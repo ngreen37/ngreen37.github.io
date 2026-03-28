@@ -1,6 +1,6 @@
 # Site settings
-title: Nathan Builds Stuff
-description: My journey learning and building things
+title: PJCC
+description: Website For Princess and the Journey to Chess City
 baseurl: ""        # leave empty for root
 url: "https://ngreen37.github.io"  
 
@@ -10,4 +10,5 @@ theme: minima
 # Navigation
 header_pages:
   - index.md
+  - projects.md
   - blog.md
