@@ -1,5 +1,4 @@
 title: PJCC
 description: Website documenting my progress with GitHub, Blender, and, of course, PJCC
 remote_theme: cotes2020/jekyll-theme-chirpy
-plugins:
-  - jekyll-remote-theme
+plugins: jekyll-remote-theme
