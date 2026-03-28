@@ -1,4 +1,13 @@
-title: PJCC
-description: Website documenting my progress with GitHub, Blender, and, of course, PJCC
-remote_theme: cotes2020/jekyll-theme-chirpy
-plugins: jekyll-remote-theme
+# Site settings
+title: Nathan Builds Stuff
+description: My journey learning and building things
+baseurl: ""        # leave empty for root
+url: "https://ngreen37.github.io"  
+
+# Theme
+theme: minima       
+
+# Navigation
+header_pages:
+  - index.md
+  - blog.md
