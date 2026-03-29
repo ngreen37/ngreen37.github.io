@@ -37,7 +37,8 @@
   background: #e2e8f0;
   color: #1e293b;
   padding: 4px 10px;
-  margin-right: 8px;   /* spacing between tags */
+  margin-right: 8px;   /* space between tags */
+  margin-bottom: 4px;  /* space if tags wrap to next line */
   border-radius: 8px;
   font-size: 14px;
   text-decoration: none;
