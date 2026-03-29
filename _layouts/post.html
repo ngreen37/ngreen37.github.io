@@ -3,7 +3,21 @@ layout: default
 ---
 
 <article class="post">
+<div class="post-nav post-nav-top">
+  {% if page.previous %}
+    <a class="prev-post" href="{{ page.previous.url }}">
+      ← {{ page.previous.title }}
+    </a>
+  {% endif %}
 
+  {% if page.next %}
+    <a class="next-post" href="{{ page.next.url }}">
+      {{ page.next.title }} →
+    </a>
+  {% endif %}
+</div>
+
+  
   <!-- Reading header -->
   <header class="post-header">
     <h1>{{ page.title }}</h1>
