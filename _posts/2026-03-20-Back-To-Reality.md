@@ -19,7 +19,7 @@ tags: [Home, Vinyl, Wrens, Introduction, Lifestyle]
   - Well, I paid the price for my little rumpus time after my trip.  I showed up late a couple times to my day job, but perfectly on time for the night one. I showed up and worked the hours, best I could.  My day job knows I work late so they do give me some leeway, although I should not take advantage of it.  I also spent too much time in the fantasy stage of PJCC, but I am giving myself some grace on all fronts.
 
 ### What’s next:
-  - Saturday at 5pm, my weekend begins.  I'm going to simply rest.  My body needs it.  I have another loaded work week starting Monday pm but this week I will be ready
+  - Saturday at 5pm, my weekend begins.  I'm going to simply rest.  My body needs it.  I have another loaded work week starting Monday evening but this week I will be ready
 
 ## Listening to: LiSA - traumerei
 
