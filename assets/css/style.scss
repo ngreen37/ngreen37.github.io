@@ -32,6 +32,21 @@
   font-size: 14px;
   margin-left: 8px;
 }
+.blog-tags .tag {
+  display: inline-block;
+  background: #e2e8f0;
+  color: #1e293b;
+  padding: 4px 10px;
+  margin-right: 8px;   /* spacing between tags */
+  border-radius: 8px;
+  font-size: 14px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.blog-tags .tag:hover {
+  background: #cbd5e1;
+}
 .post-title {
   font-size: 36px;
 }
