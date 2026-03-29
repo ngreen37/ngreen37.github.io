@@ -63,3 +63,33 @@ code {
   border-radius: 14px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.05);
 }
+/* Reading header styles */
+.post-header {
+  margin-bottom: 30px;
+}
+
+.post-header h1 {
+  font-size: 36px;
+  margin-bottom: 6px;
+}
+
+.post-meta {
+  font-size: 16px;
+  color: #64748b; /* gray-blue */
+  margin-bottom: 10px;
+}
+
+/* Tags under post title */
+.post-tags {
+  margin-top: 10px;
+}
+
+.post-tags .tag {
+  display: inline-block;
+  background: #e2e8f0;
+  color: #1e293b;
+  padding: 4px 10px;
+  margin-right: 6px;
+  border-radius: 8px;
+  font-size: 14px;
+}
