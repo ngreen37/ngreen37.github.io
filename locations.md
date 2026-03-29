@@ -1,4 +1,4 @@
-# Locations
+
 
 ## City: Checkers Town
 - People play checkers mostly  
