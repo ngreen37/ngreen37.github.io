@@ -8,8 +8,8 @@ Here’s where I post updates on what I’m building and learning.
 <h2>Featured</h2>
 
 <p>
-  <a href="/2026/03/28/GitHub/">My Best Post</a>  
-  - The one where everything finally clicked.
+  <a href="/2026/03/28/GitHub/">Ep. 6 - GitHub</a>  
+  - First Breakthrough
 </p>
 
 
