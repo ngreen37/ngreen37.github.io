@@ -1,15 +1,11 @@
 ---
 layout: page
 title: Blog
-permalink: /blog/
+permalink: /:year/:month/:day/:title/
 ---
-
-# Blog
 
 Here’s where I post updates on what I’m building and learning.
 
-
-<h1>Blog</h1>
 
 <ul>
   {% for post in site.posts %}
