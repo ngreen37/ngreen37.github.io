@@ -92,4 +92,10 @@ code {
   margin-right: 6px;
   border-radius: 8px;
   font-size: 14px;
+  text-decoration: none;  /* remove underline */
+  transition: background 0.2s;
+}
+
+.post-tags .tag:hover {
+  background: #cbd5e1;
 }
