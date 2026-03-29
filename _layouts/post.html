@@ -11,7 +11,7 @@ layout: default
       {{ page.date | date: "%B %d, %Y" }} • {{ page.content | number_of_words | divided_by:200 }} min read
     </p>
 
-    {% if page.tags %}
+   {% if page.tags %}
 <div class="blog-tags">
   {% for tag in page.tags %}
     <a href="/tags/{{ tag | slugify }}/" class="tag">{{ tag }}</a>
