@@ -27,3 +27,39 @@ h3 {
   font-size: 22px;
   font-weight: 600;
 }
+.post-content {
+  font-size: 18px;
+  line-height: 1.75;
+  max-width: 720px;
+  margin: auto;
+}
+
+.post-content h1, 
+.post-content h2, 
+.post-content h3 {
+  margin-top: 2em;
+  margin-bottom: 0.5em;
+}
+
+.post-content p {
+  margin-bottom: 1.2em;
+}
+pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+}
+
+code {
+  background: #1e293b;
+  padding: 3px 6px;
+  border-radius: 6px;
+}
+.post {
+  background: white;
+  padding: 30px;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
