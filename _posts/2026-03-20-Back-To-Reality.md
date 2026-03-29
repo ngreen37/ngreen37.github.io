@@ -9,7 +9,7 @@ tags: [Work, LiSA, Lifestyle]
 -	I feel like the only way to execute this in any sort of realistic timeline is to eventually get myself down to one job or 40 hours a week.  I’m doing maybe 60 now, but it takes all day and can be hard be productive during breaks.  I do get Saturday PM to Monday PM off usually, however, which is a full weekend that I can take advantage of.  But to really put it in full-gear I’d love to whittle it down, some.  I’m probably 3-4 months away from that, realistically.   
 
 
-### What I worked on: 
+### What I worked on since last post: 
   - Day and night jobs.  Maybe like 60 hours this week, which is not crazy, but on the heels of a tough trip home, it can be!  
     
 ### What I learned:
