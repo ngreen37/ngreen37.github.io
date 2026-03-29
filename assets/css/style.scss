@@ -151,3 +151,35 @@ code {
   margin-right: 8px;
   margin-bottom: 4px;
 }
+/* --- Previous / Next Post Navigation --- */
+.post-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+  gap: 20px;
+}
+
+.post-nav a {
+  flex: 1;
+  background: #f8fafc;
+  padding: 15px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #1e293b;
+  font-weight: 500;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.post-nav a:hover {
+  background: #e2e8f0;
+  transform: translateY(-2px);
+}
+
+/* Align left/right nicely */
+.prev-post {
+  text-align: left;
+}
+
+.next-post {
+  text-align: right;
+}
