@@ -3,10 +3,16 @@
 
 @import "minima";
 
+/* --- Site Title & Nav --- */
 /* Make site title (top-left header) bigger */
 .site-title {
   font-size: 40px;
 }
+.site-nav a {
+  font-size: 18px;
+}
+
+/* --- Blog List Page --- */
 .blog-list {
   list-style: none; /* remove bullets */
   padding-left: 0;
@@ -32,28 +38,66 @@
   font-size: 14px;
   margin-left: 8px;
 }
-.blog-tags .tag {
+
+/* --- Unified Tag Styles --- */
+.tag,
+.blog-tags .tag,
+.post-tags .tag,
+.tags-list li a {
   display: inline-block;
   background: #e2e8f0;
   color: #1e293b;
   padding: 4px 10px;
   margin-right: 8px;   /* space between tags */
-  margin-bottom: 4px;  /* space if tags wrap to next line */
+  margin-bottom: 4px;  /* space if tags wrap */
   border-radius: 8px;
   font-size: 14px;
   text-decoration: none;
   transition: background 0.2s;
 }
 
-.blog-tags .tag:hover {
+.tag:hover,
+.blog-tags .tag:hover,
+.post-tags .tag:hover,
+.tags-list li a:hover {
   background: #cbd5e1;
 }
+
+/* --- Post Headers & Meta --- */
 .post-title {
   font-size: 36px;
 }
-.site-nav a {
-  font-size: 18px;
+
+.post-header {
+  margin-bottom: 30px;
 }
+
+.post-header h1 {
+  font-size: 36px;
+  margin-bottom: 6px;
+}
+
+.post-meta {
+  font-size: 16px;
+  color: #64748b; /* gray-blue */
+  margin-bottom: 10px;
+}
+
+/* --- Post Content --- */
+.post-content {
+  font-size: 18px;
+  line-height: 1.75;
+  max-width: 720px;
+  margin: auto;
+}
+
+.post-content h1, 
+.post-content h2, 
+.post-content h3 {
+  margin-top: 2em;
+  margin-bottom: 0.5em;
+}
+
 /* Make section headers (##) larger and cleaner */
 h2 {
   font-size: 28px;
@@ -62,27 +106,18 @@ h2 {
   padding-bottom: 5px;
   margin-top: 30px;
 }
-/* Optional: slightly style smaller headers */
+
+/* Slightly smaller headers */
 h3 {
   font-size: 22px;
   font-weight: 600;
-}
-.post-content {
-  font-size: 18px;
-  line-height: 1.75;
-  max-width: 720px;
-  margin: auto;
-}
-.post-content h1, 
-.post-content h2, 
-.post-content h3 {
-  margin-top: 2em;
-  margin-bottom: 0.5em;
 }
 
 .post-content p {
   margin-bottom: 1.2em;
 }
+
+/* --- Code Blocks --- */
 pre {
   background: #0f172a;
   color: #e2e8f0;
@@ -96,41 +131,23 @@ code {
   padding: 3px 6px;
   border-radius: 6px;
 }
+
+/* --- Post Container --- */
 .post {
   background: white;
   padding: 30px;
   border-radius: 14px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.05);
 }
-/* Reading header styles */
-.post-header {
-  margin-bottom: 30px;
-}
-.post-header h1 {
-  font-size: 36px;
-  margin-bottom: 6px;
-}
-.post-meta {
-  font-size: 16px;
-  color: #64748b; /* gray-blue */
-  margin-bottom: 10px;
-}
-/* Tags under post title */
+
+/* --- Blog Tags under Post Title --- */
 .post-tags {
   margin-top: 10px;
 }
-.post-tags .tag {
-  display: inline-block;
-  background: #e2e8f0;
-  color: #1e293b;
-  padding: 4px 10px;
-  margin-right: 6px;
-  border-radius: 8px;
-  font-size: 14px;
-  text-decoration: none;  /* remove underline */
-  transition: background 0.2s;
-}
 
-.post-tags .tag:hover {
-  background: #cbd5e1;
+/* --- Tag Pages List --- */
+.tags-list li {
+  display: inline-block;
+  margin-right: 8px;
+  margin-bottom: 4px;
 }
