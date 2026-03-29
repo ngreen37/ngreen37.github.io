@@ -1,4 +1,5 @@
 ---
 layout: tag
-tag: blender
+tag: Blender
+permalink: /tags/blender/
 ---
