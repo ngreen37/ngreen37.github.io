@@ -7,4 +7,4 @@ I believe this idea came to me March 1st, 2026, so this is Day 14.  I have clear
 
 Listening to Minus the Bear - Drilling 
 
-<iframe src="https://open.spotify.com/track/6blyhK94ONYsrcdHNl73wh?si=1ac0069f217d47d0" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+<iframe src="https://open.spotify.com/embed/track/6blyhK94ONYsrcdHNl73wh" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
