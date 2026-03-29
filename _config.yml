@@ -12,6 +12,8 @@ header_pages:
   - index.md
   - projects.md
   - blog.md
+  - characters.md
+  - locations.md
   - contact.md
 
 
