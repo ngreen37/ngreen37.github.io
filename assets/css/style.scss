@@ -13,3 +13,22 @@
 .site-nav a {
   font-size: 18px;
 }
+/* Make section headers (##) larger and cleaner */
+h2 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-top: 30px;
+}
+
+/* Optional: slightly style smaller headers */
+h3 {
+  font-size: 22px;
+  font-weight: 600;
+}
+h2 {
+  font-size: 28px;
+  font-weight: 700;
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 5px;
+  margin-top: 30px;
+}
