@@ -197,3 +197,25 @@ code {
 .post-nav-top a {
   background: transparent;
   padding: 0;
+/* Divider for top navigation */
+.post-nav-top {
+  border-bottom: 1px solid #e2e8f0; /* light gray line */
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+/* --- Arrow hover animation for post navigation --- */
+
+/* Smooth transition */
+.post-nav a {
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+/* Move left arrow slightly left on hover */
+.prev-post:hover {
+  transform: translateX(-4px);
+}
+
+/* Move right arrow slightly right on hover */
+.next-post:hover {
+  transform: translateX(4px);
+}
