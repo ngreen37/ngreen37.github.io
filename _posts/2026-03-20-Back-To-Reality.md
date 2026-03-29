@@ -10,13 +10,13 @@ tags: [Work, LiSA, Lifestyle]
 
 
 ### What I worked on since last post: 
-  - Day and night jobs.  Maybe like 60 hours this week, which is not crazy, but on the heels of a tough trip home, it can be!  
+- Day and night jobs.  Maybe like 60 hours this week, which is not crazy, but on the heels of a tough trip home, it can be!  
     
 ### What I learned:
-  - Motivation is fleeting and causes burn out.  Disciplined inspiration is the way to go, for me.  Easier said than done.  But incorporating "Rest" and "Working regular jobs" can and should also be on the to-do list for PJCC. Not only is it necessary, but it helps me keep me in the "REALITY" stage and not the "Fantasy" one
+- Motivation is fleeting and causes burn out.  Disciplined inspiration is the way to go, for me.  Easier said than done.  But incorporating "Rest" and "Working regular jobs" can and should also be on the to-do list for PJCC. Not only is it necessary, but it helps me keep me in the "REALITY" stage and not the "Fantasy" one
 
 ### What’s next:
-  - Saturday at 5pm, my weekend begins.  I'm going to simply rest.  My body needs it.  I have another loaded work week starting Monday evening but this week I will be ready
+- Saturday at 5pm, my weekend begins.  I'm going to simply rest.  My body needs it.  I have another loaded work week starting Monday evening but this week I will be ready
 
 ## Listening to: LiSA - traumerei
 
