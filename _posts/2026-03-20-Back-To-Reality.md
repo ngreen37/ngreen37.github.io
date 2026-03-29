@@ -1,8 +1,8 @@
 ---
 layout: post
-title: Ep. 2 - Trip Home
-date: 2026-03-18
-tags: [Home, Vinyl, Wrens, Introduction, Lifestyle]
+title: Ep. 3 - Back To Reality
+date: 2026-03-20
+tags: [Work, LiSA, Lifestyle]
 ---
 -	All is well in MI.  I’m working 8am to 11:30pm with about four hours in between spanning two jobs, soon-to-be three jobs.  It’s okay.  It’s not that hard, honestly, as long as I live relatively clean. I don’t like how it affects the dog.  I walk or skate with her many days, but sometimes two or three days will go by where I just take her out quick and then nap in-between shifts.  No good.  I won’t have to keep this up much longer, and I can make a better effort to take her out for walks in the morning, but I feel stuck in a cycle of work-sleep-work-sleep etc sometimes.
 
