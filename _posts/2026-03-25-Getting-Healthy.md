@@ -9,7 +9,7 @@ tags: [El Ten Eleven, BlenderGuru, Chato]
 -	Sometimes I feel like he would prefer seeing leftover food go in the trash instead of my stomach, but that could just be in my head
 
 
-### What I worked on: 
+### What I worked on since last post: 
   - Successfully rested and recovered from the trip, the drive, the butt-ended work, and the fear of not having enough money
   - Poking around more with Blender.  It's fascinating.  I have now built a basic Donut shape and Coffee mug thanks to BlenderGuru, who is a great teacher. 
     
