@@ -4,9 +4,9 @@ title: Ep. 3 - Back To Reality
 date: 2026-03-20
 tags: [Work, LiSA, Lifestyle]
 ---
--	All is well in MI.  I’m working 8am to 11:30pm with about four hours in between spanning two jobs, soon-to-be three jobs.  It’s okay.  It’s not that hard, honestly, as long as I live relatively clean. I don’t like how it affects the dog.  I walk or skate with her many days, but sometimes two or three days will go by where I just take her out quick and then nap in-between shifts.  No good.  I won’t have to keep this up much longer, and I can make a better effort to take her out for walks in the morning, but I feel stuck in a cycle of work-sleep-work-sleep etc sometimes.
+- All is well in MI.  I’m working 8am to 11:30pm with about four hours in between spanning two jobs, soon-to-be three jobs.  It’s okay.  It’s not that hard, honestly, as long as I live relatively clean. I don’t like how it affects the dog.  I walk or skate with her many days, but sometimes two or three days will go by where I just take her out quick and then nap in-between shifts.  No good.  I won’t have to keep this up much longer, and I can make a better effort to take her out for walks in the morning, but I feel stuck in a cycle of work-sleep-work-sleep etc sometimes.
 
--	I feel like the only way to execute this in any sort of realistic timeline is to eventually get myself down to one job or 40 hours a week.  I’m doing maybe 60 now, but it takes all day and can be hard be productive during breaks.  I do get Saturday PM to Monday PM off usually, however, which is a full weekend that I can take advantage of.  But to really put it in full-gear I’d love to whittle it down, some.  I’m probably 3-4 months away from that, realistically.   
+- I feel like the only way to execute this in any sort of realistic timeline is to eventually get myself down to one job or 40 hours a week.  I’m doing maybe 60 now, but it takes all day and can be hard be productive during breaks.  I do get Saturday PM to Monday PM off usually, however, which is a full weekend that I can take advantage of.  But to really put it in full-gear I’d love to whittle it down, some.  I’m probably 3-4 months away from that, realistically.   
 
 
 ### What I worked on since last post: 
