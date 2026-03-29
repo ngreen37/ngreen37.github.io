@@ -1,3 +1,5 @@
+# Locations
+
 ## City: Checkers Town
 - People play checkers mostly  
 - Houses are built out of giant checker pieces that fell from the sky  
