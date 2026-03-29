@@ -6,7 +6,7 @@ tags: [El Ten Eleven, BlenderGuru, Chato]
 ---
 
 -	It’s warming up outside and the work has been steady.  All is well.  I’ve focused harder on getting the dog out before work and in-between shifts.  My clean(er) living has really been paying off.  It helps to have a purpose.  My day job feeds me as much food as I need, which is a luxury, but Chato gives me flack for how much I eat. I make it clear that I am the last stop before it goes in the garbage...  I know the optics aren’t great but *SHRUG*
--	Sometimes I feel like he would prefer seeing leftover food go in the trash instead of my stomach, but that could just be in my head
+-	Sometimes I feel like he would prefer seeing leftover food go in the trash instead of my stomach, but... I dunno
 
 
 ### What I worked on since last post: 
