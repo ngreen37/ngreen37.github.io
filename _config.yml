@@ -3,7 +3,7 @@ title: PJCC
 description: Website For Princess and the Journey to Chess City
 baseurl: ""        # leave empty for root
 url: "https://ngreen37.github.io"  
-
+permalink: /:year/:month/:day/:title/
 # Theme
 theme: minima       
 
