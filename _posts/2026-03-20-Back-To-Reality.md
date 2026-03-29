@@ -16,7 +16,7 @@ tags: [Work, LiSA, Lifestyle]
   - Motivation is fleeting and causes burn out.  Disciplined inspiration is the way to go, for me.  Easier said than done.  But incorporating "Rest" and "Working regular jobs" can and should also be on the to-do list for PJCC. Not only is it necessary, but it helps me keep me in the "REALITY" stage and not the "Fantasy" one
 
 ### What Went Wrong:
-   I spent too much time in the fantasy stage of PJCC with no action, but I am giving myself some grace considering I am handling the immediate-priorities
+- I spent too much time in the fantasy stage of PJCC with no action, but I am giving myself some grace considering I am handling the immediate-priorities
 
 ### What’s next:
   - Saturday at 5pm, my weekend begins.  I'm going to simply rest.  My body needs it.  I have another loaded work week starting Monday evening but this week I will be ready
