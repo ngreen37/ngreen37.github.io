@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Blog
-permalink: /:year/:month/:day/:title/
+permalink: /blog/
 ---
 
 Here’s where I post updates on what I’m building and learning.
