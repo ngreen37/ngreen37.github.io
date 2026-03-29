@@ -183,3 +183,14 @@ code {
 .next-post {
   text-align: right;
 }
+/* Top nav spacing */
+.post-nav-top {
+  margin-bottom: 20px;
+}
+
+/* Make top nav a bit smaller/subtle */
+.post-nav-top a {
+  font-size: 14px;
+  padding: 10px;
+  background: #f1f5f9;
+}
