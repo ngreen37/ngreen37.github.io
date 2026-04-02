@@ -1,4 +1,4 @@
-**---
+---
 layout: page
 title: Blog
 permalink: /blog/
@@ -21,4 +21,3 @@ Here’s where I post updates on what I’m building and learning.
     </li>
   {% endfor %}
 </ul>
-**

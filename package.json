@@ -1,0 +1,26 @@
+{
+  "name": "ngreen37.github.io",
+  "version": "1.0.0",
+  "description": "README:  New Project - Princess and the Journey to Chess City\r This is a repository to blog my progress on PJCC.  I have never written a story or done animation or built a website or used GitHub, but here goes nothing.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "eleventy --serve",
+    "build": "eleventy"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ngreen37/ngreen37.github.io.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ngreen37/ngreen37.github.io/issues"
+  },
+  "homepage": "https://github.com/ngreen37/ngreen37.github.io#readme",
+  "dependencies": {
+    "@11ty/eleventy": "^3.1.5"
+  }
+}
