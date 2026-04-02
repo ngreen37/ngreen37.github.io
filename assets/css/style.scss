@@ -32,7 +32,8 @@ a {
   }
 }
 
-.site-header .site-nav a {
+.site-header .site-nav a,
+.site-nav .page-link {
   font-size: 18px;
   display: inline-block;
   background: #2D1B69;
@@ -41,6 +42,11 @@ a {
   border-radius: 999px;
   text-decoration: none;
   transition: background 0.2s, color 0.2s;
+
+  &:hover,
+  &:visited {
+    color: #F5C518;
+  }
 
   &:hover {
     background: #F5C518;
@@ -198,18 +204,23 @@ code {
 
 .post .post-nav a {
   flex: 1;
-  background: #f8fafc;
-  padding: 15px;
-  border-radius: 10px;
+  background: #2D1B69;
+  color: #F5C518;
+  padding: 8px 18px;
+  border-radius: 999px;
   text-decoration: none;
-  color: #1e293b;
   font-weight: 500;
-  transition: background 0.2s, transform 0.2s ease, color 0.2s ease;
+  text-align: center;
+  transition: background 0.2s, color 0.2s, transform 0.2s ease;
+
+  &:visited {
+    color: #F5C518;
+  }
 }
 
 .post .post-nav a:hover {
-  background: #e2e8f0;
-  color: #0f172a;
+  background: #F5C518;
+  color: #2D1B69;
 }
 
 /* Align left/right nicely */
