@@ -4,8 +4,9 @@ description: Website For Princess and the Journey to Chess City
 baseurl: ""        # leave empty for root
 url: "https://ngreen37.github.io"  
 permalink: /:year/:month/:day/:title/
-
-       
+theme: minima
+minima:
+  skin: classic       
 
 # Navigation
 header_pages:
