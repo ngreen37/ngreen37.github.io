@@ -3,13 +3,49 @@
 
 @import "minima";
 
+/* --- Cartoon Theme Colors ---
+   Deep purple:    #2D1B69
+   Medium purple:  #5B2D8E
+   Gold:           #F5C518
+   Light gold:     #FFE566
+   Electric blue:  #1A8FE3
+   Light bg:       #F0EBF8
+*/
+
+/* --- Global Background & Links --- */
+body {
+  background-color: #F0EBF8;
+}
+
+a {
+  color: #5B2D8E;
+}
+
 /* --- Site Title & Nav --- */
 /* Make site title (top-left header) bigger */
 .site-title {
   font-size: 40px;
+  color: #2D1B69;
+
+  &:visited {
+    color: #2D1B69;
+  }
 }
+
 .site-nav a {
   font-size: 18px;
+  display: inline-block;
+  background: #2D1B69;
+  color: #F5C518;
+  padding: 6px 16px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+
+  &:hover {
+    background: #F5C518;
+    color: #2D1B69;
+  }
 }
 
 /* --- Blog List Page --- */
@@ -45,8 +81,8 @@
 .post-tags .tag,
 .tags-list li a {
   display: inline-block;
-  background: #e2e8f0;
-  color: #1e293b;
+  background: #2D1B69;
+  color: #F5C518;
   padding: 4px 10px;
   margin-right: 8px;    /* space between tags */
   margin-bottom: 4px;  /* space if tags wrap */
@@ -60,7 +96,7 @@
 .blog-tags .tag:hover,
 .post-tags .tag:hover,
 .tags-list li a:hover {
-  background: #cbd5e1;
+  background: #5B2D8E;
 }
 
 /* --- Post Headers & Meta --- */
@@ -102,7 +138,7 @@
 h2 {
   font-size: 28px;
   font-weight: 700;
-  border-bottom: 2px solid #ccc;
+  border-bottom: 2px solid #F5C518;
   padding-bottom: 5px;
   margin-top: 30px;
 }
@@ -137,6 +173,7 @@ code {
   background: white;
   padding: 30px;
   border-radius: 14px;
+  border: 2px solid #2D1B69;
   box-shadow: 0 10px 25px rgba(0,0,0,0.05);
 }
 
