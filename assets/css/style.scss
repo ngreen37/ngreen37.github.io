@@ -32,7 +32,7 @@ a {
   }
 }
 
-.site-nav a {
+.site-header .site-nav a {
   font-size: 18px;
   display: inline-block;
   background: #2D1B69;
@@ -189,14 +189,14 @@ code {
   margin-bottom: 4px;
 }
 /* --- Previous / Next Post Navigation --- */
-.post-nav {
+.post .post-nav {
   display: flex;
   justify-content: space-between;
   margin-top: 40px;
   gap: 20px;
 }
 
-.post-nav a {
+.post .post-nav a {
   flex: 1;
   background: #f8fafc;
   padding: 15px;
@@ -207,7 +207,7 @@ code {
   transition: background 0.2s, transform 0.2s ease, color 0.2s ease;
 }
 
-.post-nav a:hover {
+.post .post-nav a:hover {
   background: #e2e8f0;
   color: #0f172a;
 }
