@@ -5,6 +5,10 @@ title: Ep. 8 - Chess Lessons
 date: 2026-04-11
 tags: [Home, Chess, Second_Job, Lessons]
 ---
+## Listening to: The Falcon - When I Give the Signal, Run!
+
+<iframe src="https://open.spotify.com/embed/track/7BbxOTLBf91IE8TAVAAfG0" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+
 - Last ten days have been busy, but weekly minimum posting is my aim 
 
 Life is good, here!  How are you?  What's new?
@@ -16,14 +20,12 @@ Chess lessons have picked back up again!  This is my second session doing it, an
   - My chess classes and playing around with Blender.  I've almost got a checker piece ready, for the main character's home 
     
 ### What I learned:
-  - Well, I remembered why I started this in the first place.  These chesses lessons are so enjoyable that I thought, "how do I build this into my own business"
+  - Well, I remembered why I started PJCC in the first place.  These chesses lessons are so enjoyable that I thought, "how do I build this into my own business?"
 
 ### What Needs Attention:
   - My PJCC consistency took a dip, but I do like to 'set the table' for more dedicated work, and in this case that may take weeks.  Working three jobs for the next five weeks.   
 
 ### What’s next:
-  - Well, my weekend is pretty wide open!  I'm off to a good start with this blog post, and I am working on minor fixes of the website (the navigation buttons should look like little pills, my background picture isn't loading, etc.  
+  - Well, my weekend is pretty wide open!  I'm off to a good start with this blog post, and I am working on minor fixes of the website (the navigation buttons should look like little pills, my background picture isn't loading, etc.)  
 
-## Listening to: The Falcon - When I Give the Signal, Run!
 
-<iframe src="https://open.spotify.com/embed/track/7BbxOTLBf91IE8TAVAAfG0" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
