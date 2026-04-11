@@ -4,7 +4,7 @@ title: Locations
 permalink: /locations/
 ---
 
-## City: Checkers Town
+## City: Checker Town
 - People play checkers mostly  
 - Houses are built out of giant checker pieces that fell from the sky  
 - The community is poor and struggling.  Hope is in short supply  
@@ -15,11 +15,15 @@ permalink: /locations/
 - Must earn your way in by winning chess tournaments
 - Family and Friends reside there but in order to visit you must go through security and get Tagged with a symbol of some sort
 
-## City: Unknown City
-- A world away from Checkers Town and Chess City
-- Mysterious. Rumored to be the Capital of Chess and the source of the fallen checker pieces 
-- Everyone speaks Japanese for some unexplained reason
+## City: Shogi Island
+- A near Checker Town and Chess City
+- Little chess is played here, most people play Shogi 
+- Everyone speaks Japanese
 
+## City: ???
+- Mysterious. Rumored to be the Capital of Chess and the source of the fallen checker pieces
+
+  
 ## Workplace: Chess City Elementary
 - Main Character works there but as a janitor.  Eventually teaches chess there
 - He has to go through security and get tagged every shift 
