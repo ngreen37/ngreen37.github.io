@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 100" width="520" height="100">
+  <!-- Paw icon -->
+  <!-- Four toe beans -->
+  <ellipse cx="34" cy="22" rx="11" ry="10" fill="#111"/>
+  <ellipse cx="51" cy="14" rx="11" ry="10" fill="#111"/>
+  <ellipse cx="71" cy="14" rx="11" ry="10" fill="#111"/>
+  <ellipse cx="88" cy="22" rx="11" ry="10" fill="#111"/>
+  <!-- Main pad -->
+  <ellipse cx="61" cy="58" rx="36" ry="31" fill="#111"/>
+  <!-- McP knocked out -->
+  <text x="20" y="70"
+    font-family="Georgia, serif"
+    font-size="28"
+    font-weight="700"
+    fill="white"
+    letter-spacing="-1">Mc</text>
+  <text x="63" y="70"
+    font-family="Georgia, serif"
+    font-size="28"
+    font-weight="700"
+    fill="white">P</text>
+
+  <!-- Divider -->
+  <rect x="110" y="16" width="1" height="68" fill="#ccc"/>
+
+  <!-- Wordmark -->
+  <text x="124" y="62"
+    font-family="Georgia, serif"
+    font-size="42"
+    font-weight="700"
+    fill="#111"
+    letter-spacing="-1">Mc</text>
+  <text x="200" y="62"
+    font-family="Georgia, serif"
+    font-size="42"
+    font-weight="700"
+    fill="#111">P</text>
+  <text x="228" y="62"
+    font-family="Georgia, serif"
+    font-size="42"
+    font-weight="400"
+    fill="#111">uppy</text>
+  <text x="124" y="88"
+    font-family="Georgia, serif"
+    font-size="18"
+    font-weight="400"
+    letter-spacing="6"
+    fill="#555">Studios</text>
+</svg>

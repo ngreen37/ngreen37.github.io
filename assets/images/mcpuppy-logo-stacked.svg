@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="300" height="200">
+  <!-- Four toe beans -->
+  <ellipse cx="102" cy="48" rx="17" ry="15" fill="#111"/>
+  <ellipse cx="128" cy="36" rx="17" ry="15" fill="#111"/>
+  <ellipse cx="162" cy="36" rx="17" ry="15" fill="#111"/>
+  <ellipse cx="188" cy="48" rx="17" ry="15" fill="#111"/>
+  <!-- Main pad -->
+  <ellipse cx="145" cy="105" rx="58" ry="50" fill="#111"/>
+  <!-- McP knocked out -->
+  <text x="108" y="120"
+    font-family="Georgia, serif"
+    font-size="38"
+    font-weight="700"
+    fill="white"
+    letter-spacing="-1">Mc</text>
+  <text x="160" y="120"
+    font-family="Georgia, serif"
+    font-size="38"
+    font-weight="700"
+    fill="white">P</text>
+  <!-- Full name beneath -->
+  <text x="145" y="172"
+    text-anchor="middle"
+    font-family="Georgia, serif"
+    font-size="24"
+    font-weight="700"
+    fill="#111"
+    letter-spacing="-0.5">McPuppy Studios</text>
+</svg>
