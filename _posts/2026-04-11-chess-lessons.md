@@ -17,7 +17,7 @@ Last ten days have been busy, but the first week of chess lessons is finished an
   - I remembered why I started PJCC in the first place.  These chess lessons are so enjoyable that I thought, "how do I build this into my own business?".  PJCC can offer an entire empire of options to work with.  Lessons, Tutorials, animated shorts or series.
   - My PJCC consistency took a dip, but I do like to "set the table" for more dedicated work, and in this case that may take weeks.  Working three jobs for the next five weeks.   
 
-### What’s next:
+### What's next:
   - My weekend is pretty wide open!  I'm off to a good start with this blog post, and I am working on minor fixes of the website (the navigation buttons should look like little pills, my background picture isn't loading, etc.)  
 
 

@@ -494,6 +494,131 @@ pre code {
   line-height: 1.8;
 }
 
+/* --- Character Pages --- */
+.character-card {
+  background: #1c1540;
+  padding: 40px 48px;
+  border-radius: 16px;
+  border: 1px solid #3d2b8a;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.character-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 36px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #3d2b8a;
+}
+
+.character-name {
+  font-family: 'Poppins', sans-serif;
+  font-size: 44px;
+  font-weight: 800;
+  color: #F5C518;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.character-fullname {
+  font-size: 16px;
+  color: #9b87c0;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.character-role-badge {
+  display: inline-block;
+  background: #2D1B69;
+  color: #c4b5fd;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid #3d2b8a;
+  white-space: nowrap;
+  align-self: center;
+}
+
+.character-body {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 44px;
+  align-items: start;
+}
+
+.portrait-placeholder {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: #12093a;
+  border: 2px dashed #3d2b8a;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.portrait-placeholder-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: #4a3870;
+}
+
+.portrait-icon {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.portrait-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.character-details {
+  font-size: 17px;
+  line-height: 1.85;
+  color: #ddd6f3;
+
+  h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #F5C518;
+    border-bottom: 1px solid #3d2b8a;
+    padding-bottom: 4px;
+    margin-top: 28px;
+    margin-bottom: 10px;
+    letter-spacing: 0.2px;
+  }
+
+  ul {
+    margin-bottom: 1em;
+    padding-left: 1.4em;
+  }
+
+  li {
+    margin-bottom: 0.35em;
+  }
+
+  p {
+    margin-bottom: 1em;
+  }
+
+  em {
+    color: #6b5a8e;
+    font-style: italic;
+  }
+}
+
 /* --- Responsive --- */
 @media (max-width: 700px) {
   .header-inner {
@@ -511,8 +636,22 @@ pre code {
   }
 
   .page-card,
-  .post {
+  .post,
+  .character-card {
     padding: 24px 20px;
+  }
+
+  .character-body {
+    grid-template-columns: 1fr;
+  }
+
+  .character-name {
+    font-size: 32px;
+  }
+
+  .portrait-placeholder {
+    max-width: 200px;
+    margin: 0 auto;
   }
 
   .page-title,

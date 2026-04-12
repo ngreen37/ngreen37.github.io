@@ -20,6 +20,12 @@ header_pages:
 
 
 
+# Collections
+collections:
+  characters:
+    output: true
+    permalink: /characters/:name/
+
 # Optional: social links / footer
 # (you can add later if you want)
 # github: yourusername

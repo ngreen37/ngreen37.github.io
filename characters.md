@@ -3,26 +3,21 @@ layout: page
 title: Characters
 permalink: /characters/
 ---
-## Main Character: Princess  
-- Beginner chess player  
-- Loyal and Obedient, yet Curious  
-- Is a dog
-- Full Name:  Princess Sophia McPuppy
 
-## Main Character: Me (Name Undetermined)
-- Accompanies Princess through chess adventures
-- Male between 14 and 21 years old
-- Lives in Checkers Town
+The story of *Princess and the Journey to Chess City* follows a cast of characters from the struggling streets of Checkers Town to the gates of Chess City and beyond.
 
-## Main Character: Rival (Name Undetermined)
-- In the beginning it feels contentious but they eventually find common ground
-- Same age as main character
-- Lives in Checkers Town.  All his family is in Chess City, and thus inspires him to play chess as much as possible to eventually join them
-- Takes in Princess when main character gets sent away
-- Teaches Princess the Pirc
+## Main Characters
 
-## Side Character: Best Friend (Name Undetermined)
-- Has known the main character since they were in pre-school
-- Uninspired or simply content with life in Checker Town
-- Out of insecurity, makes fun of main character's hopes and dreams of a better life
-- Teams up with Rival when main character is sent away, and takes in the other dogs while Rival takes in Princess
+### [Princess](/characters/princess/)
+Full name: Princess Sophia McPuppy. A loyal, curious dog and beginner chess player -- the heart of the whole adventure.
+
+### [The Narrator](/characters/narrator/)
+Name undetermined. A young man from Checkers Town with big dreams and a deep bond with Princess. The story's guide and driving force.
+
+### [The Rival](/characters/rival/)
+Name undetermined. Same age as the narrator. His entire family lives in Chess City -- and chess is his only road back to them. He and the narrator start as opponents and find common ground.
+
+## Side Characters
+
+### [The Best Friend](/characters/best-friend/)
+Name undetermined. The narrator's oldest friend. Content with life in Checkers Town, and quietly threatened by the narrator's ambition. Their bond is tested as the journey unfolds.

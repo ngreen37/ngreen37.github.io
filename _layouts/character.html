@@ -1,0 +1,40 @@
+---
+layout: default
+---
+
+<article class="character-card">
+
+  <header class="character-header">
+    <div class="character-header-text">
+      <h1 class="character-name">{{ page.title }}</h1>
+      {% if page.full_name and page.full_name != "Name Undetermined" %}
+        <p class="character-fullname">{{ page.full_name }}</p>
+      {% endif %}
+    </div>
+    {% if page.role %}
+      <span class="character-role-badge">{{ page.role }}</span>
+    {% endif %}
+  </header>
+
+  <div class="character-body">
+
+    <div class="character-portrait">
+      {% if page.image %}
+        <img src="{{ page.image | relative_url }}" alt="Portrait of {{ page.title }}">
+      {% else %}
+        <div class="portrait-placeholder">
+          <div class="portrait-placeholder-inner">
+            <span class="portrait-icon">&#9813;</span>
+            <span class="portrait-label">Art Coming Soon</span>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="character-details">
+      {{ content }}
+    </div>
+
+  </div>
+
+</article>
