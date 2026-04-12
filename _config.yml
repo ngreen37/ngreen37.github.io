@@ -25,6 +25,9 @@ collections:
   characters:
     output: true
     permalink: /characters/:name/
+  locations:
+    output: true
+    permalink: /locations/:name/
 
 # Optional: social links / footer
 # (you can add later if you want)

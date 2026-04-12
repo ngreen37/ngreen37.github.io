@@ -619,6 +619,116 @@ pre code {
   }
 }
 
+/* --- Location Pages --- */
+.location-card {
+  background: #1c1540;
+  padding: 40px 48px;
+  border-radius: 16px;
+  border: 1px solid #3d2b8a;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.location-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #3d2b8a;
+}
+
+.location-name {
+  font-family: 'Poppins', sans-serif;
+  font-size: 44px;
+  font-weight: 800;
+  color: #F5C518;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.location-type-badge {
+  display: inline-block;
+  background: #12093a;
+  color: #1A8FE3;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid #1A8FE3;
+  white-space: nowrap;
+  align-self: center;
+}
+
+.location-art {
+  width: 100%;
+  height: 140px;
+  background: #12093a;
+  border: 2px dashed #3d2b8a;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.location-art-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #4a3870;
+}
+
+.location-art-icon {
+  font-size: 36px;
+  line-height: 1;
+}
+
+.location-art-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.location-details {
+  font-size: 17px;
+  line-height: 1.85;
+  color: #ddd6f3;
+
+  h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #F5C518;
+    border-bottom: 1px solid #3d2b8a;
+    padding-bottom: 4px;
+    margin-top: 28px;
+    margin-bottom: 10px;
+  }
+
+  ul {
+    margin-bottom: 1em;
+    padding-left: 1.4em;
+  }
+
+  li {
+    margin-bottom: 0.35em;
+  }
+
+  p {
+    margin-bottom: 1em;
+  }
+
+  em {
+    color: #9b87c0;
+    font-style: italic;
+  }
+}
+
 /* --- Responsive --- */
 @media (max-width: 700px) {
   .header-inner {
@@ -637,7 +747,8 @@ pre code {
 
   .page-card,
   .post,
-  .character-card {
+  .character-card,
+  .location-card {
     padding: 24px 20px;
   }
 

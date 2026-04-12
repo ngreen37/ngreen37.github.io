@@ -1,0 +1,27 @@
+---
+layout: default
+---
+
+<article class="location-card">
+
+  <header class="location-header">
+    <div class="location-header-text">
+      <h1 class="location-name">{{ page.title }}</h1>
+    </div>
+    {% if page.location_type %}
+      <span class="location-type-badge">{{ page.location_type }}</span>
+    {% endif %}
+  </header>
+
+  <div class="location-art">
+    <div class="location-art-inner">
+      <span class="location-art-icon">&#9812;</span>
+      <span class="location-art-label">Art / Map Coming Soon</span>
+    </div>
+  </div>
+
+  <div class="location-details">
+    {{ content }}
+  </div>
+
+</article>
