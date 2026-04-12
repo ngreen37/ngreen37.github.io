@@ -1,0 +1,104 @@
+---
+layout: default
+---
+
+{% comment %} Day counter: March 1 2026 00:00 UTC = Unix 1772323200 {% endcomment %}
+{% assign start_ts  = 1772323200 %}
+{% assign now_ts    = site.time | date: "%s" | plus: 0 %}
+{% assign days_since = now_ts | minus: start_ts | divided_by: 86400 | plus: 1 %}
+
+{% comment %} ── 1. HERO ─────────────────────────────────────────── {% endcomment %}
+<section class="home-hero">
+  <p class="hero-eyebrow">McPuppy Studios Presents</p>
+  <h1 class="hero-title">Princess and the Journey<br>to Chess City</h1>
+  <p class="hero-subtitle">A cartoon series in progress</p>
+  <a class="hero-btn" href="{{ '/blog/' | relative_url }}">Read the Blog</a>
+</section>
+
+{% comment %} ── 2. FEATURED POST ─────────────────────────────────── {% endcomment %}
+{% assign featured = site.posts.first %}
+{% if featured %}
+<section class="home-section">
+  <h2 class="home-section-label">Latest Post</h2>
+  <a class="featured-card" href="{{ featured.url | relative_url }}">
+    <div class="featured-meta">{{ featured.date | date: "%B %d, %Y" }}</div>
+    <h3 class="featured-post-title">{{ featured.title }}</h3>
+    <p class="featured-excerpt">{{ featured.content | strip_html | strip | truncatewords: 45 }}</p>
+    <span class="featured-cta">Read full post &rarr;</span>
+  </a>
+</section>
+{% endif %}
+
+{% comment %} ── 3. RECENT POSTS (next 3 after featured) ───────────── {% endcomment %}
+<section class="home-section">
+  <h2 class="home-section-label">
+    Recent Posts
+    <a class="home-section-link" href="{{ '/blog/' | relative_url }}">All posts &rarr;</a>
+  </h2>
+  <div class="preview-grid">
+    {% for post in site.posts limit: 3 offset: 1 %}
+    <a class="preview-card" href="{{ post.url | relative_url }}">
+      <div class="preview-meta">{{ post.date | date: "%b %d, %Y" }}</div>
+      <h3 class="preview-post-title">{{ post.title }}</h3>
+      <p class="preview-excerpt">{{ post.content | strip_html | strip | truncatewords: 20 }}</p>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+{% comment %} ── 4. CHARACTER TEASER ──────────────────────────────── {% endcomment %}
+<section class="home-section">
+  <h2 class="home-section-label">
+    Characters
+    <a class="home-section-link" href="{{ '/characters/' | relative_url }}">Meet them all &rarr;</a>
+  </h2>
+  <div class="char-row">
+    {% for char in site.characters %}
+    <a class="char-chip" href="{{ char.url | relative_url }}">
+      <span class="char-chip-icon">&#9823;</span>
+      <span class="char-chip-name">{{ char.title }}</span>
+      <span class="char-chip-role">{{ char.role }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+{% comment %} ── 5. STATS BAR ─────────────────────────────────────── {% endcomment %}
+<div class="home-stats">
+  <div class="stats-inner">
+    <div class="hstat">
+      <span class="hstat-num" data-target="{{ days_since }}">0</span>
+      <span class="hstat-lbl">Days Since Start</span>
+    </div>
+    <div class="hstat">
+      <span class="hstat-num" data-target="{{ site.posts.size }}">0</span>
+      <span class="hstat-lbl">Posts Written</span>
+    </div>
+    <div class="hstat">
+      <span class="hstat-num" data-target="{{ site.characters.size }}">0</span>
+      <span class="hstat-lbl">Characters</span>
+    </div>
+    <div class="hstat">
+      <span class="hstat-num" data-target="{{ site.locations.size }}">0</span>
+      <span class="hstat-lbl">Locations</span>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.hstat-num').forEach(function(el) {
+  var target = parseInt(el.getAttribute('data-target'), 10);
+  if (!target) return;
+  var duration = 1400;
+  var start = null;
+  function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+  function step(ts) {
+    if (!start) start = ts;
+    var p = Math.min((ts - start) / duration, 1);
+    el.textContent = Math.floor(ease(p) * target);
+    if (p < 1) requestAnimationFrame(step);
+    else el.textContent = target;
+  }
+  requestAnimationFrame(step);
+});
+</script>
