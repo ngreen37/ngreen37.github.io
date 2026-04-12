@@ -4,13 +4,13 @@ title: Projects
 permalink: /projects/
 ---
 
-McPuppy Studios is an independent creative studio built around storytelling, animation, and chess. Here's what's in the works.
+McPuppy Studios is an independent creative studio built around storytelling, animation, and chess.
 
 ---
 
 ## Princess and the Journey to Chess City
 
-The flagship project. *Princess and the Journey to Chess City* (PJCC) is an original cartoon series following a young girl who discovers the world of chess and the strange, strategic lands that come with it.
+The flagship project. *Princess and the Journey to Chess City* (PJCC) is an original cartoon series following a young man who discovers the world of chess and the strange, strategic lands that come with it.
 
 - **Format:** Animated series
 - **Status:** In development -- story, characters, and world-building ongoing
@@ -22,7 +22,7 @@ The flagship project. *Princess and the Journey to Chess City* (PJCC) is an orig
 
 Short 2D/3D animation experiments built in Blender -- scene studies, character tests, and world sketches for PJCC.
 
-**Coming soon** -- clips and GIFs will be posted here as they're ready.
+**Coming soon** -- clips will be posted here as they're ready.
 
 ---
 
