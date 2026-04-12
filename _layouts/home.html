@@ -3,8 +3,8 @@ layout: default
 ---
 
 {% comment %} Day counter: March 1 2026 00:00 UTC = Unix 1772323200 {% endcomment %}
-{% assign start_ts  = 1772323200 %}
-{% assign now_ts    = site.time | date: "%s" | plus: 0 %}
+{% assign start_ts   = 1772323200 %}
+{% assign now_ts     = site.time | date: "%s" | plus: 0 %}
 {% assign days_since = now_ts | minus: start_ts | divided_by: 86400 | plus: 1 %}
 
 {% comment %} ── 1. HERO ─────────────────────────────────────────── {% endcomment %}
@@ -15,32 +15,44 @@ layout: default
   <a class="hero-btn" href="{{ '/blog/' | relative_url }}">Read the Blog</a>
 </section>
 
-{% comment %} ── 2. FEATURED POST ─────────────────────────────────── {% endcomment %}
-{% assign featured = site.posts.first %}
-{% if featured %}
-<section class="home-section">
-  <h2 class="home-section-label">Latest Post</h2>
-  <a class="featured-card" href="{{ featured.url | relative_url }}">
-    <div class="featured-meta">{{ featured.date | date: "%B %d, %Y" }}</div>
-    <h3 class="featured-post-title">{{ featured.title }}</h3>
-    <p class="featured-excerpt">{{ featured.content | strip_html | strip | truncatewords: 45 }}</p>
-    <span class="featured-cta">Read full post &rarr;</span>
-  </a>
+{% comment %} ── 2. PJCC DESCRIPTOR ───────────────────────────────── {% endcomment %}
+<section class="home-about">
+  <p>
+    <strong>Princess and the Journey to Chess City</strong> is an original animated cartoon series in development by McPuppy Studios.
+    It follows Princess -- a loyal, chess-playing dog -- and the young man who raises her as they navigate life in Checker Town,
+    a struggling community where checker pieces once fell from the sky, and chase a better life in Chess City across the sea.
+  </p>
+  <p>
+    This site documents the project as it's being built: the story, the characters, the locations, and everything in between.
+    Lessons learned along the way get posted to the blog.
+  </p>
 </section>
-{% endif %}
 
-{% comment %} ── 3. RECENT POSTS (next 3 after featured) ───────────── {% endcomment %}
+{% comment %} ── 3. RECENT POSTS ───────────────────────────────────── {% endcomment %}
 <section class="home-section">
   <h2 class="home-section-label">
     Recent Posts
     <a class="home-section-link" href="{{ '/blog/' | relative_url }}">All posts &rarr;</a>
   </h2>
   <div class="preview-grid">
-    {% for post in site.posts limit: 3 offset: 1 %}
+    {% for post in site.posts limit: 3 %}
+
+    {% comment %} Walk lines, skip Spotify/Listening-to block, grab first real sentence {% endcomment %}
+    {% assign _lines   = post.content | strip_html | newline_to_br | split: "<br />" %}
+    {% assign _preview = "" %}
+    {% for _line in _lines %}
+      {% assign _t = _line | strip %}
+      {% unless _t contains "Listening to:" or _t.size < 20 %}
+        {% assign _preview = _t %}
+        {% break %}
+      {% endunless %}
+    {% endfor %}
+    {% if _preview == "" %}{% assign _preview = post.content | strip_html | strip %}{% endif %}
+
     <a class="preview-card" href="{{ post.url | relative_url }}">
       <div class="preview-meta">{{ post.date | date: "%b %d, %Y" }}</div>
       <h3 class="preview-post-title">{{ post.title }}</h3>
-      <p class="preview-excerpt">{{ post.content | strip_html | strip | truncatewords: 20 }}</p>
+      <p class="preview-excerpt">{{ _preview | truncatewords: 22 }}</p>
     </a>
     {% endfor %}
   </div>

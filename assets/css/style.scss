@@ -825,55 +825,29 @@ pre code {
   }
 }
 
-/* Featured card */
-.featured-card {
-  display: block;
+/* PJCC descriptor */
+.home-about {
   background: #1c1540;
   border: 1px solid #3d2b8a;
   border-radius: 14px;
-  padding: 32px 38px;
-  text-decoration: none;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  transition: border-color 0.2s, transform 0.2s;
-
-  &:hover {
-    border-color: #F5C518;
-    transform: translateY(-3px);
-    text-decoration: none;
-  }
-}
-
-.featured-meta {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: #4a3870;
-  margin-bottom: 10px;
-}
-
-.featured-post-title {
-  font-family: 'Poppins', sans-serif;
-  font-size: 26px;
-  font-weight: 800;
-  color: #F5C518;
-  line-height: 1.2;
-  margin: 0 0 14px;
-  padding: 0;
-  border: none;
-}
-
-.featured-excerpt {
+  padding: 28px 36px;
+  margin-bottom: 52px;
+  font-size: 17px;
+  line-height: 1.8;
   color: #c4b5fd;
-  font-size: 16px;
-  line-height: 1.75;
-  margin-bottom: 18px;
-}
 
-.featured-cta {
-  font-size: 13px;
-  font-weight: 600;
-  color: #a78bfa;
+  p {
+    margin-bottom: 0.9em;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  strong {
+    color: #F5C518;
+    font-weight: 700;
+  }
 }
 
 /* Preview grid — 3 columns */
