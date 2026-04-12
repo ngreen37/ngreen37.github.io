@@ -92,26 +92,24 @@ ul, ol {
   gap: 12px;
 }
 
-/* --- Site Title --- */
-.site-title {
-  font-family: 'Poppins', sans-serif;
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  color: #F5C518;
+/* --- Site Logo (header) --- */
+.site-logo {
+  display: block;
+  line-height: 0;
   text-decoration: none;
-  line-height: 1;
-  transition: color 0.2s, transform 0.2s;
+  transition: opacity 0.2s;
 
   &:hover {
-    color: #FFE566;
+    opacity: 0.8;
     text-decoration: none;
-    transform: scale(1.05);
   }
+}
 
-  &:visited {
-    color: #F5C518;
-  }
+.logo-stacked {
+  height: 52px;
+  width: auto;
+  display: block;
+  filter: invert(1);
 }
 
 /* --- Navigation Pills --- */
@@ -193,23 +191,17 @@ ul, ol {
   text-align: center;
 }
 
-.footer-tagline {
-  color: #9b87c0;
-  font-size: 14px;
-  line-height: 1.6;
+.logo-horizontal {
+  height: 48px;
+  width: auto;
+  display: block;
+  margin: 0 auto 10px;
+  filter: invert(1);
 }
 
-.footer-title {
-  font-family: 'Poppins', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  color: #F5C518;
-}
-
-.footer-studio {
+.footer-copy {
   color: #6b5a8e;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 /* --- Section Headers --- */
