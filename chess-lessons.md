@@ -10,14 +10,14 @@ permalink: /chess-lessons/
     <span class="stat-label">Students Taught</span>
   </div>
   <div class="stat-card">
-    <span class="stat-number" data-target="8">0</span>
+    <span class="stat-number" data-target="13">0</span>
     <span class="stat-label">Classes Taught</span>
   </div>
 </div>
 
 <div class="lessons-info">
   <h2>In-Person &amp; Online Lessons</h2>
-  <p>I offer chess lessons for students of all skill levels — whether you're a complete beginner just learning how the pieces move, or an intermediate player ready to take your game to the next level.</p>
+  <p>I offer chess lessons for <strong>beginners</strong> and <strong>intermediate</strong> players -- whether you're just learning how the pieces move or looking to sharpen your game and take it to the next level.</p>
   <p>Lessons are available both <strong>in person</strong> and <strong>online</strong>, and can be tailored to your schedule and goals.</p>
   <p>For availability, scheduling, and pricing, please <a href="/contact/">contact me</a> — I'd love to hear from you.</p>
 </div>
