@@ -9,7 +9,8 @@ permalink: /characters/narrator/
 The story's guide and driving force. A young man from Checker Town with big dreams, a strong work ethic, and a deep bond with his dog, Princess.
 
 ## Traits
-- Male, between 14 and 21 years old
+- Late teens
+- Anime protagonist energy: determined and always moving forward
 - Ambitious and hopeful, but grounded in the hard reality of Checker Town
 - Talks with his hands a lot
 - Has a knack for getting people genuinely excited about things

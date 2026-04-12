@@ -486,6 +486,28 @@ pre code {
   line-height: 1.8;
 }
 
+/* --- Back Button (character + location pages) --- */
+.back-btn {
+  display: inline-block;
+  margin-bottom: 20px;
+  padding: 6px 16px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #9b87c0;
+  border: 2px solid #3d2b8a;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: color 0.2s, border-color 0.2s, transform 0.15s;
+
+  &:hover {
+    color: #F5C518;
+    border-color: #F5C518;
+    text-decoration: none;
+    transform: translateX(-2px);
+  }
+}
+
 /* --- Character Pages --- */
 .character-card {
   background: #1c1540;
