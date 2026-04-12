@@ -1,5 +1,7 @@
 ---
+layout: page
 title: Characters
+permalink: /characters/
 ---
 ## Main Character: Princess  
 - Beginner chess player  

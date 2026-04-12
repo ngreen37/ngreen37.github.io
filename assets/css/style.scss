@@ -1,49 +1,140 @@
 ---
 ---
 
-@import "minima";
+/* =============================================================
+   Royal Chess Theme — Princess and the Journey to Chess City
+   McPuppy Studios
+   Colors:
+     Deep purple:    #2D1B69
+     Medium purple:  #5B2D8E
+     Gold:           #F5C518
+     Light gold:     #FFE566
+     Electric blue:  #1A8FE3
+     Light bg:       #F0EBF8
+   Fonts: Bangers (display), Nunito (body)
+   ============================================================= */
 
-/* --- Cartoon Theme Colors ---
-   Deep purple:    #2D1B69
-   Medium purple:  #5B2D8E
-   Gold:           #F5C518
-   Light gold:     #FFE566
-   Electric blue:  #1A8FE3
-   Light bg:       #F0EBF8
-*/
+/* --- Reset & Box Sizing --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-/* --- Global Background & Links --- */
+/* --- Base Typography --- */
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
 body {
+  font-family: 'Nunito', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 400;
   background-color: #F0EBF8;
+  color: #1a1a2e;
+  line-height: 1.7;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #2D1B69;
 }
 
 a {
   color: #5B2D8E;
-}
+  text-decoration: none;
 
-/* --- Site Title & Nav --- */
-/* Make site title (top-left header) bigger */
-.site-title {
-  font-size: 40px;
-  color: #2D1B69;
-
-  &:visited {
-    color: #2D1B69;
+  &:hover {
+    text-decoration: underline;
   }
 }
 
-.site-header .site-nav a,
-.site-nav .page-link {
-  font-size: 18px;
-  display: inline-block;
-  background: #2D1B69;
-  color: #F5C518;
-  padding: 8px 18px;
-  border-radius: 999px;
-  text-decoration: none;
-  transition: background 0.2s, color 0.2s;
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
 
-  &:hover,
+ul, ol {
+  padding-left: 1.5em;
+}
+
+/* --- Layout Wrapper --- */
+.wrapper {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* --- Site Header --- */
+.site-header {
+  background: #2D1B69;
+  border-bottom: 4px solid #F5C518;
+  padding: 14px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(45, 27, 105, 0.35);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* --- Site Title --- */
+.site-title {
+  font-family: 'Bangers', cursive;
+  font-size: 42px;
+  letter-spacing: 3px;
+  color: #F5C518;
+  text-decoration: none;
+  line-height: 1;
+  text-shadow: 3px 3px 0px rgba(0,0,0,0.3);
+  transition: color 0.2s, transform 0.2s;
+
+  &:hover {
+    color: #FFE566;
+    text-decoration: none;
+    transform: scale(1.05);
+  }
+
+  &:visited {
+    color: #F5C518;
+  }
+}
+
+/* --- Navigation Pills --- */
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.site-nav .page-link,
+.site-header .site-nav a {
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  display: inline-block;
+  background: transparent;
+  color: #F5C518;
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 2px solid #F5C518;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+  letter-spacing: 0.3px;
+
   &:visited {
     color: #F5C518;
   }
@@ -51,12 +142,93 @@ a {
   &:hover {
     background: #F5C518;
     color: #2D1B69;
+    text-decoration: none;
+    transform: translateY(-2px);
   }
+}
+
+/* --- Main Content Area --- */
+.page-content {
+  flex: 1;
+  padding: 40px 0 60px;
+}
+
+/* --- Page Card (used by page.html layout) --- */
+.page-card {
+  background: white;
+  padding: 36px 40px;
+  border-radius: 16px;
+  border: 2px solid #2D1B69;
+  box-shadow: 0 8px 28px rgba(45, 27, 105, 0.1);
+}
+
+.page-title {
+  font-family: 'Bangers', cursive;
+  font-size: 48px;
+  color: #2D1B69;
+  letter-spacing: 2px;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 3px solid #F5C518;
+}
+
+.page-body {
+  font-size: 17px;
+  line-height: 1.75;
+}
+
+/* --- Footer --- */
+.site-footer {
+  background: #2D1B69;
+  border-top: 4px solid #F5C518;
+  padding: 24px 0;
+  margin-top: auto;
+}
+
+.footer-inner {
+  text-align: center;
+}
+
+.footer-tagline {
+  color: #F0EBF8;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.footer-title {
+  font-family: 'Bangers', cursive;
+  font-size: 20px;
+  letter-spacing: 1.5px;
+  color: #F5C518;
+}
+
+.footer-studio {
+  color: #c9b8e8;
+  font-size: 13px;
+}
+
+/* --- Section Headers --- */
+h2 {
+  font-size: 28px;
+  font-weight: 800;
+  border-bottom: 3px solid #F5C518;
+  padding-bottom: 6px;
+  margin-top: 36px;
+  margin-bottom: 14px;
+  color: #2D1B69;
+}
+
+h3 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 24px;
+  margin-bottom: 10px;
+  color: #5B2D8E;
 }
 
 /* --- Blog List Page --- */
 .blog-list {
-  list-style: none; /* remove bullets */
+  list-style: none;
   padding-left: 0;
 }
 
@@ -90,10 +262,11 @@ a {
   background: #2D1B69;
   color: #F5C518;
   padding: 4px 10px;
-  margin-right: 8px;    /* space between tags */
-  margin-bottom: 4px;  /* space if tags wrap */
-  border-radius: 999px; /* pill shape*/
+  margin-right: 8px;
+  margin-bottom: 4px;
+  border-radius: 999px;
   font-size: 14px;
+  font-weight: 700;
   text-decoration: none;
   transition: background 0.2s;
 }
@@ -103,56 +276,56 @@ a {
 .post-tags .tag:hover,
 .tags-list li a:hover {
   background: #5B2D8E;
+  text-decoration: none;
 }
 
-/* --- Post Headers & Meta --- */
-.post-title {
-  font-size: 36px;
+/* --- Post Layout --- */
+.post {
+  background: white;
+  padding: 36px 40px;
+  border-radius: 16px;
+  border: 2px solid #2D1B69;
+  box-shadow: 0 8px 28px rgba(45, 27, 105, 0.1);
 }
 
 .post-header {
   margin-bottom: 30px;
 }
 
-.post-header h1 {
-  font-size: 36px;
-  margin-bottom: 6px;
+.post-header h1,
+.post-title {
+  font-family: 'Bangers', cursive;
+  font-size: 44px;
+  letter-spacing: 2px;
+  color: #2D1B69;
+  margin-bottom: 8px;
+  line-height: 1.1;
 }
 
 .post-meta {
-  font-size: 16px;
-  color: #64748b; /* gray-blue */
-  margin-bottom: 10px;
+  font-size: 15px;
+  color: #64748b;
+  margin-bottom: 12px;
+  font-weight: 600;
 }
 
-/* --- Post Content --- */
+.post-tags {
+  margin-top: 10px;
+}
+
+/* --- Post Content Body --- */
 .post-content {
   font-size: 18px;
-  line-height: 1.75;
+  line-height: 1.8;
   max-width: 720px;
-  margin: auto;
+  margin: 0 auto;
 }
 
-.post-content h1, 
-.post-content h2, 
+.post-content h1,
+.post-content h2,
 .post-content h3 {
   margin-top: 2em;
   margin-bottom: 0.5em;
-}
-
-/* Make section headers (##) larger and cleaner */
-h2 {
-  font-size: 28px;
-  font-weight: 700;
-  border-bottom: 2px solid #F5C518;
-  padding-bottom: 5px;
-  margin-top: 30px;
-}
-
-/* Slightly smaller headers */
-h3 {
-  font-size: 22px;
-  font-weight: 600;
 }
 
 .post-content p {
@@ -166,83 +339,60 @@ pre {
   padding: 16px;
   border-radius: 10px;
   overflow-x: auto;
+  margin-bottom: 1.2em;
 }
 
 code {
   background: #1e293b;
+  color: #e2e8f0;
   padding: 3px 6px;
   border-radius: 6px;
+  font-size: 0.9em;
 }
 
-/* --- Post Container --- */
-.post {
-  background: white;
-  padding: 30px;
-  border-radius: 14px;
-  border: 2px solid #2D1B69;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
 }
 
-/* --- Blog Tags under Post Title --- */
-.post-tags {
-  margin-top: 10px;
-}
-
-/* --- Tag Pages List --- */
-.tags-list li {
-  display: inline-block;
-  margin-right: 8px;
-  margin-bottom: 4px;
-}
-/* --- Previous / Next Post Navigation --- */
-.post .post-nav {
+/* --- Post Prev / Next Navigation --- */
+.post-nav {
   display: flex;
   justify-content: space-between;
   margin-top: 40px;
   gap: 20px;
 }
 
-.post .post-nav a {
+.post-nav a {
   flex: 1;
   background: #2D1B69;
   color: #F5C518;
-  padding: 8px 18px;
+  padding: 10px 18px;
   border-radius: 999px;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 700;
   text-align: center;
-  transition: background 0.2s, color 0.2s, transform 0.2s ease;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
 
   &:visited {
     color: #F5C518;
   }
+
+  &:hover {
+    background: #F5C518;
+    color: #2D1B69;
+    text-decoration: none;
+  }
 }
 
-.post .post-nav a:hover {
-  background: #F5C518;
-  color: #2D1B69;
-}
+.prev-post { text-align: left; }
+.next-post  { text-align: right; }
 
-/* Align left/right nicely */
-.prev-post {
-  text-align: left;
-}
+.prev-post:hover { transform: translateX(-4px); }
+.next-post:hover  { transform: translateX(4px); }
 
-.next-post {
-  text-align: right;
-}
-
-/* Move prev button slightly left on hover */
-.prev-post:hover {
-  transform: translateX(-4px);
-}
-
-/* Move next button slightly right on hover */
-.next-post:hover {
-  transform: translateX(4px);
-}
-
-/* Top nav spacing */
+/* Top nav breadcrumb bar */
 .post-nav-top {
   border-bottom: 1px solid #e2e8f0;
   padding-bottom: 10px;
@@ -253,4 +403,74 @@ code {
   font-size: 14px;
   background: transparent;
   padding: 0;
+  border-radius: 0;
+  color: #5B2D8E;
+  font-weight: 700;
+
+  &:hover {
+    background: transparent;
+    color: #2D1B69;
+    text-decoration: underline;
+    transform: none;
+  }
+}
+
+/* --- Tag Pages List --- */
+.tags-list li {
+  display: inline-block;
+  margin-right: 8px;
+  margin-bottom: 4px;
+}
+
+/* --- Home Page --- */
+.home-intro {
+  background: white;
+  padding: 36px 40px;
+  border-radius: 16px;
+  border: 2px solid #2D1B69;
+  box-shadow: 0 8px 28px rgba(45, 27, 105, 0.1);
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+/* --- Electric blue accent links --- */
+.accent-link {
+  color: #1A8FE3;
+  font-weight: 700;
+
+  &:hover {
+    color: #5B2D8E;
+  }
+}
+
+/* --- Responsive --- */
+@media (max-width: 600px) {
+  .header-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .site-nav {
+    gap: 6px;
+  }
+
+  .site-nav .page-link {
+    font-size: 13px;
+    padding: 5px 12px;
+  }
+
+  .page-card,
+  .post {
+    padding: 24px 20px;
+  }
+
+  .page-title,
+  .post-header h1,
+  .post-title {
+    font-size: 34px;
+  }
+
+  .post-nav {
+    flex-direction: column;
+  }
 }
