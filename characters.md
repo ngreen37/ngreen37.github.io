@@ -21,3 +21,9 @@ Name undetermined. Same age as the narrator. His entire family lives in Chess Ci
 
 ### [The Best Friend](/characters/best-friend/)
 Name undetermined. The narrator's oldest friend. Content with life in Checker Town, and quietly threatened by the narrator's ambition. Their bond is tested as the journey unfolds.
+
+### [Argus](/characters/argus/)
+A responsible, reliable dog who travels with the main crew. Picks up chess slowly and earnestly -- plays as a pawn, always where he needs to be.
+
+### [Oskar](/characters/oskar/)
+Comic relief and loyal tag-along. Cannot play chess well, but shows up every time regardless. Travels with the main crew and plays as a pawn -- usually the first one sacrificed.
