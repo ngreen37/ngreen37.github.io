@@ -2,13 +2,47 @@
 layout: default
 ---
 
-<h1>Posts tagged: {{ page.tag }}</h1>
+<div class="tag-page">
+  <header class="tag-header">
+    <p class="tag-back"><a href="{{ '/blog/' | relative_url }}">&larr; All Posts</a></p>
+    <h1 class="tag-title">
+      <span class="tag-label">Tag:</span>
+      {{ page.tag }}
+    </h1>
+    {% assign tag_posts = site.tags[page.tag] %}
+    <p class="tag-count">{{ tag_posts.size }} post{% if tag_posts.size != 1 %}s{% endif %}</p>
+  </header>
 
-<ul>
-{% assign tag_posts = site.tags[page.tag] %}
-{% for post in tag_posts %}
-  <li>
-    <a href="{{ post.url }}">{{ post.title }}</a> - <small>{{ post.date | date: "%B %d, %Y" }}</small>
-  </li>
-{% endfor %}
-</ul>
+  <div class="tag-post-list">
+    {% assign tag_posts = site.tags[page.tag] %}
+    {% for post in tag_posts %}
+      {% assign _lines = post.content | strip_html | newline_to_br | split: "<br />" %}
+      {% assign _preview = "" %}
+      {% for _line in _lines %}
+        {% assign _t = _line | strip %}
+        {% unless _t contains "Listening to:" or _t.size < 20 %}
+          {% assign _preview = _t %}
+          {% break %}
+        {% endunless %}
+      {% endfor %}
+      <article class="tag-post-card">
+        <div class="tag-post-meta">
+          <time class="tag-post-date">{{ post.date | date: "%B %d, %Y" }}</time>
+          {% if post.tags %}
+            <div class="tag-post-tags">
+              {% for t in post.tags %}
+                <a href="/tags/{{ t | slugify }}/" class="tag{% if t == page.tag %} tag-active{% endif %}">{{ t }}</a>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+        <h2 class="tag-post-title">
+          <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+        </h2>
+        {% if _preview != "" %}
+          <p class="tag-post-excerpt">{{ _preview | truncatewords: 30 }}</p>
+        {% endif %}
+      </article>
+    {% endfor %}
+  </div>
+</div>
