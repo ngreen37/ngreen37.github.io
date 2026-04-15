@@ -13,6 +13,7 @@ Separates Checker Town from Chess City
 
 ## Who Lives Here
 There are humans, or maybe-human like amphibious creatures that live there
+
 ## Mysteries
 There is a chessboard there where important games are played.  What the main character doesn't know is that the frame can drop out, causing each individual square to bob and float in the middle of the sea
 

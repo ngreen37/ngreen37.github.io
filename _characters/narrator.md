@@ -12,7 +12,8 @@ The story's guide and driving force. A young man from Checker Town with big drea
 - Late teens
 - Anime protagonist energy: determined and always moving forward
 - Ambitious and hopeful, but grounded in the hard reality of Checker Town
-- Talks with his hands a lot, which can both annoy and endear, but his persuasion skills prove useful
+- Talks with his hands a lot
+- Has a knack for getting people genuinely excited about things
 
 ## Background
 He was born and raised in Checker Town, a place where hope is in short supply and most people never leave. He has his sights set on Chess City -- not just as a destination, but as proof that a better life is possible. His path there is not straightforward: work, sacrifice, and eventually being sent away all stand between him and where he wants to go.
