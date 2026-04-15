@@ -27,3 +27,8 @@ A school inside Chess City where the narrator works as a janitor and eventually 
 
 ### [The Sand Mines](/locations/sand-mines/)
 Hard labor on the outskirts. Worked mostly by Checker Town citizens, run by corporate interests, and very difficult to leave.
+
+## Other
+
+### [The Sea](/_locations/the-sea.md)
+Separates Cheker Town from Chess City.  Features a Chess Stadium.

@@ -19,6 +19,9 @@ Name undetermined. Same age as the narrator. His entire family lives in Chess Ci
 
 ## Side Characters
 
+### [The Father](/_characters/father.md)
+Name undertimed.  Father of the main character.  Seldom home.  Works in the Mines.  Wise and quirky.
+
 ### [The Best Friend](/characters/best-friend/)
 Name undetermined. The narrator's oldest friend. Content with life in Checker Town, and quietly threatened by the narrator's ambition. Their bond is tested as the journey unfolds.
 
