@@ -18,11 +18,8 @@ permalink: /about/
 
     <div class="about-photo-grid">
       <div class="about-photo-slot">
-        <div class="photo-placeholder-inner">
-          <span class="photo-icon">🐾</span>
-          <span class="photo-label">Photo coming soon</span>
-        </div>
-      </div>
+  <img src="{{ site.baseurl }}/assets/images/princess-1.png" alt="Princess" class="about-photo">
+</div>
       <div class="about-photo-slot">
         <div class="photo-placeholder-inner">
           <span class="photo-icon">🐾</span>
