@@ -1,6 +1,6 @@
 ---
 layout: tag
 tag: home
-title: "home"
+title: "Home"
 permalink: /tags/home/
 ---

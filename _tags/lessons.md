@@ -1,6 +1,6 @@
 ---
 layout: tag
 tag: lessons
-title: "lessons"
+title: "Lessons"
 permalink: /tags/lessons/
 ---

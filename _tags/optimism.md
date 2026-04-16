@@ -1,6 +1,6 @@
 ---
 layout: tag
 tag: optimism
-title: "optimism"
+title: "Optimism"
 permalink: /tags/optimism/
 ---

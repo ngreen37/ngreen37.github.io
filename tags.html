@@ -11,7 +11,7 @@ permalink: /tags/
     {% assign tag_name = tag[0] %}
     {% assign tag_display = tag_name | replace: "-", " " | capitalize %}
     <li>
-      <a href="/tags/{{ tag_name | slugify }}/">{{ tag_display }} ({{ tag[1].size }})</a>
+      <a href="/tags/{{ tag_name }}/">{{ tag_display }} ({{ tag[1].size }})</a>
     </li>
   {% endfor %}
 </ul>

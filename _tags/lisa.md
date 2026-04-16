@@ -1,6 +1,6 @@
 ---
 layout: tag
 tag: lisa
-title: "lisa"
+title: "LiSA"
 permalink: /tags/lisa/
 ---

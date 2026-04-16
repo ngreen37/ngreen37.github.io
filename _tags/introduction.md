@@ -1,6 +1,6 @@
 ---
 layout: tag
 tag: introduction
-title: "introduction"
+title: "Introduction"
 permalink: /tags/introduction/
 ---

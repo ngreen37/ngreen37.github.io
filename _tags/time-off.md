@@ -1,6 +1,6 @@
 ---
 layout: tag
 tag: time-off
-title: "time-off"
+title: "Time Off"
 permalink: /tags/time-off/
 ---

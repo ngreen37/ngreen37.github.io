@@ -1,6 +1,6 @@
 ---
 layout: tag
 tag: reality
-title: "reality"
+title: "Reality"
 permalink: /tags/reality/
 ---
