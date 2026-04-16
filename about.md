@@ -1,0 +1,71 @@
+---
+layout: default
+title: About
+permalink: /about/
+---
+
+<div class="page-card">
+  <h1 class="page-title">About</h1>
+
+  <!-- ── Princess ── -->
+  <section class="about-section">
+    <div class="about-header">
+      <div>
+        <h2 class="about-name">Princess</h2>
+        <p class="about-fullname">Princess Sophia McPuppy</p>
+      </div>
+    </div>
+
+    <div class="about-photo-grid">
+      <div class="about-photo-slot">
+        <div class="photo-placeholder-inner">
+          <span class="photo-icon">🐾</span>
+          <span class="photo-label">Photo coming soon</span>
+        </div>
+      </div>
+      <div class="about-photo-slot">
+        <div class="photo-placeholder-inner">
+          <span class="photo-icon">🐾</span>
+          <span class="photo-label">Photo coming soon</span>
+        </div>
+      </div>
+      <div class="about-photo-slot">
+        <div class="photo-placeholder-inner">
+          <span class="photo-icon">🐾</span>
+          <span class="photo-label">Photo coming soon</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-bio">
+      <p>The real Princess Sophia McPuppy — the inspiration behind McPuppy Studios and the heart of everything here.</p>
+    </div>
+  </section>
+
+  <hr class="about-divider">
+
+  <!-- ── Nate ── -->
+  <section class="about-section">
+    <div class="about-header">
+      <div>
+        <h2 class="about-name">Nate</h2>
+      </div>
+    </div>
+
+    <div class="about-bio">
+      <h3>Career Highlights</h3>
+      <ul>
+        <li>Built a powerful mortgage calculator — a tool that brought real clarity to a complicated process</li>
+        <li>Automated his supposed "dream job" out of necessity, then wondered what to do next</li>
+        <li>Teaching chess — the current chapter, and the one that inspired this whole project</li>
+      </ul>
+
+      <h3>Other Hobbies</h3>
+      <ul>
+        <li>Hockey</li>
+        <li>Attending concerts and listening to music</li>
+        <li>Off-and-on endurance running</li>
+      </ul>
+    </div>
+  </section>
+</div>
