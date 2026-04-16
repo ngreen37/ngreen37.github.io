@@ -38,7 +38,7 @@ permalink: /about/
     </div>
 
     <div class="about-bio">
-      <p>The real Princess Sophia McPuppy — the inspiration behind McPuppy Studios and the heart of everything here.</p>
+      <p>The real Princess Sophia McPuppy — the inspiration behind McPuppy Studios and the heart of everything here. She loves running and chasing squirrels, cats, or anything she deems interesting.  When I return from work, the podcasts I leave on for her have ended and either old Chess Tournament coverage or Toronto Maple Leafs sports talk shows are on.</p>
     </div>
   </section>
 
@@ -56,7 +56,7 @@ permalink: /about/
       <h3>Career Highlights</h3>
       <ul>
         <li>Built a powerful mortgage calculator — a tool that brought real clarity to a complicated process</li>
-        <li>Automated his supposed "dream job" out of necessity, then wondered what to do next</li>
+        <li>Automated his supposed "dream job" out of creative boredom, then wondered what to do next</li>
         <li>Teaching chess — the current chapter, and the one that inspired this whole project</li>
       </ul>
 
