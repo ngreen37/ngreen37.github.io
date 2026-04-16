@@ -24,7 +24,7 @@ permalink: /about/
   <img src="{{ site.baseurl }}/assets/images/Princess-2.jpg" alt="Princess" class="about-photo">
 </div>
       <div class="about-photo-slot">
-  <img src="{{ site.baseurl }}/assets/images/Princess-3.jpg" alt="Princess" class="about-photo">
+  <img src="{{ site.baseurl }}/assets/images/Princess-3.jpg" alt="Princess" class="about-photo" style="object-fit: contain; background: #12093a;>
 </div>
     </div>
 
