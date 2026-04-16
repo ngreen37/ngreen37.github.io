@@ -21,17 +21,11 @@ permalink: /about/
   <img src="{{ site.baseurl }}/assets/images/Princess-1.png" alt="Princess" class="about-photo">
 </div>
       <div class="about-photo-slot">
-        <div class="photo-placeholder-inner">
-          <span class="photo-icon">🐾</span>
-          <span class="photo-label">Photo coming soon</span>
-        </div>
-      </div>
+  <img src="{{ site.baseurl }}/assets/images/Princess-2.jpg" alt="Princess" class="about-photo">
+</div>
       <div class="about-photo-slot">
-        <div class="photo-placeholder-inner">
-          <span class="photo-icon">🐾</span>
-          <span class="photo-label">Photo coming soon</span>
-        </div>
-      </div>
+  <img src="{{ site.baseurl }}/assets/images/Princess-3.jpg" alt="Princess" class="about-photo">
+</div>
     </div>
 
     <div class="about-bio">
