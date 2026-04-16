@@ -18,7 +18,7 @@ permalink: /about/
 
     <div class="about-photo-grid">
       <div class="about-photo-slot">
-  <img src="{{ site.baseurl }}/assets/images/princess-1.png" alt="Princess" class="about-photo">
+  <img src="{{ site.baseurl }}/assets/images/Princess-1.png" alt="Princess" class="about-photo">
 </div>
       <div class="about-photo-slot">
         <div class="photo-placeholder-inner">
