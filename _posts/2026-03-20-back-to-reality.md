@@ -3,7 +3,7 @@
 layout: post
 title: Ep. 3 - Back To Reality
 date: 2026-03-20
-tags: [Home, Vinyl, LiSA, Reality, Lifestyle]
+tags: [home, vinyl, lisa, reality, lifestyle]
 ---
 ### Listening to: LiSA - traumerei
 

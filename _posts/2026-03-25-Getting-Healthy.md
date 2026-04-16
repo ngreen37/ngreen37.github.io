@@ -2,7 +2,7 @@
 layout: post
 title: Ep. 4 - Getting Healthy
 date: 2026-03-25
-tags: [Ratatat, Time Off, BlenderGuru]
+tags: [ratatat, time-off]
 ---
 ### Listening to: Ratatat - Cream on Chrome 
 

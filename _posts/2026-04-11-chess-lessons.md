@@ -3,7 +3,7 @@
 layout: post
 title: Ep. 8 - Chess Lessons
 date: 2026-04-11
-tags: [Chess, Second_Job, Lessons]
+tags: [chess, second-job, lessons]
 ---
 ### Listening to: The Falcon - When I Give the Signal, Run!
 

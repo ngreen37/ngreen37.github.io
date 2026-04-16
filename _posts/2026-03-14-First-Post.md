@@ -2,7 +2,7 @@
 layout: post
 title: First Post
 date: 2026-03-14
-tags: [Introduction, Minus the Bear, Blender]
+tags: [introduction, minus-the-bear, blender]
 ---
 ### Listening to: Minus the Bear - Drilling 
 
