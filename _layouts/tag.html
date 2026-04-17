@@ -9,12 +9,12 @@ layout: default
       <span class="tag-label">Tag:</span>
       {{ page.title }}
     </h1>
-    {% assign tag_posts = site.tags[page.title] %}
+    {% assign tag_posts = site.tags[page.tag] %}
     <p class="tag-count">{{ tag_posts.size }} post{% if tag_posts.size != 1 %}s{% endif %}</p>
   </header>
 
   <div class="tag-post-list">
-    {% assign tag_posts = site.tags[page.title] %}
+    {% assign tag_posts = site.tags[page.tag] %}
     {% for post in tag_posts %}
       {% assign _lines = post.content | strip_html | newline_to_br | split: "<br />" %}
       {% assign _preview = "" %}
@@ -31,7 +31,7 @@ layout: default
           {% if post.tags %}
             <div class="tag-post-tags">
               {% for t in post.tags %}
-                <a href="/tags/{{ t | slugify }}/" class="tag{% if t == page.title %} tag-active{% endif %}">{{ t }}</a>
+                <a href="/tags/{{ t | slugify }}/" class="tag{% if t == page.tag %} tag-active{% endif %}">{{ t }}</a>
               {% endfor %}
             </div>
           {% endif %}
