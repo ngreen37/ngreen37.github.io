@@ -17,14 +17,12 @@ def get_tags_from_posts():
     for filepath in glob.glob("_posts/*.md"):
         with open(filepath, "r", encoding="utf-8") as f:
             content = f.read()
-        # Find front matter block
         parts = content.split("---")
         if len(parts) < 3:
             continue
         front_matter = parts[1]
         for line in front_matter.splitlines():
             if line.strip().startswith("tags:"):
-                # Handle both: tags: [a, b] and tags: a
                 raw = line.split(":", 1)[1].strip()
                 raw = raw.strip("[]")
                 for tag in raw.split(","):
@@ -35,7 +33,7 @@ def get_tags_from_posts():
 
 def get_existing_tag_pages():
     existing = set()
-    for filepath in glob.glob("_tags/*.md"):
+    for filepath in glob.glob("_tag_pages/*.md"):
         with open(filepath, "r", encoding="utf-8") as f:
             content = f.read()
         parts = content.split("---")
@@ -47,13 +45,14 @@ def get_existing_tag_pages():
     return existing
 
 def create_tag_page(tag):
-    os.makedirs("_tags", exist_ok=True)
+    os.makedirs("_tag_pages", exist_ok=True)
     slug = tag.lower().replace(" ", "-")
-    filepath = f"_tags/{slug}.md"
+    title = tag.replace("-", " ").title()
+    filepath = f"_tag_pages/{slug}.md"
     content = f"""---
 layout: tag
 tag: {tag}
-title: "{tag}"
+title: "{title}"
 permalink: /tags/{slug}/
 ---
 """

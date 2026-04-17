@@ -1,6 +1,6 @@
 ---
 layout: tag
 tag: productivity
-title: "productivity"
+title: "Productivity"
 permalink: /tags/productivity/
 ---

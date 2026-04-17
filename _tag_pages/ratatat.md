@@ -1,6 +1,6 @@
 ---
 layout: tag
 tag: ratatat
-title: "ratatat"
+title: "Ratatat"
 permalink: /tags/ratatat/
 ---

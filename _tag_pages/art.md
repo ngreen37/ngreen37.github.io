@@ -1,6 +1,6 @@
 ---
 layout: tag
 tag: art
-title: "art"
+title: "Art"
 permalink: /tags/art/
 ---

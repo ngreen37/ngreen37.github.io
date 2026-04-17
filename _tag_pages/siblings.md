@@ -1,6 +1,6 @@
 ---
 layout: tag
 tag: siblings
-title: "siblings"
+title: "Siblings"
 permalink: /tags/siblings/
 ---

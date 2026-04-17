@@ -1,6 +1,6 @@
 ---
 layout: tag
 tag: vinyl
-title: "vinyl"
+title: "Vinyl"
 permalink: /tags/vinyl/
 ---

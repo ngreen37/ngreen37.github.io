@@ -1,6 +1,6 @@
 ---
 layout: tag
 tag: chess
-title: "chess"
+title: "Chess"
 permalink: /tags/chess/
 ---

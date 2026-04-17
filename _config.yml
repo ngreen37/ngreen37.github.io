@@ -20,7 +20,6 @@ header_pages:
 
 
 
-# Collections
 collections:
   characters:
     output: true
@@ -28,8 +27,10 @@ collections:
   locations:
     output: true
     permalink: /locations/:name/
-
+  tag_pages:
+    output: true
+    permalink: /tags/:name/
 # Optional: social links / footer
 # (you can add later if you want)
-# github: yourusername
+# github: yourusernames
 # twitter: yourhandle

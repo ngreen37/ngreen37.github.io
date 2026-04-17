@@ -1,6 +1,6 @@
 ---
 layout: tag
 tag: fang-island
-title: "fang-island"
+title: "Fang Island"
 permalink: /tags/fang-island/
 ---

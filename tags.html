@@ -6,12 +6,10 @@ permalink: /tags/
 
 <h1>All Tags</h1>
 <ul>
-  {% assign sorted_tags = site.tags | sort %}
-  {% for tag in sorted_tags %}
-    {% assign tag_name = tag[0] %}
-    {% assign tag_display = tag_name | replace: "-", " " | capitalize %}
+  {% assign sorted_tag_pages = site.tag_pages | sort_by: "title" %}
+  {% for tag_page in sorted_tag_pages %}
     <li>
-      <a href="/tags/{{ tag_name }}/">{{ tag_display }} ({{ tag[1].size }})</a>
+      <a href="{{ tag_page.url }}">{{ tag_page.title }} ({{ site.tags[tag_page.tag] | size }})</a>
     </li>
   {% endfor %}
 </ul>
