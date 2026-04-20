@@ -5,7 +5,7 @@ date: 2026-04-19
 tags: []
 ---
 ### Listening to: The Wrens - Everyone Choose Sides
-<iframe src="https://open.spotify.com/embed/track/TRACK_ID" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+<iframe src="https://open.spotify.com/embed/track/0320GL1aqQgsi7uDYSMEQ0" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
 The Meadowlands (2003) is one of my all-time favorite albums, and the story of its creation is quite interesting and inspiring. By their own admission, they appeared to have a low ceiling as a band, and were about to break up after releasing their third album, The Meadowlands.  Using a shared house, a DIY-mentality, and the better part of a decade, they released a beautiful album.  
 
