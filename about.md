@@ -39,7 +39,7 @@ permalink: /about/
   <section class="about-section">
     <div class="about-header">
       <div>
-        <h2 class="about-name">Nate</h2>
+        <h2 class="about-name">The Creator</h2>
       </div>
     </div>
 
@@ -47,7 +47,7 @@ permalink: /about/
       <h3>Career Highlights</h3>
       <ul>
         <li>Built a powerful mortgage calculator — a tool that brought real clarity to a complicated process</li>
-        <li>Automated his supposed "dream job" out of creative boredom, then wondered what to do next</li>
+        <li>Automated his "dream job" out of creative boredom, then wondered where coding and mathematics can take them</li>
         <li>Teaching chess — the current chapter, and the one that inspired this whole project</li>
       </ul>
 

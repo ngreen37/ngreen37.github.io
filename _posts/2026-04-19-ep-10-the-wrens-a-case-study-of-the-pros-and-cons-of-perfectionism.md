@@ -19,5 +19,8 @@ The Meadowlands (2003) is one of my all-time favorite albums, and the story of i
     - tracking down an old microphone I have somewhere
     - finishing the first build of Princess, the narrator, and maybe a side character or two
     - keeping up the blog, and
-    - improving the website gradually <break>
-      would feel like a major accomplishment.  We'll see.  It's playoff hockey time, which makes it easier to sit on my computer, but harder to stay focused.  Is that what a Catch 22 is?  I forget.  
+    - improving the website gradually
+
+  would feel like a major accomplishment.  We'll see.  It's playoff hockey time, which makes it easier to sit on my computer, but harder to stay focused.  
+  
+      Is that what a Catch 22 is?  I forget.  

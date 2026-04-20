@@ -1,6 +1,6 @@
 ---
 layout: tag
-tag: princess
+tag: Princess
 title: "Princess"
 permalink: /tags/princess/
 ---
