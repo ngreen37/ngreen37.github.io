@@ -12,6 +12,7 @@ The Meadowlands (2003) is one of my all-time favorite albums, and the story of i
 ### What I worked on:
   - Creating a Princess character is harder than I thought, but progress is being made!  I am trying to finish the blocking tonight
     - Building ears independently, rather than extruding from the head, is the way to go.  That took a few hours
+  - I am going really low-poly for my characters.  I want a Pokemon/DBZ feel as best as I can, but due to my inability to draw, Blender 3d continues to be my best bet. 
 
 ### What's next:
   - The next four weeks will be work-heavy.  Three jobs most workdays, with weekends free.  So, realistically:
@@ -19,4 +20,4 @@ The Meadowlands (2003) is one of my all-time favorite albums, and the story of i
     - finishing the first build of Princess, the narrator, and maybe a side character or two
     - keeping up the blog, and
     - improving the website gradually
-    would feel like a major accomplishment.  We'll see.  It's playoff hockey time, which makes it easier to sit on my computer, but harder to stay focused.  Is that what a Catch 22 is?  I forget.  
+      would feel like a major accomplishment.  We'll see.  It's playoff hockey time, which makes it easier to sit on my computer, but harder to stay focused.  Is that what a Catch 22 is?  I forget.  
