@@ -14,8 +14,10 @@ The Meadowlands (2003) is one of my all-time favorite albums, and the story of i
     - Building ears independently, rather than extruding from the head, is the way to go.  That took a few hours
   - I am going low-poly for my characters.  I want a Pokemon/DBZ feel as best as I can, but due to my inability to draw, Blender 3d continues to be my best bet. 
 
+!   [Princess head phase 1](/assets/images/Princess_Head_v01.jpg)
+
 ### What's next:
-  - The next four weeks will be work-heavy.  Three jobs most workdays, with weekends free.  So, realistically:
+  - The next four weeks will be work-heavy.  Three jobs most workdays, with half of weekends free.  So, realistically:
     - tracking down an old microphone I have somewhere
     - finishing the first build of Princess, the narrator, and maybe a side character or two
     - keeping up the blog, and
