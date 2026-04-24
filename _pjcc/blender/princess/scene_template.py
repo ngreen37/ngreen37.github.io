@@ -7,10 +7,11 @@ bpy.ops.object.delete(use_global=False)
 scene = bpy.context.scene
 
 # Render settings — Eevee, 1080p, 24fps, PNG, Standard view transform
-scene.render.engine = 'BLENDER_EEVEE_NEXT'  # use 'BLENDER_EEVEE' if on 4.1 or older
+scene.render.engine = 'BLENDER_EEVEE'
 scene.render.resolution_x = 1920
 scene.render.resolution_y = 1080
 scene.render.fps = 24
+scene.render.image_settings.media_type = 'IMAGE'
 scene.render.image_settings.file_format = 'PNG'
 scene.view_settings.view_transform = 'Standard'
 
