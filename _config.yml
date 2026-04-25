@@ -30,6 +30,9 @@ collections:
   tag_pages:
     output: true
     permalink: /tags/:name/
+  evolutions:
+    output: true
+    permalink: /evolutions/:name/
 # Optional: social links / footer
 # (you can add later if you want)
 # github: yourusernames

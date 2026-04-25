@@ -1,0 +1,97 @@
+---
+layout: default
+---
+
+<div class="character-top-nav">
+  <a href="{{ '/evolutions/' | relative_url }}" class="back-btn">&larr; Evolution Log</a>
+  <a href="{{ page.character_url | relative_url }}" class="back-btn">View Character &rarr;</a>
+</div>
+
+<article class="evo-card">
+
+  <header class="evo-header">
+    <div class="evo-header-text">
+      <span class="evo-eyebrow">Evolution Log</span>
+      <h1 class="evo-title">{{ page.title }}</h1>
+    </div>
+    {% if page.role %}
+      <span class="character-role-badge">{{ page.role }}</span>
+    {% endif %}
+  </header>
+
+  {% assign version_count = page.versions | size %}
+  {% if version_count > 0 %}
+    <div class="evo-grid">
+      {% for v in page.versions %}
+        <button class="evo-item"
+                data-image="{{ v.image | relative_url }}"
+                data-label="{{ v.label }}"
+                data-notes="{{ v.notes | default: '' }}">
+          <div class="evo-chess-border">
+            <img src="{{ v.image | relative_url }}" alt="{{ v.label }}" loading="lazy">
+          </div>
+          <p class="evo-item-label">{{ v.label }}</p>
+        </button>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="evo-empty">
+      <span class="evo-empty-icon">&#9813;</span>
+      <p>No versions logged yet. Check back as the character develops.</p>
+    </div>
+  {% endif %}
+
+</article>
+
+<div class="evo-lightbox" id="evoLightbox" aria-hidden="true">
+  <div class="evo-lightbox-backdrop"></div>
+  <div class="evo-lightbox-panel">
+    <button class="evo-lightbox-close" aria-label="Close">&times;</button>
+    <img class="evo-lightbox-img" src="" alt="">
+    <div class="evo-lightbox-info">
+      <h2 class="evo-lightbox-label"></h2>
+      <p class="evo-lightbox-notes"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var lb       = document.getElementById('evoLightbox');
+  var lbImg    = lb.querySelector('.evo-lightbox-img');
+  var lbLabel  = lb.querySelector('.evo-lightbox-label');
+  var lbNotes  = lb.querySelector('.evo-lightbox-notes');
+  var lbClose  = lb.querySelector('.evo-lightbox-close');
+  var lbBg     = lb.querySelector('.evo-lightbox-backdrop');
+
+  function open(img, label, notes) {
+    lbImg.src          = img;
+    lbImg.alt          = label;
+    lbLabel.textContent = label;
+    lbNotes.textContent = notes;
+    lbNotes.style.display = notes ? 'block' : 'none';
+    lb.classList.add('is-open');
+    lb.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function close() {
+    lb.classList.remove('is-open');
+    lb.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    lbImg.src = '';
+  }
+
+  document.querySelectorAll('.evo-item').forEach(function (el) {
+    el.addEventListener('click', function () {
+      open(el.dataset.image, el.dataset.label, el.dataset.notes);
+    });
+  });
+
+  lbClose.addEventListener('click', close);
+  lbBg.addEventListener('click', close);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') close();
+  });
+}());
+</script>
