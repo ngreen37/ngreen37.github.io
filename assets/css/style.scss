@@ -1386,6 +1386,75 @@ pre code {
 }
 
 /* =============================================================
+   Evolution Log Index Grid
+   ============================================================= */
+
+.evo-index-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.evo-index-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  transition: transform 0.15s;
+
+  &:hover {
+    transform: translateY(-3px);
+    text-decoration: none;
+
+    .evo-index-thumb {
+      border-color: #F5C518;
+      box-shadow: 0 6px 24px rgba(245, 197, 24, 0.3);
+    }
+
+    .evo-index-name {
+      color: #F5C518;
+    }
+  }
+}
+
+.evo-index-thumb {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: #12093a;
+  border: 2px solid #3d2b8a;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.evo-index-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4a3870;
+  font-size: 36px;
+}
+
+.evo-index-name {
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ddd6f3;
+  text-align: center;
+  line-height: 1.3;
+  transition: color 0.2s;
+}
+
+/* =============================================================
    Evolution Log Pages
    ============================================================= */
 
@@ -1625,5 +1694,10 @@ pre code {
   .character-top-nav {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .evo-index-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
   }
 }
