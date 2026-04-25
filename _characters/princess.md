@@ -21,4 +21,4 @@ Princess is half Australian Cattle Dog, half Pit Bull. She lives with the main c
 Princess is the reason everything happens. The journey to Chess City begins because of her, and it is her loyalty and curiosity that keep the story moving forward even when the odds are stacked against the both of them.
 
 ## Art
-*Illustration coming soon.*
+![Princess Wireframe]({{ '/assets/images/Princess_Wireframe.jpg' | relative_url }})
