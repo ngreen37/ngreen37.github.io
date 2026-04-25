@@ -1098,6 +1098,318 @@ pre code {
 }
 
 /* =============================================================
+   McPuppy Studios Landing Page
+   ============================================================= */
+
+body.studio-body {
+  background: #000;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.studio-page {
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.studio-welcome-bg {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Poppins', sans-serif;
+  font-size: 19vw;
+  font-weight: 800;
+  color: #fff;
+  opacity: 0.30;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 0;
+  letter-spacing: 0.08em;
+  user-select: none;
+}
+
+.studio-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 960px;
+  padding: 52px 28px 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px;
+}
+
+.studio-logo-wrap {
+  text-align: center;
+}
+
+.studio-logo-img {
+  height: 120px;
+  width: auto;
+  filter: invert(1);
+  display: block;
+  margin: 0 auto;
+}
+
+.studio-quad-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  width: 100%;
+}
+
+.studio-quad {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 2px solid #2a2a2a;
+  border-radius: 16px;
+  padding: 56px 28px;
+  text-decoration: none;
+  min-height: 190px;
+  gap: 12px;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+
+  &:hover {
+    border-color: #ffffff;
+    background: rgba(255, 255, 255, 0.09);
+    transform: translateY(-3px);
+    text-decoration: none;
+  }
+}
+
+.studio-quad-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(18px, 2.4vw, 28px);
+  font-weight: 800;
+  color: #ffffff;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.studio-quad-sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: #555;
+  text-align: center;
+  line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+  .studio-quad-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .studio-quad {
+    padding: 38px 20px;
+    min-height: 120px;
+  }
+
+  .studio-welcome-bg {
+    font-size: 26vw;
+    letter-spacing: 0.04em;
+  }
+
+  .studio-logo-img {
+    height: 84px;
+  }
+}
+
+/* =============================================================
+   Black & White Theme  (body.theme-bw)
+   Applied to: Blog, Chess Lessons, Contact
+   ============================================================= */
+
+body.theme-bw {
+  background-color: #080808;
+  color: #cccccc;
+}
+
+body.theme-bw h1,
+body.theme-bw h2,
+body.theme-bw h3,
+body.theme-bw h4,
+body.theme-bw h5,
+body.theme-bw h6 {
+  color: #ffffff;
+}
+
+body.theme-bw a {
+  color: #aaaaaa;
+
+  &:hover {
+    color: #ffffff;
+  }
+}
+
+/* Header */
+body.theme-bw .site-header {
+  background: #000000;
+  border-bottom-color: #ffffff;
+}
+
+body.theme-bw .site-nav .page-link,
+body.theme-bw .site-header .site-nav a {
+  color: #ffffff;
+  border-color: #ffffff;
+
+  &:visited {
+    color: #ffffff;
+  }
+
+  &:hover {
+    background: #ffffff;
+    color: #000000;
+    text-decoration: none;
+  }
+}
+
+/* Footer */
+body.theme-bw .site-footer {
+  background: #000000;
+  border-top-color: #ffffff;
+}
+
+body.theme-bw .footer-copy {
+  color: #555555;
+}
+
+/* Page card */
+body.theme-bw .page-card {
+  background: #111111;
+  border-color: #2a2a2a;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
+}
+
+body.theme-bw .page-title {
+  color: #ffffff;
+  border-bottom-color: #2a2a2a;
+}
+
+body.theme-bw .page-body {
+  color: #cccccc;
+}
+
+/* h2/h3 in page body */
+body.theme-bw h2 {
+  color: #ffffff;
+  border-bottom-color: #2a2a2a;
+}
+
+body.theme-bw h3 {
+  color: #dddddd;
+}
+
+/* Blog list */
+body.theme-bw .blog-list li a {
+  color: #cccccc;
+
+  &:hover {
+    color: #ffffff;
+  }
+}
+
+body.theme-bw .blog-list .blog-date {
+  color: #555555;
+}
+
+/* Tags */
+body.theme-bw .tag,
+body.theme-bw .blog-tags .tag {
+  background: #181818;
+  color: #bbbbbb;
+  border-color: #333333;
+
+  &:hover {
+    background: #333333;
+    color: #ffffff;
+  }
+}
+
+/* Back button */
+body.theme-bw .back-btn {
+  color: #777777;
+  border-color: #333333;
+
+  &:hover {
+    color: #ffffff;
+    border-color: #ffffff;
+  }
+}
+
+/* Stat cards (Chess Lessons) */
+body.theme-bw .lessons-stats {
+  gap: 24px;
+}
+
+body.theme-bw .stat-card {
+  background: #0d0d0d;
+  border-color: #ffffff;
+}
+
+body.theme-bw .stat-number {
+  color: #ffffff;
+}
+
+body.theme-bw .stat-label {
+  color: #666666;
+}
+
+body.theme-bw .lessons-info p {
+  color: #cccccc;
+}
+
+body.theme-bw .lessons-info strong {
+  color: #ffffff;
+}
+
+/* Post (individual blog posts also get B&W via their layout → default) */
+body.theme-bw .post {
+  background: #111111;
+  border-color: #2a2a2a;
+}
+
+body.theme-bw .post-header h1,
+body.theme-bw .post-title {
+  color: #ffffff;
+}
+
+body.theme-bw .post-meta {
+  color: #555555;
+}
+
+body.theme-bw .post-content {
+  color: #cccccc;
+}
+
+body.theme-bw .post-content strong {
+  color: #ffffff;
+}
+
+body.theme-bw .post-nav a {
+  background: #181818;
+  color: #cccccc;
+  border-color: #2a2a2a;
+
+  &:hover {
+    background: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+  }
+}
+
+/* =============================================================
    About Page
    ============================================================= */
 

@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
 </head>
-<body>
+<body{% if page.body_class %} class="{{ page.body_class }}"{% endif %}>
 
   <header class="site-header">
     <div class="wrapper header-inner">
@@ -21,6 +21,7 @@
              class="logo-stacked">
       </a>
       <nav class="site-nav">
+        <a class="page-link" href="{{ '/pjcc/' | relative_url }}">PJCC</a>
         <a class="page-link" href="{{ '/blog/' | relative_url }}">Blog</a>
         <a class="page-link" href="{{ '/chess-lessons/' | relative_url }}">Chess Lessons</a>
         <a class="page-link" href="{{ '/characters/' | relative_url }}">Characters</a>

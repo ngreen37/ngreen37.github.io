@@ -2,6 +2,7 @@
 layout: page
 title: Blog
 permalink: /blog/
+body_class: theme-bw
 ---
 
 Here’s where I post updates on what I’m building and learning.

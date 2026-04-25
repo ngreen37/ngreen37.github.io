@@ -1,4 +1,5 @@
 ---
-layout: home
-title: Home
+layout: studio-home
+title: McPuppy Studios
+permalink: /
 ---
