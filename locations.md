@@ -31,4 +31,4 @@ Hard labor on the outskirts. Worked mostly by Checker Town citizens, run by corp
 ## Other
 
 ### [The Sea](/_locations/the-sea.md)
-Separates Cheker Town from Chess City.  Features a Chess Stadium.
+Separates Checker Town from Chess City.  Features a Chess Stadium.
