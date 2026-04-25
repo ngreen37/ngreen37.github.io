@@ -2207,3 +2207,106 @@ body.theme-bw .page-body em {
     &:hover { color: #ffffff; }
   }
 }
+
+/* =============================================================
+   Flair 1 — Studio tagline: cycling discipline words
+   ============================================================= */
+
+.studio-tagline {
+  position: relative;
+  height: 26px;
+  margin-top: 22px;
+  text-align: center;
+}
+
+.tagline-word {
+  position: absolute;
+  left: 0;
+  right: 0;
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.32);
+  opacity: 0;
+  animation: word-cycle 12s ease-in-out infinite;
+
+  &:nth-child(1) { animation-delay: 0s; }
+  &:nth-child(2) { animation-delay: 2.4s; }
+  &:nth-child(3) { animation-delay: 4.8s; }
+  &:nth-child(4) { animation-delay: 7.2s; }
+  &:nth-child(5) { animation-delay: 9.6s; }
+}
+
+@keyframes word-cycle {
+  0%, 100% { opacity: 0; }
+  4%        { opacity: 1; }
+  16%       { opacity: 1; }
+  20%       { opacity: 0; }
+}
+
+/* =============================================================
+   Flair 2 — Footer chess-piece scrolling ribbon
+   ============================================================= */
+
+.footer-ribbon-wrap {
+  overflow: hidden;
+  width: 100%;
+  padding: 10px 0 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ribbon-track {
+  display: inline-block;
+  white-space: nowrap;
+  font-size: 17px;
+  color: rgba(255, 255, 255, 0.07);
+  letter-spacing: 14px;
+  animation: ribbon-scroll 28s linear infinite;
+}
+
+body.theme-bw .ribbon-track {
+  color: rgba(255, 255, 255, 0.04);
+}
+
+@keyframes ribbon-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-33.333%); }
+}
+
+/* =============================================================
+   Flair 3 — Card entrance: slide-up on page load
+   ============================================================= */
+
+@keyframes card-rise {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.character-card,
+.location-card,
+.evo-index-card,
+.post {
+  animation: card-rise 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.character-card:nth-child(2),
+.location-card:nth-child(2),
+.evo-index-card:nth-child(2),
+.post:nth-child(2) { animation-delay: 0.08s; }
+
+.character-card:nth-child(3),
+.location-card:nth-child(3),
+.evo-index-card:nth-child(3),
+.post:nth-child(3) { animation-delay: 0.16s; }
+
+.character-card:nth-child(4),
+.location-card:nth-child(4),
+.evo-index-card:nth-child(4),
+.post:nth-child(4) { animation-delay: 0.24s; }
+
+.character-card:nth-child(n+5),
+.location-card:nth-child(n+5),
+.evo-index-card:nth-child(n+5),
+.post:nth-child(n+5) { animation-delay: 0.32s; }
