@@ -2,6 +2,7 @@
 layout: page
 title: Projects
 permalink: /projects/
+body_class: theme-bw
 ---
 
 McPuppy Studios is an independent creative studio built around storytelling, animation, and chess.

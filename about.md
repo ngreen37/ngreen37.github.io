@@ -2,6 +2,7 @@
 layout: default
 title: About
 permalink: /about/
+body_class: theme-bw
 ---
 
 <div class="page-card">
