@@ -4,7 +4,16 @@ layout: default
 
 <div class="character-top-nav">
   <a href="{{ '/evolutions/' | relative_url }}" class="back-btn">&larr; Evolution Log</a>
-  <a href="{{ page.character_url | relative_url }}" class="back-btn">View Character &rarr;</a>
+  <div class="evo-top-right">
+    {% if page.category == 'location' %}
+      <a href="{{ '/locations/' | relative_url }}" class="back-btn">All Locations</a>
+    {% else %}
+      <a href="{{ '/characters/' | relative_url }}" class="back-btn">All Characters</a>
+    {% endif %}
+    <a href="{{ page.entity_url | relative_url }}" class="evo-link-btn">
+      View {{ page.category | default: 'Character' | capitalize }} &rarr;
+    </a>
+  </div>
 </div>
 
 <article class="evo-card">
@@ -16,6 +25,8 @@ layout: default
     </div>
     {% if page.role %}
       <span class="character-role-badge">{{ page.role }}</span>
+    {% elsif page.location_type %}
+      <span class="location-type-badge">{{ page.location_type }}</span>
     {% endif %}
   </header>
 
@@ -37,7 +48,7 @@ layout: default
   {% else %}
     <div class="evo-empty">
       <span class="evo-empty-icon">&#9813;</span>
-      <p>No versions logged yet. Check back as the character develops.</p>
+      <p>No versions logged yet. Check back as this {% if page.category == 'location' %}location{% else %}character{% endif %} develops.</p>
     </div>
   {% endif %}
 
@@ -65,8 +76,8 @@ layout: default
   var lbBg     = lb.querySelector('.evo-lightbox-backdrop');
 
   function open(img, label, notes) {
-    lbImg.src          = img;
-    lbImg.alt          = label;
+    lbImg.src           = img;
+    lbImg.alt           = label;
     lbLabel.textContent = label;
     lbNotes.textContent = notes;
     lbNotes.style.display = notes ? 'block' : 'none';

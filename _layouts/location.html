@@ -2,7 +2,11 @@
 layout: default
 ---
 
-<a href="{{ '/locations/' | relative_url }}" class="back-btn">&larr; Back to Locations</a>
+<div class="character-top-nav">
+  <a href="{{ '/locations/' | relative_url }}" class="back-btn">&larr; Back to Locations</a>
+  {% assign evo_slug = page.name | remove: '.md' %}
+  <a href="{{ '/evolutions/' | append: evo_slug | append: '/' | relative_url }}" class="evo-link-btn">Evolution Log &rarr;</a>
+</div>
 
 <article class="location-card">
 
