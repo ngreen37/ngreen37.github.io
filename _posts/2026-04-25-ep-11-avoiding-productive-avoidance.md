@@ -7,9 +7,10 @@ tags: [Productive Avoidance, Blender, Princess, Hockey, Basketball, Wild, Timber
 ### Listening to: Generator - Bad Religion
 <iframe src="https://open.spotify.com/embed/track/1a42up3NBd91HTCbmYKMq4" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
-aaaaaaaaaaaaaaaaaahhh! Oh yeah!  Ohh yeah!  Big blender today, so Bad Religion is perfect for today.  All day, in between Wolves and Wild playoff games.  That's right; I am from Minnesota and I have yet to witness a sports championship. All four major sports (hockey, basketball, football, and baseball), and not even a finals APPEARANCE.  
+aaaaaaaaaaaaaaaaaahhh! Oh yeah!  Ohh yeah!  Big blender day today, so Bad Religion is perfect.  All evening, in between Wolves and Wild playoff games.  That's right; I am from Minnesota and I root for my teams with great passion. I have yet to witness a sports championship in any of the four major sports (hockey, basketball, football, and baseball), and not even a finals APPEARANCE.  
+  - When I was growing up, it was called the four major sports, anyway.  Americans sometimes would say the THREE major sports, which is incredibly disrespectful to my favorite sport of hockey, but I digress
 
-Perhaps the Wild can go all the way this year; the Wolves can definitely get past Denver in the first round, but I am less confident about them facing a stacked OKC or a Wemby-led San Antonio team.  But our squad is very good as well, and will cheer them on no matter what.   
+Perhaps the Wild, who look good despite being down 2-1 in the series, can go all the way this year; the Wolves can definitely get past Denver in the first round, but I am less confident about them facing a stacked OKC or a Wemby-led San Antonio team.  But our squad is very good as well, and will cheer them on no matter what.   
 
 ### What I worked on:
   - Lots of Blender.  I created a dog structure!  My friend Kennie says it looks like Catdog, lol.  The idea is to just get something I can use for now, and I will detail it later

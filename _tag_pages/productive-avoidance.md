@@ -1,6 +1,6 @@
 ---
 layout: tag
-tag: Productive Avoidance
+tag: productive-avoidance
 title: "Productive Avoidance"
 permalink: /tags/productive-avoidance/
 ---
