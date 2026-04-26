@@ -23,7 +23,7 @@ permalink: /classified/
     <div class="classified-stamp-wrap">
       <span class="classified-stamp">CLASSIFIED</span>
     </div>
-    <h1 class="classified-title" data-text="OPERATION: PRINCESS">OPERATION: PRINCESS</h1>
+    <h1 class="classified-title" data-text="PJCC: THE LOST FILES">PJCC: THE LOST FILES</h1>
     <div class="classified-subtitle">FRAGMENT ARCHIVE &mdash; EYES ONLY</div>
     <div class="classified-coords">
       ORIGIN:&nbsp;<span class="classified-redact">████████████</span>&nbsp;&nbsp;
@@ -40,6 +40,12 @@ permalink: /classified/
   </div>
   <div class="classified-subwarning">
     You weren't supposed to find this. But since you're here — welcome to the archive.
+  </div>
+
+  <div class="classified-burn-top">
+    <button class="classified-destruct-btn classified-destruct-btn--small" id="destruct-btn-top" onclick="igniteSequence()">
+      ▸ &nbsp; BURN NOW
+    </button>
   </div>
 
   <div class="classified-files">
@@ -116,7 +122,7 @@ permalink: /classified/
     <button class="classified-destruct-btn" id="destruct-btn" onclick="igniteSequence()">
       ▸ &nbsp; INITIATE BURN SEQUENCE
     </button>
-    <div class="classified-destruct-note">Don't worry. It's just for show.</div>
+    <div class="classified-destruct-note">It's just for show.</div>
   </div>
 
 </div>
@@ -124,12 +130,13 @@ permalink: /classified/
 <script>
 function igniteSequence() {
   var btn = document.getElementById('destruct-btn');
+  var btnTop = document.getElementById('destruct-btn-top');
   var overlay = document.getElementById('burn-overlay');
   var countdown = document.getElementById('burn-countdown');
   var number = document.getElementById('burn-number');
 
-  btn.disabled = true;
-  btn.textContent = '▸   BURNING...';
+  if (btn) { btn.disabled = true; btn.textContent = '▸   BURNING...'; }
+  if (btnTop) { btnTop.disabled = true; btnTop.textContent = '▸   BURNING...'; }
 
   var count = 3;
   countdown.classList.add('is-visible');
