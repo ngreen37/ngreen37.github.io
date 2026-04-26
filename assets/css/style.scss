@@ -161,22 +161,22 @@ ul, ol {
 .nav-group-label {
   flex: 0 0 100%;
   font-family: 'Poppins', sans-serif;
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 3px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 3.5px;
   text-transform: uppercase;
   text-align: center;
-  margin-bottom: 2px;
+  margin-bottom: 6px;
   user-select: none;
   pointer-events: none;
 }
 
 .nav-group-pjcc .nav-group-label {
-  color: rgba(245, 197, 24, 0.55);
+  color: rgba(245, 197, 24, 0.82);
 }
 
 .nav-group-studio .nav-group-label {
-  color: rgba(200, 200, 200, 0.4);
+  color: rgba(220, 220, 220, 0.72);
 }
 
 .nav-group-pjcc {
@@ -191,8 +191,8 @@ ul, ol {
   border-right: 3px solid rgba(200, 200, 200, 0.2);
 }
 
-/* --- McPuppy-side nav pills — always B&W, higher specificity beats .site-nav .page-link --- */
-.nav-group-studio .page-link {
+/* --- McPuppy-side nav pills — 3-class specificity beats .site-nav .page-link --- */
+.site-nav .nav-group-studio .page-link {
   color: #d4d4d4;
   border-color: #525252;
   background: transparent;
@@ -1356,6 +1356,48 @@ body.studio-body {
 .studio-quad:nth-child(3) { animation: quad-appear 1.3s ease 0.46s both; }
 .studio-quad:nth-child(4) { animation: quad-appear 1.3s ease 0.64s both; }
 
+/* PJCC quad — rich purple background, gold title */
+.studio-quad-grid .studio-quad:nth-child(1) {
+  background: linear-gradient(145deg, rgba(40, 16, 95, 0.82) 0%, rgba(100, 38, 220, 0.68) 55%, rgba(60, 16, 140, 0.6) 100%);
+  border-color: rgba(245, 197, 24, 0.48);
+
+  .studio-quad-title {
+    color: #F5C518;
+    text-shadow: 0 0 22px rgba(245, 197, 24, 0.4);
+  }
+
+  .studio-quad-sub {
+    color: rgba(245, 197, 24, 0.52);
+  }
+
+  &::after {
+    background: linear-gradient(135deg, rgba(245, 197, 24, 0.12) 0%, transparent 65%);
+  }
+
+  &:hover {
+    background: linear-gradient(145deg, rgba(65, 25, 160, 0.95) 0%, rgba(130, 52, 255, 0.85) 55%, rgba(90, 22, 180, 0.8) 100%);
+    border-color: #F5C518;
+    box-shadow: 0 0 44px rgba(245, 197, 24, 0.2), 0 14px 44px rgba(100, 38, 220, 0.55);
+    transform: translateY(-5px);
+  }
+}
+
+/* About/Contact quad — subtle DOS green */
+.studio-quad-grid .studio-quad:nth-child(4) {
+  background: rgba(0, 255, 65, 0.04);
+  border-color: rgba(0, 255, 65, 0.16);
+
+  .studio-quad-title {
+    color: rgba(165, 255, 185, 0.88);
+  }
+
+  &:hover {
+    background: rgba(0, 255, 65, 0.11);
+    border-color: rgba(0, 255, 65, 0.38);
+    transform: translateY(-3px);
+  }
+}
+
 .studio-quad-title {
   font-family: 'Poppins', sans-serif;
   font-size: clamp(18px, 2.4vw, 28px);
@@ -2410,17 +2452,17 @@ body.theme-bw .page-body em {
 .footer-ribbon-wrap {
   overflow: hidden;
   width: 100%;
-  padding: 14px 0 12px;
+  padding: 18px 0 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .ribbon-track {
   display: inline-block;
   white-space: nowrap;
-  font-size: 40px;
+  font-size: 50px;
   color: rgba(255, 255, 255, 0.055);
-  letter-spacing: 26px;
-  animation: ribbon-scroll 150s linear infinite;
+  letter-spacing: 28px;
+  animation: ribbon-scroll 200s linear infinite;
 }
 
 body.theme-bw .ribbon-track {
@@ -2493,35 +2535,35 @@ body.theme-bw .ribbon-track {
     left: 7%;
     bottom: 12%;
     font-size: 64px;
-    color: rgba(245, 197, 24, 0.09);
+    color: rgba(245, 197, 24, 0.11);
     animation-delay: 0s;
   }
   &:nth-child(2) {
     left: 71%;
     bottom: 22%;
     font-size: 52px;
-    color: rgba(160, 100, 255, 0.08);
+    color: rgba(160, 100, 255, 0.10);
     animation-delay: 13s;
   }
   &:nth-child(3) {
     left: 38%;
     bottom: 7%;
     font-size: 58px;
-    color: rgba(245, 197, 24, 0.07);
+    color: rgba(245, 197, 24, 0.09);
     animation-delay: 26s;
   }
   &:nth-child(4) {
     left: 83%;
     bottom: 16%;
-    font-size: 46px;
-    color: rgba(200, 200, 200, 0.07);
+    font-size: 53px;
+    color: rgba(200, 200, 200, 0.09);
     animation-delay: 7s;
   }
   &:nth-child(5) {
     left: 17%;
     bottom: 28%;
     font-size: 42px;
-    color: rgba(200, 200, 200, 0.065);
+    color: rgba(200, 200, 200, 0.08);
     animation-delay: 19s;
   }
 
