@@ -4,6 +4,11 @@ title: CLASSIFIED
 permalink: /classified/
 ---
 
+<div class="burn-overlay" id="burn-overlay"></div>
+<div class="burn-countdown" id="burn-countdown">
+  <span class="burn-countdown-number" id="burn-number"></span>
+</div>
+
 <div class="classified-page">
 
   <header class="classified-header">
@@ -106,4 +111,45 @@ permalink: /classified/
     <div class="classified-footer-note">This page does not exist.</div>
   </footer>
 
+  <div class="classified-destruct-zone">
+    <div class="classified-destruct-label">— BURN AFTER READING —</div>
+    <button class="classified-destruct-btn" id="destruct-btn" onclick="igniteSequence()">
+      ▸ &nbsp; INITIATE BURN SEQUENCE
+    </button>
+    <div class="classified-destruct-note">Don't worry. It's just for show.</div>
+  </div>
+
 </div>
+
+<script>
+function igniteSequence() {
+  var btn = document.getElementById('destruct-btn');
+  var overlay = document.getElementById('burn-overlay');
+  var countdown = document.getElementById('burn-countdown');
+  var number = document.getElementById('burn-number');
+
+  btn.disabled = true;
+  btn.textContent = '▸   BURNING...';
+
+  var count = 3;
+  countdown.classList.add('is-visible');
+
+  function tick() {
+    if (count < 1) {
+      overlay.classList.add('is-burning');
+      setTimeout(function() {
+        window.location.href = '{{ "/" | relative_url }}';
+      }, 2600);
+      return;
+    }
+    number.textContent = count;
+    number.style.animation = 'none';
+    void number.offsetWidth;
+    number.style.animation = 'countdown-pulse 0.7s ease-in-out';
+    count--;
+    setTimeout(tick, 750);
+  }
+
+  tick();
+}
+</script>
