@@ -191,11 +191,11 @@ ul, ol {
   border-right: 3px solid rgba(200, 200, 200, 0.2);
 }
 
-/* --- McPuppy-side nav pills — always B&W regardless of page theme --- */
-.site-nav .page-link-bw {
+/* --- McPuppy-side nav pills — always B&W, higher specificity beats .site-nav .page-link --- */
+.nav-group-studio .page-link {
   color: #d4d4d4;
   border-color: #525252;
-  background: rgba(255, 255, 255, 0.04);
+  background: transparent;
 
   &:visited {
     color: #d4d4d4;
@@ -206,6 +206,7 @@ ul, ol {
     color: #080808;
     border-color: #ffffff;
     text-decoration: none;
+    transform: translateY(-2px);
   }
 }
 
@@ -2416,10 +2417,10 @@ body.theme-bw .page-body em {
 .ribbon-track {
   display: inline-block;
   white-space: nowrap;
-  font-size: 30px;
-  color: rgba(255, 255, 255, 0.04);
-  letter-spacing: 24px;
-  animation: ribbon-scroll 110s linear infinite;
+  font-size: 40px;
+  color: rgba(255, 255, 255, 0.055);
+  letter-spacing: 26px;
+  animation: ribbon-scroll 150s linear infinite;
 }
 
 body.theme-bw .ribbon-track {
@@ -2669,7 +2670,7 @@ body.theme-contact .about-photo-slot {
   background: linear-gradient(160deg, #061200 0%, #030a02 70%);
   border-radius: 20px;
   border: 1px solid rgba(0, 255, 65, 0.18);
-  animation: contact-hero-flip 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: contact-hero-flip 2.2s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* Flair 4: ambient chess piece drifting in hero background */
@@ -2712,8 +2713,8 @@ body.theme-contact .about-photo-slot {
   padding: 0 4px 0 0;
   width: 0;
   animation: typewriter-in 0.9s steps(12) 0.4s forwards,
-             cursor-blink 0.7s step-end 0.4s 6,
-             cursor-vanish 0.5s ease 4.6s forwards;
+             cursor-blink 0.8s step-end 0.4s 4,
+             cursor-vanish 0.5s ease 3.6s forwards;
 }
 
 .contact-methods {
@@ -2871,8 +2872,8 @@ body.theme-contact .contact-gh-btn:hover {
 
 /* Flair 1 — 3D perspective flip entrance */
 @keyframes contact-hero-flip {
-  from { opacity: 0; transform: perspective(900px) rotateY(14deg) translateY(18px); }
-  to   { opacity: 1; transform: perspective(900px) rotateY(0deg) translateY(0); }
+  from { opacity: 0; transform: perspective(600px) rotateY(32deg) translateY(40px) scale(0.93); }
+  to   { opacity: 1; transform: perspective(600px) rotateY(0deg)  translateY(0)    scale(1);    }
 }
 
 /* Flair 2 — CSS typewriter */
