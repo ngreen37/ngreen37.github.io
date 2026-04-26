@@ -15,13 +15,21 @@
 
   <header class="site-header">
     <div class="wrapper header-inner">
-      <a class="site-logo" href="{{ '/' | relative_url }}">
-        <img src="{{ '/assets/images/mcpuppy-logo-stacked.svg' | relative_url }}"
-             alt="McPuppy Studios"
-             class="logo-stacked">
-      </a>
+
+      <!-- Top bar: logo left, about/contact right -->
+      <div class="header-top">
+        <a class="site-logo" href="{{ '/' | relative_url }}">
+          <img src="{{ '/assets/images/mcpuppy-logo-stacked.svg' | relative_url }}"
+               alt="McPuppy Studios"
+               class="logo-stacked">
+        </a>
+        <a class="about-contact-btn" href="{{ '/about/' | relative_url }}">About / Contact</a>
+      </div>
+
+      <!-- Nav: PJCC | pawn | McPuppy -->
       <nav class="site-nav">
         <div class="nav-group nav-group-pjcc">
+          <span class="nav-group-label">PJCC</span>
           <a class="page-link" href="{{ '/pjcc/' | relative_url }}">PJCC</a>
           <a class="page-link" href="{{ '/characters/' | relative_url }}">Characters</a>
           <a class="page-link" href="{{ '/locations/' | relative_url }}">Locations</a>
@@ -29,13 +37,14 @@
         </div>
         <span class="nav-divider" aria-hidden="true">&#9823;</span>
         <div class="nav-group nav-group-studio">
+          <span class="nav-group-label">McPuppy Studios</span>
           <a class="page-link page-link-bw" href="{{ '/projects/' | relative_url }}">Projects</a>
           <a class="page-link page-link-bw" href="{{ '/chess-lessons/' | relative_url }}">Chess Lessons</a>
           <a class="page-link page-link-bw" href="{{ '/podcast/' | relative_url }}">Podcast</a>
           <a class="page-link page-link-bw" href="{{ '/blog/' | relative_url }}">Blog</a>
-          <a class="page-link page-link-bw" href="{{ '/about/' | relative_url }}">About / Contact</a>
         </div>
       </nav>
+
     </div>
   </header>
 

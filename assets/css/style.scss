@@ -78,7 +78,7 @@ ul, ol {
   background: #0a0714;
   border-bottom: 3px solid transparent;
   border-image: linear-gradient(to right, #F5C518 50%, #cccccc 50%) 1;
-  padding: 14px 0 0;
+  padding: 0;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -88,8 +88,37 @@ ul, ol {
 .header-inner {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 0;
+}
+
+/* --- Header Top Bar --- */
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px 8px;
+  border-bottom: 1px solid rgba(61, 43, 138, 0.2);
+}
+
+.about-contact-btn {
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #cccccc;
+  border: 1.5px solid #484848;
+  border-radius: 999px;
+  padding: 5px 14px;
+  text-decoration: none;
+  letter-spacing: 0.3px;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+
+  &:hover {
+    color: #ffffff;
+    border-color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+    text-decoration: none;
+  }
 }
 
 /* --- Site Logo (header) --- */
@@ -98,7 +127,6 @@ ul, ol {
   line-height: 0;
   text-decoration: none;
   transition: opacity 0.2s;
-  margin-bottom: 10px;
 
   &:hover {
     opacity: 0.8;
@@ -107,7 +135,7 @@ ul, ol {
 }
 
 .logo-stacked {
-  height: 100px;
+  height: 80px;
   width: auto;
   display: block;
   filter: invert(1);
@@ -130,14 +158,37 @@ ul, ol {
   justify-content: center;
 }
 
+.nav-group-label {
+  flex: 0 0 100%;
+  font-family: 'Poppins', sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 2px;
+  user-select: none;
+  pointer-events: none;
+}
+
+.nav-group-pjcc .nav-group-label {
+  color: rgba(245, 197, 24, 0.55);
+}
+
+.nav-group-studio .nav-group-label {
+  color: rgba(200, 200, 200, 0.4);
+}
+
 .nav-group-pjcc {
-  padding: 16px 20px 16px 12px;
-  background: linear-gradient(to right, rgba(110, 50, 255, 0.28), rgba(110, 50, 255, 0) 92%);
-  border-left: 3px solid rgba(130, 60, 255, 0.32);
+  padding: 20px 24px 20px 16px;
+  background: linear-gradient(to right, rgba(110, 50, 255, 0.44), rgba(110, 50, 255, 0.18) 56%, rgba(110, 50, 255, 0) 100%);
+  border-left: 3px solid rgba(130, 60, 255, 0.55);
 }
 
 .nav-group-studio {
-  padding: 16px 12px 16px 20px;
+  padding: 20px 16px 20px 24px;
+  background: linear-gradient(to left, rgba(200, 200, 200, 0.1), rgba(200, 200, 200, 0) 100%);
+  border-right: 3px solid rgba(200, 200, 200, 0.2);
 }
 
 /* --- McPuppy-side nav pills (right of divider) — B&W style --- */
@@ -169,6 +220,12 @@ ul, ol {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  cursor: default;
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  &:hover {
+    transform: rotate(360deg);
+  }
 }
 
 .site-nav .page-link,
@@ -1221,6 +1278,7 @@ body.studio-body {
   left: 28px;
   z-index: 2;
   pointer-events: none;
+  animation: logo-bob 5s ease-in-out infinite;
 }
 
 .studio-corner-img {
@@ -1308,9 +1366,14 @@ body.studio-body {
   font-family: 'Inter', sans-serif;
   font-size: 13px;
   font-weight: 400;
-  color: #555;
+  color: rgba(255, 255, 255, 0.6);
   text-align: center;
   line-height: 1.6;
+  transition: opacity 0.3s;
+}
+
+.studio-quad:hover .studio-quad-sub {
+  opacity: 0;
 }
 
 @media (max-width: 600px) {
@@ -2274,7 +2337,7 @@ body.theme-bw .page-body em {
 
 .studio-tagline {
   position: relative;
-  height: 36px;
+  height: 40px;
   text-align: center;
   width: 100%;
 }
@@ -2284,13 +2347,13 @@ body.theme-bw .page-body em {
   left: 0;
   right: 0;
   font-family: 'Poppins', sans-serif;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 5px;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.32);
   opacity: 0;
-  line-height: 36px;
+  line-height: 40px;
   white-space: nowrap;
 
   /* 27s total: words 1-5 = 3s each (11.1%), word 6 = 12s (44.4%) */
@@ -2304,13 +2367,16 @@ body.theme-bw .page-body em {
 
 /* Main tagline — larger, italic, spread horizontally */
 .tagline-main {
-  font-size: 17px;
+  font-size: 20px;
   letter-spacing: 1px;
   word-spacing: 10px;
   text-transform: none;
   font-weight: 700;
   font-style: italic;
   color: rgba(255, 255, 255, 0.68);
+
+  &::before { content: '\201C'; }
+  &::after  { content: '\201D'; }
 }
 
 @keyframes tagline-w1 {
@@ -2362,17 +2428,17 @@ body.theme-bw .page-body em {
 .footer-ribbon-wrap {
   overflow: hidden;
   width: 100%;
-  padding: 10px 0 8px;
+  padding: 14px 0 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .ribbon-track {
   display: inline-block;
   white-space: nowrap;
-  font-size: 19px;
-  color: rgba(255, 255, 255, 0.05);
-  letter-spacing: 14px;
-  animation: ribbon-scroll 40s linear infinite;
+  font-size: 28px;
+  color: rgba(255, 255, 255, 0.07);
+  letter-spacing: 22px;
+  animation: ribbon-scroll 70s linear infinite;
 }
 
 body.theme-bw .ribbon-track {
@@ -2432,29 +2498,39 @@ body.theme-bw .ribbon-track {
   overflow: hidden;
 }
 
-.studio-drifters span {
+.studio-drifters .drift-piece {
   position: absolute;
-  bottom: 10%;
   user-select: none;
   animation: piece-drift 39s linear infinite;
+  text-decoration: none;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: color 0.3s;
 
   &:nth-child(1) {
-    left: 9%;
-    font-size: 28px;
-    color: rgba(245, 197, 24, 0.11);
+    left: 7%;
+    bottom: 12%;
+    font-size: 64px;
+    color: rgba(245, 197, 24, 0.18);
     animation-delay: 0s;
   }
   &:nth-child(2) {
-    left: 73%;
-    font-size: 23px;
-    color: rgba(160, 100, 255, 0.1);
+    left: 71%;
+    bottom: 22%;
+    font-size: 52px;
+    color: rgba(160, 100, 255, 0.16);
     animation-delay: 13s;
   }
   &:nth-child(3) {
-    left: 46%;
-    font-size: 25px;
-    color: rgba(245, 197, 24, 0.09);
+    left: 38%;
+    bottom: 7%;
+    font-size: 58px;
+    color: rgba(245, 197, 24, 0.14);
     animation-delay: 26s;
+  }
+
+  &:hover {
+    color: rgba(245, 197, 24, 0.55);
   }
 }
 
@@ -2463,4 +2539,66 @@ body.theme-bw .ribbon-track {
   6%   { opacity: 1; }
   88%  { opacity: 1; }
   100% { transform: translateY(-110vh) rotate(14deg); opacity: 0; }
+}
+
+/* =============================================================
+   Flair 5 — Studio corner logo gentle bob
+   ============================================================= */
+
+@keyframes logo-bob {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-5px); }
+}
+
+/* =============================================================
+   Flair 6 — Gold-to-purple custom scrollbar
+   ============================================================= */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0714;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #F5C518, #7c3aed);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #FFE566, #9333ea);
+}
+
+/* =============================================================
+   B&W overrides — Header top bar, About/Contact btn, nav labels
+   ============================================================= */
+
+body.theme-bw .header-top {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-bw .about-contact-btn {
+  color: #777777;
+  border-color: #333333;
+
+  &:hover {
+    color: #ffffff;
+    border-color: #ffffff;
+    background: rgba(255, 255, 255, 0.06);
+  }
+}
+
+body.theme-bw .nav-group-pjcc .nav-group-label {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+body.theme-bw .nav-group-studio .nav-group-label {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+body.theme-bw .nav-group-studio {
+  background: linear-gradient(to left, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 85%);
+  border-right-color: rgba(255, 255, 255, 0.1);
 }
