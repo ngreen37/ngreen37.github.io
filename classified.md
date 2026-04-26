@@ -122,7 +122,6 @@ permalink: /classified/
     <button class="classified-destruct-btn" id="destruct-btn" onclick="igniteSequence()">
       ▸ &nbsp; INITIATE BURN SEQUENCE
     </button>
-    <div class="classified-destruct-note">It's just for show.</div>
   </div>
 
 </div>
