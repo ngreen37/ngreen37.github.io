@@ -258,6 +258,49 @@ ul, ol {
   }
 }
 
+/* --- Header top-right group (about btn + hamburger) --- */
+.header-top-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* --- Hamburger toggle (hidden on desktop) --- */
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 7px 6px;
+  flex-shrink: 0;
+}
+
+.nav-toggle-bar {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: #F5C518;
+  border-radius: 2px;
+  transition: transform 0.24s ease, opacity 0.24s ease;
+}
+
+.nav-toggle.is-open .nav-toggle-bar:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.nav-toggle.is-open .nav-toggle-bar:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+.nav-toggle.is-open .nav-toggle-bar:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+body.theme-bw .nav-toggle-bar     { background: #cccccc; }
+body.theme-contact .nav-toggle-bar { background: #00ff41; }
+
 /* --- Main Content Area --- */
 .page-content {
   flex: 1;
@@ -1123,36 +1166,65 @@ pre code {
 /* --- Responsive --- */
 @media (max-width: 700px) {
   .header-inner {
-    align-items: center;
+    align-items: stretch;
   }
 
-  .site-nav {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  .nav-group {
-    padding: 6px 12px !important;
-    background: none !important;
-    border: none !important;
-  }
-
-  .nav-divider {
-    display: block;
-    text-align: center;
-    padding: 4px 0;
-  }
-
+  /* Shrink logo so the header-top row stays compact */
   .logo-stacked {
-    height: 80px;
+    height: 52px;
   }
 
   .logo-horizontal {
     height: 72px;
   }
 
+  /* Show the hamburger button */
+  .nav-toggle {
+    display: flex;
+  }
+
+  /* Nav collapses to zero-height by default; animates open */
   .site-nav {
-    gap: 6px;
+    grid-template-columns: 1fr;
+    gap: 0;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.25s ease;
+    border-top: none;
+  }
+
+  .site-nav.is-open {
+    max-height: 480px;
+    opacity: 1;
+    border-top: 1px solid rgba(61, 43, 138, 0.3);
+  }
+
+  body.theme-bw .site-nav.is-open {
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+
+  body.theme-contact .site-nav.is-open {
+    border-top-color: rgba(0, 255, 65, 0.12);
+  }
+
+  .nav-group {
+    padding: 8px 14px !important;
+    background: none !important;
+    border: none !important;
+  }
+
+  .nav-group-label {
+    font-size: 9px;
+    letter-spacing: 2.5px;
+    margin-bottom: 6px;
+  }
+
+  .nav-divider {
+    display: block;
+    text-align: center;
+    padding: 2px 0;
+    font-size: 20px;
   }
 
   .site-nav .page-link {
