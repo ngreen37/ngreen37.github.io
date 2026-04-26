@@ -120,7 +120,6 @@ ul, ol {
   align-items: center;
   width: 100%;
   border-top: 1px solid rgba(61, 43, 138, 0.3);
-  padding: 10px 0 14px;
 }
 
 .nav-group {
@@ -128,18 +127,17 @@ ul, ol {
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
+  justify-content: center;
 }
 
 .nav-group-pjcc {
-  justify-content: flex-end;
-  padding: 6px 16px 6px 8px;
-  background: linear-gradient(to right, rgba(110, 50, 255, 0.26), rgba(110, 50, 255, 0) 90%);
-  border-radius: 6px 0 0 6px;
+  padding: 16px 20px 16px 12px;
+  background: linear-gradient(to right, rgba(110, 50, 255, 0.28), rgba(110, 50, 255, 0) 92%);
+  border-left: 3px solid rgba(130, 60, 255, 0.32);
 }
 
 .nav-group-studio {
-  justify-content: flex-start;
-  padding-left: 16px;
+  padding: 16px 12px 16px 20px;
 }
 
 /* --- McPuppy-side nav pills (right of divider) — B&W style --- */
@@ -1071,17 +1069,18 @@ pre code {
   .site-nav {
     grid-template-columns: 1fr;
     gap: 0;
-    padding: 8px 0 12px;
   }
 
   .nav-group {
-    justify-content: center;
-    padding: 4px 8px !important;
+    padding: 6px 12px !important;
     background: none !important;
+    border: none !important;
   }
 
   .nav-divider {
+    display: block;
     text-align: center;
+    padding: 4px 0;
   }
 
   .logo-stacked {
@@ -1208,12 +1207,28 @@ body.studio-body {
   z-index: 1;
   width: 100%;
   max-width: 960px;
-  padding: 52px 28px 60px;
+  padding: 36px 28px 56px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 48px;
+  gap: 36px;
   animation: studio-fade-in 1.3s ease forwards;
+}
+
+.studio-corner-logo {
+  position: fixed;
+  top: 22px;
+  left: 28px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.studio-corner-img {
+  height: 52px;
+  width: auto;
+  filter: invert(1);
+  opacity: 0.72;
+  display: block;
 }
 
 .studio-logo-wrap {
@@ -1354,6 +1369,7 @@ body.theme-bw .site-header {
 
 body.theme-bw .nav-group-pjcc {
   background: linear-gradient(to right, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 85%);
+  border-left-color: rgba(255, 255, 255, 0.1);
 }
 
 body.theme-bw .site-nav {
@@ -2258,9 +2274,9 @@ body.theme-bw .page-body em {
 
 .studio-tagline {
   position: relative;
-  height: 30px;
-  margin-top: 24px;
+  height: 36px;
   text-align: center;
+  width: 100%;
 }
 
 .tagline-word {
@@ -2274,21 +2290,23 @@ body.theme-bw .page-body em {
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.32);
   opacity: 0;
-  line-height: 30px;
+  line-height: 36px;
+  white-space: nowrap;
 
-  /* 80s cycle: words 1-5 get 10s (12.5%), word 6 gets 30s (37.5%) */
-  &:nth-child(1) { animation: tagline-w1 80s linear infinite; }
-  &:nth-child(2) { animation: tagline-w2 80s linear infinite; }
-  &:nth-child(3) { animation: tagline-w3 80s linear infinite; }
-  &:nth-child(4) { animation: tagline-w4 80s linear infinite; }
-  &:nth-child(5) { animation: tagline-w5 80s linear infinite; }
-  &:nth-child(6) { animation: tagline-w6 80s linear infinite; }
+  /* 27s total: words 1-5 = 3s each (11.1%), word 6 = 12s (44.4%) */
+  &:nth-child(1) { animation: tagline-w1 27s linear infinite; }
+  &:nth-child(2) { animation: tagline-w2 27s linear infinite; }
+  &:nth-child(3) { animation: tagline-w3 27s linear infinite; }
+  &:nth-child(4) { animation: tagline-w4 27s linear infinite; }
+  &:nth-child(5) { animation: tagline-w5 27s linear infinite; }
+  &:nth-child(6) { animation: tagline-w6 27s linear infinite; }
 }
 
-/* Main tagline slide — larger, brighter, italic */
+/* Main tagline — larger, italic, spread horizontally */
 .tagline-main {
-  font-size: 14px;
-  letter-spacing: 2px;
+  font-size: 17px;
+  letter-spacing: 1px;
+  word-spacing: 10px;
   text-transform: none;
   font-weight: 700;
   font-style: italic;
@@ -2297,44 +2315,44 @@ body.theme-bw .page-body em {
 
 @keyframes tagline-w1 {
   0%      { opacity: 0; }
-  1%      { opacity: 1; }
-  11.5%   { opacity: 1; }
-  12.5%   { opacity: 0; }
+  1.5%    { opacity: 1; }
+  9.5%    { opacity: 1; }
+  11.1%   { opacity: 0; }
   100%    { opacity: 0; }
 }
 @keyframes tagline-w2 {
-  0%, 12.5%  { opacity: 0; }
-  13.5%      { opacity: 1; }
-  24%        { opacity: 1; }
-  25%        { opacity: 0; }
-  100%       { opacity: 0; }
+  0%, 11.1%   { opacity: 0; }
+  12.6%       { opacity: 1; }
+  20.7%       { opacity: 1; }
+  22.2%       { opacity: 0; }
+  100%        { opacity: 0; }
 }
 @keyframes tagline-w3 {
-  0%, 25%    { opacity: 0; }
-  26%        { opacity: 1; }
-  36.5%      { opacity: 1; }
-  37.5%      { opacity: 0; }
-  100%       { opacity: 0; }
+  0%, 22.2%   { opacity: 0; }
+  23.7%       { opacity: 1; }
+  31.8%       { opacity: 1; }
+  33.3%       { opacity: 0; }
+  100%        { opacity: 0; }
 }
 @keyframes tagline-w4 {
-  0%, 37.5%  { opacity: 0; }
-  38.5%      { opacity: 1; }
-  49%        { opacity: 1; }
-  50%        { opacity: 0; }
-  100%       { opacity: 0; }
+  0%, 33.3%   { opacity: 0; }
+  34.8%       { opacity: 1; }
+  43%         { opacity: 1; }
+  44.4%       { opacity: 0; }
+  100%        { opacity: 0; }
 }
 @keyframes tagline-w5 {
-  0%, 50%    { opacity: 0; }
-  51%        { opacity: 1; }
-  61.5%      { opacity: 1; }
-  62.5%      { opacity: 0; }
-  100%       { opacity: 0; }
+  0%, 44.4%   { opacity: 0; }
+  45.9%       { opacity: 1; }
+  54.1%       { opacity: 1; }
+  55.6%       { opacity: 0; }
+  100%        { opacity: 0; }
 }
 @keyframes tagline-w6 {
-  0%, 62.5%  { opacity: 0; }
-  63.5%      { opacity: 1; }
-  99%        { opacity: 1; }
-  100%       { opacity: 0; }
+  0%, 55.6%   { opacity: 0; }
+  57.1%       { opacity: 1; }
+  99%         { opacity: 1; }
+  100%        { opacity: 0; }
 }
 
 /* =============================================================
@@ -2416,27 +2434,27 @@ body.theme-bw .ribbon-track {
 
 .studio-drifters span {
   position: absolute;
-  bottom: -8%;
+  bottom: 10%;
   user-select: none;
-  animation: piece-drift 26s linear infinite;
+  animation: piece-drift 39s linear infinite;
 
   &:nth-child(1) {
     left: 9%;
-    font-size: 22px;
+    font-size: 28px;
     color: rgba(245, 197, 24, 0.11);
     animation-delay: 0s;
   }
   &:nth-child(2) {
     left: 73%;
-    font-size: 18px;
+    font-size: 23px;
     color: rgba(160, 100, 255, 0.1);
-    animation-delay: 9s;
+    animation-delay: 13s;
   }
   &:nth-child(3) {
     left: 46%;
-    font-size: 20px;
+    font-size: 25px;
     color: rgba(245, 197, 24, 0.09);
-    animation-delay: 18s;
+    animation-delay: 26s;
   }
 }
 
@@ -2444,5 +2462,5 @@ body.theme-bw .ribbon-track {
   0%   { transform: translateY(0) rotate(0deg); opacity: 0; }
   6%   { opacity: 1; }
   88%  { opacity: 1; }
-  100% { transform: translateY(-115vh) rotate(14deg); opacity: 0; }
+  100% { transform: translateY(-110vh) rotate(14deg); opacity: 0; }
 }
