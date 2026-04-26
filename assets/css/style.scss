@@ -105,8 +105,8 @@ ul, ol {
   font-family: 'Poppins', sans-serif;
   font-size: 12px;
   font-weight: 600;
-  color: #cccccc;
-  border: 1.5px solid #484848;
+  color: #00c8c0;
+  border: 1.5px solid rgba(0, 200, 192, 0.42);
   border-radius: 999px;
   padding: 5px 14px;
   text-decoration: none;
@@ -114,9 +114,9 @@ ul, ol {
   transition: color 0.2s, border-color 0.2s, background 0.2s;
 
   &:hover {
-    color: #ffffff;
-    border-color: #ffffff;
-    background: rgba(255, 255, 255, 0.08);
+    color: #050f12;
+    border-color: #00c8c0;
+    background: #00c8c0;
     text-decoration: none;
   }
 }
@@ -2435,10 +2435,10 @@ body.theme-bw .page-body em {
 .ribbon-track {
   display: inline-block;
   white-space: nowrap;
-  font-size: 28px;
-  color: rgba(255, 255, 255, 0.07);
-  letter-spacing: 22px;
-  animation: ribbon-scroll 70s linear infinite;
+  font-size: 30px;
+  color: rgba(255, 255, 255, 0.04);
+  letter-spacing: 24px;
+  animation: ribbon-scroll 110s linear infinite;
 }
 
 body.theme-bw .ribbon-track {
@@ -2511,21 +2511,21 @@ body.theme-bw .ribbon-track {
     left: 7%;
     bottom: 12%;
     font-size: 64px;
-    color: rgba(245, 197, 24, 0.18);
+    color: rgba(245, 197, 24, 0.09);
     animation-delay: 0s;
   }
   &:nth-child(2) {
     left: 71%;
     bottom: 22%;
     font-size: 52px;
-    color: rgba(160, 100, 255, 0.16);
+    color: rgba(160, 100, 255, 0.08);
     animation-delay: 13s;
   }
   &:nth-child(3) {
     left: 38%;
     bottom: 7%;
     font-size: 58px;
-    color: rgba(245, 197, 24, 0.14);
+    color: rgba(245, 197, 24, 0.07);
     animation-delay: 26s;
   }
 
@@ -2580,13 +2580,13 @@ body.theme-bw .header-top {
 }
 
 body.theme-bw .about-contact-btn {
-  color: #777777;
-  border-color: #333333;
+  color: #00a09a;
+  border-color: rgba(0, 160, 154, 0.35);
 
   &:hover {
-    color: #ffffff;
-    border-color: #ffffff;
-    background: rgba(255, 255, 255, 0.06);
+    color: #000000;
+    border-color: #00c8c0;
+    background: #00c8c0;
   }
 }
 
@@ -2601,4 +2601,356 @@ body.theme-bw .nav-group-studio .nav-group-label {
 body.theme-bw .nav-group-studio {
   background: linear-gradient(to left, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 85%);
   border-right-color: rgba(255, 255, 255, 0.1);
+}
+
+/* =============================================================
+   Theme: Contact / About  (body.theme-contact)
+   Teal/Cyan — primary #00c8c0, dark bg #050f12
+   ============================================================= */
+
+body.theme-contact {
+  background-color: #050f12;
+  color: #a8d5d3;
+}
+
+body.theme-contact h1,
+body.theme-contact h2,
+body.theme-contact h3 {
+  color: #00c8c0;
+}
+
+body.theme-contact a {
+  color: #00c8c0;
+  &:hover { color: #ffffff; }
+}
+
+body.theme-contact .site-header {
+  background: #020a0d;
+  border-image: linear-gradient(to right, #00c8c0 50%, #888888 50%) 1;
+}
+
+body.theme-contact .site-nav {
+  border-top-color: rgba(0, 200, 192, 0.2);
+}
+
+body.theme-contact .nav-group-pjcc {
+  background: linear-gradient(to right, rgba(0, 200, 192, 0.18), rgba(0, 200, 192, 0.06) 56%, rgba(0, 200, 192, 0) 100%);
+  border-left-color: rgba(0, 200, 192, 0.35);
+}
+
+body.theme-contact .nav-group-studio {
+  background: linear-gradient(to left, rgba(200, 200, 200, 0.08), rgba(200, 200, 200, 0) 100%);
+  border-right-color: rgba(200, 200, 200, 0.15);
+}
+
+body.theme-contact .nav-group-pjcc .nav-group-label {
+  color: rgba(0, 200, 192, 0.55);
+}
+
+body.theme-contact .site-nav .page-link,
+body.theme-contact .site-header .site-nav a {
+  color: #00c8c0;
+  border-color: rgba(0, 200, 192, 0.6);
+
+  &:visited { color: #00c8c0; }
+
+  &:hover {
+    background: #00c8c0;
+    color: #050f12;
+    border-color: #00c8c0;
+    text-decoration: none;
+  }
+}
+
+body.theme-contact .site-nav .page-link-bw {
+  color: #888888;
+  border-color: #3a3a3a;
+
+  &:hover {
+    background: #ffffff;
+    color: #050f12;
+    border-color: #ffffff;
+  }
+}
+
+body.theme-contact .nav-divider {
+  background: linear-gradient(to right, #00c8c0 50%, #888888 50%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body.theme-contact .about-contact-btn {
+  color: #050f12;
+  background: #00c8c0;
+  border-color: #00c8c0;
+}
+
+body.theme-contact .site-footer {
+  background: #020a0d;
+  border-top-color: #00c8c0;
+}
+
+body.theme-contact .footer-copy {
+  color: #1e5553;
+}
+
+body.theme-contact .ribbon-track {
+  color: rgba(0, 200, 192, 0.035);
+}
+
+body.theme-contact .about-photo-slot {
+  background: #071e22;
+  border-color: rgba(0, 200, 192, 0.18);
+}
+
+/* =============================================================
+   Contact Hero
+   ============================================================= */
+
+.contact-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 80px 28px 72px;
+  text-align: center;
+  background: linear-gradient(160deg, #071e22 0%, #050f12 70%);
+  border-radius: 20px;
+  border: 1px solid rgba(0, 200, 192, 0.2);
+  /* Flair 1: 3D perspective flip entrance */
+  animation: contact-hero-flip 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Flair 4: ambient chess piece drifting in hero background */
+.contact-hero-piece {
+  position: absolute;
+  right: 7%;
+  bottom: 8%;
+  font-size: 100px;
+  color: rgba(0, 200, 192, 0.055);
+  user-select: none;
+  pointer-events: none;
+  line-height: 1;
+  animation: contact-piece-drift 9s ease-in-out infinite;
+}
+
+.contact-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  color: rgba(0, 200, 192, 0.5);
+  margin-bottom: 16px;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Flair 2: CSS typewriter on headline */
+.contact-headline {
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(36px, 6vw, 64px);
+  font-weight: 800;
+  color: #00c8c0;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  margin-bottom: 40px;
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  border: none;
+  border-right: 3px solid #00c8c0;
+  padding: 0 4px 0 0;
+  width: 0;
+  animation: typewriter-in 0.9s steps(12) 0.4s forwards, cursor-fade 0.7s step-end 0.4s 6;
+}
+
+.contact-methods {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Flair 3: breathing glow on email address */
+.contact-email-link {
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(15px, 2.2vw, 20px);
+  font-weight: 700;
+  color: #00c8c0;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  animation: email-glow 3.5s ease-in-out infinite;
+
+  &:hover {
+    color: #ffffff;
+    text-decoration: none;
+    animation: none;
+    text-shadow: 0 0 24px rgba(0, 200, 192, 0.85);
+  }
+}
+
+/* Flair 5: bloom lift on GitHub button */
+.contact-gh-btn {
+  display: inline-block;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #050f12;
+  background: #00c8c0;
+  padding: 12px 32px;
+  border-radius: 999px;
+  text-decoration: none;
+  letter-spacing: 0.4px;
+  box-shadow: 0 0 0 rgba(0, 200, 192, 0);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+
+  &:hover {
+    color: #050f12;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 36px rgba(0, 200, 192, 0.6), 0 0 60px rgba(0, 200, 192, 0.2);
+    text-decoration: none;
+  }
+}
+
+/* =============================================================
+   Contact/About divider — self-drawing lines (Flair note: line-draw)
+   ============================================================= */
+
+.contact-about-divider {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 52px 0 44px;
+}
+
+.contact-about-divider .divider-piece {
+  font-size: 26px;
+  color: rgba(0, 200, 192, 0.35);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.contact-about-divider .divider-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(0, 200, 192, 0.22);
+  transform-origin: left center;
+  animation: line-draw 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.6s both;
+}
+
+.contact-about-divider .divider-line:last-child {
+  transform-origin: right center;
+}
+
+/* =============================================================
+   About blocks (combined page)
+   ============================================================= */
+
+.about-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding-bottom: 40px;
+}
+
+.about-block {
+  background: #071e22;
+  border: 1px solid rgba(0, 200, 192, 0.14);
+  border-radius: 16px;
+  padding: 40px 44px;
+}
+
+.about-block-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 200, 192, 0.18);
+}
+
+.about-block-name {
+  font-family: 'Poppins', sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  color: #00c8c0;
+  margin: 0 0 4px;
+  padding: 0;
+  border: none;
+  letter-spacing: -0.3px;
+}
+
+.about-block-sub {
+  font-size: 14px;
+  color: rgba(0, 200, 192, 0.5);
+  font-weight: 500;
+  display: block;
+}
+
+.about-block-bio {
+  font-size: 16px;
+  line-height: 1.85;
+  color: #a8d5d3;
+  margin: 0;
+
+  h3 {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(0, 200, 192, 0.65);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 24px;
+    margin-bottom: 10px;
+    border: none;
+    padding: 0;
+  }
+
+  ul {
+    margin-bottom: 1em;
+    padding-left: 1.4em;
+  }
+
+  li { margin-bottom: 0.4em; }
+  p  { margin-bottom: 1em; }
+}
+
+/* =============================================================
+   Contact page keyframes (5 flair pieces)
+   ============================================================= */
+
+/* Flair 1 — 3D perspective flip entrance on contact hero */
+@keyframes contact-hero-flip {
+  from { opacity: 0; transform: perspective(900px) rotateY(14deg) translateY(18px); }
+  to   { opacity: 1; transform: perspective(900px) rotateY(0deg) translateY(0); }
+}
+
+/* Flair 2 — CSS typewriter on "Get In Touch" */
+@keyframes typewriter-in {
+  from { width: 0; }
+  to   { width: 13ch; }
+}
+
+@keyframes cursor-fade {
+  0%, 100% { border-right-color: #00c8c0; }
+  50%       { border-right-color: transparent; }
+}
+
+/* Flair 3 — breathing glow on email */
+@keyframes email-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(0, 200, 192, 0); }
+  50%       { text-shadow: 0 0 28px rgba(0, 200, 192, 0.7); }
+}
+
+/* Flair 4 — ambient chess piece drift in hero bg */
+@keyframes contact-piece-drift {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50%       { transform: translateY(-18px) rotate(6deg); }
+}
+
+/* Flair 5 — self-drawing divider lines */
+@keyframes line-draw {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@media (max-width: 700px) {
+  .contact-hero { padding: 56px 20px 52px; }
+  .contact-hero-piece { font-size: 70px; }
+  .about-block { padding: 28px 20px; }
+  .contact-about-divider { padding: 36px 0 30px; }
 }
