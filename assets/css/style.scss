@@ -2467,37 +2467,48 @@ body.theme-bw .page-body em {
   &:nth-child(6) { animation: tagline-w6 27s linear infinite; }
 }
 
-/* Main tagline — logo above, italic text below */
+/* Main tagline — two-line text reveal */
 .tagline-main {
-  line-height: 1.2;
+  line-height: 1.25;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   top: 0;
   height: 110px;
-  gap: 10px;
+  gap: 7px;
   white-space: normal;
-  font-size: 20px;
-  letter-spacing: 1px;
-  word-spacing: 10px;
   text-transform: none;
-  font-weight: 700;
-  font-style: italic;
+  font-style: normal;
   color: rgba(255, 255, 255, 0.68);
 }
 
-.tagline-logo-img {
-  height: 40px;
-  width: auto;
-  filter: invert(1);
-  display: block;
-  animation: tagline-logo-glow 3s ease-in-out infinite;
+.tagline-main-studio {
+  font-family: 'Poppins', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
 }
 
-@keyframes tagline-logo-glow {
-  0%, 100% { filter: invert(1) brightness(0.85); opacity: 0.75; }
-  50%       { filter: invert(1) brightness(1.35); opacity: 1.0; }
+.tagline-main-tagline {
+  font-family: 'Poppins', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -0.3px;
+  background: linear-gradient(90deg, #F5C518, #c4b5fd, #ffffff, #F5C518);
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: tagline-shimmer 4s linear infinite;
+}
+
+@keyframes tagline-shimmer {
+  from { background-position: 0% center; }
+  to   { background-position: 220% center; }
 }
 
 @keyframes tagline-w1 {
@@ -2563,7 +2574,7 @@ body.theme-bw .page-body em {
 }
 
 body.theme-bw .ribbon-track {
-  color: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.055);
 }
 
 @keyframes ribbon-scroll {
@@ -2667,8 +2678,8 @@ body.theme-bw .ribbon-track {
     left: 54%;
     bottom: 36%;
     font-size: 27px;
-    color: rgba(255, 180, 40, 0.05);
-    animation: piece-drift 52s linear 17s infinite;
+    color: rgba(255, 180, 40, 0.08);
+    animation: piece-drift 52s linear 9s infinite;
   }
 
   &:hover {
@@ -2788,7 +2799,7 @@ body.theme-contact .about-contact-btn {
 
 body.theme-contact .site-footer {
   background: #010601;
-  border-top-color: #00ff41;
+  border-top-color: rgba(0, 255, 65, 0.68);
 }
 
 body.theme-contact .footer-copy {
@@ -2796,7 +2807,7 @@ body.theme-contact .footer-copy {
 }
 
 body.theme-contact .ribbon-track {
-  color: rgba(0, 255, 65, 0.04);
+  color: rgba(0, 255, 65, 0.07);
 }
 
 body.theme-contact .about-photo-slot {
@@ -3189,9 +3200,14 @@ body.theme-contact .contact-gh-btn:hover {
 }
 
 .project-status-active {
-  background: rgba(255, 255, 255, 0.07);
-  color: #cccccc;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 196, 58, 0.06);
+  color: rgba(0, 196, 58, 0.82);
+  border: 1px solid rgba(0, 196, 58, 0.22);
+}
+
+.project-status-active .project-status-dot {
+  background: rgba(0, 196, 58, 0.9);
+  animation: status-dot-pulse-green 2.2s ease-in-out infinite;
 }
 
 .project-status-soon {

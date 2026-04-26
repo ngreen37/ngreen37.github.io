@@ -25,7 +25,7 @@ permalink: /classified/
       FREQ:&nbsp;<span class="classified-redact">████</span>&nbsp;&nbsp;
       AGENT:&nbsp;<span class="classified-redact" title="hover to reveal">████████</span>
     </div>
-    <div class="classified-secret-text" aria-hidden="true">YOU ARE NOT SUPPOSED TO BE HERE</div>
+    <div class="classified-secret-text" aria-hidden="true">CONGRATULATIONS, OPERATIVE. YOU'VE BEEN EXPECTED.</div>
   </header>
 
   <div class="classified-warning-banner">
