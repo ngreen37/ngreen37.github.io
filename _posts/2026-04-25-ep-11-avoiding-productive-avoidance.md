@@ -9,7 +9,11 @@ tags: [Productive Avoidance, Blender, Princess, Hockey, Basketball, Wild, Timber
 
 aaaaaaaaaaaaaaaaaahhh! Oh yeah!  Oh-oh yeah!  Big blender day today, so Bad Religion is perfect.  All evening, in between Wolves and Wild playoff games.  That's right; I am from Minnesota and I root for my teams with great passion. I have yet to witness a championship in any of the four major sports (hockey, basketball, football, and baseball). Not even a finals APPEARANCE.  
 
-Perhaps the Wild, who look good despite being down 2-1 in the series, can go all the way this year; the Wolves can definitely get past Denver in the first round, but I am less confident about them facing a stacked OKC or a Wemby-led San Antonio team.  But our squad is very good as well, and will cheer them on no matter what.   **Edit** Wild win in OT!!!! What a tip-in by Boldy!  Wolves look good nearing the half; Naz Reid playing particularly well and ohhhh noooo Anthony Edwards is hobbling off the court.  omg.  I hope he is okay.  
+Perhaps the Wild, who look good despite being down 2-1 in the series, can go all the way this year; the Wolves can definitely get past Denver in the first round, but I am less confident about them facing a stacked OKC or a Wemby-led San Antonio team.  But our squad is very good as well, and will cheer them on no matter what.   
+
+**Edit** Wild win in OT!!!! What a tip-in by Boldy!  Wolves look good nearing the half; Naz Reid playing particularly well and ohhhh noooo Anthony Edwards is hobbling off the court.  omg.  I hope he is okay.  
+
+**Edit** Ant is out for the game but the Wolves are playing really well with Dosunmu leading the way with a career-high 43(!). what an overall great day.  My teams won and PJCC took a huge leap forward. Princess has some color, the sea scene has some sea, and the website looks cleeean.  I'm going to try and plant some easter eggs in there, too.  
 
 ### What I worked on:
   - Lots of Blender.  I created a dog structure!  My friend Kennie says it looks like Catdog, lol.  The idea is to just get something I can use for now, and I will detail it later
