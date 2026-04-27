@@ -3,6 +3,7 @@ layout: character
 title: Princess
 full_name: Princess Sophia McPuppy
 role: Main Character
+image: /assets/images/Princess_Color_v01.jpg
 permalink: /characters/princess/
 ---
 

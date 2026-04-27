@@ -11,9 +11,61 @@ body_class: theme-contact
   <p class="contact-eyebrow">Say Hello</p>
   <h1 class="contact-headline">Get In Touch</h1>
   <div class="contact-methods">
-    <a href="mailto:nathgreen37@gmail.com" class="contact-email-link">nathgreen37@gmail.com</a>
-    <a href="https://github.com/ngreen37" class="contact-gh-btn" target="_blank" rel="noopener">♟&nbsp; GitHub — ngreen37</a>
+    <div class="contact-calc-wrapper" id="contact-calc-wrap">
+      <div class="contact-calc-line" id="calc-line-1"></div>
+      <div class="contact-calc-line" id="calc-line-2"></div>
+    </div>
+    <a href="mailto:nathgreen37@gmail.com" class="contact-email-link" id="contact-email" style="opacity:0;pointer-events:none">nathgreen37@gmail.com</a>
+    <a href="https://github.com/ngreen37" class="contact-gh-btn" id="contact-gh" style="opacity:0;pointer-events:none" target="_blank" rel="noopener">♟&nbsp; GitHub — ngreen37</a>
   </div>
+
+<script>
+(function() {
+  var line1 = document.getElementById('calc-line-1');
+  var line2 = document.getElementById('calc-line-2');
+  var wrap  = document.getElementById('contact-calc-wrap');
+  var email = document.getElementById('contact-email');
+  var gh    = document.getElementById('contact-gh');
+  var cursor = '<span class="contact-calc-cursor"></span>';
+
+  function typeInto(el, text, delay, cb) {
+    setTimeout(function() {
+      var i = 0;
+      el.innerHTML = cursor;
+      var t = setInterval(function() {
+        el.innerHTML = text.slice(0, i + 1) + cursor;
+        i++;
+        if (i >= text.length) {
+          clearInterval(t);
+          setTimeout(function() { el.innerHTML = text; if (cb) cb(); }, 300);
+        }
+      }, 38);
+    }, delay);
+  }
+
+  function fadeIn(el, cb) {
+    el.style.transition = 'opacity 0.5s';
+    el.style.opacity = '1';
+    el.style.pointerEvents = 'auto';
+    if (cb) setTimeout(cb, 600);
+  }
+
+  typeInto(line1, 'Calculating...', 500, function() {
+    typeInto(line2, 'Calculating...', 200, function() {
+      setTimeout(function() {
+        wrap.style.transition = 'opacity 0.4s';
+        wrap.style.opacity = '0';
+        setTimeout(function() {
+          wrap.style.display = 'none';
+          fadeIn(email, function() {
+            fadeIn(gh);
+          });
+        }, 420);
+      }, 700);
+    });
+  });
+})();
+</script>
 </section>
 
 <!-- ══════════ DIVIDER ══════════ -->

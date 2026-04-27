@@ -2,6 +2,8 @@
 layout: default
 ---
 
+<div class="reading-progress-bar" id="reading-progress-bar"></div>
+
 <article class="post">
 <div class="post-nav post-nav-top">
   {% if page.previous %}
@@ -54,3 +56,17 @@ layout: default
   {% endif %}
 </div>
 </article>
+
+<script>
+(function() {
+  var bar = document.getElementById('reading-progress-bar');
+  if (!bar) return;
+  function update() {
+    var h = document.documentElement;
+    var scrolled = h.scrollTop || document.body.scrollTop;
+    var total = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+    bar.style.width = (total > 0 ? Math.min(100, (scrolled / total) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', update, { passive: true });
+})();
+</script>
