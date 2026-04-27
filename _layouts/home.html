@@ -28,6 +28,39 @@ layout: default
   </p>
 </section>
 
+{% comment %} ── 3. WORLD STATUS TICKER ───────────────────────────── {% endcomment %}
+<div class="world-ticker-wrap">
+  <div class="ticker-eyebrow">◈ LIVE TRANSMISSION — CHECKER TOWN BUREAU OF DISPATCH</div>
+  <div class="ticker-outer">
+    <div class="ticker-track">
+      <span class="ticker-item">CHECKER TOWN CHECKER PIECE SUPPLY AT ALL-TIME LOW — BOARD SHORTAGE REPORTED IN SECTOR 3</span>
+      <span class="ticker-item">CHESS CITY TOURNAMENT ENROLLMENT NOW OPEN — LIMITED SPOTS REMAINING — APPLICATIONS CLOSE END OF SEASON</span>
+      <span class="ticker-item">SHOGI ISLAND FERRY DELAYED FOR THIRD CONSECUTIVE WEEK — NO DEPARTURE DATE ANNOUNCED</span>
+      <span class="ticker-item">INTERPLANETARY CONSTRUCTION CO. DENIES ALL VESSEL WRECKAGE CLAIMS — INVESTIGATION CONTINUES</span>
+      <span class="ticker-item">CHESS CITY LEAFS ADVANCE TO FINALS — ROSTER ANNOUNCEMENT EXPECTED SHORTLY</span>
+      <span class="ticker-item">WEATHER ADVISORY: THE SEA IS ROUGH — ALL CROSSINGS POSTPONED INDEFINITELY</span>
+      <span class="ticker-item">CHECKER PIECE PRICES REACH RECORD HIGH — ECONOMISTS CITE THE CRASH AS ORIGIN POINT</span>
+      <span class="ticker-item">UNKNOWN VESSEL SPOTTED OFF COAST — AUTHORITIES INVESTIGATING — PUBLIC ADVISED TO REMAIN CALM</span>
+      <span class="ticker-item">CHECKER TOWN YOUTH CHESS LEAGUE REGISTRATION NOW OPEN — FORMS AVAILABLE AT THE CIVIC HALL</span>
+      <span class="ticker-item">OFFICIAL: CHESS CITY HAS NOT RESPONDED TO CHECKER TOWN PASSAGE PERMIT REQUEST — DAY 47</span>
+      <span class="ticker-item">PRINCESS WINS CHECKER TOWN INFORMAL CHESS TOURNAMENT — REMATCH PENDING</span>
+      <span class="ticker-item">SHADOW ACTIVITY NEAR THE CRASH SITE — CONSTRUCTION EQUIPMENT UNACCOUNTED FOR</span>
+      <span class="ticker-item">CHECKER TOWN CHECKER PIECE SUPPLY AT ALL-TIME LOW — BOARD SHORTAGE REPORTED IN SECTOR 3</span>
+      <span class="ticker-item">CHESS CITY TOURNAMENT ENROLLMENT NOW OPEN — LIMITED SPOTS REMAINING — APPLICATIONS CLOSE END OF SEASON</span>
+      <span class="ticker-item">SHOGI ISLAND FERRY DELAYED FOR THIRD CONSECUTIVE WEEK — NO DEPARTURE DATE ANNOUNCED</span>
+      <span class="ticker-item">INTERPLANETARY CONSTRUCTION CO. DENIES ALL VESSEL WRECKAGE CLAIMS — INVESTIGATION CONTINUES</span>
+      <span class="ticker-item">CHESS CITY LEAFS ADVANCE TO FINALS — ROSTER ANNOUNCEMENT EXPECTED SHORTLY</span>
+      <span class="ticker-item">WEATHER ADVISORY: THE SEA IS ROUGH — ALL CROSSINGS POSTPONED INDEFINITELY</span>
+      <span class="ticker-item">CHECKER PIECE PRICES REACH RECORD HIGH — ECONOMISTS CITE THE CRASH AS ORIGIN POINT</span>
+      <span class="ticker-item">UNKNOWN VESSEL SPOTTED OFF COAST — AUTHORITIES INVESTIGATING — PUBLIC ADVISED TO REMAIN CALM</span>
+      <span class="ticker-item">CHECKER TOWN YOUTH CHESS LEAGUE REGISTRATION NOW OPEN — FORMS AVAILABLE AT THE CIVIC HALL</span>
+      <span class="ticker-item">OFFICIAL: CHESS CITY HAS NOT RESPONDED TO CHECKER TOWN PASSAGE PERMIT REQUEST — DAY 47</span>
+      <span class="ticker-item">PRINCESS WINS CHECKER TOWN INFORMAL CHESS TOURNAMENT — REMATCH PENDING</span>
+      <span class="ticker-item">SHADOW ACTIVITY NEAR THE CRASH SITE — CONSTRUCTION EQUIPMENT UNACCOUNTED FOR</span>
+    </div>
+  </div>
+</div>
+
 {% comment %} ── 4. CHARACTER TEASER ──────────────────────────────── {% endcomment %}
 <section class="home-section">
   <h2 class="home-section-label">
@@ -150,14 +183,6 @@ layout: default
       <span class="hstat-num" data-target="{{ site.locations.size }}">0</span>
       <span class="hstat-lbl">Locations</span>
     </div>
-    <div class="hstat">
-      <span class="hstat-num" data-target="24">0</span>
-      <span class="hstat-lbl">Chess Lessons</span>
-    </div>
-    <div class="hstat">
-      <span class="hstat-num" data-target="2">0</span>
-      <span class="hstat-lbl">Tournaments Run</span>
-    </div>
   </div>
 </div>
 
@@ -165,6 +190,7 @@ layout: default
 <div class="chess-clock-wrap">
   <div class="chess-clock-label">Time in Development</div>
   <div class="chess-clock-display" id="chess-clock-display">0d 00:00:00</div>
+  <div class="chess-milestone-wrap" id="chess-milestone-wrap"></div>
 </div>
 
 <script>
@@ -236,5 +262,25 @@ document.querySelectorAll('.hstat-num').forEach(function(el) {
   }
   tick();
   setInterval(tick, 1000);
+})();
+
+// Milestone badges
+(function() {
+  var milestones = [
+    [30,  '★ 30 DAYS IN THE GAME'],
+    [60,  '★ TWO MONTHS DEEP'],
+    [100, '★ 100 DAYS'],
+    [180, '★ HALF A YEAR'],
+    [365, '★ ONE YEAR IN DEVELOPMENT'],
+    [500, '★ 500 DAYS — NO SIGNS OF STOPPING']
+  ];
+  var mWrap = document.getElementById('chess-milestone-wrap');
+  if (!mWrap) return;
+  var days = Math.floor(Math.max(0, Date.now() - 1772323200000) / 86400000);
+  var label = '';
+  for (var i = milestones.length - 1; i >= 0; i--) {
+    if (days >= milestones[i][0]) { label = milestones[i][1]; break; }
+  }
+  if (label) mWrap.innerHTML = '<span class="chess-milestone">' + label + '</span>';
 })();
 </script>

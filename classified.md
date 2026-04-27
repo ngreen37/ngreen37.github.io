@@ -121,7 +121,7 @@ permalink: /classified/
       <div class="classified-file-body classified-file-body--locked">
         <p class="c-reveal" data-real="Subject's origin coordinates match no known planetary system in the current database. Cross-referencing with construction company manifest records yields a single anomaly: a vessel that was never officially decommissioned.">█████████ ██████ ███████████ █████ ██ █████ █████████ ██████ ██ ███ ███████ █████████ █████████████████ ████ ████████████ ███████ ████████ ███████ ██████ █ ██████ ████████ █ ██████ ████ ███ █████ ██████████ ███████████████</p>
         <p class="c-reveal" data-real="All attempts to study the vessel wreckage have been blocked at the permit level. Someone with authority does not want this investigated. The investigation continues anyway.">████████ ████████████ ████████ ████████████ ████ ████████████████████████ ████ ████████████████████████████████████████████████████████ ████ ████████████████████</p>
-        <p class="classified-note classified-note--locked">TRANSMISSION INCOMPLETE &mdash; MORE FRAGMENTS INCOMING.</p>
+        <p class="classified-note classified-note--locked">TRANSMISSION INCOMPLETE &mdash; <a href="/fragments/" class="fragments-link">MORE FRAGMENTS INCOMING</a>.</p>
       </div>
     </article>
 

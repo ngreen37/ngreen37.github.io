@@ -126,6 +126,7 @@
     };
     var buf = '';
     var timer = null;
+    var lastQd5 = 0;
     var toast = document.getElementById('chess-toast');
     var toastMove = document.getElementById('chess-toast-move');
     var toastMsg  = document.getElementById('chess-toast-msg');
@@ -147,12 +148,91 @@
         timer = setTimeout(function() { buf = ''; }, 1800);
         for (var move in secrets) {
           if (buf.endsWith(move)) {
+            if (move === 'Qd5') {
+              var now = Date.now();
+              if (now - lastQd5 < 30000) { window.location.href = '/archive/'; return; }
+              lastQd5 = now;
+            }
             showToast(secrets[move][0], secrets[move][1]);
             buf = '';
             break;
           }
         }
       }
+    });
+  })();
+  </script>
+
+  <!-- Konami Code + amber flash -->
+  <div class="konami-flash" id="konami-flash" aria-hidden="true"></div>
+  <script>
+  (function() {
+    var seq = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+    var pos = 0;
+    document.addEventListener('keydown', function(e) {
+      if (e.key === seq[pos]) { pos++; } else { pos = (e.key === seq[0]) ? 1 : 0; }
+      if (pos === seq.length) {
+        pos = 0;
+        var flash = document.getElementById('konami-flash');
+        flash.classList.remove('is-active');
+        void flash.offsetWidth;
+        flash.classList.add('is-active');
+        setTimeout(function() { flash.classList.remove('is-active'); }, 1500);
+        var toast = document.getElementById('chess-toast');
+        var toastMove = document.getElementById('chess-toast-move');
+        var toastMsg  = document.getElementById('chess-toast-msg');
+        toastMove.textContent = '↑↑↓↓←→←→BA';
+        toastMsg.textContent  = 'CLEARANCE LEVEL: OMEGA — She already knows you\'re here.';
+        toast.classList.add('is-visible');
+        setTimeout(function() { toast.classList.remove('is-visible'); }, 4500);
+      }
+    });
+  })();
+  </script>
+
+  <!-- Princess walker -->
+  <div class="princess-walker" id="princess-walker" aria-hidden="true" title="Princess">♟</div>
+  <script>
+  (function() {
+    var walker = document.getElementById('princess-walker');
+    if (!walker) return;
+    function walk() {
+      walker.classList.remove('is-walking');
+      void walker.offsetWidth;
+      walker.classList.add('is-walking');
+      setTimeout(function() { walker.classList.remove('is-walking'); scheduleNext(); }, 14000);
+    }
+    function scheduleNext() { setTimeout(walk, (300 + Math.random() * 300) * 1000); }
+    setTimeout(walk, 45000);
+  })();
+  </script>
+
+  <!-- Character name glitch on hover -->
+  <script>
+  (function() {
+    var gc = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789░▒▓';
+    document.addEventListener('mouseover', function(e) {
+      var chip = e.target.closest('.char-chip');
+      if (!chip) return;
+      var n = chip.querySelector('.char-chip-name');
+      if (!n || n._glitching) return;
+      n._glitching = true;
+      n.classList.add('is-glitching');
+      var real = n.textContent;
+      var i = 0;
+      var iv = setInterval(function() {
+        if (i >= real.length) {
+          clearInterval(iv);
+          n.textContent = real;
+          n.classList.remove('is-glitching');
+          n._glitching = false;
+          return;
+        }
+        n.textContent = real.slice(0, i) + real.slice(i).split('').map(function(c) {
+          return c === ' ' ? ' ' : gc[Math.floor(Math.random() * gc.length)];
+        }).join('');
+        i++;
+      }, 55);
     });
   })();
   </script>

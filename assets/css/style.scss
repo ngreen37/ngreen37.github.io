@@ -5134,3 +5134,367 @@ body.theme-classified {
   text-transform: uppercase;
   text-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
 }
+
+/* =============================================================
+   World Status Ticker
+   ============================================================= */
+
+.world-ticker-wrap {
+  margin: 24px -28px 0;
+  background: #000;
+  border-top: 1px solid rgba(245, 197, 24, 0.22);
+  border-bottom: 1px solid rgba(245, 197, 24, 0.22);
+  overflow: hidden;
+}
+
+.ticker-eyebrow {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: rgba(245, 197, 24, 0.42);
+  padding: 7px 28px 0;
+  text-transform: uppercase;
+}
+
+.ticker-outer {
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 5px 0 9px;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
+}
+
+.ticker-track {
+  display: inline-block;
+  white-space: nowrap;
+  animation: ticker-scroll 95s linear infinite;
+  will-change: transform;
+}
+
+.ticker-item {
+  display: inline-block;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  color: #F5C518;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 0 0 0 64px;
+
+  &::after {
+    content: ' ◈';
+    color: rgba(245, 197, 24, 0.28);
+    margin-left: 8px;
+  }
+}
+
+@keyframes ticker-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* =============================================================
+   Princess Walker
+   ============================================================= */
+
+.princess-walker {
+  position: fixed;
+  bottom: 18px;
+  left: 110vw;
+  z-index: 9000;
+  pointer-events: none;
+  font-size: 34px;
+  opacity: 0;
+  line-height: 1;
+  filter: drop-shadow(0 0 10px rgba(245, 197, 24, 0.65));
+  user-select: none;
+  will-change: left;
+}
+
+.princess-walker.is-walking {
+  opacity: 1;
+  animation: pawn-walk 14s linear forwards, pawn-bob 0.42s ease-in-out infinite;
+}
+
+@keyframes pawn-walk {
+  0%   { left: 110vw; }
+  100% { left: -60px; }
+}
+
+@keyframes pawn-bob {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-7px); }
+}
+
+/* =============================================================
+   Character Name Glitch
+   ============================================================= */
+
+.char-chip-name.is-glitching {
+  color: rgba(196, 181, 253, 0.95);
+  text-shadow: 2px 0 rgba(245, 197, 24, 0.45), -2px 0 rgba(220, 80, 80, 0.45);
+  letter-spacing: 0.04em;
+}
+
+/* =============================================================
+   Konami Flash
+   ============================================================= */
+
+.konami-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+  opacity: 0;
+  background: transparent;
+}
+
+.konami-flash.is-active {
+  animation: konami-flash-anim 1.5s ease-out forwards;
+}
+
+@keyframes konami-flash-anim {
+  0%   { background: rgba(255, 140,  0, 0);    opacity: 1; }
+  4%   { background: rgba(255, 255, 255, 0.95); opacity: 1; }
+  8%   { background: rgba(255, 160,  0, 0.88); opacity: 1; }
+  16%  { background: rgba(255, 200, 40, 0.6);  opacity: 1; }
+  28%  { background: rgba(255, 140,  0, 0.72); opacity: 1; }
+  48%  { background: rgba(255, 140,  0, 0.22); opacity: 1; }
+  78%  { background: rgba(255, 140,  0, 0.06); opacity: 1; }
+  100% { background: rgba(255, 140,  0, 0);    opacity: 0; }
+}
+
+/* =============================================================
+   CRT Glitch (classified page)
+   ============================================================= */
+
+@keyframes crt-glitch {
+  0%, 87%, 100% { transform: none; filter: none; }
+  88%           { transform: translateX(-3px) skewX(-0.4deg); filter: hue-rotate(12deg); }
+  88.5%         { transform: translateX(5px);  filter: hue-rotate(-10deg) brightness(1.12); }
+  89%           { transform: translateX(-1px); filter: none; }
+  93%           { transform: none; filter: none; }
+  93.5%         { transform: translateX(4px);  filter: brightness(0.86); }
+  93.8%         { transform: none; filter: none; }
+}
+
+body.theme-classified {
+  animation: crt-flicker 10s linear infinite, crt-glitch 24s step-end infinite;
+}
+
+/* =============================================================
+   Story Arc Progress Bar (blog)
+   ============================================================= */
+
+.story-arc-bar {
+  margin: 0 0 28px;
+  padding: 18px 20px 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+}
+
+.story-arc-bar-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: rgba(255, 255, 255, 0.28);
+  margin-bottom: 14px;
+  text-transform: uppercase;
+}
+
+.story-arc-bar-chapters {
+  display: flex;
+  gap: 4px;
+}
+
+.story-arc-ch {
+  flex: 1;
+  min-height: 32px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Share Tech Mono', monospace;
+  padding: 5px 2px;
+  text-align: center;
+
+  &.arc-done {
+    background: rgba(245, 197, 24, 0.82);
+    color: #000;
+  }
+
+  &.arc-active {
+    background: rgba(245, 197, 24, 0.16);
+    color: rgba(245, 197, 24, 0.92);
+    border: 1px solid rgba(245, 197, 24, 0.45);
+    animation: arc-ch-pulse 3.2s ease-in-out infinite;
+  }
+
+  &.arc-future {
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  &.arc-locked {
+    background: rgba(255, 255, 255, 0.02);
+    color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+  }
+}
+
+@keyframes arc-ch-pulse {
+  0%, 100% { border-color: rgba(245, 197, 24, 0.45); box-shadow: none; }
+  50%       { border-color: rgba(245, 197, 24, 0.9);  box-shadow: 0 0 7px rgba(245, 197, 24, 0.2); }
+}
+
+.story-arc-ch-num {
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.story-arc-ch-lbl {
+  font-size: 7px;
+  opacity: 0.75;
+  margin-top: 3px;
+  line-height: 1;
+}
+
+/* =============================================================
+   Chess Milestone Badge
+   ============================================================= */
+
+.chess-milestone-wrap {
+  text-align: center;
+  margin-top: 10px;
+  min-height: 28px;
+}
+
+.chess-milestone {
+  display: inline-block;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: rgba(245, 197, 24, 0.65);
+  padding: 4px 14px;
+  border: 1px solid rgba(245, 197, 24, 0.18);
+  border-radius: 4px;
+  animation: milestone-glow 4.5s ease-in-out infinite;
+}
+
+@keyframes milestone-glow {
+  0%, 100% { border-color: rgba(245, 197, 24, 0.18); color: rgba(245, 197, 24, 0.65); }
+  50%       { border-color: rgba(245, 197, 24, 0.55); color: rgba(245, 197, 24, 1.0);  }
+}
+
+/* =============================================================
+   Fragments Easter Egg Link
+   ============================================================= */
+
+.fragments-link {
+  color: inherit;
+  text-decoration: none;
+  cursor: default;
+  transition: color 0.3s, text-shadow 0.3s;
+
+  &:hover {
+    color: rgba(255, 165, 0, 0.75);
+    text-shadow: 0 0 8px rgba(255, 140, 0, 0.35);
+    cursor: pointer;
+  }
+}
+
+/* =============================================================
+   404 Signal Lost Page
+   ============================================================= */
+
+.lost-signal-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 80px 28px;
+  text-align: center;
+}
+
+.lost-signal-ping {
+  font-size: 60px;
+  color: #ff8c00;
+  margin-bottom: 18px;
+  display: block;
+  animation: radar-ping 2.2s ease-in-out infinite;
+}
+
+.lost-signal-code {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 130px;
+  color: rgba(255, 140, 0, 0.09);
+  line-height: 1;
+  letter-spacing: -6px;
+  margin-bottom: -62px;
+  position: relative;
+  z-index: 0;
+}
+
+.lost-signal-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(40px, 9vw, 76px);
+  font-weight: 800;
+  color: #ff8c00;
+  letter-spacing: -2px;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 10px;
+
+  &::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    color: rgba(255, 200, 0, 0.35);
+    pointer-events: none;
+    animation: title-echo-glitch 9s step-end infinite;
+  }
+}
+
+@keyframes title-echo-glitch {
+  0%, 87%, 100% { opacity: 0; transform: none; }
+  88% { opacity: 1; transform: translateX(-5px); clip-path: inset(20% 0 58% 0); }
+  89% { opacity: 1; transform: translateX(5px);  clip-path: inset(52% 0 14% 0); }
+  90% { opacity: 0; }
+}
+
+.lost-signal-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: rgba(255, 140, 0, 0.42);
+  margin-bottom: 44px;
+  text-transform: uppercase;
+}
+
+.lost-signal-body {
+  max-width: 520px;
+  margin: 0 auto 52px;
+  text-align: left;
+}
+
+.lost-signal-msg {
+  font-size: 15px;
+  color: rgba(255, 140, 0, 0.78);
+  line-height: 1.8;
+  margin-bottom: 6px;
+}
+
+.lost-signal-divider {
+  text-align: center;
+  color: rgba(255, 140, 0, 0.16);
+  letter-spacing: 0.4em;
+  margin: 28px 0;
+}
+
+.lost-signal-lore {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: rgba(255, 140, 0, 0.36);
+  margin-bottom: 7px;
+}

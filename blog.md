@@ -10,6 +10,21 @@ body_class: theme-bw
   <h1 class="ep-index-title">Episode Archive</h1>
   <p class="ep-index-sub">{{ site.posts.size }} episodes so far. In order from the beginning.</p>
 
+  <div class="story-arc-bar">
+    <div class="story-arc-bar-label">◈ Story Arc Progress — Princess and the Journey to Chess City</div>
+    <div class="story-arc-bar-chapters">
+      <div class="story-arc-ch arc-done"><div class="story-arc-ch-num">B</div><div class="story-arc-ch-lbl">Backstory</div></div>
+      <div class="story-arc-ch arc-active"><div class="story-arc-ch-num">1</div><div class="story-arc-ch-lbl">Checker&nbsp;Town</div></div>
+      <div class="story-arc-ch arc-active"><div class="story-arc-ch-num">2</div><div class="story-arc-ch-lbl">First&nbsp;Move</div></div>
+      <div class="story-arc-ch arc-future"><div class="story-arc-ch-num">3</div><div class="story-arc-ch-lbl">Journey</div></div>
+      <div class="story-arc-ch arc-future"><div class="story-arc-ch-num">4</div><div class="story-arc-ch-lbl">The&nbsp;Sea</div></div>
+      <div class="story-arc-ch arc-future"><div class="story-arc-ch-num">5</div><div class="story-arc-ch-lbl">Shogi</div></div>
+      <div class="story-arc-ch arc-future"><div class="story-arc-ch-num">6</div><div class="story-arc-ch-lbl">Chess&nbsp;City</div></div>
+      <div class="story-arc-ch arc-future"><div class="story-arc-ch-num">7</div><div class="story-arc-ch-lbl">Tournament</div></div>
+      <div class="story-arc-ch arc-locked"><div class="story-arc-ch-num">?</div><div class="story-arc-ch-lbl">████</div></div>
+    </div>
+  </div>
+
   <div class="ep-list">
     {% assign posts_rev = site.posts | reverse %}
     {% for post in posts_rev %}
