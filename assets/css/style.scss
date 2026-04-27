@@ -3883,16 +3883,29 @@ body.theme-classified {
   margin-bottom: 44px;
 }
 
-.classified-destruct-btn--small {
-  font-size: 11px;
-  letter-spacing: 2px;
-  padding: 9px 26px;
-  opacity: 0.55;
-  animation: none;
+.classified-burn-top-notice {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(230, 60, 30, 0.65);
+  margin-bottom: 14px;
+}
 
-  &:hover {
-    opacity: 1;
-  }
+.classified-burn-top-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: rgba(255, 140, 0, 0.35);
+  margin-top: 12px;
+  font-style: italic;
+}
+
+.classified-destruct-btn--top {
+  font-size: 13px;
+  letter-spacing: 3px;
+  padding: 13px 44px;
+  animation: destruct-idle 2.8s ease-in-out infinite;
 }
 
 .classified-destruct-zone {

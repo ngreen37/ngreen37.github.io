@@ -43,9 +43,11 @@ permalink: /classified/
   </div>
 
   <div class="classified-burn-top">
-    <button class="classified-destruct-btn classified-destruct-btn--small" id="destruct-btn-top" onclick="igniteSequence()">
+    <div class="classified-burn-top-notice">⚠ &nbsp; READ CAREFULLY. THEN DESTROY.</div>
+    <button class="classified-destruct-btn classified-destruct-btn--top" id="destruct-btn-top" onclick="igniteSequence()">
       ▸ &nbsp; BURN NOW
     </button>
+    <div class="classified-burn-top-sub">This document is not meant to exist.</div>
   </div>
 
   <div class="classified-files">
