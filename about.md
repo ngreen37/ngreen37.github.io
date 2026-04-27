@@ -13,7 +13,6 @@ body_class: theme-contact
   <div class="contact-methods">
     <div class="contact-calc-wrapper" id="contact-calc-wrap">
       <div class="contact-calc-line" id="calc-line-1"></div>
-      <div class="contact-calc-line" id="calc-line-2"></div>
     </div>
     <a href="mailto:nathgreen37@gmail.com" class="contact-email-link" id="contact-email" style="opacity:0;pointer-events:none">nathgreen37@gmail.com</a>
     <a href="https://github.com/ngreen37" class="contact-gh-btn" id="contact-gh" style="opacity:0;pointer-events:none" target="_blank" rel="noopener">♟&nbsp; GitHub — ngreen37</a>
@@ -22,7 +21,6 @@ body_class: theme-contact
 <script>
 (function() {
   var line1 = document.getElementById('calc-line-1');
-  var line2 = document.getElementById('calc-line-2');
   var wrap  = document.getElementById('contact-calc-wrap');
   var email = document.getElementById('contact-email');
   var gh    = document.getElementById('contact-gh');
@@ -51,18 +49,16 @@ body_class: theme-contact
   }
 
   typeInto(line1, 'Calculating...', 500, function() {
-    typeInto(line2, 'Calculating...', 200, function() {
+    setTimeout(function() {
+      wrap.style.transition = 'opacity 0.4s';
+      wrap.style.opacity = '0';
       setTimeout(function() {
-        wrap.style.transition = 'opacity 0.4s';
-        wrap.style.opacity = '0';
-        setTimeout(function() {
-          wrap.style.display = 'none';
-          fadeIn(email, function() {
-            fadeIn(gh);
-          });
-        }, 420);
-      }, 700);
-    });
+        wrap.style.display = 'none';
+        fadeIn(email, function() {
+          fadeIn(gh);
+        });
+      }, 420);
+    }, 700);
   });
 })();
 </script>

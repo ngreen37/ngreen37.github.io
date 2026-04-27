@@ -28,36 +28,6 @@ layout: default
   </p>
 </section>
 
-{% comment %} ── 3. RECENT POSTS ───────────────────────────────────── {% endcomment %}
-<section class="home-section">
-  <h2 class="home-section-label">
-    Recent Posts
-    <a class="home-section-link" href="{{ '/blog/' | relative_url }}">All posts &rarr;</a>
-  </h2>
-  <div class="preview-grid">
-    {% for post in site.posts limit: 3 %}
-
-    {% comment %} Walk lines, skip Spotify/Listening-to block, grab first real sentence {% endcomment %}
-    {% assign _lines   = post.content | strip_html | newline_to_br | split: "<br />" %}
-    {% assign _preview = "" %}
-    {% for _line in _lines %}
-      {% assign _t = _line | strip %}
-      {% unless _t contains "Listening to:" or _t.size < 20 %}
-        {% assign _preview = _t %}
-        {% break %}
-      {% endunless %}
-    {% endfor %}
-    {% if _preview == "" %}{% assign _preview = post.content | strip_html | strip %}{% endif %}
-
-    <a class="preview-card" href="{{ post.url | relative_url }}">
-      <div class="preview-meta">{{ post.date | date: "%b %d, %Y" }}</div>
-      <h3 class="preview-post-title">{{ post.title }}</h3>
-      <p class="preview-excerpt">{{ _preview | truncatewords: 22 }}</p>
-    </a>
-    {% endfor %}
-  </div>
-</section>
-
 {% comment %} ── 4. CHARACTER TEASER ──────────────────────────────── {% endcomment %}
 <section class="home-section">
   <h2 class="home-section-label">
