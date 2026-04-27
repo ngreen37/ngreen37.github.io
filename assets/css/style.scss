@@ -4611,3 +4611,209 @@ body.theme-classified {
   margin: 0 auto;
   font-style: italic;
 }
+
+/* =============================================================
+   Arc Lore Typewriter
+   ============================================================= */
+
+.arc-lore {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: rgba(245, 197, 24, 0.7);
+  font-style: italic;
+  min-height: 16px;
+  margin-top: 6px;
+  margin-bottom: 2px;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.15s;
+  letter-spacing: 0.03em;
+}
+
+.arc-lore.is-typing {
+  opacity: 1;
+}
+
+/* =============================================================
+   Chess Clock
+   ============================================================= */
+
+.chess-clock-wrap {
+  text-align: center;
+  padding: 28px 0 16px;
+  width: 100%;
+}
+
+.chess-clock-label {
+  font-family: 'Poppins', sans-serif;
+  font-size: 9px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: rgba(245, 197, 24, 0.28);
+  margin-bottom: 8px;
+}
+
+.chess-clock-display {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: clamp(20px, 3.5vw, 32px);
+  color: rgba(245, 197, 24, 0.45);
+  letter-spacing: 0.12em;
+  transition: color 0.3s;
+
+  &:hover {
+    color: rgba(245, 197, 24, 0.75);
+  }
+}
+
+/* =============================================================
+   Episode Card Index (blog page)
+   ============================================================= */
+
+.ep-index {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 4px 0 56px;
+}
+
+.ep-index-eyebrow {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.22);
+  margin-bottom: 8px;
+}
+
+.ep-index-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(22px, 4vw, 36px);
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.88);
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+
+.ep-index-sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.28);
+  font-style: italic;
+  margin-bottom: 32px;
+}
+
+.ep-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.ep-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 16px 18px 20px;
+  text-decoration: none;
+  position: relative;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  transition: background 0.18s, padding-left 0.18s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.03);
+    padding-left: 26px;
+    text-decoration: none;
+  }
+}
+
+.ep-card-stripe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  transition: width 0.18s;
+}
+
+.ep-card:hover .ep-card-stripe {
+  width: 5px;
+}
+
+.ep-num {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.28);
+  min-width: 48px;
+  flex-shrink: 0;
+}
+
+.ep-card-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.ep-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.82);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.18s;
+}
+
+.ep-logline {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.28s ease, opacity 0.28s;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin-top: 0;
+}
+
+.ep-card:hover .ep-logline {
+  max-height: 22px;
+  opacity: 1;
+  margin-top: 3px;
+}
+
+.ep-date {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.2);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ep-card-arrow {
+  color: rgba(255, 255, 255, 0.22);
+  font-size: 13px;
+  flex-shrink: 0;
+  transition: transform 0.18s, color 0.18s;
+}
+
+.ep-card:hover .ep-card-arrow {
+  transform: translateX(4px);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.ep-card:hover .ep-title { color: #fff; }
+
+/* Stripe accent colors (cycling by ep modulo 5) */
+.ep-card--accent-0 .ep-card-stripe { background: rgba(255, 255, 255, 0.4); }
+.ep-card--accent-1 .ep-card-stripe { background: rgba(245, 197, 24, 0.75); }
+.ep-card--accent-2 .ep-card-stripe { background: rgba(160, 100, 255, 0.65); }
+.ep-card--accent-3 .ep-card-stripe { background: rgba(100, 210, 220, 0.6); }
+.ep-card--accent-4 .ep-card-stripe { background: rgba(255, 110, 110, 0.55); }
+
+.ep-card--accent-1:hover .ep-title { color: #F5C518; }
+.ep-card--accent-2:hover .ep-title { color: #b47fff; }
+.ep-card--accent-3:hover .ep-title { color: #64d2dc; }
+.ep-card--accent-4:hover .ep-title { color: #ff7070; }
+
+@media (max-width: 600px) {
+  .ep-date { display: none; }
+  .ep-card { gap: 10px; }
+}

@@ -51,75 +51,84 @@ layout: default
   <div class="arc-strip-hint">← scroll to explore the journey →</div>
   <div class="arc-strip" id="arc-strip">
 
-    <div class="arc-panel arc-panel--complete">
+    <div class="arc-panel arc-panel--complete" data-lore="She is still watching for the ship.">
       <span class="arc-num">FRAGMENT — 001</span>
       <span class="arc-icon">🛸</span>
       <div class="arc-title">The Crash</div>
       <div class="arc-beat">A vessel from an interplanetary construction company makes its final approach. One passenger is left behind.</div>
+      <div class="arc-lore"></div>
       <span class="arc-status arc-status--complete">Backstory</span>
     </div>
 
-    <div class="arc-panel arc-panel--active">
+    <div class="arc-panel arc-panel--active" data-lore="The pieces didn't fall by accident.">
       <span class="arc-num">CHAPTER — 01</span>
       <span class="arc-icon">♟</span>
       <div class="arc-title">Checker Town</div>
       <div class="arc-beat">A struggling community where checker pieces once fell from the sky. Home. The place they're trying to leave.</div>
+      <div class="arc-lore"></div>
       <span class="arc-status arc-status--active">In Development</span>
     </div>
 
-    <div class="arc-panel arc-panel--active">
+    <div class="arc-panel arc-panel--active" data-lore="She learned the knight first. Nobody taught her.">
       <span class="arc-num">CHAPTER — 02</span>
       <span class="arc-icon">♞</span>
       <div class="arc-title">First Move</div>
       <div class="arc-beat">Princess discovers chess. Everything changes. A game becomes a reason to go somewhere.</div>
+      <div class="arc-lore"></div>
       <span class="arc-status arc-status--active">In Development</span>
     </div>
 
-    <div class="arc-panel arc-panel--future">
+    <div class="arc-panel arc-panel--future" data-lore="The distance looked smaller on the map.">
       <span class="arc-num">CHAPTER — 03</span>
       <span class="arc-icon">🌊</span>
       <div class="arc-title">The Journey Begins</div>
       <div class="arc-beat">They decide to cross The Sea. Checker Town grows smaller in the distance.</div>
+      <div class="arc-lore"></div>
       <span class="arc-status arc-status--upcoming">Upcoming</span>
     </div>
 
-    <div class="arc-panel arc-panel--future">
+    <div class="arc-panel arc-panel--future" data-lore="Something follows beneath the surface.">
       <span class="arc-num">CHAPTER — 04</span>
       <span class="arc-icon">⛵</span>
       <div class="arc-title">The Sea</div>
       <div class="arc-beat">Crossing the water between two worlds. New faces. Old doubts. The horizon never gets closer.</div>
+      <div class="arc-lore"></div>
       <span class="arc-status arc-status--upcoming">Upcoming</span>
     </div>
 
-    <div class="arc-panel arc-panel--future">
+    <div class="arc-panel arc-panel--future" data-lore="The rules here are different. She adapts faster.">
       <span class="arc-num">CHAPTER — 05</span>
       <span class="arc-icon">⛩</span>
       <div class="arc-title">Shogi Island</div>
       <div class="arc-beat">A detour. Different rules. A different kind of chess. Unexpected alliances.</div>
+      <div class="arc-lore"></div>
       <span class="arc-status arc-status--upcoming">Upcoming</span>
     </div>
 
-    <div class="arc-panel arc-panel--future">
+    <div class="arc-panel arc-panel--future" data-lore="Not everyone in Chess City plays fair.">
       <span class="arc-num">CHAPTER — 06</span>
       <span class="arc-icon">♛</span>
       <div class="arc-title">Chess City</div>
       <div class="arc-beat">The destination they've been chasing. But cities have secrets too.</div>
+      <div class="arc-lore"></div>
       <span class="arc-status arc-status--upcoming">Upcoming</span>
     </div>
 
-    <div class="arc-panel arc-panel--future">
+    <div class="arc-panel arc-panel--future" data-lore="The board was set before they arrived.">
       <span class="arc-num">CHAPTER — 07</span>
       <span class="arc-icon">♔</span>
       <div class="arc-title">The Tournament</div>
       <div class="arc-beat">The climax. Princess plays. Everything that mattered — it all comes down to a board.</div>
+      <div class="arc-lore"></div>
       <span class="arc-status arc-status--upcoming">Upcoming</span>
     </div>
 
-    <div class="arc-panel arc-panel--locked">
+    <div class="arc-panel arc-panel--locked" data-lore="████ █████ ████ ██████████ ██.">
       <span class="arc-num">CHAPTER — 0?</span>
       <span class="arc-icon">█</span>
       <div class="arc-title">████████</div>
       <div class="arc-beat">████████████ ████ ████████████ ████████</div>
+      <div class="arc-lore"></div>
       <span class="arc-status arc-status--classified">Classified</span>
     </div>
 
@@ -146,6 +155,12 @@ layout: default
       <span class="hstat-lbl">Locations</span>
     </div>
   </div>
+</div>
+
+{% comment %} ── 7. CHESS CLOCK ───────────────────────────────────── {% endcomment %}
+<div class="chess-clock-wrap">
+  <div class="chess-clock-label">Time in Development</div>
+  <div class="chess-clock-display" id="chess-clock-display">0d 00:00:00</div>
 </div>
 
 <script>
@@ -175,4 +190,47 @@ document.querySelectorAll('.hstat-num').forEach(function(el) {
   }
   requestAnimationFrame(step);
 });
+
+// Arc lore typewriter
+(function() {
+  document.querySelectorAll('.arc-panel[data-lore]').forEach(function(panel) {
+    var lore = panel.getAttribute('data-lore');
+    var loreEl = panel.querySelector('.arc-lore');
+    if (!loreEl) return;
+    var iv = null;
+    panel.addEventListener('mouseenter', function() {
+      clearInterval(iv);
+      loreEl.textContent = '';
+      loreEl.classList.add('is-typing');
+      var i = 0;
+      iv = setInterval(function() {
+        loreEl.textContent += lore[i]; i++;
+        if (i >= lore.length) clearInterval(iv);
+      }, 30);
+    });
+    panel.addEventListener('mouseleave', function() {
+      clearInterval(iv);
+      loreEl.classList.remove('is-typing');
+      loreEl.textContent = '';
+    });
+  });
+})();
+
+// Chess clock
+(function() {
+  var clockEl = document.getElementById('chess-clock-display');
+  if (!clockEl) return;
+  var startMs = 1772323200000; // March 1, 2026 00:00 UTC
+  function pad(n) { return n < 10 ? '0' + n : String(n); }
+  function tick() {
+    var elapsed = Math.max(0, Date.now() - startMs);
+    var d = Math.floor(elapsed / 86400000);
+    var h = Math.floor((elapsed % 86400000) / 3600000);
+    var m = Math.floor((elapsed % 3600000) / 60000);
+    var s = Math.floor((elapsed % 60000) / 1000);
+    clockEl.textContent = d + 'd ' + pad(h) + ':' + pad(m) + ':' + pad(s);
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
 </script>
