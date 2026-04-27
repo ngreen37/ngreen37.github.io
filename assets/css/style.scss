@@ -932,7 +932,7 @@ pre code {
 }
 
 .hero-subtitle {
-  font-size: 18px;
+  font-size: clamp(20px, 2.8vw, 28px);
   color: #c4b5fd;
   margin-bottom: 36px;
   font-weight: 400;
