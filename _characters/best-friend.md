@@ -9,6 +9,7 @@ piece: ♝
 chapters: 1,2,3
 dossier_clearance: DELTA
 dossier_secret: Knows more about Checker Town history than he admits. Comfort is a choice he made deliberately.
+last_seen: CHECKER TOWN
 ---
 
 The narrator's oldest friend -- and in many ways, his greatest obstacle. Not through malice, but through the quiet weight of complacency.

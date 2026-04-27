@@ -54,5 +54,15 @@ body_class: theme-bw
     </a>
 
     {% endfor %}
+    <div class="ep-card ep-card--draft" aria-hidden="true">
+      <div class="ep-card-stripe"></div>
+      <div class="ep-num">EP.&nbsp;??</div>
+      <div class="ep-card-main">
+        <div class="ep-title">[DRAFT — COMING SOON]</div>
+        <div class="ep-logline">Transmission incomplete. Check back soon.</div>
+      </div>
+      <div class="ep-date">— — —</div>
+      <div class="ep-card-arrow">→</div>
+    </div>
   </div>
 </div>

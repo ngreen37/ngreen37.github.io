@@ -2,6 +2,7 @@
 layout: easter-eggs
 title: Transmission Archive
 permalink: /archive/
+fragment_key: frag_archive
 ---
 
 <div class="classified-page">

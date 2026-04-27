@@ -23,6 +23,15 @@ body_class: theme-bw
   <p>For availability, scheduling, and pricing, please <a href="/contact/">contact me</a> — I'd love to hear from you.</p>
 </div>
 
+<div class="lessons-game-feed">
+  <div class="lessons-game-feed-label">◈ LIVE GAME FEED — ngreen37 on chess.com</div>
+  <div class="lessons-game-coming-soon">
+    <span class="lessons-game-icon">♛</span>
+    <div class="lessons-game-msg">Live game replay coming soon.</div>
+    <div class="lessons-game-sub">Follow <a href="https://www.chess.com/member/ngreen37" target="_blank" rel="noopener">ngreen37 on chess.com</a> in the meantime.</div>
+  </div>
+</div>
+
 <script>
 document.querySelectorAll('.stat-number').forEach(function(el) {
   var target = parseInt(el.getAttribute('data-target'), 10);

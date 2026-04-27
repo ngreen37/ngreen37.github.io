@@ -73,6 +73,7 @@ layout: default
       <span class="char-chip-icon">&#9823;</span>
       <span class="char-chip-name">{{ char.title }}</span>
       <span class="char-chip-role">{{ char.role }}</span>
+      {% if char.last_seen %}<span class="char-chip-seen">LAST SEEN: {{ char.last_seen }}</span>{% endif %}
     </a>
     {% endfor %}
   </div>
@@ -282,5 +283,16 @@ document.querySelectorAll('.hstat-num').forEach(function(el) {
     if (days >= milestones[i][0]) { label = milestones[i][1]; break; }
   }
   if (label) mWrap.innerHTML = '<span class="chess-milestone">' + label + '</span>';
+})();
+
+// Header signal disruption on hero scroll-out
+(function() {
+  var hero = document.querySelector('.home-hero');
+  var header = document.querySelector('.site-header');
+  if (!hero || !header || !('IntersectionObserver' in window)) return;
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) { header.classList.toggle('is-disrupted', !e.isIntersecting); });
+  }, { threshold: 0 });
+  obs.observe(hero);
 })();
 </script>

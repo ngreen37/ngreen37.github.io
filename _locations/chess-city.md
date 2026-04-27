@@ -5,6 +5,18 @@ location_type: City
 permalink: /locations/chess-city/
 ---
 
+<div class="cc-gate">
+  <div class="cc-gate-label">ENTRY CHECKPOINT — CHESS CITY BORDER AUTHORITY</div>
+  <div class="cc-gate-status">
+    <span class="cc-gate-icon">⊘</span>
+    <div>
+      <div class="cc-gate-msg">ENTRY REQUIRES WINNING A CHESS TOURNAMENT</div>
+      <div class="cc-gate-sub">No exceptions. No permits. No shortcuts.</div>
+    </div>
+  </div>
+  <button class="cc-gate-btn" disabled>ACCESS DENIED</button>
+</div>
+
 The destination. Chess City is well-to-do, prosperous, and deliberately difficult to reach. You cannot simply move there -- you have to earn your way in.
 
 ## Notable Features

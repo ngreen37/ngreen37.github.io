@@ -74,6 +74,7 @@
       <p class="footer-copy">
         &copy; {{ 'now' | date: "%Y" }} McPuppy Studios. All rights reserved.
       </p>
+      <div class="fragment-counter" id="fragment-counter"></div>
     </div>
   </footer>
 
@@ -131,7 +132,22 @@
     var toastMove = document.getElementById('chess-toast-move');
     var toastMsg  = document.getElementById('chess-toast-msg');
 
+    function playChessClick() {
+      try {
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        var osc = ctx.createOscillator(); var gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(700, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(160, ctx.currentTime + 0.09);
+        gain.gain.setValueAtTime(0.22, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.13);
+        osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.13);
+      } catch(e) {}
+    }
+
     function showToast(move, msg) {
+      playChessClick();
       toastMove.textContent = move;
       toastMsg.textContent  = msg;
       toast.classList.add('is-visible');
@@ -152,6 +168,7 @@
               var now = Date.now();
               if (now - lastQd5 < 30000) { window.location.href = '/archive/'; return; }
               lastQd5 = now;
+              try { localStorage.setItem('frag_qd5', '1'); } catch(e) {}
             }
             showToast(secrets[move][0], secrets[move][1]);
             buf = '';
@@ -183,6 +200,7 @@
         var toastMsg  = document.getElementById('chess-toast-msg');
         toastMove.textContent = '↑↑↓↓←→←→BA';
         toastMsg.textContent  = 'CLEARANCE LEVEL: OMEGA — She already knows you\'re here.';
+        try { localStorage.setItem('frag_konami', '1'); } catch(e) {}
         toast.classList.add('is-visible');
         setTimeout(function() { toast.classList.remove('is-visible'); }, 4500);
       }
@@ -263,6 +281,16 @@
         });
       });
     })();
+  </script>
+
+  <script>
+  (function() {
+    var el = document.getElementById('fragment-counter');
+    if (!el) return;
+    var count = 0;
+    try { for (var k in localStorage) { if (k.indexOf('frag_') === 0) count++; } } catch(e) {}
+    if (count > 0) el.textContent = '[' + count + '/∞ FRAGMENTS RECOVERED]';
+  })();
   </script>
 </body>
 </html>

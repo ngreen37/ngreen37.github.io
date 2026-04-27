@@ -10,6 +10,7 @@ piece: ♟
 chapters: 0,1,2,3,4,5,6,7
 dossier_clearance: DELTA
 dossier_secret: Subject may be unaware of his own significance to the mission.
+last_seen: CHECKER TOWN
 ---
 
 The story's guide and driving force. A young man from Checker Town with big dreams, a strong work ethic, and a deep bond with his dog, Princess.

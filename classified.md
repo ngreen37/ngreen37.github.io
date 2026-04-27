@@ -2,6 +2,7 @@
 layout: easter-eggs
 title: CLASSIFIED
 permalink: /classified/
+fragment_key: frag_classified
 ---
 
 <div class="burn-overlay" id="burn-overlay"></div>
@@ -40,6 +41,11 @@ permalink: /classified/
   </div>
   <div class="classified-subwarning">
     You weren't supposed to find this. But since you're here — welcome to the archive.
+  </div>
+
+  <div class="access-log">
+    <div class="access-log-header">◈ ACCESS LOG — LIVE MONITORING</div>
+    <div class="access-log-entries" id="access-log-entries"></div>
   </div>
 
   <div class="classified-burn-top">
@@ -203,6 +209,37 @@ initCompare('mirror-compare', 'mirror-after', 'mirror-handle');
     el.addEventListener('mouseleave', resetReveal);
     el.addEventListener('touchend', resetReveal);
   });
+})();
+
+// Access log
+(function() {
+  var log = document.getElementById('access-log-entries');
+  if (!log) return;
+  var agents = ['AGENT_7291','OPERATIVE_Λ7','USER_0x881F','UNKNOWN_SOURCE','AGENT_OMEGA_3','OPERATIVE_████','SIGNAL_RELAY_9'];
+  var locs   = ['CHECKER TOWN','CHESS CITY','THE SEA','SECTOR 7','LOCATION UNKNOWN','SHOGI ISLAND'];
+  var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+  function ts(offset) {
+    var d = new Date(Date.now() - offset);
+    return '[' + d.getUTCFullYear() + '-' + pad(d.getUTCMonth()+1) + '-' + pad(d.getUTCDate()) + ' ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()) + ' UTC]';
+  }
+  function add(text, isYou) {
+    var div = document.createElement('div');
+    div.className = 'access-log-entry' + (isYou ? ' is-you' : '');
+    div.textContent = text;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  }
+  [8400000,3600000,1200000,600000,240000,90000,18000,4000].forEach(function(off) {
+    add(ts(off) + ' ' + agents[Math.floor(Math.random()*agents.length)] + ' — ACCESSED FROM ' + locs[Math.floor(Math.random()*locs.length)]);
+  });
+  setTimeout(function() { add(ts(0) + ' OPERATIVE_NGREEN37 — ACCESS GRANTED', true); }, 900);
+  function scheduleNext() {
+    setTimeout(function() {
+      add(ts(0) + ' ' + agents[Math.floor(Math.random()*agents.length)] + ' — ACCESSED FROM ' + locs[Math.floor(Math.random()*locs.length)]);
+      scheduleNext();
+    }, 9000 + Math.random() * 9000);
+  }
+  scheduleNext();
 })();
 
 function igniteSequence() {

@@ -17,5 +17,6 @@
   <main class="classified-main">
     {{ content }}
   </main>
+{% if page.fragment_key %}<script>try{localStorage.setItem('{{ page.fragment_key }}','1');}catch(e){}</script>{% endif %}
 </body>
 </html>

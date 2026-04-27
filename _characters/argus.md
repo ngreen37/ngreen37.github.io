@@ -9,6 +9,7 @@ piece: ♞
 chapters: 3,4,5,6,7
 dossier_clearance: DELTA
 dossier_secret: Has never missed a move he was supposed to make. Not once.
+last_seen: UNKNOWN
 ---
 
 Dependable and steady, Argus is the dog you want in your corner when the road gets long and the stakes get real.

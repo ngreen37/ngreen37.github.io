@@ -9,6 +9,7 @@ piece: ♟
 chapters: 3,4,5,6,7
 dossier_clearance: DELTA
 dossier_secret: Claims to be a pawn. The analysts are not sure. Neither is he.
+last_seen: UNKNOWN
 ---
 
 Oskar cannot play chess. He has tried, repeatedly, with great enthusiasm and consistently poor results. He keeps showing up anyway.
