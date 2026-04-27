@@ -43,7 +43,7 @@ permalink: /classified/
   </div>
 
   <div class="classified-burn-top">
-    <div class="classified-burn-top-notice">⚠ &nbsp; READ CAREFULLY. THEN DESTROY.</div>
+    <div class="classified-burn-top-notice">⚠ &nbsp; BURN NOW OR IMMEDIATELY AFTER READING.</div>
     <button class="classified-destruct-btn classified-destruct-btn--top" id="destruct-btn-top" onclick="igniteSequence()">
       ▸ &nbsp; BURN NOW
     </button>
@@ -119,7 +119,7 @@ permalink: /classified/
       </div>
       <h2 class="classified-file-title c-reveal" data-real="The Real Origin Story">████████ ██████ ████████</h2>
       <div class="classified-file-body classified-file-body--locked">
-        <p class="c-reveal" data-real="Subject's origin coordinates match no known planetary system in the current database. Cross-referencing with construction company manifest records yields a single anomaly: a vessel that was never officially decommissioned.">████████████ ████ ████████ ████ ████████████████ ████ ████████████ ████████ ████████████████ ████████ ████████████████ ████ ████████████████████████████████████████████████████████████████ ████████ ████████████████████████████████ ████ ████████</p>
+        <p class="c-reveal" data-real="Subject's origin coordinates match no known planetary system in the current database. Cross-referencing with construction company manifest records yields a single anomaly: a vessel that was never officially decommissioned.">█████████ ██████ ███████████ █████ ██ █████ █████████ ██████ ██ ███ ███████ █████████ █████████████████ ████ ████████████ ███████ ████████ ███████ ██████ █ ██████ ████████ █ ██████ ████ ███ █████ ██████████ ███████████████</p>
         <p class="c-reveal" data-real="All attempts to study the vessel wreckage have been blocked at the permit level. Someone with authority does not want this investigated. The investigation continues anyway.">████████ ████████████ ████████ ████████████ ████ ████████████████████████ ████ ████████████████████████████████████████████████████████ ████ ████████████████████</p>
         <p class="classified-note classified-note--locked">TRANSMISSION INCOMPLETE &mdash; MORE FRAGMENTS INCOMING.</p>
       </div>
