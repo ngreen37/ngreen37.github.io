@@ -1,5 +1,6 @@
 ---
 layout: post
+spotify: 0320GL1aqQgsi7uDYSMEQ0
 title: Ep. 10 - The Pros and Cons of Perfectionism - a Wrens Case Study
 date: 2026-04-19
 tags: [Wrens, Perfectionism, Princess, Blender]

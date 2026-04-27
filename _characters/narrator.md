@@ -1,9 +1,15 @@
 ---
 layout: character
-title: The Narrator
+title: Main Character
 full_name: Name Undetermined
 role: Main Character
+image: /assets/characters/Main_v01.jpg
 permalink: /characters/narrator/
+order: 2
+piece: ♟
+chapters: 0,1,2,3,4,5,6,7
+dossier_clearance: DELTA
+dossier_secret: Subject may be unaware of his own significance to the mission.
 ---
 
 The story's guide and driving force. A young man from Checker Town with big dreams, a strong work ethic, and a deep bond with his dog, Princess.

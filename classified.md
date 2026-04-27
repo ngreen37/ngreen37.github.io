@@ -26,9 +26,9 @@ permalink: /classified/
     <h1 class="classified-title" data-text="PJCC: THE LOST FILES">PJCC: THE LOST FILES</h1>
     <div class="classified-subtitle">FRAGMENT ARCHIVE &mdash; EYES ONLY</div>
     <div class="classified-coords">
-      ORIGIN:&nbsp;<span class="classified-redact">████████████</span>&nbsp;&nbsp;
-      FREQ:&nbsp;<span class="classified-redact">████</span>&nbsp;&nbsp;
-      AGENT:&nbsp;<span class="classified-redact" title="hover to reveal">████████</span>
+      ORIGIN:&nbsp;<span class="classified-redact c-reveal" data-real="CHECKER TOWN, SECTOR 7">████████████</span>&nbsp;&nbsp;
+      FREQ:&nbsp;<span class="classified-redact c-reveal" data-real="7291">████</span>&nbsp;&nbsp;
+      AGENT:&nbsp;<span class="classified-redact c-reveal" data-real="OPERATIVE NGREEN37">████████</span>
     </div>
     <div class="classified-secret-text" aria-hidden="true">CONGRATULATIONS, OPERATIVE. YOU'VE BEEN EXPECTED.</div>
   </header>
@@ -115,10 +115,10 @@ permalink: /classified/
         <span class="classified-file-tag classified-file-tag--locked">ENCRYPTED</span>
         <span class="classified-file-clearance">CLEARANCE: ABOVE OMEGA</span>
       </div>
-      <h2 class="classified-file-title">████████ ██████ ████████</h2>
+      <h2 class="classified-file-title c-reveal" data-real="The Real Origin Story">████████ ██████ ████████</h2>
       <div class="classified-file-body classified-file-body--locked">
-        <p>████████████ ████ ████████ ████ ████████████████ ████ ████████████ ████████ ████████████████ ████████ ████████████████ ████ ████████████████████████████████████████████████████████████████ ████████ ████████████████████████████████ ████ ████████</p>
-        <p>████████ ████████████ ████████ ████████████ ████ ████████████████████████ ████ ████████████████████████████████████████████████████████ ████ ████████████████████</p>
+        <p class="c-reveal" data-real="Subject's origin coordinates match no known planetary system in the current database. Cross-referencing with construction company manifest records yields a single anomaly: a vessel that was never officially decommissioned.">████████████ ████ ████████ ████ ████████████████ ████ ████████████ ████████ ████████████████ ████████ ████████████████ ████ ████████████████████████████████████████████████████████████████ ████████ ████████████████████████████████ ████ ████████</p>
+        <p class="c-reveal" data-real="All attempts to study the vessel wreckage have been blocked at the permit level. Someone with authority does not want this investigated. The investigation continues anyway.">████████ ████████████ ████████ ████████████ ████ ████████████████████████ ████ ████████████████████████████████████████████████████████ ████ ████████████████████</p>
         <p class="classified-note classified-note--locked">TRANSMISSION INCOMPLETE &mdash; MORE FRAGMENTS INCOMING.</p>
       </div>
     </article>
@@ -127,7 +127,7 @@ permalink: /classified/
 
   <footer class="classified-footer">
     <div class="classified-footer-coords">
-      END OF TRANSMISSION &mdash; <span class="classified-redact">█████████████████</span>
+      END OF TRANSMISSION &mdash; <span class="classified-redact c-reveal" data-real="THIS PAGE DOES NOT EXIST. BURN AFTER READING.">█████████████████</span>
     </div>
     <a href="{{ '/' | relative_url }}" class="classified-return-btn">⊘ &nbsp; RETURN TO SURFACE</a>
     <div class="classified-footer-note">This page does not exist.</div>
@@ -165,6 +165,43 @@ function initCompare(containerId, afterId, handleId) {
 }
 
 initCompare('mirror-compare', 'mirror-after', 'mirror-handle');
+
+// Redacted hold-to-reveal
+(function() {
+  document.querySelectorAll('.c-reveal').forEach(function(el) {
+    var real = el.getAttribute('data-real');
+    var redacted = el.textContent;
+    var timer = null;
+    el.title = 'hold to reveal';
+    el.style.cursor = 'cell';
+
+    function startReveal() {
+      el.classList.add('is-revealing');
+      var i = 0;
+      timer = setInterval(function() {
+        if (i >= real.length) { clearInterval(timer); return; }
+        var tail = '';
+        for (var j = i + 1; j < redacted.length; j++) {
+          tail += redacted[j] === ' ' ? ' ' : '█';
+        }
+        el.textContent = real.slice(0, i + 1) + tail;
+        i++;
+      }, 32);
+    }
+
+    function resetReveal() {
+      clearInterval(timer);
+      el.classList.remove('is-revealing');
+      el.textContent = redacted;
+    }
+
+    el.addEventListener('mousedown', startReveal);
+    el.addEventListener('touchstart', startReveal, { passive: true });
+    el.addEventListener('mouseup', resetReveal);
+    el.addEventListener('mouseleave', resetReveal);
+    el.addEventListener('touchend', resetReveal);
+  });
+})();
 
 function igniteSequence() {
   var btn = document.getElementById('destruct-btn');

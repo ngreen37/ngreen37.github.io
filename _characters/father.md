@@ -4,6 +4,11 @@ title: The Father
 full_name: Unknown
 role: Side Character
 permalink: /characters/father/
+order: 4
+piece: ♜
+chapters: 1,2
+dossier_clearance: DELTA
+dossier_secret: Works in the Sand Mines. Has seen something down there. Will not discuss it.
 ---
 
 The main character's source of stability and some wisdom

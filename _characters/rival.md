@@ -4,6 +4,11 @@ title: The Rival
 full_name: Name Undetermined
 role: Main Character
 permalink: /characters/rival/
+order: 3
+piece: ♚
+chapters: 5,6,7
+dossier_clearance: OMEGA
+dossier_secret: His family is already in Chess City. He is not trying to get there. He is trying to go back.
 ---
 
 Introduced as an antagonist, the Rival turns out to be one of the most important allies in the story -- someone who understands the pull of Chess City better than almost anyone.

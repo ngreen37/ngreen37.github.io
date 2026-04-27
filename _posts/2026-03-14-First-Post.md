@@ -1,5 +1,6 @@
 ---
 layout: post
+spotify: 6blyhK94ONYsrcdHNl73wh
 title: First Post
 date: 2026-03-14
 tags: [introduction, minus-the-bear, blender]

@@ -1,6 +1,7 @@
 ---
 
 layout: post
+spotify: 24GwFhh1ByRhPuCBrTQhlW
 title: Ep. 3 - Back To Reality
 date: 2026-03-20
 tags: [home, vinyl, lisa, reality, lifestyle]

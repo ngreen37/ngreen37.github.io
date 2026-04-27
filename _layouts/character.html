@@ -43,4 +43,30 @@ layout: default
 
   </div>
 
+  {% if page.chapters %}
+  {% assign ch_list = page.chapters | split: "," %}
+  <div class="char-timeline">
+    <div class="char-timeline-label">Story Appearances</div>
+    <div class="char-timeline-track">
+      {% assign all_chs = "0,1,2,3,4,5,6,7" | split: "," %}
+      {% assign ch_names = "Backstory,Ch.1 Checker Town,Ch.2 First Move,Ch.3 The Journey,Ch.4 The Sea,Ch.5 Shogi Island,Ch.6 Chess City,Ch.7 The Tournament" | split: "," %}
+      {% for ch in all_chs %}
+        {% assign is_active = false %}
+        {% for pch in ch_list %}
+          {% assign pch_t = pch | strip %}
+          {% if pch_t == ch %}{% assign is_active = true %}{% break %}{% endif %}
+        {% endfor %}
+        {% assign ch_name = ch_names[forloop.index0] %}
+        <div class="char-ch-dot{% if is_active %} char-ch-dot--active{% endif %}" title="{{ ch_name }}">
+          <span class="char-ch-label">{% if ch == "0" %}B{% else %}{{ ch }}{% endif %}</span>
+        </div>
+        {% unless forloop.last %}
+        <div class="char-ch-line{% if is_active %} char-ch-line--active{% endif %}"></div>
+        {% endunless %}
+      {% endfor %}
+    </div>
+    <div class="char-timeline-hint">Hover dots for chapter names</div>
+  </div>
+  {% endif %}
+
 </article>

@@ -20,6 +20,14 @@ layout: default
 </div>
 
   
+  <!-- Now Playing -->
+  {% if page.spotify %}
+  <div class="now-playing-wrap">
+    <div class="now-playing-label">▶ &nbsp;NOW PLAYING — THIS EPISODE</div>
+    <iframe src="https://open.spotify.com/embed/track/{{ page.spotify }}" frameborder="0" allowtransparency="true" allow="encrypted-media" loading="lazy"></iframe>
+  </div>
+  {% endif %}
+
   <!-- Reading header -->
   <header class="post-header">
     <h1>{{ page.title }}</h1>

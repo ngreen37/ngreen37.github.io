@@ -4,29 +4,32 @@ title: Characters
 permalink: /characters/
 ---
 
-The story of *Princess and the Journey to Chess City* follows a cast of characters from the struggling streets of Checker Town to the gates of Chess City and beyond.
+<div class="char-flip-page">
+  <p class="char-flip-sub">The story of <em>Princess and the Journey to Chess City</em> —
+  from the streets of Checker Town to the gates of Chess City and beyond.
+  Hover any card to reveal their file.</p>
 
-## Main Characters
+  <div class="char-flip-grid">
+    {% assign sorted_chars = site.characters | sort: "order" %}
+    {% for char in sorted_chars %}
+    <div class="char-flip-card">
+      <div class="char-flip-inner">
 
-### [Princess](/characters/princess/)
-Full name: Princess Sophia McPuppy. A loyal, curious dog and beginner chess player -- the heart of the whole adventure.
+        <div class="char-flip-front">
+          <div class="char-flip-piece">{{ char.piece | default: "♟" }}</div>
+          <div class="char-flip-name">{{ char.title }}</div>
+          <div class="char-flip-role">{{ char.role }}</div>
+        </div>
 
-### [The Narrator](/characters/narrator/)
-Name undetermined. A young man from Checker Town with big dreams and a deep bond with Princess. The story's guide and driving force.
+        <div class="char-flip-back">
+          <div class="char-flip-back-label">— DOSSIER —</div>
+          <div class="char-flip-clearance">CLEARANCE: {{ char.dossier_clearance | default: "DELTA" }}</div>
+          <div class="char-flip-secret">{{ char.dossier_secret | default: "Data redacted." }}</div>
+          <a class="char-flip-link" href="{{ char.url | relative_url }}">View Full File →</a>
+        </div>
 
-### [The Rival](/characters/rival/)
-Name undetermined. Same age as the narrator. His entire family lives in Chess City -- and chess is his only road back to them. He and the narrator start as opponents and find common ground.
-
-## Side Characters
-
-### [The Father](/_characters/father.md)
-Name undetermined.  Father of the main character.  Seldom home.  Works in the Mines.  Wise and quirky.
-
-### [The Best Friend](/characters/best-friend/)
-Name undetermined. The narrator's oldest friend. Content with life in Checker Town, and quietly threatened by the narrator's ambition. Their bond is tested as the journey unfolds.
-
-### [Argus](/characters/argus/)
-A responsible, reliable dog who travels with the main crew. Picks up chess slowly and earnestly -- plays as a pawn, always where he needs to be.
-
-### [Oskar](/characters/oskar/)
-Comic relief and loyal tag-along dog. Cannot play chess well, but shows up every time regardless. Travels with the main crew and plays as a pawn -- usually the first one sacrificed.
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>

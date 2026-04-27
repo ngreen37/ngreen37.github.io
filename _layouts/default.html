@@ -77,11 +77,41 @@
     </div>
   </footer>
 
+  <!-- Page nav transition -->
+  <div class="nav-transition" id="nav-transition">
+    <span class="nav-transition-text" id="nav-transition-text"></span>
+  </div>
+
   <!-- Chess notation easter egg toast -->
   <div class="chess-toast" id="chess-toast">
     <span class="chess-toast-move" id="chess-toast-move"></span>
     <span id="chess-toast-msg"></span>
   </div>
+
+  <script>
+  // Nav transition
+  (function() {
+    var overlay = document.getElementById('nav-transition');
+    var text    = document.getElementById('nav-transition-text');
+    if (!overlay || !text) return;
+
+    document.addEventListener('click', function(e) {
+      var link = e.target.closest('a[href]');
+      if (!link) return;
+      var href = link.getAttribute('href');
+      if (!href || href.charAt(0) === '#' || href.indexOf('mailto:') === 0) return;
+      if (link.target === '_blank') return;
+      try {
+        var dest = new URL(href, location.origin);
+        if (dest.origin !== location.origin) return;
+        e.preventDefault();
+        text.textContent = 'MOVING TO: ' + dest.pathname + ' — ACCEPTED';
+        overlay.classList.add('is-visible');
+        setTimeout(function() { window.location.href = href; }, 360);
+      } catch(err) {}
+    });
+  })();
+  </script>
 
   <script>
   (function() {

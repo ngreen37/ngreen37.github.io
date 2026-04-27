@@ -4,6 +4,11 @@ title: Argus
 full_name: Argus
 role: Side Character
 permalink: /characters/argus/
+order: 6
+piece: ♞
+chapters: 3,4,5,6,7
+dossier_clearance: DELTA
+dossier_secret: Has never missed a move he was supposed to make. Not once.
 ---
 
 Dependable and steady, Argus is the dog you want in your corner when the road gets long and the stakes get real.

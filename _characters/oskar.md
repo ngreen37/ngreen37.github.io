@@ -4,6 +4,11 @@ title: Oskar
 full_name: Oskar
 role: Side Character
 permalink: /characters/oskar/
+order: 7
+piece: ♟
+chapters: 3,4,5,6,7
+dossier_clearance: DELTA
+dossier_secret: Claims to be a pawn. The analysts are not sure. Neither is he.
 ---
 
 Oskar cannot play chess. He has tried, repeatedly, with great enthusiasm and consistently poor results. He keeps showing up anyway.

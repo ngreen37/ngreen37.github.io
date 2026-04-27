@@ -1,6 +1,7 @@
 ---
 
 layout: post
+spotify: 7BbxOTLBf91IE8TAVAAfG0
 title: Ep. 8 - Chess Lessons
 date: 2026-04-11
 tags: [chess, second-job, lessons]
