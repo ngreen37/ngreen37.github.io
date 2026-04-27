@@ -8,10 +8,23 @@
   <link rel="icon" href="{{ '/assets/images/favicon.svg' | relative_url }}" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
 </head>
 <body class="studio-body">
+
+  <!-- ── TRANSMISSION OVERLAY (first visit) ─────────────────── -->
+  <div class="transmission-overlay" id="transmission-overlay">
+    <div class="transmission-scanlines"></div>
+    <div class="transmission-inner">
+      <div class="transmission-line" id="t1"></div>
+      <div class="transmission-line" id="t2"></div>
+      <div class="transmission-line" id="t3"></div>
+      <div class="transmission-headline" id="t-headline">McPuppy Studios</div>
+      <div class="transmission-sub" id="t-sub">A Million Stories to Tell</div>
+    </div>
+    <div class="transmission-skip">click anywhere to skip</div>
+  </div>
 
   <div class="studio-page">
 
@@ -74,6 +87,51 @@
     </div>
 
   </div>
+
+  <script>
+  (function() {
+    var overlay = document.getElementById('transmission-overlay');
+    if (!overlay) return;
+    if (localStorage.getItem('mcpuppy_seen')) {
+      overlay.style.display = 'none';
+      return;
+    }
+
+    function type(id, text, delay, cb) {
+      setTimeout(function() {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var i = 0;
+        var iv = setInterval(function() {
+          el.textContent += text[i]; i++;
+          if (i >= text.length) { clearInterval(iv); if (cb) cb(); }
+        }, 32);
+      }, delay);
+    }
+
+    function dismiss() {
+      overlay.classList.add('is-done');
+      localStorage.setItem('mcpuppy_seen', '1');
+      setTimeout(function() { overlay.style.display = 'none'; }, 950);
+    }
+
+    type('t1', 'SIGNAL ACQUIRED FROM: ████████████', 300, function() {
+      type('t2', 'ORIGIN: INTERPLANETARY CONSTRUCTION CO.', 200, function() {
+        type('t3', 'DECRYPTING TRANSMISSION…', 200, function() {
+          setTimeout(function() {
+            document.getElementById('t-headline').classList.add('is-visible');
+            setTimeout(function() {
+              document.getElementById('t-sub').classList.add('is-visible');
+              setTimeout(dismiss, 2200);
+            }, 400);
+          }, 600);
+        });
+      });
+    });
+
+    overlay.addEventListener('click', dismiss);
+  })();
+  </script>
 
 </body>
 </html>

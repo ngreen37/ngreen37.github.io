@@ -41,6 +41,8 @@
           <a class="page-link" href="{{ '/characters/' | relative_url }}">Characters</a>
           <a class="page-link" href="{{ '/locations/' | relative_url }}">Locations</a>
           <a class="page-link" href="{{ '/evolutions/' | relative_url }}">Evolution Log</a>
+          <a class="page-link" href="{{ '/world/' | relative_url }}">World Map</a>
+          <a class="page-link" href="{{ '/constellation/' | relative_url }}">Constellation</a>
         </div>
         <span class="nav-divider" aria-hidden="true">&#9823;</span>
         <div class="nav-group nav-group-studio">
@@ -49,6 +51,7 @@
           <a class="page-link page-link-bw" href="{{ '/chess-lessons/' | relative_url }}">Chess Lessons</a>
           <a class="page-link page-link-bw" href="{{ '/podcast/' | relative_url }}">Podcast</a>
           <a class="page-link page-link-bw" href="{{ '/blog/' | relative_url }}">Blog</a>
+          <a class="page-link page-link-bw" href="{{ '/soundtrack/' | relative_url }}">Soundtrack</a>
         </div>
       </nav>
 
@@ -74,6 +77,56 @@
       </p>
     </div>
   </footer>
+
+  <!-- Chess notation easter egg toast -->
+  <div class="chess-toast" id="chess-toast">
+    <span class="chess-toast-move" id="chess-toast-move"></span>
+    <span id="chess-toast-msg"></span>
+  </div>
+
+  <script>
+  (function() {
+    var secrets = {
+      'e4':    ['e4', 'The first move. Every great journey starts here.'],
+      'Nf3':   ['Nf3', 'Pattern recognized. The knight knows the way.'],
+      'd4':    ['d4', 'The Queen\'s pawn. Solid. Methodical. Like building a website.'],
+      'O-O':   ['O-O', 'Castled. Sometimes you protect what matters most.'],
+      'Qd5':   ['Qd5', 'An aggressive queen. She\'s going somewhere. → /classified/'],
+      'Ke2':   ['Ke2', 'The king walks forward. Brave. Unusual. Keep going.'],
+      'h4':    ['h4', 'A flank attack. Nobody expects it. Neither did Princess.']
+    };
+    var buf = '';
+    var timer = null;
+    var toast = document.getElementById('chess-toast');
+    var toastMove = document.getElementById('chess-toast-move');
+    var toastMsg  = document.getElementById('chess-toast-msg');
+
+    function showToast(move, msg) {
+      toastMove.textContent = move;
+      toastMsg.textContent  = msg;
+      toast.classList.add('is-visible');
+      setTimeout(function() { toast.classList.remove('is-visible'); }, 3800);
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === 'Escape') { buf = ''; return; }
+      if (e.key.length === 1) {
+        buf += e.key;
+        if (buf.length > 5) buf = buf.slice(-5);
+        clearTimeout(timer);
+        timer = setTimeout(function() { buf = ''; }, 1800);
+        for (var move in secrets) {
+          if (buf.endsWith(move)) {
+            showToast(secrets[move][0], secrets[move][1]);
+            buf = '';
+            break;
+          }
+        }
+      }
+    });
+  })();
+  </script>
 
   <script>
     (function () {

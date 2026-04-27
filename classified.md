@@ -90,6 +90,22 @@ permalink: /classified/
         <p>However: wherever a <strong>reflective surface</strong> appears — a mirror, still water, polished chess pieces, a window at night — the reflection will be rendered in <strong>photorealistic detail</strong>. Full texture. Full light simulation. Shocking fidelity.</p>
         <p>The first time a viewer notices this discrepancy, they will stop and rewind. That is the intended response. The second time, they will start looking for every reflective surface in every scene.</p>
         <p class="classified-note">Note: This is a true Easter Egg. You are reading it before it ships. Keep this between us.</p>
+
+        <!-- LIVE DEMO of the Mirror Protocol -->
+        <div class="mirror-proto-section">
+          <div class="mirror-proto-eyebrow">— LIVE DEMONSTRATION —</div>
+          <div class="mirror-proto-title">See it for yourself. Drag the divider.</div>
+          <div class="img-compare" id="mirror-compare" style="height:320px;max-width:580px;margin:0 auto;">
+            <img src="{{ '/assets/images/Princess_Color_v01.jpg' | relative_url }}" alt="Low-poly render">
+            <div class="img-compare-after" id="mirror-after" style="width:50%;">
+              <img src="{{ '/assets/images/Princess-1.png' | relative_url }}" alt="Real Princess">
+            </div>
+            <div class="img-compare-handle" id="mirror-handle" style="left:50%;"></div>
+            <span class="img-compare-label img-compare-label-left">Rendered</span>
+            <span class="img-compare-label img-compare-label-right">Real</span>
+          </div>
+          <div class="mirror-proto-note">The reflection knows what it is.</div>
+        </div>
       </div>
     </article>
 
@@ -127,6 +143,29 @@ permalink: /classified/
 </div>
 
 <script>
+// Image comparison drag divider (shared utility)
+function initCompare(containerId, afterId, handleId) {
+  var container = document.getElementById(containerId);
+  var after     = document.getElementById(afterId);
+  var handle    = document.getElementById(handleId);
+  if (!container || !after || !handle) return;
+  var dragging  = false;
+
+  function setPos(x) {
+    var rect = container.getBoundingClientRect();
+    var pct  = Math.max(2, Math.min(98, ((x - rect.left) / rect.width) * 100));
+    after.style.width  = pct + '%';
+    handle.style.left  = pct + '%';
+  }
+
+  handle.addEventListener('mousedown',  function(e) { dragging = true; e.preventDefault(); });
+  document.addEventListener('mouseup',  function()  { dragging = false; });
+  document.addEventListener('mousemove',function(e) { if (dragging) setPos(e.clientX); });
+  container.addEventListener('touchmove',function(e){ setPos(e.touches[0].clientX); e.preventDefault(); }, { passive: false });
+}
+
+initCompare('mirror-compare', 'mirror-after', 'mirror-handle');
+
 function igniteSequence() {
   var btn = document.getElementById('destruct-btn');
   var btnTop = document.getElementById('destruct-btn-top');

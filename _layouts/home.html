@@ -75,7 +75,88 @@ layout: default
   </div>
 </section>
 
-{% comment %} ── 5. STATS BAR ─────────────────────────────────────── {% endcomment %}
+{% comment %} ── 5. STORY ARC FILM STRIP ──────────────────────────── {% endcomment %}
+<section class="home-section arc-section">
+  <div class="arc-section-label">Story Arc</div>
+  <div class="arc-strip-hint">← scroll to explore the journey →</div>
+  <div class="arc-strip" id="arc-strip">
+
+    <div class="arc-panel arc-panel--complete">
+      <span class="arc-num">FRAGMENT — 001</span>
+      <span class="arc-icon">🛸</span>
+      <div class="arc-title">The Crash</div>
+      <div class="arc-beat">A vessel from an interplanetary construction company makes its final approach. One passenger is left behind.</div>
+      <span class="arc-status arc-status--complete">Backstory</span>
+    </div>
+
+    <div class="arc-panel arc-panel--active">
+      <span class="arc-num">CHAPTER — 01</span>
+      <span class="arc-icon">♟</span>
+      <div class="arc-title">Checker Town</div>
+      <div class="arc-beat">A struggling community where checker pieces once fell from the sky. Home. The place they're trying to leave.</div>
+      <span class="arc-status arc-status--active">In Development</span>
+    </div>
+
+    <div class="arc-panel arc-panel--active">
+      <span class="arc-num">CHAPTER — 02</span>
+      <span class="arc-icon">♞</span>
+      <div class="arc-title">First Move</div>
+      <div class="arc-beat">Princess discovers chess. Everything changes. A game becomes a reason to go somewhere.</div>
+      <span class="arc-status arc-status--active">In Development</span>
+    </div>
+
+    <div class="arc-panel arc-panel--future">
+      <span class="arc-num">CHAPTER — 03</span>
+      <span class="arc-icon">🌊</span>
+      <div class="arc-title">The Journey Begins</div>
+      <div class="arc-beat">They decide to cross The Sea. Checker Town grows smaller in the distance.</div>
+      <span class="arc-status arc-status--upcoming">Upcoming</span>
+    </div>
+
+    <div class="arc-panel arc-panel--future">
+      <span class="arc-num">CHAPTER — 04</span>
+      <span class="arc-icon">⛵</span>
+      <div class="arc-title">The Sea</div>
+      <div class="arc-beat">Crossing the water between two worlds. New faces. Old doubts. The horizon never gets closer.</div>
+      <span class="arc-status arc-status--upcoming">Upcoming</span>
+    </div>
+
+    <div class="arc-panel arc-panel--future">
+      <span class="arc-num">CHAPTER — 05</span>
+      <span class="arc-icon">⛩</span>
+      <div class="arc-title">Shogi Island</div>
+      <div class="arc-beat">A detour. Different rules. A different kind of chess. Unexpected alliances.</div>
+      <span class="arc-status arc-status--upcoming">Upcoming</span>
+    </div>
+
+    <div class="arc-panel arc-panel--future">
+      <span class="arc-num">CHAPTER — 06</span>
+      <span class="arc-icon">♛</span>
+      <div class="arc-title">Chess City</div>
+      <div class="arc-beat">The destination they've been chasing. But cities have secrets too.</div>
+      <span class="arc-status arc-status--upcoming">Upcoming</span>
+    </div>
+
+    <div class="arc-panel arc-panel--future">
+      <span class="arc-num">CHAPTER — 07</span>
+      <span class="arc-icon">♔</span>
+      <div class="arc-title">The Tournament</div>
+      <div class="arc-beat">The climax. Princess plays. Everything that mattered — it all comes down to a board.</div>
+      <span class="arc-status arc-status--upcoming">Upcoming</span>
+    </div>
+
+    <div class="arc-panel arc-panel--locked">
+      <span class="arc-num">CHAPTER — 0?</span>
+      <span class="arc-icon">█</span>
+      <div class="arc-title">████████</div>
+      <div class="arc-beat">████████████ ████ ████████████ ████████</div>
+      <span class="arc-status arc-status--classified">Classified</span>
+    </div>
+
+  </div>
+</section>
+
+{% comment %} ── 6. STATS BAR ─────────────────────────────────────── {% endcomment %}
 <div class="home-stats">
   <div class="stats-inner">
     <div class="hstat">
@@ -98,6 +179,17 @@ layout: default
 </div>
 
 <script>
+// Arc strip drag scroll
+(function() {
+  var strip = document.getElementById('arc-strip');
+  if (!strip) return;
+  var down = false, startX, scrollLeft;
+  strip.addEventListener('mousedown', function(e) { down = true; startX = e.pageX - strip.offsetLeft; scrollLeft = strip.scrollLeft; strip.style.cursor = 'grabbing'; });
+  strip.addEventListener('mouseleave', function() { down = false; strip.style.cursor = 'grab'; });
+  strip.addEventListener('mouseup', function() { down = false; strip.style.cursor = 'grab'; });
+  strip.addEventListener('mousemove', function(e) { if (!down) return; e.preventDefault(); strip.scrollLeft = scrollLeft - (e.pageX - strip.offsetLeft - startX); });
+})();
+
 document.querySelectorAll('.hstat-num').forEach(function(el) {
   var target = parseInt(el.getAttribute('data-target'), 10);
   if (!target) return;

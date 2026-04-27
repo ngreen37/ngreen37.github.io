@@ -1,0 +1,99 @@
+---
+layout: default
+---
+
+<div class="wm-header">
+  <div class="wm-eyebrow">PJCC World Atlas</div>
+  <h1 class="wm-title">The Known World</h1>
+  <p class="wm-sub">From Checker Town to Chess City — and the sea between them.</p>
+</div>
+
+<div class="wm-wrap">
+  <div class="wm-svg-container" style="position:relative;">
+    {{ content }}
+
+    <!-- Info panel injected by JS -->
+    <div class="wm-info-panel" id="wm-panel">
+      <button class="wm-info-close" id="wm-close" aria-label="Close">✕</button>
+      <div class="wm-info-type" id="wm-type"></div>
+      <h2 class="wm-info-name" id="wm-name"></h2>
+      <p class="wm-info-desc" id="wm-desc"></p>
+      <a href="#" class="wm-info-link" id="wm-link">Explore →</a>
+    </div>
+  </div>
+
+  <div class="wm-legend">
+    <div class="wm-legend-item"><div class="wm-legend-dot" style="background:#b87333;"></div>Checker Town / Mainland</div>
+    <div class="wm-legend-item"><div class="wm-legend-dot" style="background:#F5C518;"></div>Chess City</div>
+    <div class="wm-legend-item"><div class="wm-legend-dot" style="background:#4a90c4;"></div>The Sea</div>
+    <div class="wm-legend-item"><div class="wm-legend-dot" style="background:#5a9e6a;"></div>Island</div>
+    <div class="wm-legend-item"><div class="wm-legend-dot" style="background:rgba(140,80,200,0.6);"></div>Mystery</div>
+  </div>
+</div>
+
+<script>
+var locations = {
+  'checker-town': {
+    type: 'City',
+    name: 'Checker Town',
+    desc: 'A struggling community where checker pieces once fell from the sky. Gritty, grid-patterned, and full of people chasing something they can\'t name.',
+    link: '{{ "/locations/checker-town/" | relative_url }}'
+  },
+  'sand-mines': {
+    type: 'Workplace',
+    name: 'The Sand Mines',
+    desc: 'Where the Father works. Deep, dark, and exhausting. The kind of place that makes you understand why someone would want to leave.',
+    link: '{{ "/locations/sand-mines/" | relative_url }}'
+  },
+  'the-sea': {
+    type: 'Landmark',
+    name: 'The Sea',
+    desc: 'The vast water between Checker Town and Chess City. Dangerous, beautiful, and full of things the maps don\'t show.',
+    link: '{{ "/locations/the-sea/" | relative_url }}'
+  },
+  'shogi-island': {
+    type: 'Island',
+    name: 'Shogi Island',
+    desc: 'A stop along the journey. Different rules, different customs. Chess here looks nothing like it does back home.',
+    link: '{{ "/locations/shogi-island/" | relative_url }}'
+  },
+  'mystery-city': {
+    type: 'Unknown',
+    name: 'Mystery City',
+    desc: 'Something is out there. The maps show a shape. The shape has a name. That\'s all anyone knows for now.',
+    link: '{{ "/locations/" | relative_url }}'
+  },
+  'chess-city': {
+    type: 'City',
+    name: 'Chess City',
+    desc: 'The destination. The gleaming place across the sea. Whether it lives up to the dream is a question the whole story is built around.',
+    link: '{{ "/locations/chess-city/" | relative_url }}'
+  },
+  'chess-city-elementary': {
+    type: 'Landmark',
+    name: 'Chess City Elementary',
+    desc: 'Where young chess prodigies train. Where the Rival came from. A building full of pressure and prodigies.',
+    link: '{{ "/locations/chess-city-elementary/" | relative_url }}'
+  }
+};
+
+function openPanel(key) {
+  var loc = locations[key];
+  if (!loc) return;
+  document.getElementById('wm-type').textContent = loc.type;
+  document.getElementById('wm-name').textContent = loc.name;
+  document.getElementById('wm-desc').textContent = loc.desc;
+  var link = document.getElementById('wm-link');
+  link.href = loc.link;
+  link.textContent = loc.name === 'Mystery City' ? '? ? ?' : 'Explore →';
+  document.getElementById('wm-panel').classList.add('is-open');
+}
+
+document.getElementById('wm-close').addEventListener('click', function() {
+  document.getElementById('wm-panel').classList.remove('is-open');
+});
+
+document.querySelectorAll('[data-loc]').forEach(function(el) {
+  el.addEventListener('click', function() { openPanel(el.getAttribute('data-loc')); });
+});
+</script>
