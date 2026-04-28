@@ -37,6 +37,16 @@ body_class: theme-bw
   </div>
 </div>
 
+<div class="chess-puzzle-widget">
+  <div class="chess-puzzle-label">&#9672; PUZZLE OF THE DAY &mdash; chess.com</div>
+  <div id="puzzle-wrap">
+    <div class="lessons-game-coming-soon">
+      <span class="lessons-game-icon">&#9822;</span>
+      <div class="lessons-game-msg" id="puzzle-msg">Loading puzzle...</div>
+    </div>
+  </div>
+</div>
+
 <div class="chess-stats-widget">
   <div class="chess-stats-label">◈ RATINGS — ngreen37</div>
   <div class="chess-stats-grid">
@@ -128,6 +138,28 @@ document.querySelectorAll('.stat-number').forEach(function(el) {
     .catch(function() {
       if (msgEl) msgEl.textContent = 'Game feed unavailable — visit chess.com/member/ngreen37';
     });
+
+  // Daily puzzle
+  (function() {
+    var pw = document.getElementById('puzzle-wrap');
+    var pm = document.getElementById('puzzle-msg');
+    if (!pw) return;
+    fetch('https://api.chess.com/pub/puzzle')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data || !data.image) { if (pm) pm.textContent = 'No puzzle available today.'; return; }
+        var d = new Date((data.publish_time || 0) * 1000);
+        var dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        pw.innerHTML =
+          '<div class="puzzle-inner">' +
+          '<div class="puzzle-date">' + dateStr + '</div>' +
+          '<div class="puzzle-title">' + (data.title || 'Find the Best Move') + '</div>' +
+          '<img class="puzzle-board-img" src="' + data.image + '" alt="Chess puzzle board position">' +
+          '<a class="puzzle-solve-btn" href="' + data.url + '" target="_blank" rel="noopener">&#9654;&nbsp; Solve on chess.com</a>' +
+          '</div>';
+      })
+      .catch(function() { if (pm) pm.textContent = 'Puzzle unavailable today.'; });
+  })();
 
   // Ratings
   fetch('https://api.chess.com/pub/player/ngreen37/stats')

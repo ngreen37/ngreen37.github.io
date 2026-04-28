@@ -43,6 +43,72 @@ layout: default
 
   </div>
 
+  {% if page.dossier_clearance %}
+  <div class="char-dossier">
+    <div class="char-dossier-bar">
+      <span class="char-dossier-eyebrow">&#9672; OPERATIVE DOSSIER</span>
+      <span class="char-dossier-clearance">{{ page.dossier_clearance }} CLEARANCE</span>
+    </div>
+    <div class="char-dossier-grid">
+      <div class="char-dossier-field">
+        <span class="char-dossier-key">LAST SEEN</span>
+        <span class="char-dossier-val">{{ page.last_seen | default: "UNKNOWN" }}</span>
+      </div>
+      {% if page.piece %}
+      <div class="char-dossier-field">
+        <span class="char-dossier-key">PIECE DESIGNATION</span>
+        <span class="char-dossier-val">{{ page.piece }}</span>
+      </div>
+      {% endif %}
+      {% if page.role %}
+      <div class="char-dossier-field">
+        <span class="char-dossier-key">ROLE</span>
+        <span class="char-dossier-val">{{ page.role }}</span>
+      </div>
+      {% endif %}
+    </div>
+    {% if page.dossier_secret %}
+    <div class="char-dossier-secret-wrap">
+      <div class="char-dossier-key">ANALYST NOTE &mdash; HOLD TO REVEAL</div>
+      <div class="char-dossier-secret c-reveal-char" data-real="{{ page.dossier_secret }}">████████████████████████████████████████</div>
+    </div>
+    {% endif %}
+  </div>
+
+  <script>
+  (function() {
+    document.querySelectorAll('.c-reveal-char').forEach(function(el) {
+      var real = el.getAttribute('data-real');
+      var redacted = real.split('').map(function(c){ return c === ' ' ? ' ' : '█'; }).join('');
+      el.textContent = redacted;
+      var timer = null;
+      el.title = 'hold to reveal';
+      el.style.cursor = 'cell';
+      function startReveal() {
+        el.classList.add('is-revealing');
+        var i = 0;
+        timer = setInterval(function() {
+          if (i >= real.length) { clearInterval(timer); return; }
+          var tail = redacted.slice(i + 1);
+          el.textContent = real.slice(0, i + 1) + tail;
+          i++;
+        }, 30);
+      }
+      function resetReveal() {
+        clearInterval(timer);
+        el.classList.remove('is-revealing');
+        el.textContent = redacted;
+      }
+      el.addEventListener('mousedown', startReveal);
+      el.addEventListener('touchstart', startReveal, { passive: true });
+      el.addEventListener('mouseup', resetReveal);
+      el.addEventListener('mouseleave', resetReveal);
+      el.addEventListener('touchend', resetReveal);
+    });
+  })();
+  </script>
+  {% endif %}
+
   {% if page.chapters %}
   {% assign ch_list = page.chapters | split: "," %}
   <div class="char-timeline">

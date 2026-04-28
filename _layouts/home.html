@@ -45,6 +45,7 @@ layout: default
       <span class="ticker-item">OFFICIAL: CHESS CITY HAS NOT RESPONDED TO CHECKER TOWN PASSAGE PERMIT REQUEST — DAY 47</span>
       <span class="ticker-item">PRINCESS WINS CHECKER TOWN INFORMAL CHESS TOURNAMENT — REMATCH PENDING</span>
       <span class="ticker-item">SHADOW ACTIVITY NEAR THE CRASH SITE — CONSTRUCTION EQUIPMENT UNACCOUNTED FOR</span>
+      <span class="ticker-item">MCPUPPY STUDIOS DISPATCH UPDATED {{ site.time | date: "%Y.%m.%d" }} — OPERATIVE NGREEN37 ON DUTY</span>
       <span class="ticker-item">CHECKER TOWN CHECKER PIECE SUPPLY AT ALL-TIME LOW — BOARD SHORTAGE REPORTED IN SECTOR 3</span>
       <span class="ticker-item">CHESS CITY TOURNAMENT ENROLLMENT NOW OPEN — LIMITED SPOTS REMAINING — APPLICATIONS CLOSE END OF SEASON</span>
       <span class="ticker-item">SHOGI ISLAND FERRY DELAYED FOR THIRD CONSECUTIVE WEEK — NO DEPARTURE DATE ANNOUNCED</span>
@@ -57,6 +58,7 @@ layout: default
       <span class="ticker-item">OFFICIAL: CHESS CITY HAS NOT RESPONDED TO CHECKER TOWN PASSAGE PERMIT REQUEST — DAY 47</span>
       <span class="ticker-item">PRINCESS WINS CHECKER TOWN INFORMAL CHESS TOURNAMENT — REMATCH PENDING</span>
       <span class="ticker-item">SHADOW ACTIVITY NEAR THE CRASH SITE — CONSTRUCTION EQUIPMENT UNACCOUNTED FOR</span>
+      <span class="ticker-item">MCPUPPY STUDIOS DISPATCH UPDATED {{ site.time | date: "%Y.%m.%d" }} — OPERATIVE NGREEN37 ON DUTY</span>
     </div>
   </div>
 </div>
@@ -244,6 +246,56 @@ document.querySelectorAll('.hstat-num').forEach(function(el) {
       loreEl.classList.remove('is-typing');
       loreEl.textContent = '';
     });
+  });
+})();
+
+// Locked arc panel: 3-second hover flicker
+(function() {
+  var locked = document.querySelector('.arc-panel--locked');
+  if (!locked) return;
+  var titleEl = locked.querySelector('.arc-title');
+  var beatEl  = locked.querySelector('.arc-beat');
+  var iconEl  = locked.querySelector('.arc-icon');
+  var origTitle = titleEl ? titleEl.textContent : '';
+  var origBeat  = beatEl  ? beatEl.textContent  : '';
+  var origIcon  = iconEl  ? iconEl.textContent  : '';
+  var noise = '░▒▓█▓▒░';
+  var hoverTimer = null;
+  var flickerIv  = null;
+
+  function glitch(el, orig) {
+    el.textContent = orig.split('').map(function(c) {
+      return c === ' ' ? ' ' : (Math.random() < 0.45 ? noise[Math.floor(Math.random() * noise.length)] : c);
+    }).join('');
+  }
+
+  function startFlicker() {
+    locked.classList.add('is-near-unlock');
+    flickerIv = setInterval(function() {
+      if (titleEl) glitch(titleEl, origTitle);
+      if (beatEl)  glitch(beatEl,  origBeat);
+      if (iconEl)  glitch(iconEl,  origIcon);
+    }, 75);
+    setTimeout(function() {
+      clearInterval(flickerIv);
+      stopFlicker();
+    }, 1400);
+  }
+
+  function stopFlicker() {
+    clearInterval(flickerIv);
+    locked.classList.remove('is-near-unlock');
+    if (titleEl) titleEl.textContent = origTitle;
+    if (beatEl)  beatEl.textContent  = origBeat;
+    if (iconEl)  iconEl.textContent  = origIcon;
+  }
+
+  locked.addEventListener('mouseenter', function() {
+    hoverTimer = setTimeout(startFlicker, 3000);
+  });
+  locked.addEventListener('mouseleave', function() {
+    clearTimeout(hoverTimer);
+    stopFlicker();
   });
 })();
 

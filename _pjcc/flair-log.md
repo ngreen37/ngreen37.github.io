@@ -111,37 +111,60 @@ Also removed: Chess Lessons stat from PJCC page
 
 ---
 
-### Round 4 — Proposed 10 Ideas (after R3 builds) — CURRENT QUEUE
+### Round 4 — Proposed 10 Ideas (after R3 builds)
 
 | # | Feature | Status |
 |---|---------|--------|
-| 1 | Chess.com game embed (live/recent game viewer) | 🔄 In Progress |
-| 2 | "Signal Jamming" — occasional full-page glitch burst (1–2 pixels of shift, 0.3s) on classified-theme pages | ⬜ Proposed |
-| 3 | PJCC world map (SVG, interactive, clickable locations) | ⬜ Proposed |
-| 4 | Cinematic episode premiere page (/premiere/ep-01/) | ⬜ Proposed |
-| 5 | Character relationship constellation (SVG overlay on Characters page) | ⬜ Proposed (previously declined, reproposed) |
-| 6 | Blog post: reading-complete toast (fires on scroll-to-bottom) | ⬜ Proposed |
-| 7 | Soundtrack page with embedded tracks | ⬜ Proposed |
-| 8 | Princess chess.com puzzle embed (interactive, not Unicode) | ⬜ Proposed |
-| 9 | "Operative Field Dossier" per-character expand (classified-style reveal panel) | ⬜ Proposed |
-| 10 | Ambient sound toggle (low ambient music or chess clock ticking on hover) | ⬜ Proposed |
+| 1 | Chess.com game embed (live/recent game viewer) + ratings widget | ✅ Built |
+| 2 | "Signal Jamming" — full-page glitch burst on classified pages | ❌ Declined |
+| 3 | PJCC world map phase 1 — SVG with clickable location hotspots | ✅ Built |
+| 4 | Cinematic episode premiere page (/premiere/ep-01/) | 📌 Deferred |
+| 5 | Character relationship constellation (SVG overlay) | 📌 Deferred |
+| 6 | Blog post reading-complete toast | ❌ Declined (also declined R3) |
+| 7 | Soundtrack page with embedded tracks | ❌ Declined |
+| 8 | Chess.com daily puzzle embed (API image + link) | ✅ Built |
+| 9 | "Operative Dossier" hold-to-reveal panel on character pages | ✅ Built |
+| 10 | Ambient sound toggle | ❌ Declined |
 
 ---
 
-## PREVIOUSLY PROPOSED (NOT YET DONE)
-- Interactive World Map (SVG, zoomable, location drawers) — proposed in Round 6, only placeholder built
-- Cinematic Episode Premiere Page — proposed, never built
-- Character Relationship Constellation — built then nav link removed; pending re-add
+### Round 5 — Proposed 10 Ideas (April 28 2026)
+
+| # | Feature | Status |
+|---|---------|--------|
+| 1 | Classified "who else has been here" visit counter | ❌ Declined |
+| 2 | World map phase 1 — SVG + clickable hotspots | ✅ Built |
+| 3 | Post-read toast on scroll-to-bottom | ❌ Declined |
+| 4 | Operative dossier panel on character pages | ✅ Built |
+| 5 | Chess.com daily puzzle widget (API) | ✅ Built |
+| 6 | Homepage ticker entry with real Jekyll build date | ✅ Built |
+| 7 | Character chip "active signal" dot (green/amber/red by last_seen) | ❌ Declined |
+| 8 | Arc panel: 3-second hover flicker on the locked chapter | ✅ Built |
+| 9 | Mirror Protocol: panning photorealistic reflection on /classified/ | ❌ Declined |
+| 10 | Soundtrack page (/soundtrack/) | ❌ Declined |
+
+---
+
+## PENDING / DEFERRED (not yet built)
+- Cinematic Episode Premiere Page (/premiere/ep-01/) — waiting for first animation clip
+- Character Relationship Constellation — built once then nav removed; re-add when characters are fleshed out
 
 ---
 
 ## DECLINED (All Time)
 - Chess Tournaments Run stat counter — added, immediately removed
 - Chess Lessons stat on PJCC page — removed
-- Character relationship constellation (R1 round) — skipped
-- "How long have you been reading" per-post tracker — skipped
-- Blog post reading-complete toast (R3 round) — skipped
+- Character relationship constellation (R1 round) — skipped; later deferred, not fully declined
+- "How long have you been reading" per-post tracker — R3, skipped
+- Blog post reading-complete toast — R3 + R4, skipped twice
+- Signal Jamming glitch burst — R4, declined
+- Soundtrack page — R4 + R5, declined both times
+- Ambient sound toggle — R4, declined
+- Classified visitor counter — R5, declined
+- Post-read scroll toast — R5, declined
+- Character chip active signal dot — R5, declined
+- Mirror Protocol panning — R5, declined
 
 ---
 
-*Last updated: April 2026*
+*Last updated: April 28 2026*

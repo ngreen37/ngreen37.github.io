@@ -5951,3 +5951,173 @@ body.theme-classified {
   color: rgba(255,255,255,0.85);
   line-height: 1;
 }
+
+/* =============================================================
+   Chess Lessons — Daily Puzzle Widget
+   ============================================================= */
+
+.chess-puzzle-widget {
+  margin-top: 32px;
+  padding: 24px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
+}
+
+.chess-puzzle-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: rgba(255,255,255,0.28);
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+.puzzle-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.puzzle-date {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: rgba(255,255,255,0.22);
+  text-transform: uppercase;
+}
+
+.puzzle-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+.puzzle-board-img {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  border-radius: 6px;
+  display: block;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.puzzle-solve-btn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.5);
+  text-decoration: none;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 4px;
+  padding: 8px 22px;
+  transition: border-color 0.15s, color 0.15s;
+
+  &:hover {
+    border-color: rgba(245, 197, 24, 0.45);
+    color: rgba(245, 197, 24, 0.88);
+  }
+}
+
+/* =============================================================
+   Character Dossier Panel
+   ============================================================= */
+
+.char-dossier {
+  margin-top: 32px;
+  border: 1px solid rgba(245, 197, 24, 0.18);
+  border-radius: 8px;
+  background: rgba(245, 197, 24, 0.025);
+  overflow: hidden;
+}
+
+.char-dossier-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(245, 197, 24, 0.055);
+  border-bottom: 1px solid rgba(245, 197, 24, 0.12);
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.char-dossier-eyebrow {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: rgba(245, 197, 24, 0.55);
+  text-transform: uppercase;
+}
+
+.char-dossier-clearance {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: rgba(245, 197, 24, 0.32);
+  text-transform: uppercase;
+}
+
+.char-dossier-grid {
+  display: flex;
+  gap: 28px;
+  padding: 14px 16px 10px;
+  flex-wrap: wrap;
+}
+
+.char-dossier-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.char-dossier-key {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.22);
+  text-transform: uppercase;
+}
+
+.char-dossier-val {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.char-dossier-secret-wrap {
+  padding: 12px 16px 16px;
+  border-top: 1px solid rgba(245, 197, 24, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.char-dossier-secret {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  color: rgba(245, 197, 24, 0.38);
+  line-height: 1.6;
+  cursor: cell;
+  user-select: none;
+  letter-spacing: 0.04em;
+  transition: color 0.1s;
+
+  &.is-revealing { color: rgba(245, 197, 24, 0.88); }
+}
+
+/* =============================================================
+   Arc Panel — Near-Unlock Glow State
+   ============================================================= */
+
+.arc-panel--locked.is-near-unlock {
+  border-color: rgba(255, 60, 60, 0.35) !important;
+  box-shadow: 0 0 14px rgba(255, 40, 40, 0.10) !important;
+
+  .arc-title,
+  .arc-beat,
+  .arc-icon { color: rgba(255, 100, 100, 0.75); }
+}
