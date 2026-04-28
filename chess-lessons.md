@@ -24,11 +24,25 @@ body_class: theme-bw
 </div>
 
 <div class="lessons-game-feed">
-  <div class="lessons-game-feed-label">◈ LIVE GAME FEED — ngreen37 on chess.com</div>
-  <div class="lessons-game-coming-soon">
-    <span class="lessons-game-icon">♛</span>
-    <div class="lessons-game-msg">Live game replay coming soon.</div>
-    <div class="lessons-game-sub">Follow <a href="https://www.chess.com/member/ngreen37" target="_blank" rel="noopener">ngreen37 on chess.com</a> in the meantime.</div>
+  <div class="lessons-game-feed-label">◈ RECENT GAMES — ngreen37 on chess.com</div>
+  <div id="chess-embed-wrap">
+    <div class="lessons-game-coming-soon" id="chess-embed-loading">
+      <span class="lessons-game-icon">♛</span>
+      <div class="lessons-game-msg" id="chess-embed-msg">Fetching latest game...</div>
+    </div>
+  </div>
+  <div id="chess-recent-list"></div>
+  <div class="game-feed-footer">
+    <a href="https://www.chess.com/member/ngreen37" target="_blank" rel="noopener" class="game-feed-profile-link">↗ Full profile on chess.com</a>
+  </div>
+</div>
+
+<div class="chess-stats-widget">
+  <div class="chess-stats-label">◈ RATINGS — ngreen37</div>
+  <div class="chess-stats-grid">
+    <div class="chess-stat-item"><div class="chess-stat-type">DAILY</div><div class="chess-stat-val" id="stat-daily">—</div></div>
+    <div class="chess-stat-item"><div class="chess-stat-type">RAPID</div><div class="chess-stat-val" id="stat-rapid">—</div></div>
+    <div class="chess-stat-item"><div class="chess-stat-type">BLITZ</div><div class="chess-stat-val" id="stat-blitz">—</div></div>
   </div>
 </div>
 
@@ -47,4 +61,88 @@ document.querySelectorAll('.stat-number').forEach(function(el) {
   }
   requestAnimationFrame(step);
 });
+</script>
+
+<script>
+(function() {
+  var now = new Date();
+  var year = now.getFullYear();
+  var month = String(now.getMonth() + 1).padStart('0', 2);
+  var msgEl  = document.getElementById('chess-embed-msg');
+  var wrap   = document.getElementById('chess-embed-wrap');
+  var list   = document.getElementById('chess-recent-list');
+
+  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+  month = pad2(now.getMonth() + 1);
+
+  function renderGames(games) {
+    if (!games || !games.length) {
+      if (msgEl) msgEl.textContent = 'No games found this month yet.';
+      return;
+    }
+
+    // Embed most recent game via chess.com emboard
+    var latest = games[games.length - 1];
+    var gameId = latest.url ? latest.url.split('/').pop() : null;
+    if (gameId && wrap) {
+      wrap.innerHTML =
+        '<div class="chess-embed-container">' +
+        '<iframe src="https://www.chess.com/emboard?id=' + gameId + '" ' +
+        'width="100%" height="420" style="border:none;border-radius:6px;display:block;" ' +
+        'allowfullscreen loading="lazy"></iframe>' +
+        '</div>';
+    }
+
+    // Recent games list (last 5)
+    var recent = games.slice(-5).reverse();
+    var html = '<div class="game-feed-list">';
+    recent.forEach(function(g) {
+      var white = (g.white && g.white.username || '').toLowerCase();
+      var isWhite = white === 'ngreen37';
+      var me  = isWhite ? g.white : g.black;
+      var opp = isWhite ? g.black : g.white;
+      var r   = (me && me.result) || '';
+      var result = r === 'win' ? 'W' : (r === 'agreed' || r === 'stalemate' || r === 'repetition' || r === 'insufficient') ? 'D' : 'L';
+      var cls = result === 'W' ? 'game-result--win' : result === 'D' ? 'game-result--draw' : 'game-result--loss';
+      var oppName = (opp && opp.username) || '?';
+      var oppRating = (opp && opp.rating) ? '(' + opp.rating + ')' : '';
+      var d = new Date((g.end_time || 0) * 1000);
+      var dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      var tc = (g.time_class || 'game').toUpperCase();
+      html +=
+        '<a class="game-feed-row" href="' + (g.url || '#') + '" target="_blank" rel="noopener">' +
+        '<span class="game-result ' + cls + '">' + result + '</span>' +
+        '<span class="game-type">' + tc + '</span>' +
+        '<span class="game-opponent">vs ' + oppName + '</span>' +
+        '<span class="game-opp-rating">' + oppRating + '</span>' +
+        '<span class="game-date">' + dateStr + '</span>' +
+        '</a>';
+    });
+    html += '</div>';
+    if (list) list.innerHTML = html;
+  }
+
+  fetch('https://api.chess.com/pub/player/ngreen37/games/' + year + '/' + month)
+    .then(function(r) { return r.json(); })
+    .then(function(data) { renderGames(data.games); })
+    .catch(function() {
+      if (msgEl) msgEl.textContent = 'Game feed unavailable — visit chess.com/member/ngreen37';
+    });
+
+  // Ratings
+  fetch('https://api.chess.com/pub/player/ngreen37/stats')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      function setRating(id, obj, key) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var val = data[obj] && data[obj].last && data[obj].last.rating;
+        if (val) el.textContent = val;
+      }
+      setRating('stat-daily', 'chess_daily', 'rating');
+      setRating('stat-rapid', 'chess_rapid', 'rating');
+      setRating('stat-blitz', 'chess_blitz', 'rating');
+    })
+    .catch(function() {});
+})();
 </script>
