@@ -6772,22 +6772,6 @@ body.theme-classified {
   animation: crt-scan 6s linear infinite;
 }
 
-/* 4 — Viewport-edge radar ping */
-@keyframes radar-ping {
-  0%   { box-shadow: inset 0 0 0 0 rgba(245, 197, 24, 0); }
-  3%   { box-shadow: inset 0 0 0 2px rgba(245, 197, 24, 0.65); }
-  9%   { box-shadow: inset 0 0 0 10px rgba(245, 197, 24, 0); }
-  100% { box-shadow: inset 0 0 0 10px rgba(245, 197, 24, 0); }
-}
-.page-content::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9990;
-  animation: radar-ping 8s ease-out infinite;
-}
-
 /* 7 — Data stream card hover */
 .data-stream-card { position: relative; overflow: hidden; }
 .ds-flow {

@@ -105,46 +105,6 @@
   <!-- Back-to-top button (#14) -->
   <button class="back-to-top" id="back-to-top" aria-label="Back to top">♟</button>
 
-  <script>
-  // Nav transition with chess piece stamp (#6)
-  (function() {
-    var overlay = document.getElementById('nav-transition');
-    var text    = document.getElementById('nav-transition-text');
-    if (!overlay || !text) return;
-    var pieces = ['♛','♜','♝','♞','♟','♚'];
-
-    document.addEventListener('click', function(e) {
-      var link = e.target.closest('a[href]');
-      if (!link) return;
-      var href = link.getAttribute('href');
-      if (!href || href.charAt(0) === '#' || href.indexOf('mailto:') === 0) return;
-      if (link.target === '_blank') return;
-      try {
-        var dest = new URL(href, location.origin);
-        if (dest.origin !== location.origin) return;
-        e.preventDefault();
-        var piece = pieces[Math.floor(Math.random() * pieces.length)];
-        var stamp = document.createElement('span');
-        stamp.textContent = piece;
-        stamp.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.4);font-size:80px;color:#F5C518;opacity:0;transition:transform 0.3s ease,opacity 0.3s ease;z-index:9999;pointer-events:none;text-shadow:0 0 30px rgba(245,197,24,0.5);';
-        document.body.appendChild(stamp);
-        requestAnimationFrame(function() {
-          requestAnimationFrame(function() {
-            stamp.style.transform = 'translate(-50%,-50%) scale(1)';
-            stamp.style.opacity = '0.85';
-            setTimeout(function() {
-              stamp.style.opacity = '0';
-              stamp.style.transform = 'translate(-50%,-50%) scale(1.4)';
-            }, 200);
-          });
-        });
-        text.textContent = 'MOVING TO: ' + dest.pathname + ' — ACCEPTED';
-        overlay.classList.add('is-visible');
-        setTimeout(function() { window.location.href = href; document.body.removeChild(stamp); }, 380);
-      } catch(err) {}
-    });
-  })();
-  </script>
 
   <script>
   (function() {
