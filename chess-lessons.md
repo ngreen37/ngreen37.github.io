@@ -24,12 +24,12 @@ body_class: theme-bw
 </div>
 
 <div class="lessons-game-feed">
-  <div class="lessons-game-feed-label">◈ RECENT GAMES — ngreen37 on chess.com</div>
   <div id="chess-embed-wrap">
     <div class="lessons-game-coming-soon" id="chess-embed-loading">
       <span class="lessons-game-icon">♛</span>
       <div class="lessons-game-msg" id="chess-embed-msg">Fetching latest game...</div>
     </div>
+    <div class="cl-blindfold-overlay">&#9822; BOARD HIDDEN<br><span style="font-size:10px;opacity:0.6;letter-spacing:0.08em;">Blindfold mode active — trust your calculation</span></div>
   </div>
   <div id="chess-recent-list"></div>
   <div class="game-feed-footer">
@@ -54,6 +54,40 @@ body_class: theme-bw
     <div class="chess-stat-item"><div class="chess-stat-type">RAPID</div><div class="chess-stat-val" id="stat-rapid">—</div></div>
     <div class="chess-stat-item"><div class="chess-stat-type">BLITZ</div><div class="chess-stat-val" id="stat-blitz">—</div></div>
   </div>
+</div>
+
+<!-- #40 Tactics Streak -->
+<div class="cl-streak" id="cl-streak">
+  <span class="cl-streak-fire">🔥</span>
+  <div class="cl-streak-info">
+    <span class="cl-streak-label">◈ Daily Visit Streak</span>
+    <span class="cl-streak-count" id="streak-count">1</span>
+    <span class="cl-streak-sub" id="streak-sub">day — keep studying</span>
+  </div>
+</div>
+
+<!-- #33 Opening of the Week -->
+<div class="cl-opening" id="cl-opening">
+  <div class="cl-opening-label">◈ Opening of the Week</div>
+  <div class="cl-opening-eco" id="op-eco">—</div>
+  <div class="cl-opening-name" id="op-name">—</div>
+  <div class="cl-opening-moves" id="op-moves">—</div>
+  <div class="cl-opening-note" id="op-note">—</div>
+</div>
+
+<!-- #22 / #38 Scenario of the Day -->
+<div class="cl-scenario" id="cl-scenario">
+  <div class="cl-scenario-label">◈ Scenario of the Day</div>
+  <div class="cl-scenario-day" id="sc-day">—</div>
+  <div class="cl-scenario-title" id="sc-title">—</div>
+  <div class="cl-scenario-body" id="sc-body">—</div>
+  <span class="cl-scenario-tag" id="sc-tag">—</span>
+</div>
+
+<!-- #37 Blindfold Training Toggle (wraps game feed) -->
+<div class="cl-blindfold-bar">
+  <span class="cl-blindfold-label">◈ RECENT GAMES — ngreen37 on chess.com</span>
+  <button class="cl-blindfold-toggle" id="blindfold-toggle">&#9822; Blindfold Mode</button>
 </div>
 
 <script>
@@ -176,5 +210,182 @@ document.querySelectorAll('.stat-number').forEach(function(el) {
       setRating('stat-blitz', 'chess_blitz', 'rating');
     })
     .catch(function() {});
+})();
+</script>
+
+<!-- #34 Piece Hierarchy -->
+<div class="cl-piece-chart">
+  <div class="cl-piece-chart-label">◈ Piece Value Hierarchy</div>
+  <div class="cl-piece-row"><span class="cl-piece-sym">♟</span><span class="cl-piece-name">Pawn</span><div class="cl-piece-bar-wrap"><div class="cl-piece-bar" data-w="11"></div></div><span class="cl-piece-val">1</span></div>
+  <div class="cl-piece-row"><span class="cl-piece-sym">♞</span><span class="cl-piece-name">Knight</span><div class="cl-piece-bar-wrap"><div class="cl-piece-bar" data-w="33"></div></div><span class="cl-piece-val">3</span></div>
+  <div class="cl-piece-row"><span class="cl-piece-sym">♝</span><span class="cl-piece-name">Bishop</span><div class="cl-piece-bar-wrap"><div class="cl-piece-bar" data-w="33"></div></div><span class="cl-piece-val">3</span></div>
+  <div class="cl-piece-row"><span class="cl-piece-sym">♜</span><span class="cl-piece-name">Rook</span><div class="cl-piece-bar-wrap"><div class="cl-piece-bar" data-w="55"></div></div><span class="cl-piece-val">5</span></div>
+  <div class="cl-piece-row"><span class="cl-piece-sym">♛</span><span class="cl-piece-name">Queen</span><div class="cl-piece-bar-wrap"><div class="cl-piece-bar" data-w="100"></div></div><span class="cl-piece-val">9</span></div>
+  <div class="cl-piece-row"><span class="cl-piece-sym">♚</span><span class="cl-piece-name">King</span><div class="cl-piece-bar-wrap"><div class="cl-piece-bar" data-w="100" style="background:linear-gradient(90deg,#2D1B69 0%,#FFE566 100%)"></div></div><span class="cl-piece-val">∞</span></div>
+</div>
+
+<!-- #35 Endgame Position of the Week -->
+<div class="cl-endgame" id="cl-endgame">
+  <div class="cl-endgame-label">◈ Endgame Study of the Week</div>
+  <div class="cl-endgame-week" id="eg-week">—</div>
+  <div class="cl-endgame-name" id="eg-name">—</div>
+  <div class="cl-endgame-desc" id="eg-desc">—</div>
+  <a class="cl-endgame-link" id="eg-link" href="https://lichess.org/practice" target="_blank" rel="noopener">&#9654; Study on Lichess</a>
+</div>
+
+<!-- #39 Chess Resources Briefing -->
+<div class="cl-resources">
+  <div class="cl-resources-label">◈ Intelligence Briefing — Recommended Resources</div>
+  <a class="cl-resource-card" href="https://lichess.org/learn" target="_blank" rel="noopener">
+    <span class="cl-resource-icon">&#9812;</span>
+    <div class="cl-resource-info">
+      <span class="cl-resource-name">Lichess Learn</span>
+      <span class="cl-resource-desc">Free interactive lessons covering every phase of the game. No account required.</span>
+      <span class="cl-resource-tag">LESSONS</span>
+    </div>
+  </a>
+  <a class="cl-resource-card" href="https://lichess.org/practice" target="_blank" rel="noopener">
+    <span class="cl-resource-icon">&#9813;</span>
+    <div class="cl-resource-info">
+      <span class="cl-resource-name">Lichess Practice</span>
+      <span class="cl-resource-desc">Endgame practice with guided study positions. Essential for converting advantages.</span>
+      <span class="cl-resource-tag">ENDGAMES</span>
+    </div>
+  </a>
+  <a class="cl-resource-card" href="https://www.chess.com/puzzles" target="_blank" rel="noopener">
+    <span class="cl-resource-icon">&#9822;</span>
+    <div class="cl-resource-info">
+      <span class="cl-resource-name">Chess.com Puzzles</span>
+      <span class="cl-resource-desc">Daily tactical puzzles. Rated system tracks your improvement over time.</span>
+      <span class="cl-resource-tag">TACTICS</span>
+    </div>
+  </a>
+  <a class="cl-resource-card" href="https://chesstempo.com" target="_blank" rel="noopener">
+    <span class="cl-resource-icon">&#9823;</span>
+    <div class="cl-resource-info">
+      <span class="cl-resource-name">Chess Tempo</span>
+      <span class="cl-resource-desc">High-volume tactics trainer with spaced repetition. Used by serious improvers at every level.</span>
+      <span class="cl-resource-tag">TACTICS</span>
+    </div>
+  </a>
+  <a class="cl-resource-card" href="https://www.chess.com/openings" target="_blank" rel="noopener">
+    <span class="cl-resource-icon">&#9820;</span>
+    <div class="cl-resource-info">
+      <span class="cl-resource-name">Opening Explorer</span>
+      <span class="cl-resource-desc">Study opening theory, see stats from grandmaster games, build your repertoire.</span>
+      <span class="cl-resource-tag">OPENINGS</span>
+    </div>
+  </a>
+</div>
+
+<script>
+(function() {
+  var day = new Date().getDay();
+  var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+  // #33 Openings
+  var openings = [
+    { eco:'A00', name:'Sokolsky Opening', moves:'1. b4', note:'Sideline surprise. Fights for queenside space immediately and takes opponents out of book.' },
+    { eco:'B20', name:'Sicilian Defense', moves:'1. e4 c5', note:'Most popular reply to 1.e4. Black fights for the center asymmetrically, creating rich imbalances.' },
+    { eco:'D00', name:'London System', moves:'1. d4 2. Bf4 3. e3', note:'Solid, reliable setup for White. Easy to learn, hard to bust — great for beginners and club players alike.' },
+    { eco:'C60', name:'Ruy Lopez', moves:'1. e4 e5 2. Nf3 Nc6 3. Bb5', note:'One of the oldest and most respected openings. White pressures the knight supporting the e5 pawn.' },
+    { eco:'E60', name:'King\'s Indian Defense', moves:'1. d4 Nf6 2. c4 g6', note:'Black allows White a big center and counter-attacks it. Tactical, dynamic, and beloved by attackers.' },
+    { eco:'A45', name:'Trompowsky Attack', moves:'1. d4 Nf6 2. Bg5', note:'Avoid mainline theory. Bg5 pins the knight immediately, disrupting Black\'s development plans.' },
+    { eco:'C00', name:'French Defense', moves:'1. e4 e6', note:'Solid structure for Black. The e6 pawn creates a pawn chain that leads to tense positional battles.' }
+  ];
+  var op = openings[day];
+  document.getElementById('op-eco').textContent = op.eco;
+  document.getElementById('op-name').textContent = op.name;
+  document.getElementById('op-moves').textContent = op.moves;
+  document.getElementById('op-note').textContent = op.note;
+
+  // #22/#38 Scenario of the day
+  var scenarios = [
+    { title:'The Back Rank Weakness', body:'Your opponent has all their pawns in front of their king, no escape square. You have a rook on the seventh rank. What pattern do you look for?', tag:'TACTICS' },
+    { title:'Outpost Knight', body:'You have a knight that cannot be chased by an enemy pawn. It sits on e5, d6, or c7. What makes this position winning, and how do you exploit the outpost?', tag:'STRATEGY' },
+    { title:'The Zwischenzug', body:'Your opponent plays what looks like a winning move. Before responding to their threat, look for an in-between move that changes the calculation entirely.', tag:'TACTICS' },
+    { title:'Rook Activation', body:'Your rook has been passive all game behind your own pawns. The endgame is approaching. How do you open a file and activate your rook before the position closes?', tag:'ENDGAME' },
+    { title:'Pawn Majority', body:'You have four pawns vs. three on the queenside. Your opponent\'s pieces are focused kingside. What is your plan to convert this structural advantage?', tag:'STRATEGY' },
+    { title:'King in the Endgame', body:'It\'s a rook and pawn endgame. Most beginners leave their king passive. Walk your king toward the action. What does "king activity" mean in practice?', tag:'ENDGAME' },
+    { title:'The Pin and the Fork', body:'Identify which piece is pinned against the king or queen. Now look for a fork that exploits a pinned piece that cannot recapture. How many ways does this pattern appear?', tag:'TACTICS' }
+  ];
+  var sc = scenarios[day];
+  document.getElementById('sc-day').textContent = days[day].toUpperCase();
+  document.getElementById('sc-title').textContent = sc.title;
+  document.getElementById('sc-body').textContent = sc.body;
+  document.getElementById('sc-tag').textContent = sc.tag;
+
+  // #35 Endgame of the week
+  var endgames = [
+    { week:'Week Theme: Rook Endgames', name:'The Lucena Position', desc:'The most important rook endgame to know. White has a pawn on the 7th rank with the king blocking. The "bridge building" technique decides the game.', url:'https://lichess.org/practice/rook-endings/lucena-position/TPJ08rYS/' },
+    { week:'Week Theme: Rook Endgames', name:'The Philidor Position', desc:'Black\'s drawing fortress in rook endgames. The rook cuts the enemy king off with a side attack. Essential defensive knowledge.', url:'https://lichess.org/practice/rook-endings/philidor-position/1mhXKDKK/' },
+    { week:'Week Theme: Pawn Endgames', name:'Opposition and Key Squares', desc:'In king and pawn vs. king, understanding opposition decides who wins. Learn to calculate key squares before advancing.', url:'https://lichess.org/learn#/23' },
+    { week:'Week Theme: Minor Pieces', name:'Good Bishop vs. Bad Bishop', desc:'Pawns on the same color as your bishop? That\'s a bad bishop. Learn how to identify and use this structural factor.', url:'https://lichess.org/practice' },
+    { week:'Week Theme: Technique', name:'The Pawn Breakthrough', desc:'Three connected passed pawns vs. three defenders. Sometimes sacrificing one pawn forces a queen. Calculate the breakthrough.', url:'https://lichess.org/learn#/24' },
+    { week:'Week Theme: Rook + Pawn', name:'Rook Behind the Passed Pawn', desc:'The rook belongs behind a passed pawn — whether yours or your opponent\'s. This fundamental principle wins games.', url:'https://lichess.org/practice/rook-endings/rook-and-pawn-vs-rook/f6sMfMnp/' },
+    { week:'Week Theme: Queen Endgames', name:'Queen vs. Advanced Pawn', desc:'A queen vs. a pawn near queening — the result depends on where the pawn is. Rook and bishop pawns on the 7th are tricky draws.', url:'https://lichess.org/practice' }
+  ];
+  var eg = endgames[day];
+  document.getElementById('eg-week').textContent = eg.week;
+  document.getElementById('eg-name').textContent = eg.name;
+  document.getElementById('eg-desc').textContent = eg.desc;
+  document.getElementById('eg-link').href = eg.url;
+
+  // #40 Tactics streak
+  (function() {
+    var today = new Date().toDateString();
+    var key = 'cl_streak';
+    var lk = 'cl_last_visit';
+    try {
+      var last = localStorage.getItem(lk);
+      var streak = parseInt(localStorage.getItem(key) || '0', 10);
+      var yesterday = new Date(Date.now() - 86400000).toDateString();
+      if (last === today) {
+        // already visited today
+      } else if (last === yesterday) {
+        streak++;
+        localStorage.setItem(key, streak);
+        localStorage.setItem(lk, today);
+      } else {
+        streak = 1;
+        localStorage.setItem(key, '1');
+        localStorage.setItem(lk, today);
+      }
+      var countEl = document.getElementById('streak-count');
+      var subEl   = document.getElementById('streak-sub');
+      if (countEl) countEl.textContent = streak;
+      if (subEl) subEl.textContent = streak === 1 ? 'day — first step counts' : streak + ' days — keep going';
+    } catch(e) {}
+  })();
+
+  // #37 Blindfold toggle
+  (function() {
+    var btn  = document.getElementById('blindfold-toggle');
+    var wrap = document.getElementById('chess-embed-wrap');
+    if (!btn || !wrap) return;
+    btn.addEventListener('click', function() {
+      var active = wrap.classList.toggle('is-blindfold');
+      btn.classList.toggle('is-active', active);
+      btn.textContent = active ? '♞ Board Revealed' : '♞ Blindfold Mode';
+    });
+  })();
+})();
+
+// Animate piece bars on scroll
+(function() {
+  var bars = document.querySelectorAll('.cl-piece-bar[data-w]');
+  if (!bars.length) return;
+  var triggered = false;
+  function animate() {
+    if (triggered) return;
+    triggered = true;
+    bars.forEach(function(b) { b.style.width = b.getAttribute('data-w') + '%'; });
+  }
+  if ('IntersectionObserver' in window) {
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) { if (e.isIntersecting) { animate(); obs.disconnect(); } });
+    }, { threshold: 0.1 });
+    obs.observe(bars[0].closest('.cl-piece-chart'));
+  } else { animate(); }
 })();
 </script>

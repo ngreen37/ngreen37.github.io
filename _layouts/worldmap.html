@@ -8,6 +8,12 @@ layout: default
   <p class="wm-sub">From Checker Town to Chess City — and the sea between them.</p>
 </div>
 
+<div class="world-state-banner" id="world-state-banner">
+  <div class="world-state-eyebrow">◈ World State — Current Dispatch</div>
+  <div class="world-state-text" id="world-state-text">Loading...</div>
+  <div class="world-state-date" id="world-state-date"></div>
+</div>
+
 <div class="wm-wrap">
   <div class="wm-svg-container" style="position:relative;">
     {{ content }}
@@ -19,6 +25,13 @@ layout: default
       <h2 class="wm-info-name" id="wm-name"></h2>
       <p class="wm-info-desc" id="wm-desc"></p>
       <a href="#" class="wm-info-link" id="wm-link">Explore →</a>
+      <div id="mystery-terminal" style="display:none;margin-top:14px;">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(0,255,65,0.55);letter-spacing:0.14em;margin-bottom:6px;">◈ TERMINAL ACTIVE — ENTER ACCESS CODE</div>
+        <input id="mystery-input" type="text" maxlength="6"
+          style="background:#030a02;border:1px solid rgba(0,255,65,0.35);color:#00ff41;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:0.14em;padding:6px 10px;width:100%;box-sizing:border-box;border-radius:3px;outline:none;text-transform:uppercase;"
+          placeholder="_ _ _ _ _ _" autocomplete="off">
+        <div id="mystery-result" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#00ff41;margin-top:8px;line-height:1.6;"></div>
+      </div>
     </div>
   </div>
 
@@ -93,7 +106,66 @@ document.getElementById('wm-close').addEventListener('click', function() {
   document.getElementById('wm-panel').classList.remove('is-open');
 });
 
+var _currentLoc = null;
+function openPanel(key) {
+  _currentLoc = key;
+  var loc = locations[key];
+  if (!loc) return;
+  document.getElementById('wm-type').textContent = loc.type;
+  document.getElementById('wm-name').textContent = loc.name;
+  document.getElementById('wm-desc').textContent = loc.desc;
+  var link = document.getElementById('wm-link');
+  link.href = loc.link;
+  link.textContent = loc.name === 'Mystery City' ? '? ? ?' : 'Explore →';
+  var mt = document.getElementById('mystery-terminal');
+  var mi = document.getElementById('mystery-input');
+  var mr = document.getElementById('mystery-result');
+  if (mt) { mt.style.display = key === 'mystery-city' ? 'block' : 'none'; }
+  if (mi) { mi.value = ''; }
+  if (mr) { mr.textContent = ''; }
+  document.getElementById('wm-panel').classList.add('is-open');
+}
+
 document.querySelectorAll('[data-loc]').forEach(function(el) {
   el.addEventListener('click', function() { openPanel(el.getAttribute('data-loc')); });
 });
+
+// #17 — Mystery City QD5 terminal
+(function() {
+  var input = document.getElementById('mystery-input');
+  var result = document.getElementById('mystery-result');
+  if (!input || !result) return;
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      var val = input.value.trim().toUpperCase();
+      if (val === 'QD5') {
+        try { localStorage.setItem('frag_qd5', '1'); } catch(ex) {}
+        result.style.color = '#00ff41';
+        result.innerHTML = 'ACCESS GRANTED<br>The shape on the map has a name.<br>The name has a history.<br>The history is classified.<br><span style="opacity:0.5;font-size:9px;">— Fragment Qd5 recovered —</span>';
+      } else {
+        result.style.color = 'rgba(255,80,80,0.7)';
+        result.textContent = 'ACCESS DENIED — Code invalid.';
+      }
+    }
+  });
+})();
+
+// #30 — World State summary
+(function() {
+  var states = [
+    'Checker Town border quiet. No vessel activity reported. Sand Mines at 60% capacity.',
+    'Chess City tournament registrations open. Ferry service to Shogi Island delayed — third week.',
+    'Interplanetary Construction Co. vessel debris confirmed 40km offshore. Authorities investigating.',
+    'Checker piece black market activity elevated in Sector 7. Civic Hall closed for repairs.',
+    'Princess spotted near the old crash site at dusk. No confrontation. Observation ongoing.',
+    'Heavy fog over The Sea. All crossings postponed. Radio silence from the eastern route.',
+    'Chess City Leafs advance in tournament. Checker Town youth league semifinal this evening.'
+  ];
+  var day = new Date().getDay();
+  var el = document.getElementById('world-state-text');
+  var de = document.getElementById('world-state-date');
+  var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  if (el) el.textContent = states[day];
+  if (de) de.textContent = days[day].toUpperCase() + ' DISPATCH — ' + new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
+})();
 </script>

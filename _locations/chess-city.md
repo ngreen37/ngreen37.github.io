@@ -33,3 +33,7 @@ Chess City is the prize, the promise, and the obstacle. It represents a better l
 
 ## Art
 *Map or illustration coming soon.*
+
+<script>
+try { localStorage.setItem('chess_city_entry', '1'); } catch(e) {}
+</script>

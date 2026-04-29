@@ -75,6 +75,10 @@
         &copy; {{ 'now' | date: "%Y" }} McPuppy Studios. All rights reserved.
       </p>
       <div class="fragment-counter" id="fragment-counter"></div>
+      <div class="footer-actions">
+        <button class="share-tx-btn" id="share-tx-btn">&#9672; Share This Transmission</button>
+        <span id="chess-city-permit-slot"></span>
+      </div>
     </div>
   </footer>
 
@@ -89,12 +93,25 @@
     <span id="chess-toast-msg"></span>
   </div>
 
+  <!-- Transmission Received toast (#9) -->
+  <div class="tx-toast" id="tx-toast">
+    <div class="tx-toast-header">◈ TRANSMISSION RECEIVED</div>
+    <div class="tx-toast-body" id="tx-toast-body"></div>
+  </div>
+
+  <!-- Share This Transmission flash (#20) -->
+  <div class="share-tx-flash" id="share-tx-flash">◈ TRANSMISSION COPIED</div>
+
+  <!-- Back-to-top button (#14) -->
+  <button class="back-to-top" id="back-to-top" aria-label="Back to top">♟</button>
+
   <script>
-  // Nav transition
+  // Nav transition with chess piece stamp (#6)
   (function() {
     var overlay = document.getElementById('nav-transition');
     var text    = document.getElementById('nav-transition-text');
     if (!overlay || !text) return;
+    var pieces = ['♛','♜','♝','♞','♟','♚'];
 
     document.addEventListener('click', function(e) {
       var link = e.target.closest('a[href]');
@@ -106,9 +123,24 @@
         var dest = new URL(href, location.origin);
         if (dest.origin !== location.origin) return;
         e.preventDefault();
+        var piece = pieces[Math.floor(Math.random() * pieces.length)];
+        var stamp = document.createElement('span');
+        stamp.textContent = piece;
+        stamp.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.4);font-size:80px;color:#F5C518;opacity:0;transition:transform 0.3s ease,opacity 0.3s ease;z-index:9999;pointer-events:none;text-shadow:0 0 30px rgba(245,197,24,0.5);';
+        document.body.appendChild(stamp);
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            stamp.style.transform = 'translate(-50%,-50%) scale(1)';
+            stamp.style.opacity = '0.85';
+            setTimeout(function() {
+              stamp.style.opacity = '0';
+              stamp.style.transform = 'translate(-50%,-50%) scale(1.4)';
+            }, 200);
+          });
+        });
         text.textContent = 'MOVING TO: ' + dest.pathname + ' — ACCEPTED';
         overlay.classList.add('is-visible');
-        setTimeout(function() { window.location.href = href; }, 360);
+        setTimeout(function() { window.location.href = href; document.body.removeChild(stamp); }, 380);
       } catch(err) {}
     });
   })();
@@ -180,7 +212,7 @@
   })();
   </script>
 
-  <!-- Konami Code + amber flash -->
+  <!-- Konami Code + amber flash (#9 tx toast) -->
   <div class="konami-flash" id="konami-flash" aria-hidden="true"></div>
   <script>
   (function() {
@@ -195,15 +227,132 @@
         void flash.offsetWidth;
         flash.classList.add('is-active');
         setTimeout(function() { flash.classList.remove('is-active'); }, 1500);
-        var toast = document.getElementById('chess-toast');
-        var toastMove = document.getElementById('chess-toast-move');
-        var toastMsg  = document.getElementById('chess-toast-msg');
-        toastMove.textContent = '↑↑↓↓←→←→BA';
-        toastMsg.textContent  = 'CLEARANCE LEVEL: OMEGA — She already knows you\'re here.';
         try { localStorage.setItem('frag_konami', '1'); } catch(e) {}
-        toast.classList.add('is-visible');
-        setTimeout(function() { toast.classList.remove('is-visible'); }, 4500);
+        showTxToast('CLEARANCE LEVEL: OMEGA — She already knows you\'re here.');
       }
+    });
+  })();
+  </script>
+
+  <script>
+  // Transmission Received toast helper (#9)
+  function showTxToast(msg, duration) {
+    var t = document.getElementById('tx-toast');
+    var b = document.getElementById('tx-toast-body');
+    if (!t || !b) return;
+    b.textContent = msg;
+    t.classList.add('is-visible');
+    setTimeout(function() { t.classList.remove('is-visible'); }, duration || 4500);
+  }
+  </script>
+
+  <script>
+  // Back-to-top floating button (#14)
+  (function() {
+    var btn = document.getElementById('back-to-top');
+    if (!btn) return;
+    window.addEventListener('scroll', function() {
+      btn.classList.toggle('is-visible', window.scrollY > 400);
+    }, { passive: true });
+    btn.addEventListener('click', function() {
+      btn.textContent = '♛';
+      btn.classList.add('is-promoted');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(function() { btn.textContent = '♟'; btn.classList.remove('is-promoted'); }, 1200);
+    });
+  })();
+  </script>
+
+  <script>
+  // Share This Transmission (#20)
+  (function() {
+    var btn   = document.getElementById('share-tx-btn');
+    var flash = document.getElementById('share-tx-flash');
+    if (!btn || !flash) return;
+    btn.addEventListener('click', function() {
+      var url = location.href;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(function() { showFlash(); }).catch(function() { fallback(url); });
+      } else { fallback(url); }
+    });
+    function fallback(url) {
+      var ta = document.createElement('textarea');
+      ta.value = url;
+      ta.style.cssText = 'position:fixed;opacity:0;';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch(e) {}
+      document.body.removeChild(ta);
+      showFlash();
+    }
+    function showFlash() {
+      flash.classList.add('is-visible');
+      setTimeout(function() { flash.classList.remove('is-visible'); }, 2400);
+    }
+  })();
+  </script>
+
+  <script>
+  // Morse code logo easter egg — 3 rapid taps (#21)
+  (function() {
+    var logo = document.querySelector('.site-logo');
+    if (!logo) return;
+    var taps = 0; var timer = null;
+    logo.addEventListener('click', function(e) {
+      e.preventDefault();
+      taps++;
+      clearTimeout(timer);
+      timer = setTimeout(function() {
+        if (taps >= 3) {
+          var flash = document.getElementById('konami-flash');
+          if (flash) { flash.classList.remove('is-active'); void flash.offsetWidth; flash.classList.add('is-active'); setTimeout(function() { flash.classList.remove('is-active'); }, 900); }
+          showTxToast('— — — / . — . — / — — . — / — . — — — MORSE SIGNAL CONFIRMED');
+        } else {
+          window.location.href = logo.getAttribute('href') || '/';
+        }
+        taps = 0;
+      }, 400);
+    });
+  })();
+  </script>
+
+  <script>
+  // Chess City Entry Permit badge in footer (#28)
+  (function() {
+    var slot = document.getElementById('chess-city-permit-slot');
+    if (!slot) return;
+    try {
+      if (localStorage.getItem('chess_city_entry')) {
+        slot.innerHTML = '<span class="chess-city-permit">&#9812; CHESS CITY — ENTRY PERMIT GRANTED</span>';
+      }
+    } catch(e) {}
+  })();
+  </script>
+
+  <script>
+  // Data stream cards — inject DS flow on hover (#7)
+  (function() {
+    var hex = '0123456789ABCDEF';
+    function rh() { return hex[Math.floor(Math.random()*16)] + hex[Math.floor(Math.random()*16)]; }
+    function startDs(card) {
+      if (card._dsFlow) return;
+      var d = document.createElement('div');
+      d.className = 'ds-flow';
+      card.insertBefore(d, card.firstChild);
+      card._dsFlow = d;
+      card._dsIv = setInterval(function() {
+        var s = '';
+        for (var i = 0; i < 60; i++) s += rh() + (i % 4 === 3 ? '\n' : ' ');
+        d.textContent = s;
+      }, 120);
+    }
+    function stopDs(card) {
+      if (card._dsIv) clearInterval(card._dsIv);
+      if (card._dsFlow) { try { card.removeChild(card._dsFlow); } catch(e) {} card._dsFlow = null; }
+    }
+    document.querySelectorAll('.data-stream-card').forEach(function(card) {
+      card.addEventListener('mouseenter', function() { startDs(card); });
+      card.addEventListener('mouseleave', function() { stopDs(card); });
     });
   })();
   </script>

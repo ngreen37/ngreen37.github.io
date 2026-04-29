@@ -26,11 +26,34 @@ layout: default
     </div>
   </div>
 
+  <div id="loc-weather-slot"></div>
+
   <div class="location-details">
     {{ content }}
   </div>
 
 </article>
+
+<script>
+(function() {
+  var slot = document.getElementById('loc-weather-slot');
+  if (!slot) return;
+  var name = document.querySelector('.location-name');
+  var loc = name ? name.textContent.trim().toLowerCase() : '';
+  var weather = {
+    'checker town':       { icon: '🌫', temp: '58°F / 14°C', cond: 'Overcast. Ash fog advisory in effect. Visibility low in Sector 3.' },
+    'chess city':         { icon: '☀', temp: '72°F / 22°C', cond: 'Clear skies. Game-day visibility excellent. Crowds expected downtown.' },
+    'shogi island':       { icon: '🌊', temp: '79°F / 26°C', cond: 'Warm and humid. Sea winds from the east. 将棋の島: 晴れ。東からの風。' },
+    'the sea':            { icon: '⛈', temp: '55°F / 13°C', cond: 'Rough swells — 14-ft waves. All vessels advised to stand down.' },
+    'the sand mines':     { icon: '🌫', temp: '52°F / 11°C', cond: 'Underground. Air quality poor. Dust reported in shafts 3 through 7.' },
+    'mystery city':       { icon: '░', temp: '???', cond: 'Weather data unavailable. All sensors offline. Do not approach.' },
+    'chess city elementary': { icon: '🌤', temp: '68°F / 20°C', cond: 'Partly cloudy. Tournament conditions nominal. Indoor courts operational.' }
+  };
+  var w = weather[loc];
+  if (!w) return;
+  slot.innerHTML = '<div class="loc-weather"><span class="loc-weather-icon">' + w.icon + '</span><div class="loc-weather-data"><span class="loc-weather-label">◈ Atmospheric Conditions</span><span class="loc-weather-temp">' + w.temp + '</span><span class="loc-weather-cond">' + w.cond + '</span></div></div>';
+})();
+</script>
 
 <script>
 (function() {
