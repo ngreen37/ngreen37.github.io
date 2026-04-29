@@ -145,6 +145,87 @@ Also removed: Chess Lessons stat from PJCC page
 
 ---
 
+### Round 6 — Proposed 50 Ideas (April 28 2026)
+
+> **Checker status:** All 50 pass `flair_checker.js` — palette-compliant, no banned properties or keywords.
+
+#### Visual / Animation (1–12)
+
+| # | Feature | Palette Colors | Status |
+|---|---------|---------------|--------|
+| 1 | Gold gradient shimmer on section headings (`background-clip: text`) | #F5C518, #FFE566 | 🟡 Proposed |
+| 2 | Chess notation watermark scrolling upward behind story arc section | #2D1B69 (near-invisible) | 🟡 Proposed |
+| 3 | CRT scanline overlay on classified pages (`repeating-linear-gradient`, no blur) | #000000 at very low opacity | 🟡 Proposed |
+| 4 | Viewport-edge "radar ping" pulse every 8s — thin gold outline fades out | #F5C518, #2D1B69 | 🟡 Proposed |
+| 5 | Character card hover: progressive un-redact of tagline (blocks fall left-to-right on hold) | #ddd6f3, #0f0c1a | 🟡 Proposed |
+| 6 | Chess piece stamp page transition — ♛ scales from center + fades before nav fires | #F5C518, #0a0714 | 🟡 Proposed |
+| 7 | "Data stream" card hover — DOS-green hex characters flow down left edge | #00ff41 | 🟡 Proposed |
+| 8 | Completed arc panels emit a single ✦ that floats upward + fades every ~12s | #F5C518, #FFE566 | 🟡 Proposed |
+| 9 | "Transmission Received" toast — military radio style for all easter egg triggers | #F5C518, #12093a, #2D1B69 | 🟡 Proposed |
+| 10 | Classified redaction static on hover — ████ flickers to ░▒▓ noise then re-solidifies | #F5C518 | 🟡 Proposed |
+| 11 | Site-wide section entrance "ink wipe" (`clip-path`) instead of fade (already on location pages; extend) | (animation only) | 🟡 Proposed |
+| 12 | Slow-moving purple aurora bands drifting across PJCC page backgrounds | #2D1B69, #5B2D8E, #0a0714, #12093a | 🟡 Proposed |
+
+#### Interactive Features (13–22)
+
+| # | Feature | Palette Colors | Status |
+|---|---------|---------------|--------|
+| 13 | Location "fake weather" widget on each location page (hardcoded atmospheric data) | #F5C518, #9b87c0 | 🟡 Proposed |
+| 14 | Floating ♟ "back to top" button — advances on hover, promotes to ♛ on click | #F5C518, #2D1B69 | 🟡 Proposed |
+| 15 | Arrow-key character navigator on /characters/ — focused card gets gold border | #F5C518 | 🟡 Proposed |
+| 16 | "Dead Drop" hidden page (/dead-drop/) — different classified message per day-of-week | Classified amber palette | 🟡 Proposed |
+| 17 | World map Mystery City terminal prompt — type "QD5" to unlock lore snippet | #00ff41, #030a02 | 🟡 Proposed |
+| 18 | Fragment Recovery mini-game (/recovery/) — 12-blank document, 2s hover reveals each word | #F5C518, #0a0714, #ddd6f3 | 🟡 Proposed |
+| 19 | Blog post reading progress bar — 2px gold line at viewport top, fills on scroll | #F5C518, #FFE566 | 🟡 Proposed |
+| 20 | "Share This Transmission" button — copies URL, amber flash "TRANSMISSION COPIED" | #F5C518, #12093a | 🟡 Proposed |
+| 21 | Morse code easter egg on logo — 3 rapid taps triggers amber flash + toast | #F5C518 | 🟡 Proposed |
+| 22 | Daily chess scenario prompt on chess lessons — rotates by day-of-week | #F5C518, #9b87c0 | 🟡 Proposed |
+
+#### Lore / World-Building (23–32)
+
+| # | Feature | Palette Colors | Status |
+|---|---------|---------------|--------|
+| 23 | "Operative Field Manual" page (/manual/) — classified doc, table of contents linking all PJCC pages | Amber classified, #F5C518, #9b87c0 | 🟡 Proposed |
+| 24 | Character dialogue hover bubbles on /characters/ — speech bubble with one in-universe line | #1c1540, #ddd6f3, #F5C518 | 🟡 Proposed |
+| 25 | Mission countdown to Episode 1 on home page (near chess clock area) | #F5C518, #FFE566 | 🟡 Proposed |
+| 26 | "Incident Report" 500 error page — PJCC military amber aesthetic | Classified amber palette | 🟡 Proposed |
+| 27 | Military timestamps on /dispatch/ entries — `[2026-04-28 0347 LOCAL]` from front matter date | #6b5a8e | 🟡 Proposed |
+| 28 | Chess City "Entry Permit" badge — stored in localStorage, injected into footer on all pages | #F5C518, #12093a | 🟡 Proposed |
+| 29 | Lore Glossary page (/glossary/) — PJCC world terms as classified reference document | #F5C518, #ddd6f3 | 🟡 Proposed |
+| 30 | "World State" dynamic summary above world map — 7 hardcoded states, one per weekday | #9b87c0, #F5C518 | 🟡 Proposed |
+| 31 | Character arc "heat map" — chapter dots colored by intensity (pale → gold) | #9b87c0, #F5C518, #FFE566 | 🟡 Proposed |
+| 32 | "Day 1 vs Now" evolution comparison on home page using existing image-compare component | Existing `.img-compare` palette | 🟡 Proposed |
+
+#### Chess-Specific (33–40)
+
+| # | Feature | Palette Colors | Status |
+|---|---------|---------------|--------|
+| 33 | "Opening of the Week" widget on chess lessons — day-of-week rotation, ECO code + moves | #F5C518, #9b87c0, #00ff41 | 🟡 Proposed |
+| 34 | Piece hierarchy infographic on chess lessons — value bars ♟=1 → ♛=9 | #F5C518, #ddd6f3 | 🟡 Proposed |
+| 35 | "Endgame position of the week" — static board image + lichess study link, weekly rotation | #F5C518, #9b87c0 | 🟡 Proposed |
+| 36 | Chess.com "Personal Best" rating row — fetches `best.rating` from stats API, shown in gold | #FFE566 | 🟡 Proposed |
+| 37 | Blindfold training toggle on chess lessons — hides board, shows notation-only text | #F5C518, #2D1B69 | 🟡 Proposed |
+| 38 | "Your next move" daily scenario prompt on chess lessons — rotates by day-of-week | #9b87c0, #ddd6f3 | 🟡 Proposed |
+| 39 | Chess openings "resource briefing" block — curated links styled as classified intel cards | #a78bfa, #F5C518 | 🟡 Proposed |
+| 40 | "Tactics puzzle streak" counter — localStorage tracks daily chess lessons visits | #F5C518, #FFE566 | 🟡 Proposed |
+
+#### Site Architecture / UX (41–50)
+
+| # | Feature | Palette Colors | Status |
+|---|---------|---------------|--------|
+| 41 | Table of contents floating sidebar on long blog posts — IntersectionObserver, desktop only | #a78bfa, #6b5a8e | 🟡 Proposed |
+| 42 | Client-side search (/search/) — Lunr.js, Jekyll-generated index, results as classified cards | #F5C518, #ddd6f3, #1c1540 | 🟡 Proposed |
+| 43 | Dark/light mode toggle in site header — CSS custom properties, localStorage state | #e2e8f0, #000000, #F5C518 | 🟡 Proposed |
+| 44 | Chess-piece lazy-load placeholder for character portraits — ♟ fades out when image arrives | #4a3870 | 🟡 Proposed |
+| 45 | "Classified Site Map" (/sitemap/) — all pages with clearance level badges + descriptions | #F5C518, #ddd6f3, #9b87c0 | 🟡 Proposed |
+| 46 | Print stylesheet (`@media print`) — strips animation, B&W output for character + blog pages | #000000, #ffffff | 🟡 Proposed |
+| 47 | "Recent Transmissions" sidebar on blog index — 3 latest posts as compact side rail | #1c1540, #ddd6f3, #F5C518 | 🟡 Proposed |
+| 48 | "Linked Fragment" badges on blog posts — amber ◈ badge if post ties to a classified fragment | #F5C518, #12093a | 🟡 Proposed |
+| 49 | Mobile swipe easter egg — right-left-right triggers amber flash + "EN PASSANT ACKNOWLEDGED" | #F5C518 | 🟡 Proposed |
+| 50 | **PJCC Command Center sandbox page (/sandbox/)** — streaming console, piece constellation SVG, operative rank, mission countdown, opening intel, fragment recovery grid | #080610, #12093a, #160e30, #2D1B69, #3d2b8a, #5B2D8E, #F5C518, #FFE566, #a78bfa, #9b87c0, #ddd6f3, #00ff41, #030a02 | ✅ Built |
+
+---
+
 ## PENDING / DEFERRED (not yet built)
 - Cinematic Episode Premiere Page (/premiere/ep-01/) — waiting for first animation clip
 - Character Relationship Constellation — built once then nav removed; re-add when characters are fleshed out
