@@ -8,7 +8,9 @@
       "Bash(git -C \"c:/Users/Nate/Desktop/ngreen37.github.io\" add -A)",
       "Bash(git -C c:/Users/Nate/Desktop/ngreen37.github.io commit -m ' *)",
       "Bash(git -C \"c:/Users/Nate/Desktop/ngreen37.github.io\" push)",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(xargs grep *)",
+      "Bash(node tools/flair_checker.js assets/css/style.scss)"
     ]
   }
 }

@@ -4,8 +4,8 @@
 Read these files in full and confirm before generating:
 1. `_pjcc/notes.md` — story bible. Chess gameplay is battle-room style; players inhabit pieces. Princess plays as a pawn, not a queen. This is permanent and non-negotiable.
 2. `_pjcc/flair-log.md` — shipped and rejected items. Do not repeat patterns from either column.
-3. `[path/to/checker]` — validation rules every flair piece must pass.
-4. `[path/to/theme.css]` — Royal Chess tokens (#2D1B69 purple, #F5C518 gold), existing components, animation conventions.
+3. `tools/flair_checker.js` — validation rules every flair piece must pass.
+4. `_assets/css/style_css` — Royal Chess tokens (#2D1B69 purple, #F5C518 gold), existing components, animation conventions.
 
 ## The bar
 Every suggestion must:
