@@ -80,7 +80,11 @@
           <span class="studio-quad-sub">Podcast Coming Soon</span>
         </a>
 
-        <div class="studio-quad studio-quad-blank" aria-hidden="true"></div>
+        <a href="{{ '/sandbox/' | relative_url }}" class="studio-quad studio-quad--sandbox">
+          <span class="studio-quad-title">Command Center</span>
+          <span class="studio-quad-sub">◈ PJCC Operations Terminal</span>
+          <span class="studio-quad-jp">作戦司令室</span>
+        </a>
 
       </div>
 
@@ -116,8 +120,8 @@
     }
 
     type('t1', 'SIGNAL ACQUIRED FROM: ████████████', 300, function() {
-      type('t2', 'ORIGIN: INTERPLANETARY CONSTRUCTION CO.', 200, function() {
-        type('t3', 'DECRYPTING TRANSMISSION…', 200, function() {
+      type('t2', 'ORIGIN: 惑星間建設会社 / INTERPLANETARY CONSTRUCTION CO.', 200, function() {
+        type('t3', '解読中... DECRYPTING TRANSMISSION…', 200, function() {
           setTimeout(function() {
             document.getElementById('t-headline').classList.add('is-visible');
             setTimeout(function() {
