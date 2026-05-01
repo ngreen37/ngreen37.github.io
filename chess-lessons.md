@@ -11,7 +11,7 @@ body_class: theme-bw
     <span class="stat-label">Students Taught</span>
   </div>
   <div class="stat-card">
-    <span class="stat-number" data-target="26">0</span>
+    <span class="stat-number" data-target="27">0</span>
     <span class="stat-label">Classes Taught</span>
   </div>
 </div>
