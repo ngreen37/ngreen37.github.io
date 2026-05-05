@@ -41,3 +41,22 @@ permalink: /evolutions/
   </a>
 {% endfor %}
 </div>
+
+## Pieces
+
+{% assign piece_evos = site.evolutions | where: "category", "piece" %}
+<div class="evo-index-grid">
+{% for evo in piece_evos %}
+  {% assign thumb = evo.versions | first %}
+  <a href="{{ evo.url | relative_url }}" class="evo-index-card">
+    <div class="evo-index-thumb{% unless thumb %} evo-index-placeholder{% endunless %}">
+      {% if thumb %}
+        <img src="{{ thumb.image | relative_url }}" alt="{{ evo.title }}">
+      {% else %}
+        <span>{{ evo.piece_symbol | default: "&#9823;" }}</span>
+      {% endif %}
+    </div>
+    <span class="evo-index-name">{{ evo.title }}</span>
+  </a>
+{% endfor %}
+</div>

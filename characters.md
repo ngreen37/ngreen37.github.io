@@ -87,3 +87,47 @@ permalink: /characters/
   });
 })();
 </script>
+
+## Pieces {#pieces}
+
+<p class="char-flip-sub">The six pieces of the PJCC board — built in Blender, each scaled to the battle-room concept. Renders coming as the project progresses.</p>
+
+<div class="pieces-grid">
+
+  <div class="piece-card">
+    <div class="piece-symbol">&#9823;</div>
+    <div class="piece-name">Pawn</div>
+    <p class="piece-desc">The foot soldier. Dogs in the PJCC world are measured in pawns — the base unit of scale. Common, essential, and quietly capable of becoming anything on the board.</p>
+  </div>
+
+  <div class="piece-card">
+    <div class="piece-symbol">&#9820;</div>
+    <div class="piece-name">Rook</div>
+    <p class="piece-desc">The sentinel. Moves in straight lines, controlling entire ranks and files. A fortress piece — steady, powerful, and the last thing you want standing between you and the king.</p>
+  </div>
+
+  <div class="piece-card">
+    <div class="piece-symbol">&#9821;</div>
+    <div class="piece-name">Bishop</div>
+    <p class="piece-desc">The diagonal thinker. Bound to its color for the entire game, the bishop sees the board from an angle no other piece can. Fast across long stretches, but always moving at a slant.</p>
+  </div>
+
+  <div class="piece-card">
+    <div class="piece-symbol">&#9822;</div>
+    <div class="piece-name">Knight</div>
+    <p class="piece-desc">The unpredictable one. The only piece that leaps over others, moving in an L-shape that defies the grid. Hard to pin down, harder to predict — and the piece Princess is designated as.</p>
+  </div>
+
+  <div class="piece-card">
+    <div class="piece-symbol">&#9819;</div>
+    <div class="piece-name">Queen</div>
+    <p class="piece-desc">The powerhouse. Combines the reach of the rook and the sweep of the bishop into the most dangerous piece on the board. Few can stand in her way.</p>
+  </div>
+
+  <div class="piece-card">
+    <div class="piece-symbol">&#9818;</div>
+    <div class="piece-name">King</div>
+    <p class="piece-desc">The whole point. Every sacrifice, every gambit, every move exists to protect or threaten the king. Slow and vulnerable — but the game ends the moment he falls.</p>
+  </div>
+
+</div>

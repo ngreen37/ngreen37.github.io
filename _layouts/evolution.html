@@ -7,12 +7,16 @@ layout: default
   <div class="evo-top-right">
     {% if page.category == 'location' %}
       <a href="{{ '/locations/' | relative_url }}" class="back-btn">All Locations</a>
+    {% elsif page.category == 'piece' %}
+      <a href="{{ '/characters/' | relative_url }}#pieces" class="back-btn">All Pieces</a>
     {% else %}
       <a href="{{ '/characters/' | relative_url }}" class="back-btn">All Characters</a>
     {% endif %}
+    {% if page.entity_url %}
     <a href="{{ page.entity_url | relative_url }}" class="evo-link-btn">
       View {{ page.category | default: 'Character' | capitalize }} &rarr;
     </a>
+    {% endif %}
   </div>
 </div>
 
@@ -48,7 +52,7 @@ layout: default
   {% else %}
     <div class="evo-empty">
       <span class="evo-empty-icon">&#9813;</span>
-      <p>No versions logged yet. Check back as this {% if page.category == 'location' %}location{% else %}character{% endif %} develops.</p>
+      <p>No versions logged yet. Check back as this {% if page.category == 'location' %}location{% elsif page.category == 'piece' %}piece{% else %}character{% endif %} develops.</p>
     </div>
   {% endif %}
 
