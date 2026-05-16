@@ -25,7 +25,7 @@ BASE_HEIGHT = 0.05
 
 # Body (tapered cylinder)
 BODY_BOTTOM_RADIUS = 0.25
-BODY_TOP_RADIUS    = 0.18
+BODY_TOP_RADIUS    = 0.10
 BODY_HEIGHT        = 0.55
 
 # Collar ring

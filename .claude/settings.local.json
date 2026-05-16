@@ -10,7 +10,12 @@
       "Bash(git -C \"c:/Users/Nate/Desktop/ngreen37.github.io\" push)",
       "Bash(python3 -c ' *)",
       "Bash(xargs grep *)",
-      "Bash(node tools/flair_checker.js assets/css/style.scss)"
+      "Bash(node tools/flair_checker.js assets/css/style.scss)",
+      "Bash(grep -v \"^--$\")",
+      "Bash(git -C \"c:/Users/Nate/Desktop/ngreen37.github.io\" status)",
+      "Bash(git -C \"c:/Users/Nate/Desktop/ngreen37.github.io\" log --oneline -3)",
+      "Bash(git -C \"c:/Users/Nate/Desktop/ngreen37.github.io\" add _evolutions/bishop.md _evolutions/king.md _evolutions/knight.md _evolutions/pawn.md _evolutions/queen.md _evolutions/rook.md _layouts/evolution.html assets/css/style.scss characters.md evolutions.md)",
+      "Bash(where blender *)"
     ]
   }
 }
