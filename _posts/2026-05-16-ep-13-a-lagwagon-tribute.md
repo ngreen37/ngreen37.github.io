@@ -4,12 +4,12 @@ title: Ep. 13 - A Lagwagon Tribute
 date: 2026-05-16
 tags: [Lagwagon, Blender, Quotes]
 ---
-### Listening to: Lagwagon - May 16th
-<iframe src="https://open.spotify.com/embed/track/TRACK_ID" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+### Listening to: Lagwagon - May 16
+<iframe src="https://open.spotify.com/embed/track/1L3fMMyr9tqSy2f0EbX2lR" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
 Just another Saturday. Yeah, right.  I am back in action after about ten days of workworkwork, playoff heartbreak for my Minnesota teams, and spending time with the dog.   Chess is effectively over after a makeup class, my hard work has been paying off and I can pare down my night job, and, as such, the PJCC dream remains alive!  
 
-Lagwagon's, Bad Astronaut's, and Joey Cape's solo albums are just fantastic.  He is very talented with a great voice, and has been incredibly prolific over the years.  I hope they are doing a big show somewhere today.  If it's anywhere within three hours of me, I will have thrown my PC out of the window and you may not have any new blogs for awhile!
+Lagwagon's, Bad Astronaut's, and Joey Cape's solo albums are just fantastic.  He is very talented with a great voice, and has been incredibly prolific over the years.  Today is a Saturday, May 16th, and I hope they are doing a big show somewhere today; I know they have done that in the past even when not necessarily touring.  If it's anywhere within three hours of me, I will have thrown my PC out of the window and you may not have any new blogs for awhile!
 
 ### What I worked on:
   - Studying loop cuts and extruding faces along normals.  Man, Blender is tricky.  
