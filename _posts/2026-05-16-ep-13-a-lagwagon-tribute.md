@@ -2,6 +2,7 @@
 layout: post
 title: Ep. 13 - A Lagwagon Tribute
 date: 2026-05-16
+spotify: 1L3fMMyr9tqSy2f0EbX2lR
 tags: [Lagwagon, Blender, Quotes]
 ---
 ### Listening to: Lagwagon - May 16

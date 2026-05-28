@@ -2,6 +2,7 @@
 layout: post
 title: Ep. 14 - Three Days of Banging Head Against Wall
 date: 2026-05-25
+spotify: 57KLy7PiYG98p11EN3LoRb
 tags: [Running, Blender, Lazerbeak]
 ---
 ### Listening to: Lazerbeak - Salt and Sea
