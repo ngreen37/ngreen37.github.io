@@ -3,6 +3,7 @@ layout: location
 title: The Sea
 location_type: North Region
 permalink: /locations/the-sea/
+video: /assets/scenes/Sea_Scene_May_2026.mkv
 ---
 
 Separates Checker Town from Chess City
@@ -20,5 +21,5 @@ There is a chessboard there where important games are played.  What the main cha
 ## Role in the Story
 It is the setting of a great challenge, when playing on the sea chessboard.  Throughout the story, it represents the divide between Checker Town and Chess City.
 
-## Art
-*Map or illustration coming soon.*
+## Scene Progress
+- **May 2026** — First render. Sea environment blocking.
