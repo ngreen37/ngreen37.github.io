@@ -399,7 +399,7 @@ document.querySelectorAll('.hstat-num').forEach(function(el) {
 (function() {
   var el = document.getElementById('home-mc-display');
   if (!el) return;
-  var target = new Date('2027-01-15T00:00:00Z').getTime();
+  var target = new Date('2027-04-21T00:00:00Z').getTime();
   function pad(n) { return n < 10 ? '0' + n : String(n); }
   function tick() {
     var diff = Math.max(0, target - Date.now());
