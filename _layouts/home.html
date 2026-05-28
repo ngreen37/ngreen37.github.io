@@ -2,8 +2,8 @@
 layout: default
 ---
 
-{% comment %} Day counter: March 1 2026 00:00 UTC = Unix 1772323200 {% endcomment %}
-{% assign start_ts   = 1772323200 %}
+{% comment %} Day counter: March 1 2026 00:00 EDT (04:00 UTC) = Unix 1772337600 {% endcomment %}
+{% assign start_ts   = 1772337600 %}
 {% assign now_ts     = site.time | date: "%s" | plus: 0 %}
 {% assign days_since = now_ts | minus: start_ts | divided_by: 86400 | plus: 1 %}
 
@@ -316,7 +316,7 @@ document.querySelectorAll('.hstat-num').forEach(function(el) {
 (function() {
   var clockEl = document.getElementById('chess-clock-display');
   if (!clockEl) return;
-  var startMs = 1772323200000; // March 1, 2026 00:00 UTC
+  var startMs = 1772337600000; // March 1, 2026 00:00 EDT (04:00 UTC)
   function pad(n) { return n < 10 ? '0' + n : String(n); }
   function tick() {
     var elapsed = Math.max(0, Date.now() - startMs);
@@ -342,7 +342,7 @@ document.querySelectorAll('.hstat-num').forEach(function(el) {
   ];
   var mWrap = document.getElementById('chess-milestone-wrap');
   if (!mWrap) return;
-  var days = Math.floor(Math.max(0, Date.now() - 1772323200000) / 86400000);
+  var days = Math.floor(Math.max(0, Date.now() - 1772337600000) / 86400000);
   var label = '';
   for (var i = milestones.length - 1; i >= 0; i--) {
     if (days >= milestones[i][0]) { label = milestones[i][1]; break; }
@@ -399,7 +399,7 @@ document.querySelectorAll('.hstat-num').forEach(function(el) {
 (function() {
   var el = document.getElementById('home-mc-display');
   if (!el) return;
-  var target = new Date('2027-04-21T00:00:00Z').getTime();
+  var target = new Date('2027-04-21T04:00:00Z').getTime(); // midnight EDT
   function pad(n) { return n < 10 ? '0' + n : String(n); }
   function tick() {
     var diff = Math.max(0, target - Date.now());
