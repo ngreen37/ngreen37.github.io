@@ -10,6 +10,7 @@ Run from the root of your site: C:\\Users\\Nate\\Desktop\\ngreen37.github.io
 
 import sys
 import os
+import subprocess
 from datetime import date
 
 def slugify(title):
@@ -62,7 +63,7 @@ Intro text here.
         f.write(template)
 
     print(f"Created: _posts/{filename}")
-    print(f"Open it: code _posts/{filename}")
+    subprocess.Popen(["code", filepath], shell=True)
 
 if __name__ == "__main__":
     main()

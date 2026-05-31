@@ -14,7 +14,6 @@ None are currently marked — tracking hasn't been kept current.
 - Alkaline Trio – Maybe I'll Catch Fire, Continental
 - Andre Nickatina – Conversation With a Devil
 - Armchair Martian – Crestfallen, Break Your Frame, Never Coming Home, Meldrum Attic, Heart, I Never, Mexican Song
-- At the Drive-In – Starslight
 - Atmosphere – Get Fly
 - Audioslave – I Am the Highway
 - BABYMETAL – Road of Resistance
@@ -27,10 +26,9 @@ None are currently marked — tracking hasn't been kept current.
 - Dananananakroyd – Infinity Milk
 - Danny Brown – Ain't it Funny, Lie4
 - Dead To Me – Little Brother
-- Don McLean – Vincent
 - Dr. Dog – The World May Never Know
 - El Ten Eleven – Transitions
-- Fang Island – Make Me
+
 - Fang Island – Sisterly
 - Firewater – Green Light
 - Gang of Youths – Let Me Down Easy
@@ -38,16 +36,13 @@ None are currently marked — tracking hasn't been kept current.
 - Jay-Z – Moment of Clarity, Public Service Announcement (Interlude)
 - Jim Croce – Thursday, Age, These Dreams
 - Joey Cape – I Know How to Run
-- Lazerbeak – Salt and Sea
 - Lawrence Arms, The – Are You There, Margaret? It's Me, God
 - Led Zeppelin – Over the Hills and Far Away
 - Less than Jake – The Science of Selling Yourself Short
 - LiSA – Rally Go Round
-- LiSA – traumerei
 - Linkin Park – Papercut
 - Malibu Ken – Corn Maze
 - Masayoshi
-- Minus the Bear – Drilling
 - My Morning Jacket – Golden
 - NOFX – The Decline, We Threw Gasoline…, One Million Coasters
 - Oasis – Don't Look Back in Anger
@@ -55,7 +50,7 @@ None are currently marked — tracking hasn't been kept current.
 - Plastic Constellations – floated down and flew around
 - Prince – Uptown
 - Rancid – Side Kick
-- Ratatat – Cream on Chrome
+x
 - Rod Stewart – Young Turks
 - RX Bandits – Republic
 - Sound of Animals Fighting, The – Act III: Modulate Back to the Tonic
@@ -64,13 +59,31 @@ None are currently marked — tracking hasn't been kept current.
 - Strokes, The – Automatic Stop
 - Swingin' Utters – Pills and Smoke
 - Tegan and Sara – Walking With a Ghost
-- The Advantage – Stage Select + Metal Man
-- The Falcon – When I Give the Signal, Run!
 - The Fight – Can't Be Bothered
 - The Flys – Got You (Where I Want You)
-- The Wrens – Ex-Girl Collection, Everyone Choose Sides
+- The Wrens – Ex-Girl Collection, 
 - Tool – Parabola
 - TRUSTcompany – Downfall
 - Ween – Chocolate Town
-- White Reaper – Might Be Right
 - zebrahead – Strength
+
+
+
+Used
+- White Reaper – Might Be Right
+- The Falcon – When I Give the Signal, Run!
+- LiSA – traumerei
+- Lazerbeak – Salt and Sea
+- At the Drive-In – Starslight
+- Minus the Bear – Drilling
+- The Wrens - Everyone Choose Sides
+- The Advantage – Stage Select + Metal Man
+- Don McLean – Vincen
+- Don McLean – Vincen
+- Fang Island – Make Me
+- Lagwagon - May 16th
+- Bad Religion - Generator
+- White Reaper - Might Be Right
+- Brendan Kelly and the Wandering Birds - Malthusian Clown
+
+
