@@ -8,7 +8,7 @@ body_class: theme-bw
 <div class="soundtrack-page">
   <div class="soundtrack-eyebrow">McPuppy Studios — The Build Playlist</div>
   <h1>Soundtrack</h1>
-  <p class="soundtrack-count">Every song played while building this. In order. — 13 tracks so far.</p>
+  <p class="soundtrack-count">Every song played while building this. In order. — 15 tracks so far.</p>
 
   <div class="track-item">
     <div class="track-post-label">Ep. 1 — First Post</div>
@@ -111,6 +111,22 @@ body_class: theme-bw
     <div class="track-title">Lazerbeak - Salt and Sea</div>
     <div class="track-embed-wrap">
       <iframe src="https://open.spotify.com/embed/track/57KLy7PiYG98p11EN3LoRb" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+    </div>
+  </div>
+
+  <div class="track-item">
+    <div class="track-post-label">Ep. 15 — 90-Day Mark!</div>
+    <div class="track-title">White Reaper - Might Be Right</div>
+    <div class="track-embed-wrap">
+      <iframe src="https://open.spotify.com/embed/track/5YTDnlr6qzl0XIGCqHP7sx" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+    </div>
+  </div>
+
+  <div class="track-item">
+    <div class="track-post-label">Ep. 16 — A New Vision</div>
+    <div class="track-title">Backstreet Boys - The Call</div>
+    <div class="track-embed-wrap">
+      <iframe src="https://open.spotify.com/embed/track/1mxTCArq9EhSg4QPGqhjhT" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
     </div>
   </div>
 

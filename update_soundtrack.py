@@ -6,7 +6,9 @@ Usage:
     python update_soundtrack.py
 
 Run from root: C:\\Users\\Nate\\Desktop\\ngreen37.github.io
-Also triggered automatically by the Claude Code PostToolUse hook whenever a _posts/*.md file is saved.
+Also triggered automatically by:
+  - Claude Code PostToolUse hook whenever a _posts/*.md file is saved via Claude
+  - git pre-commit hook whenever _posts/*.md files are staged
 
 Convention: each episode post should have in its frontmatter:
     spotify: <track_id>
@@ -19,6 +21,7 @@ from the first Spotify iframe in the post body.
 
 import os
 import re
+import sys
 import glob
 from datetime import datetime
 
@@ -68,7 +71,13 @@ def build_ep_label(title):
     return title
 
 
+def extract_ep_number(ep_label):
+    m = re.match(r"Ep\.\s*(\d+)", ep_label)
+    return int(m.group(1)) if m else None
+
+
 tracks = []
+skipped = []
 
 for post_path in sorted(glob.glob(os.path.join(POSTS_DIR, "*.md"))):
     basename = os.path.basename(post_path)
@@ -80,6 +89,8 @@ for post_path in sorted(glob.glob(os.path.join(POSTS_DIR, "*.md"))):
     track_id = extract_track(fm, content)
     song_label = extract_song_label(content)
     if not track_id or not song_label:
+        title = fm.get("title", basename)
+        skipped.append(title)
         continue
     date_match = re.match(r"(\d{4}-\d{2}-\d{2})", basename)
     date = datetime.strptime(date_match.group(1), "%Y-%m-%d") if date_match else datetime.min
@@ -88,6 +99,31 @@ for post_path in sorted(glob.glob(os.path.join(POSTS_DIR, "*.md"))):
 
 tracks.sort(key=lambda x: x[0])
 
+# --- Order validation ---
+order_ok = True
+ep_numbers = [(i, extract_ep_number(t[1]), t[1]) for i, t in enumerate(tracks)]
+ep_nums_only = [n for _, n, _ in ep_numbers if n is not None]
+
+if ep_nums_only:
+    for i in range(1, len(ep_nums_only)):
+        if ep_nums_only[i] <= ep_nums_only[i - 1]:
+            print(f"ORDER WARNING: Ep. {ep_nums_only[i]} appears after Ep. {ep_nums_only[i-1]} in date order — check post dates.")
+            order_ok = False
+
+    # Check for gaps
+    min_ep, max_ep = ep_nums_only[0], ep_nums_only[-1]
+    present = set(ep_nums_only)
+    gaps = [n for n in range(min_ep, max_ep + 1) if n not in present]
+    if gaps:
+        print(f"ORDER NOTE: Missing episodes (no song or placeholder): Ep. {', Ep. '.join(str(g) for g in gaps)}")
+
+if order_ok and ep_nums_only:
+    print(f"Order check: OK — episodes {ep_nums_only[0]}–{ep_nums_only[-1]} in sequence.")
+
+if skipped:
+    print(f"Skipped (no Spotify ID or 'Listening to' line): {', '.join(skipped)}")
+
+# --- Generate soundtrack.md ---
 track_blocks = []
 for _, ep_label, song_label, track_id in tracks:
     track_blocks.append(f"""  <div class="track-item">

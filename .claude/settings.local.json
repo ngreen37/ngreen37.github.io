@@ -18,7 +18,8 @@
       "Bash(where blender *)",
       "Bash(python update_soundtrack.py)",
       "Skill(update-config)",
-      "Skill(update-config:*)"
+      "Skill(update-config:*)",
+      "Bash(findstr /v node_modules)"
     ]
   },
   "hooks": {
