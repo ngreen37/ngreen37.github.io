@@ -13,7 +13,7 @@ Speaking of vision, I don't think I have even shared it yet:  the idea is to cre
 - There are so many avenues to take, and I will likely choose two or three to focus on; one of them being a cartoon series
 
 ### What I worked on:
-  - I've got my sea scene and dog-chess-board for May done.  They are very basic, but are supposed to mbe.  
+  - I've got my sea scene and dog-chess-board for May done.  They are very basic, but are supposed to be.  
 
 ### What's next:
   - I am looking forward to a day and a half off to get some more Blender time in!  
