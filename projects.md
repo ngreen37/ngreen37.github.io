@@ -64,12 +64,12 @@ body_class: theme-bw
     </ul>
   </div>
 
-  <div class="project-card project-card-live">
+  <div class="project-card project-card-active">
     <div class="project-card-corner-piece" aria-hidden="true">♟</div>
     <div class="project-card-header">
-      <span class="project-status project-status-live">
+      <span class="project-status project-status-active">
         <span class="project-status-dot"></span>
-        Live
+        In Development
       </span>
       <h2 class="project-title">Chess Lessons</h2>
     </div>
