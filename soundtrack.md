@@ -8,7 +8,7 @@ body_class: theme-bw
 <div class="soundtrack-page">
   <div class="soundtrack-eyebrow">McPuppy Studios — The Build Playlist</div>
   <h1>Soundtrack</h1>
-  <p class="soundtrack-count">Every song played while building this. In order. — 16 tracks so far.</p>
+  <p class="soundtrack-count">Every song played while building this. In order. — 17 tracks so far.</p>
 
   <div class="track-item">
     <div class="track-post-label">Ep. 1 — First Post</div>
@@ -135,6 +135,14 @@ body_class: theme-bw
     <div class="track-title">Dr. Dog - The World May Never Know</div>
     <div class="track-embed-wrap">
       <iframe src="https://open.spotify.com/embed/track/5RXwS2p2yXqGtBEW91sV8C" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+    </div>
+  </div>
+
+  <div class="track-item">
+    <div class="track-post-label">Ep. 18 — PJCC Games are now live!</div>
+    <div class="track-title">Lilly Wood and The Prick, Robin Schulz - Prayer in C (Robin Schulz Radio Edit)</div>
+    <div class="track-embed-wrap">
+      <iframe src="https://open.spotify.com/embed/track/5fnA9mkIfScSqHIpeDyvck" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
     </div>
   </div>
 

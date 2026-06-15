@@ -1,6 +1,6 @@
 ---
 layout: tag
-tag: blender
+tag: Blender
 title: "Blender"
 permalink: /tags/blender/
 ---
