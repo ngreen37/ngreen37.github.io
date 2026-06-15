@@ -225,14 +225,15 @@ body_class: theme-bw
     </div>
   </div>
 
-  <div class="project-card project-card-active">
+  <div class="project-card project-card-featured">
+    <div class="featured-ribbon">PLAYABLE NOW</div>
     <div class="project-card-corner-piece" aria-hidden="true">⛴</div>
     <div class="project-card-header">
-      <span class="project-status project-status-active">
+      <span class="project-status project-status-done">
         <span class="project-status-dot"></span>
-        In Development
+        Completed (pending improvements)
       </span>
-      <h2 class="project-title">Ferry Delayed</h2>
+      <h2 class="project-title">Ferry Delayed <span class="ver">v1.1</span></h2>
     </div>
     <p class="project-desc">A sliding-block logic puzzle set at the gridlocked Shogi Island ferry dock. Every crate slides in a straight line, like a rook; drag them clear in the right order and slide Princess onto the ferry. Five computer-verified crossings, each with an optimal par to chase.</p>
     <ul class="project-details">
@@ -240,27 +241,8 @@ body_class: theme-bw
       <li><strong>Status:</strong> Playable — more crossings in progress</li>
     </ul>
     <div class="project-links">
-      <a href="/games/ferry-delayed/" class="project-link">Play Now &rarr;</a>
+      <a href="/games/ferry-delayed/" class="project-link project-link-play">▶ PLAY NOW</a>
       <a href="/games/" class="project-link">All Games</a>
-    </div>
-  </div>
-
-  <div class="project-card project-card-terminated">
-    <div class="project-card-corner-piece" aria-hidden="true">♞</div>
-    <div class="project-card-header">
-      <span class="project-status project-status-terminated">
-        <span class="project-status-dot"></span>
-        TERMINATED
-      </span>
-      <h2 class="project-title">Knight's Tour</h2>
-    </div>
-    <p class="project-desc">The centuries-old chess puzzle, reframed as Princess's journey. Hop the knight across every square of a region exactly once, then string five growing boards — 5×5 up to a full 8×8 — into the whole road from Checker Town to Chess City. Pulled from the main lineup — but still fully playable right here.</p>
-    <ul class="project-details">
-      <li><strong>Format:</strong> Browser game</li>
-      <li><strong>Status:</strong> Terminated — not listed on the games page, playable from here only</li>
-    </ul>
-    <div class="project-links">
-      <a href="/games/knights-tour/" class="project-link project-link-terminated">▶ PLAY IT HERE</a>
     </div>
   </div>
 
@@ -358,6 +340,57 @@ body_class: theme-bw
     </div>
   </div>
 
+  <div class="project-card project-card-terminated">
+    <div class="project-card-corner-piece" aria-hidden="true">♞</div>
+    <div class="project-card-header">
+      <span class="project-status project-status-terminated">
+        <span class="project-status-dot"></span>
+        TERMINATED
+      </span>
+      <h2 class="project-title">Knight's Tour</h2>
+    </div>
+    <p class="project-desc">The centuries-old chess puzzle, reframed as Princess's journey. Hop the knight across every square of a region exactly once, then string five growing boards — 5×5 up to a full 8×8 — into the whole road from Checker Town to Chess City. Pulled from the main lineup — but still fully playable right here.</p>
+    <ul class="project-details">
+      <li><strong>Format:</strong> Browser game</li>
+      <li><strong>Status:</strong> Terminated — not listed on the games page, playable from here only</li>
+    </ul>
+    <div class="project-links">
+      <a href="/games/knights-tour/" class="project-link project-link-terminated">▶ PLAY IT HERE</a>
+    </div>
+  </div>
+
 </div>
+
+<h2 class="games-index-heading">All Games</h2>
+<ul class="games-index">
+  <li><a href="/games/dungeon/">Princess Dungeon</a> <span class="games-index-note">— in development</span></li>
+  <li><a href="/games/notation-run/">Notation Blitz <span class="ver">v1.4</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/space-run/">Space Run</a> <span class="games-index-note">— in development</span></li>
+  <li><a href="/games/pirc-protocol/">The Pirc Protocol <span class="ver">v1.1</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/fork-in-the-road/">Fork in the Road <span class="ver">v1.1</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/sand-mine-depths/">Sand Mine Depths <span class="ver">v1.1</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/cipher/">CIPHER <span class="ver">v1.2</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/clearance-delta/">Clearance: DELTA <span class="ver">v1.2</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/ferry-delayed/">Ferry Delayed <span class="ver">v1.1</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/knights-tour/">Knight's Tour</a> <span class="games-index-term">— terminated</span></li>
+</ul>
+
+<style>
+.games-index-heading { color: #F5C518; margin-top: 2.4rem; }
+.games-index { list-style: none; padding: 0; margin: 0.6rem 0 1.4rem; }
+.games-index li {
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 8px 0; border-bottom: 1px solid rgba(245,197,24,0.18);
+}
+.games-index a { color: #f0e6ff; text-decoration: none; font-weight: 700; }
+.games-index a:hover { color: #ffd740; }
+.games-index .ver { font-size: 0.72em; color: #ff8fd0; vertical-align: super; }
+.games-index-done {
+  font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em;
+  color: #04110a; background: #6bffb8; border-radius: 999px; padding: 2px 8px; font-weight: 800;
+}
+.games-index-note { font-size: 0.8rem; color: #9a7fd4; }
+.games-index-term { font-size: 0.8rem; color: #ff6b6b; }
+</style>
 
 <p class="projects-footer-note">More in the works. Check the <a href="/blog/">blog</a> for updates.</p>

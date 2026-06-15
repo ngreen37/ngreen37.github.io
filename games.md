@@ -6,12 +6,12 @@ permalink: /games/
 
 <div class="games-grid">
 
-  <a class="game-card" href="{{ '/games/dungeon/' | relative_url }}">
+  <a class="game-card game-card-dim" href="{{ '/games/dungeon/' | relative_url }}">
     <div class="game-card-icon">♟</div>
     <div class="game-card-body">
       <h2>Princess Dungeon</h2>
       <p>A chessboard dungeon crawler. Clear each room. Reach the exit.</p>
-      <span class="game-tag">Playable</span>
+      <span class="game-tag game-tag-soon">In Development</span>
     </div>
   </a>
 
@@ -24,12 +24,12 @@ permalink: /games/
     </div>
   </a>
 
-  <a class="game-card" href="{{ '/games/space-run/' | relative_url }}">
+  <a class="game-card game-card-dim" href="{{ '/games/space-run/' | relative_url }}">
     <div class="game-card-icon">✦</div>
     <div class="game-card-body">
       <h2>Space Run</h2>
       <p>A Star Fox-style chess runner. Skate across the pieces the CEO throws at you and ride each track to its end.</p>
-      <span class="game-tag">Playable</span>
+      <span class="game-tag game-tag-soon">In Development</span>
     </div>
   </a>
 
@@ -143,5 +143,22 @@ permalink: /games/
   border: 1px solid #F5C518;
   border-radius: 4px;
   padding: 2px 7px;
+}
+
+/* Not-yet-ready games: dimmed, muted border, "in development" tag */
+.game-card-dim {
+  opacity: 0.55;
+  filter: grayscale(0.55);
+  border-color: #6b5fa0;
+}
+.game-card-dim:hover {
+  opacity: 0.8;
+  filter: grayscale(0.2);
+  background: #2D1B69;
+  border-color: #8a7bc0;
+}
+.game-tag-soon {
+  color: #b9a8e6;
+  border-color: #6b5fa0;
 }
 </style>
