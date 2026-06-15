@@ -7,6 +7,49 @@ body_class: theme-bw
 
 <p class="projects-intro">McPuppy Studios is an independent creative studio built around storytelling, animation, and chess. Everything here is built from the ground up — one idea at a time.</p>
 
+<style>
+/* ---- Featured "Completed, playable now" card (Notation Blitz) ---- */
+.project-card-featured {
+  position: relative;
+  overflow: hidden;
+  border: 2px solid #F5C518 !important;
+  background: linear-gradient(135deg, #1f1147 0%, #34206f 100%) !important;
+  animation: blitzGlow 2.4s ease-in-out infinite;
+}
+@keyframes blitzGlow {
+  0%, 100% { box-shadow: 0 0 16px 2px rgba(245,197,24,0.35), inset 0 0 34px rgba(245,197,24,0.05); }
+  50%      { box-shadow: 0 0 34px 7px rgba(245,197,24,0.7),  inset 0 0 44px rgba(245,197,24,0.12); }
+}
+.project-card-featured .project-title { color: #F5C518 !important; }
+.project-card-featured .project-title .ver { font-size: 0.62em; color: #ff8fd0; vertical-align: super; letter-spacing: 1px; }
+.project-card-featured .project-desc { color: #e3d6ff !important; }
+.project-card-featured .project-details,
+.project-card-featured .project-details li { color: #c9b6ef !important; }
+.project-card-featured .project-details strong { color: #fff !important; }
+.project-card-featured .project-card-corner-piece { color: rgba(245,197,24,0.22) !important; }
+
+.project-status-done {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #6bffb8; color: #04110a !important; font-weight: 800;
+  border-radius: 999px; padding: 4px 12px; letter-spacing: 0.3px;
+}
+.project-status-done .project-status-dot { background: #04110a; animation: donePulse 1.3s ease-in-out infinite; }
+@keyframes donePulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } }
+
+.featured-ribbon {
+  position: absolute; top: 16px; right: -42px; transform: rotate(45deg);
+  background: #ff8fd0; color: #1a0f3d; font-weight: 900; font-size: 11px; letter-spacing: 1.5px;
+  padding: 5px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.45); z-index: 2;
+}
+.project-link-play {
+  background: #F5C518 !important; color: #1a0f3d !important; font-weight: 900 !important;
+  border: none !important; border-radius: 999px !important; padding: 9px 22px !important;
+  box-shadow: 0 0 14px rgba(245,197,24,0.55); animation: playPulse 1.5s ease-in-out infinite;
+}
+.project-link-play:hover { background: #ffd740 !important; }
+@keyframes playPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.07); } }
+</style>
+
 <div class="projects-list">
 
   <div class="project-card project-card-active">
@@ -47,26 +90,6 @@ body_class: theme-bw
     </ul>
     <div class="project-links">
       <a href="/games/dungeon/" class="project-link">Play Now &rarr;</a>
-      <a href="/games/" class="project-link">All Games</a>
-    </div>
-  </div>
-
-  <div class="project-card project-card-active">
-    <div class="project-card-corner-piece" aria-hidden="true">♫</div>
-    <div class="project-card-header">
-      <span class="project-status project-status-active">
-        <span class="project-status-dot"></span>
-        In Development
-      </span>
-      <h2 class="project-title">Notation Run</h2>
-    </div>
-    <p class="project-desc">A coordinate-reading rhythm game set in the streets of Checker Town. Square names drop on the beat — click them before they pass the gate. Includes a Pirc Defense mode that traces the Rival's opening move by move.</p>
-    <ul class="project-details">
-      <li><strong>Format:</strong> Browser game</li>
-      <li><strong>Status:</strong> Playable — more openings and tracks in progress</li>
-    </ul>
-    <div class="project-links">
-      <a href="/games/notation-run/" class="project-link">Play Now &rarr;</a>
       <a href="/games/" class="project-link">All Games</a>
     </div>
   </div>
@@ -301,6 +324,27 @@ body_class: theme-bw
     <ul class="project-details">
       <li><strong>Status:</strong> Projects linked when published</li>
     </ul>
+  </div>
+
+  <div class="project-card project-card-featured">
+    <div class="featured-ribbon">PLAYABLE NOW</div>
+    <div class="project-card-corner-piece" aria-hidden="true">♫</div>
+    <div class="project-card-header">
+      <span class="project-status project-status-done">
+        <span class="project-status-dot"></span>
+        Completed (pending improvements)
+      </span>
+      <h2 class="project-title">Notation Blitz <span class="ver">v1.3</span></h2>
+    </div>
+    <p class="project-desc">A coordinate-reading rhythm game set in the streets of Checker Town. Square names drop on the beat — click them before they pass the gate. Forgiving timing, an approach ring that tells you exactly when to hit, saved personal bests, and a Pirc Defense mode that traces the Rival's opening move by move.</p>
+    <ul class="project-details">
+      <li><strong>Format:</strong> Browser game</li>
+      <li><strong>Status:</strong> Completed — playable now, polish ongoing</li>
+    </ul>
+    <div class="project-links">
+      <a href="/games/notation-run/" class="project-link project-link-play">▶ PLAY NOW</a>
+      <a href="/games/" class="project-link">All Games</a>
+    </div>
   </div>
 
 </div>

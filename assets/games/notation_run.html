@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PJCC: Notation Run</title>
+<title>PJCC: Notation Blitz v1.3</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -176,7 +176,7 @@
   <!-- TITLE SCREEN -->
   <div class="overlay" id="title-screen">
     <div class="ov-eyebrow">Checker Town · Coordinate Drill</div>
-    <div class="ov-title">NOTATION RUN</div>
+    <div class="ov-title">NOTATION BLITZ <span style="font-size:0.5em;color:#ff8fd0;vertical-align:super;letter-spacing:1px;">v1.3</span></div>
     <div class="ov-sub">
       Calls drop in on the beat. When a square's name reaches the
       <b style="color:#F5C518">gate</b>, click that square on the board.
@@ -248,13 +248,13 @@ const COLORS = {
 
 // Timing windows are a fraction of the gap between calls (computed per game in
 // newGame as G.goodW / G.perfectW). Bigger GOOD_FRAC = far more forgiving.
-const PERFECT_FRAC = 0.18;
-const GOOD_FRAC = 0.40;
+const PERFECT_FRAC = 0.20;
+const GOOD_FRAC = 0.46;
 
 const DIFFS = {
-  easy:   { bpm: 58,  bpc: 2, calls: 18, label: 'Stroll' },
-  medium: { bpm: 80,  bpc: 2, calls: 22, label: 'March' },
-  hard:   { bpm: 110, bpc: 2, calls: 26, label: 'Sprint' },
+  easy:   { bpm: 43, bpc: 2, calls: 18, label: 'Stroll' },
+  medium: { bpm: 60, bpc: 2, calls: 22, label: 'March' },
+  hard:   { bpm: 82, bpc: 2, calls: 26, label: 'Sprint' },
 };
 
 // ---- Personal bests (per mode + tempo), saved in the browser ----
