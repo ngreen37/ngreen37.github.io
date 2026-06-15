@@ -191,6 +191,66 @@ body_class: theme-bw
     </div>
   </div>
 
+  <div class="project-card project-card-active">
+    <div class="project-card-corner-piece" aria-hidden="true">Δ</div>
+    <div class="project-card-header">
+      <span class="project-status project-status-active">
+        <span class="project-status-dot"></span>
+        In Development
+      </span>
+      <h2 class="project-title">Clearance: DELTA</h2>
+    </div>
+    <p class="project-desc">An operative trivia exam in the style of the Classified archive. Answer questions on chess rules, tactics, and history — and on the PJCC files themselves — to climb the clearance ladder from Recruit to Above Omega. Every promotion unredacts another dossier fragment; three wrong answers revokes your access.</p>
+    <ul class="project-details">
+      <li><strong>Format:</strong> Browser game</li>
+      <li><strong>Status:</strong> Playable — more questions in progress</li>
+    </ul>
+    <div class="project-links">
+      <a href="/games/clearance-delta/" class="project-link">Play Now &rarr;</a>
+      <a href="/games/" class="project-link">All Games</a>
+    </div>
+  </div>
+
+  <div class="project-card project-card-active">
+    <div class="project-card-corner-piece" aria-hidden="true">⛴</div>
+    <div class="project-card-header">
+      <span class="project-status project-status-active">
+        <span class="project-status-dot"></span>
+        In Development
+      </span>
+      <h2 class="project-title">Ferry Delayed</h2>
+    </div>
+    <p class="project-desc">A sliding-block logic puzzle set at the gridlocked Shogi Island ferry dock. Every crate slides in a straight line, like a rook; drag them clear in the right order and slide Princess onto the ferry. Five computer-verified crossings, each with an optimal par to chase.</p>
+    <ul class="project-details">
+      <li><strong>Format:</strong> Browser game</li>
+      <li><strong>Status:</strong> Playable — more crossings in progress</li>
+    </ul>
+    <div class="project-links">
+      <a href="/games/ferry-delayed/" class="project-link">Play Now &rarr;</a>
+      <a href="/games/" class="project-link">All Games</a>
+    </div>
+  </div>
+
+  <div class="project-card project-card-active">
+    <div class="project-card-corner-piece" aria-hidden="true">♞</div>
+    <div class="project-card-header">
+      <span class="project-status project-status-active">
+        <span class="project-status-dot"></span>
+        In Development
+      </span>
+      <h2 class="project-title">Knight's Tour</h2>
+    </div>
+    <p class="project-desc">The centuries-old chess puzzle, reframed as Princess's journey. Hop the knight across every square of a region exactly once, then string five growing boards — 5×5 up to a full 8×8 — into the whole road from Checker Town to Chess City. Undo and a Warnsdorff hint keep it fair.</p>
+    <ul class="project-details">
+      <li><strong>Format:</strong> Browser game</li>
+      <li><strong>Status:</strong> Playable — larger boards in progress</li>
+    </ul>
+    <div class="project-links">
+      <a href="/games/knights-tour/" class="project-link">Play Now &rarr;</a>
+      <a href="/games/" class="project-link">All Games</a>
+    </div>
+  </div>
+
   <div class="project-card project-card-soon">
     <div class="project-card-corner-piece" aria-hidden="true">♞</div>
     <div class="project-card-header">

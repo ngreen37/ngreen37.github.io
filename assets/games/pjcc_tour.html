@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>PJCC: Knight's Tour</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; background: #160a33; overflow: hidden;
+    font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  #stage { position: relative; width: 480px; max-width: 100vw; }
+  #canvas { display: block; width: 100%; border: 3px solid #F5C518; border-radius: 12px;
+    background: #241152; box-shadow: 0 0 40px rgba(245,197,24,0.25); }
+  .float-btn { position: absolute; z-index: 6; font-family: 'Trebuchet MS', sans-serif; font-weight: bold;
+    border: none; border-radius: 999px; cursor: pointer; transition: transform 0.08s; box-shadow: 0 3px 0 rgba(0,0,0,0.4); }
+  .float-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.4); }
+  #hint-btn { bottom: 12px; right: 12px; background: #ff8fd0; color: #3a0a2a; padding: 8px 16px; font-size: 12px; }
+  #undo-btn { bottom: 12px; left: 12px; background: #2D1B69; color: #c9a7ff; padding: 8px 16px; font-size: 12px; border: 1px solid #6a4fb0; }
+  #menu-btn { top: 10px; right: 10px; background: #2D1B69; color: #c9a7ff; padding: 5px 12px; font-size: 11px; border: 1px solid #6a4fb0; }
+  .float-btn.hidden { display: none; }
+  .overlay { position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 24px; text-align: center; border-radius: 12px;
+    background: radial-gradient(circle at 50% 28%, #3a1d72 0%, #160a33 82%); }
+  .overlay.hidden { display: none; }
+  .eyebrow { font-size: 11px; letter-spacing: 4px; color: #ff8fd0; text-transform: uppercase; margin-bottom: 6px; }
+  .big-title { font-size: 28px; font-weight: 900; color: #F5C518; letter-spacing: 1px; text-shadow: 0 3px 0 #6a4400, 0 0 22px rgba(245,197,24,0.5); margin-bottom: 4px; line-height: 1.1; }
+  .blurb { font-size: 12.5px; color: #d9c9ff; line-height: 1.7; max-width: 380px; margin-bottom: 16px; }
+  .btn { font-family: 'Trebuchet MS', sans-serif; font-weight: bold; cursor: pointer; border: none; border-radius: 999px;
+    padding: 12px 30px; font-size: 15px; letter-spacing: 1px; box-shadow: 0 4px 0 rgba(0,0,0,0.4); }
+  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.4); }
+  .btn-gold { background: #F5C518; color: #1a0f3d; } .btn-gold:hover { background: #ffd740; }
+  .btn-ghost { background: #2D1B69; color: #c9a7ff; box-shadow: 0 4px 0 #170a36; }
+  .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .foot { margin-top: 14px; font-size: 10.5px; color: #7a5fb0; line-height: 1.7; } .foot b { color: #c9a7ff; }
+  .tap { cursor: pointer; text-decoration: underline; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="canvas" width="480" height="500"></canvas>
+  <button class="float-btn hidden" id="menu-btn">☰ menu</button>
+  <button class="float-btn hidden" id="undo-btn">↶ undo</button>
+  <button class="float-btn hidden" id="hint-btn">🐾 hint</button>
+
+  <div class="overlay" id="menu-screen">
+    <div class="eyebrow">The Road to Chess City</div>
+    <div class="big-title">KNIGHT'S TOUR</div>
+    <div class="blurb">
+      Princess is the <b style="color:#c96bff">knight ♞</b>. Hop across every square of a region
+      <b>exactly once</b> — never landing twice — to cross it. String all five regions together
+      and trace the whole road from <b>Checker Town</b> to <b style="color:#F5C518">Chess City</b>.
+    </div>
+    <div class="row"><button class="btn btn-gold" id="start-btn">SET OUT</button></div>
+    <div class="foot">
+      Tap a glowing square to hop &nbsp;·&nbsp; <b>hint</b> uses the knight's old trick (fewest exits first)<br>
+      <span class="tap" id="snd-toggle">🔊 sound: on</span> &nbsp;·&nbsp; <b id="best-line">furthest: —</b>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="win-screen">
+    <div class="eyebrow" id="win-eyebrow">Region cleared</div>
+    <div class="big-title" id="win-title" style="font-size:24px;">CROSSED!</div>
+    <div class="blurb" id="win-msg"></div>
+    <div class="row">
+      <button class="btn btn-gold" id="next-btn">NEXT REGION</button>
+      <button class="btn btn-ghost" id="win-menu">MENU</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const W = 480, H = 500;
+const MOVES = [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+const C = { gold:'#F5C518', pink:'#ff8fd0', good:'#6bffb8', ink:'#f0e6ff', muted:'#b39ae0', purple:'#c96bff' };
+
+// Verified: open tour exists from (0,0) on each
+const LEVELS = [
+  { region:'Checker Town', cols:5, rows:5 },
+  { region:'Sand Mines',   cols:5, rows:6 },
+  { region:'The Sea',      cols:6, rows:6 },
+  { region:'Shogi Island', cols:6, rows:7 },
+  { region:'Chess City',   cols:8, rows:8 },
+];
+const REGIONS = LEVELS.map(l => l.region);
+
+let S = null, anim = null, confetti = [], hintCell = null, toast = { t:-1, text:'', col:C.gold };
+let geom = null;
+const BEST_KEY = 'pjcc.tour.furthest.v1';
+function loadBest(){ try { return parseInt(localStorage.getItem(BEST_KEY)) || 0; } catch(e){ return 0; } }
+function saveBest(v){ try { localStorage.setItem(BEST_KEY, String(v)); } catch(e){} }
+
+// ---- Audio ----
+let actx=null, master=null, sndOn=true;
+function initAudio(){ if(actx) return; actx=new (window.AudioContext||window.webkitAudioContext)(); master=actx.createGain(); master.gain.value=sndOn?0.75:0; master.connect(actx.destination); }
+function tone(f,t0,dur,type,vol){ if(!actx) return; const o=actx.createOscillator(),g=actx.createGain(); o.connect(g);g.connect(master);o.type=type||'sine';o.frequency.setValueAtTime(f,t0);g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(vol||0.25,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);o.start(t0);o.stop(t0+dur+0.02);}
+function sfx(k){ if(!actx) return; const t=actx.currentTime;
+  if(k==='hop'){const n=S?S.path.length:1;tone(300+n*12,t,0.1,'triangle',0.2);tone(150+n*6,t,0.08,'sine',0.16);}
+  else if(k==='undo'){tone(260,t,0.1,'sine',0.16);}
+  else if(k==='stuck'){tone(180,t,0.16,'sawtooth',0.2);tone(120,t+0.05,0.2,'sawtooth',0.16);}
+  else if(k==='win'){[392,523,659,784,1047,1319].forEach((f,i)=>tone(f,t+i*0.08,0.24,'triangle',0.24));}
+  else if(k==='hint'){tone(880,t,0.08,'triangle',0.14);} }
+
+// ---- Level ----
+function loadLevel(i){
+  const lv = LEVELS[i];
+  S = { idx:i, cols:lv.cols, rows:lv.rows, region:lv.region,
+        visited: Array.from({length:lv.rows},()=>Array(lv.cols).fill(false)),
+        path: [], pos:{x:0,y:0}, total: lv.cols*lv.rows, hints:0, done:false, stuck:false };
+  S.visited[0][0] = true; S.path.push({x:0,y:0});
+  hintCell = null; anim = null;
+  computeGeom();
+}
+function computeGeom(){
+  const area = 360, areaX = (W - area)/2, areaY = 92;
+  const tile = Math.floor(Math.min(area / S.cols, area / S.rows));
+  const bw = tile*S.cols, bh = tile*S.rows;
+  geom = { tile, bx: Math.round((W - bw)/2), by: Math.round(areaY + (area - bh)/2), bw, bh };
+}
+function cell(x,y){ return { x: geom.bx + x*geom.tile + geom.tile/2, y: geom.by + y*geom.tile + geom.tile/2 }; }
+function inb(x,y){ return x>=0 && x<S.cols && y>=0 && y<S.rows; }
+function legalFrom(x,y){ const out=[]; for (const [dx,dy] of MOVES){ const nx=x+dx,ny=y+dy; if (inb(nx,ny) && !S.visited[ny][nx]) out.push({x:nx,y:ny}); } return out; }
+function onwardDeg(x,y){ let d=0; for (const [dx,dy] of MOVES){ const nx=x+dx,ny=y+dy; if (inb(nx,ny) && !S.visited[ny][nx]) d++; } return d; }
+
+// ---- Input ----
+function cellFromXY(cx,cy){ const r=canvas.getBoundingClientRect(); const mx=(cx-r.left)*(W/r.width), my=(cy-r.top)*(H/r.height); const col=Math.floor((mx-geom.bx)/geom.tile), row=Math.floor((my-geom.by)/geom.tile); if (col<0||col>=S.cols||row<0||row>=S.rows) return null; return { x:col, y:row }; }
+canvas.addEventListener('pointerdown', e => {
+  if (!S || S.done || anim) return;
+  const c = cellFromXY(e.clientX, e.clientY); if (!c) return; e.preventDefault();
+  const legal = legalFrom(S.pos.x, S.pos.y).some(m => m.x===c.x && m.y===c.y);
+  if (!legal) return;
+  hop(c);
+});
+function hop(c){
+  const from = cell(S.pos.x, S.pos.y), to = cell(c.x, c.y);
+  anim = { from, to, t:0, dur:0.18, onDone:()=>{ landed(c); } };
+  sfx('hop'); hintCell = null;
+}
+function landed(c){
+  S.pos = { x:c.x, y:c.y }; S.visited[c.y][c.x] = true; S.path.push({x:c.x,y:c.y});
+  if (S.path.length === S.total){ winLevel(); return; }
+  if (legalFrom(c.x, c.y).length === 0){ S.stuck = true; sfx('stuck'); doToast('Dead end! Undo or reset.', C.pink); }
+}
+document.getElementById('undo-btn').addEventListener('click', () => {
+  if (!S || S.done || anim || S.path.length <= 1) return;
+  const last = S.path.pop(); S.visited[last.y][last.x] = false;
+  S.pos = { ...S.path[S.path.length-1] }; S.stuck = false; hintCell = null; sfx('undo');
+});
+document.getElementById('hint-btn').addEventListener('click', () => {
+  if (!S || S.done || anim) return;
+  const legal = legalFrom(S.pos.x, S.pos.y);
+  if (!legal.length){ doToast('No moves — undo.', C.pink); return; }
+  // Warnsdorff: fewest onward moves
+  let best = legal[0], bd = 99;
+  legal.forEach(m => { const d = onwardDeg(m.x, m.y); if (d < bd){ bd = d; best = m; } });
+  hintCell = best; S.hints++; sfx('hint');
+});
+
+function winLevel(){
+  S.done = true; sfx('win'); burstAll();
+  const best = loadBest(); if (S.idx+1 > best) saveBest(S.idx+1);
+  setTimeout(() => {
+    const last = S.idx >= LEVELS.length - 1;
+    document.getElementById('win-eyebrow').textContent = last ? 'The gates open' : 'Region cleared';
+    document.getElementById('win-title').textContent = last ? 'CHESS CITY! 🏰' : S.region.toUpperCase() + ' CROSSED';
+    document.getElementById('win-msg').innerHTML = last
+      ? 'Princess has toured every square of every region. The whole road from Checker Town to Chess City — walked by a knight.'
+      : 'Every square touched once. ' + (S.hints === 0 ? '<span style="color:#6bffb8">No hints, too!</span> ' : '') + 'On to ' + REGIONS[S.idx+1] + '.';
+    document.getElementById('next-btn').textContent = last ? 'TOUR AGAIN' : 'NEXT REGION';
+    document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('undo-btn').classList.add('hidden'); document.getElementById('hint-btn').classList.add('hidden');
+    document.getElementById('win-screen').classList.remove('hidden');
+  }, 700);
+}
+
+// ---- Effects ----
+function burstAll(){ for (let i=0;i<60;i++){ const a=Math.random()*Math.PI*2, s=2+Math.random()*5; confetti.push({ x:W/2, y:geom.by+geom.bh/2, vx:Math.cos(a)*s, vy:Math.sin(a)*s, col:['#F5C518','#6bffb8','#ff8fd0','#c96bff'][(Math.random()*4)|0], sz:2+Math.random()*4, life:50+Math.random()*30, max:80, rot:Math.random()*6 }); } }
+function doToast(text,col){ toast = { t:0, text, col:col||C.gold }; }
+
+// ---- Render ----
+function render(){
+  ctx.clearRect(0,0,W,H); drawBg();
+  if (S){ drawHeader(); drawBoard(); drawTrail(); drawKnight(); }
+  drawConfetti(); if (S && S.idx!=null) drawRibbon();
+  drawToast();
+}
+let bgG = Array.from({length:8},()=>({x:Math.random()*W,y:Math.random()*H,s:18+Math.random()*30,g:'♟♞♝♜♛♚'[(Math.random()*6)|0],spd:0.1+Math.random()*0.2,a:0.04+Math.random()*0.05}));
+function drawBg(){ const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#2a1560'); g.addColorStop(1,'#160a33'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); bgG.forEach(b=>{ b.y-=b.spd; if(b.y<-40){b.y=H+40;b.x=Math.random()*W;} ctx.fillStyle='rgba(245,197,24,'+b.a+')'; ctx.font=b.s+'px serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(b.g,b.x,b.y); }); }
+function drawHeader(){
+  ctx.fillStyle = C.gold; ctx.font='900 17px Trebuchet MS'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText("KNIGHT'S TOUR", 16, 24);
+  ctx.fillStyle = C.purple; ctx.font='12px Trebuchet MS'; ctx.fillText(S.region + '  ·  ' + S.cols + '×' + S.rows, 16, 44);
+  ctx.textAlign='right'; ctx.fillStyle = C.ink; ctx.font='bold 15px Trebuchet MS';
+  ctx.fillText(S.path.length + ' / ' + S.total, W-16, 24);
+  ctx.fillStyle = C.muted; ctx.font='11px Trebuchet MS'; ctx.fillText('squares toured', W-16, 44);
+}
+function drawBoard(){
+  ctx.fillStyle='#1c0d44'; roundRect(geom.bx-6, geom.by-6, geom.bw+12, geom.bh+12, 9); ctx.fill();
+  ctx.strokeStyle=C.gold; ctx.lineWidth=3; roundRect(geom.bx-6, geom.by-6, geom.bw+12, geom.bh+12, 9); ctx.stroke();
+  for (let r=0;r<S.rows;r++) for (let c=0;c<S.cols;c++){
+    const x=geom.bx+c*geom.tile, y=geom.by+r*geom.tile;
+    ctx.fillStyle=(r+c)%2===0?'#6b4bb0':'#3f2880'; ctx.fillRect(x,y,geom.tile,geom.tile);
+    if (S.visited[r][c]){
+      const ord = S.path.findIndex(p=>p.x===c&&p.y===r);
+      const f = ord/Math.max(1,S.total-1);
+      ctx.fillStyle = `rgba(245,197,24,${0.16 + 0.20*(1-f)})`; ctx.fillRect(x,y,geom.tile,geom.tile);
+      ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = 'bold '+Math.max(9,Math.round(geom.tile*0.26))+'px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(ord+1, x+geom.tile/2, y+geom.tile/2);
+    }
+  }
+  ctx.strokeStyle='rgba(245,197,24,0.12)'; ctx.lineWidth=0.5;
+  for (let i=0;i<=S.cols;i++){ ctx.beginPath(); ctx.moveTo(geom.bx+i*geom.tile,geom.by); ctx.lineTo(geom.bx+i*geom.tile,geom.by+geom.bh); ctx.stroke(); }
+  for (let i=0;i<=S.rows;i++){ ctx.beginPath(); ctx.moveTo(geom.bx,geom.by+i*geom.tile); ctx.lineTo(geom.bx+geom.bw,geom.by+i*geom.tile); ctx.stroke(); }
+  // legal move dots
+  if (!S.done && !anim){
+    const pulse = 0.5+0.5*Math.sin(Date.now()/250);
+    legalFrom(S.pos.x,S.pos.y).forEach(m=>{ const c=cell(m.x,m.y);
+      const isHint = hintCell && hintCell.x===m.x && hintCell.y===m.y;
+      ctx.fillStyle = isHint ? `rgba(255,143,208,${0.55+0.4*pulse})` : `rgba(107,255,184,${0.4+0.35*pulse})`;
+      ctx.beginPath(); ctx.arc(c.x,c.y, isHint?11:7, 0, Math.PI*2); ctx.fill();
+      if (isHint){ ctx.strokeStyle=C.pink; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(c.x,c.y,geom.tile*0.4,0,Math.PI*2); ctx.stroke(); }
+    });
+  }
+}
+function drawTrail(){
+  if (S.path.length<2) return;
+  ctx.strokeStyle='rgba(245,197,24,0.55)'; ctx.lineWidth=Math.max(2,geom.tile*0.06); ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.beginPath();
+  S.path.forEach((p,i)=>{ const c=cell(p.x,p.y); i?ctx.lineTo(c.x,c.y):ctx.moveTo(c.x,c.y); });
+  ctx.stroke();
+}
+function drawKnight(){
+  let p;
+  if (anim){ const e=1-Math.pow(1-anim.t,3); p={ x:anim.from.x+(anim.to.x-anim.from.x)*e, y:anim.from.y+(anim.to.y-anim.from.y)*e-Math.sin(anim.t*Math.PI)*geom.tile*0.4 }; }
+  else p = cell(S.pos.x, S.pos.y);
+  const r = geom.tile*0.34;
+  ctx.save(); ctx.translate(p.x, p.y);
+  ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(0,r*0.8,r*0.85,r*0.3,0,0,Math.PI*2); ctx.fill();
+  const g=ctx.createRadialGradient(-r*0.3,-r*0.4,r*0.2,0,0,r); g.addColorStop(0,'#8a5fd0'); g.addColorStop(1,'#33196e'); ctx.fillStyle=g;
+  ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle=C.gold; ctx.lineWidth=2.5; ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,0.32)'; ctx.beginPath(); ctx.ellipse(-r*0.3,-r*0.4,r*0.3,r*0.16,-0.5,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#fceeff'; ctx.font='bold '+Math.round(r*1.4)+'px serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('♞',0,r*0.05);
+  ctx.restore();
+}
+function drawConfetti(){ confetti.forEach(p=>{ ctx.save(); ctx.globalAlpha=Math.max(0,p.life/p.max); ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.fillStyle=p.col; ctx.fillRect(-p.sz/2,-p.sz/2,p.sz,p.sz*1.6); ctx.restore(); }); }
+function drawRibbon(){
+  const y=H-26, x0=30, x1=W-30, n=LEVELS.length;
+  ctx.strokeStyle='rgba(245,197,24,0.3)'; ctx.lineWidth=4; ctx.setLineDash([2,6]); ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke(); ctx.setLineDash([]);
+  for (let i=0;i<n;i++){ const x=x0+(x1-x0)*(i/(n-1)); const done=i<S.idx||(i===S.idx&&S.done); const cur=i===S.idx;
+    ctx.fillStyle = done?C.gold:cur?C.pink:'rgba(122,95,176,0.6)'; ctx.beginPath(); ctx.arc(x,y,cur?6:4,0,Math.PI*2); ctx.fill();
+    if (i===n-1){ ctx.fillStyle=C.gold; ctx.font='12px serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('♛',x,y); }
+  }
+  ctx.fillStyle=C.muted; ctx.font='9px Trebuchet MS'; ctx.textBaseline='top';
+  ctx.textAlign='left'; ctx.fillText(REGIONS[0], x0-4, y+8); ctx.textAlign='right'; ctx.fillText('Chess City', x1+4, y+8);
+}
+function drawToast(){ if (toast.t<0) return; toast.t+=1/60; const a=toast.t<0.2?toast.t/0.2:(toast.t>1.6?Math.max(0,1-(toast.t-1.6)/0.4):1); ctx.globalAlpha=a; const yy=geom?geom.by+geom.bh/2:H/2; ctx.font='bold 14px Trebuchet MS'; const tw=ctx.measureText(toast.text).width+30; ctx.fillStyle='rgba(20,12,45,0.9)'; roundRect(W/2-tw/2,yy-18,tw,36,9); ctx.fill(); ctx.strokeStyle=toast.col; ctx.lineWidth=2; roundRect(W/2-tw/2,yy-18,tw,36,9); ctx.stroke(); ctx.fillStyle=toast.col; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(toast.text,W/2,yy); ctx.globalAlpha=1; if (toast.t>2) toast.t=-1; }
+function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+// ---- Loop ----
+let lastT = performance.now();
+function loop(now){ const dt=Math.min(0.05,(now-lastT)/1000); lastT=now;
+  if (anim){ anim.t+=dt/anim.dur; if (anim.t>=1){ const d=anim.onDone; anim=null; if (d) d(); } }
+  confetti = confetti.filter(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=0.12; p.rot+=0.2; p.life--; return p.life>0; });
+  render(); requestAnimationFrame(loop);
+}
+
+// ---- Screens ----
+function showMenu(){ S=null; ['menu-btn','undo-btn','hint-btn'].forEach(id=>document.getElementById(id).classList.add('hidden')); document.getElementById('win-screen').classList.add('hidden'); document.getElementById('best-line').textContent='furthest: '+(loadBest()?REGIONS[Math.min(loadBest(),REGIONS.length)-1]:'—'); document.getElementById('menu-screen').classList.remove('hidden'); }
+function play(i){ document.getElementById('menu-screen').classList.add('hidden'); document.getElementById('win-screen').classList.add('hidden'); ['menu-btn','undo-btn','hint-btn'].forEach(id=>document.getElementById(id).classList.remove('hidden')); loadLevel(i); }
+function begin(){ initAudio(); if (actx && actx.state==='suspended') actx.resume(); play(0); }
+document.getElementById('start-btn').addEventListener('click', begin);
+document.getElementById('menu-btn').addEventListener('click', showMenu);
+document.getElementById('win-menu').addEventListener('click', showMenu);
+document.getElementById('next-btn').addEventListener('click', () => { const n=S.idx+1; if (n>=LEVELS.length) showMenu(); else play(n); });
+document.getElementById('snd-toggle').addEventListener('click', () => { sndOn=!sndOn; if(master) master.gain.value=sndOn?0.75:0; document.getElementById('snd-toggle').textContent = sndOn?'🔊 sound: on':'🔇 sound: off'; });
+
+document.getElementById('best-line').textContent = 'furthest: ' + (loadBest()?REGIONS[Math.min(loadBest(),REGIONS.length)-1]:'—');
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

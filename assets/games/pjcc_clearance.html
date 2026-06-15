@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>PJCC: Clearance — DELTA</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; background: #0c0726; overflow: hidden;
+    font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  #term { position: relative; width: 460px; max-width: 100vw; height: 500px; overflow: hidden;
+    background: radial-gradient(circle at 50% 16%, #2a1666 0%, #0c0726 78%);
+    border: 3px solid #F5C518; border-radius: 12px; box-shadow: 0 0 40px rgba(245,197,24,0.25);
+    color: #ecdcff; display: flex; flex-direction: column; padding: 10px 14px 12px; }
+
+  .hdr { display: flex; align-items: center; justify-content: space-between; font-size: 10px; letter-spacing: 1.5px; color: #b79aff; }
+  .hdr .stamp { border: 1px solid #F5C518; color: #F5C518; padding: 1px 6px; border-radius: 3px; transform: rotate(-3deg); font-weight: bold; }
+
+  .badge-wrap { display: flex; align-items: center; gap: 12px; margin: 6px 0 2px; }
+  .badge { width: 64px; height: 64px; flex-shrink: 0; border-radius: 50%; border: 3px solid #F5C518;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 40% 35%, #4a2f8a, #1a0f3d); box-shadow: inset 0 -4px 8px rgba(0,0,0,0.5), 0 0 16px rgba(245,197,24,0.3); }
+  .badge .b-pip { font-size: 19px; line-height: 1; }
+  .badge .b-lab { font-size: 7px; letter-spacing: 1px; color: #F5C518; margin-top: 2px; }
+  .badge.bump { animation: bump 0.5s ease; }
+  @keyframes bump { 0%{ transform: scale(1); } 40%{ transform: scale(1.25) rotate(-6deg); } 100%{ transform: scale(1); } }
+  .rank-info { flex: 1; }
+  .rank-name { font-size: 19px; font-weight: 900; color: #F5C518; letter-spacing: 1px; text-shadow: 0 0 12px rgba(245,197,24,0.4); }
+  .clr-bar-bg { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-top: 5px; overflow: hidden; }
+  .clr-bar { height: 100%; width: 0; background: linear-gradient(90deg,#F5C518,#ff8fd0); border-radius: 4px; transition: width 0.4s; }
+  .rank-sub { font-size: 10px; color: #9a7fd4; margin-top: 3px; }
+
+  .strikes { font-size: 13px; color: #ff5b8a; letter-spacing: 2px; }
+  .strikes b { color: #3a1d52; }
+
+  .qcard { background: rgba(0,0,0,0.32); border: 1px solid #4a2f8a; border-radius: 10px; padding: 12px 14px; margin: 9px 0; flex: 0 0 auto; }
+  .qtags { display: flex; gap: 6px; margin-bottom: 8px; }
+  .qtag { font-size: 8.5px; letter-spacing: 1px; font-weight: bold; padding: 2px 7px; border-radius: 999px; text-transform: uppercase; }
+  .qtag.cat { background: #2D1B69; color: #c9a7ff; border: 1px solid #6a4fb0; }
+  .qtag.tier { background: #F5C518; color: #1a0f3d; }
+  .qtext { font-size: 14.5px; line-height: 1.45; color: #fff; min-height: 42px; }
+
+  .answers { display: flex; flex-direction: column; gap: 7px; }
+  .ans { text-align: left; font-family: 'Trebuchet MS', sans-serif; font-size: 13px; color: #ecdcff;
+    background: #241152; border: 1px solid #4a2f8a; border-radius: 8px; padding: 10px 12px; cursor: pointer;
+    transition: transform 0.06s, background 0.12s, border-color 0.12s; }
+  .ans:hover { background: #322066; border-color: #F5C518; }
+  .ans:active { transform: translateY(1px); }
+  .ans .key { display: inline-block; width: 18px; color: #F5C518; font-weight: bold; }
+  .ans.correct { background: #1f6b46; border-color: #2ecc71; color: #eafff2; }
+  .ans.wrong { background: #6b1f33; border-color: #ff5b8a; color: #ffe0ea; }
+  .ans.dim { opacity: 0.5; }
+  .ans.locked { pointer-events: none; }
+
+  .explain { font-size: 11.5px; color: #b79aff; line-height: 1.5; margin-top: 9px; min-height: 30px; opacity: 0; transition: opacity 0.25s; }
+  .explain.show { opacity: 1; }
+  .explain b { color: #6bffb8; }
+
+  .next-btn { margin-top: 8px; align-self: center; font-family: 'Trebuchet MS', sans-serif; font-weight: bold;
+    background: #F5C518; color: #1a0f3d; border: none; border-radius: 999px; padding: 9px 28px; font-size: 13px;
+    letter-spacing: 1px; cursor: pointer; box-shadow: 0 4px 0 #8a5a00; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .next-btn.show { opacity: 1; pointer-events: auto; }
+  .next-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #8a5a00; }
+
+  .overlay { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 24px; text-align: center;
+    background: radial-gradient(circle at 50% 30%, #2a1666 0%, #0c0726 82%); }
+  .overlay.hidden { display: none; }
+  .eyebrow { font-size: 11px; letter-spacing: 4px; color: #ff8fd0; text-transform: uppercase; margin-bottom: 10px; }
+  .big-title { font-size: 26px; font-weight: 900; color: #F5C518; letter-spacing: 2px; text-shadow: 0 3px 0 #6a4400, 0 0 22px rgba(245,197,24,0.5); margin-bottom: 4px; }
+  .blurb { font-size: 12px; color: #d9c9ff; line-height: 1.7; max-width: 350px; margin-bottom: 14px; }
+  .btn { font-family: 'Trebuchet MS', sans-serif; font-weight: bold; cursor: pointer; border: none; border-radius: 999px;
+    padding: 12px 30px; font-size: 14px; letter-spacing: 1px; box-shadow: 0 4px 0 rgba(0,0,0,0.4); }
+  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.4); }
+  .btn-gold { background: #F5C518; color: #1a0f3d; }
+  .btn-ghost { background: #2D1B69; color: #c9a7ff; box-shadow: 0 4px 0 #170a36; }
+  .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .foot { margin-top: 14px; font-size: 10px; color: #7a5fb0; line-height: 1.7; } .foot b { color: #c9a7ff; }
+  .dossier { background: rgba(0,0,0,0.4); border: 1px solid #F5C518; border-radius: 8px; padding: 10px 12px; max-width: 360px; margin-bottom: 12px; font-size: 11.5px; line-height: 1.5; color: #9fe8c0; }
+  .dossier .dl { color: #F5C518; font-size: 8.5px; letter-spacing: 2px; display: block; margin-bottom: 3px; }
+
+  /* promotion flash */
+  .promo { position: absolute; inset: 0; z-index: 18; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+  .promo-card { background: rgba(12,7,38,0.95); border: 2px solid #F5C518; border-radius: 12px; padding: 18px 26px; text-align: center;
+    transform: scale(0.6); opacity: 0; }
+  .promo-card.show { animation: promoPop 1.8s ease forwards; }
+  @keyframes promoPop { 0%{ transform: scale(0.6); opacity: 0; } 15%{ transform: scale(1.08); opacity: 1; } 80%{ transform: scale(1); opacity: 1; } 100%{ transform: scale(1); opacity: 0; } }
+  .promo-card .pl { font-size: 10px; letter-spacing: 3px; color: #ff8fd0; }
+  .promo-card .pr { font-size: 28px; font-weight: 900; color: #F5C518; letter-spacing: 2px; margin: 4px 0; }
+  .promo-card .pd { font-size: 11px; color: #9fe8c0; max-width: 300px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div id="term">
+  <div class="hdr">
+    <span id="exam-id">EXAM // PJCC-CCI</span>
+    <span class="stamp">CLASSIFIED</span>
+    <span id="score-lbl">SCORE 0</span>
+  </div>
+
+  <div class="badge-wrap">
+    <div class="badge" id="badge"><div class="b-pip" id="b-pip">▽</div><div class="b-lab">CLR</div></div>
+    <div class="rank-info">
+      <div class="rank-name" id="rank-name">RECRUIT</div>
+      <div class="clr-bar-bg"><div class="clr-bar" id="clr-bar"></div></div>
+      <div class="rank-sub" id="rank-sub">Answer to earn clearance.</div>
+    </div>
+    <div class="strikes" id="strikes">◆◆◆</div>
+  </div>
+
+  <div class="qcard">
+    <div class="qtags"><span class="qtag cat" id="q-cat">RULES</span><span class="qtag tier" id="q-tier">DELTA</span></div>
+    <div class="qtext" id="q-text">—</div>
+  </div>
+  <div class="answers" id="answers"></div>
+  <div class="explain" id="explain"></div>
+  <button class="next-btn" id="next-btn">NEXT ▸</button>
+
+  <div class="promo" id="promo"><div class="promo-card" id="promo-card">
+    <div class="pl">CLEARANCE GRANTED</div><div class="pr" id="promo-rank">DELTA</div><div class="pd" id="promo-file"></div>
+  </div></div>
+
+  <!-- MENU -->
+  <div class="overlay" id="menu">
+    <div class="eyebrow">◈ Chess City Invitational</div>
+    <div class="big-title">CLEARANCE: DELTA</div>
+    <div class="blurb">
+      An operative's exam. Answer questions on <b style="color:#F5C518">chess</b> and the
+      <b style="color:#ff8fd0">PJCC files</b> to climb the clearance ladder —
+      RECRUIT to <b>ABOVE OMEGA</b>. Each promotion unredacts a piece of the archive.
+      Three wrong answers and your access is revoked.
+    </div>
+    <div class="row"><button class="btn btn-gold" id="begin-btn">BEGIN EXAM</button></div>
+    <div class="foot">Keys <b>1&ndash;4</b> to answer &nbsp;·&nbsp; <b id="best-line">highest clearance: —</b></div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="overlay hidden" id="result">
+    <div class="eyebrow">◈ Access Revoked</div>
+    <div class="big-title" id="res-rank" style="font-size:22px;">CLEARANCE: DELTA</div>
+    <div class="blurb" id="res-msg"></div>
+    <div class="dossier" id="res-dossier"><span class="dl">— LAST FILE UNSEALED —</span><span id="res-file"></span></div>
+    <div class="row">
+      <button class="btn btn-gold" id="retry-btn">RE-EXAMINE</button>
+      <button class="btn btn-ghost" id="menu-btn">MENU</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+// ---- Question bank ----  c = correct index; tier 1-4; cat
+const Q = [
+  // TIER 1 — basics
+  { t:1, cat:'RULES', q:'How does a knight move?', a:['Straight, any distance','One square in any direction','In an L-shape (two then one)','Only diagonally'], c:2, why:'The knight is the only piece that jumps, moving in an L.' },
+  { t:1, cat:'RULES', q:'Which piece has the highest point value?', a:['Rook (5)','Queen (9)','Bishop (3)','Knight (3)'], c:1, why:'The queen is worth about nine pawns — the most of any piece.' },
+  { t:1, cat:'RULES', q:'How many squares are on a chessboard?', a:['49','64','81','100'], c:1, why:'Eight files by eight ranks — 64 squares.' },
+  { t:1, cat:'RULES', q:'A bishop is locked to squares of what?', a:['One colour','One file','The centre','The edge'], c:0, why:'Each bishop stays on its starting colour for the whole game.' },
+  { t:1, cat:'RULES', q:'Which piece can jump over other pieces?', a:['Rook','Bishop','Knight','Queen'], c:2, why:'Only the knight leaps; everything else needs a clear path.' },
+  { t:1, cat:'RULES', q:'How many pawns does each side start with?', a:['6','7','8','9'], c:2, why:'Eight pawns line the second rank.' },
+  { t:1, cat:'RULES', q:'When the king is under attack, it is in…', a:['Check','Stalemate','Zugzwang','Castle'], c:0, why:'Check means the king is attacked and must be saved.' },
+  { t:1, cat:'RULES', q:'Pawns capture how?', a:['Straight ahead','Diagonally forward','Sideways','Backward'], c:1, why:'Pawns push straight but capture one square diagonally forward.' },
+  // TIER 2 — intermediate
+  { t:2, cat:'RULES', q:'Castling moves the king how far?', a:['One square','Two squares toward a rook','To the corner','Anywhere on its rank'], c:1, why:'The king steps two squares toward a rook, which hops to its other side.' },
+  { t:2, cat:'RULES', q:'No legal move, but the king is NOT in check. That is…', a:['Checkmate','Stalemate','Resignation','Check'], c:1, why:'Stalemate is a draw — no legal move and no check.' },
+  { t:2, cat:'RULES', q:'“En passant” is a special capture by which piece?', a:['Rook','Bishop','Pawn','King'], c:2, why:'A pawn can capture a pawn that just dashed two squares past it.' },
+  { t:2, cat:'RULES', q:'A pawn reaching the far rank may become…', a:['Only a queen','Any piece except a king','Any piece including a king','Nothing — it stops'], c:1, why:'Promotion: usually a queen, but any piece except a king.' },
+  { t:2, cat:'RULES', q:'You may NOT castle when…', a:['It is move ten','Your king is in or moves through check','Your queen has moved','You are winning'], c:1, why:'No castling into, through, or out of check.' },
+  { t:2, cat:'RULES', q:'Which piece moves like a rook AND a bishop?', a:['King','Queen','Knight','Pawn'], c:1, why:'The queen combines straight and diagonal lines.' },
+  { t:2, cat:'TACTICS', q:'A knight and a bishop are each worth about how many pawns?', a:['Two','Three','Four','Five'], c:1, why:'Minor pieces are valued at roughly three pawns apiece.' },
+  // TIER 3 — tactics / history
+  { t:3, cat:'TACTICS', q:'One piece attacking two enemy pieces at once is a…', a:['Pin','Fork','Skewer','Gambit'], c:1, why:'A fork hits two targets — knights are famous for it.' },
+  { t:3, cat:'TACTICS', q:'In a “pin”, a piece can’t move because…', a:['It would expose a more valuable piece','It is out of moves','It is pinned to the edge','The king forbids it'], c:0, why:'Moving the pinned piece would expose something more valuable behind it.' },
+  { t:3, cat:'TACTICS', q:'A “skewer” differs from a pin because…', a:['It uses a knight','The more valuable piece is in front','It only works on pawns','It is illegal'], c:1, why:'In a skewer the valuable piece is in front and is forced to move.' },
+  { t:3, cat:'TACTICS', q:'“Zugzwang” means…', a:['A double check','Any move you make worsens your position','A pawn breakthrough','A drawn endgame'], c:1, why:'In zugzwang you must move — and every move hurts.' },
+  { t:3, cat:'TACTICS', q:'The fastest checkmate (“Fool’s Mate”) takes how many moves?', a:['Two','Four','Seven','Ten'], c:0, why:'Fool’s Mate ends it in just two moves for each side… well, two moves total.' },
+  { t:3, cat:'TACTICS', q:'A “gambit” sacrifices material in exchange for…', a:['A draw','Development and initiative','A pawn','Nothing'], c:1, why:'You give up material to develop faster and seize the initiative.' },
+  { t:3, cat:'HISTORY', q:'1.e4 e5 2.Nf3 Nc6 3.Bc4 is the…', a:['Italian Game','French Defense','Sicilian','London System'], c:0, why:'The bishop to c4 marks the Italian Game.' },
+  { t:3, cat:'HISTORY', q:'The Scandinavian Defense begins with…', a:['1.d4 d5','1.e4 c5','1.e4 d5','1.e4 e6'], c:2, why:'1.e4 d5 — Black strikes the centre at once.' },
+  { t:3, cat:'TACTICS', q:'“Discovered check” happens when…', a:['Two kings face off','A piece moves to reveal another’s check','A pawn promotes','You castle into check'], c:1, why:'One piece steps aside, unveiling a check from the piece behind it.' },
+  // TIER 4 — PJCC lore
+  { t:4, cat:'PJCC', q:'Which chess piece is Princess designated as?', a:['Pawn','Bishop','Knight','Queen'], c:2, why:'Princess is the knight — the unpredictable leaper.' },
+  { t:4, cat:'PJCC', q:'Princess’s full name is…', a:['Princess Sophia McPuppy','Princess Leia Barksdale','Princess of Checker Town','Lady Princess Pawsworth'], c:0, why:'Princess Sophia McPuppy — half cattle dog, half pit bull.' },
+  { t:4, cat:'PJCC', q:'The Rival teaches Princess which opening?', a:['The Sicilian','The Pirc Defense','The London','The King’s Gambit'], c:1, why:'The Rival introduces Princess to the Pirc Defense.' },
+  { t:4, cat:'PJCC', q:'Where does the Father work?', a:['Chess City','The Sand Mines','Shogi Island','The docks'], c:1, why:'He works the Sand Mines — and won’t discuss what he saw there.' },
+  { t:4, cat:'PJCC', q:'The journey begins in which place?', a:['Chess City','Shogi Island','Checker Town','The Sea'], c:2, why:'Checker Town — the origin point, where hope runs short.' },
+  { t:4, cat:'PJCC', q:'The destination, where access is “restricted”, is…', a:['Chess City','Sand Mines','The uncharted city','Checker Town'], c:0, why:'Chess City — the gleaming, gated goal of the whole journey.' },
+  { t:4, cat:'PJCC', q:'Princess reportedly arrived via the same vessel as…', a:['The Rival','Subject Zero','The Father','Oskar'], c:1, why:'“Arrived via same vessel as Subject Zero. Connection to crash: unconfirmed.”' },
+  { t:4, cat:'PJCC', q:'The Father reads which paper for “the REAL news”?', a:['Checker Daily','Chess City Times','Checker Financial','The Sand Gazette'], c:2, why:'Checker Financial — even though he has no money.' },
+  { t:4, cat:'PJCC', q:'On the world map, the ferry to which island is “delayed”?', a:['Shogi Island','Chess City','The Sand Mines','Sector 7'], c:0, why:'The Shogi Island ferry has been delayed — and not by mechanics.' },
+  { t:4, cat:'PJCC', q:'Under the Mirror Protocol, reflections are rendered…', a:['In low-poly','In photorealistic detail','In black and white','Not at all'], c:1, why:'Reflective surfaces alone render in shocking photorealistic fidelity.' },
+  { t:4, cat:'PJCC', q:'The Rival is associated with which piece?', a:['King','Rook','Knight','Pawn'], c:0, why:'The Rival plays the King — his family waits in Chess City.' },
+  { t:4, cat:'PJCC', q:'Princess’s secret “imprint” allegiance is to which team?', a:['The Chess City Leafs','Toronto Maple Leafs','The Checker Town Pawns','Shogi United'], c:1, why:'A residual imprint: she was a Maple Leafs fan before she got here.' },
+];
+
+const RANKS = [
+  { at: 0,  name: 'RECRUIT',     pip: '▽' },
+  { at: 3,  name: 'DELTA',       pip: 'Δ', file: 'FILE 001 — THE CRASH: Subject arrived via a construction company vessel. It departed in an emergency. Subject was left behind.' },
+  { at: 6,  name: 'GAMMA',       pip: 'Γ', file: 'FILE 002 — DESIGNATION: Princess is logged as a Knight. An odd classification for a Checker Town cattle-dog.' },
+  { at: 10, name: 'BETA',        pip: 'β', file: 'FILE 003 — THE RIVAL: His family is already inside Chess City. He is not trying to get there. He is trying to go back.' },
+  { at: 15, name: 'OMEGA',       pip: 'Ω', file: 'FILE 004 — THE MINES: The Father has seen something in the Sand Mines. The equipment predates the crash by three years.' },
+  { at: 21, name: 'ABOVE OMEGA', pip: '★', file: 'FILE 005 — SUBJECT ZERO: Same vessel as Princess. Origin coordinates match no known system. The investigation continues anyway.' },
+];
+
+const BEST_KEY = 'pjcc.clearance.best.v1';
+function loadBest(){ try { return parseInt(localStorage.getItem(BEST_KEY)) || 0; } catch(e){ return 0; } }
+function saveBest(v){ try { localStorage.setItem(BEST_KEY, String(v)); } catch(e){} }
+
+// ---- Audio ----
+let actx=null, master=null;
+function initAudio(){ if(actx) return; actx=new (window.AudioContext||window.webkitAudioContext)(); master=actx.createGain(); master.gain.value=0.7; master.connect(actx.destination); }
+function tone(f,t0,dur,type,vol){ if(!actx) return; const o=actx.createOscillator(),g=actx.createGain(); o.connect(g);g.connect(master);o.type=type||'sine';o.frequency.setValueAtTime(f,t0);g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(vol||0.25,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);o.start(t0);o.stop(t0+dur+0.02);}
+function sfx(k){ if(!actx) return; const t=actx.currentTime;
+  if(k==='right'){[660,990].forEach((f,i)=>tone(f,t+i*0.05,0.16,'triangle',0.22));}
+  else if(k==='wrong'){tone(200,t,0.2,'sawtooth',0.25);tone(120,t+0.05,0.24,'sawtooth',0.2);}
+  else if(k==='promo'){[523,659,784,1047,1319].forEach((f,i)=>tone(f,t+i*0.09,0.26,'triangle',0.24));}
+  else if(k==='over'){[330,247,196,131].forEach((f,i)=>tone(f,t+i*0.13,0.32,'sawtooth',0.24));} }
+
+// ---- State ----
+let queues = {}, correct = 0, score = 0, strikes = 0, streak = 0, rankIdx = 0, cur = null, answered = false, lastFile = '';
+
+function shuffle(a){ for (let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function buildQueues(){ queues = {1:[],2:[],3:[],4:[]}; Q.forEach((q,i)=>queues[q.t].push(i)); for (const t in queues) shuffle(queues[t]); }
+
+function start(){
+  buildQueues(); correct = 0; score = 0; strikes = 0; streak = 0; rankIdx = 0; lastFile = '';
+  updateRank(false); updateHUD();
+  document.getElementById('menu').classList.add('hidden');
+  document.getElementById('result').classList.add('hidden');
+  nextQuestion();
+}
+function pickTier(){
+  // escalate difficulty with clearance, fall back if a tier is empty
+  let t = Math.min(4, 1 + Math.floor(correct / 4));
+  const order = [t, t-1, t+1, t-2, t+2, 1, 2, 3, 4];
+  for (const tt of order){ if (queues[tt] && queues[tt].length) return tt; }
+  // all empty -> rebuild (endless)
+  buildQueues(); return Math.min(4, 1 + Math.floor(correct / 4));
+}
+function nextQuestion(){
+  answered = false;
+  const t = pickTier();
+  const qi = queues[t].pop();
+  cur = Q[qi];
+  document.getElementById('q-cat').textContent = cur.cat;
+  const tierName = ['', 'DELTA', 'GAMMA', 'BETA', 'OMEGA'][cur.t];
+  document.getElementById('q-tier').textContent = tierName;
+  document.getElementById('q-text').textContent = cur.q;
+  const ansEl = document.getElementById('answers'); ansEl.innerHTML = '';
+  const order = shuffle(cur.a.map((_, i) => i));
+  cur._display = order;
+  order.forEach((origIdx, pos) => {
+    const b = document.createElement('button'); b.className = 'ans';
+    b.innerHTML = '<span class="key">' + (pos + 1) + '</span> ' + cur.a[origIdx];
+    b.addEventListener('click', () => answer(origIdx, b));
+    ansEl.appendChild(b);
+  });
+  document.getElementById('explain').classList.remove('show');
+  document.getElementById('explain').innerHTML = '';
+  document.getElementById('next-btn').classList.remove('show');
+}
+function answer(origIdx, btn){
+  if (answered) return;
+  answered = true;
+  const buttons = Array.from(document.getElementById('answers').children);
+  buttons.forEach(b => b.classList.add('locked'));
+  const correctPos = cur._display.indexOf(cur.c);
+  if (origIdx === cur.c){
+    btn.classList.add('correct'); sfx('right');
+    correct++; streak++;
+    score += 100 + Math.min(streak, 8) * 20;
+    buttons.forEach((b, i) => { if (i !== correctPos) b.classList.add('dim'); });
+    updateRank(true);
+  } else {
+    btn.classList.add('wrong'); sfx('wrong');
+    streak = 0; strikes++;
+    buttons[correctPos].classList.add('correct');
+    buttons.forEach((b, i) => { if (i !== correctPos && b !== btn) b.classList.add('dim'); });
+  }
+  const ex = document.getElementById('explain');
+  ex.innerHTML = (origIdx === cur.c ? '<b>Correct.</b> ' : '<b style="color:#ff8fd0">Not quite.</b> ') + cur.why;
+  ex.classList.add('show');
+  updateHUD();
+  if (strikes >= 3){ setTimeout(gameOver, 250); }
+  else document.getElementById('next-btn').classList.add('show');
+}
+function updateHUD(){
+  document.getElementById('score-lbl').textContent = 'SCORE ' + score;
+  document.getElementById('strikes').innerHTML = ['◆','◆','◆'].map((c, i) => i < (3 - strikes) ? '◆' : '<b>◇</b>').join('');
+}
+function updateRank(animate){
+  // determine current rank by correct count
+  let idx = 0;
+  for (let i = 0; i < RANKS.length; i++){ if (correct >= RANKS[i].at) idx = i; }
+  const r = RANKS[idx];
+  document.getElementById('rank-name').textContent = r.name;
+  document.getElementById('b-pip').textContent = r.pip;
+  // progress to next rank
+  const next = RANKS[idx + 1];
+  const lo = r.at, hi = next ? next.at : r.at;
+  const frac = next ? Math.min(1, (correct - lo) / (hi - lo)) : 1;
+  document.getElementById('clr-bar').style.width = (frac * 100) + '%';
+  document.getElementById('rank-sub').textContent = next ? ((hi - correct) + ' more to ' + next.name) : 'Maximum clearance.';
+  if (animate && idx > rankIdx){
+    rankIdx = idx;
+    if (r.file) lastFile = r.file;
+    promote(r);
+  }
+  rankIdx = Math.max(rankIdx, idx);
+}
+function promote(r){
+  sfx('promo');
+  const badge = document.getElementById('badge'); badge.classList.remove('bump'); void badge.offsetWidth; badge.classList.add('bump');
+  document.getElementById('promo-rank').textContent = r.name;
+  document.getElementById('promo-file').textContent = r.file || '';
+  const card = document.getElementById('promo-card'); card.classList.remove('show'); void card.offsetWidth; card.classList.add('show');
+}
+function gameOver(){
+  sfx('over');
+  const best = loadBest(); const isBest = correct > best; if (isBest) saveBest(correct);
+  const r = RANKS[rankIdx];
+  document.getElementById('res-rank').textContent = 'CLEARANCE: ' + r.name;
+  document.getElementById('res-msg').innerHTML = 'You answered <b style="color:#F5C518">' + correct + '</b> correctly for <b style="color:#F5C518">' + score + '</b> points.' +
+    (isBest ? '<br><span style="color:#6bffb8">Highest clearance yet.</span>' : '<br>Best: ' + best + ' correct.');
+  const dossier = document.getElementById('res-dossier');
+  if (lastFile){ dossier.style.display = ''; document.getElementById('res-file').textContent = lastFile; }
+  else dossier.style.display = 'none';
+  document.getElementById('result').classList.remove('hidden');
+}
+
+// ---- Input ----
+document.getElementById('next-btn').addEventListener('click', nextQuestion);
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('menu').classList.contains('hidden')) return;
+  if (document.getElementById('result').classList.contains('hidden') === false) return;
+  if (!answered && /^[1-4]$/.test(e.key)){ const b = document.getElementById('answers').children[parseInt(e.key,10)-1]; if (b) b.click(); }
+  else if (answered && (e.key === 'Enter' || e.key === ' ')){ const nb = document.getElementById('next-btn'); if (nb.classList.contains('show')) nb.click(); }
+});
+
+function begin(){ initAudio(); if (actx && actx.state === 'suspended') actx.resume(); start(); }
+document.getElementById('begin-btn').addEventListener('click', begin);
+document.getElementById('retry-btn').addEventListener('click', begin);
+document.getElementById('menu-btn').addEventListener('click', () => { document.getElementById('result').classList.add('hidden'); document.getElementById('menu').classList.remove('hidden'); });
+
+document.getElementById('best-line').textContent = 'highest clearance: ' + (loadBest() ? loadBest() + ' correct' : '—');
+</script>
+</body>
+</html>

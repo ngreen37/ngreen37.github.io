@@ -78,6 +78,33 @@ permalink: /games/
     </div>
   </a>
 
+  <a class="game-card" href="{{ '/games/clearance-delta/' | relative_url }}">
+    <div class="game-card-icon">Δ</div>
+    <div class="game-card-body">
+      <h2>Clearance: DELTA</h2>
+      <p>An operative trivia exam. Answer chess and PJCC questions to climb the clearance ladder — each promotion unredacts a dossier file.</p>
+      <span class="game-tag">Playable</span>
+    </div>
+  </a>
+
+  <a class="game-card" href="{{ '/games/ferry-delayed/' | relative_url }}">
+    <div class="game-card-icon">⛴</div>
+    <div class="game-card-body">
+      <h2>Ferry Delayed</h2>
+      <p>A sliding-block logic puzzle. Crates slide like rooks — clear the jammed dock and guide Princess onto the Shogi Island ferry.</p>
+      <span class="game-tag">Playable</span>
+    </div>
+  </a>
+
+  <a class="game-card" href="{{ '/games/knights-tour/' | relative_url }}">
+    <div class="game-card-icon">♞</div>
+    <div class="game-card-body">
+      <h2>Knight's Tour</h2>
+      <p>The classic path puzzle. Hop across every square of each region exactly once, tracing the road from Checker Town to Chess City.</p>
+      <span class="game-tag">Playable</span>
+    </div>
+  </a>
+
 </div>
 
 <style>
