@@ -200,6 +200,7 @@
     <button class="start-btn" id="start-btn">START</button>
     <div class="ov-foot">
       Click the square &nbsp;·&nbsp; or type it (e.g. <b>e</b> then <b>4</b>)<br>
+      <span id="title-best" style="color:#F5C518;">—</span><br>
       <span id="mute-toggle" style="cursor:pointer;text-decoration:underline;">♪ sound: on</span>
     </div>
   </div>
@@ -217,7 +218,8 @@
       <div class="s-lab">Good</div><div class="s-val good" id="res-good">0</div>
       <div class="s-lab">Missed</div><div class="s-val miss" id="res-miss">0</div>
     </div>
-    <div class="btn-row" style="margin-top:16px;">
+    <div class="ov-foot" id="res-best" style="margin-top:10px;min-height:14px;">&nbsp;</div>
+    <div class="btn-row" style="margin-top:10px;">
       <button class="start-btn" id="replay-btn" style="margin-top:0;">REPLAY</button>
       <button class="pick" id="menu-btn" style="align-self:center;">Change mode</button>
     </div>
@@ -236,7 +238,7 @@ const BX = (W - BOARD) / 2;        // 56
 const BY = 124;                    // board top
 const HITX = 64;                   // gate x on the track
 const TRACK_Y = 80;                // center of the rhythm track
-const APPROACH = 2.2;              // seconds a call is visible before its hit
+const APPROACH = 3.0;              // seconds a call is visible before its hit
 const PXPS = (W - 14 - HITX) / APPROACH; // px per second the calls travel
 
 const COLORS = {
@@ -244,15 +246,21 @@ const COLORS = {
   good: '#6bffb8', bad: '#ff6b6b', text: '#f0e6ff', muted: '#9a7fd4',
 };
 
-// Timing windows (seconds)
-const PERFECT_W = 0.10;
-const GOOD_W = 0.22;
+// Timing windows are a fraction of the gap between calls (computed per game in
+// newGame as G.goodW / G.perfectW). Bigger GOOD_FRAC = far more forgiving.
+const PERFECT_FRAC = 0.18;
+const GOOD_FRAC = 0.40;
 
 const DIFFS = {
-  easy:   { bpm: 72,  bpc: 2, calls: 20, label: 'Stroll' },
-  medium: { bpm: 96,  bpc: 2, calls: 24, label: 'March' },
-  hard:   { bpm: 120, bpc: 1, calls: 28, label: 'Sprint' },
+  easy:   { bpm: 58,  bpc: 2, calls: 18, label: 'Stroll' },
+  medium: { bpm: 80,  bpc: 2, calls: 22, label: 'March' },
+  hard:   { bpm: 110, bpc: 2, calls: 26, label: 'Sprint' },
 };
+
+// ---- Personal bests (per mode + tempo), saved in the browser ----
+const BEST_KEY = 'pjcc.notation.best.v1';
+function loadBests() { try { return JSON.parse(localStorage.getItem(BEST_KEY)) || {}; } catch (e) { return {}; } }
+function saveBests(o) { try { localStorage.setItem(BEST_KEY, JSON.stringify(o)); } catch (e) {} }
 
 // Opening lines — each ply is {san, sq}; sq is the destination square clicked.
 const OPENINGS = {
@@ -341,8 +349,12 @@ function newGame(mode, diff) {
     });
   }
 
+  const callInterval = spb * d.bpc;   // seconds between successive calls
+
   G = {
     mode, diff, spb, bpc: d.bpc,
+    goodW: callInterval * GOOD_FRAC,
+    perfectW: callInterval * PERFECT_FRAC,
     countIn: 4,
     queue, qPtr: 0,
     calls: [],          // active/visible calls
@@ -402,7 +414,7 @@ function update() {
 
   // Auto-miss calls whose window has closed
   G.calls.forEach(c => {
-    if (c.status === 'pending' && now > c.hitTime + GOOD_W) {
+    if (c.status === 'pending' && now > c.hitTime + G.goodW) {
       c.status = 'missed';
       registerResult('miss', c);
       flashSquare(c.x, c.y, COLORS.bad);
@@ -434,7 +446,7 @@ function update() {
 
   // Finish check
   if (G.qPtr >= G.queue.length && !G.calls.some(c => c.status === 'pending')
-      && now > G.lastHitTime + GOOD_W + 0.15 && !G.finished) {
+      && now > G.lastHitTime + G.goodW + 0.15 && !G.finished) {
     finish();
   }
 }
@@ -462,12 +474,12 @@ function resolveAt(sqx, sqy) {
   G.calls.forEach(c => {
     if (c.status !== 'pending') return;
     const dt = Math.abs(c.hitTime - now);
-    if (dt <= GOOD_W && dt < bestDt) { best = c; bestDt = dt; }
+    if (dt <= G.goodW && dt < bestDt) { best = c; bestDt = dt; }
   });
   if (!best) return; // nothing to hit right now — no penalty
 
   if (best.x === sqx && best.y === sqy) {
-    const kind = bestDt <= PERFECT_W ? 'perfect' : 'good';
+    const kind = bestDt <= G.perfectW ? 'perfect' : 'good';
     best.status = 'hit';
     registerResult(kind, best);
     movePrincess(sqx, sqy);
@@ -565,15 +577,15 @@ function drawBoard() {
   ctx.lineWidth = 1.5;
   ctx.strokeRect(BX, BY, BOARD, BOARD);
 
-  // File / rank labels (the player's reading aid)
-  ctx.fillStyle = 'rgba(245,197,24,0.45)';
-  ctx.font = '10px Courier New';
+  // File / rank labels (the player's reading aid) — bold + brighter to find squares fast
+  ctx.fillStyle = 'rgba(245,197,24,0.7)';
+  ctx.font = 'bold 13px Courier New';
   ctx.textBaseline = 'alphabetic';
   const files = 'abcdefgh';
   for (let i = 0; i < 8; i++) {
     ctx.textAlign = 'left';
     ctx.fillText(files[i], BX + i * TILE + 3, BY + BOARD - 4);   // files along bottom
-    ctx.fillText(8 - i, BX + 2, BY + i * TILE + 12);             // ranks down the left
+    ctx.fillText(8 - i, BX + 3, BY + i * TILE + 15);             // ranks down the left
   }
 }
 
@@ -594,32 +606,70 @@ function drawTrack() {
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(HITX, TRACK_Y - 26); ctx.lineTo(HITX, TRACK_Y + 26); ctx.stroke();
 
-  // Incoming calls
+  // Approach ring — shrinks onto the gate as the imminent call lands, turning
+  // green the moment it's actually hittable. The clearest "click NOW" cue.
+  if (G.running) {
+    let nextC = null;
+    G.calls.forEach(c => { if (c.status === 'pending' && (!nextC || c.hitTime < nextC.hitTime)) nextC = c; });
+    if (nextC) {
+      const delta = nextC.hitTime - now;
+      const LEAD = 1.0, GATE_R = 16, MAX_EXTRA = 22;
+      const ringR = GATE_R + Math.min(Math.max(delta, 0), LEAD) / LEAD * MAX_EXTRA;
+      const within = Math.abs(delta) <= G.goodW;
+      ctx.strokeStyle = within ? 'rgba(107,255,184,0.95)' : 'rgba(245,197,24,0.55)';
+      ctx.lineWidth = within ? 3 : 2;
+      ctx.beginPath(); ctx.arc(HITX, TRACK_Y, ringR, 0, Math.PI * 2); ctx.stroke();
+    }
+  }
+
+  // Incoming calls — drawn as rounded "pills" sized to the notation text
   G.calls.forEach(c => {
     const dx = (c.hitTime - now) * PXPS;
-    let x = HITX + dx;
-    if (c.status !== 'pending') x = HITX + dx; // resolved ones keep sliding & fade
-    if (x > W - 6 || x < -30) return;
+    const x = HITX + dx;
+    if (x > W + 20 || x < -40) return;
     const dt = Math.abs(c.hitTime - now);
-    const active = c.status === 'pending' && dt <= GOOD_W;
-    const r = active ? 16 : 13;
+    const active = c.status === 'pending' && dt <= G.goodW;
+
+    const fontSize = active ? 24 : 18;
+    ctx.font = 'bold ' + fontSize + 'px Courier New';
+    const textW = ctx.measureText(c.san).width;
+    const padX = active ? 12 : 9;
+    const w = textW + padX * 2;
+    const h = fontSize + 12;
+
     let fill, stroke;
-    if (c.status === 'hit') { fill = 'rgba(107,255,184,'+(0.7*c.fade)+')'; stroke = 'rgba(107,255,184,'+c.fade+')'; }
+    if (c.status === 'hit') { fill = 'rgba(107,255,184,'+(0.75*c.fade)+')'; stroke = 'rgba(107,255,184,'+c.fade+')'; }
     else if (c.status === 'missed') { fill = 'rgba(255,107,107,'+(0.6*c.fade)+')'; stroke = 'rgba(255,107,107,'+c.fade+')'; }
-    else if (active) { fill = 'rgba(245,197,24,0.92)'; stroke = '#fff'; }
+    else if (active) { fill = 'rgba(245,197,24,0.95)'; stroke = '#fff'; }
     else { fill = '#2D1B69'; stroke = '#7a5fb0'; }
 
-    ctx.beginPath(); ctx.arc(x, TRACK_Y, r, 0, Math.PI * 2);
+    pill(x, TRACK_Y, w, h, h / 2);
     ctx.fillStyle = fill; ctx.fill();
-    ctx.strokeStyle = stroke; ctx.lineWidth = active ? 2 : 1; ctx.stroke();
+    ctx.strokeStyle = stroke; ctx.lineWidth = active ? 2.5 : 1.5; ctx.stroke();
 
-    ctx.fillStyle = (active || c.status === 'pending') ? (active ? '#1a0f3d' : COLORS.text) : '#fff';
-    if (c.status === 'hit') ctx.fillStyle = '#0c3d28';
-    if (c.status === 'missed') ctx.fillStyle = '#fff';
-    ctx.font = 'bold ' + (active ? 15 : 12) + 'px Courier New';
+    let textColor;
+    if (c.status === 'hit') textColor = '#0c3d28';
+    else if (c.status === 'missed') textColor = '#fff';
+    else if (active) textColor = '#1a0f3d';
+    else textColor = COLORS.text;
+    ctx.fillStyle = textColor;
+    ctx.font = 'bold ' + fontSize + 'px Courier New';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(c.san, x, TRACK_Y + 1);
   });
+}
+
+// Rounded-rectangle "pill" centered at (cx, cy)
+function pill(cx, cy, w, h, r) {
+  const x = cx - w / 2, y = cy - h / 2;
+  r = Math.min(r, h / 2, w / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
 }
 
 function drawPrincess() {
@@ -725,15 +775,26 @@ function loop() {
 // ---- Screens / flow ----
 let selMode = 'coords', selDiff = 'medium';
 
+function modeName(mode) { return mode === 'coords' ? 'Coordinates' : OPENINGS[mode].label; }
+function updateTitleBest() {
+  const best = loadBests()[selMode + '_' + selDiff];
+  const el = document.getElementById('title-best');
+  el.innerHTML = best
+    ? 'Best (' + modeName(selMode) + ' · ' + DIFFS[selDiff].label + '): <b>' + best.rank + '</b> · ' + best.score
+    : 'Best (' + modeName(selMode) + ' · ' + DIFFS[selDiff].label + '): <b>—</b>';
+}
+
 document.getElementById('mode-row').addEventListener('click', e => {
   const b = e.target.closest('[data-mode]'); if (!b) return;
   selMode = b.dataset.mode;
   document.querySelectorAll('#mode-row .pick').forEach(p => p.classList.toggle('sel', p === b));
+  updateTitleBest();
 });
 document.getElementById('diff-row').addEventListener('click', e => {
   const b = e.target.closest('[data-diff]'); if (!b) return;
   selDiff = b.dataset.diff;
   document.querySelectorAll('#diff-row .pick').forEach(p => p.classList.toggle('sel', p === b));
+  updateTitleBest();
 });
 
 document.getElementById('mute-toggle').addEventListener('click', () => {
@@ -784,11 +845,24 @@ function finish() {
   document.getElementById('res-perfect').textContent = r.perfect;
   document.getElementById('res-good').textContent = r.good;
   document.getElementById('res-miss').textContent = r.miss;
+
+  // Personal best (per mode + tempo)
+  const bests = loadBests();
+  const key = G.mode + '_' + G.diff;
+  const prev = bests[key];
+  const isBest = !prev || G.score > prev.score;
+  if (isBest) { bests[key] = { score: G.score, rank }; saveBests(bests); }
+  const bestEl = document.getElementById('res-best');
+  if (isBest) bestEl.innerHTML = '<b style="color:#6bffb8;">✨ NEW BEST! ✨</b>';
+  else bestEl.innerHTML = 'Best: <b style="color:#F5C518;">' + prev.rank + '</b> · ' + prev.score;
+  updateTitleBest();
+
   document.getElementById('results-screen').classList.remove('hidden');
 }
 
 // Boot
 newGame(selMode, selDiff);   // so the board renders behind the title screen
+updateTitleBest();
 loop();
 </script>
 </body>
