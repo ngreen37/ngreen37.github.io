@@ -5,6 +5,8 @@ description: "An operative decryption word game. Crack the five-letter code and 
 permalink: /games/cipher/
 ---
 
+<div id="pjcc-profile-bar" class="pjcc-profile-bar" hidden></div>
+
 <div class="game-frame-wrap">
   <iframe
     src="{{ '/assets/games/pjcc_cipher.html' | relative_url }}"
@@ -13,6 +15,72 @@ permalink: /games/cipher/
     scrolling="no"
   ></iframe>
 </div>
+
+<script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
+<script>
+(function () {
+  var bar = document.getElementById('pjcc-profile-bar');
+  function render() {
+    if (!PJCC.enabled) { bar.hidden = true; return; }   // keys not set yet
+    bar.hidden = false;
+    var user = PJCC.currentUser();
+    var prof = PJCC.getProfile();
+    if (!user) {
+      bar.innerHTML =
+        '<span class="pjcc-pb-label">Save your operative across any device:</span>' +
+        '<input id="pjcc-email" type="email" placeholder="you@email.com" class="pjcc-pb-input">' +
+        '<button id="pjcc-login" class="pjcc-pb-btn">Send login link</button>';
+      document.getElementById('pjcc-login').onclick = function () {
+        var email = document.getElementById('pjcc-email').value.trim();
+        if (!email) return;
+        PJCC.signInMagic(email).then(function () {
+          bar.innerHTML = '<span class="pjcc-pb-label">Check your email for a login link, then come back here.</span>';
+        });
+      };
+    } else if (!prof) {
+      bar.innerHTML =
+        '<span class="pjcc-pb-label">Pick your operative codename:</span>' +
+        '<input id="pjcc-codename" type="text" maxlength="24" placeholder="codename" class="pjcc-pb-input">' +
+        '<button id="pjcc-claim" class="pjcc-pb-btn">Claim</button>';
+      document.getElementById('pjcc-claim').onclick = function () {
+        var name = document.getElementById('pjcc-codename').value.trim();
+        if (!name) return;
+        PJCC.claimCodename(name).then(render);
+      };
+    } else {
+      bar.innerHTML =
+        '<span class="pjcc-pb-who">Operative <strong>' + prof.codename + '</strong> · ' +
+        prof.rank + ' · ' + prof.credits + ' credits</span>' +
+        '<button id="pjcc-out" class="pjcc-pb-btn pjcc-pb-ghost">Sign out</button>';
+      document.getElementById('pjcc-out').onclick = function () { PJCC.signOut().then(render); };
+    }
+  }
+  PJCC.onChange(render);
+  PJCC.ready.then(render);
+})();
+</script>
+
+<style>
+.pjcc-profile-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  background: #160c33; border: 1px solid #6b5fa0; border-radius: 8px;
+  padding: 10px 14px; margin: 0 0 1rem; font-size: 0.85rem; color: #cdbcf2;
+}
+.pjcc-pb-label { color: #9a7fd4; }
+.pjcc-pb-who strong { color: #F5C518; }
+.pjcc-pb-input {
+  background: #0d0722; border: 1px solid #6b5fa0; border-radius: 5px;
+  color: #f0e6ff; padding: 5px 9px; font-size: 0.85rem;
+}
+.pjcc-pb-btn {
+  background: #F5C518; color: #1a0f3d; border: none; border-radius: 5px;
+  padding: 6px 14px; font-weight: 800; cursor: pointer;
+}
+.pjcc-pb-btn:hover { background: #ffd740; }
+.pjcc-pb-ghost { background: transparent; color: #9a7fd4; border: 1px solid #6b5fa0; }
+.pjcc-pb-ghost:hover { background: #2a1d55; color: #f0e6ff; }
+</style>
 
 <div class="game-info">
   <h2>How to Play</h2>

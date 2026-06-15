@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>PJCC: CIPHER</title>
+<script src="/assets/js/pjcc-config.js"></script>
+<script src="/assets/js/pjcc-profile.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   :root { --green:#2ecc71; --amber:#F5C518; --dim:#243; --ink:#caffe0; --bg:#04100a; }
@@ -308,6 +310,11 @@ function win(){
   over = true; sfx('win');
   const s = loadStreak(); s.n = (s.n || 0) + 1; saveStreak(s);
   document.getElementById('streak-lbl').textContent = 'STREAK ' + s.n;
+  // Record the run to the operative profile (no-op for guests / offline).
+  if (window.PJCC) {
+    const seed = (mode === 'daily') ? new Date().toISOString().slice(0,10) : null;
+    PJCC.saveScore('cipher', s.n, { seed: seed, credits: 10, data: { mode: mode } });
+  }
   decryptFragment(() => {
     document.getElementById('res-stamp').className = 'ov-stamp ok'; document.getElementById('res-stamp').textContent = 'DECRYPTION COMPLETE';
     document.getElementById('res-title').textContent = ['CRACKED','SHARP','OPERATIVE','TEXTBOOK'][Math.min(row,3)] + (row === 0 ? ' — FIRST TRY' : '');
