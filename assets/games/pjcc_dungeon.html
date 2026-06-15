@@ -292,6 +292,7 @@ function generateRoom() {
 
   const enemies = [];
   const occupied = new Set(['0,7']); // princess start
+  const pawnColumns = new Set(); // track columns used by pawns
 
   for(let i=0;i<count;i++){
     const type = pool[Math.floor(Math.random()*pool.length)];
@@ -302,8 +303,10 @@ function generateRoom() {
       y = Math.floor(Math.random()*6);
       key = x+','+y;
       tries++;
-    } while(occupied.has(key) && tries<30);
+      // Pawns must occupy unique columns
+    } while((occupied.has(key) || (type==='P' && pawnColumns.has(x))) && tries<50);
     occupied.add(key);
+    if(type==='P') pawnColumns.add(x);
     enemies.push({ type, x, y, hp:1, id: Math.random() });
   }
   state.enemies = enemies;
@@ -358,12 +361,15 @@ function getEnemyMoves(e) {
   };
 
   if(type==='P') {
-    // Pawns move one step toward princess (downward on our board = toward y=7)
-    const dy = py > y ? 1 : -1;
-    addIfValid(x, y+dy);
-    // diagonal capture
-    if(isPrincess(x-1,y+dy)) addIfValid(x-1,y+dy);
-    if(isPrincess(x+1,y+dy)) addIfValid(x+1,y+dy);
+    // Pawns always march downward (toward y=7, where Princess starts)
+    const dy = 1;
+    // Forward move: blocked if occupied (including princess — pawns can't capture forward)
+    if(inBounds(x, y+dy) && !isEnemy(x, y+dy) && !isPrincess(x, y+dy)) {
+      moves.push({x, y: y+dy});
+    }
+    // Diagonal capture: only if princess is exactly there
+    if(isPrincess(x-1, y+dy)) addIfValid(x-1, y+dy);
+    if(isPrincess(x+1, y+dy)) addIfValid(x+1, y+dy);
   }
   if(type==='N') {
     [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]].forEach(([dx,dy])=>addIfValid(x+dx,y+dy));
@@ -408,6 +414,7 @@ function enemyTurn() {
           log('Princess has fallen...','danger');
           showMessage('GAME OVER', 'Princess has been defeated.<br>The dungeon claims another soul.', 'Try Again', ()=>{
             state.floor=1; state.room=0;
+            state.dead=false; state.cleared=false; state.flashTiles=[];
             state.princess={x:0,y:7,hp:10,maxHp:10};
             generateRoom();
           });
