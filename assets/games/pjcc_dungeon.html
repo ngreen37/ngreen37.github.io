@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PJCC: Princess Dungeon</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a0f3d;
+    color: #f0e6ff;
+    font-family: 'Courier New', monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  #game-wrapper {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  #hud {
+    width: 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .hud-panel {
+    background: #2D1B69;
+    border: 1px solid #F5C518;
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+
+  .hud-label {
+    font-size: 10px;
+    color: #F5C518;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+
+  .hud-value {
+    font-size: 18px;
+    font-weight: bold;
+    color: #f0e6ff;
+  }
+
+  #hp-bar-wrap { margin-top: 4px; }
+  #hp-bar-bg {
+    height: 8px;
+    background: #1a0f3d;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  #hp-bar {
+    height: 100%;
+    background: #F5C518;
+    border-radius: 4px;
+    transition: width 0.2s;
+  }
+
+  #floor-label { font-size: 11px; color: #9a7fd4; }
+
+  #enemy-list { font-size: 11px; color: #c9a7ff; line-height: 1.8; }
+
+  #controls-hint {
+    font-size: 9px;
+    color: #7a5fb0;
+    line-height: 1.7;
+  }
+
+  #board-container {
+    position: relative;
+  }
+
+  #canvas {
+    display: block;
+    border: 2px solid #F5C518;
+    border-radius: 4px;
+    box-shadow: 0 0 30px rgba(245, 197, 24, 0.2);
+  }
+
+  #message-overlay {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(26, 15, 61, 0.95);
+    border: 2px solid #F5C518;
+    border-radius: 8px;
+    padding: 24px 32px;
+    text-align: center;
+    z-index: 10;
+  }
+
+  #message-title {
+    font-size: 22px;
+    color: #F5C518;
+    margin-bottom: 8px;
+    font-weight: bold;
+  }
+
+  #message-body {
+    font-size: 13px;
+    color: #c9a7ff;
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+
+  #message-btn {
+    background: #F5C518;
+    color: #1a0f3d;
+    border: none;
+    padding: 8px 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 1px;
+  }
+  #message-btn:hover { background: #ffd740; }
+
+  #log-panel {
+    width: 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  #log-title {
+    font-size: 10px;
+    color: #F5C518;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  #log-entries {
+    background: #2D1B69;
+    border: 1px solid #4a2f8a;
+    border-radius: 6px;
+    padding: 8px 10px;
+    height: 320px;
+    overflow-y: auto;
+    font-size: 10px;
+    color: #9a7fd4;
+    line-height: 1.8;
+    display: flex;
+    flex-direction: column-reverse;
+  }
+
+  #log-entries .log-line { display: block; }
+  #log-entries .log-line.gold { color: #F5C518; }
+  #log-entries .log-line.danger { color: #ff6b6b; }
+  #log-entries .log-line.good { color: #6bffb8; }
+
+  .piece-icon { font-size: 11px; }
+</style>
+</head>
+<body>
+
+<div id="game-wrapper">
+  <div id="hud">
+    <div class="hud-panel">
+      <div class="hud-label">Princess</div>
+      <div id="hp-bar-wrap">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <div class="hud-label" style="margin:0">HP</div>
+          <span id="hp-text" style="font-size:11px;color:#f0e6ff;">10/10</span>
+        </div>
+        <div class="hp-bar-bg" id="hp-bar-bg" style="height:8px;background:#1a0f3d;border-radius:4px;overflow:hidden;margin-top:3px">
+          <div id="hp-bar" style="height:100%;background:#F5C518;border-radius:4px;width:100%;transition:width 0.2s;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="hud-panel">
+      <div class="hud-label">Floor</div>
+      <div class="hud-value" id="floor-num">1</div>
+      <div id="floor-label">Room <span id="room-num">1</span></div>
+    </div>
+    <div class="hud-panel">
+      <div class="hud-label">Enemies</div>
+      <div id="enemy-list">—</div>
+    </div>
+    <div class="hud-panel">
+      <div class="hud-label">Controls</div>
+      <div id="controls-hint">
+        ↑ ↓ ← →  move<br>
+        WASD  move<br>
+        <br>
+        Move onto<br>
+        an enemy to<br>
+        capture it.<br>
+        <br>
+        Enemies move<br>
+        like chess<br>
+        pieces.
+      </div>
+    </div>
+  </div>
+
+  <div id="board-container">
+    <canvas id="canvas" width="480" height="480"></canvas>
+    <div id="message-overlay">
+      <div id="message-title">ROOM CLEARED</div>
+      <div id="message-body">The door is open.<br>Move to the gold square to advance.</div>
+      <button id="message-btn">CONTINUE</button>
+    </div>
+  </div>
+
+  <div id="log-panel">
+    <div id="log-title">Battle Log</div>
+    <div id="log-entries"></div>
+  </div>
+</div>
+
+<script>
+const TILE = 60;
+const COLS = 8;
+const ROWS = 8;
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+const COLORS = {
+  lightSquare: '#3d2a7a',
+  darkSquare:  '#2D1B69',
+  gold:        '#F5C518',
+  goldDim:     '#a87d00',
+  princess:    '#f0e6ff',
+  pawn:        '#ff6b6b',
+  knight:      '#ff9b4a',
+  bishop:      '#c96bff',
+  rook:        '#6bbfff',
+  queen:       '#ff6bc8',
+  highlight:   'rgba(245,197,24,0.25)',
+  danger:      'rgba(255,60,60,0.22)',
+  exit:        'rgba(245,197,24,0.18)',
+};
+
+const PIECE_NAMES = { P:'Pawn', N:'Knight', B:'Bishop', R:'Rook', Q:'Queen' };
+const PIECE_COLORS = { P:COLORS.pawn, N:COLORS.knight, B:COLORS.bishop, R:COLORS.rook, Q:COLORS.queen };
+const PIECE_SYMBOLS = { P:'♟', N:'♞', B:'♝', R:'♜', Q:'♛', PRINCESS:'♙' };
+
+let state = {
+  floor: 1,
+  room: 0,
+  princess: { x:0, y:7, hp:10, maxHp:10 },
+  enemies: [],
+  cleared: false,
+  dead: false,
+  animating: false,
+  flashTiles: [],  // {x,y,color,frames}
+  roomsPerFloor: 5,
+};
+
+function log(msg, cls='') {
+  const el = document.getElementById('log-entries');
+  const line = document.createElement('span');
+  line.className = 'log-line' + (cls ? ' '+cls : '');
+  line.textContent = msg;
+  el.prepend(line);
+  while(el.children.length > 40) el.removeChild(el.lastChild);
+}
+
+function generateRoom() {
+  state.cleared = false;
+  state.princess.x = 0;
+  state.princess.y = 7;
+  state.flashTiles = [];
+
+  const floorBudget = state.floor;
+  const roomIdx = state.room % state.roomsPerFloor;
+
+  // Scale enemy count: 1-2 early, up to 5+ later
+  const count = Math.min(2 + Math.floor(floorBudget * 0.7) + Math.floor(roomIdx * 0.4), 6);
+
+  const pool = [];
+  if(floorBudget >= 1) pool.push('P','P','P');
+  if(floorBudget >= 2) pool.push('N','N');
+  if(floorBudget >= 3) pool.push('B','B');
+  if(floorBudget >= 4) pool.push('R');
+  if(floorBudget >= 5) pool.push('Q');
+
+  const enemies = [];
+  const occupied = new Set(['0,7']); // princess start
+
+  for(let i=0;i<count;i++){
+    const type = pool[Math.floor(Math.random()*pool.length)];
+    let x,y,key;
+    let tries=0;
+    do {
+      x = 2 + Math.floor(Math.random()*6);
+      y = Math.floor(Math.random()*6);
+      key = x+','+y;
+      tries++;
+    } while(occupied.has(key) && tries<30);
+    occupied.add(key);
+    enemies.push({ type, x, y, hp:1, id: Math.random() });
+  }
+  state.enemies = enemies;
+  log(`— Room ${state.room+1} (Floor ${state.floor}) —`, 'gold');
+  updateHUD();
+}
+
+function updateHUD() {
+  document.getElementById('floor-num').textContent = state.floor;
+  document.getElementById('room-num').textContent = state.room+1;
+  const p = state.princess;
+  document.getElementById('hp-text').textContent = p.hp+'/'+p.maxHp;
+  document.getElementById('hp-bar').style.width = Math.max(0,p.hp/p.maxHp*100)+'%';
+
+  const el = document.getElementById('enemy-list');
+  if(state.enemies.length === 0) {
+    el.textContent = state.cleared ? 'All cleared!' : '—';
+  } else {
+    const counts = {};
+    state.enemies.forEach(e=>{ counts[e.type]=(counts[e.type]||0)+1; });
+    el.innerHTML = Object.entries(counts).map(([t,n])=>
+      `<span style="color:${PIECE_COLORS[t]}">${PIECE_SYMBOLS[t]} ${PIECE_NAMES[t]}${n>1?' ×'+n:''}</span>`
+    ).join('<br>');
+  }
+}
+
+// ---- Chess movement rules ----
+function getEnemyMoves(e) {
+  const moves = [];
+  const {x,y,type} = e;
+  const occupied = new Set(state.enemies.map(o=>`${o.x},${o.y}`));
+  const px = state.princess.x, py = state.princess.y;
+
+  const inBounds = (cx,cy) => cx>=0&&cx<COLS&&cy>=0&&cy<ROWS;
+  const isEnemy = (cx,cy) => occupied.has(`${cx},${cy}`);
+  const isPrincess = (cx,cy) => cx===px&&cy===py;
+
+  const addIfValid = (cx,cy) => {
+    if(!inBounds(cx,cy)) return false;
+    if(isEnemy(cx,cy)) return false; // can't capture own kind
+    moves.push({x:cx,y:cy});
+    return true;
+  };
+
+  const slide = (dx,dy) => {
+    let cx=x+dx,cy=y+dy;
+    while(inBounds(cx,cy)&&!isEnemy(cx,cy)){
+      moves.push({x:cx,y:cy});
+      if(isPrincess(cx,cy)) break;
+      cx+=dx; cy+=dy;
+    }
+  };
+
+  if(type==='P') {
+    // Pawns move one step toward princess (downward on our board = toward y=7)
+    const dy = py > y ? 1 : -1;
+    addIfValid(x, y+dy);
+    // diagonal capture
+    if(isPrincess(x-1,y+dy)) addIfValid(x-1,y+dy);
+    if(isPrincess(x+1,y+dy)) addIfValid(x+1,y+dy);
+  }
+  if(type==='N') {
+    [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]].forEach(([dx,dy])=>addIfValid(x+dx,y+dy));
+  }
+  if(type==='B') {
+    [[-1,-1],[-1,1],[1,-1],[1,1]].forEach(([dx,dy])=>slide(dx,dy));
+  }
+  if(type==='R') {
+    [[-1,0],[1,0],[0,-1],[0,1]].forEach(([dx,dy])=>slide(dx,dy));
+  }
+  if(type==='Q') {
+    [[-1,-1],[-1,1],[1,-1],[1,1],[-1,0],[1,0],[0,-1],[0,1]].forEach(([dx,dy])=>slide(dx,dy));
+  }
+  return moves;
+}
+
+function enemyTurn() {
+  if(state.cleared || state.dead) return;
+  const p = state.princess;
+  const attackTiles = [];
+
+  state.enemies.forEach(e => {
+    const moves = getEnemyMoves(e);
+    const canAttack = moves.find(m=>m.x===p.x&&m.y===p.y);
+
+    if(canAttack) {
+      // Move toward princess — find move that minimizes distance
+      const best = moves.reduce((a,b)=>{
+        const da = Math.abs(a.x-p.x)+Math.abs(a.y-p.y);
+        const db = Math.abs(b.x-p.x)+Math.abs(b.y-p.y);
+        return da<db?a:b;
+      });
+      if(best.x===p.x&&best.y===p.y){
+        // Attack!
+        const dmg = 1;
+        p.hp = Math.max(0,p.hp-dmg);
+        attackTiles.push({x:e.x,y:e.y,color:'rgba(255,80,80,0.55)',frames:8});
+        attackTiles.push({x:p.x,y:p.y,color:'rgba(255,80,80,0.55)',frames:8});
+        log(`${PIECE_NAMES[e.type]} attacks! -${dmg} HP`, 'danger');
+        if(p.hp<=0){
+          state.dead=true;
+          log('Princess has fallen...','danger');
+          showMessage('GAME OVER', 'Princess has been defeated.<br>The dungeon claims another soul.', 'Try Again', ()=>{
+            state.floor=1; state.room=0;
+            state.princess={x:0,y:7,hp:10,maxHp:10};
+            generateRoom();
+          });
+        }
+      } else {
+        e.x=best.x; e.y=best.y;
+      }
+    } else if(moves.length>0) {
+      // Move toward princess
+      const best = moves.reduce((a,b)=>{
+        const da = Math.abs(a.x-p.x)+Math.abs(a.y-p.y);
+        const db = Math.abs(b.x-p.x)+Math.abs(b.y-p.y);
+        return da<db?a:b;
+      });
+      e.x=best.x; e.y=best.y;
+    }
+  });
+
+  state.flashTiles.push(...attackTiles);
+  updateHUD();
+}
+
+function tryMove(dx,dy) {
+  if(state.animating||state.dead) return;
+  const p = state.princess;
+  const nx=p.x+dx, ny=p.y+dy;
+  if(nx<0||nx>=COLS||ny<0||ny>=ROWS) return;
+
+  // Check exit
+  if(state.cleared && nx===7 && ny===0) {
+    nextRoom();
+    return;
+  }
+
+  // Check capture
+  const target = state.enemies.find(e=>e.x===nx&&e.y===ny);
+  if(target) {
+    state.enemies = state.enemies.filter(e=>e!==target);
+    state.flashTiles.push({x:nx,y:ny,color:'rgba(245,197,24,0.7)',frames:10});
+    log(`Captured ${PIECE_NAMES[target.type]}!`, 'good');
+    p.x=nx; p.y=ny;
+    if(state.enemies.length===0 && !state.cleared){
+      state.cleared=true;
+      log('Room cleared! Exit open.','gold');
+      state.flashTiles.push({x:7,y:0,color:'rgba(245,197,24,0.5)',frames:20});
+    }
+    enemyTurn();
+    updateHUD();
+    return;
+  }
+
+  p.x=nx; p.y=ny;
+  enemyTurn();
+  updateHUD();
+}
+
+function nextRoom() {
+  state.room++;
+  if(state.room % state.roomsPerFloor === 0) {
+    state.floor++;
+    log(`=== FLOOR ${state.floor} ===`,'gold');
+    // Restore some HP between floors
+    const restore = 2;
+    state.princess.hp = Math.min(state.princess.maxHp, state.princess.hp + restore);
+    log(`+${restore} HP restored`,'good');
+  }
+  generateRoom();
+}
+
+function showMessage(title, body, btnText, callback) {
+  const overlay = document.getElementById('message-overlay');
+  document.getElementById('message-title').textContent = title;
+  document.getElementById('message-body').innerHTML = body;
+  const btn = document.getElementById('message-btn');
+  btn.textContent = btnText;
+  btn.onclick = () => { overlay.style.display='none'; if(callback) callback(); };
+  overlay.style.display = 'block';
+}
+
+// ---- Rendering ----
+function getThreatMap() {
+  const threats = new Set();
+  state.enemies.forEach(e=>{
+    getEnemyMoves(e).forEach(m=>threats.add(`${m.x},${m.y}`));
+  });
+  return threats;
+}
+
+function drawBoard() {
+  ctx.clearRect(0,0,480,480);
+
+  const threats = getThreatMap();
+
+  // Squares
+  for(let row=0;row<ROWS;row++){
+    for(let col=0;col<COLS;col++){
+      const light = (row+col)%2===0;
+      ctx.fillStyle = light ? COLORS.lightSquare : COLORS.darkSquare;
+      ctx.fillRect(col*TILE, row*TILE, TILE, TILE);
+
+      // Threat overlay
+      if(threats.has(`${col},${row}`) && !(col===state.princess.x&&row===state.princess.y)){
+        ctx.fillStyle = COLORS.danger;
+        ctx.fillRect(col*TILE, row*TILE, TILE, TILE);
+      }
+
+      // Exit tile
+      if(state.cleared && col===7 && row===0){
+        ctx.fillStyle = COLORS.exit;
+        ctx.fillRect(col*TILE, row*TILE, TILE, TILE);
+        // Animated pulse border
+        const t = Date.now()/400;
+        ctx.strokeStyle = `rgba(245,197,24,${0.4+0.4*Math.sin(t)})`;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(col*TILE+1.5, row*TILE+1.5, TILE-3, TILE-3);
+        ctx.lineWidth = 1;
+      }
+    }
+  }
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(245,197,24,0.08)';
+  ctx.lineWidth = 0.5;
+  for(let i=0;i<=COLS;i++){
+    ctx.beginPath(); ctx.moveTo(i*TILE,0); ctx.lineTo(i*TILE,ROWS*TILE); ctx.stroke();
+  }
+  for(let j=0;j<=ROWS;j++){
+    ctx.beginPath(); ctx.moveTo(0,j*TILE); ctx.lineTo(COLS*TILE,j*TILE); ctx.stroke();
+  }
+
+  // Flash tiles
+  state.flashTiles = state.flashTiles.filter(f=>{
+    if(f.frames>0){
+      ctx.fillStyle = f.color;
+      ctx.fillRect(f.x*TILE, f.y*TILE, TILE, TILE);
+      f.frames--;
+      return f.frames>0;
+    }
+    return false;
+  });
+
+  // Rank/file labels
+  ctx.fillStyle = 'rgba(245,197,24,0.3)';
+  ctx.font = '10px Courier New';
+  ctx.textAlign = 'left';
+  const files = 'abcdefgh';
+  for(let i=0;i<8;i++){
+    ctx.fillText(files[i], i*TILE+3, 477);
+    ctx.fillText(8-i, 2, i*TILE+13);
+  }
+
+  // Enemies
+  state.enemies.forEach(e=>{
+    const cx = e.x*TILE+TILE/2;
+    const cy = e.y*TILE+TILE/2;
+    const col = PIECE_COLORS[e.type];
+
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath();
+    ctx.ellipse(cx, cy+18, 14, 5, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    // Body hexagon (low-poly vibe)
+    ctx.fillStyle = col;
+    drawHex(cx, cy, 18);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+    ctx.lineWidth = 1.5;
+    drawHex(cx, cy, 18);
+    ctx.stroke();
+
+    // Piece symbol
+    ctx.fillStyle = '#1a0f3d';
+    ctx.font = 'bold 20px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(PIECE_SYMBOLS[e.type], cx, cy+1);
+  });
+
+  // Princess
+  const p = state.princess;
+  const pcx = p.x*TILE+TILE/2;
+  const pcy = p.y*TILE+TILE/2;
+  const t2 = Date.now()/600;
+
+  // Bob animation
+  const bob = Math.sin(t2)*2;
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath();
+  ctx.ellipse(pcx, pcy+18, 16, 6, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Gold ring (halo)
+  ctx.strokeStyle = COLORS.gold;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(pcx, pcy+bob, 22, 0, Math.PI*2);
+  ctx.stroke();
+
+  // Princess body (white/light)
+  ctx.fillStyle = '#f0e6ff';
+  drawHex(pcx, pcy+bob, 18);
+  ctx.fill();
+
+  ctx.strokeStyle = COLORS.gold;
+  ctx.lineWidth = 2;
+  drawHex(pcx, pcy+bob, 18);
+  ctx.stroke();
+
+  // Dog face details
+  ctx.fillStyle = '#c8a87a';  // brown accents
+  ctx.beginPath();
+  ctx.arc(pcx-5, pcy+bob-4, 4, 0, Math.PI*2);
+  ctx.arc(pcx+5, pcy+bob-4, 4, 0, Math.PI*2);
+  ctx.fill();
+
+  // Eyes
+  ctx.fillStyle = '#1a0f3d';
+  ctx.beginPath();
+  ctx.arc(pcx-4, pcy+bob-5, 2, 0, Math.PI*2);
+  ctx.arc(pcx+4, pcy+bob-5, 2, 0, Math.PI*2);
+  ctx.fill();
+
+  // Nose
+  ctx.fillStyle = '#1a0f3d';
+  ctx.beginPath();
+  ctx.arc(pcx, pcy+bob, 2.5, 0, Math.PI*2);
+  ctx.fill();
+
+  // Pawn symbol below
+  ctx.fillStyle = COLORS.gold;
+  ctx.font = 'bold 11px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillText('♙', pcx, pcy+bob+10);
+
+  // Exit arrow if cleared
+  if(state.cleared) {
+    const pt = Date.now()/500;
+    const alpha = 0.5+0.5*Math.sin(pt);
+    ctx.fillStyle = `rgba(245,197,24,${alpha})`;
+    ctx.font = 'bold 18px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('EXIT', 7*TILE+TILE/2, 0*TILE+TILE/2);
+  }
+}
+
+function drawHex(cx,cy,r){
+  ctx.beginPath();
+  for(let i=0;i<6;i++){
+    const a = Math.PI/2 + i*Math.PI/3;
+    const x=cx+r*Math.cos(a), y=cy+r*Math.sin(a);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+}
+
+function loop(){
+  drawBoard();
+  requestAnimationFrame(loop);
+}
+
+document.addEventListener('keydown', e=>{
+  const map = {
+    'ArrowUp':[0,-1],'ArrowDown':[0,1],'ArrowLeft':[-1,0],'ArrowRight':[1,0],
+    'w':[0,-1],'s':[0,1],'a':[-1,0],'d':[1,0],
+    'W':[0,-1],'S':[0,1],'A':[-1,0],'D':[1,0],
+  };
+  if(map[e.key]){
+    e.preventDefault();
+    tryMove(...map[e.key]);
+  }
+});
+
+// Intro message
+generateRoom();
+loop();
+showMessage(
+  'PJCC DUNGEON',
+  'Princess must clear each chessboard room.<br><br>' +
+  'Move onto enemy pieces to capture them.<br>' +
+  'Enemy pieces move by <em>chess rules</em>.<br>' +
+  'Red squares = threatened. Avoid them.<br><br>' +
+  'Reach the EXIT to advance.',
+  'ENTER DUNGEON',
+  null
+);
+</script>
+</body>
+</html>

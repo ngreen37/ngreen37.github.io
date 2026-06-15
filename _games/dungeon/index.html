@@ -1,0 +1,27 @@
+---
+layout: game
+title: "Princess Dungeon"
+description: "A chessboard dungeon crawler. Clear each room. Reach the exit."
+permalink: /games/dungeon/
+---
+
+<div class="game-frame-wrap">
+  <iframe
+    src="{{ '/assets/games/pjcc_dungeon.html' | relative_url }}"
+    title="PJCC Dungeon Crawler"
+    allowfullscreen
+    scrolling="no"
+  ></iframe>
+</div>
+
+<div class="game-info">
+  <h2>How to Play</h2>
+  <ul>
+    <li><strong>Arrow keys</strong> or <strong>WASD</strong> — move Princess</li>
+    <li><strong>Move onto an enemy</strong> to capture it</li>
+    <li>Enemy pieces move by <strong>chess rules</strong> — pawns advance, knights L-shape, bishops diagonal</li>
+    <li><strong>Red squares</strong> show threatened tiles — avoid them</li>
+    <li>Clear all enemies → <strong>EXIT</strong> opens top-right corner</li>
+    <li>Enemy count and piece types scale each floor</li>
+  </ul>
+</div>
