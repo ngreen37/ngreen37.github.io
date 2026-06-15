@@ -9,7 +9,7 @@ order: 1
 piece: ♞
 chapters: 0,1,2,3,4,5,6,7
 dossier_clearance: DELTA
-dossier_secret: Arrived via same vessel as Subject Zero. Connection to crash: unconfirmed.
+dossier_secret: "Arrived via same vessel as Subject Zero. Connection to crash: unconfirmed."
 last_seen: CHECKER TOWN
 ---
 

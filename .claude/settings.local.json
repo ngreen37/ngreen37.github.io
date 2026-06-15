@@ -19,7 +19,8 @@
       "Bash(python update_soundtrack.py)",
       "Skill(update-config)",
       "Skill(update-config:*)",
-      "Bash(findstr /v node_modules)"
+      "Bash(findstr /v node_modules)",
+      "Bash(git rm *)"
     ]
   },
   "hooks": {
