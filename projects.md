@@ -111,6 +111,46 @@ body_class: theme-bw
     </div>
   </div>
 
+  <div class="project-card project-card-active">
+    <div class="project-card-corner-piece" aria-hidden="true">⚔</div>
+    <div class="project-card-header">
+      <span class="project-status project-status-active">
+        <span class="project-status-dot"></span>
+        In Development
+      </span>
+      <h2 class="project-title">Fork in the Road</h2>
+    </div>
+    <p class="project-desc">A chess tactics trainer dressed as a journey. Each puzzle — fork, pin, skewer, discovered attack, mate — is a step on the road to Chess City. Find the winning move and Princess advances across the world map. Journey mode and a date-seeded Daily Five.</p>
+    <ul class="project-details">
+      <li><strong>Format:</strong> Browser game</li>
+      <li><strong>Status:</strong> Playable — more puzzles in progress</li>
+    </ul>
+    <div class="project-links">
+      <a href="/games/fork-in-the-road/" class="project-link">Play Now &rarr;</a>
+      <a href="/games/" class="project-link">All Games</a>
+    </div>
+  </div>
+
+  <div class="project-card project-card-active">
+    <div class="project-card-corner-piece" aria-hidden="true">⛏</div>
+    <div class="project-card-header">
+      <span class="project-status project-status-active">
+        <span class="project-status-dot"></span>
+        In Development
+      </span>
+      <h2 class="project-title">Sand Mine Depths</h2>
+    </div>
+    <p class="project-desc">A knight-movement descent roguelite set in the Sand Mines beneath Checker Town — the Father's domain, and what he "has seen down there." Princess hops in L-shapes, the sand caves in behind her, and the deeper she goes the more the mine remembers. A buried thread of the Subject Zero mystery.</p>
+    <ul class="project-details">
+      <li><strong>Format:</strong> Browser game</li>
+      <li><strong>Status:</strong> Playable — deeper floors and lore in progress</li>
+    </ul>
+    <div class="project-links">
+      <a href="/games/sand-mine-depths/" class="project-link">Play Now &rarr;</a>
+      <a href="/games/" class="project-link">All Games</a>
+    </div>
+  </div>
+
   <div class="project-card project-card-soon">
     <div class="project-card-corner-piece" aria-hidden="true">♞</div>
     <div class="project-card-header">

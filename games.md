@@ -42,6 +42,24 @@ permalink: /games/
     </div>
   </a>
 
+  <a class="game-card" href="{{ '/games/fork-in-the-road/' | relative_url }}">
+    <div class="game-card-icon">⚔</div>
+    <div class="game-card-body">
+      <h2>Fork in the Road</h2>
+      <p>Chess tactics puzzles. Spot the fork, pin, skewer, or mate and play the winning move — every solve walks Princess closer to Chess City.</p>
+      <span class="game-tag">Playable</span>
+    </div>
+  </a>
+
+  <a class="game-card" href="{{ '/games/sand-mine-depths/' | relative_url }}">
+    <div class="game-card-icon">⛏</div>
+    <div class="game-card-body">
+      <h2>Sand Mine Depths</h2>
+      <p>A knight-movement descent into the Father's mine. Hop deeper, dodge the pieces, and uncover what he saw down in the dark.</p>
+      <span class="game-tag">Playable</span>
+    </div>
+  </a>
+
 </div>
 
 <style>
