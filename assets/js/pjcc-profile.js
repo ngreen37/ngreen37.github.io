@@ -231,11 +231,16 @@
   };
 
   // All-time per-game board: best score per operative (from game_stats).
-  PJCC.gameLeaderboard = async function (game, limit) {
+  // Paginated via offset/limit (range), with a stable secondary sort.
+  PJCC.gameLeaderboard = async function (game, limit, offset) {
     if (!sb) return [];
+    limit = limit || 25; offset = offset || 0;
     var r = await sb.from('game_stats')
-      .select('best_score,plays,profiles(codename,companion)')
-      .eq('game', game).order('best_score', { ascending: false }).limit(limit || 25);
+      .select('best_score,plays,updated_at,profiles(codename,companion)')
+      .eq('game', game)
+      .order('best_score', { ascending: false })
+      .order('updated_at', { ascending: true })
+      .range(offset, offset + limit - 1);
     if (r.error || !r.data) return [];
     return r.data.map(function (row) {
       return { score: row.best_score, plays: row.plays,
@@ -245,11 +250,14 @@
   };
 
   // Cumulative board: operatives ranked by total credits earned everywhere.
-  PJCC.cumulativeLeaderboard = async function (limit) {
+  PJCC.cumulativeLeaderboard = async function (limit, offset) {
     if (!sb) return [];
+    limit = limit || 25; offset = offset || 0;
     var r = await sb.from('profiles')
       .select('codename,credits,rank,companion')
-      .order('credits', { ascending: false }).limit(limit || 25);
+      .order('credits', { ascending: false })
+      .order('codename', { ascending: true })
+      .range(offset, offset + limit - 1);
     if (r.error || !r.data) return [];
     return r.data;
   };
