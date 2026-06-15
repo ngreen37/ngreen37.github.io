@@ -60,6 +60,24 @@ permalink: /games/
     </div>
   </a>
 
+  <a class="game-card" href="{{ '/games/checker-financial/' | relative_url }}">
+    <div class="game-card-icon">$</div>
+    <div class="game-card-body">
+      <h2>Checker Financial</h2>
+      <p>A trading-floor number game. Call every trade — profit, even, or loss — before the clock runs out, and learn the REAL value of the pieces.</p>
+      <span class="game-tag">Playable</span>
+    </div>
+  </a>
+
+  <a class="game-card" href="{{ '/games/cipher/' | relative_url }}">
+    <div class="game-card-icon">⊙</div>
+    <div class="game-card-body">
+      <h2>CIPHER</h2>
+      <p>An operative decryption word game. Crack the five-letter code and the intercepted dispatch decrypts itself — chess terms and the Subject Zero file.</p>
+      <span class="game-tag">Playable</span>
+    </div>
+  </a>
+
 </div>
 
 <style>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>PJCC: CIPHER</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root { --green:#2ecc71; --amber:#F5C518; --dim:#243; --ink:#caffe0; --bg:#04100a; }
+  html, body { height: 100%; background: #020805; overflow: hidden;
+    font-family: 'Courier New', monospace; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  #term {
+    position: relative; width: 460px; max-width: 100vw; height: 500px;
+    background: radial-gradient(circle at 50% 18%, #0a2316 0%, #04100a 75%);
+    border: 3px solid var(--green); border-radius: 12px; overflow: hidden;
+    box-shadow: 0 0 40px rgba(46,204,113,0.25); color: var(--ink);
+    display: flex; flex-direction: column; padding: 8px 12px 10px;
+  }
+  /* CRT scanlines */
+  #term::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 50;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.16) 0px, rgba(0,0,0,0.16) 1px, transparent 2px, transparent 3px);
+    mix-blend-mode: multiply; }
+  #term::before { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 49;
+    background: radial-gradient(circle at 50% 50%, transparent 55%, rgba(0,0,0,0.45) 100%); }
+
+  .hdr { display: flex; align-items: center; justify-content: space-between; font-size: 10px; letter-spacing: 1.5px; color: var(--green); }
+  .hdr .stamp { border: 1px solid var(--amber); color: var(--amber); padding: 1px 6px; border-radius: 3px; transform: rotate(-3deg); font-weight: bold; }
+  .title { text-align: center; font-weight: bold; font-size: 22px; letter-spacing: 8px; color: #eafff2;
+    text-shadow: 0 0 10px rgba(46,204,113,0.7); margin: 3px 0 1px; }
+  .subtitle { text-align: center; font-size: 9px; letter-spacing: 3px; color: #6fbf90; margin-bottom: 6px; }
+
+  .transmission { background: rgba(0,0,0,0.4); border: 1px solid #1c5; border-left: 3px solid var(--green);
+    border-radius: 4px; padding: 5px 8px; font-size: 10.5px; line-height: 1.5; min-height: 46px; color: #9fe8c0; }
+  .transmission .tlabel { color: var(--green); font-size: 8.5px; letter-spacing: 2px; display: block; margin-bottom: 2px; }
+  .transmission .tbody { color: #d8ffe9; letter-spacing: 0.5px; word-break: break-word; }
+  .transmission .tbody.locked { color: #3c8a5f; }
+
+  .grid { display: grid; grid-template-rows: repeat(6, 1fr); gap: 5px; margin: 7px auto; width: 252px; flex: 0 0 auto; }
+  .grow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+  .cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: bold; border: 2px solid #1f6; border-color: rgba(46,204,113,0.3);
+    border-radius: 4px; color: #eafff2; background: rgba(0,0,0,0.25); transition: transform 0.15s;
+    transform-style: preserve-3d; }
+  .cell.filled { border-color: rgba(46,204,113,0.8); animation: pop 0.12s ease; }
+  .cell.flip { animation: flip 0.5s ease forwards; }
+  @keyframes pop { 0%{ transform: scale(1); } 50%{ transform: scale(1.12); } 100%{ transform: scale(1); } }
+  @keyframes flip { 0%{ transform: rotateX(0); } 50%{ transform: rotateX(90deg); } 100%{ transform: rotateX(0); } }
+  .cell.correct { background: var(--green); border-color: var(--green); color: #042; box-shadow: 0 0 12px rgba(46,204,113,0.6); }
+  .cell.present { background: var(--amber); border-color: var(--amber); color: #221a02; }
+  .cell.absent { background: #0b1f14; border-color: #143; color: #4a6a56; }
+  .grid.shake { animation: shake 0.3s; }
+  @keyframes shake { 0%,100%{ transform: translateX(0); } 25%{ transform: translateX(-7px); } 75%{ transform: translateX(7px); } }
+
+  .kbd { display: flex; flex-direction: column; gap: 4px; margin-top: auto; }
+  .krow { display: flex; gap: 3.5px; justify-content: center; }
+  .key { flex: 1; min-width: 0; height: 36px; border: none; border-radius: 4px; cursor: pointer;
+    background: #16331f; color: #cfeede; font-family: 'Courier New', monospace; font-weight: bold; font-size: 13px;
+    transition: transform 0.05s, background 0.1s; box-shadow: 0 2px 0 rgba(0,0,0,0.5); }
+  .key:active { transform: translateY(2px); box-shadow: 0 0 0 rgba(0,0,0,0.5); }
+  .key.wide { flex: 1.6; font-size: 10px; letter-spacing: 1px; }
+  .key.correct { background: var(--green); color: #042; }
+  .key.present { background: var(--amber); color: #221a02; }
+  .key.absent { background: #081710; color: #3a5446; }
+
+  .toast { position: absolute; top: 96px; left: 50%; transform: translateX(-50%); z-index: 60;
+    background: rgba(0,0,0,0.9); border: 1px solid var(--amber); color: var(--amber);
+    padding: 7px 16px; border-radius: 5px; font-size: 12px; font-weight: bold; letter-spacing: 1px;
+    opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+
+  .overlay { position: absolute; inset: 0; z-index: 70; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 24px; text-align: center;
+    background: radial-gradient(circle at 50% 30%, #0a2316 0%, #02080a 82%); }
+  .overlay.hidden { display: none; }
+  .ov-stamp { font-size: 12px; letter-spacing: 3px; padding: 3px 10px; border-radius: 4px; margin-bottom: 10px; font-weight: bold; }
+  .ov-stamp.ok { border: 1px solid var(--green); color: var(--green); }
+  .ov-stamp.fail { border: 1px solid #ff5b5b; color: #ff5b5b; }
+  .ov-title { font-size: 26px; font-weight: bold; letter-spacing: 4px; color: #eafff2; margin-bottom: 4px; text-shadow: 0 0 12px rgba(46,204,113,0.5); }
+  .ov-word { font-size: 16px; letter-spacing: 6px; color: var(--amber); margin: 6px 0 4px; }
+  .ov-frag { font-size: 11.5px; color: #9fe8c0; line-height: 1.6; max-width: 330px; margin-bottom: 6px; }
+  .ov-streak { font-size: 11px; color: #6fbf90; margin-bottom: 12px; }
+  .btn { font-family: 'Courier New', monospace; font-weight: bold; cursor: pointer; border: none;
+    border-radius: 6px; padding: 11px 24px; font-size: 13px; letter-spacing: 1.5px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.5); transition: transform 0.08s, box-shadow 0.08s; }
+  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.5); }
+  .btn-green { background: var(--green); color: #042; }
+  .btn-ghost { background: #16331f; color: #cfeede; box-shadow: 0 4px 0 #0a1c12; }
+  .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .modes { display: flex; gap: 8px; margin: 10px 0 14px; }
+  .mode { font-family: 'Courier New', monospace; background: #0b1f14; color: #6fbf90; border: 1px solid #1c5;
+    border-radius: 6px; padding: 7px 16px; font-size: 12px; cursor: pointer; letter-spacing: 1px; }
+  .mode.sel { background: var(--green); color: #042; font-weight: bold; }
+  .blurb { font-size: 11.5px; color: #9fe8c0; line-height: 1.7; max-width: 340px; margin-bottom: 6px; }
+  .foot { margin-top: 14px; font-size: 9.5px; color: #4a6a56; line-height: 1.7; }
+</style>
+</head>
+<body>
+<div id="term">
+  <div class="hdr">
+    <span id="clearance">CLEARANCE: DELTA</span>
+    <span class="stamp">CLASSIFIED</span>
+    <span id="streak-lbl">STREAK 0</span>
+  </div>
+  <div class="title">CIPHER</div>
+  <div class="subtitle" id="sub">OPERATIVE DECRYPTION TERMINAL</div>
+
+  <div class="transmission">
+    <span class="tlabel">◈ INTERCEPTED TRANSMISSION — DECRYPT TO READ</span>
+    <span class="tbody locked" id="frag">████████████████████████████████</span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div class="kbd" id="kbd"></div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- START / MODE -->
+  <div class="overlay" id="menu">
+    <div class="ov-title" style="letter-spacing:8px;">CIPHER</div>
+    <div class="subtitle" style="margin-bottom:12px;">OPERATIVE DECRYPTION TERMINAL</div>
+    <div class="blurb">
+      Six attempts to crack a five-letter code word.
+      <span style="color:var(--green)">Green</span> = right spot,
+      <span style="color:var(--amber)">amber</span> = wrong spot.
+      Crack it and the intercepted dispatch <b>decrypts itself</b>.
+    </div>
+    <div class="modes">
+      <button class="mode sel" data-mode="daily">DAILY</button>
+      <button class="mode" data-mode="endless">ENDLESS</button>
+    </div>
+    <div class="row"><button class="btn btn-green" id="begin-btn">BEGIN DECRYPTION</button></div>
+    <div class="foot">Words are chess terms &amp; PJCC field codes.<br>DAILY: one fixed code per day. ENDLESS: keep cracking.</div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="overlay hidden" id="result">
+    <div class="ov-stamp ok" id="res-stamp">DECRYPTION COMPLETE</div>
+    <div class="ov-title" id="res-title">CRACKED</div>
+    <div class="ov-word" id="res-word">QUEEN</div>
+    <div class="ov-frag" id="res-frag"></div>
+    <div class="ov-streak" id="res-streak"></div>
+    <div class="row">
+      <button class="btn btn-green" id="next-btn">NEXT INTERCEPT</button>
+      <button class="btn btn-ghost" id="menu-btn">MENU</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const WORDS = [
+  { w:'QUEEN', deck:'chess', frag:'The powerhouse — a rook and a bishop in one. Few can stand in her way.' },
+  { w:'ROOKS', deck:'chess', frag:'Sentinels. The last thing you want standing between you and the king.' },
+  { w:'CHECK', deck:'chess', frag:'A warning shot. The king still breathes — but he is listening now.' },
+  { w:'MATED', deck:'chess', frag:'Game over. Every sacrifice and gambit aimed at this one square.' },
+  { w:'FORKS', deck:'chess', frag:"One piece, two targets. Princess's signature, and her favourite trick." },
+  { w:'BOARD', deck:'chess', frag:'Sixty-four squares. The whole war fits neatly inside them.' },
+  { w:'PAWNS', deck:'chess', frag:'The base unit of the PJCC world — dogs are measured in pawns.' },
+  { w:'RANKS', deck:'chess', frag:'The rows the armies cross. The eighth rank is where a pawn dreams.' },
+  { w:'RIVAL', deck:'lore', frag:'Introduced as an enemy. Ended up the cornerstone of the whole crew.' },
+  { w:'OSKAR', deck:'lore', frag:'Claims to be a pawn. The analysts are not sure. Neither is he.' },
+  { w:'ARGUS', deck:'lore', frag:'Has never missed a move he was supposed to make. Not once.' },
+  { w:'SHOGI', deck:'lore', frag:'Ferry delayed twenty-one days. The island has gone silent.' },
+  { w:'LEAFS', deck:'lore', frag:'A residual behavioural imprint. She was a fan before she got here.' },
+  { w:'CRASH', deck:'lore', frag:"The vessel didn't land here by accident. It was delivered." },
+  { w:'MINES', deck:'lore', frag:'Shafts three through seven. The Father has seen something down there.' },
+  { w:'SANDS', deck:'lore', frag:'The deeper sand runs warm. The mine remembers what it buried.' },
+];
+const ROWS = 6, LEN = 5;
+const KEYS = ['QWERTYUIOP', 'ASDFGHJKL', '↵ZXCVBNM⌫'];
+
+let mode = 'daily';
+let target = null, row = 0, col = 0, guesses = [], over = false, locked = false;
+let keyState = {};
+
+const STREAK_KEY = 'pjcc.cipher.streak.v1';
+const DAILY_KEY = 'pjcc.cipher.daily.v1';
+function loadStreak(){ try { return JSON.parse(localStorage.getItem(STREAK_KEY)) || { n: 0 }; } catch(e){ return { n: 0 }; } }
+function saveStreak(s){ try { localStorage.setItem(STREAK_KEY, JSON.stringify(s)); } catch(e){} }
+
+// ---- Audio ----
+let actx=null, master=null, sndOn=true;
+function initAudio(){ if(actx) return; actx=new (window.AudioContext||window.webkitAudioContext)(); master=actx.createGain(); master.gain.value=0.7; master.connect(actx.destination); }
+function tone(f,t0,dur,type,vol){ if(!actx) return; const o=actx.createOscillator(),g=actx.createGain(); o.connect(g);g.connect(master);o.type=type||'sine';o.frequency.setValueAtTime(f,t0);g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(vol||0.25,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);o.start(t0);o.stop(t0+dur+0.02);}
+function sfx(k){ if(!actx) return; const t=actx.currentTime;
+  if(k==='key'){tone(330,t,0.04,'square',0.12);}
+  else if(k==='flip'){tone(440,t,0.05,'triangle',0.12);}
+  else if(k==='win'){[523,659,784,1047,1319].forEach((f,i)=>tone(f,t+i*0.09,0.24,'triangle',0.24));}
+  else if(k==='lose'){[330,247,185].forEach((f,i)=>tone(f,t+i*0.14,0.3,'sawtooth',0.22));}
+  else if(k==='bad'){tone(160,t,0.14,'sawtooth',0.2);} }
+
+// ---- Build UI ----
+const gridEl = document.getElementById('grid'), kbdEl = document.getElementById('kbd');
+function buildGrid(){
+  gridEl.innerHTML = '';
+  for (let r = 0; r < ROWS; r++){
+    const rowEl = document.createElement('div'); rowEl.className = 'grow';
+    for (let c = 0; c < LEN; c++){ const cell = document.createElement('div'); cell.className = 'cell'; cell.id = 'c' + r + c; rowEl.appendChild(cell); }
+    gridEl.appendChild(rowEl);
+  }
+}
+function buildKbd(){
+  kbdEl.innerHTML = '';
+  KEYS.forEach(rowStr => {
+    const rowEl = document.createElement('div'); rowEl.className = 'krow';
+    for (const ch of rowStr){
+      const key = document.createElement('button'); key.className = 'key';
+      if (ch === '↵'){ key.classList.add('wide'); key.textContent = 'ENTER'; key.dataset.k = 'ENTER'; }
+      else if (ch === '⌫'){ key.classList.add('wide'); key.textContent = '⌫'; key.dataset.k = 'BACK'; }
+      else { key.textContent = ch; key.dataset.k = ch; key.id = 'k' + ch; }
+      key.addEventListener('click', () => handleKey(key.dataset.k));
+      rowEl.appendChild(key);
+    }
+    kbdEl.appendChild(rowEl);
+  });
+}
+
+// ---- Puzzle selection ----
+function todaySeed(){ const d = new Date(); return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
+function pickWord(){
+  if (mode === 'daily'){ return WORDS[todaySeed() % WORDS.length]; }
+  let w; do { w = WORDS[(Math.random()*WORDS.length)|0]; } while (target && w.w === target.w);
+  return w;
+}
+
+function startPuzzle(){
+  target = pickWord();
+  row = 0; col = 0; guesses = []; over = false; locked = false; keyState = {};
+  buildGrid(); buildKbd();
+  document.getElementById('clearance').textContent = 'CLEARANCE: ' + (target.deck === 'lore' ? 'OMEGA' : 'DELTA');
+  document.getElementById('sub').textContent = target.deck === 'lore' ? 'FIELD CODE — PJCC OPERATIONS' : 'CHESS PROTOCOL LEXICON';
+  // redact the fragment to its shape
+  const f = document.getElementById('frag');
+  f.classList.add('locked');
+  f.textContent = target.frag.split('').map(ch => ch === ' ' ? ' ' : '█').join('');
+  const s = loadStreak();
+  document.getElementById('streak-lbl').textContent = 'STREAK ' + (s.n || 0);
+}
+
+// ---- Input ----
+function handleKey(k){
+  if (over || locked || !target) return;
+  if (k === 'ENTER') return submit();
+  if (k === 'BACK'){ if (col > 0){ col--; setCell(row, col, ''); } return; }
+  if (/^[A-Z]$/.test(k) && col < LEN){ setCell(row, col, k); col++; sfx('key'); }
+}
+function setCell(r, c, ch){ const el = document.getElementById('c'+r+c); el.textContent = ch; el.classList.toggle('filled', !!ch); }
+document.addEventListener('keydown', e => {
+  if (document.getElementById('menu').classList.contains('hidden') === false) return;
+  const k = e.key.toUpperCase();
+  if (k === 'ENTER') handleKey('ENTER');
+  else if (k === 'BACKSPACE') handleKey('BACK');
+  else if (/^[A-Z]$/.test(k) && k.length === 1) handleKey(k);
+});
+
+function evaluate(guess, answer){
+  const res = Array(LEN).fill('absent');
+  const counts = {};
+  for (const ch of answer) counts[ch] = (counts[ch] || 0) + 1;
+  for (let i = 0; i < LEN; i++){ if (guess[i] === answer[i]){ res[i] = 'correct'; counts[guess[i]]--; } }
+  for (let i = 0; i < LEN; i++){ if (res[i] === 'correct') continue; if (counts[guess[i]] > 0){ res[i] = 'present'; counts[guess[i]]--; } }
+  return res;
+}
+const RANK = { absent:0, present:1, correct:2 };
+function submit(){
+  if (col < LEN){ showToast('NEED FIVE LETTERS'); shakeRow(); sfx('bad'); return; }
+  let guess = ''; for (let c = 0; c < LEN; c++) guess += document.getElementById('c'+row+c).textContent;
+  const res = evaluate(guess, target.w);
+  locked = true;
+  // flip + color sequentially
+  for (let c = 0; c < LEN; c++){
+    const el = document.getElementById('c'+row+c);
+    setTimeout(() => {
+      el.classList.add('flip'); sfx('flip');
+      setTimeout(() => { el.classList.add(res[c]); }, 250);
+      // keyboard state (best)
+      const kb = document.getElementById('k'+guess[c]);
+      if (kb){ const cur = keyState[guess[c]] || 'absent'; if (RANK[res[c]] > RANK[cur]){ keyState[guess[c]] = res[c]; kb.classList.remove('correct','present','absent'); kb.classList.add(res[c]); } }
+    }, c * 180);
+  }
+  const finishAt = LEN * 180 + 350;
+  setTimeout(() => {
+    locked = false;
+    if (guess === target.w){ win(); }
+    else if (row >= ROWS - 1){ lose(); }
+    else { row++; col = 0; }
+  }, finishAt);
+}
+
+function shakeRow(){ gridEl.classList.add('shake'); setTimeout(() => gridEl.classList.remove('shake'), 300); }
+let toastTimer = null;
+function showToast(msg){ const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1100); }
+
+// ---- End states ----
+function decryptFragment(done){
+  const el = document.getElementById('frag'); el.classList.remove('locked');
+  const real = target.frag, blocks = real.split('').map(ch => ch === ' ' ? ' ' : '█');
+  let i = 0;
+  const iv = setInterval(() => {
+    if (i >= real.length){ clearInterval(iv); if (done) done(); return; }
+    let out = real.slice(0, i + 1);
+    for (let j = i + 1; j < real.length; j++) out += blocks[j];
+    el.textContent = out; i++;
+  }, 22);
+}
+function win(){
+  over = true; sfx('win');
+  const s = loadStreak(); s.n = (s.n || 0) + 1; saveStreak(s);
+  document.getElementById('streak-lbl').textContent = 'STREAK ' + s.n;
+  decryptFragment(() => {
+    document.getElementById('res-stamp').className = 'ov-stamp ok'; document.getElementById('res-stamp').textContent = 'DECRYPTION COMPLETE';
+    document.getElementById('res-title').textContent = ['CRACKED','SHARP','OPERATIVE','TEXTBOOK'][Math.min(row,3)] + (row === 0 ? ' — FIRST TRY' : '');
+    document.getElementById('res-word').textContent = target.w;
+    document.getElementById('res-frag').textContent = '“' + target.frag + '”';
+    document.getElementById('res-streak').textContent = 'Decryption streak: ' + s.n + (mode === 'daily' ? '  ·  daily intercept logged' : '');
+    showResult();
+  });
+}
+function lose(){
+  over = true; sfx('lose');
+  const s = loadStreak(); s.n = 0; saveStreak(s);
+  document.getElementById('streak-lbl').textContent = 'STREAK 0';
+  document.getElementById('res-stamp').className = 'ov-stamp fail'; document.getElementById('res-stamp').textContent = 'DECRYPTION FAILED';
+  document.getElementById('res-title').textContent = 'SIGNAL LOST';
+  document.getElementById('res-word').textContent = target.w;
+  document.getElementById('res-frag').textContent = 'The transmission stays encrypted. The code word was ' + target.w + '.';
+  document.getElementById('res-streak').textContent = 'Streak reset.';
+  showResult();
+}
+function showResult(){ setTimeout(() => document.getElementById('result').classList.remove('hidden'), 350); }
+
+// ---- Screens ----
+function showMenu(){ document.getElementById('result').classList.add('hidden'); document.getElementById('menu').classList.remove('hidden'); }
+function begin(){ initAudio(); if (actx && actx.state === 'suspended') actx.resume(); document.getElementById('menu').classList.add('hidden'); document.getElementById('result').classList.add('hidden'); startPuzzle(); }
+
+document.querySelectorAll('.mode').forEach(m => m.addEventListener('click', () => {
+  mode = m.dataset.mode; document.querySelectorAll('.mode').forEach(x => x.classList.toggle('sel', x === m));
+}));
+document.getElementById('begin-btn').addEventListener('click', begin);
+document.getElementById('menu-btn').addEventListener('click', showMenu);
+document.getElementById('next-btn').addEventListener('click', () => {
+  document.getElementById('result').classList.add('hidden');
+  if (mode === 'daily'){ // daily already done -> roll into endless
+    mode = 'endless';
+  }
+  startPuzzle();
+});
+
+buildGrid(); buildKbd();
+</script>
+</body>
+</html>

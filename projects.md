@@ -151,6 +151,46 @@ body_class: theme-bw
     </div>
   </div>
 
+  <div class="project-card project-card-active">
+    <div class="project-card-corner-piece" aria-hidden="true">$</div>
+    <div class="project-card-header">
+      <span class="project-status project-status-active">
+        <span class="project-status-dot"></span>
+        In Development
+      </span>
+      <h2 class="project-title">Checker Financial</h2>
+    </div>
+    <p class="project-desc">A material-counting arcade dressed as a trading floor — named for the paper the Father reads "to find the REAL news." Trades cross the ticker; call each one profit, even, or loss before the clock runs out. Bull-run combos, a live market index, and the Father himself as tipster.</p>
+    <ul class="project-details">
+      <li><strong>Format:</strong> Browser game</li>
+      <li><strong>Status:</strong> Playable — sprint mode in progress</li>
+    </ul>
+    <div class="project-links">
+      <a href="/games/checker-financial/" class="project-link">Play Now &rarr;</a>
+      <a href="/games/" class="project-link">All Games</a>
+    </div>
+  </div>
+
+  <div class="project-card project-card-active">
+    <div class="project-card-corner-piece" aria-hidden="true">⊙</div>
+    <div class="project-card-header">
+      <span class="project-status project-status-active">
+        <span class="project-status-dot"></span>
+        In Development
+      </span>
+      <h2 class="project-title">CIPHER</h2>
+    </div>
+    <p class="project-desc">An operative decryption terminal in the style of the Classified archive. Crack a five-letter code in six tries — chess vocabulary at Clearance Delta, PJCC field codes at Clearance Omega — and the intercepted dispatch unredacts itself, line by line. Daily intercept plus an endless decryption streak.</p>
+    <ul class="project-details">
+      <li><strong>Format:</strong> Browser game</li>
+      <li><strong>Status:</strong> Playable — more intercepts in progress</li>
+    </ul>
+    <div class="project-links">
+      <a href="/games/cipher/" class="project-link">Play Now &rarr;</a>
+      <a href="/games/" class="project-link">All Games</a>
+    </div>
+  </div>
+
   <div class="project-card project-card-soon">
     <div class="project-card-corner-piece" aria-hidden="true">♞</div>
     <div class="project-card-header">
