@@ -31,6 +31,26 @@ body_class: theme-bw
     </div>
   </div>
 
+  <div class="project-card project-card-active">
+    <div class="project-card-corner-piece" aria-hidden="true">♟</div>
+    <div class="project-card-header">
+      <span class="project-status project-status-active">
+        <span class="project-status-dot"></span>
+        In Development
+      </span>
+      <h2 class="project-title">PJCC Dungeon Crawler</h2>
+    </div>
+    <p class="project-desc">A chessboard dungeon crawler set in the PJCC universe. Play as Princess, capture enemy pieces by chess rules, clear rooms, and reach the exit.</p>
+    <ul class="project-details">
+      <li><strong>Format:</strong> Browser game</li>
+      <li><strong>Status:</strong> Playable — new floors and pieces in progress</li>
+    </ul>
+    <div class="project-links">
+      <a href="/games/dungeon/" class="project-link">Play Now &rarr;</a>
+      <a href="/games/" class="project-link">All Games</a>
+    </div>
+  </div>
+
   <div class="project-card project-card-soon">
     <div class="project-card-corner-piece" aria-hidden="true">♞</div>
     <div class="project-card-header">
