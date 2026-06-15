@@ -60,15 +60,6 @@ permalink: /games/
     </div>
   </a>
 
-  <a class="game-card" href="{{ '/games/checker-financial/' | relative_url }}">
-    <div class="game-card-icon">$</div>
-    <div class="game-card-body">
-      <h2>Checker Financial</h2>
-      <p>A trading-floor number game. Call every trade — profit, even, or loss — before the clock runs out, and learn the REAL value of the pieces.</p>
-      <span class="game-tag">Playable</span>
-    </div>
-  </a>
-
   <a class="game-card" href="{{ '/games/cipher/' | relative_url }}">
     <div class="game-card-icon">⊙</div>
     <div class="game-card-body">
@@ -92,15 +83,6 @@ permalink: /games/
     <div class="game-card-body">
       <h2>Ferry Delayed</h2>
       <p>A sliding-block logic puzzle. Crates slide like rooks — clear the jammed dock and guide Princess onto the Shogi Island ferry.</p>
-      <span class="game-tag">Playable</span>
-    </div>
-  </a>
-
-  <a class="game-card" href="{{ '/games/knights-tour/' | relative_url }}">
-    <div class="game-card-icon">♞</div>
-    <div class="game-card-body">
-      <h2>Knight's Tour</h2>
-      <p>The classic path puzzle. Hop across every square of each region exactly once, tracing the road from Checker Town to Chess City.</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>

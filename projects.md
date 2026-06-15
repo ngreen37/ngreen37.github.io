@@ -48,6 +48,33 @@ body_class: theme-bw
 }
 .project-link-play:hover { background: #ffd740 !important; }
 @keyframes playPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.07); } }
+
+/* ---- TERMINATED card (a distinct red state) ---- */
+.project-card-terminated {
+  position: relative;
+  border: 2px solid #ff3b3b !important;
+  background: linear-gradient(135deg, #2a0d12 0%, #160709 100%) !important;
+  box-shadow: 0 0 16px 1px rgba(255,59,59,0.28);
+}
+.project-card-terminated .project-title { color: #ff6b6b !important; }
+.project-card-terminated .project-desc { color: #f0cccc !important; }
+.project-card-terminated .project-details,
+.project-card-terminated .project-details li { color: #d6a8a8 !important; }
+.project-card-terminated .project-details strong { color: #fff !important; }
+.project-card-terminated .project-card-corner-piece { color: rgba(255,59,59,0.25) !important; }
+.project-status-terminated {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #ff3b3b; color: #fff !important; font-weight: 800;
+  border-radius: 999px; padding: 4px 12px; letter-spacing: 2px;
+}
+.project-status-terminated .project-status-dot { background: #fff; animation: termBlink 1s steps(1) infinite; }
+@keyframes termBlink { 0%,49% { opacity: 1; } 50%,100% { opacity: 0.25; } }
+.project-link-terminated {
+  background: #ff3b3b !important; color: #fff !important; font-weight: 800 !important;
+  border: none !important; border-radius: 999px !important; padding: 9px 22px !important;
+  box-shadow: 0 0 12px rgba(255,59,59,0.5);
+}
+.project-link-terminated:hover { background: #ff5e5e !important; }
 </style>
 
 <div class="projects-list">
@@ -155,33 +182,13 @@ body_class: theme-bw
   </div>
 
   <div class="project-card project-card-active">
-    <div class="project-card-corner-piece" aria-hidden="true">$</div>
-    <div class="project-card-header">
-      <span class="project-status project-status-active">
-        <span class="project-status-dot"></span>
-        In Development
-      </span>
-      <h2 class="project-title">Checker Financial</h2>
-    </div>
-    <p class="project-desc">A material-counting arcade dressed as a trading floor — named for the paper the Father reads "to find the REAL news." Trades cross the ticker; call each one profit, even, or loss before the clock runs out. Bull-run combos, a live market index, and the Father himself as tipster.</p>
-    <ul class="project-details">
-      <li><strong>Format:</strong> Browser game</li>
-      <li><strong>Status:</strong> Playable — sprint mode in progress</li>
-    </ul>
-    <div class="project-links">
-      <a href="/games/checker-financial/" class="project-link">Play Now &rarr;</a>
-      <a href="/games/" class="project-link">All Games</a>
-    </div>
-  </div>
-
-  <div class="project-card project-card-active">
     <div class="project-card-corner-piece" aria-hidden="true">⊙</div>
     <div class="project-card-header">
-      <span class="project-status project-status-active">
+      <span class="project-status project-status-done">
         <span class="project-status-dot"></span>
-        In Development
+        Completed (pending improvements)
       </span>
-      <h2 class="project-title">CIPHER</h2>
+      <h2 class="project-title">CIPHER <span class="ver">v1.2</span></h2>
     </div>
     <p class="project-desc">An operative decryption terminal in the style of the Classified archive. Crack a five-letter code in six tries — chess vocabulary at Clearance Delta, PJCC field codes at Clearance Omega — and the intercepted dispatch unredacts itself, line by line. Daily intercept plus an endless decryption streak.</p>
     <ul class="project-details">
@@ -197,11 +204,11 @@ body_class: theme-bw
   <div class="project-card project-card-active">
     <div class="project-card-corner-piece" aria-hidden="true">Δ</div>
     <div class="project-card-header">
-      <span class="project-status project-status-active">
+      <span class="project-status project-status-done">
         <span class="project-status-dot"></span>
-        In Development
+        Completed (pending improvements)
       </span>
-      <h2 class="project-title">Clearance: DELTA</h2>
+      <h2 class="project-title">Clearance: DELTA <span class="ver">v1.2</span></h2>
     </div>
     <p class="project-desc">An operative trivia exam in the style of the Classified archive. Answer questions on chess rules, tactics, and history — and on the PJCC files themselves — to climb the clearance ladder from Recruit to Above Omega. Every promotion unredacts another dossier fragment; three wrong answers revokes your access.</p>
     <ul class="project-details">
@@ -234,23 +241,22 @@ body_class: theme-bw
     </div>
   </div>
 
-  <div class="project-card project-card-active">
+  <div class="project-card project-card-terminated">
     <div class="project-card-corner-piece" aria-hidden="true">♞</div>
     <div class="project-card-header">
-      <span class="project-status project-status-active">
+      <span class="project-status project-status-terminated">
         <span class="project-status-dot"></span>
-        In Development
+        TERMINATED
       </span>
       <h2 class="project-title">Knight's Tour</h2>
     </div>
-    <p class="project-desc">The centuries-old chess puzzle, reframed as Princess's journey. Hop the knight across every square of a region exactly once, then string five growing boards — 5×5 up to a full 8×8 — into the whole road from Checker Town to Chess City. Undo and a Warnsdorff hint keep it fair.</p>
+    <p class="project-desc">The centuries-old chess puzzle, reframed as Princess's journey. Hop the knight across every square of a region exactly once, then string five growing boards — 5×5 up to a full 8×8 — into the whole road from Checker Town to Chess City. Pulled from the main lineup — but still fully playable right here.</p>
     <ul class="project-details">
       <li><strong>Format:</strong> Browser game</li>
-      <li><strong>Status:</strong> Playable — larger boards in progress</li>
+      <li><strong>Status:</strong> Terminated — not listed on the games page, playable from here only</li>
     </ul>
     <div class="project-links">
-      <a href="/games/knights-tour/" class="project-link">Play Now &rarr;</a>
-      <a href="/games/" class="project-link">All Games</a>
+      <a href="/games/knights-tour/" class="project-link project-link-terminated">▶ PLAY IT HERE</a>
     </div>
   </div>
 
