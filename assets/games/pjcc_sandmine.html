@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>PJCC: Sand Mine Depths</title>
+<script src="/assets/js/pjcc-config.js"></script>
+<script src="/assets/js/pjcc-profile.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
@@ -284,6 +286,7 @@ function enemyTurn(){
 function gameOver(){
   S.dead = true; S.phase = 'dead';
   if (S.depth > S.best){ S.best = S.depth; saveBest(S.best); }
+  if (window.PJCC) PJCC.saveScore('sand-mine-depths', S.depth, { credits: 10, data: { gold: S.score, floor: S.floor } });
   sfx('dead');
   document.getElementById('menu-btn').classList.add('hidden');
   const newBest = S.depth >= S.best;

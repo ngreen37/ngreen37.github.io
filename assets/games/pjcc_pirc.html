@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>PJCC: The Pirc Protocol</title>
+<script src="/assets/js/pjcc-config.js"></script>
+<script src="/assets/js/pjcc-profile.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
@@ -879,6 +881,7 @@ function showSummary() {
     ? 'Cram runs don’t change your schedule.'
     : (due > 0 ? due + ' line' + (due > 1 ? 's' : '') + ' still due in this deck.' : 'Deck clear — come back later! 🦴');
   sfx('done');
+  if (window.PJCC) PJCC.saveScore('pirc-protocol', s.flawless, { credits: 10, data: { deck: session.deckId, lines: s.lines, promo: s.promo } });
   hideOverlays();
   document.getElementById('summary-screen').classList.remove('hidden');
 }

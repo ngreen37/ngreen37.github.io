@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>PJCC: Clearance — DELTA</title>
+<script src="/assets/js/pjcc-config.js"></script>
+<script src="/assets/js/pjcc-profile.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; background: #0c0726; overflow: hidden;
@@ -319,6 +321,7 @@ function promote(r){
 function gameOver(){
   sfx('over');
   const best = loadBest(); const isBest = correct > best; if (isBest) saveBest(correct);
+  if (window.PJCC) PJCC.saveScore('clearance-delta', score, { credits: 10, data: { correct: correct } });
   const r = RANKS[rankIdx];
   document.getElementById('res-rank').textContent = 'CLEARANCE: ' + r.name;
   document.getElementById('res-msg').innerHTML = 'You answered <b style="color:#F5C518">' + correct + '</b> correctly for <b style="color:#F5C518">' + score + '</b> points.' +

@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>PJCC: Fork in the Road</title>
+<script src="/assets/js/pjcc-config.js"></script>
+<script src="/assets/js/pjcc-profile.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
@@ -408,6 +410,7 @@ function showSummary(){
   document.getElementById('sum-solved').textContent = s.solved + ' / ' + run.queue.length;
   document.getElementById('sum-clean').textContent = s.clean;
   document.getElementById('sum-streak').textContent = s.best;
+  if (window.PJCC) PJCC.saveScore('fork-in-the-road', s.solved, { credits: 10, data: { mode: run.mode, clean: s.clean, bestStreak: s.best } });
   if (run.mode === 'daily'){ try { const d = JSON.parse(localStorage.getItem(DAILY_KEY)) || {}; const today = dailySeed(); if (d.date !== today){ d.streak = (d.date === today - 1 || (d.streak && d.last === today-1)) ? (d.streak||0)+1 : 1; d.date = today; localStorage.setItem(DAILY_KEY, JSON.stringify(d)); } } catch(e){} }
   sfx('win');
   hideOverlays(); document.getElementById('summary-screen').classList.remove('hidden');

@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PJCC: Notation Blitz v1.4</title>
+<script src="/assets/js/pjcc-config.js"></script>
+<script src="/assets/js/pjcc-profile.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -842,6 +844,7 @@ function finish() {
   if (isBest) bestEl.innerHTML = '<b style="color:#6bffb8;">✨ NEW BEST! ✨</b>';
   else bestEl.innerHTML = 'Best: <b style="color:#F5C518;">' + prev.rank + '</b> · ' + prev.score;
   updateTitleBest();
+  if (window.PJCC) PJCC.saveScore('notation-run', G.score, { credits: 10, data: { mode: G.mode, diff: G.diff, rank: rank } });
 
   document.getElementById('results-screen').classList.remove('hidden');
 }
