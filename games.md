@@ -24,6 +24,24 @@ permalink: /games/
     </div>
   </a>
 
+  <a class="game-card" href="{{ '/games/space-run/' | relative_url }}">
+    <div class="game-card-icon">✦</div>
+    <div class="game-card-body">
+      <h2>Space Run</h2>
+      <p>A Star Fox-style chess runner. Skate across the pieces the CEO throws at you and ride each track to its end.</p>
+      <span class="game-tag">Playable</span>
+    </div>
+  </a>
+
+  <a class="game-card" href="{{ '/games/pirc-protocol/' | relative_url }}">
+    <div class="game-card-icon">♚</div>
+    <div class="game-card-body">
+      <h2>The Pirc Protocol</h2>
+      <p>A spaced-repetition opening trainer. The Rival drills Princess on real openings — master a line and it returns later; slip and it comes back sooner.</p>
+      <span class="game-tag">Playable</span>
+    </div>
+  </a>
+
 </div>
 
 <style>

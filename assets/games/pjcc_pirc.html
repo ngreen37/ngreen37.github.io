@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>PJCC: The Pirc Protocol</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    background: #1a0f3d; height: 100%; overflow: hidden;
+    font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+
+  #stage { position: relative; width: 480px; max-width: 100vw; }
+  #canvas {
+    display: block; width: 100%;
+    border: 3px solid #F5C518; border-radius: 12px;
+    background: #241152; box-shadow: 0 0 40px rgba(245,197,24,0.25);
+  }
+
+  /* Floating in-game buttons */
+  .float-btn {
+    position: absolute; z-index: 6;
+    font-family: 'Trebuchet MS', sans-serif; font-weight: bold;
+    border: none; border-radius: 999px; cursor: pointer;
+    letter-spacing: 0.5px; transition: transform 0.08s, filter 0.12s;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.35);
+  }
+  .float-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
+  #hint-btn {
+    bottom: 12px; left: 50%; transform: translateX(-50%);
+    background: #ff8fd0; color: #3a0a2a; padding: 8px 18px; font-size: 13px;
+  }
+  #hint-btn:active { transform: translateX(-50%) translateY(2px); }
+  #menu-btn {
+    top: 10px; right: 10px; background: #2D1B69; color: #c9a7ff;
+    padding: 5px 12px; font-size: 11px; border: 1px solid #6a4fb0;
+  }
+  .float-btn.hidden { display: none; }
+
+  /* Overlays */
+  .overlay {
+    position: absolute; inset: 0; z-index: 10;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 20px; text-align: center; border-radius: 12px;
+    background: radial-gradient(circle at 50% 30%, #3a1d72 0%, #1a0f3d 80%);
+  }
+  .overlay.hidden { display: none; }
+
+  .big-title {
+    font-size: 30px; font-weight: 900; color: #F5C518; letter-spacing: 1px;
+    text-shadow: 0 3px 0 #8a5a00, 0 0 22px rgba(245,197,24,0.5);
+    margin-bottom: 2px;
+  }
+  .eyebrow { font-size: 11px; letter-spacing: 4px; color: #ff8fd0; text-transform: uppercase; margin-bottom: 14px; }
+  .blurb { font-size: 12.5px; color: #d9c9ff; line-height: 1.7; max-width: 380px; margin-bottom: 16px; }
+
+  .deck-list { display: flex; flex-direction: column; gap: 9px; width: 100%; max-width: 360px; }
+  .deck {
+    display: flex; align-items: center; gap: 12px; cursor: pointer;
+    background: #2D1B69; border: 2px solid #4a2f8a; border-radius: 12px;
+    padding: 10px 12px; transition: transform 0.1s, border-color 0.12s, background 0.12s;
+  }
+  .deck:hover { transform: translateY(-2px); border-color: #F5C518; background: #38228a; }
+  .deck-badge {
+    width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; box-shadow: inset 0 -3px 6px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.4);
+  }
+  .deck-info { flex: 1; text-align: left; }
+  .deck-name { font-size: 15px; font-weight: bold; color: #fff; }
+  .deck-sub { font-size: 10.5px; color: #b39ae0; margin-top: 1px; }
+  .deck-stars { font-size: 12px; letter-spacing: 1px; margin-top: 2px; }
+  .deck-due {
+    font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 999px;
+    flex-shrink: 0; min-width: 54px; text-align: center;
+  }
+  .due-have { background: #F5C518; color: #1a0f3d; }
+  .due-none { background: #2a1a5a; color: #7a5fb0; }
+
+  .row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; justify-content: center; }
+  .btn {
+    font-family: 'Trebuchet MS', sans-serif; font-weight: bold; cursor: pointer;
+    border: none; border-radius: 999px; padding: 11px 26px; font-size: 14px; letter-spacing: 1px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.35); transition: transform 0.08s, box-shadow 0.08s;
+  }
+  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
+  .btn-gold { background: #F5C518; color: #1a0f3d; }
+  .btn-gold:hover { background: #ffd740; }
+  .btn-ghost { background: #2D1B69; color: #c9a7ff; box-shadow: 0 4px 0 #170a36; }
+  .btn-pink { background: #ff8fd0; color: #3a0a2a; }
+
+  .sum-grid { display: grid; grid-template-columns: auto auto; gap: 7px 22px; margin: 12px 0; }
+  .sum-grid .l { text-align: right; color: #b39ae0; font-size: 13px; }
+  .sum-grid .v { text-align: left; color: #fff; font-size: 15px; font-weight: bold; }
+  .v.up { color: #6bffb8; }
+  .v.again { color: #ff8fd0; }
+
+  .foot { margin-top: 14px; font-size: 10.5px; color: #7a5fb0; line-height: 1.7; }
+  .foot b { color: #c9a7ff; }
+  .tap { cursor: pointer; text-decoration: underline; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="canvas" width="480" height="500"></canvas>
+
+  <button class="float-btn hidden" id="menu-btn">☰ menu</button>
+  <button class="float-btn hidden" id="hint-btn">🐾 Show me</button>
+
+  <!-- DECK SELECT -->
+  <div class="overlay" id="menu-screen">
+    <div class="eyebrow">The Rival's Lessons</div>
+    <div class="big-title">THE PIRC PROTOCOL</div>
+    <div class="blurb">
+      Learn openings the way Princess did &mdash; by <b style="color:#F5C518">repetition</b>.
+      Play the book move when the Rival asks. Nail a whole line and it comes
+      back <i>later</i>; slip up and you'll see it <i>sooner</i>.
+    </div>
+    <div class="deck-list" id="deck-list"></div>
+    <div class="row">
+      <button class="btn btn-gold" id="review-btn">START REVIEW</button>
+      <button class="btn btn-ghost" id="cram-btn">CRAM ALL</button>
+    </div>
+    <div class="foot">
+      Pick a deck above &nbsp;·&nbsp; <span class="tap" id="reset-srs">reset progress</span><br>
+      <span class="tap" id="snd-toggle">🔊 sound: on</span>
+    </div>
+  </div>
+
+  <!-- CAUGHT UP -->
+  <div class="overlay hidden" id="caught-screen">
+    <div class="big-title" style="font-size:24px;">ALL CAUGHT UP! 🦴</div>
+    <div class="blurb" id="caught-msg">Nothing due in this deck right now.</div>
+    <div class="row">
+      <button class="btn btn-pink" id="caught-cram">CRAM ANYWAY</button>
+      <button class="btn btn-ghost" id="caught-menu">BACK</button>
+    </div>
+  </div>
+
+  <!-- SESSION SUMMARY -->
+  <div class="overlay hidden" id="summary-screen">
+    <div class="eyebrow" id="sum-deck">Pirc Defense</div>
+    <div class="big-title" style="font-size:24px;">SESSION COMPLETE</div>
+    <div class="sum-grid">
+      <div class="l">Lines drilled</div><div class="v" id="sum-lines">0</div>
+      <div class="l">Flawless</div><div class="v up" id="sum-flaw">0</div>
+      <div class="l">Promoted ⭐</div><div class="v up" id="sum-promo">0</div>
+      <div class="l">Need work</div><div class="v again" id="sum-again">0</div>
+    </div>
+    <div class="blurb" id="sum-next" style="margin-bottom:6px;"></div>
+    <div class="row">
+      <button class="btn btn-gold" id="sum-again-btn">REVIEW AGAIN</button>
+      <button class="btn btn-ghost" id="sum-menu">DECKS</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const W = 480, H = 500;
+
+// ---- Board geometry ----
+const TILE = 44, BOARD = TILE * 8, BX = (W - BOARD) / 2, BY = 104;
+
+const C = {
+  light: '#6b4bb0', dark: '#3f2880', frame: '#F5C518',
+  gold: '#F5C518', good: '#6bffb8', bad: '#ff5b8a', pink: '#ff8fd0',
+  ink: '#f0e6ff', muted: '#b39ae0',
+};
+
+// ---- Pieces ----
+const GLYPH = { K:'♚', Q:'♛', R:'♜', B:'♝', N:'♞', P:'♟' };
+
+function startBoard() {
+  const b = Array.from({ length: 8 }, () => Array(8).fill(null));
+  const back = ['R','N','B','Q','K','B','N','R'];
+  for (let x = 0; x < 8; x++) {
+    b[0][x] = { t: back[x], c: 'b' };
+    b[1][x] = { t: 'P', c: 'b' };
+    b[6][x] = { t: 'P', c: 'w' };
+    b[7][x] = { t: back[x], c: 'w' };
+  }
+  return b;
+}
+function sq(alg) { return { x: alg.charCodeAt(0) - 97, y: 8 - parseInt(alg[1], 10) }; }
+
+// ---- Opening data: [uci, san, castleSide?] ; color = index%2 (0 = White) ----
+const RAW = {
+  'pirc-classical': { deck: 'pirc', name: 'Classical', side: 'b', moves: [
+    ['e2e4','e4'],['d7d6','d6'],['d2d4','d4'],['g8f6','Nf6'],['b1c3','Nc3'],['g7g6','g6'],
+    ['g1f3','Nf3'],['f8g7','Bg7'],['f1e2','Be2'],['e8g8','O-O','K'],['e1g1','O-O','K'],
+    ['c7c6','c6'],['a2a4','a4'],['e7e5','e5'] ] },
+  'pirc-austrian': { deck: 'pirc', name: 'Austrian Attack', side: 'b', moves: [
+    ['e2e4','e4'],['d7d6','d6'],['d2d4','d4'],['g8f6','Nf6'],['b1c3','Nc3'],['g7g6','g6'],
+    ['f2f4','f4'],['f8g7','Bg7'],['g1f3','Nf3'],['e8g8','O-O','K'],['f1d3','Bd3'],['b8a6','Na6'],
+    ['e1g1','O-O','K'],['c7c5','c5'] ] },
+  'pirc-150': { deck: 'pirc', name: '150 Attack', side: 'b', moves: [
+    ['e2e4','e4'],['d7d6','d6'],['d2d4','d4'],['g8f6','Nf6'],['b1c3','Nc3'],['g7g6','g6'],
+    ['c1e3','Be3'],['f8g7','Bg7'],['d1d2','Qd2'],['c7c6','c6'],['f2f3','f3'],['b7b5','b5'],
+    ['g1e2','Nge2'],['b8d7','Nbd7'] ] },
+  'italian-pianissimo': { deck: 'italian', name: 'Giuoco Pianissimo', side: 'w', moves: [
+    ['e2e4','e4'],['e7e5','e5'],['g1f3','Nf3'],['b8c6','Nc6'],['f1c4','Bc4'],['f8c5','Bc5'],
+    ['c2c3','c3'],['g8f6','Nf6'],['d2d3','d3'],['d7d6','d6'],['e1g1','O-O','K'],['e8g8','O-O','K'],
+    ['c1g5','Bg5'],['h7h6','h6'],['g5h4','Bh4'] ] },
+  'italian-piano': { deck: 'italian', name: 'Giuoco Piano', side: 'w', moves: [
+    ['e2e4','e4'],['e7e5','e5'],['g1f3','Nf3'],['b8c6','Nc6'],['f1c4','Bc4'],['f8c5','Bc5'],
+    ['c2c3','c3'],['g8f6','Nf6'],['d2d4','d4'],['e5d4','exd4'],['c3d4','cxd4'],['c5b4','Bb4+'],
+    ['b1c3','Nc3'],['f6e4','Nxe4'],['e1g1','O-O','K'] ] },
+  'scandi-main': { deck: 'scandi', name: 'Main Line', side: 'b', moves: [
+    ['e2e4','e4'],['d7d5','d5'],['e4d5','exd5'],['d8d5','Qxd5'],['b1c3','Nc3'],['d5a5','Qa5'],
+    ['d2d4','d4'],['g8f6','Nf6'],['g1f3','Nf3'],['c7c6','c6'],['f1c4','Bc4'],['c8f5','Bf5'],
+    ['c1d2','Bd2'],['e7e6','e6'] ] },
+  'scandi-modern': { deck: 'scandi', name: 'Modern (3...Nf6)', side: 'b', moves: [
+    ['e2e4','e4'],['d7d5','d5'],['e4d5','exd5'],['g8f6','Nf6'],['d2d4','d4'],['f6d5','Nxd5'],
+    ['g1f3','Nf3'],['g7g6','g6'],['f1e2','Be2'],['f8g7','Bg7'],['e1g1','O-O','K'],['e8g8','O-O','K'] ] },
+};
+
+const DECKS = [
+  { id: 'pirc', name: 'Pirc Defense', side: 'Black', glyph: '♞', color: '#c96bff',
+    sub: "The Rival's signature defence" },
+  { id: 'italian', name: 'Italian Game', side: 'White', glyph: '♝', color: '#F5C518',
+    sub: 'Classical fight for the centre' },
+  { id: 'scandi', name: 'Scandinavian', side: 'Black', glyph: '♛', color: '#6bbfff',
+    sub: 'Strike at the centre move one' },
+];
+
+// Build LINES with structured plies
+const LINES = {};
+for (const id in RAW) {
+  const r = RAW[id];
+  const plies = r.moves.map((m, i) => {
+    const [uci, san, castle] = m;
+    return {
+      from: sq(uci.slice(0, 2)), to: sq(uci.slice(2, 4)),
+      san, color: i % 2 === 0 ? 'w' : 'b', castle: castle || null,
+    };
+  });
+  LINES[id] = { id, deck: r.deck, name: r.name, side: r.side, plies };
+}
+function deckLineIds(deckId) { return Object.keys(LINES).filter(id => LINES[id].deck === deckId); }
+
+// ---- Apply a ply to a board (mutates) ----
+function applyPly(b, ply) {
+  const captured = b[ply.to.y][ply.to.x];
+  b[ply.to.y][ply.to.x] = b[ply.from.y][ply.from.x];
+  b[ply.from.y][ply.from.x] = null;
+  if (ply.castle === 'K') { // king-side rook h-file -> f-file, same rank as king
+    const ry = ply.from.y;
+    b[ry][5] = b[ry][7]; b[ry][7] = null;
+  } else if (ply.castle === 'Q') {
+    const ry = ply.from.y;
+    b[ry][3] = b[ry][0]; b[ry][0] = null;
+  }
+  return captured;
+}
+
+// ---- SRS (Leitner) persisted to localStorage ----
+const SRS_KEY = 'pjcc.pirc.srs.v2';
+const DAY = 86400000;
+const INTERVAL = { 1: 1 * DAY, 2: 2 * DAY, 3: 4 * DAY, 4: 8 * DAY, 5: 16 * DAY };
+let SRS = loadSRS();
+function loadSRS() { try { return JSON.parse(localStorage.getItem(SRS_KEY)) || {}; } catch (e) { return {}; } }
+function saveSRS() { try { localStorage.setItem(SRS_KEY, JSON.stringify(SRS)); } catch (e) {} }
+function sched(id) { return SRS[id] || { box: 0, due: 0 }; }
+function isDue(id) { return sched(id).due <= Date.now(); }
+function updateSched(id, flawless) {
+  const s = sched(id);
+  let box;
+  if (flawless) box = Math.min((s.box || 0) + 1, 5);
+  else box = 1;
+  const due = flawless ? Date.now() + INTERVAL[box] : Date.now() + 60000;
+  SRS[id] = { box, due }; saveSRS();
+  return { box, promoted: flawless && box > (s.box || 0) };
+}
+function deckMastery(deckId) {
+  const ids = deckLineIds(deckId);
+  let sum = 0; ids.forEach(id => sum += sched(id).box);
+  return sum / ids.length; // 0..5
+}
+function deckDue(deckId) { return deckLineIds(deckId).filter(isDue).length; }
+
+// ---- Audio ----
+let actx = null, master = null, sndOn = true;
+function initAudio() {
+  if (actx) return;
+  actx = new (window.AudioContext || window.webkitAudioContext)();
+  master = actx.createGain(); master.gain.value = sndOn ? 0.85 : 0; master.connect(actx.destination);
+}
+function tone(freq, t0, dur, type, vol) {
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.connect(g); g.connect(master); o.type = type || 'sine';
+  o.frequency.setValueAtTime(freq, t0);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(vol || 0.3, t0 + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.start(t0); o.stop(t0 + dur + 0.02);
+}
+function sfx(kind) {
+  if (!actx) return;
+  const t = actx.currentTime;
+  if (kind === 'move') { tone(220, t, 0.12, 'triangle', 0.25); tone(140, t, 0.10, 'sine', 0.2); }
+  else if (kind === 'correct') { [660, 880].forEach((f, i) => tone(f, t + i * 0.06, 0.18, 'triangle', 0.28)); }
+  else if (kind === 'wrong') { tone(180, t, 0.18, 'sawtooth', 0.25); tone(120, t + 0.04, 0.22, 'sawtooth', 0.22); }
+  else if (kind === 'levelup') { [523, 659, 784, 1047].forEach((f, i) => tone(f, t + i * 0.08, 0.22, 'triangle', 0.3)); }
+  else if (kind === 'done') { [392, 523, 659].forEach((f, i) => tone(f, t + i * 0.1, 0.3, 'sine', 0.26)); }
+}
+
+// ---- Game state ----
+let G = null;          // current line runtime
+let session = null;    // {deckId, mode, queue, attempts, stats}
+let anim = null;       // moving piece animation
+let pops = {};         // cellKey -> bounce phase
+let confetti = [];
+let floaters = [];
+let shake = 0, vignette = 0;
+let coach = { mood: 'think', say: '', mouth: 0, bob: 0 };
+let arrow = null;      // hint arrow {from,to,t}
+
+const PRAISE = ['Textbook! ⭐', 'Good dog! 🦴', "That's the one.", 'Crisp play.', 'Booked up!', 'Clean.'];
+const NUDGE = ['Not that one…', 'Mind the move order.', 'Hmm, try again.', 'Look again, Princess.'];
+
+function pick(a) { return a[(Math.random() * a.length) | 0]; }
+
+// ---- Session flow ----
+function startSession(deckId, mode) {
+  const ids = deckLineIds(deckId);
+  let queue;
+  if (mode === 'review') {
+    queue = ids.filter(isDue);
+    queue.sort((a, b) => sched(a).due - sched(b).due);
+    if (queue.length === 0) { showCaughtUp(deckId); return; }
+  } else {
+    queue = ids.slice();
+  }
+  session = {
+    deckId, mode, queue,
+    attempts: {}, // id -> count this session
+    stats: { lines: 0, flawless: 0, promo: 0, again: 0, seen: {} },
+  };
+  hideOverlays();
+  document.getElementById('menu-btn').classList.remove('hidden');
+  loadLine(queue.shift());
+}
+
+function loadLine(id) {
+  const line = LINES[id];
+  G = {
+    id, line, board: startBoard(), idx: 0,
+    mistakes: 0, wrongHere: 0, orient: line.side,
+    selected: null, phase: 'intro', done: false,
+  };
+  session.attempts[id] = (session.attempts[id] || 0) + 1;
+  if (!session.stats.seen[id]) { session.stats.seen[id] = true; session.stats.lines++; }
+  coach.mood = 'think';
+  coach.say = (line.side === 'b' ? 'Princess plays the ' : "Let's drill the ") + line.name + '.';
+  // brief intro pause, then run auto-moves to first player card
+  G.phase = 'animating';
+  setTimeout(() => advanceAuto(), 750);
+}
+
+function advanceAuto() {
+  if (!G) return;
+  const plies = G.line.plies;
+  if (G.idx >= plies.length) { lineComplete(); return; }
+  const ply = plies[G.idx];
+  if (ply.color === G.orient) {
+    // Player's turn
+    G.phase = 'await'; G.wrongHere = 0; G.selected = null;
+    coach.mood = 'think';
+    coach.say = pick(['Your move.', 'What does the book say?', 'Find the move.', 'Your turn, Princess.']);
+    document.getElementById('hint-btn').classList.remove('hidden');
+    return;
+  }
+  // Opponent auto-move
+  G.phase = 'animating';
+  document.getElementById('hint-btn').classList.add('hidden');
+  coach.mood = 'talk';
+  coach.say = 'I play ' + ply.san + '.';
+  doMove(ply, () => { G.idx++; advanceAuto(); });
+}
+
+function playerMove(ply) {
+  G.phase = 'animating';
+  document.getElementById('hint-btn').classList.add('hidden');
+  sfx('correct'); burst(ply.to, true);
+  coach.mood = 'happy'; coach.say = pick(PRAISE);
+  doMove(ply, () => { G.idx++; advanceAuto(); });
+}
+
+function revealMove(ply) {
+  G.phase = 'animating';
+  document.getElementById('hint-btn').classList.add('hidden');
+  arrow = { from: ply.from, to: ply.to, t: 0 };
+  coach.mood = 'talk'; coach.say = 'Here — ' + ply.san + '.';
+  setTimeout(() => { arrow = null; doMove(ply, () => { G.idx++; advanceAuto(); }); }, 850);
+}
+
+function doMove(ply, onDone) {
+  const fromC = cellCenter(ply.from.x, ply.from.y);
+  const toC = cellCenter(ply.to.x, ply.to.y);
+  const piece = G.board[ply.from.y][ply.from.x];
+  const cap = applyPly(G.board, ply);
+  sfx('move');
+  anim = {
+    piece, fromC, toC, t: 0, dur: 0.26,
+    toCell: ply.to, cap, capC: cap ? toC : null,
+    castle: ply.castle, castleRy: ply.from.y,
+    onDone,
+  };
+}
+
+function lineComplete() {
+  G.phase = 'lineend'; G.done = true;
+  document.getElementById('hint-btn').classList.add('hidden');
+  const flawless = G.mistakes === 0;
+  let promo = false, retry = false;
+
+  if (session.mode === 'review') {
+    const r = updateSched(G.id, flawless);
+    promo = r.promoted;
+  }
+  if (flawless) {
+    session.stats.flawless++;
+    if (promo) { session.stats.promo++; sfx('levelup'); starburst(); coach.mood = 'happy'; coach.say = 'Mastered! ⭐'; }
+    else { sfx('done'); coach.mood = 'happy'; coach.say = 'Clean line!'; }
+  } else {
+    session.stats.again++;
+    coach.mood = 'talk'; coach.say = "We'll see that one again.";
+    if (session.mode === 'review' && (session.attempts[G.id] || 1) < 2) {
+      session.queue.push(G.id); retry = true; // re-drill this session
+    }
+  }
+  bannerText = flawless ? (promo ? 'LINE MASTERED ⭐' : 'FLAWLESS!') : 'KEEP PRACTISING';
+  bannerColor = flawless ? C.good : C.pink;
+  bannerT = 0;
+
+  setTimeout(() => {
+    if (session.queue.length > 0) loadLine(session.queue.shift());
+    else showSummary();
+  }, retry ? 1500 : 1400);
+}
+
+// ---- Input ----
+function cellFromXY(clientX, clientY) {
+  const r = canvas.getBoundingClientRect();
+  const mx = (clientX - r.left) * (W / r.width);
+  const my = (clientY - r.top) * (H / r.height);
+  const col = Math.floor((mx - BX) / TILE), row = Math.floor((my - BY) / TILE);
+  if (col < 0 || col > 7 || row < 0 || row > 7) return null;
+  // screen col/row -> board x/y depending on orientation
+  if (G.orient === 'w') return { x: col, y: row };
+  return { x: 7 - col, y: 7 - row };
+}
+
+canvas.addEventListener('pointerdown', e => {
+  if (!G || G.phase !== 'await') return;
+  const cell = cellFromXY(e.clientX, e.clientY);
+  if (!cell) return;
+  e.preventDefault();
+  const expected = G.line.plies[G.idx];
+  const piece = G.board[cell.y][cell.x];
+
+  if (!G.selected) {
+    // must select a piece of the trained colour
+    if (piece && piece.c === G.orient) {
+      G.selected = cell;
+    } else { wiggle(); }
+    return;
+  }
+  // second click = destination (or reselect)
+  if (cell.x === G.selected.x && cell.y === G.selected.y) { G.selected = null; return; }
+  if (piece && piece.c === G.orient) { G.selected = cell; return; } // reselect own piece
+
+  const from = G.selected;
+  if (from.x === expected.from.x && from.y === expected.from.y &&
+      cell.x === expected.to.x && cell.y === expected.to.y) {
+    G.selected = null;
+    playerMove(expected);
+  } else {
+    // Wrong move
+    G.selected = null;
+    G.mistakes++; G.wrongHere++;
+    sfx('wrong'); shake = 10; vignette = 14;
+    coach.mood = 'oops';
+    if (G.wrongHere >= 2) { coach.say = 'Let me show you…'; setTimeout(() => revealMove(expected), 500); }
+    else coach.say = pick(NUDGE);
+  }
+});
+
+document.getElementById('hint-btn').addEventListener('click', () => {
+  if (!G || G.phase !== 'await') return;
+  G.mistakes++; G.selected = null;
+  revealMove(G.line.plies[G.idx]);
+});
+
+// ---- Effects ----
+function cellCenter(x, y) {
+  let col, row;
+  if (G.orient === 'w') { col = x; row = y; } else { col = 7 - x; row = 7 - y; }
+  return { x: BX + col * TILE + TILE / 2, y: BY + row * TILE + TILE / 2 };
+}
+function burst(cell, gold) {
+  const c = cellCenter(cell.x, cell.y);
+  for (let i = 0; i < 16; i++) {
+    const a = Math.random() * Math.PI * 2, s = 1.5 + Math.random() * 3.5;
+    confetti.push({ x: c.x, y: c.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1.5,
+      col: gold ? (Math.random() < 0.5 ? '#F5C518' : '#6bffb8') : '#ff8fd0',
+      sz: 2 + Math.random() * 3, life: 34 + Math.random() * 16, max: 50, rot: Math.random() * 6 });
+  }
+}
+function starburst() {
+  for (let i = 0; i < 40; i++) {
+    const a = Math.random() * Math.PI * 2, s = 2 + Math.random() * 5;
+    confetti.push({ x: W / 2, y: BY + BOARD / 2, vx: Math.cos(a) * s, vy: Math.sin(a) * s,
+      col: ['#F5C518', '#6bffb8', '#ff8fd0', '#c96bff'][(Math.random() * 4) | 0],
+      sz: 2 + Math.random() * 4, life: 50 + Math.random() * 20, max: 70, rot: Math.random() * 6 });
+  }
+}
+function wiggle() { shake = 5; }
+
+let bannerText = '', bannerColor = C.good, bannerT = -1;
+
+// ---- Render ----
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  drawBg();
+  ctx.save();
+  if (shake > 0) { ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake); shake -= 0.6; }
+  if (G) { drawBoard(); drawPieces(); drawArrow(); }
+  ctx.restore();
+  drawConfetti();
+  drawFloaters();
+  if (G) drawCoach();
+  drawBottomHUD();
+  drawBanner();
+  if (vignette > 0) {
+    ctx.fillStyle = 'rgba(255,40,90,' + (vignette / 14 * 0.22) + ')';
+    ctx.fillRect(0, 0, W, H); vignette -= 0.6;
+  }
+}
+
+let bgGlyphs = Array.from({ length: 10 }, () => ({
+  x: Math.random() * W, y: Math.random() * H, s: 18 + Math.random() * 30,
+  g: '♟♞♝♜♛♚'[(Math.random() * 6) | 0], spd: 0.1 + Math.random() * 0.2, a: 0.04 + Math.random() * 0.05,
+}));
+function drawBg() {
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, '#311866'); grad.addColorStop(1, '#1a0f3d');
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+  bgGlyphs.forEach(b => {
+    b.y -= b.spd; if (b.y < -40) { b.y = H + 40; b.x = Math.random() * W; }
+    ctx.fillStyle = 'rgba(245,197,24,' + b.a + ')';
+    ctx.font = b.s + 'px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(b.g, b.x, b.y);
+  });
+}
+
+function drawBoard() {
+  // frame
+  ctx.fillStyle = '#1c0d44';
+  roundRect(BX - 7, BY - 7, BOARD + 14, BOARD + 14, 10); ctx.fill();
+  ctx.strokeStyle = C.frame; ctx.lineWidth = 3;
+  roundRect(BX - 7, BY - 7, BOARD + 14, BOARD + 14, 10); ctx.stroke();
+
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      ctx.fillStyle = (row + col) % 2 === 0 ? C.light : C.dark;
+      ctx.fillRect(BX + col * TILE, BY + row * TILE, TILE, TILE);
+    }
+  }
+  // gloss
+  const gl = ctx.createLinearGradient(0, BY, 0, BY + BOARD);
+  gl.addColorStop(0, 'rgba(255,255,255,0.08)'); gl.addColorStop(0.5, 'rgba(255,255,255,0)');
+  ctx.fillStyle = gl; ctx.fillRect(BX, BY, BOARD, BOARD);
+
+  // selected highlight + expected-from glow handled in pieces; mark selected square
+  if (G.selected) {
+    const c = cellCenter(G.selected.x, G.selected.y);
+    ctx.fillStyle = 'rgba(245,197,24,0.32)';
+    ctx.fillRect(c.x - TILE / 2, c.y - TILE / 2, TILE, TILE);
+  }
+
+  // labels (orientation aware)
+  ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.font = '9px Trebuchet MS';
+  for (let i = 0; i < 8; i++) {
+    const file = G.orient === 'w' ? String.fromCharCode(97 + i) : String.fromCharCode(97 + (7 - i));
+    const rank = G.orient === 'w' ? 8 - i : i + 1;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    ctx.fillText(file, BX + i * TILE + 3, BY + BOARD - 2);
+    ctx.textBaseline = 'top';
+    ctx.fillText(rank, BX + 2, BY + i * TILE + 2);
+  }
+}
+
+function drawPieces() {
+  for (let y = 0; y < 8; y++) {
+    for (let x = 0; x < 8; x++) {
+      const p = G.board[y][x];
+      if (!p) continue;
+      if (anim && anim.toCell && anim.toCell.x === x && anim.toCell.y === y) continue; // gliding
+      const c = cellCenter(x, y);
+      const key = x + ',' + y;
+      let scale = 1;
+      if (pops[key] !== undefined) { scale = 1 + 0.22 * Math.sin(pops[key] * Math.PI); }
+      drawPiece(c.x, c.y, p, scale, false);
+    }
+  }
+  // gliding piece
+  if (anim) {
+    if (anim.capC && anim.cap) {
+      ctx.globalAlpha = Math.max(0, 1 - anim.t * 1.6);
+      drawPiece(anim.capC.x, anim.capC.y, anim.cap, 1 - anim.t * 0.3, false);
+      ctx.globalAlpha = 1;
+    }
+    const e = easeOut(anim.t);
+    const px = anim.fromC.x + (anim.toC.x - anim.fromC.x) * e;
+    const py = anim.fromC.y + (anim.toC.y - anim.fromC.y) * e - Math.sin(anim.t * Math.PI) * 12;
+    drawPiece(px, py, anim.piece, 1.06, true);
+  }
+}
+
+function drawPiece(cx, cy, p, scale, lifted) {
+  const r = TILE * 0.40 * scale;
+  ctx.save(); ctx.translate(cx, cy + (lifted ? -3 : 0));
+  // shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.beginPath(); ctx.ellipse(0, r * 0.78, r * 0.85, r * 0.3, 0, 0, Math.PI * 2); ctx.fill();
+  // disc
+  const grad = ctx.createRadialGradient(-r * 0.3, -r * 0.4, r * 0.2, 0, 0, r);
+  if (p.c === 'w') { grad.addColorStop(0, '#fff9ec'); grad.addColorStop(1, '#d9bd84'); }
+  else { grad.addColorStop(0, '#7a52c8'); grad.addColorStop(1, '#33196e'); }
+  ctx.fillStyle = grad;
+  ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = C.gold; ctx.lineWidth = 2; ctx.stroke();
+  // gloss highlight
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.beginPath(); ctx.ellipse(-r * 0.32, -r * 0.4, r * 0.32, r * 0.18, -0.5, 0, Math.PI * 2); ctx.fill();
+  // glyph
+  ctx.fillStyle = p.c === 'w' ? '#3a2566' : '#fceeff';
+  ctx.font = 'bold ' + Math.round(r * 1.5) + 'px serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(GLYPH[p.t], 0, r * 0.06);
+  ctx.restore();
+}
+
+function drawArrow() {
+  if (!arrow) return;
+  const a = cellCenter(arrow.from.x, arrow.from.y), b = cellCenter(arrow.to.x, arrow.to.y);
+  const pulse = 0.5 + 0.5 * Math.sin(arrow.t * 12);
+  ctx.strokeStyle = 'rgba(107,255,184,' + (0.6 + 0.4 * pulse) + ')';
+  ctx.fillStyle = ctx.strokeStyle; ctx.lineWidth = 6; ctx.lineCap = 'round';
+  const ang = Math.atan2(b.y - a.y, b.x - a.x);
+  const ex = b.x - Math.cos(ang) * 16, ey = b.y - Math.sin(ang) * 16;
+  ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(ex, ey); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(b.x, b.y);
+  ctx.lineTo(ex - Math.cos(ang - 0.5) * 14, ey - Math.sin(ang - 0.5) * 14);
+  ctx.lineTo(ex - Math.cos(ang + 0.5) * 14, ey - Math.sin(ang + 0.5) * 14);
+  ctx.closePath(); ctx.fill();
+}
+
+function drawConfetti() {
+  confetti.forEach(p => {
+    ctx.save(); ctx.globalAlpha = Math.max(0, p.life / p.max);
+    ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+    ctx.fillStyle = p.col; ctx.fillRect(-p.sz / 2, -p.sz / 2, p.sz, p.sz * 1.6);
+    ctx.restore();
+  });
+}
+function drawFloaters() {
+  floaters.forEach(f => {
+    ctx.globalAlpha = Math.max(0, f.life / f.max);
+    ctx.fillStyle = f.col; ctx.font = 'bold 15px Trebuchet MS';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(f.txt, f.x, f.y); ctx.globalAlpha = 1;
+  });
+}
+
+// ---- Coach mascot (the Rival: a crowned dog) ----
+function drawCoach() {
+  const cx = 42, cy = 52, S = 26;
+  coach.bob += 0.06;
+  const bob = Math.sin(coach.bob) * 2;
+  ctx.save(); ctx.translate(cx, cy + bob);
+
+  // crown above
+  ctx.fillStyle = C.gold;
+  ctx.beginPath();
+  ctx.moveTo(-S * 0.7, -S * 0.85); ctx.lineTo(-S * 0.7, -S * 1.25);
+  ctx.lineTo(-S * 0.35, -S * 0.95); ctx.lineTo(0, -S * 1.4);
+  ctx.lineTo(S * 0.35, -S * 0.95); ctx.lineTo(S * 0.7, -S * 1.25);
+  ctx.lineTo(S * 0.7, -S * 0.85); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#a87d00'; ctx.lineWidth = 1; ctx.stroke();
+
+  // ears
+  ctx.fillStyle = '#8a5a2a';
+  ctx.beginPath(); ctx.ellipse(-S * 0.78, -S * 0.2, S * 0.3, S * 0.5, -0.4, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(S * 0.78, -S * 0.2, S * 0.3, S * 0.5, 0.4, 0, Math.PI * 2); ctx.fill();
+  // head
+  const hg = ctx.createRadialGradient(-S * 0.3, -S * 0.3, S * 0.2, 0, 0, S);
+  hg.addColorStop(0, '#caa06a'); hg.addColorStop(1, '#9a6a38');
+  ctx.fillStyle = hg;
+  ctx.beginPath(); ctx.arc(0, 0, S * 0.92, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#5a3a1a'; ctx.lineWidth = 1.5; ctx.stroke();
+  // muzzle
+  ctx.fillStyle = '#e8d3ac';
+  ctx.beginPath(); ctx.ellipse(0, S * 0.34, S * 0.5, S * 0.38, 0, 0, Math.PI * 2); ctx.fill();
+
+  // eyes by mood
+  ctx.fillStyle = '#1a0f1a';
+  if (coach.mood === 'happy') {
+    ctx.lineWidth = 2.4; ctx.strokeStyle = '#1a0f1a';
+    ctx.beginPath(); ctx.arc(-S * 0.3, -S * 0.1, S * 0.16, Math.PI, 0); ctx.stroke();
+    ctx.beginPath(); ctx.arc(S * 0.3, -S * 0.1, S * 0.16, Math.PI, 0); ctx.stroke();
+  } else if (coach.mood === 'oops') {
+    ctx.beginPath(); ctx.arc(-S * 0.3, -S * 0.08, S * 0.15, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(S * 0.3, -S * 0.08, S * 0.15, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(-S * 0.34, -S * 0.12, S * 0.05, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(S * 0.26, -S * 0.12, S * 0.05, 0, Math.PI * 2); ctx.fill();
+  } else {
+    ctx.beginPath(); ctx.arc(-S * 0.3, -S * 0.08, S * 0.13, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(S * 0.3, -S * 0.08, S * 0.13, 0, Math.PI * 2); ctx.fill();
+  }
+  // nose
+  ctx.fillStyle = '#2a1a2a';
+  ctx.beginPath(); ctx.ellipse(0, S * 0.2, S * 0.13, S * 0.1, 0, 0, Math.PI * 2); ctx.fill();
+  // mouth (animated when talking)
+  ctx.strokeStyle = '#3a221a'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+  const talking = (coach.mood === 'talk' || coach.mood === 'happy');
+  const open = talking ? (0.5 + 0.5 * Math.sin(Date.now() / 90)) * S * 0.12 : 0;
+  ctx.beginPath(); ctx.moveTo(0, S * 0.3); ctx.lineTo(0, S * 0.38 + open); ctx.stroke();
+  ctx.beginPath(); ctx.arc(0, S * 0.38, S * 0.16 + open, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+  ctx.restore();
+
+  // speech bubble
+  drawBubble(coach.say);
+}
+
+function drawBubble(text) {
+  const x = 86, y = 12, w = W - 86 - 12, h = 64;
+  ctx.fillStyle = 'rgba(255,255,255,0.96)';
+  roundRect(x, y, w, h, 12); ctx.fill();
+  // tail
+  ctx.beginPath(); ctx.moveTo(x, y + 28); ctx.lineTo(x - 12, y + 36); ctx.lineTo(x, y + 46); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#F5C518'; ctx.lineWidth = 2; roundRect(x, y, w, h, 12); ctx.stroke();
+
+  ctx.fillStyle = '#2a1a55'; ctx.font = 'bold 15px Trebuchet MS';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  const lines = wrapText(text, w - 24);
+  lines.slice(0, 2).forEach((ln, i) => ctx.fillText(ln, x + 12, y + 13 + i * 19));
+}
+function wrapText(text, maxW) {
+  ctx.font = 'bold 15px Trebuchet MS';
+  const words = ('' + text).split(' '); const lines = []; let cur = '';
+  words.forEach(wd => {
+    const test = cur ? cur + ' ' + wd : wd;
+    if (ctx.measureText(test).width > maxW && cur) { lines.push(cur); cur = wd; }
+    else cur = test;
+  });
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+function drawBottomHUD() {
+  if (!G || !session) return;
+  const y = H - 22;
+  // progress through line
+  const plies = G.line.plies;
+  const totalCards = plies.filter(p => p.color === G.orient).length;
+  const doneCards = plies.slice(0, G.idx).filter(p => p.color === G.orient).length;
+  ctx.fillStyle = C.muted; ctx.font = '11px Trebuchet MS';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText(G.line.name + '  ·  move ' + Math.min(doneCards + 1, totalCards) + '/' + totalCards, 12, y);
+
+  // box / mastery pips for this line
+  const box = sched(G.id).box;
+  ctx.textAlign = 'right';
+  let pips = '';
+  for (let i = 1; i <= 5; i++) pips += i <= box ? '★' : '☆';
+  ctx.fillStyle = C.gold; ctx.fillText(pips, W - 12, y);
+
+  // queue remaining
+  ctx.fillStyle = C.muted; ctx.textAlign = 'center';
+  ctx.fillText((session.queue.length) + ' to go', W / 2, y);
+}
+
+function drawBanner() {
+  if (bannerT < 0) return;
+  bannerT += 1 / 60;
+  const a = bannerT < 0.2 ? bannerT / 0.2 : (bannerT > 1.0 ? Math.max(0, 1 - (bannerT - 1.0) / 0.3) : 1);
+  ctx.globalAlpha = a;
+  ctx.fillStyle = bannerColor;
+  ctx.font = '900 30px Trebuchet MS'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const yy = BY + BOARD / 2;
+  ctx.save(); ctx.translate(W / 2, yy);
+  const pop = 0.8 + Math.min(0.2, bannerT) ;
+  ctx.scale(pop, pop);
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 5; ctx.strokeText(bannerText, 0, 0);
+  ctx.fillText(bannerText, 0, 0);
+  ctx.restore();
+  ctx.globalAlpha = 1;
+  if (bannerT > 1.4) bannerT = -1;
+}
+
+// ---- Helpers ----
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+// ---- Main loop ----
+let lastT = performance.now();
+function loop(now) {
+  const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
+
+  // animation
+  if (anim) {
+    anim.t += dt / anim.dur;
+    if (anim.t >= 1) {
+      const done = anim.onDone, cell = anim.toCell;
+      // castle rook pop
+      if (anim.castle === 'K') pops['5,' + anim.castleRy] = 0;
+      else if (anim.castle === 'Q') pops['3,' + anim.castleRy] = 0;
+      pops[cell.x + ',' + cell.y] = 0;
+      anim = null;
+      if (done) done();
+    }
+  }
+  // pops decay
+  for (const k in pops) { pops[k] += dt * 4.5; if (pops[k] >= 1) delete pops[k]; }
+  // confetti
+  confetti = confetti.filter(p => {
+    p.x += p.vx; p.y += p.vy; p.vy += 0.16; p.rot += 0.2; p.life -= 1; return p.life > 0;
+  });
+  floaters = floaters.filter(f => { f.y -= 0.6; f.life -= 1; return f.life > 0; });
+  if (arrow) arrow.t += dt;
+
+  render();
+  requestAnimationFrame(loop);
+}
+
+// ---- Screens ----
+function hideOverlays() {
+  ['menu-screen', 'caught-screen', 'summary-screen'].forEach(id => document.getElementById(id).classList.add('hidden'));
+}
+function showMenu() {
+  G = null; session = null;
+  document.getElementById('menu-btn').classList.add('hidden');
+  document.getElementById('hint-btn').classList.add('hidden');
+  buildDeckList();
+  hideOverlays();
+  document.getElementById('menu-screen').classList.remove('hidden');
+}
+function showCaughtUp(deckId) {
+  hideOverlays();
+  const nextDue = Math.min(...deckLineIds(deckId).map(id => sched(id).due));
+  let msg = 'Every line in this deck is resting. ';
+  if (isFinite(nextDue) && nextDue > Date.now()) {
+    const hrs = Math.round((nextDue - Date.now()) / 3600000);
+    msg += hrs < 1 ? 'Next review in under an hour.' : 'Next review in ~' + hrs + 'h.';
+  }
+  document.getElementById('caught-msg').textContent = msg;
+  document.getElementById('caught-screen').dataset.deck = deckId;
+  document.getElementById('caught-screen').classList.remove('hidden');
+}
+function showSummary() {
+  G = null;
+  document.getElementById('menu-btn').classList.add('hidden');
+  const s = session.stats;
+  const deck = DECKS.find(d => d.id === session.deckId);
+  document.getElementById('sum-deck').textContent = deck.name + (session.mode === 'cram' ? ' · Cram' : '');
+  document.getElementById('sum-lines').textContent = s.lines;
+  document.getElementById('sum-flaw').textContent = s.flawless;
+  document.getElementById('sum-promo').textContent = s.promo;
+  document.getElementById('sum-again').textContent = s.again;
+  const due = deckDue(session.deckId);
+  document.getElementById('sum-next').textContent = session.mode === 'cram'
+    ? 'Cram runs don’t change your schedule.'
+    : (due > 0 ? due + ' line' + (due > 1 ? 's' : '') + ' still due in this deck.' : 'Deck clear — come back later! 🦴');
+  sfx('done');
+  hideOverlays();
+  document.getElementById('summary-screen').classList.remove('hidden');
+}
+
+let selectedDeck = 'pirc';
+function buildDeckList() {
+  const list = document.getElementById('deck-list');
+  list.innerHTML = '';
+  DECKS.forEach(d => {
+    const due = deckDue(d.id);
+    const m = deckMastery(d.id);
+    const stars = '★'.repeat(Math.round(m)) + '☆'.repeat(5 - Math.round(m));
+    const el = document.createElement('div');
+    el.className = 'deck' + (d.id === selectedDeck ? ' sel' : '');
+    el.style.borderColor = d.id === selectedDeck ? '#F5C518' : '#4a2f8a';
+    el.innerHTML =
+      '<div class="deck-badge" style="background:' + d.color + ';color:#1a0f3d;">' + d.glyph + '</div>' +
+      '<div class="deck-info"><div class="deck-name">' + d.name + '</div>' +
+      '<div class="deck-sub">Play ' + d.side + ' · ' + d.sub + '</div>' +
+      '<div class="deck-stars" style="color:#F5C518;">' + stars + '</div></div>' +
+      '<div class="deck-due ' + (due ? 'due-have' : 'due-none') + '">' + (due ? due + ' due' : 'rest') + '</div>';
+    el.addEventListener('click', () => { selectedDeck = d.id; buildDeckList(); });
+    list.appendChild(el);
+  });
+}
+
+// ---- Button wiring ----
+function go() { initAudio(); if (actx.state === 'suspended') actx.resume(); }
+document.getElementById('review-btn').addEventListener('click', () => { go(); startSession(selectedDeck, 'review'); });
+document.getElementById('cram-btn').addEventListener('click', () => { go(); startSession(selectedDeck, 'cram'); });
+document.getElementById('menu-btn').addEventListener('click', showMenu);
+document.getElementById('caught-cram').addEventListener('click', e => {
+  go(); startSession(document.getElementById('caught-screen').dataset.deck, 'cram');
+});
+document.getElementById('caught-menu').addEventListener('click', showMenu);
+document.getElementById('sum-again-btn').addEventListener('click', () => { go(); startSession(session ? session.deckId : selectedDeck, 'review'); });
+document.getElementById('sum-menu').addEventListener('click', showMenu);
+document.getElementById('reset-srs').addEventListener('click', () => {
+  SRS = {}; saveSRS(); buildDeckList();
+});
+document.getElementById('snd-toggle').addEventListener('click', () => {
+  sndOn = !sndOn; if (master) master.gain.value = sndOn ? 0.85 : 0;
+  document.getElementById('snd-toggle').textContent = sndOn ? '🔊 sound: on' : '🔇 sound: off';
+});
+
+// boot
+buildDeckList();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

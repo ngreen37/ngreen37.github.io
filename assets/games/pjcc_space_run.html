@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>PJCC: Space Run</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{background:#000;height:100%;overflow:hidden;touch-action:none;}
+#wrap{display:flex;flex-direction:column;align-items:center;height:100vh;}
+#canvas-wrap{position:relative;flex:1;width:100%;max-width:520px;min-height:0;}
+canvas{display:block;width:100%;height:100%;}
+#overlay{display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,8,0.95);z-index:10;}
+#overlay.show{display:flex;}
+#overlay h2{font-family:'Courier New',monospace;color:#F5C518;font-size:20px;margin-bottom:4px;letter-spacing:2px;}
+#overlay .sub{font-family:'Courier New',monospace;color:#c96bff;font-size:9px;letter-spacing:3px;margin-bottom:14px;}
+#overlay p{font-family:'Courier New',monospace;color:#8888cc;font-size:11px;text-align:center;line-height:2.1;margin-bottom:18px;}
+#overlay button{font-family:'Courier New',monospace;background:#F5C518;color:#000;border:none;padding:10px 32px;font-size:13px;font-weight:bold;border-radius:3px;cursor:pointer;letter-spacing:2px;}
+#overlay button:hover{background:#ffd740;}
+#tap-zones{width:100%;max-width:520px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;flex-shrink:0;height:60px;border-top:1px solid #111;}
+.tap-btn{display:flex;align-items:center;justify-content:center;font-size:18px;color:#333;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;border-right:1px solid #111;font-family:monospace;transition:background 0.08s;}
+.tap-btn:last-child{border-right:none;}
+.tap-btn.pressed{background:#1a0050;color:#F5C518;}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="canvas-wrap">
+    <canvas id="c"></canvas>
+    <div id="overlay" class="show">
+      <h2>PJCC: SPACE RUN</h2>
+      <div class="sub">— CHESS CITY INVITATIONAL —</div>
+      <p>The CEO hurls chess pieces at you.<br>Each piece forms a connected track.<br>Skate onto it and ride to the end.<br><br>← → or A D — change lane<br>SPACE or W — jump to next piece<br><br>Miss a track = lose HP<br>Queen = HP bonus</p>
+      <button id="startBtn">ENGAGE</button>
+    </div>
+  </div>
+  <div id="tap-zones">
+    <div class="tap-btn" id="btnLeft">←</div>
+    <div class="tap-btn" id="btnJump">↑</div>
+    <div class="tap-btn" id="btnRight">→</div>
+    <div class="tap-btn" id="btnDown">↓</div>
+  </div>
+</div>
+<script>
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+const cw=document.getElementById('canvas-wrap');
+let W,H;
+function resize(){
+  const r=cw.getBoundingClientRect();
+  W=Math.round(r.width);H=Math.round(r.height);
+  canvas.width=W;canvas.height=H;
+}
+resize();window.addEventListener('resize',resize);
+
+// ── PROJECTION ────────────────────────────────────────────────────────────
+const FAR=800;
+const HORIZON=()=>H*0.36;
+const GROUND_SCREEN=()=>H*0.98;
+
+function projectGround(wx,wz){
+  if(wz<=0)wz=0.01;
+  const t=wz/FAR;
+  const sy=HORIZON()+(GROUND_SCREEN()-HORIZON())*(1-t);
+  const sx=W/2+wx*W*0.48*(1-t);
+  return{x:sx,y:sy,scale:Math.max(0.01,1-t)};
+}
+function projectAt(wx,wz,hpx){
+  const g=projectGround(wx,wz);
+  return{x:g.x,y:g.y-hpx*g.scale,scale:g.scale};
+}
+
+const LANE_X=[-1.5,-0.5,0.5,1.5];
+const LANES=4;
+const SEG=90; // z-length of one track segment
+
+// Piece colors — King is now purple
+const PCOL={P:'#6bffb8',N:'#ff9b4a',B:'#c96bff',R:'#6bbfff',Q:'#F5C518',K:'#aa44ff'};
+const PSYM={P:'♟',N:'♞',B:'♝',R:'♜',Q:'♛',K:'♚'};
+
+// ── TRACK GROUPS ──────────────────────────────────────────────────────────
+// A track group is one thrown piece. It has:
+//   segs: [{lane, zStart, zEnd}]  — ordered far to near
+//   type, col, sym
+//   scored, landedOn, passed
+//   hazardLanes (for King only): [{lane, zStart, zEnd}]
+
+function buildTrack(type,lane,zFar){
+  const col=PCOL[type];
+  const sym=PSYM[type];
+  const segs=[];
+  const hazardSegs=[];
+
+  if(type==='P'){
+    // Single short straight segment
+    segs.push({lane,zStart:zFar,zEnd:zFar-SEG*1.2});
+  }
+  else if(type==='N'){
+    // L-shape: two straight then a diagonal jump to adjacent lane
+    const l2=lane+1<LANES?lane+1:lane-1;
+    segs.push({lane,  zStart:zFar,       zEnd:zFar-SEG});
+    segs.push({lane,  zStart:zFar-SEG,   zEnd:zFar-SEG*2}); // second straight
+    segs.push({lane:l2,zStart:zFar-SEG*2,zEnd:zFar-SEG*3}); // L-jump
+  }
+  else if(type==='B'){
+    // Diagonal zigzag: each segment shifts one lane
+    let cur=lane;
+    const dir=cur<LANES-2?1:-1;
+    for(let i=0;i<4;i++){
+      const next=Math.max(0,Math.min(LANES-1,cur+(i%2===0?dir:-dir)));
+      segs.push({lane:cur,zStart:zFar-i*SEG,zEnd:zFar-(i+1)*SEG});
+      cur=next;
+    }
+  }
+  else if(type==='R'){
+    // 8 long straight segments — the smooth long skate
+    for(let i=0;i<8;i++){
+      segs.push({lane,zStart:zFar-i*SEG,zEnd:zFar-(i+1)*SEG});
+    }
+  }
+  else if(type==='K'){
+    // 3 rows: each row one safe lane + hazards on the rest
+    // Safe lane changes each row — player must jump
+    let safeLane=lane;
+    for(let i=0;i<3;i++){
+      const z0=zFar-i*SEG*1.4;
+      const z1=z0-SEG;
+      segs.push({lane:safeLane,zStart:z0,zEnd:z1});
+      for(let l=0;l<LANES;l++){
+        if(l!==safeLane){
+          hazardSegs.push({lane:l,zStart:z0,zEnd:z1});
+        }
+      }
+      // Shift safe lane for next row
+      safeLane=(safeLane+1+Math.floor(Math.random()*2))%LANES;
+    }
+  }
+  else if(type==='Q'){
+    // Three adjacent lanes simultaneously — wide generous track
+    const start=Math.max(0,lane-1);
+    for(let i=0;i<3&&start+i<LANES;i++){
+      segs.push({lane:start+i,zStart:zFar,zEnd:zFar-SEG*2});
+    }
+  }
+
+  return{type,col,sym,segs,hazardSegs,scored:false,landedOn:false,passed:false,bonus:type==='Q'};
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let keys={},best=0,running=false,g;
+let jumpHeld=false,laneCooldown=0;
+
+function initGame(){
+  resize();
+  g={
+    frame:0,dist:0,hp:3,score:0,dead:false,flash:0,
+    speed:2.5,
+    player:{lane:1,targetLane:1,laneT:1,z:18,groundY:0,vy:0,onPiece:false,ridingGroup:null},
+    princess:{lane:1,targetLane:1,laneT:1,z:80,groundY:0,vy:0,onPiece:false,jumpTimer:0,ridingGroup:null},
+    groups:[],
+    ceo:{anim:0,throwTimer:120,dogPhase:0},
+    particles:[],texts:[],
+    stars:Array.from({length:200},()=>({sx:Math.random(),sy:Math.random()*0.95,s:Math.random()*1.8+0.3,spd:Math.random()*0.3+0.15})),
+  };
+  laneCooldown=0;jumpHeld=false;
+
+  // Seed a single starter rook — one piece on screen at a time
+  g.groups.push(buildTrack('R',1,520));
+}
+
+// ── INPUT ─────────────────────────────────────────────────────────────────
+function setupTap(id,key){
+  const el=document.getElementById(id);
+  const on=()=>{keys[key]=true;el.classList.add('pressed');};
+  const off=()=>{keys[key]=false;el.classList.remove('pressed');};
+  el.addEventListener('pointerdown',on);el.addEventListener('pointerup',off);el.addEventListener('pointerleave',off);
+}
+setupTap('btnLeft','ArrowLeft');setupTap('btnJump',' ');setupTap('btnRight','ArrowRight');setupTap('btnDown','s');
+
+document.addEventListener('keydown',e=>{
+  keys[e.key]=true;
+  if([' ','ArrowUp','ArrowLeft','ArrowRight'].includes(e.key))e.preventDefault();
+  if(!g||g.dead)return;
+  if((e.key==='ArrowLeft'||e.key==='a')&&laneCooldown===0&&g.player.targetLane>0){g.player.targetLane--;laneCooldown=12;}
+  if((e.key==='ArrowRight'||e.key==='d')&&laneCooldown===0&&g.player.targetLane<LANES-1){g.player.targetLane++;laneCooldown=12;}
+});
+document.addEventListener('keyup',e=>{keys[e.key]=false;});
+
+// ── PHYSICS ───────────────────────────────────────────────────────────────
+const GRAV=0.55,JUMP_V=6;
+
+function lerpX(laneT){return LANE_X[0]+laneT*(LANE_X[LANES-1]-LANE_X[0])/(LANES-1);}
+
+// Check if a character at (laneT, z) is over any seg of any group
+function segUnder(laneT,z){
+  const lane=Math.round(laneT);
+  const wx=lerpX(laneT);
+  for(const grp of g.groups){
+    for(const seg of grp.segs){
+      if(seg.lane!==lane)continue;
+      if(z>=seg.zEnd-5&&z<=seg.zStart+5){
+        // Also check lane proximity by world X
+        if(Math.abs(wx-LANE_X[seg.lane])<0.85) return grp;
+      }
+    }
+  }
+  return null;
+}
+
+function updatePlayer(){
+  const pl=g.player;
+  if(laneCooldown>0)laneCooldown--;
+  // Manual lane changes only when airborne — riding locks you to the track
+  if(!pl.onPiece){
+    if((keys['ArrowLeft']||keys['a'])&&laneCooldown===0&&pl.targetLane>0){pl.targetLane--;laneCooldown=12;}
+    if((keys['ArrowRight']||keys['d'])&&laneCooldown===0&&pl.targetLane<LANES-1){pl.targetLane++;laneCooldown=12;}
+  }
+
+  const wantJump=keys[' ']||keys['ArrowUp']||keys['w'];
+  if(wantJump&&!jumpHeld&&(pl.onPiece||pl.groundY<=0.1)){
+    pl.vy=JUMP_V;pl.onPiece=false;pl.ridingGroup=null;jumpHeld=true;
+    emit(pl.z,pl.targetLane,5,false);
+  }
+  if(!wantJump)jumpHeld=false;
+
+  pl.laneT+=(pl.targetLane-pl.laneT)*0.18;
+
+  // If riding, lock onto the track and slide along it
+  if(pl.ridingGroup&&!pl.ridingGroup.passed){
+    let onSeg=null;
+    for(const seg of pl.ridingGroup.segs){
+      if(pl.z>=seg.zEnd-8&&pl.z<=seg.zStart+8){ onSeg=seg; break; }
+    }
+    if(onSeg){
+      // Lock to the segment's lane — smooth auto-slide through diagonals
+      pl.targetLane=onSeg.lane;
+      pl.laneT+=(onSeg.lane-pl.laneT)*0.25;
+      pl.groundY=0;pl.vy=0;pl.onPiece=true;
+    } else {
+      pl.ridingGroup=null;pl.onPiece=false;
+    }
+  } else {
+    pl.ridingGroup=null;pl.onPiece=false;
+  }
+
+  if(!pl.onPiece){
+    pl.vy-=GRAV;
+    pl.groundY+=pl.vy;
+    if(pl.groundY<=0&&pl.vy<=0){
+      pl.groundY=0;pl.vy=0;
+      // Try to land on a track
+      const grp=segUnder(pl.laneT,pl.z);
+      if(grp){
+        pl.onPiece=true;pl.ridingGroup=grp;
+        if(!grp.scored){
+          grp.scored=true;grp.landedOn=true;g.score++;
+          const sc=projectAt(lerpX(pl.laneT),pl.z,50);
+          addText(grp.bonus?'QUEEN! +HP':'+1',sc.x,sc.y,grp.col,38);
+          emit(pl.z,pl.targetLane,5,grp.bonus);
+          if(grp.bonus)g.hp=Math.min(3,g.hp+1);
+        }
+      }
+    }
+  }
+}
+
+function updatePrincess(){
+  const pr=g.princess;
+  // Target nearest upcoming group's first seg lane
+  let best=null,bd=Infinity;
+  for(const grp of g.groups){
+    if(grp.passed)continue;
+    for(const seg of grp.segs){
+      const d=Math.abs(seg.zStart-pr.z);
+      if(d<bd){bd=d;best={grp,lane:seg.lane};}
+    }
+  }
+  if(best)pr.targetLane=best.lane;
+  pr.laneT+=(pr.targetLane-pr.laneT)*0.07;
+
+  if(pr.ridingGroup&&!pr.ridingGroup.passed){
+    const still=segUnder(pr.laneT,pr.z);
+    if(still===pr.ridingGroup){pr.groundY=0;pr.vy=0;pr.onPiece=true;}
+    else{pr.ridingGroup=null;pr.onPiece=false;}
+  } else {pr.ridingGroup=null;pr.onPiece=false;}
+
+  if(!pr.onPiece){
+    pr.vy-=GRAV;pr.groundY+=pr.vy;
+    if(pr.groundY<=0&&pr.vy<=0){
+      pr.groundY=0;pr.vy=0;
+      const grp=segUnder(pr.laneT,pr.z);
+      if(grp){pr.onPiece=true;pr.ridingGroup=grp;}
+    }
+  }
+
+  pr.jumpTimer--;
+  if(pr.onPiece&&best&&pr.jumpTimer<=0&&best.grp.segs[0]&&best.grp.segs[0].zStart>pr.z+80){
+    pr.vy=JUMP_V*0.8;pr.onPiece=false;pr.ridingGroup=null;pr.jumpTimer=22;
+    emit(pr.z,pr.targetLane,5,false);
+  }
+}
+
+function updateGroups(){
+  const spd=g.speed;
+  g.groups.forEach(grp=>{
+    grp.segs.forEach(s=>{s.zStart-=spd;s.zEnd-=spd;});
+    if(grp.hazardSegs)grp.hazardSegs.forEach(s=>{s.zStart-=spd;s.zEnd-=spd;});
+    // Passed when all segs past camera
+    const maxZ=Math.max(...grp.segs.map(s=>s.zStart));
+    if(maxZ<-30)grp.passed=true;
+    // Miss check: first seg scrolled past player without being scored
+    const firstSeg=grp.segs[grp.segs.length-1]; // last in array = nearest (smallest z)
+    if(firstSeg&&firstSeg.zEnd<g.player.z-20&&!grp.scored&&!grp.passed){
+      grp.scored=true;
+      if(!grp.landedOn){
+        g.hp=Math.max(0,g.hp-1);g.flash=18;
+        const sc=projectAt(LANE_X[grp.segs[0].lane],g.player.z,60);
+        addText('MISS',sc.x,sc.y,'#ff4444',40);
+        if(g.hp<=0){g.dead=true;if(g.dist>best)best=g.dist;setTimeout(showOverlay,700);}
+      }
+    }
+  });
+  g.groups=g.groups.filter(grp=>!grp.passed);
+}
+
+function updateCEO(){
+  const ceo=g.ceo;
+  ceo.anim=(ceo.anim+1)%200;ceo.dogPhase+=0.04;
+
+  // One piece at a time: only throw when the board is clear of unscored tracks
+  const activeUnscored=g.groups.some(grp=>!grp.scored&&!grp.passed);
+  if(activeUnscored) return;
+
+  ceo.throwTimer--;
+  if(ceo.throwTimer<=0){
+    let pool;
+    if(g.dist<30)       pool=['R'];
+    else if(g.dist<70)  pool=['R','R','P','P'];
+    else if(g.dist<120) pool=['R','P','P','N','N'];
+    else if(g.dist<180) pool=['R','P','N','N','B','B'];
+    else if(g.dist<260) pool=['R','P','N','B','B','Q'];
+    else                pool=['R','P','N','B','K','K','Q'];
+
+    const type=pool[Math.floor(Math.random()*pool.length)];
+    const lane=Math.floor(Math.random()*LANES);
+    g.groups.push(buildTrack(type,lane,FAR*0.72));
+    // Gap between pieces — shorter as you progress
+    ceo.throwTimer=Math.max(40,90-g.dist*0.5);
+  }
+}
+
+// ── PARTICLES / TEXTS ─────────────────────────────────────────────────────
+function emit(wz,lane,height,gold){
+  const sc=projectAt(LANE_X[Math.max(0,Math.min(LANES-1,Math.round(lane)))],wz,height);
+  for(let i=0;i<12;i++){
+    g.particles.push({x:sc.x,y:sc.y,vx:(Math.random()-0.5)*5,vy:-(Math.random()*4+1),
+      r:gold?245:100,gb:gold?197:200,b:gold?24:255,s:Math.random()*3+1,life:32,max:32});
+  }
+}
+function addText(txt,x,y,col,life){g.texts.push({txt,x,y:y||H*0.5,col,life,max:life});}
+
+// ── DRAW ──────────────────────────────────────────────────────────────────
+function drawStars(){
+  ctx.fillStyle='#00000a';ctx.fillRect(0,0,W,H);
+  g.stars.forEach(s=>{
+    s.sy+=s.spd*0.001;if(s.sy>1)s.sy=0;
+    const bright=s.sy;
+    ctx.fillStyle=`rgba(200,180,255,${bright*0.8})`;
+    ctx.beginPath();ctx.arc(s.sx*W,s.sy*H,s.s,0,Math.PI*2);ctx.fill();
+  });
+  const nb=ctx.createRadialGradient(W*0.5,H*0.2,0,W*0.5,H*0.2,W*0.5);
+  nb.addColorStop(0,'rgba(80,0,160,0.12)');nb.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=nb;ctx.fillRect(0,0,W,H*0.5);
+}
+
+function drawGrid(){
+  const hor=HORIZON();
+  for(let l=0;l<=LANES;l++){
+    const wx=LANE_X[0]+(l/LANES)*(LANE_X[LANES-1]-LANE_X[0])*1.1-0.1;
+    const far=projectGround(wx,FAR*0.9),near=projectGround(wx,0);
+    const grad=ctx.createLinearGradient(far.x,far.y,near.x,near.y);
+    grad.addColorStop(0,'rgba(120,0,255,0.0)');
+    grad.addColorStop(0.3,'rgba(120,0,255,0.25)');
+    grad.addColorStop(1,'rgba(120,0,255,0.08)');
+    ctx.strokeStyle=grad;ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(far.x,Math.min(far.y,hor));ctx.lineTo(near.x,GROUND_SCREEN());ctx.stroke();
+  }
+  [50,100,160,230,310,400,500,FAR*0.8].forEach(z=>{
+    const left=projectGround(-2.2,z),right=projectGround(2.2,z);
+    if(left.y<hor||left.y>H)return;
+    const alpha=0.05+0.1*(1-z/FAR);
+    ctx.strokeStyle=`rgba(100,0,255,${alpha})`;ctx.lineWidth=0.8;
+    ctx.beginPath();ctx.moveTo(left.x,left.y);ctx.lineTo(right.x,right.y);ctx.stroke();
+  });
+  const gg=ctx.createLinearGradient(0,hor,0,hor+30);
+  gg.addColorStop(0,'rgba(100,0,255,0.22)');gg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=gg;ctx.fillRect(0,hor,W,30);
+}
+
+// Draw one track slab segment
+function drawSlab(wx,zStart,zEnd,col,isHazard,glow){
+  const ww=0.44;
+  const zF=Math.min(zStart,FAR*0.95);
+  const zN=Math.max(zEnd,1);
+  if(zF<=0||zN>=FAR||zN>=zF)return;
+
+  const TL=projectAt(wx-ww,zF,10),TR=projectAt(wx+ww,zF,10);
+  const BL=projectAt(wx-ww,zN,10),BR=projectAt(wx+ww,zN,10);
+  const BLb=projectAt(wx-ww,zN,-2),BRb=projectAt(wx+ww,zN,-2);
+
+  if(isHazard){
+    ctx.beginPath();ctx.moveTo(TL.x,TL.y);ctx.lineTo(TR.x,TR.y);ctx.lineTo(BR.x,BR.y);ctx.lineTo(BL.x,BL.y);ctx.closePath();
+    ctx.fillStyle='#2a0000';ctx.fill();
+    ctx.strokeStyle='#ff2222';ctx.lineWidth=2;ctx.stroke();
+    const mid=projectAt(wx,(zF+zN)/2,12);
+    const sz=Math.max(10,Math.round(mid.scale*34));
+    ctx.font=`bold ${sz}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillStyle='#ff4444';ctx.fillText('✕',mid.x,mid.y);
+    return;
+  }
+
+  // Side face
+  ctx.beginPath();ctx.moveTo(BL.x,BL.y);ctx.lineTo(BR.x,BR.y);ctx.lineTo(BRb.x,BRb.y);ctx.lineTo(BLb.x,BLb.y);ctx.closePath();
+  ctx.fillStyle='#111';ctx.fill();ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.stroke();
+  // Top face solid
+  ctx.beginPath();ctx.moveTo(TL.x,TL.y);ctx.lineTo(TR.x,TR.y);ctx.lineTo(BR.x,BR.y);ctx.lineTo(BL.x,BL.y);ctx.closePath();
+  ctx.fillStyle=col;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=glow?3:1.5;ctx.stroke();
+
+  if(glow){
+    const pulse=0.5+0.5*Math.sin(g.frame*0.3);
+    ctx.strokeStyle='#fff';ctx.lineWidth=2+pulse*4;ctx.globalAlpha=pulse*0.7;
+    ctx.beginPath();ctx.moveTo(TL.x,TL.y);ctx.lineTo(TR.x,TR.y);ctx.lineTo(BR.x,BR.y);ctx.lineTo(BL.x,BL.y);ctx.closePath();ctx.stroke();
+    ctx.globalAlpha=1;
+  }
+}
+
+// Draw a connector quad bridging two adjacent segs with different lanes
+function drawConnector(wx1,z1,wx2,z2,col,glow){
+  // Connects the far edge of seg A (at z1) to the near edge of seg B (at z2)
+  // Both are single z-values (the junction point)
+  const ww=0.44;
+  const zFar=Math.min(z1,FAR*0.95);
+  const zNear=Math.max(z2,1);
+  if(zFar<=0||zNear>=FAR)return;
+
+  const TL=projectAt(wx1-ww,zFar,10),TR=projectAt(wx1+ww,zFar,10);
+  const BL=projectAt(wx2-ww,zNear,10),BR=projectAt(wx2+ww,zNear,10);
+
+  ctx.beginPath();ctx.moveTo(TL.x,TL.y);ctx.lineTo(TR.x,TR.y);ctx.lineTo(BR.x,BR.y);ctx.lineTo(BL.x,BL.y);ctx.closePath();
+  ctx.fillStyle=col;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=glow?3:1.5;ctx.stroke();
+
+  if(glow){
+    const pulse=0.5+0.5*Math.sin(g.frame*0.3);
+    ctx.strokeStyle='#fff';ctx.lineWidth=2+pulse*4;ctx.globalAlpha=pulse*0.7;
+    ctx.beginPath();ctx.moveTo(TL.x,TL.y);ctx.lineTo(TR.x,TR.y);ctx.lineTo(BR.x,BR.y);ctx.lineTo(BL.x,BL.y);ctx.closePath();ctx.stroke();
+    ctx.globalAlpha=1;
+  }
+}
+
+function drawGroups(){
+  // Sort groups far-first by their max zStart
+  const sorted=[...g.groups].sort((a,b)=>{
+    const az=Math.max(...a.segs.map(s=>s.zStart));
+    const bz=Math.max(...b.segs.map(s=>s.zStart));
+    return bz-az;
+  });
+
+  sorted.forEach(grp=>{
+    const glow=grp.landedOn;
+    const col=grp.col;
+    const ww=0.44;
+
+    // Draw hazard segs first (behind)
+    if(grp.hazardSegs){
+      grp.hazardSegs.forEach(seg=>{
+        if(seg.zStart<0&&seg.zEnd<0)return;
+        drawSlab(LANE_X[seg.lane],seg.zStart,seg.zEnd,col,true,false);
+      });
+    }
+
+    // Draw each seg + connector to next
+    for(let i=0;i<grp.segs.length;i++){
+      const seg=grp.segs[i];
+      if(seg.zStart<0&&seg.zEnd<0)continue;
+
+      // Draw this segment slab
+      drawSlab(LANE_X[seg.lane],seg.zStart,seg.zEnd,col,false,glow);
+
+      // If next seg exists and is in a different lane, draw a diagonal connector
+      const next=grp.segs[i+1];
+      if(next&&next.lane!==seg.lane){
+        // Connector: far edge = seg.zEnd (the near end of this seg)
+        //            near edge = next.zStart (the far end of next seg)
+        // But they're the same z point — the lane just shifts
+        // So we draw a trapezoid bridging the two lane positions at that junction z
+        const jZ=seg.zEnd; // junction z
+        const wx1=LANE_X[seg.lane];
+        const wx2=LANE_X[next.lane];
+        drawConnector(wx1,jZ+5,wx2,jZ-5,col,glow);
+      }
+
+      // Symbol on middle of segment
+      const midZ=(seg.zStart+seg.zEnd)/2;
+      if(midZ>5&&midZ<FAR*0.88){
+        const mid=projectAt(LANE_X[seg.lane],midZ,13);
+        const sz=Math.max(11,Math.round(mid.scale*44));
+        ctx.font=`bold ${sz}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillStyle='#000';ctx.fillText(grp.sym,mid.x,mid.y);
+      }
+    }
+  });
+}
+
+function drawSkater(laneT,z,groundY,isJumping,isBob,label){
+  const wx=lerpX(laneT);
+  const hpx=groundY*18+4;
+  const base=projectAt(wx,z,hpx);
+  const S=Math.max(14,base.scale*62);
+  const bob=isBob?Math.sin(g.frame*0.3)*S*0.04:0;
+  ctx.save();ctx.translate(base.x,base.y+bob);
+
+  const gnd=projectAt(wx,z,0);
+  ctx.fillStyle='rgba(80,0,200,0.35)';
+  const sr=S*0.7*(isJumping?0.5:1);
+  ctx.beginPath();ctx.ellipse(gnd.x-base.x,gnd.y-base.y,sr,sr*0.3,0,0,Math.PI*2);ctx.fill();
+
+  ctx.fillStyle='#7a5fb0';
+  ctx.beginPath();ctx.ellipse(-S*0.55,S*0.85,S*0.55,S*0.18,-0.2,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(S*0.55,S*0.85,S*0.55,S*0.18,0.2,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#F5C518';
+  ctx.beginPath();ctx.ellipse(-S*0.55,S*0.85,S*0.2,S*0.1,-0.2,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(S*0.55,S*0.85,S*0.2,S*0.1,0.2,0,Math.PI*2);ctx.fill();
+
+  ctx.fillStyle='#2D1B69';
+  ctx.beginPath();ctx.ellipse(0,S*0.1,S*0.42,S*0.62,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#6633cc';ctx.lineWidth=S*0.05;ctx.stroke();
+
+  ctx.strokeStyle='#9a7fd4';ctx.lineWidth=S*0.16;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(-S*0.38,0);ctx.lineTo(-S*0.7,S*0.5);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(S*0.38,0);ctx.lineTo(S*0.7,S*0.5);ctx.stroke();
+
+  ctx.fillStyle=label==='princess'?'#f0e6ff':'#F5C518';
+  ctx.beginPath();ctx.arc(0,-S*0.65,S*0.42,0,Math.PI*2);ctx.fill();
+
+  if(label==='princess'){
+    ctx.fillStyle='#c8a87a';
+    ctx.beginPath();ctx.ellipse(-S*0.28,-S*1.05,S*0.14,S*0.26,0.3,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(S*0.28,-S*1.05,S*0.14,S*0.26,-0.3,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#F5C518';ctx.lineWidth=S*0.06;
+    ctx.beginPath();ctx.arc(0,-S*0.65,S*0.42,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle='#c8a87a';ctx.beginPath();ctx.arc(0,-S*0.52,S*0.1,0,Math.PI*2);ctx.fill();
+  }
+  ctx.fillStyle='#000';
+  ctx.beginPath();ctx.arc(-S*0.15,-S*0.68,S*0.09,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(S*0.15,-S*0.68,S*0.09,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+}
+
+function drawLeash(){
+  const pl=g.player,pr=g.princess;
+  const p1=projectAt(lerpX(pl.laneT),pl.z,pl.groundY*18+30);
+  const p2=projectAt(lerpX(pr.laneT),pr.z,pr.groundY*18+20);
+  const t=Math.abs(pl.laneT-pr.laneT)/3;
+  const wob=Math.sin(g.frame*0.14)*8*(1-t);
+  const mx=(p1.x+p2.x)/2+wob,my=(p1.y+p2.y)/2+12;
+  ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.quadraticCurveTo(mx,my,p2.x,p2.y);
+  ctx.strokeStyle=`rgba(200,168,122,${0.5+t*0.4})`;
+  ctx.lineWidth=t>0.5?2:1.5;ctx.setLineDash(t>0.7?[]:[4,4]);
+  ctx.stroke();ctx.setLineDash([]);
+}
+
+function drawCEO(){
+  const ceo=g.ceo;
+  const cx=W/2,cy=HORIZON()-40;
+  const bob=Math.sin(g.frame*0.04)*3;
+  const S=30;
+  ctx.save();ctx.translate(cx,cy+bob);
+
+  ctx.fillStyle='#0d0028';
+  ctx.beginPath();
+  ctx.moveTo(-S*2.4,S*0.6);ctx.lineTo(-S*0.9,-S*0.2);ctx.lineTo(0,-S*0.9);
+  ctx.lineTo(S*0.9,-S*0.2);ctx.lineTo(S*2.4,S*0.6);
+  ctx.lineTo(S*1.3,S*1.2);ctx.lineTo(-S*1.3,S*1.2);ctx.closePath();
+  ctx.fill();ctx.strokeStyle='#6600cc';ctx.lineWidth=1.5;ctx.stroke();
+  const eg=ctx.createRadialGradient(0,S*1.0,0,0,S*1.0,S*0.8);
+  eg.addColorStop(0,'rgba(180,0,255,0.4)');eg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=eg;ctx.beginPath();ctx.ellipse(0,S*1.0,S*0.8,S*0.4,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#1a0040';
+  ctx.beginPath();ctx.ellipse(0,S*0.1,S*0.9,S*0.62,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#9933ff';ctx.lineWidth=1;ctx.stroke();
+
+  const fx=0,fy=S*0.05;
+  ctx.fillStyle='#d4a855';ctx.beginPath();ctx.arc(fx,fy-S*0.08,S*0.3,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#0a001a';
+  ctx.beginPath();ctx.rect(fx-S*0.24,fy-S*0.46,S*0.48,S*0.1);ctx.fill();
+  ctx.beginPath();ctx.rect(fx-S*0.17,fy-S*0.78,S*0.34,S*0.32);ctx.fill();
+  ctx.strokeStyle='#6600cc';ctx.lineWidth=0.8;ctx.stroke();
+  ctx.fillStyle='#ff0000';
+  ctx.beginPath();ctx.arc(fx-S*0.1,fy-S*0.11,S*0.07,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(fx+S*0.1,fy-S*0.11,S*0.07,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#1a0800';ctx.lineWidth=1.8;ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(fx,fy+S*0.06);
+  ctx.bezierCurveTo(fx-S*0.18,fy,fx-S*0.26,fy+S*0.18,fx-S*0.16,fy+S*0.24);
+  ctx.bezierCurveTo(fx-S*0.06,fy+S*0.3,fx-S*0.02,fy+S*0.2,fx,fy+S*0.06);ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(fx,fy+S*0.06);
+  ctx.bezierCurveTo(fx+S*0.18,fy,fx+S*0.26,fy+S*0.18,fx+S*0.16,fy+S*0.24);
+  ctx.bezierCurveTo(fx+S*0.06,fy+S*0.3,fx+S*0.02,fy+S*0.2,fx,fy+S*0.06);ctx.stroke();
+  const ta=ceo.anim<25;
+  const armAngle=ta?(ceo.anim/25-0.5)*2.4:-0.3;
+  ctx.strokeStyle='#0d0028';ctx.lineWidth=2;
+  ctx.save();ctx.translate(fx+S*0.28,fy+S*0.15);ctx.rotate(armAngle);
+  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(S*0.38,S*0.22);ctx.stroke();
+  ctx.fillStyle='#d4a855';ctx.beginPath();ctx.arc(S*0.38,S*0.22,S*0.1,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+
+  const dx=S*1.55,dy=S*0.2,dp=Math.sin(ceo.dogPhase)*3;
+  ctx.fillStyle='#0d0000';ctx.beginPath();ctx.ellipse(dx,dy+dp,S*0.44,S*0.34,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#ff1100';ctx.lineWidth=1.2;ctx.stroke();
+  [[-.28,-.62],[.28,-.62]].forEach(([ex,ey])=>{
+    ctx.fillStyle='#0d0000';
+    ctx.beginPath();ctx.moveTo(dx+ex*S,dy+dp);ctx.lineTo(dx+(ex-0.14)*S,dy+ey*S+dp);ctx.lineTo(dx+(ex+0.14)*S,dy+dp);ctx.closePath();ctx.fill();
+    ctx.strokeStyle='#550000';ctx.lineWidth=0.8;ctx.stroke();
+  });
+  ctx.fillStyle='#ff0000';
+  ctx.beginPath();ctx.arc(dx-S*0.14,dy-S*0.06+dp,S*0.09,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(dx+S*0.14,dy-S*0.06+dp,S*0.09,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';
+  ctx.beginPath();ctx.moveTo(dx-S*0.1,dy+S*0.14+dp);ctx.lineTo(dx-S*0.06,dy+S*0.28+dp);ctx.lineTo(dx-S*0.01,dy+S*0.14+dp);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(dx+S*0.01,dy+S*0.14+dp);ctx.lineTo(dx+S*0.06,dy+S*0.28+dp);ctx.lineTo(dx+S*0.1,dy+S*0.14+dp);ctx.closePath();ctx.fill();
+  ctx.restore();
+}
+
+function drawParticles(){
+  g.particles=g.particles.filter(p=>p.life>0);
+  g.particles.forEach(p=>{
+    ctx.fillStyle=`rgba(${p.r},${p.gb},${p.b},${p.life/p.max})`;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,Math.PI*2);ctx.fill();
+    p.x+=p.vx;p.y+=p.vy;p.vy+=0.18;p.life--;
+  });
+}
+function drawTexts(){
+  g.texts=g.texts.filter(t=>t.life>0);
+  g.texts.forEach(t=>{
+    ctx.fillStyle=t.col;ctx.globalAlpha=t.life/t.max;
+    ctx.font='bold 14px Courier New';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(t.txt,t.x,t.y);ctx.globalAlpha=1;
+    t.y-=1;t.life--;
+  });
+}
+function drawHUD(){
+  ctx.font='bold 11px Courier New';ctx.textBaseline='top';
+  for(let i=0;i<3;i++){
+    ctx.fillStyle=i<g.hp?'#F5C518':'#330033';
+    ctx.textAlign='left';ctx.fillText('♥',8+i*20,8);
+  }
+  ctx.fillStyle='rgba(200,100,255,0.9)';ctx.textAlign='center';
+  ctx.fillText(`score ${g.score}`,W/2,8);
+  ctx.fillStyle='rgba(100,100,200,0.6)';ctx.textAlign='right';
+  ctx.fillText(`${g.dist}m  best:${best}m`,W-6,8);
+  ctx.fillStyle='rgba(245,197,24,0.4)';ctx.textAlign='center';
+  ctx.fillText(`lane ${g.player.targetLane+1}/${LANES}  SPACE=jump`,W/2,H-18);
+}
+function showOverlay(){
+  const ov=document.getElementById('overlay');
+  ov.querySelector('h2').textContent='MISSION FAILED';
+  ov.querySelector('p').innerHTML=
+    `Score <strong style="color:#F5C518">${g.score}</strong> &nbsp; Dist <strong style="color:#F5C518">${g.dist}m</strong><br>`+
+    (g.dist===best&&g.dist>0?'<span style="color:#6bffb8">New best!</span><br>':'')+
+    `<br>← → / A D — change lane<br>SPACE / W — jump between tracks`;
+  ov.querySelector('button').textContent='TRY AGAIN';
+  ov.classList.add('show');
+}
+
+function lerpX(laneT){return LANE_X[0]+laneT*(LANE_X[LANES-1]-LANE_X[0])/(LANES-1);}
+
+function update(){
+  if(!running||g.dead)return;
+  g.frame++;
+  g.dist=Math.floor(g.frame*g.speed/60);
+  updateGroups();updateCEO();updatePlayer();updatePrincess();
+}
+function draw(){
+  if(!g)return;
+  drawStars();drawGrid();drawGroups();drawLeash();
+  const pr=g.princess;
+  drawSkater(pr.laneT,pr.z,pr.groundY,!pr.onPiece,pr.onPiece,'princess');
+  const pl=g.player;
+  drawSkater(pl.laneT,pl.z,pl.groundY,!pl.onPiece,pl.onPiece,'player');
+  drawParticles();drawCEO();drawTexts();drawHUD();
+  if(g.flash>0){ctx.fillStyle=`rgba(255,0,0,${g.flash/18*0.28})`;ctx.fillRect(0,0,W,H);g.flash--;}
+}
+function loop(){update();draw();requestAnimationFrame(loop);}
+
+document.getElementById('startBtn').addEventListener('click',()=>{
+  document.getElementById('overlay').classList.remove('show');
+  initGame();running=true;
+});
+initGame();loop();
+</script>
+</body>
+</html>

@@ -71,6 +71,46 @@ body_class: theme-bw
     </div>
   </div>
 
+  <div class="project-card project-card-active">
+    <div class="project-card-corner-piece" aria-hidden="true">✦</div>
+    <div class="project-card-header">
+      <span class="project-status project-status-active">
+        <span class="project-status-dot"></span>
+        In Development
+      </span>
+      <h2 class="project-title">Space Run</h2>
+    </div>
+    <p class="project-desc">A Star Fox-style chess runner. The CEO of the Chess City Invitational hurls chess pieces that unfold into rideable tracks — skate onto each one and ride it to the end. Rooks run long, bishops zigzag, knights cut an L, and the King's lanes bite back.</p>
+    <ul class="project-details">
+      <li><strong>Format:</strong> Browser game</li>
+      <li><strong>Status:</strong> Playable — new piece patterns in progress</li>
+    </ul>
+    <div class="project-links">
+      <a href="/games/space-run/" class="project-link">Play Now &rarr;</a>
+      <a href="/games/" class="project-link">All Games</a>
+    </div>
+  </div>
+
+  <div class="project-card project-card-active">
+    <div class="project-card-corner-piece" aria-hidden="true">♚</div>
+    <div class="project-card-header">
+      <span class="project-status project-status-active">
+        <span class="project-status-dot"></span>
+        In Development
+      </span>
+      <h2 class="project-title">The Pirc Protocol</h2>
+    </div>
+    <p class="project-desc">A spaced-repetition opening trainer. The Rival drills Princess on real chess openings — the Pirc Defense, the Italian Game, the Scandinavian — one book move at a time. Master a line and it returns later; slip up and it comes back sooner, Anki-style.</p>
+    <ul class="project-details">
+      <li><strong>Format:</strong> Browser game</li>
+      <li><strong>Status:</strong> Playable — more openings in progress</li>
+    </ul>
+    <div class="project-links">
+      <a href="/games/pirc-protocol/" class="project-link">Play Now &rarr;</a>
+      <a href="/games/" class="project-link">All Games</a>
+    </div>
+  </div>
+
   <div class="project-card project-card-soon">
     <div class="project-card-corner-piece" aria-hidden="true">♞</div>
     <div class="project-card-header">
