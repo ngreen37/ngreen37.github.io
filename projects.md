@@ -21,7 +21,7 @@ body_class: theme-bw
   50%      { box-shadow: 0 0 34px 7px rgba(245,197,24,0.7),  inset 0 0 44px rgba(245,197,24,0.12); }
 }
 .project-card-featured .project-title { color: #F5C518 !important; }
-.project-card-featured .project-title .ver { font-size: 0.62em; color: #ff8fd0; vertical-align: super; letter-spacing: 1px; }
+.project-title .ver { font-size: 0.62em; color: #ff8fd0; vertical-align: super; letter-spacing: 1px; }
 .project-card-featured .project-desc { color: #e3d6ff !important; }
 .project-card-featured .project-details,
 .project-card-featured .project-details li { color: #c9b6ef !important; }
@@ -117,13 +117,13 @@ body_class: theme-bw
   <div class="project-card project-card-active">
     <div class="project-card-corner-piece" aria-hidden="true">♚</div>
     <div class="project-card-header">
-      <span class="project-status project-status-active">
+      <span class="project-status project-status-done">
         <span class="project-status-dot"></span>
-        In Development
+        Completed (pending improvements)
       </span>
-      <h2 class="project-title">The Pirc Protocol</h2>
+      <h2 class="project-title">The Pirc Protocol <span class="ver">v1.1</span></h2>
     </div>
-    <p class="project-desc">A spaced-repetition opening trainer. The Rival drills Princess on real chess openings — the Pirc Defense, the Italian Game, the Scandinavian — one book move at a time. Master a line and it returns later; slip up and it comes back sooner, Anki-style.</p>
+    <p class="project-desc">A spaced-repetition opening trainer. Sit across the board from Princess and answer her openings — the Pirc Defense, the Italian Game, the Scandinavian — one book move at a time. Master a line and it returns later; slip up and it comes back sooner, Anki-style.</p>
     <ul class="project-details">
       <li><strong>Format:</strong> Browser game</li>
       <li><strong>Status:</strong> Playable — more openings in progress</li>

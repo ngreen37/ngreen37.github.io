@@ -112,12 +112,12 @@
 
   <!-- DECK SELECT -->
   <div class="overlay" id="menu-screen">
-    <div class="eyebrow">The Rival's Lessons</div>
+    <div class="eyebrow">Your Opponent: Princess</div>
     <div class="big-title">THE PIRC PROTOCOL</div>
     <div class="blurb">
-      Learn openings the way Princess did &mdash; by <b style="color:#F5C518">repetition</b>.
-      Play the book move when the Rival asks. Nail a whole line and it comes
-      back <i>later</i>; slip up and you'll see it <i>sooner</i>.
+      Sit across the board from <b style="color:#F5C518">Princess</b> and learn openings by
+      <b>repetition</b>. Play the book move each time it's your turn. Nail a whole line and it
+      comes back <i>later</i>; slip up and you'll see it <i>sooner</i>.
     </div>
     <div class="deck-list" id="deck-list"></div>
     <div class="row">
@@ -322,8 +322,8 @@ let shake = 0, vignette = 0;
 let coach = { mood: 'think', say: '', mouth: 0, bob: 0 };
 let arrow = null;      // hint arrow {from,to,t}
 
-const PRAISE = ['Textbook! ⭐', 'Good dog! 🦴', "That's the one.", 'Crisp play.', 'Booked up!', 'Clean.'];
-const NUDGE = ['Not that one…', 'Mind the move order.', 'Hmm, try again.', 'Look again, Princess.'];
+const PRAISE = ['Textbook! ⭐', 'You know this line.', "That's the one.", 'Crisp play.', 'Booked up!', 'Clean.'];
+const NUDGE = ['Not that one…', 'Wrong move order.', 'Hmm, try again.', 'Look again.'];
 
 function pick(a) { return a[(Math.random() * a.length) | 0]; }
 
@@ -358,7 +358,7 @@ function loadLine(id) {
   session.attempts[id] = (session.attempts[id] || 0) + 1;
   if (!session.stats.seen[id]) { session.stats.seen[id] = true; session.stats.lines++; }
   coach.mood = 'think';
-  coach.say = (line.side === 'b' ? 'Princess plays the ' : "Let's drill the ") + line.name + '.';
+  coach.say = 'The ' + line.name + '. I have ' + (line.side === 'b' ? 'White' : 'Black') + '.';
   // brief intro pause, then run auto-moves to first player card
   G.phase = 'animating';
   setTimeout(() => advanceAuto(), 750);
@@ -373,7 +373,7 @@ function advanceAuto() {
     // Player's turn
     G.phase = 'await'; G.wrongHere = 0; G.selected = null;
     coach.mood = 'think';
-    coach.say = pick(['Your move.', 'What does the book say?', 'Find the move.', 'Your turn, Princess.']);
+    coach.say = pick(['Your move.', 'What does the book say?', 'Find the move.', 'Your reply?']);
     document.getElementById('hint-btn').classList.remove('hidden');
     return;
   }
@@ -682,21 +682,12 @@ function drawFloaters() {
   });
 }
 
-// ---- Coach mascot (the Rival: a crowned dog) ----
+// ---- Opponent mascot (Princess, the dog you're playing against) ----
 function drawCoach() {
   const cx = 42, cy = 52, S = 26;
   coach.bob += 0.06;
   const bob = Math.sin(coach.bob) * 2;
   ctx.save(); ctx.translate(cx, cy + bob);
-
-  // crown above
-  ctx.fillStyle = C.gold;
-  ctx.beginPath();
-  ctx.moveTo(-S * 0.7, -S * 0.85); ctx.lineTo(-S * 0.7, -S * 1.25);
-  ctx.lineTo(-S * 0.35, -S * 0.95); ctx.lineTo(0, -S * 1.4);
-  ctx.lineTo(S * 0.35, -S * 0.95); ctx.lineTo(S * 0.7, -S * 1.25);
-  ctx.lineTo(S * 0.7, -S * 0.85); ctx.closePath(); ctx.fill();
-  ctx.strokeStyle = '#a87d00'; ctx.lineWidth = 1; ctx.stroke();
 
   // ears
   ctx.fillStyle = '#8a5a2a';
