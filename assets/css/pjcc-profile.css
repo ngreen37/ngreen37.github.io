@@ -1,0 +1,100 @@
+/* PJCC Operative profile bar + leaderboard styling */
+
+.pjcc-bar {
+  max-width: 860px;
+  margin: 0 auto 1.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1f1147 0%, #2c1a63 60%, #34206f 100%);
+  border: 1px solid #6b5fa0;
+  box-shadow: 0 0 18px rgba(245,197,24,0.10), inset 0 0 24px rgba(0,0,0,0.25);
+  color: #cdbcf2;
+  font-size: 0.9rem;
+}
+.pjcc-bar.pjcc-bar-in {
+  border-color: #F5C518;
+  box-shadow: 0 0 22px rgba(245,197,24,0.28), inset 0 0 24px rgba(0,0,0,0.25);
+}
+
+/* Logged-in identity block */
+.pjcc-avatar {
+  width: 44px; height: 44px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; line-height: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #3a2a72, #160c33);
+  border: 2px solid #F5C518;
+  box-shadow: 0 0 12px rgba(245,197,24,0.45);
+}
+.pjcc-id { display: flex; flex-direction: column; gap: 1px; }
+.pjcc-codename { color: #F5C518; font-weight: 800; font-size: 1.02rem; letter-spacing: 0.4px; }
+.pjcc-sub { color: #b9a8e6; font-size: 0.76rem; }
+.pjcc-credits { color: #6bffb8; font-weight: 700; }
+.pjcc-spacer { flex: 1 1 auto; }
+
+/* Prompts (logged out / claim) */
+.pjcc-label { color: #d7c9f5; }
+.pjcc-label strong { color: #F5C518; }
+.pjcc-input {
+  background: #0d0722; border: 1px solid #6b5fa0; border-radius: 6px;
+  color: #f0e6ff; padding: 7px 11px; font-size: 0.9rem; min-width: 180px;
+}
+.pjcc-input:focus { outline: none; border-color: #F5C518; }
+
+.pjcc-btn {
+  background: #F5C518; color: #1a0f3d; border: none; border-radius: 6px;
+  padding: 7px 16px; font-weight: 800; cursor: pointer; font-size: 0.85rem;
+  transition: background 0.15s, transform 0.1s;
+}
+.pjcc-btn:hover { background: #ffd740; }
+.pjcc-btn:active { transform: scale(0.97); }
+.pjcc-btn-ghost {
+  background: transparent; color: #b9a8e6; border: 1px solid #6b5fa0;
+  padding: 6px 12px; font-weight: 600;
+}
+.pjcc-btn-ghost:hover { background: #2a1d55; color: #f0e6ff; }
+
+.pjcc-trophy {
+  text-decoration: none; color: #1a0f3d; background: #6bffb8;
+  border-radius: 999px; padding: 6px 14px; font-weight: 800; font-size: 0.82rem;
+}
+.pjcc-trophy:hover { background: #8fffcb; }
+
+/* Avatar picker */
+.pjcc-picker { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.pjcc-pick {
+  width: 42px; height: 42px; font-size: 23px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; cursor: pointer;
+  background: #160c33; border: 2px solid #6b5fa0;
+  transition: transform 0.1s, border-color 0.15s, box-shadow 0.15s;
+}
+.pjcc-pick:hover { transform: scale(1.12); border-color: #F5C518; box-shadow: 0 0 12px rgba(245,197,24,0.5); }
+.pjcc-pick.sel { border-color: #F5C518; box-shadow: 0 0 12px rgba(245,197,24,0.6); }
+
+/* ---- Leaderboards page ---- */
+.lb-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 1.2rem 0; }
+.lb-tab {
+  background: #2D1B69; color: #cdbcf2; border: 1px solid #6b5fa0;
+  border-radius: 999px; padding: 7px 15px; cursor: pointer; font-size: 0.84rem; font-weight: 700;
+}
+.lb-tab:hover { border-color: #F5C518; color: #fff; }
+.lb-tab.active { background: #F5C518; color: #1a0f3d; border-color: #F5C518; }
+
+.lb-table { width: 100%; border-collapse: collapse; max-width: 720px; }
+.lb-table th {
+  text-align: left; color: #9a7fd4; font-size: 0.72rem; text-transform: uppercase;
+  letter-spacing: 0.08em; padding: 8px 10px; border-bottom: 1px solid #6b5fa0;
+}
+.lb-table td { padding: 10px; border-bottom: 1px solid rgba(245,197,24,0.14); color: #e3d6ff; }
+.lb-rank { color: #F5C518; font-weight: 800; width: 48px; }
+.lb-rank.gold { color: #ffd740; } .lb-rank.silver { color: #d8d8e8; } .lb-rank.bronze { color: #e0a877; }
+.lb-av { font-size: 20px; width: 30px; }
+.lb-name { font-weight: 700; color: #f0e6ff; }
+.lb-score { text-align: right; color: #6bffb8; font-weight: 800; }
+.lb-empty { color: #9a7fd4; padding: 1rem 0; }
+.lb-me { background: rgba(245,197,24,0.08); }

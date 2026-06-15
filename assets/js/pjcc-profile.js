@@ -32,11 +32,24 @@
   var profile = null;       // cached profile row
   var listeners = [];
 
+  // Avatar catalogue: key -> emoji. Stored on profile.companion.avatar.
+  var AVATARS = {
+    'human-1': '🧑', 'human-2': '👨', 'human-3': '👩',
+    'dog-1': '🐕', 'dog-2': '🐩', 'dog-3': '🦮',
+    'cat-1': '🐈', 'bird-1': '🦜'
+  };
+
   var PJCC = {
     enabled: !!configured,
     ready: null,
+    AVATARS: AVATARS,
+    AVATAR_ORDER: ['human-1', 'human-2', 'human-3', 'dog-1', 'dog-2', 'dog-3', 'cat-1', 'bird-1'],
     currentUser: function () { return sb ? (sb.auth.__user || null) : null; },
     getProfile: function () { return profile; },
+    avatarEmoji: function (prof) {
+      var key = prof && prof.companion && prof.companion.avatar;
+      return AVATARS[key] || '◆';
+    },
     onChange: function (fn) { listeners.push(fn); }
   };
   window.PJCC = PJCC;
@@ -186,17 +199,58 @@
     } catch (e) {}
   };
 
-  // --- leaderboard -----------------------------------------------------------
+  // --- avatar ----------------------------------------------------------------
+  PJCC.setAvatar = async function (key) {
+    var u = PJCC.currentUser();
+    if (!sb || !u) throw new Error('not signed in');
+    if (!AVATARS[key]) throw new Error('unknown avatar');
+    var comp = Object.assign({}, (profile && profile.companion) || {}, { avatar: key });
+    var r = await sb.from('profiles')
+      .update({ companion: comp, updated_at: new Date().toISOString() })
+      .eq('id', u.id).select().maybeSingle();
+    if (r.error) throw r.error;
+    profile = r.data;
+    emit();
+    return profile;
+  };
+
+  // --- leaderboards ----------------------------------------------------------
+  // Daily / raw scores board (one row per play; used for date-seeded boards).
   PJCC.leaderboard = async function (game, opts) {
     opts = opts || {};
     if (!sb) return [];
-    var q = sb.from('scores').select('score,created_at,profiles(codename)').eq('game', game);
+    var q = sb.from('scores').select('score,created_at,profiles(codename,companion)').eq('game', game);
     if (opts.scope === 'daily' && opts.seed) q = q.eq('seed', opts.seed);
     q = q.order('score', { ascending: false }).limit(opts.limit || 10);
     var r = await q;
     if (r.error || !r.data) return [];
     return r.data.map(function (row) {
-      return { score: row.score, codename: row.profiles ? row.profiles.codename : 'unknown' };
+      return { score: row.score, codename: row.profiles ? row.profiles.codename : 'unknown',
+               companion: row.profiles ? row.profiles.companion : null };
     });
+  };
+
+  // All-time per-game board: best score per operative (from game_stats).
+  PJCC.gameLeaderboard = async function (game, limit) {
+    if (!sb) return [];
+    var r = await sb.from('game_stats')
+      .select('best_score,plays,profiles(codename,companion)')
+      .eq('game', game).order('best_score', { ascending: false }).limit(limit || 25);
+    if (r.error || !r.data) return [];
+    return r.data.map(function (row) {
+      return { score: row.best_score, plays: row.plays,
+               codename: row.profiles ? row.profiles.codename : 'unknown',
+               companion: row.profiles ? row.profiles.companion : null };
+    });
+  };
+
+  // Cumulative board: operatives ranked by total credits earned everywhere.
+  PJCC.cumulativeLeaderboard = async function (limit) {
+    if (!sb) return [];
+    var r = await sb.from('profiles')
+      .select('codename,credits,rank,companion')
+      .order('credits', { ascending: false }).limit(limit || 25);
+    if (r.error || !r.data) return [];
+    return r.data;
   };
 })();
