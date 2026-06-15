@@ -18,7 +18,7 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/notation-run/' | relative_url }}">
     <div class="game-card-icon">♫</div>
     <div class="game-card-body">
-      <h2>Notation Blitz v1.3</h2>
+      <h2>Notation Blitz v1.4</h2>
       <p>A coordinate-reading rhythm game. Calls drop on the beat — click the square before it passes the gate.</p>
       <span class="game-tag">Playable</span>
     </div>

@@ -141,7 +141,8 @@ body_class: theme-bw
     </div>
   </div>
 
-  <div class="project-card project-card-active">
+  <div class="project-card project-card-featured">
+    <div class="featured-ribbon">PLAYABLE NOW</div>
     <div class="project-card-corner-piece" aria-hidden="true">♚</div>
     <div class="project-card-header">
       <span class="project-status project-status-done">
@@ -156,12 +157,13 @@ body_class: theme-bw
       <li><strong>Status:</strong> Playable — more openings in progress</li>
     </ul>
     <div class="project-links">
-      <a href="/games/pirc-protocol/" class="project-link">Play Now &rarr;</a>
+      <a href="/games/pirc-protocol/" class="project-link project-link-play">▶ PLAY NOW</a>
       <a href="/games/" class="project-link">All Games</a>
     </div>
   </div>
 
-  <div class="project-card project-card-active">
+  <div class="project-card project-card-featured">
+    <div class="featured-ribbon">PLAYABLE NOW</div>
     <div class="project-card-corner-piece" aria-hidden="true">⚔</div>
     <div class="project-card-header">
       <span class="project-status project-status-done">
@@ -176,12 +178,13 @@ body_class: theme-bw
       <li><strong>Status:</strong> Playable — more puzzles in progress</li>
     </ul>
     <div class="project-links">
-      <a href="/games/fork-in-the-road/" class="project-link">Play Now &rarr;</a>
+      <a href="/games/fork-in-the-road/" class="project-link project-link-play">▶ PLAY NOW</a>
       <a href="/games/" class="project-link">All Games</a>
     </div>
   </div>
 
-  <div class="project-card project-card-active">
+  <div class="project-card project-card-featured">
+    <div class="featured-ribbon">PLAYABLE NOW</div>
     <div class="project-card-corner-piece" aria-hidden="true">⊙</div>
     <div class="project-card-header">
       <span class="project-status project-status-done">
@@ -196,12 +199,13 @@ body_class: theme-bw
       <li><strong>Status:</strong> Playable — more intercepts in progress</li>
     </ul>
     <div class="project-links">
-      <a href="/games/cipher/" class="project-link">Play Now &rarr;</a>
+      <a href="/games/cipher/" class="project-link project-link-play">▶ PLAY NOW</a>
       <a href="/games/" class="project-link">All Games</a>
     </div>
   </div>
 
-  <div class="project-card project-card-active">
+  <div class="project-card project-card-featured">
+    <div class="featured-ribbon">PLAYABLE NOW</div>
     <div class="project-card-corner-piece" aria-hidden="true">Δ</div>
     <div class="project-card-header">
       <span class="project-status project-status-done">
@@ -216,7 +220,7 @@ body_class: theme-bw
       <li><strong>Status:</strong> Playable — more questions in progress</li>
     </ul>
     <div class="project-links">
-      <a href="/games/clearance-delta/" class="project-link">Play Now &rarr;</a>
+      <a href="/games/clearance-delta/" class="project-link project-link-play">▶ PLAY NOW</a>
       <a href="/games/" class="project-link">All Games</a>
     </div>
   </div>
@@ -320,7 +324,7 @@ body_class: theme-bw
         <span class="project-status-dot"></span>
         Completed (pending improvements)
       </span>
-      <h2 class="project-title">Notation Blitz <span class="ver">v1.3</span></h2>
+      <h2 class="project-title">Notation Blitz <span class="ver">v1.4</span></h2>
     </div>
     <p class="project-desc">A coordinate-reading rhythm game set in the streets of Checker Town. Square names drop on the beat — click them before they pass the gate. Forgiving timing, an approach ring that tells you exactly when to hit, saved personal bests, and a Pirc Defense mode that traces the Rival's opening move by move.</p>
     <ul class="project-details">
@@ -333,7 +337,8 @@ body_class: theme-bw
     </div>
   </div>
 
-  <div class="project-card project-card-active">
+  <div class="project-card project-card-featured">
+    <div class="featured-ribbon">PLAYABLE NOW</div>
     <div class="project-card-corner-piece" aria-hidden="true">⛏</div>
     <div class="project-card-header">
       <span class="project-status project-status-done">
@@ -348,7 +353,7 @@ body_class: theme-bw
       <li><strong>Status:</strong> Completed — playable now, deeper floors and lore ongoing</li>
     </ul>
     <div class="project-links">
-      <a href="/games/sand-mine-depths/" class="project-link">Play Now &rarr;</a>
+      <a href="/games/sand-mine-depths/" class="project-link project-link-play">▶ PLAY NOW</a>
       <a href="/games/" class="project-link">All Games</a>
     </div>
   </div>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PJCC: Notation Blitz v1.3</title>
+<title>PJCC: Notation Blitz v1.4</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -176,7 +176,7 @@
   <!-- TITLE SCREEN -->
   <div class="overlay" id="title-screen">
     <div class="ov-eyebrow">Checker Town · Coordinate Drill</div>
-    <div class="ov-title">NOTATION BLITZ <span style="font-size:0.5em;color:#ff8fd0;vertical-align:super;letter-spacing:1px;">v1.3</span></div>
+    <div class="ov-title">NOTATION BLITZ <span style="font-size:0.5em;color:#ff8fd0;vertical-align:super;letter-spacing:1px;">v1.4</span></div>
     <div class="ov-sub">
       Calls drop in on the beat. When a square's name reaches the
       <b style="color:#F5C518">gate</b>, click that square on the board.
@@ -199,7 +199,7 @@
 
     <button class="start-btn" id="start-btn">START</button>
     <div class="ov-foot">
-      Click the square &nbsp;·&nbsp; or type it (e.g. <b>e</b> then <b>4</b>)<br>
+      Click the square on the board when its name reaches the gate<br>
       <span id="title-best" style="color:#F5C518;">—</span><br>
       <span id="mute-toggle" style="cursor:pointer;text-decoration:underline;">♪ sound: on</span>
     </div>
@@ -369,7 +369,6 @@ function newGame(mode, diff) {
     princess: { x: 0, y: 7, px: 0, py: 0, tx: 0, ty: 0 },
     lastHitTime: 0,
     running: false, finished: false,
-    keyFile: null, keyFileTime: 0,
   };
   const pp = boardCenter(0, 7);
   G.princess.px = pp.x; G.princess.py = pp.y;
@@ -526,19 +525,6 @@ function canvasToSquare(clientX, clientY) {
 canvas.addEventListener('pointerdown', e => {
   const sq = canvasToSquare(e.clientX, e.clientY);
   if (sq) { e.preventDefault(); resolveAt(sq.x, sq.y); }
-});
-
-document.addEventListener('keydown', e => {
-  if (!G || !G.running) return;
-  const k = e.key.toLowerCase();
-  if (k >= 'a' && k <= 'h') {
-    G.keyFile = k; G.keyFileTime = nowSec();
-  } else if (k >= '1' && k <= '8' && G.keyFile && nowSec() - G.keyFileTime < 1.2) {
-    const x = G.keyFile.charCodeAt(0) - 97;
-    const y = 8 - parseInt(k, 10);
-    G.keyFile = null;
-    resolveAt(x, y);
-  }
 });
 
 // ---- Rendering ----
