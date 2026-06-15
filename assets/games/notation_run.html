@@ -844,7 +844,7 @@ function finish() {
   if (isBest) bestEl.innerHTML = '<b style="color:#6bffb8;">✨ NEW BEST! ✨</b>';
   else bestEl.innerHTML = 'Best: <b style="color:#F5C518;">' + prev.rank + '</b> · ' + prev.score;
   updateTitleBest();
-  if (window.PJCC) PJCC.saveScore('notation-run', G.score, { credits: 10, data: { mode: G.mode, diff: G.diff, rank: rank } });
+  if (window.PJCC) PJCC.saveScore('notation-run', G.score, { credits: 1, data: { mode: G.mode, diff: G.diff, rank: rank } });
 
   document.getElementById('results-screen').classList.remove('hidden');
 }

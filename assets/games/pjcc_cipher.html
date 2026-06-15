@@ -313,7 +313,7 @@ function win(){
   // Record the run to the operative profile (no-op for guests / offline).
   if (window.PJCC) {
     const seed = (mode === 'daily') ? new Date().toISOString().slice(0,10) : null;
-    PJCC.saveScore('cipher', s.n, { seed: seed, credits: 10, data: { mode: mode } });
+    PJCC.saveScore('cipher', s.n, { seed: seed, credits: 1, data: { mode: mode } });
   }
   decryptFragment(() => {
     document.getElementById('res-stamp').className = 'ov-stamp ok'; document.getElementById('res-stamp').textContent = 'DECRYPTION COMPLETE';

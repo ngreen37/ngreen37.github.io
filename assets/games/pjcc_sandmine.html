@@ -286,7 +286,7 @@ function enemyTurn(){
 function gameOver(){
   S.dead = true; S.phase = 'dead';
   if (S.depth > S.best){ S.best = S.depth; saveBest(S.best); }
-  if (window.PJCC) PJCC.saveScore('sand-mine-depths', S.depth, { credits: 10, data: { gold: S.score, floor: S.floor } });
+  if (window.PJCC) PJCC.saveScore('sand-mine-depths', S.depth, { credits: 1, data: { gold: S.score, floor: S.floor } });
   sfx('dead');
   document.getElementById('menu-btn').classList.add('hidden');
   const newBest = S.depth >= S.best;

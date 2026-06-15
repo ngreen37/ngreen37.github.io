@@ -881,7 +881,7 @@ function showSummary() {
     ? 'Cram runs don’t change your schedule.'
     : (due > 0 ? due + ' line' + (due > 1 ? 's' : '') + ' still due in this deck.' : 'Deck clear — come back later! 🦴');
   sfx('done');
-  if (window.PJCC) PJCC.saveScore('pirc-protocol', s.flawless, { credits: 10, data: { deck: session.deckId, lines: s.lines, promo: s.promo } });
+  if (window.PJCC) PJCC.saveScore('pirc-protocol', s.flawless, { credits: 5, data: { deck: session.deckId, lines: s.lines, promo: s.promo } });
   hideOverlays();
   document.getElementById('summary-screen').classList.remove('hidden');
 }

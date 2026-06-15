@@ -4,6 +4,8 @@ title: Games
 permalink: /games/
 ---
 
+<a class="games-lb-link" href="{{ '/leaderboards/' | relative_url }}">🏆 View the Leaderboards &rarr;</a>
+
 <div class="games-grid">
 
   <a class="game-card game-card-dim" href="{{ '/games/dungeon/' | relative_url }}">
@@ -161,4 +163,18 @@ permalink: /games/
   color: #b9a8e6;
   border-color: #6b5fa0;
 }
+
+.games-lb-link {
+  display: inline-block;
+  margin: 0.4rem 0 0.2rem;
+  background: #2D1B69;
+  border: 1px solid #F5C518;
+  border-radius: 999px;
+  padding: 9px 20px;
+  color: #F5C518;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+.games-lb-link:hover { background: #F5C518; color: #1a0f3d; }
 </style>

@@ -321,7 +321,7 @@ function promote(r){
 function gameOver(){
   sfx('over');
   const best = loadBest(); const isBest = correct > best; if (isBest) saveBest(correct);
-  if (window.PJCC) PJCC.saveScore('clearance-delta', score, { credits: 10, data: { correct: correct } });
+  if (window.PJCC) PJCC.saveScore('clearance-delta', score, { credits: 1, data: { correct: correct } });
   const r = RANKS[rankIdx];
   document.getElementById('res-rank').textContent = 'CLEARANCE: ' + r.name;
   document.getElementById('res-msg').innerHTML = 'You answered <b style="color:#F5C518">' + correct + '</b> correctly for <b style="color:#F5C518">' + score + '</b> points.' +

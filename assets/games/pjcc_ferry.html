@@ -175,7 +175,7 @@ function winLevel(){
   anim = { t: 0, dur: 0.9 };
   const aced = loadAced(); const acedNow = S.moves <= S.par;
   if (acedNow){ aced[S.idx] = true; saveAced(aced); }
-  if (window.PJCC) PJCC.saveScore('ferry-delayed', Object.keys(aced).length, { credits: 10, data: { crossing: S.idx + 1, moves: S.moves, par: S.par } });
+  if (window.PJCC) PJCC.saveScore('ferry-delayed', Object.keys(aced).length, { credits: 1, data: { crossing: S.idx + 1, moves: S.moves, par: S.par } });
   setTimeout(() => {
     splashSpawn();
     const last = S.idx >= LEVELS.length - 1;
