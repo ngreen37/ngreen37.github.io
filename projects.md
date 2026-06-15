@@ -51,6 +51,26 @@ body_class: theme-bw
     </div>
   </div>
 
+  <div class="project-card project-card-active">
+    <div class="project-card-corner-piece" aria-hidden="true">♫</div>
+    <div class="project-card-header">
+      <span class="project-status project-status-active">
+        <span class="project-status-dot"></span>
+        In Development
+      </span>
+      <h2 class="project-title">Notation Run</h2>
+    </div>
+    <p class="project-desc">A coordinate-reading rhythm game set in the streets of Checker Town. Square names drop on the beat — click them before they pass the gate. Includes a Pirc Defense mode that traces the Rival's opening move by move.</p>
+    <ul class="project-details">
+      <li><strong>Format:</strong> Browser game</li>
+      <li><strong>Status:</strong> Playable — more openings and tracks in progress</li>
+    </ul>
+    <div class="project-links">
+      <a href="/games/notation-run/" class="project-link">Play Now &rarr;</a>
+      <a href="/games/" class="project-link">All Games</a>
+    </div>
+  </div>
+
   <div class="project-card project-card-soon">
     <div class="project-card-corner-piece" aria-hidden="true">♞</div>
     <div class="project-card-header">

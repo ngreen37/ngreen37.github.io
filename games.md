@@ -15,6 +15,15 @@ permalink: /games/
     </div>
   </a>
 
+  <a class="game-card" href="{{ '/games/notation-run/' | relative_url }}">
+    <div class="game-card-icon">♫</div>
+    <div class="game-card-body">
+      <h2>Notation Run</h2>
+      <p>A coordinate-reading rhythm game. Calls drop on the beat — click the square before it passes the gate.</p>
+      <span class="game-tag">Playable</span>
+    </div>
+  </a>
+
 </div>
 
 <style>

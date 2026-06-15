@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PJCC: Notation Run</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: #1a0f3d;
+    color: #f0e6ff;
+    font-family: 'Courier New', monospace;
+    overflow: hidden;
+    height: 100%;
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  #stage {
+    position: relative;
+    width: 480px;
+    max-width: 100vw;
+  }
+
+  #canvas {
+    display: block;
+    width: 100%;
+    border: 2px solid #F5C518;
+    border-radius: 6px;
+    box-shadow: 0 0 30px rgba(245, 197, 24, 0.2);
+    background: #1a0f3d;
+    touch-action: manipulation;
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(20, 12, 45, 0.94);
+    border-radius: 6px;
+    padding: 22px;
+    text-align: center;
+    z-index: 10;
+  }
+
+  .overlay.hidden { display: none; }
+
+  .ov-eyebrow {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #9a7fd4;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .ov-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #F5C518;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+    text-shadow: 0 0 18px rgba(245,197,24,0.35);
+  }
+
+  .ov-sub {
+    font-size: 12px;
+    color: #c9a7ff;
+    line-height: 1.7;
+    max-width: 360px;
+    margin-bottom: 16px;
+  }
+
+  .ov-group-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: #F5C518;
+    text-transform: uppercase;
+    margin: 12px 0 7px;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .pick {
+    background: #2D1B69;
+    color: #c9a7ff;
+    border: 1px solid #4a2f8a;
+    border-radius: 5px;
+    padding: 7px 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .pick:hover { border-color: #F5C518; color: #f0e6ff; }
+  .pick.sel {
+    background: #F5C518;
+    color: #1a0f3d;
+    border-color: #F5C518;
+    font-weight: bold;
+  }
+
+  .pick small { display: block; font-size: 9px; opacity: 0.75; margin-top: 2px; font-weight: normal; }
+
+  .start-btn {
+    margin-top: 20px;
+    background: #F5C518;
+    color: #1a0f3d;
+    border: none;
+    padding: 11px 32px;
+    font-family: 'Courier New', monospace;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    letter-spacing: 2px;
+  }
+  .start-btn:hover { background: #ffd740; box-shadow: 0 0 16px rgba(245,197,24,0.5); }
+
+  .ov-foot {
+    margin-top: 16px;
+    font-size: 10px;
+    color: #7a5fb0;
+    line-height: 1.7;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 26px;
+    margin: 10px 0 4px;
+  }
+  .stat-grid .s-lab { font-size: 10px; color: #9a7fd4; text-align: right; }
+  .stat-grid .s-val { font-size: 14px; color: #f0e6ff; font-weight: bold; text-align: left; }
+  .stat-grid .s-val.perfect { color: #6bffb8; }
+  .stat-grid .s-val.good { color: #F5C518; }
+  .stat-grid .s-val.miss { color: #ff6b6b; }
+
+  .rank-badge {
+    font-size: 64px;
+    font-weight: bold;
+    line-height: 1;
+    margin: 4px 0 2px;
+    text-shadow: 0 0 24px currentColor;
+  }
+  .fc-badge {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #6bffb8;
+    border: 1px solid #6bffb8;
+    border-radius: 4px;
+    padding: 3px 9px;
+    margin-top: 4px;
+    display: inline-block;
+  }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <canvas id="canvas" width="480" height="500"></canvas>
+
+  <!-- TITLE SCREEN -->
+  <div class="overlay" id="title-screen">
+    <div class="ov-eyebrow">Checker Town · Coordinate Drill</div>
+    <div class="ov-title">NOTATION RUN</div>
+    <div class="ov-sub">
+      Calls drop in on the beat. When a square's name reaches the
+      <b style="color:#F5C518">gate</b>, click that square on the board.
+      Read the files (a&ndash;h) and ranks (1&ndash;8) fast &mdash; that's the whole game.
+    </div>
+
+    <div class="ov-group-label">Mode</div>
+    <div class="btn-row" id="mode-row">
+      <button class="pick sel" data-mode="coords">Coordinates<small>random squares</small></button>
+      <button class="pick" data-mode="pirc">Pirc Defense<small>the Rival's line</small></button>
+      <button class="pick" data-mode="italian">Italian Game<small>classic opening</small></button>
+    </div>
+
+    <div class="ov-group-label">Tempo</div>
+    <div class="btn-row" id="diff-row">
+      <button class="pick" data-diff="easy">Stroll<small>72 bpm</small></button>
+      <button class="pick sel" data-diff="medium">March<small>96 bpm</small></button>
+      <button class="pick" data-diff="hard">Sprint<small>120 bpm</small></button>
+    </div>
+
+    <button class="start-btn" id="start-btn">START</button>
+    <div class="ov-foot">
+      Click the square &nbsp;·&nbsp; or type it (e.g. <b>e</b> then <b>4</b>)<br>
+      <span id="mute-toggle" style="cursor:pointer;text-decoration:underline;">♪ sound: on</span>
+    </div>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div class="overlay hidden" id="results-screen">
+    <div class="ov-eyebrow" id="res-mode-label">Coordinates · March</div>
+    <div class="rank-badge" id="res-rank">A</div>
+    <div id="res-fc-wrap"><span class="fc-badge">FULL COMBO</span></div>
+    <div class="stat-grid">
+      <div class="s-lab">Score</div><div class="s-val" id="res-score">0</div>
+      <div class="s-lab">Accuracy</div><div class="s-val" id="res-acc">0%</div>
+      <div class="s-lab">Max Combo</div><div class="s-val" id="res-combo">0</div>
+      <div class="s-lab">Perfect</div><div class="s-val perfect" id="res-perfect">0</div>
+      <div class="s-lab">Good</div><div class="s-val good" id="res-good">0</div>
+      <div class="s-lab">Missed</div><div class="s-val miss" id="res-miss">0</div>
+    </div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="start-btn" id="replay-btn" style="margin-top:0;">REPLAY</button>
+      <button class="pick" id="menu-btn" style="align-self:center;">Change mode</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const W = 480, H = 500;
+
+// ---- Board geometry ----
+const TILE = 46;
+const BOARD = TILE * 8;            // 368
+const BX = (W - BOARD) / 2;        // 56
+const BY = 124;                    // board top
+const HITX = 64;                   // gate x on the track
+const TRACK_Y = 80;                // center of the rhythm track
+const APPROACH = 2.2;              // seconds a call is visible before its hit
+const PXPS = (W - 14 - HITX) / APPROACH; // px per second the calls travel
+
+const COLORS = {
+  light: '#3d2a7a', dark: '#2D1B69', gold: '#F5C518', goldDim: '#a87d00',
+  good: '#6bffb8', bad: '#ff6b6b', text: '#f0e6ff', muted: '#9a7fd4',
+};
+
+// Timing windows (seconds)
+const PERFECT_W = 0.10;
+const GOOD_W = 0.22;
+
+const DIFFS = {
+  easy:   { bpm: 72,  bpc: 2, calls: 20, label: 'Stroll' },
+  medium: { bpm: 96,  bpc: 2, calls: 24, label: 'March' },
+  hard:   { bpm: 120, bpc: 1, calls: 28, label: 'Sprint' },
+};
+
+// Opening lines — each ply is {san, sq}; sq is the destination square clicked.
+const OPENINGS = {
+  pirc: { label: 'Pirc Defense', line: [
+    ['e4','e4'],['d6','d6'],['d4','d4'],['Nf6','f6'],['Nc3','c3'],['g6','g6'],
+    ['f4','f4'],['Bg7','g7'],['Nf3','f3'],['c6','c6'],['Bd3','d3'],['b5','b5'],
+    ['e5','e5'],['Nd7','d7'],['Ng5','g5'],['Nb6','b6'],
+  ]},
+  italian: { label: 'Italian Game', line: [
+    ['e4','e4'],['e5','e5'],['Nf3','f3'],['Nc6','c6'],['Bc4','c4'],['Bc5','c5'],
+    ['c3','c3'],['Nf6','f6'],['d3','d3'],['d6','d6'],['Bg5','g5'],['Be6','e6'],
+    ['Nbd2','d2'],['Qe7','e7'],
+  ]},
+};
+
+// ---- Coordinate helpers (a1 bottom-left, rank 8 at top) ----
+function algToXY(alg) {
+  const x = alg.charCodeAt(0) - 97;      // 'a' -> 0
+  const y = 8 - parseInt(alg[1], 10);    // rank 8 -> 0
+  return { x, y };
+}
+function xyToAlg(x, y) {
+  return String.fromCharCode(97 + x) + (8 - y);
+}
+
+// ---- Audio (also the master clock) ----
+let actx = null, masterGain = null, soundOn = true;
+function initAudio() {
+  if (actx) return;
+  actx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = actx.createGain();
+  masterGain.gain.value = soundOn ? 0.9 : 0;
+  masterGain.connect(actx.destination);
+}
+function nowSec() { return actx ? actx.currentTime : performance.now() / 1000; }
+
+function beep(time, accent) {
+  if (!actx) return;
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.connect(g); g.connect(masterGain);
+  o.type = accent ? 'triangle' : 'sine';
+  o.frequency.setValueAtTime(accent ? 660 : 150, time);
+  if (accent) o.frequency.exponentialRampToValueAtTime(330, time + 0.06);
+  const peak = accent ? 0.5 : 0.42;
+  g.gain.setValueAtTime(0.0001, time);
+  g.gain.exponentialRampToValueAtTime(peak, time + 0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001, time + (accent ? 0.10 : 0.14));
+  o.start(time); o.stop(time + 0.18);
+}
+function sfx(kind) {
+  if (!actx) return;
+  const t = actx.currentTime;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.connect(g); g.connect(masterGain);
+  if (kind === 'perfect') { o.type='triangle'; o.frequency.setValueAtTime(880,t); o.frequency.exponentialRampToValueAtTime(1320,t+0.08); }
+  else if (kind === 'good') { o.type='sine'; o.frequency.setValueAtTime(620,t); }
+  else { o.type='sawtooth'; o.frequency.setValueAtTime(180,t); o.frequency.exponentialRampToValueAtTime(90,t+0.12); }
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.3,t+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+0.16);
+  o.start(t); o.stop(t+0.2);
+}
+
+// ---- Game state ----
+let G = null;
+
+function newGame(mode, diff) {
+  const d = DIFFS[diff];
+  const spb = 60 / d.bpm;
+  const queue = [];
+
+  if (mode === 'coords') {
+    let prev = -1;
+    for (let i = 0; i < d.calls; i++) {
+      let x, y, idx;
+      do { x = (Math.random()*8)|0; y = (Math.random()*8)|0; idx = y*8+x; } while (idx === prev);
+      prev = idx;
+      const alg = xyToAlg(x, y);
+      queue.push({ san: alg, x, y });
+    }
+  } else {
+    OPENINGS[mode].line.forEach(([san, sq]) => {
+      const p = algToXY(sq);
+      queue.push({ san, x: p.x, y: p.y });
+    });
+  }
+
+  G = {
+    mode, diff, spb, bpc: d.bpc,
+    countIn: 4,
+    queue, qPtr: 0,
+    calls: [],          // active/visible calls
+    callBeat: 4,        // first call lands on beat 4 (after count-in)
+    beepIdx: 0,
+    startTime: 0,
+    total: queue.length,
+    score: 0, combo: 0, maxCombo: 0,
+    res: { perfect: 0, good: 0, miss: 0 },
+    particles: [], floaters: [],
+    flashSq: [],        // {x,y,color,t} brief square highlights
+    princess: { x: 0, y: 7, px: 0, py: 0, tx: 0, ty: 0 },
+    lastHitTime: 0,
+    running: false, finished: false,
+    keyFile: null, keyFileTime: 0,
+  };
+  const pp = boardCenter(0, 7);
+  G.princess.px = pp.x; G.princess.py = pp.y;
+}
+
+function boardCenter(x, y) {
+  return { x: BX + x * TILE + TILE / 2, y: BY + y * TILE + TILE / 2 };
+}
+
+function startRun() {
+  G.startTime = nowSec() + 0.35;     // small lead-in
+  G.running = true;
+  G.finished = false;
+}
+
+// ---- Scheduling ----
+function beatTime(n) { return G.startTime + n * G.spb; }
+
+function update() {
+  if (!G || !G.running) return;
+  const now = nowSec();
+
+  // Schedule metronome beeps a touch ahead of real time
+  while (beatTime(G.beepIdx) < now + 0.12) {
+    const n = G.beepIdx;
+    const isCall = n >= G.countIn && ((n - G.countIn) % G.bpc === 0) && (G.qPtr < G.queue.length || G.calls.some(c => c.beat === n));
+    if (beatTime(n) >= now - 0.05) beep(beatTime(n), isCall);
+    G.beepIdx++;
+  }
+
+  // Spawn upcoming calls within the approach window
+  while (G.qPtr < G.queue.length && beatTime(G.callBeat) < now + APPROACH) {
+    const def = G.queue[G.qPtr];
+    G.calls.push({
+      san: def.san, x: def.x, y: def.y,
+      hitTime: beatTime(G.callBeat), beat: G.callBeat,
+      status: 'pending', fade: 1,
+    });
+    G.qPtr++;
+    G.callBeat += G.bpc;
+  }
+
+  // Auto-miss calls whose window has closed
+  G.calls.forEach(c => {
+    if (c.status === 'pending' && now > c.hitTime + GOOD_W) {
+      c.status = 'missed';
+      registerResult('miss', c);
+      flashSquare(c.x, c.y, COLORS.bad);
+      floater('MISS', c, COLORS.bad);
+      sfx('miss');
+    }
+  });
+
+  // Drop fully faded, resolved calls
+  G.calls = G.calls.filter(c => {
+    if (c.status !== 'pending') { c.fade -= 0.06; return c.fade > 0; }
+    return true;
+  });
+
+  // Princess glide
+  const pr = G.princess;
+  const tgt = boardCenter(pr.tx, pr.ty);
+  pr.px += (tgt.x - pr.px) * 0.35;
+  pr.py += (tgt.y - pr.py) * 0.35;
+
+  // Particles
+  G.particles = G.particles.filter(p => {
+    p.x += p.vx; p.y += p.vy; p.vy += 0.18; p.life -= 1; return p.life > 0;
+  });
+  // Floaters
+  G.floaters = G.floaters.filter(f => { f.y -= 0.7; f.life -= 1; return f.life > 0; });
+  // Square flashes
+  G.flashSq = G.flashSq.filter(s => { s.t -= 1; return s.t > 0; });
+
+  // Finish check
+  if (G.qPtr >= G.queue.length && !G.calls.some(c => c.status === 'pending')
+      && now > G.lastHitTime + GOOD_W + 0.15 && !G.finished) {
+    finish();
+  }
+}
+
+function registerResult(kind, call) {
+  if (kind === 'perfect' || kind === 'good') {
+    G.res[kind]++;
+    G.combo++;
+    if (G.combo > G.maxCombo) G.maxCombo = G.combo;
+    const mult = 1 + Math.min(G.combo, 20) * 0.05;
+    G.score += Math.round((kind === 'perfect' ? 100 : 55) * mult);
+  } else {
+    G.res.miss++;
+    G.combo = 0;
+  }
+  G.lastHitTime = Math.max(G.lastHitTime, nowSec());
+}
+
+// ---- Input handling ----
+function resolveAt(sqx, sqy) {
+  if (!G || !G.running) return;
+  const now = nowSec();
+  // Nearest pending call within the good window
+  let best = null, bestDt = Infinity;
+  G.calls.forEach(c => {
+    if (c.status !== 'pending') return;
+    const dt = Math.abs(c.hitTime - now);
+    if (dt <= GOOD_W && dt < bestDt) { best = c; bestDt = dt; }
+  });
+  if (!best) return; // nothing to hit right now — no penalty
+
+  if (best.x === sqx && best.y === sqy) {
+    const kind = bestDt <= PERFECT_W ? 'perfect' : 'good';
+    best.status = 'hit';
+    registerResult(kind, best);
+    movePrincess(sqx, sqy);
+    popParticles(sqx, sqy, kind === 'perfect' ? COLORS.good : COLORS.gold);
+    flashSquare(sqx, sqy, kind === 'perfect' ? 'rgba(107,255,184,0.5)' : 'rgba(245,197,24,0.45)');
+    floater(kind === 'perfect' ? 'PERFECT!' : 'GOOD', best, kind === 'perfect' ? COLORS.good : COLORS.gold);
+    sfx(kind);
+  } else {
+    // Wrong square — miss and reveal the correct one
+    best.status = 'missed';
+    registerResult('miss', best);
+    flashSquare(best.x, best.y, COLORS.bad);
+    flashSquare(sqx, sqy, 'rgba(255,107,107,0.3)');
+    floater('WRONG → ' + best.san, best, COLORS.bad);
+    sfx('miss');
+  }
+}
+
+function movePrincess(x, y) { G.princess.tx = x; G.princess.ty = y; }
+function flashSquare(x, y, color) { G.flashSq.push({ x, y, color, t: 22 }); }
+function floater(text, call, color) {
+  const c = boardCenter(call.x, call.y);
+  G.floaters.push({ text, x: c.x, y: c.y - 6, life: 46, color });
+}
+function popParticles(x, y, color) {
+  const c = boardCenter(x, y);
+  for (let i = 0; i < 12; i++) {
+    const a = (Math.PI * 2 * i) / 12 + Math.random() * 0.4;
+    const s = 1.5 + Math.random() * 2.5;
+    G.particles.push({ x: c.x, y: c.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1, life: 24 + Math.random() * 12, color });
+  }
+}
+
+function canvasToSquare(clientX, clientY) {
+  const r = canvas.getBoundingClientRect();
+  const mx = (clientX - r.left) * (W / r.width);
+  const my = (clientY - r.top) * (H / r.height);
+  const col = Math.floor((mx - BX) / TILE);
+  const row = Math.floor((my - BY) / TILE);
+  if (col < 0 || col > 7 || row < 0 || row > 7) return null;
+  return { x: col, y: row };
+}
+
+canvas.addEventListener('pointerdown', e => {
+  const sq = canvasToSquare(e.clientX, e.clientY);
+  if (sq) { e.preventDefault(); resolveAt(sq.x, sq.y); }
+});
+
+document.addEventListener('keydown', e => {
+  if (!G || !G.running) return;
+  const k = e.key.toLowerCase();
+  if (k >= 'a' && k <= 'h') {
+    G.keyFile = k; G.keyFileTime = nowSec();
+  } else if (k >= '1' && k <= '8' && G.keyFile && nowSec() - G.keyFileTime < 1.2) {
+    const x = G.keyFile.charCodeAt(0) - 97;
+    const y = 8 - parseInt(k, 10);
+    G.keyFile = null;
+    resolveAt(x, y);
+  }
+});
+
+// ---- Rendering ----
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  if (!G) return;
+
+  drawTrack();
+  drawBoard();
+  drawPrincess();
+  drawParticles();
+  drawFloaters();
+  drawHUD();
+}
+
+function drawBoard() {
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      ctx.fillStyle = (row + col) % 2 === 0 ? COLORS.light : COLORS.dark;
+      ctx.fillRect(BX + col * TILE, BY + row * TILE, TILE, TILE);
+    }
+  }
+  // Square flashes
+  G.flashSq.forEach(s => {
+    ctx.fillStyle = s.color;
+    ctx.fillRect(BX + s.x * TILE, BY + s.y * TILE, TILE, TILE);
+  });
+  // Grid lines + border
+  ctx.strokeStyle = 'rgba(245,197,24,0.10)';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 8; i++) {
+    ctx.beginPath(); ctx.moveTo(BX + i * TILE, BY); ctx.lineTo(BX + i * TILE, BY + BOARD); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(BX, BY + i * TILE); ctx.lineTo(BX + BOARD, BY + i * TILE); ctx.stroke();
+  }
+  ctx.strokeStyle = 'rgba(245,197,24,0.4)';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(BX, BY, BOARD, BOARD);
+
+  // File / rank labels (the player's reading aid)
+  ctx.fillStyle = 'rgba(245,197,24,0.45)';
+  ctx.font = '10px Courier New';
+  ctx.textBaseline = 'alphabetic';
+  const files = 'abcdefgh';
+  for (let i = 0; i < 8; i++) {
+    ctx.textAlign = 'left';
+    ctx.fillText(files[i], BX + i * TILE + 3, BY + BOARD - 4);   // files along bottom
+    ctx.fillText(8 - i, BX + 2, BY + i * TILE + 12);             // ranks down the left
+  }
+}
+
+function drawTrack() {
+  const now = nowSec();
+  // Track baseline
+  ctx.strokeStyle = 'rgba(245,197,24,0.12)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(HITX, TRACK_Y); ctx.lineTo(W - 8, TRACK_Y); ctx.stroke();
+
+  // Beat pulse at the gate
+  const sinceBeat = G.running ? ((now - G.startTime) % G.spb) / G.spb : 0;
+  const pulse = G.running ? (1 - Math.min(sinceBeat * 2, 1)) : 0;
+  ctx.strokeStyle = `rgba(245,197,24,${0.35 + 0.5 * pulse})`;
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(HITX, TRACK_Y, 17 + pulse * 5, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = 'rgba(245,197,24,0.25)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(HITX, TRACK_Y - 26); ctx.lineTo(HITX, TRACK_Y + 26); ctx.stroke();
+
+  // Incoming calls
+  G.calls.forEach(c => {
+    const dx = (c.hitTime - now) * PXPS;
+    let x = HITX + dx;
+    if (c.status !== 'pending') x = HITX + dx; // resolved ones keep sliding & fade
+    if (x > W - 6 || x < -30) return;
+    const dt = Math.abs(c.hitTime - now);
+    const active = c.status === 'pending' && dt <= GOOD_W;
+    const r = active ? 16 : 13;
+    let fill, stroke;
+    if (c.status === 'hit') { fill = 'rgba(107,255,184,'+(0.7*c.fade)+')'; stroke = 'rgba(107,255,184,'+c.fade+')'; }
+    else if (c.status === 'missed') { fill = 'rgba(255,107,107,'+(0.6*c.fade)+')'; stroke = 'rgba(255,107,107,'+c.fade+')'; }
+    else if (active) { fill = 'rgba(245,197,24,0.92)'; stroke = '#fff'; }
+    else { fill = '#2D1B69'; stroke = '#7a5fb0'; }
+
+    ctx.beginPath(); ctx.arc(x, TRACK_Y, r, 0, Math.PI * 2);
+    ctx.fillStyle = fill; ctx.fill();
+    ctx.strokeStyle = stroke; ctx.lineWidth = active ? 2 : 1; ctx.stroke();
+
+    ctx.fillStyle = (active || c.status === 'pending') ? (active ? '#1a0f3d' : COLORS.text) : '#fff';
+    if (c.status === 'hit') ctx.fillStyle = '#0c3d28';
+    if (c.status === 'missed') ctx.fillStyle = '#fff';
+    ctx.font = 'bold ' + (active ? 15 : 12) + 'px Courier New';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(c.san, x, TRACK_Y + 1);
+  });
+}
+
+function drawPrincess() {
+  const pr = G.princess;
+  const cx = pr.px, cy = pr.py;
+  const t = Date.now() / 600;
+  const bob = Math.sin(t) * 1.5;
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath(); ctx.ellipse(cx, cy + 15, 13, 5, 0, 0, Math.PI * 2); ctx.fill();
+  // Halo
+  ctx.strokeStyle = COLORS.gold; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(cx, cy + bob, 18, 0, Math.PI * 2); ctx.stroke();
+  // Body
+  ctx.fillStyle = '#f0e6ff'; drawHex(cx, cy + bob, 15); ctx.fill();
+  ctx.strokeStyle = COLORS.gold; ctx.lineWidth = 1.5; drawHex(cx, cy + bob, 15); ctx.stroke();
+  // Ears
+  ctx.fillStyle = '#c8a87a';
+  ctx.beginPath(); ctx.arc(cx - 4, cy + bob - 4, 3.5, 0, Math.PI * 2);
+  ctx.arc(cx + 4, cy + bob - 4, 3.5, 0, Math.PI * 2); ctx.fill();
+  // Eyes + nose
+  ctx.fillStyle = '#1a0f3d';
+  ctx.beginPath(); ctx.arc(cx - 3.5, cy + bob - 4, 1.7, 0, Math.PI * 2);
+  ctx.arc(cx + 3.5, cy + bob - 4, 1.7, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx, cy + bob + 1, 2, 0, Math.PI * 2); ctx.fill();
+  // Knight mark
+  ctx.fillStyle = COLORS.gold;
+  ctx.font = 'bold 10px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.fillText('♞', cx, cy + bob + 8);
+}
+
+function drawHex(cx, cy, r) {
+  ctx.beginPath();
+  for (let i = 0; i < 6; i++) {
+    const a = Math.PI / 2 + i * Math.PI / 3;
+    const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+}
+
+function drawParticles() {
+  G.particles.forEach(p => {
+    ctx.globalAlpha = Math.max(0, p.life / 30);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x - 1.5, p.y - 1.5, 3, 3);
+  });
+  ctx.globalAlpha = 1;
+}
+
+function drawFloaters() {
+  G.floaters.forEach(f => {
+    ctx.globalAlpha = Math.max(0, f.life / 46);
+    ctx.fillStyle = f.color;
+    ctx.font = 'bold 13px Courier New';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(f.text, f.x, f.y);
+  });
+  ctx.globalAlpha = 1;
+}
+
+function drawHUD() {
+  // Score (top-left, above track)
+  ctx.fillStyle = COLORS.gold;
+  ctx.font = 'bold 14px Courier New';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText(String(G.score).padStart(5, '0'), 10, 8);
+
+  // Progress (top-right)
+  const done = G.res.perfect + G.res.good + G.res.miss;
+  ctx.fillStyle = COLORS.muted;
+  ctx.font = '11px Courier New';
+  ctx.textAlign = 'right';
+  ctx.fillText(done + ' / ' + G.total, W - 10, 10);
+
+  // Combo (center, big when high)
+  if (G.combo > 1) {
+    ctx.fillStyle = G.combo >= 10 ? COLORS.good : COLORS.text;
+    ctx.font = 'bold ' + (14 + Math.min(G.combo, 20)) + 'px Courier New';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.fillText(G.combo + '×', W / 2, 6);
+  }
+
+  // Count-in banner
+  const now = nowSec();
+  if (G.running && now < G.startTime + G.countIn * G.spb) {
+    const beatsLeft = Math.ceil((G.startTime + G.countIn * G.spb - now) / G.spb);
+    ctx.fillStyle = 'rgba(245,197,24,0.85)';
+    ctx.font = 'bold 30px Courier New';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(beatsLeft > 0 ? beatsLeft : 'GO', W / 2, BY + BOARD / 2);
+  }
+}
+
+// ---- Main loop ----
+function loop() {
+  update();
+  render();
+  requestAnimationFrame(loop);
+}
+
+// ---- Screens / flow ----
+let selMode = 'coords', selDiff = 'medium';
+
+document.getElementById('mode-row').addEventListener('click', e => {
+  const b = e.target.closest('[data-mode]'); if (!b) return;
+  selMode = b.dataset.mode;
+  document.querySelectorAll('#mode-row .pick').forEach(p => p.classList.toggle('sel', p === b));
+});
+document.getElementById('diff-row').addEventListener('click', e => {
+  const b = e.target.closest('[data-diff]'); if (!b) return;
+  selDiff = b.dataset.diff;
+  document.querySelectorAll('#diff-row .pick').forEach(p => p.classList.toggle('sel', p === b));
+});
+
+document.getElementById('mute-toggle').addEventListener('click', () => {
+  soundOn = !soundOn;
+  if (masterGain) masterGain.gain.value = soundOn ? 0.9 : 0;
+  document.getElementById('mute-toggle').textContent = soundOn ? '♪ sound: on' : '♪ sound: off';
+});
+
+function begin() {
+  initAudio();
+  if (actx.state === 'suspended') actx.resume();
+  newGame(selMode, selDiff);
+  document.getElementById('title-screen').classList.add('hidden');
+  document.getElementById('results-screen').classList.add('hidden');
+  startRun();
+}
+
+document.getElementById('start-btn').addEventListener('click', begin);
+document.getElementById('replay-btn').addEventListener('click', begin);
+document.getElementById('menu-btn').addEventListener('click', () => {
+  document.getElementById('results-screen').classList.add('hidden');
+  document.getElementById('title-screen').classList.remove('hidden');
+});
+
+function finish() {
+  G.running = false;
+  G.finished = true;
+  const r = G.res;
+  const total = G.total;
+  const accVal = total > 0 ? (r.perfect + r.good * 0.5) / total : 0;
+  const acc = Math.round(accVal * 100);
+  let rank, color;
+  if (r.miss === 0 && accVal >= 0.97) { rank = 'S'; color = '#6bffb8'; }
+  else if (accVal >= 0.88) { rank = 'A'; color = '#F5C518'; }
+  else if (accVal >= 0.72) { rank = 'B'; color = '#c96bff'; }
+  else if (accVal >= 0.52) { rank = 'C'; color = '#6bbfff'; }
+  else { rank = 'D'; color = '#ff6b6b'; }
+
+  const modeLabel = G.mode === 'coords' ? 'Coordinates'
+    : OPENINGS[G.mode].label;
+  document.getElementById('res-mode-label').textContent = modeLabel + ' · ' + DIFFS[G.diff].label;
+  const badge = document.getElementById('res-rank');
+  badge.textContent = rank; badge.style.color = color;
+  document.getElementById('res-fc-wrap').style.display = (r.miss === 0) ? 'block' : 'none';
+  document.getElementById('res-score').textContent = G.score;
+  document.getElementById('res-acc').textContent = acc + '%';
+  document.getElementById('res-combo').textContent = G.maxCombo + '×';
+  document.getElementById('res-perfect').textContent = r.perfect;
+  document.getElementById('res-good').textContent = r.good;
+  document.getElementById('res-miss').textContent = r.miss;
+  document.getElementById('results-screen').classList.remove('hidden');
+}
+
+// Boot
+newGame(selMode, selDiff);   // so the board renders behind the title screen
+loop();
+</script>
+</body>
+</html>
