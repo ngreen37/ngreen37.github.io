@@ -1,0 +1,86 @@
+<!-- Site-wide Build Playlist jukebox. Track list is generated from
+     _data/soundtrack.yml, so new songs are picked up automatically. -->
+<div id="pjcc-jukebox" class="pjcc-jukebox jb-collapsed" aria-label="Build Playlist jukebox">
+  <button class="jb-tab" id="jb-tab" title="Open the Build Playlist jukebox" aria-label="Open jukebox">♪</button>
+  <div class="jb-main" id="jb-main">
+    <div class="jb-id">
+      <span class="jb-eyebrow">♪ THE BUILD PLAYLIST</span>
+      <span class="jb-title" id="jb-title">—</span>
+    </div>
+    <button class="jb-btn" id="jb-prev" aria-label="Previous track">⏮</button>
+    <button class="jb-btn" id="jb-next" aria-label="Next track">⏭</button>
+    <div class="jb-embed"><div id="pjcc-jukebox-embed"></div></div>
+    <button class="jb-btn" id="jb-list-btn" aria-label="Track list">☰</button>
+    <button class="jb-btn jb-x" id="jb-close" aria-label="Hide jukebox">×</button>
+    <div class="jb-list" id="jb-list" hidden></div>
+  </div>
+</div>
+
+<script>
+window.PJCC_SOUNDTRACK = [
+{% for t in site.data.soundtrack %}{ "ep": {{ t.ep | jsonify }}, "title": {{ t.title | jsonify }}, "id": {{ t.id | jsonify }} }{% unless forloop.last %},{% endunless %}
+{% endfor %}];
+</script>
+<script src="{{ '/assets/js/jukebox.js' | relative_url }}"></script>
+<script async src="https://open.spotify.com/embed/iframe-api/v1"></script>
+
+<style>
+.pjcc-jukebox { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9000; font-family: 'Inter', system-ui, sans-serif; }
+body.has-jukebox { padding-bottom: 104px; }
+
+.pjcc-jukebox .jb-main {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 10px 16px;
+  background: linear-gradient(180deg, #2a1a5e 0%, #1a0f3d 100%);
+  border-top: 2px solid #F5C518;
+  box-shadow: 0 -6px 22px rgba(0,0,0,0.45);
+}
+.pjcc-jukebox.jb-collapsed .jb-main { display: none; }
+
+.jb-id { display: flex; flex-direction: column; min-width: 0; flex: 0 1 240px; }
+.jb-eyebrow { color: #F5C518; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.14em; }
+.jb-title { color: #f0e6ff; font-size: 0.84rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.jb-btn {
+  background: #3a2a72; color: #F5C518; border: 1px solid #6b5fa0; border-radius: 8px;
+  width: 38px; height: 38px; font-size: 1rem; cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; transition: background 0.15s, transform 0.1s;
+}
+.jb-btn:hover { background: #4a3790; color: #ffd740; }
+.jb-btn:active { transform: scale(0.93); }
+.jb-x { color: #c9b6ef; }
+
+.jb-embed { flex: 1 1 220px; min-width: 180px; }
+.jb-embed #pjcc-jukebox-embed { width: 100%; }
+.jb-embed iframe { border-radius: 10px; display: block; width: 100%; }
+
+.jb-tab {
+  position: absolute; left: 18px; bottom: 14px;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: linear-gradient(135deg, #F5C518, #ffb300); color: #1a0f3d;
+  border: none; font-size: 1.5rem; cursor: pointer; display: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5); animation: jbPulse 2.2s ease-in-out infinite;
+}
+.pjcc-jukebox.jb-collapsed .jb-tab { display: flex; align-items: center; justify-content: center; }
+@keyframes jbPulse { 0%,100% { box-shadow: 0 4px 16px rgba(245,197,24,0.4);} 50% { box-shadow: 0 4px 26px rgba(245,197,24,0.8);} }
+
+.jb-list {
+  position: absolute; right: 16px; bottom: 100%; margin-bottom: 8px;
+  width: 340px; max-width: calc(100vw - 32px); max-height: 50vh; overflow-y: auto;
+  background: #160c33; border: 1px solid #F5C518; border-radius: 10px; padding: 6px;
+  box-shadow: 0 -8px 24px rgba(0,0,0,0.5);
+}
+.jb-li {
+  display: block; width: 100%; text-align: left; background: transparent; border: none;
+  color: #e3d6ff; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; line-height: 1.3;
+}
+.jb-li:hover { background: #2a1d55; }
+.jb-li.sel { background: rgba(245,197,24,0.16); color: #F5C518; font-weight: 700; }
+.jb-li-ep { display: block; color: #9a7fd4; font-size: 0.7rem; }
+
+@media (max-width: 620px) {
+  .jb-id { flex-basis: 100%; }
+  .jb-embed { flex-basis: 100%; order: 5; }
+  body.has-jukebox { padding-bottom: 168px; }
+}
+</style>
