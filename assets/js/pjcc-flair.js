@@ -96,29 +96,7 @@
     window.addEventListener('scroll', onScroll, { passive: true });
   }
 
-  /* ---- 4. Journey-to-Chess-City scroll bar ---- */
-  function setupJourney() {
-    var bar = document.createElement('div');
-    bar.className = 'flair-journey';
-    bar.title = 'Journey to Chess City';
-    var flag = document.createElement('span');
-    flag.className = 'flair-journey-flag';
-    flag.textContent = '♟'; // ♟
-    bar.appendChild(flag);
-    document.body.appendChild(bar);
-    function update() {
-      var h = document.documentElement;
-      var max = (h.scrollHeight - h.clientHeight) || 1;
-      var pct = Math.min(100, Math.max(0, (window.pageYOffset / max) * 100));
-      bar.style.width = pct + '%';
-      flag.textContent = pct > 99 ? '♚' : '♟'; // king at the gates
-    }
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
-    update();
-  }
-
-  /* ---- 5. Piece-burst confetti ---- */
+  /* ---- Piece-burst confetti ---- */
   function burst(x, y, glyphs) {
     if (reduce) return;
     var set = glyphs || GLYPHS;
@@ -186,7 +164,6 @@
     try { setupReveal(); } catch (e) {}
     try { setupTilt(); } catch (e) {}
     try { setupDrift(); } catch (e) {}
-    try { setupJourney(); } catch (e) {}
     try { setupBursts(); } catch (e) {}
   });
 })();

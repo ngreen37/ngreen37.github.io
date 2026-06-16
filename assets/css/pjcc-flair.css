@@ -56,28 +56,7 @@
   will-change: transform;
 }
 
-/* ---- 4. "Journey to Chess City" scroll-progress bar ---- */
-.flair-journey {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 3px;
-  width: 0;
-  z-index: 99998;
-  background: linear-gradient(90deg, #6e32ff, #F5C518);
-  box-shadow: 0 0 8px rgba(245, 197, 24, 0.6);
-  pointer-events: none;
-  transition: width 0.08s linear;
-}
-.flair-journey-flag {
-  position: absolute;
-  right: -7px;
-  top: -6px;
-  font-size: 12px;
-  filter: drop-shadow(0 0 3px rgba(245, 197, 24, 0.8));
-}
-
-/* ---- 5. Piece-burst confetti particles ---- */
+/* ---- Piece-burst confetti particles ---- */
 .flair-particle {
   position: fixed;
   z-index: 99999;

@@ -211,27 +211,32 @@ permalink: /games/
   padding: 2px 7px;
 }
 
-/* Not-yet-ready games: dimmed, muted border, "in development" tag */
+/* Not-yet-ready games: grayish-purple wash, dimmed via colour (not opacity/
+   filter, so the scroll-reveal animation can't wash the dimming back out) */
 .game-card-dim {
-  opacity: 0.55;
-  filter: grayscale(0.55);
-  border-color: #6b5fa0;
+  background: linear-gradient(135deg, #26223c, #2f2a4a);
+  border-color: #4f466e;
 }
+.game-card-dim .game-card-icon { color: #7d70a8; }
+.game-card-dim h2 { color: #9a8fc0; }
+.game-card-dim p  { color: #6f6592; }
 .game-card-dim:hover {
-  opacity: 0.8;
-  filter: grayscale(0.2);
-  background: #2D1B69;
+  background: linear-gradient(135deg, #2f2a4a, #3a3260);
   border-color: #8a7bc0;
 }
+.game-card-dim:hover h2 { color: #d8cdf0; }
 .game-tag-soon {
-  color: #b9a8e6;
-  border-color: #6b5fa0;
+  color: #9a8cc4;
+  border-color: #5b5080;
 }
 
-/* Locked bonus game: a clear padlock badge + dashed "sealed" border */
+/* Locked bonus game: grayish-purple, only the lock & key shows. A slow light
+   sweep crosses the card and illuminates the hidden text as it passes;
+   hovering holds the light on so the full clue is readable. */
 .game-card-locked {
   position: relative;
   border-style: dashed;
+  background: linear-gradient(135deg, #26223c, #2f2a4a);
 }
 .game-card-locked::after {
   content: "🔒";
@@ -239,11 +244,37 @@ permalink: /games/
   top: 8px;
   right: 10px;
   font-size: 1.1rem;
-  filter: grayscale(0);
   opacity: 0.95;
+  z-index: 3;
 }
-.game-card-locked .game-card-icon {
-  filter: none;
+.game-card-locked .game-card-icon { color: #F5C518; }
+.game-card-locked h2,
+.game-card-locked p {
+  color: transparent;
+  background-image: linear-gradient(105deg,
+    #2f2a4a 0%, #2f2a4a 40%, #fff3c4 50%, #2f2a4a 60%, #2f2a4a 100%);
+  background-size: 280% 100%;
+  background-position: 150% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: bf-sweep 5.5s ease-in-out infinite;
+}
+.game-card-locked p { animation-delay: 0.16s; }
+@keyframes bf-sweep {
+  0%, 16%   { background-position: 150% 0; }
+  60%, 100% { background-position: -60% 0; }
+}
+.game-card-locked:hover h2,
+.game-card-locked:hover p {
+  animation: none;
+  color: #f0e6ff;
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-card-locked h2,
+  .game-card-locked p { animation: none; color: #6f6592; background: none; -webkit-background-clip: border-box; background-clip: border-box; }
 }
 
 .games-lb-link {
