@@ -5332,6 +5332,11 @@ body.theme-classified {
   will-change: transform;
 }
 
+/* Pause the scroll while a reader hovers the ticker. */
+.world-ticker-wrap:hover .ticker-track {
+  animation-play-state: paused;
+}
+
 .ticker-item {
   display: inline-block;
   font-family: 'Share Tech Mono', monospace;

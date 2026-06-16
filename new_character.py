@@ -13,9 +13,9 @@ import csv
 
 print("=== New Character ===\n")
 
-slug        = input("Slug (e.g. kennie): ").strip().lower()
+slug        = input("Slug (e.g. garrett): ").strip().lower()
 title       = input("Title (e.g. The Rival): ").strip()
-full_name   = input("Full name (e.g. Kennie McAllister): ").strip()
+full_name   = input("Full name (e.g. Garrett McAllister): ").strip()
 role        = input("Role (e.g. Supporting Character): ").strip()
 species     = input("Species (e.g. Human): ").strip()
 description = input("Short description (one sentence): ").strip()
