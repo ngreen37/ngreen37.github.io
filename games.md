@@ -43,7 +43,7 @@ permalink: /games/
     <div class="game-card-icon">♫</div>
     <div class="game-card-body">
       <h2>Notation Blitz v1.5</h2>
-      <p>A coordinate-reading rhythm game. Calls drop on the beat — click the square before it passes the gate.</p>
+      <p>A rhythm drill for reading chess coordinates at speed.</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>

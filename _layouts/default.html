@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/a11y.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/pjcc-flair.css' | relative_url }}">
 </head>
 <body{% if page.body_class %} class="{{ page.body_class }}"{% endif %}>
 
@@ -325,8 +326,15 @@
   })();
   </script>
 
-  <!-- Princess walker -->
-  <div class="princess-walker" id="princess-walker" aria-hidden="true" title="Princess">♟</div>
+  <!-- Princess walker (little 3D figurine; click her for a surprise) -->
+  <div class="princess-walker" id="princess-walker" title="Princess — psst, click me">
+    <div class="princess-3d" id="princess-3d">
+      <span class="p3d-crown">♛</span>
+      <span class="p3d-head"></span>
+      <span class="p3d-body"></span>
+      <span class="p3d-base"></span>
+    </div>
+  </div>
   <script>
   (function() {
     var walker = document.getElementById('princess-walker');
@@ -443,6 +451,7 @@
   .lang-toggle:hover { border-color: #F5C518; color: #F5C518; }
   </style>
   <script src="{{ '/assets/js/pjcc-lang.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/pjcc-flair.js' | relative_url }}" defer></script>
 
   {% include jukebox.html %}
 

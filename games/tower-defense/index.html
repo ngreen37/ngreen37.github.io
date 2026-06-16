@@ -5,7 +5,7 @@ description: "A tower-defense stand. The CEO marches his chess army down the Jou
 permalink: /games/tower-defense/
 ---
 
-<div class="game-frame-wrap">
+<div class="game-frame-wrap td-frame">
   <iframe
     src="{{ '/assets/games/pjcc_tower_defense.html' | relative_url }}"
     title="PJCC Siege on Chess City"
@@ -13,6 +13,13 @@ permalink: /games/tower-defense/
     scrolling="no"
   ></iframe>
 </div>
+
+<style>
+/* Siege needs room for the canvas PLUS the defender rack and controls below it */
+.td-frame { max-width: 760px; }
+.td-frame iframe { height: 720px; }
+@media (max-width: 640px) { .td-frame iframe { height: 600px; } }
+</style>
 
 <div class="game-info">
   <h2>How to Play</h2>

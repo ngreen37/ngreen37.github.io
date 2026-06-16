@@ -1,0 +1,93 @@
+/* =============================================================================
+ * PJCC Flair — dramatic entrances + a few "wow" touches.
+ * Loaded site-wide from the default layout. Everything here is additive and
+ * JS-driven (classes are added by pjcc-flair.js), so if the script never runs
+ * or motion is reduced, the page stays fully visible and usable.
+ * ========================================================================== */
+
+/* ---- 1. Scroll-reveal dramatic entrance ---- */
+.flair-reveal {
+  opacity: 0;
+  transform: translateY(26px) scale(0.965);
+  filter: blur(6px);
+  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+              filter 0.6s ease;
+  will-change: opacity, transform;
+}
+.flair-reveal.flair-in {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+/* ---- 2. 3D tilt + light sheen on cards ---- */
+.flair-tilt {
+  transform-style: preserve-3d;
+  transition: transform 0.18s ease;
+}
+.flair-tilt-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 0%),
+              rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0) 55%);
+  transition: opacity 0.2s ease;
+  z-index: 2;
+}
+.flair-tilt:hover .flair-tilt-sheen { opacity: 1; }
+
+/* ---- 3. Parallax drifting pieces (home only) ---- */
+.flair-drift-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.flair-drift {
+  position: absolute;
+  color: rgba(245, 197, 24, 0.07);
+  font-size: 120px;
+  line-height: 1;
+  user-select: none;
+  will-change: transform;
+}
+
+/* ---- 4. "Journey to Chess City" scroll-progress bar ---- */
+.flair-journey {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0;
+  z-index: 99998;
+  background: linear-gradient(90deg, #6e32ff, #F5C518);
+  box-shadow: 0 0 8px rgba(245, 197, 24, 0.6);
+  pointer-events: none;
+  transition: width 0.08s linear;
+}
+.flair-journey-flag {
+  position: absolute;
+  right: -7px;
+  top: -6px;
+  font-size: 12px;
+  filter: drop-shadow(0 0 3px rgba(245, 197, 24, 0.8));
+}
+
+/* ---- 5. Piece-burst confetti particles ---- */
+.flair-particle {
+  position: fixed;
+  z-index: 99999;
+  pointer-events: none;
+  font-size: 18px;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flair-reveal { opacity: 1; transform: none; filter: none; transition: none; }
+  .flair-tilt { transition: none; }
+  .flair-drift-layer { display: none; }
+}
