@@ -45,6 +45,10 @@ add:
   otherwise leave it out entirely
 
 ## 5. Create the database webhook (~3 min)
+⚠️ This is in **SUPABASE**, not Resend. (Resend also has a "Webhooks" page —
+that's the wrong one; it's for Resend notifying you about email events.) The hook
+we want watches your Supabase `subscribers` table.
+
 Supabase → **Database → Webhooks** → **Create a new hook**:
 - **Table:** `subscribers`
 - **Events:** Insert
