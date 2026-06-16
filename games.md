@@ -129,8 +129,8 @@ permalink: /games/
     </div>
   </a>
 
-  <a class="game-card game-card-dim" id="bf-card" href="{{ '/games/blindfold-puzzles/' | relative_url }}">
-    <div class="game-card-icon">◻</div>
+  <a class="game-card game-card-dim game-card-locked" id="bf-card" href="{{ '/games/blindfold-puzzles/' | relative_url }}">
+    <div class="game-card-icon" id="bf-icon">🔐</div>
     <div class="game-card-body">
       <h2>Blindfold Puzzles</h2>
       <p>A blank board and a clue — find the winning move in your head, then play it. Hidden bonus game.</p>
@@ -146,9 +146,11 @@ permalink: /games/
   try { ok = localStorage.getItem('pjcc.blindfold.unlocked') === '1'; } catch (e) {}
   if (ok) {
     var card = document.getElementById('bf-card');
-    if (card) card.classList.remove('game-card-dim');
+    if (card) card.classList.remove('game-card-dim', 'game-card-locked');
+    var icon = document.getElementById('bf-icon');
+    if (icon) icon.textContent = '◻';
     var tag = document.getElementById('bf-tag');
-    if (tag) { tag.textContent = 'Unlocked'; tag.className = 'game-tag'; }
+    if (tag) { tag.textContent = '🔓 Unlocked'; tag.className = 'game-tag'; }
   }
 })();
 </script>
@@ -224,6 +226,24 @@ permalink: /games/
 .game-tag-soon {
   color: #b9a8e6;
   border-color: #6b5fa0;
+}
+
+/* Locked bonus game: a clear padlock badge + dashed "sealed" border */
+.game-card-locked {
+  position: relative;
+  border-style: dashed;
+}
+.game-card-locked::after {
+  content: "🔒";
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 1.1rem;
+  filter: grayscale(0);
+  opacity: 0.95;
+}
+.game-card-locked .game-card-icon {
+  filter: none;
 }
 
 .games-lb-link {

@@ -144,7 +144,8 @@ ul, ol {
 /* --- Navigation Pills --- */
 .site-nav {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  /* PJCC group | divider | Your Dossier | divider | Studio group */
+  grid-template-columns: 1fr auto auto auto 1fr;
   align-items: center;
   width: 100%;
   border-top: 1px solid rgba(61, 43, 138, 0.3);
