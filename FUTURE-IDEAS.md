@@ -26,7 +26,7 @@ accessibility pass, opt-in coaching).
   Bishop Spire, Rook Bastion, Queen's Guard), upgrades/sell, a charge-up Royal Decree
   ultimate, 12 waves ending in the King boss. Scores log to the leaderboard.
 - **Personality quiz** — a short quiz that tells you which PJCC character you're most like
-  (Princess, the Rival/Kennie, the Father, Argus, Oskar, the Narrator…). Shareable result,
+  (Princess, the Rival/Kennie, the Father, Argus, Louie, the Narrator…). Shareable result,
   could grant a cosmetic title. Light to build, high shareability.
 
 ## Engagement / live features

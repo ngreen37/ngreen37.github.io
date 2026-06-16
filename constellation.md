@@ -44,7 +44,7 @@ permalink: /constellation/
       <line class="const-edge const-edge--bond"      x1="400" y1="220" x2="400" y2="100"/>
       <!-- Princess ↔ Argus: companion -->
       <line class="const-edge const-edge--companion" x1="400" y1="220" x2="240" y2="340"/>
-      <!-- Princess ↔ Oskar: companion -->
+      <!-- Princess ↔ Louie: companion -->
       <line class="const-edge const-edge--companion" x1="400" y1="220" x2="560" y2="340"/>
       <!-- Narrator ↔ Rival: rivals →  respect -->
       <line class="const-edge const-edge--rival"     x1="400" y1="100" x2="620" y2="180"/>
@@ -52,7 +52,7 @@ permalink: /constellation/
       <line class="const-edge const-edge--family"    x1="400" y1="100" x2="180" y2="180"/>
       <!-- Narrator ↔ Best Friend: friend (strained) -->
       <line class="const-edge const-edge--strained"  x1="400" y1="100" x2="200" y2="340"/>
-      <!-- Argus ↔ Oskar: companions -->
+      <!-- Argus ↔ Louie: companions -->
       <line class="const-edge const-edge--companion" x1="240" y1="340" x2="560" y2="340"/>
 
       <!-- ── NODES ── -->
@@ -104,12 +104,12 @@ permalink: /constellation/
         <text x="240" y="367" text-anchor="middle" font-family="'Poppins',sans-serif" font-size="10" font-weight="700" fill="rgba(196,181,253,0.52)" pointer-events="none">Argus</text>
       </g>
 
-      <!-- Oskar (lower right) -->
-      <g class="const-node-group" data-char="oskar" data-name="Oskar" data-role="Companion" data-url="/characters/oskar/">
+      <!-- Louie (lower right) -->
+      <g class="const-node-group" data-char="louie" data-name="Louie" data-role="Companion" data-url="/characters/louie/">
         <circle cx="560" cy="340" r="18" fill="rgba(196,181,253,0.06)" stroke="rgba(196,181,253,0.1)" stroke-width="1" class="const-node-ring"/>
         <circle cx="560" cy="340" r="13" fill="rgba(196,181,253,0.12)" stroke="rgba(196,181,253,0.42)" stroke-width="1.5" filter="url(#node-glow)"/>
         <text x="560" y="345" text-anchor="middle" font-size="11" fill="rgba(196,181,253,0.72)" pointer-events="none">♞</text>
-        <text x="560" y="367" text-anchor="middle" font-family="'Poppins',sans-serif" font-size="10" font-weight="700" fill="rgba(196,181,253,0.52)" pointer-events="none">Oskar</text>
+        <text x="560" y="367" text-anchor="middle" font-family="'Poppins',sans-serif" font-size="10" font-weight="700" fill="rgba(196,181,253,0.52)" pointer-events="none">Louie</text>
       </g>
     </svg>
 

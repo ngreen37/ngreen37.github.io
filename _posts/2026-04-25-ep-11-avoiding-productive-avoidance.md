@@ -5,7 +5,7 @@ title: Ep. 11 - Avoiding Productive Avoidance
 date: 2026-04-25
 tags: [Productive Avoidance, Blender, Princess, Hockey, Basketball, Wild, Timberwolves]
 ---
-### Listening to: Generator - Bad Religion
+### Listening to: Bad Religion - Generator
 <iframe src="https://open.spotify.com/embed/track/1a42up3NBd91HTCbmYKMq4" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
 aaaaaaaaaaaaaaaaaahhh! Oh yeah!  Oh-oh yeah!  Big blender day today, so Bad Religion is perfect.  All evening, in between Wolves and Wild playoff games.  That's right; I am from Minnesota and I root for my teams with great passion. I have yet to witness a championship in any of the four major sports (hockey, basketball, football, and baseball). Not even a finals APPEARANCE.  

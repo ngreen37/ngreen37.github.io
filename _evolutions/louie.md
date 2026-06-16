@@ -1,9 +1,9 @@
 ---
 layout: evolution
-title: Oskar
+title: Louie
 category: character
-entity_url: /characters/oskar/
+entity_url: /characters/louie/
 role: Side Character
-permalink: /evolutions/oskar/
+permalink: /evolutions/louie/
 versions: []
 ---
