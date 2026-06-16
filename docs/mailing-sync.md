@@ -11,16 +11,12 @@ Flow once set up:
 
 ---
 
-## 1. Get your Resend Audience ID (~1 min)
-Resend gives every account ONE default audience automatically — you don't need to
-create one, and the ID is NOT in the page URL. Get it one of these ways:
-- On Resend → **Audience**, click the **`</>`** button (top-right, next to
-  "Add contacts"). The example snippet contains `audience_id: '….'` — that UUID
-  is your Audience ID, OR
-- run in a terminal (replace with your real key):
-  `curl -s https://api.resend.com/audiences -H "Authorization: Bearer re_yourkey"`
-  and copy the `"id"` it returns.
-Save that ID for step 4 (`RESEND_AUDIENCE_ID`).
+## 1. Audience ID — you probably don't need one
+Resend now uses a single default audience. If the **`</>`** snippet on the
+Audience page shows `contacts.create({ email, ... })` with **no** `audience_id`,
+your account is single-audience: skip this entirely and leave
+`RESEND_AUDIENCE_ID` unset in step 4. (Only older accounts whose snippet includes
+an `audienceId` need to set it.)
 
 ## 2. Pick a webhook secret (~1 min)
 Make up a random string (e.g. mash the keyboard, or run `openssl rand -hex 16`).
@@ -42,10 +38,11 @@ supabase functions deploy sync-subscriber --no-verify-jwt
 
 ## 4. Add the function's secrets (~2 min)
 Supabase → **Edge Functions → Secrets** (or Project Settings → Edge Functions),
-add three:
+add:
 - `RESEND_API_KEY` = your `re_...` key (reuse the one from SMTP, or make a new one)
-- `RESEND_AUDIENCE_ID` = the Audience ID from step 1
 - `WEBHOOK_SECRET` = the random string from step 2
+- `RESEND_AUDIENCE_ID` = **only if** your account still needs one (see step 1) —
+  otherwise leave it out entirely
 
 ## 5. Create the database webhook (~3 min)
 Supabase → **Database → Webhooks** → **Create a new hook**:

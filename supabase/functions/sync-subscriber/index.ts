@@ -2,20 +2,25 @@
 // sync-subscriber — Supabase Edge Function
 // -----------------------------------------------------------------------------
 // Fired by a Database Webhook whenever a row is INSERTed into `subscribers`.
-// It takes the new email and adds it as a contact in your Resend audience, so
-// newsletter signups flow automatically from Supabase into Resend.
+// It adds the new email as a contact in Resend, so newsletter signups flow
+// automatically from Supabase into your Resend audience.
 //
-// Secrets it needs (set in Supabase → Edge Functions → Secrets):
+// Uses the Resend SDK (same call your Resend dashboard shows under </>), so it
+// matches the current single-audience API — no audience id required. (If your
+// account still needs one, set RESEND_AUDIENCE_ID and it will be included.)
+//
+// Secrets (Supabase → Edge Functions → Secrets):
 //   RESEND_API_KEY      your Resend API key (re_...)   — SECRET
-//   RESEND_AUDIENCE_ID  the audience to add contacts to
 //   WEBHOOK_SECRET      a random string you also put on the webhook header
+//   RESEND_AUDIENCE_ID  optional — only if your account still requires it
 //
 // Deploy with JWT verification OFF so the database webhook can call it.
 // =============================================================================
+import { Resend } from "npm:resend";
 
 Deno.serve(async (req: Request): Promise<Response> => {
   try {
-    // 1. Simple shared-secret check so randoms can't spam your audience.
+    // 1. Shared-secret check so randoms can't spam your audience.
     const expected = Deno.env.get("WEBHOOK_SECRET");
     if (expected && req.headers.get("x-webhook-secret") !== expected) {
       return new Response("forbidden", { status: 403 });
@@ -26,32 +31,25 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const email: string | undefined = payload?.record?.email ?? payload?.email;
     if (!email) return new Response("no email in payload", { status: 400 });
 
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    const AUDIENCE_ID = Deno.env.get("RESEND_AUDIENCE_ID");
-    if (!RESEND_API_KEY || !AUDIENCE_ID) {
-      return new Response("function not configured", { status: 500 });
-    }
+    const key = Deno.env.get("RESEND_API_KEY");
+    if (!key) return new Response("RESEND_API_KEY not set", { status: 500 });
 
-    // 3. Add the contact to the Resend audience.
-    const res = await fetch(
-      `https://api.resend.com/audiences/${AUDIENCE_ID}/contacts`,
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${RESEND_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, unsubscribed: false }),
-      },
-    );
+    // 3. Create the contact (audience id only if your account still needs it).
+    const resend = new Resend(key);
+    const params: Record<string, unknown> = { email, unsubscribed: false };
+    const audienceId = Deno.env.get("RESEND_AUDIENCE_ID");
+    if (audienceId) params.audienceId = audienceId;
 
-    // 200 on success; treat "already a contact" (409/422) as success too so the
-    // webhook doesn't retry forever. Only real failures bubble up as 500.
-    if (res.ok || res.status === 409 || res.status === 422) {
-      return new Response("ok", { status: 200 });
+    const { error } = await resend.contacts.create(params);
+    if (error) {
+      const msg = JSON.stringify(error);
+      // "already exists" -> treat as success so the webhook doesn't retry forever
+      if (/exist|already|duplicate/i.test(msg)) {
+        return new Response("ok (already a contact)", { status: 200 });
+      }
+      return new Response(`resend error: ${msg}`, { status: 500 });
     }
-    const detail = await res.text();
-    return new Response(`resend error ${res.status}: ${detail}`, { status: 500 });
+    return new Response("ok", { status: 200 });
   } catch (e) {
     return new Response(`error: ${(e as Error).message}`, { status: 500 });
   }
