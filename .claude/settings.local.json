@@ -34,7 +34,12 @@
       "Bash(node --check assets/js/pjcc-profile-bar.js)",
       "Bash(ls quartermaster.md)",
       "Bash(awk '/^<script>$/{f=1;next}/^<\\\\/script>$/{f=0}f' assets/games/pjcc_shogi.html)",
-      "Bash(node --check /tmp/shogi.js)"
+      "Bash(node --check /tmp/shogi.js)",
+      "Bash(awk '/^<script>$/{f=1;next}/^<\\\\/script>$/{f=0}f' assets/games/pjcc_blindfold.html)",
+      "Bash(node --check /tmp/bf.js)",
+      "Bash(awk '/^<script>$/{f=1;next}/^<\\\\/script>$/{f=0}f' games/blindfold-puzzles/index.html)",
+      "Bash(node --check /tmp/bfw.js)",
+      "Bash(awk '/^<script>$/{f=1;next}/^<\\\\/script>$/{f=0}f' games.md)"
     ]
   },
   "hooks": {

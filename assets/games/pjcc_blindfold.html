@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>PJCC: Blindfold Puzzles</title>
+<script src="/assets/js/pjcc-config.js"></script>
+<script src="/assets/js/pjcc-profile.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root { --gold:#F5C518; --pink:#ff8fd0; --light:#3d2a7a; --dark:#2D1B69; --ink:#f0e6ff; }
+  html, body { height: 100%; background: #140c2d; color: var(--ink);
+    font-family: 'Trebuchet MS','Segoe UI',sans-serif; -webkit-tap-highlight-color: transparent; }
+  body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 10px; }
+  #wrap { width: 100%; max-width: 460px; }
+  .top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; font-size: 13px; }
+  .top .goal { color: var(--gold); font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
+  .top .score { color: #6bffb8; }
+  .clue { background: #1d1140; border: 1px solid var(--gold); border-radius: 8px; padding: 11px 14px;
+    font-size: 15px; line-height: 1.5; margin-bottom: 10px; min-height: 64px; }
+  .clue b.you { color: var(--gold); } .clue b.them { color: var(--pink); }
+  #board { display: grid; grid-template-columns: 18px repeat(8, 1fr); grid-template-rows: repeat(8, 1fr) 18px;
+    gap: 0; aspect-ratio: 1 / 1; width: 100%; border: 2px solid var(--gold); border-radius: 4px; overflow: hidden; }
+  .sq { display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative;
+    font-size: 7vmin; line-height: 1; user-select: none; }
+  @media (min-width: 460px) { .sq { font-size: 34px; } }
+  .sq.light { background: var(--light); } .sq.dark { background: var(--dark); }
+  .sq.from { box-shadow: inset 0 0 0 3px #6bffb8; }
+  .sq.target { box-shadow: inset 0 0 0 3px var(--gold); }
+  .sq.bad { box-shadow: inset 0 0 0 3px #ff6b6b; }
+  .sq .pc.you { color: var(--gold); text-shadow: 0 1px 2px #000; }
+  .sq .pc.them { color: var(--pink); text-shadow: 0 1px 2px #000; }
+  .lab { display: flex; align-items: center; justify-content: center; font-size: 9px; color: #9a7fd4; background: #140c2d; }
+  .msg { text-align: center; min-height: 22px; margin: 8px 0; font-size: 14px; }
+  .msg.good { color: #6bffb8; } .msg.bad { color: #ff6b6b; }
+  .row { display: flex; gap: 8px; justify-content: center; }
+  button { background: var(--dark); color: var(--ink); border: 1px solid #6b5fa0; border-radius: 7px;
+    padding: 9px 16px; font-size: 14px; font-weight: bold; cursor: pointer; font-family: inherit; }
+  button.primary { background: var(--gold); color: #1a0f3d; border-color: var(--gold); }
+  button:hover { border-color: var(--gold); }
+  .overlay { position: fixed; inset: 0; background: rgba(15,9,30,0.95); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; padding: 24px; z-index: 20; }
+  .overlay.hidden { display: none; }
+  .overlay h1 { color: var(--gold); font-size: 26px; margin-bottom: 10px; letter-spacing: 1px; }
+  .overlay p { color: #c9a7ff; max-width: 360px; line-height: 1.6; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div class="top">
+    <span class="goal" id="goal">—</span>
+    <span class="score">Solved <b id="solved">0</b>/<b id="total">0</b></span>
+  </div>
+  <div class="clue" id="clue"></div>
+  <div id="board"></div>
+  <div class="msg" id="msg">Read the clue. Click the piece that moves, then its target square.</div>
+  <div class="row">
+    <button id="reveal">Reveal position</button>
+    <button class="primary" id="next" disabled>Next &rarr;</button>
+  </div>
+</div>
+
+<div class="overlay" id="end" class="hidden">
+  <h1 id="end-title">SET COMPLETE</h1>
+  <p id="end-msg"></p>
+  <button class="primary" id="again">Play again</button>
+</div>
+
+<script>
+const FILES = ['a','b','c','d','e','f','g','h'];
+const GLYPH = {
+  w: { k:'♔', q:'♕', r:'♖', b:'♗', n:'♘', p:'♙' },
+  b: { k:'♚', q:'♛', r:'♜', b:'♝', n:'♞', p:'♟' }
+};
+
+// Each puzzle: a verbal clue on a blank board. Click the moving piece's square
+// to reveal it, then click its destination. All hand-verified mate/fork in one.
+const PUZZLES = [
+  { goal: 'Mate in one',
+    clue: 'Opposing <b class="them">king on g8</b>, with pawns on f7, g7, h7. Your <b class="you">rook is on e4</b> and your king on d1.',
+    pieces: { g8:['k','b'], f7:['p','b'], g7:['p','b'], h7:['p','b'], e4:['r','w'], d1:['k','w'] }, from:'e4', to:'e8' },
+  { goal: 'Mate in one',
+    clue: 'Opposing <b class="them">king on a8</b>. Your <b class="you">rook is on h7</b> and your king on b6.',
+    pieces: { a8:['k','b'], h7:['r','w'], b6:['k','w'] }, from:'h7', to:'h8' },
+  { goal: 'Mate in one',
+    clue: 'Opposing <b class="them">king on e8</b>. Your <b class="you">queen is on e1</b> and your king on e6.',
+    pieces: { e8:['k','b'], e1:['q','w'], e6:['k','w'] }, from:'e1', to:'e7' },
+  { goal: 'Win the queen (fork)',
+    clue: 'Opposing <b class="them">king on h8, queen on d8</b>. Your <b class="you">knight is on g5</b> and your king on g1.',
+    pieces: { h8:['k','b'], d8:['q','b'], g5:['n','w'], g1:['k','w'] }, from:'g5', to:'f7' },
+  { goal: 'Mate in one',
+    clue: 'Opposing <b class="them">king on d8</b>. Your <b class="you">rooks are on a7 and b1</b>, king on h1.',
+    pieces: { d8:['k','b'], a7:['r','w'], b1:['r','w'], h1:['k','w'] }, from:'b1', to:'b8' },
+  { goal: 'Mate in one',
+    clue: 'Opposing <b class="them">king on g8</b> with pawns on f7 and h7. Your <b class="you">queen is on g3</b> and king on f6.',
+    pieces: { g8:['k','b'], f7:['p','b'], h7:['p','b'], g3:['q','w'], f6:['k','w'] }, from:'g3', to:'g7' }
+];
+
+const boardEl = document.getElementById('board');
+const sqEls = {};
+function buildBoard() {
+  boardEl.innerHTML = '';
+  for (let r = 8; r >= 1; r--) {
+    const lab = document.createElement('div'); lab.className = 'lab'; lab.textContent = r; boardEl.appendChild(lab);
+    for (let f = 0; f < 8; f++) {
+      const name = FILES[f] + r;
+      const d = document.createElement('div');
+      d.className = 'sq ' + (((f + r) % 2 === 0) ? 'dark' : 'light');
+      d.dataset.sq = name;
+      d.onclick = () => clickSquare(name);
+      boardEl.appendChild(d);
+      sqEls[name] = d;
+    }
+  }
+  // bottom file labels (with a corner spacer)
+  const corner = document.createElement('div'); corner.className = 'lab'; boardEl.appendChild(corner);
+  for (let f = 0; f < 8; f++) { const l = document.createElement('div'); l.className = 'lab'; l.textContent = FILES[f]; boardEl.appendChild(l); }
+}
+
+let idx = 0, solved = 0, phase = 'from', curMistake = false;
+const total = PUZZLES.length;
+
+function setMsg(t, cls) { const m = document.getElementById('msg'); m.textContent = t; m.className = 'msg ' + (cls || ''); }
+function clearMarks() { Object.values(sqEls).forEach(e => { e.classList.remove('from','target','bad'); }); }
+function place(sq, piece) {
+  const [type, side] = piece;
+  sqEls[sq].innerHTML = '<span class="pc ' + (side === 'w' ? 'you' : 'them') + '">' + GLYPH[side][type] + '</span>';
+}
+function clearPieces() { Object.values(sqEls).forEach(e => { e.innerHTML = ''; }); }
+
+function loadPuzzle() {
+  clearPieces(); clearMarks();
+  const p = PUZZLES[idx];
+  phase = 'from'; curMistake = false;
+  document.getElementById('goal').textContent = p.goal;
+  document.getElementById('clue').innerHTML = p.clue;
+  document.getElementById('solved').textContent = solved;
+  document.getElementById('total').textContent = total;
+  document.getElementById('next').disabled = true;
+  setMsg('Click the piece that moves.', '');
+}
+
+function clickSquare(sq) {
+  const p = PUZZLES[idx];
+  if (phase === 'done') return;
+  if (phase === 'from') {
+    if (sq === p.from) {
+      place(sq, p.pieces[sq]); sqEls[sq].classList.add('from');
+      phase = 'to'; setMsg('Good — now click where it goes.', 'good');
+    } else {
+      curMistake = true;
+      if (p.pieces[sq]) { place(sq, p.pieces[sq]); sqEls[sq].classList.add('bad'); setMsg('That piece isn’t the one to move.', 'bad'); }
+      else setMsg('Nothing on that square. Re-read the clue.', 'bad');
+      setTimeout(() => { if (phase === 'from') { clearPieces(); clearMarks(); } }, 900);
+    }
+  } else if (phase === 'to') {
+    if (sq === p.to) {
+      sqEls[p.from].innerHTML = ''; place(sq, p.pieces[p.from]); clearMarks(); sqEls[sq].classList.add('target');
+      // reveal the rest of the position for confirmation
+      Object.keys(p.pieces).forEach(s => { if (s !== p.from && !sqEls[s].innerHTML) place(s, p.pieces[s]); });
+      phase = 'done';
+      if (!curMistake) solved++;
+      document.getElementById('solved').textContent = solved;
+      setMsg(curMistake ? 'Correct — but counted as a slip.' : 'Solved! ✓', 'good');
+      document.getElementById('next').disabled = false;
+    } else {
+      curMistake = true; sqEls[sq].classList.add('bad');
+      setMsg('Not the right square — try again.', 'bad');
+      setTimeout(() => sqEls[sq].classList.remove('bad'), 700);
+    }
+  }
+}
+
+document.getElementById('reveal').onclick = () => {
+  const p = PUZZLES[idx];
+  Object.keys(p.pieces).forEach(s => place(s, p.pieces[s]));
+  clearMarks(); sqEls[p.from].classList.add('from'); sqEls[p.to].classList.add('target');
+  curMistake = true; phase = 'done';
+  setMsg('Answer: ' + p.from + ' → ' + p.to + '.', '');
+  document.getElementById('next').disabled = false;
+};
+
+document.getElementById('next').onclick = () => {
+  idx++;
+  if (idx >= total) return endSet();
+  loadPuzzle();
+};
+
+function endSet() {
+  document.getElementById('end-title').textContent = solved === total ? 'PERFECT SET! ⭐' : 'SET COMPLETE';
+  document.getElementById('end-msg').textContent = 'You solved ' + solved + ' of ' + total + ' blindfold puzzles clean.';
+  document.getElementById('end').classList.remove('hidden');
+  if (window.PJCC) PJCC.saveScore('blindfold', solved, { credits: 1, data: { total: total } });
+}
+
+document.getElementById('again').onclick = () => {
+  idx = 0; solved = 0;
+  document.getElementById('end').classList.add('hidden');
+  loadPuzzle();
+};
+
+buildBoard();
+loadPuzzle();
+</script>
+</body>
+</html>

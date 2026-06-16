@@ -841,6 +841,15 @@ function finish() {
   else bestEl.innerHTML = 'Best: <b style="color:#F5C518;">' + prev.rank + '</b> · ' + prev.score;
   updateTitleBest();
   if (window.PJCC) PJCC.saveScore('notation-run', G.score, { credits: 1, data: { mode: G.mode, diff: G.diff, rank: rank } });
+  // Perfect Sprint (rank S on the hardest tempo) unlocks Blindfold Puzzles.
+  if (G.diff === 'hard' && rank === 'S') {
+    try {
+      if (localStorage.getItem('pjcc.blindfold.unlocked') !== '1') {
+        localStorage.setItem('pjcc.blindfold.unlocked', '1');
+        document.getElementById('res-best').innerHTML += '<br><b style="color:#6bffb8;">🔓 Blindfold Puzzles unlocked!</b>';
+      }
+    } catch (e) {}
+  }
 
   document.getElementById('results-screen').classList.remove('hidden');
 }

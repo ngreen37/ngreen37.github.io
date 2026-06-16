@@ -18,7 +18,8 @@ permalink: /dossier/
     'cipher': ['CIPHER', 'streak'], 'clearance-delta': ['Clearance: DELTA', 'score'],
     'notation-run': ['Notation Blitz', 'score'], 'fork-in-the-road': ['Fork in the Road', 'solved'],
     'sand-mine-depths': ['Sand Mine Depths', 'depth'], 'pirc-protocol': ['Pirc Protocol', 'flawless'],
-    'ferry-delayed': ['Ferry Delayed', 'aced']
+    'ferry-delayed': ['Ferry Delayed', 'aced'], 'shogi-island': ['Shogi Island', 'correct'],
+    'blindfold': ['Blindfold Puzzles', 'solved']
   };
   function esc(s) {
     return String(s).replace(/[&<>"]/g, function (c) {

@@ -1,0 +1,54 @@
+---
+layout: game
+title: "Blindfold Puzzles"
+description: "No pieces on the board — only a clue. Find the move in your head, then play it."
+permalink: /games/blindfold-puzzles/
+---
+
+<div id="bf-lock" class="bf-lock" hidden>
+  <div class="bf-lock-icon">🔒</div>
+  <h2>Locked</h2>
+  <p>Blindfold Puzzles unlocks when you earn a <strong>perfect run on Sprint</strong> — rank <strong>S</strong>, no misses — in <a href="/games/notation-run/">Notation Blitz</a>. Master the board with your eyes open first; then we take the pieces away.</p>
+  <a class="bf-cta" href="/games/notation-run/">Train in Notation Blitz &rarr;</a>
+</div>
+
+<div id="bf-frame" class="game-frame-wrap" hidden>
+  <iframe
+    src="{{ '/assets/games/pjcc_blindfold.html' | relative_url }}"
+    title="PJCC Blindfold Puzzles"
+    allowfullscreen
+    scrolling="no"
+  ></iframe>
+</div>
+
+<script>
+(function () {
+  var unlocked = false;
+  try { unlocked = localStorage.getItem('pjcc.blindfold.unlocked') === '1'; } catch (e) {}
+  document.getElementById(unlocked ? 'bf-frame' : 'bf-lock').hidden = false;
+})();
+</script>
+
+<style>
+.bf-lock { max-width: 560px; margin: 0 auto 1.6rem; text-align: center; background: #160c33;
+  border: 1px solid #6b5fa0; border-radius: 12px; padding: 2rem 1.6rem; }
+.bf-lock-icon { font-size: 48px; }
+.bf-lock h2 { color: #F5C518; margin: 0.4rem 0; }
+.bf-lock p { color: #c9a7ff; line-height: 1.6; }
+.bf-cta { display: inline-block; margin-top: 1rem; background: #F5C518; color: #1a0f3d;
+  font-weight: 800; border-radius: 999px; padding: 9px 20px; text-decoration: none; }
+.bf-cta:hover { background: #ffd740; }
+</style>
+
+<div class="game-info">
+  <h2>How to Play</h2>
+  <ul>
+    <li>The board is <strong>blank</strong> — you get only a written clue describing where every piece sits</li>
+    <li>Picture the position, then <strong>click the square of the piece that moves</strong> to reveal it</li>
+    <li>Then <strong>click the square it should move to</strong> — the winning move</li>
+    <li><strong>Reveal position</strong> shows everything if you're stuck (counts as a slip)</li>
+    <li>Six puzzles per set — solve them clean to keep your score</li>
+  </ul>
+
+  <p class="game-note">The final test of board vision: no pieces, just coordinates and your mind's eye. Scores log to your <a href="/dossier/">operative dossier</a> and the <a href="/leaderboards/">leaderboards</a>.</p>
+</div>

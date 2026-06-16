@@ -10,6 +10,24 @@ accessibility pass, opt-in coaching).
 
 ---
 
+## New game concepts (bigger builds — own session each)
+- **Sky Run — chess Bloons (à la Bloons Supermonkey 2).** A side/auto-scrolling shooter:
+  Princess flies and pops chess pieces as they appear, town to town, ending at **Chess
+  City**, with a **secret level: the CEO's Office**. Power-ups by piece:
+  - **Bishop** → an **"X" shot** (four diagonal beams)
+  - **Knight** → **two sharpshooter escorts** firing alongside you
+  - **Queen** → a **super-shot** (screen-clearing blast)
+  - **King** → the **end-villain / boss** of a region
+  Best built in a real engine (or a focused canvas effort); ties beautifully to the
+  Blender/Godot path so the flier + pieces could be 3D later. Scores would log to the
+  same leaderboard.
+- **Tower Defense** — place chess pieces as towers along a path (rook = long lane, bishop
+  = diagonals, knight = L-splash, queen = premium) to stop waves marching toward Chess
+  City. Natural fit for the piece-movement theme; a dedicated build.
+- **Personality quiz** — a short quiz that tells you which PJCC character you're most like
+  (Princess, the Rival/Kennie, the Father, Argus, Oskar, the Narrator…). Shareable result,
+  could grant a cosmetic title. Light to build, high shareability.
+
 ## Engagement / live features
 - **Daily Dispatch** — one date-seeded challenge that's identical for every operative
   each day (a rotating game or fixed CIPHER word), with its own daily leaderboard and

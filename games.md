@@ -120,7 +120,29 @@ permalink: /games/
     </div>
   </a>
 
+  <a class="game-card game-card-dim" id="bf-card" href="{{ '/games/blindfold-puzzles/' | relative_url }}">
+    <div class="game-card-icon">◻</div>
+    <div class="game-card-body">
+      <h2>Blindfold Puzzles</h2>
+      <p>A blank board and a clue — find the winning move in your head, then play it. Hidden bonus game.</p>
+      <span class="game-tag game-tag-soon" id="bf-tag">🔒 Locked — perfect Sprint in Notation Blitz</span>
+    </div>
+  </a>
+
 </div>
+
+<script>
+(function () {
+  var ok = false;
+  try { ok = localStorage.getItem('pjcc.blindfold.unlocked') === '1'; } catch (e) {}
+  if (ok) {
+    var card = document.getElementById('bf-card');
+    if (card) card.classList.remove('game-card-dim');
+    var tag = document.getElementById('bf-tag');
+    if (tag) { tag.textContent = 'Unlocked'; tag.className = 'game-tag'; }
+  }
+})();
+</script>
 
 <style>
 .games-grid {

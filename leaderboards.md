@@ -25,7 +25,8 @@ permalink: /leaderboards/
     { key: 'sand-mine-depths',label: 'Sand Mine Depths', unit: 'depth'   },
     { key: 'pirc-protocol',   label: 'Pirc Protocol',    unit: 'score'   },
     { key: 'ferry-delayed',   label: 'Ferry Delayed',    unit: 'solved'  },
-    { key: 'shogi-island',    label: 'Shogi Island',     unit: 'correct' }
+    { key: 'shogi-island',    label: 'Shogi Island',     unit: 'correct' },
+    { key: 'blindfold',       label: 'Blindfold Puzzles',unit: 'solved'  }
   ];
   var PAGE = 25;
 
