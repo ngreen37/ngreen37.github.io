@@ -63,7 +63,7 @@ permalink: /leaderboards/
     if (active === '__overall__') {
       var rows = await PJCC.cumulativeLeaderboard(PAGE, offset);
       return rows.map(function (r) {
-        return { codename: r.codename, companion: r.companion, value: r.credits, rankName: r.rank };
+        return { codename: r.codename, companion: r.companion, value: r.credits, rankName: PJCC.rankFor(r.credits).name };
       });
     }
     var grows = await PJCC.gameLeaderboard(active, PAGE, offset);

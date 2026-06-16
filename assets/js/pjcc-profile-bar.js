@@ -74,13 +74,15 @@
 
     // Complete identity row
     bar.className = 'pjcc-bar pjcc-bar-in';
+    var rankName = PJCC.rankFor(prof.credits).name;
     bar.innerHTML =
       '<div class="pjcc-avatar">' + PJCC.avatarEmoji(prof) + '</div>' +
       '<div class="pjcc-id">' +
         '<span class="pjcc-codename">' + esc(prof.codename) + '</span>' +
-        '<span class="pjcc-sub">' + esc(prof.rank) + ' · <span class="pjcc-credits">' + prof.credits + ' credits</span></span>' +
+        '<span class="pjcc-sub">' + esc(rankName) + ' · <span class="pjcc-credits">' + prof.credits + ' credits</span></span>' +
       '</div>' +
       '<span class="pjcc-spacer"></span>' +
+      '<a class="pjcc-trophy" href="/dossier/">🗂 Dossier</a>' +
       '<a class="pjcc-trophy" href="/leaderboards/">🏆 Leaderboards</a>' +
       '<button id="pjcc-edit" class="pjcc-btn-ghost">Change avatar</button>' +
       '<button id="pjcc-out" class="pjcc-btn-ghost">Sign out</button>';
@@ -91,13 +93,14 @@
   function renderPicker(bar, prof, firstTime) {
     bar.className = 'pjcc-bar pjcc-bar-in';
     var current = prof.companion && prof.companion.avatar;
-    var picks = PJCC.AVATAR_ORDER.map(function (key) {
+    var picks = PJCC.ownedAvatars().map(function (key) {
       return '<span class="pjcc-pick' + (key === current ? ' sel' : '') + '" data-av="' + key + '" title="' + key + '">' +
 avEmoji(key) + '</span>';
     }).join('');
     bar.innerHTML =
       '<span class="pjcc-label">' + (firstTime ? 'Pick your <strong>avatar</strong>:' : 'Change avatar:') + '</span>' +
       '<div class="pjcc-picker">' + picks + '</div>' +
+      '<a class="pjcc-trophy" href="/quartermaster/">＋ More</a>' +
       (firstTime ? '' : '<button id="pjcc-cancel" class="pjcc-btn-ghost">Cancel</button>');
     Array.prototype.forEach.call(bar.querySelectorAll('.pjcc-pick'), function (node) {
       node.onclick = function () { PJCC.setAvatar(node.getAttribute('data-av')).then(render); };

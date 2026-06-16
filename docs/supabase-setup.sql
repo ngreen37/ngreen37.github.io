@@ -84,4 +84,18 @@ as $$
   returning credits;
 $$;
 
--- Done. Tables: profiles, game_stats, scores. Function: add_credits(int).
+-- 6. MAILING LIST ------------------------------------------------------------
+-- Newsletter signups. Insert-only from the browser; emails are NOT readable via
+-- the API (no select policy) so they can't be scraped — you read them in the
+-- Supabase Table Editor. Run this block if you added the mailing list later.
+create table if not exists subscribers (
+  id         bigint generated always as identity primary key,
+  email      text not null unique,
+  created_at timestamptz default now()
+);
+alter table subscribers enable row level security;
+drop policy if exists "subscribers insert" on subscribers;
+create policy "subscribers insert" on subscribers for insert with check (true);
+-- (intentionally no select policy: write-only from the client)
+
+-- Done. Tables: profiles, game_stats, scores, subscribers. Function: add_credits(int).
