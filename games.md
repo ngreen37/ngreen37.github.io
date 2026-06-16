@@ -10,7 +10,7 @@ permalink: /games/
 
 <script>
 (function () {
-  var NAMES = { 'cipher': 'CIPHER', 'clearance-delta': 'Clearance: DELTA', 'notation-run': 'Notation Blitz', 'fork-in-the-road': 'Fork in the Road', 'sand-mine-depths': 'Sand Mine Depths', 'pirc-protocol': 'The Pirc Protocol', 'ferry-delayed': 'Ferry Delayed', 'shogi-island': 'Shogi Island' };
+  var NAMES = { 'cipher': 'CIPHER', 'clearance-delta': 'Clearance: DELTA', 'notation-run': 'Notation Blitz', 'fork-in-the-road': 'Fork in the Road', 'sand-mine-depths': 'Sand Mine Depths', 'pirc-protocol': 'The Pirc Protocol', 'ferry-delayed': 'Ferry Delayed', 'shogi-island': 'Shogi Island', 'tower-defense': 'Siege on Chess City' };
   function show() {
     if (!window.PJCC || !PJCC.bountyGame) return;
     var key = PJCC.bountyGame();
@@ -116,6 +116,15 @@ permalink: /games/
     <div class="game-card-body">
       <h2>Shogi Island</h2>
       <p>A shogi piece-movement trainer set across the water. Read each piece and tap every square it can move to — pawns, lances, the gold and silver generals.</p>
+      <span class="game-tag">Playable</span>
+    </div>
+  </a>
+
+  <a class="game-card" href="{{ '/games/tower-defense/' | relative_url }}">
+    <div class="game-card-icon">🏰</div>
+    <div class="game-card-body">
+      <h2>Siege on Chess City</h2>
+      <p>A tower-defense stand. The CEO marches his chess army down the Journey road — line it with defenders, charge the Royal Decree, and hold the gates.</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>

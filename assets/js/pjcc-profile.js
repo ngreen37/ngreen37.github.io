@@ -504,7 +504,7 @@
   };
 
   // --- weekly bounty (one game per week pays 2x credits) ---------------------
-  PJCC.BOUNTY_GAMES = ['cipher', 'clearance-delta', 'notation-run', 'fork-in-the-road', 'sand-mine-depths', 'pirc-protocol', 'ferry-delayed', 'shogi-island'];
+  PJCC.BOUNTY_GAMES = ['cipher', 'clearance-delta', 'notation-run', 'fork-in-the-road', 'sand-mine-depths', 'pirc-protocol', 'ferry-delayed', 'shogi-island', 'tower-defense'];
   PJCC.bountyGame = function () {
     var now = new Date();
     var week = Math.floor((now - new Date(now.getFullYear(), 0, 1)) / (7 * 24 * 3600 * 1000));

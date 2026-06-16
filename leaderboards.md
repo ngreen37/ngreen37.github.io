@@ -26,7 +26,8 @@ permalink: /leaderboards/
     { key: 'pirc-protocol',   label: 'Pirc Protocol',    unit: 'score'   },
     { key: 'ferry-delayed',   label: 'Ferry Delayed',    unit: 'solved'  },
     { key: 'shogi-island',    label: 'Shogi Island',     unit: 'correct' },
-    { key: 'blindfold',       label: 'Blindfold Puzzles',unit: 'solved'  }
+    { key: 'blindfold',       label: 'Blindfold Puzzles',unit: 'solved'  },
+    { key: 'tower-defense',   label: 'Siege on Chess City', unit: 'score' }
   ];
   var PAGE = 25;
 

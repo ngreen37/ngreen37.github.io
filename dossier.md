@@ -19,7 +19,7 @@ permalink: /dossier/
     'notation-run': ['Notation Blitz', 'score'], 'fork-in-the-road': ['Fork in the Road', 'solved'],
     'sand-mine-depths': ['Sand Mine Depths', 'depth'], 'pirc-protocol': ['Pirc Protocol', 'flawless'],
     'ferry-delayed': ['Ferry Delayed', 'aced'], 'shogi-island': ['Shogi Island', 'correct'],
-    'blindfold': ['Blindfold Puzzles', 'solved']
+    'blindfold': ['Blindfold Puzzles', 'solved'], 'tower-defense': ['Siege on Chess City', 'score']
   };
   function esc(s) {
     return String(s).replace(/[&<>"]/g, function (c) {

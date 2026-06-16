@@ -394,6 +394,8 @@ body_class: theme-bw
   <li><a href="/games/clearance-delta/">Clearance: DELTA <span class="ver">v1.2</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/ferry-delayed/">Ferry Delayed <span class="ver">v1.1</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/shogi-island/">Shogi Island <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/tower-defense/">Siege on Chess City <span class="ver">v1.0</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/blindfold-puzzles/">Blindfold Puzzles</a> <span class="games-index-note">— hidden bonus</span></li>
   <li><a href="/games/knights-tour/">Knight's Tour</a> <span class="games-index-term">— terminated</span></li>
 </ul>
 

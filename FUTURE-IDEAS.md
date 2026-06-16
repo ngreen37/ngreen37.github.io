@@ -21,9 +21,10 @@ accessibility pass, opt-in coaching).
   Best built in a real engine (or a focused canvas effort); ties beautifully to the
   Blender/Godot path so the flier + pieces could be 3D later. Scores would log to the
   same leaderboard.
-- **Tower Defense** — place chess pieces as towers along a path (rook = long lane, bishop
-  = diagonals, knight = L-splash, queen = premium) to stop waves marching toward Chess
-  City. Natural fit for the piece-movement theme; a dedicated build.
+- ~~**Tower Defense**~~ — **BUILT** as *Siege on Chess City* (`/games/tower-defense/`): the
+  CEO's pieces march the Journey road; five PJCC defenders (Pawn Picket, Argus Outpost,
+  Bishop Spire, Rook Bastion, Queen's Guard), upgrades/sell, a charge-up Royal Decree
+  ultimate, 12 waves ending in the King boss. Scores log to the leaderboard.
 - **Personality quiz** — a short quiz that tells you which PJCC character you're most like
   (Princess, the Rival/Kennie, the Father, Argus, Oskar, the Narrator…). Shareable result,
   could grant a cosmetic title. Light to build, high shareability.
