@@ -12,12 +12,14 @@ Flow once set up:
 ---
 
 ## 1. Get your Resend Audience ID (~1 min)
-Resend now gives every account ONE default audience automatically — you don't
-need to create one. Just grab its ID:
-- Open Resend → **Audience**. Look at the browser URL: it ends in
-  `/audiences/<AUDIENCE_ID>` — that long string is your Audience ID, OR
-- click the **`</>`** button (top-right, next to "Add contacts") and copy the
-  `audience_id` shown in the snippet.
+Resend gives every account ONE default audience automatically — you don't need to
+create one, and the ID is NOT in the page URL. Get it one of these ways:
+- On Resend → **Audience**, click the **`</>`** button (top-right, next to
+  "Add contacts"). The example snippet contains `audience_id: '….'` — that UUID
+  is your Audience ID, OR
+- run in a terminal (replace with your real key):
+  `curl -s https://api.resend.com/audiences -H "Authorization: Bearer re_yourkey"`
+  and copy the `"id"` it returns.
 Save that ID for step 4 (`RESEND_AUDIENCE_ID`).
 
 ## 2. Pick a webhook secret (~1 min)
