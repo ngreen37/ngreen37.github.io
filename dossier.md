@@ -53,11 +53,15 @@ permalink: /dossier/
   function renderClaim() {
     el.innerHTML =
       '<div class="dsr-card"><h2 class="dsr-h">Choose your codename</h2>' +
-      '<div class="ml-form"><input id="dsr-name" type="text" maxlength="24" class="pjcc-input" placeholder="codename"><button id="dsr-claim" class="pjcc-btn">Claim</button></div></div>';
+      '<div class="ml-form"><input id="dsr-name" type="text" maxlength="24" class="pjcc-input" placeholder="codename"><button id="dsr-claim" class="pjcc-btn">Claim</button></div>' +
+      '<p id="dsr-claim-msg" class="pjcc-sub"></p></div>';
     document.getElementById('dsr-claim').onclick = function () {
       var name = document.getElementById('dsr-name').value.trim();
       if (!name) return;
-      PJCC.claimCodename(name).then(render);
+      PJCC.claimCodename(name).then(render).catch(function (e) {
+        document.getElementById('dsr-claim-msg').textContent =
+          (e && e.message === 'codename taken') ? 'That codename is taken — try another.' : 'Could not claim — try again.';
+      });
     };
   }
 
@@ -73,7 +77,7 @@ permalink: /dossier/
       '<div><div class="dsr-name">' + esc(prof.codename) + '</div>' +
       '<div class="dsr-rank">' + esc(rank.name) + ' · <span class="pjcc-credits">' + credits + ' credits</span></div></div>' +
       '<span class="pjcc-spacer"></span>' +
-      '<a class="pjcc-trophy" href="/quartermaster/">🛒 Quartermaster</a>' +
+      '<a class="pjcc-trophy" href="/shopkeeper/">🛒 Shopkeeper</a>' +
       '<a class="pjcc-trophy" href="/leaderboards/">🏆 Leaderboards</a></div>';
 
     // progress to next rank

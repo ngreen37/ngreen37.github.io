@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>PJCC: Shogi Island</title>
+<script src="/assets/js/pjcc-config.js"></script>
+<script src="/assets/js/pjcc-profile.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root { --gold:#F5C518; --ink:#f0e6ff; --dim:#9a7fd4; --bg:#140a06; --board:#e8c98a; --line:#7a5a2a; }
+  html, body { height: 100%; background: #0a0503; overflow: hidden; font-family: 'Trebuchet MS','Segoe UI',sans-serif;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  body { display: flex; align-items: center; justify-content: center; min-height: 100vh; color: var(--ink); }
+  #app { width: 100%; max-width: 460px; padding: 14px; text-align: center; }
+  .title { color: var(--gold); font-size: 1.1rem; font-weight: 800; letter-spacing: 1px; }
+  .title .jp { font-size: 1.3rem; margin-right: 6px; }
+  .hud { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--dim); margin: 6px 2px 10px; }
+  .hud b { color: var(--gold); }
+  .fwd { color: var(--dim); font-size: 0.72rem; letter-spacing: 2px; margin-bottom: 4px; }
+
+  .board { display: grid; gap: 2px; background: var(--line); border: 3px solid var(--line);
+    border-radius: 4px; width: 308px; margin: 0 auto; }
+  .cell { aspect-ratio: 1; background: var(--board); display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; color: #2a1a08; cursor: pointer; user-select: none; transition: background 0.1s; }
+  .cell:hover { background: #f0d9a0; }
+  .cell.pc { background: #2a1a55; color: var(--gold); font-weight: 800; cursor: default; box-shadow: inset 0 0 0 2px var(--gold); }
+  .cell.sel { background: #9bd6ff; }
+  .cell.correct { background: #6bffb8; }
+  .cell.missed { background: #6bffb8; opacity: 0.45; box-shadow: inset 0 0 0 2px #1a7a4a; }
+  .cell.wrong { background: #ff8a8a; }
+
+  .prompt { margin: 12px 4px 4px; min-height: 46px; }
+  .prompt .pname { color: var(--gold); font-weight: 700; }
+  .prompt .pdesc { color: var(--dim); font-size: 0.82rem; }
+  .fb { min-height: 20px; font-size: 0.9rem; font-weight: 700; margin-top: 4px; }
+  .fb.ok { color: #6bffb8; } .fb.no { color: #ff8a8a; }
+
+  .btn { margin-top: 10px; background: var(--gold); color: #1a0f3d; border: none; border-radius: 999px;
+    padding: 10px 26px; font-weight: 800; font-size: 0.95rem; cursor: pointer; }
+  .btn:hover { background: #ffd740; }
+
+  .overlay { position: fixed; inset: 0; background: rgba(8,4,2,0.94); display: flex; align-items: center;
+    justify-content: center; flex-direction: column; padding: 20px; text-align: center; }
+  .overlay.hidden { display: none; }
+  .overlay h2 { color: var(--gold); font-size: 1.4rem; margin-bottom: 6px; }
+  .overlay .jp-big { font-size: 2rem; color: var(--gold); margin-bottom: 8px; }
+  .overlay p { color: var(--ink); margin-bottom: 6px; }
+  .overlay .sub { color: var(--dim); font-size: 0.85rem; max-width: 320px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="title"><span class="jp">将棋島</span>Shogi Island</div>
+  <div class="hud"><span>Piece <b id="qnum">1</b>/10</span><span>Correct <b id="score">0</b></span></div>
+  <div class="fwd">▲ forward ▲</div>
+  <div class="board" id="board"></div>
+  <div class="prompt">
+    <div>Tap every square the <span class="pname" id="pname">piece</span> can move to.</div>
+    <div class="pdesc" id="pdesc"></div>
+    <div class="fb" id="fb"></div>
+  </div>
+  <button class="btn" id="action">Check</button>
+</div>
+
+<div class="overlay hidden" id="overlay">
+  <div class="jp-big" id="ov-jp">よくできました</div>
+  <h2 id="ov-title">Round complete</h2>
+  <p id="ov-score"></p>
+  <p class="sub" id="ov-sub"></p>
+  <button class="btn" id="ov-again">Play again</button>
+</div>
+
+<script>
+const N = 7, CTR = 3, ROUND = 10;
+
+function inb(r, c) { return r >= 0 && r < N && c >= 0 && c < N; }
+function step(deltas) { return function (r, c) { var o = []; deltas.forEach(function (d) { if (inb(r + d[0], c + d[1])) o.push((r + d[0]) + ',' + (c + d[1])); }); return o; }; }
+function slide(dirs) { return function (r, c) { var o = []; dirs.forEach(function (d) { var nr = r + d[0], nc = c + d[1]; while (inb(nr, nc)) { o.push(nr + ',' + nc); nr += d[0]; nc += d[1]; } }); return o; }; }
+
+// forward = up = negative row delta
+const PIECES = [
+  { k: '歩', r: 'fu', e: 'Pawn', d: 'one square straight forward', m: step([[-1,0]]) },
+  { k: '香', r: 'kyō', e: 'Lance', d: 'any distance straight forward', m: slide([[-1,0]]) },
+  { k: '桂', r: 'keima', e: 'Knight', d: 'an L — two forward then one to the side (it jumps)', m: step([[-2,-1],[-2,1]]) },
+  { k: '銀', r: 'gin', e: 'Silver General', d: 'one forward, or one in any diagonal', m: step([[-1,-1],[-1,0],[-1,1],[1,-1],[1,1]]) },
+  { k: '金', r: 'kin', e: 'Gold General', d: 'one in any straight direction, or one forward-diagonal', m: step([[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,0]]) },
+  { k: '角', r: 'kaku', e: 'Bishop', d: 'any distance diagonally', m: slide([[-1,-1],[-1,1],[1,-1],[1,1]]) },
+  { k: '飛', r: 'hisha', e: 'Rook', d: 'any distance straight', m: slide([[-1,0],[1,0],[0,-1],[0,1]]) },
+  { k: '王', r: 'ō', e: 'King', d: 'one square in any direction', m: step([[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]) }
+];
+
+var boardEl = document.getElementById('board');
+var cells = {};
+var qi = 0, score = 0, piece = null, target = {}, selected = {}, checked = false;
+
+boardEl.style.gridTemplateColumns = 'repeat(' + N + ', 1fr)';
+for (var r = 0; r < N; r++) for (var c = 0; c < N; c++) {
+  var cell = document.createElement('div');
+  cell.className = 'cell'; cell.dataset.r = r; cell.dataset.c = c;
+  (function (rr, cc) { cell.onclick = function () { onClick(rr, cc); }; })(r, c);
+  boardEl.appendChild(cell); cells[r + ',' + c] = cell;
+}
+
+function newQuestion() {
+  piece = PIECES[Math.floor(Math.random() * PIECES.length)];
+  target = {}; piece.m(CTR, CTR).forEach(function (k) { target[k] = true; });
+  selected = {}; checked = false;
+  document.getElementById('pname').textContent = piece.e + ' (' + piece.k + ' ' + piece.r + ')';
+  document.getElementById('pdesc').textContent = '';
+  document.getElementById('fb').textContent = '';
+  document.getElementById('fb').className = 'fb';
+  document.getElementById('qnum').textContent = (qi + 1);
+  document.getElementById('action').textContent = 'Check';
+  paint();
+}
+
+function onClick(r, c) {
+  if (checked) return;
+  if (r === CTR && c === CTR) return;
+  var key = r + ',' + c;
+  if (selected[key]) delete selected[key]; else selected[key] = true;
+  paint();
+}
+
+function paint() {
+  for (var key in cells) {
+    var cell = cells[key]; cell.className = 'cell'; cell.textContent = '';
+  }
+  cells[CTR + ',' + CTR].className = 'cell pc';
+  cells[CTR + ',' + CTR].textContent = piece.k;
+  for (var key in cells) {
+    if (key === CTR + ',' + CTR) continue;
+    var cell = cells[key];
+    if (!checked) {
+      if (selected[key]) cell.classList.add('sel');
+    } else {
+      if (target[key] && selected[key]) cell.classList.add('correct');
+      else if (target[key] && !selected[key]) cell.classList.add('missed');
+      else if (!target[key] && selected[key]) cell.classList.add('wrong');
+    }
+  }
+}
+
+function check() {
+  checked = true;
+  var ok = true;
+  for (var k in target) if (!selected[k]) ok = false;
+  for (var k in selected) if (!target[k]) ok = false;
+  if (ok) score++;
+  document.getElementById('score').textContent = score;
+  var fb = document.getElementById('fb');
+  fb.textContent = ok ? '正解！ Correct!' : 'おしい — the ' + piece.e + ' moves ' + piece.d + '.';
+  fb.className = 'fb ' + (ok ? 'ok' : 'no');
+  document.getElementById('pdesc').textContent = piece.e + ': ' + piece.d + '.';
+  paint();
+  document.getElementById('action').textContent = (qi + 1 >= ROUND) ? 'See results' : 'Next piece';
+}
+
+function next() {
+  qi++;
+  if (qi >= ROUND) finish();
+  else newQuestion();
+}
+
+function finish() {
+  var ov = document.getElementById('overlay');
+  document.getElementById('ov-score').textContent = 'You read ' + score + ' of ' + ROUND + ' pieces correctly.';
+  var jp, title, sub;
+  if (score >= 9) { jp = '免許皆伝'; title = 'Master of the Island'; sub = 'You know the pieces cold. The ferry master nods in respect.'; }
+  else if (score >= 6) { jp = 'よくできました'; title = 'Well done'; sub = 'Solid reading. A few more crossings and the island is yours.'; }
+  else { jp = 'もう一回'; title = 'Keep training'; sub = 'Shogi pieces move differently from chess — study the gold and silver generals.'; }
+  document.getElementById('ov-jp').textContent = jp;
+  document.getElementById('ov-title').textContent = title;
+  document.getElementById('ov-sub').textContent = sub;
+  ov.classList.remove('hidden');
+  if (window.PJCC) PJCC.saveScore('shogi-island', score, { credits: 1, data: { round: ROUND } });
+}
+
+document.getElementById('action').onclick = function () { if (!checked) check(); else next(); };
+document.getElementById('ov-again').onclick = function () { document.getElementById('overlay').classList.add('hidden'); qi = 0; score = 0; document.getElementById('score').textContent = 0; newQuestion(); };
+
+newQuestion();
+</script>
+</body>
+</html>

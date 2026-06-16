@@ -24,6 +24,7 @@
                class="logo-stacked">
         </a>
         <div class="header-top-right">
+          <a class="nav-operative" id="nav-operative" href="{{ '/dossier/' | relative_url }}" hidden>Sign in</a>
           <a class="about-contact-btn" href="{{ '/about/' | relative_url }}">About / Contact</a>
           <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
             <span class="nav-toggle-bar"></span>
@@ -405,6 +406,36 @@
     if (count > 0) el.textContent = '[' + count + '/∞ FRAGMENTS RECOVERED]';
   })();
   </script>
+
+  <!-- Operative identity in the nav (site-wide) -->
+  <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
+  <script>
+  (function () {
+    var elr = document.getElementById('nav-operative');
+    if (!elr || !window.PJCC) return;
+    function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    function upd() {
+      if (!PJCC.enabled) { elr.hidden = true; return; }
+      elr.hidden = false;
+      var prof = PJCC.getProfile();
+      if (prof) { elr.innerHTML = PJCC.avatarEmoji(prof) + ' ' + esc(prof.codename); elr.classList.add('in'); }
+      else { elr.textContent = '⬡ Sign in'; elr.classList.remove('in'); }
+    }
+    PJCC.onChange(upd);
+    PJCC.ready.then(upd);
+  })();
+  </script>
+  <style>
+  .nav-operative {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #2D1B69; border: 1px solid #6b5fa0; border-radius: 999px;
+    padding: 5px 12px; margin-right: 8px;
+    color: #cdbcf2; text-decoration: none; font-size: 0.82rem; font-weight: 700;
+  }
+  .nav-operative:hover { border-color: #F5C518; color: #fff; }
+  .nav-operative.in { border-color: #F5C518; color: #F5C518; }
+  </style>
 
   {% include jukebox.html %}
 

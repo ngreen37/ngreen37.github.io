@@ -89,6 +89,15 @@ permalink: /games/
     </div>
   </a>
 
+  <a class="game-card" href="{{ '/games/shogi-island/' | relative_url }}">
+    <div class="game-card-icon">将</div>
+    <div class="game-card-body">
+      <h2>Shogi Island</h2>
+      <p>A shogi piece-movement trainer set across the water. Read each piece and tap every square it can move to — pawns, lances, the gold and silver generals.</p>
+      <span class="game-tag">Playable</span>
+    </div>
+  </a>
+
 </div>
 
 <style>

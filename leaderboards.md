@@ -24,7 +24,8 @@ permalink: /leaderboards/
     { key: 'fork-in-the-road',label: 'Fork in the Road', unit: 'solved'  },
     { key: 'sand-mine-depths',label: 'Sand Mine Depths', unit: 'depth'   },
     { key: 'pirc-protocol',   label: 'Pirc Protocol',    unit: 'score'   },
-    { key: 'ferry-delayed',   label: 'Ferry Delayed',    unit: 'solved'  }
+    { key: 'ferry-delayed',   label: 'Ferry Delayed',    unit: 'solved'  },
+    { key: 'shogi-island',    label: 'Shogi Island',     unit: 'correct' }
   ];
   var PAGE = 25;
 

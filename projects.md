@@ -340,6 +340,27 @@ body_class: theme-bw
     </div>
   </div>
 
+  <div class="project-card project-card-featured">
+    <div class="featured-ribbon">PLAYABLE NOW</div>
+    <div class="project-card-corner-piece" aria-hidden="true">将</div>
+    <div class="project-card-header">
+      <span class="project-status project-status-done">
+        <span class="project-status-dot"></span>
+        Completed (pending improvements)
+      </span>
+      <h2 class="project-title">Shogi Island <span class="ver">v1.0</span></h2>
+    </div>
+    <p class="project-desc">A shogi piece-movement trainer set in the Japanese-speaking world beyond the ferry. Read each piece — pawn, lance, knight, the gold and silver generals — and tap every square it can move to. Princess's first lessons after the pu-rin-se-suuu portal.</p>
+    <ul class="project-details">
+      <li><strong>Format:</strong> Browser game</li>
+      <li><strong>Status:</strong> Playable — promoted pieces and the full 9×9 board in progress</li>
+    </ul>
+    <div class="project-links">
+      <a href="/games/shogi-island/" class="project-link project-link-play">▶ PLAY NOW</a>
+      <a href="/games/" class="project-link">All Games</a>
+    </div>
+  </div>
+
   <div class="project-card project-card-terminated">
     <div class="project-card-corner-piece" aria-hidden="true">♞</div>
     <div class="project-card-header">
@@ -372,6 +393,7 @@ body_class: theme-bw
   <li><a href="/games/cipher/">CIPHER <span class="ver">v1.2</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/clearance-delta/">Clearance: DELTA <span class="ver">v1.2</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/ferry-delayed/">Ferry Delayed <span class="ver">v1.1</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/shogi-island/">Shogi Island <span class="ver">v1.0</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/knights-tour/">Knight's Tour</a> <span class="games-index-term">— terminated</span></li>
 </ul>
 

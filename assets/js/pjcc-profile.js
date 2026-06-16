@@ -162,7 +162,10 @@
     name = String(name || '').trim().slice(0, 24);
     if (!name) throw new Error('codename required');
     var r = await sb.from('profiles').insert({ id: u.id, codename: name }).select().maybeSingle();
-    if (r.error) throw r.error;
+    if (r.error) {
+      if (r.error.code === '23505') throw new Error('codename taken');   // unique violation
+      throw r.error;
+    }
     profile = r.data;
     await PJCC.migrateGuest();       // pull any local bests up to the account
     emit();

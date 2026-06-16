@@ -58,11 +58,15 @@
       bar.innerHTML =
         '<span class="pjcc-label">Choose your operative <strong>codename</strong>:</span>' +
         '<input id="pjcc-codename" type="text" maxlength="24" class="pjcc-input" placeholder="codename">' +
-        '<button id="pjcc-claim" class="pjcc-btn">Claim</button>';
+        '<button id="pjcc-claim" class="pjcc-btn">Claim</button>' +
+        '<span id="pjcc-claim-msg" class="pjcc-label"></span>';
       bind('pjcc-claim', function () {
         var name = (document.getElementById('pjcc-codename').value || '').trim();
         if (!name) return;
-        PJCC.claimCodename(name).then(render);
+        PJCC.claimCodename(name).then(render).catch(function (e) {
+          var m = document.getElementById('pjcc-claim-msg');
+          m.textContent = (e && e.message === 'codename taken') ? 'That codename is taken — try another.' : 'Could not claim — try again.';
+        });
       });
       return;
     }
@@ -100,7 +104,7 @@ avEmoji(key) + '</span>';
     bar.innerHTML =
       '<span class="pjcc-label">' + (firstTime ? 'Pick your <strong>avatar</strong>:' : 'Change avatar:') + '</span>' +
       '<div class="pjcc-picker">' + picks + '</div>' +
-      '<a class="pjcc-trophy" href="/quartermaster/">＋ More</a>' +
+      '<a class="pjcc-trophy" href="/shopkeeper/">＋ More</a>' +
       (firstTime ? '' : '<button id="pjcc-cancel" class="pjcc-btn-ghost">Cancel</button>');
     Array.prototype.forEach.call(bar.querySelectorAll('.pjcc-pick'), function (node) {
       node.onclick = function () { PJCC.setAvatar(node.getAttribute('data-av')).then(render); };

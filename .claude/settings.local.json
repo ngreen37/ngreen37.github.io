@@ -22,7 +22,19 @@
       "Bash(findstr /v node_modules)",
       "Bash(git rm *)",
       "Bash(node -e ' *)",
-      "Bash(node -e \"console.log\\('easy',\\(1-43/58\\)*100|0,'%  medium',\\(1-60/80\\)*100|0,'%  hard',\\(1-82/110\\)*100|0,'% slower'\\)\")"
+      "Bash(node -e \"console.log\\('easy',\\(1-43/58\\)*100|0,'%  medium',\\(1-60/80\\)*100|0,'%  hard',\\(1-82/110\\)*100|0,'% slower'\\)\")",
+      "Bash(curl -sI -m 15 https://mcpuppystudios.com)",
+      "Bash(curl -sI -m 15 https://www.mcpuppystudios.com)",
+      "Bash(curl -sI -m 15 https://ngreen37.github.io)",
+      "Bash(node --check assets/js/jukebox.js)",
+      "Bash(nslookup -type=ns mcpuppystudios.com)",
+      "Bash(nslookup -type=a mcpuppystudios.com)",
+      "Bash(grep -iA1 \"name\\\\|address\")",
+      "Bash(node --check assets/js/pjcc-profile.js)",
+      "Bash(node --check assets/js/pjcc-profile-bar.js)",
+      "Bash(ls quartermaster.md)",
+      "Bash(awk '/^<script>$/{f=1;next}/^<\\\\/script>$/{f=0}f' assets/games/pjcc_shogi.html)",
+      "Bash(node --check /tmp/shogi.js)"
     ]
   },
   "hooks": {
