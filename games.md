@@ -251,18 +251,22 @@ permalink: /games/
 .game-card-locked h2,
 .game-card-locked p {
   color: transparent;
-  background-image: linear-gradient(105deg,
-    #2f2a4a 0%, #2f2a4a 40%, #fff3c4 50%, #2f2a4a 60%, #2f2a4a 100%);
-  background-size: 280% 100%;
-  background-position: 150% 0;
+  /* dark → feathered mid → bright core → feathered mid → dark, so the light
+     ramps in and out gradually instead of snapping on */
+  background-image: linear-gradient(100deg,
+    #2f2a4a 0%, #2f2a4a 26%,
+    #4a4470 36%, #8d83b8 44%, #fff3c4 50%, #8d83b8 56%, #4a4470 64%,
+    #2f2a4a 74%, #2f2a4a 100%);
+  background-size: 320% 100%;
+  background-position: 165% 0;
   -webkit-background-clip: text;
   background-clip: text;
-  animation: bf-sweep 5.5s ease-in-out infinite;
+  animation: bf-sweep 6.5s ease-in-out infinite;
 }
-.game-card-locked p { animation-delay: 0.16s; }
+.game-card-locked p { animation-delay: 0.22s; }
 @keyframes bf-sweep {
-  0%, 16%   { background-position: 150% 0; }
-  60%, 100% { background-position: -60% 0; }
+  0%, 14%   { background-position: 165% 0; }
+  72%, 100% { background-position: -65% 0; }
 }
 .game-card-locked:hover h2,
 .game-card-locked:hover p {

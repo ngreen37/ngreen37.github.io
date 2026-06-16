@@ -179,11 +179,6 @@
   <div class="overlay" id="title-screen">
     <div class="ov-eyebrow">Checker Town · Coordinate Drill</div>
     <div class="ov-title">NOTATION BLITZ <span style="font-size:0.5em;color:#ff8fd0;vertical-align:super;letter-spacing:1px;">v1.5</span></div>
-    <div class="ov-sub">
-      Calls drop in on the beat. When a square's name reaches the
-      <b style="color:#F5C518">gate</b>, click that square on the board.
-      Read the files (a&ndash;h) and ranks (1&ndash;8) fast &mdash; that's the whole game.
-    </div>
 
     <div class="ov-group-label">Tempo</div>
     <div class="btn-row" id="diff-row">
@@ -655,34 +650,43 @@ function pill(cx, cy, w, h, r) {
   ctx.closePath();
 }
 
+// Princess's 3D Blender render (from her character page), shown as her token
+const princessImg = new Image();
+let princessImgReady = false;
+princessImg.onload = function () { princessImgReady = true; };
+princessImg.src = '/assets/images/Princess_Color_v01.jpg';
+
 function drawPrincess() {
   const pr = G.princess;
   const cx = pr.px, cy = pr.py;
   const t = Date.now() / 600;
   const bob = Math.sin(t) * 1.5;
+  const r = 17;
 
   // Shadow
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
   ctx.beginPath(); ctx.ellipse(cx, cy + 15, 13, 5, 0, 0, Math.PI * 2); ctx.fill();
-  // Halo
-  ctx.strokeStyle = COLORS.gold; ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.arc(cx, cy + bob, 18, 0, Math.PI * 2); ctx.stroke();
-  // Body
-  ctx.fillStyle = '#f0e6ff'; drawHex(cx, cy + bob, 15); ctx.fill();
-  ctx.strokeStyle = COLORS.gold; ctx.lineWidth = 1.5; drawHex(cx, cy + bob, 15); ctx.stroke();
-  // Ears
-  ctx.fillStyle = '#c8a87a';
-  ctx.beginPath(); ctx.arc(cx - 4, cy + bob - 4, 3.5, 0, Math.PI * 2);
-  ctx.arc(cx + 4, cy + bob - 4, 3.5, 0, Math.PI * 2); ctx.fill();
-  // Eyes + nose
-  ctx.fillStyle = '#1a0f3d';
-  ctx.beginPath(); ctx.arc(cx - 3.5, cy + bob - 4, 1.7, 0, Math.PI * 2);
-  ctx.arc(cx + 3.5, cy + bob - 4, 1.7, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(cx, cy + bob + 1, 2, 0, Math.PI * 2); ctx.fill();
-  // Knight mark
-  ctx.fillStyle = COLORS.gold;
-  ctx.font = 'bold 10px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  ctx.fillText('♞', cx, cy + bob + 8);
+
+  if (princessImgReady) {
+    // Circular avatar token of the 3D render (top-centred square crop)
+    const iw = princessImg.naturalWidth, ih = princessImg.naturalHeight;
+    const s = Math.min(iw, ih);
+    const sx = (iw - s) / 2, sy = 0;
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy + bob, r, 0, Math.PI * 2); ctx.closePath(); ctx.clip();
+    ctx.drawImage(princessImg, sx, sy, s, s, cx - r, cy + bob - r, r * 2, r * 2);
+    ctx.restore();
+    // Gold ring
+    ctx.strokeStyle = COLORS.gold; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(cx, cy + bob, r, 0, Math.PI * 2); ctx.stroke();
+  } else {
+    // Fallback token while the render loads
+    ctx.fillStyle = '#f0e6ff'; drawHex(cx, cy + bob, 15); ctx.fill();
+    ctx.strokeStyle = COLORS.gold; ctx.lineWidth = 1.5; drawHex(cx, cy + bob, 15); ctx.stroke();
+    ctx.fillStyle = COLORS.gold;
+    ctx.font = 'bold 12px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('♞', cx, cy + bob);
+  }
 }
 
 function drawHex(cx, cy, r) {

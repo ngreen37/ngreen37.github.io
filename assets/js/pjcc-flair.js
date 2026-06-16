@@ -148,14 +148,6 @@
           setTimeout(function () { fig.classList.remove('is-cheering'); }, 950);
         }
         burst(r.left + r.width / 2, r.top, ['❤', '✨', '♟']); // ❤ ✨ ♟
-        var woof = document.createElement('div');
-        woof.className = 'princess-woof';
-        woof.textContent = 'woof!';
-        woof.style.left = (r.left - 8) + 'px';
-        woof.style.top = (r.top - 26) + 'px';
-        document.body.appendChild(woof);
-        requestAnimationFrame(function () { woof.classList.add('show'); });
-        setTimeout(function () { woof.classList.remove('show'); setTimeout(function () { woof.remove(); }, 250); }, 1100);
       });
     }
   }
