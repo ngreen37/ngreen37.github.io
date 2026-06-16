@@ -306,7 +306,7 @@ body_class: theme-bw
         <span class="project-status-dot"></span>
         Completed (pending improvements)
       </span>
-      <h2 class="project-title">Notation Blitz <span class="ver">v1.5</span></h2>
+      <h2 class="project-title">Notation Blitz <span class="ver">v2.1</span></h2>
     </div>
     <p class="project-desc">A coordinate-reading rhythm game set in the streets of Checker Town. Square names drop on the beat — click them before they pass the gate. Forgiving timing, an approach ring that tells you exactly when to hit, saved personal bests, and a Pirc Defense mode that traces the Rival's opening move by move.</p>
     <ul class="project-details">
@@ -385,7 +385,7 @@ body_class: theme-bw
 <h2 class="games-index-heading">All Games</h2>
 <ul class="games-index">
   <li><a href="/games/dungeon/">Princess Dungeon</a> <span class="games-index-note">— in development</span></li>
-  <li><a href="/games/notation-run/">Notation Blitz <span class="ver">v1.5</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/notation-run/">Notation Blitz <span class="ver">v2.1</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/space-run/">Space Run</a> <span class="games-index-note">— in development</span></li>
   <li><a href="/games/pirc-protocol/">The Pirc Protocol <span class="ver">v1.1</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/fork-in-the-road/">Fork in the Road <span class="ver">v1.1</span></a> <span class="games-index-done">Completed</span></li>

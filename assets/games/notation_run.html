@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PJCC: Notation Blitz v1.4</title>
+<title>PJCC: Notation Blitz v2.1</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -134,10 +134,11 @@
 
   .ov-foot {
     margin-top: 16px;
-    font-size: 10px;
-    color: #7a5fb0;
-    line-height: 1.7;
+    font-size: 17px;
+    color: #c9a7ff;
+    line-height: 1.85;
   }
+  .ov-foot #title-best { font-size: 18px; }
 
   .stat-grid {
     display: grid;
@@ -178,7 +179,7 @@
   <!-- TITLE SCREEN -->
   <div class="overlay" id="title-screen">
     <div class="ov-eyebrow">Checker Town · Coordinate Drill</div>
-    <div class="ov-title">NOTATION BLITZ <span style="font-size:0.5em;color:#ff8fd0;vertical-align:super;letter-spacing:1px;">v1.5</span></div>
+    <div class="ov-title">NOTATION BLITZ <span style="font-size:0.5em;color:#ff8fd0;vertical-align:super;letter-spacing:1px;">v2.1</span></div>
 
     <div class="ov-group-label">Tempo</div>
     <div class="btn-row" id="diff-row">
@@ -306,8 +307,11 @@ function sfx(kind) {
   const t = actx.currentTime;
   const o = actx.createOscillator(), g = actx.createGain();
   o.connect(g); g.connect(masterGain);
-  if (kind === 'perfect') { o.type='triangle'; o.frequency.setValueAtTime(880,t); o.frequency.exponentialRampToValueAtTime(1320,t+0.08); }
-  else if (kind === 'good') { o.type='sine'; o.frequency.setValueAtTime(620,t); }
+  // Pitch climbs with your streak (up to ~+1 octave), and resets on a miss.
+  const semis = Math.min((G ? G.combo : 0), 24);
+  const climb = Math.pow(2, semis / 24);
+  if (kind === 'perfect') { o.type='triangle'; o.frequency.setValueAtTime(880*climb,t); o.frequency.exponentialRampToValueAtTime(1320*climb,t+0.08); }
+  else if (kind === 'good') { o.type='sine'; o.frequency.setValueAtTime(620*climb,t); }
   else { o.type='sawtooth'; o.frequency.setValueAtTime(180,t); o.frequency.exponentialRampToValueAtTime(90,t+0.12); }
   g.gain.setValueAtTime(0.0001,t);
   g.gain.exponentialRampToValueAtTime(0.3,t+0.01);
@@ -353,6 +357,10 @@ function newGame(mode, diff) {
     startTime: 0,
     total: queue.length,
     score: 0, combo: 0, maxCombo: 0,
+    scoreShown: 0, scorePulse: 0, scoreFlash: 0,   // animated score readout
+    shake: 0,                                       // screen-shake impulse
+    bolts: [],                                      // lightning at high streaks
+    milestone: null,                                // {text, life} streak callout
     res: { perfect: 0, good: 0, miss: 0 },
     particles: [], floaters: [],
     flashSq: [],        // {x,y,color,t} brief square highlights
@@ -433,10 +441,28 @@ function update() {
   // Square flashes
   G.flashSq = G.flashSq.filter(s => { s.t -= 1; return s.t > 0; });
 
+  // Animated score readout + streak FX
+  G.scoreShown += (G.score - G.scoreShown) * 0.25;
+  if (Math.abs(G.score - G.scoreShown) < 0.5) G.scoreShown = G.score;
+  G.scorePulse *= 0.88;
+  G.scoreFlash *= 0.9;
+  G.shake *= 0.86;
+  if (G.milestone) { G.milestone.life--; if (G.milestone.life <= 0) G.milestone = null; }
+  if (G.combo >= 10 && Math.random() < 0.1) spawnBolt();
+  G.bolts = G.bolts.filter(b => { b.life--; return b.life > 0; });
+
   // Finish check
   if (G.qPtr >= G.queue.length && !G.calls.some(c => c.status === 'pending')
       && now > G.lastHitTime + G.goodW + 0.15 && !G.finished) {
     finish();
+  }
+}
+
+const MILESTONES = { 3: 'STREAK ×3 ⚡', 5: 'HEATING UP ×5', 10: 'ON FIRE! ×10 🔥', 15: 'BLAZING ×15', 20: 'UNREAL ×20 ⚡', 30: 'GODLIKE ×30' };
+function checkMilestone(c) {
+  if (MILESTONES[c]) {
+    G.milestone = { text: MILESTONES[c], life: 64 };
+    G.shake = Math.min(12, G.shake + 5);
   }
 }
 
@@ -447,6 +473,9 @@ function registerResult(kind, call) {
     if (G.combo > G.maxCombo) G.maxCombo = G.combo;
     const mult = 1 + Math.min(G.combo, 20) * 0.05;
     G.score += Math.round((kind === 'perfect' ? 100 : 55) * mult);
+    G.scorePulse = 1;
+    if (G.combo >= 3) G.shake = Math.min(11, 2 + G.combo * 0.35);
+    checkMilestone(G.combo);
   } else {
     G.res.miss++;
     G.combo = 0;
@@ -477,12 +506,15 @@ function resolveAt(sqx, sqy) {
     floater(kind === 'perfect' ? 'PERFECT!' : 'GOOD', best, kind === 'perfect' ? COLORS.good : COLORS.gold);
     sfx(kind);
   } else {
-    // Wrong square — miss and reveal the correct one
+    // Wrong square — miss, lose half-points, and reveal the correct one
     best.status = 'missed';
     registerResult('miss', best);
+    const penalty = 50; // half of a base hit (100)
+    G.score = Math.max(0, G.score - penalty);
+    G.scorePulse = 1; G.scoreFlash = 1;
     flashSquare(best.x, best.y, COLORS.bad);
     flashSquare(sqx, sqy, 'rgba(255,107,107,0.3)');
-    floater('WRONG → ' + best.san, best, COLORS.bad);
+    floater('WRONG → ' + best.san + '  −' + penalty, best, COLORS.bad);
     sfx('miss');
   }
 }
@@ -522,12 +554,48 @@ function render() {
   ctx.clearRect(0, 0, W, H);
   if (!G) return;
 
+  ctx.save();
+  if (G.shake > 0.25) ctx.translate((Math.random() - 0.5) * G.shake, (Math.random() - 0.5) * G.shake);
+
   drawTrack();
   drawBoard();
   drawPrincess();
   drawParticles();
   drawFloaters();
+  drawBolts();
   drawHUD();
+
+  ctx.restore();
+}
+
+function spawnBolt() {
+  if (!G) return;
+  const x0 = HITX + 10 + Math.random() * (W - HITX - 30);
+  const segs = 6 + Math.floor(Math.random() * 4);
+  const endY = TRACK_Y + 26 + Math.random() * 34;
+  const pts = [];
+  for (let i = 0; i <= segs; i++) {
+    const yy = 8 + (endY - 8) * (i / segs);
+    pts.push({ x: x0 + (Math.random() - 0.5) * 24, y: yy });
+  }
+  G.bolts.push({ pts, life: 7 + Math.floor(Math.random() * 5), max: 11 });
+}
+
+function drawBolts() {
+  if (!G || !G.bolts.length) return;
+  ctx.save();
+  ctx.shadowColor = 'rgba(120,180,255,0.9)';
+  ctx.shadowBlur = 12;
+  G.bolts.forEach(b => {
+    ctx.globalAlpha = Math.min(1, b.life / b.max);
+    ctx.strokeStyle = 'rgba(170,220,255,0.95)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    b.pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+    ctx.stroke();
+  });
+  ctx.restore();
+  ctx.globalAlpha = 1;
 }
 
 function drawBoard() {
@@ -567,11 +635,22 @@ function drawBoard() {
 
 function drawTrack() {
   const now = nowSec();
-  // Track baseline — bold, bright rhythm bar
-  ctx.strokeStyle = 'rgba(245,197,24,0.9)';
-  ctx.lineWidth = 8;
-  ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.moveTo(HITX, TRACK_Y); ctx.lineTo(W - 8, TRACK_Y); ctx.stroke();
+  const combo = G ? G.combo : 0;
+  const heat = combo >= 10 ? 2 : combo >= 3 ? 1 : 0;   // 0 calm · 1 warm · 2 electric
+
+  // Track baseline — bold rhythm bar; vibrates and heats up with your streak
+  let by = TRACK_Y, lw = 8, col = 'rgba(245,197,24,0.9)', glow = 0;
+  if (heat >= 1) {
+    by += (Math.random() - 0.5) * (heat === 2 ? 5 : 2.4);
+    lw = heat === 2 ? 12 : 10;
+    glow = heat === 2 ? 20 : 11;
+    col = heat === 2 ? 'rgba(130,205,255,0.97)' : 'rgba(255,168,58,0.96)';
+  }
+  ctx.save();
+  if (glow) { ctx.shadowColor = col; ctx.shadowBlur = glow; }
+  ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(HITX, by); ctx.lineTo(W - 8, by); ctx.stroke();
+  ctx.restore();
   ctx.lineCap = 'butt';
 
   // Beat pulse at the gate
@@ -720,11 +799,26 @@ function drawFloaters() {
 }
 
 function drawHUD() {
-  // Score (top-left, above track)
-  ctx.fillStyle = COLORS.gold;
-  ctx.font = 'bold 14px Courier New';
+  // Score (top-left) — big, and pops/flashes when it changes
+  const scoreStr = String(Math.max(0, Math.round(G.scoreShown))).padStart(5, '0');
+  ctx.save();
+  ctx.translate(12, 10);
+  ctx.scale(1 + G.scorePulse * 0.45, 1 + G.scorePulse * 0.45);
+  ctx.fillStyle = G.scoreFlash > 0.06 ? COLORS.bad : COLORS.gold;
+  ctx.font = 'bold 24px Courier New';
   ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-  ctx.fillText(String(G.score).padStart(5, '0'), 10, 8);
+  if (G.scorePulse > 0.08) { ctx.shadowColor = COLORS.gold; ctx.shadowBlur = 14 * G.scorePulse; }
+  ctx.fillText(scoreStr, 0, 0);
+  ctx.restore();
+
+  // Live score multiplier badge (the payoff of your streak)
+  if (G.combo >= 2) {
+    const mult = 1 + Math.min(G.combo, 20) * 0.05;
+    ctx.fillStyle = G.combo >= 10 ? 'rgba(150,210,255,0.97)' : COLORS.good;
+    ctx.font = 'bold 13px Courier New';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText('×' + mult.toFixed(2), 13, 40);
+  }
 
   // Progress (top-right)
   const done = G.res.perfect + G.res.good + G.res.miss;
@@ -739,6 +833,21 @@ function drawHUD() {
     ctx.font = 'bold ' + (14 + Math.min(G.combo, 20)) + 'px Courier New';
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
     ctx.fillText(G.combo + '×', W / 2, 6);
+  }
+
+  // Streak milestone callout (between track and board)
+  if (G.milestone) {
+    const a = Math.min(1, G.milestone.life / 64);
+    const rise = (1 - a) * 10;
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.fillStyle = G.combo >= 10 ? 'rgba(150,210,255,1)' : COLORS.gold;
+    ctx.font = 'bold 26px Courier New';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 16;
+    ctx.fillText(G.milestone.text, W / 2, BY - 16 - rise);
+    ctx.restore();
+    ctx.globalAlpha = 1;
   }
 
   // Count-in banner

@@ -42,7 +42,7 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/notation-run/' | relative_url }}">
     <div class="game-card-icon">♫</div>
     <div class="game-card-body">
-      <h2>Notation Blitz v1.5</h2>
+      <h2>Notation Blitz v2.1</h2>
       <p>A rhythm drill for reading chess coordinates at speed.</p>
       <span class="game-tag">Playable</span>
     </div>
