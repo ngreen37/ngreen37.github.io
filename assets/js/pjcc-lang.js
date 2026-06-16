@@ -19,6 +19,7 @@
     'Leaderboard': 'ランキング',
     'Leaderboards': 'ランキング',
     'Dossier': 'ファイル',
+    'Your Dossier': 'あなたのファイル',
     'Operative Dossier': '機密ファイル',
     'Chess Lessons': 'チェス教室',
     'In-Person Chess Lessons': '対面チェス教室',

@@ -56,7 +56,7 @@ body_class: theme-bw
     {% endfor %}
     <div class="ep-card ep-card--draft" aria-hidden="true">
       <div class="ep-card-stripe"></div>
-      <div class="ep-num">EP.&nbsp;??</div>
+      <div class="ep-num">EP.&nbsp;{{ site.posts.size | plus: 2 | prepend: "00" | slice: -2, 2 }}</div>
       <div class="ep-card-main">
         <div class="ep-title">[DRAFT — COMING SOON]</div>
         <div class="ep-logline">Transmission incomplete. Check back soon.</div>

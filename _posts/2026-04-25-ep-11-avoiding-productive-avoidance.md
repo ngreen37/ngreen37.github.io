@@ -17,7 +17,7 @@ Perhaps the Wild, who look good despite being down 2-1 in the series, can go all
 **Edit** Ant is out for the game but the Wolves are playing really well with Dosunmu leading the way with a career-high 43(!). what an overall great day.  My teams won and PJCC took a huge leap forward. Princess has some color, the sea scene has some sea, and the website looks cleeean.  I'm going to try and plant some easter eggs in there, too.  
 
 ### What I worked on:
-  - Lots of Blender.  I created a dog structure!  My friend Garrett says it looks like Catdog, lol.  The idea is to just get something I can use for now, and I will detail it later
+  - Lots of Blender.  I created a dog structure!  My friend Kennie says it looks like Catdog, lol.  The idea is to just get something I can use for now, and I will detail it later
     - So I have a master Princess file that I will link into my scenes, and any updates to her will automatically pull through!  Very cool.  
 
 ### What's next:

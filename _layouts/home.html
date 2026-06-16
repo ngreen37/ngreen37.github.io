@@ -194,6 +194,10 @@ layout: default
       <span class="hstat-num" data-target="{{ site.locations.size }}">0</span>
       <span class="hstat-lbl">Locations</span>
     </div>
+    <div class="hstat">
+      <span class="hstat-num" data-target="9">0</span>
+      <span class="hstat-lbl">Playable Games</span>
+    </div>
   </div>
 </div>
 
@@ -205,7 +209,7 @@ layout: default
   <div class="home-mission-countdown">
     <div class="home-mc-label">◈ Episode 1 Premiere Countdown</div>
     <div class="home-mc-display" id="home-mc-display">—</div>
-    <div class="home-mc-target">TARGET: 2027.04.21</div>
+    <div class="home-mc-target">TARGET: 2027.10.21</div>
   </div>
 </div>
 
@@ -399,7 +403,7 @@ document.querySelectorAll('.hstat-num').forEach(function(el) {
 (function() {
   var el = document.getElementById('home-mc-display');
   if (!el) return;
-  var target = new Date('2027-04-21T04:00:00Z').getTime(); // midnight EDT
+  var target = new Date('2027-10-21T04:00:00Z').getTime(); // midnight EDT
   function pad(n) { return n < 10 ? '0' + n : String(n); }
   function tick() {
     var diff = Math.max(0, target - Date.now());

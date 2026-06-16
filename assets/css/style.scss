@@ -210,6 +210,29 @@ ul, ol {
   }
 }
 
+/* --- Center "Your Dossier" pill — the player's own profile, sitting between
+   the PJCC world nav and the McPuppy Studios nav so it reads as personal --- */
+.site-nav .page-link-dossier {
+  background: #F5C518;
+  color: #1a0f3d;
+  border-color: #F5C518;
+  font-weight: 800;
+
+  &::before {
+    content: '◈ ';
+    opacity: 0.7;
+  }
+
+  &:visited { color: #1a0f3d; }
+
+  &:hover {
+    background: #ffd740;
+    color: #1a0f3d;
+    border-color: #ffd740;
+    transform: translateY(-2px);
+  }
+}
+
 /* --- Nav Divider (chess pawn separator) --- */
 .nav-divider {
   display: inline-block;
