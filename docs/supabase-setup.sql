@@ -98,4 +98,32 @@ drop policy if exists "subscribers insert" on subscribers;
 create policy "subscribers insert" on subscribers for insert with check (true);
 -- (intentionally no select policy: write-only from the client)
 
--- Done. Tables: profiles, game_stats, scores, subscribers. Function: add_credits(int).
+-- 7. REFERRALS ----------------------------------------------------------------
+-- One-time referral: a new operative redeems a friend's codename; both get +10
+-- credits. Guarded server-side against self-referral and double-redeeming. Run
+-- this block if you added referral links later.
+alter table profiles add column if not exists referred_by uuid;
+
+create or replace function redeem_referral(ref_codename text)
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  ref_id uuid;
+  me uuid := auth.uid();
+begin
+  if me is null then return 'no auth'; end if;
+  if (select referred_by from profiles where id = me) is not null then return 'already'; end if;
+  select id into ref_id from profiles where codename = ref_codename;
+  if ref_id is null then return 'no referrer'; end if;
+  if ref_id = me then return 'self'; end if;
+  update profiles set referred_by = ref_id, credits = credits + 10, updated_at = now() where id = me;
+  update profiles set credits = credits + 10, updated_at = now() where id = ref_id;
+  return 'ok';
+end;
+$$;
+
+-- Done. Tables: profiles, game_stats, scores, subscribers.
+-- Functions: add_credits(int), redeem_referral(text).

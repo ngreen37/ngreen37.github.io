@@ -95,6 +95,12 @@
 
   function emit() { listeners.forEach(function (fn) { try { fn(); } catch (e) {} }); }
 
+  // Remember a referral code from the landing URL (?ref=CODENAME) for later.
+  try {
+    var _ref = new URLSearchParams(location.search).get('ref');
+    if (_ref) localStorage.setItem('pjcc.ref', _ref);
+  } catch (e) {}
+
   // --- dynamic SDK loader ----------------------------------------------------
   function loadSDK() {
     return new Promise(function (resolve, reject) {
@@ -168,6 +174,12 @@
     }
     profile = r.data;
     await PJCC.migrateGuest();       // pull any local bests up to the account
+    // Redeem a pending referral (awards credits to both, server-side & one-time).
+    try {
+      var pendingRef = localStorage.getItem('pjcc.ref');
+      if (pendingRef && pendingRef !== name) await PJCC.redeemReferral(pendingRef);
+      localStorage.removeItem('pjcc.ref');
+    } catch (e) {}
     emit();
     return profile;
   };
@@ -350,5 +362,143 @@
       .range(offset, offset + limit - 1);
     if (r.error || !r.data) return [];
     return r.data;
+  };
+
+  // ===========================================================================
+  // Progression: companion levels, achievements, world map, titles, referral
+  // ===========================================================================
+
+  // --- companion levels (XP = total rounds played, a monotonic stat) ---------
+  var LEVELS = [
+    { lvl: 1, at: 0,   stage: 'Stray' },
+    { lvl: 2, at: 5,   stage: 'Recruit Pup' },
+    { lvl: 3, at: 15,  stage: 'Scout' },
+    { lvl: 4, at: 30,  stage: 'Tracker' },
+    { lvl: 5, at: 55,  stage: 'Pathfinder' },
+    { lvl: 6, at: 90,  stage: 'Vanguard' },
+    { lvl: 7, at: 140, stage: 'Champion' },
+    { lvl: 8, at: 210, stage: 'Legend of the Board' }
+  ];
+  PJCC.LEVELS = LEVELS;
+  PJCC.companionLevel = function (plays) {
+    plays = plays || 0;
+    var cur = LEVELS[0], nxt = null;
+    for (var i = 0; i < LEVELS.length; i++) {
+      if (plays >= LEVELS[i].at) cur = LEVELS[i];
+      else { nxt = LEVELS[i]; break; }
+    }
+    return { level: cur.lvl, stage: cur.stage, into: plays - cur.at, span: nxt ? nxt.at - cur.at : 0, next: nxt };
+  };
+
+  function statsCtx(prof, stats) {
+    var map = {}; (stats || []).forEach(function (s) { map[s.game] = s; });
+    return {
+      profile: prof, credits: (prof && prof.credits) || 0,
+      totalPlays: (stats || []).reduce(function (a, s) { return a + (s.plays || 0); }, 0),
+      best: function (g) { return map[g] ? (map[g].best_score || 0) : 0; },
+      played: function (g) { return !!(map[g] && map[g].plays > 0); }
+    };
+  }
+
+  // --- achievements ----------------------------------------------------------
+  var ACHIEVEMENTS = [
+    { key: 'first-contact', icon: '📡', label: 'First Contact',  desc: 'Claim your codename',            test: function (c) { return !!c.profile; } },
+    { key: 'cipher-breaker',icon: '⊙', label: 'Cipher Breaker', desc: 'CIPHER streak of 5+',            test: function (c) { return c.best('cipher') >= 5; } },
+    { key: 'tactician',     icon: '⚔', label: 'Tactician',      desc: 'Solve 5+ in Fork in the Road',  test: function (c) { return c.best('fork-in-the-road') >= 5; } },
+    { key: 'deep-miner',    icon: '⛏', label: 'Deep Miner',     desc: 'Reach 100m in Sand Mine Depths',test: function (c) { return c.best('sand-mine-depths') >= 100; } },
+    { key: 'ferry-master',  icon: '⛴', label: 'Ferry Master',   desc: 'Ace all 5 ferry crossings',     test: function (c) { return c.best('ferry-delayed') >= 5; } },
+    { key: 'analyst',       icon: 'Δ', label: 'Analyst',        desc: 'Score 500+ in Clearance: DELTA',test: function (c) { return c.best('clearance-delta') >= 500; } },
+    { key: 'on-the-beat',   icon: '♫', label: 'On the Beat',    desc: 'Score 1000+ in Notation Blitz', test: function (c) { return c.best('notation-run') >= 1000; } },
+    { key: 'shogi-scholar', icon: '将', label: 'Shogi Scholar',  desc: 'Read 9/10 on Shogi Island',     test: function (c) { return c.best('shogi-island') >= 9; } },
+    { key: 'globetrotter',  icon: '🗺', label: 'Globetrotter',   desc: 'Play every game at least once',  test: function (c) { return WORLDMAP.every(function (s) { return !s.game || c.played(s.game); }); } },
+    { key: 'dedicated',     icon: '🔥', label: 'Dedicated',      desc: 'Play 50 rounds total',          test: function (c) { return c.totalPlays >= 50; } },
+    { key: 'collector',     icon: '🛒', label: 'Collector',      desc: 'Own a Shopkeeper avatar',       test: function (c) { return !!(c.profile.companion && (c.profile.companion.owned || []).length); } }
+  ];
+  PJCC.ACHIEVEMENTS = ACHIEVEMENTS;
+  PJCC.earnedAchievements = function (prof, stats) {
+    var c = statsCtx(prof, stats);
+    return ACHIEVEMENTS.map(function (a) { return { key: a.key, icon: a.icon, label: a.label, desc: a.desc, earned: !!a.test(c) }; });
+  };
+
+  // --- world map (game completion -> Princess's journey) ---------------------
+  var WORLDMAP = [
+    { name: 'Checker Town',     game: 'notation-run' },
+    { name: 'The Sand Mines',   game: 'sand-mine-depths' },
+    { name: 'Fork in the Road', game: 'fork-in-the-road' },
+    { name: 'Cipher Station',   game: 'cipher' },
+    { name: 'Clearance HQ',     game: 'clearance-delta' },
+    { name: 'Pirc Crossing',    game: 'pirc-protocol' },
+    { name: 'The Ferry Dock',   game: 'ferry-delayed' },
+    { name: 'Shogi Island',     game: 'shogi-island' },
+    { name: 'Chess City',       game: null }
+  ];
+  PJCC.WORLDMAP = WORLDMAP;
+  PJCC.worldProgress = function (stats) {
+    var c = statsCtx(profile, stats);
+    var stops = WORLDMAP.map(function (s) { return { name: s.name, game: s.game, reached: s.game ? c.played(s.game) : false }; });
+    stops[stops.length - 1].reached = stops.filter(function (s) { return s.game; }).every(function (s) { return s.reached; });
+    var furthest = -1; stops.forEach(function (s, i) { if (s.reached) furthest = i; });
+    return { stops: stops, furthest: furthest };
+  };
+
+  // --- titles (flair shown by your codename) ---------------------------------
+  var TITLES = {
+    'rookie':    { label: 'Rookie',              rule: 'free' },
+    'regular':   { label: 'Regular',             rule: 'plays:25' },
+    'veteran':   { label: 'Veteran',             rule: 'plays:75' },
+    'tactician': { label: 'Tactician',           rule: 'ach:tactician' },
+    'miner':     { label: 'Mine Survivor',       rule: 'ach:deep-miner' },
+    'ferryman':  { label: 'Ferryman',            rule: 'ach:ferry-master' },
+    'sensei':    { label: 'Shogi Sensei',        rule: 'ach:shogi-scholar' },
+    'curator':   { label: 'Curator',             rule: 'buy:20' },
+    'legend':    { label: 'Legend of the Board', rule: 'buy:60' }
+  };
+  PJCC.TITLES = TITLES;
+  PJCC.TITLE_SHOP = [{ key: 'curator', price: 20 }, { key: 'legend', price: 60 }];
+  PJCC.unlockedTitles = function (prof, stats) {
+    var c = statsCtx(prof, stats);
+    var earned = {}; PJCC.earnedAchievements(prof, stats).forEach(function (a) { if (a.earned) earned[a.key] = true; });
+    var ownedTitles = (prof && prof.companion && prof.companion.owned_titles) || [];
+    return Object.keys(TITLES).filter(function (key) {
+      var rule = TITLES[key].rule;
+      if (rule === 'free') return true;
+      if (rule.indexOf('plays:') === 0) return c.totalPlays >= parseInt(rule.slice(6), 10);
+      if (rule.indexOf('ach:') === 0) return !!earned[rule.slice(4)];
+      if (rule.indexOf('buy:') === 0) return ownedTitles.indexOf(key) !== -1;
+      return false;
+    });
+  };
+  PJCC.titleLabel = function (prof) {
+    var key = prof && prof.companion && prof.companion.title;
+    return (key && TITLES[key]) ? TITLES[key].label : '';
+  };
+  PJCC.setTitle = function (key) {
+    if (key && !TITLES[key]) throw new Error('unknown title');
+    return updateCompanion({ title: key || null });
+  };
+  PJCC.buyTitle = async function (key) {
+    var item = PJCC.TITLE_SHOP.filter(function (t) { return t.key === key; })[0];
+    if (!item) throw new Error('not for sale');
+    var ownedTitles = (profile.companion && profile.companion.owned_titles) || [];
+    if (ownedTitles.indexOf(key) !== -1) throw new Error('already owned');
+    await PJCC.spendCredits(item.price);
+    return updateCompanion({ owned_titles: ownedTitles.concat([key]), title: key });
+  };
+
+  // --- referral --------------------------------------------------------------
+  PJCC.inviteLink = function (prof) {
+    var code = (prof && prof.codename) ? prof.codename : '';
+    return code ? (location.origin + '/?ref=' + encodeURIComponent(code)) : '';
+  };
+  PJCC.redeemReferral = async function (refCodename) {
+    if (!sb || !PJCC.currentUser()) return { ok: false };
+    refCodename = String(refCodename || '').trim();
+    if (!refCodename) return { ok: false };
+    try {
+      var r = await sb.rpc('redeem_referral', { ref_codename: refCodename });
+      if (r.error) return { ok: false, error: r.error };
+      await loadProfile(); emit();
+      return { ok: true, result: r.data };
+    } catch (e) { return { ok: false, error: e }; }
   };
 })();

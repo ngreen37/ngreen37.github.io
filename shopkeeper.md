@@ -58,8 +58,32 @@ permalink: /shopkeeper/
       html += tile(item.key, isOwned ? 'Owned' : item.price + ' credits', action);
     });
     html += '</div>';
+
+    // Titles (purchasable flair shown by your codename)
+    var ownedTitles = (prof.companion && prof.companion.owned_titles) || [];
+    var equippedTitle = (prof.companion && prof.companion.title) || '';
+    html += '<h2 class="qm-h">Titles</h2><div class="qm-grid">';
+    PJCC.TITLE_SHOP.forEach(function (t) {
+      var owned = ownedTitles.indexOf(t.key) !== -1;
+      var on = equippedTitle === t.key;
+      var canAfford = (prof.credits || 0) >= t.price;
+      var action;
+      if (on) action = '<button class="pjcc-btn-ghost" disabled>Equipped</button>';
+      else if (owned) action = '<button class="pjcc-btn qm-tequip" data-k="' + t.key + '">Equip</button>';
+      else action = '<button class="pjcc-btn qm-tbuy" data-k="' + t.key + '"' + (canAfford ? '' : ' disabled') + '>' + (canAfford ? 'Buy · ' + t.price : t.price + ' cr') + '</button>';
+      html += '<div class="qm-item' + (on ? ' on' : '') + '"><div class="qm-title-label">' + PJCC.TITLES[t.key].label + '</div>' +
+        '<div class="qm-price">' + (owned ? 'Owned' : t.price + ' credits') + '</div>' + action + '</div>';
+    });
+    html += '</div>';
+
     el.innerHTML = html;
 
+    Array.prototype.forEach.call(el.querySelectorAll('.qm-tbuy'), function (b) {
+      b.onclick = function () { b.disabled = true; b.textContent = '…'; PJCC.buyTitle(b.getAttribute('data-k')).then(render).catch(function () { b.disabled = false; b.textContent = 'Try again'; }); };
+    });
+    Array.prototype.forEach.call(el.querySelectorAll('.qm-tequip'), function (b) {
+      b.onclick = function () { PJCC.setTitle(b.getAttribute('data-k')).then(render); };
+    });
     Array.prototype.forEach.call(el.querySelectorAll('.qm-buy'), function (b) {
       b.onclick = function () {
         b.disabled = true; b.textContent = '…';
@@ -85,5 +109,6 @@ permalink: /shopkeeper/
 .qm-item { background: #160c33; border: 1px solid #6b5fa0; border-radius: 12px; padding: 14px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .qm-item.on { border-color: #F5C518; box-shadow: 0 0 14px rgba(245,197,24,0.3); }
 .qm-emoji { font-size: 38px; }
+.qm-title-label { font-size: 0.95rem; font-weight: 800; color: #F5C518; min-height: 38px; display: flex; align-items: center; text-align: center; }
 .qm-price { color: #b9a8e6; font-size: 0.78rem; }
 </style>

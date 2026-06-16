@@ -79,10 +79,11 @@
     // Complete identity row
     bar.className = 'pjcc-bar pjcc-bar-in';
     var rankName = PJCC.rankFor(prof.credits).name;
+    var titleLabel = PJCC.titleLabel ? PJCC.titleLabel(prof) : '';
     bar.innerHTML =
       '<div class="pjcc-avatar">' + PJCC.avatarEmoji(prof) + '</div>' +
       '<div class="pjcc-id">' +
-        '<span class="pjcc-codename">' + esc(prof.codename) + '</span>' +
+        '<span class="pjcc-codename">' + esc(prof.codename) + (titleLabel ? ' <span class="pjcc-title">' + esc(titleLabel) + '</span>' : '') + '</span>' +
         '<span class="pjcc-sub">' + esc(rankName) + ' · <span class="pjcc-credits">' + prof.credits + ' credits</span></span>' +
       '</div>' +
       '<span class="pjcc-spacer"></span>' +

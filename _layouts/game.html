@@ -80,6 +80,10 @@
     .page-content {
       padding-top: 0;
     }
+
+    .lang-toggle { background: transparent; color: #9a7fd4; border: 1px solid #6b5fa0; border-radius: 999px;
+      padding: 5px 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin-left: 10px; }
+    .lang-toggle:hover { border-color: #F5C518; color: #F5C518; }
   </style>
 </head>
 <body>
@@ -87,6 +91,7 @@
   <header class="site-header">
     <div class="wrapper">
       <a class="site-title" rel="author" href="{{ '/' | relative_url }}">{{ site.title | escape }}</a>
+      <button class="lang-toggle" id="lang-toggle" type="button" aria-label="Toggle language">日本語</button>
       <nav class="site-nav">
         <input type="checkbox" id="nav-trigger" class="nav-trigger" />
         <label for="nav-trigger">
@@ -128,6 +133,7 @@
   <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pjcc-profile-bar.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/pjcc-lang.js' | relative_url }}"></script>
 
   <footer class="site-footer">
     <div class="wrapper">

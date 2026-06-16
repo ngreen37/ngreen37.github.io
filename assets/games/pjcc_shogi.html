@@ -18,6 +18,9 @@
   .hud { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--dim); margin: 6px 2px 10px; }
   .hud b { color: var(--gold); }
   .fwd { color: var(--dim); font-size: 0.72rem; letter-spacing: 2px; margin-bottom: 4px; }
+  .modes { display: flex; gap: 8px; justify-content: center; margin-bottom: 8px; }
+  .mode { background: #2a1a55; color: var(--dim); border: 1px solid #4a3a7a; border-radius: 999px; padding: 5px 14px; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+  .mode.on { background: var(--gold); color: #1a0f3d; border-color: var(--gold); }
 
   .board { display: grid; gap: 2px; background: var(--line); border: 3px solid var(--line);
     border-radius: 4px; width: 308px; margin: 0 auto; }
@@ -53,6 +56,7 @@
 <div id="app">
   <div class="title"><span class="jp">将棋島</span>Shogi Island</div>
   <div class="hud"><span>Piece <b id="qnum">1</b>/10</span><span>Correct <b id="score">0</b></span></div>
+  <div class="modes"><button class="mode on" id="mode-basic">Basics</button><button class="mode" id="mode-all">＋ Promoted</button></div>
   <div class="fwd">▲ forward ▲</div>
   <div class="board" id="board"></div>
   <div class="prompt">
@@ -72,23 +76,35 @@
 </div>
 
 <script>
-const N = 7, CTR = 3, ROUND = 10;
+const N = 9, CTR = 4, ROUND = 10;
 
 function inb(r, c) { return r >= 0 && r < N && c >= 0 && c < N; }
 function step(deltas) { return function (r, c) { var o = []; deltas.forEach(function (d) { if (inb(r + d[0], c + d[1])) o.push((r + d[0]) + ',' + (c + d[1])); }); return o; }; }
 function slide(dirs) { return function (r, c) { var o = []; dirs.forEach(function (d) { var nr = r + d[0], nc = c + d[1]; while (inb(nr, nc)) { o.push(nr + ',' + nc); nr += d[0]; nc += d[1]; } }); return o; }; }
+function combine() { var fns = arguments; return function (r, c) { var set = {}; for (var i = 0; i < fns.length; i++) fns[i](r, c).forEach(function (k) { set[k] = 1; }); return Object.keys(set); }; }
 
 // forward = up = negative row delta
-const PIECES = [
+var GOLD = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,0]];
+var DIAG = [[-1,-1],[-1,1],[1,-1],[1,1]];
+var ORTH = [[-1,0],[1,0],[0,-1],[0,1]];
+var KING = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+
+const PIECES_BASE = [
   { k: '歩', r: 'fu', e: 'Pawn', d: 'one square straight forward', m: step([[-1,0]]) },
   { k: '香', r: 'kyō', e: 'Lance', d: 'any distance straight forward', m: slide([[-1,0]]) },
   { k: '桂', r: 'keima', e: 'Knight', d: 'an L — two forward then one to the side (it jumps)', m: step([[-2,-1],[-2,1]]) },
   { k: '銀', r: 'gin', e: 'Silver General', d: 'one forward, or one in any diagonal', m: step([[-1,-1],[-1,0],[-1,1],[1,-1],[1,1]]) },
-  { k: '金', r: 'kin', e: 'Gold General', d: 'one in any straight direction, or one forward-diagonal', m: step([[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,0]]) },
-  { k: '角', r: 'kaku', e: 'Bishop', d: 'any distance diagonally', m: slide([[-1,-1],[-1,1],[1,-1],[1,1]]) },
-  { k: '飛', r: 'hisha', e: 'Rook', d: 'any distance straight', m: slide([[-1,0],[1,0],[0,-1],[0,1]]) },
-  { k: '王', r: 'ō', e: 'King', d: 'one square in any direction', m: step([[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]) }
+  { k: '金', r: 'kin', e: 'Gold General', d: 'one in any straight direction, or one forward-diagonal', m: step(GOLD) },
+  { k: '角', r: 'kaku', e: 'Bishop', d: 'any distance diagonally', m: slide(DIAG) },
+  { k: '飛', r: 'hisha', e: 'Rook', d: 'any distance straight', m: slide(ORTH) },
+  { k: '王', r: 'ō', e: 'King', d: 'one square in any direction', m: step(KING) }
 ];
+const PIECES_PROMO = [
+  { k: 'と', r: 'tokin', e: 'Tokin (promoted Pawn)', d: 'like a Gold General', m: step(GOLD) },
+  { k: '馬', r: 'uma', e: 'Horse (promoted Bishop)', d: 'a Bishop, plus one square straight', m: combine(slide(DIAG), step(ORTH)) },
+  { k: '龍', r: 'ryū', e: 'Dragon (promoted Rook)', d: 'a Rook, plus one square diagonally', m: combine(slide(ORTH), step(DIAG)) }
+];
+var pool = PIECES_BASE;
 
 var boardEl = document.getElementById('board');
 var cells = {};
@@ -103,7 +119,7 @@ for (var r = 0; r < N; r++) for (var c = 0; c < N; c++) {
 }
 
 function newQuestion() {
-  piece = PIECES[Math.floor(Math.random() * PIECES.length)];
+  piece = pool[Math.floor(Math.random() * pool.length)];
   target = {}; piece.m(CTR, CTR).forEach(function (k) { target[k] = true; });
   selected = {}; checked = false;
   document.getElementById('pname').textContent = piece.e + ' (' + piece.k + ' ' + piece.r + ')';
@@ -178,7 +194,11 @@ function finish() {
 }
 
 document.getElementById('action').onclick = function () { if (!checked) check(); else next(); };
-document.getElementById('ov-again').onclick = function () { document.getElementById('overlay').classList.add('hidden'); qi = 0; score = 0; document.getElementById('score').textContent = 0; newQuestion(); };
+document.getElementById('ov-again').onclick = function () { document.getElementById('overlay').classList.add('hidden'); startRound(); };
+
+function startRound() { qi = 0; score = 0; document.getElementById('score').textContent = 0; newQuestion(); }
+document.getElementById('mode-basic').onclick = function () { pool = PIECES_BASE; this.classList.add('on'); document.getElementById('mode-all').classList.remove('on'); startRound(); };
+document.getElementById('mode-all').onclick = function () { pool = PIECES_BASE.concat(PIECES_PROMO); this.classList.add('on'); document.getElementById('mode-basic').classList.remove('on'); startRound(); };
 
 newQuestion();
 </script>

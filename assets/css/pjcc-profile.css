@@ -32,6 +32,7 @@
 }
 .pjcc-id { display: flex; flex-direction: column; gap: 1px; }
 .pjcc-codename { color: #F5C518; font-weight: 800; font-size: 1.02rem; letter-spacing: 0.4px; }
+.pjcc-title { font-size: 0.62rem; vertical-align: middle; background: rgba(245,197,24,0.16); color: #F5C518; border: 1px solid #F5C518; border-radius: 999px; padding: 1px 7px; margin-left: 4px; font-weight: 700; letter-spacing: 0.03em; }
 .pjcc-sub { color: #b9a8e6; font-size: 0.76rem; }
 .pjcc-credits { color: #6bffb8; font-weight: 700; }
 .pjcc-spacer { flex: 1 1 auto; }

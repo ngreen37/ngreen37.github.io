@@ -102,10 +102,11 @@ permalink: /leaderboards/
                board.unit.toUpperCase() + '</th></tr></thead><tbody>';
     var body = accum.map(function (r, i) {
       var mine = me && r.codename === me.codename ? ' lb-me' : '';
+      var titleLabel = PJCC.titleLabel ? PJCC.titleLabel({ companion: r.companion }) : '';
       return '<tr class="' + mine + '">' +
         '<td class="lb-rank ' + rankClass(i) + '">' + (i + 1) + '</td>' +
         '<td class="lb-av">' + av(r.companion) + '</td>' +
-        '<td class="lb-name">' + esc(r.codename) + (r.rankName ? ' <span class="pjcc-sub">· ' + esc(r.rankName) + '</span>' : '') + '</td>' +
+        '<td class="lb-name">' + esc(r.codename) + (titleLabel ? ' <span class="pjcc-title">' + esc(titleLabel) + '</span>' : '') + (r.rankName ? ' <span class="pjcc-sub">· ' + esc(r.rankName) + '</span>' : '') + '</td>' +
         '<td class="lb-score">' + r.value + '</td>' +
       '</tr>';
     }).join('');

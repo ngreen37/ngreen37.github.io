@@ -70,26 +70,35 @@ permalink: /dossier/
     var rank = PJCC.rankFor(credits);
     var next = PJCC.nextRank(credits);
     var stats = await PJCC.myStats();
+    var totalPlays = stats.reduce(function (a, s) { return a + (s.plays || 0); }, 0);
+    var title = PJCC.titleLabel(prof);
+    var lvl = PJCC.companionLevel(totalPlays);
 
-    // header
+    // header — avatar with level ring, codename + title flair
     var html = '<div class="dsr-head">' +
-      '<div class="dsr-avatar">' + PJCC.avatarEmoji(prof) + '</div>' +
-      '<div><div class="dsr-name">' + esc(prof.codename) + '</div>' +
+      '<div class="dsr-avatar">' + PJCC.avatarEmoji(prof) + '<span class="dsr-lvl">Lv ' + lvl.level + '</span></div>' +
+      '<div><div class="dsr-name">' + esc(prof.codename) + (title ? ' <span class="dsr-title-flair">' + esc(title) + '</span>' : '') + '</div>' +
       '<div class="dsr-rank">' + esc(rank.name) + ' · <span class="pjcc-credits">' + credits + ' credits</span></div></div>' +
       '<span class="pjcc-spacer"></span>' +
       '<a class="pjcc-trophy" href="/shopkeeper/">🛒 Shopkeeper</a>' +
       '<a class="pjcc-trophy" href="/leaderboards/">🏆 Leaderboards</a></div>';
 
-    // progress to next rank
-    if (next) {
-      var span = next.min - rank.min;
-      var into = credits - rank.min;
-      var pct = Math.max(0, Math.min(100, Math.round(into / span * 100)));
-      html += '<div class="dsr-prog-wrap"><div class="dsr-prog" style="width:' + pct + '%"></div></div>' +
-        '<p class="pjcc-sub">' + (next.min - credits) + ' credits to <strong>' + esc(next.name) + '</strong></p>';
-    } else {
-      html += '<p class="pjcc-sub">Maximum clearance reached. There is nothing above Omega. (Or there is.)</p>';
-    }
+    // companion level + XP
+    var xpPct = lvl.span ? Math.round(lvl.into / lvl.span * 100) : 100;
+    html += '<div class="dsr-companion">' +
+      '<div class="dsr-comp-stage">' + esc(lvl.stage) + ' · Lv ' + lvl.level + '</div>' +
+      '<div class="dsr-xp"><div class="dsr-xp-fill" style="width:' + xpPct + '%"></div></div>' +
+      '<div class="pjcc-sub">' + (lvl.next ? ((lvl.span - lvl.into) + ' more rounds to Lv ' + (lvl.level + 1)) : 'Max level — top dog of the board.') + '</div></div>';
+
+    // world map — Princess's journey
+    var wp = PJCC.worldProgress(stats);
+    html += '<h2 class="dsr-h">The journey</h2><div class="dsr-map">';
+    wp.stops.forEach(function (s, i) {
+      html += '<div class="dsr-stop ' + (s.reached ? 'reached' : '') + '">' +
+        '<div class="dsr-here">' + (i === wp.furthest ? PJCC.avatarEmoji(prof) : '') + '</div>' +
+        '<div class="dsr-dot"></div><div class="dsr-stop-name">' + esc(s.name) + '</div></div>';
+    });
+    html += '</div>';
 
     // clearance ladder + lore
     html += '<h2 class="dsr-h">Clearance ladder</h2><div class="dsr-ladder">';
@@ -102,25 +111,62 @@ permalink: /dossier/
     });
     html += '</div>';
 
-    // Kintsugi panel
-    var plays = stats.reduce(function (a, s) { return a + (s.plays || 0); }, 0);
-    var seams = new Array(Math.min(plays, 24) + 1).join('╱');
+    // achievements
+    html += '<h2 class="dsr-h">Achievements</h2><div class="dsr-ach-grid">';
+    PJCC.earnedAchievements(prof, stats).forEach(function (a) {
+      html += '<div class="dsr-ach ' + (a.earned ? 'got' : 'locked') + '">' +
+        '<div class="dsr-ach-icon">' + a.icon + '</div><div class="dsr-ach-label">' + esc(a.label) + '</div>' +
+        '<div class="dsr-ach-desc">' + esc(a.desc) + '</div></div>';
+    });
+    html += '</div>';
+
+    // title flair selector
+    var unlocked = PJCC.unlockedTitles(prof, stats);
+    var equipped = (prof.companion && prof.companion.title) || '';
+    html += '<h2 class="dsr-h">Title flair</h2><div class="dsr-titles">';
+    unlocked.forEach(function (key) {
+      html += '<button class="dsr-title-chip ' + (key === equipped ? 'on' : '') + '" data-title="' + key + '">' + esc(PJCC.TITLES[key].label) + '</button>';
+    });
+    html += '<button class="dsr-title-chip ' + (equipped === '' ? 'on' : '') + '" data-title="">None</button></div>' +
+      '<p class="pjcc-sub">Unlock more through achievements and the <a href="/shopkeeper/">Shopkeeper</a>.</p>';
+
+    // Kintsugi
+    var seams = new Array(Math.min(totalPlays, 24) + 1).join('╱');
     html += '<h2 class="dsr-h">Kintsugi</h2>' +
       '<div class="dsr-kintsugi"><div class="dsr-seams">' + (seams || '·') + '</div>' +
-      '<p class="pjcc-sub">' + plays + ' attempts logged. Every operative cracks — yours are filled with gold. <em>Kaizen: one percent better each run.</em></p></div>';
+      '<p class="pjcc-sub">' + totalPlays + ' attempts logged. Every operative cracks — yours are filled with gold. <em>Kaizen: one percent better each run.</em></p></div>';
 
-    // per-game bests
+    // service record
     html += '<h2 class="dsr-h">Service record</h2><table class="lb-table"><tbody>';
     Object.keys(GAMES).forEach(function (key) {
       var s = stats.filter(function (x) { return x.game === key; })[0];
-      var label = GAMES[key][0], unit = GAMES[key][1];
-      html += '<tr><td class="lb-name">' + esc(label) + '</td>' +
+      html += '<tr><td class="lb-name">' + esc(GAMES[key][0]) + '</td>' +
         '<td class="pjcc-sub">' + (s ? (s.plays + ' runs') : 'not yet played') + '</td>' +
-        '<td class="lb-score">' + (s ? s.best_score + ' ' + unit : '—') + '</td></tr>';
+        '<td class="lb-score">' + (s ? s.best_score + ' ' + GAMES[key][1] : '—') + '</td></tr>';
     });
     html += '</tbody></table>';
 
+    // invite link
+    var link = PJCC.inviteLink(prof);
+    html += '<h2 class="dsr-h">Invite an operative</h2>' +
+      '<p class="pjcc-sub">Share your link — when a friend signs up through it, you each earn 10 credits.</p>' +
+      '<div class="dsr-invite"><input id="dsr-invite" class="pjcc-input" readonly value="' + esc(link) + '"><button id="dsr-copy" class="pjcc-btn">Copy</button></div>';
+
     el.innerHTML = html;
+
+    // wire title chips
+    Array.prototype.forEach.call(el.querySelectorAll('.dsr-title-chip'), function (b) {
+      b.onclick = function () { PJCC.setTitle(b.getAttribute('data-title')).then(render); };
+    });
+    // wire copy
+    var copyBtn = document.getElementById('dsr-copy');
+    if (copyBtn) copyBtn.onclick = function () {
+      var inp = document.getElementById('dsr-invite');
+      inp.select();
+      try { navigator.clipboard.writeText(inp.value); } catch (e) { document.execCommand('copy'); }
+      copyBtn.textContent = 'Copied!';
+      setTimeout(function () { copyBtn.textContent = 'Copy'; }, 1500);
+    };
   }
 
   PJCC.onChange(render);
@@ -148,4 +194,46 @@ permalink: /dossier/
 .dsr-rung.locked .dsr-frag { letter-spacing: 1px; font-style: normal; }
 .dsr-kintsugi { background: #160c33; border: 1px solid #6b5fa0; border-radius: 10px; padding: 12px 14px; max-width: 640px; }
 .dsr-seams { color: #F5C518; font-size: 1.4rem; letter-spacing: 2px; word-break: break-all; text-shadow: 0 0 8px rgba(245,197,24,0.5); }
+
+/* avatar level badge + title flair */
+.dsr-avatar { position: relative; }
+.dsr-lvl { position: absolute; bottom: -6px; right: -6px; background: #F5C518; color: #1a0f3d; font-size: 0.6rem; font-weight: 800; border-radius: 999px; padding: 1px 6px; border: 2px solid #160c33; }
+.dsr-title-flair { font-size: 0.7rem; vertical-align: middle; background: rgba(245,197,24,0.16); color: #F5C518; border: 1px solid #F5C518; border-radius: 999px; padding: 2px 9px; margin-left: 8px; letter-spacing: 0.04em; font-weight: 700; }
+
+/* companion level / XP */
+.dsr-companion { background: #160c33; border: 1px solid #6b5fa0; border-radius: 12px; padding: 12px 16px; margin-top: 12px; max-width: 560px; }
+.dsr-comp-stage { color: #6bffb8; font-weight: 800; margin-bottom: 6px; }
+.dsr-xp { background: #221347; border: 1px solid #6b5fa0; border-radius: 999px; height: 10px; overflow: hidden; margin-bottom: 4px; }
+.dsr-xp-fill { background: linear-gradient(90deg,#6bffb8,#F5C518); height: 100%; }
+
+/* world map */
+.dsr-map { display: flex; gap: 0; overflow-x: auto; padding: 18px 4px 6px; max-width: 100%; }
+.dsr-stop { position: relative; flex: 1 0 86px; text-align: center; }
+.dsr-stop::before { content: ''; position: absolute; top: 26px; left: -50%; width: 100%; height: 2px; background: #3a2a72; z-index: 0; }
+.dsr-stop:first-child::before { display: none; }
+.dsr-stop.reached::before { background: #F5C518; }
+.dsr-here { height: 20px; font-size: 18px; }
+.dsr-dot { width: 14px; height: 14px; border-radius: 50%; background: #3a2a72; border: 2px solid #6b5fa0; margin: 0 auto 6px; position: relative; z-index: 1; }
+.dsr-stop.reached .dsr-dot { background: #F5C518; border-color: #F5C518; box-shadow: 0 0 10px rgba(245,197,24,0.6); }
+.dsr-stop-name { color: #9a7fd4; font-size: 0.7rem; line-height: 1.2; }
+.dsr-stop.reached .dsr-stop-name { color: #f0e6ff; }
+
+/* achievements */
+.dsr-ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; max-width: 720px; }
+.dsr-ach { background: #160c33; border: 1px solid #6b5fa0; border-radius: 10px; padding: 12px; text-align: center; }
+.dsr-ach.got { border-color: #F5C518; box-shadow: 0 0 10px rgba(245,197,24,0.2); }
+.dsr-ach.locked { opacity: 0.4; filter: grayscale(0.6); }
+.dsr-ach-icon { font-size: 26px; }
+.dsr-ach-label { color: #f0e6ff; font-weight: 700; font-size: 0.84rem; margin: 4px 0 2px; }
+.dsr-ach-desc { color: #9a7fd4; font-size: 0.72rem; line-height: 1.3; }
+
+/* title chips */
+.dsr-titles { display: flex; flex-wrap: wrap; gap: 8px; }
+.dsr-title-chip { background: #2D1B69; color: #cdbcf2; border: 1px solid #6b5fa0; border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: 0.82rem; font-weight: 700; }
+.dsr-title-chip:hover { border-color: #F5C518; color: #fff; }
+.dsr-title-chip.on { background: #F5C518; color: #1a0f3d; border-color: #F5C518; }
+
+/* invite */
+.dsr-invite { display: flex; gap: 8px; flex-wrap: wrap; max-width: 560px; }
+.dsr-invite input { flex: 1 1 280px; }
 </style>

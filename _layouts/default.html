@@ -24,6 +24,7 @@
                class="logo-stacked">
         </a>
         <div class="header-top-right">
+          <button class="lang-toggle" id="lang-toggle" type="button" aria-label="Toggle language">日本語</button>
           <a class="nav-operative" id="nav-operative" href="{{ '/dossier/' | relative_url }}" hidden>Sign in</a>
           <a class="about-contact-btn" href="{{ '/about/' | relative_url }}">About / Contact</a>
           <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
@@ -435,7 +436,11 @@
   }
   .nav-operative:hover { border-color: #F5C518; color: #fff; }
   .nav-operative.in { border-color: #F5C518; color: #F5C518; }
+  .lang-toggle { background: transparent; color: #9a7fd4; border: 1px solid #6b5fa0; border-radius: 999px;
+    padding: 5px 12px; margin-right: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+  .lang-toggle:hover { border-color: #F5C518; color: #F5C518; }
   </style>
+  <script src="{{ '/assets/js/pjcc-lang.js' | relative_url }}"></script>
 
   {% include jukebox.html %}
 
