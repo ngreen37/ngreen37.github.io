@@ -76,8 +76,34 @@ permalink: /shopkeeper/
     });
     html += '</div>';
 
+    // Profile themes (Dossier accent)
+    var ownedThemes = PJCC.ownedThemes(prof);
+    var equippedTheme = (prof.companion && prof.companion.theme) || 'default';
+    html += '<h2 class="qm-h">Profile themes</h2><div class="qm-grid">';
+    PJCC.THEME_SHOP.forEach(function (key) {
+      var t = PJCC.THEMES[key];
+      var owned = ownedThemes.indexOf(key) !== -1;
+      var on = equippedTheme === key;
+      var canAfford = (prof.credits || 0) >= t.price;
+      var action;
+      if (on) action = '<button class="pjcc-btn-ghost" disabled>Equipped</button>';
+      else if (owned) action = '<button class="pjcc-btn qm-thequip" data-k="' + key + '">Equip</button>';
+      else action = '<button class="pjcc-btn qm-thbuy" data-k="' + key + '"' + (canAfford ? '' : ' disabled') + '>' + (canAfford ? 'Buy · ' + t.price : t.price + ' cr') + '</button>';
+      html += '<div class="qm-item' + (on ? ' on' : '') + '"><div class="qm-swatch" style="background:' + t.bg + ';border-color:' + t.accent + '"></div>' +
+        '<div class="qm-title-label" style="color:' + t.accent + '">' + t.label + '</div>' +
+        '<div class="qm-price">' + (owned ? 'Owned' : t.price + ' credits') + '</div>' + action + '</div>';
+    });
+    html += '</div>';
+    if (equippedTheme !== 'default') html += '<button class="pjcc-btn-ghost qm-thequip" data-k="default" style="margin-top:10px;">Reset to Operative Gold</button>';
+
     el.innerHTML = html;
 
+    Array.prototype.forEach.call(el.querySelectorAll('.qm-thbuy'), function (b) {
+      b.onclick = function () { b.disabled = true; b.textContent = '…'; PJCC.buyTheme(b.getAttribute('data-k')).then(render).catch(function () { b.disabled = false; b.textContent = 'Try again'; }); };
+    });
+    Array.prototype.forEach.call(el.querySelectorAll('.qm-thequip'), function (b) {
+      b.onclick = function () { PJCC.setTheme(b.getAttribute('data-k')).then(render); };
+    });
     Array.prototype.forEach.call(el.querySelectorAll('.qm-tbuy'), function (b) {
       b.onclick = function () { b.disabled = true; b.textContent = '…'; PJCC.buyTitle(b.getAttribute('data-k')).then(render).catch(function () { b.disabled = false; b.textContent = 'Try again'; }); };
     });
@@ -109,6 +135,7 @@ permalink: /shopkeeper/
 .qm-item { background: #160c33; border: 1px solid #6b5fa0; border-radius: 12px; padding: 14px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .qm-item.on { border-color: #F5C518; box-shadow: 0 0 14px rgba(245,197,24,0.3); }
 .qm-emoji { font-size: 38px; }
-.qm-title-label { font-size: 0.95rem; font-weight: 800; color: #F5C518; min-height: 38px; display: flex; align-items: center; text-align: center; }
+.qm-title-label { font-size: 0.95rem; font-weight: 800; color: #F5C518; min-height: 38px; display: flex; align-items: center; justify-content: center; text-align: center; }
+.qm-swatch { width: 100%; height: 34px; border-radius: 8px; border: 2px solid #F5C518; margin-bottom: 4px; }
 .qm-price { color: #b9a8e6; font-size: 0.78rem; }
 </style>

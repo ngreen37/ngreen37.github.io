@@ -225,9 +225,10 @@
         updated_at: new Date().toISOString()
       }, { onConflict: 'user_id,game' });
 
-      // 3. credits (atomic via RPC)
+      // 3. credits (atomic via RPC) — doubled when this is the weekly bounty game
       if (extras.credits) {
-        var cr = await sb.rpc('add_credits', { amount: extras.credits });
+        var award = extras.credits * (PJCC.bountyGame() === game ? 2 : 1);
+        var cr = await sb.rpc('add_credits', { amount: award });
         if (!cr.error && typeof cr.data === 'number' && profile) profile.credits = cr.data;
       }
       emit();
@@ -301,7 +302,7 @@
   PJCC.myStats = async function () {
     var u = PJCC.currentUser();
     if (!sb || !u) return [];
-    var r = await sb.from('game_stats').select('game,best_score,plays,data').eq('user_id', u.id);
+    var r = await sb.from('game_stats').select('game,best_score,plays,data,updated_at').eq('user_id', u.id);
     return (r && r.data) ? r.data : [];
   };
 
@@ -500,5 +501,47 @@
       await loadProfile(); emit();
       return { ok: true, result: r.data };
     } catch (e) { return { ok: false, error: e }; }
+  };
+
+  // --- weekly bounty (one game per week pays 2x credits) ---------------------
+  PJCC.BOUNTY_GAMES = ['cipher', 'clearance-delta', 'notation-run', 'fork-in-the-road', 'sand-mine-depths', 'pirc-protocol', 'ferry-delayed', 'shogi-island'];
+  PJCC.bountyGame = function () {
+    var now = new Date();
+    var week = Math.floor((now - new Date(now.getFullYear(), 0, 1)) / (7 * 24 * 3600 * 1000));
+    return PJCC.BOUNTY_GAMES[week % PJCC.BOUNTY_GAMES.length];
+  };
+
+  // --- companion pet-mood (decays with time since last played) ---------------
+  PJCC.petMood = function (stats) {
+    var last = 0;
+    (stats || []).forEach(function (s) { var t = s.updated_at ? Date.parse(s.updated_at) : 0; if (t > last) last = t; });
+    if (!last) return { state: 'New', emoji: '🥚', line: 'Your companion is waiting for its first adventure.' };
+    var hrs = (Date.now() - last) / 3600000;
+    if (hrs < 24)  return { state: 'Happy',   emoji: '💛', line: 'Bright-eyed and ready — you played recently.' };
+    if (hrs < 72)  return { state: 'Content', emoji: '🙂', line: "Doing fine, but wouldn't mind a round." };
+    if (hrs < 168) return { state: 'Lonely',  emoji: '🥺', line: 'Misses you. A game would cheer it up.' };
+    return { state: 'Restless', emoji: '😔', line: "It's been a while. Play a round to lift its spirits." };
+  };
+
+  // --- profile themes (cosmetic accent for the Dossier) ----------------------
+  var THEMES = {
+    'default': { label: 'Operative Gold',   price: 0,  accent: '#F5C518', bg: 'linear-gradient(135deg,#1f1147,#34206f)' },
+    'jade':    { label: 'Jade Dispatch',    price: 15, accent: '#6bffb8', bg: 'linear-gradient(135deg,#0f2a22,#143d31)' },
+    'crimson': { label: 'Red Clearance',    price: 15, accent: '#ff6b6b', bg: 'linear-gradient(135deg,#2a0d12,#1a090c)' },
+    'sakura':  { label: 'Shogi Sakura',     price: 25, accent: '#ff8fd0', bg: 'linear-gradient(135deg,#2a1030,#3d1640)' },
+    'mono':    { label: 'Classified Mono',  price: 25, accent: '#cdbcf2', bg: 'linear-gradient(135deg,#16161c,#27272f)' }
+  };
+  PJCC.THEMES = THEMES;
+  PJCC.THEME_SHOP = ['jade', 'crimson', 'sakura', 'mono'];
+  PJCC.themeFor = function (prof) { var k = prof && prof.companion && prof.companion.theme; return THEMES[k] || THEMES['default']; };
+  PJCC.ownedThemes = function (prof) { return ['default'].concat((prof && prof.companion && prof.companion.owned_themes) || []); };
+  PJCC.setTheme = function (key) { if (key && !THEMES[key]) throw new Error('unknown theme'); return updateCompanion({ theme: key || 'default' }); };
+  PJCC.buyTheme = async function (key) {
+    var t = THEMES[key];
+    if (!t || !t.price) throw new Error('not for sale');
+    var owned = (profile.companion && profile.companion.owned_themes) || [];
+    if (owned.indexOf(key) !== -1) throw new Error('already owned');
+    await PJCC.spendCredits(t.price);
+    return updateCompanion({ owned_themes: owned.concat([key]), theme: key });
   };
 })();

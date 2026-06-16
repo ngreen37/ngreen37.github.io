@@ -73,19 +73,25 @@ permalink: /dossier/
     var totalPlays = stats.reduce(function (a, s) { return a + (s.plays || 0); }, 0);
     var title = PJCC.titleLabel(prof);
     var lvl = PJCC.companionLevel(totalPlays);
+    var theme = PJCC.themeFor(prof);
+    var mood = PJCC.petMood(stats);
 
-    // header — avatar with level ring, codename + title flair
-    var html = '<div class="dsr-head">' +
-      '<div class="dsr-avatar">' + PJCC.avatarEmoji(prof) + '<span class="dsr-lvl">Lv ' + lvl.level + '</span></div>' +
-      '<div><div class="dsr-name">' + esc(prof.codename) + (title ? ' <span class="dsr-title-flair">' + esc(title) + '</span>' : '') + '</div>' +
+    // header — themed, avatar with level ring, codename + title flair
+    var html = '<div class="dsr-head" style="background:' + theme.bg + ';border-color:' + theme.accent + '">' +
+      '<div class="dsr-avatar" style="border-color:' + theme.accent + '">' + PJCC.avatarEmoji(prof) + '<span class="dsr-lvl" style="background:' + theme.accent + '">Lv ' + lvl.level + '</span></div>' +
+      '<div><div class="dsr-name" style="color:' + theme.accent + '">' + esc(prof.codename) + (title ? ' <span class="dsr-title-flair">' + esc(title) + '</span>' : '') + '</div>' +
       '<div class="dsr-rank">' + esc(rank.name) + ' · <span class="pjcc-credits">' + credits + ' credits</span></div></div>' +
       '<span class="pjcc-spacer"></span>' +
+      '<button class="pjcc-btn" id="dsr-share">📸 Share card</button>' +
       '<a class="pjcc-trophy" href="/shopkeeper/">🛒 Shopkeeper</a>' +
       '<a class="pjcc-trophy" href="/leaderboards/">🏆 Leaderboards</a></div>';
 
-    // companion level + XP
+    // companion: level + XP + pet mood
     var xpPct = lvl.span ? Math.round(lvl.into / lvl.span * 100) : 100;
     html += '<div class="dsr-companion">' +
+      '<div class="dsr-mood"><span class="dsr-mood-emoji">' + mood.emoji + '</span>' +
+      '<span><b>' + esc(mood.state) + '</b> — ' + esc(mood.line) + '</span>' +
+      '<button class="pjcc-btn-ghost" id="dsr-pet">Pet</button></div>' +
       '<div class="dsr-comp-stage">' + esc(lvl.stage) + ' · Lv ' + lvl.level + '</div>' +
       '<div class="dsr-xp"><div class="dsr-xp-fill" style="width:' + xpPct + '%"></div></div>' +
       '<div class="pjcc-sub">' + (lvl.next ? ((lvl.span - lvl.into) + ' more rounds to Lv ' + (lvl.level + 1)) : 'Max level — top dog of the board.') + '</div></div>';
@@ -167,6 +173,47 @@ permalink: /dossier/
       copyBtn.textContent = 'Copied!';
       setTimeout(function () { copyBtn.textContent = 'Copy'; }, 1500);
     };
+    // pet the companion (cosmetic)
+    var petBtn = document.getElementById('dsr-pet');
+    if (petBtn) petBtn.onclick = function () {
+      var em = el.querySelector('.dsr-mood-emoji');
+      if (em) { em.textContent = '💗'; em.style.transition = 'transform .2s'; em.style.transform = 'scale(1.5)'; setTimeout(function () { em.style.transform = 'scale(1)'; }, 260); }
+      petBtn.textContent = 'Good pup!'; setTimeout(function () { petBtn.textContent = 'Pet'; }, 1500);
+    };
+    // shareable card
+    var shareBtn = document.getElementById('dsr-share');
+    if (shareBtn) shareBtn.onclick = function () { shareCard(prof, rank, lvl, credits, theme); };
+  }
+
+  function shareCard(prof, rank, lvl, credits, theme) {
+    var c = document.createElement('canvas'); c.width = 600; c.height = 340;
+    var g = c.getContext('2d');
+    var grad = g.createLinearGradient(0, 0, 600, 340);
+    grad.addColorStop(0, '#1f1147'); grad.addColorStop(1, '#34206f');
+    g.fillStyle = grad; g.fillRect(0, 0, 600, 340);
+    g.strokeStyle = theme.accent; g.lineWidth = 6; g.strokeRect(10, 10, 580, 320);
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = '92px sans-serif'; g.fillText(PJCC.avatarEmoji(prof), 110, 140);
+    g.textAlign = 'left';
+    g.fillStyle = theme.accent; g.font = 'bold 42px Poppins, system-ui, sans-serif';
+    g.fillText(prof.codename, 195, 92);
+    var ttl = PJCC.titleLabel(prof);
+    g.fillStyle = '#cdbcf2'; g.font = '21px Inter, system-ui, sans-serif';
+    g.fillText((ttl ? ttl + ' · ' : '') + rank.name, 195, 132);
+    g.fillText('Level ' + lvl.level + ' · ' + lvl.stage, 195, 164);
+    g.fillStyle = '#6bffb8'; g.font = 'bold 32px Poppins, system-ui, sans-serif';
+    g.fillText(credits + ' credits', 110, 255);
+    g.fillStyle = '#9a7fd4'; g.font = '16px Inter, system-ui, sans-serif';
+    g.fillText('mcpuppystudios.com · Princess and the Journey to Chess City', 30, 312);
+    c.toBlob(function (blob) {
+      if (!blob) return;
+      var file = new File([blob], 'pjcc-operative.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: 'My PJCC operative', text: 'Operative ' + prof.codename + ' — mcpuppystudios.com' }).catch(function () {});
+      } else {
+        var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'pjcc-operative.png'; a.click();
+      }
+    }, 'image/png');
   }
 
   PJCC.onChange(render);
@@ -202,6 +249,9 @@ permalink: /dossier/
 
 /* companion level / XP */
 .dsr-companion { background: #160c33; border: 1px solid #6b5fa0; border-radius: 12px; padding: 12px 16px; margin-top: 12px; max-width: 560px; }
+.dsr-mood { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; color: #cdbcf2; font-size: 0.86rem; flex-wrap: wrap; }
+.dsr-mood-emoji { font-size: 28px; }
+.dsr-mood b { color: #f0e6ff; }
 .dsr-comp-stage { color: #6bffb8; font-weight: 800; margin-bottom: 6px; }
 .dsr-xp { background: #221347; border: 1px solid #6b5fa0; border-radius: 999px; height: 10px; overflow: hidden; margin-bottom: 4px; }
 .dsr-xp-fill { background: linear-gradient(90deg,#6bffb8,#F5C518); height: 100%; }

@@ -1,11 +1,11 @@
 ---
 layout: game
-title: "Notation Blitz v1.3"
+title: "Notation Blitz v1.5"
 description: "A coordinate-reading rhythm game. Calls drop on the beat — click the square."
 permalink: /games/notation-run/
 ---
 
-<div class="game-frame-wrap">
+<div class="game-frame-wrap nb-frame">
   <iframe
     src="{{ '/assets/games/notation_run.html' | relative_url }}"
     title="PJCC Notation Blitz"
@@ -13,6 +13,13 @@ permalink: /games/notation-run/
     scrolling="no"
   ></iframe>
 </div>
+
+<style>
+/* Notation Blitz plays on a near-square board — give it a taller, roomier frame */
+.nb-frame { max-width: 640px; }
+.nb-frame iframe { height: 680px; }
+@media (max-width: 600px) { .nb-frame iframe { height: 560px; } }
+</style>
 
 <div class="game-info">
   <h2>How to Play</h2>
@@ -25,10 +32,12 @@ permalink: /games/notation-run/
     <li>Read the <strong>a&ndash;h</strong> files and <strong>1&ndash;8</strong> ranks on the board edges</li>
   </ul>
 
-  <h2>Modes</h2>
+  <h2>Tempo</h2>
   <ul>
-    <li><strong>Coordinates</strong> — random squares to drill pure board vision</li>
-    <li><strong>Pirc Defense</strong> — trace the Rival's signature opening, move by move</li>
-    <li><strong>Italian Game</strong> — a classic line, played to the beat</li>
+    <li><strong>Stroll</strong> — gentle pace to learn the board</li>
+    <li><strong>March</strong> — the standard beat</li>
+    <li><strong>Sprint</strong> — fast calls for sharp board vision</li>
   </ul>
+
+  <p class="game-note">Pure coordinate drilling — read the files and ranks fast. Scores log to your <a href="/dossier/">operative dossier</a> and the <a href="/leaderboards/">leaderboards</a>.</p>
 </div>

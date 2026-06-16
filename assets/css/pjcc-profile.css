@@ -99,3 +99,10 @@
 .lb-score { text-align: right; color: #6bffb8; font-weight: 800; }
 .lb-empty { color: #9a7fd4; padding: 1rem 0; }
 .lb-me { background: rgba(245,197,24,0.08); }
+
+/* Opt-in coaching panel on game pages */
+.coach { max-width: 860px; margin: 0 auto 1.4rem; background: #160c33; border: 1px solid #6b5fa0; border-radius: 10px; padding: 2px 16px; }
+.coach summary { cursor: pointer; color: #F5C518; font-weight: 700; padding: 12px 0; }
+.coach ol { color: #c9a7ff; line-height: 1.7; margin: 0 0 12px; padding-left: 1.2rem; }
+.coach li { margin-bottom: 6px; }
+.coach strong { color: #f0e6ff; }

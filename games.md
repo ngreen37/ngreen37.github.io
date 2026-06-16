@@ -4,7 +4,29 @@ title: Games
 permalink: /games/
 ---
 
+<div id="bounty-banner" class="bounty-banner" hidden></div>
+
 <a class="games-lb-link" href="{{ '/leaderboards/' | relative_url }}">🏆 View the Leaderboards &rarr;</a>
+
+<script>
+(function () {
+  var NAMES = { 'cipher': 'CIPHER', 'clearance-delta': 'Clearance: DELTA', 'notation-run': 'Notation Blitz', 'fork-in-the-road': 'Fork in the Road', 'sand-mine-depths': 'Sand Mine Depths', 'pirc-protocol': 'The Pirc Protocol', 'ferry-delayed': 'Ferry Delayed', 'shogi-island': 'Shogi Island' };
+  function show() {
+    if (!window.PJCC || !PJCC.bountyGame) return;
+    var key = PJCC.bountyGame();
+    var b = document.getElementById('bounty-banner');
+    if (!b) return;
+    b.innerHTML = '🎯 <strong>This week’s bounty:</strong> ' + (NAMES[key] || key) + ' — <strong>double credits</strong> all week!';
+    b.hidden = false;
+  }
+  if (window.PJCC && PJCC.ready) PJCC.ready.then(show); else document.addEventListener('DOMContentLoaded', show);
+})();
+</script>
+
+<style>
+.bounty-banner { background: linear-gradient(135deg,#2a1a5e,#3a2570); border: 1px solid #F5C518; border-radius: 10px; padding: 11px 16px; margin: 0 0 1rem; color: #f0e6ff; font-size: 0.92rem; }
+.bounty-banner strong { color: #F5C518; }
+</style>
 
 <div class="games-grid">
 
@@ -20,7 +42,7 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/notation-run/' | relative_url }}">
     <div class="game-card-icon">♫</div>
     <div class="game-card-body">
-      <h2>Notation Blitz v1.4</h2>
+      <h2>Notation Blitz v1.5</h2>
       <p>A coordinate-reading rhythm game. Calls drop on the beat — click the square before it passes the gate.</p>
       <span class="game-tag">Playable</span>
     </div>

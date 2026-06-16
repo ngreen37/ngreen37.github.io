@@ -1,0 +1,33 @@
+/* =============================================================================
+ * PJCC accessibility pass
+ *  - respects "reduce motion" (kills the glows/pulses/walker for those who opt in)
+ *  - clear keyboard-focus outline for tab navigation
+ *  - comfortable minimum tap-target size on interactive controls
+ * ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid #F5C518;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Comfortable tap targets on the interactive controls we built */
+.pjcc-btn, .pjcc-btn-ghost, .lb-tab, .jb-btn,
+.dsr-title-chip, .pjcc-pick, .lang-toggle, .games-lb-link {
+  min-height: 40px;
+}
+@media (max-width: 620px) {
+  .pjcc-btn, .pjcc-btn-ghost, .lb-tab, .jb-btn { min-height: 44px; }
+}

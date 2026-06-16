@@ -26,7 +26,7 @@
 
   #stage {
     position: relative;
-    width: 480px;
+    width: 560px;
     max-width: 100vw;
   }
 
@@ -65,7 +65,7 @@
   }
 
   .ov-title {
-    font-size: 28px;
+    font-size: 34px;
     font-weight: bold;
     color: #F5C518;
     letter-spacing: 2px;
@@ -74,10 +74,10 @@
   }
 
   .ov-sub {
-    font-size: 12px;
+    font-size: 16px;
     color: #c9a7ff;
     line-height: 1.7;
-    max-width: 360px;
+    max-width: 440px;
     margin-bottom: 16px;
   }
 
@@ -101,9 +101,9 @@
     color: #c9a7ff;
     border: 1px solid #4a2f8a;
     border-radius: 5px;
-    padding: 7px 12px;
+    padding: 9px 15px;
     font-family: 'Courier New', monospace;
-    font-size: 12px;
+    font-size: 15px;
     cursor: pointer;
     transition: all 0.12s;
   }
@@ -122,9 +122,9 @@
     background: #F5C518;
     color: #1a0f3d;
     border: none;
-    padding: 11px 32px;
+    padding: 13px 36px;
     font-family: 'Courier New', monospace;
-    font-size: 15px;
+    font-size: 18px;
     font-weight: bold;
     border-radius: 5px;
     cursor: pointer;
@@ -145,8 +145,8 @@
     gap: 8px 26px;
     margin: 10px 0 4px;
   }
-  .stat-grid .s-lab { font-size: 10px; color: #9a7fd4; text-align: right; }
-  .stat-grid .s-val { font-size: 14px; color: #f0e6ff; font-weight: bold; text-align: left; }
+  .stat-grid .s-lab { font-size: 13px; color: #9a7fd4; text-align: right; }
+  .stat-grid .s-val { font-size: 18px; color: #f0e6ff; font-weight: bold; text-align: left; }
   .stat-grid .s-val.perfect { color: #6bffb8; }
   .stat-grid .s-val.good { color: #F5C518; }
   .stat-grid .s-val.miss { color: #ff6b6b; }
@@ -178,18 +178,11 @@
   <!-- TITLE SCREEN -->
   <div class="overlay" id="title-screen">
     <div class="ov-eyebrow">Checker Town · Coordinate Drill</div>
-    <div class="ov-title">NOTATION BLITZ <span style="font-size:0.5em;color:#ff8fd0;vertical-align:super;letter-spacing:1px;">v1.4</span></div>
+    <div class="ov-title">NOTATION BLITZ <span style="font-size:0.5em;color:#ff8fd0;vertical-align:super;letter-spacing:1px;">v1.5</span></div>
     <div class="ov-sub">
       Calls drop in on the beat. When a square's name reaches the
       <b style="color:#F5C518">gate</b>, click that square on the board.
       Read the files (a&ndash;h) and ranks (1&ndash;8) fast &mdash; that's the whole game.
-    </div>
-
-    <div class="ov-group-label">Mode</div>
-    <div class="btn-row" id="mode-row">
-      <button class="pick sel" data-mode="coords">Coordinates<small>random squares</small></button>
-      <button class="pick" data-mode="pirc">Pirc Defense<small>the Rival's line</small></button>
-      <button class="pick" data-mode="italian">Italian Game<small>classic opening</small></button>
     </div>
 
     <div class="ov-group-label">Tempo</div>
@@ -256,7 +249,7 @@ const GOOD_FRAC = 0.46;
 const DIFFS = {
   easy:   { bpm: 43, bpc: 2, calls: 18, label: 'Stroll' },
   medium: { bpm: 60, bpc: 2, calls: 22, label: 'March' },
-  hard:   { bpm: 82, bpc: 2, calls: 26, label: 'Sprint' },
+  hard:   { bpm: 94, bpc: 2, calls: 28, label: 'Sprint' },
 };
 
 // ---- Personal bests (per mode + tempo), saved in the browser ----
@@ -579,10 +572,12 @@ function drawBoard() {
 
 function drawTrack() {
   const now = nowSec();
-  // Track baseline
-  ctx.strokeStyle = 'rgba(245,197,24,0.12)';
-  ctx.lineWidth = 1;
+  // Track baseline — bold, bright rhythm bar
+  ctx.strokeStyle = 'rgba(245,197,24,0.9)';
+  ctx.lineWidth = 8;
+  ctx.lineCap = 'round';
   ctx.beginPath(); ctx.moveTo(HITX, TRACK_Y); ctx.lineTo(W - 8, TRACK_Y); ctx.stroke();
+  ctx.lineCap = 'butt';
 
   // Beat pulse at the gate
   const sinceBeat = G.running ? ((now - G.startTime) % G.spb) / G.spb : 0;
@@ -618,7 +613,7 @@ function drawTrack() {
     const dt = Math.abs(c.hitTime - now);
     const active = c.status === 'pending' && dt <= G.goodW;
 
-    const fontSize = active ? 24 : 18;
+    const fontSize = active ? 28 : 22;
     ctx.font = 'bold ' + fontSize + 'px Courier New';
     const textW = ctx.measureText(c.san).width;
     const padX = active ? 12 : 9;
@@ -763,7 +758,7 @@ function loop() {
 // ---- Screens / flow ----
 let selMode = 'coords', selDiff = 'medium';
 
-function modeName(mode) { return mode === 'coords' ? 'Coordinates' : OPENINGS[mode].label; }
+function modeName(mode) { return mode === 'coords' ? 'Coordinates' : (OPENINGS[mode] ? OPENINGS[mode].label : 'Coordinates'); }
 function updateTitleBest() {
   const best = loadBests()[selMode + '_' + selDiff];
   const el = document.getElementById('title-best');
@@ -772,7 +767,8 @@ function updateTitleBest() {
     : 'Best (' + modeName(selMode) + ' · ' + DIFFS[selDiff].label + '): <b>—</b>';
 }
 
-document.getElementById('mode-row').addEventListener('click', e => {
+var modeRow = document.getElementById('mode-row');
+if (modeRow) modeRow.addEventListener('click', e => {
   const b = e.target.closest('[data-mode]'); if (!b) return;
   selMode = b.dataset.mode;
   document.querySelectorAll('#mode-row .pick').forEach(p => p.classList.toggle('sel', p === b));
