@@ -11,9 +11,14 @@ Flow once set up:
 
 ---
 
-## 1. Create the Resend audience (~2 min)
-1. Resend → **Audiences** → **Create Audience** → name it `PJCC Dispatch`.
-2. Open it and copy the **Audience ID** (looks like `78261eea-...`). You'll need it below.
+## 1. Get your Resend Audience ID (~1 min)
+Resend now gives every account ONE default audience automatically — you don't
+need to create one. Just grab its ID:
+- Open Resend → **Audience**. Look at the browser URL: it ends in
+  `/audiences/<AUDIENCE_ID>` — that long string is your Audience ID, OR
+- click the **`</>`** button (top-right, next to "Add contacts") and copy the
+  `audience_id` shown in the snippet.
+Save that ID for step 4 (`RESEND_AUDIENCE_ID`).
 
 ## 2. Pick a webhook secret (~1 min)
 Make up a random string (e.g. mash the keyboard, or run `openssl rand -hex 16`).
