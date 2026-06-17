@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PJCC: Notation Blitz v2.1</title>
+<title>PJCC: Notation Blitz v2.7</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -179,7 +179,7 @@
   <!-- TITLE SCREEN -->
   <div class="overlay" id="title-screen">
     <div class="ov-eyebrow">Checker Town · Coordinate Drill</div>
-    <div class="ov-title">NOTATION BLITZ <span style="font-size:0.5em;color:#ff8fd0;vertical-align:super;letter-spacing:1px;">v2.1</span></div>
+    <div class="ov-title">NOTATION BLITZ <span style="font-size:0.5em;color:#ff8fd0;vertical-align:super;letter-spacing:1px;">v2.7</span></div>
 
     <div class="ov-group-label">Tempo</div>
     <div class="btn-row" id="diff-row">
@@ -448,7 +448,8 @@ function update() {
   G.scoreFlash *= 0.9;
   G.shake *= 0.86;
   if (G.milestone) { G.milestone.life--; if (G.milestone.life <= 0) G.milestone = null; }
-  if (G.combo >= 10 && Math.random() < 0.1) spawnBolt();
+  if (G.combo >= 15) { if (Math.random() < 0.45) spawnBolt(); if (Math.random() < 0.3) spawnBolt(); }
+  else if (G.combo >= 10 && Math.random() < 0.1) spawnBolt();
   G.bolts = G.bolts.filter(b => { b.life--; return b.life > 0; });
 
   // Finish check
@@ -458,7 +459,7 @@ function update() {
   }
 }
 
-const MILESTONES = { 3: 'STREAK ×3 ⚡', 5: 'HEATING UP ×5', 10: 'ON FIRE! ×10 🔥', 15: 'BLAZING ×15', 20: 'UNREAL ×20 ⚡', 30: 'GODLIKE ×30' };
+const MILESTONES = { 3: 'STREAK ×3 ⚡', 5: 'HEATING UP ×5', 10: 'ON FIRE! ×10 🔥', 15: '⚡⚡ OVERLOAD ×15 ⚡⚡', 20: 'UNREAL ×20', 30: 'GODLIKE ×30' };
 function checkMilestone(c) {
   if (MILESTONES[c]) {
     G.milestone = { text: MILESTONES[c], life: 64 };
@@ -474,7 +475,7 @@ function registerResult(kind, call) {
     const mult = 1 + Math.min(G.combo, 20) * 0.05;
     G.score += Math.round((kind === 'perfect' ? 100 : 55) * mult);
     G.scorePulse = 1;
-    if (G.combo >= 3) G.shake = Math.min(11, 2 + G.combo * 0.35);
+    if (G.combo >= 3) G.shake = Math.min(G.combo >= 15 ? 19 : 11, 2 + G.combo * 0.5);
     checkMilestone(G.combo);
   } else {
     G.res.miss++;
@@ -566,6 +567,24 @@ function render() {
   drawHUD();
 
   ctx.restore();
+  drawOverload();
+}
+
+// Streak >=15: a pulsing electric frame + occasional strobe around the arena
+function drawOverload() {
+  if (!G || G.combo < 15) return;
+  const now = nowSec();
+  const hue = Math.floor((now * 620) % 360);
+  const p = 0.16 + 0.12 * Math.abs(Math.sin(now * 9));
+  ctx.save();
+  ctx.globalAlpha = p;
+  ctx.fillStyle = 'hsl(' + hue + ',100%,62%)';
+  ctx.fillRect(0, 0, W, 7); ctx.fillRect(0, H - 7, W, 7);
+  ctx.fillRect(0, 0, 7, H); ctx.fillRect(W - 7, 0, 7, H);
+  ctx.restore();
+  if (Math.random() < 0.05) {
+    ctx.save(); ctx.globalAlpha = 0.12; ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H); ctx.restore();
+  }
 }
 
 function spawnBolt() {
@@ -636,11 +655,17 @@ function drawBoard() {
 function drawTrack() {
   const now = nowSec();
   const combo = G ? G.combo : 0;
-  const heat = combo >= 10 ? 2 : combo >= 3 ? 1 : 0;   // 0 calm · 1 warm · 2 electric
+  const heat = combo >= 15 ? 3 : combo >= 10 ? 2 : combo >= 3 ? 1 : 0;  // 0 calm·1 warm·2 electric·3 OVERLOAD
 
   // Track baseline — bold rhythm bar; vibrates and heats up with your streak
   let by = TRACK_Y, lw = 8, col = 'rgba(245,197,24,0.9)', glow = 0;
-  if (heat >= 1) {
+  if (heat === 3) {
+    // OVERLOAD: a thrashing, racing-rainbow electric bar
+    by += (Math.random() - 0.5) * 9;
+    lw = 14 + Math.sin(now * 42) * 2.5;
+    glow = 30;
+    col = 'hsl(' + Math.floor((now * 620) % 360) + ', 100%, 66%)';
+  } else if (heat >= 1) {
     by += (Math.random() - 0.5) * (heat === 2 ? 5 : 2.4);
     lw = heat === 2 ? 12 : 10;
     glow = heat === 2 ? 20 : 11;
