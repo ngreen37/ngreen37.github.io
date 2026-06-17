@@ -1,11 +1,11 @@
 ---
 layout: game
-title: "The Pirc Protocol"
-description: "A spaced-repetition opening trainer. Face Princess over the board and learn real chess openings."
+title: "The Pirc Protocol v2.0"
+description: "An opening library. Learn real chess openings by playing the book moves against Princess."
 permalink: /games/pirc-protocol/
 ---
 
-<div class="game-frame-wrap">
+<div class="game-frame-wrap pirc-frame">
   <iframe
     src="{{ '/assets/games/pjcc_pirc.html' | relative_url }}"
     title="PJCC The Pirc Protocol"
@@ -14,35 +14,20 @@ permalink: /games/pirc-protocol/
   ></iframe>
 </div>
 
+<style>
+/* Pirc plays on a near-square board — give it a roomier library frame */
+.pirc-frame { max-width: 680px; }
+.pirc-frame iframe { height: 680px; }
+@media (max-width: 640px) { .pirc-frame iframe { height: 560px; } }
+</style>
+
 <div class="game-info">
   <h2>How to Play</h2>
   <ul>
-    <li>Pick a deck, then <strong>Start Review</strong> — only the lines that are <strong>due</strong> come up</li>
-    <li>Princess plays her move; when it's your turn, answer with the book move: <strong>click the piece, then its square</strong></li>
-    <li>Castling: click the <strong>king</strong>, then its destination (two squares over)</li>
-    <li>Stuck? Hit <strong>🐾 Show me</strong> — but it counts as a slip</li>
-    <li>Finish a whole line cleanly and it's <strong>promoted</strong> — you'll see it again later</li>
-    <li>Slip up and it drops back to <strong>box 1</strong> — it'll return much sooner</li>
-    <li>Your progress saves in this browser. <strong>Cram</strong> ignores the schedule for free practice</li>
+    <li>Pick a deck, choose <strong>📖 Run-through</strong> (a whole opening from move 1) or <strong>🃏 Spot cards</strong> (one position at a time)</li>
+    <li>Princess plays only <strong>book moves</strong>; on your turn, answer with the book move — <strong>click the piece, then its square</strong></li>
+    <li>Stuck? <strong>🐾 Show me</strong> reveals it and sends that line back for another pass</li>
   </ul>
 
-  <h2>Decks</h2>
-  <ul>
-    <li><strong>Pirc Defense</strong> (Black) — the Rival's signature: Classical, Austrian Attack, 150 Attack</li>
-    <li><strong>Italian Game</strong> (White) — Giuoco Pianissimo &amp; Giuoco Piano</li>
-    <li><strong>Scandinavian</strong> (Black) — Main Line &amp; the 3...Nf6 Modern</li>
-  </ul>
-
-  <p class="game-note">Spaced repetition is the same trick Anki uses: master something and it leaves you alone; fumble it and it keeps coming back until it sticks. Princess already knows these lines cold — your job is to keep up with her.</p>
+  <p class="game-note">Every line is a real, named opening — the <strong>Pirc Defense</strong>, <strong>Italian Game</strong>, and <strong>Scandinavian</strong>, each with its main variations. Moves follow standard opening theory (cross-check any line in the <a href="https://lichess.org/opening" target="_blank" rel="noopener">lichess opening explorer</a>). Master a line and spaced repetition rests it; slip and it returns sooner. Scores log to your <a href="/dossier/">operative dossier</a> and the <a href="/leaderboards/">leaderboards</a>.</p>
 </div>
-
-<details class="coach">
-  <summary>🧭 Coach me through it (optional)</summary>
-  <ol>
-    <li><strong>Start with the Italian deck</strong> if you're new — its moves are the most intuitive.</li>
-    <li>Princess moves first each turn. <strong>Watch her move land</strong>, then it's you.</li>
-    <li>To answer: <strong>click the piece you want to move, then click its destination square.</strong> The board only accepts the one book move.</li>
-    <li>Truly stuck? <strong>🐾 Show me</strong> reveals it — it just sends that line back to box&nbsp;1 so you'll see it again sooner. That's the system working, not a failure.</li>
-    <li>Don't grind everything at once — do the <strong>due</strong> lines, come back tomorrow, and let the schedule do the remembering for you.</li>
-  </ol>
-</details>

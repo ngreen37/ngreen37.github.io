@@ -3,23 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: The Pirc Protocol</title>
+<title>PJCC: The Pirc Protocol v2.0</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
+<script src="/assets/js/pjcc-pieces.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
-    background: #1a0f3d; height: 100%; overflow: hidden;
+    background: #211309; height: 100%; overflow: hidden;
     font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
 
-  #stage { position: relative; width: 480px; max-width: 100vw; }
+  /* Maximize the playfield on desktop; still scales down for mobile. */
+  #stage { position: relative; width: 100%; max-width: 600px; }
   #canvas {
     display: block; width: 100%;
-    border: 3px solid #F5C518; border-radius: 12px;
-    background: #241152; box-shadow: 0 0 40px rgba(245,197,24,0.25);
+    border: 3px solid #caa24a; border-radius: 12px;
+    background: #2a1c0e; box-shadow: 0 0 40px rgba(202,162,74,0.25);
   }
 
   /* Floating in-game buttons */
@@ -37,8 +39,8 @@
   }
   #hint-btn:active { transform: translateX(-50%) translateY(2px); }
   #menu-btn {
-    top: 10px; right: 10px; background: #2D1B69; color: #c9a7ff;
-    padding: 5px 12px; font-size: 11px; border: 1px solid #6a4fb0;
+    top: 10px; right: 10px; background: #3a2812; color: #ead9b8;
+    padding: 5px 12px; font-size: 11px; border: 1px solid #6a4a22;
   }
   .float-btn.hidden { display: none; }
 
@@ -47,25 +49,28 @@
     position: absolute; inset: 0; z-index: 10;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     padding: 20px; text-align: center; border-radius: 12px;
-    background: radial-gradient(circle at 50% 30%, #3a1d72 0%, #1a0f3d 80%);
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.16) 0 2px, rgba(0,0,0,0) 2px 26px),
+      radial-gradient(circle at 50% 26%, #3a2912 0%, #160d04 82%);
   }
   .overlay.hidden { display: none; }
 
   .big-title {
     font-size: 30px; font-weight: 900; color: #F5C518; letter-spacing: 1px;
-    text-shadow: 0 3px 0 #8a5a00, 0 0 22px rgba(245,197,24,0.5);
+    text-shadow: 0 3px 0 #6a4400, 0 0 22px rgba(245,197,24,0.5);
     margin-bottom: 2px;
   }
-  .eyebrow { font-size: 11px; letter-spacing: 4px; color: #ff8fd0; text-transform: uppercase; margin-bottom: 14px; }
-  .blurb { font-size: 12.5px; color: #d9c9ff; line-height: 1.7; max-width: 380px; margin-bottom: 16px; }
+  .eyebrow { font-size: 11px; letter-spacing: 4px; color: #d9b877; text-transform: uppercase; margin-bottom: 14px; }
+  .blurb { font-size: 12.5px; color: #ead9b8; line-height: 1.7; max-width: 380px; margin-bottom: 16px; }
+  .blurb b.book { color: #6bffb8; }
 
   .deck-list { display: flex; flex-direction: column; gap: 9px; width: 100%; max-width: 360px; }
   .deck {
     display: flex; align-items: center; gap: 12px; cursor: pointer;
-    background: #2D1B69; border: 2px solid #4a2f8a; border-radius: 12px;
+    background: #3a2812; border: 2px solid #6a4a22; border-radius: 12px;
     padding: 10px 12px; transition: transform 0.1s, border-color 0.12s, background 0.12s;
   }
-  .deck:hover { transform: translateY(-2px); border-color: #F5C518; background: #38228a; }
+  .deck:hover { transform: translateY(-2px); border-color: #F5C518; background: #4a3418; }
   .deck-badge {
     width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
@@ -73,7 +78,7 @@
   }
   .deck-info { flex: 1; text-align: left; }
   .deck-name { font-size: 15px; font-weight: bold; color: #fff; }
-  .deck-sub { font-size: 10.5px; color: #b39ae0; margin-top: 1px; }
+  .deck-sub { font-size: 10.5px; color: #c9a36a; margin-top: 1px; }
   .deck-stars { font-size: 12px; letter-spacing: 1px; margin-top: 2px; }
   .deck-due {
     font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 999px;
@@ -91,17 +96,23 @@
   .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
   .btn-gold { background: #F5C518; color: #1a0f3d; }
   .btn-gold:hover { background: #ffd740; }
-  .btn-ghost { background: #2D1B69; color: #c9a7ff; box-shadow: 0 4px 0 #170a36; }
+  .btn-ghost { background: #3a2812; color: #ead9b8; box-shadow: 0 4px 0 #1c1206; }
   .btn-pink { background: #ff8fd0; color: #3a0a2a; }
+  .btn.sel { outline: 3px solid #6bffb8; }
+  .style-row { display: flex; gap: 8px; justify-content: center; margin: 4px 0 2px; }
+  .style-pick { font-family: 'Trebuchet MS', sans-serif; font-size: 12px; font-weight: bold; cursor: pointer;
+    background: #3a2812; color: #c9a36a; border: 2px solid #6a4a22; border-radius: 999px; padding: 7px 14px; }
+  .style-pick.sel { border-color: #6bffb8; color: #fff; background: #4a3418; }
 
   .sum-grid { display: grid; grid-template-columns: auto auto; gap: 7px 22px; margin: 12px 0; }
-  .sum-grid .l { text-align: right; color: #b39ae0; font-size: 13px; }
+  .sum-grid .l { text-align: right; color: #c9a36a; font-size: 13px; }
   .sum-grid .v { text-align: left; color: #fff; font-size: 15px; font-weight: bold; }
   .v.up { color: #6bffb8; }
   .v.again { color: #ff8fd0; }
 
-  .foot { margin-top: 14px; font-size: 10.5px; color: #7a5fb0; line-height: 1.7; }
-  .foot b { color: #c9a7ff; }
+  .foot { margin-top: 14px; font-size: 10.5px; color: #9a7a4a; line-height: 1.7; }
+  .foot b { color: #ead9b8; }
+  .foot a { color: #6bffb8; }
   .tap { cursor: pointer; text-decoration: underline; }
 </style>
 </head>
@@ -114,20 +125,26 @@
 
   <!-- DECK SELECT -->
   <div class="overlay" id="menu-screen">
-    <div class="eyebrow">Your Opponent: Princess</div>
+    <div class="eyebrow">The Opening Library · v2.0</div>
     <div class="big-title">THE PIRC PROTOCOL</div>
     <div class="blurb">
-      Sit across the board from <b style="color:#F5C518">Princess</b> and learn openings by
-      <b>repetition</b>. Play the book move each time it's your turn. Nail a whole line and it
-      comes back <i>later</i>; slip up and you'll see it <i>sooner</i>.
+      Welcome to the library. Across the table, <b style="color:#F5C518">Princess</b> plays only
+      <b class="book">📖 book moves</b> — the established main lines. Learn them by repetition:
+      master a whole line and it returns <i>later</i>; slip and you'll see it <i>sooner</i>.
     </div>
     <div class="deck-list" id="deck-list"></div>
+    <div class="style-row" id="style-row">
+      <button class="style-pick sel" data-style="line">📖 Run-through</button>
+      <button class="style-pick" data-style="spot">🃏 Spot cards</button>
+    </div>
     <div class="row">
       <button class="btn btn-gold" id="review-btn">START REVIEW</button>
       <button class="btn btn-ghost" id="cram-btn">CRAM ALL</button>
     </div>
     <div class="foot">
-      Pick a deck above &nbsp;·&nbsp; <span class="tap" id="reset-srs">reset progress</span><br>
+      <b>Run-through</b>: play a whole opening from move 1. &nbsp;<b>Spot cards</b>: one book move per card.<br>
+      Lines after <a href="https://lichess.org/opening" target="_blank" rel="noopener">lichess opening explorer</a> &amp; standard ECO theory &nbsp;·&nbsp;
+      <span class="tap" id="reset-srs">reset progress</span><br>
       <span class="tap" id="snd-toggle">🔊 sound: on</span>
     </div>
   </div>
@@ -169,11 +186,14 @@ const W = 480, H = 500;
 // ---- Board geometry ----
 const TILE = 44, BOARD = TILE * 8, BX = (W - BOARD) / 2, BY = 104;
 
+// Library theme — parchment & wood board, brass/gold accents.
 const C = {
-  light: '#6b4bb0', dark: '#3f2880', frame: '#F5C518',
+  light: '#e9d7ab', dark: '#9c6a3a', frame: '#caa24a',
   gold: '#F5C518', good: '#6bffb8', bad: '#ff5b8a', pink: '#ff8fd0',
-  ink: '#f0e6ff', muted: '#b39ae0',
+  ink: '#f0e6ff', muted: '#c9a36a',
 };
+// Shared "carved" piece palette tinted for the library: ivory vs ebony.
+const LIBPAL = { wFill: '#f7edcf', wEdge: '#6a4a1e', bFill: '#2c1d12', bEdge: '#f0e2c4' };
 
 // ---- Pieces ----
 const GLYPH = { K:'♚', Q:'♛', R:'♜', B:'♝', N:'♞', P:'♟' };
@@ -330,8 +350,26 @@ const NUDGE = ['Not that one…', 'Wrong move order.', 'Hmm, try again.', 'Look 
 function pick(a) { return a[(Math.random() * a.length) | 0]; }
 
 // ---- Session flow ----
-function startSession(deckId, mode) {
+function startSession(deckId, mode, style) {
+  style = style || 'line';
   const ids = deckLineIds(deckId);
+
+  if (style === 'spot') {
+    // Spot cards: one card per player decision point across the deck's lines.
+    const cards = [];
+    ids.forEach(id => {
+      const ln = LINES[id];
+      ln.plies.forEach((ply, i) => { if (ply.color === ln.side) cards.push({ id, ply: i }); });
+    });
+    for (let i = cards.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; const t = cards[i]; cards[i] = cards[j]; cards[j] = t; }
+    session = { deckId, mode, style, cards, cardIdx: 0, attempts: {},
+      stats: { lines: 0, flawless: 0, promo: 0, again: 0, seen: {} } };
+    hideOverlays();
+    document.getElementById('menu-btn').classList.remove('hidden');
+    loadCard(cards[0]);
+    return;
+  }
+
   let queue;
   if (mode === 'review') {
     queue = ids.filter(isDue);
@@ -341,13 +379,38 @@ function startSession(deckId, mode) {
     queue = ids.slice();
   }
   session = {
-    deckId, mode, queue,
+    deckId, mode, style, queue,
     attempts: {}, // id -> count this session
     stats: { lines: 0, flawless: 0, promo: 0, again: 0, seen: {} },
   };
   hideOverlays();
   document.getElementById('menu-btn').classList.remove('hidden');
   loadLine(queue.shift());
+}
+
+// Spot card = a single book-move position drawn from a line.
+function loadCard(card) {
+  const line = LINES[card.id];
+  const board = startBoard();
+  for (let i = 0; i < card.ply; i++) applyPly(board, line.plies[i]);
+  G = { id: card.id, line, board, idx: card.ply, mistakes: 0, wrongHere: 0,
+        orient: line.side, selected: null, phase: 'await', done: false, spot: true };
+  coach.mood = 'think'; coach.say = '';
+  document.getElementById('hint-btn').classList.remove('hidden');
+}
+function spotSolved() {
+  G.phase = 'lineend'; G.done = true;
+  document.getElementById('hint-btn').classList.add('hidden');
+  const flawless = G.mistakes === 0;
+  session.stats.lines++;
+  if (flawless) session.stats.flawless++; else session.stats.again++;
+  bannerText = flawless ? 'BOOK MOVE! 📖' : 'GOT IT';
+  bannerColor = flawless ? C.good : C.pink; bannerT = 0;
+  setTimeout(() => {
+    session.cardIdx++;
+    if (session.cardIdx < session.cards.length) loadCard(session.cards[session.cardIdx]);
+    else showSummary();
+  }, 1050);
 }
 
 function loadLine(id) {
@@ -360,7 +423,7 @@ function loadLine(id) {
   session.attempts[id] = (session.attempts[id] || 0) + 1;
   if (!session.stats.seen[id]) { session.stats.seen[id] = true; session.stats.lines++; }
   coach.mood = 'think';
-  coach.say = 'The ' + line.name + '. I have ' + (line.side === 'b' ? 'White' : 'Black') + '.';
+  coach.say = '';   // Princess stays quiet; she only speaks when she plays a move
   // brief intro pause, then run auto-moves to first player card
   G.phase = 'animating';
   setTimeout(() => advanceAuto(), 750);
@@ -372,10 +435,9 @@ function advanceAuto() {
   if (G.idx >= plies.length) { lineComplete(); return; }
   const ply = plies[G.idx];
   if (ply.color === G.orient) {
-    // Player's turn
+    // Player's turn — Princess waits quietly (no chatter on your move)
     G.phase = 'await'; G.wrongHere = 0; G.selected = null;
-    coach.mood = 'think';
-    coach.say = pick(['Your move.', 'What does the book say?', 'Find the move.', 'Your reply?']);
+    coach.mood = 'think'; coach.say = '';
     document.getElementById('hint-btn').classList.remove('hidden');
     return;
   }
@@ -391,16 +453,16 @@ function playerMove(ply) {
   G.phase = 'animating';
   document.getElementById('hint-btn').classList.add('hidden');
   sfx('correct'); burst(ply.to, true);
-  coach.mood = 'happy'; coach.say = pick(PRAISE);
-  doMove(ply, () => { G.idx++; advanceAuto(); });
+  coach.mood = 'happy'; coach.say = '';   // your move lands — she stays quiet
+  doMove(ply, () => { if (G.spot) { spotSolved(); return; } G.idx++; advanceAuto(); });
 }
 
 function revealMove(ply) {
   G.phase = 'animating';
   document.getElementById('hint-btn').classList.add('hidden');
   arrow = { from: ply.from, to: ply.to, t: 0 };
-  coach.mood = 'talk'; coach.say = 'Here — ' + ply.san + '.';
-  setTimeout(() => { arrow = null; doMove(ply, () => { G.idx++; advanceAuto(); }); }, 850);
+  coach.mood = 'talk'; coach.say = 'The book move is ' + ply.san + '.';
+  setTimeout(() => { arrow = null; doMove(ply, () => { if (G.spot) { spotSolved(); return; } G.idx++; advanceAuto(); }); }, 850);
 }
 
 function doMove(ply, onDone) {
@@ -438,7 +500,7 @@ function lineComplete() {
       session.queue.push(G.id); retry = true; // re-drill this session
     }
   }
-  bannerText = flawless ? (promo ? 'LINE MASTERED ⭐' : 'FLAWLESS!') : 'KEEP PRACTISING';
+  bannerText = flawless ? (promo ? 'LINE MASTERED ⭐' : 'FLAWLESS!') : 'KEEP PRACTICING';
   bannerColor = flawless ? C.good : C.pink;
   bannerT = 0;
 
@@ -547,25 +609,34 @@ function render() {
   }
 }
 
-let bgGlyphs = Array.from({ length: 10 }, () => ({
-  x: Math.random() * W, y: Math.random() * H, s: 18 + Math.random() * 30,
-  g: '♟♞♝♜♛♚'[(Math.random() * 6) | 0], spd: 0.1 + Math.random() * 0.2, a: 0.04 + Math.random() * 0.05,
+const BOOKS = '📖📜♟📕📗📘';
+let bgGlyphs = Array.from({ length: 9 }, () => ({
+  x: Math.random() * W, y: Math.random() * H, s: 16 + Math.random() * 26,
+  g: BOOKS[(Math.random() * BOOKS.length) | 0], spd: 0.06 + Math.random() * 0.14, a: 0.05 + Math.random() * 0.06,
 }));
 function drawBg() {
+  // warm library backdrop
   const grad = ctx.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, '#311866'); grad.addColorStop(1, '#1a0f3d');
+  grad.addColorStop(0, '#3a2912'); grad.addColorStop(1, '#160d04');
   ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+  // faint bookshelf rows
+  ctx.strokeStyle = 'rgba(0,0,0,0.22)'; ctx.lineWidth = 2;
+  for (let y = 40; y < H; y += 96) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  ctx.fillStyle = 'rgba(120,80,30,0.10)';
+  for (let x = 6; x < W; x += 13) ctx.fillRect(x, 0, 4, H);   // book-spine stripes
+  // drifting books/scrolls
   bgGlyphs.forEach(b => {
     b.y -= b.spd; if (b.y < -40) { b.y = H + 40; b.x = Math.random() * W; }
-    ctx.fillStyle = 'rgba(245,197,24,' + b.a + ')';
+    ctx.globalAlpha = b.a;
     ctx.font = b.s + 'px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(b.g, b.x, b.y);
+    ctx.globalAlpha = 1;
   });
 }
 
 function drawBoard() {
-  // frame
-  ctx.fillStyle = '#1c0d44';
+  // frame — dark wood with a brass edge
+  ctx.fillStyle = '#3a2812';
   roundRect(BX - 7, BY - 7, BOARD + 14, BOARD + 14, 10); ctx.fill();
   ctx.strokeStyle = C.frame; ctx.lineWidth = 3;
   roundRect(BX - 7, BY - 7, BOARD + 14, BOARD + 14, 10); ctx.stroke();
@@ -628,27 +699,8 @@ function drawPieces() {
 }
 
 function drawPiece(cx, cy, p, scale, lifted) {
-  const r = TILE * 0.40 * scale;
-  ctx.save(); ctx.translate(cx, cy + (lifted ? -3 : 0));
-  // shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.3)';
-  ctx.beginPath(); ctx.ellipse(0, r * 0.78, r * 0.85, r * 0.3, 0, 0, Math.PI * 2); ctx.fill();
-  // disc
-  const grad = ctx.createRadialGradient(-r * 0.3, -r * 0.4, r * 0.2, 0, 0, r);
-  if (p.c === 'w') { grad.addColorStop(0, '#fff9ec'); grad.addColorStop(1, '#d9bd84'); }
-  else { grad.addColorStop(0, '#7a52c8'); grad.addColorStop(1, '#33196e'); }
-  ctx.fillStyle = grad;
-  ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = C.gold; ctx.lineWidth = 2; ctx.stroke();
-  // gloss highlight
-  ctx.fillStyle = 'rgba(255,255,255,0.35)';
-  ctx.beginPath(); ctx.ellipse(-r * 0.32, -r * 0.4, r * 0.32, r * 0.18, -0.5, 0, Math.PI * 2); ctx.fill();
-  // glyph
-  ctx.fillStyle = p.c === 'w' ? '#3a2566' : '#fceeff';
-  ctx.font = 'bold ' + Math.round(r * 1.5) + 'px serif';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(GLYPH[p.t], 0, r * 0.06);
-  ctx.restore();
+  // Shared carved-glyph look (recognizable & themeable), tinted for the library.
+  PJCCPieces.draw(ctx, cx, cy + (lifted ? -3 : 0), TILE * 0.84 * scale, p.t, p.c, LIBPAL);
 }
 
 function drawArrow() {
@@ -732,8 +784,8 @@ function drawCoach() {
   ctx.beginPath(); ctx.arc(0, S * 0.38, S * 0.16 + open, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
   ctx.restore();
 
-  // speech bubble
-  drawBubble(coach.say);
+  // speech bubble — only when Princess actually has something to say
+  if (coach.say) drawBubble(coach.say);
 }
 
 function drawBubble(text) {
@@ -764,24 +816,27 @@ function wrapText(text, maxW) {
 function drawBottomHUD() {
   if (!G || !session) return;
   const y = H - 22;
-  // progress through line
-  const plies = G.line.plies;
-  const totalCards = plies.filter(p => p.color === G.orient).length;
-  const doneCards = plies.slice(0, G.idx).filter(p => p.color === G.orient).length;
+  const deck = DECKS.find(d => d.id === G.line.deck);
+  // left: the named opening + variation, always on show (the defence/attack)
   ctx.fillStyle = C.muted; ctx.font = '11px Trebuchet MS';
   ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-  ctx.fillText(G.line.name + '  ·  move ' + Math.min(doneCards + 1, totalCards) + '/' + totalCards, 12, y);
+  ctx.fillText('📖 ' + deck.name + ' — ' + G.line.name, 12, y);
 
-  // box / mastery pips for this line
-  const box = sched(G.id).box;
-  ctx.textAlign = 'right';
-  let pips = '';
-  for (let i = 1; i <= 5; i++) pips += i <= box ? '★' : '☆';
-  ctx.fillStyle = C.gold; ctx.fillText(pips, W - 12, y);
-
-  // queue remaining
-  ctx.fillStyle = C.muted; ctx.textAlign = 'center';
-  ctx.fillText((session.queue.length) + ' to go', W / 2, y);
+  if (session.style === 'spot') {
+    ctx.textAlign = 'right'; ctx.fillStyle = C.good;
+    ctx.fillText('card ' + (session.cardIdx + 1) + '/' + session.cards.length, W - 12, y);
+    ctx.fillStyle = C.muted; ctx.textAlign = 'center';
+    ctx.fillText('find the book move', W / 2, y);
+  } else {
+    const plies = G.line.plies;
+    const totalCards = plies.filter(p => p.color === G.orient).length;
+    const doneCards = plies.slice(0, G.idx).filter(p => p.color === G.orient).length;
+    const box = sched(G.id).box;
+    let pips = ''; for (let i = 1; i <= 5; i++) pips += i <= box ? '★' : '☆';
+    ctx.textAlign = 'right'; ctx.fillStyle = C.gold; ctx.fillText(pips, W - 12, y);
+    ctx.fillStyle = C.muted; ctx.textAlign = 'center';
+    ctx.fillText('move ' + Math.min(doneCards + 1, totalCards) + '/' + totalCards + ' · ' + session.queue.length + ' to go', W / 2, y);
+  }
 }
 
 function drawBanner() {
@@ -871,7 +926,7 @@ function showSummary() {
   document.getElementById('menu-btn').classList.add('hidden');
   const s = session.stats;
   const deck = DECKS.find(d => d.id === session.deckId);
-  document.getElementById('sum-deck').textContent = deck.name + (session.mode === 'cram' ? ' · Cram' : '');
+  document.getElementById('sum-deck').textContent = deck.name + ' · ' + (session.style === 'spot' ? 'Spot cards' : 'Run-through') + (session.mode === 'cram' ? ' · Cram' : '');
   document.getElementById('sum-lines').textContent = s.lines;
   document.getElementById('sum-flaw').textContent = s.flawless;
   document.getElementById('sum-promo').textContent = s.promo;
@@ -909,15 +964,21 @@ function buildDeckList() {
 }
 
 // ---- Button wiring ----
+let selectedStyle = 'line';
+document.getElementById('style-row').addEventListener('click', e => {
+  const b = e.target.closest('[data-style]'); if (!b) return;
+  selectedStyle = b.dataset.style;
+  document.querySelectorAll('#style-row .style-pick').forEach(p => p.classList.toggle('sel', p === b));
+});
 function go() { initAudio(); if (actx.state === 'suspended') actx.resume(); }
-document.getElementById('review-btn').addEventListener('click', () => { go(); startSession(selectedDeck, 'review'); });
-document.getElementById('cram-btn').addEventListener('click', () => { go(); startSession(selectedDeck, 'cram'); });
+document.getElementById('review-btn').addEventListener('click', () => { go(); startSession(selectedDeck, 'review', selectedStyle); });
+document.getElementById('cram-btn').addEventListener('click', () => { go(); startSession(selectedDeck, 'cram', selectedStyle); });
 document.getElementById('menu-btn').addEventListener('click', showMenu);
 document.getElementById('caught-cram').addEventListener('click', e => {
-  go(); startSession(document.getElementById('caught-screen').dataset.deck, 'cram');
+  go(); startSession(document.getElementById('caught-screen').dataset.deck, 'cram', selectedStyle);
 });
 document.getElementById('caught-menu').addEventListener('click', showMenu);
-document.getElementById('sum-again-btn').addEventListener('click', () => { go(); startSession(session ? session.deckId : selectedDeck, 'review'); });
+document.getElementById('sum-again-btn').addEventListener('click', () => { go(); startSession(session ? session.deckId : selectedDeck, 'review', session ? session.style : selectedStyle); });
 document.getElementById('sum-menu').addEventListener('click', showMenu);
 document.getElementById('reset-srs').addEventListener('click', () => {
   SRS = {}; saveSRS(); buildDeckList();

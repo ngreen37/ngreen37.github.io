@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Sand Mine Depths</title>
+<title>PJCC: Sand Mine Depths v2.0</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
+<script src="/assets/js/pjcc-pieces.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
@@ -14,9 +15,10 @@
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-  #stage { position: relative; width: 480px; max-width: 100vw; }
-  #canvas { display: block; width: 100%; border: 3px solid #F5C518; border-radius: 12px;
-    background: #2a1a0c; box-shadow: 0 0 40px rgba(245,197,24,0.22); }
+  /* Maximize the playfield on desktop; still scales down for mobile. */
+  #stage { position: relative; width: 100%; max-width: 560px; }
+  #canvas { display: block; width: 100%; border: 3px solid #e0b25a; border-radius: 12px;
+    background: #2a1a0c; box-shadow: 0 0 40px rgba(224,178,90,0.28); }
   .float-btn { position: absolute; z-index: 6; font-family: 'Trebuchet MS', sans-serif; font-weight: bold;
     border: none; border-radius: 999px; cursor: pointer; transition: transform 0.08s; box-shadow: 0 3px 0 rgba(0,0,0,0.4); }
   .float-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.4); }
@@ -88,6 +90,9 @@ const PCOL = { P:'#ff8f6b', N:'#ffb24a', B:'#c96bff', R:'#6bbfff', Q:'#ff6bc8' }
 const GLYPH = { P:'♟', N:'♞', B:'♝', R:'♜', Q:'♛' };
 const NAME = { P:'Pawn', N:'Knight', B:'Bishop', R:'Rook', Q:'Queen' };
 const MAXHP = 3;
+// Shared carved pieces: obsidian enemies, a violet Princess-knight.
+const SAND_PAL = { bFill:'#241a12', bEdge:'#e9c98a' };
+const PRIN_PAL = { wFill:'#cba6ff', wEdge:'#39206e' };
 
 const LORE = [
   { d: 20, t: 'The sand down here is warm to the touch.' },
@@ -101,7 +106,7 @@ const LORE = [
 ];
 
 let S = null; // state
-let anim = null, dust = [], floaters = [], shake = 0, vignette = 0;
+let anim = null, enemyAnims = null, wind = [], dust = [], floaters = [], shake = 0, vignette = 0;
 let toast = { text: '', t: -1, col: C.gold };
 const BEST_KEY = 'pjcc.sandmine.best.v1';
 function loadBest(){ try { return parseInt(localStorage.getItem(BEST_KEY)) || 0; } catch(e){ return 0; } }
@@ -259,20 +264,30 @@ function descend(){
   S.phase = 'await';
 }
 function enemyTurn(){
-  S.phase = 'anim';
-  // resolve each enemy sequentially
-  let hurt = false;
+  // The mine reacts: every enemy decides, then they MOVE (right after the player).
+  const moves = [];
   S.enemies.forEach(e => {
-    if (e.t === 'P' && e.y + 1 >= ROWS){ e.dead = true; return; } // fell down the shaft
+    if (e.t === 'P' && e.y + 1 >= ROWS){ e.dead = true; return; }   // marched off into the dark
     const c = enemyChoose(e);
-    if (!c) return;
-    if (c.x === S.princess.x && c.y === S.princess.y){ hurt = true; e.dead = true; }
-    else { e.x = c.x; e.y = c.y; }
+    const to = c || { x: e.x, y: e.y };
+    moves.push({ e, to, attack: !!(c && c.x === S.princess.x && c.y === S.princess.y) });
   });
   S.enemies = S.enemies.filter(e => !e.dead);
-  if (hurt){ S.hp--; shake = 12; vignette = 16; sfx('hurt'); floater('-♥', center(S.princess.x, S.princess.y), C.bad); }
+  const live = moves.filter(m => !m.e.dead);
+  if (!live.length){ finishEnemyTurn(); return; }
+  S.phase = 'enemyAnim';
+  enemyAnims = { t: 0, dur: 0.18, moves: live.map(m => ({ e: m.e, fc: center(m.e.x, m.e.y), tc: center(m.to.x, m.to.y), to: m.to, attack: m.attack })) };
+}
+function finishEnemyTurn(){
+  let hurt = false;
+  if (enemyAnims) enemyAnims.moves.forEach(m => {
+    if (m.attack){ hurt = true; m.e.dead = true; }
+    else { m.e.x = m.to.x; m.e.y = m.to.y; }
+  });
+  enemyAnims = null;
+  S.enemies = S.enemies.filter(e => !e.dead);
+  if (hurt){ S.hp--; shake = 14; vignette = 18; sfx('hurt'); floater('-♥', center(S.princess.x, S.princess.y), C.bad); }
   computeThreats();
-
   if (S.hp <= 0){ gameOver(); return; }
   // stuck safety: no legal hops -> the sand shifts
   if (knightMoves(S.princess.x, S.princess.y).length === 0){
@@ -400,37 +415,39 @@ function drawNugget(c){
   ctx.restore();
 }
 function drawEntities(){
-  // enemies
-  S.enemies.forEach(e => { if (anim) return; drawToken(center(e.x, e.y), e.t, false); });
-  if (anim){ S.enemies.forEach(e => drawToken(center(e.x, e.y), e.t, false)); }
-  // princess (animated)
+  // enemies — interpolated as they react right after the player's hop
+  if (enemyAnims){
+    const e = 1 - Math.pow(1 - enemyAnims.t, 2);
+    const moving = new Set(enemyAnims.moves.map(m => m.e));
+    enemyAnims.moves.forEach(m => {
+      const x = m.fc.x + (m.tc.x - m.fc.x) * e, y = m.fc.y + (m.tc.y - m.fc.y) * e;
+      drawToken({ x, y }, m.e.t, false, 1 + (m.attack ? 0.14 * Math.sin(enemyAnims.t * Math.PI) : 0), m.attack);
+    });
+    S.enemies.forEach(en => { if (!moving.has(en)) drawToken(center(en.x, en.y), en.t, false); });
+  } else {
+    S.enemies.forEach(en => drawToken(center(en.x, en.y), en.t, false));
+  }
+  // princess (animated hop)
   let pc;
   if (anim){ const e = 1-Math.pow(1-anim.t,3); pc = { x: anim.fc.x + (anim.tc.x-anim.fc.x)*e, y: anim.fc.y + (anim.tc.y-anim.fc.y)*e - Math.sin(anim.t*Math.PI)*16 }; }
   else pc = center(S.princess.x, S.princess.y);
   drawToken(pc, 'PR', true, anim ? 1.05 : 1);
 }
-function drawToken(c, type, isPrincess, scaleIn){
+function drawToken(c, type, isPrincess, scaleIn, attacking){
   const scale = scaleIn || 1;
-  const r = TILE*0.36*scale;
   const t = Date.now()/600, bob = isPrincess && !anim ? Math.sin(t)*1.5 : 0;
-  ctx.save(); ctx.translate(c.x, c.y + bob);
-  ctx.fillStyle = 'rgba(0,0,0,0.32)'; ctx.beginPath(); ctx.ellipse(0, r*0.8, r*0.85, r*0.3, 0, 0, Math.PI*2); ctx.fill();
-  const col = isPrincess ? '#33196e' : '#2a1a0c';
-  const g = ctx.createRadialGradient(-r*0.3, -r*0.4, r*0.2, 0, 0, r);
-  if (isPrincess){ g.addColorStop(0, '#8a5fd0'); g.addColorStop(1, '#33196e'); }
-  else { g.addColorStop(0, PCOL[type]); g.addColorStop(1, shade(PCOL[type])); }
-  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI*2); ctx.fill();
-  ctx.strokeStyle = isPrincess ? C.gold : 'rgba(0,0,0,0.45)'; ctx.lineWidth = isPrincess ? 2.5 : 1.5; ctx.stroke();
-  ctx.fillStyle = 'rgba(255,255,255,0.32)'; ctx.beginPath(); ctx.ellipse(-r*0.32, -r*0.4, r*0.3, r*0.16, -0.5, 0, Math.PI*2); ctx.fill();
+  const cx = c.x, cy = c.y + bob, size = TILE * 0.78 * scale;
   if (isPrincess){
-    // little dog face + knight glyph
-    ctx.fillStyle = '#fceeff'; ctx.font = 'bold ' + Math.round(r*1.4) + 'px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('♞', 0, r*0.05);
+    // gold ring marks Princess, the violet knight
+    ctx.save(); ctx.strokeStyle = C.gold; ctx.lineWidth = 2.5; ctx.globalAlpha = 0.92;
+    ctx.beginPath(); ctx.arc(cx, cy, TILE*0.42, 0, Math.PI*2); ctx.stroke(); ctx.restore();
+    PJCCPieces.draw(ctx, cx, cy, size, 'N', 'w', PRIN_PAL);
+  } else if (attacking){
+    ctx.save(); ctx.shadowColor = 'rgba(255,70,70,0.95)'; ctx.shadowBlur = 16;
+    PJCCPieces.draw(ctx, cx, cy, size, type, 'b', SAND_PAL); ctx.restore();
   } else {
-    ctx.fillStyle = '#1a0f06'; ctx.font = 'bold ' + Math.round(r*1.4) + 'px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(GLYPH[type], 0, r*0.06);
+    PJCCPieces.draw(ctx, cx, cy, size, type, 'b', SAND_PAL);
   }
-  ctx.restore();
 }
 function shade(hex){ // darken a hex color
   const n = parseInt(hex.slice(1), 16); let r=(n>>16)&255, g=(n>>8)&255, b=n&255;
@@ -483,6 +500,7 @@ let lastT = performance.now();
 function loop(now){
   const dt = Math.min(0.05, (now - lastT)/1000); lastT = now;
   if (anim){ anim.t += dt/anim.dur; if (anim.t >= 1){ const d = anim.onDone; anim = null; if (d) d(); } }
+  if (enemyAnims){ enemyAnims.t += dt/enemyAnims.dur; if (enemyAnims.t >= 1) finishEnemyTurn(); }
   dust = dust.filter(p => { p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.life--; return p.life>0; });
   floaters = floaters.filter(f => { f.y -= 0.5; f.life--; return f.life>0; });
   render(); requestAnimationFrame(loop);

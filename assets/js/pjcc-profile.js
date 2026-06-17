@@ -33,17 +33,24 @@
   var listeners = [];
 
   // Avatar catalogue: key -> emoji. Stored on profile.companion.avatar.
-  // FREE starters everyone owns; SHOP avatars are bought with credits.
+  // The operative's *face* is one of 8 free humans; the companion *pet* is a
+  // separate slot (companion.pet) driven by the pet system in pjcc-companion.js.
+  // SHOP avatars are bought with credits.
   var AVATARS = {
-    'human-1': '🧑', 'human-2': '👨', 'human-3': '👩',
-    'dog-1': '🐕', 'dog-2': '🐩', 'dog-3': '🦮',
-    'cat-1': '🐈', 'bird-1': '🦜',
+    'human-1': '🕵️', 'human-2': '🥷', 'human-3': '🤵', 'human-4': '👸',
+    'human-5': '🤴', 'human-6': '🧙', 'human-7': '👮', 'human-8': '🧑',
+    // legacy free animals (now pets) kept so older profiles still render a face
+    'dog-1': '🐕', 'dog-2': '🐩', 'dog-3': '🦮', 'cat-1': '🐈', 'bird-1': '🦜',
     // Quartermaster — chess set
     'pc-knight': '♞', 'pc-bishop': '♝', 'pc-rook': '♜', 'pc-queen': '♛', 'pc-king': '♚',
     // Quartermaster — field specials
     'sp-fox': '🦊', 'sp-owl': '🦉', 'sp-wolf': '🐺', 'sp-eagle': '🦅', 'sp-dragon': '🐉'
   };
-  var AVATAR_FREE = ['human-1', 'human-2', 'human-3', 'dog-1', 'dog-2', 'dog-3', 'cat-1', 'bird-1'];
+  var HUMAN_LABELS = {
+    'human-1': 'The Sleuth', 'human-2': 'The Shadow', 'human-3': 'The Agent', 'human-4': 'The Princess',
+    'human-5': 'The Heir', 'human-6': 'The Strategist', 'human-7': 'The Warden', 'human-8': 'The Recruit'
+  };
+  var AVATAR_FREE = ['human-1', 'human-2', 'human-3', 'human-4', 'human-5', 'human-6', 'human-7', 'human-8'];
   var AVATAR_SHOP = [
     { key: 'pc-knight', price: 10 }, { key: 'pc-bishop', price: 10 }, { key: 'pc-rook', price: 15 },
     { key: 'pc-queen', price: 25 }, { key: 'pc-king', price: 40 },
@@ -69,12 +76,16 @@
     AVATAR_ORDER: AVATAR_FREE,
     AVATAR_FREE: AVATAR_FREE,
     AVATAR_SHOP: AVATAR_SHOP,
+    HUMAN_LABELS: HUMAN_LABELS,
     RANKS: RANKS,
     currentUser: function () { return sb ? (sb.auth.__user || null) : null; },
     getProfile: function () { return profile; },
     avatarEmoji: function (prof) {
       var key = prof && prof.companion && prof.companion.avatar;
-      return AVATARS[key] || '◆';
+      return AVATARS[key] || AVATARS['human-1'];
+    },
+    petKey: function (prof) {
+      return (prof && prof.companion && prof.companion.pet) || 'dog-1';
     },
     rankFor: function (credits) {
       var r = RANKS[0];
@@ -274,6 +285,10 @@
     if (PJCC.ownedAvatars().indexOf(key) === -1) throw new Error('avatar not owned');
     return updateCompanion({ avatar: key });
   };
+
+  // Persist the active pet (the full pet experience lives in pjcc-companion.js;
+  // here we only store which one follows the operative across devices).
+  PJCC.setPet = async function (key) { return updateCompanion({ pet: key }); };
 
   // --- credits / store -------------------------------------------------------
   // Deduct credits atomically (add_credits RPC with a negative amount).

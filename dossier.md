@@ -5,11 +5,13 @@ permalink: /dossier/
 ---
 
 <link rel="stylesheet" href="{{ '/assets/css/pjcc-profile.css' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/css/pjcc-companion.css' | relative_url }}">
 
 <div id="dossier"><p class="lb-empty">Loading…</p></div>
 
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-companion.js' | relative_url }}"></script>
 <script>
 (function () {
   var el = document.getElementById('dossier');
@@ -75,11 +77,10 @@ permalink: /dossier/
     var title = PJCC.titleLabel(prof);
     var lvl = PJCC.companionLevel(totalPlays);
     var theme = PJCC.themeFor(prof);
-    var mood = PJCC.petMood(stats);
 
     // header — themed, avatar with level ring, codename + title flair
     var html = '<div class="dsr-head" style="background:' + theme.bg + ';border-color:' + theme.accent + '">' +
-      '<div class="dsr-avatar" style="border-color:' + theme.accent + '">' + PJCC.avatarEmoji(prof) + '<span class="dsr-lvl" style="background:' + theme.accent + '">Lv ' + lvl.level + '</span></div>' +
+      '<div class="dsr-avatar" style="border-color:' + theme.accent + '">' + PJCC.avatarEmoji(prof) + '<span class="dsr-lvl" style="background:' + theme.accent + '">Lv ' + lvl.level + '</span>' + (window.PJCCPet ? '<span class="dsr-pet-badge">' + PJCCPet.petEmoji() + '</span>' : '') + '</div>' +
       '<div><div class="dsr-name" style="color:' + theme.accent + '">' + esc(prof.codename) + (title ? ' <span class="dsr-title-flair">' + esc(title) + '</span>' : '') + '</div>' +
       '<div class="dsr-rank">' + esc(rank.name) + ' · <span class="pjcc-credits">' + credits + ' credits</span></div></div>' +
       '<span class="pjcc-spacer"></span>' +
@@ -87,13 +88,11 @@ permalink: /dossier/
       '<a class="pjcc-trophy" href="/shopkeeper/">🛒 Shopkeeper</a>' +
       '<a class="pjcc-trophy" href="/leaderboards/">🏆 Leaderboards</a></div>';
 
-    // companion: level + XP + pet mood
+    // companion: the pet mood card (drills into the Den) + operative rank progress
     var xpPct = lvl.span ? Math.round(lvl.into / lvl.span * 100) : 100;
     html += '<div class="dsr-companion">' +
-      '<div class="dsr-mood"><span class="dsr-mood-emoji">' + mood.emoji + '</span>' +
-      '<span><b>' + esc(mood.state) + '</b> — ' + esc(mood.line) + '</span>' +
-      '<button class="pjcc-btn-ghost" id="dsr-pet">Pet</button></div>' +
-      '<div class="dsr-comp-stage">' + esc(lvl.stage) + ' · Lv ' + lvl.level + '</div>' +
+      '<div id="pet-mood-card"></div>' +
+      '<div class="dsr-comp-stage" style="margin-top:14px;">Operative progress · Lv ' + lvl.level + ' ' + esc(lvl.stage) + '</div>' +
       '<div class="dsr-xp"><div class="dsr-xp-fill" style="width:' + xpPct + '%"></div></div>' +
       '<div class="pjcc-sub">' + (lvl.next ? ((lvl.span - lvl.into) + ' more rounds to Lv ' + (lvl.level + 1)) : 'Max level — top dog of the board.') + '</div></div>';
 
@@ -161,6 +160,9 @@ permalink: /dossier/
 
     el.innerHTML = html;
 
+    // companion pet — inline mood card that drills into the Companion Den
+    if (window.PJCCPet) PJCCPet.renderCard(document.getElementById('pet-mood-card'), stats);
+
     // wire title chips
     Array.prototype.forEach.call(el.querySelectorAll('.dsr-title-chip'), function (b) {
       b.onclick = function () { PJCC.setTitle(b.getAttribute('data-title')).then(render); };
@@ -173,13 +175,6 @@ permalink: /dossier/
       try { navigator.clipboard.writeText(inp.value); } catch (e) { document.execCommand('copy'); }
       copyBtn.textContent = 'Copied!';
       setTimeout(function () { copyBtn.textContent = 'Copy'; }, 1500);
-    };
-    // pet the companion (cosmetic)
-    var petBtn = document.getElementById('dsr-pet');
-    if (petBtn) petBtn.onclick = function () {
-      var em = el.querySelector('.dsr-mood-emoji');
-      if (em) { em.textContent = '💗'; em.style.transition = 'transform .2s'; em.style.transform = 'scale(1.5)'; setTimeout(function () { em.style.transform = 'scale(1)'; }, 260); }
-      petBtn.textContent = 'Good pup!'; setTimeout(function () { petBtn.textContent = 'Pet'; }, 1500);
     };
     // shareable card
     var shareBtn = document.getElementById('dsr-share');
@@ -246,6 +241,7 @@ permalink: /dossier/
 /* avatar level badge + title flair */
 .dsr-avatar { position: relative; }
 .dsr-lvl { position: absolute; bottom: -6px; right: -6px; background: #F5C518; color: #1a0f3d; font-size: 0.6rem; font-weight: 800; border-radius: 999px; padding: 1px 6px; border: 2px solid #160c33; }
+.dsr-pet-badge { position: absolute; bottom: -7px; left: -7px; font-size: 22px; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.55)); }
 .dsr-title-flair { font-size: 0.7rem; vertical-align: middle; background: rgba(245,197,24,0.16); color: #F5C518; border: 1px solid #F5C518; border-radius: 999px; padding: 2px 9px; margin-left: 8px; letter-spacing: 0.04em; font-weight: 700; }
 
 /* companion level / XP */

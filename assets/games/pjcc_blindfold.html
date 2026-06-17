@@ -12,13 +12,48 @@
   html, body { height: 100%; background: #140c2d; color: var(--ink);
     font-family: 'Trebuchet MS','Segoe UI',sans-serif; -webkit-tap-highlight-color: transparent; }
   body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 10px; }
-  #wrap { width: 100%; max-width: 460px; }
+  #wrap { width: 100%; max-width: 460px; position: relative; }
   .top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; font-size: 13px; }
   .top .goal { color: var(--gold); font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
   .top .score { color: #6bffb8; }
-  .clue { background: #1d1140; border: 1px solid var(--gold); border-radius: 8px; padding: 11px 14px;
-    font-size: 15px; line-height: 1.5; margin-bottom: 10px; min-height: 64px; }
-  .clue b.you { color: var(--gold); } .clue b.them { color: var(--pink); }
+
+  /* The clue lives in the dark. Only the text under the flashlight's beam shows. */
+  .clue { position: relative; overflow: hidden; background: #120a26; border: 1px solid #2a1d54;
+    border-radius: 8px; padding: 11px 14px; font-size: 15px; line-height: 1.5; margin-bottom: 10px; min-height: 72px; }
+  .clue.lit { border-color: var(--gold); box-shadow: 0 0 14px rgba(245,197,24,0.18); }
+  .clue-text { position: relative; z-index: 2;
+    --r: 0px; --lx: 50%; --ly: 50%;
+    -webkit-mask-image: radial-gradient(circle var(--r) at var(--lx) var(--ly), #000 58%, rgba(0,0,0,0.18) 82%, transparent 100%);
+            mask-image: radial-gradient(circle var(--r) at var(--lx) var(--ly), #000 58%, rgba(0,0,0,0.18) 82%, transparent 100%);
+    transition: none; }
+  .clue-text b.you { color: var(--gold); } .clue-text b.them { color: var(--pink); }
+  .clue-beam { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity .25s;
+    background: radial-gradient(circle 120px at var(--lx, 50%) var(--ly, 50%), rgba(255,240,180,0.20), rgba(255,240,180,0.05) 45%, transparent 72%); }
+  .clue.lit .clue-beam { opacity: 1; }
+  .clue-hint { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 0 18px; color: #6a5aa0; font-size: 12.5px; line-height: 1.45; transition: opacity .3s;
+    pointer-events: none; }
+  .clue.lit .clue-hint { opacity: 0; }
+  .beam-batt { position: absolute; left: 10px; right: 10px; bottom: 5px; height: 3px; z-index: 4; border-radius: 2px;
+    background: rgba(255,255,255,0.07); overflow: hidden; opacity: 0; transition: opacity .25s; }
+  .clue.lit .beam-batt { opacity: 1; }
+  .beam-batt > i { display: block; height: 100%; width: 100%; transform-origin: left center;
+    background: linear-gradient(90deg, #ff6b6b, var(--gold) 55%, #6bffb8); }
+
+  /* The catchable flashlight, drifting up through the scene like a loose firefly. */
+  .bf-torch { position: absolute; left: 38%; top: 64px; z-index: 7; font-size: 30px; cursor: pointer;
+    user-select: none; -webkit-user-select: none; touch-action: manipulation; line-height: 1;
+    filter: drop-shadow(0 0 7px rgba(255,240,180,0.75)); animation: bf-drift 7.5s ease-in-out infinite; }
+  .bf-torch.caught { display: none; }
+  .bf-torch::after { content: ""; position: absolute; inset: -14px; border-radius: 50%; }  /* fat tap target */
+  @keyframes bf-drift {
+    0%   { transform: translate(0, 130px) rotate(-16deg); opacity: 0; }
+    10%  { opacity: 1; }
+    50%  { transform: translate(78px, 36px) rotate(12deg); opacity: 1; }
+    90%  { opacity: 1; }
+    100% { transform: translate(8px, -70px) rotate(-8deg); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { .bf-torch { animation-duration: 14s; } }
   #board { display: grid; grid-template-columns: 18px repeat(8, 1fr); grid-template-rows: repeat(8, 1fr) 18px;
     gap: 0; aspect-ratio: 1 / 1; width: 100%; border: 2px solid var(--gold); border-radius: 4px; overflow: hidden; }
   .sq { display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative;
@@ -51,9 +86,15 @@
     <span class="goal" id="goal">—</span>
     <span class="score">Solved <b id="solved">0</b>/<b id="total">0</b></span>
   </div>
-  <div class="clue" id="clue"></div>
+  <div class="clue" id="clue">
+    <div class="clue-beam" id="clue-beam"></div>
+    <div class="clue-text" id="clue-text"></div>
+    <div class="clue-hint" id="clue-hint">🔦 Catch the drifting flashlight, then sweep its beam across the clue to read it.</div>
+    <div class="beam-batt" id="beam-batt"><i></i></div>
+  </div>
+  <span class="bf-torch" id="bf-torch" title="Catch the flashlight!">🔦</span>
   <div id="board"></div>
-  <div class="msg" id="msg">Read the clue. Click the piece that moves, then its target square.</div>
+  <div class="msg" id="msg">Catch the 🔦 to light the clue — then click the piece that moves, then its target square.</div>
   <div class="row">
     <button id="reveal">Reveal position</button>
     <button class="primary" id="next" disabled>Next &rarr;</button>
@@ -133,7 +174,8 @@ function loadPuzzle() {
   const p = PUZZLES[idx];
   phase = 'from'; curMistake = false;
   document.getElementById('goal').textContent = p.goal;
-  document.getElementById('clue').innerHTML = p.clue;
+  document.getElementById('clue-text').innerHTML = p.clue;
+  resetBeam();
   document.getElementById('solved').textContent = solved;
   document.getElementById('total').textContent = total;
   document.getElementById('next').disabled = true;
@@ -198,6 +240,69 @@ document.getElementById('again').onclick = () => {
   document.getElementById('end').classList.add('hidden');
   loadPuzzle();
 };
+
+// ---- Flashlight beam ------------------------------------------------------
+// The clue sits in the dark. A flashlight drifts up through the scene; catch it
+// and its beam — which follows your pointer — reveals only the text it touches.
+const clueEl   = document.getElementById('clue');
+const clueText = document.getElementById('clue-text');
+const beamEl   = document.getElementById('clue-beam');
+const battFill = document.querySelector('#beam-batt > i');
+const torchEl  = document.getElementById('bf-torch');
+
+const BEAM_R = 104;        // reveal radius in px
+const BEAM_SECONDS = 6.5;  // battery life per catch
+let beamLit = false, beamBatt = 0, lastTs = 0;
+
+function setBeamPos(clientX, clientY) {
+  const r = clueEl.getBoundingClientRect();
+  const x = Math.max(0, Math.min(r.width,  clientX - r.left));
+  const y = Math.max(0, Math.min(r.height, clientY - r.top));
+  clueText.style.setProperty('--lx', x + 'px');
+  clueText.style.setProperty('--ly', y + 'px');
+  beamEl.style.setProperty('--lx', x + 'px');
+  beamEl.style.setProperty('--ly', y + 'px');
+}
+
+function catchTorch() {
+  beamLit = true; beamBatt = BEAM_SECONDS;
+  clueEl.classList.add('lit');
+  clueText.style.setProperty('--r', BEAM_R + 'px');
+  torchEl.classList.add('caught');
+  const r = clueEl.getBoundingClientRect();          // start lit at the clue's centre
+  setBeamPos(r.left + r.width / 2, r.top + r.height / 2);
+}
+
+function beamOff() {
+  beamLit = false;
+  clueEl.classList.remove('lit');
+  clueText.style.setProperty('--r', '0px');
+  respawnTorch();
+}
+
+function respawnTorch() {
+  torchEl.classList.remove('caught');               // restart the drift from the bottom
+  torchEl.style.animation = 'none';
+  void torchEl.offsetWidth;                          // force reflow
+  torchEl.style.animation = '';
+}
+
+function resetBeam() { beamOff(); if (battFill) battFill.style.transform = 'scaleX(0)'; }
+
+torchEl.addEventListener('pointerdown', e => { e.preventDefault(); catchTorch(); });
+clueEl.addEventListener('pointermove', e => { if (beamLit) setBeamPos(e.clientX, e.clientY); });
+clueEl.addEventListener('pointerdown', e => { if (beamLit) setBeamPos(e.clientX, e.clientY); });
+
+function beamTick(ts) {
+  const dt = lastTs ? (ts - lastTs) / 1000 : 0; lastTs = ts;
+  if (beamLit) {
+    beamBatt -= dt;
+    if (beamBatt <= 0) { beamBatt = 0; beamOff(); }
+    if (battFill) battFill.style.transform = 'scaleX(' + (beamBatt / BEAM_SECONDS) + ')';
+  }
+  requestAnimationFrame(beamTick);
+}
+requestAnimationFrame(beamTick);
 
 buildBoard();
 loadPuzzle();

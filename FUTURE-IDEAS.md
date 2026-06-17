@@ -90,6 +90,16 @@ accessibility pass, opt-in coaching).
 - **Blender cutscene intros** — short rendered clips of rigged Princess + the chess
   pieces as game intros / loading screens / leaderboard-season trailers. (Saved favorite.)
 
+## Per-game extra features (suggested, not yet built)
+*Captured from build sessions — five proposed extras per game, held for later.*
+
+- **Blindfold Puzzles** (floating flashlight): battery/lens pickups that extend beam time or radius · colored lenses (gold reveals the clue, blue reveals a hint, red is a faster-draining decoy) · glow-afterimage so already-swept text lingers faintly · a "lights out" hard mode that darkens the board too for bonus score · hold-to-lock / arrow-key beam nudge for accessibility, plus an uncatchable-firefly ambiance.
+- **Games page**: per-game accent theming on each card (crimson Siege, jade Ferry…) · Playable / In-Dev / Locked filter+sort tabs · a "your best / rank" chip pulled from the profile onto each card · a "continue where you left off" hero strip · a user toggle to disable the cursor sheen entirely.
+- **Notation Blitz** (v3.2): a cross-run timing-trend history (are you drifting early or late over time?) · a practice / endless ramp mode · keyboard coordinate entry + a free BPM slider between the three themes · a "catch it on the tail" late-save before the pill falls off the cliff · Princess emotes on combos/misses + an audio-latency calibration pre-roll.
+- **Pirc Protocol** (v2.0): a transposition map showing how lines share early moves · spaced "boss exams" that mix cards from every learned variation · an ECO-code + master-game citation on each card's back · a blunder-trap mode (play the *refutation* when the opponent goes off-book) · downloadable PGN of any line you've mastered.
+- **Fork in the Road** (v2.0): themed boss puzzles at each region gate · a per-tactic accuracy breakdown (forks vs pins vs mates) on the Dossier · a daily seeded "same puzzle for everyone" ladder · hint tiers (highlight the piece → show the motif → reveal the move) with score cost · an explanation card after each solve naming the motif.
+- **Sand Mine Depths** (v2.0): collectible relics/upgrades found in the dark (longer knight reach, a shovel that fills one hole) · a torch/lantern light radius that shrinks with depth · rival "Subject Zero" miner enemies with unique movement · a weekly seeded depth race · a between-runs surface camp that banks gold for permanent perks.
+
 ## The big one — a real game
 - **Binding of Isaac-style roguelite / 3D Space Run in Godot** — use the existing Blender
   assets (rigged Princess, chess pieces, the battle-room concept). Start with ONE

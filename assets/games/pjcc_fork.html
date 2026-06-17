@@ -3,22 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Fork in the Road</title>
+<title>PJCC: Fork in the Road v2.0</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
+<script src="/assets/js/pjcc-pieces.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
-    background: #1a0f3d; height: 100%; overflow: hidden;
+    background: #0a1a1c; height: 100%; overflow: hidden;
     font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-  #stage { position: relative; width: 480px; max-width: 100vw; }
+  /* Maximize the playfield on desktop; still scales down for mobile. */
+  #stage { position: relative; width: 100%; max-width: 600px; }
   #canvas {
     display: block; width: 100%;
-    border: 3px solid #F5C518; border-radius: 12px; background: #241152;
-    box-shadow: 0 0 40px rgba(245,197,24,0.25);
+    border: 3px solid #5be0c0; border-radius: 12px; background: #0e2422;
+    box-shadow: 0 0 40px rgba(91,224,192,0.22);
   }
   .float-btn {
     position: absolute; z-index: 6; font-family: 'Trebuchet MS', sans-serif; font-weight: bold;
@@ -27,19 +29,19 @@
   }
   .float-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
   #hint-btn { bottom: 84px; right: 10px; background: #ff8fd0; color: #3a0a2a; padding: 7px 14px; font-size: 12px; }
-  #menu-btn { top: 10px; right: 10px; background: #2D1B69; color: #c9a7ff; padding: 5px 12px; font-size: 11px; border: 1px solid #6a4fb0; }
+  #menu-btn { top: 10px; right: 10px; background: #163a36; color: #cfeee6; padding: 5px 12px; font-size: 11px; border: 1px solid #2a6a5e; }
   .float-btn.hidden { display: none; }
 
   .overlay {
     position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column;
     align-items: center; justify-content: center; padding: 22px; text-align: center;
-    border-radius: 12px; background: radial-gradient(circle at 50% 28%, #3a1d72 0%, #1a0f3d 80%);
+    border-radius: 12px; background: radial-gradient(circle at 50% 26%, #14463f 0%, #0a1a1c 82%);
   }
   .overlay.hidden { display: none; }
   .big-title { font-size: 30px; font-weight: 900; color: #F5C518; letter-spacing: 1px;
-    text-shadow: 0 3px 0 #8a5a00, 0 0 22px rgba(245,197,24,0.5); margin-bottom: 2px; }
-  .eyebrow { font-size: 11px; letter-spacing: 4px; color: #ff8fd0; text-transform: uppercase; margin-bottom: 14px; }
-  .blurb { font-size: 12.5px; color: #d9c9ff; line-height: 1.7; max-width: 380px; margin-bottom: 16px; }
+    text-shadow: 0 3px 0 #1a5a4c, 0 0 22px rgba(91,224,192,0.45); margin-bottom: 2px; }
+  .eyebrow { font-size: 11px; letter-spacing: 4px; color: #5be0c0; text-transform: uppercase; margin-bottom: 14px; }
+  .blurb { font-size: 12.5px; color: #cfeee6; line-height: 1.7; max-width: 380px; margin-bottom: 16px; }
   .row { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
   .btn { font-family: 'Trebuchet MS', sans-serif; font-weight: bold; cursor: pointer; border: none;
     border-radius: 999px; padding: 12px 26px; font-size: 14px; letter-spacing: 1px;
@@ -47,9 +49,9 @@
   .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
   .btn-gold { background: #F5C518; color: #1a0f3d; }
   .btn-gold:hover { background: #ffd740; }
-  .btn-ghost { background: #2D1B69; color: #c9a7ff; box-shadow: 0 4px 0 #170a36; }
-  .foot { margin-top: 16px; font-size: 10.5px; color: #7a5fb0; line-height: 1.8; }
-  .foot b { color: #c9a7ff; } .tap { cursor: pointer; text-decoration: underline; }
+  .btn-ghost { background: #163a36; color: #cfeee6; box-shadow: 0 4px 0 #0a1f1c; }
+  .foot { margin-top: 16px; font-size: 10.5px; color: #6faea0; line-height: 1.8; }
+  .foot b { color: #cfeee6; } .tap { cursor: pointer; text-decoration: underline; }
   .sum-grid { display: grid; grid-template-columns: auto auto; gap: 7px 22px; margin: 10px 0; }
   .sum-grid .l { text-align: right; color: #b39ae0; font-size: 13px; }
   .sum-grid .v { text-align: left; color: #fff; font-size: 15px; font-weight: bold; }
@@ -66,17 +68,18 @@
     <div class="eyebrow">The Road to Chess City</div>
     <div class="big-title">FORK IN THE ROAD</div>
     <div class="blurb">
-      Every step toward Chess City is a puzzle. Spot the tactic &mdash;
-      <b style="color:#F5C518">forks, pins, skewers, mates</b> &mdash; and play the winning move.
-      Princess is the <b style="color:#c96bff">knight ♞</b>, so watch for those forks.
+      Every step toward Chess City is a tactic. Spot the
+      <b style="color:#F5C518">fork, pin, skewer, or mate</b> and play the winning move.
+      The road runs <b>1,000 steps</b> and the puzzles <b>adapt to you</b> — solve and they sharpen, slip and they ease off.
     </div>
+    <div class="blurb" id="journey-line" style="margin-bottom:10px;color:#5be0c0;min-height:14px;"></div>
     <div class="row">
-      <button class="btn btn-gold" id="journey-btn">JOURNEY</button>
+      <button class="btn btn-gold" id="journey-btn">CONTINUE JOURNEY</button>
       <button class="btn btn-ghost" id="daily-btn">DAILY FIVE</button>
     </div>
     <div class="foot">
-      <b>Journey</b>: solve your way across the world map.<br>
-      <b>Daily Five</b>: five fresh puzzles, a new set each day.<br>
+      <b>Journey</b>: adaptive puzzles across five regions; progress saves to your profile.<br>
+      <b>Daily Five</b>: five seeded puzzles, the same for everyone each day.<br>
       <span class="tap" id="snd-toggle">🔊 sound: on</span> &nbsp;·&nbsp; <span class="tap" id="reset-prog">reset journey</span>
     </div>
   </div>
@@ -104,34 +107,139 @@ const ctx = canvas.getContext('2d');
 const W = 480, H = 500;
 const TILE = 42, BOARD = TILE * 8, BX = (W - BOARD) / 2, BY = 80;
 
-const C = { light: '#6b4bb0', dark: '#3f2880', gold: '#F5C518', good: '#6bffb8',
-  bad: '#ff5b8a', pink: '#ff8fd0', ink: '#f0e6ff', muted: '#b39ae0', dot: 'rgba(107,255,184,0.55)' };
+// Wayfarer theme — mossy-stone board, teal road, gold waypoints.
+const C = { light: '#3f6f66', dark: '#274a44', gold: '#F5C518', good: '#6bffb8',
+  bad: '#ff5b8a', pink: '#ff8fd0', ink: '#f0e6ff', muted: '#8fc7bd', dot: 'rgba(107,255,184,0.6)' };
+// Shared carved pieces, tinted for stone: pale sandstone vs dark slate.
+const FORK_PAL = { wFill: '#ece1c6', wEdge: '#5a4a28', bFill: '#1e2e33', bEdge: '#cfeee6' };
 const GLYPH = { K:'♚', Q:'♛', R:'♜', B:'♝', N:'♞', P:'♟' };
 
 function F(a){ return a.charCodeAt(0) - 97; }
 function Rk(a){ return 8 - parseInt(a[1], 10); }
 
-// ---- Puzzle bank (verified) ----
-const PUZZLES = [
- { id:'p1', theme:'Back Rank', goal:'Mate in one.', hint:'The back rank is fatally weak.', side:'w',
-   pieces:['Kg1','Ra1','kg8','pf7','pg7','ph7'], line:[['a1a8','Ra8#']] },
- { id:'p2', theme:'Back Rank', goal:'Mate in one.', hint:'Bring the heaviest piece to the last rank.', side:'w',
-   pieces:['Kg1','Qd1','kg8','pf7','pg7','ph7'], line:[['d1d8','Qd8#']] },
- { id:'p3', theme:'Royal Fork', goal:'Win the queen.', hint:'A knight check that also eyes the queen.', side:'w',
-   pieces:['Kg1','Nd5','kg8','qe8','pf7','ph7'], line:[['d5f6','Nf6+'],['g8g7','Kg7'],['f6e8','Nxe8']] },
- { id:'p4', theme:'Knight Fork', goal:'Win the rook.', hint:'Check the cornered king and hit the rook.', side:'w',
-   pieces:['Kg1','Nb5','ka8','re8','pb7','ph7'], line:[['b5c7','Nc7+'],['a8b8','Kb8'],['c7e8','Nxe8']] },
- { id:'p5', theme:'Skewer', goal:'Win the queen.', hint:'Check the king on the file; the queen is behind it.', side:'w',
-   pieces:['Kg1','Ra1','kc4','qc8'], line:[['a1c1','Rc1+'],['c4d4','Kd4'],['c1c8','Rxc8']] },
- { id:'p6', theme:'Discovered Attack', goal:'Win the queen.', hint:'Move the knight and unveil the bishop.', side:'w',
-   pieces:['Kg1','Bb2','Ne5','kh8','qd7','ph7'], line:[['e5d7','Nxd7+']] },
- { id:'p7', theme:'Checkmate', goal:'Mate in one.', hint:'The king already boxes in its cousin.', side:'w',
-   pieces:['Kg6','Qb1','kh8'], line:[['b1b8','Qb8#']] },
- { id:'p8', theme:'Family Fork', goal:'Win the queen.', hint:'One knight leap, two targets.', side:'w',
-   pieces:['Kg1','Nd5','kg8','qc6','pf7','ph7'], line:[['d5e7','Ne7+'],['g8h8','Kh8'],['e7c6','Nxc6']] },
-];
+// ---- Journey + procedural puzzle generator -------------------------------
+// Puzzles are generated and verified by construction (no chess-theory guesswork):
+// knight forks (Princess's own move) and corner back-rank mates. Difficulty
+// scales board clutter + target value; the journey adapts to the player.
+const REGIONS = ['Checker Town', 'The Sand Mines', 'The Sea', 'Shogi Isle', 'Chess City'];
+const JOURNEY_LEN = 1000, LEG = 5;
+function regionFor(step){ return Math.min(4, Math.floor(step / (JOURNEY_LEN / 5))); }
+const STORY = {
+  0:    'The road out of Checker Town begins — one tactic at a time.',
+  200:  'Into the Sand Mines. The puzzles bite harder in the dark.',
+  400:  'The Sea crossing. Keep your eyes sharp on the open board.',
+  600:  'Shogi Isle — foreign shores, familiar forks.',
+  800:  'The gates of Chess City rise ahead. Almost there.',
+  1000: 'Chess City! Princess has walked the whole road.'
+};
 
-const REGIONS = ['Checker Town', 'Sand Mines', 'The Sea', 'Shogi Isle', 'Chess City'];
+function alg(x, y){ return String.fromCharCode(97 + x) + (8 - y); }   // (x,y) -> 'e4'
+const KOFF = [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+function kTargets(x, y){ const o = []; KOFF.forEach(([dx,dy]) => { const a=x+dx,b=y+dy; if(a>=0&&a<8&&b>=0&&b<8) o.push({x:a,y:b}); }); return o; }
+function adjc(ax,ay,bx,by){ return Math.max(Math.abs(ax-bx), Math.abs(ay-by)) === 1; }
+function k2(p){ return p.x + ',' + p.y; }
+// seeded RNG (mulberry32) for the Daily set
+function rng32(seed){ let a = seed >>> 0; return function(){ a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+function placeFar(used, avoid, rnd, banFile){
+  for (let t = 0; t < 90; t++){
+    const x = (rnd()*8)|0, y = 1 + ((rnd()*7)|0);
+    if (used.has(x+','+y)) continue;
+    if (banFile != null && x === banFile) continue;
+    if (avoid.some(a => (a.x===x&&a.y===y) || adjc(x,y,a.x,a.y))) continue;
+    return { x, y };
+  }
+  return null;
+}
+// A few harmless black-pawn distractors that can't touch the tactic.
+function addDistractors(pieces, used, n, rnd, keepClearOf){
+  let added = 0, tries = 0;
+  while (added < n && tries < 60){
+    tries++;
+    const x = (rnd()*8)|0, y = 2 + ((rnd()*4)|0);            // ranks away from the back rank
+    if (used.has(x+','+y)) continue;
+    if (keepClearOf.some(s => Math.max(Math.abs(s.x-x), Math.abs(s.y-y)) <= 1)) continue;
+    // a black pawn here must not attack any protected square
+    if (keepClearOf.some(s => (s.x===x-1||s.x===x+1) && s.y===y+1)) continue;
+    used.add(x+','+y); pieces.push('p'+alg(x,y)); added++;
+  }
+}
+
+function genKnightFork(diff, rnd){
+  for (let t = 0; t < 220; t++){
+    const S = { x: 1 + (rnd()*6|0), y: 1 + (rnd()*6|0) };
+    const tg = kTargets(S.x, S.y);
+    if (tg.length < 5) continue;
+    const T1 = tg[rnd()*tg.length|0];                          // enemy king
+    const T2 = tg[rnd()*tg.length|0];                          // enemy big piece
+    if (k2(T1) === k2(T2)) continue;
+    const origins = tg.filter(o => k2(o)!==k2(T1) && k2(o)!==k2(T2));
+    if (!origins.length) continue;
+    const O = origins[rnd()*origins.length|0];                 // knight's start
+    const big = (diff >= 6 && rnd() < 0.5) ? 'R' : 'Q';
+    const used = new Set([k2(S), k2(T1), k2(T2), k2(O)]);
+    const wk = placeFar(used, [T1, T2, S], rnd); if (!wk) continue;
+    used.add(k2(wk));
+    const checkSet = new Set(kTargets(S.x, S.y).map(k2));       // squares the knight covers from S
+    const escapes = [];
+    for (let dx=-1; dx<=1; dx++) for (let dy=-1; dy<=1; dy++){
+      if (!dx && !dy) continue;
+      const ex=T1.x+dx, ey=T1.y+dy;
+      if (ex<0||ex>7||ey<0||ey>7) continue;
+      const kk = ex+','+ey;
+      if (used.has(kk) || checkSet.has(kk)) continue;
+      if (adjc(ex,ey,wk.x,wk.y) || (ex===S.x&&ey===S.y)) continue;
+      escapes.push({x:ex,y:ey});
+    }
+    if (!escapes.length) continue;                              // would be mate/stuck — retry
+    const E = escapes[rnd()*escapes.length|0];
+    const pieces = ['K'+alg(wk.x,wk.y), 'N'+alg(O.x,O.y), 'k'+alg(T1.x,T1.y), big.toLowerCase()+alg(T2.x,T2.y)];
+    addDistractors(pieces, used, Math.max(0, Math.min(3, diff-4)), rnd, [S, T1, T2, O]);
+    const line = [
+      [alg(O.x,O.y)+alg(S.x,S.y), 'N'+alg(S.x,S.y)+'+'],
+      [alg(T1.x,T1.y)+alg(E.x,E.y), 'K'+alg(E.x,E.y)],
+      [alg(S.x,S.y)+alg(T2.x,T2.y), 'Nx'+alg(T2.x,T2.y)],
+    ];
+    const tn = big === 'Q' ? 'queen' : 'rook';
+    return { theme:'Knight Fork', goal:'Win the '+tn+'.', side:'w',
+      hint:'A knight leap that checks the king and forks the '+tn+'.', pieces, line };
+  }
+  return null;
+}
+
+function genBackRankMate(diff, rnd){
+  for (let t = 0; t < 140; t++){
+    const ek = rnd() < 0.5 ? {x:7,y:0} : {x:0,y:0};            // black king cornered on its back rank
+    const dirIn = ek.x === 7 ? -1 : 1;
+    const fp = [{x:ek.x, y:1}, {x:ek.x+dirIn, y:1}];           // own pawns box the front
+    const fx = ek.x + dirIn * (2 + (rnd()*3|0));               // delivery file, toward centre
+    if (fx < 1 || fx > 6) continue;
+    const ry = 1 + (rnd()*5|0);                                // heavy piece starts on the file
+    const heavy = (diff >= 5 && rnd() < 0.4) ? 'Q' : 'R';
+    const used = new Set([k2(ek), k2({x:fx,y:0}), k2({x:fx,y:ry}), k2(fp[0]), k2(fp[1])]);
+    const wk = placeFar(used, [ek], rnd, fx); if (!wk) continue;
+    used.add(k2(wk));
+    const pieces = ['K'+alg(wk.x,wk.y), heavy+alg(fx,ry), 'k'+alg(ek.x,ek.y), 'p'+alg(fp[0].x,fp[0].y), 'p'+alg(fp[1].x,fp[1].y)];
+    addDistractors(pieces, used, Math.max(0, Math.min(2, diff-5)), rnd, [ek, {x:fx,y:0}, {x:fx,y:ry}]);
+    const line = [[alg(fx,ry)+alg(fx,0), heavy+alg(fx,0)+'#']];
+    return { theme:'Back Rank', goal:'Mate in one.', side:'w',
+      hint:'The back rank is fatally weak — bring a heavy piece down.', pieces, line };
+  }
+  return null;
+}
+
+function genPuzzle(diff, rnd){
+  rnd = rnd || Math.random;
+  for (let a = 0; a < 6; a++){
+    const wantMate = rnd() < (diff <= 3 ? 0.5 : 0.3);
+    const p = wantMate ? genBackRankMate(diff, rnd) : genKnightFork(diff, rnd);
+    if (p) { p.id = 'g' + (genPuzzle._n = (genPuzzle._n||0) + 1); return p; }
+  }
+  // guaranteed fallbacks
+  return genKnightFork(2, rnd) || genBackRankMate(2, rnd) ||
+    { id:'g0', theme:'Back Rank', goal:'Mate in one.', side:'w', hint:'Down the file to the back rank.',
+      pieces:['Kg1','Rd2','kh8','pg7','ph7'], line:[['d2d8','Rd8#']] };
+}
 
 function parseBoard(p) {
   const b = Array.from({ length: 8 }, () => Array(8).fill(null));
@@ -177,35 +285,48 @@ let anim = null, pops = {}, confetti = [], floaters = [], shake = 0, vignette = 
 let arrow = null, bannerText = '', bannerColor = C.good, bannerT = -1;
 let princessHop = { from: 0, to: 0, t: 1 }; // ribbon advance animation
 
-const PROG_KEY = 'pjcc.fork.journey.v1';
+const PROG_KEY = 'pjcc.fork.journey.v2';
 const DAILY_KEY = 'pjcc.fork.daily.v1';
-function loadProg(){ try { return JSON.parse(localStorage.getItem(PROG_KEY)) || { best: 0 }; } catch(e){ return { best: 0 }; } }
+function loadProg(){ try { return Object.assign({ step:0, diff:2, best:0 }, JSON.parse(localStorage.getItem(PROG_KEY)) || {}); } catch(e){ return { step:0, diff:2, best:0 }; } }
 function saveProg(p){ try { localStorage.setItem(PROG_KEY, JSON.stringify(p)); } catch(e){} }
-
-// Deterministic shuffle for Daily
 function dailySeed(){ const d = new Date(); return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
-function seededOrder(seed){ const a = PUZZLES.map((_,i)=>i); let s = seed; for (let i=a.length-1;i>0;i--){ s=(s*9301+49297)%233280; const j=Math.floor(s/233280*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function updateJourneyLine(){
+  const pr = loadProg(), el = document.getElementById('journey-line');
+  if (!el) return;
+  el.textContent = pr.step >= JOURNEY_LEN
+    ? '🏰 You reached Chess City! (step ' + pr.step + '/' + JOURNEY_LEN + ')'
+    : 'Step ' + pr.step + ' / ' + JOURNEY_LEN + ' · ' + REGIONS[regionFor(pr.step)] + ' · difficulty ' + Math.round(pr.diff) + '/10';
+}
 
 // ---- Flow ----
 function startRun(mode){
-  let order;
-  if (mode === 'daily') order = seededOrder(dailySeed()).slice(0, 5);
-  else order = PUZZLES.map((_,i)=>i);
-  run = { mode, queue: order, idx: 0, stats: { solved: 0, clean: 0, streak: 0, best: 0 } };
+  if (mode === 'daily'){
+    const r = rng32(dailySeed());
+    const queue = []; for (let i = 0; i < 5; i++) queue.push(genPuzzle(3 + i, r));   // fixed ramp 3..7
+    run = { mode, queue, idx: 0, legLen: 5, stats: { solved:0, clean:0, streak:0, best:0 } };
+  } else {
+    const pr = loadProg();
+    run = { mode: 'journey', idx: 0, legLen: LEG, step: pr.step, diff: pr.diff, best: pr.best,
+            legStartStep: pr.step, queue: null, stats: { solved:0, clean:0, streak:0, best:0 } };
+  }
   hideOverlays();
   document.getElementById('menu-btn').classList.remove('hidden');
   loadPuzzle();
 }
 function loadPuzzle(){
-  const p = PUZZLES[run.queue[run.idx]];
+  let p;
+  if (run.mode === 'daily') p = run.queue[run.idx];
+  else {
+    const eff = Math.max(1, Math.min(10, Math.round(run.diff + (Math.random()*3 - 1.5))));  // generous variance
+    p = genPuzzle(eff, Math.random);
+  }
   G = { p, board: parseBoard(p), step: 0, selected: null, wrong: 0, clean: true, phase: 'await', orient: p.side };
   document.getElementById('hint-btn').classList.remove('hidden');
   bannerT = -1;
 }
 function nextPuzzle(){
   run.idx++;
-  if (run.idx >= run.queue.length) { showSummary(); return; }
-  // advance Princess along the ribbon
+  if (run.idx >= run.legLen) { showSummary(); return; }
   princessHop = { from: run.idx - 1, to: run.idx, t: 0 };
   loadPuzzle();
 }
@@ -228,10 +349,15 @@ function puzzleSolved(){
   run.stats.solved++;
   if (G.clean) { run.stats.clean++; run.stats.streak++; if (run.stats.streak > run.stats.best) run.stats.best = run.stats.streak; }
   else run.stats.streak = 0;
-  if (run.mode === 'journey') { const pr = loadProg(); pr.best = Math.max(pr.best, run.idx + 1); saveProg(pr); }
+  if (run.mode === 'journey'){
+    run.diff = Math.max(1, Math.min(10, run.diff + (G.clean ? 0.34 : -0.7)));   // adapts to you
+    run.step = Math.min(JOURNEY_LEN, run.step + 1);
+    run.best = Math.max(run.best || 0, run.step);
+    saveProg({ step: run.step, diff: run.diff, best: run.best });
+  }
   bannerText = G.clean ? 'SOLVED!' : 'GOT THERE'; bannerColor = G.clean ? C.good : C.pink; bannerT = 0;
   sfx('advance');
-  setTimeout(nextPuzzle, 1250);
+  setTimeout(nextPuzzle, 1150);
 }
 function revealSolution(){
   G.clean = false; G.selected = null; G.wrong = 0;
@@ -301,7 +427,7 @@ function render(){
   if (vignette > 0){ ctx.fillStyle = 'rgba(255,40,90,'+(vignette/14*0.22)+')'; ctx.fillRect(0,0,W,H); vignette -= 0.6; }
 }
 let bgG = Array.from({length:8},()=>({x:Math.random()*W,y:Math.random()*H,s:18+Math.random()*30,g:'♟♞♝♜♛♚'[(Math.random()*6)|0],spd:0.1+Math.random()*0.2,a:0.04+Math.random()*0.05}));
-function drawBg(){ const grd=ctx.createLinearGradient(0,0,0,H); grd.addColorStop(0,'#311866'); grd.addColorStop(1,'#1a0f3d'); ctx.fillStyle=grd; ctx.fillRect(0,0,W,H); bgG.forEach(b=>{ b.y-=b.spd; if(b.y<-40){b.y=H+40;b.x=Math.random()*W;} ctx.fillStyle='rgba(245,197,24,'+b.a+')'; ctx.font=b.s+'px serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(b.g,b.x,b.y); }); }
+function drawBg(){ const grd=ctx.createLinearGradient(0,0,0,H); grd.addColorStop(0,'#143a36'); grd.addColorStop(1,'#0a1a1c'); ctx.fillStyle=grd; ctx.fillRect(0,0,W,H); bgG.forEach(b=>{ b.y-=b.spd; if(b.y<-40){b.y=H+40;b.x=Math.random()*W;} ctx.fillStyle='rgba(91,224,192,'+b.a+')'; ctx.font=b.s+'px serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(b.g,b.x,b.y); }); }
 
 function drawHeader(){
   const p = G.p;
@@ -312,14 +438,19 @@ function drawHeader(){
   ctx.fillText('⚔ ' + p.theme.toUpperCase(), 22, 26);
   // side to move + goal
   ctx.fillStyle = C.ink; ctx.font = 'bold 14px Trebuchet MS'; ctx.textAlign = 'center';
-  ctx.fillText((p.side === 'w' ? 'White' : 'Black') + ' to move — ' + p.goal, W/2, 58);
+  ctx.fillText((p.side === 'w' ? 'White' : 'Black') + ' to move — ' + p.goal, W/2, 56);
+  // journey region + step (the stepping storyline)
+  if (run && run.mode === 'journey'){
+    ctx.fillStyle = C.muted; ctx.font = '11px Trebuchet MS';
+    ctx.fillText('🗺 ' + REGIONS[regionFor(run.step)] + ' · step ' + run.step + ' / ' + JOURNEY_LEN, W/2, 72);
+  }
   // streak top-right
   ctx.fillStyle = C.gold; ctx.font = 'bold 13px Trebuchet MS'; ctx.textAlign = 'right';
   if (run) ctx.fillText('🔥 ' + run.stats.streak, W - 96, 26);
 }
 
 function drawBoard(){
-  ctx.fillStyle = '#1c0d44'; roundRect(BX-6, BY-6, BOARD+12, BOARD+12, 9); ctx.fill();
+  ctx.fillStyle = '#0e2a26'; roundRect(BX-6, BY-6, BOARD+12, BOARD+12, 9); ctx.fill();
   ctx.strokeStyle = C.gold; ctx.lineWidth = 3; roundRect(BX-6, BY-6, BOARD+12, BOARD+12, 9); ctx.stroke();
   for (let r=0;r<8;r++) for (let c=0;c<8;c++){ ctx.fillStyle = (r+c)%2===0?C.light:C.dark; ctx.fillRect(BX+c*TILE, BY+r*TILE, TILE, TILE); }
   const gl=ctx.createLinearGradient(0,BY,0,BY+BOARD); gl.addColorStop(0,'rgba(255,255,255,0.07)'); gl.addColorStop(0.5,'rgba(255,255,255,0)'); ctx.fillStyle=gl; ctx.fillRect(BX,BY,BOARD,BOARD);
@@ -338,22 +469,14 @@ function drawPieces(){
   if (anim){ if (anim.capC && anim.cap){ ctx.globalAlpha=Math.max(0,1-anim.t*1.6); drawPiece(anim.capC.x,anim.capC.y,anim.cap,1-anim.t*0.3,false); ctx.globalAlpha=1; } const e=1-Math.pow(1-anim.t,3); const px=anim.fromC.x+(anim.toC.x-anim.fromC.x)*e, py=anim.fromC.y+(anim.toC.y-anim.fromC.y)*e-Math.sin(anim.t*Math.PI)*12; drawPiece(px,py,anim.piece,1.07,true); }
 }
 function drawPiece(cx, cy, p, scale, lifted){
-  const r = TILE*0.40*scale; ctx.save(); ctx.translate(cx, cy+(lifted?-3:0));
-  ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(0,r*0.78,r*0.85,r*0.3,0,0,Math.PI*2); ctx.fill();
-  const g=ctx.createRadialGradient(-r*0.3,-r*0.4,r*0.2,0,0,r);
-  if (p.c==='w'){ g.addColorStop(0,'#fff9ec'); g.addColorStop(1,'#d9bd84'); } else { g.addColorStop(0,'#7a52c8'); g.addColorStop(1,'#33196e'); }
-  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle=C.gold; ctx.lineWidth=2; ctx.stroke();
-  ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.beginPath(); ctx.ellipse(-r*0.32,-r*0.4,r*0.32,r*0.18,-0.5,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle=p.c==='w'?'#3a2566':'#fceeff'; ctx.font='bold '+Math.round(r*1.5)+'px serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(GLYPH[p.t],0,r*0.06);
-  ctx.restore();
+  PJCCPieces.draw(ctx, cx, cy + (lifted ? -3 : 0), TILE * 0.84 * scale, p.t, p.c, FORK_PAL);
 }
 function drawArrow(){ if(!arrow) return; const a=cell(arrow.fx,arrow.fy), b=cell(arrow.tx,arrow.ty); const pulse=0.5+0.5*Math.sin(arrow.t*12); ctx.strokeStyle='rgba(107,255,184,'+(0.6+0.4*pulse)+')'; ctx.fillStyle=ctx.strokeStyle; ctx.lineWidth=6; ctx.lineCap='round'; const ang=Math.atan2(b.y-a.y,b.x-a.x); const ex=b.x-Math.cos(ang)*16, ey=b.y-Math.sin(ang)*16; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(ex,ey); ctx.stroke(); ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(ex-Math.cos(ang-0.5)*14,ey-Math.sin(ang-0.5)*14); ctx.lineTo(ex-Math.cos(ang+0.5)*14,ey-Math.sin(ang+0.5)*14); ctx.closePath(); ctx.fill(); }
 function drawConfetti(){ confetti.forEach(p=>{ ctx.save(); ctx.globalAlpha=Math.max(0,p.life/p.max); ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.fillStyle=p.col; ctx.fillRect(-p.sz/2,-p.sz/2,p.sz,p.sz*1.6); ctx.restore(); }); }
 function drawFloaters(){ floaters.forEach(f=>{ ctx.globalAlpha=Math.max(0,f.life/f.max); ctx.fillStyle=f.col; ctx.font='bold 14px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(f.txt,f.x,f.y); ctx.globalAlpha=1; }); }
 
 function drawRibbon(){
-  const y = H - 34, x0 = 30, x1 = W - 30, n = run.queue.length;
+  const y = H - 34, x0 = 30, x1 = W - 30, n = run.legLen || (run.queue ? run.queue.length : 5);
   ctx.strokeStyle = 'rgba(245,197,24,0.3)'; ctx.lineWidth = 4; ctx.setLineDash([2, 6]); ctx.lineCap = 'round';
   ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke(); ctx.setLineDash([]);
   for (let i = 0; i <= n; i++){
@@ -365,7 +488,7 @@ function drawRibbon(){
   }
   // region labels at ends
   ctx.fillStyle = C.muted; ctx.font = '9px Trebuchet MS'; ctx.textBaseline = 'top';
-  ctx.textAlign = 'left'; ctx.fillText(REGIONS[0], x0 - 6, y + 9);
+  ctx.textAlign = 'left'; ctx.fillText(run.mode === 'journey' ? REGIONS[regionFor(run.step)] : REGIONS[0], x0 - 6, y + 9);
   ctx.textAlign = 'right'; ctx.fillText('Chess City', x1 + 6, y + 9);
   // Princess token gliding along
   const ph = princessHop;
@@ -397,23 +520,33 @@ function loop(now){
 
 // ---- Screens ----
 function hideOverlays(){ ['menu-screen','summary-screen'].forEach(id=>document.getElementById(id).classList.add('hidden')); }
-function showMenu(){ G=null; run=null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('hint-btn').classList.add('hidden'); hideOverlays(); document.getElementById('menu-screen').classList.remove('hidden'); }
+function showMenu(){ G=null; run=null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('hint-btn').classList.add('hidden'); hideOverlays(); updateJourneyLine(); document.getElementById('menu-screen').classList.remove('hidden'); }
 function showSummary(){
   G = null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('hint-btn').classList.add('hidden');
   const s = run.stats;
-  document.getElementById('sum-mode').textContent = run.mode === 'daily' ? 'Daily Five' : 'Journey';
-  const allClean = s.clean === run.queue.length;
-  document.getElementById('sum-title').textContent = run.mode === 'journey' ? 'CHESS CITY! 🏰' : (allClean ? 'PERFECT FIVE! ⭐' : 'DAILY DONE');
-  document.getElementById('sum-msg').textContent = run.mode === 'journey'
-    ? 'Princess made it across the world map.' + (allClean ? ' Not a single slip!' : '')
-    : 'Come back tomorrow for five fresh puzzles.';
-  document.getElementById('sum-solved').textContent = s.solved + ' / ' + run.queue.length;
+  if (run.mode === 'journey'){
+    const reg = REGIONS[regionFor(run.step)], done = run.step >= JOURNEY_LEN;
+    let beat = '';
+    for (const k in STORY){ const st = +k; if (st > run.legStartStep && st <= run.step) beat = STORY[k]; }
+    document.getElementById('sum-mode').textContent = 'Journey · ' + reg;
+    document.getElementById('sum-title').textContent = done ? 'CHESS CITY! 🏰' : 'STEP ' + run.step + ' / ' + JOURNEY_LEN;
+    document.getElementById('sum-msg').textContent = beat || ('Onward through ' + reg + '. Puzzle difficulty now ' + Math.round(run.diff) + '/10.');
+    document.getElementById('sum-again').textContent = done ? 'WALK IT AGAIN' : 'CONTINUE';
+    if (window.PJCC) PJCC.saveScore('fork-in-the-road', run.step, { credits: 1, data: { step: run.step, diff: Math.round(run.diff), best: run.best } });
+  } else {
+    const allClean = s.clean === run.legLen;
+    document.getElementById('sum-mode').textContent = 'Daily Five';
+    document.getElementById('sum-title').textContent = allClean ? 'PERFECT FIVE! ⭐' : 'DAILY DONE';
+    document.getElementById('sum-msg').textContent = 'Come back tomorrow for five fresh puzzles.';
+    document.getElementById('sum-again').textContent = 'PLAY AGAIN';
+    if (window.PJCC) PJCC.saveScore('fork-in-the-road', s.solved, { credits: 1, data: { mode: 'daily', clean: s.clean } });
+  }
+  document.getElementById('sum-solved').textContent = s.solved + ' / ' + run.legLen;
   document.getElementById('sum-clean').textContent = s.clean;
   document.getElementById('sum-streak').textContent = s.best;
-  if (window.PJCC) PJCC.saveScore('fork-in-the-road', s.solved, { credits: 1, data: { mode: run.mode, clean: s.clean, bestStreak: s.best } });
-  if (run.mode === 'daily'){ try { const d = JSON.parse(localStorage.getItem(DAILY_KEY)) || {}; const today = dailySeed(); if (d.date !== today){ d.streak = (d.date === today - 1 || (d.streak && d.last === today-1)) ? (d.streak||0)+1 : 1; d.date = today; localStorage.setItem(DAILY_KEY, JSON.stringify(d)); } } catch(e){} }
   sfx('win');
   hideOverlays(); document.getElementById('summary-screen').classList.remove('hidden');
+  updateJourneyLine();
 }
 
 function go(){ initAudio(); if (actx.state === 'suspended') actx.resume(); }
@@ -422,8 +555,21 @@ document.getElementById('daily-btn').addEventListener('click', ()=>{ go(); start
 document.getElementById('menu-btn').addEventListener('click', showMenu);
 document.getElementById('sum-again').addEventListener('click', ()=>{ go(); startRun(run ? run.mode : 'journey'); });
 document.getElementById('sum-menu').addEventListener('click', showMenu);
-document.getElementById('reset-prog').addEventListener('click', ()=>{ saveProg({ best: 0 }); floater('Journey reset', W/2, H/2, C.gold); });
+document.getElementById('reset-prog').addEventListener('click', ()=>{ saveProg({ step:0, diff:2, best:0 }); updateJourneyLine(); });
 document.getElementById('snd-toggle').addEventListener('click', ()=>{ sndOn=!sndOn; if(master) master.gain.value=sndOn?0.85:0; document.getElementById('snd-toggle').textContent = sndOn?'🔊 sound: on':'🔇 sound: off'; });
+
+// Restore journey progress from the profile (if logged in and further than local).
+updateJourneyLine();
+if (window.PJCC && PJCC.ready) PJCC.ready.then(async () => {
+  try {
+    const st = await PJCC.myStats();
+    const row = (st || []).find(s => s.game === 'fork-in-the-road');
+    if (row && row.data && row.data.step){
+      const pr = loadProg();
+      if (row.data.step > pr.step){ pr.step = row.data.step; if (row.data.diff) pr.diff = row.data.diff; pr.best = Math.max(pr.best || 0, row.data.step); saveProg(pr); updateJourneyLine(); }
+    }
+  } catch (e) {}
+});
 
 requestAnimationFrame(loop);
 </script>

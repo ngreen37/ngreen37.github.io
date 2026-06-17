@@ -1,11 +1,11 @@
 ---
 layout: game
-title: "Fork in the Road"
-description: "Chess tactics puzzles. Spot the fork, pin, skewer, or mate and play the winning move."
+title: "Fork in the Road v2.0"
+description: "Adaptive chess-tactics journey. Spot the fork or mate and play the winning move, 1,000 steps to Chess City."
 permalink: /games/fork-in-the-road/
 ---
 
-<div class="game-frame-wrap">
+<div class="game-frame-wrap fork-frame">
   <iframe
     src="{{ '/assets/games/pjcc_fork.html' | relative_url }}"
     title="PJCC Fork in the Road"
@@ -14,22 +14,19 @@ permalink: /games/fork-in-the-road/
   ></iframe>
 </div>
 
+<style>
+.fork-frame { max-width: 680px; }
+.fork-frame iframe { height: 680px; }
+@media (max-width: 640px) { .fork-frame iframe { height: 560px; } }
+</style>
+
 <div class="game-info">
   <h2>How to Play</h2>
   <ul>
-    <li>Each puzzle shows whose move it is and the goal (win material or mate)</li>
-    <li><strong>Click a piece</strong> to see its moves, then <strong>click the target square</strong></li>
-    <li>Find the <strong>winning</strong> move — forks, pins, skewers, discovered attacks, mates</li>
-    <li>Multi-move puzzles play the opponent's reply automatically — keep the combination going</li>
-    <li>Stuck? <strong>🐾 Hint</strong> nudges you once, then reveals the move (it breaks your streak)</li>
-    <li>Each solve walks Princess one step closer to <strong>Chess City</strong></li>
+    <li><strong>Click a piece, then its target square</strong> to play the winning move — a fork or a mate</li>
+    <li><strong>Journey</strong> is 1,000 adaptive steps to Chess City; <strong>Daily Five</strong> is a shared seeded set</li>
+    <li>Stuck? <strong>🐾 Hint</strong> nudges once, then reveals (it breaks your streak)</li>
   </ul>
 
-  <h2>Modes</h2>
-  <ul>
-    <li><strong>Journey</strong> — solve your way across the world map, Checker Town to Chess City</li>
-    <li><strong>Daily Five</strong> — five puzzles in a fixed order that changes each day</li>
-  </ul>
-
-  <p class="game-note">Princess is designated a knight ♞, so the bank leans into knight forks — the trickiest pattern for new players to see coming.</p>
+  <p class="game-note">Puzzles are generated and verified by construction, scaling to your skill — solve and they sharpen, slip and they ease off (with enough variance that it never spikes). Journey progress saves to your <a href="/dossier/">operative dossier</a>; scores hit the <a href="/leaderboards/">leaderboards</a>.</p>
 </div>

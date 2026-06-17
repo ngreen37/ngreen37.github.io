@@ -42,7 +42,7 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/notation-run/' | relative_url }}">
     <div class="game-card-icon">♫</div>
     <div class="game-card-body">
-      <h2>Notation Blitz v2.7</h2>
+      <h2>Notation Blitz v3.2</h2>
       <p>A rhythm drill for reading chess coordinates at speed.</p>
       <span class="game-tag">Playable</span>
     </div>
@@ -134,7 +134,7 @@ permalink: /games/
     <div class="game-card-body">
       <h2>Blindfold Puzzles</h2>
       <p>A blank board and a clue — find the winning move in your head, then play it. Hidden bonus game.</p>
-      <span class="game-tag game-tag-soon" id="bf-tag">🔒 Locked — perfect Sprint in Notation Blitz</span>
+      <span class="game-tag game-tag-soon" id="bf-tag">🔒 Locked — perfect Fast run in Notation Blitz</span>
     </div>
   </a>
 
@@ -167,13 +167,22 @@ permalink: /games/
   display: flex;
   align-items: flex-start;
   gap: 1rem;
-  background: #2D1B69;
+  background: #241451;        /* deeper base so the lilac text reads stronger */
   border: 1px solid #F5C518;
   border-radius: 8px;
   padding: 1.2rem 1.4rem;
   text-decoration: none;
   transition: border-color 0.15s, background 0.15s;
 }
+
+/* The cursor "flashlight" sheen (added site-wide by pjcc-flair.js) washes the
+   descriptions out on hover. Dim it well over 25% on game cards so the text
+   stays readable — softer light, smaller radius, capped opacity. */
+.game-card .flair-tilt-sheen {
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 0%),
+              rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 46%);
+}
+.game-card.flair-tilt:hover .flair-tilt-sheen { opacity: 0.7; }
 
 .game-card:hover {
   background: #3d2a7a;
@@ -195,7 +204,7 @@ permalink: /games/
 }
 
 .game-card-body p {
-  color: #9a7fd4;
+  color: #d3c5f3;            /* brighter lilac — far higher contrast on the dark purple card */
   font-size: 0.85rem;
   margin: 0 0 0.6rem;
   line-height: 1.5;

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PJCC: Notation Blitz v2.7</title>
+<title>PJCC: Notation Blitz v3.2</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -149,8 +149,11 @@
   .stat-grid .s-lab { font-size: 13px; color: #9a7fd4; text-align: right; }
   .stat-grid .s-val { font-size: 18px; color: #f0e6ff; font-weight: bold; text-align: left; }
   .stat-grid .s-val.perfect { color: #6bffb8; }
+  .stat-grid .s-val.great { color: #9bffd0; }
   .stat-grid .s-val.good { color: #F5C518; }
   .stat-grid .s-val.miss { color: #ff6b6b; }
+  .timing-grid { gap: 5px 26px; margin: 4px 0; }
+  .timing-grid .s-val { font-size: 15px; }
 
   .rank-badge {
     font-size: 64px;
@@ -179,13 +182,13 @@
   <!-- TITLE SCREEN -->
   <div class="overlay" id="title-screen">
     <div class="ov-eyebrow">Checker Town · Coordinate Drill</div>
-    <div class="ov-title">NOTATION BLITZ <span style="font-size:0.5em;color:#ff8fd0;vertical-align:super;letter-spacing:1px;">v2.7</span></div>
+    <div class="ov-title">NOTATION BLITZ <span style="font-size:0.5em;color:#ff8fd0;vertical-align:super;letter-spacing:1px;">v3.2</span></div>
 
     <div class="ov-group-label">Tempo</div>
     <div class="btn-row" id="diff-row">
-      <button class="pick" data-diff="easy">Stroll<small>72 bpm</small></button>
-      <button class="pick sel" data-diff="medium">March<small>96 bpm</small></button>
-      <button class="pick" data-diff="hard">Sprint<small>120 bpm</small></button>
+      <button class="pick" data-diff="easy">Slow<small>moonlit</small></button>
+      <button class="pick sel" data-diff="medium">Medium<small>golden</small></button>
+      <button class="pick" data-diff="hard">Fast<small>crimson</small></button>
     </div>
 
     <button class="start-btn" id="start-btn">START</button>
@@ -198,7 +201,7 @@
 
   <!-- RESULTS SCREEN -->
   <div class="overlay hidden" id="results-screen">
-    <div class="ov-eyebrow" id="res-mode-label">Coordinates · March</div>
+    <div class="ov-eyebrow" id="res-mode-label">Coordinates · Medium</div>
     <div class="rank-badge" id="res-rank">A</div>
     <div id="res-fc-wrap"><span class="fc-badge">FULL COMBO</span></div>
     <div class="stat-grid">
@@ -206,8 +209,15 @@
       <div class="s-lab">Accuracy</div><div class="s-val" id="res-acc">0%</div>
       <div class="s-lab">Max Combo</div><div class="s-val" id="res-combo">0</div>
       <div class="s-lab">Perfect</div><div class="s-val perfect" id="res-perfect">0</div>
+      <div class="s-lab">Great</div><div class="s-val great" id="res-great">0</div>
       <div class="s-lab">Good</div><div class="s-val good" id="res-good">0</div>
       <div class="s-lab">Missed</div><div class="s-val miss" id="res-miss">0</div>
+    </div>
+    <div class="ov-group-label" style="margin-top:4px;">Timing</div>
+    <div class="stat-grid timing-grid">
+      <div class="s-lab">Early</div><div class="s-val" id="res-early">0</div>
+      <div class="s-lab">Late</div><div class="s-val" id="res-late">0</div>
+      <div class="s-lab">Avg offset</div><div class="s-val" id="res-timing">—</div>
     </div>
     <div class="ov-foot" id="res-best" style="margin-top:10px;min-height:14px;">&nbsp;</div>
     <div class="btn-row" style="margin-top:10px;">
@@ -240,14 +250,28 @@ const COLORS = {
 
 // Timing windows are a fraction of the gap between calls (computed per game in
 // newGame as G.goodW / G.perfectW). Bigger GOOD_FRAC = far more forgiving.
-const PERFECT_FRAC = 0.20;
-const GOOD_FRAC = 0.46;
+// Accuracy resolves into four bands — Perfect · Great · Good · Early/Late — for a
+// more dynamic, timing-driven score (see resolveAt).
+const PERFECT_FRAC = 0.16;
+const GOOD_FRAC = 0.48;
+const GREAT_RATIO = 0.34;   // of the perfect→good span, this much still scores "Great"
+const GOOD_RATIO  = 0.68;   // ...up to here is "Good"; beyond, to the edge, is Early/Late
 
 const DIFFS = {
-  easy:   { bpm: 43, bpc: 2, calls: 18, label: 'Stroll' },
-  medium: { bpm: 60, bpc: 2, calls: 22, label: 'March' },
-  hard:   { bpm: 94, bpc: 2, calls: 28, label: 'Sprint' },
+  easy:   { bpm: 43, bpc: 2, calls: 18, label: 'Slow' },
+  medium: { bpm: 60, bpc: 2, calls: 22, label: 'Medium' },
+  hard:   { bpm: 94, bpc: 2, calls: 28, label: 'Fast' },
 };
+
+// Each tempo gets its own palette — board squares, track, accent and backdrop.
+const THEMES = {
+  easy:   { name: 'moonlit', light: '#27376f', dark: '#1b274f', bg: '#0e1530', accent: '#7fd4ff', rgb: '127,212,255' },
+  medium: { name: 'golden',  light: '#3d2a7a', dark: '#2D1B69', bg: '#1a0f3d', accent: '#F5C518', rgb: '245,197,24' },
+  hard:   { name: 'crimson', light: '#6d2542', dark: '#481630', bg: '#280c19', accent: '#ff5c8a', rgb: '255,92,138' },
+};
+let TH = THEMES.medium;     // active theme (set per game in newGame)
+
+const CLIFF_X = 34;         // missed calls tumble off the cliff here, short of the edge
 
 // ---- Personal bests (per mode + tempo), saved in the browser ----
 const BEST_KEY = 'pjcc.notation.best.v1';
@@ -325,6 +349,10 @@ let G = null;
 
 function newGame(mode, diff) {
   const d = DIFFS[diff];
+  // Apply this tempo's theme (board, track accent, backdrop all recolour).
+  TH = THEMES[diff] || THEMES.medium;
+  COLORS.gold = TH.accent; COLORS.light = TH.light; COLORS.dark = TH.dark;
+  try { canvas.style.background = TH.bg; document.body.style.background = TH.bg; } catch (e) {}
   const spb = 60 / d.bpm;
   const queue = [];
 
@@ -362,10 +390,12 @@ function newGame(mode, diff) {
     shake: 0,                                       // screen-shake impulse
     bolts: [],                                      // lightning at high streaks
     milestone: null,                                // {text, life} streak callout
-    res: { perfect: 0, good: 0, miss: 0 },
+    res: { perfect: 0, great: 0, good: 0, miss: 0, early: 0, late: 0, offSum: 0, offCount: 0 },
     particles: [], floaters: [],
     flashSq: [],        // {x,y,color,t} brief square highlights
-    princess: { x: 0, y: 7, px: 0, py: 0, tx: 0, ty: 0 },
+    // dir: facing (-1 looks left, the render's natural way; +1 mirrors her right).
+    // dizzy: frames of whiplash spin. prevDx: last move's direction, for whiplash.
+    princess: { x: 0, y: 7, px: 0, py: 0, tx: 0, ty: 0, dir: -1, dizzy: 0, prevDx: 0 },
     lastHitTime: 0,
     running: false, finished: false,
   };
@@ -421,11 +451,27 @@ function update() {
     }
   });
 
+  // Missed pills slide down the tail, then tumble off the cliff (gravity + spin).
+  G.calls.forEach(c => {
+    if (c.status !== 'missed') return;
+    if (!c.falling) {
+      const x = HITX + (c.hitTime - now) * PXPS;
+      if (x <= CLIFF_X) {
+        c.falling = true;
+        c.fx = CLIFF_X; c.fy = TRACK_Y;
+        c.fvx = -1.3 - Math.random(); c.fvy = -2.4 - Math.random();   // a little hop, then drop
+        c.spin = 0; c.spinV = (Math.random() - 0.5) * 0.5;
+      }
+    } else {
+      c.fvy += 0.5; c.fx += c.fvx; c.fy += c.fvy; c.spin += c.spinV;
+    }
+  });
+
   // Resolve finished calls: a hit pill detonates at the gate and vanishes fast;
-  // a missed pill keeps gliding past the gate and slides off the tail to the left.
+  // a missed pill is dropped once it has fallen off the bottom of the cliff.
   G.calls = G.calls.filter(c => {
     if (c.status === 'hit') { c.fade -= 0.16; return c.fade > 0; }
-    if (c.status === 'missed') return HITX + (c.hitTime - now) * PXPS > TAIL_X - 40;
+    if (c.status === 'missed') return !c.falling || c.fy < H + 60;
     return true; // pending
   });
 
@@ -434,6 +480,11 @@ function update() {
   const tgt = boardCenter(pr.tx, pr.ty);
   pr.px += (tgt.x - pr.px) * 0.35;
   pr.py += (tgt.y - pr.py) * 0.35;
+  if (pr.dizzy > 0) pr.dizzy--;
+  // Look ahead: she turns to face the square of the next call still in flight.
+  let peek = null;
+  G.calls.forEach(c => { if (c.status === 'pending' && (!peek || c.hitTime < peek.hitTime)) peek = c; });
+  if (peek && !pr.dizzy) { if (peek.x > pr.tx) pr.dir = 1; else if (peek.x < pr.tx) pr.dir = -1; }
 
   // Particles
   G.particles = G.particles.filter(p => {
@@ -474,8 +525,8 @@ function checkMilestone(c) {
 // returns the actual points added after the combo multiplier, for the floater.
 function registerResult(kind, call, base) {
   let gained = 0;
-  if (kind === 'perfect' || kind === 'good') {
-    G.res[kind]++;
+  if (kind !== 'miss') {
+    G.res[kind] = (G.res[kind] || 0) + 1;   // perfect | great | good
     G.combo++;
     if (G.combo > G.maxCombo) G.maxCombo = G.combo;
     const mult = 1 + Math.min(G.combo, 20) * 0.05;
@@ -506,18 +557,22 @@ function resolveAt(sqx, sqy) {
   if (!best) return; // nothing to hit right now — no penalty
 
   if (best.x === sqx && best.y === sqy) {
-    // Points scale with timing: dead-on the gate = perfect (full value); early or
-    // late within the window scores progressively less the further off you are.
-    let kind, base, label;
+    // Four-band, timing-driven scoring. Dead-on the gate = Perfect; the rest of
+    // the window splits into Great / Good / Early·Late, each worth steadily less.
+    const dtSigned = now - best.hitTime;                          // + = late, − = early
+    const dir = dtSigned < 0 ? 'EARLY' : 'LATE';
+    let kind, base, label, color;
     if (bestDt <= G.perfectW) {
-      kind = 'perfect'; base = 100; label = 'PERFECT!';
+      kind = 'perfect'; base = 100; label = 'PERFECT!'; color = COLORS.good;
     } else {
-      kind = 'good';
-      const f = (bestDt - G.perfectW) / (G.goodW - G.perfectW); // 0 (snug) → 1 (edge)
-      base = Math.round(65 - f * 40);                           // 65 → 25
-      label = now < best.hitTime ? 'EARLY' : 'LATE';            // clicked before/after the gate
+      const f = (bestDt - G.perfectW) / (G.goodW - G.perfectW);   // 0 (snug) → 1 (edge)
+      if (f <= GREAT_RATIO)      { kind = 'great'; base = Math.round(82 - f * 30); label = 'GREAT · ' + dir; color = '#9bffd0'; }
+      else if (f <= GOOD_RATIO)  { kind = 'good';  base = Math.round(58 - f * 25); label = 'GOOD · ' + dir;  color = COLORS.gold; }
+      else                       { kind = 'good';  base = Math.round(34 - f * 12); label = dir;              color = '#ffb03a'; }
+      // Early/late tally + running timing offset, for the end-of-run report.
+      if (dtSigned < 0) G.res.early++; else G.res.late++;
     }
-    const color = kind === 'perfect' ? COLORS.good : COLORS.gold;
+    G.res.offSum += dtSigned; G.res.offCount++;
     best.status = 'hit';
     const gained = registerResult(kind, best, base);
     movePrincess(sqx, sqy);
@@ -525,7 +580,7 @@ function resolveAt(sqx, sqy) {
     gateExplode(HITX + (best.hitTime - now) * PXPS, color, kind === 'perfect'); // burst on the track
     flashSquare(sqx, sqy, kind === 'perfect' ? 'rgba(107,255,184,0.5)' : 'rgba(245,197,24,0.45)');
     floater(label + ' +' + gained, best, color);
-    sfx(kind);
+    sfx(kind === 'perfect' || kind === 'great' ? 'perfect' : 'good');
   } else {
     // Wrong square — miss, lose half-points, and reveal the correct one
     best.status = 'missed';
@@ -540,7 +595,21 @@ function resolveAt(sqx, sqy) {
   }
 }
 
-function movePrincess(x, y) { G.princess.tx = x; G.princess.ty = y; }
+function movePrincess(x, y) {
+  const pr = G.princess;
+  const dx = x - pr.tx;
+  if (dx !== 0) {
+    // Whiplash: a hard reverse across a big distance leaves her dizzy.
+    if (pr.prevDx && Math.sign(dx) !== Math.sign(pr.prevDx) && (Math.abs(dx) + Math.abs(pr.prevDx)) >= 9) {
+      pr.dizzy = Math.max(pr.dizzy, 90);
+      G.shake = Math.min(18, G.shake + 7);
+      floater('😵 whoa!', { x: x, y: y }, '#ffd166');
+    }
+    pr.prevDx = dx;
+    pr.dir = dx > 0 ? 1 : -1;   // face the way she just moved
+  }
+  pr.tx = x; pr.ty = y;
+}
 function flashSquare(x, y, color) { G.flashSq.push({ x, y, color, t: 22 }); }
 function floater(text, call, color) {
   const c = boardCenter(call.x, call.y);
@@ -659,18 +728,18 @@ function drawBoard() {
     ctx.fillRect(BX + s.x * TILE, BY + s.y * TILE, TILE, TILE);
   });
   // Grid lines + border
-  ctx.strokeStyle = 'rgba(245,197,24,0.10)';
+  ctx.strokeStyle = 'rgba(' + TH.rgb + ',0.10)';
   ctx.lineWidth = 0.5;
   for (let i = 0; i <= 8; i++) {
     ctx.beginPath(); ctx.moveTo(BX + i * TILE, BY); ctx.lineTo(BX + i * TILE, BY + BOARD); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(BX, BY + i * TILE); ctx.lineTo(BX + BOARD, BY + i * TILE); ctx.stroke();
   }
-  ctx.strokeStyle = 'rgba(245,197,24,0.4)';
+  ctx.strokeStyle = 'rgba(' + TH.rgb + ',0.4)';
   ctx.lineWidth = 1.5;
   ctx.strokeRect(BX, BY, BOARD, BOARD);
 
   // File / rank labels (the player's reading aid) — bold + brighter to find squares fast
-  ctx.fillStyle = 'rgba(245,197,24,0.7)';
+  ctx.fillStyle = 'rgba(' + TH.rgb + ',0.7)';
   ctx.font = 'bold 13px Courier New';
   ctx.textBaseline = 'alphabetic';
   const files = 'abcdefgh';
@@ -687,7 +756,7 @@ function drawTrack() {
   const heat = combo >= 15 ? 3 : combo >= 10 ? 2 : combo >= 3 ? 1 : 0;  // 0 calm·1 warm·2 electric·3 OVERLOAD
 
   // Track baseline — bold rhythm bar; vibrates and heats up with your streak
-  let by = TRACK_Y, lw = 8, col = 'rgba(245,197,24,0.9)', glow = 0;
+  let by = TRACK_Y, lw = 8, col = 'rgba(' + TH.rgb + ',0.9)', glow = 0;
   if (heat === 3) {
     // OVERLOAD: a thrashing, racing-rainbow electric bar
     by += (Math.random() - 0.5) * 9;
@@ -700,12 +769,25 @@ function drawTrack() {
     glow = heat === 2 ? 20 : 11;
     col = heat === 2 ? 'rgba(130,205,255,0.97)' : 'rgba(255,168,58,0.96)';
   }
-  // Tail — the dim run-off ramp left of the gate where missed calls slide away.
+  // Tail — the dim run-off ramp left of the gate, ending at a broken cliff edge
+  // where missed calls tumble into the void.
   ctx.save();
-  ctx.strokeStyle = 'rgba(255,107,107,0.30)';
+  ctx.strokeStyle = 'rgba(255,107,107,0.32)';
   ctx.lineWidth = 3; ctx.lineCap = 'round';
   ctx.setLineDash([5, 7]);
-  ctx.beginPath(); ctx.moveTo(TAIL_X, TRACK_Y); ctx.lineTo(HITX, TRACK_Y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(CLIFF_X, TRACK_Y); ctx.lineTo(HITX, TRACK_Y); ctx.stroke();
+  ctx.restore();
+  // The cliff: a jagged drop-off at CLIFF_X
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,107,107,0.7)';
+  ctx.lineWidth = 2; ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(CLIFF_X, TRACK_Y - 9);
+  ctx.lineTo(CLIFF_X, TRACK_Y + 4);
+  ctx.lineTo(CLIFF_X - 5, TRACK_Y + 10);
+  ctx.lineTo(CLIFF_X + 2, TRACK_Y + 16);
+  ctx.lineTo(CLIFF_X - 4, TRACK_Y + 23);
+  ctx.stroke();
   ctx.restore();
 
   ctx.save();
@@ -718,10 +800,10 @@ function drawTrack() {
   // Beat pulse at the gate
   const sinceBeat = G.running ? ((now - G.startTime) % G.spb) / G.spb : 0;
   const pulse = G.running ? (1 - Math.min(sinceBeat * 2, 1)) : 0;
-  ctx.strokeStyle = `rgba(245,197,24,${0.35 + 0.5 * pulse})`;
+  ctx.strokeStyle = 'rgba(' + TH.rgb + ',' + (0.35 + 0.5 * pulse) + ')';
   ctx.lineWidth = 2;
   ctx.beginPath(); ctx.arc(HITX, TRACK_Y, 17 + pulse * 5, 0, Math.PI * 2); ctx.stroke();
-  ctx.strokeStyle = 'rgba(245,197,24,0.25)';
+  ctx.strokeStyle = 'rgba(' + TH.rgb + ',0.25)';
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(HITX, TRACK_Y - 26); ctx.lineTo(HITX, TRACK_Y + 26); ctx.stroke();
 
@@ -735,7 +817,7 @@ function drawTrack() {
       const LEAD = 1.0, GATE_R = 16, MAX_EXTRA = 22;
       const ringR = GATE_R + Math.min(Math.max(delta, 0), LEAD) / LEAD * MAX_EXTRA;
       const within = Math.abs(delta) <= G.goodW;
-      ctx.strokeStyle = within ? 'rgba(107,255,184,0.95)' : 'rgba(245,197,24,0.55)';
+      ctx.strokeStyle = within ? 'rgba(107,255,184,0.95)' : 'rgba(' + TH.rgb + ',0.55)';
       ctx.lineWidth = within ? 3 : 2;
       ctx.beginPath(); ctx.arc(HITX, TRACK_Y, ringR, 0, Math.PI * 2); ctx.stroke();
     }
@@ -743,9 +825,10 @@ function drawTrack() {
 
   // Incoming calls — drawn as rounded "pills" sized to the notation text
   G.calls.forEach(c => {
-    const dx = (c.hitTime - now) * PXPS;
-    const x = HITX + dx;
-    if (x > W + 20 || x < -40) return;
+    const falling = c.status === 'missed' && c.falling;
+    const x = falling ? c.fx : HITX + (c.hitTime - now) * PXPS;
+    const y = falling ? c.fy : TRACK_Y;
+    if (!falling && (x > W + 20 || x < -40)) return;
     const dt = Math.abs(c.hitTime - now);
     const active = c.status === 'pending' && dt <= G.goodW;
 
@@ -756,31 +839,29 @@ function drawTrack() {
     const w = textW + padX * 2;
     const h = fontSize + 12;
 
-    // A hit pill pops larger as it detonates; a missed pill fades out as it
-    // reaches the end of the tail and slides off the left edge.
-    let scale = 1;
-    if (c.status === 'hit') scale = 1 + (1 - c.fade) * 0.6;
-    const missA = c.status === 'missed' ? Math.max(0, Math.min(1, (x - TAIL_X) / 64)) : 1;
+    // A hit pill pops larger as it detonates; a missed pill stays solid as it
+    // slides to the cliff, then fades as it tumbles into the void below.
+    let scale = 1, alpha = 1;
+    if (c.status === 'hit') { scale = 1 + (1 - c.fade) * 0.6; alpha = c.fade; }
+    else if (falling) alpha = Math.max(0, 1 - (c.fy - TRACK_Y) / (H - TRACK_Y));
 
-    let fill, stroke;
-    if (c.status === 'hit') { fill = 'rgba(107,255,184,'+(0.75*c.fade)+')'; stroke = 'rgba(107,255,184,'+c.fade+')'; }
-    else if (c.status === 'missed') { fill = 'rgba(255,107,107,'+(0.6*missA)+')'; stroke = 'rgba(255,107,107,'+missA+')'; }
-    else if (active) { fill = 'rgba(245,197,24,0.95)'; stroke = '#fff'; }
-    else { fill = '#2D1B69'; stroke = '#7a5fb0'; }
+    let fill, stroke, textColor;
+    if (c.status === 'hit') { fill = 'rgba(107,255,184,'+(0.75*alpha)+')'; stroke = 'rgba(107,255,184,'+alpha+')'; textColor = '#0c3d28'; }
+    else if (c.status === 'missed') { fill = 'rgba(255,107,107,'+(0.66*alpha)+')'; stroke = 'rgba(255,107,107,'+alpha+')'; textColor = 'rgba(255,255,255,'+alpha+')'; }
+    else if (active) { fill = 'rgba(' + TH.rgb + ',0.95)'; stroke = '#fff'; textColor = '#1a0f3d'; }
+    else { fill = COLORS.dark; stroke = '#7a5fb0'; textColor = COLORS.text; }
 
-    pill(x, TRACK_Y, w * scale, h * scale, h * scale / 2);
+    ctx.save();
+    ctx.translate(x, y);
+    if (falling) ctx.rotate(c.spin);
+    pill(0, 0, w * scale, h * scale, h * scale / 2);
     ctx.fillStyle = fill; ctx.fill();
     ctx.strokeStyle = stroke; ctx.lineWidth = active ? 2.5 : 1.5; ctx.stroke();
-
-    let textColor;
-    if (c.status === 'hit') textColor = '#0c3d28';
-    else if (c.status === 'missed') textColor = 'rgba(255,255,255,'+missA+')';
-    else if (active) textColor = '#1a0f3d';
-    else textColor = COLORS.text;
     ctx.fillStyle = textColor;
     ctx.font = 'bold ' + fontSize + 'px Courier New';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(c.san, x, TRACK_Y + 1);
+    ctx.fillText(c.san, 0, 1);
+    ctx.restore();
   });
 }
 
@@ -809,10 +890,18 @@ function drawPrincess() {
   const t = Date.now() / 600;
   const bob = Math.sin(t) * 1.5;
   const r = 17;
+  // When dizzy, she wobbles; otherwise she sits upright.
+  const tilt = pr.dizzy > 0 ? Math.sin(Date.now() / 70) * 0.35 * (pr.dizzy / 90) : 0;
 
   // Shadow
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
   ctx.beginPath(); ctx.ellipse(cx, cy + 15, 13, 5, 0, 0, Math.PI * 2); ctx.fill();
+
+  ctx.save();
+  ctx.translate(cx, cy + bob);
+  ctx.rotate(tilt);
+  // The 3D render faces left; mirror horizontally so she can look to her right.
+  if (pr.dir > 0) ctx.scale(-1, 1);
 
   if (princessImgReady) {
     // Circular avatar token of the 3D render (top-centred square crop)
@@ -820,19 +909,31 @@ function drawPrincess() {
     const s = Math.min(iw, ih);
     const sx = (iw - s) / 2, sy = 0;
     ctx.save();
-    ctx.beginPath(); ctx.arc(cx, cy + bob, r, 0, Math.PI * 2); ctx.closePath(); ctx.clip();
-    ctx.drawImage(princessImg, sx, sy, s, s, cx - r, cy + bob - r, r * 2, r * 2);
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.closePath(); ctx.clip();
+    ctx.drawImage(princessImg, sx, sy, s, s, -r, -r, r * 2, r * 2);
     ctx.restore();
-    // Gold ring
     ctx.strokeStyle = COLORS.gold; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(cx, cy + bob, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
   } else {
-    // Fallback token while the render loads
-    ctx.fillStyle = '#f0e6ff'; drawHex(cx, cy + bob, 15); ctx.fill();
-    ctx.strokeStyle = COLORS.gold; ctx.lineWidth = 1.5; drawHex(cx, cy + bob, 15); ctx.stroke();
+    ctx.fillStyle = '#f0e6ff'; drawHex(0, 0, 15); ctx.fill();
+    ctx.strokeStyle = COLORS.gold; ctx.lineWidth = 1.5; drawHex(0, 0, 15); ctx.stroke();
     ctx.fillStyle = COLORS.gold;
     ctx.font = 'bold 12px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('♞', cx, cy + bob);
+    ctx.fillText('♞', 0, 0);
+  }
+  ctx.restore();
+
+  // Dizzy stars orbiting her head after a whiplash swing
+  if (pr.dizzy > 0) {
+    const a = Date.now() / 110;
+    ctx.fillStyle = '#ffd166';
+    ctx.font = '12px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (let i = 0; i < 3; i++) {
+      const ang = a + i * (Math.PI * 2 / 3);
+      ctx.globalAlpha = Math.min(1, pr.dizzy / 90);
+      ctx.fillText('✦', cx + Math.cos(ang) * 15, cy + bob - r - 2 + Math.sin(ang) * 5);
+    }
+    ctx.globalAlpha = 1;
   }
 }
 
@@ -889,7 +990,7 @@ function drawHUD() {
   }
 
   // Progress (top-right)
-  const done = G.res.perfect + G.res.good + G.res.miss;
+  const done = G.res.perfect + G.res.great + G.res.good + G.res.miss;
   ctx.fillStyle = COLORS.muted;
   ctx.font = '11px Courier New';
   ctx.textAlign = 'right';
@@ -922,7 +1023,7 @@ function drawHUD() {
   const now = nowSec();
   if (G.running && now < G.startTime + G.countIn * G.spb) {
     const beatsLeft = Math.ceil((G.startTime + G.countIn * G.spb - now) / G.spb);
-    ctx.fillStyle = 'rgba(245,197,24,0.85)';
+    ctx.fillStyle = 'rgba(' + TH.rgb + ',0.85)';
     ctx.font = 'bold 30px Courier New';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(beatsLeft > 0 ? beatsLeft : 'GO', W / 2, BY + BOARD / 2);
@@ -959,6 +1060,7 @@ document.getElementById('diff-row').addEventListener('click', e => {
   const b = e.target.closest('[data-diff]'); if (!b) return;
   selDiff = b.dataset.diff;
   document.querySelectorAll('#diff-row .pick').forEach(p => p.classList.toggle('sel', p === b));
+  newGame(selMode, selDiff);   // re-theme the preview board behind the title to this tempo
   updateTitleBest();
 });
 
@@ -982,6 +1084,7 @@ document.getElementById('replay-btn').addEventListener('click', begin);
 document.getElementById('menu-btn').addEventListener('click', () => {
   document.getElementById('results-screen').classList.add('hidden');
   document.getElementById('title-screen').classList.remove('hidden');
+  newGame(selMode, selDiff);   // reset the idle preview board to the selected tempo
 });
 
 function finish() {
@@ -989,7 +1092,8 @@ function finish() {
   G.finished = true;
   const r = G.res;
   const total = G.total;
-  const accVal = total > 0 ? (r.perfect + r.good * 0.5) / total : 0;
+  // Quality-weighted accuracy: Perfect counts full, Great most, Good half.
+  const accVal = total > 0 ? (r.perfect + r.great * 0.8 + r.good * 0.5) / total : 0;
   const acc = Math.round(accVal * 100);
   let rank, color;
   if (r.miss === 0 && accVal >= 0.97) { rank = 'S'; color = '#6bffb8'; }
@@ -1008,8 +1112,20 @@ function finish() {
   document.getElementById('res-acc').textContent = acc + '%';
   document.getElementById('res-combo').textContent = G.maxCombo + '×';
   document.getElementById('res-perfect').textContent = r.perfect;
+  document.getElementById('res-great').textContent = r.great;
   document.getElementById('res-good').textContent = r.good;
   document.getElementById('res-miss').textContent = r.miss;
+
+  // Early / late breakdown + average timing offset (ms, + = late).
+  document.getElementById('res-early').textContent = r.early;
+  document.getElementById('res-late').textContent = r.late;
+  const avgMs = r.offCount ? Math.round(r.offSum / r.offCount * 1000) : 0;
+  let timing;
+  if (!r.offCount) timing = '—';
+  else if (Math.abs(avgMs) <= 12) timing = 'dead-on (' + (avgMs >= 0 ? '+' : '') + avgMs + 'ms)';
+  else if (avgMs > 0) timing = '+' + avgMs + 'ms · tend LATE';
+  else timing = avgMs + 'ms · tend EARLY';
+  document.getElementById('res-timing').textContent = timing;
 
   // Personal best (per mode + tempo)
   const bests = loadBests();
