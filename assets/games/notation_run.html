@@ -227,7 +227,8 @@ const TILE = 46;
 const BOARD = TILE * 8;            // 368
 const BX = (W - BOARD) / 2;        // 56
 const BY = 124;                    // board top
-const HITX = 64;                   // gate x on the track
+const HITX = 150;                  // gate x — pulled toward center, leaving a tail to its left
+const TAIL_X = 8;                  // left end of the track; missed calls slide off down the tail
 const TRACK_Y = 80;                // center of the rhythm track
 const APPROACH = 3.0;              // seconds a call is visible before its hit
 const PXPS = (W - 14 - HITX) / APPROACH; // px per second the calls travel
@@ -420,10 +421,12 @@ function update() {
     }
   });
 
-  // Drop fully faded, resolved calls
+  // Resolve finished calls: a hit pill detonates at the gate and vanishes fast;
+  // a missed pill keeps gliding past the gate and slides off the tail to the left.
   G.calls = G.calls.filter(c => {
-    if (c.status !== 'pending') { c.fade -= 0.06; return c.fade > 0; }
-    return true;
+    if (c.status === 'hit') { c.fade -= 0.16; return c.fade > 0; }
+    if (c.status === 'missed') return HITX + (c.hitTime - now) * PXPS > TAIL_X - 40;
+    return true; // pending
   });
 
   // Princess glide
@@ -467,13 +470,17 @@ function checkMilestone(c) {
   }
 }
 
-function registerResult(kind, call) {
+// `base` is the timing-scaled point value (perfect = full, early/late = less);
+// returns the actual points added after the combo multiplier, for the floater.
+function registerResult(kind, call, base) {
+  let gained = 0;
   if (kind === 'perfect' || kind === 'good') {
     G.res[kind]++;
     G.combo++;
     if (G.combo > G.maxCombo) G.maxCombo = G.combo;
     const mult = 1 + Math.min(G.combo, 20) * 0.05;
-    G.score += Math.round((kind === 'perfect' ? 100 : 55) * mult);
+    gained = Math.round(base * mult);
+    G.score += gained;
     G.scorePulse = 1;
     if (G.combo >= 3) G.shake = Math.min(G.combo >= 15 ? 19 : 11, 2 + G.combo * 0.5);
     checkMilestone(G.combo);
@@ -482,6 +489,7 @@ function registerResult(kind, call) {
     G.combo = 0;
   }
   G.lastHitTime = Math.max(G.lastHitTime, nowSec());
+  return gained;
 }
 
 // ---- Input handling ----
@@ -498,13 +506,25 @@ function resolveAt(sqx, sqy) {
   if (!best) return; // nothing to hit right now — no penalty
 
   if (best.x === sqx && best.y === sqy) {
-    const kind = bestDt <= G.perfectW ? 'perfect' : 'good';
+    // Points scale with timing: dead-on the gate = perfect (full value); early or
+    // late within the window scores progressively less the further off you are.
+    let kind, base, label;
+    if (bestDt <= G.perfectW) {
+      kind = 'perfect'; base = 100; label = 'PERFECT!';
+    } else {
+      kind = 'good';
+      const f = (bestDt - G.perfectW) / (G.goodW - G.perfectW); // 0 (snug) → 1 (edge)
+      base = Math.round(65 - f * 40);                           // 65 → 25
+      label = now < best.hitTime ? 'EARLY' : 'LATE';            // clicked before/after the gate
+    }
+    const color = kind === 'perfect' ? COLORS.good : COLORS.gold;
     best.status = 'hit';
-    registerResult(kind, best);
+    const gained = registerResult(kind, best, base);
     movePrincess(sqx, sqy);
-    popParticles(sqx, sqy, kind === 'perfect' ? COLORS.good : COLORS.gold);
+    popParticles(sqx, sqy, color);
+    gateExplode(HITX + (best.hitTime - now) * PXPS, color, kind === 'perfect'); // burst on the track
     flashSquare(sqx, sqy, kind === 'perfect' ? 'rgba(107,255,184,0.5)' : 'rgba(245,197,24,0.45)');
-    floater(kind === 'perfect' ? 'PERFECT!' : 'GOOD', best, kind === 'perfect' ? COLORS.good : COLORS.gold);
+    floater(label + ' +' + gained, best, color);
     sfx(kind);
   } else {
     // Wrong square — miss, lose half-points, and reveal the correct one
@@ -532,6 +552,15 @@ function popParticles(x, y, color) {
     const a = (Math.PI * 2 * i) / 12 + Math.random() * 0.4;
     const s = 1.5 + Math.random() * 2.5;
     G.particles.push({ x: c.x, y: c.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1, life: 24 + Math.random() * 12, color });
+  }
+}
+// A burst on the rhythm track where a correctly-clicked call is detonated.
+function gateExplode(px, color, big) {
+  const n = big ? 22 : 14;
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const s = (big ? 2.5 : 1.8) + Math.random() * (big ? 4 : 3);
+    G.particles.push({ x: px, y: TRACK_Y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 20 + Math.random() * 16, color });
   }
 }
 
@@ -671,6 +700,14 @@ function drawTrack() {
     glow = heat === 2 ? 20 : 11;
     col = heat === 2 ? 'rgba(130,205,255,0.97)' : 'rgba(255,168,58,0.96)';
   }
+  // Tail — the dim run-off ramp left of the gate where missed calls slide away.
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,107,107,0.30)';
+  ctx.lineWidth = 3; ctx.lineCap = 'round';
+  ctx.setLineDash([5, 7]);
+  ctx.beginPath(); ctx.moveTo(TAIL_X, TRACK_Y); ctx.lineTo(HITX, TRACK_Y); ctx.stroke();
+  ctx.restore();
+
   ctx.save();
   if (glow) { ctx.shadowColor = col; ctx.shadowBlur = glow; }
   ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.lineCap = 'round';
@@ -719,19 +756,25 @@ function drawTrack() {
     const w = textW + padX * 2;
     const h = fontSize + 12;
 
+    // A hit pill pops larger as it detonates; a missed pill fades out as it
+    // reaches the end of the tail and slides off the left edge.
+    let scale = 1;
+    if (c.status === 'hit') scale = 1 + (1 - c.fade) * 0.6;
+    const missA = c.status === 'missed' ? Math.max(0, Math.min(1, (x - TAIL_X) / 64)) : 1;
+
     let fill, stroke;
     if (c.status === 'hit') { fill = 'rgba(107,255,184,'+(0.75*c.fade)+')'; stroke = 'rgba(107,255,184,'+c.fade+')'; }
-    else if (c.status === 'missed') { fill = 'rgba(255,107,107,'+(0.6*c.fade)+')'; stroke = 'rgba(255,107,107,'+c.fade+')'; }
+    else if (c.status === 'missed') { fill = 'rgba(255,107,107,'+(0.6*missA)+')'; stroke = 'rgba(255,107,107,'+missA+')'; }
     else if (active) { fill = 'rgba(245,197,24,0.95)'; stroke = '#fff'; }
     else { fill = '#2D1B69'; stroke = '#7a5fb0'; }
 
-    pill(x, TRACK_Y, w, h, h / 2);
+    pill(x, TRACK_Y, w * scale, h * scale, h * scale / 2);
     ctx.fillStyle = fill; ctx.fill();
     ctx.strokeStyle = stroke; ctx.lineWidth = active ? 2.5 : 1.5; ctx.stroke();
 
     let textColor;
     if (c.status === 'hit') textColor = '#0c3d28';
-    else if (c.status === 'missed') textColor = '#fff';
+    else if (c.status === 'missed') textColor = 'rgba(255,255,255,'+missA+')';
     else if (active) textColor = '#1a0f3d';
     else textColor = COLORS.text;
     ctx.fillStyle = textColor;
