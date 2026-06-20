@@ -3,29 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Siege on Chess City</title>
+<title>PJCC: Siege on Chess City v2.0</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   :root { --gold:#F5C518; --pink:#ff8fd0; --light:#3d2a7a; --dark:#2D1B69; --ink:#f0e6ff; --good:#6bffb8; --bad:#ff6b6b; }
-  html, body { background: #120a28; color: var(--ink);
-    font-family: 'Trebuchet MS','Segoe UI',sans-serif; -webkit-tap-highlight-color: transparent; }
+  html, body { background: #120a28; color: var(--ink); font-family: 'Trebuchet MS','Segoe UI',sans-serif;
+    -webkit-tap-highlight-color: transparent; }
   body { display: flex; align-items: flex-start; justify-content: center; min-height: 0; padding: 8px; }
-  #wrap { width: 100%; max-width: 720px; }
+  #wrap { width: 100%; max-width: 880px; position: relative; }
 
-  .hud { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
+  .hud { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
   .stat { background: #1d1140; border: 1px solid #4a3a86; border-radius: 8px; padding: 5px 11px; font-size: 14px; font-weight: bold; }
   .stat .lbl { color: #9a7fd4; font-weight: normal; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-right: 5px; }
   .stat.gold b { color: var(--gold); } .stat.lives b { color: var(--pink); } .stat.wave b { color: var(--good); }
   .stat.score b { color: #9ad0ff; }
   .hud .spacer { flex: 1; }
+  .hud .mini { background:#2a1a5e; border:1px solid #6b5fa0; color:#c9a7ff; border-radius:8px; padding:5px 10px; font-size:12px; font-weight:bold; cursor:pointer; font-family:inherit; }
 
   .stage { position: relative; width: 100%; }
   canvas { display: block; width: 100%; height: auto; aspect-ratio: 660 / 396;
-    background: #160c33; border: 2px solid var(--gold); border-radius: 8px; touch-action: manipulation; cursor: pointer; }
+    background: #160c33; border: 2px solid var(--gold); border-radius: 8px; touch-action: none; cursor: crosshair; }
 
-  /* decree charge bar */
   .decree-row { display: flex; align-items: center; gap: 8px; margin-top: 7px; }
   .decree-meter { flex: 1; height: 14px; background: #1d1140; border: 1px solid #4a3a86; border-radius: 999px; overflow: hidden; }
   .decree-fill { height: 100%; width: 0%; background: linear-gradient(90deg,#ff8fd0,#F5C518); transition: width 0.2s; }
@@ -35,14 +35,13 @@
     box-shadow: 0 0 14px rgba(245,197,24,0.6); animation: decreePulse 1.1s ease-in-out infinite; }
   @keyframes decreePulse { 0%,100% { box-shadow: 0 0 10px rgba(245,197,24,0.5); } 50% { box-shadow: 0 0 20px rgba(245,197,24,0.9); } }
 
-  .shop { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 9px; }
+  .shop { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 9px; }
   .twr { background: #1d1140; border: 1px solid #4a3a86; border-radius: 9px; padding: 7px 4px 6px; text-align: center;
     cursor: pointer; transition: border-color 0.12s, background 0.12s; user-select: none; }
   .twr:hover { border-color: #7a68c0; }
   .twr.sel { border-color: var(--gold); background: #2a1a5e; box-shadow: 0 0 10px rgba(245,197,24,0.35); }
-  .twr.cant { opacity: 0.45; }
-  .twr .g { font-size: 22px; line-height: 1; color: var(--gold); }
-  .twr .nm { font-size: 10px; font-weight: bold; margin-top: 2px; letter-spacing: 0.3px; }
+  .twr.cant { opacity: 0.45; } .twr.locked { opacity: 0.4; }
+  .twr .g { font-size: 22px; line-height: 1; } .twr .nm { font-size: 10px; font-weight: bold; margin-top: 2px; letter-spacing: 0.2px; }
   .twr .ct { font-size: 11px; color: var(--good); margin-top: 1px; }
 
   .actions { display: flex; gap: 8px; margin-top: 9px; flex-wrap: wrap; align-items: center; }
@@ -50,34 +49,73 @@
     padding: 8px 16px; font-size: 13px; font-weight: bold; cursor: pointer; font-family: inherit; }
   button.act.primary { background: var(--gold); color: #1a0f3d; border-color: var(--gold); }
   button.act:hover { border-color: var(--gold); }
-  button.act:disabled { opacity: 0.45; cursor: default; }
   .hint { font-size: 12px; color: #9a7fd4; }
 
-  /* tower inspector popup */
   .insp { position: absolute; background: #221346; border: 1px solid var(--gold); border-radius: 10px; padding: 10px;
-    width: 160px; z-index: 10; box-shadow: 0 6px 24px rgba(0,0,0,0.5); font-size: 12px; }
+    width: 168px; z-index: 12; box-shadow: 0 6px 24px rgba(0,0,0,0.5); font-size: 12px; }
   .insp .ih { font-weight: bold; color: var(--gold); font-size: 13px; margin-bottom: 4px; }
   .insp .irow { color: #c9a7ff; margin: 1px 0; }
+  .insp .tgt { display:flex; gap:4px; margin-top:6px; }
+  .insp .tgt button { flex:1; padding:4px 0; font-size:10px; border-radius:6px; border:1px solid #6b5fa0; background:#2a1a5e; color:#c9a7ff; cursor:pointer; font-family:inherit; }
+  .insp .tgt button.on { background:var(--gold); color:#1a0f3d; border-color:var(--gold); }
   .insp .ibtns { display: flex; gap: 6px; margin-top: 8px; }
-  .insp button { flex: 1; border-radius: 7px; padding: 6px 4px; font-size: 11px; font-weight: bold; cursor: pointer;
+  .insp .ibtns button { flex: 1; border-radius: 7px; padding: 6px 4px; font-size: 11px; font-weight: bold; cursor: pointer;
     border: 1px solid #6b5fa0; background: var(--dark); color: var(--ink); font-family: inherit; }
   .insp button.up { background: var(--good); color: #07321f; border-color: var(--good); }
   .insp button.sell { background: #3a1530; color: #ff9ec9; border-color: #7a3060; }
   .insp button:disabled { opacity: 0.4; cursor: default; }
 
-  .overlay { position: absolute; inset: 0; background: rgba(15,9,30,0.94); display: flex; flex-direction: column;
-    align-items: center; justify-content: center; text-align: center; padding: 22px; z-index: 20; border-radius: 8px; }
-  .overlay.hidden { display: none; }
-  .overlay h1 { color: var(--gold); font-size: clamp(22px,5vw,32px); margin-bottom: 8px; letter-spacing: 1px; }
-  .overlay p { color: #c9a7ff; max-width: 420px; line-height: 1.55; margin-bottom: 8px; font-size: 14px; }
-  .overlay .big { color: var(--good); font-size: 18px; font-weight: bold; }
-  .overlay button { margin-top: 14px; background: var(--gold); color: #1a0f3d; border: none; border-radius: 999px;
-    padding: 11px 26px; font-size: 15px; font-weight: 800; cursor: pointer; font-family: inherit; }
-  .banner { position: absolute; left: 50%; top: 14%; transform: translateX(-50%); text-align: center; z-index: 8;
-    pointer-events: none; opacity: 0; transition: opacity 0.4s; }
+  .banner { position: absolute; left: 50%; top: 12%; transform: translateX(-50%); text-align: center; z-index: 8; pointer-events: none; opacity: 0; transition: opacity 0.4s; }
   .banner.show { opacity: 1; }
   .banner .b1 { color: var(--gold); font-size: 12px; letter-spacing: 3px; text-transform: uppercase; }
   .banner .b2 { color: var(--ink); font-size: clamp(18px,4vw,26px); font-weight: 800; text-shadow: 0 2px 6px #000; }
+
+  /* ===== Full-screen menus ===== */
+  .screen { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center;
+    justify-content: flex-start; padding: 22px 16px 30px; overflow-y: auto; text-align: center;
+    background: radial-gradient(circle at 50% 18%, #241452 0%, #0d0722 80%); }
+  .screen.hidden { display: none; }
+  .screen h1 { color: var(--gold); font-size: clamp(24px,6vw,40px); letter-spacing: 2px; text-shadow: 0 3px 0 #6a4400, 0 0 26px rgba(245,197,24,0.5); }
+  .screen .sub { color: #c9a7ff; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+  .screen p { color: #c9a7ff; max-width: 460px; line-height: 1.55; margin: 6px 0; font-size: 14px; }
+  .coins { background:#1d1140; border:1px solid var(--gold); border-radius:999px; padding:6px 16px; font-weight:800; color:var(--gold); margin:8px 0 4px; }
+  .coins span { color:#9a7fd4; font-weight:normal; font-size:12px; }
+  .menu-btns { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-top:14px; }
+  .big-btn { background: var(--gold); color:#1a0f3d; border:none; border-radius:12px; padding:14px 30px; font-size:17px; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 4px 0 #8a6f00; }
+  .big-btn:active { transform: translateY(3px); box-shadow:0 1px 0 #8a6f00; }
+  .big-btn.ghost { background:#2a1a5e; color:#c9a7ff; box-shadow:0 4px 0 #160a36; }
+
+  .map-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; max-width:680px; width:100%; margin-top:10px; }
+  .map-card { background:#1a1040; border:2px solid #4a3a86; border-radius:12px; padding:14px; text-align:left; cursor:pointer; position:relative; overflow:hidden; transition:border-color .12s, transform .08s; }
+  .map-card:hover { border-color:var(--gold); } .map-card:active { transform:translateY(2px); }
+  .map-card.locked { opacity:0.55; cursor:not-allowed; }
+  .map-card .mt { font-weight:900; color:var(--ink); font-size:16px; }
+  .map-card .md { font-size:11px; letter-spacing:1px; text-transform:uppercase; margin:2px 0 6px; }
+  .map-card .mdesc { font-size:12px; color:#b9a8e6; line-height:1.4; }
+  .map-card .beat { position:absolute; top:8px; right:10px; color:var(--good); font-size:12px; font-weight:800; }
+  .map-card .lk { position:absolute; top:8px; right:10px; font-size:16px; }
+  .d-easy{color:#6bffb8} .d-med{color:#F5C518} .d-hard{color:#ff8fd0} .d-vhard{color:#ff6b6b}
+
+  .shop-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; max-width:680px; width:100%; margin-top:8px; }
+  .up-card { background:#1a1040; border:1px solid #4a3a86; border-radius:10px; padding:12px; text-align:left; }
+  .up-card .un { font-weight:800; color:var(--gold); font-size:14px; }
+  .up-card .ud { font-size:12px; color:#b9a8e6; margin:3px 0 7px; line-height:1.35; }
+  .up-card .pips { display:flex; gap:3px; margin-bottom:7px; }
+  .up-card .pip { width:14px; height:6px; border-radius:3px; background:#3a2a6a; } .up-card .pip.on { background:var(--good); }
+  .up-card button { width:100%; background:var(--gold); color:#1a0f3d; border:none; border-radius:8px; padding:8px; font-weight:800; cursor:pointer; font-family:inherit; }
+  .up-card button:disabled { background:#3a2a6a; color:#7a6aae; cursor:default; }
+  .shop-deco { font-size:40px; margin:2px 0; letter-spacing:6px; }
+
+  .overlay { position: absolute; inset: 0; background: rgba(15,9,30,0.94); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; padding: 22px; z-index: 20; border-radius: 8px; }
+  .overlay.hidden { display: none; }
+  .overlay h1 { color: var(--gold); font-size: clamp(20px,5vw,30px); margin-bottom: 8px; letter-spacing: 1px; }
+  .overlay p { color: #c9a7ff; max-width: 440px; line-height: 1.55; margin-bottom: 8px; font-size: 14px; }
+  .overlay .big { color: var(--good); font-size: 17px; font-weight: bold; }
+  .overlay .row2 { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:12px; }
+  .overlay button { background: var(--gold); color: #1a0f3d; border: none; border-radius: 999px;
+    padding: 11px 24px; font-size: 15px; font-weight: 800; cursor: pointer; font-family: inherit; }
+  .overlay button.ghost { background:#2a1a5e; color:#c9a7ff; }
 </style>
 </head>
 <body>
@@ -88,16 +126,20 @@
     <span class="stat wave"><span class="lbl">Wave</span><b id="s-wave">0</b>/<span id="s-wmax">0</span></span>
     <span class="spacer"></span>
     <span class="stat score"><span class="lbl">Score</span><b id="s-score">0</b></span>
+    <button class="mini" id="menu-back">☰ Menu</button>
   </div>
 
   <div class="stage" id="stage">
     <canvas id="cv" width="660" height="396"></canvas>
-    <div class="banner" id="banner"><div class="b1" id="banner1">Dead Drop</div><div class="b2" id="banner2"></div></div>
-    <div class="overlay" id="ovl">
-      <h1 id="ovl-title">SIEGE ON CHESS CITY</h1>
-      <p id="ovl-msg">The CEO is marching his pieces down the Journey road toward Chess City. Build a line of defenders, hold every wave, and protect the gates.</p>
+    <div class="banner" id="banner"><div class="b1" id="banner1"></div><div class="b2" id="banner2"></div></div>
+    <div class="overlay hidden" id="ovl">
+      <h1 id="ovl-title"></h1>
+      <p id="ovl-msg"></p>
       <p id="ovl-extra" class="big"></p>
-      <button id="ovl-btn">Begin the siege</button>
+      <div class="row2">
+        <button id="ovl-btn">Play again</button>
+        <button id="ovl-menu" class="ghost">Menu</button>
+      </div>
     </div>
   </div>
 
@@ -107,13 +149,44 @@
     <button class="decree-btn" id="decree-btn">Royal Decree</button>
   </div>
 
-  <div class="shop" id="shop"></div>
+  <div class="shop" id="rack"></div>
 
   <div class="actions">
     <button class="act primary" id="send-btn">Send next wave</button>
     <button class="act" id="speed-btn">Speed ▶▶ 1×</button>
-    <span class="hint" id="hint">Pick a defender, then tap a tile to build. Tap a tower to upgrade or sell.</span>
+    <span class="hint" id="hint">Pick a defender, then place it beside the road.</span>
   </div>
+</div>
+
+<!-- MENU -->
+<div class="screen" id="scr-menu">
+  <div class="sub">Princess defends</div>
+  <h1>SIEGE ON CHESS CITY</h1>
+  <p>The CEO marches his pieces down the Journey road. Build a line of defenders, hold every wave, and protect the gates of <b style="color:var(--gold)">Chess City</b>.</p>
+  <div class="coins">🪙 <b id="m-coins">0</b> <span>City Crowns</span></div>
+  <div class="menu-btns">
+    <button class="big-btn" id="m-play">▶ Play</button>
+    <button class="big-btn ghost" id="m-shop">🏛 Shop</button>
+  </div>
+</div>
+
+<!-- MAP SELECT -->
+<div class="screen hidden" id="scr-maps">
+  <div class="sub">Choose your stand</div>
+  <h1>The Campaign</h1>
+  <p>Each front is harder than the last — beat one to unlock the next.</p>
+  <div class="map-grid" id="map-grid"></div>
+  <div class="menu-btns"><button class="big-btn ghost" id="maps-back">◂ Back</button></div>
+</div>
+
+<!-- SHOP -->
+<div class="screen hidden" id="scr-shop">
+  <div class="sub">Chess City Quartermaster</div>
+  <h1>🏛 The Shop</h1>
+  <div class="shop-deco">♜ ♞ ♝ ♛ ♚</div>
+  <div class="coins">🪙 <b id="sh-coins">0</b> <span>City Crowns — earned every siege, spent on permanent upgrades</span></div>
+  <div class="shop-grid" id="shop-grid"></div>
+  <div class="menu-btns"><button class="big-btn ghost" id="shop-back">◂ Back</button></div>
 </div>
 
 <script>
@@ -122,533 +195,589 @@
 var cv = document.getElementById('cv');
 var ctx = cv.getContext('2d');
 var W = 660, H = 396, CELL = 44, COLS = 15, ROWS = 9;
-
-// ---- the Journey road: waypoints in cell (col,row) coordinates ----
-var WAY = [[0,4],[3,4],[3,1],[7,1],[7,7],[11,7],[11,4],[14,4]];
-function cellCenter(c, r) { return { x: c * CELL + CELL / 2, y: r * CELL + CELL / 2 }; }
-var PATH = WAY.map(function (w) { return cellCenter(w[0], w[1]); });
-
-// mark path cells (so they can't be built on)
-var blocked = {};
 function key(c, r) { return c + ',' + r; }
-for (var i = 0; i < WAY.length - 1; i++) {
-  var a = WAY[i], b = WAY[i + 1];
-  var dc = Math.sign(b[0] - a[0]), dr = Math.sign(b[1] - a[1]);
-  var c = a[0], r = a[1];
-  blocked[key(c, r)] = true;
-  while (c !== b[0] || r !== b[1]) { c += dc; r += dr; blocked[key(c, r)] = true; }
+function cellCenter(c, r) { return { x: c * CELL + CELL / 2, y: r * CELL + CELL / 2 }; }
+
+/* ============ persistent meta (coins + upgrades + maps beaten) ============ */
+var METAKEY = 'pjcc.siege.v2';
+var META = loadMeta();
+function loadMeta() {
+  try { var m = JSON.parse(localStorage.getItem(METAKEY)); if (m && m.up) return m; } catch (e) {}
+  return { coins: 0, up: { gold0: 0, heart0: 0, power: 0, thrift: 0, decree: 0, louie: 0 }, beaten: {} };
 }
+function saveMeta() { try { localStorage.setItem(METAKEY, JSON.stringify(META)); } catch (e) {} }
 
-// ---- tower catalogue (PJCC defenders) ----
+var UPGRADES = [
+  { id: 'gold0', name: 'War Chest', max: 4, costs: [30,60,100,150], desc: '+40 starting gold each level.' },
+  { id: 'heart0', name: 'City Walls', max: 3, costs: [40,90,150], desc: '+10 starting city hearts each level.' },
+  { id: 'power', name: 'Forged Arms', max: 5, costs: [35,60,90,130,180], desc: '+8% tower damage each level.' },
+  { id: 'thrift', name: 'Guild Rates', max: 4, costs: [40,75,120,180], desc: '−5% tower build cost each level.' },
+  { id: 'decree', name: "Queen's Favor", max: 3, costs: [45,90,150], desc: 'Royal Decree charges +20% faster each level.' },
+  { id: 'louie', name: 'Recruit Louie', max: 1, costs: [120], desc: 'Unlocks 💣 Louie the Bomber — lobbed splash that clears packs.' }
+];
+function upCost(u) { return u.costs[META.up[u.id]]; }
+
+/* ============ tower catalogue ============ */
 var TOWERS = {
-  pawn:   { name: 'Pawn Picket', glyph: '♙', cost: 50,  range: 92,  dmg: 8,  rate: 0.55, splash: 0,  color: '#dfe6ff', lore: 'Checker Town conscripts. Cheap, quick, everywhere.' },
-  knight: { name: 'Argus Outpost', glyph: '♘', cost: 110, range: 96, dmg: 13, rate: 1.05, splash: 46, color: '#8fe3ff', lore: "Argus the guard-dog's kennel — hits the whole pack at once." },
-  bishop: { name: 'Bishop Spire', glyph: '♗', cost: 130, range: 170, dmg: 27, rate: 1.3,  splash: 0,  color: '#c79bff', lore: 'A long diagonal sightline. Picks off runners from afar.' },
-  rook:   { name: 'Rook Bastion', glyph: '♖', cost: 165, range: 124, dmg: 58, rate: 1.85, splash: 0,  color: '#ffb066', lore: 'Castle-wall firepower. Slow, but it flattens tanks.' },
-  queen:  { name: "Queen's Guard", glyph: '♕', cost: 285, range: 150, dmg: 30, rate: 0.7,  splash: 42, color: '#ff8fd0', lore: 'The royal escort: fast, far, and splashes. Premium.' }
+  pawn:   { name: 'Pawn Picket', glyph: '♙', cost: 50,  range: 92,  dmg: 8,  rate: 0.55, splash: 0,  color: '#dfe6ff', free:false, sniper:false, lore: 'Checker Town conscripts. Cheap, quick, everywhere.' },
+  knight: { name: 'Argus Outpost', glyph: '♘', cost: 110, range: 96, dmg: 13, rate: 1.05, splash: 46, color: '#8fe3ff', free:false, sniper:false, lore: "Argus the guard-dog's kennel — splashes the whole pack." },
+  louie:  { name: 'Louie the Bomber', glyph: '💣', cost: 150, range: 132, dmg: 40, rate: 2.0, splash: 70, color: '#ffd36b', free:false, sniper:false, lob:true, lore: 'Louie swears he is a pawn. He is, in fact, a bomb. Huge splash, slow fuse.' },
+  bishop: { name: 'Bishop Sniper', glyph: '♗', cost: 150, range: 250, dmg: 70, rate: 2.2, splash: 0, color: '#c79bff', free:true, sniper:true, lore: 'A diagonal sightline that never ends. Place him anywhere with a clear view — one shot, one runner.' },
+  rook:   { name: 'Rook Bastion', glyph: '♖', cost: 175, range: 124, dmg: 60, rate: 1.85, splash: 0, color: '#ffb066', free:false, sniper:false, lore: 'Castle-wall firepower. Slow, but it flattens tanks.' },
+  queen:  { name: "Queen's Guard", glyph: '♕', cost: 300, range: 150, dmg: 32, rate: 0.7, splash: 42, color: '#ff8fd0', free:false, sniper:false, lore: 'The royal escort: fast, far, and splashes. Premium.' }
 };
-var ORDER = ['pawn', 'knight', 'bishop', 'rook', 'queen'];
+function towerOrder() { var o = ['pawn','knight','rook','bishop','queen']; if (META.up.louie) o.splice(2,0,'louie'); return o; }
 
-// ---- enemy types (the CEO's army) ----
+/* ============ enemies ============ */
 var FOES = {
   pawn:   { glyph: '♟', hp: 32,  spd: 56, reward: 6,  color: '#b9a8e6', leak: 1 },
-  bishop: { glyph: '♝', hp: 46,  spd: 82, reward: 9,  color: '#c79bff', leak: 1 },
-  knight: { glyph: '♞', hp: 62,  spd: 98, reward: 11, color: '#8fe3ff', leak: 1 },
-  rook:   { glyph: '♜', hp: 150, spd: 46, reward: 19, color: '#ffb066', leak: 2 },
-  queen:  { glyph: '♛', hp: 320, spd: 56, reward: 42, color: '#ff8fd0', leak: 4 },
-  king:   { glyph: '♚', hp: 1700, spd: 40, reward: 300, color: '#F5C518', leak: 12, boss: true }
+  bishop: { glyph: '♝', hp: 46,  spd: 84, reward: 9,  color: '#c79bff', leak: 1 },
+  knight: { glyph: '♞', hp: 64,  spd: 100, reward: 11, color: '#8fe3ff', leak: 1 },
+  rook:   { glyph: '♜', hp: 160, spd: 46, reward: 19, color: '#ffb066', leak: 2 },
+  queen:  { glyph: '♛', hp: 340, spd: 58, reward: 42, color: '#ff8fd0', leak: 4 },
+  king:   { glyph: '♚', hp: 1800, spd: 40, reward: 320, color: '#F5C518', leak: 12, boss: true }
 };
-
-// ---- waves: list of spawn groups ----
 function W_(t, n, gap) { return { t: t, n: n, gap: gap }; }
-var WAVES = [
-  [ W_('pawn', 8, 0.85) ],
-  [ W_('pawn', 12, 0.7) ],
-  [ W_('pawn', 6, 0.6), W_('bishop', 5, 0.7) ],
-  [ W_('bishop', 10, 0.6), W_('knight', 3, 0.8) ],
-  [ W_('knight', 10, 0.55), W_('pawn', 8, 0.4) ],
-  [ W_('rook', 4, 1.2), W_('bishop', 8, 0.5) ],
-  [ W_('knight', 14, 0.45), W_('rook', 3, 1.1) ],
-  [ W_('queen', 1, 1), W_('bishop', 12, 0.45) ],
-  [ W_('rook', 7, 0.8), W_('knight', 10, 0.45) ],
-  [ W_('queen', 2, 2.5), W_('rook', 6, 0.7), W_('knight', 8, 0.4) ],
-  [ W_('pawn', 20, 0.3), W_('bishop', 14, 0.3), W_('knight', 10, 0.35) ],
-  [ W_('queen', 1, 1), W_('rook', 6, 0.8), W_('king', 1, 1) ]
+
+/* ============ maps ============ */
+var MAPS = [
+  {
+    id: 1, name: 'The Journey Road', loc: 'Checker Town', diff: 'Easy', dcls: 'd-easy',
+    desc: 'The winding road where it all begins. Wide shoulders, gentle pace.',
+    pal: { bg0:'#1c1142', bg1:'#150b30', road:'#3a2a5e', edge:'#4a3770', dash:'rgba(245,197,24,0.35)', dot:'rgba(122,104,192,0.18)' },
+    paths: [ [[0,4],[3,4],[3,1],[7,1],[7,7],[11,7],[11,4],[14,4]] ], gate: [14,4],
+    waves: [
+      [W_('pawn',8,0.85)], [W_('pawn',12,0.7)], [W_('pawn',6,0.6),W_('bishop',5,0.7)],
+      [W_('bishop',10,0.6),W_('knight',3,0.8)], [W_('knight',10,0.55),W_('pawn',8,0.4)],
+      [W_('rook',4,1.2),W_('bishop',8,0.5)], [W_('knight',14,0.45),W_('rook',3,1.1)],
+      [W_('queen',1,1),W_('bishop',12,0.45)], [W_('rook',7,0.8),W_('knight',10,0.45)],
+      [W_('queen',2,2.5),W_('rook',6,0.7),W_('knight',8,0.4)],
+      [W_('pawn',20,0.3),W_('bishop',14,0.3),W_('knight',10,0.35)],
+      [W_('queen',1,1),W_('rook',6,0.8),W_('king',1,1)]
+    ]
+  },
+  {
+    id: 2, name: 'Sand Mine Pass', loc: 'The Depths', diff: 'Medium', dcls: 'd-med',
+    desc: 'Two shafts feed the pass — the swarm comes from both mouths at once.',
+    pal: { bg0:'#3a2710', bg1:'#160d04', road:'#6a4a22', edge:'#8a6230', dash:'rgba(245,197,24,0.4)', dot:'rgba(200,150,70,0.18)' },
+    paths: [ [[0,1],[4,1],[4,4],[2,4],[2,7],[8,7],[8,4],[14,4]], [[0,7],[4,7],[4,5],[6,5],[6,2],[10,2],[10,4],[14,4]] ], gate: [14,4],
+    waves: [
+      [W_('pawn',12,0.55)], [W_('bishop',10,0.5),W_('pawn',8,0.4)], [W_('knight',12,0.5)],
+      [W_('rook',4,1.0),W_('knight',8,0.45)], [W_('bishop',16,0.35),W_('knight',6,0.5)],
+      [W_('rook',7,0.7),W_('pawn',16,0.3)], [W_('queen',1,1),W_('knight',16,0.4)],
+      [W_('rook',9,0.6),W_('bishop',12,0.35)], [W_('queen',2,2.0),W_('knight',14,0.4)],
+      [W_('pawn',26,0.22),W_('rook',5,0.9)], [W_('queen',2,2.0),W_('rook',8,0.6),W_('bishop',12,0.3)],
+      [W_('knight',22,0.3),W_('rook',8,0.6)], [W_('queen',2,1.4),W_('rook',8,0.6),W_('king',1,1)]
+    ]
+  },
+  {
+    id: 3, name: 'Shogi Island Crossing', loc: 'Across the Water', diff: 'Hard', dcls: 'd-hard',
+    desc: 'A serpentine over open water. You can only build on the narrow banks.',
+    pal: { bg0:'#0e2c33', bg1:'#06141a', road:'#5a4326', edge:'#7a5e34', dash:'rgba(245,197,24,0.4)', dot:'rgba(91,224,192,0.16)', water:true },
+    paths: [ [[0,1],[12,1],[12,4],[2,4],[2,7],[14,7]] ], gate: [14,7], bankOnly: true,
+    waves: [
+      [W_('bishop',14,0.45)], [W_('knight',14,0.45)], [W_('rook',5,0.9),W_('bishop',10,0.4)],
+      [W_('knight',18,0.35),W_('pawn',10,0.3)], [W_('queen',1,1),W_('rook',7,0.7)],
+      [W_('bishop',22,0.28),W_('knight',8,0.4)], [W_('rook',10,0.55),W_('knight',10,0.4)],
+      [W_('queen',2,2.0),W_('bishop',16,0.3)], [W_('rook',12,0.5),W_('queen',1,1)],
+      [W_('knight',26,0.26),W_('rook',8,0.6)], [W_('queen',3,1.6),W_('rook',10,0.5)],
+      [W_('pawn',30,0.2),W_('bishop',20,0.25),W_('rook',6,0.7)], [W_('queen',3,1.4),W_('king',1,1)],
+      [W_('queen',2,1.0),W_('rook',10,0.5),W_('king',2,3)]
+    ]
+  },
+  {
+    id: 4, name: 'Chess City Gates', loc: 'The Final Stand', diff: 'Very Hard', dcls: 'd-vhard',
+    desc: 'Two spirals wind in toward the gate at the heart of the city. Hold, or fall.',
+    pal: { bg0:'#10122a', bg1:'#05060f', road:'#3a3050', edge:'#5a4a86', dash:'rgba(245,197,24,0.55)', dot:'rgba(245,197,24,0.14)', gold:true },
+    paths: [ [[0,4],[12,4],[12,1],[2,1],[2,7],[13,7],[13,4],[7,4]], [[7,0],[7,2],[11,2],[11,6],[3,6],[3,4],[7,4]] ], gate: [7,4],
+    waves: [
+      [W_('knight',16,0.4),W_('bishop',10,0.4)], [W_('rook',8,0.7),W_('knight',12,0.4)],
+      [W_('queen',1,1),W_('bishop',18,0.3)], [W_('rook',12,0.5),W_('knight',14,0.35)],
+      [W_('queen',2,1.8),W_('rook',8,0.6)], [W_('knight',26,0.26),W_('bishop',16,0.3)],
+      [W_('queen',2,1.6),W_('rook',12,0.5)], [W_('rook',16,0.45),W_('queen',1,1)],
+      [W_('queen',3,1.4),W_('knight',20,0.3)], [W_('pawn',36,0.18),W_('rook',10,0.5)],
+      [W_('queen',4,1.4),W_('rook',12,0.5),W_('bishop',16,0.28)], [W_('king',1,1),W_('queen',2,1.6),W_('rook',10,0.5)],
+      [W_('knight',30,0.24),W_('rook',14,0.45),W_('queen',2,1.5)], [W_('queen',4,1.2),W_('king',1,1),W_('rook',12,0.5)],
+      [W_('king',2,4),W_('queen',4,1.4),W_('rook',12,0.5)]
+    ]
+  }
 ];
 
-// ---- game state ----
-var G = null;
-function newGame() {
-  return {
-    gold: 230, lives: 20, score: 0, kills: 0,
-    wave: 0, running: false, over: false, won: false,
-    towers: [], foes: [], shots: [], parts: [],
-    spawnQ: [], spawnT: 0, betweenT: 0, waveActive: false,
-    decree: 0, decreeMax: 100, speed: 1, sel: null
-  };
+// current map runtime
+var curMap = null, PATHS = [], GATE = null, blocked = {};
+function buildMapTopology(map) {
+  PATHS = map.paths.map(function (way) { return way.map(function (w) { return cellCenter(w[0], w[1]); }); });
+  GATE = cellCenter(map.gate[0], map.gate[1]);
+  blocked = {};
+  var roadCells = {};
+  map.paths.forEach(function (way) {
+    for (var i = 0; i < way.length - 1; i++) {
+      var a = way[i], b = way[i + 1], dc = Math.sign(b[0]-a[0]), dr = Math.sign(b[1]-a[1]);
+      var c = a[0], r = a[1]; roadCells[key(c,r)] = 1;
+      while (c !== b[0] || r !== b[1]) { c += dc; r += dr; roadCells[key(c,r)] = 1; }
+    }
+  });
+  for (var k in roadCells) blocked[k] = true;
+  if (map.bankOnly) { // only cells adjacent to the road are buildable; the rest is water
+    for (var c2 = 0; c2 < COLS; c2++) for (var r2 = 0; r2 < ROWS; r2++) {
+      if (roadCells[key(c2,r2)]) continue;
+      var near = false;
+      for (var dc2=-1;dc2<=1&&!near;dc2++) for (var dr2=-1;dr2<=1;dr2++){ if(roadCells[key(c2+dc2,r2+dr2)]){ near=true; break; } }
+      if (!near) blocked[key(c2,r2)] = 'water';
+    }
+  }
 }
 
-// ---------- spawning ----------
+/* ============ game state ============ */
+var G = null;
+function newGame(mapIdx) {
+  curMap = MAPS[mapIdx];
+  buildMapTopology(curMap);
+  var startGold = 230 + META.up.gold0 * 40;
+  var startHearts = 50 + META.up.heart0 * 10;
+  return {
+    mapIdx: mapIdx, gold: startGold, lives: startHearts, score: 0, kills: 0,
+    wave: 0, running: true, over: false, won: false,
+    towers: [], foes: [], shots: [], parts: [],
+    spawnQ: [], spawnT: 0, betweenT: 0, waveActive: false, spawnCount: 0,
+    decree: 0, decreeMax: 100, speed: 1, sel: null,
+    dmgMult: 1 + META.up.power * 0.08, costMult: 1 - META.up.thrift * 0.05,
+    decreeMult: 1 + META.up.decree * 0.2
+  };
+}
+function towerCost(kind) { return Math.round(TOWERS[kind].cost * G.costMult); }
+
+/* ============ spawning ============ */
 function buildSpawnQueue(waveIdx) {
   var q = [], delay = 0;
-  WAVES[waveIdx].forEach(function (grp) {
+  curMap.waves[waveIdx].forEach(function (grp) {
     for (var k = 0; k < grp.n; k++) { q.push({ t: grp.t, at: delay }); delay += grp.gap; }
   });
   return q;
 }
 function startWave() {
   if (G.waveActive || G.over) return;
-  if (G.wave >= WAVES.length) return;
-  G.spawnQ = buildSpawnQueue(G.wave);
-  G.spawnT = 0; G.waveActive = true; G.betweenT = 0;
-  var foeName = WAVES[G.wave].map(function (g) { return g.t; });
-  var hasKing = foeName.indexOf('king') >= 0;
-  showBanner(hasKing ? 'Final Intercept' : 'Dead Drop — Wave ' + (G.wave + 1),
-    hasKing ? 'The CEO himself approaches' : describeWave(G.wave));
+  if (G.wave >= curMap.waves.length) return;
+  G.spawnQ = buildSpawnQueue(G.wave); G.spawnT = 0; G.waveActive = true; G.betweenT = 0;
+  var names = curMap.waves[G.wave].map(function (g) { return g.t; });
+  var hasKing = names.indexOf('king') >= 0;
+  showBanner(hasKing ? 'Final Intercept' : 'Wave ' + (G.wave + 1), hasKing ? 'The CEO himself approaches' : describeWave(G.wave));
 }
 function describeWave(idx) {
   var counts = {};
-  WAVES[idx].forEach(function (g) { counts[g.t] = (counts[g.t] || 0) + g.n; });
+  curMap.waves[idx].forEach(function (g) { counts[g.t] = (counts[g.t] || 0) + g.n; });
   return Object.keys(counts).map(function (t) { return counts[t] + ' ' + t + (counts[t] > 1 ? 's' : ''); }).join(' · ');
 }
 function spawnFoe(typeName) {
   var base = FOES[typeName];
-  var scale = 1 + G.wave * 0.16;
-  var hp = Math.round(base.hp * (base.boss ? 1 : scale));
+  var scale = 1 + G.wave * 0.18 + (curMap.id - 1) * 0.22;
+  var hp = Math.round(base.hp * (base.boss ? (1 + (curMap.id-1)*0.4) : scale));
+  var pi = PATHS.length > 1 ? (G.spawnCount % PATHS.length) : 0;
+  G.spawnCount++;
+  var path = PATHS[pi];
   G.foes.push({
     type: typeName, glyph: base.glyph, color: base.color, boss: !!base.boss,
     hp: hp, maxhp: hp, spd: base.spd, reward: base.reward, leak: base.leak,
-    seg: 0, t: 0, x: PATH[0].x, y: PATH[0].y, slow: 0
+    path: path, seg: 0, t: 0, x: path[0].x, y: path[0].y, slow: 0
   });
 }
 
-// ---------- movement ----------
+/* ============ movement ============ */
 function advanceFoe(f, dt) {
-  if (f.seg >= PATH.length - 1) return;
-  var a = PATH[f.seg], b = PATH[f.seg + 1];
+  var P = f.path;
+  if (f.seg >= P.length - 1) return;
+  var a = P[f.seg], b = P[f.seg + 1];
   var segLen = Math.hypot(b.x - a.x, b.y - a.y);
   var sp = f.spd * (f.slow > 0 ? 0.5 : 1);
   f.t += (sp * dt) / segLen;
-  while (f.t >= 1 && f.seg < PATH.length - 1) {
+  while (f.t >= 1 && f.seg < P.length - 1) {
     f.t -= 1; f.seg++;
-    if (f.seg >= PATH.length - 1) { f.t = 1; break; }
-    a = PATH[f.seg]; b = PATH[f.seg + 1];
-    segLen = Math.hypot(b.x - a.x, b.y - a.y);
+    if (f.seg >= P.length - 1) { f.t = 1; break; }
+    a = P[f.seg]; b = P[f.seg + 1]; segLen = Math.hypot(b.x - a.x, b.y - a.y);
   }
-  a = PATH[f.seg]; b = PATH[Math.min(f.seg + 1, PATH.length - 1)];
-  f.x = a.x + (b.x - a.x) * f.t;
-  f.y = a.y + (b.y - a.y) * f.t;
+  a = P[f.seg]; b = P[Math.min(f.seg + 1, P.length - 1)];
+  f.x = a.x + (b.x - a.x) * f.t; f.y = a.y + (b.y - a.y) * f.t;
   if (f.slow > 0) f.slow -= dt;
 }
 
-// ---------- combat ----------
+/* ============ combat ============ */
 function towerStats(tw) {
   var base = TOWERS[tw.kind];
-  var mult = 1 + (tw.lvl - 1) * 0.6;
+  var mult = (1 + (tw.lvl - 1) * 0.6) * G.dmgMult;
   return { dmg: base.dmg * mult, range: base.range * (1 + (tw.lvl - 1) * 0.12), rate: base.rate, splash: base.splash };
+}
+function pickTarget(tw, s) {
+  var best = null, bestVal = null;
+  for (var i = 0; i < G.foes.length; i++) {
+    var f = G.foes[i];
+    if (Math.hypot(f.x - tw.x, f.y - tw.y) > s.range) continue;
+    var v;
+    if (tw.target === 'last') v = -(f.seg + f.t);
+    else if (tw.target === 'strong') v = f.hp;
+    else if (tw.target === 'weak') v = -f.hp;
+    else v = f.seg + f.t;          // 'first'
+    if (bestVal === null || v > bestVal) { bestVal = v; best = f; }
+  }
+  return best;
 }
 function fireTowers(dt) {
   G.towers.forEach(function (tw) {
-    tw.cd -= dt;
-    if (tw.cd > 0) return;
-    var s = towerStats(tw);
-    var target = null, bestProg = -1;
-    for (var i = 0; i < G.foes.length; i++) {
-      var f = G.foes[i];
-      if (Math.hypot(f.x - tw.x, f.y - tw.y) <= s.range) {
-        var prog = f.seg + f.t;                 // target the foe furthest along
-        if (prog > bestProg) { bestProg = prog; target = f; }
-      }
-    }
+    tw.cd -= dt; if (tw.cd > 0) return;
+    var s = towerStats(tw); var target = pickTarget(tw, s);
     if (!target) return;
-    tw.cd = s.rate;
+    tw.cd = s.rate; tw.flash = 0.12;
+    var base = TOWERS[tw.kind];
     G.shots.push({ x: tw.x, y: tw.y, tx: target.x, ty: target.y, target: target,
-      dmg: s.dmg, splash: s.splash, kind: tw.kind, life: 0, color: TOWERS[tw.kind].color });
+      dmg: s.dmg, splash: s.splash, kind: tw.kind, life: 0, color: base.color,
+      sniper: base.sniper, lob: base.lob, sx: tw.x, sy: tw.y, prog: 0 });
   });
 }
 function updateShots(dt) {
   for (var i = G.shots.length - 1; i >= 0; i--) {
-    var s = G.shots[i];
-    s.life += dt;
+    var s = G.shots[i]; s.life += dt;
+    if (s.sniper) { // instant beam
+      hit(s.target && s.target.hp > 0 ? s.target.x : s.tx, s.target && s.target.hp > 0 ? s.target.y : s.ty, s);
+      s.beam = 0.14; s.done = true;
+      // keep a brief beam to draw, then remove
+      if (s.life > 0.14) G.shots.splice(i, 1);
+      continue;
+    }
     var tx = s.target && s.target.hp > 0 ? s.target.x : s.tx;
     var ty = s.target && s.target.hp > 0 ? s.target.y : s.ty;
     var d = Math.hypot(tx - s.x, ty - s.y);
-    var step = 460 * dt;
-    if (d <= step || s.life > 1.2) {
-      hit(tx, ty, s);
-      G.shots.splice(i, 1);
-    } else {
-      s.x += (tx - s.x) / d * step; s.y += (ty - s.y) / d * step;
-    }
+    var step = (s.lob ? 300 : 470) * dt;
+    if (d <= step || s.life > 1.4) { hit(tx, ty, s); G.shots.splice(i, 1); }
+    else { s.x += (tx - s.x) / d * step; s.y += (ty - s.y) / d * step; if (s.lob) s.prog = Math.min(1, s.prog + step / (d + step)); }
   }
 }
 function hit(x, y, s) {
-  burst(x, y, s.color, s.splash ? 10 : 5);
-  if (s.splash) {
-    G.foes.forEach(function (f) { if (Math.hypot(f.x - x, f.y - y) <= s.splash) damage(f, s.dmg); });
-  } else if (s.target && s.target.hp > 0) {
-    damage(s.target, s.dmg);
-  } else {
-    // nearest foe to impact point
-    var best = null, bd = 22;
-    G.foes.forEach(function (f) { var dd = Math.hypot(f.x - x, f.y - y); if (dd < bd) { bd = dd; best = f; } });
-    if (best) damage(best, s.dmg);
-  }
+  burst(x, y, s.color, s.splash ? 12 : 5);
+  if (s.splash) { G.foes.forEach(function (f) { if (Math.hypot(f.x - x, f.y - y) <= s.splash) damage(f, s.dmg); }); }
+  else if (s.target && s.target.hp > 0) { damage(s.target, s.dmg); }
+  else { var best = null, bd = 22; G.foes.forEach(function (f) { var dd = Math.hypot(f.x - x, f.y - y); if (dd < bd) { bd = dd; best = f; } }); if (best) damage(best, s.dmg); }
 }
 function damage(f, dmg) {
   if (f.hp <= 0) return;
   f.hp -= dmg;
-  if (f.hp <= 0) {
-    f.hp = 0;
-    G.gold += f.reward; G.kills++; G.score += f.boss ? 200 : 10;
-    chargeDecree(f.reward);
-    burst(f.x, f.y, f.color, f.boss ? 40 : 14);
-  }
+  if (f.hp <= 0) { f.hp = 0; G.gold += f.reward; G.kills++; G.score += f.boss ? 200 : 10; chargeDecree(f.reward); burst(f.x, f.y, f.color, f.boss ? 40 : 14); }
 }
 
-// ---------- royal decree ----------
-function chargeDecree(amt) { G.decree = Math.min(G.decreeMax, G.decree + amt * 0.5); refreshDecree(); }
+/* ============ royal decree ============ */
+function chargeDecree(amt) { G.decree = Math.min(G.decreeMax, G.decree + amt * 0.5 * G.decreeMult); refreshDecree(); }
+var decreeFlash = 0;
 function fireDecree() {
   if (G.decree < G.decreeMax || G.over) return;
   G.decree = 0; refreshDecree();
-  G.foes.forEach(function (f) { damage(f, 130); });
+  G.foes.forEach(function (f) { damage(f, 150); });
   decreeFlash = 0.6;
-  for (var i = 0; i < 60; i++) {
-    var an = Math.random() * Math.PI * 2, sp = 60 + Math.random() * 200;
-    G.parts.push({ x: W / 2, y: H / 2, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, life: 0.9, max: 0.9, c: Math.random() < 0.5 ? '#ff8fd0' : '#F5C518', r: 3 });
-  }
+  for (var i = 0; i < 60; i++) { var an = Math.random()*Math.PI*2, sp = 60+Math.random()*200; G.parts.push({ x:W/2, y:H/2, vx:Math.cos(an)*sp, vy:Math.sin(an)*sp, life:0.9, max:0.9, c: Math.random()<0.5?'#ff8fd0':'#F5C518', r:3 }); }
   showBanner('Royal Decree', 'Princess raises the banner of Checker Town');
 }
 
-// ---------- particles ----------
-function burst(x, y, color, n) {
-  for (var i = 0; i < n; i++) {
-    var an = Math.random() * Math.PI * 2, sp = 25 + Math.random() * 95;
-    G.parts.push({ x: x, y: y, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, life: 0.45, max: 0.45, c: color, r: 1 + Math.random() * 2 });
-  }
-}
-function updateParts(dt) {
-  for (var i = G.parts.length - 1; i >= 0; i--) {
-    var p = G.parts[i]; p.life -= dt;
-    if (p.life <= 0) { G.parts.splice(i, 1); continue; }
-    p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.94; p.vy *= 0.94;
-  }
-}
+/* ============ particles ============ */
+function burst(x, y, color, n) { for (var i=0;i<n;i++){ var an=Math.random()*Math.PI*2, sp=25+Math.random()*95; G.parts.push({ x:x,y:y,vx:Math.cos(an)*sp,vy:Math.sin(an)*sp,life:0.45,max:0.45,c:color,r:1+Math.random()*2 }); } }
+function updateParts(dt) { for (var i=G.parts.length-1;i>=0;i--){ var p=G.parts[i]; p.life-=dt; if(p.life<=0){G.parts.splice(i,1);continue;} p.x+=p.vx*dt; p.y+=p.vy*dt; p.vx*=0.94; p.vy*=0.94; } }
 
-// ---------- main update ----------
-var decreeFlash = 0;
+/* ============ update ============ */
 function update(dt) {
   if (!G.running || G.over) return;
-
-  // spawning
   if (G.waveActive) {
     G.spawnT += dt;
-    while (G.spawnQ.length && G.spawnQ[0].at <= G.spawnT) {
-      spawnFoe(G.spawnQ.shift().t);
-    }
+    while (G.spawnQ.length && G.spawnQ[0].at <= G.spawnT) spawnFoe(G.spawnQ.shift().t);
     if (!G.spawnQ.length && !G.foes.length) {
-      // wave cleared
-      G.waveActive = false;
-      G.wave++;
-      G.score += 100;
-      if (G.wave >= WAVES.length) { return endGame(true); }
-      G.gold += 40 + G.wave * 5;            // clear bonus
-      G.betweenT = 0;
+      G.waveActive = false; G.wave++; G.score += 100;
+      if (G.wave >= curMap.waves.length) return endGame(true);
+      G.gold += 40 + G.wave * 5; G.betweenT = 0;
     }
-  } else if (!G.over) {
-    G.betweenT += dt;
-    if (G.betweenT >= 8) startWave();        // auto-start next wave
-  }
+  } else if (!G.over) { G.betweenT += dt; if (G.betweenT >= 8) startWave(); }
 
   G.foes.forEach(function (f) { advanceFoe(f, dt); });
-  // leaks
   for (var i = G.foes.length - 1; i >= 0; i--) {
     var f = G.foes[i];
-    if (f.seg >= PATH.length - 1 && f.t >= 1) {
-      G.lives -= f.leak; G.foes.splice(i, 1);
-      burst(PATH[PATH.length - 1].x, PATH[PATH.length - 1].y, '#ff6b6b', 12);
+    if (f.seg >= f.path.length - 1 && f.t >= 1) {
+      G.lives -= f.leak; G.foes.splice(i, 1); burst(GATE.x, GATE.y, '#ff6b6b', 12);
       if (G.lives <= 0) { G.lives = 0; return endGame(false); }
     }
   }
-  // remove dead
-  for (var j = G.foes.length - 1; j >= 0; j--) { if (G.foes[j].hp <= 0) G.foes.splice(j, 1); }
-
-  fireTowers(dt);
-  updateShots(dt);
-  updateParts(dt);
+  for (var j = G.foes.length - 1; j >= 0; j--) if (G.foes[j].hp <= 0) G.foes.splice(j, 1);
+  G.towers.forEach(function (t){ if (t.flash > 0) t.flash -= dt; });
+  fireTowers(dt); updateShots(dt); updateParts(dt);
   if (decreeFlash > 0) decreeFlash -= dt;
   syncHud();
 }
 
-// ---------- rendering ----------
+/* ============ rendering ============ */
 function draw() {
   ctx.clearRect(0, 0, W, H);
-  // grass / map background
-  var grd = ctx.createLinearGradient(0, 0, 0, H);
-  grd.addColorStop(0, '#1c1142'); grd.addColorStop(1, '#150b30');
-  ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H);
+  var pal = curMap ? curMap.pal : MAPS[0].pal;
+  var grd = ctx.createLinearGradient(0,0,0,H); grd.addColorStop(0, pal.bg0); grd.addColorStop(1, pal.bg1);
+  ctx.fillStyle = grd; ctx.fillRect(0,0,W,H);
+  if (pal.water) drawWater(pal);
+  // build dots
+  ctx.fillStyle = pal.dot;
+  for (var c=0;c<COLS;c++) for (var r=0;r<ROWS;r++){ if (blocked[key(c,r)]) continue; ctx.fillRect(c*CELL+CELL/2-1, r*CELL+CELL/2-1, 2, 2); }
+  // roads
+  ctx.lineJoin='round'; ctx.lineCap='round';
+  PATHS.forEach(function (P) {
+    ctx.strokeStyle = pal.road; ctx.lineWidth = CELL-6; roadPath(P); ctx.stroke();
+    ctx.strokeStyle = pal.edge; ctx.lineWidth = CELL-16; roadPath(P); ctx.stroke();
+    ctx.setLineDash([7,10]); ctx.strokeStyle = pal.dash; ctx.lineWidth = 2; roadPath(P); ctx.stroke(); ctx.setLineDash([]);
+  });
+  // start flags + gate
+  ctx.font='20px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  PATHS.forEach(function (P){ ctx.fillText('🚩', P[0].x+4, P[0].y); });
+  drawCity(GATE.x, GATE.y, pal);
+  if (pal.gold) drawSkyline();
 
-  // buildable grid dots
-  ctx.fillStyle = 'rgba(122,104,192,0.18)';
-  for (var c = 0; c < COLS; c++) for (var r = 0; r < ROWS; r++) {
-    if (blocked[key(c, r)]) continue;
-    ctx.fillRect(c * CELL + CELL / 2 - 1, r * CELL + CELL / 2 - 1, 2, 2);
-  }
-
-  // the road
-  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-  ctx.strokeStyle = '#3a2a5e'; ctx.lineWidth = CELL - 6;
-  roadPath(); ctx.stroke();
-  ctx.strokeStyle = '#4a3770'; ctx.lineWidth = CELL - 16;
-  roadPath(); ctx.stroke();
-  // dashed centre
-  ctx.setLineDash([7, 10]); ctx.strokeStyle = 'rgba(245,197,24,0.35)'; ctx.lineWidth = 2;
-  roadPath(); ctx.stroke(); ctx.setLineDash([]);
-
-  // start flag + Chess City gate
-  var st = PATH[0], en = PATH[PATH.length - 1];
-  ctx.font = '20px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('🚩', st.x + 4, st.y);
-  drawCity(en.x, en.y);
-
-  // selection range preview
-  if (G.sel && hoverCell && !blocked[key(hoverCell.c, hoverCell.r)] && !towerAt(hoverCell.c, hoverCell.r)) {
-    var ctr = cellCenter(hoverCell.c, hoverCell.r);
-    var afford = G.gold >= TOWERS[G.sel].cost;
-    ctx.fillStyle = afford ? 'rgba(107,255,184,0.10)' : 'rgba(255,107,107,0.12)';
-    ctx.beginPath(); ctx.arc(ctr.x, ctr.y, TOWERS[G.sel].range, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = afford ? 'rgba(107,255,184,0.22)' : 'rgba(255,107,107,0.25)';
-    ctx.fillRect(hoverCell.c * CELL + 3, hoverCell.r * CELL + 3, CELL - 6, CELL - 6);
-  }
+  // placement ghost (selected tower preview at cursor)
+  if (G && G.sel && hoverPx && !selTower) drawGhost();
 
   // towers
   G.towers.forEach(function (tw) {
     var base = TOWERS[tw.kind];
-    if (tw === selTower) {
-      var s = towerStats(tw);
-      ctx.fillStyle = 'rgba(245,197,24,0.10)';
-      ctx.beginPath(); ctx.arc(tw.x, tw.y, s.range, 0, Math.PI * 2); ctx.fill();
-    }
-    ctx.fillStyle = '#241544'; roundRect(tw.x - 17, tw.y - 17, 34, 34, 7); ctx.fill();
-    ctx.strokeStyle = base.color; ctx.lineWidth = 2; roundRect(tw.x - 17, tw.y - 17, 34, 34, 7); ctx.stroke();
-    ctx.font = '24px serif'; ctx.fillStyle = base.color;
-    ctx.fillText(base.glyph, tw.x, tw.y + 1);
-    // level pips
-    for (var L = 0; L < tw.lvl; L++) { ctx.fillStyle = '#F5C518'; ctx.beginPath(); ctx.arc(tw.x - 10 + L * 9, tw.y + 14, 2.2, 0, 7); ctx.fill(); }
+    if (tw === selTower) { var s = towerStats(tw); ctx.fillStyle='rgba(245,197,24,0.10)'; ctx.beginPath(); ctx.arc(tw.x,tw.y,s.range,0,7); ctx.fill(); }
+    ctx.fillStyle = tw.flash>0 ? '#4a2f7a' : '#241544'; roundRect(tw.x-17,tw.y-17,34,34,7); ctx.fill();
+    ctx.strokeStyle = base.color; ctx.lineWidth=2; roundRect(tw.x-17,tw.y-17,34,34,7); ctx.stroke();
+    ctx.font = (tw.kind==='louie'?'20px':'24px')+' serif'; ctx.fillStyle = base.color; ctx.fillText(base.glyph, tw.x, tw.y+1);
+    for (var L=0;L<tw.lvl;L++){ ctx.fillStyle='#F5C518'; ctx.beginPath(); ctx.arc(tw.x-10+L*9, tw.y+14, 2.2, 0, 7); ctx.fill(); }
+    // tiny targeting tag
+    if (tw === selTower) { ctx.fillStyle='#F5C518'; ctx.font='8px sans-serif'; ctx.fillText(tw.target.toUpperCase(), tw.x, tw.y-22); }
   });
 
   // foes
   G.foes.forEach(function (f) {
     var rad = f.boss ? 19 : 13;
-    ctx.font = (f.boss ? 30 : 22) + 'px serif'; ctx.fillStyle = f.color;
-    if (f.slow > 0) { ctx.globalAlpha = 0.75; }
-    ctx.fillText(f.glyph, f.x, f.y + 1); ctx.globalAlpha = 1;
-    // hp bar
-    var w = f.boss ? 40 : 24, pct = f.hp / f.maxhp;
-    ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(f.x - w / 2, f.y - rad - 7, w, 4);
-    ctx.fillStyle = pct > 0.5 ? '#6bffb8' : pct > 0.25 ? '#F5C518' : '#ff6b6b';
-    ctx.fillRect(f.x - w / 2, f.y - rad - 7, w * pct, 4);
+    ctx.font = (f.boss?30:22)+'px serif'; ctx.fillStyle = f.color;
+    if (f.slow > 0) ctx.globalAlpha = 0.75;
+    ctx.fillText(f.glyph, f.x, f.y+1); ctx.globalAlpha = 1;
+    var w = f.boss?40:24, pct=f.hp/f.maxhp;
+    ctx.fillStyle='rgba(0,0,0,0.55)'; ctx.fillRect(f.x-w/2,f.y-rad-7,w,4);
+    ctx.fillStyle = pct>0.5?'#6bffb8':pct>0.25?'#F5C518':'#ff6b6b'; ctx.fillRect(f.x-w/2,f.y-rad-7,w*pct,4);
   });
 
-  // shots
+  // shots / beams
   G.shots.forEach(function (s) {
-    ctx.strokeStyle = s.color; ctx.lineWidth = s.splash ? 3 : 2; ctx.globalAlpha = 0.9;
-    ctx.beginPath(); ctx.moveTo(s.x, s.y);
-    ctx.lineTo(s.x - (s.tx - s.x) * 0.06, s.y - (s.ty - s.y) * 0.06); ctx.stroke();
-    ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(s.x, s.y, s.splash ? 4 : 2.6, 0, 7); ctx.fill();
-    ctx.globalAlpha = 1;
+    if (s.sniper) { ctx.strokeStyle = s.color; ctx.globalAlpha = Math.max(0, 1 - s.life/0.14); ctx.lineWidth=2.5;
+      ctx.beginPath(); ctx.moveTo(s.sx, s.sy); ctx.lineTo(s.tx, s.ty); ctx.stroke(); ctx.globalAlpha=1; return; }
+    var yoff = 0; if (s.lob) yoff = -Math.sin(s.prog*Math.PI)*26;
+    ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(s.x, s.y+yoff, s.splash?4:2.6, 0, 7); ctx.fill();
   });
 
-  // particles
-  G.parts.forEach(function (p) {
-    ctx.globalAlpha = Math.max(0, p.life / p.max); ctx.fillStyle = p.c;
-    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill();
-  });
+  G.parts.forEach(function (p) { ctx.globalAlpha=Math.max(0,p.life/p.max); ctx.fillStyle=p.c; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7); ctx.fill(); });
   ctx.globalAlpha = 1;
+  if (decreeFlash > 0) { ctx.fillStyle='rgba(255,143,208,'+(decreeFlash*0.4)+')'; ctx.fillRect(0,0,W,H); }
+}
+function drawGhost() {
+  var base = TOWERS[G.sel];
+  var pos, ok;
+  if (base.free) { pos = { x: hoverPx.x, y: hoverPx.y }; ok = freeSpotOk(hoverPx.x, hoverPx.y); }
+  else { var cell = pxToCell(hoverPx.x, hoverPx.y); if (!cell) return; var ctr = cellCenter(cell.c, cell.r); pos = ctr; ok = gridSpotOk(cell.c, cell.r); }
+  var afford = G.gold >= towerCost(G.sel);
+  var good = ok && afford;
+  ctx.globalAlpha = 0.85;
+  ctx.fillStyle = good ? 'rgba(107,255,184,0.12)' : 'rgba(255,107,107,0.14)';
+  ctx.beginPath(); ctx.arc(pos.x, pos.y, base.range, 0, 7); ctx.fill();
+  ctx.fillStyle = good ? 'rgba(36,21,68,0.85)' : 'rgba(80,20,30,0.85)';
+  roundRect(pos.x-17,pos.y-17,34,34,7); ctx.fill();
+  ctx.strokeStyle = good ? base.color : '#ff6b6b'; ctx.lineWidth=2; roundRect(pos.x-17,pos.y-17,34,34,7); ctx.stroke();
+  ctx.font=(G.sel==='louie'?'20px':'24px')+' serif'; ctx.fillStyle = good ? base.color : '#ff6b6b'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(base.glyph, pos.x, pos.y+1);
+  ctx.globalAlpha = 1;
+}
+function drawWater(pal) {
+  ctx.fillStyle = 'rgba(40,120,150,0.12)';
+  var t = Date.now()/900;
+  for (var y=0;y<ROWS;y++) for (var x=0;x<COLS;x++){ if (blocked[key(x,y)]!=='water') continue;
+    var cx=x*CELL, cy=y*CELL; ctx.fillStyle='rgba(40,130,160,'+(0.10+0.04*Math.sin(t+x+y))+')'; ctx.fillRect(cx,cy,CELL,CELL); }
+}
+function drawSkyline() { ctx.fillStyle='rgba(245,197,24,0.06)'; for (var i=0;i<7;i++){ var x=20+i*94, h=20+((i*53)%40); ctx.fillRect(x, H-h, 60, h); } }
+function roadPath(P){ ctx.beginPath(); ctx.moveTo(P[0].x,P[0].y); for(var i=1;i<P.length;i++) ctx.lineTo(P[i].x,P[i].y); }
+function drawCity(x,y,pal){ ctx.fillStyle='#2a1a5e'; roundRect(x-6,y-22,40,44,5); ctx.fill(); ctx.strokeStyle='#F5C518'; ctx.lineWidth=2; roundRect(x-6,y-22,40,44,5); ctx.stroke(); ctx.font='24px serif'; ctx.fillStyle='#F5C518'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('🏰', x+14, y); }
+function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 
-  if (decreeFlash > 0) {
-    ctx.fillStyle = 'rgba(255,143,208,' + (decreeFlash * 0.4) + ')';
-    ctx.fillRect(0, 0, W, H);
-  }
-}
-function roadPath() {
-  ctx.beginPath(); ctx.moveTo(PATH[0].x, PATH[0].y);
-  for (var i = 1; i < PATH.length; i++) ctx.lineTo(PATH[i].x, PATH[i].y);
-}
-function drawCity(x, y) {
-  ctx.fillStyle = '#2a1a5e'; roundRect(x - 6, y - 22, 40, 44, 5); ctx.fill();
-  ctx.strokeStyle = '#F5C518'; ctx.lineWidth = 2; roundRect(x - 6, y - 22, 40, 44, 5); ctx.stroke();
-  ctx.font = '24px serif'; ctx.fillStyle = '#F5C518'; ctx.textAlign = 'center';
-  ctx.fillText('🏰', x + 14, y);
-}
-function roundRect(x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+/* ============ placement validity ============ */
+function pxToCell(px, py) { var c = Math.floor(px/CELL), r = Math.floor(py/CELL); if (c<0||c>=COLS||r<0||r>=ROWS) return null; return { c:c, r:r }; }
+function towerAt(c, r) { for (var i=0;i<G.towers.length;i++) if (G.towers[i].c===c && G.towers[i].r===r) return G.towers[i]; return null; }
+function gridSpotOk(c, r) { return !blocked[key(c,r)] && !towerAt(c,r); }
+function freeSpotOk(px, py) {
+  if (px<18||px>W-18||py<18||py>H-18) return false;
+  var cell = pxToCell(px, py); if (!cell || blocked[key(cell.c,cell.r)]) return false;     // not on road / water
+  for (var i=0;i<G.towers.length;i++){ if (Math.hypot(G.towers[i].x-px, G.towers[i].y-py) < 30) return false; } // no overlap
+  return true;
 }
 
-// ---------- input ----------
-var hoverCell = null, selTower = null;
-function evtCell(e) {
-  var rect = cv.getBoundingClientRect();
-  var px = ((e.touches ? e.touches[0].clientX : e.clientX) - rect.left) / rect.width * W;
-  var py = ((e.touches ? e.touches[0].clientY : e.clientY) - rect.top) / rect.height * H;
-  return { c: Math.floor(px / CELL), r: Math.floor(py / CELL), px: px, py: py };
-}
-function towerAt(c, r) {
-  for (var i = 0; i < G.towers.length; i++) if (G.towers[i].c === c && G.towers[i].r === r) return G.towers[i];
-  return null;
-}
-cv.addEventListener('mousemove', function (e) { hoverCell = evtCell(e); });
-cv.addEventListener('mouseleave', function () { hoverCell = null; });
-cv.addEventListener('click', function (e) {
-  if (!G.running || G.over) return;
-  var cell = evtCell(e);
-  if (cell.c < 0 || cell.c >= COLS || cell.r < 0 || cell.r >= ROWS) return;
-  var existing = towerAt(cell.c, cell.r);
-  if (existing) { openInspector(existing, cell); return; }
+/* ============ input ============ */
+var hoverPx = null, selTower = null, inspEl = null;
+function evtPx(e) { var rect = cv.getBoundingClientRect(); return { x: (e.clientX-rect.left)/rect.width*W, y: (e.clientY-rect.top)/rect.height*H }; }
+cv.addEventListener('pointermove', function (e) { hoverPx = evtPx(e); });
+cv.addEventListener('pointerleave', function () { hoverPx = null; });
+cv.addEventListener('pointerdown', function (e) {
+  if (!G || !G.running || G.over) return;
+  e.preventDefault(); hoverPx = evtPx(e);
+  var px = hoverPx.x, py = hoverPx.y;
+  // tapping an existing tower opens inspector
+  var cell = pxToCell(px, py);
+  var existing = cell ? towerAt(cell.c, cell.r) : null;
+  // for free towers also catch near-pixel towers
+  if (!existing) { for (var i=0;i<G.towers.length;i++){ if (Math.hypot(G.towers[i].x-px,G.towers[i].y-py) < 18) { existing = G.towers[i]; break; } } }
+  if (existing && !G.sel) { openInspector(existing); return; }
   closeInspector();
-  if (blocked[key(cell.c, cell.r)]) { setHint('Can’t build on the road.'); return; }
-  if (!G.sel) { setHint('Pick a defender below first.'); return; }
-  var def = TOWERS[G.sel];
-  if (G.gold < def.cost) { setHint('Not enough gold for ' + def.name + '.'); return; }
-  var ctr = cellCenter(cell.c, cell.r);
-  G.gold -= def.cost;
-  G.towers.push({ kind: G.sel, c: cell.c, r: cell.r, x: ctr.x, y: ctr.y, lvl: 1, cd: 0, invested: def.cost });
-  syncHud(); buildShop();
-  setHint(def.name + ' deployed. ' + def.lore);
+  if (!G.sel) { if (existing) openInspector(existing); else setHint('Pick a defender below first.'); return; }
+  var base = TOWERS[G.sel];
+  if (G.gold < towerCost(G.sel)) { setHint('Not enough gold for ' + base.name + '.'); return; }
+  if (base.free) {
+    if (!freeSpotOk(px, py)) { setHint('Obstructed — the ' + base.name + ' needs clear ground off the road.'); return; }
+    placeTower(G.sel, null, null, px, py);
+  } else {
+    if (!cell) return;
+    if (!gridSpotOk(cell.c, cell.r)) { setHint(blocked[key(cell.c,cell.r)] ? 'Can’t build there.' : 'A tower already stands there.'); return; }
+    var ctr = cellCenter(cell.c, cell.r); placeTower(G.sel, cell.c, cell.r, ctr.x, ctr.y);
+  }
 });
+function placeTower(kind, c, r, x, y) {
+  var base = TOWERS[kind], cost = towerCost(kind);
+  G.gold -= cost;
+  G.towers.push({ kind: kind, c: c, r: r, x: x, y: y, lvl: 1, cd: 0, invested: cost, target: 'first', flash: 0 });
+  syncHud(); buildRack(); setHint(base.name + ' deployed. ' + base.lore);
+}
 
-// ---------- tower inspector ----------
-var inspEl = null;
+/* ============ inspector ============ */
 function closeInspector() { selTower = null; if (inspEl) { inspEl.remove(); inspEl = null; } }
-function openInspector(tw, cell) {
-  closeInspector(); selTower = tw;
+function openInspector(tw) {
+  closeInspector(); selTower = tw; G.sel = null; buildRack();
   var base = TOWERS[tw.kind], s = towerStats(tw);
-  var upCost = Math.round(base.cost * 0.85 * tw.lvl);
+  var upCost2 = Math.round(base.cost * 0.85 * tw.lvl * G.costMult);
   var sellVal = Math.round(tw.invested * 0.6);
+  var modes = ['first','last','strong','weak'];
   var stage = document.getElementById('stage');
   inspEl = document.createElement('div'); inspEl.className = 'insp';
   inspEl.innerHTML =
     '<div class="ih">' + base.glyph + ' ' + base.name + ' · L' + tw.lvl + '</div>' +
-    '<div class="irow">Damage: ' + s.dmg.toFixed(0) + (base.splash ? ' (splash)' : '') + '</div>' +
+    '<div class="irow">Damage: ' + s.dmg.toFixed(0) + (base.splash?' (splash)':base.sniper?' (sniper)':'') + '</div>' +
     '<div class="irow">Range: ' + s.range.toFixed(0) + ' · Rate: ' + base.rate + 's</div>' +
+    '<div class="irow" style="margin-top:5px;color:#9a7fd4">Aim:</div>' +
+    '<div class="tgt">' + modes.map(function(m){ return '<button data-m="'+m+'"'+(tw.target===m?' class="on"':'')+'>'+m+'</button>'; }).join('') + '</div>' +
     '<div class="ibtns">' +
-      '<button class="up" id="i-up"' + (tw.lvl >= 3 || G.gold < upCost ? ' disabled' : '') + '>' +
-        (tw.lvl >= 3 ? 'Max' : 'Upgrade ' + upCost) + '</button>' +
-      '<button class="sell" id="i-sell">Sell ' + sellVal + '</button>' +
+      '<button class="up" id="i-up"' + (tw.lvl>=3 || G.gold<upCost2 ? ' disabled':'') + '>' + (tw.lvl>=3?'Max':'Up '+upCost2) + '</button>' +
+      '<button class="sell" id="i-sell">Sell '+sellVal+'</button>' +
     '</div>';
-  // position near cell, kept on-canvas
-  var rect = cv.getBoundingClientRect();
-  var scale = rect.width / W;
-  var left = Math.min(cell.c * CELL * scale, rect.width - 168);
-  var top = Math.min((cell.r + 1) * CELL * scale + 4, rect.height - 120);
-  inspEl.style.left = Math.max(2, left) + 'px';
-  inspEl.style.top = Math.max(2, top) + 'px';
+  var rect = cv.getBoundingClientRect(), scale = rect.width/W;
+  var left = Math.min(tw.x*scale, rect.width-176), top = Math.min((tw.y+24)*scale, rect.height-150);
+  inspEl.style.left = Math.max(2,left)+'px'; inspEl.style.top = Math.max(2,top)+'px';
   stage.appendChild(inspEl);
-  document.getElementById('i-up').onclick = function () {
-    if (tw.lvl >= 3 || G.gold < upCost) return;
-    G.gold -= upCost; tw.lvl++; tw.invested += upCost;
-    syncHud(); buildShop(); openInspector(tw, cell);
-  };
-  document.getElementById('i-sell').onclick = function () {
-    G.gold += sellVal;
-    G.towers = G.towers.filter(function (t) { return t !== tw; });
-    closeInspector(); syncHud(); buildShop();
-  };
+  inspEl.querySelectorAll('.tgt button').forEach(function(b){ b.onclick=function(){ tw.target=b.dataset.m; openInspector(tw); }; });
+  document.getElementById('i-up').onclick = function () { if (tw.lvl>=3 || G.gold<upCost2) return; G.gold-=upCost2; tw.lvl++; tw.invested+=upCost2; syncHud(); openInspector(tw); };
+  document.getElementById('i-sell').onclick = function () { G.gold+=sellVal; G.towers=G.towers.filter(function(t){return t!==tw;}); closeInspector(); syncHud(); };
 }
 
-// ---------- HUD / shop ----------
+/* ============ HUD / rack ============ */
 function syncHud() {
   document.getElementById('s-gold').textContent = G.gold;
   document.getElementById('s-lives').textContent = G.lives;
-  document.getElementById('s-wave').textContent = Math.min(G.wave + (G.waveActive ? 1 : 0), WAVES.length);
+  document.getElementById('s-wave').textContent = Math.min(G.wave + (G.waveActive?1:0), curMap.waves.length);
   document.getElementById('s-score').textContent = G.score;
+  document.getElementById('s-wmax').textContent = curMap.waves.length;
 }
 function refreshDecree() {
-  var pct = G.decree / G.decreeMax * 100;
-  document.getElementById('decree-fill').style.width = pct + '%';
+  var pct = G.decree/G.decreeMax*100; document.getElementById('decree-fill').style.width = pct + '%';
   var btn = document.getElementById('decree-btn');
-  if (G.decree >= G.decreeMax) { btn.classList.add('ready'); btn.textContent = 'Royal Decree ✦'; }
-  else { btn.classList.remove('ready'); btn.textContent = 'Royal Decree'; }
+  if (G.decree >= G.decreeMax) { btn.classList.add('ready'); btn.textContent='Royal Decree ✦'; } else { btn.classList.remove('ready'); btn.textContent='Royal Decree'; }
 }
-function buildShop() {
-  var shop = document.getElementById('shop'); shop.innerHTML = '';
-  ORDER.forEach(function (kind) {
-    var d = TOWERS[kind];
+function buildRack() {
+  var rack = document.getElementById('rack'); rack.innerHTML = '';
+  towerOrder().forEach(function (kind) {
+    var d = TOWERS[kind], cost = towerCost(kind);
     var el = document.createElement('div');
-    el.className = 'twr' + (G.sel === kind ? ' sel' : '') + (G && G.gold < d.cost ? ' cant' : '');
-    el.innerHTML = '<div class="g">' + d.glyph + '</div><div class="nm">' + d.name + '</div><div class="ct">' + d.cost + 'g</div>';
-    el.onclick = function () { G.sel = (G.sel === kind ? null : kind); closeInspector(); buildShop(); if (G.sel) setHint(d.name + ' — ' + d.lore); };
-    el.title = d.lore;
-    shop.appendChild(el);
+    el.className = 'twr' + (G && G.sel===kind ? ' sel':'') + (G && G.gold<cost ? ' cant':'');
+    el.innerHTML = '<div class="g" style="color:'+d.color+'">'+d.glyph+'</div><div class="nm">'+d.name+'</div><div class="ct">'+cost+'g</div>';
+    el.onclick = function () { closeInspector(); G.sel = (G.sel===kind?null:kind); buildRack(); if (G.sel) setHint(d.name+' — '+d.lore); };
+    el.title = d.lore; rack.appendChild(el);
   });
 }
 function setHint(t) { document.getElementById('hint').textContent = t; }
-
 var bannerT = 0;
-function showBanner(b1, b2) {
-  document.getElementById('banner1').textContent = b1;
-  document.getElementById('banner2').textContent = b2;
-  document.getElementById('banner').classList.add('show');
-  bannerT = 2.4;
-}
+function showBanner(b1, b2) { document.getElementById('banner1').textContent=b1; document.getElementById('banner2').textContent=b2; document.getElementById('banner').classList.add('show'); bannerT=2.4; }
 
-// ---------- end ----------
+/* ============ end ============ */
 function endGame(won) {
   if (G.over) return;
   G.over = true; G.won = won; G.running = false;
-  // leftover gold + survival into score
   G.score += G.lives * 15 + (won ? 600 : 0);
-  var credits = Math.min(5, 1 + Math.floor(G.wave / 3) + (won ? 1 : 0));
-  if (window.PJCC && PJCC.saveScore) {
-    PJCC.saveScore('tower-defense', G.score, { credits: credits, data: { waves: G.wave, kills: G.kills, won: won } });
-  }
+  var credits = Math.min(5, 1 + Math.floor(G.wave/3) + (won?1:0));
+  var coinsEarned = Math.floor(G.score/120) + G.wave*2 + (won?25:0);
+  META.coins += coinsEarned;
+  if (won) META.beaten[curMap.id] = true;
+  saveMeta();
+  if (window.PJCC && PJCC.saveScore) PJCC.saveScore('tower-defense', G.score, { credits: credits, data: { map: curMap.id, waves: G.wave, kills: G.kills, won: won } });
   var ovl = document.getElementById('ovl');
   document.getElementById('ovl-title').textContent = won ? 'CHESS CITY HOLDS! 🏰' : 'THE GATES HAVE FALLEN';
+  var nextUnlocked = won && curMap.id < MAPS.length;
   document.getElementById('ovl-msg').textContent = won
-    ? 'You turned back the CEO and his King. Checker Town sleeps safe tonight — the Journey continues.'
-    : 'The CEO’s pieces overran the line at wave ' + (G.wave + 1) + '. Reinforce earlier and hold the chokepoints.';
-  document.getElementById('ovl-extra').textContent =
-    'Score ' + G.score + ' · ' + G.kills + ' pieces felled · +' + credits + ' credits';
+    ? ('You turned back the CEO on ' + curMap.name + '.' + (nextUnlocked ? ' A new front has opened.' : ' The campaign is won!'))
+    : ('The line broke at wave ' + (G.wave + 1) + ' on ' + curMap.name + '. Reinforce the chokepoints and try again.');
+  document.getElementById('ovl-extra').textContent = 'Score ' + G.score + ' · ' + G.kills + ' felled · 🪙 +' + coinsEarned + ' Crowns · +' + credits + ' credits';
   document.getElementById('ovl-btn').textContent = 'Play again';
-  ovl.classList.remove('hidden');
-  closeInspector();
+  ovl.classList.remove('hidden'); closeInspector();
 }
 
-// ---------- controls ----------
-document.getElementById('decree-btn').onclick = fireDecree;
-document.getElementById('send-btn').onclick = function () {
-  if (!G.running || G.over) return;
-  if (G.waveActive) { setHint('Wave already in progress.'); return; }
-  G.gold += 25;                  // early-call bonus
-  setHint('Early call! +25 gold. Brace yourself.');
-  startWave(); syncHud();
-};
-document.getElementById('speed-btn').onclick = function () {
-  G.speed = G.speed === 1 ? 2 : G.speed === 2 ? 3 : 1;
-  this.textContent = 'Speed ▶▶ ' + G.speed + '×';
-};
-document.getElementById('ovl-btn').onclick = function () {
+/* ============ screens ============ */
+function show(id) { ['scr-menu','scr-maps','scr-shop'].forEach(function(s){ document.getElementById(s).classList.toggle('hidden', s!==id); }); }
+function openMenu() { show('scr-menu'); document.getElementById('m-coins').textContent = META.coins; if (G) G.running = false; }
+function openMaps() {
+  show('scr-maps'); var grid = document.getElementById('map-grid'); grid.innerHTML = '';
+  MAPS.forEach(function (m, idx) {
+    var unlocked = m.id===1 || META.beaten[m.id-1];
+    var el = document.createElement('div'); el.className = 'map-card' + (unlocked?'':' locked');
+    el.innerHTML = '<div class="mt">'+m.name+'</div><div class="md '+m.dcls+'">'+m.diff+' · '+m.loc+'</div><div class="mdesc">'+m.desc+'</div>' +
+      (META.beaten[m.id] ? '<div class="beat">✓ held</div>' : (unlocked?'':'<div class="lk">🔒</div>'));
+    if (unlocked) el.onclick = function () { startMap(idx); };
+    grid.appendChild(el);
+  });
+}
+function openShop() {
+  show('scr-shop'); document.getElementById('sh-coins').textContent = META.coins;
+  var grid = document.getElementById('shop-grid'); grid.innerHTML = '';
+  UPGRADES.forEach(function (u) {
+    var lvl = META.up[u.id], maxed = lvl >= u.max, cost = maxed?0:upCost(u);
+    var el = document.createElement('div'); el.className = 'up-card';
+    var pips = ''; for (var i=0;i<u.max;i++) pips += '<div class="pip'+(i<lvl?' on':'')+'"></div>';
+    el.innerHTML = '<div class="un">'+u.name+'</div><div class="ud">'+u.desc+'</div><div class="pips">'+pips+'</div>' +
+      '<button '+(maxed||META.coins<cost?'disabled':'')+'>'+(maxed?'Maxed':'Buy · 🪙'+cost)+'</button>';
+    if (!maxed) el.querySelector('button').onclick = function () { if (META.coins<cost) return; META.coins-=cost; META.up[u.id]++; saveMeta(); openShop(); };
+    grid.appendChild(el);
+  });
+}
+function startMap(idx) {
+  show(null); // hide all screens
+  document.getElementById('scr-menu').classList.add('hidden');
   document.getElementById('ovl').classList.add('hidden');
-  G = newGame(); G.running = true;
-  buildShop(); syncHud(); refreshDecree();
-  setHint('Pick a defender, then tap a tile to build.');
-};
+  G = newGame(idx); buildRack(); syncHud(); refreshDecree();
+  setHint('Pick a defender, then place it beside the road. Tap a tower to retarget, upgrade, or sell.');
+  showBanner(curMap.name, curMap.diff + ' · ' + curMap.loc);
+}
 
-// ---------- loop ----------
+/* ============ controls ============ */
+document.getElementById('m-play').onclick = openMaps;
+document.getElementById('m-shop').onclick = openShop;
+document.getElementById('maps-back').onclick = openMenu;
+document.getElementById('shop-back').onclick = openMenu;
+document.getElementById('menu-back').onclick = openMenu;
+document.getElementById('decree-btn').onclick = fireDecree;
+document.getElementById('send-btn').onclick = function () { if (!G||!G.running||G.over) return; if (G.waveActive) { setHint('Wave already in progress.'); return; } G.gold += 25; setHint('Early call! +25 gold. Brace yourself.'); startWave(); syncHud(); };
+document.getElementById('speed-btn').onclick = function () { if (!G) return; G.speed = G.speed===1?2:G.speed===2?3:1; this.textContent = 'Speed ▶▶ ' + G.speed + '×'; };
+document.getElementById('ovl-btn').onclick = function () { document.getElementById('ovl').classList.add('hidden'); startMap(G.mapIdx); };
+document.getElementById('ovl-menu').onclick = function () { document.getElementById('ovl').classList.add('hidden'); openMenu(); };
+
+/* ============ loop ============ */
 var last = 0;
 function loop(ts) {
-  var dt = last ? Math.min((ts - last) / 1000, 0.05) : 0; last = ts;
-  if (G && G.running && !G.over) for (var s = 0; s < G.speed; s++) update(dt);
-  if (bannerT > 0) { bannerT -= dt; if (bannerT <= 0) document.getElementById('banner').classList.remove('show'); }
+  var dt = last ? Math.min((ts-last)/1000, 0.05) : 0; last = ts;
+  if (G && G.running && !G.over) for (var s=0;s<G.speed;s++) update(dt);
+  if (bannerT > 0) { bannerT -= dt; if (bannerT<=0) document.getElementById('banner').classList.remove('show'); }
   if (G) draw();
   requestAnimationFrame(loop);
 }
-
-document.getElementById('s-wmax').textContent = WAVES.length;
-G = newGame();
-buildShop(); syncHud(); refreshDecree();
+openMenu();
 requestAnimationFrame(loop);
 })();
 </script>

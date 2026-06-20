@@ -3,62 +3,71 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Blindfold Puzzles</title>
+<title>PJCC: Blindfold Puzzles v2.0</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  :root { --gold:#F5C518; --pink:#ff8fd0; --light:#3d2a7a; --dark:#2D1B69; --ink:#f0e6ff; }
+  :root { --gold:#F5C518; --pink:#ff8fd0; --light:#3d2a7a; --dark:#2D1B69; --ink:#f0e6ff; --good:#6bffb8; --bad:#ff6b6b; }
   html, body { height: 100%; background: #140c2d; color: var(--ink);
     font-family: 'Trebuchet MS','Segoe UI',sans-serif; -webkit-tap-highlight-color: transparent; }
   body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 10px; }
-  #wrap { width: 100%; max-width: 460px; position: relative; }
-  .top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; font-size: 13px; }
+  #wrap { width: 100%; max-width: 540px; position: relative; }
+  .top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; font-size: 13px; gap:8px; }
   .top .goal { color: var(--gold); font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
-  .top .score { color: #6bffb8; }
+  .top .score { color: #6bffb8; white-space:nowrap; }
+  .diffbar { height:6px; background:#241640; border:1px solid #3a2a6a; border-radius:999px; overflow:hidden; margin-bottom:8px; }
+  .diffbar > i { display:block; height:100%; width:10%; background:linear-gradient(90deg,#6bffb8,#F5C518,#ff6b6b); transition:width .3s; }
 
-  /* The clue lives in the dark. Only the text under the flashlight's beam shows. */
   .clue { position: relative; overflow: hidden; background: #120a26; border: 1px solid #2a1d54;
-    border-radius: 8px; padding: 11px 14px; font-size: 15px; line-height: 1.5; margin-bottom: 10px; min-height: 72px; }
+    border-radius: 8px; padding: 11px 14px; font-size: 15px; line-height: 1.5; margin-bottom: 10px; min-height: 76px; }
   .clue.lit { border-color: var(--gold); box-shadow: 0 0 14px rgba(245,197,24,0.18); }
-  .clue-text { position: relative; z-index: 2;
-    --r: 0px; --lx: 50%; --ly: 50%;
+  .clue-text { position: relative; z-index: 2; --r: 0px; --lx: 50%; --ly: 50%;
     -webkit-mask-image: radial-gradient(circle var(--r) at var(--lx) var(--ly), #000 58%, rgba(0,0,0,0.18) 82%, transparent 100%);
-            mask-image: radial-gradient(circle var(--r) at var(--lx) var(--ly), #000 58%, rgba(0,0,0,0.18) 82%, transparent 100%);
-    transition: none; }
+            mask-image: radial-gradient(circle var(--r) at var(--lx) var(--ly), #000 58%, rgba(0,0,0,0.18) 82%, transparent 100%); }
   .clue-text b.you { color: var(--gold); } .clue-text b.them { color: var(--pink); }
   .clue-beam { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity .25s;
     background: radial-gradient(circle 120px at var(--lx, 50%) var(--ly, 50%), rgba(255,240,180,0.20), rgba(255,240,180,0.05) 45%, transparent 72%); }
   .clue.lit .clue-beam { opacity: 1; }
   .clue-hint { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center;
-    text-align: center; padding: 0 18px; color: #6a5aa0; font-size: 12.5px; line-height: 1.45; transition: opacity .3s;
-    pointer-events: none; }
+    text-align: center; padding: 0 18px; color: #6a5aa0; font-size: 12.5px; line-height: 1.45; transition: opacity .3s; pointer-events: none; }
   .clue.lit .clue-hint { opacity: 0; }
   .beam-batt { position: absolute; left: 10px; right: 10px; bottom: 5px; height: 3px; z-index: 4; border-radius: 2px;
     background: rgba(255,255,255,0.07); overflow: hidden; opacity: 0; transition: opacity .25s; }
   .clue.lit .beam-batt { opacity: 1; }
   .beam-batt > i { display: block; height: 100%; width: 100%; transform-origin: left center;
     background: linear-gradient(90deg, #ff6b6b, var(--gold) 55%, #6bffb8); }
-
-  /* The catchable flashlight, drifting up through the scene like a loose firefly. */
-  .bf-torch { position: absolute; left: 38%; top: 64px; z-index: 7; font-size: 30px; cursor: pointer;
+  .bf-torch { position: absolute; left: 38%; top: 70px; z-index: 7; font-size: 30px; cursor: pointer;
     user-select: none; -webkit-user-select: none; touch-action: manipulation; line-height: 1;
     filter: drop-shadow(0 0 7px rgba(255,240,180,0.75)); animation: bf-drift 7.5s ease-in-out infinite; }
   .bf-torch.caught { display: none; }
-  .bf-torch::after { content: ""; position: absolute; inset: -14px; border-radius: 50%; }  /* fat tap target */
-  @keyframes bf-drift {
-    0%   { transform: translate(0, 130px) rotate(-16deg); opacity: 0; }
-    10%  { opacity: 1; }
-    50%  { transform: translate(78px, 36px) rotate(12deg); opacity: 1; }
-    90%  { opacity: 1; }
-    100% { transform: translate(8px, -70px) rotate(-8deg); opacity: 0; }
-  }
-  @media (prefers-reduced-motion: reduce) { .bf-torch { animation-duration: 14s; } }
+  .bf-torch::after { content: ""; position: absolute; inset: -14px; border-radius: 50%; }
+  @keyframes bf-drift { 0%{transform:translate(0,130px) rotate(-16deg);opacity:0;} 10%{opacity:1;} 50%{transform:translate(78px,36px) rotate(12deg);opacity:1;} 90%{opacity:1;} 100%{transform:translate(8px,-70px) rotate(-8deg);opacity:0;} }
+  /* Afterglow — recently-swept text lingers as a soft, lagging halo. */
+  .clue-after { position: absolute; top: 11px; left: 14px; right: 14px; bottom: 11px; z-index: 1; pointer-events: none;
+    opacity: 0; font-size: 15px; line-height: 1.5; color: rgba(255,236,170,0.32); transition: opacity .4s;
+    --r: 0px; --lx: 50%; --ly: 50%;
+    -webkit-mask-image: radial-gradient(circle var(--r) at var(--lx) var(--ly), #000 38%, transparent 100%);
+            mask-image: radial-gradient(circle var(--r) at var(--lx) var(--ly), #000 38%, transparent 100%); }
+  .clue.lit .clue-after { opacity: 1; }
+  .beam-lock { position: absolute; top: 5px; right: 8px; z-index: 5; font-size: 11px; color: var(--gold); opacity: 0; transition: opacity .2s; }
+  .clue.locked .beam-lock { opacity: 1; }
+  /* Floating battery/lens pickups + uncatchable firefly ambiance. */
+  .bf-pickup { position: absolute; z-index: 8; font-size: 22px; cursor: pointer; line-height: 1; user-select: none;
+    filter: drop-shadow(0 0 6px rgba(255,255,255,0.5)); }
+  .bf-firefly { position: absolute; z-index: 6; width: 6px; height: 6px; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle, rgba(255,240,150,0.9), rgba(255,240,150,0) 70%); opacity: 0; animation: bf-fly 9s ease-in-out infinite; }
+  @keyframes bf-fly { 0%{transform:translate(0,120px);opacity:0;} 12%{opacity:0.8;} 50%{transform:translate(40px,30px);opacity:0.7;} 88%{opacity:0.6;} 100%{transform:translate(-20px,-90px);opacity:0;} }
+  #board.lights-out .sq.light, #board.lights-out .sq.dark { background: #0b0720; }
+  #board.lights-out .lab { color: #1a1430; }
+  .lights-btn { background: #1d1140; border: 1px solid #6b5fa0; color: #c9a7ff; border-radius: 7px; padding: 9px 14px; font-size: 14px; font-weight: bold; cursor: pointer; font-family: inherit; }
+  .lights-btn.on { background: #0b0720; border-color: var(--gold); color: var(--gold); }
+
   #board { display: grid; grid-template-columns: 18px repeat(8, 1fr); grid-template-rows: repeat(8, 1fr) 18px;
     gap: 0; aspect-ratio: 1 / 1; width: 100%; border: 2px solid var(--gold); border-radius: 4px; overflow: hidden; }
   .sq { display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative;
-    font-size: 7vmin; line-height: 1; user-select: none; }
-  @media (min-width: 460px) { .sq { font-size: 34px; } }
+    font-size: 6.6vmin; line-height: 1; user-select: none; }
+  @media (min-width: 540px) { .sq { font-size: 38px; } }
   .sq.light { background: var(--light); } .sq.dark { background: var(--dark); }
   .sq.from { box-shadow: inset 0 0 0 3px #6bffb8; }
   .sq.target { box-shadow: inset 0 0 0 3px var(--gold); }
@@ -68,244 +77,643 @@
   .lab { display: flex; align-items: center; justify-content: center; font-size: 9px; color: #9a7fd4; background: #140c2d; }
   .msg { text-align: center; min-height: 22px; margin: 8px 0; font-size: 14px; }
   .msg.good { color: #6bffb8; } .msg.bad { color: #ff6b6b; }
-  .row { display: flex; gap: 8px; justify-content: center; }
+  .row { display: flex; gap: 8px; justify-content: center; flex-wrap:wrap; }
   button { background: var(--dark); color: var(--ink); border: 1px solid #6b5fa0; border-radius: 7px;
     padding: 9px 16px; font-size: 14px; font-weight: bold; cursor: pointer; font-family: inherit; }
   button.primary { background: var(--gold); color: #1a0f3d; border-color: var(--gold); }
-  button:hover { border-color: var(--gold); }
-  .overlay { position: fixed; inset: 0; background: rgba(15,9,30,0.95); display: flex; flex-direction: column;
-    align-items: center; justify-content: center; text-align: center; padding: 24px; z-index: 20; }
+  button:hover { border-color: var(--gold); } button:disabled { opacity:0.45; cursor:default; }
+
+  .mindseye { margin-top:12px; }
+  .me-locked { background:#160c33; border:1px dashed #6b5fa0; border-radius:10px; padding:10px 12px; font-size:12.5px; color:#9a7fd4; text-align:center; }
+  .me-unlock { width:100%; background:linear-gradient(135deg,#1a0f3d,#3a1d52); color:#F5C518; border:1px solid var(--gold);
+    border-radius:10px; padding:12px; font-weight:900; letter-spacing:1px; cursor:pointer; box-shadow:0 0 18px rgba(245,197,24,0.4); font-family:inherit; }
+
+  .overlay { position: fixed; inset: 0; background: rgba(10,6,22,0.96); display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start; text-align: center; padding: 18px 14px 30px; z-index: 20; overflow-y:auto; }
   .overlay.hidden { display: none; }
-  .overlay h1 { color: var(--gold); font-size: 26px; margin-bottom: 10px; letter-spacing: 1px; }
-  .overlay p { color: #c9a7ff; max-width: 360px; line-height: 1.6; margin-bottom: 16px; }
+  .overlay h1 { color: var(--gold); font-size: 24px; margin: 6px 0; letter-spacing: 1px; }
+  .overlay p { color: #c9a7ff; max-width: 380px; line-height: 1.55; margin-bottom: 10px; font-size:13.5px; }
+
+  /* ===== The Mind's Eye ===== */
+  #me-wrap { width:100%; max-width:460px; }
+  .me-sub { color:#b79aff; font-size:12px; letter-spacing:2px; text-transform:uppercase; }
+  .me-title { color:var(--gold); font-size:26px; font-weight:900; letter-spacing:2px; text-shadow:0 0 20px rgba(245,197,24,0.5); margin:2px 0 6px; }
+  #me-board { display:grid; grid-template-columns:16px repeat(8,1fr); grid-template-rows:repeat(8,1fr) 16px;
+    width:100%; aspect-ratio:1/1; border:2px solid var(--gold); border-radius:4px; overflow:hidden; }
+  .me-sq { display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; font-size:6vmin; }
+  @media (min-width:460px){ .me-sq{ font-size:30px; } }
+  .me-sq.light{ background:var(--light);} .me-sq.dark{ background:var(--dark);}
+  .me-sq.sel{ box-shadow:inset 0 0 0 3px var(--good);} .me-sq.lastf{ box-shadow:inset 0 0 0 3px rgba(245,197,24,0.5);}
+  .me-sq.lastt{ box-shadow:inset 0 0 0 3px var(--gold);} .me-sq.chk{ box-shadow:inset 0 0 0 3px var(--bad);}
+  .me-sq .pc.w{ color:#fff; text-shadow:0 1px 2px #000;} .me-sq .pc.b{ color:#1a0a2a; text-shadow:0 1px 1px rgba(255,255,255,0.3);}
+  .me-lab{ display:flex; align-items:center; justify-content:center; font-size:8px; color:#9a7fd4; background:#140c2d; }
+  .me-log { background:#120a26; border:1px solid #2a1d54; border-radius:8px; padding:8px; font-size:12.5px; line-height:1.5;
+    height:74px; overflow-y:auto; text-align:left; margin:8px 0; font-family:'Courier New',monospace; color:#c9a7ff; }
+  .me-status { min-height:22px; font-weight:bold; font-size:14px; }
+  .me-status.good{ color:var(--good);} .me-status.bad{ color:var(--bad);} .me-status.think{ color:#9a7fd4;}
+  .confetti { position:fixed; inset:0; pointer-events:none; z-index:25; }
 </style>
 </head>
 <body>
 <div id="wrap">
   <div class="top">
     <span class="goal" id="goal">—</span>
-    <span class="score">Solved <b id="solved">0</b>/<b id="total">0</b></span>
+    <span class="score">Solved <b id="solved">0</b> · streak <b id="streak">0</b></span>
   </div>
+  <div class="diffbar"><i id="diff-fill"></i></div>
   <div class="clue" id="clue">
     <div class="clue-beam" id="clue-beam"></div>
+    <div class="clue-after" id="clue-after"></div>
     <div class="clue-text" id="clue-text"></div>
-    <div class="clue-hint" id="clue-hint">🔦 Catch the drifting flashlight, then sweep its beam across the clue to read it.</div>
+    <div class="clue-hint" id="clue-hint">🔦 Catch the drifting flashlight, then sweep its beam across the clue. Long-press to lock it; arrow keys nudge it.</div>
     <div class="beam-batt" id="beam-batt"><i></i></div>
+    <div class="beam-lock" id="beam-lock">🔒 locked</div>
   </div>
   <span class="bf-torch" id="bf-torch" title="Catch the flashlight!">🔦</span>
+  <span class="bf-firefly" style="left:18%;top:120px;animation-delay:-1s"></span>
+  <span class="bf-firefly" style="left:72%;top:90px;animation-delay:-4s;animation-duration:11s"></span>
+  <span class="bf-firefly" style="left:46%;top:140px;animation-delay:-7s;animation-duration:8s"></span>
   <div id="board"></div>
-  <div class="msg" id="msg">Catch the 🔦 to light the clue — then click the piece that moves, then its target square.</div>
+  <div class="msg" id="msg">Catch the 🔦 to light the clue — then click the piece that moves, then its target.</div>
   <div class="row">
     <button id="reveal">Reveal position</button>
+    <button class="lights-btn" id="lights-btn">💡 Lights out</button>
     <button class="primary" id="next" disabled>Next &rarr;</button>
+  </div>
+  <div class="mindseye" id="mindseye"></div>
+</div>
+
+<!-- The Mind's Eye overlay -->
+<div class="overlay hidden" id="me-overlay">
+  <div id="me-wrap">
+    <div class="me-sub">The ultimate challenge</div>
+    <div class="me-title">THE MIND&rsquo;S EYE</div>
+    <p style="margin-bottom:6px">A full game against the <b style="color:var(--pink)">CEO</b> — played blind. The board shows <b>no pieces</b>. Move by coordinate; hold the whole position in your head.</p>
+    <div id="me-board"></div>
+    <div class="me-status think" id="me-status">You are White. Make your move.</div>
+    <div class="me-log" id="me-log"></div>
+    <div class="row">
+      <button id="me-peek">👁 Peek (3)</button>
+      <button id="me-resign">Resign</button>
+      <button id="me-close">Leave</button>
+    </div>
   </div>
 </div>
 
-<div class="overlay" id="end" class="hidden">
-  <h1 id="end-title">SET COMPLETE</h1>
-  <p id="end-msg"></p>
-  <button class="primary" id="again">Play again</button>
+<!-- Trophy -->
+<div class="overlay hidden" id="trophy">
+  <canvas class="confetti" id="confetti"></canvas>
+  <div style="font-size:72px; margin-top:20px;">🏆</div>
+  <div class="me-sub">Achievement unlocked</div>
+  <div class="me-title" id="tr-title">THE MIND&rsquo;S EYE</div>
+  <p id="tr-msg"></p>
+  <div class="row"><button class="primary" id="tr-ok">Continue</button></div>
 </div>
 
 <script>
-const FILES = ['a','b','c','d','e','f','g','h'];
-const GLYPH = {
-  w: { k:'♔', q:'♕', r:'♖', b:'♗', n:'♘', p:'♙' },
-  b: { k:'♚', q:'♛', r:'♜', b:'♝', n:'♞', p:'♟' }
-};
+"use strict";
+/* ====================================================================
+   CHESS ENGINE  (verified by perft in Node via globalThis.__chessTest)
+   board: 64 chars, index = r*8+f, r=0 is rank 8 (top), white at bottom.
+   white pieces UPPERCASE, black lowercase, '' empty.
+   ==================================================================== */
+function isW(p){ return !!p && p>='A' && p<='Z'; }
+function isB(p){ return !!p && p>='a' && p<='z'; }
+function colorOf(p){ return isW(p)?'w':isB(p)?'b':null; }
+var START_FEN='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
-// Each puzzle: a verbal clue on a blank board. Click the moving piece's square
-// to reveal it, then click its destination. All hand-verified mate/fork in one.
-const PUZZLES = [
-  { goal: 'Mate in one',
-    clue: 'Opposing <b class="them">king on g8</b>, with pawns on f7, g7, h7. Your <b class="you">rook is on e4</b> and your king on d1.',
-    pieces: { g8:['k','b'], f7:['p','b'], g7:['p','b'], h7:['p','b'], e4:['r','w'], d1:['k','w'] }, from:'e4', to:'e8' },
-  { goal: 'Mate in one',
-    clue: 'Opposing <b class="them">king on a8</b>. Your <b class="you">rook is on h7</b> and your king on b6.',
-    pieces: { a8:['k','b'], h7:['r','w'], b6:['k','w'] }, from:'h7', to:'h8' },
-  { goal: 'Mate in one',
-    clue: 'Opposing <b class="them">king on e8</b>. Your <b class="you">queen is on e1</b> and your king on e6.',
-    pieces: { e8:['k','b'], e1:['q','w'], e6:['k','w'] }, from:'e1', to:'e7' },
-  { goal: 'Win the queen (fork)',
-    clue: 'Opposing <b class="them">king on h8, queen on d8</b>. Your <b class="you">knight is on g5</b> and your king on g1.',
-    pieces: { h8:['k','b'], d8:['q','b'], g5:['n','w'], g1:['k','w'] }, from:'g5', to:'f7' },
-  { goal: 'Mate in one',
-    clue: 'Opposing <b class="them">king on d8</b>. Your <b class="you">rooks are on a7 and b1</b>, king on h1.',
-    pieces: { d8:['k','b'], a7:['r','w'], b1:['r','w'], h1:['k','w'] }, from:'b1', to:'b8' },
-  { goal: 'Mate in one',
-    clue: 'Opposing <b class="them">king on g8</b> with pawns on f7 and h7. Your <b class="you">queen is on g3</b> and king on f6.',
-    pieces: { g8:['k','b'], f7:['p','b'], h7:['p','b'], g3:['q','w'], f6:['k','w'] }, from:'g3', to:'g7' }
-];
+function parseFEN(fen){
+  var parts=fen.trim().split(/\s+/), rows=parts[0].split('/'), b=new Array(64).fill('');
+  for(var r=0;r<8;r++){ var f=0, row=rows[r]; for(var i=0;i<row.length;i++){ var ch=row[i];
+    if(ch>='1'&&ch<='8') f+=+ch; else { b[r*8+f]=ch; f++; } } }
+  var c=parts[2]||'-';
+  return { b:b, turn:(parts[1]==='b'?'b':'w'),
+    cast:{K:c.indexOf('K')>=0,Q:c.indexOf('Q')>=0,k:c.indexOf('k')>=0,q:c.indexOf('q')>=0},
+    ep:(parts[3]&&parts[3]!=='-')?sqFromName(parts[3]):-1 };
+}
+function sqFromName(s){ return (8-(+s[1]))*8 + (s.charCodeAt(0)-97); }
+function nameFromSq(i){ return String.fromCharCode(97+(i%8)) + (8-((i/8)|0)); }
+function rf(i){ return [(i/8)|0, i%8]; }
+function onb(r,f){ return r>=0&&r<8&&f>=0&&f<8; }
 
-const boardEl = document.getElementById('board');
-const sqEls = {};
-function buildBoard() {
-  boardEl.innerHTML = '';
-  for (let r = 8; r >= 1; r--) {
-    const lab = document.createElement('div'); lab.className = 'lab'; lab.textContent = r; boardEl.appendChild(lab);
-    for (let f = 0; f < 8; f++) {
-      const name = FILES[f] + r;
-      const d = document.createElement('div');
-      d.className = 'sq ' + (((f + r) % 2 === 0) ? 'dark' : 'light');
-      d.dataset.sq = name;
-      d.onclick = () => clickSquare(name);
-      boardEl.appendChild(d);
-      sqEls[name] = d;
+var KNJ=[[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+var KGJ=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+var DIAG=[[-1,-1],[-1,1],[1,-1],[1,1]];
+var ORTH=[[-1,0],[1,0],[0,-1],[0,1]];
+
+function isAttacked(b, sq, by){
+  var p=rf(sq), r=p[0], f=p[1], i, nr, nf;
+  // knights
+  for(i=0;i<8;i++){ nr=r+KNJ[i][0]; nf=f+KNJ[i][1]; if(onb(nr,nf)){ var k=b[nr*8+nf]; if(k===(by==='w'?'N':'n')) return true; } }
+  // king
+  for(i=0;i<8;i++){ nr=r+KGJ[i][0]; nf=f+KGJ[i][1]; if(onb(nr,nf)){ var kk=b[nr*8+nf]; if(kk===(by==='w'?'K':'k')) return true; } }
+  // pawns: attacker sits at r-dir, f±1
+  var dir = by==='w' ? -1 : 1; var pr=r-dir;
+  if(onb(pr,f-1) && b[pr*8+(f-1)]===(by==='w'?'P':'p')) return true;
+  if(onb(pr,f+1) && b[pr*8+(f+1)]===(by==='w'?'P':'p')) return true;
+  // sliders
+  for(i=0;i<4;i++){ nr=r+DIAG[i][0]; nf=f+DIAG[i][1];
+    while(onb(nr,nf)){ var d=b[nr*8+nf]; if(d){ if(colorOf(d)===by && (d.toLowerCase()==='b'||d.toLowerCase()==='q')) return true; break; } nr+=DIAG[i][0]; nf+=DIAG[i][1]; } }
+  for(i=0;i<4;i++){ nr=r+ORTH[i][0]; nf=f+ORTH[i][1];
+    while(onb(nr,nf)){ var o=b[nr*8+nf]; if(o){ if(colorOf(o)===by && (o.toLowerCase()==='r'||o.toLowerCase()==='q')) return true; break; } nr+=ORTH[i][0]; nf+=ORTH[i][1]; } }
+  return false;
+}
+function kingSq(b, color){ var t=color==='w'?'K':'k'; for(var i=0;i<64;i++) if(b[i]===t) return i; return -1; }
+function inCheck(S, color){ var ks=kingSq(S.b,color); return ks>=0 && isAttacked(S.b, ks, color==='w'?'b':'w'); }
+
+function genPseudo(S){
+  var b=S.b, turn=S.turn, moves=[], i;
+  for(i=0;i<64;i++){ var p=b[i]; if(!p||colorOf(p)!==turn) continue;
+    var pr=rf(i), r=pr[0], f=pr[1], pl=p.toLowerCase(), j, nr, nf, ni, t;
+    if(pl==='p'){
+      var dir=turn==='w'?-1:1, startR=turn==='w'?6:1, promoR=turn==='w'?0:7;
+      // push
+      nr=r+dir; if(onb(nr,f) && !b[nr*8+f]){ addPawn(moves,i,nr*8+f,nr===promoR,turn);
+        if(r===startR && !b[(r+2*dir)*8+f]) moves.push({from:i,to:(r+2*dir)*8+f,dbl:true}); }
+      // captures + ep
+      for(j=-1;j<=1;j+=2){ nf=f+j; nr=r+dir; if(!onb(nr,nf)) continue; ni=nr*8+nf; t=b[ni];
+        if(t && colorOf(t)!==turn) addPawn(moves,i,ni,nr===promoR,turn);
+        else if(ni===S.ep) moves.push({from:i,to:ni,ep:true}); }
+    } else if(pl==='n'){ for(j=0;j<8;j++){ nr=r+KNJ[j][0]; nf=f+KNJ[j][1]; if(!onb(nr,nf)) continue; ni=nr*8+nf; t=b[ni]; if(!t||colorOf(t)!==turn) moves.push({from:i,to:ni}); } }
+    else if(pl==='k'){ for(j=0;j<8;j++){ nr=r+KGJ[j][0]; nf=f+KGJ[j][1]; if(!onb(nr,nf)) continue; ni=nr*8+nf; t=b[ni]; if(!t||colorOf(t)!==turn) moves.push({from:i,to:ni}); } castleMoves(S,i,moves); }
+    else { var dirs = pl==='b'?DIAG : pl==='r'?ORTH : DIAG.concat(ORTH);
+      for(j=0;j<dirs.length;j++){ nr=r+dirs[j][0]; nf=f+dirs[j][1];
+        while(onb(nr,nf)){ ni=nr*8+nf; t=b[ni]; if(!t){ moves.push({from:i,to:ni}); } else { if(colorOf(t)!==turn) moves.push({from:i,to:ni}); break; } nr+=dirs[j][0]; nf+=dirs[j][1]; } } }
+  }
+  return moves;
+}
+function addPawn(moves, from, to, promo, turn){
+  if(promo){ ['q','r','b','n'].forEach(function(pp){ moves.push({from:from,to:to,promo: turn==='w'?pp.toUpperCase():pp}); }); }
+  else moves.push({from:from,to:to});
+}
+function castleMoves(S,i,moves){
+  var b=S.b;
+  if(S.turn==='w' && i===60){
+    if(S.cast.K && !b[61] && !b[62] && !isAttacked(b,60,'b') && !isAttacked(b,61,'b') && !isAttacked(b,62,'b')) moves.push({from:60,to:62,castle:'K'});
+    if(S.cast.Q && !b[59] && !b[58] && !b[57] && !isAttacked(b,60,'b') && !isAttacked(b,59,'b') && !isAttacked(b,58,'b')) moves.push({from:60,to:58,castle:'Q'});
+  } else if(S.turn==='b' && i===4){
+    if(S.cast.k && !b[5] && !b[6] && !isAttacked(b,4,'w') && !isAttacked(b,5,'w') && !isAttacked(b,6,'w')) moves.push({from:4,to:6,castle:'k'});
+    if(S.cast.q && !b[3] && !b[2] && !b[1] && !isAttacked(b,4,'w') && !isAttacked(b,3,'w') && !isAttacked(b,2,'w')) moves.push({from:4,to:2,castle:'q'});
+  }
+}
+function makeMove(S, m){
+  var b=S.b.slice(), cast={K:S.cast.K,Q:S.cast.Q,k:S.cast.k,q:S.cast.q};
+  var piece=b[m.from], turn=S.turn, dir=turn==='w'?-1:1;
+  b[m.from]='';
+  if(m.ep){ var capR=((m.to/8)|0)-dir, capF=m.to%8; b[capR*8+capF]=''; }
+  b[m.to]= m.promo ? m.promo : piece;
+  if(m.castle){ if(m.castle==='K'){ b[61]=b[63]; b[63]=''; } else if(m.castle==='Q'){ b[59]=b[56]; b[56]=''; }
+    else if(m.castle==='k'){ b[5]=b[7]; b[7]=''; } else if(m.castle==='q'){ b[3]=b[0]; b[0]=''; } }
+  // castling rights
+  var pl=piece.toLowerCase();
+  if(pl==='k'){ if(turn==='w'){ cast.K=cast.Q=false; } else { cast.k=cast.q=false; } }
+  [m.from,m.to].forEach(function(sq){ if(sq===56) cast.Q=false; else if(sq===63) cast.K=false; else if(sq===0) cast.q=false; else if(sq===7) cast.k=false; });
+  var ep=-1; if(m.dbl) ep=(((m.from/8)|0)+dir)*8 + (m.from%8);
+  return { b:b, turn: turn==='w'?'b':'w', cast:cast, ep:ep };
+}
+function legalMoves(S){
+  var ps=genPseudo(S), out=[], me=S.turn;
+  for(var i=0;i<ps.length;i++){ var ns=makeMove(S,ps[i]); if(!inCheck({b:ns.b,turn:me},me)) out.push(ps[i]); }
+  return out;
+}
+function isCheckmate(S){ return inCheck(S,S.turn) && legalMoves(S).length===0; }
+function isStalemate(S){ return !inCheck(S,S.turn) && legalMoves(S).length===0; }
+
+function perft(S, d){ if(d===0) return 1; var mv=legalMoves(S), n=0; for(var i=0;i<mv.length;i++) n+=perft(makeMove(S,mv[i]), d-1); return n; }
+
+/* ===== SAN-lite for the move log ===== */
+function moveSAN(S, m){
+  var b=S.b, piece=b[m.from], pl=piece.toLowerCase();
+  if(m.castle==='K'||m.castle==='k') return 'O-O';
+  if(m.castle==='Q'||m.castle==='q') return 'O-O-O';
+  var cap = !!b[m.to] || m.ep;
+  var dest=nameFromSq(m.to), s='';
+  if(pl==='p'){ if(cap) s=nameFromSq(m.from)[0]+'x'+dest; else s=dest; if(m.promo) s+='='+m.promo.toUpperCase(); }
+  else { s=piece.toUpperCase()==='K'?'K':piece.toUpperCase()==='N'?'N':piece.toUpperCase(); s = piece.toUpperCase()[0]; if(cap) s+='x'; s+=dest; }
+  var ns=makeMove(S,m); if(isCheckmate(ns)) s+='#'; else if(inCheck(ns,ns.turn)) s+='+';
+  return s;
+}
+
+/* ===== AI (negamax + alpha-beta) ===== */
+var PVAL={p:100,n:320,b:330,r:500,q:900,k:0};
+var PST_PAWN=[0,0,0,0,0,0,0,0, 50,50,50,50,50,50,50,50, 10,10,20,30,30,20,10,10, 5,5,10,25,25,10,5,5, 0,0,0,20,20,0,0,0, 5,-5,-10,0,0,-10,-5,5, 5,10,10,-20,-20,10,10,5, 0,0,0,0,0,0,0,0];
+var PST_KN=[-50,-40,-30,-30,-30,-30,-40,-50, -40,-20,0,0,0,0,-20,-40, -30,0,10,15,15,10,0,-30, -30,5,15,20,20,15,5,-30, -30,0,15,20,20,15,0,-30, -30,5,10,15,15,10,5,-30, -40,-20,0,5,5,0,-20,-40, -50,-40,-30,-30,-30,-30,-40,-50];
+function evalBoard(b){
+  var s=0;
+  for(var i=0;i<64;i++){ var p=b[i]; if(!p) continue; var pl=p.toLowerCase(), v=PVAL[pl]||0;
+    var pst=0; if(pl==='p') pst=isW(p)?PST_PAWN[i]:PST_PAWN[63-i]; else if(pl==='n') pst=isW(p)?PST_KN[i]:PST_KN[63-i];
+    s += isW(p) ? (v+pst) : -(v+pst); }
+  return s; // + = good for white
+}
+var MATE=1000000;
+function negamax(S, depth, alpha, beta, who){
+  // who: +1 if side-to-move is white perspective handled by sign
+  var mv=orderMoves(S, legalMoves(S));
+  if(mv.length===0){ if(inCheck(S,S.turn)) return -MATE - depth; return 0; }
+  if(depth===0) return (S.turn==='w'?1:-1)*evalBoard(S.b);
+  var best=-Infinity;
+  for(var i=0;i<mv.length;i++){ var v=-negamax(makeMove(S,mv[i]), depth-1, -beta, -alpha, -who);
+    if(v>best) best=v; if(best>alpha) alpha=best; if(alpha>=beta) break; }
+  return best;
+}
+function orderMoves(S, mv){ var b=S.b; mv.sort(function(a,c){ return (capVal(b,c)) - (capVal(b,a)); }); return mv; }
+function capVal(b,m){ var t=b[m.to]; return t ? (PVAL[t.toLowerCase()]||0) + (m.promo?800:0) : (m.promo?800:0); }
+function aiMove(S, depth){
+  var mv=orderMoves(S, legalMoves(S)); if(!mv.length) return null;
+  var best=mv[0], bv=-Infinity;
+  for(var i=0;i<mv.length;i++){ var v=-negamax(makeMove(S,mv[i]), depth-1, -Infinity, Infinity, 1);
+    if(v>bv || (v===bv && Math.random()<0.3)){ bv=v; best=mv[i]; } }
+  return best;
+}
+
+/* ====================================================================
+   PUZZLE GENERATOR (verified by the engine above)
+   ==================================================================== */
+function rnd(n){ return (Math.random()*n)|0; }
+function emptyBoard(){ return new Array(64).fill(''); }
+function placeRandKing(b, color, edgeBias){
+  for(var tries=0;tries<200;tries++){ var r,f;
+    if(edgeBias){ r = Math.random()<0.6 ? (Math.random()<0.5?0:1) : rnd(8); f = Math.random()<0.5 ? rnd(8) : (Math.random()<0.5?rnd(2):6+rnd(2)); }
+    else { r=1+rnd(6); f=1+rnd(6); }
+    var i=r*8+f; if(b[i]) continue;
+    var ok=true; for(var d=0;d<8;d++){ var nr=r+KGJ[d][0], nf=f+KGJ[d][1]; if(onb(nr,nf)&&b[nr*8+nf]&&b[nr*8+nf].toLowerCase()==='k'){ok=false;break;} }
+    if(ok){ b[i]= color==='w'?'K':'k'; return i; } }
+  return -1;
+}
+function freeSq(b){ for(var t=0;t<200;t++){ var i=rnd(64); if(!b[i]) return i; } return -1; }
+
+// Mate-in-one: build White-to-move position; search for a move that checkmates Black.
+function genMate(diff){
+  for(var att=0; att<400; att++){
+    var b=emptyBoard();
+    var bk=placeRandKing(b,'b', diff<=5);   // lower diff = king to the edge (easier mates)
+    if(bk<0) continue;
+    var wk=placeRandKing(b,'w', false); if(wk<0) continue;
+    // white attackers
+    var pool = diff<=3 ? ['Q','R'] : diff<=6 ? ['R','Q','B','N'] : ['R','B','N','Q'];
+    var npieces = 1 + (diff>=4?1:0) + (diff>=8?1:0);
+    var ok=true;
+    for(var k=0;k<npieces;k++){ var sq=freeSq(b); if(sq<0){ok=false;break;} b[sq]= pool[rnd(pool.length)]; }
+    if(!ok) continue;
+    // a few black blockers at higher diff (own pawns near king) to make it less trivial
+    if(diff>=5){ var bp=rf(bk); for(var d2=0;d2<8 && Math.random()<0.4;d2++){ var nr=bp[0]+KGJ[d2][0], nf=bp[1]+KGJ[d2][1]; if(onb(nr,nf)&&!b[nr*8+nf]) b[nr*8+nf]='p'; } }
+    var S={b:b, turn:'w', cast:{K:false,Q:false,k:false,q:false}, ep:-1};
+    if(inCheck(S,'b')) continue;             // black shouldn't already be in check
+    if(inCheck(S,'w')) continue;             // white king safe
+    var mv=legalMoves(S), maters=[];
+    for(var mi=0;mi<mv.length;mi++){ if(isCheckmate(makeMove(S,mv[mi]))) maters.push(mv[mi]); }
+    if(maters.length>=1 && maters.length<=3 && mv.length>=6)
+      return { S:S, goal:'Mate in one', sols:maters };
+  }
+  return fallbackMate();
+}
+function fallbackMate(){ var S=parseFEN('6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1'); var mv=legalMoves(S), sols=[];
+  for(var i=0;i<mv.length;i++) if(isCheckmate(makeMove(S,mv[i]))) sols.push(mv[i]); return { S:S, goal:'Mate in one', sols:sols }; }
+
+// Knight fork that wins the queen: white knight move forks black K + Q on a safe square.
+function genFork(diff){
+  for(var att=0; att<500; att++){
+    var b=emptyBoard();
+    var bk=placeRandKing(b,'b', false); if(bk<0) continue;
+    var wk=placeRandKing(b,'w', false); if(wk<0) continue;
+    // pick a fork square that knight-attacks the black king, then place the queen on another knight-target of it
+    var bp=rf(bk), forks=[];
+    for(var d=0;d<8;d++){ var fr=bp[0]+KNJ[d][0], ff=bp[1]+KNJ[d][1]; if(onb(fr,ff)&&!b[fr*8+ff]) forks.push(fr*8+ff); }
+    if(!forks.length) continue;
+    var fsq=forks[rnd(forks.length)], fp=rf(fsq), qtargets=[];
+    for(var e=0;e<8;e++){ var qr=fp[0]+KNJ[e][0], qf=fp[1]+KNJ[e][1]; if(onb(qr,qf)){ var qi=qr*8+qf; if(qi!==bk && !b[qi]) qtargets.push(qi); } }
+    if(!qtargets.length) continue;
+    var qsq=qtargets[rnd(qtargets.length)]; b[qsq]='q';
+    // place white knight a knight-move away from fsq (so it can hop in), on an empty safe square
+    var fp2=rf(fsq), starts=[];
+    for(var g=0;g<8;g++){ var sr=fp2[0]+KNJ[g][0], sf=fp2[1]+KNJ[g][1]; if(onb(sr,sf)){ var si=sr*8+sf; if(!b[si] && si!==bk && si!==qsq) starts.push(si); } }
+    if(!starts.length) continue;
+    var nsq=starts[rnd(starts.length)]; b[nsq]='N';
+    var S={b:b, turn:'w', cast:{K:false,Q:false,k:false,q:false}, ep:-1};
+    if(inCheck(S,'w')||inCheck(S,'b')) continue;
+    // the move N nsq->fsq must be legal, give check, attack the queen, and the knight be safe on fsq
+    var mv=legalMoves(S), theMove=null;
+    for(var mi=0;mi<mv.length;mi++){ if(mv[mi].from===nsq && mv[mi].to===fsq){ theMove=mv[mi]; break; } }
+    if(!theMove) continue;
+    var ns=makeMove(S,theMove);
+    if(!inCheck(ns,'b')) continue;                       // must check the king
+    if(!isAttacked(ns.b, qsq, 'w')) continue;            // knight (or someone) attacks the queen
+    if(isAttacked(ns.b, fsq, 'b')) continue;             // knight must be safe on the fork square
+    if(isCheckmate(ns)) continue;                        // that's a mate puzzle, not a fork
+    return { S:S, goal:'Win the queen (fork)', sols:[theMove] };
+  }
+  return null;
+}
+
+function describeBoard(b){
+  var TY={k:'king',q:'queen',r:'rook',b:'bishop',n:'knight',p:'pawn'};
+  function side(white){
+    var order=['k','q','r','b','n','p'], parts=[];
+    order.forEach(function(t){ var sqs=[]; for(var i=0;i<64;i++){ var p=b[i]; if(!p) continue; if((white?isW(p):isB(p)) && p.toLowerCase()===t) sqs.push(nameFromSq(i)); }
+      if(!sqs.length) return; var nm=TY[t]; var plural = sqs.length>1;
+      parts.push((plural? (nm==='knight'?'knights':nm+'s') : nm) + ' on ' + listJoin(sqs)); });
+    return parts;
+  }
+  function listJoin(a){ if(a.length===1) return a[0]; if(a.length===2) return a[0]+' and '+a[1]; return a.slice(0,-1).join(', ')+', and '+a[a.length-1]; }
+  var them=side(false), you=side(true);
+  // emphasise their king/queen and your pieces
+  var t='Opposing <b class="them">'+cap(them[0])+'</b>' + (them.length>1 ? ' — '+them.slice(1).join(', ') : '') + '. ';
+  t += 'Your <b class="you">'+you[0]+'</b>' + (you.length>1 ? ', '+you.slice(1).join(', ') : '') + '.';
+  return t;
+}
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+/* ===== self-test (Node) ===== */
+function chessSelfTest(){
+  var out={};
+  var S=parseFEN(START_FEN);
+  out.perftStart=[perft(S,1),perft(S,2),perft(S,3)];
+  var KW=parseFEN('r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1');
+  out.perftKiwi=[perft(KW,1),perft(KW,2),perft(KW,3)];
+  // fool's mate -> white checkmated
+  var F=parseFEN(START_FEN);
+  [['f2','f3'],['e7','e5'],['g2','g4'],['d8','h4']].forEach(function(mm){ var from=sqFromName(mm[0]),to=sqFromName(mm[1]);
+    var mv=legalMoves(F), found=null; for(var i=0;i<mv.length;i++) if(mv[i].from===from&&mv[i].to===to){found=mv[i];break;} F=makeMove(F,found); });
+  out.foolsMate=isCheckmate(F);
+  // stalemate position (black to move, not in check, no moves)
+  var ST=parseFEN('7k/5Q2/6K1/8/8/8/8/8 b - - 0 1'); out.stalemate=isStalemate(ST);
+  // generators
+  var gm=0,gf=0,fails=[];
+  for(var d=1;d<=10;d++){ for(var t=0;t<25;t++){
+    var pm=genMate(d); var any=false; pm.sols.forEach(function(s){ if(isCheckmate(makeMove(pm.S,s))) any=true; else fails.push('mate@'+d); }); if(any&&pm.sols.length) gm++; else fails.push('mate-none@'+d);
+    var pf=genFork(d); if(pf){ var ns=makeMove(pf.S,pf.sols[0]); if(inCheck(ns,'b')&&!isCheckmate(ns)) gf++; else fails.push('fork@'+d); }
+  } }
+  out.gen={mate:gm, fork:gf, fails:fails.length, sample:fails.slice(0,8)};
+  // AI sanity: play 30 games AI vs AI (depth 2), ensure legal + terminate
+  var aiErr=0, ended=0;
+  for(var g=0; g<20; g++){ var GS=parseFEN(START_FEN), plies=0;
+    while(plies<120){ var lm=legalMoves(GS); if(!lm.length){ ended++; break; } var mv=aiMove(GS,2); var ok=false;
+      for(var z=0;z<lm.length;z++) if(lm[z].from===mv.from&&lm[z].to===mv.to&&(lm[z].promo||'')===(mv.promo||'')){ok=true;break;}
+      if(!ok){ aiErr++; break; } GS=makeMove(GS,mv); plies++;
+      if(legalMoves(GS).length===0){ ended++; break; } }
+  }
+  out.ai={errors:aiErr, ended:ended};
+  return JSON.stringify(out);
+}
+if (typeof globalThis!=='undefined') globalThis.__chessTest=chessSelfTest;
+
+/* ====================================================================
+   UI (browser only)
+   ==================================================================== */
+var RUN_UI = (typeof document!=='undefined') && !!document.getElementById && !!document.getElementById('board');
+if (RUN_UI) (function(){
+  var FILES=['a','b','c','d','e','f','g','h'];
+  var GLYPH={ w:{k:'♔',q:'♕',r:'♖',b:'♗',n:'♘',p:'♙'}, b:{k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'} };
+  var KEY='pjcc.blindfold.v2', UNLOCK_AT=20;
+  var st = load();
+  function load(){ try{ var s=JSON.parse(localStorage.getItem(KEY)); if(s&&typeof s.solved==='number') return s; }catch(e){} return {solved:0, diff:2, best:0, streak:0, eye:false, trophy:false}; }
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){} }
+
+  var boardEl=document.getElementById('board'), sqEls={};
+  function buildBoard(){ boardEl.innerHTML='';
+    for(var r=8;r>=1;r--){ var lab=document.createElement('div'); lab.className='lab'; lab.textContent=r; boardEl.appendChild(lab);
+      for(var f=0;f<8;f++){ var name=FILES[f]+r; var d=document.createElement('div'); d.className='sq '+(((f+r)%2===0)?'dark':'light'); d.dataset.sq=name;
+        (function(nm){ d.onclick=function(){ clickSquare(nm); }; })(name); boardEl.appendChild(d); sqEls[name]=d; } }
+    var corner=document.createElement('div'); corner.className='lab'; boardEl.appendChild(corner);
+    for(var f2=0;f2<8;f2++){ var l=document.createElement('div'); l.className='lab'; l.textContent=FILES[f2]; boardEl.appendChild(l); }
+  }
+
+  var prob=null, phase='from', curMistake=false;
+  function setMsg(t,cls){ var m=document.getElementById('msg'); m.textContent=t; m.className='msg '+(cls||''); }
+  function clearMarks(){ for(var k in sqEls) sqEls[k].classList.remove('from','target','bad'); }
+  function clearPieces(){ for(var k in sqEls) sqEls[k].innerHTML=''; }
+  function place(sq, p){ var side=isW(p)?'you':'them'; sqEls[sq].innerHTML='<span class="pc '+side+'">'+GLYPH[isW(p)?'w':'b'][p.toLowerCase()]+'</span>'; }
+
+  function effDiff(){ var e=Math.round(st.diff + (Math.random()*2-1)*1.6); return Math.max(1, Math.min(10, e)); }
+  function newPuzzle(){
+    clearPieces(); clearMarks(); phase='from'; curMistake=false;
+    var d=effDiff(), p = (Math.random()<0.7) ? genMate(d) : (genFork(d)||genMate(d));
+    prob={ S:p.S, goal:p.goal, sols:p.sols, from:nameFromSq(p.sols[0].from), to:nameFromSq(p.sols[0].to),
+      clue: describeBoard(p.S.b) };
+    document.getElementById('goal').textContent = p.goal + ' · lv' + d;
+    document.getElementById('clue-text').innerHTML = prob.clue;
+    resetBeam();
+    document.getElementById('solved').textContent=st.solved;
+    document.getElementById('streak').textContent=st.streak;
+    document.getElementById('diff-fill').style.width = (st.diff/10*100)+'%';
+    document.getElementById('next').disabled=true;
+    setMsg('Light the clue, then click the piece that moves.','');
+    renderMindsEye();
+  }
+  function pieceAt(sq){ return prob.S.b[sqFromName(sq)]; }
+  function isSolutionTo(sq){ // accept any listed solution whose from matches the chosen piece and to matches sq
+    return prob.sols.some(function(s){ return nameFromSq(s.to)===sq; });
+  }
+  function solutionFromSquares(){ var o={}; prob.sols.forEach(function(s){ o[nameFromSq(s.from)]=1; }); return o; }
+  function clickSquare(sq){
+    if(phase==='done') return;
+    if(phase==='from'){
+      if(solutionFromSquares()[sq]){ place(sq, pieceAt(sq)); sqEls[sq].classList.add('from'); prob.fromSq=sq; phase='to'; setMsg('Good — now click where it goes.','good'); }
+      else { curMistake=true; if(pieceAt(sq)){ place(sq,pieceAt(sq)); sqEls[sq].classList.add('bad'); setMsg('That piece isn’t the one to move.','bad'); } else setMsg('Nothing on that square. Re-read the clue.','bad');
+        setTimeout(function(){ if(phase==='from'){ clearPieces(); clearMarks(); } }, 850); }
+    } else if(phase==='to'){
+      var validTo = prob.sols.some(function(s){ return nameFromSq(s.from)===prob.fromSq && nameFromSq(s.to)===sq; });
+      if(validTo){ sqEls[prob.fromSq].innerHTML=''; place(sq, pieceAt(prob.fromSq)); clearMarks(); sqEls[sq].classList.add('target');
+        revealAll(); phase='done'; finishSolve(!curMistake); }
+      else { curMistake=true; sqEls[sq].classList.add('bad'); setMsg('Not the winning square — try again.','bad'); setTimeout(function(){ sqEls[sq].classList.remove('bad'); }, 650); }
     }
   }
-  // bottom file labels (with a corner spacer)
-  const corner = document.createElement('div'); corner.className = 'lab'; boardEl.appendChild(corner);
-  for (let f = 0; f < 8; f++) { const l = document.createElement('div'); l.className = 'lab'; l.textContent = FILES[f]; boardEl.appendChild(l); }
-}
+  function revealAll(){ var b=prob.S.b; for(var i=0;i<64;i++){ if(b[i]){ var nm=nameFromSq(i); if(!sqEls[nm].innerHTML) place(nm,b[i]); } } }
+  function finishSolve(clean){
+    if(clean){ st.solved++; st.streak++; st.diff=Math.min(10, st.diff+0.34); if(lightsOut) st.diff=Math.min(10, st.diff+0.2); setMsg('Solved! ✓'+(lightsOut?' ⭐ lights-out':''),'good'); }
+    else { st.streak=0; st.diff=Math.max(1, st.diff-0.5); setMsg('Correct — but counted as a slip.','good'); }
+    if(st.solved>st.best) st.best=st.solved;
+    if(!st.eye && st.solved>=UNLOCK_AT){ st.eye=true; setMsg('THE MIND’S EYE is unlocked — scroll down.','good'); }
+    save();
+    document.getElementById('solved').textContent=st.solved; document.getElementById('streak').textContent=st.streak;
+    document.getElementById('diff-fill').style.width=(st.diff/10*100)+'%';
+    document.getElementById('next').disabled=false;
+    if(window.PJCC) PJCC.saveScore('blindfold', st.solved, { credits:1, data:{ streak:st.streak, diff:Math.round(st.diff) } });
+    renderMindsEye();
+  }
+  function failReveal(){ // "Reveal position": show + treat as slip; diff eases
+    revealAll(); clearMarks(); sqEls[prob.from].classList.add('from'); sqEls[prob.to].classList.add('target');
+    phase='done'; curMistake=true; st.streak=0; st.diff=Math.max(1, st.diff-0.7); save();
+    document.getElementById('streak').textContent=st.streak; document.getElementById('diff-fill').style.width=(st.diff/10*100)+'%';
+    setMsg('Answer: ' + prob.from + ' → ' + prob.to + '.','');
+    document.getElementById('next').disabled=false;
+  }
 
-let idx = 0, solved = 0, phase = 'from', curMistake = false;
-const total = PUZZLES.length;
+  document.getElementById('reveal').onclick=failReveal;
+  document.getElementById('next').onclick=newPuzzle;
 
-function setMsg(t, cls) { const m = document.getElementById('msg'); m.textContent = t; m.className = 'msg ' + (cls || ''); }
-function clearMarks() { Object.values(sqEls).forEach(e => { e.classList.remove('from','target','bad'); }); }
-function place(sq, piece) {
-  const [type, side] = piece;
-  sqEls[sq].innerHTML = '<span class="pc ' + (side === 'w' ? 'you' : 'them') + '">' + GLYPH[side][type] + '</span>';
-}
-function clearPieces() { Object.values(sqEls).forEach(e => { e.innerHTML = ''; }); }
-
-function loadPuzzle() {
-  clearPieces(); clearMarks();
-  const p = PUZZLES[idx];
-  phase = 'from'; curMistake = false;
-  document.getElementById('goal').textContent = p.goal;
-  document.getElementById('clue-text').innerHTML = p.clue;
-  resetBeam();
-  document.getElementById('solved').textContent = solved;
-  document.getElementById('total').textContent = total;
-  document.getElementById('next').disabled = true;
-  setMsg('Click the piece that moves.', '');
-}
-
-function clickSquare(sq) {
-  const p = PUZZLES[idx];
-  if (phase === 'done') return;
-  if (phase === 'from') {
-    if (sq === p.from) {
-      place(sq, p.pieces[sq]); sqEls[sq].classList.add('from');
-      phase = 'to'; setMsg('Good — now click where it goes.', 'good');
+  function renderMindsEye(){
+    var m=document.getElementById('mindseye');
+    if(st.eye || st.solved>=UNLOCK_AT){ st.eye=true;
+      m.innerHTML='<button class="me-unlock" id="me-launch">👁 THE MIND’S EYE — blindfold duel with the CEO'+(st.trophy?' 🏆':'')+'</button>';
+      document.getElementById('me-launch').onclick=openMindsEye;
     } else {
-      curMistake = true;
-      if (p.pieces[sq]) { place(sq, p.pieces[sq]); sqEls[sq].classList.add('bad'); setMsg('That piece isn’t the one to move.', 'bad'); }
-      else setMsg('Nothing on that square. Re-read the clue.', 'bad');
-      setTimeout(() => { if (phase === 'from') { clearPieces(); clearMarks(); } }, 900);
-    }
-  } else if (phase === 'to') {
-    if (sq === p.to) {
-      sqEls[p.from].innerHTML = ''; place(sq, p.pieces[p.from]); clearMarks(); sqEls[sq].classList.add('target');
-      // reveal the rest of the position for confirmation
-      Object.keys(p.pieces).forEach(s => { if (s !== p.from && !sqEls[s].innerHTML) place(s, p.pieces[s]); });
-      phase = 'done';
-      if (!curMistake) solved++;
-      document.getElementById('solved').textContent = solved;
-      setMsg(curMistake ? 'Correct — but counted as a slip.' : 'Solved! ✓', 'good');
-      document.getElementById('next').disabled = false;
-    } else {
-      curMistake = true; sqEls[sq].classList.add('bad');
-      setMsg('Not the right square — try again.', 'bad');
-      setTimeout(() => sqEls[sq].classList.remove('bad'), 700);
+      m.innerHTML='<div class="me-locked">🔒 Solve <b>'+UNLOCK_AT+'</b> blindfold puzzles to unlock <b>The Mind’s Eye</b> — a full game against the CEO, played blind. You are at '+st.solved+'.</div>';
     }
   }
-}
 
-document.getElementById('reveal').onclick = () => {
-  const p = PUZZLES[idx];
-  Object.keys(p.pieces).forEach(s => place(s, p.pieces[s]));
-  clearMarks(); sqEls[p.from].classList.add('from'); sqEls[p.to].classList.add('target');
-  curMistake = true; phase = 'done';
-  setMsg('Answer: ' + p.from + ' → ' + p.to + '.', '');
-  document.getElementById('next').disabled = false;
-};
+  /* ===== Flashlight beam — afterglow, pickups, lock & arrow-nudge ===== */
+  var clueEl=document.getElementById('clue'), clueText=document.getElementById('clue-text'),
+      clueAfter=document.getElementById('clue-after'), beamEl=document.getElementById('clue-beam'),
+      battFill=document.querySelector('#beam-batt > i'), torchEl=document.getElementById('bf-torch');
+  var BEAM_R=104, BEAM_SECONDS=6.5, beamLit=false, beamBatt=0, lastTs=0;
+  var beamX=0, beamY=0, afterX=0, afterY=0, beamLocked=false, drainMul=1, lensR=0, lensT=0;
+  var lightsOut=false;
+  function applyBeam(){ var R=BEAM_R+lensR;
+    clueText.style.setProperty('--lx',beamX+'px'); clueText.style.setProperty('--ly',beamY+'px'); clueText.style.setProperty('--r',R+'px');
+    beamEl.style.setProperty('--lx',beamX+'px'); beamEl.style.setProperty('--ly',beamY+'px'); }
+  function setBeamPos(cx,cy){ var r=clueEl.getBoundingClientRect(); beamX=Math.max(0,Math.min(r.width,cx-r.left)); beamY=Math.max(0,Math.min(r.height,cy-r.top)); applyBeam(); }
+  function nudge(dx,dy){ if(!beamLit) return; var r=clueEl.getBoundingClientRect(); beamX=Math.max(0,Math.min(r.width,beamX+dx)); beamY=Math.max(0,Math.min(r.height,beamY+dy)); beamLocked=true; clueEl.classList.add('locked'); applyBeam(); }
+  function catchTorch(){ beamLit=true; beamBatt=BEAM_SECONDS; beamLocked=false; lensR=0; lensT=0; drainMul=1;
+    clueEl.classList.remove('locked'); clueEl.classList.add('lit'); torchEl.classList.add('caught');
+    var r=clueEl.getBoundingClientRect(); beamX=r.width/2; beamY=r.height/2; afterX=beamX; afterY=beamY; applyBeam(); }
+  function beamOff(){ beamLit=false; beamLocked=false; lensR=0; drainMul=1; lensT=0; clueEl.classList.remove('lit','locked');
+    clueText.style.setProperty('--r','0px'); if(clueAfter) clueAfter.style.setProperty('--r','0px'); respawn(); }
+  function respawn(){ torchEl.classList.remove('caught'); torchEl.style.animation='none'; void torchEl.offsetWidth; torchEl.style.animation=''; }
+  function resetBeam(){ beamOff(); if(battFill) battFill.style.transform='scaleX(0)'; if(clueAfter) clueAfter.innerHTML = prob ? prob.clue : ''; }
 
-document.getElementById('next').onclick = () => {
-  idx++;
-  if (idx >= total) return endSet();
-  loadPuzzle();
-};
+  torchEl.addEventListener('pointerdown', function(e){ e.preventDefault(); catchTorch(); });
+  // long-press to LOCK the beam in place; a quick tap while locked releases it
+  var pressT=null, pressStart=0;
+  clueEl.addEventListener('pointerdown', function(e){ if(!beamLit) return; pressStart=Date.now(); if(!beamLocked) setBeamPos(e.clientX,e.clientY);
+    pressT=setTimeout(function(){ beamLocked=true; clueEl.classList.add('locked'); }, 420); });
+  clueEl.addEventListener('pointermove', function(e){ if(beamLit && !beamLocked) setBeamPos(e.clientX,e.clientY); });
+  clueEl.addEventListener('pointerup', function(){ if(pressT){ clearTimeout(pressT); pressT=null; } if(Date.now()-pressStart<420 && beamLocked){ beamLocked=false; clueEl.classList.remove('locked'); } });
+  clueEl.addEventListener('pointerleave', function(){ if(pressT){ clearTimeout(pressT); pressT=null; } });
+  document.addEventListener('keydown', function(e){ var s=14;
+    if(e.key==='ArrowLeft'){ nudge(-s,0); e.preventDefault(); } else if(e.key==='ArrowRight'){ nudge(s,0); e.preventDefault(); }
+    else if(e.key==='ArrowUp'){ nudge(0,-s); e.preventDefault(); } else if(e.key==='ArrowDown'){ nudge(0,s); e.preventDefault(); } });
 
-function endSet() {
-  document.getElementById('end-title').textContent = solved === total ? 'PERFECT SET! ⭐' : 'SET COMPLETE';
-  document.getElementById('end-msg').textContent = 'You solved ' + solved + ' of ' + total + ' blindfold puzzles clean.';
-  document.getElementById('end').classList.remove('hidden');
-  if (window.PJCC) PJCC.saveScore('blindfold', solved, { credits: 1, data: { total: total } });
-}
-
-document.getElementById('again').onclick = () => {
-  idx = 0; solved = 0;
-  document.getElementById('end').classList.add('hidden');
-  loadPuzzle();
-};
-
-// ---- Flashlight beam ------------------------------------------------------
-// The clue sits in the dark. A flashlight drifts up through the scene; catch it
-// and its beam — which follows your pointer — reveals only the text it touches.
-const clueEl   = document.getElementById('clue');
-const clueText = document.getElementById('clue-text');
-const beamEl   = document.getElementById('clue-beam');
-const battFill = document.querySelector('#beam-batt > i');
-const torchEl  = document.getElementById('bf-torch');
-
-const BEAM_R = 104;        // reveal radius in px
-const BEAM_SECONDS = 6.5;  // battery life per catch
-let beamLit = false, beamBatt = 0, lastTs = 0;
-
-function setBeamPos(clientX, clientY) {
-  const r = clueEl.getBoundingClientRect();
-  const x = Math.max(0, Math.min(r.width,  clientX - r.left));
-  const y = Math.max(0, Math.min(r.height, clientY - r.top));
-  clueText.style.setProperty('--lx', x + 'px');
-  clueText.style.setProperty('--ly', y + 'px');
-  beamEl.style.setProperty('--lx', x + 'px');
-  beamEl.style.setProperty('--ly', y + 'px');
-}
-
-function catchTorch() {
-  beamLit = true; beamBatt = BEAM_SECONDS;
-  clueEl.classList.add('lit');
-  clueText.style.setProperty('--r', BEAM_R + 'px');
-  torchEl.classList.add('caught');
-  const r = clueEl.getBoundingClientRect();          // start lit at the clue's centre
-  setBeamPos(r.left + r.width / 2, r.top + r.height / 2);
-}
-
-function beamOff() {
-  beamLit = false;
-  clueEl.classList.remove('lit');
-  clueText.style.setProperty('--r', '0px');
-  respawnTorch();
-}
-
-function respawnTorch() {
-  torchEl.classList.remove('caught');               // restart the drift from the bottom
-  torchEl.style.animation = 'none';
-  void torchEl.offsetWidth;                          // force reflow
-  torchEl.style.animation = '';
-}
-
-function resetBeam() { beamOff(); if (battFill) battFill.style.transform = 'scaleX(0)'; }
-
-torchEl.addEventListener('pointerdown', e => { e.preventDefault(); catchTorch(); });
-clueEl.addEventListener('pointermove', e => { if (beamLit) setBeamPos(e.clientX, e.clientY); });
-clueEl.addEventListener('pointerdown', e => { if (beamLit) setBeamPos(e.clientX, e.clientY); });
-
-function beamTick(ts) {
-  const dt = lastTs ? (ts - lastTs) / 1000 : 0; lastTs = ts;
-  if (beamLit) {
-    beamBatt -= dt;
-    if (beamBatt <= 0) { beamBatt = 0; beamOff(); }
-    if (battFill) battFill.style.transform = 'scaleX(' + (beamBatt / BEAM_SECONDS) + ')';
-  }
+  function beamTick(ts){ var dt=lastTs?(ts-lastTs)/1000:0; lastTs=ts;
+    if(beamLit){ beamBatt-=dt*drainMul; if(lensT>0){ lensT-=dt; if(lensT<=0){ lensR=0; drainMul=1; applyBeam(); } }
+      if(beamBatt<=0){ beamBatt=0; beamOff(); }
+      if(battFill) battFill.style.transform='scaleX('+(beamBatt/BEAM_SECONDS)+')';
+      afterX += (beamX-afterX)*0.08; afterY += (beamY-afterY)*0.08;
+      if(clueAfter){ clueAfter.style.setProperty('--lx',afterX+'px'); clueAfter.style.setProperty('--ly',afterY+'px'); clueAfter.style.setProperty('--r',(BEAM_R+lensR+34)+'px'); }
+    }
+    updatePickups(dt);
+    requestAnimationFrame(beamTick); }
   requestAnimationFrame(beamTick);
-}
-requestAnimationFrame(beamTick);
 
-buildBoard();
-loadPuzzle();
+  // ---- Battery / lens pickups ----
+  var pickups=[], pickT=3;
+  function spawnPickup(){
+    var types=[ {e:'🔋',k:'batt'}, {e:'🔆',k:'gold'}, {e:'🔴',k:'red'} ];
+    var t=types[(Math.random()*types.length)|0];
+    var el=document.createElement('span'); el.className='bf-pickup'; el.textContent=t.e;
+    el.style.left=(12+Math.random()*72)+'%'; el.style.top='160px';
+    document.getElementById('wrap').appendChild(el);
+    var p={ el:el, k:t.k, y:160, vy:-(13+Math.random()*9), x:0, vx:(Math.random()-0.5)*14, life:6.5, dead:false };
+    el.addEventListener('pointerdown', function(ev){ ev.preventDefault(); grabPickup(p); });
+    pickups.push(p);
+  }
+  function grabPickup(p){
+    if(p.dead) return; p.dead=true; if(p.el) p.el.remove();
+    if(p.k==='batt'){ if(beamLit) beamBatt=Math.min(BEAM_SECONDS+4, beamBatt+3); setMsg('🔋 +battery — longer beam.','good'); }
+    else if(p.k==='gold'){ lensR=46; lensT=5; drainMul=0.8; if(beamLit) applyBeam(); setMsg('🔆 gold lens — wider beam, slower drain (a hint!).','good'); }
+    else { lensR=-34; lensT=4; drainMul=1.7; if(beamLit) applyBeam(); setMsg('🔴 decoy lens — tight beam, draining fast!','bad'); }
+  }
+  function updatePickups(dt){
+    pickT-=dt; if(pickT<=0){ pickT=4+Math.random()*4; if(pickups.filter(function(p){return !p.dead;}).length<2) spawnPickup(); }
+    for(var i=pickups.length-1;i>=0;i--){ var p=pickups[i]; if(p.dead){ pickups.splice(i,1); continue; }
+      p.life-=dt; p.y+=p.vy*dt*6; p.x+=p.vx*dt*6;
+      if(p.el){ p.el.style.top=p.y+'px'; p.el.style.transform='translateX('+p.x+'px)'; p.el.style.opacity=Math.max(0,Math.min(1,p.life/1.2)); }
+      if(p.life<=0 || p.y<-30){ if(p.el) p.el.remove(); pickups.splice(i,1); } }
+  }
+
+  // ---- Lights-out hard mode ----
+  document.getElementById('lights-btn').onclick=function(){
+    lightsOut=!lightsOut; document.getElementById('board').classList.toggle('lights-out',lightsOut); this.classList.toggle('on',lightsOut);
+    setMsg(lightsOut?'💡 Lights out — the board is dark too. Clean solves earn a bonus.':'Lights back on.','');
+  };
+
+  /* ================= THE MIND'S EYE (blindfold chess vs CEO) ================= */
+  var ME=null, meBoardEl=document.getElementById('me-board'), meSq={}, mePeeks=3, mePeekT=0, meSel=null, meBusy=false, meLast=null;
+  function buildMeBoard(){ meBoardEl.innerHTML='';
+    for(var r=8;r>=1;r--){ var lab=document.createElement('div'); lab.className='me-lab'; lab.textContent=r; meBoardEl.appendChild(lab);
+      for(var f=0;f<8;f++){ var name=FILES[f]+r; var d=document.createElement('div'); d.className='me-sq '+(((f+r)%2===0)?'dark':'light'); d.dataset.sq=name;
+        (function(nm){ d.onclick=function(){ meClick(nm); }; })(name); meBoardEl.appendChild(d); meSq[name]=d; } }
+    var c=document.createElement('div'); c.className='me-lab'; meBoardEl.appendChild(c);
+    for(var f2=0;f2<8;f2++){ var l=document.createElement('div'); l.className='me-lab'; l.textContent=FILES[f2]; meBoardEl.appendChild(l); }
+  }
+  function openMindsEye(){ document.getElementById('me-overlay').classList.remove('hidden'); newMe(); }
+  function newMe(){ ME=parseFEN(START_FEN); mePeeks=3; mePeekT=0; meSel=null; meBusy=false; meLast=null;
+    document.getElementById('me-log').innerHTML=''; document.getElementById('me-peek').textContent='👁 Peek (3)';
+    setMeStatus('You are White. Make your move (click from-square, then to-square).','think'); drawMe(); }
+  function drawMe(){
+    for(var k in meSq){ meSq[k].className='me-sq '+(((FILES.indexOf(k[0])+ +k[1])%2===0)?'dark':'light'); meSq[k].innerHTML=''; }
+    if(mePeekT>0){ for(var i=0;i<64;i++){ var p=ME.b[i]; if(p){ var nm=nameFromSq(i); meSq[nm].innerHTML='<span class="pc '+(isW(p)?'w':'b')+'">'+GLYPH[isW(p)?'w':'b'][p.toLowerCase()]+'</span>'; } } }
+    if(meLast){ if(meSq[nameFromSq(meLast.from)]) meSq[nameFromSq(meLast.from)].classList.add('lastf'); if(meSq[nameFromSq(meLast.to)]) meSq[nameFromSq(meLast.to)].classList.add('lastt'); }
+    if(meSel && meSq[meSel]) meSq[meSel].classList.add('sel');
+    if(inCheck(ME, ME.turn)){ var ks=nameFromSq(kingSq(ME.b, ME.turn)); if(meSq[ks]) meSq[ks].classList.add('chk'); }
+  }
+  function setMeStatus(t,cls){ var s=document.getElementById('me-status'); s.textContent=t; s.className='me-status '+(cls||''); }
+  function meLog(line){ var l=document.getElementById('me-log'); l.innerHTML += line; l.scrollTop=l.scrollHeight; }
+  function meClick(sq){
+    if(meBusy || !ME || ME.turn!=='w') return;
+    var i=sqFromName(sq);
+    if(meSel===null){ if(ME.b[i] && isW(ME.b[i])){ meSel=sq; drawMe(); } return; }
+    if(sq===meSel){ meSel=null; drawMe(); return; }
+    // attempt move meSel -> sq
+    var from=sqFromName(meSel), to=i, lm=legalMoves(ME), found=null;
+    for(var z=0;z<lm.length;z++){ if(lm[z].from===from && lm[z].to===to){ found=lm[z]; break; } }
+    if(!found){ if(ME.b[i] && isW(ME.b[i])){ meSel=sq; drawMe(); return; } setMeStatus('Illegal move. Try again.','bad'); meSel=null; drawMe(); return; }
+    if(found.promo){ found=Object.assign({},found,{promo:'Q'}); /* auto-queen for simplicity */ for(var z2=0;z2<lm.length;z2++){ if(lm[z2].from===from&&lm[z2].to===to&&lm[z2].promo==='Q'){ found=lm[z2]; break; } } }
+    doMe(found, true);
+  }
+  function doMe(m, isPlayer){
+    var moveNo = ''; var san = moveSAN(ME, m);
+    if(ME.turn==='w'){ var num=(document.getElementById('me-log').childElementCount); meLog('<div><b style="color:#F5C518">'+moveNumber()+'.</b> '+san+' '); }
+    else { meLog('<span style="color:#ff8fd0">'+san+'</span></div>'); }
+    ME=makeMove(ME, m); meLast=m; meSel=null; drawMe();
+    // outcome
+    if(isCheckmate(ME)){ // side to move (ME.turn) is mated
+      if(ME.turn==='b'){ winMindsEye(); } else { setMeStatus('Checkmate — the CEO wins this one. Rebuild and challenge again.','bad'); meBusy=true; }
+      return;
+    }
+    if(isStalemate(ME) || onlyKings(ME.b)){ setMeStatus('Drawn game. The CEO tips his king.','think'); meBusy=true; return; }
+    if(isPlayer){ // CEO replies
+      meBusy=true; setMeStatus('The CEO considers…','think');
+      setTimeout(function(){ var mv=aiMove(ME, 3); if(!mv){ setMeStatus('Stalemate.','think'); return; } doMe(mv, false);
+        if(!isCheckmate(ME) && !isStalemate(ME)){ meBusy=false; setMeStatus(inCheck(ME,'w')?'Check! Your move.':'Your move.', inCheck(ME,'w')?'bad':'think'); } }, 380);
+    }
+  }
+  function moveNumber(){ // count full moves played so far for white
+    return Math.floor((document.getElementById('me-log').querySelectorAll('div').length))+1;
+  }
+  function onlyKings(b){ for(var i=0;i<64;i++){ if(b[i] && b[i].toLowerCase()!=='k') return false; } return true; }
+  function winMindsEye(){
+    meBusy=true; setMeStatus('CHECKMATE — you beat the CEO blind!','good');
+    var firstTime = !st.trophy; st.trophy=true; st.eye=true; save();
+    var creds = firstTime ? 25 : 5;
+    if(window.PJCC) PJCC.saveScore('blindfold', st.solved, { credits: creds, data:{ trophy:'minds-eye', firstTime:firstTime } });
+    setTimeout(function(){ showTrophy(firstTime, creds); }, 700);
+  }
+  document.getElementById('me-peek').onclick=function(){ if(mePeeks<=0||meBusy) return; mePeeks--; mePeekT=1.2; this.textContent='👁 Peek ('+mePeeks+')'; drawMe(); setTimeout(function(){ mePeekT=0; drawMe(); }, 1200); };
+  document.getElementById('me-resign').onclick=function(){ if(!ME) return; setMeStatus('You resign. The CEO smiles.','bad'); meBusy=true; };
+  document.getElementById('me-close').onclick=function(){ document.getElementById('me-overlay').classList.add('hidden'); renderMindsEye(); };
+
+  /* ===== trophy ===== */
+  function showTrophy(firstTime, creds){
+    document.getElementById('me-overlay').classList.add('hidden');
+    document.getElementById('tr-msg').innerHTML = (firstTime ? 'You held the entire board in your mind and checkmated the CEO. ' : 'Bested the CEO again. ') +
+      'Awarded <b style="color:#F5C518">+'+creds+' credits</b>' + (firstTime ? ' and the <b style="color:#F5C518">Mind’s Eye</b> trophy.' : '.');
+    document.getElementById('trophy').classList.remove('hidden');
+    confetti();
+  }
+  document.getElementById('tr-ok').onclick=function(){ document.getElementById('trophy').classList.add('hidden'); renderMindsEye(); };
+  function confetti(){
+    var cv=document.getElementById('confetti'); cv.width=window.innerWidth; cv.height=window.innerHeight; var cx=cv.getContext('2d');
+    var ps=[]; for(var i=0;i<140;i++) ps.push({x:Math.random()*cv.width, y:-20-Math.random()*cv.height, vx:(Math.random()-0.5)*60, vy:60+Math.random()*120, c:['#F5C518','#ff8fd0','#6bffb8','#fff'][i%4], r:3+Math.random()*4, a:Math.random()*7});
+    var t0=performance.now(), dur=2600;
+    function fr(t){ var dt=0.016, el=t-t0; cx.clearRect(0,0,cv.width,cv.height);
+      ps.forEach(function(p){ p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=140*dt; p.a+=0.1; cx.save(); cx.translate(p.x,p.y); cx.rotate(p.a); cx.fillStyle=p.c; cx.fillRect(-p.r,-p.r,p.r*2,p.r*2); cx.restore(); });
+      if(el<dur && !document.getElementById('trophy').classList.contains('hidden')) requestAnimationFrame(fr); else cx.clearRect(0,0,cv.width,cv.height); }
+    requestAnimationFrame(fr);
+  }
+
+  buildBoard(); buildMeBoard(); newPuzzle();
+})();
 </script>
 </body>
 </html>

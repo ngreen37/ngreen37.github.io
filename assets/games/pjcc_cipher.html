@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: CIPHER</title>
+<title>PJCC: CIPHER v1.3</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -13,11 +13,11 @@
     font-family: 'Courier New', monospace; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
   body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
   #term {
-    position: relative; width: 460px; max-width: 100vw; height: 500px;
+    position: relative; width: min(560px, 96vw); height: min(700px, 95vh);
     background: radial-gradient(circle at 50% 18%, #0a2316 0%, #04100a 75%);
     border: 3px solid var(--green); border-radius: 12px; overflow: hidden;
     box-shadow: 0 0 40px rgba(46,204,113,0.25); color: var(--ink);
-    display: flex; flex-direction: column; padding: 8px 12px 10px;
+    display: flex; flex-direction: column; padding: 10px 16px 14px;
   }
   /* CRT scanlines */
   #term::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 50;
@@ -28,21 +28,21 @@
 
   .hdr { display: flex; align-items: center; justify-content: space-between; font-size: 10px; letter-spacing: 1.5px; color: var(--green); }
   .hdr .stamp { border: 1px solid var(--amber); color: var(--amber); padding: 1px 6px; border-radius: 3px; transform: rotate(-3deg); font-weight: bold; }
-  .title { text-align: center; font-weight: bold; font-size: 22px; letter-spacing: 8px; color: #eafff2;
-    text-shadow: 0 0 10px rgba(46,204,113,0.7); margin: 3px 0 1px; }
-  .subtitle { text-align: center; font-size: 9px; letter-spacing: 3px; color: #6fbf90; margin-bottom: 6px; }
+  .title { text-align: center; font-weight: bold; font-size: 30px; letter-spacing: 9px; color: #eafff2;
+    text-shadow: 0 0 10px rgba(46,204,113,0.7); margin: 5px 0 2px; }
+  .subtitle { text-align: center; font-size: 11px; letter-spacing: 3px; color: #6fbf90; margin-bottom: 8px; }
 
   .transmission { background: rgba(0,0,0,0.4); border: 1px solid #1c5; border-left: 3px solid var(--green);
-    border-radius: 4px; padding: 5px 8px; font-size: 10.5px; line-height: 1.5; min-height: 46px; color: #9fe8c0; }
-  .transmission .tlabel { color: var(--green); font-size: 8.5px; letter-spacing: 2px; display: block; margin-bottom: 2px; }
+    border-radius: 4px; padding: 7px 10px; font-size: 13px; line-height: 1.55; min-height: 54px; color: #9fe8c0; }
+  .transmission .tlabel { color: var(--green); font-size: 9.5px; letter-spacing: 2px; display: block; margin-bottom: 3px; }
   .transmission .tbody { color: #d8ffe9; letter-spacing: 0.5px; word-break: break-word; }
   .transmission .tbody.locked { color: #3c8a5f; }
 
-  .grid { display: grid; grid-template-rows: repeat(6, 1fr); gap: 5px; margin: 7px auto; width: 252px; flex: 0 0 auto; }
-  .grow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+  .grid { display: grid; grid-template-rows: repeat(6, 1fr); gap: 6px; margin: 9px auto; width: min(280px, 62vw); flex: 0 0 auto; }
+  .grow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
   .cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-    font-size: 22px; font-weight: bold; border: 2px solid #1f6; border-color: rgba(46,204,113,0.3);
-    border-radius: 4px; color: #eafff2; background: rgba(0,0,0,0.25); transition: transform 0.15s;
+    font-size: 25px; font-weight: bold; border: 2px solid #1f6; border-color: rgba(46,204,113,0.3);
+    border-radius: 5px; color: #eafff2; background: rgba(0,0,0,0.25); transition: transform 0.15s;
     transform-style: preserve-3d; }
   .cell.filled { border-color: rgba(46,204,113,0.8); animation: pop 0.12s ease; }
   .cell.flip { animation: flip 0.5s ease forwards; }
@@ -54,20 +54,20 @@
   .grid.shake { animation: shake 0.3s; }
   @keyframes shake { 0%,100%{ transform: translateX(0); } 25%{ transform: translateX(-7px); } 75%{ transform: translateX(7px); } }
 
-  .kbd { display: flex; flex-direction: column; gap: 4px; margin-top: auto; }
-  .krow { display: flex; gap: 3.5px; justify-content: center; }
-  .key { flex: 1; min-width: 0; height: 36px; border: none; border-radius: 4px; cursor: pointer;
-    background: #16331f; color: #cfeede; font-family: 'Courier New', monospace; font-weight: bold; font-size: 13px;
+  .kbd { display: flex; flex-direction: column; gap: 6px; margin-top: auto; padding-top: 6px; }
+  .krow { display: flex; gap: 4px; justify-content: center; }
+  .key { flex: 1; min-width: 0; height: 44px; border: none; border-radius: 5px; cursor: pointer;
+    background: #16331f; color: #cfeede; font-family: 'Courier New', monospace; font-weight: bold; font-size: 16px;
     transition: transform 0.05s, background 0.1s; box-shadow: 0 2px 0 rgba(0,0,0,0.5); }
   .key:active { transform: translateY(2px); box-shadow: 0 0 0 rgba(0,0,0,0.5); }
-  .key.wide { flex: 1.6; font-size: 10px; letter-spacing: 1px; }
+  .key.wide { flex: 1.6; font-size: 11px; letter-spacing: 1px; }
   .key.correct { background: var(--green); color: #042; }
   .key.present { background: var(--amber); color: #221a02; }
   .key.absent { background: #081710; color: #3a5446; }
 
-  .toast { position: absolute; top: 96px; left: 50%; transform: translateX(-50%); z-index: 60;
+  .toast { position: absolute; top: 110px; left: 50%; transform: translateX(-50%); z-index: 60;
     background: rgba(0,0,0,0.9); border: 1px solid var(--amber); color: var(--amber);
-    padding: 7px 16px; border-radius: 5px; font-size: 12px; font-weight: bold; letter-spacing: 1px;
+    padding: 8px 18px; border-radius: 5px; font-size: 13px; font-weight: bold; letter-spacing: 1px;
     opacity: 0; transition: opacity 0.2s; pointer-events: none; }
   .toast.show { opacity: 1; }
 
@@ -78,10 +78,10 @@
   .ov-stamp { font-size: 12px; letter-spacing: 3px; padding: 3px 10px; border-radius: 4px; margin-bottom: 10px; font-weight: bold; }
   .ov-stamp.ok { border: 1px solid var(--green); color: var(--green); }
   .ov-stamp.fail { border: 1px solid #ff5b5b; color: #ff5b5b; }
-  .ov-title { font-size: 26px; font-weight: bold; letter-spacing: 4px; color: #eafff2; margin-bottom: 4px; text-shadow: 0 0 12px rgba(46,204,113,0.5); }
-  .ov-word { font-size: 16px; letter-spacing: 6px; color: var(--amber); margin: 6px 0 4px; }
-  .ov-frag { font-size: 11.5px; color: #9fe8c0; line-height: 1.6; max-width: 330px; margin-bottom: 6px; }
-  .ov-streak { font-size: 11px; color: #6fbf90; margin-bottom: 12px; }
+  .ov-title { font-size: 30px; font-weight: bold; letter-spacing: 4px; color: #eafff2; margin-bottom: 4px; text-shadow: 0 0 12px rgba(46,204,113,0.5); }
+  .ov-word { font-size: 19px; letter-spacing: 7px; color: var(--amber); margin: 6px 0 4px; }
+  .ov-frag { font-size: 13px; color: #9fe8c0; line-height: 1.6; max-width: 340px; margin-bottom: 6px; }
+  .ov-streak { font-size: 12px; color: #6fbf90; margin-bottom: 12px; }
   .btn { font-family: 'Courier New', monospace; font-weight: bold; cursor: pointer; border: none;
     border-radius: 6px; padding: 11px 24px; font-size: 13px; letter-spacing: 1.5px;
     box-shadow: 0 4px 0 rgba(0,0,0,0.5); transition: transform 0.08s, box-shadow 0.08s; }
@@ -93,8 +93,16 @@
   .mode { font-family: 'Courier New', monospace; background: #0b1f14; color: #6fbf90; border: 1px solid #1c5;
     border-radius: 6px; padding: 7px 16px; font-size: 12px; cursor: pointer; letter-spacing: 1px; }
   .mode.sel { background: var(--green); color: #042; font-weight: bold; }
-  .blurb { font-size: 11.5px; color: #9fe8c0; line-height: 1.7; max-width: 340px; margin-bottom: 6px; }
-  .foot { margin-top: 14px; font-size: 9.5px; color: #4a6a56; line-height: 1.7; }
+  .blurb { font-size: 13.5px; color: #9fe8c0; line-height: 1.75; max-width: 360px; margin-bottom: 6px; }
+  .foot { margin-top: 14px; font-size: 11px; color: #4a6a56; line-height: 1.7; }
+  .ctrlrow { display: flex; align-items: center; gap: 8px; justify-content: center; margin: 4px 0 2px; min-height: 24px; flex-wrap: wrap; }
+  .hintb { font-family: 'Courier New', monospace; font-weight: bold; font-size: 11px; letter-spacing: 1px; cursor: pointer;
+    background: #0b1f14; color: var(--amber); border: 1px solid var(--amber); border-radius: 5px; padding: 4px 10px; }
+  .hintb:disabled { opacity: 0.4; cursor: default; color: #6a5a2a; border-color: #3a3320; }
+  .hint-chip { font-family: 'Courier New', monospace; font-size: 11px; color: var(--green); opacity: 0; transition: opacity 0.2s; }
+  .hint-chip.show { opacity: 1; }
+  .packsel { flex-wrap: wrap; justify-content: center; }
+  .mode.pk { padding: 5px 10px; font-size: 10.5px; }
 </style>
 </head>
 <body>
@@ -112,6 +120,11 @@
     <span class="tbody locked" id="frag">████████████████████████████████</span>
   </div>
 
+  <div class="ctrlrow">
+    <button class="hintb" id="hint-btn" disabled>🔑 HINT · 0</button>
+    <span class="hint-chip" id="hint-chip"></span>
+  </div>
+
   <div class="grid" id="grid"></div>
   <div class="kbd" id="kbd"></div>
 
@@ -122,17 +135,18 @@
     <div class="ov-title" style="letter-spacing:8px;">CIPHER</div>
     <div class="subtitle" style="margin-bottom:12px;">OPERATIVE DECRYPTION TERMINAL</div>
     <div class="blurb">
-      Six attempts to crack a five-letter code word.
       <span style="color:var(--green)">Green</span> = right spot,
       <span style="color:var(--amber)">amber</span> = wrong spot.
-      Crack it and the intercepted dispatch <b>decrypts itself</b>.
+      Crack the code and the intercepted dispatch <b>decrypts itself</b>.
     </div>
     <div class="modes">
       <button class="mode sel" data-mode="daily">DAILY</button>
       <button class="mode" data-mode="endless">ENDLESS</button>
+      <button class="mode" data-mode="crypto">WEEKLY</button>
     </div>
+    <div class="modes packsel" id="pack-row"></div>
     <div class="row"><button class="btn btn-green" id="begin-btn">BEGIN DECRYPTION</button></div>
-    <div class="foot">Words are chess terms &amp; PJCC field codes.<br>DAILY: one fixed code per day. ENDLESS: keep cracking.</div>
+    <div class="foot">Pick a <b>pack</b> — Chess · Openings · Endgame · Field Codes.<br>DAILY: one fixed code a day · ENDLESS: keep cracking · WEEKLY: the cryptogram.<br>Crack 3 in a row to earn a 🔑 hint token.</div>
   </div>
 
   <!-- RESULT -->
@@ -144,6 +158,7 @@
     <div class="ov-streak" id="res-streak"></div>
     <div class="row">
       <button class="btn btn-green" id="next-btn">NEXT INTERCEPT</button>
+      <button class="btn btn-ghost" id="share-btn">⛓ SHARE</button>
       <button class="btn btn-ghost" id="menu-btn">MENU</button>
     </div>
   </div>
@@ -160,6 +175,25 @@ const WORDS = [
   { w:'BOARD', deck:'chess', frag:'Sixty-four squares. The whole war fits neatly inside them.' },
   { w:'PAWNS', deck:'chess', frag:'The base unit of the PJCC world — dogs are measured in pawns.' },
   { w:'RANKS', deck:'chess', frag:'The rows the armies cross. The eighth rank is where a pawn dreams.' },
+  { w:'FILES', deck:'chess', frag:'The columns, a through h — eight lanes the rooks were born to own.' },
+  { w:'KINGS', deck:'chess', frag:'The pieces you can never trade and never lose. Everything orbits them.' },
+  { w:'MATES', deck:'chess', frag:'Checkmates, plural — the collection every attacker is quietly building.' },
+  { w:'MOVES', deck:'chess', frag:'The only currency that matters down here. Spend them well.' },
+  { w:'PIECE', deck:'chess', frag:"Anything that isn't a pawn — the heavy machinery of the board." },
+  { w:'TEMPO', deck:'chess', frag:"A single move's worth of time. Lose one and the whole attack arrives late." },
+  { w:'LINES', deck:'chess', frag:'A memorised sequence of best play — the map through the opening fog.' },
+  { w:'DEPTH', deck:'chess', frag:'How many moves ahead the mind can see. The engine sees more; Princess sees enough.' },
+  { w:'BLITZ', deck:'chess', frag:'Five minutes on the clock, no mercy. Think with your hands, not your head.' },
+  { w:'RAPID', deck:'chess', frag:'Slower than blitz, faster than mercy — fifteen minutes to be brilliant.' },
+  { w:'CLOCK', deck:'chess', frag:'The third opponent. It never blunders, and it never sleeps.' },
+  { w:'DRAWS', deck:'chess', frag:'Neither army falls. Half a point each, and a long walk home.' },
+  { w:'STALE', deck:'chess', frag:'Stalemate: no legal move, yet no check — a draw snatched from a lost game.' },
+  { w:'ROYAL', deck:'chess', frag:'Fork the king and queen at once — a royal fork, and the gallery gasps.' },
+  { w:'CROWN', deck:'chess', frag:'What a pawn earns on the eighth rank. Long live the new queen.' },
+  { w:'WHITE', deck:'chess', frag:'The side that moves first. One free breath before the war.' },
+  { w:'BLACK', deck:'chess', frag:'The side that moves second — patience dressed up as a disadvantage.' },
+  { w:'DUTCH', deck:'chess', frag:'The Dutch: meet 1.d4 with 1...f5. Bold, lopsided, and a headache to face.' },
+  { w:'SWISS', deck:'chess', frag:'A pairing system where winners meet winners and nobody is knocked out. Tournaments live by it.' },
   { w:'RIVAL', deck:'lore', frag:'Introduced as an enemy. Ended up the cornerstone of the whole crew.' },
   { w:'LOUIE', deck:'lore', frag:'Claims to be a pawn. The analysts are not sure. Neither is he.' },
   { w:'ARGUS', deck:'lore', frag:'Has never missed a move he was supposed to make. Not once.' },
@@ -169,17 +203,57 @@ const WORDS = [
   { w:'MINES', deck:'lore', frag:'Shafts three through seven. The Father has seen something down there.' },
   { w:'SANDS', deck:'lore', frag:'The deeper sand runs warm. The mine remembers what it buried.' },
 ];
+// ---- Extra packs (the list above is the Chess Lexicon + PJCC Field Codes) ----
+const OPENINGS = [
+  { w:'BENKO', frag:'The Benko Gambit: hand over a wing pawn for lasting pressure down the a- and b-files.' },
+  { w:'BIRDS', frag:"Bird's Opening, 1.f4 — stake the kingside early and dare Black to punish it." },
+  { w:'SLAVS', frag:"The Slav: answer the Queen's Gambit by bracing the centre, not surrendering it." },
+  { w:'FLANK', frag:"Flank openings (the English, Bird's) strike the centre from the wing instead of occupying it." },
+  { w:'DEBUT', frag:'The opening — your first dozen moves quietly decide which middlegame you must play.' },
+  { w:'SETUP', frag:'A system opening: build the same setup against almost anything (the London, the Colle).' },
+  { w:'TRAPS', frag:'Opening traps — the Légal Mate, the Fishing Pole — punish a careless reply at once.' }
+];
+const ENDGAMES = [
+  { w:'TRADE', frag:'Endgame craft: trade into a won ending — but never trade off your last active piece.' },
+  { w:'RACES', frag:'Pawn races: count the tempi, queen first, and check on the way if you can.' },
+  { w:'BREAK', frag:'The breakthrough — sacrifice a pawn to manufacture an unstoppable runner.' },
+  { w:'WEDGE', frag:'A pawn wedge cramps the enemy king and turns a draw into a slow win.' },
+  { w:'QUIET', frag:'The quiet move: in the endgame, a waiting move hands the burden back to your opponent.' },
+  { w:'BLOCK', frag:'Blockade the passed pawn — park a piece square in front of it and it goes nowhere.' }
+];
+OPENINGS.forEach(o => o.pack = 'opening');
+ENDGAMES.forEach(o => o.pack = 'endgame');
+WORDS.forEach(o => { o.pack = (o.deck === 'lore') ? 'field' : 'chess'; });
+const ALLWORDS = WORDS.concat(OPENINGS, ENDGAMES);
+const PACKS = [
+  { id:'all', label:'ALL' }, { id:'chess', label:'CHESS' }, { id:'opening', label:'OPENINGS' },
+  { id:'endgame', label:'ENDGAME' }, { id:'field', label:'FIELD' }
+];
+function packPool(p){ return p === 'all' ? ALLWORDS : ALLWORDS.filter(w => w.pack === p); }
+function packLabel(p){ var x = PACKS.filter(function(q){return q.id===p;})[0]; return x ? x.label : 'ALL'; }
+
+// ---- Weekly cryptogram: crack the code words in order to unlock a redacted dispatch ----
+const CRYPTOGRAMS = [
+  { words:['ARGUS','MINES','CRASH','ZEROS'], sentence:'ARGUS traced the MINES to the CRASH — and to the ZEROS before her.' },
+  { words:['FERRY','SHOGI','DELAY','VOWED'], sentence:'The FERRY to SHOGI met DELAY; the island had VOWED to wait.' },
+  { words:['CROWN','RIVAL','TRUST','BOUND'], sentence:'The CROWN turned a RIVAL to TRUST — two souls now BOUND.' }
+];
+function weekSeed(){ return Math.floor(Date.now() / (7 * 86400000)); }
+
 const ROWS = 6, LEN = 5;
 const KEYS = ['QWERTYUIOP', 'ASDFGHJKL', '↵ZXCVBNM⌫'];
 
-let mode = 'daily';
+let mode = 'daily', pack = 'all';
 let target = null, row = 0, col = 0, guesses = [], over = false, locked = false;
 let keyState = {};
+let puzzleStart = 0, evals = [], hinted = false, lastScore = 0, crypto = null;
 
 const STREAK_KEY = 'pjcc.cipher.streak.v1';
-const DAILY_KEY = 'pjcc.cipher.daily.v1';
+const TOKENS_KEY = 'pjcc.cipher.tokens.v1';
 function loadStreak(){ try { return JSON.parse(localStorage.getItem(STREAK_KEY)) || { n: 0 }; } catch(e){ return { n: 0 }; } }
 function saveStreak(s){ try { localStorage.setItem(STREAK_KEY, JSON.stringify(s)); } catch(e){} }
+function loadTokens(){ try { return parseInt(localStorage.getItem(TOKENS_KEY)) || 0; } catch(e){ return 0; } }
+function saveTokens(n){ try { localStorage.setItem(TOKENS_KEY, String(Math.max(0, n))); } catch(e){} }
 
 // ---- Audio ----
 let actx=null, master=null, sndOn=true;
@@ -221,23 +295,48 @@ function buildKbd(){
 // ---- Puzzle selection ----
 function todaySeed(){ const d = new Date(); return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
 function pickWord(){
-  if (mode === 'daily'){ return WORDS[todaySeed() % WORDS.length]; }
-  let w; do { w = WORDS[(Math.random()*WORDS.length)|0]; } while (target && w.w === target.w);
+  const pool = packPool(pack);
+  if (mode === 'daily'){ return pool[todaySeed() % pool.length]; }
+  let w; do { w = pool[(Math.random()*pool.length)|0]; } while (pool.length > 1 && target && w.w === target.w);
   return w;
 }
 
 function startPuzzle(){
-  target = pickWord();
-  row = 0; col = 0; guesses = []; over = false; locked = false; keyState = {};
+  if (mode === 'crypto'){
+    if (!crypto){ const c = CRYPTOGRAMS[weekSeed() % CRYPTOGRAMS.length]; crypto = { words: c.words, sentence: c.sentence, idx: 0, score: 0 }; }
+    target = { w: crypto.words[crypto.idx], frag: '', deck: 'crypto', pack: 'crypto' };
+  } else {
+    target = pickWord();
+  }
+  row = 0; col = 0; guesses = []; evals = []; over = false; locked = false; keyState = {}; hinted = false;
+  puzzleStart = (window.performance ? performance.now() : Date.now());
   buildGrid(); buildKbd();
-  document.getElementById('clearance').textContent = 'CLEARANCE: ' + (target.deck === 'lore' ? 'OMEGA' : 'DELTA');
-  document.getElementById('sub').textContent = target.deck === 'lore' ? 'FIELD CODE — PJCC OPERATIONS' : 'CHESS PROTOCOL LEXICON';
-  // redact the fragment to its shape
+  const isLore = target.deck === 'lore';
+  document.getElementById('clearance').textContent = 'CLEARANCE: ' + (mode === 'crypto' ? 'CRYPTOGRAM' : (isLore ? 'OMEGA' : 'DELTA'));
+  document.getElementById('sub').textContent = mode === 'crypto'
+    ? ('WEEKLY CRYPTOGRAM — WORD ' + (crypto.idx + 1) + ' / ' + crypto.words.length)
+    : (isLore ? 'FIELD CODE — PJCC OPERATIONS' : (pack === 'all' ? 'CHESS PROTOCOL LEXICON' : packLabel(pack) + ' PROTOCOL'));
   const f = document.getElementById('frag');
-  f.classList.add('locked');
-  f.textContent = target.frag.split('').map(ch => ch === ' ' ? ' ' : '█').join('');
+  if (mode === 'crypto'){ renderCryptoLine(); }
+  else {
+    document.querySelector('.transmission .tlabel').textContent = '◈ INTERCEPTED TRANSMISSION — DECRYPT TO READ';
+    f.classList.add('locked');
+    f.textContent = target.frag.split('').map(ch => ch === ' ' ? ' ' : '█').join('');
+  }
+  const hc = document.getElementById('hint-chip'); if (hc) hc.classList.remove('show');
   const s = loadStreak();
   document.getElementById('streak-lbl').textContent = 'STREAK ' + (s.n || 0);
+  updateHintBtn();
+}
+function renderCryptoLine(){
+  const f = document.getElementById('frag'); f.classList.remove('locked');
+  document.querySelector('.transmission .tlabel').textContent = '◈ WEEKLY CRYPTOGRAM — CRACK EACH CODE WORD';
+  let out = crypto.sentence;
+  crypto.words.forEach(function (w, i) {
+    const rep = (i < crypto.idx) ? w : w.split('').map(function () { return '█'; }).join('');
+    out = out.replace(w, rep);
+  });
+  f.textContent = out;
 }
 
 // ---- Input ----
@@ -256,6 +355,43 @@ document.addEventListener('keydown', e => {
   else if (/^[A-Z]$/.test(k) && k.length === 1) handleKey(k);
 });
 
+// ---- Hint tokens (earned every 3 cracks; spend one to reveal a letter, at a score cost) ----
+let shareText = '';
+function updateHintBtn(){
+  const b = document.getElementById('hint-btn'); if (!b) return;
+  const t = loadTokens();
+  b.textContent = '🔑 HINT · ' + t;
+  b.disabled = (t <= 0 || over || !target);
+}
+function useHint(){
+  if (over || locked || !target) return;
+  let t = loadTokens(); if (t <= 0){ showToast('NO HINT TOKENS'); return; }
+  const placed = {};
+  for (let r = 0; r < row; r++) for (let c = 0; c < LEN; c++){ const cell = document.getElementById('c'+r+c); if (cell && cell.classList.contains('correct')) placed[c] = true; }
+  const opts = []; for (let c = 0; c < LEN; c++) if (!placed[c]) opts.push(c);
+  if (!opts.length){ showToast('ALREADY CRACKED'); return; }
+  const c = opts[(Math.random()*opts.length)|0];
+  t--; saveTokens(t); hinted = true;
+  const chip = document.getElementById('hint-chip'); if (chip){ chip.textContent = '🔑 letter ' + (c+1) + ' is "' + target.w[c] + '"'; chip.classList.add('show'); }
+  showToast('POSITION ' + (c+1) + ' = ' + target.w[c]); sfx('flip'); updateHintBtn();
+}
+// ---- Emoji share-card ----
+function buildShare(){
+  const map = { correct:'🟩', present:'🟨', absent:'⬛' };
+  const grid = evals.map(function (r) { return r.map(function (x) { return map[x]; }).join(''); }).join('\n');
+  const head = (mode === 'crypto') ? 'CIPHER · Weekly Cryptogram'
+    : 'CIPHER · ' + (mode === 'daily' ? 'Daily ' : '') + packLabel(pack);
+  shareText = head + '  ' + new Date().toISOString().slice(0,10) + '\n' + grid +
+    '\nscore ' + lastScore + (hinted ? ' 🔑' : '') + ' · mcpuppystudios.com';
+}
+function copyShare(){
+  if (!shareText) return;
+  function done(){ showToast('COPIED — go paste it'); }
+  if (navigator.clipboard){ navigator.clipboard.writeText(shareText).then(done).catch(function(){ fallbackCopy(); }); }
+  else fallbackCopy();
+  function fallbackCopy(){ const ta=document.createElement('textarea'); ta.value=shareText; ta.style.cssText='position:fixed;opacity:0;'; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta); done(); }
+}
+
 function evaluate(guess, answer){
   const res = Array(LEN).fill('absent');
   const counts = {};
@@ -269,6 +405,7 @@ function submit(){
   if (col < LEN){ showToast('NEED FIVE LETTERS'); shakeRow(); sfx('bad'); return; }
   let guess = ''; for (let c = 0; c < LEN; c++) guess += document.getElementById('c'+row+c).textContent;
   const res = evaluate(guess, target.w);
+  evals.push(res.slice());
   locked = true;
   // flip + color sequentially
   for (let c = 0; c < LEN; c++){
@@ -306,21 +443,56 @@ function decryptFragment(done){
     el.textContent = out; i++;
   }, 22);
 }
+function scoreFor(elapsed){
+  let sc = 1000 - row*120 - Math.min(320, Math.floor(elapsed*3)) - (hinted ? 250 : 0);
+  if (target && target.deck === 'lore') sc += 120;   // omega field-code bonus
+  return Math.max(60, sc);
+}
+function grantTokenIf(s){ if (s.n > 0 && s.n % 3 === 0){ saveTokens(loadTokens() + 1); showToast('🔑 +1 HINT TOKEN'); } }
+
 function win(){
   over = true; sfx('win');
-  const s = loadStreak(); s.n = (s.n || 0) + 1; saveStreak(s);
+  const elapsed = ((window.performance ? performance.now() : Date.now()) - puzzleStart) / 1000;
+
+  if (mode === 'crypto'){
+    crypto.idx++;
+    crypto.score += Math.max(40, 700 - row*100 - (hinted ? 150 : 0));
+    if (crypto.idx < crypto.words.length){
+      renderCryptoLine(); showToast('CODE WORD CRACKED — NEXT');
+      setTimeout(startPuzzle, 850);
+      return;
+    }
+    renderCryptoLine();
+    const s = loadStreak(); s.n = (s.n || 0) + 1; saveStreak(s); grantTokenIf(s);
+    document.getElementById('streak-lbl').textContent = 'STREAK ' + s.n;
+    lastScore = crypto.score + 500;   // completion bonus
+    if (window.PJCC) PJCC.saveScore('cipher', lastScore, { seed: 'cw' + weekSeed(), credits: 2, data: { mode: 'crypto', words: crypto.words.length } });
+    buildShare();
+    document.getElementById('res-stamp').className = 'ov-stamp ok'; document.getElementById('res-stamp').textContent = 'CRYPTOGRAM SOLVED';
+    document.getElementById('res-title').textContent = 'DISPATCH RECOVERED';
+    document.getElementById('res-word').textContent = '✶ ✶ ✶';
+    document.getElementById('res-frag').textContent = '“' + crypto.sentence + '”';
+    document.getElementById('res-streak').textContent = 'Cryptogram score: ' + lastScore + '  ·  streak ' + s.n;
+    crypto = null;
+    showResult();
+    return;
+  }
+
+  const s = loadStreak(); s.n = (s.n || 0) + 1; saveStreak(s); grantTokenIf(s);
   document.getElementById('streak-lbl').textContent = 'STREAK ' + s.n;
+  lastScore = scoreFor(elapsed);
   // Record the run to the operative profile (no-op for guests / offline).
   if (window.PJCC) {
     const seed = (mode === 'daily') ? new Date().toISOString().slice(0,10) : null;
-    PJCC.saveScore('cipher', s.n, { seed: seed, credits: 1, data: { mode: mode } });
+    PJCC.saveScore('cipher', lastScore, { seed: seed, credits: 1, data: { mode: mode, pack: pack, streak: s.n, guesses: row + 1, secs: Math.round(elapsed), hinted: hinted } });
   }
+  buildShare();
   decryptFragment(() => {
     document.getElementById('res-stamp').className = 'ov-stamp ok'; document.getElementById('res-stamp').textContent = 'DECRYPTION COMPLETE';
     document.getElementById('res-title').textContent = ['CRACKED','SHARP','OPERATIVE','TEXTBOOK'][Math.min(row,3)] + (row === 0 ? ' — FIRST TRY' : '');
     document.getElementById('res-word').textContent = target.w;
     document.getElementById('res-frag').textContent = '“' + target.frag + '”';
-    document.getElementById('res-streak').textContent = 'Decryption streak: ' + s.n + (mode === 'daily' ? '  ·  daily intercept logged' : '');
+    document.getElementById('res-streak').textContent = 'Score ' + lastScore + '  ·  streak ' + s.n + (hinted ? '  ·  🔑 hinted' : '');
     showResult();
   });
 }
@@ -333,6 +505,7 @@ function lose(){
   document.getElementById('res-word').textContent = target.w;
   document.getElementById('res-frag').textContent = 'The transmission stays encrypted. The code word was ' + target.w + '.';
   document.getElementById('res-streak').textContent = 'Streak reset.';
+  lastScore = 0; buildShare();
   showResult();
 }
 function showResult(){ setTimeout(() => document.getElementById('result').classList.remove('hidden'), 350); }
@@ -341,16 +514,28 @@ function showResult(){ setTimeout(() => document.getElementById('result').classL
 function showMenu(){ document.getElementById('result').classList.add('hidden'); document.getElementById('menu').classList.remove('hidden'); }
 function begin(){ initAudio(); if (actx && actx.state === 'suspended') actx.resume(); document.getElementById('menu').classList.add('hidden'); document.getElementById('result').classList.add('hidden'); startPuzzle(); }
 
-document.querySelectorAll('.mode').forEach(m => m.addEventListener('click', () => {
-  mode = m.dataset.mode; document.querySelectorAll('.mode').forEach(x => x.classList.toggle('sel', x === m));
+document.querySelectorAll('[data-mode]').forEach(m => m.addEventListener('click', () => {
+  mode = m.dataset.mode;
+  document.querySelectorAll('[data-mode]').forEach(x => x.classList.toggle('sel', x === m));
+  if (mode !== 'crypto') crypto = null;
+  const pr = document.getElementById('pack-row'); if (pr) pr.style.display = (mode === 'crypto') ? 'none' : 'flex';
 }));
+(function buildPackRow(){
+  const pr = document.getElementById('pack-row'); if (!pr) return;
+  PACKS.forEach(p => {
+    const b = document.createElement('button');
+    b.className = 'mode pk' + (p.id === pack ? ' sel' : ''); b.textContent = p.label; b.dataset.pk = p.id;
+    b.addEventListener('click', () => { pack = p.id; pr.querySelectorAll('.pk').forEach(x => x.classList.toggle('sel', x === b)); });
+    pr.appendChild(b);
+  });
+})();
 document.getElementById('begin-btn').addEventListener('click', begin);
 document.getElementById('menu-btn').addEventListener('click', showMenu);
+var _hb = document.getElementById('hint-btn'); if (_hb) _hb.addEventListener('click', useHint);
+var _sb = document.getElementById('share-btn'); if (_sb) _sb.addEventListener('click', copyShare);
 document.getElementById('next-btn').addEventListener('click', () => {
   document.getElementById('result').classList.add('hidden');
-  if (mode === 'daily'){ // daily already done -> roll into endless
-    mode = 'endless';
-  }
+  if (mode === 'daily' || mode === 'crypto'){ mode = 'endless'; }   // daily/weekly already logged → roll into endless
   startPuzzle();
 });
 

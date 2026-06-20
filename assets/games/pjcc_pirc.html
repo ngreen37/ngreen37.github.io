@@ -86,6 +86,14 @@
   }
   .due-have { background: #F5C518; color: #1a0f3d; }
   .due-none { background: #2a1a5a; color: #7a5fb0; }
+  .sum-codex { width: 100%; max-width: 380px; max-height: 152px; overflow-y: auto; margin: 0 auto 8px; display: flex; flex-direction: column; gap: 6px; }
+  .sum-card { background: #3a2812; border: 1px solid #6a4a22; border-radius: 8px; padding: 7px 10px; text-align: left; }
+  .sc-top { display: flex; align-items: center; gap: 8px; }
+  .sc-top b { color: #fff; font-size: 12.5px; flex: 1; }
+  .sc-eco { color: #F5C518; font-size: 10px; font-weight: bold; letter-spacing: 1px; }
+  .sc-pgn { background: #6a4a22; color: #ead9b8; border: none; border-radius: 6px; font-size: 10px; font-weight: bold; padding: 4px 8px; cursor: pointer; font-family: inherit; }
+  .sc-pgn:hover { background: #F5C518; color: #1a0f3d; }
+  .sc-ref { color: #c9a36a; font-size: 10.5px; line-height: 1.4; margin-top: 3px; }
 
   .row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; justify-content: center; }
   .btn {
@@ -141,6 +149,10 @@
       <button class="btn btn-gold" id="review-btn">START REVIEW</button>
       <button class="btn btn-ghost" id="cram-btn">CRAM ALL</button>
     </div>
+    <div class="row" style="margin-top:8px;">
+      <button class="btn btn-pink" id="boss-btn">👑 BOSS EXAM</button>
+      <button class="btn btn-ghost" id="pgn-btn">⬇ PGN</button>
+    </div>
     <div class="foot">
       <b>Run-through</b>: play a whole opening from move 1. &nbsp;<b>Spot cards</b>: one book move per card.<br>
       Lines after <a href="https://lichess.org/opening" target="_blank" rel="noopener">lichess opening explorer</a> &amp; standard ECO theory &nbsp;·&nbsp;
@@ -170,6 +182,7 @@
       <div class="l">Need work</div><div class="v again" id="sum-again">0</div>
     </div>
     <div class="blurb" id="sum-next" style="margin-bottom:6px;"></div>
+    <div id="sum-codex" class="sum-codex"></div>
     <div class="row">
       <button class="btn btn-gold" id="sum-again-btn">REVIEW AGAIN</button>
       <button class="btn btn-ghost" id="sum-menu">DECKS</button>
@@ -306,6 +319,64 @@ function deckMastery(deckId) {
 }
 function deckDue(deckId) { return deckLineIds(deckId).filter(isDue).length; }
 
+// ---- ECO codes + master-game citations (shown on the "back" of each card) ----
+const LINEMETA = {
+  'pirc-classical':     { eco:'B08', ref:'Classical Main Line — Be2 & O-O, the quiet, solid Pirc.' },
+  'pirc-austrian':      { eco:'B09', ref:'Austrian Attack — see Tal–Tringov, Amsterdam 1964.' },
+  'pirc-150':           { eco:'B07', ref:'The “150 Attack” — Be3, Qd2, f3, then castle long.' },
+  'italian-pianissimo': { eco:'C53', ref:'Giuoco Pianissimo — the slow Italian revived by Carlsen & Caruana.' },
+  'italian-piano':      { eco:'C54', ref:'Giuoco Piano — tactics catalogued by Greco in the 1600s.' },
+  'scandi-main':        { eco:'B01', ref:'Scandinavian — the classical 3…Qa5 main line.' },
+  'scandi-modern':      { eco:'B01', ref:'Scandinavian — the modern 3…Nf6 lines.' },
+};
+function metaFor(id){ return LINEMETA[id] || { eco:'', ref:'' }; }
+
+// ---- PGN export of a line ----
+function pgnFor(id){
+  const ln = LINES[id]; if (!ln) return '';
+  const meta = metaFor(id);
+  let h = '[Event "PJCC — The Pirc Protocol"]\n[Site "mcpuppystudios.com"]\n[White "?"]\n[Black "?"]\n[Result "*"]\n';
+  if (meta.eco) h += '[ECO "' + meta.eco + '"]\n';
+  h += '[Opening "' + ln.name + '"]\n\n';
+  let mt = '', n = 1;
+  ln.plies.forEach((p, i) => { if (i % 2 === 0){ mt += n + '. '; n++; } mt += p.san + ' '; });
+  return h + mt + '*\n';
+}
+function downloadText(filename, text){
+  try {
+    const blob = new Blob([text], { type: 'application/x-chess-pgn' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (e) {}
+}
+function exportMasteredPGN(){
+  const ids = Object.keys(LINES).filter(id => LINES[id].deck !== 'trap');
+  let mastered = ids.filter(id => sched(id).box >= 3);
+  const note = mastered.length ? '' : '{ No lines mastered yet — here is the full repertoire. }\n\n';
+  if (!mastered.length) mastered = ids;
+  const body = note + mastered.map(pgnFor).join('\n');
+  downloadText('pjcc-pirc-repertoire.pgn', body);
+}
+
+// ---- Boss exam: spot cards mixed from every variation in every deck ----
+function startBoss(){
+  const cards = [];
+  Object.keys(LINES).forEach(id => {
+    if (LINES[id].deck === 'trap') return;
+    const ln = LINES[id];
+    ln.plies.forEach((ply, i) => { if (ply.color === ln.side) cards.push({ id, ply: i }); });
+  });
+  for (let i = cards.length - 1; i > 0; i--){ const j = (Math.random() * (i + 1)) | 0; const t = cards[i]; cards[i] = cards[j]; cards[j] = t; }
+  const examCards = cards.slice(0, 16);
+  session = { deckId: '__boss__', boss: true, mode: 'cram', style: 'spot', cards: examCards, cardIdx: 0,
+    attempts: {}, stats: { lines: 0, flawless: 0, promo: 0, again: 0, seen: {} } };
+  hideOverlays();
+  document.getElementById('menu-btn').classList.remove('hidden');
+  loadCard(examCards[0]);
+}
+
 // ---- Audio ----
 let actx = null, master = null, sndOn = true;
 function initAudio() {
@@ -406,6 +477,8 @@ function spotSolved() {
   if (flawless) session.stats.flawless++; else session.stats.again++;
   bannerText = flawless ? 'BOOK MOVE! 📖' : 'GOT IT';
   bannerColor = flawless ? C.good : C.pink; bannerT = 0;
+  session.stats.seen[G.id] = true;
+  { const m = metaFor(G.id); coach.mood = 'talk'; coach.say = G.line.name + (m.eco ? ' · ' + m.eco : ''); }
   setTimeout(() => {
     session.cardIdx++;
     if (session.cardIdx < session.cards.length) loadCard(session.cards[session.cardIdx]);
@@ -503,6 +576,7 @@ function lineComplete() {
   bannerText = flawless ? (promo ? 'LINE MASTERED ⭐' : 'FLAWLESS!') : 'KEEP PRACTICING';
   bannerColor = flawless ? C.good : C.pink;
   bannerT = 0;
+  { const m = metaFor(G.id); if (m.eco) coach.say = (coach.say ? coach.say + ' · ' : '') + m.eco; }
 
   setTimeout(() => {
     if (session.queue.length > 0) loadLine(session.queue.shift());
@@ -925,16 +999,37 @@ function showSummary() {
   G = null;
   document.getElementById('menu-btn').classList.add('hidden');
   const s = session.stats;
-  const deck = DECKS.find(d => d.id === session.deckId);
-  document.getElementById('sum-deck').textContent = deck.name + ' · ' + (session.style === 'spot' ? 'Spot cards' : 'Run-through') + (session.mode === 'cram' ? ' · Cram' : '');
+  const deck = DECKS.find(d => d.id === session.deckId) || { name: session.boss ? 'Boss Exam 👑' : 'Session' };
+  document.getElementById('sum-deck').textContent = session.boss
+    ? 'Boss Exam 👑 · every variation'
+    : deck.name + ' · ' + (session.style === 'spot' ? 'Spot cards' : 'Run-through') + (session.mode === 'cram' ? ' · Cram' : '');
   document.getElementById('sum-lines').textContent = s.lines;
   document.getElementById('sum-flaw').textContent = s.flawless;
   document.getElementById('sum-promo').textContent = s.promo;
   document.getElementById('sum-again').textContent = s.again;
-  const due = deckDue(session.deckId);
-  document.getElementById('sum-next').textContent = session.mode === 'cram'
-    ? 'Cram runs don’t change your schedule.'
-    : (due > 0 ? due + ' line' + (due > 1 ? 's' : '') + ' still due in this deck.' : 'Deck clear — come back later! 🦴');
+  if (session.boss){
+    const total = s.lines || 1, pct = Math.round(s.flawless / total * 100);
+    document.getElementById('sum-next').textContent = 'Boss exam: ' + s.flawless + '/' + s.lines + ' clean (' + pct + '%). ' + (pct >= 80 ? 'The repertoire holds! 👑' : 'Drill the lines that slipped.');
+  } else {
+    const due = deckDue(session.deckId);
+    document.getElementById('sum-next').textContent = session.mode === 'cram'
+      ? 'Cram runs don’t change your schedule.'
+      : (due > 0 ? due + ' line' + (due > 1 ? 's' : '') + ' still due in this deck.' : 'Deck clear — come back later! 🦴');
+  }
+  // card backs — each line seen this session: ECO code + master-game citation + a PGN download
+  const codex = document.getElementById('sum-codex');
+  if (codex){
+    const seen = Object.keys(session.stats.seen);
+    if (seen.length){
+      codex.innerHTML = seen.map(function(id){
+        const ln = LINES[id], m = metaFor(id);
+        return '<div class="sum-card"><div class="sc-top"><b>' + ln.name + '</b><span class="sc-eco">' + (m.eco || '') + '</span>' +
+          '<button class="sc-pgn" data-id="' + id + '">⬇ PGN</button></div><div class="sc-ref">' + m.ref + '</div></div>';
+      }).join('');
+      codex.querySelectorAll('.sc-pgn').forEach(function(b){ b.addEventListener('click', function(){ const id = b.getAttribute('data-id'); downloadText('pjcc-' + id + '.pgn', pgnFor(id)); }); });
+      codex.style.display = '';
+    } else codex.style.display = 'none';
+  }
   sfx('done');
   if (window.PJCC) PJCC.saveScore('pirc-protocol', s.flawless, { credits: 5, data: { deck: session.deckId, lines: s.lines, promo: s.promo } });
   hideOverlays();
@@ -973,12 +1068,14 @@ document.getElementById('style-row').addEventListener('click', e => {
 function go() { initAudio(); if (actx.state === 'suspended') actx.resume(); }
 document.getElementById('review-btn').addEventListener('click', () => { go(); startSession(selectedDeck, 'review', selectedStyle); });
 document.getElementById('cram-btn').addEventListener('click', () => { go(); startSession(selectedDeck, 'cram', selectedStyle); });
+document.getElementById('boss-btn').addEventListener('click', () => { go(); startBoss(); });
+document.getElementById('pgn-btn').addEventListener('click', exportMasteredPGN);
 document.getElementById('menu-btn').addEventListener('click', showMenu);
 document.getElementById('caught-cram').addEventListener('click', e => {
   go(); startSession(document.getElementById('caught-screen').dataset.deck, 'cram', selectedStyle);
 });
 document.getElementById('caught-menu').addEventListener('click', showMenu);
-document.getElementById('sum-again-btn').addEventListener('click', () => { go(); startSession(session ? session.deckId : selectedDeck, 'review', session ? session.style : selectedStyle); });
+document.getElementById('sum-again-btn').addEventListener('click', () => { go(); if (session && session.boss){ startBoss(); return; } startSession(session ? session.deckId : selectedDeck, 'review', session ? session.style : selectedStyle); });
 document.getElementById('sum-menu').addEventListener('click', showMenu);
 document.getElementById('reset-srs').addEventListener('click', () => {
   SRS = {}; saveSRS(); buildDeckList();

@@ -422,7 +422,6 @@
     { key: 'cipher-breaker',icon: '⊙', label: 'Cipher Breaker', desc: 'CIPHER streak of 5+',            test: function (c) { return c.best('cipher') >= 5; } },
     { key: 'tactician',     icon: '⚔', label: 'Tactician',      desc: 'Solve 5+ in Fork in the Road',  test: function (c) { return c.best('fork-in-the-road') >= 5; } },
     { key: 'deep-miner',    icon: '⛏', label: 'Deep Miner',     desc: 'Reach 100m in Sand Mine Depths',test: function (c) { return c.best('sand-mine-depths') >= 100; } },
-    { key: 'ferry-master',  icon: '⛴', label: 'Ferry Master',   desc: 'Ace all 5 ferry crossings',     test: function (c) { return c.best('ferry-delayed') >= 5; } },
     { key: 'analyst',       icon: 'Δ', label: 'Analyst',        desc: 'Score 500+ in Clearance: DELTA',test: function (c) { return c.best('clearance-delta') >= 500; } },
     { key: 'on-the-beat',   icon: '♫', label: 'On the Beat',    desc: 'Score 1000+ in Notation Blitz', test: function (c) { return c.best('notation-run') >= 1000; } },
     { key: 'shogi-scholar', icon: '将', label: 'Shogi Scholar',  desc: 'Read 9/10 on Shogi Island',     test: function (c) { return c.best('shogi-island') >= 9; } },
@@ -444,7 +443,6 @@
     { name: 'Cipher Station',   game: 'cipher' },
     { name: 'Clearance HQ',     game: 'clearance-delta' },
     { name: 'Pirc Crossing',    game: 'pirc-protocol' },
-    { name: 'The Ferry Dock',   game: 'ferry-delayed' },
     { name: 'Shogi Island',     game: 'shogi-island' },
     { name: 'Chess City',       game: null }
   ];
@@ -464,7 +462,6 @@
     'veteran':   { label: 'Veteran',             rule: 'plays:75' },
     'tactician': { label: 'Tactician',           rule: 'ach:tactician' },
     'miner':     { label: 'Mine Survivor',       rule: 'ach:deep-miner' },
-    'ferryman':  { label: 'Ferryman',            rule: 'ach:ferry-master' },
     'sensei':    { label: 'Shogi Sensei',        rule: 'ach:shogi-scholar' },
     'curator':   { label: 'Curator',             rule: 'buy:20' },
     'legend':    { label: 'Legend of the Board', rule: 'buy:60' }
@@ -519,7 +516,7 @@
   };
 
   // --- weekly bounty (one game per week pays 2x credits) ---------------------
-  PJCC.BOUNTY_GAMES = ['cipher', 'clearance-delta', 'notation-run', 'fork-in-the-road', 'sand-mine-depths', 'pirc-protocol', 'ferry-delayed', 'shogi-island', 'tower-defense'];
+  PJCC.BOUNTY_GAMES = ['cipher', 'clearance-delta', 'notation-run', 'fork-in-the-road', 'sand-mine-depths', 'pirc-protocol', 'shogi-island', 'tower-defense'];
   PJCC.bountyGame = function () {
     var now = new Date();
     var week = Math.floor((now - new Date(now.getFullYear(), 0, 1)) / (7 * 24 * 3600 * 1000));

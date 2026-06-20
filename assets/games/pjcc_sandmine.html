@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Sand Mine Depths v2.0</title>
+<title>PJCC: Sand Mine Depths v2.2</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <script src="/assets/js/pjcc-pieces.js"></script>
@@ -41,12 +41,23 @@
   .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
   .foot { margin-top: 16px; font-size: 10.5px; color: #9a7a4a; line-height: 1.8; }
   .foot b { color: #e9d6b8; } .tap { cursor: pointer; text-decoration: underline; }
+  #shovel-btn { bottom: 14px; left: 14px; background: #2D1B69; color: #c9a7ff; padding: 8px 14px; font-size: 14px; border: 1px solid #6a4fb0; }
+  #shovel-btn.armed { background: #5be0c0; color: #0e2422; border-color: #5be0c0; box-shadow: 0 0 14px rgba(91,224,192,0.7); }
+  .camp-list { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 360px; margin: 6px 0; }
+  .camp-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: rgba(45,27,105,0.4); border: 1px solid #4a3a7a; border-radius: 10px; padding: 8px 12px; text-align: left; }
+  .camp-info { font-size: 12px; color: #e9d6b8; line-height: 1.35; }
+  .camp-info b { color: #fff3da; } .camp-info .lvl { color: #c9a7ff; font-size: 10.5px; } .camp-info .cd { color: #c9a36a; font-size: 10.5px; }
+  .camp-buy { font-family: 'Trebuchet MS', sans-serif; font-weight: bold; cursor: pointer; border: none; border-radius: 999px;
+    background: #F5C518; color: #2a1a0c; padding: 7px 12px; font-size: 12px; white-space: nowrap; }
+  .camp-buy:disabled { background: #5a4a2a; color: #9a8a6a; cursor: not-allowed; }
+  .camp-max { color: #5be0c0; font-size: 11px; font-weight: bold; padding: 7px 12px; }
 </style>
 </head>
 <body>
 <div id="stage">
   <canvas id="canvas" width="480" height="500"></canvas>
   <button class="float-btn hidden" id="menu-btn">☰ menu</button>
+  <button class="float-btn hidden" id="shovel-btn">🪏</button>
 
   <div class="overlay" id="menu-screen">
     <div class="eyebrow">Beneath Checker Town</div>
@@ -54,14 +65,20 @@
     <div class="blurb">
       Princess is a <b style="color:#c96bff">knight ♞</b> — she only moves in <b>L-shapes</b>.
       Hop down through the depths of the mine, and learn of the mysteries below.
-      The sand and rock <b>cave in</b> behind you, and the pieces below are not friendly.
+      The sand <b>caves in</b> behind every hop — and the pieces below <b>answer the moment you land</b>.
     </div>
     <div class="row">
       <button class="btn btn-gold" id="start-btn">DESCEND</button>
     </div>
+    <div class="row" style="margin-top:10px;">
+      <button class="btn btn-ghost" id="race-btn">⏱ WEEKLY RACE</button>
+      <button class="btn btn-ghost" id="camp-btn">⛺ SURFACE CAMP</button>
+    </div>
     <div class="foot">
-      Tap a glowing dot to hop &nbsp;·&nbsp; land on a piece to capture it<br>
-      reach the shaft to go deeper &nbsp;·&nbsp; <b id="best-line">best depth: —</b><br>
+      Tap a glowing dot to hop, land on a piece to capture, reach the shaft ▼ to go deeper<br>
+      🔺 a red crosshair means a piece can strike that square<br>
+      ♟ pawns march ▼ down &amp; only strike diagonally — park right in front to pin one<br>
+      ✦ grab relics · 🪏 shovels fill a pit · it gets darker as you descend &nbsp;·&nbsp; <b id="best-line">best depth: —</b><br>
       <span class="tap" id="snd-toggle">🔊 sound: on</span>
     </div>
   </div>
@@ -72,9 +89,12 @@
     <div class="blurb" id="over-msg"></div>
     <div class="row">
       <button class="btn btn-gold" id="retry-btn">DESCEND AGAIN</button>
+      <button class="btn btn-ghost" id="over-camp">⛺ CAMP</button>
       <button class="btn btn-ghost" id="over-menu">MENU</button>
     </div>
   </div>
+
+  <div class="overlay hidden" id="camp-screen"></div>
 </div>
 
 <script>
@@ -86,9 +106,6 @@ const COLS = 6, ROWS = 7, TILE = 56;
 const BX = (W - COLS * TILE) / 2, BY = 70;
 
 const C = { gold:'#F5C518', teal:'#5be0c0', bad:'#ff5b5b', ink:'#fff3da', muted:'#c9a36a' };
-const PCOL = { P:'#ff8f6b', N:'#ffb24a', B:'#c96bff', R:'#6bbfff', Q:'#ff6bc8' };
-const GLYPH = { P:'♟', N:'♞', B:'♝', R:'♜', Q:'♛' };
-const NAME = { P:'Pawn', N:'Knight', B:'Bishop', R:'Rook', Q:'Queen' };
 const MAXHP = 3;
 // Shared carved pieces: obsidian enemies, a violet Princess-knight.
 const SAND_PAL = { bFill:'#241a12', bEdge:'#e9c98a' };
@@ -112,6 +129,21 @@ const BEST_KEY = 'pjcc.sandmine.best.v1';
 function loadBest(){ try { return parseInt(localStorage.getItem(BEST_KEY)) || 0; } catch(e){ return 0; } }
 function saveBest(v){ try { localStorage.setItem(BEST_KEY, String(v)); } catch(e){} }
 
+// Seeded RNG (mulberry32) — drives the Weekly Race so everyone digs the same mine.
+function rng32(seed){ let a = seed >>> 0; return function(){ a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function weeklySeed(){ return Math.floor(Date.now() / (7 * 86400000)); }   // same value all week, worldwide
+
+// Surface Camp — gold banked across runs buys lasting gear (disabled in the fair Weekly Race).
+const CAMP_KEY = 'pjcc.sandmine.camp.v1';
+function loadCamp(){ try { return Object.assign({ gold:0, perks:{} }, JSON.parse(localStorage.getItem(CAMP_KEY)) || {}); } catch(e){ return { gold:0, perks:{} }; } }
+function saveCamp(c){ try { localStorage.setItem(CAMP_KEY, JSON.stringify(c)); } catch(e){} }
+const PERKS = [
+  { id:'maxhp',   name:'Reinforced Heart',  icon:'♥',  max:3, desc:'+1 starting heart',        cost:l=>40+l*45 },
+  { id:'lantern', name:'Brighter Lantern',  icon:'🔦', max:3, desc:'see further in the dark',  cost:l=>30+l*35 },
+  { id:'shovel',  name:'Field Shovel',      icon:'🪏', max:3, desc:'start with +1 shovel',      cost:l=>25+l*30 },
+  { id:'luck',    name:"Prospector's Eye",  icon:'✦',  max:3, desc:'more relics surface',       cost:l=>35+l*40 }
+];
+
 // ---- Audio ----
 let actx=null, master=null, sndOn=true;
 function initAudio(){ if(actx) return; actx=new (window.AudioContext||window.webkitAudioContext)(); master=actx.createGain(); master.gain.value=sndOn?0.8:0; master.connect(actx.destination); }
@@ -129,22 +161,34 @@ const key = (x, y) => x + ',' + y;
 const inb = (x, y) => x >= 0 && x < COLS && y >= 0 && y < ROWS;
 function enemyAt(x, y){ return S.enemies.find(e => e.x === x && e.y === y); }
 function occupied(x, y){ return S.holes.has(key(x, y)) || !!enemyAt(x, y); }
+// A pawn is "pinned" when Princess sits directly in its path (the square it would step into).
+function pawnBlocked(e){ return e.t === 'P' && !!S && S.princess.x === e.x && S.princess.y === e.y + 1; }
 
 const KN = [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+// "Long Reach" relic adds camel leaps (3,1)/(1,3) — a bigger L while the relic lasts.
+const KN_LONG = [[-3,-1],[-3,1],[-1,-3],[-1,3],[1,-3],[1,3],[3,-1],[3,1]];
 function knightMoves(x, y){
   const out = [];
-  KN.forEach(([dx, dy]) => { const a = x+dx, b = y+dy; if (inb(a,b) && !S.holes.has(key(a,b))) out.push({ x: a, y: b }); });
+  const set = (S && S.reachFloors > 0) ? KN.concat(KN_LONG) : KN;
+  set.forEach(([dx, dy]) => { const a = x+dx, b = y+dy; if (inb(a,b) && !S.holes.has(key(a,b))) out.push({ x: a, y: b }); });
   return out;
 }
 
 // ---- Floor generation ----
+function pickRelic(f, rnd){
+  // weighted: shovels & lanterns common, reach rarer, the odd ration
+  const bag = ['shovel','shovel','lantern','lantern','reach','heart'];
+  if (f >= 5) bag.push('reach');
+  return bag[(rnd()*bag.length)|0];
+}
 function newFloor(){
+  const rnd = S.rng;
   S.holes = new Set();
-  S.princess = { x: (Math.random()*COLS)|0, y: 0 };
+  S.princess = { x: (rnd()*COLS)|0, y: 0 };
   const f = S.floor;
   // shaft in the bottom two rows, reachable-ish
   let sx, sy, tries = 0;
-  do { sx = (Math.random()*COLS)|0; sy = ROWS - 1 - ((Math.random()*2)|0); tries++; } while (sx === S.princess.x && sy === 0 && tries < 20);
+  do { sx = (rnd()*COLS)|0; sy = ROWS - 1 - ((rnd()*2)|0); tries++; } while (sx === S.princess.x && sy === 0 && tries < 20);
   S.shaft = { x: sx, y: sy };
   // enemies
   const pool = ['P'];
@@ -157,27 +201,52 @@ function newFloor(){
   const taken = new Set([key(S.princess.x, S.princess.y), key(sx, sy)]);
   for (let i = 0; i < count; i++){
     let x, y, t2 = 0;
-    do { x = (Math.random()*COLS)|0; y = 1 + ((Math.random()*(ROWS-2))|0); t2++; } while (taken.has(key(x,y)) && t2 < 30);
+    do { x = (rnd()*COLS)|0; y = 1 + ((rnd()*(ROWS-2))|0); t2++; } while (taken.has(key(x,y)) && t2 < 30);
     taken.add(key(x, y));
-    S.enemies.push({ t: pool[(Math.random()*pool.length)|0], x, y });
+    S.enemies.push({ t: pool[(rnd()*pool.length)|0], x, y });
+  }
+  // Subject Zero — a rival knight-miner that hunts you and digs through caved sand. Deep only.
+  if (f >= 9 && rnd() < 0.42){
+    let x, y, tz = 0;
+    do { x = (rnd()*COLS)|0; y = 1 + ((rnd()*(ROWS-2))|0); tz++; } while (taken.has(key(x,y)) && tz < 30);
+    if (tz < 30){ taken.add(key(x,y)); S.enemies.push({ t:'Z', x, y });
+      if (!S.metZero){ S.metZero = true; doToast('Something else is down here. It moves like you.', '#c96bff'); } }
   }
   // gold
   S.gold = [];
-  const ng = 1 + ((Math.random()*2)|0);
+  const ng = 1 + ((rnd()*2)|0);
   for (let i = 0; i < ng; i++){
     let x, y, t3 = 0;
-    do { x = (Math.random()*COLS)|0; y = 1 + ((Math.random()*(ROWS-1))|0); t3++; } while (taken.has(key(x,y)) && t3 < 30);
+    do { x = (rnd()*COLS)|0; y = 1 + ((rnd()*(ROWS-1))|0); t3++; } while (taken.has(key(x,y)) && t3 < 30);
     if (t3 < 30){ taken.add(key(x,y)); S.gold.push({ x, y }); }
+  }
+  // relics — rare upgrades glinting in the dark (Prospector's Eye perk lifts the odds)
+  S.relics = [];
+  const relicChance = Math.min(0.42, 0.15 + f*0.02) + (S.perks.luck ? S.perks.luck*0.05 : 0);
+  if (rnd() < relicChance){
+    let x, y, t4 = 0;
+    do { x = (rnd()*COLS)|0; y = 1 + ((rnd()*(ROWS-1))|0); t4++; } while (taken.has(key(x,y)) && t4 < 30);
+    if (t4 < 30){ taken.add(key(x,y)); S.relics.push({ x, y, type: pickRelic(f, rnd) }); }
   }
   computeThreats();
 }
 
-function newGame(){
-  S = { floor: 1, depth: 10, hp: MAXHP, score: 0, best: loadBest(), phase: 'await', dead: false,
-        shownLore: new Set(), enemies: [], gold: [], holes: new Set(), threats: new Set() };
+function newGame(mode){
+  mode = mode || 'normal';
+  const camp = loadCamp();
+  const perks = (mode === 'race') ? {} : (camp.perks || {});     // Weekly Race is perk-free for fairness
+  const seed = (mode === 'race') ? weeklySeed() : 0;
+  const mh = 3 + (perks.maxhp || 0);
+  S = { mode, seed, rng: (mode === 'race') ? rng32(seed) : Math.random,
+        floor: 1, depth: 10, hp: mh, maxhp: mh, score: 0, best: loadBest(), phase: 'await', dead: false,
+        shownLore: new Set(), enemies: [], gold: [], relics: [], holes: new Set(), threats: new Set(),
+        shovels: (perks.shovel || 0), shovelArmed: false, reachFloors: 0, lanternFloors: 0,
+        perks, metZero: false };
   newFloor();
+  initWind();
   toast.t = -1;
-  doToast('DEPTH 10m', C.teal);
+  updateShovelBtn();
+  doToast(mode === 'race' ? 'WEEKLY RACE · DEPTH 10m' : 'DEPTH 10m', C.teal);
 }
 
 // ---- Enemy AI ----
@@ -185,14 +254,20 @@ function enemyCandidates(e){
   const px = S.princess.x, py = S.princess.y;
   const out = [];
   if (e.t === 'P'){
-    // marches down; captures Princess diagonally
+    // Chess pawn: marches straight DOWN, but can only CAPTURE diagonally — never forward.
     if (px === e.x - 1 && py === e.y + 1) out.push({ x: e.x - 1, y: e.y + 1 });
     if (px === e.x + 1 && py === e.y + 1) out.push({ x: e.x + 1, y: e.y + 1 });
-    if (inb(e.x, e.y + 1) && !occupied(e.x, e.y + 1)) out.push({ x: e.x, y: e.y + 1 });
+    // forward step only into a truly empty square — Princess parked in front blocks it cold (pin).
+    if (inb(e.x, e.y + 1) && !occupied(e.x, e.y + 1) && !(px === e.x && py === e.y + 1)) out.push({ x: e.x, y: e.y + 1 });
     return out;
   }
   if (e.t === 'N'){
     KN.forEach(([dx, dy]) => { const a = e.x+dx, b = e.y+dy; if (inb(a,b) && !S.holes.has(key(a,b)) && !enemyAt(a,b)) out.push({ x:a, y:b }); });
+    return out;
+  }
+  if (e.t === 'Z'){
+    // Subject Zero — a rival knight that digs: knight leaps that IGNORE caved sand (not onto other foes).
+    KN.forEach(([dx, dy]) => { const a = e.x+dx, b = e.y+dy; if (inb(a,b) && !enemyAt(a,b)) out.push({ x:a, y:b }); });
     return out;
   }
   const dirs = e.t === 'R' ? [[-1,0],[1,0],[0,-1],[0,1]]
@@ -228,6 +303,14 @@ function computeThreats(){
   });
   S.threats = th;
 }
+// Which enemy is covering this square? (drives the attack telegraph)
+function threatSource(x, y){
+  for (const e of S.enemies){
+    if (e.t === 'P'){ if ((x === e.x - 1 || x === e.x + 1) && y === e.y + 1) return e; }
+    else if (enemyCandidates(e).some(c => c.x === x && c.y === y)) return e;
+  }
+  return null;
+}
 
 // ---- Turn flow ----
 function tryHop(cell){
@@ -246,22 +329,38 @@ function resolveHop(from, cell){
   puff(center(from.x, from.y), '#c08a3a');
 
   const foe = enemyAt(cell.x, cell.y);
-  if (foe){ S.enemies = S.enemies.filter(e => e !== foe); S.score += 5; sfx('capture'); burst(center(cell.x, cell.y), C.gold); floater('+5', center(cell.x, cell.y), C.gold); }
+  if (foe){
+    S.enemies = S.enemies.filter(e => e !== foe);
+    const cc = center(cell.x, cell.y);
+    if (foe.t === 'Z'){
+      S.score += 12; sfx('capture'); burst(cc, '#c96bff'); floater('+12', cc, '#c96bff');
+      doToast('SUBJECT ZERO captured — it drops something.', '#c96bff');
+      applyRelic(pickRelic(S.floor, S.rng));
+    } else {
+      S.score += 5; sfx('capture'); burst(cc, C.gold); floater('+5', cc, C.gold);
+    }
+  }
   const gi = S.gold.findIndex(g => g.x === cell.x && g.y === cell.y);
   if (gi >= 0){ S.gold.splice(gi, 1); S.score += 3; sfx('gold'); burst(center(cell.x, cell.y), C.gold); floater('⛏ +3', center(cell.x, cell.y), C.gold); }
+  const ri = S.relics.findIndex(r => r.x === cell.x && r.y === cell.y);
+  if (ri >= 0){ const r = S.relics.splice(ri, 1)[0]; applyRelic(r.type); }
 
+  updateShovelBtn();
   if (cell.x === S.shaft.x && cell.y === S.shaft.y){ descend(); return; }
   enemyTurn();
 }
 function descend(){
   sfx('descend'); burst(center(S.shaft.x, S.shaft.y), C.teal);
   S.floor++; S.depth += 10;
-  if (S.floor % 4 === 0 && S.hp < MAXHP){ S.hp++; floater('+♥', center(S.princess.x, S.princess.y), C.teal); }
+  if (S.reachFloors > 0) S.reachFloors--;
+  if (S.lanternFloors > 0) S.lanternFloors--;
+  if (S.floor % 4 === 0 && S.hp < S.maxhp){ S.hp++; floater('+♥', center(S.princess.x, S.princess.y), C.teal); }
   // lore
   for (const L of LORE){ if (S.depth >= L.d && !S.shownLore.has(L.d)){ S.shownLore.add(L.d); doToast(L.t, C.teal); break; } }
   if (toast.t < 0 || toast.text.indexOf('m') === toast.text.length - 1) doToast('DEPTH ' + S.depth + 'm', C.teal);
   newFloor();
   S.phase = 'await';
+  updateShovelBtn();
 }
 function enemyTurn(){
   // The mine reacts: every enemy decides, then they MOVE (right after the player).
@@ -301,15 +400,37 @@ function finishEnemyTurn(){
 function gameOver(){
   S.dead = true; S.phase = 'dead';
   if (S.depth > S.best){ S.best = S.depth; saveBest(S.best); }
-  if (window.PJCC) PJCC.saveScore('sand-mine-depths', S.depth, { credits: 1, data: { gold: S.score, floor: S.floor } });
+  const camp = loadCamp(); camp.gold = (camp.gold || 0) + S.score; saveCamp(camp);   // bank the run's gold
+  if (window.PJCC) PJCC.saveScore('sand-mine-depths', S.depth, { credits: 1, data: { gold: S.score, floor: S.floor, mode: S.mode, seed: S.seed } });
   sfx('dead');
   document.getElementById('menu-btn').classList.add('hidden');
+  const shb = document.getElementById('shovel-btn'); if (shb) shb.classList.add('hidden');
   const newBest = S.depth >= S.best;
   document.getElementById('over-msg').innerHTML =
     'Princess reached <b style="color:#F5C518">' + S.depth + 'm</b> with <b style="color:#F5C518">' + S.score + '</b> gold.' +
     (newBest ? '<br><span style="color:#5be0c0">A new deepest mark!</span>' : '<br>Best: ' + S.best + 'm') +
+    '<br><span style="color:#c9a36a">Banked ⛏ ' + S.score + ' — ' + camp.gold + ' saved at camp.</span>' +
+    (S.mode === 'race' ? '<br><span style="color:#c96bff">Weekly Race · seed ' + S.seed + '</span>' : '') +
     '<br><br><i style="color:#c9a36a">The mine keeps what it takes.</i>';
   setTimeout(() => document.getElementById('over-screen').classList.remove('hidden'), 700);
+}
+
+// ---- Relics + shovel ----
+function applyRelic(type){
+  const c = center(S.princess.x, S.princess.y);
+  sfx('gold'); burst(c, '#c96bff');
+  if (type === 'reach'){ S.reachFloors = Math.max(S.reachFloors, 3); floater('✦ Long Reach', c, '#c96bff'); doToast('RELIC · Long Reach — bigger L-leaps for 3 floors', '#c96bff'); }
+  else if (type === 'shovel'){ S.shovels++; floater('✦ Shovel', c, C.teal); doToast('RELIC · Shovel — tap 🪏 then a pit to fill it', C.teal); }
+  else if (type === 'lantern'){ S.lanternFloors = Math.max(S.lanternFloors, 4); floater('✦ Lantern Oil', c, C.gold); doToast('RELIC · Lantern Oil — the dark pulls back for 4 floors', C.gold); }
+  else { if (S.hp < S.maxhp) S.hp++; else S.score += 5; floater('✦ +♥', c, C.bad); doToast('RELIC · Ration — patched up', C.bad); }
+  updateShovelBtn();
+}
+function updateShovelBtn(){
+  const b = document.getElementById('shovel-btn'); if (!b) return;
+  if (S && !S.dead && S.shovels > 0){
+    b.classList.remove('hidden'); b.classList.toggle('armed', !!S.shovelArmed);
+    b.textContent = S.shovelArmed ? '🪏 tap a pit' : '🪏 ' + S.shovels;
+  } else b.classList.add('hidden');
 }
 
 // ---- Input ----
@@ -323,6 +444,10 @@ function cellFromXY(cx, cy){
 canvas.addEventListener('pointerdown', e => {
   if (!S || S.phase !== 'await') return;
   const c = cellFromXY(e.clientX, e.clientY); if (!c) return; e.preventDefault();
+  if (S.shovelArmed){           // shovel mode: tap a caved-in pit to fill it back in
+    if (S.holes.has(key(c.x, c.y))){ S.holes.delete(key(c.x, c.y)); S.shovels--; puff(center(c.x,c.y), '#c9a36a'); sfx('gold'); computeThreats(); }
+    S.shovelArmed = false; updateShovelBtn(); return;
+  }
   tryHop(c);
 });
 
@@ -342,6 +467,8 @@ function render(){
   if (S){ drawBoard(); drawEntities(); }
   ctx.restore();
   drawDust(); drawFloaters();
+  drawWind();
+  if (S) drawTorch();
   if (S) drawHUD();
   drawToast();
   if (vignette > 0){ ctx.fillStyle = 'rgba(255,40,40,'+(vignette/16*0.24)+')'; ctx.fillRect(0,0,W,H); vignette -= 0.7; }
@@ -359,27 +486,44 @@ function drawBoard(){
   for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++){
     const px = BX + x*TILE, py = BY + y*TILE;
     const hole = S.holes.has(key(x, y));
-    if (hole){
-      ctx.fillStyle = '#0c0700'; ctx.fillRect(px, py, TILE, TILE);
-      ctx.strokeStyle = 'rgba(60,40,16,0.8)'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(px+6,py+8); ctx.lineTo(px+TILE-10,py+14); ctx.lineTo(px+TILE-6,py+TILE-8); ctx.stroke();
-    } else {
-      ctx.fillStyle = (x + y) % 2 === 0 ? '#e0b25a' : '#c08a3a'; ctx.fillRect(px, py, TILE, TILE);
-      // grain
-      ctx.fillStyle = 'rgba(120,80,20,0.18)';
-      for (let i = 0; i < 3; i++){ const gx = px + ((x*7+i*23+y*13) % (TILE-8)) + 4, gy = py + ((y*11+i*17+x*5) % (TILE-8)) + 4; ctx.fillRect(gx, gy, 2, 2); }
-    }
-    // threat overlay
-    if (S.threats.has(key(x, y)) && !hole){ ctx.fillStyle = 'rgba(255,60,60,0.22)'; ctx.fillRect(px, py, TILE, TILE); }
+    if (hole) drawHole(px, py, x, y);
+    else drawSand(px, py, x, y);
+    // threat heat — a faint warning wash on any square a piece covers
+    if (S.threats.has(key(x, y)) && !hole){ ctx.fillStyle = 'rgba(255,60,60,0.18)'; ctx.fillRect(px, py, TILE, TILE); }
   }
-  // legal-move dots
+  // legal-move dots — calm teal where it's safe, a live attack telegraph where it isn't
   if (S.phase === 'await'){
+    const pulse = 0.5 + 0.5 * Math.sin(Date.now()/250);
     knightMoves(S.princess.x, S.princess.y).forEach(m => {
       const c = center(m.x, m.y);
-      const danger = S.threats.has(key(m.x, m.y));
-      const pulse = 0.5 + 0.5 * Math.sin(Date.now()/250);
-      ctx.fillStyle = danger ? 'rgba(255,120,120,' + (0.4+0.4*pulse) + ')' : 'rgba(91,224,192,' + (0.45+0.4*pulse) + ')';
-      ctx.beginPath(); ctx.arc(c.x, c.y, 8, 0, Math.PI*2); ctx.fill();
+      if (S.threats.has(key(m.x, m.y))){
+        const src = threatSource(m.x, m.y);
+        ctx.save();
+        // an aiming line drawn straight from the piece that covers this square
+        if (src){
+          const sc = center(src.x, src.y);
+          ctx.strokeStyle = 'rgba(255,70,70,' + (0.30 + 0.4*pulse) + ')';
+          ctx.lineWidth = 2; ctx.setLineDash([5, 5]); ctx.lineDashOffset = -Date.now()/40;
+          ctx.beginPath(); ctx.moveTo(sc.x, sc.y); ctx.lineTo(c.x, c.y); ctx.stroke();
+          ctx.setLineDash([]);
+        }
+        // crosshair: land here and you get hit
+        const rr = 11 + pulse*2;
+        ctx.strokeStyle = 'rgba(255,90,90,' + (0.6 + 0.4*pulse) + ')'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(c.x, c.y, rr, 0, Math.PI*2); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(c.x-rr-3, c.y); ctx.lineTo(c.x-rr+4, c.y);
+        ctx.moveTo(c.x+rr-4, c.y); ctx.lineTo(c.x+rr+3, c.y);
+        ctx.moveTo(c.x, c.y-rr-3); ctx.lineTo(c.x, c.y-rr+4);
+        ctx.moveTo(c.x, c.y+rr-4); ctx.lineTo(c.x, c.y+rr+3);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(255,90,90,' + (0.5 + 0.4*pulse) + ')';
+        ctx.beginPath(); ctx.arc(c.x, c.y, 3, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+      } else {
+        ctx.fillStyle = 'rgba(91,224,192,' + (0.45 + 0.4*pulse) + ')';
+        ctx.beginPath(); ctx.arc(c.x, c.y, 8, 0, Math.PI*2); ctx.fill();
+      }
     });
   }
   // shaft
@@ -404,15 +548,82 @@ function drawShaft(){
 }
 function drawNugget(c){
   const t = Date.now()/400;
-  ctx.save(); ctx.translate(c.x, c.y + Math.sin(t)*1.5);
-  ctx.fillStyle = '#b8860b'; ctx.beginPath(); ctx.ellipse(0, 3, 11, 7, 0, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = C.gold; ctx.beginPath(); ctx.moveTo(-9,2); ctx.lineTo(-3,-6); ctx.lineTo(5,-3); ctx.lineTo(9,4); ctx.lineTo(0,7); ctx.closePath(); ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.beginPath(); ctx.arc(-2, -2, 2, 0, Math.PI*2); ctx.fill();
-  // sparkle
+  ctx.save(); ctx.translate(c.x, c.y + Math.sin(t)*1.6);
+  // warm glow
+  const glow = ctx.createRadialGradient(0, 1, 1, 0, 1, 17);
+  glow.addColorStop(0, 'rgba(255,212,90,0.55)'); glow.addColorStop(1, 'rgba(255,212,90,0)');
+  ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(0, 1, 17, 0, Math.PI*2); ctx.fill();
+  // ground shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.30)'; ctx.beginPath(); ctx.ellipse(0, 9, 9, 3, 0, 0, Math.PI*2); ctx.fill();
+  // faceted body, lit from upper-left
+  const gg = ctx.createLinearGradient(-9, -7, 9, 7);
+  gg.addColorStop(0, '#ffe680'); gg.addColorStop(0.5, '#f5c518'); gg.addColorStop(1, '#b07d08');
+  ctx.fillStyle = gg; ctx.strokeStyle = '#6e5106'; ctx.lineWidth = 1; ctx.lineJoin = 'round';
+  ctx.beginPath(); ctx.moveTo(-8,1); ctx.lineTo(-4,-6); ctx.lineTo(3,-7); ctx.lineTo(9,-1); ctx.lineTo(7,6); ctx.lineTo(-2,8); ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  // interior facet creases
+  ctx.strokeStyle = 'rgba(110,81,6,0.5)'; ctx.lineWidth = 0.8;
+  ctx.beginPath(); ctx.moveTo(-4,-6); ctx.lineTo(-1,1); ctx.lineTo(-2,8); ctx.moveTo(-1,1); ctx.lineTo(9,-1); ctx.stroke();
+  // bright top facet
+  ctx.fillStyle = 'rgba(255,255,225,0.55)';
+  ctx.beginPath(); ctx.moveTo(-4,-6); ctx.lineTo(3,-7); ctx.lineTo(0,-1); ctx.closePath(); ctx.fill();
+  // twinkle
   const s = (Math.sin(t*3) + 1) / 2;
-  ctx.strokeStyle = 'rgba(255,255,200,' + s + ')'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(7,-7); ctx.lineTo(7,-1); ctx.moveTo(4,-4); ctx.lineTo(10,-4); ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,255,210,' + (0.4 + 0.6*s) + ')'; ctx.lineWidth = 1.2; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(6,-8); ctx.lineTo(6,-3); ctx.moveTo(3.5,-5.5); ctx.lineTo(8.5,-5.5); ctx.stroke();
   ctx.restore();
+}
+// A textured sand square: two tones, wind ripples, grain, and a little top-edge relief.
+function drawSand(px, py, x, y){
+  ctx.fillStyle = (x + y) % 2 === 0 ? '#e3b65f' : '#c28b3c';
+  ctx.fillRect(px, py, TILE, TILE);
+  ctx.strokeStyle = 'rgba(120,78,26,0.13)'; ctx.lineWidth = 1.4;
+  for (let r = 0; r < 3; r++){
+    const yy = py + 10 + r*15 + ((x*5 + y*9 + r*3) % 6);
+    ctx.beginPath(); ctx.moveTo(px+2, yy); ctx.quadraticCurveTo(px + TILE*0.5, yy - 3, px + TILE - 2, yy); ctx.stroke();
+  }
+  ctx.fillStyle = 'rgba(110,72,18,0.22)';
+  for (let i = 0; i < 4; i++){ const gx = px + ((x*7 + i*23 + y*13) % (TILE-8)) + 4, gy = py + ((y*11 + i*17 + x*5) % (TILE-8)) + 4; ctx.fillRect(gx, gy, 2, 2); }
+  ctx.fillStyle = 'rgba(255,232,176,0.10)'; ctx.fillRect(px, py, TILE, 2);
+  ctx.fillStyle = 'rgba(54,32,8,0.16)'; ctx.fillRect(px, py + TILE - 2, TILE, 2);
+}
+// A caved-in pit: dark sand collar, a sunken radial hollow, a lit far rim and shadowed near lip.
+function drawHole(px, py, x, y){
+  const cx = px + TILE/2, cy = py + TILE/2;
+  ctx.fillStyle = (x + y) % 2 === 0 ? '#7c5320' : '#5f4018';
+  ctx.fillRect(px, py, TILE, TILE);
+  const rg = ctx.createRadialGradient(cx, cy - 4, 2, cx, cy + 4, TILE*0.5);
+  rg.addColorStop(0, '#000000'); rg.addColorStop(0.45, '#140b02'); rg.addColorStop(0.85, '#2a1a0a'); rg.addColorStop(1, 'rgba(42,26,10,0)');
+  ctx.fillStyle = rg; ctx.beginPath(); ctx.ellipse(cx, cy, TILE*0.42, TILE*0.40, 0, 0, Math.PI*2); ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba(240,210,150,0.35)'; ctx.beginPath(); ctx.ellipse(cx, cy, TILE*0.40, TILE*0.36, 0, Math.PI, Math.PI*2); ctx.stroke();
+  ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.beginPath(); ctx.ellipse(cx, cy, TILE*0.40, TILE*0.36, 0, 0, Math.PI); ctx.stroke();
+  // a couple of grains that slid into the pit (stable, derived from x/y)
+  ctx.fillStyle = 'rgba(200,150,70,0.45)'; const h = (x*13 + y*7);
+  ctx.fillRect(cx - 6 + (h % 5), cy + 6 + ((h >> 2) % 4), 2, 2);
+  ctx.fillRect(cx + 4 - ((h >> 1) % 5), cy - 7 + ((h >> 3) % 4), 2, 2);
+}
+// Blowing sand: low streaks that drift across the scene, swelling with gusts.
+function makeGust(anywhere){
+  const cols = ['#f0dcae', '#e8c98a', '#d9a85a'];
+  return { x: anywhere ? Math.random()*W : -30 - Math.random()*40, y: Math.random()*H,
+    len: 8 + Math.random()*26, sp: 0.8 + Math.random()*2.4, drift: (Math.random()-0.5)*0.5,
+    a: 0.06 + Math.random()*0.18, sz: 0.6 + Math.random()*1.4, col: cols[(Math.random()*cols.length)|0] };
+}
+function initWind(){ wind = []; for (let i = 0; i < 46; i++) wind.push(makeGust(true)); }
+function drawWind(){
+  if (!S) return;
+  const gust = 0.6 + 0.4*Math.sin(Date.now()/1700);
+  ctx.save(); ctx.lineCap = 'round';
+  for (const w of wind){
+    w.x += w.sp * (0.7 + gust*0.8);
+    w.y += w.drift + Math.sin((w.x + w.y)/60)*0.2;
+    if (w.x > W + 30){ w.x = -30; w.y = Math.random()*H; }
+    ctx.globalAlpha = w.a * (0.55 + gust*0.6);
+    ctx.strokeStyle = w.col; ctx.lineWidth = w.sz;
+    ctx.beginPath(); ctx.moveTo(w.x, w.y); ctx.lineTo(w.x - w.len*(0.6 + gust), w.y - w.drift*3); ctx.stroke();
+  }
+  ctx.restore(); ctx.globalAlpha = 1;
 }
 function drawEntities(){
   // enemies — interpolated as they react right after the player's hop
@@ -423,9 +634,9 @@ function drawEntities(){
       const x = m.fc.x + (m.tc.x - m.fc.x) * e, y = m.fc.y + (m.tc.y - m.fc.y) * e;
       drawToken({ x, y }, m.e.t, false, 1 + (m.attack ? 0.14 * Math.sin(enemyAnims.t * Math.PI) : 0), m.attack);
     });
-    S.enemies.forEach(en => { if (!moving.has(en)) drawToken(center(en.x, en.y), en.t, false); });
+    S.enemies.forEach(en => { if (!moving.has(en)) drawToken(center(en.x, en.y), en.t, false, 1, false, pawnBlocked(en)); });
   } else {
-    S.enemies.forEach(en => drawToken(center(en.x, en.y), en.t, false));
+    S.enemies.forEach(en => drawToken(center(en.x, en.y), en.t, false, 1, false, pawnBlocked(en)));
   }
   // princess (animated hop)
   let pc;
@@ -433,7 +644,8 @@ function drawEntities(){
   else pc = center(S.princess.x, S.princess.y);
   drawToken(pc, 'PR', true, anim ? 1.05 : 1);
 }
-function drawToken(c, type, isPrincess, scaleIn, attacking){
+const ZERO_PAL = { bFill:'#2a153e', bEdge:'#c96bff' };   // Subject Zero — a shadow of Princess
+function drawToken(c, type, isPrincess, scaleIn, attacking, blocked){
   const scale = scaleIn || 1;
   const t = Date.now()/600, bob = isPrincess && !anim ? Math.sin(t)*1.5 : 0;
   const cx = c.x, cy = c.y + bob, size = TILE * 0.78 * scale;
@@ -442,27 +654,83 @@ function drawToken(c, type, isPrincess, scaleIn, attacking){
     ctx.save(); ctx.strokeStyle = C.gold; ctx.lineWidth = 2.5; ctx.globalAlpha = 0.92;
     ctx.beginPath(); ctx.arc(cx, cy, TILE*0.42, 0, Math.PI*2); ctx.stroke(); ctx.restore();
     PJCCPieces.draw(ctx, cx, cy, size, 'N', 'w', PRIN_PAL);
-  } else if (attacking){
-    ctx.save(); ctx.shadowColor = 'rgba(255,70,70,0.95)'; ctx.shadowBlur = 16;
-    PJCCPieces.draw(ctx, cx, cy, size, type, 'b', SAND_PAL); ctx.restore();
+    return;
+  }
+  const isZero = type === 'Z';
+  const drawType = isZero ? 'N' : type;        // Subject Zero is drawn as a (violet) knight
+  const pal = isZero ? ZERO_PAL : SAND_PAL;
+  if (attacking){
+    ctx.save(); ctx.shadowColor = isZero ? 'rgba(201,107,255,0.95)' : 'rgba(255,70,70,0.95)'; ctx.shadowBlur = 16;
+    PJCCPieces.draw(ctx, cx, cy, size, drawType, 'b', pal); ctx.restore();
   } else {
-    PJCCPieces.draw(ctx, cx, cy, size, type, 'b', SAND_PAL);
+    PJCCPieces.draw(ctx, cx, cy, size, drawType, 'b', pal);
+  }
+  if (isZero){
+    const pz = 0.5 + 0.5*Math.sin(Date.now()/220);
+    ctx.save(); ctx.strokeStyle = 'rgba(201,107,255,' + (0.55 + 0.4*pz) + ')'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(cx, cy, TILE*0.40, 0, Math.PI*2); ctx.stroke();
+    ctx.fillStyle = '#e3b6ff'; ctx.font = 'bold 11px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('0', cx + TILE*0.30, cy - TILE*0.30); ctx.restore();
+  } else if (type === 'P'){
+    drawPawnHeading(cx, cy, !!attacking, blocked);
   }
 }
-function shade(hex){ // darken a hex color
-  const n = parseInt(hex.slice(1), 16); let r=(n>>16)&255, g=(n>>8)&255, b=n&255;
-  r=(r*0.5)|0; g=(g*0.5)|0; b=(b*0.5)|0; return 'rgb('+r+','+g+','+b+')';
+// Pawns only ever march straight DOWN and bite the two squares diagonally ahead — they
+// can't capture forward. A down-chevron makes their heading obvious; when Princess is
+// parked directly in front, it flips to a calm "blocked" stop-bar so the pin reads clearly.
+function drawPawnHeading(cx, cy, hot, blocked){
+  const tt = Date.now()/300, pulse = 0.5 + 0.5*Math.sin(tt);
+  const ay = cy + TILE*0.30, aw = TILE*0.13, ah = TILE*0.11;
+  ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  if (blocked){
+    ctx.strokeStyle = 'rgba(91,224,192,' + (0.7 + 0.3*pulse) + ')'; ctx.lineWidth = 2.6;
+    ctx.beginPath(); ctx.moveTo(cx - aw, ay); ctx.lineTo(cx + aw, ay); ctx.stroke();             // stop bar — it can't advance
+    ctx.globalAlpha = 0.5; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(cx - aw*0.7, ay - ah - 1); ctx.lineTo(cx, ay - 2); ctx.lineTo(cx + aw*0.7, ay - ah - 1); ctx.stroke();
+    ctx.globalAlpha = 1;
+  } else {
+    const col = hot ? 'rgba(255,95,80,' : 'rgba(255,150,70,';
+    ctx.strokeStyle = col + (0.55 + 0.4*pulse) + ')'; ctx.lineWidth = 2.4;
+    ctx.beginPath(); ctx.moveTo(cx - aw, ay - ah); ctx.lineTo(cx, ay); ctx.lineTo(cx + aw, ay - ah); ctx.stroke();               // down-chevron (heading)
+    ctx.globalAlpha = 0.45; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(cx - aw*0.7, ay - ah + 5); ctx.lineTo(cx, ay + 5); ctx.lineTo(cx + aw*0.7, ay - ah + 5); ctx.stroke();  // motion echo
+    ctx.globalAlpha = 1;
+  }
+  ctx.restore();
 }
 function drawDust(){ dust.forEach(p => { ctx.globalAlpha = Math.max(0, p.life/p.max); ctx.fillStyle = p.col; ctx.fillRect(p.x-p.sz/2, p.y-p.sz/2, p.sz, p.sz); ctx.globalAlpha = 1; }); }
 function drawFloaters(){ floaters.forEach(f => { ctx.globalAlpha = Math.max(0, f.life/f.max); ctx.fillStyle = f.col; ctx.font = 'bold 14px Trebuchet MS'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(f.txt, f.x, f.y); ctx.globalAlpha = 1; }); }
 
+// Torch: a pool of light around Princess that shrinks the deeper she digs.
+function torchRadius(){
+  let base = 3.5 - S.depth / 110;                               // the dark closes in with depth
+  if (S.lanternFloors > 0) base += 1.2;                         // Lantern Oil relic
+  if (S.perks && S.perks.lantern) base += S.perks.lantern * 0.45; // Brighter Lantern camp perk
+  return Math.max(2.4, Math.min(4.3, base));
+}
+function drawTorch(){
+  const r = torchRadius() * TILE;
+  const c = center(S.princess.x, S.princess.y);
+  const x0 = BX-6, y0 = BY-6, w = COLS*TILE+12, h = ROWS*TILE+12;
+  const maxDark = Math.min(0.93, 0.30 + S.depth / 240);
+  const fl = 1 + Math.sin(Date.now()/160) * 0.04;              // gentle torch flicker
+  ctx.save();
+  ctx.beginPath(); ctx.rect(x0, y0, w, h); ctx.clip();
+  const g = ctx.createRadialGradient(c.x, c.y, r*0.32, c.x, c.y, r*fl);
+  g.addColorStop(0, 'rgba(0,0,0,0)');
+  g.addColorStop(0.72, 'rgba(4,3,1,' + (maxDark*0.5).toFixed(3) + ')');
+  g.addColorStop(1, 'rgba(4,3,1,' + maxDark.toFixed(3) + ')');
+  ctx.fillStyle = g; ctx.fillRect(x0, y0, w, h);
+  ctx.restore();
+}
 function drawHUD(){
   // hearts
   ctx.font = 'bold 18px Trebuchet MS'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-  for (let i = 0; i < MAXHP; i++){ ctx.fillStyle = i < S.hp ? C.bad : 'rgba(120,60,60,0.4)'; ctx.fillText('♥', 14 + i*22, 30); }
+  for (let i = 0; i < S.maxhp; i++){ ctx.fillStyle = i < S.hp ? C.bad : 'rgba(120,60,60,0.4)'; ctx.fillText('♥', 14 + i*22, 30); }
   // depth
   ctx.fillStyle = C.teal; ctx.font = 'bold 16px Trebuchet MS'; ctx.textAlign = 'center';
   ctx.fillText('▼ ' + S.depth + 'm', W/2, 30);
+  if (S.mode === 'race'){ ctx.fillStyle = '#c96bff'; ctx.font = 'bold 9px Trebuchet MS'; ctx.fillText('⏱ WEEKLY RACE', W/2, 48); }
   // gold
   ctx.fillStyle = C.gold; ctx.textAlign = 'right';
   ctx.fillText('⛏ ' + S.score, W - 92, 30);
@@ -507,12 +775,50 @@ function loop(now){
 }
 
 // ---- Screens ----
-function showMenu(){ S = null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('over-screen').classList.add('hidden'); const b = loadBest(); document.getElementById('best-line').textContent = 'best depth: ' + (b ? b + 'm' : '—'); document.getElementById('menu-screen').classList.remove('hidden'); }
-function begin(){ initAudio(); if (actx.state==='suspended') actx.resume(); document.getElementById('menu-screen').classList.add('hidden'); document.getElementById('over-screen').classList.add('hidden'); document.getElementById('menu-btn').classList.remove('hidden'); newGame(); }
-document.getElementById('start-btn').addEventListener('click', begin);
-document.getElementById('retry-btn').addEventListener('click', begin);
+let lastMode = 'normal';
+function hideScreens(){ ['menu-screen','over-screen','camp-screen'].forEach(id => document.getElementById(id).classList.add('hidden')); }
+function showMenu(){ S = null; document.getElementById('menu-btn').classList.add('hidden'); const sh = document.getElementById('shovel-btn'); if (sh) sh.classList.add('hidden'); hideScreens(); const b = loadBest(); document.getElementById('best-line').textContent = 'best depth: ' + (b ? b + 'm' : '—'); document.getElementById('menu-screen').classList.remove('hidden'); }
+function begin(mode){ lastMode = mode || 'normal'; initAudio(); if (actx.state==='suspended') actx.resume(); hideScreens(); document.getElementById('menu-btn').classList.remove('hidden'); newGame(lastMode); }
+
+function showCamp(){
+  S = null; document.getElementById('menu-btn').classList.add('hidden');
+  const sh = document.getElementById('shovel-btn'); if (sh) sh.classList.add('hidden');
+  const camp = loadCamp();
+  let html = '<div class="eyebrow">Back on the surface</div><div class="big-title" style="font-size:24px;">SURFACE CAMP</div>'
+    + '<div class="blurb">Gold you carry out of the mine is banked here. Spend it on gear that lasts every run.<br>'
+    + '<b style="color:#F5C518">⛏ ' + camp.gold + '</b> banked &nbsp;·&nbsp; <span style="color:#9a7a4a;font-size:11px;">Weekly Race runs are perk-free</span></div>'
+    + '<div class="camp-list">';
+  PERKS.forEach(p => {
+    const lvl = camp.perks[p.id] || 0, maxed = lvl >= p.max, cost = p.cost(lvl);
+    html += '<div class="camp-row"><div class="camp-info"><b>' + p.icon + ' ' + p.name + '</b> <span class="lvl">Lv ' + lvl + '/' + p.max + '</span><br><span class="cd">' + p.desc + '</span></div>'
+      + (maxed ? '<span class="camp-max">MAX</span>'
+               : '<button class="camp-buy" data-id="' + p.id + '"' + (camp.gold < cost ? ' disabled' : '') + '>' + cost + ' ⛏</button>')
+      + '</div>';
+  });
+  html += '</div><div class="row" style="margin-top:14px;"><button class="btn btn-gold" id="camp-descend">DESCEND</button><button class="btn btn-ghost" id="camp-back">BACK</button></div>';
+  const el = document.getElementById('camp-screen');
+  el.innerHTML = html; hideScreens(); el.classList.remove('hidden');
+  el.querySelectorAll('.camp-buy').forEach(b => b.addEventListener('click', () => buyPerk(b.getAttribute('data-id'))));
+  document.getElementById('camp-descend').addEventListener('click', () => begin('normal'));
+  document.getElementById('camp-back').addEventListener('click', showMenu);
+}
+function buyPerk(id){
+  const camp = loadCamp(), p = PERKS.find(x => x.id === id), lvl = camp.perks[id] || 0;
+  if (!p || lvl >= p.max) return; const cost = p.cost(lvl);
+  if (camp.gold < cost) return;
+  camp.gold -= cost; camp.perks[id] = lvl + 1; saveCamp(camp);
+  initAudio(); if (actx && actx.state === 'suspended') actx.resume(); sfx('gold');
+  showCamp();
+}
+
+document.getElementById('start-btn').addEventListener('click', () => begin('normal'));
+document.getElementById('race-btn').addEventListener('click', () => begin('race'));
+document.getElementById('camp-btn').addEventListener('click', showCamp);
+document.getElementById('retry-btn').addEventListener('click', () => begin(lastMode));
+document.getElementById('over-camp').addEventListener('click', showCamp);
 document.getElementById('over-menu').addEventListener('click', showMenu);
 document.getElementById('menu-btn').addEventListener('click', showMenu);
+document.getElementById('shovel-btn').addEventListener('click', () => { if (S && S.shovels > 0){ S.shovelArmed = !S.shovelArmed; updateShovelBtn(); } });
 document.getElementById('snd-toggle').addEventListener('click', () => { sndOn = !sndOn; if (master) master.gain.value = sndOn?0.8:0; document.getElementById('snd-toggle').textContent = sndOn?'🔊 sound: on':'🔇 sound: off'; });
 
 document.getElementById('best-line').textContent = 'best depth: ' + (loadBest() ? loadBest()+'m' : '—');

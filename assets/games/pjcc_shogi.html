@@ -3,204 +3,821 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Shogi Island</title>
+<title>PJCC: Shogi Island v3.0</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  :root { --gold:#F5C518; --ink:#f0e6ff; --dim:#9a7fd4; --bg:#140a06; --board:#e8c98a; --line:#7a5a2a; }
-  html, body { height: 100%; background: #0a0503; overflow: hidden; font-family: 'Trebuchet MS','Segoe UI',sans-serif;
+  :root {
+    --gold:#d9a441; --ink:#2a2018; --paper:#efeae0; --board:#efeae0; --line:#b9b09a;
+    --enemy:#a8324a; --good:#1f8a52; --bad:#b03a3a; --muted:#7a7165;
+  }
+  html, body { height: 100%; overflow: hidden; background: #e7e2d8;
+    font-family: 'Hiragino Mincho ProN','Yu Mincho','Trebuchet MS','Segoe UI',serif;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-  body { display: flex; align-items: center; justify-content: center; min-height: 100vh; color: var(--ink); }
-  #app { width: 100%; max-width: 460px; padding: 14px; text-align: center; }
-  .title { color: var(--gold); font-size: 1.1rem; font-weight: 800; letter-spacing: 1px; }
-  .title .jp { font-size: 1.3rem; margin-right: 6px; }
-  .hud { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--dim); margin: 6px 2px 10px; }
-  .hud b { color: var(--gold); }
-  .fwd { color: var(--dim); font-size: 0.72rem; letter-spacing: 2px; margin-bottom: 4px; }
-  .modes { display: flex; gap: 8px; justify-content: center; margin-bottom: 8px; }
-  .mode { background: #2a1a55; color: var(--dim); border: 1px solid #4a3a7a; border-radius: 999px; padding: 5px 14px; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
-  .mode.on { background: var(--gold); color: #1a0f3d; border-color: var(--gold); }
+  body { display: flex; align-items: flex-start; justify-content: center; min-height: 100vh; }
 
-  .board { display: grid; gap: 2px; background: var(--line); border: 3px solid var(--line);
-    border-radius: 4px; width: 308px; margin: 0 auto; }
-  .cell { aspect-ratio: 1; background: var(--board); display: flex; align-items: center; justify-content: center;
-    font-size: 1.3rem; color: #2a1a08; cursor: pointer; user-select: none; transition: background 0.1s; }
-  .cell:hover { background: #f0d9a0; }
-  .cell.pc { background: #2a1a55; color: var(--gold); font-weight: 800; cursor: default; box-shadow: inset 0 0 0 2px var(--gold); }
-  .cell.sel { background: #9bd6ff; }
-  .cell.correct { background: #6bffb8; }
-  .cell.missed { background: #6bffb8; opacity: 0.45; box-shadow: inset 0 0 0 2px #1a7a4a; }
-  .cell.wrong { background: #ff8a8a; }
+  /* ===== Scene (theme layers, behind everything) ===== */
+  #scene { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: #e7e2d8; transition: background 1s; }
+  .layer { position: absolute; inset: 0; opacity: 0; transition: opacity 1.1s ease; pointer-events: none; }
+  .layer.on { opacity: 1; }
+  .l-paper { background:
+      radial-gradient(circle at 30% 20%, rgba(255,250,235,0.7), transparent 60%),
+      repeating-linear-gradient(0deg, rgba(180,165,140,0.05) 0 2px, transparent 2px 5px),
+      #efe7d6; }
+  .l-sky { background: linear-gradient(180deg, #f6dcc0 0%, #f2e7d6 42%, transparent 70%); }
+  .l-sun { background: radial-gradient(circle at 50% 20%, rgba(245,180,120,0.55), rgba(245,180,120,0) 22%); }
+  .l-fuji { background:
+      radial-gradient(120% 80% at 50% 100%, transparent 58%, rgba(120,140,165,0.0) 58%),
+      none; }
+  .l-fuji::before { content:''; position:absolute; left:50%; bottom:18%; transform:translateX(-50%);
+      width: 78%; height: 30%;
+      background: linear-gradient(180deg,#9fb0c4,#7d92ad);
+      clip-path: polygon(50% 0, 64% 34%, 58% 36%, 70% 58%, 100% 100%, 0 100%, 30% 58%, 42% 36%, 36% 34%);
+      opacity: 0.55; }
+  .l-fuji::after { content:''; position:absolute; left:50%; bottom:42%; transform:translateX(-50%);
+      width: 22%; height: 9%; background:#f4efe6;
+      clip-path: polygon(50% 0, 64% 70%, 58% 64%, 50% 80%, 42% 64%, 36% 70%); opacity:0.9; }
+  .l-torii::before, .l-torii::after { content:''; position:absolute; }
+  .l-torii::before { left:14%; bottom:14%; width:70px; height:120px;
+      background:
+        linear-gradient(#c0392b,#9e2b20) , /* fallback */ none;
+      -webkit-mask: none; opacity:0.0; } /* torii drawn via .torii element instead */
+  .torii { position:absolute; bottom:13%; left:12%; width:84px; height:104px; opacity:0; transition:opacity 1.1s; }
+  #scene .torii.on { opacity:0.92; }
+  .torii i { position:absolute; background:#b0392b; box-shadow:0 1px 2px rgba(0,0,0,0.2); }
+  .torii .t-top { top:0; left:-6px; right:-6px; height:11px; border-radius:3px; }
+  .torii .t-top2 { top:16px; left:2px; right:2px; height:7px; }
+  .torii .t-lp { top:8px; left:14px; width:11px; bottom:0; }
+  .torii .t-rp { top:8px; right:14px; width:11px; bottom:0; }
+  .l-lantern { background:
+      radial-gradient(circle at 85% 30%, rgba(255,170,90,0.22), transparent 16%),
+      radial-gradient(circle at 12% 62%, rgba(255,150,80,0.18), transparent 14%); }
+  .l-ink { box-shadow: inset 0 0 90px rgba(40,28,18,0.22), inset 0 0 18px rgba(40,28,18,0.18); }
+  .l-gold { background:
+      radial-gradient(circle at 0% 0%, rgba(217,164,65,0.16), transparent 18%),
+      radial-gradient(circle at 100% 100%, rgba(217,164,65,0.16), transparent 18%); }
+  .seal { position:absolute; right:16px; bottom:14px; width:40px; height:40px; border:2px solid #b0392b;
+      border-radius:6px; color:#b0392b; font-size:11px; display:flex; align-items:center; justify-content:center;
+      text-align:center; line-height:1.05; opacity:0; transition:opacity 1.1s; transform:rotate(-4deg); font-weight:700; }
+  #scene .seal.on { opacity:0.85; }
+  .petal { position:absolute; top:-12px; width:9px; height:9px; background:#f6b8cf; border-radius:80% 0 80% 0;
+      opacity:0; }
+  #scene.petals .petal { animation: fall linear infinite; }
+  @keyframes fall { 0%{ transform: translateY(-20px) rotate(0); opacity:0; } 10%{opacity:0.85;}
+      100%{ transform: translateY(102vh) rotate(540deg); opacity:0.7; } }
 
-  .prompt { margin: 12px 4px 4px; min-height: 46px; }
-  .prompt .pname { color: var(--gold); font-weight: 700; }
-  .prompt .pdesc { color: var(--dim); font-size: 0.82rem; }
-  .fb { min-height: 20px; font-size: 0.9rem; font-weight: 700; margin-top: 4px; }
-  .fb.ok { color: #6bffb8; } .fb.no { color: #ff8a8a; }
+  /* ===== App ===== */
+  #app { position: relative; z-index: 1; width: 100%; max-width: 560px; padding: 12px 14px 22px; text-align: center; color: var(--ink); }
+  .topbar { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
+  .title { font-weight:800; letter-spacing:1px; color:#3a2d1c; font-size:1.05rem; }
+  .title .jp { font-size:1.25rem; margin-right:6px; color:#7a2d22; }
+  .rank { font-size:0.82rem; color:var(--muted); }
+  .rank b { color:var(--gold); }
+  .bars { display:flex; gap:10px; justify-content:center; font-size:0.72rem; color:var(--muted); margin-bottom:8px; }
+  .bars .chip { background:rgba(255,255,255,0.5); border:1px solid rgba(120,110,90,0.3); border-radius:999px; padding:2px 10px; }
+  .bars b { color:#7a2d22; }
 
-  .btn { margin-top: 10px; background: var(--gold); color: #1a0f3d; border: none; border-radius: 999px;
-    padding: 10px 26px; font-weight: 800; font-size: 0.95rem; cursor: pointer; }
-  .btn:hover { background: #ffd740; }
+  .fwd { color:var(--muted); font-size:0.7rem; letter-spacing:3px; margin-bottom:4px; }
 
-  .overlay { position: fixed; inset: 0; background: rgba(8,4,2,0.94); display: flex; align-items: center;
-    justify-content: center; flex-direction: column; padding: 20px; text-align: center; }
-  .overlay.hidden { display: none; }
-  .overlay h2 { color: var(--gold); font-size: 1.4rem; margin-bottom: 6px; }
-  .overlay .jp-big { font-size: 2rem; color: var(--gold); margin-bottom: 8px; }
-  .overlay p { color: var(--ink); margin-bottom: 6px; }
-  .overlay .sub { color: var(--dim); font-size: 0.85rem; max-width: 320px; }
+  .board-wrap { position:relative; width: min(380px, 84vw); margin: 0 auto; }
+  .board { display:grid; gap:1px; background:var(--line); border:3px solid var(--line);
+    border-radius:3px; box-shadow: 0 6px 22px rgba(40,28,18,0.18); transition: box-shadow 1s; }
+  .cell { aspect-ratio:1; background:var(--board); display:flex; align-items:center; justify-content:center;
+    font-size: clamp(13px, 4.4vw, 22px); color:#2a1a08; cursor:pointer; user-select:none; position:relative; transition: background 0.08s; }
+  .cell.pc { font-weight:800; }
+  .cell.me { color:#2a1a08; }
+  .cell.enemy { color:var(--enemy); transform: rotate(180deg); }
+  .cell.subj { box-shadow: inset 0 0 0 2px var(--gold); background:#f3e6c6; }
+  .cell.sel  { background:#bfe2ff; }
+  .cell.dest::after { content:''; position:absolute; width:30%; height:30%; border-radius:50%;
+    background: rgba(31,138,82,0.55); }
+  .cell.dest.cap::after { width:62%; height:62%; background:transparent; border:3px solid rgba(176,58,58,0.7); border-radius:50%; }
+  .cell.correct { background:#9be7bf; }
+  .cell.missed  { background:#9be7bf; opacity:0.5; box-shadow: inset 0 0 0 2px #1f8a52; }
+  .cell.wrong   { background:#f3a9a9; }
+  .cell.hint    { box-shadow: inset 0 0 0 3px var(--gold); }
+
+  .hand { min-height:34px; display:flex; gap:6px; justify-content:center; align-items:center; margin:8px 0 2px; flex-wrap:wrap; }
+  .hand .lbl { font-size:0.72rem; color:var(--muted); }
+  .hand .hp { background:#f3e6c6; border:1px solid var(--gold); border-radius:5px; padding:3px 9px; font-weight:800; cursor:pointer; font-size:1rem; color:#2a1a08; }
+  .hand .hp.sel { background:#bfe2ff; }
+
+  .prompt { margin: 8px 4px 2px; min-height: 40px; }
+  .prompt .ask { font-weight:700; color:#3a2d1c; }
+  .prompt .ask .jp { color:#7a2d22; }
+  .prompt .pdesc { color:var(--muted); font-size:0.8rem; margin-top:2px; }
+  .fb { min-height:20px; font-size:0.9rem; font-weight:700; margin-top:4px; }
+  .fb.ok { color:var(--good); } .fb.no { color:var(--bad); }
+
+  .controls { display:flex; gap:8px; justify-content:center; margin-top:8px; }
+  .btn { background:var(--gold); color:#2a1a08; border:none; border-radius:999px; padding:9px 22px;
+    font-weight:800; font-size:0.92rem; cursor:pointer; font-family:inherit; }
+  .btn:hover { filter:brightness(1.06); }
+  .btn.ghost { background:rgba(255,255,255,0.6); color:#5a4a30; border:1px solid rgba(120,110,90,0.4); }
+  .btn:disabled { opacity:0.4; cursor:default; }
+
+  /* ===== Codex ===== */
+  .codex { margin: 16px auto 0; max-width: 520px; text-align:left;
+    background: rgba(255,253,247,0.82); border:1px solid rgba(150,130,95,0.4); border-radius:10px;
+    max-height: 200px; overflow-y:auto; padding: 6px 4px; box-shadow: 0 4px 16px rgba(40,28,18,0.12); }
+  .codex section { border-bottom:1px solid rgba(150,130,95,0.18); }
+  .codex h3 { font-size:0.92rem; color:#7a2d22; padding:8px 12px 4px; display:flex; justify-content:space-between; align-items:center; }
+  .codex h3 .cnt { font-size:0.68rem; color:var(--muted); font-weight:600; }
+  .codex .seg { padding:5px 12px 7px; font-size:0.85rem; }
+  .codex .jpx { color:#43372a; }
+  .codex .enx { display:none; color:#1f6b46; font-size:0.82rem; margin-top:2px; }
+  .codex .seg.dec .jpx { color:#9a8f7a; }
+  .codex .seg.dec .enx { display:block; }
+  .codex .seg.locked .jpx::after { content:' 🔒'; font-size:0.7rem; opacity:0.6; }
+  .codex .seg.justdec { animation: shimmer 1.1s ease; }
+  @keyframes shimmer { 0%{ background:rgba(217,164,65,0.5);} 100%{ background:transparent;} }
+  .codex .lockmsg { color:var(--muted); font-size:0.74rem; padding:6px 12px; font-style:italic; }
+
+  .unlock { margin:12px auto 0; max-width:520px; }
+  .unlock .ubtn { background:#7a2d22; color:#f6e7c8; border:none; border-radius:10px; padding:11px 18px;
+    font-weight:800; cursor:pointer; font-family:inherit; width:100%; font-size:0.95rem; box-shadow:0 0 16px rgba(217,164,65,0.4); }
+  .unlock .locked { background:rgba(255,255,255,0.5); color:var(--muted); border:1px dashed rgba(120,110,90,0.5);
+    border-radius:10px; padding:11px 18px; font-size:0.85rem; }
+
+  /* ===== Overlays / mini-game ===== */
+  .overlay { position:fixed; inset:0; z-index:30; background:rgba(20,12,6,0.92); display:flex; flex-direction:column;
+    align-items:center; justify-content:flex-start; padding:18px 14px; overflow-y:auto; color:#f3e9d6; }
+  .overlay.hidden { display:none; }
+  .overlay h2 { color:var(--gold); font-size:1.3rem; margin:4px 0 2px; }
+  .overlay .jp-big { font-size:1.7rem; color:var(--gold); }
+  .overlay p { margin:4px 0; max-width:360px; text-align:center; font-size:0.9rem; }
+  .overlay .sub { color:#cdbfa6; font-size:0.82rem; }
+  .dob-board { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; width:min(240px,72vw); margin:10px auto;
+    background:#6b4a22; border:3px solid #6b4a22; border-radius:4px; }
+  .dob-cell { aspect-ratio:1; background:#f0d9a0; display:flex; align-items:center; justify-content:center;
+    font-size: clamp(20px,8vw,34px); cursor:pointer; position:relative; }
+  .dob-cell.me { color:#2a1a08; } .dob-cell.enemy { color:#a8324a; transform:rotate(180deg); }
+  .dob-cell.sel { background:#bfe2ff; } .dob-cell.dest::after{ content:''; position:absolute; width:30%; height:30%;
+    border-radius:50%; background:rgba(31,138,82,0.6); }
+  .dob-hand { display:flex; gap:6px; justify-content:center; min-height:30px; margin:4px 0; flex-wrap:wrap; }
+  .dob-hand .hp { background:#f3e6c6; border:1px solid var(--gold); border-radius:5px; padding:2px 8px; cursor:pointer; color:#2a1a08; font-size:1.2rem;}
+  .dob-hand .hp.sel { background:#bfe2ff; }
+  .dob-hand.enemy .hp { transform:rotate(180deg); color:#a8324a; cursor:default; }
+  .dob-status { font-weight:700; min-height:22px; }
 </style>
 </head>
 <body>
+<div id="scene">
+  <div class="layer l-paper" data-min="1"></div>
+  <div class="layer l-sky" data-min="2"></div>
+  <div class="layer l-sun" data-min="2"></div>
+  <div class="layer l-fuji" data-min="3"></div>
+  <div class="torii" data-min="4"><i class="t-top"></i><i class="t-top2"></i><i class="t-lp"></i><i class="t-rp"></i></div>
+  <div class="layer l-lantern" data-min="6"></div>
+  <div class="layer l-ink" data-min="7"></div>
+  <div class="layer l-gold" data-min="8"></div>
+  <div class="seal" data-min="8">将棋<br>之印</div>
+</div>
+
 <div id="app">
-  <div class="title"><span class="jp">将棋島</span>Shogi Island</div>
-  <div class="hud"><span>Piece <b id="qnum">1</b>/10</span><span>Correct <b id="score">0</b></span></div>
-  <div class="modes"><button class="mode on" id="mode-basic">Basics</button><button class="mode" id="mode-all">＋ Promoted</button></div>
-  <div class="fwd">▲ forward ▲</div>
-  <div class="board" id="board"></div>
+  <div class="topbar">
+    <div class="title"><span class="jp">将棋島</span>Shogi Island</div>
+    <div class="rank">位 <b id="rank">無級</b></div>
+  </div>
+  <div class="bars">
+    <span class="chip">解いた数 solved <b id="solved">0</b></span>
+    <span class="chip">解読 decoded <b id="decoded">0</b>/<b id="dectot">0</b></span>
+  </div>
+  <div class="fwd">▲ 前 forward ▲</div>
+  <div class="board-wrap"><div class="board" id="board"></div></div>
+  <div class="hand" id="hand"></div>
   <div class="prompt">
-    <div>Tap every square the <span class="pname" id="pname">piece</span> can move to.</div>
+    <div class="ask" id="ask">…</div>
     <div class="pdesc" id="pdesc"></div>
     <div class="fb" id="fb"></div>
   </div>
-  <button class="btn" id="action">Check</button>
+  <div class="controls">
+    <button class="btn" id="action">確認 Check</button>
+    <button class="btn ghost" id="showme">教えて Show me</button>
+  </div>
+
+  <div class="codex" id="codex"></div>
+
+  <div class="unlock" id="unlock"></div>
 </div>
 
-<div class="overlay hidden" id="overlay">
-  <div class="jp-big" id="ov-jp">よくできました</div>
-  <h2 id="ov-title">Round complete</h2>
-  <p id="ov-score"></p>
+<!-- Mini-game overlay -->
+<div class="overlay hidden" id="dobutsu">
+  <h2><span class="jp-big">どうぶつしょうぎ</span></h2>
+  <p class="sub">Catch the Lion — a 3×4 shogi. Capture the enemy <b>Lion 🦁</b>, or march your Lion to the far row.</p>
+  <div class="dob-hand enemy" id="dob-hand-e"></div>
+  <div class="dob-board" id="dob-board"></div>
+  <div class="dob-hand" id="dob-hand-p"></div>
+  <div class="dob-status" id="dob-status">Your move (you are ▲, the bottom).</div>
+  <div class="controls">
+    <button class="btn" id="dob-new">New match</button>
+    <button class="btn ghost" id="dob-close">Back to lessons</button>
+  </div>
+</div>
+
+<!-- Decode celebration -->
+<div class="overlay hidden" id="ov">
+  <div class="jp-big" id="ov-jp"></div>
+  <h2 id="ov-title"></h2>
+  <p id="ov-msg"></p>
   <p class="sub" id="ov-sub"></p>
-  <button class="btn" id="ov-again">Play again</button>
+  <div class="controls"><button class="btn" id="ov-ok">続ける Continue</button></div>
 </div>
 
 <script>
-const N = 9, CTR = 4, ROUND = 10;
+"use strict";
+/* ============================================================
+   SHOGI ENGINE (pure) — verified offline via __shogiTest
+   side 'P' = you (sente, forward = -row), 'E' = enemy (forward = +row)
+   types: P L N S G B R K  and promoted +P +L +N +S +B +R
+   ============================================================ */
+var GOLD=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,0]];
+var DIAG=[[-1,-1],[-1,1],[1,-1],[1,1]];
+var ORTH=[[-1,0],[1,0],[0,-1],[0,1]];
+var KING8=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
 
-function inb(r, c) { return r >= 0 && r < N && c >= 0 && c < N; }
-function step(deltas) { return function (r, c) { var o = []; deltas.forEach(function (d) { if (inb(r + d[0], c + d[1])) o.push((r + d[0]) + ',' + (c + d[1])); }); return o; }; }
-function slide(dirs) { return function (r, c) { var o = []; dirs.forEach(function (d) { var nr = r + d[0], nc = c + d[1]; while (inb(nr, nc)) { o.push(nr + ',' + nc); nr += d[0]; nc += d[1]; } }); return o; }; }
-function combine() { var fns = arguments; return function (r, c) { var set = {}; for (var i = 0; i < fns.length; i++) fns[i](r, c).forEach(function (k) { set[k] = 1; }); return Object.keys(set); }; }
+function inb(r,c){ return r>=0 && r<9 && c>=0 && c<9; }
+function key(r,c){ return r+','+c; }
+function rc(k){ var p=k.split(','); return [parseInt(p[0],10), parseInt(p[1],10)]; }
+function orient(d,s){ return s==='P' ? d : [-d[0], d[1]]; }
+function isSlider(t){ return t==='L'||t==='B'||t==='R'||t==='+B'||t==='+R'; }
 
-// forward = up = negative row delta
-var GOLD = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,0]];
-var DIAG = [[-1,-1],[-1,1],[1,-1],[1,1]];
-var ORTH = [[-1,0],[1,0],[0,-1],[0,1]];
-var KING = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
-
-const PIECES_BASE = [
-  { k: '歩', r: 'fu', e: 'Pawn', d: 'one square straight forward', m: step([[-1,0]]) },
-  { k: '香', r: 'kyō', e: 'Lance', d: 'any distance straight forward', m: slide([[-1,0]]) },
-  { k: '桂', r: 'keima', e: 'Knight', d: 'an L — two forward then one to the side (it jumps)', m: step([[-2,-1],[-2,1]]) },
-  { k: '銀', r: 'gin', e: 'Silver General', d: 'one forward, or one in any diagonal', m: step([[-1,-1],[-1,0],[-1,1],[1,-1],[1,1]]) },
-  { k: '金', r: 'kin', e: 'Gold General', d: 'one in any straight direction, or one forward-diagonal', m: step(GOLD) },
-  { k: '角', r: 'kaku', e: 'Bishop', d: 'any distance diagonally', m: slide(DIAG) },
-  { k: '飛', r: 'hisha', e: 'Rook', d: 'any distance straight', m: slide(ORTH) },
-  { k: '王', r: 'ō', e: 'King', d: 'one square in any direction', m: step(KING) }
-];
-const PIECES_PROMO = [
-  { k: 'と', r: 'tokin', e: 'Tokin (promoted Pawn)', d: 'like a Gold General', m: step(GOLD) },
-  { k: '馬', r: 'uma', e: 'Horse (promoted Bishop)', d: 'a Bishop, plus one square straight', m: combine(slide(DIAG), step(ORTH)) },
-  { k: '龍', r: 'ryū', e: 'Dragon (promoted Rook)', d: 'a Rook, plus one square diagonally', m: combine(slide(ORTH), step(DIAG)) }
-];
-var pool = PIECES_BASE;
-
-var boardEl = document.getElementById('board');
-var cells = {};
-var qi = 0, score = 0, piece = null, target = {}, selected = {}, checked = false;
-
-boardEl.style.gridTemplateColumns = 'repeat(' + N + ', 1fr)';
-for (var r = 0; r < N; r++) for (var c = 0; c < N; c++) {
-  var cell = document.createElement('div');
-  cell.className = 'cell'; cell.dataset.r = r; cell.dataset.c = c;
-  (function (rr, cc) { cell.onclick = function () { onClick(rr, cc); }; })(r, c);
-  boardEl.appendChild(cell); cells[r + ',' + c] = cell;
-}
-
-function newQuestion() {
-  piece = pool[Math.floor(Math.random() * pool.length)];
-  target = {}; piece.m(CTR, CTR).forEach(function (k) { target[k] = true; });
-  selected = {}; checked = false;
-  document.getElementById('pname').textContent = piece.e + ' (' + piece.k + ' ' + piece.r + ')';
-  document.getElementById('pdesc').textContent = '';
-  document.getElementById('fb').textContent = '';
-  document.getElementById('fb').className = 'fb';
-  document.getElementById('qnum').textContent = (qi + 1);
-  document.getElementById('action').textContent = 'Check';
-  paint();
-}
-
-function onClick(r, c) {
-  if (checked) return;
-  if (r === CTR && c === CTR) return;
-  var key = r + ',' + c;
-  if (selected[key]) delete selected[key]; else selected[key] = true;
-  paint();
-}
-
-function paint() {
-  for (var key in cells) {
-    var cell = cells[key]; cell.className = 'cell'; cell.textContent = '';
+function moveDef(t){
+  switch(t){
+    case 'P': return {steps:[[-1,0]], slides:[]};
+    case 'L': return {steps:[], slides:[[-1,0]]};
+    case 'N': return {steps:[[-2,-1],[-2,1]], slides:[]};
+    case 'S': return {steps:[[-1,-1],[-1,0],[-1,1],[1,-1],[1,1]], slides:[]};
+    case 'G': case '+P': case '+L': case '+N': case '+S': return {steps:GOLD, slides:[]};
+    case 'B': return {steps:[], slides:DIAG};
+    case 'R': return {steps:[], slides:ORTH};
+    case 'K': return {steps:KING8, slides:[]};
+    case '+B': return {steps:ORTH, slides:DIAG};
+    case '+R': return {steps:DIAG, slides:ORTH};
   }
-  cells[CTR + ',' + CTR].className = 'cell pc';
-  cells[CTR + ',' + CTR].textContent = piece.k;
-  for (var key in cells) {
-    if (key === CTR + ',' + CTR) continue;
-    var cell = cells[key];
-    if (!checked) {
-      if (selected[key]) cell.classList.add('sel');
+  return {steps:[], slides:[]};
+}
+
+function destsFor(board, r, c){
+  var pc = board[key(r,c)]; if(!pc) return [];
+  var def = moveDef(pc.t), s = pc.s, out = [];
+  for(var i=0;i<def.steps.length;i++){ var o=orient(def.steps[i],s); var nr=r+o[0], nc=c+o[1];
+    if(inb(nr,nc)){ var occ=board[key(nr,nc)]; if(!occ || occ.s!==s) out.push(key(nr,nc)); } }
+  for(var j=0;j<def.slides.length;j++){ var d=orient(def.slides[j],s); var nr2=r+d[0], nc2=c+d[1];
+    while(inb(nr2,nc2)){ var o2=board[key(nr2,nc2)]; if(!o2){ out.push(key(nr2,nc2)); }
+      else { if(o2.s!==s) out.push(key(nr2,nc2)); break; } nr2+=d[0]; nc2+=d[1]; } }
+  return out;
+}
+
+function isAttacked(board, r, c, by){
+  for(var k in board){ var pc=board[k]; if(pc.s!==by) continue; var p=rc(k);
+    var ds=destsFor(board, p[0], p[1]); for(var i=0;i<ds.length;i++){ if(ds[i]===key(r,c)) return true; } }
+  return false;
+}
+function cloneB(board){ var o={}; for(var k in board) o[k]={t:board[k].t, s:board[k].s}; return o; }
+function applyMove(board, fromK, toK){ var b=cloneB(board); b[toK]=b[fromK]; delete b[fromK]; return b; }
+function applyDrop(board, type, toK, s){ var b=cloneB(board); b[toK]={t:type, s:s}; return b; }
+
+/* Bare-king checkmate: enemy King alone (no other enemy pieces / no enemy hand). */
+function isBareMate(b, kk){
+  var p=rc(kk);
+  if(!isAttacked(b, p[0], p[1], 'P')) return false;
+  for(var dr=-1;dr<=1;dr++) for(var dc=-1;dc<=1;dc++){
+    if(!dr && !dc) continue; var nr=p[0]+dr, nc=p[1]+dc; if(!inb(nr,nc)) continue;
+    var occ=b[key(nr,nc)]; if(occ && occ.s==='E') continue;       // can't step on own piece
+    var b2=cloneB(b); delete b2[kk]; if(b2[key(nr,nc)]) delete b2[key(nr,nc)]; b2[key(nr,nc)]={t:'K',s:'E'};
+    if(!isAttacked(b2, nr, nc, 'P')) return false;                 // an escape exists
+  }
+  return true;
+}
+function dropDests(board, type, s){
+  var out=[];
+  for(var r=0;r<9;r++) for(var c=0;c<9;c++){ if(board[key(r,c)]) continue;
+    if(s==='P'){ if(type==='L'&&r===0) continue; if(type==='N'&&(r===0||r===1)) continue; }
+    else { if(type==='L'&&r===8) continue; if(type==='N'&&(r===8||r===7)) continue; }
+    out.push(key(r,c)); }
+  return out;
+}
+
+/* ===== labels ===== */
+var GLYPH={P:'歩',L:'香',N:'桂',S:'銀',G:'金',B:'角',R:'飛',K:'玉','+P':'と','+L':'杏','+N':'圭','+S':'全','+B':'馬','+R':'龍'};
+var NAME={P:'Pawn (歩)',L:'Lance (香)',N:'Knight (桂)',S:'Silver (銀)',G:'Gold (金)',B:'Bishop (角)',R:'Rook (飛)',K:'King (玉)',
+  '+P':'Tokin / promoted Pawn (と)','+L':'promoted Lance (杏)','+N':'promoted Knight (圭)','+S':'promoted Silver (全)',
+  '+B':'Horse / promoted Bishop (馬)','+R':'Dragon / promoted Rook (龍)'};
+var DESC={P:'one square straight forward',L:'any distance straight forward',N:'jumps in an L — two forward then one to the side',
+  S:'one forward, or one square in any diagonal',G:'one square in any straight direction, or one forward-diagonal',
+  B:'any distance diagonally',R:'any distance straight',K:'one square in any direction',
+  '+P':'like a Gold General','+L':'like a Gold General','+N':'like a Gold General','+S':'like a Gold General',
+  '+B':'a Bishop plus one square straight',' +R':'a Rook plus one square diagonally','+R':'a Rook plus one square diagonally'};
+
+var BASE_T=['P','L','N','S','G','B','R','K'];
+var PROMO_T=['+P','+B','+R','+L','+N','+S'];
+function rndPick(a){ return a[(Math.random()*a.length)|0]; }
+function arraysSameSet(a,b){ if(a.length!==b.length) return false; var s={}; a.forEach(function(x){s[x]=1;}); for(var i=0;i<b.length;i++) if(!s[b[i]]) return false; return true; }
+
+/* ============================================================
+   PROBLEM GENERATORS  (generate-then-verify, like the Fork engine)
+   ============================================================ */
+function genMove(diff){
+  var pool = diff>=3 ? BASE_T.concat(PROMO_T) : BASE_T;
+  var t = rndPick(pool);
+  var r = 3 + ((Math.random()*3)|0), c = 3 + ((Math.random()*3)|0);
+  var board={}; board[key(r,c)]={t:t, s:'P'};
+  if(diff>=2 && isSlider(t)){
+    var sl=moveDef(t).slides;
+    if(sl.length){ var d=orient(sl[(Math.random()*sl.length)|0],'P'); var dist=1+((Math.random()*2)|0);
+      var br=r+d[0]*dist, bc=c+d[1]*dist; if(inb(br,bc)) board[key(br,bc)]={t:'P', s:(Math.random()<0.5?'P':'E')}; }
+  }
+  var target=destsFor(board,r,c);
+  if(target.length===0){ for(var bk in board){ if(bk!==key(r,c)) delete board[bk]; } target=destsFor(board,r,c); } // a blocker killed every move (e.g. friendly in front of a Lance) — clear it
+  return {goal:'move', kind:'move', board:board, subj:key(r,c), pieceType:t,
+    target:target, teach: NAME[t]+' — '+DESC[t]+'.'};
+}
+
+function genCapture(diff){
+  for(var att=0; att<200; att++){
+    var myType = rndPick(['R','B','G','S','+R','+B','L','N']);
+    var r=2+((Math.random()*5)|0), c=2+((Math.random()*5)|0);
+    var board={}; board[key(r,c)]={t:myType, s:'P'};
+    var ds=destsFor(board,r,c); if(!ds.length) continue;
+    var tgt=ds[(Math.random()*ds.length)|0];
+    board[tgt]={t: rndPick(['P','S','G','N','L','B','R']), s:'E'};
+    // recompute (enemy may shorten a slide path, but tgt is the first hit so still reachable)
+    var ds2=destsFor(board,r,c); if(ds2.indexOf(tgt)<0) continue;
+    if(diff>=2){ // a decoy own piece that can't reach the enemy and doesn't block the capturer
+      var dr=(Math.random()*9)|0, dc=(Math.random()*9)|0, dk=key(dr,dc);
+      if(!board[dk] && dk!==tgt && dk!==key(r,c)){ board[dk]={t:'G',s:'P'};
+        var stillReach=destsFor(board,r,c).indexOf(tgt)>=0, decoyReaches=destsFor(board,dr,dc).indexOf(tgt)>=0;
+        if(!stillReach || decoyReaches) delete board[dk]; } }
+    return {goal:'capture', kind:'play', board:board, enemyKey:tgt, teach:'取り Capture — move onto the marked enemy ('+NAME[board[tgt].t]+').'};
+  }
+  // fallback
+  var b={}; b[key(4,4)]={t:'R',s:'P'}; b[key(4,7)]={t:'P',s:'E'};
+  return {goal:'capture', kind:'play', board:b, enemyKey:key(4,7), teach:'取り Capture — the Rook takes along the rank.'};
+}
+
+function genCheck(diff){
+  for(var att=0; att<300; att++){
+    var board={};
+    var kr=(Math.random()*3)|0, kc=(Math.random()*9)|0; board[key(kr,kc)]={t:'K',s:'E'};
+    var n=1+((Math.random()*2)|0);
+    var ok=true;
+    for(var i=0;i<n;i++){ var tt=rndPick(['R','B','G','S','N','L','+R','+B']); var rr,cc,tr=0;
+      do{ rr=(Math.random()*9)|0; cc=(Math.random()*9)|0; tr++; } while((board[key(rr,cc)]||(rr===kr&&cc===kc))&&tr<30);
+      if(board[key(rr,cc)]){ok=false;break;} board[key(rr,cc)]={t:tt,s:'P'}; }
+    if(!ok) continue;
+    if(isAttacked(board,kr,kc,'P')) continue;          // must not already be check
+    var sols=[];
+    for(var k in board){ var pc=board[k]; if(pc.s!=='P') continue; var p=rc(k); var ds=destsFor(board,p[0],p[1]);
+      for(var di=0;di<ds.length;di++){ if(ds[di]===key(kr,kc)) continue; var b2=applyMove(board,k,ds[di]);
+        if(isAttacked(b2,kr,kc,'P')) sols.push({kind:'move',from:k,to:ds[di]}); } }
+    if(sols.length>=1) return {goal:'check', kind:'play', board:board, enemyKey:key(kr,kc), solutions:sols,
+      teach:'王手 Check — make any move that attacks the enemy King.'};
+  }
+  var b={}; b[key(0,4)]={t:'K',s:'E'}; b[key(2,4)]={t:'G',s:'P'};
+  return {goal:'check', kind:'play', board:b, enemyKey:key(0,4), solutions:[{kind:'move',from:key(2,4),to:key(1,4)}],
+    teach:'王手 Check — step the Gold up to attack the King.'};
+}
+
+function genMate(diff){
+  for(var att=0; att<700; att++){
+    var board={};
+    var kr = Math.random()<0.62 ? (Math.random()<0.5?0:1) : ((Math.random()*9)|0);
+    var kc = Math.random()<0.62 ? rndPick([0,1,7,8]) : ((Math.random()*9)|0);
+    board[key(kr,kc)]={t:'K',s:'E'};
+    var nmy = 2 + (diff>=4?1:0), ok=true, types=['G','S','R','B','N','L','+R','+B','G','R'];
+    for(var i=0;i<nmy;i++){ var tt=rndPick(types); var rr,cc,tr=0;
+      do{ rr=(Math.random()*9)|0; cc=(Math.random()*9)|0; tr++; } while((board[key(rr,cc)]||(rr===kr&&cc===kc))&&tr<40);
+      if(board[key(rr,cc)]){ok=false;break;} board[key(rr,cc)]={t:tt,s:'P'}; }
+    if(!ok) continue;
+    var hand = Math.random()<0.5 ? [rndPick(['G','S','R','B','N','L'])] : [];
+    if(isAttacked(board,kr,kc,'P')) continue;          // king not already in check
+    var sols=[];
+    for(var k in board){ var pc=board[k]; if(pc.s!=='P') continue; var p=rc(k); var ds=destsFor(board,p[0],p[1]);
+      for(var di=0;di<ds.length;di++){ if(ds[di]===key(kr,kc)) continue; var b2=applyMove(board,k,ds[di]);
+        if(isBareMate(b2,key(kr,kc))) sols.push({kind:'move',from:k,to:ds[di]}); } }
+    for(var hi=0;hi<hand.length;hi++){ var ht=hand[hi]; var dd=dropDests(board,ht,'P');
+      for(var dj=0;dj<dd.length;dj++){ var b3=applyDrop(board,ht,dd[dj],'P'); if(isBareMate(b3,key(kr,kc))) sols.push({kind:'drop',type:ht,to:dd[dj]}); } }
+    if(sols.length>=1 && sols.length<=4)
+      return {goal:'mate', kind:'play', board:board, hand:hand, enemyKey:key(kr,kc), solutions:sols,
+        teach:'詰み Checkmate — one move the lone King cannot escape.'};
+  }
+  // fallback: drop Gold to mate K in the corner, Rook guarding the escape rank
+  var b={}; b[key(0,0)]={t:'K',s:'E'}; b[key(1,8)]={t:'R',s:'P'};
+  return {goal:'mate', kind:'play', board:b, hand:['G'], enemyKey:key(0,0),
+    solutions:[{kind:'drop',type:'G',to:key(1,0)}], teach:'詰み Checkmate — drop the Gold beside the King; the Rook seals the escape.'};
+}
+
+function pickProblem(solved){
+  var diff = 1 + Math.floor(solved/6);
+  var g;
+  if(solved < 4) g='move';
+  else if(solved < 10) g = rndPick(['move','capture']);
+  else if(solved < 18) g = rndPick(['move','capture','check']);
+  else g = rndPick(['capture','check','mate','mate']);
+  if(g==='move') return genMove(diff);
+  if(g==='capture') return genCapture(diff);
+  if(g==='check') return genCheck(diff);
+  return genMate(diff);
+}
+
+/* ============================================================
+   DECODE CODEX  (Japanese first; decodes 1 segment per solve)
+   ============================================================ */
+var HOWTO=[
+  {jp:'目的：相手の玉を詰ますこと。', en:'Goal: checkmate the enemy King (玉).'},
+  {jp:'駒を選び、行ける所へ動かす。', en:'Pick a piece, then move it where it can legally go.'},
+  {jp:'前は上（▲）。多くの駒は前にしか進めない。', en:'Forward is up (▲). Most pieces can only move forward.'},
+  {jp:'取った駒は手駒になり、盤に打てる。', en:'A captured piece joins your hand — you can drop it back on the board.'},
+  {jp:'敵陣（上の三段）で駒は成れる。', en:'In the enemy camp (the far three ranks) pieces may promote and grow stronger.'},
+  {jp:'コツ：まず金と銀の動きを覚えよう。', en:'Tip: learn the Gold and Silver generals first — most fights run through them.'}
+];
+var BIBLE=[
+  {jp:'歩 ふ — 前に一マス。成ると「と」、金の動き。', en:'Pawn: one step forward. Promotes to Tokin (と), which moves like a Gold.'},
+  {jp:'香 きょう — 前へ何マスでも。成ると金の動き。', en:'Lance: any distance straight forward. Promotes to a Gold-mover.'},
+  {jp:'桂 けいま — 前へ二、横へ一を跳ぶ。前だけ。', en:'Knight: jumps two forward and one to the side — and only forward. It can leap over pieces.'},
+  {jp:'銀 ぎん — 前と斜め。引く時は斜めだけ。', en:'Silver: one square forward or one square on any diagonal. Promotes to Gold.'},
+  {jp:'金 きん — 縦横と前の斜め。成れない。', en:'Gold: one square orthogonally or one forward-diagonal. The Gold never promotes.'},
+  {jp:'角 かく — 斜めへ何マスでも。成ると「馬」。', en:'Bishop: any distance diagonally. Promotes to a Horse (馬): bishop plus one orthogonal step.'},
+  {jp:'飛 ひしゃ — 縦横へ何マスでも。成ると「龍」。', en:'Rook: any distance straight. Promotes to a Dragon (龍): rook plus one diagonal step.'},
+  {jp:'玉 ぎょく — どこでも一マス。詰めば負け。', en:'King: one square any direction. If it cannot escape check, that is 詰み (mate) and the game is lost.'},
+  {jp:'打つ — 手駒を空きマスに置く。これが将棋の核。', en:'Drops: place a captured piece on any empty square instead of moving. This is the heart of shogi.'},
+  {jp:'二歩は反則。歩は同じ筋に二枚置けない。', en:'Nifu is illegal: you may never have two of your own un-promoted pawns on the same file.'},
+  {jp:'行き所のない駒は打てない（歩香は最終段不可）。', en:'You cannot drop a piece where it could never move (a pawn/lance on the last rank, a knight on the last two).'}
+];
+var PRO=[
+  {jp:'玉は金銀で囲う（美濃・矢倉）。', en:'Castle your King — wrap it in golds and silvers (the Mino and Yagura castles).'},
+  {jp:'手駒は強い。打つ場所を読め。', en:'Pieces in hand are powerful — much of shogi is reading where to drop them.'},
+  {jp:'「桂の高跳び歩の餌食」。', en:'Proverb: “A knight that leaps too soon becomes a pawn’s prey.”'},
+  {jp:'「終盤は駒の損得より速度」。', en:'Proverb: “In the endgame, speed beats material.”'},
+  {jp:'「一歩千金」。', en:'Proverb: “A single pawn can be worth a fortune.”'},
+  {jp:'王手は追う手にあらず — 無駄な王手を避けよ。', en:'“A check is not always a chase” — avoid pointless checks that only help the enemy King.'}
+];
+var SECTIONS=[{key:'howto', jp:'遊び方', en:'How to Play', items:HOWTO},
+  {key:'bible', jp:'将棋の基本', en:'Shogi, from the ground up', items:BIBLE},
+  {key:'pro', jp:'プロの心得', en:'Tips from strong players', items:PRO}];
+var TOTAL_SEG = HOWTO.length + BIBLE.length + PRO.length;
+var UNLOCK_AT = 28;
+
+/* rank by solved (cosmetic) */
+function rankFor(s){
+  if(s>=60) return '名人'; if(s>=45) return '三段'; if(s>=34) return '二段'; if(s>=28) return '初段';
+  if(s>=20) return '一級'; if(s>=12) return '三級'; if(s>=6) return '六級'; if(s>=1) return '九級'; return '無級';
+}
+
+/* ============================================================
+   DOBUTSU SHOGI (Catch the Lion) — 3 wide x 4 tall
+   types: Y=Giraffe(orth1) E=Elephant(diag1) C=Chick(fwd1) H=Hen(gold) Lion(king8)
+   ============================================================ */
+function dobStart(){
+  // rows 0..3 top->bottom. Enemy 'E' at top (forward = +row), Player 'P' bottom (forward = -row)
+  var b={};
+  b['0,0']={t:'Y',s:'E'}; b['0,1']={t:'Lion',s:'E'}; b['0,2']={t:'E',s:'E'};
+  b['1,1']={t:'C',s:'E'};
+  b['2,1']={t:'C',s:'P'};
+  b['3,0']={t:'E',s:'P'}; b['3,1']={t:'Lion',s:'P'}; b['3,2']={t:'Y',s:'P'};
+  return {b:b, hand:{P:[],E:[]}, turn:'P', winner:null};
+}
+function dInb(r,c){ return r>=0&&r<4&&c>=0&&c<3; }
+function dDef(t){
+  if(t==='Lion') return {steps:KING8};
+  if(t==='Y') return {steps:ORTH};
+  if(t==='E') return {steps:DIAG};
+  if(t==='C') return {steps:[[-1,0]]};
+  if(t==='H') return {steps:GOLD};
+  return {steps:[]};
+}
+function dDests(st, r, c){
+  var pc=st.b[r+','+c]; if(!pc) return []; var s=pc.s, out=[], st0=dDef(pc.t);
+  for(var i=0;i<st0.steps.length;i++){ var o=orient(st0.steps[i],s); var nr=r+o[0], nc=c+o[1];
+    if(dInb(nr,nc)){ var occ=st.b[nr+','+nc]; if(!occ||occ.s!==s) out.push(nr+','+nc); } }
+  return out;
+}
+function dAttacked(st, r, c, by){
+  for(var k in st.b){ var pc=st.b[k]; if(pc.s!==by) continue; var p=k.split(','); var ds=dDests(st,+p[0],+p[1]);
+    for(var i=0;i<ds.length;i++) if(ds[i]===(r+','+c)) return true; } return false;
+}
+function dLegal(st){
+  var s=st.turn, mv=[];
+  for(var k in st.b){ var pc=st.b[k]; if(pc.s!==s) continue; var p=k.split(','); var ds=dDests(st,+p[0],+p[1]);
+    for(var i=0;i<ds.length;i++) mv.push({from:k,to:ds[i]}); }
+  var hand=st.hand[s];
+  for(var h=0; h<hand.length; h++){ for(var r=0;r<4;r++) for(var c=0;c<3;c++){ if(!st.b[r+','+c]) mv.push({drop:hand[h], to:r+','+c}); } }
+  return mv;
+}
+function dApply(st, m){
+  var n={ b:{}, hand:{P:st.hand.P.slice(), E:st.hand.E.slice()}, turn:(st.turn==='P'?'E':'P'), winner:null };
+  for(var k in st.b) n.b[k]={t:st.b[k].t, s:st.b[k].s};
+  var s=st.turn;
+  if(m.drop){ var idx=n.hand[s].indexOf(m.drop); if(idx>=0) n.hand[s].splice(idx,1); n.b[m.to]={t:m.drop,s:s}; }
+  else {
+    var pc=n.b[m.from]; var cap=n.b[m.to];
+    if(cap){ if(cap.t==='Lion'){ n.winner=s; } var ct=(cap.t==='H'?'C':cap.t); if(ct!=='Lion') n.hand[s].push(ct); }
+    delete n.b[m.from];
+    var tr=+m.to.split(',')[0];
+    if(pc.t==='C' && ((s==='P'&&tr===0)||(s==='E'&&tr===3))) pc={t:'H',s:s};   // promote on far row
+    n.b[m.to]=pc;
+    // Try rule: your Lion reaches the far row and is not attacked -> win
+    if(pc.t==='Lion'){ var far=(s==='P'?0:3); if(tr===far && !dAttacked(n, +m.to.split(',')[0], +m.to.split(',')[1], (s==='P'?'E':'P'))) n.winner=s; }
+  }
+  return n;
+}
+function dEval(st, who){
+  // material from who's perspective
+  var val={Lion:1000, H:6, Y:5, E:5, C:2};
+  var sc=0;
+  for(var k in st.b){ var pc=st.b[k]; var v=val[pc.t]||0; sc += (pc.s===who? v : -v); }
+  st.hand[who].forEach(function(t){ sc += (val[t]||0)*0.8; });
+  st.hand[who==='P'?'E':'P'].forEach(function(t){ sc -= (val[t]||0)*0.8; });
+  return sc;
+}
+function dNeg(st, depth, a, b, who){
+  if(st.winner) return st.winner===who ? 9000+depth : -9000-depth;
+  if(depth===0) return dEval(st, who);
+  var mv=dLegal(st), best=-1e9;
+  if(!mv.length) return dEval(st, who);
+  for(var i=0;i<mv.length;i++){ var ns=dApply(st, mv[i]); var v=-dNeg(ns, depth-1, -b, -a, who==='P'?'E':'P');
+    if(v>best) best=v; if(best>a) a=best; if(a>=b) break; }
+  return best;
+}
+function dAIMove(st, depth){
+  var mv=dLegal(st); if(!mv.length) return null; var best=null, bv=-1e9, who=st.turn;
+  // light shuffle for variety
+  for(var i=mv.length-1;i>0;i--){ var j=(Math.random()*(i+1))|0; var tmp=mv[i]; mv[i]=mv[j]; mv[j]=tmp; }
+  for(var k=0;k<mv.length;k++){ var ns=dApply(st, mv[k]); var v=-dNeg(ns, depth-1, -1e9, 1e9, who==='P'?'E':'P');
+    if(v>bv){ bv=v; best=mv[k]; } }
+  return best;
+}
+
+/* ============================================================
+   SELF TEST (run in Node; not in browser unless called)
+   ============================================================ */
+function shogiSelfTest(iter){
+  iter=iter||400; var fails=[], cnt={move:0,capture:0,check:0,mate:0};
+  for(var i=0;i<iter;i++){
+    var d=1+(i%6);
+    // move
+    var pm=genMove(d); var p=rc(pm.subj); var rec=destsFor(pm.board,p[0],p[1]);
+    if(!arraysSameSet(rec, pm.target) || pm.target.length===0) fails.push('move@'+i); else cnt.move++;
+    // capture
+    var pc=genCapture(d); var en=pc.board[pc.enemyKey];
+    if(!en || en.s!=='E'){ fails.push('cap-noenemy@'+i); }
+    else { var reach=false; for(var k in pc.board){ if(pc.board[k].s!=='P') continue; var pp=rc(k); if(destsFor(pc.board,pp[0],pp[1]).indexOf(pc.enemyKey)>=0){ reach=true; break; } } if(reach) cnt.capture++; else fails.push('cap-unreach@'+i); }
+    // check
+    var ck=genCheck(d); var kp=rc(ck.enemyKey); if(isAttacked(ck.board,kp[0],kp[1],'P')) fails.push('chk-precheck@'+i);
+    else { var anyc=false; ck.solutions.forEach(function(m){ var b2=applyMove(ck.board,m.from,m.to); if(isAttacked(b2,kp[0],kp[1],'P')) anyc=true; else fails.push('chk-bad@'+i); }); if(anyc) cnt.check++; }
+    // mate
+    var mt=genMate(d); var mk=rc(mt.enemyKey); if(isAttacked(mt.board,mk[0],mk[1],'P')) fails.push('mate-precheck@'+i);
+    else { var allm=mt.solutions.length>0; mt.solutions.forEach(function(s){ var b3 = s.kind==='move'?applyMove(mt.board,s.from,s.to):applyDrop(mt.board,s.type,s.to,'P'); if(!isBareMate(b3, mt.enemyKey)) allm=false; }); if(allm) cnt.mate++; else fails.push('mate-bad@'+i); }
+  }
+  // dobutsu: AI(E) vs random(P); ensure legality + termination
+  var dobErr=0, dobEnded=0, games=120;
+  for(var g=0; g<games; g++){
+    var st=dobStart(), plies=0;
+    while(!st.winner && plies<160){
+      var mv=dLegal(st); if(!mv.length){ break; }
+      var choice;
+      if(st.turn==='E') choice=dAIMove(st, 4); else choice=mv[(Math.random()*mv.length)|0];
+      if(!choice){ dobErr++; break; }
+      // legality check
+      var legalSet=dLegal(st), found=false;
+      for(var z=0;z<legalSet.length;z++){ var L=legalSet[z]; if((L.from===choice.from&&L.to===choice.to&&!L.drop&&!choice.drop)||(L.drop&&choice.drop&&L.drop===choice.drop&&L.to===choice.to)){ found=true; break; } }
+      if(!found){ dobErr++; break; }
+      st=dApply(st, choice); plies++;
+    }
+    if(st.winner) dobEnded++;
+  }
+  return JSON.stringify({cnt:cnt, failCount:fails.length, fails:fails.slice(0,12), dob:{games:games, decisive:dobEnded, errors:dobErr}});
+}
+if (typeof globalThis !== 'undefined') globalThis.__shogiTest = shogiSelfTest;
+
+/* ============================================================
+   UI  (runs only in browser)
+   ============================================================ */
+var RUN_UI = (typeof document !== 'undefined') && !!document.getElementById && !!document.getElementById('app');
+if (RUN_UI) (function(){
+  var KEY='pjcc.shogi.v3';
+  var st = loadState();
+  var prob=null, sel=null, marks={}, locked=false, mode='lesson';
+
+  function loadState(){ try{ var s=JSON.parse(localStorage.getItem(KEY)); if(s&&typeof s.solved==='number') return s; }catch(e){}
+    return {solved:0, decoded:0, best:0, unlocked:false}; }
+  function saveState(){ try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){} }
+
+  // build board
+  var boardEl=document.getElementById('board'); boardEl.style.gridTemplateColumns='repeat(9,1fr)';
+  var cells={};
+  for(var r=0;r<9;r++) for(var c=0;c<9;c++){ var cell=document.createElement('div'); cell.className='cell';
+    (function(rr,cc){ cell.onclick=function(){ onCell(rr,cc); }; })(r,c); boardEl.appendChild(cell); cells[key(r,c)]=cell; }
+
+  function setTheme(level){
+    var scene=document.getElementById('scene');
+    document.querySelectorAll('#scene .layer, #scene .torii, #scene .seal').forEach(function(el){
+      var m=+el.dataset.min; el.classList.toggle('on', level>=m); });
+    scene.classList.toggle('petals', level>=5);
+    if(level>=5 && !scene.querySelector('.petal')){ for(var i=0;i<9;i++){ var p=document.createElement('div'); p.className='petal';
+      p.style.left=(4+Math.random()*92)+'%'; p.style.animationDuration=(6+Math.random()*6)+'s'; p.style.animationDelay=(-Math.random()*8)+'s';
+      p.style.opacity=0.7; scene.appendChild(p); } }
+    // board + paper richness
+    var rootS=document.documentElement.style;
+    if(level<=0){ rootS.setProperty('--board','#efeae0'); rootS.setProperty('--line','#c2b7a3'); document.getElementById('scene').style.background='#e7e2d8'; }
+    else { rootS.setProperty('--board', level>=4?'#f1d49a':'#ecdcbb'); rootS.setProperty('--line', level>=4?'#a9742f':'#bda878');
+      document.getElementById('scene').style.background = level>=3?'#e9d9bf':'#e7ddca'; }
+    document.getElementById('app').style.background = level>=2 ? 'rgba(255,253,247,0.55)' : 'transparent';
+    document.getElementById('app').style.borderRadius='14px';
+  }
+  function themeLevel(){ var s=st.solved; var th=[0,2,4,7,10,14,18,24,30]; var lv=0; for(var i=0;i<th.length;i++) if(s>=th[i]) lv=i; return lv; }
+
+  function renderCodex(){
+    var box=document.getElementById('codex'); box.innerHTML='';
+    var idx=0;
+    SECTIONS.forEach(function(sec){
+      var decInSec=0; sec.items.forEach(function(){ if(idx<st.decoded) decInSec++; idx++; });
+    });
+    idx=0;
+    SECTIONS.forEach(function(sec){
+      var sectionEl=document.createElement('section');
+      var start=idx, decd=0; for(var z=0;z<sec.items.length;z++){ if(start+z<st.decoded) decd++; }
+      var h=document.createElement('h3'); h.innerHTML='<span>'+sec.jp+' · '+sec.en+'</span><span class="cnt">'+decd+'/'+sec.items.length+'</span>';
+      sectionEl.appendChild(h);
+      if(decd===0 && start>st.decoded){ var lm=document.createElement('div'); lm.className='lockmsg'; lm.textContent='— locked — keep solving to begin decoding —'; sectionEl.appendChild(lm); }
+      sec.items.forEach(function(it){
+        var seg=document.createElement('div'); var dec = idx < st.decoded; seg.className='seg'+(dec?' dec':' locked');
+        seg.innerHTML='<div class="jpx">'+it.jp+'</div><div class="enx">'+it.en+'</div>';
+        sectionEl.appendChild(seg); idx++;
+      });
+      box.appendChild(sectionEl);
+    });
+  }
+  function renderUnlock(){
+    var u=document.getElementById('unlock');
+    if(st.unlocked || st.solved>=UNLOCK_AT){ st.unlocked = st.unlocked || st.solved>=UNLOCK_AT;
+      u.innerHTML='<button class="ubtn" id="play-dob">★ 隠し対局 — Play “Catch the Lion” (どうぶつしょうぎ)</button>';
+      document.getElementById('play-dob').onclick=openDobutsu;
     } else {
-      if (target[key] && selected[key]) cell.classList.add('correct');
-      else if (target[key] && !selected[key]) cell.classList.add('missed');
-      else if (!target[key] && selected[key]) cell.classList.add('wrong');
+      u.innerHTML='<div class="locked">🔒 A hidden match waits at <b>'+UNLOCK_AT+'</b> solves — you are at '+st.solved+'. Decode the island and it opens.</div>';
     }
   }
-}
+  function refreshHud(){ document.getElementById('solved').textContent=st.solved;
+    document.getElementById('decoded').textContent=Math.min(st.decoded,TOTAL_SEG);
+    document.getElementById('dectot').textContent=TOTAL_SEG; document.getElementById('rank').textContent=rankFor(st.solved); }
 
-function check() {
-  checked = true;
-  var ok = true;
-  for (var k in target) if (!selected[k]) ok = false;
-  for (var k in selected) if (!target[k]) ok = false;
-  if (ok) score++;
-  document.getElementById('score').textContent = score;
-  var fb = document.getElementById('fb');
-  fb.textContent = ok ? '正解！ Correct!' : 'おしい — the ' + piece.e + ' moves ' + piece.d + '.';
-  fb.className = 'fb ' + (ok ? 'ok' : 'no');
-  document.getElementById('pdesc').textContent = piece.e + ': ' + piece.d + '.';
-  paint();
-  document.getElementById('action').textContent = (qi + 1 >= ROUND) ? 'See results' : 'Next piece';
-}
+  /* ---- problem flow ---- */
+  function newProblem(){ prob=pickProblem(st.solved); sel=null; marks={}; locked=false;
+    var hasHand = prob.hand && prob.hand.length;
+    document.getElementById('action').style.display = (prob.kind==='move') ? '' : 'none';
+    document.getElementById('action').textContent='確認 Check'; document.getElementById('action').disabled=false;
+    document.getElementById('showme').style.display = (prob.goal==='move')?'none':'';
+    var ask = {
+      move:'Tap every square the <span class="pname">'+NAME[prob.pieceType]+'</span> can move to.',
+      capture:'<span class="jp">取り</span> Capture the marked enemy — tap your piece, then its target.',
+      check:'<span class="jp">王手</span> Give check — tap your piece, then a square that attacks the King.',
+      mate:'<span class="jp">詰み</span> Checkmate in one — tap a piece (or a hand piece) and the mating square.'
+    }[prob.goal];
+    document.getElementById('ask').innerHTML=ask;
+    document.getElementById('pdesc').textContent='';
+    var fb=document.getElementById('fb'); fb.textContent=''; fb.className='fb';
+    renderHand(); paint();
+  }
+  function renderHand(){
+    var h=document.getElementById('hand'); h.innerHTML='';
+    if(prob.hand && prob.hand.length){ var lbl=document.createElement('span'); lbl.className='lbl'; lbl.textContent='持ち駒 in hand:'; h.appendChild(lbl);
+      prob.hand.forEach(function(t,i){ var b=document.createElement('div'); b.className='hp'+(sel&&sel.hand===i?' sel':''); b.textContent=GLYPH[t];
+        (function(ii){ b.onclick=function(){ if(locked) return; sel={hand:ii, type:prob.hand[ii]}; paint(); }; })(i); h.appendChild(b); }); }
+  }
+  function paint(){
+    for(var k in cells){ var cell=cells[k]; cell.className='cell'; cell.textContent=''; }
+    for(var k2 in prob.board){ var pc=prob.board[k2]; var cell2=cells[k2]; cell2.textContent=GLYPH[pc.t];
+      cell2.classList.add('pc'); cell2.classList.add(pc.s==='P'?'me':'enemy'); }
+    if(prob.kind==='move'){ cells[prob.subj].classList.add('subj');
+      for(var mk in marks){ if(marks[mk]) cells[mk].classList.add('sel'); }
+    }
+    if(prob.goal==='capture'||prob.goal==='check'||prob.goal==='mate'){ cells[prob.enemyKey].classList.add(prob.goal==='capture'?'subj':'subj'); }
+    // selection highlights for play mode
+    if(prob.kind==='play' && sel){
+      var dests=[];
+      if(sel.hand!=null){ dests=dropDests(prob.board, sel.type, 'P'); }
+      else if(sel.from){ var p=rc(sel.from); dests=destsFor(prob.board,p[0],p[1]).filter(function(d){ return d!==prob.enemyKey || prob.goal==='capture'; });
+        cells[sel.from].classList.add('sel'); }
+      dests.forEach(function(d){ cells[d].classList.add('dest'); if(prob.board[d]&&prob.board[d].s==='E') cells[d].classList.add('cap'); });
+    }
+  }
 
-function next() {
-  qi++;
-  if (qi >= ROUND) finish();
-  else newQuestion();
-}
+  function onCell(r,c){
+    if(locked) return; var k=key(r,c);
+    if(prob.kind==='move'){ if(k===prob.subj) return; marks[k]=!marks[k]; paint(); return; }
+    // play mode
+    var pc=prob.board[k];
+    if(sel && (sel.from || sel.hand!=null)){
+      // try to commit to k as destination
+      var dests = sel.hand!=null ? dropDests(prob.board, sel.type, 'P')
+                : destsFor(prob.board, rc(sel.from)[0], rc(sel.from)[1]);
+      if(dests.indexOf(k)>=0 && (k!==prob.enemyKey || prob.goal==='capture')){ commitMove(sel.hand!=null?{kind:'drop',type:sel.type,to:k}:{kind:'move',from:sel.from,to:k}); return; }
+    }
+    if(pc && pc.s==='P'){ sel={from:k}; paint(); renderHand(); return; }
+    sel=null; paint(); renderHand();
+  }
 
-function finish() {
-  var ov = document.getElementById('overlay');
-  document.getElementById('ov-score').textContent = 'You read ' + score + ' of ' + ROUND + ' pieces correctly.';
-  var jp, title, sub;
-  if (score >= 9) { jp = '免許皆伝'; title = 'Master of the Island'; sub = 'You know the pieces cold. The ferry master nods in respect.'; }
-  else if (score >= 6) { jp = 'よくできました'; title = 'Well done'; sub = 'Solid reading. A few more crossings and the island is yours.'; }
-  else { jp = 'もう一回'; title = 'Keep training'; sub = 'Shogi pieces move differently from chess — study the gold and silver generals.'; }
-  document.getElementById('ov-jp').textContent = jp;
-  document.getElementById('ov-title').textContent = title;
-  document.getElementById('ov-sub').textContent = sub;
-  ov.classList.remove('hidden');
-  if (window.PJCC) PJCC.saveScore('shogi-island', score, { credits: 1, data: { round: ROUND } });
-}
+  function commitMove(m){
+    var after = m.kind==='drop' ? applyDrop(prob.board, m.type, m.to, 'P') : applyMove(prob.board, m.from, m.to);
+    var ok=false, msg='';
+    if(prob.goal==='capture'){ ok = (m.kind==='move' && m.to===prob.enemyKey); msg = ok?'':'That doesn’t capture the marked piece — move onto it.'; }
+    else if(prob.goal==='check'){ var kp=rc(prob.enemyKey); ok = isAttacked(after, kp[0], kp[1], 'P'); msg = ok?'':'No check yet — the King isn’t attacked. Try another move.'; }
+    else if(prob.goal==='mate'){ ok = isBareMate(after, prob.enemyKey); var kp2=rc(prob.enemyKey);
+      msg = ok?'' : (isAttacked(after,kp2[0],kp2[1],'P') ? 'Check — but the King escapes. Find the move with no escape.' : 'Not check. The King must be attacked and trapped.'); }
+    var fb=document.getElementById('fb');
+    if(ok){ locked=true; markCells([m.to], 'correct'); fb.textContent='正解！ Correct.'; fb.className='fb ok'; onSolved(); afterSolveButton(); }
+    else { fb.textContent='おしい — '+msg; fb.className='fb no'; sel=null; paint(); renderHand(); }
+  }
+  function markCells(list, cls){ list.forEach(function(k){ if(cells[k]) cells[k].classList.add(cls); }); }
 
-document.getElementById('action').onclick = function () { if (!checked) check(); else next(); };
-document.getElementById('ov-again').onclick = function () { document.getElementById('overlay').classList.add('hidden'); startRound(); };
+  function checkMove(){ // move-type
+    locked=true; var ok = arraysSameSet(Object.keys(marks).filter(function(k){return marks[k];}), prob.target);
+    var fb=document.getElementById('fb');
+    // paint result
+    for(var k in cells){ if(k===prob.subj) continue; var inT=prob.target.indexOf(k)>=0, inM=!!marks[k];
+      if(inT&&inM) cells[k].classList.add('correct'); else if(inT&&!inM) cells[k].classList.add('missed'); else if(!inT&&inM) cells[k].classList.add('wrong'); }
+    if(ok){ fb.textContent='正解！ Correct.'; fb.className='fb ok'; onSolved(); }
+    else { fb.textContent='おしい — '+NAME[prob.pieceType]+' moves '+DESC[prob.pieceType]+'.'; fb.className='fb no'; }
+    document.getElementById('pdesc').textContent = NAME[prob.pieceType]+': '+DESC[prob.pieceType]+'.';
+    afterSolveButton(ok);
+  }
+  function afterSolveButton(){ var a=document.getElementById('action'); a.style.display=''; a.textContent='次へ Next ▸'; a.disabled=false; a.dataset.next='1'; }
 
-function startRound() { qi = 0; score = 0; document.getElementById('score').textContent = 0; newQuestion(); }
-document.getElementById('mode-basic').onclick = function () { pool = PIECES_BASE; this.classList.add('on'); document.getElementById('mode-all').classList.remove('on'); startRound(); };
-document.getElementById('mode-all').onclick = function () { pool = PIECES_BASE.concat(PIECES_PROMO); this.classList.add('on'); document.getElementById('mode-basic').classList.remove('on'); startRound(); };
+  function onSolved(){
+    st.solved++; if(st.solved>st.best) st.best=st.solved;
+    var before=st.decoded; if(st.decoded<TOTAL_SEG) st.decoded++;
+    saveState(); refreshHud(); renderCodex(); renderUnlock(); setTheme(themeLevel());
+    if(st.decoded>before){ flashDecode(st.decoded-1); }
+    if(st.solved===UNLOCK_AT){ celebrate(); }
+    if(typeof window!=='undefined' && window.PJCC) PJCC.saveScore('shogi-island', st.solved, {credits:1, data:{decoded:st.decoded, theme:themeLevel()}});
+  }
+  function flashDecode(i){ renderCodex(); var segs=document.querySelectorAll('#codex .seg'); if(segs[i]){ segs[i].classList.add('justdec'); segs[i].scrollIntoView({block:'nearest'}); } }
+  function celebrate(){ var ov=document.getElementById('ov'); document.getElementById('ov-jp').textContent='免許皆伝';
+    document.getElementById('ov-title').textContent='The island opens'; document.getElementById('ov-msg').textContent='You have decoded the codex and learned the pieces, the drops, and the mate.';
+    document.getElementById('ov-sub').textContent='A hidden match — Catch the Lion — is now unlocked below.'; ov.classList.remove('hidden'); }
 
-newQuestion();
+  function showMe(){
+    if(prob.goal==='move'){ return; }
+    var s = prob.solutions && prob.solutions[0]; if(!s) return; locked=true;
+    if(s.kind==='move'){ cells[s.from].classList.add('hint'); cells[s.to].classList.add('hint'); }
+    else { cells[s.to].classList.add('hint'); }
+    var fb=document.getElementById('fb'); fb.textContent='教えて — '+(s.kind==='drop'?('drop '+NAME[s.type].split(' ')[0]+' there'):('move '+ (NAME[prob.board[s.from].t]||'').split(' ')[0] +' there')); fb.className='fb';
+    afterSolveButton();  // lets you move on (no solve credit)
+  }
+
+  document.getElementById('action').onclick=function(){
+    if(this.dataset.next==='1'){ this.dataset.next=''; newProblem(); return; }
+    if(prob.kind==='move') checkMove();
+  };
+  document.getElementById('showme').onclick=showMe;
+  document.getElementById('ov-ok').onclick=function(){ document.getElementById('ov').classList.add('hidden'); };
+
+  /* ---- Dobutsu UI ---- */
+  var dob=null, dsel=null, dbusy=false;
+  function openDobutsu(){ document.getElementById('dobutsu').classList.remove('hidden'); newDob(); }
+  function newDob(){ dob=dobStart(); dsel=null; dbusy=false; document.getElementById('dob-status').textContent='Your move — you are ▲ (bottom). Catch the enemy Lion 🦁.'; drawDob(); }
+  function drawDob(){
+    var bd=document.getElementById('dob-board'); bd.innerHTML='';
+    var GL={Lion:'🦁',Y:'🦒',E:'🐘',C:'🐤',H:'🐔'};
+    for(var r=0;r<4;r++) for(var c=0;c<3;c++){ var cell=document.createElement('div'); cell.className='dob-cell';
+      var pc=dob.b[r+','+c]; if(pc){ cell.textContent=GL[pc.t]; cell.classList.add(pc.s==='P'?'me':'enemy'); }
+      if(dsel && dsel.from===(r+','+c)) cell.classList.add('sel');
+      (function(rr,cc){ cell.onclick=function(){ dobClick(rr,cc); }; })(r,c); bd.appendChild(cell); }
+    // dests
+    if(dsel){ var dests = dsel.hand!=null ? emptyDob() : dDests(dob, +dsel.from.split(',')[0], +dsel.from.split(',')[1]);
+      dests.forEach(function(k){ var i=(+k.split(',')[0])*3+(+k.split(',')[1]); bd.children[i].classList.add('dest'); }); }
+    // hands
+    var GL2={Lion:'🦁',Y:'🦒',E:'🐘',C:'🐤',H:'🐔'};
+    var ph=document.getElementById('dob-hand-p'); ph.innerHTML=''; dob.hand.P.forEach(function(t,i){ var b=document.createElement('div'); b.className='hp'+(dsel&&dsel.hand===i?' sel':''); b.textContent=GL2[t];
+      (function(ii){ b.onclick=function(){ if(dbusy||dob.winner) return; dsel={hand:ii,type:dob.hand.P[ii]}; drawDob(); }; })(i); ph.appendChild(b); });
+    var eh=document.getElementById('dob-hand-e'); eh.innerHTML=''; dob.hand.E.forEach(function(t){ var b=document.createElement('div'); b.className='hp'; b.textContent=GL2[t]; eh.appendChild(b); });
+  }
+  function emptyDob(){ var o=[]; for(var r=0;r<4;r++) for(var c=0;c<3;c++) if(!dob.b[r+','+c]) o.push(r+','+c); return o; }
+  function dobClick(r,c){
+    if(dbusy || dob.winner || dob.turn!=='P') return; var k=r+','+c, pc=dob.b[k];
+    if(dsel){ var dests = dsel.hand!=null ? emptyDob() : dDests(dob, +dsel.from.split(',')[0], +dsel.from.split(',')[1]);
+      if(dests.indexOf(k)>=0){ dob=dApply(dob, dsel.hand!=null?{drop:dsel.type,to:k}:{from:dsel.from,to:k}); dsel=null; drawDob(); afterPlayer(); return; } }
+    if(pc && pc.s==='P'){ dsel={from:k}; drawDob(); return; }
+    dsel=null; drawDob();
+  }
+  function afterPlayer(){
+    if(dob.winner){ endDob(); return; }
+    dbusy=true; document.getElementById('dob-status').textContent='…thinking';
+    setTimeout(function(){ var m=dAIMove(dob, 4); if(m){ dob=dApply(dob, m); } drawDob();
+      if(dob.winner) endDob(); else { dbusy=false; document.getElementById('dob-status').textContent='Your move.'; } }, 260);
+  }
+  function endDob(){ var s=document.getElementById('dob-status'); s.textContent = dob.winner==='P' ? '🎉 You caught the Lion — you win!' : 'The enemy caught your Lion. Try again!'; dbusy=true; }
+  document.getElementById('dob-new').onclick=newDob;
+  document.getElementById('dob-close').onclick=function(){ document.getElementById('dobutsu').classList.add('hidden'); };
+
+  /* ---- boot ---- */
+  // merge server best if higher
+  if(typeof window!=='undefined' && window.PJCC && PJCC.ready){ PJCC.ready.then(function(){ try{ PJCC.myStats().then(function(stats){
+    var rec = stats && stats['shogi-island']; if(rec && rec.best && rec.best>st.solved){ /* keep local decode, but bump best */ st.best=Math.max(st.best, rec.best); saveState(); refreshHud(); } }); }catch(e){} }); }
+  refreshHud(); renderCodex(); renderUnlock(); setTheme(themeLevel()); newProblem();
+})();
 </script>
 </body>
 </html>

@@ -2,6 +2,7 @@
 layout: page
 title: Leaderboards
 permalink: /leaderboards/
+jukebox: true
 ---
 
 <link rel="stylesheet" href="{{ '/assets/css/pjcc-profile.css' | relative_url }}">
@@ -18,14 +19,13 @@ permalink: /leaderboards/
   // key '__overall__' = cumulative credits board; others = per-game best scores.
   var BOARDS = [
     { key: '__overall__',     label: 'Overall',          unit: 'credits' },
-    { key: 'cipher',          label: 'CIPHER',           unit: 'streak'  },
+    { key: 'cipher',          label: 'CIPHER',           unit: 'score'   },
     { key: 'clearance-delta', label: 'Clearance: DELTA', unit: 'score'   },
     { key: 'notation-run',    label: 'Notation Blitz',   unit: 'score'   },
     { key: 'fork-in-the-road',label: 'Fork in the Road', unit: 'solved'  },
     { key: 'sand-mine-depths',label: 'Sand Mine Depths', unit: 'depth'   },
     { key: 'pirc-protocol',   label: 'Pirc Protocol',    unit: 'score'   },
-    { key: 'ferry-delayed',   label: 'Ferry Delayed',    unit: 'solved'  },
-    { key: 'shogi-island',    label: 'Shogi Island',     unit: 'correct' },
+    { key: 'shogi-island',    label: 'Shogi Island',     unit: 'solved'  },
     { key: 'blindfold',       label: 'Blindfold Puzzles',unit: 'solved'  },
     { key: 'tower-defense',   label: 'Siege on Chess City', unit: 'score' }
   ];

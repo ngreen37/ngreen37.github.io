@@ -3,6 +3,7 @@ layout: page
 title: Projects
 permalink: /projects/
 body_class: theme-bw
+jukebox: true
 ---
 
 <p class="projects-intro">McPuppy Studios is an independent creative studio built around storytelling, animation, and chess. Everything here is built from the ground up — one idea at a time.</p>
@@ -149,7 +150,7 @@ body_class: theme-bw
         <span class="project-status-dot"></span>
         Completed (pending improvements)
       </span>
-      <h2 class="project-title">The Pirc Protocol <span class="ver">v1.1</span></h2>
+      <h2 class="project-title">The Pirc Protocol <span class="ver">v2.0</span></h2>
     </div>
     <p class="project-desc">A spaced-repetition opening trainer. Sit across the board from Princess and answer her openings — the Pirc Defense, the Italian Game, the Scandinavian — one book move at a time. Master a line and it returns later; slip up and it comes back sooner, Anki-style.</p>
     <ul class="project-details">
@@ -170,7 +171,7 @@ body_class: theme-bw
         <span class="project-status-dot"></span>
         Completed (pending improvements)
       </span>
-      <h2 class="project-title">Fork in the Road <span class="ver">v1.1</span></h2>
+      <h2 class="project-title">Fork in the Road <span class="ver">v2.0</span></h2>
     </div>
     <p class="project-desc">A chess tactics trainer dressed as a journey. Each puzzle — fork, pin, skewer, discovered attack, mate — is a step on the road to Chess City. Find the winning move and Princess advances across the world map. Journey mode and a date-seeded Daily Five.</p>
     <ul class="project-details">
@@ -191,7 +192,7 @@ body_class: theme-bw
         <span class="project-status-dot"></span>
         Completed (pending improvements)
       </span>
-      <h2 class="project-title">CIPHER <span class="ver">v1.2</span></h2>
+      <h2 class="project-title">CIPHER <span class="ver">v1.3</span></h2>
     </div>
     <p class="project-desc">An operative decryption terminal in the style of the Classified archive. Crack a five-letter code in six tries — chess vocabulary at Clearance Delta, PJCC field codes at Clearance Omega — and the intercepted dispatch unredacts itself, line by line. Daily intercept plus an endless decryption streak.</p>
     <ul class="project-details">
@@ -212,7 +213,7 @@ body_class: theme-bw
         <span class="project-status-dot"></span>
         Completed (pending improvements)
       </span>
-      <h2 class="project-title">Clearance: DELTA <span class="ver">v1.2</span></h2>
+      <h2 class="project-title">Clearance: DELTA <span class="ver">v1.3</span></h2>
     </div>
     <p class="project-desc">An operative trivia exam in the style of the Classified archive. Answer questions on chess rules, tactics, and history — and on the PJCC files themselves — to climb the clearance ladder from Recruit to Above Omega. Every promotion unredacts another dossier fragment; three wrong answers revokes your access.</p>
     <ul class="project-details">
@@ -221,27 +222,6 @@ body_class: theme-bw
     </ul>
     <div class="project-links">
       <a href="/games/clearance-delta/" class="project-link project-link-play">▶ PLAY NOW</a>
-      <a href="/games/" class="project-link">All Games</a>
-    </div>
-  </div>
-
-  <div class="project-card project-card-featured">
-    <div class="featured-ribbon">PLAYABLE NOW</div>
-    <div class="project-card-corner-piece" aria-hidden="true">⛴</div>
-    <div class="project-card-header">
-      <span class="project-status project-status-done">
-        <span class="project-status-dot"></span>
-        Completed (pending improvements)
-      </span>
-      <h2 class="project-title">Ferry Delayed <span class="ver">v1.1</span></h2>
-    </div>
-    <p class="project-desc">A sliding-block logic puzzle set at the gridlocked Shogi Island ferry dock. Every crate slides in a straight line, like a rook; drag them clear in the right order and slide Princess onto the ferry. Five computer-verified crossings, each with an optimal par to chase.</p>
-    <ul class="project-details">
-      <li><strong>Format:</strong> Browser game</li>
-      <li><strong>Status:</strong> Playable — more crossings in progress</li>
-    </ul>
-    <div class="project-links">
-      <a href="/games/ferry-delayed/" class="project-link project-link-play">▶ PLAY NOW</a>
       <a href="/games/" class="project-link">All Games</a>
     </div>
   </div>
@@ -306,7 +286,7 @@ body_class: theme-bw
         <span class="project-status-dot"></span>
         Completed (pending improvements)
       </span>
-      <h2 class="project-title">Notation Blitz <span class="ver">v2.7</span></h2>
+      <h2 class="project-title">Notation Blitz <span class="ver">v3.3</span></h2>
     </div>
     <p class="project-desc">A coordinate-reading rhythm game set in the streets of Checker Town. Square names drop on the beat — click them before they pass the gate. Forgiving timing, an approach ring that tells you exactly when to hit, saved personal bests, and a Pirc Defense mode that traces the Rival's opening move by move.</p>
     <ul class="project-details">
@@ -327,7 +307,7 @@ body_class: theme-bw
         <span class="project-status-dot"></span>
         Completed (pending improvements)
       </span>
-      <h2 class="project-title">Sand Mine Depths <span class="ver">v1.1</span></h2>
+      <h2 class="project-title">Sand Mine Depths <span class="ver">v2.2</span></h2>
     </div>
     <p class="project-desc">A knight-movement descent roguelite set in the mine beneath Checker Town. Princess hops in L-shapes, the sand and rock cave in behind her, and the deeper she goes the more the mine remembers. A buried thread of the Subject Zero mystery.</p>
     <ul class="project-details">
@@ -348,12 +328,12 @@ body_class: theme-bw
         <span class="project-status-dot"></span>
         Completed (pending improvements)
       </span>
-      <h2 class="project-title">Shogi Island <span class="ver">v2.0</span></h2>
+      <h2 class="project-title">Shogi Island <span class="ver">v3.0</span></h2>
     </div>
-    <p class="project-desc">A shogi piece-movement trainer set in the Japanese-speaking world beyond the ferry. Read each piece — pawn, lance, knight, the generals, and the promoted Tokin, Horse, and Dragon — and tap every square it can move to on a full 9×9 board. Princess's first lessons after the pu-rin-se-suuu portal.</p>
+    <p class="project-desc">A shogi school that teaches by playing. Solve a rising ladder of problems — read a piece, capture, give check, then forced checkmate — on a full 9×9 board. The whole guide begins in Japanese and decodes into English one line per solve, the bare island slowly blooms into a grand Japanese scene, and getting far enough unlocks a hidden match: Catch the Lion (Dōbutsu Shōgi). Every problem is generated and computer-verified.</p>
     <ul class="project-details">
       <li><strong>Format:</strong> Browser game</li>
-      <li><strong>Status:</strong> Playable — full 9×9 board with a Basics / +Promoted toggle; a drops lesson in progress</li>
+      <li><strong>Status:</strong> Playable — engine, decode codex, theme bloom, and the hidden Lion match all live</li>
     </ul>
     <div class="project-links">
       <a href="/games/shogi-island/" class="project-link project-link-play">▶ PLAY NOW</a>
@@ -385,17 +365,16 @@ body_class: theme-bw
 <h2 class="games-index-heading">All Games</h2>
 <ul class="games-index">
   <li><a href="/games/dungeon/">Princess Dungeon</a> <span class="games-index-note">— in development</span></li>
-  <li><a href="/games/notation-run/">Notation Blitz <span class="ver">v2.7</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/notation-run/">Notation Blitz <span class="ver">v3.3</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/space-run/">Space Run</a> <span class="games-index-note">— in development</span></li>
-  <li><a href="/games/pirc-protocol/">The Pirc Protocol <span class="ver">v1.1</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/fork-in-the-road/">Fork in the Road <span class="ver">v1.1</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/sand-mine-depths/">Sand Mine Depths <span class="ver">v1.1</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/cipher/">CIPHER <span class="ver">v1.2</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/clearance-delta/">Clearance: DELTA <span class="ver">v1.2</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/ferry-delayed/">Ferry Delayed <span class="ver">v1.1</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/shogi-island/">Shogi Island <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/tower-defense/">Siege on Chess City <span class="ver">v1.0</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/blindfold-puzzles/">Blindfold Puzzles</a> <span class="games-index-note">— hidden bonus</span></li>
+  <li><a href="/games/pirc-protocol/">The Pirc Protocol <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/fork-in-the-road/">Fork in the Road <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/sand-mine-depths/">Sand Mine Depths <span class="ver">v2.2</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/cipher/">CIPHER <span class="ver">v1.3</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/clearance-delta/">Clearance: DELTA <span class="ver">v1.3</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/shogi-island/">Shogi Island <span class="ver">v3.0</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/tower-defense/">Siege on Chess City <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/blindfold-puzzles/">Blindfold Puzzles <span class="ver">v2.0</span></a> <span class="games-index-note">— hidden bonus · hides The Mind's Eye</span></li>
   <li><a href="/games/knights-tour/">Knight's Tour</a> <span class="games-index-term">— terminated</span></li>
 </ul>
 

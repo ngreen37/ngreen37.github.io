@@ -3,6 +3,7 @@ layout: default
 title: About / Contact
 permalink: /about/
 body_class: theme-contact
+jukebox: true
 ---
 
 <!-- ══════════ CONTACT ══════════ -->

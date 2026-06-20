@@ -17,10 +17,10 @@ permalink: /dossier/
   var el = document.getElementById('dossier');
   // game key -> [label, unit]
   var GAMES = {
-    'cipher': ['CIPHER', 'streak'], 'clearance-delta': ['Clearance: DELTA', 'score'],
+    'cipher': ['CIPHER', 'score'], 'clearance-delta': ['Clearance: DELTA', 'score'],
     'notation-run': ['Notation Blitz', 'score'], 'fork-in-the-road': ['Fork in the Road', 'solved'],
     'sand-mine-depths': ['Sand Mine Depths', 'depth'], 'pirc-protocol': ['Pirc Protocol', 'flawless'],
-    'ferry-delayed': ['Ferry Delayed', 'aced'], 'shogi-island': ['Shogi Island', 'correct'],
+    'shogi-island': ['Shogi Island', 'solved'],
     'blindfold': ['Blindfold Puzzles', 'solved'], 'tower-defense': ['Siege on Chess City', 'score']
   };
   function esc(s) {
@@ -151,6 +151,38 @@ permalink: /dossier/
         '<td class="lb-score">' + (s ? s.best_score + ' ' + GAMES[key][1] : '—') + '</td></tr>';
     });
     html += '</tbody></table>';
+
+    // Fork in the Road — per-tactic accuracy (forks / skewers / mates)
+    var forkRow = stats.filter(function (x) { return x.game === 'fork-in-the-road'; })[0];
+    var tac = forkRow && forkRow.data && forkRow.data.tactics;
+    if (tac) {
+      var CATL = { fork: 'Forks', skewer: 'Skewers', mate: 'Mates', pin: 'Pins' };
+      var trows = '';
+      ['fork', 'skewer', 'mate', 'pin'].forEach(function (c) {
+        var e = tac[c];
+        if (e && e.seen) {
+          var pct = Math.round(100 * e.clean / e.seen);
+          trows += '<tr><td class="lb-name">' + CATL[c] + '</td>' +
+            '<td class="pjcc-sub">' + e.seen + ' seen</td>' +
+            '<td class="lb-score">' + e.clean + '/' + e.seen + ' · ' + pct + '%</td></tr>';
+        }
+      });
+      if (trows) html += '<h2 class="dsr-h">Tactic accuracy · Fork in the Road</h2><table class="lb-table"><tbody>' + trows + '</tbody></table>';
+    }
+
+    // Clearance: DELTA — missed-questions review (from this device)
+    try {
+      var missed = JSON.parse(localStorage.getItem('pjcc.clearance.missed.v1')) || [];
+      if (missed.length){
+        html += '<h2 class="dsr-h">Clearance — missed questions</h2><div style="display:flex;flex-direction:column;gap:6px;">';
+        missed.slice(0, 12).forEach(function (mq) {
+          html += '<div style="background:rgba(122,34,54,0.18);border-left:3px solid #F5C518;border-radius:6px;padding:7px 10px;">' +
+            '<div style="color:#f0e6ff;font-size:0.86rem;line-height:1.35;">' + esc(mq.q) + '</div>' +
+            '<div style="color:#6bffb8;font-size:0.8rem;margin-top:3px;">✔ ' + esc(mq.ans) + ' <span style="color:#9a7fd4;">· ' + esc(mq.cat || '') + '</span></div></div>';
+        });
+        html += '</div><p class="pjcc-sub">The questions that tripped you up — study them, then go re-earn that clearance.</p>';
+      }
+    } catch (e) {}
 
     // invite link
     var link = PJCC.inviteLink(prof);

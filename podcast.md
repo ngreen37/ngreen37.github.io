@@ -3,6 +3,7 @@ layout: page
 title: Podcast
 permalink: /podcast/
 body_class: theme-bw
+jukebox: true
 ---
 
 <div class="podcast-coming">

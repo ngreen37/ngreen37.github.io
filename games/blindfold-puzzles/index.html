@@ -1,7 +1,7 @@
 ---
 layout: game
-title: "Blindfold Puzzles"
-description: "No pieces on the board — only a clue. Find the move in your head, then play it."
+title: "Blindfold Puzzles v2.0"
+description: "No pieces on the board — only a clue. Adaptive blindfold tactics, and a hidden full game vs the CEO."
 permalink: /games/blindfold-puzzles/
 ---
 
@@ -12,7 +12,7 @@ permalink: /games/blindfold-puzzles/
   <a class="bf-cta" href="/games/notation-run/">Train in Notation Blitz &rarr;</a>
 </div>
 
-<div id="bf-frame" class="game-frame-wrap" hidden>
+<div id="bf-frame" class="game-frame-wrap bf-frame" hidden>
   <iframe
     src="{{ '/assets/games/pjcc_blindfold.html' | relative_url }}"
     title="PJCC Blindfold Puzzles"
@@ -35,20 +35,20 @@ permalink: /games/blindfold-puzzles/
 .bf-lock-icon { font-size: 48px; }
 .bf-lock h2 { color: #F5C518; margin: 0.4rem 0; }
 .bf-lock p { color: #c9a7ff; line-height: 1.6; }
-.bf-cta { display: inline-block; margin-top: 1rem; background: #F5C518; color: #1a0f3d;
-  font-weight: 800; border-radius: 999px; padding: 9px 20px; text-decoration: none; }
+.bf-cta { display: inline-block; margin-top: 1rem; background: #F5C518; color: #1a0f3d; font-weight: 800; border-radius: 999px; padding: 9px 20px; text-decoration: none; }
 .bf-cta:hover { background: #ffd740; }
+.bf-frame { max-width: 560px; }
+.bf-frame iframe { height: 820px; }
+@media (max-width: 640px) { .bf-frame iframe { height: 760px; } }
 </style>
 
 <div class="game-info">
   <h2>How to Play</h2>
   <ul>
-    <li>The board is <strong>blank</strong> — you get only a written clue describing where every piece sits</li>
-    <li>Picture the position, then <strong>click the square of the piece that moves</strong> to reveal it</li>
-    <li>Then <strong>click the square it should move to</strong> — the winning move</li>
-    <li><strong>Reveal position</strong> shows everything if you're stuck (counts as a slip)</li>
-    <li>Six puzzles per set — solve them clean to keep your score</li>
+    <li>The board is <strong>blank</strong> — catch the 🔦 and sweep its beam to read the clue, then click the <strong>piece that moves</strong> and its <strong>target square</strong></li>
+    <li>Puzzles <strong>adapt</strong> — solve clean and they sharpen, slip and they ease (with wide variance, so it never spikes)</li>
+    <li>Solve enough and <strong>The Mind's Eye</strong> opens: a full game against the CEO, played blind</li>
   </ul>
 
-  <p class="game-note">The final test of board vision: no pieces, just coordinates and your mind's eye. Scores log to your <a href="/dossier/">operative dossier</a> and the <a href="/leaderboards/">leaderboards</a>.</p>
+  <p class="game-note">The final test of board vision — no pieces, just coordinates and your mind's eye. Progress logs to your <a href="/dossier/">operative dossier</a> and the <a href="/leaderboards/">leaderboards</a>.</p>
 </div>

@@ -3,6 +3,7 @@ layout: page
 title: Chess Lessons
 permalink: /chess-lessons/
 body_class: theme-bw
+jukebox: true
 ---
 
 <div class="lessons-stats">

@@ -3,26 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Clearance — DELTA</title>
+<title>PJCC: Clearance — DELTA v1.3</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { height: 100%; background: #0c0726; overflow: hidden;
+  html, body { height: 100%; background: #120308; overflow: hidden;
     font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
   body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-  #term { position: relative; width: 460px; max-width: 100vw; height: 500px; overflow: hidden;
-    background: radial-gradient(circle at 50% 16%, #2a1666 0%, #0c0726 78%);
+  #term { position: relative; width: min(620px, 96vw); height: min(620px, 95vh); overflow: hidden;
+    background: radial-gradient(circle at 50% 16%, #3a0f1c 0%, #120308 78%);
     border: 3px solid #F5C518; border-radius: 12px; box-shadow: 0 0 40px rgba(245,197,24,0.25);
-    color: #ecdcff; display: flex; flex-direction: column; padding: 10px 14px 12px; }
+    color: #f6e7d2; display: flex; flex-direction: column; padding: 10px 14px 12px; }
 
-  .hdr { display: flex; align-items: center; justify-content: space-between; font-size: 10px; letter-spacing: 1.5px; color: #b79aff; }
+  .hdr { display: flex; align-items: center; justify-content: space-between; font-size: 10px; letter-spacing: 1.5px; color: #d8a6b2; }
   .hdr .stamp { border: 1px solid #F5C518; color: #F5C518; padding: 1px 6px; border-radius: 3px; transform: rotate(-3deg); font-weight: bold; }
 
   .badge-wrap { display: flex; align-items: center; gap: 12px; margin: 6px 0 2px; }
   .badge { width: 64px; height: 64px; flex-shrink: 0; border-radius: 50%; border: 3px solid #F5C518;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: radial-gradient(circle at 40% 35%, #4a2f8a, #1a0f3d); box-shadow: inset 0 -4px 8px rgba(0,0,0,0.5), 0 0 16px rgba(245,197,24,0.3); }
+    background: radial-gradient(circle at 40% 35%, #7a2236, #2a0a12); box-shadow: inset 0 -4px 8px rgba(0,0,0,0.5), 0 0 16px rgba(245,197,24,0.3); }
   .badge .b-pip { font-size: 19px; line-height: 1; }
   .badge .b-lab { font-size: 7px; letter-spacing: 1px; color: #F5C518; margin-top: 2px; }
   .badge.bump { animation: bump 0.5s ease; }
@@ -30,55 +30,55 @@
   .rank-info { flex: 1; }
   .rank-name { font-size: 19px; font-weight: 900; color: #F5C518; letter-spacing: 1px; text-shadow: 0 0 12px rgba(245,197,24,0.4); }
   .clr-bar-bg { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-top: 5px; overflow: hidden; }
-  .clr-bar { height: 100%; width: 0; background: linear-gradient(90deg,#F5C518,#ff8fd0); border-radius: 4px; transition: width 0.4s; }
-  .rank-sub { font-size: 10px; color: #9a7fd4; margin-top: 3px; }
+  .clr-bar { height: 100%; width: 0; background: linear-gradient(90deg,#F5C518,#ff9fb0); border-radius: 4px; transition: width 0.4s; }
+  .rank-sub { font-size: 10px; color: #c08a98; margin-top: 3px; }
 
-  .strikes { font-size: 13px; color: #ff5b8a; letter-spacing: 2px; }
-  .strikes b { color: #3a1d52; }
+  .strikes { font-size: 13px; color: #ff5b6e; letter-spacing: 2px; }
+  .strikes b { color: #4a1520; }
 
-  .qcard { background: rgba(0,0,0,0.32); border: 1px solid #4a2f8a; border-radius: 10px; padding: 12px 14px; margin: 9px 0; flex: 0 0 auto; }
+  .qcard { background: rgba(0,0,0,0.32); border: 1px solid #7a2236; border-radius: 10px; padding: 14px 16px; margin: 10px 0; flex: 0 0 auto; }
   .qtags { display: flex; gap: 6px; margin-bottom: 8px; }
   .qtag { font-size: 8.5px; letter-spacing: 1px; font-weight: bold; padding: 2px 7px; border-radius: 999px; text-transform: uppercase; }
-  .qtag.cat { background: #2D1B69; color: #c9a7ff; border: 1px solid #6a4fb0; }
-  .qtag.tier { background: #F5C518; color: #1a0f3d; }
-  .qtext { font-size: 14.5px; line-height: 1.45; color: #fff; min-height: 42px; }
+  .qtag.cat { background: #4a0f1c; color: #f0c0cc; border: 1px solid #8a3346; }
+  .qtag.tier { background: #F5C518; color: #2a0a12; }
+  .qtext { font-size: 16px; line-height: 1.45; color: #fff; min-height: 46px; }
 
-  .answers { display: flex; flex-direction: column; gap: 7px; }
-  .ans { text-align: left; font-family: 'Trebuchet MS', sans-serif; font-size: 13px; color: #ecdcff;
-    background: #241152; border: 1px solid #4a2f8a; border-radius: 8px; padding: 10px 12px; cursor: pointer;
+  .answers { display: flex; flex-direction: column; gap: 8px; }
+  .ans { text-align: left; font-family: 'Trebuchet MS', sans-serif; font-size: 14.5px; color: #f6e7d2;
+    background: #4a1320; border: 1px solid #7a2236; border-radius: 8px; padding: 12px 14px; cursor: pointer;
     transition: transform 0.06s, background 0.12s, border-color 0.12s; }
-  .ans:hover { background: #322066; border-color: #F5C518; }
+  .ans:hover { background: #5a1828; border-color: #F5C518; }
   .ans:active { transform: translateY(1px); }
   .ans .key { display: inline-block; width: 18px; color: #F5C518; font-weight: bold; }
   .ans.correct { background: #1f6b46; border-color: #2ecc71; color: #eafff2; }
-  .ans.wrong { background: #6b1f33; border-color: #ff5b8a; color: #ffe0ea; }
+  .ans.wrong { background: #6b1f33; border-color: #ff5b6e; color: #ffe0ea; }
   .ans.dim { opacity: 0.5; }
   .ans.locked { pointer-events: none; }
 
-  .explain { font-size: 11.5px; color: #b79aff; line-height: 1.5; margin-top: 9px; min-height: 30px; opacity: 0; transition: opacity 0.25s; }
+  .explain { font-size: 12.5px; color: #d8a6b2; line-height: 1.5; margin-top: 9px; min-height: 30px; opacity: 0; transition: opacity 0.25s; }
   .explain.show { opacity: 1; }
   .explain b { color: #6bffb8; }
 
   .next-btn { margin-top: 8px; align-self: center; font-family: 'Trebuchet MS', sans-serif; font-weight: bold;
-    background: #F5C518; color: #1a0f3d; border: none; border-radius: 999px; padding: 9px 28px; font-size: 13px;
+    background: #F5C518; color: #2a0a12; border: none; border-radius: 999px; padding: 9px 28px; font-size: 13px;
     letter-spacing: 1px; cursor: pointer; box-shadow: 0 4px 0 #8a5a00; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
   .next-btn.show { opacity: 1; pointer-events: auto; }
   .next-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #8a5a00; }
 
   .overlay { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column;
     align-items: center; justify-content: center; padding: 24px; text-align: center;
-    background: radial-gradient(circle at 50% 30%, #2a1666 0%, #0c0726 82%); }
+    background: radial-gradient(circle at 50% 30%, #3a0f1c 0%, #120308 82%); }
   .overlay.hidden { display: none; }
-  .eyebrow { font-size: 11px; letter-spacing: 4px; color: #ff8fd0; text-transform: uppercase; margin-bottom: 10px; }
+  .eyebrow { font-size: 11px; letter-spacing: 4px; color: #ff9fb0; text-transform: uppercase; margin-bottom: 10px; }
   .big-title { font-size: 26px; font-weight: 900; color: #F5C518; letter-spacing: 2px; text-shadow: 0 3px 0 #6a4400, 0 0 22px rgba(245,197,24,0.5); margin-bottom: 4px; }
-  .blurb { font-size: 12px; color: #d9c9ff; line-height: 1.7; max-width: 350px; margin-bottom: 14px; }
+  .blurb { font-size: 12px; color: #f0d8c0; line-height: 1.7; max-width: 350px; margin-bottom: 14px; }
   .btn { font-family: 'Trebuchet MS', sans-serif; font-weight: bold; cursor: pointer; border: none; border-radius: 999px;
     padding: 12px 30px; font-size: 14px; letter-spacing: 1px; box-shadow: 0 4px 0 rgba(0,0,0,0.4); }
   .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.4); }
-  .btn-gold { background: #F5C518; color: #1a0f3d; }
-  .btn-ghost { background: #2D1B69; color: #c9a7ff; box-shadow: 0 4px 0 #170a36; }
+  .btn-gold { background: #F5C518; color: #2a0a12; }
+  .btn-ghost { background: #4a0f1c; color: #f0c0cc; box-shadow: 0 4px 0 #1a0308; }
   .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-  .foot { margin-top: 14px; font-size: 10px; color: #7a5fb0; line-height: 1.7; } .foot b { color: #c9a7ff; }
+  .foot { margin-top: 14px; font-size: 10px; color: #a06a78; line-height: 1.7; } .foot b { color: #f0c0cc; }
   .dossier { background: rgba(0,0,0,0.4); border: 1px solid #F5C518; border-radius: 8px; padding: 10px 12px; max-width: 360px; margin-bottom: 12px; font-size: 11.5px; line-height: 1.5; color: #9fe8c0; }
   .dossier .dl { color: #F5C518; font-size: 8.5px; letter-spacing: 2px; display: block; margin-bottom: 3px; }
 
@@ -88,9 +88,19 @@
     transform: scale(0.6); opacity: 0; }
   .promo-card.show { animation: promoPop 1.8s ease forwards; }
   @keyframes promoPop { 0%{ transform: scale(0.6); opacity: 0; } 15%{ transform: scale(1.08); opacity: 1; } 80%{ transform: scale(1); opacity: 1; } 100%{ transform: scale(1); opacity: 0; } }
-  .promo-card .pl { font-size: 10px; letter-spacing: 3px; color: #ff8fd0; }
+  .promo-card .pl { font-size: 10px; letter-spacing: 3px; color: #ff9fb0; }
   .promo-card .pr { font-size: 28px; font-weight: 900; color: #F5C518; letter-spacing: 2px; margin: 4px 0; }
   .promo-card .pd { font-size: 11px; color: #9fe8c0; max-width: 300px; line-height: 1.5; }
+  #timebar-wrap { height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; margin: 0 0 6px; overflow: hidden; }
+  #timebar { height: 100%; width: 100%; background: linear-gradient(90deg,#ff5b6e,#F5C518); border-radius: 3px; }
+  #diagram { grid-template-columns: repeat(8, 1fr); width: min(248px, 64%); margin: 2px auto 10px; border: 2px solid #7a2236; border-radius: 6px; overflow: hidden; box-shadow: 0 3px 12px rgba(0,0,0,0.4); }
+  .dsq { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: clamp(13px, 4.2vw, 21px); line-height: 1; }
+  .dsq.light { background: #e8c9a0; } .dsq.dark { background: #9c5d3c; }
+  .dsq .wp { color: #fff; text-shadow: 0 1px 1px #000, 0 0 2px #000; } .dsq .bp { color: #18090a; }
+  .sel-grp { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
+  .selb { font-family: 'Trebuchet MS', sans-serif; font-weight: bold; font-size: 10.5px; letter-spacing: 0.5px; cursor: pointer;
+    background: #4a0f1c; color: #f0c0cc; border: 1px solid #8a3346; border-radius: 999px; padding: 6px 12px; }
+  .selb.sel { background: #F5C518; color: #2a0a12; border-color: #F5C518; }
 </style>
 </head>
 <body>
@@ -111,8 +121,10 @@
     <div class="strikes" id="strikes">◆◆◆</div>
   </div>
 
+  <div id="timebar-wrap" style="display:none"><div id="timebar"></div></div>
   <div class="qcard">
     <div class="qtags"><span class="qtag cat" id="q-cat">RULES</span><span class="qtag tier" id="q-tier">DELTA</span></div>
+    <div id="diagram" style="display:none"></div>
     <div class="qtext" id="q-text">—</div>
   </div>
   <div class="answers" id="answers"></div>
@@ -128,13 +140,25 @@
     <div class="eyebrow">◈ Chess City Invitational</div>
     <div class="big-title">CLEARANCE: DELTA</div>
     <div class="blurb">
-      An operative's exam. Answer questions on <b style="color:#F5C518">chess</b> and the
-      <b style="color:#ff8fd0">PJCC files</b> to climb the clearance ladder —
-      RECRUIT to <b>ABOVE OMEGA</b>. Each promotion unredacts a piece of the archive.
-      Three wrong answers and your access is revoked.
+      An operative's exam, held in the Invitational hall. Field questions on <b style="color:#F5C518">chess</b> —
+      rules, tactics, <b>World Champions</b> and famous games — and the
+      <b style="color:#ff9fb0">PJCC files</b>, climbing from RECRUIT to <b>ABOVE OMEGA</b>.
+      Each promotion unredacts a piece of the archive; three wrong and your access is revoked.
+    </div>
+    <div class="sel-grp" id="mode-sel">
+      <button class="selb sel" data-m="standard">STANDARD</button>
+      <button class="selb" data-m="lightning">⚡ LIGHTNING</button>
+      <button class="selb" data-m="daily">★ DAILY</button>
+    </div>
+    <div class="sel-grp" id="cat-sel">
+      <button class="selb sel" data-c="all">ALL</button>
+      <button class="selb" data-c="rules">RULES</button>
+      <button class="selb" data-c="tactics">TACTICS</button>
+      <button class="selb" data-c="history">HISTORY &amp; CHAMPS</button>
+      <button class="selb" data-c="pjcc">PJCC</button>
     </div>
     <div class="row"><button class="btn btn-gold" id="begin-btn">BEGIN EXAM</button></div>
-    <div class="foot">Keys <b>1&ndash;4</b> to answer &nbsp;·&nbsp; <b id="best-line">highest clearance: —</b></div>
+    <div class="foot">Keys <b>1&ndash;4</b> to answer · <b>⚡ Lightning</b> beats the clock · <b>★ Daily</b> is one shared exam &nbsp;·&nbsp; <b id="best-line">highest clearance: —</b></div>
   </div>
 
   <!-- RESULT -->
@@ -181,7 +205,12 @@ const Q = [
   { t:3, cat:'HISTORY', q:'1.e4 e5 2.Nf3 Nc6 3.Bc4 is the…', a:['Italian Game','French Defense','Sicilian','London System'], c:0, why:'The bishop to c4 marks the Italian Game.' },
   { t:3, cat:'HISTORY', q:'The Scandinavian Defense begins with…', a:['1.d4 d5','1.e4 c5','1.e4 d5','1.e4 e6'], c:2, why:'1.e4 d5 — Black strikes the centre at once.' },
   { t:3, cat:'TACTICS', q:'“Discovered check” happens when…', a:['Two kings face off','A piece moves to reveal another’s check','A pawn promotes','You castle into check'], c:1, why:'One piece steps aside, unveiling a check from the piece behind it.' },
-  // TIER 4 — PJCC lore
+  { t:3, cat:'HISTORY', q:'1.e4 c5 begins which opening?', a:['French Defense','Sicilian Defense','Caro-Kann','Italian Game'], c:1, why:'1...c5 is the Sicilian — the most popular reply to 1.e4.' },
+  { t:3, cat:'HISTORY', q:'1.d4 d5 2.c4 is the…', a:['Queen’s Gambit','King’s Gambit','Slav Defense','Catalan'], c:0, why:'White offers the c-pawn: the Queen’s Gambit.' },
+  { t:3, cat:'HISTORY', q:'The opening 1.e4 e6 is the…', a:['Caro-Kann','French Defense','Pirc','Petroff'], c:1, why:'1...e6 prepares ...d5 — the French Defense.' },
+  { t:3, cat:'HISTORY', q:'Which country is World Champion Magnus Carlsen from?', a:['Sweden','Denmark','Norway','Iceland'], c:2, why:'Carlsen, champion 2013–2023, is Norwegian.' },
+  { t:3, cat:'RULES', q:'Castling queenside is written as…', a:['O-O','O-O-O','0-1','e.p.'], c:1, why:'O-O is kingside; O-O-O (three letters) is queenside.' },
+  // TIER 4 — hard: PJCC files + World Champions & famous events
   { t:4, cat:'PJCC', q:'Which chess piece is Princess designated as?', a:['Pawn','Bishop','Knight','Queen'], c:2, why:'Princess is the knight — the unpredictable leaper.' },
   { t:4, cat:'PJCC', q:'Princess’s full name is…', a:['Princess Sophia McPuppy','Princess Leia Barksdale','Princess of Checker Town','Lady Princess Pawsworth'], c:0, why:'Princess Sophia McPuppy — half cattle dog, half pit bull.' },
   { t:4, cat:'PJCC', q:'The Rival teaches Princess which opening?', a:['The Sicilian','The Pirc Defense','The London','The King’s Gambit'], c:1, why:'The Rival introduces Princess to the Pirc Defense.' },
@@ -194,6 +223,23 @@ const Q = [
   { t:4, cat:'PJCC', q:'Under the Mirror Protocol, reflections are rendered…', a:['In low-poly','In photorealistic detail','In black and white','Not at all'], c:1, why:'Reflective surfaces alone render in shocking photorealistic fidelity.' },
   { t:4, cat:'PJCC', q:'The Rival is associated with which piece?', a:['King','Rook','Knight','Pawn'], c:0, why:'The Rival plays the King — his family waits in Chess City.' },
   { t:4, cat:'PJCC', q:'Princess’s secret “imprint” allegiance is to which team?', a:['The Chess City Leafs','Toronto Maple Leafs','The Checker Town Pawns','Shogi United'], c:1, why:'A residual imprint: she was a Maple Leafs fan before she got here.' },
+  // TIER 4 (cont.) — World Champions & famous events
+  { t:4, cat:'CHAMPIONS', q:'Who was the first official World Chess Champion (1886)?', a:['Emanuel Lasker','Wilhelm Steinitz','Paul Morphy','José Capablanca'], c:1, why:'Wilhelm Steinitz, 1886 — also the father of positional chess.' },
+  { t:4, cat:'CHAMPIONS', q:'Which World Champion was nicknamed “the Magician from Riga”?', a:['Mikhail Tal','Mikhail Botvinnik','Boris Spassky','Tigran Petrosian'], c:0, why:'Mikhail Tal, the 8th champion, famed for dazzling sacrifices.' },
+  { t:4, cat:'HISTORY', q:'In the 1972 “Match of the Century” at Reykjavík, Bobby Fischer beat…', a:['Anatoly Karpov','Boris Spassky','Tigran Petrosian','Mikhail Tal'], c:1, why:'Fischer dethroned Boris Spassky in 1972, ending Soviet dominance.' },
+  { t:4, cat:'HISTORY', q:'In 1997 a computer beat reigning champion Kasparov in a match. Its name?', a:['Deep Thought','Deep Blue','AlphaZero','Stockfish'], c:1, why:'IBM’s Deep Blue won the 1997 rematch in New York.' },
+  { t:4, cat:'CHAMPIONS', q:'Who is widely regarded as the strongest female player in history?', a:['Hou Yifan','Judit Polgár','Vera Menchik','Susan Polgar'], c:1, why:'Judit Polgár reached the world top 10 and beat many champions.' },
+  { t:4, cat:'CHAMPIONS', q:'Which Cuban champion was nicknamed “the chess machine” for flawless technique?', a:['José Raúl Capablanca','Emanuel Lasker','Max Euwe','Efim Bogoljubov'], c:0, why:'Capablanca, champion 1921–27, famed for effortless endgames.' },
+  // TIER 5 — REALLY hard: deep history & champions
+  { t:5, cat:'CHAMPIONS', q:'Who held the World Championship for a record 27 years?', a:['Emanuel Lasker','Wilhelm Steinitz','Garry Kasparov','Alexander Alekhine'], c:0, why:'Emanuel Lasker reigned 1894–1921 — 27 years, still the record.' },
+  { t:5, cat:'CHAMPIONS', q:'In 2024, who became the youngest undisputed World Champion, at 18?', a:['R Praggnanandhaa','Magnus Carlsen','D Gukesh','Alireza Firouzja'], c:2, why:'D Gukesh beat Ding Liren in 2024 to take the title at eighteen.' },
+  { t:5, cat:'HISTORY', q:'In the 1851 “Immortal Game”, who sacrificed a queen and both rooks to mate?', a:['Paul Morphy','Adolf Anderssen','Howard Staunton','Wilhelm Steinitz'], c:1, why:'Adolf Anderssen vs Kieseritzky — chess’s most famous brilliancy.' },
+  { t:5, cat:'HISTORY', q:'The 1956 “Game of the Century” starred a 13-year-old prodigy. Who?', a:['Bobby Fischer','Boris Spassky','Garry Kasparov','Anatoly Karpov'], c:0, why:'A teenage Bobby Fischer beat Donald Byrne with a stunning queen sacrifice.' },
+  { t:5, cat:'CHAMPIONS', q:'In 2000, who dethroned Kasparov using the rock-solid Berlin Defense?', a:['Viswanathan Anand','Vladimir Kramnik','Veselin Topalov','Peter Leko'], c:1, why:'Vladimir Kramnik took the title in London 2000 — Kasparov never solved the Berlin.' },
+  { t:5, cat:'HISTORY', q:'Which 19th-century American genius won the “Opera Game” in Paris in 1858?', a:['Paul Morphy','Harry Pillsbury','Frank Marshall','Wilhelm Steinitz'], c:0, why:'Paul Morphy crushed two noblemen at the opera — a model of fast development.' },
+  { t:5, cat:'CHAMPIONS', q:'Which World Champion died in 1946 while still holding the title?', a:['José Capablanca','Alexander Alekhine','Emanuel Lasker','Max Euwe'], c:1, why:'Alexander Alekhine is the only champion to die undefeated, title in hand.' },
+  { t:5, cat:'HISTORY', q:'Who was the first Women’s World Chess Champion, crowned in 1927?', a:['Vera Menchik','Nona Gaprindashvili','Judit Polgár','Lyudmila Rudenko'], c:0, why:'Vera Menchik held the first Women’s World title from 1927.' },
+  { t:5, cat:'HISTORY', q:'Which 18th-century master called pawns “the soul of chess”?', a:['Gioachino Greco','François-André Philidor','Ruy López','Howard Staunton'], c:1, why:'Philidor’s famous maxim — centuries ahead of its time.' },
 ];
 
 const RANKS = [
@@ -205,9 +251,66 @@ const RANKS = [
   { at: 21, name: 'ABOVE OMEGA', pip: '★', file: 'FILE 005 — SUBJECT ZERO: Same vessel as Princess. Origin coordinates match no known system. The investigation continues anyway.' },
 ];
 
+// ---- Diagram questions (a mini board is drawn from the FEN; find the move / name the threat) ----
+Q.push(
+  { t:3, cat:'TACTICS', dfen:'6k1/5ppp/8/8/8/8/8/R5K1', q:'White to move — checkmate in one. Which move mates?',
+    a:['Ra8#','Ra7+','Rh1','Kf2'], c:0, why:'Ra8# — the king is trapped behind its own pawns. Classic back-rank mate.' },
+  { t:3, cat:'TACTICS', dfen:'r1bqkbnr/pppp1ppp/2n5/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR', q:'White has played Qh5 and Bc4. What is the threat?',
+    a:['Qxf7# (Scholar’s Mate)','Qxe5','Bxg8','Qxh7'], c:0, why:'Qxf7# — queen and bishop both hit f7, defended only by the king. Answer it with ...g6 or ...Qe7.' },
+  { t:4, cat:'TACTICS', dfen:'6k1/8/2N5/3q4/8/8/8/6K1', q:'White to move — a knight move wins the queen. Which?',
+    a:['Ne7+','Ne5','Nb8','Nd4'], c:0, why:'Ne7+ forks the king on g8 and the queen on d5 — next move the knight takes the queen.' },
+  { t:3, cat:'TACTICS', dfen:'3q1rk1/5ppp/5n2/6B1/8/8/8/6K1', q:'The g5-bishop hits the f6-knight, with the queen behind on d8. This is a…',
+    a:['Pin','Fork','Skewer','Stalemate'], c:0, why:'A pin — the f6 knight is pinned to the queen along the g5–d8 diagonal and cannot legally move.' }
+);
+
 const BEST_KEY = 'pjcc.clearance.best.v1';
+const MISS_KEY = 'pjcc.clearance.missed.v1';
 function loadBest(){ try { return parseInt(localStorage.getItem(BEST_KEY)) || 0; } catch(e){ return 0; } }
 function saveBest(v){ try { localStorage.setItem(BEST_KEY, String(v)); } catch(e){} }
+function recordMissed(q){
+  try {
+    let m = JSON.parse(localStorage.getItem(MISS_KEY)) || [];
+    m = m.filter(function(x){ return x.q !== q.q; });
+    m.unshift({ q: q.q, ans: q.a[q.c], cat: q.cat });
+    if (m.length > 40) m = m.slice(0, 40);
+    localStorage.setItem(MISS_KEY, JSON.stringify(m));
+  } catch(e){}
+}
+
+// ---- Modes, categories, seeded daily ----
+const CATSETS = { all:null, rules:['RULES'], tactics:['TACTICS'], history:['HISTORY','CHAMPIONS'], pjcc:['PJCC'] };
+let mode = 'standard', catFilter = 'all';
+let timer = null, timeLeft = 0, timeMax = 0;
+let dailyList = [], dailyPtr = 0;
+const DAILY_N = 10;
+function rng32(seed){ let a = seed >>> 0; return function(){ a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function todaySeed(){ const d = new Date(); return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
+function seededDaily(){
+  const r = rng32(todaySeed()); const idx = []; for (let i = 0; i < Q.length; i++) idx.push(i);
+  for (let i = idx.length - 1; i > 0; i--){ const j = Math.floor(r() * (i + 1)); const tmp = idx[i]; idx[i] = idx[j]; idx[j] = tmp; }
+  return idx.slice(0, DAILY_N);
+}
+
+// ---- Diagram board renderer (piece placement from FEN) ----
+const DGLYPH = { p:'♟',n:'♞',b:'♝',r:'♜',q:'♛',k:'♚', P:'♙',N:'♘',B:'♗',R:'♖',Q:'♕',K:'♔' };
+function renderDiagram(fen){
+  const host = document.getElementById('diagram'); if (!host) return;
+  if (!fen){ host.style.display = 'none'; host.innerHTML = ''; return; }
+  host.style.display = 'grid'; host.innerHTML = '';
+  const rows = fen.split(' ')[0].split('/');
+  for (let r = 0; r < 8; r++){
+    let c = 0;
+    for (const ch of rows[r]){
+      if (/[0-9]/.test(ch)){ for (let k = 0; k < +ch; k++){ host.appendChild(dsq(r, c, '')); c++; } }
+      else { host.appendChild(dsq(r, c, DGLYPH[ch] || '')); c++; }
+    }
+  }
+  function dsq(r, c, g){
+    const d = document.createElement('div'); d.className = 'dsq ' + ((r + c) % 2 ? 'dark' : 'light');
+    if (g){ const w = '♙♘♗♖♕♔'.indexOf(g) >= 0; d.innerHTML = '<span class="' + (w ? 'wp' : 'bp') + '">' + g + '</span>'; }
+    return d;
+  }
+}
 
 // ---- Audio ----
 let actx=null, master=null;
@@ -223,10 +326,16 @@ function sfx(k){ if(!actx) return; const t=actx.currentTime;
 let queues = {}, correct = 0, score = 0, strikes = 0, streak = 0, rankIdx = 0, cur = null, answered = false, lastFile = '';
 
 function shuffle(a){ for (let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
-function buildQueues(){ queues = {1:[],2:[],3:[],4:[]}; Q.forEach((q,i)=>queues[q.t].push(i)); for (const t in queues) shuffle(queues[t]); }
+function buildQueues(){
+  queues = {1:[],2:[],3:[],4:[],5:[]};
+  const set = CATSETS[catFilter];
+  Q.forEach((q,i)=>{ if (!set || set.indexOf(q.cat) >= 0) queues[q.t].push(i); });
+  for (const t in queues) shuffle(queues[t]);
+}
 
 function start(){
   buildQueues(); correct = 0; score = 0; strikes = 0; streak = 0; rankIdx = 0; lastFile = '';
+  if (mode === 'daily'){ dailyList = seededDaily(); dailyPtr = 0; }
   updateRank(false); updateHUD();
   document.getElementById('menu').classList.add('hidden');
   document.getElementById('result').classList.add('hidden');
@@ -234,20 +343,21 @@ function start(){
 }
 function pickTier(){
   // escalate difficulty with clearance, fall back if a tier is empty
-  let t = Math.min(4, 1 + Math.floor(correct / 4));
-  const order = [t, t-1, t+1, t-2, t+2, 1, 2, 3, 4];
+  let t = Math.min(5, 1 + Math.floor(correct / 4));
+  const order = [t, t-1, t+1, t-2, t+2, 1, 2, 3, 4, 5];
   for (const tt of order){ if (queues[tt] && queues[tt].length) return tt; }
   // all empty -> rebuild (endless)
-  buildQueues(); return Math.min(4, 1 + Math.floor(correct / 4));
+  buildQueues(); return Math.min(5, 1 + Math.floor(correct / 4));
 }
 function nextQuestion(){
+  if (mode === 'daily' && dailyPtr >= dailyList.length){ finishDaily(); return; }
   answered = false;
-  const t = pickTier();
-  const qi = queues[t].pop();
-  cur = Q[qi];
+  if (mode === 'daily'){ cur = Q[dailyList[dailyPtr++]]; }
+  else { const t = pickTier(); const qi = queues[t].pop(); cur = Q[qi]; }
+  renderDiagram(cur.dfen || null);
   document.getElementById('q-cat').textContent = cur.cat;
-  const tierName = ['', 'DELTA', 'GAMMA', 'BETA', 'OMEGA'][cur.t];
-  document.getElementById('q-tier').textContent = tierName;
+  const tierName = ['', 'DELTA', 'GAMMA', 'BETA', 'OMEGA', 'OMEGA+'][cur.t];
+  document.getElementById('q-tier').textContent = (mode === 'daily') ? ('Q' + dailyPtr + '/' + dailyList.length) : tierName;
   document.getElementById('q-text').textContent = cur.q;
   const ansEl = document.getElementById('answers'); ansEl.innerHTML = '';
   const order = shuffle(cur.a.map((_, i) => i));
@@ -261,10 +371,51 @@ function nextQuestion(){
   document.getElementById('explain').classList.remove('show');
   document.getElementById('explain').innerHTML = '';
   document.getElementById('next-btn').classList.remove('show');
+  startTimer();
+}
+function startTimer(){
+  clearTimer();
+  const wrap = document.getElementById('timebar-wrap');
+  if (mode !== 'lightning'){ if (wrap) wrap.style.display = 'none'; return; }
+  if (wrap) wrap.style.display = 'block';
+  timeMax = Math.max(7, 15 - cur.t); timeLeft = timeMax;
+  const bar = document.getElementById('timebar');
+  if (bar){ bar.style.transition = 'none'; bar.style.width = '100%'; void bar.offsetWidth; bar.style.transition = 'width 0.12s linear'; }
+  timer = setInterval(function(){
+    timeLeft -= 0.1;
+    const f = Math.max(0, timeLeft / timeMax); if (bar) bar.style.width = (f * 100) + '%';
+    if (timeLeft <= 0){ clearTimer(); timeUp(); }
+  }, 100);
+}
+function clearTimer(){ if (timer){ clearInterval(timer); timer = null; } }
+function timeUp(){
+  if (answered) return;
+  answered = true;
+  const buttons = Array.from(document.getElementById('answers').children);
+  buttons.forEach(b => b.classList.add('locked'));
+  const correctPos = cur._display.indexOf(cur.c);
+  buttons[correctPos].classList.add('correct');
+  streak = 0; strikes++; recordMissed(cur); sfx('wrong');
+  const ex = document.getElementById('explain'); ex.innerHTML = '<b style="color:#ff9fb0">Time!</b> ' + cur.why; ex.classList.add('show');
+  updateHUD();
+  if (mode !== 'daily' && strikes >= 3){ setTimeout(gameOver, 250); }
+  else document.getElementById('next-btn').classList.add('show');
+}
+function finishDaily(){
+  clearTimer();
+  const best = loadBest(); const isBest = correct > best; if (isBest) saveBest(correct);
+  if (window.PJCC) PJCC.saveScore('clearance-delta', score, { seed: new Date().toISOString().slice(0,10), credits: 2, data: { mode: 'daily', correct: correct } });
+  document.querySelector('#result .eyebrow').textContent = '◈ Exam Complete';
+  document.getElementById('res-rank').textContent = 'DAILY EXAM — ' + correct + '/' + dailyList.length;
+  document.getElementById('res-msg').innerHTML = 'You scored <b style="color:#F5C518">' + score + '</b> on today’s shared exam (<b style="color:#F5C518">' +
+    correct + '</b>/' + dailyList.length + ' correct).<br>Same questions for every operative today — compare on the leaderboard.';
+  const dossier = document.getElementById('res-dossier');
+  if (lastFile){ dossier.style.display = ''; document.getElementById('res-file').textContent = lastFile; } else dossier.style.display = 'none';
+  document.getElementById('result').classList.remove('hidden');
 }
 function answer(origIdx, btn){
   if (answered) return;
-  answered = true;
+  answered = true; clearTimer();
   const buttons = Array.from(document.getElementById('answers').children);
   buttons.forEach(b => b.classList.add('locked'));
   const correctPos = cur._display.indexOf(cur.c);
@@ -272,19 +423,20 @@ function answer(origIdx, btn){
     btn.classList.add('correct'); sfx('right');
     correct++; streak++;
     score += 100 + Math.min(streak, 8) * 20;
+    if (mode === 'lightning' && timeMax > 0) score += Math.round(Math.max(0, timeLeft / timeMax) * 100);  // speed bonus
     buttons.forEach((b, i) => { if (i !== correctPos) b.classList.add('dim'); });
     updateRank(true);
   } else {
     btn.classList.add('wrong'); sfx('wrong');
-    streak = 0; strikes++;
+    streak = 0; strikes++; recordMissed(cur);
     buttons[correctPos].classList.add('correct');
     buttons.forEach((b, i) => { if (i !== correctPos && b !== btn) b.classList.add('dim'); });
   }
   const ex = document.getElementById('explain');
-  ex.innerHTML = (origIdx === cur.c ? '<b>Correct.</b> ' : '<b style="color:#ff8fd0">Not quite.</b> ') + cur.why;
+  ex.innerHTML = (origIdx === cur.c ? '<b>Correct.</b> ' : '<b style="color:#ff9fb0">Not quite.</b> ') + cur.why;
   ex.classList.add('show');
   updateHUD();
-  if (strikes >= 3){ setTimeout(gameOver, 250); }
+  if (mode !== 'daily' && strikes >= 3){ setTimeout(gameOver, 250); }
   else document.getElementById('next-btn').classList.add('show');
 }
 function updateHUD(){
@@ -319,9 +471,10 @@ function promote(r){
   const card = document.getElementById('promo-card'); card.classList.remove('show'); void card.offsetWidth; card.classList.add('show');
 }
 function gameOver(){
-  sfx('over');
+  sfx('over'); clearTimer();
   const best = loadBest(); const isBest = correct > best; if (isBest) saveBest(correct);
-  if (window.PJCC) PJCC.saveScore('clearance-delta', score, { credits: 1, data: { correct: correct } });
+  document.querySelector('#result .eyebrow').textContent = '◈ Access Revoked';
+  if (window.PJCC) PJCC.saveScore('clearance-delta', score, { credits: 1, data: { mode: mode, correct: correct } });
   const r = RANKS[rankIdx];
   document.getElementById('res-rank').textContent = 'CLEARANCE: ' + r.name;
   document.getElementById('res-msg').innerHTML = 'You answered <b style="color:#F5C518">' + correct + '</b> correctly for <b style="color:#F5C518">' + score + '</b> points.' +
@@ -345,6 +498,14 @@ function begin(){ initAudio(); if (actx && actx.state === 'suspended') actx.resu
 document.getElementById('begin-btn').addEventListener('click', begin);
 document.getElementById('retry-btn').addEventListener('click', begin);
 document.getElementById('menu-btn').addEventListener('click', () => { document.getElementById('result').classList.add('hidden'); document.getElementById('menu').classList.remove('hidden'); });
+
+document.querySelectorAll('#mode-sel .selb').forEach(b => b.addEventListener('click', () => {
+  mode = b.dataset.m; document.querySelectorAll('#mode-sel .selb').forEach(x => x.classList.toggle('sel', x === b));
+  document.getElementById('cat-sel').style.opacity = (mode === 'daily') ? '0.4' : '1';   // daily ignores category
+}));
+document.querySelectorAll('#cat-sel .selb').forEach(b => b.addEventListener('click', () => {
+  catFilter = b.dataset.c; document.querySelectorAll('#cat-sel .selb').forEach(x => x.classList.toggle('sel', x === b));
+}));
 
 document.getElementById('best-line').textContent = 'highest clearance: ' + (loadBest() ? loadBest() + ' correct' : '—');
 </script>

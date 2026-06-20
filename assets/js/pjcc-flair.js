@@ -45,21 +45,21 @@
   function setupTilt() {
     if (reduce) return;
     if (window.matchMedia && !window.matchMedia('(hover: hover)').matches) return; // skip touch
+    // User kill-switch (set from the Games page) turns the cursor sheen off site-wide.
+    var noSheen = false; try { noSheen = localStorage.getItem('pjcc.noSheen') === '1'; } catch (e) {}
     var sel = '.game-card, .ep-card, .character-card, .location-card';
     Array.prototype.forEach.call(document.querySelectorAll(sel), function (card) {
       if (getComputedStyle(card).position === 'static') card.style.position = 'relative';
       card.classList.add('flair-tilt');
-      var sheen = document.createElement('span');
-      sheen.className = 'flair-tilt-sheen';
-      card.appendChild(sheen);
+      var sheen = null;
+      if (!noSheen) { sheen = document.createElement('span'); sheen.className = 'flair-tilt-sheen'; card.appendChild(sheen); }
       card.addEventListener('mousemove', function (e) {
         var r = card.getBoundingClientRect();
         var px = (e.clientX - r.left) / r.width;
         var py = (e.clientY - r.top) / r.height;
         card.style.transform = 'perspective(700px) rotateY(' + ((px - 0.5) * 7).toFixed(2) +
           'deg) rotateX(' + ((0.5 - py) * 7).toFixed(2) + 'deg) translateZ(0)';
-        sheen.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
-        sheen.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+        if (sheen) { sheen.style.setProperty('--mx', (px * 100).toFixed(1) + '%'); sheen.style.setProperty('--my', (py * 100).toFixed(1) + '%'); }
       });
       card.addEventListener('mouseleave', function () { card.style.transform = ''; });
     });

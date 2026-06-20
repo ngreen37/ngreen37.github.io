@@ -42,6 +42,7 @@
         <div class="nav-group nav-group-pjcc">
           <span class="nav-group-label">PJCC</span>
           <a class="page-link" href="{{ '/pjcc/' | relative_url }}">PJCC</a>
+          <a class="page-link" href="{{ '/games/' | relative_url }}">Games</a>
           <a class="page-link" href="{{ '/characters/' | relative_url }}">Characters</a>
           <a class="page-link" href="{{ '/locations/' | relative_url }}">Locations</a>
           <a class="page-link" href="{{ '/evolutions/' | relative_url }}">Evolution Log</a>
@@ -53,7 +54,6 @@
         <div class="nav-group nav-group-studio">
           <span class="nav-group-label">McPuppy Studios</span>
           <a class="page-link page-link-bw" href="{{ '/projects/' | relative_url }}">Projects</a>
-          <a class="page-link page-link-bw" href="{{ '/games/' | relative_url }}">Games</a>
           <a class="page-link page-link-bw" href="{{ '/leaderboards/' | relative_url }}">Leaderboard</a>
           <a class="page-link page-link-bw" href="{{ '/chess-lessons/' | relative_url }}">Chess Lessons</a>
           <a class="page-link page-link-bw" href="{{ '/podcast/' | relative_url }}">Podcast</a>
@@ -453,7 +453,8 @@
   <script src="{{ '/assets/js/pjcc-lang.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pjcc-flair.js' | relative_url }}" defer></script>
 
-  {% include jukebox.html %}
+  {% comment %} Build Playlist jukebox is a McPuppy Studios feature only — opt in per page with `jukebox: true`. PJCC-side pages (characters, locations, games, dossier, world…) stay music-free. {% endcomment %}
+  {% if page.jukebox %}{% include jukebox.html %}{% endif %}
 
   <!-- Cloudflare Web Analytics -->
   <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "46881c52a7e741a2954c7f09a9759305"}'></script>

@@ -142,5 +142,10 @@
   })();
   </script>
 
+  {% comment %} McPuppy Studios flagship gets the Build Playlist jukebox. Guard the
+       fixed studio layout so an expanded player can't reserve/shift bottom space. {% endcomment %}
+  <style>body.studio-body.has-jukebox { padding-bottom: 0; }</style>
+  {% include jukebox.html %}
+
 </body>
 </html>

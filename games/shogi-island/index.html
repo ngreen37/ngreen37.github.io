@@ -1,11 +1,11 @@
 ---
 layout: game
-title: "Shogi Island"
-description: "Learn how the shogi pieces move — Princess's first lessons in the Japanese-speaking world across the water."
+title: "Shogi Island v3.0"
+description: "Learn shogi by solving — read pieces, capture, check, and mate. The guide is written in Japanese and decodes, line by line, as you play."
 permalink: /games/shogi-island/
 ---
 
-<div class="game-frame-wrap">
+<div class="game-frame-wrap shogi-frame">
   <iframe
     src="{{ '/assets/games/pjcc_shogi.html' | relative_url }}"
     title="PJCC Shogi Island"
@@ -14,32 +14,157 @@ permalink: /games/shogi-island/
   ></iframe>
 </div>
 
-<div class="game-info">
-  <h2>How to Play</h2>
-  <ul>
-    <li>A shogi piece sits in the middle of the board — <strong>forward is up</strong> (▲)</li>
-    <li>Tap <strong>every square</strong> that piece can legally move to, then press <strong>Check</strong></li>
-    <li><strong>Green</strong> = right · <strong>faded green</strong> = a move you missed · <strong>red</strong> = not a legal move</li>
-    <li>Ten pieces per round — read as many as you can</li>
-  </ul>
+<style>
+.shogi-frame { max-width: 600px; }
+.shogi-frame iframe { height: 980px; }
+@media (max-width: 640px) { .shogi-frame iframe { height: 900px; } }
 
-  <h2>The pieces (駒)</h2>
-  <ul>
-    <li><strong>歩 Pawn</strong> — one step forward &nbsp;·&nbsp; <strong>香 Lance</strong> — straight forward, any distance</li>
-    <li><strong>桂 Knight</strong> — jumps an L, forward only &nbsp;·&nbsp; <strong>銀 Silver</strong> / <strong>金 Gold</strong> — the generals</li>
-    <li><strong>角 Bishop</strong> — diagonals &nbsp;·&nbsp; <strong>飛 Rook</strong> — straights &nbsp;·&nbsp; <strong>王 King</strong> — one any way</li>
-  </ul>
+/* ===== Decoding guide (Japanese first; reveals as you solve) ===== */
+.shogi-howto { max-width: 600px; margin: 0 auto; }
+.sh-head h2 { color: #F5C518; font-size: 1.25rem; letter-spacing: 0.04em; margin-bottom: 0.3rem; }
+.sh-head h2 .sh-en { color: #9a7fd4; font-size: 0.9rem; font-weight: 600; }
+.sh-intro { color: #c9a7ff; font-size: 0.84rem; line-height: 1.6; margin-bottom: 14px; }
+.sh-intro .sh-en { display: block; color: #7d6aa8; font-size: 0.78rem; margin-top: 2px; }
 
-  <p class="game-note">When Princess falls through the pu-rin-se-suuu portal, she washes up where everyone speaks Japanese and the board has nine files. Learn the pieces here before the ferry runs again. Scores log to your <a href="/dossier/">operative dossier</a> and the <a href="/leaderboards/">leaderboards</a>.</p>
+.sh-meter { background: rgba(26,15,61,0.6); border: 1px solid #6b5fa0; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; }
+.sh-meter-label { color: #f0e6ff; font-size: 0.8rem; letter-spacing: 0.06em; margin-bottom: 7px; }
+.sh-meter-label b { color: #F5C518; font-size: 1.05rem; }
+.sh-bar { height: 12px; background: #1a0f3d; border-radius: 999px; overflow: hidden; border: 1px solid #3a2a72; }
+.sh-fill { height: 100%; width: 0; background: linear-gradient(90deg, #7a2d22, #d9a441 70%, #ffe680); border-radius: 999px; transition: width 0.7s cubic-bezier(.2,.8,.2,1); box-shadow: 0 0 12px rgba(245,197,24,0.5); }
+.sh-rank { text-align: right; color: #d9a441; font-size: 0.82rem; font-weight: 700; margin-top: 6px; min-height: 1em; }
+.sh-meter.done { border-color: #F5C518; box-shadow: 0 0 26px rgba(245,197,24,0.35); }
+
+.sh-codex { display: flex; flex-direction: column; gap: 4px; }
+.sh-sec { border-top: 1px solid rgba(150,130,200,0.22); padding-top: 8px; margin-top: 6px; }
+.sh-sec:first-child { border-top: none; margin-top: 0; }
+.sh-sec h3 { font-size: 1rem; color: #e3b6ff; margin-bottom: 4px; }
+.sh-sec h3 .jp { color: #ffd0c4; }
+.sh-sec h3 .en { color: #9a7fd4; font-size: 0.82rem; font-weight: 600; }
+.sh-sec h3 .lock { color: #6b5fa0; font-size: 0.8rem; }
+
+.sh-seg { padding: 6px 10px; border-radius: 8px; margin: 3px 0; background: rgba(255,255,255,0.02); }
+.sh-seg .jpx { color: #efeae0; font-size: 0.95rem; font-family: 'Hiragino Mincho ProN','Yu Mincho',serif; }
+.sh-seg .enx { font-size: 0.82rem; margin-top: 3px; }
+.sh-seg.dec { background: rgba(31,107,70,0.12); box-shadow: inset 2px 0 0 #1f8a52; }
+.sh-seg.dec .enx { color: #8ee0b4; }
+.sh-seg.lk .jpx { color: #b8aed0; }
+.sh-seg.lk .enx.red { color: #5a4f7a; letter-spacing: 2px; font-family: monospace; user-select: none; }
+.sh-seg .enx .lkpill { color: #7d6aa8; font-style: italic; letter-spacing: 0; font-family: inherit; }
+@keyframes shPop { 0% { transform: scale(0.98); background: rgba(245,197,24,0.25); } 100% { transform: scale(1); } }
+.sh-seg.just { animation: shPop 0.7s ease; }
+</style>
+
+<div class="game-info shogi-howto">
+  <div class="sh-head">
+    <h2>遊び方 <span class="sh-en">— How to Play</span></h2>
+    <p class="sh-intro">この案内は全て日本語で書かれている。島で問題を一つ解くごとに、一行ずつ英語へ解読されていく。
+      <span class="sh-en">This guide is written entirely in Japanese. Solve one problem in the game and one more line decodes into English — it stays decoded forever.</span></p>
+  </div>
+
+  <div class="sh-meter" id="sh-meter">
+    <div class="sh-meter-label">解読 · DECODED <b id="sh-n">0</b> / <b id="sh-tot">20</b></div>
+    <div class="sh-bar"><div class="sh-fill" id="sh-fill"></div></div>
+    <div class="sh-rank" id="sh-rank"></div>
+  </div>
+
+  <div id="sh-codex" class="sh-codex"></div>
+
+  <p class="game-note" id="sh-note">Across the water, everyone speaks Japanese and the board has nine files. This is Princess's school — the codex, the drops, the mate, taught by playing. Your decode progress and rank log to your <a href="/dossier/">operative dossier</a> and the <a href="/leaderboards/">leaderboards</a>.</p>
 </div>
 
-<details class="coach">
-  <summary>🧭 Coach me through it (optional)</summary>
-  <ol>
-    <li><strong>Find the piece</strong> in the centre and match its kanji to the list above.</li>
-    <li><strong>Forward is up (▲).</strong> Most shogi pieces only move forward — that arrow is Princess's direction.</li>
-    <li><strong>Tap every reachable square.</strong> Sliders (Lance, Bishop, Rook, and the promoted Horse/Dragon) travel any distance to the edge; steppers (Pawn, Silver, Gold, King, Tokin) move one square.</li>
-    <li>Stuck on the generals? <strong>Gold</strong> goes one square any way except straight-back-diagonal; <strong>Silver</strong> goes one forward or one on any diagonal.</li>
-    <li>Press <strong>Check</strong> — green is right, faded green is a square you missed, red is illegal. Learn it and run the next piece.</li>
-  </ol>
-</details>
+<script>
+(function () {
+  // Mirrors the in-game codex (assets/games/pjcc_shogi.html) exactly, so the page
+  // decodes in lock-step with play. Progress lives in localStorage 'pjcc.shogi.v3'.
+  var SECTIONS = [
+    { jp: '遊び方', en: 'How to Play', items: [
+      { jp: '目的：相手の玉を詰ますこと。', en: 'Goal: checkmate the enemy King (玉).' },
+      { jp: '駒を選び、行ける所へ動かす。', en: 'Pick a piece, then move it where it can legally go.' },
+      { jp: '前は上（▲）。多くの駒は前にしか進めない。', en: 'Forward is up (▲). Most pieces can only move forward.' },
+      { jp: '取った駒は手駒になり、盤に打てる。', en: 'A captured piece joins your hand — you can drop it back on the board.' },
+      { jp: '敵陣（上の三段）で駒は成れる。', en: 'In the enemy camp (the far three ranks) pieces may promote and grow stronger.' },
+      { jp: 'コツ：まず金と銀の動きを覚えよう。', en: 'Tip: learn the Gold and Silver generals first — most fights run through them.' }
+    ]},
+    { jp: '将棋の基本', en: 'Shogi, from the ground up', items: [
+      { jp: '歩 ふ — 前に一マス。成ると「と」、金の動き。', en: 'Pawn: one step forward. Promotes to Tokin (と), which moves like a Gold.' },
+      { jp: '香 きょう — 前へ何マスでも。成ると金の動き。', en: 'Lance: any distance straight forward. Promotes to a Gold-mover.' },
+      { jp: '桂 けいま — 前へ二、横へ一を跳ぶ。前だけ。', en: 'Knight: jumps two forward and one to the side — and only forward. It can leap over pieces.' },
+      { jp: '銀 ぎん — 前と斜め。引く時は斜めだけ。', en: 'Silver: one square forward or one square on any diagonal. Promotes to Gold.' },
+      { jp: '金 きん — 縦横と前の斜め。成れない。', en: 'Gold: one square orthogonally or one forward-diagonal. The Gold never promotes.' },
+      { jp: '角 かく — 斜めへ何マスでも。成ると「馬」。', en: 'Bishop: any distance diagonally. Promotes to a Horse (馬): bishop plus one orthogonal step.' },
+      { jp: '飛 ひしゃ — 縦横へ何マスでも。成ると「龍」。', en: 'Rook: any distance straight. Promotes to a Dragon (龍): rook plus one diagonal step.' },
+      { jp: '玉 ぎょく — どこでも一マス。詰めば負け。', en: 'King: one square any direction. If it cannot escape check, that is 詰み (mate) and the game is lost.' }
+    ]},
+    { jp: 'プロの心得', en: 'Tips from strong players', items: [
+      { jp: '玉は金銀で囲う（美濃・矢倉）。', en: 'Castle your King — wrap it in golds and silvers (the Mino and Yagura castles).' },
+      { jp: '手駒は強い。打つ場所を読め。', en: 'Pieces in hand are powerful — much of shogi is reading where to drop them.' },
+      { jp: '「桂の高跳び歩の餌食」。', en: 'Proverb: "A knight that leaps too soon becomes a pawn’s prey."' },
+      { jp: '「終盤は駒の損得より速度」。', en: 'Proverb: "In the endgame, speed beats material."' },
+      { jp: '「一歩千金」。', en: 'Proverb: "A single pawn can be worth a fortune."' },
+      { jp: '王手は追う手にあらず — 無駄な王手を避けよ。', en: '"A check is not always a chase" — avoid pointless checks that only help the enemy King.' }
+    ]}
+  ];
+  var TOTAL = 0; SECTIONS.forEach(function (s) { TOTAL += s.items.length; });
+  var prevDec = -1;
+
+  function readDecoded() {
+    try { var s = JSON.parse(localStorage.getItem('pjcc.shogi.v3')); if (s && typeof s.decoded === 'number') return Math.max(0, Math.min(TOTAL, s.decoded)); } catch (e) {}
+    return 0;
+  }
+  function rankWord(n) {
+    if (n >= TOTAL) return '免許皆伝 — fully decoded';
+    if (n >= 15) return '解読・三段';
+    if (n >= 9)  return '解読・初段';
+    if (n >= 4)  return '解読が進む';
+    if (n >= 1)  return '解読を始めた';
+    return 'まだ日本語のまま — not yet decoded';
+  }
+  function redacted(str) {
+    var n = Math.max(10, Math.min(46, Math.round(str.length * 0.8))), o = '';
+    for (var i = 0; i < n; i++) o += (i % 8 === 7 ? ' ' : '▒');
+    return o;
+  }
+  function render(decIn) {
+    var dec = (decIn == null) ? readDecoded() : decIn;
+    document.getElementById('sh-n').textContent = dec;
+    document.getElementById('sh-tot').textContent = TOTAL;
+    document.getElementById('sh-fill').style.width = Math.round(dec / TOTAL * 100) + '%';
+    document.getElementById('sh-rank').textContent = rankWord(dec);
+    document.getElementById('sh-meter').classList.toggle('done', dec >= TOTAL);
+    var host = document.getElementById('sh-codex'); host.innerHTML = '';
+    var idx = 0;
+    SECTIONS.forEach(function (sec) {
+      var secStart = idx, begun = dec > secStart;
+      var el = document.createElement('section'); el.className = 'sh-sec';
+      var h = document.createElement('h3');
+      h.innerHTML = '<span class="jp">' + sec.jp + '</span> ' +
+        (begun ? '<span class="en">' + sec.en + '</span>' : '<span class="lock">🔒 ▒▒▒▒</span>');
+      el.appendChild(h);
+      sec.items.forEach(function (it) {
+        var done = idx < dec;
+        var seg = document.createElement('div');
+        seg.className = 'sh-seg ' + (done ? 'dec' : 'lk') + (done && idx >= prevDec && prevDec >= 0 ? ' just' : '');
+        seg.innerHTML = '<div class="jpx">' + it.jp + '</div>' +
+          (done ? '<div class="enx">' + it.en + '</div>'
+                : '<div class="enx red"><span class="lkpill">🔒 解読待ち · </span>' + redacted(it.en) + '</div>');
+        el.appendChild(seg); idx++;
+      });
+      host.appendChild(el);
+    });
+    prevDec = dec;
+  }
+
+  render();
+  // Cross-device: if signed in, reflect the higher decoded count from the profile (read-only).
+  if (window.PJCC && PJCC.ready) {
+    PJCC.ready.then(function () { return PJCC.myStats(); }).then(function (stats) {
+      try {
+        var row = (stats || []).filter(function (s) { return s.game === 'shogi-island'; })[0];
+        if (row && row.data && typeof row.data.decoded === 'number' && row.data.decoded > readDecoded()) render(Math.min(TOTAL, row.data.decoded));
+      } catch (e) {}
+    }).catch(function () {});
+  }
+  // Re-read when returning to the tab after playing.
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) render(); });
+})();
+</script>

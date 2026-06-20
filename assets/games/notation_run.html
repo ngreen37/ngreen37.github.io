@@ -172,6 +172,15 @@
     margin-top: 4px;
     display: inline-block;
   }
+  .ver { font-size: 0.5em; color: #ff8fd0; vertical-align: super; letter-spacing: 1px; }
+  .bpm-row { display: flex; align-items: center; gap: 10px; margin: 8px 0 0; justify-content: center; }
+  #bpm-slider { width: 190px; accent-color: #F5C518; }
+  #bpm-label { font-size: 13px; color: #c9a7ff; min-width: 62px; text-align: left; }
+  .pick.on { background: #F5C518; color: #1a0f3d; border-color: #F5C518; font-weight: bold; }
+  #calib-dot { width: 96px; height: 96px; border-radius: 50%; background: #2D1B69; border: 3px solid #F5C518;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 34px; color: #c9a7ff;
+    transition: transform .07s, background .07s; user-select: none; }
+  #calib-dot.beat { background: #F5C518; color: #1a0f3d; transform: scale(1.14); }
 </style>
 </head>
 <body>
@@ -181,8 +190,14 @@
 
   <!-- TITLE SCREEN -->
   <div class="overlay" id="title-screen">
-    <div class="ov-eyebrow">Checker Town · Coordinate Drill</div>
-    <div class="ov-title">NOTATION BLITZ <span style="font-size:0.5em;color:#ff8fd0;vertical-align:super;letter-spacing:1px;">v3.2</span></div>
+    <div class="ov-eyebrow" id="ov-eyebrow">Checker Town · Coordinate Drill</div>
+    <div class="ov-title">NOTATION BLITZ <span class="ver" id="ov-ver">v3.3</span></div>
+
+    <div class="ov-group-label">Mode</div>
+    <div class="btn-row" id="mode-row">
+      <button class="pick sel" data-mode="coords">Drill<small>fixed run</small></button>
+      <button class="pick" data-mode="endless">Endless<small>ramps up</small></button>
+    </div>
 
     <div class="ov-group-label">Tempo</div>
     <div class="btn-row" id="diff-row">
@@ -190,12 +205,36 @@
       <button class="pick sel" data-diff="medium">Medium<small>golden</small></button>
       <button class="pick" data-diff="hard">Fast<small>crimson</small></button>
     </div>
+    <div class="bpm-row">
+      <input type="range" id="bpm-slider" min="36" max="120" step="1" value="60" aria-label="Tempo BPM">
+      <span id="bpm-label">60 BPM</span>
+    </div>
+
+    <div class="btn-row" style="margin-top:10px;">
+      <button class="pick" id="black-toggle" data-on="0">⬛⬜ Black side · 2-Tone</button>
+      <button class="pick" id="calib-btn">🎧 Calibrate</button>
+    </div>
 
     <button class="start-btn" id="start-btn">START</button>
     <div class="ov-foot">
       Click the square on the board when its name reaches the gate<br>
       <span id="title-best" style="color:#F5C518;">—</span><br>
+      <span id="title-trend" style="font-size:13px;color:#9a7fd4;"></span>
       <span id="mute-toggle" style="cursor:pointer;text-decoration:underline;">♪ sound: on</span>
+    </div>
+  </div>
+
+  <!-- CALIBRATION SCREEN -->
+  <div class="overlay hidden" id="calib-screen">
+    <div class="ov-eyebrow">Audio + input latency</div>
+    <div class="ov-title" style="font-size:26px;">CALIBRATE</div>
+    <div class="ov-sub" id="calib-msg">Tap the dot exactly <b>on</b> each beep — eight times. We measure your delay and judge your hits against it.</div>
+    <div id="calib-dot">●</div>
+    <div class="ov-foot"><span id="calib-count">0 / 8</span><br><span id="calib-result" style="color:#6bffb8;"></span></div>
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="pick" id="calib-start">▶ Start beeps</button>
+      <button class="pick" id="calib-reset">Reset to 0</button>
+      <button class="start-btn" id="calib-done" style="margin-top:0;">DONE</button>
     </div>
   </div>
 
@@ -268,6 +307,8 @@ const THEMES = {
   easy:   { name: 'moonlit', light: '#27376f', dark: '#1b274f', bg: '#0e1530', accent: '#7fd4ff', rgb: '127,212,255' },
   medium: { name: 'golden',  light: '#3d2a7a', dark: '#2D1B69', bg: '#1a0f3d', accent: '#F5C518', rgb: '245,197,24' },
   hard:   { name: 'crimson', light: '#6d2542', dark: '#481630', bg: '#280c19', accent: '#ff5c8a', rgb: '255,92,138' },
+  // HARD "Black side" skin: a stark 2-Tone checker, a quiet nod to The Specials.
+  ska:    { name: '2-tone', light: '#e9e9e9', dark: '#141414', bg: '#050505', accent: '#ffffff', rgb: '255,255,255' },
 };
 let TH = THEMES.medium;     // active theme (set per game in newGame)
 
@@ -347,65 +388,67 @@ function sfx(kind) {
 // ---- Game state ----
 let G = null;
 
+function randCoordCall(prev) {
+  let x, y, idx;
+  do { x = (Math.random()*8)|0; y = (Math.random()*8)|0; idx = y*8+x; } while (idx === prev);
+  return { san: xyToAlg(x, y), x, y };
+}
+function refillEndless() {
+  let prev = G.queue.length ? (G.queue[G.queue.length-1].y*8 + G.queue[G.queue.length-1].x) : -1;
+  for (let i = 0; i < 24; i++) { const c = randCoordCall(prev); prev = c.y*8 + c.x; G.queue.push(c); }
+}
+// Endless ramp: step the tempo up and cleanly re-anchor the clock to "now".
+function rampUp() {
+  const now = nowSec();
+  const nb = Math.min(150, G.bpm + 7);
+  G.bpm = nb; G.spb = 60 / nb; G.topBpm = Math.max(G.topBpm, nb);
+  const ci = G.spb * G.bpc; G.goodW = ci * GOOD_FRAC; G.perfectW = ci * PERFECT_FRAC;
+  G.startTime = now; G.beepIdx = 0;
+  G.callBeat = Math.ceil((APPROACH / G.spb) / G.bpc) * G.bpc;   // next call enters with full approach lead
+  G.milestone = { text: '♪ ' + nb + ' BPM', life: 50 };
+}
+
 function newGame(mode, diff) {
-  const d = DIFFS[diff];
-  // Apply this tempo's theme (board, track accent, backdrop all recolour).
-  TH = THEMES[diff] || THEMES.medium;
+  const endless = (mode === 'endless');
+  const bpm = selBpm, bpc = 2;
+  // Theme: tempo palette, or the stark 2-Tone skin when Black side is armed.
+  TH = THEMES[selBlack ? 'ska' : diff] || THEMES.medium;
   COLORS.gold = TH.accent; COLORS.light = TH.light; COLORS.dark = TH.dark;
   try { canvas.style.background = TH.bg; document.body.style.background = TH.bg; } catch (e) {}
-  const spb = 60 / d.bpm;
+  const spb = 60 / bpm;
   const queue = [];
-
-  if (mode === 'coords') {
-    let prev = -1;
-    for (let i = 0; i < d.calls; i++) {
-      let x, y, idx;
-      do { x = (Math.random()*8)|0; y = (Math.random()*8)|0; idx = y*8+x; } while (idx === prev);
-      prev = idx;
-      const alg = xyToAlg(x, y);
-      queue.push({ san: alg, x, y });
-    }
+  if (mode === 'coords' || endless) {
+    let prev = -1, n = endless ? 40 : bpmCalls(bpm);
+    for (let i = 0; i < n; i++) { const c = randCoordCall(prev); prev = c.y*8 + c.x; queue.push(c); }
   } else {
-    OPENINGS[mode].line.forEach(([san, sq]) => {
-      const p = algToXY(sq);
-      queue.push({ san, x: p.x, y: p.y });
-    });
+    OPENINGS[mode].line.forEach(([san, sq]) => { const p = algToXY(sq); queue.push({ san, x: p.x, y: p.y }); });
   }
-
-  const callInterval = spb * d.bpc;   // seconds between successive calls
+  const callInterval = spb * bpc;
 
   G = {
-    mode, diff, spb, bpc: d.bpc,
-    goodW: callInterval * GOOD_FRAC,
-    perfectW: callInterval * PERFECT_FRAC,
-    countIn: 4,
-    queue, qPtr: 0,
-    calls: [],          // active/visible calls
-    callBeat: 4,        // first call lands on beat 4 (after count-in)
-    beepIdx: 0,
-    startTime: 0,
-    total: queue.length,
-    score: 0, combo: 0, maxCombo: 0,
-    scoreShown: 0, scorePulse: 0, scoreFlash: 0,   // animated score readout
-    shake: 0,                                       // screen-shake impulse
-    bolts: [],                                      // lightning at high streaks
-    milestone: null,                                // {text, life} streak callout
-    res: { perfect: 0, great: 0, good: 0, miss: 0, early: 0, late: 0, offSum: 0, offCount: 0 },
-    particles: [], floaters: [],
-    flashSq: [],        // {x,y,color,t} brief square highlights
-    // dir: facing (-1 looks left, the render's natural way; +1 mirrors her right).
-    // dizzy: frames of whiplash spin. prevDx: last move's direction, for whiplash.
-    princess: { x: 0, y: 7, px: 0, py: 0, tx: 0, ty: 0, dir: -1, dizzy: 0, prevDx: 0 },
-    lastHitTime: 0,
-    running: false, finished: false,
+    mode, diff, endless, spb, bpc, bpm, flip: selBlack, latency: audioLatency,
+    goodW: callInterval * GOOD_FRAC, perfectW: callInterval * PERFECT_FRAC,
+    countIn: 4, queue, qPtr: 0, calls: [], callBeat: 4, beepIdx: 0, startTime: 0,
+    total: endless ? Infinity : queue.length,
+    lives: endless ? 3 : Infinity, rampAt: 16, topBpm: bpm,
+    score: 0, combo: 0, maxCombo: 0, scoreShown: 0, scorePulse: 0, scoreFlash: 0, shake: 0,
+    bolts: [], milestone: null,
+    res: { perfect: 0, great: 0, good: 0, save: 0, miss: 0, early: 0, late: 0, offSum: 0, offCount: 0 },
+    particles: [], floaters: [], flashSq: [],
+    princess: { x: 0, y: 7, px: 0, py: 0, tx: 0, ty: 0, dir: -1, dizzy: 0, prevDx: 0, emote: null, emoteT: 0, lastMoveT: 0 },
+    lastHitTime: 0, running: false, finished: false,
   };
   const pp = boardCenter(0, 7);
   G.princess.px = pp.x; G.princess.py = pp.y;
 }
 
+// Logical (x,y) → screen pixel. When playing the Black side the board is flipped.
 function boardCenter(x, y) {
-  return { x: BX + x * TILE + TILE / 2, y: BY + y * TILE + TILE / 2 };
+  const sc = (G && G.flip) ? 7 - x : x;
+  const sr = (G && G.flip) ? 7 - y : y;
+  return { x: BX + sc * TILE + TILE / 2, y: BY + sr * TILE + TILE / 2 };
 }
+function setEmote(e, frames) { if (G) { G.princess.emote = e; G.princess.emoteT = frames || 70; } }
 
 function startRun() {
   G.startTime = nowSec() + 0.35;     // small lead-in
@@ -439,30 +482,31 @@ function update() {
     G.qPtr++;
     G.callBeat += G.bpc;
   }
+  if (!G.begun && G.calls.length) G.begun = true;
+  if (G.endless) {
+    if (G.queue.length - G.qPtr < 12) refillEndless();
+    if (G.qPtr >= G.rampAt) { rampUp(); G.rampAt += 16; }
+  }
 
-  // Auto-miss calls whose window has closed
+  // Window closed → the call slips onto the TAIL (a grace zone). Not a miss yet —
+  // you can still "catch it on the tail" until it reaches the cliff.
   G.calls.forEach(c => {
-    if (c.status === 'pending' && now > c.hitTime + G.goodW) {
-      c.status = 'missed';
-      registerResult('miss', c);
-      flashSquare(c.x, c.y, COLORS.bad);
-      floater('MISS', c, COLORS.bad);
-      sfx('miss');
-    }
+    if (c.status === 'pending' && now > c.hitTime + G.goodW) c.status = 'tail';
   });
 
-  // Missed pills slide down the tail, then tumble off the cliff (gravity + spin).
+  // Tail/missed pills slide; a tail pill that reaches the cliff uncaught becomes a
+  // real miss (breaks combo, costs a life in Endless), then tumbles into the void.
   G.calls.forEach(c => {
-    if (c.status !== 'missed') return;
-    if (!c.falling) {
+    if (c.status === 'tail' && !c.falling) {
       const x = HITX + (c.hitTime - now) * PXPS;
       if (x <= CLIFF_X) {
-        c.falling = true;
-        c.fx = CLIFF_X; c.fy = TRACK_Y;
-        c.fvx = -1.3 - Math.random(); c.fvy = -2.4 - Math.random();   // a little hop, then drop
-        c.spin = 0; c.spinV = (Math.random() - 0.5) * 0.5;
+        c.status = 'missed'; registerResult('miss', c);
+        flashSquare(c.x, c.y, COLORS.bad); floater('MISS', c, COLORS.bad); sfx('miss'); setEmote('😣', 60);
+        c.falling = true; c.fx = CLIFF_X; c.fy = TRACK_Y;
+        c.fvx = -1.3 - Math.random(); c.fvy = -2.4 - Math.random(); c.spin = 0; c.spinV = (Math.random() - 0.5) * 0.5;
+        if (G.endless) { G.lives--; if (G.lives <= 0 && !G.finished) finish(); }
       }
-    } else {
+    } else if (c.status === 'missed' && c.falling) {
       c.fvy += 0.5; c.fx += c.fvx; c.fy += c.fvy; c.spin += c.spinV;
     }
   });
@@ -481,10 +525,11 @@ function update() {
   pr.px += (tgt.x - pr.px) * 0.35;
   pr.py += (tgt.y - pr.py) * 0.35;
   if (pr.dizzy > 0) pr.dizzy--;
-  // Look ahead: she turns to face the square of the next call still in flight.
+  if (pr.emoteT > 0) pr.emoteT--; else pr.emote = null;
+  // Look ahead: she turns to face (in screen space) the next call still in flight.
   let peek = null;
   G.calls.forEach(c => { if (c.status === 'pending' && (!peek || c.hitTime < peek.hitTime)) peek = c; });
-  if (peek && !pr.dizzy) { if (peek.x > pr.tx) pr.dir = 1; else if (peek.x < pr.tx) pr.dir = -1; }
+  if (peek && !pr.dizzy) { const ddx = (G.flip ? -1 : 1) * (peek.x - pr.tx); if (ddx > 0) pr.dir = 1; else if (ddx < 0) pr.dir = -1; }
 
   // Particles
   G.particles = G.particles.filter(p => {
@@ -506,8 +551,8 @@ function update() {
   else if (G.combo >= 10 && Math.random() < 0.1) spawnBolt();
   G.bolts = G.bolts.filter(b => { b.life--; return b.life > 0; });
 
-  // Finish check
-  if (G.qPtr >= G.queue.length && !G.calls.some(c => c.status === 'pending')
+  // Finish (Drill only — Endless ends when lives run out)
+  if (!G.endless && G.qPtr >= G.queue.length && !G.calls.some(c => c.status === 'pending' || c.status === 'tail')
       && now > G.lastHitTime + G.goodW + 0.15 && !G.finished) {
     finish();
   }
@@ -518,6 +563,7 @@ function checkMilestone(c) {
   if (MILESTONES[c]) {
     G.milestone = { text: MILESTONES[c], life: 64 };
     G.shake = Math.min(12, G.shake + 5);
+    setEmote('🔥', 80);
   }
 }
 
@@ -546,7 +592,7 @@ function registerResult(kind, call, base) {
 // ---- Input handling ----
 function resolveAt(sqx, sqy) {
   if (!G || !G.running) return;
-  const now = nowSec();
+  const now = nowSec() - (G.latency || 0);   // judge against your calibrated input delay
   // Nearest pending call within the good window
   let best = null, bestDt = Infinity;
   G.calls.forEach(c => {
@@ -554,7 +600,21 @@ function resolveAt(sqx, sqy) {
     const dt = Math.abs(c.hitTime - now);
     if (dt <= G.goodW && dt < bestDt) { best = c; bestDt = dt; }
   });
-  if (!best) return; // nothing to hit right now — no penalty
+  if (!best) {
+    // "Catch it on the tail" — a slipped call still on the runway, before the cliff.
+    let tail = null, tailX = Infinity;
+    G.calls.forEach(c => { if (c.status === 'tail' && !c.falling && c.x === sqx && c.y === sqy) {
+      const x = HITX + (c.hitTime - now) * PXPS; if (x > CLIFF_X && x < tailX) { tailX = x; tail = c; } } });
+    if (tail) {
+      tail.status = 'hit';
+      const gained = registerResult('save', tail, 30);
+      movePrincess(sqx, sqy); popParticles(sqx, sqy, '#ffd166');
+      gateExplode(HITX + (tail.hitTime - now) * PXPS, '#ffd166', false);
+      flashSquare(sqx, sqy, 'rgba(255,209,102,0.45)'); floater('TAIL SAVE +' + gained, tail, '#ffd166');
+      setEmote('😅', 70); sfx('good');
+    }
+    return; // no pending call in window — no penalty
+  }
 
   if (best.x === sqx && best.y === sqy) {
     // Four-band, timing-driven scoring. Dead-on the gate = Perfect; the rest of
@@ -581,6 +641,7 @@ function resolveAt(sqx, sqy) {
     flashSquare(sqx, sqy, kind === 'perfect' ? 'rgba(107,255,184,0.5)' : 'rgba(245,197,24,0.45)');
     floater(label + ' +' + gained, best, color);
     sfx(kind === 'perfect' || kind === 'great' ? 'perfect' : 'good');
+    setEmote(kind === 'perfect' ? '😄' : '🙂', 55);
   } else {
     // Wrong square — miss, lose half-points, and reveal the correct one
     best.status = 'missed';
@@ -592,22 +653,27 @@ function resolveAt(sqx, sqy) {
     flashSquare(sqx, sqy, 'rgba(255,107,107,0.3)');
     floater('WRONG → ' + best.san + '  −' + penalty, best, COLORS.bad);
     sfx('miss');
+    setEmote('😣', 60);
   }
 }
 
 function movePrincess(x, y) {
   const pr = G.princess;
   const dx = x - pr.tx;
+  const t = nowSec();
   if (dx !== 0) {
-    // Whiplash: a hard reverse across a big distance leaves her dizzy.
-    if (pr.prevDx && Math.sign(dx) !== Math.sign(pr.prevDx) && (Math.abs(dx) + Math.abs(pr.prevDx)) >= 9) {
+    // Whiplash now needs a near-full-board reversal made *quickly* — much rarer.
+    const quick = (t - pr.lastMoveT) < 1.0;
+    if (pr.prevDx && Math.sign(dx) !== Math.sign(pr.prevDx) && (Math.abs(dx) + Math.abs(pr.prevDx)) >= 13 && quick) {
       pr.dizzy = Math.max(pr.dizzy, 90);
       G.shake = Math.min(18, G.shake + 7);
       floater('😵 whoa!', { x: x, y: y }, '#ffd166');
+      setEmote('😵', 90);
     }
     pr.prevDx = dx;
-    pr.dir = dx > 0 ? 1 : -1;   // face the way she just moved
+    pr.dir = ((G.flip ? -1 : 1) * dx) > 0 ? 1 : -1;   // face the way she moved (in screen space)
   }
+  pr.lastMoveT = t;
   pr.tx = x; pr.ty = y;
 }
 function flashSquare(x, y, color) { G.flashSq.push({ x, y, color, t: 22 }); }
@@ -637,9 +703,10 @@ function canvasToSquare(clientX, clientY) {
   const r = canvas.getBoundingClientRect();
   const mx = (clientX - r.left) * (W / r.width);
   const my = (clientY - r.top) * (H / r.height);
-  const col = Math.floor((mx - BX) / TILE);
-  const row = Math.floor((my - BY) / TILE);
+  let col = Math.floor((mx - BX) / TILE);
+  let row = Math.floor((my - BY) / TILE);
   if (col < 0 || col > 7 || row < 0 || row > 7) return null;
+  if (G && G.flip) { col = 7 - col; row = 7 - row; }   // screen → logical
   return { x: col, y: row };
 }
 
@@ -722,10 +789,11 @@ function drawBoard() {
       ctx.fillRect(BX + col * TILE, BY + row * TILE, TILE, TILE);
     }
   }
-  // Square flashes
+  // Square flashes (logical → screen)
   G.flashSq.forEach(s => {
+    const sc = G.flip ? 7 - s.x : s.x, sr = G.flip ? 7 - s.y : s.y;
     ctx.fillStyle = s.color;
-    ctx.fillRect(BX + s.x * TILE, BY + s.y * TILE, TILE, TILE);
+    ctx.fillRect(BX + sc * TILE, BY + sr * TILE, TILE, TILE);
   });
   // Grid lines + border
   ctx.strokeStyle = 'rgba(' + TH.rgb + ',0.10)';
@@ -745,8 +813,8 @@ function drawBoard() {
   const files = 'abcdefgh';
   for (let i = 0; i < 8; i++) {
     ctx.textAlign = 'left';
-    ctx.fillText(files[i], BX + i * TILE + 3, BY + BOARD - 4);   // files along bottom
-    ctx.fillText(8 - i, BX + 3, BY + i * TILE + 15);             // ranks down the left
+    ctx.fillText(files[G.flip ? 7 - i : i], BX + i * TILE + 3, BY + BOARD - 4);   // files along bottom
+    ctx.fillText(G.flip ? i + 1 : 8 - i, BX + 3, BY + i * TILE + 15);             // ranks down the left
   }
 }
 
@@ -848,6 +916,7 @@ function drawTrack() {
     let fill, stroke, textColor;
     if (c.status === 'hit') { fill = 'rgba(107,255,184,'+(0.75*alpha)+')'; stroke = 'rgba(107,255,184,'+alpha+')'; textColor = '#0c3d28'; }
     else if (c.status === 'missed') { fill = 'rgba(255,107,107,'+(0.66*alpha)+')'; stroke = 'rgba(255,107,107,'+alpha+')'; textColor = 'rgba(255,255,255,'+alpha+')'; }
+    else if (c.status === 'tail') { fill = 'rgba(255,176,58,0.92)'; stroke = '#ffd166'; textColor = '#3a2400'; }   // slipping — catch it on the tail!
     else if (active) { fill = 'rgba(' + TH.rgb + ',0.95)'; stroke = '#fff'; textColor = '#1a0f3d'; }
     else { fill = COLORS.dark; stroke = '#7a5fb0'; textColor = COLORS.text; }
 
@@ -935,6 +1004,14 @@ function drawPrincess() {
     }
     ctx.globalAlpha = 1;
   }
+
+  // Emote bubble (her little reactions)
+  if (pr.emote && pr.emoteT > 0 && pr.dizzy <= 0) {
+    ctx.globalAlpha = Math.min(1, pr.emoteT / 18);
+    ctx.font = '18px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(pr.emote, cx, cy + bob - r - 13);
+    ctx.globalAlpha = 1;
+  }
 }
 
 function drawHex(cx, cy, r) {
@@ -989,12 +1066,13 @@ function drawHUD() {
     ctx.fillText('×' + mult.toFixed(2), 13, 40);
   }
 
-  // Progress (top-right)
-  const done = G.res.perfect + G.res.great + G.res.good + G.res.miss;
+  // Progress (top-right) — Drill shows X/total; Endless shows calls · lives · BPM
+  const done = G.res.perfect + G.res.great + G.res.good + (G.res.save || 0) + G.res.miss;
   ctx.fillStyle = COLORS.muted;
   ctx.font = '11px Courier New';
   ctx.textAlign = 'right';
-  ctx.fillText(done + ' / ' + G.total, W - 10, 10);
+  if (G.endless) ctx.fillText(done + ' · ' + '♥'.repeat(Math.max(0, G.lives)) + ' · ' + G.bpm + 'bpm', W - 10, 10);
+  else ctx.fillText(done + ' / ' + G.total, W - 10, 10);
 
   // Combo (center, big when high)
   if (G.combo > 1) {
@@ -1019,9 +1097,9 @@ function drawHUD() {
     ctx.globalAlpha = 1;
   }
 
-  // Count-in banner
+  // Count-in banner (only before the first call; not after an endless ramp re-anchor)
   const now = nowSec();
-  if (G.running && now < G.startTime + G.countIn * G.spb) {
+  if (G.running && !G.begun && now < G.startTime + G.countIn * G.spb) {
     const beatsLeft = Math.ceil((G.startTime + G.countIn * G.spb - now) / G.spb);
     ctx.fillStyle = 'rgba(' + TH.rgb + ',0.85)';
     ctx.font = 'bold 30px Courier New';
@@ -1038,15 +1116,24 @@ function loop() {
 }
 
 // ---- Screens / flow ----
-let selMode = 'coords', selDiff = 'medium';
+let selMode = 'coords', selDiff = 'medium', selBpm = 60, selBlack = false;
+const DIFF_BPM = { easy: 43, medium: 60, hard: 94 };
+const LAT_KEY = 'pjcc.notation.latency', TREND_KEY = 'pjcc.notation.trend.v1';
+let audioLatency = (function () { try { return parseFloat(localStorage.getItem(LAT_KEY)) || 0; } catch (e) { return 0; } })(); // seconds, + = you tap late
+function bucketOf(bpm) { return bpm < 52 ? 'easy' : bpm <= 78 ? 'medium' : 'hard'; }
+function bpmCalls(bpm) { return bpm < 52 ? 18 : bpm <= 78 ? 22 : 28; }
+function loadTrend() { try { return JSON.parse(localStorage.getItem(TREND_KEY)) || []; } catch (e) { return []; } }
+function saveTrend(a) { try { localStorage.setItem(TREND_KEY, JSON.stringify(a.slice(-20))); } catch (e) {} }
 
-function modeName(mode) { return mode === 'coords' ? 'Coordinates' : (OPENINGS[mode] ? OPENINGS[mode].label : 'Coordinates'); }
+function modeName(mode) { return mode === 'coords' ? 'Coordinates' : mode === 'endless' ? 'Endless' : (OPENINGS[mode] ? OPENINGS[mode].label : 'Coordinates'); }
 function updateTitleBest() {
-  const best = loadBests()[selMode + '_' + selDiff];
+  const key = selMode + '_' + selDiff + (selBlack ? '_b' : '');
+  const best = loadBests()[key];
+  const tag = modeName(selMode) + ' · ' + DIFFS[selDiff].label + (selBlack ? ' · Black' : '');
   const el = document.getElementById('title-best');
-  el.innerHTML = best
-    ? 'Best (' + modeName(selMode) + ' · ' + DIFFS[selDiff].label + '): <b>' + best.rank + '</b> · ' + best.score
-    : 'Best (' + modeName(selMode) + ' · ' + DIFFS[selDiff].label + '): <b>—</b>';
+  el.innerHTML = best ? 'Best (' + tag + '): <b>' + best.rank + '</b> · ' + best.score
+                      : 'Best (' + tag + '): <b>—</b>';
+  updateTrend();
 }
 
 var modeRow = document.getElementById('mode-row');
@@ -1056,13 +1143,85 @@ if (modeRow) modeRow.addEventListener('click', e => {
   document.querySelectorAll('#mode-row .pick').forEach(p => p.classList.toggle('sel', p === b));
   updateTitleBest();
 });
+function setDiffHighlight() { document.querySelectorAll('#diff-row .pick').forEach(p => p.classList.toggle('sel', p.dataset.diff === selDiff)); }
+function syncBpmUI() {
+  const sl = document.getElementById('bpm-slider'), lab = document.getElementById('bpm-label');
+  if (sl) sl.value = selBpm; if (lab) lab.textContent = selBpm + ' BPM';
+  setDiffHighlight();
+}
+function setEyebrow() {
+  const e = document.getElementById('ov-eyebrow');
+  if (e) e.textContent = selBlack ? '2-Tone Drill · “A Message to you, Princess” 🎺' : 'Checker Town · Coordinate Drill';
+}
 document.getElementById('diff-row').addEventListener('click', e => {
   const b = e.target.closest('[data-diff]'); if (!b) return;
-  selDiff = b.dataset.diff;
-  document.querySelectorAll('#diff-row .pick').forEach(p => p.classList.toggle('sel', p === b));
-  newGame(selMode, selDiff);   // re-theme the preview board behind the title to this tempo
-  updateTitleBest();
+  selDiff = b.dataset.diff; selBpm = DIFF_BPM[selDiff];
+  syncBpmUI(); newGame(selMode, selDiff); updateTitleBest();
 });
+document.getElementById('bpm-slider').addEventListener('input', e => {
+  selBpm = parseInt(e.target.value, 10) || 60; selDiff = bucketOf(selBpm);
+  syncBpmUI(); newGame(selMode, selDiff); updateTitleBest();
+});
+document.getElementById('black-toggle').addEventListener('click', function () {
+  selBlack = !selBlack; this.dataset.on = selBlack ? '1' : '0'; this.classList.toggle('on', selBlack);
+  setEyebrow(); newGame(selMode, selDiff); updateTitleBest();
+});
+document.getElementById('calib-btn').addEventListener('click', openCalib);
+
+// ---- Audio-latency calibration ----
+let calib = null;
+function openCalib() {
+  initAudio(); if (actx.state === 'suspended') actx.resume();
+  document.getElementById('title-screen').classList.add('hidden');
+  document.getElementById('calib-screen').classList.remove('hidden');
+  document.getElementById('calib-count').textContent = '0 / 8';
+  document.getElementById('calib-result').textContent = audioLatency ? ('current delay: ' + Math.round(audioLatency * 1000) + 'ms') : '';
+  calib = null;
+}
+function startCalib() {
+  if (!actx) return;
+  const t0 = actx.currentTime + 0.9, iv = 0.6;
+  calib = { beats: [], taps: [] };
+  for (let i = 0; i < 8; i++) {
+    const bt = t0 + i * iv; calib.beats.push(bt); beep(bt, true);
+    const delay = (bt - actx.currentTime) * 1000;
+    setTimeout(() => { const d = document.getElementById('calib-dot'); if (!d) return; d.classList.add('beat'); setTimeout(() => d.classList.remove('beat'), 110); }, Math.max(0, delay));
+  }
+  document.getElementById('calib-count').textContent = '0 / 8';
+  document.getElementById('calib-result').textContent = '';
+}
+function calibTap() {
+  if (!calib || !actx) return;
+  const t = actx.currentTime; let best = null, bd = Infinity;
+  calib.beats.forEach(bt => { const d = Math.abs(t - bt); if (d < bd) { bd = d; best = bt; } });
+  if (best === null || bd > 0.45) return;            // ignore taps nowhere near a beep
+  calib.taps.push(t - best);
+  document.getElementById('calib-count').textContent = calib.taps.length + ' / 8';
+  if (calib.taps.length >= 8) {
+    const s = calib.taps.slice().sort((a, b) => a - b), mid = s[Math.floor(s.length / 2)];
+    audioLatency = Math.max(-0.15, Math.min(0.35, mid));
+    try { localStorage.setItem(LAT_KEY, String(audioLatency)); } catch (e) {}
+    document.getElementById('calib-result').textContent = 'Your delay: ' + Math.round(audioLatency * 1000) + 'ms — saved. Hits now judge against it.';
+    calib = null;
+  }
+}
+document.getElementById('calib-dot').addEventListener('pointerdown', e => { e.preventDefault(); calibTap(); });
+document.getElementById('calib-start').addEventListener('click', startCalib);
+document.getElementById('calib-reset').addEventListener('click', () => { audioLatency = 0; try { localStorage.setItem(LAT_KEY, '0'); } catch (e) {} document.getElementById('calib-result').textContent = 'Reset to 0ms.'; });
+document.getElementById('calib-done').addEventListener('click', () => { document.getElementById('calib-screen').classList.add('hidden'); document.getElementById('title-screen').classList.remove('hidden'); calib = null; });
+
+function updateTrend() {
+  const tr = loadTrend(), el = document.getElementById('title-trend'); if (!el) return;
+  if (tr.length < 2) { el.innerHTML = ''; return; }
+  const recent = tr.slice(-6);
+  const avg = Math.round(recent.reduce((s, x) => s + x.ms, 0) / recent.length);
+  const half = Math.floor(recent.length / 2);
+  const a1 = avg2(recent.slice(0, recent.length - half)), a2 = avg2(recent.slice(-half)), drift = a2 - a1;
+  const dirWord = Math.abs(avg) <= 10 ? 'dead-on' : (avg > 0 ? 'LATE' : 'EARLY');
+  let driftWord = ''; if (Math.abs(drift) >= 8) driftWord = ' · trending ' + (drift > 0 ? 'later' : 'earlier');
+  el.innerHTML = 'Timing trend (last ' + recent.length + '): ' + (avg > 0 ? '+' : '') + avg + 'ms ' + dirWord + driftWord + '<br>';
+}
+function avg2(a) { return a.length ? a.reduce((s, x) => s + x.ms, 0) / a.length : 0; }
 
 document.getElementById('mute-toggle').addEventListener('click', () => {
   soundOn = !soundOn;
@@ -1091,9 +1250,9 @@ function finish() {
   G.running = false;
   G.finished = true;
   const r = G.res;
-  const total = G.total;
-  // Quality-weighted accuracy: Perfect counts full, Great most, Good half.
-  const accVal = total > 0 ? (r.perfect + r.great * 0.8 + r.good * 0.5) / total : 0;
+  const total = G.endless ? (r.perfect + r.great + r.good + (r.save || 0) + r.miss) : G.total;
+  // Quality-weighted accuracy: Perfect full, Great most, Good half, tail-Save partial.
+  const accVal = total > 0 ? (r.perfect + r.great * 0.8 + r.good * 0.5 + (r.save || 0) * 0.4) / total : 0;
   const acc = Math.round(accVal * 100);
   let rank, color;
   if (r.miss === 0 && accVal >= 0.97) { rank = 'S'; color = '#6bffb8'; }
@@ -1102,9 +1261,9 @@ function finish() {
   else if (accVal >= 0.52) { rank = 'C'; color = '#6bbfff'; }
   else { rank = 'D'; color = '#ff6b6b'; }
 
-  const modeLabel = G.mode === 'coords' ? 'Coordinates'
-    : OPENINGS[G.mode].label;
-  document.getElementById('res-mode-label').textContent = modeLabel + ' · ' + DIFFS[G.diff].label;
+  const modeLabel = G.endless ? ('Endless · top ' + G.topBpm + ' BPM')
+    : G.mode === 'coords' ? 'Coordinates' : OPENINGS[G.mode].label;
+  document.getElementById('res-mode-label').textContent = modeLabel + ' · ' + DIFFS[G.diff].label + (G.flip ? ' · Black' : '');
   const badge = document.getElementById('res-rank');
   badge.textContent = rank; badge.style.color = color;
   document.getElementById('res-fc-wrap').style.display = (r.miss === 0) ? 'block' : 'none';
@@ -1126,10 +1285,11 @@ function finish() {
   else if (avgMs > 0) timing = '+' + avgMs + 'ms · tend LATE';
   else timing = avgMs + 'ms · tend EARLY';
   document.getElementById('res-timing').textContent = timing;
+  if (r.offCount) { const tr = loadTrend(); tr.push({ ms: avgMs, mode: G.mode, diff: G.diff, t: Date.now() }); saveTrend(tr); }
 
-  // Personal best (per mode + tempo)
+  // Personal best (per mode + tempo + side)
   const bests = loadBests();
-  const key = G.mode + '_' + G.diff;
+  const key = G.mode + '_' + G.diff + (G.flip ? '_b' : '');
   const prev = bests[key];
   const isBest = !prev || G.score > prev.score;
   if (isBest) { bests[key] = { score: G.score, rank }; saveBests(bests); }
@@ -1138,8 +1298,8 @@ function finish() {
   else bestEl.innerHTML = 'Best: <b style="color:#F5C518;">' + prev.rank + '</b> · ' + prev.score;
   updateTitleBest();
   if (window.PJCC) PJCC.saveScore('notation-run', G.score, { credits: 1, data: { mode: G.mode, diff: G.diff, rank: rank } });
-  // Perfect Sprint (rank S on the hardest tempo) unlocks Blindfold Puzzles.
-  if (G.diff === 'hard' && rank === 'S') {
+  // Perfect Sprint (rank S on the hardest tempo, Drill) unlocks Blindfold Puzzles.
+  if (!G.endless && G.diff === 'hard' && rank === 'S') {
     try {
       if (localStorage.getItem('pjcc.blindfold.unlocked') !== '1') {
         localStorage.setItem('pjcc.blindfold.unlocked', '1');
@@ -1153,6 +1313,7 @@ function finish() {
 
 // Boot
 newGame(selMode, selDiff);   // so the board renders behind the title screen
+syncBpmUI(); setEyebrow();
 updateTitleBest();
 loop();
 </script>

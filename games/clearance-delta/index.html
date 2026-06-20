@@ -1,11 +1,11 @@
 ---
 layout: game
-title: "Clearance: DELTA"
-description: "An operative trivia exam. Answer chess and PJCC questions to climb the clearance ladder."
+title: "Clearance: DELTA v1.3"
+description: "An operative trivia exam — chess, World Champions, diagram puzzles, and PJCC files. Category runs, a lightning round, and a daily shared exam."
 permalink: /games/clearance-delta/
 ---
 
-<div class="game-frame-wrap">
+<div class="game-frame-wrap clearance-frame">
   <iframe
     src="{{ '/assets/games/pjcc_clearance.html' | relative_url }}"
     title="PJCC Clearance DELTA"
@@ -14,16 +14,20 @@ permalink: /games/clearance-delta/
   ></iframe>
 </div>
 
+<style>
+.clearance-frame { max-width: 640px; }
+.clearance-frame iframe { height: 660px; }
+@media (max-width: 640px) { .clearance-frame iframe { height: 620px; } }
+</style>
+
 <div class="game-info">
   <h2>How to Play</h2>
   <ul>
-    <li>Answer multiple-choice questions on <strong>chess</strong> and the <strong>PJCC files</strong></li>
-    <li>Click an answer or use keys <strong>1&ndash;4</strong>; <strong>Enter</strong> for the next question</li>
-    <li>Every correct answer earns <strong>clearance</strong> — climb RECRUIT → DELTA → GAMMA → BETA → OMEGA → ABOVE OMEGA</li>
-    <li>Each promotion <strong>unredacts a dossier file</strong> from the archive</li>
-    <li>Questions get harder as your clearance rises; build a streak for bonus points</li>
-    <li>Three wrong answers and your access is <strong>revoked</strong></li>
+    <li>Answer multiple-choice questions on <strong>chess</strong> and the <strong>PJCC files</strong> — click or press <strong>1&ndash;4</strong>. Some show a <strong>board diagram</strong> ("find the mate / name the tactic")</li>
+    <li>Each correct answer earns clearance: <strong>RECRUIT → DELTA → GAMMA → BETA → OMEGA → ABOVE OMEGA</strong>, every promotion unsealing a dossier file. Three wrong and access is revoked</li>
+    <li>Pick a <strong>focus</strong> — Rules · Tactics · History &amp; Champions · PJCC — or run <strong>⚡ Lightning</strong> (beat the per-question clock for bonus points)</li>
+    <li><strong>★ Daily</strong> is one shared 10-question exam — same for every operative; missed questions are logged on your Dossier to review</li>
   </ul>
 
-  <p class="game-note">Styled after the Classified archive's clearance system. Chess rules and tactics sit at the lower clearances; the deepest PJCC secrets — the crash, the mines, Subject Zero — are Omega and above.</p>
+  <p class="game-note">Set in the Invitational hall, styled after the Classified archive's clearance system. Your score and highest clearance log to your <a href="/dossier/">operative dossier</a> and the <a href="/leaderboards/">leaderboards</a>.</p>
 </div>

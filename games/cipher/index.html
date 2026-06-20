@@ -1,11 +1,11 @@
 ---
 layout: game
-title: "CIPHER"
-description: "An operative decryption word game. Crack the five-letter code and the dispatch decrypts itself."
+title: "CIPHER v1.3"
+description: "An operative decryption word game. Crack the five-letter code and the dispatch decrypts itself — now with packs, hint tokens, a weekly cryptogram, and a shareable result."
 permalink: /games/cipher/
 ---
 
-<div class="game-frame-wrap">
+<div class="game-frame-wrap cipher-frame">
   <iframe
     src="{{ '/assets/games/pjcc_cipher.html' | relative_url }}"
     title="PJCC CIPHER"
@@ -14,21 +14,20 @@ permalink: /games/cipher/
   ></iframe>
 </div>
 
+<style>
+.cipher-frame { max-width: 580px; }
+.cipher-frame iframe { height: 740px; }
+@media (max-width: 640px) { .cipher-frame iframe { height: 660px; } }
+</style>
+
 <div class="game-info">
   <h2>How to Play</h2>
   <ul>
-    <li>Six attempts to crack a <strong>five-letter code word</strong></li>
-    <li><strong>Green</strong> = right letter, right spot &nbsp;·&nbsp; <strong>Amber</strong> = right letter, wrong spot</li>
-    <li>Type on the on-screen keys or your keyboard; <strong>Enter</strong> to submit</li>
-    <li>Crack the code and the <strong>intercepted transmission decrypts itself</strong> — a new fragment of the file</li>
-    <li>Words are <strong>chess terms</strong> (Clearance: Delta) and <strong>PJCC field codes</strong> (Clearance: Omega)</li>
+    <li><strong>Green</strong> = right letter, right spot &nbsp;·&nbsp; <strong>Amber</strong> = right letter, wrong spot. Crack the code and the dispatch <strong>decrypts itself</strong></li>
+    <li>Pick a <strong>pack</strong> — Chess · Openings · Endgame · PJCC Field Codes. <strong>Daily</strong> = one shared code a day · <strong>Endless</strong> keeps cracking · <strong>Weekly</strong> = a multi-word cryptogram</li>
+    <li>Crack three in a row to earn a <strong>🔑 hint token</strong> (reveals a letter, at a score cost); your score rewards <strong>fewer guesses and faster time</strong></li>
+    <li>After a solve, hit <strong>⛓ Share</strong> for an emoji result card</li>
   </ul>
 
-  <h2>Modes</h2>
-  <ul>
-    <li><strong>Daily</strong> — one fixed intercept per day, shared by every operative</li>
-    <li><strong>Endless</strong> — keep cracking; build a decryption streak</li>
-  </ul>
-
-  <p class="game-note">Companion to the <a href="/dead-drop/">Dead Drop</a> and <a href="/classified/">Classified</a> files. Every word you crack unredacts another line of the archive — chess vocabulary and the Subject Zero mystery, one cipher at a time.</p>
+  <p class="game-note">Words are chess terms and PJCC field codes — every crack unredacts another line of the archive, and the weekly cryptogram unlocks a full intercepted dispatch. Scores log to your <a href="/dossier/">dossier</a> and the <a href="/leaderboards/">leaderboards</a>.</p>
 </div>

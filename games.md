@@ -7,10 +7,13 @@ permalink: /games/
 <div id="bounty-banner" class="bounty-banner" hidden></div>
 
 <a class="games-lb-link" href="{{ '/leaderboards/' | relative_url }}">🏆 View the Leaderboards &rarr;</a>
+<button id="sheen-toggle" class="sheen-toggle" type="button">✨ Cursor sheen: on</button>
+
+<div id="continue-hero" class="continue-hero" hidden></div>
 
 <script>
 (function () {
-  var NAMES = { 'cipher': 'CIPHER', 'clearance-delta': 'Clearance: DELTA', 'notation-run': 'Notation Blitz', 'fork-in-the-road': 'Fork in the Road', 'sand-mine-depths': 'Sand Mine Depths', 'pirc-protocol': 'The Pirc Protocol', 'ferry-delayed': 'Ferry Delayed', 'shogi-island': 'Shogi Island', 'tower-defense': 'Siege on Chess City' };
+  var NAMES = { 'cipher': 'CIPHER', 'clearance-delta': 'Clearance: DELTA', 'notation-run': 'Notation Blitz', 'fork-in-the-road': 'Fork in the Road', 'sand-mine-depths': 'Sand Mine Depths', 'pirc-protocol': 'The Pirc Protocol', 'shogi-island': 'Shogi Island', 'tower-defense': 'Siege on Chess City' };
   function show() {
     if (!window.PJCC || !PJCC.bountyGame) return;
     var key = PJCC.bountyGame();
@@ -26,6 +29,13 @@ permalink: /games/
 <style>
 .bounty-banner { background: linear-gradient(135deg,#2a1a5e,#3a2570); border: 1px solid #F5C518; border-radius: 10px; padding: 11px 16px; margin: 0 0 1rem; color: #f0e6ff; font-size: 0.92rem; }
 .bounty-banner strong { color: #F5C518; }
+.sheen-toggle { display: inline-block; margin: 0.4rem 0 0.2rem 0.5rem; background: #1d1140; border: 1px solid #6b5fa0; color: #c9a7ff; border-radius: 999px; padding: 8px 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.sheen-toggle:hover { border-color: #F5C518; color: #f0e6ff; }
+.sheen-toggle.off { border-color: #4f466e; color: #9a8fc0; }
+.continue-hero { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: linear-gradient(135deg,#1f1147,#34206f); border: 1px solid #6b5fa0; border-radius: 10px; padding: 11px 16px; margin: 0.6rem 0 0; }
+.continue-hero .ch-eye { color: #9a7fd4; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; }
+.continue-hero .ch-link { background: var(--accent,#F5C518); color: #1a0f3d; font-weight: 800; border-radius: 999px; padding: 7px 16px; text-decoration: none; }
+.continue-hero .ch-link:hover { filter: brightness(1.08); }
 </style>
 
 <div class="games-grid">
@@ -42,8 +52,8 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/notation-run/' | relative_url }}">
     <div class="game-card-icon">♫</div>
     <div class="game-card-body">
-      <h2>Notation Blitz v3.2</h2>
-      <p>A rhythm drill for reading chess coordinates at speed.</p>
+      <h2>Notation Blitz v3.3</h2>
+      <p>A rhythm drill for reading chess coordinates at speed — Endless ramp, a free BPM slider, latency calibration, and a board-flipped 2-Tone "Black side" mode.</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>
@@ -60,8 +70,8 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/pirc-protocol/' | relative_url }}">
     <div class="game-card-icon">♚</div>
     <div class="game-card-body">
-      <h2>The Pirc Protocol</h2>
-      <p>A spaced-repetition opening trainer. The Rival drills Princess on real openings — master a line and it returns later; slip and it comes back sooner.</p>
+      <h2>The Pirc Protocol v2.0</h2>
+      <p>An opening library. Learn real openings by playing the book moves — run a whole line, drill spot-cards, or face a boss exam mixing every variation. ECO codes + master-game citations on each card, and PGN export of your mastered lines.</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>
@@ -69,8 +79,8 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/fork-in-the-road/' | relative_url }}">
     <div class="game-card-icon">⚔</div>
     <div class="game-card-body">
-      <h2>Fork in the Road</h2>
-      <p>Chess tactics puzzles. Spot the fork, pin, skewer, or mate and play the winning move — every solve walks Princess closer to Chess City.</p>
+      <h2>Fork in the Road v2.0</h2>
+      <p>Adaptive chess-tactics puzzles — forks, skewers, and mates that sharpen as you solve and ease off if you slip. Region-gate bosses, a daily seeded ladder, and a motif card after every solve so you actually learn the pattern.</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>
@@ -78,8 +88,8 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/sand-mine-depths/' | relative_url }}">
     <div class="game-card-icon">⛏</div>
     <div class="game-card-body">
-      <h2>Sand Mine Depths</h2>
-      <p>A knight-movement descent into the Father's mine. Hop deeper, dodge the pieces, and uncover what he saw down in the dark.</p>
+      <h2>Sand Mine Depths v2.2</h2>
+      <p>A knight-movement descent into the Father's mine. Grab relics in the shrinking torchlight, outwit Subject Zero, and bank gold at the surface camp for lasting gear — or take on the perk-free weekly race.</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>
@@ -87,8 +97,8 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/cipher/' | relative_url }}">
     <div class="game-card-icon">⊙</div>
     <div class="game-card-body">
-      <h2>CIPHER</h2>
-      <p>An operative decryption word game. Crack the five-letter code and the intercepted dispatch decrypts itself — chess terms and the Subject Zero file.</p>
+      <h2>CIPHER v1.3</h2>
+      <p>An operative decryption word game. Crack the five-letter code and the dispatch decrypts itself. Pick a pack (Openings · Endgame · Field Codes), spend 🔑 hint tokens, chase a guesses-and-time score, and unlock the weekly cryptogram.</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>
@@ -96,17 +106,8 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/clearance-delta/' | relative_url }}">
     <div class="game-card-icon">Δ</div>
     <div class="game-card-body">
-      <h2>Clearance: DELTA</h2>
-      <p>An operative trivia exam. Answer chess and PJCC questions to climb the clearance ladder — each promotion unredacts a dossier file.</p>
-      <span class="game-tag">Playable</span>
-    </div>
-  </a>
-
-  <a class="game-card" href="{{ '/games/ferry-delayed/' | relative_url }}">
-    <div class="game-card-icon">⛴</div>
-    <div class="game-card-body">
-      <h2>Ferry Delayed</h2>
-      <p>A sliding-block logic puzzle. Crates slide like rooks — clear the jammed dock and guide Princess onto the Shogi Island ferry.</p>
+      <h2>Clearance: DELTA v1.3</h2>
+      <p>An operative trivia exam in the Invitational hall. Chess, World Champions, board-diagram puzzles, and PJCC files — climb the clearance ladder. Category focus runs, a ⚡ lightning round, and a daily shared exam.</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>
@@ -114,8 +115,8 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/shogi-island/' | relative_url }}">
     <div class="game-card-icon">将</div>
     <div class="game-card-body">
-      <h2>Shogi Island</h2>
-      <p>A shogi piece-movement trainer set across the water. Read each piece and tap every square it can move to — pawns, lances, the gold and silver generals.</p>
+      <h2>Shogi Island v3.0</h2>
+      <p>Learn shogi by solving — read the pieces, capture, give check, then mate. The guide begins in Japanese and decodes as you go, the island blooms, and getting far unlocks a hidden match: Catch the Lion.</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>
@@ -123,8 +124,8 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/tower-defense/' | relative_url }}">
     <div class="game-card-icon">🏰</div>
     <div class="game-card-body">
-      <h2>Siege on Chess City</h2>
-      <p>A tower-defense stand. The CEO marches his chess army down the Journey road — line it with defenders, charge the Royal Decree, and hold the gates.</p>
+      <h2>Siege on Chess City v2.0</h2>
+      <p>A four-front tower-defense campaign. Unlock new maps, place defenders (and a free-roaming Bishop Sniper), recruit Louie the Bomber, and spend City Crowns in the shop on permanent upgrades.</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>
@@ -132,8 +133,8 @@ permalink: /games/
   <a class="game-card game-card-dim game-card-locked" id="bf-card" href="{{ '/games/blindfold-puzzles/' | relative_url }}">
     <div class="game-card-icon" id="bf-icon">🔐</div>
     <div class="game-card-body">
-      <h2>Blindfold Puzzles</h2>
-      <p>A blank board and a clue — find the winning move in your head, then play it. Hidden bonus game.</p>
+      <h2>Blindfold Puzzles v2.0</h2>
+      <p>A blank board and a clue — find the winning move in your head. Adaptive, ever-harder puzzles; solve enough to unlock <strong>The Mind's Eye</strong>, a full blind game vs the CEO. Hidden bonus game.</p>
       <span class="game-tag game-tag-soon" id="bf-tag">🔒 Locked — perfect Fast run in Notation Blitz</span>
     </div>
   </a>
@@ -164,15 +165,16 @@ permalink: /games/
 }
 
 .game-card {
+  --accent: #F5C518;          /* per-game accent set by JS below */
   display: flex;
   align-items: flex-start;
   gap: 1rem;
   background: #241451;        /* deeper base so the lilac text reads stronger */
-  border: 1px solid #F5C518;
+  border: 1px solid var(--accent);
   border-radius: 8px;
   padding: 1.2rem 1.4rem;
   text-decoration: none;
-  transition: border-color 0.15s, background 0.15s;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
 }
 
 /* The cursor "flashlight" sheen (added site-wide by pjcc-flair.js) washes the
@@ -186,13 +188,14 @@ permalink: /games/
 
 .game-card:hover {
   background: #3d2a7a;
-  border-color: #ffd740;
+  border-color: var(--accent);
+  box-shadow: 0 0 18px -5px var(--accent);
 }
 
 .game-card-icon {
   font-size: 2rem;
   line-height: 1;
-  color: #F5C518;
+  color: var(--accent);
   flex-shrink: 0;
 }
 
@@ -304,3 +307,52 @@ permalink: /games/
 }
 .games-lb-link:hover { background: #F5C518; color: #1a0f3d; }
 </style>
+
+<script>
+(function () {
+  // ---- Per-game accent theming on the cards ----
+  var ACCENT = {
+    'notation-run': '#F5C518', 'pirc-protocol': '#caa24a', 'fork-in-the-road': '#5be0c0',
+    'sand-mine-depths': '#e0b25a', 'cipher': '#2ecc71', 'clearance-delta': '#ff9fb0',
+    'shogi-island': '#d9a441', 'tower-defense': '#ff8fd0', 'blindfold-puzzles': '#c9a7ff',
+    'dungeon': '#9a8fc0', 'space-run': '#8fb8ff'
+  };
+  function keyOf(href) { var m = (href || '').match(/\/games\/([^\/]+)\/?/); return m ? m[1] : ''; }
+  var cards = document.querySelectorAll('.games-grid .game-card');
+  Array.prototype.forEach.call(cards, function (c) {
+    var k = keyOf(c.getAttribute('href'));
+    if (ACCENT[k] && !c.classList.contains('game-card-dim') && !c.classList.contains('game-card-locked'))
+      c.style.setProperty('--accent', ACCENT[k]);
+    c.addEventListener('click', function () {
+      var h2 = c.querySelector('h2'); var name = h2 ? h2.textContent : k;
+      try { localStorage.setItem('pjcc.lastGame', JSON.stringify({ href: c.getAttribute('href'), name: name, k: k })); } catch (e) {}
+    });
+  });
+
+  // ---- Continue where you left off ----
+  try {
+    var last = JSON.parse(localStorage.getItem('pjcc.lastGame') || 'null');
+    var hero = document.getElementById('continue-hero');
+    if (last && last.href && hero) {
+      var acc = ACCENT[last.k] || '#F5C518';
+      hero.innerHTML = '<span class="ch-eye">▶ Continue where you left off</span>' +
+        '<a class="ch-link" href="' + last.href + '" style="--accent:' + acc + '">' + (last.name || 'Last game') + ' &rarr;</a>';
+      hero.hidden = false;
+    }
+  } catch (e) {}
+
+  // ---- Kill-the-sheen toggle (applies site-wide via pjcc-flair.js) ----
+  var btn = document.getElementById('sheen-toggle');
+  function isOff() { try { return localStorage.getItem('pjcc.noSheen') === '1'; } catch (e) { return false; } }
+  function paint() { if (!btn) return; var off = isOff(); btn.textContent = off ? '✨ Cursor sheen: off' : '✨ Cursor sheen: on'; btn.classList.toggle('off', off); }
+  if (btn) {
+    paint();
+    btn.addEventListener('click', function () {
+      var off = !isOff();
+      try { localStorage.setItem('pjcc.noSheen', off ? '1' : '0'); } catch (e) {}
+      if (off) Array.prototype.forEach.call(document.querySelectorAll('.flair-tilt-sheen'), function (s) { s.remove(); });
+      paint();  // turning it back on takes effect on the next page load
+    });
+  }
+})();
+</script>

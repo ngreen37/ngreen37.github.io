@@ -1,11 +1,11 @@
 ---
 layout: game
-title: "Sand Mine Depths"
-description: "A knight-movement descent into the Father's mine. Hop deeper, dodge the pieces, learn what he saw."
+title: "Sand Mine Depths v2.2"
+description: "A knight-movement descent into the Father's mine. Hop deeper, dodge the reacting pieces, learn what he saw."
 permalink: /games/sand-mine-depths/
 ---
 
-<div class="game-frame-wrap">
+<div class="game-frame-wrap sand-frame">
   <iframe
     src="{{ '/assets/games/pjcc_sandmine.html' | relative_url }}"
     title="PJCC Sand Mine Depths"
@@ -14,16 +14,20 @@ permalink: /games/sand-mine-depths/
   ></iframe>
 </div>
 
+<style>
+.sand-frame { max-width: 560px; }
+.sand-frame iframe { height: 600px; }
+@media (max-width: 640px) { .sand-frame iframe { height: 540px; } }
+</style>
+
 <div class="game-info">
   <h2>How to Play</h2>
   <ul>
-    <li>Princess moves like a <strong>knight</strong> — only in L-shapes. Tap a glowing dot to hop</li>
-    <li>Reach the swirling <strong>shaft ▼</strong> to descend to the next floor (10m deeper each time)</li>
-    <li>The tile you leave <strong>caves into a hole</strong> — plan your route so you don't trap yourself</li>
-    <li>Land on an enemy piece to <strong>capture</strong> it; grab <strong>gold ⛏</strong> for score</li>
-    <li>Red squares are <strong>threatened</strong> — don't end your hop where a piece can reach you</li>
-    <li>Enemies move by chess rules after each hop. Three hearts and the mine claims you</li>
+    <li>Princess moves like a <strong>knight</strong> — tap a glowing dot to hop. The tile you leave <strong>caves in</strong>; a <strong>red crosshair</strong> marks a square a piece can strike</li>
+    <li><strong>Pawns</strong> march <strong>▼ down</strong> and only strike <strong>diagonally</strong> — park right in front to <strong>pin</strong> one. Grab <strong>gold ⛏</strong> and glinting <strong>relics ✦</strong> (longer reach, lantern oil, a 🪏 shovel that fills a pit)</li>
+    <li>The deeper you go, the <strong>darker it gets</strong> — your torch only reaches so far. Beware <strong>Subject Zero</strong>: a rival knight that hunts you and digs through caved sand</li>
+    <li><strong>Surface Camp</strong> banks your gold between runs for lasting gear; the <strong>Weekly Race</strong> is one seeded mine — same for everyone, perk-free</li>
   </ul>
 
-  <p class="game-note">The Sand Mines are where the Father works — and what he "has seen down there and will not discuss." The deeper you go, the more the mine remembers. Watch the messages at each new depth.</p>
+  <p class="game-note">The Sand Mines are where the Father works — and what he "has seen down there and will not discuss." The deeper you go, the more the mine remembers; watch the message at each new depth. Scores log to your <a href="/dossier/">operative dossier</a> and the <a href="/leaderboards/">leaderboards</a>.</p>
 </div>
