@@ -329,14 +329,14 @@ Resend plumbing already exists; a **welcome-email automation** is a Resend-dashb
 
 **A fresh nine:**
 1. **Milestone share-cards** — when a funding/priority beat is hit, auto-generate a "we funded X" card (a viral loop).
-2. **The Founders Wall** — a public, opt-in scroll of founding-operative codenames (seed client-side now; real with accounts).
-3. **First store SKUs = founder cosmetics** — avatar frames + titles, cosmetic-only, the credits store's opening shelf.
+2. ✅ **The Founders Wall** — *shipped (client-side: the studio + your own reserved number; shared roll with accounts)* on the Press Pass.
+3. ✅ **Founder cosmetics** — *shipped as a preview* (frames + titles on the Press Pass); the actual purchasable SKUs wait on the credits store backend.
 4. **"Adopt a shot"** — micro-patronage: back a single animatic shot and get credited *on* it.
 5. **Pricing-experiment page** — annual vs monthly vs pay-what-you-want, tested before charging.
 6. **Academy B2B licensing** — a classroom / site license as real recurring revenue.
 7. **Game-over email capture** — arcade game-over screens as top-of-funnel for the dispatch.
-8. **"Fund-the-frame" on the tracker** — tie support directly to the animation progress bars.
-9. **Backer-only quarterly dispatch** — a paid-tier behind-the-scenes issue once tiers go live.
+8. ✅ **"Fund-the-frame" on the tracker** — *shipped*: a support module under the production bars linking to the Press Pass.
+9. ✅ **Backer-only quarterly dispatch** — *shipped as a locked preview* (redacted table-of-contents on the Press Pass); the real issue ships with paid tiers.
 
 ---
 

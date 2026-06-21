@@ -117,6 +117,60 @@ permalink: /press-pass/
 })();
 </script>
 
+<!-- ===== FOUNDERS WALL ===== -->
+<h2 class="xp-h2">◈ The Founders Wall</h2>
+<p class="xp-crednote">The roll of operatives who showed up before episode one. <span class="xp-muted">This is your view of the wall; the shared, public roll opens with Operative accounts — your number is reserved.</span></p>
+<div class="xp-wall" id="xp-wall"></div>
+<script>
+(function () {
+  var host = document.getElementById('xp-wall'); if (!host) return;
+  function load() { try { return JSON.parse(localStorage.getItem('pjcc.presscred.v1')); } catch (e) { return null; } }
+  function codename() { try { if (window.PJCC && PJCC.getProfile) { var p = PJCC.getProfile(); if (p && p.codename) return p.codename; } } catch (e) {} return null; }
+  function provNum(ts) { return 1 + (Math.floor(ts / 1000) % 888); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]; }); }
+  function row(num, name, you) {
+    return '<div class="xp-wall-row' + (you ? ' is-you' : '') + '"><span class="xp-wall-no">No. ' + ('00' + num).slice(-3) + '</span>' +
+      '<span class="xp-wall-name">' + esc(name) + '</span>' + (you ? '<span class="xp-wall-tag">that’s you</span>' : '') + '</div>';
+  }
+  function render() {
+    var rec = load();
+    var html = row(1, 'McPuppy Studios', false);
+    if (rec) html += row(provNum(rec.ts), codename() || 'You · unregistered', true);
+    html += '<div class="xp-wall-more">…and a growing roll. ' + (rec ? 'Your spot is held.' : '<a href="#xp-cred">Claim your credential</a> to take one.') + '</div>';
+    host.innerHTML = html;
+  }
+  render();
+  if (window.PJCC && PJCC.ready) PJCC.ready.then(render);
+  if (window.PJCC && PJCC.onChange) PJCC.onChange(render);
+})();
+</script>
+
+<!-- ===== FOUNDER COSMETICS (preview) ===== -->
+<h2 class="xp-h2">◈ Founder cosmetics <span class="xp-soon-tag">preview</span></h2>
+<p class="xp-crednote">What a pass dresses your operative in — <b>cosmetic only</b>, never an edge in a game. These unlock when the credits store opens.</p>
+<div class="xp-cos">
+  <div class="xp-cos-item">
+    <div class="xp-cos-avatar xp-frame-gold">🧑‍🚀</div>
+    <div class="xp-cos-name">Founders’ Gold</div><div class="xp-cos-sub">avatar frame</div>
+  </div>
+  <div class="xp-cos-item">
+    <div class="xp-cos-avatar xp-frame-laurel">🧑‍🚀</div>
+    <div class="xp-cos-name">Charter Laurel</div><div class="xp-cos-sub">avatar frame</div>
+  </div>
+  <div class="xp-cos-item">
+    <div class="xp-cos-avatar xp-frame-press">🧑‍🚀</div>
+    <div class="xp-cos-name">Press Badge</div><div class="xp-cos-sub">avatar frame</div>
+  </div>
+  <div class="xp-cos-item">
+    <div class="xp-cos-titles">
+      <span class="xp-cos-title">Founding Operative</span>
+      <span class="xp-cos-title">Charter Member</span>
+      <span class="xp-cos-title">Day-One</span>
+    </div>
+    <div class="xp-cos-name">Operative titles</div><div class="xp-cos-sub">profile flair</div>
+  </div>
+</div>
+
 <!-- ===== WHAT YOUR SUPPORT FUNDS (transparency) ===== -->
 <h2 class="xp-h2">◈ What your support funds</h2>
 <p class="xp-crednote">No fake thermometers here — we won't show a made-up total. But we'll always be straight about <b>where the money goes</b>. Every dollar of support points at one thing: getting the pilot animated.</p>
@@ -159,6 +213,21 @@ permalink: /press-pass/
     '<a class="xp-sup-btn xp-sup-list" href="' + MAILING_URL + '"><b>✉ Free</b><small>join the dispatch</small></a>';
 })();
 </script>
+
+<!-- ===== BACKER DISPATCH (preview) ===== -->
+<h2 class="xp-h2">◈ The Backer Dispatch <span class="xp-soon-tag">with paid tiers</span></h2>
+<p class="xp-crednote">Pass-holders get a <b>quarterly behind-the-scenes issue</b> — the stuff too raw or too spoiler-y for the public dispatch. Here's the peek; the full issue unlocks when tiers go live.</p>
+<div class="xp-backer">
+  <div class="xp-backer-head"><span>◈ BACKER DISPATCH · No. 01</span><span class="xp-backer-lock">🔒 locked</span></div>
+  <ul class="xp-backer-toc">
+    <li>The pilot's full board breakdown — every shot, annotated</li>
+    <li class="xp-blur">Casting tests for ████ and the ███████</li>
+    <li class="xp-blur">A first listen at the ██████ ████ theme</li>
+    <li class="xp-blur">What we cut from "Fell From the Sky," and why</li>
+    <li class="xp-blur">The next game — before anyone else sees it</li>
+  </ul>
+  <a class="xp-cta xp-cta-ghost xp-backer-cta" href="{{ '/mailing-list/' | relative_url }}">Get told when it opens →</a>
+</div>
 
 <div class="xp-promise">
   <h2>The promise</h2>
@@ -245,4 +314,41 @@ permalink: /press-pass/
 .xp-sup-btn.is-soon:hover { border-color: #4a2f8a; transform: none; }
 .xp-sup-kofi:hover { box-shadow: 0 0 18px rgba(245,197,24,0.18); }
 .xp-sup-list { border-color: #2f6b50; }
+
+.xp-soon-tag { font-size: 0.54rem; letter-spacing: 0.12em; text-transform: uppercase; color: #1a0f3d; background: #9fe8ff; padding: 3px 9px; border-radius: 999px; font-weight: 800; }
+
+/* Founders Wall */
+.xp-wall { max-width: 520px; background: rgba(26,16,48,0.6); border: 1px solid #3a2a6a; border-radius: 12px; overflow: hidden; }
+.xp-wall-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #2a1f52; }
+.xp-wall-row.is-you { background: rgba(245,197,24,0.08); }
+.xp-wall-no { font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; color: #ffe27a; flex: 0 0 auto; width: 64px; }
+.xp-wall-name { color: #f0e6ff; font-weight: 700; flex: 1; }
+.xp-wall-tag { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; color: #06210f; background: #6bffb8; padding: 2px 8px; border-radius: 999px; font-weight: 800; }
+.xp-wall-more { padding: 10px 14px; color: #8a78ba; font-size: 0.82rem; }
+.xp-wall-more a { color: #F5C518; }
+
+/* Founder cosmetics preview */
+.xp-cos { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+.xp-cos-item { background: rgba(45,27,105,0.5); border: 1px solid #3a2a6a; border-radius: 12px; padding: 14px 10px; text-align: center; }
+.xp-cos-avatar { width: 56px; height: 56px; margin: 0 auto 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; background: #1a1030; position: relative; }
+.xp-frame-gold { box-shadow: 0 0 0 3px #F5C518, 0 0 16px rgba(245,197,24,0.5); }
+.xp-frame-laurel { box-shadow: 0 0 0 3px #6bffb8; }
+.xp-frame-laurel::before { content: '🌿'; position: absolute; left: -8px; bottom: -4px; font-size: 16px; transform: scaleX(-1); }
+.xp-frame-laurel::after { content: '🌿'; position: absolute; right: -8px; bottom: -4px; font-size: 16px; }
+.xp-frame-press { box-shadow: 0 0 0 3px #ff8fd0; }
+.xp-frame-press::after { content: '🎟'; position: absolute; right: -6px; top: -6px; font-size: 16px; }
+.xp-cos-titles { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; align-items: center; }
+.xp-cos-title { font-size: 0.66rem; font-weight: 800; color: #1a0f3d; background: linear-gradient(90deg,#F5C518,#ffd740); border-radius: 999px; padding: 2px 8px; }
+.xp-cos-name { color: #f0e6ff; font-weight: 700; font-size: 0.84rem; }
+.xp-cos-sub { color: #9a7fd4; font-size: 0.72rem; }
+
+/* Backer Dispatch */
+.xp-backer { max-width: 560px; background: #140c2c; border: 1px solid #4a2f8a; border-radius: 12px; overflow: hidden; }
+.xp-backer-head { display: flex; justify-content: space-between; align-items: center; background: rgba(245,197,24,0.08); border-bottom: 1px solid #3a2a6a; padding: 9px 14px; font-family: 'Share Tech Mono', monospace; font-size: 0.72rem; color: #F5C518; }
+.xp-backer-lock { color: #ff8fd0; }
+.xp-backer-toc { list-style: none; margin: 0; padding: 10px 14px; }
+.xp-backer-toc li { color: #cfc3ee; font-size: 0.86rem; line-height: 1.6; padding-left: 16px; position: relative; }
+.xp-backer-toc li::before { content: '›'; position: absolute; left: 0; color: #6b5fa0; }
+.xp-backer-toc li.xp-blur { filter: blur(3px); user-select: none; opacity: 0.85; }
+.xp-backer-cta { display: inline-block; width: auto; margin: 4px 14px 14px; padding: 8px 16px; }
 </style>

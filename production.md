@@ -67,6 +67,16 @@ permalink: /production/
 
 <div class="pr-eps" id="pr-eps"></div>
 
+<!-- ===== FUND THE FRAME ===== -->
+<a class="pr-fund" href="{{ '/press-pass/' | relative_url }}">
+  <div class="pr-fund-ico">🎬</div>
+  <div class="pr-fund-body">
+    <b>Fund the frame →</b>
+    <small>Every bar above only moves when real work gets paid for. A <b>Press Pass</b> is what turns these percentages into finished animation — you're not buying a perk, you're moving the needle.</small>
+  </div>
+  <div class="pr-fund-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+</a>
+
 <!-- ===== FRAME THE SCENE ===== -->
 <h2 class="pr-h2">◈ Frame the Scene</h2>
 <p class="pr-note">Help art-direct the show. Two takes on the same shot — pick the one that lands. <span class="pr-muted">(Your vote is saved on this device; a live community tally is coming.)</span></p>
@@ -441,6 +451,22 @@ permalink: /production/
 .pr-wr-ico { font-size: 30px; flex: 0 0 auto; }
 .pr-wr-cta b { color: #F5C518; display: block; }
 .pr-wr-cta small { color: #c9a7ff; font-size: 0.84rem; line-height: 1.5; display: block; margin-top: 2px; }
+
+.pr-fund { display: flex; gap: 14px; align-items: center; margin: 14px 0 4px; padding: 14px 16px; text-decoration: none; background: linear-gradient(135deg, rgba(245,197,24,0.10), rgba(255,143,208,0.06)); border: 1px solid #6b5fa0; border-radius: 12px; transition: all 0.14s; }
+.pr-fund:hover { border-color: #F5C518; transform: translateY(-2px); }
+.pr-fund-ico { font-size: 28px; flex: 0 0 auto; }
+.pr-fund-body { flex: 1; }
+.pr-fund-body b { color: #F5C518; display: block; }
+.pr-fund-body small { color: #c9a7ff; font-size: 0.84rem; line-height: 1.5; display: block; margin-top: 2px; }
+.pr-fund-body small b { display: inline; color: #ffd36b; }
+.pr-fund-bars { display: flex; align-items: flex-end; gap: 3px; height: 30px; flex: 0 0 auto; }
+.pr-fund-bars i { width: 5px; background: linear-gradient(180deg,#F5C518,#6b5fa0); border-radius: 2px; animation: pr-fund-pulse 1.8s ease-in-out infinite; }
+.pr-fund-bars i:nth-child(1){ height: 40%; animation-delay: 0s; }
+.pr-fund-bars i:nth-child(2){ height: 70%; animation-delay: 0.2s; }
+.pr-fund-bars i:nth-child(3){ height: 55%; animation-delay: 0.4s; }
+.pr-fund-bars i:nth-child(4){ height: 85%; animation-delay: 0.6s; }
+.pr-fund-bars i:nth-child(5){ height: 60%; animation-delay: 0.8s; }
+@keyframes pr-fund-pulse { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
 
 .pr-bible { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
 .pr-bible-card { display: flex; flex-direction: column; gap: 2px; background: rgba(45,27,105,0.5); border: 1px solid #3a2a6a; border-radius: 12px; padding: 14px; text-decoration: none; transition: all 0.14s; }
