@@ -50,6 +50,8 @@ input,
 textarea,
 select,
 [contenteditable="true"],
+.post-content,
+.post-content *,
 .selectable,
 .selectable * {
   user-select: text;
