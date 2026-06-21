@@ -420,7 +420,6 @@
   // --- achievements ----------------------------------------------------------
   var ACHIEVEMENTS = [
     { key: 'first-contact', icon: '📡', label: 'First Contact',  desc: 'Claim your codename',            test: function (c) { return !!c.profile; } },
-    { key: 'cipher-breaker',icon: '⊙', label: 'Cipher Breaker', desc: 'CIPHER streak of 5+',            test: function (c) { return c.best('cipher') >= 5; } },
     { key: 'tactician',     icon: '⚔', label: 'Tactician',      desc: 'Solve 5+ in Fork in the Road',  test: function (c) { return c.best('fork-in-the-road') >= 5; } },
     { key: 'deep-miner',    icon: '⛏', label: 'Deep Miner',     desc: 'Reach 100m in Sand Mine Depths',test: function (c) { return c.best('sand-mine-depths') >= 100; } },
     { key: 'analyst',       icon: 'Δ', label: 'Analyst',        desc: 'Score 500+ in Clearance: DELTA',test: function (c) { return c.best('clearance-delta') >= 500; } },
@@ -441,7 +440,6 @@
     { name: 'Checker Town',     game: 'notation-run' },
     { name: 'The Sand Mines',   game: 'sand-mine-depths' },
     { name: 'Fork in the Road', game: 'fork-in-the-road' },
-    { name: 'Cipher Station',   game: 'cipher' },
     { name: 'Clearance HQ',     game: 'clearance-delta' },
     { name: 'Pirc Crossing',    game: 'pirc-protocol' },
     { name: 'Shogi Island',     game: 'shogi-island' },
@@ -517,7 +515,7 @@
   };
 
   // --- weekly bounty (one game per week pays 2x credits) ---------------------
-  PJCC.BOUNTY_GAMES = ['cipher', 'clearance-delta', 'notation-run', 'fork-in-the-road', 'sand-mine-depths', 'pirc-protocol', 'shogi-island', 'tower-defense'];
+  PJCC.BOUNTY_GAMES = ['clearance-delta', 'notation-run', 'fork-in-the-road', 'sand-mine-depths', 'pirc-protocol', 'shogi-island', 'tower-defense', 'sky-run'];
   PJCC.bountyGame = function () {
     var now = new Date();
     var week = Math.floor((now - new Date(now.getFullYear(), 0, 1)) / (7 * 24 * 3600 * 1000));
@@ -552,7 +550,7 @@
   // Nate's own marks, posted as the target to chase. Units match each leaderboard.
   // Update these as the creator sets new personal bests.
   var GHOSTS = {
-    'cipher': 12, 'clearance-delta': 850, 'notation-run': 1500, 'fork-in-the-road': 18,
+    'clearance-delta': 850, 'notation-run': 1500, 'fork-in-the-road': 18,
     'sand-mine-depths': 140, 'pirc-protocol': 7, 'shogi-island': 40, 'blindfold': 12,
     'tower-defense': 4200, 'siege-endless': 22, 'sky-run': 9000, 'daily-dispatch': 100
   };
@@ -566,7 +564,7 @@
 
   // --- Seasons / Tours (monthly legs of the Journey to Chess City) ----------------
   var SEASON_NAMES = [
-    'Checker Town Open', 'Sand Mine Circuit', 'The Fork Trials', 'Cipher Season',
+    'Checker Town Open', 'Sand Mine Circuit', 'The Fork Trials', 'Dead Drop Season',
     'Delta Clearance Cup', 'Pirc Crossing Tour', 'Shogi Island Invitational', 'Chess City Masters',
     'Journey Road Rally', 'Quartermaster Classic', 'Royal Decree Series', "Founder's Finale"
   ];

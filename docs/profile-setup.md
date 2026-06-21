@@ -104,11 +104,11 @@ GitHub's A/CNAME records route the *website*; Resend's TXT/MX records handle
 
 1. Edit `assets/js/pjcc-config.js` → paste the **Project URL** and **anon key**
    from step A3 over the two `YOUR_..._HERE` placeholders.
-2. Commit & push. The profile bar appears on the CIPHER page automatically and
+2. Commit & push. The profile bar appears on any game page automatically and
    `PJCC.enabled` flips to true.
 
 ### Test it
-1. Open the CIPHER game page.
+1. Open any game page (e.g. Notation Blitz).
 2. Enter your email → **Send login link** → check your inbox → click the link.
 3. Back on the page, **claim a codename**.
 4. Win a round → confirm the bar shows your codename, rank, and credits going up.

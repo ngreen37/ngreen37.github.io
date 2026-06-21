@@ -17,8 +17,8 @@ permalink: /dossier/
   var el = document.getElementById('dossier');
   // game key -> [label, unit]
   var GAMES = {
-    'cipher': ['CIPHER', 'score'], 'clearance-delta': ['Clearance: DELTA', 'score'],
-    'notation-run': ['Notation Blitz', 'score'], 'fork-in-the-road': ['Fork in the Road', 'solved'],
+    'clearance-delta': ['Clearance: DELTA', 'score'],
+    'notation-run': ['Notation Blitz', 'score'], 'notation-accuracy': ['Notation · Timing', 'precision'], 'fork-in-the-road': ['Fork in the Road', 'solved'],
     'sand-mine-depths': ['Sand Mine Depths', 'depth'], 'pirc-protocol': ['Pirc Protocol', 'flawless'],
     'shogi-island': ['Shogi Island', 'solved'],
     'blindfold': ['Blindfold Puzzles', 'solved'], 'tower-defense': ['Siege on Chess City', 'score'],

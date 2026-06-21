@@ -37,7 +37,7 @@
     bird:   { idle:'idle-hop',   stages:['Chick','Fledgling','Flyer','Sky Marshal'], say:'Tweet — I memorised your best line!' },
     turtle: { idle:'idle-plod',  stages:['Hatchling','Shellback','Elder','Ancient One'], say:'Slow and steady wins the board.' }
   };
-  var NAMES = { 'cipher':'CIPHER','clearance-delta':'Clearance: DELTA','notation-run':'Notation Blitz','fork-in-the-road':'Fork in the Road','sand-mine-depths':'Sand Mine Depths','pirc-protocol':'Pirc Protocol','shogi-island':'Shogi Island','blindfold':'Blindfold Puzzles','tower-defense':'Siege on Chess City' };
+  var NAMES = { 'clearance-delta':'Clearance: DELTA','notation-run':'Notation Blitz','fork-in-the-road':'Fork in the Road','sand-mine-depths':'Sand Mine Depths','pirc-protocol':'Pirc Protocol','shogi-island':'Shogi Island','blindfold':'Blindfold Puzzles','tower-defense':'Siege on Chess City','sky-run':'Sky Run' };
   function gameName(k) { return NAMES[k] || k || 'the games'; }
 
   var SKILLS = [

@@ -15,11 +15,21 @@ permalink: /games/
   <button class="gf-tab active" data-filter="all">All</button>
   <button class="gf-tab" data-filter="playable">▶ Playable</button>
   <button class="gf-tab" data-filter="dev">🛠 In Development</button>
+  <button class="gf-tab" data-filter="new">✦ New</button>
+  <span class="gf-spacer"></span>
+  <input id="gf-search" class="gf-search" type="search" placeholder="🔎 search games…" autocomplete="off">
+  <select id="gf-sort" class="gf-sort" aria-label="Sort games">
+    <option value="default">Sort: Featured</option>
+    <option value="az">Sort: A–Z</option>
+    <option value="new">Sort: Newest</option>
+    <option value="best">Sort: My best</option>
+  </select>
+  <button id="gf-surprise" class="gf-surprise" type="button">🎲 Surprise me</button>
 </div>
 
 <script>
 (function () {
-  var NAMES = { 'cipher': 'CIPHER', 'clearance-delta': 'Clearance: DELTA', 'notation-run': 'Notation Blitz', 'fork-in-the-road': 'Fork in the Road', 'sand-mine-depths': 'Sand Mine Depths', 'pirc-protocol': 'The Pirc Protocol', 'shogi-island': 'Shogi Island', 'tower-defense': 'Siege on Chess City', 'sky-run': 'Sky Run' };
+  var NAMES = { 'clearance-delta': 'Clearance: DELTA', 'notation-run': 'Notation Blitz', 'fork-in-the-road': 'Fork in the Road', 'sand-mine-depths': 'Sand Mine Depths', 'pirc-protocol': 'The Pirc Protocol', 'shogi-island': 'Shogi Island', 'tower-defense': 'Siege on Chess City', 'sky-run': 'Sky Run' };
   function show() {
     if (!window.PJCC || !PJCC.bountyGame) return;
     var key = PJCC.bountyGame();
@@ -67,8 +77,8 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/notation-run/' | relative_url }}">
     <div class="game-card-icon">♫</div>
     <div class="game-card-body">
-      <h2>Notation Blitz v3.4</h2>
-      <p>A rhythm drill for reading chess coordinates at speed — Endless ramp, a free BPM slider, a board-flipped 2-Tone "Black side" mode, and a new ⟲ Extreme mode where the board keeps flipping White↔Black mid-run.</p>
+      <h2>Notation Blitz v3.5</h2>
+      <p>A rhythm drill for reading chess coordinates at speed — Endless ramp, a free BPM slider, a 2-Tone "Black side" mode, a ⟲ Extreme board-flip mode, and a new 📅 Daily seeded chart that posts to a global <strong>timing-accuracy</strong> board (not just score).</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>
@@ -114,15 +124,6 @@ permalink: /games/
     <div class="game-card-body">
       <h2>Sand Mine Depths v2.2</h2>
       <p>A knight-movement descent into the Father's mine. Grab relics in the shrinking torchlight, outwit Subject Zero, and bank gold at the surface camp for lasting gear — or take on the perk-free weekly race.</p>
-      <span class="game-tag">Playable</span>
-    </div>
-  </a>
-
-  <a class="game-card" href="{{ '/games/cipher/' | relative_url }}">
-    <div class="game-card-icon">⊙</div>
-    <div class="game-card-body">
-      <h2>CIPHER v1.4</h2>
-      <p>An operative decryption word game. Crack the five-letter code and the dispatch decrypts itself. Pick a pack (Openings · Endgame · Field Codes), spend 🔑 hint tokens, chase a guesses-and-time score, and unlock the weekly cryptogram.</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>
@@ -322,7 +323,31 @@ permalink: /games/
   padding: 7px 16px; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: inherit; transition: border-color .12s, background .12s, color .12s; }
 .gf-tab:hover { border-color: #8a7bc0; color: #f0e6ff; }
 .gf-tab.active { background: #F5C518; border-color: #F5C518; color: #1a0f3d; }
+.gf-spacer { flex: 1 1 auto; }
+.gf-search, .gf-sort { background: #1d1140; border: 1px solid #4f466e; color: #e9defb; border-radius: 999px;
+  padding: 7px 14px; font-size: 0.85rem; font-family: inherit; }
+.gf-search:focus, .gf-sort:focus { outline: none; border-color: #F5C518; }
+.gf-surprise { background: linear-gradient(135deg,#34206f,#5a3aa0); border: 1px solid #8a7bc0; color: #fff;
+  border-radius: 999px; padding: 7px 16px; font-weight: 800; font-size: 0.85rem; cursor: pointer; font-family: inherit; }
+.gf-surprise:hover { border-color: #F5C518; box-shadow: 0 0 12px -3px #F5C518; }
 .game-card.gc-hidden { display: none; }
+/* "new" badge + changelog popover */
+.game-card { position: relative; }
+.gc-new { position: absolute; top: 8px; right: 10px; z-index: 4; background: #6bffb8; color: #042; font-size: 0.62rem;
+  font-weight: 900; letter-spacing: 0.06em; border-radius: 999px; padding: 2px 8px; cursor: help; box-shadow: 0 0 10px -2px #6bffb8; }
+.gc-pop { position: absolute; top: 28px; right: 8px; z-index: 9; width: 220px; background: #160c33; border: 1px solid #6bffb8;
+  border-radius: 8px; padding: 9px 11px; font-size: 0.74rem; color: #d3c5f3; line-height: 1.45; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  opacity: 0; pointer-events: none; transform: translateY(-4px); transition: opacity .14s, transform .14s; text-align: left; }
+.gc-new:hover + .gc-pop, .gc-pop:hover { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.gc-pop b { color: #6bffb8; }
+.gc-pop .gc-pop-date { color: #9a7fd4; font-size: 0.68rem; }
+/* hover mini-preview: a tiny animated glyph loop tinted to the game accent */
+.gc-prev { display: inline-flex; gap: 3px; margin-left: 6px; vertical-align: middle; opacity: 0; transition: opacity .15s; }
+.game-card:hover .gc-prev { opacity: 1; }
+.gc-prev span { font-size: 0.8rem; color: var(--accent); animation: gchop 0.9s ease-in-out infinite; }
+.gc-prev span:nth-child(2) { animation-delay: 0.15s; } .gc-prev span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes gchop { 0%,100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(-4px); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .gc-prev span { animation: none; } }
 .gc-best { display: inline-block; margin-left: 6px; font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase;
   color: #6bffb8; border: 1px solid #2f6b50; background: rgba(107,255,184,0.10); border-radius: 4px; padding: 2px 7px; vertical-align: middle; }
 .gc-best.none { color: #9a8fc0; border-color: #4f466e; background: transparent; }
@@ -347,7 +372,7 @@ permalink: /games/
   // ---- Per-game accent theming on the cards ----
   var ACCENT = {
     'notation-run': '#F5C518', 'pirc-protocol': '#caa24a', 'fork-in-the-road': '#5be0c0',
-    'sand-mine-depths': '#e0b25a', 'cipher': '#2ecc71', 'clearance-delta': '#ff9fb0',
+    'sand-mine-depths': '#e0b25a', 'clearance-delta': '#ff9fb0',
     'shogi-island': '#d9a441', 'tower-defense': '#ff8fd0', 'blindfold-puzzles': '#c9a7ff',
     'dungeon': '#9a8fc0', 'space-run': '#8fb8ff', 'sky-run': '#7fc8ff'
   };
@@ -380,7 +405,7 @@ permalink: /games/
   var SCOREKEY = {
     'notation-run': ['notation-run','score'], 'pirc-protocol': ['pirc-protocol','flawless'],
     'fork-in-the-road': ['fork-in-the-road','solved'], 'sand-mine-depths': ['sand-mine-depths','depth'],
-    'cipher': ['cipher','score'], 'clearance-delta': ['clearance-delta','score'],
+    'clearance-delta': ['clearance-delta','score'],
     'shogi-island': ['shogi-island','solved'], 'tower-defense': ['tower-defense','score'],
     'blindfold-puzzles': ['blindfold','solved'], 'sky-run': ['sky-run','score']
   };
@@ -410,18 +435,87 @@ permalink: /games/
     });
   }).catch(function () {});
 
-  // ---- Playable / In-Development filter tabs ----
   function isDev(c) { return c.classList.contains('game-card-dim') || c.classList.contains('game-card-locked'); }
+  function cardKey(c) { var h = c.getAttribute('href') || ''; return h.indexOf('/daily/') >= 0 ? 'daily' : keyOf(h); }
+
+  // ---- recent-change log -> auto "✦ new" badges + changelog popover ----
+  var NEW_DAYS = 21;
+  var CHANGELOG = {
+    'notation-run':      { date: '2026-06-20', note: 'v3.5 — Daily seeded chart + a global timing-accuracy board.' },
+    'pirc-protocol':     { date: '2026-06-20', note: 'v2.1 — Blunder Traps deck: famous traps, machine-verified forced mates.' },
+    'tower-defense':     { date: '2026-06-20', note: 'v2.0 — Endless survival + wave board, Frost Knight, mutators, boss mechanics.' },
+    'shogi-island':      { date: '2026-06-20', note: 'v3.1 — real 詰将棋 tsume (mate-in-3/5) and a full 9×9 AI match.' },
+    'blindfold-puzzles': { date: '2026-06-20', note: 'v2.1 — Speed-Vision, Describe-only, Daily; Mind’s Eye tiers, blitz clock, replay.' },
+    'sky-run':           { date: '2026-06-15', note: 'v1.0 — new chess-Bloons sky shooter.' },
+    'daily':             { date: '2026-06-20', note: 'New — date-seeded Dead Drop word, daily board + streak.' }
+  };
+  function daysSince(d) { var t = Date.parse(d + 'T00:00:00'); return isNaN(t) ? 9e9 : (Date.now() - t) / 86400000; }
+  var PREVIEW = { 'notation-run':['♫','♪','♬'], 'pirc-protocol':['♚','♟','♛'], 'fork-in-the-road':['♞','⚔','♝'],
+    'sand-mine-depths':['⛏','💎','♘'], 'clearance-delta':['Δ','✦','▲'], 'shogi-island':['将','歩','王'],
+    'tower-defense':['🏰','♜','❄'], 'blindfold-puzzles':['◻','♟','👁'], 'sky-run':['♞','✦','♛'], 'daily':['📡','✦','🔑'] };
+
+  Array.prototype.forEach.call(cards, function (c) {
+    var k = cardKey(c), body = c.querySelector('.game-card-body'), h2 = body ? body.querySelector('h2') : null;
+    // hover mini-preview (tiny animated glyph loop tinted to the accent)
+    if (h2 && PREVIEW[k]) { var pv = document.createElement('span'); pv.className = 'gc-prev';
+      pv.innerHTML = PREVIEW[k].map(function (g) { return '<span>' + g + '</span>'; }).join(''); h2.appendChild(pv); }
+    // "new" badge if recently bumped, with a changelog popover
+    var cl = CHANGELOG[k];
+    if (cl && daysSince(cl.date) <= NEW_DAYS && !isDev(c)) {
+      c.setAttribute('data-new', '1');
+      var badge = document.createElement('span'); badge.className = 'gc-new'; badge.textContent = '✦ NEW';
+      var pop = document.createElement('span'); pop.className = 'gc-pop';
+      pop.innerHTML = '<b>What’s new</b><br>' + cl.note + '<div class="gc-pop-date">updated ' + cl.date + '</div>';
+      c.appendChild(badge); c.appendChild(pop);
+    }
+  });
+
+  // ---- unified filter (tab + search) + sort ----
+  var grid = cards.length ? cards[0].parentNode : null;
+  var original = Array.prototype.slice.call(cards);
+  var activeFilter = 'all', term = '';
+  function matchesFilter(c) {
+    if (activeFilter === 'playable') return !isDev(c);
+    if (activeFilter === 'dev') return isDev(c);
+    if (activeFilter === 'new') return c.getAttribute('data-new') === '1';
+    return true;
+  }
+  function cardText(c) { var h2 = c.querySelector('h2'), p = c.querySelector('p'); return ((h2 ? h2.textContent : '') + ' ' + (p ? p.textContent : '')).toLowerCase(); }
+  function applyFilters() {
+    Array.prototype.forEach.call(cards, function (c) {
+      var show = matchesFilter(c) && (!term || cardText(c).indexOf(term) >= 0);
+      c.classList.toggle('gc-hidden', !show);
+    });
+  }
+  function bestOf(c) { var info = scoreInfo(c); if (!info) return -1; return (window.PJCC && PJCC.localBest) ? PJCC.localBest(info[0]) : 0; }
+  function sortBy(mode) {
+    if (!grid) return;
+    var arr = original.slice();
+    if (mode === 'az') arr.sort(function (a, b) { return cardText(a).localeCompare(cardText(b)); });
+    else if (mode === 'new') arr.sort(function (a, b) { var da = CHANGELOG[cardKey(a)], db = CHANGELOG[cardKey(b)];
+      return (db ? Date.parse(db.date) : 0) - (da ? Date.parse(da.date) : 0); });
+    else if (mode === 'best') arr.sort(function (a, b) { return bestOf(b) - bestOf(a); });
+    arr.forEach(function (c) { grid.appendChild(c); });
+  }
   var tabs = document.querySelectorAll('#game-filters .gf-tab');
   Array.prototype.forEach.call(tabs, function (t) {
     t.addEventListener('click', function () {
       Array.prototype.forEach.call(tabs, function (x) { x.classList.toggle('active', x === t); });
-      var f = t.getAttribute('data-filter');
-      Array.prototype.forEach.call(cards, function (c) {
-        var show = f === 'all' || (f === 'dev' ? isDev(c) : !isDev(c));
-        c.classList.toggle('gc-hidden', !show);
-      });
+      activeFilter = t.getAttribute('data-filter'); applyFilters();
     });
+  });
+  var search = document.getElementById('gf-search');
+  if (search) search.addEventListener('input', function () { term = this.value.trim().toLowerCase(); applyFilters(); });
+  var sortSel = document.getElementById('gf-sort');
+  if (sortSel) sortSel.addEventListener('change', function () { sortBy(this.value); });
+
+  // ---- surprise me: jump to a random playable game ----
+  var surprise = document.getElementById('gf-surprise');
+  if (surprise) surprise.addEventListener('click', function () {
+    var playable = original.filter(function (c) { return !isDev(c); });
+    if (!playable.length) return;
+    var pick = playable[(Math.random() * playable.length) | 0];
+    var h = pick.getAttribute('href'); if (h) window.location.href = h;
   });
 
   // ---- Kill-the-sheen toggle (applies site-wide via pjcc-flair.js) ----

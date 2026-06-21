@@ -207,27 +207,6 @@ jukebox: true
 
   <div class="project-card project-card-featured">
     <div class="featured-ribbon">PLAYABLE NOW</div>
-    <div class="project-card-corner-piece" aria-hidden="true">⊙</div>
-    <div class="project-card-header">
-      <span class="project-status project-status-done">
-        <span class="project-status-dot"></span>
-        Completed (pending improvements)
-      </span>
-      <h2 class="project-title">CIPHER <span class="ver">v1.3</span></h2>
-    </div>
-    <p class="project-desc">An operative decryption terminal in the style of the Classified archive. Crack a five-letter code in six tries — chess vocabulary at Clearance Delta, PJCC field codes at Clearance Omega — and the intercepted dispatch unredacts itself, line by line. Daily intercept plus an endless decryption streak.</p>
-    <ul class="project-details">
-      <li><strong>Format:</strong> Browser game</li>
-      <li><strong>Status:</strong> Playable — more intercepts in progress</li>
-    </ul>
-    <div class="project-links">
-      <a href="/games/cipher/" class="project-link project-link-play">▶ PLAY NOW</a>
-      <a href="/games/" class="project-link">All Games</a>
-    </div>
-  </div>
-
-  <div class="project-card project-card-featured">
-    <div class="featured-ribbon">PLAYABLE NOW</div>
     <div class="project-card-corner-piece" aria-hidden="true">Δ</div>
     <div class="project-card-header">
       <span class="project-status project-status-done">
@@ -392,11 +371,10 @@ jukebox: true
   <li><a href="/games/pirc-protocol/">The Pirc Protocol <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/fork-in-the-road/">Fork in the Road <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/sand-mine-depths/">Sand Mine Depths <span class="ver">v2.2</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/cipher/">CIPHER <span class="ver">v1.3</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/clearance-delta/">Clearance: DELTA <span class="ver">v1.3</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/shogi-island/">Shogi Island <span class="ver">v3.0</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/shogi-island/">Shogi Island <span class="ver">v3.1</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/tower-defense/">Siege on Chess City <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/blindfold-puzzles/">Blindfold Puzzles <span class="ver">v2.0</span></a> <span class="games-index-note">— hidden bonus · hides The Mind's Eye</span></li>
+  <li><a href="/games/blindfold-puzzles/">Blindfold Puzzles <span class="ver">v2.1</span></a> <span class="games-index-note">— hidden bonus · hides The Mind's Eye</span></li>
   <li><a href="/games/knights-tour/">Knight's Tour</a> <span class="games-index-term">— terminated</span></li>
 </ul>
 
