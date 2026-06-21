@@ -34,6 +34,11 @@ referrals.)
   carries a panel (shot type · emoji · VO) so a story plays back as a reel with a temp score.
   Save drafts locally, load Pilot/Louie examples, and **publish** by baking the whole story into a
   shareable link (URL-encoded; remixable). Shared studio gallery deferred to Operative accounts.
+- **Avenue 5 — audio pillar hub** (`/sound/`) — makes audio first-class: a live, playable
+  **Leitmotif Gallery** (every character's signature + a "play the ensemble" medley, all procedural/
+  offline), plus the roadmap staged as Coming Soon — the **Score &amp; EP** (locked tracklist; no
+  original music recorded), the **audio-fiction radio-drama pilot**, **Notation Blitz score mode**,
+  and **community remixes** for the Build Playlist. Linked in the McPuppy nav.
 - **Avenue 5 — character leitmotifs** (`assets/js/pjcc-leitmotif.js`) — deterministic Web-Audio
   signature per character, a "♪ theme" button on every character page.
 - **Avenue 6 — Princess companion** (`assets/js/pjcc-princess.js`) — Train Princess (ranks from
@@ -73,12 +78,38 @@ board-skins foundation + JP-localization mechanism.
 - **Projects** — a public roadmap / "What's next" page (read-only is easy; voting needs a backend).
 - **Academy** — tune lesson thresholds with real data · more courses (a strategy track, a shogi
   track) · a multi-page printable worksheet packet · a branching skill-tree (prereqs/unlocks).
-- **Leitmotifs** — a showcase strip to hear every character's theme in one place.
 - **Princess** — promote her to a *floating site-wide* companion; holiday / episode-drop lines.
-- **Production** — the clickable **pilot animatic reel** scaffold (drop in boards + scratch VO later).
 
 **Audio / cosmetics**
 - A PJCC original track for the jukebox + a per-game SFX toggle.
+
+---
+
+## ❓ Open decision — how Operatives publish & share Writers' Room reels
+Right now "publish" = a self-contained shareable link (the whole story is URL-encoded). That works
+with zero infrastructure but there's no shared place to *discover* other people's reels. Options,
+lightest → heaviest:
+
+- **A · Curated "Featured Reels" shelf (ship now, no backend).** Keep link-publishing; add a
+  hand-curated `_data/reels.yml` that renders a shelf on `/writers-room/`. Operatives send links via
+  contact / mailing list; you paste the standouts in. *Pros:* free, on-brand ("winners get
+  featured," you stay showrunner). *Cons:* not self-serve; manual.
+- **B · GitHub "submit a reel" (no backend, semi-automated).** A "Submit to the studio" button opens
+  a prefilled GitHub issue containing the story code; accepted ones get merged into `reels.yml`.
+  *Pros:* free, versioned, real submission trail. *Cons:* needs a GitHub account; friction for
+  non-devs.
+- **C · Form-service capture → shelf (no backend, lower friction than B).** A "Submit your reel"
+  Formspree/Google-Form posts the code to your inbox; you curate winners into the shelf. *Pros:*
+  anyone can submit; you stay curator. *Cons:* a third-party form; still manual to feature.
+- **D · Supabase Story Gallery (the "real" version; needs Operative accounts).** POST the story JSON
+  to a `stories` table; `/writers-room/gallery/` lists featured + recent with likes/comments reused
+  from the profile system; featuring a reel grants a credit/badge. *Pros:* true community, ties to
+  dossier + Press Pass. *Cons:* needs auth, moderation, and spam controls.
+
+**Recommendation:** ship **A** now (costs nothing, matches the "you can publish too / winners get a
+credit" ethos), and graduate to **D** when Operative accounts land — the editor already emits a
+clean story object that can POST straight to a table. **C** is the good middle step if demand shows
+up before accounts do.
 
 ---
 
@@ -179,13 +210,7 @@ board-game Kickstarter is bigger, but the designs exist and are proven fun — t
 **Best case:** A Kickstarter for the chess set + field guide funds a real chunk of the pilot.
 
 ## Avenue 5 — Lean all the way into audio (PJCC as a *sound* world)
-Music is clearly core to you. Make audio a first-class pillar. *(Leitmotifs shipped.)*
-1. **An original score / EP** — a Checker Town theme, a Chess City theme, a villain motif.
-2. **A radio drama / audio-fiction pilot** — voice the pilot as audio first; a fraction of animation's
-   cost, ships years sooner, tests writing + cast + tone live.
-3. **Character leitmotifs** — a tiny, distinct signature on each character's page.
-4. **Notation Blitz "score mode"** — chart the actual PJCC themes as playable rhythm tracks.
-5. **Community remixes** — "submit a track for the Build Playlist," with a featured fan slot.
+
 **Realistic take:** The audio drama is the most *underrated* idea here — ships the story cheaply,
 proves the writing/performances, and grows a fiction-podcast audience while the animation cooks.
 **Best case:** A devoted listenership, a score with its own life on streaming, and a proven cast by
