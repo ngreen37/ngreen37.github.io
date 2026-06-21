@@ -24,8 +24,10 @@ referrals.)
   certificate. Fully offline, kid-safe.
 - **Projects page** — live playable / completed / in-the-lab stat counters; earlier games-page
   polish (Daily tab + badges, Game-of-the-Week hero).
-- **Avenue 1 — production as content** (`/production/`) — pipeline tracker, Frame-the-Scene poll,
-  casting booth, living-style-bible links.
+- **Avenue 1 — production as content** (`/production/`) — full build-out: an interactive **Pilot
+  Animatic** (scene-by-scene storyboard reel, scratch-VO subtitles, per-shot temp-score leitmotifs,
+  filmstrip jump, per-shot comments), pipeline tracker, Frame-the-Scene poll, living-style-bible
+  links. Casting booth (#4) staged as **Coming Soon**.
 - **Avenue 5 — character leitmotifs** (`assets/js/pjcc-leitmotif.js`) — deterministic Web-Audio
   signature per character, a "♪ theme" button on every character page.
 - **Avenue 6 — Princess companion** (`assets/js/pjcc-princess.js`) — Train Princess (ranks from
@@ -129,22 +131,7 @@ board-skins foundation + JP-localization mechanism.
 **Realistic take** and a **Best case**. A menu, not a to-do list — ranked picks at the end.
 (Avenues 1, 3, 5, 6, and 10 now have shipped pieces; see the Shipped log above.)*
 
-## Avenue 1 — Make "the show getting made" the product (production as content)
-The honest truth of PJCC is that it's a cartoon *in development*. Most indie studios hide the
-pipeline until the pilot is done. Flip it: the act of building the show **is** the show until the
-show exists.
-1. **The pilot animatic** — a clickable, scene-by-scene storyboard reel with scratch VO and a temp
-   score; viewers comment per shot.
-2. **"Frame the Scene"** — post two versions of a shot and let the audience vote.
-3. **A real production tracker** — public % bars per episode (script → boards → layout → animation
-   → comp).
-4. **Open the booth** — community voice auditions for a side character; winners get a credit.
-5. **The living style bible** — turnarounds, color scripts, prop sheets as a public page.
-**Realistic take:** Highest-leverage, most on-brand move on the list — mostly *organizing work
-you're already doing* into something that shows the show. An animatic + tracker are achievable solo
-and convert dev-log energy into pre-launch audience, the one thing that reliably saves indie animation.
-**Best case:** The animatic catches fire, "I backed this before episode 1" becomes a badge of honor,
-and you arrive at the pilot having effectively *pre-sold* it.
+
 
 ## Avenue 2 — Turn the spy meta-layer into a real, season-long ARG
 You've already built ~80% of the scaffolding — Agent 0091, transmissions, fragments, Konami/morse
