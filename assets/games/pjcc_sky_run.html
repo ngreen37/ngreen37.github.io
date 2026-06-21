@@ -379,14 +379,41 @@ function updateBoss(dt){
   }
   if (b.hp<=0){ bossDefeated(); }
 }
+// Two-panel story beats between regions (Avenue 1 tie — the show, in-game).
+const STORY_BEATS = {
+  1: { a:['🏠','🌊'], cap:['Checker Town below.','Open sea ahead.'] },
+  2: { a:['🌊','⛩'], cap:['Across the water.','Shogi Isle rises.'] },
+  3: { a:['⛩','🏙️'], cap:['The island fades.','Chess City gleams.'] },
+  4: { a:['🏙️','🚪'], cap:['A door marked ★','The CEO waits.'] }
+};
 function bossDefeated(){
   const b=G.boss; burst(b.x,b.y,curRegion().glow,60); G.shake=16; sfx('boom');
   G.score += 500*G.region; floater('BOSS +'+(500*G.region), b.x, b.y, '#ffe27a');
   G.boss=null; G.ebullets.length=0;
-  G.phase='interstitial'; G.interT=2.6; G.nextRegion=G.region+1;
   const last = G.region>=REGIONS.length;
+  G.beat = last ? null : STORY_BEATS[G.region];
+  G.phase='interstitial'; G.interT=2.6; G.nextRegion=G.region+1;
   G.banner = last ? 'YOU REACHED THE TOP' : 'REGION CLEARED'; G.bannerT=2.6;
   sfx('win');
+}
+function drawInterstitial(){
+  const beat=G.beat; if(!beat) return;
+  const cy=H*0.52, pw=W*0.36, ph=pw*0.66, gap=W*0.08;
+  const xs=[W/2-gap/2-pw, W/2+gap/2];
+  ctx.save();
+  ctx.fillStyle='rgba(5,6,15,0.55)'; ctx.fillRect(0,cy-ph*0.7,W,ph*1.4);
+  for(let i=0;i<2;i++){
+    const x=xs[i];
+    ctx.fillStyle='#0a0f24'; ctx.fillRect(x,cy-ph/2,pw,ph);
+    ctx.strokeStyle='#8fb8ff'; ctx.lineWidth=2; ctx.strokeRect(x,cy-ph/2,pw,ph);
+    ctx.fillStyle='#fff'; ctx.font='bold '+Math.round(pw*0.4)+'px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(beat.a[i], x+pw/2, cy-ph*0.1);
+    ctx.fillStyle='#cfe0ff'; ctx.font='bold 10px Trebuchet MS';
+    ctx.fillText(beat.cap[i], x+pw/2, cy+ph*0.32);
+  }
+  ctx.fillStyle='#ffe27a'; ctx.font='bold 22px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('→', W/2, cy);
+  ctx.restore();
 }
 
 function updateBullets(dt){
@@ -523,6 +550,7 @@ function render(){
   drawHUD();
   if (G.flash>0){ ctx.fillStyle='rgba(255,40,60,'+(G.flash*0.4)+')'; ctx.fillRect(0,0,W,H); }
   if (G.pflash>0){ ctx.fillStyle='rgba('+hexToRgb(G.pflashCol)+','+(G.pflash*0.3)+')'; ctx.fillRect(0,0,W,H); }
+  if (G.phase==='interstitial' && G.beat) drawInterstitial();
   if (G.bannerT>0) drawBanner();
 }
 function glyph(x,y,ch,size,col){ ctx.font='900 '+size+'px "Segoe UI Symbol","Noto Sans Symbols2",serif'; ctx.textAlign='center'; ctx.textBaseline='middle';

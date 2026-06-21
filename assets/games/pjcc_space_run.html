@@ -149,6 +149,10 @@ function buildTrack(type,lane,zFar){
 // ── STATE ─────────────────────────────────────────────────────────────────
 let keys={},best=0,running=false,g;
 let jumpHeld=false,laneCooldown=0;
+const BEST_KEY='pjcc.spacerun.best.v1';
+function loadBest(){ try{ return parseInt(localStorage.getItem(BEST_KEY),10)||0; }catch(e){ return 0; } }
+function saveBest(v){ try{ localStorage.setItem(BEST_KEY,String(v)); }catch(e){} }
+best=loadBest();
 
 function initGame(){
   resize();
@@ -159,6 +163,7 @@ function initGame(){
     princess:{lane:1,targetLane:1,laneT:1,z:80,groundY:0,vy:0,onPiece:false,jumpTimer:0,ridingGroup:null},
     groups:[],
     ceo:{anim:0,throwTimer:120,dogPhase:0},
+    flyby:null,flybyNext:80,
     particles:[],texts:[],
     stars:Array.from({length:200},()=>({sx:Math.random(),sy:Math.random()*0.95,s:Math.random()*1.8+0.3,spd:Math.random()*0.3+0.15})),
   };
@@ -316,7 +321,7 @@ function updateGroups(){
         g.hp=Math.max(0,g.hp-1);g.flash=18;
         const sc=projectAt(LANE_X[grp.segs[0].lane],g.player.z,60);
         addText('MISS',sc.x,sc.y,'#ff4444',40);
-        if(g.hp<=0){g.dead=true;if(g.dist>best)best=g.dist;setTimeout(showOverlay,700);}
+        if(g.hp<=0){g.dead=true;if(g.dist>best){best=g.dist;saveBest(best);}setTimeout(showOverlay,700);}
       }
     }
   });
@@ -679,11 +684,27 @@ function update(){
   if(!running||g.dead)return;
   g.frame++;
   g.dist=Math.floor(g.frame*g.speed/60);
+  // Crash-site flyby — a periodic lore beat: the origin wreck drifts past the horizon
+  if(!g.flyby&&g.dist>=g.flybyNext){g.flyby={t:0};g.flybyNext+=130;addText('◈ the wreck that fell from the sky…',W/2,HORIZON()-44,'#c96bff',130);}
+  if(g.flyby){g.flyby.t++;if(g.flyby.t>220)g.flyby=null;}
   updateGroups();updateCEO();updatePlayer();updatePrincess();
+}
+function drawFlyby(){
+  if(!g.flyby)return;
+  const p=g.flyby.t/220, x=W*(-0.12+p*1.24), y=HORIZON()-16, a=Math.sin(p*Math.PI);
+  ctx.save();ctx.globalAlpha=Math.max(0,a)*0.85;ctx.translate(x,y);
+  // wrecked construction vessel silhouette
+  ctx.fillStyle='#1a0d2e';ctx.strokeStyle='#6633aa';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(-26,4);ctx.lineTo(-8,-6);ctx.lineTo(18,-3);ctx.lineTo(24,3);ctx.lineTo(10,9);ctx.lineTo(-20,9);ctx.closePath();ctx.fill();ctx.stroke();
+  // snapped tail + embers
+  ctx.strokeStyle='rgba(255,120,60,'+(a*0.6)+')';ctx.beginPath();ctx.moveTo(-26,4);ctx.lineTo(-42,1);ctx.stroke();
+  ctx.fillStyle='rgba(255,170,90,'+(a*0.6)+')';ctx.beginPath();ctx.arc(-32,3,2,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(-38,0,1.4,0,Math.PI*2);ctx.fill();
+  ctx.restore();
 }
 function draw(){
   if(!g)return;
-  drawStars();drawGrid();drawGroups();drawLeash();
+  drawStars();drawGrid();drawFlyby();drawGroups();drawLeash();
   const pr=g.princess;
   drawSkater(pr.laneT,pr.z,pr.groundY,!pr.onPiece,pr.onPiece,'princess');
   const pl=g.player;

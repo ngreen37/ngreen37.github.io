@@ -150,6 +150,7 @@ preview + share-card generator + `/educators/` B2B page + game-page dispatch cap
 10. **Hidden chamber → fragment** — the mine literally buries lore.
 
 ## Shogi Island / Catch the Lion — *3×4 shogi*
+*Deferred this pass (stay-within-means): Shogi Island is already the most complex game — full 9×9 rules, a tsume solver, capture/check/mate problem generation, and an AI. These are the next layer, each a sizeable, careful add on top of that engine — left here on purpose rather than risk destabilizing it.*
 1. **Scaling handicaps vs the Lion AI** — a difficulty ladder.
 2. **Piece-reach trainer** — highlight what each shogi piece threatens.
 3. **Tsume-of-the-day** — a daily mate-in-N, global solve board.
@@ -162,6 +163,7 @@ preview + share-card generator + `/educators/` B2B page + game-page dispatch cap
 10. **Island duel** — local hot-seat with drops.
 
 ## Sky Run — *vertical shmup*
+*Shipped this pass: **#10 Animatic interstitials** — a 2-panel story beat now plays on each region clear (reusing the interstitial phase). Feasible-next within means: Daily seeded sky (#4), Endless "Sea" mode (#3), Loadout select (#6), Photo end-card (#7), new power-ups (#2). Too far for now: Co-pilot (#5, 2-player input) and the rhythm tie-in (#8, needs the real score).*
 1. **Lore bosses** — every region's king with a patterned fight (CEO finale exists).
 2. **New power-ups** — Rook (laning wall), pawn-storm, an en-passant dash.
 3. **Endless "Sea" mode** — one life, escalating, global distance board.
@@ -174,6 +176,7 @@ preview + share-card generator + `/educators/` B2B page + game-page dispatch cap
 10. **Animatic interstitials** — a 2-panel story beat between regions (Avenue 1 tie).
 
 ## Space Run — *the Chess City Invitational runner*
+*Shipped this pass: **#10 Crash-site flyby** — the origin wreck now drifts past the horizon periodically with a lore caption; **also** the high score now persists to localStorage (it was lost on reload). Note: Space Run is the one arcade game **not yet wired to PJCC** (no config/profile include), so the Daily/global-board items (#1 qualifier, #5 daily track) need that wiring first; #2/#4/#6 (collect-a-set, rival racers, tactic shortcuts) are larger mechanics; #7/#8 (cosmetic ships, speed-tier music) need the cosmetics/audio layers.*
 1. **Qualifier framing** — beating it earns a tournament seed in the meta.
 2. **Collect-a-set pieces** — pick up chess pieces to upgrade the ship.
 3. **Legality dodging** — move only into squares your piece could legally reach.
