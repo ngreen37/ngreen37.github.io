@@ -339,10 +339,12 @@ marketing beat for the show's launch.
 ## Avenue 10 — Fund the dream without breaking the vibe (business & reach)
 The meta-avenue: how this pays for itself and finds people. Boring on the surface, but it's
 what lets every other avenue happen.
-1. **A membership / "Chess City Press Pass"** — early episodes, behind-the-scenes, exclusive
-   cosmetics, name-in-credits. The operative tier system already models this.
-2. **An ethical premium currency** — cosmetics only, never pay-to-win, with a bright line you
-   never cross. Protects trust while opening revenue.
+1. ◐ **A membership / "Chess City Press Pass"** — *page shipped (`/press-pass/`):* a 3-tier pitch
+   (Operative free · Press Pass · Founder) grounded in the operative/credits system, with a
+   cosmetics-only promise and a "founders list → dispatch" CTA. *Still needs:* real payment + the
+   gated perks behind it (early-episode access, BTS feed, supporter cosmetics).
+2. ⏳ **An ethical premium currency** — cosmetics only, never pay-to-win. *(Needs payment + store
+   backend; the Quartermaster/credits system is the hook.)*
 3. **A newsletter-first engine** — the mailing list already exists; a genuinely great weekly
    dispatch is the cheapest *durable, owned* audience you can build (no algorithm can take it).
 4. **Grants & festivals** — animation/arts grants and film-festival short submissions are real
