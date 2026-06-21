@@ -175,7 +175,7 @@ permalink: /games/
     <div class="game-card-icon">🏰</div>
     <div class="game-card-body">
       <h2>Siege on Chess City v2.1</h2>
-      <p>A four-front tower-defense campaign — now with <strong>tower synergies</strong> (stand a Knight by a Queen for haste, a Bishop by a Rook for a piercing beam), a 📅 <strong>Daily mutator-roulette</strong> on a fixed seed with its own global board, an ♾ Endless survival mode + wave board, a ❄ Frost Knight, map mutators for bonus Crowns, and bosses that summon adds and teleport. Place a free-roaming Bishop Sniper, recruit Louie the Bomber, and spend City Crowns on permanent upgrades.</p>
+      <p>A four-front tower-defense campaign — now with <strong>tower synergies</strong> (stand a Knight by a Queen for haste, a Bishop by a Rook for a piercing beam), a 📅 <strong>Daily mutator-roulette</strong> on a fixed seed with its own global board, an ♾ Endless survival mode + wave board, a ❄ Frost Knight, map mutators for bonus Crowns, and bosses that summon adds and teleport. Place a free-roaming Bishop Sniper, recruit Auston the Bomber, and spend City Crowns on permanent upgrades.</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>

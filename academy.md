@@ -69,7 +69,7 @@ permalink: /academy/
 
 <!-- ===== Skill tree ===== -->
 <h2 class="ac-h2">🗺 The Skill Tree</h2>
-<p class="ac-class-intro">Lessons unlock as you climb. Start with Louie's Bootcamp; the rest opens from there.</p>
+<p class="ac-class-intro">Lessons unlock as you climb. Start with Auston's Bootcamp; the rest opens from there.</p>
 <div class="ac-skilltree" id="ac-skilltree"></div>
 
 <!-- ===== Sandbox board (in-site real-play bridge) ===== -->
@@ -207,12 +207,12 @@ permalink: /academy/
     <p class="ws-sub">A ready-to-run unit. Each week pairs a short lesson with an in-Academy game and a worksheet page.</p>
     <table class="ws-curric">
       <tr><th>Week</th><th>Focus</th><th>Faculty · Game</th><th>Homework</th></tr>
-      <tr><td>1</td><td>The board &amp; coordinates</td><td>Louie · Notation Blitz</td><td>Worksheet 1</td></tr>
-      <tr><td>2</td><td>How the pieces move</td><td>Louie · Sand Mine / Knight's Tour</td><td>Worksheet 2</td></tr>
+      <tr><td>1</td><td>The board &amp; coordinates</td><td>Auston · Notation Blitz</td><td>Worksheet 1</td></tr>
+      <tr><td>2</td><td>How the pieces move</td><td>Auston · Sand Mine / Knight's Tour</td><td>Worksheet 2</td></tr>
       <tr><td>3</td><td>Openings — the first moves</td><td>Argus · The Pirc Protocol</td><td>Play one line</td></tr>
       <tr><td>4</td><td>Tactics — forks &amp; pins</td><td>The Rival · Fork in the Road</td><td>Worksheet 3 · solve 3</td></tr>
       <tr><td>5</td><td>Strategy — the long game</td><td>Bill · Siege on Chess City</td><td>Play one siege</td></tr>
-      <tr><td>6</td><td>Vision &amp; the island</td><td>Princess / Oskar · Blindfold · Shogi</td><td>Solve 5 blind</td></tr>
+      <tr><td>6</td><td>Vision &amp; the island</td><td>Princess / Crockett · Blindfold · Shogi</td><td>Solve 5 blind</td></tr>
     </table>
     <p class="ws-foot">Belts: a new belt every ~3–4 lessons (see the live ladder on the Academy page). Print each student's certificate at the end — the code on it verifies right on the site.</p>
   </div>
@@ -254,8 +254,8 @@ window.ACCERT = (function () {
 
   // ---- Faculty & courses: each lesson is a target in a game you already have ----
   var COURSES = [
-    { id: 'fundamentals', who: 'Louie', slug: 'louie', ico: '💣', accent: '#ffd36b',
-      title: "Louie's Bootcamp", sub: 'Fundamentals — the board & the pieces',
+    { id: 'fundamentals', who: 'Auston', slug: 'auston', ico: '💣', accent: '#ffd36b',
+      title: "Auston's Bootcamp", sub: 'Fundamentals — the board & the pieces',
       blurb: '"You gotta know where everything is before it goes boom." The squares, the files, the ranks.',
       lessons: [
         { t: 'Learn the coordinates', d: 'Play one run of Notation Blitz.', go: 'notation-run', done: function(){ return best('notation-run') >= 1; } },
@@ -298,9 +298,9 @@ window.ACCERT = (function () {
         { t: 'Take the long way', d: 'Fly a run of Sky Run.', go: 'sky-run', done: function(){ return best('sky-run') >= 1; } },
         { t: 'Weigh the risk', d: 'Make a call in Checker Financial.', go: 'checker-financial', done: function(){ return best('checker-financial') >= 1; } }
       ] },
-    { id: 'shogi', who: 'Oskar', slug: 'oskar', ico: '⛩', accent: '#ffb066',
-      title: "Oskar's Shogi Dojo", sub: 'The island game — shogi',
-      blurb: 'On Shogi Island the rules bend: captured pieces change sides. A different kind of board.',
+    { id: 'shogi', who: 'Crockett', slug: 'crockett', ico: '⛩', accent: '#ffb066',
+      title: "Crockett's Shogi Dojo", sub: 'The island game — shogi',
+      blurb: 'The main character\'s little sister fell in love with the island\'s puzzle game. Now she teaches it.',
       lessons: [
         { t: 'Catch the Lion', d: 'Win once on Shogi Island.', go: 'shogi-island', done: function(){ return best('shogi-island') >= 1; } },
         { t: 'Drops & reach', d: 'Solve 3 on Shogi Island.', go: 'shogi-island', done: function(){ return best('shogi-island') >= 3; } },
@@ -432,8 +432,8 @@ window.ACCERT = (function () {
     var dm = {}; COURSES.forEach(function (c) { dm[c.id] = courseDone(c); });
     var f = dm.fundamentals || 0, t2 = (dm.openings || 0) + (dm.tactics || 0), t3 = (dm.strategy || 0) + (dm.vision || 0);
     var gate = {
-      fundamentals: { open: true }, openings: { open: f >= 1, by: "Start Louie's Bootcamp" },
-      tactics: { open: f >= 1, by: "Start Louie's Bootcamp" }, strategy: { open: t2 >= 2, by: '2 lessons in Openings/Tactics' },
+      fundamentals: { open: true }, openings: { open: f >= 1, by: "Start Auston's Bootcamp" },
+      tactics: { open: f >= 1, by: "Start Auston's Bootcamp" }, strategy: { open: t2 >= 2, by: '2 lessons in Openings/Tactics' },
       vision: { open: t2 >= 2, by: '2 lessons in Openings/Tactics' }, shogi: { open: t3 >= 2, by: '2 lessons in Strategy/Vision' }
     };
     var tiers = [['fundamentals'], ['openings', 'tactics'], ['strategy', 'vision'], ['shogi']];
@@ -560,7 +560,7 @@ window.ACCERT = (function () {
     });
     $('ac-place-submit').onclick = function () {
       var score = 0; QS.forEach(function (q, i) { if (picks[i] === q.c) score++; });
-      var path = score <= 2 ? { t: "Start with Louie's Bootcamp", d: 'Lock in the board and pieces first.', go: 'notation-run' }
+      var path = score <= 2 ? { t: "Start with Auston's Bootcamp", d: 'Lock in the board and pieces first.', go: 'notation-run' }
         : score <= 4 ? { t: "Jump to Argus & the Rival", d: 'You know the basics — build openings and tactics.', go: 'pirc-protocol' }
         : { t: "Straight to Princess's Vision Hall", d: 'Strong start! Train board vision and the endgame.', go: 'blindfold-puzzles' };
       try { localStorage.setItem('pjcc.academy.placement', JSON.stringify({ score: score, when: Date.now() })); } catch (_) {}

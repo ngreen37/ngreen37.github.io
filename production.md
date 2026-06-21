@@ -87,7 +87,7 @@ permalink: /production/
 <div class="pr-booth is-soon">
   <div class="pr-booth-ico">🎙</div>
   <div>
-    <p class="pr-booth-lead">Community voice auditions are on the way. We'll cast real listeners as side characters — first up, <b>Louie the Bomber</b>.</p>
+    <p class="pr-booth-lead">Community voice auditions are on the way. We'll cast real listeners as side characters — first up, <b>Auston the Bomber</b>.</p>
     <p class="pr-muted">When the booth opens you'll record a short clip (3–4 lines, any mic). Winners get a credit on the episode, with their take read on the dev-log. Not open yet — <a href="{{ '/mailing-list/' | relative_url }}">join the dispatch</a> to be first in line when casting starts.</p>
     <span class="pr-booth-btn is-disabled" aria-disabled="true">Auditions open soon</span>
   </div>

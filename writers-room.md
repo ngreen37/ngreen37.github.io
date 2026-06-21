@@ -49,7 +49,7 @@ permalink: /writers-room/
         <button class="wr-btn" id="wr-example-btn" type="button">≡ Load example ▾</button>
         <div class="wr-example-menu" id="wr-example-menu" hidden>
           <button type="button" data-ex="pilot">The Pilot — Story Circle</button>
-          <button type="button" data-ex="louie">Louie's Fuse — but/therefore</button>
+          <button type="button" data-ex="louie">Auston's Fuse — but/therefore</button>
         </div>
       </span>
     </div>
@@ -450,10 +450,10 @@ permalink: /writers-room/
         { x:'She reaches Chess City — but it is not the haven she imagined.', s:'WIDE', a:'🏙️', vo:'', c:'BUT' },
         { x:'She is no longer a town dog dreaming of the sky; she is a player who chose her board.', s:'CLOSE', a:'♛', vo:'There. That’s where we’re going.', c:'THEREFORE' }
       ] },
-    louie: { v:1, title:'Louie’s Fuse', author:'McPuppy Studios', method:'parker',
+    louie: { v:1, title:'Auston’s Fuse', author:'McPuppy Studios', method:'parker',
       logline:'A festival prank lights a fuse only a chess move can stop.',
       beats: [
-        { x:'Louie the Bomber rigs the town fireworks to launch over the festival.', s:'WIDE', a:'🎆', vo:'', c:'THEREFORE' },
+        { x:'Auston the Bomber rigs the town fireworks to launch over the festival.', s:'WIDE', a:'🎆', vo:'', c:'THEREFORE' },
         { x:'A stray spark drops into the old checker-dust mine.', s:'INSERT', a:'⚡', vo:'', c:'BUT' },
         { x:'Princess has to clear the board-path before the fuse reaches the powder.', s:'MEDIUM', a:'♟', vo:'', c:'THEREFORE' },
         { x:'The only safe line means sacrificing the one piece that was winning the game.', s:'CLOSE', a:'♛', vo:'Sometimes you protect what matters most.', c:'BUT' },

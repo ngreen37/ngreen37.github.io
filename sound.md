@@ -34,6 +34,7 @@ permalink: /sound/
 <!-- ===== 2 · THE SCORE / EP (coming soon) ===== -->
 <h2 class="snd-h2">◈ The Score &amp; EP <span class="snd-soon">Coming Soon</span></h2>
 <p class="snd-note">An original score is on the roadmap — proper themes for the places and people of the show, collected as an EP. <b>Not recorded yet.</b> Here's the planned track order; the leitmotifs above are the seeds these will grow from.</p>
+<p class="snd-handmade">🎸🥁 <b>Played by hand.</b> When these get recorded, they won't be presets or loops — they'll be performed: <b>real guitar, real drums</b>, tracked in the room. The plan is to film it, so you'll get to watch the score of Chess City actually get played. <span class="snd-muted">Following the <a href="{{ '/mailing-list/' | relative_url }}">dispatch</a> means you'll see the first session.</span></p>
 
 <div class="snd-album">
   <div class="snd-album-cover" aria-hidden="true">
@@ -142,6 +143,9 @@ permalink: /sound/
 .snd-h2 { color: #F5C518; margin: 28px 0 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .snd-note { color: #9a7fd4; max-width: 760px; font-size: 0.92rem; line-height: 1.6; }
 .snd-note b { color: #c9a7ff; }
+.snd-handmade { max-width: 720px; font-size: 0.92rem; line-height: 1.6; color: #ffd9b0; background: rgba(255,143,208,0.07); border: 1px solid #6a4a60; border-radius: 12px; padding: 12px 14px; margin-top: 10px; }
+.snd-handmade b { color: #ffd36b; }
+.snd-handmade a { color: #F5C518; }
 .snd-muted { color: #7d6bb0; font-size: 0.88em; }
 .snd-foot-note { color: #9a7fd4; font-size: 0.84rem; margin-top: 8px; }
 .snd-foot-note a, .snd-note a { color: #F5C518; }

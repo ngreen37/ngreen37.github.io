@@ -29,7 +29,7 @@ jukebox: true
   <div class="ml-cell"><span class="ml-cell-ico">✎</span><b>Dev-log &amp; art</b><small>boards, color keys, and what moved on the <a href="{{ '/production/' | relative_url }}">tracker</a>.</small></div>
   <div class="ml-cell"><span class="ml-cell-ico">📡</span><b>Intercepted transmissions</b><small>in-universe lore beats and the odd classified leak.</small></div>
   <div class="ml-cell"><span class="ml-cell-ico">🎟</span><b>Founders-list first</b><small>the <a href="{{ '/press-pass/' | relative_url }}">Press Pass</a> and any limited slots open here first.</small></div>
-  <div class="ml-cell"><span class="ml-cell-ico">🎵</span><b>Score reveals</b><small>the first <a href="{{ '/sound/' | relative_url }}">PJCC theme</a> drops to the list before streaming.</small></div>
+  <div class="ml-cell"><span class="ml-cell-ico">🎸</span><b>Score reveals</b><small>the first <a href="{{ '/sound/' | relative_url }}">PJCC theme</a> — recorded live on guitar &amp; drums — drops here, on camera, before streaming.</small></div>
 </div>
 
 <!-- sample dispatch -->

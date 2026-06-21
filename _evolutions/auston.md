@@ -1,9 +1,9 @@
 ---
 layout: evolution
-title: Louie
+title: Auston
 category: character
-entity_url: /characters/louie/
+entity_url: /characters/auston/
 role: Side Character
-permalink: /evolutions/louie/
+permalink: /evolutions/auston/
 versions: []
 ---
