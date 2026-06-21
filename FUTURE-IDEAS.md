@@ -262,14 +262,17 @@ and music fans can already hum.
 ## Avenue 6 — Make Princess a companion you have a *relationship* with
 The walker, the 3D figurine, and the Dossier "pet mood" already exist but stay shallow. Deepen
 Princess into a persistent character who knows you across the whole site.
-1. **A site-wide companion** — she reacts to what you do, remembers you between visits, and has
-   real moods and needs.
-2. **"Train Princess"** — your puzzle-solving teaches *her* chess; she visibly improves and
-   comments on your play.
-3. **A daily ritual** — "walk Princess" once a day for a small reward and a one-beat micro-story.
-4. **Reactive moments** — she responds to your streaks, the time of day, holidays, and episode
-   drops with bespoke lines/animations.
-5. **Memory** — she references things you did weeks ago ("you finally beat the Rival, huh?").
+*(Shipped: a "Princess &amp; You" panel on her character page via `assets/js/pjcc-princess.js`.)*
+1. ◐ **A site-wide companion** — *partial:* she lives on her page (greets by time of day, shows
+   bond) but isn't yet a floating site-wide widget. The Dossier "pet mood" (`PJCCPet`) is separate.
+2. ✅ **"Train Princess"** *(shipped)* — your games teach her chess; she ranks up Curious Pup →
+   Grandmaster Hound across 10 skill milestones read from your play, and comments on each.
+3. ✅ **A daily ritual** *(shipped)* — "walk Princess" once a day → a seeded micro-story + a bond
+   bump + a walk streak.
+4. ◐ **Reactive moments** *(partial)* — time-of-day greetings + training-level reactions shipped;
+   holidays / episode-drop bespoke lines still open.
+5. ✅ **Memory** *(shipped)* — she remembers milestones ("you finally out-foxed the Rival") and
+   surfaces them when first earned + keeps a running "Princess remembers" list.
 **Realistic take:** Cheap stickiness using pieces you already have — mostly a state system plus
 a content library of lines and animations. This is exactly the kind of charming, low-cost
 detail that makes a site feel *alive* and gets shared.
