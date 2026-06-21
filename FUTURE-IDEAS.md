@@ -40,6 +40,13 @@ Press Pass + Press Credential + Bureau-of-Dispatch newsletter + Press Kit/EPK + 
 referral invite links + Founders Wall + founder-cosmetic preview + pricing poll + backer-dispatch
 preview + share-card generator + `/educators/` B2B page + game-page dispatch capture (10).
 
+> **What's the "Lore Codex"?** (`/lore-codex/`) The site's in-world **encyclopedia** — a collectible
+> set of canon (and *classified*) entries about the characters, places, and mysteries of PJCC. Entries
+> start **sealed** and **unseal as you explore**: reading a character or location page reveals its
+> entry, and recovering hidden `frag_` fragments (from easter eggs across the site) cracks the
+> classified ones. Collect all six core fragments and the **origin story** unlocks. It's the reward
+> layer that turns "browsing the site" into "uncovering the world."
+
 ---
 
 # 🕹️ The Arcade — ten ideas per game
@@ -73,7 +80,7 @@ preview + share-card generator + `/educators/` B2B page + game-page dispatch cap
 ## Clearance: DELTA — *dossier trivia under the clock*
 1. **Redacted-dossier meta** — correct answers progressively unredact a classified file.
 2. **Sudden-death OMEGA** — one life, escalating clearance, for superfans.
-3. **Audio-intercept questions** — answer from a garbled transmission (Avenue 5/8 tie).
+3. **Audio-intercept questions** — answer from a garbled transmission (Avenue 5 audio tie).
 4. **Wager mode** — bet credits on your confidence per question.
 5. **Daily briefing** — one seeded quiz a day, global accuracy board.
 6. **Three lanes** — chess rules vs PJCC lore vs real chess history.
@@ -133,7 +140,7 @@ preview + share-card generator + `/educators/` B2B page + game-page dispatch cap
 ## Sand Mine Depths — *roguelike descent*
 1. **Light beacons + fog-of-war minimap** — drop light to map the dark.
 2. **Cave-in chains** — escape a timed collapse; a tension spike.
-3. **Louie-camp consumables** — one-run gear from the bomber's stash.
+3. **Auston-camp consumables** — one-run gear from the bomber's stash.
 4. **Relic sets** — collect a set for a run-defining bonus.
 5. **Knight-only rooms** — pure Warnsdorff traversal puzzles.
 6. **The deeper, the stranger** — obsidian-vs-violet biome shifts as you fall.
@@ -189,11 +196,20 @@ preview + share-card generator + `/educators/` B2B page + game-page dispatch cap
 8. **Constellation trail** — your path draws a star map (ties to `/constellation/`).
 9. **Kids' teach-mode** — an Academy lesson built on the tour.
 10. **Two-knight co-op** — cover the board together without colliding.
+11. **The hook/message** — frame the whole game around one challenge line: *"Can you conquer this unique knight-moving game?"* (use it on the menu + share cards).
+12. **The core lesson** — hammer home that the knight *can* reach **every** square; it just needs **re-directing** sometimes. Teach planning over panic: a "you're not stuck, you're mis-routed" coach line when players think they've dead-ended.
+13. **Tactical knight puzzles** — beyond the pure tour, add a **forcing-moves** mode: fork drills and **multi-knight** scenarios, *including sacrificing one knight to FORCE* a queen+king fork, rook+king fork, rook+queen fork, or a smothered mate. ⚠ Every scenario must be **strictly forcing** (each opponent reply forced) — vet each one so there's a single, provable solution.
 
 ## Siege on Chess City — *tower defense*
+> **Design guardrail — don't be Bloons TD.** The path-and-towers skeleton is familiar on purpose, but
+> the differentiation has to be **chess**, not just a reskin: towers move/threaten by **piece rules**
+> (a Knight only hits its L-squares, a Bishop only its diagonals), placement is a **positional**
+> puzzle (lines of fire, forks, pins on the lane), and the fantasy is *defending Chess City*, not
+> popping balloons. If a feature would feel identical with monkeys and darts, rethink it.
 1. **Campaign map** — branching routes + between-battle dialogue.
 2. **Map editor** — build paths, share by code (Avenue 7).
-3. **Full synergy matrix** — a tower-pairing bonus for every piece combo.
+3. **Full synergy matrix** — a tower-pairing bonus for every piece combo (lean on real chess
+   relationships — a battery, a pin, a fork — not generic "+10% damage" auras).
 4. **Boss waves** — the CEO's machines as siege bosses.
 5. **Endless survival** — global wave board.
 6. **Bigger mutator pool** — expand the existing Daily roulette.
@@ -219,16 +235,18 @@ preview + share-card generator + `/educators/` B2B page + game-page dispatch cap
 10. **Embeddable animatic player** for socials.
 
 ## Avenue 2 — The season-long ARG *(scaffolding ~80% built)*
-1. **Weekly cipher chain** — each week decrypts a coordinate.
-2. **Coordinates assemble** a map to a hidden page.
-3. **Collective fragment** — only cracks once N visitors contribute.
-4. **Narrator voicemail** — a real number or audio line to call.
-5. **Subject Zero countdowns** ending in a revealed scene.
-6. **In-universe clearance rank** gating secret content.
-7. **Printable invisible-ink dossier** + QR stickers.
-8. **Cross-game keys** — a code from one game unlocks another's secret.
-9. **Weekly field report** built to be dissected on Discord.
-10. **The crash-site coordinate** as the season-one payoff.
+*An ARG = an "alternate reality game": a mystery that treats the real world (the site, emails, even
+physical objects) as part of the story, and that players solve **together** over time.*
+1. **Weekly cipher chain** — a new coded message posts each week; solving it gives a chess coordinate (like `e4`). A *chain* because each week's answer feeds the next, so the audience returns weekly.
+2. **Coordinates assemble a map** — collect those weekly coordinates and they plot points that, together, reveal the location of a hidden page on the site. The season-long reward for keeping up.
+3. **Collective fragment** — a clue that's impossible alone: it only unlocks once **N different visitors** have each contributed a piece, forcing the community to cooperate (and to recruit others).
+4. **Narrator voicemail** — a real phone number (or audio clip) you can "call" to hear the Narrator leave an in-character message — breaks the fourth wall and makes the world feel physically real.
+5. **Subject Zero countdowns** — a visible timer that, when it hits zero, reveals a new scene or chapter — turning a story drop into a live, appointment "event."
+6. **In-universe clearance rank** — your real progress earns a "clearance level" (DELTA → OMEGA) that gates secret pages, so deeper fans literally see more of the story.
+7. **Printable invisible-ink dossier + QR stickers** — physical artifacts: a dossier you print and reveal, stickers with QR codes that link to hidden lore — the ARG leaking into the real world.
+8. **Cross-game keys** — a code earned in one game unlocks a secret in another, rewarding players who explore the whole arcade rather than one title.
+9. **Weekly field report** — a recurring post structured to be picked apart on a Discord/subreddit — gives the community a regular thing to theorize about (the engine that markets the show for you).
+10. **The crash-site coordinate** — the season-one payoff: all the cipher work converges on the exact spot where Princess fell from the sky, tying the whole mystery back to the origin.
 
 ## Avenue 3 — The Academy *(all ten shipped in-site/offline — 2026-06-21)*
 1. ✅ **Real-play bridge** — *in-site*: lessons link to their matching game **plus** a free-move **Sandbox Board** on the Academy (no external Lichess — we're sandboxing). A rules-enforcing board/engine is the future upgrade.
@@ -245,16 +263,17 @@ preview + share-card generator + `/educators/` B2B page + game-page dispatch cap
 *Backend upgrades when accounts land: shared class rosters/dashboards, a server-verifiable cert registry, a rules-enforcing practice board.*
 
 ## Avenue 4 — Physical / tabletop
-1. **Print-and-play Siege PDF** — zero manufacturing.
-2. **POD pins/stickers mockup page** — proof of demand first.
-3. **The PJCC chess set** (obsidian vs violet).
-4. **Sand Mine Depths** as a roguelike dice/card PnP.
-5. **Operative Field Kit** — cipher wheel + decoder card.
-6. **Checker Town Field Guide** art book (festival leave-behind).
-7. **Rank pins** earned online, bought offline.
-8. **"Build your dossier"** printable.
-9. **Founders sticker pack** as a Press-Pass thank-you.
-10. **Catch the Lion** mini travel set.
+*Turning the digital world into things people can hold — merch and tabletop that can fund the show.*
+1. **Print-and-play Siege PDF** — a downloadable, printable board-game version of Siege. "Print-and-play" = the player prints and assembles it themselves, so there's **zero manufacturing cost** to test the idea.
+2. **POD pins/stickers mockup page** — a store-style page showing pin/sticker designs ("POD" = print-on-demand, made only when ordered, so no inventory). It exists mainly to **measure demand** before committing money.
+3. **The PJCC chess set** — a real chess set in the show's "obsidian vs. violet" Sand-Mine look — the most natural, premium piece of merch (likely a Kickstarter item).
+4. **Sand Mine Depths as a dice/card PnP** — the roguelike mine game adapted into a print-and-play **dice-and-card** tabletop game (captures the descent + luck without a computer).
+5. **Operative Field Kit** — a physical spy kit: a working **cipher wheel** and a **decoder card** — ties directly into the Avenue-2 ARG (use the real wheel to solve a clue).
+6. **Checker Town Field Guide** — a printed **art book** of the world bible; doubles as a polished thing to hand a festival or a potential partner (a "leave-behind").
+7. **Rank pins** — earn a clearance rank by playing online, then **buy the matching enamel pin** — connects digital achievement to physical reward.
+8. **"Build your dossier" printable** — a print-it-yourself operative dossier kids/fans fill in — cheap, shareable, and on-brand.
+9. **Founders sticker pack** — a small physical thank-you mailed to Press-Pass founders — makes the support feel tangible.
+10. **Catch the Lion mini travel set** — a tiny physical version of the 3×4 shogi game from Shogi Island — a cute, cheap, giftable product (now Crockett's signature game).
 
 ## Avenue 5 — Audio *(hub + leitmotifs live)*
 1. **First theme** → EP player + Notation Score Mode.
@@ -269,77 +288,74 @@ preview + share-card generator + `/educators/` B2B page + game-page dispatch cap
 10. **A podcast feed** for the audio drama.
 
 ## Avenue 6 — Princess companion *(site-wide companion live)*
-1. **React to live game results** — cheer a new best the instant it lands.
-2. **Seasonal outfits** + holiday lines.
-3. **Persistent chattiness/mute** setting on her page.
-4. **"Walk you to"** contextual page suggestions.
-5. **A mood/needs system** (play, walks, attention).
-6. **She learns your codename** and uses it.
-7. **A fetch micro-interaction** (toss her a piece).
-8. **Milestone gifts** she "brings" you (cosmetics).
-9. **A second companion** to unlock down the line.
-10. **Her voice** — the day the show gives her one (the payoff).
+*Deepening Princess from a mascot into a character who **knows you** — cheap stickiness that makes
+people return to see *her*.*
+1. **React to live game results** — the moment you set a new best in a game, the companion reacts immediately ("you did it!") instead of staying generic — makes her feel aware of what you actually do.
+2. **Seasonal outfits + holiday lines** — she visibly changes for winter/holidays and says season-appropriate things — small touches that make the site feel alive and worth revisiting.
+3. **Persistent chattiness/mute setting** — a real preference (saved across visits) for how talkative she is, so fans can tune her — currently the "shush" only lasts a session.
+4. **"Walk you to" page suggestions** — based on where you are and what you've done, she suggests (and links) the next worthwhile page — a friendly guide, not a menu.
+5. **A mood/needs system** — lightweight stats (she wants play / walks / attention) that shift her mood — a tiny tamagotchi loop that rewards coming back.
+6. **She learns your codename** — once you've signed in, she greets you by your operative name — personal, and a reason to make an account.
+7. **A fetch micro-interaction** — toss a chess piece and she fetches it — a 5-second delight with no goal beyond charm.
+8. **Milestone gifts she "brings" you** — hit a milestone and she trots over with a cosmetic reward — ties the bond to the cosmetics system.
+9. **A second companion** — unlock another pet/character to accompany you later, so the relationship layer keeps growing.
+10. **Her voice** — the ultimate payoff: the day the animated show gives Princess a real voice, the companion you've bonded with for months finally speaks. The whole avenue is building toward that moment.
 
 ## Avenue 7 — UGC / creators
-1. **Writers' Room "Featured Reels" shelf** — the first, lowest-risk slice *(see decision note)*.
-2. **Siege map editor** + shareable codes.
-3. **"Design a citizen"** template → curated gallery.
-4. **Fan-art gallery** on character/location pages.
-5. **Headcanon submissions** feeding the Lore Codex.
-6. **Trivia forge** — community Clearance questions.
-7. **Board-skin uploader**.
-8. **Monthly featured-creator** slot.
-9. **Remix-a-reel** — fork another operative's Writers' Room story.
-10. **Embed/API** for fans' own sites.
+*UGC = "user-generated content": letting fans **make** things inside the world (and showing the best
+of it off). Turns an audience into co-authors.*
+1. **Writers' Room "Featured Reels" shelf** — a curated showcase of the best fan-made storyboard reels — the easiest first step into UGC (you hand-pick winners; see the decision note below).
+2. **Siege map editor + shareable codes** — let players design their own Siege levels and share them with a code others paste in — community level packs with no server needed.
+3. **"Design a citizen" template** — a simple template for fans to invent a Checker Town townsperson; the best get added to a **curated gallery** (the dream prize: appear in an actual episode).
+4. **Fan-art gallery** — a moderated gallery of fan art on each character/location page, with a monthly featured artist — rewards and spotlights the community.
+5. **Headcanon submissions** — fans submit their theories/backstory; the best get folded into semi-canon and feed the **Lore Codex** (the in-world encyclopedia).
+6. **Trivia forge** — players submit quiz questions for the Clearance: DELTA game; curated ones enter the real deck — the community helps build the game.
+7. **Board-skin uploader** — let players make and share custom chessboard skins — personal expression that costs you nothing to host if shared by code.
+8. **Monthly featured-creator slot** — a recurring spotlight (artist, writer, level-designer) — gives fans a reason to make *and* a reason to come back to see who's featured.
+9. **Remix-a-reel** — take someone else's published Writers' Room story and **fork** it into your own version — collaborative storytelling, like a remix culture.
+10. **Embed/API** — let fans put their PJCC stats or a mini-game on their own site/blog — every embed is a tiny advert that spreads the world for you.
 
 > **Open decision (publish/share reels):** ship **A** — a hand-curated `_data/reels.yml` shelf (free,
 > on-brand) now; graduate to a **Supabase gallery** with likes/credits when Operative accounts land.
 > A **Formspree/Google-Form** capture is the middle step if demand shows up first.
 
-## Avenue 8 — AI, in-universe and tasteful
-1. **Dossier analyst** on your own play data, in the Narrator's voice.
-2. **Argus blunder-coach** on your actual games.
-3. **Daily generated transmission** (then curated).
-4. **In-character cast Q&A** — tightly guard-railed.
-5. **"Describe a scene → sketch"** storyboard toy.
-6. **Auto-annotate a pasted PGN** in Argus's voice.
-7. **A weakness-tuned puzzle generator**.
-8. **Lore-consistent codename generator**.
-9. **A difficulty director** that reads your sessions.
-10. **A "what should I play next" concierge**.
-
 ## Avenue 9 — Live ops / a heartbeat
-1. **Community megabar** — combined bests "build the bridge to Chess City."
-2. **Seasonal reskins** (winter, festival, the sea freezing).
-3. **December advent** — a door a day.
-4. **24-hour tournament** events.
-5. **"Studio is open"** live indicator when Nate's building.
-6. **Episode-drop watch party** page.
-7. **A daily world-state** that shifts the ticker.
-8. **Limited-time event games/rewards**.
-9. **A global "first to clear"** race on new content.
-10. **An anniversary beat** dated to the crash.
+*"Live ops" = features tied to **real time and presence**, so the site is different today than it was
+yesterday and feels alive rather than static. Creates **appointment** engagement (reasons to come
+back on a schedule).*
+1. **Community megabar** — a single site-wide progress bar that everyone's combined scores fill, themed as literally "building the bridge to Chess City" — turns solo play into a shared goal.
+2. **Seasonal reskins** — the site visibly changes with the seasons (winter snow, a festival, the sea freezing over) — small recurring novelty that signals the world is tended.
+3. **December advent** — a 24-day calendar where a new door opens each day (a game, a lore beat, an art drop) — a daily ritual through the holidays.
+4. **24-hour tournament events** — a time-boxed competition on a fixed challenge — urgency and a shared "were you there?" moment.
+5. **"Studio is open" indicator** — a live badge showing when Nate is actively building/drawing (eventually streaming) — turns the work itself into a draw.
+6. **Episode-drop watch party** — a page that gathers people for a synchronized first-watch when content lands — makes a release an event, not just a file.
+7. **A daily world-state** — the in-world news ticker (and small details) shift each day based on a date seed — the world keeps "happening" even between updates.
+8. **Limited-time event games/rewards** — games or cosmetics available only during an event window — scarcity that rewards showing up.
+9. **A global "first to clear" race** — when new content drops, the first players to beat it are recorded — a competitive hook for the most engaged.
+10. **An anniversary beat** — a dated event each year on the "crash" anniversary (and the dev-start date) — a recurring celebration that doubles as a milestone marker.
 
 ## Avenue 10 — Funding & reach *(Press Pass + dispatch + Press Kit live)*
-*Shipped this pass: a **Press Kit / EPK** (`/press-kit/`) with a live "by the numbers" block that
-doubles as the standing **state-of-the-studio**; a **"what your support funds"** transparency split
-and a **direct-support (Ko-fi/Patreon) row** on the Press Pass; **personalized referral invite links**
-+ an "invited by" welcome on the dispatch; and a **festivals/grants tracker** (`docs/festivals-and-grants.md`).
-Still open: **#7 cosmetic store** (needs the credits backend — `shopkeeper` scaffolding exists) and
-**#8 partner outreach** (relationship work, not a build — the Press Kit + grants doc make you ready).
-Resend plumbing already exists; a **welcome-email automation** is a Resend-dashboard step, and
-**confirming/carrying the founders number** waits on Operative accounts.*
+*How this pays for itself and finds people. **Live now:** Press Pass + Press Credential + Founders
+Wall + founder-cosmetic preview + pricing poll + backer-dispatch preview · Press Kit/EPK + share-card
+generator + live "by the numbers" · `/educators/` B2B page · "what your support funds" transparency ·
+direct-support row · referral invite links · game-over dispatch capture · `docs/festivals-and-grants.md`.*
 
-**A fresh nine:**
-1. ✅ **Milestone share-cards** — *shipped*: a canvas share-card generator on the Press Kit (live day-count + your founder number; download PNG / copy caption — the viral artifact).
-2. ✅ **The Founders Wall** — *shipped (client-side: the studio + your own reserved number; shared roll with accounts)* on the Press Pass.
-3. ✅ **Founder cosmetics** — *shipped as a preview* (frames + titles on the Press Pass); the actual purchasable SKUs wait on the credits store backend.
-4. **"Adopt a shot"** — micro-patronage: back a single animatic shot and get credited *on* it. *(Needs payments + a backend to record/credit the patron — the first feature for the day accounts land; pairs with Fund-the-frame.)*
-5. ✅ **Pricing input** — *shipped as a community poll* ("help us price it": monthly / annual / PWYW, local vote) on the Press Pass; true A/B conversion testing waits on real checkout.
-6. ✅ **Academy B2B** — *shipped the `/educators/` landing page* (classroom pitch, free-now tier, licensing tiers, pilot CTA); the licensing/sales motion itself is offline business work.
-7. ✅ **Game-over email capture** — *shipped*: a dispatch capture strip under every game (one edit to the game layout; real subscribe flow), catching arcade players where they finish.
-8. ✅ **"Fund-the-frame" on the tracker** — *shipped*: a support module under the production bars linking to the Press Pass.
-9. ✅ **Backer-only quarterly dispatch** — *shipped as a locked preview* (redacted table-of-contents on the Press Pass); the real issue ships with paid tiers.
+*Waiting on the **backend/payments** layer (build these the day accounts land): the **cosmetic store**
+transaction, **"Adopt a shot"** micro-patronage (back one animatic shot, get credited on it), a
+**server-verifiable** founders number, the **Resend welcome-email** automation, and **partner outreach**
+(a relationship motion, not a build — the Press Kit makes you ready).*
+
+**Fresh ideas (newest thinking):**
+1. **Producer-credit ladder** — support tiers map to a real on-screen credit (Backer → Associate Producer → Executive Producer) in the finished episode. People will pay to have their name *in the cartoon*.
+2. **Pay-it-forward passes** — buy a Press Pass (or Academy access) for a kid or classroom that can't afford one; sponsors get a thank-you and a count of who they've helped.
+3. **Unlock-goals tied to deliverables** — public goals where hitting one **unlocks something for everyone** — e.g. "fund the first studio session → the Checker Town theme gets recorded **on camera**." Directly serves the live-music reveal (see Planted Seeds).
+4. **A living credits crawl** — a scrolling, always-on credits page that every supporter/contributor joins; the show's end-credits, but already rolling, in public.
+5. **"Name your price" arcade bundle** — package the whole arcade as a pay-what-you-want download (itch.io-style); $0 is allowed, but the option to pay converts the goodwill you've already earned.
+6. **Sponsor the Game of the Week** — a backer's name or dedication rides on the weekly featured game — small, cheap, repeatable patronage.
+7. **The Chess City Passport** — an annual all-access pass framed in-world as a travel passport that earns a cosmetic **stamp** each season — recurring revenue with a collectible hook.
+8. **Radical-transparency burn page** — show monthly cost vs. support, openly. Indie audiences reward honesty; "here's exactly what keeps the lights on" builds trust no ad can buy.
+9. **Creator kit** — a ready-made "cover PJCC" pack (overlays, embed widgets, key art, talking points) so streamers/teachers can feature the project in minutes — lowers the friction of every Avenue-2/10 partnership.
+10. **Refundable merch pre-orders** — gauge real demand for Avenue-4 items with fully-refundable pre-orders/waitlists before any inventory exists — de-risks the physical bets.
 
 ---
 
@@ -362,6 +378,32 @@ Resend plumbing already exists; a **welcome-email automation** is a Resend-dashb
 
 Honorable mention: **Avenue 3 (Academy)** is the strongest standalone business but a real second
 job; **Avenue 2 (ARG)** is the superfan ceiling but a cadence trap — start it only when #1 is humming.
+
+---
+
+## 🌱 Planted Seeds (a running list — quiet set-ups for later payoffs)
+*Small things we plant **now**, in public, so a future reveal feels earned instead of out of nowhere.
+Each line: the seed → the payoff it's building toward. Add to this as we go.*
+
+- **The score is played by hand** → *Nate on guitar & drums.* Seeded on `/sound/` ("played by hand —
+  real guitar, real drums, filmed") and in the dispatch's "score reveals." Payoff: videos of the
+  studio sessions where the audience watches the music of Chess City actually get performed. *(Tie to
+  Avenue-10 #3: an unlock-goal that funds the first on-camera session.)*
+- **"Made in the open"** → *the pilot pre-sold.* Seeded everywhere (production hub, tracker, Press
+  Kit). Payoff: arriving at episode one with an audience that already feels like co-producers.
+- **Subject Zero / the crash** → *the origin reveal.* Seeded via the ARG fragments + Lore Codex.
+  Payoff: the season-one ending that pays off years of breadcrumbs.
+- **Bill is quietly the most capable person in the room** → *the turn.* Seeded as the scattered,
+  comic dad. Payoff: the origin montage where he can teach Princess *anything* — and the heartbreak
+  of leaving her behind.
+- **The big brother who became a father** → *the emotional core.* Seeded on the Main Character &
+  [Crockett](/characters/crockett/) pages. Payoff: the audience realizing the whole journey is for
+  his little sister.
+- **"Chess City Leafs"** (in the news ticker) → *the Auston Matthews nod.* Seeded in the world ticker
+  + Auston the Bomber. A wink for the hockey fans.
+
+*(Seeds to plant next: a recurring object/motif that recurs across games and the show; a line of
+dialogue that only lands after the origin; a background character who matters later.)*
 
 ---
 
