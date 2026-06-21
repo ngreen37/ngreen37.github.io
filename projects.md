@@ -8,6 +8,12 @@ jukebox: true
 
 <p class="projects-intro">McPuppy Studios is an independent creative studio built around storytelling, animation, and chess. Everything here is built from the ground up — one idea at a time.</p>
 
+<div class="projects-stats" id="projects-stats" aria-label="Studio at a glance">
+  <div class="pstat"><span class="pstat-num" id="pstat-playable">—</span><span class="pstat-lab">playable now</span></div>
+  <div class="pstat"><span class="pstat-num" id="pstat-done">—</span><span class="pstat-lab">completed</span></div>
+  <div class="pstat"><span class="pstat-num" id="pstat-dev">—</span><span class="pstat-lab">in the lab</span></div>
+</div>
+
 <style>
 /* ---- Featured "Completed, playable now" card (Notation Blitz) ---- */
 .project-card-featured {
@@ -365,7 +371,7 @@ jukebox: true
 <h2 class="games-index-heading">All Games</h2>
 <ul class="games-index">
   <li><a href="/games/dungeon/">Princess Dungeon</a> <span class="games-index-note">— in development</span></li>
-  <li><a href="/games/notation-run/">Notation Blitz <span class="ver">v3.4</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/notation-run/">Notation Blitz <span class="ver">v3.6</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/space-run/">Space Run</a> <span class="games-index-note">— in development</span></li>
   <li><a href="/games/sky-run/">Sky Run <span class="ver">v1.0</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/pirc-protocol/">The Pirc Protocol <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
@@ -394,6 +400,30 @@ jukebox: true
 }
 .games-index-note { font-size: 0.8rem; color: #9a7fd4; }
 .games-index-term { font-size: 0.8rem; color: #ff6b6b; }
+
+/* Studio-at-a-glance stat counters */
+.projects-stats { display: flex; flex-wrap: wrap; gap: 14px; margin: 18px 0 6px; }
+.pstat { flex: 1 1 120px; min-width: 120px; text-align: center; padding: 14px 10px;
+  background: linear-gradient(135deg, #1f1147 0%, #2d1b69 100%);
+  border: 1px solid rgba(245,197,24,0.3); border-radius: 12px; }
+.pstat-num { display: block; font-size: 2rem; font-weight: 800; color: #F5C518; line-height: 1; }
+.pstat-lab { display: block; margin-top: 6px; font-size: 0.74rem; text-transform: uppercase;
+  letter-spacing: 0.08em; color: #c9b6ef; }
 </style>
+
+<script>
+(function () {
+  var items = [].slice.call(document.querySelectorAll('.games-index li'));
+  if (!items.length) return;
+  var dev  = items.filter(function (li) { return /development/i.test(li.textContent); }).length;
+  var term = items.filter(function (li) { return li.querySelector('.games-index-term'); }).length;
+  var done = items.filter(function (li) { return li.querySelector('.games-index-done'); }).length;
+  var playable = items.length - dev - term;   // completed + playable bonuses
+  function set(id, n) { var e = document.getElementById(id); if (e) e.textContent = n; }
+  set('pstat-playable', playable);
+  set('pstat-done', done);
+  set('pstat-dev', dev);
+})();
+</script>
 
 <p class="projects-footer-note">More in the works. Check the <a href="/blog/">blog</a> for updates.</p>

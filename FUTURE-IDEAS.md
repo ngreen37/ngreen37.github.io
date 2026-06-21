@@ -54,9 +54,7 @@ Nate; not website features.*
 
 #
 ## Projects page polish
-- **Version-history timeline / changelog** ("Ferry v1.0 → v1.1") so the "pending
-  improvements" story is visible.
-- **Progress meters** on In-Development cards ("Space Run — 60% to v1.0").
+
 - **Public roadmap / "What's next"** that visitors can vote on.
 - **Stat counters at the top** — "10 playable games · N completed · 1 in the lab."
 
@@ -74,11 +72,7 @@ Nate; not website features.*
   pieces as game intros / loading screens / leaderboard-season trailers. (Saved favorite.)
 
 ## Per-game extra features (suggested, not yet built)
-*Captured from build sessions — five proposed extras per game, held for later.*
 
-**Shipped 2026-06-17:** Notation Blitz's five (timing-trend history, Endless ramp, free BPM
-slider, tail-save, Princess emotes + 🎧 calibration) all confirmed live in v3.3 (plus the
-Black-side 2-Tone hard mode). 
 
 **Deferred / queued next (Notation Blitz v3.5+):** two input-paradigm modes held back for
 hands-on play-testing before shipping —
@@ -97,14 +91,9 @@ hands-on play-testing before shipping —
 *A brand-new set of five per game (distinct from anything shipped or listed above). This also
 restores per-game idea coverage for the titles whose sections had been trimmed.*
 
-- **Notation Blitz**: a "ranks-only / files-only" warmup drill before the mixed run · square-colour
-  call-outs woven in as bonus pills ("is e4 light or dark?") · a freestyle mode that rubber-bands
-  the BPM to your last ten hits · milestone "perks" you pick mid-run (wider window, double points,
-  shield-one-miss) · a two-player hot-seat race on one keyboard (left half vs right half).
+
 - **Fork in the Road**: an endless one-life gauntlet ranked by depth reached · a "show the
-  refutation" coach that plays out *why* a wrong move loses · isolate-a-motif drills (forks-only,
-  mates-only, skewers-only) · per-region speedrun medals (bronze/silver/gold) · a compose-a-tactic
-  sandbox where the engine confirms whether your setup is a sound fork.
+  refutation" coach that plays out *why* a wrong move loses 
 - **Sand Mine Depths**: droppable light beacons that permanently lid a cleared square · a fog-of-war
   minimap that reveals as the torch sweeps · timed cave-in chain events (a rumble warns; climb to
   escape) · spend gold with Louie at camp for one-run consumables (a 3×3 bomb) · "deep relic sets" —
@@ -113,9 +102,7 @@ restores per-game idea coverage for the titles whose sections had been trimmed.*
   a "name that opening" reverse mode from a position · opponent personalities (the Rival sharp,
   Argus solid) that branch differently · a weekly "model game" you predict move-by-move · a
   side-switcher to drill the same opening from the other colour.
-- **CIPHER**: a "cryptic clue" mode (a riddle for the word, not just colours) · streak-insurance
-  tokens (skip a day without breaking the streak) · a word-of-the-week tied to the current Dispatch
-  lore beat · two-word "intercept" puzzles (a 5+5 phrase) · a 60-second speed-decrypt blitz.
+-
 - **Clearance: DELTA**: a "redacted dossier" meta that unseals a growing case file across sessions ·
   a sudden-death OMEGA gauntlet (tier-5 only, one wrong ends it) · audio-intercept questions (a line
   or SFX plays — identify it) · a wager mode (bet clearance points on your confidence) ·

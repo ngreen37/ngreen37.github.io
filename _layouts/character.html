@@ -136,3 +136,8 @@ layout: default
   {% endif %}
 
 </article>
+
+<script>
+  // Lore Codex: mark this character's file as recovered once you've read it.
+  try { localStorage.setItem('codex.char.' + {{ page.slug | jsonify }}, '1'); } catch (e) {}
+</script>
