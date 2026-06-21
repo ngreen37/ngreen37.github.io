@@ -174,8 +174,8 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/tower-defense/' | relative_url }}">
     <div class="game-card-icon">🏰</div>
     <div class="game-card-body">
-      <h2>Siege on Chess City v2.0</h2>
-      <p>A four-front tower-defense campaign — now with an ♾ Endless survival mode + global wave board, a ❄ Frost Knight, map mutators for bonus Crowns, and bosses that summon adds and teleport. Place a free-roaming Bishop Sniper, recruit Louie the Bomber, and spend City Crowns on permanent upgrades.</p>
+      <h2>Siege on Chess City v2.1</h2>
+      <p>A four-front tower-defense campaign — now with <strong>tower synergies</strong> (stand a Knight by a Queen for haste, a Bishop by a Rook for a piercing beam), a 📅 <strong>Daily mutator-roulette</strong> on a fixed seed with its own global board, an ♾ Endless survival mode + wave board, a ❄ Frost Knight, map mutators for bonus Crowns, and bosses that summon adds and teleport. Place a free-roaming Bishop Sniper, recruit Louie the Bomber, and spend City Crowns on permanent upgrades.</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>
@@ -468,7 +468,7 @@ permalink: /games/
   var CHANGELOG = {
     'notation-run':      { date: '2026-06-20', note: 'v3.5 — Daily seeded chart + a global timing-accuracy board.' },
     'pirc-protocol':     { date: '2026-06-20', note: 'v2.1 — Blunder Traps deck: famous traps, machine-verified forced mates.' },
-    'tower-defense':     { date: '2026-06-20', note: 'v2.0 — Endless survival + wave board, Frost Knight, mutators, boss mechanics.' },
+    'tower-defense':     { date: '2026-06-21', note: 'v2.1 — tower synergies (Knight+Queen haste · Bishop+Rook pierce) + Daily mutator-roulette with a global board.' },
     'shogi-island':      { date: '2026-06-20', note: 'v3.1 — real 詰将棋 tsume (mate-in-3/5) and a full 9×9 AI match.' },
     'blindfold-puzzles': { date: '2026-06-20', note: 'v2.1 — Speed-Vision, Describe-only, Daily; Mind’s Eye tiers, blitz clock, replay.' },
     'sky-run':           { date: '2026-06-15', note: 'v1.0 — new chess-Bloons sky shooter.' },

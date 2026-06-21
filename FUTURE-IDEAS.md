@@ -116,7 +116,11 @@ restores per-game idea coverage for the titles whose sections had been trimmed.*
   become collectible brush-art · a "tsume of the day" with a global solve-time board · castle drills
   (build the Mino / Yagura shape).
 - **Siege on Chess City**: a path-map level editor with shareable codes · co-op "two crowns" split
-  lanes (hot-seat or async score-sum) 
+  lanes (hot-seat or async score-sum)
+  - ✅ *(shipped v2.1)* tower synergies (Knight+Queen haste · Bishop+Rook pierce) + a Daily
+    mutator-roulette on a fixed seed with a global board.
+  - ⏳ *still open:* a narrative campaign map with branching routes + between-battle dialogue (a
+    bigger build — branching state + a dialogue system).
 
 ## The big one — a real game
 - **Binding of Isaac-style roguelite / 3D Space Run in Godot** — use the existing Blender

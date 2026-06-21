@@ -180,7 +180,7 @@
 <div class="screen hidden" id="scr-maps">
   <div class="sub">Choose your stand</div>
   <h1>The Campaign</h1>
-  <p>Each front is harder than the last — beat one to unlock the next. Toggle <b style="color:var(--gold)">♾ Endless</b> for a survival run, or add <b style="color:var(--pink)">mutators</b> for bonus City Crowns.</p>
+  <p>Each front is harder than the last — beat one to unlock the next. Toggle <b style="color:var(--gold)">♾ Endless</b> for a survival run, or add <b style="color:var(--pink)">mutators</b> for bonus City Crowns. <b style="color:#c79bff">Synergy:</b> stand a Knight by a Queen for <b style="color:#ff8fd0">haste</b>, or a Bishop by a Rook for a <b style="color:#c79bff">piercing</b> beam.</p>
   <div id="map-opts" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:680px;margin:4px 0 2px;"></div>
   <div class="map-grid" id="map-grid"></div>
   <div class="menu-btns"><button class="big-btn ghost" id="maps-back">◂ Back</button></div>
@@ -234,6 +234,20 @@ var MUTATORS = [
 ];
 var selMutators = {};                                   // id -> true (chosen on the map screen)
 function mutatorBonus() { var b = 0; MUTATORS.forEach(function (m) { if (selMutators[m.id]) b += m.bonus; }); return b; }
+function mutBonusFromObj(muts) { var b = 0; MUTATORS.forEach(function (m) { if (muts[m.id]) b += m.bonus; }); return b; }
+
+/* ============ daily mutator-roulette (one fixed seed for everyone) ============ */
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function dayStamp() { return (window.PJCC && PJCC.dayStamp) ? PJCC.dayStamp() : new Date().toISOString().slice(0,10); }
+function dailySeed() { var s = dayStamp(), h = 2166136261; for (var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return (h>>>0); }
+// Deterministic spin of the mutator roulette: 1–2 mutators picked from the day's seed.
+function dailyMutators(seed) {
+  var r = mulberry32(seed ^ 0x9e3779b9), pool = MUTATORS.slice(), picks = {}, n = 1 + (r() < 0.5 ? 1 : 0);
+  for (var i = 0; i < n && pool.length; i++) { var idx = Math.floor(r() * pool.length); picks[pool[idx].id] = true; pool.splice(idx, 1); }
+  return picks;
+}
+function dailyDone() { try { var o = JSON.parse(localStorage.getItem('pjcc.siege.daily')); return (o && o.day === dayStamp()) ? o : null; } catch (e) { return null; } }
+function markDaily(score, won) { try { localStorage.setItem('pjcc.siege.daily', JSON.stringify({ day: dayStamp(), score: score, won: won })); } catch (e) {} }
 
 /* ============ tower catalogue ============ */
 var TOWERS = {
@@ -355,11 +369,13 @@ function newGame(mapIdx, opts) {
   buildMapTopology(curMap);
   var startGold = 230 + META.up.gold0 * 40;
   var startHearts = 50 + META.up.heart0 * 10;
-  var muts = {}; for (var k in selMutators) if (selMutators[k]) muts[k] = true;
+  var muts = {};
+  if (opts.muts) { for (var mk in opts.muts) if (opts.muts[mk]) muts[mk] = true; }
+  else { for (var k in selMutators) if (selMutators[k]) muts[k] = true; }
   return {
     mapIdx: mapIdx, gold: startGold, lives: startHearts, score: 0, kills: 0,
-    wave: 0, running: true, over: false, won: false,
-    endless: !!opts.endless, muts: muts, mutBonus: mutatorBonus(),
+    wave: 0, running: true, over: false, won: false, daily: !!opts.daily,
+    endless: !!opts.endless, muts: muts, mutBonus: mutBonusFromObj(muts),
     foeSpdMult: muts.blitz ? 1.35 : 1, fogMult: muts.fog ? 0.82 : 1,
     towers: [], foes: [], shots: [], parts: [],
     spawnQ: [], spawnT: 0, betweenT: 0, waveActive: false, spawnCount: 0,
@@ -459,11 +475,38 @@ function advanceFoe(f, dt) {
   }
 }
 
+/* ============ tower synergies ============
+   Adjacent piece-pairs reinforce each other (Chebyshev-ish neighbour, ~1.6 cells):
+   · Knight next to a Queen → HASTE (fires far faster, the cavalry charge)
+   · Bishop next to a Rook  → PIERCE (the diagonal beam punches through the whole file) */
+function hasNeighborKind(tw, kind) {
+  for (var i = 0; i < G.towers.length; i++) {
+    var o = G.towers[i];
+    if (o === tw) continue;
+    if (o.kind === kind && Math.hypot(o.x - tw.x, o.y - tw.y) < CELL * 1.6) return true;
+  }
+  return false;
+}
+function synergyOf(tw) {
+  if (tw.kind === 'knight' && hasNeighborKind(tw, 'queen')) return 'haste';
+  if (tw.kind === 'bishop' && hasNeighborKind(tw, 'rook')) return 'pierce';
+  return null;
+}
+
 /* ============ combat ============ */
 function towerStats(tw) {
   var base = TOWERS[tw.kind];
   var mult = (1 + (tw.lvl - 1) * 0.6) * G.dmgMult;
-  return { dmg: base.dmg * mult, range: base.range * (1 + (tw.lvl - 1) * 0.12) * (G.fogMult || 1), rate: base.rate, splash: base.splash };
+  var rate = base.rate;
+  if (tw.kind === 'knight' && hasNeighborKind(tw, 'queen')) rate *= 0.58;   // Knight+Queen haste
+  return { dmg: base.dmg * mult, range: base.range * (1 + (tw.lvl - 1) * 0.12) * (G.fogMult || 1), rate: rate, splash: base.splash };
+}
+// Perpendicular distance from point (px,py) to the segment (ax,ay)-(bx,by).
+function segDist(px, py, ax, ay, bx, by) {
+  var dx = bx - ax, dy = by - ay, L2 = dx * dx + dy * dy;
+  var t = L2 ? ((px - ax) * dx + (py - ay) * dy) / L2 : 0;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
 }
 function pickTarget(tw, s) {
   var best = null, bestVal = null;
@@ -486,9 +529,10 @@ function fireTowers(dt) {
     if (!target) return;
     tw.cd = s.rate; tw.flash = 0.12;
     var base = TOWERS[tw.kind];
+    var pierce = (tw.kind === 'bishop' && hasNeighborKind(tw, 'rook'));   // Bishop+Rook pierce
     G.shots.push({ x: tw.x, y: tw.y, tx: target.x, ty: target.y, target: target,
       dmg: s.dmg, splash: s.splash, kind: tw.kind, life: 0, color: base.color,
-      sniper: base.sniper, lob: base.lob, slows: base.slows, sx: tw.x, sy: tw.y, prog: 0 });
+      sniper: base.sniper, lob: base.lob, slows: base.slows, pierce: pierce, sx: tw.x, sy: tw.y, prog: 0 });
   });
 }
 function updateShots(dt) {
@@ -511,6 +555,13 @@ function updateShots(dt) {
 }
 function hit(x, y, s) {
   burst(x, y, s.color, s.splash ? 12 : 5);
+  // Bishop+Rook PIERCE: the beam also rakes every foe along its line for 60% damage.
+  if (s.pierce) {
+    G.foes.forEach(function (f) {
+      if (f === s.target || f.hp <= 0) return;
+      if (segDist(f.x, f.y, s.sx, s.sy, x, y) <= 16) { damage(f, s.dmg * 0.6); burst(f.x, f.y, s.color, 4); }
+    });
+  }
   if (s.splash) { G.foes.forEach(function (f) { if (Math.hypot(f.x - x, f.y - y) <= s.splash) { damage(f, s.dmg); if (s.slows && f.hp > 0) f.slow = 1.6; } }); }
   else if (s.target && s.target.hp > 0) { damage(s.target, s.dmg); if (s.slows) s.target.slow = 1.6; }
   else { var best = null, bd = 22; G.foes.forEach(function (f) { var dd = Math.hypot(f.x - x, f.y - y); if (dd < bd) { bd = dd; best = f; } }); if (best) { damage(best, s.dmg); if (s.slows) best.slow = 1.6; } }
@@ -606,6 +657,15 @@ function draw() {
     if (tw === selTower) { var s = towerStats(tw); ctx.fillStyle='rgba(245,197,24,0.10)'; ctx.beginPath(); ctx.arc(tw.x,tw.y,s.range,0,7); ctx.fill(); }
     ctx.fillStyle = tw.flash>0 ? '#4a2f7a' : '#241544'; roundRect(tw.x-17,tw.y-17,34,34,7); ctx.fill();
     ctx.strokeStyle = base.color; ctx.lineWidth=2; roundRect(tw.x-17,tw.y-17,34,34,7); ctx.stroke();
+    // Synergy aura — pulsing ring when a neighbour pairing is active
+    var syn = synergyOf(tw);
+    if (syn) {
+      var sc = syn === 'haste' ? '#ff8fd0' : '#c79bff';
+      ctx.save(); ctx.globalAlpha = 0.5 + 0.3 * Math.sin(Date.now() / 220);
+      ctx.strokeStyle = sc; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(tw.x, tw.y, 21, 0, 7); ctx.stroke();
+      ctx.globalAlpha = 1; ctx.fillStyle = sc; ctx.font = '9px sans-serif';
+      ctx.fillText(syn === 'haste' ? '⚡' : '⤢', tw.x + 15, tw.y - 14); ctx.restore();
+    }
     ctx.font = (tw.kind==='louie'?'20px':'24px')+' serif'; ctx.fillStyle = base.color; ctx.fillText(base.glyph, tw.x, tw.y+1);
     for (var L=0;L<tw.lvl;L++){ ctx.fillStyle='#F5C518'; ctx.beginPath(); ctx.arc(tw.x-10+L*9, tw.y+14, 2.2, 0, 7); ctx.fill(); }
     // tiny targeting tag
@@ -724,7 +784,8 @@ function openInspector(tw) {
   inspEl.innerHTML =
     '<div class="ih">' + base.glyph + ' ' + base.name + ' · L' + tw.lvl + '</div>' +
     '<div class="irow">Damage: ' + s.dmg.toFixed(0) + (base.splash?' (splash)':base.sniper?' (sniper)':'') + '</div>' +
-    '<div class="irow">Range: ' + s.range.toFixed(0) + ' · Rate: ' + base.rate + 's</div>' +
+    '<div class="irow">Range: ' + s.range.toFixed(0) + ' · Rate: ' + s.rate.toFixed(2) + 's</div>' +
+    (synergyOf(tw) ? '<div class="irow" style="color:' + (synergyOf(tw)==='haste'?'#ff8fd0':'#c79bff') + '">✦ Synergy: ' + (synergyOf(tw)==='haste'?'HASTE (Knight + Queen)':'PIERCE (Bishop + Rook)') + '</div>' : '') +
     '<div class="irow" style="margin-top:5px;color:#9a7fd4">Aim:</div>' +
     '<div class="tgt">' + modes.map(function(m){ return '<button data-m="'+m+'"'+(tw.target===m?' class="on"':'')+'>'+m+'</button>'; }).join('') + '</div>' +
     '<div class="ibtns">' +
@@ -776,13 +837,18 @@ function endGame(won) {
   var credits = Math.min(5, 1 + Math.floor(G.wave/3) + (won?1:0));
   var coinsEarned = Math.round((Math.floor(G.score/120) + G.wave*2 + (won?25:0)) * (1 + (G.mutBonus || 0)));
   META.coins += coinsEarned;
-  if (won && !G.endless) META.beaten[curMap.id] = true;
+  if (won && !G.endless && !G.daily) META.beaten[curMap.id] = true;
   // track best endless wave per map
   if (G.endless) { META.endless = META.endless || {}; if ((G.wave) > (META.endless[curMap.id] || 0)) META.endless[curMap.id] = G.wave; }
+  if (G.daily) markDaily(G.score, won);
   saveMeta();
   if (window.PJCC && PJCC.saveScore) {
-    PJCC.saveScore('tower-defense', G.score, { credits: credits, data: { map: curMap.id, waves: G.wave, kills: G.kills, won: won, endless: !!G.endless, muts: Object.keys(G.muts) } });
-    if (G.endless) PJCC.saveScore('siege-endless', G.wave, { credits: 0, data: { map: curMap.id, score: G.score, kills: G.kills } });
+    if (G.daily) {
+      PJCC.saveScore('siege-daily', G.score, { seed: dayStamp(), credits: won ? 3 : 1, data: { map: curMap.id, waves: G.wave, won: won, muts: Object.keys(G.muts) } });
+    } else {
+      PJCC.saveScore('tower-defense', G.score, { credits: credits, data: { map: curMap.id, waves: G.wave, kills: G.kills, won: won, endless: !!G.endless, muts: Object.keys(G.muts) } });
+      if (G.endless) PJCC.saveScore('siege-endless', G.wave, { credits: 0, data: { map: curMap.id, score: G.score, kills: G.kills } });
+    }
   }
   var ovl = document.getElementById('ovl');
   var mutTag = G.mutBonus ? ' · mutators +' + Math.round(G.mutBonus*100) + '% Crowns' : '';
@@ -816,8 +882,29 @@ function renderMapOpts() {
     el.onclick = function () { selMutators[m.id] = !selMutators[m.id]; renderMapOpts(); }; box.appendChild(el);
   });
 }
+function startDaily() {
+  document.getElementById('scr-menu').classList.add('hidden');
+  document.getElementById('scr-maps').classList.add('hidden');
+  document.getElementById('ovl').classList.add('hidden');
+  var seed = dailySeed(), mi = seed % MAPS.length, muts = dailyMutators(seed);
+  G = newGame(mi, { muts: muts, daily: true }); buildRack(); syncHud(); refreshDecree();
+  setHint('📅 Daily Siege — one fixed seed for every operative. Hold the line!');
+  var tags = Object.keys(muts).map(function (k) { var mm = MUTATORS.filter(function (x) { return x.id === k; })[0]; return mm ? mm.glyph + ' ' + mm.name : k; });
+  showBanner('📅 Daily Siege · ' + curMap.name, tags.length ? tags.join(' · ') : 'No mutators today');
+}
 function openMaps() {
   show('scr-maps'); renderMapOpts(); var grid = document.getElementById('map-grid'); grid.innerHTML = '';
+  // Daily mutator-roulette card (fixed seed, its own global board)
+  (function () {
+    var seed = dailySeed(), dmi = seed % MAPS.length, dmuts = dailyMutators(seed), done = dailyDone();
+    var dtags = Object.keys(dmuts).map(function (k) { var mm = MUTATORS.filter(function (x) { return x.id === k; })[0]; return mm ? mm.glyph + ' ' + mm.name : k; }).join(' · ') || 'no mutators';
+    var el = document.createElement('div'); el.className = 'map-card daily-card';
+    el.style.cssText = 'border-color:#ff8fd0;background:linear-gradient(135deg,#241544,#3a1d52);';
+    el.innerHTML = '<div class="mt">📅 Daily Siege</div><div class="md d-hard">' + MAPS[dmi].name + ' · roulette</div>' +
+      '<div class="mdesc">One fixed seed for everyone · ' + dtags + '</div>' +
+      (done ? '<div class="beat" style="color:#6bffb8">✓ ' + done.score + (done.won ? ' · held' : '') + '</div>' : '<div class="beat" style="color:#ff8fd0">global board</div>');
+    el.onclick = startDaily; grid.appendChild(el);
+  })();
   MAPS.forEach(function (m, idx) {
     var unlocked = m.id===1 || META.beaten[m.id-1];
     var best = (META.endless && META.endless[m.id]) ? META.endless[m.id] : 0;
@@ -860,7 +947,7 @@ document.getElementById('menu-back').onclick = openMenu;
 document.getElementById('decree-btn').onclick = fireDecree;
 document.getElementById('send-btn').onclick = function () { if (!G||!G.running||G.over) return; if (G.waveActive) { setHint('Wave already in progress.'); return; } G.gold += 25; setHint('Early call! +25 gold. Brace yourself.'); startWave(); syncHud(); };
 document.getElementById('speed-btn').onclick = function () { if (!G) return; G.speed = G.speed===1?2:G.speed===2?3:1; this.textContent = 'Speed ▶▶ ' + G.speed + '×'; };
-document.getElementById('ovl-btn').onclick = function () { var em = G.endless; var mi = G.mapIdx; document.getElementById('ovl').classList.add('hidden'); startMap(mi, em); };
+document.getElementById('ovl-btn').onclick = function () { if (G.daily) { document.getElementById('ovl').classList.add('hidden'); startDaily(); return; } var em = G.endless; var mi = G.mapIdx; document.getElementById('ovl').classList.add('hidden'); startMap(mi, em); };
 document.getElementById('ovl-menu').onclick = function () { document.getElementById('ovl').classList.add('hidden'); openMenu(); };
 
 /* ============ loop ============ */
