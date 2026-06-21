@@ -77,11 +77,11 @@ Nate; not website features.*
 ## Per-game extra features (suggested, not yet built)
 
 
-**Deferred / queued next (Notation Blitz v3.5+):** two input-paradigm modes held back for
-hands-on play-testing before shipping —
-- **Reverse "name-the-square" drill** — a square lights up and you *call* it (likely a
-  coordinate keypad, or multiple-choice name buttons, judged on the beat like the forward run).
-- **Dual-lane two-hand mode** — two simultaneous calls at high BPM, one per lane/hand.
+✅ **Notation Blitz input-paradigm modes** *(shipped v3.7)* — both deferred modes are in:
+- **Recall "name-the-square" drill** — a square lights up on the board and you name it on a
+  file/rank keypad before it reaches the gate (board → coordinates, the reverse skill).
+- **2-Hand dual-lane mode** — two simultaneous calls per beat, one per lane; click both in time.
+
 *(Shipped in v3.5: the 📅 Daily seeded chart + the global timing-accuracy board. Shipped in v3.6:
 Freestyle rubber-band BPM, the files/ranks Warmup, and mid-run Perks.)*
  

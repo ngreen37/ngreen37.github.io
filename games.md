@@ -102,8 +102,8 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/notation-run/' | relative_url }}">
     <div class="game-card-icon">♫</div>
     <div class="game-card-body">
-      <h2>Notation Blitz v3.6</h2>
-      <p>A rhythm drill for reading chess coordinates at speed — Endless ramp, an adaptive <strong>Freestyle</strong> tempo, a files/ranks <strong>Warmup</strong>, mid-run <strong>Perks</strong>, a free BPM slider, a 2-Tone "Black side" mode, a ⟲ Extreme board-flip mode, and a 📅 Daily seeded chart that posts to a global <strong>timing-accuracy</strong> board (not just score).</p>
+      <h2>Notation Blitz v3.7</h2>
+      <p>A rhythm drill for reading chess coordinates at speed — Endless ramp, an adaptive <strong>Freestyle</strong> tempo, a <strong>Recall</strong> name-the-square mode, a <strong>2-Hand</strong> dual-lane mode, a files/ranks <strong>Warmup</strong>, mid-run <strong>Perks</strong>, a free BPM slider, a 2-Tone "Black side" mode, a ⟲ Extreme board-flip mode, and a 📅 Daily seeded chart that posts to a global <strong>timing-accuracy</strong> board (not just score).</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>

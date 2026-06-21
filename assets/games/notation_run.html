@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PJCC: Notation Blitz v3.6</title>
+<title>PJCC: Notation Blitz v3.7</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -179,6 +179,17 @@
   #bpm-slider { width: 190px; accent-color: #F5C518; }
   #bpm-label { font-size: 13px; color: #c9a7ff; min-width: 62px; text-align: left; }
   .pick.on { background: #F5C518; color: #1a0f3d; border-color: #F5C518; font-weight: bold; }
+  /* RECALL keypad */
+  .keypad { margin-top: 8px; width: 100%; }
+  .keypad.hidden { display: none; }
+  .kp-readout { text-align: center; font-family: 'Courier New', monospace; font-size: 18px;
+    font-weight: bold; letter-spacing: 4px; color: #F5C518; min-height: 22px; margin-bottom: 6px; }
+  .kp-row { display: flex; gap: 4px; justify-content: center; margin-bottom: 4px; }
+  .kp-key { flex: 1 1 0; max-width: 56px; background: #2D1B69; color: #c9a7ff; border: 1px solid #4a2f8a;
+    border-radius: 6px; padding: 10px 0; font-family: 'Courier New', monospace; font-size: 18px;
+    font-weight: bold; cursor: pointer; transition: all 0.1s; }
+  .kp-key:hover { border-color: #F5C518; color: #fff; }
+  .kp-key.armed { background: #F5C518; color: #1a0f3d; border-color: #F5C518; }
   .perk-pick {
     width: 124px; min-height: 96px; display: flex; flex-direction: column; align-items: center;
     justify-content: center; gap: 4px; padding: 12px 8px; text-align: center;
@@ -196,16 +207,25 @@
 <div id="stage">
   <canvas id="canvas" width="480" height="500"></canvas>
 
+  <!-- RECALL keypad (reverse "name-the-square" mode) -->
+  <div id="keypad" class="keypad hidden">
+    <div class="kp-readout" id="kp-readout">name the lit square</div>
+    <div class="kp-row" id="kp-files"></div>
+    <div class="kp-row" id="kp-ranks"></div>
+  </div>
+
   <!-- TITLE SCREEN -->
   <div class="overlay" id="title-screen">
     <div class="ov-eyebrow" id="ov-eyebrow">Checker Town · Coordinate Drill</div>
-    <div class="ov-title">NOTATION BLITZ <span class="ver" id="ov-ver">v3.6</span></div>
+    <div class="ov-title">NOTATION BLITZ <span class="ver" id="ov-ver">v3.7</span></div>
 
     <div class="ov-group-label">Mode</div>
     <div class="btn-row" id="mode-row">
       <button class="pick sel" data-mode="coords">Drill<small>fixed run</small></button>
       <button class="pick" data-mode="endless">Endless<small>ramps up</small></button>
       <button class="pick" data-mode="freestyle">Freestyle<small>BPM adapts to you</small></button>
+      <button class="pick" data-mode="recall">Recall<small>name the square</small></button>
+      <button class="pick" data-mode="dual">2-Hand<small>two lanes at once</small></button>
       <button class="pick" data-mode="extreme">Extreme<small>board flips!</small></button>
       <button class="pick" data-mode="daily">📅 Daily<small>same chart · timing board</small></button>
     </div>
@@ -478,6 +498,8 @@ function newGame(mode, diff) {
   const freestyle = (mode === 'freestyle');
   const extreme = (mode === 'extreme');
   const daily = (mode === 'daily');
+  const reverse = (mode === 'recall');     // name-the-square: the board lights up, you type the name
+  const dual = (mode === 'dual');          // two-hand: two simultaneous lanes
   const infinite = endless || freestyle;
   // Daily is a fixed, fair chart so every operative's timing-accuracy is comparable.
   if (daily) { diff = 'medium'; }
@@ -490,20 +512,29 @@ function newGame(mode, diff) {
     NRAND = mulberry32(dailySeedNB()); let prev = -1;
     for (let i = 0; i < 28; i++) { const c = randCoordCall(prev); prev = c.y*8 + c.x; queue.push(c); }
     NRAND = Math.random;
-  } else if (mode === 'coords' || infinite || extreme) {
-    let prev = -1, n = infinite ? 40 : (extreme ? 30 : bpmCalls(bpm));
+  } else if (dual) {
+    // Two distinct squares per beat — lane 0 and lane 1.
+    let p0 = -1, p1 = -1;
+    for (let i = 0; i < 24; i++) {
+      const a = randCoordCall(p0); let b; do { b = randCoordCall(p1); } while (b.x === a.x && b.y === a.y);
+      a.lane = 0; b.lane = 1; p0 = a.y*8 + a.x; p1 = b.y*8 + b.x;
+      queue.push(a); queue.push(b);
+    }
+  } else if (mode === 'coords' || reverse || infinite || extreme) {
+    let prev = -1, n = infinite ? 40 : (extreme ? 30 : (reverse ? 24 : bpmCalls(bpm)));
     for (let i = 0; i < n; i++) { const c = randCoordCall(prev); prev = c.y*8 + c.x; queue.push(c); }
   } else {
     OPENINGS[mode].line.forEach(([san, sq]) => { const p = algToXY(sq); queue.push({ san, x: p.x, y: p.y }); });
   }
   // Warmup: prepend a short files-only / ranks-only drill before the mixed run.
-  const warmup = (selWarmup && !daily);
+  // (Skipped for Recall/Dual — those change the input model.)
+  const warmup = (selWarmup && !daily && !reverse && !dual);
   if (warmup) queue.unshift.apply(queue, makeWarmupCalls(8));
   const perksOn = (selPerks && !daily);
   const callInterval = spb * bpc;
 
   G = {
-    mode, diff, endless, freestyle, extreme, daily, spb, bpc, bpm, flip: (extreme || daily ? false : selBlack),
+    mode, diff, endless, freestyle, extreme, daily, reverse, dual, spb, bpc, bpm, flip: (extreme || daily ? false : selBlack),
     flipAtBeat: 0, flipBanner: null, flips: 0,
     goodW: callInterval * GOOD_FRAC, perfectW: callInterval * PERFECT_FRAC,
     perksOn, perks: { wideStacks: 0, scoreMult: 1, shields: 0 }, perkIdx: 0, openPerk: false,
@@ -530,6 +561,13 @@ function boardCenter(x, y) {
   return { x: BX + sc * TILE + TILE / 2, y: BY + sr * TILE + TILE / 2 };
 }
 function setEmote(e, frames) { if (G) { G.princess.emote = e; G.princess.emoteT = frames || 70; } }
+// Dual mode: lane 0 rides slightly above the gate line, lane 1 slightly below.
+function laneY(c) { return TRACK_Y + (G && G.dual ? (c && c.lane ? 16 : -16) : 0); }
+// Recall mode hides the square name on the pill until it's resolved (you must name it).
+function pillLabel(c) {
+  if (!G || !G.reverse) return c.san;
+  return (c.status === 'hit' || c.status === 'missed') ? c.san : '?';
+}
 
 // Extreme mode: flip the board's perspective (White ⟲ Black). The theme shifts so you can feel the side.
 function doFlip(curBeat) {
@@ -565,15 +603,18 @@ function update() {
     G.beepIdx++;
   }
 
-  // Spawn upcoming calls within the approach window
+  // Spawn upcoming calls within the approach window (Dual spawns both lanes per beat).
   while (G.qPtr < G.queue.length && beatTime(G.callBeat) < now + APPROACH) {
-    const def = G.queue[G.qPtr];
-    G.calls.push({
-      san: def.san, x: def.x, y: def.y,
-      hitTime: beatTime(G.callBeat), beat: G.callBeat,
-      status: 'pending', fade: 1,
-    });
-    G.qPtr++;
+    const grp = G.dual ? 2 : 1;
+    for (let g = 0; g < grp && G.qPtr < G.queue.length; g++) {
+      const def = G.queue[G.qPtr];
+      G.calls.push({
+        san: def.san, x: def.x, y: def.y, lane: def.lane || 0,
+        hitTime: beatTime(G.callBeat), beat: G.callBeat,
+        status: 'pending', fade: 1,
+      });
+      G.qPtr++;
+    }
     G.callBeat += G.bpc;
   }
   if (!G.begun && G.calls.length) G.begun = true;
@@ -605,7 +646,7 @@ function update() {
         c.status = 'missed'; registerResult('miss', c);
         if (G.shieldedMiss) { floater('🛡 SHIELDED', c, '#7fd4ff'); }
         else { flashSquare(c.x, c.y, COLORS.bad); floater('MISS', c, COLORS.bad); sfx('miss'); setEmote('😣', 60); }
-        c.falling = true; c.fx = CLIFF_X; c.fy = TRACK_Y;
+        c.falling = true; c.fx = CLIFF_X; c.fy = laneY(c);
         c.fvx = -1.3 - Math.random(); c.fvy = -2.4 - Math.random(); c.spin = 0; c.spinV = (Math.random() - 0.5) * 0.5;
         if ((G.endless || G.freestyle) && !G.shieldedMiss) { G.lives--; if (G.lives <= 0 && !G.finished) finish(); }
       }
@@ -714,34 +755,22 @@ function registerResult(kind, call, base) {
 function resolveAt(sqx, sqy) {
   if (!G || !G.running) return;
   const now = nowSec();
-  // Nearest pending call within the good window
+  // Does this input correctly answer call c? (square, or warmup file/rank)
+  function matches(c) {
+    return c.kind === 'file' ? (sqx === c.fileIdx)
+         : c.kind === 'rank' ? (sqy === c.rankIdx)
+         : (c.x === sqx && c.y === sqy);
+  }
+
+  // Pass 1: the pending call in the window that this input correctly answers
+  // (nearest in time). With two lanes active, this picks the lane you hit.
   let best = null, bestDt = Infinity;
   G.calls.forEach(c => {
     if (c.status !== 'pending') return;
     const dt = Math.abs(c.hitTime - now);
-    if (dt <= G.goodW && dt < bestDt) { best = c; bestDt = dt; }
+    if (dt <= G.goodW && matches(c) && dt < bestDt) { best = c; bestDt = dt; }
   });
-  if (!best) {
-    // "Catch it on the tail" — a slipped call still on the runway, before the cliff.
-    let tail = null, tailX = Infinity;
-    G.calls.forEach(c => { if (c.status === 'tail' && !c.falling && c.x === sqx && c.y === sqy) {
-      const x = HITX + (c.hitTime - now) * PXPS; if (x > CLIFF_X && x < tailX) { tailX = x; tail = c; } } });
-    if (tail) {
-      tail.status = 'hit';
-      const gained = registerResult('save', tail, 30);
-      movePrincess(sqx, sqy); popParticles(sqx, sqy, '#ffd166');
-      gateExplode(HITX + (tail.hitTime - now) * PXPS, '#ffd166', false);
-      flashSquare(sqx, sqy, 'rgba(255,209,102,0.45)'); floater('TAIL SAVE +' + gained, tail, '#ffd166');
-      setEmote('😅', 70); sfx('good');
-    }
-    return; // no pending call in window — no penalty
-  }
-
-  // Warmup file/rank calls accept any square on the named column/row.
-  const correct = best.kind === 'file' ? (sqx === best.fileIdx)
-                : best.kind === 'rank' ? (sqy === best.rankIdx)
-                : (best.x === sqx && best.y === sqy);
-  if (correct) {
+  if (best) {
     // Four-band, timing-driven scoring. Dead-on the gate = Perfect; the rest of
     // the window splits into Great / Good / Early·Late, each worth steadily less.
     const dtSigned = now - best.hitTime;                          // + = late, − = early
@@ -760,29 +789,52 @@ function resolveAt(sqx, sqy) {
     G.res.offSum += dtSigned; G.res.offCount++; G.res.absSum = (G.res.absSum || 0) + Math.abs(dtSigned);
     best.status = 'hit';
     const gained = registerResult(kind, best, base);
-    movePrincess(sqx, sqy);
-    popParticles(sqx, sqy, color);
-    gateExplode(HITX + (best.hitTime - now) * PXPS, color, kind === 'perfect'); // burst on the track
-    flashSquare(sqx, sqy, kind === 'perfect' ? 'rgba(107,255,184,0.5)' : 'rgba(245,197,24,0.45)');
+    movePrincess(best.x, best.y);
+    popParticles(best.x, best.y, color);
+    gateExplode(HITX + (best.hitTime - now) * PXPS, color, kind === 'perfect', laneY(best)); // burst on the track
+    flashSquare(best.x, best.y, kind === 'perfect' ? 'rgba(107,255,184,0.5)' : 'rgba(245,197,24,0.45)');
     floater(label + ' +' + gained, best, color);
     sfx(kind === 'perfect' || kind === 'great' ? 'perfect' : 'good');
     setEmote(kind === 'perfect' ? '😄' : '🙂', 55);
+    return;
+  }
+
+  // "Catch it on the tail" — a slipped call still on the runway that this input answers.
+  let tail = null, tailX = Infinity;
+  G.calls.forEach(c => { if (c.status === 'tail' && !c.falling && matches(c)) {
+    const x = HITX + (c.hitTime - now) * PXPS; if (x > CLIFF_X && x < tailX) { tailX = x; tail = c; } } });
+  if (tail) {
+    tail.status = 'hit';
+    const gained = registerResult('save', tail, 30);
+    movePrincess(tail.x, tail.y); popParticles(tail.x, tail.y, '#ffd166');
+    gateExplode(HITX + (tail.hitTime - now) * PXPS, '#ffd166', false, laneY(tail));
+    flashSquare(tail.x, tail.y, 'rgba(255,209,102,0.45)'); floater('TAIL SAVE +' + gained, tail, '#ffd166');
+    setEmote('😅', 70); sfx('good');
+    return;
+  }
+
+  // Pass 2: nearest pending call in the window that this input did NOT answer → a wrong
+  // answer (penalty + reveal). Skipped if nothing is live, so stray taps cost nothing.
+  let wrong = null, wDt = Infinity;
+  G.calls.forEach(c => {
+    if (c.status !== 'pending') return;
+    const dt = Math.abs(c.hitTime - now);
+    if (dt <= G.goodW && dt < wDt) { wrong = c; wDt = dt; }
+  });
+  if (!wrong) return;
+  wrong.status = 'missed';
+  registerResult('miss', wrong);
+  flashSquare(wrong.x, wrong.y, COLORS.bad);
+  if (sqx >= 0 && sqx <= 7 && sqy >= 0 && sqy <= 7) flashSquare(sqx, sqy, 'rgba(255,107,107,0.3)');
+  if (G.shieldedMiss) {
+    floater('🛡 SHIELDED → ' + wrong.san, wrong, '#7fd4ff');
+    sfx('good'); setEmote('🛡', 60);
   } else {
-    // Wrong square — miss, lose half-points, and reveal the correct one
-    best.status = 'missed';
-    registerResult('miss', best);
-    flashSquare(best.x, best.y, COLORS.bad);
-    flashSquare(sqx, sqy, 'rgba(255,107,107,0.3)');
-    if (G.shieldedMiss) {
-      floater('🛡 SHIELDED → ' + best.san, best, '#7fd4ff');
-      sfx('good'); setEmote('🛡', 60);
-    } else {
-      const penalty = 50; // half of a base hit (100)
-      G.score = Math.max(0, G.score - penalty);
-      G.scorePulse = 1; G.scoreFlash = 1;
-      floater('WRONG → ' + best.san + '  −' + penalty, best, COLORS.bad);
-      sfx('miss'); setEmote('😣', 60);
-    }
+    const penalty = 50; // half of a base hit (100)
+    G.score = Math.max(0, G.score - penalty);
+    G.scorePulse = 1; G.scoreFlash = 1;
+    floater('WRONG → ' + wrong.san + '  −' + penalty, wrong, COLORS.bad);
+    sfx('miss'); setEmote('😣', 60);
   }
 }
 
@@ -819,12 +871,13 @@ function popParticles(x, y, color) {
   }
 }
 // A burst on the rhythm track where a correctly-clicked call is detonated.
-function gateExplode(px, color, big) {
+function gateExplode(px, color, big, py) {
+  const y = (py == null) ? TRACK_Y : py;
   const n = big ? 22 : 14;
   for (let i = 0; i < n; i++) {
     const a = Math.random() * Math.PI * 2;
     const s = (big ? 2.5 : 1.8) + Math.random() * (big ? 4 : 3);
-    G.particles.push({ x: px, y: TRACK_Y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 20 + Math.random() * 16, color });
+    G.particles.push({ x: px, y: y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 20 + Math.random() * 16, color });
   }
 }
 
@@ -840,9 +893,48 @@ function canvasToSquare(clientX, clientY) {
 }
 
 canvas.addEventListener('pointerdown', e => {
+  if (G && G.reverse) return;   // Recall mode: answer with the keypad, not the board
   const sq = canvasToSquare(e.clientX, e.clientY);
   if (sq) { e.preventDefault(); resolveAt(sq.x, sq.y); }
 });
+
+// ---- Recall keypad: compose a file + a rank, then it resolves on the beat ----
+(function () {
+  const filesEl = document.getElementById('kp-files');
+  const ranksEl = document.getElementById('kp-ranks');
+  const readEl = document.getElementById('kp-readout');
+  if (!filesEl || !ranksEl) return;
+  const FILES = 'abcdefgh';
+  let kpFile = null, kpRank = null;   // kpFile: 0–7 col · kpRank: 0–7 row
+  function paintReadout() {
+    if (!readEl) return;
+    if (kpFile == null && kpRank == null) { readEl.textContent = 'name the lit square'; return; }
+    readEl.textContent = (kpFile == null ? '·' : FILES[kpFile]) + (kpRank == null ? '·' : String(8 - kpRank));
+  }
+  function clearArmedIn(el) { Array.prototype.forEach.call(el.querySelectorAll('.kp-key.armed'), b => b.classList.remove('armed')); }
+  function reset() { kpFile = null; kpRank = null; clearArmedIn(filesEl); clearArmedIn(ranksEl); paintReadout(); }
+  function tryResolve() {
+    if (kpFile != null && kpRank != null) { const x = kpFile, y = kpRank; reset(); resolveAt(x, y); }
+  }
+  FILES.split('').forEach((ch, i) => {
+    const b = document.createElement('button');
+    b.className = 'kp-key'; b.textContent = ch;
+    b.addEventListener('pointerdown', e => { e.preventDefault(); clearArmedIn(filesEl); kpFile = i; b.classList.add('armed'); paintReadout(); tryResolve(); });
+    filesEl.appendChild(b);
+  });
+  for (let rk = 1; rk <= 8; rk++) {
+    const row = 8 - rk;
+    const b = document.createElement('button');
+    b.className = 'kp-key'; b.textContent = String(rk);
+    b.addEventListener('pointerdown', e => { e.preventDefault(); clearArmedIn(ranksEl); kpRank = row; b.classList.add('armed'); paintReadout(); tryResolve(); });
+    ranksEl.appendChild(b);
+  }
+  window.__kpShow = function (on) {
+    const kp = document.getElementById('keypad');
+    if (kp) kp.classList.toggle('hidden', !on);
+    reset();
+  };
+})();
 
 // ---- Rendering ----
 function render() {
@@ -945,6 +1037,23 @@ function drawBoard() {
     ctx.fillText(files[G.flip ? 7 - i : i], BX + i * TILE + 3, BY + BOARD - 4);   // files along bottom
     ctx.fillText(G.flip ? i + 1 : 8 - i, BX + 3, BY + i * TILE + 15);             // ranks down the left
   }
+
+  // Recall mode: ring the square(s) you must name (no name shown on the pill).
+  if (G.reverse && G.running) {
+    const now = nowSec();
+    G.calls.forEach(c => {
+      if (c.status !== 'pending' && c.status !== 'tail') return;
+      const sc = G.flip ? 7 - c.x : c.x, sr = G.flip ? 7 - c.y : c.y;
+      const cx = BX + sc * TILE + TILE / 2, cy = BY + sr * TILE + TILE / 2;
+      const active = c.status === 'pending' && Math.abs(c.hitTime - now) <= G.goodW;
+      ctx.save();
+      ctx.strokeStyle = active ? 'rgba(107,255,184,0.95)' : (c.status === 'tail' ? '#ffd166' : 'rgba(' + TH.rgb + ',0.85)');
+      ctx.lineWidth = active ? 4 : 2.5;
+      ctx.beginPath(); ctx.arc(cx, cy, TILE * 0.34, 0, Math.PI * 2); ctx.stroke();
+      if (active) { ctx.fillStyle = 'rgba(107,255,184,0.18)'; ctx.fill(); }
+      ctx.restore();
+    });
+  }
 }
 
 function drawTrack() {
@@ -1006,32 +1115,40 @@ function drawTrack() {
 
   // Approach ring — shrinks onto the gate as the imminent call lands, turning
   // green the moment it's actually hittable. The clearest "click NOW" cue.
+  // Dual mode draws one ring per lane.
   if (G.running) {
-    let nextC = null;
-    G.calls.forEach(c => { if (c.status === 'pending' && (!nextC || c.hitTime < nextC.hitTime)) nextC = c; });
-    if (nextC) {
+    const laneList = G.dual ? [0, 1] : [0];
+    laneList.forEach(ln => {
+      let nextC = null;
+      G.calls.forEach(c => {
+        if (c.status !== 'pending') return;
+        if (G.dual && (c.lane || 0) !== ln) return;
+        if (!nextC || c.hitTime < nextC.hitTime) nextC = c;
+      });
+      if (!nextC) return;
       const delta = nextC.hitTime - now;
       const LEAD = 1.0, GATE_R = 16, MAX_EXTRA = 22;
       const ringR = GATE_R + Math.min(Math.max(delta, 0), LEAD) / LEAD * MAX_EXTRA;
       const within = Math.abs(delta) <= G.goodW;
       ctx.strokeStyle = within ? 'rgba(107,255,184,0.95)' : 'rgba(' + TH.rgb + ',0.55)';
       ctx.lineWidth = within ? 3 : 2;
-      ctx.beginPath(); ctx.arc(HITX, TRACK_Y, ringR, 0, Math.PI * 2); ctx.stroke();
-    }
+      ctx.beginPath(); ctx.arc(HITX, laneY(nextC), ringR, 0, Math.PI * 2); ctx.stroke();
+    });
   }
 
   // Incoming calls — drawn as rounded "pills" sized to the notation text
   G.calls.forEach(c => {
     const falling = c.status === 'missed' && c.falling;
     const x = falling ? c.fx : HITX + (c.hitTime - now) * PXPS;
-    const y = falling ? c.fy : TRACK_Y;
+    const y = falling ? c.fy : laneY(c);
     if (!falling && (x > W + 20 || x < -40)) return;
     const dt = Math.abs(c.hitTime - now);
     const active = c.status === 'pending' && dt <= G.goodW;
+    const label = pillLabel(c);
 
     const fontSize = active ? 28 : 22;
     ctx.font = 'bold ' + fontSize + 'px Courier New';
-    const textW = ctx.measureText(c.san).width;
+    const textW = ctx.measureText(label).width;
     const padX = active ? 12 : 9;
     const w = textW + padX * 2;
     const h = fontSize + 12;
@@ -1040,7 +1157,7 @@ function drawTrack() {
     // slides to the cliff, then fades as it tumbles into the void below.
     let scale = 1, alpha = 1;
     if (c.status === 'hit') { scale = 1 + (1 - c.fade) * 0.6; alpha = c.fade; }
-    else if (falling) alpha = Math.max(0, 1 - (c.fy - TRACK_Y) / (H - TRACK_Y));
+    else if (falling) alpha = Math.max(0, 1 - (c.fy - laneY(c)) / (H - laneY(c)));
 
     let fill, stroke, textColor;
     if (c.status === 'hit') { fill = 'rgba(107,255,184,'+(0.75*alpha)+')'; stroke = 'rgba(107,255,184,'+alpha+')'; textColor = '#0c3d28'; }
@@ -1058,7 +1175,7 @@ function drawTrack() {
     ctx.fillStyle = textColor;
     ctx.font = 'bold ' + fontSize + 'px Courier New';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(c.san, 0, 1);
+    ctx.fillText(label, 0, 1);
     ctx.restore();
   });
 }
@@ -1286,7 +1403,7 @@ function bpmCalls(bpm) { return bpm < 52 ? 18 : bpm <= 78 ? 22 : 28; }
 function loadTrend() { try { return JSON.parse(localStorage.getItem(TREND_KEY)) || []; } catch (e) { return []; } }
 function saveTrend(a) { try { localStorage.setItem(TREND_KEY, JSON.stringify(a.slice(-20))); } catch (e) {} }
 
-function modeName(mode) { return mode === 'coords' ? 'Coordinates' : mode === 'endless' ? 'Endless' : mode === 'freestyle' ? 'Freestyle' : mode === 'extreme' ? 'Extreme' : mode === 'daily' ? '📅 Daily' : (OPENINGS[mode] ? OPENINGS[mode].label : 'Coordinates'); }
+function modeName(mode) { return mode === 'coords' ? 'Coordinates' : mode === 'endless' ? 'Endless' : mode === 'freestyle' ? 'Freestyle' : mode === 'recall' ? 'Recall' : mode === 'dual' ? '2-Hand' : mode === 'extreme' ? 'Extreme' : mode === 'daily' ? '📅 Daily' : (OPENINGS[mode] ? OPENINGS[mode].label : 'Coordinates'); }
 function updateTitleBest() {
   const key = selMode + '_' + selDiff + (selBlack ? '_b' : '');
   const best = loadBests()[key];
@@ -1315,6 +1432,8 @@ function setEyebrow() {
   if (!e) return;
   if (selMode === 'extreme') e.textContent = 'EXTREME · the board keeps flipping ⟲';
   else if (selMode === 'freestyle') e.textContent = 'FREESTYLE · the tempo rubber-bands to your level';
+  else if (selMode === 'recall') e.textContent = 'RECALL · a square lights up — name it on the keypad';
+  else if (selMode === 'dual') e.textContent = '2-HAND · two lanes at once — click both squares';
   else if (selMode === 'daily') e.textContent = '📅 DAILY · same chart for everyone · timing-accuracy board';
   else e.textContent = selBlack ? '2-Tone Drill · “A Message to you, Princess” 🎺' : 'Checker Town · Coordinate Drill';
 }
@@ -1364,6 +1483,7 @@ function begin() {
   newGame(selMode, selDiff);
   document.getElementById('title-screen').classList.add('hidden');
   document.getElementById('results-screen').classList.add('hidden');
+  if (window.__kpShow) window.__kpShow(G.reverse);   // keypad only in Recall mode
   startRun();
 }
 
@@ -1372,6 +1492,7 @@ document.getElementById('replay-btn').addEventListener('click', begin);
 document.getElementById('menu-btn').addEventListener('click', () => {
   document.getElementById('results-screen').classList.add('hidden');
   document.getElementById('title-screen').classList.remove('hidden');
+  if (window.__kpShow) window.__kpShow(false);
   newGame(selMode, selDiff);   // reset the idle preview board to the selected tempo
 });
 
@@ -1419,6 +1540,7 @@ function resumeFromPause() {
 function finish() {
   G.running = false;
   G.finished = true;
+  if (window.__kpShow) window.__kpShow(false);
   const r = G.res;
   const total = (G.endless || G.freestyle) ? (r.perfect + r.great + r.good + (r.save || 0) + r.miss + (r.shielded || 0)) : G.total;
   // Quality-weighted accuracy: Perfect full, Great most, Good half, tail-Save partial.
@@ -1433,6 +1555,8 @@ function finish() {
 
   const modeLabel = G.endless ? ('Endless · top ' + G.topBpm + ' BPM')
     : G.freestyle ? ('Freestyle · settled ' + G.bpm + ' BPM')
+    : G.reverse ? 'Recall · name-the-square'
+    : G.dual ? '2-Hand · two lanes'
     : G.daily ? '📅 Daily Chart' : G.mode === 'coords' ? 'Coordinates' : OPENINGS[G.mode] ? OPENINGS[G.mode].label : 'Coordinates';
   document.getElementById('res-mode-label').textContent = modeLabel + ' · ' + DIFFS[G.diff].label + (G.flip ? ' · Black' : '');
   const badge = document.getElementById('res-rank');
@@ -1480,7 +1604,7 @@ function finish() {
   }
   if (G.daily) document.getElementById('res-timing').textContent += ' · accuracy ' + accScore + '/1000';
   // Perfect Sprint (rank S on the hardest tempo, Drill) unlocks Blindfold Puzzles.
-  if (!G.endless && !G.freestyle && !G.perksOn && G.diff === 'hard' && rank === 'S') {
+  if (!G.endless && !G.freestyle && !G.perksOn && !G.reverse && !G.dual && G.diff === 'hard' && rank === 'S') {
     try {
       if (localStorage.getItem('pjcc.blindfold.unlocked') !== '1') {
         localStorage.setItem('pjcc.blindfold.unlocked', '1');

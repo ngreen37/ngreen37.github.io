@@ -371,7 +371,7 @@ jukebox: true
 <h2 class="games-index-heading">All Games</h2>
 <ul class="games-index">
   <li><a href="/games/dungeon/">Princess Dungeon</a> <span class="games-index-note">— in development</span></li>
-  <li><a href="/games/notation-run/">Notation Blitz <span class="ver">v3.6</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/notation-run/">Notation Blitz <span class="ver">v3.7</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/space-run/">Space Run</a> <span class="games-index-note">— in development</span></li>
   <li><a href="/games/sky-run/">Sky Run <span class="ver">v1.0</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/pirc-protocol/">The Pirc Protocol <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
