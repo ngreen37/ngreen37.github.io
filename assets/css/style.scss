@@ -26,6 +26,8 @@
 html {
   font-size: 16px;
   scroll-behavior: smooth;
+  /* App-like feel: kill the blue tap/highlight flash everywhere */
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -37,6 +39,28 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  /* Intentional, app-like feel: text isn't selectable/highlightable by default */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Re-enable selection where it actually matters: form fields the user types
+   into, and anything explicitly opted back in with .selectable */
+input,
+textarea,
+select,
+[contenteditable="true"],
+.selectable,
+.selectable * {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* Images/icons shouldn't be drag-grabbable either */
+img,
+svg {
+  -webkit-user-drag: none;
+  user-drag: none;
 }
 
 h1, h2, h3, h4, h5, h6 {
