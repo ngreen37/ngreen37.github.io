@@ -63,7 +63,7 @@
       <b>King's summon</b>, and break each region's <b>boss King</b>.
     </div>
     <div class="legend">
-      <span class="g">♗</span><span>Bishop — an <b>X-shot</b>, two diagonal beams</span>
+      <span class="g">♗</span><span>Bishop — <b>X-only</b> twin beams: no straight shot, but big damage</span>
       <span class="g">♘</span><span>Knight — two <b>sharpshooter escorts</b></span>
       <span class="g">♕</span><span>Queen — a heavy <b>super-shot</b> that pierces</span>
       <span class="g">♚</span><span>King — <b>summon pawns</b> (earned by combo) that leap &amp; explode</span>
@@ -110,6 +110,8 @@ const ENEMY = {
 const POWERS = ['bishop','knight','queen'];
 const POWER_GLYPH = { bishop:'♗', knight:'♘', queen:'♕' };
 const POWER_COL   = { bishop:'#c79bff', knight:'#8fe3ff', queen:'#ff8fd0' };
+const POWER_NAME  = { bishop:'♗ X-BEAMS!', knight:'♘ ESCORTS!', queen:'♕ SUPER-SHOT!' };
+function hexToRgb(h){ const n=parseInt(h.slice(1),16); return ((n>>16)&255)+','+((n>>8)&255)+','+(n&255); }
 const PWR_DUR = { bishop:12, knight:14, queen:10 }, PWR_CAP = 22;
 
 const KILLS_PER_PAWN = 9, MAX_PAWNS = 8, START_HEARTS = 5;
@@ -154,8 +156,8 @@ function newGame(){
     region: 1, regionIdx: 0, waveIdx: 0, wavesInRegion: 5,
     toSpawn: [], boss: null, phase: 'play',  // play | interstitial | done
     interT: 0, nextRegion: 1,
-    enemies: [], bullets: [], ebullets: [], ppawns: [], tokens: [], parts: [], floaters: [],
-    banner: '', bannerT: 0, shake: 0, flash: 0, bg: makeBg()
+    enemies: [], bullets: [], ebullets: [], ppawns: [], tokens: [], parts: [], floaters: [], rings: [],
+    banner: '', bannerT: 0, shake: 0, flash: 0, pflash: 0, pflashCol: '#fff', bg: makeBg()
   };
   startRegion(1);
 }
@@ -212,11 +214,16 @@ function spawnEnemy(type, x){
 }
 
 // ---------- firing ----------
-function shoot(x,y,vx,vy,sup){ G.bullets.push({ x, y, vx, vy, r:sup?7:4, dmg:sup?3:1, pierce:sup?2:0, sup, hit:null }); }
+function shoot(x,y,vx,vy,sup,opt){ opt=opt||{}; G.bullets.push({ x, y, vx, vy, r:(opt.r||(sup?7:4)), dmg:(sup?3:1)+(opt.dmg||0), pierce:sup?2:0, sup, bishop:!!opt.bishop, hit:null }); }
 function fire(){
   const sup = G.pwr.queen>0;
-  shoot(G.px, G.py-18, 0, -BSPD, sup);
-  if (G.pwr.bishop>0){ shoot(G.px-7, G.py-12, -DIAG, -BSPD*0.9, sup); shoot(G.px+7, G.py-12, DIAG, -BSPD*0.9, sup); }
+  if (G.pwr.bishop>0){
+    // Bishop: X-ONLY — the straight shot is gone, but each diagonal beam hits much harder
+    shoot(G.px-7, G.py-12, -DIAG, -BSPD*0.95, sup, { dmg:2, r:(sup?8:6), bishop:true });
+    shoot(G.px+7, G.py-12,  DIAG, -BSPD*0.95, sup, { dmg:2, r:(sup?8:6), bishop:true });
+  } else {
+    shoot(G.px, G.py-18, 0, -BSPD, sup);
+  }
   sfx('shoot');
 }
 
@@ -250,7 +257,8 @@ function explodePawn(x,y){
 
 // ---------- effects ----------
 function burst(x,y,col,n){ for(let i=0;i<(n||12);i++){ const a=Math.random()*Math.PI*2, s=rnd(40,220); G.parts.push({ x,y, vx:Math.cos(a)*s, vy:Math.sin(a)*s, life:rnd(0.3,0.7), max:0.7, col, sz:rnd(2,4) }); } }
-function floater(txt,x,y,col){ G.floaters.push({ txt, x, y, col, life:0.9, max:0.9 }); }
+function floater(txt,x,y,col,big){ G.floaters.push({ txt, x, y, col, life:big?1.4:0.9, max:big?1.4:0.9, big:!!big }); }
+function ring(x,y,col){ G.rings.push({ x, y, col, r:12, life:0.55, max:0.55 }); }
 
 // ---------- damage to enemies / kills ----------
 function killEnemy(e, byPawn){
@@ -261,7 +269,7 @@ function killEnemy(e, byPawn){
   G.killAcc++;
   if (G.killAcc >= KILLS_PER_PAWN && G.pawns < MAX_PAWNS){ G.killAcc = 0; G.pawns++; updateSummonBtn(); floater('♟ +1', G.px, G.py-30, '#ffd36b'); sfx('charge'); }
   // power-up drop
-  if (Math.random() < 0.09){ const p = POWERS[(Math.random()*POWERS.length)|0]; G.tokens.push({ kind:p, x:e.x, y:e.y, vy:80, t:0 }); }
+  if (Math.random() < 0.09){ const p = POWERS[(Math.random()*POWERS.length)|0]; G.tokens.push({ kind:p, x:e.x, y:e.y, bx:e.x, seed:rnd(0,6), vy:80, t:0 }); }
 }
 function hurtPlayer(){
   if (G.inv>0) return;
@@ -290,6 +298,7 @@ function update(dt){
   G.time += dt;
   if (G.shake>0) G.shake = Math.max(0, G.shake-dt*30);
   if (G.flash>0) G.flash = Math.max(0, G.flash-dt*2);
+  if (G.pflash>0) G.pflash = Math.max(0, G.pflash-dt*2);
   if (G.inv>0) G.inv -= dt;
   if (G.bannerT>0) G.bannerT -= dt;
   // background scroll
@@ -333,6 +342,7 @@ function update(dt){
   updatePawns(dt);
   updateTokens(dt);
   updateParts(dt);
+  updateRings(dt);
   for (let i=G.floaters.length-1;i>=0;i--){ const f=G.floaters[i]; f.y-=24*dt; f.life-=dt; if(f.life<=0) G.floaters.splice(i,1); }
 }
 
@@ -420,15 +430,21 @@ function updatePawns(dt){
 function updateTokens(dt){
   for (let i=G.tokens.length-1;i>=0;i--){
     const tk=G.tokens[i]; tk.t+=dt; tk.y+=tk.vy*dt;
+    tk.x = tk.bx + Math.sin(tk.t*3 + tk.seed)*12;   // gentle wobble as it falls
     if (tk.y>H+16){ G.tokens.splice(i,1); continue; }
-    if (dist2(tk.x,tk.y,G.px,G.py) < (16+G.pr)*(16+G.pr)){
+    if (dist2(tk.x,tk.y,G.px,G.py) < (18+G.pr)*(18+G.pr)){
+      const col = POWER_COL[tk.kind];
       G.pwr[tk.kind] = Math.min(PWR_CAP, G.pwr[tk.kind] + PWR_DUR[tk.kind]);
-      floater(POWER_GLYPH[tk.kind], G.px, G.py-30, POWER_COL[tk.kind]); sfx('power'); G.score+=25;
+      floater(POWER_NAME[tk.kind], G.px, G.py-40, col, true);
+      burst(G.px, G.py, col, 24); ring(G.px, G.py, col);
+      G.pflash = 0.6; G.pflashCol = col; G.shake = Math.max(G.shake, 6);
+      sfx('power'); G.score+=25;
       G.tokens.splice(i,1);
     }
   }
 }
 function updateParts(dt){ for(let i=G.parts.length-1;i>=0;i--){ const p=G.parts[i]; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vx*=0.94; p.vy=p.vy*0.94+60*dt; p.life-=dt; if(p.life<=0) G.parts.splice(i,1); } }
+function updateRings(dt){ for(let i=G.rings.length-1;i>=0;i--){ const r=G.rings[i]; r.r+=420*dt; r.life-=dt; if(r.life<=0) G.rings.splice(i,1); } }
 
 // ---------- render ----------
 function render(){
@@ -442,12 +458,38 @@ function render(){
   ctx.save();
   if (G.shake>0) ctx.translate(rnd(-G.shake,G.shake)*0.4, rnd(-G.shake,G.shake)*0.4);
 
-  // tokens
-  G.tokens.forEach(tk=>{ const pulse=0.6+0.4*Math.sin(tk.t*6);
-    ctx.save(); ctx.globalAlpha=0.25+0.2*pulse; ctx.fillStyle=POWER_COL[tk.kind]; ctx.beginPath(); ctx.arc(tk.x,tk.y,16,0,7); ctx.fill(); ctx.restore();
-    ctx.fillStyle='#0a0f24'; ctx.beginPath(); ctx.arc(tk.x,tk.y,12,0,7); ctx.fill();
-    ctx.strokeStyle=POWER_COL[tk.kind]; ctx.lineWidth=2; ctx.stroke();
-    glyph(tk.x,tk.y,POWER_GLYPH[tk.kind],16,POWER_COL[tk.kind]);
+  // tokens (power-ups) — made loud while falling so you chase them
+  G.tokens.forEach(tk=>{
+    const col = POWER_COL[tk.kind];
+    const pulse = 0.5 + 0.5*Math.sin(tk.t*7);
+    ctx.save();
+    // upward sparkle trail
+    for (let k=1;k<=4;k++){
+      ctx.globalAlpha = 0.18*(1 - k/5);
+      ctx.fillStyle = col;
+      const ty = tk.y - k*11;
+      const tx = tk.bx + Math.sin((tk.t - k*0.05)*3 + tk.seed)*12;
+      ctx.beginPath(); ctx.arc(tx, ty, 6 - k*0.9, 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    // expanding "grab me" halo
+    ctx.globalAlpha = 0.5*(1 - pulse);
+    ctx.strokeStyle = col; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(tk.x, tk.y, 16 + pulse*12, 0, 7); ctx.stroke();
+    ctx.globalAlpha = 1;
+    // glow aura
+    ctx.shadowColor = col; ctx.shadowBlur = 16 + pulse*10;
+    ctx.fillStyle = col; ctx.globalAlpha = 0.30 + 0.25*pulse;
+    ctx.beginPath(); ctx.arc(tk.x, tk.y, 17, 0, 7); ctx.fill();
+    ctx.restore();
+    // solid core coin
+    ctx.fillStyle='#0a0f24'; ctx.beginPath(); ctx.arc(tk.x,tk.y,13,0,7); ctx.fill();
+    ctx.strokeStyle=col; ctx.lineWidth=2.5; ctx.stroke();
+    glyph(tk.x,tk.y,POWER_GLYPH[tk.kind],17,col);
+    // downward chevron pointer
+    ctx.globalAlpha = 0.5 + 0.5*pulse;
+    glyph(tk.x, tk.y + 26 + pulse*3, '▾', 14, col);
+    ctx.globalAlpha = 1;
   });
 
   // enemies
@@ -459,19 +501,28 @@ function render(){
   // pawns (summoned)
   G.ppawns.forEach(p=>{ ctx.save(); ctx.shadowColor='#ffd36b'; ctx.shadowBlur=10; glyph(p.x,p.y,'♙',22,'#ffe27a'); ctx.restore(); });
   // player bullets
-  G.bullets.forEach(b=>{ ctx.fillStyle=b.sup?'#ff8fd0':'#9fe8ff'; ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,7); ctx.fill(); if(b.sup){ ctx.globalAlpha=0.5; ctx.beginPath(); ctx.arc(b.x,b.y,b.r+3,0,7); ctx.fill(); ctx.globalAlpha=1; } });
+  G.bullets.forEach(b=>{
+    const col = b.bishop ? '#d9b3ff' : (b.sup?'#ff8fd0':'#9fe8ff');
+    if (b.bishop){ ctx.save(); ctx.shadowColor='#c79bff'; ctx.shadowBlur=10; }
+    ctx.fillStyle=col; ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,7); ctx.fill();
+    if(b.sup){ ctx.globalAlpha=0.5; ctx.beginPath(); ctx.arc(b.x,b.y,b.r+3,0,7); ctx.fill(); ctx.globalAlpha=1; }
+    if (b.bishop) ctx.restore();
+  });
   // escorts
   G.escorts.forEach(es=>{ glyph(es.x,es.y,'♘',20,'#8fe3ff'); });
   // princess
   drawPrincess();
   // particles
   G.parts.forEach(p=>{ ctx.globalAlpha=Math.max(0,p.life/p.max); ctx.fillStyle=p.col; ctx.fillRect(p.x-p.sz/2,p.y-p.sz/2,p.sz,p.sz); }); ctx.globalAlpha=1;
+  // shockwave rings (power-up collection)
+  G.rings.forEach(r=>{ ctx.globalAlpha=Math.max(0,r.life/r.max); ctx.strokeStyle=r.col; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(r.x,r.y,r.r,0,7); ctx.stroke(); }); ctx.globalAlpha=1;
   // floaters
-  G.floaters.forEach(f=>{ ctx.globalAlpha=Math.max(0,f.life/f.max); ctx.fillStyle=f.col; ctx.font='bold 15px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(f.txt,f.x,f.y); }); ctx.globalAlpha=1;
+  G.floaters.forEach(f=>{ ctx.globalAlpha=Math.max(0,f.life/f.max); ctx.font='bold '+(f.big?22:15)+'px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle'; if(f.big){ ctx.strokeStyle='rgba(0,0,0,0.6)'; ctx.lineWidth=4; ctx.strokeText(f.txt,f.x,f.y); } ctx.fillStyle=f.col; ctx.fillText(f.txt,f.x,f.y); }); ctx.globalAlpha=1;
 
   ctx.restore();
   drawHUD();
   if (G.flash>0){ ctx.fillStyle='rgba(255,40,60,'+(G.flash*0.4)+')'; ctx.fillRect(0,0,W,H); }
+  if (G.pflash>0){ ctx.fillStyle='rgba('+hexToRgb(G.pflashCol)+','+(G.pflash*0.3)+')'; ctx.fillRect(0,0,W,H); }
   if (G.bannerT>0) drawBanner();
 }
 function glyph(x,y,ch,size,col){ ctx.font='900 '+size+'px "Segoe UI Symbol","Noto Sans Symbols2",serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
