@@ -95,6 +95,7 @@
       <div class="footer-actions">
         <button class="share-tx-btn" id="share-tx-btn">&#9672; Share This Transmission</button>
         <span id="chess-city-permit-slot"></span>
+        <span id="press-credential-slot"></span>
       </div>
     </div>
   </footer>
@@ -303,6 +304,12 @@
         slot.innerHTML = '<span class="chess-city-permit">&#9812; CHESS CITY — ENTRY PERMIT GRANTED</span>';
       }
     } catch(e) {}
+    var pslot = document.getElementById('press-credential-slot');
+    try {
+      if (pslot && localStorage.getItem('pjcc.presscred.v1')) {
+        pslot.innerHTML = '<a href="/press-pass/" class="chess-city-permit" style="text-decoration:none;">&#127915; FOUNDING OPERATIVE</a>';
+      }
+    } catch(e) {}
   })();
   </script>
 
@@ -343,20 +350,10 @@
       <span class="p3d-base"></span>
     </div>
   </div>
-  <script>
-  (function() {
-    var walker = document.getElementById('princess-walker');
-    if (!walker) return;
-    function walk() {
-      walker.classList.remove('is-walking');
-      void walker.offsetWidth;
-      walker.classList.add('is-walking');
-      setTimeout(function() { walker.classList.remove('is-walking'); scheduleNext(); }, 14000);
-    }
-    function scheduleNext() { setTimeout(walk, (90 + Math.random() * 120) * 1000); }
-    setTimeout(walk, 9000);
-  })();
-  </script>
+  <!-- Princess is a site-wide companion: she strolls, pauses to speak contextual
+       lines, remembers your milestones, and talks when clicked (Avenue 6). -->
+  <script src="{{ '/assets/js/pjcc-princess.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/pjcc-princess-companion.js' | relative_url }}" defer></script>
 
   <!-- Character name glitch on hover -->
   <script>

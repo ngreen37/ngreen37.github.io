@@ -39,6 +39,15 @@ referrals.)
   offline), plus the roadmap staged as Coming Soon — the **Score &amp; EP** (locked tracklist; no
   original music recorded), the **audio-fiction radio-drama pilot**, **Notation Blitz score mode**,
   and **community remixes** for the Build Playlist. Linked in the McPuppy nav.
+- **Avenue 6 — site-wide Princess companion** (`assets/js/pjcc-princess-companion.js`) — the
+  walking figurine grew a voice: she strolls in, pauses to deliver lines that fit **where** you are,
+  **when** it is, your **training/bond/streak** (via `PJCCPrincess.summary()`), a premiere countdown,
+  holidays, and a resurfaced memory. Click her any time to talk; a "shh" quiets the session.
+- **Avenue 10 — Press Pass actionable + newsletter engine** — a free, claimable **Press Credential**
+  on `/press-pass/` (provisional founding number, carries your dossier codename, site-wide
+  "Founding Operative" footer badge). And `/mailing-list/` rebuilt as the **Bureau of Dispatch**:
+  what-you-get grid, cadence, an in-universe sample dispatch, founders-list-first framing, and a
+  share/referral nudge.
 - **Avenue 5 — character leitmotifs** (`assets/js/pjcc-leitmotif.js`) — deterministic Web-Audio
   signature per character, a "♪ theme" button on every character page.
 - **Avenue 6 — Princess companion** (`assets/js/pjcc-princess.js`) — Train Princess (ranks from
@@ -49,6 +58,41 @@ referrals.)
 **Earlier** — Daily Dispatch (`/daily/`), Hall of Fame, cross-game streak flame, "beat the
 creator" ghosts, leaderboard seasons; verified-chess passes (Shogi tsume + AI, Pirc traps);
 board-skins foundation + JP-localization mechanism.
+
+---
+
+## 🧭 Next path per avenue (post-build refresh — what to build *next* in each lane)
+Now that 1 / 3 / 5 / 6 / 10 have shipped pieces, here's the single highest-leverage *next* move in
+each avenue, biased toward buildable-now where possible.
+
+- **1 · Production as content** — drop **real board scans** into the Pilot Animatic (the `art` field
+  already takes them), and give Frame-the-Scene + per-shot comments a **shared tally** (ties to the
+  publish-gallery decision below). Bonus: a "what changed this week" changelog auto-derived from the
+  tracker bars.
+- **2 · ARG** — a **weekly cipher chain**: each week decrypts a coordinate; coordinates assemble a
+  map to a hidden page. Add one **collective fragment** that only cracks once N visitors contribute,
+  and a Narrator **voicemail** line.
+- **3 · Academy** — the **real-play bridge**: a Lichess study / bot link so a finished lesson hands
+  off to an actual game. Then a **strategy track** + **shogi track**, and a multi-page printable
+  worksheet packet.
+- **4 · Physical / tabletop** — ship a **print-and-play Siege PDF** (rules + board, zero
+  manufacturing) and a **POD mockup page** for pins/stickers — proof of demand before any inventory.
+- **5 · Audio** — when the first theme exists, it slots straight into the **EP player** and unlocks
+  **Notation Blitz score mode**; record one **5-minute audio-drama scene** as the cheapest pilot
+  test; add a per-game **SFX toggle**.
+- **6 · Princess companion** — make her react to **live game results** (cheer a new best the instant
+  it lands), add **seasonal outfits**, a **persistent chattiness/mute setting** on her page, and
+  "walk you to" **contextual page suggestions**.
+- **7 · UGC** — ship the Writers' Room **"Featured Reels" shelf** (option A below) as the first,
+  lowest-risk UGC slice; then a **Siege map editor** with shareable codes and a "design a citizen"
+  template.
+- **8 · AI** — safest first slice is the **dossier analyst on your own play data**, written in the
+  Narrator's voice (no open chat); then the **Argus blunder-coach** on your actual games.
+- **9 · Live ops** — a **community megabar** ("build the bridge to Chess City") summing local bests
+  site-wide, a **seasonal reskin** hook, and a **December advent** door-a-day calendar.
+- **10 · Funding & reach** — wire the dispatch to **Resend** (real welcome email), **confirm + carry**
+  the provisional founders number when accounts land, add a **Patreon/Ko-fi** link behind the Press
+  Pass tiers, and start a **festival / grant** target list.
 
 ---
 
@@ -78,7 +122,6 @@ board-skins foundation + JP-localization mechanism.
 - **Projects** — a public roadmap / "What's next" page (read-only is easy; voting needs a backend).
 - **Academy** — tune lesson thresholds with real data · more courses (a strategy track, a shogi
   track) · a multi-page printable worksheet packet · a branching skill-tree (prereqs/unlocks).
-- **Princess** — promote her to a *floating site-wide* companion; holiday / episode-drop lines.
 
 **Audio / cosmetics**
 - A PJCC original track for the jukebox + a per-game SFX toggle.

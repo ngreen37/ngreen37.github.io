@@ -50,6 +50,73 @@ permalink: /press-pass/
   </div>
 </div>
 
+<!-- ===== FREE PRESS CREDENTIAL (claim now) ===== -->
+<h2 class="xp-h2">◈ Claim your Press Credential <span class="xp-free-tag">Free · now</span></h2>
+<p class="xp-crednote">The Press Pass isn't open yet — but the <b>founders list</b> is forming. Claim your free credential to lock in a <b>provisional founding number</b>. It's a keepsake that says you were here before episode one; when paid passes open, your number carries over. <span class="xp-muted">Saved on this device — link your <a href="{{ '/dossier/' | relative_url }}">dossier</a> to put your codename on it.</span></p>
+
+<div class="xp-cred" id="xp-cred"><!-- rendered by script --></div>
+
+<script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
+<script>
+(function () {
+  var KEY = 'pjcc.presscred.v1';
+  var DOSSIER_URL = {{ '/dossier/' | relative_url | jsonify }};
+  var host = document.getElementById('xp-cred');
+  if (!host) return;
+  function load() { try { return JSON.parse(localStorage.getItem(KEY)); } catch (e) { return null; } }
+  function save(o) { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]; }); }
+  function codename() { try { if (window.PJCC && PJCC.getProfile) { var p = PJCC.getProfile(); if (p && p.codename) return p.codename; } } catch (e) {} return null; }
+  function fmtDate(ts) { try { return new Date(ts).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }); } catch (e) { return ''; } }
+  function credId(ts) { return 'PJCC-FND-' + ts.toString(36).toUpperCase().slice(-6); }
+  function provNum(ts) { return 1 + (Math.floor(ts / 1000) % 888); }  // provisional, device-local
+
+  function render() {
+    var rec = load();
+    if (!rec) {
+      host.innerHTML =
+        '<div class="xp-cred-claim">' +
+          '<div class="xp-cred-claim-ico">🎟</div>' +
+          '<div><div class="xp-cred-claim-lead">You haven’t claimed your credential yet.</div>' +
+          '<div class="xp-muted">Free, instant, no payment — just plant your flag on the founders list.</div>' +
+          '<button class="xp-cta xp-cred-btn" id="xp-cred-claim" type="button">Claim my Press Credential</button></div>' +
+        '</div>';
+      document.getElementById('xp-cred-claim').onclick = function () {
+        save({ ts: Date.now(), v: 1 }); render();
+      };
+      return;
+    }
+    var name = codename();
+    host.innerHTML =
+      '<div class="xp-cred-card selectable">' +
+        '<div class="xp-cred-top"><span class="xp-cred-org">◈ CHESS CITY PRESS</span><span class="xp-cred-prov">PROVISIONAL</span></div>' +
+        '<div class="xp-cred-title">FOUNDING OPERATIVE</div>' +
+        '<div class="xp-cred-num">No. ' + ('00' + provNum(rec.ts)).slice(-3) + '</div>' +
+        '<div class="xp-cred-rows">' +
+          '<div><span>HOLDER</span>' + (name ? esc(name) : '<a href="' + DOSSIER_URL + '">link your dossier ›</a>') + '</div>' +
+          '<div><span>ISSUED</span>' + esc(fmtDate(rec.ts)) + '</div>' +
+          '<div><span>CREDENTIAL</span>' + esc(credId(rec.ts)) + '</div>' +
+        '</div>' +
+        '<div class="xp-cred-foot">Provisional founding number — confirmed when the Press Pass opens. Cosmetic only.</div>' +
+      '</div>' +
+      '<div class="xp-cred-actions">' +
+        '<button class="xp-cta xp-cta-ghost xp-cred-share" id="xp-cred-share" type="button">⧉ Share the founders list</button>' +
+      '</div>';
+    var share = document.getElementById('xp-cred-share');
+    if (share) share.onclick = function () {
+      var url = location.origin + location.pathname;
+      if (navigator.clipboard) navigator.clipboard.writeText(url).then(flash).catch(flash); else flash();
+      function flash() { share.textContent = '✓ link copied'; setTimeout(function () { share.textContent = '⧉ Share the founders list'; }, 1500); }
+    };
+  }
+
+  render();
+  if (window.PJCC && PJCC.ready) PJCC.ready.then(render);
+  if (window.PJCC && PJCC.onChange) PJCC.onChange(render);
+})();
+</script>
+
 <div class="xp-promise">
   <h2>The promise</h2>
   <ul>
@@ -91,4 +158,30 @@ permalink: /press-pass/
 .xp-promise b { color: #f0e6ff; }
 .xp-promise a, .xp-foot a { color: #F5C518; }
 .xp-foot { color: #9a7fd4; text-align: center; max-width: 640px; margin: 18px auto 0; }
+
+.xp-h2 { color: #F5C518; margin: 26px 0 6px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.xp-free-tag { font-size: 0.56rem; letter-spacing: 0.12em; text-transform: uppercase; color: #06210f; background: #6bffb8; padding: 3px 9px; border-radius: 999px; font-weight: 800; }
+.xp-crednote { color: #9a7fd4; max-width: 760px; line-height: 1.6; }
+.xp-crednote b { color: #c9a7ff; }
+.xp-crednote a, .xp-cred-rows a { color: #F5C518; }
+.xp-muted { color: #7d6bb0; font-size: 0.88em; }
+
+.xp-cred-claim { display: flex; gap: 14px; align-items: center; background: rgba(245,197,24,0.06); border: 1px dashed #6b5fa0; border-radius: 14px; padding: 16px; margin-top: 8px; }
+.xp-cred-claim-ico { font-size: 34px; }
+.xp-cred-claim-lead { color: #f0e6ff; font-weight: 700; margin-bottom: 2px; }
+.xp-cred-btn { display: inline-block; margin-top: 10px; padding: 10px 18px; }
+
+.xp-cred-card { max-width: 380px; margin-top: 8px; background: linear-gradient(150deg,#241453,#3a1d6e); border: 1px solid #F5C518; border-radius: 14px; padding: 16px 18px; box-shadow: 0 0 26px rgba(245,197,24,0.18); position: relative; overflow: hidden; }
+.xp-cred-card::after { content: '♛'; position: absolute; right: -6px; bottom: -14px; font-size: 90px; color: rgba(245,197,24,0.07); }
+.xp-cred-top { display: flex; justify-content: space-between; align-items: center; font-family: 'Share Tech Mono', monospace; font-size: 0.66rem; letter-spacing: 0.1em; }
+.xp-cred-org { color: #F5C518; }
+.xp-cred-prov { color: #ff8fd0; border: 1px solid #7a3a60; border-radius: 999px; padding: 1px 8px; }
+.xp-cred-title { color: #f0e6ff; font-weight: 800; letter-spacing: 0.12em; font-size: 1.05rem; margin: 8px 0 2px; }
+.xp-cred-num { font-family: 'Share Tech Mono', monospace; font-size: 2rem; font-weight: 800; color: #ffe27a; line-height: 1; margin-bottom: 12px; }
+.xp-cred-rows { display: flex; flex-direction: column; gap: 5px; position: relative; z-index: 1; }
+.xp-cred-rows > div { display: flex; gap: 10px; font-size: 0.82rem; color: #f0e6ff; }
+.xp-cred-rows span { width: 96px; flex: 0 0 auto; color: #9a7fd4; font-family: 'Share Tech Mono', monospace; font-size: 0.66rem; letter-spacing: 0.08em; align-self: center; }
+.xp-cred-foot { margin-top: 12px; font-size: 0.7rem; color: #8a78ba; line-height: 1.5; }
+.xp-cred-actions { margin-top: 10px; }
+.xp-cred-share { display: inline-block; width: auto; padding: 8px 16px; }
 </style>

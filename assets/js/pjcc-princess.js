@@ -122,5 +122,25 @@ window.PJCCPrincess = (function () {
     };
   }
 
-  return { render: render };
+  // ---- compact state for the site-wide companion (no DOM) ----
+  function daysBetween(a, b) {
+    try { var da = new Date(a + 'T00:00:00'), db = new Date(b + 'T00:00:00');
+      return Math.max(0, Math.round((db - da) / 86400000)); } catch (e) { return 0; }
+  }
+  function summary() {
+    var s = load(); var today = dayStamp();
+    var xp = trainXP(), rank = rankFor(xp), next = nextRank(xp);
+    var learned = MILESTONES.filter(function (m) { return m.on(); });
+    var memList = MILESTONES.filter(function (m) { return s.seen[m.id]; });
+    return {
+      bond: s.bond, walks: s.walks, walkStreak: s.walkStreak,
+      walkedToday: s.lastWalk === today,
+      rank: rank.t, nextRank: next ? next.t : null,
+      learnedCount: learned.length, totalSkills: MILESTONES.length,
+      lastMemory: memList.length ? memList[memList.length - 1].mem : null,
+      daysSince: daysBetween(s.firstSeen || today, today)
+    };
+  }
+
+  return { render: render, summary: summary, greeting: greeting };
 })();
