@@ -138,6 +138,7 @@ preview + share-card generator + `/educators/` B2B page + game-page dispatch cap
 10. **Boss: the Rival's prep** — he's studied your deck; deviate or get punished.
 
 ## Sand Mine Depths — *roguelike descent*
+*Status: already the deepest-built game — **#7 banked-gold prestige** (Surface Camp + perks), **#8 rival miner** (Subject Zero, the digging knight), and **#9 a seeded global board** (the Weekly Race) all already exist. Shipped this pass: **#10 Hidden chamber → fragment** — reaching **180m** now buries a real Lore-Codex fragment (`frag_subjectzero`, one-time, counts on the site-wide fragment tally; not in the free-run `race` mode). Feasible-next: relic **sets** (#4), cave-in chains (#2), Auston-camp one-run consumables (#3), explicit biome shifts (#6), light beacons/minimap (#1).*
 1. **Light beacons + fog-of-war minimap** — drop light to map the dark.
 2. **Cave-in chains** — escape a timed collapse; a tension spike.
 3. **Auston-camp consumables** — one-run gear from the bomber's stash.
@@ -163,7 +164,7 @@ preview + share-card generator + `/educators/` B2B page + game-page dispatch cap
 10. **Island duel** — local hot-seat with drops.
 
 ## Sky Run — *vertical shmup*
-*Shipped this pass: **#10 Animatic interstitials** — a 2-panel story beat now plays on each region clear (reusing the interstitial phase). Feasible-next within means: Daily seeded sky (#4), Endless "Sea" mode (#3), Loadout select (#6), Photo end-card (#7), new power-ups (#2). Too far for now: Co-pilot (#5, 2-player input) and the rhythm tie-in (#8, needs the real score).*
+*Shipped: **#10 Animatic interstitials** (2-panel story beat on each region clear); **#4 Daily seeded sky** (a 📅 Daily Run button — same enemy script for everyone today, its own best + `sky-run-daily` board). Also: the **Queen power-up now fires all eight directions** (rook + bishop lines, piercing — it supersedes the Bishop X-shot while active), and a stray-bullet leak off the bottom was fixed. Feasible-next within means: Endless "Sea" mode (#3), Loadout select (#6), Photo end-card (#7), new power-ups (#2). Too far for now: Co-pilot (#5, 2-player input) and the rhythm tie-in (#8, needs the real score).*
 1. **Lore bosses** — every region's king with a patterned fight (CEO finale exists).
 2. **New power-ups** — Rook (laning wall), pawn-storm, an en-passant dash.
 3. **Endless "Sea" mode** — one life, escalating, global distance board.

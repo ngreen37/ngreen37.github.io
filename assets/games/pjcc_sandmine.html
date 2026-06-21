@@ -359,6 +359,10 @@ function descend(){
   if (S.floor % 4 === 0 && S.hp < S.maxhp){ S.hp++; floater('+♥', center(S.princess.x, S.princess.y), C.teal); }
   // lore
   for (const L of LORE){ if (S.depth >= L.d && !S.shownLore.has(L.d)){ S.shownLore.add(L.d); doToast(L.t, C.teal); break; } }
+  // hidden chamber — the deepest reach buries a real Lore-Codex fragment (one-time, site-wide)
+  if (S.depth >= 180 && S.mode !== 'race'){
+    try { if (!localStorage.getItem('frag_subjectzero')){ localStorage.setItem('frag_subjectzero', '1'); doToast('◈ HIDDEN CHAMBER — fragment recovered: SUBJECT ZERO', C.gold); sfx('gold'); } } catch(e){}
+  }
   if (toast.t < 0 || toast.text.indexOf('m') === toast.text.length - 1) doToast('DEPTH ' + S.depth + 'm', C.teal);
   newFloor();
   S.phase = 'await';
