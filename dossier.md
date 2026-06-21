@@ -21,7 +21,8 @@ permalink: /dossier/
     'notation-run': ['Notation Blitz', 'score'], 'fork-in-the-road': ['Fork in the Road', 'solved'],
     'sand-mine-depths': ['Sand Mine Depths', 'depth'], 'pirc-protocol': ['Pirc Protocol', 'flawless'],
     'shogi-island': ['Shogi Island', 'solved'],
-    'blindfold': ['Blindfold Puzzles', 'solved'], 'tower-defense': ['Siege on Chess City', 'score']
+    'blindfold': ['Blindfold Puzzles', 'solved'], 'tower-defense': ['Siege on Chess City', 'score'],
+    'siege-endless': ['Siege · Endless', 'wave'], 'sky-run': ['Sky Run', 'score']
   };
   function esc(s) {
     return String(s).replace(/[&<>"]/g, function (c) {
@@ -96,6 +97,21 @@ permalink: /dossier/
       '<div class="dsr-xp"><div class="dsr-xp-fill" style="width:' + xpPct + '%"></div></div>' +
       '<div class="pjcc-sub">' + (lvl.next ? ((lvl.span - lvl.into) + ' more rounds to Lv ' + (lvl.level + 1)) : 'Max level — top dog of the board.') + '</div></div>';
 
+    // cross-game streak flame (days active in a row, any game)
+    var stk = PJCC.streakInfo();
+    var flameOn = stk.current > 0;
+    html += '<div class="dsr-flame ' + (flameOn ? 'lit' : 'cold') + '" style="--acc:' + theme.accent + '">' +
+      '<div class="dsr-flame-icon">' + (flameOn ? '🔥' : '🕯️') + '</div>' +
+      '<div class="dsr-flame-body">' +
+        '<div class="dsr-flame-num">' + stk.current + '<span> day' + (stk.current === 1 ? '' : 's') + ' active' + (stk.playedToday ? '' : ' — play today to keep it!') + '</span></div>' +
+        '<div class="pjcc-sub">Longest run: ' + stk.best + ' days. Any game you play counts toward the flame.</div>' +
+      '</div></div>';
+
+    // current season / tour
+    var season = PJCC.seasonInfo();
+    html += '<div class="dsr-season"><span class="dsr-season-tag">SEASON</span> <b>' + esc(season.name) + '</b>' +
+      ' <span class="pjcc-sub">· ' + season.daysLeft + ' day' + (season.daysLeft === 1 ? '' : 's') + ' left · winners enter the <a href="/hall-of-fame/">Hall of Fame</a></span></div>';
+
     // world map — Princess's journey
     var wp = PJCC.worldProgress(stats);
     html += '<h2 class="dsr-h">The journey</h2><div class="dsr-map">';
@@ -142,13 +158,19 @@ permalink: /dossier/
       '<div class="dsr-kintsugi"><div class="dsr-seams">' + (seams || '·') + '</div>' +
       '<p class="pjcc-sub">' + totalPlays + ' attempts logged. Every operative cracks — yours are filled with gold. <em>Kaizen: one percent better each run.</em></p></div>';
 
-    // service record
-    html += '<h2 class="dsr-h">Service record</h2><table class="lb-table"><tbody>';
+    // service record — with "Beat the Creator" ghost markers
+    html += '<h2 class="dsr-h">Service record <span class="pjcc-sub" style="font-weight:normal">· 👻 = the creator\'s mark to chase</span></h2><table class="lb-table"><tbody>';
     Object.keys(GAMES).forEach(function (key) {
       var s = stats.filter(function (x) { return x.game === key; })[0];
+      var best = s ? s.best_score : 0;
+      var g = PJCC.vsGhost(key, best);
+      var ghostCell = '';
+      if (g) ghostCell = g.beat
+        ? '<span class="dsr-ghost beat">✓ beat 👻 ' + g.target + '</span>'
+        : '<span class="dsr-ghost">👻 ' + g.target + ' · ' + (g.target - best) + ' to go</span>';
       html += '<tr><td class="lb-name">' + esc(GAMES[key][0]) + '</td>' +
         '<td class="pjcc-sub">' + (s ? (s.plays + ' runs') : 'not yet played') + '</td>' +
-        '<td class="lb-score">' + (s ? s.best_score + ' ' + GAMES[key][1] : '—') + '</td></tr>';
+        '<td class="lb-score">' + (s ? s.best_score + ' ' + GAMES[key][1] : '—') + (ghostCell ? ' <br>' + ghostCell : '') + '</td></tr>';
     });
     html += '</tbody></table>';
 

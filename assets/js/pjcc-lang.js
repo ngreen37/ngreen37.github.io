@@ -38,12 +38,22 @@
   function current() { try { return localStorage.getItem(KEY) || 'en'; } catch (e) { return 'en'; } }
 
   function apply(lang) {
+    // 1) navigation labels via the shared dictionary
     var nodes = document.querySelectorAll(SEL);
     Array.prototype.forEach.call(nodes, function (el) {
       var en = el.getAttribute('data-en');
       if (en === null) { en = el.textContent.trim(); el.setAttribute('data-en', en); }
       el.textContent = (lang === 'jp' && DICT[en]) ? DICT[en] : en;
     });
+    // 2) page-body content explicitly marked up by authors: <tag data-jp="日本語の文">English</tag>
+    //    (carries the games' JP→EN spirit onto the marketing / lore pages)
+    var marked = document.querySelectorAll('[data-jp]');
+    Array.prototype.forEach.call(marked, function (el) {
+      var en = el.getAttribute('data-en-html');
+      if (en === null) { en = el.innerHTML; el.setAttribute('data-en-html', en); }
+      el.innerHTML = (lang === 'jp') ? el.getAttribute('data-jp') : en;
+    });
+    document.documentElement.setAttribute('lang', lang === 'jp' ? 'ja' : 'en');
     var btn = document.getElementById('lang-toggle');
     if (btn) btn.textContent = (lang === 'jp') ? 'EN' : '日本語';
     try { localStorage.setItem(KEY, lang); } catch (e) {}

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: CIPHER v1.3</title>
+<title>PJCC: CIPHER v1.4</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -50,7 +50,7 @@
   @keyframes flip { 0%{ transform: rotateX(0); } 50%{ transform: rotateX(90deg); } 100%{ transform: rotateX(0); } }
   .cell.correct { background: var(--green); border-color: var(--green); color: #042; box-shadow: 0 0 12px rgba(46,204,113,0.6); }
   .cell.present { background: var(--amber); border-color: var(--amber); color: #221a02; }
-  .cell.absent { background: #0b1f14; border-color: #143; color: #4a6a56; }
+  .cell.absent { background: #2a1414; border-color: #6a2f2f; color: #d98a8a; }
   .grid.shake { animation: shake 0.3s; }
   @keyframes shake { 0%,100%{ transform: translateX(0); } 25%{ transform: translateX(-7px); } 75%{ transform: translateX(7px); } }
 
@@ -63,7 +63,7 @@
   .key.wide { flex: 1.6; font-size: 11px; letter-spacing: 1px; }
   .key.correct { background: var(--green); color: #042; }
   .key.present { background: var(--amber); color: #221a02; }
-  .key.absent { background: #081710; color: #3a5446; }
+  .key.absent { background: #2a1414; color: #c07a7a; }
 
   .toast { position: absolute; top: 110px; left: 50%; transform: translateX(-50%); z-index: 60;
     background: rgba(0,0,0,0.9); border: 1px solid var(--amber); color: var(--amber);
@@ -173,7 +173,7 @@ const WORDS = [
   { w:'MATED', deck:'chess', frag:'Game over. Every sacrifice and gambit aimed at this one square.' },
   { w:'FORKS', deck:'chess', frag:"One piece, two targets. Princess's signature, and her favourite trick." },
   { w:'BOARD', deck:'chess', frag:'Sixty-four squares. The whole war fits neatly inside them.' },
-  { w:'PAWNS', deck:'chess', frag:'The base unit of the PJCC world — dogs are measured in pawns.' },
+  { w:'PAWNS', deck:'chess', frag:'The foot soldiers. Eight to a side, and any one of them dreams of a crown.' },
   { w:'RANKS', deck:'chess', frag:'The rows the armies cross. The eighth rank is where a pawn dreams.' },
   { w:'FILES', deck:'chess', frag:'The columns, a through h — eight lanes the rooks were born to own.' },
   { w:'KINGS', deck:'chess', frag:'The pieces you can never trade and never lose. Everything orbits them.' },

@@ -95,6 +95,12 @@
   .map-card .beat { position:absolute; top:8px; right:10px; color:var(--good); font-size:12px; font-weight:800; }
   .map-card .lk { position:absolute; top:8px; right:10px; font-size:16px; }
   .d-easy{color:#6bffb8} .d-med{color:#F5C518} .d-hard{color:#ff8fd0} .d-vhard{color:#ff6b6b}
+  .mopt { background:#1a1040; border:1px solid #4a3a86; border-radius:999px; padding:7px 14px; font-size:12px; font-weight:700;
+    color:#b9a8e6; cursor:pointer; user-select:none; font-family:inherit; transition:border-color .12s, background .12s; }
+  .mopt:hover { border-color:#7a68c0; }
+  .mopt.on { border-color:var(--gold); background:#2a1a5e; color:var(--gold); box-shadow:0 0 10px rgba(245,197,24,0.3); }
+  .mopt.endless.on { border-color:var(--good); color:var(--good); box-shadow:0 0 10px rgba(107,255,184,0.3); }
+  .mopt small { display:block; font-weight:normal; color:#8a7ab8; font-size:10px; }
 
   .shop-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; max-width:680px; width:100%; margin-top:8px; }
   .up-card { background:#1a1040; border:1px solid #4a3a86; border-radius:10px; padding:12px; text-align:left; }
@@ -174,7 +180,8 @@
 <div class="screen hidden" id="scr-maps">
   <div class="sub">Choose your stand</div>
   <h1>The Campaign</h1>
-  <p>Each front is harder than the last — beat one to unlock the next.</p>
+  <p>Each front is harder than the last — beat one to unlock the next. Toggle <b style="color:var(--gold)">♾ Endless</b> for a survival run, or add <b style="color:var(--pink)">mutators</b> for bonus City Crowns.</p>
+  <div id="map-opts" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:680px;margin:4px 0 2px;"></div>
   <div class="map-grid" id="map-grid"></div>
   <div class="menu-btns"><button class="big-btn ghost" id="maps-back">◂ Back</button></div>
 </div>
@@ -192,6 +199,8 @@
 <script>
 (function () {
 'use strict';
+// Board skins: paint the operative's chosen Shopkeeper theme onto the gold chrome.
+try { if (window.PJCC && PJCC.applyGameSkin) { PJCC.applyGameSkin(['--gold']); if (PJCC.ready) PJCC.ready.then(function () { PJCC.applyGameSkin(['--gold']); }); } } catch (e) {}
 var cv = document.getElementById('cv');
 var ctx = cv.getContext('2d');
 var W = 660, H = 396, CELL = 44, COLS = 15, ROWS = 9;
@@ -217,16 +226,26 @@ var UPGRADES = [
 ];
 function upCost(u) { return u.costs[META.up[u.id]]; }
 
+/* ============ map mutators (opt-in modifiers for bonus Crowns) ============ */
+var MUTATORS = [
+  { id: 'fog',    name: 'War Fog',     glyph: '🌫', bonus: 0.30, desc: 'A haze shrouds the field — every tower loses ~18% of its range.' },
+  { id: 'blitz',  name: 'Forced March',glyph: '⚡', bonus: 0.35, desc: 'The CEO drives his ranks on — all enemies move ~35% faster.' },
+  { id: 'nosell', name: 'No Retreat',  glyph: '⛓', bonus: 0.25, desc: 'No selling, no refunds. Every placement is final.' }
+];
+var selMutators = {};                                   // id -> true (chosen on the map screen)
+function mutatorBonus() { var b = 0; MUTATORS.forEach(function (m) { if (selMutators[m.id]) b += m.bonus; }); return b; }
+
 /* ============ tower catalogue ============ */
 var TOWERS = {
   pawn:   { name: 'Pawn Picket', glyph: '♙', cost: 50,  range: 92,  dmg: 8,  rate: 0.55, splash: 0,  color: '#dfe6ff', free:false, sniper:false, lore: 'Checker Town conscripts. Cheap, quick, everywhere.' },
   knight: { name: 'Argus Outpost', glyph: '♘', cost: 110, range: 96, dmg: 13, rate: 1.05, splash: 46, color: '#8fe3ff', free:false, sniper:false, lore: "Argus the guard-dog's kennel — splashes the whole pack." },
+  frost:  { name: 'Frost Knight', glyph: '❄', cost: 120, range: 104, dmg: 5,  rate: 0.85, splash: 44, color: '#9fe8ff', free:false, sniper:false, slows:true, lore: 'Chills the whole road — little damage, but every hit saps enemy speed. Pure tempo.' },
   louie:  { name: 'Louie the Bomber', glyph: '💣', cost: 150, range: 132, dmg: 40, rate: 2.0, splash: 70, color: '#ffd36b', free:false, sniper:false, lob:true, lore: 'Louie swears he is a pawn. He is, in fact, a bomb. Huge splash, slow fuse.' },
   bishop: { name: 'Bishop Sniper', glyph: '♗', cost: 150, range: 250, dmg: 70, rate: 2.2, splash: 0, color: '#c79bff', free:true, sniper:true, lore: 'A diagonal sightline that never ends. Place him anywhere with a clear view — one shot, one runner.' },
   rook:   { name: 'Rook Bastion', glyph: '♖', cost: 175, range: 124, dmg: 60, rate: 1.85, splash: 0, color: '#ffb066', free:false, sniper:false, lore: 'Castle-wall firepower. Slow, but it flattens tanks.' },
   queen:  { name: "Queen's Guard", glyph: '♕', cost: 300, range: 150, dmg: 32, rate: 0.7, splash: 42, color: '#ff8fd0', free:false, sniper:false, lore: 'The royal escort: fast, far, and splashes. Premium.' }
 };
-function towerOrder() { var o = ['pawn','knight','rook','bishop','queen']; if (META.up.louie) o.splice(2,0,'louie'); return o; }
+function towerOrder() { var o = ['pawn','knight','frost','rook','bishop','queen']; if (META.up.louie) o.splice(3,0,'louie'); return o; }
 
 /* ============ enemies ============ */
 var FOES = {
@@ -330,14 +349,18 @@ function buildMapTopology(map) {
 
 /* ============ game state ============ */
 var G = null;
-function newGame(mapIdx) {
+function newGame(mapIdx, opts) {
+  opts = opts || {};
   curMap = MAPS[mapIdx];
   buildMapTopology(curMap);
   var startGold = 230 + META.up.gold0 * 40;
   var startHearts = 50 + META.up.heart0 * 10;
+  var muts = {}; for (var k in selMutators) if (selMutators[k]) muts[k] = true;
   return {
     mapIdx: mapIdx, gold: startGold, lives: startHearts, score: 0, kills: 0,
     wave: 0, running: true, over: false, won: false,
+    endless: !!opts.endless, muts: muts, mutBonus: mutatorBonus(),
+    foeSpdMult: muts.blitz ? 1.35 : 1, fogMult: muts.fog ? 0.82 : 1,
     towers: [], foes: [], shots: [], parts: [],
     spawnQ: [], spawnT: 0, betweenT: 0, waveActive: false, spawnCount: 0,
     decree: 0, decreeMax: 100, speed: 1, sel: null,
@@ -345,27 +368,41 @@ function newGame(mapIdx) {
     decreeMult: 1 + META.up.decree * 0.2
   };
 }
+/* procedurally-built waves for Endless mode (wave index beyond the scripted list) */
+function procWave(waveIdx) {
+  var tier = waveIdx + 1;
+  var groups = [];
+  groups.push(W_('knight', 8 + (tier % 5) * 2, Math.max(0.22, 0.5 - tier * 0.01)));
+  if (tier % 2 === 0) groups.push(W_('bishop', 10 + (tier % 4) * 2, 0.32));
+  if (tier % 3 === 0) groups.push(W_('rook', 4 + Math.floor(tier / 3), 0.7));
+  if (tier % 4 === 0) groups.push(W_('queen', 1 + Math.floor(tier / 6), 1.5));
+  if (tier % 6 === 0) groups.push(W_('king', Math.max(1, Math.floor(tier / 8)), 3));   // boss every 6th endless wave
+  if (tier % 5 === 0) groups.push(W_('pawn', 16 + tier, 0.18));
+  return groups;
+}
 function towerCost(kind) { return Math.round(TOWERS[kind].cost * G.costMult); }
 
 /* ============ spawning ============ */
+function waveDef(idx) { return (idx < curMap.waves.length) ? curMap.waves[idx] : procWave(idx); }
 function buildSpawnQueue(waveIdx) {
   var q = [], delay = 0;
-  curMap.waves[waveIdx].forEach(function (grp) {
+  waveDef(waveIdx).forEach(function (grp) {
     for (var k = 0; k < grp.n; k++) { q.push({ t: grp.t, at: delay }); delay += grp.gap; }
   });
   return q;
 }
 function startWave() {
   if (G.waveActive || G.over) return;
-  if (G.wave >= curMap.waves.length) return;
+  if (!G.endless && G.wave >= curMap.waves.length) return;
   G.spawnQ = buildSpawnQueue(G.wave); G.spawnT = 0; G.waveActive = true; G.betweenT = 0;
-  var names = curMap.waves[G.wave].map(function (g) { return g.t; });
+  var names = waveDef(G.wave).map(function (g) { return g.t; });
   var hasKing = names.indexOf('king') >= 0;
-  showBanner(hasKing ? 'Final Intercept' : 'Wave ' + (G.wave + 1), hasKing ? 'The CEO himself approaches' : describeWave(G.wave));
+  var label = G.endless ? 'Endless · Wave ' + (G.wave + 1) : 'Wave ' + (G.wave + 1);
+  showBanner(hasKing ? 'Boss Intercept' : label, hasKing ? 'A CEO marches — he summons reinforcements' : describeWave(G.wave));
 }
 function describeWave(idx) {
   var counts = {};
-  curMap.waves[idx].forEach(function (g) { counts[g.t] = (counts[g.t] || 0) + g.n; });
+  waveDef(idx).forEach(function (g) { counts[g.t] = (counts[g.t] || 0) + g.n; });
   return Object.keys(counts).map(function (t) { return counts[t] + ' ' + t + (counts[t] > 1 ? 's' : ''); }).join(' · ');
 }
 function spawnFoe(typeName) {
@@ -377,8 +414,21 @@ function spawnFoe(typeName) {
   var path = PATHS[pi];
   G.foes.push({
     type: typeName, glyph: base.glyph, color: base.color, boss: !!base.boss,
-    hp: hp, maxhp: hp, spd: base.spd, reward: base.reward, leak: base.leak,
-    path: path, seg: 0, t: 0, x: path[0].x, y: path[0].y, slow: 0
+    hp: hp, maxhp: hp, spd: base.spd * (G.foeSpdMult || 1), reward: base.reward, leak: base.leak,
+    path: path, seg: 0, t: 0, x: path[0].x, y: path[0].y, slow: 0,
+    summonCd: base.boss ? 3.2 : 0,                 // King summons adds
+    teleCd: typeName === 'queen' ? (3 + Math.random() * 2) : 0   // Queen blinks past the line
+  });
+}
+/* spawn a small add at a foe's current position (used by boss Kings) */
+function spawnAddAt(host, typeName) {
+  var base = FOES[typeName];
+  var scale = 1 + G.wave * 0.18 + (curMap.id - 1) * 0.22;
+  var hp = Math.round(base.hp * scale);
+  G.foes.push({
+    type: typeName, glyph: base.glyph, color: base.color, boss: false,
+    hp: hp, maxhp: hp, spd: base.spd * (G.foeSpdMult || 1), reward: Math.round(base.reward * 0.5), leak: base.leak,
+    path: host.path, seg: host.seg, t: host.t, x: host.x, y: host.y, slow: 0, summonCd: 0, teleCd: 0
   });
 }
 
@@ -398,13 +448,22 @@ function advanceFoe(f, dt) {
   a = P[f.seg]; b = P[Math.min(f.seg + 1, P.length - 1)];
   f.x = a.x + (b.x - a.x) * f.t; f.y = a.y + (b.y - a.y) * f.t;
   if (f.slow > 0) f.slow -= dt;
+  // Queen teleport: blink forward along the path, skipping the towers behind her
+  if (f.teleCd > 0) {
+    f.teleCd -= dt;
+    if (f.teleCd <= 0 && f.seg < P.length - 2 && f.hp > 0) {
+      f.seg = Math.min(P.length - 2, f.seg + 2); f.t = 0;
+      var na = P[f.seg]; f.x = na.x; f.y = na.y;
+      burst(f.x, f.y, '#ff8fd0', 18); f.teleCd = 5 + Math.random() * 3;
+    }
+  }
 }
 
 /* ============ combat ============ */
 function towerStats(tw) {
   var base = TOWERS[tw.kind];
   var mult = (1 + (tw.lvl - 1) * 0.6) * G.dmgMult;
-  return { dmg: base.dmg * mult, range: base.range * (1 + (tw.lvl - 1) * 0.12), rate: base.rate, splash: base.splash };
+  return { dmg: base.dmg * mult, range: base.range * (1 + (tw.lvl - 1) * 0.12) * (G.fogMult || 1), rate: base.rate, splash: base.splash };
 }
 function pickTarget(tw, s) {
   var best = null, bestVal = null;
@@ -429,7 +488,7 @@ function fireTowers(dt) {
     var base = TOWERS[tw.kind];
     G.shots.push({ x: tw.x, y: tw.y, tx: target.x, ty: target.y, target: target,
       dmg: s.dmg, splash: s.splash, kind: tw.kind, life: 0, color: base.color,
-      sniper: base.sniper, lob: base.lob, sx: tw.x, sy: tw.y, prog: 0 });
+      sniper: base.sniper, lob: base.lob, slows: base.slows, sx: tw.x, sy: tw.y, prog: 0 });
   });
 }
 function updateShots(dt) {
@@ -452,9 +511,9 @@ function updateShots(dt) {
 }
 function hit(x, y, s) {
   burst(x, y, s.color, s.splash ? 12 : 5);
-  if (s.splash) { G.foes.forEach(function (f) { if (Math.hypot(f.x - x, f.y - y) <= s.splash) damage(f, s.dmg); }); }
-  else if (s.target && s.target.hp > 0) { damage(s.target, s.dmg); }
-  else { var best = null, bd = 22; G.foes.forEach(function (f) { var dd = Math.hypot(f.x - x, f.y - y); if (dd < bd) { bd = dd; best = f; } }); if (best) damage(best, s.dmg); }
+  if (s.splash) { G.foes.forEach(function (f) { if (Math.hypot(f.x - x, f.y - y) <= s.splash) { damage(f, s.dmg); if (s.slows && f.hp > 0) f.slow = 1.6; } }); }
+  else if (s.target && s.target.hp > 0) { damage(s.target, s.dmg); if (s.slows) s.target.slow = 1.6; }
+  else { var best = null, bd = 22; G.foes.forEach(function (f) { var dd = Math.hypot(f.x - x, f.y - y); if (dd < bd) { bd = dd; best = f; } }); if (best) { damage(best, s.dmg); if (s.slows) best.slow = 1.6; } }
 }
 function damage(f, dmg) {
   if (f.hp <= 0) return;
@@ -486,10 +545,19 @@ function update(dt) {
     while (G.spawnQ.length && G.spawnQ[0].at <= G.spawnT) spawnFoe(G.spawnQ.shift().t);
     if (!G.spawnQ.length && !G.foes.length) {
       G.waveActive = false; G.wave++; G.score += 100;
-      if (G.wave >= curMap.waves.length) return endGame(true);
+      if (!G.endless && G.wave >= curMap.waves.length) return endGame(true);
       G.gold += 40 + G.wave * 5; G.betweenT = 0;
     }
   } else if (!G.over) { G.betweenT += dt; if (G.betweenT >= 8) startWave(); }
+
+  // boss Kings summon reinforcements while alive
+  for (var bi = 0; bi < G.foes.length; bi++) {
+    var bf = G.foes[bi]; if (!bf.boss || bf.hp <= 0) continue;
+    bf.summonCd -= dt;
+    if (bf.summonCd <= 0) { bf.summonCd = 4.5; var adds = 2 + Math.floor(curMap.id / 2);
+      for (var a2 = 0; a2 < adds; a2++) spawnAddAt(bf, 'pawn');
+      burst(bf.x, bf.y, '#F5C518', 16); }
+  }
 
   G.foes.forEach(function (f) { advanceFoe(f, dt); });
   for (var i = G.foes.length - 1; i >= 0; i--) {
@@ -566,6 +634,8 @@ function draw() {
   G.parts.forEach(function (p) { ctx.globalAlpha=Math.max(0,p.life/p.max); ctx.fillStyle=p.c; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7); ctx.fill(); });
   ctx.globalAlpha = 1;
   if (decreeFlash > 0) { ctx.fillStyle='rgba(255,143,208,'+(decreeFlash*0.4)+')'; ctx.fillRect(0,0,W,H); }
+  if (G && G.muts && G.muts.fog) { var ft=Date.now()/2600; ctx.fillStyle='rgba(150,160,185,0.16)'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='rgba(180,190,210,0.08)'; for (var fz=0;fz<4;fz++){ var fx=((ft*30+fz*200)%(W+200))-100; ctx.beginPath(); ctx.ellipse(fx, 80+fz*70, 130, 44, 0, 0, 7); ctx.fill(); } }
 }
 function drawGhost() {
   var base = TOWERS[G.sel];
@@ -659,7 +729,7 @@ function openInspector(tw) {
     '<div class="tgt">' + modes.map(function(m){ return '<button data-m="'+m+'"'+(tw.target===m?' class="on"':'')+'>'+m+'</button>'; }).join('') + '</div>' +
     '<div class="ibtns">' +
       '<button class="up" id="i-up"' + (tw.lvl>=3 || G.gold<upCost2 ? ' disabled':'') + '>' + (tw.lvl>=3?'Max':'Up '+upCost2) + '</button>' +
-      '<button class="sell" id="i-sell">Sell '+sellVal+'</button>' +
+      '<button class="sell" id="i-sell"' + (G.muts.nosell ? ' disabled':'') + '>' + (G.muts.nosell ? 'No Retreat' : 'Sell '+sellVal) + '</button>' +
     '</div>';
   var rect = cv.getBoundingClientRect(), scale = rect.width/W;
   var left = Math.min(tw.x*scale, rect.width-176), top = Math.min((tw.y+24)*scale, rect.height-150);
@@ -667,16 +737,16 @@ function openInspector(tw) {
   stage.appendChild(inspEl);
   inspEl.querySelectorAll('.tgt button').forEach(function(b){ b.onclick=function(){ tw.target=b.dataset.m; openInspector(tw); }; });
   document.getElementById('i-up').onclick = function () { if (tw.lvl>=3 || G.gold<upCost2) return; G.gold-=upCost2; tw.lvl++; tw.invested+=upCost2; syncHud(); openInspector(tw); };
-  document.getElementById('i-sell').onclick = function () { G.gold+=sellVal; G.towers=G.towers.filter(function(t){return t!==tw;}); closeInspector(); syncHud(); };
+  document.getElementById('i-sell').onclick = function () { if (G.muts.nosell) return; G.gold+=sellVal; G.towers=G.towers.filter(function(t){return t!==tw;}); closeInspector(); syncHud(); };
 }
 
 /* ============ HUD / rack ============ */
 function syncHud() {
   document.getElementById('s-gold').textContent = G.gold;
   document.getElementById('s-lives').textContent = G.lives;
-  document.getElementById('s-wave').textContent = Math.min(G.wave + (G.waveActive?1:0), curMap.waves.length);
+  document.getElementById('s-wave').textContent = G.endless ? (G.wave + (G.waveActive?1:0)) : Math.min(G.wave + (G.waveActive?1:0), curMap.waves.length);
   document.getElementById('s-score').textContent = G.score;
-  document.getElementById('s-wmax').textContent = curMap.waves.length;
+  document.getElementById('s-wmax').textContent = G.endless ? '∞' : curMap.waves.length;
 }
 function refreshDecree() {
   var pct = G.decree/G.decreeMax*100; document.getElementById('decree-fill').style.width = pct + '%';
@@ -704,18 +774,29 @@ function endGame(won) {
   G.over = true; G.won = won; G.running = false;
   G.score += G.lives * 15 + (won ? 600 : 0);
   var credits = Math.min(5, 1 + Math.floor(G.wave/3) + (won?1:0));
-  var coinsEarned = Math.floor(G.score/120) + G.wave*2 + (won?25:0);
+  var coinsEarned = Math.round((Math.floor(G.score/120) + G.wave*2 + (won?25:0)) * (1 + (G.mutBonus || 0)));
   META.coins += coinsEarned;
-  if (won) META.beaten[curMap.id] = true;
+  if (won && !G.endless) META.beaten[curMap.id] = true;
+  // track best endless wave per map
+  if (G.endless) { META.endless = META.endless || {}; if ((G.wave) > (META.endless[curMap.id] || 0)) META.endless[curMap.id] = G.wave; }
   saveMeta();
-  if (window.PJCC && PJCC.saveScore) PJCC.saveScore('tower-defense', G.score, { credits: credits, data: { map: curMap.id, waves: G.wave, kills: G.kills, won: won } });
+  if (window.PJCC && PJCC.saveScore) {
+    PJCC.saveScore('tower-defense', G.score, { credits: credits, data: { map: curMap.id, waves: G.wave, kills: G.kills, won: won, endless: !!G.endless, muts: Object.keys(G.muts) } });
+    if (G.endless) PJCC.saveScore('siege-endless', G.wave, { credits: 0, data: { map: curMap.id, score: G.score, kills: G.kills } });
+  }
   var ovl = document.getElementById('ovl');
-  document.getElementById('ovl-title').textContent = won ? 'CHESS CITY HOLDS! 🏰' : 'THE GATES HAVE FALLEN';
-  var nextUnlocked = won && curMap.id < MAPS.length;
-  document.getElementById('ovl-msg').textContent = won
-    ? ('You turned back the CEO on ' + curMap.name + '.' + (nextUnlocked ? ' A new front has opened.' : ' The campaign is won!'))
-    : ('The line broke at wave ' + (G.wave + 1) + ' on ' + curMap.name + '. Reinforce the chokepoints and try again.');
-  document.getElementById('ovl-extra').textContent = 'Score ' + G.score + ' · ' + G.kills + ' felled · 🪙 +' + coinsEarned + ' Crowns · +' + credits + ' credits';
+  var mutTag = G.mutBonus ? ' · mutators +' + Math.round(G.mutBonus*100) + '% Crowns' : '';
+  if (G.endless) {
+    document.getElementById('ovl-title').textContent = 'THE LINE FELL — SURVIVAL';
+    document.getElementById('ovl-msg').textContent = 'You held the endless siege on ' + curMap.name + ' through ' + G.wave + ' waves. The CEO never stops coming.';
+  } else {
+    document.getElementById('ovl-title').textContent = won ? 'CHESS CITY HOLDS! 🏰' : 'THE GATES HAVE FALLEN';
+    var nextUnlocked = won && curMap.id < MAPS.length;
+    document.getElementById('ovl-msg').textContent = won
+      ? ('You turned back the CEO on ' + curMap.name + '.' + (nextUnlocked ? ' A new front has opened.' : ' The campaign is won!'))
+      : ('The line broke at wave ' + (G.wave + 1) + ' on ' + curMap.name + '. Reinforce the chokepoints and try again.');
+  }
+  document.getElementById('ovl-extra').textContent = (G.endless ? ('Reached wave ' + G.wave + ' · ') : ('Score ' + G.score + ' · ')) + G.kills + ' felled · 🪙 +' + coinsEarned + ' Crowns' + mutTag + ' · +' + credits + ' credits';
   document.getElementById('ovl-btn').textContent = 'Play again';
   ovl.classList.remove('hidden'); closeInspector();
 }
@@ -723,14 +804,27 @@ function endGame(won) {
 /* ============ screens ============ */
 function show(id) { ['scr-menu','scr-maps','scr-shop'].forEach(function(s){ document.getElementById(s).classList.toggle('hidden', s!==id); }); }
 function openMenu() { show('scr-menu'); document.getElementById('m-coins').textContent = META.coins; if (G) G.running = false; }
+var endlessMode = false;
+function renderMapOpts() {
+  var box = document.getElementById('map-opts'); box.innerHTML = '';
+  var e = document.createElement('div'); e.className = 'mopt endless' + (endlessMode ? ' on' : '');
+  e.innerHTML = '♾ Endless<small>survival · global wave board</small>';
+  e.onclick = function () { endlessMode = !endlessMode; renderMapOpts(); }; box.appendChild(e);
+  MUTATORS.forEach(function (m) {
+    var el = document.createElement('div'); el.className = 'mopt' + (selMutators[m.id] ? ' on' : '');
+    el.title = m.desc; el.innerHTML = m.glyph + ' ' + m.name + '<small>+' + Math.round(m.bonus*100) + '% 🪙</small>';
+    el.onclick = function () { selMutators[m.id] = !selMutators[m.id]; renderMapOpts(); }; box.appendChild(el);
+  });
+}
 function openMaps() {
-  show('scr-maps'); var grid = document.getElementById('map-grid'); grid.innerHTML = '';
+  show('scr-maps'); renderMapOpts(); var grid = document.getElementById('map-grid'); grid.innerHTML = '';
   MAPS.forEach(function (m, idx) {
     var unlocked = m.id===1 || META.beaten[m.id-1];
+    var best = (META.endless && META.endless[m.id]) ? META.endless[m.id] : 0;
     var el = document.createElement('div'); el.className = 'map-card' + (unlocked?'':' locked');
     el.innerHTML = '<div class="mt">'+m.name+'</div><div class="md '+m.dcls+'">'+m.diff+' · '+m.loc+'</div><div class="mdesc">'+m.desc+'</div>' +
-      (META.beaten[m.id] ? '<div class="beat">✓ held</div>' : (unlocked?'':'<div class="lk">🔒</div>'));
-    if (unlocked) el.onclick = function () { startMap(idx); };
+      (best ? '<div class="beat" style="color:#6bffb8">♾ '+best+'</div>' : (META.beaten[m.id] ? '<div class="beat">✓ held</div>' : (unlocked?'':'<div class="lk">🔒</div>')));
+    if (unlocked) el.onclick = function () { startMap(idx, endlessMode); };
     grid.appendChild(el);
   });
 }
@@ -747,13 +841,14 @@ function openShop() {
     grid.appendChild(el);
   });
 }
-function startMap(idx) {
+function startMap(idx, endless) {
   show(null); // hide all screens
   document.getElementById('scr-menu').classList.add('hidden');
   document.getElementById('ovl').classList.add('hidden');
-  G = newGame(idx); buildRack(); syncHud(); refreshDecree();
+  G = newGame(idx, { endless: !!endless }); buildRack(); syncHud(); refreshDecree();
   setHint('Pick a defender, then place it beside the road. Tap a tower to retarget, upgrade, or sell.');
-  showBanner(curMap.name, curMap.diff + ' · ' + curMap.loc);
+  var tags = []; if (G.endless) tags.push('♾ Endless'); Object.keys(G.muts).forEach(function (k) { var mm = MUTATORS.filter(function(x){return x.id===k;})[0]; if (mm) tags.push(mm.glyph + ' ' + mm.name); });
+  showBanner(curMap.name, tags.length ? tags.join(' · ') : (curMap.diff + ' · ' + curMap.loc));
 }
 
 /* ============ controls ============ */
@@ -765,7 +860,7 @@ document.getElementById('menu-back').onclick = openMenu;
 document.getElementById('decree-btn').onclick = fireDecree;
 document.getElementById('send-btn').onclick = function () { if (!G||!G.running||G.over) return; if (G.waveActive) { setHint('Wave already in progress.'); return; } G.gold += 25; setHint('Early call! +25 gold. Brace yourself.'); startWave(); syncHud(); };
 document.getElementById('speed-btn').onclick = function () { if (!G) return; G.speed = G.speed===1?2:G.speed===2?3:1; this.textContent = 'Speed ▶▶ ' + G.speed + '×'; };
-document.getElementById('ovl-btn').onclick = function () { document.getElementById('ovl').classList.add('hidden'); startMap(G.mapIdx); };
+document.getElementById('ovl-btn').onclick = function () { var em = G.endless; var mi = G.mapIdx; document.getElementById('ovl').classList.add('hidden'); startMap(mi, em); };
 document.getElementById('ovl-menu').onclick = function () { document.getElementById('ovl').classList.add('hidden'); openMenu(); };
 
 /* ============ loop ============ */

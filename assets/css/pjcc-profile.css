@@ -106,3 +106,20 @@
 .coach ol { color: #c9a7ff; line-height: 1.7; margin: 0 0 12px; padding-left: 1.2rem; }
 .coach li { margin-bottom: 6px; }
 .coach strong { color: #f0e6ff; }
+
+/* --- cross-game streak flame + season + creator ghost (added v2 retention) --- */
+.dsr-flame { display:flex; align-items:center; gap:14px; max-width:860px; margin:0 auto 1rem;
+  background:#160c33; border:1px solid #6b5fa0; border-radius:12px; padding:12px 18px; }
+.dsr-flame.lit { border-color:var(--acc,#F5C518); box-shadow:0 0 18px rgba(245,197,24,0.22); }
+.dsr-flame.cold { opacity:0.85; }
+.dsr-flame-icon { font-size:34px; line-height:1; filter:drop-shadow(0 0 6px rgba(245,150,40,0.5)); }
+.dsr-flame.lit .dsr-flame-icon { animation: flameFlick 1.6s ease-in-out infinite; }
+@keyframes flameFlick { 0%,100%{ transform:scale(1) rotate(-2deg); } 50%{ transform:scale(1.12) rotate(2deg); } }
+.dsr-flame-num { color:#F5C518; font-size:1.6rem; font-weight:900; line-height:1; }
+.dsr-flame-num span { color:#c9a7ff; font-size:0.82rem; font-weight:normal; margin-left:6px; }
+.dsr-season { max-width:860px; margin:0 auto 1.4rem; background:rgba(122,34,54,0.14); border-left:3px solid #F5C518;
+  border-radius:8px; padding:8px 14px; color:#f0e6ff; font-size:0.92rem; }
+.dsr-season-tag { color:#F5C518; font-weight:800; font-size:0.7rem; letter-spacing:2px; }
+.dsr-ghost { display:inline-block; font-size:0.74rem; color:#c9a7ff; background:rgba(157,127,212,0.16);
+  border-radius:6px; padding:1px 7px; margin-top:2px; }
+.dsr-ghost.beat { color:#6bffb8; background:rgba(107,255,184,0.14); }

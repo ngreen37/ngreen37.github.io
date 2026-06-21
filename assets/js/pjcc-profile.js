@@ -217,6 +217,7 @@
     extras = extras || {};
     score = parseInt(score, 10) || 0;
     setLocalBest(game, score);                         // always keep a local copy
+    try { PJCC.touchStreak(); } catch (e) {}           // any play keeps the daily flame alive
 
     var u = PJCC.currentUser();
     if (!sb || !u) return { saved: 'local' };
@@ -523,6 +524,93 @@
     return PJCC.BOUNTY_GAMES[week % PJCC.BOUNTY_GAMES.length];
   };
 
+  // --- daily-active streak (the cross-game "flame": consecutive days you played) ---
+  // Local-first so it works for guests; mirrors to the profile when signed in.
+  var STREAK_KEY = 'pjcc.streak';
+  function dayStamp(d) { d = d || new Date(); return d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2); }
+  PJCC.dayStamp = dayStamp;
+  function loadStreak() { try { return JSON.parse(localStorage.getItem(STREAK_KEY)) || { current: 0, best: 0, last: '' }; } catch (e) { return { current: 0, best: 0, last: '' }; } }
+  PJCC.touchStreak = function () {
+    var s = loadStreak(), today = dayStamp();
+    if (s.last === today) return s;                    // already counted today
+    var y = new Date(); y.setDate(y.getDate() - 1);
+    s.current = (s.last === dayStamp(y)) ? (s.current + 1) : 1;   // consecutive or reset to 1
+    s.best = Math.max(s.best || 0, s.current);
+    s.last = today;
+    try { localStorage.setItem(STREAK_KEY, JSON.stringify(s)); } catch (e) {}
+    return s;
+  };
+  PJCC.streakInfo = function () {
+    var s = loadStreak(), today = dayStamp();
+    var y = new Date(); y.setDate(y.getDate() - 1);
+    // a streak only counts as "alive" if the last active day was today or yesterday
+    var alive = (s.last === today || s.last === dayStamp(y));
+    return { current: alive ? (s.current || 0) : 0, best: s.best || 0, last: s.last || '', playedToday: s.last === today };
+  };
+
+  // --- "Beat the Creator" ghost scores -------------------------------------------
+  // Nate's own marks, posted as the target to chase. Units match each leaderboard.
+  // Update these as the creator sets new personal bests.
+  var GHOSTS = {
+    'cipher': 12, 'clearance-delta': 850, 'notation-run': 1500, 'fork-in-the-road': 18,
+    'sand-mine-depths': 140, 'pirc-protocol': 7, 'shogi-island': 40, 'blindfold': 12,
+    'tower-defense': 4200, 'siege-endless': 22, 'sky-run': 9000, 'daily-dispatch': 100
+  };
+  PJCC.GHOSTS = GHOSTS;
+  PJCC.ghostFor = function (game) { return (typeof GHOSTS[game] === 'number') ? GHOSTS[game] : null; };
+  // Compare a score to the creator's ghost: {target, beat, delta} or null if no ghost.
+  PJCC.vsGhost = function (game, score) {
+    var t = PJCC.ghostFor(game); if (t === null) return null;
+    return { target: t, beat: (score || 0) >= t, delta: (score || 0) - t };
+  };
+
+  // --- Seasons / Tours (monthly legs of the Journey to Chess City) ----------------
+  var SEASON_NAMES = [
+    'Checker Town Open', 'Sand Mine Circuit', 'The Fork Trials', 'Cipher Season',
+    'Delta Clearance Cup', 'Pirc Crossing Tour', 'Shogi Island Invitational', 'Chess City Masters',
+    'Journey Road Rally', 'Quartermaster Classic', 'Royal Decree Series', "Founder's Finale"
+  ];
+  PJCC.seasonInfo = function (when) {
+    var d = when || new Date();
+    var y = d.getFullYear(), m = d.getMonth();           // 0..11
+    var idx = (y * 12 + m);
+    var name = SEASON_NAMES[m % SEASON_NAMES.length];
+    var monthEnd = new Date(y, m + 1, 1);
+    var daysLeft = Math.ceil((monthEnd - d) / 86400000);
+    var id = y + '-' + ('0'+(m+1)).slice(-2);            // e.g. 2026-06 — usable as a score seed
+    return { id: id, index: idx, name: name + ' ' + y, shortName: name, year: y, month: m + 1, daysLeft: daysLeft };
+  };
+
+  // Season race: this month's standings, tallied from scores posted since the 1st.
+  // Date-bounded, so it auto-resets every month with no server changes. Returns
+  // [{codename, companion, plays, points}] ranked by activity then points.
+  PJCC.seasonRace = async function (limit) {
+    if (!sb) return [];
+    var s = PJCC.seasonInfo();
+    var monthStart = new Date(s.year, s.month - 1, 1).toISOString();
+    var r = await sb.from('scores')
+      .select('score,created_at,profiles(codename,companion)')
+      .gte('created_at', monthStart)
+      .order('created_at', { ascending: false })
+      .limit(2000);
+    if (r.error || !r.data) return [];
+    var tally = {};
+    r.data.forEach(function (row) {
+      var name = row.profiles ? row.profiles.codename : null; if (!name) return;
+      if (!tally[name]) tally[name] = { codename: name, companion: row.profiles.companion, plays: 0, points: 0 };
+      tally[name].plays += 1; tally[name].points += (row.score || 0);
+    });
+    return Object.keys(tally).map(function (k) { return tally[k]; })
+      .sort(function (a, b) { return (b.plays - a.plays) || (b.points - a.points); })
+      .slice(0, limit || 25);
+  };
+
+  // Hall of Fame: past season champions. Add an entry here at the close of each
+  // season (newest first). season = "Mon YYYY" label; champ = winning codename.
+  PJCC.HALL_OF_FAME = [
+    // { season: 'May 2026', tour: 'Sand Mine Circuit', champ: 'CODENAME', note: 'First champion of the Journey.' }
+  ];
+
   // --- companion pet-mood (decays with time since last played) ---------------
   PJCC.petMood = function (stats) {
     var last = 0;
@@ -547,7 +635,30 @@
   PJCC.THEME_SHOP = ['jade', 'crimson', 'sakura', 'mono'];
   PJCC.themeFor = function (prof) { var k = prof && prof.companion && prof.companion.theme; return THEMES[k] || THEMES['default']; };
   PJCC.ownedThemes = function (prof) { return ['default'].concat((prof && prof.companion && prof.companion.owned_themes) || []); };
-  PJCC.setTheme = function (key) { if (key && !THEMES[key]) throw new Error('unknown theme'); return updateCompanion({ theme: key || 'default' }); };
+  var SKIN_KEY = 'pjcc.skin';
+  PJCC.setTheme = function (key) {
+    if (key && !THEMES[key]) throw new Error('unknown theme');
+    try { localStorage.setItem(SKIN_KEY, key || 'default'); } catch (e) {}   // cache so games + guests can read it
+    return updateCompanion({ theme: key || 'default' });
+  };
+  // The skin to use inside a game: cached local choice, else the signed-in profile's theme.
+  PJCC.localTheme = function () {
+    var k = null;
+    try { k = localStorage.getItem(SKIN_KEY); } catch (e) {}
+    if (!k && profile && profile.companion) k = profile.companion.theme;
+    return THEMES[k] || THEMES['default'];
+  };
+  // Board skins in games: paint the chosen accent into a game's CSS variables.
+  // Call once at boot, e.g. PJCC.applyGameSkin(['--gold']) or with an element root.
+  PJCC.applyGameSkin = function (vars, root) {
+    try {
+      var t = PJCC.localTheme();
+      var el = root || document.documentElement;
+      el.style.setProperty('--pjcc-skin', t.accent);
+      if (t !== THEMES['default']) (vars || []).forEach(function (v) { el.style.setProperty(v, t.accent); });   // only override when a skin is actually chosen
+      return t;
+    } catch (e) { return null; }
+  };
   PJCC.buyTheme = async function (key) {
     var t = THEMES[key];
     if (!t || !t.price) throw new Error('not for sale');

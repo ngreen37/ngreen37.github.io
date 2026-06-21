@@ -1,7 +1,7 @@
 ---
 layout: game
-title: "Shogi Island v3.0"
-description: "Learn shogi by solving — read pieces, capture, check, and mate. The guide is written in Japanese and decodes, line by line, as you play."
+title: "Shogi Island v3.1"
+description: "Learn shogi by solving — read pieces, capture, check, mate, and real tsume (mate-in-3/5). The guide is written in Japanese and decodes line by line, and a full 9×9 match vs the island AI unlocks with mastery."
 permalink: /games/shogi-island/
 ---
 
@@ -69,7 +69,7 @@ permalink: /games/shogi-island/
 
   <div id="sh-codex" class="sh-codex"></div>
 
-  <p class="game-note" id="sh-note">Across the water, everyone speaks Japanese and the board has nine files. This is Princess's school — the codex, the drops, the mate, taught by playing. Your decode progress and rank log to your <a href="/dossier/">operative dossier</a> and the <a href="/leaderboards/">leaderboards</a>.</p>
+  <p class="game-note" id="sh-note">Across the water, everyone speaks Japanese and the board has nine files. This is Princess's school — the codex, the drops, the mate, taught by playing. Late lessons add real <b>詰将棋 tsume</b> (forced mate-in-3 and mate-in-5, where the King fights back with its own hand), and a full <b>9×9 match vs the island AI</b> unlocks once you've solved enough. Your decode progress and rank log to your <a href="/dossier/">operative dossier</a> and the <a href="/leaderboards/">leaderboards</a>.</p>
 </div>
 
 <script>
@@ -79,7 +79,6 @@ permalink: /games/shogi-island/
   var SECTIONS = [
     { jp: '遊び方', en: 'How to Play', items: [
       { jp: '目的：相手の玉を詰ますこと。', en: 'Goal: checkmate the enemy King (玉).' },
-      { jp: '駒を選び、行ける所へ動かす。', en: 'Pick a piece, then move it where it can legally go.' },
       { jp: '前は上（▲）。多くの駒は前にしか進めない。', en: 'Forward is up (▲). Most pieces can only move forward.' },
       { jp: '取った駒は手駒になり、盤に打てる。', en: 'A captured piece joins your hand — you can drop it back on the board.' },
       { jp: '敵陣（上の三段）で駒は成れる。', en: 'In the enemy camp (the far three ranks) pieces may promote and grow stronger.' },

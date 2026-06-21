@@ -9,8 +9,8 @@ jukebox: true
 <!-- ══════════ CONTACT ══════════ -->
 <section class="contact-hero">
   <div class="contact-hero-piece" aria-hidden="true">♜</div>
-  <p class="contact-eyebrow">Say Hello</p>
-  <h1 class="contact-headline">Get In Touch</h1>
+  <p class="contact-eyebrow" data-jp="ご挨拶">Say Hello</p>
+  <h1 class="contact-headline" data-jp="お問い合わせ">Get In Touch</h1>
   <div class="contact-methods">
     <div class="contact-calc-wrapper" id="contact-calc-wrap">
       <div class="contact-calc-line" id="calc-line-1"></div>

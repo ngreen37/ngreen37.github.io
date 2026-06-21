@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Shogi Island v3.0</title>
+<title>PJCC: Shogi Island v3.1</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -14,7 +14,8 @@
   }
   html, body { height: 100%; overflow: hidden; background: #e7e2d8;
     font-family: 'Hiragino Mincho ProN','Yu Mincho','Trebuchet MS','Segoe UI',serif;
-    -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    user-select: none; -webkit-user-select: none; -moz-user-select: none; }
   body { display: flex; align-items: flex-start; justify-content: center; min-height: 100vh; }
 
   /* ===== Scene (theme layers, behind everything) ===== */
@@ -97,6 +98,7 @@
   .cell.missed  { background:#9be7bf; opacity:0.5; box-shadow: inset 0 0 0 2px #1f8a52; }
   .cell.wrong   { background:#f3a9a9; }
   .cell.hint    { box-shadow: inset 0 0 0 3px var(--gold); }
+  .cell.lastmv  { box-shadow: inset 0 0 0 2px rgba(122,45,34,0.55); }
 
   .hand { min-height:34px; display:flex; gap:6px; justify-content:center; align-items:center; margin:8px 0 2px; flex-wrap:wrap; }
   .hand .lbl { font-size:0.72rem; color:var(--muted); }
@@ -160,6 +162,24 @@
   .dob-hand .hp.sel { background:#bfe2ff; }
   .dob-hand.enemy .hp { transform:rotate(180deg); color:#a8324a; cursor:default; }
   .dob-status { font-weight:700; min-height:22px; }
+
+  /* ===== 9×9 match ===== */
+  .m-board { display:grid; grid-template-columns:repeat(9,1fr); gap:1px; width:min(384px,86vw); margin:8px auto;
+    background:#b9893f; border:3px solid #b9893f; border-radius:3px; }
+  .m-cell { aspect-ratio:1; background:#f1d8a0; display:flex; align-items:center; justify-content:center;
+    font-size:clamp(12px,3.6vw,19px); cursor:pointer; position:relative; color:#2a1a08; user-select:none; }
+  .m-cell.me { color:#2a1a08; font-weight:700; } .m-cell.enemy { color:#a8324a; transform:rotate(180deg); font-weight:700; }
+  .m-cell.sel { background:#bfe2ff; } .m-cell.last { box-shadow: inset 0 0 0 2px rgba(122,45,34,0.6); }
+  .m-cell.chk { background:#f3a9a9; }
+  .m-cell.dest::after { content:''; position:absolute; width:28%; height:28%; border-radius:50%; background:rgba(31,138,82,0.6); }
+  .m-cell.dest.cap::after { width:60%; height:60%; background:transparent; border:3px solid rgba(176,58,58,0.7); border-radius:50%; }
+  .m-hand { display:flex; gap:5px; justify-content:center; min-height:30px; margin:4px 0; flex-wrap:wrap; align-items:center; }
+  .m-hand .lbl { font-size:0.7rem; color:#cdbfa6; }
+  .m-hand .hp { background:#f3e6c6; border:1px solid var(--gold); border-radius:5px; padding:2px 8px; cursor:pointer; color:#2a1a08; font-size:1.05rem; position:relative; }
+  .m-hand .hp .ct { position:absolute; right:-4px; top:-6px; background:#7a2d22; color:#fff; border-radius:8px; font-size:0.6rem; padding:0 4px; }
+  .m-hand .hp.sel { background:#bfe2ff; }
+  .m-hand.enemy .hp { transform:rotate(180deg); color:#a8324a; cursor:default; }
+  .m-promo { display:flex; gap:8px; justify-content:center; margin:6px 0; }
 </style>
 </head>
 <body>
@@ -213,6 +233,24 @@
   <div class="controls">
     <button class="btn" id="dob-new">New match</button>
     <button class="btn ghost" id="dob-close">Back to lessons</button>
+  </div>
+</div>
+
+<!-- Full 9×9 match overlay -->
+<div class="overlay hidden" id="match">
+  <h2><span class="jp-big">本将棋</span> Full Match</h2>
+  <p class="sub">A complete 9×9 game against the island AI. You are ▲ (sente, bottom). Capture into hand and drop. Mate the King.</p>
+  <div class="m-hand enemy" id="m-hand-e"></div>
+  <div class="m-board" id="m-board"></div>
+  <div class="m-hand" id="m-hand-p"></div>
+  <div class="m-promo" id="m-promo" style="display:none;">
+    <button class="btn" id="m-promo-yes">成 Promote</button>
+    <button class="btn ghost" id="m-promo-no">不成 Keep</button>
+  </div>
+  <div class="dob-status" id="m-status">Your move — you are ▲ (bottom).</div>
+  <div class="controls">
+    <button class="btn" id="m-new">New match</button>
+    <button class="btn ghost" id="m-close">Back to lessons</button>
   </div>
 </div>
 
@@ -409,17 +447,27 @@ function genMate(diff){
     solutions:[{kind:'drop',type:'G',to:key(1,0)}], teach:'詰み Checkmate — drop the Gold beside the King; the Rook seals the escape.'};
 }
 
+function pickTsume3(){
+  var e = (typeof TSUME_LIB!=='undefined' && TSUME_LIB.length) ? TSUME_LIB[(Math.random()*TSUME_LIB.length)|0] : null;
+  if(!e) return genTsume(1);                                  // safety fallback
+  var n = e.n || 3, te = 2*n - 1;                             // attacker-moves -> 手 (plies): 2->3手, 3->5手
+  return { goal:'tsume', plies:n, te:te, kind:'play', board:cloneB(e.b), hand:e.hand.slice(), defHand:e.defHand.slice(),
+    enemyKey:e.k, firsts:[e.first],
+    teach:'詰将棋 Tsume — mate in '+te+' ('+te+'手詰め). Give check every move; the defender (with a hand) fights back.' };
+}
 function pickProblem(solved){
   var diff = 1 + Math.floor(solved/6);
   var g;
   if(solved < 4) g='move';
   else if(solved < 10) g = rndPick(['move','capture']);
   else if(solved < 18) g = rndPick(['move','capture','check']);
-  else g = rndPick(['capture','check','mate','mate']);
+  else if(solved < 24) g = rndPick(['capture','check','mate','mate']);
+  else g = (Math.random()<0.4) ? 'tsume' : rndPick(['capture','check','mate','mate']);
   if(g==='move') return genMove(diff);
   if(g==='capture') return genCapture(diff);
   if(g==='check') return genCheck(diff);
-  return genMate(diff);
+  if(g==='tsume') return pickTsume3();
+  return genTsume(1);                                          // mate-in-one vs a real defending King
 }
 
 /* ============================================================
@@ -427,7 +475,6 @@ function pickProblem(solved){
    ============================================================ */
 var HOWTO=[
   {jp:'目的：相手の玉を詰ますこと。', en:'Goal: checkmate the enemy King (玉).'},
-  {jp:'駒を選び、行ける所へ動かす。', en:'Pick a piece, then move it where it can legally go.'},
   {jp:'前は上（▲）。多くの駒は前にしか進めない。', en:'Forward is up (▲). Most pieces can only move forward.'},
   {jp:'取った駒は手駒になり、盤に打てる。', en:'A captured piece joins your hand — you can drop it back on the board.'},
   {jp:'敵陣（上の三段）で駒は成れる。', en:'In the enemy camp (the far three ranks) pieces may promote and grow stronger.'},
@@ -459,6 +506,7 @@ var SECTIONS=[{key:'howto', jp:'遊び方', en:'How to Play', items:HOWTO},
   {key:'pro', jp:'プロの心得', en:'Tips from strong players', items:PRO}];
 var TOTAL_SEG = HOWTO.length + BIBLE.length + PRO.length;
 var UNLOCK_AT = 28;
+var MATCH_UNLOCK_AT = 40;
 
 /* rank by solved (cosmetic) */
 function rankFor(s){
@@ -551,6 +599,281 @@ function dAIMove(st, depth){
 }
 
 /* ============================================================
+   FULL 9×9 SHOGI — game state, legality, tsume solver, AI
+   state = { b:boardMap, hand:{P:[types], E:[types]}, turn:'P'|'E' }
+   All pure; verified offline via __shogiTest.
+   ============================================================ */
+function baseT(t){ return t.charAt(0)==='+' ? t.slice(1) : t; }
+function promoteT(t){ return (t==='P'||t==='L'||t==='N'||t==='S'||t==='B'||t==='R') ? '+'+t : t; }
+function canPromoteT(t){ return t==='P'||t==='L'||t==='N'||t==='S'||t==='B'||t==='R'; }
+function inZone(r,s){ return s==='P' ? r<=2 : r>=6; }                 // enemy camp for that side
+function mustPromote(t,r,s){                                          // dead piece unless promoted
+  if(t==='P'||t==='L') return s==='P' ? r===0 : r===8;
+  if(t==='N') return s==='P' ? r<=1 : r>=7;
+  return false;
+}
+function dropDead(t,r,s){ return mustPromote(t,r,s); }               // can't drop where it could never move
+function findKing(b, s){ for(var k in b){ if(b[k].t==='K' && b[k].s===s) return k; } return null; }
+function inCheck(b, s){ var kk=findKing(b,s); if(!kk) return false; var p=rc(kk); return isAttacked(b, p[0], p[1], s==='P'?'E':'P'); }
+function nifu(b, file, s){ for(var r=0;r<9;r++){ var pc=b[key(r,file)]; if(pc && pc.s===s && pc.t==='P') return true; } return false; }
+
+/* clone full state */
+function cloneState(st){ return { b:cloneB(st.b), hand:{P:st.hand.P.slice(), E:st.hand.E.slice()}, turn:st.turn }; }
+
+/* apply a full move/drop, returning the new state (turn flips) */
+function applyFull(st, m){
+  var n=cloneState(st), s=st.turn;
+  if(m.drop){ var idx=n.hand[s].indexOf(m.drop); if(idx>=0) n.hand[s].splice(idx,1); n.b[m.to]={t:m.drop, s:s}; }
+  else {
+    var pc=n.b[m.from], cap=n.b[m.to];
+    if(cap){ n.hand[s].push(baseT(cap.t)); }
+    delete n.b[m.from];
+    n.b[m.to]={ t: m.promote ? promoteT(pc.t) : pc.t, s:s };
+  }
+  n.turn = (s==='P'?'E':'P');
+  return n;
+}
+
+/* pseudo-legal move + drop generation for st.turn (board moves include promo variants) */
+function genPseudo(st){
+  var s=st.turn, b=st.b, out=[];
+  for(var k in b){ var pc=b[k]; if(pc.s!==s) continue; var p=rc(k); var ds=destsFor(b, p[0], p[1]);
+    for(var i=0;i<ds.length;i++){ var d=ds[i], dp=rc(d); var canP=canPromoteT(pc.t) && (inZone(p[0],s)||inZone(dp[0],s));
+      var forced=mustPromote(pc.t, dp[0], s);
+      if(forced){ out.push({from:k, to:d, promote:true}); }
+      else { out.push({from:k, to:d, promote:false}); if(canP) out.push({from:k, to:d, promote:true}); }
+    }
+  }
+  var hand=st.hand[s], seen={};
+  for(var h=0; h<hand.length; h++){ var t=hand[h]; if(seen[t]) continue; seen[t]=1;
+    for(var r=0;r<9;r++) for(var c=0;c<9;c++){ var kk=key(r,c); if(b[kk]) continue;
+      if(dropDead(t,r,s)) continue; if(t==='P' && nifu(b,c,s)) continue; out.push({drop:t, to:kk}); } }
+  return out;
+}
+
+/* fully legal moves: own king not left in check; pawn-drop-mate (uchifuzume) forbidden */
+function legalMoves(st){
+  var out=[], s=st.turn, ps=genPseudo(st);
+  for(var i=0;i<ps.length;i++){ var m=ps[i]; var n=applyFull(st, m);
+    if(inCheck(n.b, s)) continue;                                       // can't leave/put own king in check
+    if(m.drop==='P'){ // uchifuzume: a pawn drop may not deliver immediate checkmate
+      var opp=(s==='P'?'E':'P');
+      if(inCheck(n.b, opp)){ var nn={b:n.b, hand:n.hand, turn:opp}; if(legalMoves(nn).length===0) continue; }
+    }
+    out.push(m);
+  }
+  return out;
+}
+
+/* ---- TSUME (mate problem) solver ----
+   Attacker = 'P' (must check every move). Defender = 'E' (king + a stated hand).
+   Returns true if attacker forces mate using <= plyLeft attacker-moves.       */
+function atkCheckMoves(st){ // st.turn must be 'P'; only moves that (a) are legal for attacker and (b) check the E king
+  var out=[], ms=legalMoves(st);
+  for(var i=0;i<ms.length;i++){ var n=applyFull(st, ms[i]); if(inCheck(n.b,'E')) out.push(ms[i]); }
+  return out;
+}
+function checkersOf(b, s){ // keys of opp pieces attacking s's king
+  var kk=findKing(b,s); if(!kk) return []; var opp=(s==='P'?'E':'P'), res=[];
+  for(var k in b){ var pc=b[k]; if(pc.s!==opp) continue; var q=rc(k); if(destsFor(b,q[0],q[1]).indexOf(kk)>=0) res.push(k); }
+  return res;
+}
+function betweenSquares(aK, bK){ // squares strictly between a and b on a shared line; else []
+  var a=rc(aK), c=rc(bK), dr=Math.sign(c[0]-a[0]), dc=Math.sign(c[1]-a[1]);
+  if(dr===0&&dc===0) return [];
+  if(!(a[0]===c[0]||a[1]===c[1]||Math.abs(c[0]-a[0])===Math.abs(c[1]-a[1]))) return [];
+  var out=[], r=a[0]+dr, col=a[1]+dc;
+  while(r!==c[0]||col!==c[1]){ out.push(key(r,col)); r+=dr; col+=dc; }
+  return out;
+}
+// expand a board move (from->to) into legal promo variants for side s
+function pushMoveVariants(out, b, from, to, s){
+  var pc=b[from], pf=rc(from), pt=rc(to);
+  var canP=canPromoteT(pc.t) && (inZone(pf[0],s)||inZone(pt[0],s)), forced=mustPromote(pc.t, pt[0], s);
+  if(forced){ out.push({from:from,to:to,promote:true}); }
+  else { out.push({from:from,to:to,promote:false}); if(canP) out.push({from:from,to:to,promote:true}); }
+}
+// COMPLETE set of legal replies to a check: king moves, capture the checker, interpose. Verified.
+function defenderEscapes(st){ // st.turn 'E', E in check
+  var b=st.b, s='E', kk=findKing(b,s), cand=[];
+  if(!kk) return [];
+  var kp=rc(kk), chs=checkersOf(b,s);
+  // king steps
+  var kds=destsFor(b, kp[0], kp[1]);
+  for(var i=0;i<kds.length;i++) cand.push({from:kk, to:kds[i], promote:false});
+  if(chs.length===1){
+    var ch=chs[0];
+    // capture the checker with a non-king E piece
+    for(var k in b){ var pc=b[k]; if(pc.s!==s||pc.t==='K') continue; var q=rc(k);
+      if(destsFor(b,q[0],q[1]).indexOf(ch)>=0) pushMoveVariants(cand, b, k, ch, s); }
+    // interpose on the line between checker and king (only sliders create a gap)
+    var betw=betweenSquares(ch, kk);
+    for(var z=0;z<betw.length;z++){ var sq=betw[z];
+      for(var k2 in b){ var pc2=b[k2]; if(pc2.s!==s||pc2.t==='K') continue; var q2=rc(k2);
+        if(destsFor(b,q2[0],q2[1]).indexOf(sq)>=0) pushMoveVariants(cand, b, k2, sq, s); }
+      var hand=st.hand[s], seen={};
+      for(var h=0;h<hand.length;h++){ var t=hand[h]; if(seen[t]) continue; seen[t]=1; var pr=rc(sq)[0];
+        if(dropDead(t,pr,s)) continue; if(t==='P'&&nifu(b,rc(sq)[1],s)) continue; cand.push({drop:t,to:sq}); } }
+  }
+  // verify each candidate truly escapes check
+  var out=[];
+  for(var ci=0;ci<cand.length;ci++){ var n=applyFull(st, cand[ci]); if(!inCheck(n.b, s)) out.push(cand[ci]); }
+  return out;
+}
+function solveTsume(st, plyLeft){
+  // st.turn === 'P', attacker to move
+  if(plyLeft<=0) return false;
+  var cms=atkCheckMoves(st);
+  for(var i=0;i<cms.length;i++){
+    var m=cms[i], n=applyFull(st, m);            // now n.turn==='E', E in check
+    var replies=defenderEscapes(n);
+    if(replies.length===0){                       // delivered mate
+      if(m.drop==='P') continue;                  // uchifuzume already filtered, but guard
+      return true;
+    }
+    if(plyLeft<=1) continue;                       // defender escaped, no budget to continue
+    var allMated=true;
+    for(var r=0;r<replies.length;r++){
+      var n2=applyFull(n, replies[r]);            // n2.turn==='P'
+      if(!solveTsume(n2, plyLeft-1)){ allMated=false; break; }
+    }
+    if(allMated) return true;
+  }
+  return false;
+}
+/* defender's best (longest-resisting) reply — used by the UI to auto-play E */
+function tsumeBestDefense(st, plyLeft){
+  var replies=defenderEscapes(st); if(!replies.length) return null;
+  var best=null, bestDist=-1;
+  for(var r=0;r<replies.length;r++){
+    var n2=applyFull(st, replies[r]);
+    // toughest defense = the reply that forces the attacker to take the MOST moves to mate
+    // (and a reply that escapes mate within budget is best of all, though a verified problem has none)
+    var dist;
+    if(!solveTsume(n2, plyLeft)) dist=1e9;
+    else { dist=plyLeft; for(var d=1; d<=plyLeft; d++){ if(solveTsume(n2, d)){ dist=d; break; } } }
+    if(dist>bestDist){ bestDist=dist; best=replies[r]; }
+  }
+  return best;
+}
+
+/* ---- TSUME GENERATOR (sound: defender has a stated general's hand) ---- */
+var TSUME_DEF_HAND=['G','S','B','N'];                                  // shown to player; solver verifies vs exactly this
+var TSUME_LIB=[{"b":{"1,8":{"t":"K","s":"E"},"0,8":{"t":"S","s":"E"},"0,7":{"t":"N","s":"E"},"4,2":{"t":"+R","s":"P"},"0,3":{"t":"R","s":"P"},"6,6":{"t":"R","s":"P"}},"hand":["N","L"],"defHand":["G","S","B","N"],"k":"1,8","first":{"from":"6,6","to":"1,6","promote":true},"n":3},{"b":{"2,0":{"t":"K","s":"E"},"4,1":{"t":"S","s":"E"},"1,2":{"t":"+R","s":"P"},"5,5":{"t":"N","s":"P"}},"hand":["G"],"defHand":["G","S","B","N"],"k":"2,0","first":{"drop":"G","to":"2,1"},"n":3},{"b":{"1,8":{"t":"K","s":"E"},"0,7":{"t":"P","s":"E"},"4,0":{"t":"B","s":"P"},"3,6":{"t":"+R","s":"P"}},"hand":["B","G"],"defHand":["G","S","B","N"],"k":"1,8","first":{"drop":"B","to":"2,7"},"n":2},{"b":{"0,7":{"t":"K","s":"E"},"1,8":{"t":"S","s":"E"},"0,8":{"t":"L","s":"E"},"1,5":{"t":"R","s":"P"},"1,2":{"t":"+B","s":"P"}},"hand":["L"],"defHand":["G","S","B","N"],"k":"0,7","first":{"from":"1,2","to":"3,4","promote":false},"n":3},{"b":{"0,7":{"t":"K","s":"E"},"2,8":{"t":"P","s":"E"},"3,8":{"t":"+B","s":"P"},"7,3":{"t":"+R","s":"P"}},"hand":["R","S"],"defHand":["G","S","B","N"],"k":"0,7","first":{"drop":"S","to":"1,6"},"n":3},{"b":{"1,1":{"t":"K","s":"E"},"3,1":{"t":"G","s":"E"},"0,3":{"t":"L","s":"E"},"2,8":{"t":"R","s":"P"},"6,7":{"t":"B","s":"P"}},"hand":["B"],"defHand":["G","S","B","N"],"k":"1,1","first":{"drop":"B","to":"0,2"},"n":3},{"b":{"1,0":{"t":"K","s":"E"},"0,1":{"t":"N","s":"E"},"7,2":{"t":"R","s":"P"},"4,0":{"t":"+B","s":"P"}},"hand":["S"],"defHand":["G","S","B","N"],"k":"1,0","first":{"from":"7,2","to":"1,2","promote":true},"n":3},{"b":{"0,8":{"t":"K","s":"E"},"0,6":{"t":"N","s":"E"},"2,8":{"t":"N","s":"E"},"3,4":{"t":"G","s":"P"},"1,0":{"t":"+R","s":"P"}},"hand":["N","L"],"defHand":["G","S","B","N"],"k":"0,8","first":{"drop":"L","to":"1,8"},"n":2},{"b":{"1,0":{"t":"K","s":"E"},"0,0":{"t":"L","s":"E"},"4,8":{"t":"N","s":"P"},"0,3":{"t":"B","s":"P"},"3,8":{"t":"S","s":"P"}},"hand":["B","S"],"defHand":["G","S","B","N"],"k":"1,0","first":{"drop":"B","to":"3,2"},"n":3},{"b":{"0,0":{"t":"K","s":"E"},"1,2":{"t":"P","s":"E"},"5,4":{"t":"B","s":"P"},"2,6":{"t":"R","s":"P"},"4,8":{"t":"N","s":"P"}},"hand":["S"],"defHand":["G","S","B","N"],"k":"0,0","first":{"from":"2,6","to":"2,0","promote":true},"n":2},{"b":{"0,6":{"t":"K","s":"E"},"2,4":{"t":"L","s":"E"},"1,2":{"t":"+R","s":"P"},"3,6":{"t":"B","s":"P"}},"hand":["L"],"defHand":["G","S","B","N"],"k":"0,6","first":{"drop":"L","to":"2,6"},"n":2},{"b":{"0,5":{"t":"K","s":"E"},"1,6":{"t":"S","s":"E"},"2,4":{"t":"R","s":"P"},"6,2":{"t":"+R","s":"P"}},"hand":[],"defHand":["G","S","B","N"],"k":"0,5","first":{"from":"6,2","to":"0,2","promote":false},"n":3},{"b":{"0,1":{"t":"K","s":"E"},"0,2":{"t":"L","s":"E"},"2,8":{"t":"R","s":"P"},"7,7":{"t":"B","s":"P"},"1,6":{"t":"+B","s":"P"}},"hand":[],"defHand":["G","S","B","N"],"k":"0,1","first":{"from":"2,8","to":"2,1","promote":true},"n":2},{"b":{"1,7":{"t":"K","s":"E"},"2,6":{"t":"S","s":"E"},"8,6":{"t":"+R","s":"P"},"3,5":{"t":"+B","s":"P"}},"hand":["B","L"],"defHand":["G","S","B","N"],"k":"1,7","first":{"from":"8,6","to":"2,6","promote":false},"n":2}];
+function genTsume(plies){   // plies = 1 or 3
+  for(var att=0; att<1400; att++){
+    var b={};
+    var kr = Math.random()<0.7 ? (Math.random()<0.5?0:1) : ((Math.random()*3)|0);
+    var kc = Math.random()<0.6 ? rndPick([0,1,7,8]) : ((Math.random()*9)|0);
+    b[key(kr,kc)]={t:'K', s:'E'};
+    // a couple of E blockers near the king to make defense real
+    var nDef = plies===1 ? ((Math.random()*2)|0) : (1+((Math.random()*2)|0));
+    var placed=0, fail=false;
+    for(var i=0;i<nDef;i++){ var tt=rndPick(['G','S','P','L','N']); var rr,cc,tr=0;
+      do{ rr=Math.max(0,Math.min(8,kr+((Math.random()*5)|0)-2)); cc=Math.max(0,Math.min(8,kc+((Math.random()*5)|0)-2)); tr++; }
+      while((b[key(rr,cc)]||(rr===kr&&cc===kc))&&tr<25);
+      if(b[key(rr,cc)]){ continue; } b[key(rr,cc)]={t:tt, s:'E'}; placed++; }
+    // attacker force
+    var nAtk = plies===1 ? (1+((Math.random()*2)|0)) : (2+((Math.random()*2)|0));
+    for(var a=0;a<nAtk;a++){ var at=rndPick(['G','S','R','B','N','L','+R','+B']); var ar,ac,tr2=0;
+      do{ ar=(Math.random()*9)|0; ac=(Math.random()*9)|0; tr2++; } while((b[key(ar,ac)])&&tr2<30);
+      if(b[key(ar,ac)]){ fail=true; break; } b[key(ar,ac)]={t:at, s:'P'}; }
+    if(fail) continue;
+    var ahand = Math.random()<0.7 ? [rndPick(['G','S','R','B','N','L'])] : [];
+    if(Math.random()<0.35) ahand.push(rndPick(['G','S','N','L']));
+    var st={ b:b, hand:{P:ahand, E:TSUME_DEF_HAND.slice()}, turn:'P' };
+    if(inCheck(b,'E')) continue;                                        // not already check
+    if(findKing(b,'P')) continue;                                       // attacker has no king (tsume convention)
+    // verify exact mate distance
+    if(plies===1){ if(!solveTsume(st,1)) continue; }
+    else { if(solveTsume(st,1)) continue; if(!solveTsume(st,3)) continue; }   // genuine mate-in-3
+    // collect first checking moves that work (for hinting / acceptance)
+    var firsts=[];
+    var cms=atkCheckMoves(st);
+    for(var ci=0; ci<cms.length; ci++){ var n=applyFull(st, cms[ci]);
+      var ok = (plies===1) ? (defenderEscapes(n).length===0)
+                           : (defenderEscapes(n).length>0 && (function(){ var rs=defenderEscapes(n); for(var z=0;z<rs.length;z++){ if(!solveTsume(applyFull(n,rs[z]),2)) return false; } return true; })());
+      if(ok) firsts.push(cms[ci]); }
+    if(plies===3 && firsts.length!==1) continue;                        // prefer a unique key move for 3-move
+    if(!firsts.length) continue;
+    return { goal:(plies===1?'mate':'tsume'), plies:plies, kind:'play', board:b,
+      hand:ahand, defHand:TSUME_DEF_HAND.slice(), enemyKey:key(kr,kc),
+      firsts:firsts, teach:(plies===1?'詰み Mate in one — the King has pieces and a hand to defend, yet cannot escape.'
+                                     :'詰将棋 Tsume — mate in three. Check every move; the defender fights back.') };
+  }
+  // fallback: simple gold-drop mate-in-1 vs bare-ish king
+  var fb={}; fb[key(0,0)]={t:'K',s:'E'}; fb[key(1,8)]={t:'R',s:'P'};
+  var fst={ b:fb, hand:{P:['G'], E:[]}, turn:'P' };
+  return { goal:'mate', plies:1, kind:'play', board:fb, hand:['G'], defHand:[], enemyKey:key(0,0),
+    firsts:[{drop:'G', to:key(1,0)}], teach:'詰み Mate in one — drop the Gold beside the King.' };
+}
+
+/* ---- 9×9 MATCH AI: alpha-beta with node budget + safe move filter ---- */
+var PVAL={ P:1, L:3, N:3, S:5, G:6, B:8, R:10, K:0, '+P':6,'+L':6,'+N':6,'+S':6,'+B':10,'+R':12 };
+function evalState(st, who){
+  var sc=0, oppK=findKing(st.b, who==='P'?'E':'P'), myK=findKing(st.b, who);
+  for(var k in st.b){ var pc=st.b[k], v=PVAL[pc.t]||0, p=rc(k);
+    // advancement bonus toward the enemy
+    var adv = pc.s==='P' ? (8-p[0]) : p[0];
+    var sv = v + (pc.t==='K'?0:adv*0.08);
+    sc += (pc.s===who ? sv : -sv);
+  }
+  st.hand[who].forEach(function(t){ sc += (PVAL[t]||0)*0.9; });
+  st.hand[who==='P'?'E':'P'].forEach(function(t){ sc -= (PVAL[t]||0)*0.9; });
+  // king safety: defenders adjacent to own king
+  function guard(kk, s){ if(!kk) return 0; var p=rc(kk), g=0; for(var i=0;i<KING8.length;i++){ var nr=p[0]+KING8[i][0], nc=p[1]+KING8[i][1]; var o=st.b[key(nr,nc)]; if(o&&o.s===s) g++; } return g; }
+  sc += guard(myK, who)*0.4 - guard(oppK, who==='P'?'E':'P')*0.4;
+  return sc;
+}
+function orderMoves(st, ms){
+  return ms.map(function(m){ var s=0; if(m.drop){ s=PVAL[m.drop]||0; } else { var cap=st.b[m.to]; if(cap) s+= (PVAL[cap.t]||0)*10 - (PVAL[st.b[m.from].t]||0); if(m.promote) s+=4; } return {m:m,s:s}; })
+    .sort(function(a,b){ return b.s-a.s; }).map(function(x){ return x.m; });
+}
+// lighter move gen for the search interior: legal w.r.t. self-check, but skips the
+// (expensive, rarely-relevant-to-eval) uchifuzume recursion. Full legalMoves is used
+// for actual play + game-over detection.
+function searchMoves(st){
+  var out=[], s=st.turn, ps=genPseudo(st);
+  for(var i=0;i<ps.length;i++){ var n=applyFull(st, ps[i]); if(!inCheck(n.b, s)) out.push(ps[i]); }
+  return out;
+}
+function isMateState(st){ return inCheck(st.b, st.turn) && searchMoves(st).length===0; }
+var __nodes=0, __budget=0, __deadline=0;
+function abFull(st, depth, a, b, who){
+  if((__nodes++ & 1023)===0 && Date.now()>__deadline) return evalState(st, who);
+  if(__nodes > __budget) return evalState(st, who);
+  var ms=searchMoves(st);
+  if(ms.length===0){ return inCheck(st.b, st.turn) ? (st.turn===who ? -99999-depth : 99999+depth) : 0; }
+  if(depth<=0) return evalState(st, who);
+  ms=orderMoves(st, ms);
+  var best=-1e9;
+  for(var i=0;i<ms.length;i++){ var n=applyFull(st, ms[i]); var v=-abFull(n, depth-1, -b, -a, who==='P'?'E':'P');
+    if(v>best) best=v; if(best>a) a=best; if(a>=b) break; }
+  return best;
+}
+function aiMoveFull(st, depth, budget){
+  var ms=legalMoves(st); if(!ms.length) return null;
+  // 1) take a mate-in-1 if available
+  for(var i=0;i<ms.length;i++){ var n=applyFull(st, ms[i]); if(isMateState(n)) return ms[i]; }
+  __budget = budget||60000; __nodes=0; __deadline = Date.now() + 500;   // wall-clock cap keeps the UI snappy
+  ms=orderMoves(st, ms);
+  var best=ms[0], bv=-1e9, who=st.turn;
+  for(var j=0;j<ms.length;j++){ var nn=applyFull(st, ms[j]); var v=-abFull(nn, depth-1, -1e9, 1e9, who==='P'?'E':'P');
+    if(v>bv){ bv=v; best=ms[j]; } if(__nodes>__budget || Date.now()>__deadline) break; }
+  return best;
+}
+function matchStart(){
+  // standard shogi setup, rows 0..8 top->bottom; E (enemy) top, P (you) bottom
+  var b={};
+  var back=['L','N','S','G','K','G','S','N','L'];
+  for(var c=0;c<9;c++){ b[key(0,c)]={t:back[c],s:'E'}; b[key(8,c)]={t:back[c],s:'P'}; }
+  b[key(1,1)]={t:'R',s:'E'}; b[key(1,7)]={t:'B',s:'E'};
+  b[key(7,7)]={t:'R',s:'P'}; b[key(7,1)]={t:'B',s:'P'};
+  for(var c2=0;c2<9;c2++){ b[key(2,c2)]={t:'P',s:'E'}; b[key(6,c2)]={t:'P',s:'P'}; }
+  return { b:b, hand:{P:[],E:[]}, turn:'P' };
+}
+
+/* ============================================================
    SELF TEST (run in Node; not in browser unless called)
    ============================================================ */
 function shogiSelfTest(iter){
@@ -588,7 +911,35 @@ function shogiSelfTest(iter){
     }
     if(st.winner) dobEnded++;
   }
-  return JSON.stringify({cnt:cnt, failCount:fails.length, fails:fails.slice(0,12), dob:{games:games, decisive:dobEnded, errors:dobErr}});
+  // TSUME soundness: generated mate-in-1 / mate-in-3 must verify, and 3-move must NOT be mate-in-1
+  var tcnt={m1:0,m3:0}, tfail=0, TN=Math.min(iter,60);
+  for(var ti=0; ti<TN; ti++){
+    var p1=genTsume(1);
+    if(p1.plies===1 && solveTsume({b:p1.board,hand:{P:p1.hand.slice(),E:p1.defHand.slice()},turn:'P'},1)) tcnt.m1++; else tfail++;
+    var p3=genTsume(3);
+    var s3={b:p3.board,hand:{P:p3.hand.slice(),E:p3.defHand.slice()},turn:'P'};
+    if(p3.plies===3 && solveTsume(s3,3) && !solveTsume(s3,1)) tcnt.m3++; else tfail++;
+  }
+  // 9×9 MATCH: AI vs AI self-play — every move must be legal; games should terminate
+  var mErr=0, mEnded=0, mGames=8;
+  for(var mg=0; mg<mGames; mg++){
+    var ms=matchStart(), mp=0;
+    while(mp<140){
+      var legal=legalMoves(ms);
+      if(legal.length===0){ mEnded++; break; }                       // mate or stalemate (rare in shogi)
+      var mv2=aiMoveFull(ms, 2, 12000);
+      if(!mv2){ mErr++; break; }
+      var ok2=false; for(var z2=0; z2<legal.length; z2++){ var L2=legal[z2];
+        if(L2.drop&&mv2.drop){ if(L2.drop===mv2.drop&&L2.to===mv2.to){ ok2=true; break; } }
+        else if(!L2.drop&&!mv2.drop){ if(L2.from===mv2.from&&L2.to===mv2.to&&!!L2.promote===!!mv2.promote){ ok2=true; break; } } }
+      if(!ok2){ mErr++; break; }
+      ms=applyFull(ms, mv2); mp++;
+    }
+  }
+  return JSON.stringify({cnt:cnt, failCount:fails.length, fails:fails.slice(0,12),
+    dob:{games:games, decisive:dobEnded, errors:dobErr},
+    tsume:{tested:TN, m1:tcnt.m1, m3:tcnt.m3, fails:tfail},
+    match:{games:mGames, mateOrEnd:mEnded, errors:mErr}});
 }
 if (typeof globalThis !== 'undefined') globalThis.__shogiTest = shogiSelfTest;
 
@@ -599,7 +950,7 @@ var RUN_UI = (typeof document !== 'undefined') && !!document.getElementById && !
 if (RUN_UI) (function(){
   var KEY='pjcc.shogi.v3';
   var st = loadState();
-  var prob=null, sel=null, marks={}, locked=false, mode='lesson';
+  var prob=null, sel=null, marks={}, locked=false, mode='lesson', lastMv=null;
 
   function loadState(){ try{ var s=JSON.parse(localStorage.getItem(KEY)); if(s&&typeof s.solved==='number') return s; }catch(e){}
     return {solved:0, decoded:0, best:0, unlocked:false}; }
@@ -651,72 +1002,131 @@ if (RUN_UI) (function(){
     });
   }
   function renderUnlock(){
-    var u=document.getElementById('unlock');
+    var u=document.getElementById('unlock'); var html='';
     if(st.unlocked || st.solved>=UNLOCK_AT){ st.unlocked = st.unlocked || st.solved>=UNLOCK_AT;
-      u.innerHTML='<button class="ubtn" id="play-dob">★ 隠し対局 — Play “Catch the Lion” (どうぶつしょうぎ)</button>';
-      document.getElementById('play-dob').onclick=openDobutsu;
+      html+='<button class="ubtn" id="play-dob">★ 隠し対局 — Play “Catch the Lion” (どうぶつしょうぎ)</button>';
     } else {
-      u.innerHTML='<div class="locked">🔒 A hidden match waits at <b>'+UNLOCK_AT+'</b> solves — you are at '+st.solved+'. Decode the island and it opens.</div>';
+      html+='<div class="locked">🔒 A hidden match waits at <b>'+UNLOCK_AT+'</b> solves — you are at '+st.solved+'. Decode the island and it opens.</div>';
     }
+    if(st.solved>=MATCH_UNLOCK_AT){
+      html+='<button class="ubtn" id="play-match" style="margin-top:8px;background:#3a2d1c;">⚔ 本将棋 — Full 9×9 match vs the island AI</button>';
+    } else {
+      html+='<div class="locked" style="margin-top:8px;">⚔ The full 9×9 match opens at <b>'+MATCH_UNLOCK_AT+'</b> solves — you are at '+st.solved+'.</div>';
+    }
+    u.innerHTML=html;
+    if(document.getElementById('play-dob')) document.getElementById('play-dob').onclick=openDobutsu;
+    if(document.getElementById('play-match')) document.getElementById('play-match').onclick=openMatch;
   }
   function refreshHud(){ document.getElementById('solved').textContent=st.solved;
     document.getElementById('decoded').textContent=Math.min(st.decoded,TOTAL_SEG);
     document.getElementById('dectot').textContent=TOTAL_SEG; document.getElementById('rank').textContent=rankFor(st.solved); }
 
   /* ---- problem flow ---- */
-  function newProblem(){ prob=pickProblem(st.solved); sel=null; marks={}; locked=false;
-    var hasHand = prob.hand && prob.hand.length;
+  function isTsumeGoal(){ return prob.goal==='mate' || prob.goal==='tsume'; }
+  function probBoard(){ return isTsumeGoal() ? prob.live.b : prob.board; }
+  function newProblem(){ prob=pickProblem(st.solved); sel=null; marks={}; locked=false; lastMv=null;
     document.getElementById('action').style.display = (prob.kind==='move') ? '' : 'none';
     document.getElementById('action').textContent='確認 Check'; document.getElementById('action').disabled=false;
     document.getElementById('showme').style.display = (prob.goal==='move')?'none':'';
+    if(isTsumeGoal()){ prob.live={ b:cloneB(prob.board), hand:{P:(prob.hand||[]).slice(), E:(prob.defHand||[]).slice()}, turn:'P' };
+      prob.rem = prob.plies || 1; prob.enemyKey = findKing(prob.live.b,'E') || prob.enemyKey; }
     var ask = {
       move:'Tap every square the <span class="pname">'+NAME[prob.pieceType]+'</span> can move to.',
       capture:'<span class="jp">取り</span> Capture the marked enemy — tap your piece, then its target.',
       check:'<span class="jp">王手</span> Give check — tap your piece, then a square that attacks the King.',
-      mate:'<span class="jp">詰み</span> Checkmate in one — tap a piece (or a hand piece) and the mating square.'
+      mate:'<span class="jp">詰み</span> Checkmate in <b>one</b> — the King has pieces and a hand, yet cannot escape.',
+      tsume:'<span class="jp">詰将棋</span> <b>Mate in '+(prob.te||3)+'</b> ('+(prob.te||3)+'手詰め) — give check every move; the King fights back between your blows.'
     }[prob.goal];
     document.getElementById('ask').innerHTML=ask;
-    document.getElementById('pdesc').textContent='';
+    document.getElementById('pdesc').textContent = (prob.goal==='tsume') ? 'Each of your moves must be check. After each, the defender plays its toughest reply.' : '';
     var fb=document.getElementById('fb'); fb.textContent=''; fb.className='fb';
     renderHand(); paint();
   }
   function renderHand(){
     var h=document.getElementById('hand'); h.innerHTML='';
-    if(prob.hand && prob.hand.length){ var lbl=document.createElement('span'); lbl.className='lbl'; lbl.textContent='持ち駒 in hand:'; h.appendChild(lbl);
-      prob.hand.forEach(function(t,i){ var b=document.createElement('div'); b.className='hp'+(sel&&sel.hand===i?' sel':''); b.textContent=GLYPH[t];
-        (function(ii){ b.onclick=function(){ if(locked) return; sel={hand:ii, type:prob.hand[ii]}; paint(); }; })(i); h.appendChild(b); }); }
+    var myHand = isTsumeGoal() ? prob.live.hand.P : (prob.hand||[]);
+    if(myHand && myHand.length){ var lbl=document.createElement('span'); lbl.className='lbl'; lbl.textContent='持ち駒 in hand:'; h.appendChild(lbl);
+      myHand.forEach(function(t,i){ var b=document.createElement('div'); b.className='hp'+(sel&&sel.hand===i?' sel':''); b.textContent=GLYPH[t];
+        (function(ii,tt){ b.onclick=function(){ if(locked) return; sel={hand:ii, type:tt}; paint(); }; })(i,t); h.appendChild(b); }); }
+    if(isTsumeGoal() && prob.live.hand.E && prob.live.hand.E.length){
+      var lbl2=document.createElement('span'); lbl2.className='lbl'; lbl2.style.marginLeft='8px'; lbl2.textContent='敵 enemy:'; h.appendChild(lbl2);
+      prob.live.hand.E.forEach(function(t){ var b=document.createElement('div'); b.className='hp'; b.style.transform='rotate(180deg)'; b.style.color='var(--enemy)'; b.style.cursor='default'; b.textContent=GLYPH[t]; h.appendChild(b); });
+    }
   }
   function paint(){
+    var B=probBoard();
     for(var k in cells){ var cell=cells[k]; cell.className='cell'; cell.textContent=''; }
-    for(var k2 in prob.board){ var pc=prob.board[k2]; var cell2=cells[k2]; cell2.textContent=GLYPH[pc.t];
+    for(var k2 in B){ var pc=B[k2]; var cell2=cells[k2]; cell2.textContent=GLYPH[pc.t];
       cell2.classList.add('pc'); cell2.classList.add(pc.s==='P'?'me':'enemy'); }
     if(prob.kind==='move'){ cells[prob.subj].classList.add('subj');
       for(var mk in marks){ if(marks[mk]) cells[mk].classList.add('sel'); }
     }
-    if(prob.goal==='capture'||prob.goal==='check'||prob.goal==='mate'){ cells[prob.enemyKey].classList.add(prob.goal==='capture'?'subj':'subj'); }
+    if(prob.goal==='capture'||prob.goal==='check'||isTsumeGoal()){ if(cells[prob.enemyKey]) cells[prob.enemyKey].classList.add('subj'); }
+    if(lastMv){ if(cells[lastMv.from]) cells[lastMv.from].classList.add('lastmv'); if(cells[lastMv.to]) cells[lastMv.to].classList.add('lastmv'); }
     // selection highlights for play mode
     if(prob.kind==='play' && sel){
       var dests=[];
-      if(sel.hand!=null){ dests=dropDests(prob.board, sel.type, 'P'); }
-      else if(sel.from){ var p=rc(sel.from); dests=destsFor(prob.board,p[0],p[1]).filter(function(d){ return d!==prob.enemyKey || prob.goal==='capture'; });
+      if(sel.hand!=null){ dests = isTsumeGoal() ? dropDests(B, sel.type, 'P') : dropDests(B, sel.type, 'P'); }
+      else if(sel.from){ var p=rc(sel.from); dests=destsFor(B,p[0],p[1]).filter(function(d){ return isTsumeGoal() || d!==prob.enemyKey || prob.goal==='capture'; });
         cells[sel.from].classList.add('sel'); }
-      dests.forEach(function(d){ cells[d].classList.add('dest'); if(prob.board[d]&&prob.board[d].s==='E') cells[d].classList.add('cap'); });
+      dests.forEach(function(d){ if(!cells[d]) return; cells[d].classList.add('dest'); if(B[d]&&B[d].s==='E') cells[d].classList.add('cap'); });
     }
   }
 
   function onCell(r,c){
-    if(locked) return; var k=key(r,c);
+    if(locked) return; var k=key(r,c); var B=probBoard();
     if(prob.kind==='move'){ if(k===prob.subj) return; marks[k]=!marks[k]; paint(); return; }
     // play mode
-    var pc=prob.board[k];
+    var pc=B[k];
     if(sel && (sel.from || sel.hand!=null)){
-      // try to commit to k as destination
-      var dests = sel.hand!=null ? dropDests(prob.board, sel.type, 'P')
-                : destsFor(prob.board, rc(sel.from)[0], rc(sel.from)[1]);
-      if(dests.indexOf(k)>=0 && (k!==prob.enemyKey || prob.goal==='capture')){ commitMove(sel.hand!=null?{kind:'drop',type:sel.type,to:k}:{kind:'move',from:sel.from,to:k}); return; }
+      var dests = sel.hand!=null ? dropDests(B, sel.type, 'P')
+                : destsFor(B, rc(sel.from)[0], rc(sel.from)[1]);
+      var allow = dests.indexOf(k)>=0;
+      if(!isTsumeGoal()) allow = allow && (k!==prob.enemyKey || prob.goal==='capture');
+      if(allow){
+        if(isTsumeGoal()) tsumeCommit(sel.hand!=null?{drop:sel.type,to:k}:{from:sel.from,to:k});
+        else commitMove(sel.hand!=null?{kind:'drop',type:sel.type,to:k}:{kind:'move',from:sel.from,to:k});
+        return;
+      }
     }
     if(pc && pc.s==='P'){ sel={from:k}; paint(); renderHand(); return; }
     sel=null; paint(); renderHand();
+  }
+
+  /* ---- real-defender mate (1) and tsume (3) ---- */
+  function tsumeAcceptMove(m){
+    var st0=prob.live, cands=[];
+    if(m.drop){ cands=[{drop:m.drop, to:m.to}]; }
+    else { var pc=st0.b[m.from], pf=rc(m.from), pt=rc(m.to);
+      var canP=canPromoteT(pc.t)&&(inZone(pf[0],'P')||inZone(pt[0],'P')), forced=mustPromote(pc.t, pt[0],'P');
+      if(forced) cands=[{from:m.from,to:m.to,promote:true}];
+      else { cands=[{from:m.from,to:m.to,promote:false}]; if(canP) cands.push({from:m.from,to:m.to,promote:true}); } }
+    for(var i=0;i<cands.length;i++){ var cm=cands[i]; var pos1=applyFull(st0, cm);
+      if(!inCheck(pos1.b,'E')) continue;                       // must give check
+      var escapes=defenderEscapes(pos1);
+      if(escapes.length===0){ if(cm.drop==='P') continue;       // uchifuzume: pawn-drop mate is illegal
+        return {result:'mate', move:cm, pos:pos1}; }
+      if(prob.rem<=1) continue;                                 // had to mate now, didn't
+      var allMate=true;
+      for(var e=0;e<escapes.length;e++){ if(!solveTsume(applyFull(pos1, escapes[e]), prob.rem-1)){ allMate=false; break; } }
+      if(allMate) return {result:'continue', move:cm, pos:pos1};
+    }
+    return {result:'no'};
+  }
+  function tsumeCommit(m){
+    var fb=document.getElementById('fb');
+    var res=tsumeAcceptMove(m);
+    if(res.result==='no'){ fb.textContent = (prob.goal==='mate') ? 'おしい — give check with no escape for the King.' : 'おしい — that doesn’t force mate. Every move must check and keep the net closed.'; fb.className='fb no'; sel=null; paint(); renderHand(); return; }
+    // apply the player's move
+    prob.live=res.pos; prob.board=prob.live.b; lastMv = res.move.drop ? {from:res.move.to,to:res.move.to} : {from:res.move.from,to:res.move.to};
+    prob.enemyKey=findKing(prob.live.b,'E')||prob.enemyKey; sel=null;
+    if(res.result==='mate'){ locked=true; paint(); markCells([res.move.to],'correct'); fb.textContent='詰み！ Checkmate.'; fb.className='fb ok'; onSolved(); afterSolveButton(); return; }
+    // continue: defender plays its toughest legal reply
+    var dm=tsumeBestDefense(prob.live, prob.rem-1);
+    prob.rem-=1;
+    if(dm){ prob.live=applyFull(prob.live, dm); prob.board=prob.live.b; lastMv = dm.drop ? {from:dm.to,to:dm.to} : {from:dm.from,to:dm.to}; prob.enemyKey=findKing(prob.live.b,'E')||prob.enemyKey; }
+    paint(); renderHand();
+    fb.textContent='王手！ Check — the King answers. Find the next blow ('+prob.rem+' to go).'; fb.className='fb';
   }
 
   function commitMove(m){
@@ -756,16 +1166,25 @@ if (RUN_UI) (function(){
   function flashDecode(i){ renderCodex(); var segs=document.querySelectorAll('#codex .seg'); if(segs[i]){ segs[i].classList.add('justdec'); segs[i].scrollIntoView({block:'nearest'}); } }
   function celebrate(){ var ov=document.getElementById('ov'); document.getElementById('ov-jp').textContent='免許皆伝';
     document.getElementById('ov-title').textContent='The island opens'; document.getElementById('ov-msg').textContent='You have decoded the codex and learned the pieces, the drops, and the mate.';
-    document.getElementById('ov-sub').textContent='A hidden match — Catch the Lion — is now unlocked below.'; ov.classList.remove('hidden'); }
+    document.getElementById('ov-sub').textContent='A hidden match — Catch the Lion — is now unlocked below. Reach '+MATCH_UNLOCK_AT+' solves to open the full 9×9 match.'; ov.classList.remove('hidden'); }
 
   function showMe(){
     if(prob.goal==='move'){ return; }
-    var s = prob.solutions && prob.solutions[0]; if(!s) return; locked=true;
+    locked=true; var fb=document.getElementById('fb');
+    if(isTsumeGoal()){
+      var f = prob.firsts && prob.firsts[0]; if(!f){ return; }
+      if(f.drop){ if(cells[f.to]) cells[f.to].classList.add('hint'); fb.textContent='教えて — drop '+(NAME[f.drop]||'').split(' ')[0]+' on '+sqName(f.to)+(prob.goal==='tsume'?' (the key move)':''); }
+      else { if(cells[f.from]) cells[f.from].classList.add('hint'); if(cells[f.to]) cells[f.to].classList.add('hint');
+        fb.textContent='教えて — '+(NAME[prob.live.b[f.from] ? prob.live.b[f.from].t : 'P']||'').split(' ')[0]+' to '+sqName(f.to)+(f.promote?' (promote)':'')+(prob.goal==='tsume'?' (the key move)':''); }
+      fb.className='fb'; afterSolveButton(); return;
+    }
+    var s = prob.solutions && prob.solutions[0]; if(!s) return;
     if(s.kind==='move'){ cells[s.from].classList.add('hint'); cells[s.to].classList.add('hint'); }
     else { cells[s.to].classList.add('hint'); }
-    var fb=document.getElementById('fb'); fb.textContent='教えて — '+(s.kind==='drop'?('drop '+NAME[s.type].split(' ')[0]+' there'):('move '+ (NAME[prob.board[s.from].t]||'').split(' ')[0] +' there')); fb.className='fb';
+    fb.textContent='教えて — '+(s.kind==='drop'?('drop '+NAME[s.type].split(' ')[0]+' there'):('move '+ (NAME[prob.board[s.from].t]||'').split(' ')[0] +' there')); fb.className='fb';
     afterSolveButton();  // lets you move on (no solve credit)
   }
+  function sqName(k){ var p=rc(k); return (9-p[1])+''+'abcdefghi'.charAt(p[0]); }
 
   document.getElementById('action').onclick=function(){
     if(this.dataset.next==='1'){ this.dataset.next=''; newProblem(); return; }
@@ -811,6 +1230,82 @@ if (RUN_UI) (function(){
   function endDob(){ var s=document.getElementById('dob-status'); s.textContent = dob.winner==='P' ? '🎉 You caught the Lion — you win!' : 'The enemy caught your Lion. Try again!'; dbusy=true; }
   document.getElementById('dob-new').onclick=newDob;
   document.getElementById('dob-close').onclick=function(){ document.getElementById('dobutsu').classList.add('hidden'); };
+
+  /* ---- Full 9×9 match UI ---- */
+  var M=null, msel=null, mbusy=false, mlast=null, mpending=null;
+  var mboardEl=document.getElementById('m-board'), mcells={};
+  for(var mr=0;mr<9;mr++) for(var mc=0;mc<9;mc++){ var mcell=document.createElement('div'); mcell.className='m-cell';
+    (function(rr,cc){ mcell.onclick=function(){ matchClick(rr,cc); }; })(mr,mc); mboardEl.appendChild(mcell); mcells[key(mr,mc)]=mcell; }
+  function openMatch(){ document.getElementById('match').classList.remove('hidden'); newMatch(); }
+  function newMatch(){ M=matchStart(); msel=null; mbusy=false; mlast=null; mpending=null;
+    document.getElementById('m-promo').style.display='none';
+    setMStatus('Your move — you are ▲ (bottom). Tap a piece, then its target.'); drawMatch(); }
+  function setMStatus(t){ document.getElementById('m-status').textContent=t; }
+  function handCounts(arr){ var m={}; arr.forEach(function(t){ m[t]=(m[t]||0)+1; }); return m; }
+  function drawMatch(){
+    for(var k in mcells){ var c=mcells[k]; c.className='m-cell'; c.textContent=''; }
+    for(var k2 in M.b){ var pc=M.b[k2], cell=mcells[k2]; cell.textContent=GLYPH[pc.t]; cell.classList.add(pc.s==='P'?'me':'enemy'); }
+    if(mlast){ if(mcells[mlast.from]) mcells[mlast.from].classList.add('last'); if(mcells[mlast.to]) mcells[mlast.to].classList.add('last'); }
+    // mark a king in check
+    if(inCheck(M.b,'P')){ var pk=findKing(M.b,'P'); if(pk) mcells[pk].classList.add('chk'); }
+    if(inCheck(M.b,'E')){ var ek=findKing(M.b,'E'); if(ek) mcells[ek].classList.add('chk'); }
+    if(msel){
+      if(msel.from){ mcells[msel.from].classList.add('sel'); var p=rc(msel.from);
+        destsFor(M.b,p[0],p[1]).forEach(function(d){ mcells[d].classList.add('dest'); if(M.b[d]&&M.b[d].s==='E') mcells[d].classList.add('cap'); }); }
+      else if(msel.type){ for(var r=0;r<9;r++) for(var c=0;c<9;c++){ var kk=key(r,c); if(M.b[kk]) continue;
+        if(dropDead(msel.type,r,'P')) continue; if(msel.type==='P'&&nifu(M.b,c,'P')) continue; mcells[kk].classList.add('dest'); } }
+    }
+    // hands
+    var ph=document.getElementById('m-hand-p'); ph.innerHTML=''; var pc2=handCounts(M.hand.P), order=['R','B','G','S','N','L','P'];
+    order.forEach(function(t){ if(!pc2[t]) return; var b=document.createElement('div'); b.className='hp'+(msel&&msel.type===t?' sel':''); b.innerHTML=GLYPH[t]+(pc2[t]>1?'<span class="ct">'+pc2[t]+'</span>':'');
+      b.onclick=function(){ if(mbusy||M.over) return; msel={type:t}; drawMatch(); }; ph.appendChild(b); });
+    var eh=document.getElementById('m-hand-e'); eh.innerHTML=''; var ec=handCounts(M.hand.E);
+    order.forEach(function(t){ if(!ec[t]) return; var b=document.createElement('div'); b.className='hp'; b.innerHTML=GLYPH[t]+(ec[t]>1?'<span class="ct">'+ec[t]+'</span>':''); eh.appendChild(b); });
+  }
+  function matchClick(r,c){
+    if(mbusy || (M&&M.over) || M.turn!=='P' || mpending) return; var k=key(r,c), pc=M.b[k];
+    if(msel){
+      if(msel.from){ var p=rc(msel.from), ds=destsFor(M.b,p[0],p[1]);
+        if(ds.indexOf(k)>=0){ tryPlayerMove(msel.from, k); return; } }
+      else if(msel.type){ // drop
+        if(!M.b[k] && !dropDead(msel.type,r,'P') && !(msel.type==='P'&&nifu(M.b,c,'P'))){
+          var dm={drop:msel.type, to:k}; if(!moveIsLegal(dm)){ setMStatus('That drop is illegal (it would expose your King, double pawn, or a pawn-drop mate).'); return; }
+          msel=null; doPlayerMove(dm); return; } }
+    }
+    if(pc && pc.s==='P'){ msel={from:k}; drawMatch(); return; }
+    msel=null; drawMatch();
+  }
+  function moveIsLegal(m){ var lg=legalMoves(M); return lg.some(function(L){ return (L.drop&&m.drop)?(L.drop===m.drop&&L.to===m.to):(!L.drop&&!m.drop&&L.from===m.from&&L.to===m.to&&!!L.promote===!!m.promote); }); }
+  function tryPlayerMove(from, to){
+    var piece=M.b[from], pf=rc(from), pt=rc(to);
+    var canP=canPromoteT(piece.t)&&(inZone(pf[0],'P')||inZone(pt[0],'P')), forced=mustPromote(piece.t, pt[0],'P');
+    if(forced){ msel=null; doPlayerMove({from:from,to:to,promote:true}); return; }
+    if(canP){ mpending={from:from,to:to}; msel=null; drawMatch(); document.getElementById('m-promo').style.display='flex';
+      setMStatus('Promote the piece?'); return; }
+    msel=null; doPlayerMove({from:from,to:to,promote:false});
+  }
+  function doPlayerMove(m){
+    if(!moveIsLegal(m)){ setMStatus('Illegal — that would leave your King in check.'); msel=null; drawMatch(); return; }
+    M=applyFull(M, m); mlast = m.drop ? {from:m.to,to:m.to} : {from:m.from,to:m.to}; msel=null; drawMatch();
+    if(checkMatchEnd()) return;
+    mbusy=true; setMStatus('…AI is thinking');
+    setTimeout(function(){ var am=aiMoveFull(M, 2, 60000);
+      if(!am){ checkMatchEnd(); return; }
+      M=applyFull(M, am); mlast = am.drop ? {from:am.to,to:am.to} : {from:am.from,to:am.to}; drawMatch();
+      if(checkMatchEnd()) return; mbusy=false; setMStatus(inCheck(M.b,'P')?'王手 — you are in check!':'Your move.'); }, 220);
+  }
+  function checkMatchEnd(){
+    var lg=legalMoves(M);
+    if(lg.length===0){ M.over=true; mbusy=true;
+      if(M.turn==='P'){ setMStatus(inCheck(M.b,'P')?'詰み — checkmate. The island AI wins. Try again!':'Stalemate — no legal move.'); }
+      else { setMStatus('🎉 詰み — checkmate! You beat the island AI.'); if(typeof window!=='undefined'&&window.PJCC){ try{ PJCC.saveScore('shogi-island', st.solved, {credits:3, data:{matchWin:true}}); }catch(e){} } }
+      return true; }
+    return false;
+  }
+  document.getElementById('m-promo-yes').onclick=function(){ document.getElementById('m-promo').style.display='none'; var m=mpending; mpending=null; if(m) doPlayerMove({from:m.from,to:m.to,promote:true}); };
+  document.getElementById('m-promo-no').onclick=function(){ document.getElementById('m-promo').style.display='none'; var m=mpending; mpending=null; if(m) doPlayerMove({from:m.from,to:m.to,promote:false}); };
+  document.getElementById('m-new').onclick=newMatch;
+  document.getElementById('m-close').onclick=function(){ document.getElementById('match').classList.add('hidden'); };
 
   /* ---- boot ---- */
   // merge server best if higher

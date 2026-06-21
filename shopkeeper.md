@@ -79,7 +79,7 @@ permalink: /shopkeeper/
     // Profile themes (Dossier accent)
     var ownedThemes = PJCC.ownedThemes(prof);
     var equippedTheme = (prof.companion && prof.companion.theme) || 'default';
-    html += '<h2 class="qm-h">Profile themes</h2><div class="qm-grid">';
+    html += '<h2 class="qm-h">Board skins &amp; themes</h2><p class="pjcc-sub" style="margin:0 0 8px;">Recolours your Dossier — and now skins the gold chrome inside the games too.</p><div class="qm-grid">';
     PJCC.THEME_SHOP.forEach(function (key) {
       var t = PJCC.THEMES[key];
       var owned = ownedThemes.indexOf(key) !== -1;

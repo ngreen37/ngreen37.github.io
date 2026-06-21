@@ -97,7 +97,7 @@ permalink: /characters/
   <div class="piece-card">
     <div class="piece-symbol">&#9823;</div>
     <div class="piece-name">Pawn</div>
-    <p class="piece-desc">The foot soldier. Dogs in the PJCC world are measured in pawns — the base unit of scale. Common, essential, and quietly capable of becoming anything on the board.</p>
+    <p class="piece-desc">The foot soldier. Common, essential, and quietly capable of becoming anything on the board.</p>
   </div>
 
   <div class="piece-card">

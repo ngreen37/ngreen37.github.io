@@ -143,6 +143,27 @@ jukebox: true
   </div>
 
   <div class="project-card project-card-featured">
+    <div class="featured-ribbon">NEW · PLAYABLE</div>
+    <div class="project-card-corner-piece" aria-hidden="true">♞</div>
+    <div class="project-card-header">
+      <span class="project-status project-status-done">
+        <span class="project-status-dot"></span>
+        Completed (pending improvements)
+      </span>
+      <h2 class="project-title">Sky Run <span class="ver">v1.0</span></h2>
+    </div>
+    <p class="project-desc">A chess-Bloons sky shooter: Princess flies town to town toward Chess City, popping the pieces that fall from above. Collect Bishop (X-shot), Knight (escorts), and Queen (super-shot) power-ups, build a combo to charge the King's pawn-summon, and break each region's boss — with the CEO's Office waiting at the very top. Built to port to the Blender/Godot 3D path.</p>
+    <ul class="project-details">
+      <li><strong>Format:</strong> Browser game (canvas)</li>
+      <li><strong>Status:</strong> Playable — balance &amp; content tuning to come</li>
+    </ul>
+    <div class="project-links">
+      <a href="/games/sky-run/" class="project-link project-link-play">▶ PLAY NOW</a>
+      <a href="/games/" class="project-link">All Games</a>
+    </div>
+  </div>
+
+  <div class="project-card project-card-featured">
     <div class="featured-ribbon">PLAYABLE NOW</div>
     <div class="project-card-corner-piece" aria-hidden="true">♚</div>
     <div class="project-card-header">
@@ -286,7 +307,7 @@ jukebox: true
         <span class="project-status-dot"></span>
         Completed (pending improvements)
       </span>
-      <h2 class="project-title">Notation Blitz <span class="ver">v3.3</span></h2>
+      <h2 class="project-title">Notation Blitz <span class="ver">v3.4</span></h2>
     </div>
     <p class="project-desc">A coordinate-reading rhythm game set in the streets of Checker Town. Square names drop on the beat — click them before they pass the gate. Forgiving timing, an approach ring that tells you exactly when to hit, saved personal bests, and a Pirc Defense mode that traces the Rival's opening move by move.</p>
     <ul class="project-details">
@@ -365,8 +386,9 @@ jukebox: true
 <h2 class="games-index-heading">All Games</h2>
 <ul class="games-index">
   <li><a href="/games/dungeon/">Princess Dungeon</a> <span class="games-index-note">— in development</span></li>
-  <li><a href="/games/notation-run/">Notation Blitz <span class="ver">v3.3</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/notation-run/">Notation Blitz <span class="ver">v3.4</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/space-run/">Space Run</a> <span class="games-index-note">— in development</span></li>
+  <li><a href="/games/sky-run/">Sky Run <span class="ver">v1.0</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/pirc-protocol/">The Pirc Protocol <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/fork-in-the-road/">Fork in the Road <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/sand-mine-depths/">Sand Mine Depths <span class="ver">v2.2</span></a> <span class="games-index-done">Completed</span></li>

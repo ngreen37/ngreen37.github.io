@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PJCC: Notation Blitz v3.2</title>
+<title>PJCC: Notation Blitz v3.4</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -15,6 +15,8 @@
     font-family: 'Courier New', monospace;
     overflow: hidden;
     height: 100%;
+    user-select: none; -webkit-user-select: none; -moz-user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
@@ -177,10 +179,6 @@
   #bpm-slider { width: 190px; accent-color: #F5C518; }
   #bpm-label { font-size: 13px; color: #c9a7ff; min-width: 62px; text-align: left; }
   .pick.on { background: #F5C518; color: #1a0f3d; border-color: #F5C518; font-weight: bold; }
-  #calib-dot { width: 96px; height: 96px; border-radius: 50%; background: #2D1B69; border: 3px solid #F5C518;
-    cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 34px; color: #c9a7ff;
-    transition: transform .07s, background .07s; user-select: none; }
-  #calib-dot.beat { background: #F5C518; color: #1a0f3d; transform: scale(1.14); }
 </style>
 </head>
 <body>
@@ -191,12 +189,13 @@
   <!-- TITLE SCREEN -->
   <div class="overlay" id="title-screen">
     <div class="ov-eyebrow" id="ov-eyebrow">Checker Town · Coordinate Drill</div>
-    <div class="ov-title">NOTATION BLITZ <span class="ver" id="ov-ver">v3.3</span></div>
+    <div class="ov-title">NOTATION BLITZ <span class="ver" id="ov-ver">v3.4</span></div>
 
     <div class="ov-group-label">Mode</div>
     <div class="btn-row" id="mode-row">
       <button class="pick sel" data-mode="coords">Drill<small>fixed run</small></button>
       <button class="pick" data-mode="endless">Endless<small>ramps up</small></button>
+      <button class="pick" data-mode="extreme">Extreme<small>board flips!</small></button>
     </div>
 
     <div class="ov-group-label">Tempo</div>
@@ -212,7 +211,6 @@
 
     <div class="btn-row" style="margin-top:10px;">
       <button class="pick" id="black-toggle" data-on="0">⬛⬜ Black side · 2-Tone</button>
-      <button class="pick" id="calib-btn">🎧 Calibrate</button>
     </div>
 
     <button class="start-btn" id="start-btn">START</button>
@@ -224,19 +222,6 @@
     </div>
   </div>
 
-  <!-- CALIBRATION SCREEN -->
-  <div class="overlay hidden" id="calib-screen">
-    <div class="ov-eyebrow">Audio + input latency</div>
-    <div class="ov-title" style="font-size:26px;">CALIBRATE</div>
-    <div class="ov-sub" id="calib-msg">Tap the dot exactly <b>on</b> each beep — eight times. We measure your delay and judge your hits against it.</div>
-    <div id="calib-dot">●</div>
-    <div class="ov-foot"><span id="calib-count">0 / 8</span><br><span id="calib-result" style="color:#6bffb8;"></span></div>
-    <div class="btn-row" style="margin-top:14px;">
-      <button class="pick" id="calib-start">▶ Start beeps</button>
-      <button class="pick" id="calib-reset">Reset to 0</button>
-      <button class="start-btn" id="calib-done" style="margin-top:0;">DONE</button>
-    </div>
-  </div>
 
   <!-- RESULTS SCREEN -->
   <div class="overlay hidden" id="results-screen">
@@ -311,6 +296,11 @@ const THEMES = {
   ska:    { name: '2-tone', light: '#e9e9e9', dark: '#141414', bg: '#050505', accent: '#ffffff', rgb: '255,255,255' },
 };
 let TH = THEMES.medium;     // active theme (set per game in newGame)
+function applyTheme(key) {
+  TH = THEMES[key] || THEMES.medium;
+  COLORS.gold = TH.accent; COLORS.light = TH.light; COLORS.dark = TH.dark;
+  try { canvas.style.background = TH.bg; document.body.style.background = TH.bg; } catch (e) {}
+}
 
 const CLIFF_X = 34;         // missed calls tumble off the cliff here, short of the edge
 
@@ -410,15 +400,14 @@ function rampUp() {
 
 function newGame(mode, diff) {
   const endless = (mode === 'endless');
+  const extreme = (mode === 'extreme');
   const bpm = selBpm, bpc = 2;
-  // Theme: tempo palette, or the stark 2-Tone skin when Black side is armed.
-  TH = THEMES[selBlack ? 'ska' : diff] || THEMES.medium;
-  COLORS.gold = TH.accent; COLORS.light = TH.light; COLORS.dark = TH.dark;
-  try { canvas.style.background = TH.bg; document.body.style.background = TH.bg; } catch (e) {}
+  // Theme: tempo palette, the 2-Tone Black skin, or (Extreme) the White-side palette to start.
+  applyTheme(extreme ? diff : (selBlack ? 'ska' : diff));
   const spb = 60 / bpm;
   const queue = [];
-  if (mode === 'coords' || endless) {
-    let prev = -1, n = endless ? 40 : bpmCalls(bpm);
+  if (mode === 'coords' || endless || extreme) {
+    let prev = -1, n = endless ? 40 : (extreme ? 30 : bpmCalls(bpm));
     for (let i = 0; i < n; i++) { const c = randCoordCall(prev); prev = c.y*8 + c.x; queue.push(c); }
   } else {
     OPENINGS[mode].line.forEach(([san, sq]) => { const p = algToXY(sq); queue.push({ san, x: p.x, y: p.y }); });
@@ -426,7 +415,8 @@ function newGame(mode, diff) {
   const callInterval = spb * bpc;
 
   G = {
-    mode, diff, endless, spb, bpc, bpm, flip: selBlack, latency: audioLatency,
+    mode, diff, endless, extreme, spb, bpc, bpm, flip: (extreme ? false : selBlack),
+    flipAtBeat: 0, flipBanner: null, flips: 0,
     goodW: callInterval * GOOD_FRAC, perfectW: callInterval * PERFECT_FRAC,
     countIn: 4, queue, qPtr: 0, calls: [], callBeat: 4, beepIdx: 0, startTime: 0,
     total: endless ? Infinity : queue.length,
@@ -449,6 +439,17 @@ function boardCenter(x, y) {
   return { x: BX + sc * TILE + TILE / 2, y: BY + sr * TILE + TILE / 2 };
 }
 function setEmote(e, frames) { if (G) { G.princess.emote = e; G.princess.emoteT = frames || 70; } }
+
+// Extreme mode: flip the board's perspective (White ⟲ Black). The theme shifts so you can feel the side.
+function doFlip(curBeat) {
+  G.flip = !G.flip; G.flips++;
+  applyTheme(G.flip ? 'ska' : G.diff);
+  G.flipBanner = { text: G.flip ? 'BLACK ▼' : 'WHITE ▲', side: G.flip, life: 72 };
+  G.shake = Math.min(18, G.shake + 9); setEmote('🔄', 50);
+  const pp = boardCenter(G.princess.tx, G.princess.ty); G.princess.px = pp.x; G.princess.py = pp.y;
+  G.flipAtBeat = curBeat + 5 + (Math.random() * 3 | 0);   // next flip in 5–7 beats
+  sfx('good');
+}
 
 function startRun() {
   G.startTime = nowSec() + 0.35;     // small lead-in
@@ -483,6 +484,12 @@ function update() {
     G.callBeat += G.bpc;
   }
   if (!G.begun && G.calls.length) G.begun = true;
+  // Extreme mode: flip the board's perspective every 5–7 beats so you must re-orient.
+  if (G.extreme && G.begun) {
+    const beat = (now - G.startTime) / G.spb;
+    if (G.flipAtBeat === 0) G.flipAtBeat = Math.floor(beat) + 5 + (Math.random() * 3 | 0);
+    else if (beat >= G.flipAtBeat) doFlip(Math.floor(beat));
+  }
   if (G.endless) {
     if (G.queue.length - G.qPtr < 12) refillEndless();
     if (G.qPtr >= G.rampAt) { rampUp(); G.rampAt += 16; }
@@ -547,6 +554,7 @@ function update() {
   G.scoreFlash *= 0.9;
   G.shake *= 0.86;
   if (G.milestone) { G.milestone.life--; if (G.milestone.life <= 0) G.milestone = null; }
+  if (G.flipBanner) { G.flipBanner.life--; if (G.flipBanner.life <= 0) G.flipBanner = null; }
   if (G.combo >= 15) { if (Math.random() < 0.45) spawnBolt(); if (Math.random() < 0.3) spawnBolt(); }
   else if (G.combo >= 10 && Math.random() < 0.1) spawnBolt();
   G.bolts = G.bolts.filter(b => { b.life--; return b.life > 0; });
@@ -592,7 +600,7 @@ function registerResult(kind, call, base) {
 // ---- Input handling ----
 function resolveAt(sqx, sqy) {
   if (!G || !G.running) return;
-  const now = nowSec() - (G.latency || 0);   // judge against your calibrated input delay
+  const now = nowSec();
   // Nearest pending call within the good window
   let best = null, bestDt = Infinity;
   G.calls.forEach(c => {
@@ -1097,6 +1105,26 @@ function drawHUD() {
     ctx.globalAlpha = 1;
   }
 
+  // Extreme: which side am I facing? — a persistent chip above the board + a big flip flash
+  if (G.extreme) {
+    const txt = G.flip ? '▼ FACING BLACK' : '▲ FACING WHITE';
+    ctx.font = 'bold 13px Courier New'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const w = ctx.measureText(txt).width + 22;
+    ctx.fillStyle = G.flip ? '#111111' : 'rgba(' + TH.rgb + ',0.92)';
+    ctx.fillRect(W / 2 - w / 2, BY - 46, w, 22);
+    ctx.strokeStyle = G.flip ? '#ffffff' : COLORS.gold; ctx.lineWidth = 1.5; ctx.strokeRect(W / 2 - w / 2, BY - 46, w, 22);
+    ctx.fillStyle = G.flip ? '#ffffff' : '#1a0f3d'; ctx.fillText(txt, W / 2, BY - 35);
+  }
+  if (G.flipBanner) {
+    const a = Math.min(1, G.flipBanner.life / 72);
+    ctx.save(); ctx.globalAlpha = a;
+    ctx.fillStyle = G.flipBanner.side ? '#ffffff' : COLORS.gold;
+    ctx.font = 'bold 34px Courier New'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 18;
+    ctx.fillText('⟲ ' + G.flipBanner.text, W / 2, BY + BOARD / 2);
+    ctx.restore(); ctx.globalAlpha = 1;
+  }
+
   // Count-in banner (only before the first call; not after an endless ramp re-anchor)
   const now = nowSec();
   if (G.running && !G.begun && now < G.startTime + G.countIn * G.spb) {
@@ -1118,14 +1146,13 @@ function loop() {
 // ---- Screens / flow ----
 let selMode = 'coords', selDiff = 'medium', selBpm = 60, selBlack = false;
 const DIFF_BPM = { easy: 43, medium: 60, hard: 94 };
-const LAT_KEY = 'pjcc.notation.latency', TREND_KEY = 'pjcc.notation.trend.v1';
-let audioLatency = (function () { try { return parseFloat(localStorage.getItem(LAT_KEY)) || 0; } catch (e) { return 0; } })(); // seconds, + = you tap late
+const TREND_KEY = 'pjcc.notation.trend.v1';
 function bucketOf(bpm) { return bpm < 52 ? 'easy' : bpm <= 78 ? 'medium' : 'hard'; }
 function bpmCalls(bpm) { return bpm < 52 ? 18 : bpm <= 78 ? 22 : 28; }
 function loadTrend() { try { return JSON.parse(localStorage.getItem(TREND_KEY)) || []; } catch (e) { return []; } }
 function saveTrend(a) { try { localStorage.setItem(TREND_KEY, JSON.stringify(a.slice(-20))); } catch (e) {} }
 
-function modeName(mode) { return mode === 'coords' ? 'Coordinates' : mode === 'endless' ? 'Endless' : (OPENINGS[mode] ? OPENINGS[mode].label : 'Coordinates'); }
+function modeName(mode) { return mode === 'coords' ? 'Coordinates' : mode === 'endless' ? 'Endless' : mode === 'extreme' ? 'Extreme' : (OPENINGS[mode] ? OPENINGS[mode].label : 'Coordinates'); }
 function updateTitleBest() {
   const key = selMode + '_' + selDiff + (selBlack ? '_b' : '');
   const best = loadBests()[key];
@@ -1141,7 +1168,7 @@ if (modeRow) modeRow.addEventListener('click', e => {
   const b = e.target.closest('[data-mode]'); if (!b) return;
   selMode = b.dataset.mode;
   document.querySelectorAll('#mode-row .pick').forEach(p => p.classList.toggle('sel', p === b));
-  updateTitleBest();
+  setEyebrow(); updateTitleBest();
 });
 function setDiffHighlight() { document.querySelectorAll('#diff-row .pick').forEach(p => p.classList.toggle('sel', p.dataset.diff === selDiff)); }
 function syncBpmUI() {
@@ -1151,7 +1178,9 @@ function syncBpmUI() {
 }
 function setEyebrow() {
   const e = document.getElementById('ov-eyebrow');
-  if (e) e.textContent = selBlack ? '2-Tone Drill · “A Message to you, Princess” 🎺' : 'Checker Town · Coordinate Drill';
+  if (!e) return;
+  if (selMode === 'extreme') e.textContent = 'EXTREME · the board keeps flipping ⟲';
+  else e.textContent = selBlack ? '2-Tone Drill · “A Message to you, Princess” 🎺' : 'Checker Town · Coordinate Drill';
 }
 document.getElementById('diff-row').addEventListener('click', e => {
   const b = e.target.closest('[data-diff]'); if (!b) return;
@@ -1166,49 +1195,7 @@ document.getElementById('black-toggle').addEventListener('click', function () {
   selBlack = !selBlack; this.dataset.on = selBlack ? '1' : '0'; this.classList.toggle('on', selBlack);
   setEyebrow(); newGame(selMode, selDiff); updateTitleBest();
 });
-document.getElementById('calib-btn').addEventListener('click', openCalib);
-
-// ---- Audio-latency calibration ----
-let calib = null;
-function openCalib() {
-  initAudio(); if (actx.state === 'suspended') actx.resume();
-  document.getElementById('title-screen').classList.add('hidden');
-  document.getElementById('calib-screen').classList.remove('hidden');
-  document.getElementById('calib-count').textContent = '0 / 8';
-  document.getElementById('calib-result').textContent = audioLatency ? ('current delay: ' + Math.round(audioLatency * 1000) + 'ms') : '';
-  calib = null;
-}
-function startCalib() {
-  if (!actx) return;
-  const t0 = actx.currentTime + 0.9, iv = 0.6;
-  calib = { beats: [], taps: [] };
-  for (let i = 0; i < 8; i++) {
-    const bt = t0 + i * iv; calib.beats.push(bt); beep(bt, true);
-    const delay = (bt - actx.currentTime) * 1000;
-    setTimeout(() => { const d = document.getElementById('calib-dot'); if (!d) return; d.classList.add('beat'); setTimeout(() => d.classList.remove('beat'), 110); }, Math.max(0, delay));
-  }
-  document.getElementById('calib-count').textContent = '0 / 8';
-  document.getElementById('calib-result').textContent = '';
-}
-function calibTap() {
-  if (!calib || !actx) return;
-  const t = actx.currentTime; let best = null, bd = Infinity;
-  calib.beats.forEach(bt => { const d = Math.abs(t - bt); if (d < bd) { bd = d; best = bt; } });
-  if (best === null || bd > 0.45) return;            // ignore taps nowhere near a beep
-  calib.taps.push(t - best);
-  document.getElementById('calib-count').textContent = calib.taps.length + ' / 8';
-  if (calib.taps.length >= 8) {
-    const s = calib.taps.slice().sort((a, b) => a - b), mid = s[Math.floor(s.length / 2)];
-    audioLatency = Math.max(-0.15, Math.min(0.35, mid));
-    try { localStorage.setItem(LAT_KEY, String(audioLatency)); } catch (e) {}
-    document.getElementById('calib-result').textContent = 'Your delay: ' + Math.round(audioLatency * 1000) + 'ms — saved. Hits now judge against it.';
-    calib = null;
-  }
-}
-document.getElementById('calib-dot').addEventListener('pointerdown', e => { e.preventDefault(); calibTap(); });
-document.getElementById('calib-start').addEventListener('click', startCalib);
-document.getElementById('calib-reset').addEventListener('click', () => { audioLatency = 0; try { localStorage.setItem(LAT_KEY, '0'); } catch (e) {} document.getElementById('calib-result').textContent = 'Reset to 0ms.'; });
-document.getElementById('calib-done').addEventListener('click', () => { document.getElementById('calib-screen').classList.add('hidden'); document.getElementById('title-screen').classList.remove('hidden'); calib = null; });
+// (Audio-latency calibration removed — unnecessary.)
 
 function updateTrend() {
   const tr = loadTrend(), el = document.getElementById('title-trend'); if (!el) return;

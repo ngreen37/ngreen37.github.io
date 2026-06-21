@@ -13,7 +13,7 @@ permalink: /games/
 
 <script>
 (function () {
-  var NAMES = { 'cipher': 'CIPHER', 'clearance-delta': 'Clearance: DELTA', 'notation-run': 'Notation Blitz', 'fork-in-the-road': 'Fork in the Road', 'sand-mine-depths': 'Sand Mine Depths', 'pirc-protocol': 'The Pirc Protocol', 'shogi-island': 'Shogi Island', 'tower-defense': 'Siege on Chess City' };
+  var NAMES = { 'cipher': 'CIPHER', 'clearance-delta': 'Clearance: DELTA', 'notation-run': 'Notation Blitz', 'fork-in-the-road': 'Fork in the Road', 'sand-mine-depths': 'Sand Mine Depths', 'pirc-protocol': 'The Pirc Protocol', 'shogi-island': 'Shogi Island', 'tower-defense': 'Siege on Chess City', 'sky-run': 'Sky Run' };
   function show() {
     if (!window.PJCC || !PJCC.bountyGame) return;
     var key = PJCC.bountyGame();
@@ -40,6 +40,15 @@ permalink: /games/
 
 <div class="games-grid">
 
+  <a class="game-card" href="{{ '/daily/' | relative_url }}">
+    <div class="game-card-icon">📡</div>
+    <div class="game-card-body">
+      <h2>Daily Dispatch</h2>
+      <p>One Dead Drop intercept a day — the same coded word for every operative. Crack it in as few tries as you can, climb today's board, and keep your dispatch streak alive. New drop at midnight.</p>
+      <span class="game-tag">Daily</span>
+    </div>
+  </a>
+
   <a class="game-card game-card-dim" href="{{ '/games/dungeon/' | relative_url }}">
     <div class="game-card-icon">♟</div>
     <div class="game-card-body">
@@ -52,8 +61,17 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/notation-run/' | relative_url }}">
     <div class="game-card-icon">♫</div>
     <div class="game-card-body">
-      <h2>Notation Blitz v3.3</h2>
-      <p>A rhythm drill for reading chess coordinates at speed — Endless ramp, a free BPM slider, latency calibration, and a board-flipped 2-Tone "Black side" mode.</p>
+      <h2>Notation Blitz v3.4</h2>
+      <p>A rhythm drill for reading chess coordinates at speed — Endless ramp, a free BPM slider, a board-flipped 2-Tone "Black side" mode, and a new ⟲ Extreme mode where the board keeps flipping White↔Black mid-run.</p>
+      <span class="game-tag">Playable</span>
+    </div>
+  </a>
+
+  <a class="game-card" href="{{ '/games/sky-run/' | relative_url }}">
+    <div class="game-card-icon">♞</div>
+    <div class="game-card-body">
+      <h2>Sky Run v1.0</h2>
+      <p>A chess-Bloons sky shooter. Princess flies town to town toward Chess City, popping the pieces that fall — grab Bishop/Knight/Queen power-ups, charge the King's pawn-summon, and break each region's boss. A secret office waits at the very top.</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>
@@ -70,8 +88,8 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/pirc-protocol/' | relative_url }}">
     <div class="game-card-icon">♚</div>
     <div class="game-card-body">
-      <h2>The Pirc Protocol v2.0</h2>
-      <p>An opening library. Learn real openings by playing the book moves — run a whole line, drill spot-cards, or face a boss exam mixing every variation. ECO codes + master-game citations on each card, and PGN export of your mastered lines.</p>
+      <h2>The Pirc Protocol v2.1</h2>
+      <p>An opening library. Learn real openings by playing the book moves — run a whole line, drill spot-cards, or face a boss exam mixing every variation. ECO codes + master-game citations, PGN export, and a new ☠ Blunder Traps deck of machine-verified forced mates.</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>
@@ -97,7 +115,7 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/cipher/' | relative_url }}">
     <div class="game-card-icon">⊙</div>
     <div class="game-card-body">
-      <h2>CIPHER v1.3</h2>
+      <h2>CIPHER v1.4</h2>
       <p>An operative decryption word game. Crack the five-letter code and the dispatch decrypts itself. Pick a pack (Openings · Endgame · Field Codes), spend 🔑 hint tokens, chase a guesses-and-time score, and unlock the weekly cryptogram.</p>
       <span class="game-tag">Playable</span>
     </div>
@@ -115,8 +133,8 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/shogi-island/' | relative_url }}">
     <div class="game-card-icon">将</div>
     <div class="game-card-body">
-      <h2>Shogi Island v3.0</h2>
-      <p>Learn shogi by solving — read the pieces, capture, give check, then mate. The guide begins in Japanese and decodes as you go, the island blooms, and getting far unlocks a hidden match: Catch the Lion.</p>
+      <h2>Shogi Island v3.1</h2>
+      <p>Learn shogi by solving — read the pieces, capture, give check, then real 詰将棋 tsume (forced mate-in-3 and mate-in-5). The guide begins in Japanese and decodes as you go; getting far unlocks Catch the Lion and a full 9×9 match vs the island AI.</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>
@@ -125,7 +143,7 @@ permalink: /games/
     <div class="game-card-icon">🏰</div>
     <div class="game-card-body">
       <h2>Siege on Chess City v2.0</h2>
-      <p>A four-front tower-defense campaign. Unlock new maps, place defenders (and a free-roaming Bishop Sniper), recruit Louie the Bomber, and spend City Crowns in the shop on permanent upgrades.</p>
+      <p>A four-front tower-defense campaign — now with an ♾ Endless survival mode + global wave board, a ❄ Frost Knight, map mutators for bonus Crowns, and bosses that summon adds and teleport. Place a free-roaming Bishop Sniper, recruit Louie the Bomber, and spend City Crowns on permanent upgrades.</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>
@@ -315,7 +333,7 @@ permalink: /games/
     'notation-run': '#F5C518', 'pirc-protocol': '#caa24a', 'fork-in-the-road': '#5be0c0',
     'sand-mine-depths': '#e0b25a', 'cipher': '#2ecc71', 'clearance-delta': '#ff9fb0',
     'shogi-island': '#d9a441', 'tower-defense': '#ff8fd0', 'blindfold-puzzles': '#c9a7ff',
-    'dungeon': '#9a8fc0', 'space-run': '#8fb8ff'
+    'dungeon': '#9a8fc0', 'space-run': '#8fb8ff', 'sky-run': '#7fc8ff'
   };
   function keyOf(href) { var m = (href || '').match(/\/games\/([^\/]+)\/?/); return m ? m[1] : ''; }
   var cards = document.querySelectorAll('.games-grid .game-card');

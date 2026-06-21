@@ -1,26 +1,13 @@
 # PJCC — Future Ideas
 
 A running backlog of ideas raised across build sessions that we have **not** built
-yet. Pulled from the whole chat history and project notes. Done items are not
-listed here (they live on the site already: accounts, credits, leaderboards,
-Dossier with rank ladder + achievements + world map + titles + pet mood + share
-card, Shopkeeper avatars/titles/themes, jukebox, mailing list + Resend sync,
-referrals, Cloudflare analytics, EN/JP toggle, Shogi v2, weekly bounty,
-accessibility pass, opt-in coaching).
+yet.  mailing list + Resend sync,
+referrals (??).
 
 ---
 
 ## New game concepts (bigger builds — own session each)
-- **Sky Run — chess Bloons (à la Bloons Supermonkey 2).** A side/auto-scrolling shooter:
-  Princess flies and pops chess pieces as they appear, town to town, ending at **Chess
-  City**, with a **secret level: the CEO's Office**. Power-ups by piece:
-  - **Bishop** → an **"X" shot** (four diagonal beams)
-  - **Knight** → **two sharpshooter escorts** firing alongside you
-  - **Queen** → a **super-shot** (screen-clearing blast)
-  - **King** → the **end-villain / boss** of a region
-  Best built in a real engine (or a focused canvas effort); ties beautifully to the
-  Blender/Godot path so the flier + pieces could be 3D later. Scores would log to the
-  same leaderboard.
+
 
 
 ## Engagement / live features

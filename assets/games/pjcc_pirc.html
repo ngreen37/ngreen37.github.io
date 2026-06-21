@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: The Pirc Protocol v2.0</title>
+<title>PJCC: The Pirc Protocol v2.1</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <script src="/assets/js/pjcc-pieces.js"></script>
@@ -253,6 +253,22 @@ const RAW = {
   'scandi-modern': { deck: 'scandi', name: 'Modern (3...Nf6)', side: 'b', moves: [
     ['e2e4','e4'],['d7d5','d5'],['e4d5','exd5'],['g8f6','Nf6'],['d2d4','d4'],['f6d5','Nxd5'],
     ['g1f3','Nf3'],['g7g6','g6'],['f1e2','Be2'],['f8g7','Bg7'],['e1g1','O-O','K'],['e8g8','O-O','K'] ] },
+
+  // ---- BLUNDER TRAPS ----  every refutation below is a machine-verified FORCED mate
+  // (proved offline: after the marked blunder, the trainee mates against EVERY defence).
+  // blunderAt = index of the opponent's losing move; you play the punishment.
+  'trap-legal': { deck: 'trap', name: "Légal's Mate", side: 'w', blunderAt: 11, moves: [
+    ['e2e4','e4'],['e7e5','e5'],['g1f3','Nf3'],['b8c6','Nc6'],['f1c4','Bc4'],['d7d6','d6'],
+    ['b1c3','Nc3'],['c8g4','Bg4'],['h2h3','h3'],['g4h5','Bh5'],['f3e5','Nxe5'],['h5d1','Bxd1??'],
+    ['c4f7','Bxf7+'],['e8e7','Ke7'],['c3d5','Nd5#'] ] },
+  'trap-scholar': { deck: 'trap', name: "Scholar's Mate", side: 'w', blunderAt: 5, moves: [
+    ['e2e4','e4'],['e7e5','e5'],['f1c4','Bc4'],['f8c5','Bc5'],['d1h5','Qh5'],['g8f6','Nf6??'],
+    ['h5f7','Qxf7#'] ] },
+  'trap-fools': { deck: 'trap', name: "Fool's Mate", side: 'b', blunderAt: 2, moves: [
+    ['f2f3','f3'],['e7e5','e5'],['g2g4','g4??'],['d8h4','Qh4#'] ] },
+  'trap-froms': { deck: 'trap', name: "From's Gambit Mate", side: 'b', blunderAt: 6, moves: [
+    ['f2f4','f4'],['e7e5','e5'],['f4e5','fxe5'],['d7d6','d6'],['e5d6','exd6'],['f8d6','Bxd6'],
+    ['b1c3','Nc3??'],['d8h4','Qh4+'],['g2g3','g3'],['d6g3','Bxg3+'],['h2g3','hxg3'],['h4g3','Qxg3#'] ] },
 };
 
 const DECKS = [
@@ -262,6 +278,8 @@ const DECKS = [
     sub: 'Classical fight for the centre' },
   { id: 'scandi', name: 'Scandinavian', side: 'Black', glyph: '♛', color: '#6bbfff',
     sub: 'Strike at the centre move one' },
+  { id: 'trap', name: 'Blunder Traps', side: 'both sides', glyph: '☠', color: '#ff5b8a',
+    sub: 'Punish the losing move — forced mates' },
 ];
 
 // Build LINES with structured plies
@@ -275,7 +293,7 @@ for (const id in RAW) {
       san, color: i % 2 === 0 ? 'w' : 'b', castle: castle || null,
     };
   });
-  LINES[id] = { id, deck: r.deck, name: r.name, side: r.side, plies };
+  LINES[id] = { id, deck: r.deck, name: r.name, side: r.side, plies, blunderAt: (typeof r.blunderAt === 'number' ? r.blunderAt : -1) };
 }
 function deckLineIds(deckId) { return Object.keys(LINES).filter(id => LINES[id].deck === deckId); }
 
@@ -328,6 +346,10 @@ const LINEMETA = {
   'italian-piano':      { eco:'C54', ref:'Giuoco Piano — tactics catalogued by Greco in the 1600s.' },
   'scandi-main':        { eco:'B01', ref:'Scandinavian — the classical 3…Qa5 main line.' },
   'scandi-modern':      { eco:'B01', ref:'Scandinavian — the modern 3…Nf6 lines.' },
+  'trap-legal':         { eco:'TRAP', ref:'Légal’s Mate (1750). After the greedy …Bxd1??, the queen sac pays off: Bxf7+ Ke7 Nd5#. (Decline with …dxe5 and White just wins the bishop.)' },
+  'trap-scholar':       { eco:'TRAP', ref:'Scholar’s Mate. …Nf6?? ignores the threat to f7 — Qxf7# ends it. Defend with …Qe7 or …g6 instead.' },
+  'trap-fools':         { eco:'TRAP', ref:'Fool’s Mate — the fastest loss in chess. 2.g4?? opens the e1–h4 diagonal and Qh4# is mate.' },
+  'trap-froms':         { eco:'TRAP', ref:'From’s Gambit. After 4.Nc3??, Black forces mate: Qh4+ g3 Bxg3+ hxg3 Qxg3#.' },
 };
 function metaFor(id){ return LINEMETA[id] || { eco:'', ref:'' }; }
 
@@ -430,7 +452,7 @@ function startSession(deckId, mode, style) {
     const cards = [];
     ids.forEach(id => {
       const ln = LINES[id];
-      ln.plies.forEach((ply, i) => { if (ply.color === ln.side) cards.push({ id, ply: i }); });
+      ln.plies.forEach((ply, i) => { if (ply.color === ln.side && (ln.blunderAt < 0 || i > ln.blunderAt)) cards.push({ id, ply: i }); });
     });
     for (let i = cards.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; const t = cards[i]; cards[i] = cards[j]; cards[j] = t; }
     session = { deckId, mode, style, cards, cardIdx: 0, attempts: {},

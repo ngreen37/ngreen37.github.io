@@ -27,7 +27,9 @@ jukebox: true
     { key: 'pirc-protocol',   label: 'Pirc Protocol',    unit: 'score'   },
     { key: 'shogi-island',    label: 'Shogi Island',     unit: 'solved'  },
     { key: 'blindfold',       label: 'Blindfold Puzzles',unit: 'solved'  },
-    { key: 'tower-defense',   label: 'Siege on Chess City', unit: 'score' }
+    { key: 'tower-defense',   label: 'Siege on Chess City', unit: 'score' },
+    { key: 'siege-endless',   label: 'Siege · Endless',     unit: 'wave'  },
+    { key: 'sky-run',         label: 'Sky Run',             unit: 'score' }
   ];
   var PAGE = 25;
 
@@ -94,13 +96,19 @@ jukebox: true
   function render() {
     var board = boardFor(active);
     if (!accum.length) {
-      bodyEl.innerHTML = loading
+      var eg = (active !== '__overall__' && PJCC.ghostFor) ? PJCC.ghostFor(active) : null;
+      var egb = (eg !== null && eg !== undefined) ? '<div class="lb-ghost">👻 <b>Beat the creator:</b> Nate\'s mark is <b>' + eg + ' ' + esc(board.unit) + '</b>.</div>' : '';
+      bodyEl.innerHTML = egb + (loading
         ? '<p class="lb-empty">Loading…</p>'
-        : '<p class="lb-empty">No scores logged yet — be the first.</p>';
+        : '<p class="lb-empty">No scores logged yet — be the first.</p>');
       return;
     }
     var me = PJCC.getProfile();
-    var head = '<table class="lb-table"><thead><tr><th>#</th><th></th><th>Operative</th><th class="lb-score">' +
+    var ghost = (active !== '__overall__' && PJCC.ghostFor) ? PJCC.ghostFor(active) : null;
+    var ghostBanner = (ghost !== null && ghost !== undefined)
+      ? '<div class="lb-ghost">👻 <b>Beat the creator:</b> Nate\'s mark on ' + esc(board.label) + ' is <b>' + ghost + ' ' + esc(board.unit) + '</b>. Top it.</div>'
+      : '';
+    var head = ghostBanner + '<table class="lb-table"><thead><tr><th>#</th><th></th><th>Operative</th><th class="lb-score">' +
                board.unit.toUpperCase() + '</th></tr></thead><tbody>';
     var body = accum.map(function (r, i) {
       var mine = me && r.codename === me.codename ? ' lb-me' : '';
@@ -128,6 +136,9 @@ jukebox: true
 <style>
 .lb-intro { color: #9a7fd4; max-width: 720px; }
 .lb-intro strong { color: #F5C518; }
+.lb-ghost { background: rgba(157,127,212,0.14); border: 1px solid #6b5fa0; border-left: 3px solid #F5C518;
+  border-radius: 8px; padding: 8px 14px; margin-bottom: 12px; color: #c9a7ff; font-size: 0.9rem; }
+.lb-ghost b { color: #F5C518; }
 .lb-more {
   background: #2D1B69; color: #F5C518; border: 1px solid #6b5fa0; border-radius: 999px;
   padding: 8px 20px; cursor: pointer; font-weight: 700; margin-top: 14px;
