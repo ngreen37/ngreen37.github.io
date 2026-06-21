@@ -22,10 +22,12 @@ referrals (??).
   emit its own "I hit a CIPHER streak of 12" image at game-over (pairs with referrals).
 
 ## Story / world
-- **Lore Codex** — a collectible in-universe encyclopedia; playing unlocks entries
-  (characters, locations, Subject Zero), complementing the rank-fragment reveals.
-- **Cross-link game cards to lore** — each game card deep-links to the character/location
-  it ties to (Ferry → Shogi Island, Sand Mine → the Father).
+- ✅ **Lore Codex** *(shipped)* — `/lore-codex/`: a collectible in-universe encyclopedia.
+  Entries unseal as you read character/location files (codex.* flags set by the layouts) and
+  recover classified fragments; a final all-six-fragments entry unlocks the origin (the
+  construction-co. crash). Progress bar + nav link.
+- ✅ **Cross-link game cards to lore** *(shipped)* — each game card shows a deep-link chip to the
+  character/location it ties to (Shogi Island, Sand Mine → the Father, Siege → Chess City, etc.).
 - **"Find Princess" ARG / mystery door** — a hidden hub unlocked by collecting the
   `frag_` easter-egg fragments across the site, leading to a career-portfolio of
   different art styles/mediums (from the PJCC notes).
@@ -56,7 +58,8 @@ Nate; not website features.*
 ## Projects page polish
 
 - **Public roadmap / "What's next"** that visitors can vote on.
-- **Stat counters at the top** — "10 playable games · N completed · 1 in the lab."
+- ✅ **Stat counters at the top** *(shipped)* — live "playable / completed / in the lab" counters
+  on the projects page, counted from the games index so they stay accurate.
 
 ## Audio / cosmetics
 - **A PJCC original track** — commission/compose one studio theme for the jukebox, plus
@@ -79,7 +82,8 @@ hands-on play-testing before shipping —
 - **Reverse "name-the-square" drill** — a square lights up and you *call* it (likely a
   coordinate keypad, or multiple-choice name buttons, judged on the beat like the forward run).
 - **Dual-lane two-hand mode** — two simultaneous calls at high BPM, one per lane/hand.
-*(Shipped in v3.5: the 📅 Daily seeded chart + the global timing-accuracy board.)*
+*(Shipped in v3.5: the 📅 Daily seeded chart + the global timing-accuracy board. Shipped in v3.6:
+Freestyle rubber-band BPM, the files/ranks Warmup, and mid-run Perks.)*
  
 
 
@@ -112,16 +116,7 @@ restores per-game idea coverage for the titles whose sections had been trimmed.*
   become collectible brush-art · a "tsume of the day" with a global solve-time board · castle drills
   (build the Mino / Yagura shape).
 - **Siege on Chess City**: a path-map level editor with shareable codes · co-op "two crowns" split
-  lanes (hot-seat or async score-sum) · tower synergies (Bishop+Rook adjacency pierces; Knight near
-  Queen hastes) · a narrative campaign map with branching routes + between-battle dialogue ·
-  a daily mutator-roulette siege on a fixed seed with a global board.
-- **Blindfold Puzzles**: a pure audio-only mode (moves spoken, no board at all) · "rebuild the board"
-  recall after a sequence · progressive piece-count ladders (2 pieces → full board) · a coach that
-  narrates a mnemonic per position · a daily blindfold puzzle with a "no-peek" badge track.
-- **The Mind's Eye** (hidden): a difficulty ladder (Intern → CEO → Board) with deeper search + an
-  opening book · a shareable animated replay of your won blindfold game · voice narration of the
-  move log · a "blunder review" that flags where the eval swung · cosmetic boards/sets unlocked by
-  wins (tie-in to the Shopkeeper).
+  lanes (hot-seat or async score-sum) 
 
 ## The big one — a real game
 - **Binding of Isaac-style roguelite / 3D Space Run in Godot** — use the existing Blender
