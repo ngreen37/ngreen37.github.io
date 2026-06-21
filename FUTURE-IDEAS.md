@@ -37,7 +37,8 @@ boards, ghosts, streak flame, board-skins + JP-localization scaffolding. World/s
 Academy, Projects, Daily Dispatch, Hall of Fame, leaderboard seasons. Avenue pieces: production hub
 + Pilot animatic + Writers' Room (1), audio hub + leitmotifs (5), site-wide Princess companion (6),
 Press Pass + Press Credential + Bureau-of-Dispatch newsletter + Press Kit/EPK + support-transparency +
-referral invite links (10).
+referral invite links + Founders Wall + founder-cosmetic preview + pricing poll + backer-dispatch
+preview + share-card generator + `/educators/` B2B page + game-page dispatch capture (10).
 
 ---
 
@@ -328,13 +329,13 @@ Resend plumbing already exists; a **welcome-email automation** is a Resend-dashb
 **confirming/carrying the founders number** waits on Operative accounts.*
 
 **A fresh nine:**
-1. **Milestone share-cards** — when a funding/priority beat is hit, auto-generate a "we funded X" card (a viral loop).
+1. ✅ **Milestone share-cards** — *shipped*: a canvas share-card generator on the Press Kit (live day-count + your founder number; download PNG / copy caption — the viral artifact).
 2. ✅ **The Founders Wall** — *shipped (client-side: the studio + your own reserved number; shared roll with accounts)* on the Press Pass.
 3. ✅ **Founder cosmetics** — *shipped as a preview* (frames + titles on the Press Pass); the actual purchasable SKUs wait on the credits store backend.
-4. **"Adopt a shot"** — micro-patronage: back a single animatic shot and get credited *on* it.
-5. **Pricing-experiment page** — annual vs monthly vs pay-what-you-want, tested before charging.
-6. **Academy B2B licensing** — a classroom / site license as real recurring revenue.
-7. **Game-over email capture** — arcade game-over screens as top-of-funnel for the dispatch.
+4. **"Adopt a shot"** — micro-patronage: back a single animatic shot and get credited *on* it. *(Needs payments + a backend to record/credit the patron — the first feature for the day accounts land; pairs with Fund-the-frame.)*
+5. ✅ **Pricing input** — *shipped as a community poll* ("help us price it": monthly / annual / PWYW, local vote) on the Press Pass; true A/B conversion testing waits on real checkout.
+6. ✅ **Academy B2B** — *shipped the `/educators/` landing page* (classroom pitch, free-now tier, licensing tiers, pilot CTA); the licensing/sales motion itself is offline business work.
+7. ✅ **Game-over email capture** — *shipped*: a dispatch capture strip under every game (one edit to the game layout; real subscribe flow), catching arcade players where they finish.
 8. ✅ **"Fund-the-frame" on the tracker** — *shipped*: a support module under the production bars linking to the Press Pass.
 9. ✅ **Backer-only quarterly dispatch** — *shipped as a locked preview* (redacted table-of-contents on the Press Pass); the real issue ships with paid tiers.
 

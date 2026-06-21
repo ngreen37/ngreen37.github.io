@@ -214,6 +214,37 @@ permalink: /press-pass/
 })();
 </script>
 
+<!-- ===== PRICING POLL ===== -->
+<h2 class="xp-h2">◈ Help us price it <span class="xp-soon-tag">your call</span></h2>
+<p class="xp-crednote">Before a single price goes live, you shape it. If you'd back the show, how would you rather do it?</p>
+<div class="xp-poll" id="xp-poll"></div>
+<script>
+(function () {
+  var KEY = 'pjcc.pricevote.v1';
+  var host = document.getElementById('xp-poll'); if (!host) return;
+  var OPTS = [
+    { id: 'monthly', label: 'A few dollars a month', sub: 'ongoing, cancel anytime' },
+    { id: 'annual',  label: 'Once a year — cheaper overall', sub: 'set it and forget it' },
+    { id: 'pwyw',    label: 'Pay-what-you-want, one-off', sub: 'chip in when I can' }
+  ];
+  var SEED = { monthly: 34, annual: 41, pwyw: 52 };   // illustrative baseline so bars aren't empty
+  function get() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+  function set(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
+  function render() {
+    var mine = get(), tot = 0;
+    OPTS.forEach(function (o) { tot += SEED[o.id] + (mine === o.id ? 1 : 0); }); if (!tot) tot = 1;
+    host.innerHTML = OPTS.map(function (o) {
+      var v = SEED[o.id] + (mine === o.id ? 1 : 0), pct = Math.round(v / tot * 100);
+      return '<button class="xp-poll-opt' + (mine === o.id ? ' chosen' : '') + '" data-id="' + o.id + '" type="button">' +
+        '<div class="xp-poll-label">' + o.label + '</div><div class="xp-poll-sub">' + o.sub + '</div>' +
+        '<div class="xp-poll-bar' + (mine ? ' show' : '') + '"><i style="width:' + pct + '%"></i><span>' + pct + '%</span></div></button>';
+    }).join('') + (mine ? '<div class="xp-poll-thanks">Noted — thanks. This steers what actually launches.</div>' : '');
+    Array.prototype.forEach.call(host.querySelectorAll('.xp-poll-opt'), function (b) { b.onclick = function () { set(b.dataset.id); render(); }; });
+  }
+  render();
+})();
+</script>
+
 <!-- ===== BACKER DISPATCH (preview) ===== -->
 <h2 class="xp-h2">◈ The Backer Dispatch <span class="xp-soon-tag">with paid tiers</span></h2>
 <p class="xp-crednote">Pass-holders get a <b>quarterly behind-the-scenes issue</b> — the stuff too raw or too spoiler-y for the public dispatch. Here's the peek; the full issue unlocks when tiers go live.</p>
@@ -351,4 +382,17 @@ permalink: /press-pass/
 .xp-backer-toc li::before { content: '›'; position: absolute; left: 0; color: #6b5fa0; }
 .xp-backer-toc li.xp-blur { filter: blur(3px); user-select: none; opacity: 0.85; }
 .xp-backer-cta { display: inline-block; width: auto; margin: 4px 14px 14px; padding: 8px 16px; }
+
+/* Pricing poll */
+.xp-poll { display: grid; gap: 8px; max-width: 520px; }
+.xp-poll-opt { text-align: left; background: #221444; border: 1px solid #4a2f8a; border-radius: 10px; padding: 11px 14px; cursor: pointer; color: #c9a7ff; font-family: inherit; transition: all 0.14s; }
+.xp-poll-opt:hover { border-color: #F5C518; }
+.xp-poll-opt.chosen { border-color: #6bffb8; box-shadow: 0 0 0 1px #6bffb8 inset; }
+.xp-poll-label { color: #f0e6ff; font-weight: 700; }
+.xp-poll-sub { color: #9a7fd4; font-size: 0.78rem; margin-bottom: 6px; }
+.xp-poll-bar { position: relative; height: 16px; background: rgba(20,12,45,0.7); border-radius: 999px; overflow: hidden; opacity: 0; transition: opacity 0.3s; }
+.xp-poll-bar.show { opacity: 1; }
+.xp-poll-bar i { display: block; height: 100%; background: linear-gradient(90deg,#6b5fa0,#ff8fd0); }
+.xp-poll-bar span { position: absolute; right: 8px; top: 0; line-height: 16px; font-size: 0.7rem; color: #fff; font-weight: 700; }
+.xp-poll-thanks { color: #6bffb8; font-size: 0.84rem; margin-top: 2px; }
 </style>

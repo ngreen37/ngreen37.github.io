@@ -85,6 +85,14 @@
     .lang-toggle { background: transparent; color: #9a7fd4; border: 1px solid #6b5fa0; border-radius: 999px;
       padding: 5px 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin-left: 10px; }
     .lang-toggle:hover { border-color: #F5C518; color: #F5C518; }
+
+    .game-dispatch { max-width: 860px; margin: 1.8rem auto 0; background: rgba(45,27,105,0.4); border: 1px solid #3a2a6a; border-radius: 12px; padding: 14px 16px; }
+    .game-dispatch-text { color: #cfc3ee; font-size: 0.9rem; margin-bottom: 8px; }
+    .game-dispatch-text b { color: #F5C518; }
+    .game-dispatch-form { display: flex; gap: 8px; flex-wrap: wrap; }
+    .game-dispatch-msg { min-height: 1.2em; font-size: 0.84rem; margin: 6px 0 0; }
+    .game-dispatch-msg.ok { color: #6bffb8; }
+    .game-dispatch-msg.err { color: #ff6b6b; }
   </style>
 </head>
 <body>
@@ -128,6 +136,16 @@
 
       {{ content }}
 
+      <!-- Game-over funnel: catch arcade players for the dispatch (Avenue 10) -->
+      <div class="game-dispatch">
+        <div class="game-dispatch-text"><b>Enjoyed it?</b> New games and the pilot drop to the dispatch first — no spam, unsubscribe anytime.</div>
+        <form id="gd-form" class="game-dispatch-form" novalidate>
+          <input id="gd-email" type="email" class="pjcc-input" placeholder="you@email.com" autocomplete="email" aria-label="Email address" required>
+          <button type="submit" class="pjcc-btn">Get the next one</button>
+        </form>
+        <p id="gd-msg" class="game-dispatch-msg" role="status"></p>
+      </div>
+
     </div>
   </main>
 
@@ -135,6 +153,29 @@
   <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pjcc-profile-bar.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pjcc-lang.js' | relative_url }}"></script>
+  <script>
+  (function () {
+    var form = document.getElementById('gd-form'); if (!form) return;
+    var input = document.getElementById('gd-email'), msg = document.getElementById('gd-msg');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var email = input.value.trim(); if (!email) return;
+      msg.className = 'game-dispatch-msg'; msg.textContent = 'Subscribing…';
+      if (!window.PJCC || !PJCC.ready) { msg.textContent = 'Try again in a moment.'; return; }
+      PJCC.ready.then(function () {
+        if (!PJCC.enabled) { msg.textContent = 'Sign-ups are offline right now.'; return; }
+        return PJCC.subscribe(email).then(function (res) {
+          msg.className = 'game-dispatch-msg ok';
+          msg.textContent = res.already ? "You're already on the list — thanks!" : "✓ You're in. See you at the next drop.";
+          form.reset();
+        });
+      }).catch(function (err) {
+        msg.className = 'game-dispatch-msg err';
+        msg.textContent = (err && err.message === 'invalid email') ? 'That email looks off.' : 'Something went wrong — try again.';
+      });
+    });
+  })();
+  </script>
 
   <footer class="site-footer">
     <div class="wrapper">
