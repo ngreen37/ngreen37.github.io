@@ -1456,6 +1456,9 @@ body.studio-body {
   gap: 12px;
   position: relative;
   overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
   transition: border-color 0.25s, background 0.25s, transform 0.15s;
 
   &::after {
@@ -2611,6 +2614,8 @@ body.theme-bw .page-body em {
   height: 110px;
   text-align: center;
   width: 100%;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .tagline-word {
