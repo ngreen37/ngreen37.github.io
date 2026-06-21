@@ -206,6 +206,11 @@ Chess Lessons exists as a page; this turns it into a *curriculum* with the cast 
    Chess City Citizen ladder driven by lessons completed, with a printable certificate.
 5. ⏳ **Connect to real play** *(deferred — needs external integration)* — a Lichess/Chess.com
    study or bot bridge so lessons lead into actual games. Held until we wire external services.
+
+*Academy follow-ups (deepening, not yet built):* tune the lesson thresholds with real play data ·
+add more courses (e.g. a Clearance/Siege **strategy** track, a Shogi track) · flesh the worksheets
+into a printable multi-page packet (coordinates → piece moves → simple mates) · a fuller branching
+skill-tree (prerequisites/unlocks) rather than the current linear "next lesson."
 **Realistic take:** This is one of the few avenues with a clear path to *money and real-world
 utility*. The curriculum can be assembled largely from games you've already built and tested.
 It's durable work — schools and parents don't churn like a viral audience does.
