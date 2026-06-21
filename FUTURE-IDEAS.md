@@ -210,6 +210,18 @@ preview + share-card generator + `/educators/` B2B page + game-page dispatch cap
 > (a Knight only hits its L-squares, a Bishop only its diagonals), placement is a **positional**
 > puzzle (lines of fire, forks, pins on the lane), and the fantasy is *defending Chess City*, not
 > popping balloons. If a feature would feel identical with monkeys and darts, rethink it.
+
+*Shipped this pass: the **Rook is now a spiked-ball Trebuchet** — instead of a single-target bastion it
+**heaves a spiked iron ball** that arcs over the lane (lobbed, long reach, AoE crater), distinct from
+Auston's chaotic bomb. And **progressive unlock**: you start with the founding trio (Pawn · Argus
+Knight · Bishop Sniper), and **Frost / Rook / Queen unlock as you clear 1 / 2 / 3 sieges** (Auston
+stays the bought hero); locked towers show in the rack with their requirement, and wins announce the
+unlock. Already in the game from before: **#4 boss waves** (the CEO King), **#5 endless survival** +
+board, **#6 daily mutator roulette**, and **partial #3 synergies** (Knight+Queen haste · Bishop+Rook
+pierce). Deferred (big): **#1** branching campaign + between-battle dialogue (a flat map campaign
+exists), **#2** the map editor (Avenue 7), and the **full #3 synergy matrix** (every piece pairing as
+a real chess relationship — battery / pin / fork — not generic auras).*
+
 1. **Campaign map** — branching routes + between-battle dialogue.
 2. **Map editor** — build paths, share by code (Avenue 7).
 3. **Full synergy matrix** — a tower-pairing bonus for every piece combo (lean on real chess

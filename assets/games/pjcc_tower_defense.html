@@ -40,7 +40,8 @@
     cursor: pointer; transition: border-color 0.12s, background 0.12s; user-select: none; }
   .twr:hover { border-color: #7a68c0; }
   .twr.sel { border-color: var(--gold); background: #2a1a5e; box-shadow: 0 0 10px rgba(245,197,24,0.35); }
-  .twr.cant { opacity: 0.45; } .twr.locked { opacity: 0.4; }
+  .twr.cant { opacity: 0.45; } .twr.locked { opacity: 0.5; cursor: default; }
+  .twr.locked:hover { border-color: #4a3a86; } .twr.locked .ct { color: #8a78ba; font-size: 9px; }
   .twr .g { font-size: 22px; line-height: 1; } .twr .nm { font-size: 10px; font-weight: bold; margin-top: 2px; letter-spacing: 0.2px; }
   .twr .ct { font-size: 11px; color: var(--good); margin-top: 1px; }
 
@@ -256,10 +257,21 @@ var TOWERS = {
   frost:  { name: 'Frost Knight', glyph: '❄', cost: 120, range: 104, dmg: 5,  rate: 0.85, splash: 44, color: '#9fe8ff', free:false, sniper:false, slows:true, lore: 'Chills the whole road — little damage, but every hit saps enemy speed. Pure tempo.' },
   louie:  { name: 'Auston the Bomber', glyph: '💣', cost: 150, range: 132, dmg: 40, rate: 2.0, splash: 70, color: '#ffd36b', free:false, sniper:false, lob:true, lore: 'Auston swears he is a pawn. He is, in fact, a bomb. Huge splash, slow fuse.' },
   bishop: { name: 'Bishop Sniper', glyph: '♗', cost: 150, range: 250, dmg: 70, rate: 2.2, splash: 0, color: '#c79bff', free:true, sniper:true, lore: 'A diagonal sightline that never ends. Place him anywhere with a clear view — one shot, one runner.' },
-  rook:   { name: 'Rook Bastion', glyph: '♖', cost: 175, range: 124, dmg: 60, rate: 1.85, splash: 0, color: '#ffb066', free:false, sniper:false, lore: 'Castle-wall firepower. Slow, but it flattens tanks.' },
+  rook:   { name: 'Rook Trebuchet', glyph: '♖', cost: 175, range: 150, dmg: 58, rate: 2.25, splash: 52, color: '#ffb066', free:false, sniper:false, lob:true, spike:true, lore: "The castle doesn't fire — it heaves. A spiked iron ball arcs over the lane and craters on impact: slow fuse, long reach, caves in a tank and the pack around it." },
   queen:  { name: "Queen's Guard", glyph: '♕', cost: 300, range: 150, dmg: 32, rate: 0.7, splash: 42, color: '#ff8fd0', free:false, sniper:false, lore: 'The royal escort: fast, far, and splashes. Premium.' }
 };
 function towerOrder() { var o = ['pawn','knight','frost','rook','bishop','queen']; if (META.up.louie) o.splice(3,0,'louie'); return o; }
+// Progressive unlock — heavier pieces earn their place as the campaign is won.
+var TOWER_UNLOCK = { frost:'Clear 1 siege', rook:'Clear 2 sieges', queen:'Clear 3 sieges' };
+function towersUnlocked() {
+  var n = Object.keys(META.beaten || {}).length;
+  var u = { pawn:true, knight:true, bishop:true };   // the founding trio
+  if (n >= 1) u.frost = true;
+  if (n >= 2) u.rook = true;
+  if (n >= 3) u.queen = true;
+  if (META.up.louie) u.louie = true;                 // Auston is the bought hero
+  return u;
+}
 
 /* ============ enemies ============ */
 var FOES = {
@@ -532,7 +544,7 @@ function fireTowers(dt) {
     var pierce = (tw.kind === 'bishop' && hasNeighborKind(tw, 'rook'));   // Bishop+Rook pierce
     G.shots.push({ x: tw.x, y: tw.y, tx: target.x, ty: target.y, target: target,
       dmg: s.dmg, splash: s.splash, kind: tw.kind, life: 0, color: base.color,
-      sniper: base.sniper, lob: base.lob, slows: base.slows, pierce: pierce, sx: tw.x, sy: tw.y, prog: 0 });
+      sniper: base.sniper, lob: base.lob, spike: base.spike, slows: base.slows, pierce: pierce, sx: tw.x, sy: tw.y, prog: 0 });
   });
 }
 function updateShots(dt) {
@@ -688,6 +700,14 @@ function draw() {
     if (s.sniper) { ctx.strokeStyle = s.color; ctx.globalAlpha = Math.max(0, 1 - s.life/0.14); ctx.lineWidth=2.5;
       ctx.beginPath(); ctx.moveTo(s.sx, s.sy); ctx.lineTo(s.tx, s.ty); ctx.stroke(); ctx.globalAlpha=1; return; }
     var yoff = 0; if (s.lob) yoff = -Math.sin(s.prog*Math.PI)*26;
+    if (s.spike) {  // Rook Trebuchet — a spiked iron ball arcing over the lane
+      var bx = s.x, by = s.y + yoff, R = 5.5;
+      ctx.strokeStyle = '#6b5038'; ctx.lineWidth = 2;
+      for (var k = 0; k < 8; k++) { var a = k/8*Math.PI*2; ctx.beginPath(); ctx.moveTo(bx+Math.cos(a)*R, by+Math.sin(a)*R); ctx.lineTo(bx+Math.cos(a)*(R+4), by+Math.sin(a)*(R+4)); ctx.stroke(); }
+      ctx.fillStyle = '#4a3624'; ctx.beginPath(); ctx.arc(bx, by, R, 0, 7); ctx.fill();
+      ctx.fillStyle = '#8a6a48'; ctx.beginPath(); ctx.arc(bx-1.6, by-1.6, 1.8, 0, 7); ctx.fill();
+      return;
+    }
     ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(s.x, s.y+yoff, s.splash?4:2.6, 0, 7); ctx.fill();
   });
 
@@ -816,9 +836,16 @@ function refreshDecree() {
 }
 function buildRack() {
   var rack = document.getElementById('rack'); rack.innerHTML = '';
+  var unlocked = towersUnlocked();
   towerOrder().forEach(function (kind) {
     var d = TOWERS[kind], cost = towerCost(kind);
     var el = document.createElement('div');
+    if (!unlocked[kind]) {
+      el.className = 'twr locked';
+      el.innerHTML = '<div class="g" style="color:#5a4d7a">🔒</div><div class="nm">'+d.name+'</div><div class="ct">'+(TOWER_UNLOCK[kind]||'Locked')+'</div>';
+      el.title = d.name + ' — locked · ' + (TOWER_UNLOCK[kind] || '');
+      rack.appendChild(el); return;
+    }
     el.className = 'twr' + (G && G.sel===kind ? ' sel':'') + (G && G.gold<cost ? ' cant':'');
     el.innerHTML = '<div class="g" style="color:'+d.color+'">'+d.glyph+'</div><div class="nm">'+d.name+'</div><div class="ct">'+cost+'g</div>';
     el.onclick = function () { closeInspector(); G.sel = (G.sel===kind?null:kind); buildRack(); if (G.sel) setHint(d.name+' — '+d.lore); };
@@ -838,6 +865,9 @@ function endGame(won) {
   var coinsEarned = Math.round((Math.floor(G.score/120) + G.wave*2 + (won?25:0)) * (1 + (G.mutBonus || 0)));
   META.coins += coinsEarned;
   if (won && !G.endless && !G.daily) META.beaten[curMap.id] = true;
+  var towerUnlock = '';
+  if (won && !G.endless && !G.daily) { var _nb = Object.keys(META.beaten).length;
+    towerUnlock = _nb===1 ? ' ❄ Frost Knight unlocked!' : _nb===2 ? ' ♖ Rook Trebuchet unlocked!' : _nb===3 ? " ♕ Queen's Guard unlocked!" : ''; }
   // track best endless wave per map
   if (G.endless) { META.endless = META.endless || {}; if ((G.wave) > (META.endless[curMap.id] || 0)) META.endless[curMap.id] = G.wave; }
   if (G.daily) markDaily(G.score, won);
@@ -859,7 +889,7 @@ function endGame(won) {
     document.getElementById('ovl-title').textContent = won ? 'CHESS CITY HOLDS! 🏰' : 'THE GATES HAVE FALLEN';
     var nextUnlocked = won && curMap.id < MAPS.length;
     document.getElementById('ovl-msg').textContent = won
-      ? ('You turned back the CEO on ' + curMap.name + '.' + (nextUnlocked ? ' A new front has opened.' : ' The campaign is won!'))
+      ? ('You turned back the CEO on ' + curMap.name + '.' + (nextUnlocked ? ' A new front has opened.' : ' The campaign is won!') + towerUnlock)
       : ('The line broke at wave ' + (G.wave + 1) + ' on ' + curMap.name + '. Reinforce the chokepoints and try again.');
   }
   document.getElementById('ovl-extra').textContent = (G.endless ? ('Reached wave ' + G.wave + ' · ') : ('Score ' + G.score + ' · ')) + G.kills + ' felled · 🪙 +' + coinsEarned + ' Crowns' + mutTag + ' · +' + credits + ' credits';
