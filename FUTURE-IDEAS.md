@@ -323,7 +323,12 @@ of it off). Turns an audience into co-authors.*
 > on-brand) now; graduate to a **Supabase gallery** with likes/credits when Operative accounts land.
 > A **Formspree/Google-Form** capture is the middle step if demand shows up first.
 
-## Avenue 8 — The Operative Command Center *(reborn from the dropped `/sandbox/`)*
+## Avenue 8 — The Operative Command Center *(✅ v1 shipped at `/command-center/`)*
+*v1 is live and client-side: operative status (rank/credits/codename via the profile system), a live
+mission clock + dev-day counter, a date-seeded **daily mission**, a **fragment-recovery grid** (the six
+origin frags + the new `frag_subjectzero`), a cosmetic transmission feed, and quick-launch. In the
+PJCC nav. The list below is the deepening path; the cross-device/social parts (#10) ride in on accounts.*
+
 *The old `/sandbox/` "Command Center" was a slick hidden dev terminal — a streaming transmission log,
 a 16-node cast constellation, operative rank, an episode countdown, daily opening intel, and a
 fragment-recovery grid. We **dropped the page** (it was a static mockup behind a front-door tile) but
