@@ -15,6 +15,7 @@ permalink: /games/
   <button class="gf-tab active" data-filter="all">All</button>
   <button class="gf-tab" data-filter="playable">▶ Playable</button>
   <button class="gf-tab" data-filter="dev">🛠 In Development</button>
+  <button class="gf-tab" data-filter="daily">📅 Daily</button>
   <button class="gf-tab" data-filter="new">✦ New</button>
   <span class="gf-spacer"></span>
   <input id="gf-search" class="gf-search" type="search" placeholder="🔎 search games…" autocomplete="off">
@@ -30,12 +31,22 @@ permalink: /games/
 <script>
 (function () {
   var NAMES = { 'clearance-delta': 'Clearance: DELTA', 'notation-run': 'Notation Blitz', 'fork-in-the-road': 'Fork in the Road', 'sand-mine-depths': 'Sand Mine Depths', 'pirc-protocol': 'The Pirc Protocol', 'shogi-island': 'Shogi Island', 'tower-defense': 'Siege on Chess City', 'sky-run': 'Sky Run' };
+  var ICON = { 'clearance-delta':'Δ', 'notation-run':'♫', 'fork-in-the-road':'⚔', 'sand-mine-depths':'⛏', 'pirc-protocol':'♚', 'shogi-island':'将', 'tower-defense':'🏰', 'sky-run':'♞' };
+  var ACC = { 'clearance-delta':'#ff9fb0', 'notation-run':'#F5C518', 'fork-in-the-road':'#5be0c0', 'sand-mine-depths':'#e0b25a', 'pirc-protocol':'#caa24a', 'shogi-island':'#d9a441', 'tower-defense':'#ff8fd0', 'sky-run':'#7fc8ff' };
+  var BLURB = { 'clearance-delta':'Climb the clearance ladder in the trivia hall.', 'notation-run':'Read chess coordinates at speed, on the beat.', 'fork-in-the-road':'Adaptive tactics — forks, skewers, mates.', 'sand-mine-depths':'A knight-move descent into the Father’s mine.', 'pirc-protocol':'Learn real openings by playing the book.', 'shogi-island':'Learn shogi as the Japanese guide decodes.', 'tower-defense':'Hold the gates of Chess City.', 'sky-run':'A chess-Bloons climb to Chess City.' };
   function show() {
     if (!window.PJCC || !PJCC.bountyGame) return;
     var key = PJCC.bountyGame();
     var b = document.getElementById('bounty-banner');
     if (!b) return;
-    b.innerHTML = '🎯 <strong>This week’s bounty:</strong> ' + (NAMES[key] || key) + ' — <strong>double credits</strong> all week!';
+    var acc = ACC[key] || '#F5C518';
+    b.style.setProperty('--gotw', acc);
+    b.innerHTML =
+      '<div class="gotw-icon" style="color:' + acc + '">' + (ICON[key] || '🎯') + '</div>' +
+      '<div class="gotw-body"><div class="gotw-eye">★ Game of the Week · <b>2× credits</b></div>' +
+      '<div class="gotw-name">' + (NAMES[key] || key) + '</div>' +
+      '<div class="gotw-blurb">' + (BLURB[key] || '') + '</div></div>' +
+      '<a class="gotw-play" href="/games/' + key + '/" style="background:' + acc + '">Play ▸</a>';
     b.hidden = false;
   }
   if (window.PJCC && PJCC.ready) PJCC.ready.then(show); else document.addEventListener('DOMContentLoaded', show);
@@ -43,8 +54,22 @@ permalink: /games/
 </script>
 
 <style>
-.bounty-banner { background: linear-gradient(135deg,#2a1a5e,#3a2570); border: 1px solid #F5C518; border-radius: 10px; padding: 11px 16px; margin: 0 0 1rem; color: #f0e6ff; font-size: 0.92rem; }
-.bounty-banner strong { color: #F5C518; }
+.bounty-banner { display: flex; align-items: center; gap: 14px; background: linear-gradient(135deg,#241452,#34206f);
+  border: 1px solid var(--gotw,#F5C518); border-radius: 12px; padding: 14px 18px; margin: 0 0 1rem; color: #f0e6ff;
+  box-shadow: 0 0 22px -8px var(--gotw,#F5C518); }
+.bounty-banner strong { color: var(--gotw,#F5C518); }
+.gotw-icon { font-size: 40px; line-height: 1; flex-shrink: 0; }
+.gotw-body { flex: 1; min-width: 0; }
+.gotw-eye { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: #c9a7ff; }
+.gotw-eye b { color: var(--gotw,#F5C518); }
+.gotw-name { font-size: 1.15rem; font-weight: 900; color: #fff; margin: 1px 0; }
+.gotw-blurb { font-size: 0.82rem; color: #b9a8e6; }
+.gotw-play { flex-shrink: 0; color: #1a0f3d; font-weight: 900; border-radius: 999px; padding: 9px 18px; text-decoration: none; white-space: nowrap; }
+.gotw-play:hover { filter: brightness(1.08); }
+/* "Daily" badge (date-seeded mode), with a done-today ✓ */
+.gc-daily { display: inline-block; margin-left: 6px; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.04em;
+  vertical-align: middle; color: #8fd0ff; border: 1px solid #3a6a8a; background: rgba(143,200,255,0.10); border-radius: 4px; padding: 1px 6px; }
+.gc-daily.done { color: #6bffb8; border-color: #2f6b50; background: rgba(107,255,184,0.12); }
 .sheen-toggle { display: inline-block; margin: 0.4rem 0 0.2rem 0.5rem; background: #1d1140; border: 1px solid #6b5fa0; color: #c9a7ff; border-radius: 999px; padding: 8px 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
 .sheen-toggle:hover { border-color: #F5C518; color: #f0e6ff; }
 .sheen-toggle.off { border-color: #4f466e; color: #9a8fc0; }
@@ -421,7 +446,7 @@ permalink: /games/
     var best = (window.PJCC && PJCC.localBest) ? PJCC.localBest(info[0]) : 0;
     var chip = document.createElement('span');
     chip.className = 'gc-best' + (best > 0 ? '' : ' none');
-    chip.textContent = best > 0 ? ('★ best ' + best + ' ' + info[1]) : 'not played';
+    chip.textContent = best > 0 ? ('★ your best ' + best.toLocaleString() + ' ' + info[1]) : 'not played';
     h2.appendChild(document.createTextNode(' ')); h2.appendChild(chip);
     chipEls[info[0]] = { chip: chip, unit: info[1] };
   });
@@ -431,7 +456,7 @@ permalink: /games/
   }).then(function (stats) {
     (stats || []).forEach(function (s) {
       var e = chipEls[s.game]; if (!e) return;
-      if ((s.best_score || 0) > 0) { e.chip.className = 'gc-best'; e.chip.textContent = '★ best ' + s.best_score + ' ' + e.unit; }
+      if ((s.best_score || 0) > 0) { e.chip.className = 'gc-best'; e.chip.textContent = '★ your best ' + s.best_score.toLocaleString() + ' ' + e.unit; }
     });
   }).catch(function () {});
 
@@ -454,11 +479,30 @@ permalink: /games/
     'sand-mine-depths':['⛏','💎','♘'], 'clearance-delta':['Δ','✦','▲'], 'shogi-island':['将','歩','王'],
     'tower-defense':['🏰','♜','❄'], 'blindfold-puzzles':['◻','♟','👁'], 'sky-run':['♞','✦','♛'], 'daily':['📡','✦','🔑'] };
 
+  // games that have a date-seeded "daily" mode, with how to tell if it's done today
+  function todayS() { return (window.PJCC && PJCC.dayStamp) ? PJCC.dayStamp() : new Date().toISOString().slice(0,10); }
+  function lsField(key, field) { try { var o = JSON.parse(localStorage.getItem(key)); return o ? o[field] : null; } catch (e) { return null; } }
+  var DAILY = {
+    'daily':              function () { return lsField('pjcc.daily.v1', 'last') === todayS(); },
+    'blindfold-puzzles':  function () { return lsField('pjcc.bf.daily', 'day') === todayS(); },
+    'notation-run':       null,   // has a Daily chart, but it's replayable (no done-lock)
+    'fork-in-the-road':   null,   // daily seeded ladder
+    'clearance-delta':    null    // daily shared exam
+  };
+
   Array.prototype.forEach.call(cards, function (c) {
     var k = cardKey(c), body = c.querySelector('.game-card-body'), h2 = body ? body.querySelector('h2') : null;
     // hover mini-preview (tiny animated glyph loop tinted to the accent)
     if (h2 && PREVIEW[k]) { var pv = document.createElement('span'); pv.className = 'gc-prev';
       pv.innerHTML = PREVIEW[k].map(function (g) { return '<span>' + g + '</span>'; }).join(''); h2.appendChild(pv); }
+    // "Daily" badge for date-seeded games, with a done-today ✓
+    if (h2 && DAILY.hasOwnProperty(k)) {
+      c.setAttribute('data-daily', '1');
+      var done = DAILY[k] ? DAILY[k]() : false;
+      var db = document.createElement('span'); db.className = 'gc-daily' + (done ? ' done' : '');
+      db.textContent = done ? '📅 done today ✓' : '📅 daily';
+      h2.appendChild(document.createTextNode(' ')); h2.appendChild(db);
+    }
     // "new" badge if recently bumped, with a changelog popover
     var cl = CHANGELOG[k];
     if (cl && daysSince(cl.date) <= NEW_DAYS && !isDev(c)) {
@@ -478,6 +522,7 @@ permalink: /games/
     if (activeFilter === 'playable') return !isDev(c);
     if (activeFilter === 'dev') return isDev(c);
     if (activeFilter === 'new') return c.getAttribute('data-new') === '1';
+    if (activeFilter === 'daily') return c.getAttribute('data-daily') === '1';
     return true;
   }
   function cardText(c) { var h2 = c.querySelector('h2'), p = c.querySelector('p'); return ((h2 ? h2.textContent : '') + ' ' + (p ? p.textContent : '')).toLowerCase(); }

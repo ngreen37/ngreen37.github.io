@@ -11,16 +11,7 @@ referrals (??).
 
 
 ## Engagement / live features
-- **Daily Dispatch** — one date-seeded challenge that's identical for every operative
-  each day (a rotating game or fixed CIPHER word), with its own daily leaderboard and
-  a consecutive-day streak. Framed as a Dead Drop intercept. Best single driver of
-  daily return visits; the `scores` table already has a `seed` column for it.
-- **Cross-game streak flame** — a unified "days active" streak shown on the Dossier
-  (distinct from per-game streaks).
-- **"Beat the creator" ghost scores** — Nate's own scores posted as the target to chase
-  in each game.
-- **Leaderboard Seasons / Tours + Hall of Fame** — periodic (monthly) resets, each a leg
-  of the Journey to Chess City, with a permanent Hall of Fame page of past winners.
+
 
 ## Social
 - **Guilds / Houses** — operatives pick a faction (Checker Town vs Chess City, or a
@@ -61,13 +52,7 @@ Nate; not website features.*
     aboard**, and is forced to **leave Princess behind** — a choice that **shatters him**.
   - Hook for later: **maybe he comes back looking for her.**
 
-## Games page polish
-- **Status filter tabs** — All / Playable / In Development / Daily.
-- **"Daily" badge** on cards that have a date-seeded mode, with a done-today checkmark.
-- **Animated card previews** — a small looping GIF/canvas thumbnail per game on hover.
-- **Per-card mini-stat** — "Your best: 1,240" pulled from the player's saved data.
-- **Game of the Week hero strip** at the top (the weekly bounty banner is a first step).
-
+#
 ## Projects page polish
 - **Version-history timeline / changelog** ("Ferry v1.0 → v1.1") so the "pending
   improvements" story is visible.
@@ -78,19 +63,11 @@ Nate; not website features.*
 ## Audio / cosmetics
 - **A PJCC original track** — commission/compose one studio theme for the jukebox, plus
   a per-game SFX toggle.
-- **Board skins** — in-game cosmetic board/piece themes sold in the Shopkeeper. (Today the
-  purchasable themes only restyle the Dossier; extend them into the actual games.)
-- **Full Japanese localization** — extend the EN/JP toggle beyond the nav into page body
-  content (the games already decode JP→EN; carry that across the marketing/lore pages too).
 
-*(Done — not listed above: the Build Playlist jukebox is now a McPuppy-Studios-only feature
-[opt-in per page via `jukebox: true`], games are music-free, and **Games** moved to the PJCC
-nav group.)*
 
 
 ## Onboarding / reach
-- **Expanded coaching** — in-game guided first runs (current coaching is an opt-in panel
-  on the wrapper pages for Shogi & Pirc).
+
 
 ## Animation (Blender)
 - **Blender cutscene intros** — short rendered clips of rigged Princess + the chess
@@ -101,40 +78,20 @@ nav group.)*
 
 **Shipped 2026-06-17:** Notation Blitz's five (timing-trend history, Endless ramp, free BPM
 slider, tail-save, Princess emotes + 🎧 calibration) all confirmed live in v3.3 (plus the
-Black-side 2-Tone hard mode). **Fork in the Road v2.0** — region-gate bosses, 3-tier hints,
-motif explanation cards, per-tactic accuracy (forks/skewers/mates, on the Dossier), and a
-daily seeded ladder; added a new **verified skewer** motif (stress-tested 5000/0).
-**Sand Mine Depths v2.2** — relics (long reach, lantern oil, a pit-filling shovel), a torch
-that shrinks with depth, the rival **Subject Zero** knight-miner, a deterministic **Weekly
-Race**, and a gold-banking **Surface Camp** with permanent perks.
-**Shogi Island** — the "How to Play" below the game is now written **entirely in Japanese** and
-**decodes line-by-line as you play** (live `decoded` count, progress meter, redacted locks,
-免許皆伝 finish) — the dramatic decode the request was really after.
-**CIPHER v1.3** — selectable packs (Chess · Openings · Endgame · Field Codes), 🔑 hint tokens
-(earned every 3 cracks, reveal a letter at a score cost), a **weekly cryptogram** that unlocks a
-multi-word dispatch, a **guesses-and-time score** feeding the leaderboard, and an emoji share-card.
+Black-side 2-Tone hard mode). 
 
-**Clearance: DELTA v1.3** — category focus runs (Rules · Tactics · History & Champions · PJCC),
-a ⚡ lightning round (per-question countdown + speed bonus), **board-diagram questions** (find the
-mate / name the tactic, drawn from FEN), a **daily shared 10-question exam** (seeded), and a
-missed-questions review log on the Dossier.
+**Deferred / queued next (Notation Blitz v3.5+):** two input-paradigm modes held back for
+hands-on play-testing before shipping —
+- **Reverse "name-the-square" drill** — a square lights up and you *call* it (likely a
+  coordinate keypad, or multiple-choice name buttons, judged on the beat like the forward run).
+- **Dual-lane two-hand mode** — two simultaneous calls at high BPM, one per lane/hand.
+*(Shipped in v3.5: the 📅 Daily seeded chart + the global timing-accuracy board.)*
+ 
 
-**The Pirc Protocol v2.0** — a 👑 boss exam mixing spot cards from every variation, ECO codes +
-master-game citations on each card's back, and PGN export of your mastered lines. (Blunder-trap
-mode deferred to the verified-chess pass below, so its refutations can be machine-checked sound.)
 
-*In progress (this batch): Siege on Chess City v2.0, then a dedicated correctness-critical pass —
-Pirc's blunder-trap refutations + Shogi v3.0's verified tsume mate-3/5 solver and 9×9 AI match
-(grouped because both need sound, machine-checked chess/shogi), plus Shogi's furigana/romaji +
-audio, spaced repetition, and daily tsume + kifu export.*
 
-- **Blindfold Puzzles** (floating flashlight): battery/lens pickups that extend beam time or radius · colored lenses (gold reveals the clue, blue reveals a hint, red is a faster-draining decoy) · glow-afterimage so already-swept text lingers faintly · a "lights out" hard mode that darkens the board too for bonus score · hold-to-lock / arrow-key beam nudge for accessibility, plus an uncatchable-firefly ambiance.
-- **Games page**: per-game accent theming on each card (crimson Siege, jade Ferry…) · Playable / In-Dev / Locked filter+sort tabs · a "your best / rank" chip pulled from the profile onto each card · a "continue where you left off" hero strip · a user toggle to disable the cursor sheen entirely.
 
-- **Blindfold Puzzles** (v2.0): themed packs (back-rank, knight forks, smothered mates, endgame zugzwang) · a timed "speed-vision" mode (shorter battery, bigger combo) · a hardcore "describe-only" mode with no board — type the move in algebraic · a daily seeded blindfold puzzle shared by everyone · a reviewable miss log + per-motif accuracy on the Dossier.
-- **The Mind's Eye** (hidden): CEO difficulty tiers (Intern → CEO → Board of Directors) with deeper search · an opening book with named CEO openings and a post-game "here's what you played" reveal · a no-peek "purist" trophy worth extra credits · a blitz blindfold clock mode · an animated, piece-by-piece replay of your won game to share.
-- **Notation Blitz** (round 2): a "ghost runner" race where your personal-best run replays as faint pills beside the live ones · a reverse "name-the-square" output drill (a square lights, you call it) · a dual-lane two-hand mode at high BPM · a "song" mode that charts a real famous game's moves to the beat · a daily seeded chart + a global timing-accuracy leaderboard (not just score).
-- **Games page** (round 2): Playable / In-Dev / Locked filter+sort tabs with a search box · a "your best / rank" chip pulled from the profile onto each card · hover mini-previews (a tiny animated loop per game) · a "surprise me" random-playable button · auto "new ✦" badges on cards bumped in the last N days, with a changelog popover.
+
 
 ## Five fresh ideas per game — round 3 (filed 2026-06-17)
 *A brand-new set of five per game (distinct from anything shipped or listed above). This also
