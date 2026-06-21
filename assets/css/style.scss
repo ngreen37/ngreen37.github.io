@@ -2731,6 +2731,9 @@ body.theme-bw .page-body em {
   width: 100%;
   padding: 18px 0 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
 }
 
 .ribbon-track {
@@ -2740,6 +2743,10 @@ body.theme-bw .page-body em {
   color: rgba(255, 255, 255, 0.055);
   letter-spacing: 32px;
   animation: ribbon-scroll 206s linear infinite;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  pointer-events: none;
 }
 
 body.theme-bw .ribbon-track {

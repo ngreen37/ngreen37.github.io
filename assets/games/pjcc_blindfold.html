@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Blindfold Puzzles v2.0</title>
+<title>PJCC: Blindfold Puzzles v2.1</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -94,7 +94,32 @@
   .overlay h1 { color: var(--gold); font-size: 24px; margin: 6px 0; letter-spacing: 1px; }
   .overlay p { color: #c9a7ff; max-width: 380px; line-height: 1.55; margin-bottom: 10px; font-size:13.5px; }
 
+  /* ===== modes, combo, describe-only ===== */
+  .modebar { display:flex; gap:5px; margin-bottom:8px; flex-wrap:wrap; }
+  .mode-btn { flex:1; min-width:0; background:#1d1140; border:1px solid #3a2a6a; color:#b79aff; border-radius:7px;
+    padding:7px 4px; font-size:11.5px; font-weight:bold; cursor:pointer; font-family:inherit; transition:border-color .12s,background .12s,color .12s; white-space:nowrap; }
+  .mode-btn:hover { border-color:#7a68c0; color:#f0e6ff; }
+  .mode-btn.active { background:#2a1a5e; border-color:var(--gold); color:var(--gold); }
+  .combo-chip { color:#6bffb8; } .combo-chip b { color:#6bffb8; }
+  .describe-wrap { background:#120a26; border:1px solid #2a1d54; border-radius:8px; padding:12px; margin:8px 0; }
+  .describe-note { color:#b79aff; font-size:12.5px; line-height:1.5; margin-bottom:8px; }
+  .describe-note b { color:var(--gold); }
+  .describe-row { display:flex; gap:6px; }
+  .describe-in { flex:1; background:#0d0720; border:1px solid #4f466e; color:#f0e6ff; border-radius:7px; padding:10px 12px;
+    font-size:16px; font-family:'Courier New',monospace; text-transform:none; }
+  .describe-in:focus { outline:none; border-color:var(--gold); }
+  #board.no-board .sq .pc { display:none; }
+  #board.no-board { opacity:0.25; }
+
   /* ===== The Mind's Eye ===== */
+  .me-tiers { display:flex; gap:5px; margin-bottom:7px; }
+  .me-tier { flex:1; background:#1d1140; border:1px solid #3a2a6a; color:#b79aff; border-radius:7px; padding:7px 3px;
+    font-size:11px; font-weight:bold; cursor:pointer; font-family:inherit; }
+  .me-tier.active { background:#2a1a5e; border-color:var(--gold); color:var(--gold); }
+  .me-clock { display:flex; justify-content:space-between; font-family:'Courier New',monospace; font-size:14px; margin:4px 0; }
+  .me-clock .cw { color:#fff; } .me-clock .cb { color:#ff8fd0; } .me-clock b.low { color:var(--bad); }
+  .me-opt { display:flex; gap:10px; justify-content:center; font-size:12px; color:#b79aff; margin-bottom:6px; }
+  .me-opt label { cursor:pointer; user-select:none; }
   #me-wrap { width:100%; max-width:460px; }
   .me-sub { color:#b79aff; font-size:12px; letter-spacing:2px; text-transform:uppercase; }
   .me-title { color:var(--gold); font-size:26px; font-weight:900; letter-spacing:2px; text-shadow:0 0 20px rgba(245,197,24,0.5); margin:2px 0 6px; }
@@ -118,7 +143,13 @@
 <div id="wrap">
   <div class="top">
     <span class="goal" id="goal">—</span>
-    <span class="score">Solved <b id="solved">0</b> · streak <b id="streak">0</b></span>
+    <span class="score">Solved <b id="solved">0</b> · streak <b id="streak">0</b><span id="combo-chip" class="combo-chip" hidden> · combo <b id="combo">0</b>×</span></span>
+  </div>
+  <div class="modebar" id="modebar">
+    <button class="mode-btn active" data-mode="classic">Classic</button>
+    <button class="mode-btn" data-mode="speed">⚡ Speed-Vision</button>
+    <button class="mode-btn" data-mode="describe">⌨ Describe-only</button>
+    <button class="mode-btn" data-mode="daily">📅 Daily</button>
   </div>
   <div class="diffbar"><i id="diff-fill"></i></div>
   <div class="clue" id="clue">
@@ -134,6 +165,13 @@
   <span class="bf-firefly" style="left:72%;top:90px;animation-delay:-4s;animation-duration:11s"></span>
   <span class="bf-firefly" style="left:46%;top:140px;animation-delay:-7s;animation-duration:8s"></span>
   <div id="board"></div>
+  <div class="describe-wrap" id="describe-wrap" hidden>
+    <div class="describe-note">🧠 No board. Read the clue, picture it, and <b>type the winning move</b> — algebraic (Qh5, Nf7) or coordinates (d1h5).</div>
+    <div class="describe-row">
+      <input id="describe-in" class="describe-in" placeholder="your move…" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="primary" id="describe-go">Play</button>
+    </div>
+  </div>
   <div class="msg" id="msg">Catch the 🔦 to light the clue — then click the piece that moves, then its target.</div>
   <div class="row">
     <button id="reveal">Reveal position</button>
@@ -149,11 +187,22 @@
     <div class="me-sub">The ultimate challenge</div>
     <div class="me-title">THE MIND&rsquo;S EYE</div>
     <p style="margin-bottom:6px">A full game against the <b style="color:var(--pink)">CEO</b> — played blind. The board shows <b>no pieces</b>. Move by coordinate; hold the whole position in your head.</p>
+    <div class="me-tiers" id="me-tiers">
+      <button class="me-tier active" data-tier="intern">Intern</button>
+      <button class="me-tier" data-tier="ceo">CEO</button>
+      <button class="me-tier" data-tier="board">Board of Directors</button>
+    </div>
+    <div class="me-opt">
+      <label><input type="checkbox" id="me-blitz"> ⏱ Blitz clock (3:00)</label>
+      <label><input type="checkbox" id="me-purist"> 🚫 Purist (no peeks, +credits)</label>
+    </div>
     <div id="me-board"></div>
+    <div class="me-clock" id="me-clock" hidden><span class="cw">You <b id="clk-w">3:00</b></span><span class="cb">CEO <b id="clk-b">3:00</b></span></div>
     <div class="me-status think" id="me-status">You are White. Make your move.</div>
     <div class="me-log" id="me-log"></div>
     <div class="row">
       <button id="me-peek">👁 Peek (3)</button>
+      <button id="me-replay" hidden>▶ Replay</button>
       <button id="me-resign">Resign</button>
       <button id="me-close">Leave</button>
     </div>
@@ -306,8 +355,10 @@ function evalBoard(b){
   return s; // + = good for white
 }
 var MATE=1000000;
+var SEARCH_DEADLINE=Infinity, SN=0;                       // wall-clock guard for deeper tiers
 function negamax(S, depth, alpha, beta, who){
   // who: +1 if side-to-move is white perspective handled by sign
+  if(((SN++)&2047)===0 && Date.now()>SEARCH_DEADLINE) return (S.turn==='w'?1:-1)*evalBoard(S.b);
   var mv=orderMoves(S, legalMoves(S));
   if(mv.length===0){ if(inCheck(S,S.turn)) return -MATE - depth; return 0; }
   if(depth===0) return (S.turn==='w'?1:-1)*evalBoard(S.b);
@@ -320,20 +371,26 @@ function orderMoves(S, mv){ var b=S.b; mv.sort(function(a,c){ return (capVal(b,c
 function capVal(b,m){ var t=b[m.to]; return t ? (PVAL[t.toLowerCase()]||0) + (m.promo?800:0) : (m.promo?800:0); }
 function aiMove(S, depth){
   var mv=orderMoves(S, legalMoves(S)); if(!mv.length) return null;
+  SEARCH_DEADLINE = Date.now() + 1200; SN=0;               // keep deep tiers responsive
   var best=mv[0], bv=-Infinity;
   for(var i=0;i<mv.length;i++){ var v=-negamax(makeMove(S,mv[i]), depth-1, -Infinity, Infinity, 1);
-    if(v>bv || (v===bv && Math.random()<0.3)){ bv=v; best=mv[i]; } }
+    if(v>bv || (v===bv && Math.random()<0.3)){ bv=v; best=mv[i]; }
+    if(Date.now()>SEARCH_DEADLINE) break; }
+  SEARCH_DEADLINE=Infinity;
   return best;
 }
 
 /* ====================================================================
    PUZZLE GENERATOR (verified by the engine above)
    ==================================================================== */
-function rnd(n){ return (Math.random()*n)|0; }
+var RAND = Math.random;                                  // swappable for seeded daily puzzles
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function withSeed(seed, fn){ var prev=RAND; RAND=mulberry32(seed>>>0); try { return fn(); } finally { RAND=prev; } }
+function rnd(n){ return (RAND()*n)|0; }
 function emptyBoard(){ return new Array(64).fill(''); }
 function placeRandKing(b, color, edgeBias){
   for(var tries=0;tries<200;tries++){ var r,f;
-    if(edgeBias){ r = Math.random()<0.6 ? (Math.random()<0.5?0:1) : rnd(8); f = Math.random()<0.5 ? rnd(8) : (Math.random()<0.5?rnd(2):6+rnd(2)); }
+    if(edgeBias){ r = RAND()<0.6 ? (RAND()<0.5?0:1) : rnd(8); f = RAND()<0.5 ? rnd(8) : (RAND()<0.5?rnd(2):6+rnd(2)); }
     else { r=1+rnd(6); f=1+rnd(6); }
     var i=r*8+f; if(b[i]) continue;
     var ok=true; for(var d=0;d<8;d++){ var nr=r+KGJ[d][0], nf=f+KGJ[d][1]; if(onb(nr,nf)&&b[nr*8+nf]&&b[nr*8+nf].toLowerCase()==='k'){ok=false;break;} }
@@ -356,7 +413,7 @@ function genMate(diff){
     for(var k=0;k<npieces;k++){ var sq=freeSq(b); if(sq<0){ok=false;break;} b[sq]= pool[rnd(pool.length)]; }
     if(!ok) continue;
     // a few black blockers at higher diff (own pawns near king) to make it less trivial
-    if(diff>=5){ var bp=rf(bk); for(var d2=0;d2<8 && Math.random()<0.4;d2++){ var nr=bp[0]+KGJ[d2][0], nf=bp[1]+KGJ[d2][1]; if(onb(nr,nf)&&!b[nr*8+nf]) b[nr*8+nf]='p'; } }
+    if(diff>=5){ var bp=rf(bk); for(var d2=0;d2<8 && RAND()<0.4;d2++){ var nr=bp[0]+KGJ[d2][0], nf=bp[1]+KGJ[d2][1]; if(onb(nr,nf)&&!b[nr*8+nf]) b[nr*8+nf]='p'; } }
     var S={b:b, turn:'w', cast:{K:false,Q:false,k:false,q:false}, ep:-1};
     if(inCheck(S,'b')) continue;             // black shouldn't already be in check
     if(inCheck(S,'w')) continue;             // white king safe
@@ -478,35 +535,104 @@ if (RUN_UI) (function(){
     for(var f2=0;f2<8;f2++){ var l=document.createElement('div'); l.className='lab'; l.textContent=FILES[f2]; boardEl.appendChild(l); }
   }
 
-  var prob=null, phase='from', curMistake=false;
+  var prob=null, phase='from', curMistake=false, mode='classic', combo=0;
   function setMsg(t,cls){ var m=document.getElementById('msg'); m.textContent=t; m.className='msg '+(cls||''); }
   function clearMarks(){ for(var k in sqEls) sqEls[k].classList.remove('from','target','bad'); }
   function clearPieces(){ for(var k in sqEls) sqEls[k].innerHTML=''; }
   function place(sq, p){ var side=isW(p)?'you':'them'; sqEls[sq].innerHTML='<span class="pc '+side+'">'+GLYPH[isW(p)?'w':'b'][p.toLowerCase()]+'</span>'; }
 
   function effDiff(){ var e=Math.round(st.diff + (Math.random()*2-1)*1.6); return Math.max(1, Math.min(10, e)); }
+  function genFor(d){ return (Math.random()<0.7) ? genMate(d) : (genFork(d)||genMate(d)); }
+  /* ---- Daily seeded blindfold (shared by everyone) ---- */
+  function todayStamp(){ return (window.PJCC && PJCC.dayStamp) ? PJCC.dayStamp() : new Date().toISOString().slice(0,10); }
+  function dailySeed(){ var s=todayStamp(), h=2166136261; for(var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return (h>>>0); }
+  function dailyDone(){ try{ var o=JSON.parse(localStorage.getItem('pjcc.bf.daily')); return !!(o && o.day===todayStamp()); }catch(e){ return false; } }
+  function markDailyDone(solved){ try{ localStorage.setItem('pjcc.bf.daily', JSON.stringify({ day:todayStamp(), solved:solved })); }catch(e){} }
+  function beamSecondsForMode(){ return mode==='speed' ? 3.6 : mode==='describe' ? 9 : 6.5; }
+  function comboMult(){ return 1 + Math.floor(combo/3) * (mode==='speed' ? 1 : 0.5); }
+  function updateCombo(){ var chip=document.getElementById('combo-chip'); var show = combo>=2 || mode==='speed';
+    chip.hidden=!show; document.getElementById('combo').textContent=combo + (mode==='speed' ? ' ('+comboMult().toFixed(1)+'×)' : ''); }
+
   function newPuzzle(){
     clearPieces(); clearMarks(); phase='from'; curMistake=false;
-    var d=effDiff(), p = (Math.random()<0.7) ? genMate(d) : (genFork(d)||genMate(d));
+    var dw=document.getElementById('describe-wrap'), bd=document.getElementById('board');
+    if(mode==='daily' && dailyDone()){
+      prob=null; document.getElementById('goal').textContent='📅 Daily · done';
+      document.getElementById('clue-text').innerHTML='📅 You have already solved today’s <b>Daily Blindfold</b>. Everyone gets the same position — come back tomorrow, or switch to Classic / Speed to keep training.';
+      clueEl.classList.add('lit'); document.getElementById('clue-text').style.setProperty('--r','999px');
+      dw.hidden=true; bd.classList.remove('no-board'); document.getElementById('next').disabled=true;
+      setMsg('Daily complete. New shared position at midnight.',''); renderMindsEye(); return;
+    }
+    var d, p;
+    if(mode==='daily'){ var seed=dailySeed(); d=4+(seed%4); p=withSeed(seed, function(){ return genMate(d); }); }
+    else { d=effDiff(); p=genFor(d); }
     prob={ S:p.S, goal:p.goal, sols:p.sols, from:nameFromSq(p.sols[0].from), to:nameFromSq(p.sols[0].to),
-      clue: describeBoard(p.S.b) };
-    document.getElementById('goal').textContent = p.goal + ' · lv' + d;
+      clue: describeBoard(p.S.b), d:d };
+    document.getElementById('goal').textContent = (mode==='daily'?'📅 Daily · ':'') + p.goal + ' · lv' + d;
     document.getElementById('clue-text').innerHTML = prob.clue;
     resetBeam();
     document.getElementById('solved').textContent=st.solved;
     document.getElementById('streak').textContent=st.streak;
     document.getElementById('diff-fill').style.width = (st.diff/10*100)+'%';
     document.getElementById('next').disabled=true;
-    setMsg('Light the clue, then click the piece that moves.','');
+    updateCombo();
+    if(mode==='describe'){ dw.hidden=false; bd.classList.add('no-board'); var di=document.getElementById('describe-in'); di.value=''; setTimeout(function(){ try{ di.focus(); }catch(e){} },60);
+      setMsg('Light the clue, picture the board, then type the winning move.',''); }
+    else { dw.hidden=true; bd.classList.remove('no-board'); setMsg('Light the clue, then click the piece that moves.',''); }
     renderMindsEye();
   }
+
+  /* ---- per-motif accuracy + miss log (surfaced on the Dossier) ---- */
+  function motifKey(goal){ return /fork/i.test(goal) ? 'fork' : /mate/i.test(goal) ? 'mate' : 'other'; }
+  function recordStat(goal, clean){
+    try{ var s=JSON.parse(localStorage.getItem('pjcc.blindfold.stats.v1'))||{}; var k=motifKey(goal);
+      if(!s[k]) s[k]={seen:0,clean:0}; s[k].seen++; if(clean) s[k].clean++;
+      localStorage.setItem('pjcc.blindfold.stats.v1', JSON.stringify(s)); }catch(e){}
+  }
+  function recordMiss(){
+    if(!prob) return;
+    try{ var arr=JSON.parse(localStorage.getItem('pjcc.blindfold.missed.v1'))||[];
+      arr.unshift({ goal:prob.goal, ans:prob.from+'→'+prob.to, clue:String(prob.clue).replace(/<[^>]+>/g,''), t:Date.now() });
+      localStorage.setItem('pjcc.blindfold.missed.v1', JSON.stringify(arr.slice(0,15))); }catch(e){}
+  }
+
+  /* ---- Describe-only: type the move ---- */
+  function normMove(s){ return String(s).trim().toLowerCase().replace(/[+#x!?\s.=]/g,'').replace(/(.)(q|r|b|n)$/, function(m,a,b){ return /[a-h][18]/.test(a+ '') ? a : m; }); }
+  function acceptStrings(m){
+    var from=nameFromSq(m.from), to=nameFromSq(m.to), pc=prob.S.b[m.from], type=pc?pc.toLowerCase():'p';
+    var letter = type==='p' ? '' : type.toUpperCase();
+    var arr=[from+to, to, letter+to, letter+from[0]+to];
+    if(type==='p') arr.push(from[0]+to);
+    if(m.promo) arr.push(from+to+m.promo, to+m.promo);
+    return arr.map(normMove);
+  }
+  function submitDescribe(){
+    if(phase==='done' || !prob) return;
+    var n=normMove(document.getElementById('describe-in').value);
+    if(!n){ return; }
+    var ok = prob.sols.some(function(m){ return acceptStrings(m).indexOf(n)>=0; });
+    if(ok){ document.getElementById('board').classList.remove('no-board'); revealAll(); clearMarks();
+      sqEls[prob.from].classList.add('from'); sqEls[prob.to].classList.add('target');
+      phase='done'; finishSolve(!curMistake); }
+    else { curMistake=true; setMsg('Not the move — re-read the clue and try again.','bad');
+      var di=document.getElementById('describe-in'); di.value=''; try{ di.focus(); }catch(e){} }
+  }
+  document.getElementById('describe-go').onclick=submitDescribe;
+  document.getElementById('describe-in').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); submitDescribe(); } });
+
+  /* ---- mode bar ---- */
+  Array.prototype.forEach.call(document.querySelectorAll('#modebar .mode-btn'), function(b){
+    b.onclick=function(){ mode=b.dataset.mode; combo=0;
+      Array.prototype.forEach.call(document.querySelectorAll('#modebar .mode-btn'), function(x){ x.classList.toggle('active', x===b); });
+      newPuzzle(); };
+  });
   function pieceAt(sq){ return prob.S.b[sqFromName(sq)]; }
   function isSolutionTo(sq){ // accept any listed solution whose from matches the chosen piece and to matches sq
     return prob.sols.some(function(s){ return nameFromSq(s.to)===sq; });
   }
   function solutionFromSquares(){ var o={}; prob.sols.forEach(function(s){ o[nameFromSq(s.from)]=1; }); return o; }
   function clickSquare(sq){
-    if(phase==='done') return;
+    if(phase==='done' || mode==='describe') return;
     if(phase==='from'){
       if(solutionFromSquares()[sq]){ place(sq, pieceAt(sq)); sqEls[sq].classList.add('from'); prob.fromSq=sq; phase='to'; setMsg('Good — now click where it goes.','good'); }
       else { curMistake=true; if(pieceAt(sq)){ place(sq,pieceAt(sq)); sqEls[sq].classList.add('bad'); setMsg('That piece isn’t the one to move.','bad'); } else setMsg('Nothing on that square. Re-read the clue.','bad');
@@ -520,18 +646,27 @@ if (RUN_UI) (function(){
   }
   function revealAll(){ var b=prob.S.b; for(var i=0;i<64;i++){ if(b[i]){ var nm=nameFromSq(i); if(!sqEls[nm].innerHTML) place(nm,b[i]); } } }
   function finishSolve(clean){
-    if(clean){ st.solved++; st.streak++; st.diff=Math.min(10, st.diff+0.34); if(lightsOut) st.diff=Math.min(10, st.diff+0.2); setMsg('Solved! ✓'+(lightsOut?' ⭐ lights-out':''),'good'); }
-    else { st.streak=0; st.diff=Math.max(1, st.diff-0.5); setMsg('Correct — but counted as a slip.','good'); }
+    recordStat(prob.goal, clean); if(!clean) recordMiss();
+    if(clean){ combo++; st.solved++; st.streak++; st.diff=Math.min(10, st.diff+0.34); if(lightsOut) st.diff=Math.min(10, st.diff+0.2);
+      setMsg('Solved! ✓'+(mode==='speed'&&combo>=3?(' ⚡ '+combo+' combo!'):'')+(lightsOut?' ⭐ lights-out':''),'good'); }
+    else { combo=0; st.streak=0; st.diff=Math.max(1, st.diff-0.5); setMsg('Correct — but counted as a slip.','good'); }
     if(st.solved>st.best) st.best=st.solved;
     if(!st.eye && st.solved>=UNLOCK_AT){ st.eye=true; setMsg('THE MIND’S EYE is unlocked — scroll down.','good'); }
-    save();
+    save(); updateCombo();
     document.getElementById('solved').textContent=st.solved; document.getElementById('streak').textContent=st.streak;
     document.getElementById('diff-fill').style.width=(st.diff/10*100)+'%';
     document.getElementById('next').disabled=false;
-    if(window.PJCC) PJCC.saveScore('blindfold', st.solved, { credits:1, data:{ streak:st.streak, diff:Math.round(st.diff) } });
+    var motif={}; try{ motif=JSON.parse(localStorage.getItem('pjcc.blindfold.stats.v1'))||{}; }catch(e){}
+    if(window.PJCC){
+      if(mode==='daily'){ markDailyDone(clean); PJCC.saveScore('blindfold', st.solved, { seed: todayStamp(), credits: clean?2:1, data:{ daily:true, motif:motif } }); }
+      else { var creds = mode==='speed' ? Math.min(5, 1+Math.floor(combo/3)) : 1; PJCC.saveScore('blindfold', st.solved, { credits:creds, data:{ streak:st.streak, diff:Math.round(st.diff), motif:motif } }); }
+    }
     renderMindsEye();
   }
   function failReveal(){ // "Reveal position": show + treat as slip; diff eases
+    if(!prob) return;
+    document.getElementById('board').classList.remove('no-board'); document.getElementById('describe-wrap').hidden=true;
+    recordStat(prob.goal, false); recordMiss(); combo=0; updateCombo();
     revealAll(); clearMarks(); sqEls[prob.from].classList.add('from'); sqEls[prob.to].classList.add('target');
     phase='done'; curMistake=true; st.streak=0; st.diff=Math.max(1, st.diff-0.7); save();
     document.getElementById('streak').textContent=st.streak; document.getElementById('diff-fill').style.width=(st.diff/10*100)+'%';
@@ -556,7 +691,7 @@ if (RUN_UI) (function(){
   var clueEl=document.getElementById('clue'), clueText=document.getElementById('clue-text'),
       clueAfter=document.getElementById('clue-after'), beamEl=document.getElementById('clue-beam'),
       battFill=document.querySelector('#beam-batt > i'), torchEl=document.getElementById('bf-torch');
-  var BEAM_R=104, BEAM_SECONDS=6.5, beamLit=false, beamBatt=0, lastTs=0;
+  var BEAM_R=104, BEAM_SECONDS=6.5, beamMax=6.5, beamLit=false, beamBatt=0, lastTs=0;
   var beamX=0, beamY=0, afterX=0, afterY=0, beamLocked=false, drainMul=1, lensR=0, lensT=0;
   var lightsOut=false;
   function applyBeam(){ var R=BEAM_R+lensR;
@@ -564,7 +699,7 @@ if (RUN_UI) (function(){
     beamEl.style.setProperty('--lx',beamX+'px'); beamEl.style.setProperty('--ly',beamY+'px'); }
   function setBeamPos(cx,cy){ var r=clueEl.getBoundingClientRect(); beamX=Math.max(0,Math.min(r.width,cx-r.left)); beamY=Math.max(0,Math.min(r.height,cy-r.top)); applyBeam(); }
   function nudge(dx,dy){ if(!beamLit) return; var r=clueEl.getBoundingClientRect(); beamX=Math.max(0,Math.min(r.width,beamX+dx)); beamY=Math.max(0,Math.min(r.height,beamY+dy)); beamLocked=true; clueEl.classList.add('locked'); applyBeam(); }
-  function catchTorch(){ beamLit=true; beamBatt=BEAM_SECONDS; beamLocked=false; lensR=0; lensT=0; drainMul=1;
+  function catchTorch(){ beamLit=true; beamMax=beamSecondsForMode(); beamBatt=beamMax; beamLocked=false; lensR=0; lensT=0; drainMul=1;
     clueEl.classList.remove('locked'); clueEl.classList.add('lit'); torchEl.classList.add('caught');
     var r=clueEl.getBoundingClientRect(); beamX=r.width/2; beamY=r.height/2; afterX=beamX; afterY=beamY; applyBeam(); }
   function beamOff(){ beamLit=false; beamLocked=false; lensR=0; drainMul=1; lensT=0; clueEl.classList.remove('lit','locked');
@@ -581,13 +716,14 @@ if (RUN_UI) (function(){
   clueEl.addEventListener('pointerup', function(){ if(pressT){ clearTimeout(pressT); pressT=null; } if(Date.now()-pressStart<420 && beamLocked){ beamLocked=false; clueEl.classList.remove('locked'); } });
   clueEl.addEventListener('pointerleave', function(){ if(pressT){ clearTimeout(pressT); pressT=null; } });
   document.addEventListener('keydown', function(e){ var s=14;
+    if(document.activeElement && document.activeElement.id==='describe-in') return;   // don't hijack arrows while typing a move
     if(e.key==='ArrowLeft'){ nudge(-s,0); e.preventDefault(); } else if(e.key==='ArrowRight'){ nudge(s,0); e.preventDefault(); }
     else if(e.key==='ArrowUp'){ nudge(0,-s); e.preventDefault(); } else if(e.key==='ArrowDown'){ nudge(0,s); e.preventDefault(); } });
 
   function beamTick(ts){ var dt=lastTs?(ts-lastTs)/1000:0; lastTs=ts;
     if(beamLit){ beamBatt-=dt*drainMul; if(lensT>0){ lensT-=dt; if(lensT<=0){ lensR=0; drainMul=1; applyBeam(); } }
       if(beamBatt<=0){ beamBatt=0; beamOff(); }
-      if(battFill) battFill.style.transform='scaleX('+(beamBatt/BEAM_SECONDS)+')';
+      if(battFill) battFill.style.transform='scaleX('+(beamBatt/beamMax)+')';
       afterX += (beamX-afterX)*0.08; afterY += (beamY-afterY)*0.08;
       if(clueAfter){ clueAfter.style.setProperty('--lx',afterX+'px'); clueAfter.style.setProperty('--ly',afterY+'px'); clueAfter.style.setProperty('--r',(BEAM_R+lensR+34)+'px'); }
     }
@@ -609,7 +745,7 @@ if (RUN_UI) (function(){
   }
   function grabPickup(p){
     if(p.dead) return; p.dead=true; if(p.el) p.el.remove();
-    if(p.k==='batt'){ if(beamLit) beamBatt=Math.min(BEAM_SECONDS+4, beamBatt+3); setMsg('🔋 +battery — longer beam.','good'); }
+    if(p.k==='batt'){ if(beamLit) beamBatt=Math.min(beamMax+4, beamBatt+3); setMsg('🔋 +battery — longer beam.','good'); }
     else if(p.k==='gold'){ lensR=46; lensT=5; drainMul=0.8; if(beamLit) applyBeam(); setMsg('🔆 gold lens — wider beam, slower drain (a hint!).','good'); }
     else { lensR=-34; lensT=4; drainMul=1.7; if(beamLit) applyBeam(); setMsg('🔴 decoy lens — tight beam, draining fast!','bad'); }
   }
@@ -629,6 +765,28 @@ if (RUN_UI) (function(){
 
   /* ================= THE MIND'S EYE (blindfold chess vs CEO) ================= */
   var ME=null, meBoardEl=document.getElementById('me-board'), meSq={}, mePeeks=3, mePeekT=0, meSel=null, meBusy=false, meLast=null;
+  var meDepth=2, meTier='intern', meBlitz=false, mePurist=false, mePeeked=false;
+  var meMoves=[], meBook=null, meBookName='', meClockW=180, meClockB=180, meClockH=null, meEnded=false;
+  var TIER_DEPTH={ intern:2, ceo:3, board:4 }, TIER_LABEL={ intern:'an Intern', ceo:'the CEO', board:'the Board of Directors' };
+  // The CEO's named opening book — Black replies it follows while White plays the mainline.
+  // Each line is the full move list in coordinate form (White, Black, White, …).
+  var OPENINGS=[
+    { name:'the Sicilian Defense',   line:['e2e4','c7c5','g1f3','d7d6','d2d4','c5d4','f3d4','g8f6','b1c3','a7a6'] },
+    { name:'the French Defense',     line:['e2e4','e7e6','d2d4','d7d5','b1c3','g8f6','c1g5','f8e7'] },
+    { name:'the Caro-Kann',          line:['e2e4','c7c6','d2d4','d7d5','b1c3','d5e4','c3e4','c8f5'] },
+    { name:'the King’s Indian',      line:['d2d4','g8f6','c2c4','g7g6','b1c3','f8g7','e2e4','d7d6'] },
+    { name:'the Queen’s Gambit Declined', line:['d2d4','d7d5','c2c4','e7e6','b1c3','g8f6','c1g5','f8e7'] },
+    { name:'the Pirc Defense',       line:['e2e4','d7d6','d2d4','g8f6','b1c3','g7g6','g1f3','f8g7'] }
+  ];
+  function meUci(m){ return nameFromSq(m.from)+nameFromSq(m.to)+(m.promo?m.promo.toLowerCase():''); }
+  function uciToMove(S, u){ var from=sqFromName(u.slice(0,2)), to=sqFromName(u.slice(2,4)), pr=u.length>4?u[4].toUpperCase():null;
+    var lm=legalMoves(S); for(var i=0;i<lm.length;i++){ if(lm[i].from===from&&lm[i].to===to&&(lm[i].promo||'')===(pr||'')) return lm[i]; } return null; }
+  function bookMove(){
+    if(!meBook) return null; var ply=meMoves.length;
+    if(ply>=meBook.line.length) return null;
+    for(var i=0;i<ply;i++){ if(meMoves[i]!==meBook.line[i]){ meBook=null; return null; } }   // White left the book
+    return uciToMove(ME, meBook.line[ply]);
+  }
   function buildMeBoard(){ meBoardEl.innerHTML='';
     for(var r=8;r>=1;r--){ var lab=document.createElement('div'); lab.className='me-lab'; lab.textContent=r; meBoardEl.appendChild(lab);
       for(var f=0;f<8;f++){ var name=FILES[f]+r; var d=document.createElement('div'); d.className='me-sq '+(((f+r)%2===0)?'dark':'light'); d.dataset.sq=name;
@@ -637,9 +795,51 @@ if (RUN_UI) (function(){
     for(var f2=0;f2<8;f2++){ var l=document.createElement('div'); l.className='me-lab'; l.textContent=FILES[f2]; meBoardEl.appendChild(l); }
   }
   function openMindsEye(){ document.getElementById('me-overlay').classList.remove('hidden'); newMe(); }
-  function newMe(){ ME=parseFEN(START_FEN); mePeeks=3; mePeekT=0; meSel=null; meBusy=false; meLast=null;
-    document.getElementById('me-log').innerHTML=''; document.getElementById('me-peek').textContent='👁 Peek (3)';
-    setMeStatus('You are White. Make your move (click from-square, then to-square).','think'); drawMe(); }
+  function newMe(){ ME=parseFEN(START_FEN); mePeekT=0; meSel=null; meBusy=false; meLast=null; meMoves=[]; meEnded=false; mePeeked=false;
+    meBlitz=document.getElementById('me-blitz').checked; mePurist=document.getElementById('me-purist').checked;
+    mePeeks = mePurist ? 0 : 3; meDepth=TIER_DEPTH[meTier]||2;
+    meBook = OPENINGS[(Math.random()*OPENINGS.length)|0]; meBookName=meBook.name;
+    meClockW=180; meClockB=180; stopMeClock();
+    document.getElementById('me-log').innerHTML='';
+    var pk=document.getElementById('me-peek'); pk.textContent = mePurist ? '🚫 Purist' : '👁 Peek (3)'; pk.disabled = mePurist;
+    document.getElementById('me-replay').hidden = true;
+    var clk=document.getElementById('me-clock'); clk.hidden = !meBlitz; renderClock();
+    setMeStatus('You are White vs '+TIER_LABEL[meTier]+'. Make your move (click from-square, then to-square).','think'); drawMe();
+    if(meBlitz) startMeClock();
+  }
+  /* ---- blitz clock ---- */
+  function fmtClock(s){ s=Math.max(0,Math.ceil(s)); return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2); }
+  function renderClock(){ var w=document.getElementById('clk-w'), b=document.getElementById('clk-b');
+    if(w){ w.textContent=fmtClock(meClockW); w.className=meClockW<=20?'low':''; }
+    if(b){ b.textContent=fmtClock(meClockB); b.className=meClockB<=20?'low':''; } }
+  function stopMeClock(){ if(meClockH){ clearInterval(meClockH); meClockH=null; } }
+  function startMeClock(){ stopMeClock(); meClockH=setInterval(function(){
+    if(meEnded || !ME){ stopMeClock(); return; }
+    if(ME.turn==='w') meClockW-=1; else meClockB-=1; renderClock();
+    if(meClockW<=0){ meClockW=0; renderClock(); endReveal(); setMeStatus('Your flag fell — '+TIER_LABEL[meTier]+' wins on time.','bad'); }
+    else if(meClockB<=0){ meClockB=0; renderClock(); winMindsEye(true); }
+  }, 1000); }
+  /* ---- post-game reveal + replay ---- */
+  function endReveal(){ if(meEnded) return; meEnded=true; meBusy=true; stopMeClock();
+    meLog('<div style="color:#9a7fd4;margin-top:4px">— You played vs <b style="color:#ff8fd0">'+TIER_LABEL[meTier]+'</b>. Opening: <b style="color:#F5C518">'+meBookName+'</b> · '+Math.ceil(meMoves.length/2)+' moves. Hit ▶ Replay.</div>');
+    document.getElementById('me-replay').hidden = false;
+  }
+  var replaying=false;
+  function replayGame(){
+    if(replaying || !meMoves.length) return; replaying=true; var S=parseFEN(START_FEN), i=0;
+    var prevPeek=mePeekT; setMeStatus('▶ Replaying your game…','think');
+    function step(){
+      // draw S with pieces visible
+      for(var k in meSq){ meSq[k].className='me-sq '+(((FILES.indexOf(k[0])+ +k[1])%2===0)?'dark':'light'); meSq[k].innerHTML=''; }
+      for(var q=0;q<64;q++){ var p=S.b[q]; if(p){ var nm=nameFromSq(q); meSq[nm].innerHTML='<span class="pc '+(isW(p)?'w':'b')+'">'+GLYPH[isW(p)?'w':'b'][p.toLowerCase()]+'</span>'; } }
+      if(i>=meMoves.length){ replaying=false; setMeStatus('Replay complete. Leave or play again.','good'); return; }
+      var mv=uciToMove(S, meMoves[i]); if(!mv){ replaying=false; return; }
+      if(meSq[nameFromSq(mv.from)]) meSq[nameFromSq(mv.from)].classList.add('lastf');
+      if(meSq[nameFromSq(mv.to)]) meSq[nameFromSq(mv.to)].classList.add('lastt');
+      S=makeMove(S, mv); i++; setTimeout(step, 720);
+    }
+    step();
+  }
   function drawMe(){
     for(var k in meSq){ meSq[k].className='me-sq '+(((FILES.indexOf(k[0])+ +k[1])%2===0)?'dark':'light'); meSq[k].innerHTML=''; }
     if(mePeekT>0){ for(var i=0;i<64;i++){ var p=ME.b[i]; if(p){ var nm=nameFromSq(i); meSq[nm].innerHTML='<span class="pc '+(isW(p)?'w':'b')+'">'+GLYPH[isW(p)?'w':'b'][p.toLowerCase()]+'</span>'; } } }
@@ -662,41 +862,53 @@ if (RUN_UI) (function(){
     doMe(found, true);
   }
   function doMe(m, isPlayer){
-    var moveNo = ''; var san = moveSAN(ME, m);
-    if(ME.turn==='w'){ var num=(document.getElementById('me-log').childElementCount); meLog('<div><b style="color:#F5C518">'+moveNumber()+'.</b> '+san+' '); }
+    var san = moveSAN(ME, m);
+    if(ME.turn==='w'){ meLog('<div><b style="color:#F5C518">'+moveNumber()+'.</b> '+san+' '); }
     else { meLog('<span style="color:#ff8fd0">'+san+'</span></div>'); }
+    meMoves.push(meUci(m));
     ME=makeMove(ME, m); meLast=m; meSel=null; drawMe();
     // outcome
     if(isCheckmate(ME)){ // side to move (ME.turn) is mated
-      if(ME.turn==='b'){ winMindsEye(); } else { setMeStatus('Checkmate — the CEO wins this one. Rebuild and challenge again.','bad'); meBusy=true; }
+      if(ME.turn==='b'){ winMindsEye(false); } else { setMeStatus('Checkmate — '+TIER_LABEL[meTier]+' wins this one. Rebuild and challenge again.','bad'); endReveal(); }
       return;
     }
-    if(isStalemate(ME) || onlyKings(ME.b)){ setMeStatus('Drawn game. The CEO tips his king.','think'); meBusy=true; return; }
-    if(isPlayer){ // CEO replies
-      meBusy=true; setMeStatus('The CEO considers…','think');
-      setTimeout(function(){ var mv=aiMove(ME, 3); if(!mv){ setMeStatus('Stalemate.','think'); return; } doMe(mv, false);
-        if(!isCheckmate(ME) && !isStalemate(ME)){ meBusy=false; setMeStatus(inCheck(ME,'w')?'Check! Your move.':'Your move.', inCheck(ME,'w')?'bad':'think'); } }, 380);
+    if(isStalemate(ME) || onlyKings(ME.b)){ setMeStatus('Drawn game. '+TIER_LABEL[meTier]+' tips a king.','think'); endReveal(); return; }
+    if(isPlayer){ // CEO replies (from its opening book, else search at the chosen depth)
+      meBusy=true; setMeStatus(TIER_LABEL[meTier]+' considers…','think');
+      setTimeout(function(){ var mv=bookMove() || aiMove(ME, meDepth); if(!mv){ setMeStatus('Stalemate.','think'); endReveal(); return; } doMe(mv, false);
+        if(!meEnded){ meBusy=false; setMeStatus(inCheck(ME,'w')?'Check! Your move.':'Your move.', inCheck(ME,'w')?'bad':'think'); } }, 360);
     }
   }
   function moveNumber(){ // count full moves played so far for white
     return Math.floor((document.getElementById('me-log').querySelectorAll('div').length))+1;
   }
   function onlyKings(b){ for(var i=0;i<64;i++){ if(b[i] && b[i].toLowerCase()!=='k') return false; } return true; }
-  function winMindsEye(){
-    meBusy=true; setMeStatus('CHECKMATE — you beat the CEO blind!','good');
+  function winMindsEye(byTime){
+    endReveal(); setMeStatus((byTime?'Flag fall — ':'CHECKMATE — ')+'you beat '+TIER_LABEL[meTier]+' blind!','good');
     var firstTime = !st.trophy; st.trophy=true; st.eye=true; save();
-    var creds = firstTime ? 25 : 5;
-    if(window.PJCC) PJCC.saveScore('blindfold', st.solved, { credits: creds, data:{ trophy:'minds-eye', firstTime:firstTime } });
-    setTimeout(function(){ showTrophy(firstTime, creds); }, 700);
+    var purist = mePurist && !mePeeked;
+    var tierBonus = meTier==='board' ? 10 : meTier==='ceo' ? 5 : 0;
+    var creds = (firstTime ? 25 : 5) + tierBonus + (purist ? 15 : 0);
+    if(window.PJCC) PJCC.saveScore('blindfold', st.solved, { credits: creds, data:{ trophy:'minds-eye', tier:meTier, purist:purist, firstTime:firstTime } });
+    setTimeout(function(){ showTrophy(firstTime, creds, purist); }, 700);
   }
-  document.getElementById('me-peek').onclick=function(){ if(mePeeks<=0||meBusy) return; mePeeks--; mePeekT=1.2; this.textContent='👁 Peek ('+mePeeks+')'; drawMe(); setTimeout(function(){ mePeekT=0; drawMe(); }, 1200); };
-  document.getElementById('me-resign').onclick=function(){ if(!ME) return; setMeStatus('You resign. The CEO smiles.','bad'); meBusy=true; };
-  document.getElementById('me-close').onclick=function(){ document.getElementById('me-overlay').classList.add('hidden'); renderMindsEye(); };
+  document.getElementById('me-peek').onclick=function(){ if(mePeeks<=0||meBusy||mePurist) return; mePeeked=true; mePeeks--; mePeekT=1.2; this.textContent='👁 Peek ('+mePeeks+')'; drawMe(); setTimeout(function(){ mePeekT=0; drawMe(); }, 1200); };
+  document.getElementById('me-resign').onclick=function(){ if(!ME||meEnded) return; setMeStatus('You resign. '+TIER_LABEL[meTier]+' smiles.','bad'); endReveal(); };
+  document.getElementById('me-close').onclick=function(){ stopMeClock(); document.getElementById('me-overlay').classList.add('hidden'); renderMindsEye(); };
+  document.getElementById('me-replay').onclick=replayGame;
+  Array.prototype.forEach.call(document.querySelectorAll('#me-tiers .me-tier'), function(b){
+    b.onclick=function(){ meTier=b.dataset.tier;
+      Array.prototype.forEach.call(document.querySelectorAll('#me-tiers .me-tier'), function(x){ x.classList.toggle('active', x===b); });
+      if(ME && (meMoves.length===0 || meEnded)) newMe();   // apply immediately if game hasn't started or has ended
+    };
+  });
 
   /* ===== trophy ===== */
-  function showTrophy(firstTime, creds){
+  function showTrophy(firstTime, creds, purist){
     document.getElementById('me-overlay').classList.add('hidden');
-    document.getElementById('tr-msg').innerHTML = (firstTime ? 'You held the entire board in your mind and checkmated the CEO. ' : 'Bested the CEO again. ') +
+    document.getElementById('tr-title').innerHTML = purist ? 'PURIST — MIND’S EYE' : 'THE MIND’S EYE';
+    document.getElementById('tr-msg').innerHTML = (firstTime ? 'You held the entire board in your mind and checkmated ' + TIER_LABEL[meTier] + '. ' : 'Bested ' + TIER_LABEL[meTier] + ' again. ') +
+      (purist ? '<b style="color:#6bffb8">No peeks — a true purist.</b> ' : '') +
       'Awarded <b style="color:#F5C518">+'+creds+' credits</b>' + (firstTime ? ' and the <b style="color:#F5C518">Mind’s Eye</b> trophy.' : '.');
     document.getElementById('trophy').classList.remove('hidden');
     confetti();

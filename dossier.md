@@ -206,6 +206,30 @@ permalink: /dossier/
       }
     } catch (e) {}
 
+    // Blindfold Puzzles — per-motif accuracy + recent misses (from this device)
+    try {
+      var bfStats = JSON.parse(localStorage.getItem('pjcc.blindfold.stats.v1')) || {};
+      var BFL = { mate: 'Mate-in-one', fork: 'Knight forks', other: 'Other' };
+      var brows = '';
+      ['mate', 'fork', 'other'].forEach(function (k) {
+        var e = bfStats[k];
+        if (e && e.seen) { var pct = Math.round(100 * e.clean / e.seen);
+          brows += '<tr><td class="lb-name">' + BFL[k] + '</td><td class="pjcc-sub">' + e.seen + ' seen</td>' +
+            '<td class="lb-score">' + e.clean + '/' + e.seen + ' · ' + pct + '%</td></tr>'; }
+      });
+      if (brows) html += '<h2 class="dsr-h">Blindfold accuracy · by motif</h2><table class="lb-table"><tbody>' + brows + '</tbody></table>';
+      var bfMiss = JSON.parse(localStorage.getItem('pjcc.blindfold.missed.v1')) || [];
+      if (bfMiss.length) {
+        html += '<h2 class="dsr-h">Blindfold — recent misses</h2><div style="display:flex;flex-direction:column;gap:6px;">';
+        bfMiss.slice(0, 10).forEach(function (mq) {
+          html += '<div style="background:rgba(34,54,122,0.18);border-left:3px solid #c9a7ff;border-radius:6px;padding:7px 10px;">' +
+            '<div style="color:#f0e6ff;font-size:0.84rem;line-height:1.35;">' + esc(mq.goal || '') + ' — answer <b style="color:#6bffb8">' + esc(mq.ans || '') + '</b></div>' +
+            '<div style="color:#9a7fd4;font-size:0.78rem;margin-top:3px;">' + esc((mq.clue || '').slice(0, 150)) + '</div></div>';
+        });
+        html += '</div><p class="pjcc-sub">The positions you missed or revealed — picture each one again before you sleep.</p>';
+      }
+    } catch (e) {}
+
     // invite link
     var link = PJCC.inviteLink(prof);
     html += '<h2 class="dsr-h">Invite an operative</h2>' +
