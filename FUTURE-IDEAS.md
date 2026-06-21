@@ -194,16 +194,18 @@ built a self-sustaining engagement engine that markets the series for you.
 ## Avenue 3 — Productize the teaching: "Checker Town Chess Academy"
 Chess Lessons exists as a page; this turns it into a *curriculum* with the cast as instructors
 — and a real, defensible niche (cartoon-led chess for kids is a proven formula).
-1. **Character-led paths** — Argus teaches openings, the Rival teaches tactics, Princess
-   teaches endgames; each "course" is a themed sequence of your existing games.
-2. **An adaptive skill tree** — diagnose level from a player's game data, then assign the next
-   lesson/puzzle automatically.
-3. **Classroom mode** — tie it to Chess City Elementary: printable worksheets, a teacher view,
-   kid-safe accounts. Aim it squarely at parents and schools.
-4. **Belts & certificates** — a Checker → Pawn → … → Chess City Citizen ladder with shareable
-   credentials (real-world bragging rights for kids).
-5. **Connect to real play** — a Lichess/Chess.com study or bot bridge so lessons lead into
-   actual games.
+1. ✅ **Character-led paths** *(shipped — `/academy/`)* — Louie (fundamentals), Argus (openings),
+   the Rival (tactics), Princess (vision/endgames); each course is an ordered sequence of lessons
+   that are targets in the existing games, auto-checked from local play data.
+2. ✅ **Adaptive "next lesson"** *(shipped)* — reads each game's local best, finds your first
+   incomplete lesson, and surfaces it as "Your next lesson." (A fuller branching skill-tree is a
+   future deepening.)
+3. ✅ **Classroom mode** *(shipped)* — printable Coordinate-Quest worksheet, a printable teacher
+   progress sheet, a local student-name field; all device-local (kid-safe, no accounts).
+4. ✅ **Belts & certificates** *(shipped)* — Checker → Pawn → Knight → Bishop → Rook → Queen →
+   Chess City Citizen ladder driven by lessons completed, with a printable certificate.
+5. ⏳ **Connect to real play** *(deferred — needs external integration)* — a Lichess/Chess.com
+   study or bot bridge so lessons lead into actual games. Held until we wire external services.
 **Realistic take:** This is one of the few avenues with a clear path to *money and real-world
 utility*. The curriculum can be assembled largely from games you've already built and tested.
 It's durable work — schools and parents don't churn like a viral audience does.
