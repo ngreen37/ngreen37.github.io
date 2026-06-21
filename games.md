@@ -11,6 +11,12 @@ permalink: /games/
 
 <div id="continue-hero" class="continue-hero" hidden></div>
 
+<div class="game-filters" id="game-filters">
+  <button class="gf-tab active" data-filter="all">All</button>
+  <button class="gf-tab" data-filter="playable">▶ Playable</button>
+  <button class="gf-tab" data-filter="dev">🛠 In Development</button>
+</div>
+
 <script>
 (function () {
   var NAMES = { 'cipher': 'CIPHER', 'clearance-delta': 'Clearance: DELTA', 'notation-run': 'Notation Blitz', 'fork-in-the-road': 'Fork in the Road', 'sand-mine-depths': 'Sand Mine Depths', 'pirc-protocol': 'The Pirc Protocol', 'shogi-island': 'Shogi Island', 'tower-defense': 'Siege on Chess City', 'sky-run': 'Sky Run' };
@@ -311,6 +317,16 @@ permalink: /games/
   .game-card-locked p { animation: none; color: #6f6592; background: none; -webkit-background-clip: border-box; background-clip: border-box; }
 }
 
+.game-filters { display: flex; gap: 8px; flex-wrap: wrap; margin: 1rem 0 0.2rem; }
+.gf-tab { background: #1d1140; border: 1px solid #4f466e; color: #c9a7ff; border-radius: 999px;
+  padding: 7px 16px; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: inherit; transition: border-color .12s, background .12s, color .12s; }
+.gf-tab:hover { border-color: #8a7bc0; color: #f0e6ff; }
+.gf-tab.active { background: #F5C518; border-color: #F5C518; color: #1a0f3d; }
+.game-card.gc-hidden { display: none; }
+.gc-best { display: inline-block; margin-left: 6px; font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase;
+  color: #6bffb8; border: 1px solid #2f6b50; background: rgba(107,255,184,0.10); border-radius: 4px; padding: 2px 7px; vertical-align: middle; }
+.gc-best.none { color: #9a8fc0; border-color: #4f466e; background: transparent; }
+
 .games-lb-link {
   display: inline-block;
   margin: 0.4rem 0 0.2rem;
@@ -358,6 +374,55 @@ permalink: /games/
       hero.hidden = false;
     }
   } catch (e) {}
+
+  // ---- "Your best" chip per card (local-first, upgraded from the profile) ----
+  // slug (href) -> [scoreKey, unit]
+  var SCOREKEY = {
+    'notation-run': ['notation-run','score'], 'pirc-protocol': ['pirc-protocol','flawless'],
+    'fork-in-the-road': ['fork-in-the-road','solved'], 'sand-mine-depths': ['sand-mine-depths','depth'],
+    'cipher': ['cipher','score'], 'clearance-delta': ['clearance-delta','score'],
+    'shogi-island': ['shogi-island','solved'], 'tower-defense': ['tower-defense','score'],
+    'blindfold-puzzles': ['blindfold','solved'], 'sky-run': ['sky-run','score']
+  };
+  function scoreInfo(card) {
+    var href = card.getAttribute('href') || '';
+    if (href.indexOf('/daily/') >= 0) return ['daily-dispatch','score'];
+    return SCOREKEY[keyOf(href)] || null;
+  }
+  var chipEls = {};
+  Array.prototype.forEach.call(cards, function (c) {
+    var info = scoreInfo(c); if (!info) return;
+    var body = c.querySelector('.game-card-body'); var h2 = body ? body.querySelector('h2') : null; if (!h2) return;
+    var best = (window.PJCC && PJCC.localBest) ? PJCC.localBest(info[0]) : 0;
+    var chip = document.createElement('span');
+    chip.className = 'gc-best' + (best > 0 ? '' : ' none');
+    chip.textContent = best > 0 ? ('★ best ' + best + ' ' + info[1]) : 'not played';
+    h2.appendChild(document.createTextNode(' ')); h2.appendChild(chip);
+    chipEls[info[0]] = { chip: chip, unit: info[1] };
+  });
+  // upgrade chips with the (possibly higher) server best once the profile loads
+  if (window.PJCC && PJCC.ready) PJCC.ready.then(function () {
+    return PJCC.myStats ? PJCC.myStats() : [];
+  }).then(function (stats) {
+    (stats || []).forEach(function (s) {
+      var e = chipEls[s.game]; if (!e) return;
+      if ((s.best_score || 0) > 0) { e.chip.className = 'gc-best'; e.chip.textContent = '★ best ' + s.best_score + ' ' + e.unit; }
+    });
+  }).catch(function () {});
+
+  // ---- Playable / In-Development filter tabs ----
+  function isDev(c) { return c.classList.contains('game-card-dim') || c.classList.contains('game-card-locked'); }
+  var tabs = document.querySelectorAll('#game-filters .gf-tab');
+  Array.prototype.forEach.call(tabs, function (t) {
+    t.addEventListener('click', function () {
+      Array.prototype.forEach.call(tabs, function (x) { x.classList.toggle('active', x === t); });
+      var f = t.getAttribute('data-filter');
+      Array.prototype.forEach.call(cards, function (c) {
+        var show = f === 'all' || (f === 'dev' ? isDev(c) : !isDev(c));
+        c.classList.toggle('gc-hidden', !show);
+      });
+    });
+  });
 
   // ---- Kill-the-sheen toggle (applies site-wide via pjcc-flair.js) ----
   var btn = document.getElementById('sheen-toggle');
