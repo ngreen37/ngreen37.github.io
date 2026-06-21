@@ -230,17 +230,19 @@ preview + share-card generator + `/educators/` B2B page + game-page dispatch cap
 9. **Weekly field report** built to be dissected on Discord.
 10. **The crash-site coordinate** as the season-one payoff.
 
-## Avenue 3 — The Academy *(courses + belts live)*
-1. **Real-play bridge** — Lichess study / bot link out of a lesson.
-2. **Strategy track** + **shogi track**.
-3. **Printable worksheet packet** (multi-page).
-4. **Branching skill-tree** with prereqs/unlocks.
-5. **Diagnostic placement test** → assigned path.
-6. **Parent/teacher dashboard** with progress export.
-7. **Verifiable certificate codes**.
-8. **Character-voiced lesson intros** (Avenue 5/8).
-9. **Daily "homework"** that feeds the streak flame.
-10. **School-pilot kit** — a curriculum PDF + class codes.
+## Avenue 3 — The Academy *(all ten shipped in-site/offline — 2026-06-21)*
+1. ✅ **Real-play bridge** — *in-site*: lessons link to their matching game **plus** a free-move **Sandbox Board** on the Academy (no external Lichess — we're sandboxing). A rules-enforcing board/engine is the future upgrade.
+2. ✅ **Strategy track** (Bill · Siege / Knight's Tour / Sky Run / Financial) + **Shogi track** (Oskar · Shogi Island).
+3. ✅ **Printable worksheet packet** — 3 pages (coordinates · piece moves · first tactics).
+4. ✅ **Branching skill-tree** — tiers with prereq locks/unlocks, rendered from progress.
+5. ✅ **Placement exam** — a 6-question diagnostic → an assigned starting track.
+6. ✅ **Teacher dashboard** — class-code tool + progress **export/import (.json)** + copy-summary.
+7. ✅ **Verifiable certificate codes** — deterministic `CTA-…` codes on the cert, verified client-side (tamper-evident checksum) by a paste-box. *(Offline/self-contained, not a registry.)*
+8. ✅ **Character-voiced intros** — a ▶ on each course plays the faculty leitmotif + reads the blurb via browser TTS (no recorded VO).
+9. ✅ **Daily homework** — a date-seeded task with its own streak flame.
+10. ✅ **School-pilot kit** — a printable 6-week **Curriculum** + local **class codes**.
+
+*Backend upgrades when accounts land: shared class rosters/dashboards, a server-verifiable cert registry, a rules-enforcing practice board.*
 
 ## Avenue 4 — Physical / tabletop
 1. **Print-and-play Siege PDF** — zero manufacturing.
