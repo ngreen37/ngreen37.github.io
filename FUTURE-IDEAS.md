@@ -28,6 +28,12 @@ referrals.)
   Animatic** (scene-by-scene storyboard reel, scratch-VO subtitles, per-shot temp-score leitmotifs,
   filmstrip jump, per-shot comments), pipeline tracker, Frame-the-Scene poll, living-style-bible
   links. Casting booth (#4) staged as **Coming Soon**.
+- **The Writers' Room** (`/writers-room/`) — a storyboard editor built on two creators' methods:
+  **Dan Harmon's Story Circle** (8-beat ring with a live-filling SVG + per-stage prompts) and
+  **Trey Parker's but/therefore** rule (toggle connectives, with an "and then" detector). Each beat
+  carries a panel (shot type · emoji · VO) so a story plays back as a reel with a temp score.
+  Save drafts locally, load Pilot/Louie examples, and **publish** by baking the whole story into a
+  shareable link (URL-encoded; remixable). Shared studio gallery deferred to Operative accounts.
 - **Avenue 5 — character leitmotifs** (`assets/js/pjcc-leitmotif.js`) — deterministic Web-Audio
   signature per character, a "♪ theme" button on every character page.
 - **Avenue 6 — Princess companion** (`assets/js/pjcc-princess.js`) — Train Princess (ranks from

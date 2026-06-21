@@ -47,6 +47,14 @@ permalink: /production/
   </div>
 </div>
 
+<a class="pr-wr-cta" href="{{ '/writers-room/' | relative_url }}">
+  <div class="pr-wr-ico">✎</div>
+  <div>
+    <b>Build your own reel in the Writers' Room →</b>
+    <small>Storyboard a tale with Dan Harmon's Story Circle or Trey Parker's but/therefore rule — then publish a shareable link. For you, or any Operative.</small>
+  </div>
+</a>
+
 <!-- ===== PRODUCTION TRACKER ===== -->
 <h2 class="pr-h2">◈ Production Tracker</h2>
 <p class="pr-note">Every frame travels the same road: <b>Script → Boards → Layout → Animation → Comp</b>. These bars are updated by hand as the work progresses — <span id="pr-updated">a living dashboard</span>.</p>
@@ -427,6 +435,12 @@ permalink: /production/
 .an-cmt-in:focus { outline: none; border-color: #F5C518; }
 .an-cmt-send { background: #F5C518; color: #1a0f3d; border: none; border-radius: 8px; padding: 8px 18px; font-weight: 800; cursor: pointer; font-family: inherit; }
 .an-cmt-send:hover { background: #ffd740; }
+
+.pr-wr-cta { display: flex; gap: 14px; align-items: center; margin: 14px 0 4px; padding: 14px 16px; text-decoration: none; background: linear-gradient(135deg, rgba(255,143,208,0.10), rgba(245,197,24,0.08)); border: 1px solid #6b5fa0; border-radius: 12px; transition: all 0.14s; }
+.pr-wr-cta:hover { border-color: #F5C518; transform: translateY(-2px); }
+.pr-wr-ico { font-size: 30px; flex: 0 0 auto; }
+.pr-wr-cta b { color: #F5C518; display: block; }
+.pr-wr-cta small { color: #c9a7ff; font-size: 0.84rem; line-height: 1.5; display: block; margin-top: 2px; }
 
 .pr-bible { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
 .pr-bible-card { display: flex; flex-direction: column; gap: 2px; background: rgba(45,27,105,0.5); border: 1px solid #3a2a6a; border-radius: 12px; padding: 14px; text-decoration: none; transition: all 0.14s; }
