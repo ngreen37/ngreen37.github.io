@@ -1,184 +1,354 @@
 # PJCC — Future Ideas
 
-A running backlog of ideas raised across build sessions. **Shipped** work is logged at the top;
-everything below it is still open. (Loose side-notes to wire someday: mailing-list ↔ Resend sync,
-referrals.)
+The open backlog. Done work has been cleared out of the lists below — see **Already live** for the
+one-line guardrail of what's shipped (so we don't re-pitch it). Everything else here is a path not
+yet taken.
 
 ---
 
-## ✅ Shipped log (newest first)
+## ★ The direction (north star)
 
-**2026-06-20/21 — the big batch**
-- **Notation Blitz → v3.7** — Daily seeded chart + global timing-accuracy board (v3.5); Freestyle
-  rubber-band BPM, files/ranks Warmup, mid-run Perks (v3.6); Recall "name-the-square" keypad mode
-  + 2-Hand dual-lane mode (v3.7).
-- **Siege on Chess City → v2.1** — tower synergies (Knight+Queen haste · Bishop+Rook pierce) +
-  a Daily mutator-roulette on a fixed seed with its own global board.
-- **Blindfold Puzzles → v2.2** — Audio-only mode (position spoken + a coach mnemonic); The Mind's
-  Eye now voice-narrates each move.
-- **Lore Codex** (`/lore-codex/`) — collectible encyclopedia; entries unseal from reading
-  character/location files + recovering `frag_` fragments; all six unlock the origin. Plus
-  game-card → lore deep-link chips on the Games page.
-- **Checker Town Chess Academy** (`/academy/`) — character-led courses, adaptive "your next
-  lesson," belt ladder (Checker → Chess City Citizen), printable worksheet / teacher sheet /
-  certificate. Fully offline, kid-safe.
-- **Projects page** — live playable / completed / in-the-lab stat counters; earlier games-page
-  polish (Daily tab + badges, Game-of-the-Week hero).
-- **Avenue 1 — production as content** (`/production/`) — full build-out: an interactive **Pilot
-  Animatic** (scene-by-scene storyboard reel, scratch-VO subtitles, per-shot temp-score leitmotifs,
-  filmstrip jump, per-shot comments), pipeline tracker, Frame-the-Scene poll, living-style-bible
-  links. Casting booth (#4) staged as **Coming Soon**.
-- **The Writers' Room** (`/writers-room/`) — a storyboard editor built on two creators' methods:
-  **Dan Harmon's Story Circle** (8-beat ring with a live-filling SVG + per-stage prompts) and
-  **Trey Parker's but/therefore** rule (toggle connectives, with an "and then" detector). Each beat
-  carries a panel (shot type · emoji · VO) so a story plays back as a reel with a temp score.
-  Save drafts locally, load Pilot/Louie examples, and **publish** by baking the whole story into a
-  shareable link (URL-encoded; remixable). Shared studio gallery deferred to Operative accounts.
-- **Avenue 5 — audio pillar hub** (`/sound/`) — makes audio first-class: a live, playable
-  **Leitmotif Gallery** (every character's signature + a "play the ensemble" medley, all procedural/
-  offline), plus the roadmap staged as Coming Soon — the **Score &amp; EP** (locked tracklist; no
-  original music recorded), the **audio-fiction radio-drama pilot**, **Notation Blitz score mode**,
-  and **community remixes** for the Build Playlist. Linked in the McPuppy nav.
-- **Avenue 6 — site-wide Princess companion** (`assets/js/pjcc-princess-companion.js`) — the
-  walking figurine grew a voice: she strolls in, pauses to deliver lines that fit **where** you are,
-  **when** it is, your **training/bond/streak** (via `PJCCPrincess.summary()`), a premiere countdown,
-  holidays, and a resurfaced memory. Click her any time to talk; a "shh" quiets the session.
-- **Avenue 10 — Press Pass actionable + newsletter engine** — a free, claimable **Press Credential**
-  on `/press-pass/` (provisional founding number, carries your dossier codename, site-wide
-  "Founding Operative" footer badge). And `/mailing-list/` rebuilt as the **Bureau of Dispatch**:
-  what-you-get grid, cadence, an in-universe sample dispatch, founders-list-first framing, and a
-  share/referral nudge.
-- **Avenue 5 — character leitmotifs** (`assets/js/pjcc-leitmotif.js`) — deterministic Web-Audio
-  signature per character, a "♪ theme" button on every character page.
-- **Avenue 6 — Princess companion** (`assets/js/pjcc-princess.js`) — Train Princess (ranks from
-  your play), a daily Walk ritual, and Memory of your milestones, on her character page.
-- **Avenue 10 — Chess City Press Pass** (`/press-pass/`) — 3-tier support pitch, cosmetics-only
-  promise, founders-list CTA (no payment wired yet).
+**Right now, PJCC's product is the show *getting made*.** The animation is years out; the move is to
+ship the *story* in every cheaper form first, build an audience that owns itself, and make people
+fall for the world before a single frame renders. Five threads, braided:
 
-**Earlier** — Daily Dispatch (`/daily/`), Hall of Fame, cross-game streak flame, "beat the
-creator" ghosts, leaderboard seasons; verified-chess passes (Shogi tsume + AI, Pirc traps);
-board-skins foundation + JP-localization mechanism.
+1. **Ship the show early** — production-as-content (the Pilot animatic, the tracker, the Writers'
+   Room) + an audio drama. The story arrives long before the animation can.
+2. **Own the audience** — the dispatch (newsletter) and the Press Pass are durable, un-algorithmed
+   channels. Founders fund the pilot.
+3. **Make them love her** — Princess as a companion is the emotional hook; the bond pays off the day
+   she gets a voice.
+4. **The arcade is the funnel** — a deep, polished chess arcade that pulls players into the Academy,
+   the business most likely to *fund the animation*.
+5. **One mystery over all of it** — the spy/ARG meta-layer (Subject Zero, the crash, the
+   Construction Co.) ties the games, the lore, and the show into a single self-marketing puzzle.
+
+The long game is the **Godot roguelite** built from the Blender assets. The trap to avoid is
+*shipping more games for their own sake* — the per-game ideas below are for **depth, retention, and
+funnel**, not sprawl. New surface area should serve one of the five threads.
 
 ---
 
-## 🧭 Next path per avenue (post-build refresh — what to build *next* in each lane)
-Now that 1 / 3 / 5 / 6 / 10 have shipped pieces, here's the single highest-leverage *next* move in
-each avenue, biased toward buildable-now where possible.
-
-- **1 · Production as content** — drop **real board scans** into the Pilot Animatic (the `art` field
-  already takes them), and give Frame-the-Scene + per-shot comments a **shared tally** (ties to the
-  publish-gallery decision below). Bonus: a "what changed this week" changelog auto-derived from the
-  tracker bars.
-- **2 · ARG** — a **weekly cipher chain**: each week decrypts a coordinate; coordinates assemble a
-  map to a hidden page. Add one **collective fragment** that only cracks once N visitors contribute,
-  and a Narrator **voicemail** line.
-- **3 · Academy** — the **real-play bridge**: a Lichess study / bot link so a finished lesson hands
-  off to an actual game. Then a **strategy track** + **shogi track**, and a multi-page printable
-  worksheet packet.
-- **4 · Physical / tabletop** — ship a **print-and-play Siege PDF** (rules + board, zero
-  manufacturing) and a **POD mockup page** for pins/stickers — proof of demand before any inventory.
-- **5 · Audio** — when the first theme exists, it slots straight into the **EP player** and unlocks
-  **Notation Blitz score mode**; record one **5-minute audio-drama scene** as the cheapest pilot
-  test; add a per-game **SFX toggle**.
-- **6 · Princess companion** — make her react to **live game results** (cheer a new best the instant
-  it lands), add **seasonal outfits**, a **persistent chattiness/mute setting** on her page, and
-  "walk you to" **contextual page suggestions**.
-- **7 · UGC** — ship the Writers' Room **"Featured Reels" shelf** (option A below) as the first,
-  lowest-risk UGC slice; then a **Siege map editor** with shareable codes and a "design a citizen"
-  template.
-- **8 · AI** — safest first slice is the **dossier analyst on your own play data**, written in the
-  Narrator's voice (no open chat); then the **Argus blunder-coach** on your actual games.
-- **9 · Live ops** — a **community megabar** ("build the bridge to Chess City") summing local bests
-  site-wide, a **seasonal reskin** hook, and a **December advent** door-a-day calendar.
-- **10 · Funding & reach** — wire the dispatch to **Resend** (real welcome email), **confirm + carry**
-  the provisional founders number when accounts land, add a **Patreon/Ko-fi** link behind the Press
-  Pass tiers, and start a **festival / grant** target list.
+## ✅ Already live (guardrail — don't re-pitch)
+Arcade: Notation Blitz, Blindfold Puzzles / The Mind's Eye, Clearance: DELTA, Princess Dungeon,
+Checker Financial, Fork in the Road, The Pirc Protocol, Sand Mine Depths, Shogi Island (Catch the
+Lion), Sky Run, Space Run, Knight's Tour, Siege on Chess City — each with daily seeds, global
+boards, ghosts, streak flame, board-skins + JP-localization scaffolding. World/site: Lore Codex,
+Academy, Projects, Daily Dispatch, Hall of Fame, leaderboard seasons. Avenue pieces: production hub
++ Pilot animatic + Writers' Room (1), audio hub + leitmotifs (5), site-wide Princess companion (6),
+Press Pass + Press Credential + Bureau-of-Dispatch newsletter (10).
 
 ---
 
-## 🔜 Active backlog — buildable next (no new infrastructure)
+# 🕹️ The Arcade — ten ideas per game
 
-**Story / world**
-- **"Find Princess" ARG / mystery door** — a hidden hub unlocked by collecting the `frag_`
-  fragments site-wide, leading to a career-portfolio of art styles/mediums. (The Codex already
-  does a light version of the fragment payoff; this is the dedicated destination.)
+*Polish and retention, not new games. Each line is one buildable move.*
 
-**Per-game round-3 (still open)**
-- **Fork in the Road** — endless one-life depth gauntlet · a "show the refutation" coach.
-- **Sand Mine Depths** — droppable light beacons · fog-of-war minimap · timed cave-in chains ·
-  Louie-camp one-run consumables · deep relic sets.
-- **The Pirc Protocol** — transposition tree · "name that opening" reverse · opponent
-  personalities · weekly model game · colour side-switcher.
-- **Clearance: DELTA** — redacted-dossier meta · sudden-death OMEGA · audio-intercept questions ·
-  wager mode · curated community questions.
-- **Shogi Island** — piece-reach trainer · scaling handicaps vs the Lion · calligraphy wall ·
-  tsume-of-the-day board · castle drills.
-- **Siege** — narrative campaign map with branching routes + between-battle dialogue · path-map
-  level editor with shareable codes.
-- **Blindfold / Mind's Eye** — rebuild-the-board recall · piece-count ladders (2 → full) ·
-  shareable replay export · blunder-review (flags eval swings) · cosmetic boards unlocked by wins.
+## Notation Blitz — *coordinate/notation rhythm*
+1. **Score Mode** — chart the real PJCC themes as the beatmap (the Avenue-5 unlock).
+2. **Square-colour sprint** — call light/dark only at brutal BPM; builds the "is e4 light?" instinct.
+3. **Diagonal & file lanes** — "what sits on the long diagonal from c1?" as its own mode.
+4. **Coordinate duel** — the Rival trades calls with you and speeds up every time you miss.
+5. **Blind grid** — the board fades out mid-run; finish from memory (a bridge to Blindfold).
+6. **Hot-seat race** — split-keyboard two-player on one device.
+7. **Combo leitmotif** — a sustained streak layers a character's theme in live.
+8. **Reverse "find the piece"** — given a position, tap every square the knight can reach, in tempo.
+9. **Landmark ladder** — escalating BPM tiers, each named for a Checker-Town location.
+10. **Coach metronome** — set a target accuracy; it drills your weakest squares back at you.
 
-**Deepening what already shipped**
-- **Projects** — a public roadmap / "What's next" page (read-only is easy; voting needs a backend).
-- **Academy** — tune lesson thresholds with real data · more courses (a strategy track, a shogi
-  track) · a multi-page printable worksheet packet · a branching skill-tree (prereqs/unlocks).
+## Blindfold Puzzles / The Mind's Eye — *no-board visualization*
+1. **Rebuild-the-board** — after N moves, place the pieces back where they belong.
+2. **Piece-count ladder** — start at 2 pieces, climb toward a full position.
+3. **Voice-input mode** — speak your move (Web Speech API); fully eyes-free.
+4. **Phantom-blunder review** — flags the exact move your mental board diverged.
+5. **Pick your narrator** — Narrator, Argus, or Princess reads the position aloud.
+6. **Walk-the-knight audio drills** — eyes closed, follow spoken hops, name the landing square.
+7. **PGN import** — paste a real game and train visualization on a masterpiece.
+8. **Co-op blindfold** — one narrates, one places; couch mode.
+9. **Relic boards** — cosmetic boards unlocked only by blindfold wins.
+10. **"Solved it blind" card** — a shareable flex of the position + your solve.
 
-**Audio / cosmetics**
-- A PJCC original track for the jukebox + a per-game SFX toggle.
+## Clearance: DELTA — *dossier trivia under the clock*
+1. **Redacted-dossier meta** — correct answers progressively unredact a classified file.
+2. **Sudden-death OMEGA** — one life, escalating clearance, for superfans.
+3. **Audio-intercept questions** — answer from a garbled transmission (Avenue 5/8 tie).
+4. **Wager mode** — bet credits on your confidence per question.
+5. **Daily briefing** — one seeded quiz a day, global accuracy board.
+6. **Three lanes** — chess rules vs PJCC lore vs real chess history.
+7. **Spot the lie** — three "facts," one is planted disinformation (ARG flavor).
+8. **Question forge** — operatives submit Qs, curated into the deck (Avenue 7).
+9. **Clearance rewards** — ranks gate secret lore pages (Avenue 2 payoff).
+10. **Speed-vs-accuracy dial** — choose your scoring style each run.
+
+## Princess Dungeon — *roguelite crawler (the Godot prototype)*
+1. **Room grammar that mirrors Godot** — design here, port the patterns to the 3D build.
+2. **Chess-piece enemies** — each moves by its piece's rules; every room is a tactic in disguise.
+3. **Move-set relics** — items that grant a bishop dash, a knight blink, a pawn-storm.
+4. **Boss = a mate-in-N** — beat the room by solving the problem, not just surviving.
+5. **Biome floors** — Checker Town → the Sea → Shogi Isle → Chess City.
+6. **Bill's toolbox** — consumables themed on Dad's gadgets (yes, the Hyperspeed Box).
+7. **Daily seeded dungeon** — same floor for everyone, global depth board.
+8. **Pacifist route** — clear by puzzle, not combat, for a different reward.
+9. **Escort pawns** — summon-and-protect (reuse Sky Run's king-summon mechanic).
+10. **Risk altars** — take a curse for loot; the deepest hide ARG fragments.
+
+## Checker Financial — *call the market*
+1. **The piece exchange** — trade Checker Town's checker-piece economy, in-lore.
+2. **News-driven swings** — the world-ticker headlines actually move the chart.
+3. **Portfolio mode** — hold positions across a multi-day seeded market.
+4. **Insider whispers** — risky tips from shady NPCs (sometimes disinformation — ARG tie).
+5. **Leverage round** — high risk, high credit payout, for nerve.
+6. **Short the crash** — a scenario built on the origin's "crash" lore.
+7. **Candlestick coach** — teaches real chart-reading as you play.
+8. **Daily ticker** — one seeded market, global P&L board.
+9. **Bank it** — spend gains on cosmetics/boosts (Quartermaster tie).
+10. **The CEO's ledger** — an endgame market the villain is rigging against you.
+
+## Fork in the Road — *tactics puzzles*
+1. **Endless one-life gauntlet** — climb the regions until you miss.
+2. **Show-the-refutation coach** — after a miss, it plays out exactly why.
+3. **Theme drills** — fork / pin / skewer / discovered-attack as separate lanes.
+4. **Blitz tactics** — a shrinking clock and a combo multiplier.
+5. **Boss-gate taunts** — each region boss is a named character with a line.
+6. **Mistake replay** — your three worst misses, re-served next session (spaced repetition).
+7. **Race the creator ghost** — puzzle-rush against the existing ghost system.
+8. **Construct-the-fork** — given a goal, place the piece that forks.
+9. **Daily tactic + streak flame** — one curated puzzle, global solve-time board.
+10. **Reads-you difficulty** — auto-tunes from your accuracy (Academy bridge).
+
+## The Pirc Protocol — *openings trainer*
+1. **More decks** — extend the spaced-repetition system beyond the Pirc.
+2. **Transposition tree** — show how lines bleed into one another.
+3. **Name-that-opening** — shown a position, identify the line.
+4. **Opponent personalities** — aggressive/positional bots that punish wrong moves.
+5. **Weekly model game** — a real master Pirc, annotated in Argus's voice.
+6. **Side-switcher** — drill the same system from both colours.
+7. **Trap of the week** — a famous opening trap as a one-move puzzle.
+8. **Repertoire builder** — assemble and export/share your own deck (UGC).
+9. **"Out of book" alarm** — flags the precise move you left theory.
+10. **Boss: the Rival's prep** — he's studied your deck; deviate or get punished.
+
+## Sand Mine Depths — *roguelike descent*
+1. **Light beacons + fog-of-war minimap** — drop light to map the dark.
+2. **Cave-in chains** — escape a timed collapse; a tension spike.
+3. **Louie-camp consumables** — one-run gear from the bomber's stash.
+4. **Relic sets** — collect a set for a run-defining bonus.
+5. **Knight-only rooms** — pure Warnsdorff traversal puzzles.
+6. **The deeper, the stranger** — obsidian-vs-violet biome shifts as you fall.
+7. **Banked-gold prestige** — permanent upgrades that change the descent.
+8. **A rival miner** — an NPC racing you to the same vein.
+9. **Daily shaft** — global "deepest dive" board.
+10. **Hidden chamber → fragment** — the mine literally buries lore.
+
+## Shogi Island / Catch the Lion — *3×4 shogi*
+1. **Scaling handicaps vs the Lion AI** — a difficulty ladder.
+2. **Piece-reach trainer** — highlight what each shogi piece threatens.
+3. **Tsume-of-the-day** — a daily mate-in-N, global solve board.
+4. **Drop-rule drills** — teach captured-piece drops, shogi's signature move.
+5. **Calligraphy wall** — learn the kanji on each piece (JP-localization tie).
+6. **Castle drills** — build defensive shapes against the clock.
+7. **9×9 stepping-stone** — graduate from 3×4 toward real shogi.
+8. **The Lion's moods** — personalities named for island characters.
+9. **Codex bridge** — shogi mastery unlocks a Lore Codex island entry.
+10. **Island duel** — local hot-seat with drops.
+
+## Sky Run — *vertical shmup*
+1. **Lore bosses** — every region's king with a patterned fight (CEO finale exists).
+2. **New power-ups** — Rook (laning wall), pawn-storm, an en-passant dash.
+3. **Endless "Sea" mode** — one life, escalating, global distance board.
+4. **Daily seeded sky** — identical enemy script for everyone.
+5. **Co-pilot** — a second ship for couch co-op.
+6. **Loadout select** — pick a starting power triad before launch.
+7. **Photo-mode end-card** — a shareable finish with run stats.
+8. **Rhythm tie-in** — enemies pulse to the temp score (Avenue 5).
+9. **Boss rush** — all kings back-to-back, for veterans.
+10. **Animatic interstitials** — a 2-panel story beat between regions (Avenue 1 tie).
+
+## Space Run — *the Chess City Invitational runner*
+1. **Qualifier framing** — beating it earns a tournament seed in the meta.
+2. **Collect-a-set pieces** — pick up chess pieces to upgrade the ship.
+3. **Legality dodging** — move only into squares your piece could legally reach.
+4. **Rival racers** — the cast runs beside you, rubber-banding.
+5. **Daily track** — seeded route, global board.
+6. **Tactic shortcuts** — branching paths gated by a quick puzzle.
+7. **Quartermaster ships** — cosmetic vessels.
+8. **Speed-tier soundtrack** — the music ramps with your velocity.
+9. **Near-miss style combo** — points for grazing obstacles.
+10. **Crash-site flyby** — pass the origin wreck for a lore beat.
+
+## Knight's Tour — *the tour puzzle*
+1. **Warnsdorff coach** — a toggleable "fewest exits" hint that teaches the heuristic.
+2. **Tour sprints** — fastest full tour, global board.
+3. **Closed-tour challenge** — finish where you began.
+4. **Variable boards** — 6×6, 8×8, L-shaped Checker-Town maps.
+5. **Rubble squares** — blocked cells force re-routing (Sand Mine flavor).
+6. **Daily start square** — seeded, global board.
+7. **Undo-budget mode** — only N takebacks, for pressure.
+8. **Constellation trail** — your path draws a star map (ties to `/constellation/`).
+9. **Kids' teach-mode** — an Academy lesson built on the tour.
+10. **Two-knight co-op** — cover the board together without colliding.
+
+## Siege on Chess City — *tower defense*
+1. **Campaign map** — branching routes + between-battle dialogue.
+2. **Map editor** — build paths, share by code (Avenue 7).
+3. **Full synergy matrix** — a tower-pairing bonus for every piece combo.
+4. **Boss waves** — the CEO's machines as siege bosses.
+5. **Endless survival** — global wave board.
+6. **Bigger mutator pool** — expand the existing Daily roulette.
+7. **Hero ability** — an active Princess power you aim, on cooldown.
+8. **Economy gambles** — trade income for power; a real risk curve.
+9. **Co-op gate** — two players, two lanes, one wall.
+10. **Win → Codex** — campaign victories unlock lore entries.
 
 ---
 
-## ❓ Open decision — how Operatives publish & share Writers' Room reels
-Right now "publish" = a self-contained shareable link (the whole story is URL-encoded). That works
-with zero infrastructure but there's no shared place to *discover* other people's reels. Options,
-lightest → heaviest:
+# 🛣️ The Ten Avenues — ten ideas per lane
 
-- **A · Curated "Featured Reels" shelf (ship now, no backend).** Keep link-publishing; add a
-  hand-curated `_data/reels.yml` that renders a shelf on `/writers-room/`. Operatives send links via
-  contact / mailing list; you paste the standouts in. *Pros:* free, on-brand ("winners get
-  featured," you stay showrunner). *Cons:* not self-serve; manual.
-- **B · GitHub "submit a reel" (no backend, semi-automated).** A "Submit to the studio" button opens
-  a prefilled GitHub issue containing the story code; accepted ones get merged into `reels.yml`.
-  *Pros:* free, versioned, real submission trail. *Cons:* needs a GitHub account; friction for
-  non-devs.
-- **C · Form-service capture → shelf (no backend, lower friction than B).** A "Submit your reel"
-  Formspree/Google-Form posts the code to your inbox; you curate winners into the shelf. *Pros:*
-  anyone can submit; you stay curator. *Cons:* a third-party form; still manual to feature.
-- **D · Supabase Story Gallery (the "real" version; needs Operative accounts).** POST the story JSON
-  to a `stories` table; `/writers-room/gallery/` lists featured + recent with likes/comments reused
-  from the profile system; featuring a reel grants a credit/badge. *Pros:* true community, ties to
-  dossier + Press Pass. *Cons:* needs auth, moderation, and spam controls.
+## Avenue 1 — Production as content *(animatic + Writers' Room live)*
+1. **Real board scans** dropped into the animatic's `art` field.
+2. **Shared Frame-the-Scene tally** — community art-direction, for real.
+3. **Auto-changelog** from the tracker bars ("what moved this week").
+4. **Threaded per-shot comments** → fold the best notes into the boards.
+5. **Render-queue status** — a public "what's animating right now."
+6. **Two-cut compare slider** on a shot (A/B the staging).
+7. **Scratch-VO upload** — operatives record a line for a shot.
+8. **Living episode pages** that grow animatic → leica → final.
+9. **A credits wall** that visibly fills as people contribute.
+10. **Embeddable animatic player** for socials.
 
-**Recommendation:** ship **A** now (costs nothing, matches the "you can publish too / winners get a
-credit" ethos), and graduate to **D** when Operative accounts land — the editor already emits a
-clean story object that can POST straight to a table. **C** is the good middle step if demand shows
-up before accounts do.
+## Avenue 2 — The season-long ARG *(scaffolding ~80% built)*
+1. **Weekly cipher chain** — each week decrypts a coordinate.
+2. **Coordinates assemble** a map to a hidden page.
+3. **Collective fragment** — only cracks once N visitors contribute.
+4. **Narrator voicemail** — a real number or audio line to call.
+5. **Subject Zero countdowns** ending in a revealed scene.
+6. **In-universe clearance rank** gating secret content.
+7. **Printable invisible-ink dossier** + QR stickers.
+8. **Cross-game keys** — a code from one game unlocks another's secret.
+9. **Weekly field report** built to be dissected on Discord.
+10. **The crash-site coordinate** as the season-one payoff.
+
+## Avenue 3 — The Academy *(courses + belts live)*
+1. **Real-play bridge** — Lichess study / bot link out of a lesson.
+2. **Strategy track** + **shogi track**.
+3. **Printable worksheet packet** (multi-page).
+4. **Branching skill-tree** with prereqs/unlocks.
+5. **Diagnostic placement test** → assigned path.
+6. **Parent/teacher dashboard** with progress export.
+7. **Verifiable certificate codes**.
+8. **Character-voiced lesson intros** (Avenue 5/8).
+9. **Daily "homework"** that feeds the streak flame.
+10. **School-pilot kit** — a curriculum PDF + class codes.
+
+## Avenue 4 — Physical / tabletop
+1. **Print-and-play Siege PDF** — zero manufacturing.
+2. **POD pins/stickers mockup page** — proof of demand first.
+3. **The PJCC chess set** (obsidian vs violet).
+4. **Sand Mine Depths** as a roguelike dice/card PnP.
+5. **Operative Field Kit** — cipher wheel + decoder card.
+6. **Checker Town Field Guide** art book (festival leave-behind).
+7. **Rank pins** earned online, bought offline.
+8. **"Build your dossier"** printable.
+9. **Founders sticker pack** as a Press-Pass thank-you.
+10. **Catch the Lion** mini travel set.
+
+## Avenue 5 — Audio *(hub + leitmotifs live)*
+1. **First theme** → EP player + Notation Score Mode.
+2. **A 5-minute audio-drama scene** — the cheapest pilot test.
+3. **Per-game SFX toggle** + one unified sound palette.
+4. **Leitmotif duets** — two themes interleave on shared pages.
+5. **Checker Town ambience** — a focus/sleep loop.
+6. **The casting call** (the booth, when it opens).
+7. **Soundtrack on streaming** once themes exist.
+8. **Reactive music** that shifts with game state.
+9. **"Hum the theme"** call-and-response toy.
+10. **A podcast feed** for the audio drama.
+
+## Avenue 6 — Princess companion *(site-wide companion live)*
+1. **React to live game results** — cheer a new best the instant it lands.
+2. **Seasonal outfits** + holiday lines.
+3. **Persistent chattiness/mute** setting on her page.
+4. **"Walk you to"** contextual page suggestions.
+5. **A mood/needs system** (play, walks, attention).
+6. **She learns your codename** and uses it.
+7. **A fetch micro-interaction** (toss her a piece).
+8. **Milestone gifts** she "brings" you (cosmetics).
+9. **A second companion** to unlock down the line.
+10. **Her voice** — the day the show gives her one (the payoff).
+
+## Avenue 7 — UGC / creators
+1. **Writers' Room "Featured Reels" shelf** — the first, lowest-risk slice *(see decision note)*.
+2. **Siege map editor** + shareable codes.
+3. **"Design a citizen"** template → curated gallery.
+4. **Fan-art gallery** on character/location pages.
+5. **Headcanon submissions** feeding the Lore Codex.
+6. **Trivia forge** — community Clearance questions.
+7. **Board-skin uploader**.
+8. **Monthly featured-creator** slot.
+9. **Remix-a-reel** — fork another operative's Writers' Room story.
+10. **Embed/API** for fans' own sites.
+
+> **Open decision (publish/share reels):** ship **A** — a hand-curated `_data/reels.yml` shelf (free,
+> on-brand) now; graduate to a **Supabase gallery** with likes/credits when Operative accounts land.
+> A **Formspree/Google-Form** capture is the middle step if demand shows up first.
+
+## Avenue 8 — AI, in-universe and tasteful
+1. **Dossier analyst** on your own play data, in the Narrator's voice.
+2. **Argus blunder-coach** on your actual games.
+3. **Daily generated transmission** (then curated).
+4. **In-character cast Q&A** — tightly guard-railed.
+5. **"Describe a scene → sketch"** storyboard toy.
+6. **Auto-annotate a pasted PGN** in Argus's voice.
+7. **A weakness-tuned puzzle generator**.
+8. **Lore-consistent codename generator**.
+9. **A difficulty director** that reads your sessions.
+10. **A "what should I play next" concierge**.
+
+## Avenue 9 — Live ops / a heartbeat
+1. **Community megabar** — combined bests "build the bridge to Chess City."
+2. **Seasonal reskins** (winter, festival, the sea freezing).
+3. **December advent** — a door a day.
+4. **24-hour tournament** events.
+5. **"Studio is open"** live indicator when Nate's building.
+6. **Episode-drop watch party** page.
+7. **A daily world-state** that shifts the ticker.
+8. **Limited-time event games/rewards**.
+9. **A global "first to clear"** race on new content.
+10. **An anniversary beat** dated to the crash.
+
+## Avenue 10 — Funding & reach *(Press Pass + dispatch live)*
+1. **Dispatch → Resend** — a real welcome email.
+2. **Confirm + carry** the provisional founders number when accounts land.
+3. **Patreon/Ko-fi** behind the Press Pass tiers.
+4. **Festival/grant target list** + a submission calendar.
+5. **Referral rewards** — bring an operative.
+6. **A "what your money funds"** transparency bar.
+7. **Cosmetic-only Quartermaster store** on credits.
+8. **Partner outreach** — a chess platform, a streamer, a school.
+9. **A press/EPK page** for the show.
+10. **An annual "state of the studio"** report to the list.
 
 ---
 
-## 🧩 Needs infrastructure (backend / payments / moderation)
-- **Guilds / Houses** — factions + team leaderboards (Supabase tables).
-- **Async duels** — challenge another operative to the same seeded puzzle; winner takes a credit pot.
-- **Per-game shareable result cards** — a game-over share image (client-side gen is doable; the
-  open part is hosting/sharing).
-- **Ethical premium currency + Press Pass payment** — cosmetics-only store on the credits system.
-- **UGC** (Avenue 7) — level-editor sharing, "design a citizen," curated fan-art gallery, embed/API.
-- **AI-native** (Avenue 8) — in-character cast chat, a dossier analyst, the Argus blunder-coach.
-- **Live ops** (Avenue 9) — seasonal reskins, a community megabar, tournament / watch-party sync.
-
----
-
-## 🎬 The show & the studio (content / business — mostly not code)
-- **Audio drama / original score & EP** (Avenue 5) — ship the story in audio first; release themes.
+## 🛠️ The long game (bigger bets, mostly not web code)
+- **The Godot roguelite** — a Binding-of-Isaac-style game from the Blender assets (rigged Princess,
+  chess pieces, the battle-room). Start with ONE playable room exported to HTML5, embedded on the
+  Games page and wired to the same profile/leaderboard; then layer rooms → items → procedural floors.
+  Blender (assets) + Godot 4 (engine). Princess Dungeon is its web prototype.
 - **Blender cutscene intros** — short rendered clips as game intros / loading screens / season
   trailers. *(Saved favorite.)*
-- **The Godot game** — a Binding of Isaac-style roguelite / 3D Space Run from the existing Blender
-  assets (rigged Princess, chess pieces, the battle-room concept). Start with ONE playable battle
-  room exported to HTML5, embedded on the games page and wired to the same Supabase profile /
-  leaderboard; then layer rooms + items + procedural floors. Blender (assets) + Godot 4 (engine).
-- **Physical / tabletop** (Avenue 4) — a PJCC chess set, print-and-play Siege / Sand-Mine, rank
-  pins, the Operative Field Kit (cipher wheel), the Checker Town Field Guide art book.
-- **Funding & reach** (Avenue 10) — a newsletter-first engine, grants & festivals, partnerships.
+- **Backend** (Supabase) unlocks the cross-cutting features: guilds/houses, async duels, the
+  Writers' Room gallery, shared community tallies, the cosmetics store.
+
+## My honest read — if you only chase three
+1. **Avenue 1 + Avenue 5's audio drama** — together they *ship the story* before animation can. The
+   main quest; everything else is side content.
+2. **Avenue 10 (newsletter + Press Pass)** — the owned, durable funding layer. Cheap and defensible.
+3. **Avenue 6 (Princess companion)** — the cheapest emotional stickiness; most likely to make people
+   *love* the brand.
+
+Honorable mention: **Avenue 3 (Academy)** is the strongest standalone business but a real second
+job; **Avenue 2 (ARG)** is the superfan ceiling but a cadence trap — start it only when #1 is humming.
 
 ---
 
@@ -202,137 +372,3 @@ up before accounts do.
   - The turn: the **Hyperspeed Box runs astray**. Bill has to **protect his family, who are
     aboard**, and is forced to **leave Princess behind** — a choice that **shatters him**.
   - Hook for later: **maybe he comes back looking for her.**
-
----
-
-# 📚 Reference — Ten Avenues for PJCC (the strategic menu, filed 2026-06-17)
-
-*A deliberately wide map of where PJCC could go: ten directions, five ideas each, with an honest
-**Realistic take** and a **Best case**. A menu, not a to-do list — ranked picks at the end.
-(Avenues 1, 3, 5, 6, and 10 now have shipped pieces; see the Shipped log above.)*
-
-
-
-## Avenue 2 — Turn the spy meta-layer into a real, season-long ARG
-You've already built ~80% of the scaffolding — Agent 0091, transmissions, fragments, Konami/morse
-eggs, the "INTERPLANETARY CONSTRUCTION CO." signal, Subject Zero. Make it a *collaborative,
-time-gated mystery* that pays off the lore.
-1. **A cipher chain** — each week decrypts a coordinate; coordinates assemble a map to a hidden page.
-2. **Collective unlocks** — some fragments only crack if the *whole* playerbase contributes.
-3. **Break the fourth wall** — a Narrator voicemail line, a printable invisible-ink dossier, QR stickers.
-4. **"Subject Zero is transmitting"** — periodic live countdowns ending in a revealed scene/chapter.
-5. **In-universe clearance** — a real rank that gates secret content with tangible rewards.
-**Realistic take:** A *light* version (weekly cipher chain + one collective unlock) is very doable
-and would deepen your most-engaged fans. The risk is cadence — ARGs die the moment updates lapse.
-**Best case:** A well-run PJCC mystery gets dissected on a Discord/subreddit and becomes a
-self-sustaining engagement engine that markets the series for you.
-
-## Avenue 3 — Productize the teaching: "Checker Town Chess Academy"
-Turns Chess Lessons into a *curriculum* with the cast as instructors — a defensible niche
-(cartoon-led chess for kids is a proven formula). *(Items 1–4 shipped at `/academy/`.)*
-1. **Character-led paths** — Argus openings, the Rival tactics, Princess endgames; themed game sequences.
-2. **An adaptive skill tree** — diagnose level from play data, assign the next lesson automatically.
-3. **Classroom mode** — Chess City Elementary: printable worksheets, a teacher view, kid-safe accounts.
-4. **Belts & certificates** — Checker → … → Chess City Citizen, with shareable credentials.
-5. **Connect to real play** — a Lichess/Chess.com study or bot bridge so lessons lead into real games.
-**Realistic take:** One of the few avenues with a clear path to *money and real-world utility*,
-assembled largely from games you've already built. Durable — schools/parents don't churn like virality.
-**Best case:** PJCC becomes "the cartoon that teaches chess," lands in classrooms, and the Academy
-becomes the business that *funds the animation*.
-
-## Avenue 4 — Make Checker Town real in the hand (physical / tabletop / merch)
-The chess/checker duality and carved-piece aesthetic are inherently merchandisable, and a physical
-layer can fund the rest.
-1. **A PJCC chess set** — the "obsidian vs. violet" Sand-Mine look as print-on-demand / Kickstarter.
-2. **Print-and-play tabletop** — *Siege* as a board game; *Sand Mine Depths* as a roguelike dice/card game.
-3. **Rank pins & patches** — earn your clearance rank online, buy the enamel pin.
-4. **The Operative Field Kit** — a sticker dossier, a working cipher wheel, a decoder card (pairs with the ARG).
-5. **The Checker Town Field Guide** — an art book of the world bible (also a festival/pitch leave-behind).
-**Realistic take:** Print-on-demand pins/stickers are low-risk and extend the Quartermaster loop. A
-board-game Kickstarter is bigger, but the designs exist and are proven fun — that de-risks it.
-**Best case:** A Kickstarter for the chess set + field guide funds a real chunk of the pilot.
-
-## Avenue 5 — Lean all the way into audio (PJCC as a *sound* world)
-
-**Realistic take:** The audio drama is the most *underrated* idea here — ships the story cheaply,
-proves the writing/performances, and grows a fiction-podcast audience while the animation cooks.
-**Best case:** A devoted listenership, a score with its own life on streaming, and a proven cast by
-the time the pilot animates.
-
-## Avenue 6 — Make Princess a companion you have a *relationship* with
-Deepen Princess into a persistent character who knows you. *(Train / Walk / Memory shipped on her page.)*
-1. **A site-wide companion** — reacts to what you do, remembers you between visits, has moods/needs.
-2. **"Train Princess"** — your puzzle-solving teaches *her* chess; she visibly improves.
-3. **A daily ritual** — "walk Princess" once a day for a small reward + a micro-story.
-4. **Reactive moments** — responds to streaks, time of day, holidays, episode drops.
-5. **Memory** — references things you did weeks ago ("you finally beat the Rival, huh?").
-**Realistic take:** Cheap stickiness from pieces you already have — a state system plus a content
-library of lines. The kind of charming detail that makes a site feel *alive*.
-**Best case:** Princess becomes the emotional hook — people return to see *her* — and that bond pays
-off the day the show gives her a voice.
-
-## Avenue 7 — Open the world to creators (UGC, editors, "citizens")
-Let fans *make* things inside Checker Town.
-1. **A level editor** — a Sand Mine floor, a Siege map, a CIPHER pack; community-rated. (Siege first — grid-based.)
-2. **"Design a citizen"** — fans create a Checker Town NPC from a template.
-3. **A curated fan-art gallery** — on character/location pages, with a monthly featured artist.
-4. **Headcanon submissions** — fan lore curated into semi-canon (feeds the Lore Codex).
-5. **An embed/API** — let fans put their PJCC stats or a mini-game on their own sites.
-**Realistic take:** Full UGC is a moderation burden — start with the smallest delightful slice (a
-curated gallery + one editor, Siege).
-**Best case:** Players become co-authors; "design a citizen who appears in an actual episode" becomes
-a dream prize.
-
-## Avenue 8 — AI-native experiences, used tastefully and in-universe
-Make the world *talk back* — carefully, in-lore.
-1. **Interrogate the cast** — guard-railed in-character personas that stay on-voice and dole out lore.
-2. **A dossier analyst** — an AI that reads your play history and writes an in-universe scouting report.
-3. **Daily transmissions** — procedurally generated micro-lore in the Narrator's voice (then curated).
-4. **An in-character coach** — Argus explains your *actual* chess blunders in his own voice.
-5. **"Describe a scene, get a sketch"** — a controlled storyboard toy in the house style.
-**Realistic take (candidly):** Powerful but risky for a hand-crafted brand (tone drift, cost,
-"uncanny" perception). Safest high-value slice is the coach/analyst on *your own data*; keep
-open-ended chat tightly scoped or skip it.
-**Best case:** An in-character Argus who genuinely makes you better at chess is a one-of-a-kind hook.
-
-## Avenue 9 — Give the site a heartbeat (live & event-driven)
-Make *time and presence* features so the site is different today than yesterday.
-1. **Seasonal world events** — the site visibly changes (winter, a festival, the sea freezing) with
-   event-only games/rewards.
-2. **Live ops** — a countdown to a transmission, a 24-hour tournament, an episode-drop watch party.
-3. **A community monument** — combined scores literally "build the bridge to Chess City."
-4. **"Studio is open"** — a live indicator when Nate is streaming a build/draw session.
-5. **An advent-style calendar** — a door a day, each a game, lore beat, or art drop.
-**Realistic take:** Seasonal reskins + a community megabar create *appointment* engagement. Live
-streaming depends on your time — don't promise a cadence you can't keep.
-**Best case:** PJCC becomes a destination with a pulse, and the community finishes the bridge in a
-finale that doubles as a launch beat.
-
-## Avenue 10 — Fund the dream without breaking the vibe (business & reach)
-How this pays for itself and finds people. *(Press Pass page shipped.)*
-1. **A membership / "Chess City Press Pass"** — early episodes, BTS, exclusive cosmetics, name-in-credits.
-2. **An ethical premium currency** — cosmetics only, never pay-to-win, with a bright line you never cross.
-3. **A newsletter-first engine** — the mailing list is the cheapest *durable, owned* audience you can build.
-4. **Grants & festivals** — animation/arts grants and festival submissions are real money for animation.
-5. **Strategic partnerships** — a chess platform, a streamer collab, a school program, a podcast network.
-**Realistic take:** *Owned channels* beat chasing virality. A Patreon tied to "watch it get made" +
-early access is the most defensible income while the pilot cooks; grants/festivals are real funding.
-**Best case:** A few thousand true fans on a press pass fund the pilot outright.
-
----
-
-## My honest read — if you only chase three
-
-1. **Avenue 1 (production as content)** + **Avenue 5's audio drama** — together they *ship the
-   story* long before animation can. The main quest; everything else is side content.
-2. **Avenue 10 (newsletter + a "watch it get made" membership)** — the funding/reach layer that
-   keeps the lights on. Cheap, owned, durable.
-3. **Avenue 6 (Princess as a companion)** — the cheapest emotional stickiness, built from pieces
-   already on the site; most likely to make people *love* the brand.
-
-Honorable mention: **Avenue 3 (the Academy)** is the strongest *standalone business*, but it's a
-real second job. **Avenue 2 (the ARG)** is the highest-ceiling for superfans but a cadence trap —
-start it only when #1 is humming.
-
-The trap to avoid: more *games*. You have a deep arcade already. The next leap is shipping the
-*show*, in whatever cheap form ships first.
