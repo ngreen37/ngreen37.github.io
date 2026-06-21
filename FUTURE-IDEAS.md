@@ -36,7 +36,8 @@ Lion), Sky Run, Space Run, Knight's Tour, Siege on Chess City — each with dail
 boards, ghosts, streak flame, board-skins + JP-localization scaffolding. World/site: Lore Codex,
 Academy, Projects, Daily Dispatch, Hall of Fame, leaderboard seasons. Avenue pieces: production hub
 + Pilot animatic + Writers' Room (1), audio hub + leitmotifs (5), site-wide Princess companion (6),
-Press Pass + Press Credential + Bureau-of-Dispatch newsletter (10).
+Press Pass + Press Credential + Bureau-of-Dispatch newsletter + Press Kit/EPK + support-transparency +
+referral invite links (10).
 
 ---
 
@@ -316,17 +317,26 @@ Press Pass + Press Credential + Bureau-of-Dispatch newsletter (10).
 9. **A global "first to clear"** race on new content.
 10. **An anniversary beat** dated to the crash.
 
-## Avenue 10 — Funding & reach *(Press Pass + dispatch live)*
-1. **Dispatch → Resend** — a real welcome email.
-2. **Confirm + carry** the provisional founders number when accounts land.
-3. **Patreon/Ko-fi** behind the Press Pass tiers.
-4. **Festival/grant target list** + a submission calendar.
-5. **Referral rewards** — bring an operative.
-6. **A "what your money funds"** transparency bar.
-7. **Cosmetic-only Quartermaster store** on credits.
-8. **Partner outreach** — a chess platform, a streamer, a school.
-9. **A press/EPK page** for the show.
-10. **An annual "state of the studio"** report to the list.
+## Avenue 10 — Funding & reach *(Press Pass + dispatch + Press Kit live)*
+*Shipped this pass: a **Press Kit / EPK** (`/press-kit/`) with a live "by the numbers" block that
+doubles as the standing **state-of-the-studio**; a **"what your support funds"** transparency split
+and a **direct-support (Ko-fi/Patreon) row** on the Press Pass; **personalized referral invite links**
++ an "invited by" welcome on the dispatch; and a **festivals/grants tracker** (`docs/festivals-and-grants.md`).
+Still open: **#7 cosmetic store** (needs the credits backend — `shopkeeper` scaffolding exists) and
+**#8 partner outreach** (relationship work, not a build — the Press Kit + grants doc make you ready).
+Resend plumbing already exists; a **welcome-email automation** is a Resend-dashboard step, and
+**confirming/carrying the founders number** waits on Operative accounts.*
+
+**A fresh nine:**
+1. **Milestone share-cards** — when a funding/priority beat is hit, auto-generate a "we funded X" card (a viral loop).
+2. **The Founders Wall** — a public, opt-in scroll of founding-operative codenames (seed client-side now; real with accounts).
+3. **First store SKUs = founder cosmetics** — avatar frames + titles, cosmetic-only, the credits store's opening shelf.
+4. **"Adopt a shot"** — micro-patronage: back a single animatic shot and get credited *on* it.
+5. **Pricing-experiment page** — annual vs monthly vs pay-what-you-want, tested before charging.
+6. **Academy B2B licensing** — a classroom / site license as real recurring revenue.
+7. **Game-over email capture** — arcade game-over screens as top-of-funnel for the dispatch.
+8. **"Fund-the-frame" on the tracker** — tie support directly to the animation progress bars.
+9. **Backer-only quarterly dispatch** — a paid-tier behind-the-scenes issue once tiers go live.
 
 ---
 

@@ -7,6 +7,8 @@ jukebox: true
 
 <link rel="stylesheet" href="{{ '/assets/css/pjcc-profile.css' | relative_url }}">
 
+<div class="ml-refbanner" id="ml-refbanner" hidden></div>
+
 <div class="ml-hero">
   <div class="ml-eyebrow">◈ Checker Town Bureau of Dispatch</div>
   <p class="ml-intro">The dispatch is the studio's <b>owned channel</b> — no algorithm decides who hears from us. It's the front row for <i>watching the show get made</i>: dev-logs, game drops, art reveals, and the occasional intercepted transmission. It's also where the <a href="{{ '/press-pass/' | relative_url }}">Press Pass founders list</a> opens <b>first</b>.</p>
@@ -48,11 +50,12 @@ jukebox: true
 
 <!-- referral / share -->
 <h2 class="ml-h2">Bring an Operative</h2>
-<p class="ml-refnote">The list grows by word of mouth, not ad spend. If PJCC is your kind of thing, it's probably someone else's too.</p>
-<div class="ml-share">
-  <button class="pjcc-btn ml-share-btn" id="ml-share-btn" type="button">⧉ Copy the dispatch link</button>
-  <span class="ml-share-flash" id="ml-share-flash"></span>
+<p class="ml-refnote">The list grows by word of mouth, not ad spend. Share <b>your</b> invite link — when accounts open, referrals will earn credit toward founder cosmetics. For now it's the cleanest way to bring someone in.</p>
+<div class="ml-invite">
+  <input id="ml-invite-link" class="pjcc-input ml-invite-input" readonly aria-label="Your invite link">
+  <button class="pjcc-btn ml-share-btn" id="ml-share-btn" type="button">⧉ Copy my invite link</button>
 </div>
+<span class="ml-share-flash" id="ml-share-flash"></span>
 
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
@@ -73,8 +76,8 @@ jukebox: true
       return PJCC.subscribe(email).then(function (res) {
         msg.className = 'ml-msg ok';
         msg.textContent = res.already
-          ? 'You are already on the list — thanks!'
-          : '✓ You are in. Watch your inbox for dispatches.';
+          ? "You're already on the list — thanks for riding along."
+          : "✓ You're in. You'll get the next dispatch — watch your inbox (and the spam folder the first time).";
         form.reset();
       });
     }).catch(function (err) {
@@ -85,13 +88,38 @@ jukebox: true
     });
   });
 
+  // ---- personalized invite link (ref tag) ----
+  function refId() {
+    try { if (window.PJCC && PJCC.getProfile) { var p = PJCC.getProfile(); if (p && p.codename) return p.codename; } } catch (e) {}
+    try {
+      var k = 'pjcc.ref.id', v = localStorage.getItem(k);
+      if (!v) { v = 'op-' + Math.random().toString(36).slice(2, 7); localStorage.setItem(k, v); }
+      return v;
+    } catch (e) { return 'op'; }
+  }
+  function inviteUrl() { return location.origin + location.pathname + '?ref=' + encodeURIComponent(refId()); }
+  function setLink() { var i = document.getElementById('ml-invite-link'); if (i) i.value = inviteUrl(); }
+  setLink();
+  if (window.PJCC && PJCC.ready) PJCC.ready.then(setLink);   // upgrade to codename once profile loads
+
   var share = document.getElementById('ml-share-btn');
   var flash = document.getElementById('ml-share-flash');
   if (share) share.addEventListener('click', function () {
-    var url = location.origin + location.pathname;
-    function ok() { if (flash) { flash.textContent = '✓ copied — pass it on'; setTimeout(function () { flash.textContent = ''; }, 1800); } }
+    var url = inviteUrl();
+    function ok() { if (flash) { flash.textContent = '✓ copied — pass it on'; setTimeout(function () { flash.textContent = ''; }, 2000); } }
     if (navigator.clipboard) navigator.clipboard.writeText(url).then(ok).catch(ok); else ok();
+    var i = document.getElementById('ml-invite-link'); if (i) { i.focus(); i.select(); }
   });
+
+  // ---- "invited by" welcome ----
+  try {
+    var ref = new URLSearchParams(location.search).get('ref');
+    var banner = document.getElementById('ml-refbanner');
+    if (ref && banner) {
+      banner.hidden = false;
+      banner.innerHTML = '◈ An operative invited you in. Welcome to the Bureau — drop your email below and you\'re one of us.';
+    }
+  } catch (e) {}
 })();
 </script>
 
@@ -124,6 +152,9 @@ jukebox: true
 .ml-sample-note { color: #7d6bb0; font-size: 0.84rem; margin-top: 8px; }
 
 .ml-refnote { color: #9a7fd4; max-width: 600px; line-height: 1.6; }
-.ml-share { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
-.ml-share-flash { color: #6bffb8; font-size: 0.84rem; }
+.ml-refnote b { color: #c9a7ff; }
+.ml-invite { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; max-width: 600px; }
+.ml-invite-input { flex: 1; min-width: 200px; font-size: 0.82rem; color: #9fe8ff; }
+.ml-share-flash { color: #6bffb8; font-size: 0.84rem; display: inline-block; min-height: 1.2em; margin-top: 4px; }
+.ml-refbanner { background: rgba(107,255,184,0.08); border: 1px solid #2f6b50; border-radius: 12px; padding: 12px 16px; margin-bottom: 14px; color: #6bffb8; font-size: 0.9rem; }
 </style>

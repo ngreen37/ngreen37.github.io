@@ -117,6 +117,49 @@ permalink: /press-pass/
 })();
 </script>
 
+<!-- ===== WHAT YOUR SUPPORT FUNDS (transparency) ===== -->
+<h2 class="xp-h2">◈ What your support funds</h2>
+<p class="xp-crednote">No fake thermometers here — we won't show a made-up total. But we'll always be straight about <b>where the money goes</b>. Every dollar of support points at one thing: getting the pilot animated.</p>
+<div class="xp-fund">
+  <div class="xp-fund-bar" aria-hidden="true">
+    <span class="xp-fund-seg" style="width:55%; background:#F5C518;" title="Animation"></span>
+    <span class="xp-fund-seg" style="width:20%; background:#ff8fd0;" title="Voice & score"></span>
+    <span class="xp-fund-seg" style="width:15%; background:#9fe8ff;" title="Tools & art"></span>
+    <span class="xp-fund-seg" style="width:10%; background:#6bffb8;" title="Hosting & ops"></span>
+  </div>
+  <ul class="xp-fund-key">
+    <li><i style="background:#F5C518"></i> <b>55%</b> Animation — frames, layout, comp</li>
+    <li><i style="background:#ff8fd0"></i> <b>20%</b> Voice &amp; score — cast, the audio drama, themes</li>
+    <li><i style="background:#9fe8ff"></i> <b>15%</b> Tools &amp; art — software, hardware, materials</li>
+    <li><i style="background:#6bffb8"></i> <b>10%</b> Hosting &amp; ops — the site, the games, the dispatch</li>
+  </ul>
+  <p class="xp-muted">Illustrative split, not a live ledger — the point is the priority order: <b>the screen first.</b></p>
+</div>
+
+<!-- ===== DIRECT SUPPORT (tip jar) ===== -->
+<h2 class="xp-h2">◈ Support directly</h2>
+<p class="xp-crednote">Don't want a pass — just want to chip in? A one-off tip funds the same pilot, no strings.</p>
+<div class="xp-support" id="xp-support"></div>
+<script>
+(function () {
+  // Drop in real URLs when the accounts exist. Empty string = "opening soon".
+  var SUPPORT = {
+    kofi:    '',   // e.g. 'https://ko-fi.com/mcpuppystudios'
+    patreon: ''    // e.g. 'https://patreon.com/mcpuppystudios'
+  };
+  var MAILING_URL = {{ '/mailing-list/' | relative_url | jsonify }};
+  var host = document.getElementById('xp-support'); if (!host) return;
+  function btn(label, sub, url, cls) {
+    if (url) return '<a class="xp-sup-btn ' + cls + '" href="' + url + '" target="_blank" rel="noopener"><b>' + label + '</b><small>' + sub + '</small></a>';
+    return '<span class="xp-sup-btn ' + cls + ' is-soon"><b>' + label + '</b><small>opening soon</small></span>';
+  }
+  host.innerHTML =
+    btn('☕ Ko-fi', 'one-off tip', SUPPORT.kofi, 'xp-sup-kofi') +
+    btn('◈ Patreon', 'monthly backing', SUPPORT.patreon, 'xp-sup-patreon') +
+    '<a class="xp-sup-btn xp-sup-list" href="' + MAILING_URL + '"><b>✉ Free</b><small>join the dispatch</small></a>';
+})();
+</script>
+
 <div class="xp-promise">
   <h2>The promise</h2>
   <ul>
@@ -184,4 +227,22 @@ permalink: /press-pass/
 .xp-cred-foot { margin-top: 12px; font-size: 0.7rem; color: #8a78ba; line-height: 1.5; }
 .xp-cred-actions { margin-top: 10px; }
 .xp-cred-share { display: inline-block; width: auto; padding: 8px 16px; }
+
+.xp-fund { max-width: 620px; }
+.xp-fund-bar { display: flex; height: 18px; border-radius: 999px; overflow: hidden; border: 1px solid #3a2a6a; margin-bottom: 12px; }
+.xp-fund-seg { display: block; height: 100%; }
+.xp-fund-key { list-style: none; padding: 0; margin: 0 0 8px; display: grid; gap: 5px; }
+.xp-fund-key li { color: #c9a7ff; font-size: 0.86rem; display: flex; align-items: center; gap: 8px; }
+.xp-fund-key i { width: 12px; height: 12px; border-radius: 3px; flex: 0 0 auto; }
+.xp-fund-key b { color: #f0e6ff; width: 38px; flex: 0 0 auto; }
+
+.xp-support { display: flex; gap: 10px; flex-wrap: wrap; }
+.xp-sup-btn { display: flex; flex-direction: column; align-items: center; gap: 1px; background: rgba(45,27,105,0.5); border: 1px solid #4a2f8a; border-radius: 12px; padding: 12px 20px; text-decoration: none; color: #f0e6ff; transition: all 0.14s; min-width: 130px; }
+.xp-sup-btn:hover { border-color: #F5C518; transform: translateY(-2px); }
+.xp-sup-btn b { font-size: 0.95rem; }
+.xp-sup-btn small { color: #9a7fd4; font-size: 0.74rem; }
+.xp-sup-btn.is-soon { opacity: 0.6; cursor: default; }
+.xp-sup-btn.is-soon:hover { border-color: #4a2f8a; transform: none; }
+.xp-sup-kofi:hover { box-shadow: 0 0 18px rgba(245,197,24,0.18); }
+.xp-sup-list { border-color: #2f6b50; }
 </style>
