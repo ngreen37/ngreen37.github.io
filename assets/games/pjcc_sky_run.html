@@ -65,11 +65,11 @@
     <div class="legend">
       <span class="g">♗</span><span>Bishop — <b>X-only</b> twin beams: no straight shot, but big damage</span>
       <span class="g">♘</span><span>Knight — two <b>sharpshooter escorts</b></span>
-      <span class="g">♕</span><span>Queen — a heavy <b>super-shot</b> that pierces</span>
+      <span class="g">♕</span><span>Queen — fires <b>all 8 directions</b> at once, piercing</span>
       <span class="g">♚</span><span>King — <b>summon pawns</b> (earned by combo) that leap &amp; explode</span>
     </div>
-    <div class="row"><button class="btn btn-gold" id="play-btn">▶ TAKE FLIGHT</button><button class="btn btn-ghost" id="daily-btn">📅 DAILY RUN</button></div>
-    <div class="foot" style="margin-top:8px;">📅 <b>Daily</b> — the same enemy script for everyone today; its own best.</div>
+    <div class="row"><button class="btn btn-gold" id="play-btn">▶ TAKE FLIGHT</button><button class="btn btn-ghost" id="daily-btn">📅 DAILY</button><button class="btn btn-ghost" id="endless-btn">🌊 ENDLESS</button></div>
+    <div class="foot" style="margin-top:8px;">📅 <b>Daily</b> — same enemy script for everyone today · 🌊 <b>Endless</b> — one life, the sea keeps rising.</div>
     <div class="foot">Drag / move to fly · <b>Space</b> summons pawns · <b id="best-line">best: —</b></div>
   </div>
 
@@ -80,6 +80,7 @@
     <div class="blurb" id="res-msg"></div>
     <div class="row">
       <button class="btn btn-gold" id="retry-btn">FLY AGAIN</button>
+      <button class="btn btn-ghost" id="card-btn">📷 CARD</button>
       <button class="btn btn-ghost" id="menu-btn2">MENU</button>
     </div>
   </div>
@@ -116,11 +117,13 @@ function hexToRgb(h){ const n=parseInt(h.slice(1),16); return ((n>>16)&255)+','+
 const PWR_DUR = { bishop:12, knight:14, queen:10 }, PWR_CAP = 22;
 
 const KILLS_PER_PAWN = 9, MAX_PAWNS = 8, START_HEARTS = 5;
-const BEST_KEY = 'pjcc.skyrun.best.v1', BEST_KEY_D = 'pjcc.skyrun.dailybest.v1';
+const BEST_KEY = 'pjcc.skyrun.best.v1', BEST_KEY_D = 'pjcc.skyrun.dailybest.v1', BEST_KEY_E = 'pjcc.skyrun.endlessbest.v1';
 function loadBest(){ try { return parseInt(localStorage.getItem(BEST_KEY)) || 0; } catch(e){ return 0; } }
 function saveBest(v){ try { localStorage.setItem(BEST_KEY, String(v)); } catch(e){} }
 function loadBestD(){ try { var o=JSON.parse(localStorage.getItem(BEST_KEY_D)||'{}'); return o.d===dayStr()?(o.v||0):0; } catch(e){ return 0; } }
 function saveBestD(v){ try { localStorage.setItem(BEST_KEY_D, JSON.stringify({ d:dayStr(), v:v })); } catch(e){} }
+function loadBestE(){ try { return parseInt(localStorage.getItem(BEST_KEY_E)) || 0; } catch(e){ return 0; } }
+function saveBestE(v){ try { localStorage.setItem(BEST_KEY_E, String(v)); } catch(e){} }
 
 // ---------- audio ----------
 let actx=null, master=null, sndOn=true;
@@ -156,13 +159,16 @@ function dist2(ax,ay,bx,by){ const dx=ax-bx,dy=ay-by; return dx*dx+dy*dy; }
 let G = null;
 const FIRE_CD = 0.16, BSPD = 560, PAWNSPD = 460, DIAG = 200;
 
-function newGame(daily){
+function newGame(mode){
+  mode = mode || 'normal';
+  const daily = mode==='daily', endless = mode==='endless';
   SRNG = daily ? mulberry32(todaySeed()) : null;
   G = {
-    daily: !!daily,
+    mode: mode, daily: daily, endless: endless, loop: 1,
     time: 0, running: true, over: false,
     px: W/2, py: H-90, tx: W/2, ty: H-90, pr: 16,
-    hearts: START_HEARTS, inv: 0, score: 0, best: daily ? loadBestD() : loadBest(),
+    hearts: endless ? 1 : START_HEARTS, inv: 0, score: 0,
+    best: daily ? loadBestD() : (endless ? loadBestE() : loadBest()),
     combo: 0, mult: 1, killAcc: 0, pawns: 0,
     pwr: { bishop:0, knight:0, queen:0 }, escorts: [],
     fireCd: 0,
@@ -212,7 +218,7 @@ function startWave(){
 function startBoss(){
   if (G.boss) return;
   const r = curRegion();
-  const hp = 200 + G.region*130;
+  const hp = Math.round((200 + G.region*130) * (1+(G.loop-1)*0.5));
   G.boss = { x: W/2, y: -40, ty: 96, hp: hp, maxhp: hp, t: 0, fireCd: 1.4, addCd: 5, dir: 1, entering: true,
     name: r.secret ? 'THE CEO' : r.name + ' King' };
   G.banner = '⚠ ' + G.boss.name.toUpperCase(); G.bannerT = 2.0; sfx('boss');
@@ -222,8 +228,9 @@ function startBoss(){
 function spawnEnemy(type, x){
   const a = ENEMY[type];
   const ex = (x==null) ? srndR(a.r+8, W-a.r-8) : x;
-  G.enemies.push({ type, glyph:a.glyph, fill:a.fill, r:a.r, hp:a.hp, maxhp:a.hp, pts:a.pts,
-    x:ex, y:-a.r-srndR(0,40), vx:0, vy:a.spd, pat:a.pat, t:srndR(0,6), shoots:!!a.shoots, shootCd:srndR(1.2,2.4), seed:srndR(0,100) });
+  const sc = 1+(G.loop-1)*0.4, ssp = 1+(G.loop-1)*0.12, hp = Math.round(a.hp*sc);  // Endless loops escalate
+  G.enemies.push({ type, glyph:a.glyph, fill:a.fill, r:a.r, hp:hp, maxhp:hp, pts:a.pts,
+    x:ex, y:-a.r-srndR(0,40), vx:0, vy:a.spd*ssp, pat:a.pat, t:srndR(0,6), shoots:!!a.shoots, shootCd:srndR(1.2,2.4), seed:srndR(0,100) });
 }
 
 // ---------- firing ----------
@@ -326,8 +333,10 @@ function update(dt){
   if (G.phase==='interstitial'){
     G.interT -= dt; updateParts(dt);
     if (G.interT<=0){
-      if (G.nextRegion > REGIONS.length){ gameOver(true); return; }
-      startRegion(G.nextRegion);
+      if (G.nextRegion > REGIONS.length){
+        if (G.endless){ G.loop++; G.nextRegion=1; startRegion(1); G.banner='LOOP '+G.loop+' ▸ THE SEA RISES'; G.bannerT=2.4; }
+        else { gameOver(true); return; }
+      } else startRegion(G.nextRegion);
     }
     return;
   }
@@ -411,7 +420,7 @@ function bossDefeated(){
   const last = G.region>=REGIONS.length;
   G.beat = last ? null : STORY_BEATS[G.region];
   G.phase='interstitial'; G.interT=2.6; G.nextRegion=G.region+1;
-  G.banner = last ? 'YOU REACHED THE TOP' : 'REGION CLEARED'; G.bannerT=2.6;
+  G.banner = last ? (G.endless ? 'THE SEA RISES AGAIN' : 'YOU REACHED THE TOP') : 'REGION CLEARED'; G.bannerT=2.6;
   sfx('win');
 }
 function drawInterstitial(){
@@ -636,8 +645,8 @@ function loop(now){ const dt=Math.min(0.04,(now-lastT)/1000); lastT=now; if(G){ 
 // ---------- screens ----------
 function gameOver(won){
   G.running=false; G.over=true;
-  if (G.score>G.best){ G.best=G.score; (G.daily?saveBestD:saveBest)(G.best); }
-  if (window.PJCC && PJCC.saveScore) PJCC.saveScore(G.daily?'sky-run-daily':'sky-run', G.score, { credits: 1+G.region, data: { region:G.region, won:won, daily:G.daily } });
+  if (G.score>G.best){ G.best=G.score; (G.daily?saveBestD:(G.endless?saveBestE:saveBest))(G.best); }
+  if (window.PJCC && PJCC.saveScore) PJCC.saveScore(G.daily?'sky-run-daily':(G.endless?'sky-run-endless':'sky-run'), G.score, { credits: 1+G.region, data: { region:G.region, won:won, mode:G.mode, loop:G.loop } });
   document.getElementById('menu-btn').classList.add('hidden');
   document.getElementById('summon-btn').classList.add('hidden');
   document.getElementById('res-eye').textContent = won ? 'The summit' : 'Shot down';
@@ -649,17 +658,39 @@ function gameOver(won){
   sfx(won?'win':'lose');
   document.getElementById('result').classList.remove('hidden');
 }
-let curDaily=false;
-function startPlay(daily){ curDaily=!!daily; initAudio(); if(actx&&actx.state==='suspended') actx.resume();
+let curMode='normal';
+function startPlay(mode){ curMode=mode||'normal'; initAudio(); if(actx&&actx.state==='suspended') actx.resume();
   document.getElementById('menu').classList.add('hidden'); document.getElementById('result').classList.add('hidden');
   document.getElementById('menu-btn').classList.remove('hidden'); document.getElementById('summon-btn').classList.remove('hidden');
-  newGame(curDaily); updateSummonBtn();
+  newGame(curMode); updateSummonBtn();
+}
+// Photo-mode end-card — a shareable PNG of your run
+function saveCard(){
+  if (!G) return;
+  const cw=600, ch=315, cv=document.createElement('canvas'); cv.width=cw; cv.height=ch; const cx=cv.getContext('2d');
+  const r=curRegion();
+  const grd=cx.createLinearGradient(0,0,0,ch); grd.addColorStop(0, r.sky?r.sky[0]:'#0a0f24'); grd.addColorStop(1,'#05060f');
+  cx.fillStyle=grd; cx.fillRect(0,0,cw,ch);
+  cx.strokeStyle='#8fb8ff'; cx.lineWidth=4; cx.strokeRect(8,8,cw-16,ch-16);
+  cx.textAlign='center';
+  const tag = G.daily?' · DAILY':(G.endless?' · ENDLESS':'');
+  cx.fillStyle='#8fb8ff'; cx.font='bold 16px Trebuchet MS'; cx.fillText('PJCC · SKY RUN'+tag, cw/2, 50);
+  cx.fillStyle='#ffe27a'; cx.font='900 70px Trebuchet MS'; cx.fillText(String(G.score), cw/2, 152);
+  cx.fillStyle='#cfe0ff'; cx.font='600 18px Trebuchet MS'; cx.fillText('score', cw/2, 180);
+  cx.fillStyle='#f0e6ff'; cx.font='bold 22px Trebuchet MS';
+  const won = G.over && G.region>=REGIONS.length && !G.endless;
+  cx.fillText((won?'Reached Chess City ★':'Down over '+r.name) + (G.endless?(' · loop '+G.loop):''), cw/2, 228);
+  cx.fillStyle='#9fe8ff'; cx.font='600 15px Trebuchet MS'; cx.fillText('best '+G.best+'   ·   ngreen37.github.io', cw/2, 264);
+  cx.font='40px "Segoe UI Symbol","Noto Sans Symbols2",serif'; cx.fillStyle='#f0e6ff'; cx.fillText('♞', cw/2, 300);
+  const a=document.createElement('a'); a.download='sky-run-'+G.score+'.png'; a.href=cv.toDataURL('image/png'); a.click();
 }
 function openMenu(){ if(G) G.running=false; document.getElementById('result').classList.add('hidden'); document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('summon-btn').classList.add('hidden'); document.getElementById('menu').classList.remove('hidden'); }
 
-document.getElementById('play-btn').addEventListener('click', function(){ startPlay(false); });
-document.getElementById('daily-btn').addEventListener('click', function(){ startPlay(true); });
-document.getElementById('retry-btn').addEventListener('click', function(){ startPlay(curDaily); });
+document.getElementById('play-btn').addEventListener('click', function(){ startPlay('normal'); });
+document.getElementById('daily-btn').addEventListener('click', function(){ startPlay('daily'); });
+document.getElementById('endless-btn').addEventListener('click', function(){ startPlay('endless'); });
+document.getElementById('retry-btn').addEventListener('click', function(){ startPlay(curMode); });
+document.getElementById('card-btn').addEventListener('click', saveCard);
 document.getElementById('menu-btn').addEventListener('click', openMenu);
 document.getElementById('menu-btn2').addEventListener('click', openMenu);
 document.getElementById('summon-btn').addEventListener('click', summon);

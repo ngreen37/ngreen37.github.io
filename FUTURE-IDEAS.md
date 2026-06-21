@@ -164,7 +164,7 @@ preview + share-card generator + `/educators/` B2B page + game-page dispatch cap
 10. **Island duel** — local hot-seat with drops.
 
 ## Sky Run — *vertical shmup*
-*Shipped: **#10 Animatic interstitials** (2-panel story beat on each region clear); **#4 Daily seeded sky** (a 📅 Daily Run button — same enemy script for everyone today, its own best + `sky-run-daily` board). Also: the **Queen power-up now fires all eight directions** (rook + bishop lines, piercing — it supersedes the Bishop X-shot while active), and a stray-bullet leak off the bottom was fixed. Feasible-next within means: Endless "Sea" mode (#3), Loadout select (#6), Photo end-card (#7), new power-ups (#2). Too far for now: Co-pilot (#5, 2-player input) and the rhythm tie-in (#8, needs the real score).*
+*Shipped: **#10 Animatic interstitials** (2-panel story beat on each region clear); **#4 Daily seeded sky** (a 📅 Daily Run button — same enemy script for everyone today, its own best + `sky-run-daily` board). Also: the **Queen power-up now fires all eight directions** (rook + bishop lines, piercing — it supersedes the Bishop X-shot while active), and a stray-bullet leak off the bottom was fixed. Also shipped: **#3 Endless "Sea" mode** (a 🌊 button — one life, regions loop with escalating enemy hp/speed each lap, its own `sky-run-endless` best/board) and **#7 Photo-mode end-card** (a 📷 CARD button on the result screen downloads a shareable PNG of your run). Feasible-next within means: Loadout select (#6), new power-ups (#2). Too far for now: Co-pilot (#5, 2-player input) and the rhythm tie-in (#8, needs the real score).*
 1. **Lore bosses** — every region's king with a patterned fight (CEO finale exists).
 2. **New power-ups** — Rook (laning wall), pawn-storm, an en-passant dash.
 3. **Endless "Sea" mode** — one life, escalating, global distance board.
@@ -322,6 +322,27 @@ of it off). Turns an audience into co-authors.*
 > **Open decision (publish/share reels):** ship **A** — a hand-curated `_data/reels.yml` shelf (free,
 > on-brand) now; graduate to a **Supabase gallery** with likes/credits when Operative accounts land.
 > A **Formspree/Google-Form** capture is the middle step if demand shows up first.
+
+## Avenue 8 — The Operative Command Center *(reborn from the dropped `/sandbox/`)*
+*The old `/sandbox/` "Command Center" was a slick hidden dev terminal — a streaming transmission log,
+a 16-node cast constellation, operative rank, an episode countdown, daily opening intel, and a
+fragment-recovery grid. We **dropped the page** (it was a static mockup behind a front-door tile) but
+the **concept is too good to lose**: a single **mission-control HQ** that makes an operative's whole
+relationship with PJCC personal and **earned**. Most of it is buildable client-side from systems that
+already exist (rank, fragments, dailies, countdown); the social/cross-device parts wait on accounts.*
+
+1. **One HQ screen** — your dossier rank, credits, and streak in a single mission-control layout (the place a returning operative lands).
+2. **Fragment-recovery grid** — your site-wide `frag_` collection as a live status board, with hints at what's still hidden (ties the ARG + the new Sand Mine `frag_subjectzero`).
+3. **Mission clock** — the premiere ETA as a live countdown (the same date the companion + Press Kit already use).
+4. **Daily mission** — one assigned task a day, pulling the Academy homework and each game's Daily into a single objective.
+5. **Live transmission log** — a streaming in-universe feed (curated now; an Avenue-tie if it ever generates).
+6. **The cast constellation** — the 16-node piece-relationship graph, but **unlocked node by node** as you read character/location files (ties the Lore Codex).
+7. **Opening intel** — a daily chess-opening tip (ties the Pirc trainer + Academy).
+8. **Earned, gated modules** — panels unseal as your clearance rank climbs, so the HQ literally grows with you.
+9. **"What's new since you left"** — a changelog of drops, bar-moves, and dailies since your last visit.
+10. **Backend-aware** — with Operative accounts it shows real cross-device progress, leaderboard standing, and guild/house.
+
+**Realistic take:** the old terminal proved the *look*; the value is making it *yours* and *earned* — a durable reason to return that compounds with everything else on the site. Build the client-side modules first (rank · fragments · countdown · daily · constellation); the social layer rides in with accounts.
 
 ## Avenue 9 — Live ops / a heartbeat
 *"Live ops" = features tied to **real time and presence**, so the site is different today than it was
