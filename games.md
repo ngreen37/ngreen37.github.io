@@ -102,8 +102,8 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/notation-run/' | relative_url }}">
     <div class="game-card-icon">♫</div>
     <div class="game-card-body">
-      <h2>Notation Blitz v3.5</h2>
-      <p>A rhythm drill for reading chess coordinates at speed — Endless ramp, a free BPM slider, a 2-Tone "Black side" mode, a ⟲ Extreme board-flip mode, and a new 📅 Daily seeded chart that posts to a global <strong>timing-accuracy</strong> board (not just score).</p>
+      <h2>Notation Blitz v3.6</h2>
+      <p>A rhythm drill for reading chess coordinates at speed — Endless ramp, an adaptive <strong>Freestyle</strong> tempo, a files/ranks <strong>Warmup</strong>, mid-run <strong>Perks</strong>, a free BPM slider, a 2-Tone "Black side" mode, a ⟲ Extreme board-flip mode, and a 📅 Daily seeded chart that posts to a global <strong>timing-accuracy</strong> board (not just score).</p>
       <span class="game-tag">Playable</span>
     </div>
   </a>
@@ -576,5 +576,57 @@ permalink: /games/
       paint();  // turning it back on takes effect on the next page load
     });
   }
+})();
+</script>
+
+<style>
+/* Lore tie-in chip on each game card — a deep-link to the character/location it ties to */
+.gc-lore {
+  display: inline-flex; align-items: center; gap: 4px; margin-left: 8px;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.02em;
+  color: #c9a7ff; background: rgba(157,127,212,0.14);
+  border: 1px solid #4a2f8a; border-radius: 999px; padding: 2px 9px;
+  cursor: pointer; transition: all 0.13s; vertical-align: middle;
+}
+.gc-lore:hover { color: #1a0f3d; background: #F5C518; border-color: #F5C518; }
+.gc-lore-ic { font-style: normal; }
+</style>
+
+<script>
+(function () {
+  // Map each game (by slug in its card href) to the lore file it ties to.
+  var LORE = {
+    'notation-run':     { label: 'Checker Town', href: '/locations/checker-town/' },
+    'sky-run':          { label: 'Chess City',   href: '/locations/chess-city/' },
+    'pirc-protocol':    { label: 'Argus',        href: '/characters/argus/' },
+    'fork-in-the-road': { label: 'The Rival',    href: '/characters/rival/' },
+    'sand-mine-depths': { label: 'The Father',   href: '/characters/father/' },
+    'clearance-delta':  { label: 'The Narrator', href: '/characters/narrator/' },
+    'shogi-island':     { label: 'Shogi Island', href: '/locations/shogi-island/' },
+    'tower-defense':    { label: 'Chess City',   href: '/locations/chess-city/' },
+    'blindfold-puzzles':{ label: 'Princess',     href: '/characters/princess/' },
+    'dungeon':          { label: 'Princess',     href: '/characters/princess/' },
+    'daily':            { label: 'The Dead Drop',href: '/dead-drop/' }
+  };
+  Array.prototype.forEach.call(document.querySelectorAll('a.game-card'), function (card) {
+    var href = card.getAttribute('href') || '';
+    var slug = (href.replace(/\/+$/, '').split('/').pop()) || '';
+    var lore = LORE[slug];
+    if (!lore) return;
+    var body = card.querySelector('.game-card-body');
+    if (!body) return;
+    var chip = document.createElement('span');
+    chip.className = 'gc-lore';
+    chip.setAttribute('role', 'link');
+    chip.setAttribute('tabindex', '0');
+    chip.title = 'Lore: ' + lore.label;
+    chip.innerHTML = '<span class="gc-lore-ic">📖</span> ' + lore.label;
+    function go(e) { e.preventDefault(); e.stopPropagation(); window.location.href = lore.href; }
+    chip.addEventListener('click', go);
+    chip.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') go(e); });
+    var tag = body.querySelector('.game-tag');
+    if (tag && tag.parentNode) tag.parentNode.insertBefore(chip, tag.nextSibling);
+    else body.appendChild(chip);
+  });
 })();
 </script>
