@@ -245,11 +245,13 @@ Make audio a first-class pillar, not a background tab.
 2. **A radio drama / audio-fiction pilot** — voice the pilot as audio first. It's a fraction of
    animation's cost, ships *years* sooner, and tests the writing, cast, and tone live. The
    podcast slot is already sitting there.
-3. **Character leitmotifs** — a tiny, distinct musical signature that plays softly on each
-   character's page.
-4. **Notation Blitz "score mode"** — chart the actual PJCC themes as playable rhythm tracks,
-   tying the arcade to the music.
-5. **Community remixes** — "submit a track for the Build Playlist," with a featured fan slot.
+3. ✅ **Character leitmotifs** *(shipped)* — `assets/js/pjcc-leitmotif.js` generates a tiny,
+   deterministic Web-Audio signature per character (seeded melody + timbre + key, no audio files);
+   a "♪ Hear …'s theme" button is on every character page. *(Could later add a showcase strip.)*
+4. ⏳ **Notation Blitz "score mode"** — chart the actual PJCC themes as playable rhythm tracks,
+   tying the arcade to the music. *(Not built — needs composed charts.)*
+5. ⏳ **Community remixes** — "submit a track for the Build Playlist." *(Needs a submission backend.)*
+1. ⏳ **Original score / EP** &nbsp; 2. ⏳ **Radio drama / audio-fiction pilot** — *(content/recording, not code; the biggest swings here.)*
 **Realistic take:** The audio drama is the most *underrated* idea on this list. It ships the
 story cheaply, proves the most expensive-to-fix thing (writing + performances), and grows a
 fiction-podcast audience — a hungry, underserved market — while the animation cooks.

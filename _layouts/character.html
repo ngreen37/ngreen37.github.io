@@ -16,6 +16,7 @@ layout: default
       {% if page.full_name and page.full_name != "Name Undetermined" %}
         <p class="character-fullname">{{ page.full_name }}</p>
       {% endif %}
+      <button type="button" class="leitmotif-btn" id="leitmotif-btn" data-name="{{ page.title }}">♪ Hear {{ page.title }}'s theme</button>
     </div>
     {% if page.role %}
       <span class="character-role-badge">{{ page.role }}</span>
@@ -141,3 +142,28 @@ layout: default
   // Lore Codex: mark this character's file as recovered once you've read it.
   try { localStorage.setItem('codex.char.' + {{ page.slug | jsonify }}, '1'); } catch (e) {}
 </script>
+
+<script src="{{ '/assets/js/pjcc-leitmotif.js' | relative_url }}"></script>
+<script>
+  (function () {
+    var btn = document.getElementById('leitmotif-btn');
+    if (!btn) return;
+    if (!(window.AudioContext || window.webkitAudioContext)) { btn.style.display = 'none'; return; }
+    btn.addEventListener('click', function () {
+      if (window.PJCCLeitmotif) PJCCLeitmotif.play(btn.getAttribute('data-name'));
+      btn.classList.remove('playing'); void btn.offsetWidth; btn.classList.add('playing');
+    });
+  })();
+</script>
+
+<style>
+  .leitmotif-btn {
+    margin-top: 10px; display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(245,197,24,0.12); color: #F5C518; border: 1px solid #b8902a;
+    border-radius: 999px; padding: 6px 14px; font-family: inherit; font-size: 0.82rem;
+    font-weight: 700; cursor: pointer; transition: all 0.15s;
+  }
+  .leitmotif-btn:hover { background: #F5C518; color: #1a0f3d; }
+  .leitmotif-btn.playing { animation: leitPulse 0.9s ease; }
+  @keyframes leitPulse { 0% { box-shadow: 0 0 0 0 rgba(245,197,24,0.5); } 100% { box-shadow: 0 0 0 14px rgba(245,197,24,0); } }
+</style>
