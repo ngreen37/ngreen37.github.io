@@ -149,6 +149,7 @@
     <button class="mode-btn active" data-mode="classic">Classic</button>
     <button class="mode-btn" data-mode="speed">⚡ Speed-Vision</button>
     <button class="mode-btn" data-mode="describe">⌨ Describe-only</button>
+    <button class="mode-btn" data-mode="audio">🔊 Audio-only</button>
     <button class="mode-btn" data-mode="daily">📅 Daily</button>
   </div>
   <div class="diffbar"><i id="diff-fill"></i></div>
@@ -166,9 +167,10 @@
   <span class="bf-firefly" style="left:46%;top:140px;animation-delay:-7s;animation-duration:8s"></span>
   <div id="board"></div>
   <div class="describe-wrap" id="describe-wrap" hidden>
-    <div class="describe-note">🧠 No board. Read the clue, picture it, and <b>type the winning move</b> — algebraic (Qh5, Nf7) or coordinates (d1h5).</div>
+    <div class="describe-note" id="describe-note">🧠 No board. Read the clue, picture it, and <b>type the winning move</b> — algebraic (Qh5, Nf7) or coordinates (d1h5).</div>
     <div class="describe-row">
       <input id="describe-in" class="describe-in" placeholder="your move…" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button id="audio-replay" hidden>🔊 Replay</button>
       <button class="primary" id="describe-go">Play</button>
     </div>
   </div>
@@ -195,6 +197,7 @@
     <div class="me-opt">
       <label><input type="checkbox" id="me-blitz"> ⏱ Blitz clock (3:00)</label>
       <label><input type="checkbox" id="me-purist"> 🚫 Purist (no peeks, +credits)</label>
+      <label><input type="checkbox" id="me-narrate"> 🔊 Narrate moves</label>
     </div>
     <div id="me-board"></div>
     <div class="me-clock" id="me-clock" hidden><span class="cw">You <b id="clk-w">3:00</b></span><span class="cb">CEO <b id="clk-b">3:00</b></span></div>
@@ -537,6 +540,48 @@ if (RUN_UI) (function(){
 
   var prob=null, phase='from', curMistake=false, mode='classic', combo=0;
   function setMsg(t,cls){ var m=document.getElementById('msg'); m.textContent=t; m.className='msg '+(cls||''); }
+
+  /* ---- speech (audio-only mode + Mind's Eye narration) ---- */
+  var speechOK = (typeof window!=='undefined') && !!window.speechSynthesis && typeof window.SpeechSynthesisUtterance!=='undefined';
+  function speak(text){
+    if(!speechOK) return false;
+    try{ window.speechSynthesis.cancel(); var u=new SpeechSynthesisUtterance(text); u.rate=0.96; u.pitch=1; window.speechSynthesis.speak(u); return true; }catch(e){ return false; }
+  }
+  function typingMode(){ return mode==='describe' || mode==='audio'; }
+  var PNAME={ k:'King', q:'Queen', r:'Rook', b:'Bishop', n:'Knight', p:'Pawn' };
+  function piecesSpoken(b, white){ var list=[]; for(var i=0;i<64;i++){ var p=b[i]; if(!p||isW(p)!==white) continue; list.push(PNAME[p.toLowerCase()]+' on '+nameFromSq(i)); } return list; }
+  // A memory aid that frames the position without giving away the move.
+  function coachMnemonic(prob){
+    var b=prob.S.b, wc=0, bc=0; for(var i=0;i<64;i++){ if(b[i]){ if(isW(b[i])) wc++; else bc++; } }
+    var bk=nameFromSq(kingSq(b,'b'));
+    var motif=/fork/i.test(prob.goal)?'fork':'mate';
+    var tip = motif==='fork' ? 'Coach: one move should strike two targets at once.'
+                             : 'Coach: trap the enemy king — every escape square must be covered.';
+    return 'Anchor the picture: the Black king sits on '+bk+', with '+wc+' White pieces against '+bc+' Black. '+tip;
+  }
+  function speakPosition(prob){
+    var b=prob.S.b, mover = prob.S.turn==='w' ? 'White' : 'Black';
+    var txt = mover+' to move. Goal: '+prob.goal+'. '
+            + 'White has: '+piecesSpoken(b,true).join(', ')+'. '
+            + 'Black has: '+piecesSpoken(b,false).join(', ')+'. '
+            + coachMnemonic(prob);
+    return txt;
+  }
+  // Expand SAN into something a speech synth reads cleanly ("Nf6" → "Knight f 6").
+  function spokenSAN(san){
+    if(/^O-O-O/.test(san)) return 'castles queenside';
+    if(/^O-O/.test(san)) return 'castles kingside';
+    var out='', map={ N:'Knight ', B:'Bishop ', R:'Rook ', Q:'Queen ', K:'King ' };
+    for(var i=0;i<san.length;i++){ var c=san[i];
+      if(map[c]) out+=map[c];
+      else if(c==='x') out+='takes ';
+      else if(c==='+') out+=' check';
+      else if(c==='#') out+=' checkmate';
+      else if(c==='=') out+=' promotes to ';
+      else out+=c+' ';
+    }
+    return out.replace(/\s+/g,' ').trim();
+  }
   function clearMarks(){ for(var k in sqEls) sqEls[k].classList.remove('from','target','bad'); }
   function clearPieces(){ for(var k in sqEls) sqEls[k].innerHTML=''; }
   function place(sq, p){ var side=isW(p)?'you':'them'; sqEls[sq].innerHTML='<span class="pc '+side+'">'+GLYPH[isW(p)?'w':'b'][p.toLowerCase()]+'</span>'; }
@@ -576,9 +621,24 @@ if (RUN_UI) (function(){
     document.getElementById('diff-fill').style.width = (st.diff/10*100)+'%';
     document.getElementById('next').disabled=true;
     updateCombo();
-    if(mode==='describe'){ dw.hidden=false; bd.classList.add('no-board'); var di=document.getElementById('describe-in'); di.value=''; setTimeout(function(){ try{ di.focus(); }catch(e){} },60);
-      setMsg('Light the clue, picture the board, then type the winning move.',''); }
-    else { dw.hidden=true; bd.classList.remove('no-board'); setMsg('Light the clue, then click the piece that moves.',''); }
+    var areplay=document.getElementById('audio-replay'), dnote=document.getElementById('describe-note');
+    if(typingMode()){
+      dw.hidden=false; bd.classList.add('no-board'); var di=document.getElementById('describe-in'); di.value='';
+      setTimeout(function(){ try{ di.focus(); }catch(e){} },60);
+      if(mode==='audio'){
+        areplay.hidden=false;
+        dnote.innerHTML='🔊 No board, no text. <b>Listen</b> to the position, picture it, then <b>type the winning move</b>.';
+        document.getElementById('clue-text').innerHTML = speechOK ? '🔊 Listen to the position…' : '🔇 Speech unavailable — clue: ' + prob.clue;
+        clueEl.classList.add('lit'); document.getElementById('clue-text').style.setProperty('--r','999px');
+        if(speechOK) setTimeout(function(){ speak(speakPosition(prob)); }, 250);
+        setMsg('Listen, picture the board, then type the winning move.','');
+      } else {
+        areplay.hidden=true;
+        dnote.innerHTML='🧠 No board. Read the clue, picture it, and <b>type the winning move</b> — algebraic (Qh5, Nf7) or coordinates (d1h5).';
+        setMsg('Light the clue, picture the board, then type the winning move.','');
+      }
+    }
+    else { dw.hidden=true; bd.classList.remove('no-board'); areplay.hidden=true; setMsg('Light the clue, then click the piece that moves.',''); }
     renderMindsEye();
   }
 
@@ -619,6 +679,7 @@ if (RUN_UI) (function(){
   }
   document.getElementById('describe-go').onclick=submitDescribe;
   document.getElementById('describe-in').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); submitDescribe(); } });
+  document.getElementById('audio-replay').onclick=function(){ if(prob && mode==='audio') speak(speakPosition(prob)); };
 
   /* ---- mode bar ---- */
   Array.prototype.forEach.call(document.querySelectorAll('#modebar .mode-btn'), function(b){
@@ -632,7 +693,7 @@ if (RUN_UI) (function(){
   }
   function solutionFromSquares(){ var o={}; prob.sols.forEach(function(s){ o[nameFromSq(s.from)]=1; }); return o; }
   function clickSquare(sq){
-    if(phase==='done' || mode==='describe') return;
+    if(phase==='done' || typingMode()) return;
     if(phase==='from'){
       if(solutionFromSquares()[sq]){ place(sq, pieceAt(sq)); sqEls[sq].classList.add('from'); prob.fromSq=sq; phase='to'; setMsg('Good — now click where it goes.','good'); }
       else { curMistake=true; if(pieceAt(sq)){ place(sq,pieceAt(sq)); sqEls[sq].classList.add('bad'); setMsg('That piece isn’t the one to move.','bad'); } else setMsg('Nothing on that square. Re-read the clue.','bad');
@@ -765,7 +826,7 @@ if (RUN_UI) (function(){
 
   /* ================= THE MIND'S EYE (blindfold chess vs CEO) ================= */
   var ME=null, meBoardEl=document.getElementById('me-board'), meSq={}, mePeeks=3, mePeekT=0, meSel=null, meBusy=false, meLast=null;
-  var meDepth=2, meTier='intern', meBlitz=false, mePurist=false, mePeeked=false;
+  var meDepth=2, meTier='intern', meBlitz=false, mePurist=false, mePeeked=false, meNarrate=false;
   var meMoves=[], meBook=null, meBookName='', meClockW=180, meClockB=180, meClockH=null, meEnded=false;
   var TIER_DEPTH={ intern:2, ceo:3, board:4 }, TIER_LABEL={ intern:'an Intern', ceo:'the CEO', board:'the Board of Directors' };
   // The CEO's named opening book — Black replies it follows while White plays the mainline.
@@ -797,6 +858,7 @@ if (RUN_UI) (function(){
   function openMindsEye(){ document.getElementById('me-overlay').classList.remove('hidden'); newMe(); }
   function newMe(){ ME=parseFEN(START_FEN); mePeekT=0; meSel=null; meBusy=false; meLast=null; meMoves=[]; meEnded=false; mePeeked=false;
     meBlitz=document.getElementById('me-blitz').checked; mePurist=document.getElementById('me-purist').checked;
+    meNarrate=document.getElementById('me-narrate').checked;
     mePeeks = mePurist ? 0 : 3; meDepth=TIER_DEPTH[meTier]||2;
     meBook = OPENINGS[(Math.random()*OPENINGS.length)|0]; meBookName=meBook.name;
     meClockW=180; meClockB=180; stopMeClock();
@@ -863,6 +925,7 @@ if (RUN_UI) (function(){
   }
   function doMe(m, isPlayer){
     var san = moveSAN(ME, m);
+    if(meNarrate) speak((ME.turn==='w' ? 'You play ' : 'CEO plays ') + spokenSAN(san));
     if(ME.turn==='w'){ meLog('<div><b style="color:#F5C518">'+moveNumber()+'.</b> '+san+' '); }
     else { meLog('<span style="color:#ff8fd0">'+san+'</span></div>'); }
     meMoves.push(meUci(m));

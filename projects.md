@@ -380,7 +380,7 @@ jukebox: true
   <li><a href="/games/clearance-delta/">Clearance: DELTA <span class="ver">v1.3</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/shogi-island/">Shogi Island <span class="ver">v3.1</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/tower-defense/">Siege on Chess City <span class="ver">v2.1</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/blindfold-puzzles/">Blindfold Puzzles <span class="ver">v2.1</span></a> <span class="games-index-note">— hidden bonus · hides The Mind's Eye</span></li>
+  <li><a href="/games/blindfold-puzzles/">Blindfold Puzzles <span class="ver">v2.2</span></a> <span class="games-index-note">— hidden bonus · hides The Mind's Eye</span></li>
   <li><a href="/games/knights-tour/">Knight's Tour</a> <span class="games-index-term">— terminated</span></li>
 </ul>
 

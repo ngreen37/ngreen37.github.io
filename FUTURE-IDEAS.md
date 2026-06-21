@@ -121,6 +121,12 @@ restores per-game idea coverage for the titles whose sections had been trimmed.*
     mutator-roulette on a fixed seed with a global board.
   - ⏳ *still open:* a narrative campaign map with branching routes + between-battle dialogue (a
     bigger build — branching state + a dialogue system).
+- **Blindfold Puzzles / The Mind's Eye** *(round-3 batch):*
+  - ✅ *(shipped v2.2)* a pure **Audio-only** mode (position spoken aloud, no board/text) + a
+    **coach mnemonic** per position; **The Mind's Eye** gained **voice narration** of each move.
+  - ⏳ *still open:* "rebuild-the-board" recall after a sequence · progressive piece-count ladders ·
+    a shareable animated replay export · a blunder-review that flags eval swings · cosmetic
+    boards/sets unlocked by wins (Shopkeeper tie-in).
 
 ## The big one — a real game
 - **Binding of Isaac-style roguelite / 3D Space Run in Godot** — use the existing Blender

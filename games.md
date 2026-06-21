@@ -183,8 +183,8 @@ permalink: /games/
   <a class="game-card game-card-dim game-card-locked" id="bf-card" href="{{ '/games/blindfold-puzzles/' | relative_url }}">
     <div class="game-card-icon" id="bf-icon">🔐</div>
     <div class="game-card-body">
-      <h2>Blindfold Puzzles v2.1</h2>
-      <p>A blank board and a clue — find the winning move in your head. Adaptive puzzles with ⚡ Speed-Vision, ⌨ Describe-only, and a 📅 Daily shared position; solve enough to unlock <strong>The Mind's Eye</strong> — a full blind game vs the CEO with difficulty tiers, a blitz clock, a purist trophy, and a replay. Hidden bonus game.</p>
+      <h2>Blindfold Puzzles v2.2</h2>
+      <p>A blank board and a clue — find the winning move in your head. Adaptive puzzles with ⚡ Speed-Vision, ⌨ Describe-only, a new 🔊 Audio-only mode (the position spoken aloud with a coach), and a 📅 Daily shared position; solve enough to unlock <strong>The Mind's Eye</strong> — a full blind game vs the CEO with difficulty tiers, move narration, a blitz clock, a purist trophy, and a replay. Hidden bonus game.</p>
       <span class="game-tag game-tag-soon" id="bf-tag">🔒 Locked — perfect Fast run in Notation Blitz</span>
     </div>
   </a>
