@@ -290,19 +290,7 @@ relics, or bosses. That single embedded room is the milestone that makes the who
 10. **Crash-site flyby** — pass the origin wreck for a lore beat.
 
 ## Knight's Tour — *the tour puzzle*
-1. **Warnsdorff coach** — a toggleable "fewest exits" hint that teaches the heuristic.
-2. **Tour sprints** — fastest full tour, global board.
-3. **Closed-tour challenge** — finish where you began.
-4. **Variable boards** — 6×6, 8×8, L-shaped Checker-Town maps.
-5. **Rubble squares** — blocked cells force re-routing (Sand Mine flavor).
-6. **Daily start square** — seeded, global board.
-7. **Undo-budget mode** — only N takebacks, for pressure.
-8. **Constellation trail** — your path draws a star map (ties to `/constellation/`).
-9. **Kids' teach-mode** — an Academy lesson built on the tour.
-10. **Two-knight co-op** — cover the board together without colliding.
-11. **The hook/message** — frame the whole game around one challenge line: *"Can you conquer this unique knight-moving game?"* (use it on the menu + share cards).
-12. **The core lesson** — hammer home that the knight *can* reach **every** square; it just needs **re-directing** sometimes. Teach planning over panic: a "you're not stuck, you're mis-routed" coach line when players think they've dead-ended.
-13. **Tactical knight puzzles** — beyond the pure tour, add a **forcing-moves** mode: fork drills and **multi-knight** scenarios, *including sacrificing one knight to FORCE* a queen+king fork, rook+king fork, rook+queen fork, or a smothered mate. ⚠ Every scenario must be **strictly forcing** (each opponent reply forced) — vet each one so there's a single, provable solution.
+
 
 ## Siege on Chess City — *tower defense*
 > **Design guardrail — don't be Bloons TD.** The path-and-towers skeleton is familiar on purpose, but

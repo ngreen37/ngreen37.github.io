@@ -346,22 +346,22 @@ jukebox: true
     </div>
   </div>
 
-  <div class="project-card project-card-terminated">
+  <div class="project-card">
     <div class="project-card-corner-piece" aria-hidden="true">♞</div>
     <div class="project-card-header">
-      <span class="project-status project-status-terminated">
+      <span class="project-status">
         <span class="project-status-dot"></span>
-        TERMINATED
+        PLAYABLE
       </span>
       <h2 class="project-title">Knight's Tour</h2>
     </div>
-    <p class="project-desc">The centuries-old chess puzzle, reframed as Princess's journey. Hop the knight across every square of a region exactly once, then string five growing boards — 5×5 up to a full 8×8 — into the whole road from Checker Town to Chess City. Pulled from the main lineup — but still fully playable right here.</p>
+    <p class="project-desc">The centuries-old chess puzzle, reframed as Princess's journey. Place the knight anywhere a complete tour exists, hop every square exactly once, and chase the closed-tour bonus — across a Journey of five growing boards (5×5 up to a full 8×8), free play, or a shared daily challenge. A Warnsdorff "Coach" teaches the classic fewest-exits trick.</p>
     <ul class="project-details">
       <li><strong>Format:</strong> Browser game</li>
-      <li><strong>Status:</strong> Terminated — not listed on the games page, playable from here only</li>
+      <li><strong>Status:</strong> Live — rebuilt with a tour solver, scoring &amp; a daily challenge</li>
     </ul>
     <div class="project-links">
-      <a href="/games/knights-tour/" class="project-link project-link-terminated">▶ PLAY IT HERE</a>
+      <a href="/games/knights-tour/" class="project-link">▶ PLAY IT HERE</a>
     </div>
   </div>
 
@@ -380,7 +380,7 @@ jukebox: true
   <li><a href="/games/shogi-island/">Shogi Island <span class="ver">v3.1</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/tower-defense/">Siege on Chess City <span class="ver">v2.1</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/blindfold-puzzles/">Blindfold Puzzles <span class="ver">v2.2</span></a> <span class="games-index-note">— hidden bonus · hides The Mind's Eye</span></li>
-  <li><a href="/games/knights-tour/">Knight's Tour</a> <span class="games-index-term">— terminated</span></li>
+  <li><a href="/games/knights-tour/">Knight's Tour <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
 </ul>
 
 <style>
