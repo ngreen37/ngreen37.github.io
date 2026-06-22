@@ -1,6 +1,8 @@
 # The Gauntlet — chess-game ladder of opponents (design doc)
 
-*Status: design-first (awaiting sign-off before any game code). Headline Arcade build.*
+*Status: **Option A confirmed.** **Phase 1 (engine) shipped & perft-verified** —
+`assets/js/pjcc-chess.js`. Phases 2+ (playable game, then the ladder) proceed next; the open
+questions below shape the UX/ladder, not the engine. Headline Arcade build.*
 *Working title: **The Gauntlet** (alts: The Ascent · Coronation Run · Challengers' Road · Rivals' Ladder).*
 
 ## 1. The fantasy
@@ -127,7 +129,9 @@ Difficulty = **search depth × blunder rate × eval personality**, not depth alo
 ## 8. Build phases
 
 - **Phase 0** — this doc, sign-off.
-- **Phase 1** — extract + **perft-test** `pjcc-chess.js` (engine correctness first).
+- ✅ **Phase 1 (done)** — extracted + **perft-verified** `assets/js/pjcc-chess.js` (startpos→d4,
+  Kiwipete→d3, positions 3/5; plus FEN I/O, halfmove/fullmove clocks, insufficient-material &
+  draw detection, repetition keys, disambiguated SAN, and a legal-move finder).
 - **Phase 2** — vertical slice: a real game vs **one** tunable AI (board UX, promotion, all
   game-end states, resign).
 - **Phase 3** — the ladder shell: roster, progression, unlock, Crowns, win/lose flavor.
