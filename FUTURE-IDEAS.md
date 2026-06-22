@@ -211,21 +211,21 @@ preview + share-card generator + `/educators/` B2B page + game-page dispatch cap
 > puzzle (lines of fire, forks, pins on the lane), and the fantasy is *defending Chess City*, not
 > popping balloons. If a feature would feel identical with monkeys and darts, rethink it.
 
-*Shipped this pass: the **Rook is now a spiked-ball Trebuchet** — instead of a single-target bastion it
-**heaves a spiked iron ball** that arcs over the lane (lobbed, long reach, AoE crater), distinct from
-Auston's chaotic bomb. And **progressive unlock**: you start with the founding trio (Pawn · Argus
-Knight · Bishop Sniper), and **Frost / Rook / Queen unlock as you clear 1 / 2 / 3 sieges** (Auston
-stays the bought hero); locked towers show in the rack with their requirement, and wins announce the
-unlock. Already in the game from before: **#4 boss waves** (the CEO King), **#5 endless survival** +
-board, **#6 daily mutator roulette**, and **partial #3 synergies** (Knight+Queen haste · Bishop+Rook
-pierce). Deferred (big): **#1** branching campaign + between-battle dialogue (a flat map campaign
-exists), **#2** the map editor (Avenue 7), and the **full #3 synergy matrix** (every piece pairing as
-a real chess relationship — battery / pin / fork — not generic auras).*
+*Shipped this pass: the **full #3 synergy matrix** — every adjacent piece-pair is now a named chess
+relationship with a real effect, never a generic aura: **Pawn Chain** (P+P), **Knights' Fork** (N+N),
+**Bishop Pair** (B+B), **Battery** (R+R, rook-behind-rook), **Outpost** (P+N), **Fianchetto** (P+B),
+**Open File** (P+R), **Promotion** (P+Q — the pawn gains splash + 60% dmg), **Minor Duet** (N+B),
+**Arabian Mate** (N+R, +60% vs boss Kings), **Cavalry Charge** (N+Q haste), **Skewer** (B+R pierce),
+**Pin** (B+Q — slows and suppresses the Queen blink), and **Heavy Battery** (R+Q). Auras stack and
+the inspector lists each active bond; it's data-driven (a `RELS` table) so new pieces slot in cleanly.
+Already in the game: the **Rook spiked-ball Trebuchet** + **progressive tower unlock**, **#4 boss
+waves** (the CEO King), **#5 endless survival** + board, and **#6 daily mutator roulette**. Deferred
+(big): **#1** branching campaign + between-battle dialogue (a flat map campaign exists), and **#2** the
+map editor (Avenue 7).*
 
 1. **Campaign map** — branching routes + between-battle dialogue.
 2. **Map editor** — build paths, share by code (Avenue 7).
-3. **Full synergy matrix** — a tower-pairing bonus for every piece combo (lean on real chess
-   relationships — a battery, a pin, a fork — not generic "+10% damage" auras).
+3. ~~**Full synergy matrix**~~ — ✅ shipped (see above): a named chess bond for every piece pairing.
 4. **Boss waves** — the CEO's machines as siege bosses.
 5. **Endless survival** — global wave board.
 6. **Bigger mutator pool** — expand the existing Daily roulette.

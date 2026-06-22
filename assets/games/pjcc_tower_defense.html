@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Siege on Chess City v2.0</title>
+<title>PJCC: Siege on Chess City v2.2</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -181,7 +181,7 @@
 <div class="screen hidden" id="scr-maps">
   <div class="sub">Choose your stand</div>
   <h1>The Campaign</h1>
-  <p>Each front is harder than the last — beat one to unlock the next. Toggle <b style="color:var(--gold)">♾ Endless</b> for a survival run, or add <b style="color:var(--pink)">mutators</b> for bonus City Crowns. <b style="color:#c79bff">Synergy:</b> stand a Knight by a Queen for <b style="color:#ff8fd0">haste</b>, or a Bishop by a Rook for a <b style="color:#c79bff">piercing</b> beam.</p>
+  <p>Each front is harder than the last — beat one to unlock the next. Toggle <b style="color:var(--gold)">♾ Endless</b> for a survival run, or add <b style="color:var(--pink)">mutators</b> for bonus City Crowns. <b style="color:#c79bff">Formations:</b> stand pieces side by side and they forge real chess bonds — a rook-behind-rook <b>battery</b>, a bishop <b style="color:#ff8fd0">pin</b>, a knight <b style="color:#8fe3ff">fork</b>, a pawn that <b style="color:#ff8fd0">promotes</b> by the Queen. Tap a placed piece to read its active bonds.</p>
   <div id="map-opts" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:680px;margin:4px 0 2px;"></div>
   <div class="map-grid" id="map-grid"></div>
   <div class="menu-btns"><button class="big-btn ghost" id="maps-back">◂ Back</button></div>
@@ -443,7 +443,7 @@ function spawnFoe(typeName) {
   G.foes.push({
     type: typeName, glyph: base.glyph, color: base.color, boss: !!base.boss,
     hp: hp, maxhp: hp, spd: base.spd * (G.foeSpdMult || 1), reward: base.reward, leak: base.leak,
-    path: path, seg: 0, t: 0, x: path[0].x, y: path[0].y, slow: 0,
+    path: path, seg: 0, t: 0, x: path[0].x, y: path[0].y, slow: 0, pinT: 0,
     summonCd: base.boss ? 3.2 : 0,                 // King summons adds
     teleCd: typeName === 'queen' ? (3 + Math.random() * 2) : 0   // Queen blinks past the line
   });
@@ -456,7 +456,7 @@ function spawnAddAt(host, typeName) {
   G.foes.push({
     type: typeName, glyph: base.glyph, color: base.color, boss: false,
     hp: hp, maxhp: hp, spd: base.spd * (G.foeSpdMult || 1), reward: Math.round(base.reward * 0.5), leak: base.leak,
-    path: host.path, seg: host.seg, t: host.t, x: host.x, y: host.y, slow: 0, summonCd: 0, teleCd: 0
+    path: host.path, seg: host.seg, t: host.t, x: host.x, y: host.y, slow: 0, pinT: 0, summonCd: 0, teleCd: 0
   });
 }
 
@@ -476,10 +476,11 @@ function advanceFoe(f, dt) {
   a = P[f.seg]; b = P[Math.min(f.seg + 1, P.length - 1)];
   f.x = a.x + (b.x - a.x) * f.t; f.y = a.y + (b.y - a.y) * f.t;
   if (f.slow > 0) f.slow -= dt;
-  // Queen teleport: blink forward along the path, skipping the towers behind her
+  if (f.pinT > 0) f.pinT -= dt;
+  // Queen teleport: blink forward along the path, skipping the towers behind her (a Pin holds her)
   if (f.teleCd > 0) {
     f.teleCd -= dt;
-    if (f.teleCd <= 0 && f.seg < P.length - 2 && f.hp > 0) {
+    if (f.teleCd <= 0 && f.pinT <= 0 && f.seg < P.length - 2 && f.hp > 0) {
       f.seg = Math.min(P.length - 2, f.seg + 2); f.t = 0;
       var na = P[f.seg]; f.x = na.x; f.y = na.y;
       burst(f.x, f.y, '#ff8fd0', 18); f.teleCd = 5 + Math.random() * 3;
@@ -487,31 +488,80 @@ function advanceFoe(f, dt) {
   }
 }
 
-/* ============ tower synergies ============
-   Adjacent piece-pairs reinforce each other (Chebyshev-ish neighbour, ~1.6 cells):
-   · Knight next to a Queen → HASTE (fires far faster, the cavalry charge)
-   · Bishop next to a Rook  → PIERCE (the diagonal beam punches through the whole file) */
-function hasNeighborKind(tw, kind) {
+/* ============ tower synergy matrix ============
+   Adjacent pieces (within ~1.6 cells) form a real chess relationship — never a
+   generic aura. Every bond is a named motif with an effect on one or both sides:
+     P+P Pawn Chain · N+N Fork · B+B Bishop Pair · R+R Battery
+     P+N Outpost · P+B Fianchetto · P+R Open File · P+Q Promotion
+     N+B Minor Duet · N+R Arabian Mate · N+Q Cavalry Charge (haste)
+     B+R Skewer (pierce) · B+Q Pin · R+Q Heavy Battery
+   Effect vocabulary: rate (×fire interval, <1 faster), range/dmg/splashMul (×),
+   splashAdd (+radius), pierce/pin (flags), bossMul (× damage vs boss Kings). */
+var RELS = [
+  // --- same-piece formations ---
+  { a:'pawn',  b:'pawn',  name:'Pawn Chain',    glyph:'⛓', color:'#dfe6ff', desc:'phalanx · +18% fire, +15% dmg',          aFx:{ rate:0.85, dmg:1.15 } },
+  { a:'knight',b:'knight',name:"Knights' Fork",  glyph:'✶', color:'#8fe3ff', desc:'fork zone · +35% splash, +15% dmg',      aFx:{ splashMul:1.35, dmg:1.15 } },
+  { a:'bishop',b:'bishop',name:'Bishop Pair',    glyph:'❖', color:'#c79bff', desc:'both colours · +18% range, +12% dmg',    aFx:{ range:1.18, dmg:1.12 } },
+  { a:'rook',  b:'rook',  name:'Battery',        glyph:'▦', color:'#ffb066', desc:'doubled rooks · +30% splash, +20% dmg',  aFx:{ splashMul:1.30, dmg:1.20 } },
+  // --- a pawn supports a piece ---
+  { a:'pawn',  b:'knight',name:'Outpost',        glyph:'⌂', color:'#8fe3ff', desc:'entrenched knight · +20% range, +15% dmg', aFx:{ rate:0.90 }, bFx:{ range:1.20, dmg:1.15 } },
+  { a:'pawn',  b:'bishop',name:'Fianchetto',     glyph:'◤', color:'#c79bff', desc:'long diagonal · +20% range',            aFx:{ range:1.10 }, bFx:{ range:1.20 } },
+  { a:'pawn',  b:'rook',  name:'Open File',      glyph:'☰', color:'#ffb066', desc:'clear lane · +15% range, +20% splash',  aFx:{ dmg:1.10 }, bFx:{ range:1.15, splashMul:1.20 } },
+  { a:'pawn',  b:'queen', name:'Promotion',      glyph:'⬆', color:'#ff8fd0', desc:'pawn promotes · +60% dmg, gains splash',aFx:{ dmg:1.60, splashAdd:40 }, bFx:{ rate:0.92 } },
+  // --- piece pairs ---
+  { a:'knight',b:'bishop',name:'Minor Duet',     glyph:'♪', color:'#9fe8ff', desc:'coordinated minors · +11% fire',        aFx:{ rate:0.90 }, bFx:{ rate:0.90 } },
+  { a:'knight',b:'rook',  name:'Arabian Mate',   glyph:'✠', color:'#F5C518', desc:'corners the King · +60% vs bosses',     aFx:{ bossMul:1.60 }, bFx:{ bossMul:1.60 } },
+  { a:'knight',b:'queen', name:'Cavalry Charge', glyph:'⚡', color:'#ff8fd0', desc:'haste · fires ~1.7× faster',           aFx:{ rate:0.58 }, bFx:{ range:1.10 } },
+  { a:'bishop',b:'rook',  name:'Skewer',         glyph:'⤢', color:'#c79bff', desc:'beam pierces the whole line',          aFx:{ pierce:true }, bFx:{ range:1.12 } },
+  { a:'bishop',b:'queen', name:'Pin',            glyph:'⊕', color:'#ff8fd0', desc:'pins the lane · slows, no blink',       aFx:{ pin:true, dmg:1.10 }, bFx:{ range:1.10 } },
+  { a:'rook',  b:'queen', name:'Heavy Battery',  glyph:'▥', color:'#ff8fd0', desc:'siege barrage · +25% splash, +15% dmg', aFx:{ splashMul:1.25, dmg:1.15 }, bFx:{ splashMul:1.25, dmg:1.15 } }
+];
+// PAIRFX[selfKind][neighbourKind] = { rel, fx } — what a tower of selfKind gains from that neighbour.
+var PAIRFX = {};
+(function () {
+  function reg(self, neigh, rel, fx) { (PAIRFX[self] || (PAIRFX[self] = {}))[neigh] = { rel: rel, fx: fx || {} }; }
+  RELS.forEach(function (R) {
+    var rel = { name: R.name, glyph: R.glyph, color: R.color, desc: R.desc };
+    reg(R.a, R.b, rel, R.aFx);
+    if (R.a !== R.b) reg(R.b, R.a, rel, R.bFx);
+  });
+})();
+// Distinct neighbour kinds within bonding range of a tower.
+function neighborKinds(tw) {
+  var set = {};
   for (var i = 0; i < G.towers.length; i++) {
     var o = G.towers[i];
     if (o === tw) continue;
-    if (o.kind === kind && Math.hypot(o.x - tw.x, o.y - tw.y) < CELL * 1.6) return true;
+    if (Math.hypot(o.x - tw.x, o.y - tw.y) < CELL * 1.6) set[o.kind] = true;
   }
-  return false;
+  return set;
 }
-function synergyOf(tw) {
-  if (tw.kind === 'knight' && hasNeighborKind(tw, 'queen')) return 'haste';
-  if (tw.kind === 'bishop' && hasNeighborKind(tw, 'rook')) return 'pierce';
-  return null;
+// Accumulate every active bond's effect for a tower; .rels lists them for display.
+function synFx(tw) {
+  var fx = { rate:1, range:1, dmg:1, splashMul:1, splashAdd:0, pierce:false, pin:false, bossMul:1, rels:[] };
+  var lut = PAIRFX[tw.kind]; if (!lut) return fx;
+  var nb = neighborKinds(tw);
+  for (var nk in nb) {
+    var e = lut[nk]; if (!e) continue; var f = e.fx;
+    fx.rate *= f.rate || 1; fx.range *= f.range || 1; fx.dmg *= f.dmg || 1;
+    fx.splashMul *= f.splashMul || 1; fx.splashAdd += f.splashAdd || 0;
+    if (f.pierce) fx.pierce = true; if (f.pin) fx.pin = true; fx.bossMul *= f.bossMul || 1;
+    fx.rels.push({ name: e.rel.name, glyph: e.rel.glyph, color: e.rel.color, desc: e.rel.desc, withKind: nk });
+  }
+  return fx;
 }
 
 /* ============ combat ============ */
 function towerStats(tw) {
-  var base = TOWERS[tw.kind];
-  var mult = (1 + (tw.lvl - 1) * 0.6) * G.dmgMult;
-  var rate = base.rate;
-  if (tw.kind === 'knight' && hasNeighborKind(tw, 'queen')) rate *= 0.58;   // Knight+Queen haste
-  return { dmg: base.dmg * mult, range: base.range * (1 + (tw.lvl - 1) * 0.12) * (G.fogMult || 1), rate: rate, splash: base.splash };
+  var base = TOWERS[tw.kind], fx = synFx(tw);
+  var lvlMul = (1 + (tw.lvl - 1) * 0.6) * G.dmgMult;
+  return {
+    dmg: base.dmg * lvlMul * fx.dmg,
+    range: base.range * (1 + (tw.lvl - 1) * 0.12) * (G.fogMult || 1) * fx.range,
+    rate: base.rate * fx.rate,
+    splash: base.splash * fx.splashMul + fx.splashAdd,
+    pierce: fx.pierce, pin: fx.pin, bossMul: fx.bossMul, rels: fx.rels
+  };
 }
 // Perpendicular distance from point (px,py) to the segment (ax,ay)-(bx,by).
 function segDist(px, py, ax, ay, bx, by) {
@@ -541,10 +591,10 @@ function fireTowers(dt) {
     if (!target) return;
     tw.cd = s.rate; tw.flash = 0.12;
     var base = TOWERS[tw.kind];
-    var pierce = (tw.kind === 'bishop' && hasNeighborKind(tw, 'rook'));   // Bishop+Rook pierce
     G.shots.push({ x: tw.x, y: tw.y, tx: target.x, ty: target.y, target: target,
       dmg: s.dmg, splash: s.splash, kind: tw.kind, life: 0, color: base.color,
-      sniper: base.sniper, lob: base.lob, spike: base.spike, slows: base.slows, pierce: pierce, sx: tw.x, sy: tw.y, prog: 0 });
+      sniper: base.sniper, lob: base.lob, spike: base.spike, slows: base.slows,
+      pierce: s.pierce, pin: s.pin, bossMul: s.bossMul, sx: tw.x, sy: tw.y, prog: 0 });
   });
 }
 function updateShots(dt) {
@@ -565,18 +615,22 @@ function updateShots(dt) {
     else { s.x += (tx - s.x) / d * step; s.y += (ty - s.y) / d * step; if (s.lob) s.prog = Math.min(1, s.prog + step / (d + step)); }
   }
 }
+// Arabian Mate: shots from a knight+rook bond hit boss Kings for extra.
+function shotDmgVs(s, f) { return s.dmg * (f.boss && s.bossMul > 1 ? s.bossMul : 1); }
+// Pin: a bishop+queen bond locks a foe — slowed, and its Queen blink is suppressed.
+function applyPin(f) { if (f.hp > 0) { f.slow = Math.max(f.slow || 0, 1.6); f.pinT = 1.6; } }
 function hit(x, y, s) {
   burst(x, y, s.color, s.splash ? 12 : 5);
-  // Bishop+Rook PIERCE: the beam also rakes every foe along its line for 60% damage.
+  // Skewer (Bishop+Rook): the beam rakes every foe along its line for 60% damage.
   if (s.pierce) {
     G.foes.forEach(function (f) {
       if (f === s.target || f.hp <= 0) return;
-      if (segDist(f.x, f.y, s.sx, s.sy, x, y) <= 16) { damage(f, s.dmg * 0.6); burst(f.x, f.y, s.color, 4); }
+      if (segDist(f.x, f.y, s.sx, s.sy, x, y) <= 16) { damage(f, shotDmgVs(s, f) * 0.6); if (s.pin) applyPin(f); burst(f.x, f.y, s.color, 4); }
     });
   }
-  if (s.splash) { G.foes.forEach(function (f) { if (Math.hypot(f.x - x, f.y - y) <= s.splash) { damage(f, s.dmg); if (s.slows && f.hp > 0) f.slow = 1.6; } }); }
-  else if (s.target && s.target.hp > 0) { damage(s.target, s.dmg); if (s.slows) s.target.slow = 1.6; }
-  else { var best = null, bd = 22; G.foes.forEach(function (f) { var dd = Math.hypot(f.x - x, f.y - y); if (dd < bd) { bd = dd; best = f; } }); if (best) { damage(best, s.dmg); if (s.slows) best.slow = 1.6; } }
+  if (s.splash) { G.foes.forEach(function (f) { if (Math.hypot(f.x - x, f.y - y) <= s.splash) { damage(f, shotDmgVs(s, f)); if (s.slows && f.hp > 0) f.slow = 1.6; if (s.pin) applyPin(f); } }); }
+  else if (s.target && s.target.hp > 0) { damage(s.target, shotDmgVs(s, s.target)); if (s.slows) s.target.slow = 1.6; if (s.pin) applyPin(s.target); }
+  else { var best = null, bd = 22; G.foes.forEach(function (f) { var dd = Math.hypot(f.x - x, f.y - y); if (dd < bd) { bd = dd; best = f; } }); if (best) { damage(best, shotDmgVs(s, best)); if (s.slows) best.slow = 1.6; if (s.pin) applyPin(best); } }
 }
 function damage(f, dmg) {
   if (f.hp <= 0) return;
@@ -669,14 +723,14 @@ function draw() {
     if (tw === selTower) { var s = towerStats(tw); ctx.fillStyle='rgba(245,197,24,0.10)'; ctx.beginPath(); ctx.arc(tw.x,tw.y,s.range,0,7); ctx.fill(); }
     ctx.fillStyle = tw.flash>0 ? '#4a2f7a' : '#241544'; roundRect(tw.x-17,tw.y-17,34,34,7); ctx.fill();
     ctx.strokeStyle = base.color; ctx.lineWidth=2; roundRect(tw.x-17,tw.y-17,34,34,7); ctx.stroke();
-    // Synergy aura — pulsing ring when a neighbour pairing is active
-    var syn = synergyOf(tw);
-    if (syn) {
-      var sc = syn === 'haste' ? '#ff8fd0' : '#c79bff';
-      ctx.save(); ctx.globalAlpha = 0.5 + 0.3 * Math.sin(Date.now() / 220);
-      ctx.strokeStyle = sc; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(tw.x, tw.y, 21, 0, 7); ctx.stroke();
-      ctx.globalAlpha = 1; ctx.fillStyle = sc; ctx.font = '9px sans-serif';
-      ctx.fillText(syn === 'haste' ? '⚡' : '⤢', tw.x + 15, tw.y - 14); ctx.restore();
+    // Synergy aura — a pulsing ring + a glyph for each active chess bond
+    var rels = synFx(tw).rels;
+    if (rels.length) {
+      ctx.save(); ctx.globalAlpha = 0.45 + 0.3 * Math.sin(Date.now() / 220);
+      ctx.strokeStyle = rels[0].color; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(tw.x, tw.y, 21, 0, 7); ctx.stroke();
+      ctx.globalAlpha = 1; ctx.font = '9px sans-serif';
+      for (var ri = 0; ri < rels.length && ri < 3; ri++) { ctx.fillStyle = rels[ri].color; ctx.fillText(rels[ri].glyph, tw.x + 14, tw.y - 15 + ri * 9); }
+      ctx.restore();
     }
     ctx.font = (tw.kind==='louie'?'20px':'24px')+' serif'; ctx.fillStyle = base.color; ctx.fillText(base.glyph, tw.x, tw.y+1);
     for (var L=0;L<tw.lvl;L++){ ctx.fillStyle='#F5C518'; ctx.beginPath(); ctx.arc(tw.x-10+L*9, tw.y+14, 2.2, 0, 7); ctx.fill(); }
@@ -803,9 +857,9 @@ function openInspector(tw) {
   inspEl = document.createElement('div'); inspEl.className = 'insp';
   inspEl.innerHTML =
     '<div class="ih">' + base.glyph + ' ' + base.name + ' · L' + tw.lvl + '</div>' +
-    '<div class="irow">Damage: ' + s.dmg.toFixed(0) + (base.splash?' (splash)':base.sniper?' (sniper)':'') + '</div>' +
+    '<div class="irow">Damage: ' + s.dmg.toFixed(0) + (s.splash>0?' (splash)':base.sniper?' (sniper)':'') + '</div>' +
     '<div class="irow">Range: ' + s.range.toFixed(0) + ' · Rate: ' + s.rate.toFixed(2) + 's</div>' +
-    (synergyOf(tw) ? '<div class="irow" style="color:' + (synergyOf(tw)==='haste'?'#ff8fd0':'#c79bff') + '">✦ Synergy: ' + (synergyOf(tw)==='haste'?'HASTE (Knight + Queen)':'PIERCE (Bishop + Rook)') + '</div>' : '') +
+    s.rels.map(function (r) { return '<div class="irow" style="color:' + r.color + '">✦ ' + r.name + ' (' + base.glyph + '+' + TOWERS[r.withKind].glyph + ') — ' + r.desc + '</div>'; }).join('') +
     '<div class="irow" style="margin-top:5px;color:#9a7fd4">Aim:</div>' +
     '<div class="tgt">' + modes.map(function(m){ return '<button data-m="'+m+'"'+(tw.target===m?' class="on"':'')+'>'+m+'</button>'; }).join('') + '</div>' +
     '<div class="ibtns">' +
