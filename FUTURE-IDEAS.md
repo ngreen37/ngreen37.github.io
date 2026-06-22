@@ -1,8 +1,11 @@
 # PJCC — Future Ideas
 
-The open backlog. Done work has been cleared out of the lists below — see **Already live** for the
-one-line guardrail of what's shipped (so we don't re-pitch it). Everything else here is a path not
-yet taken.
+The open backlog. Done work is cleared out of the lists below — see **Already live** for the
+guardrail of what's shipped (so we don't re-pitch it). Everything else here is a path not yet taken.
+
+**Operating principle (2026-06-22): *less is more.*** We deliberately built "too much," and we're now
+paring the site to its most important, inviting elements — combining pages, cutting clutter. New ideas
+must earn their place against that bar; prefer **depth and combination** over new surface area.
 
 ---
 
@@ -29,28 +32,36 @@ funnel**, not sprawl. New surface area should serve one of the five threads.
 
 ---
 
-## ♚ Headline build in flight — *The Gauntlet* (chess-game ladder)
+## ♚ Headline shipped — *The Gauntlet* (chess-game ladder)
 
-A ladder of PJCC opponents you climb by playing **real games of chess** (Checker-Town recruit →
-Argus → the Rival → the CEO) — the arcade's headline depth piece, and the first game where you
-play a *whole game*, not a puzzle. **Design-first**: the full plan — engine pros/cons, opponent
-roster, AI personality tiers, UX, and meta hooks — lives in
-[`docs/chess-ladder-design.md`](docs/chess-ladder-design.md). Recommended engine: extend the
-legal move-gen + checkmate + search **already shipping in `pjcc_blindfold.html`** into a shared,
-perft-tested module (no dependency). Awaiting sign-off before Phase 1 code.
+**Live at [`/games/the-gauntlet/`](/games/the-gauntlet/).** Climb a ladder of PJCC opponents by
+playing **real, whole games of chess** (Checker-Town Recruit → Argus → the City Gatekeeper → the
+Rival → the CEO) on a shared, **perft-verified** engine (`pjcc-chess.js`) with a tunable negamax AI
+(`pjcc-chess-ai.js`) — one personality per rung. You alternate colours and play strict (no takebacks,
+no hints). Design doc: [`docs/chess-ladder-design.md`](docs/chess-ladder-design.md).
+**Next (unbuilt):** opening books for the Rival/CEO, a daily gauntlet, a captured-tray + move list,
+more rungs (the secret King).
 
 ---
 
 ## ✅ Already live (guardrail — don't re-pitch)
 Arcade: Notation Blitz, Blindfold Puzzles / The Mind's Eye, Clearance: DELTA, Princess Dungeon,
 Checker Financial, Fork in the Road, The Pirc Protocol, Sand Mine Depths, Shogi Island (Catch the
-Lion), Sky Run, Space Run, Knight's Tour, Siege on Chess City — each with daily seeds, global
+Lion), Sky Run, Space Run, Knight's Tour, Siege on Chess City, The Gauntlet, The Reading Room — each with daily seeds, global
 boards, ghosts, streak flame, board-skins + JP-localization scaffolding. World/site: Lore Codex,
 Academy, Projects, Daily Dispatch, Hall of Fame, leaderboard seasons. Avenue pieces: production hub
 + Pilot animatic + Writers' Room (1), audio hub + leitmotifs (5), site-wide Princess companion (6),
 Press Pass + Press Credential + Bureau-of-Dispatch newsletter + Press Kit/EPK + support-transparency +
 referral invite links + Founders Wall + founder-cosmetic preview + pricing poll + backer-dispatch
 preview + share-card generator + `/educators/` B2B page + game-page dispatch capture (10).
+
+**Declutter pass (2026-06-22):** the site was pared to essentials — games page rebuilt as a featured
+Gauntlet + Learn / Arcade / In-Development **pillars** (Gauntlet-Legends style); the weekly game is a
+small chip; leaderboards un-embedded (own page, linked from a Games CTA + a floating homepage icon);
+**cursor sheen discarded**; **Princess walker silenced** (movement only, never speaks); nav combined
+(**Characters & Locations** hub, **The Pilot ⊃ Writers' Room**, **Command Center merged into the
+Dossier**); homepage **Story Arc removed** (now decode-as-you-play); the personal "Creator" bio
+replaced with a mysterious-but-contactable **"Operator."**
 
 > **What's the "Lore Codex"?** (`/lore-codex/`) The site's in-world **encyclopedia** — a collectible
 > set of canon (and *classified*) entries about the characters, places, and mysteries of PJCC. Entries
@@ -101,7 +112,7 @@ preview + share-card generator + `/educators/` B2B page + game-page dispatch cap
 9. **Clearance rewards** — ranks gate secret lore pages (Avenue 2 payoff).
 10. **Speed-vs-accuracy dial** — choose your scoring style each run.
 
-## Princess Dungeon — *roguelite crawler (the Godot prototype)*
+## Princess Dungeon — *roguelite crawler (2D shipped → Godot next)*
 1. **Room grammar that mirrors Godot** — design here, port the patterns to the 3D build.
 2. **Chess-piece enemies** — each moves by its piece's rules; every room is a tactic in disguise.
 3. **Move-set relics** — items that grant a bishop dash, a knight blink, a pawn-storm.
@@ -224,11 +235,8 @@ relics, or bosses. That single embedded room is the milestone that makes the who
 10. **Reads-you difficulty** — auto-tunes from your accuracy (Academy bridge).
 
 ## The Pirc Protocol — *openings trainer*
-1. ✅ **More decks** (2026-06-22) — added Ruy López, Sicilian, Queen's Gambit & Caro-Kann to the
-   spaced-repetition system (now 8 decks / 18 lines).
-2. ✅ **Transposition tree** (2026-06-22) — a 🌳 view of how every line shares a trunk and branches,
-   with ↔ markers where move-orders reach the same position.
-3. ✅ **Name-that-opening** (2026-06-22) — a 🔎 quiz: shown a position, pick the line from four choices.
+*Shipped (2026-06-22): more decks (Ruy López, Sicilian, Queen's Gambit, Caro-Kann — now 8 decks /
+18 lines), a 🌳 Transposition Tree, and a 🔎 Name-That-Opening quiz. Remaining:*
 4. **Opponent personalities** — aggressive/positional bots that punish wrong moves.
 5. **Weekly model game** — a real master Pirc, annotated in Argus's voice.
 6. **Side-switcher** — drill the same system from both colours.
@@ -272,7 +280,7 @@ relics, or bosses. That single embedded room is the milestone that makes the who
 5. **Co-pilot** — a second ship for couch co-op.
 6. **Loadout select** — pick a starting power triad before launch.
 7. **Photo-mode end-card** — a shareable finish with run stats.
-8. **Rhythm tie-in** — enemies pulse to the temp score (Avenue 5).
+
 9. **Boss rush** — all kings back-to-back, for veterans.
 10. **Animatic interstitials** — a 2-panel story beat between regions (Avenue 1 tie).
 
@@ -290,7 +298,16 @@ relics, or bosses. That single embedded room is the milestone that makes the who
 10. **Crash-site flyby** — pass the origin wreck for a lore beat.
 
 ## Knight's Tour — *the tour puzzle*
-
+*Rebuilt big (2026-06-22, [`/games/knights-tour/`](/games/knights-tour/)). **Shipped:** Warnsdorff
+coach, tour scoring + speed bonus, closed-tour bonus/challenge, variable boards (5×5–8×8), seeded
+daily, free **solver-verified** start, undo + auto-finish, and the "you're not stuck, you're
+mis-routed" teaching frame. **Remaining:***
+1. **Rubble squares** — blocked cells force re-routing (Sand Mine flavor).
+2. **Constellation trail** — your completed path draws a star map (ties to `/constellation/`).
+3. **Undo-budget mode** — only N takebacks, for pressure.
+4. **Two-knight co-op** — cover the board together without colliding.
+5. **Academy teach-mode** — a lesson built on the tour (the knight reaches *every* square — it just needs re-directing).
+6. **Tactical knight puzzles** — a forcing-moves mode beyond the pure tour: fork drills & multi-knight sacs to FORCE a queen/rook fork or smothered mate. ⚠ Each strictly forcing, single provable solution.
 
 ## Siege on Chess City — *tower defense*
 > **Design guardrail — don't be Bloons TD.** The path-and-towers skeleton is familiar on purpose, but
@@ -423,11 +440,12 @@ of it off). Turns an audience into co-authors.*
 > on-brand) now; graduate to a **Supabase gallery** with likes/credits when Operative accounts land.
 > A **Formspree/Google-Form** capture is the middle step if demand shows up first.
 
-## Avenue 8 — The Operative Command Center *(✅ v1 shipped at `/command-center/`)*
-*v1 is live and client-side: operative status (rank/credits/codename via the profile system), a live
-mission clock + dev-day counter, a date-seeded **daily mission**, a **fragment-recovery grid** (the six
-origin frags + the new `frag_subjectzero`), a cosmetic transmission feed, and quick-launch. In the
-PJCC nav. The list below is the deepening path; the cross-device/social parts (#10) ride in on accounts.*
+## Avenue 8 — The Operative Command Center *(✅ merged into the Dossier, 2026-06-22)*
+*No longer its own page — its best modules now ride at the **top of [`/dossier/`](/dossier/)** as an
+instant, **offline-safe** strip: mission clock + dev-day counter, a date-seeded **daily mission**, a
+**fragment-recovery grid**, and quick-launch — all rendered without waiting on the account network
+(so slow connections still get a useful page). `/command-center/` redirects to the Dossier. The list
+below is the deepening path; the cross-device/social parts (#10) ride in on accounts.*
 
 *The old `/sandbox/` "Command Center" was a slick hidden dev terminal — a streaming transmission log,
 a 16-node cast constellation, operative rank, an episode countdown, daily opening intel, and a
@@ -546,7 +564,16 @@ Removed from the live surface for a cleaner, less-is-more site — kept here so 
 - **Games-page sort dropdown** (Featured / A–Z / Newest / My best) — same trigger.
 - **De-linked nav pages** (revisit when there's real content): World Map, Sound, Soundtrack, Press Kit,
   Lore Codex, Evolution Log. **Podcast** page removed (a "Podcast Coming Winter 2026" teaser sits on the
-  homepage). **Chess Lessons** folded into About/Contact; **Leaderboards** folded into the Games page.
+  homepage). **Chess Lessons** folded into About/Contact.
+- **Cursor sheen** — the cursor-following card glow (it washed out card text); discarded site-wide.
+  *Creative re-use if it ever returns: a single "spotlight" sheen on the featured Gauntlet box only, or
+  a treasure-hunt reveal that lights hidden text only where the cursor sweeps.*
+- **Games-page embedded leaderboard** — now its own page (`/leaderboards/`), reached from a Games CTA +
+  a floating homepage 🏆 icon (cleaner than inlining the whole board).
+- **Homepage Story Arc film-strip** — removed; chapter beats are now **decode-as-you-play** (see Seeds).
+- **Site-wide Princess speech** — removed; she's movement-only now (Avenue-6 talk ideas stay parked).
+- **The personal "Creator" bio** (career highlights / hobbies) — replaced with a mysterious "Operator";
+  bring back selectively only if a real founder story helps a specific business ask.
 
 ---
 
@@ -592,9 +619,21 @@ Each line: the seed → the payoff it's building toward. Add to this as we go.*
   his little sister.
 - **"Chess City Leafs"** (in the news ticker) → *the Auston Matthews nod.* Seeded in the world ticker
   + Auston the Bomber. A wink for the hockey fans.
+- **The story, told in fragments** → *decode-as-you-play.* The homepage Story Arc film-strip was
+  removed on purpose: the chapter beats (the Crash → Checker Town → First Move → the Sea → Shogi Island
+  → Chess City → the Tournament → the classified chapter) are now things players **uncover** through
+  games, the Lore Codex, and the ARG — earned, not handed over. Payoff: piecing the arc together feels
+  like real discovery.
+- **A heart you can feel** → *the show's moral center.* PJCC is positioned around **good values and
+  quiet positivity** (Neville-Goddard-flavored — assume the good, tend your inner world) plus Nate's
+  real, touching stories. Seed it in copy + lore tone now: warm, hopeful, never cynical. Payoff: a show
+  people trust their kids with and adults feel better for having watched.
+- **Kaede's locked second shelf** → *a language no one can read.* Seeded in
+  [Kaede](/characters/kaede/)'s dossier (the Reading Room's sealed scrolls). Payoff: an Avenue-12
+  "decode-the-transmission" reveal that ties the Japanese lane back to the Construction Co. origin.
 
-*(Seeds to plant next: a recurring object/motif that recurs across games and the show; a line of
-dialogue that only lands after the origin; a background character who matters later.)*
+*(Seeds to plant next: a recurring object/motif across games and the show; a line of dialogue that
+only lands after the origin; a background character who matters later.)*
 
 ---
 
