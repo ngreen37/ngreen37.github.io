@@ -427,7 +427,7 @@ title, and a short cryptic line — the page intentionally says less. {% endcomm
   var CHANGELOG = {
     'the-gauntlet':      { date: '2026-06-21', note: 'New — play real games of chess up a ladder of opponents to the CEO.' },
     'notation-run':      { date: '2026-06-20', note: 'v3.5 — Daily seeded chart + a global timing-accuracy board.' },
-    'pirc-protocol':     { date: '2026-06-20', note: 'v2.1 — Blunder Traps deck: famous traps, machine-verified forced mates.' },
+    'pirc-protocol':     { date: '2026-06-22', note: 'v2.2 — four new decks (Ruy López, Sicilian, Queen’s Gambit, Caro-Kann), a Name-That-Opening quiz, and a Transposition Tree view.' },
     'tower-defense':     { date: '2026-06-21', note: 'v2.2 — full chess-relationship synergy matrix (battery/pin/fork/…).' },
     'shogi-island':      { date: '2026-06-20', note: 'v3.1 — real 詰将棋 tsume (mate-in-3/5) and a full 9×9 AI match.' },
     'blindfold-puzzles': { date: '2026-06-20', note: 'v2.1 — Speed-Vision, Describe-only, Daily; Mind’s Eye tiers, blitz clock, replay.' },

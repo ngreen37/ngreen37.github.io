@@ -224,9 +224,11 @@ relics, or bosses. That single embedded room is the milestone that makes the who
 10. **Reads-you difficulty** — auto-tunes from your accuracy (Academy bridge).
 
 ## The Pirc Protocol — *openings trainer*
-1. **More decks** — extend the spaced-repetition system beyond the Pirc.
-2. **Transposition tree** — show how lines bleed into one another.
-3. **Name-that-opening** — shown a position, identify the line.
+1. ✅ **More decks** (2026-06-22) — added Ruy López, Sicilian, Queen's Gambit & Caro-Kann to the
+   spaced-repetition system (now 8 decks / 18 lines).
+2. ✅ **Transposition tree** (2026-06-22) — a 🌳 view of how every line shares a trunk and branches,
+   with ↔ markers where move-orders reach the same position.
+3. ✅ **Name-that-opening** (2026-06-22) — a 🔎 quiz: shown a position, pick the line from four choices.
 4. **Opponent personalities** — aggressive/positional bots that punish wrong moves.
 5. **Weekly model game** — a real master Pirc, annotated in Argus's voice.
 6. **Side-switcher** — drill the same system from both colours.

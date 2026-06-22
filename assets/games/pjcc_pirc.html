@@ -124,6 +124,32 @@
   .foot b { color: #ead9b8; }
   .foot a { color: #6bffb8; }
   .tap { cursor: pointer; text-decoration: underline; }
+
+  /* Name-that-opening */
+  .nm-board { display: grid; grid-template-columns: repeat(8, 1fr); width: min(74vw, 288px); aspect-ratio: 1 / 1;
+    border: 3px solid #caa24a; border-radius: 6px; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,0.5); margin: 2px auto 0; }
+  .nm-board .cell { display: flex; align-items: center; justify-content: center; font-size: min(5.4vw, 21px); }
+  .nm-board .cell.lt { background: #e9d7ab; } .nm-board .cell.dk { background: #9c6a3a; }
+  .nm-board .cell.wp { color: #fffbe9; text-shadow: 0 1px 1px #000, 0 0 3px #6a4a1e; }
+  .nm-board .cell.bp { color: #241208; text-shadow: 0 1px 1px #e8d3ac; }
+  .nm-choices { display: flex; flex-direction: column; gap: 7px; width: 100%; max-width: 340px; }
+  .nm-choice { font-family: 'Trebuchet MS', sans-serif; font-weight: bold; font-size: 12.5px; cursor: pointer; text-align: left;
+    background: #3a2812; color: #ead9b8; border: 2px solid #6a4a22; border-radius: 10px; padding: 9px 12px; transition: border-color 0.12s, background 0.12s; }
+  .nm-choice:hover { border-color: #F5C518; }
+  .nm-choice:disabled { cursor: default; }
+  .nm-choice.right { border-color: #6bffb8; background: #1e3a28; color: #cfffe6; }
+  .nm-choice.wrong { border-color: #ff5b8a; background: #3a1320; color: #ffd0dc; }
+  .nm-progress { font-size: 11px; color: #c9a36a; margin-top: 10px; }
+
+  /* Transposition tree */
+  .tree-wrap { width: 100%; max-width: 540px; max-height: 60vh; overflow: auto; text-align: left;
+    background: #2a1c0e; border: 1px solid #6a4a22; border-radius: 10px; padding: 10px 12px; }
+  .tnode { white-space: nowrap; font-size: 12.5px; line-height: 1.55; }
+  .tmove { color: #ead9b8; font-weight: bold; }
+  .tmove.branch { color: #F5C518; }
+  .tend { color: #6bffb8; }
+  .tline-name { color: #c9a36a; font-size: 11px; }
+  .ttrans { color: #6bffb8; font-size: 11px; }
 </style>
 </head>
 <body>
@@ -135,7 +161,7 @@
 
   <!-- DECK SELECT -->
   <div class="overlay" id="menu-screen">
-    <div class="eyebrow">The Opening Library · v2.0</div>
+    <div class="eyebrow">The Opening Library · v2.2</div>
     <div class="big-title">THE PIRC PROTOCOL</div>
     <div class="blurb">
       Welcome to the library. Across the table, <b style="color:#F5C518">Princess</b> plays only
@@ -154,6 +180,10 @@
     <div class="row" style="margin-top:8px;">
       <button class="btn btn-pink" id="boss-btn">👑 BOSS EXAM</button>
       <button class="btn btn-ghost" id="pgn-btn">⬇ PGN</button>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <button class="btn btn-ghost" id="name-btn">🔎 NAME THAT OPENING</button>
+      <button class="btn btn-ghost" id="tree-btn">🌳 TREE</button>
     </div>
     <div class="foot">
       <b>Run-through</b>: play a whole opening from move 1. &nbsp;<b>Spot cards</b>: one book move per card.<br>
@@ -188,6 +218,28 @@
     <div class="row">
       <button class="btn btn-gold" id="sum-again-btn">REVIEW AGAIN</button>
       <button class="btn btn-ghost" id="sum-menu">DECKS</button>
+    </div>
+  </div>
+
+  <!-- NAME THAT OPENING -->
+  <div class="overlay hidden" id="name-screen">
+    <div class="eyebrow" id="name-eyebrow">🔎 Name That Opening</div>
+    <div class="nm-board" id="nm-board"></div>
+    <div class="blurb" id="nm-q" style="margin:10px 0 8px;">Which opening reaches this position?</div>
+    <div class="nm-choices" id="nm-choices"></div>
+    <div class="nm-progress" id="nm-progress"></div>
+    <div class="row" style="margin-top:12px;">
+      <button class="btn btn-ghost" id="nm-menu">BACK</button>
+    </div>
+  </div>
+
+  <!-- TRANSPOSITION TREE -->
+  <div class="overlay hidden" id="tree-screen">
+    <div class="eyebrow">🌳 Transposition Tree</div>
+    <div class="blurb" style="margin-bottom:8px;max-width:420px;">How every line shares a trunk, then branches apart. <span class="tend">●</span> ends a line; <span class="ttrans">↔</span> marks two move-orders reaching the same position.</div>
+    <div class="tree-wrap" id="tree-wrap"></div>
+    <div class="row" style="margin-top:12px;">
+      <button class="btn btn-ghost" id="tree-menu">BACK</button>
     </div>
   </div>
 </div>
@@ -256,6 +308,42 @@ const RAW = {
     ['e2e4','e4'],['d7d5','d5'],['e4d5','exd5'],['g8f6','Nf6'],['d2d4','d4'],['f6d5','Nxd5'],
     ['g1f3','Nf3'],['g7g6','g6'],['f1e2','Be2'],['f8g7','Bg7'],['e1g1','O-O','K'],['e8g8','O-O','K'] ] },
 
+  // ---- RUY LÓPEZ (Spanish) — a White repertoire ----
+  'ruy-morphy': { deck: 'ruy', name: 'Closed (Morphy)', side: 'w', moves: [
+    ['e2e4','e4'],['e7e5','e5'],['g1f3','Nf3'],['b8c6','Nc6'],['f1b5','Bb5'],['a7a6','a6'],
+    ['b5a4','Ba4'],['g8f6','Nf6'],['e1g1','O-O','K'],['f8e7','Be7'],['f1e1','Re1'],['b7b5','b5'],
+    ['a4b3','Bb3'],['d7d6','d6'],['c2c3','c3'],['e8g8','O-O','K'] ] },
+  'ruy-berlin': { deck: 'ruy', name: 'Berlin Defence', side: 'w', moves: [
+    ['e2e4','e4'],['e7e5','e5'],['g1f3','Nf3'],['b8c6','Nc6'],['f1b5','Bb5'],['g8f6','Nf6'],
+    ['e1g1','O-O','K'],['f6e4','Nxe4'],['d2d4','d4'],['e4d6','Nd6'],['b5c6','Bxc6'],['d7c6','dxc6'],
+    ['d4e5','dxe5'],['d6f5','Nf5'],['d1d8','Qxd8+'],['e8d8','Kxd8'] ] },
+
+  // ---- SICILIAN DEFENSE — a Black repertoire ----
+  'sicilian-najdorf': { deck: 'sicilian', name: 'Najdorf', side: 'b', moves: [
+    ['e2e4','e4'],['c7c5','c5'],['g1f3','Nf3'],['d7d6','d6'],['d2d4','d4'],['c5d4','cxd4'],
+    ['f3d4','Nxd4'],['g8f6','Nf6'],['b1c3','Nc3'],['a7a6','a6'],['f1e2','Be2'],['e7e5','e5'],
+    ['d4b3','Nb3'],['f8e7','Be7'],['e1g1','O-O','K'],['e8g8','O-O','K'] ] },
+  'sicilian-dragon': { deck: 'sicilian', name: 'Dragon', side: 'b', moves: [
+    ['e2e4','e4'],['c7c5','c5'],['g1f3','Nf3'],['d7d6','d6'],['d2d4','d4'],['c5d4','cxd4'],
+    ['f3d4','Nxd4'],['g8f6','Nf6'],['b1c3','Nc3'],['g7g6','g6'],['c1e3','Be3'],['f8g7','Bg7'],
+    ['f2f3','f3'],['e8g8','O-O','K'],['d1d2','Qd2'],['b8c6','Nc6'] ] },
+
+  // ---- QUEEN'S GAMBIT — a White repertoire ----
+  'queens-qgd': { deck: 'queens', name: 'Declined (QGD)', side: 'w', moves: [
+    ['d2d4','d4'],['d7d5','d5'],['c2c4','c4'],['e7e6','e6'],['b1c3','Nc3'],['g8f6','Nf6'],
+    ['c1g5','Bg5'],['f8e7','Be7'],['e2e3','e3'],['e8g8','O-O','K'],['g1f3','Nf3'],['h7h6','h6'],
+    ['g5h4','Bh4'],['b7b6','b6'] ] },
+  'queens-slav': { deck: 'queens', name: 'Slav Defence', side: 'w', moves: [
+    ['d2d4','d4'],['d7d5','d5'],['c2c4','c4'],['c7c6','c6'],['g1f3','Nf3'],['g8f6','Nf6'],
+    ['b1c3','Nc3'],['d5c4','dxc4'],['a2a4','a4'],['c8f5','Bf5'],['e2e3','e3'],['e7e6','e6'],
+    ['f1c4','Bxc4'],['f8b4','Bb4'] ] },
+
+  // ---- CARO-KANN — a Black repertoire ----
+  'caro-classical': { deck: 'caro', name: 'Classical', side: 'b', moves: [
+    ['e2e4','e4'],['c7c6','c6'],['d2d4','d4'],['d7d5','d5'],['b1c3','Nc3'],['d5e4','dxe4'],
+    ['c3e4','Nxe4'],['c8f5','Bf5'],['e4g3','Ng3'],['f5g6','Bg6'],['h2h4','h4'],['h7h6','h6'],
+    ['g1f3','Nf3'],['b8d7','Nd7'] ] },
+
   // ---- BLUNDER TRAPS ----  every refutation below is a machine-verified FORCED mate
   // (proved offline: after the marked blunder, the trainee mates against EVERY defence).
   // blunderAt = index of the opponent's losing move; you play the punishment.
@@ -280,6 +368,14 @@ const DECKS = [
     sub: 'Classical fight for the centre' },
   { id: 'scandi', name: 'Scandinavian', side: 'Black', glyph: '♛', color: '#6bbfff',
     sub: 'Strike at the centre move one' },
+  { id: 'ruy', name: 'Ruy López', side: 'White', glyph: '♗', color: '#ff9f6b',
+    sub: 'The Spanish — pressure the knight' },
+  { id: 'sicilian', name: 'Sicilian Defense', side: 'Black', glyph: '♞', color: '#6bff9f',
+    sub: "Black's fighting answer to 1.e4" },
+  { id: 'queens', name: "Queen's Gambit", side: 'White', glyph: '♛', color: '#b0c4ff',
+    sub: 'Offer the c-pawn, seize the centre' },
+  { id: 'caro', name: 'Caro-Kann', side: 'Black', glyph: '♟', color: '#d0a0ff',
+    sub: 'Solid as a rock' },
   { id: 'trap', name: 'Blunder Traps', side: 'both sides', glyph: '☠', color: '#ff5b8a',
     sub: 'Punish the losing move — forced mates' },
 ];
@@ -348,6 +444,13 @@ const LINEMETA = {
   'italian-piano':      { eco:'C54', ref:'Giuoco Piano — tactics catalogued by Greco in the 1600s.' },
   'scandi-main':        { eco:'B01', ref:'Scandinavian — the classical 3…Qa5 main line.' },
   'scandi-modern':      { eco:'B01', ref:'Scandinavian — the modern 3…Nf6 lines.' },
+  'ruy-morphy':         { eco:'C84', ref:'Closed Ruy López, Morphy Defence — …a6, …Be7, …O-O; the great main road of the Spanish.' },
+  'ruy-berlin':         { eco:'C67', ref:'The Berlin "Wall" — after Qxd8+ Kxd8 Black gives up castling for a rock-solid endgame. Kramnik used it to dethrone Kasparov, 2000.' },
+  'sicilian-najdorf':   { eco:'B90', ref:'Najdorf Sicilian — 5…a6, the most analysed opening in chess; Fischer & Kasparov’s weapon.' },
+  'sicilian-dragon':    { eco:'B76', ref:'Dragon Sicilian — …g6 fianchetto; opposite-side castling and a race to mate.' },
+  'queens-qgd':         { eco:'D37', ref:'Queen’s Gambit Declined — classical …e6 with Bg5; rock-solid, a World-Championship staple.' },
+  'queens-slav':        { eco:'D17', ref:'Slav Defence — …c6 holds d5; …dxc4 then …Bf5 frees the light-squared bishop.' },
+  'caro-classical':     { eco:'B19', ref:'Caro-Kann Classical — …Bf5 develops the bishop before …e6; famously hard to crack.' },
   'trap-legal':         { eco:'TRAP', ref:'Légal’s Mate (1750). After the greedy …Bxd1??, the queen sac pays off: Bxf7+ Ke7 Nd5#. (Decline with …dxe5 and White just wins the bishop.)' },
   'trap-scholar':       { eco:'TRAP', ref:'Scholar’s Mate. …Nf6?? ignores the threat to f7 — Qxf7# ends it. Defend with …Qe7 or …g6 instead.' },
   'trap-fools':         { eco:'TRAP', ref:'Fool’s Mate — the fastest loss in chess. 2.g4?? opens the e1–h4 diagonal and Qh4# is mate.' },
@@ -997,7 +1100,7 @@ function loop(now) {
 
 // ---- Screens ----
 function hideOverlays() {
-  ['menu-screen', 'caught-screen', 'summary-screen'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  ['menu-screen', 'caught-screen', 'summary-screen', 'name-screen', 'tree-screen'].forEach(id => document.getElementById(id).classList.add('hidden'));
 }
 function showMenu() {
   G = null; session = null;
@@ -1082,6 +1185,118 @@ function buildDeckList() {
   });
 }
 
+// ---- Shared helpers for the new modes ----
+function lineLabel(id) { const ln = LINES[id]; const d = DECKS.find(x => x.id === ln.deck); return (d ? d.name : ln.deck) + ' — ' + ln.name; }
+function boardForLine(id) { const b = startBoard(); LINES[id].plies.forEach(p => applyPly(b, p)); return b; }
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+
+// ---- Name That Opening (shown a position, identify the line) ----
+let nameQuiz = null;
+function startName() {
+  const ids = Object.keys(LINES).filter(id => LINES[id].deck !== 'trap');
+  const order = shuffle(ids.slice()).slice(0, Math.min(8, ids.length));
+  nameQuiz = {
+    idx: 0, correct: 0,
+    qs: order.map(id => {
+      const distract = shuffle(ids.filter(x => x !== id)).slice(0, 3);
+      return { id, choices: shuffle([id].concat(distract)) };
+    })
+  };
+  G = null; session = null;
+  document.getElementById('menu-btn').classList.add('hidden');
+  hideOverlays();
+  document.getElementById('name-screen').classList.remove('hidden');
+  showNameQ();
+}
+function renderMiniBoard(b) {
+  const el = document.getElementById('nm-board'); el.innerHTML = '';
+  for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell ' + (((x + y) % 2 === 0) ? 'lt' : 'dk');
+    const p = b[y][x];
+    if (p) { cell.classList.add(p.c === 'w' ? 'wp' : 'bp'); cell.textContent = GLYPH[p.t]; }
+    el.appendChild(cell);
+  }
+}
+function showNameQ() {
+  const q = nameQuiz.qs[nameQuiz.idx];
+  renderMiniBoard(boardForLine(q.id));
+  document.getElementById('nm-q').textContent = 'Which opening reaches this position?';
+  const ch = document.getElementById('nm-choices'); ch.innerHTML = '';
+  q.choices.forEach(cid => {
+    const b = document.createElement('button');
+    b.className = 'nm-choice'; b.textContent = lineLabel(cid);
+    b.addEventListener('click', () => answerName(cid, b));
+    ch.appendChild(b);
+  });
+  document.getElementById('nm-progress').textContent =
+    'Question ' + (nameQuiz.idx + 1) + ' / ' + nameQuiz.qs.length + '  ·  ' + nameQuiz.correct + ' correct';
+}
+function answerName(cid, btn) {
+  const q = nameQuiz.qs[nameQuiz.idx];
+  const buttons = Array.prototype.slice.call(document.querySelectorAll('#nm-choices .nm-choice'));
+  buttons.forEach(b => b.disabled = true);
+  if (cid === q.id) { btn.classList.add('right'); nameQuiz.correct++; sfx('correct'); }
+  else {
+    btn.classList.add('wrong'); sfx('wrong');
+    const right = lineLabel(q.id);
+    buttons.forEach(b => { if (b.textContent === right) b.classList.add('right'); });
+  }
+  setTimeout(() => {
+    nameQuiz.idx++;
+    if (nameQuiz.idx < nameQuiz.qs.length) showNameQ();
+    else finishName();
+  }, 950);
+}
+function finishName() {
+  const n = nameQuiz.qs.length, c = nameQuiz.correct;
+  document.getElementById('nm-board').innerHTML = '';
+  document.getElementById('nm-choices').innerHTML = '';
+  document.getElementById('nm-q').textContent = 'You named ' + c + ' of ' + n + ' correctly!';
+  document.getElementById('nm-progress').textContent =
+    c === n ? 'Perfect recall. 📖⭐' : (c >= Math.ceil(n * 0.6) ? 'Solid — you know your openings.' : 'Keep drilling the decks.');
+  sfx('done');
+  if (window.PJCC && PJCC.saveScore) PJCC.saveScore('pirc-protocol', 0, { credits: c, data: { mode: 'name', correct: c, of: n } });
+}
+
+// ---- Transposition tree (how the lines share a trunk and branch) ----
+function boardKey(b) { let s = ''; for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) { const p = b[y][x]; s += p ? (p.c + p.t) : '..'; } return s; }
+function buildTree() {
+  const ids = Object.keys(LINES).filter(id => LINES[id].deck !== 'trap');
+  const root = { kids: {}, lines: [] };
+  ids.forEach(id => {
+    const ln = LINES[id]; let node = root; const b = startBoard();
+    ln.plies.forEach((p, i) => {
+      applyPly(b, p);
+      if (!node.kids[p.san]) node.kids[p.san] = { kids: {}, lines: [], san: p.san, ply: i, color: p.color, key: boardKey(b) };
+      node = node.kids[p.san];
+    });
+    node.lines.push(id);
+  });
+  return root;
+}
+function renderTree() {
+  const root = buildTree();
+  const seen = {};   // boardKey -> true (first path wins; later identical positions = transpositions)
+  const out = [];
+  function esc(s) { return String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
+  function walk(node, depth) {
+    Object.keys(node.kids).forEach(san => {
+      const c = node.kids[san];
+      const num = (c.color === 'w') ? (Math.floor(c.ply / 2) + 1) + '.' : (Math.floor(c.ply / 2) + 1) + '…';
+      const branchy = Object.keys(c.kids).length > 1;
+      let html = '<span class="tmove' + (branchy ? ' branch' : '') + '">' + num + ' ' + esc(san) + '</span>';
+      let trans = '';
+      if (seen[c.key]) trans = ' <span class="ttrans">↔ transposes</span>'; else seen[c.key] = true;
+      if (c.lines.length) html += ' <span class="tend">●</span> <span class="tline-name">' + c.lines.map(id => esc(lineLabel(id))).join(', ') + '</span>';
+      out.push('<div class="tnode" style="padding-left:' + (depth * 15) + 'px;">' + html + trans + '</div>');
+      walk(c, depth + 1);
+    });
+  }
+  walk(root, 0);
+  document.getElementById('tree-wrap').innerHTML = out.join('');
+}
+
 // ---- Button wiring ----
 let selectedStyle = 'line';
 document.getElementById('style-row').addEventListener('click', e => {
@@ -1094,6 +1309,10 @@ document.getElementById('review-btn').addEventListener('click', () => { go(); st
 document.getElementById('cram-btn').addEventListener('click', () => { go(); startSession(selectedDeck, 'cram', selectedStyle); });
 document.getElementById('boss-btn').addEventListener('click', () => { go(); startBoss(); });
 document.getElementById('pgn-btn').addEventListener('click', exportMasteredPGN);
+document.getElementById('name-btn').addEventListener('click', () => { go(); startName(); });
+document.getElementById('tree-btn').addEventListener('click', () => { renderTree(); hideOverlays(); document.getElementById('tree-screen').classList.remove('hidden'); });
+document.getElementById('nm-menu').addEventListener('click', showMenu);
+document.getElementById('tree-menu').addEventListener('click', showMenu);
 document.getElementById('menu-btn').addEventListener('click', showMenu);
 document.getElementById('caught-cram').addEventListener('click', e => {
   go(); startSession(document.getElementById('caught-screen').dataset.deck, 'cram', selectedStyle);
