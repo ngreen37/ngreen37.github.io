@@ -29,6 +29,18 @@ funnel**, not sprawl. New surface area should serve one of the five threads.
 
 ---
 
+## ♚ Headline build in flight — *The Gauntlet* (chess-game ladder)
+
+A ladder of PJCC opponents you climb by playing **real games of chess** (Checker-Town recruit →
+Argus → the Rival → the CEO) — the arcade's headline depth piece, and the first game where you
+play a *whole game*, not a puzzle. **Design-first**: the full plan — engine pros/cons, opponent
+roster, AI personality tiers, UX, and meta hooks — lives in
+[`docs/chess-ladder-design.md`](docs/chess-ladder-design.md). Recommended engine: extend the
+legal move-gen + checkmate + search **already shipping in `pjcc_blindfold.html`** into a shared,
+perft-tested module (no dependency). Awaiting sign-off before Phase 1 code.
+
+---
+
 ## ✅ Already live (guardrail — don't re-pitch)
 Arcade: Notation Blitz, Blindfold Puzzles / The Mind's Eye, Clearance: DELTA, Princess Dungeon,
 Checker Financial, Fork in the Road, The Pirc Protocol, Sand Mine Depths, Shogi Island (Catch the
@@ -55,25 +67,25 @@ preview + share-card generator + `/educators/` B2B page + game-page dispatch cap
 
 ## Notation Blitz — *coordinate/notation rhythm*
 1. **Score Mode** — chart the real PJCC themes as the beatmap (the Avenue-5 unlock).
-2. **Square-colour sprint** — call light/dark only at brutal BPM; builds the "is e4 light?" instinct.
+
 3. **Diagonal & file lanes** — "what sits on the long diagonal from c1?" as its own mode.
 4. **Coordinate duel** — the Rival trades calls with you and speeds up every time you miss.
 5. **Blind grid** — the board fades out mid-run; finish from memory (a bridge to Blindfold).
-6. **Hot-seat race** — split-keyboard two-player on one device.
+
 7. **Combo leitmotif** — a sustained streak layers a character's theme in live.
-8. **Reverse "find the piece"** — given a position, tap every square the knight can reach, in tempo.
+
 9. **Landmark ladder** — escalating BPM tiers, each named for a Checker-Town location.
-10. **Coach metronome** — set a target accuracy; it drills your weakest squares back at you.
+
 
 ## Blindfold Puzzles / The Mind's Eye — *no-board visualization*
 1. **Rebuild-the-board** — after N moves, place the pieces back where they belong.
 2. **Piece-count ladder** — start at 2 pieces, climb toward a full position.
 3. **Voice-input mode** — speak your move (Web Speech API); fully eyes-free.
 4. **Phantom-blunder review** — flags the exact move your mental board diverged.
-5. **Pick your narrator** — Narrator, Argus, or Princess reads the position aloud.
+
 6. **Walk-the-knight audio drills** — eyes closed, follow spoken hops, name the landing square.
-7. **PGN import** — paste a real game and train visualization on a masterpiece.
-8. **Co-op blindfold** — one narrates, one places; couch mode.
+7. **PGN import** — paste a real game and train visualization on a masterpiece or one of their games.
+
 9. **Relic boards** — cosmetic boards unlocked only by blindfold wins.
 10. **"Solved it blind" card** — a shareable flex of the position + your solve.
 
