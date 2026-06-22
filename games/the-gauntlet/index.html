@@ -1,0 +1,33 @@
+---
+layout: game
+title: "The Gauntlet v1.0"
+description: "Climb a ladder of the CEO's champions in real games of chess — from a Checker-Town recruit to the CEO at the gates of Chess City. A tunable, perft-verified engine; you alternate colors and play strict (no takebacks)."
+permalink: /games/the-gauntlet/
+---
+
+<div class="game-frame-wrap td-frame">
+  <iframe
+    src="{{ '/assets/games/pjcc_gauntlet.html' | relative_url }}"
+    title="PJCC The Gauntlet"
+    allowfullscreen
+    scrolling="no"
+  ></iframe>
+</div>
+
+<style>
+.td-frame { max-width: 560px; }
+.td-frame iframe { height: 620px; }
+@media (max-width: 600px) { .td-frame iframe { height: 580px; } }
+</style>
+
+<div class="game-info">
+  <h2>How to Play</h2>
+  <ul>
+    <li>Open <strong>The Ladder</strong> and pick your challenger — beat one to unlock the next.</li>
+    <li>Tap a piece to see its legal moves (green dots), then tap a square to move. A pawn reaching the last rank prompts a <strong>promotion</strong> choice.</li>
+    <li>You <strong>alternate colors</strong> as you climb (your color shows top-right). It's <strong>strict</strong> — no takebacks, no hints.</li>
+    <li>Climb from the <strong>Checker-Town Recruit</strong> through <strong>Argus the Guard-Dog</strong>, the <strong>City Gatekeeper</strong>, and <strong>the Rival</strong>, to <strong>the CEO</strong> at the gates. Results post to the <a href="/leaderboards/">leaderboards</a>.</li>
+  </ul>
+
+  <p class="game-note">Each champion plays a real, distinct style — the recruit grabs everything and blunders; Argus hunts your king; the Rival and the CEO simply don't miss. The engine plays full legal chess (castling, en passant, promotion) and is <strong>perft-verified</strong>.</p>
+</div>

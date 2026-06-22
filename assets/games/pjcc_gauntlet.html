@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>PJCC: The Gauntlet v1.0</title>
+<script src="/assets/js/pjcc-config.js"></script>
+<script src="/assets/js/pjcc-profile.js"></script>
+<script src="/assets/js/pjcc-pieces.js"></script>
+<script src="/assets/js/pjcc-chess.js"></script>
+<script src="/assets/js/pjcc-chess-ai.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color:transparent; }
+  html, body { background:#0c0820; height:100%; overflow:hidden; font-family:'Trebuchet MS','Segoe UI',sans-serif; touch-action:manipulation; }
+  body { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+  #stage { position:relative; width:100%; max-width:520px; }
+  #cv { display:block; width:100%; border:3px solid #F5C518; border-radius:12px; background:#160c33; box-shadow:0 0 40px rgba(245,197,24,0.18); }
+  .float-btn { position:absolute; z-index:6; font-weight:bold; border:none; border-radius:999px; cursor:pointer;
+    font-family:inherit; box-shadow:0 3px 0 rgba(0,0,0,0.35); transition:transform .08s; }
+  .float-btn:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,0.35); }
+  #menu-btn { top:10px; right:10px; background:#2a1a5e; color:#cdbcf2; padding:5px 12px; font-size:11px; border:1px solid #6b5fa0; }
+  #resign-btn { bottom:10px; right:10px; background:#3a1530; color:#ff9ec9; padding:7px 14px; font-size:12px; border:1px solid #7a3060; }
+  .float-btn.hidden { display:none; }
+
+  .overlay { position:absolute; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:22px; text-align:center; border-radius:12px; background:radial-gradient(circle at 50% 22%, #241452 0%, #0c0820 82%); overflow-y:auto; }
+  .overlay.hidden { display:none; }
+  .eyebrow { font-size:11px; letter-spacing:4px; color:#9a7fd4; text-transform:uppercase; margin-bottom:10px; }
+  .big-title { font-size:32px; font-weight:900; color:#F5C518; letter-spacing:1px; text-shadow:0 3px 0 #6a4400, 0 0 22px rgba(245,197,24,0.45); margin-bottom:4px; }
+  .blurb { font-size:13px; color:#cdbcf2; line-height:1.6; max-width:400px; margin-bottom:14px; }
+  .btn { font-weight:bold; cursor:pointer; border:none; border-radius:999px; padding:12px 26px; font-size:14px; letter-spacing:1px;
+    box-shadow:0 4px 0 rgba(0,0,0,0.35); transition:transform .08s; font-family:inherit; }
+  .btn:active { transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,0.35); }
+  .btn-gold { background:#F5C518; color:#1a0f3d; } .btn-gold:hover { background:#ffd740; }
+  .btn-ghost { background:#2a1a5e; color:#cdbcf2; box-shadow:0 4px 0 #160a36; }
+  .row { display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; justify-content:center; }
+
+  .rungs { display:flex; flex-direction:column; gap:8px; width:100%; max-width:380px; margin:6px 0 12px; }
+  .rung { display:flex; align-items:center; gap:12px; background:#1a1040; border:1px solid #4a3a86; border-radius:10px; padding:10px 14px; text-align:left; cursor:pointer; }
+  .rung:hover { border-color:#F5C518; } .rung.locked { opacity:0.5; cursor:not-allowed; }
+  .rung.beaten { border-color:#6bffb8; }
+  .rung .rg { font-size:24px; flex-shrink:0; width:30px; text-align:center; }
+  .rung .rb { flex:1; min-width:0; } .rung .rn { font-weight:800; color:#f0e6ff; font-size:15px; }
+  .rung .rd { font-size:11px; color:#b9a8e6; } .rung .rs { font-size:11px; font-weight:800; flex-shrink:0; }
+
+  .promo { position:absolute; inset:0; z-index:12; display:flex; align-items:center; justify-content:center; background:rgba(12,8,32,0.82); }
+  .promo.hidden { display:none; }
+  .promo-box { background:#1a1040; border:2px solid #F5C518; border-radius:14px; padding:16px 18px; text-align:center; }
+  .promo-box .pt { color:#cdbcf2; font-size:13px; margin-bottom:10px; }
+  .promo-choices { display:flex; gap:10px; }
+  .promo-choices button { width:54px; height:54px; font-size:30px; border-radius:10px; border:1px solid #6b5fa0; background:#2a1a5e; color:#fff; cursor:pointer; }
+  .promo-choices button:hover { border-color:#F5C518; background:#3d2a7a; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="cv" width="440" height="500"></canvas>
+  <button class="float-btn hidden" id="menu-btn">☰ menu</button>
+  <button class="float-btn hidden" id="resign-btn">⚑ resign</button>
+
+  <div class="overlay" id="menu-screen">
+    <div class="eyebrow">The road to Chess City</div>
+    <div class="big-title">THE GAUNTLET</div>
+    <div class="blurb">Play <b style="color:#F5C518">real games of chess</b> against a ladder of the CEO's champions — climb from a Checker-Town recruit all the way to the <b style="color:#ff8fd0">CEO</b> at the gates of Chess City. You alternate colors as you climb. No takebacks. Win to advance.</div>
+    <div class="row"><button class="btn btn-gold" id="play-btn">▶ THE LADDER</button></div>
+  </div>
+
+  <div class="overlay hidden" id="ladder-screen">
+    <div class="eyebrow">Choose your challenger</div>
+    <div class="big-title" style="font-size:24px;">THE LADDER</div>
+    <div class="rungs" id="rungs"></div>
+    <div class="row"><button class="btn btn-ghost" id="ladder-back">◂ Back</button></div>
+  </div>
+
+  <div class="promo hidden" id="promo-screen">
+    <div class="promo-box"><div class="pt">Promote to…</div><div class="promo-choices" id="promo-choices"></div></div>
+  </div>
+
+  <div class="overlay hidden" id="over-screen">
+    <div class="eyebrow" id="over-eye">Result</div>
+    <div class="big-title" id="over-title" style="font-size:26px;">—</div>
+    <div class="blurb" id="over-msg"></div>
+    <div class="row" id="over-row"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+var C = window.PJCCChess, AI = window.PJCCChessAI;
+var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+var W = 440, H = 500, TILE = 50, BOARD = TILE*8, BX = (W-BOARD)/2, BY = 78;
+var PAL = { wFill:'#f3ecd6', wEdge:'#4a3618', bFill:'#241a3c', bEdge:'#efe4ff' };
+var LIGHT = '#6a5aa0', DARK = '#3d2a7a';
+
+// ---- The ladder (alternating colors; strict — no takebacks/hints) ----
+var LADDER = [
+  { name:'Checker-Town Recruit', glyph:'♟', accent:'#b9a8e6', region:'Checker Town',
+    blurb:'Barely knows the moves — and grabs every piece he sees.',
+    win:'The recruit tips his king and salutes. "Onward, operative."',
+    persona:{ depth:1, blunder:0.45, mat:1, pst:0, timeMs:140 } },
+  { name:'Argus the Guard-Dog', glyph:'♞', accent:'#8fe3ff', region:'Checker Town',
+    blurb:'Loyal and ferocious — he hunts your king with everything he has.',
+    win:'Argus barks once, then licks your hand. You passed.',
+    persona:{ depth:2, blunder:0.18, mat:1, pst:0.6, aggr:5, timeMs:320 } },
+  { name:'The City Gatekeeper', glyph:'♜', accent:'#ffb066', region:'Chess City gates',
+    blurb:'A solid, patient defender. No gifts, no blunders to speak of.',
+    win:'The Gatekeeper steps aside. The inner gate groans open.',
+    persona:{ depth:2, blunder:0.06, mat:1, pst:1, aggr:1, timeMs:420 } },
+  { name:'The Rival', glyph:'♝', accent:'#c79bff', region:'—',
+    blurb:'Your equal and your foil. Plays sharp, punishes loose moves.',
+    win:'"...Well played." The Rival means it, this time.',
+    persona:{ depth:3, blunder:0.0, mat:1, pst:1, aggr:2, timeMs:650 } },
+  { name:'The CEO', glyph:'♛', accent:'#ff8fd0', region:'Chess City',
+    blurb:'The last guardian before Chess City. He does not lose. Usually.',
+    win:'The CEO stares at the board a long time. Then, quietly: "...How?"',
+    persona:{ depth:4, blunder:0.0, mat:1, pst:1, aggr:1, timeMs:850 } }
+];
+function colorForRung(i){ return (i % 2 === 0) ? 'w' : 'b'; }   // alternate per rung
+
+// ---- progress ----
+var PKEY = 'pjcc.gauntlet.v1';
+function loadProg(){ try { return Object.assign({ unlocked:0, beaten:{} }, JSON.parse(localStorage.getItem(PKEY))||{}); } catch(e){ return { unlocked:0, beaten:{} }; } }
+function saveProg(p){ try { localStorage.setItem(PKEY, JSON.stringify(p)); } catch(e){} }
+
+// ---- runtime ----
+var G = null, raf = null;
+function startRung(idx){
+  var rung = LADDER[idx], pc = colorForRung(idx);
+  G = { idx:idx, rung:rung, persona:rung.persona, pc:pc,
+        S:C.parseFEN(C.START_FEN), reps:{}, sel:-1, legal:[], over:false, result:null,
+        last:null, thinking:false, promo:null, log:[] };
+  bumpRep();
+  G.legal = C.legalMoves(G.S);
+  hideOverlays();
+  document.getElementById('menu-btn').classList.remove('hidden');
+  document.getElementById('resign-btn').classList.remove('hidden');
+  // if the player is Black, the AI (White) moves first
+  if (G.S.turn !== G.pc) aiTurnSoon();
+}
+function bumpRep(){ var k = C.posKey(G.S); G.reps[k] = (G.reps[k]||0) + 1; return G.reps[k]; }
+
+// ---- board geometry (player always at the bottom) ----
+function idxToScreen(i){ var r=(i/8)|0, f=i%8; return G.pc==='w' ? { col:f, row:r } : { col:7-f, row:7-r }; }
+function screenToIdx(col, row){ var r = G.pc==='w' ? row : 7-row, f = G.pc==='w' ? col : 7-col; return r*8+f; }
+function cellXY(i){ var s=idxToScreen(i); return { x: BX + s.col*TILE + TILE/2, y: BY + s.row*TILE + TILE/2 }; }
+
+// ---- input ----
+cv.addEventListener('pointerdown', function(e){
+  if (!G || G.over || G.thinking || G.promo) return;
+  if (G.S.turn !== G.pc) return;                       // not your move
+  var rect = cv.getBoundingClientRect();
+  var mx = (e.clientX-rect.left)*(W/rect.width), my = (e.clientY-rect.top)*(H/rect.height);
+  var col = Math.floor((mx-BX)/TILE), row = Math.floor((my-BY)/TILE);
+  if (col<0||col>7||row<0||row>7) return;
+  e.preventDefault();
+  var i = screenToIdx(col, row), p = G.S.b[i], mine = p && C.colorOf(p)===G.pc;
+  if (G.sel < 0){ if (mine) G.sel = i; return; }
+  if (i === G.sel){ G.sel = -1; return; }
+  if (mine){ G.sel = i; return; }                      // reselect
+  var cands = G.legal.filter(function(m){ return m.from===G.sel && m.to===i; });
+  if (!cands.length){ G.sel = -1; return; }            // illegal target
+  if (cands.length > 1){ openPromo(G.sel, i); return; } // promotion choice
+  applyPlayerMove(cands[0]);
+});
+
+function applyPlayerMove(m){
+  G.last = { from:m.from, to:m.to };
+  G.log.push(C.toSAN(G.S, m));
+  G.S = C.makeMove(G.S, m); G.sel = -1;
+  var rep = bumpRep();
+  var res = C.gameResult(G.S, rep);
+  if (res){ endGame(res); return; }
+  G.legal = C.legalMoves(G.S);
+  aiTurnSoon();
+}
+function aiTurnSoon(){ G.thinking = true; setTimeout(aiMove, 280); }
+function aiMove(){
+  if (!G || G.over){ return; }
+  var m = AI.bestMove(G.S, G.persona);
+  if (!m){ G.thinking=false; var res0=C.gameResult(G.S, G.reps[C.posKey(G.S)]||1); if(res0) endGame(res0); return; }
+  G.last = { from:m.from, to:m.to };
+  G.log.push(C.toSAN(G.S, m));
+  G.S = C.makeMove(G.S, m);
+  var rep = bumpRep();
+  G.thinking = false;
+  var res = C.gameResult(G.S, rep);
+  if (res){ endGame(res); return; }
+  G.legal = C.legalMoves(G.S);
+}
+
+// ---- promotion picker ----
+function openPromo(from, to){
+  G.promo = { from:from, to:to };
+  var host = document.getElementById('promo-choices'); host.innerHTML = '';
+  ['q','r','b','n'].forEach(function(pp){
+    var letter = G.pc==='w' ? pp.toUpperCase() : pp;
+    var b = document.createElement('button');
+    b.textContent = { q:'♛', r:'♜', b:'♝', n:'♞' }[pp];
+    b.onclick = function(){
+      var m = C.findMove(G.S, from, to, letter);
+      document.getElementById('promo-screen').classList.add('hidden'); G.promo = null;
+      if (m) applyPlayerMove(m); else G.sel = -1;
+    };
+    host.appendChild(b);
+  });
+  document.getElementById('promo-screen').classList.remove('hidden');
+}
+
+// ---- end of game ----
+function endGame(result){
+  G.over = true; G.result = result; G.thinking = false; G.sel = -1;
+  document.getElementById('resign-btn').classList.add('hidden');
+  var prog = loadProg(), playerWon = false, draw = false, title, msg, eye;
+  if (result === 'checkmate'){ playerWon = (G.S.turn !== G.pc); }   // side to move is mated
+  else if (result === 'resign'){ playerWon = false; }
+  else { draw = true; }                                              // stalemate / material / fifty / threefold
+
+  if (playerWon){
+    prog.beaten[G.idx] = true;
+    if (G.idx + 1 > prog.unlocked) prog.unlocked = Math.min(LADDER.length, G.idx + 1);
+    saveProg(prog);
+    eye = 'Rung ' + (G.idx+1) + ' cleared'; title = 'VICTORY ♛';
+    msg = G.rung.win + (G.idx+1 < LADDER.length ? '' : ' You have taken Chess City.');
+  } else if (draw){
+    eye = 'Draw'; title = 'A DRAW';
+    msg = ({ stalemate:'Stalemate — the king has no move, but no check. Half a point.',
+             material:'Insufficient material — neither side can mate. Drawn.',
+             fifty:'Fifty moves without a pawn or capture. Drawn.',
+             threefold:'Threefold repetition. Drawn.' }[result]) || 'Drawn.';
+  } else {
+    eye = 'Defeat'; title = result === 'resign' ? 'YOU RESIGNED' : 'CHECKMATED';
+    msg = 'The ' + G.rung.name + ' holds the line. Study the board and try again.';
+  }
+  // record to the profile / leaderboard
+  if (window.PJCC && PJCC.saveScore){
+    PJCC.saveScore('the-gauntlet', Object.keys(prog.beaten).length, {
+      credits: playerWon ? 2 : 1,
+      data: { rung: G.idx+1, opponent: G.rung.name, result: playerWon?'win':(draw?'draw':'loss'), cleared: Object.keys(prog.beaten).length }
+    });
+  }
+  var row = document.getElementById('over-row'); row.innerHTML = '';
+  if (playerWon && G.idx+1 < LADDER.length){
+    addBtn(row, 'NEXT CHALLENGER ▸', 'btn-gold', function(){ startRung(G.idx+1); });
+  } else if (!playerWon){
+    addBtn(row, 'TRY AGAIN', 'btn-gold', function(){ startRung(G.idx); });
+  }
+  addBtn(row, 'THE LADDER', 'btn-ghost', showLadder);
+  document.getElementById('over-eye').textContent = eye;
+  document.getElementById('over-title').textContent = title;
+  document.getElementById('over-msg').textContent = msg;
+  document.getElementById('over-screen').classList.remove('hidden');
+}
+function addBtn(row, label, cls, fn){ var b=document.createElement('button'); b.className='btn '+cls; b.textContent=label; b.onclick=fn; row.appendChild(b); }
+
+// ---- rendering ----
+function render(){
+  ctx.clearRect(0,0,W,H);
+  var grd = ctx.createLinearGradient(0,0,0,H); grd.addColorStop(0,'#1a1040'); grd.addColorStop(1,'#0c0820');
+  ctx.fillStyle = grd; ctx.fillRect(0,0,W,H);
+  if (!G){ return; }
+  drawHud();
+  // board frame
+  ctx.fillStyle = '#0e0a26'; roundRect(BX-6, BY-6, BOARD+12, BOARD+12, 9); ctx.fill();
+  ctx.strokeStyle = G.rung.accent; ctx.lineWidth = 3; roundRect(BX-6, BY-6, BOARD+12, BOARD+12, 9); ctx.stroke();
+  // squares (true colors regardless of flip)
+  for (var i=0;i<64;i++){ var r=(i/8)|0, f=i%8, s=idxToScreen(i);
+    ctx.fillStyle = ((r+f)%2===0) ? LIGHT : DARK;
+    ctx.fillRect(BX+s.col*TILE, BY+s.row*TILE, TILE, TILE); }
+  // last move
+  if (G.last){ [G.last.from,G.last.to].forEach(function(sq){ var s=idxToScreen(sq);
+    ctx.fillStyle='rgba(245,197,24,0.28)'; ctx.fillRect(BX+s.col*TILE, BY+s.row*TILE, TILE, TILE); }); }
+  // check
+  if (C.inCheck(G.S, G.S.turn)){ var ks=C.kingSq(G.S.b, G.S.turn); if(ks>=0){ var s2=idxToScreen(ks);
+    ctx.fillStyle='rgba(255,80,110,0.5)'; ctx.fillRect(BX+s2.col*TILE, BY+s2.row*TILE, TILE, TILE); } }
+  // selection + legal dots
+  if (G.sel>=0){ var ss=idxToScreen(G.sel); ctx.fillStyle='rgba(245,197,24,0.34)'; ctx.fillRect(BX+ss.col*TILE, BY+ss.row*TILE, TILE, TILE);
+    G.legal.forEach(function(m){ if(m.from!==G.sel) return; var d=cellXY(m.to), cap=G.S.b[m.to];
+      ctx.fillStyle='rgba(107,255,184,0.65)';
+      if (cap){ ctx.lineWidth=4; ctx.strokeStyle='rgba(107,255,184,0.7)'; ctx.beginPath(); ctx.arc(d.x,d.y,TILE*0.42,0,7); ctx.stroke(); }
+      else { ctx.beginPath(); ctx.arc(d.x,d.y,7,0,7); ctx.fill(); } }); }
+  // coordinate labels (oriented to the player)
+  ctx.fillStyle='rgba(255,255,255,0.32)'; ctx.font='9px Trebuchet MS';
+  for (var n=0;n<8;n++){
+    var file = G.pc==='w' ? String.fromCharCode(97+n) : String.fromCharCode(97+(7-n));
+    var rank = G.pc==='w' ? 8-n : n+1;
+    ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText(file, BX+n*TILE+3, BY+BOARD-2);
+    ctx.textBaseline='top'; ctx.fillText(rank, BX+2, BY+n*TILE+2);
+  }
+  // pieces
+  for (var j=0;j<64;j++){ var p=G.S.b[j]; if(!p) continue; var c=cellXY(j);
+    PJCCPieces.draw(ctx, c.x, c.y, TILE*0.84, p.toUpperCase(), C.colorOf(p), PAL); }
+}
+function drawHud(){
+  ctx.textAlign='left'; ctx.textBaseline='middle';
+  ctx.fillStyle=G.rung.accent; ctx.font='bold 16px Trebuchet MS';
+  ctx.fillText(G.rung.glyph + '  ' + G.rung.name, 14, 24);
+  ctx.fillStyle='#9a7fd4'; ctx.font='11px Trebuchet MS';
+  ctx.fillText('Rung ' + (G.idx+1) + ' / ' + LADDER.length + ' · ' + G.rung.region, 14, 42);
+  // you-are badge
+  var youW = G.pc==='w', txt = youW ? '♔ YOU PLAY WHITE' : '♚ YOU PLAY BLACK';
+  ctx.font='bold 12px Trebuchet MS'; ctx.textAlign='right'; ctx.textBaseline='middle';
+  var tw = ctx.measureText(txt).width + 22, bx = W-14-tw, by=14, bh=22;
+  ctx.fillStyle = youW ? '#efe7cf' : '#13242a'; roundRect(bx,by,tw,bh,11); ctx.fill();
+  ctx.strokeStyle = youW ? '#caa84a' : '#5be0c0'; ctx.lineWidth=1.5; roundRect(bx,by,tw,bh,11); ctx.stroke();
+  ctx.fillStyle = youW ? '#2a2208' : '#dffff6'; ctx.textAlign='center'; ctx.fillText(txt, bx+tw/2, by+bh/2);
+  // turn / thinking
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='bold 12px Trebuchet MS';
+  var status = G.over ? '' : (G.thinking ? '… ' + G.rung.name.split(' ')[0] + ' is thinking' : (G.S.turn===G.pc ? 'Your move' : ''));
+  ctx.fillStyle = '#cdbcf2'; ctx.fillText(status, W-14, 46);
+}
+function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function loop(){ render(); raf = requestAnimationFrame(loop); }
+
+// ---- screens ----
+function hideOverlays(){ ['menu-screen','ladder-screen','over-screen'].forEach(function(id){ document.getElementById(id).classList.add('hidden'); }); document.getElementById('promo-screen').classList.add('hidden'); }
+function showMenu(){ G=null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('resign-btn').classList.add('hidden'); hideOverlays(); document.getElementById('menu-screen').classList.remove('hidden'); }
+function showLadder(){
+  if (G){ G.over = true; }
+  document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('resign-btn').classList.add('hidden');
+  hideOverlays();
+  var prog = loadProg(), host = document.getElementById('rungs'); host.innerHTML = '';
+  LADDER.forEach(function(rung, i){
+    var unlocked = i <= prog.unlocked, beaten = !!prog.beaten[i], pc = colorForRung(i);
+    var el = document.createElement('div');
+    el.className = 'rung' + (unlocked?'':' locked') + (beaten?' beaten':'');
+    el.innerHTML = '<div class="rg" style="color:'+rung.accent+'">'+rung.glyph+'</div>' +
+      '<div class="rb"><div class="rn">'+(i+1)+'. '+rung.name+'</div><div class="rd">'+rung.blurb+'</div></div>' +
+      '<div class="rs" style="color:'+(beaten?'#6bffb8':unlocked?'#F5C518':'#7a6aae')+'">'+(beaten?'✓ beaten':unlocked?('play '+(pc==='w'?'♔':'♚')):'🔒')+'</div>';
+    if (unlocked) el.onclick = function(){ startRung(i); };
+    host.appendChild(el);
+  });
+  document.getElementById('ladder-screen').classList.remove('hidden');
+}
+
+document.getElementById('play-btn').onclick = showLadder;
+document.getElementById('ladder-back').onclick = showMenu;
+document.getElementById('menu-btn').onclick = showLadder;
+document.getElementById('resign-btn').onclick = function(){ if (G && !G.over) endGame('resign'); };
+
+// restore highest unlocked rung from the profile, if further than local
+if (window.PJCC && PJCC.ready) PJCC.ready.then(function(){
+  try { PJCC.myStats && PJCC.myStats().then(function(st){
+    var row = (st||[]).find(function(s){ return s.game==='the-gauntlet'; });
+    if (row && row.data && typeof row.data.cleared === 'number'){
+      var prog = loadProg(); if (row.data.cleared > prog.unlocked){ prog.unlocked = Math.min(LADDER.length, row.data.cleared); saveProg(prog); }
+    }
+  }); } catch(e){}
+});
+
+showMenu();
+loop();
+</script>
+</body>
+</html>
