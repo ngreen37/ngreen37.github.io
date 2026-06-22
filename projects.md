@@ -266,9 +266,9 @@ jukebox: true
       <span class="project-status project-status-soon">Coming Soon</span>
       <h2 class="project-title">Podcast</h2>
     </div>
-    <p class="project-desc">A podcast going behind the scenes of building McPuppy Studios — animation, chess, creative process, and making things from scratch.</p>
+    <p class="project-desc">A podcast going behind the scenes of building McPuppy Studios — animation, chess, creative process, and making things from scratch. <strong>Coming Winter 2026.</strong></p>
     <div class="project-links">
-      <a href="/podcast/" class="project-link">More Info &rarr;</a>
+      <a href="/blog/" class="project-link">More Info &rarr;</a>
     </div>
   </div>
 

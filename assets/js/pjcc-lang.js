@@ -10,27 +10,31 @@
 (function () {
   var DICT = {
     'PJCC': 'PJCC',
+    'Games': 'ゲーム',
+    'Daily Dispatch': 'デイリー速報',
     'Characters': 'キャラクター',
     'Locations': 'ロケーション',
-    'Evolution Log': '進化の記録',
-    'World Map': '世界地図',
-    'Projects': 'プロジェクト',
-    'Games': 'ゲーム',
-    'Leaderboard': 'ランキング',
-    'Leaderboards': 'ランキング',
-    'Dossier': 'ファイル',
+    'Academy': 'アカデミー',
+    'The Pilot': 'パイロット版',
+    "Writers' Room": '脚本室',
     'Your Dossier': 'あなたのファイル',
+    'Dossier': 'ファイル',
     'Operative Dossier': '機密ファイル',
-    'Chess Lessons': 'チェス教室',
-    'In-Person Chess Lessons': '対面チェス教室',
-    'Podcast': 'ポッドキャスト',
+    'Command Center': '司令部',
+    'Projects': 'プロジェクト',
     'Blog': 'ブログ',
-    'Soundtrack': 'サントラ',
     'Mailing List': 'メール登録',
+    'Press Pass': 'プレスパス',
+    'For Educators': '教育者向け',
     'About / Contact': '概要・連絡',
     'Contact': '連絡先',
+    'Leaderboard': 'ランキング',
+    'Leaderboards': 'ランキング',
+    'McPuppy Studios': 'マクパピー',
     'Home': 'ホーム',
-    'McPuppy Studios': 'マクパピー'
+    'Patreon': 'Patreon',
+    'Coming Soon': '近日公開',
+    'Podcast & Blog': 'ポッドキャスト・ブログ'
   };
   var SEL = '.page-link, .about-contact-btn, .nav-group-label';
   var KEY = 'pjcc.lang';

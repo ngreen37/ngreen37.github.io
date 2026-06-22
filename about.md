@@ -114,4 +114,14 @@ jukebox: true
     </div>
   </div>
 
+  <div class="about-block">
+    <div class="about-block-header">
+      <h2 class="about-block-name">Chess Lessons</h2>
+    </div>
+    <div class="about-block-bio">
+      <p>I teach chess for <strong>beginners and intermediate players of any age</strong> — whether you're learning how the pieces move or sharpening a game you already love. Lessons run <strong>in person and online</strong>, tailored to your schedule and goals.</p>
+      <p>For availability and pricing, <a href="mailto:nathgreen37@gmail.com">email me</a> — I'd love to hear from you. Between lessons, the free <a href="{{ '/academy/' | relative_url }}">Checker Town Chess Academy</a> is a self-paced way to practice openings, tactics, and board vision through the games. You can also see a <a href="{{ '/chess-lessons/' | relative_url }}">live game feed &amp; daily puzzle →</a>.</p>
+    </div>
+  </div>
+
 </section>

@@ -413,6 +413,58 @@ transaction, **"Adopt a shot"** micro-patronage (back one animatic shot, get cre
 
 ---
 
+## Avenue 12 — 日本語 / Japanese Learning *(new lane)*
+
+A learn-Japanese wing, grown out of what's already in the world: Shogi Island, the bilingual
+home ticker, and the Construction Co. transmissions. **Designed for all ages** — playful mnemonics
+and big friendly drills on the surface, with optional depth (JLPT, pitch-accent) so it scales from
+a curious kid to an adult learner. Mirrors the arcade's proven scaffolding (daily seeds, streaks,
+belts, global boards, a guide companion).
+
+1. **Kana Dojo** — hiragana/katakana drills with spaced repetition (SRS) and a Shogi-Island sensei.
+2. **Kanji of the Day** — one kanji daily: stroke-order animation + a PJCC-flavored story mnemonic.
+3. **Stroke-order trace** — finger/mouse-trace kana & kanji on a canvas; graded on order and shape.
+4. **Shogi-piece kanji first** — 歩 香 桂 銀 金 角 飛 王 as the gateway set (straight off Shogi Island).
+5. **Romaji → kana ramp** — start with romaji crutches that fade as you improve (the Shogi guide's "decode as you go").
+6. **Decode-the-transmission** — translate the Construction Co. intercepts to crack lore fragments (ARG tie, Avenue 2).
+7. **Bilingual ticker reader** — the home ticker's JP lines become tap-to-reveal furigana + meaning drills.
+8. **Site-wide furigana toggle** — optional ruby furigana over any Japanese on the site for learners.
+9. **Counting & counters kata** — numbers, dates, and counters (〜枚 for boards, 〜手 for moves).
+10. **Chess/shogi vocab deck** — 王手 (check), 詰み (mate), 成る (promote), 持ち駒 (pieces in hand)…
+11. **Listening booth** — native-ish TTS speaks words/phrases; an echo-back mode (Web Speech).
+12. **Speak-it** — say the word; graded by speech recognition for an eyes-free drill.
+13. **Particle puzzles** — drag は / が / を / に into the right slot in a sentence.
+14. **Sentence-builder** — assemble simple sentences from word tiles; Princess narrates the result.
+15. **JLPT N5 track** — a structured beginner path (kana → N5 kanji/vocab/grammar) with Academy-style belts.
+16. **Daily seeded lesson** — one shared lesson/quiz a day; global accuracy board (like the other dailies).
+17. **Phrasebook for the Journey** — travel phrases themed to "crossing to Shogi Island" (greetings, directions, food).
+18. **Catch-the-Lion JP mode** — the 3×4 shogi game labels pieces in kanji + furigana, teaching as you play.
+19. **Radical lab** — learn radicals, then a "build-a-kanji" mini-game that combines them.
+20. **PJCC-flavored mnemonic cards** — every kana/kanji memory hook uses a character or location.
+21. **Memory match** — concentration: kana↔sound and kanji↔meaning pairs.
+22. **Kana typing trainer** — romaji→kana IME basics; learn to actually type Japanese.
+23. **Story mode: the Shogi Island arc** — a short bilingual visual-novel slice; choices teach phrases.
+24. **Boss-gate quizzes** — region-gate bosses (à la Fork) that test the current lesson set.
+25. **Calligraphy gallery** — earn brush-art "relic" unlocks for streaks (cosmetic, like Blindfold relics).
+26. **Pitch-accent ear trainer** — distinguish accent patterns (advanced, opt-in).
+27. **Seasons & dates** — culturally-flavored, tied to the Story-Arc chapters' moods.
+28. **"Sensei" companion** — the Shogi Island guide gives daily encouragement + gentle corrections (Princess-companion tie, Avenue 6).
+29. **Language passport** — a stamped passport in the dossier; ranks/belts as you advance (Command Center tie).
+30. **Community translation board** — learners submit translations of lore snippets, upvoted & curated (UGC, Avenue 7).
+
+---
+
+## 🅿️ Pulled from the live site (parked here)
+
+Removed from the live surface for a cleaner, less-is-more site — kept here so the work/idea isn't lost:
+- **Games-page search box** — re-add if the library outgrows a single screen.
+- **Games-page sort dropdown** (Featured / A–Z / Newest / My best) — same trigger.
+- **De-linked nav pages** (revisit when there's real content): World Map, Sound, Soundtrack, Press Kit,
+  Lore Codex, Evolution Log. **Podcast** page removed (a "Podcast Coming Winter 2026" teaser sits on the
+  homepage). **Chess Lessons** folded into About/Contact; **Leaderboards** folded into the Games page.
+
+---
+
 ## 🛠️ The long game (bigger bets, mostly not web code)
 - **The Godot roguelite** — a Binding-of-Isaac-style game from the Blender assets (rigged Princess,
   chess pieces, the battle-room). Start with ONE playable room exported to HTML5, embedded on the

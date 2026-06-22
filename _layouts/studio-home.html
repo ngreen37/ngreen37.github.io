@@ -38,8 +38,9 @@
       <a href="{{ '/classified/' | relative_url }}" class="drift-piece" aria-label="???">✦</a>
     </div>
 
-    <!-- About / Contact pinned top-right -->
-    <a href="{{ '/about/' | relative_url }}" class="studio-corner-about">About / Contact</a>
+    <!-- About / Contact + language toggle pinned top-right -->
+    <a href="{{ '/about/' | relative_url }}" class="studio-corner-about" data-jp="概要・連絡">About / Contact</a>
+    <button class="studio-corner-lang" id="lang-toggle" type="button" aria-label="Toggle language">日本語</button>
 
     <!-- Logo pinned top-left -->
     <div class="studio-corner-logo">
@@ -66,23 +67,23 @@
       <div class="studio-quad-grid">
 
         <a href="{{ '/pjcc/' | relative_url }}" class="studio-quad">
-          <span class="studio-quad-title">PJCC</span>
-          <span class="studio-quad-sub">Princess &amp; the Journey<br>to Chess City</span>
+          <span class="studio-quad-title" data-jp="PJCC">PJCC</span>
+          <span class="studio-quad-sub" data-jp="プリンセスとチェスシティへの旅">Princess &amp; the Journey<br>to Chess City</span>
         </a>
 
         <a href="{{ '/games/' | relative_url }}" class="studio-quad">
-          <span class="studio-quad-title">Games</span>
-          <span class="studio-quad-sub">Play in the PJCC universe</span>
+          <span class="studio-quad-title" data-jp="ゲーム">Games</span>
+          <span class="studio-quad-sub" data-jp="PJCCの世界で遊ぶ">Play in the PJCC universe</span>
         </a>
 
         <a class="studio-quad studio-quad-soon" aria-disabled="true">
-          <span class="studio-quad-title">Patreon</span>
-          <span class="studio-quad-sub">Coming Soon</span>
+          <span class="studio-quad-title" data-jp="Patreon">Patreon</span>
+          <span class="studio-quad-sub" data-jp="近日公開">Coming Soon</span>
         </a>
 
         <a href="{{ '/blog/' | relative_url }}" class="studio-quad">
-          <span class="studio-quad-title">Podcast &amp; Blog</span>
-          <span class="studio-quad-sub">Podcast Coming Winter 2026</span>
+          <span class="studio-quad-title" data-jp="ポッドキャスト・ブログ">Podcast &amp; Blog</span>
+          <span class="studio-quad-sub" data-jp="ポッドキャスト 2026年冬予定">Podcast Coming Winter 2026</span>
         </a>
 
       </div>
@@ -135,6 +136,16 @@
     overlay.addEventListener('click', dismiss);
   })();
   </script>
+
+  <!-- Site-wide language toggle (EN / 日本語) -->
+  <style>
+  .studio-corner-lang { position: fixed; top: 54px; right: 28px; z-index: 3; font-family: 'Poppins', sans-serif;
+    font-size: 11px; font-weight: 700; letter-spacing: 1px; background: rgba(20,12,45,0.55); color: #c9a7ff;
+    border: 1px solid #4a3a86; border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+  .studio-corner-lang:hover { border-color: #F5C518; color: #F5C518; }
+  @media (max-width: 600px){ .studio-corner-lang { top: 44px; right: 14px; font-size: 9px; padding: 4px 9px; } }
+  </style>
+  <script src="{{ '/assets/js/pjcc-lang.js' | relative_url }}"></script>
 
   {% comment %} McPuppy Studios flagship gets the Build Playlist jukebox. Guard the
        fixed studio layout so an expanded player can't reserve/shift bottom space. {% endcomment %}
