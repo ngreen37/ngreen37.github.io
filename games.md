@@ -138,7 +138,7 @@ permalink: /games/
   <a class="game-card" href="{{ '/games/fork-in-the-road/' | relative_url }}">
     <div class="game-card-icon">⚔</div>
     <div class="game-card-body">
-      <h2>Fork in the Road v2.0</h2>
+      <h2>Fork in the Road v2.1</h2>
       <p>Adaptive chess-tactics puzzles — forks, skewers, and mates that sharpen as you solve and ease off if you slip. Region-gate bosses, a daily seeded ladder, and a motif card after every solve so you actually learn the pattern.</p>
       <span class="game-tag">Playable</span>
     </div>
@@ -209,20 +209,20 @@ permalink: /games/
 <style>
 .games-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1.2rem;
-  margin-top: 1.4rem;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.8rem;
+  margin-top: 1rem;
 }
 
 .game-card {
   --accent: #F5C518;          /* per-game accent set by JS below */
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
+  gap: 0.7rem;
   background: #241451;        /* deeper base so the lilac text reads stronger */
   border: 1px solid var(--accent);
-  border-radius: 8px;
-  padding: 1.2rem 1.4rem;
+  border-radius: 7px;
+  padding: 0.7rem 0.85rem;
   text-decoration: none;
   transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
 }
@@ -243,7 +243,7 @@ permalink: /games/
 }
 
 .game-card-icon {
-  font-size: 2rem;
+  font-size: 1.45rem;
   line-height: 1;
   color: var(--accent);
   flex-shrink: 0;
@@ -251,26 +251,26 @@ permalink: /games/
 
 .game-card-body h2 {
   color: #f0e6ff;
-  font-size: 1rem;
+  font-size: 0.82rem;
   font-weight: 700;
-  margin: 0 0 0.3rem;
+  margin: 0 0 0.2rem;
 }
 
 .game-card-body p {
   color: #d3c5f3;            /* brighter lilac — far higher contrast on the dark purple card */
-  font-size: 0.85rem;
-  margin: 0 0 0.6rem;
-  line-height: 1.5;
+  font-size: 0.72rem;
+  margin: 0 0 0.4rem;
+  line-height: 1.4;
 }
 
 .game-tag {
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #F5C518;
   border: 1px solid #F5C518;
   border-radius: 4px;
-  padding: 2px 7px;
+  padding: 1px 6px;
 }
 
 /* Not-yet-ready games: grayish-purple wash, dimmed via colour (not opacity/

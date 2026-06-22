@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Fork in the Road v2.0</title>
+<title>PJCC: Fork in the Road v2.1</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <script src="/assets/js/pjcc-pieces.js"></script>
@@ -314,6 +314,41 @@ function genMoves(b, x, y) {
   return out;
 }
 
+// ---- Full legality + checkmate test ----
+// Lets a puzzle accept ANY move that wins (e.g. a second mate-in-one), not only
+// the one stored solution line. Scoped to single-move (mate) puzzles below.
+function cloneBoard(b){ return b.map(row => row.map(c => c ? { t:c.t, c:c.c } : null)); }
+function findKing(b, col){ for (let y=0;y<8;y++) for (let x=0;x<8;x++){ const p=b[y][x]; if (p && p.t==='K' && p.c===col) return {x,y}; } return null; }
+function isAttacked(b, x, y, by){
+  const pd = by === 'w' ? 1 : -1;                                  // a `by` pawn attacking (x,y) sits one rank toward its own side
+  for (const dx of [-1,1]){ const a=x+dx, c=y+pd; if (a>=0&&a<8&&c>=0&&c<8){ const q=b[c][a]; if (q && q.c===by && q.t==='P') return true; } }
+  for (const [dx,dy] of KOFF){ const a=x+dx, c=y+dy; if (a>=0&&a<8&&c>=0&&c<8){ const q=b[c][a]; if (q && q.c===by && q.t==='N') return true; } }
+  for (let dx=-1;dx<=1;dx++) for (let dy=-1;dy<=1;dy++){ if(!dx&&!dy) continue; const a=x+dx,c=y+dy; if (a>=0&&a<8&&c>=0&&c<8){ const q=b[c][a]; if (q && q.c===by && q.t==='K') return true; } }
+  for (const [dx,dy] of [[-1,-1],[-1,1],[1,-1],[1,1]]){ let a=x+dx,c=y+dy; while(a>=0&&a<8&&c>=0&&c<8){ const q=b[c][a]; if(q){ if(q.c===by&&(q.t==='B'||q.t==='Q')) return true; break; } a+=dx;c+=dy; } }
+  for (const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]){ let a=x+dx,c=y+dy; while(a>=0&&a<8&&c>=0&&c<8){ const q=b[c][a]; if(q){ if(q.c===by&&(q.t==='R'||q.t==='Q')) return true; break; } a+=dx;c+=dy; } }
+  return false;
+}
+function inCheck(b, col){ const k=findKing(b,col); return k ? isAttacked(b,k.x,k.y, col==='w'?'b':'w') : false; }
+function legalMovesFor(b, col){
+  const out=[];
+  for (let y=0;y<8;y++) for (let x=0;x<8;x++){ const p=b[y][x]; if (!p || p.c!==col) continue;
+    genMoves(b, x, y).forEach(m => { const nb=cloneBoard(b); nb[m.y][m.x]=nb[y][x]; nb[y][x]=null; if (!inCheck(nb, col)) out.push({fx:x,fy:y,tx:m.x,ty:m.y}); });
+  }
+  return out;
+}
+function isCheckmate(b, col){ return inCheck(b, col) && legalMovesFor(b, col).length === 0; }
+// Is from->to a legal move for the side to move that also satisfies the puzzle goal?
+// Scoped to mate-in-one: accept ANY move that delivers mate (multi-move tactics keep their exact line).
+function isWinningAltMove(p, b, fx, fy, tx, ty){
+  if (p.cat !== 'mate') return false;
+  const mover = p.side, foe = mover === 'w' ? 'b' : 'w';
+  const pc = b[fy][fx]; if (!pc || pc.c !== mover) return false;
+  if (!genMoves(b, fx, fy).some(m => m.x===tx && m.y===ty)) return false;
+  const nb = cloneBoard(b); nb[ty][tx]=nb[fy][fx]; nb[fy][fx]=null;
+  if (inCheck(nb, mover)) return false;
+  return isCheckmate(nb, foe);
+}
+
 // ---- Audio ----
 let actx=null, master=null, sndOn=true;
 function initAudio(){ if(actx) return; actx=new (window.AudioContext||window.webkitAudioContext)(); master=actx.createGain(); master.gain.value=sndOn?0.85:0; master.connect(actx.destination); }
@@ -433,6 +468,11 @@ function playerCorrect(){
     setTimeout(() => doMove(rep[0], () => { G.step++; G.phase = 'await'; G.wrong = 0; }), 380);
   });
 }
+// The player found a valid alternative — a different winning move than the stored line.
+function playerAltCorrect(fx, fy, tx, ty){
+  sfx('solve'); burst(tx, ty, true);
+  doMove(alg(fx,fy) + alg(tx,ty), () => { G.step = G.p.line.length; puzzleSolved(); });
+}
 function puzzleSolved(){
   G.phase = 'done';
   document.getElementById('hint-btn').classList.add('hidden');
@@ -466,8 +506,7 @@ function showExplain(){
   const mt = MOTIFS[G.p.theme] || { icon:'★', name:G.p.theme, color:C.good, explain:'' };
   explainCard = { icon: mt.icon, color: mt.color || C.good, text: mt.explain, t: 0,
     name: G.p.boss ? (mt.name + ' · ' + G.p.boss.name) : mt.name };
-  clearTimeout(explainTimer);
-  explainTimer = setTimeout(advanceFromExplain, 2800);
+  clearTimeout(explainTimer);   // no auto-advance — the player taps OK when ready, so there's time to read it
 }
 function advanceFromExplain(){ clearTimeout(explainTimer); explainCard = null; nextPuzzle(); }
 function revealSolution(){
@@ -509,6 +548,8 @@ canvas.addEventListener('pointerdown', e => {
   const from = G.selected;
   if (from.x === exp.fx && from.y === exp.fy && c.x === exp.tx && c.y === exp.ty) {
     G.selected = null; G.moves = null; playerCorrect();
+  } else if (G.p.line.length === 1 && isWinningAltMove(G.p, G.board, from.x, from.y, c.x, c.y)) {
+    G.selected = null; G.moves = null; playerAltCorrect(from.x, from.y, c.x, c.y);   // a second, equally-valid mate
   } else {
     G.selected = null; G.moves = null; G.clean = false; G.wrong++;
     sfx('wrong'); shake = 10; vignette = 14;
@@ -570,9 +611,15 @@ function drawHeader(){
   ctx.fillStyle = '#ff8fd0'; roundRect(12, 12, 150, 26, 13); ctx.fill();
   ctx.fillStyle = '#3a0a2a'; ctx.font = 'bold 13px Trebuchet MS'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
   ctx.fillText('⚔ ' + p.theme.toUpperCase(), 22, 26);
-  // side to move + goal
-  ctx.fillStyle = C.ink; ctx.font = 'bold 14px Trebuchet MS'; ctx.textAlign = 'center';
-  ctx.fillText((p.side === 'w' ? 'White' : 'Black') + ' to move — ' + p.goal, W/2, 56);
+  // YOU-ARE badge — make the player's colour unmistakable, with the goal alongside
+  const youW = (p.side === 'w');
+  const youTxt = (youW ? '♔ YOU PLAY WHITE' : '♚ YOU PLAY BLACK') + '  ·  ' + p.goal;
+  ctx.font = 'bold 13px Trebuchet MS'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  const yw = ctx.measureText(youTxt).width + 30, yx = W/2 - yw/2, yy = 45, yh = 23;
+  ctx.fillStyle = youW ? '#efe7cf' : '#13242a'; roundRect(yx, yy, yw, yh, 12); ctx.fill();
+  ctx.strokeStyle = youW ? '#caa84a' : '#5be0c0'; ctx.lineWidth = 2; roundRect(yx, yy, yw, yh, 12); ctx.stroke();
+  ctx.fillStyle = youW ? '#2a2208' : '#dffff6'; ctx.textAlign = 'center';
+  ctx.fillText(youTxt, W/2, yy + yh/2);
   // journey region + step — or the boss banner when a gate puzzle is up
   if (run && run.mode === 'journey'){
     if (p.boss){
@@ -654,8 +701,11 @@ function drawExplain(){
   ctx.fillText(explainCard.icon + '  ' + explainCard.name, x + 14, y + 12);
   ctx.fillStyle = C.ink; ctx.font = '12.5px Trebuchet MS';
   wrapText(explainCard.text, x + 14, y + 38, cardW - 28, 16);
-  ctx.fillStyle = C.muted; ctx.font = '10px Trebuchet MS'; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
-  ctx.fillText('tap to continue ▸', x + cardW - 12, y + cardH - 8);
+  // OK button — the player must tap (anywhere) to continue; gives time to read the lesson
+  const okW = 70, okH = 24, okX = x + cardW - okW - 12, okY = y + cardH - okH - 9;
+  ctx.fillStyle = explainCard.color; roundRect(okX, okY, okW, okH, 12); ctx.fill();
+  ctx.fillStyle = '#07221e'; ctx.font = 'bold 13px Trebuchet MS'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('OK ▸', okX + okW/2, okY + okH/2);
   ctx.globalAlpha = 1;
 }
 function wrapText(text, x, y, maxW, lh){
