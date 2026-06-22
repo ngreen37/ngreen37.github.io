@@ -211,7 +211,7 @@ permalink: /academy/
       <tr><td>2</td><td>How the pieces move</td><td>Auston · Sand Mine / Knight's Tour</td><td>Worksheet 2</td></tr>
       <tr><td>3</td><td>Openings — the first moves</td><td>Argus · The Pirc Protocol</td><td>Play one line</td></tr>
       <tr><td>4</td><td>Tactics — forks &amp; pins</td><td>The Rival · Fork in the Road</td><td>Worksheet 3 · solve 3</td></tr>
-      <tr><td>5</td><td>Strategy — the long game</td><td>Bill · Siege on Chess City</td><td>Play one siege</td></tr>
+      <tr><td>5</td><td>Strategy — the long game</td><td>The Father · Siege on Chess City</td><td>Play one siege</td></tr>
       <tr><td>6</td><td>Vision &amp; the island</td><td>Princess / Crockett · Blindfold · Shogi</td><td>Solve 5 blind</td></tr>
     </table>
     <p class="ws-foot">Belts: a new belt every ~3–4 lessons (see the live ladder on the Academy page). Print each student's certificate at the end — the code on it verifies right on the site.</p>
@@ -289,8 +289,8 @@ window.ACCERT = (function () {
         { t: "The Mind's Eye", d: 'Beat the CEO in a full blind game.', go: 'blindfold-puzzles', done: function(){ return mindsEyeTrophy(); } },
         { t: 'Island cross-training', d: 'Solve 3 problems on Shogi Island.', go: 'shogi-island', done: function(){ return best('shogi-island') >= 3; } }
       ] },
-    { id: 'strategy', who: 'Bill', slug: 'father', ico: '🧰', accent: '#9fe8ff',
-      title: "Bill's Long Game", sub: 'Strategy — plans, structure & the long view',
+    { id: 'strategy', who: 'The Father', slug: 'father', ico: '🧰', accent: '#9fe8ff',
+      title: "The Father's Long Game", sub: 'Strategy — plans, structure & the long view',
       blurb: 'Dad seems scattered, but nobody plans further ahead. Think in plans, not just moves.',
       lessons: [
         { t: 'Hold the line', d: 'Play a round of Siege on Chess City.', go: 'tower-defense', done: function(){ return best('tower-defense') >= 1; } },

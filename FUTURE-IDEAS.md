@@ -107,7 +107,7 @@ preview + share-card generator + `/educators/` B2B page + game-page dispatch cap
 3. **Move-set relics** — items that grant a bishop dash, a knight blink, a pawn-storm.
 4. **Boss = a mate-in-N** — beat the room by solving the problem, not just surviving.
 5. **Biome floors** — Checker Town → the Sea → Shogi Isle → Chess City.
-6. **Bill's toolbox** — consumables themed on Dad's gadgets (yes, the Hyperspeed Box).
+6. **Bill's toolbox** — consumables themed on Bill's own gadgets (yes, the Hyperspeed Box).
 7. **Daily seeded dungeon** — same floor for everyone, global depth board.
 8. **Pacifist route** — clear by puzzle, not combat, for a different reward.
 9. **Escort pawns** — summon-and-protect (reuse Sky Run's king-summon mechanic).
@@ -278,7 +278,7 @@ physical objects) as part of the story, and that players solve **together** over
 
 ## Avenue 3 — The Academy *(all ten shipped in-site/offline — 2026-06-21)*
 1. ✅ **Real-play bridge** — *in-site*: lessons link to their matching game **plus** a free-move **Sandbox Board** on the Academy (no external Lichess — we're sandboxing). A rules-enforcing board/engine is the future upgrade.
-2. ✅ **Strategy track** (Bill · Siege / Knight's Tour / Sky Run / Financial) + **Shogi track** (Oskar · Shogi Island).
+2. ✅ **Strategy track** (The Father · Siege / Knight's Tour / Sky Run / Financial) + **Shogi track** (Oskar · Shogi Island).
 3. ✅ **Printable worksheet packet** — 3 pages (coordinates · piece moves · first tactics).
 4. ✅ **Branching skill-tree** — tiers with prereq locks/unlocks, rendered from progress.
 5. ✅ **Placement exam** — a 6-question diagnostic → an assigned starting track.
@@ -499,8 +499,8 @@ Each line: the seed → the payoff it's building toward. Add to this as we go.*
   Kit). Payoff: arriving at episode one with an audience that already feels like co-producers.
 - **Subject Zero / the crash** → *the origin reveal.* Seeded via the ARG fragments + Lore Codex.
   Payoff: the season-one ending that pays off years of breadcrumbs.
-- **Bill is quietly the most capable person in the room** → *the turn.* Seeded as the scattered,
-  comic dad. Payoff: the origin montage where he can teach Princess *anything* — and the heartbreak
+- **Bill is quietly the most capable person in the room** → *the turn.* Seeded as Princess' easygoing
+  crew partner. Payoff: the origin montage where he can teach Princess *anything* — and the heartbreak
   of leaving her behind.
 - **The big brother who became a father** → *the emotional core.* Seeded on the Main Character &
   [Crockett](/characters/crockett/) pages. Payoff: the audience realizing the whole journey is for
@@ -516,9 +516,11 @@ dialogue that only lands after the origin; a background character who matters la
 ## ✍️ Series canon & story seeds (writing notes — not site features)
 *Captured verbatim-ish from Nate.*
 
-- **Bill (the Dad).** Simple, silly, and absent-minded on the surface — but in *his* lane he's
-  incredibly sharp, and no matter what, he does everything he can for his kids. (The comic-relief
-  dad who turns out to be quietly the most capable person in the room when it counts.)
+- **Bill — Princess' former crew partner** (*not* the main character's dad). Simple, silly, and
+  absent-minded on the surface — but in *his* lane he's incredibly sharp: the gadget guy who can rig
+  or fix anything, and the one who taught Princess to hit the Hyperspeed Box. He has his own family
+  and does everything he can for them. (The comic-relief everyman who turns out to be quietly the
+  most capable person in the room when it counts.)
 - **Season 2 villain — the rival teen.** A teenager in Chess City who works for the
   dog-stealing gang; he's the **contact who returns the stolen dog and collects the ransom**.
   Arc: later he discovers what the gang is *actually* doing, turns on them, and **joins the main

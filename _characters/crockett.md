@@ -23,7 +23,7 @@ Crockett is the main character's younger sister — two years younger, and about
 - Adores her big brother, and isn't shy about telling him when he's wrong
 
 ## Background
-With their father, Bill, kind but scattered and often away with the work crew, it was the main character who quietly stepped up. He learned to braid hair, to pack a lunch, to sit up on the bad nights. Somewhere along the way the older-brother role grew into something more like a father's — and Crockett grew up steady because of it.
+With their father kind but scattered and often away with the work crew, it was the main character who quietly stepped up. He learned to braid hair, to pack a lunch, to sit up on the bad nights. Somewhere along the way the older-brother role grew into something more like a father's — and Crockett grew up steady because of it.
 
 She pays him back in her own currency: she believes in him completely, and she keeps him honest. When the whole world tells the main character to be reasonable, Crockett is the one who says *go*.
 
