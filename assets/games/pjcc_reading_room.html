@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>PJCC: The Reading Room 読書室</title>
+<script src="/assets/js/pjcc-config.js"></script>
+<script src="/assets/js/pjcc-profile.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
+  html, body { height:100%; background:#0d0a1e; font-family:'Trebuchet MS','Segoe UI',sans-serif; color:#efe7ff; overflow:hidden; touch-action:manipulation; }
+  body { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+  .jp { font-family:'Hiragino Mincho ProN','Yu Mincho','YuMincho','Yu Gothic','Meiryo','MS PMincho',serif; }
+
+  #app { position:relative; width:100%; max-width:460px; min-height:560px; background:
+      radial-gradient(circle at 50% 0%, #2a1c4e 0%, #14102e 60%, #0d0a1e 100%);
+    border:3px solid #d24b4b; border-radius:16px; box-shadow:0 0 44px rgba(210,75,75,0.22);
+    padding:16px 16px 20px; overflow:hidden; }
+  /* faint hanko/seal pattern */
+  #app::before { content:""; position:absolute; inset:0; pointer-events:none; opacity:0.05;
+    background-image:radial-gradient(circle at 20% 30%, #d24b4b 0 2px, transparent 3px),
+      radial-gradient(circle at 80% 70%, #f5c518 0 2px, transparent 3px); background-size:60px 60px; }
+
+  /* ---- Kaede header ---- */
+  .kaede-bar { display:flex; align-items:center; gap:11px; margin-bottom:10px; position:relative; z-index:2; }
+  .kaede { width:46px; height:46px; flex-shrink:0; border-radius:50%; background:radial-gradient(circle at 40% 35%,#ff9e57,#d2622a);
+    display:flex; align-items:center; justify-content:center; font-size:26px; border:2px solid #ffd089; box-shadow:0 3px 10px rgba(0,0,0,0.4); }
+  .kaede-say { flex:1; min-width:0; background:rgba(255,255,255,0.96); color:#2a1a55; border-radius:12px; border:2px solid #f5c518;
+    padding:7px 11px; font-size:12.5px; line-height:1.35; position:relative; }
+  .kaede-say .romaji { color:#9a6a2a; font-style:italic; }
+  .kaede-say .en { color:#5a4a7a; }
+  .kaede-say::after { content:""; position:absolute; left:-8px; top:14px; border:6px solid transparent; border-right-color:#f5c518; }
+
+  .screen { position:relative; z-index:2; }
+  .screen.hidden { display:none; }
+  .eyebrow { font-size:11px; letter-spacing:4px; color:#e79a9a; text-transform:uppercase; text-align:center; }
+  .title { text-align:center; font-weight:900; color:#f5c518; letter-spacing:1px; font-size:26px;
+    text-shadow:0 2px 0 #6a4400, 0 0 18px rgba(245,197,24,0.4); margin:2px 0 4px; }
+  .title .jp { display:block; font-size:15px; color:#ffd089; letter-spacing:6px; margin-top:2px; }
+  .sub { text-align:center; color:#cdbcf2; font-size:12.5px; line-height:1.6; margin:8px auto 12px; max-width:360px; }
+  .sub b { color:#ffd740; }
+
+  /* ---- deck list ---- */
+  .decks { display:flex; flex-direction:column; gap:9px; }
+  .deck { display:flex; align-items:center; gap:12px; background:#211842; border:2px solid #4a3a86; border-radius:12px; padding:10px 12px; cursor:pointer; transition:border-color .12s, transform .08s; }
+  .deck:hover { border-color:#f5c518; transform:translateY(-1px); }
+  .deck.sel { border-color:#f5c518; background:#2c2056; }
+  .deck-badge { width:46px; height:46px; flex-shrink:0; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:24px; color:#1a0f3d; font-weight:900; }
+  .deck-info { flex:1; min-width:0; text-align:left; }
+  .deck-name { font-weight:800; color:#fff; font-size:15px; }
+  .deck-sub { font-size:11px; color:#b9a8e6; }
+  .deck-stars { font-size:12px; color:#f5c518; letter-spacing:1px; margin-top:1px; }
+  .deck-due { flex-shrink:0; font-size:10px; font-weight:800; padding:3px 9px; border-radius:999px; min-width:52px; text-align:center; }
+  .due-have { background:#f5c518; color:#1a0f3d; } .due-none { background:#2a1a5a; color:#8a6fd0; }
+
+  .mode-row { display:flex; gap:8px; justify-content:center; margin:12px 0 4px; }
+  .mode-pick { font-family:inherit; font-size:12.5px; font-weight:800; cursor:pointer; background:#211842; color:#b9a8e6;
+    border:2px solid #4a3a86; border-radius:999px; padding:7px 16px; }
+  .mode-pick.sel { border-color:#6bffb8; color:#fff; background:#1e3a32; }
+  .mode-note { text-align:center; font-size:11px; color:#9a8fc0; margin-top:4px; min-height:14px; }
+
+  .row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:12px; }
+  .btn { font-family:inherit; font-weight:800; cursor:pointer; border:none; border-radius:999px; padding:11px 24px; font-size:14px; letter-spacing:.5px;
+    box-shadow:0 4px 0 rgba(0,0,0,0.35); transition:transform .08s, box-shadow .08s; }
+  .btn:active { transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,0.35); }
+  .btn-gold { background:#f5c518; color:#1a0f3d; } .btn-gold:hover { background:#ffd740; }
+  .btn-ghost { background:#211842; color:#cdbcf2; box-shadow:0 4px 0 #120a2e; }
+  .foot { text-align:center; font-size:10.5px; color:#8a7fb8; margin-top:14px; line-height:1.7; }
+  .foot .tap { cursor:pointer; text-decoration:underline; }
+
+  /* ---- study card ---- */
+  .card { background:#f6efe0; border-radius:16px; border:3px solid #d24b4b; box-shadow:0 8px 28px rgba(0,0,0,0.45);
+    min-height:226px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:18px; margin:6px 0 4px; position:relative; }
+  .card-glyph { color:#1b1206; font-size:108px; line-height:1; }
+  .card-prompt { color:#7a3030; font-size:12px; letter-spacing:2px; text-transform:uppercase; margin-top:8px; }
+  .card-back { text-align:center; margin-top:10px; }
+  .card-reading { color:#1b1206; font-size:30px; font-weight:900; }
+  .card-meaning { color:#7a3030; font-size:16px; margin-top:2px; }
+  .card-extra { color:#9a6a4a; font-size:12.5px; margin-top:4px; }
+
+  .grade-row { display:flex; gap:8px; justify-content:center; margin-top:10px; }
+  .grade { flex:1; max-width:120px; font-family:inherit; font-weight:800; cursor:pointer; border:none; border-radius:12px; padding:12px 8px; font-size:13px; color:#1a0f3d; box-shadow:0 4px 0 rgba(0,0,0,0.3); }
+  .grade:active { transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,0.3); }
+  .g-again { background:#ff7a8a; } .g-good { background:#7bd0ff; } .g-easy { background:#6bffb8; }
+  .grade small { display:block; font-weight:600; font-size:10px; opacity:0.8; }
+
+  /* ---- quiz ---- */
+  .choices { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px; }
+  .choice { font-family:inherit; font-weight:800; font-size:16px; cursor:pointer; background:#211842; color:#efe7ff;
+    border:2px solid #4a3a86; border-radius:12px; padding:14px 8px; transition:border-color .1s, background .1s; }
+  .choice:hover { border-color:#f5c518; }
+  .choice:disabled { cursor:default; }
+  .choice.right { border-color:#6bffb8; background:#1e3a2c; color:#cfffe6; }
+  .choice.wrong { border-color:#ff5b8a; background:#3a1320; color:#ffd0dc; }
+
+  .hud { display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#b9a8e6; margin:4px 2px 0; }
+  .hud .score { color:#f5c518; font-weight:900; }
+  .hud .combo { color:#6bffb8; font-weight:800; }
+  .bar { height:6px; background:#211842; border-radius:999px; overflow:hidden; margin:8px 0 2px; }
+  .bar > i { display:block; height:100%; width:0; background:linear-gradient(90deg,#d24b4b,#f5c518); transition:width .25s; }
+
+  /* ---- summary ---- */
+  .sum-grid { display:grid; grid-template-columns:auto auto; gap:6px 20px; justify-content:center; margin:10px 0; }
+  .sum-grid .l { text-align:right; color:#b9a8e6; font-size:13px; }
+  .sum-grid .v { text-align:left; color:#fff; font-weight:800; font-size:15px; }
+  .sum-grid .v.up { color:#6bffb8; }
+  .ghost-line { text-align:center; font-size:12px; color:#9a8fc0; margin-top:4px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="kaede-bar">
+    <div class="kaede jp">🦊</div>
+    <div class="kaede-say" id="kaede-say">
+      <span class="jp">ようこそ、読書室へ。</span>
+      <span class="romaji">Yōkoso.</span> <span class="en">— Welcome.</span>
+    </div>
+  </div>
+
+  <!-- ===== HOME / DECK SELECT ===== -->
+  <div class="screen" id="home">
+    <div class="eyebrow">Kaede's</div>
+    <div class="title">THE READING ROOM<span class="jp">どくしょしつ</span></div>
+    <div class="sub">Learn to read Japanese with <b>Kaede</b> — the <b>kana</b> first, then your first <b>common kanji</b>. Cards come back on an <b>Anki-style schedule</b>: get one right and it returns later; slip and you'll see it sooner.</div>
+    <div class="decks" id="deck-list"></div>
+    <div class="mode-row" id="mode-row">
+      <button class="mode-pick sel" data-mode="review">🔁 Review</button>
+      <button class="mode-pick" data-mode="quiz">⚡ Quiz</button>
+    </div>
+    <div class="mode-note" id="mode-note">Review: see a character, recall it, then grade yourself. This is what teaches you.</div>
+    <div class="row">
+      <button class="btn btn-gold" id="start-btn">START</button>
+      <button class="btn btn-ghost" id="cram-btn">CRAM ALL</button>
+    </div>
+    <div class="foot">
+      Readings use simple romaji. <span class="tap" id="reset-srs">reset progress</span>
+    </div>
+  </div>
+
+  <!-- ===== REVIEW (Anki flip) ===== -->
+  <div class="screen hidden" id="review">
+    <div class="hud"><span id="rv-deck">—</span><span id="rv-left">—</span></div>
+    <div class="bar"><i id="rv-bar"></i></div>
+    <div class="card">
+      <div class="card-glyph jp" id="rv-glyph">あ</div>
+      <div class="card-prompt" id="rv-prompt">what does this read?</div>
+      <div class="card-back hidden" id="rv-back">
+        <div class="card-reading" id="rv-reading"></div>
+        <div class="card-meaning" id="rv-meaning"></div>
+        <div class="card-extra" id="rv-extra"></div>
+      </div>
+    </div>
+    <div id="rv-show-wrap" class="row"><button class="btn btn-gold" id="rv-show">SHOW ANSWER</button></div>
+    <div class="grade-row hidden" id="rv-grades">
+      <button class="grade g-again" data-g="again">Again<small>&lt; 1 min</small></button>
+      <button class="grade g-good"  data-g="good">Good<small>schedule</small></button>
+      <button class="grade g-easy"  data-g="easy">Easy<small>skip ahead</small></button>
+    </div>
+    <div class="row"><button class="btn btn-ghost" id="rv-menu">END</button></div>
+  </div>
+
+  <!-- ===== QUIZ ===== -->
+  <div class="screen hidden" id="quiz">
+    <div class="hud"><span class="score" id="qz-score">0</span><span class="combo" id="qz-combo"></span></div>
+    <div class="bar"><i id="qz-bar"></i></div>
+    <div class="card">
+      <div class="card-glyph jp" id="qz-glyph">あ</div>
+      <div class="card-prompt" id="qz-prompt">tap the reading</div>
+    </div>
+    <div class="choices" id="qz-choices"></div>
+    <div class="row"><button class="btn btn-ghost" id="qz-menu">END</button></div>
+  </div>
+
+  <!-- ===== SUMMARY ===== -->
+  <div class="screen hidden" id="summary">
+    <div class="eyebrow" id="sm-eyebrow">Session complete</div>
+    <div class="title" id="sm-title" style="font-size:22px;">お見事！</div>
+    <div class="sum-grid" id="sm-grid"></div>
+    <div class="ghost-line" id="sm-ghost"></div>
+    <div class="row">
+      <button class="btn btn-gold" id="sm-again">AGAIN</button>
+      <button class="btn btn-ghost" id="sm-menu">DECKS</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+(function () {
+
+  // ======================= DATA =======================
+  // Kana: [glyph, romaji]
+  var HIRA = [
+    ['あ','a'],['い','i'],['う','u'],['え','e'],['お','o'],
+    ['か','ka'],['き','ki'],['く','ku'],['け','ke'],['こ','ko'],
+    ['さ','sa'],['し','shi'],['す','su'],['せ','se'],['そ','so'],
+    ['た','ta'],['ち','chi'],['つ','tsu'],['て','te'],['と','to'],
+    ['な','na'],['に','ni'],['ぬ','nu'],['ね','ne'],['の','no'],
+    ['は','ha'],['ひ','hi'],['ふ','fu'],['へ','he'],['ほ','ho'],
+    ['ま','ma'],['み','mi'],['む','mu'],['め','me'],['も','mo'],
+    ['や','ya'],['ゆ','yu'],['よ','yo'],
+    ['ら','ra'],['り','ri'],['る','ru'],['れ','re'],['ろ','ro'],
+    ['わ','wa'],['を','wo'],['ん','n']
+  ];
+  var KATA = [
+    ['ア','a'],['イ','i'],['ウ','u'],['エ','e'],['オ','o'],
+    ['カ','ka'],['キ','ki'],['ク','ku'],['ケ','ke'],['コ','ko'],
+    ['サ','sa'],['シ','shi'],['ス','su'],['セ','se'],['ソ','so'],
+    ['タ','ta'],['チ','chi'],['ツ','tsu'],['テ','te'],['ト','to'],
+    ['ナ','na'],['ニ','ni'],['ヌ','nu'],['ネ','ne'],['ノ','no'],
+    ['ハ','ha'],['ヒ','hi'],['フ','fu'],['ヘ','he'],['ホ','ho'],
+    ['マ','ma'],['ミ','mi'],['ム','mu'],['メ','me'],['モ','mo'],
+    ['ヤ','ya'],['ユ','yu'],['ヨ','yo'],
+    ['ラ','ra'],['リ','ri'],['ル','ru'],['レ','re'],['ロ','ro'],
+    ['ワ','wa'],['ヲ','wo'],['ン','n']
+  ];
+  // Kanji: [glyph, reading(romaji), meaning] — a common JLPT-N5 starter set
+  var KANJI = [
+    ['一','ichi','one'],['二','ni','two'],['三','san','three'],['四','shi / yon','four'],['五','go','five'],
+    ['六','roku','six'],['七','shichi / nana','seven'],['八','hachi','eight'],['九','kyuu','nine'],['十','juu','ten'],
+    ['百','hyaku','hundred'],['千','sen','thousand'],['円','en','yen / circle'],
+    ['日','nichi / hi','day, sun'],['月','getsu / tsuki','month, moon'],['火','ka','fire'],['水','sui','water'],
+    ['木','moku / ki','tree, wood'],['金','kin','gold, money'],['土','do','earth, soil'],
+    ['人','hito / jin','person'],['大','dai','big'],['小','shou','small'],['中','naka / chuu','middle, inside'],
+    ['山','yama','mountain'],['川','kawa','river'],['田','ta','rice field'],['本','hon','book, origin'],
+    ['上','ue','up, above'],['下','shita','down, below'],['左','hidari','left'],['右','migi','right'],
+    ['口','kuchi','mouth'],['目','me','eye'],['耳','mimi','ear'],['手','te','hand'],['足','ashi','foot, leg'],
+    ['学','gaku','study'],['校','kou','school'],['先','sen','ahead, previous'],['生','sei / nama','life, raw'],
+    ['年','nen / toshi','year'],['時','ji / toki','time, hour'],['今','ima','now'],['国','kuni','country']
+  ];
+
+  var DECKS = [
+    { id:'hira', name:'Hiragana', jp:'ひらがな', sub:'the everyday script', glyph:'あ', color:'#ff8f8f', cards:HIRA, kind:'kana' },
+    { id:'kata', name:'Katakana', jp:'カタカナ', sub:'foreign & loud words', glyph:'ア', color:'#8fc8ff', cards:KATA, kind:'kana' },
+    { id:'kanji', name:'Kanji', jp:'漢字 · N5', sub:'46 common characters', glyph:'本', color:'#f5c518', cards:KANJI, kind:'kanji' }
+  ];
+
+  function deckById(id) { for (var i=0;i<DECKS.length;i++) if (DECKS[i].id===id) return DECKS[i]; return null; }
+  function cardId(deckId, glyph) { return deckId + ':' + glyph; }
+  function glyphOf(card) { return card[0]; }
+  function readingOf(card) { return card[1]; }
+  function meaningOf(card, deck) { return deck.kind==='kanji' ? card[2] : card[1]; }
+  // The "answer" used by Quiz/Anki front->back: kana = romaji, kanji = meaning.
+  function answerOf(card, deck) { return deck.kind==='kanji' ? card[2] : card[1]; }
+
+  // ======================= SRS (Anki-lite Leitner) =======================
+  var SRS_KEY = 'pjcc.reading.srs.v1';
+  var MIN = 60000, HOUR = 3600000, DAY = 86400000;
+  var INTERVAL = { 1: 4*HOUR, 2: 1*DAY, 3: 3*DAY, 4: 7*DAY, 5: 16*DAY };
+  var SRS = loadSRS();
+  function loadSRS() { try { return JSON.parse(localStorage.getItem(SRS_KEY)) || {}; } catch (e) { return {}; } }
+  function saveSRS() { try { localStorage.setItem(SRS_KEY, JSON.stringify(SRS)); } catch (e) {} }
+  function sched(id) { return SRS[id] || { box: 0, due: 0 }; }
+  function isDue(id) { return sched(id).due <= Date.now(); }
+  function grade(id, g) {
+    var s = sched(id), box;
+    if (g === 'again') { SRS[id] = { box: 1, due: Date.now() + MIN }; saveSRS(); return { box:1, promoted:false }; }
+    if (g === 'easy') box = Math.min((s.box || 0) + 2, 5);
+    else box = Math.min((s.box || 0) + 1, 5);              // 'good'
+    var due = Date.now() + INTERVAL[box] * (g === 'easy' ? 1.3 : 1);
+    var promoted = box > (s.box || 0);
+    SRS[id] = { box: box, due: due }; saveSRS();
+    return { box: box, promoted: promoted };
+  }
+  function deckIds(deck) { return deck.cards.map(function (c) { return cardId(deck.id, glyphOf(c)); }); }
+  function deckMastery(deck) { var ids = deckIds(deck), sum = 0; ids.forEach(function (id) { sum += sched(id).box; }); return ids.length ? sum / ids.length : 0; }
+  function deckDue(deck) { return deckIds(deck).filter(isDue).length; }
+
+  // ======================= Kaede speech =======================
+  function say(jp, romaji, en) {
+    var el = document.getElementById('kaede-say');
+    el.innerHTML = '<span class="jp">' + jp + '</span> <span class="romaji">' + romaji + '</span> <span class="en">— ' + en + '</span>';
+  }
+  var PRAISE = [['上手！','Jōzu!','Nicely done!'], ['その調子！','Sono chōshi!','That\'s the way!'], ['お見事！','Omigoto!','Splendid!']];
+  var NUDGE  = [['だいじょうぶ。','Daijōbu.','It\'s okay.'], ['もう一回。','Mō ikkai.','One more time.'], ['よく見て。','Yoku mite.','Look closely.']];
+  function pick(a) { return a[(Math.random() * a.length) | 0]; }
+  function sayPraise() { var p = pick(PRAISE); say(p[0], p[1], p[2]); }
+  function sayNudge()  { var p = pick(NUDGE);  say(p[0], p[1], p[2]); }
+
+  // ======================= tiny audio =======================
+  var actx = null;
+  function go() { try { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); } catch (e) {} }
+  function tone(f, t0, dur, type, vol) {
+    if (!actx) return; var o = actx.createOscillator(), g = actx.createGain();
+    o.connect(g); g.connect(actx.destination); o.type = type || 'sine'; o.frequency.setValueAtTime(f, t0);
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol || 0.25, t0 + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.start(t0); o.stop(t0 + dur + 0.02);
+  }
+  function sfx(k) {
+    if (!actx) return; var t = actx.currentTime;
+    if (k === 'right') { [660, 880].forEach(function (f, i) { tone(f, t + i * 0.05, 0.16, 'triangle', 0.26); }); }
+    else if (k === 'wrong') { tone(170, t, 0.2, 'sawtooth', 0.22); }
+    else if (k === 'done') { [392, 523, 659, 784].forEach(function (f, i) { tone(f, t + i * 0.09, 0.26, 'sine', 0.24); }); }
+    else if (k === 'flip') { tone(330, t, 0.1, 'triangle', 0.2); }
+  }
+
+  // ======================= shuffle =======================
+  function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = (Math.random() * (i + 1)) | 0; var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+
+  // ======================= screens =======================
+  function show(id) { ['home','review','quiz','summary'].forEach(function (s) { document.getElementById(s).classList.toggle('hidden', s !== id); }); }
+
+  var selectedDeck = 'hira', selectedMode = 'review';
+
+  function buildDeckList() {
+    var list = document.getElementById('deck-list'); list.innerHTML = '';
+    DECKS.forEach(function (d) {
+      var due = deckDue(d), m = Math.round(deckMastery(d));
+      var stars = '★'.repeat(m) + '☆'.repeat(5 - m);
+      var el = document.createElement('div');
+      el.className = 'deck' + (d.id === selectedDeck ? ' sel' : '');
+      el.innerHTML =
+        '<div class="deck-badge jp" style="background:' + d.color + '">' + d.glyph + '</div>' +
+        '<div class="deck-info"><div class="deck-name">' + d.name + ' <span class="jp" style="color:#b9a8e6;font-size:12px;">' + d.jp + '</span></div>' +
+        '<div class="deck-sub">' + d.cards.length + ' cards · ' + d.sub + '</div>' +
+        '<div class="deck-stars">' + stars + '</div></div>' +
+        '<div class="deck-due ' + (due ? 'due-have' : 'due-none') + '">' + (due ? due + ' due' : 'rest') + '</div>';
+      el.addEventListener('click', function () { selectedDeck = d.id; buildDeckList(); });
+      list.appendChild(el);
+    });
+  }
+
+  // ======================= REVIEW (Anki) =======================
+  var R = null;
+  function startReview(deck, cram) {
+    var ids = deckIds(deck).slice();
+    var queue;
+    if (cram) { queue = shuffle(ids); }
+    else {
+      queue = ids.filter(isDue);
+      queue.sort(function (a, b) { return sched(a).due - sched(b).due; });
+      // new (unseen) cards first-time get pulled in even if due===0 (they are)
+      if (!queue.length) { allCaughtUp(deck); return; }
+    }
+    R = { deck: deck, cram: !!cram, queue: queue, total: queue.length, done: 0,
+          stats: { seen: 0, again: 0, good: 0, promo: 0 }, shown: false, cur: null };
+    show('review');
+    document.getElementById('rv-deck').textContent = deck.name + (cram ? ' · cram' : ' · review');
+    nextReview();
+  }
+  function cardByIdInDeck(deck, id) {
+    var g = id.split(':')[1];
+    for (var i = 0; i < deck.cards.length; i++) if (glyphOf(deck.cards[i]) === g) return deck.cards[i];
+    return null;
+  }
+  function nextReview() {
+    if (!R.queue.length) { reviewDone(); return; }
+    R.cur = R.queue.shift();
+    R.shown = false;
+    var deck = R.deck, card = cardByIdInDeck(deck, R.cur);
+    document.getElementById('rv-glyph').textContent = glyphOf(card);
+    document.getElementById('rv-prompt').textContent = deck.kind === 'kanji' ? 'what does this mean?' : 'what does this read?';
+    document.getElementById('rv-back').classList.add('hidden');
+    document.getElementById('rv-show-wrap').classList.remove('hidden');
+    document.getElementById('rv-grades').classList.add('hidden');
+    var left = R.queue.length + 1;
+    document.getElementById('rv-left').textContent = left + ' to go';
+    document.getElementById('rv-bar').style.width = (R.done / R.total * 100) + '%';
+  }
+  function revealReview() {
+    if (R.shown) return; R.shown = true; sfx('flip');
+    var deck = R.deck, card = cardByIdInDeck(deck, R.cur);
+    document.getElementById('rv-reading').textContent = readingOf(card);
+    document.getElementById('rv-meaning').textContent = deck.kind === 'kanji' ? meaningOf(card, deck) : (deck.id === 'hira' ? 'hiragana' : 'katakana');
+    document.getElementById('rv-extra').textContent = deck.kind === 'kanji' ? '読み — reading' : '';
+    document.getElementById('rv-back').classList.remove('hidden');
+    document.getElementById('rv-show-wrap').classList.add('hidden');
+    document.getElementById('rv-grades').classList.remove('hidden');
+  }
+  function gradeReview(g) {
+    if (!R.shown) return;
+    R.stats.seen++;
+    if (g === 'again') { R.stats.again++; sayNudge(); }
+    else { R.stats.good++; if (Math.random() < 0.5) sayPraise(); }
+    if (!R.cram) { var r = grade(R.cur, g); if (r.promoted) R.stats.promo++; }
+    if (g === 'again') R.queue.push(R.cur);   // re-drill this session
+    R.done++;
+    nextReview();
+  }
+  function reviewDone() {
+    sfx('done');
+    var s = R.stats;
+    showSummary('review', R.deck, {
+      'Cards seen': s.seen, 'Recalled': s.good, 'Promoted ★': s.promo, 'Stumbled': s.again
+    }, null);
+    if (window.PJCC && PJCC.saveScore) PJCC.saveScore('reading-room', 0, { credits: Math.ceil(s.good / 3), data: { deck: R.deck.id, mode: 'review' } });
+  }
+  function allCaughtUp(deck) {
+    showSummary('caught', deck, {}, null);
+  }
+
+  // ======================= QUIZ =======================
+  var Q = null;
+  function startQuiz(deck) {
+    var n = Math.min(10, deck.cards.length);
+    var pool = shuffle(deck.cards.slice()).slice(0, n);
+    var answers = deck.cards.map(function (c) { return answerOf(c, deck); });
+    Q = { deck: deck, items: pool.map(function (card) {
+        var ans = answerOf(card, deck);
+        var others = shuffle(answers.filter(function (a) { return a !== ans; })).slice(0, 3);
+        return { card: card, answer: ans, choices: shuffle([ans].concat(others)) };
+      }), idx: 0, score: 0, combo: 0, best: 0, correct: 0 };
+    show('quiz');
+    showQuiz();
+  }
+  function showQuiz() {
+    var it = Q.items[Q.idx], deck = Q.deck;
+    document.getElementById('qz-glyph').textContent = glyphOf(it.card);
+    document.getElementById('qz-prompt').textContent = deck.kind === 'kanji' ? 'tap the meaning' : 'tap the reading';
+    document.getElementById('qz-score').textContent = Q.score;
+    document.getElementById('qz-combo').textContent = Q.combo > 1 ? ('combo ×' + Q.combo) : '';
+    document.getElementById('qz-bar').style.width = (Q.idx / Q.items.length * 100) + '%';
+    var box = document.getElementById('qz-choices'); box.innerHTML = '';
+    it.choices.forEach(function (ch) {
+      var b = document.createElement('button');
+      b.className = 'choice'; b.textContent = ch;
+      b.addEventListener('click', function () { answerQuiz(ch, b); });
+      box.appendChild(b);
+    });
+  }
+  function answerQuiz(ch, btn) {
+    var it = Q.items[Q.idx];
+    var btns = Array.prototype.slice.call(document.querySelectorAll('#qz-choices .choice'));
+    btns.forEach(function (b) { b.disabled = true; });
+    if (ch === it.answer) {
+      btn.classList.add('right'); sfx('right');
+      Q.combo++; Q.best = Math.max(Q.best, Q.combo); Q.correct++;
+      Q.score += 10 + (Q.combo - 1) * 2;
+      if (Q.combo >= 3 && Math.random() < 0.5) sayPraise();
+    } else {
+      btn.classList.add('wrong'); sfx('wrong'); Q.combo = 0; sayNudge();
+      btns.forEach(function (b) { if (b.textContent === it.answer) b.classList.add('right'); });
+    }
+    document.getElementById('qz-score').textContent = Q.score;
+    setTimeout(function () {
+      Q.idx++;
+      if (Q.idx < Q.items.length) showQuiz(); else quizDone();
+    }, 760);
+  }
+  function quizDone() {
+    sfx('done');
+    var bonus = Q.best * 5;
+    var total = Q.score + bonus;
+    showSummary('quiz', Q.deck, {
+      'Correct': Q.correct + ' / ' + Q.items.length, 'Best combo': '×' + Q.best, 'Round score': Q.score, 'Streak bonus': bonus
+    }, total);
+    if (window.PJCC && PJCC.saveScore) PJCC.saveScore('reading-room', total, { credits: Math.ceil(total / 30), data: { deck: Q.deck.id, mode: 'quiz' } });
+  }
+
+  // ======================= SUMMARY =======================
+  function showSummary(kind, deck, rows, score) {
+    show('summary');
+    var eyebrow = document.getElementById('sm-eyebrow'), title = document.getElementById('sm-title');
+    if (kind === 'caught') {
+      eyebrow.textContent = deck.name + ' — all caught up';
+      title.innerHTML = '<span class="jp">また あとで</span>';
+      document.getElementById('sm-grid').innerHTML = '<div class="l">Status</div><div class="v up">resting</div>';
+      var nextDue = Math.min.apply(null, deckIds(deck).map(function (id) { return sched(id).due; }));
+      var msg = 'Every card is scheduled. ';
+      if (isFinite(nextDue) && nextDue > Date.now()) { var h = Math.round((nextDue - Date.now()) / HOUR); msg += h < 1 ? 'Next one is due within the hour.' : 'Next review in ~' + h + 'h.'; }
+      document.getElementById('sm-ghost').textContent = msg + ' (Try Cram to drill anyway.)';
+      say('また あとで。', 'Mata atode.', 'See you later.');
+    } else {
+      eyebrow.textContent = (kind === 'quiz' ? 'Quiz' : 'Review') + ' · ' + deck.name;
+      title.innerHTML = '<span class="jp">お疲れさま！</span>';
+      var g = ''; for (var k in rows) g += '<div class="l">' + k + '</div><div class="v' + (/Recalled|Correct|Round|score/.test(k) ? ' up' : '') + '">' + rows[k] + '</div>';
+      document.getElementById('sm-grid').innerHTML = g;
+      var gl = document.getElementById('sm-ghost');
+      if (kind === 'quiz' && window.PJCC && PJCC.vsGhost) {
+        var vg = PJCC.vsGhost('reading-room', score);
+        gl.innerHTML = vg ? (vg.beat ? '👑 You passed Kaede\'s mark of ' + vg.target + '!' : '👻 Kaede\'s mark is ' + vg.target + ' — ' + (-vg.delta) + ' to go.') : '';
+      } else gl.textContent = '';
+      say('お疲れさま。', 'Otsukaresama.', 'Good work.');
+    }
+  }
+
+  // ======================= wiring =======================
+  document.getElementById('mode-row').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-mode]'); if (!b) return;
+    selectedMode = b.dataset.mode;
+    Array.prototype.forEach.call(document.querySelectorAll('#mode-row .mode-pick'), function (p) { p.classList.toggle('sel', p === b); });
+    document.getElementById('mode-note').textContent = selectedMode === 'review'
+      ? 'Review: see a character, recall it, then grade yourself. This is what teaches you.'
+      : 'Quiz: pick the reading against the clock — combos score big. Posts to the leaderboard.';
+  });
+  function startSelected(cram) {
+    go(); var deck = deckById(selectedDeck);
+    if (selectedMode === 'quiz') startQuiz(deck); else startReview(deck, cram);
+  }
+  document.getElementById('start-btn').addEventListener('click', function () { startSelected(false); });
+  document.getElementById('cram-btn').addEventListener('click', function () { go(); startReview(deckById(selectedDeck), true); });
+  document.getElementById('rv-show').addEventListener('click', revealReview);
+  document.getElementById('rv-grades').addEventListener('click', function (e) { var b = e.target.closest('[data-g]'); if (b) gradeReview(b.dataset.g); });
+  document.getElementById('rv-menu').addEventListener('click', goHome);
+  document.getElementById('qz-menu').addEventListener('click', goHome);
+  document.getElementById('sm-menu').addEventListener('click', goHome);
+  document.getElementById('sm-again').addEventListener('click', function () { startSelected(false); });
+  document.getElementById('reset-srs').addEventListener('click', function () {
+    SRS = {}; saveSRS(); buildDeckList(); say('リセットしたよ。', 'Risetto shita yo.', 'Progress reset.');
+  });
+
+  function goHome() { buildDeckList(); show('home'); say('ようこそ。', 'Yōkoso.', 'Welcome back.'); }
+
+  // boot
+  buildDeckList();
+  show('home');
+})();
+</script>
+</body>
+</html>

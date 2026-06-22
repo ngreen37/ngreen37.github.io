@@ -105,6 +105,10 @@ title, and a short cryptic line — the page intentionally says less. {% endcomm
       <div class="game-card-icon">将</div>
       <div class="game-card-body"><h2>Shogi Island</h2><p>Foreign rules. Familiar war.</p></div>
     </a>
+    <a class="game-card" href="{{ '/games/reading-room/' | relative_url }}">
+      <div class="game-card-icon">あ</div>
+      <div class="game-card-body"><h2>The Reading Room</h2><p>Learn to read, one mark at a time.</p></div>
+    </a>
     <a class="game-card" href="{{ '/games/clearance-delta/' | relative_url }}">
       <div class="game-card-icon">Δ</div>
       <div class="game-card-body"><h2>Clearance: DELTA</h2><p>Answer, or stay outside.</p></div>
@@ -353,7 +357,8 @@ title, and a short cryptic line — the page intentionally says less. {% endcomm
     'notation-run': '#F5C518', 'pirc-protocol': '#caa24a', 'fork-in-the-road': '#5be0c0',
     'sand-mine-depths': '#e0b25a', 'clearance-delta': '#ff9fb0',
     'shogi-island': '#d9a441', 'tower-defense': '#ff8fd0', 'blindfold-puzzles': '#c9a7ff',
-    'dungeon': '#ff8fd0', 'space-run': '#8fb8ff', 'sky-run': '#7fc8ff', 'the-gauntlet': '#F5C518'
+    'dungeon': '#ff8fd0', 'space-run': '#8fb8ff', 'sky-run': '#7fc8ff', 'the-gauntlet': '#F5C518',
+    'reading-room': '#ff6b6b'
   };
   function keyOf(href) { var m = (href || '').match(/\/games\/([^\/]+)\/?/); return m ? m[1] : ''; }
   var cards = document.querySelectorAll('.games-grid .game-card');
@@ -387,7 +392,8 @@ title, and a short cryptic line — the page intentionally says less. {% endcomm
     'clearance-delta': ['clearance-delta','score'],
     'shogi-island': ['shogi-island','solved'], 'tower-defense': ['tower-defense','score'],
     'blindfold-puzzles': ['blindfold','solved'], 'sky-run': ['sky-run','score'],
-    'the-gauntlet': ['the-gauntlet','cleared'], 'dungeon': ['dungeon','floors']
+    'the-gauntlet': ['the-gauntlet','cleared'], 'dungeon': ['dungeon','floors'],
+    'reading-room': ['reading-room','score']
   };
   function scoreInfo(card) {
     var href = card.getAttribute('href') || '';
@@ -433,13 +439,14 @@ title, and a short cryptic line — the page intentionally says less. {% endcomm
     'blindfold-puzzles': { date: '2026-06-20', note: 'v2.1 — Speed-Vision, Describe-only, Daily; Mind’s Eye tiers, blitz clock, replay.' },
     'fork-in-the-road':  { date: '2026-06-21', note: 'v2.1 — accepts any mate-in-one, OK-to-continue, clearer side-to-move.' },
     'sky-run':           { date: '2026-06-15', note: 'v1.0 — new chess-Bloons sky shooter.' },
-    'dungeon':           { date: '2026-06-22', note: 'v0.1 — chess-tactics roguelite: piece-rule enemies, threat-reading, stacking move-relics, biome floors. The 2D proving ground for the Godot build.' }
+    'dungeon':           { date: '2026-06-22', note: 'v0.1 — chess-tactics roguelite: piece-rule enemies, threat-reading, stacking move-relics, biome floors. The 2D proving ground for the Godot build.' },
+    'reading-room':      { date: '2026-06-22', note: 'New — learn to read Japanese with Kaede: an Anki-style trainer for kana + common kanji, with a combo Quiz mode.' }
   };
   function daysSince(d) { var t = Date.parse(d + 'T00:00:00'); return isNaN(t) ? 9e9 : (Date.now() - t) / 86400000; }
   var PREVIEW = { 'notation-run':['♫','♪','♬'], 'pirc-protocol':['♚','♟','♛'], 'fork-in-the-road':['♞','⚔','♝'],
     'sand-mine-depths':['⛏','💎','♘'], 'clearance-delta':['Δ','✦','▲'], 'shogi-island':['将','歩','王'],
     'tower-defense':['🏰','♜','❄'], 'blindfold-puzzles':['◻','♟','👁'], 'sky-run':['♞','✦','♛'], 'the-gauntlet':['♛','♟','♚'],
-    'dungeon':['♟','♞','▟'] };
+    'dungeon':['♟','♞','▟'], 'reading-room':['あ','本','ア'] };
 
   // games that have a date-seeded "daily" mode, with how to tell if it's done today
   function todayS() { return (window.PJCC && PJCC.dayStamp) ? PJCC.dayStamp() : new Date().toISOString().slice(0,10); }
@@ -553,6 +560,7 @@ title, and a short cryptic line — the page intentionally says less. {% endcomm
     'sand-mine-depths': { label: 'The Father',   href: '/characters/father/' },
     'clearance-delta':  { label: 'The Narrator', href: '/characters/narrator/' },
     'shogi-island':     { label: 'Shogi Island', href: '/locations/shogi-island/' },
+    'reading-room':     { label: 'Kaede',        href: '/characters/kaede/' },
     'tower-defense':    { label: 'Chess City',   href: '/locations/chess-city/' },
     'blindfold-puzzles':{ label: 'Princess',     href: '/characters/princess/' },
     'dungeon':          { label: 'Princess',     href: '/characters/princess/' },

@@ -509,7 +509,16 @@ and big friendly drills on the surface, with optional depth (JLPT, pitch-accent)
 a curious kid to an adult learner. Mirrors the arcade's proven scaffolding (daily seeds, streaks,
 belts, global boards, a guide companion).
 
-1. **Kana Dojo** — hiragana/katakana drills with spaced repetition (SRS) and a Shogi-Island sensei.
+> **✅ Engine shipped (2026-06-22) — [The Reading Room](/games/reading-room/)** (`assets/games/pjcc_reading_room.html`,
+> score key `reading-room`). The lane's foundation: an **Anki-style SRS** (Leitner boxes + due
+> scheduling, saved per device) covering **hiragana, katakana, and 46 common N5 kanji**, with two
+> modes — **Review** (flip + self-grade Again/Good/Easy, which drives the schedule) and **Quiz**
+> (combo-scored multiple choice, posts to the leaderboard). Its guide-companion is a **new
+> character: [Kaede](/characters/kaede/)** (`_characters/kaede.md`), a fox from Shogi Island who
+> settled in **Checker Town** and runs the Reading Room (読書室), speaking Japanese in-game. This
+> realizes #1 (Kana Dojo) and seeds #4/#5/#15. The ideas below remain the growth path.
+
+1. ✅ **Kana Dojo** (in The Reading Room) — hiragana/katakana drills with spaced repetition (SRS) and a guide. Now taught by Kaede in Checker Town.
 2. **Kanji of the Day** — one kanji daily: stroke-order animation + a PJCC-flavored story mnemonic.
 3. **Stroke-order trace** — finger/mouse-trace kana & kanji on a canvas; graded on order and shape.
 4. **Shogi-piece kanji first** — 歩 香 桂 銀 金 角 飛 王 as the gateway set (straight off Shogi Island).
