@@ -96,21 +96,11 @@ jukebox: true
 
   <div class="about-block">
     <div class="about-block-header">
-      <h2 class="about-block-name">The Creator</h2>
+      <h2 class="about-block-name">The Operator</h2>
     </div>
     <div class="about-block-bio">
-      <h3>Career Highlights</h3>
-      <ul>
-        <li>Built a powerful mortgage calculator — a tool that brought real clarity to a complicated process</li>
-        <li>Automated his "dream job" out of creative boredom, then wondered where coding and mathematics can take them</li>
-        <li>Teaching chess — the current chapter, and the one that inspired this whole project</li>
-      </ul>
-      <h3>Other Hobbies</h3>
-      <ul>
-        <li>Hockey</li>
-        <li>Attending concerts and listening to music</li>
-        <li>Off-and-on endurance running</li>
-      </ul>
+      <p>There's one person behind the curtain in Checker Town. For now, they'd rather let the work do the talking — so the name stays in the margins, and the story stays the point.</p>
+      <p>That said, the door is real and it's answered. For genuine business — collaborations, licensing, press, school programs, or commissions — reach out any time at <a href="mailto:nathgreen37@gmail.com">nathgreen37@gmail.com</a>. You'll get a real reply from a real person.</p>
     </div>
   </div>
 

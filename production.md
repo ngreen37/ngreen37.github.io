@@ -10,6 +10,23 @@ permalink: /production/
   <p class="pr-sub">An animated series, <em>in production</em>. Most studios hide the pipeline until the pilot is done — we're doing it in the open. Watch the reel below, vote on shots, track every bar, and help cast the show. The act of building it <b>is</b> the show, until the show exists.</p>
 </div>
 
+<!-- ===== WRITERS' ROOM (lives under The Pilot) ===== -->
+<a class="pr-wr-cta" href="{{ '/writers-room/' | relative_url }}">
+  <span class="pr-wr-ico">✍</span>
+  <span class="pr-wr-body"><b>The Writers' Room</b><small>Author the show with us — story-board your own tale with the pros' structures (Harmon's Story Circle, Parker's but/therefore), preview it as a reel, and publish a shareable link.</small></span>
+  <span class="pr-wr-go">Open →</span>
+</a>
+<style>
+.pr-wr-cta { display:flex; align-items:center; gap:14px; text-decoration:none; margin:0 0 1.4rem;
+  background:linear-gradient(135deg,#241452,#34206f); border:1px solid #ff8fd0; border-radius:14px; padding:14px 18px;
+  box-shadow:0 0 24px -10px #ff8fd0; transition:transform .12s, box-shadow .12s; }
+.pr-wr-cta:hover { transform:translateY(-2px); box-shadow:0 6px 28px -8px #ff8fd0; }
+.pr-wr-ico { font-size:2rem; color:#ff8fd0; flex-shrink:0; }
+.pr-wr-body { flex:1; min-width:0; } .pr-wr-body b { color:#fff; display:block; font-size:1.05rem; }
+.pr-wr-body small { color:#c9b8ee; font-size:0.84rem; line-height:1.4; }
+.pr-wr-go { flex-shrink:0; background:#ff8fd0; color:#3a0a2a; font-weight:800; border-radius:999px; padding:9px 16px; white-space:nowrap; }
+</style>
+
 <!-- ===== THE PILOT ANIMATIC ===== -->
 <h2 class="pr-h2">◈ The Pilot Animatic</h2>
 <p class="pr-note">Here's the pilot — <b>"Fell From the Sky"</b> — as a scene-by-scene storyboard reel with scratch VO and a temp score. <span class="pr-muted">Hit play to let it run, or step through shot by shot. Each frame plays a character's leitmotif as its temp score — and you can leave a note on any shot.</span></p>
