@@ -113,6 +113,92 @@ preview + share-card generator + `/educators/` B2B page + game-page dispatch cap
 9. **Escort pawns** — summon-and-protect (reuse Sky Run's king-summon mechanic).
 10. **Risk altars** — take a curse for loot; the deepest hide ARG fragments.
 
+> **The rules are already proven.** The web prototype at `/games/dungeon/`
+> (`assets/games/pjcc_princess_dungeon.html`) is the playable spec: grid rooms, chess-piece enemies
+> that move by their own rules, the red "threatened-square" telegraph, stacking move-relics
+> (Bishop Dash / Rook Rush / Knight's Blink), biome floors (Checker Town → Sea → Shogi Isle →
+> Chess City), and hearts. The Godot build is the **same game in 3D** — reuse the logic, add the spectacle.
+
+## 🎮 Godot project — step-by-step build plan
+*Goal: turn the 2D prototype into a 3D Binding-of-Isaac-style crawler from the Blender assets, then
+export ONE room to the web and embed it on the Games page wired to the same profile/leaderboard —
+then grow it. Engine: **Godot 4.x** (free, open-source). Assets: **Blender**. Don't build all of this
+at once; each phase ends in something runnable.*
+
+**Plain-language terms:** a *scene* = a reusable game object saved to a file (a room, an enemy, the
+HUD). A *node* = one part of a scene (a mesh, a light, a script). *GridMap* = Godot's tool for
+snapping 3D tiles to a grid — perfect for a chessboard floor. *glTF (`.glb`)* = the file format you
+export from Blender and import into Godot. *Tween* = a short animation between two states (a piece
+sliding one square). *HTML5/Web export* = Godot packaging the game to run in a browser, like the
+other games here.
+
+### Phase 0 — Setup & pipeline (prove the toolchain end-to-end)
+- Install **Godot 4.x** (the standard build; you don't need C#/.NET — use GDScript).
+- Make a new project; put it in its **own git repo** (separate from this site repo).
+- In Blender, export a single test asset (even a cube) to **`.glb`**, import it into Godot, confirm it
+  shows in a 3D scene. **Done when:** a Blender object renders in a running Godot window.
+- Decide the grid: reuse the prototype's model — an **N×N board** (start 7×7), one piece per tile,
+  rows numbered from the far side (so the math matches `pjcc_princess_dungeon.html`).
+
+### Phase 1 — One room, grey-box (the core loop, no art yet)
+- Build a `Room` scene: a flat **GridMap** (or just tiled `MeshInstance3D` plates) for the board, a
+  fixed top-down/3-4 angled camera, and a `Stairs` marker tile.
+- Build a `Hero` scene (a capsule for now) that moves **one tile per turn** (King step). Click/tap a
+  tile to move; tween the slide over ~0.15s — mirror the prototype's feel.
+- Add a **TurnManager**: player acts → enemies act → redraw. **Done when:** you can walk a capsule
+  around the board, one square at a time, and step onto the Stairs to "win" the room (print to console).
+
+### Phase 2 — Bring in the Blender assets (the look)
+- Model/rig in Blender: **Princess**, and the chess-piece enemies (pawn/knight/bishop/rook/queen/king).
+  Keep them low-ish poly; export each as its own `.glb`.
+- Swap the grey-box hero/enemies for the real meshes. Add a simple **idle + a "hop/attack" animation**
+  per piece (even a squash-stretch is enough to read).
+- Theme the board material per biome. **Done when:** the room looks like PJCC, not a prototype.
+
+### Phase 3 — Enemies as chess pieces (port the proven rules)
+- Port the prototype's movement/attack logic to GDScript **directly** — it's already written and
+  unit-tested: pawn diagonals, knight L, slider rays that stop at the first blocker, King step.
+- Re-create the **threat telegraph**: highlight (glow/decal) every square an enemy attacks, so the
+  player reads danger before moving — this is the whole game's tactical hook.
+- Enemy AI: capture the hero if able, else step to the square nearest the hero (same as the prototype).
+- Add **hearts**, capture-to-defeat, and "hit → reset the room, lose a heart." **Done when:** a room
+  full of pieces plays exactly like the 2D version, in 3D.
+
+### Phase 4 — Relics & the run (the roguelite layer)
+- Add **move-set relics** that modify the hero's reachable set: Bishop Dash (+1 diagonal range), Rook
+  Rush (+1 straight range), Knight's Blink (gain the leap), Stone Skin (+1 heart). They **stack**.
+- Between rooms, show a **3-relic choice** screen. Track run state (depth, hearts, essence, relics).
+- **Done when:** clearing a room offers a relic and the hero visibly gains new moves.
+
+### Phase 5 — Floors & biomes (procedural depth)
+- Procedurally place enemies per floor with a **seed** (so a Daily Dungeon is possible later). Scale
+  count/piece-mix with depth, exactly like `enemyPoolFor()` in the prototype.
+- **Biome floors:** Checker Town → The Sea → Shogi Isle → Chess City (swap board material + enemy mix
+  + ambient). Every 5th floor = a **boss room** (a Queen + escorts), themed as "solve the position."
+- **Done when:** you can descend floor after floor with rising difficulty and changing scenery.
+
+### Phase 6 — Web export + wire it into the site
+- Use Godot's **Web (HTML5)** export preset; produce the `.wasm`/`.js`/`.pck` bundle.
+- Drop the bundle under `assets/games/godot-dungeon/` and point a Jekyll wrapper at it (mirror
+  `games/dungeon/index.html`). Keep the 2D version live too, or replace the embed once the 3D is better.
+- **Profile/leaderboard:** from inside the Godot web build, call out to the page's `PJCC.saveScore('dungeon', floors, {...})`
+  via JavaScriptBridge so 3D runs post to the **same** board as the 2D prototype. **Done when:** a 3D
+  run shows up on `/leaderboards/` under Princess Dungeon.
+
+### Phase 7 — Juice & cutscenes (make it pop)
+- Camera shake on capture, particle "dust" on moves, a satisfying stairs-descend transition, sound.
+- **Blender cutscene intro** (the saved favorite): a short rendered clip as the title/loading screen —
+  Princess entering the dungeon. Play it on first load. *(See the Blender-intros idea above.)*
+- **Done when:** the game *feels* like a finished arcade title, not a tech demo.
+
+### Phase 8 — Ship v1
+- Tune difficulty against the prototype's leaderboard ghost (Nate's mark). Add a win screen for
+  reaching Chess City. Announce it on the dispatch with a Blender trailer.
+
+**Sequencing advice (anti-overscope):** Phases 0-3 are the real risk — if a 3D room plays like the 2D
+prototype, the rest is content. Get **one beautiful, web-exported room** live before building floors,
+relics, or bosses. That single embedded room is the milestone that makes the whole bet real.
+
 ## Checker Financial — *call the market*
 1. **The piece exchange** — trade Checker Town's checker-piece economy, in-lore.
 2. **News-driven swings** — the world-ticker headlines actually move the chart.

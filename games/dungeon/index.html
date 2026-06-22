@@ -1,27 +1,33 @@
 ---
 layout: game
-title: "Princess Dungeon"
-description: "A chessboard dungeon crawler. Clear each room. Reach the exit."
+title: "Princess Dungeon v0.1"
+description: "A chess-tactics roguelite: every enemy is a chess piece that moves by its own rules, every room is a tactic. Read the threatened squares, find the safe path, capture what you can, and reach the stairs. Earn stacking move-relics that build Princess into a hybrid piece. The web prototype for the Godot 3D build."
 permalink: /games/dungeon/
 ---
 
-<div class="game-frame-wrap">
+<div class="game-frame-wrap td-frame">
   <iframe
-    src="{{ '/assets/games/pjcc_dungeon.html' | relative_url }}"
-    title="PJCC Dungeon Crawler"
+    src="{{ '/assets/games/pjcc_princess_dungeon.html' | relative_url }}"
+    title="PJCC Princess Dungeon"
     allowfullscreen
     scrolling="no"
   ></iframe>
 </div>
 
+<style>
+.td-frame { max-width: 480px; }
+.td-frame iframe { height: 600px; }
+@media (max-width: 600px) { .td-frame iframe { height: 560px; } }
+</style>
+
 <div class="game-info">
   <h2>How to Play</h2>
   <ul>
-    <li><strong>Arrow keys</strong> or <strong>WASD</strong> — move Princess</li>
-    <li><strong>Move onto an enemy</strong> to capture it</li>
-    <li>Enemy pieces move by <strong>chess rules</strong> — pawns advance, knights L-shape, bishops diagonal</li>
-    <li><strong>Red squares</strong> show threatened tiles — avoid them</li>
-    <li>Clear all enemies → <strong>EXIT</strong> opens top-right corner</li>
-    <li>Enemy count and piece types scale each floor</li>
+    <li>You move like a <strong>King</strong> — one step in any direction. Tap a <strong>green dot</strong> to move; tap yourself to <strong>wait</strong> a turn.</li>
+    <li>Every enemy is a <strong>chess piece that moves by its own rules</strong>. Squares they attack glow <strong>red</strong> — end your turn on one and you'll be captured, costing a heart.</li>
+    <li>Step onto an enemy to <strong>capture</strong> it. Reach the <strong>stairs ▟</strong> at the top to clear the floor and choose a <strong>relic</strong>.</li>
+    <li>Relics <strong>stack</strong>: Bishop Dash, Rook Rush, and the Knight's Blink turn Princess into a hybrid piece. Go as deep as you can — results post to the <a href="/leaderboards/">leaderboards</a>.</li>
   </ul>
+
+  <p class="game-note">This is the <strong>2D proving ground</strong> for the Godot 3D crawler — the same core (piece-rule enemies, threat-reading, move-set relics, biome floors from Checker Town to Chess City) that the full build will render in three dimensions.</p>
 </div>

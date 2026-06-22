@@ -14,6 +14,7 @@
     var BOARDS = [
       { key: '__overall__',     label: 'Overall',          unit: 'credits' },
       { key: 'the-gauntlet',    label: 'The Gauntlet',     unit: 'cleared' },
+      { key: 'dungeon',         label: 'Princess Dungeon', unit: 'floors'  },
       { key: 'clearance-delta', label: 'Clearance: DELTA', unit: 'score'   },
       { key: 'notation-run',    label: 'Notation Blitz',   unit: 'score'   },
       { key: 'notation-accuracy', label: 'Notation · Timing', unit: 'precision' },

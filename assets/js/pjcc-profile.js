@@ -552,7 +552,8 @@
   var GHOSTS = {
     'clearance-delta': 850, 'notation-run': 1500, 'fork-in-the-road': 18,
     'sand-mine-depths': 140, 'pirc-protocol': 7, 'shogi-island': 40, 'blindfold': 12,
-    'tower-defense': 4200, 'siege-endless': 22, 'sky-run': 9000, 'daily-dispatch': 100
+    'tower-defense': 4200, 'siege-endless': 22, 'sky-run': 9000, 'daily-dispatch': 100,
+    'dungeon': 6
   };
   PJCC.GHOSTS = GHOSTS;
   PJCC.ghostFor = function (game) { return (typeof GHOSTS[game] === 'number') ? GHOSTS[game] : null; };

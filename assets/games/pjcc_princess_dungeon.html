@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>PJCC: Princess Dungeon</title>
+<script src="/assets/js/pjcc-config.js"></script>
+<script src="/assets/js/pjcc-profile.js"></script>
+<script src="/assets/js/pjcc-pieces.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color:transparent; }
+  html, body { background:#0c0820; height:100%; overflow:hidden; font-family:'Trebuchet MS','Segoe UI',sans-serif; touch-action:manipulation; }
+  body { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+  #stage { position:relative; width:100%; max-width:480px; }
+  #cv { display:block; width:100%; border:3px solid #F5C518; border-radius:12px; background:#160c33; box-shadow:0 0 40px rgba(245,197,24,0.18); }
+  .float-btn { position:absolute; z-index:6; font-weight:bold; border:none; border-radius:999px; cursor:pointer;
+    font-family:inherit; box-shadow:0 3px 0 rgba(0,0,0,0.35); transition:transform .08s; }
+  .float-btn:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,0.35); }
+  #menu-btn { top:10px; right:10px; background:#2a1a5e; color:#cdbcf2; padding:5px 12px; font-size:11px; border:1px solid #6b5fa0; }
+  .float-btn.hidden { display:none; }
+
+  .overlay { position:absolute; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:24px; text-align:center; border-radius:12px; background:radial-gradient(circle at 50% 22%, #241452 0%, #0c0820 82%); overflow-y:auto; }
+  .overlay.hidden { display:none; }
+  .eyebrow { font-size:11px; letter-spacing:4px; color:#9a7fd4; text-transform:uppercase; margin-bottom:10px; }
+  .big-title { font-size:30px; font-weight:900; color:#F5C518; letter-spacing:1px; text-shadow:0 3px 0 #6a4400, 0 0 22px rgba(245,197,24,0.45); margin-bottom:6px; }
+  .blurb { font-size:13px; color:#cdbcf2; line-height:1.6; max-width:410px; margin-bottom:14px; }
+  .blurb b { color:#ffd740; }
+  .btn { font-weight:bold; cursor:pointer; border:none; border-radius:999px; padding:12px 26px; font-size:14px; letter-spacing:1px;
+    box-shadow:0 4px 0 rgba(0,0,0,0.35); transition:transform .08s; font-family:inherit; }
+  .btn:active { transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,0.35); }
+  .btn-gold { background:#F5C518; color:#1a0f3d; } .btn-gold:hover { background:#ffd740; }
+  .row { display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; justify-content:center; }
+  .legend { font-size:11px; color:#b9a8e6; line-height:1.7; max-width:380px; margin-top:6px; }
+  .legend .k { color:#6bffb8; } .legend .t { color:#ff6b8a; }
+
+  .relics { display:flex; flex-direction:column; gap:10px; width:100%; max-width:360px; margin:8px 0 4px; }
+  .relic { display:flex; align-items:center; gap:12px; background:#1a1040; border:1px solid #4a3a86; border-radius:12px; padding:12px 14px; text-align:left; cursor:pointer; transition:border-color .12s, transform .08s; }
+  .relic:hover { border-color:#F5C518; transform:translateY(-1px); }
+  .relic:active { transform:translateY(1px); }
+  .relic .ri { font-size:26px; flex-shrink:0; width:32px; text-align:center; }
+  .relic .rt { flex:1; min-width:0; }
+  .relic .rn { font-weight:800; color:#f0e6ff; font-size:14px; }
+  .relic .rd { font-size:11px; color:#b9a8e6; line-height:1.4; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="cv" width="420" height="540"></canvas>
+  <button class="float-btn hidden" id="menu-btn">☰ menu</button>
+
+  <!-- TITLE -->
+  <div class="overlay" id="ov-title">
+    <div class="eyebrow">Princess Dungeon</div>
+    <div class="big-title">PRINCESS DUNGEON</div>
+    <p class="blurb">A crawl through the world where <b>every enemy is a chess piece that moves by its own rules.</b> Each room is a tactic in disguise — read the danger, find the safe square, reach the stairs.</p>
+    <p class="legend">
+      You move like a <b>King</b> (one step any direction) — tap a <span class="k">green dot</span> to move, tap yourself to wait.<br>
+      <span class="t">Red squares</span> are attacked: end your turn there and you'll be taken.<br>
+      Step onto an enemy to <b>capture</b> it. Reach the <b>stairs ▟</b> to clear the floor and earn a <b>relic</b>.
+    </p>
+    <div class="row">
+      <button class="btn btn-gold" id="start-btn">Enter the Dungeon</button>
+    </div>
+    <p class="legend" id="title-best"></p>
+  </div>
+
+  <!-- RELIC PICK -->
+  <div class="overlay hidden" id="ov-relic">
+    <div class="eyebrow" id="relic-eyebrow">Floor cleared</div>
+    <div class="big-title" style="font-size:24px;" id="relic-title">Choose a Relic</div>
+    <p class="blurb" style="margin-bottom:8px;">Take a piece's gift. They <b>stack</b> — build Princess into a hybrid of every piece.</p>
+    <div class="relics" id="relic-list"></div>
+  </div>
+
+  <!-- GAME OVER -->
+  <div class="overlay hidden" id="ov-over">
+    <div class="eyebrow" id="over-eyebrow">The crawl ends</div>
+    <div class="big-title" id="over-title">Defeated</div>
+    <p class="blurb" id="over-stats"></p>
+    <p class="legend" id="over-ghost"></p>
+    <div class="row">
+      <button class="btn btn-gold" id="again-btn">Crawl Again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---- canvas / layout ------------------------------------------------------
+  var cv = document.getElementById('cv');
+  var ctx = cv.getContext('2d');
+  var W = cv.width;
+  var COLS = 7, ROWS = 7;
+  var HUD_H = 66, FOOT_H = 36;
+  var TILE = Math.floor(W / COLS);
+  var BOARD = TILE * COLS;
+  var BX = Math.floor((W - BOARD) / 2);
+  var BY = HUD_H;
+  cv.height = HUD_H + BOARD + FOOT_H;
+
+  // theme accent (respects the operative's chosen skin)
+  var SKIN = (window.PJCC && PJCC.applyGameSkin) ? PJCC.applyGameSkin([]) : null;
+  var GOLD = (SKIN && SKIN.accent) || '#F5C518';
+
+  // ---- biomes ---------------------------------------------------------------
+  var BIOMES = [
+    { name: 'Checker Town', light: '#f0d9b5', dark: '#b58863', edge: '#7a5638' },
+    { name: 'The Sea',      light: '#bfe9ff', dark: '#2e7da6', edge: '#1b556f' },
+    { name: 'Shogi Isle',   light: '#f3e0c7', dark: '#c98a3a', edge: '#8a5a1e' },
+    { name: 'Chess City',   light: '#d8d8ec', dark: '#5b5b7a', edge: '#3a3a55' }
+  ];
+  function biomeFor(depth) {
+    // 3 floors per biome, then cycle; the boss floors (every 5th) read as Chess City
+    if (depth % 5 === 0) return BIOMES[3];
+    return BIOMES[Math.floor((depth - 1) / 3) % BIOMES.length];
+  }
+
+  // ---- seeded RNG (mulberry32) ---------------------------------------------
+  var rng = Math.random;
+  function makeRng(seed) {
+    var a = seed >>> 0;
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function ri(n) { return Math.floor(rng() * n); }
+
+  // ---- piece movement vocabulary -------------------------------------------
+  var DIAG = [[-1,-1],[-1,1],[1,-1],[1,1]];
+  var ORTH = [[-1,0],[1,0],[0,-1],[0,1]];
+  var KING8 = DIAG.concat(ORTH);
+  var KNIGHT = [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+  var PAWN_FWD = 1;   // enemy pawns face "down" (toward the entrance)
+
+  function onBoard(r, c) { return r >= 0 && r < ROWS && c >= 0 && c < COLS; }
+  function key(r, c) { return r + ',' + c; }
+
+  // ---- game state -----------------------------------------------------------
+  var S = null;        // current run
+  var anim = null;     // { t, dur } global move tween
+  var busy = false;    // input locked during animation / enemy phase
+  var mode = 'title';  // title | play | relic | over
+
+  function newRun() {
+    S = {
+      depth: 0,
+      hp: 3, maxHp: 3,
+      essence: 0,
+      diagRange: 1, orthRange: 1, knight: false,   // hero gait (King to start)
+      relics: [],
+      hero: null, enemies: [], exit: null, start: null,
+      enemiesStart: [], roomCaps: 0,
+      threat: {}, reach: {},
+      seed: (Date.now() ^ (Math.random() * 1e9)) >>> 0
+    };
+    nextFloor();
+  }
+
+  // ---- room generation ------------------------------------------------------
+  function enemyPoolFor(depth) {
+    if (depth % 5 === 0) return ['Q', 'P', 'P', 'N'];        // boss floor
+    var pool = ['P', 'P', 'N'];
+    if (depth >= 3) pool.push('B');
+    if (depth >= 4) pool.push('R');
+    if (depth >= 6) pool.push('B', 'R');
+    if (depth >= 8) pool.push('Q');
+    return pool;
+  }
+
+  function pieceAt(list, r, c) {
+    for (var i = 0; i < list.length; i++) if (list[i].r === r && list[i].c === c) return list[i];
+    return null;
+  }
+
+  function nextFloor() {
+    S.depth++;
+    rng = makeRng((S.seed + S.depth * 2654435761) >>> 0);
+    var boss = (S.depth % 5 === 0);
+
+    S.start = { r: ROWS - 1, c: (COLS - 1) >> 1 };
+    S.exit  = { r: 0,        c: (COLS - 1) >> 1 };
+    S.hero  = { r: S.start.r, c: S.start.c, pr: S.start.r, pc: S.start.c };
+
+    var pool = enemyPoolFor(S.depth);
+    var count = boss ? 3 + Math.min(2, Math.floor(S.depth / 10))
+                     : Math.min(2 + Math.floor(S.depth * 0.7), 9);
+
+    var enemies = [];
+    var attempts = 0;
+    while (enemies.length < count && attempts < 400) {
+      attempts++;
+      var type = (boss && enemies.length === 0) ? 'Q' : pool[ri(pool.length)];
+      var r = 1 + ri(ROWS - 2);              // keep off the very top/bottom rows
+      var c = ri(COLS);
+      if (r === S.exit.r && c === S.exit.c) continue;
+      if (Math.abs(r - S.start.r) <= 1 && Math.abs(c - S.start.c) <= 1) continue;  // breathing room
+      if (pieceAt(enemies, r, c)) continue;
+      var cand = { type: type, r: r, c: c, pr: r, pc: c };
+      var test = enemies.concat([cand]);
+      // reject if it makes the entrance unsafe, or already attacks the stairs path start
+      if (squareThreatened(test, S.start.r, S.start.c, null)) continue;
+      enemies.push(cand);
+    }
+
+    S.enemies = enemies;
+    S.enemiesStart = enemies.map(function (e) { return { type: e.type, r: e.r, c: e.c }; });
+    S.roomCaps = 0;
+    recompute();
+    startAnim();
+  }
+
+  function resetRoom() {
+    // on a hit: rebuild the floor's opening position, keep relics & remaining hp
+    S.hero = { r: S.start.r, c: S.start.c, pr: S.start.r, pc: S.start.c };
+    S.enemies = S.enemiesStart.map(function (e) { return { type: e.type, r: e.r, c: e.c, pr: e.r, pc: e.c }; });
+    S.roomCaps = 0;
+    recompute();
+    startAnim();
+  }
+
+  // ---- attack & threat ------------------------------------------------------
+  // Ray from (r,c) along (dr,dc); stops at the first blocker (inclusive).
+  // `ignore` is a square treated as empty (so threat can pass through the hero).
+  function ray(list, r, c, dr, dc, out, ignore) {
+    var rr = r + dr, cc = c + dc;
+    while (onBoard(rr, cc)) {
+      out.push([rr, cc]);
+      var blocked = pieceAt(list, rr, cc);
+      if (blocked && !(ignore && rr === ignore.r && cc === ignore.c)) break;
+      rr += dr; cc += dc;
+    }
+  }
+
+  // Every square an enemy attacks (used for the red telegraph and for captures).
+  function attacksOf(list, e, ignore) {
+    var out = [], i, d, rr, cc;
+    if (e.type === 'P') {
+      out.push([e.r + PAWN_FWD, e.c - 1]);
+      out.push([e.r + PAWN_FWD, e.c + 1]);
+    } else if (e.type === 'N') {
+      for (i = 0; i < KNIGHT.length; i++) out.push([e.r + KNIGHT[i][0], e.c + KNIGHT[i][1]]);
+    } else if (e.type === 'K') {
+      for (i = 0; i < KING8.length; i++) out.push([e.r + KING8[i][0], e.c + KING8[i][1]]);
+    } else {
+      var dirs = e.type === 'B' ? DIAG : e.type === 'R' ? ORTH : KING8;
+      for (d = 0; d < dirs.length; d++) ray(list, e.r, e.c, dirs[d][0], dirs[d][1], out, ignore);
+    }
+    return out.filter(function (sq) { return onBoard(sq[0], sq[1]); });
+  }
+
+  // Is (r,c) attacked by anyone in `list`? Hero's body is ignored so this answers
+  // "if I step to (r,c), am I in danger?" exactly like reading a chess board.
+  function squareThreatened(list, r, c, ignore) {
+    for (var i = 0; i < list.length; i++) {
+      var atk = attacksOf(list, list[i], ignore || { r: r, c: c });
+      for (var j = 0; j < atk.length; j++) if (atk[j][0] === r && atk[j][1] === c) return true;
+    }
+    return false;
+  }
+
+  function recompute() {
+    // threat map (ignore the hero's square so rays pass through it)
+    var th = {};
+    for (var i = 0; i < S.enemies.length; i++) {
+      var atk = attacksOf(S.enemies, S.enemies[i], { r: S.hero.r, c: S.hero.c });
+      for (var j = 0; j < atk.length; j++) th[key(atk[j][0], atk[j][1])] = true;
+    }
+    S.threat = th;
+
+    // hero reachable squares from the gait
+    var reach = {};
+    function consider(r, c, slide) {
+      if (!onBoard(r, c)) return false;
+      var occ = pieceAt(S.enemies, r, c);
+      reach[key(r, c)] = true;        // empty -> move, enemy -> capture
+      return !occ;                    // continue sliding only through empty
+    }
+    var d, step;
+    for (d = 0; d < DIAG.length; d++) {
+      for (step = 1; step <= S.diagRange; step++) {
+        if (!consider(S.hero.r + DIAG[d][0] * step, S.hero.c + DIAG[d][1] * step)) break;
+      }
+    }
+    for (d = 0; d < ORTH.length; d++) {
+      for (step = 1; step <= S.orthRange; step++) {
+        if (!consider(S.hero.r + ORTH[d][0] * step, S.hero.c + ORTH[d][1] * step)) break;
+      }
+    }
+    if (S.knight) for (d = 0; d < KNIGHT.length; d++) consider(S.hero.r + KNIGHT[d][0], S.hero.c + KNIGHT[d][1]);
+    S.reach = reach;
+  }
+
+  // ---- enemy turn -----------------------------------------------------------
+  function enemyMoves(e) {
+    // squares this enemy may move to (attacks that are empty or the hero), plus a
+    // pawn's straight push.
+    var out = [];
+    var atk = attacksOf(S.enemies, e, { r: S.hero.r, c: S.hero.c });
+    if (e.type === 'P') {
+      var f = e.r + PAWN_FWD;
+      if (onBoard(f, e.c) && !pieceAt(S.enemies, f, e.c) && !(S.hero.r === f && S.hero.c === e.c)) out.push([f, e.c]);
+      for (var a = 0; a < atk.length; a++) if (S.hero.r === atk[a][0] && S.hero.c === atk[a][1]) out.push(atk[a]);
+      return out;
+    }
+    for (var i = 0; i < atk.length; i++) {
+      var rr = atk[i][0], cc = atk[i][1];
+      var occ = pieceAt(S.enemies, rr, cc);
+      var hero = (S.hero.r === rr && S.hero.c === cc);
+      if (!occ || hero) out.push([rr, cc]);
+    }
+    return out;
+  }
+
+  function cheby(r, c) { return Math.max(Math.abs(r - S.hero.r), Math.abs(c - S.hero.c)); }
+
+  function enemyTurn() {
+    var captured = false;
+    for (var i = 0; i < S.enemies.length; i++) {
+      var e = S.enemies[i];
+      e.pr = e.r; e.pc = e.c;
+      var moves = enemyMoves(e);
+      if (!moves.length) continue;
+      // capture the hero if able
+      var take = null;
+      for (var m = 0; m < moves.length; m++) if (moves[m][0] === S.hero.r && moves[m][1] === S.hero.c) { take = moves[m]; break; }
+      if (take) { e.r = take[0]; e.c = take[1]; captured = true; break; }
+      // otherwise close the distance (best square; seeded tie-break)
+      var best = moves[0], bestD = 1e9;
+      for (var k = 0; k < moves.length; k++) {
+        var savedR = S.hero.r;  // distance is to the hero, hero static this phase
+        var d = Math.max(Math.abs(moves[k][0] - savedR), Math.abs(moves[k][1] - S.hero.c));
+        if (d < bestD || (d === bestD && rng() < 0.4)) { bestD = d; best = moves[k]; }
+      }
+      e.r = best[0]; e.c = best[1];
+    }
+    return captured;
+  }
+
+  // ---- turn flow ------------------------------------------------------------
+  function playerActed(r, c) {
+    if (busy || mode !== 'play') return;
+    if (r === S.hero.r && c === S.hero.c) { takeTurn(null); return; }  // wait
+    if (!S.reach[key(r, c)]) return;
+    takeTurn({ r: r, c: c });
+  }
+
+  function takeTurn(dest) {
+    busy = true;
+    S.hero.pr = S.hero.r; S.hero.pc = S.hero.c;
+    if (dest) {
+      var victim = pieceAt(S.enemies, dest.r, dest.c);
+      if (victim) {
+        S.enemies = S.enemies.filter(function (x) { return x !== victim; });
+        S.roomCaps++;
+        S.essence += 5;
+      }
+      S.hero.r = dest.r; S.hero.c = dest.c;
+    }
+    // reached the stairs -> floor cleared
+    if (S.hero.r === S.exit.r && S.hero.c === S.exit.c) {
+      startAnim(function () { clearFloor(); });
+      return;
+    }
+    // enemy response
+    var hit = enemyTurn();
+    recompute();
+    startAnim(function () {
+      if (hit) onHit();
+      else busy = false;
+    });
+  }
+
+  function clearFloor() {
+    S.essence += 10 + S.roomCaps * 3 + S.depth * 2;
+    busy = false;
+    offerRelics();
+  }
+
+  function onHit() {
+    S.hp--;
+    flash = 1;
+    if (S.hp <= 0) { busy = false; gameOver(); return; }
+    resetRoom();
+    busy = false;
+  }
+
+  // ---- relics ---------------------------------------------------------------
+  var RELICS = [
+    { id: 'bishop',  ico: '♝', name: 'Bishop Dash',  desc: 'Move up to one extra square diagonally.',  apply: function () { S.diagRange++; } },
+    { id: 'rook',    ico: '♜', name: 'Rook Rush',    desc: 'Move up to one extra square in a straight line.', apply: function () { S.orthRange++; } },
+    { id: 'knight',  ico: '♞', name: "Knight's Blink", desc: 'Gain the knight leap — jump over anything in an L.', once: true, apply: function () { S.knight = true; } },
+    { id: 'heart',   ico: '❤', name: 'Stone Skin',   desc: 'Gain a heart, and heal one.', apply: function () { S.maxHp++; S.hp = Math.min(S.maxHp, S.hp + 1); } },
+    { id: 'essence', ico: '✦', name: 'Lost Cache',   desc: 'Bank +25 essence right now.', apply: function () { S.essence += 25; } }
+  ];
+
+  function offerRelics() {
+    mode = 'relic';
+    rng = makeRng((S.seed + S.depth * 40503) >>> 0);
+    var avail = RELICS.filter(function (rl) { return !(rl.once && S.knight && rl.id === 'knight'); });
+    // pick three distinct
+    var pool = avail.slice(), pick = [];
+    while (pick.length < 3 && pool.length) pick.push(pool.splice(ri(pool.length), 1)[0]);
+
+    var list = document.getElementById('relic-list');
+    list.innerHTML = '';
+    document.getElementById('relic-eyebrow').textContent = 'Floor ' + S.depth + ' cleared · ' + biomeFor(S.depth).name;
+    pick.forEach(function (rl) {
+      var b = document.createElement('button');
+      b.className = 'relic';
+      b.innerHTML = '<span class="ri">' + rl.ico + '</span><span class="rt"><span class="rn">' + rl.name + '</span><span class="rd">' + rl.desc + '</span></span>';
+      b.onclick = function () {
+        rl.apply();
+        if (['bishop', 'rook', 'knight'].indexOf(rl.id) !== -1) S.relics.push(rl.ico);
+        show('ov-relic', false);
+        mode = 'play';
+        nextFloor();
+        busy = false;
+      };
+      list.appendChild(b);
+    });
+    show('ov-relic', true);
+  }
+
+  // ---- game over ------------------------------------------------------------
+  function gameOver() {
+    mode = 'over';
+    var floors = Math.max(0, S.depth - 1);   // floors fully cleared
+    var score = floors;
+    document.getElementById('over-eyebrow').textContent = 'Reached ' + biomeFor(S.depth).name + ' · Floor ' + S.depth;
+    document.getElementById('over-title').textContent = floors >= 1 ? 'Cleared ' + floors + ' floor' + (floors === 1 ? '' : 's') : 'Defeated';
+    document.getElementById('over-stats').innerHTML =
+      '<b>' + S.essence + '</b> essence gathered · descended to <b>Floor ' + S.depth + '</b>.';
+    var ghost = (window.PJCC && PJCC.vsGhost) ? PJCC.vsGhost('dungeon', floors) : null;
+    document.getElementById('over-ghost').innerHTML = ghost
+      ? (ghost.beat ? '👑 You passed Nate\'s mark of ' + ghost.target + ' floors!' : '👻 Nate reached ' + ghost.target + ' floors — ' + (-ghost.delta) + ' to go.')
+      : '';
+    show('ov-over', true);
+    document.getElementById('menu-btn').classList.add('hidden');
+    if (window.PJCC && PJCC.saveScore) {
+      PJCC.saveScore('dungeon', floors, { credits: Math.floor(S.essence / 12), data: { essence: S.essence } });
+    }
+  }
+
+  // ---- rendering ------------------------------------------------------------
+  var flash = 0;   // red hit-flash, decays
+
+  function tileCenter(r, c) { return [BX + c * TILE + TILE / 2, BY + r * TILE + TILE / 2]; }
+
+  function drawHeart(x, y, r, full) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = full ? '#ff5d7a' : 'rgba(255,93,122,0.18)';
+    ctx.strokeStyle = full ? '#ffd1dc' : 'rgba(255,209,220,0.25)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(0, r * 0.35);
+    ctx.bezierCurveTo(0, -r * 0.1, -r, -r * 0.1, -r, -r * 0.45);
+    ctx.bezierCurveTo(-r, -r * 0.95, 0, -r * 0.95, 0, -r * 0.45);
+    ctx.bezierCurveTo(0, -r * 0.95, r, -r * 0.95, r, -r * 0.45);
+    ctx.bezierCurveTo(r, -r * 0.1, 0, -r * 0.1, 0, r * 0.35);
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawHUD() {
+    var bm = biomeFor(S.depth);
+    ctx.fillStyle = '#0c0820';
+    ctx.fillRect(0, 0, W, HUD_H);
+    // hearts
+    for (var i = 0; i < S.maxHp; i++) drawHeart(16 + i * 22, 24, 8, i < S.hp);
+    // depth + biome
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = GOLD; ctx.font = '900 16px "Trebuchet MS",sans-serif';
+    ctx.fillText('FLOOR ' + S.depth, W - 14, 20);
+    ctx.fillStyle = '#b9a8e6'; ctx.font = '11px "Trebuchet MS",sans-serif';
+    ctx.fillText(bm.name, W - 14, 40);
+    // essence + relic glyphs
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#cdbcf2'; ctx.font = '12px "Trebuchet MS",sans-serif';
+    ctx.fillText('✦ ' + S.essence, 16, 50);
+    if (S.relics.length) {
+      ctx.textAlign = 'center'; ctx.font = '15px serif'; ctx.fillStyle = '#9fe8ff';
+      ctx.fillText(S.relics.join(' '), W / 2, 24);
+      ctx.font = '9px "Trebuchet MS",sans-serif'; ctx.fillStyle = '#6b5fa0';
+      ctx.fillText('YOUR GIFTS', W / 2, 40);
+    }
+  }
+
+  function drawBoard(t) {
+    var bm = biomeFor(S.depth);
+    for (var r = 0; r < ROWS; r++) {
+      for (var c = 0; c < COLS; c++) {
+        var x = BX + c * TILE, y = BY + r * TILE;
+        ctx.fillStyle = ((r + c) & 1) ? bm.dark : bm.light;
+        ctx.fillRect(x, y, TILE, TILE);
+        if (S.threat[key(r, c)]) {
+          ctx.fillStyle = 'rgba(255,60,90,0.34)';
+          ctx.fillRect(x, y, TILE, TILE);
+        }
+      }
+    }
+    // exit / stairs
+    var ec = tileCenter(S.exit.r, S.exit.c);
+    ctx.fillStyle = 'rgba(107,255,184,0.16)';
+    ctx.fillRect(BX + S.exit.c * TILE, BY + S.exit.r * TILE, TILE, TILE);
+    ctx.fillStyle = '#6bffb8'; ctx.font = '900 ' + Math.round(TILE * 0.5) + 'px serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('▟', ec[0], ec[1] + 2);
+
+    // reachable dots (only when idle)
+    if (!busy && mode === 'play') {
+      for (var rk in S.reach) {
+        var p = rk.split(','), rr = +p[0], cc = +p[1];
+        var cen = tileCenter(rr, cc);
+        var cap = pieceAt(S.enemies, rr, cc);
+        ctx.beginPath();
+        if (cap) { ctx.strokeStyle = '#ff6b8a'; ctx.lineWidth = 3; ctx.arc(cen[0], cen[1], TILE * 0.40, 0, 7); ctx.stroke(); }
+        else { ctx.fillStyle = 'rgba(107,255,184,0.85)'; ctx.arc(cen[0], cen[1], TILE * 0.12, 0, 7); ctx.fill(); }
+      }
+    }
+
+    // enemies (animated)
+    for (var i = 0; i < S.enemies.length; i++) {
+      var e = S.enemies[i];
+      var er = e.pr + (e.r - e.pr) * t, ecc = e.pc + (e.c - e.pc) * t;
+      var px = BX + ecc * TILE + TILE / 2, py = BY + er * TILE + TILE / 2;
+      PJCCPieces.draw(ctx, px, py, TILE * 0.78, e.type, 'b', { bFill: '#241a3c', bEdge: '#ff9ec9' });
+    }
+
+    // hero (animated, gold with a pink ring)
+    var hr = S.hero.pr + (S.hero.r - S.hero.pr) * t, hc = S.hero.pc + (S.hero.c - S.hero.pc) * t;
+    var hx = BX + hc * TILE + TILE / 2, hy = BY + hr * TILE + TILE / 2;
+    ctx.beginPath(); ctx.arc(hx, hy, TILE * 0.42, 0, 7);
+    ctx.fillStyle = 'rgba(255,143,208,0.22)'; ctx.fill();
+    ctx.lineWidth = 2.5; ctx.strokeStyle = '#ff8fd0'; ctx.stroke();
+    PJCCPieces.draw(ctx, hx, hy, TILE * 0.74, 'Q', 'w', { wFill: '#ffe27a', wEdge: '#7a4d00' });
+  }
+
+  function drawFoot() {
+    var y = BY + BOARD;
+    ctx.fillStyle = '#0c0820'; ctx.fillRect(0, y, W, FOOT_H);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#6b5fa0'; ctx.font = '11px "Trebuchet MS",sans-serif';
+    var safe = busy ? '…' : (S.threat[key(S.hero.r, S.hero.c)] ? '⚠ you are in danger — move!' : 'tap a green dot · tap yourself to wait');
+    ctx.fillStyle = (S.threat[key(S.hero.r, S.hero.c)] && !busy) ? '#ff8fa8' : '#6b5fa0';
+    ctx.fillText(safe, W / 2, y + FOOT_H / 2);
+  }
+
+  function render() {
+    var t = anim ? ease(anim.t) : 1;
+    ctx.clearRect(0, 0, W, cv.height);
+    if (S) { drawHUD(); drawBoard(t); drawFoot(); }
+    if (flash > 0) {
+      ctx.fillStyle = 'rgba(255,40,70,' + (flash * 0.4) + ')';
+      ctx.fillRect(0, 0, W, cv.height);
+      flash = Math.max(0, flash - 0.05);
+    }
+  }
+  function ease(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+
+  // ---- animation loop -------------------------------------------------------
+  var pending = null;
+  function startAnim(done) { anim = { t: 0, dur: 150 }; pending = done || null; }
+  var last = 0;
+  function loop(ts) {
+    if (!last) last = ts;
+    var dt = ts - last; last = ts;
+    if (anim) {
+      anim.t += dt / anim.dur;
+      if (anim.t >= 1) { anim.t = 1; var d = pending; anim = null; pending = null; if (d) d(); }
+    }
+    render();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  // ---- input ----------------------------------------------------------------
+  function hit(ev) {
+    var rect = cv.getBoundingClientRect();
+    var scale = cv.width / rect.width;
+    var pt = ev.touches ? ev.touches[0] : ev;
+    var x = (pt.clientX - rect.left) * scale;
+    var y = (pt.clientY - rect.top) * scale;
+    if (y < BY || y >= BY + BOARD) return;
+    var c = Math.floor((x - BX) / TILE), r = Math.floor((y - BY) / TILE);
+    if (onBoard(r, c)) playerActed(r, c);
+  }
+  cv.addEventListener('click', hit);
+  cv.addEventListener('touchstart', function (e) { e.preventDefault(); hit(e); }, { passive: false });
+
+  // ---- overlays / boot ------------------------------------------------------
+  function show(id, on) { document.getElementById(id).classList.toggle('hidden', !on); }
+
+  function begin() {
+    show('ov-title', false); show('ov-over', false); show('ov-relic', false);
+    document.getElementById('menu-btn').classList.remove('hidden');
+    mode = 'play'; busy = false; flash = 0;
+    newRun();
+  }
+
+  document.getElementById('start-btn').onclick = begin;
+  document.getElementById('again-btn').onclick = begin;
+  document.getElementById('menu-btn').onclick = function () {
+    show('ov-title', true);
+    document.getElementById('menu-btn').classList.add('hidden');
+    mode = 'title';
+  };
+
+  // show the operative's best on the title card
+  (function () {
+    var b = (window.PJCC && PJCC.localBest) ? PJCC.localBest('dungeon') : 0;
+    if (b > 0) document.getElementById('title-best').innerHTML = 'Your deepest crawl: <b style="color:#ffd740">Floor ' + (b + 1) + '</b> (' + b + ' cleared)';
+  })();
+})();
+</script>
+</body>
+</html>

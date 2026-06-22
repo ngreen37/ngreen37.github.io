@@ -137,10 +137,9 @@ title, and a short cryptic line — the page intentionally says less. {% endcomm
       <div class="game-card-body"><h2>Space Run</h2><p>Outrun the barrage.</p>
         <span class="game-tag game-tag-soon">In Development</span></div>
     </a>
-    <a class="game-card game-card-dim" href="{{ '/games/dungeon/' | relative_url }}">
+    <a class="game-card" href="{{ '/games/dungeon/' | relative_url }}">
       <div class="game-card-icon">♟</div>
-      <div class="game-card-body"><h2>Princess Dungeon</h2><p>Every room is a tactic.</p>
-        <span class="game-tag game-tag-soon">In Development</span></div>
+      <div class="game-card-body"><h2>Princess Dungeon</h2><p>Every room is a tactic.</p></div>
     </a>
   </div>
 </section>
@@ -354,7 +353,7 @@ title, and a short cryptic line — the page intentionally says less. {% endcomm
     'notation-run': '#F5C518', 'pirc-protocol': '#caa24a', 'fork-in-the-road': '#5be0c0',
     'sand-mine-depths': '#e0b25a', 'clearance-delta': '#ff9fb0',
     'shogi-island': '#d9a441', 'tower-defense': '#ff8fd0', 'blindfold-puzzles': '#c9a7ff',
-    'dungeon': '#9a8fc0', 'space-run': '#8fb8ff', 'sky-run': '#7fc8ff', 'the-gauntlet': '#F5C518'
+    'dungeon': '#ff8fd0', 'space-run': '#8fb8ff', 'sky-run': '#7fc8ff', 'the-gauntlet': '#F5C518'
   };
   function keyOf(href) { var m = (href || '').match(/\/games\/([^\/]+)\/?/); return m ? m[1] : ''; }
   var cards = document.querySelectorAll('.games-grid .game-card');
@@ -388,7 +387,7 @@ title, and a short cryptic line — the page intentionally says less. {% endcomm
     'clearance-delta': ['clearance-delta','score'],
     'shogi-island': ['shogi-island','solved'], 'tower-defense': ['tower-defense','score'],
     'blindfold-puzzles': ['blindfold','solved'], 'sky-run': ['sky-run','score'],
-    'the-gauntlet': ['the-gauntlet','cleared']
+    'the-gauntlet': ['the-gauntlet','cleared'], 'dungeon': ['dungeon','floors']
   };
   function scoreInfo(card) {
     var href = card.getAttribute('href') || '';
@@ -433,12 +432,14 @@ title, and a short cryptic line — the page intentionally says less. {% endcomm
     'shogi-island':      { date: '2026-06-20', note: 'v3.1 — real 詰将棋 tsume (mate-in-3/5) and a full 9×9 AI match.' },
     'blindfold-puzzles': { date: '2026-06-20', note: 'v2.1 — Speed-Vision, Describe-only, Daily; Mind’s Eye tiers, blitz clock, replay.' },
     'fork-in-the-road':  { date: '2026-06-21', note: 'v2.1 — accepts any mate-in-one, OK-to-continue, clearer side-to-move.' },
-    'sky-run':           { date: '2026-06-15', note: 'v1.0 — new chess-Bloons sky shooter.' }
+    'sky-run':           { date: '2026-06-15', note: 'v1.0 — new chess-Bloons sky shooter.' },
+    'dungeon':           { date: '2026-06-22', note: 'v0.1 — chess-tactics roguelite: piece-rule enemies, threat-reading, stacking move-relics, biome floors. The 2D proving ground for the Godot build.' }
   };
   function daysSince(d) { var t = Date.parse(d + 'T00:00:00'); return isNaN(t) ? 9e9 : (Date.now() - t) / 86400000; }
   var PREVIEW = { 'notation-run':['♫','♪','♬'], 'pirc-protocol':['♚','♟','♛'], 'fork-in-the-road':['♞','⚔','♝'],
     'sand-mine-depths':['⛏','💎','♘'], 'clearance-delta':['Δ','✦','▲'], 'shogi-island':['将','歩','王'],
-    'tower-defense':['🏰','♜','❄'], 'blindfold-puzzles':['◻','♟','👁'], 'sky-run':['♞','✦','♛'], 'the-gauntlet':['♛','♟','♚'] };
+    'tower-defense':['🏰','♜','❄'], 'blindfold-puzzles':['◻','♟','👁'], 'sky-run':['♞','✦','♛'], 'the-gauntlet':['♛','♟','♚'],
+    'dungeon':['♟','♞','▟'] };
 
   // games that have a date-seeded "daily" mode, with how to tell if it's done today
   function todayS() { return (window.PJCC && PJCC.dayStamp) ? PJCC.dayStamp() : new Date().toISOString().slice(0,10); }
