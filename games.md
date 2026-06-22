@@ -6,8 +6,8 @@ permalink: /games/
 
 <div id="bounty-banner" class="bounty-banner" hidden></div>
 
-<a class="games-lb-link" href="{{ '/leaderboards/' | relative_url }}">🏆 View the Leaderboards &rarr;</a>
-<button id="sheen-toggle" class="sheen-toggle" type="button">✨ Cursor sheen: on</button>
+<button id="sheen-toggle" class="sheen-toggle" type="button" title="The soft glow that trails your cursor across the cards. Turn it off for a calmer page.">✨ Cursor sheen: on</button>
+<span class="sheen-note">— the glow that follows your cursor across the cards; toggle off for a calmer page</span>
 
 <div id="continue-hero" class="continue-hero" hidden></div>
 
@@ -18,22 +18,15 @@ permalink: /games/
   <button class="gf-tab" data-filter="daily">📅 Daily</button>
   <button class="gf-tab" data-filter="new">✦ New</button>
   <span class="gf-spacer"></span>
-  <input id="gf-search" class="gf-search" type="search" placeholder="🔎 search games…" autocomplete="off">
-  <select id="gf-sort" class="gf-sort" aria-label="Sort games">
-    <option value="default">Sort: Featured</option>
-    <option value="az">Sort: A–Z</option>
-    <option value="new">Sort: Newest</option>
-    <option value="best">Sort: My best</option>
-  </select>
   <button id="gf-surprise" class="gf-surprise" type="button">🎲 Surprise me</button>
 </div>
 
 <script>
 (function () {
-  var NAMES = { 'clearance-delta': 'Clearance: DELTA', 'notation-run': 'Notation Blitz', 'fork-in-the-road': 'Fork in the Road', 'sand-mine-depths': 'Sand Mine Depths', 'pirc-protocol': 'The Pirc Protocol', 'shogi-island': 'Shogi Island', 'tower-defense': 'Siege on Chess City', 'sky-run': 'Sky Run' };
-  var ICON = { 'clearance-delta':'Δ', 'notation-run':'♫', 'fork-in-the-road':'⚔', 'sand-mine-depths':'⛏', 'pirc-protocol':'♚', 'shogi-island':'将', 'tower-defense':'🏰', 'sky-run':'♞' };
-  var ACC = { 'clearance-delta':'#ff9fb0', 'notation-run':'#F5C518', 'fork-in-the-road':'#5be0c0', 'sand-mine-depths':'#e0b25a', 'pirc-protocol':'#caa24a', 'shogi-island':'#d9a441', 'tower-defense':'#ff8fd0', 'sky-run':'#7fc8ff' };
-  var BLURB = { 'clearance-delta':'Climb the clearance ladder in the trivia hall.', 'notation-run':'Read chess coordinates at speed, on the beat.', 'fork-in-the-road':'Adaptive tactics — forks, skewers, mates.', 'sand-mine-depths':'A knight-move descent into the Father’s mine.', 'pirc-protocol':'Learn real openings by playing the book.', 'shogi-island':'Learn shogi as the Japanese guide decodes.', 'tower-defense':'Hold the gates of Chess City.', 'sky-run':'A chess-Bloons climb to Chess City.' };
+  var NAMES = { 'clearance-delta': 'Clearance: DELTA', 'notation-run': 'Notation Blitz', 'fork-in-the-road': 'Fork in the Road', 'sand-mine-depths': 'Sand Mine Depths', 'pirc-protocol': 'The Pirc Protocol', 'shogi-island': 'Shogi Island', 'tower-defense': 'Siege on Chess City', 'sky-run': 'Sky Run', 'the-gauntlet': 'The Gauntlet' };
+  var ICON = { 'clearance-delta':'Δ', 'notation-run':'♫', 'fork-in-the-road':'⚔', 'sand-mine-depths':'⛏', 'pirc-protocol':'♚', 'shogi-island':'将', 'tower-defense':'🏰', 'sky-run':'♞', 'the-gauntlet':'♛' };
+  var ACC = { 'clearance-delta':'#ff9fb0', 'notation-run':'#F5C518', 'fork-in-the-road':'#5be0c0', 'sand-mine-depths':'#e0b25a', 'pirc-protocol':'#caa24a', 'shogi-island':'#d9a441', 'tower-defense':'#ff8fd0', 'sky-run':'#7fc8ff', 'the-gauntlet':'#F5C518' };
+  var BLURB = { 'clearance-delta':'Climb the clearance ladder in the trivia hall.', 'notation-run':'Read chess coordinates at speed, on the beat.', 'fork-in-the-road':'Adaptive tactics — forks, skewers, mates.', 'sand-mine-depths':'A knight-move descent into the Father’s mine.', 'pirc-protocol':'Learn real openings by playing the book.', 'shogi-island':'Learn shogi as the Japanese guide decodes.', 'tower-defense':'Hold the gates of Chess City.', 'sky-run':'A chess-Bloons climb to Chess City.', 'the-gauntlet':'Real games of chess up a ladder to the CEO.' };
   function show() {
     if (!window.PJCC || !PJCC.bountyGame) return;
     var key = PJCC.bountyGame();
@@ -73,123 +66,98 @@ permalink: /games/
 .sheen-toggle { display: inline-block; margin: 0.4rem 0 0.2rem 0.5rem; background: #1d1140; border: 1px solid #6b5fa0; color: #c9a7ff; border-radius: 999px; padding: 8px 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
 .sheen-toggle:hover { border-color: #F5C518; color: #f0e6ff; }
 .sheen-toggle.off { border-color: #4f466e; color: #9a8fc0; }
+.sheen-note { font-size: 0.72rem; color: #9a8fc0; }
 .continue-hero { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: linear-gradient(135deg,#1f1147,#34206f); border: 1px solid #6b5fa0; border-radius: 10px; padding: 11px 16px; margin: 0.6rem 0 0; }
-.continue-hero .ch-eye { color: #9a7fd4; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; }
+.continue-hero .ch-eye { color: #9a7fd4; font-size: 0.72rem; letter-spacing: 1px; text-transform: uppercase; }
 .continue-hero .ch-link { background: var(--accent,#F5C518); color: #1a0f3d; font-weight: 800; border-radius: 999px; padding: 7px 16px; text-decoration: none; }
 .continue-hero .ch-link:hover { filter: brightness(1.08); }
 </style>
 
-<div class="games-grid">
+{% comment %} Games are grouped into Versus · Learn · Arcade. Cards carry only an icon,
+title, and a short cryptic line — the page intentionally says less. {% endcomment %}
 
-  <a class="game-card" href="{{ '/daily/' | relative_url }}">
-    <div class="game-card-icon">📡</div>
-    <div class="game-card-body">
-      <h2>Daily Dispatch</h2>
-      <p>One Dead Drop intercept a day — the same coded word for every operative. Crack it in as few tries as you can, climb today's board, and keep your dispatch streak alive. New drop at midnight.</p>
-      <span class="game-tag">Daily</span>
-    </div>
+<section class="game-cat">
+  <h2 class="game-cat-h">♛ Versus</h2>
+  <div class="games-grid">
+    <a class="game-card" href="{{ '/games/the-gauntlet/' | relative_url }}">
+      <div class="game-card-icon">♛</div>
+      <div class="game-card-body"><h2>The Gauntlet</h2><p>Climb to the CEO. Real chess.</p></div>
+    </a>
+  </div>
+</section>
+
+<section class="game-cat">
+  <h2 class="game-cat-h">♟ Learn</h2>
+  <div class="games-grid">
+    <a class="game-card" href="{{ '/games/notation-run/' | relative_url }}">
+      <div class="game-card-icon">♫</div>
+      <div class="game-card-body"><h2>Notation Blitz</h2><p>Squares, on the beat.</p></div>
+    </a>
+    <a class="game-card" href="{{ '/games/fork-in-the-road/' | relative_url }}">
+      <div class="game-card-icon">⚔</div>
+      <div class="game-card-body"><h2>Fork in the Road</h2><p>Spot the only move.</p></div>
+    </a>
+    <a class="game-card" href="{{ '/games/pirc-protocol/' | relative_url }}">
+      <div class="game-card-icon">♚</div>
+      <div class="game-card-body"><h2>The Pirc Protocol</h2><p>Learn the book by heart.</p></div>
+    </a>
+    <a class="game-card" href="{{ '/games/shogi-island/' | relative_url }}">
+      <div class="game-card-icon">将</div>
+      <div class="game-card-body"><h2>Shogi Island</h2><p>Foreign rules. Familiar war.</p></div>
+    </a>
+    <a class="game-card" href="{{ '/games/clearance-delta/' | relative_url }}">
+      <div class="game-card-icon">Δ</div>
+      <div class="game-card-body"><h2>Clearance: DELTA</h2><p>Answer, or stay outside.</p></div>
+    </a>
+    <a class="game-card game-card-dim game-card-locked" id="bf-card" href="{{ '/games/blindfold-puzzles/' | relative_url }}">
+      <div class="game-card-icon" id="bf-icon">🔐</div>
+      <div class="game-card-body"><h2>Blindfold Puzzles</h2><p>No board. Only your mind.</p>
+        <span class="game-tag game-tag-soon" id="bf-tag">🔒 Locked — perfect Fast run in Notation Blitz</span></div>
+    </a>
+  </div>
+</section>
+
+<section class="game-cat">
+  <h2 class="game-cat-h">♞ Arcade</h2>
+  <div class="games-grid">
+    <a class="game-card" href="{{ '/games/sky-run/' | relative_url }}">
+      <div class="game-card-icon">♞</div>
+      <div class="game-card-body"><h2>Sky Run</h2><p>Climb the falling pieces.</p></div>
+    </a>
+    <a class="game-card" href="{{ '/games/sand-mine-depths/' | relative_url }}">
+      <div class="game-card-icon">⛏</div>
+      <div class="game-card-body"><h2>Sand Mine Depths</h2><p>Descend. Don't look back.</p></div>
+    </a>
+    <a class="game-card" href="{{ '/games/tower-defense/' | relative_url }}">
+      <div class="game-card-icon">🏰</div>
+      <div class="game-card-body"><h2>Siege on Chess City</h2><p>Hold the gates.</p></div>
+    </a>
+    <a class="game-card game-card-dim" href="{{ '/games/space-run/' | relative_url }}">
+      <div class="game-card-icon">✦</div>
+      <div class="game-card-body"><h2>Space Run</h2><p>Outrun the barrage.</p>
+        <span class="game-tag game-tag-soon">In Development</span></div>
+    </a>
+    <a class="game-card game-card-dim" href="{{ '/games/dungeon/' | relative_url }}">
+      <div class="game-card-icon">♟</div>
+      <div class="game-card-body"><h2>Princess Dungeon</h2><p>Every room is a tactic.</p>
+        <span class="game-tag game-tag-soon">In Development</span></div>
+    </a>
+  </div>
+</section>
+
+<section class="game-cat" id="leaderboards-cat">
+  <h2 class="game-cat-h">🏆 Leaderboards</h2>
+  <p class="lb-intro">Operative standings across every game. <strong>Overall</strong> ranks by total credits; each game tab shows its best runs. Sign in on any game to claim your spot.</p>
+  <a class="lb-hof-link" href="{{ '/hall-of-fame/' | relative_url }}" style="display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#241452,#3a2d1a);border:1px solid #F5C518;border-radius:12px;padding:11px 16px;margin:0 0 0.9rem;text-decoration:none;color:#f0e6ff;box-shadow:0 0 22px -10px #F5C518;">
+    <span style="font-size:1.5rem;line-height:1;">🏆</span>
+    <span style="flex:1;min-width:0;"><span style="display:block;font-weight:800;color:#fff;">Hall of Fame</span><span style="display:block;font-size:0.78rem;color:#cdbcf2;">Seasons &amp; past champions →</span></span>
   </a>
+  <div class="lb-tabs" id="lb-tabs"></div>
+  <div id="lb-body"><p class="lb-empty">Loading…</p></div>
+</section>
 
-  <a class="game-card game-card-dim" href="{{ '/games/dungeon/' | relative_url }}">
-    <div class="game-card-icon">♟</div>
-    <div class="game-card-body">
-      <h2>Princess Dungeon</h2>
-      <p>A chessboard dungeon crawler. Clear each room. Reach the exit.</p>
-      <span class="game-tag game-tag-soon">In Development</span>
-    </div>
-  </a>
-
-  <a class="game-card" href="{{ '/games/notation-run/' | relative_url }}">
-    <div class="game-card-icon">♫</div>
-    <div class="game-card-body">
-      <h2>Notation Blitz v3.7</h2>
-      <p>A rhythm drill for reading chess coordinates at speed — Endless ramp, an adaptive <strong>Freestyle</strong> tempo, a <strong>Recall</strong> name-the-square mode, a <strong>2-Hand</strong> dual-lane mode, a files/ranks <strong>Warmup</strong>, mid-run <strong>Perks</strong>, a free BPM slider, a 2-Tone "Black side" mode, a ⟲ Extreme board-flip mode, and a 📅 Daily seeded chart that posts to a global <strong>timing-accuracy</strong> board (not just score).</p>
-      <span class="game-tag">Playable</span>
-    </div>
-  </a>
-
-  <a class="game-card" href="{{ '/games/sky-run/' | relative_url }}">
-    <div class="game-card-icon">♞</div>
-    <div class="game-card-body">
-      <h2>Sky Run v1.0</h2>
-      <p>A chess-Bloons sky shooter. Princess flies town to town toward Chess City, popping the pieces that fall — grab Bishop/Knight/Queen power-ups, charge the King's pawn-summon, and break each region's boss. A secret office waits at the very top.</p>
-      <span class="game-tag">Playable</span>
-    </div>
-  </a>
-
-  <a class="game-card game-card-dim" href="{{ '/games/space-run/' | relative_url }}">
-    <div class="game-card-icon">✦</div>
-    <div class="game-card-body">
-      <h2>Space Run</h2>
-      <p>A Star Fox-style chess runner. Skate across the pieces the CEO throws at you and ride each track to its end.</p>
-      <span class="game-tag game-tag-soon">In Development</span>
-    </div>
-  </a>
-
-  <a class="game-card" href="{{ '/games/pirc-protocol/' | relative_url }}">
-    <div class="game-card-icon">♚</div>
-    <div class="game-card-body">
-      <h2>The Pirc Protocol v2.1</h2>
-      <p>An opening library. Learn real openings by playing the book moves — run a whole line, drill spot-cards, or face a boss exam mixing every variation. ECO codes + master-game citations, PGN export, and a new ☠ Blunder Traps deck of machine-verified forced mates.</p>
-      <span class="game-tag">Playable</span>
-    </div>
-  </a>
-
-  <a class="game-card" href="{{ '/games/fork-in-the-road/' | relative_url }}">
-    <div class="game-card-icon">⚔</div>
-    <div class="game-card-body">
-      <h2>Fork in the Road v2.1</h2>
-      <p>Adaptive chess-tactics puzzles — forks, skewers, and mates that sharpen as you solve and ease off if you slip. Region-gate bosses, a daily seeded ladder, and a motif card after every solve so you actually learn the pattern.</p>
-      <span class="game-tag">Playable</span>
-    </div>
-  </a>
-
-  <a class="game-card" href="{{ '/games/sand-mine-depths/' | relative_url }}">
-    <div class="game-card-icon">⛏</div>
-    <div class="game-card-body">
-      <h2>Sand Mine Depths v2.2</h2>
-      <p>A knight-movement descent into the Father's mine. Grab relics in the shrinking torchlight, outwit Subject Zero, and bank gold at the surface camp for lasting gear — or take on the perk-free weekly race.</p>
-      <span class="game-tag">Playable</span>
-    </div>
-  </a>
-
-  <a class="game-card" href="{{ '/games/clearance-delta/' | relative_url }}">
-    <div class="game-card-icon">Δ</div>
-    <div class="game-card-body">
-      <h2>Clearance: DELTA v1.3</h2>
-      <p>An operative trivia exam in the Invitational hall. Chess, World Champions, board-diagram puzzles, and PJCC files — climb the clearance ladder. Category focus runs, a ⚡ lightning round, and a daily shared exam.</p>
-      <span class="game-tag">Playable</span>
-    </div>
-  </a>
-
-  <a class="game-card" href="{{ '/games/shogi-island/' | relative_url }}">
-    <div class="game-card-icon">将</div>
-    <div class="game-card-body">
-      <h2>Shogi Island v3.1</h2>
-      <p>Learn shogi by solving — read the pieces, capture, give check, then real 詰将棋 tsume (forced mate-in-3 and mate-in-5). The guide begins in Japanese and decodes as you go; getting far unlocks Catch the Lion and a full 9×9 match vs the island AI.</p>
-      <span class="game-tag">Playable</span>
-    </div>
-  </a>
-
-  <a class="game-card" href="{{ '/games/tower-defense/' | relative_url }}">
-    <div class="game-card-icon">🏰</div>
-    <div class="game-card-body">
-      <h2>Siege on Chess City v2.1</h2>
-      <p>A four-front tower-defense campaign — now with <strong>tower synergies</strong> (stand a Knight by a Queen for haste, a Bishop by a Rook for a piercing beam), a 📅 <strong>Daily mutator-roulette</strong> on a fixed seed with its own global board, an ♾ Endless survival mode + wave board, a ❄ Frost Knight, map mutators for bonus Crowns, and bosses that summon adds and teleport. Place a free-roaming Bishop Sniper, recruit Auston the Bomber, and spend City Crowns on permanent upgrades.</p>
-      <span class="game-tag">Playable</span>
-    </div>
-  </a>
-
-  <a class="game-card game-card-dim game-card-locked" id="bf-card" href="{{ '/games/blindfold-puzzles/' | relative_url }}">
-    <div class="game-card-icon" id="bf-icon">🔐</div>
-    <div class="game-card-body">
-      <h2>Blindfold Puzzles v2.2</h2>
-      <p>A blank board and a clue — find the winning move in your head. Adaptive puzzles with ⚡ Speed-Vision, ⌨ Describe-only, a new 🔊 Audio-only mode (the position spoken aloud with a coach), and a 📅 Daily shared position; solve enough to unlock <strong>The Mind's Eye</strong> — a full blind game vs the CEO with difficulty tiers, move narration, a blitz clock, a purist trophy, and a replay. Hidden bonus game.</p>
-      <span class="game-tag game-tag-soon" id="bf-tag">🔒 Locked — perfect Fast run in Notation Blitz</span>
-    </div>
-  </a>
-
-</div>
+<link rel="stylesheet" href="{{ '/assets/css/pjcc-profile.css' | relative_url }}">
+<script src="{{ '/assets/js/pjcc-leaderboard.js' | relative_url }}" defer></script>
 
 <script>
 (function () {
@@ -211,8 +179,13 @@ permalink: /games/
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 0.8rem;
-  margin-top: 1rem;
+  margin-top: 0.4rem;
 }
+
+.game-cat { margin-top: 1.5rem; }
+.game-cat-h { font-family: 'Poppins', sans-serif; font-size: 0.76rem; font-weight: 800; letter-spacing: 0.2em;
+  text-transform: uppercase; color: #c9a7ff; margin: 0 0 0.3rem; padding-bottom: 5px; border-bottom: 1px solid #3a2a6a; }
+.game-cat.gc-hidden { display: none; }
 
 .game-card {
   --accent: #F5C518;          /* per-game accent set by JS below */
@@ -349,13 +322,10 @@ permalink: /games/
 .gf-tab:hover { border-color: #8a7bc0; color: #f0e6ff; }
 .gf-tab.active { background: #F5C518; border-color: #F5C518; color: #1a0f3d; }
 .gf-spacer { flex: 1 1 auto; }
-.gf-search, .gf-sort { background: #1d1140; border: 1px solid #4f466e; color: #e9defb; border-radius: 999px;
-  padding: 7px 14px; font-size: 0.85rem; font-family: inherit; }
-.gf-search:focus, .gf-sort:focus { outline: none; border-color: #F5C518; }
 .gf-surprise { background: linear-gradient(135deg,#34206f,#5a3aa0); border: 1px solid #8a7bc0; color: #fff;
   border-radius: 999px; padding: 7px 16px; font-weight: 800; font-size: 0.85rem; cursor: pointer; font-family: inherit; }
 .gf-surprise:hover { border-color: #F5C518; box-shadow: 0 0 12px -3px #F5C518; }
-.game-card.gc-hidden { display: none; }
+.gc-hidden { display: none; }
 /* "new" badge + changelog popover */
 .game-card { position: relative; }
 .gc-new { position: absolute; top: 8px; right: 10px; z-index: 4; background: #6bffb8; color: #042; font-size: 0.62rem;
@@ -375,21 +345,6 @@ permalink: /games/
 @media (prefers-reduced-motion: reduce) { .gc-prev span { animation: none; } }
 .gc-best { display: inline-block; margin-left: 6px; font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase;
   color: #6bffb8; border: 1px solid #2f6b50; background: rgba(107,255,184,0.10); border-radius: 4px; padding: 2px 7px; vertical-align: middle; }
-.gc-best.none { color: #9a8fc0; border-color: #4f466e; background: transparent; }
-
-.games-lb-link {
-  display: inline-block;
-  margin: 0.4rem 0 0.2rem;
-  background: #2D1B69;
-  border: 1px solid #F5C518;
-  border-radius: 999px;
-  padding: 9px 20px;
-  color: #F5C518;
-  font-weight: 800;
-  text-decoration: none;
-  transition: background 0.15s, color 0.15s;
-}
-.games-lb-link:hover { background: #F5C518; color: #1a0f3d; }
 </style>
 
 <script>
@@ -399,7 +354,7 @@ permalink: /games/
     'notation-run': '#F5C518', 'pirc-protocol': '#caa24a', 'fork-in-the-road': '#5be0c0',
     'sand-mine-depths': '#e0b25a', 'clearance-delta': '#ff9fb0',
     'shogi-island': '#d9a441', 'tower-defense': '#ff8fd0', 'blindfold-puzzles': '#c9a7ff',
-    'dungeon': '#9a8fc0', 'space-run': '#8fb8ff', 'sky-run': '#7fc8ff'
+    'dungeon': '#9a8fc0', 'space-run': '#8fb8ff', 'sky-run': '#7fc8ff', 'the-gauntlet': '#F5C518'
   };
   function keyOf(href) { var m = (href || '').match(/\/games\/([^\/]+)\/?/); return m ? m[1] : ''; }
   var cards = document.querySelectorAll('.games-grid .game-card');
@@ -407,36 +362,36 @@ permalink: /games/
     var k = keyOf(c.getAttribute('href'));
     if (ACCENT[k] && !c.classList.contains('game-card-dim') && !c.classList.contains('game-card-locked'))
       c.style.setProperty('--accent', ACCENT[k]);
+    var cleanName = (function () { var h = c.querySelector('h2'); return h ? h.textContent.trim() : k; })();
     c.addEventListener('click', function () {
-      var h2 = c.querySelector('h2'); var name = h2 ? h2.textContent : k;
-      try { localStorage.setItem('pjcc.lastGame', JSON.stringify({ href: c.getAttribute('href'), name: name, k: k })); } catch (e) {}
+      try { localStorage.setItem('pjcc.lastGame', JSON.stringify({ href: c.getAttribute('href'), name: cleanName, k: k })); } catch (e) {}
     });
   });
 
-  // ---- Continue where you left off ----
+  // ---- Last game you played (title only) ----
   try {
     var last = JSON.parse(localStorage.getItem('pjcc.lastGame') || 'null');
     var hero = document.getElementById('continue-hero');
     if (last && last.href && hero) {
       var acc = ACCENT[last.k] || '#F5C518';
-      hero.innerHTML = '<span class="ch-eye">▶ Continue where you left off</span>' +
-        '<a class="ch-link" href="' + last.href + '" style="--accent:' + acc + '">' + (last.name || 'Last game') + ' &rarr;</a>';
+      hero.innerHTML = '<span class="ch-eye">Last</span>' +
+        '<a class="ch-link" href="' + last.href + '" style="--accent:' + acc + '">' + (last.name || 'Resume') + '</a>';
       hero.hidden = false;
     }
   } catch (e) {}
 
   // ---- "Your best" chip per card (local-first, upgraded from the profile) ----
-  // slug (href) -> [scoreKey, unit]
+  // Only shown when there's a real best — no "not played" labels.
   var SCOREKEY = {
     'notation-run': ['notation-run','score'], 'pirc-protocol': ['pirc-protocol','flawless'],
     'fork-in-the-road': ['fork-in-the-road','solved'], 'sand-mine-depths': ['sand-mine-depths','depth'],
     'clearance-delta': ['clearance-delta','score'],
     'shogi-island': ['shogi-island','solved'], 'tower-defense': ['tower-defense','score'],
-    'blindfold-puzzles': ['blindfold','solved'], 'sky-run': ['sky-run','score']
+    'blindfold-puzzles': ['blindfold','solved'], 'sky-run': ['sky-run','score'],
+    'the-gauntlet': ['the-gauntlet','cleared']
   };
   function scoreInfo(card) {
     var href = card.getAttribute('href') || '';
-    if (href.indexOf('/daily/') >= 0) return ['daily-dispatch','score'];
     return SCOREKEY[keyOf(href)] || null;
   }
   var chipEls = {};
@@ -444,46 +399,51 @@ permalink: /games/
     var info = scoreInfo(c); if (!info) return;
     var body = c.querySelector('.game-card-body'); var h2 = body ? body.querySelector('h2') : null; if (!h2) return;
     var best = (window.PJCC && PJCC.localBest) ? PJCC.localBest(info[0]) : 0;
-    var chip = document.createElement('span');
-    chip.className = 'gc-best' + (best > 0 ? '' : ' none');
-    chip.textContent = best > 0 ? ('★ your best ' + best.toLocaleString() + ' ' + info[1]) : 'not played';
-    h2.appendChild(document.createTextNode(' ')); h2.appendChild(chip);
-    chipEls[info[0]] = { chip: chip, unit: info[1] };
+    if (best > 0) {
+      var chip = document.createElement('span');
+      chip.className = 'gc-best';
+      chip.textContent = '★ best ' + best.toLocaleString() + ' ' + info[1];
+      h2.appendChild(document.createTextNode(' ')); h2.appendChild(chip);
+      chipEls[info[0]] = { chip: chip, unit: info[1], h2: h2 };
+    } else {
+      chipEls[info[0]] = { chip: null, unit: info[1], h2: h2 };
+    }
   });
   // upgrade chips with the (possibly higher) server best once the profile loads
   if (window.PJCC && PJCC.ready) PJCC.ready.then(function () {
     return PJCC.myStats ? PJCC.myStats() : [];
   }).then(function (stats) {
     (stats || []).forEach(function (s) {
-      var e = chipEls[s.game]; if (!e) return;
-      if ((s.best_score || 0) > 0) { e.chip.className = 'gc-best'; e.chip.textContent = '★ your best ' + s.best_score.toLocaleString() + ' ' + e.unit; }
+      var e = chipEls[s.game]; if (!e || !(s.best_score > 0)) return;
+      if (!e.chip && e.h2) { e.chip = document.createElement('span'); e.chip.className = 'gc-best'; e.h2.appendChild(document.createTextNode(' ')); e.h2.appendChild(e.chip); }
+      if (e.chip) { e.chip.textContent = '★ best ' + s.best_score.toLocaleString() + ' ' + e.unit; }
     });
   }).catch(function () {});
 
   function isDev(c) { return c.classList.contains('game-card-dim') || c.classList.contains('game-card-locked'); }
-  function cardKey(c) { var h = c.getAttribute('href') || ''; return h.indexOf('/daily/') >= 0 ? 'daily' : keyOf(h); }
+  function cardKey(c) { return keyOf(c.getAttribute('href') || ''); }
 
   // ---- recent-change log -> auto "✦ new" badges + changelog popover ----
   var NEW_DAYS = 21;
   var CHANGELOG = {
+    'the-gauntlet':      { date: '2026-06-21', note: 'New — play real games of chess up a ladder of opponents to the CEO.' },
     'notation-run':      { date: '2026-06-20', note: 'v3.5 — Daily seeded chart + a global timing-accuracy board.' },
     'pirc-protocol':     { date: '2026-06-20', note: 'v2.1 — Blunder Traps deck: famous traps, machine-verified forced mates.' },
-    'tower-defense':     { date: '2026-06-21', note: 'v2.1 — tower synergies (Knight+Queen haste · Bishop+Rook pierce) + Daily mutator-roulette with a global board.' },
+    'tower-defense':     { date: '2026-06-21', note: 'v2.2 — full chess-relationship synergy matrix (battery/pin/fork/…).' },
     'shogi-island':      { date: '2026-06-20', note: 'v3.1 — real 詰将棋 tsume (mate-in-3/5) and a full 9×9 AI match.' },
     'blindfold-puzzles': { date: '2026-06-20', note: 'v2.1 — Speed-Vision, Describe-only, Daily; Mind’s Eye tiers, blitz clock, replay.' },
-    'sky-run':           { date: '2026-06-15', note: 'v1.0 — new chess-Bloons sky shooter.' },
-    'daily':             { date: '2026-06-20', note: 'New — date-seeded Dead Drop word, daily board + streak.' }
+    'fork-in-the-road':  { date: '2026-06-21', note: 'v2.1 — accepts any mate-in-one, OK-to-continue, clearer side-to-move.' },
+    'sky-run':           { date: '2026-06-15', note: 'v1.0 — new chess-Bloons sky shooter.' }
   };
   function daysSince(d) { var t = Date.parse(d + 'T00:00:00'); return isNaN(t) ? 9e9 : (Date.now() - t) / 86400000; }
   var PREVIEW = { 'notation-run':['♫','♪','♬'], 'pirc-protocol':['♚','♟','♛'], 'fork-in-the-road':['♞','⚔','♝'],
     'sand-mine-depths':['⛏','💎','♘'], 'clearance-delta':['Δ','✦','▲'], 'shogi-island':['将','歩','王'],
-    'tower-defense':['🏰','♜','❄'], 'blindfold-puzzles':['◻','♟','👁'], 'sky-run':['♞','✦','♛'], 'daily':['📡','✦','🔑'] };
+    'tower-defense':['🏰','♜','❄'], 'blindfold-puzzles':['◻','♟','👁'], 'sky-run':['♞','✦','♛'], 'the-gauntlet':['♛','♟','♚'] };
 
   // games that have a date-seeded "daily" mode, with how to tell if it's done today
   function todayS() { return (window.PJCC && PJCC.dayStamp) ? PJCC.dayStamp() : new Date().toISOString().slice(0,10); }
   function lsField(key, field) { try { var o = JSON.parse(localStorage.getItem(key)); return o ? o[field] : null; } catch (e) { return null; } }
   var DAILY = {
-    'daily':              function () { return lsField('pjcc.daily.v1', 'last') === todayS(); },
     'blindfold-puzzles':  function () { return lsField('pjcc.bf.daily', 'day') === todayS(); },
     'notation-run':       null,   // has a Daily chart, but it's replayable (no done-lock)
     'fork-in-the-road':   null,   // daily seeded ladder
@@ -514,10 +474,9 @@ permalink: /games/
     }
   });
 
-  // ---- unified filter (tab + search) + sort ----
-  var grid = cards.length ? cards[0].parentNode : null;
+  // ---- tab filter (categories stay; empty sections hide themselves) ----
   var original = Array.prototype.slice.call(cards);
-  var activeFilter = 'all', term = '';
+  var activeFilter = 'all';
   function matchesFilter(c) {
     if (activeFilter === 'playable') return !isDev(c);
     if (activeFilter === 'dev') return isDev(c);
@@ -525,22 +484,16 @@ permalink: /games/
     if (activeFilter === 'daily') return c.getAttribute('data-daily') === '1';
     return true;
   }
-  function cardText(c) { var h2 = c.querySelector('h2'), p = c.querySelector('p'); return ((h2 ? h2.textContent : '') + ' ' + (p ? p.textContent : '')).toLowerCase(); }
   function applyFilters() {
     Array.prototype.forEach.call(cards, function (c) {
-      var show = matchesFilter(c) && (!term || cardText(c).indexOf(term) >= 0);
-      c.classList.toggle('gc-hidden', !show);
+      c.classList.toggle('gc-hidden', !matchesFilter(c));
     });
-  }
-  function bestOf(c) { var info = scoreInfo(c); if (!info) return -1; return (window.PJCC && PJCC.localBest) ? PJCC.localBest(info[0]) : 0; }
-  function sortBy(mode) {
-    if (!grid) return;
-    var arr = original.slice();
-    if (mode === 'az') arr.sort(function (a, b) { return cardText(a).localeCompare(cardText(b)); });
-    else if (mode === 'new') arr.sort(function (a, b) { var da = CHANGELOG[cardKey(a)], db = CHANGELOG[cardKey(b)];
-      return (db ? Date.parse(db.date) : 0) - (da ? Date.parse(da.date) : 0); });
-    else if (mode === 'best') arr.sort(function (a, b) { return bestOf(b) - bestOf(a); });
-    arr.forEach(function (c) { grid.appendChild(c); });
+    Array.prototype.forEach.call(document.querySelectorAll('.game-cat'), function (sec) {
+      if (sec.id === 'leaderboards-cat') return;            // never hide the leaderboards section
+      if (!sec.querySelector('.games-grid')) return;
+      var any = sec.querySelector('.game-card:not(.gc-hidden)');
+      sec.classList.toggle('gc-hidden', !any);
+    });
   }
   var tabs = document.querySelectorAll('#game-filters .gf-tab');
   Array.prototype.forEach.call(tabs, function (t) {
@@ -549,10 +502,6 @@ permalink: /games/
       activeFilter = t.getAttribute('data-filter'); applyFilters();
     });
   });
-  var search = document.getElementById('gf-search');
-  if (search) search.addEventListener('input', function () { term = this.value.trim().toLowerCase(); applyFilters(); });
-  var sortSel = document.getElementById('gf-sort');
-  if (sortSel) sortSel.addEventListener('change', function () { sortBy(this.value); });
 
   // ---- surprise me: jump to a random playable game ----
   var surprise = document.getElementById('gf-surprise');
@@ -606,7 +555,7 @@ permalink: /games/
     'tower-defense':    { label: 'Chess City',   href: '/locations/chess-city/' },
     'blindfold-puzzles':{ label: 'Princess',     href: '/characters/princess/' },
     'dungeon':          { label: 'Princess',     href: '/characters/princess/' },
-    'daily':            { label: 'The Dead Drop',href: '/dead-drop/' }
+    'the-gauntlet':     { label: 'The Rival',    href: '/characters/rival/' }
   };
   Array.prototype.forEach.call(document.querySelectorAll('a.game-card'), function (card) {
     var href = card.getAttribute('href') || '';

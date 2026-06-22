@@ -99,6 +99,16 @@
 .lb-score { text-align: right; color: #6bffb8; font-weight: 800; }
 .lb-empty { color: #9a7fd4; padding: 1rem 0; }
 .lb-me { background: rgba(245,197,24,0.08); }
+.lb-intro { color: #9a7fd4; max-width: 720px; }
+.lb-intro strong { color: #F5C518; }
+.lb-ghost { background: rgba(157,127,212,0.14); border: 1px solid #6b5fa0; border-left: 3px solid #F5C518;
+  border-radius: 8px; padding: 8px 14px; margin-bottom: 12px; color: #c9a7ff; font-size: 0.9rem; }
+.lb-ghost b { color: #F5C518; }
+.lb-more { background: #2D1B69; color: #F5C518; border: 1px solid #6b5fa0; border-radius: 999px;
+  padding: 8px 20px; cursor: pointer; font-weight: 700; margin-top: 14px; }
+.lb-more:hover:not(:disabled) { background: #F5C518; color: #1a0f3d; }
+.lb-more:disabled { opacity: 0.6; cursor: default; }
+.lb-end { color: #9a7fd4; margin-top: 14px; font-size: 0.8rem; letter-spacing: 0.05em; }
 
 /* Opt-in coaching panel on game pages */
 .coach { max-width: 860px; margin: 0 auto 1.4rem; background: #160c33; border: 1px solid #6b5fa0; border-radius: 10px; padding: 2px 16px; }
