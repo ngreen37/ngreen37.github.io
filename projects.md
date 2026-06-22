@@ -103,7 +103,6 @@ jukebox: true
     <div class="project-links">
       <a href="/characters/" class="project-link">Characters</a>
       <a href="/locations/" class="project-link">Locations</a>
-      <a href="/evolutions/" class="project-link">Evolution Log</a>
       <a href="/blog/" class="project-link">Blog</a>
     </div>
   </div>

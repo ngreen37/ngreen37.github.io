@@ -99,8 +99,6 @@ permalink: /production/
 <div class="pr-bible">
   <a class="pr-bible-card" href="{{ '/characters/' | relative_url }}"><span>♟</span><b>Character Sheets</b><small>turnarounds &amp; dossiers</small></a>
   <a class="pr-bible-card" href="{{ '/locations/' | relative_url }}"><span>🗺️</span><b>Locations</b><small>the world, place by place</small></a>
-  <a class="pr-bible-card" href="{{ '/evolutions/' | relative_url }}"><span>✎</span><b>Evolution Log</b><small>how the designs changed</small></a>
-  <a class="pr-bible-card" href="{{ '/lore-codex/' | relative_url }}"><span>📖</span><b>Lore Codex</b><small>canon &amp; classified files</small></a>
 </div>
 
 <p class="pr-foot">Following along? The <a href="{{ '/mailing-list/' | relative_url }}">dispatch</a> sends a note each time a bar moves.</p>

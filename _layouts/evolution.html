@@ -3,7 +3,7 @@ layout: default
 ---
 
 <div class="character-top-nav">
-  <a href="{{ '/evolutions/' | relative_url }}" class="back-btn">&larr; Evolution Log</a>
+  <a href="{% if page.entity_url %}{{ page.entity_url | relative_url }}{% elsif page.category == 'location' %}{{ '/locations/' | relative_url }}{% else %}{{ '/characters/' | relative_url }}{% endif %}" class="back-btn">&larr; Back</a>
   <div class="evo-top-right">
     {% if page.category == 'location' %}
       <a href="{{ '/locations/' | relative_url }}" class="back-btn">All Locations</a>

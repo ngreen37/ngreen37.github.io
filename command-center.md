@@ -68,7 +68,6 @@ permalink: /command-center/
       <a href="{{ '/games/' | relative_url }}">🕹️ The Arcade</a>
       <a href="{{ '/academy/' | relative_url }}">🎓 Academy</a>
       <a href="{{ '/production/' | relative_url }}">🎬 The Pilot</a>
-      <a href="{{ '/lore-codex/' | relative_url }}">📖 Lore Codex</a>
       <a href="{{ '/leaderboards/' | relative_url }}">🏆 Leaderboards</a>
     </div>
   </div>
@@ -172,7 +171,7 @@ permalink: /command-center/
     });
     $('cc-frag-count').textContent = got + ' / 6';
     $('cc-frag-note').innerHTML = got >= 6
-      ? 'All six recovered — the <a href="{{ '/lore-codex/' | relative_url }}">origin</a> is unsealed.'
+      ? 'All six recovered — the <a href="{{ '/classified/' | relative_url }}">origin</a> is unsealed.'
       : (6-got) + ' fragment' + ((6-got)===1?'':'s') + ' to unseal the origin. Read files, dig deep, poke the edges.';
   })();
 

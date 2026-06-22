@@ -1,6 +1,6 @@
 # The Build Playlist — single source of truth.
-# Add a new song here and it appears on BOTH the /soundtrack/ page AND the
-# site-wide jukebox automatically. Fields: ep (episode label), title, id
+# Add a new song here and it appears in the site-wide jukebox
+# automatically. Fields: ep (episode label), title, id
 # (the Spotify track id — the part after /track/ in the share URL).
 - ep: "Ep. 1 — First Post"
   title: "Minus the Bear - Drilling"
