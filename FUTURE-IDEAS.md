@@ -335,6 +335,17 @@ and combination over new clutter. ★ = low-lift · ⛁ = wants backend. **Just 
 slowed + tap-to-pause/resume + studio promo items; "Read the Blog" shrunk to a corner "field notes" tab;
 "lessons learned" paragraph cut; bolder countdown headers.*
 
+> **Nav, pared down — shipped 2026-06-23 + 5 more ideas.** The logo is now a faded watermark (still links home);
+> "PJCC" is the clickable group header (the redundant PJCC link is gone); **Daily Dispatch moved off the nav** onto
+> the PJCC home as a feature card; the whole **McPuppy side collapsed to one link → `/projects/`**, which is now the
+> **McPuppy Studios hub** (Blog · Mailing List · Press Pass · Educators live there), and the splash `/` got a McPuppy
+> quadrant. **Five ways to pare it further:** (1) ★ collapse "Characters & Locations / Academy / The Pilot" into a
+> single **"The World"** dropdown (hover/tap) so the bar is just *PJCC · Games · The World · Dossier · McPuppy*;
+> (2) ★ make the nav **context-aware** — show the PJCC links on PJCC pages and the McPuppy links on McPuppy pages,
+> never both; (3) **sticky mini-bar on scroll** — shrink to just the watermark + a ⌘K-style command/search palette;
+> (4) ★ fold **Your Dossier** into a single operative avatar pill (already in the top bar) and drop the middle nav
+> slot entirely; (5) **icon-only nav** on mobile (♟ games · ◈ dispatch · ⬡ dossier) with labels on hover/long-press.
+
 **Hero / first impression**
 1. ★ **Adaptive hero CTA** — first-timer sees "Meet Princess," a returning operative sees "Resume your dossier," mid-build sees "Today's mission."
 2. **Hero animatic loop** — a 5–10s muted Blender/animatic clip behind the title (reduced-motion safe): the cheapest "this is real" signal.

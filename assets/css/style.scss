@@ -148,14 +148,17 @@ ul, ol {
 }
 
 /* --- Site Logo (header) --- */
+/* The logo reads as a faded watermark by default (still a clickable link to home),
+   and lifts toward full strength on hover/focus. */
 .site-logo {
   display: block;
   line-height: 0;
   text-decoration: none;
-  transition: opacity 0.2s;
+  opacity: 0.38;
+  transition: opacity 0.25s;
 
-  &:hover {
-    opacity: 0.8;
+  &:hover, &:focus-visible {
+    opacity: 0.92;
     text-decoration: none;
   }
 }
@@ -164,7 +167,7 @@ ul, ol {
   height: 80px;
   width: auto;
   display: block;
-  filter: invert(1);
+  filter: invert(1) grayscale(0.35);
 }
 
 /* --- Navigation Pills --- */
@@ -214,6 +217,20 @@ ul, ol {
 .nav-group-studio .nav-group-label {
   color: rgba(220, 220, 220, 0.72);
 }
+
+/* A group label that is itself the clickable link (PJCC · McPuppy Studios). */
+.nav-group-label-link {
+  pointer-events: auto;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.15s, opacity 0.15s;
+}
+.nav-group-label-link:hover,
+.nav-group-label-link:focus-visible { color: #F5C518; text-decoration: none; }
+
+/* McPuppy side is now a single clickable brand link (mirrors the PJCC header). */
+.nav-mcpuppy-solo { margin-bottom: 0; }
+.nav-group-studio .nav-mcpuppy-solo:hover { color: #fff; }
 
 .nav-group-pjcc {
   padding: 20px 24px 20px 16px;

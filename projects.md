@@ -1,12 +1,27 @@
 ---
 layout: page
-title: Projects
+title: McPuppy Studios
 permalink: /projects/
 body_class: theme-bw
 jukebox: true
 ---
 
-<p class="projects-intro">McPuppy Studios is an independent creative studio built around storytelling, animation, and chess. Everything here is built from the ground up — one idea at a time.</p>
+<p class="projects-intro">An independent studio. Stories, chess, and things built from nothing — one idea at a time. Most of it isn't finished. That's on purpose.</p>
+
+<nav class="studio-hub" aria-label="McPuppy Studios sections">
+  <a href="/pjcc/">PJCC</a>
+  <a href="/blog/">Blog</a>
+  <a href="/mailing-list/">Mailing List</a>
+  <a href="/press-pass/">Press Pass</a>
+  <a href="/educators/">For Educators</a>
+</nav>
+<style>
+.studio-hub { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 18px; }
+.studio-hub a { font-size: 0.82rem; font-weight: 700; text-decoration: none; color: #cdbcf2;
+  background: rgba(110,95,160,0.18); border: 1px solid #4a3a86; border-radius: 999px; padding: 6px 14px;
+  transition: border-color .15s, color .15s; }
+.studio-hub a:hover { border-color: #F5C518; color: #F5C518; }
+</style>
 
 <div class="projects-stats" id="projects-stats" aria-label="Studio at a glance">
   <div class="pstat"><span class="pstat-num" id="pstat-playable">—</span><span class="pstat-lab">playable now</span></div>
@@ -95,7 +110,7 @@ jukebox: true
       </span>
       <h2 class="project-title">Princess and the Journey to Chess City</h2>
     </div>
-    <p class="project-desc">The flagship project. <em>Princess and the Journey to Chess City</em> (PJCC) is an original cartoon series following a young man who discovers the world of chess and the strange, strategic lands that come with it.</p>
+    <p class="project-desc">A dog. A board. A city across the sea. The whole reason any of this exists.</p>
     <ul class="project-details">
       <li><strong>Format:</strong> Animated series</li>
       <li><strong>Status:</strong> Story, characters, and world-building ongoing</li>
@@ -116,7 +131,7 @@ jukebox: true
       </span>
       <h2 class="project-title">PJCC Dungeon Crawler</h2>
     </div>
-    <p class="project-desc">A chessboard dungeon crawler set in the PJCC universe. Play as Princess, capture enemy pieces by chess rules, clear rooms, and reach the exit.</p>
+    <p class="project-desc">Every room is a tactic. Princess goes down. Not everything comes back up.</p>
     <ul class="project-details">
       <li><strong>Format:</strong> Browser game</li>
       <li><strong>Status:</strong> Playable — new floors and pieces in progress</li>
@@ -136,7 +151,7 @@ jukebox: true
       </span>
       <h2 class="project-title">Follow the Dog</h2>
     </div>
-    <p class="project-desc">A Star Fox-style chess runner (formerly Space Run). The CEO of the Chess City Invitational hurls chess pieces that unfold into rideable tracks — follow the dog, skate onto each one, and ride it to the end. Rooks run long, bishops zigzag, knights cut an L, and the King's lanes bite back.</p>
+    <p class="project-desc">Don't think. Follow her. The pieces become the path — if you trust it.</p>
     <ul class="project-details">
       <li><strong>Format:</strong> Browser game</li>
       <li><strong>Status:</strong> Playable — new piece patterns in progress</li>
@@ -157,7 +172,7 @@ jukebox: true
       </span>
       <h2 class="project-title">Sky Run <span class="ver">v1.0</span></h2>
     </div>
-    <p class="project-desc">A chess-Bloons sky shooter: Princess flies town to town toward Chess City, popping the pieces that fall from above. Collect Bishop (X-shot), Knight (escorts), and Queen (super-shot) power-ups, build a combo to charge the King's pawn-summon, and break each region's boss — with the CEO's Office waiting at the very top. Built to port to the Blender/Godot 3D path.</p>
+    <p class="project-desc">She flies. They fall. Keep her in the sky long enough to reach the top.</p>
     <ul class="project-details">
       <li><strong>Format:</strong> Browser game (canvas)</li>
       <li><strong>Status:</strong> Playable — balance &amp; content tuning to come</li>
@@ -178,7 +193,7 @@ jukebox: true
       </span>
       <h2 class="project-title">The Pirc Protocol <span class="ver">v2.0</span></h2>
     </div>
-    <p class="project-desc">A spaced-repetition opening trainer. Sit across the board from Princess and answer her openings — the Pirc Defense, the Italian Game, the Scandinavian — one book move at a time. Master a line and it returns later; slip up and it comes back sooner, Anki-style.</p>
+    <p class="project-desc">Her openings, on repeat, until they're yours. Miss one and it comes back sooner.</p>
     <ul class="project-details">
       <li><strong>Format:</strong> Browser game</li>
       <li><strong>Status:</strong> Playable — more openings in progress</li>
@@ -199,7 +214,7 @@ jukebox: true
       </span>
       <h2 class="project-title">Fork in the Road <span class="ver">v2.0</span></h2>
     </div>
-    <p class="project-desc">A chess tactics trainer dressed as a journey. Each puzzle — fork, pin, skewer, discovered attack, mate — is a step on the road to Chess City. Find the winning move and Princess advances across the world map. Journey mode and a date-seeded Daily Five.</p>
+    <p class="project-desc">One move wins. Find it, and the road opens a little further.</p>
     <ul class="project-details">
       <li><strong>Format:</strong> Browser game</li>
       <li><strong>Status:</strong> Playable — more puzzles in progress</li>
@@ -210,34 +225,13 @@ jukebox: true
     </div>
   </div>
 
-  <div class="project-card project-card-featured">
-    <div class="featured-ribbon">PLAYABLE NOW</div>
-    <div class="project-card-corner-piece" aria-hidden="true">Δ</div>
-    <div class="project-card-header">
-      <span class="project-status project-status-done">
-        <span class="project-status-dot"></span>
-        Completed (pending improvements)
-      </span>
-      <h2 class="project-title">Clearance: DELTA <span class="ver">v1.3</span></h2>
-    </div>
-    <p class="project-desc">An operative trivia exam in the style of the Classified archive. Answer questions on chess rules, tactics, and history — and on the PJCC files themselves — to climb the clearance ladder from Recruit to Above Omega. Every promotion unredacts another dossier fragment; three wrong answers revokes your access.</p>
-    <ul class="project-details">
-      <li><strong>Format:</strong> Browser game</li>
-      <li><strong>Status:</strong> Playable — more questions in progress</li>
-    </ul>
-    <div class="project-links">
-      <a href="/games/clearance-delta/" class="project-link project-link-play">▶ PLAY NOW</a>
-      <a href="/games/" class="project-link">All Games</a>
-    </div>
-  </div>
-
   <div class="project-card project-card-soon">
     <div class="project-card-corner-piece" aria-hidden="true">♞</div>
     <div class="project-card-header">
       <span class="project-status project-status-soon">Coming Soon</span>
       <h2 class="project-title">Blender Animations</h2>
     </div>
-    <p class="project-desc">Short 2D/3D animation experiments built in Blender — scene studies, character tests, and world sketches for PJCC.</p>
+    <p class="project-desc">Frames, in the dark. They're coming.</p>
     <ul class="project-details">
       <li><strong>Format:</strong> Short clips</li>
       <li><strong>Status:</strong> Clips posted as they're ready</li>
@@ -253,7 +247,7 @@ jukebox: true
       </span>
       <h2 class="project-title">Chess Lessons</h2>
     </div>
-    <p class="project-desc">Real chess instruction for beginners and intermediates, taught by the creator of PJCC. The lessons directly inform how chess concepts are woven into the story.</p>
+    <p class="project-desc">Real chess, taught by hand. Everything else here grows out of these.</p>
     <div class="project-links">
       <a href="/chess-lessons/" class="project-link">Visit Chess Lessons &rarr;</a>
     </div>
@@ -265,7 +259,7 @@ jukebox: true
       <span class="project-status project-status-soon">Coming Soon</span>
       <h2 class="project-title">Podcast</h2>
     </div>
-    <p class="project-desc">A podcast going behind the scenes of building McPuppy Studios — animation, chess, creative process, and making things from scratch. <strong>Coming Winter 2026.</strong></p>
+    <p class="project-desc">Off the record, on the build. <strong>Winter 2026.</strong></p>
     <div class="project-links">
       <a href="/blog/" class="project-link">More Info &rarr;</a>
     </div>
@@ -277,7 +271,7 @@ jukebox: true
       <span class="project-status project-status-soon">Coming Soon</span>
       <h2 class="project-title">Code &amp; Tools</h2>
     </div>
-    <p class="project-desc">Scripts, generators, and small tools built to support the studio — Python utilities, Blender add-ons, and workflow experiments shared on GitHub.</p>
+    <p class="project-desc">The tools behind the curtain. Shared when they're ready.</p>
     <ul class="project-details">
       <li><strong>Status:</strong> Projects linked when published</li>
     </ul>
@@ -293,7 +287,7 @@ jukebox: true
       </span>
       <h2 class="project-title">Notation Blitz <span class="ver">v3.4</span></h2>
     </div>
-    <p class="project-desc">A coordinate-reading rhythm game set in the streets of Checker Town. Square names drop on the beat — click them before they pass the gate. Forgiving timing, an approach ring that tells you exactly when to hit, saved personal bests, and a Pirc Defense mode that traces the Rival's opening move by move.</p>
+    <p class="project-desc">Read the square before it's gone. The streets keep the beat.</p>
     <ul class="project-details">
       <li><strong>Format:</strong> Browser game</li>
       <li><strong>Status:</strong> Completed — playable now, polish ongoing</li>
@@ -314,7 +308,7 @@ jukebox: true
       </span>
       <h2 class="project-title">Sand Mine Depths <span class="ver">v2.2</span></h2>
     </div>
-    <p class="project-desc">A knight-movement descent roguelite set in the mine beneath Checker Town. Princess hops in L-shapes, the sand and rock cave in behind her, and the deeper she goes the more the mine remembers. A buried thread of the Subject Zero mystery.</p>
+    <p class="project-desc">Down. The deeper she digs, the more the mine remembers. Something's buried here.</p>
     <ul class="project-details">
       <li><strong>Format:</strong> Browser game</li>
       <li><strong>Status:</strong> Completed — playable now, deeper floors and lore ongoing</li>
@@ -335,7 +329,7 @@ jukebox: true
       </span>
       <h2 class="project-title">Shogi Island <span class="ver">v3.0</span></h2>
     </div>
-    <p class="project-desc">A shogi school that teaches by playing. Solve a rising ladder of problems — read a piece, capture, give check, then forced checkmate — on a full 9×9 board. The whole guide begins in Japanese and decodes into English one line per solve, the bare island slowly blooms into a grand Japanese scene, and getting far enough unlocks a hidden match: Catch the Lion (Dōbutsu Shōgi). Every problem is generated and computer-verified.</p>
+    <p class="project-desc">A foreign board that teaches itself. Read far enough and it opens.</p>
     <ul class="project-details">
       <li><strong>Format:</strong> Browser game</li>
       <li><strong>Status:</strong> Playable — engine, decode codex, theme bloom, and the hidden Lion match all live</li>
@@ -355,7 +349,7 @@ jukebox: true
       </span>
       <h2 class="project-title">Knight's Tour</h2>
     </div>
-    <p class="project-desc">The centuries-old chess puzzle, reframed as Princess's journey. Place the knight anywhere a complete tour exists, hop every square exactly once, and chase the closed-tour bonus — across a Journey of five growing boards (5×5 up to a full 8×8), free play, or a shared daily challenge. A Warnsdorff "Coach" teaches the classic fewest-exits trick.</p>
+    <p class="project-desc">Touch every square. Once. Leave nothing behind.</p>
     <ul class="project-details">
       <li><strong>Format:</strong> Browser game</li>
       <li><strong>Status:</strong> Live — rebuilt with a tour solver, scoring &amp; a daily challenge</li>
@@ -425,4 +419,4 @@ jukebox: true
 })();
 </script>
 
-<p class="projects-footer-note">More in the works. Check the <a href="/blog/">blog</a> for updates.</p>
+<p class="projects-footer-note">More in the dark. The <a href="/blog/">blog</a> surfaces what's ready.</p>

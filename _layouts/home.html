@@ -68,6 +68,31 @@ layout: default
   </div>
 </div>
 
+{% comment %} ── 3b. DAILY DISPATCH (moved here from the nav) ──────────── {% endcomment %}
+<a class="home-daily" href="{{ '/daily/' | relative_url }}">
+  <div class="home-daily-eyebrow">◈ Today's transmission</div>
+  <div class="home-daily-row">
+    <div class="home-daily-text">
+      <div class="home-daily-title">The Daily Dispatch</div>
+      <div class="home-daily-sub">A fresh mission, a decoded fragment, and the world's state — new every day.</div>
+    </div>
+    <span class="home-daily-go">Open today's dispatch &rarr;</span>
+  </div>
+</a>
+<style>
+.home-daily { display: block; text-decoration: none; margin: 22px 0 8px;
+  background: linear-gradient(135deg, #1f1147, #34206f); border: 1px solid #6b5fa0;
+  border-left: 3px solid #F5C518; border-radius: 12px; padding: 14px 18px; transition: border-color .15s, transform .1s; }
+.home-daily:hover { border-color: #F5C518; transform: translateY(-1px); }
+.home-daily-eyebrow { font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: rgba(245,197,24,0.7); }
+.home-daily-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 4px; }
+.home-daily-text { flex: 1 1 240px; }
+.home-daily-title { color: #F5C518; font-weight: 800; font-size: 1.15rem; }
+.home-daily-sub { color: #cdbcf2; font-size: 0.86rem; margin-top: 2px; }
+.home-daily-go { color: #fff; font-weight: 700; font-size: 0.86rem; white-space: nowrap; }
+</style>
+
 {% comment %} ── 4. CHARACTER TEASER ──────────────────────────────── {% endcomment %}
 <section class="home-section">
   <h2 class="home-section-label">
