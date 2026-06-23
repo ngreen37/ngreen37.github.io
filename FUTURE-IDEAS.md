@@ -581,6 +581,16 @@ belts, global boards, a guide companion).
 
 ---
 
+## Avenue 13 — Access puzzles / hidden portals *(new lane)*
+
+Gated secret areas you **unlock by solving**, not by clicking a link. First up: a **portal to Shogi Island.**
+
+1. **The Shogi Island portal — "one A and eight C's."** Nate's seed: *use **one A and eight C's** to create the portal to Shogi Island.* Open to interpretation (pick the mechanism later): a typed incantation (`ACCCCCCCC`), a **chess-coordinate rite** (one move on the **a-file**, then the whole **c-file** — c1…c8 — lit in sequence), or a **musical key** (the notes **A** and **C**, struck 1-then-8) that "tunes" the gate. Solving it reveals the route to Shogi Island — and feeds the Japanese lane (Avenue 12).
+2. **Diegetic, not a menu** — the portal lives *in the world* (a locked map tile, a sealed door in a game), so finding it feels like discovery (decode-as-you-play; ARG tie, Avenue 2).
+3. **More portals later** — every region/island earns its own little rite to enter; collect them like keys. A cheap, repeatable mystery hook that rewards the curious.
+
+---
+
 ## 🅿️ Pulled from the live site (parked here)
 
 Removed from the live surface for a cleaner, less-is-more site — kept here so the work/idea isn't lost:
@@ -598,6 +608,10 @@ Removed from the live surface for a cleaner, less-is-more site — kept here so 
 - **Site-wide Princess speech** — removed; she's movement-only now (Avenue-6 talk ideas stay parked).
 - **The personal "Creator" bio** (career highlights / hobbies) — replaced with a mysterious "Operator";
   bring back selectively only if a real founder story helps a specific business ask.
+- **The Build Playlist jukebox** — removed entirely (2026-06-22, per "delete Soundtrack completely"):
+  the ♪ Spotify-embed player, its `_data/soundtrack.yml` track list, and `update_soundtrack.py`.
+  Replaced by the lighter **Album-of-the-Month** beat (Day Job Ideas #11). *Re-use if it ever returns:
+  original PJCC chiptune instead of Spotify embeds.*
 
 ---
 
@@ -689,7 +703,25 @@ only lands after the origin; a background character who matters later.)*
 
 10. **The Uncle — the Neville Goddard figure.** From **Barbados** (or equivalent) — a nod to the *real* Neville Goddard's birthplace — and a **dancer in Chess City** (Neville was literally a dancer before he became a mystic). He embodies the show's **Neville-Goddard spirituality** (assume the feeling; belief in oneself as the engine of success). **The Father is proud of him but dismisses Neville's "belief in himself" as the *reason* for his success** — the loving skeptic to the Uncle's mystic. That tension *is* the show's spiritual debate, dramatized inside one family. See the moral-center note above.
 
-11. **McPuppy "Album of the Month."** One recommended album per month (McPuppy Studios) — a low-lift content beat to **take the pressure off frequent blog posts.** Pairs with retiring the per-episode Build Playlist "soundtrack" and with the Game-Recaps lane (Avenue 11): fewer obligations, steadier rhythm. ⚠️ *Re: "delete Soundtrack completely" — confirming scope first: the Soundtrack **page** is already gone, but `_data/soundtrack.yml` still powers the site-wide **Build Playlist jukebox** (the ♪ player), so the player isn't being deleted without a nod.*
+11. **McPuppy "Album of the Month."** One recommended album per month (McPuppy Studios) — a low-lift content beat to **take the pressure off frequent blog posts.** Pairs with the Game-Recaps lane (Avenue 11): fewer obligations, steadier rhythm. ✅ *The Build Playlist jukebox + all Spotify tracks were fully removed 2026-06-22 ("delete Soundtrack completely"); Album-of-the-Month is its lightweight replacement.*
+
+**— Batch 3 (added 2026-06-22):**
+
+12. **Bottling tears to mourn?** *(Nate asked for more info — see chat.)* The real-world root: **lachrymatory / "tear bottles"** — small vials once used to collect a mourner's tears as a grief keepsake (Victorian era and older), echoed in **Psalm 56:8** ("put my tears in your bottle"). As a PJCC motif: a character who literally **bottles tears to mourn** — tender and a little eerie; the bottled tears could *matter* later (a relic, a key, a cure).
+
+13. **Aphorism — "beauty is only glamour until you physically age."** Surface beauty is a *glamour* (a spell) that time dissolves; what remains is the real thing. Substance-over-surface — pairs with the moral center; could be a vain villain's beat or a quiet wisdom line.
+
+14. **"Believe in belief."** A compact creed for the Neville-Goddard spine — not just believing a *thing*, but prizing **belief itself** as the engine. Candidate tagline / the Uncle's mantra.
+
+15. **Exit 37 — animate it.** A signature shot: **driving into Exit 37 with no guide** (phone cord broken, no GPS) — going on **faith/visualization** instead of directions. Trademark 2D→drive-sequence material; ties to the cord story (#18) and the Uncle/Neville theme (#10).
+
+**— Day Job notes (added 2026-06-22):**
+
+16. **The "Who's a happy dog?" scene.** A bit Nate loves: looking at a photo of Princess (or any dog, or all of them) and saying **"Who's a happy dog?"** — and a person on the *other side of the wall* answers **"I'm a happy dog,"** and they **bond.** A warm, silly recurring gag (perfect for shorts / an in-world running joke).
+
+17. **Patreon — writing collaboration.** Backers pitch ideas; **if Nate likes yours, he uses it and credits you.** Key framing: **episodes 1 through 3–4 are credited to Nate *only*** — establishing sole authorship first *enhances* the later collab appeal (you're joining a real, authored world, not co-writing from scratch).
+
+18. **The cord that saved the day** *(true story → manifestation material).* The phone **cord finally died** right when Nate needed to find the **NJ dog camp**; he **found it by visualization**, felt **dumb telling a friend**, then got **stranded** — and the **dead cord he'd refused to replace ended up saving the day.** A real-life parable for the show's "assume it, trust it" spirituality (ties to Exit 37 #15 and the Uncle #10).
 
 ---
 
