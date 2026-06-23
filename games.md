@@ -123,6 +123,7 @@ permalink: /games/
     { slug:'sand-mine-depths',  name:'Sand Mine Depths',   cryptic:"Descend. Don't look back.",      icon:'⛏',  accent:'#e0b25a', cat:'arcade', score:['sand-mine-depths','depth'] },
     { slug:'tower-defense',     name:'Siege on Chess City',cryptic:'Hold the gates.',                icon:'🏰', accent:'#ff8fd0', cat:'arcade', score:['tower-defense','score'] },
     { slug:'dungeon',           name:'Princess Dungeon',   cryptic:'Every room is a tactic.',        icon:'♟',  accent:'#ff8fd0', cat:'arcade', score:['dungeon','floors'], neu:'2026-06-22' },
+    { slug:'battle-room',       name:'The Battle Room',    cryptic:'Chess as an action sequence.',   icon:'⚔',  accent:'#56d0ff', cat:'dev', score:['battle-room','score'], neu:'2026-06-22' },
     { slug:'space-run',         name:'Space Run',          cryptic:'Outrun the barrage.',            icon:'✦',  accent:'#8fb8ff', cat:'dev' }
   ];
   var CATS = {

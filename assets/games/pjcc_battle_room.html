@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>PJCC: The Battle Room v0.1</title>
+<script src="/assets/js/pjcc-config.js"></script>
+<script src="/assets/js/pjcc-profile.js"></script>
+<script src="/assets/js/pjcc-pieces.js"></script>
+<script src="/assets/js/pjcc-chess.js"></script>
+<script src="/assets/js/pjcc-chess-ai.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color:transparent; }
+  html, body { background:#05030f; height:100%; overflow:hidden; font-family:'Trebuchet MS','Segoe UI',sans-serif; touch-action:manipulation; }
+  body { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+  #stage { position:relative; width:100%; max-width:460px; }
+  #cv { display:block; width:100%; border:3px solid #56d0ff; border-radius:12px; background:#05030f; box-shadow:0 0 44px rgba(86,208,255,0.20); }
+  .float-btn { position:absolute; z-index:6; font-weight:bold; border:none; border-radius:999px; cursor:pointer;
+    font-family:inherit; box-shadow:0 3px 0 rgba(0,0,0,0.4); transition:transform .08s; }
+  .float-btn:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,0.4); }
+  #resign-btn { top:10px; right:10px; background:#3a1530; color:#ff9ec9; padding:5px 12px; font-size:11px; border:1px solid #7a3060; }
+  .float-btn.hidden { display:none; }
+
+  .overlay { position:absolute; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:24px; text-align:center; border-radius:12px; background:radial-gradient(circle at 50% 24%, #0a2740 0%, #05030f 82%); overflow-y:auto; }
+  .overlay.hidden { display:none; }
+  .eyebrow { font-size:11px; letter-spacing:4px; color:#56d0ff; text-transform:uppercase; margin-bottom:10px; }
+  .big-title { font-size:30px; font-weight:900; color:#eaf6ff; letter-spacing:1px; text-shadow:0 0 22px rgba(86,208,255,0.6); margin-bottom:6px; }
+  .gate { font-size:12px; letter-spacing:3px; color:#ff6a8a; text-transform:uppercase; margin-bottom:12px; }
+  .blurb { font-size:13px; color:#bfe6ff; line-height:1.6; max-width:410px; margin-bottom:14px; }
+  .blurb b { color:#fff; }
+  .btn { font-weight:bold; cursor:pointer; border:none; border-radius:999px; padding:12px 26px; font-size:14px; letter-spacing:1px;
+    box-shadow:0 4px 0 rgba(0,0,0,0.4); transition:transform .08s; font-family:inherit; }
+  .btn:active { transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,0.4); }
+  .btn-go { background:#56d0ff; color:#04121f; } .btn-go:hover { background:#8fe0ff; }
+  .btn-ghost { background:#16263a; color:#bfe6ff; box-shadow:0 4px 0 #0a1726; }
+  .row { display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; justify-content:center; }
+  .mini { font-size:11px; color:#7fa8c8; margin-top:14px; line-height:1.6; max-width:400px; }
+  a { color:#56d0ff; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="cv" width="440" height="620"></canvas>
+  <button class="float-btn hidden" id="resign-btn">⚑ resign</button>
+
+  <div class="overlay" id="menu-screen">
+    <div class="eyebrow">Ender-style chess</div>
+    <div class="big-title">THE BATTLE ROOM</div>
+    <div class="gate">▾ the enemy's gate is down ▾</div>
+    <div class="blurb">Princess straps in and grips the <b>controller</b>. Every chess move you make launches a piece across the zero-G <b>battle room</b> — the action plays out up top while the <b>2D board</b> stays live on the side. Three commentators will not shut up about it.</div>
+    <div class="row"><button class="btn btn-go" id="play-btn">▶ ENTER THE BATTLE ROOM</button></div>
+    <div class="mini">Controller: the <b>D-pad</b> moves Princess's cursor, <b>A</b> selects then launches a move, <b>B</b> cancels. Or just tap a square. Arrow keys + Z / X work too. You are <b>White</b>; checkmate the Swarm.</div>
+  </div>
+
+  <div class="overlay hidden" id="over-screen">
+    <div class="eyebrow" id="over-eye">Result</div>
+    <div class="big-title" id="over-title" style="font-size:26px;">—</div>
+    <div class="blurb" id="over-msg"></div>
+    <div class="blurb" id="over-score" style="color:#56d0ff;font-weight:bold;"></div>
+    <div class="row" id="over-row"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+var C = window.PJCCChess, AI = window.PJCCChessAI;
+var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+var W = 440, H = 620;
+var TILE = 30, BOARD = TILE*8, BX = (W-BOARD)/2, BY = 348;     // side 2D board
+var AX = 14, AY = 40, AW = W-28, AH = 196;                     // arena (action view)
+var CMY = 246, CMH = 92;                                       // commentary strip
+var PAL = { wFill:'#f3ecd6', wEdge:'#4a3618', bFill:'#2a1330', bEdge:'#ffd6ef' };
+var LIGHT = '#33597a', DARK = '#1b3148';
+var PC = 'w';                                                  // player is White (Princess)
+var PERSONA = { name:'The Swarm', depth:2, blunder:0.07, aggr:0.45, mat:1, pst:1, timeMs:480 };
+var VAL = { P:1, N:3, B:3, R:5, Q:9, K:0 };
+var PNAME = { P:'pawn', N:'knight', B:'bishop', R:'rook', Q:'queen', K:'king' };
+
+// ---- three commentators who bicker bitterly ----
+var COMMS = [
+  { name:'Big Mo',        glyph:'♜', color:'#ff9b5e' },  // 0 — bloodthirsty hype man
+  { name:'The Professor', glyph:'♝', color:'#8fb8ff' },  // 1 — pompous positional snob
+  { name:'Gigi',          glyph:'♞', color:'#6bffb8' }   // 2 — sarcastic chaos gremlin
+];
+var LINES = {
+  start: [ {w:0,t:"BATTLE ROOM is HOT! Gates lit, lattice live!"},
+           {w:1,t:"Composure, please. The enemy's gate is down."},
+           {w:2,t:"Or panic interestingly. Your call, Princess."} ],
+  pquiet:[ {w:1,t:"Patient. Structure first — I approve."},
+           {w:0,t:"Boring! Somebody hit somebody!"},
+           {w:2,t:"Mo, it's move three. Sit down."},
+           {w:1,t:"A developing move. Textbook, Princess."},
+           {w:2,t:"'Textbook.' Nobody's read a book, Professor."} ],
+  aquiet:[ {w:0,t:"The Swarm's just... shuffling. Cowards."},
+           {w:1,t:"No — it's improving its worst piece. Note that."},
+           {w:2,t:"Nerd alert. He noted it. He NOTED it."} ],
+  pcap:  [ {w:0,t:"DOWN goes the {p}! Princess feeds the lattice!"},
+           {w:1,t:"Crude. Effective. I'll allow it."},
+           {w:2,t:"Professor 'allows' it like he had a vote."} ],
+  acap:  [ {w:0,t:"Augh! The Swarm took the {p}!"},
+           {w:2,t:"Walked the {p} right into it. Bold strategy."},
+           {w:1,t:"It was a fair trade. Stop wailing, Mo."} ],
+  check: [ {w:0,t:"CHECK! The king's in the open!"},
+           {w:1,t:"A check is not a plan, Mo."},
+           {w:2,t:"Says the man whose plan is a diagram."} ],
+  castle:[ {w:1,t:"Castled. Safety. The mark of a professional."},
+           {w:0,t:"Tucking the king away? In MY battle room?"} ],
+  promo: [ {w:0,t:"A NEW QUEEN rises! Glorious!"},
+           {w:2,t:"Imagine being a pawn your whole life, then THIS."} ],
+  win:   [ {w:0,t:"CHESS CITY HEARD THAT. Princess WINS!"},
+           {w:1,t:"Clean conversion. I taught her that."},
+           {w:2,t:"You taught her NOTHING, you taught us a headache."} ],
+  loss:  [ {w:2,t:"...and the Swarm wins. Anyway."},
+           {w:0,t:"WE'LL GET 'EM NEXT TIME, PRINCESS!"},
+           {w:1,t:"Perhaps fewer 'next times' if we listened to me."} ],
+  drawc: [ {w:1,t:"A draw. The just result, frankly."},
+           {w:0,t:"A draw is a tie is a NOTHING."},
+           {w:2,t:"This is the most you two have ever agreed. Scary."} ]
+};
+
+var STARS = [];
+(function(){ for (var i=0;i<46;i++){ STARS.push({ x:AX+Math.random()*AW, y:AY+Math.random()*AH, r:Math.random()*1.4+0.3, p:Math.random()*6.28 }); } })();
+
+var G = null;
+var press = { id:null, t:0 };   // brief controller-button flash
+
+function ci(col,row){ return row*8+col; }
+function colOf(i){ return i%8; }
+function rowOf(i){ return (i/8)|0; }
+function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+function easeIO(t){ return t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; }
+function boardCell(i){ return { x: BX+colOf(i)*TILE+TILE/2, y: BY+rowOf(i)*TILE+TILE/2 }; }
+function arenaCell(i){ var c=colOf(i), fr=7-rowOf(i);   // enemy's gate is DOWN: rank 8 sits at the bottom
+  return { x: AX+(c+0.5)*(AW/8), y: AY+(fr+0.5)*(AH/8) }; }
+
+function startGame(){
+  G = { S: C.parseFEN(C.START_FEN), legal: [], sel:-1, cursor: ci(4,6),  // cursor on e2
+        last:null, reps:{}, plies:0, pcap:0, log:[],
+        phase:'play', anim:null, over:false, result:null, feed:[] };
+  G.legal = C.legalMoves(G.S);
+  document.getElementById('menu-screen').classList.add('hidden');
+  document.getElementById('over-screen').classList.add('hidden');
+  document.getElementById('resign-btn').classList.remove('hidden');
+  comm('start');
+}
+
+// ---- commentary ----
+function say(w, text){ var c=COMMS[w]; G.feed.push({ w:w, text:text, t:performance.now() }); if (G.feed.length>3) G.feed.shift(); }
+function pick(arr){ return arr[(Math.random()*arr.length)|0]; }
+function comm(event, a){
+  var pool = LINES[event]; if (!pool || !G) return;
+  var first = pick(pool);
+  var text = first.t.replace('{p}', a && a.cap ? PNAME[a.cap] : 'piece');
+  say(first.w, text);
+  // big beats get a bitter rebuttal from a different commentator
+  if (event==='start' || event==='pcap' || event==='acap' || event==='check' || event==='win' || event==='loss' || event==='drawc'){
+    var others = pool.filter(function(l){ return l.w!==first.w; });
+    if (others.length && Math.random()<0.85){ var r=pick(others); say(r.w, r.t.replace('{p}', a&&a.cap?PNAME[a.cap]:'piece')); }
+  }
+}
+
+// ---- input ----
+function moveCursor(dc, dr){
+  if (!G || G.phase!=='play') return;
+  var c = clamp(colOf(G.cursor)+dc, 0, 7), r = clamp(rowOf(G.cursor)+dr, 0, 7);
+  G.cursor = ci(c, r);
+}
+function act(){
+  if (!G || G.phase!=='play') return;
+  var i = G.cursor, p = G.S.b[i], mine = p && C.colorOf(p)===PC;
+  if (G.sel < 0){ if (mine) G.sel = i; return; }
+  if (i === G.sel){ G.sel = -1; return; }
+  if (mine){ G.sel = i; return; }
+  var cands = G.legal.filter(function(m){ return m.from===G.sel && m.to===i; });
+  if (!cands.length){ G.sel = -1; return; }
+  var m = cands.length>1 ? C.findMove(G.S, G.sel, i, 'Q') : cands[0];   // auto-queen on promotion
+  G.sel = -1;
+  doMove(m, true);
+}
+function cancel(){ if (G && G.phase==='play') G.sel = -1; }
+
+function doMove(m, isPlayer){
+  var cap = G.S.b[m.to];
+  var mover = G.S.b[m.from], mc = C.colorOf(mover);
+  if (!cap && mover.toLowerCase()==='p' && colOf(m.from)!==colOf(m.to)){      // en passant
+    cap = G.S.b[ ci(colOf(m.to), rowOf(m.from)) ];
+  }
+  var castle = mover.toLowerCase()==='k' && Math.abs(colOf(m.to)-colOf(m.from))===2;
+  var promo = mover.toLowerCase()==='p' && (rowOf(m.to)===0 || rowOf(m.to)===7);
+  var san = C.toSAN(G.S, m);
+  G.log.push(san);
+  G.anim = { from:m.from, to:m.to, piece:mover.toUpperCase(), color:mc,
+             cap: cap?cap.toUpperCase():null, castle:castle, promo:promo,
+             san:san, isPlayer:isPlayer, m:m, t0:performance.now(), dur: cap?940:740 };
+  G.phase = 'anim';
+}
+function applyAnim(){
+  var a = G.anim;
+  if (a.cap){ if (a.isPlayer) G.pcap += (VAL[a.cap]||0); }
+  G.S = C.makeMove(G.S, a.m);
+  G.plies++;
+  G.last = { from:a.from, to:a.to };
+  var key = C.posKey(G.S); G.reps[key] = (G.reps[key]||0)+1;
+  comm(a.isPlayer ? (a.cap?'pcap':'pquiet') : (a.cap?'acap':'aquiet'), a);
+  if (a.castle) comm('castle', a);
+  if (a.promo) comm('promo', a);
+  var inChk = C.inCheck(G.S, G.S.turn);
+  var res = C.gameResult(G.S, G.reps[key]);
+  G.anim = null;
+  if (res){ endGame(res); return; }
+  if (inChk) comm('check', a);
+  G.legal = C.legalMoves(G.S);
+  if (G.S.turn === PC){ G.phase = 'play'; }
+  else { G.phase = 'thinking'; setTimeout(aiMove, 380); }
+}
+function aiMove(){
+  if (!G || G.over) return;
+  var m = AI.bestMove(G.S, PERSONA);
+  if (!m){ var r = C.gameResult(G.S, G.reps[C.posKey(G.S)]||1); if (r) endGame(r); return; }
+  doMove(m, false);
+}
+
+function scoreFor(won, draw, plies, captured){
+  var base = won ? 1000 : (draw ? 350 : 80);
+  var cap = captured * 12;
+  var speed = won ? Math.max(0, (70 - plies)) * 18 : 0;
+  return Math.round(base + cap + speed);
+}
+function endGame(result){
+  G.over = true; G.result = result; G.phase = 'over'; G.sel = -1;
+  document.getElementById('resign-btn').classList.add('hidden');
+  var won = (result==='checkmate') && (G.S.turn !== PC);
+  var draw = !won && result!=='checkmate' && result!=='resign';
+  var sc = scoreFor(won, draw, G.plies, G.pcap);
+  if (window.PJCC && PJCC.saveScore){
+    PJCC.saveScore('battle-room', sc, { credits: won?2:1,
+      data: { result: won?'win':(draw?'draw':'loss'), plies:G.plies, captured:G.pcap } });
+  }
+  comm(won?'win':(draw?'drawc':'loss'));
+  var eye, title, msg;
+  if (won){ eye='Victory'; title='THE GATE IS DOWN ★';
+    msg = 'You drove through the Swarm and took the enemy gate. Princess is learning the controller fast.'; }
+  else if (draw){ eye='Stalemate'; title='A DRAW';
+    msg = ({ stalemate:'No legal move, but no check — the lattice locks. Half a point.',
+             material:'Not enough force left to mate. Drawn.',
+             fifty:'Fifty moves, no progress. The room cools. Drawn.',
+             threefold:'The same position, three times over. Drawn.' }[result]) || 'Drawn.'; }
+  else { eye='Defeat'; title = result==='resign' ? 'YOU EJECTED' : 'OVERRUN';
+    msg = 'The Swarm holds the gate. Re-strap and run it again.'; }
+  document.getElementById('over-eye').textContent = eye;
+  document.getElementById('over-title').textContent = title;
+  document.getElementById('over-msg').textContent = msg;
+  document.getElementById('over-score').textContent = 'Score ' + sc + (PJCC && PJCC.localBest ? '   ·   best ' + Math.max(sc, PJCC.localBest('battle-room')||0) : '');
+  var row = document.getElementById('over-row'); row.innerHTML = '';
+  addBtn(row, '▶ RUN IT AGAIN', 'btn-go', startGame);
+  addBtn(row, '🏆 Leaderboards', 'btn-ghost', function(){ try { window.top.location.href='/leaderboards/'; } catch(e){ window.location.href='/leaderboards/'; } });
+  document.getElementById('over-screen').classList.remove('hidden');
+}
+function addBtn(row, label, cls, fn){ var b=document.createElement('button'); b.className='btn '+cls; b.textContent=label; b.onclick=fn; row.appendChild(b); }
+
+// ---- pointer + keyboard ----
+function canvasPt(e){ var r=cv.getBoundingClientRect(); return { x:(e.clientX-r.left)*(W/r.width), y:(e.clientY-r.top)*(H/r.height) }; }
+var DPAD = { cx:52, cy:476, reach:30 }, BTN_A = { x:388, y:452, r:25 }, BTN_B = { x:388, y:512, r:21 };
+function hitCtrl(x,y){
+  var dx=x-DPAD.cx, dy=y-DPAD.cy;
+  if (Math.abs(dx)<46 && Math.abs(dy)<46){
+    if (Math.abs(dx)>Math.abs(dy)) return dx<0?'left':'right';
+    return dy<0?'up':'down';
+  }
+  if ((x-BTN_A.x)*(x-BTN_A.x)+(y-BTN_A.y)*(y-BTN_A.y) < (BTN_A.r+8)*(BTN_A.r+8)) return 'A';
+  if ((x-BTN_B.x)*(x-BTN_B.x)+(y-BTN_B.y)*(y-BTN_B.y) < (BTN_B.r+8)*(BTN_B.r+8)) return 'B';
+  return null;
+}
+cv.addEventListener('pointerdown', function(e){
+  if (!G || G.phase==='over') return;
+  var pt = canvasPt(e); e.preventDefault();
+  // board?
+  if (pt.x>=BX && pt.x<BX+BOARD && pt.y>=BY && pt.y<BY+BOARD){
+    var col = Math.floor((pt.x-BX)/TILE), row = Math.floor((pt.y-BY)/TILE);
+    G.cursor = ci(clamp(col,0,7), clamp(row,0,7)); act(); return;
+  }
+  var h = hitCtrl(pt.x, pt.y); if (!h) return;
+  press = { id:h, t:performance.now() };
+  if (h==='up') moveCursor(0,-1); else if (h==='down') moveCursor(0,1);
+  else if (h==='left') moveCursor(-1,0); else if (h==='right') moveCursor(1,0);
+  else if (h==='A') act(); else if (h==='B') cancel();
+});
+window.addEventListener('keydown', function(e){
+  if (!G || G.phase==='over') return;
+  var k=e.key;
+  if (k==='ArrowUp'){ moveCursor(0,-1); e.preventDefault(); }
+  else if (k==='ArrowDown'){ moveCursor(0,1); e.preventDefault(); }
+  else if (k==='ArrowLeft'){ moveCursor(-1,0); e.preventDefault(); }
+  else if (k==='ArrowRight'){ moveCursor(1,0); e.preventDefault(); }
+  else if (k==='Enter'||k===' '||k==='z'||k==='Z'){ act(); e.preventDefault(); }
+  else if (k==='Escape'||k==='x'||k==='X'){ cancel(); }
+  else if (k==='r'||k==='R'){ if (G.phase==='play') endGame('resign'); }
+});
+document.getElementById('play-btn').onclick = startGame;
+document.getElementById('resign-btn').onclick = function(){ if (G && G.phase==='play') endGame('resign'); };
+
+// ---- rendering ----
+function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+function drawHUD(){
+  ctx.textAlign='left'; ctx.textBaseline='middle';
+  ctx.fillStyle='#56d0ff'; ctx.font='bold 14px Trebuchet MS';
+  ctx.fillText('⚔ THE BATTLE ROOM', 14, 22);
+  ctx.textAlign='right'; ctx.fillStyle='#bfe6ff'; ctx.font='12px Trebuchet MS';
+  var turnTxt = G.over ? '—' : (G.phase==='thinking' ? 'Swarm…' : (G.S.turn===PC?'Your move':'Swarm'));
+  ctx.fillText('move ' + (Math.floor(G.plies/2)+1) + '  ·  ' + turnTxt, W-14, 22);
+}
+
+function drawArena(now){
+  ctx.save();
+  // focus shift: arena is bright during action, calm otherwise
+  var acting = G.phase==='anim' && G.anim;
+  var shake = 0, flash = 0, scaleY = 1;
+  if (acting){
+    var p = clamp((now - G.anim.t0)/G.anim.dur, 0, 1);
+    var fp = clamp(p/0.16, 0, 1); scaleY = 0.18 + 0.82*easeIO(fp);   // camera slams in (the "flip")
+    flash = (1-fp)*0.5;
+    if (G.anim.cap && p>0.66){ var q=(p-0.66)/0.34; shake = Math.sin(q*40)*4*(1-q); }
+  }
+  // clip + transform around arena
+  ctx.beginPath(); roundRect(AX-2, AY-2, AW+4, AH+4, 10); ctx.clip();
+  ctx.translate(AX+AW/2 + shake, AY+AH/2);
+  ctx.scale(1, scaleY);
+  ctx.translate(-(AX+AW/2), -(AY+AH/2));
+  // space backdrop
+  var g = ctx.createLinearGradient(0,AY,0,AY+AH); g.addColorStop(0,'#0a1f33'); g.addColorStop(1,'#05030f');
+  ctx.fillStyle=g; ctx.fillRect(AX,AY,AW,AH);
+  for (var s=0;s<STARS.length;s++){ var st=STARS[s]; var tw=0.4+0.6*Math.abs(Math.sin(now/700+st.p));
+    ctx.globalAlpha=tw; ctx.fillStyle='#cfe9ff'; ctx.beginPath(); ctx.arc(st.x,st.y,st.r,0,7); ctx.fill(); }
+  ctx.globalAlpha=1;
+  // lattice grid
+  ctx.strokeStyle='rgba(86,208,255,0.10)'; ctx.lineWidth=1;
+  for (var gx=1; gx<8; gx++){ var X=AX+gx*(AW/8); ctx.beginPath(); ctx.moveTo(X,AY); ctx.lineTo(X,AY+AH); ctx.stroke(); }
+  for (var gy=1; gy<8; gy++){ var Y=AY+gy*(AH/8); ctx.beginPath(); ctx.moveTo(AX,Y); ctx.lineTo(AX+AW,Y); ctx.stroke(); }
+  // gates: Princess top, enemy bottom (down)
+  ctx.fillStyle='rgba(245,197,24,0.16)'; ctx.fillRect(AX, AY, AW, 10);
+  var eg = ctx.createLinearGradient(0,AY+AH-16,0,AY+AH); eg.addColorStop(0,'rgba(255,60,100,0.05)'); eg.addColorStop(1,'rgba(255,60,100,0.42)');
+  ctx.fillStyle=eg; ctx.fillRect(AX, AY+AH-16, AW, 16);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillStyle='rgba(255,120,150,0.8)'; ctx.font='bold 9px Trebuchet MS';
+  ctx.fillText("THE ENEMY'S GATE IS DOWN ▾", AX+AW/2, AY+AH-5);
+
+  if (acting){
+    var pp = clamp((now - G.anim.t0)/G.anim.dur, 0, 1);
+    var from = arenaCell(G.anim.from), to = arenaCell(G.anim.to);
+    var tt = easeIO(clamp((pp-0.12)/0.72, 0, 1));
+    var px = from.x + (to.x-from.x)*tt, py = from.y + (to.y-from.y)*tt;
+    var arc = -Math.sin(tt*Math.PI)*26;       // a little flight arc
+    // trail
+    for (var tr=1; tr<=5; tr++){ var ttp=clamp(tt-tr*0.05,0,1); var trx=from.x+(to.x-from.x)*ttp, trY=from.y+(to.y-from.y)*ttp - Math.sin(ttp*Math.PI)*26;
+      ctx.globalAlpha=0.10*(6-tr); ctx.fillStyle = G.anim.color===PC?'#9fe0ff':'#ff9ec9';
+      ctx.beginPath(); ctx.arc(trx, trY, 12-tr, 0, 7); ctx.fill(); }
+    ctx.globalAlpha=1;
+    // capture burst
+    if (G.anim.cap && pp>0.7){ var q=(pp-0.7)/0.3;
+      ctx.globalAlpha=1-q; ctx.fillStyle='rgba(255,90,120,'+(0.6*(1-q))+')';
+      ctx.beginPath(); ctx.arc(to.x, to.y, 8+q*34, 0, 7); ctx.fill();
+      for (var sp=0; sp<8; sp++){ var ang=sp/8*6.28; var rr=q*30;
+        ctx.fillStyle='#ffd0dc'; ctx.beginPath(); ctx.arc(to.x+Math.cos(ang)*rr, to.y+Math.sin(ang)*rr, 2.4*(1-q), 0, 7); ctx.fill(); }
+      ctx.globalAlpha=1;
+    }
+    // the flying piece
+    PJCCPieces.draw(ctx, px, py+arc, 30, G.anim.piece, G.anim.color, PAL);
+    // move label
+    ctx.globalAlpha=clamp(1.4-pp,0,1); ctx.fillStyle='#eaf6ff'; ctx.font='bold 20px Trebuchet MS'; ctx.textAlign='center';
+    ctx.fillText(G.anim.san, AX+AW/2, AY+26); ctx.globalAlpha=1;
+  } else {
+    // calm scene — Princess at her gate with the controller
+    var bob = Math.sin(now/520)*3;
+    PJCCPieces.draw(ctx, AX+AW/2, AY+34+bob, 30, 'N', PC, PAL);
+    ctx.fillStyle='#7fd8ff'; ctx.font='9px Trebuchet MS'; ctx.textAlign='center';
+    ctx.fillText('▣ controller ready', AX+AW/2, AY+58+bob);
+    ctx.fillStyle = G.phase==='thinking' ? '#ff9ec9' : '#bfe6ff'; ctx.font='12px Trebuchet MS';
+    ctx.fillText(G.phase==='thinking' ? 'the Swarm is moving…' : 'Your move — dive the gate.', AX+AW/2, AY+AH/2+6);
+  }
+  // flash
+  if (flash>0){ ctx.fillStyle='rgba(180,230,255,'+flash+')'; ctx.fillRect(AX,AY,AW,AH); }
+  ctx.restore();
+  // arena frame
+  ctx.strokeStyle = acting ? '#8fe0ff' : '#2d5f80'; ctx.lineWidth=2; roundRect(AX-2,AY-2,AW+4,AH+4,10); ctx.stroke();
+}
+
+function drawCommentary(now){
+  ctx.textAlign='left';
+  for (var i=0;i<G.feed.length;i++){
+    var f = G.feed[i], c = COMMS[f.w]; var y = CMY + 14 + i*26;
+    var age = (now - f.t); var fade = clamp(1 - (i===0 && G.feed.length>2 ? 0.0 : 0), 0, 1);
+    ctx.globalAlpha = 0.45 + 0.55*((i+1)/G.feed.length);
+    ctx.fillStyle = c.color; ctx.font='bold 12px Trebuchet MS'; ctx.textBaseline='middle';
+    ctx.fillText(c.glyph + ' ' + c.name + ':', 16, y);
+    var nameW = ctx.measureText(c.glyph + ' ' + c.name + ': ').width;
+    ctx.fillStyle = '#dfeefb'; ctx.font='12px Trebuchet MS';
+    var txt = f.text; var maxW = W-28-nameW;
+    while (ctx.measureText(txt).width > maxW && txt.length>4){ txt = txt.slice(0,-2); }
+    if (txt !== f.text) txt = txt.slice(0,-1)+'…';
+    ctx.fillText(txt, 16+nameW, y);
+  }
+  ctx.globalAlpha=1;
+}
+
+function drawBoard(){
+  // frame
+  ctx.fillStyle='#0a1424'; roundRect(BX-6,BY-6,BOARD+12,BOARD+12,9); ctx.fill();
+  ctx.strokeStyle='#2d5f80'; ctx.lineWidth=3; roundRect(BX-6,BY-6,BOARD+12,BOARD+12,9); ctx.stroke();
+  for (var i=0;i<64;i++){ var r=rowOf(i), f=colOf(i);
+    ctx.fillStyle = ((r+f)%2===0)?LIGHT:DARK; ctx.fillRect(BX+f*TILE, BY+r*TILE, TILE, TILE); }
+  // last move
+  if (G.last){ [G.last.from,G.last.to].forEach(function(sq){ var f=colOf(sq),r=rowOf(sq);
+    ctx.fillStyle='rgba(86,208,255,0.26)'; ctx.fillRect(BX+f*TILE, BY+r*TILE, TILE, TILE); }); }
+  // check
+  if (!G.over && C.inCheck(G.S, G.S.turn)){ var ks=C.kingSq(G.S.b, G.S.turn);
+    if (ks>=0){ ctx.fillStyle='rgba(255,80,110,0.5)'; ctx.fillRect(BX+colOf(ks)*TILE, BY+rowOf(ks)*TILE, TILE, TILE); } }
+  // selection + legal targets
+  if (G.sel>=0){ ctx.fillStyle='rgba(86,208,255,0.34)'; ctx.fillRect(BX+colOf(G.sel)*TILE, BY+rowOf(G.sel)*TILE, TILE, TILE);
+    G.legal.forEach(function(m){ if (m.from!==G.sel) return; var d=boardCell(m.to);
+      if (G.S.b[m.to]){ ctx.lineWidth=3; ctx.strokeStyle='rgba(107,255,184,0.8)'; ctx.beginPath(); ctx.arc(d.x,d.y,TILE*0.42,0,7); ctx.stroke(); }
+      else { ctx.fillStyle='rgba(107,255,184,0.7)'; ctx.beginPath(); ctx.arc(d.x,d.y,6,0,7); ctx.fill(); } }); }
+  // pieces
+  for (var j=0;j<64;j++){ var p=G.S.b[j]; if(!p) continue; var c=boardCell(j);
+    PJCCPieces.draw(ctx, c.x, c.y, TILE*0.84, p.toUpperCase(), C.colorOf(p), PAL); }
+  // cursor
+  var cf=colOf(G.cursor), crow=rowOf(G.cursor);
+  ctx.strokeStyle = (G.phase==='play') ? '#F5C518' : 'rgba(245,197,24,0.4)'; ctx.lineWidth=3;
+  roundRect(BX+cf*TILE+2, BY+crow*TILE+2, TILE-4, TILE-4, 5); ctx.stroke();
+}
+
+function drawController(now){
+  var lit = (performance.now()-press.t < 130) ? press.id : null;
+  // D-pad
+  function pad(id, x, y){
+    ctx.fillStyle = lit===id ? '#56d0ff' : '#16314a';
+    ctx.strokeStyle='#2d5f80'; ctx.lineWidth=1.5;
+    roundRect(x-15,y-15,30,30,7); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = lit===id ? '#04121f' : '#9fd0ee'; ctx.font='bold 14px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText({up:'▲',down:'▼',left:'◀',right:'▶'}[id], x, y+1);
+  }
+  pad('up', DPAD.cx, DPAD.cy-30); pad('down', DPAD.cx, DPAD.cy+30);
+  pad('left', DPAD.cx-30, DPAD.cy); pad('right', DPAD.cx+30, DPAD.cy);
+  ctx.fillStyle='#5f86a5'; ctx.font='9px Trebuchet MS'; ctx.textAlign='center';
+  ctx.fillText('CONTROLLER', DPAD.cx, DPAD.cy+58);
+  // A / B
+  function rbtn(b, id, label, sub, col){
+    ctx.fillStyle = lit===id ? col : '#16314a'; ctx.strokeStyle=col; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = lit===id ? '#04121f' : col; ctx.font='bold 16px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(label, b.x, b.y);
+    ctx.fillStyle='#5f86a5'; ctx.font='8px Trebuchet MS'; ctx.fillText(sub, b.x, b.y+b.r+9);
+  }
+  rbtn(BTN_A, 'A', 'A', 'select / launch', '#6bffb8');
+  rbtn(BTN_B, 'B', 'B', 'cancel', '#ff9ec9');
+}
+
+function render(now){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#05030f'; ctx.fillRect(0,0,W,H);
+  if (!G){ return; }
+  drawHUD();
+  drawArena(now);
+  drawCommentary(now);
+  drawBoard();
+  drawController(now);
+}
+
+function loop(now){
+  if (G && G.phase==='anim' && G.anim && now >= G.anim.t0 + G.anim.dur){ applyAnim(); }
+  render(now||0);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// expose pure bits for tests
+if (typeof module !== 'undefined' && module.exports){ module.exports = { scoreFor:scoreFor, ci:ci, colOf:colOf, rowOf:rowOf, arenaCell:arenaCell }; }
+</script>
+</body>
+</html>

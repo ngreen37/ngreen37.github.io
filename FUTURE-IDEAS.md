@@ -48,7 +48,8 @@ more rungs (the secret King).
 Arcade: Notation Blitz, Blindfold Puzzles / The Mind's Eye, Clearance: DELTA, Princess Dungeon,
 Checker Financial, Fork in the Road, The Pirc Protocol, Sand Mine Depths, Shogi Island (Catch the
 Lion), Sky Run, Space Run, Knight's Tour, Siege on Chess City, The Gauntlet, The Reading Room — each with daily seeds, global
-boards, ghosts, streak flame, board-skins + JP-localization scaffolding. World/site: Lore Codex,
+boards, ghosts, streak flame, board-skins + JP-localization scaffolding. The new **Battle Room** (v0.1
+action-chess prototype) is live too — global board + ghost, with more juice to come. World/site: Lore Codex,
 Academy, Projects, Daily Dispatch, Hall of Fame, leaderboard seasons. Avenue pieces: production hub
 + Pilot animatic + Writers' Room (1), audio hub + leitmotifs (5), site-wide Princess companion (6),
 Press Pass + Press Credential + Bureau-of-Dispatch newsletter + Press Kit/EPK + support-transparency +
@@ -620,6 +621,17 @@ Removed from the live surface for a cleaner, less-is-more site — kept here so 
   chess pieces, the battle-room). Start with ONE playable room exported to HTML5, embedded on the
   Games page and wired to the same profile/leaderboard; then layer rooms → items → procedural floors.
   Blender (assets) + Godot 4 (engine). Princess Dungeon is its web prototype.
+- **The Battle Room → "deck it out" in Godot/Blender.** Web **v0.1 shipped** ([`/games/battle-room/`](/games/battle-room/)):
+  real chess on `pjcc-chess.js`, the side 2D board + the screen-flip **action arena** ("the enemy's gate
+  is down"), **Princess on a controller**, and three bickering commentators. The deck-out path:
+  - **P1 — juice the web build:** sound + music, piece-specific attack animations, screen-shake +
+    finishers, commentator portraits (and TTS voices), difficulty rungs (reuse the Gauntlet personas).
+  - **P2 — Godot port:** reuse the chess logic (port to GDScript or run the JS via WASM), a 2.5-D battle
+    room, and make the "flip" a **true camera cut** from board-cam to action-cam.
+  - **P3 — Blender:** model/rig the room, the pieces as **combatants**, capture/finisher animations (the
+    dive toward the down gate), and the three commentators; render intro cutscenes (the saved-favorite idea).
+  - **P4 — WOW:** combos, signature finishers, a crowd, instant-replay + shareable clips.
+  Shares the **same engine** as The Gauntlet, so the chess stays honest while the spectacle grows.
 - **Blender cutscene intros** — short rendered clips as game intros / loading screens / season
   trailers. *(Saved favorite.)*
 - **Backend** (Supabase) unlocks the cross-cutting features: guilds/houses, async duels, the
