@@ -93,23 +93,36 @@ layout: default
 .home-daily-go { color: #fff; font-weight: 700; font-size: 0.86rem; white-space: nowrap; }
 </style>
 
-{% comment %} ── 4. CHARACTER TEASER ──────────────────────────────── {% endcomment %}
+{% comment %} ── 4. CHARACTER TEASER — four random faces, reshuffled each visit ──── {% endcomment %}
 <section class="home-section">
   <h2 class="home-section-label">
-    Characters
+    Four from the Cast
+    <button class="home-shuffle" id="char-shuffle" type="button" aria-label="Shuffle the four characters" title="Shuffle">&#8635;</button>
     <a class="home-section-link" href="{{ '/characters/' | relative_url }}">Meet them all &rarr;</a>
   </h2>
-  <div class="char-row">
+  {% comment %} All main-cast chips are rendered (ancillary excluded); the JS below shows a
+       random four and lets you reshuffle without a reload. {% endcomment %}
+  <div class="char-row" id="home-char-row" data-show="4">
     {% for char in site.characters %}
+    {% unless char.tier == "ancillary" %}
     <a class="char-chip" href="{{ char.url | relative_url }}">
       <span class="char-chip-icon">&#9823;</span>
       <span class="char-chip-name">{{ char.title }}</span>
       <span class="char-chip-role">{{ char.role }}</span>
       {% if char.last_seen %}<span class="char-chip-seen">LAST SEEN: {{ char.last_seen }}</span>{% endif %}
     </a>
+    {% endunless %}
     {% endfor %}
   </div>
 </section>
+<style>
+.home-shuffle { background: rgba(80,30,180,0.2); color: #F5C518; border: 1px solid rgba(150,65,255,0.55);
+  border-radius: 999px; width: 30px; height: 30px; cursor: pointer; font-size: 15px; line-height: 1;
+  margin-left: 8px; padding: 0; transition: transform .35s cubic-bezier(.34,1.56,.64,1), border-color .15s; vertical-align: middle; }
+.home-shuffle:hover { border-color: #F5C518; transform: rotate(180deg); }
+.char-row.just-shuffled .char-chip { animation: chipIn .42s ease both; }
+@keyframes chipIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+</style>
 
 {% comment %} (Story Arc film-strip removed 2026-06-22 — the chapter beats are now
      things to be DECODED by users as they play, not laid out here. See FUTURE-IDEAS. {% endcomment %}
@@ -386,6 +399,32 @@ document.querySelectorAll('.hstat-num').forEach(function(el) {
   document.addEventListener('visibilitychange', function() {
     wrap.classList.toggle('is-hidden', document.hidden);
     if (!document.hidden && !userPaused) setDuration();
+  });
+})();
+
+// Character teaser — render the whole cast but show four random faces; reshuffle on click.
+(function() {
+  var row = document.getElementById('home-char-row');
+  if (!row) return;
+  var show = parseInt(row.getAttribute('data-show'), 10) || 4;
+  var chips = Array.prototype.slice.call(row.querySelectorAll('.char-chip'));
+  if (chips.length <= show) return; // not enough to randomize — leave as-is
+
+  function shuffle() {
+    var pool = chips.slice();
+    for (var i = pool.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+    }
+    chips.forEach(function(c) { c.style.display = 'none'; });
+    pool.slice(0, show).forEach(function(c) { c.style.display = ''; row.appendChild(c); });
+  }
+  shuffle();
+
+  var btn = document.getElementById('char-shuffle');
+  if (btn) btn.addEventListener('click', function() {
+    shuffle();
+    row.classList.remove('just-shuffled'); void row.offsetWidth; row.classList.add('just-shuffled');
   });
 })();
 </script>

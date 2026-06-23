@@ -1,0 +1,347 @@
+/* ============================================================
+   PJCC nav enhancements (loaded site-wide via default.html):
+     1. "The World" dropdown
+     2. Single hop to the other brand
+     3. Sticky condense on scroll (header → watermark + ⌘K)
+     4. ⌘K command palette
+     5. Mobile-only icon nav
+   ============================================================ */
+
+/* ---- 1. "The World" dropdown ----------------------------------------- */
+.nav-dd { position: relative; display: inline-flex; }
+.nav-dd-trigger { display: inline-flex; align-items: center; gap: 5px; }
+.nav-dd-caret { font-size: 0.78em; transition: transform 0.18s ease; }
+.nav-dd:hover .nav-dd-caret,
+.nav-dd:focus-within .nav-dd-caret { transform: rotate(180deg); }
+
+.nav-dd-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 224px;
+  padding: 11px;
+  background: #140a2e;
+  border: 1px solid #4a3a86;
+  border-radius: 13px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+  z-index: 130;
+}
+/* invisible bridge so the menu survives the cursor crossing the gap */
+.nav-dd-menu::before {
+  content: '';
+  position: absolute;
+  top: -12px; left: 0; right: 0; height: 12px;
+}
+.nav-dd:hover .nav-dd-menu,
+.nav-dd:focus-within .nav-dd-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+.nav-dd-menu .page-link { width: 100%; text-align: center; }
+
+/* ---- 2. Single hop to the other brand -------------------------------- */
+.nav-hop-arrow {
+  display: inline-block;
+  opacity: 0.55;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+.nav-hop:hover .nav-hop-arrow,
+.nav-hop:focus-visible .nav-hop-arrow { transform: translateX(4px); opacity: 1; }
+/* the hop is a single link — keep the brand tint but drop the side-specific
+   border so it looks right whichever side it lands on */
+.nav-group--hop { opacity: 0.92; border-left: none; border-right: none; }
+
+/* ---- 3. Sticky condense on scroll ------------------------------------ */
+@media (min-width: 701px) {
+  .site-header .site-nav {
+    max-height: 260px;
+    transition: max-height 0.3s ease, opacity 0.22s ease;
+  }
+  .site-header.is-condensed .site-nav {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    border-top-color: transparent;
+  }
+  .site-header.is-condensed .logo-stacked { height: 46px; }
+  .site-header.is-condensed .header-top { padding-top: 6px; padding-bottom: 6px; }
+  .site-header.is-condensed .cmdk-trigger { border-color: #F5C518; color: #F5C518; }
+}
+
+/* ---- 4a. ⌘K trigger (header top-right) -------------------------------- */
+.cmdk-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(20, 12, 45, 0.6);
+  color: #b9a3e8;
+  border: 1px solid #6b5fa0;
+  border-radius: 999px;
+  padding: 5px 10px 5px 11px;
+  margin-right: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.cmdk-trigger:hover,
+.cmdk-trigger:focus-visible { border-color: #F5C518; color: #F5C518; }
+.cmdk-trigger-ico { font-size: 1.05rem; line-height: 1; }
+.cmdk-trigger-kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: rgba(110, 95, 160, 0.25);
+  border: 1px solid #4a3a86;
+  border-radius: 6px;
+  padding: 1px 6px;
+  color: #cdbcf2;
+}
+.cmdk-mod { font-size: 0.92em; }
+
+/* ---- 4b. ⌘K command palette ------------------------------------------ */
+.cmdk-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 12vh 16px 16px;
+}
+.cmdk-overlay[hidden] { display: none; }
+.cmdk-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 4, 16, 0.72);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: cmdkFade 0.18s ease;
+}
+.cmdk-panel {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  background: #140a2e;
+  border: 1px solid #5a4a96;
+  border-radius: 16px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  animation: cmdkPop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes cmdkFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cmdkPop {
+  from { opacity: 0; transform: translateY(-10px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+.cmdk-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(110, 95, 160, 0.3);
+}
+.cmdk-input-ico { font-size: 1.2rem; color: #9a7fd4; }
+.cmdk-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #f3edff;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+}
+.cmdk-input::placeholder { color: #7d6db0; }
+.cmdk-esc {
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: #9a86c8;
+  background: rgba(110, 95, 160, 0.2);
+  border: 1px solid #4a3a86;
+  border-radius: 6px;
+  padding: 2px 7px;
+}
+
+.cmdk-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  max-height: 52vh;
+  overflow-y: auto;
+}
+.cmdk-list li { margin: 0; }
+.cmdk-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  color: #e3d6ff;
+  text-decoration: none;
+  cursor: pointer;
+}
+.cmdk-item:hover,
+.cmdk-item.is-active { background: linear-gradient(135deg, #2a1860, #3a2580); }
+.cmdk-item.is-active { box-shadow: inset 0 0 0 1px rgba(245, 197, 24, 0.5); }
+.cmdk-item-ico {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  border-radius: 8px;
+  background: rgba(110, 95, 160, 0.22);
+}
+.cmdk-item-text { flex: 1; min-width: 0; }
+.cmdk-item-title { display: block; font-weight: 700; font-size: 0.9rem; }
+.cmdk-item-sub {
+  display: block;
+  font-size: 0.74rem;
+  color: #a896d4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cmdk-item-brand {
+  flex: 0 0 auto;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+.cmdk-item-brand.is-pjcc { color: #F5C518; background: rgba(245, 197, 24, 0.12); }
+.cmdk-item-brand.is-mcpuppy { color: #d4d4d4; background: rgba(212, 212, 212, 0.12); }
+.cmdk-empty {
+  padding: 22px 14px;
+  text-align: center;
+  color: #8a78bc;
+  font-size: 0.86rem;
+}
+
+.cmdk-foot {
+  display: flex;
+  gap: 16px;
+  padding: 9px 14px;
+  border-top: 1px solid rgba(110, 95, 160, 0.3);
+  font-size: 0.68rem;
+  color: #8a78bc;
+}
+.cmdk-foot kbd {
+  font-family: inherit;
+  background: rgba(110, 95, 160, 0.2);
+  border: 1px solid #4a3a86;
+  border-radius: 5px;
+  padding: 1px 5px;
+  margin-right: 2px;
+}
+
+/* ---- 5. Mobile-only icon nav ----------------------------------------- */
+.mnav { display: none; }
+
+@media (max-width: 700px) {
+  /* The World dropdown flattens into the hamburger sheet (no hover on touch) */
+  .nav-dd { display: block; width: 100%; }
+  .nav-dd-menu {
+    position: static;
+    transform: none;
+    opacity: 1;
+    visibility: visible;
+    box-shadow: none;
+    background: none;
+    border: none;
+    padding: 6px 0 2px 14px;
+    min-width: 0;
+    gap: 6px;
+  }
+  .nav-dd-menu::before { display: none; }
+  .nav-dd-caret { display: none; }
+
+  /* compact ⌘K trigger: icon only */
+  .cmdk-trigger-label,
+  .cmdk-trigger-kbd { display: none; }
+  .cmdk-trigger { padding: 6px 9px; margin-right: 4px; }
+  .cmdk-trigger-ico { font-size: 1.15rem; }
+
+  /* floating icon nav */
+  .mnav {
+    display: flex;
+    position: fixed;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    z-index: 95;
+    gap: 6px;
+    padding: 6px;
+    background: rgba(16, 9, 38, 0.92);
+    border: 1px solid #4a3a86;
+    border-radius: 999px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .mnav-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 999px;
+    color: #cdbcf2;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .mnav-item:active,
+  .mnav-item:focus-visible { background: rgba(110, 95, 160, 0.3); color: #F5C518; }
+  .mnav-ico { font-size: 1.4rem; line-height: 1; }
+  .mnav-label {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    background: #1f1147;
+    color: #F5C518;
+    border: 1px solid #4a3a86;
+    border-radius: 7px;
+    padding: 3px 9px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s, transform 0.15s;
+    pointer-events: none;
+  }
+  .mnav-item.show-label .mnav-label,
+  .mnav-item:focus-visible .mnav-label {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* keep the back-to-top button clear of the floating icon bar */
+  .back-to-top { bottom: 74px !important; }
+}

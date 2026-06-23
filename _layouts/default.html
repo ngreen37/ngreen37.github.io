@@ -1,3 +1,16 @@
+{%- comment -%}
+  Context-aware brand: decide which nav set to show so the bar never carries both.
+  PJCC (the world / the games) is the default. McPuppy (the studio / the business pages,
+  the build-log blog, and posts) flips it. A page can force either with `brand:` front matter.
+{%- endcomment -%}
+{%- assign brand = page.brand -%}
+{%- unless brand -%}
+  {%- assign brand = 'pjcc' -%}
+  {%- if page.layout == 'post' -%}{%- assign brand = 'mcpuppy' -%}{%- endif -%}
+  {%- if page.body_class contains 'theme-bw' -%}{%- assign brand = 'mcpuppy' -%}{%- endif -%}
+  {%- assign mc_urls = '/projects/,/blog/,/mailing-list/,/press-pass/,/educators/,/about/,/contact/' | split: ',' -%}
+  {%- for u in mc_urls -%}{%- if page.url == u -%}{%- assign brand = 'mcpuppy' -%}{%- break -%}{%- endif -%}{%- endfor -%}
+{%- endunless -%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,6 +26,7 @@
   <link rel="stylesheet" href="{{ '/assets/css/a11y.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/pjcc-flair.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/pjcc-portal.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/pjcc-nav.css' | relative_url }}">
 </head>
 <body{% if page.body_class %} class="{{ page.body_class }}"{% endif %}>
 
@@ -27,8 +41,13 @@
                class="logo-stacked">
         </a>
         <div class="header-top-right">
+          <button class="cmdk-trigger" id="cmdk-trigger" type="button" aria-label="Open the command menu" aria-keyshortcuts="Meta+K Control+K" title="Search & jump (Ctrl/⌘ K)">
+            <span class="cmdk-trigger-ico" aria-hidden="true">⌕</span>
+            <span class="cmdk-trigger-label">Jump to…</span>
+            <span class="cmdk-trigger-kbd" aria-hidden="true"><span class="cmdk-mod">⌘</span>K</span>
+          </button>
           <button class="lang-toggle" id="lang-toggle" type="button" aria-label="Toggle language">日本語</button>
-          <a class="nav-operative" id="nav-operative" href="{{ '/dossier/' | relative_url }}" hidden>Sign in</a>
+          <a class="nav-operative" id="nav-operative" href="{{ '/dossier/' | relative_url }}" title="Your Dossier — sign in or open your profile" hidden>Sign in</a>
           <a class="about-contact-btn" href="{{ '/about/' | relative_url }}">About / Contact</a>
           <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
             <span class="nav-toggle-bar"></span>
@@ -38,23 +57,41 @@
         </div>
       </div>
 
-      <!-- Nav: PJCC (clickable header) | pawn | Your Dossier | pawn | McPuppy (single link) -->
-      <nav class="site-nav" id="site-nav">
+      <!-- Context-aware nav: PJCC links on PJCC pages, McPuppy links on McPuppy pages — never both.
+           "Your Dossier" is folded into the operative pill (top-right); ⌘K reaches everything else. -->
+      <nav class="site-nav" id="site-nav" data-brand="{{ brand }}">
+        {% if brand == 'mcpuppy' %}
+        {% comment %} ── McPuppy primary · single PJCC hop ─────────────── {% endcomment %}
+        <div class="nav-group nav-group-studio">
+          <a class="nav-group-label nav-group-label-link" href="{{ '/projects/' | relative_url }}">McPuppy Studios</a>
+          <a class="page-link" href="{{ '/blog/' | relative_url }}">Blog</a>
+          <a class="page-link" href="{{ '/mailing-list/' | relative_url }}">Mailing List</a>
+          <a class="page-link" href="{{ '/press-pass/' | relative_url }}">Press Pass</a>
+          <a class="page-link" href="{{ '/educators/' | relative_url }}">For Educators</a>
+        </div>
+        <span class="nav-divider" aria-hidden="true">&#9823;</span>
+        <div class="nav-group nav-group-pjcc nav-group--hop">
+          <a class="nav-group-label nav-group-label-link nav-hop" href="{{ '/pjcc/' | relative_url }}">PJCC <span class="nav-hop-arrow" aria-hidden="true">&rarr;</span></a>
+        </div>
+        {% else %}
+        {% comment %} ── PJCC primary · "The World" dropdown · single McPuppy hop ── {% endcomment %}
         <div class="nav-group nav-group-pjcc">
           <a class="nav-group-label nav-group-label-link" href="{{ '/pjcc/' | relative_url }}">PJCC</a>
           <a class="page-link" href="{{ '/games/' | relative_url }}">Games</a>
-          <a class="page-link" href="{{ '/the-world/' | relative_url }}">Characters &amp; Locations</a>
-          <a class="page-link" href="{{ '/academy/' | relative_url }}">Academy</a>
-          <a class="page-link" href="{{ '/production/' | relative_url }}">The Pilot</a>
+          <div class="nav-dd" data-dd>
+            <a class="page-link nav-dd-trigger" href="{{ '/the-world/' | relative_url }}" aria-haspopup="true" aria-expanded="false">The World <span class="nav-dd-caret" aria-hidden="true">&#9662;</span></a>
+            <div class="nav-dd-menu" role="menu">
+              <a class="page-link" role="menuitem" href="{{ '/the-world/' | relative_url }}">Characters &amp; Locations</a>
+              <a class="page-link" role="menuitem" href="{{ '/academy/' | relative_url }}">Academy</a>
+              <a class="page-link" role="menuitem" href="{{ '/production/' | relative_url }}">The Pilot</a>
+            </div>
+          </div>
         </div>
         <span class="nav-divider" aria-hidden="true">&#9823;</span>
-        <div class="nav-middle">
-          <a class="page-link page-link-dossier" href="{{ '/dossier/' | relative_url }}">Your Dossier</a>
+        <div class="nav-group nav-group-studio nav-group--hop">
+          <a class="nav-group-label nav-group-label-link nav-mcpuppy-solo nav-hop page-link-bw" href="{{ '/projects/' | relative_url }}">McPuppy Studios <span class="nav-hop-arrow" aria-hidden="true">&rarr;</span></a>
         </div>
-        <span class="nav-divider" aria-hidden="true">&#9823;</span>
-        <div class="nav-group nav-group-studio">
-          <a class="nav-group-label nav-group-label-link nav-mcpuppy-solo page-link-bw" href="{{ '/projects/' | relative_url }}">McPuppy Studios</a>
-        </div>
+        {% endif %}
       </nav>
 
     </div>
@@ -446,6 +483,39 @@
   <script src="{{ '/assets/js/pjcc-flair.js' | relative_url }}" defer></script>
   <!-- Av13 — the Shogi Island Gate: perform the rite (one A, eight C's, two larger) anywhere to open it -->
   <script src="{{ '/assets/js/pjcc-portal.js' | relative_url }}" defer></script>
+
+  <!-- ⌘K command palette: search & jump to anywhere on the site -->
+  <div class="cmdk-overlay" id="cmdk-overlay" hidden>
+    <div class="cmdk-backdrop" data-cmdk-close></div>
+    <div class="cmdk-panel" role="dialog" aria-modal="true" aria-label="Command menu">
+      <div class="cmdk-input-row">
+        <span class="cmdk-input-ico" aria-hidden="true">⌕</span>
+        <input class="cmdk-input" id="cmdk-input" type="text" autocomplete="off" autocorrect="off"
+               autocapitalize="off" spellcheck="false"
+               placeholder="Search the world — games, characters, the studio…"
+               aria-label="Search and jump to a page" aria-controls="cmdk-list" aria-expanded="true">
+        <kbd class="cmdk-esc">esc</kbd>
+      </div>
+      <ul class="cmdk-list" id="cmdk-list" role="listbox" aria-label="Results"></ul>
+      <div class="cmdk-foot">
+        <span><kbd>↑</kbd><kbd>↓</kbd>&nbsp;move</span>
+        <span><kbd>↵</kbd>&nbsp;open</span>
+        <span><kbd>esc</kbd>&nbsp;close</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile-only quick nav: icon-only (♟ games · ◈ dispatch · ⬡ dossier); labels on long-press -->
+  <nav class="mnav" aria-label="Quick navigation">
+    <a class="mnav-item" href="{{ '/games/' | relative_url }}" data-label="Games">
+      <span class="mnav-ico" aria-hidden="true">&#9823;</span><span class="mnav-label">Games</span></a>
+    <a class="mnav-item" href="{{ '/daily/' | relative_url }}" data-label="Dispatch">
+      <span class="mnav-ico" aria-hidden="true">&#9672;</span><span class="mnav-label">Dispatch</span></a>
+    <a class="mnav-item" href="{{ '/dossier/' | relative_url }}" data-label="Dossier">
+      <span class="mnav-ico" aria-hidden="true">&#11041;</span><span class="mnav-label">Dossier</span></a>
+  </nav>
+
+  <script src="{{ '/assets/js/pjcc-nav.js' | relative_url }}" defer></script>
 
 
   <!-- Cloudflare Web Analytics -->
