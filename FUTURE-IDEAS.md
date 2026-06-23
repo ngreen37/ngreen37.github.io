@@ -507,6 +507,30 @@ transaction, **"Adopt a shot"** micro-patronage (back one animatic shot, get cre
 
 ---
 
+## Avenue 11 — Game recaps / real-chess coverage *(new lane)*
+
+Ride the **real chess calendar.** Recap the **upcoming World Championship** games (and other marquee
+events) in PJCC's voice — turning live chess news into content that pulls real chess fans toward the
+Academy and arcade (the funnel), and gives the Dispatch a steady, low-lift cadence beat.
+
+1. **WC game recaps** — a short, illustrated recap per World Championship game: the story of the game,
+   one decisive moment, one takeaway lesson. Evergreen once written.
+2. **Replay the key position** — drop the critical position onto the shared board (`pjcc-chess.js`) so
+   readers can *play it from here* against the AI. Reuses the Gauntlet engine — little new code.
+3. **Academy tie-in** — each recap links to the matching Academy lesson (the opening played, the tactic
+   that decided it). Recap → lesson → arcade.
+4. **Character-lens commentary** — annotate through a PJCC character: the **Rival** coaches; **Argus**
+   (the smart one) explains the *why.* Warm and on-brand, not dry engine output.
+5. **Cadence relief** — during big events, recaps become the Dispatch beat, so there's something to
+   publish *without* a personal blog post (pairs with the **Album-of-the-Month** idea in Day Job notes).
+6. **Preview + predictions** — a pre-event preview and a post-event wrap, with a lightweight
+   bracket/prediction mini-game (arcade tie).
+
+*Feasibility: recaps are mostly writing (no backend); the replayable board reuses the existing engine.
+Keep it lightweight — a template, not a tournament platform.*
+
+---
+
 ## Avenue 12 — 日本語 / Japanese Learning *(new lane)*
 
 A learn-Japanese wing, grown out of what's already in the world: Shogi Island, the bilingual
@@ -660,6 +684,12 @@ only lands after the origin; a background character who matters later.)*
    - **The Rival's two friends — a brother pair.** **James & John** ("Sons of Thunder," the fiercely loyal apostle brothers; *rec*) or **Peter & Andrew** (brother apostles). A God-acting Rival flanked by apostle-brothers — plus the [Best Friend](/characters/best-friend/), who already drifts into his orbit — makes a small faithful band.
 
 > **Theme to mine:** the **Rival is *truly* righteous** (acts as God), while the **older brother is *self*-righteous** (the hollow kind) and falls — true vs. counterfeit righteousness, set side by side in the same family.
+
+9. **Even the hard ones have redeeming qualities.** The Rival's two friend-brothers aren't all edges — **perhaps they save one of the dogs** (ties to the canon where dogs get left behind and taken in). And *especially the self-righteous older brother*: his redeeming act — maybe **he's the one who saves a dog** — could be the hinge of his arc. A real **redemption** thread for the brother things "don't work out" for. People contain both.
+
+10. **The Uncle — the Neville Goddard figure.** From **Barbados** (or equivalent) — a nod to the *real* Neville Goddard's birthplace — and a **dancer in Chess City** (Neville was literally a dancer before he became a mystic). He embodies the show's **Neville-Goddard spirituality** (assume the feeling; belief in oneself as the engine of success). **The Father is proud of him but dismisses Neville's "belief in himself" as the *reason* for his success** — the loving skeptic to the Uncle's mystic. That tension *is* the show's spiritual debate, dramatized inside one family. See the moral-center note above.
+
+11. **McPuppy "Album of the Month."** One recommended album per month (McPuppy Studios) — a low-lift content beat to **take the pressure off frequent blog posts.** Pairs with retiring the per-episode Build Playlist "soundtrack" and with the Game-Recaps lane (Avenue 11): fewer obligations, steadier rhythm. ⚠️ *Re: "delete Soundtrack completely" — confirming scope first: the Soundtrack **page** is already gone, but `_data/soundtrack.yml` still powers the site-wide **Build Playlist jukebox** (the ♪ player), so the player isn't being deleted without a nod.*
 
 ---
 
