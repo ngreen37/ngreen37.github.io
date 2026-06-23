@@ -332,23 +332,27 @@ is the superfan ceiling but a cadence trap — start it only when #1 is humming.
 - **Crockett — a real male dog** (Nate's dog; their greeting is "**bellies**"). To become a male-dog crew
   member, *not* the sister. *(File fix pending: split sister → Annie, repurpose Crockett, fix the narrator link.)*
 - **Argus** — **the smart one**; a dog; slowly grows into a **solid** chess player.
-- **The Father** — name unknown; kind but often away. **Proud of the Uncle, but dismisses Neville's
-  "belief in himself" as the reason for his success** — the loving skeptic.
+- **The Father — Andrew** — **simple, silly, and absent-minded on the surface, but razor-sharp in his own
+  lane**, and **whatever happens, he does what he can for his kids.** Also the show's **loving skeptic:**
+  proud of the Uncle, but **dismisses Neville's "belief in himself" as the reason for his success.** (His
+  scattered-but-devoted warmth is *his* — distinct from Bill's rugged-hero arc below.)
 - **The Uncle** — from **Barbados** (Neville Goddard's real birthplace), a **dancer in Chess City** (Neville
   was a dancer before a mystic). Embodies the show's **Neville-Goddard spirituality.** His tension with the
   Father *is* the show's spiritual debate, in one family.
 - **The Rival** — **acts as God would, always**: the **righteous moral compass** (redefines his earlier
   morally-grey write-up). *Name — pick one:* **Michael** ("Who is like God?"; pairs with the king piece; rec) ·
   Gabriel · Samuel · Emmanuel. *His line:* "goals are 5% strategy, 95% mindset."
-- **The Rival's two friends** — a **brother pair**: **James & John** ("Sons of Thunder"; rec) or Peter & Andrew.
+- **The Rival's two friends** — a **brother pair**: **James & John** ("Sons of Thunder"; rec) or Peter & Philip.
   With the **Best Friend** (who drifts into the Rival's orbit), a small faithful band. Even they have
   redeeming qualities — perhaps they **save one of the dogs.**
 - **The older brother** — **self-righteous**, and things don't work out for him. *Name — pick one:* **Saul**
   (tragic self-righteous fall; rec) · Cain (the literal elder brother; starkest) · Esau (loses his birthright) ·
   Korah (self-righteous revolt). **Redemption thread:** *especially* he might be **the one who saves a dog.**
-- **Bill** — Princess' former crew partner (*not* the dad). Silly and absent-minded on the surface, but the
-  gadget genius who can rig anything and who **taught Princess to do anything** (incl. the Hyperspeed Box).
-  A devoted dad to his own kids — whatever happens, he does what he can for them.
+- **Bill** — Princess' former crew partner (*not* the main character's dad). A **Bruce-Willis-in-*Armageddon*
+  type:** rugged, blue-collar, gruff-but-golden-hearted — the hands-on guy who can **rig or fix anything** and
+  who **taught Princess to do anything** (incl. the Hyperspeed Box). A father to his **own** kids; when the Box
+  runs astray, his **Harry-Stamper sacrifice** is leaving Princess behind to save the family aboard — the
+  choice that shatters him. *(Hook: maybe he comes back for her.)*
 - **Season 2 villain — the rival teen** — works for the dog-stealing gang (returns the dog, collects the
   ransom); later learns what the gang really does, turns, and joins the main character. (Antagonist → ally.)
 
@@ -364,7 +368,5 @@ Hook: *maybe he comes back looking for her.*
 
 **Open decisions (waiting on Nate):** lock the names (Rival, older brother, the two friends); approve the
 **Crockett → Annie** file surgery (split the sister into Annie, make Crockett a dog, fix the narrator link,
-bump Argus to "the smart one"). ⚠ Clarify the **"Dad" character**: the traits in the latest dump (simple,
-silly, absent-minded, but *secretly sharp in his lane*, does whatever he can for his kids) are **Bill's** exact
-archetype — and Bill is canon-flagged as *not* the main character's dad. Is "Dad" = **Bill** (a father to his
-*own* kids — already captured above), or are you giving the **Father** that same archetype (or merging the two)?
+bump Argus to "the smart one"). ✅ *Resolved 2026-06-23:* the scattered-but-sharp, devoted-dad archetype goes
+to **the Father (Andrew)**; **Bill** is recast as a rugged **Bruce-Willis/*Armageddon*** hero — two distinct men.
