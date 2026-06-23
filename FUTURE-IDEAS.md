@@ -222,6 +222,14 @@ then **forget once they lose the path** for a while. The card is a physical anch
 **Av15 — PJCC stationery** *(new · physical · parked until after the flare):* branded stationery with
 **"follow the dog"** across the top. The "pocket/desk mindset" goods line alongside the goal cards.
 
+**Av16 — PJCC VR** *(new · long-horizon · rides on the Godot/Blender 3D work):* the **Battle Room is *made* for
+VR** — Ender's-Game zero-G chess where "the enemy's gate is down" becomes literal: you float in the arena and move
+pieces with your hands. Later: stand inside **Checker Town**, walk the road to **Chess City**, play a board across
+from the **Rival** in room-scale. **Why it's plausible, not a daydream:** the same Blender assets + Godot project
+you're about to build export to **OpenXR** (Godot has first-class VR), so VR is a *mode* of the 3D game, not a
+separate build. **Scope: far future** (post-flare, post-Godot-v1); a Quest build of one battle room is the
+someday-milestone. Parked here mainly so the 3D pipeline is built **VR-aware from day one.**
+
 ---
 
 ## 🅿️ Parked (pulled from the live site, kept so the work isn't lost)
@@ -340,7 +348,7 @@ is the superfan ceiling but a cadence trap — start it only when #1 is humming.
   Korah (self-righteous revolt). **Redemption thread:** *especially* he might be **the one who saves a dog.**
 - **Bill** — Princess' former crew partner (*not* the dad). Silly and absent-minded on the surface, but the
   gadget genius who can rig anything and who **taught Princess to do anything** (incl. the Hyperspeed Box).
-  Has his own family he'd do anything for.
+  A devoted dad to his own kids — whatever happens, he does what he can for them.
 - **Season 2 villain — the rival teen** — works for the dog-stealing gang (returns the dog, collects the
   ransom); later learns what the gang really does, turns, and joins the main character. (Antagonist → ally.)
 
@@ -356,4 +364,7 @@ Hook: *maybe he comes back looking for her.*
 
 **Open decisions (waiting on Nate):** lock the names (Rival, older brother, the two friends); approve the
 **Crockett → Annie** file surgery (split the sister into Annie, make Crockett a dog, fix the narrator link,
-bump Argus to "the smart one").
+bump Argus to "the smart one"). ⚠ Clarify the **"Dad" character**: the traits in the latest dump (simple,
+silly, absent-minded, but *secretly sharp in his lane*, does whatever he can for his kids) are **Bill's** exact
+archetype — and Bill is canon-flagged as *not* the main character's dad. Is "Dad" = **Bill** (a father to his
+*own* kids — already captured above), or are you giving the **Father** that same archetype (or merging the two)?
