@@ -28,7 +28,7 @@ fragment_key: frag_classified
     },
     {
       title: 'Shogi Island — Movement Report',
-      body: 'Ferry delays on the Shogi Island route are not mechanical. Someone is holding the schedule. The island hasn\'t responded to Checker Town bureau requests in 21 days. This is not typical. Recommend reconnoitering via the eastern passage.\n\n将棋の島 — 何かが起きている。'
+      body: 'Ferry delays on the Shogi Island route are not mechanical. Someone is holding the schedule. The island hasn\'t responded to Checker Town bureau requests in 21 days. This is not typical. Recommend reconnoitering via the eastern passage.\n\nRecovered from the dockmaster\'s log, final entry: "one A, eight C — two struck large. The old ferry answers only the octave." We do not yet know what it opens.\n\n将棋の島 — 何かが起きている。'
     },
     {
       title: 'The Sand Mines — Dispatch',

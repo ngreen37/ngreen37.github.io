@@ -215,6 +215,41 @@ unlock-goals tied to deliverables (→ on-camera music session) · a living publ
 name-your-price arcade bundle · sponsor the Game of the Week · the Chess City Passport (annual, stamped) ·
 radical-transparency burn page · a "cover PJCC" creator kit · refundable merch pre-orders.
 
+> **Expanded — the funding architecture (the durable layer that pays for the animation).** *Principle: fund a
+> deliverable, never a vanity tier. Every dollar maps to a frame; every supporter owns a piece of the crawl.
+> Trust-first (refundable, radically transparent). ★ = shippable now / mostly writing · ⛁ = needs backend + payments.*
+>
+> *Own the audience (the funnel):*
+> - ★ **The Dispatch, two-tier** — keep the free newsletter; add a paid **Operative's Channel** (BTS, scripts, early
+>   animatics, the render queue). The owned, un-algorithmed core; everything else points here.
+> - ★ **Festivals & grants, in the open** — surface [`docs/festivals-and-grants.md`](docs/festivals-and-grants.md) as a
+>   public "where we're applying / what we've won" board + a grant-match goal. Non-dilutive money first.
+> - ⛁ **Academy site-license** — the strongest standalone business: classroom/school licensing of the Academy (Av3),
+>   led by a quote-request page. A real second revenue leg, not a tip jar.
+>
+> *Patronage that gives you a piece of the cartoon:*
+> - ⛁ **The Animator's Fund** — one transparent bar: "$X funds Episode 1's first 30 seconds." Wired to a real shot list.
+> - ⛁ **Adopt-a-shot / own-a-cel** — back a specific shot; your codename rides that shot's credits + a digital cel cert.
+> - ⛁ **Producer-credit ladder** — named tiers that literally print your name in the crawl (Backer → Associate → Executive Producer card).
+> - ⛁ **The Founders' Ledger** — public, append-only, ranked by *join order, not amount* — so being #1–100 is the prize (no whales on top).
+> - ★ **The living credits crawl** — a perpetual, embeddable public credits page that grows with every supporter (every embed is an advert).
+>
+> *Reach engines (each purchase markets the show):*
+> - ⛁ **Pay-it-forward passes** — buy a Press Pass for a stranger or a classroom; a wall of gifted passes.
+> - ★ **Sponsor the Game of the Week** — a patron underwrites one week; a tasteful "brought to you by" card.
+> - ⛁ **Name-your-price arcade bundle** — pay-what-you-want download (offline arcade + art pack); funds *and* spreads.
+> - ⛁ **The Chess City Passport** — annual membership, stamped per season/episode; digital + physical, with a renewal ritual.
+> - **Merch that markets itself** — the goal cards (Av14) + stationery (Av15) double as funding and walking ads (gold, characters, "follow the dog").
+> - ★ **Referral reach tiers** — extend the existing credit-referral: refer N operatives → a real sticker/pin mailed (bridges to Av4 physical).
+>
+> *Trust as a feature:*
+> - ★ **Radical-transparency burn page** — live, itemized: render minutes, software, hardware, what each dollar bought.
+> - ⛁ **Refundable pre-orders** — episodes/merch pre-sold with a money-back promise (the trust *is* the pitch).
+> - ⛁ **Deliverable-locked goals** — community goals that, when hit, fire a *real* event: a filmed studio session, a new
+>   game, a Blender trailer. Goals buy outcomes, not status.
+> - ⛁ **Server-verified founders count** — a true, tamper-proof "N founding operatives" badge (anti-vanity; replaces guesswork).
+> - ★ **"Cover PJCC" creator kit** — a ready press/creator kit so streamers & YouTubers can feature it in one click.
+
 **Av11 — Game recaps / real-chess coverage** *(new):* ride the real chess calendar — recap the upcoming
 **World Championship** games in PJCC's voice (story + one key moment + one lesson) · replay the key
 position on the shared board (reuses `pjcc-chess.js`) · link each recap to its Academy lesson · commentary
@@ -230,11 +265,26 @@ sentence-builder · JLPT N5 belt track · daily seeded lesson · Catch-the-Lion 
 memory match · kana typing trainer · Shogi-Island visual-novel story mode · boss-gate quizzes ·
 calligraphy relics · pitch-accent ear trainer · language passport (Dossier) · community translation board (UGC).
 
-**Av13 — Access puzzles / hidden portals** *(new):* gated areas you **unlock by solving**, not clicking.
-First: the **Shogi Island portal** — Nate's seed "*one A and eight C's*," with **two of the c's larger than the
-rest** (a typed incantation, a chess-coordinate rite on the a- and c-files, or a musical A/C key). Diegetic, not a
-menu (decode-as-you-play, ARG tie). Then a little entry rite per region — collect them like keys. **Meant to be a
-cool reveal in the show** — plant the breadcrumbs now (see Planted Seeds) so the moment feels foretold, not arbitrary.
+**Av13 — Access puzzles / hidden portals** *(the Shogi Island gate is now LIVE):* gated areas you **unlock by
+solving**, not clicking. Then a little entry rite per region — collect them like keys. **Meant to be a cool reveal
+in the show** — the breadcrumbs are planted now (see Planted Seeds) so the moment feels foretold, not arbitrary.
+
+> **The Shogi Island Gate — shipped 2026-06-23.** The rite is Nate's seed made real: **one A, eight C's, two of the
+> c's larger than the rest** — a bell on the a-file, eight stones down the c, the first and last *struck like an
+> octave* (capital C). **Type it anywhere on the site** (no input focused) and a faint sigil lights stone-by-stone
+> as you perform it; complete it and a **cinematic gate-opening** plays (the stones align the c-file, the A tolls,
+> the two C's flare, a torii rises through fog) with a real A–C–C octave on WebAudio. Opening it unseals the hidden
+> page **`/shogi-gate/`** (the ferry/Annie's-dojo reveal) and recovers a fragment (`frag_portal`). The page also has a
+> diegetic **"carve the rite"** input as a second solve path. Files: `assets/js/pjcc-portal.js`,
+> `assets/css/pjcc-portal.css`, `shogi-gate.md`; loaded site-wide via `default.html` + `game.html`. Breadcrumbs
+> planted: the faint sigil + dock whisper on the **Shogi Island** page, and the **dockmaster's-log** line in the Dead Drop.
+> **Difficulty by design:** undocumented on-site; the only teacher is the sigil's shape (and the case/octave logic) — random typing won't hit `A·C cccccc C`.
+>
+> *Next rites to add (each a new region key):* the **chess-coordinate rite** (play the a- and c-files on a real board —
+> reuse `pjcc-chess.js`) and the **musical rite** (tap A–C–C on a hidden keyboard) as alternate solves for this same
+> gate · a **Sand Mine** depth-cipher · a **Chess City** permit-glyph · a **Checker Town** founding-rune · collect all
+> region keys → a master door (the ARG's season-one payoff) · a one-time "first to open it" race (Av9 live-ops) ·
+> hide the sigil in **game backgrounds, the news ticker, the Lore Codex, and art** so fans see it for months first.
 
 
 
@@ -314,9 +364,11 @@ is the superfan ceiling but a cadence trap — start it only when #1 is humming.
 - **"Follow the dog"** → *the brand creed.* On stationery, goal cards, and in tone. Payoff: one simple,
   repeatable line that holds the whole ethos — trust the journey; Princess leads.
 - **The Shogi Island portal** ("*one A and eight C's*," **two c's oversized**) → *a signature show reveal.*
-  Plant the glyph **now** as a recurring motif — hide the **A + eight C's (two larger)** in game backgrounds, the
-  news ticker, the Lore Codex, and art. Payoff: when the portal opens on screen, longtime fans gasp because they've
-  been *seeing* it for months without knowing. (Diegetic unlock = Av13; the cipher = Av2.)
+  **The gate is now LIVE (Av13, shipped 2026-06-23)** — the rite opens it with a cinematic. The motif is now a real,
+  reusable sigil (`.pjcc-sigil`); **keep seeding it** as a recurring glyph — hide the **A + eight C's (two larger)** in
+  more game backgrounds, the **news ticker**, the **Lore Codex**, and art (started: the Shogi Island dock + the Dead
+  Drop dockmaster's log). Payoff: when the portal opens on screen, longtime fans gasp because they've been *seeing* it
+  for months without knowing. (Diegetic unlock = Av13; the cipher = Av2.)
 - *Seeds to plant next: a recurring object/motif across games + show; a line that only lands after the origin; a background character who matters later.*
 
 ---
