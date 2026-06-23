@@ -637,6 +637,17 @@ only lands after the origin; a background character who matters later.)*
 
 ---
 
+## 🛠️ Day Job Ideas
+*Captured by Nate mid-shift — raw, to develop later. (He represents Pontiac, MI; these are the thoughts that arrive during the workday.)*
+
+1. **Podcast intro — ask Dan.** Dan (Nate's manager) might help with the podcast intro. → Action: ask Dan; also pin down what the podcast actually is (a PJCC / behind-the-show companion pod?).
+2. **More themes — a Mega Man II–flavored Games Page.** *Mega Man II (NES)* is Nate's all-time favorite game. Skin a version of the games page in that 8-bit Mega Man style and score it with **original PJCC chiptune** (McPuppy Studios). A themeable games-page skin + one original 8-bit track is a self-contained, web-buildable slice — and the first real McPuppy original music on the site.
+3. **The righteous Checker Town rival — needs a biblical name.** A character who is *completely righteous*, **represents God and always acts as such** — the story's **moral compass.** Proposed name: **Michael** ("Who is like God?" — the archangel of righteousness; pairs cleanly with the chess-king imagery). Alternates: **Samuel** (the prophet/kingmaker who guides and anoints) or **Gabriel** (herald of God). ⚠️ Open question to resolve before naming in canon: is this the **existing [The Rival](/characters/rival/)** reimagined (currently written as a morally-grey ex-antagonist with family in Chess City), or a **new, separate** righteous Checker-Town character? They don't quite reconcile as-is.
+4. **The Tortoise mindset — *not* "slow and steady."** The motif isn't the moral everyone quotes; it's the **tortoise's inner state**: calm, certain — *"I know exactly what I'm doing while everyone else is all over the place."* Quiet conviction over frantic motion. A brand value and a possible motif/character beat (fits the Neville-Goddard "assume the feeling" tone). See the moral-center positioning above.
+5. **Workplace negativity, observed.** The volume of negative talk among some coworkers was striking — and instructive: some were **infected** by others' negativity, while some **flipped positive** when met with good vibes. Lived proof of why the show leans into positivity; possible honest story material for the moral center.
+
+---
+
 ## ✍️ Series canon & story seeds (writing notes — not site features)
 *Captured verbatim-ish from Nate.*
 
