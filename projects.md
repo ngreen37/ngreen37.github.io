@@ -134,15 +134,15 @@ jukebox: true
         <span class="project-status-dot"></span>
         In Development
       </span>
-      <h2 class="project-title">Space Run</h2>
+      <h2 class="project-title">Follow the Dog</h2>
     </div>
-    <p class="project-desc">A Star Fox-style chess runner. The CEO of the Chess City Invitational hurls chess pieces that unfold into rideable tracks — skate onto each one and ride it to the end. Rooks run long, bishops zigzag, knights cut an L, and the King's lanes bite back.</p>
+    <p class="project-desc">A Star Fox-style chess runner (formerly Space Run). The CEO of the Chess City Invitational hurls chess pieces that unfold into rideable tracks — follow the dog, skate onto each one, and ride it to the end. Rooks run long, bishops zigzag, knights cut an L, and the King's lanes bite back.</p>
     <ul class="project-details">
       <li><strong>Format:</strong> Browser game</li>
       <li><strong>Status:</strong> Playable — new piece patterns in progress</li>
     </ul>
     <div class="project-links">
-      <a href="/games/space-run/" class="project-link">Play Now &rarr;</a>
+      <a href="/games/follow-the-dog/" class="project-link">Play Now &rarr;</a>
       <a href="/games/" class="project-link">All Games</a>
     </div>
   </div>
@@ -371,7 +371,7 @@ jukebox: true
 <ul class="games-index">
   <li><a href="/games/dungeon/">Princess Dungeon</a> <span class="games-index-note">— in development</span></li>
   <li><a href="/games/notation-run/">Notation Blitz <span class="ver">v3.7</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/space-run/">Space Run</a> <span class="games-index-note">— in development</span></li>
+  <li><a href="/games/follow-the-dog/">Follow the Dog</a> <span class="games-index-note">— in development</span></li>
   <li><a href="/games/sky-run/">Sky Run <span class="ver">v1.0</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/pirc-protocol/">The Pirc Protocol <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/fork-in-the-road/">Fork in the Road <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>

@@ -31,7 +31,7 @@ their own sake.* New surface area should serve one of the five threads.
 **Arcade (16 games):** The Gauntlet (headline — real games vs a ladder, perft-verified engine), Battle
 Room (v0.1 action-chess), Notation Blitz, Blindfold/The Mind's Eye, Clearance: DELTA, Princess Dungeon,
 Checker Financial, Fork in the Road, The Pirc Protocol, Sand Mine Depths, Shogi Island (Catch the Lion),
-Sky Run, Space Run, Knight's Tour, Siege on Chess City, The Reading Room — most with daily seeds, global
+Sky Run, Follow the Dog, Knight's Tour, Siege on Chess City, The Reading Room — most with daily seeds, global
 boards, creator ghosts, streak flame, board-skins + JP scaffolding.
 
 **World/site:** Lore Codex, Academy (all 10 pieces, offline), Projects, Daily Dispatch, Hall of Fame,
@@ -93,12 +93,18 @@ Handicap ladder vs the Lion AI · piece-reach trainer · tsume-of-the-day · dro
 wall (JP tie) · castle drills · 9×9 stepping-stone · the Lion's moods · Codex bridge · island hot-seat duel.
 
 **Sky Run:** *(shipped: animatic interstitials, daily, endless Sea, photo-card, 8-way Queen).* Remaining:
-lore bosses · new power-ups (Rook wall, pawn-storm, en-passant dash) · co-pilot couch co-op · loadout
-select · boss rush.
+lore bosses · **view-switch in Boss-Mode** (next) · new power-ups (Rook wall, pawn-storm, en-passant dash) ·
+co-pilot couch co-op · loadout select · boss rush.
+> **★ The view-switch — a signature mechanic (Nate, 2026-06-23).** When a boss appears, the camera *cuts to a
+> different view* (side → behind / top-down / over-the-shoulder) for the fight, then cuts back. It's the same idea
+> as the Battle Room's screen-flip: **switching view is meant to become a signature across many PJCC games** once
+> the animation pipeline lands. Web version: swap the render projection for the boss phase (a CSS/canvas transform
+> or a second draw routine) with a quick "VHS cut" transition; later it becomes a true camera cut in Godot.
 
-**Space Run:** *(not yet wired to PJCC — do that first).* Then: qualifier framing · collect-a-set upgrades ·
-legality-dodging · rival racers · daily track · tactic-shortcut branches · cosmetic ships · speed-tier
-music · near-miss combo.
+**Follow the Dog** *(formerly Space Run — renamed 2026-06-23):* *(not yet wired to PJCC — do that first).* Then:
+qualifier framing · collect-a-set upgrades · legality-dodging · rival racers · daily track · tactic-shortcut
+branches · cosmetic ships · speed-tier music · near-miss combo · lean into the **"follow the dog"** creed (the
+companion you chase becomes the guide).
 
 **Knight's Tour:** *(rebuilt: Warnsdorff coach, scoring, closed-tour, variable boards, daily, solver-verified
 starts, undo/auto-finish).* Remaining: rubble squares · constellation trail (→ `/constellation/`) ·
@@ -258,12 +264,21 @@ events · preview + predictions mini-game. *Mostly writing; keep it a template, 
 
 **Av12 — 日本語 / Japanese learning** *(new lane — engine live).* **The Reading Room** ships an Anki-style
 Leitner SRS; now **9 decks / ~235 cards** (kana, kanji ×2, words, phrases, chess/shogi vocab) **plus a
-reverse lane — English for Japanese speakers** (英単語/英会話). Taught by **Kaede**. Growth path: kanji-of-the-day
-(stroke-order + mnemonic) · stroke-order trace · decode-the-transmission (ARG) · bilingual ticker reader ·
-site-wide furigana toggle · counters kata · listening booth (TTS) + speak-it · particle puzzles ·
-sentence-builder · JLPT N5 belt track · daily seeded lesson · Catch-the-Lion JP mode · radical lab ·
+reverse lane — English for Japanese speakers** (英単語/英会話). Taught by **Kaede**. *UI polish shipped 2026-06-23:
+long home blurb removed · the answer + grade buttons now appear only after "Show Answer" and reset each card (the
+old lingering-answer bug was a missing `.hidden` rule) · long kana/phrases scale to read on one horizontal line.*
+Growth path: kanji-of-the-day (stroke-order + mnemonic) · stroke-order trace · decode-the-transmission (ARG) ·
+bilingual ticker reader · site-wide furigana toggle · counters kata · listening booth (TTS) + speak-it · particle
+puzzles · sentence-builder · JLPT N5 belt track · daily seeded lesson · Catch-the-Lion JP mode · radical lab ·
 memory match · kana typing trainer · Shogi-Island visual-novel story mode · boss-gate quizzes ·
 calligraphy relics · pitch-accent ear trainer · language passport (Dossier) · community translation board (UGC).
+> **★ Character-voiced phrase decks (Nate, 2026-06-23).** Make the phrase/sentence cards **lines the cast would
+> actually say**, so you learn Japanese *and* the characters at once: the **Checker Town Rival speaks like Bob
+> Proctor** ("goals are 5% strategy, 95% mindset" → in JP), the **main character is headstrong** (brash, eager
+> lines), the **Uncle** drops Neville-flavored aphorisms, **Annie** is brave-but-small, **Argus** is the dry smart
+> one, etc. Kaede still teaches; the *voice* of each phrase is a character. **Add their portraits later** (a small
+> headshot on the card, speaker name + romaji). Doubles as a stealth way to seed canon voice before the show. Start
+> as a new "Voices of Checker Town / 町の声" deck, hand-written, picture slot optional.
 
 **Av13 — Access puzzles / hidden portals** *(the Shogi Island gate is now LIVE):* gated areas you **unlock by
 solving**, not clicking. Then a little entry rite per region — collect them like keys. **Meant to be a cool reveal
@@ -390,6 +405,16 @@ slowed + tap-to-pause/resume + studio promo items; "Read the Blog" shrunk to a c
   a true camera cut) → **P3** Blender (piece-combatants, capture/finisher anims, the commentators; intro
   cutscenes) → **P4** WOW (combos, signature finishers, a crowd, shareable replays). Same engine as The
   Gauntlet, so the chess stays honest.
+  > **The Battle Room — north star (Nate, 2026-06-23).** Inspired by **Ender's Game** *and* the SF short story
+  > in *Masterpieces* — the **downed plane**, a general and his men (and family) forced to **play the match as the
+  > chess pieces themselves**, lives on the line. That life-or-death, you-are-the-piece weight is the feeling to
+  > chase. **The flagship for the "view-switch" signature:** a clean chess board read **always visible on the side**
+  > (you never lose the game state), while the **main stage cuts to the action view** for each capture/finish; *later,
+  > an overlay when the view switches* (mini-board floats in). **The build arc Nate wants to see:** **JS → Blender/
+  > Godot → VR** — the web build proves the loop, Godot makes the flip a real camera cut, Blender gives the pieces
+  > bodies and finishers, and in VR (Av16) you stand in the arena Ender's-Game-style ("the enemy's gate is down").
+  > **Next concrete step on the web v0.1:** dock a persistent side board next to the action arena (board-on-side),
+  > then a "VHS cut" transition between board-view and action-view.
 - **Blender cutscene intros** — short rendered clips as intros / loading screens / season trailers. *(Saved favorite.)*
 - **Backend (Supabase)** — unlocks the cross-cutting features: guilds/houses, async duels, the Writers'
   Room gallery, shared tallies, the cosmetics store.

@@ -149,7 +149,20 @@
     try {
       await loadSDK();
       sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
-        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+        auth: {
+          // Stay-signed-in: the session is written to localStorage and survives
+          // reloads + closing the browser; the refresh token is auto-renewed.
+          // (Shared across the site + every same-origin game iframe automatically.)
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+          // Use the IMPLICIT flow (token in the link) ON PURPOSE: it lets you
+          // request a login link on your phone and open it on your PC (or
+          // vice-versa). PKCE — the newer supabase-js default — stores a verifier
+          // on the requesting device only, which would break that cross-device
+          // sign-in we explicitly want to support.
+          flowType: 'implicit'
+        }
       });
       await refreshSession();
       sb.auth.onAuthStateChange(function () { refreshSession().then(emit); });

@@ -33,7 +33,10 @@
   .kaede-say::after { content:""; position:absolute; left:-8px; top:14px; border:6px solid transparent; border-right-color:#f5c518; }
 
   .screen { position:relative; z-index:2; }
-  .screen.hidden { display:none; }
+  /* Generic hide. Previously only `.screen.hidden` existed, so the answer card,
+     the grade buttons, and the Show-Answer button never actually hid — the old
+     answer lingered onto the next card. This fixes that. */
+  .hidden { display:none !important; }
   .eyebrow { font-size:11px; letter-spacing:4px; color:#e79a9a; text-transform:uppercase; text-align:center; }
   .title { text-align:center; font-weight:900; color:#f5c518; letter-spacing:1px; font-size:26px;
     text-shadow:0 2px 0 #6a4400, 0 0 18px rgba(245,197,24,0.4); margin:2px 0 4px; }
@@ -72,7 +75,9 @@
   /* ---- study card ---- */
   .card { background:#f6efe0; border-radius:16px; border:3px solid #d24b4b; box-shadow:0 8px 28px rgba(0,0,0,0.45);
     min-height:226px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:18px; margin:6px 0 4px; position:relative; }
-  .card-glyph { color:#1b1206; font-size:108px; line-height:1; }
+  /* Kana/words/phrases always read on ONE horizontal line; JS scales the size
+     to the string length so longer phrases never wrap or stack vertically. */
+  .card-glyph { color:#1b1206; font-size:108px; line-height:1.05; white-space:nowrap; max-width:100%; text-align:center; }
   .card-prompt { color:#7a3030; font-size:12px; letter-spacing:2px; text-transform:uppercase; margin-top:8px; }
   .card-back { text-align:center; margin-top:10px; }
   .card-reading { color:#1b1206; font-size:30px; font-weight:900; }
@@ -123,7 +128,6 @@
   <div class="screen" id="home">
     <div class="eyebrow">Kaede's</div>
     <div class="title">THE READING ROOM<span class="jp">どくしょしつ</span></div>
-    <div class="sub">Learn to read Japanese with <b>Kaede</b> — the <b>kana</b> first, then your first <b>common kanji</b>. Cards come back on an <b>Anki-style schedule</b>: get one right and it returns later; slip and you'll see it sooner. Now with <b>words, phrases &amp; chess</b> decks — plus a reverse set for <b>Japanese speakers learning English</b>.</div>
     <div class="decks" id="deck-list"></div>
     <div class="mode-row" id="mode-row">
       <button class="mode-pick sel" data-mode="review">🔁 Review</button>
@@ -362,6 +366,15 @@
   // ======================= shuffle =======================
   function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = (Math.random() * (i + 1)) | 0; var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
 
+  // Scale the big card glyph to the string length so kana/words/phrases always
+  // read on one horizontal line (no wrapping or vertical stacking).
+  function fitGlyph(el, text) {
+    var n = Array.from(String(text)).length;
+    var size = n <= 1 ? 104 : n === 2 ? 80 : n === 3 ? 60 : n === 4 ? 48 : n === 5 ? 40 : 34;
+    el.style.fontSize = size + 'px';
+    el.textContent = text;
+  }
+
   // ======================= screens =======================
   function show(id) { ['home','review','quiz','summary'].forEach(function (s) { document.getElementById(s).classList.toggle('hidden', s !== id); }); }
 
@@ -422,9 +435,12 @@
     R.cur = R.queue.shift();
     R.shown = false;
     var deck = R.deck, card = cardByIdInDeck(deck, R.cur);
-    document.getElementById('rv-glyph').textContent = glyphOf(card);
+    fitGlyph(document.getElementById('rv-glyph'), glyphOf(card));
     document.getElementById('rv-prompt').textContent = frontPrompt(deck);
     document.getElementById('rv-back').classList.add('hidden');
+    document.getElementById('rv-reading').textContent = '';   // never let the last answer linger
+    document.getElementById('rv-meaning').textContent = '';
+    document.getElementById('rv-extra').textContent = '';
     document.getElementById('rv-show-wrap').classList.remove('hidden');
     document.getElementById('rv-grades').classList.add('hidden');
     var left = R.queue.length + 1;
@@ -479,7 +495,7 @@
   }
   function showQuiz() {
     var it = Q.items[Q.idx], deck = Q.deck;
-    document.getElementById('qz-glyph').textContent = glyphOf(it.card);
+    fitGlyph(document.getElementById('qz-glyph'), glyphOf(it.card));
     document.getElementById('qz-prompt').textContent = quizPrompt(deck);
     document.getElementById('qz-score').textContent = Q.score;
     document.getElementById('qz-combo').textContent = Q.combo > 1 ? ('combo ×' + Q.combo) : '';
