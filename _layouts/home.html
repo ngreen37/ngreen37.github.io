@@ -19,7 +19,9 @@ layout: default
   <p class="hero-eyebrow">McPuppy Studios Presents</p>
   <h1 class="hero-title">Princess and the Journey<br>to Chess City</h1>
   <p class="hero-subtitle">A cartoon series in progress</p>
-  <a class="hero-btn" href="{{ '/blog/' | relative_url }}">Read the Blog</a>
+  {% comment %} The blog is no longer the front door — kept as a tiny dog-eared "field notes"
+       tab tucked in the hero corner (much smaller, creative spot). {% endcomment %}
+  <a class="hero-fieldnotes" href="{{ '/blog/' | relative_url }}" title="Older build notes — archived">📓 field&nbsp;notes</a>
 </section>
 
 {% comment %} ── 2. PJCC DESCRIPTOR ───────────────────────────────── {% endcomment %}
@@ -29,41 +31,37 @@ layout: default
     It follows Princess -- a loyal, chess-playing dog -- and the young man who raises her as they navigate life in Checker Town,
     a struggling community where checker pieces once fell from the sky, and chase a better life in Chess City across the sea.
   </p>
-  <p>
-    This site documents the project as it's being built: the story, the characters, the locations, and everything in between.
-    Lessons learned along the way get posted to the blog.
-  </p>
 </section>
 
-{% comment %} ── 3. WORLD STATUS TICKER ───────────────────────────── {% endcomment %}
+{% comment %} ── 3. WORLD STATUS TICKER ───────────────────────────────
+   In-world bureau news + studio PROMOS (new/upcoming features) interleaved.
+   Items are listed ONCE here; pjcc-ticker JS clones the set for a seamless loop,
+   sets a calm scroll speed regardless of count, and adds tap-to-pause / resume. {% endcomment %}
 <div class="world-ticker-wrap">
-  <div class="ticker-eyebrow">◈ LIVE TRANSMISSION — CHECKER TOWN BUREAU OF DISPATCH</div>
+  <div class="ticker-eyebrow">◈ LIVE TRANSMISSION — CHECKER TOWN BUREAU OF DISPATCH <span class="ticker-tap-hint">· tap to pause</span></div>
   <div class="ticker-outer">
-    <div class="ticker-track">
+    <div class="ticker-track" id="world-ticker-track">
       <span class="ticker-item">CHECKER TOWN CHECKER PIECE SUPPLY AT ALL-TIME LOW — BOARD SHORTAGE REPORTED IN SECTOR 3</span>
+      <span class="ticker-item ticker-item--promo">◆ NEW — THE IDENTITY FORGE: BUILD YOUR OWN OPERATIVE &amp; COMPANION, RENAME ANYTIME → /DOSSIER/</span>
       <span class="ticker-item">CHESS CITY TOURNAMENT ENROLLMENT NOW OPEN — LIMITED SPOTS REMAINING — APPLICATIONS CLOSE END OF SEASON</span>
+      <span class="ticker-item ticker-item--promo">◆ NEW — THE GAUNTLET: REAL CHESS VS A LADDER OF PJCC RIVALS → /GAMES/THE-GAUNTLET/</span>
       <span class="ticker-item">SHOGI ISLAND FERRY DELAYED FOR THIRD CONSECUTIVE WEEK — NO DEPARTURE DATE ANNOUNCED — 将棋の島 : フェリー3週連続遅延中 / 出発日未定</span>
+      <span class="ticker-item ticker-item--promo">◆ NEW — HIDDEN PORTALS: SOME DOORS YOU OPEN BY SOLVING, NOT CLICKING. LISTEN FOR THE OCTAVE.</span>
       <span class="ticker-item">INTERPLANETARY CONSTRUCTION CO. DENIES ALL VESSEL WRECKAGE CLAIMS — INVESTIGATION CONTINUES</span>
+      <span class="ticker-item ticker-item--promo">◆ THE ARCADE: 16 PLAYABLE GAMES — CLAIM A CODENAME, CLIMB THE GLOBAL BOARDS → /GAMES/</span>
       <span class="ticker-item">CHESS CITY LEAFS ADVANCE TO FINALS — ROSTER ANNOUNCEMENT EXPECTED SHORTLY</span>
+      <span class="ticker-item ticker-item--promo">◆ THE READING ROOM: LEARN JAPANESE KANA &amp; KANJI WITH KAEDE THE FOX → /GAMES/READING-ROOM/</span>
       <span class="ticker-item">WEATHER ADVISORY: THE SEA IS ROUGH — ALL CROSSINGS POSTPONED INDEFINITELY</span>
+      <span class="ticker-item ticker-item--promo">◆ THE ACADEMY: A FREE, GAMIFIED CHESS CURRICULUM — EARN YOUR BELTS → /ACADEMY/</span>
       <span class="ticker-item">CHECKER PIECE PRICES REACH RECORD HIGH — ECONOMISTS CITE THE CRASH AS ORIGIN POINT</span>
+      <span class="ticker-item ticker-item--promo">◆ DAILY DISPATCH: A FRESH MISSION EVERY DAY — KEEP YOUR STREAK FLAME LIT → /DAILY/</span>
       <span class="ticker-item">UNKNOWN VESSEL SPOTTED OFF COAST — AUTHORITIES INVESTIGATING — PUBLIC ADVISED TO REMAIN CALM</span>
+      <span class="ticker-item ticker-item--promo">◆ COMING SOON — THE BATTLE ROOM: ACTION-CHESS WITH PRINCESS ON THE CONTROLS</span>
       <span class="ticker-item">CHECKER TOWN YOUTH CHESS LEAGUE REGISTRATION NOW OPEN — FORMS AVAILABLE AT THE CIVIC HALL</span>
+      <span class="ticker-item ticker-item--promo">◆ UPCOMING — A GODOT ROGUELITE BUILT FROM THE BLENDER ASSETS. MADE IN THE OPEN.</span>
       <span class="ticker-item">OFFICIAL: CHESS CITY HAS NOT RESPONDED TO CHECKER TOWN PASSAGE PERMIT REQUEST — DAY 47</span>
       <span class="ticker-item">PRINCESS WINS CHECKER TOWN INFORMAL CHESS TOURNAMENT — REMATCH PENDING</span>
-      <span class="ticker-item">SHADOW ACTIVITY NEAR THE CRASH SITE — CONSTRUCTION EQUIPMENT UNACCOUNTED FOR</span>
-      <span class="ticker-item">MCPUPPY STUDIOS DISPATCH UPDATED {{ site.time | date: "%Y.%m.%d" }} — OPERATIVE NGREEN37 ON DUTY</span>
-      <span class="ticker-item">CHECKER TOWN CHECKER PIECE SUPPLY AT ALL-TIME LOW — BOARD SHORTAGE REPORTED IN SECTOR 3</span>
-      <span class="ticker-item">CHESS CITY TOURNAMENT ENROLLMENT NOW OPEN — LIMITED SPOTS REMAINING — APPLICATIONS CLOSE END OF SEASON</span>
-      <span class="ticker-item">SHOGI ISLAND FERRY DELAYED FOR THIRD CONSECUTIVE WEEK — NO DEPARTURE DATE ANNOUNCED — 将棋の島 : フェリー3週連続遅延中 / 出発日未定</span>
-      <span class="ticker-item">INTERPLANETARY CONSTRUCTION CO. DENIES ALL VESSEL WRECKAGE CLAIMS — INVESTIGATION CONTINUES</span>
-      <span class="ticker-item">CHESS CITY LEAFS ADVANCE TO FINALS — ROSTER ANNOUNCEMENT EXPECTED SHORTLY</span>
-      <span class="ticker-item">WEATHER ADVISORY: THE SEA IS ROUGH — ALL CROSSINGS POSTPONED INDEFINITELY</span>
-      <span class="ticker-item">CHECKER PIECE PRICES REACH RECORD HIGH — ECONOMISTS CITE THE CRASH AS ORIGIN POINT</span>
-      <span class="ticker-item">UNKNOWN VESSEL SPOTTED OFF COAST — AUTHORITIES INVESTIGATING — PUBLIC ADVISED TO REMAIN CALM</span>
-      <span class="ticker-item">CHECKER TOWN YOUTH CHESS LEAGUE REGISTRATION NOW OPEN — FORMS AVAILABLE AT THE CIVIC HALL</span>
-      <span class="ticker-item">OFFICIAL: CHESS CITY HAS NOT RESPONDED TO CHECKER TOWN PASSAGE PERMIT REQUEST — DAY 47</span>
-      <span class="ticker-item">PRINCESS WINS CHECKER TOWN INFORMAL CHESS TOURNAMENT — REMATCH PENDING</span>
+      <span class="ticker-item ticker-item--promo">◆ THE PRESS PASS: BECOME A FOUNDING OPERATIVE — OWN A PIECE OF THE JOURNEY → /PRESS-PASS/</span>
       <span class="ticker-item">SHADOW ACTIVITY NEAR THE CRASH SITE — CONSTRUCTION EQUIPMENT UNACCOUNTED FOR</span>
       <span class="ticker-item">MCPUPPY STUDIOS DISPATCH UPDATED {{ site.time | date: "%Y.%m.%d" }} — OPERATIVE NGREEN37 ON DUTY</span>
     </div>
@@ -326,5 +324,43 @@ document.querySelectorAll('.hstat-num').forEach(function(el) {
     el.textContent = d + 'd ' + pad(h) + ':' + pad(m) + ':' + pad(s);
   }
   tick(); setInterval(tick, 1000);
+})();
+
+// World ticker — calm speed, seamless loop, tap-to-pause, resume on return (#ticker)
+(function() {
+  var wrap  = document.querySelector('.world-ticker-wrap');
+  var track = document.getElementById('world-ticker-track');
+  if (!wrap || !track) return;
+
+  // Clone the single item set so the -50% keyframe loops seamlessly.
+  var items = Array.prototype.slice.call(track.children);
+  items.forEach(function(it) { track.appendChild(it.cloneNode(true)); });
+
+  // Calm, count-independent pace: a fixed px/second (lower = slower).
+  var SPEED = 38; // px per second
+  function setDuration() {
+    var copyWidth = track.scrollWidth / 2;            // one copy of the set
+    if (copyWidth > 0) track.style.animationDuration = Math.round(copyWidth / SPEED) + 's';
+  }
+  setDuration();
+  window.addEventListener('resize', setDuration);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(setDuration);
+
+  // Tap / click / keyboard to pause & resume — works on the mobile app (no hover).
+  var userPaused = false;
+  wrap.setAttribute('role', 'button');
+  wrap.setAttribute('tabindex', '0');
+  wrap.setAttribute('aria-label', 'News ticker — tap to pause or resume');
+  function toggle() { userPaused = !userPaused; wrap.classList.toggle('is-paused', userPaused); }
+  wrap.addEventListener('click', toggle);
+  wrap.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+  });
+
+  // Pause while the app/tab is backgrounded; resume cleanly when you come back.
+  document.addEventListener('visibilitychange', function() {
+    wrap.classList.toggle('is-hidden', document.hidden);
+    if (!document.hidden && !userPaused) setDuration();
+  });
 })();
 </script>

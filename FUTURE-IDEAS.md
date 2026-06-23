@@ -312,6 +312,62 @@ someday-milestone. Parked here mainly so the 3D pipeline is built **VR-aware fro
 
 ---
 
+# 🏠 The PJCC Home Page — 30 ideas
+
+*The front page is the trailhead for all five threads (ship the show · own the audience · make them love
+her · the arcade funnel · the one mystery). **Less is more** — each idea must earn its spot; prefer depth
+and combination over new clutter. ★ = low-lift · ⛁ = wants backend. **Just shipped (2026-06-23):** ticker
+slowed + tap-to-pause/resume + studio promo items; "Read the Blog" shrunk to a corner "field notes" tab;
+"lessons learned" paragraph cut; bolder countdown headers.*
+
+**Hero / first impression**
+1. ★ **Adaptive hero CTA** — first-timer sees "Meet Princess," a returning operative sees "Resume your dossier," mid-build sees "Today's mission."
+2. **Hero animatic loop** — a 5–10s muted Blender/animatic clip behind the title (reduced-motion safe): the cheapest "this is real" signal.
+3. ★ **Rotating logline** — A/B the tagline under the title (the logline · the creed "follow the dog" · the mystery hook).
+4. **"Press play" hero** — a tap starts the first leitmotif or the 5-min audio-drama scene (Av5), so the world has a *sound* on arrival.
+
+**The ticker (now slower + pausable)**
+5. ★ **Clickable ticker items** — now that it pauses, deep-link each promo to its feature.
+6. **Date-seeded ticker** — today's real dispatch headline + a rotating in-world rumor (hide an Av2 cipher in one item).
+7. ★ **Color-coded lanes** — gold = in-world news, pink = studio promos, green = community beats ("OPERATIVE X just cleared The Gauntlet").
+8. ⛁ **Live community beats** — pull the newest codename / top score from Supabase into the ticker so the site visibly breathes (Av9).
+9. **"Breaking" flash** — when a feature ships, the ticker fires a one-time gold alert banner, then settles.
+
+**Countdowns / time**
+10. ★ **Premiere clock as centerpiece** — make the Episode-1 countdown bigger, with a progress bar from dev-start → premiere.
+11. **Milestone confetti** — a one-time piece-burst when the dev clock crosses 100 / 365 / 500 days.
+12. **A near-term clock** — a second countdown to the *next* concrete deliverable (episode beat, Album-of-the-Month, season close) so there's always a soon.
+13. ★ **"Made in the open · Day N" badge** — shareable as a card (ties Av10 transparency).
+
+**Princess & you (Av6)**
+14. **Home-page Princess beat** — she trots to the hero on load, sits, wags (movement only, per canon).
+15. ★ **Personalized greeting** — signed-in visitors see their Identity-Forge operative + companion ("Welcome back, <codename>").
+16. **Companion mood pip** — a tiny care-state dot on the home page that links into the Companion Den.
+
+**The arcade funnel (the business)**
+17. ★ **Game of the Week spotlight** — one rotating featured card (doubles as the weekly bounty).
+18. **"Continue where you left off"** — your last-played game + best, one tap to resume.
+19. ★ **Mini leaderboard teaser** — top 3 this season + a "climb the board" CTA.
+20. **Playable micro-demo** — one embedded Notation-Blitz round / one tactic right on the home page: hook before the click-through.
+
+**Story / the one mystery (decode-as-you-play)**
+21. ★ **Plant the sigil** — seed the Shogi-gate glyph (one A, eight C's) subtly into the hero/ticker so the Av13 portal reveal lands foretold.
+22. **Fragments indicator** — a quiet N/6 origin-fragment meter that nudges toward the reveal without spoiling.
+23. **"Character last seen" spotlight** — a rotating cast chip that deep-links to its Lore Codex entry.
+24. ⛁ **Living front page** — the home subtly reskins by ARG season phase, so regulars feel the world advancing.
+
+**Audience & funding (Av10)**
+25. ★ **The dispatch capture** — one tasteful newsletter sign-up on the home page (the owned, un-algorithmed channel).
+26. **Founding-operative ribbon** — Press Pass holders see a quiet badge on their home page.
+27. ★ **"Support the build" micro-card** — tied to the current deliverable goal (the Animator's Fund bar).
+
+**Polish / structure**
+28. ★ **North-star declutter** — collapse the stats bar to one elegant line; cut anything not serving the five threads.
+29. **Seasonal reskin** — advent, the anniversary of the crash, premiere week (Av9 live-ops).
+30. ★ **Fix the dead stat** — "Posts Written" is stale (blog's gone); swap for a live number like "Operatives enlisted" or "Games played this week."
+
+---
+
 ## 🅿️ Parked (pulled from the live site, kept so the work isn't lost)
 - **Games-page search box** and **sort dropdown** — re-add if the library outgrows one screen.
 - **De-linked nav pages** (revisit with real content): World Map, Sound, Soundtrack, Press Kit, Lore Codex,
