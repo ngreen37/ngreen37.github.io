@@ -451,8 +451,6 @@
   <script src="{{ '/assets/js/pjcc-lang.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pjcc-flair.js' | relative_url }}" defer></script>
 
-  {% comment %} Build Playlist jukebox is a McPuppy Studios feature only — opt in per page with `jukebox: true`. PJCC-side pages (characters, locations, games, dossier, world…) stay music-free. {% endcomment %}
-  {% if page.jukebox %}{% include jukebox.html %}{% endif %}
 
   <!-- Cloudflare Web Analytics -->
   <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "46881c52a7e741a2954c7f09a9759305"}'></script>

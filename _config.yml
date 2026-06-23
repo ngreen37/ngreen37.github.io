@@ -30,7 +30,6 @@ defaults:
       type: "posts"
     values:
       body_class: theme-bw
-      jukebox: true
 
 collections:
   characters:
