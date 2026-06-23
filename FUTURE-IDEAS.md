@@ -140,7 +140,9 @@ filling credits wall · embeddable animatic player.
 weekly cipher chain → coordinates → a map to a hidden page · a collective fragment (needs N visitors) ·
 Narrator voicemail (a real number) · Subject-Zero countdowns · in-universe clearance ranks gate pages ·
 printable invisible-ink dossier + QR stickers · cross-game keys · weekly field report (Discord bait) ·
-the crash-site coordinate (season-one payoff).
+the crash-site coordinate (season-one payoff). **At launch (not before):** spin up a **Discord** as the
+community + ARG home — where fans solve the cipher chain *together.* A Discord with zero members is dead weight,
+so wait for Flare #1; it's apparatus, not destination.
 
 **Av3 — The Academy** *(all 10 shipped, offline).* Backend upgrades when accounts land: shared class
 rosters/dashboards, a server-verifiable cert registry, a rules-enforcing practice board.
@@ -199,9 +201,12 @@ memory match · kana typing trainer · Shogi-Island visual-novel story mode · b
 calligraphy relics · pitch-accent ear trainer · language passport (Dossier) · community translation board (UGC).
 
 **Av13 — Access puzzles / hidden portals** *(new):* gated areas you **unlock by solving**, not clicking.
-First: the **Shogi Island portal** — Nate's seed "*one A and eight C's*" (a typed incantation, a chess-coordinate
-rite on the a- and c-files, or a musical A/C key). Diegetic, not a menu (decode-as-you-play, ARG tie).
-Then a little entry rite per region — collect them like keys.
+First: the **Shogi Island portal** — Nate's seed "*one A and eight C's*," with **two of the c's larger than the
+rest** (a typed incantation, a chess-coordinate rite on the a- and c-files, or a musical A/C key). Diegetic, not a
+menu (decode-as-you-play, ARG tie). Then a little entry rite per region — collect them like keys. **Meant to be a
+cool reveal in the show** — plant the breadcrumbs now (see Planted Seeds) so the moment feels foretold, not arbitrary.
+
+
 
 **Av14 — Goal cards** *(new · physical · parked until after the launch flare):* a **pocket goal card** you keep
 on you **à la Bob Proctor** — reach in, **touch it**, re-anchor the goal. *The touch is the trigger; the whole
@@ -270,6 +275,10 @@ is the superfan ceiling but a cadence trap — start it only when #1 is humming.
 - **Kaede's locked second shelf** → *a language no one can read* (Av12 decode-the-transmission → the Construction Co. origin).
 - **"Follow the dog"** → *the brand creed.* On stationery, goal cards, and in tone. Payoff: one simple,
   repeatable line that holds the whole ethos — trust the journey; Princess leads.
+- **The Shogi Island portal** ("*one A and eight C's*," **two c's oversized**) → *a signature show reveal.*
+  Plant the glyph **now** as a recurring motif — hide the **A + eight C's (two larger)** in game backgrounds, the
+  news ticker, the Lore Codex, and art. Payoff: when the portal opens on screen, longtime fans gasp because they've
+  been *seeing* it for months without knowing. (Diegetic unlock = Av13; the cipher = Av2.)
 - *Seeds to plant next: a recurring object/motif across games + show; a line that only lands after the origin; a background character who matters later.*
 
 ---
