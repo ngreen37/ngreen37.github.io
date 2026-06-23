@@ -108,3 +108,37 @@ roll straight into the Vertical Slice (the Princess rig is already done). Best o
 
 *Whatever you ship, the day it goes live is the day the tortoise's quiet ends — and the stadium you already
 built finally has something playing in it.* 🐢
+
+---
+
+## Roadmap 3 — Month 1, week by week *(chosen 2026-06-23)*
+*You're not starting cold: per your Blender work you already have a **rigged low-poly Princess**, six parametric
+chess pieces, and a linked-library setup. So Months 1–2 (the Story Flare) **reuse those assets** — you're ahead.
+Goal of Month 1: a fully **blocked, animated, lit** rough cut of one short beat, ready to polish + final-render +
+score in Month 2 → **flare #1.** Scope discipline: **one location, one beat.** Optional: post a WIP each Friday
+(the open-build overlay).*
+
+**Candidate beat (pick one, keep it tiny):** a "**follow the dog**" shot — Princess trotting ahead through a
+Checker-Town corner, glancing back as if to say *come on* (literally embodies the tagline + the goal-cards ethos);
+**or** a quiet "Princess looks up at the sky" beat (seeds the crash/origin); **or** a 4-shot Bill-&-Princess
+micro-montage. *Recommendation: the "follow the dog" shot — simplest, most on-brand, and reusable later.*
+
+- **Week 1 — Target + asset audit.** Lock the one-sentence beat and shot count (1–3 shots). Open your existing
+  Princess file; confirm the rig **poses and animates cleanly** (a 2-second idle/walk test); fix anything broken.
+  Set up the scene/project file. *Done when:* the beat is one sentence and Princess moves in a test scene.
+- **Week 2 — Blockout / previs.** Grey-box the environment (a Checker-Town corner from simple shapes), place the
+  **camera**, and block the whole beat with rough timing — a 3D animatic at the target length. No materials yet.
+  *Done when:* rough camera + rough motion plays start-to-finish at ~30–60s.
+- **Week 3 — Animate the hero beat.** Refine the one motion that carries it (the trot + look-back, or the look-up)
+  on the existing rig; add light secondary motion (ears, tail). *Done when:* the performance reads emotionally even in grey-box.
+- **Week 4 — Set dressing + lighting test.** Dress the environment to "PJCC" (materials + a few set pieces), set
+  final **lighting + framing**, and do a **low-sample test render** of a few frames. *Done when:* one still frame
+  looks like the show, and you have a Month-2 render plan.
+
+**End of Month 1:** a blocked-animated-lit rough cut of one beat. **Month 2:** polish the animation + lighting, add
+a **music bed** (a leitmotif) + sound, **final render**, and **ship the clip** (site + dispatch + socials). **🚀
+Flare #1.** Months 3–6 then roll into the Godot Vertical Slice — with the Princess rig already built, a real head start.
+
+*Tutorials only if needed (you're past beginner): Godot's **Dodge the Creeps** and **Your First 3D Game** for the
+Month-3 game phase; skip the Blender-beginner stuff. When in doubt, **block something ugly this week** instead of
+researching the perfect way.*

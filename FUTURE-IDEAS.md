@@ -203,6 +203,20 @@ First: the **Shogi Island portal** — Nate's seed "*one A and eight C's*" (a ty
 rite on the a- and c-files, or a musical A/C key). Diegetic, not a menu (decode-as-you-play, ARG tie).
 Then a little entry rite per region — collect them like keys.
 
+**Av14 — Goal cards** *(new · physical · parked until after the launch flare):* a **pocket goal card** you keep
+on you **à la Bob Proctor** — reach in, **touch it**, re-anchor the goal. *The touch is the trigger; the whole
+design serves that ritual.* **The real problem it solves:** most people don't know what they want — or they do,
+then **forget once they lose the path** for a while. The card is a physical anchor against forgetting.
+- **Premium and intentional, not a download.** **High-end thick/heavy paper**, **gold** (yes, gold), with
+  **different characters** on different cards. **Not printable from the site — on purpose** (the friction keeps it personal).
+- **How you get one:** **buy** it, or **email and ask for a free one** (Patreon-funded). Or **make your own /
+  use any token** — whatever works, *as long as the goal is clearly tied to touching it.*
+- **Voice:** "**follow the dog**" + the Rival's line *"goals are 5% strategy, 95% mindset."* Ties to the
+  moral/Neville center (assume the feeling), Av4 (physical) and Av10 (Patreon).
+
+**Av15 — PJCC stationery** *(new · physical · parked until after the flare):* branded stationery with
+**"follow the dog"** across the top. The "pocket/desk mindset" goods line alongside the goal cards.
+
 ---
 
 ## 🅿️ Parked (pulled from the live site, kept so the work isn't lost)
@@ -254,6 +268,8 @@ is the superfan ceiling but a cadence trap — start it only when #1 is humming.
 - **A heart you can feel** → *the show's moral center:* good values + quiet, Neville-Goddard-flavored
   positivity + Nate's real stories. Warm, hopeful, never cynical.
 - **Kaede's locked second shelf** → *a language no one can read* (Av12 decode-the-transmission → the Construction Co. origin).
+- **"Follow the dog"** → *the brand creed.* On stationery, goal cards, and in tone. Payoff: one simple,
+  repeatable line that holds the whole ethos — trust the journey; Princess leads.
 - *Seeds to plant next: a recurring object/motif across games + show; a line that only lands after the origin; a background character who matters later.*
 
 ---
@@ -306,7 +322,7 @@ is the superfan ceiling but a cadence trap — start it only when #1 is humming.
   Father *is* the show's spiritual debate, in one family.
 - **The Rival** — **acts as God would, always**: the **righteous moral compass** (redefines his earlier
   morally-grey write-up). *Name — pick one:* **Michael** ("Who is like God?"; pairs with the king piece; rec) ·
-  Gabriel · Samuel · Emmanuel.
+  Gabriel · Samuel · Emmanuel. *His line:* "goals are 5% strategy, 95% mindset."
 - **The Rival's two friends** — a **brother pair**: **James & John** ("Sons of Thunder"; rec) or Peter & Andrew.
   With the **Best Friend** (who drifts into the Rival's orbit), a small faithful band. Even they have
   redeeming qualities — perhaps they **save one of the dogs.**
