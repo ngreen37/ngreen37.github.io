@@ -81,6 +81,10 @@
     currentUser: function () { return sb ? (sb.auth.__user || null) : null; },
     getProfile: function () { return profile; },
     avatarEmoji: function (prof) {
+      // A face built in the Identity Forge (companion.look) wins site-wide, so
+      // the operative you created shows in the nav, leaderboards and share card.
+      var look = prof && prof.companion && prof.companion.look;
+      if (look && look.glyph) return look.glyph;
       var key = prof && prof.companion && prof.companion.avatar;
       return AVATARS[key] || AVATARS['human-1'];
     },
@@ -290,6 +294,11 @@
   // Persist the active pet (the full pet experience lives in pjcc-companion.js;
   // here we only store which one follows the operative across devices).
   PJCC.setPet = async function (key) { return updateCompanion({ pet: key }); };
+
+  // Persist the full operative look built in the Identity Forge (pjcc-creator.js).
+  // Stored as companion.look = { base, tone, glyph, aura, hat, emblem, name, role, bio }.
+  // glyph is the resolved emoji so avatarEmoji() can render it without the catalogue.
+  PJCC.setLook = async function (look) { return updateCompanion({ look: look || {} }); };
 
   // --- credits / store -------------------------------------------------------
   // Deduct credits atomically (add_credits RPC with a negative amount).

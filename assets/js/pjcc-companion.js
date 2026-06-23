@@ -304,6 +304,16 @@
 
   function displayName(s) { return s.names[s.pet] || PETS[s.pet].name; }
   function petEmojiFor(s, li) { var p = PETS[s.pet]; return (li || levelInfo(s)).level < 3 ? p.baby : p.em; }
+  // Coat tint chosen in the Identity Forge (pjcc-creator.js) recolours the pet here too.
+  function tintFilter() {
+    try {
+      var id = JSON.parse(localStorage.getItem('pjcc.identity.v1')) || {};
+      var key = id.pet && id.pet.tint;
+      if (!key || key === 'none') return '';
+      var T = window.PJCCForge && PJCCForge.TINTS;
+      return (T && T[key]) ? T[key].f : '';
+    } catch (e) { return ''; }
+  }
 
   // ---- rendering: inline mood card ---------------------------------------
   var mountCard = null, lastStats = [], denEl = null;
@@ -315,7 +325,7 @@
     var accKey = s.accessories[s.pet], accEm = accKey && ACCESSORIES[accKey] ? ACCESSORIES[accKey].em : '';
     el.innerHTML =
       '<div class="pet-card">' +
-        '<div class="pc-stage ' + SPECIES[p.sp].idle + '">' + petEmojiFor(s, li) + (accEm ? '<span class="pc-acc">' + accEm + '</span>' : '') + '</div>' +
+        '<div class="pc-stage ' + SPECIES[p.sp].idle + '"><span style="filter:' + tintFilter() + '">' + petEmojiFor(s, li) + '</span>' + (accEm ? '<span class="pc-acc">' + accEm + '</span>' : '') + '</div>' +
         '<div class="pc-info">' +
           '<div class="pc-name">' + esc(displayName(s)) + ' <small>' + p.trait + ' · Lv ' + li.level + ' ' + li.stage + '</small></div>' +
           '<div class="pc-mood">' + m.emoji + ' <b>' + m.state + '</b> — ' + esc(m.line) + '</div>' +
@@ -361,7 +371,7 @@
         '<button class="den-close" id="den-x" title="Close">✕</button></div>' +
       '<div class="den-bubble">' + esc(speech(s, m)) + '</div>' +
       '<div class="den-pet-wrap">' +
-        '<span class="den-pet ' + SPECIES[p.sp].idle + (s.resting ? ' asleep' : '') + '" id="den-pet">' + petEmojiFor(s, li) + '</span>' +
+        '<span class="den-pet ' + SPECIES[p.sp].idle + (s.resting ? ' asleep' : '') + '" id="den-pet" style="filter:' + tintFilter() + '">' + petEmojiFor(s, li) + '</span>' +
         (accEm ? '<span class="den-acc-em">' + accEm + '</span>' : '') +
         (s.resting ? '<span class="den-zzz">💤</span>' : '') +
       '</div>' +

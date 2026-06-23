@@ -36,7 +36,10 @@ boards, creator ghosts, streak flame, board-skins + JP scaffolding.
 
 **World/site:** Lore Codex, Academy (all 10 pieces, offline), Projects, Daily Dispatch, Hall of Fame,
 leaderboard seasons. **Avenue pieces:** production hub + Pilot animatic + Writers' Room (Av1); audio hub
-+ leitmotifs (Av5); site-wide Princess companion (Av6); Press Pass + Credential + Bureau-of-Dispatch
++ leitmotifs (Av5); site-wide Princess companion + **the Identity Forge** (Av6 — guest-first,
+account-synced creator: build your **operative** *and* your **companion** from layered parts —
+base + skin tone + aura + headwear + emblem — with freely-editable name/role/bio, renamable and
+modifiable any time; your created face shows in the nav, leaderboards and share card); Press Pass + Credential + Bureau-of-Dispatch
 newsletter + Press Kit/EPK + transparency + referral links + Founders Wall + pricing poll + share-card
 generator + `/educators/` + game-page dispatch capture (Av10).
 
@@ -157,10 +160,37 @@ scene (cheapest pilot test) · per-game SFX toggle + unified palette · leitmoti
 ambience loop · the casting call · streaming once themes exist · reactive music · "hum the theme" toy ·
 a podcast feed.
 
-**Av6 — Princess companion** *(site-wide companion live):* react to live game results · seasonal outfits +
+**Av6 — Princess companion + the Identity Forge** *(both live):* react to live game results · seasonal outfits +
 holiday lines · persistent chattiness/mute setting · "walk you to" page suggestions · a mood/needs
 (tamagotchi) loop · she learns your codename (accounts) · a fetch micro-interaction · milestone gifts she
 brings · a second companion · **her voice** (the show's ultimate payoff — the whole avenue builds to it).
+
+> **The Identity Forge — shipped 2026-06-23.** Players now *create* (not just pick) their operative and
+> their companion: a layered emoji compositor (base + skin tone + aura + headwear + emblem) plus free-text
+> name / role / bio, all renamable + modifiable any time. Guest-first (localStorage), syncs to the account
+> (`companion.look`) when signed in, and the created face propagates site-wide via `PJCC.avatarEmoji`. Files:
+> `assets/js/pjcc-creator.js`, `assets/css/pjcc-creator.css`; mounted on `/dossier/`. Pet coat-tint also
+> reflects into the Companion Den. **Growth path — 20 next moves (depth over surface; ★ = low-lift, ⛁ = wants backend):**
+> 1. ★ **Operative trading card** — render the full composite (hat + emblem + aura + name + role) onto the existing share-card canvas; a collectible card of *your* character.
+> 2. ★ **Boards show the whole look** — paint hat + emblem next to codenames on leaderboards, not just the base glyph (a tiny per-row render helper).
+> 3. **Your companion as the site walker** — opt-in toggle to swap the footer Princess stroller for *your* created pet (ties the Forge into the live site).
+> 4. **Outfit layer** — a torso overlay (cape · armor · lab coat · kimono · varsity) as a 3rd compositing layer.
+> 5. **Held-item layer** — a prop in hand (sword · book · wand · controller · paintbrush) as a 4th layer that telegraphs your role.
+> 6. **Reactive expression** — a few face/mood variants the avatar swaps to after a strong or rough run (joins Av6's "react to live game results").
+> 7. **Backdrop scenes** — a chosen scene behind the avatar (Checker Town · Sand Mine · Shogi Island · starfield) that doubles as a Dossier theme.
+> 8. ★ **Starter archetypes** — one-tap kits ("The Tactician", "The Miner", "The Sensei", "The Operator") that fill every layer for players who don't want to fiddle.
+> 9. ⛁ **Earned cosmetics** — gate premium bases/hats/emblems/auras behind achievements + Quartermaster credits (wires the Forge into the existing economy).
+> 10. **Seasonal parts** — limited-time headwear/auras (advent · anniversary · festival) hung off Av9 live-ops.
+> 11. **Play-to-unlock pet skins** — beating a game's creator-ghost unlocks a themed companion skin (Reading-Room fox, Shogi lion, Sand-Mine mole).
+> 12. ★ **Codename/companion-name spinner** — a "roll a name" button drawing from a lore-flavoured word bank.
+> 13. **Second companion slot** — manage a pair in the Forge (delivers the avenue's existing "a second companion" seed).
+> 14. ★ **Crew portrait** — compose operative + companion(s) into one shareable "crew of Checker Town" card.
+> 15. ★ **Look-as-a-code** — encode the whole look into a short shareable/back-up string (guest-friendly, no backend).
+> 16. **In-game cameo** — read the Forge look so your operative is the on-screen player token (Sky Run pilot, Dungeon hero, Siege hero).
+> 17. **Theme sting** — pick a short chiptune that plays when your avatar appears (ties to Av5 audio; McPuppy-original).
+> 18. ★ **Animated auras** — pulse / orbit / sparkle options for the aura ring (a cosmetic upgrade tier).
+> 19. ⛁ **Operatives wall** — opt-in submit your operative to a curated "Operatives of Checker Town" gallery (Av7 UGC; hand-curated `_data` first, Supabase later).
+> 20. ★ **Unified care + identity** — show the companion's live Den mood (hungry / happy / asleep) inside the Forge preview, and auto-generate screen-reader alt-text describing the built avatar.
 
 **Av7 — UGC / creators:** Writers' Room featured-reels shelf (curated `_data/reels.yml` first) · Siege map
 editor + share codes · "design a citizen" template → curated gallery · moderated fan-art gallery · headcanon

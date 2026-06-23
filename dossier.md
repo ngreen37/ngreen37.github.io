@@ -6,6 +6,7 @@ permalink: /dossier/
 
 <link rel="stylesheet" href="{{ '/assets/css/pjcc-profile.css' | relative_url }}">
 <link rel="stylesheet" href="{{ '/assets/css/pjcc-companion.css' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/css/pjcc-creator.css' | relative_url }}">
 
 <!-- ════════ COMMAND STRIP (renders instantly — works signed-out & offline) ════════ -->
 <div class="cc-head">
@@ -50,6 +51,11 @@ permalink: /dossier/
   </div>
 </div>
 
+<!-- ════════ YOUR IDENTITY — the Forge (instant, works signed-out & offline) ════════ -->
+<h2 class="dsr-h">◆ Your identity</h2>
+<div id="forge-mount"></div>
+<p class="pjcc-sub" style="margin-top:6px">Build your operative <em>and</em> your companion — base, skin tone, aura, headwear, emblem, name, and story. Change anything, any time. Saved on this device; <a href="#dossier">sign in</a> to carry it across every device.</p>
+
 <!-- ════════ YOUR OPERATIVE (loads with your account) ════════ -->
 <h2 class="dsr-h" id="dossier">◆ Your operative</h2>
 <div id="dossier-body"><p class="lb-empty">Loading your record…</p></div>
@@ -57,6 +63,17 @@ permalink: /dossier/
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-companion.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-creator.js' | relative_url }}"></script>
+<script>
+/* The Identity Forge card — renders instantly for everyone (guest, offline, or
+   signed-in); re-renders when the account loads so it can prefer your synced look. */
+(function () {
+  var mount = document.getElementById('forge-mount');
+  if (!mount || !window.PJCCForge) return;
+  PJCCForge.renderCard(mount);
+  if (window.PJCC && PJCC.ready) PJCC.ready.then(function () { PJCCForge.renderCard(mount); });
+})();
+</script>
 
 <script>
 /* Command strip — instant, no network dependency (slow connections still get a useful page). */
