@@ -9,7 +9,7 @@
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body { -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
-  html, body { height:100%; background:#0d0a1e; font-family:'Trebuchet MS','Segoe UI',sans-serif; color:#efe7ff; overflow:hidden; touch-action:manipulation; }
+  html, body { height:100%; background:#0d0a1e; font-family:'Trebuchet MS','Segoe UI',sans-serif; color:#efe7ff; overflow-x:hidden; overflow-y:auto; touch-action:manipulation; }
   body { display:flex; align-items:center; justify-content:center; min-height:100vh; }
   .jp { font-family:'Hiragino Mincho ProN','Yu Mincho','YuMincho','Yu Gothic','Meiryo','MS PMincho',serif; }
 
@@ -123,7 +123,7 @@
   <div class="screen" id="home">
     <div class="eyebrow">Kaede's</div>
     <div class="title">THE READING ROOM<span class="jp">どくしょしつ</span></div>
-    <div class="sub">Learn to read Japanese with <b>Kaede</b> — the <b>kana</b> first, then your first <b>common kanji</b>. Cards come back on an <b>Anki-style schedule</b>: get one right and it returns later; slip and you'll see it sooner.</div>
+    <div class="sub">Learn to read Japanese with <b>Kaede</b> — the <b>kana</b> first, then your first <b>common kanji</b>. Cards come back on an <b>Anki-style schedule</b>: get one right and it returns later; slip and you'll see it sooner. Now with <b>words, phrases &amp; chess</b> decks — plus a reverse set for <b>Japanese speakers learning English</b>.</div>
     <div class="decks" id="deck-list"></div>
     <div class="mode-row" id="mode-row">
       <button class="mode-pick sel" data-mode="review">🔁 Review</button>
@@ -232,10 +232,65 @@
     ['年','nen / toshi','year'],['時','ji / toki','time, hour'],['今','ima','now'],['国','kuni','country']
   ];
 
+  // --- more Japanese (Learn Japanese) ---
+  // [glyph, reading(romaji), meaning]
+  var KANJI2 = [
+    ['父','chichi','father'],['母','haha','mother'],['男','otoko','man'],['女','onna','woman'],['子','ko','child'],
+    ['友','tomo','friend'],['名','na / mei','name'],['食','ta / shoku','eat'],['飲','no / in','drink'],
+    ['行','i / kou','go'],['来','ku / rai','come'],['見','mi / ken','see'],['聞','ki / bun','hear, ask'],
+    ['言','i / gen','say'],['話','hana / wa','talk, story'],['読','yo / doku','read'],['書','ka / sho','write'],
+    ['出','de / shutsu','go out, exit'],['入','hai / nyuu','enter'],['立','ta / ritsu','stand'],['休','yasu / kyuu','rest'],
+    ['何','nani / nan','what'],['車','kuruma / sha','car'],['駅','eki','station']
+  ];
+  // [word, reading(romaji), meaning]
+  var WORDS = [
+    ['私','watashi','I, me'],['猫','neko','cat'],['犬','inu','dog'],['家','ie / uchi','house, home'],
+    ['友達','tomodachi','friend'],['学生','gakusei','student'],['先生','sensei','teacher'],['名前','namae','name'],
+    ['食べる','taberu','to eat'],['飲む','nomu','to drink'],['行く','iku','to go'],['来る','kuru','to come'],
+    ['見る','miru','to see'],['大きい','ookii','big'],['小さい','chiisai','small'],['新しい','atarashii','new'],
+    ['今日','kyou','today'],['明日','ashita','tomorrow']
+  ];
+  // [phrase, reading(romaji), meaning]
+  var PHRASES = [
+    ['こんにちは','konnichiwa','hello / good afternoon'],['おはよう','ohayou','good morning'],['こんばんは','konbanwa','good evening'],
+    ['おやすみ','oyasumi','good night'],['さようなら','sayounara','goodbye'],['ありがとう','arigatou','thank you'],
+    ['すみません','sumimasen','excuse me / sorry'],['おねがいします','onegaishimasu','please'],['はじめまして','hajimemashite','nice to meet you'],
+    ['いただきます','itadakimasu','(said before eating)'],['ごちそうさま','gochisousama','(said after eating)'],['おげんきですか','ogenki desu ka','how are you?'],
+    ['わかりません','wakarimasen','I don\'t understand'],['だいじょうぶ','daijoubu','it\'s okay / I\'m fine']
+  ];
+  // chess & shogi vocabulary, in Japanese
+  var JCHESS = [
+    ['王手','oute','check'],['詰み','tsumi','checkmate'],['成る','naru','to promote'],['持ち駒','mochigoma','pieces in hand'],
+    ['王','ou','king'],['飛車','hisha','rook (flying chariot)'],['角','kaku','bishop'],['歩','fu','pawn'],
+    ['桂馬','keima','knight'],['銀','gin','silver general'],['金','kin','gold general'],['盤','ban','the board']
+  ];
+
+  // --- reverse: English for Japanese speakers ---
+  // [japanese(front), english(answer), example]
+  var ENWORDS = [
+    ['犬','dog','a big dog'],['猫','cat','a black cat'],['水','water','a glass of water'],['本','book','a good book'],
+    ['学校','school','go to school'],['先生','teacher','my teacher'],['友達','friend','a good friend'],['家','house','a big house'],
+    ['車','car','a fast car'],['食べる','to eat','I eat rice.'],['飲む','to drink','drink some water'],['行く','to go','go home'],
+    ['見る','to see','I can see you.'],['大きい','big','a big dog'],['小さい','small','a small cat'],['今日','today','See you today.'],
+    ['明日','tomorrow','See you tomorrow.'],['名前','name','my name']
+  ];
+  var ENPHRASES = [
+    ['こんにちは','Hello','Hello!'],['おはよう','Good morning','Good morning!'],['こんばんは','Good evening','Good evening!'],
+    ['おやすみ','Good night','Good night!'],['ありがとう','Thank you','Thank you very much.'],['すみません','Excuse me / Sorry','Excuse me.'],
+    ['おねがいします','Please','Water, please.'],['はじめまして','Nice to meet you','Hi, nice to meet you.'],['さようなら','Goodbye','Goodbye!'],
+    ['げんきですか','How are you?','How are you today?'],['わかりません','I don\'t understand','Sorry, I don\'t understand.'],['たすけて','Help!','Help me, please!']
+  ];
+
   var DECKS = [
-    { id:'hira', name:'Hiragana', jp:'ひらがな', sub:'the everyday script', glyph:'あ', color:'#ff8f8f', cards:HIRA, kind:'kana' },
-    { id:'kata', name:'Katakana', jp:'カタカナ', sub:'foreign & loud words', glyph:'ア', color:'#8fc8ff', cards:KATA, kind:'kana' },
-    { id:'kanji', name:'Kanji', jp:'漢字 · N5', sub:'46 common characters', glyph:'本', color:'#f5c518', cards:KANJI, kind:'kanji' }
+    { id:'hira', name:'Hiragana', jp:'ひらがな', sub:'the everyday script', glyph:'あ', color:'#ff8f8f', cards:HIRA, kind:'kana', group:'jp' },
+    { id:'kata', name:'Katakana', jp:'カタカナ', sub:'foreign & loud words', glyph:'ア', color:'#8fc8ff', cards:KATA, kind:'kana', group:'jp' },
+    { id:'kanji', name:'Kanji', jp:'漢字 · N5', sub:'46 common characters', glyph:'本', color:'#f5c518', cards:KANJI, kind:'kanji', group:'jp' },
+    { id:'kanji2', name:'Kanji II', jp:'漢字 · N5', sub:'24 more N5 characters', glyph:'母', color:'#ffd089', cards:KANJI2, kind:'kanji', group:'jp' },
+    { id:'words', name:'Everyday Words', jp:'単語 · N5', sub:'common N5 vocabulary', glyph:'猫', color:'#6bffb8', cards:WORDS, kind:'kanji', group:'jp' },
+    { id:'phrases', name:'Greetings & Phrases', jp:'あいさつ', sub:'say it out loud', glyph:'こ', color:'#ff9ec9', cards:PHRASES, kind:'kanji', group:'jp' },
+    { id:'jchess', name:'Chess & Shogi', jp:'将棋・チェス', sub:'the words of the board', glyph:'王', color:'#caa24a', cards:JCHESS, kind:'kanji', group:'jp' },
+    { id:'enwords', name:'English Words', jp:'英単語', sub:'for Japanese speakers', glyph:'犬', color:'#8fc8ff', cards:ENWORDS, kind:'en', group:'en' },
+    { id:'enphrases', name:'English Phrases', jp:'英会話', sub:'for Japanese speakers', glyph:'会', color:'#7bd0ff', cards:ENPHRASES, kind:'en', group:'en' }
   ];
 
   function deckById(id) { for (var i=0;i<DECKS.length;i++) if (DECKS[i].id===id) return DECKS[i]; return null; }
@@ -245,6 +300,13 @@
   function meaningOf(card, deck) { return deck.kind==='kanji' ? card[2] : card[1]; }
   // The "answer" used by Quiz/Anki front->back: kana = romaji, kanji = meaning.
   function answerOf(card, deck) { return deck.kind==='kanji' ? card[2] : card[1]; }
+  function frontPrompt(deck) { return deck.kind==='kana' ? 'what does this read?' : (deck.kind==='en' ? 'say it in English' : 'what does this mean?'); }
+  function quizPrompt(deck) { return deck.kind==='kana' ? 'tap the reading' : (deck.kind==='en' ? 'tap the English' : 'tap the meaning'); }
+  function secondaryOf(card, deck) {
+    if (deck.kind==='kanji') return meaningOf(card, deck);
+    if (deck.kind==='en') return card[2] || '';
+    return deck.id==='hira' ? 'hiragana' : 'katakana';
+  }
 
   // ======================= SRS (Anki-lite Leitner) =======================
   var SRS_KEY = 'pjcc.reading.srs.v1';
@@ -307,7 +369,16 @@
 
   function buildDeckList() {
     var list = document.getElementById('deck-list'); list.innerHTML = '';
+    var GROUP = { jp:'日本語を読む — Learn Japanese', en:'英語を学ぶ — English (for 日本語 speakers)' };
+    var lastGroup = null;
     DECKS.forEach(function (d) {
+      if (d.group !== lastGroup) {
+        lastGroup = d.group;
+        var gh = document.createElement('div');
+        gh.textContent = GROUP[d.group] || '';
+        gh.style.cssText = 'font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#8a6fd0;font-weight:800;margin:' + (list.children.length ? '14px' : '2px') + ' 4px 6px;';
+        list.appendChild(gh);
+      }
       var due = deckDue(d), m = Math.round(deckMastery(d));
       var stars = '★'.repeat(m) + '☆'.repeat(5 - m);
       var el = document.createElement('div');
@@ -352,7 +423,7 @@
     R.shown = false;
     var deck = R.deck, card = cardByIdInDeck(deck, R.cur);
     document.getElementById('rv-glyph').textContent = glyphOf(card);
-    document.getElementById('rv-prompt').textContent = deck.kind === 'kanji' ? 'what does this mean?' : 'what does this read?';
+    document.getElementById('rv-prompt').textContent = frontPrompt(deck);
     document.getElementById('rv-back').classList.add('hidden');
     document.getElementById('rv-show-wrap').classList.remove('hidden');
     document.getElementById('rv-grades').classList.add('hidden');
@@ -364,8 +435,8 @@
     if (R.shown) return; R.shown = true; sfx('flip');
     var deck = R.deck, card = cardByIdInDeck(deck, R.cur);
     document.getElementById('rv-reading').textContent = readingOf(card);
-    document.getElementById('rv-meaning').textContent = deck.kind === 'kanji' ? meaningOf(card, deck) : (deck.id === 'hira' ? 'hiragana' : 'katakana');
-    document.getElementById('rv-extra').textContent = deck.kind === 'kanji' ? '読み — reading' : '';
+    document.getElementById('rv-meaning').textContent = secondaryOf(card, deck);
+    document.getElementById('rv-extra').textContent = deck.kind === 'kanji' ? '読み — reading' : (deck.kind === 'en' ? '英語 → English' : '');
     document.getElementById('rv-back').classList.remove('hidden');
     document.getElementById('rv-show-wrap').classList.add('hidden');
     document.getElementById('rv-grades').classList.remove('hidden');
@@ -409,7 +480,7 @@
   function showQuiz() {
     var it = Q.items[Q.idx], deck = Q.deck;
     document.getElementById('qz-glyph').textContent = glyphOf(it.card);
-    document.getElementById('qz-prompt').textContent = deck.kind === 'kanji' ? 'tap the meaning' : 'tap the reading';
+    document.getElementById('qz-prompt').textContent = quizPrompt(deck);
     document.getElementById('qz-score').textContent = Q.score;
     document.getElementById('qz-combo').textContent = Q.combo > 1 ? ('combo ×' + Q.combo) : '';
     document.getElementById('qz-bar').style.width = (Q.idx / Q.items.length * 100) + '%';

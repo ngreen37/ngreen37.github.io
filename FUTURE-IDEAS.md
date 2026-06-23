@@ -548,6 +548,11 @@ belts, global boards, a guide companion).
 > character: [Kaede](/characters/kaede/)** (`_characters/kaede.md`), a fox from Shogi Island who
 > settled in **Checker Town** and runs the Reading Room (読書室), speaking Japanese in-game. This
 > realizes #1 (Kana Dojo) and seeds #4/#5/#15. The ideas below remain the growth path.
+>
+> **✅ Decks expanded (2026-06-22):** now **9 decks / ~235 cards** — added **Kanji II**, **Everyday
+> Words**, **Greetings & Phrases**, and **Chess & Shogi** vocab (realizes #4, #10, #17). Plus a **reverse
+> lane — English for Japanese speakers** (英単語 / 英会話: a Japanese prompt, an English answer), grouped
+> separately on the deck list. The same Leitner SRS drives all of them.
 
 1. ✅ **Kana Dojo** (in The Reading Room) — hiragana/katakana drills with spaced repetition (SRS) and a guide. Now taught by Kaede in Checker Town.
 2. **Kanji of the Day** — one kanji daily: stroke-order animation + a PJCC-flavored story mnemonic.
