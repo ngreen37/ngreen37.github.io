@@ -646,6 +646,21 @@ only lands after the origin; a background character who matters later.)*
 4. **The Tortoise mindset — *not* "slow and steady."** The motif isn't the moral everyone quotes; it's the **tortoise's inner state**: calm, certain — *"I know exactly what I'm doing while everyone else is all over the place."* Quiet conviction over frantic motion. A brand value and a possible motif/character beat (fits the Neville-Goddard "assume the feeling" tone). See the moral-center positioning above.
 5. **Workplace negativity, observed.** The volume of negative talk among some coworkers was striking — and instructive: some were **infected** by others' negativity, while some **flipped positive** when met with good vibes. Lived proof of why the show leans into positivity; possible honest story material for the moral center.
 
+**— Cast notes (added 2026-06-22):**
+
+6. **Crockett is a real male dog — *not* the younger sister.** Canon correction: the [Crockett](/characters/crockett/) page currently casts him as the main character's younger sister. Wrong — **Crockett is a male dog** (Nate's real dog; their greeting is "**bellies**" — Crockett plants his paws on Nate's shoulders and they rub bellies — a sweet real-life touch, à la the real Princess). → The **younger sister** is a *separate* character; name her **Annie.** Needs file surgery: move the sister role → a new Annie page, repurpose Crockett as a male-dog crew member, and fix the [Main Character](/characters/narrator/) link that points at her. *(Say the word and I'll do it.)*
+
+7. **Argus — "the smart one."** A **dog**, the brains of the crew, who **slowly grows into a solid chess player** (upgrade his current "eventually decent"). Safe refinement to [Argus](/characters/argus/).
+
+8. **The main character's people — relationship map:**
+   - **Younger sister → Annie** — the story's **emotional crux** (the role currently mislabeled "Crockett": brave beyond her size, runs the Shogi Dojo, the one he's really doing it all for).
+   - **Older brother** — a **self-righteous** Bible figure *things don't work out for.* Options: **Saul** (first king; self-righteous disobedience → rejection, jealousy, a tragic fall — dignified but doomed; *rec*), **Cain** (the literal elder brother undone by pride/jealousy — starkest, but villain-coded), **Esau** (elder brother who loses his birthright to the younger — "things don't work out," more rash than self-righteous), or **Korah** (led a self-righteous revolt, swallowed by the earth — pointed but obscure). The Prodigal Son's resentful elder brother is the exact archetype.
+   - **Father** — exists: [Father](/characters/father/) (name still unknown).
+   - **The Rival → acts as God would, *always*.** Confirms last batch: the Rival is the **righteous moral compass** (this redefines his current morally-grey write-up). Options: **Michael** ("Who is like God?" — archangel of righteousness; pairs with the chess **king**; *rec*), **Gabriel** (God's herald), **Samuel** (prophet/kingmaker, the moral compass who guides), or **Emmanuel** ("God with us" — most literal, maybe too on-the-nose).
+   - **The Rival's two friends — a brother pair.** **James & John** ("Sons of Thunder," the fiercely loyal apostle brothers; *rec*) or **Peter & Andrew** (brother apostles). A God-acting Rival flanked by apostle-brothers — plus the [Best Friend](/characters/best-friend/), who already drifts into his orbit — makes a small faithful band.
+
+> **Theme to mine:** the **Rival is *truly* righteous** (acts as God), while the **older brother is *self*-righteous** (the hollow kind) and falls — true vs. counterfeit righteousness, set side by side in the same family.
+
 ---
 
 ## ✍️ Series canon & story seeds (writing notes — not site features)
