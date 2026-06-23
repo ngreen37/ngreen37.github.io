@@ -196,7 +196,7 @@ permalink: /academy/
     <div class="cert-belt" id="cert-belt">Checker</div>
     <div class="cert-line" id="cert-line">— completed lessons across the Academy —</div>
     <div class="cert-sig"><div>♘ Argus &nbsp; ♞ The Rival &nbsp; ♛ Princess</div><div class="cert-date" id="cert-date"></div></div>
-    <div class="cert-code-wrap">Verify at ngreen37.github.io/academy &nbsp;·&nbsp; <span class="cert-code" id="cert-code"></span></div>
+    <div class="cert-code-wrap">Verify at mcpuppystudios.com/academy &nbsp;·&nbsp; <span class="cert-code" id="cert-code"></span></div>
   </div>
 </div>
 

@@ -680,7 +680,7 @@ function saveCard(){
   cx.fillStyle='#f0e6ff'; cx.font='bold 22px Trebuchet MS';
   const won = G.over && G.region>=REGIONS.length && !G.endless;
   cx.fillText((won?'Reached Chess City ★':'Down over '+r.name) + (G.endless?(' · loop '+G.loop):''), cw/2, 228);
-  cx.fillStyle='#9fe8ff'; cx.font='600 15px Trebuchet MS'; cx.fillText('best '+G.best+'   ·   ngreen37.github.io', cw/2, 264);
+  cx.fillStyle='#9fe8ff'; cx.font='600 15px Trebuchet MS'; cx.fillText('best '+G.best+'   ·   mcpuppystudios.com', cw/2, 264);
   cx.font='40px "Segoe UI Symbol","Noto Sans Symbols2",serif'; cx.fillStyle='#f0e6ff'; cx.fillText('♞', cw/2, 300);
   const a=document.createElement('a'); a.download='sky-run-'+G.score+'.png'; a.href=cv.toDataURL('image/png'); a.click();
 }
