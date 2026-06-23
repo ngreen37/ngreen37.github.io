@@ -73,27 +73,27 @@ permalink: /constellation/
       </g>
 
       <!-- The Rival (upper right) -->
-      <g class="const-node-group" data-char="rival" data-name="The Rival" data-role="Main Character" data-url="/characters/rival/">
+      <g class="const-node-group" data-char="rival" data-name="Michael" data-role="Side Character · Chess City Rival" data-url="/characters/rival/">
         <circle cx="620" cy="180" r="24" fill="rgba(220,80,80,0.06)" stroke="rgba(220,80,80,0.12)" stroke-width="1" class="const-node-ring"/>
         <circle cx="620" cy="180" r="16" fill="rgba(220,80,80,0.14)" stroke="rgba(220,80,80,0.55)" stroke-width="1.5" filter="url(#node-glow)"/>
         <text x="620" y="185" text-anchor="middle" font-size="12" fill="rgba(220,80,80,0.8)" pointer-events="none">♚</text>
-        <text x="620" y="208" text-anchor="middle" font-family="'Poppins',sans-serif" font-size="10" font-weight="700" fill="rgba(220,80,80,0.6)" pointer-events="none">The Rival</text>
+        <text x="620" y="208" text-anchor="middle" font-family="'Poppins',sans-serif" font-size="10" font-weight="700" fill="rgba(220,80,80,0.6)" pointer-events="none">Michael</text>
       </g>
 
-      <!-- The Father (upper left) -->
-      <g class="const-node-group" data-char="father" data-name="The Father" data-role="Side Character" data-url="/characters/father/">
+      <!-- The Dad (upper left) -->
+      <g class="const-node-group" data-char="father" data-name="The Dad" data-role="Family" data-url="/characters/father/">
         <circle cx="180" cy="180" r="20" fill="rgba(100,200,100,0.06)" stroke="rgba(100,200,100,0.1)" stroke-width="1" class="const-node-ring"/>
         <circle cx="180" cy="180" r="14" fill="rgba(100,200,100,0.12)" stroke="rgba(100,200,100,0.45)" stroke-width="1.5" filter="url(#node-glow)"/>
         <text x="180" y="185" text-anchor="middle" font-size="11" fill="rgba(100,200,100,0.75)" pointer-events="none">♜</text>
-        <text x="180" y="207" text-anchor="middle" font-family="'Poppins',sans-serif" font-size="10" font-weight="700" fill="rgba(100,200,100,0.55)" pointer-events="none">Father</text>
+        <text x="180" y="207" text-anchor="middle" font-family="'Poppins',sans-serif" font-size="10" font-weight="700" fill="rgba(100,200,100,0.55)" pointer-events="none">The Dad</text>
       </g>
 
-      <!-- Best Friend (lower left) -->
-      <g class="const-node-group" data-char="best-friend" data-name="The Best Friend" data-role="Side Character" data-url="/characters/best-friend/">
+      <!-- Maxwell (lower left) -->
+      <g class="const-node-group" data-char="maxwell" data-name="Maxwell" data-role="Side Character" data-url="/characters/maxwell/">
         <circle cx="200" cy="340" r="20" fill="rgba(180,100,30,0.06)" stroke="rgba(180,100,30,0.1)" stroke-width="1" class="const-node-ring"/>
         <circle cx="200" cy="340" r="14" fill="rgba(180,100,30,0.12)" stroke="rgba(180,100,30,0.45)" stroke-width="1.5" filter="url(#node-glow)"/>
         <text x="200" y="345" text-anchor="middle" font-size="11" fill="rgba(180,100,30,0.75)" pointer-events="none">♝</text>
-        <text x="200" y="367" text-anchor="middle" font-family="'Poppins',sans-serif" font-size="10" font-weight="700" fill="rgba(180,100,30,0.55)" pointer-events="none">Best Friend</text>
+        <text x="200" y="367" text-anchor="middle" font-family="'Poppins',sans-serif" font-size="10" font-weight="700" fill="rgba(180,100,30,0.55)" pointer-events="none">Maxwell</text>
       </g>
 
       <!-- Argus (lower left) -->
@@ -104,12 +104,12 @@ permalink: /constellation/
         <text x="240" y="367" text-anchor="middle" font-family="'Poppins',sans-serif" font-size="10" font-weight="700" fill="rgba(196,181,253,0.52)" pointer-events="none">Argus</text>
       </g>
 
-      <!-- Auston (lower right) -->
-      <g class="const-node-group" data-char="louie" data-name="Auston" data-role="Companion" data-url="/characters/auston/">
+      <!-- Crockett (lower right) -->
+      <g class="const-node-group" data-char="crockett" data-name="Crockett" data-role="Side Character · the dog" data-url="/characters/crockett/">
         <circle cx="560" cy="340" r="18" fill="rgba(196,181,253,0.06)" stroke="rgba(196,181,253,0.1)" stroke-width="1" class="const-node-ring"/>
         <circle cx="560" cy="340" r="13" fill="rgba(196,181,253,0.12)" stroke="rgba(196,181,253,0.42)" stroke-width="1.5" filter="url(#node-glow)"/>
         <text x="560" y="345" text-anchor="middle" font-size="11" fill="rgba(196,181,253,0.72)" pointer-events="none">♞</text>
-        <text x="560" y="367" text-anchor="middle" font-family="'Poppins',sans-serif" font-size="10" font-weight="700" fill="rgba(196,181,253,0.52)" pointer-events="none">Auston</text>
+        <text x="560" y="367" text-anchor="middle" font-family="'Poppins',sans-serif" font-size="10" font-weight="700" fill="rgba(196,181,253,0.52)" pointer-events="none">Crockett</text>
       </g>
     </svg>
 

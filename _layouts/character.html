@@ -4,8 +4,10 @@ layout: default
 
 <div class="character-top-nav">
   <a href="{{ '/characters/' | relative_url }}" class="back-btn">&larr; Back to Characters</a>
-  {% assign evo_slug = page.name | remove: '.md' %}
-  <a href="/evolutions/{{ evo_slug }}/" class="evo-link-btn">Evolution Log &rarr;</a>
+  {% comment %} Only show the Evolution Log link when a matching evolution exists
+       (matched by entity_url so it survives file renames and never 404s). {% endcomment %}
+  {% assign evo_match = site.evolutions | where: "entity_url", page.url | first %}
+  {% if evo_match %}<a href="{{ evo_match.url | relative_url }}" class="evo-link-btn">Evolution Log &rarr;</a>{% endif %}
 </div>
 
 <article class="character-card">

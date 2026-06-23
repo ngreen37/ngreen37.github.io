@@ -1,9 +1,9 @@
 ---
 layout: evolution
-title: Michael
+title: Maxwell
 category: character
-entity_url: /characters/rival/
+entity_url: /characters/maxwell/
 role: Side Character
-permalink: /evolutions/rival/
+permalink: /evolutions/maxwell/
 versions: []
 ---

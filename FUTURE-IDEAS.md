@@ -383,6 +383,50 @@ slowed + tap-to-pause/resume + studio promo items; "Read the Blog" shrunk to a c
 
 ---
 
+# 👥 Characters & Locations — 30 WOW-factor ideas
+
+*The cast + the world are the show's soul. Make the pages **feel alive** so people fall for the world before a
+frame renders (north-star thread #3). ★ = low-lift · ⛁ = wants backend · 🎬 = waits on the Blender/animation pipeline.*
+**Canon updated 2026-06-23:** sister is now **Auston**, the dog is **Crockett**; **two rivals** — **Robert** (Checker
+Town, Bob-Proctor mindset) and **Michael** (Chess City, truly righteous); **The Dad** (Family); best friend **Maxwell**;
+**Matsu** (Kaede's brother); new **Ancillary** tier — **the Commentators** (3-in-1) and **the Prodigal Brothers**.
+
+**Characters**
+1. 🎬 **Living portraits** — each character's image is a short looping Blender idle render (breathing, a tail flick) instead of a flat jpg; the [walker is already the Notation-Blitz dog render](#) — extend that everywhere.
+2. **Voice snippets** — tap a character for one signature line (Robert's mindset axiom, Michael's creed, Kaede's 「もう一回」); bridges to casting + leitmotifs (Av5).
+3. ★ **Relationship web** — an interactive graph of the cast (family · rivals · crew · ancillary), clickable to each file; instantly shows the Auston/Crockett/Maxwell/Robert/Michael/Matsu structure.
+4. ★ **First-appearance deep-links** — every card links to the exact game/scene a character shows up in (Kaede → Reading Room, Michael → Pirc, the booth → Battle Room).
+5. ⛁ **Rank-gated dossiers** — a character's redacted secret only un-redacts at higher operative clearance (ties the profile rank ladder to lore).
+6. **Per-character leitmotif, fully composed** — the theme plays on their page and *evolves by chapter* (Av5).
+7. ★ **Two-truths-and-a-redaction** — a tiny dossier mini-game: spot the planted-false fact.
+8. **Character spotlight** — a rotating "cast member of the week" on the hub + home page.
+9. **Rival compare** — an interactive Robert-vs-Michael split (mindset vs righteousness) that frames the show's core question.
+10. **The Commentators as a live overlay** — their banter pops up *during* games (Battle Room first, Gauntlet later) — the ancillary booth made playable.
+11. ⛁ **Headcanon → semi-canon** — curated fan submissions fold into character pages (Av7 UGC).
+12. ★ **"Which PJCC character are you?"** — a shareable quiz that funnels into the cast pages.
+13. ★ **Crew roster / family tree** — one visual: the Dad + Auston + narrator; Kaede + Matsu; Robert + the Prodigal Brothers; the crew dogs (Princess, Argus, Crockett).
+14. **Evolution morph** — a slider on each page that fades concept-sketch → final art (pulls from the Evolution Log).
+15. 🎬 **The funny "chase" walker** — *(Nate's idea)* a rare random variant where instead of Princess strolling alone, **you (the operator) chase her** across the bottom of the screen; later a fully-animated Princess. The walker is now her real render — animate it next.
+
+**Locations**
+16. ★ **Interactive World Map** — click the road Checker Town → the Sea → Shogi Island → Chess City; each node opens a location page (re-light the parked World Map).
+17. 🎬 **Parallax location art** — scenes with depth layers that drift on scroll/tilt; a cheap "3D" before the real 3D.
+18. ★ **Time-of-day states** — a location page shifts day/dusk/night like the Companion Den.
+19. 🎬 **Walkable panoramas** — 360°/scroll-pan location views; the web precursor to the Godot/VR walk.
+20. **Gate-locked locations** — Shogi Island's deeper pages open via the Av13 rite (you already built the gate).
+21. ★ **Location ⇄ game links** — each place names its game (Checker Town → Notation, Sand Mines → Sand Mine Depths, Shogi Island → Shogi/Reading Room): the funnel, made explicit.
+22. ⛁ **Living world-state** — locations reflect the news ticker / ARG (the "ferry delayed" beat literally shows on the Shogi Island page).
+23. **Location soundscapes** — ambient loops (Checker Town hum, the Sea, the dojo) — Av5.
+24. **The crash site** — a discoverable hidden location that pays off an ARG fragment (the origin).
+25. ★ **Fog-of-war map** — places light up as you visit their pages/play their games (ties the Dossier world-map).
+26. 🎬 **Blender flythroughs** — short rendered location intros as loading screens / season trailers.
+27. **Checker Town Field Guide** — a printable art-book leave-behind (Av4 physical).
+28. ⛁ **Journey tracker** — your operative's position on the road to Chess City, advancing with progress.
+29. **Seasonal location reskins** — advent, the anniversary of the crash, premiere week (Av9 live-ops).
+30. 🎬 **The Pieces gallery (moved here from Characters)** — the **six Blender board-pieces** (pawn/rook/bishop/knight/queen/king, each scaled to the Battle-Room concept, Princess = the knight). *Belongs in the **Evolution Log** as renders land* — show concept → grey-box → final per piece. Frame it as "the board itself is a place." (This is where the old `## Pieces` section now lives.)
+
+---
+
 ## 🅿️ Parked (pulled from the live site, kept so the work isn't lost)
 - **Games-page search box** and **sort dropdown** — re-add if the library outgrows one screen.
 - **De-linked nav pages** (revisit with real content): World Map, Sound, Soundtrack, Press Kit, Lore Codex,
@@ -490,24 +534,31 @@ is the superfan ceiling but a cadence trap — start it only when #1 is humming.
   project is ~6 months old).
 - **The main character** (the narrator) — late teens, Checker Town, big dreams. Became a **second father**
   to his younger sister after their dad was often away.
-- **Annie — the younger sister** — the story's **emotional crux**; brave beyond her size; runs the Shogi
-  Dojo; the one he's really doing it all for. *(Currently mislabeled "Crockett" on the site — fix pending.)*
-- **Crockett — a real male dog** (Nate's dog; their greeting is "**bellies**"). To become a male-dog crew
-  member, *not* the sister. *(File fix pending: split sister → Annie, repurpose Crockett, fix the narrator link.)*
+- **Auston — the younger sister** *(locked 2026-06-23)* — the story's **emotional crux**; brave beyond her size;
+  runs the Shogi Dojo; the one he's really doing it all for. *(The "Chess City Leafs" / Auston-Matthews nod is now her name.)*
+- **Crockett — a real male dog** *(locked 2026-06-23)* (Nate's dog; their greeting is "**bellies**") — comic-relief
+  crew member, plays a pawn, *not* the sister. ✅ File surgery done: sister → **Auston**, dog → **Crockett**.
 - **Argus** — **the smart one**; a dog; slowly grows into a **solid** chess player.
-- **The Father — Andrew** — **simple, silly, and absent-minded on the surface, but razor-sharp in his own
-  lane**, and **whatever happens, he does what he can for his kids.** Also the show's **loving skeptic:**
-  proud of the Uncle, but **dismisses Neville's "belief in himself" as the reason for his success.** (His
-  scattered-but-devoted warmth is *his* — distinct from Bill's rugged-hero arc below.)
+- **The Dad** *(renamed from "The Father"/Andrew, 2026-06-23; role: Family)* — **simple, silly, and absent-minded on
+  the surface, but razor-sharp in his own lane**, and **whatever happens, he does what he can for his kids.** Also
+  the show's **loving skeptic:** proud of the Uncle, but **dismisses Neville's "belief in himself" as the reason for
+  his success.** (His scattered-but-devoted warmth is *his* — distinct from Bill's rugged-hero arc below.)
 - **The Uncle** — from **Barbados** (Neville Goddard's real birthplace), a **dancer in Chess City** (Neville
   was a dancer before a mystic). Embodies the show's **Neville-Goddard spirituality.** His tension with the
-  Father *is* the show's spiritual debate, in one family.
-- **The Rival** — **acts as God would, always**: the **righteous moral compass** (redefines his earlier
-  morally-grey write-up). *Name — pick one:* **Michael** ("Who is like God?"; pairs with the king piece; rec) ·
-  Gabriel · Samuel · Emmanuel. *His line:* "goals are 5% strategy, 95% mindset."
-- **The Rival's two friends** — a **brother pair**: **James & John** ("Sons of Thunder"; rec) or Peter & Philip.
-  With the **Best Friend** (who drifts into the Rival's orbit), a small faithful band. Even they have
-  redeeming qualities — perhaps they **save one of the dogs.**
+  Dad *is* the show's spiritual debate, in one family.
+- **Two rivals, both side characters** *(locked 2026-06-23):*
+  - **Michael — the Chess City rival** — **acts as God would, always**: the **truly righteous** moral compass
+    ("Who is like God?"; pairs with the king piece). Teaches Princess the Pirc; family in Chess City.
+  - **Robert — the Checker Town rival** — speaks like **Bob Proctor**; all **mindset/manifestation**. *His line:*
+    "goals are 5% strategy, 95% mindset." The *mindset* foil to Michael's *moral* one.
+- **The Prodigal Brothers** *(ancillary)* — **Robert's two younger brothers**, the show's **prodigal sons**: took the
+  swagger, skipped the substance, and (eventually) find the road home. Even they have redeeming qualities — perhaps
+  they **save one of the dogs.** *(Supersedes the old "Rival's two friends / James & John" note.)*
+- **Maxwell — the best friend** *(named 2026-06-23)* — the pull of staying put; drifts into **Michael's** orbit.
+- **Matsu (松) — Kaede's brother** *(new, side character, 2026-06-23)* — a fox who **stayed on Shogi Island**; the
+  evergreen pine to Kaede's seasonal maple; anchors the island and its deeper rites.
+- **The Commentators** *(ancillary — Boomer/Tempo/Sunny, one trio)* — the booth that calls events, the Battle Room,
+  and later the Gauntlet; the in-world hype machine.
 - **The older brother** — **self-righteous**, and things don't work out for him. *Name — pick one:* **Saul**
   (tragic self-righteous fall; rec) · Cain (the literal elder brother; starkest) · Esau (loses his birthright) ·
   Korah (self-righteous revolt). **Redemption thread:** *especially* he might be **the one who saves a dog.**
@@ -529,7 +580,10 @@ as a **montage** where Bill teaches Princess *anything*. The turn: the **Hypersp
 must protect his family aboard and is forced to **leave Princess behind** — a choice that shatters him.
 Hook: *maybe he comes back looking for her.*
 
-**Open decisions (waiting on Nate):** lock the names (Rival, older brother, the two friends); approve the
-**Crockett → Annie** file surgery (split the sister into Annie, make Crockett a dog, fix the narrator link,
-bump Argus to "the smart one"). ✅ *Resolved 2026-06-23:* the scattered-but-sharp, devoted-dad archetype goes
-to **the Father (Andrew)**; **Bill** is recast as a rugged **Bruce-Willis/*Armageddon*** hero — two distinct men.
+**Open decisions (waiting on Nate):** lock the **older brother's** name (Saul rec); name **Robert's two Prodigal
+Brothers** and the **Commentators** are placeholders (Boomer/Tempo/Sunny) — confirm or rename.
+✅ *Resolved 2026-06-23:* sister = **Auston**, dog = **Crockett** (file surgery done); **two rivals** — **Robert**
+(Checker Town, Bob-Proctor mindset) + **Michael** (Chess City, truly righteous), both side characters; **The Dad**
+(role Family); best friend = **Maxwell**; **Matsu** = Kaede's brother; new **Ancillary** tier (Commentators +
+Prodigal Brothers). Earlier: the scattered-but-sharp devoted-dad archetype is **the Dad's**; **Bill** is the rugged
+**Bruce-Willis/*Armageddon*** hero — two distinct men.

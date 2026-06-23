@@ -1,9 +1,9 @@
 ---
 layout: evolution
-title: Michael
+title: Robert
 category: character
-entity_url: /characters/rival/
+entity_url: /characters/robert/
 role: Side Character
-permalink: /evolutions/rival/
+permalink: /evolutions/robert/
 versions: []
 ---

@@ -5587,6 +5587,17 @@ body.theme-classified {
   50%      { transform: rotateY(24deg) rotateZ(3deg); }
 }
 
+/* Dog-render walker — her real 3D portrait as a circular gold-ringed token,
+   matching the Princess token in Notation Blitz. Overrides the old figurine. */
+.princess-3d.princess-dog { width: 40px; height: 40px; animation: dog-sway 2.8s ease-in-out infinite; }
+.princess-dog .p3d-img {
+  display: block; width: 40px; height: 40px; border-radius: 50%;
+  object-fit: cover; object-position: top center;
+  border: 2px solid #F5C518; box-shadow: inset 0 0 6px rgba(0,0,0,0.35);
+}
+.princess-dog .p3d-crown { top: -9px; font-size: 14px; z-index: 2; }
+@keyframes dog-sway { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+
 /* easter-egg cheer when clicked */
 .princess-3d.is-cheering { animation: p3d-spin 0.9s ease-in-out; }
 
@@ -5597,7 +5608,7 @@ body.theme-classified {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .princess-3d { animation: none; }
+  .princess-3d, .princess-3d.princess-dog { animation: none; }
 }
 
 /* =============================================================

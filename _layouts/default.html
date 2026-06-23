@@ -335,13 +335,13 @@
   })();
   </script>
 
-  <!-- Princess walker (little 3D figurine; click her for a surprise) -->
+  <!-- Princess walker — now her real 3D render (the same dog token used in Notation
+       Blitz: a circular crop of Princess_Color_v01.jpg with a gold ring). Click her
+       for a surprise. Eventually a fully-animated Princess goes here. -->
   <div class="princess-walker" id="princess-walker" title="Princess — psst, click me">
-    <div class="princess-3d" id="princess-3d">
+    <div class="princess-3d princess-dog" id="princess-3d">
       <span class="p3d-crown">♛</span>
-      <span class="p3d-head"></span>
-      <span class="p3d-body"></span>
-      <span class="p3d-base"></span>
+      <img class="p3d-img" src="{{ '/assets/images/Princess_Color_v01.jpg' | relative_url }}" alt="Princess" draggable="false">
     </div>
   </div>
   <!-- Princess is a site-wide companion: she strolls and bobs, but by design she

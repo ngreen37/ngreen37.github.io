@@ -13,6 +13,36 @@ permalink: /characters/
   <div class="char-flip-grid" id="char-flip-grid">
     {% assign sorted_chars = site.characters | sort: "order" %}
     {% for char in sorted_chars %}
+    {% unless char.tier == "ancillary" %}
+    <div class="char-flip-card">
+      <div class="char-flip-inner">
+
+        <div class="char-flip-front">
+          <div class="char-flip-piece">{{ char.piece | default: "♟" }}</div>
+          <div class="char-flip-name">{{ char.title }}</div>
+          <div class="char-flip-role">{{ char.role }}</div>
+        </div>
+
+        <div class="char-flip-back">
+          <div class="char-flip-back-label">— DOSSIER —</div>
+          <div class="char-flip-clearance">CLEARANCE: {{ char.dossier_clearance | default: "DELTA" }}</div>
+          <div class="char-flip-secret char-unredact" data-real="{{ char.dossier_secret | default: "Data redacted." }}">████████████████████</div>
+          <a class="char-flip-link" href="{{ char.url | relative_url }}">View Full File →</a>
+        </div>
+
+      </div>
+    </div>
+    {% endunless %}
+    {% endfor %}
+  </div>
+
+  {% assign ancillary_chars = site.characters | where: "tier", "ancillary" | sort: "order" %}
+  {% if ancillary_chars.size > 0 %}
+  <h2 class="char-ancillary-head">Ancillary Characters</h2>
+  <p class="char-flip-sub char-ancillary-sub">The supporting cast that amplifies the story without driving it —
+  the booth that calls the matches, the prodigal brothers, and the faces at the edges of the board.</p>
+  <div class="char-flip-grid" id="char-ancillary-grid">
+    {% for char in ancillary_chars %}
     <div class="char-flip-card">
       <div class="char-flip-inner">
 
@@ -33,6 +63,7 @@ permalink: /characters/
     </div>
     {% endfor %}
   </div>
+  {% endif %}
 </div>
 
 <script>
@@ -88,46 +119,11 @@ permalink: /characters/
 })();
 </script>
 
-## Pieces {#pieces}
-
-<p class="char-flip-sub">The six pieces of the PJCC board — built in Blender, each scaled to the battle-room concept. Renders coming as the project progresses.</p>
-
-<div class="pieces-grid">
-
-  <div class="piece-card">
-    <div class="piece-symbol">&#9823;</div>
-    <div class="piece-name">Pawn</div>
-    <p class="piece-desc">The foot soldier. Common, essential, and quietly capable of becoming anything on the board.</p>
-  </div>
-
-  <div class="piece-card">
-    <div class="piece-symbol">&#9820;</div>
-    <div class="piece-name">Rook</div>
-    <p class="piece-desc">The sentinel. Moves in straight lines, controlling entire ranks and files. A fortress piece — steady, powerful, and the last thing you want standing between you and the king.</p>
-  </div>
-
-  <div class="piece-card">
-    <div class="piece-symbol">&#9821;</div>
-    <div class="piece-name">Bishop</div>
-    <p class="piece-desc">The diagonal thinker. Bound to its color for the entire game, the bishop sees the board from an angle no other piece can. Fast across long stretches, but always moving at a slant.</p>
-  </div>
-
-  <div class="piece-card">
-    <div class="piece-symbol">&#9822;</div>
-    <div class="piece-name">Knight</div>
-    <p class="piece-desc">The unpredictable one. The only piece that leaps over others, moving in an L-shape that defies the grid. Hard to pin down, harder to predict — and the piece Princess is designated as.</p>
-  </div>
-
-  <div class="piece-card">
-    <div class="piece-symbol">&#9819;</div>
-    <div class="piece-name">Queen</div>
-    <p class="piece-desc">The powerhouse. Combines the reach of the rook and the sweep of the bishop into the most dangerous piece on the board. Few can stand in her way.</p>
-  </div>
-
-  <div class="piece-card">
-    <div class="piece-symbol">&#9818;</div>
-    <div class="piece-name">King</div>
-    <p class="piece-desc">The whole point. Every sacrifice, every gambit, every move exists to protect or threaten the king. Slow and vulnerable — but the game ends the moment he falls.</p>
-  </div>
-
-</div>
+<!-- The "Pieces" gallery was moved out of Characters (2026-06-23). The six Blender
+     board-pieces now live as a planned build in FUTURE-IDEAS (Characters & Locations)
+     and belong in the Evolution Log as renders progress. -->
+<style>
+.char-ancillary-head { text-align: center; color: #6b5a8e; font-size: 13px; letter-spacing: 3px;
+  text-transform: uppercase; margin: 44px 0 4px; }
+.char-ancillary-sub { margin-top: 0 !important; opacity: 0.85; }
+</style>

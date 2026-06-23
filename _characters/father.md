@@ -1,8 +1,8 @@
 ---
 layout: character
-title: The Father
-full_name: Unknown
-role: Side Character
+title: The Dad
+full_name: The Dad
+role: Family
 permalink: /characters/father/
 order: 4
 piece: ♜

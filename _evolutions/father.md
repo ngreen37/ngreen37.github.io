@@ -1,9 +1,9 @@
 ---
 layout: evolution
-title: The Father
+title: The Dad
 category: character
 entity_url: /characters/father/
-role: Side Character
+role: Family
 permalink: /evolutions/father/
 versions: []
 ---

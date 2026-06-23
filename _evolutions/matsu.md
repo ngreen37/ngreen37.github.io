@@ -1,9 +1,9 @@
 ---
 layout: evolution
-title: Michael
+title: Matsu
 category: character
-entity_url: /characters/rival/
+entity_url: /characters/matsu/
 role: Side Character
-permalink: /evolutions/rival/
+permalink: /evolutions/matsu/
 versions: []
 ---
