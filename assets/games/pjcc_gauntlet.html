@@ -51,6 +51,24 @@
   .promo-choices { display:flex; gap:10px; }
   .promo-choices button { width:54px; height:54px; font-size:30px; border-radius:10px; border:1px solid #6b5fa0; background:#2a1a5e; color:#fff; cursor:pointer; }
   .promo-choices button:hover { border-color:#F5C518; background:#3d2a7a; }
+
+  /* ---- Visible opponent (portrait + mood + speech bubble) ---- */
+  .opp { position:absolute; top:8px; left:10px; z-index:5; display:flex; align-items:center; gap:9px; pointer-events:none; max-width:64%; }
+  .opp.hidden { display:none; }
+  .opp-face { position:relative; width:42px; height:42px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; background:#1a1040; border:2px solid #6b5fa0;
+    box-shadow:0 2px 8px rgba(0,0,0,0.5); transition:border-color .2s, transform .2s; }
+  .opp-face.react { transform:scale(1.1); }
+  .opp-glyph { font-size:22px; line-height:1; }
+  .opp-mood { position:absolute; right:-6px; bottom:-6px; font-size:15px; filter:drop-shadow(0 1px 1px rgba(0,0,0,0.6)); }
+  .opp-meta { min-width:0; }
+  .opp-name { font-weight:800; font-size:13px; color:#f0e6ff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .opp-sub { font-size:10px; color:#9a7fd4; white-space:nowrap; }
+  .opp-bubble { position:absolute; top:50px; left:0; max-width:240px; background:#fff; color:#1a0f3d;
+    font-size:12px; font-weight:600; line-height:1.35; border-radius:12px; padding:8px 11px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.45); opacity:0; transform:translateY(-6px); transition:opacity .18s, transform .18s; }
+  .opp-bubble::before { content:''; position:absolute; top:-7px; left:16px; border:7px solid transparent; border-bottom:7px solid #fff; }
+  .opp-bubble.show { opacity:1; transform:translateY(0); }
 </style>
 </head>
 <body>
@@ -58,6 +76,12 @@
   <canvas id="cv" width="440" height="500"></canvas>
   <button class="float-btn hidden" id="menu-btn">☰ menu</button>
   <button class="float-btn hidden" id="resign-btn">⚑ resign</button>
+
+  <div class="opp hidden" id="opp" aria-hidden="true">
+    <div class="opp-face" id="opp-face"><span class="opp-glyph" id="opp-glyph">♟</span><span class="opp-mood" id="opp-mood">🙂</span></div>
+    <div class="opp-meta"><div class="opp-name" id="opp-name">—</div><div class="opp-sub" id="opp-sub">—</div></div>
+    <div class="opp-bubble" id="opp-bubble"></div>
+  </div>
 
   <div class="overlay" id="menu-screen">
     <div class="eyebrow">The road to Chess City</div>
@@ -98,23 +122,38 @@ var LADDER = [
   { name:'Checker-Town Recruit', glyph:'♟', accent:'#b9a8e6', region:'Checker Town',
     blurb:'Barely knows the moves — and grabs every piece he sees.',
     win:'The recruit tips his king and salutes. "Onward, operative."',
-    persona:{ depth:1, blunder:0.45, mat:1, pst:0, timeMs:140 } },
+    persona:{ depth:1, blunder:0.45, mat:1, pst:0, timeMs:140 },
+    react:{ intro:['I know the moves! ...most of them.'],
+      blunder:['Ooh — a free one! Mine now.','You just GAVE me that? Thanks!','Hehe, gotcha.'],
+      good:['Hey, that\'s not fair!','Wait, you can DO that?','...uh oh.'] } },
   { name:'Argus the Guard-Dog', glyph:'♞', accent:'#8fe3ff', region:'Checker Town',
     blurb:'Loyal and ferocious — he hunts your king with everything he has.',
     win:'Argus barks once, then licks your hand. You passed.',
-    persona:{ depth:2, blunder:0.18, mat:1, pst:0.6, aggr:5, timeMs:320 } },
+    persona:{ depth:2, blunder:0.18, mat:1, pst:0.6, aggr:5, timeMs:320 },
+    react:{ intro:['*a low, rolling growl*'],
+      blunder:['*GRRR* — a gift for the pack!','*snap* Got it.','Bad move. *bark*'],
+      good:['*whine* ...good one.','*ears flatten* Hrrr.','*backs up a step*'] } },
   { name:'The City Gatekeeper', glyph:'♜', accent:'#ffb066', region:'Chess City gates',
     blurb:'A solid, patient defender. No gifts, no blunders to speak of.',
     win:'The Gatekeeper steps aside. The inner gate groans open.',
-    persona:{ depth:2, blunder:0.06, mat:1, pst:1, aggr:1, timeMs:420 } },
+    persona:{ depth:2, blunder:0.06, mat:1, pst:1, aggr:1, timeMs:420 },
+    react:{ intro:['None shall pass. Prove me wrong.'],
+      blunder:['Careless. The gate does not forgive.','You left it open. I merely walked through.'],
+      good:['...Acceptable. Barely.','Hm. The wall still holds.'] } },
   { name:'The Rival', glyph:'♝', accent:'#c79bff', region:'—',
     blurb:'Your equal and your foil. Plays sharp, punishes loose moves.',
     win:'"...Well played." The Rival means it, this time.',
-    persona:{ depth:3, blunder:0.0, mat:1, pst:1, aggr:2, timeMs:650 } },
+    persona:{ depth:3, blunder:0.0, mat:1, pst:1, aggr:2, timeMs:650 },
+    react:{ intro:['Let\'s see what you\'ve really got.'],
+      blunder:['Sloppy. I expected better from you.','That\'s the move that loses you the game.'],
+      good:['...Hm. Where did you learn that?','Sharp. But I\'m still here.'] } },
   { name:'The CEO', glyph:'♛', accent:'#ff8fd0', region:'Chess City',
     blurb:'The last guardian before Chess City. He does not lose. Usually.',
     win:'The CEO stares at the board a long time. Then, quietly: "...How?"',
-    persona:{ depth:4, blunder:0.0, mat:1, pst:1, aggr:1, timeMs:850 } }
+    persona:{ depth:4, blunder:0.0, mat:1, pst:1, aggr:1, timeMs:850 },
+    react:{ intro:['You should not have made it this far.'],
+      blunder:['Predictable.','As expected. You overreach.'],
+      good:['...Interesting. Recalculating.','Where did THAT come from.'] } }
 ];
 function colorForRung(i){ return (i % 2 === 0) ? 'w' : 'b'; }   // alternate per rung
 
@@ -129,12 +168,15 @@ function startRung(idx){
   var rung = LADDER[idx], pc = colorForRung(idx);
   G = { idx:idx, rung:rung, persona:rung.persona, pc:pc,
         S:C.parseFEN(C.START_FEN), reps:{}, sel:-1, legal:[], over:false, result:null,
-        last:null, thinking:false, promo:null, log:[] };
+        last:null, thinking:false, promo:null, log:[], roundStartMat:null };
   bumpRep();
   G.legal = C.legalMoves(G.S);
   hideOverlays();
   document.getElementById('menu-btn').classList.remove('hidden');
   document.getElementById('resign-btn').classList.remove('hidden');
+  setupPortrait(rung, idx);
+  G.roundStartMat = matPOV(G.S, G.pc);
+  setTimeout(function(){ if (G && !G.over) reactOpp('intro'); }, 650);
   // if the player is Black, the AI (White) moves first
   if (G.S.turn !== G.pc) aiTurnSoon();
 }
@@ -165,6 +207,7 @@ cv.addEventListener('pointerdown', function(e){
 });
 
 function applyPlayerMove(m){
+  G.roundStartMat = matPOV(G.S, G.pc);   // material before this move; judged after the reply
   G.last = { from:m.from, to:m.to };
   G.log.push(C.toSAN(G.S, m));
   G.S = C.makeMove(G.S, m); G.sel = -1;
@@ -187,6 +230,7 @@ function aiMove(){
   var res = C.gameResult(G.S, rep);
   if (res){ endGame(res); return; }
   G.legal = C.legalMoves(G.S);
+  judgeRound();   // react to how the player just played, now that the reply has landed
 }
 
 // ---- promotion picker ----
@@ -253,6 +297,49 @@ function endGame(result){
 }
 function addBtn(row, label, cls, fn){ var b=document.createElement('button'); b.className='btn '+cls; b.textContent=label; b.onclick=fn; row.appendChild(b); }
 
+// ---- the visible opponent: portrait, mood, and personality reactions ----
+var PVAL = { p:100, n:320, b:330, r:500, q:900, k:0 };
+function matPOV(S, pc){ var s=0, i, p; for(i=0;i<64;i++){ p=S.b[i]; if(!p) continue;
+  s += (C.colorOf(p)===pc ? 1 : -1) * (PVAL[p.toLowerCase()]||0); } return s; }
+var MOODS = { intro:'🙂', blunder:'😏', good:'😟', neutral:'🙂' };
+var bubbleTimer=null, moodTimer=null;
+function setMood(emoji){ var el=document.getElementById('opp-mood'); if(el) el.textContent=emoji; }
+function showBubble(text, mood){
+  var b=document.getElementById('opp-bubble'), face=document.getElementById('opp-face');
+  if(!b) return;
+  b.textContent=text; b.classList.add('show'); if(face) face.classList.add('react');
+  setMood(mood||MOODS.neutral);
+  clearTimeout(bubbleTimer); clearTimeout(moodTimer);
+  bubbleTimer=setTimeout(function(){ b.classList.remove('show'); if(face) face.classList.remove('react'); }, 2600);
+  moodTimer=setTimeout(function(){ setMood(MOODS.neutral); }, 3200);
+}
+function reactOpp(kind){
+  if(!G || !G.rung.react) return;
+  var lines=G.rung.react[kind]; if(!lines || !lines.length) return;
+  showBubble(lines[(Math.random()*lines.length)|0], MOODS[kind]);
+}
+function setupPortrait(rung, idx){
+  var opp=document.getElementById('opp'); if(!opp) return;
+  document.getElementById('opp-glyph').textContent=rung.glyph;
+  document.getElementById('opp-name').textContent=rung.name;
+  document.getElementById('opp-sub').textContent='Rung '+(idx+1)+'/'+LADDER.length+' · '+rung.region;
+  document.getElementById('opp-face').style.borderColor=rung.accent;
+  document.getElementById('opp-bubble').classList.remove('show');
+  setMood(MOODS.neutral);
+  opp.classList.remove('hidden');
+}
+function hidePortrait(){ var opp=document.getElementById('opp'); if(opp) opp.classList.add('hidden');
+  clearTimeout(bubbleTimer); clearTimeout(moodTimer); }
+// Judge the player's last move by net material over the full round (their move + the
+// reply) — this nets out ordinary trades and only fires on a real swing.
+function judgeRound(){
+  if(!G || G.roundStartMat==null) return;
+  var delta = matPOV(G.S, G.pc) - G.roundStartMat;   // + = player won material this round
+  G.roundStartMat=null;
+  if(delta <= -250) reactOpp('blunder');
+  else if(delta >= 250) reactOpp('good');
+}
+
 // ---- rendering ----
 function render(){
   ctx.clearRect(0,0,W,H);
@@ -293,10 +380,7 @@ function render(){
 }
 function drawHud(){
   ctx.textAlign='left'; ctx.textBaseline='middle';
-  ctx.fillStyle=G.rung.accent; ctx.font='bold 16px Trebuchet MS';
-  ctx.fillText(G.rung.glyph + '  ' + G.rung.name, 14, 24);
-  ctx.fillStyle='#9a7fd4'; ctx.font='11px Trebuchet MS';
-  ctx.fillText('Rung ' + (G.idx+1) + ' / ' + LADDER.length + ' · ' + G.rung.region, 14, 42);
+  // opponent name / region now live in the HTML portrait at top-left
   // you-are badge
   var youW = G.pc==='w', txt = youW ? '♔ YOU PLAY WHITE' : '♚ YOU PLAY BLACK';
   ctx.font='bold 12px Trebuchet MS'; ctx.textAlign='right'; ctx.textBaseline='middle';
@@ -314,10 +398,11 @@ function loop(){ render(); raf = requestAnimationFrame(loop); }
 
 // ---- screens ----
 function hideOverlays(){ ['menu-screen','ladder-screen','over-screen'].forEach(function(id){ document.getElementById(id).classList.add('hidden'); }); document.getElementById('promo-screen').classList.add('hidden'); }
-function showMenu(){ G=null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('resign-btn').classList.add('hidden'); hideOverlays(); document.getElementById('menu-screen').classList.remove('hidden'); }
+function showMenu(){ G=null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('resign-btn').classList.add('hidden'); hidePortrait(); hideOverlays(); document.getElementById('menu-screen').classList.remove('hidden'); }
 function showLadder(){
   if (G){ G.over = true; }
   document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('resign-btn').classList.add('hidden');
+  hidePortrait();
   hideOverlays();
   var prog = loadProg(), host = document.getElementById('rungs'); host.innerHTML = '';
   LADDER.forEach(function(rung, i){

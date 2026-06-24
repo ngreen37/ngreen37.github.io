@@ -14,6 +14,7 @@ jukebox: true
   <a href="/goods/">Goods</a>
   <a href="/mailing-list/">Mailing List</a>
   <a href="/press-pass/">Press Pass</a>
+  <a href="/direct-line/">Direct Line</a>
   <a href="/educators/">For Educators</a>
 </nav>
 <style>

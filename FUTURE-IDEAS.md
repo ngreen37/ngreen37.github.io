@@ -58,8 +58,14 @@ recovering hidden `frag_` fragments cracks the classified ones; all six core fra
 # 🕹️ The Arcade — remaining polish per game
 *Depth & retention only — not new games. Each line is one buildable move.*
 
-**The Gauntlet (headline) — next:** opening books for the Rival/CEO · a daily gauntlet · a captured-tray
-+ move list · more rungs (the secret King). Design doc: [`docs/chess-ladder-design.md`](docs/chess-ladder-design.md).
+**The Gauntlet (headline):** *(shipped 2026-06-24 — a **visible opponent**: a portrait with a mood emoji and
+personality **speech bubbles** that react to your play; it gloats on a blunder, gets rattled on a strong move,
+driven by a material-swing detector that nets out ordinary trades.)* **Next — take an action against each
+opponent:** a between-moves verb tied to each persona. The **nervous challenger** shakes the board and fidgets
+with the pieces; you can **ask him to stop — and he may or may not** (a saving-throw against his composure). Argus
+can be *calmed*; the Gatekeeper ignores you; the CEO turns it back on **you.** Then: opening books for the
+Rival/CEO · a daily gauntlet · a captured-tray + move list · more rungs (the secret King). Design doc:
+[`docs/chess-ladder-design.md`](docs/chess-ladder-design.md).
 
 **Notation Blitz:** Score Mode (charts the real themes — Av5 unlock) · diagonal & file lanes · coordinate
 duel (the Rival speeds up on misses) · blind grid (fade the board mid-run; bridge to Blindfold) · combo
@@ -339,6 +345,16 @@ the moral/Neville center ("assume it's done"), **"follow the dog,"** and the Riv
 weighted RNG reward table that scales with *what fraction of your best you gave up*; a cooldown so it's a **ritual,
 not a grind**; hard guardrails — **never real money**, a daily cap, and a clear "you may get nothing" warning.
 Engine: extend `pjcc-profile.js`; the altar reads the same `credits` / owned-gear the Shopkeeper writes.
+
+**Av18 — The Direct Line** *(new · Patreon perk · coming-soon page live at `/direct-line/`):* a paid/unlocked
+channel to **write to Nate directly with suggestions**, with a **guaranteed response** — not a form reply, a
+real one. **The hook:** if a suggestion is **already in the pipeline**, tell them, show them where it sits, and
+**reward them** for landing on the same wavelength (credits · a goal card · a founding credit). Turns the usual
+suggestion-box void into a relationship, and makes backers feel *heard* — the single best retention lever a
+solo studio has. Ties to **Av10** (Patreon/funding) and the **Press Pass** (founding-operative perk). **Build
+notes (post-billing):** gate behind a Patreon tier flag on the profile; a simple authenticated compose box →
+email/inbox; a lightweight "matches an existing roadmap item" tag so the reward path is one click. Parked in
+coming-soon until the payments layer is live.
 
 ---
 

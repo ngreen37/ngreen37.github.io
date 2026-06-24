@@ -15,6 +15,32 @@ permalink: /quotes/
 
 </div>
 
+<h2 class="quotes-section">On Alignment <span>· Neville Goddard–inspired</span></h2>
+
+<div class="quotes-wrap">
+
+  <figure class="quote-card quote-card--align">
+    <blockquote>When you are in alignment, you align your choices, your posture, your energy — with the person who is no longer striving, but simply <em>being</em>.</blockquote>
+    <figcaption>On being, not wanting</figcaption>
+  </figure>
+
+  <figure class="quote-card quote-card--align">
+    <blockquote>The world responds not to your words, but to your state of being — to who you are, not what you want.</blockquote>
+    <figcaption>State of being</figcaption>
+  </figure>
+
+  <figure class="quote-card quote-card--align">
+    <blockquote>Favor is not just hoped for — it is <em>assumed</em>. Reality must yield.</blockquote>
+    <figcaption>Assume it's done</figcaption>
+  </figure>
+
+  <figure class="quote-card quote-card--align">
+    <blockquote>In a state of alignment, even setbacks become setups. Even delays carry divine timing. Even rejection feels like redirection — because you are grounded in something deeper than circumstance.</blockquote>
+    <figcaption>Setbacks become setups</figcaption>
+  </figure>
+
+</div>
+
 <style>
   .quotes-intro { color:#c9a7ff; max-width:640px; margin-bottom:1.4rem; line-height:1.6; }
   .quotes-wrap { display:flex; flex-direction:column; gap:16px; max-width:680px; }
@@ -26,4 +52,10 @@ permalink: /quotes/
   .quote-card em { color:#ffd740; font-style:italic; }
   .quote-card figcaption { margin-top:12px; color:#9a7fd4; font-size:.8rem;
     text-transform:uppercase; letter-spacing:.09em; }
+  .quotes-section { color:#F5C518; font-size:1.1rem; font-weight:800; margin:2.2rem 0 1rem;
+    letter-spacing:.02em; }
+  .quotes-section span { color:#9a7fd4; font-weight:500; font-size:.78rem; }
+  .quote-card--align { border-left-color:#c79bff; }
+  .quote-card--align blockquote::before { color:#c79bff; }
+  .quote-card--align em { color:#d9c2ff; }
 </style>
