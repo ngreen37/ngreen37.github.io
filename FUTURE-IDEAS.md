@@ -313,9 +313,12 @@ then **forget once they lose the path** for a while. The card is a physical anch
   use any token** — whatever works, *as long as the goal is clearly tied to touching it.*
 - **Voice:** "**follow the dog**" + the Rival's line *"goals are 5% strategy, 95% mindset."* Ties to the
   moral/Neville center (assume the feeling), Av4 (physical) and Av10 (Patreon).
+- **Status (2026-06-24):** **coming-soon showcase now live at `/goods/`** — gold card mockups (a different
+  character per card), the touch ritual, and the three ways to get one. The *make* is still parked post-flare.
 
 **Av15 — PJCC stationery** *(new · physical · parked until after the flare):* branded stationery with
 **"follow the dog"** across the top. The "pocket/desk mindset" goods line alongside the goal cards.
+**Status (2026-06-24):** shown on `/goods/` beside the goal cards (sheet mockup with the creed across the top).
 
 **Av16 — PJCC VR** *(new · long-horizon · rides on the Godot/Blender 3D work):* the **Battle Room is *made* for
 VR** — Ender's-Game zero-G chess where "the enemy's gate is down" becomes literal: you float in the arena and move
@@ -324,6 +327,18 @@ from the **Rival** in room-scale. **Why it's plausible, not a daydream:** the sa
 you're about to build export to **OpenXR** (Godot has first-class VR), so VR is a *mode* of the 3D game, not a
 separate build. **Scope: far future** (post-flare, post-Godot-v1); a Quest build of one battle room is the
 someday-milestone. Parked here mainly so the 3D pipeline is built **VR-aware from day one.**
+
+**Av17 — The Gambit (the altar of sacrifice)** *(new · coming-soon page live at `/games/the-gambit/`):* an
+**offering** mechanic wired into the existing Quartermaster economy. Lay down what you've earned — **credits**
+(in-game money) and **collectables** (avatars, titles, board skins) — and **sometimes** the board gives back
+*more*. **Courage tilts the odds:** offer your **best** item, or **≥85% of your credits**, and the odds lean
+hard your way; small, safe offerings barely move the needle. **Values-first framing, not a casino:** the reward
+exists to honor the one hard thing — giving up the very best thing you have and trusting the path anyway; ties to
+the moral/Neville center ("assume it's done"), **"follow the dog,"** and the Rival's *"5% strategy, 95% mindset."*
+**Build notes (when it leaves coming-soon):** sacrifice flow = spend `PJCC.credits` + burn an owned collectable;
+weighted RNG reward table that scales with *what fraction of your best you gave up*; a cooldown so it's a **ritual,
+not a grind**; hard guardrails — **never real money**, a daily cap, and a clear "you may get nothing" warning.
+Engine: extend `pjcc-profile.js`; the altar reads the same `credits` / owned-gear the Shopkeeper writes.
 
 ---
 

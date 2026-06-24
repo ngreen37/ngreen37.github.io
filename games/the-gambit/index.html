@@ -1,0 +1,60 @@
+---
+layout: game
+title: "The Gambit"
+description: "The board's oldest wager: lay down what you've earned — credits, collectables, your best gear — and the board sometimes gives back more. The boldest sacrifices tilt the odds. Coming soon."
+permalink: /games/the-gambit/
+---
+
+<div class="gambit-soon">
+  <div class="gambit-badge">◈ Coming Soon — the altar is still being carved</div>
+
+  <div class="gambit-altar" aria-hidden="true">
+    <div class="gambit-glow"></div>
+    <div class="gambit-coin">♟</div>
+  </div>
+
+  <h2 class="gambit-tagline">Lay it down. See what the board gives back.</h2>
+
+  <p class="gambit-lede">
+    Every game you play earns you something — <strong>credits</strong>, <strong>collectables</strong>,
+    hard-won gear from the <a href="/shopkeeper/">Quartermaster</a>. <strong>The Gambit</strong> is the one place
+    you can <strong>give it up</strong>. Offer your points, your money, your rarest finds to the board… and
+    <strong>sometimes</strong> the board answers with something far greater.
+  </p>
+</div>
+
+<div class="game-info">
+  <h2>The wager</h2>
+  <ul>
+    <li><strong>Offer what you've earned.</strong> Stake credits (your in-game money), or lay down a collectable — an avatar, a title, a board skin from the Quartermaster.</li>
+    <li><strong>It's a chance, not a trade.</strong> Sometimes you walk away with nothing. Sometimes the board gives back far more than you put in.</li>
+    <li><strong>Courage tilts the odds.</strong> Give up your <strong>best</strong> item — or <strong>85%+ of your credits</strong> — and the odds lean hard in your favor. Small, safe offerings barely move the needle.</li>
+    <li><strong>The point isn't winning.</strong> It's the willingness to let go of what you cling to. Goals are <strong>5% strategy, 95% mindset.</strong> Assume it's already done — then <strong>follow the dog.</strong></li>
+  </ul>
+  <p class="game-note">
+    A <strong>values-first take on risk</strong>: the reward isn't here to teach you to gamble — and you will
+    <strong>never</strong> stake real money. It's here to reward the one thing most people can't do: give up the
+    very best thing they have and trust the path anyway. Built to plug straight into the economy you already use —
+    the credits and collectables you earn at the <a href="/shopkeeper/">Quartermaster</a> are exactly what you'll
+    lay on the altar. <strong>Nothing to offer yet</strong> — when it opens, the dispatch hears first.
+  </p>
+</div>
+
+<style>
+.gambit-soon { max-width: 860px; margin: 0 auto 1.4rem; text-align: center; }
+.gambit-badge { display:inline-block; font-family:'Share Tech Mono',monospace; font-size:0.72rem; letter-spacing:0.18em;
+  text-transform:uppercase; color:#F5C518; border:1px solid rgba(245,197,24,0.5); border-radius:999px;
+  padding:5px 14px; background:rgba(245,197,24,0.06); }
+.gambit-altar { position:relative; height:150px; display:flex; align-items:center; justify-content:center; margin:18px 0 6px; }
+.gambit-coin { position:relative; font-size:5rem; line-height:1; color:#F5C518;
+  filter:drop-shadow(0 6px 18px rgba(245,197,24,0.5)); animation:gambit-bob 3.4s ease-in-out infinite; z-index:1; }
+.gambit-glow { position:absolute; width:170px; height:170px; border-radius:50%;
+  background:radial-gradient(circle, rgba(245,197,24,0.28), transparent 65%); animation:gambit-pulse 3.4s ease-in-out infinite; }
+@keyframes gambit-bob { 0%,100%{ transform:translateY(0) rotate(-4deg);} 50%{ transform:translateY(-12px) rotate(4deg);} }
+@keyframes gambit-pulse { 0%,100%{ transform:scale(0.9); opacity:0.5;} 50%{ transform:scale(1.18); opacity:0.95;} }
+.gambit-tagline { color:#fff; font-size:1.5rem; font-weight:900; margin:0.4rem 0 0.6rem; }
+.gambit-lede { color:#cdbcf2; font-size:0.98rem; line-height:1.6; max-width:640px; margin:0 auto; }
+.gambit-lede strong { color:#f0e6ff; }
+.gambit-lede a, .game-note a { color:#F5C518; }
+@media (max-width:600px){ .gambit-coin{ font-size:3.6rem; } .gambit-tagline{ font-size:1.2rem; } }
+</style>

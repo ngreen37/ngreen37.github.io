@@ -26,6 +26,8 @@
       { t: 'Your Dossier',     s: 'Your profile & operative',             u: '/dossier/',            ic: '⬡', b: 'pjcc', k: 'dossier profile account sign in login operative identity forge' },
       { t: 'Leaderboards',     s: 'Hall of Fame',                         u: '/leaderboards/',       ic: '🏆', b: 'pjcc', k: 'leaderboards hall of fame scores rank high' },
       { t: 'The Reading Room', s: 'Learn Japanese kana & kanji',          u: '/games/reading-room/', ic: '🦊', b: 'pjcc', k: 'reading room japanese kana kanji kaede srs anki' },
+      { t: 'The Gambit',       s: 'Sacrifice your best — coming soon',    u: '/games/the-gambit/',   ic: '🎲', b: 'pjcc', k: 'gambit sacrifice offering altar wager risk reward credits collectables coming soon' },
+      { t: 'The Goods',        s: 'Goal cards & stationery — coming soon', u: '/goods/',             ic: '🃏', b: 'mcpuppy', k: 'goods goal cards stationery merch follow the dog mindset coming soon physical' },
       { t: 'McPuppy Studios',  s: 'Studio hub & progress',                u: '/projects/',           ic: '🐾', b: 'mcpuppy', k: 'mcpuppy studio projects progress hub' },
       { t: 'Build Log (Blog)', s: 'Episode archive',                      u: '/blog/',               ic: '✍', b: 'mcpuppy', k: 'blog build log episodes posts writing' },
       { t: 'Mailing List',     s: 'Get dispatches by email',              u: '/mailing-list/',       ic: '✉', b: 'mcpuppy', k: 'mailing list email subscribe newsletter' },

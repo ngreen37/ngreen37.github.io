@@ -11,6 +11,7 @@ jukebox: true
 <nav class="studio-hub" aria-label="McPuppy Studios sections">
   <a href="/pjcc/">PJCC</a>
   <a href="/blog/">Blog</a>
+  <a href="/goods/">Goods</a>
   <a href="/mailing-list/">Mailing List</a>
   <a href="/press-pass/">Press Pass</a>
   <a href="/educators/">For Educators</a>

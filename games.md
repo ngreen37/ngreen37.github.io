@@ -92,6 +92,9 @@ permalink: /games/
   color:#6bffb8; border:1px solid #2f6b50; background:rgba(107,255,184,0.1); border-radius:4px; padding:1px 7px; }
 .gcard-new { position:absolute; top:8px; right:9px; background:#6bffb8; color:#042; font-size:0.56rem; font-weight:900;
   letter-spacing:0.06em; border-radius:999px; padding:2px 7px; }
+.gcard-soon { position:absolute; top:8px; right:9px; background:#F5C518; color:#1a0f3d; font-size:0.56rem; font-weight:900;
+  letter-spacing:0.06em; border-radius:999px; padding:2px 7px; }
+.gcard.soon { border-style:dashed; }
 .gcard.locked { border-style:dashed; border-color:#4f466e; background:linear-gradient(135deg,#26223c,#2f2a4a); }
 .gcard.locked .gcard-icon { color:#F5C518; } .gcard.locked h3 { color:#9a8fc0; } .gcard.locked p { color:#6f6592; }
 
@@ -124,7 +127,8 @@ permalink: /games/
     { slug:'tower-defense',     name:'Siege on Chess City',cryptic:'Hold the gates.',                icon:'🏰', accent:'#ff8fd0', cat:'arcade', score:['tower-defense','score'] },
     { slug:'dungeon',           name:'Princess Dungeon',   cryptic:'Every room is a tactic.',        icon:'♟',  accent:'#ff8fd0', cat:'arcade', score:['dungeon','floors'], neu:'2026-06-22' },
     { slug:'battle-room',       name:'The Battle Room',    cryptic:'Chess as an action sequence.',   icon:'⚔',  accent:'#56d0ff', cat:'dev', score:['battle-room','score'], neu:'2026-06-22' },
-    { slug:'follow-the-dog',    name:'Follow the Dog',     cryptic:'Trust the run. Follow her.',     icon:'✦',  accent:'#8fb8ff', cat:'dev' }
+    { slug:'follow-the-dog',    name:'Follow the Dog',     cryptic:'Trust the run. Follow her.',     icon:'✦',  accent:'#8fb8ff', cat:'dev' },
+    { slug:'the-gambit',        name:'The Gambit',         cryptic:'Lay down your best. The board decides.', icon:'♟', accent:'#F5C518', cat:'dev', soon:true }
   ];
   var CATS = {
     learn:  { name:'Learn',          glyph:'♟', tag:'Sharpen your game', accent:'#6bffb8' },
@@ -162,8 +166,9 @@ permalink: /games/
       var b = best(g.slug);
       var chip = (b>0 && g.score) ? '<span class="gcard-best">★ '+b.toLocaleString()+' '+g.score[1]+'</span>' : '';
       var neu = isNew(g.neu) ? '<span class="gcard-new">NEW</span>' : '';
-      return '<a class="gcard'+(locked?' locked':'')+'" href="'+url(g.slug)+'" style="--accent:'+g.accent+'" data-slug="'+g.slug+'" data-name="'+esc(g.name)+'">'+
-        neu+'<span class="gcard-icon">'+(locked?'🔒':g.icon)+'</span>'+
+      var soon = g.soon ? '<span class="gcard-soon">SOON</span>' : '';
+      return '<a class="gcard'+(locked?' locked':'')+(g.soon?' soon':'')+'" href="'+url(g.slug)+'" style="--accent:'+g.accent+'" data-slug="'+g.slug+'" data-name="'+esc(g.name)+'">'+
+        neu+soon+'<span class="gcard-icon">'+(locked?'🔒':g.icon)+'</span>'+
         '<span class="gcard-body"><h3>'+esc(g.name)+'</h3><p>'+(locked?'Locked — flawless Fast run in Notation Blitz':esc(g.cryptic))+'</p>'+chip+'</span></a>';
     }).join('');
     // remember last-played on click
