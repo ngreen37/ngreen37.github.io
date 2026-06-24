@@ -449,7 +449,7 @@
     { key: 'shogi-scholar', icon: '将', label: 'Shogi Scholar',  desc: 'Read 9/10 on Shogi Island',     test: function (c) { return c.best('shogi-island') >= 9; } },
     { key: 'globetrotter',  icon: '🗺', label: 'Globetrotter',   desc: 'Play every game at least once',  test: function (c) { return WORLDMAP.every(function (s) { return !s.game || c.played(s.game); }); } },
     { key: 'dedicated',     icon: '🔥', label: 'Dedicated',      desc: 'Play 50 rounds total',          test: function (c) { return c.totalPlays >= 50; } },
-    { key: 'collector',     icon: '🛒', label: 'Collector',      desc: 'Own a Shopkeeper avatar',       test: function (c) { return !!(c.profile.companion && (c.profile.companion.owned || []).length); } }
+    { key: 'collector',     icon: '🛒', label: 'Collector',      desc: 'Own a Shopkeeper avatar',       test: function (c) { return !!(c.profile && c.profile.companion && (c.profile.companion.owned || []).length); } }
   ];
   PJCC.ACHIEVEMENTS = ACHIEVEMENTS;
   PJCC.earnedAchievements = function (prof, stats) {

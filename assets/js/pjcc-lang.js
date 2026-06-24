@@ -1,36 +1,38 @@
 /* =============================================================================
- * PJCC language toggle (EN / 日本語) — WHOLE-SITE edition
+ * PJCC language toggle (EN / 日本語) — WHOLE-SITE, NO-LIMIT edition
  * -----------------------------------------------------------------------------
- * Goal (Nate, 2026-06-23): the 日本語 toggle should translate the ENTIRE site,
- * not just the nav, and keep up with any and all updates automatically.
+ * Goal (Nate): the 日本語 toggle translates the ENTIRE site with NO character
+ * limit (long paragraphs included) and keeps up with ALL updates automatically.
  *
- * How it works — two layers:
- *   1. Curated dictionary (DICT): brand + nav + common terms. Instant, perfect,
- *      never sent anywhere. Brand-safe.
- *   2. Auto-fill machine translation: every other English text node is translated
- *      on demand via a free endpoint and CACHED in localStorage, so new content is
- *      picked up automatically (that's the "keeps up with updates" part) and repeat
- *      visits are instant. A MutationObserver re-translates client-rendered sections
- *      (the Dossier, leaderboards, game cards) as they appear.
+ * How it works — three layers:
+ *   1. Curated dictionary (DICT): brand + nav terms. Instant, perfect, offline.
+ *   2. Machine translation, UNLIMITED LENGTH: any other English text is split into
+ *      sentence-sized chunks, translated, and rejoined — so there is no per-string
+ *      cap. Primary engine is Google's keyless endpoint (handles long text);
+ *      MyMemory is an automatic fallback. Every result is cached in localStorage,
+ *      so repeat strings/visits are instant and the API is barely touched.
+ *   3. A MutationObserver re-translates anything rendered later (Dossier, boards,
+ *      game cards, toasts) the moment it appears — "auto-updating always".
  *
- * Always safe: anything not translated stays English; if the endpoint is down or
- * rate-limited, the page simply stays in English for those bits — nothing breaks.
- * Protected from translation: code, inputs, the operative pill + codenames, the
- * Shogi-gate sigil, the in-world ticker, the walker, and anything marked
- * [data-no-translate] / .notranslate.
+ * Uncapped: there is no MAX-per-pass limit; every visible English string is queued
+ * (concurrency-limited so we never hammer the endpoint). Fail-safe: if an endpoint
+ * is down, those bits simply stay English — nothing breaks.
+ * Protected: code, inputs, the operative pill + codenames, the Shogi sigil, the
+ * in-world ticker, the walker, and anything [data-no-translate] / .notranslate.
  *
- * To swap in a higher-quality / higher-limit engine later, change MT_ENDPOINT
- * (e.g. a self-hosted LibreTranslate or a DeepL proxy) — everything else stays.
- * Set AUTO_MT = false to fall back to dictionary-only (no external calls).
+ * UPGRADE PATH (for total reliability): point PROVIDERS at your own Cloudflare
+ * Worker proxying DeepL / Google Cloud Translate — everything else stays the same.
  * ========================================================================== */
 (function () {
   'use strict';
 
   var KEY = 'pjcc.lang';
-  var CACHE_KEY = 'pjcc.lang.cache.v1';
-  var AUTO_MT = true;                 // machine-translate beyond the dictionary
-  var MAX_MT_PER_PASS = 140;          // be gentle on the free endpoint
-  var MT_CONCURRENCY = 3;
+  var CACHE_KEY = 'pjcc.lang.cache.v2';
+  var AUTO_MT = true;            // machine-translate beyond the dictionary
+  var MT_CONCURRENCY = 6;        // parallel requests (cache makes most strings free)
+  var GTX_CHUNK = 1000;          // max source chars per Google request (URL-safe)
+  var MM_CHUNK = 450;            // max source chars per MyMemory request (its ~500 cap)
+  var CACHE_MAX = 6000;          // soft cap on cached entries
 
   // 1) curated, brand-safe dictionary (instant; never sent to any service)
   var DICT = {
@@ -39,26 +41,34 @@
     'Characters & Locations': 'キャラクターとロケーション', 'Locations': 'ロケーション',
     'Academy': 'アカデミー', 'The Pilot': 'パイロット版', "Writers' Room": '脚本室',
     'Your Dossier': 'あなたのファイル', 'Dossier': 'ファイル', 'Operative Dossier': '機密ファイル',
-    'Command Center': '司令部', 'Projects': 'プロジェクト', 'Blog': 'ブログ',
+    'Command Center': '司令部', 'Projects': 'プロジェクト', 'Blog': 'ブログ', 'Build Log': 'ビルドログ',
     'Mailing List': 'メール登録', 'Press Pass': 'プレスパス', 'For Educators': '教育者向け',
-    'About / Contact': '概要・連絡', 'Contact': '連絡先', 'About': '概要',
+    'About / Contact': '概要・連絡', 'Contact': '連絡先', 'About': '概要', 'Support': 'サポート',
     'Leaderboard': 'ランキング', 'Leaderboards': 'ランキング', 'Hall of Fame': '殿堂',
-    'Home': 'ホーム', 'Patreon': 'Patreon', 'Coming Soon': '近日公開',
+    'Home': 'ホーム', 'Patreon': 'Patreon', 'Coming Soon': '近日公開', 'The World': 'ザ・ワールド',
+    'The Goods': 'グッズ', 'The Direct Line': 'ダイレクトライン', 'Direct Line': 'ダイレクトライン',
     'Podcast & Blog': 'ポッドキャスト・ブログ', 'Play Now': 'プレイ', 'Play': 'プレイ',
     'Read the Blog': 'ブログを読む', 'field notes': 'フィールドノート',
     'Princess and the Journey to Chess City': 'プリンセスとチェスシティへの旅',
     'Checker Town': 'チェッカータウン', 'Chess City': 'チェスシティ', 'Shogi Island': '将棋の島',
     'The Reading Room': '読書室', 'The Gauntlet': 'ガントレット', 'The Battle Room': 'バトルルーム',
-    'Princess': 'プリンセス', 'Sign in': 'サインイン'
+    'The Gambit': 'ザ・ギャンビット', 'Princess': 'プリンセス', 'Sign in': 'サインイン'
   };
 
   // memory cache of machine translations (loaded from localStorage)
   var cache = {};
   try { cache = JSON.parse(localStorage.getItem(CACHE_KEY)) || {}; } catch (e) { cache = {}; }
   var saveTimer = null;
-  function saveCache() { clearTimeout(saveTimer); saveTimer = setTimeout(function () {
-    try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch (e) {}
-  }, 500); }
+  function saveCache() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () {
+      try {
+        var keys = Object.keys(cache);
+        if (keys.length > CACHE_MAX) { cache = {}; }   // rare; reset rather than grow unbounded
+        localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+      } catch (e) {}
+    }, 600);
+  }
 
   function current() { try { return localStorage.getItem(KEY) || 'en'; } catch (e) { return 'en'; } }
 
@@ -67,7 +77,7 @@
                     TEXTAREA:1, INPUT:1, SELECT:1, OPTION:1, CANVAS:1, SVG:1 };
   var SKIP_SEL = '[data-no-translate], .notranslate, .pjcc-sigil, .princess-walker,' +
                  ' #nav-operative, #lang-toggle, .world-ticker-wrap, .footer-ribbon-wrap,' +
-                 ' [contenteditable], .pjcc-credits, .dsr-name, .lb-name';
+                 ' [contenteditable], .pjcc-credits, .dsr-name, .lb-name, .cmdk-trigger-kbd';
   function skip(node) {
     var el = node.parentNode;
     while (el && el.nodeType === 1) {
@@ -81,73 +91,119 @@
   function hasJP(s) { return /[　-ヿ㐀-鿿＀-￯]/.test(s); }
   function hasLatin(s) { return /[A-Za-z]/.test(s); }
 
-  // ---- the core DOM walk ----------------------------------------------------
+  // ---- core DOM walk --------------------------------------------------------
   function lookup(trimmed) { return DICT[trimmed] || cache[trimmed] || null; }
   function setNode(node, raw, translated) {
-    var m = raw.match(/^(\s*)[\s\S]*?(\s*)$/);   // keep the original surrounding whitespace
+    var m = raw.match(/^(\s*)[\s\S]*?(\s*)$/);   // keep original surrounding whitespace
     node.nodeValue = (m ? m[1] : '') + translated + (m ? m[2] : '');
   }
 
   function translateTree(root, lang) {
     if (!root) return;
+    if (root.nodeType === 3) { handleTextNode(root, lang); return; }
     var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
-    var node, queueMap = {};   // trimmed -> [nodes] for the MT pass
-    while ((node = walker.nextNode())) {
-      var raw = node.nodeValue;
-      if (!raw || !raw.trim()) continue;
-      if (skip(node)) continue;
-      if (node.__pjEn === undefined) node.__pjEn = raw;   // remember the English once
-      var trimmed = node.__pjEn.trim();
+    var node;
+    while ((node = walker.nextNode())) handleTextNode(node, lang);
+  }
+  function handleTextNode(node, lang) {
+    var raw = node.nodeValue;
+    if (!raw || !raw.trim()) return;
+    if (skip(node)) return;
+    if (node.__pjEn === undefined) node.__pjEn = raw;       // remember the English once
+    var trimmed = node.__pjEn.trim();
 
-      if (lang === 'en') { node.nodeValue = node.__pjEn; continue; }
+    if (lang === 'en') { node.nodeValue = node.__pjEn; return; }
+    if (hasJP(trimmed) || !hasLatin(trimmed)) return;       // already JP / nothing to do
 
-      // jp
-      if (hasJP(trimmed) || !hasLatin(trimmed)) continue;   // already JP / nothing to do
-      var hit = lookup(trimmed);
-      if (hit) { setNode(node, node.__pjEn, hit); continue; }
-      if (AUTO_MT) { (queueMap[trimmed] = queueMap[trimmed] || []).push(node); }
-    }
-    if (lang === 'jp' && AUTO_MT) runMT(queueMap);
+    var hit = lookup(trimmed);
+    if (hit) { setNode(node, node.__pjEn, hit); return; }
+    if (AUTO_MT) enqueue(trimmed, node);
   }
 
-  // ---- machine-translation auto-fill (cached, throttled, fail-safe) ---------
-  var MT_ENDPOINT = function (text) {
-    return 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=en|ja';
-  };
-  function mtOne(text) {
-    return fetch(MT_ENDPOINT(text)).then(function (r) { return r.json(); }).then(function (d) {
+  // ---- machine translation: unlimited length via chunking + provider chain ---
+  function splitChunks(text, max) {
+    if (text.length <= max) return [text];
+    var parts = text.split(/(\s+)/), chunks = [], cur = '';
+    for (var i = 0; i < parts.length; i++) {
+      if (cur && (cur + parts[i]).length > max) { chunks.push(cur); cur = ''; }
+      cur += parts[i];
+    }
+    if (cur) chunks.push(cur);
+    return chunks;
+  }
+
+  // Google's keyless endpoint — handles long text, no per-request char cap of note.
+  function gtx(text) {
+    var u = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ja&dt=t&q=' +
+            encodeURIComponent(text);
+    return fetch(u).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) {
+      if (!d || !d[0]) return null;
+      var out = '';
+      for (var i = 0; i < d[0].length; i++) { if (d[0][i] && d[0][i][0]) out += d[0][i][0]; }
+      return out || null;
+    });
+  }
+  // MyMemory fallback (smaller chunks; ~500-char cap).
+  function mymemory(text) {
+    var u = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=en|ja';
+    return fetch(u).then(function (r) { return r.json(); }).then(function (d) {
       var t = d && d.responseData && d.responseData.translatedText;
-      if (!t) return null;
-      if (d.responseStatus && d.responseStatus !== 200) return null;     // quota / error
+      if (!t || (d.responseStatus && d.responseStatus !== 200)) return null;
       if (/MYMEMORY WARNING|QUERY LENGTH LIMIT|INVALID/i.test(t)) return null;
       return t;
-    }).catch(function () { return null; });
+    });
   }
-  var inFlight = false;
-  function runMT(queueMap) {
-    var keys = Object.keys(queueMap).filter(function (k) { return !lookup(k); }).slice(0, MAX_MT_PER_PASS);
-    if (!keys.length || inFlight) return;
-    inFlight = true;
-    var i = 0, active = 0;
-    function pump() {
-      if (current() !== 'jp') { inFlight = false; return; }          // user toggled back
-      while (active < MT_CONCURRENCY && i < keys.length) {
-        var key = keys[i++]; active++;
-        (function (k) {
-          mtOne(k).then(function (t) {
-            active--;
-            if (t) {
-              cache[k] = t; saveCache();
-              if (current() === 'jp') queueMap[k].forEach(function (n) {
-                if (n.__pjEn !== undefined && document.contains(n)) setNode(n, n.__pjEn, t);
-              });
-            }
-            if (i < keys.length) pump(); else if (active === 0) inFlight = false;
-          });
-        })(key);
-      }
-    }
+  var PROVIDERS = [ { fn: gtx, chunk: GTX_CHUNK }, { fn: mymemory, chunk: MM_CHUNK } ];
+
+  // translate every chunk in order with one provider; reject if any chunk fails
+  function viaProvider(text, prov) {
+    var chunks = splitChunks(text, prov.chunk), out = [], p = Promise.resolve();
+    chunks.forEach(function (c) {
+      p = p.then(function () {
+        if (!c.trim()) { out.push(c); return; }
+        return prov.fn(c).then(function (t) { if (t == null) throw 0; out.push(t); });
+      });
+    });
+    return p.then(function () { return out.join(''); });
+  }
+  // try providers in order; resolve with the first full success, else null
+  function translateText(text) {
+    var p = Promise.reject();
+    PROVIDERS.forEach(function (prov) {
+      p = p.catch(function () { return viaProvider(text, prov); });
+    });
+    return p.catch(function () { return null; });
+  }
+
+  // ---- uncapped, concurrency-limited global queue ---------------------------
+  var pending = {};     // key -> [text nodes awaiting this translation]
+  var queued = {};      // key -> true (queued or attempted this session)
+  var queue = [];
+  var active = 0;
+  function enqueue(key, node) {
+    (pending[key] = pending[key] || []).push(node);
+    if (!queued[key]) { queued[key] = true; queue.push(key); }
     pump();
+  }
+  function pump() {
+    if (current() !== 'jp') return;
+    while (active < MT_CONCURRENCY && queue.length) {
+      var key = queue.shift();
+      active++;
+      (function (k) {
+        translateText(k).then(function (t) {
+          active--;
+          if (t) {
+            cache[k] = t; saveCache();
+            if (current() === 'jp' && pending[k]) pending[k].forEach(function (n) {
+              if (n.__pjEn !== undefined && document.contains(n)) setNode(n, n.__pjEn, t);
+            });
+          }
+          delete pending[k];
+          pump();
+        });
+      })(key);
+    }
   }
 
   // ---- apply / toggle -------------------------------------------------------
@@ -158,7 +214,6 @@
       if (en === null) { en = el.innerHTML; el.setAttribute('data-en-html', en); }
       el.innerHTML = (lang === 'jp') ? el.getAttribute('data-jp') : en;
     });
-    // the whole document body
     translateTree(document.body, lang);
 
     document.documentElement.setAttribute('lang', lang === 'jp' ? 'ja' : 'en');
@@ -168,10 +223,12 @@
     ensureObserver();
   }
 
-  window.PJCCLang = { toggle: function () { apply(current() === 'jp' ? 'en' : 'jp'); }, apply: apply,
-                      DICT: DICT };
+  window.PJCCLang = {
+    toggle: function () { apply(current() === 'jp' ? 'en' : 'jp'); },
+    apply: apply, DICT: DICT
+  };
 
-  // ---- keep up with client-rendered content (Dossier, boards, cards) --------
+  // ---- keep up with client-rendered content (auto-updating always) ----------
   var observer = null;
   function ensureObserver() {
     if (observer || !window.MutationObserver) return;
@@ -179,18 +236,19 @@
       if (current() !== 'jp') return;
       var roots = [];
       muts.forEach(function (m) {
+        if (m.type === 'characterData' && m.target) { roots.push(m.target); return; }
         Array.prototype.forEach.call(m.addedNodes, function (n) {
-          if (n.nodeType === 1) roots.push(n);
-          else if (n.nodeType === 3 && n.parentNode) roots.push(n.parentNode);
+          if (n.nodeType === 1 || n.nodeType === 3) roots.push(n);
         });
       });
       if (roots.length) {
-        // debounce a touch so big re-renders translate in one pass
         clearTimeout(observer.__t);
-        observer.__t = setTimeout(function () { roots.forEach(function (r) { translateTree(r, 'jp'); }); }, 120);
+        observer.__t = setTimeout(function () { roots.forEach(function (r) {
+          if (r.nodeType === 1 || r.nodeType === 3) { if (document.contains(r)) translateTree(r, 'jp'); }
+        }); }, 120);
       }
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
   }
 
   function init() {
