@@ -160,10 +160,16 @@
   (function () {
     var header = document.querySelector('.site-header');
     if (!header) return;
-    var THRESH = 150;
+    // Hysteresis (dead-band): condensing the header shortens it, which nudges the
+    // scroll position back across a single threshold and causes a flip-flop twitch.
+    // Two separated thresholds (condense >210, expand <110) give a 100px dead-band.
+    var DOWN = 210, UP = 110;
+    var condensed = false;
     var ticking = false;
     function update() {
-      header.classList.toggle('is-condensed', window.scrollY > THRESH);
+      var y = window.pageYOffset || window.scrollY || 0;
+      if (!condensed && y > DOWN) { condensed = true; header.classList.add('is-condensed'); }
+      else if (condensed && y < UP) { condensed = false; header.classList.remove('is-condensed'); }
       ticking = false;
     }
     window.addEventListener('scroll', function () {

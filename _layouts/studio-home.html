@@ -56,35 +56,38 @@
       <div class="studio-tagline" aria-hidden="true">
         <span class="tagline-word">Chess.</span>
         <span class="tagline-word">Blog.</span>
-        <span class="tagline-word">Music.</span>
         <span class="tagline-word">Podcast.</span>
         <span class="tagline-word">Animation.</span>
+        <span class="tagline-word">Academy.</span>
+        <span class="tagline-word">Games.</span>
         <span class="tagline-word tagline-main">
           <span class="tagline-main-studio">McPuppy Studios</span>
           <span class="tagline-main-tagline">A Million Stories to Tell</span>
         </span>
       </div>
 
+      {% comment %} Quad layout: PJCC (top-left) · McPuppy (top-right, B&W) ·
+           Games (bottom-left) · Patreon (bottom-right). Each box has its own look. {% endcomment %}
       <div class="studio-quad-grid">
 
-        <a href="{{ '/pjcc/' | relative_url }}" class="studio-quad">
+        <a href="{{ '/pjcc/' | relative_url }}" class="studio-quad studio-quad--pjcc">
           <span class="studio-quad-title" data-jp="PJCC">PJCC</span>
           <span class="studio-quad-sub" data-jp="プリンセスとチェスシティへの旅">Princess &amp; the Journey<br>to Chess City</span>
         </a>
 
-        <a href="{{ '/games/' | relative_url }}" class="studio-quad">
+        <a href="{{ '/projects/' | relative_url }}" class="studio-quad studio-quad--mcpuppy">
+          <span class="studio-quad-title" data-jp="マクパピー・スタジオ">McPuppy Studios</span>
+          <span class="studio-quad-sub" data-jp="進捗・プロジェクト・速報">Progress · projects · dispatches</span>
+        </a>
+
+        <a href="{{ '/games/' | relative_url }}" class="studio-quad studio-quad--games">
           <span class="studio-quad-title" data-jp="ゲーム">Games</span>
           <span class="studio-quad-sub" data-jp="PJCCの世界で遊ぶ">Play in the PJCC universe</span>
         </a>
 
-        <a class="studio-quad studio-quad-soon" aria-disabled="true">
+        <a class="studio-quad studio-quad--patreon studio-quad-soon" aria-disabled="true">
           <span class="studio-quad-title" data-jp="Patreon">Patreon</span>
           <span class="studio-quad-sub" data-jp="近日公開">Coming Soon</span>
-        </a>
-
-        <a href="{{ '/projects/' | relative_url }}" class="studio-quad">
-          <span class="studio-quad-title" data-jp="マクパピー・スタジオ">McPuppy Studios</span>
-          <span class="studio-quad-sub" data-jp="進捗・プロジェクト・速報">Progress · projects · dispatches</span>
         </a>
 
       </div>

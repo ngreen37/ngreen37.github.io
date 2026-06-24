@@ -1591,8 +1591,8 @@ body.studio-body {
 .studio-quad:nth-child(3) { animation: quad-appear 1.3s ease 0.46s both; }
 .studio-quad:nth-child(4) { animation: quad-appear 1.3s ease 0.64s both; }
 
-/* PJCC quad — rich purple background, gold title */
-.studio-quad-grid .studio-quad:nth-child(1) {
+/* PJCC quad (top-left) — rich purple background, gold title */
+.studio-quad-grid .studio-quad--pjcc {
   background: linear-gradient(145deg, rgba(40, 16, 95, 0.82) 0%, rgba(100, 38, 220, 0.68) 55%, rgba(60, 16, 140, 0.6) 100%);
   border-color: rgba(245, 197, 24, 0.48);
 
@@ -1615,6 +1615,150 @@ body.studio-body {
     box-shadow: 0 0 44px rgba(245, 197, 24, 0.18), 0 14px 44px rgba(100, 38, 220, 0.5);
     transform: translateY(-5px);
   }
+}
+
+/* McPuppy quad (top-right) — black & white; inverts to a white card on hover */
+.studio-quad-grid .studio-quad--mcpuppy {
+  background: linear-gradient(150deg, #07070a 0%, #1b1b1f 50%, #0b0b0e 100%);
+  border-color: rgba(255, 255, 255, 0.55);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    pointer-events: none;
+    z-index: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.10) 1px, transparent 1.5px);
+    background-size: 11px 11px;
+    transition: background-image 0.25s;
+  }
+
+  .studio-quad-title {
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 18px rgba(255, 255, 255, 0.25);
+    position: relative;
+    z-index: 1;
+  }
+
+  .studio-quad-sub {
+    color: rgba(255, 255, 255, 0.62);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    position: relative;
+    z-index: 1;
+  }
+
+  &::after {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, transparent 60%);
+  }
+
+  &:hover {
+    background: #f4f4f4;
+    border-color: #ffffff;
+    box-shadow: 0 14px 46px rgba(0, 0, 0, 0.6);
+    transform: translateY(-5px);
+
+    .studio-quad-title { color: #0a0a0a; text-shadow: none; }
+    .studio-quad-sub { color: rgba(10, 10, 10, 0.72); }
+
+    &::before {
+      background-image: radial-gradient(rgba(0, 0, 0, 0.16) 1px, transparent 1.5px);
+    }
+  }
+}
+
+/* Games quad (bottom-left) — arcade neon over a faint chessboard */
+.studio-quad-grid .studio-quad--games {
+  background: linear-gradient(150deg, #1a0a2e 0%, #2b0f4a 55%, #140720 100%);
+  border-color: rgba(255, 90, 200, 0.42);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      linear-gradient(45deg, rgba(255, 255, 255, 0.045) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.045) 75%),
+      linear-gradient(45deg, rgba(255, 255, 255, 0.045) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.045) 75%);
+    background-size: 36px 36px;
+    background-position: 0 0, 18px 18px;
+    opacity: 0.55;
+  }
+
+  .studio-quad-title {
+    color: #ff5ac8;
+    text-shadow: 0 0 20px rgba(255, 90, 200, 0.5);
+    position: relative;
+    z-index: 1;
+  }
+
+  .studio-quad-sub {
+    color: rgba(255, 178, 230, 0.62);
+    position: relative;
+    z-index: 1;
+  }
+
+  &::after {
+    background: linear-gradient(135deg, rgba(255, 90, 200, 0.14) 0%, transparent 60%);
+  }
+
+  &:hover {
+    background: linear-gradient(150deg, #260f42 0%, #3d1668 55%, #1d0a30 100%);
+    border-color: #ff5ac8;
+    box-shadow: 0 0 42px rgba(255, 90, 200, 0.24), 0 14px 40px rgba(40, 10, 70, 0.6);
+    transform: translateY(-5px);
+  }
+}
+
+/* Patreon quad (bottom-right) — warm coral; shown but not yet live */
+.studio-quad-grid .studio-quad--patreon {
+  background: linear-gradient(150deg, #2a0f0c 0%, #4a1813 55%, #200a08 100%);
+  border-color: rgba(255, 99, 72, 0.42);
+  opacity: 0.95;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(circle at 50% 125%, rgba(255, 99, 72, 0.26) 0%, transparent 62%);
+  }
+
+  .studio-quad-title {
+    color: #ff7a5c;
+    text-shadow: 0 0 18px rgba(255, 99, 72, 0.4);
+    position: relative;
+    z-index: 1;
+  }
+
+  .studio-quad-sub {
+    color: rgba(255, 150, 120, 0.72);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+    animation: patreon-soon-pulse 2.6s ease-in-out infinite;
+  }
+
+  &:hover {
+    background: linear-gradient(150deg, #2a0f0c 0%, #4a1813 55%, #200a08 100%);
+    border-color: rgba(255, 99, 72, 0.42);
+    transform: none;
+  }
+}
+
+@keyframes patreon-soon-pulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; }
 }
 
 /* Blank placeholder quad */
@@ -1735,9 +1879,10 @@ body.studio-body {
   opacity: 0;
 }
 
-/* Keep subtext visible for quads that have meaningful subtitles */
-.studio-quad-grid .studio-quad:nth-child(1):hover .studio-quad-sub,
-.studio-quad-grid .studio-quad:nth-child(3):hover .studio-quad-sub {
+/* Keep subtext visible on hover for the branded quads */
+.studio-quad-grid .studio-quad--pjcc:hover .studio-quad-sub,
+.studio-quad-grid .studio-quad--mcpuppy:hover .studio-quad-sub,
+.studio-quad-grid .studio-quad--games:hover .studio-quad-sub {
   opacity: 1;
 }
 
@@ -2742,13 +2887,14 @@ body.theme-bw .page-body em {
   line-height: 110px;
   white-space: nowrap;
 
-  /* 27s total: words 1-5 = 3s each (11.1%), word 6 = 12s (44.4%) */
-  &:nth-child(1) { animation: tagline-w1 27s linear infinite; }
-  &:nth-child(2) { animation: tagline-w2 27s linear infinite; }
-  &:nth-child(3) { animation: tagline-w3 27s linear infinite; }
-  &:nth-child(4) { animation: tagline-w4 27s linear infinite; }
-  &:nth-child(5) { animation: tagline-w5 27s linear infinite; }
-  &:nth-child(6) { animation: tagline-w6 27s linear infinite; }
+  /* 28s total: words 1-6 = 2.8s each (10%), main (word 7) = 11.2s (40%) */
+  &:nth-child(1) { animation: tagline-w1 28s linear infinite; }
+  &:nth-child(2) { animation: tagline-w2 28s linear infinite; }
+  &:nth-child(3) { animation: tagline-w3 28s linear infinite; }
+  &:nth-child(4) { animation: tagline-w4 28s linear infinite; }
+  &:nth-child(5) { animation: tagline-w5 28s linear infinite; }
+  &:nth-child(6) { animation: tagline-w6 28s linear infinite; }
+  &:nth-child(7) { animation: tagline-w7 28s linear infinite; }
 }
 
 /* Main tagline — two-line text reveal */
@@ -2797,42 +2943,49 @@ body.theme-bw .page-body em {
 
 @keyframes tagline-w1 {
   0%      { opacity: 0; }
-  1.5%    { opacity: 1; }
-  9.5%    { opacity: 1; }
-  11.1%   { opacity: 0; }
+  1.3%    { opacity: 1; }
+  8.7%    { opacity: 1; }
+  10%     { opacity: 0; }
   100%    { opacity: 0; }
 }
 @keyframes tagline-w2 {
-  0%, 11.1%   { opacity: 0; }
-  12.6%       { opacity: 1; }
-  20.7%       { opacity: 1; }
-  22.2%       { opacity: 0; }
+  0%, 10%     { opacity: 0; }
+  11.3%       { opacity: 1; }
+  18.7%       { opacity: 1; }
+  20%         { opacity: 0; }
   100%        { opacity: 0; }
 }
 @keyframes tagline-w3 {
-  0%, 22.2%   { opacity: 0; }
-  23.7%       { opacity: 1; }
-  31.8%       { opacity: 1; }
-  33.3%       { opacity: 0; }
+  0%, 20%     { opacity: 0; }
+  21.3%       { opacity: 1; }
+  28.7%       { opacity: 1; }
+  30%         { opacity: 0; }
   100%        { opacity: 0; }
 }
 @keyframes tagline-w4 {
-  0%, 33.3%   { opacity: 0; }
-  34.8%       { opacity: 1; }
-  43%         { opacity: 1; }
-  44.4%       { opacity: 0; }
+  0%, 30%     { opacity: 0; }
+  31.3%       { opacity: 1; }
+  38.7%       { opacity: 1; }
+  40%         { opacity: 0; }
   100%        { opacity: 0; }
 }
 @keyframes tagline-w5 {
-  0%, 44.4%   { opacity: 0; }
-  45.9%       { opacity: 1; }
-  54.1%       { opacity: 1; }
-  55.6%       { opacity: 0; }
+  0%, 40%     { opacity: 0; }
+  41.3%       { opacity: 1; }
+  48.7%       { opacity: 1; }
+  50%         { opacity: 0; }
   100%        { opacity: 0; }
 }
 @keyframes tagline-w6 {
-  0%, 55.6%   { opacity: 0; }
-  57.1%       { opacity: 1; }
+  0%, 50%     { opacity: 0; }
+  51.3%       { opacity: 1; }
+  58.7%       { opacity: 1; }
+  60%         { opacity: 0; }
+  100%        { opacity: 0; }
+}
+@keyframes tagline-w7 {
+  0%, 60%     { opacity: 0; }
+  61.5%       { opacity: 1; }
   99%         { opacity: 1; }
   100%        { opacity: 0; }
 }
