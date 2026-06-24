@@ -34,6 +34,13 @@
   var MM_CHUNK = 450;            // max source chars per MyMemory request (its ~500 cap)
   var CACHE_MAX = 6000;          // soft cap on cached entries
 
+  // Optional: your own Cloudflare Worker translation proxy — server-side, official
+  // API, full reliability (and it keeps any API key secret). Deploy it per
+  // docs/translation-worker.md, then paste the Worker URL here to make it the
+  // PRIMARY engine. gtx + MyMemory stay as automatic fallbacks.
+  // Empty string = unchanged (keyless Google endpoint stays primary).
+  var WORKER_URL = '';
+
   // 1) curated, brand-safe dictionary (instant; never sent to any service)
   var DICT = {
     'PJCC': 'PJCC', 'McPuppy Studios': 'マクパピー・スタジオ', 'McPuppy': 'マクパピー',
@@ -153,7 +160,16 @@
       return t;
     });
   }
-  var PROVIDERS = [ { fn: gtx, chunk: GTX_CHUNK }, { fn: mymemory, chunk: MM_CHUNK } ];
+  // Your Cloudflare Worker proxy (only used if WORKER_URL is set above).
+  function worker(text) {
+    return fetch(WORKER_URL + '?sl=english&tl=japanese&q=' + encodeURIComponent(text))
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (d) { return (d && d.translation) || null; });
+  }
+  var PROVIDERS = [];
+  if (WORKER_URL) PROVIDERS.push({ fn: worker, chunk: 1500 });
+  PROVIDERS.push({ fn: gtx, chunk: GTX_CHUNK });
+  PROVIDERS.push({ fn: mymemory, chunk: MM_CHUNK });
 
   // translate every chunk in order with one provider; reject if any chunk fails
   function viaProvider(text, prov) {
