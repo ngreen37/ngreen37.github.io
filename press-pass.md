@@ -196,10 +196,11 @@ permalink: /press-pass/
 <div class="xp-support" id="xp-support"></div>
 <script>
 (function () {
-  // Drop in real URLs when the accounts exist. Empty string = "opening soon".
+  // Single source of truth: _config.yml (patreon_url / kofi_url).
+  // Empty string = the button shows "opening soon" instead of linking out.
   var SUPPORT = {
-    kofi:    '',   // e.g. 'https://ko-fi.com/mcpuppystudios'
-    patreon: ''    // e.g. 'https://patreon.com/mcpuppystudios'
+    kofi:    {{ site.kofi_url    | default: '' | jsonify }},
+    patreon: {{ site.patreon_url | default: '' | jsonify }}
   };
   var MAILING_URL = {{ '/mailing-list/' | relative_url | jsonify }};
   var host = document.getElementById('xp-support'); if (!host) return;

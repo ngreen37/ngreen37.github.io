@@ -101,10 +101,17 @@
           <span class="studio-quad-sub" data-jp="PJCCの世界で遊ぶ">Play in the PJCC universe</span>
         </a>
 
+        {% if site.patreon_url and site.patreon_url != '' %}
+        <a href="{{ site.patreon_url }}" class="studio-quad studio-quad--patreon" target="_blank" rel="noopener">
+          <span class="studio-quad-title" data-jp="Patreon">Patreon</span>
+          <span class="studio-quad-sub" data-jp="この番組を応援">Back the show</span>
+        </a>
+        {% else %}
         <a class="studio-quad studio-quad--patreon studio-quad-soon" aria-disabled="true">
           <span class="studio-quad-title" data-jp="Patreon">Patreon</span>
           <span class="studio-quad-sub" data-jp="近日公開">Coming Soon</span>
         </a>
+        {% endif %}
 
       </div>
 

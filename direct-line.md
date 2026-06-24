@@ -20,7 +20,7 @@ brand: mcpuppy
 </div>
 
 <div class="dl-steps">
-  <div class="dl-step"><span class="dl-step-n">1</span><div><strong>Back the studio on Patreon.</strong> The Direct Line unlocks as a perk (Patreon-funded, like the goal cards).</div></div>
+  <div class="dl-step"><span class="dl-step-n">1</span><div><strong>{% if site.patreon_url and site.patreon_url != '' %}<a href="{{ site.patreon_url }}" target="_blank" rel="noopener">Back the studio on Patreon.</a>{% else %}Back the studio on Patreon.{% endif %}</strong> The Direct Line unlocks as a perk (Patreon-funded, like the goal cards).</div></div>
   <div class="dl-step"><span class="dl-step-n">2</span><div><strong>Send a suggestion.</strong> A game, a character, a feature, a fix — whatever you'd build if it were yours.</div></div>
   <div class="dl-step"><span class="dl-step-n">3</span><div><strong>Get a guaranteed reply.</strong> Every message gets a real answer from me.</div></div>
   <div class="dl-step"><span class="dl-step-n">4</span><div><strong>Already on the roadmap?</strong> You hear it first — and get rewarded for calling it (credits, a goal card, a founding credit).</div></div>
