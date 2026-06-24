@@ -12,7 +12,7 @@ permalink: /:year/:month/:day/:title/
 # While a value is empty, every spot shows its graceful "coming soon" /
 # "opening soon" state and nothing 404s. The moment your page is live, paste
 # the URL here (one line) and every link across the site lights up at once.
-patreon_url: ""   # → "https://patreon.com/mcpuppystudios"
+patreon_url: "https://patreon.com/mcpuppystudios"   # live
 kofi_url:    ""   # optional one-off tip jar, e.g. "https://ko-fi.com/mcpuppystudios"
 
 # Navigation
