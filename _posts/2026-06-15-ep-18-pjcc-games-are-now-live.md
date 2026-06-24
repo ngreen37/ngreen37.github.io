@@ -5,7 +5,6 @@ date: 2026-06-15
 tags: [PJCC, Games]
 ---
 ### Listening to: Lilly Wood and The Prick, Robin Schulz - Prayer in C (Robin Schulz Radio Edit)
-<iframe src="https://open.spotify.com/embed/track/5fnA9mkIfScSqHIpeDyvck" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
 Check out the new Games section of the website!  Very cool.  All are still being worked on; about 75% of them are fully playable now.
 

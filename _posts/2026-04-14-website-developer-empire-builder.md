@@ -5,7 +5,6 @@ date: 2026-04-14
 tags: [website, productive-avoidance]
 ---
 ### Listening to: Artist - Song Title
-<iframe src="https://open.spotify.com/embed/track/TRACK_ID" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
 Well, isn't this something? The website is looking great so far. This specific post is under maintenance as I am testing the automation of the blog-posting workflow.  Actually, you know what?  This is the complete post.  Things are good.  Work is fine.  Website structure is basically done; I will do plenty of edits on it in the future, but for now it is a completely functional website.  
 

@@ -1,12 +1,10 @@
 ---
 layout: post
-spotify: 0320GL1aqQgsi7uDYSMEQ0
 title: Ep. 10 - The Pros and Cons of Perfectionism - a Wrens Case Study
 date: 2026-04-19
 tags: [Wrens, Perfectionism, Princess, Blender]
 ---
 ### Listening to: The Wrens - Everyone Choose Sides
-<iframe src="https://open.spotify.com/embed/track/0320GL1aqQgsi7uDYSMEQ0" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
 The Meadowlands (2003) is one of my all-time favorite albums, and the story of its creation is quite interesting and inspiring. By their own admission they felt they had a low ceiling as a band (although their second album found some indie success), and were about to break up after releasing their third album, The Meadowlands.  Using a shared house, a DIY-mentality, and the better part of a decade, they released a beautiful album.  Over-produced as far as one could take it, they found themselves needing to learn the songs and tour, as if they were a cover band playing their own music.  Needless to say, they did not produce a fourth album, but The Meadowlands will forever be an important part of my life. 
 

@@ -5,7 +5,6 @@ date: 2026-06-13
 tags: [Setting, Work, Travel]
 ---
 ### Listening to: Dr. Dog - The World May Never Know
-<iframe src="https://open.spotify.com/embed/track/5RXwS2p2yXqGtBEW91sV8C" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
 I started a dumpster fire today.  A literal dumpster fire.  Didn't mean to: I put coals left over from a smoker in there (they looked completely cooled, I swear!), and tra-la-la-la-la, I went about my day.  Ten minutes later, four police cars and a fire truck, and a lot of excited people.  
 

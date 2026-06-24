@@ -2,11 +2,9 @@
 layout: post
 title: Ep. 13 - A Lagwagon Tribute
 date: 2026-05-16
-spotify: 1L3fMMyr9tqSy2f0EbX2lR
 tags: [Lagwagon, Blender, Quotes]
 ---
 ### Listening to: Lagwagon - May 16
-<iframe src="https://open.spotify.com/embed/track/1L3fMMyr9tqSy2f0EbX2lR" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
 Just another Saturday. Yeah, right.  I am back in action after about ten days of workworkwork, playoff heartbreak for my Minnesota teams, and spending time with the dog.   Chess is effectively over after a makeup class, my hard work has been paying off and I can pare down my night job, and, as such, the PJCC dream remains alive!  
 

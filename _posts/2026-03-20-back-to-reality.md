@@ -1,14 +1,12 @@
 ---
 
 layout: post
-spotify: 24GwFhh1ByRhPuCBrTQhlW
 title: Ep. 3 - Back To Reality
 date: 2026-03-20
 tags: [home, vinyl, lisa, reality, lifestyle]
 ---
 ### Listening to: LiSA - traumerei
 
-<iframe src="https://open.spotify.com/embed/track/24GwFhh1ByRhPuCBrTQhlW" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
 -	All is well in MI.  I'm working 8am to 11:30pm with about four hours in between spanning two jobs, soon-to-be three (chess lessons are coming back!).  It's okay.  It's not that hard, honestly, as long as I live relatively clean. I don't like how it affects the dog.  I walk or skate with her many days, but sometimes two or three days will go by where I just take her out quick and then nap in-between shifts.  No good.  I can make a better effort to take her out for walks in the morning, but I feel stuck in a cycle of work-sleep-work-sleep etc sometimes.
 

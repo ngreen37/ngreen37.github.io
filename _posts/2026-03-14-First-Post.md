@@ -1,13 +1,11 @@
 ---
 layout: post
-spotify: 6blyhK94ONYsrcdHNl73wh
 title: Ep. 1 - First Post
 date: 2026-03-14
 tags: [introduction, minus-the-bear, blender]
 ---
 ### Listening to: Minus the Bear - Drilling 
 
-<iframe src="https://open.spotify.com/embed/track/6blyhK94ONYsrcdHNl73wh" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
 This idea, Princess and the Journey to Chess City, came to me around March 1st, 2026, so this is Day 14.  Princess is my dog, and chess is one of my passions.  Honestly, even the title makes me laugh.  It's been fun to throw ideas around, in fact I have cleared my three whiteboards at home and filled them with PJCC ideas.  I have started making a donut in Blender, and I'm working to save up for a better computer to handle the 3d animation.  Will this ever see the light of day? Who knows! 
 

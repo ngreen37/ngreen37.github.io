@@ -1,13 +1,11 @@
 ---
 layout: post
-spotify: 25OfDebGdpLxPdnqayfkFI
 title: Ep. 5 - Chess Games
 date: 2026-03-27
 tags: [chess, princess]
 ---
 ### Listening to: At The Drive-In - Starslight
 
-<iframe src="https://open.spotify.com/embed/track/25OfDebGdpLxPdnqayfkFI" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
 -	I play daily chess games on chess.com.  You have 24 hours to make a move.  It works for my schedule, and mouse-slips are eliminated, but it means I play horribly under most time pressure. My username is ngreen37 and my profile picture is a photo of Princess.  She is half Australian Cattle Dog and half Pit Bull, and is wearing sunglasses. 
 

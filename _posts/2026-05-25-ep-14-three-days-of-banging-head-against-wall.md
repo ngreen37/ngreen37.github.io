@@ -2,11 +2,9 @@
 layout: post
 title: Ep. 14 - Three Days of Banging Head Against Wall
 date: 2026-05-25
-spotify: 57KLy7PiYG98p11EN3LoRb
 tags: [Running, Blender, Lazerbeak]
 ---
 ### Listening to: Lazerbeak - Salt and Sea
-<iframe src="https://open.spotify.com/embed/track/57KLy7PiYG98p11EN3LoRb" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
 I think I need to stop and go for a run.  I haven't ran in months, although I do have experience logging long miles, and my old Hokas still fit.  Due to Memorial Day Holiday, I had three FULL days off.  I did laundry, walked with a friend and Princess, and worked a lot in Blender.  It's Monday, day 3 of 3.  
 

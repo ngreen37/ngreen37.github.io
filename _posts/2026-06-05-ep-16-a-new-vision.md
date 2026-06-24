@@ -5,7 +5,6 @@ date: 2026-06-05
 tags: [Vision, Workflow, Storyline]
 ---
 ### Listening to: Backstreet Boys - The Call
-<iframe src="https://open.spotify.com/embed/track/1mxTCArq9EhSg4QPGqhjhT" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
 My new glasses arrived!  Very exciting.  No excuses, but my vision has been compromised for a minute, so PJCC took a hit.  Movin' past it!  You learn some things when you can't see well out in public.  
 

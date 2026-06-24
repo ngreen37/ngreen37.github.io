@@ -1,13 +1,11 @@
 ---
 layout: post
-spotify: 0yzfkTH0QKIAYVeTex1NKJ
 title: Ep. 4 - Getting Healthy
 date: 2026-03-25
 tags: [ratatat, time-off]
 ---
 ### Listening to: Ratatat - Cream on Chrome 
 
-<iframe src="https://open.spotify.com/embed/track/0yzfkTH0QKIAYVeTex1NKJ" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
 -	It's warming up outside and the work has been steady.  All is well.  I've focused harder on getting the dog out before work and in-between shifts.  My cleaner living has really been paying off.  It helps to have a purpose.  My day job feeds me as much food as I need, which is a luxury, but Chato gives me flack for how much I eat. I make it clear that I am the last stop before it goes in the garbage...  I know the optics aren't great but *SHRUG*, sometimes I feel like he would prefer seeing leftover food go in the trash instead of my stomach, but... I see where he is coming from and I can come his way some.
 
