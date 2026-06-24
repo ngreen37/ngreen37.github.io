@@ -1,6 +1,7 @@
 # Site settings
 title: PJCC
 description: Website For Princess and the Journey to Chess City
+image: /assets/images/Princess_Color_v01.jpg   # default social/share image (swap for a 1200×630 card when ready)
 baseurl: ""        # leave empty for root
 url: "https://mcpuppystudios.com"
 permalink: /:year/:month/:day/:title/

@@ -5,6 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>McPuppy Studios</title>
   <meta name="description" content="McPuppy Studios — Animation, Chess, and Creativity">
+  <link rel="canonical" href="{{ '/' | absolute_url }}">
+  <meta name="theme-color" content="#0a0714">
+
+  <!-- Social / Open Graph (rich previews when the homepage is shared) -->
+  {% assign og_img = site.image | default: '/assets/images/Princess_Color_v01.jpg' %}
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="McPuppy Studios">
+  <meta property="og:title" content="McPuppy Studios — Princess and the Journey to Chess City">
+  <meta property="og:description" content="A cartoon series, an arcade of chess games, and a whole world built in the open.">
+  <meta property="og:url" content="{{ '/' | absolute_url }}">
+  <meta property="og:image" content="{{ og_img | absolute_url }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="McPuppy Studios — Princess and the Journey to Chess City">
+  <meta name="twitter:description" content="A cartoon series, an arcade of chess games, and a whole world built in the open.">
+  <meta name="twitter:image" content="{{ og_img | absolute_url }}">
+
   <link rel="icon" href="{{ '/assets/images/favicon.svg' | relative_url }}" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -157,6 +173,11 @@
   </style>
   <script src="{{ '/assets/js/pjcc-lang.js' | relative_url }}"></script>
 
+  <!-- Av13 — the Shogi Island Gate rite works on the splash too -->
+  <script src="{{ '/assets/js/pjcc-portal.js' | relative_url }}" defer></script>
+
+  <!-- Cloudflare Web Analytics (was missing on the splash — the most-visited page) -->
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "46881c52a7e741a2954c7f09a9759305"}'></script>
 
 </body>
 </html>
