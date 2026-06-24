@@ -356,6 +356,35 @@ notes (post-billing):** gate behind a Patreon tier flag on the profile; a simple
 email/inbox; a lightweight "matches an existing roadmap item" tag so the reward path is one click. Parked in
 coming-soon until the payments layer is live.
 
+**Av19 — Go-Live (launch readiness)** *(new · the active runway, started 2026-06-24).* The ordered path from
+"in development" to "ready to show the world." Everything is staged so the **launch flare** is a switch-flip,
+not a scramble.
+
+- **Phase 1 — Content pass (the words).** Read every page; cut to bare minimum; fix typos; enforce canon.
+  Tracked in [`CONTENT-CLEANUP.md`](CONTENT-CLEANUP.md) — **78 surfaces** (13 characters · 7 locations · 24
+  evolution logs · 17 game pages · ~17 core pages + in-game copy). Canon cross-checks baked into that file
+  (Auston=sister / Crockett=dog · Michael=Chess City rival, Robert=Checker Town rival · "The Dad" · Maxwell ·
+  Matsu · ancillary cast · Princess never speaks · "follow the dog" + "5% strategy, 95% mindset" · no Pieces
+  section · current game names · Clearance: DELTA = completed).
+- **Phase 2 — Structural cleanup (the plumbing).** *Done:* Spotify embeds stripped from all posts (kept the
+  "Listening to" text); the dead `update_soundtrack.py` pre-commit hook removed. *To do:* drop the now-inert
+  `jukebox: true` flags (`blog.md`, `projects.md` — the Build Playlist jukebox is gone); fix the placeholder
+  post (`2026-04-14` still reads "Listening to: Artist - Song Title"); a site-wide **link-check** (no 404s; the
+  context-aware nav + ⌘K palette + coming-soon pages all resolve; Space Run→Follow the Dog redirect; evolution-
+  log gating).
+- **Phase 3 — Systems & QA.** Supabase/profile live end-to-end (cross-device sign-in · leaderboards posting ·
+  Quartermaster credits · dossier). Cloudflare analytics firing. Mobile pass (icon nav · condensed header has
+  no twitch · splash quads · games on touch). The full-site Japanese toggle. The ARG/portal rites (Shogi gate)
+  still fire. Favicon / meta / Open-Graph for clean link-sharing.
+- **Phase 4 — Funding rails (Patreon).** **Decision: reserve now, promote at the flare.** Claim the handle +
+  stand up one honest "Founding Operative" tier (mirror the Press Pass) so the site's "Patreon · coming soon"
+  links (splash quad · Goods · Direct Line) resolve to a real page — but keep it **quiet**; don't hard-launch
+  into 0 patrons with coming-soon perks. Once the URL exists, swap those links to point at it. Ties to **Av10**.
+- **Phase 5 — The launch flare (the trigger).** The moment that earns traffic — the **Blender/Godot game demo**
+  or the **pilot** beat. At the flare: promote the Patreon · flip the **Direct Line** live (the easiest day-one
+  deliverable — just answering messages) · announce via the dispatch + mailing list · unpause the show-as-
+  product slices. Ties to the Blender/Godot long-game and **Av10**.
+
 ---
 
 # 🏠 The PJCC Home Page — 30 ideas
