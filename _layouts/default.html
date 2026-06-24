@@ -57,26 +57,35 @@
         </div>
       </div>
 
-      <!-- Context-aware nav: PJCC links on PJCC pages, McPuppy links on McPuppy pages — never both.
-           "Your Dossier" is folded into the operative pill (top-right); ⌘K reaches everything else. -->
+      <!-- Context-aware nav (rebuilt for go-live): brand badge · grouped links + one dropdown · one hop.
+           PJCC links on PJCC pages, McPuppy links on McPuppy pages — never both. Dossier = the operative
+           pill (top-right); ⌘K reaches everything else. -->
       <nav class="site-nav" id="site-nav" data-brand="{{ brand }}">
         {% if brand == 'mcpuppy' %}
-        {% comment %} ── McPuppy primary · single PJCC hop ─────────────── {% endcomment %}
-        <div class="nav-group nav-group-studio">
-          <a class="nav-group-label nav-group-label-link" href="{{ '/projects/' | relative_url }}">McPuppy Studios</a>
-          <a class="page-link" href="{{ '/blog/' | relative_url }}">Blog</a>
-          <a class="page-link" href="{{ '/mailing-list/' | relative_url }}">Mailing List</a>
-          <a class="page-link" href="{{ '/press-pass/' | relative_url }}">Press Pass</a>
-          <a class="page-link" href="{{ '/educators/' | relative_url }}">For Educators</a>
+        {% comment %} ── McPuppy: studio · Build Log · Support ▾ · → PJCC ── {% endcomment %}
+        <a class="nav-brand nav-brand--mcpuppy" href="{{ '/projects/' | relative_url }}">
+          <span class="nav-brand-glyph" aria-hidden="true">🐾</span><span class="nav-brand-name">McPuppy Studios</span>
+        </a>
+        <div class="nav-links">
+          <a class="page-link" href="{{ '/blog/' | relative_url }}">Build Log</a>
+          <div class="nav-dd" data-dd>
+            <a class="page-link nav-dd-trigger" href="{{ '/press-pass/' | relative_url }}" aria-haspopup="true" aria-expanded="false">Support <span class="nav-dd-caret" aria-hidden="true">&#9662;</span></a>
+            <div class="nav-dd-menu" role="menu">
+              <a class="page-link" role="menuitem" href="{{ '/press-pass/' | relative_url }}">Press Pass</a>
+              <a class="page-link" role="menuitem" href="{{ '/direct-line/' | relative_url }}">Direct Line</a>
+              <a class="page-link" role="menuitem" href="{{ '/goods/' | relative_url }}">The Goods</a>
+              <a class="page-link" role="menuitem" href="{{ '/mailing-list/' | relative_url }}">Mailing List</a>
+              <a class="page-link" role="menuitem" href="{{ '/educators/' | relative_url }}">For Educators</a>
+            </div>
+          </div>
         </div>
-        <span class="nav-divider" aria-hidden="true">&#9823;</span>
-        <div class="nav-group nav-group-pjcc nav-group--hop">
-          <a class="nav-group-label nav-group-label-link nav-hop" href="{{ '/pjcc/' | relative_url }}">PJCC <span class="nav-hop-arrow" aria-hidden="true">&rarr;</span></a>
-        </div>
+        <a class="nav-hop nav-hop--pjcc" href="{{ '/pjcc/' | relative_url }}">PJCC <span class="nav-hop-arrow" aria-hidden="true">&rarr;</span></a>
         {% else %}
-        {% comment %} ── PJCC primary · "The World" dropdown · single McPuppy hop ── {% endcomment %}
-        <div class="nav-group nav-group-pjcc">
-          <a class="nav-group-label nav-group-label-link" href="{{ '/pjcc/' | relative_url }}">PJCC</a>
+        {% comment %} ── PJCC: world · Games · The World ▾ · → McPuppy ── {% endcomment %}
+        <a class="nav-brand nav-brand--pjcc" href="{{ '/pjcc/' | relative_url }}">
+          <span class="nav-brand-glyph" aria-hidden="true">&#9819;</span><span class="nav-brand-name">PJCC</span>
+        </a>
+        <div class="nav-links">
           <a class="page-link" href="{{ '/games/' | relative_url }}">Games</a>
           <div class="nav-dd" data-dd>
             <a class="page-link nav-dd-trigger" href="{{ '/the-world/' | relative_url }}" aria-haspopup="true" aria-expanded="false">The World <span class="nav-dd-caret" aria-hidden="true">&#9662;</span></a>
@@ -84,13 +93,11 @@
               <a class="page-link" role="menuitem" href="{{ '/the-world/' | relative_url }}">Characters &amp; Locations</a>
               <a class="page-link" role="menuitem" href="{{ '/academy/' | relative_url }}">Academy</a>
               <a class="page-link" role="menuitem" href="{{ '/production/' | relative_url }}">The Pilot</a>
+              <a class="page-link" role="menuitem" href="{{ '/daily/' | relative_url }}">Daily Dispatch</a>
             </div>
           </div>
         </div>
-        <span class="nav-divider" aria-hidden="true">&#9823;</span>
-        <div class="nav-group nav-group-studio nav-group--hop">
-          <a class="nav-group-label nav-group-label-link nav-mcpuppy-solo nav-hop page-link-bw" href="{{ '/projects/' | relative_url }}">McPuppy Studios <span class="nav-hop-arrow" aria-hidden="true">&rarr;</span></a>
-        </div>
+        <a class="nav-hop nav-hop--mcpuppy" href="{{ '/projects/' | relative_url }}">McPuppy Studios <span class="nav-hop-arrow" aria-hidden="true">&rarr;</span></a>
         {% endif %}
       </nav>
 

@@ -3,7 +3,6 @@ layout: page
 title: Blog
 permalink: /blog/
 body_class: theme-bw
-jukebox: true
 ---
 
 <div class="ep-index">

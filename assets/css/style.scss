@@ -170,89 +170,86 @@ ul, ol {
   filter: invert(1) grayscale(0.35);
 }
 
-/* --- Navigation Pills --- */
+/* --- Navigation (rebuilt for go-live) ---
+   Layout: brand badge (left) · primary links + one dropdown (center) · a quiet hop
+   to the other brand (right). Context-aware via [data-brand]; flatter than the old
+   gradient panels. The ⌘K palette (top-right) reaches everything not in the bar. */
 .site-nav {
   display: grid;
-  /* primary brand group | pawn divider | single hop to the other brand */
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
+  gap: 16px;
   width: 100%;
-  border-top: 1px solid rgba(61, 43, 138, 0.3);
+  padding: 12px 18px;
+  border-top: 1px solid rgba(110, 95, 160, 0.28);
 }
+.site-nav[data-brand="mcpuppy"] { border-top-color: rgba(200, 200, 200, 0.22); }
 
-.nav-group {
+/* Brand badge — the home link for the world you're in */
+.nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: color 0.15s, transform 0.15s;
+}
+.nav-brand:hover, .nav-brand:focus-visible { text-decoration: none; transform: translateY(-1px); }
+.nav-brand-glyph { font-size: 1.2rem; line-height: 1; }
+.nav-brand-name { font-size: 13px; }
+.nav-brand--pjcc { color: #F5C518; }
+.nav-brand--pjcc:hover, .nav-brand--pjcc:focus-visible { color: #ffd740; }
+.nav-brand--mcpuppy { color: #ececec; }
+.nav-brand--mcpuppy:hover, .nav-brand--mcpuppy:focus-visible { color: #ffffff; }
+
+/* Primary links — centered cluster */
+.nav-links {
   display: flex;
   align-items: center;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 8px;
-  justify-content: center;
 }
 
-/* The two middle pills (Your Dossier · Command Center) stack vertically. */
-.nav-middle {
-  display: flex;
-  flex-direction: column;
+/* Hop to the other brand — a quiet ghost pill on the right */
+.nav-hop {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 8px;
-}
-
-.nav-group-label {
-  flex: 0 0 100%;
+  gap: 7px;
+  justify-self: end;
   font-family: 'Poppins', sans-serif;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 3.5px;
-  text-transform: uppercase;
-  text-align: center;
-  margin-bottom: 6px;
-  user-select: none;
-  pointer-events: none;
-}
-
-.nav-group-pjcc .nav-group-label {
-  color: rgba(245, 197, 24, 0.82);
-}
-
-.nav-group-studio .nav-group-label {
-  color: rgba(220, 220, 220, 0.72);
-}
-
-/* A group label that is itself the clickable link (PJCC · McPuppy Studios). */
-.nav-group-label-link {
-  pointer-events: auto;
-  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
   text-decoration: none;
-  transition: color 0.15s, opacity 0.15s;
+  white-space: nowrap;
+  padding: 6px 15px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  transition: color 0.2s, border-color 0.2s, background 0.2s, transform 0.15s;
 }
-.nav-group-label-link:hover,
-.nav-group-label-link:focus-visible { color: #F5C518; text-decoration: none; }
-
-/* McPuppy side is now a single clickable brand link (mirrors the PJCC header). */
-.nav-mcpuppy-solo { margin-bottom: 0; }
-.nav-group-studio .nav-mcpuppy-solo:hover { color: #fff; }
-
-.nav-group-pjcc {
-  padding: 20px 24px 20px 16px;
-  background: linear-gradient(to right, rgba(110, 50, 255, 0.44), rgba(110, 50, 255, 0.18) 56%, rgba(110, 50, 255, 0) 100%);
-  border-left: 3px solid rgba(130, 60, 255, 0.55);
+.nav-hop--mcpuppy { color: #cfcfcf; border-color: rgba(200, 200, 200, 0.4); }
+.nav-hop--mcpuppy:hover, .nav-hop--mcpuppy:focus-visible {
+  color: #fff; border-color: #fff; background: rgba(255, 255, 255, 0.08);
+  text-decoration: none; transform: translateY(-1px);
 }
-
-.nav-group-studio {
-  padding: 20px 16px 20px 24px;
-  background: linear-gradient(to left, rgba(200, 200, 200, 0.1), rgba(200, 200, 200, 0) 100%);
-  border-right: 3px solid rgba(200, 200, 200, 0.2);
+.nav-hop--pjcc { color: #F5C518; border-color: rgba(245, 197, 24, 0.45); }
+.nav-hop--pjcc:hover, .nav-hop--pjcc:focus-visible {
+  color: #ffd740; border-color: #F5C518; background: rgba(245, 197, 24, 0.1);
+  text-decoration: none; transform: translateY(-1px);
 }
 
-/* --- McPuppy-side nav pills — 3-class specificity beats .site-nav .page-link --- */
-.site-nav .nav-group-studio .page-link {
-  color: #d4d4d4;
-  border-color: #525252;
-  background: transparent;
+/* --- McPuppy-context pills go monochrome ([data-brand] beats .site-nav .page-link) --- */
+.site-nav[data-brand="mcpuppy"] .page-link {
+  color: #d8d8d8;
+  border-color: #555555;
+  background: rgba(180, 180, 180, 0.08);
 
-  &:visited {
-    color: #d4d4d4;
-  }
+  &:visited { color: #d8d8d8; }
 
   &:hover {
     background: #ffffff;
@@ -262,52 +259,9 @@ ul, ol {
     transform: translateY(-2px);
   }
 }
+.site-nav[data-brand="mcpuppy"] .nav-dd-menu { background: #141210; border-color: #555555; }
 
-/* --- Center "Your Dossier" pill — the player's own profile, sitting between
-   the PJCC world nav and the McPuppy Studios nav so it reads as personal --- */
-.site-nav .page-link-dossier {
-  background: #F5C518;
-  color: #1a0f3d;
-  border-color: #F5C518;
-  font-weight: 800;
-
-  &::before {
-    content: '◈ ';
-    opacity: 0.7;
-  }
-
-  &:visited { color: #1a0f3d; }
-
-  &:hover {
-    background: #ffd740;
-    color: #1a0f3d;
-    border-color: #ffd740;
-    transform: translateY(-2px);
-  }
-}
-
-/* --- Nav Divider (chess pawn separator) --- */
-.nav-divider {
-  display: inline-block;
-  vertical-align: middle;
-  font-size: 28px;
-  padding: 0;
-  user-select: none;
-  line-height: 1;
-  background: linear-gradient(to right, #F5C518 50%, #ffffff 50%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  cursor: default;
-  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-
-  &:hover {
-    transform: rotate(360deg);
-  }
-}
-
-.site-nav .page-link,
-.site-header .site-nav a {
+.site-nav .page-link {
   font-family: 'Poppins', sans-serif;
   font-size: 13px;
   font-weight: 600;
@@ -1333,23 +1287,26 @@ pre code {
     border-top-color: rgba(0, 255, 65, 0.12);
   }
 
-  .nav-group {
-    padding: 8px 14px !important;
-    background: none !important;
-    border: none !important;
-  }
-
-  .nav-group-label {
-    font-size: 9px;
-    letter-spacing: 2.5px;
-    margin-bottom: 6px;
-  }
-
-  .nav-divider {
-    display: block;
+  /* Stack the rebuilt nav (brand · links · hop) in the hamburger sheet */
+  .site-nav {
+    padding: 12px 14px;
+    gap: 10px;
+    justify-items: center;
     text-align: center;
-    padding: 2px 0;
-    font-size: 20px;
+  }
+
+  .nav-brand { justify-content: center; }
+
+  .nav-links {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .nav-hop {
+    justify-self: center;
+    width: 100%;
+    justify-content: center;
   }
 
   .site-nav .page-link {

@@ -3,7 +3,6 @@ layout: page
 title: McPuppy Studios
 permalink: /projects/
 body_class: theme-bw
-jukebox: true
 ---
 
 <p class="projects-intro">An independent studio. Stories, chess, and things built from nothing — one idea at a time. Most of it isn't finished. That's on purpose.</p>

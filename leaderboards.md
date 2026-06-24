@@ -2,7 +2,6 @@
 layout: page
 title: Leaderboards
 permalink: /leaderboards/
-jukebox: true
 ---
 
 <link rel="stylesheet" href="{{ '/assets/css/pjcc-profile.css' | relative_url }}">

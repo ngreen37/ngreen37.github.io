@@ -2,7 +2,6 @@
 layout: page
 title: Mailing List
 permalink: /mailing-list/
-jukebox: true
 ---
 
 <link rel="stylesheet" href="{{ '/assets/css/pjcc-profile.css' | relative_url }}">
