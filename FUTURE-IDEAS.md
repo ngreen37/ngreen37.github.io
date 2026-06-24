@@ -658,3 +658,13 @@ Brothers** and the **Commentators** are placeholders (Boomer/Tempo/Sunny) — co
 (role Family); best friend = **Maxwell**; **Matsu** = Kaede's brother; new **Ancillary** tier (Commentators +
 Prodigal Brothers). Earlier: the scattered-but-sharp devoted-dad archetype is **the Dad's**; **Bill** is the rugged
 **Bruce-Willis/*Armageddon*** hero — two distinct men.
+
+**New seeds (2026-06-24 — Nate's quick notes, to develop):**
+- **The best friend lives in a potato.** Reads as **Maxwell's** home — a snug spud in Checker Town. Dead-on for
+  "the pull of staying put" (who'd leave a cozy potato?). Works as a recurring sight-gag location — a little door
+  in a potato — and a warm, lumpy visual foil to Chess City's polish. *(Open: literally Maxwell, or a new pal?)*
+- **You get tagged upon entry to Chess City.** A worldbuilding beat: cross into Chess City and you're **tagged** —
+  badged, logged, marked at the gate. Gives the city a controlled, bureaucratic edge against cozy Checker Town,
+  and quietly **explains the site's own onboarding** (you arrive → you're issued a codename / dossier / clearance —
+  the Press Pass). Ripe for Princess's arc: the one who's tagged like everyone else **rises to Queen** — and could
+  rewrite the tagging system. *(Open: who's "I" — the narrator, or Princess?)*
