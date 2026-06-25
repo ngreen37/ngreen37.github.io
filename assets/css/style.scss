@@ -1576,8 +1576,8 @@ body.studio-body {
 
 /* McPuppy quad (top-right) — black & white; inverts to a white card on hover */
 .studio-quad-grid .studio-quad--mcpuppy {
-  background: linear-gradient(150deg, #07070a 0%, #1b1b1f 50%, #0b0b0e 100%);
-  border-color: rgba(255, 255, 255, 0.55);
+  background: linear-gradient(150deg, #07070a 0%, #161619 50%, #0b0b0e 100%);
+  border-color: rgba(255, 255, 255, 0.24);
 
   &::before {
     content: '';
@@ -1592,9 +1592,9 @@ body.studio-body {
   }
 
   .studio-quad-title {
-    color: #ffffff;
+    color: #e6e6e9;
     letter-spacing: 0.5px;
-    text-shadow: 0 0 18px rgba(255, 255, 255, 0.25);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.10);
     position: relative;
     z-index: 1;
   }
@@ -1613,16 +1613,16 @@ body.studio-body {
   }
 
   &:hover {
-    background: #f4f4f4;
-    border-color: #ffffff;
-    box-shadow: 0 14px 46px rgba(0, 0, 0, 0.6);
-    transform: translateY(-5px);
+    background: #e9e9ec;
+    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.42);
+    transform: translateY(-4px);
 
     .studio-quad-title { color: #0a0a0a; text-shadow: none; }
-    .studio-quad-sub { color: rgba(10, 10, 10, 0.72); }
+    .studio-quad-sub { color: rgba(10, 10, 10, 0.7); }
 
     &::before {
-      background-image: radial-gradient(rgba(0, 0, 0, 0.16) 1px, transparent 1.5px);
+      background-image: radial-gradient(rgba(0, 0, 0, 0.14) 1px, transparent 1.5px);
     }
   }
 }
@@ -1672,11 +1672,11 @@ body.studio-body {
   }
 }
 
-/* Patreon quad (bottom-right) — warm coral; shown but not yet live */
+/* Patreon quad (bottom-right) — "warm hearth": a living coral-amber glow.
+   It's the live invitation to back the show, so it's the warmest box on the page. */
 .studio-quad-grid .studio-quad--patreon {
-  background: linear-gradient(150deg, #2a0f0c 0%, #4a1813 55%, #200a08 100%);
-  border-color: rgba(255, 99, 72, 0.42);
-  opacity: 0.95;
+  background: linear-gradient(150deg, #3d1206 0%, #7c2d10 52%, #b8400e 100%);
+  border-color: rgba(255, 138, 92, 0.7);
 
   &::before {
     content: '';
@@ -1685,37 +1685,42 @@ body.studio-body {
     border-radius: 14px;
     pointer-events: none;
     z-index: 0;
-    background: radial-gradient(circle at 50% 125%, rgba(255, 99, 72, 0.26) 0%, transparent 62%);
+    background: radial-gradient(circle at 50% 128%, rgba(255, 170, 90, 0.55) 0%, rgba(255, 120, 70, 0.18) 38%, transparent 66%);
+    animation: patreon-hearth 3.4s ease-in-out infinite;
   }
 
   .studio-quad-title {
-    color: #ff7a5c;
-    text-shadow: 0 0 18px rgba(255, 99, 72, 0.4);
+    color: #fff1e6;
+    text-shadow: 0 0 22px rgba(255, 140, 90, 0.6);
     position: relative;
     z-index: 1;
   }
 
   .studio-quad-sub {
-    color: rgba(255, 150, 120, 0.72);
+    color: rgba(255, 224, 205, 0.92);
     font-family: 'Share Tech Mono', monospace;
     font-size: 11px;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     position: relative;
     z-index: 1;
-    animation: patreon-soon-pulse 2.6s ease-in-out infinite;
+  }
+
+  &::after {
+    background: linear-gradient(135deg, rgba(255, 180, 120, 0.22) 0%, transparent 60%);
   }
 
   &:hover {
-    background: linear-gradient(150deg, #2a0f0c 0%, #4a1813 55%, #200a08 100%);
-    border-color: rgba(255, 99, 72, 0.42);
-    transform: none;
+    background: linear-gradient(150deg, #4d1808 0%, #95370f 52%, #e25214 100%);
+    border-color: #ff9a6c;
+    box-shadow: 0 0 46px rgba(255, 120, 70, 0.4), 0 14px 42px rgba(120, 40, 10, 0.6);
+    transform: translateY(-5px);
   }
 }
 
-@keyframes patreon-soon-pulse {
-  0%, 100% { opacity: 0.55; }
-  50%      { opacity: 1; }
+@keyframes patreon-hearth {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50%      { opacity: 1; transform: scale(1.06); }
 }
 
 /* Blank placeholder quad */
