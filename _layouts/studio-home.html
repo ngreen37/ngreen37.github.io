@@ -115,9 +115,27 @@
 
       </div>
 
+      {% comment %} The Gauntlet — real chess vs the ladder (relocated here from /games/) {% endcomment %}
+      <a class="studio-gauntlet" href="{{ '/games/the-gauntlet/' | relative_url }}">
+        <span class="sg-glyph" aria-hidden="true">♛</span>
+        <span class="sg-text"><b data-jp="ガントレット">The Gauntlet</b><span class="sg-sub" data-jp="本物のチェスで頂点へ">Real chess · climb the ladder to the CEO</span></span>
+        <span class="sg-go" aria-hidden="true">&rarr;</span>
+      </a>
+
     </div>
 
   </div>
+  <style>
+  .studio-gauntlet { display:flex; align-items:center; gap:13px; max-width:480px; margin:18px auto 0; text-decoration:none;
+    background:linear-gradient(135deg, rgba(42,28,14,0.92), rgba(58,42,16,0.92)); border:2px solid #F5C518; border-radius:14px;
+    padding:11px 18px; box-shadow:0 0 26px -12px #F5C518; transition:transform .12s, box-shadow .12s; }
+  .studio-gauntlet:hover { transform:translateY(-2px); box-shadow:0 0 34px -8px #F5C518; }
+  .studio-gauntlet .sg-glyph { font-size:1.9rem; line-height:1; color:#F5C518; filter:drop-shadow(0 2px 5px rgba(0,0,0,0.5)); }
+  .studio-gauntlet .sg-text { display:flex; flex-direction:column; line-height:1.2; }
+  .studio-gauntlet .sg-text b { color:#fff; font-size:1rem; font-weight:800; }
+  .studio-gauntlet .sg-sub { color:#e7d6b0; font-size:0.74rem; }
+  .studio-gauntlet .sg-go { color:#F5C518; font-weight:900; font-size:1.2rem; margin-left:auto; }
+  </style>
 
   <script>
   (function() {

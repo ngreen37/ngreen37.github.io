@@ -35,6 +35,60 @@ layout: default
 .hero-cta--games:hover { transform: translateY(-2px); filter: brightness(1.05); box-shadow: 0 0 34px -4px rgba(245,197,24,0.85); }
 </style>
 
+{% comment %} ── 1b. PLAY STRIP — The Gauntlet + Game of the Week (moved here from /games/) ── {% endcomment %}
+<section class="home-play">
+  <a class="home-gauntlet" href="{{ '/games/the-gauntlet/' | relative_url }}">
+    <span class="hg-glyph" aria-hidden="true">♛</span>
+    <span class="hg-text"><b>The Gauntlet</b><small>Real chess · climb the ladder to the CEO</small></span>
+    <span class="hg-go" aria-hidden="true">▸</span>
+  </a>
+  <div id="weekly" class="home-weekly" hidden></div>
+</section>
+<style>
+.home-play { display:flex; flex-wrap:wrap; gap:12px; align-items:stretch; justify-content:center; margin:14px 0 4px; }
+.home-gauntlet { display:inline-flex; align-items:center; gap:12px; text-decoration:none;
+  background:linear-gradient(135deg,#2a1c0e 0%,#3a2a10 100%); border:2px solid #F5C518; border-radius:14px;
+  padding:11px 18px; box-shadow:0 0 24px -12px #F5C518; transition:transform .12s, box-shadow .12s; }
+.home-gauntlet:hover { transform:translateY(-2px); box-shadow:0 0 32px -8px #F5C518; }
+.home-gauntlet .hg-glyph { font-size:1.9rem; line-height:1; color:#F5C518; filter:drop-shadow(0 2px 5px rgba(0,0,0,0.5)); }
+.home-gauntlet .hg-text { display:flex; flex-direction:column; line-height:1.18; }
+.home-gauntlet .hg-text b { color:#fff; font-size:1rem; font-weight:800; }
+.home-gauntlet .hg-text small { color:#e7d6b0; font-size:0.74rem; }
+.home-gauntlet .hg-go { color:#F5C518; font-weight:900; font-size:1.15rem; }
+.home-weekly { display:inline-flex; align-items:center; gap:9px; background:linear-gradient(135deg,#241452,#34206f);
+  border:1px solid var(--gw,#F5C518); border-radius:14px; padding:9px 14px; font-size:0.82rem; color:#f0e6ff; }
+.home-weekly .gw-eye { color:#c9a7ff; font-weight:700; letter-spacing:0.03em; font-size:0.74rem; }
+.home-weekly .gw-name { color:#fff; font-weight:800; }
+.home-weekly .gw-play { background:var(--gw,#F5C518); color:#1a0f3d; font-weight:800; border-radius:999px; padding:5px 14px; text-decoration:none; }
+.home-weekly .gw-play:hover { filter:brightness(1.08); }
+</style>
+<script>
+// Game of the Week (moved from /games/): show the current bounty game as a chip.
+(function () {
+  var GW = {
+    'notation-run':{n:'Notation Blitz',a:'#F5C518'}, 'fork-in-the-road':{n:'Fork in the Road',a:'#5be0c0'},
+    'pirc-protocol':{n:'The Pirc Protocol',a:'#caa24a'}, 'shogi-island':{n:'Shogi Island',a:'#d9a441'},
+    'clearance-delta':{n:'Clearance: DELTA',a:'#ff9fb0'}, 'reading-room':{n:'The Reading Room',a:'#ff6b6b'},
+    'sky-run':{n:'Sky Run',a:'#7fc8ff'}, 'sand-mine-depths':{n:'Sand Mine Depths',a:'#e0b25a'},
+    'tower-defense':{n:'Siege on Chess City',a:'#ff8fd0'}, 'dungeon':{n:'Princess Dungeon',a:'#ff8fd0'},
+    'zoomies':{n:"Crockett's Zoomies",a:'#ffb454'}, 'murphys-law':{n:"Murphy's Law",a:'#3cbcfc'},
+    'battle-room':{n:'The Battle Room',a:'#56d0ff'}, 'knights-tour':{n:"Knight's Tour",a:'#c96bff'}
+  };
+  var base = '{{ "/games/" | relative_url }}'.replace(/\/$/,'');
+  function show(){
+    if (!window.PJCC || !PJCC.bountyGame) return;
+    var key = PJCC.bountyGame();
+    var g = GW[key]; if (!g) return;
+    var el = document.getElementById('weekly'); if (!el) return;
+    el.style.setProperty('--gw', g.a);
+    el.innerHTML = '<span class="gw-eye">★ Game of the Week · 2× credits</span> <span class="gw-name">'+g.n+'</span>'+
+      '<a class="gw-play" href="'+base+'/'+key+'/">Play</a>';
+    el.hidden = false;
+  }
+  if (window.PJCC && PJCC.ready) PJCC.ready.then(show); else document.addEventListener('DOMContentLoaded', show);
+})();
+</script>
+
 {% comment %} ── 2. PJCC DESCRIPTOR ───────────────────────────────── {% endcomment %}
 <section class="home-about">
   <p>

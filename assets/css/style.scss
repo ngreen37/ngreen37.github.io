@@ -127,22 +127,25 @@ ul, ol {
   border-bottom: 1px solid rgba(61, 43, 138, 0.2);
 }
 
+/* "Hello" pill — matches the PJCC gold/purple header by default (was DOS-green,
+   which clashed on every non-contact page). McPuppy pages flip it monochrome below. */
 .about-contact-btn {
   font-family: 'Poppins', sans-serif;
   font-size: 12px;
-  font-weight: 600;
-  color: #00ff41;
-  border: 1.5px solid rgba(0, 255, 65, 0.42);
+  font-weight: 700;
+  color: #F5C518;
+  border: 1.5px solid rgba(245, 197, 24, 0.5);
   border-radius: 999px;
   padding: 5px 14px;
   text-decoration: none;
   letter-spacing: 0.3px;
+  white-space: nowrap;
   transition: color 0.2s, border-color 0.2s, background 0.2s;
 
   &:hover {
-    color: #030a02;
-    border-color: #00ff41;
-    background: #00ff41;
+    color: #1a0f3d;
+    border-color: #F5C518;
+    background: #F5C518;
     text-decoration: none;
   }
 }
@@ -1261,6 +1264,14 @@ pre code {
   .nav-toggle {
     display: flex;
   }
+
+  /* Keep the top-right controls (⌘K · 日本語 · Hello · ☰) on one tidy row */
+  .header-top { padding: 8px 12px 6px; }
+  .header-top-right { gap: 6px; }
+  .about-contact-btn { font-size: 11px; padding: 4px 11px; }
+  .lang-toggle { padding: 4px 9px !important; margin-right: 0 !important; font-size: 0.74rem !important; }
+  .nav-operative { margin-right: 0 !important; }
+  .nav-toggle { padding: 7px 2px; }
 
   /* Nav collapses to zero-height by default; animates open */
   .site-nav {
@@ -3139,13 +3150,13 @@ body.theme-bw .header-top {
 }
 
 body.theme-bw .about-contact-btn {
-  color: #00cc33;
-  border-color: rgba(0, 204, 51, 0.35);
+  color: #d8d8d8;
+  border-color: rgba(200, 200, 200, 0.4);
 
   &:hover {
-    color: #000000;
-    border-color: #00ff41;
-    background: #00ff41;
+    color: #080808;
+    border-color: #ffffff;
+    background: #ffffff;
   }
 }
 
