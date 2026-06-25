@@ -65,7 +65,7 @@
           </button>
           <button class="lang-toggle" id="lang-toggle" type="button" aria-label="Toggle language">日本語</button>
           <a class="nav-operative" id="nav-operative" href="{{ '/dossier/' | relative_url }}" title="Your Dossier — sign in or open your profile" hidden>Sign in</a>
-          <a class="about-contact-btn" href="{{ '/about/' | relative_url }}">About / Contact</a>
+          <a class="about-contact-btn" href="{{ '/about/' | relative_url }}" data-jp="ご挨拶">Hello</a>
           <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
             <span class="nav-toggle-bar"></span>
             <span class="nav-toggle-bar"></span>
@@ -390,12 +390,11 @@
   })();
   </script>
 
-  <!-- Princess walker — now her real 3D render (the same dog token used in Notation
-       Blitz: a circular crop of Princess_Color_v01.jpg with a gold ring). Click her
-       for a surprise. Eventually a fully-animated Princess goes here. -->
+  <!-- Princess walker — her real 3D render (a circular crop of Princess_Color_v01.jpg).
+       No crown, no ring — just the dog. Click her for a surprise. Eventually a
+       fully-animated Princess goes here. -->
   <div class="princess-walker" id="princess-walker" title="Princess — psst, click me">
     <div class="princess-3d princess-dog" id="princess-3d">
-      <span class="p3d-crown">♛</span>
       <img class="p3d-img" src="{{ '/assets/images/Princess_Color_v01.jpg' | relative_url }}" alt="Princess" draggable="false">
     </div>
   </div>

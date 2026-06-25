@@ -694,6 +694,15 @@ Prodigal Brothers). Earlier: the scattered-but-sharp devoted-dad archetype is **
 - **The best friend lives in a potato.** Reads as **Maxwell's** home — a snug spud in Checker Town. Dead-on for
   "the pull of staying put" (who'd leave a cozy potato?). Works as a recurring sight-gag location — a little door
   in a potato — and a warm, lumpy visual foil to Chess City's polish. *(Open: literally Maxwell, or a new pal?)*
+- **Chess City is inhabited by evil chess pieces (a belief).** *(new 2026-06-25)* There's a belief among some — the
+  wary and the burned — that Chess City is **not** the promised land but a place of **evil chess pieces with mouths
+  and eyes**, watching from behind the gates. Most call it the bitterness of those who never crossed the sea. It's the
+  **pessimist's worldview**, and it's the spine of a new game (below). Seeded into the [Chess City](/locations/chess-city/) file ("The Whisper").
+- **Murphy — the pessimist brother.** *(new 2026-06-25)* A brother (named for **Murphy's Law** — whatever can go wrong,
+  will). Where the Uncle carries Neville's belief and Robert carries Proctor's mindset, **Murphy is the doom-sayer**:
+  he's *certain* the chess pieces are evil and out to get him — and in **his** game, he's right. Playable lead of
+  **"Murphy's Law"** (the Mega-Man-style scroller), tagline *"The pessimist was right."* The comedy/heart: his dread
+  is vindicated on-screen yet the world around him stays warm — a foil to the show's Neville-Goddard optimism.
 - **You get tagged upon entry to Chess City.** A worldbuilding beat: cross into Chess City and you're **tagged** —
   badged, logged, marked at the gate. Gives the city a controlled, bureaucratic edge against cozy Checker Town,
   and quietly **explains the site's own onboarding** (you arrive → you're issued a codename / dossier / clearance —
