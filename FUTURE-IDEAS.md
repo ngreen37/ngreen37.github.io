@@ -346,6 +346,37 @@ weighted RNG reward table that scales with *what fraction of your best you gave 
 not a grind**; hard guardrails — **never real money**, a daily cap, and a clear "you may get nothing" warning.
 Engine: extend `pjcc-profile.js`; the altar reads the same `credits` / owned-gear the Shopkeeper writes.
 
+> **Brainstorm expansion (2026-06-25):**
+> - **Who keeps the altar — the Uncle.** Give the Gambit a face: the **Uncle** (Barbados, the show's
+>   Neville / "assume the feeling" center, a dancer) presides — the altar becomes *spiritual trust made
+>   playable*, not a slot machine. He never promises a prize; he asks what you're willing to lay down.
+>   *(Alt: a masked "Croupier of Checker Town" if the Uncle should stay show-only.)*
+> - **The reward is usually NOT more money — this is the anti-casino key.** Big, courageous offerings pay
+>   out in **non-fungible** things you can't grind for profit: an **altar-only cosmetic** (a gold-scarred
+>   board skin that silently says *"I gave up my best"*), a **canon fragment** (lore obtainable nowhere
+>   else), or a temporary **blessing** buff (2× credits / a hint token). Safe little offerings return credits
+>   ~break-even-or-worse. Net: you sacrifice for *meaning*, never for ROI — which is precisely why it isn't
+>   gambling.
+> - **Sacrifice more than money.** Let players lay down their **Daily streak flame**, a **leaderboard rank**,
+>   a **recovered fragment**, or a **clearance rank** — the things that actually *hurt* to give. Courage is
+>   measured by what it costs *you*, not by credit value.
+> - **Transparent odds, shown before you commit.** A visible **Courage meter** displays the real shift as you
+>   raise the offering — no hidden house edge. Seeing *"your best item → the odds lean hard your way"* is the
+>   honest opposite of a casino's concealed math.
+> - **The ritual is slow on purpose.** **Hold-to-offer** (not a click), a weighty confirmation, then a single
+>   reflective line afterward — a Neville / "follow the dog" beat. The friction *is* the lesson: a decision,
+>   not a reflex.
+> - **The Monument — it remembers your courage, not your luck.** A quiet record of *the biggest thing you
+>   ever laid down*, win or lose. You're honored for the **offering**, not the outcome.
+> - **First offering is protected.** Your very first Gambit guarantees *something* (kind onboarding); after
+>   that, real risk — including an honest *"you may get nothing."*
+> - **It mirrors the show.** A gambit *is* a sacrifice for initiative — tie it to **Bill's Harry-Stamper
+>   choice** (leaving Princess to save the family aboard): the altar can surface a **Bill fragment** as a
+>   reward, so the mechanic and the story's emotional core rhyme. *(Academy tie-in: flash a real famous
+>   **chess gambit** at the moment you offer — a stealth lesson in sacrificing material for the attack.)*
+> - **Pay-it-forward altar (post-accounts).** A fraction of a big sacrifice can **seed a stranger's reward** —
+>   your courage quietly lands in another player's lap. The most PJCC-moral version of the whole mechanic.
+
 **Av18 — The Direct Line** *(new · Patreon perk · coming-soon page live at `/direct-line/`):* a paid/unlocked
 channel to **write to Nate directly with suggestions**, with a **guaranteed response** — not a form reply, a
 real one. **The hook:** if a suggestion is **already in the pipeline**, tell them, show them where it sits, and
