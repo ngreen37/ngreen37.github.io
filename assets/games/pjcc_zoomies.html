@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Crockett's Zoomies</title>
+<style>
+  :root { --gold:#F5C518; --pur:#6b5fa0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #0f0a26; color: #f0e6ff;
+    font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif; overflow: hidden; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 8px; }
+
+  .hud { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; font-size: 0.86rem; }
+  .hud .pill { background: rgba(80,30,180,0.28); border: 1px solid var(--pur); border-radius: 999px;
+    padding: 5px 12px; font-weight: 700; white-space: nowrap; }
+  .hud .pill b { color: var(--gold); }
+  .hud .pill--time { border-color: var(--gold); }
+  .hud .pill--time.low { animation: tflash 0.6s steps(2) infinite; }
+  @keyframes tflash { 50% { border-color: #ff6b6b; color: #ff6b6b; } }
+  .hud .spacer { flex: 1; }
+
+  .stage { position: relative; width: 100%; aspect-ratio: 3 / 2; }
+  canvas { display: block; width: 100%; height: 100%; border: 2px solid var(--gold); border-radius: 10px;
+    background: #15103a; touch-action: none; cursor: crosshair; }
+
+  .overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: rgba(8,5,26,0.86); border-radius: 10px; padding: 18px; text-align: center; }
+  .overlay.hidden { display: none; }
+  .card { max-width: 460px; }
+  .card h1 { color: var(--gold); font-size: 1.5rem; margin: 0 0 4px; }
+  .card h2 { color: var(--gold); font-size: 1.3rem; margin: 0 0 6px; }
+  .card p { color: #cdbcf2; font-size: 0.9rem; line-height: 1.5; margin: 0 0 10px; }
+  .card ul { text-align: left; color: #cdbcf2; font-size: 0.86rem; line-height: 1.55;
+    margin: 0 auto 14px; padding-left: 18px; max-width: 380px; }
+  .card ul b { color: #fff; }
+  .card .big { font-size: 1.7rem; color: #fff; font-weight: 800; margin: 6px 0; }
+  .card .best { color: var(--gold); font-weight: 700; }
+  .card .nb { color: #6bffb8; font-weight: 800; }
+  .btn { display: inline-block; background: var(--gold); color: #1a0f3d; font-weight: 800; font-size: 1rem;
+    border: none; border-radius: 999px; padding: 11px 26px; cursor: pointer; font-family: inherit; }
+  .btn:hover { background: #ffd740; }
+  .ctrl-note { color: #9a7fd4; font-size: 0.74rem; margin-top: 10px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hud">
+      <span class="pill pill--time" id="p-time">⏱ <b id="t">60</b>s</span>
+      <span class="pill">🦴 Bellies <b id="b">0</b></span>
+      <span class="pill">🚫 Busts <b id="bu">0</b></span>
+      <span class="spacer"></span>
+      <span class="pill">★ Best <b id="best">0</b></span>
+    </div>
+
+    <div class="stage">
+      <canvas id="game" width="720" height="480"></canvas>
+
+      <div class="overlay" id="ov-start">
+        <div class="card">
+          <h1>🐕 Crockett's Zoomies</h1>
+          <p>It's evening in the Checker Town apartment and <b>Crockett</b> has the zoomies. Chase him down for a belly rub!</p>
+          <ul>
+            <li><b>Move:</b> point / drag your finger — or <b>WASD</b> / arrow keys</li>
+            <li><b>Tag Crockett</b> to catch him — <b>+1 🦴 belly</b></li>
+            <li>The <b>bathroom is off-limits.</b> Herd him in and he's <b>BUSTED</b> — a time-out and <b>+2</b></li>
+            <li>You've got <b>60 seconds</b>. Rack up the bellies.</li>
+          </ul>
+          <button class="btn" id="btn-start">Let him rip ▸</button>
+          <div class="ctrl-note">Tip: cut off his angles — herd him toward the bathroom.</div>
+        </div>
+      </div>
+
+      <div class="overlay hidden" id="ov-over">
+        <div class="card">
+          <h2 id="o-head">Time!</h2>
+          <p id="o-line">You caught Crockett <b>0</b> times.</p>
+          <div class="big" id="o-score">0</div>
+          <p id="o-best" class="best">Best: 0</p>
+          <button class="btn" id="btn-again">Again ▸</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+  var cv = document.getElementById('game');
+  var ctx = cv.getContext('2d');
+  var W = 720, H = 480, T = 14;
+  var dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  cv.width = Math.round(W * dpr);
+  cv.height = Math.round(H * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  var BEST_KEY = 'pjcc.best.zoomies';
+  function getBest() { try { return parseInt(localStorage.getItem(BEST_KEY), 10) || 0; } catch (e) { return 0; } }
+  function setBest(v) { try { localStorage.setItem(BEST_KEY, String(v)); } catch (e) {} }
+
+  // ---- layout: walls (axis-aligned rects), furniture, rooms ----
+  var walls = [
+    { x: 0, y: 0, w: W, h: T }, { x: 0, y: H - T, w: W, h: T },
+    { x: 0, y: 0, w: T, h: H }, { x: W - T, y: 0, w: T, h: H },
+    // vertical partition: living | (kitchen/bedroom). doorway y 200..270
+    { x: 430, y: T, w: T, h: 186 }, { x: 430, y: 270, w: T, h: H - 270 - T },
+    // horizontal partition: kitchen | bedroom. doorway x 560..630
+    { x: 444, y: 240, w: 116, h: T }, { x: 630, y: 240, w: 706 - 630, h: T },
+    // bathroom (bottom-left): top wall + right wall, doorway y 380..430
+    { x: 14, y: 330, w: 156, h: T }, { x: 156, y: 344, w: T, h: 380 - 344 }, { x: 156, y: 430, w: T, h: 466 - 430 }
+  ];
+  // furniture = obstacles you weave around
+  var furn = [
+    { x: 40, y: 70, w: 150, h: 40, ico: '🛋', tag: 'couch' },
+    { x: 520, y: 150, w: 150, h: 40, ico: '🍳', tag: 'counter' },
+    { x: 540, y: 352, w: 140, h: 86, ico: '🛏', tag: 'bed' }
+  ];
+  var solids = walls.concat(furn);
+  var bath = { x: 14, y: 344, w: 142, h: 122 }; // off-limits interior zone
+  var rooms = [
+    { x: 210, y: 250, label: 'LIVING ROOM' },
+    { x: 575, y: 70,  label: 'KITCHEN' },
+    { x: 575, y: 320, label: 'BEDROOM' }
+  ];
+
+  var player = { x: 220, y: 240, r: 15, spd: 2.75 };
+  var dog = { x: 600, y: 380, r: 14, base: 2.35, stun: 0 };
+
+  var state = 'ready';
+  var score = 0, catches = 0, busts = 0, timeLeft = 60000, catchInv = 0;
+  var zooming = false, zoomT = 1800, wanderT = 0, wanderA = 0;
+  var floats = [];
+
+  // ---- helpers ----
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+  function distPR(px, py, r) {
+    var cx = clamp(px, r.x, r.x + r.w), cy = clamp(py, r.y, r.y + r.h);
+    var dx = px - cx, dy = py - cy; return Math.sqrt(dx * dx + dy * dy);
+  }
+  function inBath(px, py, m) {
+    return px > bath.x - m && px < bath.x + bath.w + m && py > bath.y - m && py < bath.y + bath.h + m;
+  }
+  function isFree(x, y, r) {
+    if (x < T + r || x > W - T - r || y < T + r || y > H - T - r) return false;
+    for (var i = 0; i < solids.length; i++) { if (distPR(x, y, solids[i]) < r + 3) return false; }
+    if (inBath(x, y, r)) return false;
+    return true;
+  }
+  function collide(ent) {
+    for (var i = 0; i < solids.length; i++) {
+      var r = solids[i];
+      var cx = clamp(ent.x, r.x, r.x + r.w), cy = clamp(ent.y, r.y, r.y + r.h);
+      var dx = ent.x - cx, dy = ent.y - cy, d2 = dx * dx + dy * dy;
+      if (d2 < ent.r * ent.r) {
+        if (d2 > 0.0001) {
+          var d = Math.sqrt(d2), push = ent.r - d;
+          ent.x += dx / d * push; ent.y += dy / d * push;
+        } else {
+          var l = ent.x - r.x, rt = r.x + r.w - ent.x, tp = ent.y - r.y, bt = r.y + r.h - ent.y;
+          var m = Math.min(l, rt, tp, bt);
+          if (m === l) ent.x = r.x - ent.r; else if (m === rt) ent.x = r.x + r.w + ent.r;
+          else if (m === tp) ent.y = r.y - ent.r; else ent.y = r.y + r.h + ent.r;
+        }
+      }
+    }
+    ent.x = clamp(ent.x, T + ent.r, W - T - ent.r);
+    ent.y = clamp(ent.y, T + ent.r, H - T - ent.r);
+  }
+  function sampleFar(awayX, awayY, minD) {
+    for (var i = 0; i < 80; i++) {
+      var x = 30 + Math.random() * (W - 60), y = 30 + Math.random() * (H - 60);
+      if (isFree(x, y, dog.r) && Math.hypot(x - awayX, y - awayY) > minD) return { x: x, y: y };
+    }
+    return { x: 600, y: 380 };
+  }
+  function floatTxt(t, x, y, c) { floats.push({ t: t, x: x, y: y, life: 900, c: c || '#fff' }); }
+
+  // ---- audio ----
+  var AC = null;
+  function tone(f, dur, type, vol) {
+    try {
+      if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+      var o = AC.createOscillator(), g = AC.createGain();
+      o.type = type || 'triangle'; o.frequency.value = f; o.connect(g); g.connect(AC.destination);
+      g.gain.setValueAtTime(vol || 0.18, AC.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur);
+      o.start(); o.stop(AC.currentTime + dur);
+    } catch (e) {}
+  }
+  function sndCatch() { tone(660, 0.1, 'triangle', 0.2); setTimeout(function () { tone(990, 0.12, 'triangle', 0.18); }, 70); }
+  function sndBust() { tone(150, 0.3, 'sawtooth', 0.16); }
+
+  // ---- input ----
+  var pointer = { x: 0, y: 0, active: false };
+  function setPointer(e) {
+    var rect = cv.getBoundingClientRect();
+    var t = (e.touches && e.touches[0]) ? e.touches[0] : e;
+    pointer.x = (t.clientX - rect.left) / rect.width * W;
+    pointer.y = (t.clientY - rect.top) / rect.height * H;
+    pointer.active = true;
+  }
+  cv.addEventListener('pointermove', setPointer);
+  cv.addEventListener('pointerdown', setPointer);
+  cv.addEventListener('pointerleave', function () { pointer.active = false; });
+  cv.addEventListener('touchmove', function (e) { e.preventDefault(); setPointer(e); }, { passive: false });
+
+  var keys = { up: false, down: false, left: false, right: false };
+  function key(e, on) {
+    var k = e.key.toLowerCase();
+    if (k === 'arrowup' || k === 'w') keys.up = on;
+    else if (k === 'arrowdown' || k === 's') keys.down = on;
+    else if (k === 'arrowleft' || k === 'a') keys.left = on;
+    else if (k === 'arrowright' || k === 'd') keys.right = on;
+    else return;
+    if (state === 'play') e.preventDefault();
+  }
+  window.addEventListener('keydown', function (e) { key(e, true); });
+  window.addEventListener('keyup', function (e) { key(e, false); });
+
+  // ---- game flow ----
+  function reset() {
+    player.x = 220; player.y = 250;
+    var s = sampleFar(player.x, player.y, 230); dog.x = s.x; dog.y = s.y; dog.stun = 0;
+    score = 0; catches = 0; busts = 0; timeLeft = 60000; catchInv = 0;
+    zooming = false; zoomT = 1600; wanderT = 0; floats.length = 0;
+  }
+  function start() {
+    reset(); state = 'play';
+    document.getElementById('ov-start').classList.add('hidden');
+    document.getElementById('ov-over').classList.add('hidden');
+  }
+  function gameOver() {
+    state = 'over';
+    var best = getBest(), nb = score > best;
+    if (nb) setBest(score);
+    document.getElementById('best').textContent = getBest();
+    document.getElementById('o-line').innerHTML = 'You caught Crockett <b>' + catches + '</b> time' + (catches === 1 ? '' : 's') +
+      (busts ? ' and busted him <b>' + busts + '</b>×' : '') + '.';
+    document.getElementById('o-score').textContent = score + ' pts';
+    document.getElementById('o-best').innerHTML = nb ? '<span class="nb">★ New best!</span>' : 'Best: ' + getBest();
+    document.getElementById('ov-over').classList.remove('hidden');
+  }
+
+  function update(dt, f) {
+    timeLeft -= dt;
+    if (timeLeft <= 0) { timeLeft = 0; gameOver(); return; }
+    if (catchInv > 0) catchInv -= dt;
+
+    // --- player ---
+    var kx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
+    var ky = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
+    if (kx || ky) {
+      var kl = Math.hypot(kx, ky);
+      player.x += kx / kl * player.spd * f; player.y += ky / kl * player.spd * f;
+    } else if (pointer.active) {
+      var pdx = pointer.x - player.x, pdy = pointer.y - player.y, pd = Math.hypot(pdx, pdy);
+      if (pd > 1) { var st = Math.min(player.spd * f, pd); player.x += pdx / pd * st; player.y += pdy / pd * st; }
+    }
+    collide(player);
+
+    // --- dog ---
+    if (dog.stun > 0) {
+      dog.stun -= dt;
+      if (dog.stun <= 0) { dog.x = 205; dog.y = 405; dog.stun = 0; } // released from the bathroom
+    } else {
+      var dxp = dog.x - player.x, dyp = dog.y - player.y, dp = Math.hypot(dxp, dyp) || 1;
+      var panic = clamp(1 - dp / 115, 0, 1);
+      var ax = dxp / dp, ay = dyp / dp; // flee
+      // steer away from the bathroom unless panicking
+      var bcx = bath.x + bath.w / 2, bcy = bath.y + bath.h / 2;
+      var bx = dog.x - bcx, by = dog.y - bcy, bd = Math.hypot(bx, by) || 1;
+      if (bd < 185) { var av = (1 - panic) * (1 - bd / 185) * 1.6; ax += bx / bd * av; ay += by / bd * av; }
+      // wander
+      wanderT -= dt; if (wanderT <= 0) { wanderA = Math.random() * Math.PI * 2; wanderT = 420 + Math.random() * 700; }
+      ax += Math.cos(wanderA) * 0.22; ay += Math.sin(wanderA) * 0.22;
+      // zoomies
+      zoomT -= dt;
+      if (zoomT <= 0) {
+        zooming = !zooming;
+        zoomT = zooming ? (500 + Math.random() * 500) : (1400 + Math.random() * 2400);
+        if (zooming) wanderA = Math.random() * Math.PI * 2;
+      }
+      var al = Math.hypot(ax, ay) || 1;
+      var spd = dog.base * (1 + 0.22 * panic) * (zooming ? 1.7 : 1);
+      dog.x += ax / al * spd * f; dog.y += ay / al * spd * f;
+      collide(dog);
+
+      // bust: entered the off-limits bathroom
+      if (inBath(dog.x, dog.y, -4)) {
+        busts++; score += 2; dog.stun = 1100;
+        floatTxt('BUSTED! 🚫', dog.x, dog.y - 18, '#ff8f6b'); sndBust();
+        document.getElementById('bu').textContent = busts;
+      } else if (catchInv <= 0) {
+        // catch
+        var cd = Math.hypot(dog.x - player.x, dog.y - player.y);
+        if (cd < player.r + dog.r + 1) {
+          catches++; score += 1; catchInv = 380;
+          floatTxt('BELLIES!', dog.x, dog.y - 16, '#6bffb8'); sndCatch();
+          document.getElementById('b').textContent = catches;
+          var s = sampleFar(player.x, player.y, 200); dog.x = s.x; dog.y = s.y;
+          if (Math.random() < 0.5) { zooming = true; zoomT = 600; wanderA = Math.random() * Math.PI * 2; }
+        }
+      }
+    }
+
+    // floats
+    for (var i = floats.length - 1; i >= 0; i--) {
+      floats[i].y -= 0.4 * f; floats[i].life -= dt;
+      if (floats[i].life <= 0) floats.splice(i, 1);
+    }
+
+    // HUD
+    document.getElementById('t').textContent = Math.ceil(timeLeft / 1000);
+    var pt = document.getElementById('p-time');
+    if (timeLeft <= 10000) pt.classList.add('low'); else pt.classList.remove('low');
+  }
+
+  // ---- render ----
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+  function render() {
+    ctx.clearRect(0, 0, W, H);
+    // floors
+    ctx.fillStyle = '#15103a'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#221a47'; ctx.fillRect(14, 14, 416, 452);       // living
+    ctx.fillStyle = '#1b2244'; ctx.fillRect(444, 14, 262, 226);      // kitchen
+    ctx.fillStyle = '#281d48'; ctx.fillRect(444, 254, 262, 212);     // bedroom
+
+    // bathroom hazard
+    ctx.fillStyle = 'rgba(255,80,70,0.16)'; ctx.fillRect(bath.x, bath.y, bath.w, bath.h);
+    ctx.strokeStyle = 'rgba(255,90,80,0.5)'; ctx.lineWidth = 2;
+    ctx.setLineDash([7, 6]); ctx.strokeRect(bath.x + 2, bath.y + 2, bath.w - 4, bath.h - 4); ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(255,140,120,0.85)'; ctx.textAlign = 'center';
+    ctx.font = '700 13px Poppins, sans-serif'; ctx.fillText('🚫 BATHROOM', bath.x + bath.w / 2, bath.y + bath.h / 2 - 4);
+    ctx.font = '700 9px Poppins, sans-serif'; ctx.fillText('OFF-LIMITS', bath.x + bath.w / 2, bath.y + bath.h / 2 + 12);
+
+    // room labels
+    ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.font = '800 13px Poppins, sans-serif';
+    for (var i = 0; i < rooms.length; i++) ctx.fillText(rooms[i].label, rooms[i].x, rooms[i].y);
+
+    // furniture
+    for (var j = 0; j < furn.length; j++) {
+      var ff = furn[j];
+      ctx.fillStyle = '#2c2156'; roundRect(ff.x, ff.y, ff.w, ff.h, 7); ctx.fill();
+      ctx.strokeStyle = '#403066'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.font = '20px serif'; ctx.fillText(ff.ico, ff.x + ff.w / 2, ff.y + ff.h / 2 + 7);
+    }
+
+    // walls
+    ctx.fillStyle = '#4a3a86';
+    for (var k = 0; k < walls.length; k++) { roundRect(walls[k].x, walls[k].y, walls[k].w, walls[k].h, 3); ctx.fill(); }
+
+    // floats
+    for (var m = 0; m < floats.length; m++) {
+      var fl = floats[m]; ctx.globalAlpha = Math.max(0, Math.min(1, fl.life / 600));
+      ctx.fillStyle = fl.c; ctx.font = '800 16px Poppins, sans-serif'; ctx.fillText(fl.t, fl.x, fl.y);
+      ctx.globalAlpha = 1;
+    }
+
+    // dog (Crockett)
+    var stunned = dog.stun > 0;
+    ctx.beginPath(); ctx.arc(dog.x, dog.y, dog.r, 0, 7); ctx.fillStyle = stunned ? '#8a6a3a' : '#c79a5b'; ctx.fill();
+    ctx.lineWidth = 2.5; ctx.strokeStyle = stunned ? '#ffcaa0' : '#7a5a2a'; ctx.stroke();
+    ctx.font = '17px serif'; ctx.fillText(stunned ? '😵' : '🐕', dog.x, dog.y + 6);
+    ctx.fillStyle = '#ffd8a0'; ctx.font = '700 9px Poppins, sans-serif'; ctx.fillText('Crockett', dog.x, dog.y - dog.r - 4);
+
+    // player (you)
+    ctx.beginPath(); ctx.arc(player.x, player.y, player.r, 0, 7); ctx.fillStyle = '#F5C518'; ctx.fill();
+    ctx.lineWidth = 2.5; ctx.strokeStyle = '#fff3b0'; ctx.stroke();
+    ctx.font = '16px serif'; ctx.fillText('🏃', player.x, player.y + 6);
+  }
+
+  // ---- loop ----
+  var last = 0;
+  function loop(ts) {
+    var dt = ts - last; if (!last || dt > 50) dt = 16; last = ts;
+    var f = dt / 16.667;
+    if (state === 'play') update(dt, f);
+    render();
+    requestAnimationFrame(loop);
+  }
+
+  document.getElementById('best').textContent = getBest();
+  document.getElementById('btn-start').addEventListener('click', start);
+  document.getElementById('btn-again').addEventListener('click', start);
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
