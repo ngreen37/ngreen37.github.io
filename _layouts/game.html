@@ -84,8 +84,19 @@
     }
 
     .lang-toggle { background: transparent; color: #9a7fd4; border: 1px solid #6b5fa0; border-radius: 999px;
-      padding: 5px 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin-left: 10px; }
+      padding: 5px 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin-left: 6px; }
     .lang-toggle:hover { border-color: #F5C518; color: #F5C518; }
+
+    /* Clean, minimal game-page top bar (replaces the old menu nav) */
+    .game-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 0.7rem 0; border-bottom: 1px solid #2a1f52; }
+    .game-brand { display: inline-flex; align-items: center; gap: 7px; text-decoration: none;
+      color: #F5C518; font-weight: 900; font-size: 1.05rem; letter-spacing: 0.06em; }
+    .game-brand:hover { filter: brightness(1.1); }
+    .game-topbar-right { display: flex; align-items: center; gap: 6px; }
+    .game-back { text-decoration: none; color: #9a7fd4; font-size: 0.82rem; font-weight: 700;
+      border: 1px solid #6b5fa0; border-radius: 999px; padding: 5px 12px; }
+    .game-back:hover { border-color: #F5C518; color: #F5C518; }
 
     .game-dispatch { max-width: 860px; margin: 1.8rem auto 0; background: rgba(45,27,105,0.4); border: 1px solid #3a2a6a; border-radius: 12px; padding: 14px 16px; }
     .game-dispatch-text { color: #cfc3ee; font-size: 0.9rem; margin-bottom: 8px; }
@@ -99,29 +110,12 @@
 <body>
 
   <header class="site-header">
-    <div class="wrapper">
-      <a class="site-title" rel="author" href="{{ '/' | relative_url }}">{{ site.title | escape }}</a>
-      <button class="lang-toggle" id="lang-toggle" type="button" aria-label="Toggle language">日本語</button>
-      <nav class="site-nav">
-        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
-        <label for="nav-trigger">
-          <span class="menu-icon">
-            <svg viewBox="0 0 18 15" width="18px" height="15px">
-              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.032,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,12.032,18,12.696,18,13.516L18,13.516z"/>
-            </svg>
-          </span>
-        </label>
-
-        <div class="trigger">
-          {% assign page_paths = site.header_pages %}
-          {% for node in page_paths %}
-            {% assign my_page = site.pages | where: "path", node | first %}
-            {% if my_page.title %}
-              <a class="page-link{% if page.url == my_page.url %} active{% endif %}" href="{{ my_page.url | relative_url }}">{{ my_page.title | escape }}</a>
-            {% endif %}
-          {% endfor %}
-        </div>
-      </nav>
+    <div class="wrapper game-topbar">
+      <a class="game-brand" href="{{ '/pjcc/' | relative_url }}"><span aria-hidden="true">&#9819;</span> PJCC</a>
+      <div class="game-topbar-right">
+        <a class="game-back" href="{{ '/games/' | relative_url }}">&larr; All Games</a>
+        <button class="lang-toggle" id="lang-toggle" type="button" aria-label="Toggle language">日本語</button>
+      </div>
     </div>
   </header>
 

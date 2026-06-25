@@ -4,23 +4,22 @@ title: Games
 permalink: /games/
 ---
 
+<!-- Game of the Week — stays on top -->
 <div id="weekly" class="weekly" hidden></div>
-<div id="continue-hero" class="continue-hero" hidden></div>
 
-<!-- ===== FEATURED: THE GAUNTLET ===== -->
-<a class="feat" href="{{ '/games/the-gauntlet/' | relative_url }}">
-  <div class="feat-glyph">♛</div>
-  <div class="feat-body">
-    <div class="feat-eyebrow">The Headline Game</div>
-    <h2 class="feat-title">The Gauntlet</h2>
-    <p class="feat-cryptic">Real chess. Climb the ladder to the CEO.</p>
-  </div>
-  <div class="feat-play">Play ▸</div>
-</a>
-
-<!-- ===== CATEGORY PILLARS (pick a hall) ===== -->
+<!-- ===== CATEGORY PILLARS (pick a hall) — the main event ===== -->
 <div class="cat-pillars" id="cat-pillars"></div>
 <div class="cat-games" id="cat-games"></div>
+
+<!-- ===== SECONDARY ROW: Gauntlet + Last (small boxes, not screen-wide) ===== -->
+<div class="mini-row">
+  <a class="mini mini-gauntlet" href="{{ '/games/the-gauntlet/' | relative_url }}">
+    <span class="mini-glyph" aria-hidden="true">♛</span>
+    <span class="mini-text"><b>The Gauntlet</b><small>Real chess · climb to the CEO</small></span>
+    <span class="mini-go" aria-hidden="true">▸</span>
+  </a>
+  <div id="continue-hero" class="continue-hero" hidden></div>
+</div>
 
 <!-- ===== LEADERBOARD / TERMINATED ===== -->
 <a class="lb-cta" href="{{ '/leaderboards/' | relative_url }}">🏆 <b>Leaderboards</b> &amp; Hall of Fame <span class="lb-cta-arrow">→</span></a>
@@ -40,24 +39,24 @@ permalink: /games/
 .weekly .gw-play { background:var(--gw,#F5C518); color:#1a0f3d; font-weight:800; border-radius:999px; padding:4px 12px; text-decoration:none; }
 .weekly .gw-play:hover { filter:brightness(1.08); }
 
-/* ---- Last ---- */
-.continue-hero { display:flex; align-items:center; gap:12px; flex-wrap:wrap; background:linear-gradient(135deg,#1f1147,#34206f);
-  border:1px solid #6b5fa0; border-radius:10px; padding:10px 16px; margin:0 0 0.9rem; }
+/* ---- Secondary row: Gauntlet + Last (small, side by side, not full-width) ---- */
+.mini-row { display:flex; flex-wrap:wrap; gap:10px; align-items:stretch; margin:0 0 1.3rem; }
+.mini { display:inline-flex; align-items:center; gap:11px; text-decoration:none;
+  background:linear-gradient(135deg,#2a1c0e 0%, #3a2a10 100%); border:2px solid #F5C518; border-radius:14px;
+  padding:10px 16px; box-shadow:0 0 22px -12px #F5C518; transition:transform .12s, box-shadow .12s; }
+.mini:hover { transform:translateY(-2px); box-shadow:0 0 30px -8px #F5C518; }
+.mini-glyph { font-size:1.8rem; line-height:1; color:#F5C518; flex-shrink:0; filter:drop-shadow(0 2px 5px rgba(0,0,0,0.5)); }
+.mini-text { display:flex; flex-direction:column; line-height:1.18; }
+.mini-text b { color:#fff; font-size:0.98rem; font-weight:800; }
+.mini-text small { color:#e7d6b0; font-size:0.72rem; }
+.mini-go { color:#F5C518; font-weight:900; font-size:1.1rem; margin-left:2px; }
+
+/* ---- Last (compact box) ---- */
+.continue-hero { display:inline-flex; align-items:center; gap:10px; background:linear-gradient(135deg,#1f1147,#34206f);
+  border:1px solid #6b5fa0; border-radius:14px; padding:10px 16px; margin:0; }
 .continue-hero .ch-eye { color:#9a7fd4; font-size:0.72rem; letter-spacing:1px; text-transform:uppercase; }
 .continue-hero .ch-link { background:var(--accent,#F5C518); color:#1a0f3d; font-weight:800; border-radius:999px; padding:7px 16px; text-decoration:none; }
 .continue-hero .ch-link:hover { filter:brightness(1.08); }
-
-/* ---- Featured Gauntlet ---- */
-.feat { display:flex; align-items:center; gap:16px; text-decoration:none; margin:0 0 1.4rem;
-  background:linear-gradient(135deg,#2a1c0e 0%, #3a2a10 100%); border:2px solid #F5C518; border-radius:16px;
-  padding:18px 20px; box-shadow:0 0 30px -8px #F5C518; transition:transform .12s, box-shadow .12s; }
-.feat:hover { transform:translateY(-2px); box-shadow:0 0 40px -6px #F5C518; }
-.feat-glyph { font-size:3.2rem; line-height:1; color:#F5C518; flex-shrink:0; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5)); }
-.feat-body { flex:1; min-width:0; }
-.feat-eyebrow { font-size:0.66rem; letter-spacing:0.22em; text-transform:uppercase; color:#d9b877; }
-.feat-title { font-size:1.7rem; font-weight:900; color:#fff; margin:1px 0 2px; }
-.feat-cryptic { color:#e7d6b0; font-size:0.9rem; margin:0; }
-.feat-play { flex-shrink:0; background:#F5C518; color:#1a0f3d; font-weight:900; border-radius:999px; padding:11px 20px; white-space:nowrap; }
 
 /* ---- Gauntlet-Legends-style category pillars ---- */
 .cat-pillars { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:0 0 1rem; }
