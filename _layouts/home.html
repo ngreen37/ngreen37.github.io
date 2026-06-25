@@ -19,10 +19,21 @@ layout: default
   <p class="hero-eyebrow">McPuppy Studios Presents</p>
   <h1 class="hero-title">Princess and the Journey<br>to Chess City</h1>
   <p class="hero-subtitle">A cartoon series in progress</p>
+  <div class="hero-cta-row">
+    <a class="hero-cta hero-cta--games" href="{{ '/games/' | relative_url }}"><span aria-hidden="true">&#9823;</span> Play the Games</a>
+  </div>
   {% comment %} The blog is no longer the front door — kept as a tiny dog-eared "field notes"
        tab tucked in the hero corner (much smaller, creative spot). {% endcomment %}
   <a class="hero-fieldnotes" href="{{ '/blog/' | relative_url }}" title="Older build notes — archived">📓 field&nbsp;notes</a>
 </section>
+<style>
+.hero-cta-row { display: flex; justify-content: center; gap: 12px; margin: 18px 0 2px; flex-wrap: wrap; }
+.hero-cta { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; font-weight: 800;
+  font-size: 1.02rem; border-radius: 999px; padding: 12px 26px; transition: transform .12s, box-shadow .12s, filter .12s; }
+.hero-cta--games { background: linear-gradient(135deg, #F5C518, #ffd740); color: #1a0f3d;
+  box-shadow: 0 0 26px -6px rgba(245,197,24,0.7); }
+.hero-cta--games:hover { transform: translateY(-2px); filter: brightness(1.05); box-shadow: 0 0 34px -4px rgba(245,197,24,0.85); }
+</style>
 
 {% comment %} ── 2. PJCC DESCRIPTOR ───────────────────────────────── {% endcomment %}
 <section class="home-about">

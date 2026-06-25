@@ -206,11 +206,11 @@ ul, ol {
 .nav-brand--mcpuppy { color: #ececec; }
 .nav-brand--mcpuppy:hover, .nav-brand--mcpuppy:focus-visible { color: #ffffff; }
 
-/* Primary links — centered cluster */
+/* Primary links — grouped left next to the brand (not floating in the center) */
 .nav-links {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   flex-wrap: wrap;
   gap: 8px;
 }
