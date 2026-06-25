@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Murphy's Law</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden;
+    font-family: 'Press Start 2P', monospace; -webkit-tap-highlight-color: transparent; }
+  #wrap { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  canvas { image-rendering: pixelated; image-rendering: crisp-edges; background: #000;
+    max-width: 100%; max-height: 100%; touch-action: none; }
+
+  /* on-screen touch controls */
+  #pad { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+  .btn { position: absolute; pointer-events: auto; width: 64px; height: 64px; border-radius: 50%;
+    background: rgba(60,188,252,0.18); border: 3px solid rgba(60,188,252,0.7); color: #fff;
+    font-family: 'Press Start 2P', monospace; font-size: 18px; display: flex; align-items: center;
+    justify-content: center; user-select: none; touch-action: none; }
+  .btn:active { background: rgba(60,188,252,0.5); }
+  #b-left  { left: 16px;  bottom: 22px; }
+  #b-right { left: 92px;  bottom: 22px; }
+  #b-jump  { right: 16px; bottom: 74px; background: rgba(248,216,0,0.2); border-color: rgba(248,216,0,0.8); }
+  #b-fire  { right: 92px; bottom: 22px; background: rgba(255,80,80,0.2); border-color: rgba(255,80,80,0.85); width: 78px; height: 78px; }
+  @media (hover: hover) and (pointer: fine) { #pad { display: none; } }
+</style>
+</head>
+<body>
+<div id="wrap"><canvas id="c" width="480" height="270"></canvas></div>
+
+<div id="pad" aria-hidden="true">
+  <div class="btn" id="b-left">◄</div>
+  <div class="btn" id="b-right">►</div>
+  <div class="btn" id="b-jump">▲</div>
+  <div class="btn" id="b-fire">●</div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var cv = document.getElementById('c'), g = cv.getContext('2d');
+  var W = cv.width, H = cv.height;
+  g.imageSmoothingEnabled = false;
+
+  // ---------- audio (tiny NES-ish blips) ----------
+  var AC = null;
+  function ac() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } return AC; }
+  function blip(freq, dur, type, vol) {
+    var a = ac(); if (!a) return;
+    var o = a.createOscillator(), gn = a.createGain();
+    o.type = type || 'square'; o.frequency.value = freq;
+    gn.gain.value = vol == null ? 0.06 : vol;
+    o.connect(gn); gn.connect(a.destination);
+    var t = a.currentTime;
+    gn.gain.setValueAtTime(gn.gain.value, t);
+    gn.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+    o.start(t); o.stop(t + dur);
+  }
+  function sShoot() { blip(880, 0.08, 'square', 0.05); }
+  function sHit()   { blip(220, 0.07, 'square', 0.05); }
+  function sBoom()  { blip(140, 0.18, 'sawtooth', 0.06); blip(90, 0.22, 'square', 0.04); }
+  function sJump()  { blip(520, 0.10, 'square', 0.045); }
+  function sHurt()  { blip(160, 0.25, 'sawtooth', 0.07); }
+
+  // ---------- input ----------
+  var keys = {};
+  var K = { left:false, right:false, jump:false, fire:false, jumpEdge:false, fireEdge:false };
+  function setK(name, v) {
+    if (name === 'jump' && v && !K.jump) K.jumpEdge = true;
+    if (name === 'fire' && v && !K.fire) K.fireEdge = true;
+    K[name] = v;
+  }
+  window.addEventListener('keydown', function (e) {
+    var k = e.key.toLowerCase();
+    if (['arrowleft','arrowright','arrowup','arrowdown',' '].indexOf(k) >= 0) e.preventDefault();
+    if (k === 'arrowleft' || k === 'a') setK('left', true);
+    else if (k === 'arrowright' || k === 'd') setK('right', true);
+    else if (k === 'arrowup' || k === 'w' || k === ' ') setK('jump', true);
+    else if (k === 'x' || k === 'j' || k === 'z') setK('fire', true);
+    if ((state === 'ready' || state === 'over') && (k === ' ' || k === 'enter' || k === 'x' || k === 'j')) startGame();
+  });
+  window.addEventListener('keyup', function (e) {
+    var k = e.key.toLowerCase();
+    if (k === 'arrowleft' || k === 'a') setK('left', false);
+    else if (k === 'arrowright' || k === 'd') setK('right', false);
+    else if (k === 'arrowup' || k === 'w' || k === ' ') setK('jump', false);
+    else if (k === 'x' || k === 'j' || k === 'z') setK('fire', false);
+  });
+  function bindBtn(id, name) {
+    var el = document.getElementById(id);
+    var on = function (e) { e.preventDefault(); setK(name, true); if (state !== 'play') startGame(); };
+    var off = function (e) { e.preventDefault(); setK(name, false); };
+    el.addEventListener('touchstart', on, { passive: false });
+    el.addEventListener('touchend', off, { passive: false });
+    el.addEventListener('touchcancel', off, { passive: false });
+    el.addEventListener('mousedown', on); el.addEventListener('mouseup', off); el.addEventListener('mouseleave', off);
+  }
+  bindBtn('b-left', 'left'); bindBtn('b-right', 'right'); bindBtn('b-jump', 'jump'); bindBtn('b-fire', 'fire');
+  cv.addEventListener('mousedown', function () { if (state !== 'play') startGame(); });
+  cv.addEventListener('touchstart', function (e) { if (state !== 'play') { e.preventDefault(); startGame(); } }, { passive: false });
+
+  // ---------- world ----------
+  var GROUND = H - 40;          // top of the road
+  var GRAV = 0.5, JUMP_V = -8.4, SPEED = 2.2;
+  var state = 'ready';          // ready | play | over
+  var score = 0, dist = 0, best = 0;
+  var BEST_KEY = 'pjcc.best.murphys-law';
+  try { best = parseInt(localStorage.getItem(BEST_KEY), 10) || 0; } catch (e) {}
+
+  var player, shots, foes, parts, gaps, spawnT, gapT, flashT, msg, msgT, diff, queenT;
+
+  // pessimist one-liners
+  var GRUMBLES = ["I knew it.", "Of course.", "Told you so.", "Typical.", "Figures.", "Saw that coming.", "We're doomed."];
+  var HURTS = ["Ow. Knew it.", "Naturally.", "Why not.", "Story of my life."];
+
+  function reset() {
+    player = { x: 70, y: GROUND - 22, w: 14, h: 22, vy: 0, onGround: true, face: 1, hp: 3, iframe: 0, fireCd: 0, anim: 0 };
+    shots = []; foes = []; parts = []; gaps = [];
+    score = 0; dist = 0; spawnT = 40; gapT = 320; flashT = 0; diff = 1; queenT = 1400;
+    msg = ""; msgT = 0;
+    K.jumpEdge = K.fireEdge = false;
+  }
+  function startGame() {
+    if (state === 'play') return;
+    ac();
+    reset(); state = 'play';
+  }
+
+  function say(t) { msg = t; msgT = 90; }
+
+  // ---------- enemies ----------
+  // type: pawn / knight / bishop / rook / queen — each grins with eyes + mouth
+  var TYPES = {
+    pawn:   { w: 14, h: 16, hp: 1, sp: 1.1, pts: 50,  col: '#bcbcbc', hop: false },
+    knight: { w: 16, h: 18, hp: 2, sp: 1.5, pts: 90,  col: '#9c6bff', hop: true  },
+    bishop: { w: 14, h: 20, hp: 2, sp: 1.3, pts: 90,  col: '#5be0c0', hop: false },
+    rook:   { w: 18, h: 18, hp: 3, sp: 0.9, pts: 130, col: '#ff9838', hop: false },
+    queen:  { w: 20, h: 26, hp: 7, sp: 0.8, pts: 400, col: '#ff5da2', hop: true  }
+  };
+  function spawnFoe(kind) {
+    var t = TYPES[kind];
+    foes.push({ kind: kind, x: W + 12, y: GROUND - t.h, w: t.w, h: t.h, hp: t.hp + Math.floor(diff/3),
+      sp: t.sp + diff * 0.12, pts: t.pts, col: t.col, hop: t.hop, vy: 0, onG: true, mouth: 0, hitT: 0 });
+  }
+  function randomKind() {
+    var pool = ['pawn', 'pawn', 'pawn'];
+    if (diff >= 2) pool.push('knight', 'bishop');
+    if (diff >= 4) pool.push('rook');
+    if (diff >= 3) pool.push('knight', 'rook');
+    return pool[(Math.random() * pool.length) | 0];
+  }
+
+  function boom(x, y, col) {
+    for (var i = 0; i < 9; i++) parts.push({ x: x, y: y, vx: (Math.random()-0.5)*4, vy: (Math.random()-0.9)*4,
+      life: 22 + Math.random()*10, col: col });
+  }
+
+  // ---------- update ----------
+  function update() {
+    if (state !== 'play') { K.jumpEdge = K.fireEdge = false; return; }
+    diff = 1 + dist / 900;
+
+    // player horizontal
+    var p = player;
+    if (K.left && !K.right) { p.face = -1; p.x -= SPEED; }
+    if (K.right && !K.left) { p.face = 1; p.x += SPEED; }
+    if (p.x < 6) p.x = 6;
+    if (p.x > W - 60) p.x = W - 60;
+    // world scroll: the road keeps moving; standing still still advances the run
+    var scroll = 1.0 + (K.right ? SPEED : 0) - (K.left ? SPEED*0.6 : 0);
+    if (scroll < 0) scroll = 0;
+    dist += scroll * 0.25;
+
+    // jump
+    if (K.jumpEdge && p.onGround) { p.vy = JUMP_V; p.onGround = false; sJump(); }
+    K.jumpEdge = false;
+    p.vy += GRAV; p.y += p.vy;
+
+    // gaps in the road — fall = death
+    var overGap = false;
+    for (var i = 0; i < gaps.length; i++) {
+      var ga = gaps[i]; ga.x -= scroll;
+      if (p.x + p.w > ga.x && p.x < ga.x + ga.w) overGap = true;
+    }
+    gaps = gaps.filter(function (ga) { return ga.x + ga.w > -10; });
+    if (!overGap) {
+      if (p.y + p.h >= GROUND) { p.y = GROUND - p.h; p.vy = 0; p.onGround = true; }
+    } else {
+      p.onGround = false;
+      if (p.y > H + 30) { hurtFatal("Down a hole. Murphy's Law."); }
+    }
+    if (p.iframe > 0) p.iframe--;
+    p.anim += Math.abs(scroll) > 0.2 ? 1 : 0;
+
+    // spawn gaps
+    gapT -= 1;
+    if (gapT <= 0 && diff >= 1.6) { gaps.push({ x: W + 20, w: 26 + Math.random()*18 }); gapT = 260 - Math.min(120, diff*14) + Math.random()*120; }
+
+    // fire
+    if (p.fireCd > 0) p.fireCd--;
+    if (K.fire && p.fireCd <= 0) {
+      shots.push({ x: p.x + (p.face>0 ? p.w : -4), y: p.y + 8, vx: p.face * 5.4, w: 6, h: 3 });
+      p.fireCd = 11; sShoot();
+    }
+    K.fireEdge = false;
+
+    // shots
+    for (var s = shots.length - 1; s >= 0; s--) {
+      var sh = shots[s]; sh.x += sh.vx;
+      if (sh.x < -8 || sh.x > W + 8) { shots.splice(s, 1); continue; }
+    }
+
+    // spawn foes
+    spawnT -= 1;
+    if (spawnT <= 0) { spawnFoe(randomKind()); spawnT = Math.max(28, 80 - diff*7) + Math.random()*40; }
+    queenT -= 1;
+    if (queenT <= 0) { spawnFoe('queen'); say("Here comes the Queen."); queenT = 1500 + Math.random()*600; }
+
+    // foes update + collisions
+    for (var f = foes.length - 1; f >= 0; f--) {
+      var fo = foes[f];
+      fo.x -= fo.sp + scroll * 0.6;   // march left, anchored to the moving road
+      fo.mouth = (fo.mouth + 0.15) % (Math.PI * 2);
+      if (fo.hitT > 0) fo.hitT--;
+      if (fo.hop) {
+        if (fo.onG && Math.random() < 0.03) { fo.vy = -5.2; fo.onG = false; }
+        fo.vy += GRAV; fo.y += fo.vy;
+        if (fo.y + fo.h >= GROUND) { fo.y = GROUND - fo.h; fo.vy = 0; fo.onG = true; }
+      }
+      // shot hits
+      for (var s2 = shots.length - 1; s2 >= 0; s2--) {
+        var sh2 = shots[s2];
+        if (aabb(sh2.x, sh2.y, sh2.w, sh2.h, fo.x, fo.y, fo.w, fo.h)) {
+          shots.splice(s2, 1); fo.hp--; fo.hitT = 5; sHit();
+          boom(sh2.x, sh2.y, '#fff');
+          if (fo.hp <= 0) { score += fo.pts; boom(fo.x+fo.w/2, fo.y+fo.h/2, fo.col); sBoom();
+            if (Math.random() < 0.35) say(GRUMBLES[(Math.random()*GRUMBLES.length)|0]);
+            foes.splice(f, 1); }
+          break;
+        }
+      }
+      if (fo !== foes[f]) continue; // removed
+      // touch player
+      if (p.iframe <= 0 && aabb(p.x, p.y, p.w, p.h, fo.x, fo.y, fo.w, fo.h)) {
+        damage();
+      }
+      if (fo.x + fo.w < -12) foes.splice(f, 1);
+    }
+
+    // particles
+    for (var pa = parts.length - 1; pa >= 0; pa--) {
+      var P = parts[pa]; P.x += P.vx; P.y += P.vy; P.vy += 0.18; P.life--;
+      if (P.life <= 0) parts.splice(pa, 1);
+    }
+
+    if (msgT > 0) msgT--;
+    if (flashT > 0) flashT--;
+  }
+
+  function aabb(ax, ay, aw, ah, bx, by, bw, bh) {
+    return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
+  }
+  function damage() {
+    var p = player; p.hp--; p.iframe = 70; flashT = 8; sHurt();
+    say(HURTS[(Math.random()*HURTS.length)|0]);
+    p.vy = -4; p.onGround = false;
+    if (p.hp <= 0) gameOver("Three hits. Murphy's Law.");
+  }
+  function hurtFatal(reason) { player.hp = 0; gameOver(reason); }
+
+  function gameOver(reason) {
+    if (state === 'over') return;
+    state = 'over';
+    var total = totalScore();
+    overReason = reason || "Murphy's Law.";
+    if (total > best) { best = total; try { localStorage.setItem(BEST_KEY, String(best)); } catch (e) {} }
+    // submit to profile/leaderboard if the host page has PJCC
+    try {
+      var host = window.parent && window.parent.PJCC ? window.parent.PJCC : (window.PJCC || null);
+      if (host && host.saveScore) host.saveScore('murphys-law', total, { credits: Math.round(total / 100) });
+    } catch (e) {}
+  }
+  var overReason = "";
+  function totalScore() { return score + Math.floor(dist); }
+
+  // ---------- draw ----------
+  function draw() {
+    // sky — Chess City gates at dusk
+    var sky = g.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, '#14104a'); sky.addColorStop(0.6, '#2a1a6e'); sky.addColorStop(1, '#3a2a7a');
+    g.fillStyle = sky; g.fillRect(0, 0, W, H);
+
+    // distant city silhouette (parallax)
+    g.fillStyle = '#0d0a2e';
+    var off = (dist * 0.4) % 64;
+    for (var bx = -off; bx < W; bx += 64) {
+      var bh = 40 + ((Math.sin(bx * 0.7) + 1) * 18);
+      g.fillRect(bx, GROUND - bh, 40, bh);
+      g.fillStyle = '#1a1550';
+      for (var wy = GROUND - bh + 6; wy < GROUND - 6; wy += 10)
+        for (var wx = bx + 5; wx < bx + 34; wx += 10) g.fillRect(wx, wy, 4, 4);
+      g.fillStyle = '#0d0a2e';
+    }
+
+    // road
+    var roadOff = (dist * 1.0) % 32;
+    g.fillStyle = '#3a2c12'; g.fillRect(0, GROUND, W, H - GROUND);
+    g.fillStyle = '#5a4420';
+    for (var rx = -roadOff; rx < W; rx += 32) g.fillRect(rx, GROUND, 2, H - GROUND);
+    g.fillStyle = '#f8d800'; g.fillRect(0, GROUND, W, 2);
+
+    // gaps (cut holes in the road)
+    for (var i = 0; i < gaps.length; i++) {
+      var ga = gaps[i];
+      g.fillStyle = sky; g.fillRect(ga.x, GROUND, ga.w, H - GROUND);
+      g.fillStyle = '#14104a'; g.fillRect(ga.x, GROUND, ga.w, H - GROUND);
+    }
+
+    // particles
+    for (var pa = 0; pa < parts.length; pa++) { var P = parts[pa]; g.fillStyle = P.col; g.fillRect(P.x|0, P.y|0, 3, 3); }
+
+    // foes
+    for (var f = 0; f < foes.length; f++) drawFoe(foes[f]);
+
+    // shots
+    g.fillStyle = '#9cf0ff';
+    for (var s = 0; s < shots.length; s++) { var sh = shots[s]; g.fillRect(sh.x|0, sh.y|0, sh.w, sh.h);
+      g.fillStyle = '#fff'; g.fillRect((sh.x+sh.vx*0.4)|0, sh.y|0, 2, sh.h); g.fillStyle = '#9cf0ff'; }
+
+    // player (Murphy) — blink during i-frames
+    if (state === 'play' || state === 'over') {
+      if (!(player.iframe > 0 && (player.iframe >> 2) % 2)) drawMurphy(player);
+    }
+
+    // HUD
+    drawHUD();
+
+    if (flashT > 0) { g.fillStyle = 'rgba(255,255,255,' + (flashT/8*0.5) + ')'; g.fillRect(0,0,W,H); }
+
+    if (state === 'ready') drawReady();
+    if (state === 'over') drawOver();
+  }
+
+  function drawMurphy(p) {
+    var x = p.x|0, y = p.y|0, fr = p.face;
+    // legs (simple run anim)
+    g.fillStyle = '#1a3a8c';
+    var step = (p.onGround && (K.left||K.right)) ? ((p.anim>>2)%2) : 0;
+    g.fillRect(x+2, y+16, 4, 6); g.fillRect(x+8, y+16 - (step?2:0), 4, 6);
+    // body — blue jacket (Mega Man blue)
+    g.fillStyle = '#3cbcfc'; g.fillRect(x+1, y+8, p.w-2, 9);
+    g.fillStyle = '#1a7ad0'; g.fillRect(x+1, y+13, p.w-2, 4);
+    // arm + buster
+    g.fillStyle = '#2a90e0';
+    if (fr>0) g.fillRect(x+p.w-2, y+9, 4, 4); else g.fillRect(x-2, y+9, 4, 4);
+    // head + grumpy face
+    g.fillStyle = '#ffd9a0'; g.fillRect(x+3, y, 8, 8);
+    g.fillStyle = '#5a3a18'; g.fillRect(x+3, y, 8, 2); // hair/cap
+    g.fillStyle = '#000';
+    g.fillRect(x + (fr>0?7:4), y+3, 2, 2);             // eye
+    g.fillRect(x+4, y+6, 6, 1);                         // frown line
+    g.fillRect(x + (fr>0?9:3), y+5, 1, 1);             // worried brow
+  }
+
+  function drawFoe(fo) {
+    var x = fo.x|0, y = fo.y|0, w = fo.w, h = fo.h;
+    g.fillStyle = fo.hitT>0 ? '#fff' : fo.col;
+    // body shape by kind
+    if (fo.kind === 'pawn') { g.fillRect(x+2, y+4, w-4, h-4); g.fillRect(x+w/2-3, y, 6, 5); }
+    else if (fo.kind === 'rook') { g.fillRect(x, y+3, w, h-3); g.fillRect(x, y, 3,3); g.fillRect(x+w/2-1, y, 3,3); g.fillRect(x+w-3, y, 3,3); }
+    else if (fo.kind === 'bishop') { g.fillRect(x+3, y+3, w-6, h-3); g.fillRect(x+w/2-2, y, 4, 6); }
+    else if (fo.kind === 'knight') { g.fillRect(x+2, y+4, w-4, h-4); g.fillRect(x+w-7, y, 7, 7); }
+    else if (fo.kind === 'queen') { g.fillRect(x+2, y+6, w-4, h-6); g.fillRect(x, y, 3,7); g.fillRect(x+w/2-1, y-2, 3,9); g.fillRect(x+w-3, y, 3,7); }
+    // eyes (white with black pupils — always staring at Murphy)
+    var ey = y + Math.max(4, h*0.32);
+    g.fillStyle = '#fff'; g.fillRect(x+3, ey, 3, 3); g.fillRect(x+w-6, ey, 3, 3);
+    g.fillStyle = '#c00'; g.fillRect(x+4, ey+1, 1, 1); g.fillRect(x+w-5, ey+1, 1, 1);
+    // grinning mouth (jagged, animated)
+    var my = ey + 5;
+    g.fillStyle = '#000'; g.fillRect(x+3, my, w-6, 3);
+    g.fillStyle = '#fff';
+    var open = (Math.sin(fo.mouth) > 0) ? 1 : 0;
+    for (var tx = x+3; tx < x+w-4; tx += 3) g.fillRect(tx, my + open, 1, 2 - open);
+  }
+
+  function drawHUD() {
+    // health bar (Mega Man segmented)
+    g.fillStyle = '#000'; g.fillRect(8, 8, 10, 36); g.fillStyle = '#fff'; g.fillRect(8, 8, 10, 36);
+    g.fillStyle = '#1a1a1a'; g.fillRect(9, 9, 8, 34);
+    var hp = state==='over' ? 0 : player.hp;
+    for (var i = 0; i < 3; i++) {
+      g.fillStyle = i < hp ? '#f8d800' : '#3a3a3a';
+      g.fillRect(10, 41 - i*11, 6, 9);
+    }
+    // score
+    g.fillStyle = '#fff'; g.font = '8px "Press Start 2P", monospace'; g.textAlign = 'right';
+    g.fillText('SCORE ' + totalScore(), W - 8, 16);
+    g.fillStyle = '#f8d800'; g.fillText('BEST ' + best, W - 8, 28);
+    g.textAlign = 'left';
+    g.fillStyle = '#9cf0ff'; g.fillText('M ' + Math.floor(dist/10), 26, 16);
+
+    // pessimist speech bubble
+    if (msgT > 0 && state === 'play') {
+      g.font = '7px "Press Start 2P", monospace'; g.textAlign = 'center';
+      var tw = g.measureText(msg).width + 10;
+      var bx = Math.min(Math.max(player.x + player.w/2, tw/2 + 4), W - tw/2 - 4);
+      var by = player.y - 16;
+      g.fillStyle = 'rgba(0,0,0,0.8)'; g.fillRect(bx - tw/2, by - 9, tw, 12);
+      g.fillStyle = '#fff'; g.fillText(msg, bx, by);
+      g.textAlign = 'left';
+    }
+  }
+
+  function center(lines, y0, gap) {
+    g.textAlign = 'center';
+    for (var i = 0; i < lines.length; i++) {
+      var L = lines[i];
+      g.font = L.size + 'px "Press Start 2P", monospace';
+      g.fillStyle = L.col;
+      g.fillText(L.t, W/2, y0 + i*gap);
+    }
+    g.textAlign = 'left';
+  }
+
+  function drawReady() {
+    g.fillStyle = 'rgba(0,0,0,0.55)'; g.fillRect(0, 0, W, H);
+    center([
+      { t: "MURPHY'S LAW", size: 18, col: '#3cbcfc' },
+      { t: "THE PESSIMIST WAS RIGHT", size: 7, col: '#f8d800' }
+    ], 86, 22);
+    center([
+      { t: "Chess City is full of", size: 7, col: '#cfd6ff' },
+      { t: "evil chess pieces.", size: 7, col: '#cfd6ff' },
+      { t: "Murphy always said so.", size: 7, col: '#9cf0ff' }
+    ], 140, 14);
+    if (((Date.now()/450)|0) % 2)
+      center([{ t: "PRESS START / FIRE", size: 8, col: '#fff' }], 210, 0);
+    center([{ t: "← → move   ▲ jump   X fire", size: 6, col: '#8aa0d8' }], 234, 0);
+  }
+
+  function drawOver() {
+    g.fillStyle = 'rgba(0,0,0,0.65)'; g.fillRect(0, 0, W, H);
+    center([
+      { t: "GAME OVER", size: 18, col: '#ff5050' },
+      { t: overReason, size: 7, col: '#fff' }
+    ], 92, 24);
+    center([
+      { t: "SCORE " + totalScore(), size: 9, col: '#f8d800' },
+      { t: "BEST " + best, size: 8, col: '#9cf0ff' }
+    ], 150, 16);
+    if (((Date.now()/450)|0) % 2)
+      center([{ t: "PRESS START TO RETRY", size: 7, col: '#fff' }], 206, 0);
+  }
+
+  // ---------- loop ----------
+  function frame() { update(); g.clearRect(0,0,W,H); draw(); requestAnimationFrame(frame); }
+  reset();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
