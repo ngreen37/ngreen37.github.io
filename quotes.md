@@ -39,6 +39,12 @@ permalink: /quotes/
     <figcaption>Setbacks become setups</figcaption>
   </figure>
 
+  <figure class="quote-card quote-card--note">
+    <div class="quote-note-tag">◈ From life — the New Jersey trip</div>
+    <blockquote>For weeks I imagined how great the trip would be, and that something amazing would happen during the ceremony. Perhaps slow-rolling PJCC to my family was it.</blockquote>
+    <figcaption>Nate — imagined it for weeks, then watched it arrive</figcaption>
+  </figure>
+
 </div>
 
 <style>
@@ -58,4 +64,10 @@ permalink: /quotes/
   .quote-card--align { border-left-color:#c79bff; }
   .quote-card--align blockquote::before { color:#c79bff; }
   .quote-card--align em { color:#d9c2ff; }
+  /* A real-life note (not a quotation): warmer, tagged "from life" */
+  .quote-card--note { border-left-color:#F5C518; background:linear-gradient(180deg,#241a0e,#1a1206); }
+  .quote-card--note blockquote { font-size:1.12rem; font-style:italic; }
+  .quote-card--note blockquote::before { content:""; margin:0; }
+  .quote-note-tag { font-family:'Share Tech Mono',monospace; font-size:.7rem; letter-spacing:.14em;
+    text-transform:uppercase; color:#F5C518; margin-bottom:8px; }
 </style>
