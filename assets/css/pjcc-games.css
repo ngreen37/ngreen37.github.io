@@ -1,0 +1,122 @@
+/* ============================================================
+   PJCC Games — hub (Gauntlet Legends portal screen) + halls.
+   Loaded by /games/ and every /games/<hall>/ page.
+   ============================================================ */
+
+/* ---------------- THE HUB (Gauntlet Legends) ---------------- */
+.ghub { position: relative; padding: 26px 18px 34px; margin: 0 0 1.4rem; border-radius: 14px; overflow: hidden;
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(120,60,20,0.5), transparent 60%),
+    radial-gradient(80% 60% at 50% 120%, rgba(80,30,120,0.4), transparent 60%),
+    linear-gradient(180deg, #0c0a14 0%, #060509 100%);
+  border: 1px solid #2a2030; box-shadow: inset 0 0 90px rgba(0,0,0,0.8); }
+/* ember flecks */
+.ghub::before { content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+  background:
+    radial-gradient(circle, rgba(255,150,40,0.5) 1px, transparent 1px) 12% 30% / 120px 120px,
+    radial-gradient(circle, rgba(255,120,40,0.3) 1px, transparent 1px) 60% 70% / 180px 160px,
+    radial-gradient(circle, rgba(255,200,90,0.25) 1px, transparent 1px) 85% 20% / 220px 200px; }
+
+.ghub-trophy { position:absolute; top:14px; right:14px; z-index:3; width:44px; height:44px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; font-size:21px; text-decoration:none;
+  background:rgba(20,14,30,0.8); border:1px solid #6b5530; box-shadow:0 0 16px rgba(255,170,60,0.35);
+  transition:transform .15s, box-shadow .15s, border-color .15s; }
+.ghub-trophy:hover { transform:translateY(-2px); border-color:#ffcf6b; box-shadow:0 0 26px rgba(255,200,90,0.7); }
+
+.ghub-head { text-align:center; position:relative; z-index:2; margin:6px 0 22px; }
+.ghub-eyebrow { font-family:'Poppins',sans-serif; font-size:11px; font-weight:700; letter-spacing:5px;
+  text-transform:uppercase; color:#c98a3a; margin:0 0 8px; }
+.ghub-title { font-family:'Poppins',sans-serif; font-weight:800; font-size:clamp(30px,7vw,52px); letter-spacing:2px;
+  margin:0; text-transform:uppercase; color:#ffcf6b;
+  text-shadow:0 0 26px rgba(255,170,60,0.5), 0 3px 0 #6b4416, 0 5px 14px rgba(0,0,0,0.7); }
+.ghub-sub { font-family:'Poppins',sans-serif; font-size:12.5px; color:#9a8a72; margin:10px 0 0; letter-spacing:1px; }
+
+.ghub-grid { position:relative; z-index:2; display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+
+.ghub-portal { --c:#ffcf6b; position:relative; display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+  min-height:178px; padding:20px 12px 16px; text-align:center; text-decoration:none; border-radius:12px; overflow:hidden;
+  background:linear-gradient(180deg, color-mix(in srgb, var(--c) 18%, #0a0810) 0%, #0a0810 78%);
+  border:2px solid color-mix(in srgb, var(--c) 55%, #2a2030);
+  box-shadow:0 0 0 1px rgba(0,0,0,0.6), inset 0 -40px 50px -30px var(--c);
+  transition:transform .14s, box-shadow .14s, border-color .14s; }
+.ghub-portal:hover, .ghub-portal:focus-visible { transform:translateY(-4px); border-color:var(--c);
+  box-shadow:0 14px 34px -10px var(--c), inset 0 -50px 60px -28px var(--c); text-decoration:none; }
+/* glowing rune ring behind the glyph */
+.ghub-portal .ghp-glyph { position:relative; font-size:3.2rem; line-height:1; color:var(--c); margin-bottom:6px;
+  filter:drop-shadow(0 0 14px color-mix(in srgb, var(--c) 70%, transparent)); }
+.ghub-portal .ghp-name { font-family:'Poppins',sans-serif; font-weight:800; font-size:1.05rem; letter-spacing:1px;
+  text-transform:uppercase; color:#fff; text-shadow:0 2px 6px rgba(0,0,0,0.7); }
+.ghub-portal .ghp-blurb { font-size:0.72rem; line-height:1.4; color:#b8ab98; margin-top:5px; min-height:2.6em; }
+.ghub-portal .ghp-count { margin-top:9px; font-family:'Poppins',sans-serif; font-size:0.6rem; letter-spacing:1.5px;
+  text-transform:uppercase; font-weight:800; color:#0a0810; background:var(--c); border-radius:999px; padding:3px 11px; }
+.ghub-portal .ghp-enter { position:absolute; top:10px; right:12px; font-size:0.66rem; letter-spacing:2px; font-weight:800;
+  color:var(--c); opacity:0; transition:opacity .14s; }
+.ghub-portal:hover .ghp-enter { opacity:.9; }
+@media (max-width:560px){ .ghub-grid { grid-template-columns:repeat(2,1fr); gap:9px; }
+  .ghub-portal { min-height:148px; padding:16px 8px 12px; } .ghub-portal .ghp-glyph { font-size:2.5rem; }
+  .ghub-portal .ghp-name { font-size:0.86rem; } .ghub-portal .ghp-blurb { display:none; } }
+
+/* ---------------- HALL PAGES (shared) ---------------- */
+.hall-bar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 1.1rem; flex-wrap:wrap; }
+.hall-back { text-decoration:none; font-family:'Poppins',sans-serif; font-weight:700; font-size:0.82rem;
+  color:#cdbcf2; border:1px solid #6b5fa0; border-radius:999px; padding:6px 14px; }
+.hall-back:hover { border-color:#F5C518; color:#F5C518; }
+.hall-trophy { text-decoration:none; font-size:20px; }
+
+.cat-games { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:0.7rem; margin:0; }
+.gcard { position:relative; display:flex; align-items:flex-start; gap:0.7rem; text-decoration:none;
+  border-radius:9px; padding:0.7rem 0.85rem; transition:transform .12s, background .12s, box-shadow .12s; }
+.gcard-icon { font-size:1.5rem; line-height:1; flex-shrink:0; }
+.gcard-body h3 { font-size:0.9rem; font-weight:800; margin:0 0 0.2rem; }
+.gcard-body p { font-size:0.72rem; line-height:1.4; margin:0; }
+.gcard-best { display:inline-block; margin-top:6px; font-size:0.62rem; letter-spacing:0.03em; text-transform:uppercase;
+  border-radius:4px; padding:1px 7px; }
+.gcard-new, .gcard-soon, .gcard-dead { position:absolute; top:8px; right:9px; font-size:0.56rem; font-weight:900;
+  letter-spacing:0.05em; border-radius:999px; padding:2px 7px; }
+
+/* default hall theme (Learn / In Dev / Vault / Terminated) — PJCC purple */
+.hall--default .gcard { background:#241451; border:1px solid var(--accent,#F5C518); }
+.hall--default .gcard:hover { transform:translateY(-2px); background:#3d2a7a; box-shadow:0 0 18px -5px var(--accent,#F5C518); }
+.hall--default .gcard-icon { color:var(--accent,#F5C518); }
+.hall--default .gcard-body h3 { color:#f0e6ff; }
+.hall--default .gcard-body p { color:#d3c5f3; }
+.hall--default .gcard-best { color:#6bffb8; border:1px solid #2f6b50; background:rgba(107,255,184,0.1); }
+.hall--default .gcard-new { background:#6bffb8; color:#042; }
+.hall--default .gcard-soon { background:#F5C518; color:#1a0f3d; }
+.hall--default .gcard-dead { background:#7c7c7c; color:#0a0a16; }
+.hall--default .gcard.soon { border-style:dashed; }
+.hall--default .gcard.locked, .hall--default .gcard.dead { border-style:dashed; border-color:#4f466e;
+  background:linear-gradient(135deg,#26223c,#2f2a4a); }
+.hall--default .gcard.locked .gcard-icon, .hall--default .gcard.dead .gcard-icon { color:#F5C518; }
+.hall--default .gcard.locked h3, .hall--default .gcard.dead h3 { color:#9a8fc0; }
+.hall--default .gcard.locked p, .hall--default .gcard.dead p { color:#6f6592; }
+.hall--default .gcard.dead { cursor:default; }
+.hall-title { font-family:'Poppins',sans-serif; font-weight:800; color:#F5C518; letter-spacing:1px; margin:0; }
+
+/* ---------------- ARCADE HALL = MEGA MAN 2 ---------------- */
+.hall--mm2 { position:relative; background:#000; border:4px solid #3cbcfc; border-radius:6px; padding:18px 16px 24px;
+  box-shadow:0 0 0 4px #000, 0 0 0 7px #1a3a8c, 0 14px 40px -10px rgba(60,188,252,0.5); overflow:hidden; }
+.hall--mm2::after { content:""; position:absolute; inset:0; pointer-events:none; z-index:4; opacity:.5;
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,0) 0 2px, rgba(0,0,0,0.28) 2px 4px); }
+.hall--mm2 .hall-bar { position:relative; z-index:5; }
+.hall--mm2 .hall-back { font-family:'Press Start 2P',monospace; font-size:0.5rem; color:#fff; border:3px solid #3cbcfc;
+  border-radius:0; padding:7px 10px; background:#000; }
+.hall--mm2 .hall-back:hover { color:#f8d800; border-color:#f8d800; }
+.hall--mm2 .mm-titlebar { position:relative; z-index:5; text-align:center; margin:4px 0 18px; }
+.hall--mm2 .mm-press { font-family:'Press Start 2P',monospace; font-size:9px; color:#fff; animation:mm-blink 1s step-end infinite; }
+.hall--mm2 .mm-title { font-family:'Press Start 2P',monospace; font-size:clamp(16px,4.5vw,30px); margin:10px 0 6px;
+  color:#3cbcfc; text-shadow:3px 3px 0 #0a1aa0, 6px 6px 0 #000; letter-spacing:1px; }
+.hall--mm2 .mm-sub { font-family:'Press Start 2P',monospace; font-size:8px; letter-spacing:2px; color:#f8d800; }
+@keyframes mm-blink { 50% { opacity:0; } }
+.hall--mm2 .cat-games { position:relative; z-index:2; }
+.hall--mm2 .gcard { background:#0a1340; border:3px solid var(--accent,#3cbcfc); border-radius:0; box-shadow:inset 0 0 0 2px #000; }
+.hall--mm2 .gcard:hover { transform:translateY(-2px); background:#13205e; }
+.hall--mm2 .gcard-icon { color:var(--accent,#3cbcfc); filter:drop-shadow(1px 1px 0 #000); }
+.hall--mm2 .gcard-body h3 { color:#fff; font-family:'Press Start 2P',monospace; font-size:0.58rem; line-height:1.5; }
+.hall--mm2 .gcard-body p { color:#bcd4ff; }
+.hall--mm2 .gcard-best { color:#000; background:#00e436; font-family:'Press Start 2P',monospace; font-size:0.42rem; }
+.hall--mm2 .gcard-new { background:#f8d800; color:#000; font-family:'Press Start 2P',monospace; font-size:0.42rem; border-radius:0; }
+.hall--mm2 .gcard-soon { background:#fc9838; color:#000; font-family:'Press Start 2P',monospace; font-size:0.42rem; border-radius:0; }
+.hall--mm2 .gcard-dead { background:#7c7c7c; color:#000; font-family:'Press Start 2P',monospace; font-size:0.42rem; border-radius:0; }
+.hall--mm2 .gcard.dead { cursor:default; border-style:dashed; border-color:#7c7c7c; background:#1a1a2e; }
+.hall--mm2 .gcard.dead h3 { color:#9a9ab0; } .hall--mm2 .gcard.dead p { color:#6f6f8c; }
