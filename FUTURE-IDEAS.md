@@ -286,9 +286,7 @@ calligraphy relics · pitch-accent ear trainer · language passport (Dossier) ·
 > headshot on the card, speaker name + romaji). Doubles as a stealth way to seed canon voice before the show. Start
 > as a new "Voices of Checker Town / 町の声" deck, hand-written, picture slot optional.
 
-**Av13 — Access puzzles / hidden portals** *(the Shogi Island gate is now LIVE):* gated areas you **unlock by
-solving**, not clicking. Then a little entry rite per region — collect them like keys. **Meant to be a cool reveal
-in the show** — the breadcrumbs are planted now (see Planted Seeds) so the moment feels foretold, not arbitrary.
+
 
 > **The Shogi Island Gate — shipped 2026-06-23.** The rite is Nate's seed made real: **one A, eight C's, two of the
 > c's larger than the rest** — a bell on the a-file, eight stones down the c, the first and last *struck like an

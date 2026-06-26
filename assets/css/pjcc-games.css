@@ -56,6 +56,20 @@
   .ghub-portal { min-height:148px; padding:16px 8px 12px; } .ghub-portal .ghp-glyph { font-size:2.5rem; }
   .ghub-portal .ghp-name { font-size:0.86rem; } .ghub-portal .ghp-blurb { display:none; } }
 
+/* Sealed & Retired — The Vault + Terminated, demoted visibly below the active halls */
+.ghub-divider { position:relative; z-index:2; display:flex; align-items:center; gap:14px; margin:30px 4px 14px; }
+.ghub-divider::before, .ghub-divider::after { content:""; flex:1; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(255,170,60,0.3), transparent); }
+.ghub-divider span { font-family:'Poppins',sans-serif; font-size:10px; font-weight:700; letter-spacing:3px;
+  text-transform:uppercase; color:#8a7355; white-space:nowrap; }
+.ghub-grid--sub { grid-template-columns:repeat(2,minmax(0,1fr)); max-width:440px; margin:0 auto; gap:12px; opacity:0.82; }
+.ghub-grid--sub .ghub-portal { min-height:128px; padding:14px 10px 12px; }
+.ghub-grid--sub .ghp-glyph { font-size:2.3rem; }
+.ghub-grid--sub .ghp-name { font-size:0.9rem; }
+.ghub-grid--sub .ghp-blurb { display:none; }
+.ghub-grid--sub .ghub-portal:hover { opacity:1; }
+@media (max-width:560px){ .ghub-grid--sub { max-width:none; } .ghub-grid--sub .ghub-portal { min-height:110px; } }
+
 /* ---------------- HALL PAGES (shared) ---------------- */
 .hall-bar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 1.1rem; flex-wrap:wrap; }
 .hall-back { text-decoration:none; font-family:'Poppins',sans-serif; font-weight:700; font-size:0.82rem;

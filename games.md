@@ -12,19 +12,23 @@ permalink: /games/
   <div class="ghub-head">
     <p class="ghub-eyebrow">PJCC Arcade</p>
     <h1 class="ghub-title">Choose Your Hall</h1>
-    <p class="ghub-sub">Five halls. Step through a gate to play.</p>
+    <p class="ghub-sub">Step through a gate to play.</p>
   </div>
+
+  <!-- the three active halls -->
   <div class="ghub-grid" id="ghub-grid"></div>
+
+  <!-- sealed & retired — set apart, lower -->
+  <div class="ghub-divider"><span>Sealed &amp; Retired</span></div>
+  <div class="ghub-grid ghub-grid--sub" id="ghub-grid-sub"></div>
 </div>
 
 <script src="{{ '/assets/js/pjcc-games-data.js' | relative_url }}"></script>
 <script>
 (function () {
-  var grid = document.getElementById('ghub-grid');
   var base = '{{ "/games/" | relative_url }}'.replace(/\/$/, '');
-  var order = ['learn', 'arcade', 'dev', 'vault', 'terminated'];
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
-  grid.innerHTML = order.map(function (key) {
+  function portal(key) {
     var c = PJCC_CATS[key];
     var n = PJCC_GAMES.filter(function (g) { return g.cat === key; }).length;
     return '<a class="ghub-portal" href="' + base + '/' + c.route + '/" style="--c:' + c.accent + '">' +
@@ -33,6 +37,8 @@ permalink: /games/
       '<span class="ghp-name">' + esc(c.name) + '</span>' +
       '<span class="ghp-blurb">' + esc(c.blurb) + '</span>' +
       '<span class="ghp-count">' + n + ' game' + (n === 1 ? '' : 's') + '</span></a>';
-  }).join('');
+  }
+  document.getElementById('ghub-grid').innerHTML = ['learn', 'arcade', 'dev'].map(portal).join('');
+  document.getElementById('ghub-grid-sub').innerHTML = ['vault', 'terminated'].map(portal).join('');
 })();
 </script>
