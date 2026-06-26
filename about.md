@@ -29,7 +29,7 @@ body_class: theme-hello
   <!-- ══════════ THE OPERATOR (< 10 words) ══════════ -->
   <section class="hello-operator">
     <span class="hello-operator-glyph" aria-hidden="true">♚</span>
-    <p class="hello-operator-line">One person behind the curtain. The work speaks.</p>
+    <p class="hello-operator-line">One person behind the curtain.</p>
   </section>
 
   <!-- ══════════ CHESS LESSONS (one line) ══════════ -->

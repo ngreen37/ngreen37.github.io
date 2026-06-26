@@ -24,7 +24,6 @@
       { key: 'pirc-protocol',   label: 'Pirc Protocol',    unit: 'score'   },
       { key: 'shogi-island',    label: 'Shogi Island',     unit: 'solved'  },
       { key: 'reading-room',    label: 'The Reading Room', unit: 'score'   },
-      { key: 'knights-tour',    label: "Knight's Tour",    unit: 'score'   },
       { key: 'blindfold',       label: 'Blindfold Puzzles',unit: 'solved'  },
       { key: 'tower-defense',   label: 'Siege on Chess City', unit: 'score' },
       { key: 'siege-endless',   label: 'Siege · Endless',     unit: 'wave'  },

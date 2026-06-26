@@ -6,7 +6,7 @@ permalink: /games/vault/
 
 <link rel="stylesheet" href="{{ '/assets/css/pjcc-games.css' | relative_url }}">
 
-<div id="games-hall" class="hall hall--default" data-hall="vault" data-base="{{ '/games/' | relative_url }}" style="--accent:#c9a7ff;">
+<div id="games-hall" class="hall hall--default" data-hall="vault" data-base="{{ '/games/' | relative_url }}" style="--accent:#9b96ad;">
   <div class="hall-bar">
     <a class="hall-back" href="{{ '/games/' | relative_url }}">← All Halls</a>
     <h1 class="hall-title">🔒 The Vault</h1>
