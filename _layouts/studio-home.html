@@ -55,9 +55,8 @@
     </div>
 
     <!-- About / Contact + language toggle pinned top-right -->
-    <a href="{{ '/about/' | relative_url }}" class="studio-corner-about" data-jp="ご挨拶">Hello</a>
+    <a href="{{ '/contact/' | relative_url }}" class="studio-corner-about" data-jp="お問い合わせ">Contact</a>
     <button class="studio-corner-lang" id="lang-toggle" type="button" aria-label="Toggle language">日本語</button>
-    <a class="studio-corner-lb" href="{{ '/leaderboards/' | relative_url }}" aria-label="Leaderboards" title="Leaderboards &amp; Hall of Fame">🏆</a>
 
     <!-- Logo pinned top-left -->
     <div class="studio-corner-logo">
@@ -189,12 +188,6 @@
     border: 1px solid #4a3a86; border-radius: 999px; padding: 5px 12px; cursor: pointer; }
   .studio-corner-lang:hover { border-color: #F5C518; color: #F5C518; }
   @media (max-width: 600px){ .studio-corner-lang { top: 44px; right: 14px; font-size: 9px; padding: 4px 9px; } }
-  .studio-corner-lb { position: fixed; top: 92px; right: 28px; z-index: 3; width: 44px; height: 44px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; font-size: 21px; text-decoration: none;
-    background: rgba(20,12,45,0.6); border: 1px solid #4a3a86; box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-    transition: transform .15s, border-color .15s, box-shadow .15s; }
-  .studio-corner-lb:hover { border-color: #F5C518; transform: translateY(-2px); box-shadow: 0 6px 22px rgba(245,197,24,0.3); }
-  @media (max-width: 600px){ .studio-corner-lb { top: 76px; right: 14px; width: 38px; height: 38px; font-size: 17px; } }
   </style>
   <script src="{{ '/assets/js/pjcc-lang.js' | relative_url }}"></script>
 

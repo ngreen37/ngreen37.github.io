@@ -1624,13 +1624,13 @@ body.studio-body {
   }
 
   &:hover {
-    background: #c6c6cd;
-    border-color: rgba(255, 255, 255, 0.55);
+    background: #b0b0b8;
+    border-color: rgba(255, 255, 255, 0.48);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.42);
     transform: translateY(-4px);
 
     .studio-quad-title { color: #0a0a0a; text-shadow: none; }
-    .studio-quad-sub { color: rgba(10, 10, 10, 0.7); }
+    .studio-quad-sub { color: rgba(10, 10, 10, 0.72); }
 
     &::before {
       background-image: radial-gradient(rgba(0, 0, 0, 0.14) 1px, transparent 1.5px);
@@ -1683,13 +1683,12 @@ body.studio-body {
   }
 }
 
-/* Patreon quad (bottom-right) — "the membership card": deep wine deepening into
-   Patreon's own coral. The coral reads unmistakably as Patreon (set apart from the
-   site's gold), and the soft coral glow at the base keeps it a warm, living
-   invitation to support the work. */
+/* Patreon quad (bottom-right) — "the patron's box": deep crimson velvet with a
+   warm rose footlight glow. Reads as a theater patron's seat — luxurious and
+   inviting, clearly its own color away from the site's gold and the games blue. */
 .studio-quad-grid .studio-quad--patreon {
-  background: linear-gradient(150deg, #270a16 0%, #7a1f3a 46%, #f4604f 100%);
-  border-color: rgba(249, 104, 84, 0.66);
+  background: linear-gradient(150deg, #1c0410 0%, #5e0f2a 48%, #9c1238 100%);
+  border-color: rgba(214, 46, 92, 0.6);
 
   &::before {
     content: '';
@@ -1698,19 +1697,19 @@ body.studio-body {
     border-radius: 14px;
     pointer-events: none;
     z-index: 0;
-    background: radial-gradient(circle at 50% 128%, rgba(255, 140, 110, 0.5) 0%, rgba(249, 104, 84, 0.16) 40%, transparent 68%);
+    background: radial-gradient(circle at 50% 128%, rgba(255, 110, 150, 0.46) 0%, rgba(214, 46, 92, 0.16) 40%, transparent 68%);
     animation: patreon-hearth 3.4s ease-in-out infinite;
   }
 
   .studio-quad-title {
-    color: #ffe3da;
-    text-shadow: 0 0 22px rgba(249, 104, 84, 0.55);
+    color: #ffdbe4;
+    text-shadow: 0 0 22px rgba(230, 60, 110, 0.5);
     position: relative;
     z-index: 1;
   }
 
   .studio-quad-sub {
-    color: rgba(255, 226, 218, 0.92);
+    color: rgba(255, 219, 228, 0.9);
     font-family: 'Share Tech Mono', monospace;
     font-size: 11px;
     letter-spacing: 0.16em;
@@ -1720,13 +1719,13 @@ body.studio-body {
   }
 
   &::after {
-    background: linear-gradient(135deg, rgba(255, 150, 120, 0.2) 0%, transparent 60%);
+    background: linear-gradient(135deg, rgba(255, 120, 160, 0.2) 0%, transparent 60%);
   }
 
   &:hover {
-    background: linear-gradient(150deg, #340e1d 0%, #98284a 46%, #ff7361 100%);
-    border-color: #ff8a78;
-    box-shadow: 0 0 46px rgba(249, 104, 84, 0.34), 0 14px 42px rgba(45, 14, 26, 0.6);
+    background: linear-gradient(150deg, #260616 0%, #7a143a 48%, #c0164a 100%);
+    border-color: #e8527e;
+    box-shadow: 0 0 46px rgba(214, 46, 92, 0.34), 0 14px 42px rgba(35, 8, 22, 0.6);
     transform: translateY(-5px);
   }
 }
