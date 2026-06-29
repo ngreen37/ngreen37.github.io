@@ -1683,12 +1683,12 @@ body.studio-body {
   }
 }
 
-/* Patreon quad (bottom-right) — "the patron's box": deep crimson velvet with a
-   warm rose footlight glow. Reads as a theater patron's seat — luxurious and
-   inviting, clearly its own color away from the site's gold and the games blue. */
+/* Patreon quad (bottom-right) — "the patron's grove": deep forest deepening into
+   jade with a soft green footlight glow. Rich and calm; reads premium and sits
+   fully apart from the gold PJCC quad and the electric-blue games quad. */
 .studio-quad-grid .studio-quad--patreon {
-  background: linear-gradient(150deg, #1c0410 0%, #5e0f2a 48%, #9c1238 100%);
-  border-color: rgba(214, 46, 92, 0.6);
+  background: linear-gradient(150deg, #07140e 0%, #0f3a2a 48%, #1f7a52 100%);
+  border-color: rgba(45, 196, 130, 0.6);
 
   &::before {
     content: '';
@@ -1697,19 +1697,19 @@ body.studio-body {
     border-radius: 14px;
     pointer-events: none;
     z-index: 0;
-    background: radial-gradient(circle at 50% 128%, rgba(255, 110, 150, 0.46) 0%, rgba(214, 46, 92, 0.16) 40%, transparent 68%);
+    background: radial-gradient(circle at 50% 128%, rgba(90, 230, 160, 0.46) 0%, rgba(45, 196, 130, 0.16) 40%, transparent 68%);
     animation: patreon-hearth 3.4s ease-in-out infinite;
   }
 
   .studio-quad-title {
-    color: #ffdbe4;
-    text-shadow: 0 0 22px rgba(230, 60, 110, 0.5);
+    color: #cdeede;
+    text-shadow: 0 0 22px rgba(60, 210, 140, 0.5);
     position: relative;
     z-index: 1;
   }
 
   .studio-quad-sub {
-    color: rgba(255, 219, 228, 0.9);
+    color: rgba(205, 238, 222, 0.9);
     font-family: 'Share Tech Mono', monospace;
     font-size: 11px;
     letter-spacing: 0.16em;
@@ -1719,13 +1719,13 @@ body.studio-body {
   }
 
   &::after {
-    background: linear-gradient(135deg, rgba(255, 120, 160, 0.2) 0%, transparent 60%);
+    background: linear-gradient(135deg, rgba(90, 230, 160, 0.2) 0%, transparent 60%);
   }
 
   &:hover {
-    background: linear-gradient(150deg, #260616 0%, #7a143a 48%, #c0164a 100%);
-    border-color: #e8527e;
-    box-shadow: 0 0 46px rgba(214, 46, 92, 0.34), 0 14px 42px rgba(35, 8, 22, 0.6);
+    background: linear-gradient(150deg, #0a1d14 0%, #155039 48%, #279a68 100%);
+    border-color: #4fd699;
+    box-shadow: 0 0 46px rgba(45, 196, 130, 0.34), 0 14px 42px rgba(8, 28, 18, 0.6);
     transform: translateY(-5px);
   }
 }
