@@ -178,9 +178,13 @@
   .studio-gauntlet .sg-sub { color:#e7d6b0; font-size:0.74rem; }
   .studio-gauntlet .sg-go { color:#F5C518; font-weight:900; font-size:1.2rem; margin-left:auto; }
 
-  /* Planted sigil seal — a faint ARG breadcrumb under the Gauntlet */
+  /* Planted sigil seal — a faint ARG breadcrumb under the Gauntlet.
+     Kept very faint here, and no hover brighten (overrides the site-wide
+     .pjcc-sigil.faint:hover from pjcc-portal.css), scoped to the splash. */
   .studio-sigil-seal { text-align:center; margin:16px auto 0; line-height:1; }
   .studio-sigil-seal .pjcc-sigil { font-size:1.05rem; }
+  .studio-sigil-seal .pjcc-sigil.faint,
+  .studio-sigil-seal .pjcc-sigil.faint:hover { opacity:0.12; transition:none; }
 
   /* Idea #2 — the creed line: the heart under the spy-tech */
   .studio-creed { text-align:center; margin:14px auto 0; max-width:480px;
@@ -195,10 +199,10 @@
   .studio-lean { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0;
     transition:opacity .4s ease, background .4s ease; }
   .studio-lean.is-on { opacity:1; }
-  .studio-lean.lean-pjcc    { background:radial-gradient(circle at 28% 30%, rgba(120,60,230,0.075), transparent 58%); }
-  .studio-lean.lean-mcpuppy { background:radial-gradient(circle at 72% 30%, rgba(225,228,255,0.0375), transparent 58%); }
-  .studio-lean.lean-games   { background:radial-gradient(circle at 28% 72%, rgba(60,188,252,0.0675), transparent 58%); }
-  .studio-lean.lean-patreon { background:radial-gradient(circle at 72% 72%, rgba(45,196,130,0.0675), transparent 58%); }
+  .studio-lean.lean-pjcc    { background:radial-gradient(circle at 28% 30%, rgba(120,60,230,0.075) 0%, rgba(120,60,230,0.03) 42%, transparent 82%); }
+  .studio-lean.lean-mcpuppy { background:radial-gradient(circle at 72% 30%, rgba(225,228,255,0.0375) 0%, rgba(225,228,255,0.015) 42%, transparent 82%); }
+  .studio-lean.lean-games   { background:radial-gradient(circle at 28% 72%, rgba(60,188,252,0.0675) 0%, rgba(60,188,252,0.027) 42%, transparent 82%); }
+  .studio-lean.lean-patreon { background:radial-gradient(circle at 72% 72%, rgba(45,196,130,0.0675) 0%, rgba(45,196,130,0.027) 42%, transparent 82%); }
 
   /* Idea #3 — the periodic sigil bloom among the drifters */
   .studio-drift-sigil { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.9);
