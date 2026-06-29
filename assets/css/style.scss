@@ -1624,13 +1624,13 @@ body.studio-body {
   }
 
   &:hover {
-    background: #b0b0b8;
-    border-color: rgba(255, 255, 255, 0.48);
+    background: #a0a0a8;
+    border-color: rgba(255, 255, 255, 0.42);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.42);
     transform: translateY(-4px);
 
     .studio-quad-title { color: #0a0a0a; text-shadow: none; }
-    .studio-quad-sub { color: rgba(10, 10, 10, 0.72); }
+    .studio-quad-sub { color: rgba(10, 10, 10, 0.74); }
 
     &::before {
       background-image: radial-gradient(rgba(0, 0, 0, 0.14) 1px, transparent 1.5px);

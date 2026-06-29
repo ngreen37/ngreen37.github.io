@@ -698,8 +698,8 @@ Prodigal Brothers). Earlier: the scattered-but-sharp devoted-dad archetype is **
   wary and the burned — that Chess City is **not** the promised land but a place of **evil chess pieces with mouths
   and eyes**, watching from behind the gates. Most call it the bitterness of those who never crossed the sea. It's the
   **pessimist's worldview**, and it's the spine of a new game (below). Seeded into the [Chess City](/locations/chess-city/) file ("The Whisper").
-- **Murphy — the pessimist brother.** *(new 2026-06-25)* A brother (named for **Murphy's Law** — whatever can go wrong,
-  will). Where the Uncle carries Neville's belief and Robert carries Proctor's mindset, **Murphy is the doom-sayer**:
+- **Gerald "Jerry" Murphy — the pessimist brother.** *(new 2026-06-25)* A brother whose family name nods to **Murphy's Law**
+  — whatever can go wrong, will. Where the Uncle carries Neville's belief and Robert carries Proctor's mindset, **Jerry is the doom-sayer**:
   he's *certain* the chess pieces are evil and out to get him — and in **his** game, he's right. Playable lead of
   **"Murphy's Law"** (the Mega-Man-style scroller), tagline *"The pessimist was right."* The comedy/heart: his dread
   is vindicated on-screen yet the world around him stays warm — a foil to the show's Neville-Goddard optimism.
