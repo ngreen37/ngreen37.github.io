@@ -252,17 +252,49 @@
   .studio-warp.warp-patreon  { background:radial-gradient(circle at 72% 72%, #1f7a52, #07140e 70%); }
   .studio-warp.warp-gauntlet { background:radial-gradient(circle at 50% 60%, #b8901f, #1a0f0a 70%); }
 
-  /* Idea #10 — mobile pass: a tight 2×2 of quads, full-width Gauntlet */
+  /* Idea #10 — mobile pass: fit the WHOLE splash in one window so the page never
+     scrolls and the fixed corner controls (logo/Contact/日本語 up top, replay pill
+     bottom) can't slide over the quads. Decorative creed + sigil seal are dropped
+     on phones; the Gauntlet bar stays, just compact. */
   @media (max-width: 600px){
-    .studio-quad-grid { grid-template-columns:1fr 1fr; gap:11px; }
-    .studio-quad { padding:24px 12px; min-height:104px; gap:7px; }
+    .studio-page { min-height:100dvh; }
+    .studio-content { gap:14px; padding:18px 14px; }
+
+    /* compact the cycling tagline (it sets a fixed 110px height by default) */
+    .studio-tagline,
+    .studio-tagline .tagline-word,
+    .studio-tagline .tagline-main { height:54px; }
+    .studio-tagline .tagline-word { line-height:54px; font-size:11px; letter-spacing:3px; }
+    .studio-tagline .tagline-main-tagline { font-size:17px; }
+
+    .studio-quad-grid { grid-template-columns:1fr 1fr; gap:10px; }
+    .studio-quad { padding:18px 12px; min-height:92px; gap:6px; }
     .studio-quad-title { font-size:1rem; }
-    .studio-quad-sub { font-size:0.66rem; }
+    .studio-quad-sub { font-size:0.64rem; }
     .studio-quad-peek { display:none; }            /* no room on phones — keep it clean */
-    .studio-gauntlet { max-width:100%; margin-top:14px; }
-    .studio-creed { font-size:0.84rem; }
+
+    .studio-gauntlet { max-width:100%; margin-top:0; padding:9px 14px; gap:10px; }
+    .studio-gauntlet .sg-glyph { font-size:1.5rem; }
+    .studio-gauntlet .sg-text b { font-size:0.9rem; }
+
+    /* drop the purely decorative pieces so everything fits one screen */
+    .studio-creed,
+    .studio-sigil-seal { display:none; }
+
+    /* keep the corner controls tucked clear of the quad block */
+    .studio-corner-img { height:44px; }
+    .studio-corner-logo { top:14px; left:14px; }
     .studio-replay { left:12px; bottom:12px; font-size:9px; }
     .studio-drift-sigil .pjcc-sigil { font-size:1.7rem; }
+  }
+
+  /* Short / landscape phones — also drop the tagline and tighten the quads so it
+     still fits a single window without scrolling. */
+  @media (max-width: 600px) and (max-height: 520px){
+    .studio-tagline { display:none; }
+    .studio-content { gap:10px; padding:12px 14px; }
+    .studio-quad { min-height:72px; padding:12px 10px; }
+    .studio-gauntlet { padding:7px 12px; }
   }
 
   /* Idea #9 — respect reduced motion: freeze the splash's ambient animation */
