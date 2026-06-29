@@ -47,6 +47,10 @@
 
   <div class="studio-page">
 
+    {% comment %} Idea #1 — the page leans toward the quad you hover: a soft brand-
+         coloured glow from that quad's corner. Toggled by the console JS below. {% endcomment %}
+    <div class="studio-lean" id="studio-lean" aria-hidden="true"></div>
+
     <div class="studio-welcome-bg" aria-hidden="true">WELCOME</div>
 
     <div class="studio-drifters">
@@ -55,6 +59,13 @@
       <a href="{{ '/characters/' | relative_url }}" class="drift-piece" aria-label="All characters">♜</a>
       <a href="{{ '/blog/' | relative_url }}" class="drift-piece" aria-label="Blog">✍</a>
       <a href="{{ '/classified/' | relative_url }}" class="drift-piece" aria-label="???">✦</a>
+    </div>
+
+    {% comment %} Idea #3 — every so often a faint sigil blooms among the drifters,
+         then dissolves: the Av13 portal glyph, foreshadowed. Skipped under
+         reduced-motion. Built once, pulsed by the JS below. {% endcomment %}
+    <div class="studio-drift-sigil" id="studio-drift-sigil" aria-hidden="true">
+      <span class="pjcc-sigil"><i class="sg-a">A</i><i class="sg-c big">C</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c sm">c</i><i class="sg-c big">C</i></span>
     </div>
 
     <!-- About / Contact + language toggle pinned top-right -->
@@ -102,27 +113,32 @@
         <a href="{{ '/pjcc/' | relative_url }}" class="studio-quad studio-quad--pjcc" data-enter="PJCC — the world · the cast, the story, the journey">
           <span class="studio-quad-title" data-jp="PJCC">PJCC</span>
           <span class="studio-quad-sub" data-jp="プリンセスとチェスシティへの旅">Princess &amp; the Journey<br>to Chess City</span>
+          <span class="studio-quad-peek">{{ site.characters | size }} characters · {{ site.locations | size }} locations</span>
         </a>
 
         <a href="{{ '/projects/' | relative_url }}" class="studio-quad studio-quad--mcpuppy" data-enter="McPuppy Studios — the studio · the build, made in the open">
           <span class="studio-quad-title" data-jp="マクパピー・スタジオ">McPuppy Studios</span>
           <span class="studio-quad-sub" data-jp="進捗・プロジェクト・速報">Progress · projects · dispatches</span>
+          <span class="studio-quad-peek">blog · dispatches · press kit</span>
         </a>
 
         <a href="{{ '/games/' | relative_url }}" class="studio-quad studio-quad--games" data-enter="The Arcade — the PJCC world at play · chess games + the Gauntlet">
           <span class="studio-quad-title" data-jp="ゲーム">Games</span>
           <span class="studio-quad-sub" data-jp="PJCCの世界で遊ぶ">Play in the PJCC universe</span>
+          <span class="studio-quad-peek">the arcade + the Gauntlet</span>
         </a>
 
         {% if site.patreon_url and site.patreon_url != '' %}
         <a href="{{ site.patreon_url }}" class="studio-quad studio-quad--patreon" target="_blank" rel="noopener" data-enter="Back the build — support the animation">
           <span class="studio-quad-title" data-jp="Patreon">Patreon</span>
           <span class="studio-quad-sub" data-jp="プロジェクトを支援">Support the Project</span>
+          <span class="studio-quad-peek">fuel the animation</span>
         </a>
         {% else %}
         <a class="studio-quad studio-quad--patreon studio-quad-soon" aria-disabled="true" data-enter="Back the build — support the animation">
           <span class="studio-quad-title" data-jp="Patreon">Patreon</span>
           <span class="studio-quad-sub" data-jp="近日公開">Coming Soon</span>
+          <span class="studio-quad-peek">fuel the animation</span>
         </a>
         {% endif %}
 
@@ -135,16 +151,31 @@
         <span class="sg-go" aria-hidden="true">&rarr;</span>
       </a>
 
-      {% comment %} Planted sigil (Av13/Av2 breadcrumb): one A, eight c's, two cut larger.
-           Faint by design — a curious visitor who types A·C c c c c c c·C anywhere opens
-           the Shogi gate. Protected from translation via .pjcc-sigil. {% endcomment %}
-      <div class="studio-sigil-seal" aria-hidden="true" title="Cut into the threshold stone. Two of the marks are larger than the rest.">
-        <span class="pjcc-sigil faint"><i class="sg-a">A</i><i class="sg-c big">C</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c big">C</i></span>
+      {% comment %} Idea #2 — one warm creed line: the heart under the spy-tech. {% endcomment %}
+      <p class="studio-creed" data-jp="旅を信じて。犬についていけ。">Trust the journey. Follow the dog.</p>
+
+      {% comment %} Planted sigil (Av13/Av2 breadcrumb): one A, eight c's — two cut large,
+           five medium, one small. The two large stay at the ends (the gate incantation
+           wants a capital C first and last); the small is the quiet stone before the last
+           strike. Faint by design. Protected from translation via .pjcc-sigil. {% endcomment %}
+      <div class="studio-sigil-seal" aria-hidden="true" title="Cut into the threshold stone. Two struck large, one struck small.">
+        <span class="pjcc-sigil faint"><i class="sg-a">A</i><i class="sg-c big">C</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c sm">c</i><i class="sg-c big">C</i></span>
       </div>
 
     </div>
 
+    {% comment %} Idea #9 — replay the cold-open. Subtle, bottom-left; clears the
+         "seen" flag and re-runs the transmission. {% endcomment %}
+    <button class="studio-replay" type="button" id="studio-replay" aria-label="Replay the intro transmission">
+      <span class="sr-icon" aria-hidden="true">↻</span><span class="sr-label" data-jp="イントロを再生">replay intro</span>
+    </button>
+
   </div>
+
+  {% comment %} Idea #5 — themed enter-transition: a quick brand-coloured wipe when you
+       pick a quad, so the splash feels like a portal. Driven by the console JS. {% endcomment %}
+  <div class="studio-warp" id="studio-warp" aria-hidden="true"></div>
+
   <style>
   .studio-gauntlet { display:flex; align-items:center; gap:13px; max-width:480px; margin:18px auto 0; text-decoration:none;
     background:linear-gradient(135deg, rgba(42,28,14,0.92), rgba(58,42,16,0.92)); border:2px solid #F5C518; border-radius:14px;
@@ -171,19 +202,89 @@
   /* Planted sigil seal — a faint ARG breadcrumb under the Gauntlet */
   .studio-sigil-seal { text-align:center; margin:16px auto 0; line-height:1; }
   .studio-sigil-seal .pjcc-sigil { font-size:1.05rem; }
+
+  /* Idea #2 — the creed line: the heart under the spy-tech */
+  .studio-creed { text-align:center; margin:14px auto 0; max-width:480px;
+    font-family:'Poppins', system-ui, sans-serif; font-style:italic; font-weight:600;
+    font-size:0.92rem; letter-spacing:0.01em; color:rgba(245,225,180,0.85); }
+
+  /* Idea #4 — per-quad "what's inside" peek, revealed on hover/focus */
+  .studio-quad-peek { display:block; max-height:0; overflow:hidden; opacity:0; margin-top:0;
+    font-family:'Share Tech Mono', ui-monospace, monospace; font-size:0.7rem; letter-spacing:0.06em;
+    text-transform:uppercase; color:rgba(255,255,255,0.7); position:relative; z-index:1;
+    transition:opacity .22s ease, max-height .22s ease, margin-top .22s ease; }
+  .studio-quad:hover .studio-quad-peek,
+  .studio-quad:focus-visible .studio-quad-peek { opacity:0.92; max-height:2.6em; margin-top:7px; }
+
+  /* Idea #1 — the page leans toward the hovered quad (glow from its corner) */
+  .studio-lean { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0;
+    transition:opacity .4s ease, background .4s ease; }
+  .studio-lean.is-on { opacity:1; }
+  .studio-lean.lean-pjcc    { background:radial-gradient(circle at 28% 30%, rgba(120,60,230,0.20), transparent 58%); }
+  .studio-lean.lean-mcpuppy { background:radial-gradient(circle at 72% 30%, rgba(225,228,255,0.10), transparent 58%); }
+  .studio-lean.lean-games   { background:radial-gradient(circle at 28% 72%, rgba(60,188,252,0.18), transparent 58%); }
+  .studio-lean.lean-patreon { background:radial-gradient(circle at 72% 72%, rgba(45,196,130,0.18), transparent 58%); }
+
+  /* Idea #3 — the periodic sigil bloom among the drifters */
+  .studio-drift-sigil { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.9);
+    z-index:0; pointer-events:none; opacity:0; filter:drop-shadow(0 0 18px rgba(245,197,24,0.25));
+    transition:opacity 1.2s ease, transform 1.2s ease; }
+  .studio-drift-sigil .pjcc-sigil { font-size:2.4rem; }
+  .studio-drift-sigil.is-bloom { opacity:0.5; transform:translate(-50%,-50%) scale(1.05); }
+
+  /* Idea #9 — replay-intro control (bottom-left, subtle) */
+  .studio-replay { position:fixed; left:18px; bottom:16px; z-index:3; display:inline-flex; align-items:center; gap:6px;
+    background:rgba(20,12,45,0.55); color:#c9a7ff; border:1px solid #4a3a86; border-radius:999px; padding:5px 11px;
+    font-family:'Share Tech Mono', ui-monospace, monospace; font-size:10px; letter-spacing:0.08em; cursor:pointer;
+    opacity:0.55; transition:opacity .15s, border-color .15s, color .15s; }
+  .studio-replay:hover { opacity:1; border-color:#F5C518; color:#F5C518; }
+  .studio-replay .sr-icon { font-size:12px; }
+
+  /* Idea #5 — the brand-coloured enter wipe */
+  .studio-warp { position:fixed; inset:0; z-index:60; pointer-events:none; opacity:0; transform:scale(1.04);
+    transition:opacity .34s ease, transform .34s ease; }
+  .studio-warp.is-on { opacity:1; transform:scale(1); pointer-events:auto; }
+  .studio-warp.warp-pjcc     { background:radial-gradient(circle at 28% 30%, #6a26dc, #1a0f3d 70%); }
+  .studio-warp.warp-mcpuppy  { background:radial-gradient(circle at 72% 30%, #2a2a2e, #050507 70%); }
+  .studio-warp.warp-games    { background:radial-gradient(circle at 28% 72%, #0e2aa0, #03102c 70%); }
+  .studio-warp.warp-patreon  { background:radial-gradient(circle at 72% 72%, #1f7a52, #07140e 70%); }
+  .studio-warp.warp-gauntlet { background:radial-gradient(circle at 50% 60%, #b8901f, #1a0f0a 70%); }
+
+  /* Idea #10 — mobile pass: a tight 2×2 of quads, full-width Gauntlet */
+  @media (max-width: 600px){
+    .studio-quad-grid { grid-template-columns:1fr 1fr; gap:11px; }
+    .studio-quad { padding:24px 12px; min-height:104px; gap:7px; }
+    .studio-quad-title { font-size:1rem; }
+    .studio-quad-sub { font-size:0.66rem; }
+    .studio-quad-peek { display:none; }            /* no room on phones — keep it clean */
+    .studio-gauntlet { max-width:100%; margin-top:14px; }
+    .studio-creed { font-size:0.84rem; }
+    .studio-replay { left:12px; bottom:12px; font-size:9px; }
+    .studio-drift-sigil .pjcc-sigil { font-size:1.7rem; }
+  }
+
+  /* Idea #9 — respect reduced motion: freeze the splash's ambient animation */
+  @media (prefers-reduced-motion: reduce){
+    .studio-lean, .studio-warp, .studio-drift-sigil { transition:none; }
+    .studio-drift-sigil { display:none; }
+    .drift-piece { animation:none !important; }
+    .studio-quad { animation:none !important; }
+    .studio-corner-logo { animation:none !important; }
+    .studio-tagline, .studio-tagline * { animation:none !important; }
+  }
   </style>
 
   <script>
   (function() {
     var overlay = document.getElementById('transmission-overlay');
     if (!overlay) return;
-    if (localStorage.getItem('mcpuppy_seen')) {
-      overlay.style.display = 'none';
-      return;
-    }
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var timers = [];
+    function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+    function clearAll() { timers.forEach(clearTimeout); timers = []; }
 
     function type(id, text, delay, cb) {
-      setTimeout(function() {
+      later(function() {
         var el = document.getElementById(id);
         if (!el) return;
         var i = 0;
@@ -191,30 +292,62 @@
           el.textContent += text[i]; i++;
           if (i >= text.length) { clearInterval(iv); if (cb) cb(); }
         }, 32);
+        timers.push(function(){ clearInterval(iv); });
       }, delay);
     }
 
     function dismiss() {
+      clearAll();
       overlay.classList.add('is-done');
-      localStorage.setItem('mcpuppy_seen', '1');
+      try { localStorage.setItem('mcpuppy_seen', '1'); } catch (e) {}
       setTimeout(function() { overlay.style.display = 'none'; }, 950);
     }
 
-    type('t1', 'SIGNAL ACQUIRED FROM: ████████████', 300, function() {
-      type('t2', 'ORIGIN: 惑星間建設会社 / INTERPLANETARY CONSTRUCTION CO.', 200, function() {
-        type('t3', '解読中... DECRYPTING TRANSMISSION…', 200, function() {
-          setTimeout(function() {
-            document.getElementById('t-headline').classList.add('is-visible');
-            setTimeout(function() {
-              document.getElementById('t-sub').classList.add('is-visible');
-              setTimeout(dismiss, 2200);
-            }, 400);
-          }, 600);
+    function reveal() {
+      document.getElementById('t-headline').classList.add('is-visible');
+      later(function() {
+        document.getElementById('t-sub').classList.add('is-visible');
+        later(dismiss, 2200);
+      }, 400);
+    }
+
+    // Reset to a clean slate so the cold-open can replay on demand.
+    function reset() {
+      clearAll();
+      ['t1', 't2', 't3'].forEach(function(id) { var el = document.getElementById(id); if (el) el.textContent = ''; });
+      document.getElementById('t-headline').classList.remove('is-visible');
+      document.getElementById('t-sub').classList.remove('is-visible');
+      overlay.classList.remove('is-done');
+      overlay.style.display = '';
+    }
+
+    function play() {
+      reset();
+      // Reduced motion: skip the typing, just reveal the headline, then dismiss.
+      if (reduce) { later(reveal, 200); return; }
+      type('t1', 'SIGNAL ACQUIRED FROM: ████████████', 300, function() {
+        type('t2', 'ORIGIN: 惑星間建設会社 / INTERPLANETARY CONSTRUCTION CO.', 200, function() {
+          type('t3', '解読中... DECRYPTING TRANSMISSION…', 200, function() {
+            later(reveal, 600);
+          });
         });
       });
-    });
+    }
 
     overlay.addEventListener('click', dismiss);
+
+    // First visit auto-plays; afterwards it stays hidden until you replay it.
+    var seen = false;
+    try { seen = !!localStorage.getItem('mcpuppy_seen'); } catch (e) {}
+    if (seen) overlay.style.display = 'none';
+    else play();
+
+    // Idea #9 — the replay control re-runs the cold-open any time.
+    var replay = document.getElementById('studio-replay');
+    if (replay) replay.addEventListener('click', function() {
+      try { localStorage.removeItem('mcpuppy_seen'); } catch (e) {}
+      play();
+    });
   })();
   </script>
 
@@ -277,6 +410,56 @@
       q.addEventListener('focus', function () { enter(label); });
       q.addEventListener('blur', showState);
     });
+  })();
+  </script>
+
+  <!-- Splash interactions: #1 bg-lean · #3 sigil bloom · #5 themed enter-wipe -->
+  <script>
+  (function () {
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var lean = document.getElementById('studio-lean');
+    var warp = document.getElementById('studio-warp');
+    var quads = document.querySelectorAll('.studio-quad[data-enter]');
+    function brandOf(el) { var m = (el.className || '').match(/studio-quad--(pjcc|mcpuppy|games|patreon)/); return m ? m[1] : null; }
+
+    // #1 — the page leans toward the hovered/focused quad.
+    if (lean) {
+      var on = function (b) { lean.className = 'studio-lean is-on lean-' + b; };
+      var off = function () { lean.className = 'studio-lean'; };
+      Array.prototype.forEach.call(quads, function (q) {
+        var b = brandOf(q); if (!b) return;
+        q.addEventListener('mouseenter', function () { on(b); });
+        q.addEventListener('mouseleave', off);
+        q.addEventListener('focus', function () { on(b); });
+        q.addEventListener('blur', off);
+      });
+    }
+
+    // #5 — a brand-coloured wipe on click, then navigate. Plain same-tab clicks only,
+    // so middle/⌘/ctrl-click (open in new tab) and the external Patreon link are untouched.
+    if (warp && !reduce) {
+      var wire = function (el, key) {
+        el.addEventListener('click', function (e) {
+          if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+          if (el.getAttribute('target') === '_blank') return;
+          var href = el.getAttribute('href');
+          if (!href || href.charAt(0) === '#') return;
+          e.preventDefault();
+          warp.className = 'studio-warp is-on warp-' + key;
+          setTimeout(function () { window.location.href = href; }, 340);
+        });
+      };
+      Array.prototype.forEach.call(quads, function (q) { var b = brandOf(q); if (b) wire(q, b); });
+      var gaunt = document.querySelector('.studio-gauntlet');
+      if (gaunt) wire(gaunt, 'gauntlet');
+    }
+
+    // #3 — every so often a faint sigil blooms among the drifters, then dissolves.
+    var sig = document.getElementById('studio-drift-sigil');
+    if (sig && !reduce) {
+      var bloom = function () { sig.classList.add('is-bloom'); setTimeout(function () { sig.classList.remove('is-bloom'); }, 4200); };
+      setTimeout(function () { bloom(); setInterval(bloom, 26000); }, 9000);
+    }
   })();
   </script>
 

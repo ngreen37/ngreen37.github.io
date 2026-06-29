@@ -19,8 +19,9 @@
 }
 .pjcc-sigil i { font-style: normal; }
 .pjcc-sigil .sg-a { color: #9a7fd4; font-size: 1em; margin-right: 0.18em; }
-.pjcc-sigil .sg-c { color: #6b5fa0; font-size: 0.82em; }
-.pjcc-sigil .sg-c.big { color: #F5C518; font-size: 1.28em; text-shadow: 0 0 6px rgba(245,197,24,0.45); }
+.pjcc-sigil .sg-c { color: #6b5fa0; font-size: 0.82em; }                          /* medium stone */
+.pjcc-sigil .sg-c.big { color: #F5C518; font-size: 1.28em; text-shadow: 0 0 6px rgba(245,197,24,0.45); }  /* the two struck large */
+.pjcc-sigil .sg-c.sm { font-size: 0.56em; opacity: 0.72; }                        /* the one struck small */
 .pjcc-sigil.faint { opacity: 0.28; }
 .pjcc-sigil.faint:hover { opacity: 0.6; transition: opacity .4s; }
 

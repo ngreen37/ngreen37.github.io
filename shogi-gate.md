@@ -15,7 +15,7 @@ description: "Access withheld. The ferry does not run for those who do not know 
     <h1>The Ferry Does Not Run</h1>
 
     <div class="sgate-sigil-big">
-      <span class="pjcc-sigil" aria-hidden="true"><i class="sg-a">A</i><i class="sg-c big">C</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c big">C</i></span>
+      <span class="pjcc-sigil" aria-hidden="true"><i class="sg-a">A</i><i class="sg-c big">C</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c sm">c</i><i class="sg-c big">C</i></span>
     </div>
 
     <p class="sgate-riddle">They carved it into the dock before the fog took the road:
