@@ -26,6 +26,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+  {% comment %} Shogi-gate rite runs on the splash (pjcc-portal.js below); load its
+       styles too so the rite UI + the planted .pjcc-sigil render correctly. {% endcomment %}
+  <link rel="stylesheet" href="{{ '/assets/css/pjcc-portal.css' | relative_url }}">
 </head>
 <body class="studio-body">
 
@@ -81,32 +84,43 @@
         </span>
       </div>
 
+      {% comment %} Threshold console — a personalized greeting + an adaptive CTA that
+           changes by visitor state (new · returning player · signed-in operative), and
+           that becomes a context line naming which brand you're about to enter on quad
+           hover. JS below; ships with the first-timer copy as the no-JS default. {% endcomment %}
+      <div class="studio-console" id="studio-console">
+        <span class="sc-greet" id="sc-greet">◈ New operative — welcome aboard.</span>
+        <a class="sc-cta" id="sc-cta" href="{{ '/characters/princess/' | relative_url }}">Meet Princess &rarr;</a>
+      </div>
+
       {% comment %} Quad layout: PJCC (top-left) · McPuppy (top-right, B&W) ·
-           Games (bottom-left) · Patreon (bottom-right). Each box has its own look. {% endcomment %}
+           Games (bottom-left) · Patreon (bottom-right). Each box has its own look.
+           data-enter = the context-aware brand line shown in the console on hover/focus,
+           making the McPuppy-studio / PJCC-world split explicit. {% endcomment %}
       <div class="studio-quad-grid">
 
-        <a href="{{ '/pjcc/' | relative_url }}" class="studio-quad studio-quad--pjcc">
+        <a href="{{ '/pjcc/' | relative_url }}" class="studio-quad studio-quad--pjcc" data-enter="PJCC — the world · the cast, the story, the journey">
           <span class="studio-quad-title" data-jp="PJCC">PJCC</span>
           <span class="studio-quad-sub" data-jp="プリンセスとチェスシティへの旅">Princess &amp; the Journey<br>to Chess City</span>
         </a>
 
-        <a href="{{ '/projects/' | relative_url }}" class="studio-quad studio-quad--mcpuppy">
+        <a href="{{ '/projects/' | relative_url }}" class="studio-quad studio-quad--mcpuppy" data-enter="McPuppy Studios — the studio · the build, made in the open">
           <span class="studio-quad-title" data-jp="マクパピー・スタジオ">McPuppy Studios</span>
           <span class="studio-quad-sub" data-jp="進捗・プロジェクト・速報">Progress · projects · dispatches</span>
         </a>
 
-        <a href="{{ '/games/' | relative_url }}" class="studio-quad studio-quad--games">
+        <a href="{{ '/games/' | relative_url }}" class="studio-quad studio-quad--games" data-enter="The Arcade — the PJCC world at play · chess games + the Gauntlet">
           <span class="studio-quad-title" data-jp="ゲーム">Games</span>
           <span class="studio-quad-sub" data-jp="PJCCの世界で遊ぶ">Play in the PJCC universe</span>
         </a>
 
         {% if site.patreon_url and site.patreon_url != '' %}
-        <a href="{{ site.patreon_url }}" class="studio-quad studio-quad--patreon" target="_blank" rel="noopener">
+        <a href="{{ site.patreon_url }}" class="studio-quad studio-quad--patreon" target="_blank" rel="noopener" data-enter="Back the build — support the animation">
           <span class="studio-quad-title" data-jp="Patreon">Patreon</span>
           <span class="studio-quad-sub" data-jp="プロジェクトを支援">Support the Project</span>
         </a>
         {% else %}
-        <a class="studio-quad studio-quad--patreon studio-quad-soon" aria-disabled="true">
+        <a class="studio-quad studio-quad--patreon studio-quad-soon" aria-disabled="true" data-enter="Back the build — support the animation">
           <span class="studio-quad-title" data-jp="Patreon">Patreon</span>
           <span class="studio-quad-sub" data-jp="近日公開">Coming Soon</span>
         </a>
@@ -121,6 +135,13 @@
         <span class="sg-go" aria-hidden="true">&rarr;</span>
       </a>
 
+      {% comment %} Planted sigil (Av13/Av2 breadcrumb): one A, eight c's, two cut larger.
+           Faint by design — a curious visitor who types A·C c c c c c c·C anywhere opens
+           the Shogi gate. Protected from translation via .pjcc-sigil. {% endcomment %}
+      <div class="studio-sigil-seal" aria-hidden="true" title="Cut into the threshold stone. Two of the marks are larger than the rest.">
+        <span class="pjcc-sigil faint"><i class="sg-a">A</i><i class="sg-c big">C</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c big">C</i></span>
+      </div>
+
     </div>
 
   </div>
@@ -134,6 +155,22 @@
   .studio-gauntlet .sg-text b { color:#fff; font-size:1rem; font-weight:800; }
   .studio-gauntlet .sg-sub { color:#e7d6b0; font-size:0.74rem; }
   .studio-gauntlet .sg-go { color:#F5C518; font-weight:900; font-size:1.2rem; margin-left:auto; }
+
+  /* Threshold console — greeting / adaptive CTA / context-aware brand line */
+  .studio-console { display:flex; align-items:center; justify-content:center; gap:14px;
+    flex-wrap:wrap; min-height:24px; margin:0 auto 16px; padding:0 12px;
+    font-family:'Share Tech Mono', ui-monospace, monospace; font-size:0.82rem; letter-spacing:0.03em; }
+  .studio-console .sc-greet { color:rgba(220,212,255,0.82); transition:color .2s; }
+  .studio-console .sc-greet .sc-name { color:#F5C518; font-weight:700; }
+  .studio-console .sc-cta { color:#F5C518; text-decoration:none; white-space:nowrap;
+    border:1px solid rgba(245,197,24,0.42); border-radius:999px; padding:3px 13px; transition:all .15s; }
+  .studio-console .sc-cta:hover { background:#F5C518; color:#1a0f3d; }
+  .studio-console.is-context .sc-greet { color:#cdbcf2; }
+  @media (max-width: 600px){ .studio-console { font-size:0.76rem; gap:9px; } }
+
+  /* Planted sigil seal — a faint ARG breadcrumb under the Gauntlet */
+  .studio-sigil-seal { text-align:center; margin:16px auto 0; line-height:1; }
+  .studio-sigil-seal .pjcc-sigil { font-size:1.05rem; }
   </style>
 
   <script>
@@ -178,6 +215,68 @@
     });
 
     overlay.addEventListener('click', dismiss);
+  })();
+  </script>
+
+  <!-- Threshold console: personalized greeting · adaptive CTA · context-aware brand line -->
+  <script>
+  (function () {
+    var box = document.getElementById('studio-console');
+    if (!box) return;
+    var greet = document.getElementById('sc-greet');
+    var cta = document.getElementById('sc-cta');
+    if (!greet || !cta) return;
+
+    function esc(s) {
+      return String(s).replace(/[&<>"]/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+      });
+    }
+    // Has this device played any game? (guest progress is keyed pjcc.best.*)
+    function hasPlayed() {
+      try {
+        for (var i = 0; i < localStorage.length; i++) {
+          if ((localStorage.key(i) || '').indexOf('pjcc.best.') === 0) return true;
+        }
+      } catch (e) {}
+      return false;
+    }
+
+    var name = null;
+    try { name = localStorage.getItem('pjcc.codename'); } catch (e) {}
+
+    var state;
+    if (name) {
+      state = { html: '◈ Welcome back, <span class="sc-name notranslate">' + esc(name) + '</span>.',
+                cta: 'Resume your dossier →', href: '/dossier/' };
+    } else if (hasPlayed()) {
+      state = { html: '◈ Welcome back, operative.',
+                cta: 'Pick up where you left off →', href: '/pjcc/' };
+    } else {
+      state = { html: '◈ New operative — welcome aboard.',
+                cta: 'Meet Princess →', href: '/characters/princess/' };
+    }
+
+    function showState() {
+      box.classList.remove('is-context');
+      greet.innerHTML = state.html;
+      cta.textContent = state.cta;
+      cta.setAttribute('href', state.href);
+      cta.style.display = '';
+    }
+    showState();
+
+    // Context-aware: name the world/brand you're about to enter while hovering or
+    // focusing a quad — reinforcing the McPuppy-studio vs PJCC-world split.
+    function enter(label) { box.classList.add('is-context'); greet.textContent = '→ ' + label; cta.style.display = 'none'; }
+    var quads = document.querySelectorAll('.studio-quad[data-enter]');
+    Array.prototype.forEach.call(quads, function (q) {
+      var label = q.getAttribute('data-enter');
+      q.addEventListener('mouseenter', function () { enter(label); });
+      q.addEventListener('mouseleave', showState);
+      q.addEventListener('focus', function () { enter(label); });
+      q.addEventListener('blur', showState);
+    });
   })();
   </script>
 

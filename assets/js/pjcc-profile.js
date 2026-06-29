@@ -108,7 +108,16 @@
   };
   window.PJCC = PJCC;
 
-  function emit() { listeners.forEach(function (fn) { try { fn(); } catch (e) {} }); }
+  function emit() {
+    // Cache the codename so light pages (e.g. the splash) can greet a returning
+    // operative without loading the whole SDK. Cleared on sign-out.
+    try {
+      var c = profile && profile.codename;
+      if (c) localStorage.setItem('pjcc.codename', c);
+      else localStorage.removeItem('pjcc.codename');
+    } catch (e) {}
+    listeners.forEach(function (fn) { try { fn(); } catch (e) {} });
+  }
 
   // Remember a referral code from the landing URL (?ref=CODENAME) for later.
   try {
