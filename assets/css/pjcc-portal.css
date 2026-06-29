@@ -41,6 +41,7 @@
 .pgate-prog .pp-stone.lit { background: #cdbcf2; box-shadow: 0 0 7px rgba(205,188,242,0.8); }
 .pgate-prog .pp-stone.big { width: 10px; height: 10px; }
 .pgate-prog .pp-stone.big.lit { background: #F5C518; box-shadow: 0 0 10px rgba(245,197,24,0.9); }
+.pgate-prog .pp-stone.sm { width: 4px; height: 4px; }                /* the soft closing stone */
 
 /* ---- the gate-opening cinematic ----------------------------------------- */
 .pgate-ov {

@@ -2,14 +2,14 @@
  * PJCC · The Shogi Island Gate  (Avenue 13 — access puzzles / hidden portals)
  * -----------------------------------------------------------------------------
  * You don't click in. You perform the rite, scattered through the world as a
- * sigil: "one A and eight C's — two of the c's larger than the rest."
+ * sigil: "one A and eight c's — the first two struck large, the last struck small."
  *
  *   The a-file bell:   one A
  *   The c-file stones: eight c's
- *   Struck like an octave: the FIRST and LAST c are larger (capital C)
+ *   The opening strike: the FIRST TWO c are larger (capital C); the LAST is small
  *
- * So the incantation is:  A · C c c c c c c C   →  type it ANYWHERE on the site
- * (capital C on the first and last of the eight). A faint sigil lights stone by
+ * So the incantation is:  A · C C c c c c c c   →  type it ANYWHERE on the site
+ * (two capital C's at the head, then six lowercase). A faint sigil lights stone by
  * stone as you get it right; complete it and the gate opens with a cinematic.
  * Loaded site-wide; runs on every page, ignores text fields, fully defensive.
  *   window.PJCCGate.tryPhrase(str)  — used by the /shogi-gate/ carving input
@@ -20,11 +20,11 @@
   'use strict';
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Each slot lists its accepted character(s). Caps required only at the ends of
-  // the c-file (the two "larger" stones); the middle six must be lowercase.
-  var TARGET = ['Aa', 'C', 'c', 'c', 'c', 'c', 'c', 'c', 'C'];
+  // Each slot lists its accepted character(s). Caps required on the first two
+  // c-stones (the two "larger" strikes); the remaining six are lowercase.
+  var TARGET = ['Aa', 'C', 'C', 'c', 'c', 'c', 'c', 'c', 'c'];
   var STONES = TARGET.length - 1;                 // 8 c-stones
-  var PHRASE_RE = /[Aa]Cc{6}C/;                   // for the carving input
+  var PHRASE_RE = /[Aa]CCc{6}/;                   // for the carving input
 
   function isOpen() { try { return localStorage.getItem('shogi_gate_open') === '1'; } catch (e) { return false; } }
   function markOpen() { try { localStorage.setItem('shogi_gate_open', '1'); localStorage.setItem('frag_portal', '1'); } catch (e) {} }
@@ -36,7 +36,7 @@
     prog = document.createElement('div'); prog.className = 'pgate-prog'; prog.setAttribute('aria-hidden', 'true');
     var bell = document.createElement('span'); bell.className = 'pp-bell'; bell.textContent = '🔔'; prog.appendChild(bell);
     for (var i = 0; i < STONES; i++) {
-      var s = document.createElement('span'); s.className = 'pp-stone' + (i === 0 || i === STONES - 1 ? ' big' : '');
+      var s = document.createElement('span'); s.className = 'pp-stone' + (i === 0 || i === 1 ? ' big' : (i === STONES - 1 ? ' sm' : ''));
       prog.appendChild(s);
     }
     (document.body || document.documentElement).appendChild(prog);
@@ -103,7 +103,7 @@
       '<div class="pgate-card">' +
         '<div class="pgate-eyebrow">◈ the rite is answered</div>' +
         '<div class="pgate-title">The Gate Remembers You</div>' +
-        '<div class="pgate-sub">Eight stones on the c-file. One bell on the a. Two struck like an octave — and the old ferry to <b>Shogi Island</b> remembers the way back.</div>' +
+        '<div class="pgate-sub">Eight stones on the c-file. One bell on the a. Two struck large to open, one small to close — and the old ferry to <b>Shogi Island</b> remembers the way back.</div>' +
         '<a class="pgate-enter" href="/shogi-gate/">⛩ Cross to Shogi Island</a>' +
       '</div>';
     document.body.appendChild(gateEl);

@@ -590,9 +590,9 @@ is the superfan ceiling but a cadence trap — start it only when #1 is humming.
 - **Kaede's locked second shelf** → *a language no one can read* (Av12 decode-the-transmission → the Construction Co. origin).
 - **"Follow the dog"** → *the brand creed.* On stationery, goal cards, and in tone. Payoff: one simple,
   repeatable line that holds the whole ethos — trust the journey; Princess leads.
-- **The Shogi Island portal** ("*one A and eight C's*," **two c's oversized**) → *a signature show reveal.*
+- **The Shogi Island portal** ("*one A and eight c's*," **first two oversized, last one small** — incantation `A · C C c c c c c c`) → *a signature show reveal.*
   **The gate is now LIVE (Av13, shipped 2026-06-23)** — the rite opens it with a cinematic. The motif is now a real,
-  reusable sigil (`.pjcc-sigil`); **keep seeding it** as a recurring glyph — hide the **A + eight C's (two larger)** in
+  reusable sigil (`.pjcc-sigil`, sizes `.big`/`.sm`); **keep seeding it** as a recurring glyph — hide the **A + eight c's (first two large, last small)** in
   more game backgrounds, the **news ticker**, the **Lore Codex**, and art (started: the Shogi Island dock + the Dead
   Drop dockmaster's log). Payoff: when the portal opens on screen, longtime fans gasp because they've been *seeing* it
   for months without knowing. (Diegetic unlock = Av13; the cipher = Av2.)

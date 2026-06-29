@@ -65,7 +65,7 @@
          then dissolves: the Av13 portal glyph, foreshadowed. Skipped under
          reduced-motion. Built once, pulsed by the JS below. {% endcomment %}
     <div class="studio-drift-sigil" id="studio-drift-sigil" aria-hidden="true">
-      <span class="pjcc-sigil"><i class="sg-a">A</i><i class="sg-c big">C</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c sm">c</i><i class="sg-c big">C</i></span>
+      <span class="pjcc-sigil"><i class="sg-a">A</i><i class="sg-c big">C</i><i class="sg-c big">C</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c sm">c</i></span>
     </div>
 
     <!-- About / Contact + language toggle pinned top-right -->
@@ -93,15 +93,6 @@
           <span class="tagline-main-studio">McPuppy Studios</span>
           <span class="tagline-main-tagline">A Million Stories to Tell</span>
         </span>
-      </div>
-
-      {% comment %} Threshold console — a personalized greeting + an adaptive CTA that
-           changes by visitor state (new · returning player · signed-in operative), and
-           that becomes a context line naming which brand you're about to enter on quad
-           hover. JS below; ships with the first-timer copy as the no-JS default. {% endcomment %}
-      <div class="studio-console" id="studio-console">
-        <span class="sc-greet" id="sc-greet">◈ New operative — welcome aboard.</span>
-        <a class="sc-cta" id="sc-cta" href="{{ '/characters/princess/' | relative_url }}">Meet Princess &rarr;</a>
       </div>
 
       {% comment %} Quad layout: PJCC (top-left) · McPuppy (top-right, B&W) ·
@@ -154,12 +145,12 @@
       {% comment %} Idea #2 — one warm creed line: the heart under the spy-tech. {% endcomment %}
       <p class="studio-creed" data-jp="旅を信じて。犬についていけ。">Trust the journey. Follow the dog.</p>
 
-      {% comment %} Planted sigil (Av13/Av2 breadcrumb): one A, eight c's — two cut large,
-           five medium, one small. The two large stay at the ends (the gate incantation
-           wants a capital C first and last); the small is the quiet stone before the last
-           strike. Faint by design. Protected from translation via .pjcc-sigil. {% endcomment %}
-      <div class="studio-sigil-seal" aria-hidden="true" title="Cut into the threshold stone. Two struck large, one struck small.">
-        <span class="pjcc-sigil faint"><i class="sg-a">A</i><i class="sg-c big">C</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c sm">c</i><i class="sg-c big">C</i></span>
+      {% comment %} Planted sigil (Av13/Av2 breadcrumb): one A, eight c's — the first two
+           cut large, then five medium, the last cut small. Matches the gate incantation
+           (A, then two capital C's, then six lowercase). Faint by design. Protected from
+           translation via .pjcc-sigil. {% endcomment %}
+      <div class="studio-sigil-seal" aria-hidden="true" title="Cut into the threshold stone. The first two struck large, the last struck small.">
+        <span class="pjcc-sigil faint"><i class="sg-a">A</i><i class="sg-c big">C</i><i class="sg-c big">C</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c sm">c</i></span>
       </div>
 
     </div>
@@ -186,18 +177,6 @@
   .studio-gauntlet .sg-text b { color:#fff; font-size:1rem; font-weight:800; }
   .studio-gauntlet .sg-sub { color:#e7d6b0; font-size:0.74rem; }
   .studio-gauntlet .sg-go { color:#F5C518; font-weight:900; font-size:1.2rem; margin-left:auto; }
-
-  /* Threshold console — greeting / adaptive CTA / context-aware brand line */
-  .studio-console { display:flex; align-items:center; justify-content:center; gap:14px;
-    flex-wrap:wrap; min-height:24px; margin:0 auto 16px; padding:0 12px;
-    font-family:'Share Tech Mono', ui-monospace, monospace; font-size:0.82rem; letter-spacing:0.03em; }
-  .studio-console .sc-greet { color:rgba(220,212,255,0.82); transition:color .2s; }
-  .studio-console .sc-greet .sc-name { color:#F5C518; font-weight:700; }
-  .studio-console .sc-cta { color:#F5C518; text-decoration:none; white-space:nowrap;
-    border:1px solid rgba(245,197,24,0.42); border-radius:999px; padding:3px 13px; transition:all .15s; }
-  .studio-console .sc-cta:hover { background:#F5C518; color:#1a0f3d; }
-  .studio-console.is-context .sc-greet { color:#cdbcf2; }
-  @media (max-width: 600px){ .studio-console { font-size:0.76rem; gap:9px; } }
 
   /* Planted sigil seal — a faint ARG breadcrumb under the Gauntlet */
   .studio-sigil-seal { text-align:center; margin:16px auto 0; line-height:1; }
@@ -347,68 +326,6 @@
     if (replay) replay.addEventListener('click', function() {
       try { localStorage.removeItem('mcpuppy_seen'); } catch (e) {}
       play();
-    });
-  })();
-  </script>
-
-  <!-- Threshold console: personalized greeting · adaptive CTA · context-aware brand line -->
-  <script>
-  (function () {
-    var box = document.getElementById('studio-console');
-    if (!box) return;
-    var greet = document.getElementById('sc-greet');
-    var cta = document.getElementById('sc-cta');
-    if (!greet || !cta) return;
-
-    function esc(s) {
-      return String(s).replace(/[&<>"]/g, function (c) {
-        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
-      });
-    }
-    // Has this device played any game? (guest progress is keyed pjcc.best.*)
-    function hasPlayed() {
-      try {
-        for (var i = 0; i < localStorage.length; i++) {
-          if ((localStorage.key(i) || '').indexOf('pjcc.best.') === 0) return true;
-        }
-      } catch (e) {}
-      return false;
-    }
-
-    var name = null;
-    try { name = localStorage.getItem('pjcc.codename'); } catch (e) {}
-
-    var state;
-    if (name) {
-      state = { html: '◈ Welcome back, <span class="sc-name notranslate">' + esc(name) + '</span>.',
-                cta: 'Resume your dossier →', href: '/dossier/' };
-    } else if (hasPlayed()) {
-      state = { html: '◈ Welcome back, operative.',
-                cta: 'Pick up where you left off →', href: '/pjcc/' };
-    } else {
-      state = { html: '◈ New operative — welcome aboard.',
-                cta: 'Meet Princess →', href: '/characters/princess/' };
-    }
-
-    function showState() {
-      box.classList.remove('is-context');
-      greet.innerHTML = state.html;
-      cta.textContent = state.cta;
-      cta.setAttribute('href', state.href);
-      cta.style.display = '';
-    }
-    showState();
-
-    // Context-aware: name the world/brand you're about to enter while hovering or
-    // focusing a quad — reinforcing the McPuppy-studio vs PJCC-world split.
-    function enter(label) { box.classList.add('is-context'); greet.textContent = '→ ' + label; cta.style.display = 'none'; }
-    var quads = document.querySelectorAll('.studio-quad[data-enter]');
-    Array.prototype.forEach.call(quads, function (q) {
-      var label = q.getAttribute('data-enter');
-      q.addEventListener('mouseenter', function () { enter(label); });
-      q.addEventListener('mouseleave', showState);
-      q.addEventListener('focus', function () { enter(label); });
-      q.addEventListener('blur', showState);
     });
   })();
   </script>

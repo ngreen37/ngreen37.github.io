@@ -15,19 +15,19 @@ description: "Access withheld. The ferry does not run for those who do not know 
     <h1>The Ferry Does Not Run</h1>
 
     <div class="sgate-sigil-big">
-      <span class="pjcc-sigil" aria-hidden="true"><i class="sg-a">A</i><i class="sg-c big">C</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c sm">c</i><i class="sg-c big">C</i></span>
+      <span class="pjcc-sigil" aria-hidden="true"><i class="sg-a">A</i><i class="sg-c big">C</i><i class="sg-c big">C</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c sm">c</i></span>
     </div>
 
     <p class="sgate-riddle">They carved it into the dock before the fog took the road:
-    <b>one A and eight C's</b> — and two of the c's <b>larger than the rest</b>.
-    Speak it as it was meant — a bell on the a-file, eight stones down the c,
-    two struck like an octave — and the old ferry will remember the way back.</p>
+    <b>one A and eight c's</b> — the <b>first two cut larger</b>, the <b>last cut small</b>.
+    Speak it as it was meant — a bell on the a-file, then eight stones down the c:
+    two struck large to open, six soft to follow — and the old ferry will remember the way back.</p>
 
     <div class="sgate-carve">
       <input id="sgate-input" type="text" maxlength="12" autocomplete="off" autocapitalize="off"
              autocorrect="off" spellcheck="false" placeholder="carve the rite" aria-label="carve the rite">
     </div>
-    <div class="sgate-hint">The capital strikes the high and the low of the file. Listen for the octave.</div>
+    <div class="sgate-hint">Two capitals open the file; the rest fall soft, the last softest of all.</div>
   </div>
 
   <!-- ░░░░ UNSEALED ░░░░ -->
