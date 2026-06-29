@@ -187,22 +187,18 @@
     font-family:'Poppins', system-ui, sans-serif; font-style:italic; font-weight:600;
     font-size:0.92rem; letter-spacing:0.01em; color:rgba(245,225,180,0.85); }
 
-  /* Idea #4 — per-quad "what's inside" peek, revealed on hover/focus */
-  .studio-quad-peek { display:block; max-height:0; overflow:hidden; opacity:0; margin-top:0;
-    font-family:'Share Tech Mono', ui-monospace, monospace; font-size:0.7rem; letter-spacing:0.06em;
-    text-transform:uppercase; color:rgba(255,255,255,0.7); position:relative; z-index:1;
-    transition:opacity .22s ease, max-height .22s ease, margin-top .22s ease; }
-  .studio-quad:hover .studio-quad-peek,
-  .studio-quad:focus-visible .studio-quad-peek { opacity:0.92; max-height:2.6em; margin-top:7px; }
+  /* Idea #4 — per-quad "what's inside" peek: retired so the boxes no longer
+     expand on hover. Markup kept for screen readers / future use. */
+  .studio-quad-peek { display:none; }
 
   /* Idea #1 — the page leans toward the hovered quad (glow from its corner) */
   .studio-lean { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0;
     transition:opacity .4s ease, background .4s ease; }
   .studio-lean.is-on { opacity:1; }
-  .studio-lean.lean-pjcc    { background:radial-gradient(circle at 28% 30%, rgba(120,60,230,0.20), transparent 58%); }
-  .studio-lean.lean-mcpuppy { background:radial-gradient(circle at 72% 30%, rgba(225,228,255,0.10), transparent 58%); }
-  .studio-lean.lean-games   { background:radial-gradient(circle at 28% 72%, rgba(60,188,252,0.18), transparent 58%); }
-  .studio-lean.lean-patreon { background:radial-gradient(circle at 72% 72%, rgba(45,196,130,0.18), transparent 58%); }
+  .studio-lean.lean-pjcc    { background:radial-gradient(circle at 28% 30%, rgba(120,60,230,0.10), transparent 58%); }
+  .studio-lean.lean-mcpuppy { background:radial-gradient(circle at 72% 30%, rgba(225,228,255,0.05), transparent 58%); }
+  .studio-lean.lean-games   { background:radial-gradient(circle at 28% 72%, rgba(60,188,252,0.09), transparent 58%); }
+  .studio-lean.lean-patreon { background:radial-gradient(circle at 72% 72%, rgba(45,196,130,0.09), transparent 58%); }
 
   /* Idea #3 — the periodic sigil bloom among the drifters */
   .studio-drift-sigil { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.9);
