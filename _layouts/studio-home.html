@@ -301,8 +301,8 @@
       // Reduced motion: skip the typing, just reveal the headline, then dismiss.
       if (reduce) { later(reveal, 200); return; }
       type('t1', 'SIGNAL ACQUIRED FROM: ████████████', 300, function() {
-        type('t2', 'ORIGIN: 惑星間建設会社 / INTERPLANETARY CONSTRUCTION CO.', 200, function() {
-          type('t3', '解読中... DECRYPTING TRANSMISSION…', 200, function() {
+        type('t2', 'ORIGIN: INTERPLANETARY CONSTRUCTION CO.', 200, function() {
+          type('t3', 'DECRYPTING TRANSMISSION…', 200, function() {
             later(reveal, 600);
           });
         });
