@@ -56,7 +56,7 @@ permalink: /daily/
   var cells = [], keyState = {}, row = 0, col = 0, cur = '', done = false;
 
   // ---- daily lock + streak (one official run per day) ----
-  var LK = 'pjcc.daily.v1';
+  var LK = 'pjcc.daily.v2';  // bumped: clears locks/streaks left by the broken (off-by-one) build so today is playable
   function loadLock() { try { return JSON.parse(localStorage.getItem(LK)) || {}; } catch (e) { return {}; } }
   function saveLock(o) { try { localStorage.setItem(LK, JSON.stringify(o)); } catch (e) {} }
   function streakInfo() {
@@ -101,14 +101,16 @@ permalink: /daily/
   function submit() {
     if (cur.length<LEN){ setMsg('Need '+LEN+' letters.', 'warn'); return; }
     var res=evaluate(cur);
-    for (var i=0;i<LEN;i++){ (function(idx){ setTimeout(function(){ cells[row][idx].classList.add(res[idx]); }, idx*90); })(i); }
+    var r0=row;   // capture the row being scored — the reveal timeouts fire AFTER row++ below
+    for (var i=0;i<LEN;i++){ (function(idx){ setTimeout(function(){ cells[r0][idx].classList.add(res[idx]); }, idx*90); })(i); }
     // keyboard state
     for (var c=0;c<LEN;c++){ var ch=cur[c]; if(RANKW[res[c]]>(RANKW[keyState[ch]||'']||-1)) keyState[ch]=res[c]; }
     var solved = res.every(function(x){ return x==='correct'; });
     row++; col=0; var guessNo=row; var g=cur; cur='';
     setTimeout(buildKbd, LEN*90);
-    if (solved){ finish(true, guessNo); }
-    else if (row>=ROWS){ finish(false, ROWS); }
+    // wait for the tile reveal to finish so the result/share grid reads the final colours
+    if (solved){ setTimeout(function(){ finish(true, guessNo); }, LEN*90); }
+    else if (row>=ROWS){ setTimeout(function(){ finish(false, ROWS); }, LEN*90); }
     else setMsg('');
   }
   function scoreFor(solved, guesses) { return solved ? Math.max(20, (ROWS+1-guesses)*20) : 0; }
