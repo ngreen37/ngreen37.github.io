@@ -1509,6 +1509,8 @@ body.studio-body {
   grid-template-columns: 1fr 1fr;
   gap: 22px;
   width: 100%;
+  position: relative;
+  z-index: 1;   /* keeps the quads above the secret-star intro float */
 }
 
 .studio-quad {
@@ -3092,7 +3094,7 @@ body.theme-bw .ribbon-track {
     left: 17%;
     bottom: 28%;
     font-size: 42px;
-    color: rgba(200, 200, 200, 0.08);
+    color: rgba(200, 200, 200, 0.072);   /* secret star — dimmed 10% */
     animation-delay: 19s;
   }
   &:nth-child(6) {
