@@ -39,7 +39,7 @@
   // docs/translation-worker.md, then paste the Worker URL here to make it the
   // PRIMARY engine. gtx + MyMemory stay as automatic fallbacks.
   // Empty string = unchanged (keyless Google endpoint stays primary).
-  var WORKER_URL = '';
+  var WORKER_URL = 'https://pjcc-translate.nathgreen37.workers.dev';
 
   // 1) curated, brand-safe dictionary (instant; never sent to any service)
   var DICT = {
