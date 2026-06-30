@@ -87,6 +87,18 @@
 
 ---
 
+## Chess City — the evil-pieces belief (canon)
+
+Some in Chess City hold that the city is inhabited by **evil chess pieces** — that the board everyone walks on is
+also a place where pieces lurk and ambush travelers. The belief isn't universal; plenty of residents treat it as
+superstition. But it runs deep enough in certain neighborhoods that it shapes how people build, travel, and raise
+their kids there.
+
+*(Powers the "pessimist route" games — Murphy's Law and the Chess City platformer — where, in those characters'
+eyes, the pieces really do have mouths and eyes.)*
+
+---
+
 ## Random Ideas and Later
 
 - Donkeyface Joke

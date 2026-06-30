@@ -19,6 +19,7 @@ window.PJCC_GAMES = [
   { slug:'murphys-law',       name:"Murphy's Law",       cryptic:'The pessimist was right.',       icon:'☹', accent:'#3cbcfc', cat:'arcade', score:['murphys-law','score'], neu:'2026-06-25' },
   { slug:'battle-room',       name:'The Battle Room',    cryptic:'Chess as an action sequence.',   icon:'⚔', accent:'#56d0ff', cat:'dev', score:['battle-room','score'], neu:'2026-06-22' },
   { slug:'follow-the-dog',    name:'Follow the Dog',     cryptic:'Trust the run. Follow her.',     icon:'✦', accent:'#8fb8ff', cat:'dev' },
+  { slug:'chess-city',        name:'Chess City',         cryptic:'Platform the cursed board — the pieces have teeth.', icon:'♜', accent:'#ff5b6e', cat:'dev', score:['chess-city','score'], neu:'2026-06-25' },
   { slug:'the-gambit',        name:'The Gambit',         cryptic:'Lay down your best. The board decides.', icon:'♟', accent:'#f8d800', cat:'dev', soon:true },
   // ── The Vault (unlockable) ──
   { slug:'blindfold-puzzles', name:'Blindfold Puzzles',  cryptic:'No board. Only your mind.',      icon:'◻', accent:'#c9a7ff', cat:'vault', score:['blindfold','solved'], locked:true },
@@ -31,7 +32,7 @@ window.PJCC_GAMES = [
 window.PJCC_CATS = {
   learn:      { name:'Learn',     glyph:'♟', tag:'Sharpen your game', accent:'#00e436', route:'learn',      blurb:'Tactics, openings, notation — the training halls.' },
   arcade:     { name:'Arcade',    glyph:'♞', tag:'Pure play',         accent:'#ff77a8', route:'arcade',     blurb:'Action, chases, and run-and-gun. The loud room.' },
-  dev:        { name:'In Dev',    glyph:'🛠', tag:'On the workbench', accent:'#3cbcfc', route:'in-dev', blurb:'Half-built and humming. Peek at the workbench.' },
+  dev:        { name:'In Development', glyph:'🛠', tag:'On the workbench', accent:'#3cbcfc', route:'in-dev', blurb:'Half-built and humming. Peek at the workbench.' },
   vault:      { name:'The Vault', glyph:'🔒', tag:'Unlock to enter', accent:'#9b96ad', route:'vault',  blurb:'Sealed. Earn the key and the door opens.' },
   terminated: { name:'Terminated',glyph:'☠', tag:'Retired roster',    accent:'#fc5454', route:'terminated', blurb:'Decommissioned and delayed. Enter at your own risk.' }
 };

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Chess City</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: #07060f; color: #e8e0ff;
+    font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif; overflow: hidden; user-select: none; }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 8px; }
+
+  .hud { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; font-size: 0.84rem; }
+  .hud .hp { letter-spacing: 2px; font-size: 1.05rem; }
+  .hud .pill { background: rgba(70,40,120,0.4); border: 1px solid #5a4a8a; border-radius: 999px; padding: 4px 11px; font-weight: 700; }
+  .hud .pill b { color: #ffcf5a; }
+  .hud .spacer { flex: 1; }
+
+  .stage { position: relative; width: 100%; aspect-ratio: 16 / 9; }
+  canvas { display: block; width: 100%; height: 100%; border: 2px solid #6b4fb0; border-radius: 10px;
+    background: #0a0820; image-rendering: -webkit-optimize-contrast; }
+
+  .overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: rgba(8,5,22,0.9); border-radius: 10px; padding: 16px; text-align: center; }
+  .overlay.hidden { display: none; }
+  .card { max-width: 480px; }
+  .card h1 { color: #ff6b8a; font-size: 1.5rem; margin: 0 0 4px; letter-spacing: 1px; }
+  .card h2 { color: #ffcf5a; font-size: 1.35rem; margin: 0 0 6px; }
+  .card p { color: #cdbcf2; font-size: 0.88rem; line-height: 1.5; margin: 0 0 10px; }
+  .card ul { text-align: left; color: #cdbcf2; font-size: 0.82rem; line-height: 1.5; margin: 0 auto 12px; padding-left: 18px; max-width: 380px; }
+  .card ul b { color: #fff; }
+  .card .big { font-size: 1.5rem; color: #fff; font-weight: 800; margin: 4px 0; }
+  .card .nb { color: #6bffb8; font-weight: 800; }
+  .btn { display: inline-block; background: #ff6b8a; color: #1a0820; font-weight: 800; font-size: 1rem; border: none;
+    border-radius: 999px; padding: 11px 26px; cursor: pointer; font-family: inherit; }
+  .btn:hover { background: #ff86a0; }
+
+  /* touch controls */
+  .pad { display: none; margin-top: 8px; align-items: center; justify-content: space-between; gap: 10px; }
+  .pad-left, .pad-right { display: flex; gap: 10px; }
+  .tbtn { width: 60px; height: 60px; border-radius: 14px; border: 2px solid #6b4fb0; background: rgba(70,40,120,0.45);
+    color: #fff; font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; justify-content: center; touch-action: none; }
+  .tbtn:active { background: rgba(255,107,138,0.5); border-color: #ff6b8a; }
+  .tbtn.fire { color: #ffcf5a; }
+  @media (hover: none) and (pointer: coarse) { .pad { display: flex; } }
+  .pad-hint { text-align: center; color: #7d6bb0; font-size: 0.72rem; margin-top: 8px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hud">
+      <span class="hp" id="hp">♥♥♥♥♥</span>
+      <span class="spacer"></span>
+      <span class="pill">Score <b id="score">0</b></span>
+      <span class="pill">Best <b id="best">0</b></span>
+    </div>
+
+    <div class="stage">
+      <canvas id="game" width="800" height="450"></canvas>
+
+      <div class="overlay" id="ov-start">
+        <div class="card">
+          <h1>♜ CHESS CITY ♜</h1>
+          <p>The streets of Chess City crawl with <b>twisted pieces</b> — pawns, knights, bishops, rooks, all grown mouths and eyes. Run, gun, and platform your way to the <b>Queen</b> at the end of the block.</p>
+          <ul>
+            <li><b>Move:</b> ← → / <b>A D</b> &nbsp;·&nbsp; <b>Jump:</b> ↑ / <b>W</b> / Space &nbsp;·&nbsp; <b>Fire:</b> <b>X</b> / <b>J</b></li>
+            <li>On a phone, use the on-screen buttons.</li>
+            <li>Bigger pieces take more hits. Mind the gaps — and the rooks' charge.</li>
+          </ul>
+          <button class="btn" id="btn-start">Enter the city ▸</button>
+        </div>
+      </div>
+
+      <div class="overlay hidden" id="ov-end">
+        <div class="card">
+          <h2 id="end-head">Down you go.</h2>
+          <p id="end-line">The pieces got you.</p>
+          <div class="big" id="end-score">0</div>
+          <p id="end-best">Best: 0</p>
+          <button class="btn" id="btn-again">Try again ▸</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pad">
+      <div class="pad-left">
+        <div class="tbtn" data-k="left">◀</div>
+        <div class="tbtn" data-k="right">▶</div>
+      </div>
+      <div class="pad-right">
+        <div class="tbtn fire" data-k="fire">●</div>
+        <div class="tbtn" data-k="jump">▲</div>
+      </div>
+    </div>
+    <div class="pad-hint">← → move · ▲ jump · ● fire</div>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+  var cv = document.getElementById('game');
+  var ctx = cv.getContext('2d');
+  var W = 800, H = 450, GY = 384;          // GY = top of ground
+  var WORLD_W = 4200, ARENA = 3400;
+  var dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  var BEST_KEY = 'pjcc.best.chess-city';
+  function getBest() { try { return parseInt(localStorage.getItem(BEST_KEY), 10) || 0; } catch (e) { return 0; } }
+  function setBest(v) { try { localStorage.setItem(BEST_KEY, String(v)); } catch (e) {} }
+
+  // ---- princess sprite ----
+  var pImg = new Image(), pReady = false;
+  pImg.onload = function () { pReady = true; };
+  pImg.src = '/assets/images/Princess_Color_v01.jpg';
+
+  // ---- level ----
+  var platforms = [
+    { x: 0, y: GY, w: 900, h: 200 },
+    { x: 1010, y: GY, w: 790, h: 200 },
+    { x: 1900, y: GY, w: 1100, h: 200 },
+    { x: 3080, y: GY, w: 1120, h: 200 },
+    // floating platforms (thick enough not to tunnel)
+    { x: 560, y: 300, w: 120, h: 26 },
+    { x: 1180, y: 286, w: 140, h: 26 },
+    { x: 2050, y: 300, w: 120, h: 26 },
+    { x: 2680, y: 276, w: 150, h: 26 }
+  ];
+  var SPAWNS = [
+    { t: 'pawn', x: 380 }, { t: 'pawn', x: 432 }, { t: 'pawn', x: 484 },
+    { t: 'knight', x: 740 },
+    { t: 'bishop', x: 1235, y: 256 },
+    { t: 'pawn', x: 1320 }, { t: 'pawn', x: 1372 }, { t: 'pawn', x: 1424 },
+    { t: 'rook', x: 1660 },
+    { t: 'knight', x: 2120 },
+    { t: 'pawn', x: 2320 }, { t: 'pawn', x: 2372 }, { t: 'pawn', x: 2424 }, { t: 'pawn', x: 2476 },
+    { t: 'bishop', x: 2730, y: 246 },
+    { t: 'rook', x: 2940 }
+  ];
+
+  // ---- state ----
+  var state = 'ready';
+  var player, enemies, shots, boss, cam, score, lastGroundX, win, shake;
+
+  function reset() {
+    player = { x: 70, y: GY - 44, w: 30, h: 44, vx: 0, vy: 0, onGround: false, face: 1, hp: 5, maxhp: 5, inv: 0, fireCd: 0, maxX: 0 };
+    enemies = SPAWNS.map(function (s) { return makeEnemy(s.t, s.x, s.y); });
+    shots = [];
+    boss = { kind: 'queen', x: 3760, y: 210, w: 66, h: 86, vx: 0.7, vy: 0, face: -1, hp: 26, maxhp: 26, active: false, t: 0, atkCd: 1100, baseY: 200, bob: 0 };
+    cam = { x: 0 };
+    score = 0; lastGroundX = 70; win = false; shake = 0;
+  }
+
+  function makeEnemy(t, x, y) {
+    if (t === 'pawn')   return { kind: 'pawn',   x: x, y: GY - 26, w: 24, h: 26, vx: 0, vy: 0, hp: 1, face: -1, onGround: false, grav: true, active: false, hurt: 0, pts: 60 };
+    if (t === 'knight') return { kind: 'knight', x: x, y: GY - 30, w: 28, h: 30, vx: 0, vy: 0, hp: 2, face: -1, onGround: false, grav: true, active: false, hurt: 0, hopCd: 500 + Math.random() * 500, pts: 130 };
+    if (t === 'bishop') return { kind: 'bishop', x: x, y: y || 256, w: 28, h: 30, vx: 0, vy: 0, hp: 2, face: -1, grav: false, active: false, hurt: 0, fireCd: 900 + Math.random() * 700, baseY: y || 256, bob: Math.random() * 6, pts: 140 };
+    return                     { kind: 'rook',   x: x, y: GY - 34, w: 34, h: 34, vx: 0, vy: 0, hp: 4, face: -1, onGround: false, grav: true, active: false, hurt: 0, st: 'idle', stT: 600, pts: 260 };
+  }
+
+  // ---- input ----
+  var K = { left: false, right: false, jump: false, fire: false, jumpEdge: false };
+  function setKey(name, on) {
+    if (name === 'jump' && on && !K.jump) K.jumpEdge = true;
+    K[name] = on;
+  }
+  window.addEventListener('keydown', function (e) {
+    var k = e.key.toLowerCase();
+    if (k === 'arrowleft' || k === 'a') setKey('left', true);
+    else if (k === 'arrowright' || k === 'd') setKey('right', true);
+    else if (k === 'arrowup' || k === 'w' || k === ' ') setKey('jump', true);
+    else if (k === 'x' || k === 'j') setKey('fire', true);
+    else return;
+    if (state === 'play') e.preventDefault();
+  });
+  window.addEventListener('keyup', function (e) {
+    var k = e.key.toLowerCase();
+    if (k === 'arrowleft' || k === 'a') setKey('left', false);
+    else if (k === 'arrowright' || k === 'd') setKey('right', false);
+    else if (k === 'arrowup' || k === 'w' || k === ' ') setKey('jump', false);
+    else if (k === 'x' || k === 'j') setKey('fire', false);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.tbtn'), function (b) {
+    var key = b.getAttribute('data-k');
+    function down(e) { e.preventDefault(); setKey(key, true); }
+    function up(e) { e.preventDefault(); setKey(key, false); }
+    b.addEventListener('touchstart', down, { passive: false });
+    b.addEventListener('touchend', up); b.addEventListener('touchcancel', up);
+    b.addEventListener('mousedown', down); b.addEventListener('mouseup', up); b.addEventListener('mouseleave', up);
+  });
+
+  // ---- audio ----
+  var AC = null;
+  function tone(f, dur, type, vol) {
+    try {
+      if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+      var o = AC.createOscillator(), g = AC.createGain();
+      o.type = type || 'square'; o.frequency.value = f; o.connect(g); g.connect(AC.destination);
+      g.gain.setValueAtTime(vol || 0.12, AC.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur);
+      o.start(); o.stop(AC.currentTime + dur);
+    } catch (e) {}
+  }
+  function sJump() { tone(440, 0.12, 'square', 0.12); }
+  function sShoot() { tone(820, 0.07, 'square', 0.1); }
+  function sHit() { tone(180, 0.1, 'sawtooth', 0.12); }
+  function sKill() { tone(120, 0.18, 'sawtooth', 0.14); }
+  function sHurt() { tone(90, 0.25, 'sawtooth', 0.16); }
+
+  // ---- physics ----
+  function overlap(a, p) { return a.x < p.x + p.w && a.x + a.w > p.x && a.y < p.y + p.h && a.y + a.h > p.y; }
+  function moveX(a, F) {
+    a.x += a.vx * F; a._wall = 0;
+    for (var i = 0; i < platforms.length; i++) {
+      var p = platforms[i];
+      if (overlap(a, p)) { if (a.vx > 0) { a.x = p.x - a.w; a._wall = 1; } else if (a.vx < 0) { a.x = p.x + p.w; a._wall = -1; } a.vx = 0; }
+    }
+  }
+  function moveY(a, F) {
+    a.y += a.vy * F; a.onGround = false;
+    for (var i = 0; i < platforms.length; i++) {
+      var p = platforms[i];
+      if (overlap(a, p)) { if (a.vy > 0) { a.y = p.y - a.h; a.onGround = true; } else if (a.vy < 0) { a.y = p.y + p.h; } a.vy = 0; }
+    }
+  }
+  function groundAhead(e) {
+    // is there a platform under the leading foot (so a walker won't step into a pit)?
+    var fx = e.face > 0 ? e.x + e.w + 4 : e.x - 4, fy = e.y + e.h + 4;
+    for (var i = 0; i < platforms.length; i++) {
+      var p = platforms[i];
+      if (fx > p.x && fx < p.x + p.w && fy > p.y && fy < p.y + p.h + 6) return true;
+    }
+    return false;
+  }
+
+  function addShot(x, y, vx, vy, from) { shots.push({ x: x, y: y, vx: vx, vy: vy, from: from, r: from === 'player' ? 5 : 6, life: 2600 }); }
+
+  function hurtPlayer(dmg, fromX) {
+    if (player.inv > 0) return;
+    player.hp -= dmg; player.inv = 1050;
+    player.vx = (fromX > player.x ? -1 : 1) * 4.2; player.vy = -4.5; shake = 8; sHurt();
+    if (player.hp <= 0) endGame(false);
+  }
+
+  // ---- enemy AI ----
+  function updateEnemy(e, dt, F) {
+    if (!e.active) { if (e.x < cam.x + W + 70) e.active = true; else return; }
+    if (e.hurt > 0) e.hurt -= dt;
+    var toP = player.x + player.w / 2 - (e.x + e.w / 2);
+
+    if (e.kind === 'pawn') {
+      if (Math.abs(toP) < 320) e.face = toP > 0 ? 1 : -1;
+      e.vx = e.face * 0.85;
+      if (e.onGround && (e._wall || !groundAhead(e))) { e.face *= -1; e.vx = e.face * 0.85; }
+    } else if (e.kind === 'knight') {
+      e.hopCd -= dt;
+      if (e.onGround && e.hopCd <= 0) {
+        e.face = toP > 0 ? 1 : -1;
+        e.vy = -7.4; e.vx = e.face * (1.6 + Math.random() * 1.8) * (Math.random() < 0.25 ? -1 : 1);
+        e.hopCd = 620 + Math.random() * 620;
+      }
+      if (e.onGround) e.vx *= 0.8;
+    } else if (e.kind === 'bishop') {
+      e.bob += dt * 0.004; e.y = e.baseY + Math.sin(e.bob) * 7;
+      e.face = toP > 0 ? 1 : -1;
+      e.fireCd -= dt;
+      if (e.fireCd <= 0 && Math.abs(toP) < 460) {
+        var sx = Math.sign(toP) || 1, sy = (player.y > e.y ? 1 : -1);
+        var sp = 3.4; addShot(e.x + e.w / 2, e.y + e.h / 2, sx * sp, sy * sp, 'enemy'); // diagonal
+        e.fireCd = 1300 + Math.random() * 700;
+      }
+    } else if (e.kind === 'rook') {
+      e.stT -= dt;
+      if (e.st === 'idle') {
+        if (Math.abs(toP) < 420 && Math.abs(player.y - e.y) < 80) { e.st = 'tele'; e.stT = 650; e.face = toP > 0 ? 1 : -1; }
+      } else if (e.st === 'tele') {
+        if (e.stT <= 0) { e.st = 'charge'; e.stT = 1400; }
+      } else if (e.st === 'charge') {
+        e.vx = e.face * 6.4;
+        if (e._wall || e.stT <= 0) { e.st = 'recover'; e.stT = 700; e.vx = 0; }
+      } else { if (e.stT <= 0) e.st = 'idle'; }
+      if (e.st !== 'charge') e.vx = 0;
+    }
+
+    if (e.grav) { e.vy += 0.5 * F; if (e.vy > 12) e.vy = 12; }
+    moveX(e, F);
+    if (e.grav) moveY(e, F);
+    if (e.y > H + 120) e.hp = 0;   // fell into a pit
+  }
+
+  function updateBoss(dt, F) {
+    if (!boss.active) { if (player.x > ARENA) { boss.active = true; cam.x = WORLD_W - W; } else return; }
+    boss.t += dt; boss.bob += dt * 0.003;
+    boss.y = boss.baseY + Math.sin(boss.bob) * 24;
+    // drift toward a hover x around the player but stay in arena
+    var targetX = Math.max(ARENA + 120, Math.min(WORLD_W - 140, player.x + 40));
+    boss.x += Math.sign(targetX - boss.x) * 0.8 * F;
+    boss.face = player.x < boss.x ? -1 : 1;
+    boss.atkCd -= dt;
+    var fast = boss.hp < boss.maxhp / 2;
+    if (boss.atkCd <= 0) {
+      var mode = Math.random();
+      var cx = boss.x + boss.w / 2, cy = boss.y + boss.h / 2;
+      if (mode < 0.55) { // aimed spread
+        var ang = Math.atan2(player.y - cy, player.x - cx), n = fast ? 5 : 3, sp = 3.6;
+        for (var i = 0; i < n; i++) { var a = ang + (i - (n - 1) / 2) * 0.26; addShot(cx, cy, Math.cos(a) * sp, Math.sin(a) * sp, 'enemy'); }
+      } else if (mode < 0.8) { // summon pawns
+        enemies.push(makeEnemy('pawn', cam.x + 40)); enemies.push(makeEnemy('pawn', cam.x + W - 60));
+        enemies[enemies.length - 1].active = true; enemies[enemies.length - 2].active = true;
+      } else { // ring burst
+        var m = fast ? 10 : 7; for (var j = 0; j < m; j++) { var b = j / m * Math.PI * 2; addShot(cx, cy, Math.cos(b) * 3.0, Math.sin(b) * 3.0, 'enemy'); }
+      }
+      boss.atkCd = fast ? 850 : 1300;
+    }
+  }
+
+  // ---- main update ----
+  function update(dt, F) {
+    if (player.inv > 0) player.inv -= dt;
+    // input -> player
+    var dir = (K.right ? 1 : 0) - (K.left ? 1 : 0);
+    if (dir !== 0) { player.vx = dir * 3.2; player.face = dir; }
+    else { player.vx *= 0.8; if (Math.abs(player.vx) < 0.1) player.vx = 0; }
+    if (K.jumpEdge && player.onGround) { player.vy = -9.4; player.onGround = false; sJump(); }
+    K.jumpEdge = false;
+    player.vy += 0.5 * F; if (player.vy > 12.5) player.vy = 12.5;
+    moveX(player, F);
+    if (boss.active && player.x < ARENA) player.x = ARENA; // lock into arena
+    if (player.x < 0) player.x = 0;
+    moveY(player, F);
+    if (player.onGround) lastGroundX = player.x;
+    if (player.y > H + 80) { hurtPlayer(1, player.x); if (player.hp > 0) { player.x = lastGroundX; player.y = GY - player.h - 4; player.vx = 0; player.vy = 0; } }
+    player.fireCd -= dt;
+    if (K.fire && player.fireCd <= 0) { addShot(player.face > 0 ? player.x + player.w : player.x, player.y + 14, player.face * 7.4, 0, 'player'); player.fireCd = 270; sShoot(); }
+    if (player.x > player.maxX) { score += Math.floor((player.x - player.maxX) / 10); player.maxX = player.x; }
+
+    // enemies
+    for (var i = enemies.length - 1; i >= 0; i--) {
+      var e = enemies[i];
+      updateEnemy(e, dt, F);
+      if (e.active && e.hp > 0 && player.inv <= 0 && overlap(player, e)) hurtPlayer(1, e.x);
+      if (e.hp <= 0) { score += e.pts || 0; enemies.splice(i, 1); }
+    }
+    updateBoss(dt, F);
+    if (boss.active && !win && player.inv <= 0 && overlap(player, boss)) hurtPlayer(1, boss.x);
+
+    // shots
+    for (var s = shots.length - 1; s >= 0; s--) {
+      var p = shots[s]; p.x += p.vx * F; p.y += p.vy * F; p.life -= dt;
+      var dead = p.life <= 0 || p.x < cam.x - 40 || p.x > cam.x + W + 40 || p.y > H + 40 || p.y < -40;
+      if (!dead) {
+        if (p.from === 'player') {
+          for (var k = enemies.length - 1; k >= 0; k--) {
+            var en = enemies[k];
+            if (en.active && en.hp > 0 && p.x > en.x && p.x < en.x + en.w && p.y > en.y && p.y < en.y + en.h) {
+              en.hp -= 1; en.hurt = 110; dead = true; sHit();
+              if (en.hp <= 0) sKill();
+              break;
+            }
+          }
+          if (!dead && boss.active && !win && p.x > boss.x && p.x < boss.x + boss.w && p.y > boss.y && p.y < boss.y + boss.h) {
+            boss.hp -= 1; boss.hurt = 90; dead = true; sHit();
+            if (boss.hp <= 0) { boss.hp = 0; win = true; score += 1500; endGame(true); }
+          }
+        } else {
+          if (player.inv <= 0 && p.x > player.x && p.x < player.x + player.w && p.y > player.y && p.y < player.y + player.h) { hurtPlayer(1, p.x); dead = true; }
+        }
+      }
+      if (dead) shots.splice(s, 1);
+    }
+
+    // camera
+    if (!boss.active) cam.x = Math.max(0, Math.min(WORLD_W - W, player.x + player.w / 2 - W / 2));
+    if (shake > 0) shake -= dt * 0.04;
+
+    // HUD
+    var hp = Math.max(0, player.hp);
+    document.getElementById('hp').textContent = '♥'.repeat(hp) + '♡'.repeat(player.maxhp - hp);
+    document.getElementById('score').textContent = score;
+  }
+
+  // ---- render ----
+  function drawPiece(g, cx, cy, size, color, hurt) {
+    // a twisted chess piece: glyph + eyes + a jagged mouth
+    ctx.save();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = '900 ' + size + 'px serif';
+    ctx.fillStyle = hurt > 0 ? '#fff' : color;
+    ctx.shadowColor = color; ctx.shadowBlur = 8;
+    ctx.fillText(g, cx, cy + size * 0.05);
+    ctx.shadowBlur = 0;
+    // eyes
+    var er = size * 0.09, ey = cy - size * 0.16, ex = size * 0.16;
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(cx - ex, ey, er, 0, 7); ctx.arc(cx + ex, ey, er, 0, 7); ctx.fill();
+    ctx.fillStyle = '#1a0010';
+    ctx.beginPath(); ctx.arc(cx - ex, ey, er * 0.5, 0, 7); ctx.arc(cx + ex, ey, er * 0.5, 0, 7); ctx.fill();
+    // mouth (zigzag)
+    ctx.strokeStyle = '#1a0010'; ctx.lineWidth = Math.max(1.5, size * 0.05);
+    var my = cy + size * 0.12, mw = size * 0.2;
+    ctx.beginPath(); ctx.moveTo(cx - mw, my);
+    ctx.lineTo(cx - mw * 0.5, my + size * 0.07); ctx.lineTo(cx, my); ctx.lineTo(cx + mw * 0.5, my + size * 0.07); ctx.lineTo(cx + mw, my);
+    ctx.stroke();
+    ctx.restore();
+  }
+  var COL = { pawn: '#ff5b6e', knight: '#ff7bd0', bishop: '#5bc8ff', rook: '#ffb24a', queen: '#c98bff' };
+  var GLY = { pawn: '♟', knight: '♞', bishop: '♝', rook: '♜', queen: '♛' };
+
+  function render() {
+    var ox = -cam.x + (shake > 0 ? (Math.random() - 0.5) * shake : 0);
+    var oy = shake > 0 ? (Math.random() - 0.5) * shake : 0;
+    // sky
+    var sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, '#1a0f33'); sky.addColorStop(0.6, '#241038'); sky.addColorStop(1, '#0c0818');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    // skyline silhouettes (parallax)
+    ctx.fillStyle = '#160a26';
+    for (var b = 0; b < 22; b++) {
+      var bx = (b * 240 - cam.x * 0.4) % (240 * 22); if (bx < -160) bx += 240 * 22;
+      var bw = 90 + (b % 3) * 34, bh = 120 + (b % 4) * 50;
+      ctx.fillRect(bx, H - bh, bw, bh);
+      ctx.fillStyle = '#221038'; ctx.fillRect(bx + bw / 2 - 7, H - bh - 26, 14, 30); // a little tower spire
+      ctx.fillStyle = '#160a26';
+    }
+    // moon
+    ctx.fillStyle = 'rgba(255,210,140,0.5)'; ctx.beginPath(); ctx.arc(660, 80, 34, 0, 7); ctx.fill();
+
+    ctx.save(); ctx.translate(ox, oy);
+
+    // platforms (checkered stone)
+    for (var i = 0; i < platforms.length; i++) {
+      var p = platforms[i];
+      if (p.x + p.w < cam.x - 20 || p.x > cam.x + W + 20) continue;
+      ctx.fillStyle = '#2c1b4e'; ctx.fillRect(p.x, p.y, p.w, p.h);
+      ctx.fillStyle = '#3a2666';
+      for (var cxr = 0; cxr < p.w; cxr += 32) for (var cyr = 0; cyr < Math.min(p.h, 64); cyr += 32)
+        if (((cxr / 32) + (cyr / 32)) % 2 === 0) ctx.fillRect(p.x + cxr, p.y + cyr, 32, 32);
+      ctx.fillStyle = '#5a3aa0'; ctx.fillRect(p.x, p.y, p.w, 3);
+    }
+
+    // enemies
+    for (var j = 0; j < enemies.length; j++) {
+      var e = enemies[j];
+      if (!e.active || e.x + e.w < cam.x - 30 || e.x > cam.x + W + 30) continue;
+      if (e.kind === 'rook' && e.st === 'tele' && Math.floor(e.stT / 80) % 2 === 0) { ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(e.x - 2, e.y - 2, e.w + 4, e.h + 4); }
+      drawPiece(GLY[e.kind], e.x + e.w / 2, e.y + e.h / 2, e.h + 6, COL[e.kind], e.hurt);
+    }
+
+    // boss
+    if (boss.active && !win) {
+      drawPiece(GLY.queen, boss.x + boss.w / 2, boss.y + boss.h / 2, boss.h, COL.queen, boss.hurt);
+    }
+
+    // shots
+    for (var s = 0; s < shots.length; s++) {
+      var sh = shots[s];
+      ctx.fillStyle = sh.from === 'player' ? '#ffe27a' : '#ff5b6e';
+      ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.arc(sh.x, sh.y, sh.r, 0, 7); ctx.fill(); ctx.shadowBlur = 0;
+    }
+
+    // princess
+    drawPrincess();
+
+    ctx.restore();
+
+    // boss health bar (screen space)
+    if (boss.active && !win) {
+      ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(W / 2 - 160, 14, 320, 16);
+      ctx.fillStyle = '#c98bff'; ctx.fillRect(W / 2 - 158, 16, 316 * Math.max(0, boss.hp) / boss.maxhp, 12);
+      ctx.fillStyle = '#fff'; ctx.font = '700 11px Poppins, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('THE QUEEN', W / 2, 26);
+    }
+  }
+
+  function drawPrincess() {
+    if (player.inv > 0 && Math.floor(player.inv / 80) % 2 === 0) return; // blink while hurt
+    var x = player.x, y = player.y, w = player.w, h = player.h;
+    ctx.save();
+    if (player.face < 0) { ctx.translate(x + w, 0); ctx.scale(-1, 1); ctx.translate(-x, 0); }
+    // shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(x + w / 2, y + h, w * 0.5, 5, 0, 0, 7); ctx.fill();
+    if (pReady) {
+      var s = Math.min(pImg.width, pImg.height);
+      ctx.save();
+      ctx.beginPath(); ctx.arc(x + w / 2, y + h / 2, w / 2 + 3, 0, 7); ctx.closePath(); ctx.clip();
+      ctx.drawImage(pImg, (pImg.width - s) / 2, (pImg.height - s) / 2, s, s, x - 3, y, w + 6, h);
+      ctx.restore();
+      ctx.lineWidth = 2.5; ctx.strokeStyle = '#ffcf5a';
+      ctx.beginPath(); ctx.arc(x + w / 2, y + h / 2, w / 2 + 3, 0, 7); ctx.stroke();
+    } else {
+      ctx.fillStyle = '#ffcf5a'; ctx.beginPath(); ctx.arc(x + w / 2, y + h / 2, w / 2, 0, 7); ctx.fill();
+      ctx.fillStyle = '#1a0820'; ctx.font = '900 18px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('♟', x + w / 2, y + h / 2);
+    }
+    ctx.restore();
+  }
+
+  // ---- flow ----
+  function start() {
+    reset(); state = 'play';
+    document.getElementById('ov-start').classList.add('hidden');
+    document.getElementById('ov-end').classList.add('hidden');
+  }
+  function endGame(won) {
+    if (state === 'over') return;
+    state = 'over';
+    var best = getBest(), nb = score > best; if (nb) setBest(score);
+    document.getElementById('best').textContent = getBest();
+    document.getElementById('end-head').textContent = won ? '♛ The Queen falls.' : 'Down you go.';
+    document.getElementById('end-line').innerHTML = won
+      ? 'You cleared the block — Chess City is quiet… for now.'
+      : 'The pieces got you. The pessimists nod knowingly.';
+    document.getElementById('end-score').textContent = score + ' pts';
+    document.getElementById('end-best').innerHTML = nb ? '<span class="nb">★ New best!</span>' : 'Best: ' + getBest();
+    document.getElementById('ov-end').classList.remove('hidden');
+  }
+
+  var last = 0;
+  function loop(ts) {
+    var dt = ts - last; if (!last || dt > 34) dt = 16; last = ts;
+    var F = dt / 16.667; if (F > 1.8) F = 1.8;
+    if (state === 'play') update(dt, F);
+    render();
+    requestAnimationFrame(loop);
+  }
+
+  document.getElementById('best').textContent = getBest();
+  document.getElementById('btn-start').addEventListener('click', start);
+  document.getElementById('btn-again').addEventListener('click', start);
+  reset();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

@@ -162,6 +162,33 @@ so wait for Flare #1; it's apparatus, not destination.
 **Av3 — The Academy** *(all 10 shipped, offline).* Backend upgrades when accounts land: shared class
 rosters/dashboards, a server-verifiable cert registry, a rules-enforcing practice board.
 
+> **The Academy as the show's central location (brainstorm, 2026-06-25):**
+>
+> **The "Hogwarts" of PJCC.** Make the Academy a single **recurring set piece** instead of one-off lessons —
+> Princess, Argus, Auston, Maxwell, et al. all attend, taught by a **mentor figure** (could be the Narrator's
+> role, or a new character — a **retired chess-piece veteran**). Episodes map to academy **ranks / belts** the
+> characters progress through, mirroring a real curriculum arc.
+>
+> **Curriculum → story mapping.** Use the real **five-week Level 1 youth curriculum** (Nate's actual coaching
+> syllabus) as the in-universe academy syllabus — so every episode teaches one real chess concept while
+> advancing a character arc:
+> - **Week 1 — board setup & piece movement** → Princess & Murphy's intro episode; pure fish-out-of-water
+>   comedy (Princess is a pawn learning the basics).
+> - **Week 2 — tactics (forks, pins)** → a battle-room episode where **Oskar** comically gets forked.
+> - **Week 3 — openings** → **Kennie** teaches Princess the **Pirc Defense** — already locked lore, slots in
+>   directly. *(Name check: `_pjcc/notes.md` currently credits **Garrett** with teaching Princess the Pirc —
+>   reconcile Garrett vs. Kennie.)*
+> - **Week 4 — endgames** → higher stakes; **Murphy's** pessimism becomes relevant ("we're already lost") vs.
+>   Princess's New-Thought-inflected optimism.
+> - **Week 5 — tournament / test** → a real battle-room match as the season climax.
+>
+> The lessons Nate already writes for the coaching job become a **content-generation engine** for the show.
+>
+> **Thematic hook.** Since New Thought / Neville Goddard already informs PJCC's spiritual direction, the Academy
+> is a natural vehicle: each chess principle (think ahead, control the center, sacrifice for position) doubles
+> as a **metaphor for a character arc** — strongest against **Murphy**, the pessimist foil who treats the board
+> (and life) as **fixed** rather than **shaped by belief.**
+
 **Av4 — Physical / tabletop:** print-and-play Siege PDF · POD pins/stickers demand page · the PJCC chess
 set (obsidian-vs-violet) · Sand Mine as a dice/card PnP · Operative Field Kit (cipher wheel + decoder,
 ARG tie) · Checker Town Field Guide (art book / festival leave-behind) · earn-a-rank → buy the pin ·
