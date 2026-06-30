@@ -85,26 +85,88 @@ binding = "AI"
 
 ---
 
-## Optional: DeepL engine (better Japanese, needs a free key)
+## DeepL engine (sharper Japanese) — DEPLOYED 2026-06-30
 
-DeepL's free tier is 500,000 chars/month (signup needs a card, but isn't charged on Free).
-Get a key at deepl.com → swap the `try` block in the Worker for:
+DeepL gives noticeably better Japanese than `m2m100`. Free tier = 500,000 chars/month
+(signup needs a card for verification but is **never charged** on the Free plan).
+
+**This is the version currently deployed.** It tries DeepL first and falls back to
+Workers AI (`m2m100`) on any DeepL hiccup — over quota, key missing, or outage — so the
+Worker always returns *something*. (And the site still has gtx → MyMemory → English under
+that.) Because of the fallback, pasting this code is safe even before the key is added: it
+just runs on `m2m100` until `DEEPL_KEY` exists, then auto-upgrades.
+
+### Steps
+1. **Get a key:** [deepl.com/pro-api](https://www.deepl.com/pro-api) → sign up for the
+   **DeepL API Free** plan (NOT a DeepL Pro/app subscription — only the *API* plan issues a
+   key). Copy the **Authentication Key** from your account page. Free keys end in `:fx`.
+2. **Store it as a secret:** Worker → **Settings → Variables and Secrets → Add → Secret**,
+   name exactly `DEEPL_KEY`, value = the key. Save. (CLI: `wrangler secret put DEEPL_KEY`.)
+3. **Swap the code:** Worker → **Edit code** → select all, paste the block below → **Deploy**.
+4. **Test:** `…workers.dev/?q=The%20princess%20learned%20to%20play%20chess` → the response
+   includes `"engine":"deepl"` when DeepL answered (or `"m2m100"` if it fell back).
 
 ```js
-const r = await fetch('https://api-free.deepl.com/v2/translate', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'DeepL-Auth-Key ' + env.DEEPL_KEY,
-    'Content-Type': 'application/x-www-form-urlencoded'
-  },
-  body: new URLSearchParams({ text: q, source_lang: 'EN', target_lang: 'JA' })
-});
-const d = await r.json();
-return json({ translation: d.translations[0].text }, 200, { ...cors, 'Cache-Control': 'public, max-age=86400' });
-```
+export default {
+  async fetch(request, env) {
+    const ALLOW = [
+      'https://mcpuppystudios.com',
+      'https://www.mcpuppystudios.com',
+      'https://ngreen37.github.io'
+    ];
+    const origin = request.headers.get('Origin') || '';
+    const cors = {
+      'Access-Control-Allow-Origin': ALLOW.includes(origin) ? origin : ALLOW[0],
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Vary': 'Origin'
+    };
+    if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
 
-Then store the key as a secret (never in code): Worker → **Settings → Variables and Secrets
-→ Add → Secret**, name `DEEPL_KEY`. (CLI: `wrangler secret put DEEPL_KEY`.)
+    const url = new URL(request.url);
+    let q  = url.searchParams.get('q')  || '';
+    let sl = url.searchParams.get('sl') || 'english';
+    let tl = url.searchParams.get('tl') || 'japanese';
+    if (request.method === 'POST') {
+      try { const b = await request.json(); q = b.q || q; sl = b.sl || sl; tl = b.tl || tl; } catch (_) {}
+    }
+    if (!q) return json({ error: 'no text' }, 400, cors);
+
+    const cache = { 'Cache-Control': 'public, max-age=86400' };
+
+    // 1) DeepL — sharper Japanese. Any failure (over quota / no key / outage) falls
+    //    through to Workers AI below, so the Worker never goes dead.
+    if (env.DEEPL_KEY) {
+      try {
+        const r = await fetch('https://api-free.deepl.com/v2/translate', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'DeepL-Auth-Key ' + env.DEEPL_KEY,
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: new URLSearchParams({ text: q, source_lang: 'EN', target_lang: 'JA' })
+        });
+        if (r.ok) {
+          const d = await r.json();
+          const t = d && d.translations && d.translations[0] && d.translations[0].text;
+          if (t) return json({ translation: t, engine: 'deepl' }, 200, { ...cors, ...cache });
+        }
+      } catch (_) { /* fall through to Workers AI */ }
+    }
+
+    // 2) Workers AI (m2m100) — the always-on fallback.
+    try {
+      const out = await env.AI.run('@cf/meta/m2m100-1.2b', { text: q, source_lang: sl, target_lang: tl });
+      return json({ translation: out.translated_text, engine: 'm2m100' }, 200, { ...cors, ...cache });
+    } catch (e) {
+      return json({ error: String(e) }, 502, cors);
+    }
+  }
+};
+function json(obj, status, headers) {
+  return new Response(JSON.stringify(obj), { status, headers: { 'Content-Type': 'application/json', ...headers } });
+}
+```
 
 ---
 
