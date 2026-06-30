@@ -26,6 +26,18 @@ brand: mcpuppy
   <div class="dl-step"><span class="dl-step-n">4</span><div><strong>Already on the roadmap?</strong> You hear it first — and get rewarded for calling it (credits, a goal card, a founding credit).</div></div>
 </div>
 
+<div class="dl-levels">
+  <div class="dl-levels-head">Where it sits on Patreon</div>
+  <div class="dl-level">
+    <span class="dl-level-badge">Lowest tier</span>
+    <div><strong>💬 Comment on Fan Art.</strong> Even the entry level gets a voice — hop onto the <a href="/fan-art/">Fan Wall</a> and talk shop with other operatives: react to their pieces, cheer them on, leave a note. The community's front door.</div>
+  </div>
+  <div class="dl-level dl-level--top">
+    <span class="dl-level-badge dl-level-badge--top">Higher tier</span>
+    <div><strong>✉ The Direct Line.</strong> Everything above, plus a private line straight to me — one person, guaranteed reply.</div>
+  </div>
+</div>
+
 <p class="dl-note">Parked behind Patreon billing, which goes live with the funding layer — so it sits in <strong>coming soon</strong> for now. Want to be first through the door?</p>
 
 <div class="dl-cta">
@@ -64,4 +76,15 @@ brand: mcpuppy
 .dl-btn:hover { transform:translateY(-2px); filter:brightness(1.07); }
 .dl-btn--ghost { background:transparent; color:#F5C518; }
 .dl-btn--ghost:hover { background:rgba(245,197,24,0.1); }
+
+.dl-levels { max-width:680px; margin:0 auto 1.6rem; }
+.dl-levels-head { color:#F5C518; font-weight:800; font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; text-align:center; margin-bottom:10px; }
+.dl-level { display:flex; gap:12px; align-items:flex-start; background:rgba(110,95,160,0.1); border:1px solid #4a3a86;
+  border-radius:12px; padding:13px 16px; color:#cdbcf2; font-size:0.95rem; line-height:1.5; margin-bottom:10px; }
+.dl-level strong { color:#f0e6ff; }
+.dl-level a { color:#F5C518; }
+.dl-level--top { border-color:#6b5fa0; border-left:3px solid #F5C518; }
+.dl-level-badge { flex-shrink:0; font-size:0.62rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase;
+  color:#cdbcf2; background:rgba(245,197,24,0.14); border:1px solid #6b5fa0; border-radius:999px; padding:3px 10px; white-space:nowrap; }
+.dl-level-badge--top { color:#1a0f3d; background:#F5C518; border-color:#F5C518; }
 </style>

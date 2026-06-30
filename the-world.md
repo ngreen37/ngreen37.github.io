@@ -33,10 +33,17 @@ permalink: /the-world/
   border: 2px solid var(--c,#6b5fa0); border-radius: 18px;
   background: linear-gradient(180deg, color-mix(in srgb, var(--c) 28%, #160a33) 0%, #160a33 80%);
   transition: transform .14s, box-shadow .14s; }
-.world-pillar:hover { transform: translateY(-4px); box-shadow: 0 12px 34px -10px var(--c); }
-.wp-glyph { position: absolute; top: 26px; left: 0; right: 0; font-size: 4.6rem; line-height: 1; color: var(--c);
+.world-pillar:hover, .world-pillar:active, .world-pillar:focus-visible {
+  transform: translateY(-4px); box-shadow: 0 0 42px -8px var(--c), 0 12px 34px -12px var(--c); }
+/* dimmed corner that lights up in the tile's colour on hover/tap — matches the splash quads */
+.world-pillar::after { content: ''; position: absolute; inset: 0; z-index: 0; border-radius: 18px; pointer-events: none;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--c) 26%, transparent) 0%, transparent 58%);
+  opacity: 0; transition: opacity .2s; }
+.world-pillar:hover::after, .world-pillar:active::after, .world-pillar:focus-visible::after { opacity: 1; }
+.wp-glyph { position: absolute; top: 26px; left: 0; right: 0; z-index: 1; font-size: 4.6rem; line-height: 1; color: var(--c);
   filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5)); transition: transform .16s; }
-.world-pillar:hover .wp-glyph { transform: scale(1.08); }
+.world-pillar:hover .wp-glyph, .world-pillar:active .wp-glyph { transform: scale(1.08); }
+.wp-name, .wp-tag, .wp-go { position: relative; z-index: 1; }
 .wp-name { font-size: 1.5rem; font-weight: 900; color: #fff; letter-spacing: 0.02em; }
 .wp-tag { color: #c9b8ee; font-size: 0.86rem; line-height: 1.5; margin: 8px 0 14px; max-width: 280px; }
 .wp-go { background: var(--c,#F5C518); color: #1a0f3d; font-weight: 800; border-radius: 999px; padding: 8px 18px; font-size: 0.9rem; }

@@ -39,8 +39,8 @@
   border:2px solid color-mix(in srgb, var(--c) 55%, #2a2030);
   box-shadow:0 0 0 1px rgba(0,0,0,0.6), inset 0 -40px 50px -30px var(--c);
   transition:transform .14s, box-shadow .14s, border-color .14s; }
-.ghub-portal:hover, .ghub-portal:focus-visible { transform:translateY(-4px); border-color:var(--c);
-  box-shadow:0 14px 34px -10px var(--c), inset 0 -50px 60px -28px var(--c); text-decoration:none; }
+.ghub-portal:hover, .ghub-portal:focus-visible, .ghub-portal:active { transform:translateY(-4px); border-color:var(--c);
+  box-shadow:0 0 38px -6px var(--c), 0 14px 34px -12px var(--c), inset 0 -50px 60px -28px var(--c); text-decoration:none; }
 /* glowing rune ring behind the glyph */
 .ghub-portal .ghp-glyph { position:relative; font-size:3.2rem; line-height:1; color:var(--c); margin-bottom:6px;
   filter:drop-shadow(0 0 14px color-mix(in srgb, var(--c) 70%, transparent)); }
@@ -51,7 +51,7 @@
   text-transform:uppercase; font-weight:800; color:#0a0810; background:var(--c); border-radius:999px; padding:3px 11px; }
 .ghub-portal .ghp-enter { position:absolute; top:10px; right:12px; font-size:0.66rem; letter-spacing:2px; font-weight:800;
   color:var(--c); opacity:0; transition:opacity .14s; }
-.ghub-portal:hover .ghp-enter { opacity:.9; }
+.ghub-portal:hover .ghp-enter, .ghub-portal:active .ghp-enter { opacity:.9; }
 @media (max-width:560px){ .ghub-grid { grid-template-columns:repeat(2,1fr); gap:9px; }
   .ghub-portal { min-height:148px; padding:16px 8px 12px; } .ghub-portal .ghp-glyph { font-size:2.5rem; }
   .ghub-portal .ghp-name { font-size:0.86rem; } .ghub-portal .ghp-blurb { display:none; } }
