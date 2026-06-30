@@ -23,6 +23,12 @@ permalink: /fan-art/
     <button class="fa-btn fa-btn--ghost" id="fa-reset" type="button">Reset</button>
   </div>
 
+  <div class="fa-namerow no-print">
+    <label for="fa-name">Sign it</label>
+    <input type="text" id="fa-name" maxlength="28" autocomplete="off"
+           placeholder="your name or operative codename — or leave blank to stay anonymous">
+  </div>
+
   <div class="fan-card" id="fan-card">
     <div class="fc-eyebrow">Fan Art</div>
     <div class="fc-brand"><span class="fc-star">★</span>PJCC<span class="fc-star">★</span></div>
@@ -33,7 +39,7 @@ permalink: /fan-art/
     </div>
     <div class="fc-thanks">
       <div class="fc-thanks-big">Thank you!</div>
-      <div class="fc-thanks-sub">— a little fan art, from a fan <span class="fc-heart">♥</span></div>
+      <div class="fc-thanks-sub">— a little fan art, from <span id="fa-by">a fan</span> <span class="fc-heart">♥</span></div>
     </div>
     <div class="fc-flourish"><span class="fc-pc">♟ ♞ ♜ ♛</span> &nbsp; GO CHESS CITY LEAFS &nbsp; <span class="fc-pc">♛ ♜ ♞ ♟</span></div>
   </div>
@@ -86,6 +92,12 @@ permalink: /fan-art/
 .fa-maker-help { text-align:center; color:#a896d4; font-size:0.9rem; line-height:1.55; margin:0 auto 1rem; max-width:560px; }
 .fa-maker-help strong { color:#f0e6ff; }
 .fa-tools { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:1.2rem; }
+.fa-namerow { display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap; margin:-0.4rem 0 1.3rem; }
+.fa-namerow label { color:#a896d4; font-size:0.84rem; font-weight:700; }
+.fa-namerow input { font-family:inherit; font-size:0.9rem; color:#f0e6ff; background:rgba(80,30,180,0.18);
+  border:1px solid rgba(150,65,255,0.5); border-radius:999px; padding:9px 16px; width:min(380px,82vw); }
+.fa-namerow input::placeholder { color:#8f7fc0; }
+.fa-namerow input:focus { outline:none; border-color:#F5C518; }
 .fa-btn { display:inline-block; text-decoration:none; cursor:pointer; font-family:inherit; font-weight:800; font-size:0.9rem;
   border-radius:999px; padding:10px 20px; background:rgba(80,30,180,0.25); color:#F5C518; border:2px solid rgba(150,65,255,0.6);
   transition:transform .12s, background .15s, border-color .15s; }
@@ -108,6 +120,7 @@ permalink: /fan-art/
 .fan-card.has-img .fc-frame { border-style:solid; border-color:#cfe0f5; cursor:default; }
 #fa-img { max-width:100%; max-height:100%; object-fit:contain; display:none; }
 .fan-card.has-img #fa-img { display:block; }
+.fan-card.has-img .fc-hint { display:none; }
 .fc-hint { text-align:center; color:#5b7bb0; font-size:14px; padding:18px; }
 .fc-hint-big { display:block; font-size:32px; margin-bottom:6px; }
 .fc-thanks { text-align:center; margin:14px 0 2px; }
@@ -153,10 +166,24 @@ permalink: /fan-art/
   var file = document.getElementById('fa-file');
   var STORE = 'pjcc.fanart.card';
 
-  function show(dataUrl) { img.src = dataUrl; card.classList.add('has-img'); try { localStorage.setItem(STORE, dataUrl); } catch (e) {} }
+  function show(dataUrl) { img.src = dataUrl; card.classList.add('has-img'); frame.style.borderColor = ''; try { localStorage.setItem(STORE, dataUrl); } catch (e) {} }
   function load(f) { if (!f || !/^image\//.test(f.type)) return; var r = new FileReader(); r.onload = function () { show(r.result); }; r.readAsDataURL(f); }
 
   try { var saved = localStorage.getItem(STORE); if (saved) show(saved); } catch (e) {}
+
+  // ---- signature: operative name, or stay anonymous ("a fan") ----
+  var byEl = document.getElementById('fa-by');
+  var nameInput = document.getElementById('fa-name');
+  var NAME_STORE = 'pjcc.fanart.name';
+  function setBy(v) { var n = (v || '').trim(); byEl.textContent = n ? n : 'a fan'; }
+  nameInput.addEventListener('input', function () { setBy(nameInput.value); try { localStorage.setItem(NAME_STORE, nameInput.value); } catch (e) {} });
+  (function () {
+    var savedName = null; try { savedName = localStorage.getItem(NAME_STORE); } catch (e) {}
+    if (savedName !== null) { nameInput.value = savedName; setBy(savedName); return; }
+    // first visit: prefill the signed-in operative's codename (they can clear it to stay anonymous)
+    function applyCodename() { try { var p = (window.PJCC && PJCC.getProfile) ? PJCC.getProfile() : null; if (p && p.codename && !nameInput.value) { nameInput.value = p.codename; setBy(p.codename); } } catch (e) {} }
+    if (window.PJCC && PJCC.ready && PJCC.ready.then) PJCC.ready.then(applyCodename); else applyCodename();
+  })();
 
   function pick() { file.click(); }
   frame.addEventListener('click', function () { if (!card.classList.contains('has-img')) pick(); });
