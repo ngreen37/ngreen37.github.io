@@ -8,7 +8,23 @@ brand: mcpuppy
 <div class="goods-head">
   <div class="goods-eyebrow">McPuppy Studios · Pocket-and-Desk Mindset Goods</div>
   <h1 class="goods-title">The Goods</h1>
-  <p class="goods-sub"><span class="goods-soon">Coming soon</span> — parked until after the launch flare, then made <em>properly</em> or not at all. Physical things you keep on you, built to fight one thing: forgetting what you're after.</p>
+  <p class="goods-sub"><span class="goods-soon">Not soon</span> — on purpose. These are physical things, and they wait for the launch flare: the game demo that earns the traffic. Made <em>properly</em> then, or not at all. Built to fight one thing — forgetting what you're after.</p>
+</div>
+
+<!-- ── Where this sits on the road ──────────────────────────── -->
+<div class="goods-timeline" aria-label="Where the goods sit on the roadmap">
+  <div class="gt-step gt-now">
+    <span class="gt-when">You are here</span>
+    <span class="gt-what">The showcase — the mockups, the idea, the ritual.</span>
+  </div>
+  <div class="gt-step">
+    <span class="gt-when">Next · the big one</span>
+    <span class="gt-what">The launch flare — the game demo that earns the traffic.</span>
+  </div>
+  <div class="gt-step">
+    <span class="gt-when">Only then</span>
+    <span class="gt-what">The goods get made properly — gold, heavy paper — or not at all.</span>
+  </div>
 </div>
 
 <!-- ── Av14 · The Goal Card ─────────────────────────────────── -->
@@ -63,6 +79,11 @@ brand: mcpuppy
     </div>
   </div>
 </section>
+
+<div class="goods-nowbox">
+  <div class="goods-nowtag">Free today, while the real one waits</div>
+  <p>You can't buy the gold card yet — but the <strong>ritual</strong> doesn't need it. Pick any token in your pocket, tie <strong>one goal</strong> to it, and <strong>touch it</strong> when you pass it. When the real cards land, you'll already know it works.</p>
+</div>
 
 <div class="goods-creed-band">
   <span class="goods-creed-quote">"Goals are 5% strategy, 95% mindset."</span>
@@ -145,4 +166,19 @@ brand: mcpuppy
 .goods-btn:hover { transform:translateY(-2px); filter:brightness(1.07); }
 .goods-btn--ghost { background:transparent; color:#F5C518; }
 .goods-btn--ghost:hover { background:rgba(245,197,24,0.1); }
+
+/* ---- Roadmap strip (where the goods sit) ---- */
+.goods-timeline { display:flex; gap:10px; max-width:840px; margin:0 auto 2.6rem; flex-wrap:wrap; }
+.gt-step { flex:1 1 200px; background:rgba(110,95,160,0.12); border:1px solid #4a3a86; border-radius:12px; padding:13px 15px; }
+.gt-now { border-color:#F5C518; background:rgba(245,197,24,0.08); }
+.gt-when { display:block; font-family:'Share Tech Mono',monospace; font-size:0.62rem; letter-spacing:0.14em; text-transform:uppercase; color:#9a8fc0; margin-bottom:6px; }
+.gt-now .gt-when { color:#F5C518; }
+.gt-what { display:block; color:#cdbcf2; font-size:0.86rem; line-height:1.45; }
+@media (max-width:760px){ .goods-timeline { flex-direction:column; } }
+
+/* ---- "Free today" ritual note ---- */
+.goods-nowbox { max-width:640px; margin:0 auto 2.2rem; background:rgba(110,95,160,0.12); border:1px solid #4a3a86; border-radius:14px; padding:18px 22px; text-align:center; }
+.goods-nowtag { font-family:'Share Tech Mono',monospace; font-size:0.66rem; letter-spacing:0.14em; text-transform:uppercase; color:#F5C518; margin-bottom:8px; }
+.goods-nowbox p { color:#cdbcf2; font-size:0.95rem; line-height:1.6; margin:0; }
+.goods-nowbox strong { color:#f0e6ff; }
 </style>

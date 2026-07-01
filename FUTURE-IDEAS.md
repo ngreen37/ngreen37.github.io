@@ -345,8 +345,11 @@ then **forget once they lose the path** for a while. The card is a physical anch
   use any token** — whatever works, *as long as the goal is clearly tied to touching it.*
 - **Voice:** "**follow the dog**" + the Rival's line *"goals are 5% strategy, 95% mindset."* Ties to the
   moral/Neville center (assume the feeling), Av4 (physical) and Av10 (Patreon).
-- **Status (2026-06-24):** **coming-soon showcase now live at `/goods/`** — gold card mockups (a different
-  character per card), the touch ritual, and the three ways to get one. The *make* is still parked post-flare.
+- **Status (2026-07-01):** showcase live at `/goods/` — gold card mockups (a different character per card),
+  the touch ritual, and the three ways to get one. **Reframed from "coming soon" → "not soon, on purpose":**
+  added a 3-step roadmap strip (*you are here* → the launch flare → the goods get made) and a "the ritual is
+  free today" note (any pocket token, no purchase), so the page is honest that the physical *make* is parked
+  well past the flare. Nav descriptor also updated off "coming soon." The *make* is still parked post-flare.
 
 **Av15 — PJCC stationery** *(new · physical · parked until after the flare):* branded stationery with
 **"follow the dog"** across the top. The "pocket/desk mindset" goods line alongside the goal cards.

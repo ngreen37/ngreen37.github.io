@@ -28,7 +28,7 @@
       { t: 'The Reading Room', s: 'Learn Japanese kana & kanji',          u: '/games/reading-room/', ic: '🦊', b: 'pjcc', k: 'reading room japanese kana kanji kaede srs anki' },
       { t: 'Fan Art',          s: 'The fan wall + make your own card',    u: '/fan-art/',            ic: '🎨', b: 'pjcc', k: 'fan art wall community printable card make submit gallery thank you' },
       { t: 'The Gambit',       s: 'Sacrifice your best — coming soon',    u: '/games/the-gambit/',   ic: '🎲', b: 'pjcc', k: 'gambit sacrifice offering altar wager risk reward credits collectables coming soon' },
-      { t: 'The Goods',        s: 'Goal cards & stationery — coming soon', u: '/goods/',             ic: '🃏', b: 'mcpuppy', k: 'goods goal cards stationery merch follow the dog mindset coming soon physical' },
+      { t: 'The Goods',        s: 'Goal cards & stationery — someday, post-flare', u: '/goods/',             ic: '🃏', b: 'mcpuppy', k: 'goods goal cards stationery merch follow the dog mindset coming soon physical' },
       { t: 'The Direct Line',  s: 'Write to me directly — coming soon',    u: '/direct-line/',        ic: '✉️', b: 'mcpuppy', k: 'direct line suggestions patreon contact write feedback guaranteed response coming soon' },
       { t: 'McPuppy Studios',  s: 'Studio hub & progress',                u: '/projects/',           ic: '🐾', b: 'mcpuppy', k: 'mcpuppy studio projects progress hub' },
       { t: 'Build Log (Blog)', s: 'Episode archive',                      u: '/blog/',               ic: '✍', b: 'mcpuppy', k: 'blog build log episodes posts writing' },
