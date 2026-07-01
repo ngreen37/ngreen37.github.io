@@ -1,0 +1,16 @@
+/* ============================================================
+   PJCC warp — the splash quads' "screen goes that colour" enter-wipe,
+   made reusable for any hub tile marked [data-warp]. The colour is read
+   per-tile from its --c accent (see pjcc-warp.js), so one file serves the
+   Games halls, The World pillars, and anything added later.
+   ============================================================ */
+.pjcc-warp {
+  position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+  opacity: 0; transform: scale(1.04);
+  transition: opacity .34s ease, transform .34s ease;
+}
+.pjcc-warp.is-on { opacity: 1; transform: scale(1); pointer-events: auto; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pjcc-warp { transition: none; }
+}

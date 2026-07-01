@@ -212,7 +212,7 @@ permalink: /academy/
       <tr><td>3</td><td>Openings — the first moves</td><td>Argus · The Pirc Protocol</td><td>Play one line</td></tr>
       <tr><td>4</td><td>Tactics — forks &amp; pins</td><td>The Rival · Fork in the Road</td><td>Worksheet 3 · solve 3</td></tr>
       <tr><td>5</td><td>Strategy — the long game</td><td>The Father · Siege on Chess City</td><td>Play one siege</td></tr>
-      <tr><td>6</td><td>Vision &amp; the island</td><td>Princess / Crockett · Blindfold · Shogi</td><td>Solve 5 blind</td></tr>
+      <tr><td>6</td><td>Vision &amp; the island</td><td>Princess / Kaede &amp; Matsu · Blindfold · Shogi</td><td>Solve 5 blind</td></tr>
     </table>
     <p class="ws-foot">Belts: a new belt every ~3–4 lessons (see the live ladder on the Academy page). Print each student's certificate at the end — the code on it verifies right on the site.</p>
   </div>
@@ -298,9 +298,9 @@ window.ACCERT = (function () {
         { t: 'Take the long way', d: 'Fly a run of Sky Run.', go: 'sky-run', done: function(){ return best('sky-run') >= 1; } },
         { t: 'Weigh the risk', d: 'Make a call in Checker Financial.', go: 'checker-financial', done: function(){ return best('checker-financial') >= 1; } }
       ] },
-    { id: 'shogi', who: 'Crockett', slug: 'crockett', ico: '⛩', accent: '#ffb066',
-      title: "Crockett's Shogi Dojo", sub: 'The island game — shogi',
-      blurb: 'The main character\'s little sister fell in love with the island\'s puzzle game. Now she teaches it.',
+    { id: 'shogi', who: 'Kaede & Matsu', slug: 'kaede', ico: '⛩', accent: '#ffb066',
+      title: 'The Shogi Dojo', sub: 'The island game — shogi',
+      blurb: 'The siblings run the island\'s game — Kaede in the hall, Matsu on the island. Auston, their very first student, trains right beside you.',
       lessons: [
         { t: 'Catch the Lion', d: 'Win once on Shogi Island.', go: 'shogi-island', done: function(){ return best('shogi-island') >= 1; } },
         { t: 'Drops & reach', d: 'Solve 3 on Shogi Island.', go: 'shogi-island', done: function(){ return best('shogi-island') >= 3; } },

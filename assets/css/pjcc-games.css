@@ -35,7 +35,7 @@
 
 .ghub-portal { --c:#ffcf6b; position:relative; display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
   min-height:178px; padding:20px 12px 16px; text-align:center; text-decoration:none; border-radius:12px; overflow:hidden;
-  background:linear-gradient(180deg, color-mix(in srgb, var(--c) 18%, #0a0810) 0%, #0a0810 78%);
+  background:linear-gradient(180deg, color-mix(in srgb, var(--c) 24%, #0c0912) 0%, #0a0810 86%);
   border:2px solid color-mix(in srgb, var(--c) 55%, #2a2030);
   box-shadow:0 0 0 1px rgba(0,0,0,0.6), inset 0 -40px 50px -30px var(--c);
   transition:transform .14s, box-shadow .14s, border-color .14s; }

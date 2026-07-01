@@ -1563,7 +1563,8 @@ body.studio-body {
 
 /* PJCC quad (top-left) — rich purple background, gold title */
 .studio-quad-grid .studio-quad--pjcc {
-  background: linear-gradient(145deg, rgba(40, 16, 95, 0.82) 0%, rgba(100, 38, 220, 0.68) 55%, rgba(60, 16, 140, 0.6) 100%);
+  /* ~10% brighter, with a softer/later fade into the dark end (Nate 2026-06-30) */
+  background: linear-gradient(145deg, rgba(48, 20, 112, 0.82) 0%, rgba(114, 48, 246, 0.7) 58%, rgba(74, 24, 166, 0.62) 100%);
   border-color: rgba(245, 197, 24, 0.48);
 
   .studio-quad-title {
@@ -1580,7 +1581,7 @@ body.studio-body {
   }
 
   &:hover {
-    background: linear-gradient(145deg, rgba(65, 25, 160, 0.855) 0%, rgba(130, 52, 255, 0.77) 55%, rgba(90, 22, 180, 0.72) 100%);
+    background: linear-gradient(145deg, rgba(80, 34, 186, 0.86) 0%, rgba(150, 74, 255, 0.8) 58%, rgba(108, 32, 205, 0.74) 100%);
     border-color: #F5C518;
     box-shadow: 0 0 44px rgba(245, 197, 24, 0.18), 0 14px 44px rgba(100, 38, 220, 0.5);
     transform: translateY(-5px);
@@ -1589,7 +1590,7 @@ body.studio-body {
 
 /* McPuppy quad (top-right) — black & white; inverts to a white card on hover */
 .studio-quad-grid .studio-quad--mcpuppy {
-  background: linear-gradient(150deg, #07070a 0%, #161619 50%, #0b0b0e 100%);
+  background: linear-gradient(150deg, #0e0e12 0%, #232329 50%, #131317 100%);
   border-color: rgba(255, 255, 255, 0.24);
 
   &::before {
@@ -1626,7 +1627,7 @@ body.studio-body {
   }
 
   &:hover {
-    background: #a0a0a8;
+    background: #adadb6;
     border-color: rgba(255, 255, 255, 0.42);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.42);
     transform: translateY(-4px);
@@ -1644,7 +1645,7 @@ body.studio-body {
 /* Games quad (bottom-left) — "arcade cabinet": NES electric-blue with CRT
    scanlines, tying the splash to the Mega Man-style arcade the games now use. */
 .studio-quad-grid .studio-quad--games {
-  background: linear-gradient(150deg, #050d2e 0%, #0b1c7a 55%, #03102c 100%);
+  background: linear-gradient(150deg, #08183f 0%, #123099 55%, #0a1a44 100%);
   border-color: rgba(60, 188, 252, 0.5);
 
   &::before {
@@ -1678,7 +1679,7 @@ body.studio-body {
   }
 
   &:hover {
-    background: linear-gradient(150deg, #08164a 0%, #0e2aa0 55%, #061640 100%);
+    background: linear-gradient(150deg, #0c1f5a 0%, #1636be 55%, #0e2050 100%);
     border-color: #3cbcfc;
     box-shadow: 0 0 44px rgba(60, 188, 252, 0.3), 0 14px 40px rgba(8, 20, 70, 0.6);
     transform: translateY(-5px);
@@ -1689,7 +1690,7 @@ body.studio-body {
    jade with a soft green footlight glow. Rich and calm; reads premium and sits
    fully apart from the gold PJCC quad and the electric-blue games quad. */
 .studio-quad-grid .studio-quad--patreon {
-  background: linear-gradient(150deg, #07140e 0%, #0f3a2a 48%, #1f7a52 100%);
+  background: linear-gradient(150deg, #0c1f16 0%, #17482f 48%, #23885b 100%);
   border-color: rgba(45, 196, 130, 0.6);
 
   &::before {
@@ -1725,7 +1726,7 @@ body.studio-body {
   }
 
   &:hover {
-    background: linear-gradient(150deg, #0a1d14 0%, #155039 48%, #279a68 100%);
+    background: linear-gradient(150deg, #102a1d 0%, #1c6045 48%, #2fae7a 100%);
     border-color: #4fd699;
     box-shadow: 0 0 46px rgba(45, 196, 130, 0.34), 0 14px 42px rgba(8, 28, 18, 0.6);
     transform: translateY(-5px);

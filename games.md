@@ -5,6 +5,7 @@ permalink: /games/
 ---
 
 <link rel="stylesheet" href="{{ '/assets/css/pjcc-games.css' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/css/pjcc-warp.css' | relative_url }}">
 
 <!-- ===== THE HALLS — Gauntlet Legends portal screen (pick a hall; no games here) ===== -->
 <div class="ghub">
@@ -31,7 +32,7 @@ permalink: /games/
   function portal(key) {
     var c = PJCC_CATS[key];
     var n = PJCC_GAMES.filter(function (g) { return g.cat === key; }).length;
-    return '<a class="ghub-portal" href="' + base + '/' + c.route + '/" style="--c:' + c.accent + '">' +
+    return '<a class="ghub-portal" href="' + base + '/' + c.route + '/" style="--c:' + c.accent + '" data-warp>' +
       '<span class="ghp-enter">ENTER ▸</span>' +
       '<span class="ghp-glyph">' + c.glyph + '</span>' +
       '<span class="ghp-name">' + esc(c.name) + '</span>' +
@@ -42,3 +43,6 @@ permalink: /games/
   document.getElementById('ghub-grid-sub').innerHTML = ['vault', 'terminated'].map(portal).join('');
 })();
 </script>
+
+<!-- Enter a hall → the screen blooms to that hall's colour, like the splash quads. -->
+<script src="{{ '/assets/js/pjcc-warp.js' | relative_url }}"></script>

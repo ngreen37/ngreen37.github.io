@@ -175,9 +175,8 @@ rosters/dashboards, a server-verifiable cert registry, a rules-enforcing practic
 > - **Week 1 — board setup & piece movement** → Princess & Murphy's intro episode; pure fish-out-of-water
 >   comedy (Princess is a pawn learning the basics).
 > - **Week 2 — tactics (forks, pins)** → a battle-room episode where **Oskar** comically gets forked.
-> - **Week 3 — openings** → **Kennie** teaches Princess the **Pirc Defense** — already locked lore, slots in
->   directly. *(Name check: `_pjcc/notes.md` currently credits **Garrett** with teaching Princess the Pirc —
->   reconcile Garrett vs. Kennie.)*
+> - **Week 3 — openings** → **Checker Town Rival** teaches Princess the **Pirc Defense** — already locked lore, slots in
+>   directly. 
 > - **Week 4 — endgames** → higher stakes; **Murphy's** pessimism becomes relevant ("we're already lost") vs.
 >   Princess's New-Thought-inflected optimism.
 > - **Week 5 — tournament / test** → a real battle-room match as the season climax.
@@ -220,7 +219,7 @@ brings · a second companion · **her voice** (the show's ultimate payoff — th
 > 8. ★ **Starter archetypes** — one-tap kits ("The Tactician", "The Miner", "The Sensei", "The Operator") that fill every layer for players who don't want to fiddle.
 > 9. ⛁ **Earned cosmetics** — gate premium bases/hats/emblems/auras behind achievements + Quartermaster credits (wires the Forge into the existing economy).
 > 10. **Seasonal parts** — limited-time headwear/auras (advent · anniversary · festival) hung off Av9 live-ops.
-> 11. **Play-to-unlock pet skins** — beating a game's creator-ghost unlocks a themed companion skin (Reading-Room fox, Shogi lion, Sand-Mine mole).
+> 11. **Play-to-unlock pet skins** — beating a game's creator-ghost unlocks a themed companion skin (Reading-Room owl, Shogi lion, Sand-Mine mole).
 > 12. ★ **Codename/companion-name spinner** — a "roll a name" button drawing from a lore-flavoured word bank.
 > 13. **Second companion slot** — manage a pair in the Forge (delivers the avenue's existing "a second companion" seed).
 > 14. ★ **Crew portrait** — compose operative + companion(s) into one shareable "crew of Checker Town" card.
@@ -663,8 +662,10 @@ is the superfan ceiling but a cadence trap — start it only when #1 is humming.
   project is ~6 months old).
 - **The main character** (the narrator) — late teens, Checker Town, big dreams. Became a **second father**
   to his younger sister after their dad was often away.
-- **Auston — the younger sister** *(locked 2026-06-23)* — the story's **emotional crux**; brave beyond her size;
-  runs the Shogi Dojo; the one he's really doing it all for. *(The "Chess City Leafs" / Auston-Matthews nod is now her name.)*
+- **Auston — the younger sister** *(locked 2026-06-23; piece → **rook**, shogi role reworked 2026-06-30)* — the
+  story's **emotional crux**; brave beyond her size; plays a **rook**; the Shogi dojo's **first student** — she does
+  *not* teach it (the siblings **Kaede & Matsu** run the dojo); she's just the one who never leaves the board;
+  the one he's really doing it all for. *(The "Chess City Leafs" / Auston-Matthews nod is now her name.)*
 - **Crockett — a real male dog** *(locked 2026-06-23)* (Nate's dog; their greeting is "**bellies**") — comic-relief
   crew member, plays a pawn, *not* the sister. ✅ File surgery done: sister → **Auston**, dog → **Crockett**.
 - **Argus** — **the smart one**; a dog; slowly grows into a **solid** chess player.
@@ -684,8 +685,8 @@ is the superfan ceiling but a cadence trap — start it only when #1 is humming.
   swagger, skipped the substance, and (eventually) find the road home. Even they have redeeming qualities — perhaps
   they **save one of the dogs.** *(Supersedes the old "Rival's two friends / James & John" note.)*
 - **Maxwell — the best friend** *(named 2026-06-23)* — the pull of staying put; drifts into **Michael's** orbit.
-- **Matsu (松) — Kaede's brother** *(new, side character, 2026-06-23)* — a fox who **stayed on Shogi Island**; the
-  evergreen pine to Kaede's seasonal maple; anchors the island and its deeper rites.
+- **Matsu (松) — Kaede's younger brother** *(new, ancillary, 2026-06-23; de-foxed → human 2026-06-30)* — **stayed on
+  Shogi Island** (only Kaede took the Checker Town exchange); the evergreen pine to Kaede's seasonal maple; anchors the island and its deeper rites.
 - **The Commentators** *(ancillary — Boomer/Tempo/Sunny, one trio)* — the booth that calls events, the Battle Room,
   and later the Gauntlet; the in-world hype machine.
 - **The older brother** — **self-righteous**, and things don't work out for him. *Name — pick one:* **Saul**
@@ -708,6 +709,14 @@ they "fell from the sky" over Checker Town). Bill & Princess were paired on the 
 as a **montage** where Bill teaches Princess *anything*. The turn: the **Hyperspeed Box runs astray**; Bill
 must protect his family aboard and is forced to **leave Princess behind** — a choice that shatters him.
 Hook: *maybe he comes back looking for her.*
+
+**▶ Chapter Zero — build it** *(new 2026-06-30).* Actually **make** the **Backstory** chapter: chapter **0**,
+the "**B**" dot that opens every character timeline and the one the Lore Codex still keeps half-classified. It's
+the origin told straight — the **Intergalactic Cup**, the **construction-crew crash**, the **pieces falling over
+Checker Town**, **Bill & Princess** paired and bonding, the **Hyperspeed Box** turn that leaves her behind. Give it a
+real telling — an animatic / short / "issue #0" comic — instead of only leaking it through fragments; it's the
+emotional + mystery keystone the whole decode-as-you-play arc points back to. *(Princess, the Narrator, Auston, and
+Argus already carry `chapters: 0`.)*
 
 **Open decisions (waiting on Nate):** lock the **older brother's** name (Saul rec); name **Robert's two Prodigal
 Brothers** and the **Commentators** are placeholders (Boomer/Tempo/Sunny) — confirm or rename.
