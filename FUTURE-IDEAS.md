@@ -664,7 +664,7 @@ is the superfan ceiling but a cadence trap — start it only when #1 is humming.
   to his younger sister after their dad was often away.
 - **Auston — the younger sister** *(locked 2026-06-23; piece → **rook**, shogi role reworked 2026-06-30)* — the
   story's **emotional crux**; brave beyond her size; plays a **rook**; the Shogi dojo's **first student** — she does
-  *not* teach it (the siblings **Kaede & Matsu** run the dojo); she's just the one who never leaves the board;
+  *not* teach it (**Kaede** leads the dojo, her brother **Matsu** helping); she's just the one who never leaves the board;
   the one he's really doing it all for. *(The "Chess City Leafs" / Auston-Matthews nod is now her name.)*
 - **Crockett — a real male dog** *(locked 2026-06-23)* (Nate's dog; their greeting is "**bellies**") — comic-relief
   crew member, plays a pawn, *not* the sister. ✅ File surgery done: sister → **Auston**, dog → **Crockett**.
@@ -686,7 +686,7 @@ is the superfan ceiling but a cadence trap — start it only when #1 is humming.
   they **save one of the dogs.** *(Supersedes the old "Rival's two friends / James & John" note.)*
 - **Maxwell — the best friend** *(named 2026-06-23)* — the pull of staying put; drifts into **Michael's** orbit.
 - **Matsu (松) — Kaede's younger brother** *(new, ancillary, 2026-06-23; de-foxed → human 2026-06-30)* — **stayed on
-  Shogi Island** (only Kaede took the Checker Town exchange); the evergreen pine to Kaede's seasonal maple; anchors the island and its deeper rites.
+  Shogi Island** (only Kaede took the Checker Town exchange); the evergreen pine to Kaede's seasonal maple; **Kaede's helper** in the Japanese teaching, anchoring the island and its deeper rites.
 - **The Commentators** *(ancillary — Boomer/Tempo/Sunny, one trio)* — the booth that calls events, the Battle Room,
   and later the Gauntlet; the in-world hype machine.
 - **The older brother** — **self-righteous**, and things don't work out for him. *Name — pick one:* **Saul**

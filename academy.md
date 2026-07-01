@@ -298,9 +298,9 @@ window.ACCERT = (function () {
         { t: 'Take the long way', d: 'Fly a run of Sky Run.', go: 'sky-run', done: function(){ return best('sky-run') >= 1; } },
         { t: 'Weigh the risk', d: 'Make a call in Checker Financial.', go: 'checker-financial', done: function(){ return best('checker-financial') >= 1; } }
       ] },
-    { id: 'shogi', who: 'Kaede & Matsu', slug: 'kaede', ico: '⛩', accent: '#ffb066',
+    { id: 'shogi', who: 'Kaede', slug: 'kaede', ico: '⛩', accent: '#ffb066',
       title: 'The Shogi Dojo', sub: 'The island game — shogi',
-      blurb: 'The siblings run the island\'s game — Kaede in the hall, Matsu on the island. Auston, their very first student, trains right beside you.',
+      blurb: 'Kaede leads the island\'s game; her brother Matsu helps from Shogi Island. Auston, their very first student, trains right beside you.',
       lessons: [
         { t: 'Catch the Lion', d: 'Win once on Shogi Island.', go: 'shogi-island', done: function(){ return best('shogi-island') >= 1; } },
         { t: 'Drops & reach', d: 'Solve 3 on Shogi Island.', go: 'shogi-island', done: function(){ return best('shogi-island') >= 3; } },

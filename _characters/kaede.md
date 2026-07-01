@@ -24,7 +24,7 @@ A girl the same age as the main character, from Shogi Island. In Checker Town, s
 Kaede grew up on **Shogi Island**, she and her brother were both to be part of an exchange program, but only she agreed to go.  For work, she opened the Reading Room: free to enter, free to borrow, and free to sit while she teaches you the basics all the way up to master.  Donations are plenty.  
 
 ## Role in the Story
-Kaede is the bridge between Checker Town and Shogi Island — the friendly face of a language and a world the crew doesn't understand yet. She's the main teacher at **[The Reading Room](/games/reading-room/)**.
+Kaede is the bridge between Checker Town and Shogi Island — the friendly face of a language and a world the crew doesn't understand yet. She **leads all the Japanese teaching** — the **[Reading Room](/games/reading-room/)** and the Academy's **Shogi** dojo alike — with her younger brother **[Matsu](/characters/matsu/)** helping.
 
 - 「ようこそ、読書室へ。」 — "Welcome to the Reading Room."
 

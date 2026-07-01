@@ -5,7 +5,7 @@ full_name: Matsu (松)
 role: Ancillary Character
 permalink: /characters/matsu/
 order: 9
-piece: ♞
+piece: ♝
 chapters: ?
 dossier_clearance: DELTA
 dossier_secret: Stayed on Shogi Island on purpose. Says he is "keeping the gate." Will not say which gate.
@@ -23,7 +23,7 @@ last_seen: SHOGI ISLAND
 Matsu and Kaede grew up on Shogi Island. He chose to stay on Shogi Island, but still keeps close tabs on his older sister.
 
 ## Role in the Story
-An **Ancillary character** and the Shogi Island anchor — the reason the island feels lived-in rather than a stop on a map. Where Kaede teaches you to *understand* the island, Matsu teaches you to *respect* it.
+An **Ancillary character** and the Shogi Island anchor — the reason the island feels lived-in rather than a stop on a map. Kaede leads the Japanese teaching everywhere; Matsu is her **helper** — where she teaches you to *understand* the island, he helps you *respect* it.
 
 「松は枯れない。」 — *Matsu wa karenai.* — "The pine does not wither."
 

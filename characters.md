@@ -18,7 +18,7 @@ permalink: /characters/
       <div class="char-flip-inner">
 
         <div class="char-flip-front">
-          <div class="char-flip-piece">{{ char.piece | default: "♟" }}</div>
+          <div class="char-flip-piece{% if char.piece.size > 2 %} char-flip-piece--word{% endif %}">{{ char.piece | default: "♟" }}</div>
           <div class="char-flip-name">{{ char.title }}</div>
           <div class="char-flip-role">{{ char.role }}</div>
         </div>
@@ -47,7 +47,7 @@ permalink: /characters/
       <div class="char-flip-inner">
 
         <div class="char-flip-front">
-          <div class="char-flip-piece">{{ char.piece | default: "♟" }}</div>
+          <div class="char-flip-piece{% if char.piece.size > 2 %} char-flip-piece--word{% endif %}">{{ char.piece | default: "♟" }}</div>
           <div class="char-flip-name">{{ char.title }}</div>
           <div class="char-flip-role">{{ char.role }}</div>
         </div>
@@ -126,4 +126,8 @@ permalink: /characters/
 .char-ancillary-head { text-align: center; color: #6b5a8e; font-size: 13px; letter-spacing: 3px;
   text-transform: uppercase; margin: 44px 0 4px; }
 .char-ancillary-sub { margin-top: 0 !important; opacity: 0.85; }
+/* Word-length "piece" designations (e.g. the Commentators' "various") render as a
+   compact label instead of the oversized 48px glyph, so they don't overflow the card. */
+.char-flip-piece--word { font-size: 15px; font-weight: 800; letter-spacing: 0.14em;
+  text-transform: uppercase; color: rgba(245, 197, 24, 0.7); }
 </style>

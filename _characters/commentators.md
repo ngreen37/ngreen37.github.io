@@ -6,7 +6,7 @@ role: Ancillary
 tier: ancillary
 permalink: /characters/commentators/
 order: 20
-piece: ♜
+piece: various
 chapters: ?
 dossier_clearance: DELTA
 dossier_secret: Former hockey teammates, they constantly argue but their friendship always sustains.

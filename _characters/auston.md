@@ -29,7 +29,7 @@ She believes in him completely, and is willing to give her energy to the cause w
 ## Role in the Story
 The sibling companion who adds emotional depth to the main character while also providing a chance to share her journey. Chess City stops being only about the main character's ambition the moment you understand he is also doing it for **her** — to build a life big enough for a little sister who may need a little push to reach for the stars. 
 
-At the Academy's **Shogi** hall she's the **first student**, never the teacher — the siblings [Kaede](/characters/kaede/) and [Matsu](/characters/matsu/) run the dojo. Auston just never leaves the board, so when you sit down to play she's the one across from you, practicing move for move.
+At the Academy's **Shogi** hall she's the **first student**, never the teacher — [Kaede](/characters/kaede/) leads the dojo, with her brother [Matsu](/characters/matsu/) helping. Auston just never leaves the board, so when you sit down to play she's the one across from you, practicing move for move.
 
 ## Art
 *Illustration coming soon.*
