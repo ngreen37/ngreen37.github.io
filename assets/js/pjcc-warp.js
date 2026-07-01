@@ -49,6 +49,6 @@
     warp.style.background = 'radial-gradient(circle at ' + cx + '% ' + cy + '%, ' +
       accent(el) + ', #06040e 72%)';
     warp.classList.add('is-on');
-    setTimeout(function () { window.location.href = href; }, 340);
+    setTimeout(function () { window.location.href = href; }, 255);
   }, false);
 })();

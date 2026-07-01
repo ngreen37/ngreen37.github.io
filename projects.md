@@ -5,12 +5,12 @@ permalink: /projects/
 body_class: theme-bw
 ---
 
-<p class="projects-intro">An independent studio. Stories, chess, and things built from nothing — one idea at a time. Most of it isn't finished. That's on purpose.</p>
+<p class="projects-intro">An independent studio, born to crest a single wave &mdash; PJCC. Most of it isn't finished yet. That's on purpose.</p>
 
 <nav class="studio-hub" aria-label="McPuppy Studios sections">
   <a href="/pjcc/">PJCC</a>
   <a href="/blog/">Blog</a>
-  <a href="/goods/">Goods</a>
+  <a href="/goods/">Merch</a>
   <a href="/mailing-list/">Mailing List</a>
   <a href="/press-pass/">Press Pass</a>
   <a href="/direct-line/">Direct Line</a>
@@ -111,14 +111,11 @@ body_class: theme-bw
       </span>
       <h2 class="project-title">Princess and the Journey to Chess City</h2>
     </div>
-    <p class="project-desc">A dog. A board. A city across the sea. The whole reason any of this exists.</p>
+    <p class="project-desc">The flagship project.</p>
     <ul class="project-details">
       <li><strong>Format:</strong> Animated series</li>
-      <li><strong>Status:</strong> Story, characters, and world-building ongoing</li>
     </ul>
     <div class="project-links">
-      <a href="/characters/" class="project-link">Characters</a>
-      <a href="/locations/" class="project-link">Locations</a>
       <a href="/blog/" class="project-link">Blog</a>
     </div>
   </div>
@@ -129,7 +126,7 @@ body_class: theme-bw
       <span class="project-status project-status-soon">Coming Soon</span>
       <h2 class="project-title">Blender Animations</h2>
     </div>
-    <p class="project-desc">Frames, in the dark. They're coming.</p>
+    <p class="project-desc">See the universe grow!</p>
     <ul class="project-details">
       <li><strong>Format:</strong> Short clips</li>
       <li><strong>Status:</strong> Clips posted as they're ready</li>
@@ -143,11 +140,27 @@ body_class: theme-bw
         <span class="project-status-dot"></span>
         In Development
       </span>
-      <h2 class="project-title">Chess Lessons</h2>
+      <h2 class="project-title">PJCC Chess Academy</h2>
     </div>
-    <p class="project-desc">Real chess, taught by hand. Everything else here grows out of these.</p>
+    <p class="project-desc">An All-Ages online Chess Academy, set in the PJCC universe! Contact me for more.</p>
     <div class="project-links">
-      <a href="/chess-lessons/" class="project-link">Visit Chess Lessons &rarr;</a>
+      <a href="/chess-lessons/" class="project-link">Visit the Academy &rarr;</a>
+      <a href="/contact/" class="project-link">Contact &rarr;</a>
+    </div>
+  </div>
+
+  <div class="project-card project-card-active">
+    <div class="project-card-corner-piece" aria-hidden="true">♚</div>
+    <div class="project-card-header">
+      <span class="project-status project-status-active">
+        <span class="project-status-dot"></span>
+        In Development
+      </span>
+      <h2 class="project-title">The Reading Room</h2>
+    </div>
+    <p class="project-desc">Coming Soon.</p>
+    <div class="project-links">
+      <a href="/games/reading-room/" class="project-link">Visit The Reading Room &rarr;</a>
     </div>
   </div>
 
@@ -157,10 +170,7 @@ body_class: theme-bw
       <span class="project-status project-status-soon">Coming Soon</span>
       <h2 class="project-title">Podcast</h2>
     </div>
-    <p class="project-desc">Off the record, on the build. <strong>Winter 2026.</strong></p>
-    <div class="project-links">
-      <a href="/blog/" class="project-link">More Info &rarr;</a>
-    </div>
+    <p class="project-desc">Listen for Studio updates and whatever else comes up &mdash; Winter 2026.</p>
   </div>
 
   <div class="project-card project-card-soon">
@@ -169,10 +179,34 @@ body_class: theme-bw
       <span class="project-status project-status-soon">Coming Soon</span>
       <h2 class="project-title">Code &amp; Tools</h2>
     </div>
-    <p class="project-desc">The tools behind the curtain. Shared when they're ready.</p>
+    <p class="project-desc">Select projects others may find useful to be posted here.</p>
     <ul class="project-details">
       <li><strong>Status:</strong> Projects linked when published</li>
     </ul>
+  </div>
+
+  <div class="project-card project-card-soon">
+    <div class="project-card-corner-piece" aria-hidden="true">♞</div>
+    <div class="project-card-header">
+      <span class="project-status project-status-soon">Coming Soon</span>
+      <h2 class="project-title">Press Pass</h2>
+    </div>
+    <p class="project-desc">Don't hold your breath!</p>
+    <div class="project-links">
+      <a href="/press-pass/" class="project-link">Press Pass &rarr;</a>
+    </div>
+  </div>
+
+  <div class="project-card project-card-soon">
+    <div class="project-card-corner-piece" aria-hidden="true">♛</div>
+    <div class="project-card-header">
+      <span class="project-status project-status-soon">Coming Soon</span>
+      <h2 class="project-title">Merch</h2>
+    </div>
+    <p class="project-desc">Don't hold your breath!</p>
+    <div class="project-links">
+      <a href="/goods/" class="project-link">Take a look &rarr;</a>
+    </div>
   </div>
 
 </div>
@@ -189,7 +223,7 @@ body_class: theme-bw
   <li><a href="/games/clearance-delta/">Clearance: DELTA <span class="ver">v1.3</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/shogi-island/">Shogi Island <span class="ver">v3.1</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/tower-defense/">Siege on Chess City <span class="ver">v2.1</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/blindfold-puzzles/">Blindfold Puzzles <span class="ver">v2.2</span></a> <span class="games-index-note">— hidden bonus · hides The Mind's Eye</span></li>
+  <li><a href="/games/blindfold-puzzles/">Blindfold Puzzles <span class="ver">v2.2</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/knights-tour/">Knight's Tour <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
 </ul>
 
@@ -235,4 +269,4 @@ body_class: theme-bw
 })();
 </script>
 
-<p class="projects-footer-note">More in the dark. The <a href="/blog/">blog</a> surfaces what's ready.</p>
+<p class="projects-footer-note">Check out the <a href="/blog/">blog</a> for more updates.</p>

@@ -1536,7 +1536,7 @@ body.studio-body {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 65%);
+    background: linear-gradient(135deg, rgba(255,255,255,0.088) 0%, transparent 65%);
     opacity: 0;
     transition: opacity 0.25s;
     border-radius: 14px;
@@ -1577,7 +1577,7 @@ body.studio-body {
   }
 
   &::after {
-    background: linear-gradient(135deg, rgba(245, 197, 24, 0.14) 0%, transparent 65%);
+    background: linear-gradient(135deg, rgba(245, 197, 24, 0.154) 0%, transparent 65%);
   }
 
   &:hover {
@@ -1623,7 +1623,7 @@ body.studio-body {
   }
 
   &::after {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, transparent 60%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.176) 0%, transparent 60%);
   }
 
   &:hover {
@@ -1675,7 +1675,7 @@ body.studio-body {
   }
 
   &::after {
-    background: linear-gradient(135deg, rgba(60, 188, 252, 0.18) 0%, transparent 60%);
+    background: linear-gradient(135deg, rgba(60, 188, 252, 0.198) 0%, transparent 60%);
   }
 
   &:hover {
@@ -1722,7 +1722,7 @@ body.studio-body {
   }
 
   &::after {
-    background: linear-gradient(135deg, rgba(90, 230, 160, 0.23) 0%, transparent 60%);
+    background: linear-gradient(135deg, rgba(90, 230, 160, 0.253) 0%, transparent 60%);
   }
 
   &:hover {

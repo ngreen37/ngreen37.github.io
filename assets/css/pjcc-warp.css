@@ -7,7 +7,7 @@
 .pjcc-warp {
   position: fixed; inset: 0; z-index: 9999; pointer-events: none;
   opacity: 0; transform: scale(1.04);
-  transition: opacity .34s ease, transform .34s ease;
+  transition: opacity .255s ease, transform .255s ease;
 }
 /* Peak opacity held well under 1 so the wipe reads as a dim colour-flash,
    not a full blackout of the page underneath (dimmed a further 15%, Nate 2026-06-30). */
