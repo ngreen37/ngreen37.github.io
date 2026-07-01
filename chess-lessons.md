@@ -24,6 +24,147 @@ body_class: theme-bw
   <p style="margin-top:14px;padding:12px 14px;border:1px solid rgba(245,197,24,0.4);border-radius:8px;">🎓 Want a free, self-paced way to practice between lessons? Try the free, self-paced side of the <a href="/academy/">PJCC Chess Academy</a> — the PJCC cast teach openings, tactics, and board vision through the games, with belts and printable worksheets for kids &amp; classrooms.</p>
 </div>
 
+<!-- ══════════ Meet the Coaches (in-universe roster) ══════════ -->
+<section class="cc-roster" aria-label="Meet the PJCC Academy coaches">
+  <div class="cc-head">
+    <span class="cc-eyebrow">◈ MEET THE COACHES</span>
+    <h2 class="cc-title">The PJCC Academy Faculty</h2>
+    <p class="cc-disclaimer">★ A make-believe roster. These are <a href="/characters/">characters from the PJCC universe</a> — and their student reviews are fiction too. For real lessons with a real human coach, use the <a href="/contact/">contact link above</a>.</p>
+  </div>
+
+  <div class="cc-grid">
+
+    <!-- Argus -->
+    <article class="cc-card" style="--cc:#F5C518">
+      <div class="cc-top">
+        <span class="cc-avatar">♞</span>
+        <div class="cc-id">
+          <a class="cc-name" href="/characters/argus/">Argus</a>
+          <span class="cc-spec">Fundamentals &amp; Discipline · Chess</span>
+          <span class="cc-rate"><span class="cc-stars"><span class="cc-stars-on" style="width:98%">★★★★★</span>★★★★★</span> <b>4.9</b> <span class="cc-count">(37)</span></span>
+        </div>
+      </div>
+      <div class="cc-badge">✓ Reigning champion — Checker Town Chess Open</div>
+      <div class="cc-chips"><span>37 students</span><span>210 sessions</span><span>Replies same day</span></div>
+      <p class="cc-bio">Steady as they get. Argus won't dazzle you with tricks — he'll build a foundation that never cracks. Perfect for beginners who want the basics done <em>right</em>.</p>
+      <blockquote class="cc-quote">
+        <span class="cc-stars mini"><span class="cc-stars-on" style="width:100%">★★★★★</span>★★★★★</span>
+        <p>"He made me play the same endgame nine times. On the tenth I finally got it — and I'll never lose it. Never flashy, always there."</p>
+        <cite>— Auston, first student</cite>
+      </blockquote>
+    </article>
+
+    <!-- Kaede -->
+    <article class="cc-card" style="--cc:#f2879a">
+      <div class="cc-top">
+        <span class="cc-avatar">♝</span>
+        <div class="cc-id">
+          <a class="cc-name" href="/characters/kaede/">Kaede <span class="cc-kanji">楓</span></a>
+          <span class="cc-spec">Shogi &amp; Japanese · All ages</span>
+          <span class="cc-rate"><span class="cc-stars"><span class="cc-stars-on" style="width:100%">★★★★★</span>★★★★★</span> <b>5.0</b> <span class="cc-count">(52)</span></span>
+        </div>
+      </div>
+      <div class="cc-badge">✓ Runs the <a href="/games/reading-room/">Reading Room</a> (読書室) — free to enter, free to learn</div>
+      <div class="cc-chips"><span>52 students</span><span>Beginner-friendly</span><span>Patient &amp; warm</span></div>
+      <p class="cc-bio">Patient, warm, and generous. Kaede leads all the Japanese teaching and the shogi dojo — she'll take you from "which way does this piece move?" all the way to master.</p>
+      <blockquote class="cc-quote">
+        <span class="cc-stars mini"><span class="cc-stars-on" style="width:100%">★★★★★</span>★★★★★</span>
+        <p>"I came in knowing zero Japanese and zero shogi. 「ようこそ」she said — and somehow I left knowing both. She teaches like you're already family."</p>
+        <cite>— Princess, Chapter 6</cite>
+      </blockquote>
+    </article>
+
+    <!-- Matsu -->
+    <article class="cc-card" style="--cc:#4cc98a">
+      <div class="cc-top">
+        <span class="cc-avatar">♝</span>
+        <div class="cc-id">
+          <a class="cc-name" href="/characters/matsu/">Matsu <span class="cc-kanji">松</span></a>
+          <span class="cc-spec">Advanced Shogi · Learn by playing</span>
+          <span class="cc-rate"><span class="cc-stars"><span class="cc-stars-on" style="width:96%">★★★★★</span>★★★★★</span> <b>4.8</b> <span class="cc-count">(19)</span></span>
+        </div>
+      </div>
+      <div class="cc-badge">✓ Shogi Island anchor — teaches by the board, not the lecture</div>
+      <div class="cc-chips"><span>19 students</span><span>Says less</span><span>Means more</span></div>
+      <p class="cc-bio">Where Kaede is the maple, Matsu is the pine — evergreen, unmoved, the same in every weather. He won't explain much. He'll just beat you, gently, until you understand.</p>
+      <blockquote class="cc-quote">
+        <span class="cc-stars mini"><span class="cc-stars-on" style="width:100%">★★★★★</span>★★★★★</span>
+        <p>"Said five words the whole lesson. I understood everything. 「松は枯れない。」"</p>
+        <cite>— a grateful student, Shogi Island</cite>
+      </blockquote>
+    </article>
+
+  </div>
+
+  <!-- little student wall for extra flavor -->
+  <div class="cc-wall">
+    <div class="cc-wall-label">◈ MORE STUDENT REVIEWS</div>
+    <div class="cc-wall-grid">
+      <div class="cc-mini"><span class="cc-stars mini"><span class="cc-stars-on" style="width:100%">★★★★★</span>★★★★★</span><p>"I still can't castle. Five stars anyway. I keep showing up!"</p><cite>— Crockett</cite></div>
+      <div class="cc-mini"><span class="cc-stars mini"><span class="cc-stars-on" style="width:100%">★★★★★</span>★★★★★</span><p>"Show her something once and she starts mastering it. The coaches barely keep up."</p><cite>— on Princess</cite></div>
+      <div class="cc-mini"><span class="cc-stars mini"><span class="cc-stars-on" style="width:100%">★★★★★</span>★★★★★</span><p>"Ten years braver than her big brother. She never leaves the board."</p><cite>— on Auston</cite></div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cc-roster { max-width: 900px; margin: 26px auto; }
+  .cc-head { text-align: center; margin-bottom: 20px; }
+  .cc-eyebrow { display: inline-block; font-size: 0.72rem; letter-spacing: 0.22em; color: #F5C518; font-weight: 700; }
+  .cc-title { margin: 6px 0 8px; font-size: 1.5rem; }
+  .cc-disclaimer { font-size: 0.82rem; font-style: italic; color: #9a927f; max-width: 620px; margin: 0 auto; line-height: 1.55; }
+  .cc-disclaimer a { color: #cbb45a; }
+
+  .cc-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @media (min-width: 720px) { .cc-grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .cc-card {
+    background: #161512; border: 1px solid rgba(245,197,24,0.16);
+    border-top: 3px solid var(--cc); border-radius: 12px; padding: 16px 16px 18px;
+    display: flex; flex-direction: column;
+  }
+  .cc-top { display: flex; gap: 12px; align-items: center; }
+  .cc-avatar {
+    flex: none; width: 52px; height: 52px; border-radius: 50%;
+    display: grid; place-items: center; font-size: 1.7rem; line-height: 1;
+    background: rgba(255,255,255,0.04); border: 2px solid var(--cc); color: var(--cc);
+  }
+  .cc-id { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .cc-name { font-weight: 800; font-size: 1.1rem; color: #f2ecdd; text-decoration: none; }
+  .cc-name:hover { color: var(--cc); }
+  .cc-kanji { font-weight: 500; color: var(--cc); opacity: 0.85; }
+  .cc-spec { font-size: 0.76rem; color: #9a927f; }
+  .cc-rate { font-size: 0.82rem; color: #d9d0bd; display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+  .cc-rate b { color: #F5C518; }
+  .cc-count { color: #7d7566; }
+
+  .cc-stars { position: relative; display: inline-block; color: #45403a; letter-spacing: 1px; white-space: nowrap; }
+  .cc-stars-on { position: absolute; left: 0; top: 0; overflow: hidden; color: #F5C518; white-space: nowrap; }
+  .cc-stars.mini { font-size: 0.8rem; }
+
+  .cc-badge {
+    margin: 12px 0 10px; font-size: 0.76rem; color: #bfe8cf;
+    background: rgba(76,201,138,0.08); border: 1px solid rgba(76,201,138,0.22);
+    border-radius: 7px; padding: 7px 9px; line-height: 1.4;
+  }
+  .cc-badge a { color: #8fe0b0; }
+  .cc-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .cc-chips span { font-size: 0.68rem; color: #b5ac97; background: rgba(255,255,255,0.05); border-radius: 999px; padding: 3px 9px; }
+  .cc-bio { font-size: 0.85rem; color: #cfc7b4; line-height: 1.5; margin: 0 0 12px; }
+
+  .cc-quote { margin: auto 0 0; padding: 10px 12px; border-left: 3px solid var(--cc); background: rgba(255,255,255,0.03); border-radius: 0 8px 8px 0; }
+  .cc-quote p { margin: 5px 0 6px; font-size: 0.82rem; color: #e6ddca; line-height: 1.5; font-style: italic; }
+  .cc-quote cite { font-size: 0.72rem; color: #9a927f; font-style: normal; }
+
+  .cc-wall { margin-top: 22px; }
+  .cc-wall-label { font-size: 0.72rem; letter-spacing: 0.2em; color: #9a927f; text-align: center; margin-bottom: 12px; }
+  .cc-wall-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 720px) { .cc-wall-grid { grid-template-columns: repeat(3, 1fr); } }
+  .cc-mini { background: #161512; border: 1px solid rgba(245,197,24,0.12); border-radius: 10px; padding: 12px 14px; }
+  .cc-mini p { margin: 6px 0 6px; font-size: 0.82rem; color: #e6ddca; line-height: 1.5; font-style: italic; }
+  .cc-mini cite { font-size: 0.72rem; color: #9a927f; font-style: normal; }
+</style>
+
 <div class="lessons-game-feed">
   <div id="chess-embed-wrap">
     <div class="lessons-game-coming-soon" id="chess-embed-loading">
