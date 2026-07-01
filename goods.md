@@ -68,14 +68,21 @@ brand: mcpuppy
   <div class="goods-copy">
     <div class="goods-tag">Av15 · The Stationery</div>
     <h2>Desk gear with a creed</h2>
-    <p>Branded PJCC stationery with <strong>"follow the dog"</strong> across the top — the desk half of the pocket-and-desk mindset line that runs alongside the goal cards.</p>
-    <p class="goods-why">Same idea, more surface: the page you write your day on already carries the reminder.</p>
+    <p>Branded PJCC stationery with <strong>"follow the dog"</strong> across the top — a letterhead sheet, a desk notecard, a sticky pad. The <strong>desk half</strong> of the pocket-and-desk mindset line that runs beside the goal cards.</p>
+    <p class="goods-why">Same idea, more surface: the page you write your day on already carries the reminder. You can't lose the path when it's printed at the top of every plan.</p>
+    <ul class="goods-list">
+      <li><strong>Heavy, warm paper.</strong> The creed set in <strong>gold</strong> across the header, a faint chess-piece watermark below.</li>
+      <li><strong>A small set:</strong> letterhead for the long plans, notecards for the one-line goal, a sticky pad for the reminder you pass all day.</li>
+      <li><strong>How you get one:</strong> buy the set, <a href="/contact/">email and ask for a free sheet</a> (Patreon-funded), or make your own — any notebook, the creed written across the top.</li>
+    </ul>
   </div>
   <div class="goods-stationery" aria-hidden="true">
+    <div class="stat-note">follow the dog<span class="stat-note-line"></span><span class="stat-note-line short"></span></div>
     <div class="stat-sheet">
       <span class="stat-creed">follow the dog</span>
       <span class="stat-line"></span><span class="stat-line"></span><span class="stat-line"></span>
       <span class="stat-line"></span><span class="stat-line short"></span>
+      <span class="stat-piece">♟</span>
     </div>
   </div>
 </section>
@@ -141,16 +148,25 @@ brand: mcpuppy
 .gc-creed { font-family:'Poppins',sans-serif; font-style:italic; font-weight:700; font-size:0.74rem; color:#5a3c05;
   border-top:1px solid rgba(90,60,5,0.4); padding-top:8px; width:100%; text-align:center; }
 
-/* ---- Stationery sheet ---- */
-.goods-stationery { display:flex; justify-content:center; }
-.stat-sheet { width:230px; min-height:290px; background:#fdfbf4; border-radius:6px; padding:22px 22px 26px;
-  box-shadow:0 16px 40px rgba(0,0,0,0.5); display:flex; flex-direction:column; gap:14px;
-  transform:rotate(-2.5deg); transition:transform 0.3s ease; }
-.goods-stationery:hover .stat-sheet { transform:rotate(0deg); }
-.stat-creed { font-family:'Poppins',sans-serif; font-style:italic; font-weight:800; font-size:1rem; color:#1a0f3d;
-  text-align:center; letter-spacing:0.01em; border-bottom:2px solid #F5C518; padding-bottom:12px; }
-.stat-line { height:9px; border-radius:3px; background:linear-gradient(90deg, rgba(40,30,80,0.14), rgba(40,30,80,0.05)); }
+/* ---- Stationery set (letterhead + sticky notecard) ---- */
+.goods-stationery { position:relative; display:flex; justify-content:center; align-items:center; min-height:320px; }
+.stat-sheet { position:relative; width:230px; min-height:290px; background:#fdfbf4; border-radius:6px; padding:22px 22px 26px;
+  box-shadow:0 16px 40px rgba(0,0,0,0.5); display:flex; flex-direction:column; gap:14px; overflow:hidden;
+  transform:rotate(-2.5deg); transition:transform 0.3s ease; z-index:2; }
+.stat-piece { position:absolute; right:-8px; bottom:-18px; font-size:6.2rem; line-height:1; color:rgba(40,30,80,0.06); z-index:0; }
+.stat-note { position:absolute; right:64px; top:20px; width:120px; min-height:118px; background:#fff3b0; border-radius:4px;
+  padding:12px 13px; box-shadow:0 12px 26px rgba(0,0,0,0.42); transform:rotate(7deg); transition:transform 0.3s ease; z-index:1;
+  font-family:'Poppins',sans-serif; font-style:italic; font-weight:800; font-size:0.8rem; color:#5a3c05; }
+.stat-note-line { display:block; height:6px; margin-top:9px; border-radius:2px; background:rgba(90,60,5,0.2); }
+.stat-note-line.short { width:60%; }
+.goods-stationery:hover .stat-sheet { transform:rotate(0deg) translateX(-10px); }
+.goods-stationery:hover .stat-note { transform:rotate(12deg) translate(12px,-8px); }
+.stat-creed { position:relative; z-index:1; font-family:'Poppins',sans-serif; font-style:italic; font-weight:800; font-size:1.05rem;
+  color:#b8860b; text-align:center; letter-spacing:0.01em; border-bottom:2px solid #F5C518; padding-bottom:12px;
+  text-shadow:0 1px 0 rgba(255,255,255,0.6); }
+.stat-line { position:relative; z-index:1; height:9px; border-radius:3px; background:linear-gradient(90deg, rgba(40,30,80,0.14), rgba(40,30,80,0.05)); }
 .stat-line.short { width:55%; }
+@media (max-width:760px){ .stat-note { right:30px; } }
 
 /* ---- Creed band + CTA ---- */
 .goods-creed-band { text-align:center; margin:0 0 2.2rem; padding:22px; border-top:1px solid rgba(245,197,24,0.25);

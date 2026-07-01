@@ -125,6 +125,20 @@ biome floors (Checker Town → Sea → Shogi Isle → Chess City) · Bill's-tool
 dungeon · pacifist puzzle route · escort pawns · risk altars (deepest hide ARG fragments). *The web
 prototype (`/games/dungeon/`) is the playable spec; the Godot build is the same game in 3D.*
 
+### 🆕 Ten new arcade concepts (replenished 2026-07-01)
+*Fresh games for the funnel — grounded in the world, cosmetics-only economy, small enough for the web-first pattern. See [[game-monetization-ethics]], [[stay-within-means]].*
+
+1. **The Ferry Crossing** — the perpetually-delayed Shogi Island ferry as a timing game: hop drifting board-tiles across the rough Sea before the gangway lifts. Pays off the "ferry delayed" running gag and the Sea region.
+2. **Endgame Escape** — a King-and-pawn roguelite: escape a collapsing board with opposition + key squares; every floor a real won/drawn study. Teaches the endgames the arcade currently skips.
+3. **The Cipher Room** — decode intercepted transmissions by solving chess-notation ciphers (files/ranks → letters). The Dead Drop / Classified / Daily Dispatch decode theme as its own game.
+4. **Crockett's Delivery** — Paperboy down Checker Town: Crockett runs the Father's paper route, dodging obstacles, belly-rub combos for accuracy. Ties Crockett + the newspaper lore.
+5. **Pawn Storm** — promote a wave of pawns across the board before the enemy Queen arrives; a chess-flavored lane puzzler with a promotion payoff.
+6. **Blindfold Duel** — The Mind's Eye as head-to-head: two operatives (or vs. a persona) call moves on a hidden board. Hot-seat now; async later.
+7. **The Quartermaster's Run** — a cozy shop-merge: stock the store, match chess-piece goods, earn cosmetics. Wraps the existing store economy in a calm loop.
+8. **Rival's Shadow** — a beat-the-ghost tactics race: replay the exact set the Rival solved and try to match his line move-for-move (uses the creator/ghost system).
+9. **Sand Mine Cart** — an auto-runner minecart plunge, dodging Subject Zero and grabbing gold ⛏ — a fast companion piece to Sand Mine Depths.
+10. **Coronation** — the journey's capstone: a mate-in-N boss rush atop the CEO's tower, unlocked by clearing the Gauntlet. The victory-lap game.
+
 ### 🎮 Godot build plan (Princess Dungeon → 3D), condensed
 *Engine: **Godot 4.x** (GDScript, free). Assets: **Blender** → `.glb`. Each phase ends runnable.*
 - **P0 Pipeline:** Blender → `.glb` → renders in Godot. Pick the grid (N×N, match the prototype).
@@ -349,7 +363,9 @@ then **forget once they lose the path** for a while. The card is a physical anch
 
 **Av15 — PJCC stationery** *(new · physical · parked until after the flare):* branded stationery with
 **"follow the dog"** across the top. The "pocket/desk mindset" goods line alongside the goal cards.
-**Status (2026-06-24):** shown on `/goods/` beside the goal cards (sheet mockup with the creed across the top).
+**Status (2026-07-01):** fuller showcase on `/goods/` (now the **Merch** page) — a letterhead + sticky-notecard
+mockup, gold creed header, a chess-piece watermark, and the same **three ways to get one** as the goal cards
+(buy · email for a free sheet · make your own). The physical *make* is still parked post-flare.
 
 **Av16 — PJCC VR** *(new · long-horizon · rides on the Godot/Blender 3D work):* the **Battle Room is *made* for
 VR** — Ender's-Game zero-G chess where "the enemy's gate is down" becomes literal: you float in the arena and move
@@ -370,6 +386,15 @@ the moral/Neville center ("assume it's done"), **"follow the dog,"** and the Riv
 weighted RNG reward table that scales with *what fraction of your best you gave up*; a cooldown so it's a **ritual,
 not a grind**; hard guardrails — **never real money**, a daily cap, and a clear "you may get nothing" warning.
 Engine: extend `pjcc-profile.js`; the altar reads the same `credits` / owned-gear the Shopkeeper writes.
+
+**Status — v1 SHIPPED (2026-07-01):** the altar is **playable** at `/games/the-gambit/` (no longer coming-soon).
+Live now: offer **credits + an owned collectable**; a **Courage meter** shows the real odds before you commit
+(best item or ≥85% of credits → the board leans hard your way); **win** → more credits back, and a bold win can
+hand back an unowned **boon** collectable; **lose** → it's gone. Guardrails shipped: **never real money**, a daily
+cap (3), a 45s cooldown, and a **two-tap "no takebacks"** commit. Engine extended in `pjcc-profile.js`
+(`ownedCollectables` / `unownedCollectables` / `grantCredits` / `burnCollectable` / `grantCollectable`).
+**v2 roadmap (from the brainstorm below):** the Uncle presiding, non-fungible / altar-only rewards + canon
+fragments, sacrificing the streak-flame / rank, hold-to-offer, the Monument, a protected first offering, pay-it-forward.
 
 > **Brainstorm expansion (2026-06-25):**
 > - **Who keeps the altar — the Uncle.** Give the Gambit a face: the **Uncle** (Barbados, the show's
@@ -440,6 +465,47 @@ not a scramble.
   or the **pilot** beat. At the flare: promote the Patreon · flip the **Direct Line** live (the easiest day-one
   deliverable — just answering messages) · announce via the dispatch + mailing list · unpause the show-as-
   product slices. Ties to the Blender/Godot long-game and **Av10**.
+
+### 🆕 Ten new Avenues (replenished 2026-07-01)
+
+**Av20 — Operative field kit (onboarding)** *(new · low-lift):* a guided first run — hand a new visitor a codename,
+one **protected** first Gambit, and a 3-stop mini-journey (a tactic, a decode, a belly rub) so they leave having
+*done* something. Cuts bounce; turns a cold splash into a warm start. Ties to [[pjcc-profile-system]].
+
+**Av21 — The Monument / Hall of Courage** *(new):* a public record of the **biggest sacrifices** laid on the
+Gambit's altar (win or lose) beside the season champions — the values center made visible, honest social proof
+that isn't a flex about luck. The anti-casino payoff: you're remembered for the offering, not the outcome.
+
+**Av22 — Couch co-op / pass-and-play** *(new · no backend):* local two-player modes — Blindfold Duel, a Battle
+Room hot-seat, a Notation race — for the family table. Zero servers, pure web; the most "gather round" thing on the site.
+
+**Av23 — Accessibility pass** *(new · always-on):* colorblind-safe boards, full keyboard play, screen-reader
+move-calls (the Blindfold audio mode already points here), captions on any voiced beat, reduced-motion honored
+everywhere. Kid-safe *and* everyone-safe — and it doubles as classroom-ready.
+
+**Av24 — The soundtrack lane** *(new · McPuppy's real craft):* the studio actually makes music — the first PJCC
+theme recorded on **guitar + drums** drops to the dispatch on camera; a jukebox of stems; later, game music that
+reacts to your run. The McPuppy (studio/music) half of the two-brand split, made loud. Ties to [[site-two-brand-split]].
+
+**Av25 — Printable classroom packs** *(new):* bundle the Academy's worksheets, belt ladder, and certificates into
+a free **teacher PDF kit** — the educators lane made downloadable and drop-in. Offline, standards-friendly, no login.
+Ties to the PJCC Chess Academy.
+
+**Av26 — The daily ritual hub** *(new):* one page that chains the day's small rituals — decode the **Dispatch**, lay
+**one Gambit**, keep the **streak flame**, unseal a **fragment** — into a tight 3-minute loop. Turns scattered daily
+features into a single habit. Respects [[declutter-north-star]].
+
+**Av27 — Fan-art → canon pipeline** *(new):* a monthly "**the studio drew your idea**" — a Fan Wall submission
+becomes a real in-world poster or goal-card character. Closes the loop between community and canon, and feeds the
+Merch character rotation.
+
+**Av28 — The pilot, playable** *(new · launch-flare candidate):* one scene from the pilot as an **interactive,
+branching, voiced** beat — not a video, a thing you play. The show-as-product idea, but a game; a strong candidate
+for the flare itself. Ties to [[blender-game-goal]].
+
+**Av29 — Cross-device continuity** *(new):* QR hand-off between phone and desktop (the implicit-flow auth already
+supports cross-device sign-in) — start a run on the couch, finish it at the desk. Small, and it makes the whole
+site feel like one app.
 
 ---
 
