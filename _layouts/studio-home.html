@@ -245,7 +245,7 @@
   /* Idea #5 — the brand-coloured enter wipe */
   .studio-warp { position:fixed; inset:0; z-index:60; pointer-events:none; opacity:0; transform:scale(1.04);
     transition:opacity .34s ease, transform .34s ease; }
-  .studio-warp.is-on { opacity:0.82; transform:scale(1); pointer-events:auto; }
+  .studio-warp.is-on { opacity:0.70; transform:scale(1); pointer-events:auto; }
   .studio-warp.warp-pjcc     { background:radial-gradient(circle at 28% 30%, #6a26dc, #1a0f3d 70%); }
   .studio-warp.warp-mcpuppy  { background:radial-gradient(circle at 72% 30%, #2a2a2e, #050507 70%); }
   .studio-warp.warp-games    { background:radial-gradient(circle at 28% 72%, #0e2aa0, #03102c 70%); }
@@ -430,6 +430,11 @@
       var gaunt = document.querySelector('.studio-gauntlet');
       if (gaunt) wire(gaunt, 'gauntlet');
     }
+
+    // Clear the wipe whenever the page is shown again — in particular a Back
+    // navigation restores this page from the bfcache with the overlay still
+    // switched on, which otherwise leaves you stuck on the full-screen colour.
+    if (warp) window.addEventListener('pageshow', function () { warp.className = 'studio-warp'; });
 
     // #3 — every so often a faint sigil blooms among the drifters, then dissolves.
     var sig = document.getElementById('studio-drift-sigil');

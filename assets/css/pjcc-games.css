@@ -40,7 +40,7 @@
   box-shadow:0 0 0 1px rgba(0,0,0,0.6), inset 0 -40px 50px -30px var(--c);
   transition:transform .14s, box-shadow .14s, border-color .14s; }
 .ghub-portal:hover, .ghub-portal:focus-visible, .ghub-portal:active { transform:translateY(-4px); border-color:var(--c);
-  box-shadow:0 0 38px -6px var(--c), 0 14px 34px -12px var(--c), inset 0 -50px 60px -28px var(--c); text-decoration:none; }
+  box-shadow:0 0 44px -3px var(--c), 0 14px 39px -9px var(--c), inset 0 -56px 66px -24px var(--c); text-decoration:none; }
 /* glowing rune ring behind the glyph */
 .ghub-portal .ghp-glyph { position:relative; font-size:3.2rem; line-height:1; color:var(--c); margin-bottom:6px;
   filter:drop-shadow(0 0 14px color-mix(in srgb, var(--c) 70%, transparent)); }

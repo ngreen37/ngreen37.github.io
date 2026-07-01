@@ -19,6 +19,11 @@
   warp.setAttribute('aria-hidden', 'true');
   (document.body || document.documentElement).appendChild(warp);
 
+  // Clear the wipe when the page is shown again. A Back navigation restores the
+  // page from the bfcache with the overlay still on, which otherwise leaves you
+  // stuck staring at the full-screen colour.
+  window.addEventListener('pageshow', function () { warp.classList.remove('is-on'); });
+
   function accent(el) {
     var c = (getComputedStyle(el).getPropertyValue('--c') || '').trim();
     return c || '#8a63ff';
