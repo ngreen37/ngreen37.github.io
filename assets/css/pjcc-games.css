@@ -134,3 +134,79 @@
 .hall--mm2 .gcard-dead { background:#7c7c7c; color:#000; font-family:'Press Start 2P',monospace; font-size:0.42rem; border-radius:0; }
 .hall--mm2 .gcard.dead { cursor:default; border-style:dashed; border-color:#7c7c7c; background:#1a1a2e; }
 .hall--mm2 .gcard.dead h3 { color:#9a9ab0; } .hall--mm2 .gcard.dead p { color:#6f6f8c; }
+
+/* ---------------- LEARN HALL = CHALKBOARD ---------------- */
+/* A classroom slate in a wooden frame: chalk-hand headings, dashed chalk cards. */
+.hall--chalk { position:relative; padding:20px 18px 26px; border-radius:8px; overflow:hidden;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(255,255,255,0.05), transparent 55%),
+    linear-gradient(160deg, #26332c 0%, #18211d 100%);
+  border:11px solid #5a3d22;
+  box-shadow:inset 0 0 0 3px #3a2814, inset 0 0 80px rgba(0,0,0,0.5), 0 16px 44px -14px rgba(0,0,0,0.6); }
+/* faint chalk-dust smears */
+.hall--chalk::after { content:""; position:absolute; inset:0; pointer-events:none; opacity:.6;
+  background:
+    radial-gradient(ellipse 40% 12% at 22% 82%, rgba(255,255,255,0.035), transparent 70%),
+    radial-gradient(ellipse 30% 10% at 74% 28%, rgba(255,255,255,0.03), transparent 70%); }
+.hall--chalk .hall-bar { position:relative; z-index:2; }
+.hall--chalk .hall-back { font-family:'Gochi Hand',cursive; font-size:1rem; color:#f2f5ef; border:2px dashed rgba(242,245,239,0.5);
+  border-radius:8px; background:transparent; }
+.hall--chalk .hall-back:hover { color:#8affb0; border-color:#8affb0; }
+.hall--chalk .chalk-titlebar { position:relative; z-index:2; text-align:center; margin:6px 0 20px; }
+.hall--chalk .chalk-eyebrow { font-family:'Gochi Hand',cursive; font-size:15px; letter-spacing:2px; color:#8fe6a6; opacity:.85; }
+.hall--chalk .chalk-title { font-family:'Gochi Hand',cursive; font-weight:400; font-size:clamp(34px,8vw,56px);
+  margin:4px 0 6px; color:#f4f7f2; letter-spacing:1px; text-shadow:0 0 2px rgba(255,255,255,0.4);
+  border-bottom:3px solid rgba(0,230,60,0.55); display:inline-block; padding-bottom:2px; }
+.hall--chalk .chalk-sub { display:block; font-family:'Gochi Hand',cursive; font-size:16px; color:#c8d4cc; }
+.hall--chalk .cat-games { position:relative; z-index:2; }
+.hall--chalk .gcard { background:rgba(255,255,255,0.02); border:2px dashed rgba(244,247,242,0.45); border-radius:10px; }
+.hall--chalk .gcard:hover { transform:translateY(-2px); background:rgba(255,255,255,0.06); border-color:#f4f7f2;
+  box-shadow:0 0 20px -6px rgba(0,230,60,0.45); }
+.hall--chalk .gcard-icon { color:var(--accent,#00e436); filter:drop-shadow(0 0 6px rgba(0,230,60,0.35)); }
+.hall--chalk .gcard-body h3 { color:#f4f7f2; font-family:'Gochi Hand',cursive; font-weight:400; font-size:1.2rem; letter-spacing:.5px; }
+.hall--chalk .gcard-body p { color:#c4d0c8; }
+.hall--chalk .gcard-best { color:#0a1a10; background:#8fe6a6; border-radius:4px; }
+.hall--chalk .gcard-new { background:#8fe6a6; color:#0a1a10; }
+.hall--chalk .gcard-soon { background:#f2f5ef; color:#1a2a20; }
+.hall--chalk .gcard-dead { background:#7c8b80; color:#0a1a10; }
+.hall--chalk .gcard.soon, .hall--chalk .gcard.locked, .hall--chalk .gcard.dead { border-style:dotted; opacity:.85; }
+
+/* ---------------- IN DEVELOPMENT HALL = BLUEPRINT / WORKBENCH ---------------- */
+/* Amber graph-paper on the bench: technical mono headings, dashed "spec" cards. */
+.hall--dev { position:relative; padding:20px 18px 26px; border-radius:6px; overflow:hidden;
+  background:linear-gradient(160deg, #13110b 0%, #0c0b07 100%);
+  border:3px solid #ffb020;
+  box-shadow:0 0 0 3px #0c0b07, 0 0 0 6px #4a3410, 0 16px 44px -14px rgba(255,176,32,0.4); }
+/* amber graph-paper grid */
+.hall--dev::before { content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 21px, rgba(255,176,32,0.09) 21px 22px),
+    repeating-linear-gradient(90deg, transparent 0 21px, rgba(255,176,32,0.09) 21px 22px); }
+/* hazard tape across the top */
+.hall--dev::after { content:""; position:absolute; top:0; left:0; right:0; height:6px; pointer-events:none; z-index:3;
+  background:repeating-linear-gradient(45deg, #ffb020 0 10px, #12100b 10px 20px); opacity:.85; }
+.hall--dev .hall-bar { position:relative; z-index:2; margin-top:6px; }
+.hall--dev .hall-back { font-family:ui-monospace,'Share Tech Mono',monospace; font-size:0.7rem; color:#ffd48a;
+  border:1px solid #ffb020; border-radius:0; background:rgba(255,176,32,0.06); letter-spacing:1px; }
+.hall--dev .hall-back:hover { color:#0c0b07; background:#ffb020; }
+.hall--dev .dev-titlebar { position:relative; z-index:2; text-align:center; margin:2px 0 20px; }
+.hall--dev .dev-eyebrow { font-family:ui-monospace,'Share Tech Mono',monospace; font-size:11px; letter-spacing:3px;
+  text-transform:uppercase; color:#ffcf7a; }
+.hall--dev .dev-title { font-family:ui-monospace,'Share Tech Mono',monospace; font-weight:800; font-size:clamp(22px,5.5vw,38px);
+  margin:8px 0 6px; color:#ffb020; letter-spacing:2px; text-shadow:0 0 16px rgba(255,176,32,0.45), 2px 2px 0 #4a3410; }
+.hall--dev .dev-sub { font-family:ui-monospace,'Share Tech Mono',monospace; font-size:10px; letter-spacing:4px;
+  text-transform:uppercase; color:#ffd48a; animation:dev-blink 1.4s step-end infinite; }
+@keyframes dev-blink { 50% { opacity:.25; } }
+.hall--dev .cat-games { position:relative; z-index:2; }
+.hall--dev .gcard { background:rgba(255,176,32,0.045); border:2px dashed color-mix(in srgb, var(--accent,#ffb020) 60%, #4a3410);
+  border-radius:4px; }
+.hall--dev .gcard:hover { transform:translateY(-2px); background:rgba(255,176,32,0.1); border-color:var(--accent,#ffb020);
+  box-shadow:0 0 20px -6px var(--accent,#ffb020); }
+.hall--dev .gcard-icon { color:var(--accent,#ffb020); filter:drop-shadow(0 0 6px rgba(255,176,32,0.3)); }
+.hall--dev .gcard-body h3 { color:#ffe0a8; font-family:ui-monospace,'Share Tech Mono',monospace; letter-spacing:.5px; }
+.hall--dev .gcard-body p { color:#cbb892; }
+.hall--dev .gcard-best { color:#12100b; background:#ffcf7a; border-radius:2px; }
+.hall--dev .gcard-new { background:#ffb020; color:#12100b; border-radius:2px; }
+.hall--dev .gcard-soon { background:#ffcf7a; color:#12100b; border-radius:2px; }
+.hall--dev .gcard-dead { background:#8a7a55; color:#12100b; border-radius:2px; }
+.hall--dev .gcard.soon, .hall--dev .gcard.locked, .hall--dev .gcard.dead { border-style:dotted; opacity:.85; }

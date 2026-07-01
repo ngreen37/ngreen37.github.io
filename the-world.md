@@ -11,7 +11,7 @@ permalink: /the-world/
 </div>
 
 <div class="world-hub">
-  <a class="world-pillar" href="{{ '/characters/' | relative_url }}" style="--c:#c96bff" data-warp>
+  <a class="world-pillar" href="{{ '/characters/' | relative_url }}" style="--c:#e2566e" data-warp>
     <span class="wp-glyph">♟</span>
     <span class="wp-name">Characters</span>
     <span class="wp-tag">The cast — Princess, the crew, the rivals, and the ones not as nice as they seem.</span>

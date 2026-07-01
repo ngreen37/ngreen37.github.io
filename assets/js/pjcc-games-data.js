@@ -31,8 +31,8 @@ window.PJCC_GAMES = [
 /* Halls (the "Gauntlet Legends" boxes). route = page under /games/. */
 window.PJCC_CATS = {
   learn:      { name:'Learn',     glyph:'♟', tag:'Sharpen your game', accent:'#00e436', route:'learn',      blurb:'Tactics, openings, notation — the training halls.' },
-  arcade:     { name:'Arcade',    glyph:'♞', tag:'Pure play',         accent:'#ff77a8', route:'arcade',     blurb:'Action, chases, and run-and-gun. The loud room.' },
-  dev:        { name:'In Development', glyph:'🛠', tag:'On the workbench', accent:'#3cbcfc', route:'in-dev', blurb:'Half-built and humming. Peek at the workbench.' },
+  arcade:     { name:'Arcade',    glyph:'♞', tag:'Pure play',         accent:'#3cbcfc', route:'arcade',     blurb:'Action, chases, and run-and-gun. The loud room.' },
+  dev:        { name:'In Development', glyph:'🛠', tag:'On the workbench', accent:'#ffb020', route:'in-dev', blurb:'Half-built and humming. Peek at the workbench.' },
   vault:      { name:'The Vault', glyph:'🔒', tag:'Unlock to enter', accent:'#9b96ad', route:'vault',  blurb:'Sealed. Earn the key and the door opens.' },
   terminated: { name:'Terminated',glyph:'☠', tag:'Retired roster',    accent:'#fc5454', route:'terminated', blurb:'Decommissioned and delayed. Enter at your own risk.' }
 };
