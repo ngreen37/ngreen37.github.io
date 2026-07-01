@@ -28,9 +28,9 @@ their own sake.* New surface area should serve one of the five threads.
 
 ## ✅ Already live (guardrail — don't re-pitch)
 
-**Arcade (16 games):** The Gauntlet (headline — real games vs a ladder, perft-verified engine), Battle
+**Arcade (15 games):** The Gauntlet (headline — real games vs a ladder, perft-verified engine), Battle
 Room (v0.1 action-chess), Notation Blitz, Blindfold/The Mind's Eye, Clearance: DELTA, Princess Dungeon,
-Checker Financial, Fork in the Road, The Pirc Protocol, Sand Mine Depths, Shogi Island (Catch the Lion),
+Fork in the Road, The Pirc Protocol, Sand Mine Depths, Shogi Island (Catch the Lion),
 Sky Run, Follow the Dog, Knight's Tour, Siege on Chess City, The Reading Room — most with daily seeds, global
 boards, creator ghosts, streak flame, board-skins + JP scaffolding.
 
@@ -77,10 +77,6 @@ phantom-blunder review · walk-the-knight audio drills · PGN import · relic bo
 **Clearance: DELTA:** redacted-dossier meta · sudden-death OMEGA · audio-intercept questions · wager mode ·
 daily briefing · three lanes (rules / lore / chess history) · spot-the-lie (ARG) · question forge (UGC) ·
 clearance-gated lore · speed-vs-accuracy dial.
-
-**Checker Financial:** the piece exchange (in-lore market) · news-driven swings (the ticker moves the
-chart) · portfolio mode · insider whispers (sometimes disinfo — ARG) · leverage round · short-the-crash
-scenario · candlestick coach · daily ticker board · bank gains → cosmetics · the CEO's rigged ledger.
 
 **Fork in the Road:** endless one-life gauntlet · show-the-refutation coach · theme drills
 (fork/pin/skewer/discovery) · blitz tactics · boss-gate taunts · mistake replay (spaced repetition) ·

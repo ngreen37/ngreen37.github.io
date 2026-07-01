@@ -42,7 +42,7 @@ A page-by-page checklist for the read-everything text pass before launch.
 - [ ] the-gauntlet · [ ] notation-run *(Notation Blitz)* · [ ] fork-in-the-road · [ ] pirc-protocol · [ ] shogi-island
 - [ ] clearance-delta · [ ] reading-room · [ ] knights-tour · [ ] blindfold-puzzles · [ ] sky-run
 - [ ] sand-mine-depths · [ ] tower-defense *(Siege)* · [ ] dungeon *(Princess Dungeon)* · [ ] battle-room
-- [ ] space_run *(Follow the Dog)* · [ ] checker-financial · [ ] the-gambit *(coming soon)*
+- [x] follow-the-dog *(was Space Run — renamed + redirect)* · [x] the-gambit *(altar built, playable)* · Checker Financial removed 2026-07-01
 - [ ] **In-game copy** (separate pass): playables in `assets/games/*.html` — titles, instructions, win/lose lines.
 
 ## Core & standalone pages (~17)

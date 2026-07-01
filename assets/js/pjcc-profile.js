@@ -697,4 +697,63 @@
     await PJCC.spendCredits(t.price);
     return updateCompanion({ owned_themes: owned.concat([key]), theme: key });
   };
+
+  // --- The Gambit (the altar of sacrifice) -----------------------------------
+  // Reads the same credits / owned-gear the Shopkeeper writes, and lets a game
+  // consume (sacrifice) or grant them. Values are credits-equivalent so the
+  // altar's courage meter can weigh an offering.
+  function prettyAvatar(k) {
+    return HUMAN_LABELS[k] || k.replace(/^(pc|sp)-/, '').replace(/^\w/, function (c) { return c.toUpperCase(); });
+  }
+  // Everything the operative owns that can be laid on the altar, with a value.
+  PJCC.ownedCollectables = function () {
+    var comp = (profile && profile.companion) || {}, out = [];
+    (comp.owned || []).forEach(function (k) {
+      var a = AVATAR_SHOP.filter(function (s) { return s.key === k; })[0];
+      if (a) out.push({ kind: 'avatar', key: k, value: a.price, glyph: AVATARS[k] || '★', label: prettyAvatar(k) });
+    });
+    (comp.owned_titles || []).forEach(function (k) {
+      var t = PJCC.TITLE_SHOP.filter(function (s) { return s.key === k; })[0];
+      out.push({ kind: 'title', key: k, value: t ? t.price : 20, glyph: '🏷', label: (TITLES[k] && TITLES[k].label) || k });
+    });
+    (comp.owned_themes || []).forEach(function (k) {
+      out.push({ kind: 'theme', key: k, value: (THEMES[k] && THEMES[k].price) || 15, glyph: '🎨', label: (THEMES[k] && THEMES[k].label) || k });
+    });
+    return out;
+  };
+  // Collectables NOT yet owned — candidate "boons" the board can hand back.
+  PJCC.unownedCollectables = function () {
+    var have = {}; PJCC.ownedCollectables().forEach(function (c) { have[c.kind + ':' + c.key] = 1; });
+    var out = [];
+    AVATAR_SHOP.forEach(function (a) { if (!have['avatar:' + a.key]) out.push({ kind: 'avatar', key: a.key, value: a.price, glyph: AVATARS[a.key] || '★', label: prettyAvatar(a.key) }); });
+    PJCC.TITLE_SHOP.forEach(function (t) { if (!have['title:' + t.key]) out.push({ kind: 'title', key: t.key, value: t.price, glyph: '🏷', label: (TITLES[t.key] && TITLES[t.key].label) || t.key }); });
+    PJCC.THEME_SHOP.forEach(function (k) { if (!have['theme:' + k]) out.push({ kind: 'theme', key: k, value: THEMES[k].price, glyph: '🎨', label: THEMES[k].label }); });
+    return out;
+  };
+  // Award credits (positive add_credits) — the board's blessing.
+  PJCC.grantCredits = async function (amount) {
+    var u = PJCC.currentUser(); if (!sb || !u) throw new Error('not signed in');
+    amount = Math.abs(parseInt(amount, 10) || 0); if (!amount) return profile ? profile.credits : 0;
+    var cr = await sb.rpc('add_credits', { amount: amount });
+    if (cr.error) throw cr.error;
+    if (typeof cr.data === 'number' && profile) profile.credits = cr.data;
+    emit(); return profile ? profile.credits : 0;
+  };
+  // Consume an owned collectable (the sacrifice); unequip it if it was active.
+  PJCC.burnCollectable = async function (kind, key) {
+    var comp = (profile && profile.companion) || {}, patch = {};
+    if (kind === 'avatar') { patch.owned = (comp.owned || []).filter(function (k) { return k !== key; }); if (comp.avatar === key) patch.avatar = 'human-1'; }
+    else if (kind === 'title') { patch.owned_titles = (comp.owned_titles || []).filter(function (k) { return k !== key; }); if (comp.title === key) patch.title = null; }
+    else if (kind === 'theme') { patch.owned_themes = (comp.owned_themes || []).filter(function (k) { return k !== key; }); if (comp.theme === key) patch.theme = 'default'; }
+    else throw new Error('unknown kind');
+    return updateCompanion(patch);
+  };
+  // Grant an owned collectable (a rare boon the board hands back).
+  PJCC.grantCollectable = async function (kind, key) {
+    var comp = (profile && profile.companion) || {};
+    if (kind === 'avatar') { var o = (comp.owned || []).slice(); if (o.indexOf(key) === -1) o.push(key); return updateCompanion({ owned: o }); }
+    if (kind === 'title') { var ot = (comp.owned_titles || []).slice(); if (ot.indexOf(key) === -1) ot.push(key); return updateCompanion({ owned_titles: ot }); }
+    if (kind === 'theme') { var oth = (comp.owned_themes || []).slice(); if (oth.indexOf(key) === -1) oth.push(key); return updateCompanion({ owned_themes: oth }); }
+    throw new Error('unknown kind');
+  };
 })();

@@ -295,8 +295,7 @@ window.ACCERT = (function () {
       lessons: [
         { t: 'Hold the line', d: 'Play a round of Siege on Chess City.', go: 'tower-defense', done: function(){ return best('tower-defense') >= 1; } },
         { t: 'Plan the route', d: 'Complete a Knight\'s Tour.', go: 'knights-tour', done: function(){ return best('knights-tour') >= 1; } },
-        { t: 'Take the long way', d: 'Fly a run of Sky Run.', go: 'sky-run', done: function(){ return best('sky-run') >= 1; } },
-        { t: 'Weigh the risk', d: 'Make a call in Checker Financial.', go: 'checker-financial', done: function(){ return best('checker-financial') >= 1; } }
+        { t: 'Take the long way', d: 'Fly a run of Sky Run.', go: 'sky-run', done: function(){ return best('sky-run') >= 1; } }
       ] },
     { id: 'shogi', who: 'Kaede', slug: 'kaede', ico: '⛩', accent: '#ffb066',
       title: 'The Shogi Dojo', sub: 'The island game — shogi',
