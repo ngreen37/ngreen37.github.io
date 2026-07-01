@@ -135,41 +135,74 @@
 .hall--mm2 .gcard.dead { cursor:default; border-style:dashed; border-color:#7c7c7c; background:#1a1a2e; }
 .hall--mm2 .gcard.dead h3 { color:#9a9ab0; } .hall--mm2 .gcard.dead p { color:#6f6f8c; }
 
-/* ---------------- LEARN HALL = CHALKBOARD ---------------- */
-/* A classroom slate in a wooden frame: chalk-hand headings, dashed chalk cards. */
-.hall--chalk { position:relative; padding:20px 18px 26px; border-radius:8px; overflow:hidden;
+/* ---------------- LEARN HALL = THE STUDY ---------------- */
+/* A quiet analysis room at night: warm lamplight, serif headings, index-card games. */
+.hall--study { position:relative; padding:26px 22px 30px; border-radius:10px; overflow:hidden;
   background:
-    radial-gradient(120% 90% at 50% 0%, rgba(255,255,255,0.05), transparent 55%),
-    linear-gradient(160deg, #26332c 0%, #18211d 100%);
-  border:11px solid #5a3d22;
-  box-shadow:inset 0 0 0 3px #3a2814, inset 0 0 80px rgba(0,0,0,0.5), 0 16px 44px -14px rgba(0,0,0,0.6); }
-/* faint chalk-dust smears */
-.hall--chalk::after { content:""; position:absolute; inset:0; pointer-events:none; opacity:.6;
+    radial-gradient(120% 70% at 50% -10%, rgba(255,214,140,0.10), transparent 60%),
+    linear-gradient(165deg, #161a17 0%, #0d100e 100%);
+  border:1px solid #2b3630;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.04), 0 16px 44px -16px rgba(0,0,0,0.7); }
+/* a soft banker's-lamp pool of light up top */
+.hall--study::after { content:""; position:absolute; top:-40px; left:50%; width:340px; height:120px; transform:translateX(-50%);
+  pointer-events:none; background:radial-gradient(ellipse at center, rgba(120,230,150,0.10), transparent 70%); filter:blur(6px); }
+.hall--study .hall-bar { position:relative; z-index:2; }
+.hall--study .hall-back { font-family:Georgia,'Times New Roman',serif; font-size:0.86rem; color:#cbd8cf;
+  border:1px solid #3a4a40; border-radius:6px; background:rgba(120,230,150,0.04); letter-spacing:.3px; }
+.hall--study .hall-back:hover { color:#8fe6a6; border-color:#8fe6a6; }
+.hall--study .study-titlebar { position:relative; z-index:2; text-align:center; margin:6px 0 22px; }
+.hall--study .study-eyebrow { font-family:Georgia,'Times New Roman',serif; font-style:italic; font-size:13px; letter-spacing:2px;
+  text-transform:uppercase; color:#7fbf95; opacity:.9; }
+.hall--study .study-title { font-family:Georgia,'Times New Roman',serif; font-weight:700; font-size:clamp(30px,7vw,46px);
+  margin:6px 0 6px; color:#eef3ee; letter-spacing:1px; }
+.hall--study .study-title::after { content:""; display:block; width:54px; height:2px; margin:8px auto 0;
+  background:linear-gradient(90deg, transparent, #5fe08a, transparent); }
+.hall--study .study-sub { display:block; font-family:Georgia,'Times New Roman',serif; font-style:italic; font-size:15px; color:#a9b8ae; }
+.hall--study .cat-games { position:relative; z-index:2; }
+.hall--study .gcard { background:#141a16; border:1px solid #2f3d34; border-radius:8px; }
+.hall--study .gcard:hover { transform:translateY(-2px); background:#18201b; border-color:#5fe08a;
+  box-shadow:0 0 22px -8px rgba(95,224,138,0.5); }
+.hall--study .gcard-icon { color:var(--accent,#5fe08a); }
+.hall--study .gcard-body h3 { color:#eef3ee; font-family:Georgia,'Times New Roman',serif; font-weight:700; font-size:1rem; letter-spacing:.3px; }
+.hall--study .gcard-body p { color:#a9b8ae; }
+.hall--study .gcard-best { color:#0a1a10; background:#8fe6a6; border-radius:4px; }
+.hall--study .gcard-new { background:#8fe6a6; color:#0a1a10; }
+.hall--study .gcard-soon { background:#e7dcc0; color:#241a0a; }
+.hall--study .gcard-dead { background:#7c8b80; color:#0a1a10; }
+.hall--study .gcard.soon, .hall--study .gcard.locked, .hall--study .gcard.dead { border-style:dashed; opacity:.85; }
+
+/* ---------------- SHOGI ISLE HALL = ISLAND / JAPANESE ---------------- */
+/* Indigo night over the sea, a vermilion rising sun, washi-paper cards. */
+.hall--isle { position:relative; padding:26px 22px 30px; border-radius:8px; overflow:hidden;
   background:
-    radial-gradient(ellipse 40% 12% at 22% 82%, rgba(255,255,255,0.035), transparent 70%),
-    radial-gradient(ellipse 30% 10% at 74% 28%, rgba(255,255,255,0.03), transparent 70%); }
-.hall--chalk .hall-bar { position:relative; z-index:2; }
-.hall--chalk .hall-back { font-family:'Gochi Hand',cursive; font-size:1rem; color:#f2f5ef; border:2px dashed rgba(242,245,239,0.5);
-  border-radius:8px; background:transparent; }
-.hall--chalk .hall-back:hover { color:#8affb0; border-color:#8affb0; }
-.hall--chalk .chalk-titlebar { position:relative; z-index:2; text-align:center; margin:6px 0 20px; }
-.hall--chalk .chalk-eyebrow { font-family:'Gochi Hand',cursive; font-size:15px; letter-spacing:2px; color:#8fe6a6; opacity:.85; }
-.hall--chalk .chalk-title { font-family:'Gochi Hand',cursive; font-weight:400; font-size:clamp(34px,8vw,56px);
-  margin:4px 0 6px; color:#f4f7f2; letter-spacing:1px; text-shadow:0 0 2px rgba(255,255,255,0.4);
-  border-bottom:3px solid rgba(0,230,60,0.55); display:inline-block; padding-bottom:2px; }
-.hall--chalk .chalk-sub { display:block; font-family:'Gochi Hand',cursive; font-size:16px; color:#c8d4cc; }
-.hall--chalk .cat-games { position:relative; z-index:2; }
-.hall--chalk .gcard { background:rgba(255,255,255,0.02); border:2px dashed rgba(244,247,242,0.45); border-radius:10px; }
-.hall--chalk .gcard:hover { transform:translateY(-2px); background:rgba(255,255,255,0.06); border-color:#f4f7f2;
-  box-shadow:0 0 20px -6px rgba(0,230,60,0.45); }
-.hall--chalk .gcard-icon { color:var(--accent,#00e436); filter:drop-shadow(0 0 6px rgba(0,230,60,0.35)); }
-.hall--chalk .gcard-body h3 { color:#f4f7f2; font-family:'Gochi Hand',cursive; font-weight:400; font-size:1.2rem; letter-spacing:.5px; }
-.hall--chalk .gcard-body p { color:#c4d0c8; }
-.hall--chalk .gcard-best { color:#0a1a10; background:#8fe6a6; border-radius:4px; }
-.hall--chalk .gcard-new { background:#8fe6a6; color:#0a1a10; }
-.hall--chalk .gcard-soon { background:#f2f5ef; color:#1a2a20; }
-.hall--chalk .gcard-dead { background:#7c8b80; color:#0a1a10; }
-.hall--chalk .gcard.soon, .hall--chalk .gcard.locked, .hall--chalk .gcard.dead { border-style:dotted; opacity:.85; }
+    radial-gradient(90% 60% at 50% 120%, rgba(224,72,60,0.16), transparent 60%),
+    linear-gradient(165deg, #161d33 0%, #0b0f1e 100%);
+  border:2px solid #b3352c;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,0.05), 0 16px 44px -14px rgba(0,0,0,0.7); }
+/* a low rising-sun disc behind the title */
+.hall--isle::after { content:""; position:absolute; top:-30px; left:50%; width:180px; height:180px; transform:translateX(-50%);
+  pointer-events:none; border-radius:50%; background:radial-gradient(circle, rgba(224,72,60,0.22), transparent 68%); }
+.hall--isle .hall-bar { position:relative; z-index:2; }
+.hall--isle .hall-back { font-family:Georgia,'Times New Roman',serif; font-size:0.86rem; color:#e8d8c8;
+  border:1px solid #b3352c; border-radius:4px; background:rgba(224,72,60,0.07); letter-spacing:.5px; }
+.hall--isle .hall-back:hover { color:#fff; background:#b3352c; }
+.hall--isle .isle-titlebar { position:relative; z-index:2; text-align:center; margin:6px 0 22px; }
+.hall--isle .isle-eyebrow { font-family:Georgia,'Times New Roman',serif; font-size:13px; letter-spacing:4px; color:#e6a89f; }
+.hall--isle .isle-title { font-family:Georgia,'Times New Roman',serif; font-weight:700; font-size:clamp(28px,6.5vw,44px);
+  margin:6px 0 6px; color:#f3ece2; letter-spacing:3px; }
+.hall--isle .isle-title .jp { color:#e0483c; }
+.hall--isle .isle-sub { display:block; font-family:Georgia,'Times New Roman',serif; font-style:italic; font-size:15px; color:#c9b8a8; }
+.hall--isle .cat-games { position:relative; z-index:2; }
+.hall--isle .gcard { background:#f4ede0; border:1px solid #c9b48f; border-radius:6px; }
+.hall--isle .gcard:hover { transform:translateY(-2px); box-shadow:0 0 22px -8px rgba(224,72,60,0.6); border-color:#e0483c; }
+.hall--isle .gcard-icon { color:#b3352c; }
+.hall--isle .gcard-body h3 { color:#2a1d14; font-family:Georgia,'Times New Roman',serif; font-weight:700; font-size:1rem; }
+.hall--isle .gcard-body p { color:#6a5a48; }
+.hall--isle .gcard-best { color:#f4ede0; background:#b3352c; border-radius:4px; }
+.hall--isle .gcard-new { background:#e0483c; color:#fff; }
+.hall--isle .gcard-soon { background:#2a3350; color:#e8e0d0; }
+.hall--isle .gcard-dead { background:#8b7c6a; color:#fff; }
+.hall--isle .gcard.soon, .hall--isle .gcard.locked, .hall--isle .gcard.dead { opacity:.9; }
 
 /* ---------------- IN DEVELOPMENT HALL = BLUEPRINT / WORKBENCH ---------------- */
 /* Amber graph-paper on the bench: technical mono headings, dashed "spec" cards. */

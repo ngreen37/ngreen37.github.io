@@ -45,7 +45,7 @@ permalink: /games/
       '<span class="ghp-blurb">' + esc(c.blurb) + '</span>' +
       '<span class="ghp-count">' + n + ' game' + (n === 1 ? '' : 's') + '</span></a>';
   }
-  document.getElementById('ghub-grid').innerHTML = ['learn', 'arcade', 'dev'].map(portal).join('');
+  document.getElementById('ghub-grid').innerHTML = ['learn', 'isle', 'arcade', 'dev'].map(portal).join('');
   document.getElementById('ghub-grid-sub').innerHTML = ['vault', 'terminated'].map(portal).join('');
 })();
 </script>

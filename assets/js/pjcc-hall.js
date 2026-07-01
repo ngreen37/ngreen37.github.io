@@ -30,10 +30,11 @@
       var soon = g.soon ? '<span class="gcard-soon">SOON</span>' : '';
       var dbadge = dead ? '<span class="gcard-dead">DELAYED</span>' : '';
       var icon = dead ? g.icon : (locked ? '🔒' : g.icon);
-      var desc = dead ? 'Non-playable — ' + esc(g.cryptic)
-        : (locked ? 'Locked — flawless Fast run in Notation Blitz' : esc(g.cryptic));
+      // Short descriptions removed from hall cards (kept only as the unlock/delayed hint).
+      var descHtml = dead ? '<p>Non-playable — ' + esc(g.cryptic) + '</p>'
+        : (locked ? '<p>Locked — flawless Fast run in Notation Blitz</p>' : '');
       var inner = neu + soon + dbadge + '<span class="gcard-icon">' + icon + '</span>' +
-        '<span class="gcard-body"><h3>' + esc(g.name) + '</h3><p>' + desc + '</p>' + chip + '</span>';
+        '<span class="gcard-body"><h3>' + esc(g.name) + '</h3>' + descHtml + chip + '</span>';
       if (dead) return '<div class="gcard dead" style="--accent:' + g.accent + '">' + inner + '</div>';
       return '<a class="gcard' + (locked ? ' locked' : '') + (g.soon ? ' soon' : '') + '" href="' + url(g.slug) +
         '" style="--accent:' + g.accent + '" data-slug="' + g.slug + '" data-name="' + esc(g.name) + '">' + inner + '</a>';

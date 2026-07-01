@@ -1,20 +1,20 @@
 ---
 layout: default
-title: Learn
-permalink: /games/learn/
+title: Shogi Isle
+permalink: /games/isle/
 ---
 
 <link rel="stylesheet" href="{{ '/assets/css/pjcc-games.css' | relative_url }}">
 
-<div id="games-hall" class="hall hall--study" data-hall="learn" data-base="{{ '/games/' | relative_url }}" style="--accent:#5fe08a;">
+<div id="games-hall" class="hall hall--isle" data-hall="isle" data-base="{{ '/games/' | relative_url }}" style="--accent:#e0483c;">
   <div class="hall-bar">
     <a class="hall-back" href="{{ '/games/' | relative_url }}">← All Halls</a>
     <a class="hall-trophy" href="{{ '/leaderboards/' | relative_url }}" title="Leaderboards">🏆</a>
   </div>
-  <div class="study-titlebar">
-    <span class="study-eyebrow">The Study</span>
-    <h1 class="study-title">Learn</h1>
-    <span class="study-sub">sharpen your game</span>
+  <div class="isle-titlebar">
+    <span class="isle-eyebrow">将棋の島</span>
+    <h1 class="isle-title">Shogi <span class="jp">Isle</span></h1>
+    <span class="isle-sub">foreign rules, familiar war — across the sea</span>
   </div>
   <div class="cat-games"></div>
 </div>
