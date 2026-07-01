@@ -146,3 +146,19 @@ Difficulty = **search depth × blunder rate × eval personality**, not depth alo
 3. **Assist**: takebacks/hints on the early rungs (teaching) vs. strict throughout (competitive)?
 4. **Name**: The Gauntlet / The Ascent / Coronation Run / Rivals' Road / other?
 5. **Roster**: any must-include canon characters, or order tweaks?
+
+## 10. Shipped (2026-07-01)
+
+The game is live at `/games/the-gauntlet/` (`assets/games/pjcc_gauntlet.html`). Decisions locked:
+
+- **Roster — 10 rungs, Argus first.** Argus the Guard-Dog (Checker Town Chess Open titleholder) opens the
+  climb; the old anonymous "Checker-Town Recruit" was dropped. Order: **Argus → Sand-Mine Foreman → Tidecaller
+  → Shogi Sentinel → City Gatekeeper → The Auditor → The Enforcer → The Vice President → The Rival → The CEO.**
+  The last five are framed as the CEO's cronies climbing the floors of his tower.
+- **Color:** alternate per rung (unchanged).
+- **Assist:** strict throughout — no takebacks/hints (Q3 answered: strict).
+- **Draw rule (Q new):** a draw does **not** advance you and does **not** cost progress — "you held the line,"
+  play again to break the tie. Only a win opens the next rung.
+- **Secret ending:** clearing the CEO drops a map from his coat — he owns **the Sand Mine Depths**. The victory
+  screen unlocks a **▾ DESCEND** button straight to `/games/sand-mine-depths/`, and sets `prog.secret`.
+- Progress key bumped to `pjcc.gauntlet.v2` (the roster overhaul invalidates old unlock indices).

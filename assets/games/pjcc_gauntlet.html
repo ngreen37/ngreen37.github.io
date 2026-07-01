@@ -86,7 +86,7 @@
   <div class="overlay" id="menu-screen">
     <div class="eyebrow">The road to Chess City</div>
     <div class="big-title">THE GAUNTLET</div>
-    <div class="blurb">Play <b style="color:#F5C518">real games of chess</b> against a ladder of the CEO's champions — climb from a Checker-Town recruit all the way to the <b style="color:#ff8fd0">CEO</b> at the gates of Chess City. You alternate colors as you climb. No takebacks. Win to advance.</div>
+    <div class="blurb">Ten champions stand between <b style="color:#F5C518">Checker Town</b> and the top of the <b style="color:#ff8fd0">CEO</b>'s tower. Real chess, one game at a time — beat one to face the next. You alternate colors. No takebacks. Only a win opens the next door.</div>
     <div class="row"><button class="btn btn-gold" id="play-btn">▶ THE LADDER</button></div>
   </div>
 
@@ -119,38 +119,73 @@ var LIGHT = '#6a5aa0', DARK = '#3d2a7a';
 
 // ---- The ladder (alternating colors; strict — no takebacks/hints) ----
 var LADDER = [
-  { name:'Checker-Town Recruit', glyph:'♟', accent:'#b9a8e6', region:'Checker Town',
-    blurb:'Barely knows the moves — and grabs every piece he sees.',
-    win:'The recruit tips his king and salutes. "Onward, operative."',
-    persona:{ depth:1, blunder:0.45, mat:1, pst:0, timeMs:140 },
-    react:{ intro:['I know the moves! ...most of them.'],
-      blunder:['Ooh — a free one! Mine now.','You just GAVE me that? Thanks!','Hehe, gotcha.'],
-      good:['Hey, that\'s not fair!','Wait, you can DO that?','...uh oh.'] } },
   { name:'Argus the Guard-Dog', glyph:'♞', accent:'#8fe3ff', region:'Checker Town',
-    blurb:'Loyal and ferocious — he hunts your king with everything he has.',
-    win:'Argus barks once, then licks your hand. You passed.',
-    persona:{ depth:2, blunder:0.18, mat:1, pst:0.6, aggr:5, timeMs:320 },
-    react:{ intro:['*a low, rolling growl*'],
-      blunder:['*GRRR* — a gift for the pack!','*snap* Got it.','Bad move. *bark*'],
+    blurb:'Checker Town Chess Open titleholder. Loyal, fierce, learned the game slow — and never lets go.',
+    win:'Argus barks once, then licks your hand. The champion of Checker Town yields the road.',
+    persona:{ depth:1, blunder:0.32, mat:1, pst:0.4, aggr:4, timeMs:220 },
+    react:{ intro:['*a proud, rolling growl* Checker Town\'s champ says hello.'],
+      blunder:['*GRRR* — a gift for the pack!','*snap* Mine now.','Bad move. *bark bark*'],
       good:['*whine* ...good one.','*ears flatten* Hrrr.','*backs up a step*'] } },
+  { name:'The Sand-Mine Foreman', glyph:'♟', accent:'#fcbc3c', region:'The Sand Mines',
+    blurb:'Runs the CEO\'s pits. A grinder who counts every grain — and every pawn.',
+    win:'The Foreman spits in the dust. "...Take the lift up. You earned it."',
+    persona:{ depth:2, blunder:0.2, mat:1.25, pst:0.4, aggr:1, timeMs:320 },
+    react:{ intro:['Down here, everything has a price. Even your pieces.'],
+      blunder:['Mine. Everything down here is mine.','Ka-ching. Straight to the vault.'],
+      good:['Tch. Off the books, that one.','...didn\'t log that.'] } },
+  { name:'The Tidecaller', glyph:'♝', accent:'#56d0ff', region:'The Sea',
+    blurb:'Keeper of the crossing. Slow, deep, and impossible to rush.',
+    win:'The tide pulls back and a path opens. "Cross. The far shore is waiting."',
+    persona:{ depth:2, blunder:0.12, mat:1, pst:0.95, aggr:0, timeMs:440 },
+    react:{ intro:['The sea is patient. So am I.'],
+      blunder:['The current takes what you drop.','You reached too far from shore.'],
+      good:['...the tide turns. Briefly.','Hm. A strong stroke.'] } },
+  { name:'The Shogi Sentinel', glyph:'♞', accent:'#fcbcb0', region:'Shogi Isle',
+    blurb:'Trained on foreign rules. Sees forks three moves before you do.',
+    win:'The Sentinel bows, precisely. "Your blade is honest. Pass."',
+    persona:{ depth:3, blunder:0.08, mat:1, pst:1, aggr:2, timeMs:520 },
+    react:{ intro:['Foreign rules. Familiar war.'],
+      blunder:['A fork you never saw.','Two pieces, one blow.'],
+      good:['...unexpected. Noted.','A clean cut.'] } },
   { name:'The City Gatekeeper', glyph:'♜', accent:'#ffb066', region:'Chess City gates',
-    blurb:'A solid, patient defender. No gifts, no blunders to speak of.',
-    win:'The Gatekeeper steps aside. The inner gate groans open.',
-    persona:{ depth:2, blunder:0.06, mat:1, pst:1, aggr:1, timeMs:420 },
+    blurb:'The last wall before the tower. Solid, patient, gives nothing away.',
+    win:'The Gatekeeper steps aside. The great doors of the tower groan open.',
+    persona:{ depth:3, blunder:0.05, mat:1, pst:1, aggr:1, timeMs:560 },
     react:{ intro:['None shall pass. Prove me wrong.'],
-      blunder:['Careless. The gate does not forgive.','You left it open. I merely walked through.'],
-      good:['...Acceptable. Barely.','Hm. The wall still holds.'] } },
-  { name:'The Rival', glyph:'♝', accent:'#c79bff', region:'—',
-    blurb:'Your equal and your foil. Plays sharp, punishes loose moves.',
-    win:'"...Well played." The Rival means it, this time.',
-    persona:{ depth:3, blunder:0.0, mat:1, pst:1, aggr:2, timeMs:650 },
+      blunder:['Careless. The gate does not forgive.','You left it open. I walked through.'],
+      good:['...Acceptable. Barely.','The wall still holds.'] } },
+  { name:'The Auditor', glyph:'♝', accent:'#9ff0c4', region:'Tower · Lower Floors',
+    blurb:'The CEO\'s numbers-man. Cold, exact, and allergic to waste.',
+    win:'The Auditor closes the ledger. "Your account... balances. Go up."',
+    persona:{ depth:3, blunder:0.03, mat:1, pst:1.05, aggr:1, timeMs:620 },
+    react:{ intro:['Every move is a line item. Yours won\'t add up.'],
+      blunder:['Filed under: loss.','A deficit. As projected.'],
+      good:['...an unaccounted gain.','Recalculating your worth.'] } },
+  { name:'The Enforcer', glyph:'♜', accent:'#ff6b6b', region:'Tower · Mid Floors',
+    blurb:'The CEO\'s muscle. Comes straight at your king and never blinks.',
+    win:'The Enforcer cracks his knuckles, then steps back. "...boss\'ll want to see you."',
+    persona:{ depth:3, blunder:0.02, mat:1, pst:1, aggr:6, timeMs:680 },
+    react:{ intro:['The boss says you don\'t reach the top. I make sure.'],
+      blunder:['Down you go.','That\'s the one that hurts.'],
+      good:['Tch. Lucky.','...you\'ve got some fight.'] } },
+  { name:'The Vice President', glyph:'♝', accent:'#c79bff', region:'Tower · Upper Floors',
+    blurb:'Polished, ruthless, one office below the top. Runs the floor like clockwork.',
+    win:'The VP straightens a cufflink. "Impressive. The corner office is... one flight up."',
+    persona:{ depth:4, blunder:0.01, mat:1, pst:1.1, aggr:2, timeMs:760 },
+    react:{ intro:['I run this floor. The CEO runs the rest.'],
+      blunder:['Sloppy. That won\'t fly up here.','A rookie line.'],
+      good:['...where did you train?','Hm. Sharp.'] } },
+  { name:'The Rival', glyph:'♛', accent:'#ff9ec9', region:'Tower · The Antechamber',
+    blurb:'Your equal and your foil, waiting at the CEO\'s door. Punishes every loose move.',
+    win:'"...Well played." The Rival means it, this time. "He\'s through there. Good luck."',
+    persona:{ depth:4, blunder:0.0, mat:1, pst:1.1, aggr:2, timeMs:820 },
     react:{ intro:['Let\'s see what you\'ve really got.'],
-      blunder:['Sloppy. I expected better from you.','That\'s the move that loses you the game.'],
-      good:['...Hm. Where did you learn that?','Sharp. But I\'m still here.'] } },
-  { name:'The CEO', glyph:'♛', accent:'#ff8fd0', region:'Chess City',
-    blurb:'The last guardian before Chess City. He does not lose. Usually.',
+      blunder:['Sloppy. I expected better from you.','That\'s the move that loses the game.'],
+      good:['...Where did you learn that?','Sharp. But I\'m still standing.'] } },
+  { name:'The CEO', glyph:'♛', accent:'#ff8fd0', region:'Chess City · The Top Floor',
+    blurb:'Top of the tallest building in Chess City. He does not lose. Usually.',
     win:'The CEO stares at the board a long time. Then, quietly: "...How?"',
-    persona:{ depth:4, blunder:0.0, mat:1, pst:1, aggr:1, timeMs:850 },
+    persona:{ depth:5, blunder:0.0, mat:1, pst:1.2, aggr:1, timeMs:950 },
     react:{ intro:['You should not have made it this far.'],
       blunder:['Predictable.','As expected. You overreach.'],
       good:['...Interesting. Recalculating.','Where did THAT come from.'] } }
@@ -158,7 +193,7 @@ var LADDER = [
 function colorForRung(i){ return (i % 2 === 0) ? 'w' : 'b'; }   // alternate per rung
 
 // ---- progress ----
-var PKEY = 'pjcc.gauntlet.v1';
+var PKEY = 'pjcc.gauntlet.v2';
 function loadProg(){ try { return Object.assign({ unlocked:0, beaten:{} }, JSON.parse(localStorage.getItem(PKEY))||{}); } catch(e){ return { unlocked:0, beaten:{} }; } }
 function saveProg(p){ try { localStorage.setItem(PKEY, JSON.stringify(p)); } catch(e){} }
 
@@ -263,15 +298,18 @@ function endGame(result){
   if (playerWon){
     prog.beaten[G.idx] = true;
     if (G.idx + 1 > prog.unlocked) prog.unlocked = Math.min(LADDER.length, G.idx + 1);
+    var isFinal = (G.idx + 1 === LADDER.length);
+    if (isFinal) prog.secret = true;
     saveProg(prog);
     eye = 'Rung ' + (G.idx+1) + ' cleared'; title = 'VICTORY ♛';
-    msg = G.rung.win + (G.idx+1 < LADDER.length ? '' : ' You have taken Chess City.');
+    msg = G.rung.win + (isFinal ? ' You stand atop the tallest building in Chess City. As the CEO turns away, a folded map slips from his coat — the Sand Mines, stamped with his own seal. He owns them. The arrow points straight down, all the way to the bottom.' : '');
   } else if (draw){
-    eye = 'Draw'; title = 'A DRAW';
-    msg = ({ stalemate:'Stalemate — the king has no move, but no check. Half a point.',
-             material:'Insufficient material — neither side can mate. Drawn.',
-             fifty:'Fifty moves without a pawn or capture. Drawn.',
-             threefold:'Threefold repetition. Drawn.' }[result]) || 'Drawn.';
+    eye = 'Draw — you held the line'; title = 'A DRAW';
+    msg = (({ stalemate:'Stalemate — the king has no move, but no check.',
+             material:'Insufficient material — neither side can mate.',
+             fifty:'Fifty moves without a pawn or capture.',
+             threefold:'Threefold repetition.' }[result]) || 'Drawn.') +
+          ' Half a point: you held your ground, but the rung only opens on a win. Line up and go again.';
   } else {
     eye = 'Defeat'; title = result === 'resign' ? 'YOU RESIGNED' : 'CHECKMATED';
     msg = 'The ' + G.rung.name + ' holds the line. Study the board and try again.';
@@ -286,6 +324,9 @@ function endGame(result){
   var row = document.getElementById('over-row'); row.innerHTML = '';
   if (playerWon && G.idx+1 < LADDER.length){
     addBtn(row, 'NEXT CHALLENGER ▸', 'btn-gold', function(){ startRung(G.idx+1); });
+  } else if (playerWon){
+    // final rung cleared — the secret map points down to the Sand Mine Depths
+    addBtn(row, '▾ DESCEND — SAND MINE DEPTHS', 'btn-gold', function(){ try { (window.top||window).location.href = '/games/sand-mine-depths/'; } catch(e){ window.location.href = '/games/sand-mine-depths/'; } });
   } else if (!playerWon){
     addBtn(row, 'TRY AGAIN', 'btn-gold', function(){ startRung(G.idx); });
   }

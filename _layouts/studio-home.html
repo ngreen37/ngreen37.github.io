@@ -109,7 +109,7 @@
 
         <a href="{{ '/projects/' | relative_url }}" class="studio-quad studio-quad--mcpuppy" data-enter="McPuppy Studios — the studio · the build, made in the open">
           <span class="studio-quad-title" data-jp="マクパピー・スタジオ">McPuppy Studios</span>
-          <span class="studio-quad-sub" data-jp="進捗・プロジェクト・速報">Progress · projects · dispatches</span>
+          <span class="studio-quad-sub" data-jp="全プロジェクトをチェック">Check in on all Projects</span>
           <span class="studio-quad-peek">blog · dispatches · press kit</span>
         </a>
 
@@ -137,8 +137,8 @@
 
       {% comment %} The Gauntlet — real chess vs the ladder (relocated here from /games/) {% endcomment %}
       <a class="studio-gauntlet" href="{{ '/games/the-gauntlet/' | relative_url }}">
-        <span class="sg-glyph" aria-hidden="true">♛</span>
-        <span class="sg-text"><b data-jp="ガントレットへ直行">Straight to the Gauntlet</b></span>
+        <span class="sg-glyph" aria-hidden="true">♔</span>
+        <span class="sg-text"><b data-jp="ガントレットに挑め">Enter the Gauntlet</b></span>
         <span class="sg-go" aria-hidden="true">&rarr;</span>
       </a>
 
@@ -199,6 +199,9 @@
   /* Idea #4 — per-quad "what's inside" peek: retired so the boxes no longer
      expand on hover. Markup kept for screen readers / future use. */
   .studio-quad-peek { display:none; }
+
+  /* Breathing room between the "A Million Stories" tagline and the quad grid */
+  .studio-content .studio-tagline { margin-bottom: 20px; }
 
   /* Idea #1 — the page leans toward the hovered quad (glow from its corner) */
   .studio-lean { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0;

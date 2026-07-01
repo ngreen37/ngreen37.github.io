@@ -6,7 +6,7 @@ brand: mcpuppy
 ---
 
 <div class="dl-head">
-  <div class="dl-eyebrow">McPuppy Studios · Patreon Perk · <span class="dl-soon">Coming soon</span></div>
+  <div class="dl-eyebrow">McPuppy Studios · Patreon Perk · <span class="dl-soon">Open now</span></div>
   <h1 class="dl-title">The Direct Line</h1>
   <p class="dl-sub">Most suggestion boxes are a void. This one isn't. Unlock it on Patreon and you write <strong>to me</strong> — one person, who actually reads it and writes back.</p>
 </div>
@@ -38,10 +38,10 @@ brand: mcpuppy
   </div>
 </div>
 
-<p class="dl-note">Parked behind Patreon billing, which goes live with the funding layer — so it sits in <strong>coming soon</strong> for now. Want to be first through the door?</p>
+<p class="dl-note">The funding layer is <strong>live</strong> — so the Direct Line is <strong>open</strong>. Back the studio on Patreon, message me through it, and you get a real reply. Not a form. Me.</p>
 
 <div class="dl-cta">
-  <a class="dl-btn" href="/mailing-list/">Tell me when it opens →</a>
+  {% if site.patreon_url and site.patreon_url != '' %}<a class="dl-btn" href="{{ site.patreon_url }}" target="_blank" rel="noopener">Open the Direct Line on Patreon →</a>{% else %}<a class="dl-btn" href="/mailing-list/">Tell me when it opens →</a>{% endif %}
   <a class="dl-btn dl-btn--ghost" href="/press-pass/">See the Press Pass</a>
 </div>
 

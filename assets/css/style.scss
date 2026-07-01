@@ -1904,6 +1904,27 @@ body.studio-body {
    Applied to: Blog, Chess Lessons, Contact
    ============================================================= */
 
+/* =============================================================
+   Studio Theme  (body.theme-studio)
+   The McPuppy Studios page — a quiet, unique studio look: warm
+   graphite + a single brass accent. Grown from theme-bw; nothing
+   flashy, and distinct from the bright-gold PJCC palette.
+   ============================================================= */
+body.theme-studio { background-color: #0c0b10; color: #c9c6d0; }
+body.theme-studio h1, body.theme-studio h2, body.theme-studio h3,
+body.theme-studio h4, body.theme-studio h5, body.theme-studio h6 { color: #f2efe8; }
+body.theme-studio a { color: #caa24a; }
+body.theme-studio a:hover { color: #e6c877; }
+body.theme-studio .site-header { background: #0a090e; border-image: linear-gradient(to right, #3a3730 60%, #caa24a 60%) 1; }
+body.theme-studio .site-footer { background: #0a090e; border-top-color: #caa24a; }
+body.theme-studio .footer-copy { color: #6a6660; }
+body.theme-studio .page-card { background: #131218; border-color: #2a2830; box-shadow: 0 12px 40px rgba(0,0,0,0.7); }
+body.theme-studio .page-title { color: #f2efe8; border-bottom-color: #2a2830; }
+body.theme-studio .page-body { color: #c9c6d0; }
+body.theme-studio .projects-intro { color: #b9b4c4; border-left: 2px solid #caa24a; padding-left: 14px; font-style: italic; }
+body.theme-studio .projects-footer-note { color: #8a8592; }
+body.theme-studio .games-index-heading { color: #caa24a; }
+
 body.theme-bw {
   background-color: #080808;
   color: #cccccc;

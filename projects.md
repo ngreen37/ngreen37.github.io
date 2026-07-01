@@ -2,7 +2,7 @@
 layout: page
 title: McPuppy Studios
 permalink: /projects/
-body_class: theme-bw
+body_class: theme-studio
 ---
 
 <p class="projects-intro">An independent studio, born to crest a single wave &mdash; PJCC. Most of it isn't finished yet. That's on purpose.</p>
@@ -213,18 +213,24 @@ body_class: theme-bw
 
 <h2 class="games-index-heading">All Games</h2>
 <ul class="games-index">
-  <li><a href="/games/dungeon/">Princess Dungeon</a> <span class="games-index-note">— in development</span></li>
   <li><a href="/games/notation-run/">Notation Blitz <span class="ver">v3.7</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/follow-the-dog/">Follow the Dog</a> <span class="games-index-note">— in development</span></li>
-  <li><a href="/games/sky-run/">Sky Run <span class="ver">v1.0</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/pirc-protocol/">The Pirc Protocol <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/fork-in-the-road/">Fork in the Road <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/sand-mine-depths/">Sand Mine Depths <span class="ver">v2.2</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/clearance-delta/">Clearance: DELTA <span class="ver">v1.3</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/pirc-protocol/">The Pirc Protocol <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/shogi-island/">Shogi Island <span class="ver">v3.1</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/clearance-delta/">Clearance: DELTA <span class="ver">v1.3</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/sky-run/">Sky Run <span class="ver">v1.0</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/sand-mine-depths/">Sand Mine Depths <span class="ver">v2.2</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/tower-defense/">Siege on Chess City <span class="ver">v2.1</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/dungeon/">Princess Dungeon</a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/zoomies/">Crockett's Zoomies</a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/murphys-law/">Murphy's Law</a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/blindfold-puzzles/">Blindfold Puzzles <span class="ver">v2.2</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/knights-tour/">Knight's Tour <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/reading-room/">The Reading Room</a> <span class="games-index-note">— in development</span></li>
+  <li><a href="/games/battle-room/">The Battle Room</a> <span class="games-index-note">— in development</span></li>
+  <li><a href="/games/follow-the-dog/">Follow the Dog</a> <span class="games-index-note">— in development</span></li>
+  <li><a href="/games/chess-city/">Chess City</a> <span class="games-index-note">— in development</span></li>
+  <li><a href="/games/the-gambit/">The Gambit</a> <span class="games-index-note">— in development</span></li>
 </ul>
 
 <style>

@@ -1,13 +1,13 @@
 ---
 layout: page
-title: The Goods
+title: Merch
 permalink: /goods/
 brand: mcpuppy
 ---
 
 <div class="goods-head">
-  <div class="goods-eyebrow">McPuppy Studios · Pocket-and-Desk Mindset Goods</div>
-  <h1 class="goods-title">The Goods</h1>
+  <div class="goods-eyebrow">McPuppy Studios · Pocket-and-Desk Mindset Merch</div>
+  <h1 class="goods-title">Merch</h1>
   <p class="goods-sub"><span class="goods-soon">Not soon</span> — on purpose. These are physical things, and they wait for the launch flare: the game demo that earns the traffic. Made <em>properly</em> then, or not at all. Built to fight one thing — forgetting what you're after.</p>
 </div>
 

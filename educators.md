@@ -5,8 +5,8 @@ permalink: /educators/
 ---
 
 <div class="ed-hero selectable">
-  <div class="ed-kicker">Chess City Academy · for classrooms &amp; curious minds of any age</div>
-  <p class="ed-sub">The <a href="{{ '/academy/' | relative_url }}">Checker Town Chess Academy</a> teaches chess the way anyone actually learns — through a cartoon they care about. It's geared for kids and classrooms, but built to be genuinely enjoyable for <strong>all ages</strong>. Free to use today, and it drops straight into a classroom: offline, kid-safe, and standards-friendly.</p>
+  <div class="ed-kicker">PJCC Chess Academy · for classrooms &amp; curious minds of any age</div>
+  <p class="ed-sub">The <a href="{{ '/academy/' | relative_url }}">PJCC Chess Academy</a> teaches chess the way anyone actually learns — through a cartoon they care about. It's geared for kids and classrooms, but built to be genuinely enjoyable for <strong>all ages</strong>. Free to use today, and it drops straight into a classroom: offline, kid-safe, and standards-friendly.</p>
 </div>
 
 <!-- WHY IT WORKS -->

@@ -7,20 +7,26 @@ permalink: /games/
 <link rel="stylesheet" href="{{ '/assets/css/pjcc-games.css' | relative_url }}">
 <link rel="stylesheet" href="{{ '/assets/css/pjcc-warp.css' | relative_url }}">
 
+<style>
+/* Light hall-select theme — a calm parchment panel under the portals (nothing flashy) */
+.ghub { background:linear-gradient(165deg,#f5f2ea 0%,#ece7f4 100%); border:1px solid #d9d2e6;
+  border-radius:20px; padding:30px 22px 34px; box-shadow:0 18px 50px rgba(20,12,45,0.35); }
+.ghub-title { color:#1e1440; }
+.ghub-trophy { filter:drop-shadow(0 2px 4px rgba(0,0,0,0.25)); }
+@media (max-width:600px){ .ghub { padding:22px 14px 26px; border-radius:16px; } }
+</style>
+
 <!-- ===== THE HALLS — Gauntlet Legends portal screen (pick a hall; no games here) ===== -->
 <div class="ghub">
   <a class="ghub-trophy" href="{{ '/leaderboards/' | relative_url }}" aria-label="Leaderboards & Hall of Fame" title="Leaderboards &amp; Hall of Fame">🏆</a>
   <div class="ghub-head">
-    <p class="ghub-eyebrow">PJCC Arcade</p>
     <h1 class="ghub-title">Choose Your Hall</h1>
-    <p class="ghub-sub">Step through a gate to play.</p>
   </div>
 
   <!-- the three active halls -->
   <div class="ghub-grid" id="ghub-grid"></div>
 
   <!-- sealed & retired — set apart, lower -->
-  <div class="ghub-divider"><span>Sealed &amp; Retired</span></div>
   <div class="ghub-grid ghub-grid--sub" id="ghub-grid-sub"></div>
 </div>
 

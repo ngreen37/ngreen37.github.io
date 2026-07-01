@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Checker Town Chess Academy
+title: PJCC Chess Academy
 permalink: /academy/
 ---
 
@@ -132,7 +132,7 @@ permalink: /academy/
 <div class="ac-print" id="sheet-worksheet">
   <!-- Page 1 — coordinates -->
   <div class="ws-page">
-    <div class="ws-head"><span>Checker Town Chess Academy · Worksheet Packet</span><span id="ws-name-1">Name: ____________________</span></div>
+    <div class="ws-head"><span>PJCC Chess Academy · Worksheet Packet</span><span id="ws-name-1">Name: ____________________</span></div>
     <h1 class="ws-title">1 · Coordinate Quest</h1>
     <p class="ws-sub">The board has 8 files (a–h, left to right) and 8 ranks (1–8, bottom to top). Each square has a name like <b>e4</b>.</p>
     <div class="ws-board" id="ws-board"></div>
@@ -148,7 +148,7 @@ permalink: /academy/
   </div>
   <!-- Page 2 — how the pieces move -->
   <div class="ws-page">
-    <div class="ws-head"><span>Checker Town Chess Academy · Worksheet Packet</span><span>Name: ____________________</span></div>
+    <div class="ws-head"><span>PJCC Chess Academy · Worksheet Packet</span><span>Name: ____________________</span></div>
     <h1 class="ws-title">2 · How the Pieces Move</h1>
     <p class="ws-sub">Draw arrows from each piece to <b>every</b> square it could move to from the centre of an empty board.</p>
     <ol class="ws-q">
@@ -163,7 +163,7 @@ permalink: /academy/
   </div>
   <!-- Page 3 — first tactics -->
   <div class="ws-page">
-    <div class="ws-head"><span>Checker Town Chess Academy · Worksheet Packet</span><span>Name: ____________________</span></div>
+    <div class="ws-head"><span>PJCC Chess Academy · Worksheet Packet</span><span>Name: ____________________</span></div>
     <h1 class="ws-title">3 · First Tactics</h1>
     <p class="ws-sub">A <b>fork</b> attacks two pieces at once. A <b>pin</b> traps a piece in front of a more valuable one. A <b>skewer</b> is a pin in reverse.</p>
     <ol class="ws-q">
@@ -179,7 +179,7 @@ permalink: /academy/
 </div>
 
 <div class="ac-print" id="sheet-teacher">
-  <div class="ws-head"><span>Checker Town Chess Academy — Progress Report</span><span id="ws-name-2">Student: ____________________</span></div>
+  <div class="ws-head"><span>PJCC Chess Academy — Progress Report</span><span id="ws-name-2">Student: ____________________</span></div>
   <h1 class="ws-title">Teacher Progress Sheet</h1>
   <div class="ws-belt" id="ws-belt">Current belt: —</div>
   <div id="ws-checklist"></div>
@@ -189,7 +189,7 @@ permalink: /academy/
 <div class="ac-print ac-cert" id="sheet-cert">
   <div class="cert-border">
     <div class="cert-crest">♚</div>
-    <div class="cert-academy">Checker Town Chess Academy</div>
+    <div class="cert-academy">PJCC Chess Academy</div>
     <div class="cert-presents">This certifies that</div>
     <div class="cert-name" id="cert-name">Cadet</div>
     <div class="cert-has">has earned the rank of</div>
@@ -202,7 +202,7 @@ permalink: /academy/
 
 <div class="ac-print" id="sheet-curric">
   <div class="ws-page">
-    <div class="ws-head"><span>Checker Town Chess Academy</span><span>Class: ____________________</span></div>
+    <div class="ws-head"><span>PJCC Chess Academy</span><span>Class: ____________________</span></div>
     <h1 class="ws-title">A 6-Week Curriculum — Teacher Plan</h1>
     <p class="ws-sub">A ready-to-run unit. Each week pairs a short lesson with an in-Academy game and a worksheet page.</p>
     <table class="ws-curric">
@@ -675,7 +675,7 @@ window.ACCERT = (function () {
       var name = '';
       try { name = localStorage.getItem('pjcc.academy.student') || 'Cadet'; } catch (e) { name = 'Cadet'; }
       var belt = ($('ws-belt') ? $('ws-belt').textContent : '');
-      var txt = 'Checker Town Chess Academy — ' + name + '\n' + belt;
+      var txt = 'PJCC Chess Academy — ' + name + '\n' + belt;
       function ok() { $('ac-export-out').textContent = '✓ summary copied'; setTimeout(function () { $('ac-export-out').textContent = ''; }, 1600); }
       if (navigator.clipboard) navigator.clipboard.writeText(txt).then(ok).catch(ok); else ok();
     };
