@@ -39,7 +39,7 @@ permalink: /the-world/
   transform: translateY(-4px); box-shadow: 0 0 48px -5px var(--c), 0 12px 39px -9px var(--c); }
 /* dimmed corner that lights up in the tile's colour on hover/tap — matches the splash quads */
 .world-pillar::after { content: ''; position: absolute; inset: 0; z-index: 0; border-radius: 18px; pointer-events: none;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--c) 30%, transparent) 0%, transparent 58%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--c) 34%, transparent) 0%, transparent 58%);
   opacity: 0; transition: opacity .2s; }
 .world-pillar:hover::after, .world-pillar:active::after, .world-pillar:focus-visible::after { opacity: 1; }
 .wp-glyph { position: absolute; top: 26px; left: 0; right: 0; z-index: 1; font-size: 4.6rem; line-height: 1; color: var(--c);
