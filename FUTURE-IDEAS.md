@@ -1,7 +1,7 @@
 # PJCC — Future Ideas
 
-The open backlog: **only what's *not* built yet.** Shipped work is condensed into the **Already live**
-guardrail (so we don't re-pitch it); everything else is a path not yet taken.
+The open backlog: **only what's *not* built yet.** Completed work has been cleared out of this file;
+everything here is a path not yet taken.
 
 **Operating principle — *less is more.*** We deliberately built "too much" and are paring to the most
 important, inviting elements. New ideas earn their place against that bar; prefer **depth and
@@ -26,42 +26,11 @@ their own sake.* New surface area should serve one of the five threads.
 
 ---
 
-## ✅ Already live (guardrail — don't re-pitch)
-
-**Arcade (15 games):** The Gauntlet (headline — real games vs a ladder, perft-verified engine), Battle
-Room (v0.1 action-chess), Notation Blitz, Blindfold/The Mind's Eye, Clearance: DELTA, Princess Dungeon,
-Fork in the Road, The Pirc Protocol, Sand Mine Depths, Shogi Island (Catch the Lion),
-Sky Run, Follow the Dog, Knight's Tour, Siege on Chess City, The Reading Room — most with daily seeds, global
-boards, creator ghosts, streak flame, board-skins + JP scaffolding.
-
-**World/site:** Lore Codex, Academy (all 10 pieces, offline), Projects, Daily Dispatch, Hall of Fame,
-leaderboard seasons. **Avenue pieces:** production hub + Pilot animatic + Writers' Room (Av1); audio hub
-+ leitmotifs (Av5); site-wide Princess companion + **the Identity Forge** (Av6 — guest-first,
-account-synced creator: build your **operative** *and* your **companion** from layered parts —
-base + skin tone + aura + headwear + emblem — with freely-editable name/role/bio, renamable and
-modifiable any time; your created face shows in the nav, leaderboards and share card); Press Pass + Credential + Bureau-of-Dispatch
-newsletter + Press Kit/EPK + transparency + referral links + Founders Wall + pricing poll + share-card
-generator + `/educators/` + game-page dispatch capture (Av10).
-
-**Declutter pass:** games page rebuilt (featured Gauntlet + Learn/Arcade/In-Dev pillars, small weekly
-chip); leaderboards un-embedded (own page + floating 🏆 icon); cursor sheen discarded; Princess walker
-silenced (movement only); nav combined (Characters & Locations hub · Pilot ⊃ Writers' Room · Command
-Center merged into the Dossier); homepage Story Arc removed (now decode-as-you-play); "Creator" bio →
-mysterious **"Operator."** Build Playlist jukebox + all Spotify tracks removed (Album-of-the-Month
-planned instead). Share cards now brand to **mcpuppystudios.com**, not the github username.
-
-*(**Lore Codex** = the in-world encyclopedia: entries start sealed and unseal as you explore the site;
-recovering hidden `frag_` fragments cracks the classified ones; all six core fragments unlock the origin.)*
-
----
-
 # 🕹️ The Arcade — remaining polish per game
 *Depth & retention only — not new games. Each line is one buildable move.*
 
-**The Gauntlet (headline):** *(shipped 2026-06-24 — a **visible opponent**: a portrait with a mood emoji and
-personality **speech bubbles** that react to your play; it gloats on a blunder, gets rattled on a strong move,
-driven by a material-swing detector that nets out ordinary trades.)* **Next — take an action against each
-opponent:** a between-moves verb tied to each persona. The **nervous challenger** shakes the board and fidgets
+**The Gauntlet (headline):** **Take an action against each
+opponent** — a between-moves verb tied to each persona. The **nervous challenger** shakes the board and fidgets
 with the pieces; you can **ask him to stop — and he may or may not** (a saving-throw against his composure). Argus
 can be *calmed*; the Gatekeeper ignores you; the CEO turns it back on **you.** Then: opening books for the
 Rival/CEO · a daily gauntlet · a captured-tray + move list · more rungs (the secret King). Design doc:
@@ -82,20 +51,17 @@ clearance-gated lore · speed-vs-accuracy dial.
 (fork/pin/skewer/discovery) · blitz tactics · boss-gate taunts · mistake replay (spaced repetition) ·
 race the creator ghost · construct-the-fork · daily tactic + streak · reads-you difficulty.
 
-**The Pirc Protocol:** *(shipped: 8 decks/18 lines, transposition tree, name-that-opening).* Remaining:
-opponent personalities · weekly annotated model game (Argus's voice) · side-switcher · trap of the week ·
+**The Pirc Protocol:** opponent personalities · weekly annotated model game (Argus's voice) · side-switcher · trap of the week ·
 repertoire builder (UGC export) · "out of book" alarm · boss: the Rival's prep.
 
-**Sand Mine Depths:** *(deepest-built; prestige, rival miner, weekly race, hidden fragment all shipped).*
-Remaining: light beacons + fog-of-war minimap · cave-in chains · Auston-camp one-run consumables · relic
+**Sand Mine Depths:** light beacons + fog-of-war minimap · cave-in chains · Auston-camp one-run consumables · relic
 sets · knight-only traversal rooms · explicit biome shifts.
 
 **Shogi Island / Catch the Lion:** *(already most complex — 9×9 rules, tsume solver, AI; add carefully).*
 Handicap ladder vs the Lion AI · piece-reach trainer · tsume-of-the-day · drop-rule drills · calligraphy
 wall (JP tie) · castle drills · 9×9 stepping-stone · the Lion's moods · Codex bridge · island hot-seat duel.
 
-**Sky Run:** *(shipped: animatic interstitials, daily, endless Sea, photo-card, 8-way Queen).* Remaining:
-lore bosses · **view-switch in Boss-Mode** (next) · new power-ups (Rook wall, pawn-storm, en-passant dash) ·
+**Sky Run:** lore bosses · **view-switch in Boss-Mode** (next) · new power-ups (Rook wall, pawn-storm, en-passant dash) ·
 co-pilot couch co-op · loadout select · boss rush.
 > **★ The view-switch — a signature mechanic (Nate, 2026-06-23).** When a boss appears, the camera *cuts to a
 > different view* (side → behind / top-down / over-the-shoulder) for the fight, then cuts back. It's the same idea
@@ -108,18 +74,16 @@ qualifier framing · collect-a-set upgrades · legality-dodging · rival racers 
 branches · cosmetic ships · speed-tier music · near-miss combo · lean into the **"follow the dog"** creed (the
 companion you chase becomes the guide).
 
-**Knight's Tour:** *(rebuilt: Warnsdorff coach, scoring, closed-tour, variable boards, daily, solver-verified
-starts, undo/auto-finish).* Remaining: rubble squares · constellation trail (→ `/constellation/`) ·
+**Knight's Tour:** rubble squares · constellation trail (→ `/constellation/`) ·
 undo-budget mode · two-knight co-op · Academy teach-mode · forcing-move knight puzzles (each one provable).
 
-**Siege on Chess City:** *(shipped: full named-synergy matrix, trebuchet, tower unlocks, boss/endless/daily).*
-Remaining: branching campaign map + between-battle dialogue · map editor (share by code, UGC) · aimed Princess
+**Siege on Chess City:** branching campaign map + between-battle dialogue · map editor (share by code, UGC) · aimed Princess
 hero ability · economy gambles · two-lane co-op · campaign win → Codex entry.
 > **Guardrail — don't be Bloons TD.** The difference must be *chess*: towers threaten by piece rules,
 > placement is a positional puzzle (lines of fire, forks, pins). If a feature would feel identical with
 > monkeys and darts, rethink it.
 
-**Princess Dungeon (2D shipped → Godot next):** room grammar that mirrors Godot · chess-piece enemies
+**Princess Dungeon → Godot next:** room grammar that mirrors Godot · chess-piece enemies
 (each moves by its rules) · move-set relics (bishop dash, knight blink, pawn-storm) · boss = a mate-in-N ·
 biome floors (Checker Town → Sea → Shogi Isle → Chess City) · Bill's-toolbox consumables · daily seeded
 dungeon · pacifist puzzle route · escort pawns · risk altars (deepest hide ARG fragments). *The web
@@ -156,7 +120,7 @@ prototype (`/games/dungeon/`) is the playable spec; the Godot build is the same 
 
 # 🛣️ The Avenues
 
-**Av1 — Production as content** *(animatic + Writers' Room live):* real board scans in the animatic ·
+**Av1 — Production as content:** real board scans in the animatic ·
 shared frame-the-scene tally · auto-changelog from the tracker · threaded per-shot comments · public
 render-queue · two-cut compare slider · scratch-VO upload · living episode pages (animatic→final) · a
 filling credits wall · embeddable animatic player.
@@ -169,7 +133,7 @@ the crash-site coordinate (season-one payoff). **At launch (not before):** spin 
 community + ARG home — where fans solve the cipher chain *together.* A Discord with zero members is dead weight,
 so wait for Flare #1; it's apparatus, not destination.
 
-**Av3 — The Academy** *(all 10 shipped, offline).* Backend upgrades when accounts land: shared class
+**Av3 — The Academy** — backend upgrades when accounts land: shared class
 rosters/dashboards, a server-verifiable cert registry, a rules-enforcing practice board.
 
 > **The Academy as the show's central location (brainstorm, 2026-06-25):**
@@ -203,22 +167,17 @@ set (obsidian-vs-violet) · Sand Mine as a dice/card PnP · Operative Field Kit 
 ARG tie) · Checker Town Field Guide (art book / festival leave-behind) · earn-a-rank → buy the pin ·
 "build your dossier" printable · Founders sticker pack · Catch the Lion mini travel set (Annie's game).
 
-**Av5 — Audio** *(hub + leitmotifs live):* first theme → EP + Notation Score Mode · a 5-min audio-drama
+**Av5 — Audio:** first theme → EP + Notation Score Mode · a 5-min audio-drama
 scene (cheapest pilot test) · per-game SFX toggle + unified palette · leitmotif duets · Checker Town
 ambience loop · the casting call · streaming once themes exist · reactive music · "hum the theme" toy ·
 a podcast feed.
 
-**Av6 — Princess companion + the Identity Forge** *(both live):* react to live game results · seasonal outfits +
+**Av6 — Princess companion + the Identity Forge:** react to live game results · seasonal outfits +
 holiday lines · persistent chattiness/mute setting · "walk you to" page suggestions · a mood/needs
 (tamagotchi) loop · she learns your codename (accounts) · a fetch micro-interaction · milestone gifts she
 brings · a second companion · **her voice** (the show's ultimate payoff — the whole avenue builds to it).
 
-> **The Identity Forge — shipped 2026-06-23.** Players now *create* (not just pick) their operative and
-> their companion: a layered emoji compositor (base + skin tone + aura + headwear + emblem) plus free-text
-> name / role / bio, all renamable + modifiable any time. Guest-first (localStorage), syncs to the account
-> (`companion.look`) when signed in, and the created face propagates site-wide via `PJCC.avatarEmoji`. Files:
-> `assets/js/pjcc-creator.js`, `assets/css/pjcc-creator.css`; mounted on `/dossier/`. Pet coat-tint also
-> reflects into the Companion Den. **Growth path — 20 next moves (depth over surface; ★ = low-lift, ⛁ = wants backend):**
+> **The Identity Forge — growth path (20 next moves; depth over surface; ★ = low-lift, ⛁ = wants backend):**
 > 1. ★ **Operative trading card** — render the full composite (hat + emblem + aura + name + role) onto the existing share-card canvas; a collectible card of *your* character.
 > 2. ★ **Boards show the whole look** — paint hat + emblem next to codenames on leaderboards, not just the base glyph (a tiny per-row render helper).
 > 3. **Your companion as the site walker** — opt-in toggle to swap the footer Princess stroller for *your* created pet (ties the Forge into the live site).
@@ -246,7 +205,7 @@ submissions → semi-canon (Codex) · trivia forge (→ Clearance deck) · board
 featured-creator slot · remix-a-reel (fork a story) · embed/API (every embed is an advert).
 > *Publish/share decision: ship the hand-curated shelf now; graduate to a Supabase gallery (likes/credits) when accounts land.*
 
-**Av8 — Operative HQ** *(merged into [`/dossier/`](/dossier/) — instant, offline-safe).* Deepening path:
+**Av8 — Operative HQ** — deepening path (on top of the live [`/dossier/`](/dossier/)):
 one HQ screen (rank/credits/streak) · fragment-recovery grid · mission clock · daily mission · live
 transmission log · cast constellation (unlocks node-by-node from lore pages) · daily opening intel ·
 clearance-gated modules · "what's new since you left" · backend-aware cross-device progress (accounts).
@@ -256,7 +215,7 @@ megabar ("build the bridge to Chess City") · seasonal reskins · a December adv
 a "studio is open" indicator · episode-drop watch party · a daily world-state ticker · limited-time event
 games · a global "first to clear" race · an anniversary beat (the crash + the dev-start date).
 
-**Av10 — Funding & reach** *(Press Pass + dispatch + Press Kit live).* Waiting on backend/payments:
+**Av10 — Funding & reach** — waiting on backend/payments:
 cosmetic store, "adopt a shot" micro-patronage, server-verified founders count, welcome-email automation,
 partner outreach. Fresh: producer-credit ladder (your name *in the cartoon*) · pay-it-forward passes ·
 unlock-goals tied to deliverables (→ on-camera music session) · a living public credits crawl ·
@@ -304,11 +263,7 @@ position on the shared board (reuses `pjcc-chess.js`) · link each recap to its 
 through a character (the Rival coaches, Argus explains) · recaps as a low-lift Dispatch beat during big
 events · preview + predictions mini-game. *Mostly writing; keep it a template, not a tournament platform.*
 
-**Av12 — 日本語 / Japanese learning** *(new lane — engine live).* **The Reading Room** ships an Anki-style
-Leitner SRS; now **9 decks / ~235 cards** (kana, kanji ×2, words, phrases, chess/shogi vocab) **plus a
-reverse lane — English for Japanese speakers** (英単語/英会話). Taught by **Kaede**. *UI polish shipped 2026-06-23:
-long home blurb removed · the answer + grade buttons now appear only after "Show Answer" and reset each card (the
-old lingering-answer bug was a missing `.hidden` rule) · long kana/phrases scale to read on one horizontal line.*
+**Av12 — 日本語 / Japanese learning.** Grow **The Reading Room** (the Leitner SRS engine, taught by **Kaede**).
 Growth path: kanji-of-the-day (stroke-order + mnemonic) · stroke-order trace · decode-the-transmission (ARG) ·
 bilingual ticker reader · site-wide furigana toggle · counters kata · listening booth (TTS) + speak-it · particle
 puzzles · sentence-builder · JLPT N5 belt track · daily seeded lesson · Catch-the-Lion JP mode · radical lab ·
@@ -322,28 +277,15 @@ calligraphy relics · pitch-accent ear trainer · language passport (Dossier) ·
 > headshot on the card, speaker name + romaji). Doubles as a stealth way to seed canon voice before the show. Start
 > as a new "Voices of Checker Town / 町の声" deck, hand-written, picture slot optional.
 
-**Av13 — Access puzzles / hidden portals** *(the Shogi Island gate is now LIVE):* gated areas you **unlock by
-solving**, not clicking. Then a little entry rite per region — collect them like keys. **Meant to be a cool reveal
+**Av13 — Access puzzles / hidden portals:** gated areas you **unlock by
+solving**, not clicking. A little entry rite per region — collect them like keys. **Meant to be a cool reveal
 in the show** — the breadcrumbs are planted now (see Planted Seeds) so the moment feels foretold, not arbitrary.
 
-> **The Shogi Island Gate — shipped 2026-06-23.** The rite is Nate's seed made real: **one A, eight C's, two of the
-> c's larger than the rest** — a bell on the a-file, eight stones down the c, the first and last *struck like an
-> octave* (capital C). **Type it anywhere on the site** (no input focused) and a faint sigil lights stone-by-stone
-> as you perform it; complete it and a **cinematic gate-opening** plays (the stones align the c-file, the A tolls,
-> the two C's flare, a torii rises through fog) with a real A–C–C octave on WebAudio. Opening it unseals the hidden
-> page **`/shogi-gate/`** (the ferry/Annie's-dojo reveal) and recovers a fragment (`frag_portal`). The page also has a
-> diegetic **"carve the rite"** input as a second solve path. Files: `assets/js/pjcc-portal.js`,
-> `assets/css/pjcc-portal.css`, `shogi-gate.md`; loaded site-wide via `default.html` + `game.html`. Breadcrumbs
-> planted: the faint sigil + dock whisper on the **Shogi Island** page, and the **dockmaster's-log** line in the Dead Drop.
-> **Difficulty by design:** undocumented on-site; the only teacher is the sigil's shape (and the case/octave logic) — random typing won't hit `A·C cccccc C`.
->
-> *Next rites to add (each a new region key):* the **chess-coordinate rite** (play the a- and c-files on a real board —
+> **More rites to add** *(the Shogi Island gate is already live; each new rite is a new region key):* the **chess-coordinate rite** (play the a- and c-files on a real board —
 > reuse `pjcc-chess.js`) and the **musical rite** (tap A–C–C on a hidden keyboard) as alternate solves for this same
 > gate · a **Sand Mine** depth-cipher · a **Chess City** permit-glyph · a **Checker Town** founding-rune · collect all
 > region keys → a master door (the ARG's season-one payoff) · a one-time "first to open it" race (Av9 live-ops) ·
 > hide the sigil in **game backgrounds, the news ticker, the Lore Codex, and art** so fans see it for months first.
-
-
 
 **Av14 — Goal cards** *(new · physical · parked until after the launch flare):* a **pocket goal card** you keep
 on you **à la Bob Proctor** — reach in, **touch it**, re-anchor the goal. *The touch is the trigger; the whole
@@ -355,17 +297,12 @@ then **forget once they lose the path** for a while. The card is a physical anch
   use any token** — whatever works, *as long as the goal is clearly tied to touching it.*
 - **Voice:** "**follow the dog**" + the Rival's line *"goals are 5% strategy, 95% mindset."* Ties to the
   moral/Neville center (assume the feeling), Av4 (physical) and Av10 (Patreon).
-- **Status (2026-07-01):** showcase live at `/goods/` — gold card mockups (a different character per card),
-  the touch ritual, and the three ways to get one. **Reframed from "coming soon" → "not soon, on purpose":**
-  added a 3-step roadmap strip (*you are here* → the launch flare → the goods get made) and a "the ritual is
-  free today" note (any pocket token, no purchase), so the page is honest that the physical *make* is parked
-  well past the flare. Nav descriptor also updated off "coming soon." The *make* is still parked post-flare.
+- **Status:** the `/goods/` showcase is up (the ritual is free today — any pocket token, no purchase). The
+  physical *make* is parked well past the launch flare.
 
 **Av15 — PJCC stationery** *(new · physical · parked until after the flare):* branded stationery with
 **"follow the dog"** across the top. The "pocket/desk mindset" goods line alongside the goal cards.
-**Status (2026-07-01):** fuller showcase on `/goods/` (now the **Merch** page) — a letterhead + sticky-notecard
-mockup, gold creed header, a chess-piece watermark, and the same **three ways to get one** as the goal cards
-(buy · email for a free sheet · make your own). The physical *make* is still parked post-flare.
+**Status:** showcased on the `/goods/` **Merch** page; the physical *make* is parked post-flare.
 
 **Av16 — PJCC VR** *(new · long-horizon · rides on the Godot/Blender 3D work):* the **Battle Room is *made* for
 VR** — Ender's-Game zero-G chess where "the enemy's gate is down" becomes literal: you float in the arena and move
@@ -375,26 +312,11 @@ you're about to build export to **OpenXR** (Godot has first-class VR), so VR is 
 separate build. **Scope: far future** (post-flare, post-Godot-v1); a Quest build of one battle room is the
 someday-milestone. Parked here mainly so the 3D pipeline is built **VR-aware from day one.**
 
-**Av17 — The Gambit (the altar of sacrifice)** *(new · coming-soon page live at `/games/the-gambit/`):* an
-**offering** mechanic wired into the existing Quartermaster economy. Lay down what you've earned — **credits**
-(in-game money) and **collectables** (avatars, titles, board skins) — and **sometimes** the board gives back
-*more*. **Courage tilts the odds:** offer your **best** item, or **≥85% of your credits**, and the odds lean
-hard your way; small, safe offerings barely move the needle. **Values-first framing, not a casino:** the reward
-exists to honor the one hard thing — giving up the very best thing you have and trusting the path anyway; ties to
-the moral/Neville center ("assume it's done"), **"follow the dog,"** and the Rival's *"5% strategy, 95% mindset."*
-**Build notes (when it leaves coming-soon):** sacrifice flow = spend `PJCC.credits` + burn an owned collectable;
-weighted RNG reward table that scales with *what fraction of your best you gave up*; a cooldown so it's a **ritual,
-not a grind**; hard guardrails — **never real money**, a daily cap, and a clear "you may get nothing" warning.
-Engine: extend `pjcc-profile.js`; the altar reads the same `credits` / owned-gear the Shopkeeper writes.
-
-**Status — v1 SHIPPED (2026-07-01):** the altar is **playable** at `/games/the-gambit/` (no longer coming-soon).
-Live now: offer **credits + an owned collectable**; a **Courage meter** shows the real odds before you commit
-(best item or ≥85% of credits → the board leans hard your way); **win** → more credits back, and a bold win can
-hand back an unowned **boon** collectable; **lose** → it's gone. Guardrails shipped: **never real money**, a daily
-cap (3), a 45s cooldown, and a **two-tap "no takebacks"** commit. Engine extended in `pjcc-profile.js`
-(`ownedCollectables` / `unownedCollectables` / `grantCredits` / `burnCollectable` / `grantCollectable`).
-**v2 roadmap (from the brainstorm below):** the Uncle presiding, non-fungible / altar-only rewards + canon
-fragments, sacrificing the streak-flame / rank, hold-to-offer, the Monument, a protected first offering, pay-it-forward.
+**Av17 — The Gambit (the altar of sacrifice)** — *v1 is live at `/games/the-gambit/`* (offer credits + an owned
+collectable; a **Courage meter** shows the real odds before you commit; guardrails: never real money, a daily cap,
+a cooldown, a two-tap "no takebacks"). **v2 roadmap (from the brainstorm below):** the Uncle presiding · non-fungible
+/ altar-only rewards + canon fragments · sacrificing the streak-flame / rank · hold-to-offer · the Monument · a
+protected first offering · pay-it-forward.
 
 > **Brainstorm expansion (2026-06-25):**
 > - **Who keeps the altar — the Uncle.** Give the Gambit a face: the **Uncle** (Barbados, the show's
@@ -513,15 +435,9 @@ site feel like one app.
 
 *The front page is the trailhead for all five threads (ship the show · own the audience · make them love
 her · the arcade funnel · the one mystery). **Less is more** — each idea must earn its spot; prefer depth
-and combination over new clutter. ★ = low-lift · ⛁ = wants backend. **Just shipped (2026-06-23):** ticker
-slowed + tap-to-pause/resume + studio promo items; "Read the Blog" shrunk to a corner "field notes" tab;
-"lessons learned" paragraph cut; bolder countdown headers.*
+and combination over new clutter. ★ = low-lift · ⛁ = wants backend.*
 
-> **Nav, pared down — shipped 2026-06-23 + 5 more ideas.** The logo is now a faded watermark (still links home);
-> "PJCC" is the clickable group header (the redundant PJCC link is gone); **Daily Dispatch moved off the nav** onto
-> the PJCC home as a feature card; the whole **McPuppy side collapsed to one link → `/projects/`**, which is now the
-> **McPuppy Studios hub** (Blog · Mailing List · Press Pass · Educators live there), and the splash `/` got a McPuppy
-> quadrant. **Five ways to pare it further:** (1) ★ collapse "Characters & Locations / Academy / The Pilot" into a
+> **Nav — five ways to pare it further:** (1) ★ collapse "Characters & Locations / Academy / The Pilot" into a
 > single **"The World"** dropdown (hover/tap) so the bar is just *PJCC · Games · The World · Dossier · McPuppy*;
 > (2) ★ make the nav **context-aware** — show the PJCC links on PJCC pages and the McPuppy links on McPuppy pages,
 > never both; (3) **sticky mini-bar on scroll** — shrink to just the watermark + a ⌘K-style command/search palette;
@@ -636,8 +552,7 @@ Town, Bob-Proctor mindset) and **Michael** (Chess City, truly righteous); **The 
 - **The Godot roguelite** — a Binding-of-Isaac game from the Blender assets; start with ONE web-exported
   room wired to the leaderboard, then layer rooms → items → floors. Princess Dungeon is its web prototype
   (build plan above).
-- **The Battle Room → deck it out** *(web v0.1 shipped: real chess, 2D board + screen-flip action arena,
-  Princess on a controller, three commentators).* **P1** juice the web build (sound, attack animations,
+- **The Battle Room → deck it out** *(building on the web v0.1):* **P1** juice the web build (sound, attack animations,
   finishers, commentator voices, difficulty rungs) → **P2** Godot port (reuse the engine; the flip becomes
   a true camera cut) → **P3** Blender (piece-combatants, capture/finisher anims, the commentators; intro
   cutscenes) → **P4** WOW (combos, signature finishers, a crowd, shareable replays). Same engine as The
@@ -682,7 +597,7 @@ is the superfan ceiling but a cadence trap — start it only when #1 is humming.
 - **"Follow the dog"** → *the brand creed.* On stationery, goal cards, and in tone. Payoff: one simple,
   repeatable line that holds the whole ethos — trust the journey; Princess leads.
 - **The Shogi Island portal** ("*one A and eight c's*," **first two oversized, last one small** — incantation `A · C C c c c c c c`) → *a signature show reveal.*
-  **The gate is now LIVE (Av13, shipped 2026-06-23)** — the rite opens it with a cinematic. The motif is now a real,
+  **The gate is live (Av13)** — the rite opens it with a cinematic. The motif is now a real,
   reusable sigil (`.pjcc-sigil`, sizes `.big`/`.sm`); **keep seeding it** as a recurring glyph — hide the **A + eight c's (first two large, last small)** in
   more game backgrounds, the **news ticker**, the **Lore Codex**, and art (started: the Shogi Island dock + the Dead
   Drop dockmaster's log). Payoff: when the portal opens on screen, longtime fans gasp because they've been *seeing* it
@@ -732,7 +647,7 @@ is the superfan ceiling but a cadence trap — start it only when #1 is humming.
   *not* teach it (**Kaede** leads the dojo, her brother **Matsu** helping); she's just the one who never leaves the board;
   the one he's really doing it all for. *(The "Chess City Leafs" / Auston-Matthews nod is now her name.)*
 - **Crockett — a real male dog** *(locked 2026-06-23)* (Nate's dog; their greeting is "**bellies**") — comic-relief
-  crew member, plays a pawn, *not* the sister. ✅ File surgery done: sister → **Auston**, dog → **Crockett**.
+  crew member, plays a pawn, *not* the sister.
 - **Argus** — **the smart one**; a dog; slowly grows into a **solid** chess player.
 - **The Dad** *(renamed from "The Father"/Andrew, 2026-06-23; role: Family)* — **simple, silly, and absent-minded on
   the surface, but razor-sharp in his own lane**, and **whatever happens, he does what he can for his kids.** Also
@@ -785,11 +700,6 @@ Argus already carry `chapters: 0`.)*
 
 **Open decisions (waiting on Nate):** lock the **older brother's** name (Saul rec); name **Robert's two Prodigal
 Brothers** and the **Commentators** are placeholders (Boomer/Tempo/Sunny) — confirm or rename.
-✅ *Resolved 2026-06-23:* sister = **Auston**, dog = **Crockett** (file surgery done); **two rivals** — **Robert**
-(Checker Town, Bob-Proctor mindset) + **Michael** (Chess City, truly righteous), both side characters; **The Dad**
-(role Family); best friend = **Maxwell**; **Matsu** = Kaede's brother; new **Ancillary** tier (Commentators +
-Prodigal Brothers). Earlier: the scattered-but-sharp devoted-dad archetype is **the Dad's**; **Bill** is the rugged
-**Bruce-Willis/*Armageddon*** hero — two distinct men.
 
 **New seeds (2026-06-24 — Nate's quick notes, to develop):**
 - **The best friend lives in a potato.** Reads as **Maxwell's** home — a snug spud in Checker Town. Dead-on for
