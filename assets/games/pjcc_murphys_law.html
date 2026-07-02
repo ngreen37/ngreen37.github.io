@@ -103,7 +103,7 @@
 
   // ---------- world ----------
   var GROUND = H - 40;          // top of the road
-  var GRAV = 0.5, JUMP_V = -8.4, SPEED = 2.2;
+  var GRAV = 0.5, JUMP_V = -6.9, SPEED = 1.5;
   var state = 'ready';          // ready | play | over
   var score = 0, dist = 0, best = 0;
   var BEST_KEY = 'pjcc.best.murphys-law';
@@ -201,7 +201,12 @@
     // fire
     if (p.fireCd > 0) p.fireCd--;
     if (K.fire && p.fireCd <= 0) {
-      shots.push({ x: p.x + (p.face>0 ? p.w : -4), y: p.y + 8, vx: p.face * 5.4, w: 6, h: 3 });
+      var muzX = p.x + (p.face>0 ? p.w + 3 : -3);   // buster tip
+      var muzY = p.y + 11;
+      shots.push({ x: muzX, y: muzY, vx: p.face * 5.4, w: 6, h: 4 });
+      // muzzle flash out of the hand
+      for (var mf = 0; mf < 4; mf++) parts.push({ x: muzX, y: muzY + 1, vx: p.face*(1.5+Math.random()*2),
+        vy: (Math.random()-0.5)*1.8, life: 6 + Math.random()*4, col: mf<2 ? '#fff' : '#9cf0ff' });
       p.fireCd = 11; sShoot();
     }
     K.fireEdge = false;
@@ -352,9 +357,10 @@
     // body — blue jacket (Mega Man blue)
     g.fillStyle = '#3cbcfc'; g.fillRect(x+1, y+8, p.w-2, 9);
     g.fillStyle = '#1a7ad0'; g.fillRect(x+1, y+13, p.w-2, 4);
-    // arm + buster
+    // arm + buster cannon (Mega Man style, extended in the fire direction)
     g.fillStyle = '#2a90e0';
-    if (fr>0) g.fillRect(x+p.w-2, y+9, 4, 4); else g.fillRect(x-2, y+9, 4, 4);
+    if (fr>0) { g.fillRect(x+p.w-3, y+9, 5, 5); g.fillStyle = '#9cf0ff'; g.fillRect(x+p.w+2, y+10, 2, 3); }
+    else       { g.fillRect(x-2, y+9, 5, 5);      g.fillStyle = '#9cf0ff'; g.fillRect(x-4, y+10, 2, 3); }
     // head + grumpy face
     g.fillStyle = '#ffd9a0'; g.fillRect(x+3, y, 8, 8);
     g.fillStyle = '#5a3a18'; g.fillRect(x+3, y, 8, 2); // hair/cap

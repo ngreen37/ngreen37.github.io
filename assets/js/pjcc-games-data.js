@@ -15,7 +15,6 @@ window.PJCC_GAMES = [
   { slug:'sand-mine-depths',  name:'Sand Mine Depths',   cryptic:"Descend. Don't look back.",      icon:'⛏', accent:'#fcbc3c', cat:'arcade', score:['sand-mine-depths','depth'] },
   { slug:'tower-defense',     name:'Siege on Chess City',cryptic:'Hold the gates.',                icon:'🏰', accent:'#ff77a8', cat:'arcade', score:['tower-defense','score'] },
   { slug:'dungeon',           name:'Princess Dungeon',   cryptic:'Every room is a tactic.',        icon:'♟', accent:'#ff77a8', cat:'arcade', score:['dungeon','floors'], neu:'2026-06-22' },
-  { slug:'zoomies',           name:"Crockett's Zoomies", cryptic:'Catch the dog. Mind the bathroom.', icon:'🐕', accent:'#fcbc3c', cat:'arcade', score:['zoomies','bellies'], neu:'2026-06-24' },
   { slug:'murphys-law',       name:"Murphy's Law",       cryptic:'The pessimist was right.',       icon:'☹', accent:'#3cbcfc', cat:'arcade', score:['murphys-law','score'], neu:'2026-06-25' },
   { slug:'battle-room',       name:'The Battle Room',    cryptic:'Chess as an action sequence.',   icon:'⚔', accent:'#56d0ff', cat:'dev', score:['battle-room','score'], neu:'2026-06-22' },
   { slug:'follow-the-dog',    name:'Follow the Dog',     cryptic:'Trust the run. Follow her.',     icon:'✦', accent:'#8fb8ff', cat:'dev' },
@@ -25,7 +24,8 @@ window.PJCC_GAMES = [
   { slug:'blindfold-puzzles', name:'Blindfold Puzzles',  cryptic:'No board. Only your mind.',      icon:'◻', accent:'#c9a7ff', cat:'vault', score:['blindfold','solved'], locked:true },
   // ── Terminated (retired roster) ──
   { slug:'knights-tour',      name:"Knight's Tour",      cryptic:'Touch every square. Once.',      icon:'♞', accent:'#c96bff', cat:'terminated', score:['knights-tour','score'] },
-  { slug:'ferry-delayed',     name:'Ferry Delayed',      cryptic:'No departure date announced.',   icon:'⛴', accent:'#9aa0b8', cat:'terminated', playable:false }
+  { slug:'ferry-delayed',     name:'Ferry Delayed',      cryptic:'No departure date announced.',   icon:'⛴', accent:'#9aa0b8', cat:'terminated', playable:false },
+  { slug:'zoomies',           name:"Crockett's Zoomies", cryptic:'The dog got out. Chase abandoned.', icon:'🐕', accent:'#fcbc3c', cat:'terminated', playable:false, score:['zoomies','bellies'] }
 ];
 
 /* Halls (the "Gauntlet Legends" boxes). route = page under /games/. */
