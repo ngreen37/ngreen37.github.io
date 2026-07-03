@@ -12,7 +12,7 @@ permalink: /press-pass/
 
 <div class="xp-tiers">
   <div class="xp-tier xp-free">
-    <div class="xp-tier-head"><span class="xp-tier-ico">🪪</span><div><div class="xp-tier-name">Operative</div><div class="xp-tier-price">Free · available now</div></div></div>
+    <div class="xp-tier-head"><span class="xp-tier-ico">🪪</span><div><div class="xp-tier-name">Operative</div><div class="xp-tier-price">Free · forever</div></div></div>
     <ul class="xp-perks">
       <li>✓ A codename, profile &amp; <a href="{{ '/dossier/' | relative_url }}">operative dossier</a></li>
       <li>✓ Every game, free — and the <a href="{{ '/academy/' | relative_url }}">Chess City Academy</a></li>
@@ -23,36 +23,57 @@ permalink: /press-pass/
     <a class="xp-cta xp-cta-ghost" href="{{ '/dossier/' | relative_url }}">Start as an Operative</a>
   </div>
 
-  <div class="xp-tier xp-feature">
-    <div class="xp-flag">Most support</div>
-    <div class="xp-tier-head"><span class="xp-tier-ico">🎟</span><div><div class="xp-tier-name">Press Pass</div><div class="xp-tier-price">Coming soon</div></div></div>
+  <div class="xp-tier">
+    <div class="xp-tier-head"><span class="xp-tier-ico">🎖</span><div><div class="xp-tier-name">Field Operative</div><div class="xp-tier-price">$3 / month</div></div></div>
     <ul class="xp-perks">
-      <li>★ <b>Early access</b> to the pilot &amp; new episodes</li>
-      <li>★ The <b>behind-the-scenes</b> feed — boards, color keys, dev-logs</li>
-      <li>★ <b>Exclusive Quartermaster cosmetics</b> (skins &amp; titles — cosmetic only)</li>
       <li>★ Your <b>name in the credits</b> as a supporter</li>
-      <li>★ <b>2× weight</b> on Frame the Scene votes</li>
+      <li>★ The <b>behind-the-scenes</b> feed — boards, color keys, dev-logs</li>
+      <li>★ A <b>supporter title</b> on your operative profile</li>
       <li>★ Everything in Operative</li>
     </ul>
-    <a class="xp-cta" href="{{ '/mailing-list/' | relative_url }}">Join the founders list →</a>
+    {% if site.patreon_url and site.patreon_url != "" %}
+    <a class="xp-cta xp-cta-ghost" href="{{ site.patreon_url }}" target="_blank" rel="noopener">Back on Patreon →</a>
+    {% else %}
+    <span class="xp-cta xp-cta-ghost is-soon">Opening soon</span>
+    {% endif %}
+  </div>
+
+  <div class="xp-tier xp-feature">
+    <div class="xp-flag">Most support</div>
+    <div class="xp-tier-head"><span class="xp-tier-ico">🎟</span><div><div class="xp-tier-name">Founding Operative</div><div class="xp-tier-price">$5 / month</div></div></div>
+    <ul class="xp-perks">
+      <li>★ <b>Early access</b> to the pilot &amp; new episodes</li>
+      <li>★ <b>Exclusive Quartermaster cosmetics</b> (skins &amp; titles — cosmetic only)</li>
+      <li>★ <b>2× weight</b> on Frame the Scene votes</li>
+      <li>★ Everything in Field Operative</li>
+    </ul>
+    {% if site.patreon_url and site.patreon_url != "" %}
+    <a class="xp-cta" href="{{ site.patreon_url }}" target="_blank" rel="noopener">Back on Patreon →</a>
+    {% else %}
+    <span class="xp-cta is-soon">Opening soon</span>
+    {% endif %}
   </div>
 
   <div class="xp-tier xp-founder">
-    <div class="xp-tier-head"><span class="xp-tier-ico">👑</span><div><div class="xp-tier-name">Founder</div><div class="xp-tier-price">Coming soon · limited</div></div></div>
+    <div class="xp-tier-head"><span class="xp-tier-ico">👑</span><div><div class="xp-tier-name">Charter Founder</div><div class="xp-tier-price">$15 / month · limited</div></div></div>
     <ul class="xp-perks">
       <li>♛ A <b>credited Founder</b> of Checker Town</li>
       <li>♛ A say in the <b>roadmap</b> &amp; what gets built next</li>
-      <li>♛ A physical thank-you from the studio</li>
-      <li>♛ A unique Founder title &amp; avatar frame</li>
-      <li>♛ Everything in the Press Pass</li>
+      <li>♛ A <b>physical thank-you</b> from the studio</li>
+      <li>♛ A unique <b>Founder frame &amp; title</b></li>
+      <li>♛ Everything in Founding Operative</li>
     </ul>
-    <a class="xp-cta xp-cta-ghost" href="{{ '/mailing-list/' | relative_url }}">Get on the list →</a>
+    {% if site.patreon_url and site.patreon_url != "" %}
+    <a class="xp-cta xp-cta-ghost" href="{{ site.patreon_url }}" target="_blank" rel="noopener">Back on Patreon →</a>
+    {% else %}
+    <span class="xp-cta xp-cta-ghost is-soon">Opening soon</span>
+    {% endif %}
   </div>
 </div>
 
 <!-- ===== FREE PRESS CREDENTIAL (claim now) ===== -->
 <h2 class="xp-h2">◈ Claim your Press Credential <span class="xp-free-tag">Free · now</span></h2>
-<p class="xp-crednote">The Press Pass isn't open yet — but the <b>founders list</b> is forming. Claim your free credential to lock in a <b>provisional founding number</b>. It's a keepsake that says you were here before episode one; when paid passes open, your number carries over. <span class="xp-muted">Saved on this device — link your <a href="{{ '/dossier/' | relative_url }}">dossier</a> to put your codename on it.</span></p>
+<p class="xp-crednote">Backing on Patreon is open now — and the <b>on-site perks</b> (cosmetics, the Backer Dispatch) light up as they're built. Either way, claim your free credential to lock in a <b>provisional founding number</b>: a keepsake that says you were here before episode one. <span class="xp-muted">Saved on this device — link your <a href="{{ '/dossier/' | relative_url }}">dossier</a> to put your codename on it.</span></p>
 
 <div class="xp-cred" id="xp-cred"><!-- rendered by script --></div>
 
@@ -216,8 +237,8 @@ permalink: /press-pass/
 </script>
 
 <!-- ===== PRICING POLL ===== -->
-<h2 class="xp-h2">◈ Help us price it <span class="xp-soon-tag">your call</span></h2>
-<p class="xp-crednote">Before a single price goes live, you shape it. If you'd back the show, how would you rather do it?</p>
+<h2 class="xp-h2">◈ How would you rather back it? <span class="xp-soon-tag">your call</span></h2>
+<p class="xp-crednote">Monthly's live on Patreon — but if you'd back the show, what would suit you best? Your answer shapes what we add next (an annual option, a one-off tip).</p>
 <div class="xp-poll" id="xp-poll"></div>
 <script>
 (function () {
@@ -247,8 +268,8 @@ permalink: /press-pass/
 </script>
 
 <!-- ===== BACKER DISPATCH (preview) ===== -->
-<h2 class="xp-h2">◈ The Backer Dispatch <span class="xp-soon-tag">with paid tiers</span></h2>
-<p class="xp-crednote">Pass-holders get a <b>quarterly behind-the-scenes issue</b> — the stuff too raw or too spoiler-y for the public dispatch. Here's the peek; the full issue unlocks when tiers go live.</p>
+<h2 class="xp-h2">◈ The Backer Dispatch <span class="xp-soon-tag">first issue soon</span></h2>
+<p class="xp-crednote">Pass-holders get a <b>quarterly behind-the-scenes issue</b> — the stuff too raw or too spoiler-y for the public dispatch. Here's the peek; the full issue unlocks when No. 01 ships.</p>
 <div class="xp-backer">
   <div class="xp-backer-head"><span>◈ BACKER DISPATCH · No. 01</span><span class="xp-backer-lock">🔒 locked</span></div>
   <ul class="xp-backer-toc">
@@ -295,6 +316,7 @@ permalink: /press-pass/
 .xp-cta:hover { background: #ffd740; }
 .xp-cta-ghost { background: transparent; color: #F5C518; border: 1px solid #6b5fa0; }
 .xp-cta-ghost:hover { background: rgba(245,197,24,0.12); color: #fff; }
+.xp-cta.is-soon { opacity: 0.55; cursor: default; }
 .xp-promise { background: rgba(107,255,184,0.06); border: 1px solid #2f6b50; border-radius: 14px; padding: 16px 20px; margin: 22px 0; max-width: 760px; }
 .xp-promise h2 { color: #6bffb8; margin: 0 0 8px; font-size: 1.1rem; }
 .xp-promise ul { margin: 0; padding-left: 4px; list-style: none; }
