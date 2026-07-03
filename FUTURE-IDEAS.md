@@ -217,6 +217,14 @@ clearance-gated modules · "what's new since you left" · backend-aware cross-de
 > registry (the `_pjcc/easter-eggs.md` catalog is the source of truth) keyed like the existing `frag_*`
 > localStorage flags, surfaced on the dossier as a collectible progress stat — rarer eggs worth a bigger nod.
 > A completionist thread that quietly rewards poking the edges. Ties to [[pjcc-profile-system]].
+>
+> **Key fragments → special access + an announcement** *(follow-on · Nate 2026-07-03):* not every egg is equal —
+> **certain fragments are keys**, not just tally marks. Tripping one grants **special access** (a clearance-gated
+> page, a Vault module, a cosmetic, a rank bump) *and* fires a **personalized announcement in the operative's own
+> name** — *"OPERATIVE [codename] now has access to ████."* — as a toast on the spot and a permanent line in the
+> dossier's transmission log. Pulls the codename from the live profile; rides the existing clearance ladder
+> (DELTA · OMEGA) and the Vault-unlock pattern (flawless Notation Blitz → Blindfold). Makes a discovery feel
+> *granted to you*, not merely counted. Ties to **Av13** (hidden portals) + [[pjcc-profile-system]].
 
 **Av9 — Live ops / a heartbeat** *(features tied to real time, so the site feels alive):* a community
 megabar ("build the bridge to Chess City") · seasonal reskins · a December advent · 24-hour tournaments ·
