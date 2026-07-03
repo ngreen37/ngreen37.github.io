@@ -210,6 +210,14 @@ one HQ screen (rank/credits/streak) · fragment-recovery grid · mission clock �
 transmission log · cast constellation (unlocks node-by-node from lore pages) · daily opening intel ·
 clearance-gated modules · "what's new since you left" · backend-aware cross-device progress (accounts).
 
+> **Dossier easter-egg tally** *(new note · Nate 2026-07-03):* broaden the dossier's 6-fragment recovery grid
+> into a full **discoveries counter** — "N of M secrets found" — that credits *every* egg the operative trips,
+> not just the origin fragments: the notation toasts (e4 · Nf3 · Qd5…), the Konami code, the hidden pages, the
+> splash secret-star + planted sigils, the Shogi gate, the once-a-day piece-rain, etc. Needs a canonical egg
+> registry (the `_pjcc/easter-eggs.md` catalog is the source of truth) keyed like the existing `frag_*`
+> localStorage flags, surfaced on the dossier as a collectible progress stat — rarer eggs worth a bigger nod.
+> A completionist thread that quietly rewards poking the edges. Ties to [[pjcc-profile-system]].
+
 **Av9 — Live ops / a heartbeat** *(features tied to real time, so the site feels alive):* a community
 megabar ("build the bridge to Chess City") · seasonal reskins · a December advent · 24-hour tournaments ·
 a "studio is open" indicator · episode-drop watch party · a daily world-state ticker · limited-time event
