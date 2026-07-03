@@ -52,10 +52,6 @@ fragment_key: frag_classified
       that feeling until the world catches up, and it always does. Chess first. Then everything. She is,
       quietly, living from the end.
     </p>
-    <p class="secret-spoiler">
-      Where it's all going <span class="secret-spoiler-tag">(don't say it out loud yet):</span> hold to read.
-      <span class="secret-reveal" data-real="The dog who fell from the sky and was tagged like everyone else at the gate rises to Queen — not because she was chosen, but because she never once entertained the idea that she wasn't.">████ ███ ███ ████ ████ ███ ███ ██ █████ ██ █████ █████ ██ ███ ████ █████ ██ █████ ████ ███ ████ ███ ███ ████████.</span>
-    </p>
   </article>
 
   <!-- ══════════ THE METHOD ══════════ -->
@@ -131,11 +127,6 @@ fragment_key: frag_classified
   margin:0 0 14px; letter-spacing:0.3px; }
 .secret-block p { font-size:15.5px; line-height:1.9; color:var(--warm); margin:0 0 12px; }
 .secret-block strong { color:var(--gold); }
-.secret-spoiler { color:rgba(255,233,191,0.7); }
-.secret-spoiler-tag { color:rgba(255,140,0,0.7); font-style:italic; }
-.secret-reveal { display:inline; color:rgba(255,170,40,0.85); cursor:cell; letter-spacing:0.5px;
-  background:rgba(255,140,0,0.08); border-radius:3px; padding:0 3px; }
-.secret-reveal.is-revealing { color:var(--warm); background:rgba(255,170,40,0.16); }
 
 .secret-steps { margin:0; padding:0 0 0 4px; list-style:none; counter-reset:step; }
 .secret-steps li { position:relative; padding:0 0 14px 40px; font-size:15.5px; line-height:1.7; color:var(--warm); counter-increment:step; }
@@ -157,32 +148,3 @@ fragment_key: frag_classified
 
 @media (max-width:600px){ .secret-core, .secret-block { padding:22px 18px; } .secret-page { padding:40px 16px 70px; } }
 </style>
-
-<script>
-/* Hold-to-reveal — "a well-sustained attention." You have to attend to it to read it. */
-(function () {
-  document.querySelectorAll('.secret-reveal').forEach(function (el) {
-    var real = el.getAttribute('data-real');
-    var redacted = el.textContent;
-    var timer = null;
-    el.title = 'hold to reveal';
-    function start() {
-      el.classList.add('is-revealing');
-      var i = 0;
-      timer = setInterval(function () {
-        if (i >= real.length) { clearInterval(timer); return; }
-        var tail = '';
-        for (var j = i + 1; j < redacted.length; j++) tail += redacted[j] === ' ' ? ' ' : '█';
-        el.textContent = real.slice(0, i + 1) + tail;
-        i++;
-      }, 24);
-    }
-    function reset() { clearInterval(timer); el.classList.remove('is-revealing'); el.textContent = redacted; }
-    el.addEventListener('mousedown', start);
-    el.addEventListener('touchstart', start, { passive: true });
-    el.addEventListener('mouseup', reset);
-    el.addEventListener('mouseleave', reset);
-    el.addEventListener('touchend', reset);
-  });
-})();
-</script>

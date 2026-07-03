@@ -212,17 +212,19 @@
   .studio-lean.lean-games   { background:radial-gradient(circle at 28% 72%, rgba(60,188,252,0.047) 0%, rgba(60,188,252,0.033) 25%, rgba(60,188,252,0.019) 45%, rgba(60,188,252,0.009) 65%, rgba(60,188,252,0.0027) 82%, transparent 100%); }
   .studio-lean.lean-patreon { background:radial-gradient(circle at 72% 72%, rgba(45,196,130,0.047) 0%, rgba(45,196,130,0.033) 25%, rgba(45,196,130,0.019) 45%, rgba(45,196,130,0.009) 65%, rgba(45,196,130,0.0027) 82%, transparent 100%); }
 
-  /* Secret-star intro — the ✦ starts tucked large *behind* the quad grid
-     (peeking through the gaps), holds for a beat, then sneaks back out to
+  /* Secret-star intro — the ✦ hides *behind* the quad grid, sized so the four
+     cards conceal its body and only its points peek through the gaps between
+     them (ready to poke out). It holds for a beat, then sneaks back out to
      rejoin the ambient drifters. Hold time is set by the JS below (7s). */
   .studio-quad-grid { position:relative; }          /* anchor + stacking ctx for the behind-quads star */
   .drift-piece.is-behind-quads {
     position:absolute; left:50%; top:50%; bottom:auto; right:auto;
     transform:translate(-50%,-50%);
-    font-size:clamp(150px, 32vw, 340px);
-    color:rgba(205,205,225,0.17);
+    /* Kept smaller than the grid so the quads hide it — no more screen-filling star. */
+    font-size:clamp(80px, 15vw, 180px);
+    color:rgba(205,205,225,0.2);
     z-index:-1; pointer-events:none;                /* sits behind the quad cards */
-    filter:drop-shadow(0 0 26px rgba(160,140,255,0.18));
+    filter:drop-shadow(0 0 14px rgba(160,140,255,0.16));
     animation:secret-star-float 6s ease-in-out infinite, secret-star-in .7s ease both;
   }
   @keyframes secret-star-in   { from { opacity:0; } to { opacity:1; } }
