@@ -42,7 +42,7 @@ A page-by-page checklist for the read-everything text pass before launch.
 - [ ] the-gauntlet · [ ] notation-run *(Notation Blitz)* · [ ] fork-in-the-road · [ ] pirc-protocol · [ ] shogi-island
 - [ ] clearance-delta · [ ] reading-room · [ ] knights-tour · [ ] blindfold-puzzles · [ ] sky-run
 - [ ] sand-mine-depths · [ ] tower-defense *(Siege)* · [ ] dungeon *(Princess Dungeon)* · [ ] battle-room
-- [x] follow-the-dog *(was Space Run — renamed + redirect)* · [x] the-gambit *(altar built, playable)* · Checker Financial removed 2026-07-01
+- [x] follow-the-dog *(was Space Run — renamed + redirect)* · [x] the-gambit *(altar built, playable)* · Checker Financial removed 2026-07-01 · Crockett's Zoomies retired to Terminated roster 2026-07-02, delisted from /projects/ 2026-07-03
 - [ ] **In-game copy** (separate pass): playables in `assets/games/*.html` — titles, instructions, win/lose lines.
 
 ## Core & standalone pages (~17)
@@ -53,9 +53,9 @@ A page-by-page checklist for the read-everything text pass before launch.
 - [ ] **Misc:** academy · production *(The Pilot)* · chess-lessons · writers-room · command-center · quotes
 
 ## Blog posts (21) — `_posts/`
-- [ ] Spotify embeds removed (done 2026-06-24); read each post for tone/typos.
-- [ ] **Fix placeholder:** `2026-04-14-website-developer-empire-builder` still has a literal
-      "Listening to: Artist - Song Title" — fill it in or cut it.
+- [x] Spotify embeds removed (done 2026-06-24). *Still to do: read each post for tone/typos.*
+- [x] **Placeholder fixed:** `2026-04-14-website-developer-empire-builder` rewritten — the literal
+      "Listening to: Artist - Song Title" line is gone (2026-07-03).
 
 ---
 *Spotify track embeds stripped from all posts 2026-06-24 (the "Listening to:" lines stay as text).*

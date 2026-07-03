@@ -369,12 +369,16 @@ not a scramble.
   (Auston=sister / Crockett=dog · Michael=Chess City rival, Robert=Checker Town rival · "The Dad" · Maxwell ·
   Matsu · ancillary cast · Princess never speaks · "follow the dog" + "5% strategy, 95% mindset" · no Pieces
   section · current game names · Clearance: DELTA = completed).
-- **Phase 2 — Structural cleanup (the plumbing).** *Done:* Spotify embeds stripped from all posts (kept the
-  "Listening to" text); the dead `update_soundtrack.py` pre-commit hook removed. *To do:* drop the now-inert
-  `jukebox: true` flags (`blog.md`, `projects.md` — the Build Playlist jukebox is gone); fix the placeholder
-  post (`2026-04-14` still reads "Listening to: Artist - Song Title"); a site-wide **link-check** (no 404s; the
-  context-aware nav + ⌘K palette + coming-soon pages all resolve; Space Run→Follow the Dog redirect; evolution-
-  log gating).
+- **Phase 2 — Structural cleanup (the plumbing). ✅ DONE (2026-07-03).** Spotify embeds stripped from all posts
+  (kept the "Listening to" text); the dead `update_soundtrack.py` pre-commit hook removed; the inert
+  `jukebox: true` flags already gone from `blog.md`/`projects.md`; the `2026-04-14` placeholder post rewritten
+  (no more "Listening to: Artist - Song Title"). **Site-wide link-check ran clean** — a static route audit
+  (no Ruby/Jekyll here) cross-checked every literal internal link in 224 source files against 178 real routes:
+  **zero 404s.** Verified the context-aware nav + all 22 ⌘K palette targets + coming-soon pages resolve, the
+  Space Run→Follow the Dog permalink+redirect works, and the games hall emits no link for non-playable entries.
+  Also caught + fixed one stale ref: **Crockett's Zoomies** (retired to the Terminated roster, `playable:false`)
+  was still listed as a playable "Completed" game on `/projects/` — removed, matching the Checker Financial /
+  Ferry Delayed treatment (the game files stay for a possible revival; it's now only reachable by direct URL).
 - **Phase 3 — Systems & QA.** Supabase/profile live end-to-end (cross-device sign-in · leaderboards posting ·
   Quartermaster credits · dossier). Cloudflare analytics firing. Mobile pass (icon nav · condensed header has
   no twitch · splash quads · games on touch). The full-site Japanese toggle. The ARG/portal rites (Shogi gate)
