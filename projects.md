@@ -168,9 +168,9 @@ body_class: theme-studio
     <div class="project-card-corner-piece" aria-hidden="true">♝</div>
     <div class="project-card-header">
       <span class="project-status project-status-soon">Coming Soon</span>
-      <h2 class="project-title">Podcast</h2>
+      <h2 class="project-title">McPuppy</h2>
     </div>
-    <p class="project-desc">Listen for Studio updates and whatever else comes up &mdash; Winter 2026.</p>
+    <p class="project-desc">The McPuppy Studios podcast &mdash; studio updates and whatever else comes up. Winter 2026.</p>
   </div>
 
   <div class="project-card project-card-soon">

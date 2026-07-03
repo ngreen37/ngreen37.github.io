@@ -45,6 +45,11 @@
     font-size: 11.5px; color: #cfe0ff; text-align: left; }
   .legend .g { font-size: 15px; text-align: center; }
   .foot { margin-top: 14px; font-size: 10.5px; color: #6a7aa8; line-height: 1.7; } .foot b { color: #bcd0ff; }
+  /* Home-screen: cool + minimal — no instruction dump (controls live below the game). */
+  .menu-tag { font-size: 14.5px; color: #cfe0ff; letter-spacing: 0.5px; margin-bottom: 24px; }
+  .menu-tag b { color: #ffe27a; }
+  .menu-best { margin-top: 18px; font-size: 12px; letter-spacing: 1px; color: #8fb8ff; }
+  .menu-best b { color: #bcd0ff; }
 </style>
 </head>
 <body>
@@ -53,24 +58,13 @@
   <button class="float-btn hidden" id="menu-btn">☰ menu</button>
   <button class="float-btn hidden" id="summon-btn">♚ SUMMON<small>0 pawns</small></button>
 
-  <!-- MENU -->
+  <!-- MENU (home screen — cool + minimal; controls live below the game) -->
   <div class="overlay" id="menu">
     <div class="eyebrow">Princess takes flight</div>
     <div class="big-title">SKY RUN</div>
-    <div class="blurb">
-      Princess flies the long way to <b>Chess City</b>, popping the pieces that fall from the sky.
-      Drag to fly — she fires on her own. Grab piece power-ups, build a combo to charge your
-      <b>King's summon</b>, and break each region's <b>boss King</b>.
-    </div>
-    <div class="legend">
-      <span class="g">♗</span><span>Bishop — <b>X-only</b> twin beams: no straight shot, but big damage</span>
-      <span class="g">♘</span><span>Knight — two <b>sharpshooter escorts</b></span>
-      <span class="g">♕</span><span>Queen — fires <b>all 8 directions</b> at once, piercing</span>
-      <span class="g">♚</span><span>King — <b>summon pawns</b> (earned by combo) that leap &amp; explode</span>
-    </div>
+    <div class="menu-tag">The long flight to <b>Chess City</b>.</div>
     <div class="row"><button class="btn btn-gold" id="play-btn">▶ TAKE FLIGHT</button><button class="btn btn-ghost" id="daily-btn">📅 DAILY</button><button class="btn btn-ghost" id="endless-btn">🌊 ENDLESS</button></div>
-    <div class="foot" style="margin-top:8px;">📅 <b>Daily</b> — same enemy script for everyone today · 🌊 <b>Endless</b> — one life, the sea keeps rising.</div>
-    <div class="foot">Drag / move to fly · <b>Space</b> summons pawns · <b id="best-line">best: —</b></div>
+    <div class="menu-best"><b id="best-line">best: —</b></div>
   </div>
 
   <!-- GAME OVER / VICTORY -->
