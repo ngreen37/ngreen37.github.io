@@ -32,8 +32,38 @@ permalink: /games/
 .ghub-portal .ghp-enter { transform:translateX(4px); transition:opacity .14s, transform .18s; }
 .ghub-portal:hover .ghp-enter, .ghub-portal:active .ghp-enter { transform:translateX(0); }
 
+/* ---- Gauntlet Legends portal treatment: glowing gateways with rune-rings ---- */
+.ghub-portal > span { position:relative; z-index:1; }               /* label + glyph ride above the glow */
+.ghub-portal::after { content:""; position:absolute; inset:0; z-index:0; pointer-events:none; border-radius:inherit;
+  opacity:.4; transition:opacity .18s ease;
+  background:radial-gradient(78% 46% at 50% 0%, color-mix(in srgb, var(--c) 45%, transparent), transparent 72%); }
+.ghub-portal:hover::after, .ghub-portal:focus-visible::after, .ghub-portal:active::after { opacity:.92; }
+/* torch flicker on the glyph */
+.ghub-portal .ghp-glyph { animation:ghp-flicker 3.2s ease-in-out infinite; }
+@keyframes ghp-flicker {
+  0%,100% { filter:drop-shadow(0 0 14px color-mix(in srgb, var(--c) 70%, transparent)); }
+  45%     { filter:drop-shadow(0 0 22px color-mix(in srgb, var(--c) 92%, transparent)) brightness(1.12); }
+  72%     { filter:drop-shadow(0 0 12px color-mix(in srgb, var(--c) 58%, transparent)) brightness(0.98); } }
+/* a rotating dashed rune-ring + a counter-rotating inner ring behind the glyph */
+.ghub-portal .ghp-glyph::before, .ghub-portal .ghp-glyph::after { content:""; position:absolute; left:50%; top:50%;
+  border-radius:50%; z-index:-1; transform:translate(-50%,-50%); pointer-events:none; }
+.ghub-portal .ghp-glyph::before { width:90px; height:90px; opacity:.5;
+  border:2px dashed color-mix(in srgb, var(--c) 60%, transparent);
+  box-shadow:0 0 24px color-mix(in srgb, var(--c) 38%, transparent), inset 0 0 16px color-mix(in srgb, var(--c) 20%, transparent);
+  animation:ghp-ring 11s linear infinite; }
+.ghub-portal .ghp-glyph::after { width:68px; height:68px; opacity:.45;
+  border:1px solid color-mix(in srgb, var(--c) 45%, transparent); animation:ghp-ring 8s linear infinite reverse; }
+.ghub-portal:hover .ghp-glyph::before { opacity:.95; animation-duration:5s; }
+.ghub-portal:hover .ghp-glyph::after  { opacity:.8; }
+@keyframes ghp-ring { from { transform:translate(-50%,-50%) rotate(0deg); } to { transform:translate(-50%,-50%) rotate(360deg); } }
+@media (max-width:560px){
+  .ghub-portal .ghp-glyph::before { width:72px; height:72px; }
+  .ghub-portal .ghp-glyph::after  { width:54px; height:54px; }
+}
+
 @media (prefers-reduced-motion: reduce){
-  .ghub, .ghub::before, .ghub-title, .ghub-head::after { animation:none; }
+  .ghub, .ghub::before, .ghub-title, .ghub-head::after,
+  .ghub-portal .ghp-glyph, .ghub-portal .ghp-glyph::before, .ghub-portal .ghp-glyph::after { animation:none; }
   .ghub { opacity:1; transform:none; }
 }
 @media (max-width:600px){ .ghub-head::after { width:140px; } }

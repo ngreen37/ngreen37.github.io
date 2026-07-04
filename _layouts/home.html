@@ -64,7 +64,7 @@ layout: default
 (function () {
   var GW = {
     'notation-run':{n:'Notation Blitz',a:'#F5C518'}, 'fork-in-the-road':{n:'Fork in the Road',a:'#5be0c0'},
-    'pirc-protocol':{n:'The Pirc Protocol',a:'#caa24a'}, 'shogi-island':{n:'Shogi Island',a:'#d9a441'},
+    'pirc-protocol':{n:'The Pirc Protocol',a:'#caa24a'},
     'clearance-delta':{n:'Clearance: DELTA',a:'#ff9fb0'},
     'sky-run':{n:'Sky Run',a:'#7fc8ff'}, 'sand-mine-depths':{n:'Sand Mine Depths',a:'#e0b25a'},
     'tower-defense':{n:'Siege on Chess City',a:'#ff8fd0'}, 'dungeon':{n:'Princess Dungeon',a:'#ff8fd0'},
@@ -194,22 +194,22 @@ layout: default
 {% assign vis_loc_count = 0 %}{% for c in site.locations %}{% unless site.hidden_location_urls contains c.url %}{% assign vis_loc_count = vis_loc_count | plus: 1 %}{% endunless %}{% endfor %}
 <div class="home-stats">
   <div class="stats-inner">
-    <div class="hstat">
+    <a class="hstat" href="{{ '/blog/' | relative_url }}">
       <span class="hstat-num" data-target="{{ site.posts.size }}">0</span>
-      <span class="hstat-lbl">Posts Written</span>
-    </div>
-    <div class="hstat">
+      <span class="hstat-lbl">Posts Written <span class="hstat-go">&#8599;</span></span>
+    </a>
+    <a class="hstat" href="{{ '/characters/' | relative_url }}">
       <span class="hstat-num" data-target="{{ vis_char_count }}">0</span>
-      <span class="hstat-lbl">Characters</span>
-    </div>
-    <div class="hstat">
+      <span class="hstat-lbl">Characters <span class="hstat-go">&#8599;</span></span>
+    </a>
+    <a class="hstat" href="{{ '/locations/' | relative_url }}">
       <span class="hstat-num" data-target="{{ vis_loc_count }}">0</span>
-      <span class="hstat-lbl">Locations</span>
-    </div>
-    <div class="hstat">
-      <span class="hstat-num" data-target="9" data-count="playable">0</span>
-      <span class="hstat-lbl">Playable Games</span>
-    </div>
+      <span class="hstat-lbl">Locations <span class="hstat-go">&#8599;</span></span>
+    </a>
+    <a class="hstat" href="{{ '/games/' | relative_url }}">
+      <span class="hstat-num" data-target="8" data-count="playable">0</span>
+      <span class="hstat-lbl">Playable Games <span class="hstat-go">&#8599;</span></span>
+    </a>
   </div>
 </div>
 

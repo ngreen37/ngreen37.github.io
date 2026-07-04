@@ -201,7 +201,6 @@ body_class: theme-studio
   <li><a href="/games/notation-run/">Notation Blitz <span class="ver">v3.7</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/fork-in-the-road/">Fork in the Road <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/pirc-protocol/">The Pirc Protocol <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/shogi-island/">Shogi Island <span class="ver">v3.1</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/clearance-delta/">Clearance: DELTA <span class="ver">v1.3</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/sky-run/">Sky Run <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/sand-mine-depths/">Sand Mine Depths <span class="ver">v2.2</span></a> <span class="games-index-done">Completed</span></li>

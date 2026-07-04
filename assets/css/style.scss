@@ -1220,10 +1220,40 @@ pre code {
   padding: 0 28px;
 }
 
+/* Stat tiles are links now — lift, glow, and frame themselves on hover */
 .hstat {
+  position: relative;
+  display: block;
   text-align: center;
   min-width: 110px;
+  padding: 14px 18px 12px;
+  border-radius: 16px;
+  text-decoration: none;
+  transition: transform .2s cubic-bezier(.2,.7,.3,1), background .2s ease, box-shadow .2s ease;
 }
+/* HUD corner ticks that snap in on hover */
+.hstat::before,
+.hstat::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #F5C518;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+.hstat::before { top: 7px; left: 7px; border-right: 0; border-bottom: 0; border-top-left-radius: 4px; }
+.hstat::after  { bottom: 7px; right: 7px; border-left: 0; border-top: 0; border-bottom-right-radius: 4px; }
+.hstat:hover,
+.hstat:focus-visible {
+  transform: translateY(-6px);
+  background: radial-gradient(120% 120% at 50% 0%, rgba(245,197,24,0.10), rgba(245,197,24,0.02) 65%, transparent);
+  box-shadow: 0 16px 40px -18px rgba(245,197,24,0.55), inset 0 0 0 1px rgba(245,197,24,0.22);
+  outline: none;
+}
+.hstat:hover::before, .hstat:hover::after,
+.hstat:focus-visible::before, .hstat:focus-visible::after { opacity: .9; }
 
 .hstat-num {
   display: block;
@@ -1234,6 +1264,13 @@ pre code {
   line-height: 1;
   margin-bottom: 8px;
   letter-spacing: -2px;
+  transition: transform .2s cubic-bezier(.2,.7,.3,1), text-shadow .2s ease, filter .2s ease;
+}
+.hstat:hover .hstat-num,
+.hstat:focus-visible .hstat-num {
+  transform: scale(1.14);
+  text-shadow: 0 0 30px rgba(245,197,24,0.85), 0 0 8px rgba(245,197,24,0.55);
+  filter: brightness(1.08);
 }
 
 .hstat-lbl {
@@ -1243,6 +1280,28 @@ pre code {
   text-transform: uppercase;
   letter-spacing: 2px;
   color: #6b5a8e;
+  transition: color .2s ease, letter-spacing .2s ease;
+}
+.hstat:hover .hstat-lbl,
+.hstat:focus-visible .hstat-lbl {
+  color: #F5C518;
+  letter-spacing: 3.5px;
+}
+/* the label sprouts a little arrow on hover */
+.hstat-go {
+  display: inline-block;
+  margin-left: 4px;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity .2s ease, transform .2s ease;
+}
+.hstat:hover .hstat-go,
+.hstat:focus-visible .hstat-go { opacity: 1; transform: translateX(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hstat, .hstat-num { transition: none; }
+  .hstat:hover, .hstat:focus-visible,
+  .hstat:hover .hstat-num, .hstat:focus-visible .hstat-num { transform: none; }
 }
 
 /* --- Responsive --- */
