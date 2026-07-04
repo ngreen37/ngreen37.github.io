@@ -59,7 +59,7 @@ body_class: theme-bw
       <div class="cc-top">
         <span class="cc-avatar">♝</span>
         <div class="cc-id">
-          <a class="cc-name" href="/characters/kaede/">Kaede <span class="cc-kanji">楓</span></a>
+          <span class="cc-name">Kaede <span class="cc-kanji">楓</span></span>
           <span class="cc-spec">Shogi &amp; Japanese · All ages</span>
           <span class="cc-rate"><span class="cc-stars"><span class="cc-stars-on" style="width:100%">★★★★★</span>★★★★★</span> <b>5.0</b> <span class="cc-count">(52)</span></span>
         </div>
@@ -79,7 +79,7 @@ body_class: theme-bw
       <div class="cc-top">
         <span class="cc-avatar">♝</span>
         <div class="cc-id">
-          <a class="cc-name" href="/characters/matsu/">Matsu <span class="cc-kanji">松</span></a>
+          <span class="cc-name">Matsu <span class="cc-kanji">松</span></span>
           <span class="cc-spec">Advanced Shogi · Learn by playing</span>
           <span class="cc-rate"><span class="cc-stars"><span class="cc-stars-on" style="width:96%">★★★★★</span>★★★★★</span> <b>4.8</b> <span class="cc-count">(19)</span></span>
         </div>

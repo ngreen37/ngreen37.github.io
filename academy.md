@@ -84,7 +84,7 @@ permalink: /academy/
 
 <!-- ===== Classroom mode ===== -->
 <h2 class="ac-h2">🏫 Classroom Mode</h2>
-<p class="ac-class-intro">For parents and teachers at <a href="{{ '/locations/chess-city-elementary/' | relative_url }}">Chess City Elementary</a> — print a worksheet, hand it out, and track the class. Put the student's name on their certificate and worksheet below.</p>
+<p class="ac-class-intro">For parents and teachers at Chess City Elementary — print a worksheet, hand it out, and track the class. Put the student's name on their certificate and worksheet below.</p>
 <div class="ac-class-row">
   <label class="ac-name-field">Student name
     <input type="text" id="ac-student" placeholder="e.g. Princess" maxlength="40" autocomplete="off">
