@@ -1221,31 +1221,25 @@ pre code {
   margin: 4px -28px 0;
   padding-bottom: 14px;
   border-top: 1px solid rgba(124, 77, 255, 0.42);
-  border-bottom: 1px solid rgba(84, 168, 148, 0.30);
   background:
     /* droplets at the ends of a few runs */
-    radial-gradient(circle at 9% 172px, rgba(245,197,24,0.72) 0 3px, transparent 4.5px),
-    radial-gradient(circle at 33% 206px, rgba(245,197,24,0.62) 0 3.5px, transparent 5px),
-    radial-gradient(circle at 69% 226px, rgba(176,142,255,0.72) 0 3.5px, transparent 5px),
-    radial-gradient(circle at 91% 178px, rgba(176,142,255,0.6) 0 3px, transparent 4.5px),
-    /* paint drips running down from the top edge */
-    linear-gradient(180deg, rgba(245,197,24,0.72), transparent 56%) 9% 0 / 3px 172px no-repeat,
-    linear-gradient(180deg, rgba(176,142,255,0.66), transparent 52%) 21% 0 / 2px 128px no-repeat,
-    linear-gradient(180deg, rgba(245,197,24,0.58), transparent 50%) 33% 0 / 4px 206px no-repeat,
-    linear-gradient(180deg, rgba(176,142,255,0.6), transparent 46%) 47% 0 / 2px 96px no-repeat,
-    linear-gradient(180deg, rgba(245,197,24,0.64), transparent 54%) 58% 0 / 3px 150px no-repeat,
-    linear-gradient(180deg, rgba(176,142,255,0.72), transparent 58%) 69% 0 / 3px 226px no-repeat,
-    linear-gradient(180deg, rgba(245,197,24,0.52), transparent 44%) 80% 0 / 2px 112px no-repeat,
-    linear-gradient(180deg, rgba(176,142,255,0.56), transparent 50%) 91% 0 / 3px 178px no-repeat,
+    radial-gradient(circle at 9% 172px, rgba(245,197,24,0.72) 0 5px, transparent 7px),
+    radial-gradient(circle at 33% 206px, rgba(245,197,24,0.62) 0 6px, transparent 8.5px),
+    radial-gradient(circle at 69% 226px, rgba(176,142,255,0.72) 0 6px, transparent 8.5px),
+    radial-gradient(circle at 91% 178px, rgba(176,142,255,0.6) 0 5px, transparent 7px),
+    /* wide paint drips running down from the top edge */
+    linear-gradient(180deg, rgba(245,197,24,0.72), transparent 56%) 9% 0 / 7px 172px no-repeat,
+    linear-gradient(180deg, rgba(176,142,255,0.66), transparent 52%) 21% 0 / 5px 128px no-repeat,
+    linear-gradient(180deg, rgba(245,197,24,0.58), transparent 50%) 33% 0 / 9px 206px no-repeat,
+    linear-gradient(180deg, rgba(176,142,255,0.6), transparent 46%) 47% 0 / 5px 96px no-repeat,
+    linear-gradient(180deg, rgba(245,197,24,0.64), transparent 54%) 58% 0 / 7px 150px no-repeat,
+    linear-gradient(180deg, rgba(176,142,255,0.72), transparent 58%) 69% 0 / 8px 226px no-repeat,
+    linear-gradient(180deg, rgba(245,197,24,0.52), transparent 44%) 80% 0 / 5px 112px no-repeat,
+    linear-gradient(180deg, rgba(176,142,255,0.56), transparent 50%) 91% 0 / 7px 178px no-repeat,
     /* fresh purple/gold wash spilling from the top */
     radial-gradient(140% 60% at 50% 0%, rgba(124,77,255,0.28), transparent 60%),
     linear-gradient(180deg, rgba(245,197,24,0.10), transparent 22%),
-    /* weathered verdigris "old paint" pooling up from the foot */
-    radial-gradient(72% 58% at 12% 100%, rgba(96,190,166,0.26), transparent 68%),
-    radial-gradient(80% 60% at 85% 100%, rgba(96,190,166,0.22), transparent 70%),
-    radial-gradient(60% 48% at 50% 100%, rgba(110,205,180,0.2), transparent 66%),
-    radial-gradient(140% 66% at 50% 100%, rgba(84,168,148,0.17), transparent 74%),
-    /* base surface: purple-black up top, aging to verdigris-black at the foot */
+    /* base surface: purple-black up top, a faint aged foot at the bottom */
     linear-gradient(180deg, #0a0714 0%, #0b0a16 46%, #0c1210 100%);
 }
 
@@ -7543,7 +7537,7 @@ body.theme-classified {
 .share-tx-flash.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 /* 25 — Mission countdown on home */
-.home-mission-countdown { text-align: center; margin-top: 12px; padding: 12px 0 4px; border-top: 1px solid rgba(126, 201, 183, 0.14); }
+.home-mission-countdown { text-align: center; margin-top: 12px; padding: 12px 0 4px; }
 .home-mc-label { font-family: 'Share Tech Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: rgba(126, 201, 183, 0.8); text-transform: uppercase; margin-bottom: 5px; }
 .home-mc-display { font-family: 'Share Tech Mono', monospace; font-size: clamp(16px, 2.5vw, 24px); color: #9fe0d0; letter-spacing: 0.1em; }
 .home-mc-target { font-family: 'Share Tech Mono', monospace; font-size: 10px; font-weight: 700; color: rgba(126, 201, 183, 0.55); letter-spacing: 0.14em; margin-top: 4px; }
