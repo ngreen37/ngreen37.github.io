@@ -25,7 +25,6 @@
       { t: 'Daily Dispatch',   s: "Today's mission & fragment",           u: '/daily/',              ic: '◈', b: 'pjcc', k: 'daily dispatch mission streak fragment today' },
       { t: 'Your Dossier',     s: 'Your profile & operative',             u: '/dossier/',            ic: '⬡', b: 'pjcc', k: 'dossier profile account sign in login operative identity forge' },
       { t: 'Leaderboards',     s: 'Hall of Fame',                         u: '/leaderboards/',       ic: '🏆', b: 'pjcc', k: 'leaderboards hall of fame scores rank high' },
-      { t: 'The Reading Room', s: 'Learn Japanese kana & kanji',          u: '/games/reading-room/', ic: '🦊', b: 'pjcc', k: 'reading room japanese kana kanji kaede srs anki' },
       { t: 'Fan Art',          s: 'The fan wall + make your own card',    u: '/fan-art/',            ic: '🎨', b: 'pjcc', k: 'fan art wall community printable card make submit gallery thank you' },
       { t: 'The Gambit',       s: 'Sacrifice your best — coming soon',    u: '/games/the-gambit/',   ic: '🎲', b: 'pjcc', k: 'gambit sacrifice offering altar wager risk reward credits collectables coming soon' },
       { t: 'Merch',            s: 'Goal cards & stationery — someday, post-flare', u: '/goods/',             ic: '🃏', b: 'mcpuppy', k: 'goods goal cards stationery merch follow the dog mindset coming soon physical' },

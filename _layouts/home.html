@@ -65,7 +65,7 @@ layout: default
   var GW = {
     'notation-run':{n:'Notation Blitz',a:'#F5C518'}, 'fork-in-the-road':{n:'Fork in the Road',a:'#5be0c0'},
     'pirc-protocol':{n:'The Pirc Protocol',a:'#caa24a'}, 'shogi-island':{n:'Shogi Island',a:'#d9a441'},
-    'clearance-delta':{n:'Clearance: DELTA',a:'#ff9fb0'}, 'reading-room':{n:'The Reading Room',a:'#ff6b6b'},
+    'clearance-delta':{n:'Clearance: DELTA',a:'#ff9fb0'},
     'sky-run':{n:'Sky Run',a:'#7fc8ff'}, 'sand-mine-depths':{n:'Sand Mine Depths',a:'#e0b25a'},
     'tower-defense':{n:'Siege on Chess City',a:'#ff8fd0'}, 'dungeon':{n:'Princess Dungeon',a:'#ff8fd0'},
     'zoomies':{n:"Crockett's Zoomies",a:'#ffb454'}, 'murphys-law':{n:"Murphy's Law",a:'#3cbcfc'},
@@ -110,9 +110,8 @@ layout: default
       <span class="ticker-item">SHOGI ISLAND FERRY DELAYED FOR THIRD CONSECUTIVE WEEK — NO DEPARTURE DATE ANNOUNCED — 将棋の島 : フェリー3週連続遅延中 / 出発日未定</span>
       <span class="ticker-item ticker-item--promo">◆ NEW — HIDDEN PORTALS: SOME DOORS YOU OPEN BY SOLVING, NOT CLICKING. LISTEN FOR THE OCTAVE.</span>
       <span class="ticker-item">INTERPLANETARY CONSTRUCTION CO. DENIES ALL VESSEL WRECKAGE CLAIMS — INVESTIGATION CONTINUES</span>
-      <span class="ticker-item ticker-item--promo">◆ THE ARCADE: 16 PLAYABLE GAMES — CLAIM A CODENAME, CLIMB THE GLOBAL BOARDS → /GAMES/</span>
+      <span class="ticker-item ticker-item--promo">◆ THE ARCADE: CLAIM A CODENAME &amp; CLIMB THE GLOBAL BOARDS → /GAMES/</span>
       <span class="ticker-item">CHESS CITY LEAFS ADVANCE TO FINALS — ROSTER ANNOUNCEMENT EXPECTED SHORTLY</span>
-      <span class="ticker-item ticker-item--promo">◆ THE READING ROOM: LEARN JAPANESE KANA &amp; KANJI WITH KAEDE → /GAMES/READING-ROOM/</span>
       <span class="ticker-item">WEATHER ADVISORY: THE SEA IS ROUGH — ALL CROSSINGS POSTPONED INDEFINITELY</span>
       <span class="ticker-item ticker-item--promo">◆ THE ACADEMY: A FREE, GAMIFIED CHESS CURRICULUM — EARN YOUR BELTS → /ACADEMY/</span>
       <span class="ticker-item">CHECKER PIECE PRICES REACH RECORD HIGH — ECONOMISTS CITE THE CRASH AS ORIGIN POINT</span>
@@ -208,7 +207,7 @@ layout: default
       <span class="hstat-lbl">Locations</span>
     </div>
     <div class="hstat">
-      <span class="hstat-num" data-target="13">0</span>
+      <span class="hstat-num" data-target="9" data-count="playable">0</span>
       <span class="hstat-lbl">Playable Games</span>
     </div>
   </div>
@@ -226,7 +225,21 @@ layout: default
   </div>
 </div>
 
+<script src="{{ '/assets/js/pjcc-games-data.js' | relative_url }}"></script>
 <script>
+// Playable Games stat — computed from the registry so it never goes stale.
+// "Playable" = finished, openly-playable games (Learn + Arcade + Shogi Isle);
+// excludes In-Development, the locked Vault, Terminated, and Coming-Soon.
+(function () {
+  var el = document.querySelector('.hstat-num[data-count="playable"]');
+  if (el && window.PJCC_GAMES) {
+    var n = window.PJCC_GAMES.filter(function (g) {
+      return !g.hidden && !g.soon && g.playable !== false &&
+        (g.cat === 'learn' || g.cat === 'arcade' || g.cat === 'isle');
+    }).length;
+    el.setAttribute('data-target', String(n));
+  }
+})();
 // Arc strip drag scroll
 (function() {
   var strip = document.getElementById('arc-strip');
