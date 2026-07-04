@@ -111,8 +111,7 @@ permalink: /dossier/
       { t:'Reach 300+ in The Pirc Protocol', go:'pirc-protocol', ok:function(){ return best('pirc-protocol')>=300; } },
       { t:'Hold the gate in Siege on Chess City', go:'tower-defense', ok:function(){ return best('tower-defense')>=1; } },
       { t:'Complete a Knight’s Tour', go:'knights-tour', ok:function(){ return best('knights-tour')>=1; } },
-      { t:'Descend past 100m in Sand Mine Depths', go:'sand-mine-depths', ok:function(){ return best('sand-mine-depths')>=100; } },
-      { t:'Learn 5 kana in The Reading Room', go:'reading-room', ok:function(){ return best('reading-room')>=50; } }
+      { t:'Descend past 100m in Sand Mine Depths', go:'sand-mine-depths', ok:function(){ return best('sand-mine-depths')>=100; } }
     ];
     function seed(s){ var h=2166136261; for(var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
     var d=new Date(), ds=d.getUTCFullYear()+'-'+(d.getUTCMonth()+1)+'-'+d.getUTCDate();
