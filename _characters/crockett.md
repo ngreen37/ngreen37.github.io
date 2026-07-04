@@ -12,7 +12,7 @@ dossier_secret: Aloof, to the point we can not confirm all details below.
 last_seen: UNKNOWN
 ---
 
-Crockett is a small white dog with black spots who has been there since main character was a small child. He has tried, repeatedly, to learn chess with the others, and with great enthusiasm, but even the basics escape his grasp. He keeps showing up, though. 
+Crockett is a small white dog with black spots who has been there since main character was a small child. He has tried, repeatedly, to learn chess with the others, and with great enthusiasm, but even the basics escape his grasp. However, he loves his crew and is always around. 
 
 ## Traits
 - A small white dog with black spots -- easy to spot, impossible to ignore

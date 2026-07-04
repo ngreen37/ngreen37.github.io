@@ -7,9 +7,9 @@ image: /assets/images/Princess_Color_v01.jpg
 permalink: /characters/princess/
 order: 1
 piece: ♞
-chapters: 0,1,2,3,4,5,6,7
+chapters: 0,1
 dossier_clearance: DELTA
-dossier_secret: "Arrived via same vessel as Subject Zero. Connection to crash: unconfirmed."
+dossier_secret: Found near disaster site that formed Checker Town. Connection to crash: "unconfirmed."
 last_seen: CHECKER TOWN
 ---
 
@@ -20,10 +20,9 @@ Princess is the heart of the story -- a dog who can learn *anything*. Chess is s
 - A quick study at the board: natural instincts, sharper every game
 - Loyal, obedient, and endlessly curious
 - A people-dog: thrives on attention, affection, and treats
-- Known to "nudge" anyone who dares stop petting her
 
 ## Background
-At six years old, Princess is half Australian Cattle Dog, half Pit Bull. She lives with the main character in Checker Town and accompanies him on every adventure -- from the local bank (where she is, without question, the Star of the Show) to the long road toward Chess City.
+She lives with the main character in Checker Town and accompanies him on every adventure -- from the local bank (where she is, without question, the Star of the Show) to the long road toward Chess City.
 
 ## Role in the Story
 Princess is the reason everything happens. The journey to Chess City begins because of her, and it is her loyalty and curiosity that keep the story moving forward even when the odds are stacked against the both of them. And she never stops growing -- every game, every lesson, every new skill carries her another square forward.
