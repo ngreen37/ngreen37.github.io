@@ -313,16 +313,18 @@ function updateGroups(){
     // Passed when all segs past camera
     const maxZ=Math.max(...grp.segs.map(s=>s.zStart));
     if(maxZ<-30)grp.passed=true;
-    // Miss check: first seg scrolled past player without being scored
-    const firstSeg=grp.segs[grp.segs.length-1]; // last in array = nearest (smallest z)
-    if(firstSeg&&firstSeg.zEnd<g.player.z-20&&!grp.scored&&!grp.passed){
+    // Miss check — fair-but-strict. A track only counts as missed once its FARTHEST
+    // segment has fully scrolled behind the player (so it's no longer catchable) AND
+    // you never rode it. That means you're never docked while on a track, and never on
+    // the frame it spawns (long pieces used to spawn with their near end already behind
+    // the camera and wrongly registered an instant miss). Each miss costs one heart, once.
+    const farSeg=grp.segs[0]; // first in array = farthest (largest z) — the last catchable point
+    if(farSeg&&farSeg.zStart<g.player.z-20&&!grp.scored&&!grp.landedOn&&!grp.passed){
       grp.scored=true;
-      if(!grp.landedOn){
-        g.hp=Math.max(0,g.hp-1);g.flash=18;
-        const sc=projectAt(LANE_X[grp.segs[0].lane],g.player.z,60);
-        addText('MISS',sc.x,sc.y,'#ff4444',40);
-        if(g.hp<=0){g.dead=true;if(g.dist>best){best=g.dist;saveBest(best);}setTimeout(showOverlay,700);}
-      }
+      g.hp=Math.max(0,g.hp-1);g.flash=18;
+      const sc=projectAt(LANE_X[grp.segs[grp.segs.length-1].lane],g.player.z,60);
+      addText('MISS',sc.x,sc.y,'#ff4444',40);
+      if(g.hp<=0){g.dead=true;if(g.dist>best){best=g.dist;saveBest(best);}setTimeout(showOverlay,700);}
     }
   });
   g.groups=g.groups.filter(grp=>!grp.passed);
