@@ -149,21 +149,6 @@ body_class: theme-studio
     </div>
   </div>
 
-  <div class="project-card project-card-active">
-    <div class="project-card-corner-piece" aria-hidden="true">♚</div>
-    <div class="project-card-header">
-      <span class="project-status project-status-active">
-        <span class="project-status-dot"></span>
-        In Development
-      </span>
-      <h2 class="project-title">The Reading Room</h2>
-    </div>
-    <p class="project-desc">Coming Soon.</p>
-    <div class="project-links">
-      <a href="/games/reading-room/" class="project-link">Visit The Reading Room &rarr;</a>
-    </div>
-  </div>
-
   <div class="project-card project-card-soon">
     <div class="project-card-corner-piece" aria-hidden="true">♝</div>
     <div class="project-card-header">
@@ -225,7 +210,6 @@ body_class: theme-studio
   <li><a href="/games/murphys-law/">Murphy's Law</a> <span class="games-index-note">— in development</span></li>
   <li><a href="/games/blindfold-puzzles/">Blindfold Puzzles <span class="ver">v2.2</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/knights-tour/">Knight's Tour <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/reading-room/">The Reading Room</a> <span class="games-index-note">— in development</span></li>
   <li><a href="/games/battle-room/">The Battle Room</a> <span class="games-index-note">— in development</span></li>
   <li><a href="/games/follow-the-dog/">Follow the Dog</a> <span class="games-index-note">— in development</span></li>
   <li><a href="/games/chess-city/">Chess City</a> <span class="games-index-note">— in development</span></li>
