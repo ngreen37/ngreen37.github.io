@@ -166,7 +166,7 @@ layout: default
        random four and lets you reshuffle without a reload. {% endcomment %}
   <div class="char-row" id="home-char-row" data-show="4">
     {% for char in site.characters %}
-    {% unless char.tier == "ancillary" %}
+    {% unless char.tier == "ancillary" or site.hidden_character_urls contains char.url %}
     <a class="char-chip" href="{{ char.url | relative_url }}">
       <span class="char-chip-icon">&#9823;</span>
       <span class="char-chip-name">{{ char.title }}</span>
@@ -190,6 +190,9 @@ layout: default
      things to be DECODED by users as they play, not laid out here. See FUTURE-IDEAS. {% endcomment %}
 
 {% comment %} ── 6. STATS BAR ─────────────────────────────────────── {% endcomment %}
+{% comment %} Counts exclude the slow-rolled (hidden) cast/locations set in _config.yml. {% endcomment %}
+{% assign vis_char_count = 0 %}{% for c in site.characters %}{% unless site.hidden_character_urls contains c.url %}{% assign vis_char_count = vis_char_count | plus: 1 %}{% endunless %}{% endfor %}
+{% assign vis_loc_count = 0 %}{% for c in site.locations %}{% unless site.hidden_location_urls contains c.url %}{% assign vis_loc_count = vis_loc_count | plus: 1 %}{% endunless %}{% endfor %}
 <div class="home-stats">
   <div class="stats-inner">
     <div class="hstat">
@@ -197,11 +200,11 @@ layout: default
       <span class="hstat-lbl">Posts Written</span>
     </div>
     <div class="hstat">
-      <span class="hstat-num" data-target="{{ site.characters.size }}">0</span>
+      <span class="hstat-num" data-target="{{ vis_char_count }}">0</span>
       <span class="hstat-lbl">Characters</span>
     </div>
     <div class="hstat">
-      <span class="hstat-num" data-target="{{ site.locations.size }}">0</span>
+      <span class="hstat-num" data-target="{{ vis_loc_count }}">0</span>
       <span class="hstat-lbl">Locations</span>
     </div>
     <div class="hstat">

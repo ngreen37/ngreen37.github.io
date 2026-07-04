@@ -222,7 +222,7 @@ body_class: theme-studio
   <li><a href="/games/sand-mine-depths/">Sand Mine Depths <span class="ver">v2.2</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/tower-defense/">Siege on Chess City <span class="ver">v2.1</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/dungeon/">Princess Dungeon</a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/murphys-law/">Murphy's Law</a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/murphys-law/">Murphy's Law</a> <span class="games-index-note">— in development</span></li>
   <li><a href="/games/blindfold-puzzles/">Blindfold Puzzles <span class="ver">v2.2</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/knights-tour/">Knight's Tour <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/reading-room/">The Reading Room</a> <span class="games-index-note">— in development</span></li>

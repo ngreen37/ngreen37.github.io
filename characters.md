@@ -13,7 +13,7 @@ permalink: /characters/
   <div class="char-flip-grid" id="char-flip-grid">
     {% assign sorted_chars = site.characters | sort: "order" %}
     {% for char in sorted_chars %}
-    {% unless char.tier == "ancillary" %}
+    {% unless char.tier == "ancillary" or site.hidden_character_urls contains char.url %}
     <div class="char-flip-card">
       <div class="char-flip-inner">
 
@@ -37,12 +37,14 @@ permalink: /characters/
   </div>
 
   {% assign ancillary_chars = site.characters | where: "tier", "ancillary" | sort: "order" %}
-  {% if ancillary_chars.size > 0 %}
+  {% assign ancillary_visible = 0 %}{% for c in ancillary_chars %}{% unless site.hidden_character_urls contains c.url %}{% assign ancillary_visible = ancillary_visible | plus: 1 %}{% endunless %}{% endfor %}
+  {% if ancillary_visible > 0 %}
   <h2 class="char-ancillary-head">Ancillary Characters</h2>
   <p class="char-flip-sub char-ancillary-sub">The supporting cast that amplifies the story without driving it —
   the booth that calls the matches, the prodigal brothers, and the faces at the edges of the board.</p>
   <div class="char-flip-grid" id="char-ancillary-grid">
     {% for char in ancillary_chars %}
+    {% unless site.hidden_character_urls contains char.url %}
     <div class="char-flip-card">
       <div class="char-flip-inner">
 
@@ -61,6 +63,7 @@ permalink: /characters/
 
       </div>
     </div>
+    {% endunless %}
     {% endfor %}
   </div>
   {% endif %}

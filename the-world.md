@@ -20,7 +20,7 @@ permalink: /the-world/
   <a class="world-pillar" href="{{ '/locations/' | relative_url }}" style="--c:#6bbfff" data-warp>
     <span class="wp-glyph">🗺️</span>
     <span class="wp-name">Locations</span>
-    <span class="wp-tag">The map — Checker Town to Chess City, the Sea, the Sand Mines, Shogi Island.</span>
+    <span class="wp-tag">The map — Checker Town to Chess City, the Sand Mines, Shogi Island.</span>
     <span class="wp-go">Explore the map →</span>
   </a>
 </div>

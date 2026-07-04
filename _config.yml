@@ -15,6 +15,23 @@ permalink: /:year/:month/:day/:title/
 patreon_url: "https://patreon.com/mcpuppystudios"   # live
 kofi_url:    ""   # optional one-off tip jar, e.g. "https://ko-fi.com/mcpuppystudios"
 
+# ── Slow-roll: characters/locations kept built but hidden from user-facing ────────
+# The files stay intact (everything we've built is preserved); these are just left
+# OFF the cast grid, the locations map, and the homepage counters until we reveal
+# them. To bring one back, delete its line here. (Cross-references from other pages
+# are handled separately.)
+hidden_character_urls:
+  - /characters/robert/
+  - /characters/prodigal-brothers/
+  - /characters/commentators/
+  - /characters/kaede/
+  - /characters/matsu/
+  - /characters/murphy/
+hidden_location_urls:
+  - /locations/the-sea/
+  - /locations/mystery-city/
+  - /locations/chess-city-elementary/
+
 # Navigation
 header_pages:
   - index.md

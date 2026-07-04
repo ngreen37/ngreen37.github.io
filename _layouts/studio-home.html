@@ -104,7 +104,7 @@
         <a href="{{ '/pjcc/' | relative_url }}" class="studio-quad studio-quad--pjcc" data-enter="PJCC — the world · the cast, the story, the journey">
           <span class="studio-quad-title" data-jp="PJCC">PJCC</span>
           <span class="studio-quad-sub" data-jp="プリンセスとチェスシティへの旅">Princess &amp; the Journey<br>to Chess City</span>
-          <span class="studio-quad-peek">{{ site.characters | size }} characters · {{ site.locations | size }} locations</span>
+          {% assign vis_char_count = 0 %}{% for c in site.characters %}{% unless site.hidden_character_urls contains c.url %}{% assign vis_char_count = vis_char_count | plus: 1 %}{% endunless %}{% endfor %}{% assign vis_loc_count = 0 %}{% for c in site.locations %}{% unless site.hidden_location_urls contains c.url %}{% assign vis_loc_count = vis_loc_count | plus: 1 %}{% endunless %}{% endfor %}<span class="studio-quad-peek">{{ vis_char_count }} characters · {{ vis_loc_count }} locations</span>
         </a>
 
         <a href="{{ '/projects/' | relative_url }}" class="studio-quad studio-quad--mcpuppy" data-enter="McPuppy Studios — the studio · the build, made in the open">

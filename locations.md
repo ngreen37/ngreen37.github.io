@@ -27,36 +27,14 @@ permalink: /locations/
       <span class="loc-desc">A nearby island where almost no one plays chess. Shogi rules here, and everyone speaks Japanese.</span>
       <span class="loc-go">Enter ▸</span>
     </a>
-    <a class="loc-card" href="{{ '/locations/mystery-city/' | relative_url }}">
-      <span class="loc-glyph">？</span>
-      <span class="loc-name">??? &nbsp;(Unknown City)</span>
-      <span class="loc-desc">Spoken of only in rumors. Said to be the Capital of Chess — and the source of the checker pieces that built Checker Town.</span>
-      <span class="loc-go">Enter ▸</span>
-    </a>
   </div>
 
   <h2 class="loc-group">◗ Workplaces</h2>
   <div class="loc-grid">
-    <a class="loc-card" href="{{ '/locations/chess-city-elementary/' | relative_url }}">
-      <span class="loc-glyph">✎</span>
-      <span class="loc-name">Chess City Elementary</span>
-      <span class="loc-desc">A school inside Chess City where the narrator works as a janitor and eventually teaches chess — getting Tagged at the security checkpoint every single shift.</span>
-      <span class="loc-go">Enter ▸</span>
-    </a>
     <a class="loc-card" href="{{ '/locations/sand-mines/' | relative_url }}">
       <span class="loc-glyph">⛏</span>
       <span class="loc-name">The Sand Mines</span>
       <span class="loc-desc">Hard labor on the outskirts. Worked mostly by Checker Town citizens, run by corporate interests, and very difficult to leave.</span>
-      <span class="loc-go">Enter ▸</span>
-    </a>
-  </div>
-
-  <h2 class="loc-group">◗ Other</h2>
-  <div class="loc-grid">
-    <a class="loc-card" href="{{ '/locations/the-sea/' | relative_url }}">
-      <span class="loc-glyph">🌊</span>
-      <span class="loc-name">The Sea</span>
-      <span class="loc-desc">Separates Checker Town from Chess City. Features a Chess Stadium.</span>
       <span class="loc-go">Enter ▸</span>
     </a>
   </div>
