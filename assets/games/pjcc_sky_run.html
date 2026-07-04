@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Sky Run v1.0</title>
+<title>PJCC: Sky Run v2.0</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -24,6 +24,10 @@
     padding: 12px 16px; font-size: 14px; min-width: 96px; text-align: center; }
   #summon-btn.empty { filter: grayscale(0.7) brightness(0.7); }
   #summon-btn small { display: block; font-size: 9px; letter-spacing: 1px; opacity: 0.8; }
+  #focus-btn { bottom: 12px; left: 12px; background: linear-gradient(180deg,#9fe8ff,#3a7fb0); color: #04121a;
+    padding: 12px 16px; font-size: 13px; min-width: 84px; text-align: center; touch-action: none; }
+  #focus-btn small { display: block; font-size: 9px; letter-spacing: 1px; opacity: 0.8; }
+  #focus-btn.on { filter: brightness(1.2); box-shadow: 0 0 16px rgba(159,232,255,0.85); }
   .float-btn.hidden { display: none; }
 
   .overlay { position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column;
@@ -56,6 +60,7 @@
 <div id="stage">
   <canvas id="canvas" width="440" height="640"></canvas>
   <button class="float-btn hidden" id="menu-btn">☰ menu</button>
+  <button class="float-btn hidden" id="focus-btn">◎ FOCUS<small>hold</small></button>
   <button class="float-btn hidden" id="summon-btn">♚ SUMMON<small>0 pawns</small></button>
 
   <!-- MENU (home screen — cool + minimal; controls live below the game) -->
@@ -109,6 +114,15 @@ const POWER_COL   = { bishop:'#c79bff', knight:'#8fe3ff', queen:'#ff8fd0' };
 const POWER_NAME  = { bishop:'♗ X-BEAMS!', knight:'♘ ESCORTS!', queen:'♕ SUPER-SHOT!' };
 function hexToRgb(h){ const n=parseInt(h.slice(1),16); return ((n>>16)&255)+','+((n>>8)&255)+','+(n&255); }
 const PWR_DUR = { bishop:12, knight:14, queen:10 }, PWR_CAP = 22;
+
+// ---------- Princess's rise (in-run promotion: pawn → knight → bishop → rook → queen) ----------
+// She clears a region, she rises a rank, and her default fire grows with her. She reaches the
+// gleaming gate as the Queen. (A quiet nod to the show: she assumes the next square is already hers.)
+const RANK_NAME    = ['Pawn','Knight','Bishop','Rook','Queen'];
+const RANK_GLYPH   = ['♙','♘','♗','♖','♕'];
+const RANK_COL     = ['#cfe0ff','#8fe3ff','#c79bff','#ffb066','#ff8fd0'];
+const RANK_AURA    = ['#6a7aa8','#3a7fb0','#7a4fd0','#c07a2a','#ff5bb0'];
+const RANK_FIRE_CD = [0.185, 0.165, 0.150, 0.150, 0.135];
 
 const KILLS_PER_PAWN = 9, MAX_PAWNS = 8, START_HEARTS = 5;
 const BEST_KEY = 'pjcc.skyrun.best.v1', BEST_KEY_D = 'pjcc.skyrun.dailybest.v1', BEST_KEY_E = 'pjcc.skyrun.endlessbest.v1';
@@ -165,7 +179,8 @@ function newGame(mode){
     best: daily ? loadBestD() : (endless ? loadBestE() : loadBest()),
     combo: 0, mult: 1, killAcc: 0, pawns: 0,
     pwr: { bishop:0, knight:0, queen:0 }, escorts: [],
-    fireCd: 0,
+    fireCd: 0, rank: 0, focus: false, promo: null,
+    dog: { x: W/2-40, y: H-70, mode:'follow', target:null, carry:null, biteCd:0, fetchCd:1, bark:0, t:0 },
     region: 1, regionIdx: 0, waveIdx: 0, wavesInRegion: 5,
     toSpawn: [], boss: null, phase: 'play',  // play | interstitial | done
     interT: 0, nextRegion: 1,
@@ -209,11 +224,15 @@ function startWave(){
   G.waveIdx++;
   G.banner = 'WAVE ' + G.waveIdx + ' / ' + G.wavesInRegion; G.bannerT = 1.5;
 }
+// Each region's King fights differently; the CEO fights in phases. Every boss
+// periodically drops its guard — a telegraphed WEAK-POINT window that rewards focus fire.
+const BOSS_KIND = ['aim','sweep','burst','royal','ceo'];
 function startBoss(){
   if (G.boss) return;
   const r = curRegion();
   const hp = Math.round((200 + G.region*130) * (1+(G.loop-1)*0.5));
   G.boss = { x: W/2, y: -40, ty: 96, hp: hp, maxhp: hp, t: 0, fireCd: 1.4, addCd: 5, dir: 1, entering: true,
+    kind: BOSS_KIND[(G.region-1) % BOSS_KIND.length], phase: 1, vuln: 0, vulnCd: 6,
     name: r.secret ? 'THE CEO' : r.name + ' King' };
   G.banner = '⚠ ' + G.boss.name.toUpperCase(); G.bannerT = 2.0; sfx('boss');
 }
@@ -228,20 +247,42 @@ function spawnEnemy(type, x){
 }
 
 // ---------- firing ----------
-function shoot(x,y,vx,vy,sup,opt){ opt=opt||{}; G.bullets.push({ x, y, vx, vy, r:(opt.r||(sup?7:4)), dmg:(sup?3:1)+(opt.dmg||0), pierce:sup?2:0, sup, bishop:!!opt.bishop, hit:null }); }
+function shoot(x,y,vx,vy,sup,opt){ opt=opt||{}; G.bullets.push({ x, y, vx, vy, r:(opt.r||(sup?7:4)), dmg:(sup?3:1)+(opt.dmg||0), pierce:(sup?2:0)+(opt.pierce||0), sup, bishop:!!opt.bishop, hit:null }); }
+// Default fire by rank — each piece shoots a little like it moves.
+function firePattern(){
+  const px=G.px, py=G.py;
+  switch (G.rank){
+    case 0:  // Pawn — one honest shot forward
+      shoot(px, py-18, 0, -BSPD); break;
+    case 1:  // Knight — a quick forward pair
+      shoot(px-6, py-16, 0, -BSPD); shoot(px+6, py-16, 0, -BSPD); break;
+    case 2:  // Bishop — forward, plus the two diagonals
+      shoot(px, py-18, 0, -BSPD);
+      shoot(px-6, py-12, -DIAG, -BSPD*0.96, false, { bishop:true });
+      shoot(px+6, py-12,  DIAG, -BSPD*0.96, false, { bishop:true }); break;
+    case 3:  // Rook — a heavy piercing lance down the file + two flankers
+      shoot(px, py-20, 0, -BSPD*1.05, false, { dmg:2, r:7, pierce:1 });
+      shoot(px-9, py-10, 0, -BSPD); shoot(px+9, py-10, 0, -BSPD); break;
+    default: // Queen — every line at once
+      { const S=BSPD*0.92, D=S*0.71;
+        [[0,-S],[0,S],[-S,0],[S,0],[-D,-D],[D,-D],[-D,D],[D,D]].forEach(d=>shoot(px,py-6,d[0],d[1],false,{r:6})); }
+  }
+}
 function fire(){
-  const queen = G.pwr.queen>0, bishop = G.pwr.bishop>0;
-  if (queen){
-    // Queen: fires along ALL EIGHT lines — like the piece, every direction at once, piercing.
-    const S = BSPD*0.92, D = S*0.71;
-    const dirs = [[0,-S],[0,S],[-S,0],[S,0],[-D,-D],[D,-D],[-D,D],[D,D]];
-    dirs.forEach(function(d){ shoot(G.px, G.py-6, d[0], d[1], true, { r:7 }); });
-  } else if (bishop){
-    // Bishop: X-ONLY — the straight shot is gone, but each diagonal beam hits much harder
-    shoot(G.px-7, G.py-12, -DIAG, -BSPD*0.95, false, { dmg:2, r:6, bishop:true });
-    shoot(G.px+7, G.py-12,  DIAG, -BSPD*0.95, false, { dmg:2, r:6, bishop:true });
+  if (G.pwr.queen>0){
+    // Queen power-up — the ultimate: all eight lines, piercing. Overrides rank.
+    const S=BSPD*0.98, D=S*0.71;
+    [[0,-S],[0,S],[-S,0],[S,0],[-D,-D],[D,-D],[-D,D],[D,D]].forEach(d=>shoot(G.px,G.py-6,d[0],d[1],true,{r:7}));
+  } else if (G.focus){
+    // Focus — trade the spread for one concentrated piercing beam; the higher she's risen, the harder it bites.
+    const dmg = 2 + G.rank;
+    shoot(G.px, G.py-20, 0, -BSPD*1.15, false, { dmg:dmg, r:7, pierce:2 });
   } else {
-    shoot(G.px, G.py-18, 0, -BSPD, false);
+    firePattern();
+    if (G.pwr.bishop>0){  // Bishop power — extra hard diagonals layered on the rank pattern
+      shoot(G.px-7, G.py-12, -DIAG, -BSPD*0.95, false, { dmg:2, r:6, bishop:true });
+      shoot(G.px+7, G.py-12,  DIAG, -BSPD*0.95, false, { dmg:2, r:6, bishop:true });
+    }
   }
   sfx('shoot');
 }
@@ -270,7 +311,7 @@ function summon(){
 function explodePawn(x,y){
   const R=74;
   G.enemies.forEach(e => { if (dist2(x,y,e.x,e.y) < (R+e.r)*(R+e.r)) e.hp -= 4; });
-  if (G.boss && dist2(x,y,G.boss.x,G.boss.y) < (R+34)*(R+34)) G.boss.hp -= 14;
+  if (G.boss && dist2(x,y,G.boss.x,G.boss.y) < (R+34)*(R+34)) G.boss.hp -= 14 * (G.boss.vuln>0 ? 1.8 : 1);
   burst(x,y,'#ffd36b',26); G.shake = Math.max(G.shake, 7); sfx('boom');
 }
 
@@ -297,19 +338,32 @@ function hurtPlayer(){
 }
 
 // ---------- input ----------
+const focusBtn=document.getElementById('focus-btn');
+let mouseFocus=false;
+function setFocus(v){ if(G) G.focus=v; if(focusBtn) focusBtn.classList.toggle('on', v); }
 function toCanvas(cx,cy){ const r=canvas.getBoundingClientRect(); return { x:(cx-r.left)*(W/r.width), y:(cy-r.top)*(H/r.height) }; }
 function pointerMove(e){ if(!G||!G.running) return; const p=toCanvas(e.clientX,e.clientY); G.tx=clamp(p.x,16,W-16); G.ty=clamp(p.y,60,H-24); }
-canvas.addEventListener('pointerdown', e=>{ e.preventDefault(); pointerMove(e); });
+canvas.addEventListener('pointerdown', e=>{ e.preventDefault(); pointerMove(e); if(e.pointerType==='mouse'){ mouseFocus=true; setFocus(true); } });
 canvas.addEventListener('pointermove', e=>{ e.preventDefault(); pointerMove(e); });   // hover (mouse) or drag (touch)
+window.addEventListener('pointerup', ()=>{ if(mouseFocus){ mouseFocus=false; setFocus(false); } });
+// Focus button (touch-friendly): hold to concentrate fire.
+if (focusBtn){
+  focusBtn.addEventListener('pointerdown', e=>{ e.preventDefault(); initAudio(); setFocus(true); });
+  focusBtn.addEventListener('pointerup',   e=>{ e.preventDefault(); setFocus(false); });
+  focusBtn.addEventListener('pointerleave', ()=> setFocus(false));
+  focusBtn.addEventListener('pointercancel', ()=> setFocus(false));
+}
 window.addEventListener('keydown', e=>{
   if(!G||!G.running) return;
   if(e.key===' '){ e.preventDefault(); summon(); }
+  else if(e.key==='Shift'){ setFocus(true); }
   const step=26;
   if(e.key==='ArrowLeft') G.tx=clamp(G.tx-step,16,W-16);
   else if(e.key==='ArrowRight') G.tx=clamp(G.tx+step,16,W-16);
   else if(e.key==='ArrowUp') G.ty=clamp(G.ty-step,60,H-24);
   else if(e.key==='ArrowDown') G.ty=clamp(G.ty+step,60,H-24);
 });
+window.addEventListener('keyup', e=>{ if(e.key==='Shift') setFocus(false); });
 
 // ---------- update ----------
 function update(dt){
@@ -335,13 +389,14 @@ function update(dt){
     return;
   }
 
-  // player follow
-  G.px += (G.tx-G.px)*Math.min(1, dt*14);
-  G.py += (G.ty-G.py)*Math.min(1, dt*14);
+  // player follow — focus eases her in slower, for precision
+  const followLerp = G.focus ? 8 : 14;
+  G.px += (G.tx-G.px)*Math.min(1, dt*followLerp);
+  G.py += (G.ty-G.py)*Math.min(1, dt*followLerp);
 
-  // fire
+  // fire — cadence grows as she rises
   G.fireCd -= dt;
-  if (G.fireCd<=0){ fire(); G.fireCd = FIRE_CD; }
+  if (G.fireCd<=0){ fire(); G.fireCd = RANK_FIRE_CD[G.rank]; }
   // power timers
   for (const k in G.pwr){ if (G.pwr[k]>0) G.pwr[k]=Math.max(0,G.pwr[k]-dt); }
   // escorts (knight)
@@ -362,6 +417,7 @@ function update(dt){
   updateEBullets(dt);
   updatePawns(dt);
   updateTokens(dt);
+  updateDog(dt);
   updateParts(dt);
   updateRings(dt);
   for (let i=G.floaters.length-1;i>=0;i--){ const f=G.floaters[i]; f.y-=24*dt; f.life-=dt; if(f.life<=0) G.floaters.splice(i,1); }
@@ -390,15 +446,48 @@ function enemyShoot(x,y,tx,ty){ const a=Math.atan2(ty-y,tx-x); const sp=180; G.e
 
 function updateBoss(dt){
   const b=G.boss; if(!b) return; b.t+=dt;
-  if (b.entering){ b.y += 70*dt; if(b.y>=b.ty){ b.y=b.ty; b.entering=false; } }
-  else {
-    b.x += b.dir*70*dt; if(b.x<60){b.x=60;b.dir=1;} if(b.x>W-60){b.x=W-60;b.dir=-1;}
-    b.fireCd-=dt;
-    if (b.fireCd<=0){ const spread = G.region>=4?5:3; for(let k=0;k<spread;k++){ const a=Math.PI/2 + (k-(spread-1)/2)*0.32; G.ebullets.push({ x:b.x, y:b.y+30, vx:Math.cos(a)*200, vy:Math.sin(a)*200, r:6 }); } b.fireCd = Math.max(1.0, 1.8 - G.region*0.12); sfx('boss'); }
+  if (b.entering){ b.y += 70*dt; if(b.y>=b.ty){ b.y=b.ty; b.entering=false; b.vulnCd=6; } return; }
+  // weak-point rhythm — it opens up, stops firing, and takes bonus damage
+  if (b.vuln>0){ b.vuln-=dt; }
+  else { b.vulnCd-=dt; if (b.vulnCd<=0){ b.vuln=2.4; b.vulnCd=7.5; sfx('charge'); floater('WEAK POINT!', b.x, b.y-46, '#6bffb8'); } }
+  // drift (the hopper teleports instead, in bossFire)
+  if (b.kind!=='burst'){ b.x += b.dir*70*dt; if(b.x<60){b.x=60;b.dir=1;} if(b.x>W-60){b.x=W-60;b.dir=-1;} }
+  // CEO phase by health
+  if (b.kind==='ceo'){ const p=b.hp/b.maxhp; b.phase = p>0.6?1:(p>0.3?2:3); }
+  // fire (paused while the guard is down — that's your window)
+  if (b.vuln<=0){ b.fireCd-=dt; if (b.fireCd<=0) bossFire(b); }
+  // reinforcements
+  if (b.kind==='royal' || b.kind==='ceo'){
     b.addCd-=dt;
-    if (b.addCd<=0){ spawnEnemy('pawn', b.x-30); spawnEnemy('pawn', b.x+30); b.addCd = 5.5; }
+    if (b.addCd<=0){ const t = (b.kind==='ceo' && b.phase>=2) ? 'knight' : 'pawn';
+      spawnEnemy(t, b.x-30); spawnEnemy(t, b.x+30); b.addCd = b.kind==='ceo' ? 4.5 : 6; }
   }
   if (b.hp<=0){ bossDefeated(); }
+}
+// Deterministic firing (time-driven, no Math.random) so Daily stays identical for everyone.
+function bossFire(b){
+  const t=b.t, cy=b.y+28;
+  if (b.kind==='aim'){                     // Checker Town — a gentle aimed spread
+    for(let k=0;k<3;k++){ const a=Math.PI/2+(k-1)*0.34; G.ebullets.push({x:b.x,y:cy,vx:Math.cos(a)*210,vy:Math.sin(a)*210,r:6}); }
+    b.fireCd=1.5;
+  } else if (b.kind==='sweep'){            // Open Sea — a falling wall with a moving gap to weave
+    const gap = Math.floor((Math.sin(t*0.9)*0.5+0.5)*6);
+    for(let c=0;c<8;c++){ if(c===gap||c===gap+1) continue; const x=30+c*(W-60)/7; G.ebullets.push({x:x,y:cy,vx:0,vy:155,r:6}); }
+    b.fireCd=1.1;
+  } else if (b.kind==='burst'){            // Shogi Isle — hops across, then a radial burst
+    b.x = clamp(W/2 + Math.sin(t*1.3)*150, 60, W-60);
+    const n=10; for(let k=0;k<n;k++){ const a=(k/n)*Math.PI*2 + t; G.ebullets.push({x:b.x,y:b.y,vx:Math.cos(a)*160,vy:Math.sin(a)*160,r:5}); }
+    b.fireCd=1.7;
+  } else if (b.kind==='royal'){            // Chess City — a wide, fast spread (adds handled above)
+    for(let k=0;k<5;k++){ const a=Math.PI/2+(k-2)*0.26; G.ebullets.push({x:b.x,y:cy,vx:Math.cos(a)*220,vy:Math.sin(a)*220,r:6}); }
+    b.fireCd=1.2;
+  } else {                                 // THE CEO — three phases, escalating
+    if (b.phase===1){ for(let k=0;k<5;k++){ const a=Math.PI/2+(k-2)*0.28; G.ebullets.push({x:b.x,y:cy,vx:Math.cos(a)*230,vy:Math.sin(a)*230,r:6}); } b.fireCd=1.1; }
+    else if (b.phase===2){ const n=12; for(let k=0;k<n;k++){ const a=(k/n)*Math.PI*2 + t*1.5; G.ebullets.push({x:b.x,y:b.y,vx:Math.cos(a)*180,vy:Math.sin(a)*180,r:5}); } b.fireCd=1.3; }
+    else { const n=8; for(let k=0;k<n;k++){ const a=(k/n)*Math.PI*2 + t; G.ebullets.push({x:b.x,y:b.y,vx:Math.cos(a)*200,vy:Math.sin(a)*200,r:5}); }
+      const aa=Math.atan2(G.py-b.y,G.px-b.x); G.ebullets.push({x:b.x,y:b.y,vx:Math.cos(aa)*280,vy:Math.sin(aa)*280,r:7}); b.fireCd=0.9; }
+  }
+  sfx('boss');
 }
 // Two-panel story beats between regions (Avenue 1 tie — the show, in-game).
 const STORY_BEATS = {
@@ -412,10 +501,14 @@ function bossDefeated(){
   G.score += 500*G.region; floater('BOSS +'+(500*G.region), b.x, b.y, '#ffe27a');
   G.boss=null; G.ebullets.length=0;
   const last = G.region>=REGIONS.length;
+  // Princess rises a rank for every region she clears — pawn to queen by the gate.
+  G.promo = null;
+  if (!last && G.rank < 4){ G.rank++; G.promo = RANK_NAME[G.rank]; G.pflash=0.8; G.pflashCol=RANK_COL[G.rank]; sfx('power'); }
   G.beat = last ? null : STORY_BEATS[G.region];
   G.phase='interstitial'; G.interT=2.6; G.nextRegion=G.region+1;
-  G.banner = last ? (G.endless ? 'THE SEA RISES AGAIN' : 'YOU REACHED THE TOP') : 'REGION CLEARED'; G.bannerT=2.6;
-  sfx('win');
+  G.banner = last ? (G.endless ? 'THE SEA RISES AGAIN' : 'YOU REACHED THE TOP')
+                  : (G.promo ? 'RISEN — ' + G.promo.toUpperCase() : 'REGION CLEARED'); G.bannerT=2.6;
+  sfx(G.promo ? 'charge' : 'win');
 }
 function drawInterstitial(){
   const beat=G.beat; if(!beat) return;
@@ -434,6 +527,8 @@ function drawInterstitial(){
   }
   ctx.fillStyle='#ffe27a'; ctx.font='bold 22px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillText('→', W/2, cy);
+  if (G.promo){ ctx.fillStyle=RANK_COL[G.rank]; ctx.font='bold 13px Trebuchet MS';
+    ctx.fillText('Princess rises   '+RANK_GLYPH[G.rank-1]+' → '+RANK_GLYPH[G.rank], W/2, cy+ph*0.72); }
   ctx.restore();
 }
 
@@ -444,7 +539,7 @@ function updateBullets(dt){
     let gone=false;
     // boss
     if (G.boss && !G.boss.entering && dist2(b.x,b.y,G.boss.x,G.boss.y) < (34+b.r)*(34+b.r)){
-      G.boss.hp-=b.dmg; burst(b.x,b.y,'#fff',4);
+      G.boss.hp -= b.dmg * (G.boss.vuln>0 ? 1.8 : 1); burst(b.x,b.y, G.boss.vuln>0?'#6bffb8':'#fff', G.boss.vuln>0?6:4);
       if (b.pierce>0 && b.hit!==G.boss){ b.pierce--; b.hit=G.boss; } else gone=true;
     }
     if (!gone) for (let j=G.enemies.length-1;j>=0;j--){
@@ -475,19 +570,61 @@ function updatePawns(dt){
     if (dist2(p.x,p.y,p.tx,p.ty) < 16*16 || p.t>2.2){ explodePawn(p.x,p.y); G.ppawns.splice(i,1); }
   }
 }
+function applyPower(kind, x, y){
+  const col = POWER_COL[kind];
+  G.pwr[kind] = Math.min(PWR_CAP, G.pwr[kind] + PWR_DUR[kind]);
+  floater(POWER_NAME[kind], G.px, G.py-40, col, true);
+  burst(x, y, col, 24); ring(G.px, G.py, col);
+  G.pflash = 0.6; G.pflashCol = col; G.shake = Math.max(G.shake, 6);
+  sfx('power'); G.score += 25;
+}
 function updateTokens(dt){
   for (let i=G.tokens.length-1;i>=0;i--){
     const tk=G.tokens[i]; tk.t+=dt; tk.y+=tk.vy*dt;
     tk.x = tk.bx + Math.sin(tk.t*3 + tk.seed)*12;   // gentle wobble as it falls
     if (tk.y>H+16){ G.tokens.splice(i,1); continue; }
     if (dist2(tk.x,tk.y,G.px,G.py) < (18+G.pr)*(18+G.pr)){
-      const col = POWER_COL[tk.kind];
-      G.pwr[tk.kind] = Math.min(PWR_CAP, G.pwr[tk.kind] + PWR_DUR[tk.kind]);
-      floater(POWER_NAME[tk.kind], G.px, G.py-40, col, true);
-      burst(G.px, G.py, col, 24); ring(G.px, G.py, col);
-      G.pflash = 0.6; G.pflashCol = col; G.shake = Math.max(G.shake, 6);
-      sfx('power'); G.score+=25;
+      applyPower(tk.kind, G.px, G.py);
       G.tokens.splice(i,1);
+    }
+  }
+}
+// ---------- Crockett, the wing-dog (follow the dog) — fetches power-ups, chomps stragglers ----------
+function updateDog(dt){
+  const d=G.dog; if(!d) return; d.t+=dt;
+  d.biteCd-=dt; d.fetchCd-=dt; if(d.bark>0) d.bark-=dt;
+  // free & off cooldown? go fetch the nearest unclaimed token
+  if (d.mode==='follow' && d.fetchCd<=0 && G.tokens.length){
+    let best=null, bd=1e9;
+    G.tokens.forEach(tk=>{ if(tk.claimed) return; const dd=dist2(d.x,d.y,tk.x,tk.y); if(dd<bd){ bd=dd; best=tk; } });
+    if (best){ best.claimed=true; d.mode='toToken'; d.target=best; }
+  }
+  // default: follow, hovering at her flank (also the fallback if a fetch falls through)
+  let tx = G.px + (G.px<W/2 ? 40 : -40), ty = G.py+16;
+  if (d.mode==='toToken' && d.target){
+    const tk=d.target, idx=G.tokens.indexOf(tk);
+    if (idx===-1){ d.mode='follow'; d.target=null; }           // player grabbed it first
+    else { tx=tk.x; ty=tk.y;
+      if (dist2(d.x,d.y,tk.x,tk.y) < 20*20){                    // got it — carry it home
+        G.tokens.splice(idx,1); d.carry=tk.kind; d.mode='carry'; d.target=null;
+        burst(d.x,d.y,POWER_COL[tk.kind],10); d.bark=0.25; sfx('pawn');
+      }
+    }
+  } else if (d.mode==='carry'){
+    tx = G.px + (G.px<W/2 ? 34 : -34); ty = G.py+10;
+    if (dist2(d.x,d.y,tx,ty) < 22*22){                          // delivered
+      applyPower(d.carry, G.px, G.py); d.carry=null; d.mode='follow'; d.fetchCd=2.6;
+    }
+  }
+  d.x += (tx-d.x)*Math.min(1, dt*6); d.y += (ty-d.y)*Math.min(1, dt*6);
+  // chomp — a short perimeter bite on the nearest enemy
+  if (d.biteCd<=0){
+    for (let i=0;i<G.enemies.length;i++){ const e=G.enemies[i];
+      if (dist2(d.x,d.y,e.x,e.y) < (e.r+16)*(e.r+16)){
+        e.hp -= 2; burst(d.x,d.y,'#ffd36b',8); d.bark=0.22; d.biteCd=0.5; sfx('pop');
+        if (e.hp<=0){ G.enemies.splice(i,1); killEnemy(e); }
+        break;
+      }
     }
   }
 }
@@ -558,7 +695,8 @@ function render(){
   });
   // escorts
   G.escorts.forEach(es=>{ glyph(es.x,es.y,'♘',20,'#8fe3ff'); });
-  // princess
+  // Crockett (behind Princess) then Princess
+  drawDog();
   drawPrincess();
   // particles
   G.parts.forEach(p=>{ ctx.globalAlpha=Math.max(0,p.life/p.max); ctx.fillStyle=p.col; ctx.fillRect(p.x-p.sz/2,p.y-p.sz/2,p.sz,p.sz); }); ctx.globalAlpha=1;
@@ -587,11 +725,13 @@ function drawEnemy(e){
   if (e.hp<e.maxhp){ const w=e.r*1.8, pct=Math.max(0,e.hp/e.maxhp); ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(e.x-w/2,e.y-e.r-7,w,3); ctx.fillStyle='#6bffb8'; ctx.fillRect(e.x-w/2,e.y-e.r-7,w*pct,3); }
 }
 function drawBoss(b){
-  ctx.save(); ctx.shadowColor=curRegion().glow; ctx.shadowBlur=22;
+  const open = b.vuln>0;
+  ctx.save(); ctx.shadowColor = open?'#6bffb8':curRegion().glow; ctx.shadowBlur = open?30:22;
   const grd=ctx.createRadialGradient(b.x-12,b.y-12,4,b.x,b.y,40);
-  grd.addColorStop(0,'#fff'); grd.addColorStop(0.4,curRegion().glow); grd.addColorStop(1,'#3a0a18');
+  grd.addColorStop(0,'#fff'); grd.addColorStop(0.4, open?'#6bffb8':curRegion().glow); grd.addColorStop(1,'#3a0a18');
   ctx.fillStyle=grd; ctx.beginPath(); ctx.arc(b.x,b.y,36,0,7); ctx.fill(); ctx.restore();
   glyph(b.x,b.y,'♚',46,'#1a0810');
+  if (open){ ctx.fillStyle='#6bffb8'; ctx.font='bold 10px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('WEAK POINT', b.x, b.y-44); }
 }
 function heart(x,y,full){ ctx.font='16px Trebuchet MS'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillStyle=full?'#ff5b6e':'rgba(120,60,70,0.5)'; ctx.fillText(full?'♥':'♡',x,y); }
 function drawHUD(){
@@ -606,26 +746,49 @@ function drawHUD(){
   // power timers (top-right icons)
   let py=54; ['queen','bishop','knight'].forEach(k=>{ if(G.pwr[k]>0){ ctx.textAlign='right'; glyph(W-20,py,POWER_GLYPH[k],16,POWER_COL[k]);
     ctx.fillStyle=POWER_COL[k]; ctx.font='10px Trebuchet MS'; ctx.textAlign='right'; ctx.fillText(Math.ceil(G.pwr[k])+'s', W-32, py); py+=20; } });
-  // pawn pips (bottom-left)
-  ctx.textAlign='left'; ctx.font='bold 11px Trebuchet MS'; ctx.fillStyle='#ffd36b'; ctx.fillText('♚', 12, H-20);
-  for (let i=0;i<MAX_PAWNS;i++){ ctx.fillStyle = i<G.pawns ? '#ffd36b':'rgba(255,211,107,0.18)'; ctx.beginPath(); ctx.arc(30+i*15, H-20, 4.5, 0, 7); ctx.fill(); }
+  // rank badge + pawn charge — centered at the bottom, clear of the corner buttons
+  ctx.textBaseline='middle';
+  glyph(W/2-34, H-34, RANK_GLYPH[G.rank], 15, RANK_COL[G.rank]);
+  ctx.fillStyle=RANK_COL[G.rank]; ctx.font='bold 12px Trebuchet MS'; ctx.textAlign='center';
+  ctx.fillText(RANK_NAME[G.rank], W/2+4, H-34);
+  const pn=MAX_PAWNS, psx=W/2-(pn*14)/2;
+  for (let i=0;i<pn;i++){ ctx.fillStyle = i<G.pawns ? '#ffd36b':'rgba(255,211,107,0.18)'; ctx.beginPath(); ctx.arc(psx+8+i*14, H-16, 4.5, 0, 7); ctx.fill(); }
   // boss hp bar
   if (G.boss && !G.boss.entering){ const bw=W-80, pct=Math.max(0,G.boss.hp/G.boss.maxhp);
     ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(40,52,bw,8); ctx.fillStyle='#ff5b6e'; ctx.fillRect(40,52,bw*pct,8);
     ctx.strokeStyle='#ffb0bb'; ctx.lineWidth=1; ctx.strokeRect(40,52,bw,8);
     ctx.fillStyle='#ffd9df'; ctx.font='9px Trebuchet MS'; ctx.textAlign='center'; ctx.fillText(G.boss.name, W/2, 47); }
 }
+function drawDog(){
+  const d=G.dog; if(!d) return;
+  const bob=Math.sin(d.t*8)*2;
+  ctx.save();
+  ctx.shadowColor = (d.mode==='carry' && d.carry) ? POWER_COL[d.carry] : '#ffd36b';
+  ctx.shadowBlur = (d.mode==='carry') ? 16 : 8;
+  ctx.font='20px "Segoe UI Emoji","Noto Color Emoji","Segoe UI Symbol",sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('🐕', d.x, d.y+bob);
+  ctx.restore();
+  if (d.bark>0){ ctx.globalAlpha=Math.min(1,d.bark*4); glyph(d.x+11, d.y-11+bob, '!', 13, '#fff'); ctx.globalAlpha=1; }
+}
 function drawPrincess(){
   const x=G.px, y=G.py;
   if (G.inv>0 && Math.floor(G.time*16)%2===0) return; // blink when hit
+  const aura=RANK_AURA[G.rank], col=RANK_COL[G.rank];
   // thruster
   ctx.fillStyle='rgba(255,180,80,'+(0.5+0.3*Math.sin(G.time*30))+')';
   ctx.beginPath(); ctx.moveTo(x-6,y+14); ctx.lineTo(x,y+14+rnd(8,16)); ctx.lineTo(x+6,y+14); ctx.closePath(); ctx.fill();
-  // body glow + knight
-  ctx.save(); ctx.shadowColor='#c9a7ff'; ctx.shadowBlur=14;
+  // focus — a tightening ring + a visible pinpoint hitbox
+  if (G.focus){
+    ctx.strokeStyle='rgba(159,232,255,0.85)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(x,y,G.pr+8+Math.sin(G.time*10)*2,0,7); ctx.stroke();
+    ctx.fillStyle='#9fe8ff'; ctx.beginPath(); ctx.arc(x,y,3,0,7); ctx.fill();
+  }
+  // body glow + her current rank piece
+  ctx.save(); ctx.shadowColor=aura; ctx.shadowBlur=14+G.rank*2;
   ctx.fillStyle='#33196e'; ctx.beginPath(); ctx.arc(x,y,G.pr,0,7); ctx.fill();
-  ctx.strokeStyle='#ffe27a'; ctx.lineWidth=2.5; ctx.stroke(); ctx.restore();
-  glyph(x,y,'♞',22,'#f0e6ff');
+  ctx.strokeStyle=col; ctx.lineWidth=2.5; ctx.stroke(); ctx.restore();
+  glyph(x,y,RANK_GLYPH[G.rank],22,'#f0e6ff');
 }
 function drawBanner(){ const a=Math.min(1,G.bannerT/0.4)*Math.min(1,(2.6-Math.max(0,2.6-G.bannerT))); ctx.globalAlpha=Math.min(1,G.bannerT); ctx.fillStyle='#ffe27a'; ctx.font='900 26px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.strokeStyle='rgba(0,0,0,0.6)'; ctx.lineWidth=5; ctx.strokeText(G.banner,W/2,H*0.32); ctx.fillText(G.banner,W/2,H*0.32); ctx.globalAlpha=1; }
 
@@ -641,13 +804,15 @@ function gameOver(won){
   G.running=false; G.over=true;
   if (G.score>G.best){ G.best=G.score; (G.daily?saveBestD:(G.endless?saveBestE:saveBest))(G.best); }
   if (window.PJCC && PJCC.saveScore) PJCC.saveScore(G.daily?'sky-run-daily':(G.endless?'sky-run-endless':'sky-run'), G.score, { credits: 1+G.region, data: { region:G.region, won:won, mode:G.mode, loop:G.loop } });
+  setFocus(false);
   document.getElementById('menu-btn').classList.add('hidden');
   document.getElementById('summon-btn').classList.add('hidden');
+  document.getElementById('focus-btn').classList.add('hidden');
   document.getElementById('res-eye').textContent = won ? 'The summit' : 'Shot down';
   document.getElementById('res-title').textContent = won ? 'CHESS CITY REACHED ★' : 'SKY RUN';
   document.getElementById('res-msg').innerHTML = (won
-      ? 'Princess flew the whole sky — through the CEO\'s Office and out the other side.'
-      : 'Princess went down over <b>'+curRegion().name+'</b>.') +
+      ? 'Princess rose from a pawn all the way to the <b>Queen</b> — and flew the whole sky, through the CEO\'s Office and out the other side.'
+      : 'Princess went down over <b>'+curRegion().name+'</b>, a '+RANK_NAME[G.rank]+'.') +
     '<br>Score <b>'+G.score+'</b>' + (G.score>=G.best?' · <span style="color:#6bffb8">new best!</span>':' · best '+G.best);
   sfx(won?'win':'lose');
   document.getElementById('result').classList.remove('hidden');
@@ -656,7 +821,8 @@ let curMode='normal';
 function startPlay(mode){ curMode=mode||'normal'; initAudio(); if(actx&&actx.state==='suspended') actx.resume();
   document.getElementById('menu').classList.add('hidden'); document.getElementById('result').classList.add('hidden');
   document.getElementById('menu-btn').classList.remove('hidden'); document.getElementById('summon-btn').classList.remove('hidden');
-  newGame(curMode); updateSummonBtn();
+  document.getElementById('focus-btn').classList.remove('hidden');
+  newGame(curMode); updateSummonBtn(); setFocus(false);
 }
 // Photo-mode end-card — a shareable PNG of your run
 function saveCard(){
@@ -673,12 +839,13 @@ function saveCard(){
   cx.fillStyle='#cfe0ff'; cx.font='600 18px Trebuchet MS'; cx.fillText('score', cw/2, 180);
   cx.fillStyle='#f0e6ff'; cx.font='bold 22px Trebuchet MS';
   const won = G.over && G.region>=REGIONS.length && !G.endless;
-  cx.fillText((won?'Reached Chess City ★':'Down over '+r.name) + (G.endless?(' · loop '+G.loop):''), cw/2, 228);
-  cx.fillStyle='#9fe8ff'; cx.font='600 15px Trebuchet MS'; cx.fillText('best '+G.best+'   ·   mcpuppystudios.com', cw/2, 264);
-  cx.font='40px "Segoe UI Symbol","Noto Sans Symbols2",serif'; cx.fillStyle='#f0e6ff'; cx.fillText('♞', cw/2, 300);
+  cx.fillText((won?'Reached Chess City ★':'Down over '+r.name) + (G.endless?(' · loop '+G.loop):''), cw/2, 224);
+  cx.fillStyle='#cfe0ff'; cx.font='600 15px Trebuchet MS'; cx.fillText(won?'crowned the Queen':'rose to '+RANK_NAME[G.rank], cw/2, 248);
+  cx.fillStyle='#9fe8ff'; cx.font='600 15px Trebuchet MS'; cx.fillText('best '+G.best+'   ·   mcpuppystudios.com', cw/2, 270);
+  cx.font='40px "Segoe UI Symbol","Noto Sans Symbols2",serif'; cx.fillStyle='#f0e6ff'; cx.fillText(RANK_GLYPH[G.rank], cw/2, 300);
   const a=document.createElement('a'); a.download='sky-run-'+G.score+'.png'; a.href=cv.toDataURL('image/png'); a.click();
 }
-function openMenu(){ if(G) G.running=false; document.getElementById('result').classList.add('hidden'); document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('summon-btn').classList.add('hidden'); document.getElementById('menu').classList.remove('hidden'); }
+function openMenu(){ if(G) G.running=false; setFocus(false); document.getElementById('result').classList.add('hidden'); document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('summon-btn').classList.add('hidden'); document.getElementById('focus-btn').classList.add('hidden'); document.getElementById('menu').classList.remove('hidden'); }
 
 document.getElementById('play-btn').addEventListener('click', function(){ startPlay('normal'); });
 document.getElementById('daily-btn').addEventListener('click', function(){ startPlay('daily'); });
