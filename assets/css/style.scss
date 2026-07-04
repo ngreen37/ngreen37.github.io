@@ -1222,25 +1222,50 @@ pre code {
   padding-bottom: 14px;
   border-top: 1px solid rgba(124, 77, 255, 0.42);
   background:
-    /* droplets at the ends of a few runs */
-    radial-gradient(circle at 9% 172px, rgba(245,197,24,0.72) 0 5px, transparent 7px),
-    radial-gradient(circle at 33% 206px, rgba(245,197,24,0.62) 0 6px, transparent 8.5px),
-    radial-gradient(circle at 69% 226px, rgba(176,142,255,0.72) 0 6px, transparent 8.5px),
-    radial-gradient(circle at 91% 178px, rgba(176,142,255,0.6) 0 5px, transparent 7px),
-    /* wide paint drips running down from the top edge */
-    linear-gradient(180deg, rgba(245,197,24,0.72), transparent 56%) 9% 0 / 7px 172px no-repeat,
-    linear-gradient(180deg, rgba(176,142,255,0.66), transparent 52%) 21% 0 / 5px 128px no-repeat,
-    linear-gradient(180deg, rgba(245,197,24,0.58), transparent 50%) 33% 0 / 9px 206px no-repeat,
-    linear-gradient(180deg, rgba(176,142,255,0.6), transparent 46%) 47% 0 / 5px 96px no-repeat,
-    linear-gradient(180deg, rgba(245,197,24,0.64), transparent 54%) 58% 0 / 7px 150px no-repeat,
-    linear-gradient(180deg, rgba(176,142,255,0.72), transparent 58%) 69% 0 / 8px 226px no-repeat,
-    linear-gradient(180deg, rgba(245,197,24,0.52), transparent 44%) 80% 0 / 5px 112px no-repeat,
-    linear-gradient(180deg, rgba(176,142,255,0.56), transparent 50%) 91% 0 / 7px 178px no-repeat,
     /* fresh purple/gold wash spilling from the top */
     radial-gradient(140% 60% at 50% 0%, rgba(124,77,255,0.28), transparent 60%),
     linear-gradient(180deg, rgba(245,197,24,0.10), transparent 22%),
     /* base surface: purple-black up top, a faint aged foot at the bottom */
     linear-gradient(180deg, #0a0714 0%, #0b0a16 46%, #0c1210 100%);
+}
+/* keep the trio above the drip layer */
+.home-basement > .home-stats,
+.home-basement > .chess-clock-wrap { position: relative; z-index: 1; }
+
+/* --- Paint drips: one element per run so each can vary and animate on its own.
+   Each <span> carries --x (position), --w (width), --len (length), --col (rgb),
+   --dur (speed) and --delay. Wider runs get slower durations, so they drip a
+   little more lazily than the skinny ones. --- */
+.home-drips { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.drip {
+  position: absolute;
+  top: 0;
+  left: var(--x);
+  width: var(--w);
+  height: var(--len);
+  border-radius: 0 0 var(--w) var(--w);
+  background: linear-gradient(180deg, rgba(var(--col), 0.75), rgba(var(--col), 0.48) 42%, transparent);
+  transform-origin: top center;
+  animation: drip-run var(--dur, 8s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+.drip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: calc(var(--w) + 3px);
+  height: calc(var(--w) + 3px);
+  transform: translate(-50%, 42%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--col), 0.8), rgba(var(--col), 0.32) 60%, transparent 72%);
+}
+@keyframes drip-run {
+  0%, 100% { transform: scaleY(0.9);  opacity: 0.82; }
+  50%      { transform: scaleY(1.07); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .drip { animation: none; }
 }
 
 .stats-inner {

@@ -193,6 +193,18 @@ layout: default
 {% assign vis_char_count = 0 %}{% for c in site.characters %}{% unless site.hidden_character_urls contains c.url %}{% assign vis_char_count = vis_char_count | plus: 1 %}{% endunless %}{% endfor %}
 {% assign vis_loc_count = 0 %}{% for c in site.locations %}{% unless site.hidden_location_urls contains c.url %}{% assign vis_loc_count = vis_loc_count | plus: 1 %}{% endunless %}{% endfor %}
 <div class="home-basement">
+<div class="home-drips" aria-hidden="true">
+  <span class="drip" style="--x:7%;  --w:6px;  --len:150px; --col:245,197,24;  --dur:7.2s;  --delay:-0.5s"></span>
+  <span class="drip" style="--x:15%; --w:9px;  --len:210px; --col:176,142,255; --dur:9.6s;  --delay:-3.1s"></span>
+  <span class="drip" style="--x:24%; --w:4px;  --len:104px; --col:245,197,24;  --dur:5.4s;  --delay:-1.4s"></span>
+  <span class="drip" style="--x:34%; --w:7px;  --len:182px; --col:176,142,255; --dur:8.0s;  --delay:-4.2s"></span>
+  <span class="drip" style="--x:45%; --w:5px;  --len:132px; --col:245,197,24;  --dur:6.2s;  --delay:-2.0s"></span>
+  <span class="drip" style="--x:56%; --w:10px; --len:232px; --col:176,142,255; --dur:10.4s; --delay:-5.5s"></span>
+  <span class="drip" style="--x:66%; --w:4px;  --len:92px;  --col:245,197,24;  --dur:4.9s;  --delay:-0.8s"></span>
+  <span class="drip" style="--x:77%; --w:8px;  --len:198px; --col:176,142,255; --dur:8.8s;  --delay:-3.7s"></span>
+  <span class="drip" style="--x:88%; --w:6px;  --len:146px; --col:245,197,24;  --dur:6.6s;  --delay:-1.9s"></span>
+  <span class="drip" style="--x:95%; --w:5px;  --len:118px; --col:176,142,255; --dur:5.8s;  --delay:-4.8s"></span>
+</div>
 <div class="home-stats">
   <div class="stats-inner">
     <a class="hstat" href="{{ '/blog/' | relative_url }}">
