@@ -21,12 +21,12 @@ The destination. Chess City is well-to-do, prosperous, and deliberately difficul
 
 ## Notable Features
 - Located across the sea from Checker Town
-- Entry requires winning chess tournaments; there is no other way in
+- Entry requires winning chess tournaments; there is no other way in (without money)
 - Visitors and workers must pass through security checkpoints and be Tagged with a symbol upon each visit
 - Family and friends of Checker Town residents often live here, creating a painful separation for those left behind
 
 ## Who Lives Here
-The Rival's entire family lives in Chess City. This is the central wound of his character -- and the engine behind everything he does. Chess City Elementary, where the narrator eventually works, is located here.
+The Rival's entire family lives in Chess City. This is the central wound of his character -- and the engine behind everything he does. Main Character works here for a time, and his Uncle lives there, as well. 
 
 ## Role in the Story
 Chess City is the prize, the promise, and the obstacle. It represents a better life -- but one that has to be fought for, and one that comes with its own costs once you arrive.

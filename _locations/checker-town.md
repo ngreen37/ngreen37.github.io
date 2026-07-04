@@ -1,7 +1,7 @@
 ---
 layout: location
 title: Checker Town
-location_type: City
+location_type: Town
 permalink: /locations/checker-town/
 ---
 
@@ -9,12 +9,11 @@ The place where the story begins. Checker Town is a struggling community where m
 
 ## Notable Features
 - Houses and buildings are constructed from enormous checker pieces that fell from the sky long ago -- no one fully understands why or how
-- Checkers is the dominant game; chess is known but rarely taken seriously
-- The community is poor and hope is in short supply
+- Checkers is the dominant game; chess is known but not taken seriously. Sometimes resentfully.
 - Close enough to see what lies beyond, far enough that getting there feels impossible
 
 ## Who Lives Here
-The narrator, the Rival, and the Best Friend all call Checker Town home. Princess does too. It is the place they are all, in different ways, trying to escape -- or make peace with.
+The Main Character and his family, Maxwell, and Michael all call Checker Town home. Princess does too. It is the place they are all, in different ways, trying to escape -- or make peace with.
 
 ## Role in the Story
 Checker Town is the world the story starts in and the world the story keeps pulling back to. It represents everything the narrator is fighting against, and everything he risks losing by leaving.

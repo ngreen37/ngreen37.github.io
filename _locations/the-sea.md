@@ -21,5 +21,4 @@ There is a chessboard there where important games are played.  What the main cha
 ## Role in the Story
 It is the setting of a great challenge, when playing on the sea chessboard.  Throughout the story, it represents the divide between Checker Town and Chess City.
 
-## Scene Progress
-- **May 2026** — First render. Sea environment blocking.
+
