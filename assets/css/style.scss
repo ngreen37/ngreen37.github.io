@@ -1204,12 +1204,32 @@ pre code {
 }
 
 /* Stats bar */
+/* The bottom trio lives in .home-basement (below); the stats bar itself is now
+   transparent so the aged surface shows through. */
 .home-stats {
-  background: #0a0714;
-  border-top: 1px solid #3d2b8a;
-  border-bottom: 1px solid #3d2b8a;
-  padding: 48px 0;
+  background: transparent;
+  padding: 44px 0 40px;
+  margin: 0;
+}
+
+/* --- The "basement" — the foot of the page. PJCC's purple/gold paint drips down
+   from the top edge and, near the bottom, weathered verdigris "old paint" shows
+   through. Wraps the counters + Time-in-Development clock + Episode 1 countdown. --- */
+.home-basement {
+  position: relative;
   margin: 4px -28px 0;
+  border-top: 1px solid rgba(124, 77, 255, 0.32);
+  border-bottom: 1px solid rgba(84, 168, 148, 0.20);
+  background:
+    linear-gradient(180deg, rgba(245,197,24,0.50), transparent 42%) 16% 0 / 3px 128px no-repeat,
+    linear-gradient(180deg, rgba(245,197,24,0.36), transparent 40%) 38% 0 / 2px 92px no-repeat,
+    linear-gradient(180deg, rgba(176,142,255,0.46), transparent 45%) 62% 0 / 2px 150px no-repeat,
+    linear-gradient(180deg, rgba(245,197,24,0.42), transparent 38%) 82% 0 / 3px 76px no-repeat,
+    radial-gradient(130% 55% at 50% 0%, rgba(124,77,255,0.20), transparent 62%),
+    radial-gradient(58% 40% at 14% 100%, rgba(96,190,166,0.16), transparent 70%),
+    radial-gradient(66% 42% at 84% 100%, rgba(96,190,166,0.13), transparent 72%),
+    radial-gradient(120% 48% at 50% 100%, rgba(84,168,148,0.12), transparent 66%),
+    linear-gradient(180deg, #0a0714 0%, #0b0a16 52%, #0c110f 100%);
 }
 
 .stats-inner {
@@ -1220,7 +1240,7 @@ pre code {
   padding: 0 28px;
 }
 
-/* Stat tiles are links now — lift, glow, and frame themselves on hover */
+/* Stat tiles are links — lift and glow on hover (verdigris "old paint" accent) */
 .hstat {
   position: relative;
   display: block;
@@ -1231,36 +1251,20 @@ pre code {
   text-decoration: none;
   transition: transform .2s cubic-bezier(.2,.7,.3,1), background .2s ease, box-shadow .2s ease;
 }
-/* HUD corner ticks that snap in on hover */
-.hstat::before,
-.hstat::after {
-  content: "";
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border: 2px solid #F5C518;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .2s ease;
-}
-.hstat::before { top: 7px; left: 7px; border-right: 0; border-bottom: 0; border-top-left-radius: 4px; }
-.hstat::after  { bottom: 7px; right: 7px; border-left: 0; border-top: 0; border-bottom-right-radius: 4px; }
 .hstat:hover,
 .hstat:focus-visible {
   transform: translateY(-6px);
-  background: radial-gradient(120% 120% at 50% 0%, rgba(245,197,24,0.10), rgba(245,197,24,0.02) 65%, transparent);
-  box-shadow: 0 16px 40px -18px rgba(245,197,24,0.55), inset 0 0 0 1px rgba(245,197,24,0.22);
+  background: radial-gradient(120% 120% at 50% 0%, rgba(126,201,183,0.09), rgba(126,201,183,0.02) 65%, transparent);
+  box-shadow: 0 16px 40px -18px rgba(126,201,183,0.47);
   outline: none;
 }
-.hstat:hover::before, .hstat:hover::after,
-.hstat:focus-visible::before, .hstat:focus-visible::after { opacity: .9; }
 
 .hstat-num {
   display: block;
   font-family: 'Poppins', sans-serif;
   font-size: 54px;
   font-weight: 800;
-  color: #F5C518;
+  color: #7ec9b7;
   line-height: 1;
   margin-bottom: 8px;
   letter-spacing: -2px;
@@ -1269,7 +1273,7 @@ pre code {
 .hstat:hover .hstat-num,
 .hstat:focus-visible .hstat-num {
   transform: scale(1.14);
-  text-shadow: 0 0 30px rgba(245,197,24,0.85), 0 0 8px rgba(245,197,24,0.55);
+  text-shadow: 0 0 30px rgba(126,201,183,0.72), 0 0 8px rgba(126,201,183,0.47);
   filter: brightness(1.08);
 }
 
@@ -1284,7 +1288,7 @@ pre code {
 }
 .hstat:hover .hstat-lbl,
 .hstat:focus-visible .hstat-lbl {
-  color: #F5C518;
+  color: #8fd8c6;
   letter-spacing: 3.5px;
 }
 /* the label sprouts a little arrow on hover */
@@ -1434,7 +1438,7 @@ pre code {
     font-size: 40px;
   }
 
-  .home-stats {
+  .home-basement {
     margin-left: -24px;
     margin-right: -24px;
   }

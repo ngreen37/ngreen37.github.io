@@ -192,6 +192,7 @@ layout: default
 {% comment %} Counts exclude the slow-rolled (hidden) cast/locations set in _config.yml. {% endcomment %}
 {% assign vis_char_count = 0 %}{% for c in site.characters %}{% unless site.hidden_character_urls contains c.url %}{% assign vis_char_count = vis_char_count | plus: 1 %}{% endunless %}{% endfor %}
 {% assign vis_loc_count = 0 %}{% for c in site.locations %}{% unless site.hidden_location_urls contains c.url %}{% assign vis_loc_count = vis_loc_count | plus: 1 %}{% endunless %}{% endfor %}
+<div class="home-basement">
 <div class="home-stats">
   <div class="stats-inner">
     <a class="hstat" href="{{ '/blog/' | relative_url }}">
@@ -224,6 +225,7 @@ layout: default
     <div class="home-mc-target">TARGET: 2027.10.21</div>
   </div>
 </div>
+</div><!-- /.home-basement -->
 
 <script src="{{ '/assets/js/pjcc-games-data.js' | relative_url }}"></script>
 <script>
