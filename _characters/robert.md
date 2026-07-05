@@ -6,7 +6,7 @@ role: Side Character
 permalink: /characters/robert/
 order: 6
 piece: ♝
-chapters: ?
+chapters: "?"
 dossier_clearance: DELTA
 dossier_secret: Reads the same three books on a loop and quotes them like scripture. It is, annoyingly, working.
 last_seen: CHESS CITY

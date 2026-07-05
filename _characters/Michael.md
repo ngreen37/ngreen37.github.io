@@ -9,7 +9,7 @@ piece: ♚
 chapters: 0, 1
 dossier_clearance: OMEGA
 dossier_secret: His family is already in Chess City. He is not trying to get there. He is trying to go back.
-last_seen: ?
+last_seen: "?"
 ---
 
 **Michael** is the **Checker Town rival** — introduced as an antagonist, revealed to be one of the most important allies in the story, and the show's truest moral compass. His name carries its meaning because Michael is the character who, again and again, **acts truly righteous.** 

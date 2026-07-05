@@ -6,7 +6,7 @@ role: Ancillary Character
 permalink: /characters/matsu/
 order: 9
 piece: ♝
-chapters: ?
+chapters: "?"
 dossier_clearance: DELTA
 dossier_secret: Stayed on Shogi Island on purpose. Says he is "keeping the gate." Will not say which gate.
 last_seen: SHOGI ISLAND

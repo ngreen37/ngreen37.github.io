@@ -9,7 +9,6 @@ order: 1
 piece: ♞
 chapters: 0,1
 dossier_clearance: DELTA
-dossier_secret: Found near disaster site that formed Checker Town. Connection to crash: "unconfirmed."
 last_seen: CHECKER TOWN
 ---
 

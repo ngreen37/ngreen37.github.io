@@ -6,7 +6,7 @@ role: Side Character
 permalink: /characters/kaede/
 order: 8
 piece: ♝
-chapters: ?
+chapters: "?"
 dossier_clearance: DELTA
 dossier_secret: There is a puzzle that subject has obsessed over for years.  Even we are unclear how to solve.
 last_seen: CHECKER TOWN
