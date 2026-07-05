@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Sand Mine Depths v2.2</title>
+<title>PJCC: Sand Mine Depths v2.3</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <script src="/assets/js/pjcc-pieces.js"></script>
@@ -182,7 +182,7 @@ function pickRelic(f, rnd){
 function newFloor(){
   const rnd = S.rng;
   S.holes = new Set();
-  S.princess = { x: (rnd()*COLS)|0, y: 0 };
+  S.princess = { x: (rnd()*COLS)|0, y: 0 };   // Princess always enters at the top row and digs DOWN
   const f = S.floor;
   // shaft in the bottom two rows, reachable-ish
   let sx, sy, tries = 0;
@@ -197,9 +197,13 @@ function newFloor(){
   const count = Math.min(2 + Math.floor(f / 2), 6);
   S.enemies = [];
   const taken = new Set([key(S.princess.x, S.princess.y), key(sx, sy)]);
+  // Early floors gather the pieces up top with Princess (rows 1–2) so the pawn
+  // threat reads immediately as she starts her descent; deeper floors let them
+  // spawn through the whole shaft.
+  const bandLo = 1, bandHi = f <= 2 ? 2 : (ROWS - 2);
   for (let i = 0; i < count; i++){
     let x, y, t2 = 0;
-    do { x = (rnd()*COLS)|0; y = 1 + ((rnd()*(ROWS-2))|0); t2++; } while (taken.has(key(x,y)) && t2 < 30);
+    do { x = (rnd()*COLS)|0; y = bandLo + ((rnd()*(bandHi - bandLo + 1))|0); t2++; } while (taken.has(key(x,y)) && t2 < 30);
     taken.add(key(x, y));
     S.enemies.push({ t: pool[(rnd()*pool.length)|0], x, y });
   }
@@ -422,7 +426,7 @@ function applyRelic(type){
   const c = center(S.princess.x, S.princess.y);
   sfx('gold'); burst(c, '#c96bff');
   if (type === 'reach'){ S.reachFloors = Math.max(S.reachFloors, 3); floater('✦ Long Reach', c, '#c96bff'); doToast('RELIC · Long Reach — bigger L-leaps for 3 floors', '#c96bff'); }
-  else if (type === 'shovel'){ S.shovels++; floater('✦ Shovel', c, C.teal); doToast('RELIC · Shovel — tap 🪏 then a pit to fill it', C.teal); }
+  else if (type === 'shovel'){ S.shovels++; floater('✦ Shovel', c, C.teal); doToast('RELIC · Shovel — press SPACE (or tap 🪏) then a pit to fill it', C.teal); }
   else if (type === 'lantern'){ S.lanternFloors = Math.max(S.lanternFloors, 4); floater('✦ Lantern Oil', c, C.gold); doToast('RELIC · Lantern Oil — the dark pulls back for 4 floors', C.gold); }
   else { if (S.hp < S.maxhp) S.hp++; else S.score += 5; floater('✦ +♥', c, C.bad); doToast('RELIC · Ration — patched up', C.bad); }
   updateShovelBtn();
@@ -485,13 +489,31 @@ function drawBg(){
 function drawBoard(){
   ctx.fillStyle = '#1c1206'; roundRect(BX-6, BY-6, COLS*TILE+12, ROWS*TILE+12, 9); ctx.fill();
   ctx.strokeStyle = C.gold; ctx.lineWidth = 3; roundRect(BX-6, BY-6, COLS*TILE+12, ROWS*TILE+12, 9); ctx.stroke();
+  const threatPulse = 0.5 + 0.5 * Math.sin(Date.now()/300);
   for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++){
     const px = BX + x*TILE, py = BY + y*TILE;
     const hole = S.holes.has(key(x, y));
     if (hole) drawHole(px, py, x, y);
     else drawSand(px, py, x, y);
-    // threat heat — a faint warning wash on any square a piece covers
-    if (S.threats.has(key(x, y)) && !hole){ ctx.fillStyle = 'rgba(255,60,60,0.18)'; ctx.fillRect(px, py, TILE, TILE); }
+    // threat heat — any square a piece covers gets a red wash, a clear inset
+    // outline, and corner ticks so the danger reads at a glance (not just on
+    // the squares Princess can hop to).
+    if (S.threats.has(key(x, y)) && !hole){
+      ctx.fillStyle = 'rgba(255,52,52,' + (0.22 + 0.14*threatPulse) + ')';
+      ctx.fillRect(px, py, TILE, TILE);
+      ctx.strokeStyle = 'rgba(255,86,86,' + (0.55 + 0.35*threatPulse) + ')';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(px + 2.5, py + 2.5, TILE - 5, TILE - 5);
+      // corner ticks
+      ctx.strokeStyle = 'rgba(255,120,120,' + (0.6 + 0.35*threatPulse) + ')';
+      ctx.lineWidth = 2; ctx.lineCap = 'round'; const tk = 8;
+      ctx.beginPath();
+      ctx.moveTo(px+4, py+4+tk); ctx.lineTo(px+4, py+4); ctx.lineTo(px+4+tk, py+4);
+      ctx.moveTo(px+TILE-4-tk, py+4); ctx.lineTo(px+TILE-4, py+4); ctx.lineTo(px+TILE-4, py+4+tk);
+      ctx.moveTo(px+4, py+TILE-4-tk); ctx.lineTo(px+4, py+TILE-4); ctx.lineTo(px+4+tk, py+TILE-4);
+      ctx.moveTo(px+TILE-4-tk, py+TILE-4); ctx.lineTo(px+TILE-4, py+TILE-4); ctx.lineTo(px+TILE-4, py+TILE-4-tk);
+      ctx.stroke();
+    }
   }
   // legal-move dots — calm teal where it's safe, a live attack telegraph where it isn't
   if (S.phase === 'await'){
@@ -820,7 +842,15 @@ document.getElementById('retry-btn').addEventListener('click', () => begin(lastM
 document.getElementById('over-camp').addEventListener('click', showCamp);
 document.getElementById('over-menu').addEventListener('click', showMenu);
 document.getElementById('menu-btn').addEventListener('click', showMenu);
-document.getElementById('shovel-btn').addEventListener('click', () => { if (S && S.shovels > 0){ S.shovelArmed = !S.shovelArmed; updateShovelBtn(); } });
+function toggleShovel(){ if (S && !S.dead && S.shovels > 0){ S.shovelArmed = !S.shovelArmed; updateShovelBtn(); } }
+document.getElementById('shovel-btn').addEventListener('click', toggleShovel);
+// SPACE arms/disarms the shovel (then tap a caved-in pit to fill it back in).
+window.addEventListener('keydown', e => {
+  if (e.code === 'Space' || e.key === ' ' || e.key === 'Spacebar'){
+    e.preventDefault();
+    toggleShovel();
+  }
+});
 document.getElementById('snd-toggle').addEventListener('click', () => { sndOn = !sndOn; if (master) master.gain.value = sndOn?0.8:0; document.getElementById('snd-toggle').textContent = sndOn?'🔊 sound: on':'🔇 sound: off'; });
 
 document.getElementById('best-line').textContent = 'best depth: ' + (loadBest() ? loadBest()+'m' : '—');
