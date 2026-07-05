@@ -1,9 +1,0 @@
----
-layout: evolution
-title: Michael
-category: character
-entity_url: /characters/rival/
-role: Side Character
-permalink: /evolutions/rival/
-versions: []
----
