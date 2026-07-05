@@ -157,6 +157,8 @@
       // Splash Gauntlet — mini-tower + boss-of-the-moment, hydrated from the game's save (offline/signed-out OK).
       (function () {
         var NAMES = ['Argus the Guard-Dog','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Rival','The CEO'];
+        // mirrors the LADDER accents in assets/games/pjcc_gauntlet.html — keep in sync
+        var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#9ff0c4','#ff6b6b','#c79bff','#ff9ec9','#ff8fd0'];
         var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
         var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;
         for (var i = 0; i < NAMES.length; i++) { if (beaten[i]) cleared++; }
@@ -167,8 +169,8 @@
           for (var k = 0; k < NAMES.length; k++) { h += '<i class="' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></i>'; }
           tower.innerHTML = h; }
         var sub = document.getElementById('sg-sub'), cta = document.getElementById('sg-cta'), link = document.getElementById('studio-gauntlet');
-        if (cleared > 0 && cur < NAMES.length) {           // mid-climb — name the next opponent, resume there
-          if (sub) { sub.removeAttribute('data-jp'); sub.innerHTML = 'Floor ' + (cur + 1) + ' — <b style="color:#F5C518">' + NAMES[cur] + '</b> awaits.'; }
+        if (cleared > 0 && cur < NAMES.length) {           // mid-climb — name the next opponent in their own colour, resume there
+          if (sub) { sub.removeAttribute('data-jp'); sub.innerHTML = 'Floor ' + (cur + 1) + ' — <b style="color:' + (ACCENTS[cur] || '#F5C518') + '">' + NAMES[cur] + '</b> awaits.'; }
           if (cta) cta.textContent = '▶ Continue';
           if (link) link.setAttribute('href', link.getAttribute('href') + '#climb');
         } else if (cur >= NAMES.length) {                  // crowned — back to the tower to rematch
@@ -179,9 +181,6 @@
       })();
       </script>
 
-      {% comment %} Idea #2 — one warm creed line: the heart under the spy-tech. {% endcomment %}
-      <p class="studio-creed" data-jp="旅を信じて。犬についていけ。">Trust the journey. Follow the dog.</p>
-
       {% comment %} Planted sigil (Av13/Av2 breadcrumb): one A, eight c's — the first two
            cut large, then five medium, the last cut small. Matches the gate incantation
            (A, then two capital C's, then six lowercase). Faint by design. Protected from
@@ -189,6 +188,11 @@
       <div class="studio-sigil-seal" aria-hidden="true" title="Cut into the threshold stone. The first two struck large, the last struck small.">
         <span class="pjcc-sigil faint"><i class="sg-a">A</i><i class="sg-c big">C</i><i class="sg-c big">C</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c sm">c</i></span>
       </div>
+
+      {% comment %} Formal studio footer — minimal; replaces the old creed line. {% endcomment %}
+      <footer class="studio-footer">
+        <b>McPuppy&nbsp;Studios</b> &middot; &copy; {{ site.time | date: "%Y" }} &middot; <span data-jp="不許複製・禁無断転載">All rights reserved</span>
+      </footer>
 
     </div>
 
@@ -241,10 +245,11 @@
   .studio-sigil-seal .pjcc-sigil .sg-c.big,
   .studio-sigil-seal .pjcc-sigil .sg-c.sm { color:#6b5fa0; text-shadow:none; opacity:1; }
 
-  /* Idea #2 — the creed line: the heart under the spy-tech */
-  .studio-creed { text-align:center; margin:14px auto 0; max-width:480px;
-    font-family:'Poppins', system-ui, sans-serif; font-style:italic; font-weight:600;
-    font-size:0.92rem; letter-spacing:0.01em; color:rgba(245,225,180,0.85); }
+  /* Formal studio footer — minimal, muted, monospace (matches the dispatch aesthetic) */
+  .studio-footer { text-align:center; margin:16px auto 0; max-width:480px;
+    font-family:'Share Tech Mono', monospace; font-size:11px; letter-spacing:0.12em;
+    color:rgba(180,170,210,0.5); }
+  .studio-footer b { color:rgba(214,204,238,0.78); font-weight:700; letter-spacing:0.16em; }
 
   /* Idea #4 — per-quad "what's inside" peek: retired so the boxes no longer
      expand on hover. Markup kept for screen readers / future use. */
@@ -337,7 +342,7 @@
     .studio-gauntlet .sg-cta { font-size:0.78rem; padding:7px 13px; }
 
     /* drop the purely decorative pieces so everything fits one screen */
-    .studio-creed,
+    .studio-footer,
     .studio-sigil-seal { display:none; }
 
     /* keep the corner controls tucked clear of the quad block */

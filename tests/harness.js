@@ -32,8 +32,16 @@ function findChrome() {
 
 // Inject `hookCode` just before the LAST occurrence of `marker` (the end of the game's
 // inline script), so the hook shares scope with the game's state + functions.
-function instrumentToTemp(srcPath, marker, hookCode) {
-  const s = fs.readFileSync(srcPath, 'utf8');
+// opts.rewriteAssets (opt-in): rewrite absolute `src="/assets/…"` to file:// paths so a
+// game that pulls REAL shared modules (e.g. the chess engine) can load them under file://.
+// Off by default — games that stub their renderer instead must not have their 404s "fixed".
+function instrumentToTemp(srcPath, marker, hookCode, opts) {
+  opts = opts || {};
+  let s = fs.readFileSync(srcPath, 'utf8');
+  if (opts.rewriteAssets) {
+    const root = srcPath.split(/[\\/]assets[\\/]/)[0].replace(/\\/g, '/');
+    s = s.replace(/src="\/assets\//g, 'src="file:///' + root + '/assets/');
+  }
   const idx = s.lastIndexOf(marker);
   if (idx < 0) throw new Error('instrument marker not found in ' + srcPath + ': ' + marker);
   const out = s.slice(0, idx) + '\n' + hookCode + '\n' + s.slice(idx);
@@ -44,10 +52,10 @@ function instrumentToTemp(srcPath, marker, hookCode) {
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-async function withGame(srcPath, marker, hookCode, drive) {
+async function withGame(srcPath, marker, hookCode, drive, opts) {
   const exe = findChrome();
   if (!exe) { console.error('No Chrome/Edge found. Install one or set CHROME_PATH.'); process.exit(2); }
-  const tmp = instrumentToTemp(srcPath, marker, hookCode);
+  const tmp = instrumentToTemp(srcPath, marker, hookCode, opts);
   const results = [];
   const errors = [];
   const ok = (cond, msg) => results.push({ pass: !!cond, msg });
