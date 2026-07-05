@@ -3221,13 +3221,10 @@ body.theme-bw .ribbon-track {
                         centred (solid-black) content panel and reads like the あ drifter. */
     left: 89%;
     bottom: 40%;
-    font-size: 46px;
-    /* TEMP — brightened + pinned (drift paused) so it's unmistakable while we
-       confirm placement. To restore the subtle drifter, put back:
-         color: rgba(255, 180, 40, 0.13);
-         animation: piece-drift 46s linear infinite; animation-delay: 5s; */
-    color: rgba(255, 205, 70, 0.95);
-    animation: none;
+    font-size: 40px;
+    color: rgba(255, 180, 40, 0.13);
+    animation: piece-drift 46s linear infinite;
+    animation-delay: 5s;
   }
 
   &:hover {
