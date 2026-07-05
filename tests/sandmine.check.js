@@ -1,9 +1,10 @@
 // Regression check for Sand Mine Depths (assets/games/pjcc_sandmine.html).
-// Locks in the v2.3 changes:
+// Locks in:
 //   - Princess always starts on the top row and descends.
 //   - Early floors (1–2) gather the pawns up top with her (rows 1–2).
 //   - Threatened squares are computed (drives the clearer red telegraph).
 //   - SPACE arms/disarms the shovel.
+//   - Capture reward (v2.4): gold scales by piece value + a flawless-streak bonus.
 //   run:  npm run test:sandmine
 const path = require('path');
 const { withGame, report } = require('./harness');
@@ -20,10 +21,22 @@ window.__t = {
     floor:S.floor, depth:S.depth, phase:S.phase, dead:S.dead,
     princess:{x:S.princess.x, y:S.princess.y},
     enemies:S.enemies.map(function(e){ return {t:e.t, x:e.x, y:e.y}; }),
-    threats:S.threats.size, shovels:S.shovels, shovelArmed:S.shovelArmed
+    threats:S.threats.size, shovels:S.shovels, shovelArmed:S.shovelArmed,
+    score:S.score, combo:S.combo, hp:S.hp
   } : null; },
   regenFloor: function(f){ if(S){ S.floor = f; newFloor(); } },
-  giveShovel: function(){ if(S){ S.shovels++; updateShovelBtn(); } }
+  giveShovel: function(){ if(S){ S.shovels++; updateShovelBtn(); } },
+  // Place a single capturable piece on one of Princess's legal knight moves and
+  // return the target + the pre-capture score/combo, so a hop onto it can be checked.
+  setupCapture: function(t){
+    var mv = knightMoves(S.princess.x, S.princess.y);
+    if(!mv.length) return null;
+    var c = mv[0];
+    S.enemies = [{ t: t || 'R', x: c.x, y: c.y }];
+    computeThreats();
+    return { x:c.x, y:c.y, score:S.score, combo:S.combo };
+  },
+  hop: function(x,y){ tryHop({ x:x, y:y }); }
 };`;
 
 (async () => {
@@ -79,7 +92,23 @@ window.__t = {
     await page.keyboard.press('Space'); await sleep(80);
     const disarmed = await G();
     ok(disarmed.shovelArmed === false, 'SPACE again disarms the shovel  [armed=' + disarmed.shovelArmed + ']');
+
+    // Capture reward — gold scales by piece value, and a flawless streak stacks a bonus.
+    await page.evaluate(() => window.__t.regenFloor(1));
+    const cap1 = await page.evaluate(() => window.__t.setupCapture('R'));   // a rook = 8 base
+    await page.evaluate(c => window.__t.hop(c.x, c.y), cap1);
+    await sleep(700);
+    const a1 = await G();
+    ok(a1.combo === 1 && a1.score === cap1.score + 8,
+       'capturing a rook pays its value (+8) and opens a ×1 streak  [' + cap1.score + '->' + a1.score + ', combo=' + a1.combo + ']');
+
+    const cap2 = await page.evaluate(() => window.__t.setupCapture('R'));
+    await page.evaluate(c => window.__t.hop(c.x, c.y), cap2);
+    await sleep(700);
+    const a2 = await G();
+    ok(a2.combo === 2 && a2.score === cap2.score + 10,
+       'a second capture chains the streak: ×2, +10 (8 base + 2 bonus)  [' + cap2.score + '->' + a2.score + ', combo=' + a2.combo + ']');
   });
 
-  process.exit(report('Sand Mine Depths v2.3', results, errors) ? 0 : 1);
+  process.exit(report('Sand Mine Depths v2.4', results, errors) ? 0 : 1);
 })();

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Sand Mine Depths v2.3</title>
+<title>PJCC: Sand Mine Depths v2.4</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <script src="/assets/js/pjcc-pieces.js"></script>
@@ -68,6 +68,7 @@
       Princess is a <b style="color:#c96bff">knight ♞</b> — she only moves in <b>L-shapes</b>.
       Hop down through the depths of the mine, and learn of the mysteries below.
       The sand <b>caves in</b> behind every hop — and the pieces below <b>answer the moment you land</b>.
+      Land on a piece to <b>capture</b> it for gold; chain captures without a scratch for a <b style="color:#5be0c0">streak bonus</b>.
     </div>
     <div class="row">
       <button class="btn btn-gold" id="start-btn">DESCEND</button>
@@ -243,7 +244,7 @@ function newGame(mode){
         floor: 1, depth: 10, hp: mh, maxhp: mh, score: 0, best: loadBest(), phase: 'await', dead: false,
         shownLore: new Set(), enemies: [], gold: [], relics: [], holes: new Set(), threats: new Set(),
         shovels: (perks.shovel || 0), shovelArmed: false, reachFloors: 0, lanternFloors: 0,
-        perks, metZero: false };
+        perks, metZero: false, combo: 0 };
   newFloor();
   initWind();
   toast.t = -1;
@@ -325,6 +326,20 @@ function tryHop(cell){
   anim = { fc, tc, t: 0, dur: 0.2, onDone: () => resolveHop(from, cell) };
   sfx('hop');
 }
+// Capturing pays out by piece value, and a flawless capture streak (no hits taken)
+// stacks a growing bonus — plus a patch-up every third capture in the run.
+const CAP_GOLD = { P:3, N:5, B:5, R:8, Q:12, Z:12 };
+function rewardCapture(foe, cc){
+  S.combo = (S.combo || 0) + 1;
+  const col = foe.t === 'Z' ? '#c96bff' : C.gold;
+  const bonus = S.combo >= 2 ? (S.combo - 1) * 2 : 0;   // streak bonus grows each capture
+  const gain = (CAP_GOLD[foe.t] || 5) + bonus;
+  S.score += gain;
+  sfx('capture'); burst(cc, col);
+  floater((S.combo >= 2 ? '×' + S.combo + ' ' : '') + '+' + gain, cc, col);
+  if (S.combo >= 2) doToast('CAPTURE STREAK ×' + S.combo + '  +' + gain, S.combo >= 4 ? C.teal : C.gold);
+  if (S.combo % 3 === 0 && S.hp < S.maxhp){ S.hp++; floater('+♥', cc, C.teal); doToast('Streak bonus — patched up! +♥', C.teal); }
+}
 function resolveHop(from, cell){
   S.princess = { x: cell.x, y: cell.y };
   S.holes.add(key(from.x, from.y));               // sand caves in behind
@@ -334,12 +349,10 @@ function resolveHop(from, cell){
   if (foe){
     S.enemies = S.enemies.filter(e => e !== foe);
     const cc = center(cell.x, cell.y);
+    rewardCapture(foe, cc);                        // gold by piece value + flawless-streak bonus
     if (foe.t === 'Z'){
-      S.score += 12; sfx('capture'); burst(cc, '#c96bff'); floater('+12', cc, '#c96bff');
       doToast('SUBJECT ZERO captured — it drops something.', '#c96bff');
       applyRelic(pickRelic(S.floor, S.rng));
-    } else {
-      S.score += 5; sfx('capture'); burst(cc, C.gold); floater('+5', cc, C.gold);
     }
   }
   const gi = S.gold.findIndex(g => g.x === cell.x && g.y === cell.y);
@@ -391,12 +404,12 @@ function finishEnemyTurn(){
   });
   enemyAnims = null;
   S.enemies = S.enemies.filter(e => !e.dead);
-  if (hurt){ S.hp--; shake = 14; vignette = 18; sfx('hurt'); floater('-♥', center(S.princess.x, S.princess.y), C.bad); }
+  if (hurt){ S.hp--; S.combo = 0; shake = 14; vignette = 18; sfx('hurt'); floater('-♥', center(S.princess.x, S.princess.y), C.bad); }
   computeThreats();
   if (S.hp <= 0){ gameOver(); return; }
   // stuck safety: no legal hops -> the sand shifts
   if (knightMoves(S.princess.x, S.princess.y).length === 0){
-    S.holes = new Set(); S.hp = Math.max(0, S.hp - 1); shake = 10; sfx('hurt');
+    S.holes = new Set(); S.hp = Math.max(0, S.hp - 1); S.combo = 0; shake = 10; sfx('hurt');
     doToast('The sand caves in!', C.bad);
     if (S.hp <= 0){ gameOver(); return; }
     computeThreats();
@@ -758,6 +771,8 @@ function drawHUD(){
   // gold
   ctx.fillStyle = C.gold; ctx.textAlign = 'right';
   ctx.fillText('⛏ ' + S.score, W - 92, 30);
+  // flawless capture streak
+  if (S.combo >= 2){ ctx.fillStyle = C.teal; ctx.font = 'bold 10px Trebuchet MS'; ctx.fillText('STREAK ×' + S.combo, W - 92, 46); }
   // depth gauge (right edge)
   const gx = W - 16, top = BY, bot = BY + ROWS*TILE;
   ctx.strokeStyle = 'rgba(91,224,192,0.3)'; ctx.lineWidth = 4; ctx.lineCap = 'round';
