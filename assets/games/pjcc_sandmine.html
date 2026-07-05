@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Sand Mine Depths v2.5</title>
+<title>PJCC: Sand Mine Depths v2.6</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <script src="/assets/js/pjcc-pieces.js"></script>
@@ -295,16 +295,23 @@ function enemyCandidates(e){
   });
   return out;
 }
-function enemyChoose(e){
+// Pick a destination, skipping any square another enemy already claimed this turn so
+// two pieces never land on — and visually "combine" into — the same tile. Attacks on
+// Princess are exempt: several may strike her at once, and they perish as they do.
+function enemyChoose(e, reserved){
   const cands = enemyCandidates(e);
   if (cands.length === 0) return null;
   const px = S.princess.x, py = S.princess.y;
   // attack Princess if possible
   const atk = cands.find(c => c.x === px && c.y === py);
   if (atk) return atk;
-  let best = cands[0], bd = 1e9;
-  cands.forEach(c => { const d = Math.abs(c.x-px) + Math.abs(c.y-py); if (d < bd){ bd = d; best = c; } });
-  return best;
+  let best = null, bd = 1e9;
+  cands.forEach(c => {
+    if (reserved && reserved.has(key(c.x, c.y))) return;   // taken by another mover
+    const d = Math.abs(c.x-px) + Math.abs(c.y-py);
+    if (d < bd){ bd = d; best = c; }
+  });
+  return best;   // null if every reachable square is already spoken for → the piece holds
 }
 function computeThreats(){
   const th = new Set();
@@ -424,11 +431,14 @@ function descend(){
 function enemyTurn(){
   // The mine reacts: every enemy decides, then they MOVE (right after the player).
   const moves = [];
+  const reserved = new Set();   // destinations claimed this turn — no two pieces share one
   S.enemies.forEach(e => {
     if (e.t === 'P' && e.y + 1 >= ROWS){ e.dead = true; return; }   // marched off into the dark
-    const c = enemyChoose(e);
-    const to = c || { x: e.x, y: e.y };
-    moves.push({ e, to, attack: !!(c && c.x === S.princess.x && c.y === S.princess.y) });
+    const c = enemyChoose(e, reserved);
+    const attack = !!(c && c.x === S.princess.x && c.y === S.princess.y);
+    const to = c || { x: e.x, y: e.y };   // nowhere free to slide → hold this square
+    if (!attack) reserved.add(key(to.x, to.y));
+    moves.push({ e, to, attack });
   });
   S.enemies = S.enemies.filter(e => !e.dead);
   const live = moves.filter(m => !m.e.dead);

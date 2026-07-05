@@ -110,5 +110,5 @@ window.__t = {
        'a second capture chains the streak: ×2, +10 (8 base + 2 bonus)  [' + cap2.score + '->' + a2.score + ', combo=' + a2.combo + ']');
   });
 
-  process.exit(report('Sand Mine Depths v2.5', results, errors) ? 0 : 1);
+  process.exit(report('Sand Mine Depths v2.6', results, errors) ? 0 : 1);
 })();
