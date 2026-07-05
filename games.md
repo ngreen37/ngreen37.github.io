@@ -67,11 +67,57 @@ permalink: /games/
   .ghub { opacity:1; transform:none; }
 }
 @media (max-width:600px){ .ghub-head::after { width:140px; } }
+
+/* ---- #9 THE FLAGSHIP — the Gauntlet promoted above the halls ---- */
+.ghub-flagship { position:relative; z-index:2; display:flex; align-items:center; gap:18px; text-decoration:none;
+  max-width:860px; margin:0 auto 24px; padding:20px 22px 18px 22px;
+  background:linear-gradient(135deg,#241206 0%,#3a2a10 52%,#231640 100%);
+  border:2px solid #F5C518; border-radius:18px; overflow:hidden;
+  box-shadow:0 0 40px -14px #F5C518, inset 0 0 70px -34px rgba(245,197,24,0.5);
+  animation:ghub-wake .6s ease both; transition:transform .12s, box-shadow .12s; }
+.ghub-flagship::before { content:''; position:absolute; right:-50px; top:-50px; width:220px; height:220px; border-radius:50%;
+  background:radial-gradient(circle, rgba(245,197,24,0.2), transparent 70%); pointer-events:none; }
+.ghub-flagship:hover { transform:translateY(-2px); box-shadow:0 0 54px -8px #F5C518, inset 0 0 70px -34px rgba(245,197,24,0.5); }
+.gfl-badge { position:absolute; top:0; left:22px; font-size:0.6rem; font-weight:900; letter-spacing:0.16em; color:#1a0f3d;
+  background:#F5C518; padding:3px 10px 4px; border-radius:0 0 8px 8px; }
+.gfl-glyph { flex-shrink:0; font-size:3rem; line-height:1; color:#F5C518; filter:drop-shadow(0 3px 8px rgba(0,0,0,0.6)); position:relative; z-index:1; }
+.gfl-main { flex:1; min-width:0; position:relative; z-index:1; padding-top:6px; display:flex; flex-direction:column; align-items:flex-start; }
+.gfl-title { font-size:1.75rem; font-weight:900; color:#fff; line-height:1.05; text-shadow:0 2px 10px rgba(0,0,0,0.55); }
+.gfl-tag { color:#e7d6b0; font-size:0.9rem; line-height:1.4; margin-top:3px; max-width:60ch; }
+.gfl-pips { display:flex; gap:4px; margin:9px 0 5px; }
+.gfl-pip { width:15px; height:7px; border-radius:2px; background:rgba(255,255,255,0.14); }
+.gfl-pip.done { background:#6bffb8; } .gfl-pip.cur { background:#F5C518; box-shadow:0 0 8px #F5C518; }
+.gfl-resume { color:#fff; font-size:0.85rem; font-weight:700; } .gfl-resume b { color:#F5C518; }
+.gfl-cta { flex-shrink:0; position:relative; z-index:1; align-self:center;
+  background:linear-gradient(135deg,#F5C518,#ffd740); color:#1a0f3d; font-weight:900; font-size:1rem;
+  border-radius:999px; padding:12px 26px; white-space:nowrap; box-shadow:0 4px 0 #7a5e0a; }
+.ghub-flagship:hover .gfl-cta { filter:brightness(1.05); }
+@media (max-width:620px){
+  .ghub-flagship { flex-wrap:wrap; gap:12px 14px; padding:18px 16px 16px; }
+  .gfl-glyph { font-size:2.2rem; }
+  .gfl-title { font-size:1.4rem; }
+  .gfl-cta { width:100%; text-align:center; }
+}
+@media (prefers-reduced-motion: reduce){ .ghub-flagship { animation:none; } }
 </style>
 
 <!-- ===== THE HALLS — Gauntlet Legends portal screen (pick a hall; no games here) ===== -->
 <div class="ghub">
   <a class="ghub-trophy" href="{{ '/leaderboards/' | relative_url }}" aria-label="Leaderboards & Hall of Fame" title="Leaderboards &amp; Hall of Fame">🏆</a>
+
+  <!-- ── THE FLAGSHIP: the Gauntlet, promoted above the halls ── -->
+  <a class="ghub-flagship" id="ghub-flagship" href="{{ '/games/the-gauntlet/' | relative_url }}">
+    <span class="gfl-badge">◆ THE FLAGSHIP</span>
+    <span class="gfl-glyph" aria-hidden="true">♛</span>
+    <span class="gfl-main">
+      <span class="gfl-title">The Gauntlet</span>
+      <span class="gfl-tag">Real chess against ten PJCC champions — climb the tower from Checker Town to the CEO's crown.</span>
+      <span class="gfl-pips" id="gfl-pips" aria-hidden="true"></span>
+      <span class="gfl-resume" id="gfl-resume">Begin the climb — Floor 1 awaits.</span>
+    </span>
+    <span class="gfl-cta" id="gfl-cta">▶ ENTER</span>
+  </a>
+
   <div class="ghub-head">
     <p class="ghub-eyebrow">◆ The PJCC Arcade</p>
     <h1 class="ghub-title">Choose Your Hall</h1>
@@ -103,6 +149,23 @@ permalink: /games/
   }
   document.getElementById('ghub-grid').innerHTML = ['learn', 'arcade', 'dev'].map(portal).join('');
   document.getElementById('ghub-grid-sub').innerHTML = ['vault', 'terminated'].map(portal).join('');
+})();
+
+// Flagship resume state — same climb data the game + homepage read (#8/#6).
+(function () {
+  var NAMES = ['Argus the Guard-Dog','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Rival','The CEO'];
+  var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
+  var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;
+  for (var i = 0; i < NAMES.length; i++) { if (beaten[i]) cleared++; }
+  for (var j = 0; j < NAMES.length; j++) { if (!beaten[j]) { cur = j; break; } }
+  var pipHost = document.getElementById('gfl-pips');
+  if (pipHost) { var h = '';
+    for (var k = 0; k < NAMES.length; k++) { h += '<span class="gfl-pip ' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></span>'; }
+    pipHost.innerHTML = h; }
+  var res = document.getElementById('gfl-resume'), cta = document.getElementById('gfl-cta'), link = document.getElementById('ghub-flagship');
+  if (cleared === 0) { if (res) res.innerHTML = 'Begin the climb — <b>Floor 1: ' + NAMES[0] + '</b>.'; }
+  else if (cur >= NAMES.length) { if (res) res.innerHTML = '<b>Crowned.</b> All ten cleared — rematch anyone.'; if (cta) cta.textContent = '♛ TOWER'; if (link) link.setAttribute('href', link.getAttribute('href') + '#climb'); }
+  else { if (res) res.innerHTML = 'Floor ' + (cur + 1) + ' of 10 — <b>' + NAMES[cur] + '</b> awaits.'; if (cta) cta.textContent = '▶ CONTINUE'; if (link) link.setAttribute('href', link.getAttribute('href') + '#climb'); }
 })();
 </script>
 

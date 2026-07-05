@@ -34,24 +34,54 @@ layout: default
 
 {% comment %} ── 1b. PLAY STRIP — The Gauntlet + Game of the Week (moved here from /games/) ── {% endcomment %}
 <section class="home-play">
-  <a class="home-gauntlet" href="{{ '/games/the-gauntlet/' | relative_url }}">
-    <span class="hg-glyph" aria-hidden="true">♛</span>
-    <span class="hg-text"><b>The Gauntlet</b><small>Real chess · climb the ladder to the CEO</small></span>
-    <span class="hg-go" aria-hidden="true">▸</span>
+  <a class="home-gauntlet" id="home-gauntlet" href="{{ '/games/the-gauntlet/' | relative_url }}">
+    <div class="hg-main">
+      <div class="hg-eyebrow">◆ THE FLAGSHIP · THE ASCENT</div>
+      <div class="hg-title"><span class="hg-glyph" aria-hidden="true">♛</span> The Gauntlet</div>
+      <div class="hg-tag">Ten champions stand between <b>Checker Town</b> and the crown. Real chess, one game at a time — climb the tower to the <b>CEO</b>.</div>
+      <div class="hg-pips" id="hg-pips" aria-hidden="true"></div>
+      <div class="hg-resume" id="hg-resume">Begin the climb — Floor 1 awaits.</div>
+    </div>
+    <div class="hg-side">
+      <div class="hg-rank" id="hg-rank" hidden></div>
+      <span class="hg-cta" id="hg-cta">▶ BEGIN THE CLIMB</span>
+    </div>
   </a>
   <div id="weekly" class="home-weekly" hidden></div>
 </section>
 <style>
-.home-play { display:flex; flex-wrap:wrap; gap:12px; align-items:stretch; justify-content:center; margin:14px 0 4px; }
-.home-gauntlet { display:inline-flex; align-items:center; gap:12px; text-decoration:none;
-  background:linear-gradient(135deg,#2a1c0e 0%,#3a2a10 100%); border:2px solid #F5C518; border-radius:14px;
-  padding:11px 18px; box-shadow:0 0 24px -12px #F5C518; transition:transform .12s, box-shadow .12s; }
-.home-gauntlet:hover { transform:translateY(-2px); box-shadow:0 0 32px -8px #F5C518; }
-.home-gauntlet .hg-glyph { font-size:1.9rem; line-height:1; color:#F5C518; filter:drop-shadow(0 2px 5px rgba(0,0,0,0.5)); }
-.home-gauntlet .hg-text { display:flex; flex-direction:column; line-height:1.18; }
-.home-gauntlet .hg-text b { color:#fff; font-size:1rem; font-weight:800; }
-.home-gauntlet .hg-text small { color:#e7d6b0; font-size:0.74rem; }
-.home-gauntlet .hg-go { color:#F5C518; font-weight:900; font-size:1.15rem; }
+.home-play { display:flex; flex-wrap:wrap; gap:12px; align-items:stretch; justify-content:center; margin:16px 0 4px; }
+.home-gauntlet { flex:1 1 100%; display:flex; align-items:center; justify-content:space-between; gap:18px; text-decoration:none;
+  background:linear-gradient(135deg,#241206 0%,#3a2a10 52%,#2a1c40 100%); border:2px solid #F5C518; border-radius:18px;
+  padding:18px 22px; position:relative; overflow:hidden;
+  box-shadow:0 0 34px -14px #F5C518, inset 0 0 60px -30px rgba(245,197,24,0.4); transition:transform .12s, box-shadow .12s; }
+.home-gauntlet::before { content:''; position:absolute; right:-42px; top:-42px; width:190px; height:190px; border-radius:50%;
+  background:radial-gradient(circle, rgba(245,197,24,0.18), transparent 70%); pointer-events:none; }
+.home-gauntlet:hover { transform:translateY(-2px); box-shadow:0 0 46px -8px #F5C518, inset 0 0 60px -30px rgba(245,197,24,0.4); }
+.home-gauntlet .hg-main { min-width:0; position:relative; z-index:1; }
+.home-gauntlet .hg-eyebrow { font-size:0.68rem; font-weight:800; letter-spacing:0.16em; color:#F5C518; opacity:0.85; }
+.home-gauntlet .hg-title { display:flex; align-items:center; gap:10px; font-size:1.7rem; font-weight:900; color:#fff; line-height:1.08;
+  margin:3px 0 5px; text-shadow:0 2px 10px rgba(0,0,0,0.5); }
+.home-gauntlet .hg-title .hg-glyph { color:#F5C518; font-size:1.7rem; line-height:1; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5)); }
+.home-gauntlet .hg-tag { color:#e7d6b0; font-size:0.9rem; line-height:1.4; max-width:54ch; }
+.home-gauntlet .hg-tag b { color:#fff; }
+.home-gauntlet .hg-pips { display:flex; gap:4px; margin:10px 0 6px; }
+.home-gauntlet .hg-pip { width:16px; height:7px; border-radius:2px; background:rgba(255,255,255,0.14); }
+.home-gauntlet .hg-pip.done { background:#6bffb8; }
+.home-gauntlet .hg-pip.cur { background:#F5C518; box-shadow:0 0 8px #F5C518; }
+.home-gauntlet .hg-resume { color:#fff; font-size:0.86rem; font-weight:700; }
+.home-gauntlet .hg-resume b { color:#F5C518; }
+.home-gauntlet .hg-side { display:flex; flex-direction:column; align-items:flex-end; gap:9px; flex-shrink:0; position:relative; z-index:1; }
+.home-gauntlet .hg-rank { font-size:0.64rem; font-weight:900; letter-spacing:0.08em; text-transform:uppercase; color:#1a0f3d;
+  background:#F5C518; border-radius:999px; padding:4px 11px; white-space:nowrap; }
+.home-gauntlet .hg-cta { background:linear-gradient(135deg,#F5C518,#ffd740); color:#1a0f3d; font-weight:900; font-size:0.95rem;
+  border-radius:999px; padding:11px 22px; white-space:nowrap; box-shadow:0 4px 0 #7a5e0a; }
+.home-gauntlet:hover .hg-cta { filter:brightness(1.05); }
+@media (max-width:560px){
+  .home-gauntlet { flex-direction:column; align-items:flex-start; gap:12px; padding:15px 17px; }
+  .home-gauntlet .hg-side { align-items:center; flex-direction:row-reverse; justify-content:space-between; width:100%; }
+  .home-gauntlet .hg-title { font-size:1.4rem; }
+}
 .home-weekly { display:inline-flex; align-items:center; gap:9px; background:linear-gradient(135deg,#241452,#34206f);
   border:1px solid var(--gw,#F5C518); border-radius:14px; padding:9px 14px; font-size:0.82rem; color:#f0e6ff; }
 .home-weekly .gw-eye { color:#c9a7ff; font-weight:700; letter-spacing:0.03em; font-size:0.74rem; }
@@ -83,6 +113,40 @@ layout: default
     el.hidden = false;
   }
   if (window.PJCC && PJCC.ready) PJCC.ready.then(show); else document.addEventListener('DOMContentLoaded', show);
+})();
+
+// The Gauntlet hero — resume state (#8), progress pips, and climb-rank badge (#6).
+// Reads the game's own localStorage so it works offline, signed-out, on any device.
+(function () {
+  // mirrors the LADDER order in assets/games/pjcc_gauntlet.html
+  var NAMES = ['Argus the Guard-Dog','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Rival','The CEO'];
+  var RANKS = ['Recruit','Checker-Town Champion','Sand-Mine Survivor','Sea-Crosser','Isle-Tested','Gatebreaker','Tower Initiate','Floor-Fighter','Near the Summit',"At the CEO's Door",'Champion of Chess City'];
+  var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
+  var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;
+  for (var i = 0; i < NAMES.length; i++) { if (beaten[i]) cleared++; }
+  for (var j = 0; j < NAMES.length; j++) { if (!beaten[j]) { cur = j; break; } }
+
+  var pipHost = document.getElementById('hg-pips');
+  if (pipHost) { var h = '';
+    for (var k = 0; k < NAMES.length; k++) { h += '<span class="hg-pip ' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></span>'; }
+    pipHost.innerHTML = h; }
+
+  var res = document.getElementById('hg-resume'), cta = document.getElementById('hg-cta'),
+      link = document.getElementById('home-gauntlet'), rankEl = document.getElementById('hg-rank');
+  var base = '{{ "/games/the-gauntlet/" | relative_url }}';
+  if (cleared === 0) {
+    if (res) res.innerHTML = 'Begin the climb — <b>Floor 1: ' + NAMES[0] + '</b>.';
+    if (cta) cta.textContent = '▶ BEGIN THE CLIMB';
+  } else if (cur >= NAMES.length) {
+    if (res) res.innerHTML = '<b>Crowned.</b> All ten floors cleared — rematch anyone in the tower.';
+    if (cta) cta.textContent = '♛ THE TOWER';
+    if (link) link.setAttribute('href', base + '#climb');
+  } else {
+    if (res) res.innerHTML = 'Floor ' + (cur + 1) + ' of 10 — <b>' + NAMES[cur] + '</b> awaits.';
+    if (cta) cta.textContent = '▶ CONTINUE THE CLIMB';
+    if (link) link.setAttribute('href', base + '#climb');
+  }
+  if (rankEl && cleared > 0) { rankEl.textContent = 'CLIMB RANK · ' + RANKS[cleared]; rankEl.hidden = false; }
 })();
 </script>
 

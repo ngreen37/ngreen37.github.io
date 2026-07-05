@@ -49,7 +49,33 @@ permalink: /dossier/
     <div class="cc-frag-grid" id="cc-frag-grid"></div>
     <div class="cc-frag-note" id="cc-frag-note"></div>
   </div>
+
+  <div class="cc-mod cc-mod--climb">
+    <div class="cc-mod-label">◆ The Gauntlet — your climb</div>
+    <div class="cc-count" id="cc-climb-rank" style="font-size:1.2rem;line-height:1.15;">—</div>
+    <div class="cc-count-lbl" id="cc-climb-sub">—</div>
+    <a class="cc-btn cc-btn-gold" id="cc-climb-go" href="{{ '/games/the-gauntlet/' | relative_url }}" style="margin-top:8px;">Enter the tower ▸</a>
+  </div>
 </div>
+
+<script>
+/* The Climb — the Gauntlet rank surfaced sitewide (#6). Reads the game's own
+   localStorage, so it renders for everyone (guest, offline, signed-in). */
+(function () {
+  var NAMES = ['Argus the Guard-Dog','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Rival','The CEO'];
+  var RANKS = ['Recruit','Checker-Town Champion','Sand-Mine Survivor','Sea-Crosser','Isle-Tested','Gatebreaker','Tower Initiate','Floor-Fighter','Near the Summit',"At the CEO's Door",'Champion of Chess City'];
+  var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
+  var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;
+  for (var i = 0; i < NAMES.length; i++) { if (beaten[i]) cleared++; }
+  for (var j = 0; j < NAMES.length; j++) { if (!beaten[j]) { cur = j; break; } }
+  var rk = document.getElementById('cc-climb-rank'), sub = document.getElementById('cc-climb-sub'), go = document.getElementById('cc-climb-go');
+  if (rk) rk.textContent = cleared > 0 ? RANKS[cleared] : 'Unranked';
+  if (sub) sub.textContent = (cleared === 0) ? 'Begin the climb — Floor 1 of 10'
+    : (cur >= NAMES.length) ? 'Crowned — all ten floors cleared 👑'
+    : 'Floor ' + (cur + 1) + ' of 10 · ' + NAMES[cur] + ' next';
+  if (go && cleared > 0) { go.setAttribute('href', go.getAttribute('href') + '#climb'); go.textContent = (cur >= NAMES.length) ? 'The tower ▸' : 'Continue ▸'; }
+})();
+</script>
 
 <!-- ════════ YOUR IDENTITY — the Forge (instant, works signed-out & offline) ════════ -->
 <h2 class="dsr-h">◆ Your identity</h2>
