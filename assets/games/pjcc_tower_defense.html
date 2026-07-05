@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Siege on Chess City v2.2</title>
+<title>PJCC: Siege on Chess City v2.3</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -37,8 +37,10 @@
 
   .shop { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 9px; }
   .twr { background: #1d1140; border: 1px solid #4a3a86; border-radius: 9px; padding: 7px 4px 6px; text-align: center;
-    cursor: pointer; transition: border-color 0.12s, background 0.12s; user-select: none; }
+    cursor: pointer; transition: border-color 0.12s, background 0.12s, opacity 0.25s, box-shadow 0.25s; user-select: none; }
   .twr:hover { border-color: #7a68c0; }
+  /* Affordable defenders glow softly; the moment gold crosses their cost they light up. */
+  .twr.can { box-shadow: 0 0 9px rgba(245,197,24,0.28); border-color: #6a5aa8; }
   .twr.sel { border-color: var(--gold); background: #2a1a5e; box-shadow: 0 0 10px rgba(245,197,24,0.35); }
   .twr.cant { opacity: 0.45; } .twr.locked { opacity: 0.5; cursor: default; }
   .twr.locked:hover { border-color: #4a3a86; } .twr.locked .ct { color: #8a78ba; font-size: 9px; }
@@ -379,7 +381,7 @@ function newGame(mapIdx, opts) {
   opts = opts || {};
   curMap = MAPS[mapIdx];
   buildMapTopology(curMap);
-  var startGold = 230 + META.up.gold0 * 40;
+  var startGold = 275 + META.up.gold0 * 40;
   var startHearts = 50 + META.up.heart0 * 10;
   var muts = {};
   if (opts.muts) { for (var mk in opts.muts) if (opts.muts[mk]) muts[mk] = true; }
@@ -435,7 +437,7 @@ function describeWave(idx) {
 }
 function spawnFoe(typeName) {
   var base = FOES[typeName];
-  var scale = 1 + G.wave * 0.18 + (curMap.id - 1) * 0.22;
+  var scale = 1 + G.wave * 0.12 + (curMap.id - 1) * 0.20;
   var hp = Math.round(base.hp * (base.boss ? (1 + (curMap.id-1)*0.4) : scale));
   var pi = PATHS.length > 1 ? (G.spawnCount % PATHS.length) : 0;
   G.spawnCount++;
@@ -451,7 +453,7 @@ function spawnFoe(typeName) {
 /* spawn a small add at a foe's current position (used by boss Kings) */
 function spawnAddAt(host, typeName) {
   var base = FOES[typeName];
-  var scale = 1 + G.wave * 0.18 + (curMap.id - 1) * 0.22;
+  var scale = 1 + G.wave * 0.12 + (curMap.id - 1) * 0.20;
   var hp = Math.round(base.hp * scale);
   G.foes.push({
     type: typeName, glyph: base.glyph, color: base.color, boss: false,
@@ -665,7 +667,7 @@ function update(dt) {
       if (!G.endless && G.wave >= curMap.waves.length) return endGame(true);
       G.gold += 40 + G.wave * 5; G.betweenT = 0;
     }
-  } else if (!G.over) { G.betweenT += dt; if (G.betweenT >= 8) startWave(); }
+  } else if (!G.over) { G.betweenT += dt; if (G.betweenT >= 10) startWave(); }
 
   // boss Kings summon reinforcements while alive
   for (var bi = 0; bi < G.foes.length; bi++) {
@@ -882,6 +884,22 @@ function syncHud() {
   document.getElementById('s-wave').textContent = G.endless ? (G.wave + (G.waveActive?1:0)) : Math.min(G.wave + (G.waveActive?1:0), curMap.waves.length);
   document.getElementById('s-score').textContent = G.score;
   document.getElementById('s-wmax').textContent = G.endless ? '∞' : curMap.waves.length;
+  refreshRackAfford();
+}
+// Keep the shop's "can I afford it" lighting live — gold climbs mid-wave from kills,
+// so re-light affordable defenders every frame instead of only when the rack rebuilds.
+// (Toggling classes on the existing cells; no DOM rebuild, so hover/selection survive.)
+function refreshRackAfford() {
+  if (!G) return;
+  var els = document.getElementById('rack').children;
+  for (var i = 0; i < els.length; i++) {
+    var el = els[i], kind = el.dataset.kind;
+    if (!kind || el.classList.contains('locked')) continue;
+    var afford = G.gold >= towerCost(kind), sel = (G.sel === kind);
+    el.classList.toggle('cant', !afford);
+    el.classList.toggle('sel', sel);
+    el.classList.toggle('can', afford && !sel);   // glow only when affordable & not selected
+  }
 }
 function refreshDecree() {
   var pct = G.decree/G.decreeMax*100; document.getElementById('decree-fill').style.width = pct + '%';
@@ -894,17 +912,19 @@ function buildRack() {
   towerOrder().forEach(function (kind) {
     var d = TOWERS[kind], cost = towerCost(kind);
     var el = document.createElement('div');
+    el.dataset.kind = kind;
     if (!unlocked[kind]) {
       el.className = 'twr locked';
       el.innerHTML = '<div class="g" style="color:#5a4d7a">🔒</div><div class="nm">'+d.name+'</div><div class="ct">'+(TOWER_UNLOCK[kind]||'Locked')+'</div>';
       el.title = d.name + ' — locked · ' + (TOWER_UNLOCK[kind] || '');
       rack.appendChild(el); return;
     }
-    el.className = 'twr' + (G && G.sel===kind ? ' sel':'') + (G && G.gold<cost ? ' cant':'');
+    el.className = 'twr';   // affordability + selection lit by refreshRackAfford (live)
     el.innerHTML = '<div class="g" style="color:'+d.color+'">'+d.glyph+'</div><div class="nm">'+d.name+'</div><div class="ct">'+cost+'g</div>';
     el.onclick = function () { closeInspector(); G.sel = (G.sel===kind?null:kind); buildRack(); if (G.sel) setHint(d.name+' — '+d.lore); };
     el.title = d.lore; rack.appendChild(el);
   });
+  refreshRackAfford();
 }
 function setHint(t) { document.getElementById('hint').textContent = t; }
 var bannerT = 0;
