@@ -69,13 +69,67 @@
     box-shadow:0 4px 14px rgba(0,0,0,0.45); opacity:0; transform:translateY(-6px); transition:opacity .18s, transform .18s; }
   .opp-bubble::before { content:''; position:absolute; top:-7px; left:16px; border:7px solid transparent; border-bottom:7px solid #fff; }
   .opp-bubble.show { opacity:1; transform:translateY(0); }
+
+  /* ---- #3/#7 THE TOWER (scrollable vertical climb, grouped by region) ---- */
+  .tower { position:relative; width:100%; max-width:340px; margin:2px auto 8px; }
+  .tower::before { content:''; position:absolute; left:26px; top:6px; bottom:6px; width:3px; border-radius:3px;
+    background:linear-gradient(180deg, #ff8fd0, #F5C518 55%, #8fe3ff); opacity:0.5; }
+  .tw-zone { position:relative; z-index:1; display:flex; align-items:center; gap:8px; margin:12px 0 6px; padding-left:2px; }
+  .tw-zone:first-child { margin-top:2px; }
+  .tw-zone .tz-line { flex:1; height:1px; background:linear-gradient(90deg, currentColor, transparent); opacity:0.5; }
+  .tw-zone .tz-name { font-size:10px; letter-spacing:2px; text-transform:uppercase; font-weight:800; white-space:nowrap; }
+  .tw-floor { position:relative; z-index:1; display:flex; align-items:center; gap:11px; text-align:left; cursor:pointer;
+    background:#1a1040; border:1px solid #4a3a86; border-radius:11px; padding:8px 12px; margin:5px 0;
+    transition:transform .09s, border-color .15s, box-shadow .15s; }
+  .tw-floor:hover { transform:translateX(2px); border-color:#F5C518; }
+  .tw-floor.locked { opacity:0.42; cursor:not-allowed; filter:saturate(0.4); }
+  .tw-floor.locked:hover { transform:none; border-color:#4a3a86; }
+  .tw-floor.beaten { border-color:#6bffb8; }
+  .tw-floor.current { border-color:#F5C518; box-shadow:0 0 0 1px #F5C518, 0 0 22px -4px #F5C518; animation:tw-pulse 2.2s ease-in-out infinite; }
+  @keyframes tw-pulse { 0%,100% { box-shadow:0 0 0 1px #F5C518, 0 0 16px -6px #F5C518; } 50% { box-shadow:0 0 0 1px #F5C518, 0 0 30px -2px #F5C518; } }
+  .tw-badge { position:relative; width:40px; height:40px; flex-shrink:0; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:#0e0a26; border:2px solid #6b5fa0; font-size:21px; }
+  .tw-floor.beaten .tw-badge::after { content:'✓'; position:absolute; right:-4px; bottom:-4px; width:16px; height:16px; border-radius:50%;
+    background:#6bffb8; color:#0c2a1c; font-size:11px; font-weight:900; display:flex; align-items:center; justify-content:center; }
+  .tw-body { flex:1; min-width:0; }
+  .tw-name { font-weight:800; color:#f0e6ff; font-size:14px; line-height:1.15; }
+  .tw-sub { font-size:10px; color:#b9a8e6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tw-chip { flex-shrink:0; font-size:10px; font-weight:800; letter-spacing:0.5px; padding:3px 8px; border-radius:999px; }
+  .tw-here { display:inline-block; margin-top:3px; font-size:9px; font-weight:900; letter-spacing:1.5px; color:#1a0f3d; background:#F5C518; padding:1px 7px; border-radius:999px; }
+
+  /* ---- #4 BOSS-CARD REVEAL ---- */
+  .boss-portrait { width:96px; height:96px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:52px; background:radial-gradient(circle at 42% 34%, #241452, #0c0820); border:3px solid #6b5fa0;
+    box-shadow:0 0 34px -6px currentColor; margin-bottom:12px; }
+  .boss-name { font-size:24px; font-weight:900; color:#fff; letter-spacing:0.5px; text-shadow:0 2px 12px rgba(0,0,0,0.6); }
+  .boss-sub { font-size:11px; letter-spacing:2px; text-transform:uppercase; margin:4px 0 10px; }
+  .boss-pips { font-size:15px; letter-spacing:3px; margin-bottom:8px; }
+  .boss-tags { display:flex; gap:7px; flex-wrap:wrap; justify-content:center; margin-bottom:12px; }
+  .boss-tag { font-size:10px; font-weight:800; letter-spacing:0.5px; padding:4px 11px; border-radius:999px;
+    background:#231548; border:1px solid #4a3a86; color:#d8c9ff; }
+  .boss-quote { font-size:13px; font-style:italic; color:#e7d6ff; line-height:1.5; max-width:330px; margin-bottom:10px; }
+  .boss-note { font-size:11px; font-weight:800; letter-spacing:1px; margin-bottom:14px; }
+
+  /* ---- #5 COMMENTARY BOOTH (text play-by-play; no audio) ---- */
+  .booth { position:absolute; left:10px; right:10px; bottom:46px; z-index:5; display:flex; justify-content:center; pointer-events:none; }
+  .booth.hidden { display:none; }
+  .booth-card { max-width:100%; display:flex; align-items:flex-start; gap:8px; background:rgba(10,7,26,0.92);
+    border:1px solid #4a3a86; border-left-width:3px; border-radius:10px; padding:7px 11px; box-shadow:0 6px 18px rgba(0,0,0,0.5);
+    opacity:0; transform:translateY(8px); transition:opacity .2s, transform .2s; }
+  .booth-card.show { opacity:1; transform:translateY(0); }
+  .booth-who { font-size:9px; font-weight:900; letter-spacing:1px; text-transform:uppercase; white-space:nowrap; padding-top:1px; }
+  .booth-line { font-size:12px; font-weight:600; color:#f0e6ff; line-height:1.35; }
 </style>
 </head>
 <body>
 <div id="stage">
   <canvas id="cv" width="440" height="500"></canvas>
-  <button class="float-btn hidden" id="menu-btn">☰ menu</button>
+  <button class="float-btn hidden" id="menu-btn">☰ tower</button>
   <button class="float-btn hidden" id="resign-btn">⚑ resign</button>
+
+  <div class="booth hidden" id="booth" aria-hidden="true">
+    <div class="booth-card" id="booth-card"><span class="booth-who" id="booth-who">RANDY</span><span class="booth-line" id="booth-line"></span></div>
+  </div>
 
   <div class="opp hidden" id="opp" aria-hidden="true">
     <div class="opp-face" id="opp-face"><span class="opp-glyph" id="opp-glyph">♟</span><span class="opp-mood" id="opp-mood">🙂</span></div>
@@ -84,16 +138,17 @@
   </div>
 
   <div class="overlay" id="menu-screen">
-    <div class="eyebrow">The road to Chess City</div>
+    <div class="eyebrow">The Ascent · the climb to the crown</div>
     <div class="big-title">THE GAUNTLET</div>
-    <div class="blurb">Ten champions stand between <b style="color:#F5C518">Checker Town</b> and the top of the <b style="color:#ff8fd0">CEO</b>'s tower. Real chess, one game at a time — beat one to face the next. You alternate colors. No takebacks. Only a win opens the next door.</div>
-    <div class="row"><button class="btn btn-gold" id="play-btn">▶ THE LADDER</button></div>
+    <div class="blurb">Ten champions stand between <b style="color:#8fe3ff">Checker Town</b> and the top of the <b style="color:#ff8fd0">CEO</b>'s tower. Real chess, one game at a time — beat one to climb to the next. You alternate colors. No takebacks. Only a win opens the next door.</div>
+    <div class="blurb" id="menu-progress" style="display:none; margin-top:-4px;"></div>
+    <div class="row"><button class="btn btn-gold" id="play-btn">▶ ENTER THE TOWER</button></div>
   </div>
 
   <div class="overlay hidden" id="ladder-screen">
-    <div class="eyebrow">Choose your challenger</div>
-    <div class="big-title" style="font-size:24px;">THE LADDER</div>
-    <div class="rungs" id="rungs"></div>
+    <div class="eyebrow">Your climb — top floor down to the street</div>
+    <div class="big-title" style="font-size:22px;">THE TOWER</div>
+    <div class="tower" id="rungs"></div>
     <div class="row"><button class="btn btn-ghost" id="ladder-back">◂ Back</button></div>
   </div>
 
@@ -106,6 +161,18 @@
     <div class="big-title" id="over-title" style="font-size:26px;">—</div>
     <div class="blurb" id="over-msg"></div>
     <div class="row" id="over-row"></div>
+  </div>
+
+  <div class="overlay hidden" id="boss-screen">
+    <div class="eyebrow" id="boss-eye">Next challenger</div>
+    <div class="boss-portrait" id="boss-portrait">♛</div>
+    <div class="boss-name" id="boss-name">—</div>
+    <div class="boss-sub" id="boss-sub">—</div>
+    <div class="boss-pips" id="boss-pips">—</div>
+    <div class="boss-tags" id="boss-tags"></div>
+    <div class="boss-quote" id="boss-quote">—</div>
+    <div class="boss-note" id="boss-note">—</div>
+    <div class="row" id="boss-row"></div>
   </div>
 </div>
 
@@ -211,7 +278,10 @@ function startRung(idx){
   document.getElementById('resign-btn').classList.remove('hidden');
   setupPortrait(rung, idx);
   G.roundStartMat = matPOV(G.S, G.pc);
+  boothLast = 0;
   setTimeout(function(){ if (G && !G.over) reactOpp('intro'); }, 650);
+  setTimeout(function(){ if (G && !G.over) callOut('open', true); }, 900);   // #5 — booth opens the broadcast
+  setTimeout(function(){ if (G && !G.over) callOut('open', true); }, 4200);
   // if the player is Black, the AI (White) moves first
   if (G.S.turn !== G.pc) aiTurnSoon();
 }
@@ -250,6 +320,8 @@ function applyPlayerMove(m){
   var res = C.gameResult(G.S, rep);
   if (res){ endGame(res); return; }
   G.legal = C.legalMoves(G.S);
+  var psan = G.log[G.log.length-1] || '';
+  if (psan.indexOf('#')<0){ if (psan.indexOf('+')>=0) callOut('pcheck'); else if (psan.indexOf('x')>=0 && Math.random()<0.34) callOut('pcap'); }
   aiTurnSoon();
 }
 function aiTurnSoon(){ G.thinking = true; setTimeout(aiMove, 280); }
@@ -265,6 +337,8 @@ function aiMove(){
   var res = C.gameResult(G.S, rep);
   if (res){ endGame(res); return; }
   G.legal = C.legalMoves(G.S);
+  var esan = G.log[G.log.length-1] || '';
+  if (esan.indexOf('#')<0){ if (esan.indexOf('+')>=0) callOut('echeck'); else if (esan.indexOf('x')>=0 && Math.random()<0.30) callOut('ecap'); }
   judgeRound();   // react to how the player just played, now that the reply has landed
 }
 
@@ -289,6 +363,7 @@ function openPromo(from, to){
 // ---- end of game ----
 function endGame(result){
   G.over = true; G.result = result; G.thinking = false; G.sel = -1;
+  hideBooth();
   document.getElementById('resign-btn').classList.add('hidden');
   var prog = loadProg(), playerWon = false, draw = false, title, msg, eye;
   if (result === 'checkmate'){ playerWon = (G.S.turn !== G.pc); }   // side to move is mated
@@ -338,6 +413,85 @@ function endGame(result){
 }
 function addBtn(row, label, cls, fn){ var b=document.createElement('button'); b.className='btn '+cls; b.textContent=label; b.onclick=fn; row.appendChild(b); }
 
+// ================= FLAGSHIP PRESENTATION: tower helpers, boss card, booth =================
+// Derive a challenger's shown strength/playstyle/difficulty straight from their persona,
+// so the boss card + tower stay in sync with the AI with no per-opponent duplication.
+function zoneOf(region){ return (/^Tower/.test(region) || /Top Floor/.test(region)) ? "The CEO's Tower" : region; }
+function nextFloor(prog){ for (var i=0;i<LADDER.length;i++){ if(!prog.beaten[i]) return i; } return LADDER.length; }
+function strengthOf(p){ return Math.max(1, Math.min(5, p.depth||1)); }
+function difficultyOf(p){ var d=p.depth||1, b=p.blunder||0;
+  if (d<=1) return 'Tutorial'; if (d===2 && b>=0.15) return 'Easy'; if (d===2) return 'Fair';
+  if (d===3) return 'Tough'; if (d===4) return 'Brutal'; return 'Merciless'; }
+function playstyleOf(p){ var aggr=p.aggr||0, mat=p.mat||1, pst=p.pst||0, d=p.depth||1;
+  if (aggr>=5) return 'Aggressive'; if (mat>=1.2) return 'Grinder';
+  if (pst>=1.0 && aggr<=1) return 'Positional'; if (aggr>=4) return 'Aggressive';
+  if (aggr>=2) return 'Tactician'; if (d>=4) return 'Calculating';
+  if (pst>=0.9) return 'Positional'; return 'Balanced'; }
+function pipStr(n){ var s=''; for (var i=1;i<=5;i++) s += (i<=n?'◆':'◇'); return s; }
+
+// #4 — the cinematic reveal before a match
+function showBossCard(idx){
+  if (G){ G.over = true; }
+  hidePortrait(); hideBooth(); hideOverlays();
+  document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('resign-btn').classList.add('hidden');
+  var rung = LADDER[idx], pc = colorForRung(idx), prog = loadProg(), beaten = !!prog.beaten[idx], acc = rung.accent;
+  var portrait = document.getElementById('boss-portrait');
+  portrait.textContent = rung.glyph; portrait.style.color = acc; portrait.style.borderColor = acc;
+  document.getElementById('boss-eye').textContent = (beaten?'Rematch':'Challenger') + ' · Floor ' + (idx+1) + ' of ' + LADDER.length;
+  document.getElementById('boss-name').textContent = rung.name;
+  var sub = document.getElementById('boss-sub'); sub.textContent = rung.region; sub.style.color = acc;
+  var pips = document.getElementById('boss-pips'); pips.textContent = pipStr(strengthOf(rung.persona)); pips.style.color = acc;
+  var tags = document.getElementById('boss-tags'); tags.innerHTML = '';
+  [playstyleOf(rung.persona), difficultyOf(rung.persona)].forEach(function(t){ var s=document.createElement('span'); s.className='boss-tag'; s.style.borderColor=acc; s.textContent=t; tags.appendChild(s); });
+  document.getElementById('boss-quote').textContent = '“' + (rung.react && rung.react.intro ? rung.react.intro[0] : rung.blurb) + '”';
+  var note = document.getElementById('boss-note'), youW = (pc==='w');
+  note.textContent = youW ? '♔ You play White this round' : '♚ You play Black this round';
+  note.style.color = youW ? '#efe7cf' : '#8fe3ff';
+  var row = document.getElementById('boss-row'); row.innerHTML = '';
+  addBtn(row, beaten ? 'REMATCH ▸' : 'FIGHT ▸', 'btn-gold', function(){ startRung(idx); });
+  addBtn(row, '◂ Tower', 'btn-ghost', showLadder);
+  document.getElementById('boss-screen').classList.remove('hidden');
+}
+
+// #5 — the commentary booth (Randy = play-by-play, Chipper = color, Pittsy = the story). Text only.
+var BOOTH = { randy:{who:'RANDY',col:'#ff8fd0'}, chipper:{who:'CHIPPER',col:'#8fe3ff'}, pittsy:{who:'PITTSY',col:'#F5C518'} };
+var boothTimer=null, boothLast=0;
+function pick(a){ return a[(Math.random()*a.length)|0]; }
+function bcast(voice, line, force){
+  if (!G || G.over) return;
+  var el=document.getElementById('booth'), card=document.getElementById('booth-card');
+  if (!el || !card) return;
+  var now=Date.now(); if (!force && now-boothLast < 2200) return; boothLast=now;
+  var v=BOOTH[voice]||BOOTH.randy;
+  var who=document.getElementById('booth-who'); who.textContent=v.who; who.style.color=v.col; card.style.borderLeftColor=v.col;
+  document.getElementById('booth-line').textContent=line;
+  el.classList.remove('hidden'); void card.offsetWidth; card.classList.add('show');
+  clearTimeout(boothTimer); boothTimer=setTimeout(function(){ card.classList.remove('show'); }, 3400);
+}
+function hideBooth(){ var el=document.getElementById('booth'), c=document.getElementById('booth-card'); if(el) el.classList.add('hidden'); if(c) c.classList.remove('show'); clearTimeout(boothTimer); }
+var CALL = {
+  open:[ ['randy',"Live from the booth — {opp} steps to the board!"],
+         ['pittsy',"This is the one our challenger's been climbing for. You can feel it."],
+         ['chipper',"{opp}. Real chess, no handicaps — let's see who blinks."] ],
+  pcheck:[ ['randy',"CHECK! The pressure is ON!"], ['chipper',"There's the check — that king has to move."] ],
+  echeck:[ ['randy',"{opp} says check — trouble for our climber!"], ['pittsy',"You can feel the tension up in the rafters."] ],
+  pgood:[ ['chipper',"Beautifully judged — {opp} did not see that coming."], ['randy',"What a swing! Our challenger's up material!"], ['pittsy',"That's the move of someone who WANTS it."] ],
+  pblunder:[ ['chipper',"Ooh — that will cost. {opp} pounces."], ['randy',"A wobble! And {opp} makes them pay!"] ],
+  pcap:[ ['randy',"Taken — and it's GONE!"], ['randy',"Snatched right off the board!"] ],
+  ecap:[ ['randy',"{opp} strikes back — a piece comes down!"], ['chipper',"{opp} collects. They'll want that one back."] ]
+};
+function callOut(kind, force){ var c=pick(CALL[kind]||[]); if(!c) return; var opp=G?G.rung.name:'the champion'; bcast(c[0], c[1].replace(/\{opp\}/g, opp), force); }
+
+// menu continue-state: reflect where the climb stands
+function refreshMenu(){
+  var prog=loadProg(), cur=nextFloor(prog), btn=document.getElementById('play-btn'), pline=document.getElementById('menu-progress');
+  if (!btn||!pline) return;
+  var cleared=Object.keys(prog.beaten||{}).length;
+  if (cleared===0){ btn.textContent='▶ ENTER THE TOWER'; pline.style.display='none'; }
+  else if (cur>=LADDER.length){ btn.textContent='♛ THE TOWER'; pline.style.display=''; pline.innerHTML='<b style="color:#6bffb8">Crowned.</b> You cleared all ten — rematch anyone from the tower.'; }
+  else { btn.textContent='▶ CONTINUE THE CLIMB'; pline.style.display=''; pline.innerHTML='Floor '+(cur+1)+' of '+LADDER.length+' — <b style="color:#F5C518">'+LADDER[cur].name+'</b> awaits.'; }
+}
+
 // ---- the visible opponent: portrait, mood, and personality reactions ----
 var PVAL = { p:100, n:320, b:330, r:500, q:900, k:0 };
 function matPOV(S, pc){ var s=0, i, p; for(i=0;i<64;i++){ p=S.b[i]; if(!p) continue;
@@ -377,8 +531,8 @@ function judgeRound(){
   if(!G || G.roundStartMat==null) return;
   var delta = matPOV(G.S, G.pc) - G.roundStartMat;   // + = player won material this round
   G.roundStartMat=null;
-  if(delta <= -250) reactOpp('blunder');
-  else if(delta >= 250) reactOpp('good');
+  if(delta <= -250){ reactOpp('blunder'); callOut('pblunder', true); }
+  else if(delta >= 250){ reactOpp('good'); callOut('pgood', true); }
 }
 
 // ---- rendering ----
@@ -425,38 +579,54 @@ function drawHud(){
   // you-are badge
   var youW = G.pc==='w', txt = youW ? '♔ YOU PLAY WHITE' : '♚ YOU PLAY BLACK';
   ctx.font='bold 12px Trebuchet MS'; ctx.textAlign='right'; ctx.textBaseline='middle';
-  var tw = ctx.measureText(txt).width + 22, bx = W-14-tw, by=14, bh=22;
+  var tw = ctx.measureText(txt).width + 22, bx = W-14-tw, by=44, bh=22;   // second row — clears the ☰ tower button
   ctx.fillStyle = youW ? '#efe7cf' : '#13242a'; roundRect(bx,by,tw,bh,11); ctx.fill();
   ctx.strokeStyle = youW ? '#caa84a' : '#5be0c0'; ctx.lineWidth=1.5; roundRect(bx,by,tw,bh,11); ctx.stroke();
   ctx.fillStyle = youW ? '#2a2208' : '#dffff6'; ctx.textAlign='center'; ctx.fillText(txt, bx+tw/2, by+bh/2);
-  // turn / thinking
-  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='bold 12px Trebuchet MS';
-  var status = G.over ? '' : (G.thinking ? '… ' + G.rung.name.split(' ')[0] + ' is thinking' : (G.S.turn===G.pc ? 'Your move' : ''));
-  ctx.fillStyle = '#cdbcf2'; ctx.fillText(status, W-14, 46);
+  // turn / thinking — to the LEFT of the badge, same row
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='bold 11px Trebuchet MS';
+  var status = G.over ? '' : (G.thinking ? '… ' + G.rung.name.replace(/^The\s+/,'') + ' is thinking' : (G.S.turn===G.pc ? 'Your move' : ''));
+  ctx.fillStyle = '#cdbcf2'; ctx.fillText(status, bx-10, by+bh/2);
 }
 function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 function loop(){ render(); raf = requestAnimationFrame(loop); }
 
 // ---- screens ----
-function hideOverlays(){ ['menu-screen','ladder-screen','over-screen'].forEach(function(id){ document.getElementById(id).classList.add('hidden'); }); document.getElementById('promo-screen').classList.add('hidden'); }
-function showMenu(){ G=null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('resign-btn').classList.add('hidden'); hidePortrait(); hideOverlays(); document.getElementById('menu-screen').classList.remove('hidden'); }
+function hideOverlays(){ ['menu-screen','ladder-screen','over-screen','boss-screen'].forEach(function(id){ document.getElementById(id).classList.add('hidden'); }); document.getElementById('promo-screen').classList.add('hidden'); }
+function showMenu(){ G=null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('resign-btn').classList.add('hidden'); hidePortrait(); hideBooth(); hideOverlays(); refreshMenu(); document.getElementById('menu-screen').classList.remove('hidden'); }
 function showLadder(){
   if (G){ G.over = true; }
   document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('resign-btn').classList.add('hidden');
-  hidePortrait();
+  hidePortrait(); hideBooth();
   hideOverlays();
-  var prog = loadProg(), host = document.getElementById('rungs'); host.innerHTML = '';
-  LADDER.forEach(function(rung, i){
-    var unlocked = i <= prog.unlocked, beaten = !!prog.beaten[i], pc = colorForRung(i);
+  var prog = loadProg(), cur = nextFloor(prog), host = document.getElementById('rungs'); host.innerHTML = '';
+  var lastZone = null, curEl = null;
+  for (var i = LADDER.length - 1; i >= 0; i--){         // top floor (CEO) down to the street (Argus)
+    var rung = LADDER[i], unlocked = i <= prog.unlocked, beaten = !!prog.beaten[i], isCur = (i === cur), pc = colorForRung(i);
+    var zone = zoneOf(rung.region);
+    if (zone !== lastZone){                              // #7 — region band header
+      var zh = document.createElement('div'); zh.className = 'tw-zone'; zh.style.color = rung.accent;
+      zh.innerHTML = '<span class="tz-name">'+zone+'</span><span class="tz-line"></span>';
+      host.appendChild(zh); lastZone = zone;
+    }
     var el = document.createElement('div');
-    el.className = 'rung' + (unlocked?'':' locked') + (beaten?' beaten':'');
-    el.innerHTML = '<div class="rg" style="color:'+rung.accent+'">'+rung.glyph+'</div>' +
-      '<div class="rb"><div class="rn">'+(i+1)+'. '+rung.name+'</div><div class="rd">'+rung.blurb+'</div></div>' +
-      '<div class="rs" style="color:'+(beaten?'#6bffb8':unlocked?'#F5C518':'#7a6aae')+'">'+(beaten?'✓ beaten':unlocked?('play '+(pc==='w'?'♔':'♚')):'🔒')+'</div>';
-    if (unlocked) el.onclick = function(){ startRung(i); };
+    el.className = 'tw-floor' + (unlocked?'':' locked') + (beaten?' beaten':'') + (isCur?' current':'');
+    var chip = beaten  ? '<span class="tw-chip" style="background:#123626;color:#6bffb8">✓ CLEARED</span>'
+             : isCur    ? '<span class="tw-chip" style="background:#F5C518;color:#1a0f3d">▶ CLIMB</span>'
+             : unlocked ? '<span class="tw-chip" style="background:#2a1a5e;color:#cdbcf2">↻ REPLAY</span>'
+             :            '<span class="tw-chip" style="background:#1a1330;color:#7a6aae">🔒 LOCKED</span>';
+    el.innerHTML =
+      '<div class="tw-badge" style="border-color:'+rung.accent+';color:'+rung.accent+'">'+rung.glyph+'</div>' +
+      '<div class="tw-body"><div class="tw-name">'+(i+1)+'. '+rung.name+'</div>' +
+        '<div class="tw-sub">'+playstyleOf(rung.persona)+' · '+difficultyOf(rung.persona)+' · you play '+(pc==='w'?'♔':'♚')+'</div>' +
+        (isCur?'<span class="tw-here">YOU ARE HERE</span>':'') +
+      '</div>' + chip;
+    if (unlocked) (function(k){ el.onclick = function(){ showBossCard(k); }; })(i);
+    if (isCur) curEl = el;
     host.appendChild(el);
-  });
+  }
   document.getElementById('ladder-screen').classList.remove('hidden');
+  if (curEl) setTimeout(function(){ try { curEl.scrollIntoView({block:'center', behavior:'smooth'}); } catch(e){} }, 60);
 }
 
 document.getElementById('play-btn').onclick = showLadder;
@@ -474,7 +644,13 @@ if (window.PJCC && PJCC.ready) PJCC.ready.then(function(){
   }); } catch(e){}
 });
 
-showMenu();
+// open state: a #climb / #tower / #continue hash (e.g. the homepage "Continue the climb"
+// deep-link) drops you straight onto the Tower; otherwise the title screen.
+(function(){
+  var h = (location.hash||'').toLowerCase();
+  if (h === '#climb' || h === '#tower' || h === '#continue') showLadder();
+  else showMenu();
+})();
 loop();
 </script>
 </body>
