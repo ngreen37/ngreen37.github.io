@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PJCC: Notation Blitz v3.7</title>
+<title>PJCC: Notation Blitz v3.8</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -175,9 +175,6 @@
     display: inline-block;
   }
   .ver { font-size: 0.5em; color: #ff8fd0; vertical-align: super; letter-spacing: 1px; }
-  .bpm-row { display: flex; align-items: center; gap: 10px; margin: 8px 0 0; justify-content: center; }
-  #bpm-slider { width: 190px; accent-color: #F5C518; }
-  #bpm-label { font-size: 13px; color: #c9a7ff; min-width: 62px; text-align: left; }
   .pick.on { background: #F5C518; color: #1a0f3d; border-color: #F5C518; font-weight: bold; }
   /* RECALL keypad */
   .keypad { margin-top: 8px; width: 100%; }
@@ -200,6 +197,48 @@
   .perk-pick .pk-ico { font-size: 30px; line-height: 1; }
   .perk-pick .pk-name { font-size: 14px; font-weight: bold; color: #F5C518; }
   .perk-pick .pk-desc { font-size: 10px; opacity: 0.85; line-height: 1.3; }
+
+  /* ===== Intro / attract screen (shown first, before the picker) ===== */
+  .overlay.intro {
+    z-index: 30; overflow: hidden; cursor: pointer;
+    background: radial-gradient(125% 95% at 50% 20%, #2a1466 0%, #180a38 62%, #100522 100%);
+  }
+  .intro-inner { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; }
+  .intro .ov-eyebrow { margin-bottom: 16px; }
+  .intro-logo { display: flex; flex-direction: column; align-items: center; line-height: 0.9; }
+  .intro-logo span {
+    font-weight: bold; letter-spacing: 7px; color: #F5C518;
+    text-shadow: 0 0 12px rgba(245,197,24,0.55), 0 0 34px rgba(245,197,24,0.32);
+    animation: introGlow 2.4s ease-in-out infinite;
+  }
+  .intro-logo .il-1 { font-size: 38px; }
+  .intro-logo .il-2 { font-size: 62px; color: #ffd740; letter-spacing: 10px;
+    text-shadow: 0 0 16px rgba(245,197,24,0.7), 0 0 44px rgba(245,197,24,0.42); }
+  @keyframes introGlow {
+    0%,100% { text-shadow: 0 0 12px rgba(245,197,24,0.5), 0 0 30px rgba(245,197,24,0.28); }
+    50%     { text-shadow: 0 0 20px rgba(245,197,24,0.85), 0 0 52px rgba(245,197,24,0.5); }
+  }
+  .intro-princess {
+    width: 92px; height: 92px; border-radius: 50%; object-fit: cover; object-position: center top;
+    border: 3px solid #F5C518; box-shadow: 0 0 26px rgba(245,197,24,0.4); margin: 18px 0 10px;
+    animation: introBob 1.5s ease-in-out infinite;
+  }
+  @keyframes introBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+  .intro-tag { font-size: 14px; color: #c9a7ff; letter-spacing: 1px; margin-bottom: 24px; }
+  .intro-start {
+    font-size: 20px; font-weight: bold; letter-spacing: 3px; color: #f0e6ff;
+    padding: 11px 24px; border: 2px solid #6bffb8; border-radius: 6px; background: rgba(107,255,184,0.08);
+    animation: introBlink 1.05s steps(1, end) infinite;
+  }
+  @keyframes introBlink { 0%,54% { opacity: 1; } 55%,100% { opacity: 0.3; } }
+  .intro-ver { position: absolute; bottom: 10px; right: 14px; z-index: 3;
+    font-size: 11px; color: #9a7fd4; letter-spacing: 2px; }
+  .intro-chips { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+  .intro-chip {
+    position: absolute; left: 100%; font-family: 'Courier New', monospace; font-weight: bold;
+    color: #F5C518; opacity: 0.13; white-space: nowrap; animation: introDrift linear infinite;
+  }
+  @keyframes introDrift { from { transform: translateX(0); } to { transform: translateX(-640px); } }
 </style>
 </head>
 <body>
@@ -214,19 +253,32 @@
     <div class="kp-row" id="kp-ranks"></div>
   </div>
 
+  <!-- INTRO / ATTRACT SCREEN (shown first) -->
+  <div class="overlay intro" id="intro-screen">
+    <div class="intro-chips" id="intro-chips" aria-hidden="true"></div>
+    <div class="intro-inner">
+      <div class="ov-eyebrow">Checker Town Arcade</div>
+      <div class="intro-logo">
+        <span class="il-1">NOTATION</span>
+        <span class="il-2">BLITZ</span>
+      </div>
+      <img class="intro-princess" id="intro-princess" src="/assets/images/Princess_Color_v01.jpg" alt="">
+      <div class="intro-tag">Read the board at the speed of thought.</div>
+      <div class="intro-start" id="intro-start">▶ PRESS&nbsp;START</div>
+    </div>
+    <div class="intro-ver">v3.8</div>
+  </div>
+
   <!-- TITLE SCREEN -->
   <div class="overlay" id="title-screen">
     <div class="ov-eyebrow" id="ov-eyebrow">Checker Town · Coordinate Drill</div>
-    <div class="ov-title">NOTATION BLITZ <span class="ver" id="ov-ver">v3.7</span></div>
+    <div class="ov-title">NOTATION BLITZ <span class="ver" id="ov-ver">v3.8</span></div>
 
     <div class="ov-group-label">Mode</div>
     <div class="btn-row" id="mode-row">
       <button class="pick sel" data-mode="coords">Drill<small>fixed run</small></button>
       <button class="pick" data-mode="endless">Endless<small>ramps up</small></button>
-      <button class="pick" data-mode="freestyle">Freestyle<small>BPM adapts to you</small></button>
       <button class="pick" data-mode="recall">Recall<small>name the square</small></button>
-      <button class="pick" data-mode="dual">2-Hand<small>two lanes at once</small></button>
-      <button class="pick" data-mode="extreme">Extreme<small>board flips!</small></button>
       <button class="pick" data-mode="daily">📅 Daily<small>same chart · timing board</small></button>
     </div>
 
@@ -236,14 +288,8 @@
       <button class="pick sel" data-diff="medium">Medium<small>golden</small></button>
       <button class="pick" data-diff="hard">Fast<small>crimson</small></button>
     </div>
-    <div class="bpm-row">
-      <input type="range" id="bpm-slider" min="36" max="120" step="1" value="60" aria-label="Tempo BPM">
-      <span id="bpm-label">60 BPM</span>
-    </div>
 
-    <div class="btn-row" style="margin-top:10px;">
-      <button class="pick" id="black-toggle" data-on="0">⬛⬜ Black side · 2-Tone</button>
-      <button class="pick" id="warmup-toggle" data-on="0">🔥 Warmup<small>files &amp; ranks first</small></button>
+    <div class="btn-row" style="margin-top:12px;">
       <button class="pick" id="perks-toggle" data-on="0">🎁 Perks<small>pick buffs mid-run</small></button>
     </div>
 
@@ -429,22 +475,6 @@ function randCoordCall(prev) {
   return { san: xyToAlg(x, y), x, y };
 }
 
-// Warmup calls: a short files-only / ranks-only drill that runs *before* the mixed
-// square run. A 'file' call ('e') accepts a click on any square of that column; a
-// 'rank' call ('4') accepts any square of that row. Calls carry kind + a target index.
-function makeWarmupCalls(n) {
-  const out = [];
-  let prevKind = null, prevIdx = -1;
-  for (let i = 0; i < n; i++) {
-    const kind = (i % 2 === 0) ? 'file' : 'rank';
-    let idx; do { idx = (NRAND()*8)|0; } while (kind === prevKind && idx === prevIdx);
-    if (kind === 'file') out.push({ san: 'abcdefgh'[idx], kind: 'file', fileIdx: idx, x: idx, y: 3 });
-    else                 out.push({ san: String(8 - idx), kind: 'rank', rankIdx: idx, x: 3, y: idx });
-    prevKind = kind; prevIdx = idx;
-  }
-  return out;
-}
-
 // Perks (opt-in): picked at streak milestones, they persist for the rest of the run.
 const PERK_DEFS = [
   { type: 'wide',   ico: '🎯', name: 'Wider Window', desc: '+30% timing leeway' },
@@ -525,10 +555,6 @@ function newGame(mode, diff) {
   } else {
     OPENINGS[mode].line.forEach(([san, sq]) => { const p = algToXY(sq); queue.push({ san, x: p.x, y: p.y }); });
   }
-  // Warmup: prepend a short files-only / ranks-only drill before the mixed run.
-  // (Skipped for Recall/Dual — those change the input model.)
-  const warmup = (selWarmup && !daily && !reverse && !dual);
-  if (warmup) queue.unshift.apply(queue, makeWarmupCalls(8));
   const perksOn = (selPerks && !daily);
   const callInterval = spb * bpc;
 
@@ -1394,10 +1420,9 @@ function loop() {
 }
 
 // ---- Screens / flow ----
-let selMode = 'coords', selDiff = 'medium', selBpm = 60, selBlack = false, selWarmup = false, selPerks = false;
+let selMode = 'coords', selDiff = 'medium', selBpm = 60, selBlack = false, selPerks = false;
 const DIFF_BPM = { easy: 43, medium: 60, hard: 94 };
 const TREND_KEY = 'pjcc.notation.trend.v1';
-function bucketOf(bpm) { return bpm < 52 ? 'easy' : bpm <= 78 ? 'medium' : 'hard'; }
 function bpmCalls(bpm) { return bpm < 52 ? 18 : bpm <= 78 ? 22 : 28; }
 function loadTrend() { try { return JSON.parse(localStorage.getItem(TREND_KEY)) || []; } catch (e) { return []; } }
 function saveTrend(a) { try { localStorage.setItem(TREND_KEY, JSON.stringify(a.slice(-20))); } catch (e) {} }
@@ -1421,36 +1446,19 @@ if (modeRow) modeRow.addEventListener('click', e => {
   setEyebrow(); updateTitleBest();
 });
 function setDiffHighlight() { document.querySelectorAll('#diff-row .pick').forEach(p => p.classList.toggle('sel', p.dataset.diff === selDiff)); }
-function syncBpmUI() {
-  const sl = document.getElementById('bpm-slider'), lab = document.getElementById('bpm-label');
-  if (sl) sl.value = selBpm; if (lab) lab.textContent = selBpm + ' BPM';
-  setDiffHighlight();
-}
+function syncBpmUI() { setDiffHighlight(); }
 function setEyebrow() {
   const e = document.getElementById('ov-eyebrow');
   if (!e) return;
-  if (selMode === 'extreme') e.textContent = 'EXTREME · the board keeps flipping ⟲';
-  else if (selMode === 'freestyle') e.textContent = 'FREESTYLE · the tempo rubber-bands to your level';
-  else if (selMode === 'recall') e.textContent = 'RECALL · a square lights up — name it on the keypad';
-  else if (selMode === 'dual') e.textContent = '2-HAND · two lanes at once — click both squares';
+  if (selMode === 'recall') e.textContent = 'RECALL · a square lights up — name it on the keypad';
+  else if (selMode === 'endless') e.textContent = 'ENDLESS · the tempo ramps up until your lives run out';
   else if (selMode === 'daily') e.textContent = '📅 DAILY · same chart for everyone · timing-accuracy board';
-  else e.textContent = selBlack ? '2-Tone Drill · “A Message to you, Princess” 🎺' : 'Checker Town · Coordinate Drill';
+  else e.textContent = 'Checker Town · Coordinate Drill';
 }
 document.getElementById('diff-row').addEventListener('click', e => {
   const b = e.target.closest('[data-diff]'); if (!b) return;
   selDiff = b.dataset.diff; selBpm = DIFF_BPM[selDiff];
   syncBpmUI(); newGame(selMode, selDiff); updateTitleBest();
-});
-document.getElementById('bpm-slider').addEventListener('input', e => {
-  selBpm = parseInt(e.target.value, 10) || 60; selDiff = bucketOf(selBpm);
-  syncBpmUI(); newGame(selMode, selDiff); updateTitleBest();
-});
-document.getElementById('black-toggle').addEventListener('click', function () {
-  selBlack = !selBlack; this.dataset.on = selBlack ? '1' : '0'; this.classList.toggle('on', selBlack);
-  setEyebrow(); newGame(selMode, selDiff); updateTitleBest();
-});
-document.getElementById('warmup-toggle').addEventListener('click', function () {
-  selWarmup = !selWarmup; this.dataset.on = selWarmup ? '1' : '0'; this.classList.toggle('on', selWarmup);
 });
 document.getElementById('perks-toggle').addEventListener('click', function () {
   selPerks = !selPerks; this.dataset.on = selPerks ? '1' : '0'; this.classList.toggle('on', selPerks);
@@ -1614,6 +1622,38 @@ function finish() {
 
   document.getElementById('results-screen').classList.remove('hidden');
 }
+
+// ---- Intro / attract screen: drifting notation chips, then tap to enter ----
+(function () {
+  const wrap = document.getElementById('intro-chips');
+  if (!wrap) return;
+  const chips = ['e4','d5','Nf3','c6','Bb5','Qh4','O-O','g6','Nc3','f5','Re1','a3','Bg7','d4','Kf1','h5','Bc4','Nd7'];
+  for (let i = 0; i < 9; i++) {
+    const s = document.createElement('span');
+    s.className = 'intro-chip';
+    s.textContent = chips[(Math.random() * chips.length) | 0];
+    const dur = 7 + Math.random() * 7;
+    s.style.top = (6 + Math.random() * 86) + '%';
+    s.style.fontSize = (14 + Math.random() * 20) + 'px';
+    s.style.animationDuration = dur.toFixed(1) + 's';
+    s.style.animationDelay = (-Math.random() * dur).toFixed(1) + 's';
+    wrap.appendChild(s);
+  }
+})();
+function enterFromIntro() {
+  const intro = document.getElementById('intro-screen');
+  if (!intro || intro.classList.contains('hidden')) return;
+  initAudio();                                   // first gesture — warm up the audio clock
+  if (actx && actx.state === 'suspended') actx.resume();
+  intro.classList.add('hidden');
+}
+document.getElementById('intro-screen').addEventListener('pointerdown', enterFromIntro);
+window.addEventListener('keydown', e => {
+  const intro = document.getElementById('intro-screen');
+  if (intro && !intro.classList.contains('hidden') && (e.key === 'Enter' || e.key === ' ')) {
+    e.preventDefault(); enterFromIntro();
+  }
+});
 
 // Boot
 newGame(selMode, selDiff);   // so the board renders behind the title screen
