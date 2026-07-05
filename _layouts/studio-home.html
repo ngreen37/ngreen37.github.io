@@ -214,16 +214,15 @@
   .studio-lean.lean-games   { background:radial-gradient(circle at 28% 72%, rgba(60,188,252,0.047) 0%, rgba(60,188,252,0.033) 25%, rgba(60,188,252,0.019) 45%, rgba(60,188,252,0.009) 65%, rgba(60,188,252,0.0027) 82%, transparent 100%); }
   .studio-lean.lean-patreon { background:radial-gradient(circle at 72% 72%, rgba(45,196,130,0.047) 0%, rgba(45,196,130,0.033) 25%, rgba(45,196,130,0.019) 45%, rgba(45,196,130,0.009) 65%, rgba(45,196,130,0.0027) 82%, transparent 100%); }
 
-  /* Secret-star intro — the ✦ hides *behind* the quad grid, sized so the four
-     cards conceal its body and only its points peek through the gaps between
-     them (ready to poke out). It holds for a beat, then sneaks back out to
-     rejoin the ambient drifters. Hold time is set by the JS below (7s). */
+  /* Secret-star intro — the ✦ hides *behind* the quad grid the whole time: kept
+     small so the four cards conceal its body and only its points peek through the
+     centre cross where the quads meet. It never sneaks out — a quiet easter egg. */
   .studio-quad-grid { position:relative; }          /* anchor + stacking ctx for the behind-quads star */
   .drift-piece.is-behind-quads {
     position:absolute; left:50%; top:50%; bottom:auto; right:auto;
     transform:translate(-50%,-50%);
-    /* Kept smaller than the grid so the quads hide it — no more screen-filling star. */
-    font-size:clamp(80px, 15vw, 180px);
+    /* Small the whole time — just its points peek out between the cards. */
+    font-size:clamp(44px, 6vw, 84px);
     color:rgba(205,205,225,0.2);
     z-index:-1; pointer-events:none;                /* sits behind the quad cards */
     filter:drop-shadow(0 0 14px rgba(160,140,255,0.16));
@@ -233,15 +232,6 @@
   @keyframes secret-star-float {
     0%,100% { transform:translate(-50%,-52%) rotate(-3deg); }
     50%     { transform:translate(-50%,-48%) rotate(3deg); }
-  }
-  /* the "sneak out" — rise up, shrink and slip away from behind the quads;
-     JS then hands it back to the drifters so the ✦ link stays live. */
-  .drift-piece.is-behind-quads.is-sneaking {
-    animation:secret-star-out 2.4s ease-in forwards;
-  }
-  @keyframes secret-star-out {
-    0%   { transform:translate(-50%,-50%) scale(1)   rotate(0deg);   opacity:0.9; }
-    100% { transform:translate(-80%,-235%) scale(0.4) rotate(-14deg); opacity:0; }
   }
 
   /* Idea #3 — the periodic sigil bloom among the drifters */
@@ -473,21 +463,13 @@
       glyphs.forEach(function (g) { seal.appendChild(g); });
     }
 
-    // Secret-star intro — the ✦ starts tucked behind the quad grid, holds for
-    // seven seconds, then sneaks back out to rejoin the ambient drift.
+    // Secret-star easter egg — the ✦ lives tucked behind the quad grid, small,
+    // with only its points peeking through the centre cross. It stays put.
     var star = document.getElementById('drift-secret');
     var grid = document.querySelector('.studio-quad-grid');
-    if (star && grid && !reduce) {
-      var driftHome = star.parentNode;
+    if (star && grid) {
       star.classList.add('is-behind-quads');
-      grid.appendChild(star);                          // tuck it behind the quad cards, centred on the grid
-      setTimeout(function () {
-        star.classList.add('is-sneaking');             // rise up and slip away
-        setTimeout(function () {
-          star.classList.remove('is-behind-quads', 'is-sneaking');
-          driftHome.appendChild(star);                 // back to the drifters, resumes the rising drift
-        }, 2400);                                       // matches secret-star-out
-      }, 7000);
+      grid.appendChild(star);                          // tuck it behind the quad cards, centred on the grid — and leave it
     }
   })();
   </script>

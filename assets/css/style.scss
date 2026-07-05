@@ -3217,12 +3217,15 @@ body.theme-bw .ribbon-track {
     color: rgba(200, 200, 200, 0.072);   /* secret star — dimmed 10% */
     animation-delay: 19s;
   }
-  &:nth-child(6) {
-    left: 54%;
-    bottom: 36%;
-    font-size: 27px;
-    color: rgba(255, 180, 40, 0.08);
-    animation: piece-drift 52s linear infinite;
+  &:nth-child(6) {   /* 将 — Shogi Island: parked in the right gutter so it clears the
+                        centred (solid-black) content panel and reads like the あ drifter,
+                        instead of drifting behind the quads dead-centre and vanishing. */
+    left: 89%;
+    bottom: 40%;
+    font-size: 40px;
+    color: rgba(255, 180, 40, 0.13);
+    animation: piece-drift 46s linear infinite;
+    animation-delay: 5s;
   }
 
   &:hover {
