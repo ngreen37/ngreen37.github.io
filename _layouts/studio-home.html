@@ -137,12 +137,40 @@
 
       </div>
 
-      {% comment %} The Gauntlet — real chess vs the ladder (relocated here from /games/) {% endcomment %}
-      <a class="studio-gauntlet" href="{{ '/games/the-gauntlet/' | relative_url }}">
-        <span class="sg-glyph" aria-hidden="true">♔</span>
-        <span class="sg-text"><b data-jp="ガントレットに挑め">Enter the Gauntlet</b></span>
-        <span class="sg-go" aria-hidden="true">&rarr;</span>
+      {% comment %} The Gauntlet — real chess vs the ladder (relocated here from /games/).
+           The headline game (the "main quest"); PJCC itself is the flagship. Progress pips +
+           CTA are hydrated from the game's own localStorage so a returning player is invited
+           to CONTINUE the climb. Decorative bits (eyebrow/sub/pips) are dropped on phones to
+           keep the splash on one screen. {% endcomment %}
+      <a class="studio-gauntlet" id="studio-gauntlet" href="{{ '/games/the-gauntlet/' | relative_url }}">
+        <span class="sg-glyph" aria-hidden="true">♛</span>
+        <span class="sg-text">
+          <span class="sg-eyebrow" aria-hidden="true">◆ The Main Quest</span>
+          <b class="sg-title" data-jp="ガントレットに挑め">Enter the Gauntlet</b>
+          <span class="sg-sub" data-jp="十人の強敵、ひとつの王冠。本気のチェス。">Ten champions. One crown. Real chess.</span>
+          <span class="sg-pips" id="sg-pips" aria-hidden="true"></span>
+        </span>
+        <span class="sg-cta" id="sg-cta" aria-hidden="true">▶ Climb</span>
       </a>
+      <script>
+      // Splash Gauntlet — hydrate progress pips + CTA from the game's own save (works offline/signed-out).
+      (function () {
+        var NAMES = ['Argus the Guard-Dog','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Rival','The CEO'];
+        var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
+        var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;
+        for (var i = 0; i < NAMES.length; i++) { if (beaten[i]) cleared++; }
+        for (var j = 0; j < NAMES.length; j++) { if (!beaten[j]) { cur = j; break; } }
+        var pipHost = document.getElementById('sg-pips');
+        if (pipHost) { var h = '';
+          for (var k = 0; k < NAMES.length; k++) { h += '<i class="' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></i>'; }
+          pipHost.innerHTML = h; }
+        var cta = document.getElementById('sg-cta'), link = document.getElementById('studio-gauntlet');
+        if (cleared > 0 && cta) {
+          if (cur >= NAMES.length) { cta.textContent = '♛ Crowned'; }
+          else { cta.textContent = '▶ Continue'; if (link) link.setAttribute('href', link.getAttribute('href') + '#climb'); }
+        }
+      })();
+      </script>
 
       {% comment %} Idea #2 — one warm creed line: the heart under the spy-tech. {% endcomment %}
       <p class="studio-creed" data-jp="旅を信じて。犬についていけ。">Trust the journey. Follow the dog.</p>
@@ -170,15 +198,27 @@
   <div class="studio-warp" id="studio-warp" aria-hidden="true"></div>
 
   <style>
-  .studio-gauntlet { display:flex; align-items:center; gap:13px; max-width:480px; margin:18px auto 0; text-decoration:none;
-    background:linear-gradient(135deg, rgba(42,28,14,0.92), rgba(58,42,16,0.92)); border:2px solid #F5C518; border-radius:14px;
-    padding:11px 18px; box-shadow:0 0 26px -12px #F5C518; transition:transform .12s, box-shadow .12s; }
-  .studio-gauntlet:hover { transform:translateY(-2px); box-shadow:0 0 34px -8px #F5C518; }
-  .studio-gauntlet .sg-glyph { font-size:1.9rem; line-height:1; color:#F5C518; filter:drop-shadow(0 2px 5px rgba(0,0,0,0.5)); }
-  .studio-gauntlet .sg-text { display:flex; flex-direction:column; line-height:1.2; }
-  .studio-gauntlet .sg-text b { color:#fff; font-size:1rem; font-weight:800; }
+  .studio-gauntlet { display:flex; align-items:center; gap:14px; max-width:500px; margin:18px auto 0; text-decoration:none;
+    position:relative; overflow:hidden;
+    background:linear-gradient(135deg, rgba(42,28,14,0.92), rgba(58,42,16,0.94)); border:2px solid #F5C518; border-radius:15px;
+    padding:12px 18px; box-shadow:0 0 26px -12px #F5C518, inset 0 0 42px -26px rgba(245,197,24,0.5);
+    transition:transform .12s, box-shadow .12s; }
+  .studio-gauntlet::before { content:''; position:absolute; right:-40px; top:-40px; width:150px; height:150px; border-radius:50%;
+    background:radial-gradient(circle, rgba(245,197,24,0.16), transparent 70%); pointer-events:none; }
+  .studio-gauntlet:hover { transform:translateY(-2px); box-shadow:0 0 36px -8px #F5C518, inset 0 0 42px -26px rgba(245,197,24,0.5); }
+  .studio-gauntlet .sg-glyph { font-size:2.1rem; line-height:1; color:#F5C518; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.55)); flex-shrink:0; position:relative; z-index:1; }
+  .studio-gauntlet .sg-text { display:flex; flex-direction:column; line-height:1.22; min-width:0; position:relative; z-index:1; }
+  .studio-gauntlet .sg-eyebrow { color:#F5C518; font-size:0.6rem; font-weight:900; letter-spacing:0.14em; opacity:0.85; text-transform:uppercase; }
+  .studio-gauntlet .sg-title { color:#fff; font-size:1.05rem; font-weight:800; margin:1px 0; }
   .studio-gauntlet .sg-sub { color:#e7d6b0; font-size:0.74rem; }
-  .studio-gauntlet .sg-go { color:#F5C518; font-weight:900; font-size:1.2rem; margin-left:auto; }
+  .studio-gauntlet .sg-pips { display:flex; gap:3px; margin-top:6px; }
+  .studio-gauntlet .sg-pips i { width:12px; height:5px; border-radius:2px; background:rgba(255,255,255,0.15); }
+  .studio-gauntlet .sg-pips i.done { background:#6bffb8; }
+  .studio-gauntlet .sg-pips i.cur { background:#F5C518; box-shadow:0 0 6px #F5C518; }
+  .studio-gauntlet .sg-cta { margin-left:auto; flex-shrink:0; position:relative; z-index:1; align-self:center;
+    background:linear-gradient(135deg,#F5C518,#ffd740); color:#1a0f3d; font-weight:900; font-size:0.82rem;
+    border-radius:999px; padding:8px 16px; white-space:nowrap; box-shadow:0 3px 0 #7a5e0a; }
+  .studio-gauntlet:hover .sg-cta { filter:brightness(1.06); }
 
   /* Planted sigil seal — a faint ARG breadcrumb under the Gauntlet.
      Kept very faint here, and no hover brighten (overrides the site-wide
@@ -281,7 +321,12 @@
 
     .studio-gauntlet { max-width:100%; margin-top:0; padding:8px 14px; gap:10px; }
     .studio-gauntlet .sg-glyph { font-size:1.5rem; }
-    .studio-gauntlet .sg-text b { font-size:0.9rem; }
+    .studio-gauntlet .sg-title { font-size:0.9rem; }
+    /* drop the decorative bits on phones so the bar stays one compact line */
+    .studio-gauntlet .sg-eyebrow,
+    .studio-gauntlet .sg-sub,
+    .studio-gauntlet .sg-pips { display:none; }
+    .studio-gauntlet .sg-cta { font-size:0.78rem; padding:7px 13px; }
 
     /* drop the purely decorative pieces so everything fits one screen */
     .studio-creed,

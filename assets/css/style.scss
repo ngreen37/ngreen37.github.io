@@ -1242,10 +1242,11 @@ pre code {
    little more lazily than the skinny ones. --- */
 .home-drips {
   position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0;
-  opacity: 0.72;   /* whole drip field dialed down (0.85 -> another 15% dimmer) */
-  /* fade the whole drip layer out through the bottom third */
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 58%, transparent 90%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 58%, transparent 90%);
+  opacity: 0.65;   /* whole drip field dialed down again (0.72 -> another 10% dimmer) */
+  /* runs now reach ALL the way down past the counters to the clock + Ep 1 countdown;
+     the fade holds solid longer and only dissolves right at the very foot (no pooling). */
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 85%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 85%, transparent 100%);
 }
 .drip {
   position: absolute;
@@ -1254,7 +1255,8 @@ pre code {
   width: var(--w);
   height: var(--len);
   border-radius: 0 0 var(--w) var(--w);
-  background: linear-gradient(180deg, rgba(var(--col), 0.72) 0%, rgba(var(--col), 0.42) 40%, rgba(var(--col), 0.12) 75%, transparent 100%);
+  /* --b = per-drip brightness (default 1); lets each run read brighter or dimmer */
+  background: linear-gradient(180deg, rgba(var(--col), calc(0.72 * var(--b, 1))) 0%, rgba(var(--col), calc(0.42 * var(--b, 1))) 40%, rgba(var(--col), calc(0.12 * var(--b, 1))) 75%, transparent 100%);
   transform-origin: top center;
   animation: drip-run var(--dur, 8s) ease-in-out infinite;
   animation-delay: var(--delay, 0s);
@@ -1271,7 +1273,7 @@ pre code {
 .drip--blob {
   height: calc(var(--w) * 2.6);
   border-radius: 48% 48% 50% 50% / 38% 38% 62% 62%;
-  background: radial-gradient(ellipse at 46% 32%, rgba(var(--col), 0.68), rgba(var(--col), 0.26) 62%, transparent 82%);
+  background: radial-gradient(ellipse at 46% 32%, rgba(var(--col), calc(0.68 * var(--b, 1))), rgba(var(--col), calc(0.26 * var(--b, 1))) 62%, transparent 82%);
   animation: drip-bob var(--dur, 7s) ease-in-out infinite;
 }
 @keyframes drip-bob {
@@ -1283,7 +1285,7 @@ pre code {
 .drip--fall {
   width: calc(var(--w) * 1.1); height: calc(var(--w) * 1.6);
   border-radius: 50% 50% 50% 50% / 38% 38% 62% 62%;
-  background: radial-gradient(circle at 44% 30%, rgba(var(--col), 0.85), rgba(var(--col), 0.32) 66%, transparent 82%);
+  background: radial-gradient(circle at 44% 30%, rgba(var(--col), calc(0.85 * var(--b, 1))), rgba(var(--col), calc(0.32 * var(--b, 1))) 66%, transparent 82%);
   animation: drip-fall var(--dur, 6s) cubic-bezier(.55, 0, .9, .45) infinite;
 }
 @keyframes drip-fall {

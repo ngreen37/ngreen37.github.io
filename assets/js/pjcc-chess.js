@@ -139,8 +139,12 @@ function insufficientMaterial(S){
   return false;
 }
 // Repetition key: position identity ignoring the move clocks (board + turn + rights + ep).
+// Empty squares are '' in S.b, so they MUST be given a placeholder here — a bare
+// join('') would drop every gap and collapse different positions onto one key (a
+// rook sliding along an empty rank would read identical), firing a false threefold.
 function posKey(S){
-  return S.b.join('')+'|'+S.turn+'|'+(S.cast.K?'K':'')+(S.cast.Q?'Q':'')+(S.cast.k?'k':'')+(S.cast.q?'q':'')+'|'+S.ep;
+  var board=''; for(var i=0;i<64;i++){ board += S.b[i] || '.'; }
+  return board+'|'+S.turn+'|'+(S.cast.K?'K':'')+(S.cast.Q?'Q':'')+(S.cast.k?'k':'')+(S.cast.q?'q':'')+'|'+S.ep;
 }
 // Outcome of the position. repCount = how many times this exact position has occurred (for threefold).
 function gameResult(S, repCount){

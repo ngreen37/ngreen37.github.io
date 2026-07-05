@@ -32,11 +32,11 @@ layout: default
 .hero-cta--games:hover { transform: translateY(-2px); filter: brightness(1.05); box-shadow: 0 0 34px -4px rgba(245,197,24,0.85); }
 </style>
 
-{% comment %} ── 1b. PLAY STRIP — The Gauntlet + Game of the Week (moved here from /games/) ── {% endcomment %}
+{% comment %} ── 1b. PLAY STRIP — The Gauntlet (moved here from /games/) ── {% endcomment %}
 <section class="home-play">
   <a class="home-gauntlet" id="home-gauntlet" href="{{ '/games/the-gauntlet/' | relative_url }}">
     <div class="hg-main">
-      <div class="hg-eyebrow">◆ THE FLAGSHIP · THE ASCENT</div>
+      <div class="hg-eyebrow">◆ THE MAIN QUEST · THE ASCENT</div>
       <div class="hg-title"><span class="hg-glyph" aria-hidden="true">♛</span> The Gauntlet</div>
       <div class="hg-tag">Ten champions stand between <b>Checker Town</b> and the crown. Real chess, one game at a time — climb the tower to the <b>CEO</b>.</div>
       <div class="hg-pips" id="hg-pips" aria-hidden="true"></div>
@@ -47,7 +47,6 @@ layout: default
       <span class="hg-cta" id="hg-cta">▶ BEGIN THE CLIMB</span>
     </div>
   </a>
-  <div id="weekly" class="home-weekly" hidden></div>
 </section>
 <style>
 .home-play { display:flex; flex-wrap:wrap; gap:12px; align-items:stretch; justify-content:center; margin:16px 0 4px; }
@@ -82,39 +81,8 @@ layout: default
   .home-gauntlet .hg-side { align-items:center; flex-direction:row-reverse; justify-content:space-between; width:100%; }
   .home-gauntlet .hg-title { font-size:1.4rem; }
 }
-.home-weekly { display:inline-flex; align-items:center; gap:9px; background:linear-gradient(135deg,#241452,#34206f);
-  border:1px solid var(--gw,#F5C518); border-radius:14px; padding:9px 14px; font-size:0.82rem; color:#f0e6ff; }
-.home-weekly .gw-eye { color:#c9a7ff; font-weight:700; letter-spacing:0.03em; font-size:0.74rem; }
-.home-weekly .gw-name { color:#fff; font-weight:800; }
-.home-weekly .gw-play { background:var(--gw,#F5C518); color:#1a0f3d; font-weight:800; border-radius:999px; padding:5px 14px; text-decoration:none; }
-.home-weekly .gw-play:hover { filter:brightness(1.08); }
 </style>
 <script>
-// Game of the Week (moved from /games/): show the current bounty game as a chip.
-(function () {
-  var GW = {
-    'notation-run':{n:'Notation Blitz',a:'#F5C518'}, 'fork-in-the-road':{n:'Fork in the Road',a:'#5be0c0'},
-    'pirc-protocol':{n:'The Pirc Protocol',a:'#caa24a'},
-    'clearance-delta':{n:'Clearance: DELTA',a:'#ff9fb0'},
-    'sky-run':{n:'Sky Run',a:'#7fc8ff'}, 'sand-mine-depths':{n:'Sand Mine Depths',a:'#e0b25a'},
-    'tower-defense':{n:'Siege on Chess City',a:'#ff8fd0'}, 'dungeon':{n:'Princess Dungeon',a:'#ff8fd0'},
-    'zoomies':{n:"Crockett's Zoomies",a:'#ffb454'}, 'murphys-law':{n:"Murphy's Law",a:'#3cbcfc'},
-    'battle-room':{n:'The Battle Room',a:'#56d0ff'}, 'knights-tour':{n:"Knight's Tour",a:'#c96bff'}
-  };
-  var base = '{{ "/games/" | relative_url }}'.replace(/\/$/,'');
-  function show(){
-    if (!window.PJCC || !PJCC.bountyGame) return;
-    var key = PJCC.bountyGame();
-    var g = GW[key]; if (!g) return;
-    var el = document.getElementById('weekly'); if (!el) return;
-    el.style.setProperty('--gw', g.a);
-    el.innerHTML = '<span class="gw-eye">★ Game of the Week · 2× credits</span> <span class="gw-name">'+g.n+'</span>'+
-      '<a class="gw-play" href="'+base+'/'+key+'/">Play</a>';
-    el.hidden = false;
-  }
-  if (window.PJCC && PJCC.ready) PJCC.ready.then(show); else document.addEventListener('DOMContentLoaded', show);
-})();
-
 // The Gauntlet hero — resume state (#8), progress pips, and climb-rank badge (#6).
 // Reads the game's own localStorage so it works offline, signed-out, on any device.
 (function () {
@@ -258,30 +226,34 @@ layout: default
 {% assign vis_loc_count = 0 %}{% for c in site.locations %}{% unless site.hidden_location_urls contains c.url %}{% assign vis_loc_count = vis_loc_count | plus: 1 %}{% endunless %}{% endfor %}
 <div class="home-basement">
 <div class="home-drips" aria-hidden="true">
-  <span class="drip"             style="--x:3%;  --w:7px;  --len:158px; --col:245,197,24;  --dur:7.4s;  --delay:-0.5s"></span>
-  <span class="drip"             style="--x:8%;  --w:9px;  --len:210px; --col:176,142,255; --dur:9.6s;  --delay:-3.1s"></span>
-  <span class="drip drip--fall"  style="--x:12%; --w:6px;  --len:150px; --col:245,197,24;  --dur:5.4s;  --delay:-1.4s"></span>
-  <span class="drip drip--blob"  style="--x:17%; --w:15px; --len:70px;  --col:176,142,255; --dur:8.0s;  --delay:-4.2s"></span>
-  <span class="drip drip--thin"  style="--x:21%; --w:2px;  --len:120px; --col:245,197,24;  --dur:4.9s;  --delay:-0.8s"></span>
-  <span class="drip"             style="--x:25%; --w:5px;  --len:132px; --col:91,224,192;  --dur:6.2s;  --delay:-2.0s"></span>
-  <span class="drip"             style="--x:30%; --w:10px; --len:232px; --col:176,142,255; --dur:10.4s; --delay:-5.5s"></span>
-  <span class="drip drip--fall"  style="--x:34%; --w:5px;  --len:112px; --col:245,197,24;  --dur:5.0s;  --delay:-2.7s"></span>
-  <span class="drip drip--fall"  style="--x:39%; --w:6px;  --len:150px; --col:176,142,255; --dur:6.0s;  --delay:-1.1s"></span>
-  <span class="drip"             style="--x:43%; --w:6px;  --len:146px; --col:245,197,24;  --dur:6.6s;  --delay:-1.9s"></span>
-  <span class="drip drip--blob"  style="--x:48%; --w:12px; --len:60px;  --col:255,143,208; --dur:7.5s;  --delay:-3.3s"></span>
-  <span class="drip drip--thin"  style="--x:52%; --w:2px;  --len:170px; --col:176,142,255; --dur:5.8s;  --delay:-4.8s"></span>
-  <span class="drip"             style="--x:56%; --w:8px;  --len:198px; --col:245,197,24;  --dur:8.8s;  --delay:-3.7s"></span>
-  <span class="drip drip--fall"  style="--x:61%; --w:6px;  --len:160px; --col:91,224,192;  --dur:6.4s;  --delay:-0.9s"></span>
-  <span class="drip"             style="--x:65%; --w:7px;  --len:120px; --col:176,142,255; --dur:7.1s;  --delay:-2.4s"></span>
-  <span class="drip drip--blob"  style="--x:70%; --w:13px; --len:64px;  --col:245,197,24;  --dur:8.2s;  --delay:-4.9s"></span>
-  <span class="drip drip--thin"  style="--x:74%; --w:3px;  --len:100px; --col:245,197,24;  --dur:4.6s;  --delay:-1.2s"></span>
-  <span class="drip"             style="--x:78%; --w:9px;  --len:182px; --col:176,142,255; --dur:9.0s;  --delay:-5.1s"></span>
-  <span class="drip drip--fall"  style="--x:82%; --w:5px;  --len:140px; --col:245,197,24;  --dur:5.6s;  --delay:-2.2s"></span>
-  <span class="drip"             style="--x:86%; --w:6px;  --len:126px; --col:91,224,192;  --dur:6.9s;  --delay:-3.9s"></span>
-  <span class="drip drip--fall"  style="--x:90%; --w:5px;  --len:140px; --col:245,197,24;  --dur:5.6s;  --delay:-0.6s"></span>
-  <span class="drip drip--blob"  style="--x:93%; --w:11px; --len:58px;  --col:176,142,255; --dur:7.7s;  --delay:-2.8s"></span>
-  <span class="drip"             style="--x:96%; --w:5px;  --len:118px; --col:245,197,24;  --dur:5.8s;  --delay:-4.8s"></span>
-  <span class="drip drip--fall"  style="--x:98%; --w:5px;  --len:130px; --col:255,143,208; --dur:6.1s;  --delay:-1.6s"></span>
+  <span class="drip"             style="--x:2%;  --w:7px;  --len:400px; --col:245,197,24;  --dur:8.4s;  --delay:-0.5s; --b:1.15"></span>
+  <span class="drip"             style="--x:6%;  --w:9px;  --len:250px; --col:176,142,255; --dur:9.6s;  --delay:-3.1s; --b:0.8"></span>
+  <span class="drip drip--fall"  style="--x:10%; --w:6px;  --len:380px; --col:255,168,60;  --dur:6.2s;  --delay:-1.4s; --b:1.25"></span>
+  <span class="drip drip--blob"  style="--x:14%; --w:15px; --len:70px;  --col:138,99,240;  --dur:8.0s;  --delay:-4.2s; --b:0.9"></span>
+  <span class="drip"             style="--x:13%; --w:4px;  --len:120px; --col:91,224,192;  --dur:5.6s;  --delay:-3.5s; --b:0.65"></span>
+  <span class="drip drip--thin"  style="--x:19%; --w:2px;  --len:230px; --col:245,197,24;  --dur:5.4s;  --delay:-0.8s; --b:1.0"></span>
+  <span class="drip"             style="--x:23%; --w:5px;  --len:150px; --col:91,224,192;  --dur:6.2s;  --delay:-2.0s; --b:0.7"></span>
+  <span class="drip"             style="--x:27%; --w:10px; --len:430px; --col:176,142,255; --dur:10.8s; --delay:-5.5s; --b:1.05"></span>
+  <span class="drip drip--fall"  style="--x:31%; --w:5px;  --len:400px; --col:245,197,24;  --dur:6.0s;  --delay:-2.7s; --b:1.2"></span>
+  <span class="drip"             style="--x:35%; --w:6px;  --len:300px; --col:205,180,255; --dur:6.6s;  --delay:-1.1s; --b:0.85"></span>
+  <span class="drip"             style="--x:39%; --w:6px;  --len:150px; --col:255,143,208; --dur:6.0s;  --delay:-1.9s; --b:0.75"></span>
+  <span class="drip"             style="--x:42%; --w:5px;  --len:340px; --col:138,99,240;  --dur:7.8s;  --delay:-2.1s; --b:1.05"></span>
+  <span class="drip drip--blob"  style="--x:45%; --w:12px; --len:60px;  --col:96,206,255;  --dur:7.5s;  --delay:-3.3s; --b:1.1"></span>
+  <span class="drip drip--thin"  style="--x:48%; --w:2px;  --len:280px; --col:176,142,255; --dur:5.8s;  --delay:-4.8s; --b:0.95"></span>
+  <span class="drip"             style="--x:52%; --w:8px;  --len:420px; --col:245,197,24;  --dur:9.4s;  --delay:-3.7s; --b:1.0"></span>
+  <span class="drip drip--fall"  style="--x:56%; --w:6px;  --len:360px; --col:91,224,192;  --dur:6.4s;  --delay:-0.9s; --b:1.15"></span>
+  <span class="drip"             style="--x:60%; --w:7px;  --len:280px; --col:138,99,240;  --dur:7.1s;  --delay:-2.4s; --b:0.8"></span>
+  <span class="drip drip--blob"  style="--x:64%; --w:13px; --len:64px;  --col:245,197,24;  --dur:8.2s;  --delay:-4.9s; --b:1.2"></span>
+  <span class="drip drip--thin"  style="--x:68%; --w:3px;  --len:230px; --col:255,168,60;  --dur:5.0s;  --delay:-1.2s; --b:1.05"></span>
+  <span class="drip"             style="--x:72%; --w:9px;  --len:400px; --col:176,142,255; --dur:9.8s;  --delay:-5.1s; --b:0.9"></span>
+  <span class="drip drip--fall"  style="--x:76%; --w:5px;  --len:430px; --col:245,197,24;  --dur:6.6s;  --delay:-2.2s; --b:1.25"></span>
+  <span class="drip"             style="--x:80%; --w:6px;  --len:150px; --col:96,206,255;  --dur:6.9s;  --delay:-3.9s; --b:0.7"></span>
+  <span class="drip"             style="--x:82%; --w:8px;  --len:340px; --col:245,197,24;  --dur:8.6s;  --delay:-4.0s; --b:1.15"></span>
+  <span class="drip"             style="--x:84%; --w:5px;  --len:200px; --col:240,120,160; --dur:6.2s;  --delay:-1.5s; --b:0.85"></span>
+  <span class="drip drip--fall"  style="--x:88%; --w:5px;  --len:380px; --col:245,197,24;  --dur:6.0s;  --delay:-0.6s; --b:1.1"></span>
+  <span class="drip drip--blob"  style="--x:92%; --w:11px; --len:58px;  --col:176,142,255; --dur:7.7s;  --delay:-2.8s; --b:0.95"></span>
+  <span class="drip"             style="--x:95%; --w:6px;  --len:300px; --col:212,160,20;  --dur:6.4s;  --delay:-4.4s; --b:1.0"></span>
+  <span class="drip drip--thin"  style="--x:97%; --w:2px;  --len:250px; --col:255,143,208; --dur:5.6s;  --delay:-1.9s; --b:0.8"></span>
 </div>
 <div class="home-stats">
   <div class="stats-inner">

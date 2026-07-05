@@ -68,7 +68,7 @@ permalink: /games/
 }
 @media (max-width:600px){ .ghub-head::after { width:140px; } }
 
-/* ---- #9 THE FLAGSHIP — the Gauntlet promoted above the halls ---- */
+/* ---- #9 THE MAIN QUEST — the Gauntlet promoted above the halls ---- */
 .ghub-flagship { position:relative; z-index:2; display:flex; align-items:center; gap:18px; text-decoration:none;
   max-width:860px; margin:0 auto 24px; padding:20px 22px 18px 22px;
   background:linear-gradient(135deg,#241206 0%,#3a2a10 52%,#231640 100%);
@@ -105,9 +105,9 @@ permalink: /games/
 <div class="ghub">
   <a class="ghub-trophy" href="{{ '/leaderboards/' | relative_url }}" aria-label="Leaderboards & Hall of Fame" title="Leaderboards &amp; Hall of Fame">🏆</a>
 
-  <!-- ── THE FLAGSHIP: the Gauntlet, promoted above the halls ── -->
+  <!-- ── THE MAIN QUEST: the Gauntlet, promoted above the halls ── -->
   <a class="ghub-flagship" id="ghub-flagship" href="{{ '/games/the-gauntlet/' | relative_url }}">
-    <span class="gfl-badge">◆ THE FLAGSHIP</span>
+    <span class="gfl-badge">◆ THE MAIN QUEST</span>
     <span class="gfl-glyph" aria-hidden="true">♛</span>
     <span class="gfl-main">
       <span class="gfl-title">The Gauntlet</span>
