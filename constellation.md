@@ -46,8 +46,6 @@ permalink: /constellation/
       <line class="const-edge const-edge--companion" x1="400" y1="220" x2="240" y2="340"/>
       <!-- Princess ↔ Auston: companion -->
       <line class="const-edge const-edge--companion" x1="400" y1="220" x2="560" y2="340"/>
-      <!-- Narrator ↔ Rival: rivals →  respect -->
-      <line class="const-edge const-edge--rival"     x1="400" y1="100" x2="620" y2="180"/>
       <!-- Narrator ↔ Father: family (distant) -->
       <line class="const-edge const-edge--family"    x1="400" y1="100" x2="180" y2="180"/>
       <!-- Narrator ↔ Best Friend: friend (strained) -->
@@ -70,14 +68,6 @@ permalink: /constellation/
         <circle cx="400" cy="100" r="19" fill="rgba(196,181,253,0.16)" stroke="rgba(196,181,253,0.65)" stroke-width="2" filter="url(#node-glow)"/>
         <text x="400" y="105" text-anchor="middle" font-size="14" fill="rgba(196,181,253,0.85)" pointer-events="none">♟</text>
         <text x="400" y="132" text-anchor="middle" font-family="'Poppins',sans-serif" font-size="10" font-weight="700" fill="rgba(196,181,253,0.65)" pointer-events="none">Narrator</text>
-      </g>
-
-      <!-- The Rival (upper right) -->
-      <g class="const-node-group" data-char="rival" data-name="Michael" data-role="Side Character · Chess City Rival" data-url="/characters/rival/">
-        <circle cx="620" cy="180" r="24" fill="rgba(220,80,80,0.06)" stroke="rgba(220,80,80,0.12)" stroke-width="1" class="const-node-ring"/>
-        <circle cx="620" cy="180" r="16" fill="rgba(220,80,80,0.14)" stroke="rgba(220,80,80,0.55)" stroke-width="1.5" filter="url(#node-glow)"/>
-        <text x="620" y="185" text-anchor="middle" font-size="12" fill="rgba(220,80,80,0.8)" pointer-events="none">♚</text>
-        <text x="620" y="208" text-anchor="middle" font-family="'Poppins',sans-serif" font-size="10" font-weight="700" fill="rgba(220,80,80,0.6)" pointer-events="none">Michael</text>
       </g>
 
       <!-- The Dad (upper left) -->
@@ -127,9 +117,6 @@ permalink: /constellation/
     </div>
     <div class="constellation-legend-item">
       <div class="legend-line" style="background:rgba(196,181,253,0.4);border-top:2px dashed rgba(196,181,253,0.4);height:0;"></div>Companion
-    </div>
-    <div class="constellation-legend-item">
-      <div class="legend-line" style="background:rgba(220,80,80,0.5);border-top:2px dashed rgba(220,80,80,0.5);height:0;"></div>Rivals
     </div>
     <div class="constellation-legend-item">
       <div class="legend-line" style="background:rgba(100,200,100,0.4);border-top:2px dashed rgba(100,200,100,0.4);height:0;"></div>Family

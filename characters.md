@@ -26,7 +26,6 @@ permalink: /characters/
         <div class="char-flip-back">
           <div class="char-flip-back-label">— DOSSIER —</div>
           <div class="char-flip-clearance">CLEARANCE: {{ char.dossier_clearance | default: "DELTA" }}</div>
-          <div class="char-flip-secret char-unredact" data-real="{{ char.dossier_secret | default: "Data redacted." }}">████████████████████</div>
           <a class="char-flip-link" href="{{ char.url | relative_url }}">View Full File →</a>
         </div>
 
@@ -57,7 +56,6 @@ permalink: /characters/
         <div class="char-flip-back">
           <div class="char-flip-back-label">— DOSSIER —</div>
           <div class="char-flip-clearance">CLEARANCE: {{ char.dossier_clearance | default: "DELTA" }}</div>
-          <div class="char-flip-secret char-unredact" data-real="{{ char.dossier_secret | default: "Data redacted." }}">████████████████████</div>
           <a class="char-flip-link" href="{{ char.url | relative_url }}">View Full File →</a>
         </div>
 
@@ -70,30 +68,6 @@ permalink: /characters/
 </div>
 
 <script>
-// #5 — Progressive un-redact on flip card hover
-(function() {
-  document.querySelectorAll('.char-unredact').forEach(function(el) {
-    var real = el.getAttribute('data-real') || '';
-    var blocks = real.split('').map(function(c) { return c === ' ' ? ' ' : '█'; }).join('');
-    el.textContent = blocks;
-    var iv = null;
-    el.closest('.char-flip-card').addEventListener('mouseenter', function() {
-      clearInterval(iv);
-      el.textContent = blocks;
-      var i = 0;
-      iv = setInterval(function() {
-        if (i >= real.length) { clearInterval(iv); return; }
-        el.textContent = real.slice(0, i + 1) + blocks.slice(i + 1);
-        i++;
-      }, 28);
-    });
-    el.closest('.char-flip-card').addEventListener('mouseleave', function() {
-      clearInterval(iv);
-      el.textContent = blocks;
-    });
-  });
-})();
-
 // #15 — Arrow-key character navigator
 (function() {
   var cards = Array.from(document.querySelectorAll('.char-flip-card'));
