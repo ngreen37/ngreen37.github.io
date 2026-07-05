@@ -140,9 +140,10 @@
   <div class="overlay" id="menu-screen">
     <div class="eyebrow">The Ascent · the climb to the crown</div>
     <div class="big-title">THE GAUNTLET</div>
-    <div class="blurb">Ten champions stand between <b style="color:#8fe3ff">Checker Town</b> and the top of the <b style="color:#ff8fd0">CEO</b>'s tower. Real chess, one game at a time — beat one to climb to the next. You alternate colors. No takebacks. Only a win opens the next door.</div>
+    <div class="blurb">Ten champions stand between <b style="color:#8fe3ff">Checker Town</b> and the top of the <b style="color:#ff8fd0">CEO</b>'s tower. Real chess, one game at a time — beat one to climb to the next. Colours are drawn each game. No takebacks. Only a win opens the next door.</div>
     <div class="blurb" id="menu-progress" style="display:none; margin-top:-4px;"></div>
     <div class="row"><button class="btn btn-gold" id="play-btn">▶ ENTER THE TOWER</button></div>
+    <div class="row"><button class="btn btn-ghost" id="tower-btn" style="display:none">☰ Browse the tower</button></div>
   </div>
 
   <div class="overlay hidden" id="ladder-screen">
@@ -257,7 +258,7 @@ var LADDER = [
       blunder:['Predictable.','As expected. You overreach.'],
       good:['...Interesting. Recalculating.','Where did THAT come from.'] } }
 ];
-function colorForRung(i){ return (i % 2 === 0) ? 'w' : 'b'; }   // alternate per rung
+function randColor(){ return Math.random() < 0.5 ? 'w' : 'b'; }   // colours drawn fresh each match
 
 // ---- progress ----
 var PKEY = 'pjcc.gauntlet.v2';
@@ -266,8 +267,9 @@ function saveProg(p){ try { localStorage.setItem(PKEY, JSON.stringify(p)); } cat
 
 // ---- runtime ----
 var G = null, raf = null;
-function startRung(idx){
-  var rung = LADDER[idx], pc = colorForRung(idx);
+function startRung(idx, pc){
+  var rung = LADDER[idx];
+  pc = (pc === 'w' || pc === 'b') ? pc : randColor();   // random unless the boss card already drew one
   G = { idx:idx, rung:rung, persona:rung.persona, pc:pc,
         S:C.parseFEN(C.START_FEN), reps:{}, sel:-1, legal:[], over:false, result:null,
         last:null, thinking:false, promo:null, log:[], roundStartMat:null };
@@ -434,7 +436,7 @@ function showBossCard(idx){
   if (G){ G.over = true; }
   hidePortrait(); hideBooth(); hideOverlays();
   document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('resign-btn').classList.add('hidden');
-  var rung = LADDER[idx], pc = colorForRung(idx), prog = loadProg(), beaten = !!prog.beaten[idx], acc = rung.accent;
+  var rung = LADDER[idx], pc = randColor(), prog = loadProg(), beaten = !!prog.beaten[idx], acc = rung.accent;
   var portrait = document.getElementById('boss-portrait');
   portrait.textContent = rung.glyph; portrait.style.color = acc; portrait.style.borderColor = acc;
   document.getElementById('boss-eye').textContent = (beaten?'Rematch':'Challenger') + ' · Floor ' + (idx+1) + ' of ' + LADDER.length;
@@ -448,7 +450,7 @@ function showBossCard(idx){
   note.textContent = youW ? '♔ You play White this round' : '♚ You play Black this round';
   note.style.color = youW ? '#efe7cf' : '#8fe3ff';
   var row = document.getElementById('boss-row'); row.innerHTML = '';
-  addBtn(row, beaten ? 'REMATCH ▸' : 'FIGHT ▸', 'btn-gold', function(){ startRung(idx); });
+  addBtn(row, beaten ? 'REMATCH ▸' : 'FIGHT ▸', 'btn-gold', function(){ startRung(idx, pc); });
   addBtn(row, '◂ Tower', 'btn-ghost', showLadder);
   document.getElementById('boss-screen').classList.remove('hidden');
 }
@@ -484,12 +486,20 @@ function callOut(kind, force){ var c=pick(CALL[kind]||[]); if(!c) return; var op
 
 // menu continue-state: reflect where the climb stands
 function refreshMenu(){
-  var prog=loadProg(), cur=nextFloor(prog), btn=document.getElementById('play-btn'), pline=document.getElementById('menu-progress');
+  var prog=loadProg(), cur=nextFloor(prog), btn=document.getElementById('play-btn'), pline=document.getElementById('menu-progress'),
+      tbtn=document.getElementById('tower-btn');
   if (!btn||!pline) return;
   var cleared=Object.keys(prog.beaten||{}).length;
-  if (cleared===0){ btn.textContent='▶ ENTER THE TOWER'; pline.style.display='none'; }
-  else if (cur>=LADDER.length){ btn.textContent='♛ THE TOWER'; pline.style.display=''; pline.innerHTML='<b style="color:#6bffb8">Crowned.</b> You cleared all ten — rematch anyone from the tower.'; }
-  else { btn.textContent='▶ CONTINUE THE CLIMB'; pline.style.display=''; pline.innerHTML='Floor '+(cur+1)+' of '+LADDER.length+' — <b style="color:#F5C518">'+LADDER[cur].name+'</b> awaits.'; }
+  if (cleared===0){ btn.textContent='▶ ENTER THE TOWER'; pline.style.display='none'; if(tbtn) tbtn.style.display='none'; }
+  else if (cur>=LADDER.length){ btn.textContent='♛ THE TOWER'; pline.style.display=''; pline.innerHTML='<b style="color:#6bffb8">Crowned.</b> You cleared all ten — rematch anyone from the tower.'; if(tbtn) tbtn.style.display='none'; }
+  else { btn.textContent='▶ CONTINUE — FLOOR '+(cur+1); pline.style.display=''; pline.innerHTML='Pick up where you left off — <b style="color:#F5C518">'+LADDER[cur].name+'</b> awaits on Floor '+(cur+1)+' of '+LADDER.length+'.'; if(tbtn) tbtn.style.display=''; }
+}
+// "Play" resumes at your CURRENT opponent (straight to the boss card, one tap to the board) —
+// no need to walk the tower each time. Fresh climbers and the crowned see the whole tower.
+function resume(){
+  var prog=loadProg(), cur=nextFloor(prog), cleared=Object.keys(prog.beaten||{}).length;
+  if (cleared===0 || cur>=LADDER.length) showLadder();
+  else showBossCard(cur);
 }
 
 // ---- the visible opponent: portrait, mood, and personality reactions ----
@@ -602,7 +612,7 @@ function showLadder(){
   var prog = loadProg(), cur = nextFloor(prog), host = document.getElementById('rungs'); host.innerHTML = '';
   var lastZone = null, curEl = null;
   for (var i = LADDER.length - 1; i >= 0; i--){         // top floor (CEO) down to the street (Argus)
-    var rung = LADDER[i], unlocked = i <= prog.unlocked, beaten = !!prog.beaten[i], isCur = (i === cur), pc = colorForRung(i);
+    var rung = LADDER[i], unlocked = i <= prog.unlocked, beaten = !!prog.beaten[i], isCur = (i === cur);
     var zone = zoneOf(rung.region);
     if (zone !== lastZone){                              // #7 — region band header
       var zh = document.createElement('div'); zh.className = 'tw-zone'; zh.style.color = rung.accent;
@@ -618,7 +628,7 @@ function showLadder(){
     el.innerHTML =
       '<div class="tw-badge" style="border-color:'+rung.accent+';color:'+rung.accent+'">'+rung.glyph+'</div>' +
       '<div class="tw-body"><div class="tw-name">'+(i+1)+'. '+rung.name+'</div>' +
-        '<div class="tw-sub">'+playstyleOf(rung.persona)+' · '+difficultyOf(rung.persona)+' · you play '+(pc==='w'?'♔':'♚')+'</div>' +
+        '<div class="tw-sub">'+playstyleOf(rung.persona)+' · '+difficultyOf(rung.persona)+' · ♔/♚ drawn</div>' +
         (isCur?'<span class="tw-here">YOU ARE HERE</span>':'') +
       '</div>' + chip;
     if (unlocked) (function(k){ el.onclick = function(){ showBossCard(k); }; })(i);
@@ -629,7 +639,8 @@ function showLadder(){
   if (curEl) setTimeout(function(){ try { curEl.scrollIntoView({block:'center', behavior:'smooth'}); } catch(e){} }, 60);
 }
 
-document.getElementById('play-btn').onclick = showLadder;
+document.getElementById('play-btn').onclick = resume;
+(function(){ var t=document.getElementById('tower-btn'); if(t) t.onclick = showLadder; })();
 document.getElementById('ladder-back').onclick = showMenu;
 document.getElementById('menu-btn').onclick = showLadder;
 document.getElementById('resign-btn').onclick = function(){ if (G && !G.over) endGame('resign'); };
@@ -644,11 +655,12 @@ if (window.PJCC && PJCC.ready) PJCC.ready.then(function(){
   }); } catch(e){}
 });
 
-// open state: a #climb / #tower / #continue hash (e.g. the homepage "Continue the climb"
-// deep-link) drops you straight onto the Tower; otherwise the title screen.
+// open state: the homepage/splash "Continue the climb" deep-link (#climb / #continue) drops you
+// straight at your CURRENT opponent's boss card; #tower forces the full tower; else the title screen.
 (function(){
   var h = (location.hash||'').toLowerCase();
-  if (h === '#climb' || h === '#tower' || h === '#continue') showLadder();
+  if (h === '#tower') showLadder();
+  else if (h === '#climb' || h === '#continue') resume();
   else showMenu();
 })();
 loop();

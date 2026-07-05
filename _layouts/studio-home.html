@@ -138,36 +138,43 @@
       </div>
 
       {% comment %} The Gauntlet — real chess vs the ladder (relocated here from /games/).
-           The headline game (the "main quest"); PJCC itself is the flagship. Progress pips +
-           CTA are hydrated from the game's own localStorage so a returning player is invited
-           to CONTINUE the climb. Decorative bits (eyebrow/sub/pips) are dropped on phones to
-           keep the splash on one screen. {% endcomment %}
+           The headline game (the "main quest"); PJCC itself is the flagship. A MINI TOWER
+           thumbnail + a BOSS-OF-THE-MOMENT line ("Floor N — <opponent> awaits") + the CTA are
+           hydrated from the game's own localStorage, so a returning player is pulled straight
+           back to their next opponent. Decorative bits are dropped on phones to keep the splash
+           on one screen. {% endcomment %}
       <a class="studio-gauntlet" id="studio-gauntlet" href="{{ '/games/the-gauntlet/' | relative_url }}">
         <span class="sg-glyph" aria-hidden="true">♛</span>
         <span class="sg-text">
           <span class="sg-eyebrow" aria-hidden="true">◆ The Main Quest</span>
           <b class="sg-title" data-jp="ガントレットに挑め">Enter the Gauntlet</b>
-          <span class="sg-sub" data-jp="十人の強敵、ひとつの王冠。本気のチェス。">Ten champions. One crown. Real chess.</span>
-          <span class="sg-pips" id="sg-pips" aria-hidden="true"></span>
+          <span class="sg-sub" id="sg-sub" data-jp="十人の強敵、ひとつの王冠。本気のチェス。">Ten champions. One crown. Real chess.</span>
         </span>
+        <span class="sg-tower" id="sg-tower" aria-hidden="true"></span>
         <span class="sg-cta" id="sg-cta" aria-hidden="true">▶ Climb</span>
       </a>
       <script>
-      // Splash Gauntlet — hydrate progress pips + CTA from the game's own save (works offline/signed-out).
+      // Splash Gauntlet — mini-tower + boss-of-the-moment, hydrated from the game's save (offline/signed-out OK).
       (function () {
         var NAMES = ['Argus the Guard-Dog','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Rival','The CEO'];
         var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
         var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;
         for (var i = 0; i < NAMES.length; i++) { if (beaten[i]) cleared++; }
         for (var j = 0; j < NAMES.length; j++) { if (!beaten[j]) { cur = j; break; } }
-        var pipHost = document.getElementById('sg-pips');
-        if (pipHost) { var h = '';
+        // mini tower: floors 0..9 rendered bottom-up (CSS column-reverse), current floor lit gold.
+        var tower = document.getElementById('sg-tower');
+        if (tower) { var h = '';
           for (var k = 0; k < NAMES.length; k++) { h += '<i class="' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></i>'; }
-          pipHost.innerHTML = h; }
-        var cta = document.getElementById('sg-cta'), link = document.getElementById('studio-gauntlet');
-        if (cleared > 0 && cta) {
-          if (cur >= NAMES.length) { cta.textContent = '♛ Crowned'; }
-          else { cta.textContent = '▶ Continue'; if (link) link.setAttribute('href', link.getAttribute('href') + '#climb'); }
+          tower.innerHTML = h; }
+        var sub = document.getElementById('sg-sub'), cta = document.getElementById('sg-cta'), link = document.getElementById('studio-gauntlet');
+        if (cleared > 0 && cur < NAMES.length) {           // mid-climb — name the next opponent, resume there
+          if (sub) { sub.removeAttribute('data-jp'); sub.innerHTML = 'Floor ' + (cur + 1) + ' — <b style="color:#F5C518">' + NAMES[cur] + '</b> awaits.'; }
+          if (cta) cta.textContent = '▶ Continue';
+          if (link) link.setAttribute('href', link.getAttribute('href') + '#climb');
+        } else if (cur >= NAMES.length) {                  // crowned — back to the tower to rematch
+          if (sub) { sub.removeAttribute('data-jp'); sub.textContent = 'Crowned — all ten floors cleared.'; }
+          if (cta) cta.textContent = '♛ The Tower';
+          if (link) link.setAttribute('href', link.getAttribute('href') + '#tower');
         }
       })();
       </script>
@@ -211,10 +218,11 @@
   .studio-gauntlet .sg-eyebrow { color:#F5C518; font-size:0.6rem; font-weight:900; letter-spacing:0.14em; opacity:0.85; text-transform:uppercase; }
   .studio-gauntlet .sg-title { color:#fff; font-size:1.05rem; font-weight:800; margin:1px 0; }
   .studio-gauntlet .sg-sub { color:#e7d6b0; font-size:0.74rem; }
-  .studio-gauntlet .sg-pips { display:flex; gap:3px; margin-top:6px; }
-  .studio-gauntlet .sg-pips i { width:12px; height:5px; border-radius:2px; background:rgba(255,255,255,0.15); }
-  .studio-gauntlet .sg-pips i.done { background:#6bffb8; }
-  .studio-gauntlet .sg-pips i.cur { background:#F5C518; box-shadow:0 0 6px #F5C518; }
+  /* mini tower thumbnail — a slim vertical preview of the climb (ground floor at the bottom) */
+  .studio-gauntlet .sg-tower { display:flex; flex-direction:column-reverse; gap:2px; width:15px; flex-shrink:0; align-self:center; position:relative; z-index:1; }
+  .studio-gauntlet .sg-tower i { height:3px; border-radius:1px; background:rgba(255,255,255,0.14); }
+  .studio-gauntlet .sg-tower i.done { background:#6bffb8; }
+  .studio-gauntlet .sg-tower i.cur { background:#F5C518; box-shadow:0 0 5px #F5C518; }
   .studio-gauntlet .sg-cta { margin-left:auto; flex-shrink:0; position:relative; z-index:1; align-self:center;
     background:linear-gradient(135deg,#F5C518,#ffd740); color:#1a0f3d; font-weight:900; font-size:0.82rem;
     border-radius:999px; padding:8px 16px; white-space:nowrap; box-shadow:0 3px 0 #7a5e0a; }
@@ -325,7 +333,7 @@
     /* drop the decorative bits on phones so the bar stays one compact line */
     .studio-gauntlet .sg-eyebrow,
     .studio-gauntlet .sg-sub,
-    .studio-gauntlet .sg-pips { display:none; }
+    .studio-gauntlet .sg-tower { display:none; }
     .studio-gauntlet .sg-cta { font-size:0.78rem; padding:7px 13px; }
 
     /* drop the purely decorative pieces so everything fits one screen */
