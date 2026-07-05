@@ -1242,6 +1242,7 @@ pre code {
    little more lazily than the skinny ones. --- */
 .home-drips {
   position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0;
+  opacity: 0.85;   /* whole drip field dialed 15% dimmer */
   /* fade the whole drip layer out through the bottom third */
   -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 58%, transparent 90%);
   mask-image: linear-gradient(180deg, #000 0%, #000 58%, transparent 90%);
@@ -1262,8 +1263,64 @@ pre code {
   0%, 100% { transform: scaleY(0.9);  opacity: 0.82; }
   50%      { transform: scaleY(1.07); opacity: 1; }
 }
+
+/* --- Shape variants: a livelier, more organic drip field. Every variant keeps the
+   --x/--w/--len/--col/--dur/--delay knobs; the modifier class changes form + motion. --- */
+
+/* a fat bead hanging at the tip of a run, swelling like it's about to fall */
+.drip--bead::after {
+  content: ""; position: absolute; left: 50%; bottom: calc(var(--w) * -0.8);
+  width: calc(var(--w) * 1.9); height: calc(var(--w) * 2.1);
+  transform: translateX(-50%);
+  border-radius: 46% 46% 50% 50% / 40% 40% 60% 60%;
+  background: radial-gradient(circle at 42% 34%, rgba(var(--col), 0.9), rgba(var(--col), 0.4) 62%, transparent 82%);
+  animation: drip-bead var(--dur, 8s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes drip-bead {
+  0%, 55%, 100% { transform: translateX(-50%) translateY(0)   scale(0.85); }
+  80%           { transform: translateX(-50%) translateY(6px) scale(1.18); }
+}
+
+/* teardrop blob — a rounded body (no long run) that gently swells */
+.drip--blob {
+  height: calc(var(--w) * 2.6);
+  border-radius: 48% 48% 50% 50% / 38% 38% 62% 62%;
+  background: radial-gradient(ellipse at 46% 32%, rgba(var(--col), 0.68), rgba(var(--col), 0.26) 62%, transparent 82%);
+  animation: drip-bob var(--dur, 7s) ease-in-out infinite;
+}
+@keyframes drip-bob {
+  0%, 100% { transform: translateY(0)   scaleY(1);    opacity: 0.82; }
+  50%      { transform: translateY(4px) scaleY(1.08); opacity: 1; }
+}
+
+/* a detached droplet that falls the length of the run, then resets */
+.drip--fall {
+  width: calc(var(--w) * 1.1); height: calc(var(--w) * 1.6);
+  border-radius: 50% 50% 50% 50% / 38% 38% 62% 62%;
+  background: radial-gradient(circle at 44% 30%, rgba(var(--col), 0.85), rgba(var(--col), 0.32) 66%, transparent 82%);
+  animation: drip-fall var(--dur, 6s) cubic-bezier(.55, 0, .9, .45) infinite;
+}
+@keyframes drip-fall {
+  0%   { transform: translateY(0)                 scaleY(0.7);  opacity: 0; }
+  10%  { opacity: 0.95; }
+  72%  { opacity: 0.8; }
+  100% { transform: translateY(var(--len, 120px)) scaleY(1.35); opacity: 0; }
+}
+
+/* skinny trickle */
+.drip--thin { width: 2px; }
+
+/* a flattened pool / splat dot */
+.drip--splat {
+  height: calc(var(--w) * 0.8);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 45%, rgba(var(--col), 0.5), transparent 68%);
+  animation: drip-bob var(--dur, 9s) ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .drip { animation: none; }
+  .drip, .drip--bead::after { animation: none; }
 }
 
 .stats-inner {
