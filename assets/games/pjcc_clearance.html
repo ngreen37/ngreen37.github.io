@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Clearance — DELTA v1.4</title>
+<title>PJCC: Clearance — DELTA v1.4</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -143,7 +143,7 @@
 <body>
 <div id="term">
   <div class="hdr">
-    <span id="exam-id">EXAM // DELTA-9</span>
+    <span id="exam-id">EXAM // PJCC-CCI</span>
     <span class="stamp">CLASSIFIED</span>
     <span id="score-lbl">SCORE 0</span>
   </div>
@@ -174,13 +174,13 @@
 
   <!-- MENU -->
   <div class="overlay" id="menu">
-    <div class="eyebrow">◈ Operative Chess Exam</div>
+    <div class="eyebrow">◈ Chess City Invitational</div>
     <div class="big-title">CLEARANCE: DELTA</div>
     <div class="blurb">
-      An operative's <b style="color:#F5C518">chess</b> exam. Field questions on
-      <b>rules</b>, <b>tactics</b>, <b>World Champions</b> and the game's most famous
-      battles — climbing from RECRUIT to <b>ABOVE OMEGA</b>.
-      Every promotion declassifies a <b style="color:#ff9fb0">chess dossier</b>; three wrong and your access is revoked.
+      An operative's exam, held in the Invitational hall. Field questions on <b style="color:#F5C518">chess</b> —
+      rules, tactics, <b>World Champions</b> and famous games — and the
+      <b style="color:#ff9fb0">PJCC files</b>, climbing from RECRUIT to <b>ABOVE OMEGA</b>.
+      Each promotion unredacts a piece of the archive; three wrong and your access is revoked.
     </div>
     <div class="sel-grp" id="mode-sel">
       <button class="selb sel" data-m="standard">STANDARD</button>
@@ -202,7 +202,7 @@
     <div class="eyebrow">◈ Access Revoked</div>
     <div class="big-title" id="res-rank" style="font-size:22px;">CLEARANCE: DELTA</div>
     <div class="blurb" id="res-msg"></div>
-    <div class="dossier" id="res-dossier"><span class="dl">— LAST DOSSIER UNSEALED —</span><span id="res-file"></span></div>
+    <div class="dossier" id="res-dossier"><span class="dl">— LAST FILE UNSEALED —</span><span id="res-file"></span></div>
     <div class="row">
       <button class="btn btn-gold" id="retry-btn">RE-EXAMINE</button>
       <button class="btn btn-ghost" id="menu-btn">MENU</button>
@@ -267,11 +267,11 @@ const Q = [
 
 const RANKS = [
   { at: 0,  name: 'RECRUIT',     pip: '▽' },
-  { at: 3,  name: 'DELTA',       pip: 'Δ', file: 'DOSSIER 001 — THE IMMORTAL GAME (1851): Adolf Anderssen sacrificed a bishop, both rooks and his queen — then delivered mate with the few pieces he had left.' },
-  { at: 6,  name: 'GAMMA',       pip: 'Γ', file: 'DOSSIER 002 — CAPABLANCA: the Cuban “chess machine” played with such flawless technique that he lost only a handful of games across his entire prime.' },
-  { at: 10, name: 'BETA',        pip: 'β', file: 'DOSSIER 003 — GAME OF THE CENTURY (1956): a 13-year-old Bobby Fischer stunned the room with an audacious queen sacrifice against Donald Byrne.' },
-  { at: 15, name: 'OMEGA',       pip: 'Ω', file: 'DOSSIER 004 — DEEP BLUE (1997): for the first time in history, a machine defeated a reigning World Champion in a full match.' },
-  { at: 21, name: 'ABOVE OMEGA', pip: '★', file: 'DOSSIER 005 — GUKESH (2024): at just eighteen years old, D Gukesh became the youngest undisputed World Chess Champion ever crowned.' },
+  { at: 3,  name: 'DELTA',       pip: 'Δ', file: 'FILE 001 — THE CRASH: Subject arrived via a construction company vessel. It departed in an emergency. Subject was left behind.' },
+  { at: 6,  name: 'GAMMA',       pip: 'Γ', file: 'FILE 002 — DESIGNATION: Princess is logged as a Knight. An odd classification for a Checker Town cattle-dog.' },
+  { at: 10, name: 'BETA',        pip: 'β', file: 'FILE 003 — THE RIVAL: His family is already inside Chess City. He is not trying to get there. He is trying to go back.' },
+  { at: 15, name: 'OMEGA',       pip: 'Ω', file: 'FILE 004 — THE MINES: The Father has seen something in the Sand Mines. The equipment predates the crash by three years.' },
+  { at: 21, name: 'ABOVE OMEGA', pip: '★', file: 'FILE 005 — SUBJECT ZERO: Same vessel as Princess. Origin coordinates match no known system. The investigation continues anyway.' },
 ];
 
 // ---- Diagram questions (a mini board is drawn from the FEN; find the move / name the threat) ----

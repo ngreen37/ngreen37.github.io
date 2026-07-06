@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: The Gauntlet v1.0</title>
+<title>PJCC: The Gauntlet v1.1</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <script src="/assets/js/pjcc-pieces.js"></script>
@@ -15,6 +15,7 @@
   html, body { background:#0c0820; height:100%; overflow:hidden; font-family:'Trebuchet MS','Segoe UI',sans-serif; touch-action:manipulation; }
   body { display:flex; align-items:center; justify-content:center; min-height:100vh; }
   #stage { position:relative; width:100%; max-width:520px; }
+  #board-wrap { position:relative; width:100%; }
   #cv { display:block; width:100%; border:3px solid #F5C518; border-radius:12px; background:#160c33; box-shadow:0 0 40px rgba(245,197,24,0.18); }
   .float-btn { position:absolute; z-index:6; font-weight:bold; border:none; border-radius:999px; cursor:pointer;
     font-family:inherit; box-shadow:0 3px 0 rgba(0,0,0,0.35); transition:transform .08s; }
@@ -110,32 +111,52 @@
   .boss-quote { font-size:13px; font-style:italic; color:#e7d6ff; line-height:1.5; max-width:330px; margin-bottom:10px; }
   .boss-note { font-size:11px; font-weight:800; letter-spacing:1px; margin-bottom:14px; }
 
-  /* ---- #5 COMMENTARY BOOTH (text play-by-play; no audio) ---- */
-  .booth { position:absolute; left:10px; right:10px; bottom:46px; z-index:5; display:flex; justify-content:center; pointer-events:none; }
+  /* ---- #5 COMMENTARY BOOTH (text play-by-play; no audio) ----
+     Lives in its own strip BELOW the board, so it never runs across the bottom rank of squares. */
+  .booth { position:relative; display:flex; justify-content:center; align-items:center; min-height:44px; padding:6px 6px 0; pointer-events:none; }
   .booth.hidden { display:none; }
   .booth-card { max-width:100%; display:flex; align-items:flex-start; gap:8px; background:rgba(10,7,26,0.92);
     border:1px solid #4a3a86; border-left-width:3px; border-radius:10px; padding:7px 11px; box-shadow:0 6px 18px rgba(0,0,0,0.5);
-    opacity:0; transform:translateY(8px); transition:opacity .2s, transform .2s; }
+    opacity:0; transform:translateY(6px); transition:opacity .2s, transform .2s; }
   .booth-card.show { opacity:1; transform:translateY(0); }
   .booth-who { font-size:9px; font-weight:900; letter-spacing:1px; text-transform:uppercase; white-space:nowrap; padding-top:1px; }
   .booth-line { font-size:12px; font-weight:600; color:#f0e6ff; line-height:1.35; }
+  @media (max-width:380px){ .booth-line { font-size:11px; } .booth { min-height:40px; } }
+
+  /* ---- boss card: a little intro/bio line for each opponent ---- */
+  .boss-bio { font-size:12px; color:#cdbcf2; line-height:1.5; max-width:330px; margin:0 auto 11px; }
+
+  /* ---- victory / defeat celebration layer ---- */
+  .fx { position:absolute; inset:0; z-index:16; pointer-events:none; overflow:hidden; border-radius:12px; }
+  .fx.hidden { display:none; }
+  .confetti { position:absolute; top:-16px; width:9px; height:14px; border-radius:2px; will-change:transform; animation:confettiFall linear forwards; }
+  @keyframes confettiFall { 0%{ transform:translateY(-16px) rotate(0deg); opacity:1; } 100%{ transform:translateY(700px) rotate(720deg); opacity:0.85; } }
+  .fx-hero { position:absolute; left:50%; top:40%; transform:translate(-50%,-50%) scale(0); text-align:center; transition:opacity .4s; }
+  .fx-hero.show { animation:fxHeroPop 1s cubic-bezier(.2,1.5,.4,1) forwards; }
+  @keyframes fxHeroPop { 0%{ transform:translate(-50%,-50%) scale(0) rotate(-12deg); opacity:0; } 55%{ transform:translate(-50%,-50%) scale(1.16) rotate(4deg); opacity:1; } 100%{ transform:translate(-50%,-50%) scale(1) rotate(0deg); opacity:1; } }
+  .fx-hero .fx-glyph { font-size:76px; line-height:1; filter:drop-shadow(0 4px 16px rgba(0,0,0,0.7)); }
+  .fx-hero .fx-word { font-size:20px; font-weight:900; letter-spacing:2px; margin-top:2px; text-shadow:0 2px 10px rgba(0,0,0,0.7); }
 </style>
 </head>
 <body>
 <div id="stage">
-  <canvas id="cv" width="440" height="500"></canvas>
-  <button class="float-btn hidden" id="menu-btn">☰ tower</button>
-  <button class="float-btn hidden" id="resign-btn">⚑ resign</button>
+  <div id="board-wrap">
+    <canvas id="cv" width="440" height="500"></canvas>
+    <button class="float-btn hidden" id="menu-btn">☰ tower</button>
+    <button class="float-btn hidden" id="resign-btn">⚑ resign</button>
+
+    <div class="opp hidden" id="opp" aria-hidden="true">
+      <div class="opp-face" id="opp-face"><span class="opp-glyph" id="opp-glyph">♟</span><span class="opp-mood" id="opp-mood">🙂</span></div>
+      <div class="opp-meta"><div class="opp-name" id="opp-name">—</div><div class="opp-sub" id="opp-sub">—</div></div>
+      <div class="opp-bubble" id="opp-bubble"></div>
+    </div>
+  </div>
 
   <div class="booth hidden" id="booth" aria-hidden="true">
     <div class="booth-card" id="booth-card"><span class="booth-who" id="booth-who">RANDY</span><span class="booth-line" id="booth-line"></span></div>
   </div>
 
-  <div class="opp hidden" id="opp" aria-hidden="true">
-    <div class="opp-face" id="opp-face"><span class="opp-glyph" id="opp-glyph">♟</span><span class="opp-mood" id="opp-mood">🙂</span></div>
-    <div class="opp-meta"><div class="opp-name" id="opp-name">—</div><div class="opp-sub" id="opp-sub">—</div></div>
-    <div class="opp-bubble" id="opp-bubble"></div>
-  </div>
+  <div class="fx hidden" id="fx" aria-hidden="true"></div>
 
   <div class="overlay" id="menu-screen">
     <div class="eyebrow">The Ascent · the climb to the crown</div>
@@ -171,6 +192,7 @@
     <div class="boss-sub" id="boss-sub">—</div>
     <div class="boss-pips" id="boss-pips">—</div>
     <div class="boss-tags" id="boss-tags"></div>
+    <div class="boss-bio" id="boss-bio">—</div>
     <div class="boss-quote" id="boss-quote">—</div>
     <div class="boss-note" id="boss-note">—</div>
     <div class="row" id="boss-row"></div>
@@ -411,7 +433,11 @@ function endGame(result){
   document.getElementById('over-eye').textContent = eye;
   document.getElementById('over-title').textContent = title;
   document.getElementById('over-msg').textContent = msg;
-  document.getElementById('over-screen').classList.remove('hidden');
+  // a little celebration first — you on a win, the opponent on a loss — then the result card
+  var showOver = function(){ document.getElementById('over-screen').classList.remove('hidden'); };
+  if (playerWon){ celebrate('win'); setTimeout(showOver, 1000); }
+  else if (!draw){ celebrate('loss', G.rung); setTimeout(showOver, 1000); }
+  else { showOver(); }
 }
 function addBtn(row, label, cls, fn){ var b=document.createElement('button'); b.className='btn '+cls; b.textContent=label; b.onclick=fn; row.appendChild(b); }
 
@@ -445,6 +471,7 @@ function showBossCard(idx){
   var pips = document.getElementById('boss-pips'); pips.textContent = pipStr(strengthOf(rung.persona)); pips.style.color = acc;
   var tags = document.getElementById('boss-tags'); tags.innerHTML = '';
   [playstyleOf(rung.persona), difficultyOf(rung.persona)].forEach(function(t){ var s=document.createElement('span'); s.className='boss-tag'; s.style.borderColor=acc; s.textContent=t; tags.appendChild(s); });
+  document.getElementById('boss-bio').textContent = rung.blurb;   // a little intro for each opponent
   document.getElementById('boss-quote').textContent = '“' + (rung.react && rung.react.intro ? rung.react.intro[0] : rung.blurb) + '”';
   var note = document.getElementById('boss-note'), youW = (pc==='w');
   note.textContent = youW ? '♔ You play White this round' : '♚ You play Black this round';
@@ -471,6 +498,44 @@ function bcast(voice, line, force){
   clearTimeout(boothTimer); boothTimer=setTimeout(function(){ card.classList.remove('show'); }, 3400);
 }
 function hideBooth(){ var el=document.getElementById('booth'), c=document.getElementById('booth-card'); if(el) el.classList.add('hidden'); if(c) c.classList.remove('show'); clearTimeout(boothTimer); }
+
+// ---- celebration layer: confetti + a hero glyph for wins (you) and losses (the opponent) ----
+var fxTimer=null;
+function spawnConfetti(colors, n){
+  var fx=document.getElementById('fx'); if(!fx) return;
+  for(var i=0;i<n;i++){
+    var c=document.createElement('div'); c.className='confetti';
+    c.style.left=(Math.random()*100)+'%';
+    c.style.background=colors[(Math.random()*colors.length)|0];
+    c.style.width=(6+Math.random()*6).toFixed(1)+'px';
+    c.style.height=(10+Math.random()*8).toFixed(1)+'px';
+    c.style.animationDuration=(1.5+Math.random()*1.5).toFixed(2)+'s';
+    c.style.animationDelay=(Math.random()*0.5).toFixed(2)+'s';
+    fx.appendChild(c);
+  }
+}
+function heroBurst(glyph, word, color){
+  var fx=document.getElementById('fx'); if(!fx) return;
+  var h=document.createElement('div'); h.className='fx-hero';
+  h.innerHTML='<div class="fx-glyph" style="color:'+color+'">'+glyph+'</div><div class="fx-word" style="color:'+color+'">'+word+'</div>';
+  fx.appendChild(h); void h.offsetWidth; h.classList.add('show');
+  setTimeout(function(){ h.style.opacity='0'; }, 1500);   // step aside for the result card
+}
+function celebrate(kind, rung){
+  var fx=document.getElementById('fx'); if(!fx) return;
+  fx.innerHTML=''; fx.classList.remove('hidden');
+  if(kind==='win'){
+    spawnConfetti(['#F5C518','#6bffb8','#ff8fd0','#8fe3ff','#ffffff'], 72);
+    heroBurst('♛','VICTORY','#F5C518');
+  } else {   // the opponent celebrates
+    var acc=(rung&&rung.accent)||'#ff9ec9', gl=(rung&&rung.glyph)||'♛',
+        nm=(rung?rung.name.replace(/^The\s+/,''):'The champion');
+    spawnConfetti([acc,'#ffffff','#9a7fd4'], 48);
+    heroBurst(gl, (nm+' wins').toUpperCase(), acc);
+  }
+  clearTimeout(fxTimer); fxTimer=setTimeout(clearFx, 3400);
+}
+function clearFx(){ var fx=document.getElementById('fx'); if(fx){ fx.classList.add('hidden'); fx.innerHTML=''; } clearTimeout(fxTimer); }
 var CALL = {
   open:[ ['randy',"Live from the booth — {opp} steps to the board!"],
          ['pittsy',"This is the one our challenger's been climbing for. You can feel it."],
@@ -602,7 +667,7 @@ function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w
 function loop(){ render(); raf = requestAnimationFrame(loop); }
 
 // ---- screens ----
-function hideOverlays(){ ['menu-screen','ladder-screen','over-screen','boss-screen'].forEach(function(id){ document.getElementById(id).classList.add('hidden'); }); document.getElementById('promo-screen').classList.add('hidden'); }
+function hideOverlays(){ ['menu-screen','ladder-screen','over-screen','boss-screen'].forEach(function(id){ document.getElementById(id).classList.add('hidden'); }); document.getElementById('promo-screen').classList.add('hidden'); clearFx(); }
 function showMenu(){ G=null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('resign-btn').classList.add('hidden'); hidePortrait(); hideBooth(); hideOverlays(); refreshMenu(); document.getElementById('menu-screen').classList.remove('hidden'); }
 function showLadder(){
   if (G){ G.over = true; }
