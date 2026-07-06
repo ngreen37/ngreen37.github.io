@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Clearance — DELTA v1.3</title>
+<title>Clearance — DELTA v1.4</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -16,7 +16,8 @@
   #term { position: relative; width: min(620px, 96vw); height: min(620px, 95vh); overflow: hidden;
     background: radial-gradient(circle at 50% 16%, #3a0f1c 0%, #120308 78%);
     border: 3px solid #F5C518; border-radius: 12px; box-shadow: 0 0 40px rgba(245,197,24,0.25);
-    color: #f6e7d2; display: flex; flex-direction: column; padding: 10px 14px 12px; }
+    color: #f6e7d2; display: flex; flex-direction: column; padding: 10px 14px 12px;
+    transition: box-shadow 0.2s ease; }
 
   .hdr { display: flex; align-items: center; justify-content: space-between; font-size: 10px; letter-spacing: 1.5px; color: #d8a6b2; }
   .hdr .stamp { border: 1px solid #F5C518; color: #F5C518; padding: 1px 6px; border-radius: 3px; transform: rotate(-3deg); font-weight: bold; }
@@ -103,12 +104,46 @@
   .selb { font-family: 'Trebuchet MS', sans-serif; font-weight: bold; font-size: 10.5px; letter-spacing: 0.5px; cursor: pointer;
     background: #4a0f1c; color: #f0c0cc; border: 1px solid #8a3346; border-radius: 999px; padding: 6px 12px; }
   .selb.sel { background: #F5C518; color: #2a0a12; border-color: #F5C518; }
+
+  /* ---- POP: classified-terminal CRT overlay (scanlines + vignette) ---- */
+  #term::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 30; border-radius: 12px;
+    background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.16) 0 1px, transparent 1px 3px),
+      radial-gradient(circle at 50% 42%, transparent 62%, rgba(0,0,0,0.34) 100%);
+    mix-blend-mode: multiply; opacity: 0.55; }
+
+  /* ---- POP: right/wrong feedback flash + shake ---- */
+  #term.flash-ok  { box-shadow: 0 0 0 2px #2ecc71, 0 0 60px rgba(46,204,113,0.55); }
+  #term.flash-bad { box-shadow: 0 0 0 2px #ff5b6e, 0 0 60px rgba(255,91,110,0.55); }
+  #term.shake { animation: shakeX 0.4s ease; }
+  @keyframes shakeX { 0%,100%{ transform: translateX(0); } 20%{ transform: translateX(-6px); } 40%{ transform: translateX(5px); } 60%{ transform: translateX(-4px); } 80%{ transform: translateX(3px); } }
+
+  /* ---- POP: score bump ---- */
+  #score-lbl { display: inline-block; }
+  #score-lbl.pop { animation: scorePop 0.32s ease; }
+  @keyframes scorePop { 0%{ transform: scale(1); } 40%{ transform: scale(1.35); color: #fff; } 100%{ transform: scale(1); } }
+
+  /* ---- POP: floating +points / streak popup ---- */
+  .gain { position: absolute; left: 50%; top: 46%; z-index: 26; pointer-events: none; white-space: nowrap;
+    font-weight: 900; font-size: 27px; color: #F5C518; text-shadow: 0 2px 0 #6a4400, 0 0 16px rgba(245,197,24,0.7);
+    animation: gainFloat 0.9s ease-out forwards; }
+  .gain .flame { color: #ff8a3a; font-size: 20px; text-shadow: 0 0 10px rgba(255,120,0,0.8); }
+  @keyframes gainFloat {
+    0%{ opacity: 0; transform: translate(-50%, 12px) scale(0.7); }
+    22%{ opacity: 1; transform: translate(-50%, 0) scale(1.12); }
+    100%{ opacity: 0; transform: translate(-50%, -48px) scale(1); } }
+
+  /* ---- POP: menu title breathing glow ---- */
+  .big-title { animation: titleGlow 2.6s ease-in-out infinite; }
+  @keyframes titleGlow {
+    0%,100%{ text-shadow: 0 3px 0 #6a4400, 0 0 22px rgba(245,197,24,0.5); }
+    50%{ text-shadow: 0 3px 0 #6a4400, 0 0 36px rgba(245,197,24,0.9); } }
 </style>
 </head>
 <body>
 <div id="term">
   <div class="hdr">
-    <span id="exam-id">EXAM // PJCC-CCI</span>
+    <span id="exam-id">EXAM // DELTA-9</span>
     <span class="stamp">CLASSIFIED</span>
     <span id="score-lbl">SCORE 0</span>
   </div>
@@ -139,13 +174,13 @@
 
   <!-- MENU -->
   <div class="overlay" id="menu">
-    <div class="eyebrow">◈ Chess City Invitational</div>
+    <div class="eyebrow">◈ Operative Chess Exam</div>
     <div class="big-title">CLEARANCE: DELTA</div>
     <div class="blurb">
-      An operative's exam, held in the Invitational hall. Field questions on <b style="color:#F5C518">chess</b> —
-      rules, tactics, <b>World Champions</b> and famous games — and the
-      <b style="color:#ff9fb0">PJCC files</b>, climbing from RECRUIT to <b>ABOVE OMEGA</b>.
-      Each promotion unredacts a piece of the archive; three wrong and your access is revoked.
+      An operative's <b style="color:#F5C518">chess</b> exam. Field questions on
+      <b>rules</b>, <b>tactics</b>, <b>World Champions</b> and the game's most famous
+      battles — climbing from RECRUIT to <b>ABOVE OMEGA</b>.
+      Every promotion declassifies a <b style="color:#ff9fb0">chess dossier</b>; three wrong and your access is revoked.
     </div>
     <div class="sel-grp" id="mode-sel">
       <button class="selb sel" data-m="standard">STANDARD</button>
@@ -157,7 +192,6 @@
       <button class="selb" data-c="rules">RULES</button>
       <button class="selb" data-c="tactics">TACTICS</button>
       <button class="selb" data-c="history">HISTORY &amp; CHAMPS</button>
-      <button class="selb" data-c="pjcc">PJCC</button>
     </div>
     <div class="row"><button class="btn btn-gold" id="begin-btn">BEGIN EXAM</button></div>
     <div class="foot"><b id="best-line">highest clearance: —</b></div>
@@ -168,7 +202,7 @@
     <div class="eyebrow">◈ Access Revoked</div>
     <div class="big-title" id="res-rank" style="font-size:22px;">CLEARANCE: DELTA</div>
     <div class="blurb" id="res-msg"></div>
-    <div class="dossier" id="res-dossier"><span class="dl">— LAST FILE UNSEALED —</span><span id="res-file"></span></div>
+    <div class="dossier" id="res-dossier"><span class="dl">— LAST DOSSIER UNSEALED —</span><span id="res-file"></span></div>
     <div class="row">
       <button class="btn btn-gold" id="retry-btn">RE-EXAMINE</button>
       <button class="btn btn-ghost" id="menu-btn">MENU</button>
@@ -212,20 +246,7 @@ const Q = [
   { t:3, cat:'HISTORY', q:'The opening 1.e4 e6 is the…', a:['Caro-Kann','French Defense','Pirc','Petroff'], c:1, why:'1...e6 prepares ...d5 — the French Defense.' },
   { t:3, cat:'HISTORY', q:'Which country is World Champion Magnus Carlsen from?', a:['Sweden','Denmark','Norway','Iceland'], c:2, why:'Carlsen, champion 2013–2023, is Norwegian.' },
   { t:3, cat:'RULES', q:'Castling queenside is written as…', a:['O-O','O-O-O','0-1','e.p.'], c:1, why:'O-O is kingside; O-O-O (three letters) is queenside.' },
-  // TIER 4 — hard: PJCC files + World Champions & famous events
-  { t:4, cat:'PJCC', q:'Which chess piece is Princess designated as?', a:['Pawn','Bishop','Knight','Queen'], c:2, why:'Princess is the knight — the unpredictable leaper.' },
-  { t:4, cat:'PJCC', q:'Princess’s full name is…', a:['Princess Sophia McPuppy','Princess Leia Barksdale','Princess of Checker Town','Lady Princess Pawsworth'], c:0, why:'Princess Sophia McPuppy — half cattle dog, half pit bull.' },
-  { t:4, cat:'PJCC', q:'The Rival teaches Princess which opening?', a:['The Sicilian','The Pirc Defense','The London','The King’s Gambit'], c:1, why:'The Rival introduces Princess to the Pirc Defense.' },
-  { t:4, cat:'PJCC', q:'Where does the Father work?', a:['Chess City','The Sand Mines','Shogi Island','The docks'], c:1, why:'He works the Sand Mines — and won’t discuss what he saw there.' },
-  { t:4, cat:'PJCC', q:'The journey begins in which place?', a:['Chess City','Shogi Island','Checker Town','The Sea'], c:2, why:'Checker Town — the origin point, where hope runs short.' },
-  { t:4, cat:'PJCC', q:'The destination, where access is “restricted”, is…', a:['Chess City','Sand Mines','The uncharted city','Checker Town'], c:0, why:'Chess City — the gleaming, gated goal of the whole journey.' },
-  { t:4, cat:'PJCC', q:'Princess reportedly arrived via the same vessel as…', a:['The Rival','Subject Zero','The Father','Auston'], c:1, why:'“Arrived via same vessel as Subject Zero. Connection to crash: unconfirmed.”' },
-  { t:4, cat:'PJCC', q:'The Father reads which paper for “the REAL news”?', a:['Checker Daily','Chess City Times','Checker Financial','The Sand Gazette'], c:2, why:'Checker Financial — even though he has no money.' },
-  { t:4, cat:'PJCC', q:'On the world map, the ferry to which island is “delayed”?', a:['Shogi Island','Chess City','The Sand Mines','Sector 7'], c:0, why:'The Shogi Island ferry has been delayed — and not by mechanics.' },
-  { t:4, cat:'PJCC', q:'Under the Mirror Protocol, reflections are rendered…', a:['In low-poly','In photorealistic detail','In black and white','Not at all'], c:1, why:'Reflective surfaces alone render in shocking photorealistic fidelity.' },
-  { t:4, cat:'PJCC', q:'The Rival is associated with which piece?', a:['King','Rook','Knight','Pawn'], c:0, why:'The Rival plays the King — his family waits in Chess City.' },
-  { t:4, cat:'PJCC', q:'Princess’s secret “imprint” allegiance is to which team?', a:['The Chess City Leafs','Toronto Maple Leafs','The Checker Town Pawns','Shogi United'], c:1, why:'A residual imprint: she was a Maple Leafs fan before she got here.' },
-  // TIER 4 (cont.) — World Champions & famous events
+  // TIER 4 — hard: World Champions & famous events
   { t:4, cat:'CHAMPIONS', q:'Who was the first official World Chess Champion (1886)?', a:['Emanuel Lasker','Wilhelm Steinitz','Paul Morphy','José Capablanca'], c:1, why:'Wilhelm Steinitz, 1886 — also the father of positional chess.' },
   { t:4, cat:'CHAMPIONS', q:'Which World Champion was nicknamed “the Magician from Riga”?', a:['Mikhail Tal','Mikhail Botvinnik','Boris Spassky','Tigran Petrosian'], c:0, why:'Mikhail Tal, the 8th champion, famed for dazzling sacrifices.' },
   { t:4, cat:'HISTORY', q:'In the 1972 “Match of the Century” at Reykjavík, Bobby Fischer beat…', a:['Anatoly Karpov','Boris Spassky','Tigran Petrosian','Mikhail Tal'], c:1, why:'Fischer dethroned Boris Spassky in 1972, ending Soviet dominance.' },
@@ -246,11 +267,11 @@ const Q = [
 
 const RANKS = [
   { at: 0,  name: 'RECRUIT',     pip: '▽' },
-  { at: 3,  name: 'DELTA',       pip: 'Δ', file: 'FILE 001 — THE CRASH: Subject arrived via a construction company vessel. It departed in an emergency. Subject was left behind.' },
-  { at: 6,  name: 'GAMMA',       pip: 'Γ', file: 'FILE 002 — DESIGNATION: Princess is logged as a Knight. An odd classification for a Checker Town cattle-dog.' },
-  { at: 10, name: 'BETA',        pip: 'β', file: 'FILE 003 — THE RIVAL: His family is already inside Chess City. He is not trying to get there. He is trying to go back.' },
-  { at: 15, name: 'OMEGA',       pip: 'Ω', file: 'FILE 004 — THE MINES: The Father has seen something in the Sand Mines. The equipment predates the crash by three years.' },
-  { at: 21, name: 'ABOVE OMEGA', pip: '★', file: 'FILE 005 — SUBJECT ZERO: Same vessel as Princess. Origin coordinates match no known system. The investigation continues anyway.' },
+  { at: 3,  name: 'DELTA',       pip: 'Δ', file: 'DOSSIER 001 — THE IMMORTAL GAME (1851): Adolf Anderssen sacrificed a bishop, both rooks and his queen — then delivered mate with the few pieces he had left.' },
+  { at: 6,  name: 'GAMMA',       pip: 'Γ', file: 'DOSSIER 002 — CAPABLANCA: the Cuban “chess machine” played with such flawless technique that he lost only a handful of games across his entire prime.' },
+  { at: 10, name: 'BETA',        pip: 'β', file: 'DOSSIER 003 — GAME OF THE CENTURY (1956): a 13-year-old Bobby Fischer stunned the room with an audacious queen sacrifice against Donald Byrne.' },
+  { at: 15, name: 'OMEGA',       pip: 'Ω', file: 'DOSSIER 004 — DEEP BLUE (1997): for the first time in history, a machine defeated a reigning World Champion in a full match.' },
+  { at: 21, name: 'ABOVE OMEGA', pip: '★', file: 'DOSSIER 005 — GUKESH (2024): at just eighteen years old, D Gukesh became the youngest undisputed World Chess Champion ever crowned.' },
 ];
 
 // ---- Diagram questions (a mini board is drawn from the FEN; find the move / name the threat) ----
@@ -280,7 +301,7 @@ function recordMissed(q){
 }
 
 // ---- Modes, categories, seeded daily ----
-const CATSETS = { all:null, rules:['RULES'], tactics:['TACTICS'], history:['HISTORY','CHAMPIONS'], pjcc:['PJCC'] };
+const CATSETS = { all:null, rules:['RULES'], tactics:['TACTICS'], history:['HISTORY','CHAMPIONS'] };
 let mode = 'standard', catFilter = 'all';
 let timer = null, timeLeft = 0, timeMax = 0;
 let dailyList = [], dailyPtr = 0;
@@ -323,6 +344,14 @@ function sfx(k){ if(!actx) return; const t=actx.currentTime;
   else if(k==='wrong'){tone(200,t,0.2,'sawtooth',0.25);tone(120,t+0.05,0.24,'sawtooth',0.2);}
   else if(k==='promo'){[523,659,784,1047,1319].forEach((f,i)=>tone(f,t+i*0.09,0.26,'triangle',0.24));}
   else if(k==='over'){[330,247,196,131].forEach((f,i)=>tone(f,t+i*0.13,0.32,'sawtooth',0.24));} }
+
+// ---- POP: juice helpers ----
+function flashTerm(kind){ const t = document.getElementById('term'); const cls = kind === 'ok' ? 'flash-ok' : 'flash-bad'; t.classList.add(cls); setTimeout(function(){ t.classList.remove(cls); }, 380); }
+function shakeTerm(){ const t = document.getElementById('term'); t.classList.remove('shake'); void t.offsetWidth; t.classList.add('shake'); setTimeout(function(){ t.classList.remove('shake'); }, 420); }
+function bumpScore(){ const el = document.getElementById('score-lbl'); el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+function floatGain(pts, st){ const el = document.createElement('div'); el.className = 'gain';
+  el.innerHTML = '+' + pts + (st >= 3 ? ' <span class="flame">🔥×' + st + '</span>' : '');
+  document.getElementById('term').appendChild(el); setTimeout(function(){ el.remove(); }, 900); }
 
 // ---- State ----
 let queues = {}, correct = 0, score = 0, strikes = 0, streak = 0, rankIdx = 0, cur = null, answered = false, lastFile = '';
@@ -398,6 +427,7 @@ function timeUp(){
   const correctPos = cur._display.indexOf(cur.c);
   buttons[correctPos].classList.add('correct');
   streak = 0; strikes++; recordMissed(cur); sfx('wrong');
+  flashTerm('bad'); shakeTerm();
   const ex = document.getElementById('explain'); ex.innerHTML = '<b style="color:#ff9fb0">Time!</b> ' + cur.why; ex.classList.add('show');
   updateHUD();
   if (mode !== 'daily' && strikes >= 3){ setTimeout(gameOver, 250); }
@@ -421,18 +451,22 @@ function answer(origIdx, btn){
   const buttons = Array.from(document.getElementById('answers').children);
   buttons.forEach(b => b.classList.add('locked'));
   const correctPos = cur._display.indexOf(cur.c);
+  const scoreBefore = score;
   if (origIdx === cur.c){
     btn.classList.add('correct'); sfx('right');
     correct++; streak++;
     score += 100 + Math.min(streak, 8) * 20;
     if (mode === 'lightning' && timeMax > 0) score += Math.round(Math.max(0, timeLeft / timeMax) * 100);  // speed bonus
     buttons.forEach((b, i) => { if (i !== correctPos) b.classList.add('dim'); });
-    updateRank(true);
+    flashTerm('ok'); bumpScore();
+    const promoted = updateRank(true);
+    if (!promoted) floatGain(score - scoreBefore, streak);   // promo card is its own reward — skip the float
   } else {
     btn.classList.add('wrong'); sfx('wrong');
     streak = 0; strikes++; recordMissed(cur);
     buttons[correctPos].classList.add('correct');
     buttons.forEach((b, i) => { if (i !== correctPos && b !== btn) b.classList.add('dim'); });
+    flashTerm('bad'); shakeTerm();
   }
   const ex = document.getElementById('explain');
   ex.innerHTML = (origIdx === cur.c ? '<b>Correct.</b> ' : '<b style="color:#ff9fb0">Not quite.</b> ') + cur.why;
@@ -458,12 +492,15 @@ function updateRank(animate){
   const frac = next ? Math.min(1, (correct - lo) / (hi - lo)) : 1;
   document.getElementById('clr-bar').style.width = (frac * 100) + '%';
   document.getElementById('rank-sub').textContent = next ? ((hi - correct) + ' more to ' + next.name) : 'Maximum clearance.';
+  let promoted = false;
   if (animate && idx > rankIdx){
     rankIdx = idx;
     if (r.file) lastFile = r.file;
     promote(r);
+    promoted = true;
   }
   rankIdx = Math.max(rankIdx, idx);
+  return promoted;
 }
 function promote(r){
   sfx('promo');
