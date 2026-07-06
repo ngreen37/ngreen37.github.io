@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PJCC: Notation Blitz v3.8</title>
+<title>PJCC: Notation Blitz v3.9</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -176,17 +176,6 @@
   }
   .ver { font-size: 0.5em; color: #ff8fd0; vertical-align: super; letter-spacing: 1px; }
   .pick.on { background: #F5C518; color: #1a0f3d; border-color: #F5C518; font-weight: bold; }
-  /* RECALL keypad */
-  .keypad { margin-top: 8px; width: 100%; }
-  .keypad.hidden { display: none; }
-  .kp-readout { text-align: center; font-family: 'Courier New', monospace; font-size: 18px;
-    font-weight: bold; letter-spacing: 4px; color: #F5C518; min-height: 22px; margin-bottom: 6px; }
-  .kp-row { display: flex; gap: 4px; justify-content: center; margin-bottom: 4px; }
-  .kp-key { flex: 1 1 0; max-width: 56px; background: #2D1B69; color: #c9a7ff; border: 1px solid #4a2f8a;
-    border-radius: 6px; padding: 10px 0; font-family: 'Courier New', monospace; font-size: 18px;
-    font-weight: bold; cursor: pointer; transition: all 0.1s; }
-  .kp-key:hover { border-color: #F5C518; color: #fff; }
-  .kp-key.armed { background: #F5C518; color: #1a0f3d; border-color: #F5C518; }
   .perk-pick {
     width: 124px; min-height: 96px; display: flex; flex-direction: column; align-items: center;
     justify-content: center; gap: 4px; padding: 12px 8px; text-align: center;
@@ -246,13 +235,6 @@
 <div id="stage">
   <canvas id="canvas" width="480" height="500"></canvas>
 
-  <!-- RECALL keypad (reverse "name-the-square" mode) -->
-  <div id="keypad" class="keypad hidden">
-    <div class="kp-readout" id="kp-readout">name the lit square</div>
-    <div class="kp-row" id="kp-files"></div>
-    <div class="kp-row" id="kp-ranks"></div>
-  </div>
-
   <!-- INTRO / ATTRACT SCREEN (shown first) -->
   <div class="overlay intro" id="intro-screen">
     <div class="intro-chips" id="intro-chips" aria-hidden="true"></div>
@@ -266,20 +248,18 @@
       <div class="intro-tag">Read the board at the speed of thought.</div>
       <div class="intro-start" id="intro-start">▶ PRESS&nbsp;START</div>
     </div>
-    <div class="intro-ver">v3.8</div>
+    <div class="intro-ver">v3.9</div>
   </div>
 
   <!-- TITLE SCREEN -->
   <div class="overlay" id="title-screen">
     <div class="ov-eyebrow" id="ov-eyebrow">Checker Town · Coordinate Drill</div>
-    <div class="ov-title">NOTATION BLITZ <span class="ver" id="ov-ver">v3.8</span></div>
+    <div class="ov-title">NOTATION BLITZ <span class="ver" id="ov-ver">v3.9</span></div>
 
     <div class="ov-group-label">Mode</div>
     <div class="btn-row" id="mode-row">
       <button class="pick sel" data-mode="coords">Drill<small>fixed run</small></button>
       <button class="pick" data-mode="endless">Endless<small>ramps up</small></button>
-      <button class="pick" data-mode="recall">Recall<small>name the square</small></button>
-      <button class="pick" data-mode="daily">📅 Daily<small>same chart · timing board</small></button>
     </div>
 
     <div class="ov-group-label">Tempo</div>
@@ -465,13 +445,9 @@ function sfx(kind) {
 // ---- Game state ----
 let G = null;
 
-let NRAND = Math.random;                                  // swappable for the seeded Daily chart
-function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
-function dailyStampNB(){ return (window.PJCC && PJCC.dayStamp) ? PJCC.dayStamp() : new Date().toISOString().slice(0,10); }
-function dailySeedNB(){ var s=dailyStampNB(), h=2166136261; for(var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return (h>>>0); }
 function randCoordCall(prev) {
   let x, y, idx;
-  do { x = (NRAND()*8)|0; y = (NRAND()*8)|0; idx = y*8+x; } while (idx === prev);
+  do { x = (Math.random()*8)|0; y = (Math.random()*8)|0; idx = y*8+x; } while (idx === prev);
   return { san: xyToAlg(x, y), x, y };
 }
 
@@ -526,22 +502,14 @@ function newGame(mode, diff) {
   const endless = (mode === 'endless');
   const freestyle = (mode === 'freestyle');
   const extreme = (mode === 'extreme');
-  const daily = (mode === 'daily');
-  const reverse = (mode === 'recall');     // name-the-square: the board lights up, you type the name
   const dual = (mode === 'dual');          // two-hand: two simultaneous lanes
   const infinite = endless || freestyle;
-  // Daily is a fixed, fair chart so every operative's timing-accuracy is comparable.
-  if (daily) { diff = 'medium'; }
-  const bpm = daily ? 72 : selBpm, bpc = 2;
+  const bpm = selBpm, bpc = 2;
   // Theme: tempo palette, the 2-Tone Black skin, or (Extreme) the White-side palette to start.
-  applyTheme(extreme ? diff : (selBlack && !daily ? 'ska' : diff));
+  applyTheme(extreme ? diff : (selBlack ? 'ska' : diff));
   const spb = 60 / bpm;
   const queue = [];
-  if (daily) {
-    NRAND = mulberry32(dailySeedNB()); let prev = -1;
-    for (let i = 0; i < 28; i++) { const c = randCoordCall(prev); prev = c.y*8 + c.x; queue.push(c); }
-    NRAND = Math.random;
-  } else if (dual) {
+  if (dual) {
     // Two distinct squares per beat — lane 0 and lane 1.
     let p0 = -1, p1 = -1;
     for (let i = 0; i < 24; i++) {
@@ -549,17 +517,17 @@ function newGame(mode, diff) {
       a.lane = 0; b.lane = 1; p0 = a.y*8 + a.x; p1 = b.y*8 + b.x;
       queue.push(a); queue.push(b);
     }
-  } else if (mode === 'coords' || reverse || infinite || extreme) {
-    let prev = -1, n = infinite ? 40 : (extreme ? 30 : (reverse ? 24 : bpmCalls(bpm)));
+  } else if (mode === 'coords' || infinite || extreme) {
+    let prev = -1, n = infinite ? 40 : (extreme ? 30 : bpmCalls(bpm));
     for (let i = 0; i < n; i++) { const c = randCoordCall(prev); prev = c.y*8 + c.x; queue.push(c); }
   } else {
     OPENINGS[mode].line.forEach(([san, sq]) => { const p = algToXY(sq); queue.push({ san, x: p.x, y: p.y }); });
   }
-  const perksOn = (selPerks && !daily);
+  const perksOn = selPerks;
   const callInterval = spb * bpc;
 
   G = {
-    mode, diff, endless, freestyle, extreme, daily, reverse, dual, spb, bpc, bpm, flip: (extreme || daily ? false : selBlack),
+    mode, diff, endless, freestyle, extreme, dual, spb, bpc, bpm, flip: (extreme ? false : selBlack),
     flipAtBeat: 0, flipBanner: null, flips: 0,
     goodW: callInterval * GOOD_FRAC, perfectW: callInterval * PERFECT_FRAC,
     perksOn, perks: { wideStacks: 0, scoreMult: 1, shields: 0 }, perkIdx: 0, openPerk: false,
@@ -588,11 +556,7 @@ function boardCenter(x, y) {
 function setEmote(e, frames) { if (G) { G.princess.emote = e; G.princess.emoteT = frames || 70; } }
 // Dual mode: lane 0 rides slightly above the gate line, lane 1 slightly below.
 function laneY(c) { return TRACK_Y + (G && G.dual ? (c && c.lane ? 16 : -16) : 0); }
-// Recall mode hides the square name on the pill until it's resolved (you must name it).
-function pillLabel(c) {
-  if (!G || !G.reverse) return c.san;
-  return (c.status === 'hit' || c.status === 'missed') ? c.san : '?';
-}
+function pillLabel(c) { return c.san; }
 
 // Extreme mode: flip the board's perspective (White ⟲ Black). The theme shifts so you can feel the side.
 function doFlip(curBeat) {
@@ -918,48 +882,9 @@ function canvasToSquare(clientX, clientY) {
 }
 
 canvas.addEventListener('pointerdown', e => {
-  if (G && G.reverse) return;   // Recall mode: answer with the keypad, not the board
   const sq = canvasToSquare(e.clientX, e.clientY);
   if (sq) { e.preventDefault(); resolveAt(sq.x, sq.y); }
 });
-
-// ---- Recall keypad: compose a file + a rank, then it resolves on the beat ----
-(function () {
-  const filesEl = document.getElementById('kp-files');
-  const ranksEl = document.getElementById('kp-ranks');
-  const readEl = document.getElementById('kp-readout');
-  if (!filesEl || !ranksEl) return;
-  const FILES = 'abcdefgh';
-  let kpFile = null, kpRank = null;   // kpFile: 0–7 col · kpRank: 0–7 row
-  function paintReadout() {
-    if (!readEl) return;
-    if (kpFile == null && kpRank == null) { readEl.textContent = 'name the lit square'; return; }
-    readEl.textContent = (kpFile == null ? '·' : FILES[kpFile]) + (kpRank == null ? '·' : String(8 - kpRank));
-  }
-  function clearArmedIn(el) { Array.prototype.forEach.call(el.querySelectorAll('.kp-key.armed'), b => b.classList.remove('armed')); }
-  function reset() { kpFile = null; kpRank = null; clearArmedIn(filesEl); clearArmedIn(ranksEl); paintReadout(); }
-  function tryResolve() {
-    if (kpFile != null && kpRank != null) { const x = kpFile, y = kpRank; reset(); resolveAt(x, y); }
-  }
-  FILES.split('').forEach((ch, i) => {
-    const b = document.createElement('button');
-    b.className = 'kp-key'; b.textContent = ch;
-    b.addEventListener('pointerdown', e => { e.preventDefault(); clearArmedIn(filesEl); kpFile = i; b.classList.add('armed'); paintReadout(); tryResolve(); });
-    filesEl.appendChild(b);
-  });
-  for (let rk = 1; rk <= 8; rk++) {
-    const row = 8 - rk;
-    const b = document.createElement('button');
-    b.className = 'kp-key'; b.textContent = String(rk);
-    b.addEventListener('pointerdown', e => { e.preventDefault(); clearArmedIn(ranksEl); kpRank = row; b.classList.add('armed'); paintReadout(); tryResolve(); });
-    ranksEl.appendChild(b);
-  }
-  window.__kpShow = function (on) {
-    const kp = document.getElementById('keypad');
-    if (kp) kp.classList.toggle('hidden', !on);
-    reset();
-  };
-})();
 
 // ---- Rendering ----
 function render() {
@@ -1063,22 +988,6 @@ function drawBoard() {
     ctx.fillText(G.flip ? i + 1 : 8 - i, BX + 3, BY + i * TILE + 15);             // ranks down the left
   }
 
-  // Recall mode: ring the square(s) you must name (no name shown on the pill).
-  if (G.reverse && G.running) {
-    const now = nowSec();
-    G.calls.forEach(c => {
-      if (c.status !== 'pending' && c.status !== 'tail') return;
-      const sc = G.flip ? 7 - c.x : c.x, sr = G.flip ? 7 - c.y : c.y;
-      const cx = BX + sc * TILE + TILE / 2, cy = BY + sr * TILE + TILE / 2;
-      const active = c.status === 'pending' && Math.abs(c.hitTime - now) <= G.goodW;
-      ctx.save();
-      ctx.strokeStyle = active ? 'rgba(107,255,184,0.95)' : (c.status === 'tail' ? '#ffd166' : 'rgba(' + TH.rgb + ',0.85)');
-      ctx.lineWidth = active ? 4 : 2.5;
-      ctx.beginPath(); ctx.arc(cx, cy, TILE * 0.34, 0, Math.PI * 2); ctx.stroke();
-      if (active) { ctx.fillStyle = 'rgba(107,255,184,0.18)'; ctx.fill(); }
-      ctx.restore();
-    });
-  }
 }
 
 function drawTrack() {
@@ -1427,7 +1336,7 @@ function bpmCalls(bpm) { return bpm < 52 ? 18 : bpm <= 78 ? 22 : 28; }
 function loadTrend() { try { return JSON.parse(localStorage.getItem(TREND_KEY)) || []; } catch (e) { return []; } }
 function saveTrend(a) { try { localStorage.setItem(TREND_KEY, JSON.stringify(a.slice(-20))); } catch (e) {} }
 
-function modeName(mode) { return mode === 'coords' ? 'Coordinates' : mode === 'endless' ? 'Endless' : mode === 'freestyle' ? 'Freestyle' : mode === 'recall' ? 'Recall' : mode === 'dual' ? '2-Hand' : mode === 'extreme' ? 'Extreme' : mode === 'daily' ? '📅 Daily' : (OPENINGS[mode] ? OPENINGS[mode].label : 'Coordinates'); }
+function modeName(mode) { return mode === 'coords' ? 'Coordinates' : mode === 'endless' ? 'Endless' : mode === 'freestyle' ? 'Freestyle' : mode === 'dual' ? '2-Hand' : mode === 'extreme' ? 'Extreme' : (OPENINGS[mode] ? OPENINGS[mode].label : 'Coordinates'); }
 function updateTitleBest() {
   const key = selMode + '_' + selDiff + (selBlack ? '_b' : '');
   const best = loadBests()[key];
@@ -1450,9 +1359,7 @@ function syncBpmUI() { setDiffHighlight(); }
 function setEyebrow() {
   const e = document.getElementById('ov-eyebrow');
   if (!e) return;
-  if (selMode === 'recall') e.textContent = 'RECALL · a square lights up — name it on the keypad';
-  else if (selMode === 'endless') e.textContent = 'ENDLESS · the tempo ramps up until your lives run out';
-  else if (selMode === 'daily') e.textContent = '📅 DAILY · same chart for everyone · timing-accuracy board';
+  if (selMode === 'endless') e.textContent = 'ENDLESS · the tempo ramps up until your lives run out';
   else e.textContent = 'Checker Town · Coordinate Drill';
 }
 document.getElementById('diff-row').addEventListener('click', e => {
@@ -1490,7 +1397,6 @@ function begin() {
   newGame(selMode, selDiff);
   document.getElementById('title-screen').classList.add('hidden');
   document.getElementById('results-screen').classList.add('hidden');
-  if (window.__kpShow) window.__kpShow(G.reverse);   // keypad only in Recall mode
   startRun();
 }
 
@@ -1499,7 +1405,6 @@ document.getElementById('replay-btn').addEventListener('click', begin);
 document.getElementById('menu-btn').addEventListener('click', () => {
   document.getElementById('results-screen').classList.add('hidden');
   document.getElementById('title-screen').classList.remove('hidden');
-  if (window.__kpShow) window.__kpShow(false);
   newGame(selMode, selDiff);   // reset the idle preview board to the selected tempo
 });
 
@@ -1547,7 +1452,6 @@ function resumeFromPause() {
 function finish() {
   G.running = false;
   G.finished = true;
-  if (window.__kpShow) window.__kpShow(false);
   const r = G.res;
   const total = (G.endless || G.freestyle) ? (r.perfect + r.great + r.good + (r.save || 0) + r.miss + (r.shielded || 0)) : G.total;
   // Quality-weighted accuracy: Perfect full, Great most, Good half, tail-Save partial.
@@ -1562,9 +1466,8 @@ function finish() {
 
   const modeLabel = G.endless ? ('Endless · top ' + G.topBpm + ' BPM')
     : G.freestyle ? ('Freestyle · settled ' + G.bpm + ' BPM')
-    : G.reverse ? 'Recall · name-the-square'
     : G.dual ? '2-Hand · two lanes'
-    : G.daily ? '📅 Daily Chart' : G.mode === 'coords' ? 'Coordinates' : OPENINGS[G.mode] ? OPENINGS[G.mode].label : 'Coordinates';
+    : G.mode === 'coords' ? 'Coordinates' : OPENINGS[G.mode] ? OPENINGS[G.mode].label : 'Coordinates';
   document.getElementById('res-mode-label').textContent = modeLabel + ' · ' + DIFFS[G.diff].label + (G.flip ? ' · Black' : '');
   const badge = document.getElementById('res-rank');
   badge.textContent = rank; badge.style.color = color;
@@ -1599,19 +1502,11 @@ function finish() {
   if (isBest) bestEl.innerHTML = '<b style="color:#6bffb8;">✨ NEW BEST! ✨</b>';
   else bestEl.innerHTML = 'Best: <b style="color:#F5C518;">' + prev.rank + '</b> · ' + prev.score;
   updateTitleBest();
-  // Timing-accuracy score (global board): dead-on timing scores ~1000, decaying with mean offset.
-  const meanAbsMs = r.offCount ? (r.absSum || 0) / r.offCount * 1000 : 999;
-  const accScore = r.offCount ? Math.max(0, Math.round(1000 - meanAbsMs * 2)) : 0;
   if (window.PJCC) {
     PJCC.saveScore('notation-run', G.score, { credits: 1, data: { mode: G.mode, diff: G.diff, rank: rank } });
-    // every run posts your best timing precision to the global accuracy board
-    if (r.offCount) PJCC.saveScore('notation-accuracy', accScore, { credits: 0, data: { meanAbsMs: Math.round(meanAbsMs), mode: G.mode } });
-    // the Daily chart has its own seeded board
-    if (G.daily) PJCC.saveScore('notation-daily', accScore, { seed: dailyStampNB(), credits: 2, data: { score: G.score, rank: rank, meanAbsMs: Math.round(meanAbsMs) } });
   }
-  if (G.daily) document.getElementById('res-timing').textContent += ' · accuracy ' + accScore + '/1000';
   // Perfect Sprint (rank S on the hardest tempo, Drill) unlocks Blindfold Puzzles.
-  if (!G.endless && !G.freestyle && !G.perksOn && !G.reverse && !G.dual && G.diff === 'hard' && rank === 'S') {
+  if (!G.endless && !G.freestyle && !G.perksOn && !G.dual && G.diff === 'hard' && rank === 'S') {
     try {
       if (localStorage.getItem('pjcc.blindfold.unlocked') !== '1') {
         localStorage.setItem('pjcc.blindfold.unlocked', '1');

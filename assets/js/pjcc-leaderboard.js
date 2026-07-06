@@ -17,8 +17,6 @@
       { key: 'dungeon',         label: 'Princess Dungeon', unit: 'floors'  },
       { key: 'clearance-delta', label: 'Clearance: DELTA', unit: 'score'   },
       { key: 'notation-run',    label: 'Notation Blitz',   unit: 'score'   },
-      { key: 'notation-accuracy', label: 'Notation · Timing', unit: 'precision' },
-      { key: 'notation-daily',  label: 'Notation · Daily',  unit: 'precision' },
       { key: 'fork-in-the-road',label: 'Fork in the Road', unit: 'solved'  },
       { key: 'sand-mine-depths',label: 'Sand Mine Depths', unit: 'depth'   },
       { key: 'pirc-protocol',   label: 'Pirc Protocol',    unit: 'score'   },
