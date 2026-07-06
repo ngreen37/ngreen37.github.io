@@ -26,7 +26,7 @@ permalink: /the-world/
   background: linear-gradient(180deg, color-mix(in srgb, var(--c) 34%, #180b38) 0%, #150a30 88%);
   transition: transform .14s, box-shadow .14s; }
 .world-pillar:hover, .world-pillar:active, .world-pillar:focus-visible {
-  transform: translateY(-4px); box-shadow: 0 0 48px -5px var(--c), 0 12px 39px -9px var(--c); }
+  text-decoration: none; transform: translateY(-4px); box-shadow: 0 0 48px -5px var(--c), 0 12px 39px -9px var(--c); }
 /* dimmed corner that lights up in the tile's colour on hover/tap — matches the splash quads */
 .world-pillar::after { content: ''; position: absolute; inset: 0; z-index: 0; border-radius: 18px; pointer-events: none;
   background: linear-gradient(135deg, color-mix(in srgb, var(--c) 37%, transparent) 0%, transparent 58%);
