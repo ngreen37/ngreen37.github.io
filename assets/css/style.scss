@@ -5391,7 +5391,7 @@ body.theme-classified {
 
 .char-flip-sub {
   font-size: 14px;
-  color: rgba(240, 170, 182, 0.62);
+  color: rgba(206, 184, 250, 0.62);
   margin-bottom: 36px;
   font-style: italic;
 }
@@ -5435,16 +5435,16 @@ body.theme-classified {
   text-align: center;
 }
 
-/* Characters theme = crimson "personnel dossier" (recoloured from purple 2026-06-30,
-   matching the Characters pillar --c:#e2566e on /the-world/). */
+/* Characters theme = violet "personnel dossier" (recoloured 2026-07-06,
+   matching the Characters pillar --c:#a879ff on /the-world/). */
 .char-flip-front {
-  background: rgba(70, 16, 30, 0.55);
-  border: 1px solid rgba(226, 86, 110, 0.4);
+  background: rgba(46, 26, 78, 0.55);
+  border: 1px solid rgba(168, 121, 255, 0.4);
 }
 
 .char-flip-back {
-  background: rgba(22, 6, 12, 0.92);
-  border: 1px solid rgba(226, 86, 110, 0.32);
+  background: rgba(18, 10, 34, 0.92);
+  border: 1px solid rgba(168, 121, 255, 0.32);
   transform: rotateY(180deg);
   justify-content: flex-start;
   align-items: flex-start;
@@ -5454,7 +5454,7 @@ body.theme-classified {
 
 .char-flip-piece {
   font-size: 48px;
-  color: rgba(235, 130, 150, 0.7);
+  color: rgba(190, 150, 255, 0.7);
   margin-bottom: 10px;
   line-height: 1;
 }
@@ -5472,14 +5472,14 @@ body.theme-classified {
   font-size: 9px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: rgba(240, 165, 178, 0.55);
+  color: rgba(200, 178, 250, 0.55);
 }
 
 .char-flip-back-label {
   font-family: 'Share Tech Mono', monospace;
   font-size: 9px;
   letter-spacing: 2px;
-  color: rgba(235, 130, 150, 0.5);
+  color: rgba(190, 150, 255, 0.5);
   margin-bottom: 4px;
   align-self: center;
 }
@@ -5496,7 +5496,7 @@ body.theme-classified {
 
 .char-flip-secret {
   font-size: 11px;
-  color: rgba(255, 200, 205, 0.78);
+  color: rgba(224, 205, 255, 0.78);
   line-height: 1.5;
   flex: 1;
 }
@@ -5505,13 +5505,13 @@ body.theme-classified {
   font-family: 'Poppins', sans-serif;
   font-size: 10px;
   font-weight: 600;
-  color: rgba(235, 120, 140, 0.8);
+  color: rgba(190, 150, 255, 0.85);
   text-decoration: none;
   align-self: flex-end;
   margin-top: auto;
 
   &:hover {
-    color: #e2566e;
+    color: #a879ff;
     text-decoration: none;
   }
 }
@@ -7528,12 +7528,12 @@ body.theme-classified {
 
 /* 15 — Arrow-key character navigator */
 .char-flip-card.is-focused .char-flip-inner {
-  box-shadow: 0 0 0 2px #e2566e, 0 0 22px rgba(226, 86, 110, 0.3);
+  box-shadow: 0 0 0 2px #a879ff, 0 0 22px rgba(168, 121, 255, 0.3);
 }
 .char-nav-hint {
   text-align: center;
   font-family: 'Share Tech Mono', monospace;
-  font-size: 10px; color: rgba(235, 130, 150, 0.42);
+  font-size: 10px; color: rgba(190, 150, 255, 0.42);
   letter-spacing: 0.12em; margin-bottom: 14px;
 }
 

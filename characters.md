@@ -106,5 +106,5 @@ permalink: /characters/
 /* Word-length "piece" designations (e.g. the Commentators' "various") render as a
    compact label instead of the oversized 48px glyph, so they don't overflow the card. */
 .char-flip-piece--word { font-size: 15px; font-weight: 800; letter-spacing: 0.14em;
-  text-transform: uppercase; color: rgba(245, 197, 24, 0.7); }
+  text-transform: uppercase; color: rgba(190, 150, 255, 0.72); }
 </style>

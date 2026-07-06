@@ -12,19 +12,19 @@ permalink: /locations/
     <a class="loc-card" href="{{ '/locations/checker-town/' | relative_url }}">
       <span class="loc-glyph">⛂</span>
       <span class="loc-name">Checker Town</span>
-      <span class="loc-desc">Where the story begins. A struggling community built from fallen checker pieces, where hope is in short supply and most people never leave.</span>
+      <span class="loc-desc">Where the story begins — a struggling town most never leave.</span>
       <span class="loc-go">Enter ▸</span>
     </a>
     <a class="loc-card" href="{{ '/locations/chess-city/' | relative_url }}">
       <span class="loc-glyph">♚</span>
       <span class="loc-name">Chess City</span>
-      <span class="loc-desc">The destination. A prosperous city across the sea — but entry requires winning chess tournaments, and visits require passing through security and getting Tagged.</span>
+      <span class="loc-desc">The destination — a prosperous city you win your way into.</span>
       <span class="loc-go">Enter ▸</span>
     </a>
     <a class="loc-card" href="{{ '/locations/shogi-island/' | relative_url }}">
       <span class="loc-glyph">将</span>
       <span class="loc-name">Shogi Island</span>
-      <span class="loc-desc">A nearby island where almost no one plays chess. Shogi rules here, and everyone speaks Japanese.</span>
+      <span class="loc-desc">A nearby island of shogi and Japanese, not chess.</span>
       <span class="loc-go">Enter ▸</span>
     </a>
   </div>
@@ -34,7 +34,7 @@ permalink: /locations/
     <a class="loc-card" href="{{ '/locations/sand-mines/' | relative_url }}">
       <span class="loc-glyph">⛏</span>
       <span class="loc-name">The Sand Mines</span>
-      <span class="loc-desc">Hard labor on the outskirts. Worked mostly by Checker Town citizens, run by corporate interests, and very difficult to leave.</span>
+      <span class="loc-desc">Hard corporate labor on the outskirts — very difficult to leave.</span>
       <span class="loc-go">Enter ▸</span>
     </a>
   </div>
