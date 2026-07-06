@@ -5,16 +5,18 @@ location_type: City
 permalink: /locations/chess-city/
 ---
 
-<div class="cc-gate">
+<div class="cc-gate" id="cc-gate">
   <div class="cc-gate-label">ENTRY CHECKPOINT — CHESS CITY BORDER AUTHORITY</div>
   <div class="cc-gate-status">
-    <span class="cc-gate-icon">⊘</span>
+    <span class="cc-gate-icon" id="cc-gate-icon">⊘</span>
     <div>
-      <div class="cc-gate-msg">ENTRY REQUIRES WINNING A CHESS TOURNAMENT</div>
-      <div class="cc-gate-sub">No exceptions. No permits. No shortcuts.</div>
+      <div class="cc-gate-msg" id="cc-gate-msg">ENTRY REQUIRES WINNING A CHESS TOURNAMENT</div>
+      <div class="cc-gate-sub" id="cc-gate-sub">No exceptions. No permits. No shortcuts.</div>
     </div>
   </div>
-  <button class="cc-gate-btn" disabled>ACCESS DENIED</button>
+  <div class="cc-gate-action" id="cc-gate-action">
+    <a class="cc-gate-btn cc-gate-link" href="{{ '/games/the-gauntlet/' | relative_url }}">▶ WIN THE GAUNTLET TO ENTER</a>
+  </div>
 </div>
 
 The destination. Chess City is well-to-do, prosperous, and deliberately difficult to reach. You cannot simply move there -- you have to earn your way in.
@@ -38,5 +40,30 @@ Not everyone believes Chess City is paradise. There is a belief among some -- th
 *Map or illustration coming soon.*
 
 <script>
-try { localStorage.setItem('chess_city_entry', '1'); } catch(e) {}
+// Chess City is gated: the page only opens once you've WON THE GAUNTLET
+// (beaten the CEO at the top of the tower). Until then, the checkpoint holds
+// the line and everything below it stays sealed. Winning stamps your permit.
+(function () {
+  var won = false;
+  try { var g = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2') || '{}'); won = !!(g && g.secret); } catch (e) {}
+  var details = document.querySelector('.location-details');
+  if (won) {
+    var gate = document.getElementById('cc-gate');
+    var icon = document.getElementById('cc-gate-icon');
+    var msg  = document.getElementById('cc-gate-msg');
+    var sub  = document.getElementById('cc-gate-sub');
+    var act  = document.getElementById('cc-gate-action');
+    if (gate) gate.classList.add('cc-granted');
+    if (icon) icon.textContent = '✔';
+    if (msg)  msg.textContent = 'ACCESS GRANTED — WELCOME TO CHESS CITY';
+    if (sub)  sub.textContent = 'Tournament victory verified. Your permit is stamped.';
+    if (act)  act.innerHTML = '<span class="cc-gate-btn cc-gate-granted">✔ ACCESS GRANTED</span>';
+    try { localStorage.setItem('chess_city_entry', '1'); } catch (e) {}
+  } else if (details) {
+    // No tournament win yet — seal the city; only the checkpoint remains.
+    Array.prototype.forEach.call(details.children, function (el) {
+      if (el.id !== 'cc-gate' && el.tagName !== 'SCRIPT') el.style.display = 'none';
+    });
+  }
+})();
 </script>

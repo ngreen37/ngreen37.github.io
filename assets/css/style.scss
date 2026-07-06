@@ -6309,6 +6309,41 @@ body.theme-classified {
   opacity: 0.7;
 }
 
+/* The path in — a live link to go win the tournament. */
+.cc-gate-btn.cc-gate-link {
+  display: inline-block;
+  text-decoration: none;
+  cursor: pointer;
+  opacity: 1;
+  color: #ffd7a0;
+  background: rgba(230, 110, 60, 0.16);
+  border-color: rgba(240, 150, 90, 0.5);
+}
+.cc-gate-btn.cc-gate-link:hover {
+  color: #fff;
+  background: rgba(240, 130, 80, 0.3);
+  border-color: rgba(255, 170, 110, 0.85);
+  text-decoration: none;
+}
+
+/* Access granted — the checkpoint turns green once you've won a tournament. */
+.cc-gate.cc-granted {
+  background: rgba(60, 200, 110, 0.07);
+  border-color: rgba(60, 200, 110, 0.3);
+}
+.cc-gate.cc-granted .cc-gate-label { color: rgba(80, 210, 130, 0.6); }
+.cc-gate.cc-granted .cc-gate-icon  { color: rgba(80, 210, 130, 0.85); }
+.cc-gate.cc-granted .cc-gate-msg   { color: rgba(190, 255, 210, 0.85); }
+.cc-gate.cc-granted .cc-gate-sub   { color: rgba(190, 255, 210, 0.5); }
+.cc-gate-btn.cc-gate-granted {
+  cursor: default;
+  opacity: 1;
+  color: #062615;
+  background: #28c76f;
+  border-color: #28c76f;
+  font-weight: bold;
+}
+
 /* =============================================================
    Blog Draft Post Teaser
    ============================================================= */
