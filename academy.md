@@ -8,8 +8,8 @@ permalink: /academy/
 
 <div class="ac-hero">
   <div class="ac-crest">♚</div>
-  <p class="ac-tagline">Chess, taught by the cast of Checker Town. Earn your belt from <strong>Checker</strong> all the way to <strong>Chess City Citizen</strong> — every lesson is a game you already have.</p>
-  <p class="ac-safe">🔒 No sign-up, nothing leaves this device — safe for kids &amp; classrooms. Your progress is read straight from the games you've played.</p>
+  <p class="ac-tagline">Chess, taught by the cast of Checker Town. Every lesson is just a game you already have — play it, and you climb from <strong>Checker</strong> to <strong>Chess City Citizen</strong>.</p>
+  <p class="ac-safe">🔒 No sign-up · nothing leaves this device · safe for kids &amp; classrooms.</p>
 </div>
 
 <!-- ===== Belt + progress ===== -->
@@ -30,7 +30,7 @@ permalink: /academy/
 
 <!-- ===== Recommended next ===== -->
 <div class="ac-next-card" id="ac-next-card" hidden>
-  <div class="ac-next-eyebrow">Your next lesson · chosen from how you've played</div>
+  <div class="ac-next-eyebrow">▶ Start here · your next move</div>
   <div class="ac-next-row">
     <div class="ac-next-ico" id="ac-next-ico">♟</div>
     <div class="ac-next-body">
@@ -64,27 +64,28 @@ permalink: /academy/
 </div>
 
 <!-- ===== Courses ===== -->
-<h2 class="ac-h2">The Faculty &amp; their courses</h2>
+<h2 class="ac-h2">The full path</h2>
+<p class="ac-class-intro">Six teachers, one belt at the end. Work down the list — or jump straight to whatever you feel like practicing.</p>
 <div class="ac-courses" id="ac-courses"></div>
 
-<!-- ===== Skill tree ===== -->
-<h2 class="ac-h2">🗺 The Skill Tree</h2>
-<p class="ac-class-intro">Lessons unlock as you climb. Start with Auston's Bootcamp; the rest opens from there.</p>
-<div class="ac-skilltree" id="ac-skilltree"></div>
-
-<!-- ===== Sandbox board (in-site real-play bridge) ===== -->
-<h2 class="ac-h2">♟ The Sandbox Board</h2>
-<p class="ac-class-intro">Try a lesson by hand. Tap a piece, then tap where it should go — no rules enforced, just a board to think on. (The games are your graded practice.)</p>
+<!-- ===== Free-play board (collapsed) ===== -->
+<details class="ac-fold">
+<summary><span class="ac-fold-t">♟ Free-play board</span><span class="ac-fold-hint">a quiet board to think on — no rules, no score</span></summary>
+<div class="ac-fold-body">
 <div class="ac-sb-tools">
   <button class="ac-print-btn" id="ac-sb-reset" type="button">↺ Reset pieces</button>
   <button class="ac-print-btn" id="ac-sb-clear" type="button">⌫ Clear board</button>
   <span class="ac-sb-hint" id="ac-sb-hint">Tap a piece to pick it up.</span>
 </div>
 <div class="ac-sb" id="ac-sb"></div>
+</div>
+</details>
 
-<!-- ===== Classroom mode ===== -->
-<h2 class="ac-h2">🏫 Classroom Mode</h2>
-<p class="ac-class-intro">For parents and teachers at Chess City Elementary — print a worksheet, hand it out, and track the class. Put the student's name on their certificate and worksheet below.</p>
+<!-- ===== For teachers & parents (collapsed) ===== -->
+<details class="ac-fold ac-fold-teacher">
+<summary><span class="ac-fold-t">🏫 For teachers &amp; parents</span><span class="ac-fold-hint">worksheets · certificates · class codes · progress export</span></summary>
+<div class="ac-fold-body">
+<p class="ac-class-intro">Print a worksheet packet, hand out a class code, and track the class. Put the student's name below and it flows onto their certificate and worksheet.</p>
 <div class="ac-class-row">
   <label class="ac-name-field">Student name
     <input type="text" id="ac-student" placeholder="e.g. Princess" maxlength="40" autocomplete="off">
@@ -127,6 +128,8 @@ permalink: /academy/
     <div class="ac-tool-out" id="ac-verify-out"></div>
   </div>
 </div>
+</div>
+</details>
 
 <!-- ===== Printable sheets (hidden on screen) ===== -->
 <div class="ac-print" id="sheet-worksheet">
@@ -419,42 +422,6 @@ window.ACCERT = (function () {
       var nm = (document.getElementById('ac-student').value || 'Cadet').trim() || 'Cadet';
       cc.textContent = ACCERT.make({ name: nm, belt: belt.n, done: done, total: total, date: new Date().toISOString().slice(0, 10) });
     }
-
-    // skill tree
-    renderSkillTree();
-  }
-
-  // ---- branching skill tree (prereqs / unlocks) ----
-  function courseDone(c) { return c.lessons.filter(function (l) { return l.done(); }).length; }
-  function renderSkillTree() {
-    var host = document.getElementById('ac-skilltree'); if (!host) return;
-    var dm = {}; COURSES.forEach(function (c) { dm[c.id] = courseDone(c); });
-    var f = dm.fundamentals || 0, t2 = (dm.openings || 0) + (dm.tactics || 0), t3 = (dm.strategy || 0) + (dm.vision || 0);
-    var gate = {
-      fundamentals: { open: true }, openings: { open: f >= 1, by: "Start Auston's Bootcamp" },
-      tactics: { open: f >= 1, by: "Start Auston's Bootcamp" }, strategy: { open: t2 >= 2, by: '2 lessons in Openings/Tactics' },
-      vision: { open: t2 >= 2, by: '2 lessons in Openings/Tactics' }, shogi: { open: t3 >= 2, by: '2 lessons in Strategy/Vision' }
-    };
-    var tiers = [['fundamentals'], ['openings', 'tactics'], ['strategy', 'vision'], ['shogi']];
-    function node(id) {
-      var c = COURSES.filter(function (x) { return x.id === id; })[0]; if (!c) return '';
-      var g = gate[id], done = dm[id], tot = c.lessons.length, complete = done >= tot;
-      var cls = 'ac-node ' + (g.open ? (complete ? 'complete' : 'open') : 'locked');
-      return '<div class="' + cls + '" style="--acc:' + c.accent + '"><div class="ac-node-ico">' + (g.open ? c.ico : '🔒') + '</div>' +
-        '<div class="ac-node-name">' + esc(c.who) + '</div>' +
-        '<div class="ac-node-sub">' + (g.open ? (done + '/' + tot + (complete ? ' ✓' : '')) : 'Locked') + '</div>' +
-        (g.open ? '' : '<div class="ac-node-by">' + esc(g.by) + '</div>') + '</div>';
-    }
-    var html = '';
-    tiers.forEach(function (row, ri) {
-      html += '<div class="ac-tree-row">' + row.map(node).join('') + '</div>';
-      html += '<div class="ac-tree-link">↓</div>';
-    });
-    var ad = doneCount(), tot = allLessons().length;
-    html += '<div class="ac-tree-row"><div class="ac-node ac-node-cap ' + (ad >= tot ? 'complete' : 'locked') + '">' +
-      '<div class="ac-node-ico">' + (ad >= tot ? '♚' : '🔒') + '</div><div class="ac-node-name">Chess City Citizen</div>' +
-      '<div class="ac-node-sub">' + ad + '/' + tot + '</div></div></div>';
-    host.innerHTML = html;
   }
 
   // ---- student name (local only) ----
@@ -732,8 +699,8 @@ window.ACCERT = (function () {
 .ac-pip.cur { box-shadow: 0 0 0 2px #ff8fd0; }
 
 /* recommended next */
-.ac-next-card { background: rgba(245,197,24,0.07); border: 1px solid #F5C518; border-radius: 14px; padding: 14px 18px; margin: 16px 0; }
-.ac-next-eyebrow { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #F5C518; margin-bottom: 8px; }
+.ac-next-card { background: rgba(245,197,24,0.09); border: 1px solid #F5C518; border-radius: 16px; padding: 18px 20px; margin: 18px 0; box-shadow: 0 0 26px rgba(245,197,24,0.14); }
+.ac-next-eyebrow { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.1em; color: #F5C518; font-weight: 700; margin-bottom: 8px; }
 .ac-next-row { display: flex; align-items: center; gap: 14px; }
 .ac-next-ico { font-size: 38px; flex: 0 0 auto; }
 .ac-next-body { min-width: 0; flex: 1; }
@@ -841,18 +808,17 @@ window.ACCERT = (function () {
 .ac-hw-go { flex: 0 0 auto; background: #ffb066; color: #1a0f3d; font-weight: 800; text-decoration: none; border-radius: 999px; padding: 9px 16px; white-space: nowrap; }
 .ac-hw-go:hover { background: #ffc98a; }
 
-/* skill tree */
-.ac-skilltree { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.ac-tree-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-.ac-tree-link { color: #4a3a78; font-size: 1.1rem; line-height: 1; }
-.ac-node { width: 130px; background: rgba(45,27,105,0.5); border: 1px solid #3a2a6a; border-top: 3px solid var(--acc, #6b5fa0); border-radius: 10px; padding: 10px; text-align: center; }
-.ac-node.locked { opacity: 0.55; border-top-color: #4a3a78; }
-.ac-node.complete { box-shadow: 0 0 0 1px var(--acc) inset; }
-.ac-node-ico { font-size: 24px; }
-.ac-node-name { color: #f0e6ff; font-weight: 700; font-size: 0.9rem; }
-.ac-node-sub { color: #9a7fd4; font-size: 0.75rem; }
-.ac-node-by { color: #7d6bb0; font-size: 0.68rem; margin-top: 3px; }
-.ac-node-cap { border-top-color: #F5C518; }
+/* collapsible sections — free-play board · teacher tools */
+.ac-fold { background: rgba(45,27,105,0.28); border: 1px solid #3a2a6a; border-radius: 12px; margin: 16px 0; overflow: hidden; }
+.ac-fold > summary { list-style: none; cursor: pointer; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding: 14px 18px; }
+.ac-fold > summary::-webkit-details-marker { display: none; }
+.ac-fold > summary::before { content: '▸'; color: #9a7fd4; align-self: center; transition: transform 0.2s ease; }
+.ac-fold[open] > summary::before { transform: rotate(90deg); }
+.ac-fold > summary:hover .ac-fold-t { color: #ffd740; }
+.ac-fold-t { color: #F5C518; font-weight: 800; font-size: 1.05rem; }
+.ac-fold-hint { color: #9a7fd4; font-size: 0.82rem; }
+.ac-fold-body { padding: 2px 18px 18px; }
+.ac-fold-body > .ac-class-intro:first-child { margin-top: 0; }
 
 /* sandbox board */
 .ac-sb-tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
