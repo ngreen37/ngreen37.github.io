@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PJCC: Notation Blitz v3.9</title>
+<title>PJCC: Notation Blitz v4.0</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -179,19 +179,7 @@
     display: inline-block;
   }
   .ver { font-size: 0.5em; color: #3d9bff; vertical-align: super; letter-spacing: 1px; }
-  .pick.on { background: #28c76f; color: #062615; border-color: #28c76f; font-weight: bold; }
-  .perk-pick {
-    width: 124px; min-height: 96px; display: flex; flex-direction: column; align-items: center;
-    justify-content: center; gap: 4px; padding: 12px 8px; text-align: center;
-    background: #1b2236; color: #cdd8f0; border: 1px solid #2f3a54; border-radius: 8px;
-    font-family: 'Courier New', monospace; cursor: pointer; transition: all 0.12s;
-  }
-  .perk-pick:hover { border-color: #3d9bff; color: #fff; box-shadow: 0 0 14px rgba(61,155,255,0.4); transform: translateY(-2px); }
-  .perk-pick .pk-ico { font-size: 30px; line-height: 1; }
-  .perk-pick .pk-name { font-size: 14px; font-weight: bold; color: #ffd60a; }
-  .perk-pick .pk-desc { font-size: 10px; opacity: 0.85; line-height: 1.3; }
-
-  /* ===== Intro / attract screen (shown first, before the picker) ===== */
+  /* ===== Intro / attract screen (shown first) ===== */
   .overlay.intro {
     z-index: 30; overflow: hidden; cursor: pointer;
     background: radial-gradient(125% 95% at 50% 20%, #163a72 0%, #0f1f3d 60%, #0a0f1c 100%);
@@ -252,13 +240,13 @@
       <div class="intro-tag">Read the board at the speed of thought.</div>
       <div class="intro-start" id="intro-start">▶ PRESS&nbsp;START</div>
     </div>
-    <div class="intro-ver">v3.9</div>
+    <div class="intro-ver">v4.0</div>
   </div>
 
   <!-- TITLE SCREEN -->
   <div class="overlay" id="title-screen">
     <div class="ov-eyebrow" id="ov-eyebrow">Checker Town · Coordinate Drill</div>
-    <div class="ov-title">NOTATION BLITZ <span class="ver" id="ov-ver">v3.9</span></div>
+    <div class="ov-title">NOTATION BLITZ <span class="ver" id="ov-ver">v4.0</span></div>
 
     <div class="ov-group-label">Mode</div>
     <div class="btn-row" id="mode-row">
@@ -271,10 +259,6 @@
       <button class="pick" data-diff="easy">Slow</button>
       <button class="pick sel" data-diff="medium">Medium</button>
       <button class="pick" data-diff="hard">Fast</button>
-    </div>
-
-    <div class="btn-row" style="margin-top:12px;">
-      <button class="pick" id="perks-toggle" data-on="0">🎁 Perks<small>pick buffs mid-run</small></button>
     </div>
 
     <button class="start-btn" id="start-btn">START</button>
@@ -313,13 +297,6 @@
     </div>
   </div>
 
-  <!-- PERK PICK (mid-run) -->
-  <div class="overlay hidden" id="perk-screen">
-    <div class="ov-eyebrow">⏸ Run paused · milestone reached</div>
-    <div class="ov-title" style="font-size:26px;">PICK A PERK</div>
-    <div class="ov-sub" id="perk-sub" style="margin-bottom:10px;">Choose one boost for the rest of the run.</div>
-    <div class="btn-row" id="perk-row"></div>
-  </div>
 </div>
 
 <script>
@@ -459,15 +436,12 @@ function randCoordCall(prev) {
 }
 
 // Perks (opt-in): picked at streak milestones, they persist for the rest of the run.
-const PERK_DEFS = [
-  { type: 'wide',   ico: '🎯', name: 'Wider Window', desc: '+30% timing leeway' },
-  { type: 'double', ico: '✦',  name: 'Double Points', desc: '×2 score from now on' },
-  { type: 'shield', ico: '🛡', name: 'Combo Shield',  desc: 'Block the next miss' },
-];
-const PERK_LABEL = { wide: '🎯 WIDER WINDOW', double: '✦ DOUBLE POINTS', shield: '🛡 SHIELD UP' };
-const PERK_COMBOS = [8, 16, 24];
-// Timing-window multiplier from the Wider-Window perk (each stack +30%).
-function windowMult() { return 1 + 0.3 * ((G && G.perks) ? G.perks.wideStacks : 0); }
+// ---- Live perks (earned by playing well — no menus, no pausing) ----
+//   🎯 SHARP EYE — 3 Perfects in a row widen the timing window for the next few calls
+//   ✦ FEVER      — a x10 streak doubles every point until you miss
+//   🛡 GUARD      — every 8 clean calls banks a save that absorbs your next miss (holds 2)
+// Timing-window multiplier: Sharp Eye opens the window +30% while it's lit.
+function windowMult() { return (G && G.sharp) ? 1.3 : 1; }
 function refillEndless() {
   let prev = G.queue.length ? (G.queue[G.queue.length-1].y*8 + G.queue[G.queue.length-1].x) : -1;
   for (let i = 0; i < 24; i++) { const c = randCoordCall(prev); prev = c.y*8 + c.x; G.queue.push(c); }
@@ -530,14 +504,13 @@ function newGame(mode, diff) {
   } else {
     OPENINGS[mode].line.forEach(([san, sq]) => { const p = algToXY(sq); queue.push({ san, x: p.x, y: p.y }); });
   }
-  const perksOn = selPerks;
   const callInterval = spb * bpc;
 
   G = {
     mode, diff, endless, freestyle, extreme, dual, spb, bpc, bpm, flip: (extreme ? false : selBlack),
     flipAtBeat: 0, flipBanner: null, flips: 0,
     goodW: callInterval * GOOD_FRAC, perfectW: callInterval * PERFECT_FRAC,
-    perksOn, perks: { wideStacks: 0, scoreMult: 1, shields: 0 }, perkIdx: 0, openPerk: false,
+    sharp: false, sharpCalls: 0, perfectRun: 0, guards: 0, sinceGuard: 0, feverOn: false,
     paused: false, pauseStart: 0, shieldedMiss: false,
     recent: [], fsResolved: 0, fsLast: 0,
     countIn: 4, queue, qPtr: 0, calls: [], callBeat: 4, beepIdx: 0, startTime: 0,
@@ -587,7 +560,6 @@ function beatTime(n) { return G.startTime + n * G.spb; }
 
 function update() {
   if (!G || !G.running) return;
-  if (G.openPerk && !G.paused) { openPerk(); return; }
   if (G.paused) return;
   const now = nowSec();
 
@@ -640,7 +612,7 @@ function update() {
       const x = HITX + (c.hitTime - now) * PXPS;
       if (x <= CLIFF_X) {
         c.status = 'missed'; registerResult('miss', c);
-        if (G.shieldedMiss) { floater('🛡 SHIELDED', c, '#7fd4ff'); }
+        if (G.shieldedMiss) { floater('🛡 GUARDED', c, '#7fd4ff'); }
         else { flashSquare(c.x, c.y, COLORS.bad); floater('MISS', c, COLORS.bad); sfx('miss'); setEmote('😣', 60); }
         c.falling = true; c.fx = CLIFF_X; c.fy = laneY(c);
         c.fvx = -1.3 - Math.random(); c.fvy = -2.4 - Math.random(); c.spin = 0; c.spinV = (Math.random() - 0.5) * 0.5;
@@ -713,28 +685,42 @@ function checkMilestone(c) {
 function registerResult(kind, call, base) {
   let gained = 0;
   const isWarmup = !!(call && (call.kind === 'file' || call.kind === 'rank'));
+  // 🎯 SHARP EYE runs on a countdown of calls — tick it down as each one resolves.
+  if (!isWarmup && G.sharp) { G.sharpCalls--; if (G.sharpCalls <= 0) { G.sharp = false; recomputeWindows(); } }
   if (kind !== 'miss') {
-    G.res[kind] = (G.res[kind] || 0) + 1;   // perfect | great | good
+    G.res[kind] = (G.res[kind] || 0) + 1;   // perfect | great | good | save
     G.combo++;
     if (G.combo > G.maxCombo) G.maxCombo = G.combo;
+    // ✦ FEVER: a x10 streak doubles every point until the streak breaks.
+    const feverMult = G.combo >= 10 ? 2 : 1;
     const mult = 1 + Math.min(G.combo, 20) * 0.05;
-    gained = Math.round(base * mult * (G.perks ? G.perks.scoreMult : 1));
+    gained = Math.round(base * mult * feverMult);
     G.score += gained;
     G.scorePulse = 1;
     if (G.combo >= 3) G.shake = Math.min(G.combo >= 15 ? 19 : 11, 2 + G.combo * 0.5);
     checkMilestone(G.combo);
-    // Perks: at a streak milestone, queue a perk pick (opened safely from update()).
-    if (G.perksOn && !G.openPerk && G.perkIdx < PERK_COMBOS.length && G.combo >= PERK_COMBOS[G.perkIdx]) {
-      G.perkIdx++; G.openPerk = true;
+    if (!G.feverOn && G.combo >= 10) { G.feverOn = true; G.milestone = { text: '✦ FEVER — DOUBLE POINTS 🔥', life: 74 }; setEmote('🤩', 80); }
+    // 🎯 SHARP EYE: three Perfects in a row lock in your focus — the window opens up for a spell.
+    if (kind === 'perfect') {
+      G.perfectRun++;
+      if (G.perfectRun >= 3) { G.sharpCalls = 6;
+        if (!G.sharp) { G.sharp = true; recomputeWindows(); G.milestone = { text: '🎯 SHARP EYE — WIDER WINDOW', life: 70 }; } }
+    } else { G.perfectRun = 0; }
+    // 🛡 GUARD: bank a save every 8 clean calls (holds up to 2).
+    if (kind !== 'save') {
+      G.sinceGuard++;
+      if (G.sinceGuard >= 8 && G.guards < 2) { G.guards++; G.sinceGuard = 0; G.milestone = { text: '🛡 GUARD READY ×' + G.guards, life: 66 }; }
     }
   } else {
-    if (G.perks && G.perks.shields > 0) {
-      G.perks.shields--; G.shieldedMiss = true;
-      G.res.shielded = (G.res.shielded || 0) + 1;   // combo survives; not a real miss
+    if (G.guards > 0) {
+      G.guards--; G.shieldedMiss = true;
+      G.res.shielded = (G.res.shielded || 0) + 1;   // combo survives — a Guard absorbed it
+      G.perfectRun = 0;
     } else {
       G.shieldedMiss = false;
       G.res.miss++;
-      G.combo = 0;
+      G.combo = 0; G.feverOn = false; G.perfectRun = 0; G.sinceGuard = 0;
+      if (G.sharp) { G.sharp = false; G.sharpCalls = 0; recomputeWindows(); }
     }
   }
   // Freestyle rubber-band & form history ignore the easy warmup calls.
@@ -823,7 +809,7 @@ function resolveAt(sqx, sqy) {
   flashSquare(wrong.x, wrong.y, COLORS.bad);
   if (sqx >= 0 && sqx <= 7 && sqy >= 0 && sqy <= 7) flashSquare(sqx, sqy, 'rgba(255,107,107,0.3)');
   if (G.shieldedMiss) {
-    floater('🛡 SHIELDED → ' + wrong.san, wrong, '#7fd4ff');
+    floater('🛡 GUARDED → ' + wrong.san, wrong, '#7fd4ff');
     sfx('good'); setEmote('🛡', 60);
   } else {
     const penalty = 50; // half of a base hit (100)
@@ -1261,12 +1247,12 @@ function drawHUD() {
   if (G.endless || G.freestyle) ctx.fillText(done + ' · ' + '♥'.repeat(Math.max(0, G.lives)) + ' · ' + G.bpm + 'bpm', W - 10, 10);
   else ctx.fillText(done + ' / ' + G.total, W - 10, 10);
 
-  // Active perks (bottom-left)
-  if (G.perks) {
+  // Live perks (bottom-left): 🎯 Sharp Eye · ✦ Fever · 🛡 Guards
+  {
     const chips = [];
-    if (G.perks.scoreMult > 1) chips.push('✦×' + G.perks.scoreMult);
-    if (G.perks.wideStacks)    chips.push('🎯×' + G.perks.wideStacks);
-    if (G.perks.shields)       chips.push('🛡×' + G.perks.shields);
+    if (G.sharp)      chips.push('🎯 SHARP');
+    if (G.feverOn)    chips.push('✦ FEVER ×2');
+    if (G.guards > 0) chips.push('🛡×' + G.guards);
     if (chips.length) {
       ctx.fillStyle = '#7fd4ff'; ctx.font = 'bold 12px Courier New';
       ctx.textAlign = 'left'; ctx.textBaseline = 'top';
@@ -1336,7 +1322,7 @@ function loop() {
 }
 
 // ---- Screens / flow ----
-let selMode = 'coords', selDiff = 'medium', selBpm = 60, selBlack = false, selPerks = false;
+let selMode = 'coords', selDiff = 'medium', selBpm = 60, selBlack = false;
 const DIFF_BPM = { easy: 43, medium: 60, hard: 94 };
 const TREND_KEY = 'pjcc.notation.trend.v1';
 function bpmCalls(bpm) { return bpm < 52 ? 18 : bpm <= 78 ? 22 : 28; }
@@ -1373,9 +1359,6 @@ document.getElementById('diff-row').addEventListener('click', e => {
   const b = e.target.closest('[data-diff]'); if (!b) return;
   selDiff = b.dataset.diff; selBpm = DIFF_BPM[selDiff];
   syncBpmUI(); newGame(selMode, selDiff); updateTitleBest();
-});
-document.getElementById('perks-toggle').addEventListener('click', function () {
-  selPerks = !selPerks; this.dataset.on = selPerks ? '1' : '0'; this.classList.toggle('on', selPerks);
 });
 // (Audio-latency calibration removed — unnecessary.)
 
@@ -1415,36 +1398,6 @@ document.getElementById('menu-btn').addEventListener('click', () => {
   newGame(selMode, selDiff);   // reset the idle preview board to the selected tempo
 });
 
-// ---- Perks (mid-run pick) ----
-function openPerk() {
-  G.openPerk = false;
-  G.paused = true;
-  G.pauseStart = nowSec();
-  const sub = document.getElementById('perk-sub');
-  if (sub) sub.textContent = 'Streak ×' + G.combo + ' — choose one boost.';
-  const row = document.getElementById('perk-row');
-  if (row) {
-    row.innerHTML = '';
-    PERK_DEFS.forEach(p => {
-      const b = document.createElement('button');
-      b.className = 'perk-pick';
-      b.innerHTML = '<span class="pk-ico">' + p.ico + '</span><span class="pk-name">' + p.name +
-                    '</span><span class="pk-desc">' + p.desc + '</span>';
-      b.onclick = function () { applyPerk(p.type); };
-      row.appendChild(b);
-    });
-  }
-  document.getElementById('perk-screen').classList.remove('hidden');
-}
-function applyPerk(type) {
-  if (type === 'wide')        { G.perks.wideStacks++; recomputeWindows(); }
-  else if (type === 'double') { G.perks.scoreMult *= 2; }
-  else if (type === 'shield') { G.perks.shields++; }
-  document.getElementById('perk-screen').classList.add('hidden');
-  G.milestone = { text: PERK_LABEL[type], life: 64 };
-  setEmote('🎁', 60);
-  resumeFromPause();
-}
 // Resume the rhythm clock after a pause: shift every scheduled time forward by the
 // paused duration so the chart picks up exactly where it left off.
 function resumeFromPause() {
@@ -1513,7 +1466,7 @@ function finish() {
     PJCC.saveScore('notation-run', G.score, { credits: 1, data: { mode: G.mode, diff: G.diff, rank: rank } });
   }
   // Perfect Sprint (rank S on the hardest tempo, Drill) unlocks Blindfold Puzzles.
-  if (!G.endless && !G.freestyle && !G.perksOn && !G.dual && G.diff === 'hard' && rank === 'S') {
+  if (!G.endless && !G.freestyle && !G.dual && G.diff === 'hard' && rank === 'S') {
     try {
       if (localStorage.getItem('pjcc.blindfold.unlocked') !== '1') {
         localStorage.setItem('pjcc.blindfold.unlocked', '1');
