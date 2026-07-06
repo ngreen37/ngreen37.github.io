@@ -5,8 +5,6 @@ permalink: /locations/
 ---
 
 <div class="loc-atlas">
-  <p class="loc-intro">The world of <em>Princess and the Journey to Chess City</em> is shaped by the game people play — and how far they are willing to go to play a better one.</p>
-
   <h2 class="loc-group">◗ Cities</h2>
   <div class="loc-grid">
     <a class="loc-card" href="{{ '/locations/checker-town/' | relative_url }}">
