@@ -8,9 +8,8 @@
 # While every entry is commented out, the wall shows its friendly "be the first"
 # empty state — so nothing looks broken before the first piece goes up.
 #
-# Example (this is your Chess City Leafs picture — save it to the path, then
-# uncomment these three lines):
+# Example (save the image to the path, then uncomment these three lines):
 #
-# - img: /assets/images/fan-art/chess-city-leafs.png
-#   title: "Princess — Chess City Leafs"
+# - img: /assets/images/fan-art/my-picture.png
+#   title: "Princess"
 #   by: "a fan"

@@ -135,7 +135,7 @@ permalink: /dossier/
       { t:'Reach 300+ in The Pirc Protocol', go:'pirc-protocol', ok:function(){ return best('pirc-protocol')>=300; } },
       { t:'Hold the gate in Siege on Chess City', go:'tower-defense', ok:function(){ return best('tower-defense')>=1; } },
       { t:'Complete a Knight’s Tour', go:'knights-tour', ok:function(){ return best('knights-tour')>=1; } },
-      { t:'Descend past 100m in Sand Mine Depths', go:'sand-mine-depths', ok:function(){ return best('sand-mine-depths')>=100; } }
+      { t:'Score 100+ points in Sand Mine Depths', go:'sand-mine-depths', ok:function(){ return best('sand-mine-depths')>=100; } }
     ];
     function seed(s){ var h=2166136261; for(var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
     var d=new Date(), ds=d.getUTCFullYear()+'-'+(d.getUTCMonth()+1)+'-'+d.getUTCDate();
@@ -174,7 +174,7 @@ permalink: /dossier/
   var GAMES = {
     'the-gauntlet': ['The Gauntlet', 'cleared'], 'clearance-delta': ['Clearance: DELTA', 'score'],
     'notation-run': ['Notation Blitz', 'score'], 'notation-accuracy': ['Notation · Timing', 'precision'], 'fork-in-the-road': ['Fork in the Road', 'solved'],
-    'sand-mine-depths': ['Sand Mine Depths', 'depth'], 'pirc-protocol': ['Pirc Protocol', 'flawless'],
+    'sand-mine-depths': ['Sand Mine Depths', 'points'], 'pirc-protocol': ['Pirc Protocol', 'flawless'],
     'shogi-island': ['Shogi Island', 'solved'], 'reading-room': ['The Reading Room', 'score'], 'knights-tour': ["Knight's Tour", 'score'],
     'blindfold': ['Blindfold Puzzles', 'solved'], 'tower-defense': ['Siege on Chess City', 'score'],
     'siege-endless': ['Siege · Endless', 'wave'], 'sky-run': ['Sky Run', 'score'], 'dungeon': ['Princess Dungeon', 'floors']

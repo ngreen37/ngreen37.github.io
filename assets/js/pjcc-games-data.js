@@ -14,7 +14,7 @@ window.PJCC_GAMES = [
   // Reading Room — slow-rolled 2026-07-04: pulled from the hub/halls; reachable only via the floating あ icon on the splash. Restore by uncommenting.
   // { slug:'reading-room',      name:'The Reading Room',   cryptic:'Learn to read, one mark at a time.', icon:'あ', accent:'#ff5050', cat:'isle', soon:true, score:['reading-room','score'], neu:'2026-06-22' },
   { slug:'sky-run',           name:'Sky Run',            cryptic:'Climb the falling pieces.',      icon:'♞', accent:'#3cbcfc', cat:'arcade', score:['sky-run','score'] },
-  { slug:'sand-mine-depths',  name:'Sand Mine Depths',   cryptic:"Descend. Don't look back.",      icon:'⛏', accent:'#fcbc3c', cat:'arcade', score:['sand-mine-depths','depth'] },
+  { slug:'sand-mine-depths',  name:'Sand Mine Depths',   cryptic:"Descend. Don't look back.",      icon:'⛏', accent:'#fcbc3c', cat:'arcade', score:['sand-mine-depths','points'] },
   { slug:'tower-defense',     name:'Siege on Chess City',cryptic:'Hold the gates.',                icon:'🏰', accent:'#ff77a8', cat:'arcade', score:['tower-defense','score'] },
   { slug:'dungeon',           name:'Princess Dungeon',   cryptic:'Every room is a tactic.',        icon:'♟', accent:'#ff77a8', cat:'dev', score:['dungeon','floors'], neu:'2026-06-22' },
   { slug:'murphys-law',       name:"Murphy's Law",       cryptic:'The pessimist was right.',       icon:'☹', accent:'#3cbcfc', cat:'dev', score:['murphys-law','score'], neu:'2026-06-25' },

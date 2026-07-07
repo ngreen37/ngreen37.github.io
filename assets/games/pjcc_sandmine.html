@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Sand Mine Depths v2.6</title>
+<title>PJCC: Sand Mine Depths v3.0</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <script src="/assets/js/pjcc-pieces.js"></script>
@@ -74,18 +74,18 @@
       Princess is a <b style="color:#c96bff">knight ♞</b> — she only moves in <b>L-shapes</b>.
       Hop down through the depths of the mine, and learn of the mysteries below.
       The sand <b>caves in</b> behind every hop — and the pieces below <b>answer the moment you land</b>.
-      Land on a piece to <b>capture</b> it for gold; chain captures without a scratch for a <b style="color:#5be0c0">streak bonus</b>.
+      Land on a piece to <b>capture</b> it for points; chain captures without a scratch for a <b style="color:#5be0c0">streak bonus</b>.
       Boxed in? A <b style="color:#5be0c0">🪏 shovel</b> fills a caved-in pit back in — reopening a path to the exit ▼.
+      <b style="color:#F5C518">Fast floors pay extra</b> — and so does <b style="color:#F5C518">THE HARD WAY</b>: 8+ hops to the exit, no shovel.
     </div>
     <div class="row">
       <button class="btn btn-gold" id="start-btn">DESCEND</button>
     </div>
     <div class="row" style="margin-top:10px;">
-      <button class="btn btn-ghost" id="race-btn">⏱ WEEKLY RACE</button>
       <button class="btn btn-ghost" id="camp-btn">⛺ SURFACE CAMP</button>
     </div>
     <div class="foot">
-      <b id="best-line">best depth: —</b> &nbsp;·&nbsp; <span class="tap" id="snd-toggle">🔊 sound: on</span>
+      <b id="best-line">best: —</b> &nbsp;·&nbsp; <span class="tap" id="snd-toggle">🔊 sound: on</span>
     </div>
   </div>
 
@@ -131,15 +131,20 @@ const LORE = [
 let S = null; // state
 let anim = null, enemyAnims = null, wind = [], dust = [], floaters = [], shake = 0, vignette = 0;
 let toast = { text: '', t: -1, col: C.gold };
-const BEST_KEY = 'pjcc.sandmine.best.v1';
+const BEST_KEY = 'pjcc.sandmine.best.v1';            // deepest reach (m) — feeds the depth gauge
+const BESTS_KEY = 'pjcc.sandmine.bestscore.v1';      // best points run — the headline mark
 function loadBest(){ try { return parseInt(localStorage.getItem(BEST_KEY)) || 0; } catch(e){ return 0; } }
 function saveBest(v){ try { localStorage.setItem(BEST_KEY, String(v)); } catch(e){} }
+function loadBestScore(){ try { return parseInt(localStorage.getItem(BESTS_KEY)) || 0; } catch(e){ return 0; } }
+function saveBestScore(v){ try { localStorage.setItem(BESTS_KEY, String(v)); } catch(e){} }
 
-// Seeded RNG (mulberry32) — drives the Weekly Race so everyone digs the same mine.
-function rng32(seed){ let a = seed >>> 0; return function(){ a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-function weeklySeed(){ return Math.floor(Date.now() / (7 * 86400000)); }   // same value all week, worldwide
+// Points, per floor cleared: +10 for the descent, a speed bonus that shrinks each
+// second spent on the floor, and THE HARD WAY — reach the exit in 8+ hops without
+// touching the shovel that floor — pays a flat bonus on top. Captures pay their
+// piece value in points too (and the same amount in camp gold).
+const PTS_DESCEND = 10, SPEED_WINDOW = 20, HARDWAY_HOPS = 8, PTS_HARDWAY = 25;
 
-// Surface Camp — gold banked across runs buys lasting gear (disabled in the fair Weekly Race).
+// Surface Camp — gold banked across runs buys lasting gear.
 const CAMP_KEY = 'pjcc.sandmine.camp.v1';
 function loadCamp(){ try { return Object.assign({ gold:0, perks:{} }, JSON.parse(localStorage.getItem(CAMP_KEY)) || {}); } catch(e){ return { gold:0, perks:{} }; } }
 function saveCamp(c){ try { localStorage.setItem(CAMP_KEY, JSON.stringify(c)); } catch(e){} }
@@ -238,26 +243,27 @@ function newFloor(){
     do { x = (rnd()*COLS)|0; y = 1 + ((rnd()*(ROWS-1))|0); t4++; } while (taken.has(key(x,y)) && t4 < 30);
     if (t4 < 30){ taken.add(key(x,y)); S.relics.push({ x, y, type: pickRelic(f, rnd) }); }
   }
+  // fresh floor — reset the per-floor scoring trackers (hops, shovel use, clock)
+  S.floorHops = 0; S.floorShovel = false; S.floorStart = Date.now();
   computeThreats();
   updateTrapped();   // fresh floor is open, but keeps S.trapped honest
 }
 
-function newGame(mode){
-  mode = mode || 'normal';
+function newGame(){
   const camp = loadCamp();
-  const perks = (mode === 'race') ? {} : (camp.perks || {});     // Weekly Race is perk-free for fairness
-  const seed = (mode === 'race') ? weeklySeed() : 0;
+  const perks = camp.perks || {};
   const mh = 3 + (perks.maxhp || 0);
-  S = { mode, seed, rng: (mode === 'race') ? rng32(seed) : Math.random,
-        floor: 1, depth: 10, hp: mh, maxhp: mh, score: 0, best: loadBest(), phase: 'await', dead: false,
+  S = { rng: Math.random,
+        floor: 1, depth: 10, hp: mh, maxhp: mh, score: 0, goldRun: 0, best: loadBest(), phase: 'await', dead: false,
         shownLore: new Set(), enemies: [], gold: [], relics: [], holes: new Set(), threats: new Set(),
         shovels: (perks.shovel || 0), shovelArmed: false, reachFloors: 0, lanternFloors: 0,
-        perks, metZero: false, combo: 0, trapped: false };
+        perks, metZero: false, combo: 0, trapped: false,
+        floorHops: 0, floorShovel: false, floorStart: Date.now() };
   newFloor();
   initWind();
   toast.t = -1;
   updateShovelBtn();
-  doToast(mode === 'race' ? 'WEEKLY RACE · DEPTH 10m' : 'DEPTH 10m', C.teal);
+  doToast('DEPTH 10m', C.teal);
 }
 
 // ---- Enemy AI ----
@@ -374,14 +380,15 @@ function tryHop(cell){
   sfx('hop');
 }
 // Capturing pays out by piece value, and a flawless capture streak (no hits taken)
-// stacks a growing bonus — plus a patch-up every third capture in the run.
+// stacks a growing bonus — plus a patch-up every third capture in the run. The same
+// amount lands in both columns: points (the run's score) and gold (banked at camp).
 const CAP_GOLD = { P:3, N:5, B:5, R:8, Q:12, Z:12 };
 function rewardCapture(foe, cc){
   S.combo = (S.combo || 0) + 1;
   const col = foe.t === 'Z' ? '#c96bff' : C.gold;
   const bonus = S.combo >= 2 ? (S.combo - 1) * 2 : 0;   // streak bonus grows each capture
   const gain = (CAP_GOLD[foe.t] || 5) + bonus;
-  S.score += gain;
+  S.score += gain; S.goldRun += gain;
   sfx('capture'); burst(cc, col);
   floater((S.combo >= 2 ? '×' + S.combo + ' ' : '') + '+' + gain, cc, col);
   if (S.combo >= 2) doToast('CAPTURE STREAK ×' + S.combo + '  +' + gain, S.combo >= 4 ? C.teal : C.gold);
@@ -389,6 +396,7 @@ function rewardCapture(foe, cc){
 }
 function resolveHop(from, cell){
   S.princess = { x: cell.x, y: cell.y };
+  S.floorHops++;                                  // counts toward THE HARD WAY bonus
   S.holes.add(key(from.x, from.y));               // sand caves in behind
   puff(center(from.x, from.y), '#c08a3a');
 
@@ -403,7 +411,7 @@ function resolveHop(from, cell){
     }
   }
   const gi = S.gold.findIndex(g => g.x === cell.x && g.y === cell.y);
-  if (gi >= 0){ S.gold.splice(gi, 1); S.score += 3; sfx('gold'); burst(center(cell.x, cell.y), C.gold); floater('⛏ +3', center(cell.x, cell.y), C.gold); }
+  if (gi >= 0){ S.gold.splice(gi, 1); S.score += 3; S.goldRun += 3; sfx('gold'); burst(center(cell.x, cell.y), C.gold); floater('⛏ +3', center(cell.x, cell.y), C.gold); }
   const ri = S.relics.findIndex(r => r.x === cell.x && r.y === cell.y);
   if (ri >= 0){ const r = S.relics.splice(ri, 1)[0]; applyRelic(r.type); }
 
@@ -413,6 +421,16 @@ function resolveHop(from, cell){
 }
 function descend(){
   sfx('descend'); burst(center(S.shaft.x, S.shaft.y), C.teal);
+  // ---- floor cleared: pay the points out ----
+  // +10 for the descent, +1 per full second left inside the speed window, and
+  // THE HARD WAY: 8+ hops to reach the exit without using the shovel this floor.
+  const sc = center(S.shaft.x, S.shaft.y);
+  const secs = (Date.now() - S.floorStart) / 1000;
+  const speed = Math.max(0, SPEED_WINDOW - Math.ceil(secs));
+  const hardway = (S.floorHops >= HARDWAY_HOPS && !S.floorShovel);
+  S.score += PTS_DESCEND + speed + (hardway ? PTS_HARDWAY : 0);
+  floater('▼ +' + (PTS_DESCEND + speed), sc, C.teal);
+  if (hardway) floater('THE HARD WAY +' + PTS_HARDWAY, { x: sc.x, y: sc.y - 18 }, C.gold);
   S.floor++; S.depth += 10;
   if (S.reachFloors > 0) S.reachFloors--;
   if (S.lanternFloors > 0) S.lanternFloors--;
@@ -420,7 +438,7 @@ function descend(){
   // lore
   for (const L of LORE){ if (S.depth >= L.d && !S.shownLore.has(L.d)){ S.shownLore.add(L.d); doToast(L.t, C.teal); break; } }
   // hidden chamber — the deepest reach buries a real Lore-Codex fragment (one-time, site-wide)
-  if (S.depth >= 180 && S.mode !== 'race'){
+  if (S.depth >= 180){
     try { if (!localStorage.getItem('frag_subjectzero')){ localStorage.setItem('frag_subjectzero', '1'); doToast('◈ HIDDEN CHAMBER — fragment recovered: SUBJECT ZERO', C.gold); sfx('gold'); } } catch(e){}
   }
   if (toast.t < 0 || toast.text.indexOf('m') === toast.text.length - 1) doToast('DEPTH ' + S.depth + 'm', C.teal);
@@ -471,17 +489,18 @@ function finishEnemyTurn(){
 function gameOver(){
   S.dead = true; S.phase = 'dead';
   if (S.depth > S.best){ S.best = S.depth; saveBest(S.best); }
-  const camp = loadCamp(); camp.gold = (camp.gold || 0) + S.score; saveCamp(camp);   // bank the run's gold
-  if (window.PJCC) PJCC.saveScore('sand-mine-depths', S.depth, { credits: 1, data: { gold: S.score, floor: S.floor, mode: S.mode, seed: S.seed } });
+  const prevBestScore = loadBestScore();
+  const newBest = S.score > prevBestScore;
+  if (newBest) saveBestScore(S.score);
+  const camp = loadCamp(); camp.gold = (camp.gold || 0) + S.goldRun; saveCamp(camp);   // bank the run's gold
+  if (window.PJCC) PJCC.saveScore('sand-mine-depths', S.score, { credits: 1, data: { depth: S.depth, gold: S.goldRun, floor: S.floor } });
   sfx('dead');
   document.getElementById('menu-btn').classList.add('hidden');
   const shb = document.getElementById('shovel-btn'); if (shb) shb.classList.add('hidden');
-  const newBest = S.depth >= S.best;
   document.getElementById('over-msg').innerHTML =
-    'Princess reached <b style="color:#F5C518">' + S.depth + 'm</b> with <b style="color:#F5C518">' + S.score + '</b> gold.' +
-    (newBest ? '<br><span style="color:#5be0c0">A new deepest mark!</span>' : '<br>Best: ' + S.best + 'm') +
-    '<br><span style="color:#c9a36a">Banked ⛏ ' + S.score + ' — ' + camp.gold + ' saved at camp.</span>' +
-    (S.mode === 'race' ? '<br><span style="color:#c96bff">Weekly Race · seed ' + S.seed + '</span>' : '') +
+    'Princess scored <b style="color:#F5C518">★ ' + S.score + '</b> points, ' + S.depth + 'm down.' +
+    (newBest ? '<br><span style="color:#5be0c0">A new best score!</span>' : '<br>Best: ★ ' + prevBestScore) +
+    '<br><span style="color:#c9a36a">Banked ⛏ ' + S.goldRun + ' — ' + camp.gold + ' saved at camp.</span>' +
     '<br><br><i style="color:#c9a36a">The mine keeps what it takes.</i>';
   setTimeout(() => document.getElementById('over-screen').classList.remove('hidden'), 700);
 }
@@ -493,7 +512,7 @@ function applyRelic(type){
   if (type === 'reach'){ S.reachFloors = Math.max(S.reachFloors, 3); floater('✦ Long Reach', c, '#c96bff'); doToast('RELIC · Long Reach — bigger L-leaps for 3 floors', '#c96bff'); }
   else if (type === 'shovel'){ S.shovels++; floater('✦ Shovel', c, C.teal); doToast('RELIC · Shovel — press SPACE (or tap 🪏) then a pit to fill it', C.teal); }
   else if (type === 'lantern'){ S.lanternFloors = Math.max(S.lanternFloors, 4); floater('✦ Lantern Oil', c, C.gold); doToast('RELIC · Lantern Oil — the dark pulls back for 4 floors', C.gold); }
-  else { if (S.hp < S.maxhp) S.hp++; else S.score += 5; floater('✦ +♥', c, C.bad); doToast('RELIC · Ration — patched up', C.bad); }
+  else { if (S.hp < S.maxhp) S.hp++; else { S.score += 5; S.goldRun += 5; } floater('✦ +♥', c, C.bad); doToast('RELIC · Ration — patched up', C.bad); }
   updateShovelBtn();
 }
 function updateShovelBtn(){
@@ -521,7 +540,7 @@ canvas.addEventListener('pointerdown', e => {
   if (!S || S.phase !== 'await') return;
   const c = cellFromXY(e.clientX, e.clientY); if (!c) return; e.preventDefault();
   if (S.shovelArmed){           // shovel mode: tap a caved-in pit to fill it back in
-    if (S.holes.has(key(c.x, c.y))){ S.holes.delete(key(c.x, c.y)); S.shovels--; puff(center(c.x,c.y), '#c9a36a'); sfx('gold'); computeThreats();
+    if (S.holes.has(key(c.x, c.y))){ S.holes.delete(key(c.x, c.y)); S.shovels--; S.floorShovel = true; puff(center(c.x,c.y), '#c9a36a'); sfx('gold'); computeThreats();
       if (S.trapped && shaftReachable()) doToast('Path reopened — the exit ▼ is reachable again', C.teal); }
     S.shovelArmed = false; updateTrapped(); updateShovelBtn(); return;
   }
@@ -826,10 +845,9 @@ function drawHUD(){
   // depth
   ctx.fillStyle = C.teal; ctx.font = 'bold 16px Trebuchet MS'; ctx.textAlign = 'center';
   ctx.fillText('▼ ' + S.depth + 'm', W/2, 30);
-  if (S.mode === 'race'){ ctx.fillStyle = '#c96bff'; ctx.font = 'bold 9px Trebuchet MS'; ctx.fillText('⏱ WEEKLY RACE', W/2, 48); }
-  // gold
+  // points
   ctx.fillStyle = C.gold; ctx.textAlign = 'right';
-  ctx.fillText('⛏ ' + S.score, W - 92, 30);
+  ctx.fillText('★ ' + S.score, W - 92, 30);
   // flawless capture streak
   if (S.combo >= 2){ ctx.fillStyle = C.teal; ctx.font = 'bold 10px Trebuchet MS'; ctx.fillText('STREAK ×' + S.combo, W - 92, 46); }
   // depth gauge (right edge)
@@ -889,10 +907,10 @@ function loop(now){
 }
 
 // ---- Screens ----
-let lastMode = 'normal';
+function bestLine(){ const s = loadBestScore(), d = loadBest(); return s || d ? 'best: ★ ' + s + ' · deepest: ' + d + 'm' : 'best: —'; }
 function hideScreens(){ ['menu-screen','over-screen','camp-screen'].forEach(id => document.getElementById(id).classList.add('hidden')); }
-function showMenu(){ S = null; document.getElementById('menu-btn').classList.add('hidden'); const sh = document.getElementById('shovel-btn'); if (sh) sh.classList.add('hidden'); hideScreens(); const b = loadBest(); document.getElementById('best-line').textContent = 'best depth: ' + (b ? b + 'm' : '—'); document.getElementById('menu-screen').classList.remove('hidden'); }
-function begin(mode){ lastMode = mode || 'normal'; initAudio(); if (actx.state==='suspended') actx.resume(); hideScreens(); document.getElementById('menu-btn').classList.remove('hidden'); newGame(lastMode); }
+function showMenu(){ S = null; document.getElementById('menu-btn').classList.add('hidden'); const sh = document.getElementById('shovel-btn'); if (sh) sh.classList.add('hidden'); hideScreens(); document.getElementById('best-line').textContent = bestLine(); document.getElementById('menu-screen').classList.remove('hidden'); }
+function begin(){ initAudio(); if (actx.state==='suspended') actx.resume(); hideScreens(); document.getElementById('menu-btn').classList.remove('hidden'); newGame(); }
 
 function showCamp(){
   S = null; document.getElementById('menu-btn').classList.add('hidden');
@@ -900,7 +918,7 @@ function showCamp(){
   const camp = loadCamp();
   let html = '<div class="eyebrow">Back on the surface</div><div class="big-title" style="font-size:24px;">SURFACE CAMP</div>'
     + '<div class="blurb">Gold you carry out of the mine is banked here. Spend it on gear that lasts every run.<br>'
-    + '<b style="color:#F5C518">⛏ ' + camp.gold + '</b> banked &nbsp;·&nbsp; <span style="color:#9a7a4a;font-size:11px;">Weekly Race runs are perk-free</span></div>'
+    + '<b style="color:#F5C518">⛏ ' + camp.gold + '</b> banked</div>'
     + '<div class="camp-list">';
   PERKS.forEach(p => {
     const lvl = camp.perks[p.id] || 0, maxed = lvl >= p.max, cost = p.cost(lvl);
@@ -913,7 +931,7 @@ function showCamp(){
   const el = document.getElementById('camp-screen');
   el.innerHTML = html; hideScreens(); el.classList.remove('hidden');
   el.querySelectorAll('.camp-buy').forEach(b => b.addEventListener('click', () => buyPerk(b.getAttribute('data-id'))));
-  document.getElementById('camp-descend').addEventListener('click', () => begin('normal'));
+  document.getElementById('camp-descend').addEventListener('click', () => begin());
   document.getElementById('camp-back').addEventListener('click', showMenu);
 }
 function buyPerk(id){
@@ -925,10 +943,9 @@ function buyPerk(id){
   showCamp();
 }
 
-document.getElementById('start-btn').addEventListener('click', () => begin('normal'));
-document.getElementById('race-btn').addEventListener('click', () => begin('race'));
+document.getElementById('start-btn').addEventListener('click', () => begin());
 document.getElementById('camp-btn').addEventListener('click', showCamp);
-document.getElementById('retry-btn').addEventListener('click', () => begin(lastMode));
+document.getElementById('retry-btn').addEventListener('click', () => begin());
 document.getElementById('over-camp').addEventListener('click', showCamp);
 document.getElementById('over-menu').addEventListener('click', showMenu);
 document.getElementById('menu-btn').addEventListener('click', showMenu);
@@ -943,7 +960,7 @@ window.addEventListener('keydown', e => {
 });
 document.getElementById('snd-toggle').addEventListener('click', () => { sndOn = !sndOn; if (master) master.gain.value = sndOn?0.8:0; document.getElementById('snd-toggle').textContent = sndOn?'🔊 sound: on':'🔇 sound: off'; });
 
-document.getElementById('best-line').textContent = 'best depth: ' + (loadBest() ? loadBest()+'m' : '—');
+document.getElementById('best-line').textContent = bestLine();
 requestAnimationFrame(loop);
 </script>
 </body>

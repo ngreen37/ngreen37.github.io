@@ -24,7 +24,7 @@ permalink: /fan-art/
     <img id="fa-img" alt="PJCC fan art">
     <div class="fc-hint no-print" id="fa-hint"><span class="fc-hint-big">＋🎨</span>Click here, or drag your picture in</div>
   </div>
-  <div class="fc-flourish"><span class="fc-pc">♟ ♞ ♜ ♛</span> &nbsp; GO CHESS CITY LEAFS &nbsp; <span class="fc-pc">♛ ♜ ♞ ♟</span></div>
+  <div class="fc-flourish"><span class="fc-pc">♟ ♞ ♜ ♛ ♚ ♛ ♜ ♞ ♟</span></div>
 </div>
 <input type="file" id="fa-file" accept="image/*" hidden>
 

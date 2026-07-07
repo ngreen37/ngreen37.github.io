@@ -452,7 +452,7 @@
   var ACHIEVEMENTS = [
     { key: 'first-contact', icon: '📡', label: 'First Contact',  desc: 'Claim your codename',            test: function (c) { return !!c.profile; } },
     { key: 'tactician',     icon: '⚔', label: 'Tactician',      desc: 'Solve 5+ in Fork in the Road',  test: function (c) { return c.best('fork-in-the-road') >= 5; } },
-    { key: 'deep-miner',    icon: '⛏', label: 'Deep Miner',     desc: 'Reach 100m in Sand Mine Depths',test: function (c) { return c.best('sand-mine-depths') >= 100; } },
+    { key: 'deep-miner',    icon: '⛏', label: 'Deep Miner',     desc: 'Score 100 in Sand Mine Depths', test: function (c) { return c.best('sand-mine-depths') >= 100; } },
     { key: 'analyst',       icon: 'Δ', label: 'Analyst',        desc: 'Score 500+ in Clearance: DELTA',test: function (c) { return c.best('clearance-delta') >= 500; } },
     { key: 'on-the-beat',   icon: '♫', label: 'On the Beat',    desc: 'Score 1000+ in Notation Blitz', test: function (c) { return c.best('notation-run') >= 1000; } },
     { key: 'shogi-scholar', icon: '将', label: 'Shogi Scholar',  desc: 'Read 9/10 on Shogi Island',     test: function (c) { return c.best('shogi-island') >= 9; } },
@@ -582,7 +582,7 @@
   // Update these as the creator sets new personal bests.
   var GHOSTS = {
     'clearance-delta': 850, 'notation-run': 1500, 'fork-in-the-road': 18,
-    'sand-mine-depths': 140, 'pirc-protocol': 7, 'shogi-island': 40, 'blindfold': 12,
+    'sand-mine-depths': 200, 'pirc-protocol': 7, 'shogi-island': 40, 'blindfold': 12,
     'tower-defense': 4200, 'siege-endless': 22, 'sky-run': 9000, 'daily-dispatch': 100,
     'dungeon': 6, 'reading-room': 160, 'knights-tour': 1400, 'battle-room': 1200
   };

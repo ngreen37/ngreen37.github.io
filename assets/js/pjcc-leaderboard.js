@@ -19,7 +19,7 @@
       { key: 'the-gauntlet',    label: 'The Gauntlet',     unit: 'cleared' },
       { key: 'clearance-delta', label: 'Clearance: DELTA', unit: 'score'   },
       { key: 'notation-run',    label: 'Notation Blitz',   unit: 'score'   },
-      { key: 'sand-mine-depths',label: 'Sand Mine Depths', unit: 'depth'   },
+      { key: 'sand-mine-depths',label: 'Sand Mine Depths', unit: 'points'  },
       { key: 'blindfold',       label: 'Blindfold Puzzles',unit: 'solved'  },
       { key: 'tower-defense',   label: 'Siege on Chess City', unit: 'score' },
       { key: 'siege-endless',   label: 'Siege · Endless',     unit: 'wave'  },
