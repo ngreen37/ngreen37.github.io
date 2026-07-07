@@ -9,6 +9,7 @@
     "build": "eleventy",
     "test:games": "node tests/chess.check.js && node tests/gauntlet.check.js && node tests/skyrun.check.js && node tests/ftd.check.js && node tests/sandmine.check.js",
     "test:chess": "node tests/chess.check.js",
+    "test:accuracy": "node tests/validate-chess.js",
     "test:gauntlet": "node tests/gauntlet.check.js",
     "test:skyrun": "node tests/skyrun.check.js",
     "test:ftd": "node tests/ftd.check.js",

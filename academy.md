@@ -143,7 +143,7 @@ permalink: /academy/
       <li>Write the name of the square where the <b>white king</b> starts: ____________</li>
       <li>Name <b>three</b> squares on the <b>e-file</b>: ________  ________  ________</li>
       <li>Name <b>three</b> squares on the <b>4th rank</b>: ________  ________  ________</li>
-      <li>A knight on <b>g1</b> can jump to <b>f3</b> or <b>h3</b> or ________ or ________</li>
+      <li>On an <b>empty board</b>, a knight on <b>g1</b> can jump to <b>f3</b>, <b>h3</b>, or ________ — three squares in all</li>
       <li>Colour the square <b>d5</b>. Is it light or dark? ____________</li>
       <li>Bonus: which two squares are in the <b>corners on White's side</b>? ________ and ________</li>
     </ol>
@@ -160,7 +160,7 @@ permalink: /academy/
       <li>The <b>queen</b> (♕) moves like a rook <b>and</b> a bishop. From <b>d4</b>, can she reach <b>h8</b>? ______</li>
       <li>The <b>knight</b> (♘) jumps in an L. List all squares a knight on <b>d4</b> can reach: ______________________</li>
       <li>The <b>pawn</b> (♙) moves forward but captures diagonally. From <b>e2</b>, where can it move on its first turn? ____________</li>
-      <li>Bonus: which piece can reach <b>every</b> square on the board given enough moves? ____________</li>
+      <li>Bonus: why can a <b>bishop</b> never visit every square on the board? ____________</li>
     </ol>
     <p class="ws-foot">Practice the knight's jump in <b>Sand Mine Depths</b> and <b>Knight's Tour</b>.</p>
   </div>
@@ -173,8 +173,8 @@ permalink: /academy/
       <li>What do we call one piece attacking <b>two</b> enemy pieces at the same time? ____________</li>
       <li>Which piece is famous for forking the king and queen with its L-jump? ____________</li>
       <li>If a knight forks the <b>king</b> and a <b>rook</b>, which must move — and what do you win? ____________</li>
-      <li>A <b>pin</b> against the <b>king</b> is special because the pinned piece <b>legally cannot</b> ____________.</li>
-      <li>Draw a fork: place a white knight so it attacks both kings of a 2-king diagram. (Use the back of the page.)</li>
+      <li>A <b>pin</b> against the <b>king</b> is special because the pinned piece legally cannot move <b>off the line of the</b> ____________.</li>
+      <li>Draw a fork: place a white knight so it attacks the <b>black king</b> and a <b>black rook</b> at the same time. (Use the back of the page.)</li>
       <li>Bonus: name the three tactics above in order of how often you think they appear: ____________</li>
     </ol>
     <p class="ws-foot">Then prove it in <b>Fork in the Road</b> — solve 3 to finish the lesson.</p>

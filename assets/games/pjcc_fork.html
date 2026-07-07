@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Fork in the Road v2.1</title>
+<title>PJCC: Fork in the Road v2.2</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <script src="/assets/js/pjcc-pieces.js"></script>
@@ -269,9 +269,51 @@ function genSkewer(diff, rnd){
   return null;
 }
 
+// The accuracy gate: no puzzle reaches a player unless it survives a full proof.
+//  1. Nobody starts in check (a queen eyeing the white king would make the stored
+//     "solution" an illegal move).
+//  2. Every ply of the stored line is a legal move for the side playing it.
+//  3. Mate puzzles: the line really ends in checkmate.
+//  4. Material puzzles ("win the queen/rook"): an exact-depth search proves the
+//     mover nets >= a clean minor piece (+300) against EVERY defence — so a king
+//     recapturing the forking knight can never turn "win the rook" into a mere trade.
+function matSum(b){ let s=0; const V={P:100,N:320,B:330,R:500,Q:900,K:0};
+  for (let y=0;y<8;y++) for (let x=0;x<8;x++){ const p=b[y][x]; if (p) s += (p.c==='w'?1:-1)*V[p.t]; }
+  return s; }
+function proveGain(b, col, d, a, beta){ // negamax, material-only, exact depth (alpha-beta)
+  const mv = legalMovesFor(b, col);
+  if (!mv.length) return inCheck(b, col) ? -100000 : 0;
+  if (d === 0) return (col==='w'?1:-1) * matSum(b);
+  let best = -Infinity;
+  for (const m of mv){
+    const nb = cloneBoard(b); nb[m.ty][m.tx] = nb[m.fy][m.fx]; nb[m.fy][m.fx] = null;
+    const v = -proveGain(nb, col==='w'?'b':'w', d-1, -beta, -a);
+    if (v > best) best = v; if (best > a) a = best; if (a >= beta) break;
+  }
+  return best;
+}
+function puzzleSane(p){
+  try {
+    const b0 = parseBoard(p);
+    const foe = p.side === 'w' ? 'b' : 'w';
+    if (inCheck(b0, p.side) || inCheck(b0, foe)) return false;
+    let b = b0, mover = p.side;
+    for (const [u] of p.line){
+      const m = uci(u);
+      const legal = legalMovesFor(b, mover).some(x => x.fx===m.fx && x.fy===m.fy && x.tx===m.tx && x.ty===m.ty);
+      if (!legal) return false;
+      const nb = cloneBoard(b); nb[m.ty][m.tx] = nb[m.fy][m.fx]; nb[m.fy][m.fx] = null; b = nb;
+      mover = mover === 'w' ? 'b' : 'w';
+    }
+    if (p.cat === 'mate' || /mate/i.test(p.goal)) return isCheckmate(b, mover);
+    const start = (p.side === 'w' ? 1 : -1) * matSum(b0);
+    return proveGain(b0, p.side, p.line.length + 1, -Infinity, Infinity) - start >= 300;
+  } catch(e){ return false; }
+}
+
 function genPuzzle(diff, rnd){
   rnd = rnd || Math.random;
-  for (let a = 0; a < 6; a++){
+  for (let a = 0; a < 14; a++){
     const roll = rnd();
     const pMate = diff <= 3 ? 0.5 : 0.3;
     const pSkew = diff >= 3 ? 0.28 : 0;     // skewers join once the road sharpens
@@ -280,11 +322,12 @@ function genPuzzle(diff, rnd){
     else if (roll < pMate + pSkew) p = genSkewer(diff, rnd);
     else p = genKnightFork(diff, rnd);
     if (!p) p = genKnightFork(diff, rnd) || genBackRankMate(diff, rnd) || genSkewer(diff, rnd);
-    if (p) { p.id = 'g' + (genPuzzle._n = (genPuzzle._n||0) + 1); return p; }
+    if (p && puzzleSane(p)) { p.id = 'g' + (genPuzzle._n = (genPuzzle._n||0) + 1); return p; }
   }
-  // guaranteed fallbacks
-  return genKnightFork(2, rnd) || genBackRankMate(2, rnd) ||
-    { id:'g0', theme:'Back Rank', goal:'Mate in one.', side:'w', hint:'Down the file to the back rank.',
+  // guaranteed fallbacks — still gated; the last resort is a known-sane composition
+  const fb = [genKnightFork(2, rnd), genBackRankMate(2, rnd), genSkewer(2, rnd)].find(q => q && puzzleSane(q));
+  if (fb){ fb.id = 'g' + (genPuzzle._n = (genPuzzle._n||0) + 1); return fb; }
+  return { id:'g0', theme:'Back Rank', goal:'Mate in one.', side:'w', hint:'Down the file to the back rank.',
       pieces:['Kg1','Rd2','kh8','pg7','ph7'], line:[['d2d8','Rd8#']] };
 }
 
@@ -310,7 +353,7 @@ function genMoves(b, x, y) {
   else if (p.t === 'B') [[-1,-1],[-1,1],[1,-1],[1,1]].forEach(([dx,dy]) => slide(dx,dy));
   else if (p.t === 'R') [[-1,0],[1,0],[0,-1],[0,1]].forEach(([dx,dy]) => slide(dx,dy));
   else if (p.t === 'Q') [[-1,-1],[-1,1],[1,-1],[1,1],[-1,0],[1,0],[0,-1],[0,1]].forEach(([dx,dy]) => slide(dx,dy));
-  else if (p.t === 'P') { const dir = p.c==='w'?-1:1; if (inb(x,y+dir)&&!b[y+dir][x]) out.push({x,y:y+dir}); [[-1],[1]].forEach(([dx]) => { const a=x+dx,c=y+dir; if (inb(a,c)&&b[c][a]&&b[c][a].c!==p.c) out.push({x:a,y:c}); }); }
+  else if (p.t === 'P') { const dir = p.c==='w'?-1:1; if (inb(x,y+dir)&&!b[y+dir][x]) { out.push({x,y:y+dir}); const sy = p.c==='w'?6:1; if (y===sy && inb(x,y+2*dir) && !b[y+2*dir][x]) out.push({x,y:y+2*dir}); } [[-1],[1]].forEach(([dx]) => { const a=x+dx,c=y+dir; if (inb(a,c)&&b[c][a]&&b[c][a].c!==p.c) out.push({x:a,y:c}); }); }
   return out;
 }
 

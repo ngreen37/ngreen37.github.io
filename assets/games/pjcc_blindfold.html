@@ -3,9 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Blindfold Puzzles v2.1</title>
+<title>PJCC: Blindfold Puzzles v2.3</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
+<script src="/assets/js/pjcc-chess.js"></script>
+<script src="/assets/js/pjcc-chess-ai.js"></script>
+<script src="/assets/js/pjcc-gauntlet-engine.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   :root { --gold:#F5C518; --pink:#ff8fd0; --light:#3d2a7a; --dark:#2D1B69; --ink:#f0e6ff; --good:#6bffb8; --bad:#ff6b6b; }
@@ -333,8 +336,12 @@ function isStalemate(S){ return !inCheck(S,S.turn) && legalMoves(S).length===0; 
 
 function perft(S, d){ if(d===0) return 1; var mv=legalMoves(S), n=0; for(var i=0;i<mv.length;i++) n+=perft(makeMove(S,mv[i]), d-1); return n; }
 
-/* ===== SAN-lite for the move log ===== */
+/* ===== SAN for the move log =====
+ * In a BLINDFOLD game the log is the only board the player has, so ambiguous
+ * notation ("Nf3" when both knights reach f3) is a real accuracy failure. Use the
+ * shared referee's fully-disambiguated SAN when present; SAN-lite is the fallback. */
 function moveSAN(S, m){
+  if (typeof window !== 'undefined' && window.PJCCChess){ try { return PJCCChess.toSAN(S, m); } catch(e){} }
   var b=S.b, piece=b[m.from], pl=piece.toLowerCase();
   if(m.castle==='K'||m.castle==='k') return 'O-O';
   if(m.castle==='Q'||m.castle==='q') return 'O-O-O';
@@ -828,7 +835,13 @@ if (RUN_UI) (function(){
   var ME=null, meBoardEl=document.getElementById('me-board'), meSq={}, mePeeks=3, mePeekT=0, meSel=null, meBusy=false, meLast=null;
   var meDepth=2, meTier='intern', meBlitz=false, mePurist=false, mePeeked=false, meNarrate=false;
   var meMoves=[], meBook=null, meBookName='', meClockW=180, meClockB=180, meClockH=null, meEnded=false;
+  var meHalf=0, meReps={};                                   // halfmove clock + repetition table (full draw rules)
   var TIER_DEPTH={ intern:2, ceo:3, board:4 }, TIER_LABEL={ intern:'an Intern', ceo:'the CEO', board:'the Board of Directors' };
+  // Stockfish throttle per tier (the shared bridge falls back to the local search if it can't load)
+  var TIER_SKILL={ intern:1, ceo:7, board:14 }, TIER_MS={ intern:350, ceo:650, board:1000 };
+  function meKey(){ if (window.PJCCChess){ try { return PJCCChess.posKey(ME); } catch(e){} }
+    var s=''; for(var i=0;i<64;i++) s+=ME.b[i]||'.'; return s+'|'+ME.turn+'|'+ME.ep; }
+  function bumpMeRep(){ var k=meKey(); meReps[k]=(meReps[k]||0)+1; return meReps[k]; }
   // The CEO's named opening book — Black replies it follows while White plays the mainline.
   // Each line is the full move list in coordinate form (White, Black, White, …).
   var OPENINGS=[
@@ -857,6 +870,8 @@ if (RUN_UI) (function(){
   }
   function openMindsEye(){ document.getElementById('me-overlay').classList.remove('hidden'); newMe(); }
   function newMe(){ ME=parseFEN(START_FEN); mePeekT=0; meSel=null; meBusy=false; meLast=null; meMoves=[]; meEnded=false; mePeeked=false;
+    meHalf=0; meReps={}; bumpMeRep();
+    if (window.PJCCGauntletEngine){ PJCCGauntletEngine.warmup(); PJCCGauntletEngine.newGame(); }
     meBlitz=document.getElementById('me-blitz').checked; mePurist=document.getElementById('me-purist').checked;
     meNarrate=document.getElementById('me-narrate').checked;
     mePeeks = mePurist ? 0 : 3; meDepth=TIER_DEPTH[meTier]||2;
@@ -929,17 +944,46 @@ if (RUN_UI) (function(){
     if(ME.turn==='w'){ meLog('<div><b style="color:#F5C518">'+moveNumber()+'.</b> '+san+' '); }
     else { meLog('<span style="color:#ff8fd0">'+san+'</span></div>'); }
     meMoves.push(meUci(m));
+    var mvPawn = (ME.b[m.from]||'').toLowerCase()==='p', mvCap = !!ME.b[m.to] || !!m.ep;
     ME=makeMove(ME, m); meLast=m; meSel=null; drawMe();
+    meHalf = (mvPawn || mvCap) ? 0 : meHalf + 1;
     // outcome
     if(isCheckmate(ME)){ // side to move (ME.turn) is mated
       if(ME.turn==='b'){ winMindsEye(false); } else { setMeStatus('Checkmate — '+TIER_LABEL[meTier]+' wins this one. Rebuild and challenge again.','bad'); endReveal(); }
       return;
     }
-    if(isStalemate(ME) || onlyKings(ME.b)){ setMeStatus('Drawn game. '+TIER_LABEL[meTier]+' tips a king.','think'); endReveal(); return; }
-    if(isPlayer){ // CEO replies (from its opening book, else search at the chosen depth)
+    // full draw rules: stalemate, insufficient material, fifty quiet moves, threefold repetition
+    var drawWhy = null;
+    if (isStalemate(ME)) drawWhy = 'Stalemate';
+    else if (window.PJCCChess ? PJCCChess.insufficientMaterial(ME) : onlyKings(ME.b)) drawWhy = 'Insufficient material';
+    else if (meHalf >= 100) drawWhy = 'Fifty quiet moves';
+    else if (bumpMeRep() >= 3) drawWhy = 'Threefold repetition';
+    if (drawWhy){ setMeStatus(drawWhy+' — drawn game. '+TIER_LABEL[meTier]+' tips a king.','think'); endReveal(); return; }
+    if(isPlayer){ // CEO replies: opening book, else Stockfish (refereed bridge), else the local search
       meBusy=true; setMeStatus(TIER_LABEL[meTier]+' considers…','think');
-      setTimeout(function(){ var mv=bookMove() || aiMove(ME, meDepth); if(!mv){ setMeStatus('Stalemate.','think'); endReveal(); return; } doMe(mv, false);
-        if(!meEnded){ meBusy=false; setMeStatus(inCheck(ME,'w')?'Check! Your move.':'Your move.', inCheck(ME,'w')?'bad':'think'); } }, 360);
+      setTimeout(function(){
+        var myME = ME;                                        // stale guard — game may reset while thinking
+        function play(mv){
+          if (ME !== myME || meEnded) return;
+          if (!mv){ setMeStatus('Stalemate.','think'); endReveal(); return; }
+          doMe(mv, false);
+          if(!meEnded){ meBusy=false; setMeStatus(inCheck(ME,'w')?'Check! Your move.':'Your move.', inCheck(ME,'w')?'bad':'think'); }
+        }
+        var book = bookMove();
+        if (book){ play(book); return; }
+        if (window.PJCCGauntletEngine){
+          PJCCGauntletEngine.move(ME, { skill: TIER_SKILL[meTier]!=null?TIER_SKILL[meTier]:7,
+              movetime: TIER_MS[meTier]||650, persona:{ depth: meDepth, timeMs: 900 } })
+            .then(function(mv){
+              if (ME !== myME || meEnded) return;
+              if (mv){ // re-find in OUR move list so the object shape stays native to this engine
+                var lm=legalMoves(myME), pick=null;
+                for(var z=0;z<lm.length;z++){ if(lm[z].from===mv.from && lm[z].to===mv.to && (lm[z].promo||'')===(mv.promo||'')){ pick=lm[z]; break; } }
+                play(pick || aiMove(myME, meDepth));
+              } else play(null);
+            }, function(){ play(aiMove(myME, meDepth)); });
+        } else play(aiMove(ME, meDepth));
+      }, 360);
     }
   }
   function moveNumber(){ // count full moves played so far for white
