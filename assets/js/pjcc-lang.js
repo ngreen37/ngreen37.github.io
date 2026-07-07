@@ -46,7 +46,7 @@
     'PJCC': 'PJCC', 'McPuppy Studios': 'マクパピー・スタジオ', 'McPuppy': 'マクパピー',
     'Games': 'ゲーム', 'Characters': 'キャラクター',
     'Characters & Locations': 'キャラクターとロケーション', 'Locations': 'ロケーション',
-    'Academy': 'アカデミー', "Writers' Room": '脚本室',
+    'Academy': 'アカデミー',
     'Your Dossier': 'あなたのファイル', 'Dossier': 'ファイル', 'Operative Dossier': '機密ファイル',
     'Command Center': '司令部', 'Projects': 'プロジェクト', 'Blog': 'ブログ', 'Build Log': 'ビルドログ',
     'Mailing List': 'メール登録', 'Press Pass': 'プレスパス', 'For Educators': '教育者向け',

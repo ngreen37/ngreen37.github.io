@@ -23,7 +23,7 @@
       { t: 'Academy',          s: 'Gamified chess curriculum',            u: '/academy/',            ic: '♔', b: 'pjcc', k: 'academy learn chess lessons belts curriculum' },
       { t: 'Your Dossier',     s: 'Your profile & operative',             u: '/dossier/',            ic: '⬡', b: 'pjcc', k: 'dossier profile account sign in login operative identity forge' },
       { t: 'Leaderboards',     s: 'Hall of Fame',                         u: '/leaderboards/',       ic: '🏆', b: 'pjcc', k: 'leaderboards hall of fame scores rank high' },
-      { t: 'Fan Art',          s: 'The fan wall + make your own card',    u: '/fan-art/',            ic: '🎨', b: 'pjcc', k: 'fan art wall community printable card make submit gallery thank you' },
+      { t: 'Fan Art',          s: 'Put your art on a printable PJCC card', u: '/fan-art/',            ic: '🎨', b: 'pjcc', k: 'fan art printable card make picture upload print pdf' },
       { t: 'The Gambit',       s: 'Sacrifice your best — coming soon',    u: '/games/the-gambit/',   ic: '🎲', b: 'pjcc', k: 'gambit sacrifice offering altar wager risk reward credits collectables coming soon' },
       { t: 'Merch',            s: 'Goal cards & stationery — someday, post-flare', u: '/goods/',             ic: '🃏', b: 'mcpuppy', k: 'goods goal cards stationery merch follow the dog mindset coming soon physical' },
       { t: 'The Direct Line',  s: 'Write to me directly — coming soon',    u: '/direct-line/',        ic: '✉️', b: 'mcpuppy', k: 'direct line suggestions patreon contact write feedback guaranteed response coming soon' },

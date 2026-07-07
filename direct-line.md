@@ -28,10 +28,6 @@ brand: mcpuppy
 
 <div class="dl-levels">
   <div class="dl-levels-head">Where it sits on Patreon</div>
-  <div class="dl-level">
-    <span class="dl-level-badge">Lowest tier</span>
-    <div><strong>💬 Comment on Fan Art.</strong> Even the entry level gets a voice — hop onto the <a href="/fan-art/">Fan Wall</a> and talk shop with other operatives: react to their pieces, cheer them on, leave a note. The community's front door.</div>
-  </div>
   <div class="dl-level dl-level--top">
     <span class="dl-level-badge dl-level-badge--top">Higher tier</span>
     <div><strong>✉ The Direct Line.</strong> Everything above, plus a private line straight to me — one person, guaranteed reply.</div>

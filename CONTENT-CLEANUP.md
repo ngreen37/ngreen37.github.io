@@ -47,10 +47,10 @@ A page-by-page checklist for the read-everything text pass before launch.
 
 ## Core & standalone pages (~17)
 - [ ] **Hubs:** index *(splash)* · pjcc *(home)* · projects *(McPuppy hub)* · the-world · characters · locations · games
-- [ ] **World/ARG:** daily · dispatch · classified · archive · recovery · dead-drop · shogi-gate · constellation
+- [ ] **World/ARG:** dispatch · classified · archive · recovery · dead-drop · shogi-gate · constellation *(daily removed from the site 2026-07-06)*
 - [ ] **Player:** dossier · shopkeeper · leaderboards · hall-of-fame
 - [ ] **Studio/funding:** about · contact · educators · mailing-list · press-pass · goods · direct-line
-- [ ] **Misc:** academy · production *(The Pilot)* · chess-lessons · writers-room · command-center · quotes
+- [ ] **Misc:** academy · chess-lessons · command-center · quotes *(production/The Pilot + writers-room removed from the site 2026-07-07)*
 
 ## Blog posts (21) — `_posts/`
 - [x] Spotify embeds removed (done 2026-06-24). *Still to do: read each post for tone/typos.*

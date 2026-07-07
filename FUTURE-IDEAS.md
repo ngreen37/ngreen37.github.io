@@ -568,8 +568,20 @@ Town, Bob-Proctor mindset) and **Michael** (Chess City, truly righteous); **The 
   - **Chapters 2 & 3 tracker rows** — "Ch.2 — First Move" / "Ch.3 — The Journey" (Script 15% / 5%).
   - **The Living Style Bible** — the Character-Sheets / Locations art-bible cards.
   - **The dispatch footer line** — "the dispatch sends a note each time a bar moves."
-  *Note:* the **Writers' Room** (`/writers-room/`) still exists but is now un-linked (hidden page), since the
-  Pilot page was its only doorway — re-link it when the Pilot page returns.
+- **The Writers' Room — REMOVED ENTIRELY** *(2026-07-07; "maybe we'll do it later")*. `writers-room.md`
+  deleted (it had already been orphaned by the Pilot-page removal — the Pilot page was its only doorway).
+  It held the full story-boarding studio: Harmon Story Circle + Parker but/therefore editors, the SVG circle,
+  "and then" detection, the 16:9 preview reel with leitmotif temp score, publish-to-URL share codes
+  (no backend — story baked into the `#s=` hash), local drafts, and two worked examples ("Fell From the Sky",
+  "Auston's Fuse"). **Restore the whole page from git**; old published `#s=` links only work again once it's back.
+  Fits **Av7 (UGC/creators)** when it returns.
+- **The Fan Wall + card extras** *(pulled 2026-07-07 — /fan-art/ is now just the upload-onto-a-card
+  function)*. Pulled: **The Wall** (the Nate-curated gallery fed by `_data/fanart.yml`, now deleted — it only
+  ever showed pieces Nate hand-added, never users' saved pictures), the card's **"Thank you!" block** + the
+  sign-it name row (with its operative-codename prefill), the **"Send it in" submission CTAs**, and the
+  Direct-Line "Comment on Fan Art" lowest-tier perk. **Restore any piece from git.** **Av27 (fan-art → canon
+  pipeline) depends on the Wall coming back**; a real submission flow needs moderation + storage (Supabase)
+  — design before restoring.
 - **Clearance: DELTA — the Daily exam** *(pulled 2026-07-06 with v1.5's intro-screen rework)* — the seeded
   10-question shared daily mode. The "daily briefing" idea above stays the future form.
 - **Siege — the Daily mutator-roulette** *(pulled 2026-07-07 with v2.4; "maybe down the road")* — the 📅 Daily
