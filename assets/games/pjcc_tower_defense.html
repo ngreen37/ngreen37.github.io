@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Siege on Chess City v2.3</title>
+<title>PJCC: Siege on Chess City v2.4</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -239,19 +239,6 @@ var selMutators = {};                                   // id -> true (chosen on
 function mutatorBonus() { var b = 0; MUTATORS.forEach(function (m) { if (selMutators[m.id]) b += m.bonus; }); return b; }
 function mutBonusFromObj(muts) { var b = 0; MUTATORS.forEach(function (m) { if (muts[m.id]) b += m.bonus; }); return b; }
 
-/* ============ daily mutator-roulette (one fixed seed for everyone) ============ */
-function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
-function dayStamp() { return (window.PJCC && PJCC.dayStamp) ? PJCC.dayStamp() : new Date().toISOString().slice(0,10); }
-function dailySeed() { var s = dayStamp(), h = 2166136261; for (var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return (h>>>0); }
-// Deterministic spin of the mutator roulette: 1–2 mutators picked from the day's seed.
-function dailyMutators(seed) {
-  var r = mulberry32(seed ^ 0x9e3779b9), pool = MUTATORS.slice(), picks = {}, n = 1 + (r() < 0.5 ? 1 : 0);
-  for (var i = 0; i < n && pool.length; i++) { var idx = Math.floor(r() * pool.length); picks[pool[idx].id] = true; pool.splice(idx, 1); }
-  return picks;
-}
-function dailyDone() { try { var o = JSON.parse(localStorage.getItem('pjcc.siege.daily')); return (o && o.day === dayStamp()) ? o : null; } catch (e) { return null; } }
-function markDaily(score, won) { try { localStorage.setItem('pjcc.siege.daily', JSON.stringify({ day: dayStamp(), score: score, won: won })); } catch (e) {} }
-
 /* ============ tower catalogue ============ */
 var TOWERS = {
   pawn:   { name: 'Pawn Picket', glyph: '♙', cost: 50,  range: 92,  dmg: 8,  rate: 0.55, splash: 0,  color: '#dfe6ff', free:false, sniper:false, lore: 'Checker Town conscripts. Cheap, quick, everywhere.' },
@@ -388,7 +375,7 @@ function newGame(mapIdx, opts) {
   else { for (var k in selMutators) if (selMutators[k]) muts[k] = true; }
   return {
     mapIdx: mapIdx, gold: startGold, lives: startHearts, score: 0, kills: 0,
-    wave: 0, running: true, over: false, won: false, daily: !!opts.daily,
+    wave: 0, running: true, over: false, won: false,
     endless: !!opts.endless, muts: muts, mutBonus: mutBonusFromObj(muts),
     foeSpdMult: muts.blitz ? 1.35 : 1, fogMult: muts.fog ? 0.82 : 1,
     towers: [], foes: [], shots: [], parts: [],
@@ -938,21 +925,16 @@ function endGame(won) {
   var credits = Math.min(5, 1 + Math.floor(G.wave/3) + (won?1:0));
   var coinsEarned = Math.round((Math.floor(G.score/120) + G.wave*2 + (won?25:0)) * (1 + (G.mutBonus || 0)));
   META.coins += coinsEarned;
-  if (won && !G.endless && !G.daily) META.beaten[curMap.id] = true;
+  if (won && !G.endless) META.beaten[curMap.id] = true;
   var towerUnlock = '';
-  if (won && !G.endless && !G.daily) { var _nb = Object.keys(META.beaten).length;
+  if (won && !G.endless) { var _nb = Object.keys(META.beaten).length;
     towerUnlock = _nb===1 ? ' ❄ Frost Knight unlocked!' : _nb===2 ? ' ♖ Rook Trebuchet unlocked!' : _nb===3 ? " ♕ Queen's Guard unlocked!" : ''; }
   // track best endless wave per map
   if (G.endless) { META.endless = META.endless || {}; if ((G.wave) > (META.endless[curMap.id] || 0)) META.endless[curMap.id] = G.wave; }
-  if (G.daily) markDaily(G.score, won);
   saveMeta();
   if (window.PJCC && PJCC.saveScore) {
-    if (G.daily) {
-      PJCC.saveScore('siege-daily', G.score, { seed: dayStamp(), credits: won ? 3 : 1, data: { map: curMap.id, waves: G.wave, won: won, muts: Object.keys(G.muts) } });
-    } else {
-      PJCC.saveScore('tower-defense', G.score, { credits: credits, data: { map: curMap.id, waves: G.wave, kills: G.kills, won: won, endless: !!G.endless, muts: Object.keys(G.muts) } });
-      if (G.endless) PJCC.saveScore('siege-endless', G.wave, { credits: 0, data: { map: curMap.id, score: G.score, kills: G.kills } });
-    }
+    PJCC.saveScore('tower-defense', G.score, { credits: credits, data: { map: curMap.id, waves: G.wave, kills: G.kills, won: won, endless: !!G.endless, muts: Object.keys(G.muts) } });
+    if (G.endless) PJCC.saveScore('siege-endless', G.wave, { credits: 0, data: { map: curMap.id, score: G.score, kills: G.kills } });
   }
   var ovl = document.getElementById('ovl');
   var mutTag = G.mutBonus ? ' · mutators +' + Math.round(G.mutBonus*100) + '% Crowns' : '';
@@ -986,29 +968,8 @@ function renderMapOpts() {
     el.onclick = function () { selMutators[m.id] = !selMutators[m.id]; renderMapOpts(); }; box.appendChild(el);
   });
 }
-function startDaily() {
-  document.getElementById('scr-menu').classList.add('hidden');
-  document.getElementById('scr-maps').classList.add('hidden');
-  document.getElementById('ovl').classList.add('hidden');
-  var seed = dailySeed(), mi = seed % MAPS.length, muts = dailyMutators(seed);
-  G = newGame(mi, { muts: muts, daily: true }); buildRack(); syncHud(); refreshDecree();
-  setHint('📅 Daily Siege — one fixed seed for every operative. Hold the line!');
-  var tags = Object.keys(muts).map(function (k) { var mm = MUTATORS.filter(function (x) { return x.id === k; })[0]; return mm ? mm.glyph + ' ' + mm.name : k; });
-  showBanner('📅 Daily Siege · ' + curMap.name, tags.length ? tags.join(' · ') : 'No mutators today');
-}
 function openMaps() {
   show('scr-maps'); renderMapOpts(); var grid = document.getElementById('map-grid'); grid.innerHTML = '';
-  // Daily mutator-roulette card (fixed seed, its own global board)
-  (function () {
-    var seed = dailySeed(), dmi = seed % MAPS.length, dmuts = dailyMutators(seed), done = dailyDone();
-    var dtags = Object.keys(dmuts).map(function (k) { var mm = MUTATORS.filter(function (x) { return x.id === k; })[0]; return mm ? mm.glyph + ' ' + mm.name : k; }).join(' · ') || 'no mutators';
-    var el = document.createElement('div'); el.className = 'map-card daily-card';
-    el.style.cssText = 'border-color:#ff8fd0;background:linear-gradient(135deg,#241544,#3a1d52);';
-    el.innerHTML = '<div class="mt">📅 Daily Siege</div><div class="md d-hard">' + MAPS[dmi].name + ' · roulette</div>' +
-      '<div class="mdesc">One fixed seed for everyone · ' + dtags + '</div>' +
-      (done ? '<div class="beat" style="color:#6bffb8">✓ ' + done.score + (done.won ? ' · held' : '') + '</div>' : '<div class="beat" style="color:#ff8fd0">global board</div>');
-    el.onclick = startDaily; grid.appendChild(el);
-  })();
   MAPS.forEach(function (m, idx) {
     var unlocked = m.id===1 || META.beaten[m.id-1];
     var best = (META.endless && META.endless[m.id]) ? META.endless[m.id] : 0;
@@ -1051,7 +1012,7 @@ document.getElementById('menu-back').onclick = openMenu;
 document.getElementById('decree-btn').onclick = fireDecree;
 document.getElementById('send-btn').onclick = function () { if (!G||!G.running||G.over) return; if (G.waveActive) { setHint('Wave already in progress.'); return; } G.gold += 25; setHint('Early call! +25 gold. Brace yourself.'); startWave(); syncHud(); };
 document.getElementById('speed-btn').onclick = function () { if (!G) return; G.speed = G.speed===1?2:G.speed===2?3:1; this.textContent = 'Speed ▶▶ ' + G.speed + '×'; };
-document.getElementById('ovl-btn').onclick = function () { if (G.daily) { document.getElementById('ovl').classList.add('hidden'); startDaily(); return; } var em = G.endless; var mi = G.mapIdx; document.getElementById('ovl').classList.add('hidden'); startMap(mi, em); };
+document.getElementById('ovl-btn').onclick = function () { var em = G.endless; var mi = G.mapIdx; document.getElementById('ovl').classList.add('hidden'); startMap(mi, em); };
 document.getElementById('ovl-menu').onclick = function () { document.getElementById('ovl').classList.add('hidden'); openMenu(); };
 
 /* ============ loop ============ */

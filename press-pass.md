@@ -18,7 +18,6 @@ permalink: /press-pass/
       <li>✓ Every game, free — and the <a href="{{ '/academy/' | relative_url }}">Chess City Academy</a></li>
       <li>✓ <a href="{{ '/leaderboards/' | relative_url }}">Global leaderboards</a>, seasons &amp; the <a href="{{ '/hall-of-fame/' | relative_url }}">Hall of Fame</a></li>
       <li>✓ Earn <b>credits</b> &amp; climb the clearance ranks</li>
-      <li>✓ A vote in <a href="{{ '/production/' | relative_url }}">Frame the Scene</a></li>
     </ul>
     <a class="xp-cta xp-cta-ghost" href="{{ '/dossier/' | relative_url }}">Start as an Operative</a>
   </div>

@@ -6,7 +6,7 @@ eligibility shift every year — **verify each one before you act on it.** Treat
 the schedule.
 
 What you can submit *now*, even pre-pilot:
-- **The Pilot animatic** (`/production/`) — a storyboard reel with scratch VO counts as a
+- **The Pilot animatic** (page pulled from the live site 2026-07-07; restore from git) — a storyboard reel with scratch VO counts as a
   work-in-progress / pitch piece for many "in development" and pitch tracks.
 - **A teaser / proof-of-concept** clip when the first Blender cutscene exists.
 - **The series bible** (the Lore Codex + characters + locations, exported) as a pitch packet.

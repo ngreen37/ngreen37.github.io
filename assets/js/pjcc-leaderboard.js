@@ -23,7 +23,6 @@
       { key: 'blindfold',       label: 'Blindfold Puzzles',unit: 'solved'  },
       { key: 'tower-defense',   label: 'Siege on Chess City', unit: 'score' },
       { key: 'siege-endless',   label: 'Siege · Endless',     unit: 'wave'  },
-      { key: 'siege-daily',     label: 'Siege · Daily',       unit: 'score' },
       { key: 'sky-run',         label: 'Sky Run',             unit: 'score' }
     ];
     var PAGE = 25;

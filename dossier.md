@@ -38,7 +38,6 @@ permalink: /dossier/
     <div class="cc-launch">
       <a href="{{ '/games/' | relative_url }}">🕹️ The Arcade</a>
       <a href="{{ '/academy/' | relative_url }}">🎓 Academy</a>
-      <a href="{{ '/production/' | relative_url }}">🎬 The Pilot</a>
       <a href="{{ '/leaderboards/' | relative_url }}">🏆 Leaderboards</a>
     </div>
   </div>

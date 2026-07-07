@@ -554,18 +554,27 @@ Town, Bob-Proctor mindset) and **Michael** (Chess City, truly righteous); **The 
   `daily-dispatch` Supabase scores persist and the credit weight stays in `pjcc-profile.js`, so history still
   counts toward Overall. **Restore = resurrect `daily.md` + links from git.** Re-imagine later inside
   **Av26 (the daily ritual hub)** — one 3-minute daily loop instead of scattered dailies.
-- **The Pilot page, pre-bare-bones** *(pulled 2026-07-06 — page cut to hero + Writers' Room + animatic +
-  tracker while the series is just starting; restore any piece from git):*
+- **The Pilot page — REMOVED ENTIRELY** *(2026-07-07; Nate: "let me build some stuff first — it's too busy
+  for the nothing I've created so far")*. `production.md` deleted; links stripped from the nav dropdown,
+  dossier quick-launch, ⌘K palette, JP dict, the mailing-list "tracker" link, and the Press-Pass
+  "Frame the Scene" perk. **Restore the whole page (or any piece) from git.** It held, in its final form:
+  the hero, the Writers' Room CTA, the **pilot animatic** ("Fell From the Sky" — 8 shots, scratch VO,
+  leitmotif temp score, per-shot notes with pinned director comments), and the **production tracker**
+  (Pilot + Ch.1). Earlier pulls (2026-07-06), all also in git:
   - **Fund the Frame** — the Press-Pass funding plate under the tracker ("you're moving the needle").
   - **Frame the Scene** — the two-take art-direction polls: the opening-shot poll and **Princess's color key**
     (warm-violet vs cool-slate); local votes + seeded tallies; a live community tally was the planned upgrade.
   - **Open the Booth** — community voice auditions (coming-soon block; "first up, Auston the Bomber").
-  - **Chapters 2 & 3 tracker rows** — "Ch.2 — First Move" / "Ch.3 — The Journey" (Script 15% / 5%);
-    the tracker now shows only the Pilot + Ch.1 until the later chapters are truly in motion.
+  - **Chapters 2 & 3 tracker rows** — "Ch.2 — First Move" / "Ch.3 — The Journey" (Script 15% / 5%).
   - **The Living Style Bible** — the Character-Sheets / Locations art-bible cards.
   - **The dispatch footer line** — "the dispatch sends a note each time a bar moves."
+  *Note:* the **Writers' Room** (`/writers-room/`) still exists but is now un-linked (hidden page), since the
+  Pilot page was its only doorway — re-link it when the Pilot page returns.
 - **Clearance: DELTA — the Daily exam** *(pulled 2026-07-06 with v1.5's intro-screen rework)* — the seeded
   10-question shared daily mode. The "daily briefing" idea above stays the future form.
+- **Siege — the Daily mutator-roulette** *(pulled 2026-07-07 with v2.4; "maybe down the road")* — the 📅 Daily
+  Siege card: one fixed day-seed for everyone (seeded map + 1–2 roulette mutators), its own global board
+  (`siege-daily`, delisted from the leaderboards page; Supabase data persists). Restore from git before v2.4.
 - **Games-page search box** and **sort dropdown** — re-add if the library outgrows one screen.
 - **De-linked nav pages** (revisit with real content): World Map, Sound, Soundtrack, Press Kit, Lore Codex,
   Evolution Log. **Podcast** removed (a "Coming Winter 2026" teaser sits on the homepage). **Chess Lessons** folded into About.
