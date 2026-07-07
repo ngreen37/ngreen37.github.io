@@ -575,13 +575,11 @@ Town, Bob-Proctor mindset) and **Michael** (Chess City, truly righteous); **The 
   (no backend — story baked into the `#s=` hash), local drafts, and two worked examples ("Fell From the Sky",
   "Auston's Fuse"). **Restore the whole page from git**; old published `#s=` links only work again once it's back.
   Fits **Av7 (UGC/creators)** when it returns.
-- **The Fan Wall + card extras** *(pulled 2026-07-07 — /fan-art/ is now just the upload-onto-a-card
-  function)*. Pulled: **The Wall** (the Nate-curated gallery fed by `_data/fanart.yml`, now deleted — it only
-  ever showed pieces Nate hand-added, never users' saved pictures), the card's **"Thank you!" block** + the
-  sign-it name row (with its operative-codename prefill), the **"Send it in" submission CTAs**, and the
-  Direct-Line "Comment on Fan Art" lowest-tier perk. **Restore any piece from git.** **Av27 (fan-art → canon
-  pipeline) depends on the Wall coming back**; a real submission flow needs moderation + storage (Supabase)
-  — design before restoring.
+- **Fan-art card extras** *(pulled 2026-07-07; **The Wall itself came back the same day** — the /fan-art/
+  gallery + `_data/fanart.yml` are live again, with a one-line "send it in" note)*. Still parked: the card's
+  **"Thank you!" block** + the sign-it name row (with its operative-codename prefill), the old **two-button
+  submit block**, and the Direct-Line "Comment on Fan Art" lowest-tier perk. **Restore any piece from git.**
+  A real in-browser submission flow needs moderation + storage (Supabase) — design before building.
 - **Clearance: DELTA — the Daily exam** *(pulled 2026-07-06 with v1.5's intro-screen rework)* — the seeded
   10-question shared daily mode. The "daily briefing" idea above stays the future form.
 - **Siege — the Daily mutator-roulette** *(pulled 2026-07-07 with v2.4; "maybe down the road")* — the 📅 Daily

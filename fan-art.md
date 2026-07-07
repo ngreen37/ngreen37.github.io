@@ -28,6 +28,34 @@ permalink: /fan-art/
 </div>
 <input type="file" id="fa-file" accept="image/*" hidden>
 
+<!-- ── The Wall ──────────────────────────────────────────────── -->
+<section class="fa-wall no-print">
+  <h2 class="fa-h2">The Wall</h2>
+  {% assign art = site.data.fanart %}
+  {% if art and art.size > 0 %}
+  <div class="fa-grid">
+    {% for piece in art %}
+    <figure class="fa-piece">
+      <a href="{{ piece.img | relative_url }}" target="_blank" rel="noopener">
+        <img src="{{ piece.img | relative_url }}" alt="{{ piece.title | default: 'PJCC fan art' }}" loading="lazy">
+      </a>
+      <figcaption>
+        <span class="fa-piece-title">{{ piece.title }}</span>
+        {% if piece.by %}<span class="fa-piece-by">— {{ piece.by }}</span>{% endif %}
+      </figcaption>
+    </figure>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="fa-empty">
+    <div class="fa-empty-glyph">🖼️</div>
+    <p>The wall is empty — <strong>for now.</strong> Be the first to put something on it.</p>
+  </div>
+  {% endif %}
+  <p class="fa-submit-note">Drew, built, knitted, or rendered something PJCC?
+  <a href="/contact/">Send it in</a> and I’ll hang it here. Nothing goes on the wall unless you send it.</p>
+</section>
+
 <style>
 .fa-head { text-align:center; max-width:680px; margin:0 auto 1.4rem; }
 .fa-title { font-size:2.4rem; font-weight:900; color:#fff; margin:0.3rem 0 0.5rem; }
@@ -61,6 +89,22 @@ permalink: /fan-art/
 .fc-hint-big { display:block; font-size:32px; margin-bottom:6px; }
 .fc-flourish { text-align:center; margin-top:14px; font-size:13px; letter-spacing:2px; color:#002e6d; font-weight:800; }
 .fc-pc { color:#e3b008; }
+
+/* ---- the wall ---- */
+.fa-wall { max-width:920px; margin:2.4rem auto 0; }
+.fa-h2 { color:#F5C518; font-size:1.3rem; font-weight:800; text-align:center; margin:0 0 0.5rem; }
+.fa-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; margin:1rem 0; }
+.fa-piece { margin:0; background:#160c33; border:1px solid #4a3a86; border-radius:12px; overflow:hidden; transition:transform .12s, border-color .12s; }
+.fa-piece:hover { transform:translateY(-3px); border-color:#F5C518; }
+.fa-piece img { display:block; width:100%; height:200px; object-fit:cover; background:#fff; }
+.fa-piece figcaption { padding:10px 12px; font-size:0.82rem; }
+.fa-piece-title { color:#f0e6ff; font-weight:700; }
+.fa-piece-by { color:#9a8fc0; }
+.fa-empty { text-align:center; padding:2.4rem 1rem; border:1px dashed #4a3a86; border-radius:14px; margin:1rem 0; color:#cdbcf2; }
+.fa-empty-glyph { font-size:2.4rem; margin-bottom:8px; }
+.fa-empty strong { color:#F5C518; }
+.fa-submit-note { text-align:center; color:#9a8fc0; font-size:0.86rem; margin-top:0.6rem; }
+.fa-submit-note a { color:#F5C518; font-weight:700; }
 
 /* ---- print: ONLY the card ---- */
 @media print {

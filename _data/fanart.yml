@@ -1,0 +1,16 @@
+# PJCC Fan Wall — powers the gallery on /fan-art/.
+#
+# To hang a piece on the wall:
+#   1. Save the image into  /assets/images/fan-art/  (create that folder if it
+#      doesn't exist yet).
+#   2. Add an entry below (newest first) and delete the leading "# ".
+#
+# While every entry is commented out, the wall shows its friendly "be the first"
+# empty state — so nothing looks broken before the first piece goes up.
+#
+# Example (this is your Chess City Leafs picture — save it to the path, then
+# uncomment these three lines):
+#
+# - img: /assets/images/fan-art/chess-city-leafs.png
+#   title: "Princess — Chess City Leafs"
+#   by: "a fan"
