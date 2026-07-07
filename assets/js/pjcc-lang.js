@@ -44,7 +44,7 @@
   // 1) curated, brand-safe dictionary (instant; never sent to any service)
   var DICT = {
     'PJCC': 'PJCC', 'McPuppy Studios': 'マクパピー・スタジオ', 'McPuppy': 'マクパピー',
-    'Games': 'ゲーム', 'Daily Dispatch': 'デイリー速報', 'Characters': 'キャラクター',
+    'Games': 'ゲーム', 'Characters': 'キャラクター',
     'Characters & Locations': 'キャラクターとロケーション', 'Locations': 'ロケーション',
     'Academy': 'アカデミー', 'The Pilot': 'パイロット版', "Writers' Room": '脚本室',
     'Your Dossier': 'あなたのファイル', 'Dossier': 'ファイル', 'Operative Dossier': '機密ファイル',

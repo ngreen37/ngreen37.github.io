@@ -9,6 +9,12 @@ combination** over new surface area.
 
 ---
 
+## ♛ Gauntlet-as-flagship — the remaining framing moves
+*(the hero band, boss cards, commentators, resume-continuity, rank badge, and games-page hierarchy all shipped; these three are what's left)*
+- **Rename the experience** — "The Ascent / Coronation Run." Wire it explicitly to Princess's canon arc (she can learn anything → she rises to Queen): the climb this whole world is about. Framing + copy, zero code.
+- **The climb as a journey across the world map** — the roster already mirrors the regions (Checker Town → Sand Mines → Sea → Shogi Isle → the tower); present it as a map you traverse so the Gauntlet visibly ties every location and game together.
+- **Advertise that it has a real ending** — lean into the coronation payoff (beating the CEO = the Princess → Queen moment + the secret ▾ DESCEND). Tease it ("Ten stand between a recruit and the crown"); the natural home for a short Blender cutscene intro.
+
 ## ★ North star (the direction)
 
 **PJCC's product right now is the show *getting made*.** The animation is years out; ship the *story*
@@ -385,16 +391,6 @@ not a scramble.
   (Auston=sister / Crockett=dog · Michael=Chess City rival, Robert=Checker Town rival · "The Dad" · Maxwell ·
   Matsu · ancillary cast · Princess never speaks · "follow the dog" + "5% strategy, 95% mindset" · no Pieces
   section · current game names · Clearance: DELTA = completed).
-- **Phase 2 — Structural cleanup (the plumbing). ✅ DONE (2026-07-03).** Spotify embeds stripped from all posts
-  (kept the "Listening to" text); the dead `update_soundtrack.py` pre-commit hook removed; the inert
-  `jukebox: true` flags already gone from `blog.md`/`projects.md`; the `2026-04-14` placeholder post rewritten
-  (no more "Listening to: Artist - Song Title"). **Site-wide link-check ran clean** — a static route audit
-  (no Ruby/Jekyll here) cross-checked every literal internal link in 224 source files against 178 real routes:
-  **zero 404s.** Verified the context-aware nav + all 22 ⌘K palette targets + coming-soon pages resolve, the
-  Space Run→Follow the Dog permalink+redirect works, and the games hall emits no link for non-playable entries.
-  Also caught + fixed one stale ref: **Crockett's Zoomies** (retired to the Terminated roster, `playable:false`)
-  was still listed as a playable "Completed" game on `/projects/` — removed, matching the Checker Financial /
-  Ferry Delayed treatment (the game files stay for a possible revival; it's now only reachable by direct URL).
 - **Phase 3 — Systems & QA.** Supabase/profile live end-to-end (cross-device sign-in · leaderboards posting ·
   Quartermaster credits · dossier). Cloudflare analytics firing. Mobile pass (icon nav · condensed header has
   no twitch · splash quads · games on touch). The full-site Japanese toggle. The ARG/portal rites (Shogi gate)
@@ -451,18 +447,15 @@ site feel like one app.
 
 ---
 
-# 🏠 The PJCC Home Page — 30 ideas
+# 🏠 The PJCC Home Page — ideas
 
 *The front page is the trailhead for all five threads (ship the show · own the audience · make them love
 her · the arcade funnel · the one mystery). **Less is more** — each idea must earn its spot; prefer depth
 and combination over new clutter. ★ = low-lift · ⛁ = wants backend.*
 
-> **Nav — five ways to pare it further:** (1) ★ collapse "Characters & Locations / Academy / The Pilot" into a
-> single **"The World"** dropdown (hover/tap) so the bar is just *PJCC · Games · The World · Dossier · McPuppy*;
-> (2) ★ make the nav **context-aware** — show the PJCC links on PJCC pages and the McPuppy links on McPuppy pages,
-> never both; (3) **sticky mini-bar on scroll** — shrink to just the watermark + a ⌘K-style command/search palette;
-> (4) ★ fold **Your Dossier** into a single operative avatar pill (already in the top bar) and drop the middle nav
-> slot entirely; (5) **icon-only nav** on mobile (♟ games · ◈ dispatch · ⬡ dossier) with labels on hover/long-press.
+> **Nav — remaining pare-downs** *(the "The World" dropdown, context-aware nav, and icon-only mobile nav all shipped):*
+> (1) **sticky mini-bar on scroll** — shrink to just the watermark + the ⌘K command palette;
+> (2) ★ fold **Your Dossier** into a single operative avatar pill (already in the top bar) and drop the middle nav slot entirely.
 
 **Hero / first impression**
 1. ★ **Adaptive hero CTA** — first-timer sees "Meet Princess," a returning operative sees "Resume your dossier," mid-build sees "Today's mission."
@@ -495,7 +488,6 @@ and combination over new clutter. ★ = low-lift · ⛁ = wants backend.*
 20. **Playable micro-demo** — one embedded Notation-Blitz round / one tactic right on the home page: hook before the click-through.
 
 **Story / the one mystery (decode-as-you-play)**
-21. ★ **Plant the sigil** — seed the Shogi-gate glyph (one A, eight C's) subtly into the hero/ticker so the Av13 portal reveal lands foretold.
 22. **Fragments indicator** — a quiet N/6 origin-fragment meter that nudges toward the reveal without spoiling.
 23. **"Character last seen" spotlight** — a rotating cast chip that deep-links to its Lore Codex entry.
 24. ⛁ **Living front page** — the home subtly reskins by ARG season phase, so regulars feel the world advancing.
@@ -512,7 +504,7 @@ and combination over new clutter. ★ = low-lift · ⛁ = wants backend.*
 
 ---
 
-# 👥 Characters & Locations — 30 WOW-factor ideas
+# 👥 Characters & Locations — WOW-factor ideas
 
 *The cast + the world are the show's soul. Make the pages **feel alive** so people fall for the world before a
 frame renders (north-star thread #3). ★ = low-lift · ⛁ = wants backend · 🎬 = waits on the Blender/animation pipeline.*
@@ -530,7 +522,6 @@ Town, Bob-Proctor mindset) and **Michael** (Chess City, truly righteous); **The 
 7. ★ **Two-truths-and-a-redaction** — a tiny dossier mini-game: spot the planted-false fact.
 8. **Character spotlight** — a rotating "cast member of the week" on the hub + home page.
 9. **Rival compare** — an interactive Robert-vs-Michael split (mindset vs righteousness) that frames the show's core question.
-10. **The Commentators as a live overlay** — their banter pops up *during* games (Battle Room first, Gauntlet later) — the ancillary booth made playable.
 11. ⛁ **Headcanon → semi-canon** — curated fan submissions fold into character pages (Av7 UGC).
 12. ★ **"Which PJCC character are you?"** — a shareable quiz that funnels into the cast pages.
 13. ★ **Crew roster / family tree** — one visual: the Dad + Auston + narrator; Kaede + Matsu; Robert + the Prodigal Brothers; the crew dogs (Princess, Argus, Crockett).
@@ -557,6 +548,24 @@ Town, Bob-Proctor mindset) and **Michael** (Chess City, truly righteous); **The 
 ---
 
 ## 🅿️ Parked (pulled from the live site, kept so the work isn't lost)
+- **The Daily Dispatch** *(pulled 2026-07-06)* — the daily word-drop game at `/daily/` (Wordle-style seeded
+  drop, shared daily board, dispatch streak, share card). Page deleted + every link stripped (nav dropdown,
+  mobile quick-nav → now Academy, PJCC-home card, dossier quick-launch, ⌘K palette, JP dict). The
+  `daily-dispatch` Supabase scores persist and the credit weight stays in `pjcc-profile.js`, so history still
+  counts toward Overall. **Restore = resurrect `daily.md` + links from git.** Re-imagine later inside
+  **Av26 (the daily ritual hub)** — one 3-minute daily loop instead of scattered dailies.
+- **The Pilot page, pre-bare-bones** *(pulled 2026-07-06 — page cut to hero + Writers' Room + animatic +
+  tracker while the series is just starting; restore any piece from git):*
+  - **Fund the Frame** — the Press-Pass funding plate under the tracker ("you're moving the needle").
+  - **Frame the Scene** — the two-take art-direction polls: the opening-shot poll and **Princess's color key**
+    (warm-violet vs cool-slate); local votes + seeded tallies; a live community tally was the planned upgrade.
+  - **Open the Booth** — community voice auditions (coming-soon block; "first up, Auston the Bomber").
+  - **Chapters 2 & 3 tracker rows** — "Ch.2 — First Move" / "Ch.3 — The Journey" (Script 15% / 5%);
+    the tracker now shows only the Pilot + Ch.1 until the later chapters are truly in motion.
+  - **The Living Style Bible** — the Character-Sheets / Locations art-bible cards.
+  - **The dispatch footer line** — "the dispatch sends a note each time a bar moves."
+- **Clearance: DELTA — the Daily exam** *(pulled 2026-07-06 with v1.5's intro-screen rework)* — the seeded
+  10-question shared daily mode. The "daily briefing" idea above stays the future form.
 - **Games-page search box** and **sort dropdown** — re-add if the library outgrows one screen.
 - **De-linked nav pages** (revisit with real content): World Map, Sound, Soundtrack, Press Kit, Lore Codex,
   Evolution Log. **Podcast** removed (a "Coming Winter 2026" teaser sits on the homepage). **Chess Lessons** folded into About.

@@ -146,12 +146,12 @@
       <a class="studio-gauntlet" id="studio-gauntlet" href="{{ '/games/the-gauntlet/' | relative_url }}">
         <span class="sg-glyph" aria-hidden="true">♛</span>
         <span class="sg-text">
-          <span class="sg-eyebrow" aria-hidden="true">◆ The Main Quest</span>
           <b class="sg-title" data-jp="ガントレットに挑め">Enter the Gauntlet</b>
           <span class="sg-sub" id="sg-sub" data-jp="十人の強敵、ひとつの王冠。本気のチェス。">Ten champions. One crown. Real chess.</span>
         </span>
         <span class="sg-tower" id="sg-tower" aria-hidden="true"></span>
-        <span class="sg-cta" id="sg-cta" aria-hidden="true">▶ Climb</span>
+        {% comment %} the tower LIFT plate — the diegetic "continue" affordance (whole card is the link) {% endcomment %}
+        <span class="sg-lift" aria-hidden="true"><i class="sg-lift-arrow" id="sg-lift-arrow">▲</i><span class="sg-lift-txt" id="sg-lift-txt">LIFT · F1</span></span>
       </a>
       <script>
       // Splash Gauntlet — mini-tower + boss-of-the-moment, hydrated from the game's save (offline/signed-out OK).
@@ -168,14 +168,17 @@
         if (tower) { var h = '';
           for (var k = 0; k < NAMES.length; k++) { h += '<i class="' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></i>'; }
           tower.innerHTML = h; }
-        var sub = document.getElementById('sg-sub'), cta = document.getElementById('sg-cta'), link = document.getElementById('studio-gauntlet');
-        if (cleared > 0 && cur < NAMES.length) {           // mid-climb — name the next opponent in their own colour, resume there
+        var sub = document.getElementById('sg-sub'), link = document.getElementById('studio-gauntlet');
+        var liftTxt = document.getElementById('sg-lift-txt'), liftArrow = document.getElementById('sg-lift-arrow');
+        if (cleared > 0 && cur < NAMES.length) {           // mid-climb — the lift is called to your floor, in the boss's colour
           if (sub) { sub.removeAttribute('data-jp'); sub.innerHTML = 'Floor ' + (cur + 1) + ' — <b style="color:' + (ACCENTS[cur] || '#F5C518') + '">' + NAMES[cur] + '</b> awaits.'; }
-          if (cta) cta.textContent = '▶ Continue';
+          if (liftTxt) liftTxt.textContent = 'LIFT · F' + (cur + 1);
+          if (liftArrow) liftArrow.style.color = ACCENTS[cur] || '#F5C518';
           if (link) link.setAttribute('href', link.getAttribute('href') + '#climb');
-        } else if (cur >= NAMES.length) {                  // crowned — back to the tower to rematch
+        } else if (cur >= NAMES.length) {                  // crowned — the lift only goes one place now
           if (sub) { sub.removeAttribute('data-jp'); sub.textContent = 'Crowned — all ten floors cleared.'; }
-          if (cta) cta.textContent = '♛ The Tower';
+          if (liftArrow) liftArrow.textContent = '♛';
+          if (liftTxt) liftTxt.textContent = 'PENTHOUSE';
           if (link) link.setAttribute('href', link.getAttribute('href') + '#tower');
         }
       })();
@@ -219,7 +222,6 @@
   .studio-gauntlet:hover { transform:translateY(-2px); box-shadow:0 0 36px -8px #F5C518, inset 0 0 42px -26px rgba(245,197,24,0.5); }
   .studio-gauntlet .sg-glyph { font-size:2.1rem; line-height:1; color:#F5C518; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.55)); flex-shrink:0; position:relative; z-index:1; }
   .studio-gauntlet .sg-text { display:flex; flex-direction:column; line-height:1.22; min-width:0; position:relative; z-index:1; }
-  .studio-gauntlet .sg-eyebrow { color:#F5C518; font-size:0.6rem; font-weight:900; letter-spacing:0.14em; opacity:0.85; text-transform:uppercase; }
   .studio-gauntlet .sg-title { color:#fff; font-size:1.05rem; font-weight:800; margin:1px 0; }
   .studio-gauntlet .sg-sub { color:#e7d6b0; font-size:0.74rem; }
   /* mini tower thumbnail — a slim vertical preview of the climb (ground floor at the bottom) */
@@ -227,10 +229,17 @@
   .studio-gauntlet .sg-tower i { height:3px; border-radius:1px; background:rgba(255,255,255,0.14); }
   .studio-gauntlet .sg-tower i.done { background:#6bffb8; }
   .studio-gauntlet .sg-tower i.cur { background:#F5C518; box-shadow:0 0 5px #F5C518; }
-  .studio-gauntlet .sg-cta { margin-left:auto; flex-shrink:0; position:relative; z-index:1; align-self:center;
-    background:linear-gradient(135deg,#F5C518,#ffd740); color:#1a0f3d; font-weight:900; font-size:0.82rem;
-    border-radius:999px; padding:8px 16px; white-space:nowrap; box-shadow:0 3px 0 #7a5e0a; }
-  .studio-gauntlet:hover .sg-cta { filter:brightness(1.06); }
+  /* the LIFT call-plate — a little brass elevator panel; the arrow pulses like a called lift */
+  .studio-gauntlet .sg-lift { margin-left:auto; flex-shrink:0; position:relative; z-index:1; align-self:center;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    font-family:'Courier New',monospace; font-size:0.62rem; font-weight:900; letter-spacing:0.12em; color:#F5C518;
+    background:rgba(12,8,2,0.6); border:1px solid rgba(245,197,24,0.45); border-radius:9px; padding:8px 12px;
+    white-space:nowrap; box-shadow:inset 0 0 12px rgba(245,197,24,0.12); }
+  .studio-gauntlet .sg-lift-arrow { font-style:normal; font-size:0.95rem; line-height:1; color:#F5C518;
+    animation:sgLift 1.7s ease-in-out infinite; }
+  @keyframes sgLift { 0%,100% { transform:translateY(1px); opacity:0.7; } 50% { transform:translateY(-2px); opacity:1; } }
+  .studio-gauntlet:hover .sg-lift { border-color:#F5C518; box-shadow:inset 0 0 16px rgba(245,197,24,0.25), 0 0 14px -6px #F5C518; }
+  @media (prefers-reduced-motion: reduce){ .studio-gauntlet .sg-lift-arrow { animation:none; } }
 
   /* Planted sigil seal — a faint ARG breadcrumb under the Gauntlet.
      Kept very faint here, and no hover brighten (overrides the site-wide
@@ -336,10 +345,9 @@
     .studio-gauntlet .sg-glyph { font-size:1.5rem; }
     .studio-gauntlet .sg-title { font-size:0.9rem; }
     /* drop the decorative bits on phones so the bar stays one compact line */
-    .studio-gauntlet .sg-eyebrow,
     .studio-gauntlet .sg-sub,
     .studio-gauntlet .sg-tower { display:none; }
-    .studio-gauntlet .sg-cta { font-size:0.78rem; padding:7px 13px; }
+    .studio-gauntlet .sg-lift { flex-direction:row; gap:6px; font-size:0.58rem; padding:6px 10px; }
 
     /* drop the purely decorative pieces so everything fits one screen */
     .studio-footer,

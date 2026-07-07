@@ -7,7 +7,7 @@ permalink: /production/
 <div class="pr-hero">
   <div class="pr-kicker">Watch it get made</div>
   <h1 class="pr-title">PRINCESS &amp; THE JOURNEY TO CHESS CITY</h1>
-  <p class="pr-sub">An animated series, <em>in production</em>. Most studios hide the pipeline until the pilot is done — we're doing it in the open. Watch the reel below, vote on shots, track every bar, and help cast the show. The act of building it <b>is</b> the show, until the show exists.</p>
+  <p class="pr-sub">An animated series, <em>just getting started</em> — and made in the open. Watch the reel below and track every bar as the work happens. The act of building it <b>is</b> the show, until the show exists.</p>
 </div>
 
 <!-- ===== WRITERS' ROOM (lives under The Pilot) ===== -->
@@ -64,14 +64,6 @@ permalink: /production/
   </div>
 </div>
 
-<a class="pr-wr-cta" href="{{ '/writers-room/' | relative_url }}">
-  <div class="pr-wr-ico">✎</div>
-  <div>
-    <b>Build your own reel in the Writers' Room →</b>
-    <small>Storyboard a tale with Dan Harmon's Story Circle or Trey Parker's but/therefore rule — then publish a shareable link. For you, or any Operative.</small>
-  </div>
-</a>
-
 <!-- ===== PRODUCTION TRACKER ===== -->
 <h2 class="pr-h2">◈ Production Tracker</h2>
 <p class="pr-note">Every frame travels the same road: <b>Script → Boards → Layout → Animation → Comp</b>. These bars are updated by hand as the work progresses — <span id="pr-updated">a living dashboard</span>.</p>
@@ -84,42 +76,6 @@ permalink: /production/
 
 <div class="pr-eps" id="pr-eps"></div>
 
-<!-- ===== FUND THE FRAME ===== -->
-<a class="pr-fund" href="{{ '/press-pass/' | relative_url }}">
-  <div class="pr-fund-ico">🎬</div>
-  <div class="pr-fund-body">
-    <b>Fund the frame →</b>
-    <small>Every bar above only moves when real work gets paid for. A <b>Press Pass</b> is what turns these percentages into finished animation — you're not buying a perk, you're moving the needle.</small>
-  </div>
-  <div class="pr-fund-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-</a>
-
-<!-- ===== FRAME THE SCENE ===== -->
-<h2 class="pr-h2">◈ Frame the Scene</h2>
-<p class="pr-note">Help art-direct the show. Two takes on the same shot — pick the one that lands. <span class="pr-muted">(Your vote is saved on this device; a live community tally is coming.)</span></p>
-<div class="pr-poll" id="pr-poll"></div>
-
-<!-- ===== OPEN THE BOOTH ===== -->
-<h2 class="pr-h2">◈ Open the Booth <span class="pr-soon">Coming Soon</span></h2>
-<div class="pr-booth is-soon">
-  <div class="pr-booth-ico">🎙</div>
-  <div>
-    <p class="pr-booth-lead">Community voice auditions are on the way. We'll cast real listeners as side characters — first up, <b>Auston the Bomber</b>.</p>
-    <p class="pr-muted">When the booth opens you'll record a short clip (3–4 lines, any mic). Winners get a credit on the episode, with their take read on the dev-log. Not open yet — <a href="{{ '/mailing-list/' | relative_url }}">join the dispatch</a> to be first in line when casting starts.</p>
-    <span class="pr-booth-btn is-disabled" aria-disabled="true">Auditions open soon</span>
-  </div>
-</div>
-
-<!-- ===== LIVING STYLE BIBLE ===== -->
-<h2 class="pr-h2">◈ The Living Style Bible</h2>
-<p class="pr-note">The world is being designed in public, too. These pages double as the show's art bible:</p>
-<div class="pr-bible">
-  <a class="pr-bible-card" href="{{ '/characters/' | relative_url }}"><span>♟</span><b>Character Sheets</b><small>turnarounds &amp; dossiers</small></a>
-  <a class="pr-bible-card" href="{{ '/locations/' | relative_url }}"><span>🗺️</span><b>Locations</b><small>the world, place by place</small></a>
-</div>
-
-<p class="pr-foot">Following along? The <a href="{{ '/mailing-list/' | relative_url }}">dispatch</a> sends a note each time a bar moves.</p>
-
 <script>
 (function () {
   /* ============================================================
@@ -129,21 +85,7 @@ permalink: /production/
   var STAGES = ['Script', 'Boards', 'Layout', 'Animation', 'Comp'];
   var EPISODES = [
     { id: 'pilot', name: 'Pilot — "Fell From the Sky"', tag: 'Origin', pct: { Script: 55, Boards: 20, Layout: 0, Animation: 0, Comp: 0 } },
-    { id: 'e1', name: 'Ch.1 — Checker Town',            tag: 'S1',     pct: { Script: 40, Boards: 0,  Layout: 0, Animation: 0, Comp: 0 } },
-    { id: 'e2', name: 'Ch.2 — First Move',              tag: 'S1',     pct: { Script: 15, Boards: 0,  Layout: 0, Animation: 0, Comp: 0 } },
-    { id: 'e3', name: 'Ch.3 — The Journey',             tag: 'S1',     pct: { Script: 5,  Boards: 0,  Layout: 0, Animation: 0, Comp: 0 } }
-  ];
-
-  /* ============================================================
-     FRAME-THE-SCENE polls — swap in real shot mockups any time.
-     ============================================================ */
-  var POLLS = [
-    { id: 'open-shot', q: 'The opening shot of the pilot — how do we meet Checker Town?',
-      a: { label: 'Wide & quiet', art: '🌌  a vast night sky, one streak of light falling', note: 'Mystery first — the crash is a rumor.' },
-      b: { label: 'Close & loud', art: '💥  smash-cut to the wreck, pieces everywhere', note: 'Action first — drop us in the chaos.' } },
-    { id: 'princess-key', q: "Princess's color key:",
-      a: { label: 'Warm violet', art: '🟣  regal purples, gold trim', note: 'Storybook royalty.' },
-      b: { label: 'Cool slate', art: '🔵  cooler blues, silver trim', note: 'Sci-fi castaway.' } }
+    { id: 'e1', name: 'Ch.1 — Checker Town',            tag: 'S1',     pct: { Script: 40, Boards: 0,  Layout: 0, Animation: 0, Comp: 0 } }
   ];
 
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
@@ -173,40 +115,7 @@ permalink: /production/
     document.getElementById('pr-overall-fill').style.width = overall + '%';
   }
 
-  // ---- frame the scene (local vote) ----
-  function voteKey(id){ return 'pjcc.frame.' + id; }
-  function getVote(id){ try { return localStorage.getItem(voteKey(id)); } catch (e) { return null; } }
-  function setVote(id, side){ try { localStorage.setItem(voteKey(id), side); } catch (e) {} }
-  // illustrative baseline tallies so the bars aren't empty before community voting exists
-  var SEED = { 'open-shot': { a: 61, b: 47 }, 'princess-key': { a: 73, b: 38 } };
-
-  function renderPolls() {
-    var wrap = document.getElementById('pr-poll'); wrap.innerHTML = '';
-    POLLS.forEach(function (p) {
-      var mine = getVote(p.id);
-      var base = SEED[p.id] || { a: 0, b: 0 };
-      var av = base.a + (mine === 'a' ? 1 : 0), bv = base.b + (mine === 'b' ? 1 : 0), tot = av + bv || 1;
-      function opt(side, o, v) {
-        var pctv = Math.round(v / tot * 100);
-        return '<button class="pr-opt' + (mine === side ? ' chosen' : '') + '" data-poll="' + p.id + '" data-side="' + side + '">' +
-          '<div class="pr-opt-art">' + esc(o.art) + '</div>' +
-          '<div class="pr-opt-label">' + esc(o.label) + '</div>' +
-          '<div class="pr-opt-note">' + esc(o.note) + '</div>' +
-          '<div class="pr-opt-bar' + (mine ? ' show' : '') + '"><i style="width:' + pctv + '%"></i><span>' + pctv + '%</span></div>' +
-          '</button>';
-      }
-      var el = document.createElement('div'); el.className = 'pr-poll-card';
-      el.innerHTML = '<div class="pr-poll-q">' + esc(p.q) + (mine ? ' <span class="pr-voted">✓ voted</span>' : '') + '</div>' +
-        '<div class="pr-opts">' + opt('a', p.a, av) + opt('b', p.b, bv) + '</div>';
-      wrap.appendChild(el);
-    });
-    Array.prototype.forEach.call(wrap.querySelectorAll('.pr-opt'), function (btn) {
-      btn.onclick = function () { setVote(btn.dataset.poll, btn.dataset.side); renderPolls(); };
-    });
-  }
-
   renderTracker();
-  renderPolls();
 })();
 </script>
 
@@ -382,33 +291,6 @@ permalink: /production/
 .pr-stage-bar i { display: block; height: 100%; background: linear-gradient(90deg,#6b5fa0,#F5C518); border-radius: 999px; }
 .pr-stage-pct { width: 38px; text-align: right; font-size: 0.74rem; color: #c9a7ff; flex: 0 0 auto; }
 
-.pr-poll { display: grid; gap: 14px; }
-.pr-poll-card { background: rgba(45,27,105,0.4); border: 1px solid #3a2a6a; border-radius: 12px; padding: 14px 16px; }
-.pr-poll-q { color: #f0e6ff; font-weight: 700; margin-bottom: 10px; }
-.pr-voted { color: #6bffb8; font-size: 0.78rem; font-weight: 600; }
-.pr-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-@media (max-width: 520px) { .pr-opts { grid-template-columns: 1fr; } }
-.pr-opt { text-align: left; background: #221444; border: 1px solid #4a2f8a; border-radius: 10px; padding: 12px; cursor: pointer; color: #c9a7ff; font-family: inherit; transition: all 0.14s; }
-.pr-opt:hover { border-color: #F5C518; transform: translateY(-2px); }
-.pr-opt.chosen { border-color: #6bffb8; box-shadow: 0 0 0 1px #6bffb8 inset; }
-.pr-opt-art { font-size: 1.05rem; color: #f0e6ff; margin-bottom: 6px; }
-.pr-opt-label { font-weight: 800; color: #F5C518; }
-.pr-opt-note { font-size: 0.82rem; color: #9a7fd4; margin-bottom: 6px; }
-.pr-opt-bar { position: relative; height: 16px; background: rgba(20,12,45,0.7); border-radius: 999px; overflow: hidden; opacity: 0; transition: opacity 0.3s; }
-.pr-opt-bar.show { opacity: 1; }
-.pr-opt-bar i { display: block; height: 100%; background: linear-gradient(90deg,#6b5fa0,#ff8fd0); }
-.pr-opt-bar span { position: absolute; right: 8px; top: 0; font-size: 0.7rem; line-height: 16px; color: #fff; font-weight: 700; }
-
-.pr-booth { display: flex; gap: 14px; align-items: flex-start; background: rgba(245,197,24,0.06); border: 1px solid #6b5fa0; border-radius: 12px; padding: 16px; }
-.pr-booth.is-soon { opacity: 0.94; }
-.pr-booth-ico { font-size: 34px; }
-.pr-booth-lead { color: #f0e6ff; font-weight: 600; }
-.pr-booth-btn { display: inline-block; margin-top: 8px; background: #F5C518; color: #1a0f3d; font-weight: 800; text-decoration: none; border-radius: 999px; padding: 9px 18px; }
-.pr-booth-btn:hover { background: #ffd740; }
-.pr-booth-btn.is-disabled { background: #3a2a6a; color: #9a7fd4; cursor: not-allowed; }
-.pr-booth-btn.is-disabled:hover { background: #3a2a6a; }
-.pr-soon { font-size: 0.58rem; vertical-align: middle; letter-spacing: 0.12em; text-transform: uppercase; color: #1a0f3d; background: #ff8fd0; padding: 3px 9px; border-radius: 999px; margin-left: 10px; font-weight: 800; }
-
 /* ---- Pilot animatic ---- */
 .an { background: rgba(20,12,45,0.5); border: 1px solid #3a2a6a; border-radius: 14px; padding: 14px; margin: 12px 0 8px; }
 .an-screen { position: relative; }
@@ -467,28 +349,5 @@ permalink: /production/
 .pr-wr-cta b { color: #F5C518; display: block; }
 .pr-wr-cta small { color: #c9a7ff; font-size: 0.84rem; line-height: 1.5; display: block; margin-top: 2px; }
 
-.pr-fund { display: flex; gap: 14px; align-items: center; margin: 14px 0 4px; padding: 14px 16px; text-decoration: none; background: linear-gradient(135deg, rgba(245,197,24,0.10), rgba(255,143,208,0.06)); border: 1px solid #6b5fa0; border-radius: 12px; transition: all 0.14s; }
-.pr-fund:hover { border-color: #F5C518; transform: translateY(-2px); }
-.pr-fund-ico { font-size: 28px; flex: 0 0 auto; }
-.pr-fund-body { flex: 1; }
-.pr-fund-body b { color: #F5C518; display: block; }
-.pr-fund-body small { color: #c9a7ff; font-size: 0.84rem; line-height: 1.5; display: block; margin-top: 2px; }
-.pr-fund-body small b { display: inline; color: #ffd36b; }
-.pr-fund-bars { display: flex; align-items: flex-end; gap: 3px; height: 30px; flex: 0 0 auto; }
-.pr-fund-bars i { width: 5px; background: linear-gradient(180deg,#F5C518,#6b5fa0); border-radius: 2px; animation: pr-fund-pulse 1.8s ease-in-out infinite; }
-.pr-fund-bars i:nth-child(1){ height: 40%; animation-delay: 0s; }
-.pr-fund-bars i:nth-child(2){ height: 70%; animation-delay: 0.2s; }
-.pr-fund-bars i:nth-child(3){ height: 55%; animation-delay: 0.4s; }
-.pr-fund-bars i:nth-child(4){ height: 85%; animation-delay: 0.6s; }
-.pr-fund-bars i:nth-child(5){ height: 60%; animation-delay: 0.8s; }
-@keyframes pr-fund-pulse { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
-
-.pr-bible { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
-.pr-bible-card { display: flex; flex-direction: column; gap: 2px; background: rgba(45,27,105,0.5); border: 1px solid #3a2a6a; border-radius: 12px; padding: 14px; text-decoration: none; transition: all 0.14s; }
-.pr-bible-card:hover { border-color: #F5C518; transform: translateY(-2px); }
-.pr-bible-card span { font-size: 26px; }
-.pr-bible-card b { color: #f0e6ff; }
-.pr-bible-card small { color: #9a7fd4; font-size: 0.76rem; }
-.pr-foot { color: #9a7fd4; margin-top: 24px; }
-.pr-foot a, .pr-booth a, .pr-note a { color: #F5C518; }
+.pr-note a { color: #F5C518; }
 </style>

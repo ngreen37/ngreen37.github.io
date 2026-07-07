@@ -36,7 +36,6 @@ permalink: /dossier/
   <div class="cc-mod cc-mod--launch">
     <div class="cc-mod-label">◆ Quick launch</div>
     <div class="cc-launch">
-      <a href="{{ '/daily/' | relative_url }}">📅 Daily Dispatch</a>
       <a href="{{ '/games/' | relative_url }}">🕹️ The Arcade</a>
       <a href="{{ '/academy/' | relative_url }}">🎓 Academy</a>
       <a href="{{ '/production/' | relative_url }}">🎬 The Pilot</a>

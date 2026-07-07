@@ -11,21 +11,20 @@
     if (!window.PJCC) { setTimeout(init, 60); return; }
 
     // key '__overall__' = cumulative credits board; others = per-game best scores.
+    // Boards exist only for LIVE games — nothing In Development or Terminated shows
+    // a leaderboard (dungeon / fork-in-the-road / pirc-protocol / battle-room pruned
+    // 2026-07-06; their Supabase data persists, restore = re-add a line).
     var BOARDS = [
       { key: '__overall__',     label: 'Overall',          unit: 'credits' },
       { key: 'the-gauntlet',    label: 'The Gauntlet',     unit: 'cleared' },
-      { key: 'dungeon',         label: 'Princess Dungeon', unit: 'floors'  },
       { key: 'clearance-delta', label: 'Clearance: DELTA', unit: 'score'   },
       { key: 'notation-run',    label: 'Notation Blitz',   unit: 'score'   },
-      { key: 'fork-in-the-road',label: 'Fork in the Road', unit: 'solved'  },
       { key: 'sand-mine-depths',label: 'Sand Mine Depths', unit: 'depth'   },
-      { key: 'pirc-protocol',   label: 'Pirc Protocol',    unit: 'score'   },
       { key: 'blindfold',       label: 'Blindfold Puzzles',unit: 'solved'  },
       { key: 'tower-defense',   label: 'Siege on Chess City', unit: 'score' },
       { key: 'siege-endless',   label: 'Siege · Endless',     unit: 'wave'  },
       { key: 'siege-daily',     label: 'Siege · Daily',       unit: 'score' },
-      { key: 'sky-run',         label: 'Sky Run',             unit: 'score' },
-      { key: 'battle-room',     label: 'The Battle Room',     unit: 'score' }
+      { key: 'sky-run',         label: 'Sky Run',             unit: 'score' }
     ];
     var PAGE = 25;
     var active = '__overall__';

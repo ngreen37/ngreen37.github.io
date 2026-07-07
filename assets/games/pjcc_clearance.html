@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Clearance — DELTA v1.4</title>
+<title>PJCC: Clearance — DELTA v1.5</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -138,6 +138,27 @@
   @keyframes titleGlow {
     0%,100%{ text-shadow: 0 3px 0 #6a4400, 0 0 22px rgba(245,197,24,0.5); }
     50%{ text-shadow: 0 3px 0 #6a4400, 0 0 36px rgba(245,197,24,0.9); } }
+
+  /* ---- INTRO: the sealed dossier ---- */
+  #intro { cursor: pointer; }
+  .in-stamp { position: absolute; top: 34px; right: 26px; transform: rotate(12deg);
+    font-family: 'Courier New', monospace; font-weight: 900; font-size: 15px; letter-spacing: 0.24em;
+    color: #ff5b6e; border: 3px double #ff5b6e; border-radius: 4px; padding: 4px 12px; opacity: 0.85;
+    text-shadow: 0 0 12px rgba(255,91,110,0.5); animation: stampIn 0.5s cubic-bezier(.2,2.4,.5,1) both 0.35s; }
+  @keyframes stampIn { 0%{ transform: rotate(12deg) scale(2.4); opacity: 0; } 100%{ transform: rotate(12deg) scale(1); opacity: 0.85; } }
+  .in-folder { margin: 14px auto 8px; padding: 20px 26px 16px; max-width: 330px;
+    background: linear-gradient(160deg, #3a1420, #2a0d16); border: 1px solid #8a3346; border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.55), inset 0 0 34px rgba(245,197,24,0.06); }
+  .in-crest { font-size: 34px; color: #F5C518; line-height: 1; margin-bottom: 6px;
+    text-shadow: 0 0 18px rgba(245,197,24,0.6); }
+  .in-file { font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 0.14em; color: #c98a97; margin-top: 8px; }
+  .in-redact { display: flex; flex-direction: column; gap: 5px; margin-top: 12px; }
+  .in-redact i { height: 8px; border-radius: 2px; background: #1c0a10; box-shadow: inset 0 0 4px #000; }
+  .in-redact i:nth-child(1){ width: 88%; } .in-redact i:nth-child(2){ width: 70%; } .in-redact i:nth-child(3){ width: 79%; }
+  .in-enter { margin-top: 16px; font-family: 'Courier New', monospace; font-weight: 900; font-size: 13px;
+    letter-spacing: 0.16em; color: #F5C518; animation: enterPulse 1.5s ease-in-out infinite; }
+  @keyframes enterPulse { 0%,100%{ opacity: 0.55; } 50%{ opacity: 1; text-shadow: 0 0 16px rgba(245,197,24,0.8); } }
+  @media (prefers-reduced-motion: reduce){ .in-stamp, .in-enter { animation: none; } }
 </style>
 </head>
 <body>
@@ -172,20 +193,30 @@
     <div class="pl">CLEARANCE GRANTED</div><div class="pr" id="promo-rank">DELTA</div><div class="pd" id="promo-file"></div>
   </div></div>
 
+  <!-- INTRO — the cold open: a sealed dossier waiting on the desk -->
+  <div class="overlay" id="intro">
+    <div class="in-stamp">TOP&nbsp;SECRET</div>
+    <div class="eyebrow">◈ Chess City Invitational · Operative Examinations</div>
+    <div class="in-folder">
+      <div class="in-crest">◆</div>
+      <div class="big-title">CLEARANCE: DELTA</div>
+      <div class="in-file">FILE&nbsp;//&nbsp;PJCC-CCI-Δ&nbsp;·&nbsp;EYES&nbsp;ONLY</div>
+      <div class="in-redact"><i></i><i></i><i></i></div>
+    </div>
+    <div class="in-enter" id="intro-enter">▸ TAP TO BREAK THE SEAL ◂</div>
+  </div>
+
   <!-- MENU -->
-  <div class="overlay" id="menu">
+  <div class="overlay hidden" id="menu">
     <div class="eyebrow">◈ Chess City Invitational</div>
     <div class="big-title">CLEARANCE: DELTA</div>
     <div class="blurb">
-      An operative's exam, held in the Invitational hall. Field questions on <b style="color:#F5C518">chess</b> —
-      rules, tactics, <b>World Champions</b> and famous games — and the
-      <b style="color:#ff9fb0">PJCC files</b>, climbing from RECRUIT to <b>ABOVE OMEGA</b>.
-      Each promotion unredacts a piece of the archive; three wrong and your access is revoked.
+      Chess and the <b style="color:#ff9fb0">PJCC files</b> — climb from RECRUIT to <b>ABOVE OMEGA</b>.
+      Three wrong and your access is revoked.
     </div>
     <div class="sel-grp" id="mode-sel">
       <button class="selb sel" data-m="standard">STANDARD</button>
       <button class="selb" data-m="lightning">⚡ LIGHTNING</button>
-      <button class="selb" data-m="daily">★ DAILY</button>
     </div>
     <div class="sel-grp" id="cat-sel">
       <button class="selb sel" data-c="all">ALL</button>
@@ -300,19 +331,10 @@ function recordMissed(q){
   } catch(e){}
 }
 
-// ---- Modes, categories, seeded daily ----
+// ---- Modes & categories ----
 const CATSETS = { all:null, rules:['RULES'], tactics:['TACTICS'], history:['HISTORY','CHAMPIONS'] };
 let mode = 'standard', catFilter = 'all';
 let timer = null, timeLeft = 0, timeMax = 0;
-let dailyList = [], dailyPtr = 0;
-const DAILY_N = 10;
-function rng32(seed){ let a = seed >>> 0; return function(){ a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-function todaySeed(){ const d = new Date(); return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
-function seededDaily(){
-  const r = rng32(todaySeed()); const idx = []; for (let i = 0; i < Q.length; i++) idx.push(i);
-  for (let i = idx.length - 1; i > 0; i--){ const j = Math.floor(r() * (i + 1)); const tmp = idx[i]; idx[i] = idx[j]; idx[j] = tmp; }
-  return idx.slice(0, DAILY_N);
-}
 
 // ---- Diagram board renderer (piece placement from FEN) ----
 const DGLYPH = { p:'♟',n:'♞',b:'♝',r:'♜',q:'♛',k:'♚', P:'♙',N:'♘',B:'♗',R:'♖',Q:'♕',K:'♔' };
@@ -366,7 +388,6 @@ function buildQueues(){
 
 function start(){
   buildQueues(); correct = 0; score = 0; strikes = 0; streak = 0; rankIdx = 0; lastFile = '';
-  if (mode === 'daily'){ dailyList = seededDaily(); dailyPtr = 0; }
   updateRank(false); updateHUD();
   document.getElementById('menu').classList.add('hidden');
   document.getElementById('result').classList.add('hidden');
@@ -381,14 +402,12 @@ function pickTier(){
   buildQueues(); return Math.min(5, 1 + Math.floor(correct / 4));
 }
 function nextQuestion(){
-  if (mode === 'daily' && dailyPtr >= dailyList.length){ finishDaily(); return; }
   answered = false;
-  if (mode === 'daily'){ cur = Q[dailyList[dailyPtr++]]; }
-  else { const t = pickTier(); const qi = queues[t].pop(); cur = Q[qi]; }
+  const t = pickTier(); const qi = queues[t].pop(); cur = Q[qi];
   renderDiagram(cur.dfen || null);
   document.getElementById('q-cat').textContent = cur.cat;
   const tierName = ['', 'DELTA', 'GAMMA', 'BETA', 'OMEGA', 'OMEGA+'][cur.t];
-  document.getElementById('q-tier').textContent = (mode === 'daily') ? ('Q' + dailyPtr + '/' + dailyList.length) : tierName;
+  document.getElementById('q-tier').textContent = tierName;
   document.getElementById('q-text').textContent = cur.q;
   const ansEl = document.getElementById('answers'); ansEl.innerHTML = '';
   const order = shuffle(cur.a.map((_, i) => i));
@@ -430,20 +449,8 @@ function timeUp(){
   flashTerm('bad'); shakeTerm();
   const ex = document.getElementById('explain'); ex.innerHTML = '<b style="color:#ff9fb0">Time!</b> ' + cur.why; ex.classList.add('show');
   updateHUD();
-  if (mode !== 'daily' && strikes >= 3){ setTimeout(gameOver, 250); }
+  if (strikes >= 3){ setTimeout(gameOver, 250); }
   else document.getElementById('next-btn').classList.add('show');
-}
-function finishDaily(){
-  clearTimer();
-  const best = loadBest(); const isBest = correct > best; if (isBest) saveBest(correct);
-  if (window.PJCC) PJCC.saveScore('clearance-delta', score, { seed: new Date().toISOString().slice(0,10), credits: 2, data: { mode: 'daily', correct: correct } });
-  document.querySelector('#result .eyebrow').textContent = '◈ Exam Complete';
-  document.getElementById('res-rank').textContent = 'DAILY EXAM — ' + correct + '/' + dailyList.length;
-  document.getElementById('res-msg').innerHTML = 'You scored <b style="color:#F5C518">' + score + '</b> on today’s shared exam (<b style="color:#F5C518">' +
-    correct + '</b>/' + dailyList.length + ' correct).<br>Same questions for every operative today — compare on the leaderboard.';
-  const dossier = document.getElementById('res-dossier');
-  if (lastFile){ dossier.style.display = ''; document.getElementById('res-file').textContent = lastFile; } else dossier.style.display = 'none';
-  document.getElementById('result').classList.remove('hidden');
 }
 function answer(origIdx, btn){
   if (answered) return;
@@ -472,7 +479,7 @@ function answer(origIdx, btn){
   ex.innerHTML = (origIdx === cur.c ? '<b>Correct.</b> ' : '<b style="color:#ff9fb0">Not quite.</b> ') + cur.why;
   ex.classList.add('show');
   updateHUD();
-  if (mode !== 'daily' && strikes >= 3){ setTimeout(gameOver, 250); }
+  if (strikes >= 3){ setTimeout(gameOver, 250); }
   else document.getElementById('next-btn').classList.add('show');
 }
 function updateHUD(){
@@ -527,6 +534,7 @@ function gameOver(){
 // ---- Input ----
 document.getElementById('next-btn').addEventListener('click', nextQuestion);
 document.addEventListener('keydown', e => {
+  if (!document.getElementById('intro').classList.contains('hidden')) return;
   if (!document.getElementById('menu').classList.contains('hidden')) return;
   if (document.getElementById('result').classList.contains('hidden') === false) return;
   if (!answered && /^[1-4]$/.test(e.key)){ const b = document.getElementById('answers').children[parseInt(e.key,10)-1]; if (b) b.click(); }
@@ -538,9 +546,15 @@ document.getElementById('begin-btn').addEventListener('click', begin);
 document.getElementById('retry-btn').addEventListener('click', begin);
 document.getElementById('menu-btn').addEventListener('click', () => { document.getElementById('result').classList.add('hidden'); document.getElementById('menu').classList.remove('hidden'); });
 
+// the cold open — break the seal, step into the hall
+document.getElementById('intro').addEventListener('click', () => {
+  initAudio(); if (actx){ sfx('promo'); }
+  document.getElementById('intro').classList.add('hidden');
+  document.getElementById('menu').classList.remove('hidden');
+});
+
 document.querySelectorAll('#mode-sel .selb').forEach(b => b.addEventListener('click', () => {
   mode = b.dataset.m; document.querySelectorAll('#mode-sel .selb').forEach(x => x.classList.toggle('sel', x === b));
-  document.getElementById('cat-sel').style.opacity = (mode === 'daily') ? '0.4' : '1';   // daily ignores category
 }));
 document.querySelectorAll('#cat-sel .selb').forEach(b => b.addEventListener('click', () => {
   catFilter = b.dataset.c; document.querySelectorAll('#cat-sel .selb').forEach(x => x.classList.toggle('sel', x === b));

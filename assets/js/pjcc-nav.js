@@ -22,7 +22,6 @@
       { t: 'Locations',        s: 'Places in the world',                  u: '/locations/',          ic: '⛰', b: 'pjcc', k: 'locations places checker town chess city' },
       { t: 'Academy',          s: 'Gamified chess curriculum',            u: '/academy/',            ic: '♔', b: 'pjcc', k: 'academy learn chess lessons belts curriculum' },
       { t: 'The Pilot',        s: 'Production & the show',                u: '/production/',         ic: '🎬', b: 'pjcc', k: 'pilot production show episode cartoon' },
-      { t: 'Daily Dispatch',   s: "Today's mission & fragment",           u: '/daily/',              ic: '◈', b: 'pjcc', k: 'daily dispatch mission streak fragment today' },
       { t: 'Your Dossier',     s: 'Your profile & operative',             u: '/dossier/',            ic: '⬡', b: 'pjcc', k: 'dossier profile account sign in login operative identity forge' },
       { t: 'Leaderboards',     s: 'Hall of Fame',                         u: '/leaderboards/',       ic: '🏆', b: 'pjcc', k: 'leaderboards hall of fame scores rank high' },
       { t: 'Fan Art',          s: 'The fan wall + make your own card',    u: '/fan-art/',            ic: '🎨', b: 'pjcc', k: 'fan art wall community printable card make submit gallery thank you' },
