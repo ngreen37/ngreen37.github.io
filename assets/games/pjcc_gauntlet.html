@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: The Gauntlet v1.1</title>
+<title>PJCC: The Gauntlet v1.2</title>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <script src="/assets/js/pjcc-pieces.js"></script>
 <script src="/assets/js/pjcc-chess.js"></script>
 <script src="/assets/js/pjcc-chess-ai.js"></script>
+<script src="/assets/js/pjcc-gauntlet-engine.js"></script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body { user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color:transparent; }
@@ -201,7 +202,9 @@
 
 <script>
 "use strict";
-var C = window.PJCCChess, AI = window.PJCCChessAI;
+var C = window.PJCCChess, AI = window.PJCCChessAI, ENGINE = window.PJCCGauntletEngine;
+// Rung -> Stockfish Skill Level (0..20). Rung 1 plays gently; the top floor is full strength.
+function skillForRung(idx){ var n = LADDER.length - 1; return n > 0 ? Math.round(idx * 20 / n) : 20; }
 var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 var W = 440, H = 500, TILE = 50, BOARD = TILE*8, BX = (W-BOARD)/2, BY = 78;
 var PAL = { wFill:'#f3ecd6', wEdge:'#4a3618', bFill:'#241a3c', bEdge:'#efe4ff' };
@@ -296,6 +299,7 @@ function startRung(idx, pc){
         S:C.parseFEN(C.START_FEN), reps:{}, sel:-1, legal:[], over:false, result:null,
         last:null, thinking:false, promo:null, log:[], roundStartMat:null };
   bumpRep();
+  if (ENGINE){ ENGINE.warmup(); ENGINE.newGame(); }   // boot Stockfish in the background for this match
   G.legal = C.legalMoves(G.S);
   hideOverlays();
   document.getElementById('menu-btn').classList.remove('hidden');
@@ -349,9 +353,20 @@ function applyPlayerMove(m){
   aiTurnSoon();
 }
 function aiTurnSoon(){ G.thinking = true; setTimeout(aiMove, 280); }
+// Ask the engine (Stockfish, throttled to this rung) for a move, then apply it in a guarded
+// callback. The bridge always resolves with a referee-legal move (or null) and never hangs;
+// if it's somehow unavailable we fall straight back to the built-in negamax.
 function aiMove(){
   if (!G || G.over){ return; }
-  var m = AI.bestMove(G.S, G.persona);
+  var myG = G, S = G.S;
+  var chooser = ENGINE
+    ? ENGINE.move(S, { persona:G.persona, skill:skillForRung(G.idx), movetime:G.persona.timeMs, blunder:G.persona.blunder })
+    : Promise.resolve(AI.bestMove(S, G.persona));
+  chooser.then(function(m){ applyAiMove(myG, S, m); },
+               function(){ applyAiMove(myG, S, AI.bestMove(S, G.persona)); });
+}
+function applyAiMove(myG, S, m){
+  if (!G || G !== myG || G.over || G.S !== S){ return; }   // reset / ended / resigned while thinking
   if (!m){ G.thinking=false; var res0=C.gameResult(G.S, G.reps[C.posKey(G.S)]||1); if(res0) endGame(res0); return; }
   G.last = { from:m.from, to:m.to };
   G.log.push(C.toSAN(G.S, m));

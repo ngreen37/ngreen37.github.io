@@ -1,0 +1,3 @@
+# Vendored Stockfish build — keep bytes exact; never normalize line endings.
+*.wasm binary
+stockfish.js -text
