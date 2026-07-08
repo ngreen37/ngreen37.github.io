@@ -23,7 +23,7 @@ last_seen: CHESS CITY
 ## Background
 
 ## Role in the Story
-A **side character** and a foil: Robert is the *mindset* rival to Michael's *moral* one. Together the two rivals frame the show's question — is the journey won by being right, or by being righteous? Robert pushes the narrator to believe bigger; Michael shows him what to do with the belief. Robert's cronies — **[the Prodigal Brothers](/characters/prodigal-brothers/)** — are a cautionary echo of where mindset goes when the heart isn't in it.
+A **side character** and a foil: Robert is the *mindset* rival to Michael's *moral* one. Together the two rivals frame the show's question — is the journey won by being right, or by being righteous? Robert pushes Nate to believe bigger; Michael shows him what to do with the belief. Robert's cronies — **[the Prodigal Brothers](/characters/prodigal-brothers/)** — are a cautionary echo of where mindset goes when the heart isn't in it.
 
 ## Art
 *Illustration coming soon.*

@@ -20,7 +20,7 @@ Steady as they get, Argus is the dog you want in your corner when you need a gua
 - Plays as a pawn in games -- not glamorous, but always where he needs to be
 
 ## Background
-With the main character since birth, Argus keeps his head down, does his part, and shows up every time. The journey to Chess City pulls him beyond anything he has done before, and he rises to meet it.
+With Nate since birth, Argus keeps his head down, does his part, and shows up every time. The journey to Chess City pulls him beyond anything he has done before, and he rises to meet it.
 
 ## Role in the Story
 Argus represents steady loyalty -- the backbone of any good team. His gradual growth as a chess player mirrors his growth as a character: not flashy, but real.

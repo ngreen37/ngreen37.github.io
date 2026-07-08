@@ -13,7 +13,7 @@
 
 ## Characters
 
-**Main Character (Narrator)**
+**Nate (Main Character)**
 - Mathematics degree, problem-solver background
 - Works at a Country Club, teaches Chess, cleans schools at night
 - Drives road trips with Princess
@@ -28,12 +28,12 @@
 - A Star of the Show wherever she goes (e.g., the bank)
 
 **Garrett (Rival)**
-- Rival and the narrator are a lot alike — always seem to end up on opposite teams (little league baseball, Checkers-Team-Tournaments, etc.)
+- Rival and Nate are a lot alike — always seem to end up on opposite teams (little league baseball, Checkers-Team-Tournaments, etc.)
 - Contentious toward each other, each with their own group of friends
 - His entire family was relocated to Chess City with no notice; he's been obsessively playing chess ever since
 - Becomes a main character and ally later
 - When narrator gets sucked into the pu-rin-se-suuu portal, Garrett befriends narrator's buddy Buddy
-- Garrett and Buddy break into the narrator's home to find the dogs
+- Garrett and Buddy break into Nate's home to find the dogs
 - Garrett ends up taking in Princess and teaches her the Pirc Defense
 
 **Buddy**
@@ -74,7 +74,7 @@
 ## Japanese / World Building
 
 - Main character ends up in Shogi Town where everyone speaks Japanese
-- The pu-rin-se-suuu portal: main character falls in, yells "Princessssss!!! Princesssss!!! Pu-ri-n-se-suuuu!!!" and ends up in a different-animated world where everyone speaks Japanese including him — and it's never explained
+- The pu-rin-se-suuu portal: Nate falls in, yells "Princessssss!!! Princesssss!!! Pu-ri-n-se-suuuu!!!" and ends up in a different-animated world where everyone speaks Japanese including him — and it's never explained
 - Maybe there are clues that he is in Chess City, and either Princess alone, or with the dogs, or with Garrett, look for him there
 - Chess City established via pan-out at end of opening monologue
 

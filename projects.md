@@ -5,7 +5,7 @@ permalink: /projects/
 body_class: theme-studio
 ---
 
-<p class="projects-intro">An independent studio, born to crest a single wave &mdash; PJCC. Most of it isn't finished yet. That's on purpose.</p>
+<p class="projects-intro">An independent studio created to build PJCC.</p>
 
 <nav class="studio-hub" aria-label="McPuppy Studios sections">
   <a href="/pjcc/">PJCC</a>
@@ -24,10 +24,11 @@ body_class: theme-studio
 .studio-hub a:hover { border-color: #F5C518; color: #F5C518; }
 </style>
 
+{% comment %} Counts come live from the games registry (pjcc-games-data.js) — same source
+     as the PJCC home stats — so they never go stale. Both tiles link to the arcade. {% endcomment %}
 <div class="projects-stats" id="projects-stats" aria-label="Studio at a glance">
-  <div class="pstat"><span class="pstat-num" id="pstat-playable">—</span><span class="pstat-lab">playable now</span></div>
-  <div class="pstat"><span class="pstat-num" id="pstat-done">—</span><span class="pstat-lab">completed</span></div>
-  <div class="pstat"><span class="pstat-num" id="pstat-dev">—</span><span class="pstat-lab">in the lab</span></div>
+  <a class="pstat" href="/games/"><span class="pstat-num" id="pstat-playable">—</span><span class="pstat-lab">playable now <span class="pstat-go">&#8599;</span></span></a>
+  <a class="pstat" href="/games/"><span class="pstat-num" id="pstat-dev">—</span><span class="pstat-lab">in the lab <span class="pstat-go">&#8599;</span></span></a>
 </div>
 
 <style>
@@ -198,13 +199,14 @@ body_class: theme-studio
 
 <h2 class="games-index-heading">All Games</h2>
 <ul class="games-index">
-  <li><a href="/games/notation-run/">Notation Blitz <span class="ver">v3.7</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/the-gauntlet/">The Gauntlet <span class="ver">v1.2</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/notation-run/">Notation Blitz <span class="ver">v3.9</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/fork-in-the-road/">Fork in the Road <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/pirc-protocol/">The Pirc Protocol <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/clearance-delta/">Clearance: DELTA <span class="ver">v1.3</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/clearance-delta/">Clearance: DELTA <span class="ver">v1.5</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/sky-run/">Sky Run <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/sand-mine-depths/">Sand Mine Depths <span class="ver">v3.0</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/tower-defense/">Siege on Chess City <span class="ver">v2.1</span></a> <span class="games-index-done">Completed</span></li>
+  <li><a href="/games/tower-defense/">Siege on Chess City <span class="ver">v2.4</span></a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/dungeon/">Princess Dungeon</a> <span class="games-index-done">Completed</span></li>
   <li><a href="/games/murphys-law/">Murphy's Law</a> <span class="games-index-note">— in development</span></li>
   <li><a href="/games/blindfold-puzzles/">Blindfold Puzzles <span class="ver">v2.2</span></a> <span class="games-index-done">Completed</span></li>
@@ -232,27 +234,31 @@ body_class: theme-studio
 .games-index-note { font-size: 0.8rem; color: #9a7fd4; }
 .games-index-term { font-size: 0.8rem; color: #ff6b6b; }
 
-/* Studio-at-a-glance stat counters */
+/* Studio-at-a-glance stat counters (links, like the PJCC home stats) */
 .projects-stats { display: flex; flex-wrap: wrap; gap: 14px; margin: 18px 0 6px; }
 .pstat { flex: 1 1 120px; min-width: 120px; text-align: center; padding: 14px 10px;
   background: linear-gradient(135deg, #1f1147 0%, #2d1b69 100%);
-  border: 1px solid rgba(245,197,24,0.3); border-radius: 12px; }
+  border: 1px solid rgba(245,197,24,0.3); border-radius: 12px;
+  text-decoration: none; transition: transform .12s, border-color .12s; }
+.pstat:hover { transform: translateY(-2px); border-color: #F5C518; }
+.pstat-go { color: #F5C518; font-size: 0.8em; }
 .pstat-num { display: block; font-size: 2rem; font-weight: 800; color: #F5C518; line-height: 1; }
 .pstat-lab { display: block; margin-top: 6px; font-size: 0.74rem; text-transform: uppercase;
   letter-spacing: 0.08em; color: #c9b6ef; }
 </style>
 
+<script src="/assets/js/pjcc-games-data.js"></script>
 <script>
 (function () {
-  var items = [].slice.call(document.querySelectorAll('.games-index li'));
-  if (!items.length) return;
-  var dev  = items.filter(function (li) { return /development/i.test(li.textContent); }).length;
-  var term = items.filter(function (li) { return li.querySelector('.games-index-term'); }).length;
-  var done = items.filter(function (li) { return li.querySelector('.games-index-done'); }).length;
-  var playable = items.length - dev - term;   // completed + playable bonuses
+  if (!window.PJCC_GAMES) return;
+  // "Playable now" mirrors the PJCC home stat: open halls (Learn/Arcade/Isle), not hidden or coming-soon.
+  var playable = PJCC_GAMES.filter(function (g) {
+    return !g.hidden && !g.soon && g.playable !== false &&
+      (g.cat === 'learn' || g.cat === 'arcade' || g.cat === 'isle');
+  }).length + 1;   // +1: The Gauntlet lives outside the registry at /games/the-gauntlet/
+  var dev = PJCC_GAMES.filter(function (g) { return g.cat === 'dev'; }).length;
   function set(id, n) { var e = document.getElementById(id); if (e) e.textContent = n; }
   set('pstat-playable', playable);
-  set('pstat-done', done);
   set('pstat-dev', dev);
 })();
 </script>

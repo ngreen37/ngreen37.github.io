@@ -47,8 +47,13 @@
       bind('pjcc-login', function () {
         var email = (document.getElementById('pjcc-email').value || '').trim();
         if (!email) return;
+        var btn = document.getElementById('pjcc-login');
+        if (btn.disabled) return;                       // one email per click, not per tap-tap
+        btn.disabled = true; btn.textContent = 'Sending…';
         PJCC.signInMagic(email).then(function () {
           bar.innerHTML = '<span class="pjcc-label">✉ Check your email for a login link, then return here.</span>';
+        }).catch(function () {
+          btn.disabled = false; btn.textContent = 'Send login link';
         });
       });
       return;

@@ -20,7 +20,7 @@ A pair of brothers. Cronies of [Robert](/characters/robert/)**, the Checker Town
 - **The younger brother** — softer, more lost than reckless. Follows his brother.
 
 ## Role in the Story
-Ancillary foils that give main character a surface-level enemy and also gives Robert's *mindset* a shadow, **even they have redeeming qualities**
+Ancillary foils that give Nate a surface-level enemy and also gives Robert's *mindset* a shadow, **even they have redeeming qualities**
 
 
 ## Art

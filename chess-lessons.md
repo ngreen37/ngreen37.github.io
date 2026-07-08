@@ -54,46 +54,6 @@ body_class: theme-bw
       </blockquote>
     </article>
 
-    <!-- Kaede -->
-    <article class="cc-card" style="--cc:#f2879a">
-      <div class="cc-top">
-        <span class="cc-avatar">♝</span>
-        <div class="cc-id">
-          <span class="cc-name">Kaede <span class="cc-kanji">楓</span></span>
-          <span class="cc-spec">Shogi &amp; Japanese · All ages</span>
-          <span class="cc-rate"><span class="cc-stars"><span class="cc-stars-on" style="width:100%">★★★★★</span>★★★★★</span> <b>5.0</b> <span class="cc-count">(52)</span></span>
-        </div>
-      </div>
-      <div class="cc-badge">✓ Runs the <a href="/games/reading-room/">Reading Room</a> (読書室) — free to enter, free to learn</div>
-      <div class="cc-chips"><span>52 students</span><span>Beginner-friendly</span><span>Patient &amp; warm</span></div>
-      <p class="cc-bio">Patient, warm, and generous. Kaede leads all the Japanese teaching and the shogi dojo — she'll take you from "which way does this piece move?" all the way to master.</p>
-      <blockquote class="cc-quote">
-        <span class="cc-stars mini"><span class="cc-stars-on" style="width:100%">★★★★★</span>★★★★★</span>
-        <p>"I came in knowing zero Japanese and zero shogi. 「ようこそ」she said — and somehow I left knowing both. She teaches like you're already family."</p>
-        <cite>— Princess, Chapter 6</cite>
-      </blockquote>
-    </article>
-
-    <!-- Matsu -->
-    <article class="cc-card" style="--cc:#4cc98a">
-      <div class="cc-top">
-        <span class="cc-avatar">♝</span>
-        <div class="cc-id">
-          <span class="cc-name">Matsu <span class="cc-kanji">松</span></span>
-          <span class="cc-spec">Advanced Shogi · Learn by playing</span>
-          <span class="cc-rate"><span class="cc-stars"><span class="cc-stars-on" style="width:96%">★★★★★</span>★★★★★</span> <b>4.8</b> <span class="cc-count">(19)</span></span>
-        </div>
-      </div>
-      <div class="cc-badge">✓ Shogi Island anchor — teaches by the board, not the lecture</div>
-      <div class="cc-chips"><span>19 students</span><span>Says less</span><span>Means more</span></div>
-      <p class="cc-bio">Where Kaede is the maple, Matsu is the pine — evergreen, unmoved, the same in every weather. He won't explain much. He'll just beat you, gently, until you understand.</p>
-      <blockquote class="cc-quote">
-        <span class="cc-stars mini"><span class="cc-stars-on" style="width:100%">★★★★★</span>★★★★★</span>
-        <p>"Said five words the whole lesson. I understood everything. 「松は枯れない。」"</p>
-        <cite>— a grateful student, Shogi Island</cite>
-      </blockquote>
-    </article>
-
   </div>
 
   <!-- little student wall for extra flavor -->
@@ -116,7 +76,7 @@ body_class: theme-bw
   .cc-disclaimer a { color: #cbb45a; }
 
   .cc-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-  @media (min-width: 720px) { .cc-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 720px) { .cc-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 460px)); justify-content: center; } }
 
   .cc-card {
     background: #161512; border: 1px solid rgba(245,197,24,0.16);

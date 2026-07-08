@@ -114,7 +114,7 @@ permalink: /games/
     <span class="gfl-glyph" aria-hidden="true">♛</span>
     <span class="gfl-main">
       <span class="gfl-title">The Gauntlet</span>
-      <span class="gfl-tag">Real chess against ten PJCC champions — climb the tower from Checker Town to the CEO's crown.</span>
+      <span class="gfl-tag">Ten PJCC champions.</span>
       <span class="gfl-pips" id="gfl-pips" aria-hidden="true"></span>
       <span class="gfl-resume" id="gfl-resume">Begin the climb — Floor 1 awaits.</span>
     </span>

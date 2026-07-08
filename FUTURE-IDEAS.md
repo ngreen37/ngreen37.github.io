@@ -145,7 +145,7 @@ rosters/dashboards, a server-verifiable cert registry, a rules-enforcing practic
 > **The Academy as the show's central location (brainstorm, 2026-06-25):**
 >
 > **The "Hogwarts" of PJCC.** Make the Academy a single **recurring set piece** instead of one-off lessons —
-> Princess, Argus, Auston, Maxwell, et al. all attend, taught by a **mentor figure** (could be the Narrator's
+> Princess, Argus, Auston, Maxwell, et al. all attend, taught by a **mentor figure** (could be Nate's
 > role, or a new character — a **retired chess-piece veteran**). Episodes map to academy **ranks / belts** the
 > characters progress through, mirroring a real curriculum arc.
 >
@@ -293,7 +293,7 @@ memory match · kana typing trainer · Shogi-Island visual-novel story mode · b
 calligraphy relics · pitch-accent ear trainer · language passport (Dossier) · community translation board (UGC).
 > **★ Character-voiced phrase decks (Nate, 2026-06-23).** Make the phrase/sentence cards **lines the cast would
 > actually say**, so you learn Japanese *and* the characters at once: the **Checker Town Rival speaks like Bob
-> Proctor** ("goals are 5% strategy, 95% mindset" → in JP), the **main character is headstrong** (brash, eager
+> Proctor** ("goals are 5% strategy, 95% mindset" → in JP), **Nate is headstrong** (brash, eager
 > lines), the **Uncle** drops Neville-flavored aphorisms, **Annie** is brave-but-small, **Argus** is the dry smart
 > one, etc. Kaede still teaches; the *voice* of each phrase is a character. **Add their portraits later** (a small
 > headshot on the card, speaker name + romaji). Doubles as a stealth way to seed canon voice before the show. Start
@@ -688,7 +688,7 @@ is the superfan ceiling but a cadence trap — start it only when #1 is humming.
 - **Princess** — the heart. *Can learn anything* (chess first); loyal, curious. **Arc (spoiler — build
   toward, don't reveal):** grows into a formidable player and **promotes to Queen.** ~6 years old (PJCC the
   project is ~6 months old).
-- **The main character** (the narrator) — late teens, Checker Town, big dreams. Became a **second father**
+- **Nate** (the main character) — late teens, Checker Town, big dreams. Became a **second father**
   to his younger sister after their dad was often away.
 - **Auston — the younger sister** *(locked 2026-06-23; piece → **rook**, shogi role reworked 2026-06-30)* — the
   story's **emotional crux**; brave beyond her size; plays a **rook**; the Shogi dojo's **first student** — she does
@@ -720,13 +720,13 @@ is the superfan ceiling but a cadence trap — start it only when #1 is humming.
 - **The older brother** — **self-righteous**, and things don't work out for him. *Name — pick one:* **Saul**
   (tragic self-righteous fall; rec) · Cain (the literal elder brother; starkest) · Esau (loses his birthright) ·
   Korah (self-righteous revolt). **Redemption thread:** *especially* he might be **the one who saves a dog.**
-- **Bill** — Princess' former crew partner (*not* the main character's dad). A **Bruce-Willis-in-*Armageddon*
+- **Bill** — Princess' former crew partner (*not* Nate's dad). A **Bruce-Willis-in-*Armageddon*
   type:** rugged, blue-collar, gruff-but-golden-hearted — the hands-on guy who can **rig or fix anything** and
   who **taught Princess to do anything** (incl. the Hyperspeed Box). A father to his **own** kids; when the Box
   runs astray, his **Harry-Stamper sacrifice** is leaving Princess behind to save the family aboard — the
   choice that shatters him. *(Hook: maybe he comes back for her.)*
 - **Season 2 villain — the rival teen** — works for the dog-stealing gang (returns the dog, collects the
-  ransom); later learns what the gang really does, turns, and joins the main character. (Antagonist → ally.)
+  ransom); later learns what the gang really does, turns, and joins Nate. (Antagonist → ally.)
 
 **Theme to mine:** the **Rival is *truly* righteous** (acts as God) while the **older brother is
 *self*-righteous** and falls — true vs. counterfeit righteousness, side by side in one family.
@@ -743,7 +743,7 @@ the "**B**" dot that opens every character timeline and the one the Lore Codex s
 the origin told straight — the **Intergalactic Cup**, the **construction-crew crash**, the **pieces falling over
 Checker Town**, **Bill & Princess** paired and bonding, the **Hyperspeed Box** turn that leaves her behind. Give it a
 real telling — an animatic / short / "issue #0" comic — instead of only leaking it through fragments; it's the
-emotional + mystery keystone the whole decode-as-you-play arc points back to. *(Princess, the Narrator, Auston, and
+emotional + mystery keystone the whole decode-as-you-play arc points back to. *(Princess, Nate, Auston, and
 Argus already carry `chapters: 0`.)*
 
 **Open decisions (waiting on Nate):** lock the **older brother's** name (Saul rec); name **Robert's two Prodigal
@@ -766,4 +766,19 @@ Brothers** and the **Commentators** are placeholders (Boomer/Tempo/Sunny) — co
   badged, logged, marked at the gate. Gives the city a controlled, bureaucratic edge against cozy Checker Town,
   and quietly **explains the site's own onboarding** (you arrive → you're issued a codename / dossier / clearance —
   the Press Pass). Ripe for Princess's arc: the one who's tagged like everyone else **rises to Queen** — and could
-  rewrite the tagging system. *(Open: who's "I" — the narrator, or Princess?)*
+  rewrite the tagging system. *(Open: who's "I" — Nate, or Princess?)*
+
+**Story ideas (2026-07-07 — Nate):**
+- **"Single File — Cover Your Tracks."** Auston and Nate are stuck out in the sands, and Nate suspects
+  they're being followed. He's carrying a pair of **Dad's work boots** — so they walk out **single file**,
+  Nate coming last and stamping the boot-prints over their trail, so anyone reading the sand sees **one
+  lone mine worker** heading home instead of two kids. Dad's absence literally covers for his kids for once.
+  Quiet-thriller beat that uses the Sand Mines' corporate-surveillance edge; Nate goes last so Auston never
+  sees how scared he is.
+- **The telescope — first sight of Chess City.** Nate discovers (or MacGyvers) a telescope, and for the
+  first time actually **sees** Chess City across the Sea — the dream stops being a rumor and becomes a real,
+  visible place. The build is real (vetted): **two lenses and a tube** — a big, weak lens up front (the
+  objective), a small, strong lens at the eye; nest two tubes and slide them to focus. Wreckage version: a
+  spectacle lens + a jeweler's loupe in a rolled sheet of *Checker Financial*. Canon-perfect physics detail:
+  a simple two-lens telescope shows everything **upside down** — Nate's first-ever view of Chess City is
+  inverted. ("It's upside down." / "Then we'll flip it when we get there.")

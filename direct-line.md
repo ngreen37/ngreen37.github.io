@@ -8,33 +8,23 @@ brand: mcpuppy
 <div class="dl-head">
   <div class="dl-eyebrow">McPuppy Studios · Patreon Perk · <span class="dl-soon">Open now</span></div>
   <h1 class="dl-title">The Direct Line</h1>
-  <p class="dl-sub">Most suggestion boxes are a void. This one isn't. Unlock it on Patreon and you write <strong>to me</strong> — one person, who actually reads it and writes back.</p>
-</div>
-
-<div class="dl-promise">
-  <div class="dl-promise-glyph">✉</div>
-  <div class="dl-promise-body">
-    <div class="dl-promise-head">My promise on this one</div>
-    <p>Through the Direct Line, <strong>I guarantee a response.</strong> Not a form reply — a real one. And if your idea is <strong>already in the pipeline</strong>, I'll tell you, show you where it sits — and find a way to <strong>reward you</strong> for landing on the same wavelength.</p>
-  </div>
+  <p class="dl-sub">Write <strong>to me</strong>. I write back.</p>
 </div>
 
 <div class="dl-steps">
-  <div class="dl-step"><span class="dl-step-n">1</span><div><strong>{% if site.patreon_url and site.patreon_url != '' %}<a href="{{ site.patreon_url }}" target="_blank" rel="noopener">Back the studio on Patreon.</a>{% else %}Back the studio on Patreon.{% endif %}</strong> The Direct Line unlocks as a perk (Patreon-funded, like the goal cards).</div></div>
-  <div class="dl-step"><span class="dl-step-n">2</span><div><strong>Send a suggestion.</strong> A game, a character, a feature, a fix — whatever you'd build if it were yours.</div></div>
-  <div class="dl-step"><span class="dl-step-n">3</span><div><strong>Get a guaranteed reply.</strong> Every message gets a real answer from me.</div></div>
-  <div class="dl-step"><span class="dl-step-n">4</span><div><strong>Already on the roadmap?</strong> You hear it first — and get rewarded for calling it (credits, a goal card, a founding credit).</div></div>
+  <div class="dl-step"><span class="dl-step-n">1</span><div><strong>{% if site.patreon_url and site.patreon_url != '' %}<a href="{{ site.patreon_url }}" target="_blank" rel="noopener">Back the studio on Patreon.</a>{% else %}Back the studio on Patreon.{% endif %}</strong> The Direct Line unlocks there.</div></div>
+  <div class="dl-step"><span class="dl-step-n">2</span><div><strong>Send a suggestion.</strong> A game, character, feature, fix.</div></div>
+  <div class="dl-step"><span class="dl-step-n">3</span><div><strong>Get a guaranteed reply.</strong> A real answer, from me.</div></div>
+  <div class="dl-step"><span class="dl-step-n">4</span><div><strong>Already on the roadmap?</strong> You hear first — and get rewarded.</div></div>
 </div>
 
 <div class="dl-levels">
   <div class="dl-levels-head">Where it sits on Patreon</div>
   <div class="dl-level dl-level--top">
     <span class="dl-level-badge dl-level-badge--top">Higher tier</span>
-    <div><strong>✉ The Direct Line.</strong> Everything above, plus a private line straight to me — one person, guaranteed reply.</div>
+    <div><strong>✉ The Direct Line.</strong> A private line straight to me.</div>
   </div>
 </div>
-
-<p class="dl-note">The funding layer is <strong>live</strong> — so the Direct Line is <strong>open</strong>. Back the studio on Patreon, message me through it, and you get a real reply. Not a form. Me.</p>
 
 <div class="dl-cta">
   {% if site.patreon_url and site.patreon_url != '' %}<a class="dl-btn" href="{{ site.patreon_url }}" target="_blank" rel="noopener">Open the Direct Line on Patreon →</a>{% else %}<a class="dl-btn" href="/mailing-list/">Tell me when it opens →</a>{% endif %}
@@ -48,14 +38,6 @@ brand: mcpuppy
 .dl-title { font-size:2.4rem; font-weight:900; color:#fff; margin:0.4rem 0 0.5rem; }
 .dl-sub { color:#cdbcf2; font-size:1.02rem; line-height:1.6; }
 .dl-sub strong { color:#f0e6ff; }
-
-.dl-promise { display:flex; gap:16px; align-items:flex-start; max-width:680px; margin:0 auto 1.8rem;
-  background:linear-gradient(135deg,#1f1147,#34206f); border:1px solid #6b5fa0; border-left:3px solid #F5C518;
-  border-radius:14px; padding:18px 20px; }
-.dl-promise-glyph { font-size:2rem; color:#F5C518; line-height:1; flex-shrink:0; }
-.dl-promise-head { color:#F5C518; font-weight:800; font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:4px; }
-.dl-promise-body p { color:#cdbcf2; font-size:0.96rem; line-height:1.6; margin:0; }
-.dl-promise-body strong { color:#fff; }
 
 .dl-steps { max-width:680px; margin:0 auto 1.6rem; display:flex; flex-direction:column; gap:10px; }
 .dl-step { display:flex; gap:14px; align-items:flex-start; background:rgba(110,95,160,0.12);

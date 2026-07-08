@@ -1,7 +1,7 @@
 ---
 layout: character
-title: Main Character
-full_name: Name Undetermined
+title: Nate
+full_name: Nate
 role: Main Character
 image: /assets/characters/Main_v01.jpg
 permalink: /characters/narrator/
@@ -24,7 +24,7 @@ The story's guide and driving force. A young man from Checker Town with big drea
 He was born and raised in Checker Town, a place where hope is in short supply and most people never leave. He has his sights set on Chess City -- not just as a destination, but as proof that a better life is possible. His path there is not straightforward: work, sacrifice, and the like all stand between him and where he wants to go.
 
 ## Role in the Story
-The main character is the lens through which we experience Checker Town, Chess City, and the world in between. His relationship with Princess is the emotional core of the series.
+Nate is the lens through which we experience Checker Town, Chess City, and the world in between. His relationship with Princess is the emotional core of the series.
 
 With their father often away, he quietly became a second father to his younger sister, [Auston](/characters/auston/) — two years younger and the person he is really doing all of this for. That paternal bond, formed before he was ever ready for it, is what turns his ambition into something selfless: he isn't only chasing a better life, he's building one big enough for her.
 

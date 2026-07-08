@@ -90,7 +90,7 @@
             <div class="nav-dd-menu" role="menu">
               <a class="page-link" role="menuitem" href="{{ '/press-pass/' | relative_url }}">Press Pass</a>
               <a class="page-link" role="menuitem" href="{{ '/direct-line/' | relative_url }}">Direct Line</a>
-              <a class="page-link" role="menuitem" href="{{ '/goods/' | relative_url }}">The Goods</a>
+              <a class="page-link" role="menuitem" href="{{ '/goods/' | relative_url }}">Merch</a>
               <a class="page-link" role="menuitem" href="{{ '/mailing-list/' | relative_url }}">Mailing List</a>
               <a class="page-link" role="menuitem" href="{{ '/educators/' | relative_url }}">For Educators</a>
             </div>
@@ -105,13 +105,9 @@
         <div class="nav-links">
           <a class="page-link" href="{{ '/games/' | relative_url }}">Games</a>
           <a class="page-link" href="{{ '/academy/' | relative_url }}">Academy</a>
-          <div class="nav-dd" data-dd>
-            <a class="page-link nav-dd-trigger" href="{{ '/the-world/' | relative_url }}" aria-haspopup="true" aria-expanded="false">The World <span class="nav-dd-caret" aria-hidden="true">&#9662;</span></a>
-            <div class="nav-dd-menu" role="menu">
-              <a class="page-link" role="menuitem" href="{{ '/the-world/' | relative_url }}">Characters &amp; Locations</a>
-              <a class="page-link" role="menuitem" href="{{ '/fan-art/' | relative_url }}">Fan Art</a>
-            </div>
-          </div>
+          <a class="page-link" href="{{ '/characters/' | relative_url }}">Characters</a>
+          <a class="page-link" href="{{ '/locations/' | relative_url }}">Locations</a>
+          <a class="page-link" href="{{ '/fan-art/' | relative_url }}">Fan Art</a>
         </div>
         <a class="nav-hop nav-hop--mcpuppy" href="{{ '/projects/' | relative_url }}">McPuppy Studios <span class="nav-hop-arrow" aria-hidden="true">&rarr;</span></a>
         {% endif %}
@@ -128,7 +124,7 @@
 
   <footer class="site-footer">
     <div class="footer-ribbon-wrap" aria-hidden="true">
-      <div class="ribbon-track">♚ ♛ ♜ ♝ ♞ ♟ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♟ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♟ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♟ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♟ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♟ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♟ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♟ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♟ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♟ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♟ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♟ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp;</div>
+      <div class="ribbon-track">♚ ♛ ♜ ♝ ♞ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp; ♚ ♛ ♜ ♝ ♞ ♙ ♖ ♗ ♘ ♕ ♔ &nbsp;</div>
     </div>
     <div class="wrapper footer-inner">
       <img src="{{ '/assets/images/mcpuppy-logo-horizontal.svg' | relative_url }}"
@@ -526,16 +522,8 @@
     </div>
   </div>
 
-  <!-- Mobile-only quick nav: icon-only (♟ games · 🎓 academy · ⬡ dossier); labels on long-press -->
-  <nav class="mnav" aria-label="Quick navigation">
-    <a class="mnav-item" href="{{ '/games/' | relative_url }}" data-label="Games">
-      <span class="mnav-ico" aria-hidden="true">&#9823;</span><span class="mnav-label">Games</span></a>
-    <a class="mnav-item" href="{{ '/academy/' | relative_url }}" data-label="Academy">
-      <span class="mnav-ico" aria-hidden="true">&#127891;</span><span class="mnav-label">Academy</span></a>
-    <a class="mnav-item" href="{{ '/dossier/' | relative_url }}" data-label="Dossier">
-      <span class="mnav-ico" aria-hidden="true">&#11041;</span><span class="mnav-label">Dossier</span></a>
-  </nav>
-
+  {% comment %} The mobile quick-nav bar was removed 2026-07-07 ("that go-to thing on the
+       bottom of the pages") — restore from git if it's ever missed. {% endcomment %}
   <script src="{{ '/assets/js/pjcc-nav.js' | relative_url }}" defer></script>
 
 

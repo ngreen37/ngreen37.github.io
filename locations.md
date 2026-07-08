@@ -39,7 +39,7 @@ permalink: /locations/
 </div>
 
 <style>
-/* Locations theme = blue "atlas" (matches the Locations pillar --c:#6bbfff on /the-world/). */
+/* Locations theme = blue "atlas" (the Locations pillar blue). */
 .loc-atlas { max-width: 900px; margin: 0 auto; }
 .loc-intro { color: #bcd6f5; line-height: 1.6; font-size: 1rem; margin-bottom: 1.4rem; }
 .loc-group { font-family: 'Share Tech Mono', ui-monospace, monospace; font-size: 12px; letter-spacing: 3px;

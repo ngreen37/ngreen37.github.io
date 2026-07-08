@@ -5436,7 +5436,7 @@ body.theme-classified {
 }
 
 /* Characters theme = violet "personnel dossier" (recoloured 2026-07-06,
-   matching the Characters pillar --c:#a879ff on /the-world/). */
+   the Characters pillar purple --c:#a879ff). */
 .char-flip-front {
   background: rgba(46, 26, 78, 0.55);
   border: 1px solid rgba(168, 121, 255, 0.4);
@@ -5721,41 +5721,93 @@ body.theme-classified {
    World Status Ticker
    ============================================================= */
 
+/* A formal broadcast ticker: gold station plate on the left (with a live dot),
+   hard gold rules top & bottom, and the headline crawl beside it. */
 .world-ticker-wrap {
   position: relative;
+  display: flex;
+  align-items: stretch;
   margin: 24px -28px 0;
-  background: #000;
-  border-top: 1px solid rgba(245, 197, 24, 0.22);
-  border-bottom: 1px solid rgba(245, 197, 24, 0.22);
+  background: #05030d;
+  border-top: 2px solid #F5C518;
+  border-bottom: 2px solid #F5C518;
   overflow: hidden;
   cursor: pointer;
 }
 
-.ticker-eyebrow {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  color: rgba(245, 197, 24, 0.42);
-  padding: 7px 28px 0;
+.ticker-badge {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #F5C518;
+  color: #1a0f3d;
+  padding: 8px 16px 8px 20px;
+  /* an angled trailing edge, like a lower-third plate */
+  clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+}
+
+.ticker-badge-name {
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  line-height: 1.25;
   text-transform: uppercase;
 }
 
-.ticker-tap-hint { color: rgba(245, 197, 24, 0.3); letter-spacing: 0.14em; }
+.ticker-badge-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: #fff;
+  background: #c8102e;
+  border-radius: 3px;
+  padding: 3px 7px;
+
+  i {
+    width: 6px; height: 6px; border-radius: 50%; background: #fff;
+    animation: ticker-live-blink 1.4s steps(1) infinite;
+  }
+}
+
+@keyframes ticker-live-blink {
+  0%, 60% { opacity: 1; }
+  61%, 100% { opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-badge-live i { animation: none; }
+}
 
 /* a small badge when the reader has paused the ticker */
 .world-ticker-wrap.is-paused::after {
   content: '⏸ PAUSED — TAP TO RESUME';
-  position: absolute; top: 6px; right: 28px; z-index: 3;
+  position: absolute; top: 50%; right: 28px; transform: translateY(-50%); z-index: 3;
   font-family: 'Share Tech Mono', monospace; font-size: 9px; letter-spacing: 0.14em;
   color: #ff8fd0;
+  background: rgba(5, 3, 13, 0.92);
+  padding: 3px 8px;
 }
 
 .ticker-outer {
+  flex: 1 1 auto;
+  min-width: 0;
   overflow: hidden;
   white-space: nowrap;
-  padding: 5px 0 9px;
+  align-self: center;
+  padding: 10px 0;
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
   mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
+}
+
+@media (max-width: 560px) {
+  .ticker-badge { padding: 6px 12px 6px 14px; gap: 7px; }
+  .ticker-badge-name { font-size: 9px; }
 }
 
 .ticker-track {

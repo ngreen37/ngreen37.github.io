@@ -6,8 +6,6 @@ permalink: /fan-art/
 
 <div class="fa-head">
   <h1 class="fa-title">Fan Art</h1>
-  <p class="fa-sub no-print">Drop your picture into the card (or click the frame), then
-  <strong>Print</strong> — choose “Save as PDF” to keep a file. Your picture stays on your device.</p>
 </div>
 
 <div class="fa-tools no-print">
@@ -19,7 +17,6 @@ permalink: /fan-art/
 <div class="fan-card" id="fan-card">
   <div class="fc-eyebrow">Fan Art</div>
   <div class="fc-brand"><span class="fc-star">★</span>PJCC<span class="fc-star">★</span></div>
-  <div class="fc-brand-sub">Princess and the Journey to Chess City</div>
   <div class="fc-frame" id="fa-frame">
     <img id="fa-img" alt="PJCC fan art">
     <div class="fc-hint no-print" id="fa-hint"><span class="fc-hint-big">＋🎨</span>Click here, or drag your picture in</div>
@@ -48,12 +45,11 @@ permalink: /fan-art/
   </div>
   {% else %}
   <div class="fa-empty">
-    <div class="fa-empty-glyph">🖼️</div>
-    <p>The wall is empty — <strong>for now.</strong> Be the first to put something on it.</p>
+    <p>Wall is empty!</p>
+    <a class="fa-empty-plus" href="/contact/" aria-label="Send in your art">＋</a>
   </div>
   {% endif %}
-  <p class="fa-submit-note">Drew, built, knitted, or rendered something PJCC?
-  <a href="/contact/">Send it in</a> and I’ll hang it here. Nothing goes on the wall unless you send it.</p>
+  <p class="fa-submit-note"><a href="/contact/">Send it in</a> and I’ll hang it here.</p>
 </section>
 
 <style>
@@ -100,9 +96,16 @@ permalink: /fan-art/
 .fa-piece figcaption { padding:10px 12px; font-size:0.82rem; }
 .fa-piece-title { color:#f0e6ff; font-weight:700; }
 .fa-piece-by { color:#9a8fc0; }
-.fa-empty { text-align:center; padding:2.4rem 1rem; border:1px dashed #4a3a86; border-radius:14px; margin:1rem 0; color:#cdbcf2; }
-.fa-empty-glyph { font-size:2.4rem; margin-bottom:8px; }
-.fa-empty strong { color:#F5C518; }
+.fa-empty { text-align:center; padding:2rem 1rem 2.4rem; border:1px dashed #4a3a86; border-radius:14px; margin:1rem 0; color:#cdbcf2; }
+/* the inviting plus — a warm, glowing button that begs to be pressed */
+.fa-empty-plus { display:inline-flex; align-items:center; justify-content:center; width:72px; height:72px;
+  margin-top:10px; border-radius:50%; text-decoration:none; font-size:2.4rem; line-height:1; font-weight:800;
+  color:#1a0f3d; background:linear-gradient(135deg,#F5C518,#ffd740); box-shadow:0 0 26px -6px rgba(245,197,24,0.8);
+  animation:faPlusBreathe 2.6s ease-in-out infinite; transition:transform .12s; }
+.fa-empty-plus:hover { transform:scale(1.1); animation-play-state:paused; }
+@keyframes faPlusBreathe { 0%,100% { transform:scale(1); box-shadow:0 0 20px -8px rgba(245,197,24,0.7); }
+  50% { transform:scale(1.06); box-shadow:0 0 34px -4px rgba(245,197,24,0.95); } }
+@media (prefers-reduced-motion: reduce){ .fa-empty-plus { animation:none; } }
 .fa-submit-note { text-align:center; color:#9a8fc0; font-size:0.86rem; margin-top:0.6rem; }
 .fa-submit-note a { color:#F5C518; font-weight:700; }
 

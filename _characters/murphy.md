@@ -12,7 +12,7 @@ dossier_secret: For all his doom & gloom, his most valuable item is his emergenc
 last_seen: CHECKER TOWN — THE GATE
 ---
 
-**Gerald Murphy** — *"Jerry"* to everyone — is the family pessimist. Main Character's older cousin.  The surname fits: this is the family that lent its name to **Murphy's Law** (*whatever can go wrong, will*), and Jerry lives by it like scripture. Where the Uncle has his self-belief, and [Robert](/characters/robert/) carries the gospel of mindset, Jerry carries the dread: he is *certain* Chess City is no promised land but a nest of **evil chess pieces** — pieces with mouths and eyes, watching from behind the gates. Everyone calls him paranoid. In **[his game](/games/murphys-law/)**, he's right.
+**Gerald Murphy** — *"Jerry"* to everyone — is the family pessimist. Nate's older cousin.  The surname fits: this is the family that lent its name to **Murphy's Law** (*whatever can go wrong, will*), and Jerry lives by it like scripture. Where the Uncle has his self-belief, and [Robert](/characters/robert/) carries the gospel of mindset, Jerry carries the dread: he is *certain* Chess City is no promised land but a nest of **evil chess pieces** — pieces with mouths and eyes, watching from behind the gates. Everyone calls him paranoid. In **[his game](/games/murphys-law/)**, he's right.
 
 ## Traits
 - His worry is a real radar: it **catches threats other people walk straight into** — the loose plank, the ambush, the trap that smiles.

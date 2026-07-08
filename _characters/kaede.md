@@ -12,7 +12,7 @@ dossier_secret: There is a puzzle that subject has obsessed over for years.  Eve
 last_seen: CHECKER TOWN
 ---
 
-A girl the same age as the main character, from Shogi Island. In Checker Town, she attends school and runs a tiny lending library called **the Reading Room (読書室)** 
+A girl the same age as Nate, from Shogi Island. In Checker Town, she attends school and runs a tiny lending library called **the Reading Room (読書室)** 
 
 ## Traits
 - Patient, warm, and generous 

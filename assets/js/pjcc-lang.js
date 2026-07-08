@@ -53,13 +53,13 @@
     'About / Contact': '概要・連絡', 'Contact': '連絡先', 'About': '概要', 'Support': 'サポート',
     'Leaderboard': 'ランキング', 'Leaderboards': 'ランキング', 'Hall of Fame': '殿堂',
     'Home': 'ホーム', 'Patreon': 'Patreon', 'Coming Soon': '近日公開', 'The World': 'ザ・ワールド',
-    'The Goods': 'グッズ', 'The Direct Line': 'ダイレクトライン', 'Direct Line': 'ダイレクトライン',
+    'The Goods': 'グッズ', 'Merch': 'グッズ', 'The Direct Line': 'ダイレクトライン', 'Direct Line': 'ダイレクトライン',
     'Podcast & Blog': 'ポッドキャスト・ブログ', 'Play Now': 'プレイ', 'Play': 'プレイ',
     'Read the Blog': 'ブログを読む', 'field notes': 'フィールドノート',
     'Princess and the Journey to Chess City': 'プリンセスとチェスシティへの旅',
     'Checker Town': 'チェッカータウン', 'Chess City': 'チェスシティ', 'Shogi Island': '将棋の島',
     'The Reading Room': '読書室', 'The Gauntlet': 'ガントレット', 'The Battle Room': 'バトルルーム',
-    'The Gambit': 'ザ・ギャンビット', 'Princess': 'プリンセス', 'Sign in': 'サインイン'
+    'The Gambit': 'ザ・ギャンビット', 'Princess': 'プリンセス', 'Sign in': 'サインイン', 'Sign out': 'サインアウト', 'Characters': 'キャラクター', 'Locations': 'ロケーション'
   };
 
   // memory cache of machine translations (loaded from localStorage)

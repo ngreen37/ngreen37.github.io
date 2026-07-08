@@ -145,8 +145,8 @@ A real tactical position (White Kf1/Qd1 vs Black Kd8/Rd6) is displayed as an int
 Fetches live ratings from the chess.com public API for `ngreen37`.
 - Displays Daily, Blitz, and Rapid ratings with animated count-up
 
-### Narrator Work Schedule (Narrator Character Page)
-A live widget shows what the main character is currently doing based on real-world time and day:
+### Nate's Work Schedule (Narrator Character Page)
+A live widget shows what Nate is currently doing based on real-world time and day:
 - Weekdays 8am–3pm: CHECKER TOWN ELEMENTARY / TEACHING
 - Weekdays 3–5pm: IN TRANSIT / COMMUTING
 - Weekdays 5–9pm: HOME — CHECKER TOWN / OFF DUTY

@@ -14,7 +14,26 @@ permalink: /leaderboards/
     <span class="lbtv-show">OPERATIVE STANDINGS</span>
   </div>
 
-  <p class="lb-intro lbtv-sub">Standings across the McPuppy Studios games. <strong>Overall</strong> ranks every operative by total credits earned everywhere; each channel shows the best runs in that game. Sign in on any game page to claim your spot.</p>
+  <p class="lb-intro lbtv-sub">Standings across the McPuppy Studios games. <strong>Overall</strong> ranks every operative by total credits earned everywhere; each channel shows the best runs in that game. <span id="lb-signin-hint">Sign in on any game page to claim your spot.</span></p>
+  <script>
+  // The sign-in nudge only shows while signed out; signed in, it greets you instead.
+  (function () {
+    function upd() {
+      var el = document.getElementById('lb-signin-hint');
+      if (!el || !window.PJCC || !PJCC.enabled) return;
+      var prof = PJCC.getProfile && PJCC.getProfile();
+      if (PJCC.currentUser && PJCC.currentUser()) {
+        el.innerHTML = prof && prof.codename
+          ? 'Signed in as <strong>' + String(prof.codename).replace(/[&<>"]/g, '') + '</strong> — your runs count.'
+          : 'Signed in — your runs count.';
+      } else {
+        el.textContent = 'Sign in on any game page to claim your spot.';
+      }
+    }
+    function arm() { if (window.PJCC && PJCC.ready) { PJCC.onChange(upd); PJCC.ready.then(upd); } else { setTimeout(arm, 300); } }
+    arm();
+  })();
+  </script>
 
   <a class="lb-hof-link lbtv-hof" href="{{ '/hall-of-fame/' | relative_url }}">
     <span class="lbtv-hof-cup">🏆</span>

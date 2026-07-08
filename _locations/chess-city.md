@@ -28,7 +28,7 @@ The destination. Chess City is well-to-do, prosperous, and deliberately difficul
 - Family and friends of Checker Town residents often live here, creating a painful separation for those left behind
 
 ## Who Lives Here
-The Rival's entire family lives in Chess City. This is the central wound of his character -- and the engine behind everything he does. Main Character works here for a time, and his Uncle lives there, as well. 
+The Rival's entire family lives in Chess City. This is the central wound of his character -- and the engine behind everything he does. Nate works here for a time, and his Uncle lives there, as well. 
 
 ## Role in the Story
 Chess City is the prize, the promise, and the obstacle. It represents a better life -- but one that has to be fought for, and one that comes with its own costs once you arrive.

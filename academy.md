@@ -8,8 +8,6 @@ permalink: /academy/
 
 <div class="ac-hero">
   <div class="ac-crest">♚</div>
-  <p class="ac-tagline">Chess, taught by the cast of Checker Town. Every lesson is just a game you already have — play it, and you climb from <strong>Checker</strong> to <strong>Chess City Citizen</strong>.</p>
-  <p class="ac-safe">🔒 No sign-up · nothing leaves this device · safe for kids &amp; classrooms.</p>
 </div>
 
 <!-- ===== Belt + progress ===== -->
@@ -45,7 +43,7 @@ permalink: /academy/
 <!-- ===== Placement exam ===== -->
 <div class="ac-place" id="ac-place">
   <div class="ac-place-head">
-    <div class="ac-place-lead"><b>New here?</b> A 60-second placement exam points you at the right track.</div>
+    <div class="ac-place-lead"><b>New here?</b></div>
     <button class="ac-place-start" id="ac-place-start" type="button">Take the exam ▸</button>
   </div>
   <div class="ac-place-quiz" id="ac-place-quiz" hidden></div>
@@ -56,7 +54,7 @@ permalink: /academy/
 <div class="ac-hw" id="ac-hw">
   <div class="ac-hw-flame" id="ac-hw-flame">🔥</div>
   <div class="ac-hw-body">
-    <div class="ac-hw-eyebrow">Daily homework · keep the streak alive</div>
+    <div class="ac-hw-eyebrow">Daily homework</div>
     <div class="ac-hw-task" id="ac-hw-task">—</div>
     <div class="ac-hw-status" id="ac-hw-status">—</div>
   </div>
@@ -65,7 +63,6 @@ permalink: /academy/
 
 <!-- ===== Courses ===== -->
 <h2 class="ac-h2">The full path</h2>
-<p class="ac-class-intro">Six teachers, one belt at the end. Work down the list — or jump straight to whatever you feel like practicing.</p>
 <div class="ac-courses" id="ac-courses"></div>
 
 <!-- ===== Free-play board (collapsed) ===== -->
@@ -85,7 +82,7 @@ permalink: /academy/
 <details class="ac-fold ac-fold-teacher">
 <summary><span class="ac-fold-t">🏫 For teachers &amp; parents</span><span class="ac-fold-hint">worksheets · certificates · class codes · progress export</span></summary>
 <div class="ac-fold-body">
-<p class="ac-class-intro">Print a worksheet packet, hand out a class code, and track the class. Put the student's name below and it flows onto their certificate and worksheet.</p>
+<p class="ac-class-intro">The student's name below flows onto every printout.</p>
 <div class="ac-class-row">
   <label class="ac-name-field">Student name
     <input type="text" id="ac-student" placeholder="e.g. Princess" maxlength="40" autocomplete="off">
@@ -100,7 +97,7 @@ permalink: /academy/
 <div class="ac-tools">
   <div class="ac-tool">
     <div class="ac-tool-h">🎟 Class code</div>
-    <p class="ac-tool-p">Teachers: generate a code for your class and hand it out. Students enter it once — it rides along on their worksheet &amp; certificate. <span class="ac-muted">(Local to each device — no accounts.)</span></p>
+    <p class="ac-tool-p">Generate a code, hand it out. <span class="ac-muted">(Local — no accounts.)</span></p>
     <div class="ac-tool-row">
       <button class="ac-print-btn" id="ac-class-gen" type="button">Generate class code</button>
       <input id="ac-class-join" class="ac-tool-in" placeholder="enter a class code" maxlength="12" autocomplete="off">
@@ -110,7 +107,7 @@ permalink: /academy/
   </div>
   <div class="ac-tool">
     <div class="ac-tool-h">📊 Progress export</div>
-    <p class="ac-tool-p">Save this student's progress as a file, copy a summary for your records, or load a file back in.</p>
+    <p class="ac-tool-p">Save progress to a file, or load it back.</p>
     <div class="ac-tool-row">
       <button class="ac-print-btn" id="ac-export" type="button">⬇ Export (.json)</button>
       <button class="ac-print-btn" id="ac-copy-sum" type="button">⧉ Copy summary</button>
@@ -120,7 +117,7 @@ permalink: /academy/
   </div>
   <div class="ac-tool">
     <div class="ac-tool-h">✅ Verify a certificate</div>
-    <p class="ac-tool-p">Paste a certificate code (the <code>CTA-…</code> line on any printed certificate) to confirm what it certifies. Tamper-evident, checked right here.</p>
+    <p class="ac-tool-p">Paste a certificate's <code>CTA-…</code> code to confirm it.</p>
     <div class="ac-tool-row">
       <input id="ac-verify-in" class="ac-tool-in ac-verify-in" placeholder="CTA-…" autocomplete="off">
       <button class="ac-print-btn" id="ac-verify-btn" type="button">Verify</button>
@@ -214,8 +211,8 @@ permalink: /academy/
       <tr><td>2</td><td>How the pieces move</td><td>Auston · Sand Mine / Knight's Tour</td><td>Worksheet 2</td></tr>
       <tr><td>3</td><td>Openings — the first moves</td><td>Argus · The Pirc Protocol</td><td>Play one line</td></tr>
       <tr><td>4</td><td>Tactics — forks &amp; pins</td><td>The Rival · Fork in the Road</td><td>Worksheet 3 · solve 3</td></tr>
-      <tr><td>5</td><td>Strategy — the long game</td><td>The Father · Siege on Chess City</td><td>Play one siege</td></tr>
-      <tr><td>6</td><td>Vision &amp; the island</td><td>Princess / Kaede &amp; Matsu · Blindfold · Shogi</td><td>Solve 5 blind</td></tr>
+      <tr><td>5</td><td>Strategy — the long game</td><td>Maxwell · Siege on Chess City</td><td>Play one siege</td></tr>
+      <tr><td>6</td><td>Board vision</td><td>Princess · Blindfold Puzzles</td><td>Solve 5 blind</td></tr>
     </table>
     <p class="ws-foot">Belts: a new belt every ~3–4 lessons (see the live ladder on the Academy page). Print each student's certificate at the end — the code on it verifies right on the site.</p>
   </div>
@@ -259,7 +256,7 @@ window.ACCERT = (function () {
   var COURSES = [
     { id: 'fundamentals', who: 'Auston', slug: 'auston', ico: '💣', accent: '#ffd36b',
       title: "Auston's Bootcamp", sub: 'Fundamentals — the board & the pieces',
-      blurb: '"You gotta know where everything is before it goes boom." The squares, the files, the ranks.',
+      blurb: '"You gotta know where everything is before it goes boom."',
       lessons: [
         { t: 'Learn the coordinates', d: 'Play one run of Notation Blitz.', go: 'notation-run', done: function(){ return best('notation-run') >= 1; } },
         { t: 'Read at tempo', d: 'Score 600+ in a Notation Blitz run.', go: 'notation-run', done: function(){ return best('notation-run') >= 600; } },
@@ -268,7 +265,7 @@ window.ACCERT = (function () {
       ] },
     { id: 'openings', who: 'Argus', slug: 'argus', ico: '♘', accent: '#8fe3ff',
       title: "Argus's Opening Repertoire", sub: 'Openings — the first ten moves',
-      blurb: 'The loyal guard-dog drills the opening book until it is muscle memory.',
+      blurb: 'Drill the book until it is muscle memory.',
       lessons: [
         { t: 'Play the book', d: 'Complete a line in The Pirc Protocol.', go: 'pirc-protocol', done: function(){ return best('pirc-protocol') >= 1; } },
         { t: 'Know the ideas', d: 'Reach 300+ in The Pirc Protocol.', go: 'pirc-protocol', done: function(){ return best('pirc-protocol') >= 300; } },
@@ -276,7 +273,7 @@ window.ACCERT = (function () {
       ] },
     { id: 'tactics', who: 'The Rival', slug: 'rival', ico: '♞', accent: '#ff8fd0',
       title: "The Rival's Tactics Dojo", sub: 'Tactics — forks, pins, skewers, mates',
-      blurb: 'The sharp teen from Chess City shows no mercy. Find the move that wins material.',
+      blurb: 'Find the move that wins material.',
       lessons: [
         { t: 'First forks', d: 'Solve 3 puzzles in Fork in the Road.', go: 'fork-in-the-road', done: function(){ return best('fork-in-the-road') >= 3; } },
         { t: 'Pins & skewers', d: 'Solve 8 in Fork in the Road.', go: 'fork-in-the-road', done: function(){ return best('fork-in-the-road') >= 8; } },
@@ -285,39 +282,30 @@ window.ACCERT = (function () {
       ] },
     { id: 'vision', who: 'Princess', slug: 'princess', ico: '♛', accent: '#F5C518',
       title: "Princess's Vision Hall", sub: 'Board vision & endgames',
-      blurb: 'Princess plays it all in her head. Train the mind’s eye.',
+      blurb: 'Princess plays it all in her head.',
       lessons: [
         { t: 'See without seeing', d: 'Solve 5 Blindfold Puzzles.', go: 'blindfold-puzzles', done: function(){ return best('blindfold') >= 5; } },
         { t: 'Deeper vision', d: 'Solve 12 Blindfold Puzzles.', go: 'blindfold-puzzles', done: function(){ return best('blindfold') >= 12; } },
-        { t: "The Mind's Eye", d: 'Beat the CEO in a full blind game.', go: 'blindfold-puzzles', done: function(){ return mindsEyeTrophy(); } },
-        { t: 'Island cross-training', d: 'Solve 3 problems on Shogi Island.', go: 'shogi-island', done: function(){ return best('shogi-island') >= 3; } }
+        { t: "The Mind's Eye", d: 'Beat the CEO in a full blind game.', go: 'blindfold-puzzles', done: function(){ return mindsEyeTrophy(); } }
       ] },
-    { id: 'strategy', who: 'The Father', slug: 'father', ico: '🧰', accent: '#9fe8ff',
-      title: "The Father's Long Game", sub: 'Strategy — plans, structure & the long view',
-      blurb: 'Dad seems scattered, but nobody plans further ahead. Think in plans, not just moves.',
+    { id: 'strategy', who: 'Maxwell', slug: 'maxwell', ico: '♖', accent: '#9fe8ff',
+      title: "Maxwell's Long Game", sub: 'Strategy — plans, structure & the long view',
+      blurb: 'Nobody sits with a position longer. Think in plans, not just moves.',
       lessons: [
         { t: 'Hold the line', d: 'Play a round of Siege on Chess City.', go: 'tower-defense', done: function(){ return best('tower-defense') >= 1; } },
         { t: 'Plan the route', d: 'Complete a Knight\'s Tour.', go: 'knights-tour', done: function(){ return best('knights-tour') >= 1; } },
         { t: 'Take the long way', d: 'Fly a run of Sky Run.', go: 'sky-run', done: function(){ return best('sky-run') >= 1; } }
-      ] },
-    { id: 'shogi', who: 'Kaede', slug: 'kaede', ico: '⛩', accent: '#ffb066',
-      title: 'The Shogi Dojo', sub: 'The island game — shogi',
-      blurb: 'Kaede leads the island\'s game; her brother Matsu helps from Shogi Island. Auston, their very first student, trains right beside you.',
-      lessons: [
-        { t: 'Catch the Lion', d: 'Win once on Shogi Island.', go: 'shogi-island', done: function(){ return best('shogi-island') >= 1; } },
-        { t: 'Drops & reach', d: 'Solve 3 on Shogi Island.', go: 'shogi-island', done: function(){ return best('shogi-island') >= 3; } },
-        { t: "Sensei's challenge", d: 'Solve 6 on Shogi Island.', go: 'shogi-island', done: function(){ return best('shogi-island') >= 6; } }
       ] }
   ];
 
   var BELTS = [
     { n: 'Checker', ico: '⛂', need: 0 },
     { n: 'Pawn', ico: '♙', need: 3 },
-    { n: 'Knight', ico: '♘', need: 7 },
-    { n: 'Bishop', ico: '♗', need: 11 },
-    { n: 'Rook', ico: '♖', need: 15 },
-    { n: 'Queen', ico: '♕', need: 19 },
-    { n: 'Chess City Citizen', ico: '♚', need: 22 }
+    { n: 'Knight', ico: '♘', need: 6 },
+    { n: 'Bishop', ico: '♗', need: 9 },
+    { n: 'Rook', ico: '♖', need: 12 },
+    { n: 'Queen', ico: '♕', need: 15 },
+    { n: 'Chess City Citizen', ico: '♚', need: 17 }
   ];
 
   // ---- progress ----
@@ -506,8 +494,7 @@ window.ACCERT = (function () {
     { q: 'Which piece jumps in an "L" shape?', a: ['Bishop', 'Knight', 'Rook', 'Pawn'], c: 1 },
     { q: 'A bishop moves along…', a: ['Files', 'Ranks', 'Diagonals', 'L-shapes'], c: 2 },
     { q: 'Attacking two pieces with one move is a…', a: ['Pin', 'Skewer', 'Fork', 'Castle'], c: 2 },
-    { q: 'Is the square d5 light or dark?', a: ['Light', 'Dark'], c: 0 },
-    { q: 'On Shogi Island, captured pieces…', a: ['Leave play', 'Switch to your side', 'Become pawns', 'Double in value'], c: 1 }
+    { q: 'Is the square d5 light or dark?', a: ['Light', 'Dark'], c: 0 }
   ];
   var pStart = $('ac-place-start');
   if (pStart) pStart.onclick = function () {
@@ -546,7 +533,6 @@ window.ACCERT = (function () {
       { t: 'Solve 5 in Fork in the Road', go: 'fork-in-the-road', ok: function () { return best('fork-in-the-road') >= 5; } },
       { t: 'Reach 300+ in The Pirc Protocol', go: 'pirc-protocol', ok: function () { return best('pirc-protocol') >= 300; } },
       { t: 'Solve 3 Blindfold Puzzles', go: 'blindfold-puzzles', ok: function () { return best('blindfold') >= 3; } },
-      { t: 'Win once on Shogi Island', go: 'shogi-island', ok: function () { return best('shogi-island') >= 1; } },
       { t: 'Play a round of Siege on Chess City', go: 'tower-defense', ok: function () { return best('tower-defense') >= 1; } },
       { t: "Complete a Knight's Tour", go: 'knights-tour', ok: function () { return best('knights-tour') >= 1; } }
     ];

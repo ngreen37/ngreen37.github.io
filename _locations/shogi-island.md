@@ -19,7 +19,7 @@ A nearby island where chess is a footnote and Shogi is everything. Shogi Island 
 - Has its own distinct culture, separate from the chess-and-checkers world of the mainland
 
 ## Role in the Story
-Shogi Island exists at the edges of the story — a reminder that the world is bigger than the chess-versus-checkers divide. Whether the narrator or Princess passes through here remains to be seen.
+Shogi Island exists at the edges of the story — a reminder that the world is bigger than the chess-versus-checkers divide. Whether Nate or Princess passes through here remains to be seen.
 
 *旅人よ、ご注意を。ここのルールは違う。*
 *(Traveler, take heed. The rules here are different.)*

@@ -63,7 +63,7 @@ permalink: /constellation/
       </g>
 
       <!-- Narrator (top center, main) -->
-      <g class="const-node-group" data-char="narrator" data-name="The Narrator" data-role="Main Character" data-url="/characters/narrator/">
+      <g class="const-node-group" data-char="narrator" data-name="Nate" data-role="Main Character" data-url="/characters/narrator/">
         <circle cx="400" cy="100" r="28" fill="rgba(196,181,253,0.07)" stroke="rgba(196,181,253,0.12)" stroke-width="1" class="const-node-ring"/>
         <circle cx="400" cy="100" r="19" fill="rgba(196,181,253,0.16)" stroke="rgba(196,181,253,0.65)" stroke-width="2" filter="url(#node-glow)"/>
         <text x="400" y="105" text-anchor="middle" font-size="14" fill="rgba(196,181,253,0.85)" pointer-events="none">♟</text>

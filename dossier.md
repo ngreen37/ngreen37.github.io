@@ -78,7 +78,7 @@ permalink: /dossier/
 <!-- ════════ YOUR IDENTITY — the Forge (instant, works signed-out & offline) ════════ -->
 <h2 class="dsr-h">◆ Your identity</h2>
 <div id="forge-mount"></div>
-<p class="pjcc-sub" style="margin-top:6px">Build your operative <em>and</em> your companion — base, skin tone, aura, headwear, emblem, name, and story. Change anything, any time. Saved on this device; <a href="#dossier">sign in</a> to carry it across every device.</p>
+<p class="pjcc-sub" style="margin-top:6px" id="forge-sync-note">Build your operative <em>and</em> your companion — base, skin tone, aura, headwear, emblem, name, and story. Change anything, any time. <span id="forge-sync-state">Saved on this device; <a href="#dossier">sign in</a> to carry it across every device.</span></p>
 
 <!-- ════════ YOUR OPERATIVE (loads with your account) ════════ -->
 <h2 class="dsr-h" id="dossier">◆ Your operative</h2>
@@ -199,8 +199,13 @@ permalink: /dossier/
     document.getElementById('dsr-login').onclick = function () {
       var email = document.getElementById('dsr-email').value.trim();
       if (!email) return;
+      var btn = document.getElementById('dsr-login');
+      if (btn.disabled) return;                       // one email per click, not per tap-tap
+      btn.disabled = true; btn.textContent = 'Sending…';
       PJCC.signInMagic(email).then(function () {
         document.getElementById('dsr-msg').textContent = '✉ Check your email for the login link, then return here.';
+      }).catch(function () {
+        btn.disabled = false; btn.textContent = 'Send login link';
       });
     };
   }
@@ -237,7 +242,8 @@ permalink: /dossier/
       '<span class="pjcc-spacer"></span>' +
       '<button class="pjcc-btn" id="dsr-share">📸 Share card</button>' +
       '<a class="pjcc-trophy" href="/shopkeeper/">🛒 Shopkeeper</a>' +
-      '<a class="pjcc-trophy" href="/leaderboards/">🏆 Leaderboards</a></div>';
+      '<a class="pjcc-trophy" href="/leaderboards/">🏆 Leaderboards</a>' +
+      '<button class="pjcc-btn-ghost" id="dsr-out">Sign out</button></div>';
 
     var xpPct = lvl.span ? Math.round(lvl.into / lvl.span * 100) : 100;
     html += '<div class="dsr-companion">' +
@@ -329,6 +335,8 @@ permalink: /dossier/
     };
     var shareBtn = document.getElementById('dsr-share');
     if (shareBtn) shareBtn.onclick = function () { shareCard(prof, rank, lvl, credits, theme); };
+    var outBtn = document.getElementById('dsr-out');
+    if (outBtn) outBtn.onclick = function () { PJCC.signOut().then(render); };
   }
 
   function shareCard(prof, rank, lvl, credits, theme) {
@@ -362,8 +370,17 @@ permalink: /dossier/
     }, 'image/png');
   }
 
-  PJCC.onChange(render);
-  PJCC.ready.then(render);
+  // The Forge's "sign in to sync" line only makes sense while signed OUT —
+  // once you're in, it flips to a synced note instead of nagging.
+  function syncNote() {
+    var el = document.getElementById('forge-sync-state');
+    if (!el) return;
+    if (PJCC.enabled && PJCC.currentUser()) el.innerHTML = '<span style="color:#6bffb8">✓ Signed in — synced across your devices.</span>';
+    else el.innerHTML = 'Saved on this device; <a href="#dossier">sign in</a> to carry it across every device.';
+  }
+
+  PJCC.onChange(function () { render(); syncNote(); });
+  PJCC.ready.then(function () { render(); syncNote(); });
 })();
 </script>
 

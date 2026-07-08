@@ -21,6 +21,6 @@ Perhaps the Wild, who look good despite being down 2-1 in the series, can go all
 ### What's next:
   - Well it's still early on a Saturday and my early errand-running is done and so is my nice walk with a friend (and of course Princess).  I hope to get the sea scene started, since I have a block of time to work
     - A few weeks ago I built a basic chessboard in Blender that uses a sine/cosine wave function (using Python code). It moves as if on water, so the idea to me is/was obvious:  Build a Sea Chessboard.  There's a sea that separates Checker Town and Chess City, so weave that into the storytelling.  
-      - Maybe Main Character gets seasick, let's plant that early in the story.  
+      - Maybe Nate gets seasick, let's plant that early in the story.  
       - Princess needs a way to gain equity as a chess player, so that is a perfect opportunity (I'm thinking the chess games are in a battle-room style, like Ender's Game sort of. Maybe there is a gamepad or similar device that is used, that Princess can learn to control)
     - And, importantly, a quick five-second sea animation, with cool aquatic themed pieces, is PERFECT for a portion of a thirty-second trailer, which is one of my early goals

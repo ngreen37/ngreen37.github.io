@@ -19,18 +19,7 @@ layout: default
   <p class="hero-eyebrow">McPuppy Studios Presents</p>
   <h1 class="hero-title">Princess and the Journey<br>to Chess City</h1>
   <p class="hero-subtitle">A cartoon series in progress</p>
-  <div class="hero-cta-row">
-    <a class="hero-cta hero-cta--games" href="{{ '/games/' | relative_url }}"><span aria-hidden="true">&#9823;</span> Play the Games</a>
-  </div>
 </section>
-<style>
-.hero-cta-row { display: flex; justify-content: center; gap: 12px; margin: 18px 0 2px; flex-wrap: wrap; }
-.hero-cta { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; font-weight: 800;
-  font-size: 1.02rem; border-radius: 999px; padding: 12px 26px; transition: transform .12s, box-shadow .12s, filter .12s; }
-.hero-cta--games { background: linear-gradient(135deg, #F5C518, #ffd740); color: #1a0f3d;
-  box-shadow: 0 0 26px -6px rgba(245,197,24,0.7); }
-.hero-cta--games:hover { transform: translateY(-2px); filter: brightness(1.05); box-shadow: 0 0 34px -4px rgba(245,197,24,0.85); }
-</style>
 
 {% comment %} ── 1b. PLAY STRIP — The Gauntlet (moved here from /games/) ── {% endcomment %}
 <section class="home-play">
@@ -43,7 +32,7 @@ layout: default
     </div>
     <div class="hg-side">
       <div class="hg-rank" id="hg-rank" hidden></div>
-      <span class="hg-cta" id="hg-cta">▶ BEGIN THE CLIMB</span>
+      <span class="hg-cta" id="hg-cta">Begin</span>
     </div>
   </a>
 </section>
@@ -97,19 +86,16 @@ layout: default
     for (var k = 0; k < NAMES.length; k++) { h += '<span class="hg-pip ' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></span>'; }
     pipHost.innerHTML = h; }
 
-  var res = document.getElementById('hg-resume'), cta = document.getElementById('hg-cta'),
+  var res = document.getElementById('hg-resume'),
       link = document.getElementById('home-gauntlet'), rankEl = document.getElementById('hg-rank');
   var base = '{{ "/games/the-gauntlet/" | relative_url }}';
   if (cleared === 0) {
     if (res) res.innerHTML = 'Begin the climb — <b>Floor 1: ' + NAMES[0] + '</b>.';
-    if (cta) cta.textContent = '▶ BEGIN THE CLIMB';
   } else if (cur >= NAMES.length) {
     if (res) res.innerHTML = '<b>Crowned.</b> All ten floors cleared — rematch anyone in the tower.';
-    if (cta) cta.textContent = '♛ THE TOWER';
     if (link) link.setAttribute('href', base + '#climb');
   } else {
     if (res) res.innerHTML = 'Floor ' + (cur + 1) + ' of 10 — <b>' + NAMES[cur] + '</b> awaits.';
-    if (cta) cta.textContent = '▶ CONTINUE THE CLIMB';
     if (link) link.setAttribute('href', base + '#climb');
   }
   if (rankEl && cleared > 0) { rankEl.textContent = 'CLIMB RANK · ' + RANKS[cleared]; rankEl.hidden = false; }
@@ -120,17 +106,21 @@ layout: default
 <section class="home-about">
   <p>
     <strong>Princess and the Journey to Chess City</strong> is an original animated universe revolved around the game of chess.
-    It follows Princess, a chess-playing dog, and the young man who travels alongside her as they navigate life in Checker Town,
+    It follows Princess, a chess-playing dog, and Nate, the young man who travels alongside her, as they navigate life in Checker Town,
     a struggling community built from large checker pieces, and chase a greater life beyond.
   </p>
 </section>
 
-{% comment %} ── 3. WORLD STATUS TICKER ───────────────────────────────
-   In-world bureau news + studio PROMOS (new/upcoming features) interleaved.
-   Items are listed ONCE here; pjcc-ticker JS clones the set for a seamless loop,
-   sets a calm scroll speed regardless of count, and adds tap-to-pause / resume. {% endcomment %}
+{% comment %} ── 3. THE NEWS TICKER ───────────────────────────────────
+   ✏️ TICKER DIALOGUE LIVES HERE — every headline is one <span class="ticker-item">
+   line below. Edit / add / delete lines freely; promos use ticker-item--promo.
+   Items are listed ONCE; the JS clones the set for a seamless loop, sets a calm
+   scroll speed regardless of count, and adds tap-to-pause / resume. {% endcomment %}
 <div class="world-ticker-wrap">
-  <div class="ticker-eyebrow">◈ LIVE TRANSMISSION — CHECKER TOWN BUREAU OF DISPATCH <span class="ticker-tap-hint">· tap to pause</span></div>
+  <div class="ticker-badge" aria-hidden="true">
+    <span class="ticker-badge-live"><i></i>LIVE</span>
+    <span class="ticker-badge-name">CHECKER&nbsp;TOWN<br>NEWS</span>
+  </div>
   <div class="ticker-outer">
     <div class="ticker-track" id="world-ticker-track">
       <span class="ticker-item">CHECKER TOWN CHECKER PIECE SUPPLY AT ALL-TIME LOW — BOARD SHORTAGE REPORTED IN SECTOR 3</span>
@@ -145,7 +135,6 @@ layout: default
       <span class="ticker-item">WEATHER ADVISORY: THE SEA IS ROUGH — ALL CROSSINGS POSTPONED INDEFINITELY</span>
       <span class="ticker-item ticker-item--promo">◆ THE ACADEMY: A FREE, GAMIFIED CHESS CURRICULUM — EARN YOUR BELTS → /ACADEMY/</span>
       <span class="ticker-item">CHECKER PIECE PRICES REACH RECORD HIGH — ECONOMISTS CITE THE CRASH AS ORIGIN POINT</span>
-      <span class="ticker-item ticker-item--promo">◆ DAILY DISPATCH: A FRESH MISSION EVERY DAY — KEEP YOUR STREAK FLAME LIT → /DAILY/</span>
       <span class="ticker-item">UNKNOWN VESSEL SPOTTED OFF COAST — AUTHORITIES INVESTIGATING — PUBLIC ADVISED TO REMAIN CALM</span>
       <span class="ticker-item ticker-item--promo">◆ COMING SOON — THE BATTLE ROOM: ACTION-CHESS WITH PRINCESS ON THE CONTROLS</span>
       <span class="ticker-item">CHECKER TOWN YOUTH CHESS LEAGUE REGISTRATION NOW OPEN — FORMS AVAILABLE AT THE CIVIC HALL</span>
@@ -273,7 +262,7 @@ layout: default
     var n = window.PJCC_GAMES.filter(function (g) {
       return !g.hidden && !g.soon && g.playable !== false &&
         (g.cat === 'learn' || g.cat === 'arcade' || g.cat === 'isle');
-    }).length;
+    }).length + 1;   // +1: The Gauntlet lives outside the registry (matches /projects/)
     el.setAttribute('data-target', String(n));
   }
 })();

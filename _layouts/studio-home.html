@@ -105,32 +105,27 @@
 
         <a href="{{ '/pjcc/' | relative_url }}" class="studio-quad studio-quad--pjcc" data-enter="PJCC — the world · the cast, the story, the journey">
           <span class="studio-quad-title" data-jp="PJCC">PJCC</span>
-          <span class="studio-quad-sub" data-jp="プリンセスとチェスシティへの旅">Princess &amp; the Journey<br>to Chess City</span>
           {% assign vis_char_count = 0 %}{% for c in site.characters %}{% unless site.hidden_character_urls contains c.url %}{% assign vis_char_count = vis_char_count | plus: 1 %}{% endunless %}{% endfor %}{% assign vis_loc_count = 0 %}{% for c in site.locations %}{% unless site.hidden_location_urls contains c.url %}{% assign vis_loc_count = vis_loc_count | plus: 1 %}{% endunless %}{% endfor %}<span class="studio-quad-peek">{{ vis_char_count }} characters · {{ vis_loc_count }} locations</span>
         </a>
 
         <a href="{{ '/projects/' | relative_url }}" class="studio-quad studio-quad--mcpuppy" data-enter="McPuppy Studios — the studio · the build, made in the open">
           <span class="studio-quad-title" data-jp="マクパピー・スタジオ">McPuppy Studios</span>
-          <span class="studio-quad-sub" data-jp="全プロジェクトをチェック">Check in on all Projects</span>
           <span class="studio-quad-peek">blog · dispatches · press kit</span>
         </a>
 
         <a href="{{ '/games/' | relative_url }}" class="studio-quad studio-quad--games" data-enter="The Arcade — the PJCC world at play · chess games + the Gauntlet">
           <span class="studio-quad-title" data-jp="ゲーム">Games</span>
-          <span class="studio-quad-sub" data-jp="PJCCの世界で遊ぶ">Play in the PJCC universe</span>
           <span class="studio-quad-peek">the arcade + the Gauntlet</span>
         </a>
 
         {% if site.patreon_url and site.patreon_url != '' %}
         <a href="{{ site.patreon_url }}" class="studio-quad studio-quad--patreon" target="_blank" rel="noopener" data-enter="Back the build — support the animation">
           <span class="studio-quad-title" data-jp="Patreon">Patreon</span>
-          <span class="studio-quad-sub" data-jp="プロジェクトを支援">Support the Project</span>
           <span class="studio-quad-peek">fuel the animation</span>
         </a>
         {% else %}
         <a class="studio-quad studio-quad--patreon studio-quad-soon" aria-disabled="true" data-enter="Back the build — support the animation">
           <span class="studio-quad-title" data-jp="Patreon">Patreon</span>
-          <span class="studio-quad-sub" data-jp="近日公開">Coming Soon</span>
           <span class="studio-quad-peek">fuel the animation</span>
         </a>
         {% endif %}
@@ -147,7 +142,6 @@
         <span class="sg-glyph" aria-hidden="true">♛</span>
         <span class="sg-text">
           <b class="sg-title" data-jp="ガントレットに挑め">Enter the Gauntlet</b>
-          <span class="sg-sub" id="sg-sub" data-jp="十人の強敵、ひとつの王冠。本気のチェス。">Ten champions. One crown. Real chess.</span>
         </span>
         <span class="sg-tower" id="sg-tower" aria-hidden="true"></span>
         {% comment %} the tower LIFT plate — the diegetic "continue" affordance (whole card is the link) {% endcomment %}
@@ -168,15 +162,13 @@
         if (tower) { var h = '';
           for (var k = 0; k < NAMES.length; k++) { h += '<i class="' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></i>'; }
           tower.innerHTML = h; }
-        var sub = document.getElementById('sg-sub'), link = document.getElementById('studio-gauntlet');
+        var link = document.getElementById('studio-gauntlet');
         var liftTxt = document.getElementById('sg-lift-txt'), liftArrow = document.getElementById('sg-lift-arrow');
         if (cleared > 0 && cur < NAMES.length) {           // mid-climb — the lift is called to your floor, in the boss's colour
-          if (sub) { sub.removeAttribute('data-jp'); sub.innerHTML = 'Floor ' + (cur + 1) + ' — <b style="color:' + (ACCENTS[cur] || '#F5C518') + '">' + NAMES[cur] + '</b> awaits.'; }
           if (liftTxt) liftTxt.textContent = 'LIFT · F' + (cur + 1);
           if (liftArrow) liftArrow.style.color = ACCENTS[cur] || '#F5C518';
           if (link) link.setAttribute('href', link.getAttribute('href') + '#climb');
         } else if (cur >= NAMES.length) {                  // crowned — the lift only goes one place now
-          if (sub) { sub.removeAttribute('data-jp'); sub.textContent = 'Crowned — all ten floors cleared.'; }
           if (liftArrow) liftArrow.textContent = '♛';
           if (liftTxt) liftTxt.textContent = 'PENTHOUSE';
           if (link) link.setAttribute('href', link.getAttribute('href') + '#tower');
@@ -223,7 +215,6 @@
   .studio-gauntlet .sg-glyph { font-size:2.1rem; line-height:1; color:#F5C518; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.55)); flex-shrink:0; position:relative; z-index:1; }
   .studio-gauntlet .sg-text { display:flex; flex-direction:column; line-height:1.22; min-width:0; position:relative; z-index:1; }
   .studio-gauntlet .sg-title { color:#fff; font-size:1.05rem; font-weight:800; margin:1px 0; }
-  .studio-gauntlet .sg-sub { color:#e7d6b0; font-size:0.74rem; }
   /* mini tower thumbnail — a slim vertical preview of the climb (ground floor at the bottom) */
   .studio-gauntlet .sg-tower { display:flex; flex-direction:column-reverse; gap:2px; width:15px; flex-shrink:0; align-self:center; position:relative; z-index:1; }
   .studio-gauntlet .sg-tower i { height:3px; border-radius:1px; background:rgba(255,255,255,0.14); }
@@ -345,7 +336,6 @@
     .studio-gauntlet .sg-glyph { font-size:1.5rem; }
     .studio-gauntlet .sg-title { font-size:0.9rem; }
     /* drop the decorative bits on phones so the bar stays one compact line */
-    .studio-gauntlet .sg-sub,
     .studio-gauntlet .sg-tower { display:none; }
     .studio-gauntlet .sg-lift { flex-direction:row; gap:6px; font-size:0.58rem; padding:6px 10px; }
 

@@ -12,7 +12,7 @@ Last ten days have been busy, but the first week of chess lessons is finished an
 - I work with a Youth Enrichment Program, so some are after-school-care programs, and some take place in the evening.  Lot of smart students this time around and a lot of excitement for the game!  I love it.  Yesterday a six-year old rattled off the definition of Stalemate and used such economy of words that it was honestly inspiring!
 
 ### What I worked on: 
-  - My chess classes and playing around with Blender.  I've almost got a checker piece ready, for the main character's home 
+  - My chess classes and playing around with Blender.  I've almost got a checker piece ready, for Nate's home 
   - I remembered why I started PJCC in the first place.  These chess lessons are so enjoyable that I thought, "how do I build this into my own business?".  PJCC can offer an entire empire of options to work with.  Lessons, Tutorials, animated shorts or series.
   - My PJCC consistency took a dip, but I do like to "set the table" for more dedicated work, and in this case that may take weeks.  Working three jobs for the next five weeks.   
 

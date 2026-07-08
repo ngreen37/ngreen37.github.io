@@ -184,12 +184,21 @@
   })();
 
   // --- auth ------------------------------------------------------------------
+  // Single-flight: a double-tap on "Send login link" (easy on phones) must not
+  // fire two OTP requests — that's how you get two login emails.
+  var magicInFlight = null, magicInFlightEmail = '';
   PJCC.signInMagic = async function (email) {
     if (!sb) throw new Error('profiles offline');
-    return sb.auth.signInWithOtp({
+    if (magicInFlight && magicInFlightEmail === email) return magicInFlight;
+    magicInFlightEmail = email;
+    magicInFlight = sb.auth.signInWithOtp({
       email: email,
       options: { emailRedirectTo: window.location.href }
     });
+    magicInFlight.finally(function () {
+      setTimeout(function () { magicInFlight = null; magicInFlightEmail = ''; }, 30000);
+    });
+    return magicInFlight;
   };
 
   PJCC.signOut = async function () {
