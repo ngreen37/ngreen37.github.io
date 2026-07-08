@@ -88,12 +88,12 @@ eval weights, book? }` plus portrait, accent, and flavor lines.
 | # | Opponent | Region | Personality | Strength |
 |---|----------|--------|-------------|----------|
 | 1 | **Checker-Town Recruit** (a pawn conscript) | Checker Town | barely knows the moves; grabby | depth 1, high blunder — tutorial-tier |
-| 2 | **Argus the Guard-Dog** | Checker Town | loyal, aggressive, chases captures | depth 1–2, attack-weighted |
+| 2 | **The Checker Town Open Champion** (title-based — currently a loyal guard-dog) | Checker Town | loyal, aggressive, chases captures | depth 1–2, attack-weighted |
 | 3 | **The Sand-Mine Foreman** | Sand Mines | grinder, materialistic | depth 2 |
 | 4 | **The Tidecaller** | The Sea | slow, defensive, positional | depth 2–3, king-safety eval |
 | 5 | **The Shogi Sentinel** | Shogi Isle | tricky, loves forks/tactics | depth 3, low blunder |
 | 6 | **The City Gatekeeper** | Chess City gates | solid all-rounder | depth 3–4 |
-| 7 | **The Rival** | — | your foil; plays the Pirc | depth 4 + opening book, ~no blunder |
+| 7 | **The Heir Apparent** | — | your foil; plays the Pirc | depth 4 + opening book, ~no blunder |
 | 8 | **The CEO** | Chess City | the climax | depth 4–5 + book + best ordering |
 
 Optional secret rung: **The King** — a gimmick/endgame challenge.
@@ -151,7 +151,7 @@ Difficulty = **search depth × blunder rate × eval personality**, not depth alo
 
 The game is live at `/games/the-gauntlet/` (`assets/games/pjcc_gauntlet.html`). Decisions locked:
 
-- **Roster — 10 rungs, Argus first.** Argus the Guard-Dog (Checker Town Chess Open titleholder) opens the
+- **Roster — 10 rungs, the Open Champion first.** The Checker Town Open Champion (a title, not a person — the current holder is a guard-dog) opens the
   climb; the old anonymous "Checker-Town Recruit" was dropped. Order: **Argus → Sand-Mine Foreman → Tidecaller
   → Shogi Sentinel → City Gatekeeper → The Auditor → The Enforcer → The Vice President → The Rival → The CEO.**
   The last five are framed as the CEO's cronies climbing the floors of his tower.

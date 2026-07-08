@@ -18,7 +18,6 @@ layout: default
 <section class="home-hero">
   <p class="hero-eyebrow">McPuppy Studios Presents</p>
   <h1 class="hero-title">Princess and the Journey<br>to Chess City</h1>
-  <p class="hero-subtitle">A cartoon series in progress</p>
 </section>
 
 {% comment %} ── 1b. PLAY STRIP — The Gauntlet (moved here from /games/) ── {% endcomment %}
@@ -26,7 +25,6 @@ layout: default
   <a class="home-gauntlet" id="home-gauntlet" href="{{ '/games/the-gauntlet/' | relative_url }}">
     <div class="hg-main">
       <div class="hg-title"><span class="hg-glyph" aria-hidden="true">♛</span> The Gauntlet</div>
-      <div class="hg-tag">Ten Opponents</div>
       <div class="hg-pips" id="hg-pips" aria-hidden="true"></div>
       <div class="hg-resume" id="hg-resume">Begin the climb — Floor 1 awaits.</div>
     </div>
@@ -49,8 +47,6 @@ layout: default
 .home-gauntlet .hg-title { display:flex; align-items:center; gap:10px; font-size:1.7rem; font-weight:900; color:#fff; line-height:1.08;
   margin:3px 0 5px; text-shadow:0 2px 10px rgba(0,0,0,0.5); }
 .home-gauntlet .hg-title .hg-glyph { color:#F5C518; font-size:1.7rem; line-height:1; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5)); }
-.home-gauntlet .hg-tag { color:#e7d6b0; font-size:0.9rem; line-height:1.4; max-width:54ch; }
-.home-gauntlet .hg-tag b { color:#fff; }
 .home-gauntlet .hg-pips { display:flex; gap:4px; margin:10px 0 6px; }
 .home-gauntlet .hg-pip { width:16px; height:7px; border-radius:2px; background:rgba(255,255,255,0.14); }
 .home-gauntlet .hg-pip.done { background:#6bffb8; }
@@ -74,7 +70,7 @@ layout: default
 // Reads the game's own localStorage so it works offline, signed-out, on any device.
 (function () {
   // mirrors the LADDER order in assets/games/pjcc_gauntlet.html
-  var NAMES = ['Argus the Guard-Dog','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Rival','The CEO'];
+  var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The CEO'];
   var RANKS = ['Recruit','Checker-Town Champion','Sand-Mine Survivor','Sea-Crosser','Isle-Tested','Gatebreaker','Tower Initiate','Floor-Fighter','Near the Summit',"At the CEO's Door",'Champion of Chess City'];
   var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
   var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;
@@ -101,15 +97,6 @@ layout: default
   if (rankEl && cleared > 0) { rankEl.textContent = 'CLIMB RANK · ' + RANKS[cleared]; rankEl.hidden = false; }
 })();
 </script>
-
-{% comment %} ── 2. PJCC DESCRIPTOR ───────────────────────────────── {% endcomment %}
-<section class="home-about">
-  <p>
-    <strong>Princess and the Journey to Chess City</strong> is an original animated universe revolved around the game of chess.
-    It follows Princess, a chess-playing dog, and Nate, the young man who travels alongside her, as they navigate life in Checker Town,
-    a struggling community built from large checker pieces, and chase a greater life beyond.
-  </p>
-</section>
 
 {% comment %} ── 3. THE NEWS TICKER ───────────────────────────────────
    ✏️ TICKER DIALOGUE LIVES HERE — every headline is one <span class="ticker-item">
@@ -151,7 +138,6 @@ layout: default
 {% comment %} ── 4. CHARACTER TEASER — four random faces, reshuffled each visit ──── {% endcomment %}
 <section class="home-section">
   <h2 class="home-section-label">
-    Four from the Cast
     <button class="home-shuffle" id="char-shuffle" type="button" aria-label="Shuffle the four characters" title="Shuffle">&#8635;</button>
     <a class="home-section-link" href="{{ '/characters/' | relative_url }}">Meet them all &rarr;</a>
   </h2>
@@ -217,53 +203,28 @@ layout: default
   <span class="drip"             style="--x:95%; --w:6px;  --len:300px; --col:212,160,20;  --dur:6.4s;  --delay:-4.4s; --b:1.0"></span>
   <span class="drip drip--thin"  style="--x:97%; --w:2px;  --len:250px; --col:255,143,208; --dur:5.6s;  --delay:-1.9s; --b:0.8"></span>
 </div>
-<div class="home-stats">
-  <div class="stats-inner">
-    <a class="hstat" href="{{ '/blog/' | relative_url }}">
-      <span class="hstat-num" data-target="{{ site.posts.size }}">0</span>
-      <span class="hstat-lbl">Posts Written <span class="hstat-go">&#8599;</span></span>
-    </a>
-    <a class="hstat" href="{{ '/characters/' | relative_url }}">
-      <span class="hstat-num" data-target="{{ vis_char_count }}">0</span>
-      <span class="hstat-lbl">Characters <span class="hstat-go">&#8599;</span></span>
-    </a>
-    <a class="hstat" href="{{ '/locations/' | relative_url }}">
-      <span class="hstat-num" data-target="{{ vis_loc_count }}">0</span>
-      <span class="hstat-lbl">Locations <span class="hstat-go">&#8599;</span></span>
-    </a>
-    <a class="hstat" href="{{ '/games/' | relative_url }}">
-      <span class="hstat-num" data-target="8" data-count="playable">0</span>
-      <span class="hstat-lbl">Playable Games <span class="hstat-go">&#8599;</span></span>
-    </a>
-  </div>
+{% comment %} Counters condensed to one slim line (2026-07-08) — the old 4-tile
+     stats bar + count-up lives in git if it's ever missed. {% endcomment %}
+<div class="home-stats-mini">
+  <a href="{{ '/blog/' | relative_url }}">{{ site.posts.size }} posts</a><i>·</i>
+  <a href="{{ '/characters/' | relative_url }}">{{ vis_char_count }} characters</a><i>·</i>
+  <a href="{{ '/locations/' | relative_url }}">{{ vis_loc_count }} locations</a><i>·</i>
+  <a href="{{ '/games/' | relative_url }}"><span id="home-playable-n">6</span> playable games</a>
 </div>
 
-{% comment %} ── 7. CHESS CLOCK ───────────────────────────────────── {% endcomment %}
-<div class="chess-clock-wrap">
-  <div class="chess-clock-label">Time in Development</div>
-  <div class="chess-clock-display" id="chess-clock-display">0d 00:00:00</div>
-  <div class="chess-milestone-wrap" id="chess-milestone-wrap"></div>
-  <div class="home-mission-countdown">
-    <div class="home-mc-label">◈ Episode 1 Premiere Countdown</div>
-    <div class="home-mc-display" id="home-mc-display">—</div>
-    <div class="home-mc-target">TARGET: 2027.10.21</div>
-  </div>
-</div>
 </div><!-- /.home-basement -->
 
 <script src="{{ '/assets/js/pjcc-games-data.js' | relative_url }}"></script>
 <script>
 // Playable Games stat — computed from the registry so it never goes stale.
-// "Playable" = finished, openly-playable games (Learn + Arcade + Shogi Isle);
-// excludes In-Development, the locked Vault, Terminated, and Coming-Soon.
 (function () {
-  var el = document.querySelector('.hstat-num[data-count="playable"]');
+  var el = document.getElementById('home-playable-n');
   if (el && window.PJCC_GAMES) {
     var n = window.PJCC_GAMES.filter(function (g) {
       return !g.hidden && !g.soon && g.playable !== false &&
         (g.cat === 'learn' || g.cat === 'arcade' || g.cat === 'isle');
     }).length + 1;   // +1: The Gauntlet lives outside the registry (matches /projects/)
-    el.setAttribute('data-target', String(n));
+    el.textContent = String(n);
   }
 })();
 // Arc strip drag scroll
@@ -276,22 +237,6 @@ layout: default
   strip.addEventListener('mouseup', function() { down = false; strip.style.cursor = 'grab'; });
   strip.addEventListener('mousemove', function(e) { if (!down) return; e.preventDefault(); strip.scrollLeft = scrollLeft - (e.pageX - strip.offsetLeft - startX); });
 })();
-
-document.querySelectorAll('.hstat-num').forEach(function(el) {
-  var target = parseInt(el.getAttribute('data-target'), 10);
-  if (!target) return;
-  var duration = 1400;
-  var start = null;
-  function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
-  function step(ts) {
-    if (!start) start = ts;
-    var p = Math.min((ts - start) / duration, 1);
-    el.textContent = Math.floor(ease(p) * target);
-    if (p < 1) requestAnimationFrame(step);
-    else el.textContent = target;
-  }
-  requestAnimationFrame(step);
-});
 
 // Arc lore typewriter
 (function() {
@@ -368,44 +313,6 @@ document.querySelectorAll('.hstat-num').forEach(function(el) {
   });
 })();
 
-// Chess clock
-(function() {
-  var clockEl = document.getElementById('chess-clock-display');
-  if (!clockEl) return;
-  var startMs = 1772337600000; // March 1, 2026 00:00 EDT (04:00 UTC)
-  function pad(n) { return n < 10 ? '0' + n : String(n); }
-  function tick() {
-    var elapsed = Math.max(0, Date.now() - startMs);
-    var d = Math.floor(elapsed / 86400000);
-    var h = Math.floor((elapsed % 86400000) / 3600000);
-    var m = Math.floor((elapsed % 3600000) / 60000);
-    var s = Math.floor((elapsed % 60000) / 1000);
-    clockEl.textContent = d + 'd ' + pad(h) + ':' + pad(m) + ':' + pad(s);
-  }
-  tick();
-  setInterval(tick, 1000);
-})();
-
-// Milestone badges
-(function() {
-  var milestones = [
-    [30,  '★ 30 DAYS IN THE GAME'],
-    [60,  '★ TWO MONTHS DEEP'],
-    [100, '★ 100 DAYS'],
-    [180, '★ HALF A YEAR'],
-    [365, '★ ONE YEAR IN DEVELOPMENT'],
-    [500, '★ 500 DAYS — NO SIGNS OF STOPPING']
-  ];
-  var mWrap = document.getElementById('chess-milestone-wrap');
-  if (!mWrap) return;
-  var days = Math.floor(Math.max(0, Date.now() - 1772337600000) / 86400000);
-  var label = '';
-  for (var i = milestones.length - 1; i >= 0; i--) {
-    if (days >= milestones[i][0]) { label = milestones[i][1]; break; }
-  }
-  if (label) mWrap.innerHTML = '<span class="chess-milestone">' + label + '</span>';
-})();
-
 // Header signal disruption on hero scroll-out
 (function() {
   var hero = document.querySelector('.home-hero');
@@ -449,23 +356,6 @@ document.querySelectorAll('.hstat-num').forEach(function(el) {
     spawnStar();
     setInterval(spawnStar, 12000 + Math.random() * 4000);
   });
-})();
-
-// Mission countdown to Episode 1 (#25)
-(function() {
-  var el = document.getElementById('home-mc-display');
-  if (!el) return;
-  var target = new Date('2027-10-21T04:00:00Z').getTime(); // midnight EDT
-  function pad(n) { return n < 10 ? '0' + n : String(n); }
-  function tick() {
-    var diff = Math.max(0, target - Date.now());
-    var d = Math.floor(diff / 86400000);
-    var h = Math.floor((diff % 86400000) / 3600000);
-    var m = Math.floor((diff % 3600000) / 60000);
-    var s = Math.floor((diff % 60000) / 1000);
-    el.textContent = d + 'd ' + pad(h) + ':' + pad(m) + ':' + pad(s);
-  }
-  tick(); setInterval(tick, 1000);
 })();
 
 // World ticker — calm speed, seamless loop, tap-to-pause, resume on return (#ticker)

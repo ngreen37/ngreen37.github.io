@@ -60,7 +60,7 @@ permalink: /dossier/
 /* The Climb — the Gauntlet rank surfaced sitewide (#6). Reads the game's own
    localStorage, so it renders for everyone (guest, offline, signed-in). */
 (function () {
-  var NAMES = ['Argus the Guard-Dog','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Rival','The CEO'];
+  var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The CEO'];
   var RANKS = ['Recruit','Checker-Town Champion','Sand-Mine Survivor','Sea-Crosser','Isle-Tested','Gatebreaker','Tower Initiate','Floor-Fighter','Near the Summit',"At the CEO's Door",'Champion of Chess City'];
   var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
   var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;

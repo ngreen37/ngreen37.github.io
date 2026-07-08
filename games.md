@@ -157,7 +157,7 @@ permalink: /games/
 
 // Flagship resume state — same climb data the game + homepage read (#8/#6).
 (function () {
-  var NAMES = ['Argus the Guard-Dog','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Rival','The CEO'];
+  var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The CEO'];
   var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
   var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;
   for (var i = 0; i < NAMES.length; i++) { if (beaten[i]) cleared++; }

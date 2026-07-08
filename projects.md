@@ -101,6 +101,76 @@ body_class: theme-studio
 .project-link-terminated:hover { background: #ff5e5e !important; }
 </style>
 
+{% comment %} Moved here from the PJCC home (2026-07-08) — the studio's own clocks. {% endcomment %}
+{% comment %} ── 7. CHESS CLOCK ───────────────────────────────────── {% endcomment %}
+<div class="chess-clock-wrap">
+  <div class="chess-clock-label">Time in Development</div>
+  <div class="chess-clock-display" id="chess-clock-display">0d 00:00:00</div>
+  <div class="chess-milestone-wrap" id="chess-milestone-wrap"></div>
+  <div class="home-mission-countdown">
+    <div class="home-mc-label">◈ Episode 1 Premiere Countdown</div>
+    <div class="home-mc-display" id="home-mc-display">—</div>
+    <div class="home-mc-target">TARGET: 2027.10.21</div>
+  </div>
+</div>
+<script>
+// Chess clock
+(function() {
+  var clockEl = document.getElementById('chess-clock-display');
+  if (!clockEl) return;
+  var startMs = 1772337600000; // March 1, 2026 00:00 EDT (04:00 UTC)
+  function pad(n) { return n < 10 ? '0' + n : String(n); }
+  function tick() {
+    var elapsed = Math.max(0, Date.now() - startMs);
+    var d = Math.floor(elapsed / 86400000);
+    var h = Math.floor((elapsed % 86400000) / 3600000);
+    var m = Math.floor((elapsed % 3600000) / 60000);
+    var s = Math.floor((elapsed % 60000) / 1000);
+    clockEl.textContent = d + 'd ' + pad(h) + ':' + pad(m) + ':' + pad(s);
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+
+// Milestone badges
+(function() {
+  var milestones = [
+    [30,  '★ 30 DAYS IN THE GAME'],
+    [60,  '★ TWO MONTHS DEEP'],
+    [100, '★ 100 DAYS'],
+    [180, '★ HALF A YEAR'],
+    [365, '★ ONE YEAR IN DEVELOPMENT'],
+    [500, '★ 500 DAYS — NO SIGNS OF STOPPING']
+  ];
+  var mWrap = document.getElementById('chess-milestone-wrap');
+  if (!mWrap) return;
+  var days = Math.floor(Math.max(0, Date.now() - 1772337600000) / 86400000);
+  var label = '';
+  for (var i = milestones.length - 1; i >= 0; i--) {
+    if (days >= milestones[i][0]) { label = milestones[i][1]; break; }
+  }
+  if (label) mWrap.innerHTML = '<span class="chess-milestone">' + label + '</span>';
+})();
+
+// Mission countdown to Episode 1 (#25)
+(function() {
+  var el = document.getElementById('home-mc-display');
+  if (!el) return;
+  var target = new Date('2027-10-21T04:00:00Z').getTime(); // midnight EDT
+  function pad(n) { return n < 10 ? '0' + n : String(n); }
+  function tick() {
+    var diff = Math.max(0, target - Date.now());
+    var d = Math.floor(diff / 86400000);
+    var h = Math.floor((diff % 86400000) / 3600000);
+    var m = Math.floor((diff % 3600000) / 60000);
+    var s = Math.floor((diff % 60000) / 1000);
+    el.textContent = d + 'd ' + pad(h) + ':' + pad(m) + ':' + pad(s);
+  }
+  tick(); setInterval(tick, 1000);
+})();
+
+</script>
+
 <div class="projects-list">
 
   <div class="project-card project-card-active">

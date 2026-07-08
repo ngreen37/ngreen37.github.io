@@ -4,13 +4,8 @@ title: Fan Art
 permalink: /fan-art/
 ---
 
-<div class="fa-head">
-  <h1 class="fa-title">Fan Art</h1>
-</div>
-
 <div class="fa-tools no-print">
   <button class="fa-btn" id="fa-pick" type="button">Choose a picture</button>
-  <button class="fa-btn fa-btn--gold" id="fa-print" type="button">🖨 Print / Save PDF</button>
   <button class="fa-btn fa-btn--ghost" id="fa-reset" type="button">Reset</button>
 </div>
 
@@ -19,7 +14,7 @@ permalink: /fan-art/
   <div class="fc-brand"><span class="fc-star">★</span>PJCC<span class="fc-star">★</span></div>
   <div class="fc-frame" id="fa-frame">
     <img id="fa-img" alt="PJCC fan art">
-    <div class="fc-hint no-print" id="fa-hint"><span class="fc-hint-big">＋🎨</span>Click here, or drag your picture in</div>
+    <div class="fc-hint no-print" id="fa-hint"><span class="fc-hint-big">＋</span>Click here, or drag your picture in</div>
   </div>
   <div class="fc-flourish"><span class="fc-pc">♟ ♞ ♜ ♛ ♚ ♛ ♜ ♞ ♟</span></div>
 </div>
@@ -53,10 +48,6 @@ permalink: /fan-art/
 </section>
 
 <style>
-.fa-head { text-align:center; max-width:680px; margin:0 auto 1.4rem; }
-.fa-title { font-size:2.4rem; font-weight:900; color:#fff; margin:0.3rem 0 0.5rem; }
-.fa-sub { color:#cdbcf2; font-size:0.95rem; line-height:1.6; }
-.fa-sub strong { color:#F5C518; }
 .fa-tools { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:1.4rem; }
 .fa-btn { display:inline-block; text-decoration:none; cursor:pointer; font-family:inherit; font-weight:800; font-size:0.9rem;
   border-radius:999px; padding:10px 20px; background:rgba(80,30,180,0.25); color:#F5C518; border:2px solid rgba(150,65,255,0.6);
@@ -75,14 +66,17 @@ permalink: /fan-art/
 .fc-star { color:#e3b008; font-size:0.55em; vertical-align:0.28em; margin:0 9px; }
 .fc-brand-sub { text-align:center; font-size:14px; font-weight:700; color:#0a3f8a; margin-bottom:14px; }
 .fc-frame { position:relative; width:100%; aspect-ratio:1/1; max-height:4.6in; margin:0 auto;
-  background:radial-gradient(circle at 50% 40%, #fff 0%, #eaf2fc 78%); border:2px dashed #9bb4d8; border-radius:14px;
+  background:radial-gradient(circle at 50% 40%, #fff 0%, #eaf2fc 78%); border:2px dashed transparent; border-radius:14px;
   overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer; }
-.fan-card.has-img .fc-frame { border-style:solid; border-color:#cfe0f5; cursor:default; }
+/* no border once art is in the frame — the picture stands on its own */
+.fan-card.has-img .fc-frame { border:none; cursor:default; }
 #fa-img { max-width:100%; max-height:100%; object-fit:contain; display:none; }
 .fan-card.has-img #fa-img { display:block; }
 .fan-card.has-img .fc-hint { display:none; }
 .fc-hint { text-align:center; color:#5b7bb0; font-size:14px; padding:18px; }
-.fc-hint-big { display:block; font-size:32px; margin-bottom:6px; }
+/* the plus wears a small, plain border — the only frame on an empty card */
+.fc-hint-big { display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px;
+  font-size:30px; line-height:1; margin-bottom:8px; border:1.5px solid #9bb4d8; border-radius:10px; color:#5b7bb0; }
 .fc-flourish { text-align:center; margin-top:14px; font-size:13px; letter-spacing:2px; color:#002e6d; font-weight:800; }
 .fc-pc { color:#e3b008; }
 
@@ -143,7 +137,6 @@ permalink: /fan-art/
   ['dragleave', 'drop'].forEach(function (ev) { frame.addEventListener(ev, function (e) { e.preventDefault(); frame.style.borderColor = ''; }); });
   frame.addEventListener('drop', function (e) { var dt = e.dataTransfer; if (dt && dt.files && dt.files[0]) load(dt.files[0]); });
 
-  document.getElementById('fa-print').addEventListener('click', function () { window.print(); });
   document.getElementById('fa-reset').addEventListener('click', function () {
     img.removeAttribute('src'); card.classList.remove('has-img'); try { localStorage.removeItem(STORE); } catch (e) {}
   });

@@ -212,11 +212,11 @@ var LIGHT = '#6a5aa0', DARK = '#3d2a7a';
 
 // ---- The ladder (alternating colors; strict — no takebacks/hints) ----
 var LADDER = [
-  { name:'Argus the Guard-Dog', glyph:'♞', accent:'#8fe3ff', region:'Checker Town',
-    blurb:'Checker Town Chess Open titleholder. Loyal, fierce, learned the game slow — and never lets go.',
-    win:'Argus barks once, then licks your hand. The champion of Checker Town yields the road.',
+  { name:'The Checker Town Open Champion', glyph:'♞', accent:'#8fe3ff', region:'Checker Town',
+    blurb:'Floor 1 belongs to whoever holds the Checker Town Chess Open title. The current holder: a loyal guard-dog who learned the game slow — and never lets go.',
+    win:'A bark, then a lick of your hand. The reigning champion of Checker Town yields the road.',
     persona:{ depth:1, blunder:0.32, mat:1, pst:0.4, aggr:4, timeMs:220 },
-    react:{ intro:['*a proud, rolling growl* Checker Town\'s champ says hello.'],
+    react:{ intro:['*a proud, rolling growl* The reigning champ says hello.'],
       blunder:['*GRRR* — a gift for the pack!','*snap* Mine now.','Bad move. *bark bark*'],
       good:['*whine* ...good one.','*ears flatten* Hrrr.','*backs up a step*'] } },
   { name:'The Sand-Mine Foreman', glyph:'♟', accent:'#fcbc3c', region:'The Sand Mines',
@@ -268,9 +268,9 @@ var LADDER = [
     react:{ intro:['I run this floor. The CEO runs the rest.'],
       blunder:['Sloppy. That won\'t fly up here.','A rookie line.'],
       good:['...where did you train?','Hm. Sharp.'] } },
-  { name:'The Rival', glyph:'♛', accent:'#ff9ec9', region:'Tower · The Antechamber',
-    blurb:'Your equal and your foil, waiting at the CEO\'s door. Punishes every loose move.',
-    win:'"...Well played." The Rival means it, this time. "He\'s through there. Good luck."',
+  { name:'The Heir Apparent', glyph:'♛', accent:'#ff9ec9', region:'Tower · The Antechamber',
+    blurb:'First in line for the crown, waiting at the CEO\'s door. Your equal, your foil — punishes every loose move.',
+    win:'"...Well played." The Heir Apparent means it, this time. "He\'s through there. Good luck."',
     persona:{ depth:4, blunder:0.0, mat:1, pst:1.1, aggr:2, timeMs:820 },
     react:{ intro:['Let\'s see what you\'ve really got.'],
       blunder:['Sloppy. I expected better from you.','That\'s the move that loses the game.'],

@@ -9,7 +9,7 @@ piece: ♜
 chapters: 1,2
 dossier_clearance: DELTA
 dossier_secret: Works in the Sand Mines. Has seen something down there. Will not discuss it.
-last_seen: CHECKER TOWN
+last_seen: THE SAND MINES
 ---
 
 Nate's source of stability and some wisdom

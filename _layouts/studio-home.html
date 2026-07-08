@@ -144,13 +144,11 @@
           <b class="sg-title" data-jp="ガントレットに挑め">Enter the Gauntlet</b>
         </span>
         <span class="sg-tower" id="sg-tower" aria-hidden="true"></span>
-        {% comment %} the tower LIFT plate — the diegetic "continue" affordance (whole card is the link) {% endcomment %}
-        <span class="sg-lift" aria-hidden="true"><i class="sg-lift-arrow" id="sg-lift-arrow">▲</i><span class="sg-lift-txt" id="sg-lift-txt">LIFT · F1</span></span>
       </a>
       <script>
       // Splash Gauntlet — mini-tower + boss-of-the-moment, hydrated from the game's save (offline/signed-out OK).
       (function () {
-        var NAMES = ['Argus the Guard-Dog','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Rival','The CEO'];
+        var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The CEO'];
         // mirrors the LADDER accents in assets/games/pjcc_gauntlet.html — keep in sync
         var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#9ff0c4','#ff6b6b','#c79bff','#ff9ec9','#ff8fd0'];
         var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
@@ -163,14 +161,9 @@
           for (var k = 0; k < NAMES.length; k++) { h += '<i class="' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></i>'; }
           tower.innerHTML = h; }
         var link = document.getElementById('studio-gauntlet');
-        var liftTxt = document.getElementById('sg-lift-txt'), liftArrow = document.getElementById('sg-lift-arrow');
-        if (cleared > 0 && cur < NAMES.length) {           // mid-climb — the lift is called to your floor, in the boss's colour
-          if (liftTxt) liftTxt.textContent = 'LIFT · F' + (cur + 1);
-          if (liftArrow) liftArrow.style.color = ACCENTS[cur] || '#F5C518';
+        if (cleared > 0 && cur < NAMES.length) {
           if (link) link.setAttribute('href', link.getAttribute('href') + '#climb');
-        } else if (cur >= NAMES.length) {                  // crowned — the lift only goes one place now
-          if (liftArrow) liftArrow.textContent = '♛';
-          if (liftTxt) liftTxt.textContent = 'PENTHOUSE';
+        } else if (cur >= NAMES.length) {
           if (link) link.setAttribute('href', link.getAttribute('href') + '#tower');
         }
       })();
@@ -220,17 +213,6 @@
   .studio-gauntlet .sg-tower i { height:3px; border-radius:1px; background:rgba(255,255,255,0.14); }
   .studio-gauntlet .sg-tower i.done { background:#6bffb8; }
   .studio-gauntlet .sg-tower i.cur { background:#F5C518; box-shadow:0 0 5px #F5C518; }
-  /* the LIFT call-plate — a little brass elevator panel; the arrow pulses like a called lift */
-  .studio-gauntlet .sg-lift { margin-left:auto; flex-shrink:0; position:relative; z-index:1; align-self:center;
-    display:flex; flex-direction:column; align-items:center; gap:3px;
-    font-family:'Courier New',monospace; font-size:0.62rem; font-weight:900; letter-spacing:0.12em; color:#F5C518;
-    background:rgba(12,8,2,0.6); border:1px solid rgba(245,197,24,0.45); border-radius:9px; padding:8px 12px;
-    white-space:nowrap; box-shadow:inset 0 0 12px rgba(245,197,24,0.12); }
-  .studio-gauntlet .sg-lift-arrow { font-style:normal; font-size:0.95rem; line-height:1; color:#F5C518;
-    animation:sgLift 1.7s ease-in-out infinite; }
-  @keyframes sgLift { 0%,100% { transform:translateY(1px); opacity:0.7; } 50% { transform:translateY(-2px); opacity:1; } }
-  .studio-gauntlet:hover .sg-lift { border-color:#F5C518; box-shadow:inset 0 0 16px rgba(245,197,24,0.25), 0 0 14px -6px #F5C518; }
-  @media (prefers-reduced-motion: reduce){ .studio-gauntlet .sg-lift-arrow { animation:none; } }
 
   /* Planted sigil seal — a faint ARG breadcrumb under the Gauntlet.
      Kept very faint here, and no hover brighten (overrides the site-wide
@@ -335,9 +317,7 @@
     .studio-gauntlet { max-width:100%; margin-top:0; padding:8px 14px; gap:10px; }
     .studio-gauntlet .sg-glyph { font-size:1.5rem; }
     .studio-gauntlet .sg-title { font-size:0.9rem; }
-    /* drop the decorative bits on phones so the bar stays one compact line */
-    .studio-gauntlet .sg-tower { display:none; }
-    .studio-gauntlet .sg-lift { flex-direction:row; gap:6px; font-size:0.58rem; padding:6px 10px; }
+    /* the mini floor indicator stays — it's tiny and it's the whole story */
 
     /* drop the purely decorative pieces so everything fits one screen */
     .studio-footer,

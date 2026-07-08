@@ -376,14 +376,21 @@ body.theme-contact .nav-toggle-bar { background: #00ff41; }
 
 .footer-inner {
   text-align: center;
+  position: relative;
 }
 
+/* The footer logo is a WATERMARK now (2026-07-08) — ghosted behind the footer
+   text instead of claiming its own row. */
 .logo-horizontal {
-  height: 92px;
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  height: 64px;
   width: auto;
-  display: block;
-  margin: 0 auto 14px;
+  margin: 0;
+  opacity: 0.08;
   filter: invert(1);
+  pointer-events: none;
 }
 
 .footer-copy {
@@ -1212,6 +1219,19 @@ pre code {
   margin: 0;
 }
 
+/* Condensed one-line counters (2026-07-08) — sits atop the drip field */
+.home-stats-mini {
+  position: relative; z-index: 1;
+  text-align: center;
+  padding: 30px 20px 10px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px; letter-spacing: 0.08em;
+  color: #6b5a8e;
+}
+.home-stats-mini a { color: #b9a8e6; text-decoration: none; white-space: nowrap; }
+.home-stats-mini a:hover { color: #F5C518; }
+.home-stats-mini i { font-style: normal; color: rgba(245, 197, 24, 0.4); margin: 0 10px; }
+
 /* --- The "basement" — the foot of the page. PJCC's purple/gold paint drips down
    from the top edge (with droplets at the ends of the runs), and near the bottom
    weathered verdigris "old paint" pools up through it. Wraps the counters +
@@ -1220,6 +1240,9 @@ pre code {
   position: relative;
   margin: 4px -28px 0;
   padding-bottom: 14px;
+  /* the counters shrank to one line (2026-07-08) — hold the height so the
+     paint-drip field keeps its full canvas at the foot of the page */
+  min-height: 300px;
   border-top: 1px solid rgba(124, 77, 255, 0.42);
   background:
     /* smooth purple/gold colour fading down through the top two-thirds,
@@ -1391,7 +1414,7 @@ pre code {
   }
 
   .logo-horizontal {
-    height: 72px;
+    height: 48px;
   }
 
   /* Show the hamburger button */
@@ -5765,7 +5788,7 @@ body.theme-classified {
   font-weight: 700;
   letter-spacing: 0.16em;
   color: #fff;
-  background: #c8102e;
+  background: #6a26dc;   /* PJCC purple — Nate vetoed the red */
   border-radius: 3px;
   padding: 3px 7px;
 
