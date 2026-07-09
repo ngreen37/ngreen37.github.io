@@ -172,8 +172,24 @@
     <div class="eyebrow">Your climb — top floor down to the street</div>
     <div class="big-title" style="font-size:22px;">THE TOWER</div>
     <div class="tower" id="rungs"></div>
+    <div class="lobby-gallery hidden" id="lobby-gallery">
+      <div class="lg-eyebrow">THE TOWER LOBBY · FAN ART, HUNG BY McPUPPY</div>
+      <div class="lg-row" id="lg-row"></div>
+    </div>
     <div class="row"><button class="btn btn-ghost" id="ladder-back">◂ Back</button></div>
   </div>
+  <style>
+  /* Tower Lobby Gallery — the site's fan wall, hung inside the tower */
+  .lobby-gallery { margin: 14px auto 4px; max-width: 340px; text-align: center; }
+  .lobby-gallery.hidden { display: none; }
+  .lg-eyebrow { font-size: 9px; letter-spacing: 0.14em; color: #9a8fc0; margin-bottom: 8px; }
+  .lg-row { display: flex; gap: 10px; justify-content: center; }
+  .lg-piece { margin: 0; width: 88px; }
+  .lg-piece img { display: block; width: 88px; height: 88px; object-fit: cover; background: #fff;
+    border: 2px solid #F5C518; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.45); }
+  .lg-piece figcaption { font-size: 8px; color: #c9b6ef; margin-top: 4px; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; }
+  </style>
 
   <div class="promo hidden" id="promo-screen">
     <div class="promo-box"><div class="pt">Promote to…</div><div class="promo-choices" id="promo-choices"></div></div>
@@ -718,6 +734,24 @@ function showLadder(){
   document.getElementById('ladder-screen').classList.remove('hidden');
   if (curEl) setTimeout(function(){ try { curEl.scrollIntoView({block:'center', behavior:'smooth'}); } catch(e){} }, 60);
 }
+
+// Tower Lobby Gallery — pieces from the site's fan wall (screened + hung by McPuppy).
+// Fetched from the Jekyll-built /assets/data/fanart.json; any failure (offline,
+// raw file, empty wall) is swallowed and the lobby simply stays bare.
+(function(){
+  var host = document.getElementById('lg-row'), wrap = document.getElementById('lobby-gallery');
+  if (!host || !wrap || !window.fetch) return;
+  fetch('/assets/data/fanart.json').then(function(r){ return r.json(); }).then(function(art){
+    if (!art || !art.length) return;
+    art.slice(0, 3).forEach(function(p){
+      var f = document.createElement('figure'); f.className = 'lg-piece';
+      var im = document.createElement('img'); im.src = p.img; im.alt = ''; im.loading = 'lazy';
+      var cap = document.createElement('figcaption'); cap.textContent = p.title || 'fan art';
+      f.appendChild(im); f.appendChild(cap); host.appendChild(f);
+    });
+    wrap.classList.remove('hidden');
+  }).catch(function(){});
+})();
 
 document.getElementById('play-btn').onclick = resume;
 (function(){ var t=document.getElementById('tower-btn'); if(t) t.onclick = showLadder; })();

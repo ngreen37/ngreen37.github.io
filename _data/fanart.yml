@@ -8,8 +8,13 @@
 # While every entry is commented out, the wall shows its friendly "be the first"
 # empty state — so nothing looks broken before the first piece goes up.
 #
-# Example (save the image to the path, then uncomment these three lines):
+# IMPORTANT: every submission is SCREENED first — nothing goes on the wall (or
+# into the games' lobby galleries) unless it's added here by hand. Each hung
+# piece shows a "✓ SCREENED · HUNG BY McPUPPY" stamp; add `hung:` for the date.
+#
+# Example (save the image to the path, then uncomment these four lines):
 #
 # - img: /assets/images/fan-art/my-picture.png
 #   title: "Princess"
 #   by: "a fan"
+#   hung: 2026-07-08

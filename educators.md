@@ -30,6 +30,49 @@ permalink: /educators/
   </div>
 </div>
 
+<!-- CLASSROOM ART KIOSK -->
+<h2 class="ed-h2">◈ Classroom Art Kiosk</h2>
+<div class="ed-free">
+  <p>Print a PJCC fan-art card for every student — names pre-filled, one card per page. They draw, you hang. Anything special? <a href="/fan-art/">Send it in</a> — every piece is screened, then hung by McPuppy.</p>
+  <textarea id="ek-names" class="ek-names" rows="6" placeholder="One student name per line…" autocomplete="off"></textarea>
+  <div class="ed-free-cta">
+    <button class="ed-btn ed-btn-gold" id="ek-print" type="button">🖨 Print the card stack</button>
+    <span class="ek-msg" id="ek-msg"></span>
+  </div>
+</div>
+
+<!-- print-only card stack (built on demand) -->
+<div id="ek-sheets" class="ek-print" aria-hidden="true"></div>
+
+<script>
+(function () {
+  var btn = document.getElementById('ek-print');
+  if (!btn) return;
+  function esc(s) { return s.replace(/[&<>"]/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]; }); }
+  btn.onclick = function () {
+    var box = document.getElementById('ek-names');
+    var names = (box.value || '').split('\n').map(function (s) { return s.trim(); }).filter(Boolean).slice(0, 40);
+    var msg = document.getElementById('ek-msg');
+    if (!names.length) { msg.textContent = 'Add at least one name first.'; box.focus(); return; }
+    msg.textContent = '';
+    var host = document.getElementById('ek-sheets');
+    host.innerHTML = '';
+    names.forEach(function (n) {
+      var d = document.createElement('div');
+      d.className = 'ek-card';
+      d.innerHTML = '<div class="ek-eyebrow">Fan Art</div>' +
+        '<div class="ek-brand"><span class="ek-star">★</span>PJCC<span class="ek-star">★</span></div>' +
+        '<div class="ek-frame"></div>' +
+        '<div class="ek-artist">Artist: <b>' + esc(n) + '</b></div>';
+      host.appendChild(d);
+    });
+    document.body.classList.add('ek-printing');
+    window.print();
+  };
+  window.addEventListener('afterprint', function () { document.body.classList.remove('ek-printing'); });
+})();
+</script>
+
 <!-- LICENSING (coming) -->
 <h2 class="ed-h2">◈ School &amp; district licensing <span class="ed-soon">Coming</span></h2>
 <p class="ed-note">For schools, clubs, and districts that want more, a site license is in the works — built to be the part that helps fund the show while putting it in real classrooms.</p>
@@ -92,4 +135,30 @@ permalink: /educators/
 .ed-tier ul { list-style: none; padding: 0; margin: 0; }
 .ed-tier li { color: #c9a7ff; font-size: 0.85rem; line-height: 1.8; border-top: 1px solid rgba(157,127,212,0.12); padding-top: 3px; }
 .ed-tier li:first-child { border-top: none; }
+
+/* ---- classroom art kiosk ---- */
+.ek-names { display: block; width: 100%; max-width: 420px; background: #160c33; border: 1px solid #4a2f8a;
+  border-radius: 10px; padding: 10px 12px; color: #f0e6ff; font-family: inherit; font-size: 0.92rem;
+  margin-bottom: 12px; resize: vertical; }
+.ek-names:focus { outline: none; border-color: #F5C518; }
+.ek-msg { color: #ff8f9e; font-size: 0.84rem; align-self: center; }
+.ek-print { display: none; }
+
+@media print {
+  body.ek-printing * { visibility: hidden !important; }
+  body.ek-printing .ek-print, body.ek-printing .ek-print * { visibility: visible !important; }
+  body.ek-printing .ek-print { display: block; position: absolute; left: 0; top: 0; width: 100%; }
+  .ek-card { page-break-after: always; border: 3px solid #002e6d; border-radius: 18px; padding: 26px;
+    max-width: 6.6in; margin: 0 auto; color: #002e6d; background: #fff; position: relative; }
+  .ek-card::before { content: ''; position: absolute; inset: 8px; border: 1.5px solid #e3b008;
+    border-radius: 12px; pointer-events: none; }
+  .ek-eyebrow { text-align: center; font-size: 11px; letter-spacing: 5px; text-transform: uppercase;
+    color: #e3b008; font-weight: 800; }
+  .ek-brand { text-align: center; font-size: 54px; font-weight: 900; letter-spacing: 4px; line-height: 1;
+    margin: 4px 0 16px; }
+  .ek-star { color: #e3b008; font-size: 0.55em; vertical-align: 0.28em; margin: 0 9px; }
+  .ek-frame { width: 100%; aspect-ratio: 1 / 1; max-height: 5.4in; border: 2px dashed #9bb4d8;
+    border-radius: 14px; }
+  .ek-artist { text-align: center; margin-top: 14px; font-size: 15px; }
+}
 </style>

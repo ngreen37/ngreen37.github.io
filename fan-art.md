@@ -6,7 +6,18 @@ permalink: /fan-art/
 
 <div class="fa-tools no-print">
   <button class="fa-btn" id="fa-pick" type="button">Choose a picture</button>
+  <button class="fa-btn" id="fa-draw" type="button">🖍 Draw one right here</button>
   <button class="fa-btn fa-btn--ghost" id="fa-reset" type="button">Reset</button>
+</div>
+
+<!-- ── Crayon mode: fat crayons, straight onto the card, nothing uploaded ── -->
+<div class="fa-crayons no-print" id="fa-crayons" hidden>
+  <canvas id="fa-canvas" width="480" height="480"></canvas>
+  <div class="fa-cray-row" id="fa-cray-row"></div>
+  <div class="fa-cray-tools">
+    <button class="fa-btn fa-btn--ghost" id="fa-cray-clear" type="button">Start over</button>
+    <button class="fa-btn fa-btn--gold" id="fa-cray-done" type="button">Put it on the card ▸</button>
+  </div>
 </div>
 
 <div class="fan-card" id="fan-card">
@@ -22,8 +33,11 @@ permalink: /fan-art/
 
 <!-- ── The Wall ──────────────────────────────────────────────── -->
 <section class="fa-wall no-print">
-  <h2 class="fa-h2">The Wall</h2>
   {% assign art = site.data.fanart %}
+  {% assign art_count = art | size %}
+  {% comment %} The wall levels up as pieces are hung: 5+ = The Gallery, 15+ = The Museum Wing. {% endcomment %}
+  {% if art_count >= 15 %}{% assign wall_name = 'The Museum Wing' %}{% assign wall_tier = 'museum' %}{% elsif art_count >= 5 %}{% assign wall_name = 'The Gallery' %}{% assign wall_tier = 'gallery' %}{% else %}{% assign wall_name = 'The Wall' %}{% assign wall_tier = 'wall' %}{% endif %}
+  <h2 class="fa-h2 fa-h2--{{ wall_tier }}">{{ wall_name }}</h2>
   {% if art and art.size > 0 %}
   <div class="fa-grid">
     {% for piece in art %}
@@ -34,6 +48,7 @@ permalink: /fan-art/
       <figcaption>
         <span class="fa-piece-title">{{ piece.title }}</span>
         {% if piece.by %}<span class="fa-piece-by">— {{ piece.by }}</span>{% endif %}
+        <span class="fa-stamp" title="Every piece is screened before it goes up.">✓ SCREENED · HUNG BY McPUPPY{% if piece.hung %} · {{ piece.hung }}{% endif %}</span>
       </figcaption>
     </figure>
     {% endfor %}
@@ -44,7 +59,7 @@ permalink: /fan-art/
     <a class="fa-empty-plus" href="/contact/" aria-label="Send in your art">＋</a>
   </div>
   {% endif %}
-  <p class="fa-submit-note"><a href="/contact/">Send it in</a> and I’ll hang it here.</p>
+  <p class="fa-submit-note"><a href="/contact/">Send it in</a> — every piece is screened, then hung by McPuppy.</p>
 </section>
 
 <style>
@@ -56,6 +71,29 @@ permalink: /fan-art/
 .fa-btn--gold { background:#F5C518; color:#1a0f3d; border-color:#F5C518; }
 .fa-btn--gold:hover { background:#ffd740; }
 .fa-btn--ghost { background:transparent; }
+
+/* ---- crayon mode ---- */
+.fa-crayons { max-width:520px; margin:0 auto 1.4rem; text-align:center; }
+#fa-canvas { width:100%; max-width:480px; aspect-ratio:1/1; background:#fff; border:3px solid #002e6d;
+  border-radius:14px; touch-action:none; cursor:crosshair; display:block; margin:0 auto 12px; }
+.fa-cray-row { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:12px; }
+.fa-cray { width:32px; height:46px; border:none; cursor:pointer; background:var(--c); padding:0;
+  clip-path:polygon(50% 0, 86% 16%, 86% 100%, 14% 100%, 14% 16%);
+  opacity:0.82; transition:transform .1s, opacity .1s; }
+.fa-cray:hover { opacity:1; transform:translateY(-4px); }
+.fa-cray.on { opacity:1; transform:translateY(-6px); filter:drop-shadow(0 3px 6px rgba(0,0,0,0.4)); }
+.fa-cray-tools { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+
+/* ---- the curator's stamp ---- */
+.fa-stamp { display:block; margin-top:6px; font-family:'Share Tech Mono',monospace; font-size:0.58rem;
+  letter-spacing:0.08em; color:#6bffb8; opacity:0.8; }
+
+/* ---- wall tiers: the wall levels up as pieces are hung ---- */
+.fa-h2--gallery::after { content:''; display:block; width:130px; height:2px; margin:7px auto 0;
+  background:linear-gradient(90deg, transparent, #F5C518, transparent); }
+.fa-h2--museum::before { content:'✦ '; }
+.fa-h2--museum::after { content:''; display:block; width:210px; height:5px; margin:7px auto 0;
+  border-top:1px solid #F5C518; border-bottom:1px solid #F5C518; }
 
 /* ---- the card (print-friendly navy/gold/white) ---- */
 .fan-card { max-width:560px; margin:0 auto; background:#fff; border:3px solid #002e6d; border-radius:18px;
@@ -140,5 +178,98 @@ permalink: /fan-art/
   document.getElementById('fa-reset').addEventListener('click', function () {
     img.removeAttribute('src'); card.classList.remove('has-img'); try { localStorage.removeItem(STORE); } catch (e) {}
   });
+
+  // ---- Crayon mode: fat crayons on a white page; "done" drops it on the card ----
+  (function () {
+    var box = document.getElementById('fa-crayons'), cv = document.getElementById('fa-canvas');
+    if (!box || !cv || !cv.getContext) return;
+    var ctx = cv.getContext('2d');
+    var COLORS = ['#d0342c', '#e8862c', '#f2c22e', '#3f9b45', '#2d6fc2', '#7a4bbf', '#8a5a2b', '#2b2b2b'];
+    var color = COLORS[0], drawing = false, last = null;
+    function paper() { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, cv.width, cv.height); }
+    paper();
+    var row = document.getElementById('fa-cray-row');
+    COLORS.forEach(function (c, i) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'fa-cray' + (i === 0 ? ' on' : '');
+      b.style.setProperty('--c', c); b.setAttribute('aria-label', 'crayon');
+      b.onclick = function () {
+        color = c;
+        Array.prototype.forEach.call(row.children, function (x) { x.classList.remove('on'); });
+        b.classList.add('on');
+      };
+      row.appendChild(b);
+    });
+    function pos(e) {
+      var r = cv.getBoundingClientRect();
+      return { x: (e.clientX - r.left) * (cv.width / r.width), y: (e.clientY - r.top) * (cv.height / r.height) };
+    }
+    function stroke(a, b) {
+      ctx.strokeStyle = color; ctx.lineWidth = 13; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.globalAlpha = 0.88;   // the slightly waxy, layered crayon look
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    cv.addEventListener('pointerdown', function (e) {
+      e.preventDefault(); drawing = true; last = pos(e); stroke(last, last);
+      try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    cv.addEventListener('pointermove', function (e) { if (!drawing) return; var p = pos(e); stroke(last, p); last = p; });
+    ['pointerup', 'pointercancel'].forEach(function (ev) { cv.addEventListener(ev, function () { drawing = false; }); });
+    document.getElementById('fa-draw').addEventListener('click', function () {
+      box.hidden = !box.hidden;
+      if (!box.hidden) { try { box.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }
+    });
+    document.getElementById('fa-cray-clear').addEventListener('click', paper);
+    document.getElementById('fa-cray-done').addEventListener('click', function () {
+      show(cv.toDataURL('image/png'));
+      box.hidden = true;
+      try { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+    });
+  })();
 })();
 </script>
+
+<script>
+// Princess visits the gallery — every so often she wanders up to a hung piece,
+// pauses in front of it, and wags. Dormant while the wall is empty.
+(function () {
+  var pieces = document.querySelectorAll('.fa-piece');
+  var walker = document.getElementById('princess-walker');
+  if (!pieces.length || !walker) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var visiting = false;
+  function visit() {
+    if (visiting || walker.classList.contains('is-walking')) { schedule(); return; }
+    var vis = Array.prototype.filter.call(pieces, function (p) {
+      var r = p.getBoundingClientRect();
+      return r.top < window.innerHeight - 140 && r.bottom > 140;
+    });
+    if (!vis.length) { schedule(); return; }
+    var r = vis[Math.floor(Math.random() * vis.length)].getBoundingClientRect();
+    var x = Math.max(10, Math.min(window.innerWidth - 50, r.left + r.width / 2 - 15));
+    visiting = true;
+    walker.classList.add('is-visiting');
+    walker.style.left = x + 'px';
+    setTimeout(function () {                       // arrived — wag at the art
+      walker.classList.add('is-wagging');
+      setTimeout(function () {                     // done — head home
+        walker.classList.remove('is-wagging');
+        walker.style.left = '110vw';
+        setTimeout(function () {
+          walker.classList.remove('is-visiting'); walker.style.left = '';
+          visiting = false; schedule();
+        }, 5200);
+      }, 3400);
+    }, 5200);
+  }
+  function schedule() { setTimeout(visit, 30000 + Math.random() * 45000); }
+  setTimeout(visit, 12000);
+})();
+</script>
+<style>
+/* the gallery visit: she slides in on `left`, then wags in front of the art */
+.princess-walker.is-visiting { opacity: 1; transition: left 5s ease-in-out; }
+.princess-walker.is-wagging .princess-3d { animation: princess-wag 0.55s ease-in-out 6; }
+@keyframes princess-wag { 0%,100% { transform: rotate(0); } 30% { transform: rotate(-9deg); } 70% { transform: rotate(9deg); } }
+</style>
