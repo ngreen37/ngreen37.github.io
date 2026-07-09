@@ -39,7 +39,7 @@ permalink: /educators/
     <button class="ed-btn ed-btn-gold" id="ek-print" type="button">🖨 Print the card stack</button>
     <span class="ek-msg" id="ek-msg"></span>
   </div>
-  <p class="ek-privacy">Nothing is stored.</p>
+  <p class="ek-privacy">Personal Data Not Stored</p>
 </div>
 
 <!-- print-only card stack (built on demand) -->

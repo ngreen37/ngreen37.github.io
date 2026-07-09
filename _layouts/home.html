@@ -36,6 +36,38 @@ layout: default
   background:rgba(168,121,255,0.35); }   /* the horizon */
 .cc-window-sky { font-size:var(--ws, 9px); letter-spacing:1px; color:#b9a8e6; line-height:1; padding-bottom:10px; }
 @media (max-width:700px){ .cc-window { display:none; } }
+
+/* #9 — first visit only: the title assembles from falling pieces */
+.hero-title .ht-l { display:inline-block; position:relative; }
+.hero-title.ht-run .ht-l { visibility:hidden; }
+.hero-title.ht-run .ht-l .ht-p { visibility:visible; }
+.hero-title .ht-l.ht-in { visibility:visible; animation:htIn .34s ease both; }
+@keyframes htIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:none; } }
+.ht-p { position:absolute; left:50%; top:0; color:#F5C518; pointer-events:none; opacity:0; }
+.ht-p.ht-fall { animation:htFall .46s ease-in both; }
+@keyframes htFall { 0% { opacity:.95; transform:translate(-50%,-58px); }
+  80% { opacity:.9; transform:translate(-50%,0); }
+  100% { opacity:0; transform:translate(-50%,0) scale(1.3); } }
+
+/* #10 — she brushes past; the title takes the bump, then settles */
+.hero-title { transition:transform 1.6s cubic-bezier(.2,1.6,.35,1); }
+.hero-title.ht-nudge { transform:rotate(-1.2deg); }
+
+/* #15 — the shop light: lit only while work is shipping. no label. */
+.shop-light { position:absolute; right:6%; bottom:74px; width:7px; height:7px; border-radius:50%; z-index:1;
+  background:#ffcf6a; box-shadow:0 0 10px 3px rgba(255,190,80,0.45), 0 0 30px 11px rgba(255,170,40,0.13);
+  animation:shopGlow 4.5s ease-in-out infinite; pointer-events:none; }
+@keyframes shopGlow { 50% { opacity:0.62; } }
+@media (prefers-reduced-motion: reduce) { .shop-light { animation:none; } }
+
+/* #20 — the veil (you were never meant to see this rule) */
+.puri-veil { position:fixed; inset:0; z-index:12000; pointer-events:none; opacity:0; transition:opacity .48s ease;
+  background:radial-gradient(circle at 50% 42%, rgba(124,77,255,0.34), rgba(10,7,20,0) 62%); }
+.puri-veil::before { content:''; position:absolute; inset:-40%; border-radius:50%; mix-blend-mode:screen;
+  background:conic-gradient(from 0deg, rgba(245,197,24,0.13), rgba(124,77,255,0.2), rgba(91,224,192,0.12), rgba(245,197,24,0.13));
+  animation:puriSpin 1.4s linear infinite; }
+.puri-veil.is-on { opacity:1; }
+@keyframes puriSpin { to { transform:rotate(360deg); } }
 </style>
 
 {% comment %} ── 1b. PLAY STRIP — The Gauntlet (moved here from /games/) ── {% endcomment %}
@@ -51,6 +83,12 @@ layout: default
       <span class="hg-cta" id="hg-cta">Begin</span>
     </div>
   </a>
+  {% comment %} #14 DOOR CHECK — some days the door asks a question (JS below fills it). {% endcomment %}
+  <div class="door-check" id="door-check" hidden>
+    <div class="dc-head">DOOR CHECK — WHITE MATES IN ONE</div>
+    <div class="dc-board" id="dc-board" aria-hidden="true"></div>
+    <div class="dc-moves" id="dc-moves" role="group" aria-label="Pick the mating move"></div>
+  </div>
 </section>
 <style>
 .home-play { display:flex; flex-wrap:wrap; gap:12px; align-items:stretch; justify-content:center; margin:16px 0 4px; }
@@ -82,6 +120,21 @@ layout: default
   .home-gauntlet .hg-side { align-items:center; flex-direction:row-reverse; justify-content:space-between; width:100%; }
   .home-gauntlet .hg-title { font-size:1.4rem; }
 }
+.door-check { flex:1 1 100%; display:flex; align-items:center; justify-content:center; gap:16px; flex-wrap:wrap;
+  background:rgba(18,11,40,0.72); border:1px dashed rgba(245,197,24,0.42); border-radius:14px; padding:12px 16px; }
+.door-check .dc-head { font-family:'Courier New',monospace; font-size:0.72rem; font-weight:700; letter-spacing:0.12em;
+  color:#F5C518; flex:1 1 100%; text-align:center; }
+.dc-board { display:grid; grid-template-columns:repeat(8,17px); border:2px solid #3a2a10; border-radius:4px; overflow:hidden; }
+.dc-board i { width:17px; height:17px; font-style:normal; font-size:13.5px; line-height:17px; text-align:center; color:#1d1430; }
+.dc-board i.lt { background:#e9dcb6; }
+.dc-board i.dk { background:#a97c50; }
+.dc-moves { display:flex; flex-direction:column; gap:8px; }
+.dc-btn { font-family:'Courier New',monospace; font-weight:700; font-size:0.86rem; color:#F5C518; background:rgba(245,197,24,0.08);
+  border:1px solid rgba(245,197,24,0.5); border-radius:999px; padding:7px 18px; cursor:pointer; }
+.dc-btn:hover { background:rgba(245,197,24,0.2); }
+.door-check.is-shake { animation:dcShake .3s ease; }
+@keyframes dcShake { 25% { transform:translateX(-5px); } 75% { transform:translateX(5px); } }
+.door-check.is-solved { border-color:#6bffb8; }
 </style>
 <script>
 // The Gauntlet hero — resume state (#8), progress pips, and climb-rank badge (#6).
@@ -208,6 +261,7 @@ layout: default
 {% assign vis_char_count = 0 %}{% for c in site.characters %}{% unless site.hidden_character_urls contains c.url %}{% assign vis_char_count = vis_char_count | plus: 1 %}{% endunless %}{% endfor %}
 {% assign vis_loc_count = 0 %}{% for c in site.locations %}{% unless site.hidden_location_urls contains c.url %}{% assign vis_loc_count = vis_loc_count | plus: 1 %}{% endunless %}{% endfor %}
 <div class="home-basement">
+<span class="shop-light" id="shop-light" hidden aria-hidden="true"></span>
 <div class="home-drips" aria-hidden="true">
   <span class="drip"             style="--x:2%;  --w:7px;  --len:400px; --col:245,197,24;  --dur:8.4s;  --delay:-0.5s; --b:1.15"></span>
   <span class="drip"             style="--x:6%;  --w:9px;  --len:250px; --col:176,142,255; --dur:9.6s;  --delay:-3.1s; --b:0.8"></span>
@@ -426,17 +480,21 @@ layout: default
 
   // ---- NIGHT DESK: midnight to 6am, the news room goes quiet ----
   if (new Date().getHours() < 6) {
+    // The overnight guy is bored, unsupervised, and slipping things in.
+    // Management has been notified. Management is asleep.
     var NIGHT = [
-      'CHECKER TOWN SLEEPS. MOSTLY.',
-      'SECTOR 3 QUIET. TOO QUIET.',
-      'A LONE PAWN SEEN CROSSING THE BOARD AT 2 A.M. — DECLINED COMMENT',
-      'THE NIGHT FERRY TO SHOGI ISLAND: STILL DELAYED. THE NIGHT CREW: STILL PATIENT.',
-      'THE SAND MINES NEVER CLOSE — SOMEBODY TELL THE FOREMAN WHAT TIME IT IS',
-      'ALL QUIET AT THE CITY GATES. THE GATEKEEPER DOES NOT SLEEP. HE WAITS.',
-      'PRINCESS IS DREAMING — PAWS TWITCHING THROUGH AN IMAGINARY CHECKMATE',
-      "TOMORROW'S HEADLINES ARE STILL BEING WRITTEN",
-      'THE LIGHTHOUSE REPORTS NOTHING TO REPORT. THANK YOU, LIGHTHOUSE.',
-      "YOU'RE UP LATE, OPERATIVE. THE BOARD WILL KEEP."
+      'IT IS THE MIDDLE OF THE NIGHT IN CHECKER TOWN. THIS HAS BEEN CONFIRMED BY MULTIPLE SOURCES',
+      'THE SEA CONTINUES TO BE LARGE. MORE ON THIS AS IT DEVELOPS. IT WILL NOT DEVELOP',
+      'A STREETLIGHT IN SECTOR 3 HAS BEEN FLICKERING SINCE TUESDAY. IT IS DOING ITS BEST',
+      'THE VENDING MACHINE AT THE NEWS DESK TOOK MY QUARTER AGAIN. INVESTIGATION ONGOING. THE INVESTIGATION IS ME, STARING AT IT',
+      "TONIGHT'S FORECAST: DARK. FOLLOWED BY, EVENTUALLY, NOT DARK",
+      'THE MOON IS UP THERE AGAIN. NOBODY ASKED IT TO BE. IT KEEPS DOING IT',
+      'MANAGEMENT ASKS THAT THE OVERNIGHT CRAWL REMAIN PROFESSIONAL. MANAGEMENT IS ASLEEP',
+      'A DOG BARKED AT 2:14 A.M. ANOTHER DOG ANSWERED. NEITHER HAS ISSUED A STATEMENT',
+      'REMINDER: THE FERRY IS STILL DELAYED. THE NIGHT SHIFT NO LONGER REMEMBERS WHAT IT IS DELAYED FROM',
+      'I COUNTED THE SQUARES ON THE BIG BOARD IN THE PLAZA. THERE ARE STILL 64. I WILL COUNT AGAIN TOMORROW',
+      'IF YOU ARE READING THIS, THE NIGHT DESK THANKS YOU. IT GETS QUIET IN HERE',
+      'GO TO BED. THE BOARD WILL KEEP'
     ];
     track.innerHTML = '';
     NIGHT.forEach(function(n) { item(n); });
@@ -550,7 +608,7 @@ layout: default
       var top = rows && rows[0];
       if (!top || !top.codename || !window.PJCCTicker) return;
       PJCCTicker.add('RECORD WATCH — ' + String(top.codename).toUpperCase() + ' HOLDS ' + pick[1] +
-        ' AT ' + top.score + ' — THINK YOU CAN TAKE IT? → /GAMES/', 'ticker-item--record');
+        ' AT ' + top.score + ' — THE RECORD STANDS', 'ticker-item--record');
     }).catch(function () {});
   });
 })();
@@ -572,6 +630,8 @@ layout: default
   if (!c) return;                                   // fresh visitors: a barely-there window
   win.style.setProperty('--ws', (9 + c * 1.5) + 'px');
   win.style.setProperty('--wo', (0.16 + c * 0.03).toFixed(2));
+  // past floor 4 the window stops being scenery: it opens onto your climb.
+  if (c >= 4) win.setAttribute('href', '{{ "/games/the-gauntlet/" | relative_url }}#climb');
   if (c >= 10) {                                    // crowned — the city lights come on
     sky.style.color = '#F5C518';
     sky.style.textShadow = '0 0 9px rgba(245,197,24,0.85)';
@@ -603,5 +663,271 @@ layout: default
     shuffle();
     row.classList.remove('just-shuffled'); void row.offsetWidth; row.classList.add('just-shuffled');
   });
+})();
+
+// #9 — the title assembles itself from falling pieces, once, on your first visit.
+(function () {
+  var t = document.querySelector('.hero-title');
+  if (!t) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  try {
+    if (localStorage.getItem('pjcc.home.introseen')) return;
+    localStorage.setItem('pjcc.home.introseen', '1');
+  } catch (e) { return; }
+  var PIECES = ['♟','♞','♝','♜','♛','♚','♙','♘','♗','♖','♕','♔'];
+  t.setAttribute('aria-label', t.textContent.replace(/\s+/g, ' '));
+  var letters = [];
+  Array.prototype.slice.call(t.childNodes).forEach(function (n) {
+    if (n.nodeType !== 3) return;                    // wrap text; leave the <br> alone
+    var frag = document.createDocumentFragment();
+    String(n.nodeValue).split('').forEach(function (ch) {
+      if (!ch.trim()) { frag.appendChild(document.createTextNode(ch)); return; }
+      var s = document.createElement('span');
+      s.className = 'ht-l'; s.textContent = ch; s.setAttribute('aria-hidden', 'true');
+      frag.appendChild(s); letters.push(s);
+    });
+    t.replaceChild(frag, n);
+  });
+  if (!letters.length) return;
+  t.classList.add('ht-run');
+  letters.forEach(function (s, i) {
+    var d = 160 + i * 34;
+    setTimeout(function () {
+      var p = document.createElement('span');
+      p.className = 'ht-p ht-fall';
+      p.textContent = PIECES[(Math.random() * PIECES.length) | 0];
+      s.appendChild(p);
+      setTimeout(function () { try { s.removeChild(p); } catch (e) {} }, 520);
+    }, d);
+    setTimeout(function () { s.classList.add('ht-in'); }, d + 280);
+  });
+  // when the dust settles, put the title back to plain text (kerning and all)
+  setTimeout(function () {
+    t.classList.remove('ht-run');
+    letters.forEach(function (s) {
+      if (s.parentNode) s.parentNode.replaceChild(document.createTextNode(s.textContent), s);
+    });
+    t.normalize(); t.removeAttribute('aria-label');
+  }, 160 + letters.length * 34 + 900);
+})();
+
+// #10 — once a session Princess takes the high road, straight through the hero,
+// and brushes the title on her way past. Movement only, as always.
+(function () {
+  var walker = document.getElementById('princess-walker');
+  var hero = document.querySelector('.home-hero');
+  var title = document.querySelector('.hero-title');
+  if (!walker || !hero || !title) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  try { if (sessionStorage.getItem('pjcc.home.herowalk')) return; } catch (e) { return; }
+  var armed = true;
+  walker.addEventListener('animationstart', function (e) {
+    if (e.animationName !== 'pawn-walk' || !armed) return;
+    if (window.scrollY > 60) return;                 // hero off-screen — normal stroll
+    armed = false;
+    try { sessionStorage.setItem('pjcc.home.herowalk', '1'); } catch (e2) {}
+    var r = hero.getBoundingClientRect();
+    walker.style.bottom = Math.max(40, window.innerHeight - r.bottom + 4) + 'px';
+    setTimeout(function () {                         // mid-stroll: the bump
+      title.classList.add('ht-nudge');
+      setTimeout(function () { title.classList.remove('ht-nudge'); }, 2400);
+    }, 6800);
+  });
+  walker.addEventListener('animationend', function (e) {
+    if (e.animationName !== 'pawn-walk') return;
+    walker.style.bottom = '';                        // back to her usual path
+  });
+})();
+
+// #14 DOOR CHECK — some days the door asks a question. One move, mate.
+// Every position is fixed and hand-verified; the board renders straight from
+// the FEN so what you see is exactly what's asked. Solve it: the door glows.
+(function () {
+  var box = document.getElementById('door-check');
+  var boardEl = document.getElementById('dc-board'), movesEl = document.getElementById('dc-moves');
+  if (!box || !boardEl || !movesEl) return;
+  var PUZZLES = [        // [position, mate-in-one, decoy, decoy] — all legal moves
+    ['6k1/5ppp/8/8/8/8/5PPP/4R1K1',                      'Re8#',  'Re7',   'Kf1'],
+    ['r1bqk1nr/pppp1ppp/2n5/2b1p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR', 'Qxf7#', 'Qxe5+', 'Bxf7+'],
+    ['6rk/6pp/8/6N1/8/8/8/6K1',                          'Nf7#',  'Ne6',   'Ne4'],
+    ['6k1/8/6K1/8/8/8/8/1Q6',                            'Qb8#',  'Qb7',   'Qh1'],
+    ['3k4/1R6/8/8/8/8/8/R5K1',                           'Ra8#',  'Rb8+',  'Ra7']
+  ];
+  var d = new Date(), ds = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+  var h = 2166136261;
+  for (var i = 0; i < ds.length; i++) { h ^= ds.charCodeAt(i); h = Math.imul(h, 16777619); }
+  var seed = h >>> 0;
+  if (seed % 3) return;                              // most days, the door keeps quiet
+  try { if (localStorage.getItem('pjcc.door.check') === ds) return; } catch (e) {}
+  var pz = PUZZLES[seed % PUZZLES.length];
+  var GLYPH = { K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟' };
+  function cell(r2, f2, g) { return '<i class="' + (((r2 + f2) % 2) ? 'dk' : 'lt') + '">' + g + '</i>'; }
+  var html = '', rows = pz[0].split('/');
+  for (var rI = 0; rI < 8; rI++) {
+    var file = 0, row = rows[rI];
+    for (var cI = 0; cI < row.length; cI++) {
+      var ch = row[cI];
+      if (ch >= '1' && ch <= '8') { for (var s2 = 0; s2 < +ch; s2++) { html += cell(rI, file, ''); file++; } }
+      else { html += cell(rI, file, GLYPH[ch] || ''); file++; }
+    }
+  }
+  boardEl.innerHTML = html;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function spark(x, y) {
+    if (reduce) return;
+    var p = document.createElement('span');
+    p.textContent = '✦';
+    p.style.cssText = 'position:fixed;left:' + x + 'px;top:' + y + 'px;color:#F5C518;z-index:11000;' +
+      'pointer-events:none;font-size:' + (9 + Math.random() * 8) + 'px;transition:transform .7s ease-out, opacity .7s ease-out;';
+    document.body.appendChild(p);
+    requestAnimationFrame(function () {
+      p.style.transform = 'translate(' + (Math.random() * 90 - 45) + 'px,' + (-30 - Math.random() * 60) + 'px) rotate(' + (Math.random() * 300 - 150) + 'deg)';
+      p.style.opacity = '0';
+    });
+    setTimeout(function () { try { p.remove(); } catch (e) {} }, 800);
+  }
+  var opts = [[pz[1], 1], [pz[2], 0], [pz[3], 0]];
+  var seqs = [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];
+  seqs[seed % 6].forEach(function (ix) {
+    var o = opts[ix], b = document.createElement('button');
+    b.type = 'button'; b.className = 'dc-btn'; b.textContent = o[0];
+    b.addEventListener('click', function () {
+      if (o[1]) {
+        try { localStorage.setItem('pjcc.door.check', ds); } catch (e) {}
+        box.classList.add('is-solved');
+        var card = document.getElementById('home-gauntlet');
+        if (card) card.style.filter = 'drop-shadow(0 0 16px rgba(245,197,24,0.45))';
+        var r3 = b.getBoundingClientRect();
+        for (var k2 = 0; k2 < 10; k2++) spark(r3.left + r3.width / 2, r3.top);
+        setTimeout(function () { box.hidden = true; }, 1600);
+      } else {
+        box.classList.remove('is-shake'); void box.offsetWidth; box.classList.add('is-shake');
+      }
+    });
+    movesEl.appendChild(b);
+  });
+  box.hidden = false;
+})();
+
+// #15 THE SHOP LIGHT — a small lamp at the foot of the page, lit only when a
+// commit shipped in the last 48 hours. No label. He's in there working.
+(function () {
+  var lamp = document.getElementById('shop-light');
+  if (!lamp || !window.fetch) return;
+  var KEY = 'pjcc.shoplight', now = Date.now();
+  function show(on) { if (on) lamp.hidden = false; }
+  try {
+    var c = JSON.parse(localStorage.getItem(KEY));
+    if (c && now - c.t < 3600000) { show(c.on); return; }   // one check an hour is plenty
+  } catch (e) {}
+  fetch('https://api.github.com/repos/ngreen37/ngreen37.github.io/commits?per_page=1')
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (j) {
+      var iso = j && j[0] && j[0].commit && j[0].commit.committer && j[0].commit.committer.date;
+      var on = !!iso && (now - new Date(iso).getTime()) < 172800000;
+      try { localStorage.setItem(KEY, JSON.stringify({ t: now, on: on })); } catch (e) {}
+      show(on);
+    }).catch(function () {});
+})();
+
+// ⠀
+(function () {
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  try { if ((localStorage.getItem('pjcc.lang') || 'en') !== 'en') return; } catch (e) {}
+  var V = 'アイウエオ', VOW = 'aiueo';
+  var ROWS = { k:'カキクケコ', g:'ガギグゲゴ', s:'サシスセソ', z:'ザジズゼゾ', t:'タチツテト', d:'ダヂヅデド',
+               n:'ナニヌネノ', h:'ハヒフヘホ', b:'バビブベボ', p:'パピプペポ', m:'マミムメモ', r:'ラリルレロ' };
+  var F  = { a:'ファ', i:'フィ', u:'フ', e:'フェ', o:'フォ' };
+  var JJ = { a:'ジャ', i:'ジ', u:'ジュ', e:'ジェ', o:'ジョ' };
+  var YY = { a:'ヤ', i:'イ', u:'ユ', e:'イェ', o:'ヨ' };
+  var WW = { a:'ワ', i:'ウィ', u:'ウ', e:'ウェ', o:'ヲ' };
+  var SH = { a:'シャ', i:'シ', u:'シュ', e:'シェ', o:'ショ' };
+  var CH = { a:'チャ', i:'チ', u:'チュ', e:'チェ', o:'チョ' };
+  var SMALL = { a:'ャ', i:'ィ', u:'ュ', e:'ェ', o:'ョ' };
+  function vi(c) { return c ? VOW.indexOf(c) : -1; }   // NB: indexOf('') is 0, not -1
+  function vi2(c) { if (!c) return -1; var k = VOW.indexOf(c); return k > -1 ? k : (c === 'y' ? 1 : -1); }
+  function kana(word) {
+    var w = word.toLowerCase(), out = '', i = 0;
+    while (i < w.length) {
+      var c = w[i], nx = w[i + 1] || '', v = vi(c);
+      if (v > -1) {
+        if (nx === c) { out += V[v] + 'ー'; i += 2; } else { out += V[v]; i++; }
+        continue;
+      }
+      var two = w.substr(i, 2), table = null, skip = 1;
+      if (two === 'sh') { table = SH; skip = 2; }
+      else if (two === 'ch') { table = CH; skip = 2; }
+      else if (two === 'th') { c = 's'; skip = 2; }
+      else if (two === 'ph') { c = 'f'; skip = 2; }
+      else if (two === 'wh') { c = 'w'; skip = 2; }
+      else if (two === 'qu') { c = 'k'; skip = 2; }
+      if (table) {
+        var nv = vi2(w[i + skip] || '');
+        out += (nv > -1) ? table[VOW[nv]] : table.u;
+        i += skip + (nv > -1 ? 1 : 0);
+        continue;
+      }
+      if (skip === 2) nx = w[i + skip] || '';
+      if (c === 'n' && vi(nx) < 0 && nx !== 'y') { out += 'ン'; i += skip; continue; }
+      if (c === 'm' && (nx === 'b' || nx === 'p' || nx === 'm')) { out += 'ン'; i += skip; continue; }
+      if (nx === c && (i + skip + 1) < w.length) { out += 'ッ'; i += skip; continue; }
+      if (nx === c) { skip += 1; nx = w[i + skip] || ''; }
+      var map = c;
+      if (c === 'l') map = 'r';
+      if (c === 'q') map = 'k';
+      if (c === 'c') map = (nx === 'i' || nx === 'e' || nx === 'y') ? 's' : 'k';
+      if (c === 'x') { out += 'クス'; i += skip; continue; }
+      if (c === 'c' && nx === 'k') { i += skip; continue; }   // 'ck' is one sound
+      if (map === 'y' && vi(nx) < 0) { out += 'イ'; i += skip; continue; }
+      if (nx === 'y' && vi(w[i + skip + 1] || '') > -1) {          // kya / ryo / nyu …
+        var v3 = VOW[vi(w[i + skip + 1])];
+        var base = ROWS[map] ? ROWS[map][1] : (map === 'f' ? 'フィ' : map === 'j' ? 'ジ' : 'イ');
+        out += base + (SMALL[v3] || ''); i += skip + 2; continue;
+      }
+      var nv2 = vi2(nx), vch = nv2 > -1 ? VOW[nv2] : null;
+      var eat = vch ? skip + 1 : skip;
+      if (map === 'f' || map === 'v') out += F[vch || 'u'];
+      else if (map === 'j') out += JJ[vch || 'u'];
+      else if (map === 'y') out += YY[vch || 'u'];
+      else if (map === 'w') out += WW[vch || 'u'];
+      else if (ROWS[map]) out += ROWS[map][vch ? VOW.indexOf(vch) : ((map === 't' || map === 'd') ? 4 : 2)];
+      else { out += w[i]; eat = skip; }
+      i += eat;
+    }
+    return out;
+  }
+  function kanaText(s) { return s.replace(/[A-Za-z]+/g, function (m) { return kana(m); }); }
+  function go() {
+    try { if (sessionStorage.getItem('pjcc.puri')) return; sessionStorage.setItem('pjcc.puri', '1'); } catch (e) {}
+    var veil = document.createElement('div');
+    veil.className = 'puri-veil'; veil.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(veil);
+    requestAnimationFrame(function () { veil.classList.add('is-on'); });
+    setTimeout(function () {
+      var tw = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+        acceptNode: function (n) {
+          if (!n.nodeValue || !/[A-Za-z]/.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
+          var p = n.parentNode && n.parentNode.nodeName;
+          if (p === 'SCRIPT' || p === 'STYLE' || p === 'NOSCRIPT' || p === 'TEXTAREA') return NodeFilter.FILTER_REJECT;
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      });
+      var swapped = [], n, cap = 0;
+      while ((n = tw.nextNode()) && cap < 900) { swapped.push([n, n.nodeValue]); cap++; }
+      swapped.forEach(function (pr) { pr[0].nodeValue = kanaText(pr[1]); });
+      veil.classList.remove('is-on');
+      setTimeout(function () {
+        veil.classList.add('is-on');
+        setTimeout(function () {
+          swapped.forEach(function (pr) { pr[0].nodeValue = pr[1]; });
+          veil.classList.remove('is-on');
+          setTimeout(function () { try { veil.remove(); } catch (e) {} }, 600);
+        }, 480);
+      }, 3000);
+    }, 480);
+  }
+  go.kana = kana;
+  window.__puri = go;
+  if (Math.random() < 0.01) setTimeout(go, 2600);
 })();
 </script>

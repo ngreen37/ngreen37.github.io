@@ -445,6 +445,20 @@ for the flare itself. Ties to [[blender-game-goal]].
 supports cross-device sign-in) — start a run on the couch, finish it at the desk. Small, and it makes the whole
 site feel like one app.
 
+**Av30 — THE DOORS** *(new 2026-07-09 · Nate: "that could be a wide opportunity to make a world… the 'doors'" →
+"yes for sure do Number five"):* every entry point on the site becomes a **door in the world**, so navigation
+stops being a menu and becomes walking around Checker Town. The first door is live: the PJCC-home Gauntlet card
+re-skins in the current floor's accent + boss piece once a climb starts (shipped 9091eb8). Phases:
+1. **Door language** — a tiny shared CSS/JS vocabulary (`.door`, accent var, glyph slot, locked/ajar/open states)
+   so any card can become a door in one class.
+2. **The game doors** — each game's card on /games/ wears its own door: the Sand Mine's timber brace, Siege's
+   portcullis, the Reading Room's shoji frame, Shogi Island's torii. State reflects YOUR progress (dusty = never
+   entered, warm light = played this week, trophy plate = a best on the board).
+3. **The place doors** — location pages get doorways as heroes; characters get dossier-drawer "doors."
+4. **Sound + hinge** — one soft door sound per family (wood, iron, paper); reduced-motion/no-sound safe.
+5. **The locked ones** — slow-rolled content (hidden cast, Murphy's Law) shows as doors with no handles.
+   People will try them. That's the point.
+
 ---
 
 # 🏠 The PJCC Home Page — ideas
@@ -786,3 +800,6 @@ Brothers** and the **Commentators** are placeholders (Boomer/Tempo/Sunny) — co
 **Parked (2026-07-08):** PJCC-home idea #3 — **tap-a-headline dispatches:** tap any ticker item and a
 two-line "full story" card unfolds beneath the ticker; the lore drips out through the news desk.
 (Nate: "for a later date." The ticker now exposes `PJCCTicker.add()` — the card layer slots in cleanly.)
+
+**Parked (2026-07-08):** PJCC-home idea #12 — **Postcard from the road:** a rotating polaroid of one
+location with a handwritten one-liner on the back, linking to its page. (Nate: "for a later date.")

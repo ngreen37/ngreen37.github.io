@@ -64,7 +64,8 @@
   /* ---- 3. Parallax drifting pieces (home only) ---- */
   function setupDrift() {
     if (reduce) return;
-    if (!document.querySelector('.home-stats')) return; // home page marker
+    // (marker was .home-stats; that bar became .home-basement's slim line 2026-07-08)
+    if (!document.querySelector('.home-basement, .home-stats')) return; // home page marker
     var layer = document.createElement('div');
     layer.className = 'flair-drift-layer';
     layer.setAttribute('aria-hidden', 'true');
@@ -77,19 +78,97 @@
       var x = Math.random() * 100, y = Math.random() * 100, size = 70 + Math.random() * 110;
       s.style.left = x + 'vw'; s.style.top = y + 'vh'; s.style.fontSize = size + 'px';
       layer.appendChild(s);
-      pieces.push({ el: s, depth: depth });
+      pieces.push({ el: s, depth: depth, x: x, y: y, size: size });
     }
     document.body.insertBefore(layer, document.body.firstChild);
-    var ticking = false;
+    var ticking = false, formed = false;
     function onScroll() {
-      if (ticking) return; ticking = true;
+      if (ticking || formed) return; ticking = true;
       requestAnimationFrame(function () {
         var sy = window.pageYOffset;
-        pieces.forEach(function (p) { p.el.style.transform = 'translateY(' + (-sy * p.depth).toFixed(1) + 'px)'; });
+        if (!formed) pieces.forEach(function (p) { p.el.style.transform = 'translateY(' + (-sy * p.depth).toFixed(1) + 'px)'; });
         ticking = false;
       });
     }
     window.addEventListener('scroll', onScroll, { passive: true });
+
+    /* #19 — on premiere-milestone days the seven drifting pieces gather once,
+       hold the shape of a crown in the sky, then the wind has them back.
+       Never announced; if you're there that day, you see it. */
+    var CROWN = [[30,31],[70,31],[32,15],[41,23],[50,10],[59,23],[68,15]];
+    function form() {
+      if (formed) return;
+      formed = true;
+      var EASE = 'left 3.6s cubic-bezier(.3,.7,.25,1), top 3.6s cubic-bezier(.3,.7,.25,1), font-size 3.6s ease, color 3.6s ease';
+      pieces.forEach(function (p, i) {
+        p.el.style.transition = EASE;
+        p.el.style.transform = '';
+        p.el.style.left = CROWN[i % CROWN.length][0] + 'vw';
+        p.el.style.top = CROWN[i % CROWN.length][1] + 'vh';
+        p.el.style.fontSize = '30px';
+        p.el.style.color = 'rgba(245,197,24,0.55)';
+        p.el.style.textShadow = '0 0 14px rgba(245,197,24,0.55)';
+      });
+      setTimeout(function () {
+        pieces.forEach(function (p) {
+          p.el.style.left = p.x + 'vw'; p.el.style.top = p.y + 'vh';
+          p.el.style.fontSize = p.size + 'px';
+          p.el.style.color = ''; p.el.style.textShadow = '';
+        });
+        setTimeout(function () {
+          pieces.forEach(function (p) { p.el.style.transition = ''; });
+          formed = false; onScroll();
+        }, 3700);
+      }, 8200);
+    }
+    var daysLeft = Math.ceil((Date.parse('2027-10-21T04:00:00Z') - Date.now()) / 86400000);
+    var MILES = [500, 450, 400, 365, 300, 250, 200, 150, 100, 75, 50, 30, 14, 7, 3, 1];
+    if (MILES.indexOf(daysLeft) > -1) {
+      var mk = 'pjcc.crown.' + daysLeft, fresh = false;
+      try { fresh = !localStorage.getItem(mk); if (fresh) localStorage.setItem(mk, '1'); } catch (e) {}
+      if (fresh) setTimeout(function () { if (window.scrollY < 120 && !document.hidden) form(); }, 9000);
+    }
+    window.__crownNight = form;
+  }
+
+  /* ---- #16 The wall remembers you — return visits leave a little more paint
+     at the foot of every page. One coat per day, capped, never a word.
+     Deterministic per visit-count: old splats stay put, new ones join. ---- */
+  function setupWeathering() {
+    var footer = document.querySelector('.site-footer');
+    if (!footer) return;
+    var KEY = 'pjcc.weathering', st = { d: 0, last: '' };
+    try { st = JSON.parse(localStorage.getItem(KEY)) || st; } catch (e) {}
+    var t = new Date(), ds = t.getFullYear() + '-' + (t.getMonth() + 1) + '-' + t.getDate();
+    if (st.last !== ds) {
+      st.d = Math.min(40, (st.d || 0) + 1); st.last = ds;
+      try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {}
+    }
+    var n = Math.min(18, Math.max(0, (st.d || 0) - 1));   // day one: the wall is clean
+    if (!n) return;
+    function rnd(seed) {
+      var x = Math.imul(seed ^ (seed >>> 15), 2246822519);
+      x = Math.imul(x ^ (x >>> 13), 3266489917);
+      return ((x ^= x >>> 16) >>> 0) / 4294967296;
+    }
+    var COLS = ['245,197,24', '176,142,255', '91,224,192', '255,143,208', '138,99,240', '255,168,60'];
+    if (getComputedStyle(footer).position === 'static') footer.style.position = 'relative';
+    var wrap = document.createElement('div');
+    wrap.className = 'flair-weathering';
+    wrap.setAttribute('aria-hidden', 'true');
+    for (var i = 0; i < n; i++) {
+      var b = i * 7 + 3;
+      var w = 9 + rnd(b + 1) * 18, hgt = w * (0.5 + rnd(b + 2) * 0.45);
+      var sp = document.createElement('i');
+      sp.style.cssText = 'left:' + (rnd(b) * 97).toFixed(1) + '%;bottom:' + (rnd(b + 3) * 10).toFixed(1) + 'px;' +
+        'width:' + w.toFixed(1) + 'px;height:' + hgt.toFixed(1) + 'px;' +
+        'background:rgba(' + COLS[i % COLS.length] + ',' + (0.045 + rnd(b + 4) * 0.05).toFixed(3) + ');' +
+        'border-radius:' + (35 + rnd(b + 5) * 30).toFixed(0) + '% ' + (65 - rnd(b + 6) * 30).toFixed(0) + '% ' +
+        (48 + rnd(b + 2) * 22).toFixed(0) + '% ' + (40 + rnd(b + 1) * 25).toFixed(0) + '%;' +
+        'transform:rotate(' + (rnd(b + 5) * 360).toFixed(0) + 'deg);';
+      wrap.appendChild(sp);
+    }
+    footer.appendChild(wrap);
   }
 
   /* ---- Piece-burst confetti ---- */
@@ -153,5 +232,6 @@
     try { setupTilt(); } catch (e) {}
     try { setupDrift(); } catch (e) {}
     try { setupBursts(); } catch (e) {}
+    try { setupWeathering(); } catch (e) {}
   });
 })();
