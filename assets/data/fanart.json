@@ -2,5 +2,5 @@
 layout: null
 ---
 [{% for piece in site.data.fanart %}
-  { "img": {{ piece.img | relative_url | jsonify }}, "title": {{ piece.title | jsonify }}, "by": {{ piece.by | jsonify }}, "hung": {{ piece.hung | jsonify }} }{% unless forloop.last %},{% endunless %}{% endfor %}
+  { "img": {{ piece.img | relative_url | jsonify }}, "title": {{ piece.title | jsonify }}, "by": {{ piece.by | jsonify }}, "hung": {{ piece.hung | jsonify }}, "walls": {{ piece.walls | jsonify }} }{% unless forloop.last %},{% endunless %}{% endfor %}
 ]

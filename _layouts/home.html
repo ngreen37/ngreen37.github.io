@@ -18,7 +18,25 @@ layout: default
 <section class="home-hero">
   <p class="hero-eyebrow">McPuppy Studios Presents</p>
   <h1 class="hero-title">Princess and the Journey<br>to Chess City</h1>
+  {% comment %} A faint, unlabeled window (idea #4, kept cryptic on purpose... i.e.
+       deliberately unexplained IN-WORLD — the skyline inside stands where your
+       Gauntlet climb stands, and only the observant will ever notice). {% endcomment %}
+  <a class="cc-window" id="cc-window" href="{{ '/games/the-gauntlet/' | relative_url }}" aria-label="A distant skyline">
+    <span class="cc-window-sky" id="cc-window-sky">♜♖♛♖♜</span>
+  </a>
 </section>
+<style>
+.home-hero { position: relative; }
+.cc-window { position:absolute; right:3%; top:6px; width:54px; height:72px; text-decoration:none;
+  border:1px solid rgba(168,121,255,0.28); border-radius:27px 27px 6px 6px; overflow:hidden;
+  display:flex; align-items:flex-end; justify-content:center; opacity:var(--wo, 0.16);
+  background:linear-gradient(180deg, rgba(20,12,45,0) 0%, rgba(124,77,255,0.09) 68%, rgba(245,197,24,0.05) 100%); }
+.cc-window:hover { opacity:0.55; }
+.cc-window::after { content:''; position:absolute; left:8px; right:8px; bottom:9px; height:1px;
+  background:rgba(168,121,255,0.35); }   /* the horizon */
+.cc-window-sky { font-size:var(--ws, 9px); letter-spacing:1px; color:#b9a8e6; line-height:1; padding-bottom:10px; }
+@media (max-width:700px){ .cc-window { display:none; } }
+</style>
 
 {% comment %} ── 1b. PLAY STRIP — The Gauntlet (moved here from /games/) ── {% endcomment %}
 <section class="home-play">
@@ -95,6 +113,24 @@ layout: default
     if (link) link.setAttribute('href', base + '#climb');
   }
   if (rankEl && cleared > 0) { rankEl.textContent = 'CLIMB RANK · ' + RANKS[cleared]; rankEl.hidden = false; }
+
+  // shared with the ticker (BREAKING floor clears) and the hero window
+  window.__gauntletProg = { cleared: cleared, cur: cur, names: NAMES };
+
+  // #5 THE DOOR — once the climb has begun, the card stops being a generic gold
+  // banner and becomes the door to YOUR floor: the current boss's colour and
+  // piece take over the frame. (Mirrors the LADDER accents/glyphs in the game.)
+  if (cleared > 0 && cur < NAMES.length) {
+    var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#9ff0c4','#ff6b6b','#c79bff','#ff9ec9','#ff8fd0'];
+    var GLYPHS  = ['♞','♟','♝','♞','♜','♝','♜','♝','♛','♛'];
+    var acc = ACCENTS[cur] || '#F5C518', card = link;
+    if (card) {
+      card.style.borderColor = acc;
+      card.style.boxShadow = '0 0 34px -14px ' + acc + ', inset 0 0 0 3px rgba(0,0,0,0.28), inset 0 0 60px -30px ' + acc;
+      var g = card.querySelector('.hg-glyph'); if (g) { g.textContent = GLYPHS[cur] || '♛'; g.style.color = acc; }
+      var pc = card.querySelector('.hg-pip.cur'); if (pc) { pc.style.background = acc; pc.style.boxShadow = '0 0 8px ' + acc; }
+    }
+  }
 })();
 </script>
 
@@ -103,10 +139,10 @@ layout: default
    line below. Edit / add / delete lines freely; promos use ticker-item--promo.
    Items are listed ONCE; the JS clones the set for a seamless loop, sets a calm
    scroll speed regardless of count, and adds tap-to-pause / resume. {% endcomment %}
-<div class="world-ticker-wrap">
+<div class="world-ticker-wrap"{% if site.data.breaking and site.data.breaking.message %} data-breaking-msg="{{ site.data.breaking.message | escape }}" data-breaking-until="{{ site.data.breaking.until }}"{% endif %}>
   <div class="ticker-badge" aria-hidden="true">
-    <span class="ticker-badge-live"><i></i>LIVE</span>
-    <span class="ticker-badge-name">CHECKER&nbsp;TOWN<br>NEWS</span>
+    <span class="ticker-badge-live"><i></i><b id="ticker-live-txt">LIVE</b></span>
+    <span class="ticker-badge-name" id="ticker-badge-name">CHECKER&nbsp;TOWN<br>NEWS</span>
   </div>
   <div class="ticker-outer">
     <div class="ticker-track" id="world-ticker-track">
@@ -119,7 +155,6 @@ layout: default
       <span class="ticker-item">INTERPLANETARY CONSTRUCTION CO. DENIES ALL VESSEL WRECKAGE CLAIMS — INVESTIGATION CONTINUES</span>
       <span class="ticker-item ticker-item--promo">◆ THE ARCADE: CLAIM A CODENAME &amp; CLIMB THE GLOBAL BOARDS → /GAMES/</span>
       <span class="ticker-item">CHESS CITY LEAFS ADVANCE TO FINALS — ROSTER ANNOUNCEMENT EXPECTED SHORTLY</span>
-      <span class="ticker-item">WEATHER ADVISORY: THE SEA IS ROUGH — ALL CROSSINGS POSTPONED INDEFINITELY</span>
       <span class="ticker-item ticker-item--promo">◆ THE ACADEMY: A FREE, GAMIFIED CHESS CURRICULUM — EARN YOUR BELTS → /ACADEMY/</span>
       <span class="ticker-item">CHECKER PIECE PRICES REACH RECORD HIGH — ECONOMISTS CITE THE CRASH AS ORIGIN POINT</span>
       <span class="ticker-item">UNKNOWN VESSEL SPOTTED OFF COAST — AUTHORITIES INVESTIGATING — PUBLIC ADVISED TO REMAIN CALM</span>
@@ -214,6 +249,8 @@ layout: default
 
 </div><!-- /.home-basement -->
 
+<script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-games-data.js' | relative_url }}"></script>
 <script>
 // Playable Games stat — computed from the registry so it never goes stale.
@@ -358,13 +395,95 @@ layout: default
   });
 })();
 
-// World ticker — calm speed, seamless loop, tap-to-pause, resume on return (#ticker)
+// World ticker — the Checker Town news desk. Calm crawl + tap-to-pause, plus:
+//   · NIGHT DESK   (midnight–6am: the quiet shift takes over)
+//   · THE FORECAST (date-seeded weather — every visitor gets the same day)
+//   · BREAKING     (a line in _data/breaking.yml, or YOUR Gauntlet floor clears past 4)
+//   · PJCCTicker.add(text, cls) — async headlines drop in without breaking the loop
 (function() {
   var wrap  = document.querySelector('.world-ticker-wrap');
   var track = document.getElementById('world-ticker-track');
   if (!wrap || !track) return;
 
-  // Clone the single item set so the -50% keyframe loops seamlessly.
+  function item(text, cls, front) {
+    var el = document.createElement('span');
+    el.className = 'ticker-item' + (cls ? ' ' + cls : '');
+    el.textContent = text;
+    if (front && track.firstChild) track.insertBefore(el, track.firstChild);
+    else track.appendChild(el);
+  }
+  function takeover(label) {
+    wrap.classList.add('is-breaking');
+    var t = document.getElementById('ticker-live-txt');
+    if (t) t.textContent = label || 'BREAKING';
+  }
+  function daySeed() {
+    var d = new Date(), ds = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+    var h = 2166136261;
+    for (var i = 0; i < ds.length; i++) { h ^= ds.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return h >>> 0;
+  }
+
+  // ---- NIGHT DESK: midnight to 6am, the news room goes quiet ----
+  if (new Date().getHours() < 6) {
+    var NIGHT = [
+      'CHECKER TOWN SLEEPS. MOSTLY.',
+      'SECTOR 3 QUIET. TOO QUIET.',
+      'A LONE PAWN SEEN CROSSING THE BOARD AT 2 A.M. — DECLINED COMMENT',
+      'THE NIGHT FERRY TO SHOGI ISLAND: STILL DELAYED. THE NIGHT CREW: STILL PATIENT.',
+      'THE SAND MINES NEVER CLOSE — SOMEBODY TELL THE FOREMAN WHAT TIME IT IS',
+      'ALL QUIET AT THE CITY GATES. THE GATEKEEPER DOES NOT SLEEP. HE WAITS.',
+      'PRINCESS IS DREAMING — PAWS TWITCHING THROUGH AN IMAGINARY CHECKMATE',
+      "TOMORROW'S HEADLINES ARE STILL BEING WRITTEN",
+      'THE LIGHTHOUSE REPORTS NOTHING TO REPORT. THANK YOU, LIGHTHOUSE.',
+      "YOU'RE UP LATE, OPERATIVE. THE BOARD WILL KEEP."
+    ];
+    track.innerHTML = '';
+    NIGHT.forEach(function(n) { item(n); });
+    var nm = document.getElementById('ticker-badge-name');
+    if (nm) nm.innerHTML = 'CHECKER&nbsp;TOWN<br>NIGHT&nbsp;DESK';
+    var lt = document.getElementById('ticker-live-txt');
+    if (lt) lt.textContent = 'OVERNIGHT';
+    wrap.classList.add('is-night');
+  }
+
+  // ---- THE FORECAST: seeded by the date, so the whole town shares the weather ----
+  (function() {
+    var roll = daySeed() % 10;                    // 0–1 rain · 2 mist · 3–9 clear
+    if (roll > 2) return;
+    var rain = roll !== 2;
+    item(rain
+      ? 'WEATHER: RAIN OVER CHECKER TOWN — THE SEA IS ROUGH — ALL CROSSINGS POSTPONED'
+      : 'WEATHER: SEA MIST IN THE LOWER SECTORS — VISIBILITY POOR — LIGHTHOUSE ON DOUBLE DUTY', null, true);
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var w = document.createElement('div');
+    w.className = 'ct-weather ct-weather--' + (rain ? 'rain' : 'mist');
+    w.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(w);
+  })();
+
+  // ---- BREAKING (studio-wide): one line in _data/breaking.yml runs the plate ----
+  (function() {
+    var msg = wrap.getAttribute('data-breaking-msg'), until = wrap.getAttribute('data-breaking-until');
+    if (!msg) return;
+    if (until && Date.now() > new Date(until + 'T23:59:59').getTime()) return;
+    item('◈ BREAKING — ' + msg.toUpperCase(), 'ticker-item--breaking', true);
+    takeover('BREAKING');
+  })();
+
+  // ---- BREAKING (yours): clearing Gauntlet floors past 4 makes the news, once each ----
+  (function() {
+    var gp = window.__gauntletProg;
+    if (!gp || gp.cleared <= 4) return;
+    var seen = 0; try { seen = parseInt(localStorage.getItem('pjcc.home.breakseen'), 10) || 0; } catch (e) {}
+    if (gp.cleared <= seen) return;
+    try { localStorage.setItem('pjcc.home.breakseen', String(gp.cleared)); } catch (e) {}
+    var fallen = gp.names[gp.cleared - 1] || 'THE TOWER';
+    item('◈ BREAKING — OPERATIVE CLEARS FLOOR ' + gp.cleared + ' — ' + String(fallen).toUpperCase() + ' FALLS', 'ticker-item--breaking', true);
+    takeover('BREAKING');
+  })();
+
+  // ---- seamless loop (clone AFTER the sync items above are in place) ----
   var items = Array.prototype.slice.call(track.children);
   items.forEach(function(it) { track.appendChild(it.cloneNode(true)); });
 
@@ -394,6 +513,70 @@ layout: default
     wrap.classList.toggle('is-hidden', document.hidden);
     if (!document.hidden && !userPaused) setDuration();
   });
+
+  // ---- async headlines: insert into BOTH halves so the -50% loop stays seamless ----
+  window.PJCCTicker = {
+    add: function (text, cls) {
+      var half = track.children.length / 2;
+      var a = document.createElement('span');
+      a.className = 'ticker-item' + (cls ? ' ' + cls : '');
+      a.textContent = text;
+      var b = a.cloneNode(true);
+      track.insertBefore(a, track.children[half] || null);   // end of the first copy
+      track.appendChild(b);                                  // end of the second copy
+      setDuration();
+    }
+  };
+})();
+
+// RECORD WATCH — one live headline a day from the boards (no sign-in needed).
+// The game rotates daily; a fetch failure just means no headline today.
+(function () {
+  var BOARDS = [
+    ['notation-run',     'NOTATION BLITZ'],
+    ['sand-mine-depths', 'SAND MINE DEPTHS'],
+    ['tower-defense',    'SIEGE ON CHESS CITY'],
+    ['sky-run',          'SKY RUN'],
+    ['fork-in-the-road', 'FORK IN THE ROAD']
+  ];
+  if (!window.PJCC || !PJCC.ready) return;
+  var d = new Date(), ds = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+  var h = 2166136261;
+  for (var i = 0; i < ds.length; i++) { h ^= ds.charCodeAt(i); h = Math.imul(h, 16777619); }
+  var pick = BOARDS[(h >>> 0) % BOARDS.length];
+  PJCC.ready.then(function () {
+    if (!PJCC.enabled || !PJCC.leaderboard) return;
+    PJCC.leaderboard(pick[0], { limit: 1 }).then(function (rows) {
+      var top = rows && rows[0];
+      if (!top || !top.codename || !window.PJCCTicker) return;
+      PJCCTicker.add('RECORD WATCH — ' + String(top.codename).toUpperCase() + ' HOLDS ' + pick[1] +
+        ' AT ' + top.score + ' — THINK YOU CAN TAKE IT? → /GAMES/', 'ticker-item--record');
+    }).catch(function () {});
+  });
+})();
+
+// The sky keeps Checker Town time — dawn, day, dusk, and night tint the aurora.
+(function () {
+  var h = new Date().getHours();
+  var phase = (h >= 5 && h < 8) ? 'dawn' : (h >= 8 && h < 17) ? 'day' : (h >= 17 && h < 20) ? 'dusk' : 'night';
+  document.body.classList.add('sky-' + phase);
+})();
+
+// The window in the hero — the skyline inside it stands where your climb stands.
+// No label, no fanfare; the observant will notice Chess City drawing closer.
+(function () {
+  var sky = document.getElementById('cc-window-sky'), win = document.getElementById('cc-window');
+  var gp = window.__gauntletProg;
+  if (!sky || !win || !gp) return;
+  var c = Math.min(10, gp.cleared || 0);
+  if (!c) return;                                   // fresh visitors: a barely-there window
+  win.style.setProperty('--ws', (9 + c * 1.5) + 'px');
+  win.style.setProperty('--wo', (0.16 + c * 0.03).toFixed(2));
+  if (c >= 10) {                                    // crowned — the city lights come on
+    sky.style.color = '#F5C518';
+    sky.style.textShadow = '0 0 9px rgba(245,197,24,0.85)';
+    win.style.setProperty('--wo', '0.55');
+  }
 })();
 
 // Character teaser — render the whole cast but show four random faces; reshuffle on click.

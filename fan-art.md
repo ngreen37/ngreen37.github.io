@@ -48,7 +48,7 @@ permalink: /fan-art/
       <figcaption>
         <span class="fa-piece-title">{{ piece.title }}</span>
         {% if piece.by %}<span class="fa-piece-by">— {{ piece.by }}</span>{% endif %}
-        <span class="fa-stamp" title="Every piece is screened before it goes up.">✓ SCREENED · HUNG BY McPUPPY{% if piece.hung %} · {{ piece.hung }}{% endif %}</span>
+        <span class="fa-stamp" title="Screened, then hung by McPuppy."><i class="fa-stamp-mark" aria-hidden="true">SCREENED</i>✓ HUNG BY McPUPPY{% if piece.hung %} · {{ piece.hung }}{% endif %}</span>
       </figcaption>
     </figure>
     {% endfor %}
@@ -84,9 +84,12 @@ permalink: /fan-art/
 .fa-cray.on { opacity:1; transform:translateY(-6px); filter:drop-shadow(0 3px 6px rgba(0,0,0,0.4)); }
 .fa-cray-tools { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
 
-/* ---- the curator's stamp ---- */
-.fa-stamp { display:block; margin-top:6px; font-family:'Share Tech Mono',monospace; font-size:0.58rem;
-  letter-spacing:0.08em; color:#6bffb8; opacity:0.8; }
+/* ---- the curator's stamp: "SCREENED" is a faint diagonal watermark behind the line ---- */
+.fa-stamp { position:relative; display:block; margin-top:8px; padding:8px 0; font-family:'Share Tech Mono',monospace;
+  font-size:0.58rem; letter-spacing:0.08em; color:#6bffb8; opacity:0.85; }
+.fa-stamp-mark { position:absolute; inset:0; margin:0 14%; display:flex; align-items:center; justify-content:center;
+  transform:rotate(-11deg); font-size:0.95rem; font-weight:900; font-style:normal; letter-spacing:0.32em;
+  color:rgba(107,255,184,0.12); border:1px solid rgba(107,255,184,0.10); border-radius:4px; pointer-events:none; }
 
 /* ---- wall tiers: the wall levels up as pieces are hung ---- */
 .fa-h2--gallery::after { content:''; display:block; width:130px; height:2px; margin:7px auto 0;

@@ -742,7 +742,9 @@ function showLadder(){
   var host = document.getElementById('lg-row'), wrap = document.getElementById('lobby-gallery');
   if (!host || !wrap || !window.fetch) return;
   fetch('/assets/data/fanart.json').then(function(r){ return r.json(); }).then(function(art){
-    if (!art || !art.length) return;
+    // Only pieces Nate explicitly hung on THIS wall (walls: [gauntlet] in _data/fanart.yml).
+    art = (art || []).filter(function(p){ return p.walls && p.walls.indexOf('gauntlet') > -1; });
+    if (!art.length) return;
     art.slice(0, 3).forEach(function(p){
       var f = document.createElement('figure'); f.className = 'lg-piece';
       var im = document.createElement('img'); im.src = p.img; im.alt = ''; im.loading = 'lazy';

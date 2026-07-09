@@ -5874,6 +5874,42 @@ body.theme-classified {
   }
 }
 
+/* BREAKING takeover — the plate inverts and means it */
+.world-ticker-wrap.is-breaking { border-color: #ffd740; }
+.world-ticker-wrap.is-breaking .ticker-badge { background: #1a0f3d; color: #F5C518; }
+.world-ticker-wrap.is-breaking .ticker-badge-live { background: #F5C518; color: #1a0f3d; }
+.world-ticker-wrap.is-breaking .ticker-badge-live i { background: #1a0f3d; }
+.ticker-item--breaking { color: #fff; font-weight: 700; }
+
+/* Record Watch — live standings called in from the boards */
+.ticker-item--record { color: #6bffb8; font-weight: 700; }
+
+/* the Night Desk — the overnight shift runs a dimmer plate */
+.world-ticker-wrap.is-night { border-color: rgba(245, 197, 24, 0.45); }
+.world-ticker-wrap.is-night .ticker-badge { background: #2d1b69; color: #e3d6ff; }
+.world-ticker-wrap.is-night .ticker-badge-live { background: #4a3a86; }
+
+/* Checker Town weather — date-seeded; the whole town shares the forecast */
+.ct-weather { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+.ct-weather--rain {
+  background:
+    repeating-linear-gradient(105deg, transparent 0 16px, rgba(150, 175, 255, 0.045) 16px 17px),
+    repeating-linear-gradient(105deg, transparent 0 41px, rgba(150, 175, 255, 0.06) 41px 42px);
+  animation: ct-rain 0.7s linear infinite;
+}
+@keyframes ct-rain {
+  from { background-position: 0 0, 0 0; }
+  to   { background-position: -30px 120px, -60px 240px; }
+}
+.ct-weather--mist {
+  background: linear-gradient(180deg, transparent 55%, rgba(180, 190, 220, 0.07) 78%, rgba(180, 190, 220, 0.12) 100%);
+  animation: ct-mist 9s ease-in-out infinite;
+}
+@keyframes ct-mist {
+  0%, 100% { opacity: 0.7; }
+  50%      { opacity: 1; }
+}
+
 @keyframes ticker-scroll {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
@@ -7565,6 +7601,11 @@ body.theme-classified {
 .ink-reveal-block.is-visible { clip-path: inset(0 0% 0 0); }
 
 /* 12 — Aurora bands on PJCC page */
+/* Time-of-day sky — the aurora keeps Checker Town time (class set by home JS) */
+body.sky-dawn  .aurora-wrap { filter: hue-rotate(-24deg) brightness(1.12); }
+body.sky-dusk  .aurora-wrap { filter: hue-rotate(22deg) saturate(1.25); }
+body.sky-night .aurora-wrap { filter: brightness(0.82) saturate(1.35); }
+
 @keyframes aurora-drift {
   0%   { transform: translateX(-55%) skewX(-14deg); opacity: 0.05; }
   50%  { opacity: 0.09; }

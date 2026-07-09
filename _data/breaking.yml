@@ -1,0 +1,8 @@
+# BREAKING-news takeover for the PJCC home ticker.
+#
+# Uncomment the two lines below and push: the news plate inverts to BREAKING and
+# the message leads the crawl until the date passes (then it stands down on its
+# own — no second push needed). Re-comment after, at your leisure.
+#
+# message: "The Gauntlet v2 is live — ten new floors"
+# until: 2026-07-14

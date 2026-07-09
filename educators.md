@@ -39,6 +39,7 @@ permalink: /educators/
     <button class="ed-btn ed-btn-gold" id="ek-print" type="button">🖨 Print the card stack</button>
     <span class="ek-msg" id="ek-msg"></span>
   </div>
+  <p class="ek-privacy">Nothing is stored.</p>
 </div>
 
 <!-- print-only card stack (built on demand) -->
@@ -142,6 +143,7 @@ permalink: /educators/
   margin-bottom: 12px; resize: vertical; }
 .ek-names:focus { outline: none; border-color: #F5C518; }
 .ek-msg { color: #ff8f9e; font-size: 0.84rem; align-self: center; }
+.ek-privacy { color: #9a7fd4; font-size: 0.78rem; margin: 8px 0 0; }
 .ek-print { display: none; }
 
 @media print {

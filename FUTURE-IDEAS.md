@@ -782,3 +782,7 @@ Brothers** and the **Commentators** are placeholders (Boomer/Tempo/Sunny) — co
   spectacle lens + a jeweler's loupe in a rolled sheet of *Checker Financial*. Canon-perfect physics detail:
   a simple two-lens telescope shows everything **upside down** — Nate's first-ever view of Chess City is
   inverted. ("It's upside down." / "Then we'll flip it when we get there.")
+
+**Parked (2026-07-08):** PJCC-home idea #3 — **tap-a-headline dispatches:** tap any ticker item and a
+two-line "full story" card unfolds beneath the ticker; the lore drips out through the news desk.
+(Nate: "for a later date." The ticker now exposes `PJCCTicker.add()` — the card layer slots in cleanly.)
