@@ -5,6 +5,8 @@ permalink: /classified/
 fragment_key: frag_classified
 ---
 
+<!-- if you're reading this, you're already home -->
+
 <div class="secret-page">
 
   <header class="secret-header">

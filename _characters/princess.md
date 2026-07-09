@@ -19,6 +19,7 @@ Princess is the heart of the story -- a dog who can learn *anything*. Chess is s
 - A quick study at the board: natural instincts, sharper every game
 - Loyal, obedient, and endlessly curious
 - A people-dog: thrives on attention, affection, and treats
+- Believes -- has since she was small, though no one will say who taught her, or whether they meant to -- that she will one day be a <a class="pp-broken" href="/characters/the-queen/">[QUEEN]</a>
 
 ## Background
 She lives with Nate in Checker Town and accompanies him on every adventure -- from the local bank (where she is, without question, the Star of the Show) to the long road toward Chess City.
@@ -44,6 +45,8 @@ Princess is the reason everything happens. The journey to Chess City begins beca
 </script>
 
 <style>
+  .pp-broken { font-family: 'Courier New', monospace; font-size: 0.88em; color: #9a7fd4; text-decoration: none; border-bottom: 1px dashed rgba(154,127,212,0.55); }
+  .pp-broken:hover { color: #F5C518; border-bottom-color: rgba(245,197,24,0.6); }
   .pp-intro { color: #c9a7ff; max-width: 640px; }
   .pp-card { background: rgba(45,27,105,0.5); border: 1px solid #6b5fa0; border-radius: 14px; padding: 16px 18px; max-width: 640px; }
   .pp-greet { color: #F5C518; font-weight: 700; margin-bottom: 12px; }

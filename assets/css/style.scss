@@ -3099,6 +3099,18 @@ body.theme-bw .page-body em {
   to   { background-position: 220% center; }
 }
 
+/* the letter that doesn't shimmer */
+.tagline-main-tagline .tg-x {
+  -webkit-text-fill-color: #d9af3f;
+  color: #d9af3f;
+  text-decoration: none;
+}
+.tagline-main-tagline .tg-x:hover,
+.tagline-main-tagline .tg-x:focus {
+  -webkit-text-fill-color: #ffd740;
+  color: #ffd740;
+}
+
 @keyframes tagline-w1 {
   0%      { opacity: 0; }
   1.3%    { opacity: 1; }

@@ -846,4 +846,41 @@ window.ACCERT = (function () {
   body.ac-printing .ac-print.printing-active, body.ac-printing .ac-print.printing-active * { visibility: visible !important; }
   body.ac-printing .ac-print.printing-active { display: block; position: absolute; left: 0; top: 0; width: 100%; padding: 18px; }
 }
+
+/* promotion state — the ladder in Chess City gold. Found, never given. */
+body.ac-gold .ac-belt-wrap { background: linear-gradient(135deg,#3a2c07,#5c4708); border-color: rgba(245,197,24,0.75); box-shadow: 0 0 30px rgba(245,197,24,0.18); }
+body.ac-gold .ac-belt-label { color: #caa84a; }
+body.ac-gold .ac-belt-next { color: #e6d28a; }
+body.ac-gold .ac-belt-bar { background: rgba(245,197,24,0.12); border-color: #8a6d10; }
+body.ac-gold .ac-belt-fill { background: linear-gradient(90deg,#caa84a,#ffd740); }
+body.ac-gold .ac-pip { background: rgba(58,44,7,0.7); border-color: #8a6d10; color: #caa84a; }
+body.ac-gold .ac-pip.got { background: #F5C518; border-color: #F5C518; color: #1a0f3d; }
 </style>
+
+<script>
+// A pawn that walks the whole ladder gets to choose what it becomes.
+// Typed anywhere on this page (outside a text field). No hint exists anywhere.
+(function () {
+  var KEY = 'pjcc.academy.promotion', buf = '', timer = null;
+  function apply(on) { document.body.classList.toggle('ac-gold', on); }
+  try { if (localStorage.getItem(KEY) === '1') apply(true); } catch (e) {}
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key.length !== 1) return;
+    buf = (buf + e.key).slice(-4);
+    clearTimeout(timer); timer = setTimeout(function () { buf = ''; }, 1800);
+    if (buf === 'e8=Q' || buf === 'e8=q') {
+      buf = '';
+      var on = !document.body.classList.contains('ac-gold');
+      apply(on);
+      try {
+        localStorage.setItem(KEY, on ? '1' : '0');
+        localStorage.setItem('frag_promotion', '1');
+      } catch (e2) {}
+      if (window.showTxToast) showTxToast(on
+        ? 'e8=Q — PROMOTION. She was always going to rise.'
+        : 'Underpromotion. Bold.');
+    }
+  });
+})();
+</script>

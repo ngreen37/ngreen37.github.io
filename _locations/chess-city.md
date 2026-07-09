@@ -17,6 +17,7 @@ permalink: /locations/chess-city/
   <div class="cc-gate-action" id="cc-gate-action">
     <a class="cc-gate-btn cc-gate-link" href="{{ '/games/the-gauntlet/' | relative_url }}">▶ WIN THE GAUNTLET TO ENTER</a>
   </div>
+  <div class="cc-gate-graffiti" id="cc-gate-graffiti" hidden>&ldquo;&hellip;or bribery.&rdquo; <span>— scratched into the booth wall</span></div>
 </div>
 
 The destination. Chess City is well-to-do, prosperous, and deliberately difficult to reach. You cannot simply move there -- you have to earn your way in.
@@ -64,6 +65,41 @@ Not everyone believes Chess City is paradise. There is a belief among some -- th
     Array.prototype.forEach.call(details.children, function (el) {
       if (el.id !== 'cc-gate' && el.tagName !== 'SCRIPT') el.style.display = 'none';
     });
+    // The checkpoint keeps count. Lose the Gauntlet three times and somebody
+    // before you has already scratched the loophole into the wall.
+    try {
+      if ((g.losses || 0) >= 3) {
+        var gr = document.getElementById('cc-gate-graffiti');
+        if (gr) gr.hidden = false;
+      }
+    } catch (e2) {}
   }
 })();
+</script>
+
+<style>
+/* the loophole, scratched in by somebody who lost one time too many */
+.cc-gate-graffiti { margin-top: 10px; font-style: italic; font-size: 0.8rem; letter-spacing: 0.04em;
+  color: rgba(245,197,24,0.42); transform: rotate(-1.4deg); }
+.cc-gate-graffiti span { font-style: normal; font-size: 0.72rem; color: rgba(157,127,212,0.45); }
+
+/* The Whisper, made small: on this page only, the white rook in the border is awake. */
+.ribbon-track .rt-alive { position: relative; display: inline-block; }
+.rt-alive .rt-eye { position: absolute; width: 0.09em; height: 0.09em; border-radius: 50%;
+  background: rgba(255,255,255,0.28); top: 0.56em; animation: rt-blink 6.4s infinite; }
+.rt-alive .rt-eye--l { left: 0.25em; }
+.rt-alive .rt-eye--r { left: 0.45em; }
+.rt-alive .rt-mouth { position: absolute; left: 0.26em; top: 0.69em; width: 0.24em; height: 0.10em;
+  border-bottom: 2px solid rgba(255,255,255,0.20); border-radius: 0 0 0.2em 0.2em; }
+@keyframes rt-blink { 0%, 91%, 100% { transform: scaleY(1); } 94% { transform: scaleY(0.08); } }
+</style>
+
+<script>
+// One of them is looking back. (No label. No explanation. See: The Whisper.)
+document.addEventListener('DOMContentLoaded', function () {
+  var track = document.querySelector('.ribbon-track');
+  if (!track || track.querySelector('.rt-alive')) return;
+  track.innerHTML = track.innerHTML.replace(/♖/g,
+    '<span class="rt-alive">♖<span class="rt-eye rt-eye--l"></span><span class="rt-eye rt-eye--r"></span><span class="rt-mouth"></span></span>');
+});
 </script>

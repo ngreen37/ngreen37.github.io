@@ -28,6 +28,11 @@ Buffer clears after 1.8 seconds of inactivity or on Escape.
 Triggers a full-screen white-to-amber flash and toast: *"CLEARANCE LEVEL: OMEGA — She already knows you're here."*
 Marks `frag_konami` in localStorage.
 
+### e8=Q — Promotion (Academy only)
+**Sequence:** type `e8=Q` (or `e8=q`) anywhere on `/academy/` outside a text field.
+
+The belt ladder flips from Checker Town purple to Chess City gold (`body.ac-gold`), persists via `pjcc.academy.promotion`, and toggles back if typed again (toggle-off toast: *"Underpromotion. Bold."*). Toggle-on toast: *"e8=Q — PROMOTION. She was always going to rise."* Marks `frag_promotion`. No hint exists anywhere on the site.
+
 ---
 
 ## Hidden Pages
@@ -57,6 +62,12 @@ Custom 404 "Signal Lost" page.
 - Redacted lore fields and coordinates
 - Visiting marks `frag_404` in localStorage
 
+### /characters/the-queen/
+CLEARANCE DENIED page (tab title: "CLEARANCE DENIED"). Reached only from the broken-looking
+`[QUEEN]` link in Princess's Traits — she was taught, possibly by accident, that she will one
+day be a queen. The file "has a date on it; it is not today." Payoff = her spoiler arc.
+Visiting marks `frag_queen` in localStorage.
+
 ---
 
 ## Fragment System
@@ -74,6 +85,8 @@ Each hidden page and key interaction stores a `frag_*` key in `localStorage`. Th
 | `frag_404` | Hit a 404 page |
 | `frag_qd5` | Type Qd5 (first time) |
 | `frag_konami` | Konami code |
+| `frag_queen` | Visit /characters/the-queen/ (Princess's [QUEEN] link) |
+| `frag_promotion` | Type e8=Q on /academy/ |
 
 ---
 
@@ -120,6 +133,30 @@ Content on location pages (paragraphs, headings, lists) reveals with an ink-wipe
 
 ### Broken Link → Signal Lost
 A link on `/classified/` labeled **"MORE FRAGMENTS INCOMING"** leads to `/fragments/` — a non-existent page that hits the custom 404.
+
+### The Letter That Doesn't Shimmer (Studio Home)
+In the studio-home tagline "A Million Stories to Tell", the **o in "Stories"** is a static warm
+gold while every other letter shimmers — it is a link straight to `/classified/`. No tooltip, no hint.
+
+### Source Comment (/classified/)
+The page source of `/classified/` opens with `<!-- if you're reading this, you're already home -->` —
+an echo of the Uncle's Barbados fragment on the same page. View-source only.
+
+### The Awake Rook (Chess City only)
+On `/locations/chess-city/`, the white rook (♖) in the footer ribbon has two faint blinking
+eyes and a small smile (`.rt-alive`, injected on DOMContentLoaded). Pays off The Whisper —
+"pieces with mouths and eyes, watching from behind the gates." Every other page's ribbon is normal.
+No label, no explanation, no fragment.
+
+### "…or bribery." (Chess City gate)
+After **3+ Gauntlet losses** (`pjcc.gauntlet.v2 → losses`, counted on checkmate or resign), a
+scratched graffiti line appears under the entry checkpoint: *"…or bribery." — scratched into the
+booth wall.* Only shows while the city is still sealed (no Gauntlet win).
+
+### The Spotted Pawn (The Gauntlet)
+The opposition's **e-pawn** carries two faint spots (a small white dog with black spots) —
+tracked square-to-square as it moves, gone when captured, promoted, or taken en passant.
+Crockett: "usually the first one sacrificed, never seems to mind." Zero label, in-game only.
 
 ---
 
@@ -184,4 +221,4 @@ Animated count-up for Posts Written, Characters, and Locations — all pull live
 
 ---
 
-*Last updated: April 2026*
+*Last updated: July 2026 (the hidden-in-plain-sight batch)*

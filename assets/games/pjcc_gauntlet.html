@@ -313,7 +313,11 @@ function startRung(idx, pc){
   pc = (pc === 'w' || pc === 'b') ? pc : randColor();   // random unless the boss card already drew one
   G = { idx:idx, rung:rung, persona:rung.persona, pc:pc,
         S:C.parseFEN(C.START_FEN), reps:{}, sel:-1, legal:[], over:false, result:null,
-        last:null, thinking:false, promo:null, log:[], roundStartMat:null };
+        last:null, thinking:false, promo:null, log:[], roundStartMat:null,
+        // the opposition's e-pawn: a small white dog with black spots rides along
+        // every match — usually the first one sacrificed, never seems to mind.
+        // Unlabeled by design; the spots are the whole of it.
+        crockett: (pc === 'w') ? 12 : 52 };
   bumpRep();
   if (ENGINE){ ENGINE.warmup(); ENGINE.newGame(); }   // boot Stockfish in the background for this match
   G.legal = C.legalMoves(G.S);
@@ -330,6 +334,14 @@ function startRung(idx, pc){
   if (G.S.turn !== G.pc) aiTurnSoon();
 }
 function bumpRep(){ var k = C.posKey(G.S); G.reps[k] = (G.reps[k]||0) + 1; return G.reps[k]; }
+// Follow the spotted pawn square-to-square; if the square no longer holds the
+// opposition's pawn (captured, en passant, promoted), he's off the board.
+function trackCrockett(m){
+  if (!G || G.crockett == null || G.crockett < 0) return;
+  if (m.from === G.crockett) G.crockett = m.to;
+  var aiPawn = G.pc === 'w' ? 'p' : 'P';
+  if (G.S.b[G.crockett] !== aiPawn) G.crockett = -1;
+}
 
 // ---- board geometry (player always at the bottom) ----
 function idxToScreen(i){ var r=(i/8)|0, f=i%8; return G.pc==='w' ? { col:f, row:r } : { col:7-f, row:7-r }; }
@@ -360,6 +372,7 @@ function applyPlayerMove(m){
   G.last = { from:m.from, to:m.to };
   G.log.push(C.toSAN(G.S, m));
   G.S = C.makeMove(G.S, m); G.sel = -1;
+  trackCrockett(m);
   var rep = bumpRep();
   var res = C.gameResult(G.S, rep);
   if (res){ endGame(res); return; }
@@ -387,6 +400,7 @@ function applyAiMove(myG, S, m){
   G.last = { from:m.from, to:m.to };
   G.log.push(C.toSAN(G.S, m));
   G.S = C.makeMove(G.S, m);
+  trackCrockett(m);
   var rep = bumpRep();
   G.thinking = false;
   var res = C.gameResult(G.S, rep);
@@ -441,6 +455,7 @@ function endGame(result){
              threefold:'Threefold repetition.' }[result]) || 'Drawn.') +
           ' Half a point: you held your ground, but the rung only opens on a win. Line up and go again.';
   } else {
+    prog.losses = (prog.losses || 0) + 1; saveProg(prog);   // the Chess City checkpoint keeps count
     eye = 'Defeat'; title = result === 'resign' ? 'YOU RESIGNED' : 'CHECKMATED';
     msg = 'The ' + G.rung.name + ' holds the line. Study the board and try again.';
   }
@@ -678,6 +693,13 @@ function render(){
   // pieces
   for (var j=0;j<64;j++){ var p=G.S.b[j]; if(!p) continue; var c=cellXY(j);
     PJCCPieces.draw(ctx, c.x, c.y, TILE*0.84, p.toUpperCase(), C.colorOf(p), PAL); }
+  // two faint spots on the opposition's e-pawn — visually unremarkable, never explained
+  if (G.crockett >= 0 && G.S.b[G.crockett]){
+    var cd = cellXY(G.crockett), aiIsWhite = (G.pc !== 'w');
+    ctx.fillStyle = aiIsWhite ? 'rgba(74,54,24,0.5)' : 'rgba(239,228,255,0.26)';
+    ctx.beginPath(); ctx.arc(cd.x - TILE*0.07, cd.y + TILE*0.10, TILE*0.048, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(cd.x + TILE*0.10, cd.y + TILE*0.19, TILE*0.038, 0, 7); ctx.fill();
+  }
 }
 function drawHud(){
   ctx.textAlign='left'; ctx.textBaseline='middle';
