@@ -201,7 +201,7 @@ body.sky-night .home-hero { border-color:#2a1d5e; }
 body.sky-night .home-section-label { border-bottom-color:#2a1d5e; }
 
 /* ── #18 first arrival: the page takes its seats after the title (JS staggers) ── */
-body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast, body.first-arrival .home-basement {
+body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
   opacity:0; transform:translateY(8px); }
 .arrive-in { transition:opacity .7s ease, transform .7s ease; opacity:1 !important; transform:none !important; }
 
@@ -324,34 +324,8 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast, b
 {% comment %} (Story Arc film-strip removed 2026-06-22 — the chapter beats are now
      things to be DECODED by users as they play, not laid out here. See FUTURE-IDEAS. {% endcomment %}
 
-{% comment %} ── 6. THE FOOT — street level. (Drips moved to the full-screen ambient
-     layer up top, 2026-07-10; counters removed.) {% endcomment %}
-<div class="home-basement">
-{% comment %} #20 — street level: storefront silhouettes at the very foot. {% endcomment %}
-<div class="street" aria-hidden="true">
-  <span style="--w:46px;--h:24px"></span>
-  <span class="lit" style="--w:34px;--h:32px"></span>
-  <span style="--w:52px;--h:18px"></span>
-  <span style="--w:28px;--h:28px"></span>
-  <span class="lit" style="--w:44px;--h:22px"></span>
-  <span style="--w:38px;--h:34px"></span>
-  <span style="--w:56px;--h:20px"></span>
-  <span class="lit" style="--w:30px;--h:26px"></span>
-  <span style="--w:48px;--h:16px"></span>
-  <span style="--w:36px;--h:30px"></span>
-  <span class="lit" style="--w:42px;--h:24px"></span>
-  <span style="--w:32px;--h:20px"></span>
-</div>
-<style>
-.street { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: flex-end;
-  justify-content: space-between; padding: 0 3%; z-index: 1; pointer-events: none; }
-.street span { flex: 0 0 auto; width: var(--w, 40px); height: var(--h, 24px); background: #070512;
-  border-top: 1px solid rgba(124,77,255,0.22); border-radius: 2px 2px 0 0; }
-.street span.lit::after { content: ''; display: block; width: 3px; height: 4px; margin: 7px 0 0 9px;
-  background: #ffcf6a; box-shadow: 0 0 6px rgba(255,190,80,0.7); }
-@media (max-width: 700px) { .street span:nth-child(2n) { display: none; } }
-</style>
-</div><!-- /.home-basement -->
+{% comment %} (the basement / #20 street band removed 2026-07-10 — the page now ends
+     at the cast; restore from git if ever missed.) {% endcomment %}
 
 </div><!-- /.home-flow -->
 
@@ -790,7 +764,7 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast, b
     setTimeout(function () { try { lbT.remove(); lbB.remove(); } catch (e) {} }, 1400);
   }, window.__htDone + 600);
   document.body.classList.add('first-arrival');
-  ['.world-ticker-wrap', '.home-section--cast', '.home-basement']
+  ['.world-ticker-wrap', '.home-section--cast']
     .forEach(function (sel, i) {
       var el = document.querySelector(sel);
       if (!el) return;

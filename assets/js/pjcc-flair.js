@@ -2,7 +2,8 @@
  * PJCC Flair — dramatic entrances + five "wow" touches.
  *  1. Scroll-reveal entrances (fade + rise + un-blur, staggered)
  *  2. 3D tilt + light sheen on cards
- *  3. Parallax drifting chess pieces behind the home hero
+ *  3. (parallax drifting pieces removed 2026-07-10 — with the milestone crown;
+ *     restore from git)
  *  4. "Journey to Chess City" scroll-progress bar
  *  5. Piece-burst confetti (back-to-top promotion + clicking Princess)
  *
@@ -61,75 +62,9 @@
     });
   }
 
-  /* ---- 3. Parallax drifting pieces (home only) ---- */
-  function setupDrift() {
-    if (reduce) return;
-    // (marker was .home-stats; that bar became .home-basement's slim line 2026-07-08)
-    if (!document.querySelector('.home-basement, .home-stats')) return; // home page marker
-    var layer = document.createElement('div');
-    layer.className = 'flair-drift-layer';
-    layer.setAttribute('aria-hidden', 'true');
-    var pieces = [];
-    for (var i = 0; i < 7; i++) {
-      var s = document.createElement('span');
-      s.className = 'flair-drift';
-      s.textContent = GLYPHS[i % GLYPHS.length];
-      var depth = 0.15 + Math.random() * 0.5;       // parallax factor
-      var x = Math.random() * 100, y = Math.random() * 100, size = 70 + Math.random() * 110;
-      s.style.left = x + 'vw'; s.style.top = y + 'vh'; s.style.fontSize = size + 'px';
-      layer.appendChild(s);
-      pieces.push({ el: s, depth: depth, x: x, y: y, size: size });
-    }
-    document.body.insertBefore(layer, document.body.firstChild);
-    var ticking = false, formed = false;
-    function onScroll() {
-      if (ticking || formed) return; ticking = true;
-      requestAnimationFrame(function () {
-        var sy = window.pageYOffset;
-        if (!formed) pieces.forEach(function (p) { p.el.style.transform = 'translateY(' + (-sy * p.depth).toFixed(1) + 'px)'; });
-        ticking = false;
-      });
-    }
-    window.addEventListener('scroll', onScroll, { passive: true });
-
-    /* #19 — on premiere-milestone days the seven drifting pieces gather once,
-       hold the shape of a crown in the sky, then the wind has them back.
-       Never announced; if you're there that day, you see it. */
-    var CROWN = [[30,31],[70,31],[32,15],[41,23],[50,10],[59,23],[68,15]];
-    function form() {
-      if (formed) return;
-      formed = true;
-      var EASE = 'left 3.6s cubic-bezier(.3,.7,.25,1), top 3.6s cubic-bezier(.3,.7,.25,1), font-size 3.6s ease, color 3.6s ease';
-      pieces.forEach(function (p, i) {
-        p.el.style.transition = EASE;
-        p.el.style.transform = '';
-        p.el.style.left = CROWN[i % CROWN.length][0] + 'vw';
-        p.el.style.top = CROWN[i % CROWN.length][1] + 'vh';
-        p.el.style.fontSize = '30px';
-        p.el.style.color = 'rgba(245,197,24,0.55)';
-        p.el.style.textShadow = '0 0 14px rgba(245,197,24,0.55)';
-      });
-      setTimeout(function () {
-        pieces.forEach(function (p) {
-          p.el.style.left = p.x + 'vw'; p.el.style.top = p.y + 'vh';
-          p.el.style.fontSize = p.size + 'px';
-          p.el.style.color = ''; p.el.style.textShadow = '';
-        });
-        setTimeout(function () {
-          pieces.forEach(function (p) { p.el.style.transition = ''; });
-          formed = false; onScroll();
-        }, 3700);
-      }, 8200);
-    }
-    var daysLeft = Math.ceil((Date.parse('2027-10-21T04:00:00Z') - Date.now()) / 86400000);
-    var MILES = [500, 450, 400, 365, 300, 250, 200, 150, 100, 75, 50, 30, 14, 7, 3, 1];
-    if (MILES.indexOf(daysLeft) > -1) {
-      var mk = 'pjcc.crown.' + daysLeft, fresh = false;
-      try { fresh = !localStorage.getItem(mk); if (fresh) localStorage.setItem(mk, '1'); } catch (e) {}
-      if (fresh) setTimeout(function () { if (window.scrollY < 120 && !document.hidden) form(); }, 9000);
-    }
-    window.__crownNight = form;
-  }
+  /* ---- 3. (Parallax drifting pieces removed 2026-07-10 — Nate: "remove the
+     background gold pieces." The premiere-milestone crown gathering went with
+     them, since it was made of these seven pieces. Restore both from git.) ---- */
 
   /* ---- #16 The wall remembers you — return visits leave a little more paint
      at the foot of every page. One coat per day, capped, never a word.
@@ -230,7 +165,6 @@
   ready(function () {
     try { setupReveal(); } catch (e) {}
     try { setupTilt(); } catch (e) {}
-    try { setupDrift(); } catch (e) {}
     try { setupBursts(); } catch (e) {}
     try { setupWeathering(); } catch (e) {}
   });

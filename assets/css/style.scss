@@ -380,11 +380,11 @@ body.theme-contact .nav-toggle-bar { background: #00ff41; }
 }
 
 /* The footer logo is a WATERMARK now (2026-07-08) — ghosted behind the footer
-   text instead of claiming its own row. */
+   text instead of claiming its own row. Off-center (right) since 2026-07-10. */
 .logo-horizontal {
   position: absolute;
-  left: 50%; top: 50%;
-  transform: translate(-50%, -50%);
+  right: 0; top: 50%;
+  transform: translateY(-50%);
   height: 64px;
   width: auto;
   margin: 0;
@@ -1210,43 +1210,8 @@ pre code {
   border: 1px solid #2d1b69;
 }
 
-/* Stats bar */
-/* The bottom trio lives in .home-basement (below); the stats bar itself is now
-   transparent so the aged surface shows through. */
-.home-stats {
-  background: transparent;
-  padding: 56px 0 48px;
-  margin: 0;
-}
-
-/* (The one-line home counters were removed entirely 2026-07-10 — restore from git.) */
-
-/* --- The "basement" — the foot of the page. PJCC's purple/gold paint drips down
-   from the top edge (with droplets at the ends of the runs), and near the bottom
-   weathered verdigris "old paint" pools up through it. Wraps the counters +
-   Time-in-Development clock + Episode 1 countdown. --- */
-.home-basement {
-  position: relative;
-  margin: 4px -28px 0;
-  padding-bottom: 14px;
-  /* 2026-07-10: the drips moved to the full-screen ambient layer — this is
-     now just the street: a slim closing band of storefronts */
-  min-height: 78px;
-  border-top: 1px solid rgba(124, 77, 255, 0.42);
-  background:
-    /* smooth purple/gold colour fading down through the top two-thirds,
-       clearing by the bottom third */
-    linear-gradient(180deg,
-      rgba(124,77,255,0.22) 0%,
-      rgba(150,110,235,0.13) 24%,
-      rgba(150,120,180,0.05) 50%,
-      transparent 72%),
-    /* base surface: darkens gently toward the foot */
-    linear-gradient(180deg, #0a0714 0%, #0b0a16 60%, #08060f 100%);
-}
-/* keep the trio above the drip layer */
-.home-basement > .home-stats,
-.home-basement > .chess-clock-wrap { position: relative; z-index: 1; }
+/* (The home counters, the "basement", and its street band were all removed
+   2026-07-10 — the home page now ends at the cast. Restore from git.) */
 
 /* --- Paint drips: one element per run so each can vary and animate on its own.
    Each <span> carries --x (position), --w (width), --len (length), --col (rgb),
@@ -1522,11 +1487,6 @@ body.sky-night .home-drips .drip { animation-duration: calc(var(--dur, 8s) * 1.6
 
   .hstat-num {
     font-size: 40px;
-  }
-
-  .home-basement {
-    margin-left: -24px;
-    margin-right: -24px;
   }
 
   .lessons-stats {
