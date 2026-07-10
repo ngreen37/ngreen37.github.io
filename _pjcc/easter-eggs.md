@@ -158,6 +158,22 @@ The opposition's **e-pawn** carries two faint spots (a small white dog with blac
 tracked square-to-square as it moves, gone when captured, promoted, or taken en passant.
 Crockett: "usually the first one sacrificed, never seems to mind." Zero label, in-game only.
 
+### window.murphysLaw() (site-wide)
+A hidden global function. Call it with anything — it always returns `false` and logs
+*"...called it!"* (Gerald "Jerry" Murphy's catchphrase). Calling it marks `frag_murphys_law`.
+
+### June 13 — for Princess (site-wide + studio home)
+On **June 13** (Princess's real birthday), the footer copyright silently becomes
+"© McPuppy Studios **· for Princess**" for that day only, then reverts. Client-side date
+check; zero announcement anywhere.
+
+### The Liminal LAST SEEN (dossiers)
+Every character's LAST SEEN is a *place* — except two, which are *thresholds*:
+- Gerald "Jerry" Murphy: `CHECKER TOWN — THE GATE` (was already in his file)
+- Argus: `CHECKER TOWN — THE FRONT DOOR` (the mythological Argus is Odysseus's dog,
+  who waited at the threshold for his master's return)
+Never explained anywhere. A careful reader pairs them by the em-dash format.
+
 ---
 
 ## Tools / Widgets

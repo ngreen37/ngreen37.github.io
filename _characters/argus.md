@@ -9,7 +9,7 @@ piece: ♞
 chapters: 0, 1
 dossier_clearance: DELTA
 dossier_secret: Dependable; a dog that follows direction and leads by example.
-last_seen: Checker Town
+last_seen: CHECKER TOWN — THE FRONT DOOR
 ---
 
 Steady as they get, Argus is the dog you want in your corner when you need a guarantee.

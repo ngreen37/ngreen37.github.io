@@ -181,6 +181,16 @@
       <footer class="studio-footer">
         <b>McPuppy&nbsp;Studios</b> &middot; &copy; {{ site.time | date: "%Y" }} &middot; <span data-jp="不許複製・禁無断転載">All rights reserved</span>
       </footer>
+      <script>
+        // June 13. No announcement.
+        (function () {
+          var d = new Date();
+          if (d.getMonth() === 5 && d.getDate() === 13) {
+            var f = document.querySelector('.studio-footer');
+            if (f) f.insertAdjacentHTML('beforeend', ' &middot; for Princess');
+          }
+        })();
+      </script>
 
     </div>
 

@@ -464,6 +464,23 @@
   })();
   </script>
 
+  <script>
+  // Murphy's Law, as a function. Ask it anything.
+  window.murphysLaw = function () {
+    try { localStorage.setItem('frag_murphys_law', '1'); } catch (e) {}
+    try { console.log('...called it!'); } catch (e) {}
+    return false;
+  };
+
+  // June 13. No announcement.
+  (function () {
+    var d = new Date();
+    if (d.getMonth() !== 5 || d.getDate() !== 13) return;
+    var el = document.querySelector('.footer-copy');
+    if (el) el.textContent = el.textContent.replace('McPuppy Studios.', 'McPuppy Studios · for Princess.');
+  })();
+  </script>
+
   <!-- Operative identity in the nav (site-wide) -->
   <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
