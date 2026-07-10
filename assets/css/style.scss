@@ -1219,13 +1219,13 @@ pre code {
   margin: 0;
 }
 
-/* Condensed one-line counters (2026-07-08) — sits atop the drip field */
+/* Condensed one-line counters — moved BELOW the drip band (2026-07-10) so they
+   read as part of the footer zone; the basement is pure paint now */
 .home-stats-mini {
-  position: relative; z-index: 1;
   text-align: center;
-  padding: 16px 20px 8px;
+  padding: 14px 20px 0;
   font-family: 'Share Tech Mono', monospace;
-  font-size: 12px; letter-spacing: 0.08em;
+  font-size: 11px; letter-spacing: 0.08em;
   color: #6b5a8e;
 }
 .home-stats-mini a { color: #b9a8e6; text-decoration: none; white-space: nowrap; }
@@ -1240,8 +1240,9 @@ pre code {
   position: relative;
   margin: 4px -28px 0;
   padding-bottom: 14px;
-  /* tightened 2026-07-10 — the foot of the page reads as a band, not a wall */
-  min-height: 185px;
+  /* tightened 2026-07-10 — the foot of the page reads as a band, not a wall;
+     the counters moved out below (#6), so this is a pure drip field now */
+  min-height: 160px;
   border-top: 1px solid rgba(124, 77, 255, 0.42);
   background:
     /* smooth purple/gold colour fading down through the top two-thirds,

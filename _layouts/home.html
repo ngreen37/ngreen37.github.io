@@ -14,6 +14,78 @@ layout: default
   <div class="aurora-band"></div>
 </div>
 
+{% comment %} .home-flow wraps every section so phones can re-order them (#5). {% endcomment %}
+<div class="home-flow">
+
+{% comment %} ── 0. THE CHYRON — the news wire runs at the very top (moved 2026-07-10) ──
+   ✏️ TICKER DIALOGUE LIVES HERE — every headline is one <span class="ticker-item">
+   line below. Edit / add / delete lines freely; promos use ticker-item--promo.
+   Items are listed ONCE; the JS clones the set for a seamless loop, sets a calm
+   scroll speed regardless of count, and adds tap-to-pause / resume. {% endcomment %}
+<div class="world-ticker-wrap"{% if site.data.breaking and site.data.breaking.message %} data-breaking-msg="{{ site.data.breaking.message | escape }}" data-breaking-until="{{ site.data.breaking.until }}"{% endif %}>
+  <div class="ticker-badge" aria-hidden="true">
+    <span class="ticker-badge-live"><i></i><b id="ticker-live-txt">LIVE</b></span>
+    <span class="ticker-badge-name" id="ticker-badge-name">CHECKER&nbsp;TOWN<br>NEWS</span>
+  </div>
+  <div class="ticker-outer">
+    <div class="ticker-track" id="world-ticker-track">
+      <span class="ticker-item">CHECKER TOWN CHECKER PIECE SUPPLY AT ALL-TIME LOW — BOARD SHORTAGE REPORTED IN SECTOR 3</span>
+      <span class="ticker-item ticker-item--promo">◆ NEW — THE IDENTITY FORGE: BUILD YOUR OWN OPERATIVE &amp; COMPANION, RENAME ANYTIME → /DOSSIER/</span>
+      <span class="ticker-item">CHESS CITY TOURNAMENT ENROLLMENT NOW OPEN — LIMITED SPOTS REMAINING — APPLICATIONS CLOSE END OF SEASON</span>
+      <span class="ticker-item ticker-item--promo">◆ NEW — THE GAUNTLET: REAL CHESS VS A LADDER OF PJCC RIVALS → /GAMES/THE-GAUNTLET/</span>
+      <span class="ticker-item">SHOGI ISLAND FERRY DELAYED FOR THIRD CONSECUTIVE WEEK — NO DEPARTURE DATE ANNOUNCED — 将棋の島 : フェリー3週連続遅延中 / 出発日未定</span>
+      <span class="ticker-item ticker-item--promo">◆ NEW — HIDDEN PORTALS: SOME DOORS YOU OPEN BY SOLVING, NOT CLICKING. LISTEN FOR THE OCTAVE.</span>
+      <span class="ticker-item">INTERPLANETARY CONSTRUCTION CO. DENIES ALL VESSEL WRECKAGE CLAIMS — INVESTIGATION CONTINUES</span>
+      <span class="ticker-item ticker-item--promo">◆ THE ARCADE: CLAIM A CODENAME &amp; CLIMB THE GLOBAL BOARDS → /GAMES/</span>
+      <span class="ticker-item">CHESS CITY LEAFS ADVANCE TO FINALS — ROSTER ANNOUNCEMENT EXPECTED SHORTLY</span>
+      <span class="ticker-item ticker-item--promo">◆ THE ACADEMY: A FREE, GAMIFIED CHESS CURRICULUM — EARN YOUR BELTS → /ACADEMY/</span>
+      <span class="ticker-item">CHECKER PIECE PRICES REACH RECORD HIGH — ECONOMISTS CITE THE CRASH AS ORIGIN POINT</span>
+      <span class="ticker-item">UNKNOWN VESSEL SPOTTED OFF COAST — AUTHORITIES INVESTIGATING — PUBLIC ADVISED TO REMAIN CALM</span>
+      <span class="ticker-item ticker-item--promo">◆ COMING SOON — THE BATTLE ROOM: ACTION-CHESS WITH PRINCESS ON THE CONTROLS</span>
+      <span class="ticker-item">CHECKER TOWN YOUTH CHESS LEAGUE REGISTRATION NOW OPEN — FORMS AVAILABLE AT THE CIVIC HALL</span>
+      <span class="ticker-item ticker-item--promo">◆ UPCOMING — A GODOT ROGUELITE BUILT FROM THE BLENDER ASSETS. MADE IN THE OPEN.</span>
+      <span class="ticker-item">OFFICIAL: CHESS CITY HAS NOT RESPONDED TO CHECKER TOWN PASSAGE PERMIT REQUEST — DAY 47</span>
+      <span class="ticker-item">PRINCESS WINS CHECKER TOWN INFORMAL CHESS TOURNAMENT — REMATCH PENDING</span>
+      <span class="ticker-item ticker-item--promo">◆ THE PRESS PASS: BECOME A FOUNDING OPERATIVE — OWN A PIECE OF THE JOURNEY → /PRESS-PASS/</span>
+      <span class="ticker-item">SHADOW ACTIVITY NEAR THE CRASH SITE — CONSTRUCTION EQUIPMENT UNACCOUNTED FOR</span>
+      <span class="ticker-item">MCPUPPY STUDIOS DISPATCH UPDATED {{ site.time | date: "%Y.%m.%d" }} — OPERATIVE NGREEN37 ON DUTY</span>
+    </div>
+  </div>
+</div>
+<style>
+/* ── #1 the chyron: flush under the site header, gold rule below, hero follows ── */
+.world-ticker-wrap { margin: -40px -28px 26px; border-top: none; }
+
+/* ── #5 mobile: the wire starts folded — badge + one headline; tap to open ── */
+.ticker-peek { display: none; }
+.world-ticker-wrap.is-collapsed .ticker-outer { display: none; }
+.world-ticker-wrap.is-collapsed .ticker-peek { display: block; flex: 1 1 auto; min-width: 0; align-self: center;
+  padding: 9px 26px 9px 14px; font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 0.05em;
+  color: #cdbcf2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.world-ticker-wrap.is-collapsed::before { content: '▾'; position: absolute; right: 10px; top: 50%;
+  transform: translateY(-50%); color: #F5C518; font-size: 11px; }
+
+/* ── #5 thumb-first order on phones: the door first, the title after ── */
+@media (max-width: 700px) {
+  .home-flow { display: flex; flex-direction: column; }
+  .world-ticker-wrap { order: 0; }
+  .home-play { order: 1; margin: 0 0 26px; }
+  .home-hero { order: 2; padding: 34px 22px 38px; margin-bottom: 30px; }
+  .hero-title { font-size: 24px; letter-spacing: -0.5px; }
+  .home-section--cast { order: 3; }
+  .home-basement { order: 4; }
+}
+
+/* ── #2 one-screen desktop: tighter rhythm so the drip band meets the fold ── */
+@media (min-width: 900px) {
+  .home-hero { padding: 42px 40px 50px; margin-bottom: 26px; }
+  .hero-title { font-size: clamp(30px, 4.2vw, 44px); }
+  .home-play { margin: 12px 0 4px; }
+  .home-section { margin-bottom: 26px; }
+  .char-chip { padding: 18px 12px 14px; }
+}
+</style>
+
 {% comment %} ── 1. HERO ─────────────────────────────────────────── {% endcomment %}
 <section class="home-hero">
   <p class="hero-eyebrow">McPuppy Studios Presents</p>
@@ -181,44 +253,10 @@ layout: default
 })();
 </script>
 
-{% comment %} ── 3. THE NEWS TICKER ───────────────────────────────────
-   ✏️ TICKER DIALOGUE LIVES HERE — every headline is one <span class="ticker-item">
-   line below. Edit / add / delete lines freely; promos use ticker-item--promo.
-   Items are listed ONCE; the JS clones the set for a seamless loop, sets a calm
-   scroll speed regardless of count, and adds tap-to-pause / resume. {% endcomment %}
-<div class="world-ticker-wrap"{% if site.data.breaking and site.data.breaking.message %} data-breaking-msg="{{ site.data.breaking.message | escape }}" data-breaking-until="{{ site.data.breaking.until }}"{% endif %}>
-  <div class="ticker-badge" aria-hidden="true">
-    <span class="ticker-badge-live"><i></i><b id="ticker-live-txt">LIVE</b></span>
-    <span class="ticker-badge-name" id="ticker-badge-name">CHECKER&nbsp;TOWN<br>NEWS</span>
-  </div>
-  <div class="ticker-outer">
-    <div class="ticker-track" id="world-ticker-track">
-      <span class="ticker-item">CHECKER TOWN CHECKER PIECE SUPPLY AT ALL-TIME LOW — BOARD SHORTAGE REPORTED IN SECTOR 3</span>
-      <span class="ticker-item ticker-item--promo">◆ NEW — THE IDENTITY FORGE: BUILD YOUR OWN OPERATIVE &amp; COMPANION, RENAME ANYTIME → /DOSSIER/</span>
-      <span class="ticker-item">CHESS CITY TOURNAMENT ENROLLMENT NOW OPEN — LIMITED SPOTS REMAINING — APPLICATIONS CLOSE END OF SEASON</span>
-      <span class="ticker-item ticker-item--promo">◆ NEW — THE GAUNTLET: REAL CHESS VS A LADDER OF PJCC RIVALS → /GAMES/THE-GAUNTLET/</span>
-      <span class="ticker-item">SHOGI ISLAND FERRY DELAYED FOR THIRD CONSECUTIVE WEEK — NO DEPARTURE DATE ANNOUNCED — 将棋の島 : フェリー3週連続遅延中 / 出発日未定</span>
-      <span class="ticker-item ticker-item--promo">◆ NEW — HIDDEN PORTALS: SOME DOORS YOU OPEN BY SOLVING, NOT CLICKING. LISTEN FOR THE OCTAVE.</span>
-      <span class="ticker-item">INTERPLANETARY CONSTRUCTION CO. DENIES ALL VESSEL WRECKAGE CLAIMS — INVESTIGATION CONTINUES</span>
-      <span class="ticker-item ticker-item--promo">◆ THE ARCADE: CLAIM A CODENAME &amp; CLIMB THE GLOBAL BOARDS → /GAMES/</span>
-      <span class="ticker-item">CHESS CITY LEAFS ADVANCE TO FINALS — ROSTER ANNOUNCEMENT EXPECTED SHORTLY</span>
-      <span class="ticker-item ticker-item--promo">◆ THE ACADEMY: A FREE, GAMIFIED CHESS CURRICULUM — EARN YOUR BELTS → /ACADEMY/</span>
-      <span class="ticker-item">CHECKER PIECE PRICES REACH RECORD HIGH — ECONOMISTS CITE THE CRASH AS ORIGIN POINT</span>
-      <span class="ticker-item">UNKNOWN VESSEL SPOTTED OFF COAST — AUTHORITIES INVESTIGATING — PUBLIC ADVISED TO REMAIN CALM</span>
-      <span class="ticker-item ticker-item--promo">◆ COMING SOON — THE BATTLE ROOM: ACTION-CHESS WITH PRINCESS ON THE CONTROLS</span>
-      <span class="ticker-item">CHECKER TOWN YOUTH CHESS LEAGUE REGISTRATION NOW OPEN — FORMS AVAILABLE AT THE CIVIC HALL</span>
-      <span class="ticker-item ticker-item--promo">◆ UPCOMING — A GODOT ROGUELITE BUILT FROM THE BLENDER ASSETS. MADE IN THE OPEN.</span>
-      <span class="ticker-item">OFFICIAL: CHESS CITY HAS NOT RESPONDED TO CHECKER TOWN PASSAGE PERMIT REQUEST — DAY 47</span>
-      <span class="ticker-item">PRINCESS WINS CHECKER TOWN INFORMAL CHESS TOURNAMENT — REMATCH PENDING</span>
-      <span class="ticker-item ticker-item--promo">◆ THE PRESS PASS: BECOME A FOUNDING OPERATIVE — OWN A PIECE OF THE JOURNEY → /PRESS-PASS/</span>
-      <span class="ticker-item">SHADOW ACTIVITY NEAR THE CRASH SITE — CONSTRUCTION EQUIPMENT UNACCOUNTED FOR</span>
-      <span class="ticker-item">MCPUPPY STUDIOS DISPATCH UPDATED {{ site.time | date: "%Y.%m.%d" }} — OPERATIVE NGREEN37 ON DUTY</span>
-    </div>
-  </div>
-</div>
+{% comment %} (The news ticker moved to the TOP of the page — the chyron — 2026-07-10.) {% endcomment %}
 
 {% comment %} ── 4. CHARACTER TEASER — four random faces, reshuffled each visit ──── {% endcomment %}
-<section class="home-section">
+<section class="home-section home-section--cast">
   <h2 class="home-section-label">
     <a class="home-section-link" href="{{ '/characters/' | relative_url }}">Meet them all &rarr;</a>
   </h2>
@@ -293,16 +331,18 @@ layout: default
   <span class="drip"             style="--x:95%; --w:6px;  --len:180px; --col:212,160,20;  --dur:6.4s;  --delay:-4.4s; --b:1.0"></span>
   <span class="drip drip--thin"  style="--x:97%; --w:2px;  --len:150px; --col:255,143,208; --dur:5.6s;  --delay:-1.9s; --b:0.8"></span>
 </div>
-{% comment %} Counters condensed to one slim line (2026-07-08) — the old 4-tile
-     stats bar + count-up lives in git if it's ever missed. {% endcomment %}
+</div><!-- /.home-basement -->
+
+</div><!-- /.home-flow -->
+
+{% comment %} #6 (2026-07-10): the slim counters moved OUT of the basement (now pure drips)
+     to sit down here with the footer. Old 4-tile stats bar lives in git. {% endcomment %}
 <div class="home-stats-mini">
   <a href="{{ '/blog/' | relative_url }}">{{ site.posts.size }} posts</a><i>·</i>
   <a href="{{ '/characters/' | relative_url }}">{{ vis_char_count }} characters</a><i>·</i>
   <a href="{{ '/locations/' | relative_url }}">{{ vis_loc_count }} locations</a><i>·</i>
   <a href="{{ '/games/' | relative_url }}"><span id="home-playable-n">6</span> playable games</a>
 </div>
-
-</div><!-- /.home-basement -->
 
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
@@ -542,6 +582,17 @@ layout: default
     takeover('BREAKING');
   })();
 
+  // ---- #5: on phones the wire starts folded — badge + the day's first headline;
+  //      one tap opens the full crawl (the tap after that pauses it, as always) ----
+  if (window.matchMedia && window.matchMedia('(max-width: 700px)').matches) {
+    wrap.classList.add('is-collapsed');
+    var peek = document.createElement('div');
+    peek.className = 'ticker-peek';
+    var f0 = track.querySelector('.ticker-item');
+    peek.textContent = f0 ? f0.textContent : 'THE CHECKER TOWN WIRE';
+    wrap.appendChild(peek);
+  }
+
   // ---- seamless loop (clone AFTER the sync items above are in place) ----
   var items = Array.prototype.slice.call(track.children);
   items.forEach(function(it) { track.appendChild(it.cloneNode(true)); });
@@ -561,7 +612,14 @@ layout: default
   wrap.setAttribute('role', 'button');
   wrap.setAttribute('tabindex', '0');
   wrap.setAttribute('aria-label', 'News ticker — tap to pause or resume');
-  function toggle() { userPaused = !userPaused; wrap.classList.toggle('is-paused', userPaused); }
+  function toggle() {
+    if (wrap.classList.contains('is-collapsed')) {   // folded (phones): first tap opens the wire
+      wrap.classList.remove('is-collapsed');
+      setDuration();
+      return;
+    }
+    userPaused = !userPaused; wrap.classList.toggle('is-paused', userPaused);
+  }
   wrap.addEventListener('click', toggle);
   wrap.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
