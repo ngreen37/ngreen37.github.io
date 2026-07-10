@@ -1223,7 +1223,7 @@ pre code {
 .home-stats-mini {
   position: relative; z-index: 1;
   text-align: center;
-  padding: 30px 20px 10px;
+  padding: 16px 20px 8px;
   font-family: 'Share Tech Mono', monospace;
   font-size: 12px; letter-spacing: 0.08em;
   color: #6b5a8e;
@@ -1240,9 +1240,8 @@ pre code {
   position: relative;
   margin: 4px -28px 0;
   padding-bottom: 14px;
-  /* the counters shrank to one line (2026-07-08) — hold the height so the
-     paint-drip field keeps its full canvas at the foot of the page */
-  min-height: 300px;
+  /* tightened 2026-07-10 — the foot of the page reads as a band, not a wall */
+  min-height: 185px;
   border-top: 1px solid rgba(124, 77, 255, 0.42);
   background:
     /* smooth purple/gold colour fading down through the top two-thirds,

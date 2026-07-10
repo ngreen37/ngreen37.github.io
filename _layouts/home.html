@@ -50,8 +50,22 @@ layout: default
   100% { opacity:0; transform:translate(-50%,0) scale(1.3); } }
 
 /* #10 — she brushes past; the title takes the bump, then settles */
-.hero-title { transition:transform 1.6s cubic-bezier(.2,1.6,.35,1); }
+.hero-title { position:relative; transition:transform 1.6s cubic-bezier(.2,1.6,.35,1); }
 .hero-title.ht-nudge { transform:rotate(-1.2deg); }
+
+/* #16 — one quiet pass of light across the title, every visit */
+.ht-sheen { position:absolute; top:-6px; bottom:-6px; left:0; width:34%; pointer-events:none;
+  mix-blend-mode:screen; opacity:0; transform:translateX(-120%) skewX(-14deg);
+  background:linear-gradient(100deg, transparent, rgba(255,236,170,0.20), transparent); }
+.ht-sheen.run { animation:htSheen 1.4s ease-in-out both; }
+@keyframes htSheen { 10% { opacity:1; } 90% { opacity:1; }
+  100% { opacity:0; transform:translateX(340%) skewX(-14deg); } }
+
+/* #17 — assembly finale: the queen takes her place on the last letter, then bows out */
+.ht-crown { position:absolute; transform:translate(-50%,-92%); color:#F5C518; font-size:0.55em; line-height:1;
+  pointer-events:none; text-shadow:0 0 12px rgba(245,197,24,0.75); animation:htCrown 2.3s ease both; }
+@keyframes htCrown { 0% { opacity:0; margin-top:-34px; } 26% { opacity:1; margin-top:0; }
+  40% { margin-top:-7px; } 54% { margin-top:0; } 82% { opacity:1; } 100% { opacity:0; margin-top:0; } }
 
 /* #15 — the shop light: lit only while work is shipping. no label. */
 .shop-light { position:absolute; right:6%; bottom:74px; width:7px; height:7px; border-radius:50%; z-index:1;
@@ -83,12 +97,7 @@ layout: default
       <span class="hg-cta" id="hg-cta">Begin</span>
     </div>
   </a>
-  {% comment %} #14 DOOR CHECK — some days the door asks a question (JS below fills it). {% endcomment %}
-  <div class="door-check" id="door-check" hidden>
-    <div class="dc-head">DOOR CHECK — WHITE MATES IN ONE</div>
-    <div class="dc-board" id="dc-board" aria-hidden="true"></div>
-    <div class="dc-moves" id="dc-moves" role="group" aria-label="Pick the mating move"></div>
-  </div>
+  {% comment %} #14 DOOR CHECK removed 2026-07-10 ("I don't get it") — restore from git if ever missed. {% endcomment %}
 </section>
 <style>
 .home-play { display:flex; flex-wrap:wrap; gap:12px; align-items:stretch; justify-content:center; margin:16px 0 4px; }
@@ -120,21 +129,6 @@ layout: default
   .home-gauntlet .hg-side { align-items:center; flex-direction:row-reverse; justify-content:space-between; width:100%; }
   .home-gauntlet .hg-title { font-size:1.4rem; }
 }
-.door-check { flex:1 1 100%; display:flex; align-items:center; justify-content:center; gap:16px; flex-wrap:wrap;
-  background:rgba(18,11,40,0.72); border:1px dashed rgba(245,197,24,0.42); border-radius:14px; padding:12px 16px; }
-.door-check .dc-head { font-family:'Courier New',monospace; font-size:0.72rem; font-weight:700; letter-spacing:0.12em;
-  color:#F5C518; flex:1 1 100%; text-align:center; }
-.dc-board { display:grid; grid-template-columns:repeat(8,17px); border:2px solid #3a2a10; border-radius:4px; overflow:hidden; }
-.dc-board i { width:17px; height:17px; font-style:normal; font-size:13.5px; line-height:17px; text-align:center; color:#1d1430; }
-.dc-board i.lt { background:#e9dcb6; }
-.dc-board i.dk { background:#a97c50; }
-.dc-moves { display:flex; flex-direction:column; gap:8px; }
-.dc-btn { font-family:'Courier New',monospace; font-weight:700; font-size:0.86rem; color:#F5C518; background:rgba(245,197,24,0.08);
-  border:1px solid rgba(245,197,24,0.5); border-radius:999px; padding:7px 18px; cursor:pointer; }
-.dc-btn:hover { background:rgba(245,197,24,0.2); }
-.door-check.is-shake { animation:dcShake .3s ease; }
-@keyframes dcShake { 25% { transform:translateX(-5px); } 75% { transform:translateX(5px); } }
-.door-check.is-solved { border-color:#6bffb8; }
 </style>
 <script>
 // The Gauntlet hero — resume state (#8), progress pips, and climb-rank badge (#6).
@@ -226,11 +220,11 @@ layout: default
 {% comment %} ── 4. CHARACTER TEASER — four random faces, reshuffled each visit ──── {% endcomment %}
 <section class="home-section">
   <h2 class="home-section-label">
-    <button class="home-shuffle" id="char-shuffle" type="button" aria-label="Shuffle the four characters" title="Shuffle">&#8635;</button>
     <a class="home-section-link" href="{{ '/characters/' | relative_url }}">Meet them all &rarr;</a>
   </h2>
   {% comment %} All main-cast chips are rendered (ancillary excluded); the JS below shows a
-       random four and lets you reshuffle without a reload. {% endcomment %}
+       random four. The shuffle button lives BELOW the grid (2026-07-10) so it can't be
+       mistaken for a ticker control. {% endcomment %}
   <div class="char-row" id="home-char-row" data-show="4">
     {% for char in site.characters %}
     {% unless char.tier == "ancillary" or site.hidden_character_urls contains char.url %}
@@ -243,12 +237,18 @@ layout: default
     {% endunless %}
     {% endfor %}
   </div>
+  <div class="char-row-tools">
+    <button class="home-shuffle" id="char-shuffle" type="button" aria-label="Shuffle the four characters" title="Shuffle the four faces">&#8635; <span>shuffle</span></button>
+  </div>
 </section>
 <style>
-.home-shuffle { background: rgba(80,30,180,0.2); color: #F5C518; border: 1px solid rgba(150,65,255,0.55);
-  border-radius: 999px; width: 30px; height: 30px; cursor: pointer; font-size: 15px; line-height: 1;
-  margin-left: 8px; padding: 0; transition: transform .35s cubic-bezier(.34,1.56,.64,1), border-color .15s; vertical-align: middle; }
-.home-shuffle:hover { border-color: #F5C518; transform: rotate(180deg); }
+.char-row-tools { display: flex; justify-content: flex-end; margin-top: 6px; }
+.home-shuffle { display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(80,30,180,0.2); color: #b9a8e6; border: 1px solid rgba(150,65,255,0.4);
+  border-radius: 999px; height: 26px; padding: 0 12px; cursor: pointer; font-size: 13px; line-height: 1;
+  transition: border-color .15s, color .15s; }
+.home-shuffle span { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.home-shuffle:hover { border-color: #F5C518; color: #F5C518; }
 .char-row.just-shuffled .char-chip { animation: chipIn .42s ease both; }
 @keyframes chipIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
 </style>
@@ -263,34 +263,35 @@ layout: default
 <div class="home-basement">
 <span class="shop-light" id="shop-light" hidden aria-hidden="true"></span>
 <div class="home-drips" aria-hidden="true">
-  <span class="drip"             style="--x:2%;  --w:7px;  --len:400px; --col:245,197,24;  --dur:8.4s;  --delay:-0.5s; --b:1.15"></span>
-  <span class="drip"             style="--x:6%;  --w:9px;  --len:250px; --col:176,142,255; --dur:9.6s;  --delay:-3.1s; --b:0.8"></span>
-  <span class="drip drip--fall"  style="--x:10%; --w:6px;  --len:380px; --col:255,168,60;  --dur:6.2s;  --delay:-1.4s; --b:1.25"></span>
+  {% comment %} Run lengths scaled ~×0.6 (2026-07-10) to match the shorter basement. {% endcomment %}
+  <span class="drip"             style="--x:2%;  --w:7px;  --len:240px; --col:245,197,24;  --dur:8.4s;  --delay:-0.5s; --b:1.15"></span>
+  <span class="drip"             style="--x:6%;  --w:9px;  --len:150px; --col:176,142,255; --dur:9.6s;  --delay:-3.1s; --b:0.8"></span>
+  <span class="drip drip--fall"  style="--x:10%; --w:6px;  --len:230px; --col:255,168,60;  --dur:6.2s;  --delay:-1.4s; --b:1.25"></span>
   <span class="drip drip--blob"  style="--x:14%; --w:15px; --len:70px;  --col:138,99,240;  --dur:8.0s;  --delay:-4.2s; --b:0.9"></span>
-  <span class="drip"             style="--x:13%; --w:4px;  --len:120px; --col:91,224,192;  --dur:5.6s;  --delay:-3.5s; --b:0.65"></span>
-  <span class="drip drip--thin"  style="--x:19%; --w:2px;  --len:230px; --col:245,197,24;  --dur:5.4s;  --delay:-0.8s; --b:1.0"></span>
-  <span class="drip"             style="--x:23%; --w:5px;  --len:150px; --col:91,224,192;  --dur:6.2s;  --delay:-2.0s; --b:0.7"></span>
-  <span class="drip"             style="--x:27%; --w:10px; --len:430px; --col:176,142,255; --dur:10.8s; --delay:-5.5s; --b:1.05"></span>
-  <span class="drip drip--fall"  style="--x:31%; --w:5px;  --len:400px; --col:245,197,24;  --dur:6.0s;  --delay:-2.7s; --b:1.2"></span>
-  <span class="drip"             style="--x:35%; --w:6px;  --len:300px; --col:205,180,255; --dur:6.6s;  --delay:-1.1s; --b:0.85"></span>
-  <span class="drip"             style="--x:39%; --w:6px;  --len:150px; --col:255,143,208; --dur:6.0s;  --delay:-1.9s; --b:0.75"></span>
-  <span class="drip"             style="--x:42%; --w:5px;  --len:340px; --col:138,99,240;  --dur:7.8s;  --delay:-2.1s; --b:1.05"></span>
+  <span class="drip"             style="--x:13%; --w:4px;  --len:75px;  --col:91,224,192;  --dur:5.6s;  --delay:-3.5s; --b:0.65"></span>
+  <span class="drip drip--thin"  style="--x:19%; --w:2px;  --len:140px; --col:245,197,24;  --dur:5.4s;  --delay:-0.8s; --b:1.0"></span>
+  <span class="drip"             style="--x:23%; --w:5px;  --len:90px;  --col:91,224,192;  --dur:6.2s;  --delay:-2.0s; --b:0.7"></span>
+  <span class="drip"             style="--x:27%; --w:10px; --len:260px; --col:176,142,255; --dur:10.8s; --delay:-5.5s; --b:1.05"></span>
+  <span class="drip drip--fall"  style="--x:31%; --w:5px;  --len:240px; --col:245,197,24;  --dur:6.0s;  --delay:-2.7s; --b:1.2"></span>
+  <span class="drip"             style="--x:35%; --w:6px;  --len:180px; --col:205,180,255; --dur:6.6s;  --delay:-1.1s; --b:0.85"></span>
+  <span class="drip"             style="--x:39%; --w:6px;  --len:90px;  --col:255,143,208; --dur:6.0s;  --delay:-1.9s; --b:0.75"></span>
+  <span class="drip"             style="--x:42%; --w:5px;  --len:200px; --col:138,99,240;  --dur:7.8s;  --delay:-2.1s; --b:1.05"></span>
   <span class="drip drip--blob"  style="--x:45%; --w:12px; --len:60px;  --col:96,206,255;  --dur:7.5s;  --delay:-3.3s; --b:1.1"></span>
-  <span class="drip drip--thin"  style="--x:48%; --w:2px;  --len:280px; --col:176,142,255; --dur:5.8s;  --delay:-4.8s; --b:0.95"></span>
-  <span class="drip"             style="--x:52%; --w:8px;  --len:420px; --col:245,197,24;  --dur:9.4s;  --delay:-3.7s; --b:1.0"></span>
-  <span class="drip drip--fall"  style="--x:56%; --w:6px;  --len:360px; --col:91,224,192;  --dur:6.4s;  --delay:-0.9s; --b:1.15"></span>
-  <span class="drip"             style="--x:60%; --w:7px;  --len:280px; --col:138,99,240;  --dur:7.1s;  --delay:-2.4s; --b:0.8"></span>
+  <span class="drip drip--thin"  style="--x:48%; --w:2px;  --len:170px; --col:176,142,255; --dur:5.8s;  --delay:-4.8s; --b:0.95"></span>
+  <span class="drip"             style="--x:52%; --w:8px;  --len:250px; --col:245,197,24;  --dur:9.4s;  --delay:-3.7s; --b:1.0"></span>
+  <span class="drip drip--fall"  style="--x:56%; --w:6px;  --len:220px; --col:91,224,192;  --dur:6.4s;  --delay:-0.9s; --b:1.15"></span>
+  <span class="drip"             style="--x:60%; --w:7px;  --len:170px; --col:138,99,240;  --dur:7.1s;  --delay:-2.4s; --b:0.8"></span>
   <span class="drip drip--blob"  style="--x:64%; --w:13px; --len:64px;  --col:245,197,24;  --dur:8.2s;  --delay:-4.9s; --b:1.2"></span>
-  <span class="drip drip--thin"  style="--x:68%; --w:3px;  --len:230px; --col:255,168,60;  --dur:5.0s;  --delay:-1.2s; --b:1.05"></span>
-  <span class="drip"             style="--x:72%; --w:9px;  --len:400px; --col:176,142,255; --dur:9.8s;  --delay:-5.1s; --b:0.9"></span>
-  <span class="drip drip--fall"  style="--x:76%; --w:5px;  --len:430px; --col:245,197,24;  --dur:6.6s;  --delay:-2.2s; --b:1.25"></span>
-  <span class="drip"             style="--x:80%; --w:6px;  --len:150px; --col:96,206,255;  --dur:6.9s;  --delay:-3.9s; --b:0.7"></span>
-  <span class="drip"             style="--x:82%; --w:8px;  --len:340px; --col:245,197,24;  --dur:8.6s;  --delay:-4.0s; --b:1.15"></span>
-  <span class="drip"             style="--x:84%; --w:5px;  --len:200px; --col:240,120,160; --dur:6.2s;  --delay:-1.5s; --b:0.85"></span>
-  <span class="drip drip--fall"  style="--x:88%; --w:5px;  --len:380px; --col:245,197,24;  --dur:6.0s;  --delay:-0.6s; --b:1.1"></span>
+  <span class="drip drip--thin"  style="--x:68%; --w:3px;  --len:140px; --col:255,168,60;  --dur:5.0s;  --delay:-1.2s; --b:1.05"></span>
+  <span class="drip"             style="--x:72%; --w:9px;  --len:240px; --col:176,142,255; --dur:9.8s;  --delay:-5.1s; --b:0.9"></span>
+  <span class="drip drip--fall"  style="--x:76%; --w:5px;  --len:260px; --col:245,197,24;  --dur:6.6s;  --delay:-2.2s; --b:1.25"></span>
+  <span class="drip"             style="--x:80%; --w:6px;  --len:90px;  --col:96,206,255;  --dur:6.9s;  --delay:-3.9s; --b:0.7"></span>
+  <span class="drip"             style="--x:82%; --w:8px;  --len:200px; --col:245,197,24;  --dur:8.6s;  --delay:-4.0s; --b:1.15"></span>
+  <span class="drip"             style="--x:84%; --w:5px;  --len:120px; --col:240,120,160; --dur:6.2s;  --delay:-1.5s; --b:0.85"></span>
+  <span class="drip drip--fall"  style="--x:88%; --w:5px;  --len:230px; --col:245,197,24;  --dur:6.0s;  --delay:-0.6s; --b:1.1"></span>
   <span class="drip drip--blob"  style="--x:92%; --w:11px; --len:58px;  --col:176,142,255; --dur:7.7s;  --delay:-2.8s; --b:0.95"></span>
-  <span class="drip"             style="--x:95%; --w:6px;  --len:300px; --col:212,160,20;  --dur:6.4s;  --delay:-4.4s; --b:1.0"></span>
-  <span class="drip drip--thin"  style="--x:97%; --w:2px;  --len:250px; --col:255,143,208; --dur:5.6s;  --delay:-1.9s; --b:0.8"></span>
+  <span class="drip"             style="--x:95%; --w:6px;  --len:180px; --col:212,160,20;  --dur:6.4s;  --delay:-4.4s; --b:1.0"></span>
+  <span class="drip drip--thin"  style="--x:97%; --w:2px;  --len:150px; --col:255,143,208; --dur:5.6s;  --delay:-1.9s; --b:0.8"></span>
 </div>
 {% comment %} Counters condensed to one slim line (2026-07-08) — the old 4-tile
      stats bar + count-up lives in git if it's ever missed. {% endcomment %}
@@ -701,14 +702,43 @@ layout: default
     }, d);
     setTimeout(function () { s.classList.add('ht-in'); }, d + 280);
   });
-  // when the dust settles, put the title back to plain text (kerning and all)
+  // when the dust settles, put the title back to plain text (kerning and all) —
+  // but first (#17) the finale: a gold queen drops onto the last letter, takes
+  // her place for a beat, and bows out. First visit only, like the assembly.
+  window.__htDone = 160 + letters.length * 34 + 900;
   setTimeout(function () {
+    var last = letters[letters.length - 1];
+    if (last && last.parentNode) {
+      var tr = t.getBoundingClientRect(), lr = last.getBoundingClientRect();
+      var c = document.createElement('span');
+      c.className = 'ht-crown'; c.textContent = '♛'; c.setAttribute('aria-hidden', 'true');
+      c.style.left = (lr.left - tr.left + lr.width / 2) + 'px';
+      c.style.top = (lr.top - tr.top) + 'px';
+      t.appendChild(c);
+      setTimeout(function () { try { t.removeChild(c); } catch (e) {} }, 2400);
+    }
     t.classList.remove('ht-run');
     letters.forEach(function (s) {
       if (s.parentNode) s.parentNode.replaceChild(document.createTextNode(s.textContent), s);
     });
     t.normalize(); t.removeAttribute('aria-label');
-  }, 160 + letters.length * 34 + 900);
+  }, window.__htDone);
+})();
+
+// #16 — the light pass: one soft sweep across the title on every visit
+// (waits for the assembly finale when that runs; otherwise fires shortly after load).
+(function () {
+  var t = document.querySelector('.hero-title');
+  if (!t) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var delay = (window.__htDone || 400) + 300;
+  setTimeout(function () {
+    var s = document.createElement('span');
+    s.className = 'ht-sheen'; s.setAttribute('aria-hidden', 'true');
+    t.appendChild(s);
+    requestAnimationFrame(function () { s.classList.add('run'); });
+    setTimeout(function () { try { t.removeChild(s); } catch (e) {} }, 2200);
+  }, delay);
 })();
 
 // #10 — once a session Princess takes the high road, straight through the hero,
@@ -739,75 +769,7 @@ layout: default
   });
 })();
 
-// #14 DOOR CHECK — some days the door asks a question. One move, mate.
-// Every position is fixed and hand-verified; the board renders straight from
-// the FEN so what you see is exactly what's asked. Solve it: the door glows.
-(function () {
-  var box = document.getElementById('door-check');
-  var boardEl = document.getElementById('dc-board'), movesEl = document.getElementById('dc-moves');
-  if (!box || !boardEl || !movesEl) return;
-  var PUZZLES = [        // [position, mate-in-one, decoy, decoy] — all legal moves
-    ['6k1/5ppp/8/8/8/8/5PPP/4R1K1',                      'Re8#',  'Re7',   'Kf1'],
-    ['r1bqk1nr/pppp1ppp/2n5/2b1p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR', 'Qxf7#', 'Qxe5+', 'Bxf7+'],
-    ['6rk/6pp/8/6N1/8/8/8/6K1',                          'Nf7#',  'Ne6',   'Ne4'],
-    ['6k1/8/6K1/8/8/8/8/1Q6',                            'Qb8#',  'Qb7',   'Qh1'],
-    ['3k4/1R6/8/8/8/8/8/R5K1',                           'Ra8#',  'Rb8+',  'Ra7']
-  ];
-  var d = new Date(), ds = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
-  var h = 2166136261;
-  for (var i = 0; i < ds.length; i++) { h ^= ds.charCodeAt(i); h = Math.imul(h, 16777619); }
-  var seed = h >>> 0;
-  if (seed % 3) return;                              // most days, the door keeps quiet
-  try { if (localStorage.getItem('pjcc.door.check') === ds) return; } catch (e) {}
-  var pz = PUZZLES[seed % PUZZLES.length];
-  var GLYPH = { K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟' };
-  function cell(r2, f2, g) { return '<i class="' + (((r2 + f2) % 2) ? 'dk' : 'lt') + '">' + g + '</i>'; }
-  var html = '', rows = pz[0].split('/');
-  for (var rI = 0; rI < 8; rI++) {
-    var file = 0, row = rows[rI];
-    for (var cI = 0; cI < row.length; cI++) {
-      var ch = row[cI];
-      if (ch >= '1' && ch <= '8') { for (var s2 = 0; s2 < +ch; s2++) { html += cell(rI, file, ''); file++; } }
-      else { html += cell(rI, file, GLYPH[ch] || ''); file++; }
-    }
-  }
-  boardEl.innerHTML = html;
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function spark(x, y) {
-    if (reduce) return;
-    var p = document.createElement('span');
-    p.textContent = '✦';
-    p.style.cssText = 'position:fixed;left:' + x + 'px;top:' + y + 'px;color:#F5C518;z-index:11000;' +
-      'pointer-events:none;font-size:' + (9 + Math.random() * 8) + 'px;transition:transform .7s ease-out, opacity .7s ease-out;';
-    document.body.appendChild(p);
-    requestAnimationFrame(function () {
-      p.style.transform = 'translate(' + (Math.random() * 90 - 45) + 'px,' + (-30 - Math.random() * 60) + 'px) rotate(' + (Math.random() * 300 - 150) + 'deg)';
-      p.style.opacity = '0';
-    });
-    setTimeout(function () { try { p.remove(); } catch (e) {} }, 800);
-  }
-  var opts = [[pz[1], 1], [pz[2], 0], [pz[3], 0]];
-  var seqs = [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];
-  seqs[seed % 6].forEach(function (ix) {
-    var o = opts[ix], b = document.createElement('button');
-    b.type = 'button'; b.className = 'dc-btn'; b.textContent = o[0];
-    b.addEventListener('click', function () {
-      if (o[1]) {
-        try { localStorage.setItem('pjcc.door.check', ds); } catch (e) {}
-        box.classList.add('is-solved');
-        var card = document.getElementById('home-gauntlet');
-        if (card) card.style.filter = 'drop-shadow(0 0 16px rgba(245,197,24,0.45))';
-        var r3 = b.getBoundingClientRect();
-        for (var k2 = 0; k2 < 10; k2++) spark(r3.left + r3.width / 2, r3.top);
-        setTimeout(function () { box.hidden = true; }, 1600);
-      } else {
-        box.classList.remove('is-shake'); void box.offsetWidth; box.classList.add('is-shake');
-      }
-    });
-    movesEl.appendChild(b);
-  });
-  box.hidden = false;
-})();
+// (#14 DOOR CHECK removed 2026-07-10 — restore from git if ever missed.)
 
 // #15 THE SHOP LIGHT — a small lamp at the foot of the page, lit only when a
 // commit shipped in the last 48 hours. No label. He's in there working.
