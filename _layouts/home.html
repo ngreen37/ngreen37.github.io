@@ -25,7 +25,7 @@ layout: default
 <div class="world-ticker-wrap"{% if site.data.breaking and site.data.breaking.message %} data-breaking-msg="{{ site.data.breaking.message | escape }}" data-breaking-until="{{ site.data.breaking.until }}"{% endif %}>
   <div class="ticker-badge" aria-hidden="true">
     <span class="ticker-badge-live"><i></i><b id="ticker-live-txt">LIVE</b></span>
-    <span class="ticker-badge-name" id="ticker-badge-name">CHECKER&nbsp;TOWN<br>NEWS</span>
+    <span class="ticker-badge-name" id="ticker-badge-name">CHECKER&nbsp;TOWN NEWS</span>
   </div>
   <div class="ticker-outer">
     <div class="ticker-track" id="world-ticker-track">
@@ -53,34 +53,34 @@ layout: default
   </div>
 </div>
 <style>
-/* ── #1 the chyron: flush under the site header, gold rule below, hero follows ── */
-.world-ticker-wrap { margin: -40px -28px 26px; border-top: none; }
+/* ── #1 the chyron: flush under the site header, gold rule below, hero follows.
+   2026-07-10: the station plate (LIVE · CHECKER TOWN NEWS) sits ABOVE the crawl. ── */
+.world-ticker-wrap { flex-direction: column; align-items: stretch; margin: -40px -28px 26px; border-top: none; }
+.ticker-badge { align-self: flex-start; padding: 5px 16px 5px 18px; gap: 8px; }
+.ticker-badge-name { font-size: 10px; }
+.ticker-outer { padding: 8px 0 10px; }
 
 /* ── #5 mobile: the wire starts folded — badge + one headline; tap to open ── */
 .ticker-peek { display: none; }
 .world-ticker-wrap.is-collapsed .ticker-outer { display: none; }
-.world-ticker-wrap.is-collapsed .ticker-peek { display: block; flex: 1 1 auto; min-width: 0; align-self: center;
-  padding: 9px 26px 9px 14px; font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 0.05em;
+.world-ticker-wrap.is-collapsed .ticker-peek { display: block; min-width: 0;
+  padding: 8px 26px 9px 14px; font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 0.05em;
   color: #cdbcf2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.world-ticker-wrap.is-collapsed::before { content: '▾'; position: absolute; right: 10px; top: 50%;
-  transform: translateY(-50%); color: #F5C518; font-size: 11px; }
+.world-ticker-wrap.is-collapsed::before { content: '▾'; position: absolute; right: 10px; bottom: 8px;
+  color: #F5C518; font-size: 11px; }
 
 /* ── #5 thumb-first order on phones: the door first, the title after ── */
 @media (max-width: 700px) {
   .home-flow { display: flex; flex-direction: column; }
   .home-row { display: contents; }   /* dissolve the fold so phones re-order freely */
   .world-ticker-wrap { order: 0; }
-  .op-strip { order: 1; }
-  .home-play { order: 2; margin: 0 0 26px; }
-  .home-hero { order: 3; padding: 26px 22px 54px; min-height: 190px; margin-bottom: 30px; }
+  .home-play { order: 1; margin: 0 0 26px; }
+  .home-hero { order: 2; padding: 26px 22px 54px; min-height: 190px; margin-bottom: 30px; }
   .hero-title { font-size: 24px; letter-spacing: -0.5px; }
   .hero-skyline { height: 34px; left: 16px; right: 16px; }
-  .sea-divider { order: 4; }
-  .home-section--cast { order: 5; }
-  .home-basement { order: 6; }
-  .char-row { min-height: 150px; }
-  .char-chip-icon { font-size: 24px; }
-  .sq-lamp { height: 52px; }
+  .hero-board { bottom: 30px; height: 64px; }
+  .home-section--cast { order: 3; }
+  .home-basement { order: 4; }
 }
 
 /* ── #2 one-screen desktop + #3 the fold + #11 the door ── */
@@ -91,6 +91,8 @@ layout: default
     margin: 12px 0 26px; }
   .home-row .home-play { margin: 0; }
   .home-row .home-section--cast { margin-bottom: 0; }
+  .home-row .char-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .home-row .char-chip { padding: 18px 10px 14px; }
   /* #11 — the Gauntlet card becomes the door itself: arched frame, floor lights
      climbing the jamb (floor 1 at the bottom), your floor's colour on the frame */
   .home-gauntlet { flex-direction: column; align-items: center; justify-content: center;
@@ -107,6 +109,7 @@ layout: default
 {% comment %} ── 1. HERO ─────────────────────────────────────────── {% endcomment %}
 <section class="home-hero">
   <p class="hero-eyebrow">McPuppy Studios Presents</p>
+  <div class="hero-board" aria-hidden="true"></div>
   <h1 class="hero-title">Princess and the Journey<br>to Chess City</h1>
   {% comment %} A faint, unlabeled window (idea #4, kept cryptic on purpose... i.e.
        deliberately unexplained IN-WORLD — the skyline inside stands where your
@@ -188,8 +191,7 @@ body.sky-night .home-section-label { border-bottom-color:#2a1d5e; }
 body.sky-night .hero-skyline .sk-cc.lit::after { opacity:1; }
 
 /* ── #18 first arrival: the page takes its seats after the title (JS staggers) ── */
-body.first-arrival .world-ticker-wrap, body.first-arrival .op-strip, body.first-arrival .sea-divider,
-body.first-arrival .home-row, body.first-arrival .home-basement, body.first-arrival .home-stats-mini {
+body.first-arrival .world-ticker-wrap, body.first-arrival .home-row, body.first-arrival .home-basement {
   opacity:0; transform:translateY(8px); }
 .arrive-in { transition:opacity .7s ease, transform .7s ease; opacity:1 !important; transform:none !important; }
 
@@ -203,17 +205,35 @@ body.first-arrival .home-row, body.first-arrival .home-basement, body.first-arri
 .cc-window-sky { font-size:var(--ws, 9px); letter-spacing:1px; color:#b9a8e6; line-height:1; padding-bottom:10px; }
 @media (max-width:700px){ .cc-window { display:none; } }
 
-/* #9 — first visit only: the title assembles from falling pieces */
+/* #9 — first visit only: the title assembles from falling pieces.
+   (2026-07-10: more dramatic — higher tumbling fall, letters land white-hot
+   with a squash-and-settle, and the hero takes the final impact.) */
 .hero-title .ht-l { display:inline-block; position:relative; }
 .hero-title.ht-run .ht-l { visibility:hidden; }
 .hero-title.ht-run .ht-l .ht-p { visibility:visible; }
-.hero-title .ht-l.ht-in { visibility:visible; animation:htIn .34s ease both; }
-@keyframes htIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:none; } }
+.hero-title .ht-l.ht-in { visibility:visible; animation:htIn .52s cubic-bezier(.3,1.4,.4,1) both; }
+@keyframes htIn {
+  0%   { opacity:0; color:#fff6d8; text-shadow:0 0 20px rgba(245,197,24,0.95); transform:translateY(-26px) scale(1.3); }
+  55%  { opacity:1; transform:translateY(3px) scale(0.92); }
+  75%  { color:#ffe27a; transform:translateY(-3px) scale(1.04); }
+  100% { color:#F5C518; text-shadow:none; transform:none; }
+}
 .ht-p { position:absolute; left:50%; top:0; color:#F5C518; pointer-events:none; opacity:0; }
-.ht-p.ht-fall { animation:htFall .46s ease-in both; }
-@keyframes htFall { 0% { opacity:.95; transform:translate(-50%,-58px); }
-  80% { opacity:.9; transform:translate(-50%,0); }
-  100% { opacity:0; transform:translate(-50%,0) scale(1.3); } }
+.ht-p.ht-fall { animation:htFall .52s cubic-bezier(.5,0,.9,.4) both; }
+@keyframes htFall { 0% { opacity:.95; transform:translate(-50%,-96px) rotate(-70deg); }
+  80% { opacity:.9; transform:translate(-50%,0) rotate(0deg); }
+  100% { opacity:0; transform:translate(-50%,0) rotate(0deg) scale(1.4); } }
+/* the hero takes the last hit and settles */
+.home-hero.ht-thump { animation:htThump .5s ease both; }
+@keyframes htThump { 30% { transform:translateY(4px); } 65% { transform:translateY(-2px); } }
+
+/* the board the title lands on — always there, quiet (non-animatic) */
+.hero-board { position:absolute; left:50%; bottom:40px; width:min(620px, 86%); height:96px;
+  transform:translateX(-50%) perspective(430px) rotateX(58deg); transform-origin:50% 100%;
+  background:repeating-conic-gradient(rgba(200,170,255,0.10) 0% 25%, rgba(14,8,32,0.14) 0% 50%);
+  background-size:64px 64px; pointer-events:none;
+  -webkit-mask-image:radial-gradient(ellipse at 50% 100%, #000 32%, transparent 74%);
+  mask-image:radial-gradient(ellipse at 50% 100%, #000 32%, transparent 74%); }
 
 /* #10 — she brushes past; the title takes the bump, then settles */
 .hero-title { position:relative; transition:transform 1.6s cubic-bezier(.2,1.6,.35,1); }
@@ -227,20 +247,7 @@ body.first-arrival .home-row, body.first-arrival .home-basement, body.first-arri
 @keyframes htSheen { 10% { opacity:1; } 90% { opacity:1; }
   100% { opacity:0; transform:translateX(340%) skewX(-14deg); } }
 
-/* #17 — assembly finale: the queen takes her place on the last letter, then bows out */
-.ht-crown { position:absolute; transform:translate(-50%,-92%); color:#F5C518; font-size:0.55em; line-height:1;
-  pointer-events:none; text-shadow:0 0 12px rgba(245,197,24,0.75); animation:htCrown 2.3s ease both; }
-@keyframes htCrown { 0% { opacity:0; margin-top:-34px; } 26% { opacity:1; margin-top:0; }
-  40% { margin-top:-7px; } 54% { margin-top:0; } 82% { opacity:1; } 100% { opacity:0; margin-top:0; } }
-
-/* #15 — the shop light: lit only while work is shipping. no label.
-   (2026-07-10: lowered to hang just above the street's roofline.) */
-.shop-light { position:absolute; right:6%; bottom:46px; width:7px; height:7px; border-radius:50%; z-index:2;
-  background:#ffcf6a; box-shadow:0 0 10px 3px rgba(255,190,80,0.45), 0 0 30px 11px rgba(255,170,40,0.13);
-  animation:shopGlow 4.5s ease-in-out infinite; pointer-events:none; }
-@keyframes shopGlow { 50% { opacity:0.62; } }
-@media (prefers-reduced-motion: reduce) { .shop-light { animation:none; } }
-
+{% comment %} (the ♛-crowning finale + #15 shop light removed 2026-07-10 — restore from git if missed.) {% endcomment %}
 /* #20 — the veil (you were never meant to see this rule) */
 .puri-veil { position:fixed; inset:0; z-index:12000; pointer-events:none; opacity:0; transition:opacity .48s ease;
   background:radial-gradient(circle at 50% 42%, rgba(124,77,255,0.34), rgba(10,7,20,0) 62%); }
@@ -251,17 +258,9 @@ body.first-arrival .home-row, body.first-arrival .home-basement, body.first-arri
 @keyframes puriSpin { to { transform:rotate(360deg); } }
 </style>
 
-{% comment %} #17 — the operative strip: codename · climb rank · fragments (signed-in only) {% endcomment %}
-<div class="op-strip" id="op-strip" hidden>
-  <span class="op-id" id="op-id"></span>
-  <span class="op-sep">·</span><span id="op-rank"></span>
-  <span class="op-sep">·</span><span id="op-frags"></span>
-</div>
+{% comment %} (op-strip + sea-divider removed 2026-07-10 — restore from git if missed.) {% endcomment %}
 
-{% comment %} #15 — the sea between the towns {% endcomment %}
-<div class="sea-divider" aria-hidden="true"></div>
-
-{% comment %} #3 — the fold: the door on the left, the town square on the right (≥900px). {% endcomment %}
+{% comment %} #3 — the fold: the door on the left, the cast cards on the right (≥900px). {% endcomment %}
 <div class="home-row">
 
 {% comment %} ── 1b. PLAY STRIP — The Gauntlet (moved here from /games/) ── {% endcomment %}
@@ -281,13 +280,15 @@ body.first-arrival .home-row, body.first-arrival .home-basement, body.first-arri
 </section>
 <style>
 .home-play { display:flex; flex-wrap:wrap; gap:12px; align-items:stretch; justify-content:center; margin:16px 0 4px; }
+/* 2026-07-10: de-boxed — a door in a dark wall, not a glowing gold box.
+   The arch, the pips, and the per-floor accent frame all stay. */
 .home-gauntlet { flex:1 1 100%; display:flex; align-items:center; justify-content:space-between; gap:18px; text-decoration:none;
-  background:linear-gradient(135deg,#241206 0%,#3a2a10 52%,#2a1c40 100%); border:2px solid #F5C518; border-radius:18px;
+  background:linear-gradient(180deg,#1b1140 0%,#120b28 100%); border:2px solid rgba(245,197,24,0.7); border-radius:18px;
   padding:18px 22px; position:relative; overflow:hidden;
-  box-shadow:0 0 34px -14px #F5C518, inset 0 0 60px -30px rgba(245,197,24,0.4); transition:transform .12s, box-shadow .12s; }
+  box-shadow:0 0 20px -14px #F5C518; transition:transform .12s, box-shadow .12s; }
 .home-gauntlet::before { content:''; position:absolute; right:-42px; top:-42px; width:190px; height:190px; border-radius:50%;
-  background:radial-gradient(circle, rgba(245,197,24,0.18), transparent 70%); pointer-events:none; }
-.home-gauntlet:hover { transform:translateY(-2px); box-shadow:0 0 46px -8px #F5C518, inset 0 0 60px -30px rgba(245,197,24,0.4); }
+  background:radial-gradient(circle, rgba(245,197,24,0.07), transparent 70%); pointer-events:none; }
+.home-gauntlet:hover { transform:translateY(-2px); box-shadow:0 0 28px -12px #F5C518; border-color:#F5C518; }
 .home-gauntlet .hg-main { min-width:0; position:relative; z-index:1; }
 .home-gauntlet .hg-title { display:flex; align-items:center; gap:10px; font-size:1.7rem; font-weight:900; color:#fff; line-height:1.08;
   margin:3px 0 5px; text-shadow:0 2px 10px rgba(0,0,0,0.5); }
@@ -361,7 +362,7 @@ body.first-arrival .home-row, body.first-arrival .home-basement, body.first-arri
     var acc = ACCENTS[cur] || '#F5C518', card = link;
     if (card) {
       card.style.borderColor = acc;
-      card.style.boxShadow = '0 0 34px -14px ' + acc + ', inset 0 0 0 3px rgba(0,0,0,0.28), inset 0 0 60px -30px ' + acc;
+      card.style.boxShadow = '0 0 22px -12px ' + acc;
       var g = card.querySelector('.hg-glyph'); if (g) { g.textContent = GLYPHS[cur] || '♛'; g.style.color = acc; }
       var pc = card.querySelector('.hg-pip.cur'); if (pc) { pc.style.background = acc; pc.style.boxShadow = '0 0 8px ' + acc; }
     }
@@ -373,15 +374,10 @@ body.first-arrival .home-row, body.first-arrival .home-basement, body.first-arri
 
 {% comment %} ── 4. CHARACTER TEASER — four random faces, reshuffled each visit ──── {% endcomment %}
 <section class="home-section home-section--cast">
-  <h2 class="home-section-label">
-    <a class="home-section-link" href="{{ '/characters/' | relative_url }}">Meet them all &rarr;</a>
-  </h2>
   {% comment %} All main-cast chips are rendered (ancillary excluded); the JS below shows a
-       random four. The shuffle button lives BELOW the grid (2026-07-10) so it can't be
-       mistaken for a ticker control. #13: the row is a town square now — lamppost,
-       bench, fountain (basic shapes); the four stand around it. {% endcomment %}
+       random four as CARDS (the town-square experiment was reverted 2026-07-10).
+       "Meet them all" + shuffle both live BELOW the grid. {% endcomment %}
   <div class="char-row" id="home-char-row" data-show="4">
-    <div class="square-props" aria-hidden="true"><span class="sq-lamp"></span><span class="sq-bench"></span><span class="sq-fountain"></span></div>
     {% for char in site.characters %}
     {% unless char.tier == "ancillary" or site.hidden_character_urls contains char.url %}
     <a class="char-chip" href="{{ char.url | relative_url }}">
@@ -394,52 +390,20 @@ body.first-arrival .home-row, body.first-arrival .home-basement, body.first-arri
     {% endfor %}
   </div>
   <div class="char-row-tools">
+    <a class="home-section-link" href="{{ '/characters/' | relative_url }}">Meet them all &rarr;</a>
     <button class="home-shuffle" id="char-shuffle" type="button" aria-label="Shuffle the four characters" title="Shuffle the four faces">&#8635; <span>shuffle</span></button>
   </div>
 </section>
 
 </div><!-- /.home-row -->
 <style>
-/* ── #13 the town square: the four stand around the square, not in a grid ── */
-.char-row { display: flex; align-items: flex-end; justify-content: space-around; gap: 6px;
-  position: relative; min-height: 210px; padding: 0 12px 14px;
-  border-bottom: 2px solid rgba(124,77,255,0.35); }
-.char-chip, .char-chip:hover { background: transparent; border: none; }
-.char-chip { padding: 6px 4px 0; z-index: 1; transition: transform .3s cubic-bezier(.34,1.56,.64,1); }
-.char-chip:hover { transform: translateY(-7px); }
-.char-chip-icon { font-size: 30px; }
-.char-chip-role, .char-chip-seen { display: none; }
-.square-props { position: absolute; inset: 0; pointer-events: none; }
-.square-props span { position: absolute; bottom: 14px; background: rgba(124,77,255,0.30); }
-.sq-lamp { left: 8%; width: 3px; height: 66px; }
-.sq-lamp::after { content: ''; position: absolute; top: -5px; left: -3px; width: 9px; height: 9px;
-  border-radius: 50%; background: rgba(255,207,106,0.5); box-shadow: 0 0 10px 3px rgba(255,190,80,0.25); }
-.sq-bench { left: 34%; width: 44px; height: 5px; }
-.sq-bench::before, .sq-bench::after { content: ''; position: absolute; top: 5px; width: 3px; height: 9px;
-  background: rgba(124,77,255,0.22); }
-.sq-bench::before { left: 4px; } .sq-bench::after { right: 4px; }
-.sq-fountain { right: 12%; width: 38px; height: 12px; border-radius: 0 0 12px 12px; }
-.sq-fountain::after { content: ''; position: absolute; left: 50%; top: -9px; width: 3px; height: 9px;
-  transform: translateX(-50%); background: rgba(96,206,255,0.35); }
-
-/* ── #17 operative strip ── */
-.op-strip { display: flex; align-items: center; justify-content: center; gap: 10px; width: max-content;
-  max-width: 100%; margin: 0 auto 14px; padding: 7px 16px; border: 1px solid rgba(124,77,255,0.32);
-  border-radius: 999px; font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 0.08em;
-  text-transform: uppercase; color: #9a7fd4; }
-.op-strip .op-id { color: #cdbcf2; font-weight: 700; }
-.op-strip .op-sep { color: rgba(245,197,24,0.5); }
-
-/* ── #15 the sea between the towns ── */
-.sea-divider { height: 12px; margin: 0 8px 16px;
-  background: radial-gradient(circle at 11px -6px, transparent 9px, rgba(96,206,255,0.15) 10px, transparent 12px) repeat-x;
-  background-size: 22px 12px; opacity: 0.85; animation: seaDrift 16s linear infinite; }
-@keyframes seaDrift { to { background-position: 220px 0; } }
+{% comment %} (#13 town square + #17 op-strip + #15 sea divider removed 2026-07-10 —
+     the cast is CARDS again; restore the square from git if ever missed.) {% endcomment %}
 @media (prefers-reduced-motion: reduce) {
-  .sea-divider, .home-hero.is-rainy::before, .home-hero.is-rainy::after { animation: none; }
+  .home-hero.is-rainy::before, .home-hero.is-rainy::after { animation: none; }
 }
 
-.char-row-tools { display: flex; justify-content: flex-end; margin-top: 6px; }
+.char-row-tools { display: flex; justify-content: flex-end; align-items: center; gap: 14px; margin-top: 8px; }
 .home-shuffle { display: inline-flex; align-items: center; gap: 6px;
   background: rgba(80,30,180,0.2); color: #b9a8e6; border: 1px solid rgba(150,65,255,0.4);
   border-radius: 999px; height: 26px; padding: 0 12px; cursor: pointer; font-size: 13px; line-height: 1;
@@ -453,42 +417,38 @@ body.first-arrival .home-row, body.first-arrival .home-basement, body.first-arri
 {% comment %} (Story Arc film-strip removed 2026-06-22 — the chapter beats are now
      things to be DECODED by users as they play, not laid out here. See FUTURE-IDEAS. {% endcomment %}
 
-{% comment %} ── 6. STATS BAR ─────────────────────────────────────── {% endcomment %}
-{% comment %} Counts exclude the slow-rolled (hidden) cast/locations set in _config.yml. {% endcomment %}
-{% assign vis_char_count = 0 %}{% for c in site.characters %}{% unless site.hidden_character_urls contains c.url %}{% assign vis_char_count = vis_char_count | plus: 1 %}{% endunless %}{% endfor %}
-{% assign vis_loc_count = 0 %}{% for c in site.locations %}{% unless site.hidden_location_urls contains c.url %}{% assign vis_loc_count = vis_loc_count | plus: 1 %}{% endunless %}{% endfor %}
+{% comment %} ── 6. THE FOOT — the paint-drip band. (Counters removed 2026-07-10.) {% endcomment %}
 <div class="home-basement">
-<span class="shop-light" id="shop-light" hidden aria-hidden="true"></span>
 <div class="home-drips" aria-hidden="true">
-  {% comment %} Run lengths scaled ~×0.6 (2026-07-10) to match the shorter basement. {% endcomment %}
-  <span class="drip"             style="--x:2%;  --w:7px;  --len:240px; --col:245,197,24;  --dur:8.4s;  --delay:-0.5s; --b:1.15"></span>
-  <span class="drip"             style="--x:6%;  --w:9px;  --len:150px; --col:176,142,255; --dur:9.6s;  --delay:-3.1s; --b:0.8"></span>
-  <span class="drip drip--fall"  style="--x:10%; --w:6px;  --len:230px; --col:255,168,60;  --dur:6.2s;  --delay:-1.4s; --b:1.25"></span>
+  {% comment %} Run lengths rescaled again (2026-07-10, ~×0.55) for the 115px band. {% endcomment %}
+  <span class="drip"             style="--x:2%;  --w:7px;  --len:130px; --col:245,197,24;  --dur:8.4s;  --delay:-0.5s; --b:1.15"></span>
+  <span class="drip"             style="--x:6%;  --w:9px;  --len:85px;  --col:176,142,255; --dur:9.6s;  --delay:-3.1s; --b:0.8"></span>
+  <span class="drip drip--fall"  style="--x:10%; --w:6px;  --len:125px; --col:255,168,60;  --dur:6.2s;  --delay:-1.4s; --b:1.25"></span>
   <span class="drip drip--blob"  style="--x:14%; --w:15px; --len:70px;  --col:138,99,240;  --dur:8.0s;  --delay:-4.2s; --b:0.9"></span>
-  <span class="drip"             style="--x:13%; --w:4px;  --len:75px;  --col:91,224,192;  --dur:5.6s;  --delay:-3.5s; --b:0.65"></span>
-  <span class="drip drip--thin"  style="--x:19%; --w:2px;  --len:140px; --col:245,197,24;  --dur:5.4s;  --delay:-0.8s; --b:1.0"></span>
-  <span class="drip"             style="--x:23%; --w:5px;  --len:90px;  --col:91,224,192;  --dur:6.2s;  --delay:-2.0s; --b:0.7"></span>
-  <span class="drip"             style="--x:27%; --w:10px; --len:260px; --col:176,142,255; --dur:10.8s; --delay:-5.5s; --b:1.05"></span>
-  <span class="drip drip--fall"  style="--x:31%; --w:5px;  --len:240px; --col:245,197,24;  --dur:6.0s;  --delay:-2.7s; --b:1.2"></span>
-  <span class="drip"             style="--x:35%; --w:6px;  --len:180px; --col:205,180,255; --dur:6.6s;  --delay:-1.1s; --b:0.85"></span>
-  <span class="drip"             style="--x:39%; --w:6px;  --len:90px;  --col:255,143,208; --dur:6.0s;  --delay:-1.9s; --b:0.75"></span>
-  <span class="drip"             style="--x:42%; --w:5px;  --len:200px; --col:138,99,240;  --dur:7.8s;  --delay:-2.1s; --b:1.05"></span>
+  <span class="drip"             style="--x:13%; --w:4px;  --len:45px;  --col:91,224,192;  --dur:5.6s;  --delay:-3.5s; --b:0.65"></span>
+  <span class="drip drip--thin"  style="--x:19%; --w:2px;  --len:75px;  --col:245,197,24;  --dur:5.4s;  --delay:-0.8s; --b:1.0"></span>
+  <span class="drip"             style="--x:23%; --w:5px;  --len:50px;  --col:91,224,192;  --dur:6.2s;  --delay:-2.0s; --b:0.7"></span>
+  <span class="drip"             style="--x:27%; --w:10px; --len:145px; --col:176,142,255; --dur:10.8s; --delay:-5.5s; --b:1.05"></span>
+  <span class="drip drip--fall"  style="--x:31%; --w:5px;  --len:130px; --col:245,197,24;  --dur:6.0s;  --delay:-2.7s; --b:1.2"></span>
+  <span class="drip"             style="--x:35%; --w:6px;  --len:100px; --col:205,180,255; --dur:6.6s;  --delay:-1.1s; --b:0.85"></span>
+  <span class="drip"             style="--x:39%; --w:6px;  --len:50px;  --col:255,143,208; --dur:6.0s;  --delay:-1.9s; --b:0.75"></span>
+  <span class="drip"             style="--x:42%; --w:5px;  --len:110px; --col:138,99,240;  --dur:7.8s;  --delay:-2.1s; --b:1.05"></span>
   <span class="drip drip--blob"  style="--x:45%; --w:12px; --len:60px;  --col:96,206,255;  --dur:7.5s;  --delay:-3.3s; --b:1.1"></span>
-  <span class="drip drip--thin"  style="--x:48%; --w:2px;  --len:170px; --col:176,142,255; --dur:5.8s;  --delay:-4.8s; --b:0.95"></span>
-  <span class="drip"             style="--x:52%; --w:8px;  --len:250px; --col:245,197,24;  --dur:9.4s;  --delay:-3.7s; --b:1.0"></span>
-  <span class="drip drip--fall"  style="--x:56%; --w:6px;  --len:220px; --col:91,224,192;  --dur:6.4s;  --delay:-0.9s; --b:1.15"></span>
-  <span class="drip"             style="--x:60%; --w:7px;  --len:170px; --col:138,99,240;  --dur:7.1s;  --delay:-2.4s; --b:0.8"></span>
+  <span class="drip drip--thin"  style="--x:48%; --w:2px;  --len:95px;  --col:176,142,255; --dur:5.8s;  --delay:-4.8s; --b:0.95"></span>
+  <span class="drip"             style="--x:52%; --w:8px;  --len:135px; --col:245,197,24;  --dur:9.4s;  --delay:-3.7s; --b:1.0"></span>
+  <span class="drip drip--fall"  style="--x:56%; --w:6px;  --len:120px; --col:91,224,192;  --dur:6.4s;  --delay:-0.9s; --b:1.15"></span>
+  <span class="drip"             style="--x:60%; --w:7px;  --len:95px;  --col:138,99,240;  --dur:7.1s;  --delay:-2.4s; --b:0.8"></span>
   <span class="drip drip--blob"  style="--x:64%; --w:13px; --len:64px;  --col:245,197,24;  --dur:8.2s;  --delay:-4.9s; --b:1.2"></span>
-  <span class="drip drip--thin"  style="--x:68%; --w:3px;  --len:140px; --col:255,168,60;  --dur:5.0s;  --delay:-1.2s; --b:1.05"></span>
-  <span class="drip"             style="--x:72%; --w:9px;  --len:240px; --col:176,142,255; --dur:9.8s;  --delay:-5.1s; --b:0.9"></span>
-  <span class="drip drip--fall"  style="--x:76%; --w:5px;  --len:260px; --col:245,197,24;  --dur:6.6s;  --delay:-2.2s; --b:1.25"></span>
-  <span class="drip"             style="--x:80%; --w:6px;  --len:90px;  --col:96,206,255;  --dur:6.9s;  --delay:-3.9s; --b:0.7"></span>
-  <span class="drip"             style="--x:82%; --w:8px;  --len:200px; --col:245,197,24;  --dur:8.6s;  --delay:-4.0s; --b:1.15"></span>
-  <span class="drip"             style="--x:84%; --w:5px;  --len:120px; --col:240,120,160; --dur:6.2s;  --delay:-1.5s; --b:0.85"></span>
-  <span class="drip drip--fall"  style="--x:88%; --w:5px;  --len:230px; --col:245,197,24;  --dur:6.0s;  --delay:-0.6s; --b:1.1"></span>
+  <span class="drip drip--thin"  style="--x:68%; --w:3px;  --len:75px;  --col:255,168,60;  --dur:5.0s;  --delay:-1.2s; --b:1.05"></span>
+  <span class="drip"             style="--x:72%; --w:9px;  --len:130px; --col:176,142,255; --dur:9.8s;  --delay:-5.1s; --b:0.9"></span>
+  <span class="drip drip--fall"  style="--x:76%; --w:5px;  --len:145px; --col:245,197,24;  --dur:6.6s;  --delay:-2.2s; --b:1.25"></span>
+  <span class="drip"             style="--x:80%; --w:6px;  --len:50px;  --col:96,206,255;  --dur:6.9s;  --delay:-3.9s; --b:0.7"></span>
+  <span class="drip"             style="--x:82%; --w:8px;  --len:110px; --col:245,197,24;  --dur:8.6s;  --delay:-4.0s; --b:1.15"></span>
+  <span class="drip"             style="--x:84%; --w:5px;  --len:65px;  --col:240,120,160; --dur:6.2s;  --delay:-1.5s; --b:0.85"></span>
+  <span class="drip drip--fall"  style="--x:88%; --w:5px;  --len:125px; --col:245,197,24;  --dur:6.0s;  --delay:-0.6s; --b:1.1"></span>
   <span class="drip drip--blob"  style="--x:92%; --w:11px; --len:58px;  --col:176,142,255; --dur:7.7s;  --delay:-2.8s; --b:0.95"></span>
-  <span class="drip"             style="--x:95%; --w:6px;  --len:180px; --col:212,160,20;  --dur:6.4s;  --delay:-4.4s; --b:1.0"></span>
-  <span class="drip drip--thin"  style="--x:97%; --w:2px;  --len:150px; --col:255,143,208; --dur:5.6s;  --delay:-1.9s; --b:0.8"></span>
+  <span class="drip"             style="--x:95%; --w:6px;  --len:100px; --col:212,160,20;  --dur:6.4s;  --delay:-4.4s; --b:1.0"></span>
+  <span class="drip drip--thin"  style="--x:97%; --w:2px;  --len:85px;  --col:255,143,208; --dur:5.6s;  --delay:-1.9s; --b:0.8"></span>
 </div>
 {% comment %} #20 — street level: storefront silhouettes at the very foot; the shop
      light hangs just above the roofline. Drips run down behind them. {% endcomment %}
@@ -519,30 +479,9 @@ body.first-arrival .home-row, body.first-arrival .home-basement, body.first-arri
 
 </div><!-- /.home-flow -->
 
-{% comment %} #6 (2026-07-10): the slim counters moved OUT of the basement (now pure drips)
-     to sit down here with the footer. Old 4-tile stats bar lives in git. {% endcomment %}
-<div class="home-stats-mini">
-  <a href="{{ '/blog/' | relative_url }}">{{ site.posts.size }} posts</a><i>·</i>
-  <a href="{{ '/characters/' | relative_url }}">{{ vis_char_count }} characters</a><i>·</i>
-  <a href="{{ '/locations/' | relative_url }}">{{ vis_loc_count }} locations</a><i>·</i>
-  <a href="{{ '/games/' | relative_url }}"><span id="home-playable-n">6</span> playable games</a>
-</div>
-
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/pjcc-games-data.js' | relative_url }}"></script>
 <script>
-// Playable Games stat — computed from the registry so it never goes stale.
-(function () {
-  var el = document.getElementById('home-playable-n');
-  if (el && window.PJCC_GAMES) {
-    var n = window.PJCC_GAMES.filter(function (g) {
-      return !g.hidden && !g.soon && g.playable !== false &&
-        (g.cat === 'learn' || g.cat === 'arcade' || g.cat === 'isle');
-    }).length + 1;   // +1: The Gauntlet lives outside the registry (matches /projects/)
-    el.textContent = String(n);
-  }
-})();
 // Arc strip drag scroll
 (function() {
   var strip = document.getElementById('arc-strip');
@@ -724,7 +663,7 @@ body.first-arrival .home-row, body.first-arrival .home-basement, body.first-arri
     track.innerHTML = '';
     NIGHT.forEach(function(n) { item(n); });
     var nm = document.getElementById('ticker-badge-name');
-    if (nm) nm.innerHTML = 'CHECKER&nbsp;TOWN<br>NIGHT&nbsp;DESK';
+    if (nm) nm.innerHTML = 'CHECKER&nbsp;TOWN NIGHT&nbsp;DESK';
     var lt = document.getElementById('ticker-live-txt');
     if (lt) lt.textContent = 'OVERNIGHT';
     wrap.classList.add('is-night');
@@ -784,7 +723,7 @@ body.first-arrival .home-row, body.first-arrival .home-basement, body.first-arri
   items.forEach(function(it) { track.appendChild(it.cloneNode(true)); });
 
   // Calm, count-independent pace: a fixed px/second (lower = slower).
-  var SPEED = 38; // px per second
+  var SPEED = 48; // px per second (38 -> 48, 2026-07-10: "slightly faster")
   function setDuration() {
     var copyWidth = track.scrollWidth / 2;            // one copy of the set
     if (copyWidth > 0) track.style.animationDuration = Math.round(copyWidth / SPEED) + 's';
@@ -946,20 +885,14 @@ body.first-arrival .home-row, body.first-arrival .home-basement, body.first-arri
     }, d);
     setTimeout(function () { s.classList.add('ht-in'); }, d + 280);
   });
-  // when the dust settles, put the title back to plain text (kerning and all) —
-  // but first (#17) the finale: a gold queen drops onto the last letter, takes
-  // her place for a beat, and bows out. First visit only, like the assembly.
+  // the hero takes the final impact, then the dust settles and the title goes
+  // back to plain text (kerning and all)
   window.__htDone = 160 + letters.length * 34 + 900;
   setTimeout(function () {
-    var last = letters[letters.length - 1];
-    if (last && last.parentNode) {
-      var tr = t.getBoundingClientRect(), lr = last.getBoundingClientRect();
-      var c = document.createElement('span');
-      c.className = 'ht-crown'; c.textContent = '♛'; c.setAttribute('aria-hidden', 'true');
-      c.style.left = (lr.left - tr.left + lr.width / 2) + 'px';
-      c.style.top = (lr.top - tr.top) + 'px';
-      t.appendChild(c);
-      setTimeout(function () { try { t.removeChild(c); } catch (e) {} }, 2400);
+    var hero = document.querySelector('.home-hero');
+    if (hero) {
+      hero.classList.add('ht-thump');
+      setTimeout(function () { hero.classList.remove('ht-thump'); }, 600);
     }
     t.classList.remove('ht-run');
     letters.forEach(function (s) {
@@ -997,7 +930,7 @@ body.first-arrival .home-row, body.first-arrival .home-basement, body.first-arri
     setTimeout(function () { try { lbT.remove(); lbB.remove(); } catch (e) {} }, 1400);
   }, window.__htDone + 600);
   document.body.classList.add('first-arrival');
-  ['.world-ticker-wrap', '.op-strip', '.sea-divider', '.home-row', '.home-basement', '.home-stats-mini']
+  ['.world-ticker-wrap', '.home-row', '.home-basement']
     .forEach(function (sel, i) {
       var el = document.querySelector(sel);
       if (!el) return;
@@ -1005,25 +938,6 @@ body.first-arrival .home-row, body.first-arrival .home-basement, body.first-arri
     });
 })();
 
-// #17 — the operative strip: codename · climb rank · fragments. Signed-in only;
-// signed-out visitors never see the element at all.
-(function () {
-  var el = document.getElementById('op-strip');
-  if (!el || !window.PJCC || !PJCC.ready) return;
-  PJCC.ready.then(function () {
-    if (!PJCC.enabled) return;
-    var prof = PJCC.getProfile();
-    if (!prof) return;
-    var frags = 0;
-    try { for (var k in localStorage) { if (k.indexOf('frag_') === 0) frags++; } } catch (e) {}
-    var gp = window.__gauntletProg || {};
-    document.getElementById('op-id').textContent =
-      (PJCC.avatarEmoji ? PJCC.avatarEmoji(prof) + ' ' : '') + prof.codename;
-    document.getElementById('op-rank').textContent = gp.rank || 'Recruit';
-    document.getElementById('op-frags').textContent = frags + ' fragment' + (frags === 1 ? '' : 's');
-    el.hidden = false;
-  });
-})();
 
 // #10 — once a session Princess takes the high road, straight through the hero,
 // and brushes the title on her way past. Movement only, as always.
@@ -1054,27 +968,6 @@ body.first-arrival .home-row, body.first-arrival .home-basement, body.first-arri
 })();
 
 // (#14 DOOR CHECK removed 2026-07-10 — restore from git if ever missed.)
-
-// #15 THE SHOP LIGHT — a small lamp at the foot of the page, lit only when a
-// commit shipped in the last 48 hours. No label. He's in there working.
-(function () {
-  var lamp = document.getElementById('shop-light');
-  if (!lamp || !window.fetch) return;
-  var KEY = 'pjcc.shoplight', now = Date.now();
-  function show(on) { if (on) lamp.hidden = false; }
-  try {
-    var c = JSON.parse(localStorage.getItem(KEY));
-    if (c && now - c.t < 3600000) { show(c.on); return; }   // one check an hour is plenty
-  } catch (e) {}
-  fetch('https://api.github.com/repos/ngreen37/ngreen37.github.io/commits?per_page=1')
-    .then(function (r) { return r.ok ? r.json() : null; })
-    .then(function (j) {
-      var iso = j && j[0] && j[0].commit && j[0].commit.committer && j[0].commit.committer.date;
-      var on = !!iso && (now - new Date(iso).getTime()) < 172800000;
-      try { localStorage.setItem(KEY, JSON.stringify({ t: now, on: on })); } catch (e) {}
-      show(on);
-    }).catch(function () {});
-})();
 
 // ⠀
 (function () {

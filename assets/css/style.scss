@@ -1219,18 +1219,7 @@ pre code {
   margin: 0;
 }
 
-/* Condensed one-line counters — moved BELOW the drip band (2026-07-10) so they
-   read as part of the footer zone; the basement is pure paint now */
-.home-stats-mini {
-  text-align: center;
-  padding: 14px 20px 0;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 11px; letter-spacing: 0.08em;
-  color: #6b5a8e;
-}
-.home-stats-mini a { color: #b9a8e6; text-decoration: none; white-space: nowrap; }
-.home-stats-mini a:hover { color: #F5C518; }
-.home-stats-mini i { font-style: normal; color: rgba(245, 197, 24, 0.4); margin: 0 10px; }
+/* (The one-line home counters were removed entirely 2026-07-10 — restore from git.) */
 
 /* --- The "basement" — the foot of the page. PJCC's purple/gold paint drips down
    from the top edge (with droplets at the ends of the runs), and near the bottom
@@ -1240,9 +1229,8 @@ pre code {
   position: relative;
   margin: 4px -28px 0;
   padding-bottom: 14px;
-  /* tightened 2026-07-10 — the foot of the page reads as a band, not a wall;
-     the counters moved out below (#6), so this is a pure drip field now */
-  min-height: 160px;
+  /* tightened again 2026-07-10 — a slim closing band of paint + storefronts */
+  min-height: 115px;
   border-top: 1px solid rgba(124, 77, 255, 0.42);
   background:
     /* smooth purple/gold colour fading down through the top two-thirds,
