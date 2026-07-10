@@ -68,21 +68,39 @@ layout: default
 /* ── #5 thumb-first order on phones: the door first, the title after ── */
 @media (max-width: 700px) {
   .home-flow { display: flex; flex-direction: column; }
+  .home-row { display: contents; }   /* dissolve the fold so phones re-order freely */
   .world-ticker-wrap { order: 0; }
-  .home-play { order: 1; margin: 0 0 26px; }
-  .home-hero { order: 2; padding: 34px 22px 38px; margin-bottom: 30px; }
+  .op-strip { order: 1; }
+  .home-play { order: 2; margin: 0 0 26px; }
+  .home-hero { order: 3; padding: 26px 22px 54px; min-height: 190px; margin-bottom: 30px; }
   .hero-title { font-size: 24px; letter-spacing: -0.5px; }
-  .home-section--cast { order: 3; }
-  .home-basement { order: 4; }
+  .hero-skyline { height: 34px; left: 16px; right: 16px; }
+  .sea-divider { order: 4; }
+  .home-section--cast { order: 5; }
+  .home-basement { order: 6; }
+  .char-row { min-height: 150px; }
+  .char-chip-icon { font-size: 24px; }
+  .sq-lamp { height: 52px; }
 }
 
-/* ── #2 one-screen desktop: tighter rhythm so the drip band meets the fold ── */
+/* ── #2 one-screen desktop + #3 the fold + #11 the door ── */
 @media (min-width: 900px) {
-  .home-hero { padding: 42px 40px 50px; margin-bottom: 26px; }
+  .home-hero { padding: 46px 40px 66px; margin-bottom: 22px; }
   .hero-title { font-size: clamp(30px, 4.2vw, 44px); }
-  .home-play { margin: 12px 0 4px; }
-  .home-section { margin-bottom: 26px; }
-  .char-chip { padding: 18px 12px 14px; }
+  .home-row { display: grid; grid-template-columns: 1.15fr 1fr; gap: 16px; align-items: stretch;
+    margin: 12px 0 26px; }
+  .home-row .home-play { margin: 0; }
+  .home-row .home-section--cast { margin-bottom: 0; }
+  /* #11 — the Gauntlet card becomes the door itself: arched frame, floor lights
+     climbing the jamb (floor 1 at the bottom), your floor's colour on the frame */
+  .home-gauntlet { flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; gap: 12px; border-radius: 150px 150px 18px 18px; min-height: 260px;
+    padding: 40px 26px 22px 52px; }
+  .home-gauntlet .hg-main { display: flex; flex-direction: column; align-items: center; }
+  .home-gauntlet .hg-pips { position: absolute; left: 16px; top: 30px; bottom: 20px;
+    flex-direction: column-reverse; justify-content: space-between; margin: 0; }
+  .home-gauntlet .hg-pip { width: 8px; height: 12px; border-radius: 3px; }
+  .home-gauntlet .hg-side { flex-direction: column; align-items: center; }
 }
 </style>
 
@@ -96,9 +114,85 @@ layout: default
   <a class="cc-window" id="cc-window" href="{{ '/games/the-gauntlet/' | relative_url }}" aria-label="A distant skyline">
     <span class="cc-window-sky" id="cc-window-sky">♜♖♛♖♜</span>
   </a>
+  {% comment %} #7 — the horizon: Checker Town on the left, the sea, Chess City on the
+       right. Basic shapes only. Cleared Gauntlet floors light the far towers (JS). {% endcomment %}
+  <div class="hero-skyline" aria-hidden="true" id="hero-skyline">
+    <span class="sk sk-ct" style="--w:30px;--h:16px"></span>
+    <span class="sk sk-ct" style="--w:22px;--h:24px"></span>
+    <span class="sk sk-ct" style="--w:34px;--h:14px"></span>
+    <span class="sk sk-ct" style="--w:18px;--h:20px"></span>
+    <span class="sk sk-ct" style="--w:28px;--h:12px"></span>
+    <span class="sk sk-ct" style="--w:20px;--h:18px"></span>
+    <i class="sk-sea"></i>
+    <span class="sk sk-cc" style="--w:12px;--h:26px"></span>
+    <span class="sk sk-cc" style="--w:14px;--h:34px"></span>
+    <span class="sk sk-cc" style="--w:11px;--h:22px"></span>
+    <span class="sk sk-cc" style="--w:15px;--h:42px"></span>
+    <span class="sk sk-cc" style="--w:12px;--h:30px"></span>
+    <span class="sk sk-cc" style="--w:16px;--h:46px"></span>
+    <span class="sk sk-cc" style="--w:11px;--h:26px"></span>
+    <span class="sk sk-cc" style="--w:13px;--h:38px"></span>
+    <span class="sk sk-cc" style="--w:12px;--h:20px"></span>
+    <span class="sk sk-cc" style="--w:14px;--h:32px"></span>
+  </div>
 </section>
 <style>
-.home-hero { position: relative; }
+/* ── #8 film title card: plate top-left, title in the lower third, horizon below ── */
+.home-hero { position: relative; display:flex; flex-direction:column; justify-content:flex-end;
+  min-height:240px; }
+.hero-eyebrow { position:absolute; top:14px; left:16px; margin:0; font-family:'Share Tech Mono',monospace;
+  font-size:9px; letter-spacing:2px; color:#8a72c0; border:1px solid rgba(138,114,192,0.4);
+  border-radius:3px; padding:5px 9px; }
+.hero-title { margin-bottom:0; }
+
+/* ── #7 the horizon (basic shapes): town · sea · city ── */
+.hero-skyline { position:absolute; left:26px; right:26px; bottom:0; height:48px;
+  display:flex; align-items:flex-end; gap:5px; pointer-events:none; }
+.hero-skyline .sk { flex:0 0 auto; width:var(--w,16px); height:var(--h,20px);
+  background:#0c0722; border-top:1px solid rgba(168,121,255,0.30); }
+.hero-skyline .sk-ct { border-radius:2px 2px 0 0; border-top-color:rgba(245,197,24,0.28); }
+.hero-skyline .sk-sea { flex:1 1 auto; height:2px; margin:0 10px 5px;
+  background:linear-gradient(90deg, rgba(96,206,255,0), rgba(96,206,255,0.30), rgba(96,206,255,0)); }
+.hero-skyline .sk-cc.lit { border-top-color:rgba(245,197,24,0.55); }
+.hero-skyline .sk-cc.lit::after { content:''; display:block; width:3px; height:3px; margin:6px auto 0;
+  background:#ffcf6a; box-shadow:0 6px 0 rgba(255,207,106,0.6); opacity:0.7; }
+
+/* ── #10 rain days: streaks run down the hero's window edges ── */
+.home-hero.is-rainy::before, .home-hero.is-rainy::after { content:''; position:absolute; top:0; bottom:0;
+  width:7px; pointer-events:none; opacity:0.45;
+  background:repeating-linear-gradient(180deg, transparent 0 26px, rgba(96,206,255,0.24) 26px 34px);
+  animation:heroRain 2.6s linear infinite; }
+.home-hero.is-rainy::before { left:6px; }
+.home-hero.is-rainy::after { right:6px; animation-delay:-1.3s; }
+@keyframes heroRain { to { background-position:0 60px; } }
+
+/* ── #9 letterbox: two bands frame the first arrival, then lift ── */
+.letterbox { position:fixed; left:0; right:0; height:9vh; background:#050310; z-index:11500;
+  pointer-events:none; transition:transform 1.1s cubic-bezier(.6,0,.3,1); }
+.letterbox--top { top:0; } .letterbox--bot { bottom:0; }
+.letterbox--top.lift { transform:translateY(-101%); } .letterbox--bot.lift { transform:translateY(101%); }
+
+/* ── #19 the board under everything: a faint 8×8-ish underlay (home only) ── */
+.page-content { background-image:
+  linear-gradient(rgba(168,121,255,0.028) 1px, transparent 1px),
+  linear-gradient(90deg, rgba(168,121,255,0.028) 1px, transparent 1px);
+  background-size:96px 96px; }
+
+/* ── #16 the sky keeps town time — the page follows it ── */
+body.sky-day  .aurora-wrap { opacity:0.55; }
+body.sky-dawn .aurora-wrap { filter:hue-rotate(40deg); }
+body.sky-dusk .aurora-wrap { filter:hue-rotate(-18deg) saturate(1.25); }
+body.sky-night .aurora-wrap { opacity:0.85; }
+body.sky-night .home-hero { border-color:#2a1d5e; }
+body.sky-night .home-section-label { border-bottom-color:#2a1d5e; }
+body.sky-night .hero-skyline .sk-cc.lit::after { opacity:1; }
+
+/* ── #18 first arrival: the page takes its seats after the title (JS staggers) ── */
+body.first-arrival .world-ticker-wrap, body.first-arrival .op-strip, body.first-arrival .sea-divider,
+body.first-arrival .home-row, body.first-arrival .home-basement, body.first-arrival .home-stats-mini {
+  opacity:0; transform:translateY(8px); }
+.arrive-in { transition:opacity .7s ease, transform .7s ease; opacity:1 !important; transform:none !important; }
+
 .cc-window { position:absolute; right:3%; top:6px; width:54px; height:72px; text-decoration:none;
   border:1px solid rgba(168,121,255,0.28); border-radius:27px 27px 6px 6px; overflow:hidden;
   display:flex; align-items:flex-end; justify-content:center; opacity:var(--wo, 0.16);
@@ -139,8 +233,9 @@ layout: default
 @keyframes htCrown { 0% { opacity:0; margin-top:-34px; } 26% { opacity:1; margin-top:0; }
   40% { margin-top:-7px; } 54% { margin-top:0; } 82% { opacity:1; } 100% { opacity:0; margin-top:0; } }
 
-/* #15 — the shop light: lit only while work is shipping. no label. */
-.shop-light { position:absolute; right:6%; bottom:74px; width:7px; height:7px; border-radius:50%; z-index:1;
+/* #15 — the shop light: lit only while work is shipping. no label.
+   (2026-07-10: lowered to hang just above the street's roofline.) */
+.shop-light { position:absolute; right:6%; bottom:46px; width:7px; height:7px; border-radius:50%; z-index:2;
   background:#ffcf6a; box-shadow:0 0 10px 3px rgba(255,190,80,0.45), 0 0 30px 11px rgba(255,170,40,0.13);
   animation:shopGlow 4.5s ease-in-out infinite; pointer-events:none; }
 @keyframes shopGlow { 50% { opacity:0.62; } }
@@ -155,6 +250,19 @@ layout: default
 .puri-veil.is-on { opacity:1; }
 @keyframes puriSpin { to { transform:rotate(360deg); } }
 </style>
+
+{% comment %} #17 — the operative strip: codename · climb rank · fragments (signed-in only) {% endcomment %}
+<div class="op-strip" id="op-strip" hidden>
+  <span class="op-id" id="op-id"></span>
+  <span class="op-sep">·</span><span id="op-rank"></span>
+  <span class="op-sep">·</span><span id="op-frags"></span>
+</div>
+
+{% comment %} #15 — the sea between the towns {% endcomment %}
+<div class="sea-divider" aria-hidden="true"></div>
+
+{% comment %} #3 — the fold: the door on the left, the town square on the right (≥900px). {% endcomment %}
+<div class="home-row">
 
 {% comment %} ── 1b. PLAY STRIP — The Gauntlet (moved here from /games/) ── {% endcomment %}
 <section class="home-play">
@@ -233,8 +341,16 @@ layout: default
   }
   if (rankEl && cleared > 0) { rankEl.textContent = 'CLIMB RANK · ' + RANKS[cleared]; rankEl.hidden = false; }
 
-  // shared with the ticker (BREAKING floor clears) and the hero window
-  window.__gauntletProg = { cleared: cleared, cur: cur, names: NAMES };
+  // shared with the ticker (BREAKING floor clears), the hero window/skyline,
+  // and the operative strip (#17)
+  window.__gauntletProg = { cleared: cleared, cur: cur, names: NAMES, rank: RANKS[cleared] };
+
+  // #7 — the far towers light with your climb (one lit window per cleared floor)
+  var skyline = document.getElementById('hero-skyline');
+  if (skyline && cleared > 0) {
+    var towers = skyline.querySelectorAll('.sk-cc');
+    for (var tw = 0; tw < Math.min(cleared, towers.length); tw++) towers[tw].classList.add('lit');
+  }
 
   // #5 THE DOOR — once the climb has begun, the card stops being a generic gold
   // banner and becomes the door to YOUR floor: the current boss's colour and
@@ -262,8 +378,10 @@ layout: default
   </h2>
   {% comment %} All main-cast chips are rendered (ancillary excluded); the JS below shows a
        random four. The shuffle button lives BELOW the grid (2026-07-10) so it can't be
-       mistaken for a ticker control. {% endcomment %}
+       mistaken for a ticker control. #13: the row is a town square now — lamppost,
+       bench, fountain (basic shapes); the four stand around it. {% endcomment %}
   <div class="char-row" id="home-char-row" data-show="4">
+    <div class="square-props" aria-hidden="true"><span class="sq-lamp"></span><span class="sq-bench"></span><span class="sq-fountain"></span></div>
     {% for char in site.characters %}
     {% unless char.tier == "ancillary" or site.hidden_character_urls contains char.url %}
     <a class="char-chip" href="{{ char.url | relative_url }}">
@@ -279,7 +397,48 @@ layout: default
     <button class="home-shuffle" id="char-shuffle" type="button" aria-label="Shuffle the four characters" title="Shuffle the four faces">&#8635; <span>shuffle</span></button>
   </div>
 </section>
+
+</div><!-- /.home-row -->
 <style>
+/* ── #13 the town square: the four stand around the square, not in a grid ── */
+.char-row { display: flex; align-items: flex-end; justify-content: space-around; gap: 6px;
+  position: relative; min-height: 210px; padding: 0 12px 14px;
+  border-bottom: 2px solid rgba(124,77,255,0.35); }
+.char-chip, .char-chip:hover { background: transparent; border: none; }
+.char-chip { padding: 6px 4px 0; z-index: 1; transition: transform .3s cubic-bezier(.34,1.56,.64,1); }
+.char-chip:hover { transform: translateY(-7px); }
+.char-chip-icon { font-size: 30px; }
+.char-chip-role, .char-chip-seen { display: none; }
+.square-props { position: absolute; inset: 0; pointer-events: none; }
+.square-props span { position: absolute; bottom: 14px; background: rgba(124,77,255,0.30); }
+.sq-lamp { left: 8%; width: 3px; height: 66px; }
+.sq-lamp::after { content: ''; position: absolute; top: -5px; left: -3px; width: 9px; height: 9px;
+  border-radius: 50%; background: rgba(255,207,106,0.5); box-shadow: 0 0 10px 3px rgba(255,190,80,0.25); }
+.sq-bench { left: 34%; width: 44px; height: 5px; }
+.sq-bench::before, .sq-bench::after { content: ''; position: absolute; top: 5px; width: 3px; height: 9px;
+  background: rgba(124,77,255,0.22); }
+.sq-bench::before { left: 4px; } .sq-bench::after { right: 4px; }
+.sq-fountain { right: 12%; width: 38px; height: 12px; border-radius: 0 0 12px 12px; }
+.sq-fountain::after { content: ''; position: absolute; left: 50%; top: -9px; width: 3px; height: 9px;
+  transform: translateX(-50%); background: rgba(96,206,255,0.35); }
+
+/* ── #17 operative strip ── */
+.op-strip { display: flex; align-items: center; justify-content: center; gap: 10px; width: max-content;
+  max-width: 100%; margin: 0 auto 14px; padding: 7px 16px; border: 1px solid rgba(124,77,255,0.32);
+  border-radius: 999px; font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: #9a7fd4; }
+.op-strip .op-id { color: #cdbcf2; font-weight: 700; }
+.op-strip .op-sep { color: rgba(245,197,24,0.5); }
+
+/* ── #15 the sea between the towns ── */
+.sea-divider { height: 12px; margin: 0 8px 16px;
+  background: radial-gradient(circle at 11px -6px, transparent 9px, rgba(96,206,255,0.15) 10px, transparent 12px) repeat-x;
+  background-size: 22px 12px; opacity: 0.85; animation: seaDrift 16s linear infinite; }
+@keyframes seaDrift { to { background-position: 220px 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .sea-divider, .home-hero.is-rainy::before, .home-hero.is-rainy::after { animation: none; }
+}
+
 .char-row-tools { display: flex; justify-content: flex-end; margin-top: 6px; }
 .home-shuffle { display: inline-flex; align-items: center; gap: 6px;
   background: rgba(80,30,180,0.2); color: #b9a8e6; border: 1px solid rgba(150,65,255,0.4);
@@ -331,6 +490,31 @@ layout: default
   <span class="drip"             style="--x:95%; --w:6px;  --len:180px; --col:212,160,20;  --dur:6.4s;  --delay:-4.4s; --b:1.0"></span>
   <span class="drip drip--thin"  style="--x:97%; --w:2px;  --len:150px; --col:255,143,208; --dur:5.6s;  --delay:-1.9s; --b:0.8"></span>
 </div>
+{% comment %} #20 — street level: storefront silhouettes at the very foot; the shop
+     light hangs just above the roofline. Drips run down behind them. {% endcomment %}
+<div class="street" aria-hidden="true">
+  <span style="--w:46px;--h:24px"></span>
+  <span class="lit" style="--w:34px;--h:32px"></span>
+  <span style="--w:52px;--h:18px"></span>
+  <span style="--w:28px;--h:28px"></span>
+  <span class="lit" style="--w:44px;--h:22px"></span>
+  <span style="--w:38px;--h:34px"></span>
+  <span style="--w:56px;--h:20px"></span>
+  <span class="lit" style="--w:30px;--h:26px"></span>
+  <span style="--w:48px;--h:16px"></span>
+  <span style="--w:36px;--h:30px"></span>
+  <span class="lit" style="--w:42px;--h:24px"></span>
+  <span style="--w:32px;--h:20px"></span>
+</div>
+<style>
+.street { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: flex-end;
+  justify-content: space-between; padding: 0 3%; z-index: 1; pointer-events: none; }
+.street span { flex: 0 0 auto; width: var(--w, 40px); height: var(--h, 24px); background: #070512;
+  border-top: 1px solid rgba(124,77,255,0.22); border-radius: 2px 2px 0 0; }
+.street span.lit::after { content: ''; display: block; width: 3px; height: 4px; margin: 7px 0 0 9px;
+  background: #ffcf6a; box-shadow: 0 0 6px rgba(255,190,80,0.7); }
+@media (max-width: 700px) { .street span:nth-child(2n) { display: none; } }
+</style>
 </div><!-- /.home-basement -->
 
 </div><!-- /.home-flow -->
@@ -559,6 +743,8 @@ layout: default
     w.className = 'ct-weather ct-weather--' + (rain ? 'rain' : 'mist');
     w.setAttribute('aria-hidden', 'true');
     document.body.appendChild(w);
+    // #10 — on rain days the hero carries streaks down its window edges
+    if (rain) { var hh = document.querySelector('.home-hero'); if (hh) hh.classList.add('is-rainy'); }
   })();
 
   // ---- BREAKING (studio-wide): one line in _data/breaking.yml runs the plate ----
@@ -797,6 +983,46 @@ layout: default
     requestAnimationFrame(function () { s.classList.add('run'); });
     setTimeout(function () { try { t.removeChild(s); } catch (e) {} }, 2200);
   }, delay);
+})();
+
+// #9 + #18 — first arrival only (the same visit the title assembles): the page
+// opens letterboxed, and the rest of the furniture takes its seats one by one.
+(function () {
+  if (!window.__htDone) return;   // assembly didn't run — not a first arrival
+  var lbT = document.createElement('div'), lbB = document.createElement('div');
+  lbT.className = 'letterbox letterbox--top'; lbB.className = 'letterbox letterbox--bot';
+  document.body.appendChild(lbT); document.body.appendChild(lbB);
+  setTimeout(function () {
+    lbT.classList.add('lift'); lbB.classList.add('lift');
+    setTimeout(function () { try { lbT.remove(); lbB.remove(); } catch (e) {} }, 1400);
+  }, window.__htDone + 600);
+  document.body.classList.add('first-arrival');
+  ['.world-ticker-wrap', '.op-strip', '.sea-divider', '.home-row', '.home-basement', '.home-stats-mini']
+    .forEach(function (sel, i) {
+      var el = document.querySelector(sel);
+      if (!el) return;
+      setTimeout(function () { el.classList.add('arrive-in'); }, window.__htDone + 250 + i * 170);
+    });
+})();
+
+// #17 — the operative strip: codename · climb rank · fragments. Signed-in only;
+// signed-out visitors never see the element at all.
+(function () {
+  var el = document.getElementById('op-strip');
+  if (!el || !window.PJCC || !PJCC.ready) return;
+  PJCC.ready.then(function () {
+    if (!PJCC.enabled) return;
+    var prof = PJCC.getProfile();
+    if (!prof) return;
+    var frags = 0;
+    try { for (var k in localStorage) { if (k.indexOf('frag_') === 0) frags++; } } catch (e) {}
+    var gp = window.__gauntletProg || {};
+    document.getElementById('op-id').textContent =
+      (PJCC.avatarEmoji ? PJCC.avatarEmoji(prof) + ' ' : '') + prof.codename;
+    document.getElementById('op-rank').textContent = gp.rank || 'Recruit';
+    document.getElementById('op-frags').textContent = frags + ' fragment' + (frags === 1 ? '' : 's');
+    el.hidden = false;
+  });
 })();
 
 // #10 — once a session Princess takes the high road, straight through the hero,
