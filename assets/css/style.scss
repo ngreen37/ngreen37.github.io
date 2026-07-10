@@ -1229,8 +1229,9 @@ pre code {
   position: relative;
   margin: 4px -28px 0;
   padding-bottom: 14px;
-  /* tightened again 2026-07-10 — a slim closing band of paint + storefronts */
-  min-height: 115px;
+  /* 2026-07-10: the drips moved to the full-screen ambient layer — this is
+     now just the street: a slim closing band of storefronts */
+  min-height: 78px;
   border-top: 1px solid rgba(124, 77, 255, 0.42);
   background:
     /* smooth purple/gold colour fading down through the top two-thirds,
@@ -1252,13 +1253,16 @@ pre code {
    --dur (speed) and --delay. Wider runs get slower durations, so they drip a
    little more lazily than the skinny ones. --- */
 .home-drips {
+  /* 2026-07-10: the drips left the basement band — they now wash the whole first
+     screen as a VERY dim ambient layer, layered exactly like the aurora. */
   position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0;
-  opacity: 0.65;   /* whole drip field dialed down again (0.72 -> another 10% dimmer) */
-  /* runs now reach ALL the way down past the counters to the clock + Ep 1 countdown;
-     the fade holds solid longer and only dissolves right at the very foot (no pooling). */
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 85%, transparent 100%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 85%, transparent 100%);
+  opacity: 0.10;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 88%, transparent 100%);
 }
+/* overnight: the paint cools, slows, and nearly sleeps */
+body.sky-night .home-drips { opacity: 0.06; filter: saturate(0.5) hue-rotate(-28deg) brightness(0.9); }
+body.sky-night .home-drips .drip { animation-duration: calc(var(--dur, 8s) * 1.6); }
 .drip {
   position: absolute;
   top: 0;
