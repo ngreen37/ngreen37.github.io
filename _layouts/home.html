@@ -216,10 +216,11 @@ body.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 
 {% comment %} (#19 board-grid underlay removed 2026-07-10 — restore from git if missed.) {% endcomment %}
 
-/* ── #16 the sky keeps town time — the page follows it ── */
+/* ── #16 the sky keeps town time — the page follows it ──
+   (filters ride the BANDS, not the wrap — see the perf note in style.scss) */
 body.sky-day  .aurora-wrap { opacity:0.55; }
-body.sky-dawn .aurora-wrap { filter:hue-rotate(40deg); }
-body.sky-dusk .aurora-wrap { filter:hue-rotate(-18deg) saturate(1.25); }
+body.sky-dawn .aurora-band { filter:hue-rotate(40deg); }
+body.sky-dusk .aurora-band { filter:hue-rotate(-18deg) saturate(1.25); }
 body.sky-night .aurora-wrap { opacity:0.85; }
 body.sky-night .home-hero { border-color:#2a1d5e; }
 body.sky-night .home-section-label { border-bottom-color:#2a1d5e; }
@@ -700,17 +701,18 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
   });
 })();
 
-// #9 — the title types itself in, one letter at a time, once, on your first visit.
-// (2026-07-11: the falling pieces / white-hot landings / hero thump were cut in
-// the lag sweep — 40 extra animated elements during load; restore from git.)
+// #9 — the title types itself in, one letter at a time, on EVERY visit
+// (2026-07-11: was first-visit-only; the letterbox + staged arrival below stay
+// first-visit-only via the introseen key. The falling pieces / white-hot
+// landings / hero thump were cut in the lag sweep; restore from git.)
 (function () {
   var t = document.querySelector('.hero-title');
   if (!t) return;
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   try {
-    if (localStorage.getItem('pjcc.home.introseen')) return;
-    localStorage.setItem('pjcc.home.introseen', '1');
-  } catch (e) { return; }
+    window.__firstArrival = !localStorage.getItem('pjcc.home.introseen');
+    if (window.__firstArrival) localStorage.setItem('pjcc.home.introseen', '1');
+  } catch (e) {}
   t.setAttribute('aria-label', t.textContent.replace(/\s+/g, ' '));
   var letters = [];
   Array.prototype.slice.call(t.childNodes).forEach(function (n) {
@@ -750,10 +752,11 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
   io.observe(field);
 })();
 
-// #9 + #18 — first arrival only (the same visit the title assembles): the page
-// opens letterboxed, and the rest of the furniture takes its seats one by one.
+// #9 + #18 — first arrival only: the page opens letterboxed, and the rest of
+// the furniture takes its seats one by one. (The title types on every visit
+// now, so this keys off __firstArrival, not just __htDone.)
 (function () {
-  if (!window.__htDone) return;   // assembly didn't run — not a first arrival
+  if (!window.__htDone || !window.__firstArrival) return;
   var lbT = document.createElement('div'), lbB = document.createElement('div');
   lbT.className = 'letterbox letterbox--top'; lbB.className = 'letterbox letterbox--bot';
   document.body.appendChild(lbT); document.body.appendChild(lbB);

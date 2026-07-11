@@ -5910,18 +5910,25 @@ body.theme-classified {
   line-height: 1;
   filter: drop-shadow(0 6px 7px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 9px rgba(245, 197, 24, 0.45));
   user-select: none;
-  will-change: left;
+  will-change: transform;
 }
 
+/* 2026-07-11 perf: the stroll used to animate `left` — a layout + repaint every
+   frame for 14 seconds (with two drop-shadows re-rendering), every page, every
+   couple of minutes. It rides transform now; the bob moved to the inner figure
+   so the walk owns the outer transform. */
 .princess-walker.is-walking {
   opacity: 1;
-  animation: pawn-walk 14s linear forwards, pawn-bob 0.42s ease-in-out infinite;
+  animation: pawn-walk 14s linear forwards;
 }
 
 @keyframes pawn-walk {
-  0%   { left: 110vw; }
-  100% { left: -60px; }
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(calc(-110vw - 60px)); }
 }
+
+.princess-walker.is-walking .princess-3d { animation: pawn-bob 0.42s ease-in-out infinite; }
+.princess-walker.is-walking .princess-3d.is-cheering { animation: p3d-spin 0.9s ease-in-out; }
 
 @keyframes pawn-bob {
   0%, 100% { transform: translateY(0); }
@@ -5989,11 +5996,13 @@ body.theme-classified {
 
 /* Dog-render walker — her real 3D portrait as a plain circular token (no crown, no
    gold ring — removed 2026-06-25). Overrides the old figurine. */
-.princess-3d.princess-dog { width: 40px; height: 40px; animation: dog-sway 2.8s ease-in-out infinite; }
+.princess-3d.princess-dog { width: 40px; height: 40px; animation: none; }
 .princess-dog .p3d-img {
   display: block; width: 40px; height: 40px; border-radius: 50%;
   object-fit: cover; object-position: top center;
   box-shadow: inset 0 0 6px rgba(0,0,0,0.35);
+  /* the sway lives on the img so the bob (on .princess-3d) can run alongside */
+  animation: dog-sway 2.8s ease-in-out infinite;
 }
 @keyframes dog-sway { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
 
@@ -7581,10 +7590,12 @@ body.theme-classified {
 .ink-reveal-block.is-visible { clip-path: inset(0 0% 0 0); }
 
 /* 12 — Aurora bands on PJCC page */
-/* Time-of-day sky — the aurora keeps Checker Town time (class set by home JS) */
-body.sky-dawn  .aurora-wrap { filter: hue-rotate(-24deg) brightness(1.12); }
-body.sky-dusk  .aurora-wrap { filter: hue-rotate(22deg) saturate(1.25); }
-body.sky-night .aurora-wrap { filter: brightness(0.82) saturate(1.35); }
+/* Time-of-day sky — the aurora keeps Checker Town time (class set by home JS).
+   2026-07-11 perf: the tint sits on the BANDS, not the wrap — a filter on the
+   full first-screen wrap re-rendered the whole layer every animation frame. */
+body.sky-dawn  .aurora-band { filter: hue-rotate(-24deg) brightness(1.12); }
+body.sky-dusk  .aurora-band { filter: hue-rotate(22deg) saturate(1.25); }
+body.sky-night .aurora-band { filter: brightness(0.82) saturate(1.35); }
 
 @keyframes aurora-drift {
   0%   { transform: translateX(-55%) skewX(-14deg); opacity: 0.05; }
