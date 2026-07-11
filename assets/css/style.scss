@@ -1143,12 +1143,14 @@ body.sky-night .home-drips .drip { animation-duration: calc(var(--dur, 8s) * 1.6
     display: flex;
   }
 
-  /* Keep the top-right controls (⌘K · 日本語 · Hello · ☰) on one tidy row */
+  /* Keep the top-right controls on one tidy row — on phones the row slims to
+     ⌕ · 日本語 · Sign in · ☰ (the "Hello" About link steps out; it stays
+     reachable via ⌘K and the menu). */
   .header-top { padding: 8px 12px 6px; }
   .header-top-right { gap: 6px; }
-  .about-contact-btn { font-size: 11px; padding: 4px 11px; }
+  .about-contact-btn { display: none; }
   .lang-toggle { padding: 4px 9px !important; margin-right: 0 !important; font-size: 0.74rem !important; }
-  .nav-operative { margin-right: 0 !important; }
+  .nav-operative { margin-right: 0 !important; font-size: 0.72rem; padding: 4px 10px; }
   .nav-toggle { padding: 7px 2px; }
 
   /* Nav collapses to zero-height by default; animates open */

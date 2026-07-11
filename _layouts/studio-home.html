@@ -300,12 +300,12 @@
   }
 
   /* Idea #3 — the periodic sigil bloom among the drifters
-     (2026-07-10: way dimmer + subtler per Nate — a whisper, not an entrance) */
+     (2026-07-11: dimmer again + 7.5% faster fade per Nate — 2s → 1.85s) */
   .studio-drift-sigil { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.96);
-    z-index:0; pointer-events:none; opacity:0; filter:drop-shadow(0 0 10px rgba(245,197,24,0.10));
-    transition:opacity 2s ease, transform 2s ease; }
+    z-index:0; pointer-events:none; opacity:0; filter:drop-shadow(0 0 10px rgba(245,197,24,0.07));
+    transition:opacity 1.85s ease, transform 1.85s ease; }
   .studio-drift-sigil .pjcc-sigil { font-size:1.8rem; }
-  .studio-drift-sigil.is-bloom { opacity:0.14; transform:translate(-50%,-50%) scale(1.0); }
+  .studio-drift-sigil.is-bloom { opacity:0.11; transform:translate(-50%,-50%) scale(1.0); }
 
   /* Idea #9 — replay-intro control (bottom-left, subtle) */
   .studio-replay { position:fixed; left:18px; bottom:16px; z-index:3; display:inline-flex; align-items:center; gap:6px;
