@@ -4649,8 +4649,12 @@ body.theme-classified {
   will-change: transform;
 }
 
-/* Pause the scroll while a reader hovers, taps, or backgrounds the app. */
-.world-ticker-wrap:hover .ticker-track,
+/* Pause the scroll while a reader taps or backgrounds the app. Hover-pause is
+   MOUSE-ONLY: on touch screens a tap leaves :hover stuck on, which froze the
+   crawl on phones until the next tap elsewhere (found 2026-07-11). */
+@media (hover: hover) {
+  .world-ticker-wrap:hover .ticker-track { animation-play-state: paused; }
+}
 .world-ticker-wrap.is-paused .ticker-track,
 .world-ticker-wrap.is-hidden .ticker-track {
   animation-play-state: paused;
@@ -5908,6 +5912,7 @@ body.sky-night .aurora-band { filter: brightness(0.82) saturate(1.35); }
   pointer-events: none;
   z-index: 0;
   contain: layout style paint;
+  opacity: 0.67; /* 2026-07-11: Nate — the arcs a third dimmer (day/night scale in home.html) */
 }
 .aurora-band {
   position: absolute;

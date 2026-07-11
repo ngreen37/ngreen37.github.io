@@ -99,14 +99,8 @@ layout: default
 .ticker-badge-name { font-size: 10px; }
 .ticker-outer { padding: 8px 0 10px; }
 
-/* ── #5 mobile: the wire starts folded — badge + one headline; tap to open ── */
-.ticker-peek { display: none; }
-.world-ticker-wrap.is-collapsed .ticker-outer { display: none; }
-.world-ticker-wrap.is-collapsed .ticker-peek { display: block; min-width: 0;
-  padding: 8px 26px 9px 14px; font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 0.05em;
-  color: #cdbcf2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.world-ticker-wrap.is-collapsed::before { content: '▾'; position: absolute; right: 10px; bottom: 8px;
-  color: #F5C518; font-size: 11px; }
+/* (#5 folded-wire mobile state removed 2026-07-11 — the static peek read as a
+   broken ticker and the tap-to-open as a glitch; phones get the live crawl.) */
 
 /* ── #5 phones: compact hero — the top band declutters (2026-07-11): the
    eyebrow plate and the door's caption step aside; sun/moon + plate + lamps
@@ -153,13 +147,14 @@ layout: default
        evening Nate asked for THE DOOR back in their place; restore from git.) {% endcomment %}
   {% comment %} #7 — the horizon: Checker Town's low rooftops at street level, the sea
        running out to the right. {% endcomment %}
+  {% comment %} heights = whole checkers (7px per disc) so no stack ends mid-piece {% endcomment %}
   <div class="hero-skyline" aria-hidden="true">
-    <span class="sk sk-ct" style="--w:30px;--h:16px"></span>
-    <span class="sk sk-ct" style="--w:22px;--h:24px"></span>
-    <span class="sk sk-ct" style="--w:34px;--h:14px"></span>
-    <span class="sk sk-ct" style="--w:18px;--h:20px"></span>
-    <span class="sk sk-ct" style="--w:28px;--h:12px"></span>
-    <span class="sk sk-ct" style="--w:20px;--h:18px"></span>
+    <span class="sk sk-ct" style="--w:24px;--h:14px"></span>
+    <span class="sk sk-ct" style="--w:24px;--h:28px"></span>
+    <span class="sk sk-ct" style="--w:24px;--h:7px"></span>
+    <span class="sk sk-ct" style="--w:24px;--h:21px"></span>
+    <span class="sk sk-ct" style="--w:24px;--h:14px"></span>
+    <span class="sk sk-ct" style="--w:24px;--h:21px"></span>
     <i class="sk-sea"></i>
   </div>
   {% comment %} THE DOOR — the way into the Gauntlet, top right of the hero.
@@ -186,12 +181,20 @@ layout: default
   border-radius:3px; padding:5px 9px; }
 .hero-title { margin-bottom:0; }
 
-/* ── #7 the horizon (basic shapes): Checker Town's rooftops + the sea ── */
+/* ── #7 the horizon (basic shapes): Checker Town's skyline + the sea.
+   2026-07-11 (Nate): the "rooftops" are now what Checker Town is actually made
+   of — stacks of checkers. Uniform diameter, 7px per disc (a 1px rim seam +
+   a shaded face), black stacks and dark-red stacks alternating. ── */
 .hero-skyline { position:absolute; left:26px; right:26px; bottom:0; height:48px;
   display:flex; align-items:flex-end; gap:5px; pointer-events:none; }
 .hero-skyline .sk { flex:0 0 auto; width:var(--w,16px); height:var(--h,20px);
   background:#0c0722; border-top:1px solid rgba(168,121,255,0.30); }
-.hero-skyline .sk-ct { border-radius:2px 2px 0 0; border-top-color:rgba(245,197,24,0.28); }
+.hero-skyline .sk-ct { border-radius:5px 5px 2px 2px; border-top-color:rgba(245,197,24,0.28);
+  background:repeating-linear-gradient(180deg,
+    rgba(200,170,255,0.22) 0 1px, #0e0826 1px 4px, #181040 4px 7px); }
+.hero-skyline span.sk-ct:nth-of-type(2n) { border-top-color:rgba(255,130,130,0.35);
+  background:repeating-linear-gradient(180deg,
+    rgba(255,150,150,0.24) 0 1px, #230b1d 1px 4px, #35122a 4px 7px); }
 .hero-skyline .sk-sea { flex:1 1 auto; height:2px; margin:0 10px 5px;
   background:linear-gradient(90deg, rgba(96,206,255,0), rgba(96,206,255,0.30), rgba(96,206,255,0)); }
 
@@ -257,10 +260,12 @@ body.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
    paint: the hero wears a different sky per phase, a sun rises and sets, the
    moon takes the night watch. (Aurora filters ride the BANDS, not the wrap —
    see the perf note in style.scss.) ── */
-body.sky-day  .aurora-wrap { opacity:0.55; }
+{% comment %} (day/night wrap opacities pre-scaled by the 0.67 base in style.scss —
+     2026-07-11 Nate asked for the aurora arcs a third dimmer across the board.) {% endcomment %}
+body.sky-day  .aurora-wrap { opacity:0.37; }
 body.sky-dawn .aurora-band { filter:hue-rotate(40deg); }
 body.sky-dusk .aurora-band { filter:hue-rotate(-18deg) saturate(1.25); }
-body.sky-night .aurora-wrap { opacity:0.85; }
+body.sky-night .aurora-wrap { opacity:0.57; }
 
 .hero-sky { position:absolute; inset:0; border-radius:inherit; overflow:hidden; pointer-events:none; }
 .hs-orb { position:absolute; display:none; border-radius:50%; }
@@ -280,11 +285,21 @@ body.sky-day .hs-orb { display:block; left:24%; top:20px; width:26px; height:26p
   background:radial-gradient(circle at 38% 34%, #fff8dc, #F5C518 70%);
   box-shadow:0 0 36px 10px rgba(245,197,24,0.28); }
 
-/* DUSK — it sets deep amber on the other side of town */
+/* DUSK — it sets deep amber on the other side of town.
+   2026-07-11 (Nate): the sun steps into the background — dimmer, half-sunk at
+   the sea line — and a faint dashed arc traces its path down so the "setting"
+   reads at a glance. The arc is one static ellipse: its right end meets the
+   half-sunk sun at the horizon, and a mask fades it off toward the east. */
 body.sky-dusk .home-hero { background:linear-gradient(160deg, #150b36 0%, #3a1e5e 45%, #7c3452 78%, #b0501f 108%); }
-body.sky-dusk .hs-orb { display:block; right:22%; bottom:38px; width:28px; height:28px;
+body.sky-dusk .hs-orb { display:block; right:calc(16% - 14px); bottom:-8px; width:28px; height:28px;
+  opacity:0.8;
   background:radial-gradient(circle at 40% 36%, #ffd9a0, #e0662e 74%);
-  box-shadow:0 0 42px 14px rgba(224,102,46,0.32); }
+  box-shadow:0 0 30px 9px rgba(224,102,46,0.22); }
+body.sky-dusk .hero-sky::before { content:''; position:absolute;
+  left:16%; right:16%; top:16%; height:170%; border-radius:50%;
+  border:1px dashed rgba(255,205,150,0.20);
+  -webkit-mask-image:linear-gradient(90deg, transparent 0, rgba(0,0,0,0.55) 35%, #000 80%);
+  mask-image:linear-gradient(90deg, transparent 0, rgba(0,0,0,0.55) 35%, #000 80%); }
 body.sky-dusk .hero-skyline .sk-ct { border-top-color:rgba(255,150,80,0.45); }
 
 /* NIGHT — a pale moon, stars out, windows warm */
@@ -538,16 +553,8 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
     takeover('BREAKING');
   })();
 
-  // ---- #5: on phones the wire starts folded — badge + the day's first headline;
-  //      one tap opens the full crawl (the tap after that pauses it, as always) ----
-  if (window.matchMedia && window.matchMedia('(max-width: 700px)').matches) {
-    wrap.classList.add('is-collapsed');
-    var peek = document.createElement('div');
-    peek.className = 'ticker-peek';
-    var f0 = track.querySelector('.ticker-item');
-    peek.textContent = f0 ? f0.textContent : 'THE CHECKER TOWN WIRE';
-    wrap.appendChild(peek);
-  }
+  // (#5 folded mobile wire removed 2026-07-11 — Nate: the frozen peek + the
+  //  tap-to-expand read as bugs. Phones run the same live crawl as desktop.)
 
   // ---- seamless loop (clone AFTER the sync items above are in place) ----
   var items = Array.prototype.slice.call(track.children);
@@ -569,11 +576,6 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
   wrap.setAttribute('tabindex', '0');
   wrap.setAttribute('aria-label', 'News ticker — tap to pause or resume');
   function toggle() {
-    if (wrap.classList.contains('is-collapsed')) {   // folded (phones): first tap opens the wire
-      wrap.classList.remove('is-collapsed');
-      setDuration();
-      return;
-    }
     userPaused = !userPaused; wrap.classList.toggle('is-paused', userPaused);
   }
   wrap.addEventListener('click', toggle);
