@@ -1218,16 +1218,24 @@ pre code {
    --dur (speed) and --delay. Wider runs get slower durations, so they drip a
    little more lazily than the skinny ones. --- */
 .home-drips {
-  /* 2026-07-10: the drips left the basement band — they now wash the whole first
-     screen as a VERY dim ambient layer, layered exactly like the aurora. */
-  position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0;
+  /* 2026-07-10: the drips left the basement band — they wash the FIRST SCREEN
+     as a VERY dim ambient layer, layered exactly like the aurora.
+     2026-07-11 perf: capped at 100vh (was full page height — a huge composited
+     surface) + paint containment; the JS sleeps the field when scrolled away. */
+  position: absolute; top: 0; left: 0; right: 0; height: 100vh;
+  overflow: hidden; pointer-events: none; z-index: 0;
   opacity: 0.10;
+  contain: layout style paint;
   -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 88%, transparent 100%);
   mask-image: linear-gradient(180deg, #000 0%, #000 88%, transparent 100%);
 }
-/* overnight: the paint cools, slows, and nearly sleeps */
-body.sky-night .home-drips { opacity: 0.06; filter: saturate(0.5) hue-rotate(-28deg) brightness(0.9); }
+/* overnight: the paint cools, slows, and nearly sleeps
+   (2026-07-11 perf: the old saturate/hue-rotate filter re-rendered the whole
+   layer every frame — night is now just dimmer + slower) */
+body.sky-night .home-drips { opacity: 0.055; }
 body.sky-night .home-drips .drip { animation-duration: calc(var(--dur, 8s) * 1.6); }
+/* scrolled out of view → the paint stops moving (class set by home JS) */
+.home-drips.is-asleep .drip { animation-play-state: paused; }
 .drip {
   position: absolute;
   top: 0;
@@ -5854,17 +5862,25 @@ body.theme-classified {
 .world-ticker-wrap.is-night .ticker-badge-live { background: #4a3a86; }
 
 /* Checker Town weather — date-seeded; the whole town shares the forecast */
-.ct-weather { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
-.ct-weather--rain {
-  background:
-    repeating-linear-gradient(105deg, transparent 0 16px, rgba(150, 175, 255, 0.045) 16px 17px),
-    repeating-linear-gradient(105deg, transparent 0 41px, rgba(150, 175, 255, 0.06) 41px 42px);
-  animation: ct-rain 0.7s linear infinite;
+.ct-weather { position: fixed; inset: 0; z-index: 2; pointer-events: none; overflow: hidden;
+  contain: layout style paint; }
+/* 2026-07-11 perf: rain used to animate background-position on a full-screen
+   fixed layer — a whole-viewport repaint every frame. Each sheet is now an
+   oversized pseudo-element sliding on transform (compositor-only). */
+.ct-weather--rain::before, .ct-weather--rain::after {
+  content: ''; position: absolute; left: -80px; right: -10px; top: -260px; bottom: 0;
+  will-change: transform;
 }
-@keyframes ct-rain {
-  from { background-position: 0 0, 0 0; }
-  to   { background-position: -30px 120px, -60px 240px; }
+.ct-weather--rain::before {
+  background: repeating-linear-gradient(105deg, transparent 0 16px, rgba(150, 175, 255, 0.045) 16px 17px);
+  animation: ct-rain-a 0.7s linear infinite;
 }
+.ct-weather--rain::after {
+  background: repeating-linear-gradient(105deg, transparent 0 41px, rgba(150, 175, 255, 0.06) 41px 42px);
+  animation: ct-rain-b 0.7s linear infinite;
+}
+@keyframes ct-rain-a { from { transform: translate3d(0,0,0); } to { transform: translate3d(-30px,120px,0); } }
+@keyframes ct-rain-b { from { transform: translate3d(0,0,0); } to { transform: translate3d(-60px,240px,0); } }
 .ct-weather--mist {
   background: linear-gradient(180deg, transparent 55%, rgba(180, 190, 220, 0.07) 78%, rgba(180, 190, 220, 0.12) 100%);
   animation: ct-mist 9s ease-in-out infinite;
@@ -7577,10 +7593,13 @@ body.sky-night .aurora-wrap { filter: brightness(0.82) saturate(1.35); }
 }
 .aurora-wrap {
   position: absolute;
-  inset: 0;
+  /* 2026-07-11 perf: the sky is the first screen, not the whole page —
+     capping the layer at 100vh shrinks the composited surface dramatically */
+  top: 0; left: 0; right: 0; height: 100vh;
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
+  contain: layout style paint;
 }
 .aurora-band {
   position: absolute;
