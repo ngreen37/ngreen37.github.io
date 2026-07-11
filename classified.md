@@ -1,4 +1,5 @@
 ---
+sitemap: false
 layout: easter-eggs
 title: THE SECRET
 permalink: /classified/

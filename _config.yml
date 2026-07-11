@@ -63,6 +63,12 @@ defaults:
       type: "posts"
     values:
       body_class: theme-bw
+  # keep raw asset files (game HTML, vendor, videos, images) OUT of sitemap.xml —
+  # the wrapper pages are the canonical URLs
+  - scope:
+      path: "assets"
+    values:
+      sitemap: false
 
 collections:
   characters:

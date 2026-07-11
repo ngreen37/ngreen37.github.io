@@ -1,4 +1,5 @@
 ---
+sitemap: false
 layout: easter-eggs
 title: THE QUEEN
 tab_title: CLEARANCE DENIED

@@ -1,4 +1,6 @@
 ---
+noindex: true
+sitemap: false
 layout: page
 title: Supabase Healthcheck
 permalink: /supabase-check/

@@ -1,4 +1,6 @@
 ---
+noindex: true
+sitemap: false
 layout: page
 title: Share Card Maker
 permalink: /share-card/
