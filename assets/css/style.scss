@@ -1057,8 +1057,13 @@ pre code {
   overflow: hidden; pointer-events: none; z-index: 0;
   opacity: 0.10;
   contain: layout style paint;
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 88%, transparent 100%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 88%, transparent 100%);
+  /* (2026-07-11 perf: the bottom-fade mask removed — a mask over a layer full of
+     animating children re-rasterizes the whole group per frame on iOS, and each
+     run's own gradient already fades to transparent) */
+}
+@media (max-width: 700px) {
+  /* phones: half the runs — 8 drips read the same at 0.10 opacity */
+  .home-drips .drip:nth-child(even) { display: none; }
 }
 /* overnight: the paint cools, slows, and nearly sleeps
    (2026-07-11 perf: the old saturate/hue-rotate filter re-rendered the whole
@@ -2502,16 +2507,27 @@ body.theme-bw .page-body em {
   to   { background-position: 220% center; }
 }
 
-/* the letter that doesn't shimmer */
+/* the letter that flickers — it shimmers with the rest now (the flat-gold
+   version was "way too distinct", Nate 2026-07-11), and betrays itself only
+   once every 12 seconds: a quick double-stutter, like a tired neon sign. */
 .tagline-main-tagline .tg-x {
-  -webkit-text-fill-color: #d9af3f;
-  color: #d9af3f;
   text-decoration: none;
+  animation: tgx-flick 12s linear infinite;
+}
+@keyframes tgx-flick {
+  0%, 96.4%, 98.4%, 100% { opacity: 1; }
+  96.8% { opacity: 0.25; }
+  97.4% { opacity: 0.85; }
+  98%   { opacity: 0.4; }
 }
 .tagline-main-tagline .tg-x:hover,
 .tagline-main-tagline .tg-x:focus {
   -webkit-text-fill-color: #ffd740;
   color: #ffd740;
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tagline-main-tagline .tg-x { animation: none; }
 }
 
 @keyframes tagline-w1 {

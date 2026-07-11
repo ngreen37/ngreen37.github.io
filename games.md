@@ -17,11 +17,9 @@ permalink: /games/
 .ghub::before { animation:ghub-twinkle 6s ease-in-out infinite; }
 @keyframes ghub-twinkle { 0%,100% { opacity:.4; } 50% { opacity:.72; } }
 
-.ghub-title { animation:ghub-glow 3.6s ease-in-out infinite; }
-@keyframes ghub-glow {
-  0%,100% { text-shadow:0 0 26px rgba(255,170,60,0.5), 0 3px 0 #6b4416, 0 5px 14px rgba(0,0,0,0.7); }
-  50%     { text-shadow:0 0 42px rgba(255,205,95,0.9), 0 3px 0 #6b4416, 0 6px 18px rgba(0,0,0,0.85); }
-}
+/* (2026-07-11 perf: the glow no longer breathes — animating text-shadow repaints
+   the whole title every frame; it wears the mid glow statically now.) */
+.ghub-title { text-shadow:0 0 34px rgba(255,190,80,0.7), 0 3px 0 #6b4416, 0 5px 16px rgba(0,0,0,0.78); }
 
 .ghub-head::after { content:""; display:block; height:2px; width:190px; margin:16px auto 0; border-radius:2px;
   background:linear-gradient(90deg, transparent 0%, #ffcf6b 50%, transparent 100%); background-size:220% 100%;
@@ -38,12 +36,9 @@ permalink: /games/
   opacity:.4; transition:opacity .18s ease;
   background:radial-gradient(78% 46% at 50% 0%, color-mix(in srgb, var(--c) 45%, transparent), transparent 72%); }
 .ghub-portal:hover::after, .ghub-portal:focus-visible::after, .ghub-portal:active::after { opacity:.92; }
-/* torch flicker on the glyph */
-.ghub-portal .ghp-glyph { animation:ghp-flicker 3.2s ease-in-out infinite; }
-@keyframes ghp-flicker {
-  0%,100% { filter:drop-shadow(0 0 14px color-mix(in srgb, var(--c) 70%, transparent)); }
-  45%     { filter:drop-shadow(0 0 22px color-mix(in srgb, var(--c) 92%, transparent)) brightness(1.12); }
-  72%     { filter:drop-shadow(0 0 12px color-mix(in srgb, var(--c) 58%, transparent)) brightness(0.98); } }
+/* the torch glow — static since 2026-07-11 (five glyphs animating drop-shadow
+   filters = per-frame re-render each; the hover rings carry the life now) */
+.ghub-portal .ghp-glyph { filter:drop-shadow(0 0 16px color-mix(in srgb, var(--c) 75%, transparent)); }
 /* a rotating dashed rune-ring + a counter-rotating inner ring behind the glyph */
 .ghub-portal .ghp-glyph::before, .ghub-portal .ghp-glyph::after { content:""; position:absolute; left:50%; top:50%;
   border-radius:50%; z-index:-1; transform:translate(-50%,-50%); pointer-events:none; }
@@ -59,6 +54,10 @@ permalink: /games/
 @media (max-width:560px){
   .ghub-portal .ghp-glyph::before { width:72px; height:72px; }
   .ghub-portal .ghp-glyph::after  { width:54px; height:54px; }
+}
+@media (max-width:700px){
+  /* phones: the ten rune-rings rest (2 per portal × 5, always spinning) */
+  .ghub-portal .ghp-glyph::before, .ghub-portal .ghp-glyph::after { animation:none; }
 }
 
 @media (prefers-reduced-motion: reduce){

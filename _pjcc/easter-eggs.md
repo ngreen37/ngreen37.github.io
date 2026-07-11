@@ -134,9 +134,11 @@ Content on location pages (paragraphs, headings, lists) reveals with an ink-wipe
 ### Broken Link → Signal Lost
 A link on `/classified/` labeled **"MORE FRAGMENTS INCOMING"** leads to `/fragments/` — a non-existent page that hits the custom 404.
 
-### The Letter That Doesn't Shimmer (Studio Home)
-In the studio-home tagline "A Million Stories to Tell", the **o in "Stories"** is a static warm
-gold while every other letter shimmers — it is a link straight to `/classified/`. No tooltip, no hint.
+### The Letter That Flickers (Studio Home)
+In the studio-home tagline "A Million Stories to Tell", the **o in "Stories"** shimmers with the
+rest — but once every 12 seconds it stutters like a tired neon sign. It is a link straight to
+`/classified/`. No tooltip, no hint. (v1 was a flat-gold "shimmerless" letter — too distinct,
+retuned 2026-07-11.)
 
 ### Source Comment (/classified/)
 The page source of `/classified/` opens with `<!-- if you're reading this, you're already home -->` —

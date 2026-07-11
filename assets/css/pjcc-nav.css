@@ -253,8 +253,8 @@
   margin-right: 2px;
 }
 
-/* ---- 5. Mobile-only icon nav ----------------------------------------- */
-.mnav { display: none; }
+/* ---- 5. (mobile icon nav removed from the DOM 2026-07-07; its leftover CSS —
+        including a persistent backdrop-filter — cleaned out 2026-07-11) ------ */
 
 @media (max-width: 700px) {
   /* The World dropdown flattens into the hamburger sheet (no hover on touch) */
@@ -280,68 +280,4 @@
   .cmdk-trigger { padding: 6px 9px; margin-right: 4px; }
   .cmdk-trigger-ico { font-size: 1.15rem; }
 
-  /* floating icon nav */
-  .mnav {
-    display: flex;
-    position: fixed;
-    left: 50%;
-    bottom: 14px;
-    transform: translateX(-50%);
-    z-index: 95;
-    gap: 6px;
-    padding: 6px;
-    background: rgba(16, 9, 38, 0.92);
-    border: 1px solid #4a3a86;
-    border-radius: 999px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-  }
-  .mnav-item {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 46px;
-    height: 46px;
-    border-radius: 999px;
-    color: #cdbcf2;
-    text-decoration: none;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-  }
-  .mnav-item:active,
-  .mnav-item:focus-visible { background: rgba(110, 95, 160, 0.3); color: #F5C518; }
-  .mnav-ico { font-size: 1.4rem; line-height: 1; }
-  .mnav-label {
-    position: absolute;
-    bottom: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%) translateY(4px);
-    font-family: 'Poppins', sans-serif;
-    font-size: 0.66rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-    background: #1f1147;
-    color: #F5C518;
-    border: 1px solid #4a3a86;
-    border-radius: 7px;
-    padding: 3px 9px;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.15s, transform 0.15s;
-    pointer-events: none;
-  }
-  .mnav-item.show-label .mnav-label,
-  .mnav-item:focus-visible .mnav-label {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  /* keep the back-to-top button clear of the floating icon bar */
-  .back-to-top { bottom: 74px !important; }
 }

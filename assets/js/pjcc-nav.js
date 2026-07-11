@@ -178,30 +178,7 @@
     update();
   })();
 
-  /* ============================================================
-     3. MOBILE ICON NAV — reveal label on long-press, navigate on tap
-     ============================================================ */
-  (function () {
-    var navItems = document.querySelectorAll('.mnav-item');
-    if (!navItems.length) return;
-    Array.prototype.forEach.call(navItems, function (item) {
-      var timer = null;
-      var shown = false;
-      function clear() { clearTimeout(timer); }
-      item.addEventListener('touchstart', function () {
-        shown = false;
-        timer = setTimeout(function () { item.classList.add('show-label'); shown = true; }, 320);
-      }, { passive: true });
-      item.addEventListener('touchend', function (e) {
-        clear();
-        if (shown) {
-          e.preventDefault(); // long-press = reveal label only, suppress navigation
-          setTimeout(function () { item.classList.remove('show-label'); }, 1100);
-        }
-      });
-      item.addEventListener('touchmove', function () { clear(); item.classList.remove('show-label'); }, { passive: true });
-      item.addEventListener('touchcancel', function () { clear(); item.classList.remove('show-label'); });
-    });
-  })();
+  /* (3. mobile icon nav removed from the DOM 2026-07-07; its handler cleaned
+     out 2026-07-11 — restore both from git if the bar ever returns) */
 
 })();
