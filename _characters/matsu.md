@@ -1,4 +1,5 @@
 ---
+sitemap: false
 layout: character
 title: Matsu
 full_name: Matsu (松)

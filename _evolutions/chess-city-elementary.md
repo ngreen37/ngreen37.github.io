@@ -1,4 +1,6 @@
 ---
+noindex: true
+sitemap: false
 layout: evolution
 title: Chess City Elementary
 category: location

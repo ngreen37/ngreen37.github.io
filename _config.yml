@@ -69,6 +69,17 @@ defaults:
       path: "assets"
     values:
       sitemap: false
+  # internal working files — not part of the site (they stay in the repo/GitHub)
+  - scope:
+      path: "docs"
+    values:
+      published: false
+      sitemap: false
+  - scope:
+      path: "tests"
+    values:
+      published: false
+      sitemap: false
 
 collections:
   characters:

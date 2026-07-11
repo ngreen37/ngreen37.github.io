@@ -1,4 +1,5 @@
 ---
+sitemap: false
 layout: character
 title: The Commentators
 full_name: Randy, Greener, and Pittsy — the booth

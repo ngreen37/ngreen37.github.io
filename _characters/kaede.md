@@ -1,4 +1,5 @@
 ---
+sitemap: false
 layout: character
 title: Kaede
 full_name: Kaede (楓)

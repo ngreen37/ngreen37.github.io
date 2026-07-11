@@ -1,4 +1,5 @@
 ---
+sitemap: false
 layout: character
 title: The Prodigal Brothers
 full_name: Robert's cronies

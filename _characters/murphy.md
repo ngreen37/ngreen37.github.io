@@ -1,4 +1,5 @@
 ---
+sitemap: false
 layout: character
 title: Gerald
 full_name: Gerald "Jerry" Murphy — the Pessimist Brother

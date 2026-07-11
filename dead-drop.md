@@ -1,4 +1,5 @@
 ---
+sitemap: false
 layout: easter-eggs
 title: Dead Drop
 permalink: /dead-drop/

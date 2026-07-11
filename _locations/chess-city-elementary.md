@@ -1,4 +1,5 @@
 ---
+sitemap: false
 layout: location
 title: Chess City Elementary
 location_type: Workplace

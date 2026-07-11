@@ -1,4 +1,5 @@
 ---
+sitemap: false
 layout: character
 title: Robert
 full_name: Robert — the Checker Town Rival

@@ -1,4 +1,5 @@
 ---
+sitemap: false
 layout: location
 title: The Sea
 location_type: North Region

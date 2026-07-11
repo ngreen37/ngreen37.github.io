@@ -1,3 +1,7 @@
+---
+published: false
+---
+
 # PJCC — Future Ideas
 
 The open backlog: **only what's *not* built yet.** Completed work has been cleared out of this file;
