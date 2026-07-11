@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>McPuppy Studios</title>
-  <meta name="description" content="McPuppy Studios — Animation, Chess, and Creativity">
+  <title>McPuppy Studios — Princess and the Journey to Chess City</title>
+  <meta name="description" content="Home of Princess and the Journey to Chess City (PJCC) — an animated series in the making, plus an arcade of free chess games, all built in the open by McPuppy Studios.">
   <link rel="canonical" href="{{ '/' | absolute_url }}">
   <meta name="theme-color" content="#0a0714">
 
@@ -20,6 +20,32 @@
   <meta name="twitter:title" content="McPuppy Studios — Princess and the Journey to Chess City">
   <meta name="twitter:description" content="A cartoon series, an arcade of chess games, and a whole world built in the open.">
   <meta name="twitter:image" content="{{ og_img | absolute_url }}">
+
+  <!-- Structured data: who we are + what the site is (this layout has its own head,
+       so it carries its own copy of the block in default.html) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "{{ site.url }}/#org",
+        "name": "McPuppy Studios",
+        "url": "{{ site.url }}/",
+        "logo": "{{ site.url }}/assets/images/pjcc-share-card.png",
+        "sameAs": ["{{ site.patreon_url }}"]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "{{ site.url }}/#website",
+        "url": "{{ site.url }}/",
+        "name": "Princess and the Journey to Chess City",
+        "alternateName": ["PJCC", "McPuppy Studios"],
+        "publisher": { "@id": "{{ site.url }}/#org" }
+      }
+    ]
+  }
+  </script>
 
   <link rel="icon" href="{{ '/assets/images/favicon.svg' | relative_url }}" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">

@@ -20,6 +20,34 @@
   <meta name="description" content="{{ page.description | default: site.description }}">
   <link rel="canonical" href="{{ page.url | absolute_url }}">
   <meta name="theme-color" content="#0a0714">
+  {%- comment -%} Slow-rolled pages stay out of Google: anything flagged noindex,
+       plus every hidden character/location from _config.yml. {%- endcomment -%}
+  {% if page.noindex or site.hidden_character_urls contains page.url or site.hidden_location_urls contains page.url %}<meta name="robots" content="noindex">{% endif %}
+
+  <!-- Structured data: who we are + what the site is (Google Knowledge Graph food) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "{{ site.url }}/#org",
+        "name": "McPuppy Studios",
+        "url": "{{ site.url }}/",
+        "logo": "{{ site.url }}/assets/images/pjcc-share-card.png",
+        "sameAs": ["{{ site.patreon_url }}"]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "{{ site.url }}/#website",
+        "url": "{{ site.url }}/",
+        "name": "Princess and the Journey to Chess City",
+        "alternateName": ["PJCC", "McPuppy Studios"],
+        "publisher": { "@id": "{{ site.url }}/#org" }
+      }
+    ]
+  }
+  </script>
 
   <!-- Social / Open Graph (rich previews when a link is shared) -->
   {% assign og_title = page.title | default: site.title %}

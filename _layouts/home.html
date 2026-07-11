@@ -7,6 +7,23 @@ layout: default
 {% assign now_ts     = site.time | date: "%s" | plus: 0 %}
 {% assign days_since = now_ts | minus: start_ts | divided_by: 86400 | plus: 1 %}
 
+{% comment %} Structured data: the show itself — this is what lets Google build a
+     rich result (name, poster image) for "Princess and the Journey to Chess City". {% endcomment %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TVSeries",
+  "@id": "{{ site.url }}/pjcc/#show",
+  "name": "Princess and the Journey to Chess City",
+  "alternateName": "PJCC",
+  "url": "{{ site.url }}/pjcc/",
+  "image": "{{ site.url }}/assets/images/pjcc-share-card.png",
+  "description": "An animated series in the making: Princess, a dog from Checker Town, journeys toward Chess City. Built in the open by McPuppy Studios, with a free arcade of chess games set in the show's world.",
+  "genre": ["Animation", "Family", "Adventure"],
+  "productionCompany": { "@id": "{{ site.url }}/#org" }
+}
+</script>
+
 {% comment %} ── AURORA BANDS ─────────────────────────────────── {% endcomment %}
 <div class="aurora-wrap" aria-hidden="true">
   <div class="aurora-band"></div>
