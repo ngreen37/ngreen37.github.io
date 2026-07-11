@@ -1290,82 +1290,7 @@ body.sky-night .home-drips .drip { animation-duration: calc(var(--dur, 8s) * 1.6
   .drip { animation: none; }
 }
 
-.stats-inner {
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  gap: 32px;
-  padding: 0 28px;
-}
-
-/* Stat tiles are links — lift and glow on hover (verdigris "old paint" accent) */
-.hstat {
-  position: relative;
-  display: block;
-  text-align: center;
-  min-width: 110px;
-  padding: 14px 18px 12px;
-  border-radius: 16px;
-  text-decoration: none;
-  transition: transform .2s cubic-bezier(.2,.7,.3,1), background .2s ease, box-shadow .2s ease;
-}
-.hstat:hover,
-.hstat:focus-visible {
-  transform: translateY(-3px);
-  background: radial-gradient(120% 120% at 50% 0%, rgba(126,201,183,0.07), rgba(126,201,183,0.02) 65%, transparent);
-  box-shadow: 0 10px 26px -18px rgba(126,201,183,0.38);
-  text-decoration: none;
-  outline: none;
-}
-
-.hstat-num {
-  display: block;
-  font-family: 'Poppins', sans-serif;
-  font-size: 54px;
-  font-weight: 800;
-  color: #7ec9b7;
-  line-height: 1;
-  margin-bottom: 8px;
-  letter-spacing: -2px;
-  transition: transform .2s cubic-bezier(.2,.7,.3,1), text-shadow .2s ease, filter .2s ease;
-}
-.hstat:hover .hstat-num,
-.hstat:focus-visible .hstat-num {
-  transform: scale(1.06);
-  text-shadow: 0 0 18px rgba(126,201,183,0.5), 0 0 6px rgba(126,201,183,0.32);
-  filter: brightness(1.05);
-}
-
-.hstat-lbl {
-  display: block;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: #6b5a8e;
-  transition: color .2s ease, letter-spacing .2s ease;
-}
-.hstat:hover .hstat-lbl,
-.hstat:focus-visible .hstat-lbl {
-  color: #8fd8c6;
-  letter-spacing: 2.6px;
-}
-/* the label sprouts a little arrow on hover */
-.hstat-go {
-  display: inline-block;
-  margin-left: 4px;
-  opacity: 0;
-  transform: translateX(-4px);
-  transition: opacity .2s ease, transform .2s ease;
-}
-.hstat:hover .hstat-go,
-.hstat:focus-visible .hstat-go { opacity: 1; transform: translateX(0); }
-
-@media (prefers-reduced-motion: reduce) {
-  .hstat, .hstat-num { transition: none; }
-  .hstat:hover, .hstat:focus-visible,
-  .hstat:hover .hstat-num, .hstat:focus-visible .hstat-num { transform: none; }
-}
+/* (.stats-inner + .hstat tiles removed 2026-07-11 — the home counters left 2026-07-10; restore from git.) */
 
 /* --- Responsive --- */
 @media (max-width: 700px) {
@@ -1491,10 +1416,6 @@ body.sky-night .home-drips .drip { animation-duration: calc(var(--dur, 8s) * 1.6
 
   .featured-card {
     padding: 22px 20px;
-  }
-
-  .hstat-num {
-    font-size: 40px;
   }
 
   .lessons-stats {
@@ -4675,157 +4596,7 @@ body.theme-classified {
   margin-bottom: 4px;
 }
 
-/* =============================================================
-   STORY ARC FILM STRIP — PJCC page horizontal scroll
-   ============================================================= */
-
-.arc-section { width: 100%; margin-top: 8px; }
-
-.arc-section-label {
-  font-family: 'Poppins', sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  color: rgba(245, 197, 24, 0.45);
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  &::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: rgba(245, 197, 24, 0.1);
-  }
-}
-
-.arc-strip-hint {
-  font-size: 10px;
-  letter-spacing: 2px;
-  color: rgba(255,255,255,0.18);
-  font-family: 'Share Tech Mono', monospace;
-  margin-bottom: 12px;
-}
-
-.arc-strip {
-  display: flex;
-  gap: 14px;
-  overflow-x: auto;
-  padding: 4px 4px 14px;
-  scroll-behavior: smooth;
-  cursor: grab;
-  user-select: none;
-
-  &:active { cursor: grabbing; }
-  &::-webkit-scrollbar { height: 3px; }
-  &::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); border-radius: 2px; }
-  &::-webkit-scrollbar-thumb { background: rgba(245,197,24,0.25); border-radius: 2px; }
-}
-
-.arc-panel {
-  flex: 0 0 185px;
-  border-radius: 10px;
-  padding: 18px 15px;
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.2s;
-
-  &:hover { transform: translateY(-3px); }
-}
-
-.arc-panel--complete {
-  background: rgba(245, 197, 24, 0.06);
-  border: 1px solid rgba(245, 197, 24, 0.28);
-}
-
-.arc-panel--active {
-  background: rgba(100, 38, 220, 0.12);
-  border: 1px solid rgba(100, 38, 220, 0.55);
-  animation: arc-pulse 3s ease-in-out infinite;
-}
-
-.arc-panel--future {
-  background: rgba(255,255,255,0.02);
-  border: 1px dashed rgba(255,255,255,0.1);
-  opacity: 0.55;
-}
-
-.arc-panel--locked {
-  background: rgba(255,255,255,0.015);
-  border: 1px dashed rgba(255,255,255,0.07);
-  opacity: 0.28;
-}
-
-@keyframes arc-pulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(100, 38, 220, 0.15); }
-  50%       { box-shadow: 0 0 38px rgba(100, 38, 220, 0.32); }
-}
-
-.arc-num {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 2px;
-  color: rgba(245, 197, 24, 0.35);
-  margin-bottom: 8px;
-  display: block;
-}
-
-.arc-icon { font-size: 20px; display: block; margin-bottom: 9px; line-height: 1; }
-
-.arc-title {
-  font-family: 'Poppins', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  color: #ffffff;
-  margin-bottom: 7px;
-  line-height: 1.3;
-}
-
-.arc-beat {
-  font-size: 11px;
-  color: rgba(196, 181, 253, 0.6);
-  line-height: 1.55;
-  font-style: italic;
-  margin-bottom: 10px;
-}
-
-.arc-jp-title {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
-  color: rgba(245, 197, 24, 0.45);
-  font-weight: 400;
-  letter-spacing: 0.05em;
-  margin-left: 6px;
-  vertical-align: middle;
-}
-
-.arc-jp-beat {
-  display: block;
-  font-style: normal;
-  font-size: 10px;
-  color: rgba(245, 197, 24, 0.38);
-  letter-spacing: 0.04em;
-  margin-top: 4px;
-  font-family: 'Share Tech Mono', monospace;
-}
-
-.arc-status {
-  display: inline-block;
-  font-family: 'Poppins', sans-serif;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  padding: 3px 8px;
-  border-radius: 999px;
-}
-
-.arc-status--complete  { background: rgba(245,197,24,0.1); color: rgba(245,197,24,0.8); border: 1px solid rgba(245,197,24,0.2); }
-.arc-status--active    { background: rgba(100,38,220,0.18); color: #c4b5fd; border: 1px solid rgba(100,38,220,0.38); }
-.arc-status--upcoming  { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.32); border: 1px solid rgba(255,255,255,0.09); }
-.arc-status--classified{ background: rgba(220,30,30,0.08); color: rgba(220,80,80,0.55); border: 1px solid rgba(220,30,30,0.16); }
+/* (STORY ARC FILM STRIP styles removed 2026-07-11 — the strip itself left the home page 2026-06-22; restore from git.) */
 
 /* =============================================================
    IMAGE COMPARISON — Drag-divider (shared component)
@@ -5142,27 +4913,7 @@ body.theme-classified {
   font-style: italic;
 }
 
-/* =============================================================
-   Arc Lore Typewriter
-   ============================================================= */
-
-.arc-lore {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
-  color: rgba(245, 197, 24, 0.7);
-  font-style: italic;
-  min-height: 16px;
-  margin-top: 6px;
-  margin-bottom: 2px;
-  overflow: hidden;
-  opacity: 0;
-  transition: opacity 0.15s;
-  letter-spacing: 0.03em;
-}
-
-.arc-lore.is-typing {
-  opacity: 1;
-}
+/* (Arc Lore Typewriter styles removed 2026-07-11 — dead since the film strip left; restore from git.) */
 
 /* =============================================================
    Chess Clock
@@ -6938,18 +6689,7 @@ body.theme-classified {
   &.is-revealing { color: rgba(245, 197, 24, 0.88); }
 }
 
-/* =============================================================
-   Arc Panel — Near-Unlock Glow State
-   ============================================================= */
-
-.arc-panel--locked.is-near-unlock {
-  border-color: rgba(255, 60, 60, 0.35) !important;
-  box-shadow: 0 0 14px rgba(255, 40, 40, 0.10) !important;
-
-  .arc-title,
-  .arc-beat,
-  .arc-icon { color: rgba(255, 100, 100, 0.75); }
-}
+/* (Arc Panel near-unlock glow removed 2026-07-11 — dead since the film strip left.) */
 
 /* =============================================================
    COMMAND CENTER — SANDBOX PAGE (/sandbox/)
@@ -7467,35 +7207,7 @@ body.theme-classified {
   animation: heading-shimmer 4s linear infinite;
 }
 
-/* 2 — Chess notation watermark */
-@keyframes notation-rise {
-  0%   { transform: translateY(0); }
-  100% { transform: translateY(-50%); }
-}
-.notation-watermark {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 0 !important;
-}
-.notation-watermark-track {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 11px;
-  color: #2D1B69;
-  line-height: 2.1;
-  word-break: break-all;
-  white-space: normal;
-  padding: 0 14px;
-  animation: notation-rise 90s linear infinite;
-}
-.arc-section {
-  position: relative;
-}
-.arc-section > *:not(.notation-watermark) {
-  position: relative;
-  z-index: 1;
-}
+/* (2 — chess notation watermark + arc-section flair removed 2026-07-11 — no markup anywhere.) */
 
 /* 3 — CRT scanline animation on classified */
 @keyframes crt-scan {
@@ -7527,21 +7239,7 @@ body.theme-classified {
 }
 .data-stream-card:hover .ds-flow { opacity: 0.65; }
 
-/* 8 — Completed arc panel floating star */
-@keyframes flair-float {
-  0%   { transform: translateY(0) scale(1); opacity: 0.9; }
-  70%  { opacity: 0.5; }
-  100% { transform: translateY(-58px) scale(0.7); opacity: 0; }
-}
-.arc-flair-star {
-  position: absolute;
-  color: #F5C518;
-  font-size: 11px;
-  pointer-events: none;
-  animation: flair-float 2s ease-out forwards;
-  z-index: 10;
-  text-shadow: 0 0 8px rgba(245, 197, 24, 0.6);
-}
+/* (8 — arc panel floating star removed 2026-07-11 — dead since the film strip left.) */
 
 /* 9 — Transmission Received toast */
 .tx-toast {
@@ -7582,12 +7280,7 @@ body.theme-classified {
   animation: redact-static 0.2s ease-in-out infinite;
 }
 
-/* 11 — Ink-wipe block class */
-.ink-reveal-block {
-  clip-path: inset(0 100% 0 0);
-  transition: clip-path 0.9s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.ink-reveal-block.is-visible { clip-path: inset(0 0% 0 0); }
+/* (11 — ink-wipe block removed 2026-07-11 — no markup anywhere.) */
 
 /* 12 — Aurora bands on PJCC page */
 /* Time-of-day sky — the aurora keeps Checker Town time (class set by home JS).

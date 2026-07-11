@@ -1,7 +1,7 @@
 /* =============================================================================
  * PJCC Flair — dramatic entrances + five "wow" touches.
  *  1. Scroll-reveal entrances (fade + rise + un-blur, staggered)
- *  2. 3D tilt + light sheen on cards
+ *  2. 3D tilt on cards
  *  3. (parallax drifting pieces removed 2026-07-10 — with the milestone crown;
  *     restore from git)
  *  4. "Journey to Chess City" scroll-progress bar
