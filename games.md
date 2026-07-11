@@ -68,59 +68,66 @@ permalink: /games/
 }
 @media (max-width:600px){ .ghub-head::after { width:140px; } }
 
-/* ---- #9 THE MAIN QUEST — the Gauntlet promoted above the halls ---- */
-.ghub-flagship { position:relative; z-index:2; display:flex; align-items:center; gap:18px; text-decoration:none;
-  max-width:860px; margin:0 auto 24px; padding:20px 22px 18px 22px;
-  background:linear-gradient(135deg,#241206 0%,#3a2a10 52%,#231640 100%);
-  border:2px solid #F5C518; border-radius:18px; overflow:hidden;
-  box-shadow:0 0 40px -14px #F5C518, inset 0 0 70px -34px rgba(245,197,24,0.5);
-  animation:ghub-wake .6s ease both; transition:transform .12s, box-shadow .12s; }
-.ghub-flagship::before { content:''; position:absolute; right:-50px; top:-50px; width:220px; height:220px; border-radius:50%;
-  background:radial-gradient(circle, rgba(245,197,24,0.2), transparent 70%); pointer-events:none; }
-.ghub-flagship:hover { transform:translateY(-2px); box-shadow:0 0 54px -8px #F5C518, inset 0 0 70px -34px rgba(245,197,24,0.5); }
-.gfl-glyph { flex-shrink:0; font-size:3rem; line-height:1; color:#F5C518; filter:drop-shadow(0 3px 8px rgba(0,0,0,0.6)); position:relative; z-index:1; }
-.gfl-main { flex:1; min-width:0; position:relative; z-index:1; padding-top:6px; display:flex; flex-direction:column; align-items:flex-start; }
-.gfl-title { font-size:1.75rem; font-weight:900; color:#fff; line-height:1.05; text-shadow:0 2px 10px rgba(0,0,0,0.55); }
-.gfl-tag { color:#e7d6b0; font-size:0.9rem; line-height:1.4; margin-top:3px; max-width:60ch; }
-.gfl-pips { display:flex; gap:4px; margin:9px 0 5px; }
-.gfl-pip { width:15px; height:7px; border-radius:2px; background:rgba(255,255,255,0.14); }
-.gfl-pip.done { background:#6bffb8; } .gfl-pip.cur { background:#F5C518; box-shadow:0 0 8px #F5C518; }
-.gfl-resume { color:#fff; font-size:0.85rem; font-weight:700; } .gfl-resume b { color:#F5C518; }
-/* the LIFT call-plate — a little brass elevator panel; the arrow pulses like a called lift */
-.gfl-lift { flex-shrink:0; position:relative; z-index:1; align-self:center;
-  display:flex; flex-direction:column; align-items:center; gap:4px;
-  font-family:'Courier New',monospace; font-size:0.7rem; font-weight:900; letter-spacing:0.12em; color:#F5C518;
-  background:rgba(12,8,2,0.6); border:1px solid rgba(245,197,24,0.45); border-radius:10px; padding:11px 15px;
-  white-space:nowrap; box-shadow:inset 0 0 14px rgba(245,197,24,0.12); }
-.gfl-lift-arrow { font-style:normal; font-size:1.15rem; line-height:1; color:#F5C518; animation:gflLift 1.7s ease-in-out infinite; }
-@keyframes gflLift { 0%,100% { transform:translateY(1px); opacity:0.7; } 50% { transform:translateY(-3px); opacity:1; } }
-.ghub-flagship:hover .gfl-lift { border-color:#F5C518; box-shadow:inset 0 0 18px rgba(245,197,24,0.25), 0 0 16px -6px #F5C518; }
-@media (max-width:620px){
-  .ghub-flagship { flex-wrap:wrap; gap:12px 14px; padding:18px 16px 16px; }
-  .gfl-glyph { font-size:2.2rem; }
-  .gfl-title { font-size:1.4rem; }
-  .gfl-lift { width:100%; flex-direction:row; justify-content:center; gap:8px; }
+/* ---- THE DOOR — the Gauntlet stands above the halls as a doorway now
+   (the big MAIN QUEST banner retired 2026-07-10 — "takes up too much of the
+   Games Page"; restore from git). Same .gdoor the home hero wears. ---- */
+.ghub-doorway { position:relative; z-index:2; display:flex; justify-content:center;
+  margin:0 auto 20px; animation:ghub-wake .6s ease both; }
+.gdoor { display:flex; flex-direction:column; align-items:center; gap:5px; text-decoration:none;
+  --acc:#F5C518; }
+.gdoor-plate { font-family:'Share Tech Mono','Courier New',monospace; font-size:10px; font-weight:700;
+  letter-spacing:2px; color:#F5C518; background:rgba(12,8,2,0.55);
+  border:1px solid rgba(245,197,24,0.5); border-radius:3px; padding:4px 10px; white-space:nowrap; }
+.gdoor-pips { display:flex; gap:3px; }
+.gdoor-pips i { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.14); }
+.gdoor-pips i.done { background:#6bffb8; box-shadow:0 0 5px rgba(107,255,184,0.6); }
+.gdoor-pips i.cur { background:var(--acc); box-shadow:0 0 7px var(--acc);
+  animation:gdoorPip 1.8s ease-in-out infinite; }
+@keyframes gdoorPip { 50% { opacity:0.4; } }
+.gdoor-arch { position:relative; display:block; width:84px; height:108px;
+  border:2px solid rgba(245,197,24,0.6); border-bottom-width:0; border-radius:42px 42px 4px 4px;
+  overflow:hidden; box-shadow:0 0 26px -8px var(--acc);
+  background:radial-gradient(ellipse at 50% 85%, color-mix(in srgb, var(--acc) 32%, #0c0722), #0c0722 78%);
+  transition:box-shadow .2s ease; }
+.gdoor-door { position:absolute; left:5px; right:5px; top:5px; bottom:0;
+  border-radius:37px 37px 0 0; border:1px solid rgba(168,121,255,0.35);
+  background:linear-gradient(180deg, #251747 0%, #150c33 100%);
+  transform-origin:0 50%; transition:transform .35s ease; }
+.gdoor-glyph { position:absolute; left:50%; top:40%; transform:translate(-50%,-50%);
+  font-style:normal; font-weight:400; font-size:34px; line-height:1; color:var(--acc);
+  filter:drop-shadow(0 0 9px color-mix(in srgb, var(--acc) 65%, transparent)); }
+.gdoor-knob { position:absolute; right:10px; top:56%; width:5px; height:5px; border-radius:50%;
+  background:#F5C518; box-shadow:0 0 5px rgba(245,197,24,0.8); }
+.gdoor-seam { position:absolute; left:6px; right:6px; bottom:0; height:3px; background:var(--acc);
+  box-shadow:0 -2px 14px 3px color-mix(in srgb, var(--acc) 55%, transparent); }
+.gdoor-sub { font-size:0.82rem; color:#e7d6b0; text-align:center; max-width:34ch; }
+.gdoor-sub b { color:#F5C518; }
+.gdoor:hover .gdoor-arch, .gdoor:focus-visible .gdoor-arch { box-shadow:0 0 34px -5px var(--acc); }
+.gdoor:hover .gdoor-door, .gdoor:focus-visible .gdoor-door { transform:perspective(320px) rotateY(-22deg); }
+@media (prefers-reduced-motion: reduce){
+  .ghub-doorway { animation:none; }
+  .gdoor-pips i.cur { animation:none; }
+  .gdoor-door { transition:none; }
 }
-@media (prefers-reduced-motion: reduce){ .gfl-lift-arrow { animation:none; } }
-@media (prefers-reduced-motion: reduce){ .ghub-flagship { animation:none; } }
 </style>
 
 <!-- ===== THE HALLS — Gauntlet Legends portal screen (pick a hall; no games here) ===== -->
 <div class="ghub">
   <a class="ghub-trophy" href="{{ '/leaderboards/' | relative_url }}" aria-label="Leaderboards & Hall of Fame" title="Leaderboards &amp; Hall of Fame">🏆</a>
 
-  <!-- ── THE MAIN QUEST: the Gauntlet, promoted above the halls ── -->
-  <a class="ghub-flagship" id="ghub-flagship" href="{{ '/games/the-gauntlet/' | relative_url }}">
-    <span class="gfl-glyph" aria-hidden="true">♛</span>
-    <span class="gfl-main">
-      <span class="gfl-title">The Gauntlet</span>
-      <span class="gfl-tag">Ten PJCC champions.</span>
-      <span class="gfl-pips" id="gfl-pips" aria-hidden="true"></span>
-      <span class="gfl-resume" id="gfl-resume">Begin the climb — Floor 1 awaits.</span>
-    </span>
-    <!-- the tower LIFT plate — the diegetic "continue" affordance (the whole card is the link) -->
-    <span class="gfl-lift" aria-hidden="true"><i class="gfl-lift-arrow" id="gfl-lift-arrow">▲</i><span class="gfl-lift-txt" id="gfl-lift-txt">LIFT · F1</span></span>
-  </a>
+  <!-- ── THE DOOR: the Gauntlet, above the halls ── -->
+  <div class="ghub-doorway">
+    <a class="gdoor" id="gauntlet-door" href="{{ '/games/the-gauntlet/' | relative_url }}"
+       aria-label="The Gauntlet — real chess vs a ladder of ten PJCC rivals">
+      <span class="gdoor-plate">THE GAUNTLET</span>
+      <span class="gdoor-pips" id="gdoor-pips" aria-hidden="true"></span>
+      <span class="gdoor-arch" aria-hidden="true">
+        <i class="gdoor-door"><b class="gdoor-glyph" id="gdoor-glyph">♛</b><u class="gdoor-knob"></u></i>
+        <i class="gdoor-seam"></i>
+      </span>
+      <span class="gdoor-sub" id="gdoor-sub">Begin the climb — <b>Floor 1</b> awaits.</span>
+    </a>
+  </div>
 
   <div class="ghub-head">
     <p class="ghub-eyebrow">◆ The PJCC Arcade</p>
@@ -155,32 +162,33 @@ permalink: /games/
   document.getElementById('ghub-grid-sub').innerHTML = ['vault', 'terminated'].map(portal).join('');
 })();
 
-// Flagship resume state — same climb data the game + homepage read (#8/#6).
+// THE DOOR resume state — same climb data the game + homepage read.
 (function () {
+  // mirrors the LADDER order / accents / glyphs in assets/games/pjcc_gauntlet.html — keep in sync
   var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The CEO'];
+  var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#9ff0c4','#ff6b6b','#c79bff','#ff9ec9','#ff8fd0'];
+  var GLYPHS  = ['♞','♟','♝','♞','♜','♝','♜','♝','♛','♛'];
   var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
   var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;
   for (var i = 0; i < NAMES.length; i++) { if (beaten[i]) cleared++; }
   for (var j = 0; j < NAMES.length; j++) { if (!beaten[j]) { cur = j; break; } }
-  var pipHost = document.getElementById('gfl-pips');
+  var door = document.getElementById('gauntlet-door');
+  if (!door) return;
+  var pipHost = document.getElementById('gdoor-pips');
   if (pipHost) { var h = '';
-    for (var k = 0; k < NAMES.length; k++) { h += '<span class="gfl-pip ' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></span>'; }
+    for (var k = 0; k < NAMES.length; k++) { h += '<i class="' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></i>'; }
     pipHost.innerHTML = h; }
-  var res = document.getElementById('gfl-resume'), link = document.getElementById('ghub-flagship');
-  var liftTxt = document.getElementById('gfl-lift-txt'), liftArrow = document.getElementById('gfl-lift-arrow');
-  // mirrors the LADDER accents in assets/games/pjcc_gauntlet.html — keep in sync
-  var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#9ff0c4','#ff6b6b','#c79bff','#ff9ec9','#ff8fd0'];
-  if (cleared === 0) { if (res) res.innerHTML = 'Begin the climb — <b>Floor 1: ' + NAMES[0] + '</b>.'; }
-  else if (cur >= NAMES.length) {
-    if (res) res.innerHTML = '<b>Crowned.</b> All ten cleared — rematch anyone.';
-    if (liftArrow) liftArrow.textContent = '♛';
-    if (liftTxt) liftTxt.textContent = 'PENTHOUSE';
-    if (link) link.setAttribute('href', link.getAttribute('href') + '#tower');
+  var glyph = document.getElementById('gdoor-glyph'), sub = document.getElementById('gdoor-sub');
+  if (cur >= NAMES.length) {
+    if (sub) sub.innerHTML = '<b>Crowned.</b> All ten cleared — rematch anyone.';
+    door.setAttribute('href', door.getAttribute('href') + '#tower');
+  } else if (cleared > 0) {
+    door.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
+    if (glyph) glyph.textContent = GLYPHS[cur] || '♛';
+    if (sub) sub.innerHTML = 'Floor ' + (cur + 1) + ' of 10 — <b>' + NAMES[cur] + '</b> awaits.';
+    door.setAttribute('href', door.getAttribute('href') + '#climb');
   } else {
-    if (res) res.innerHTML = 'Floor ' + (cur + 1) + ' of 10 — <b>' + NAMES[cur] + '</b> awaits.';
-    if (liftTxt) liftTxt.textContent = 'LIFT · F' + (cur + 1);
-    if (liftArrow) liftArrow.style.color = ACCENTS[cur] || '#F5C518';
-    if (link) link.setAttribute('href', link.getAttribute('href') + '#climb');
+    if (sub) sub.innerHTML = 'Begin the climb — <b>Floor 1: ' + NAMES[0] + '</b>.';
   }
 })();
 </script>

@@ -107,7 +107,7 @@ layout: default
   .hero-title { font-size: 24px; letter-spacing: -0.5px; }
   .hero-skyline { height: 34px; left: 16px; right: 16px; }
   .hero-board { bottom: 30px; height: 64px; }
-  .hero-city { transform: scale(0.62); transform-origin: top right; }
+  .hero-door { transform: scale(0.72); transform-origin: top right; top: 10px; right: 14px; }
 }
 
 /* ── #2 one-screen desktop ── */
@@ -122,11 +122,10 @@ layout: default
   <p class="hero-eyebrow">McPuppy Studios Presents</p>
   <div class="hero-board" aria-hidden="true"></div>
   <h1 class="hero-title">Princess and the Journey<br>to Chess City</h1>
-  {% comment %} (the cc-window egg was removed 2026-07-10 — Chess City itself lives
-       up there now; restore from git if missed.) {% endcomment %}
+  {% comment %} (the cc-window egg AND the piece-tower city are gone — 2026-07-10
+       evening Nate asked for THE DOOR back in their place; restore from git.) {% endcomment %}
   {% comment %} #7 — the horizon: Checker Town's low rooftops at street level, the sea
-       running out to the right — and CHESS CITY on the high ground, top right:
-       giant chess-piece towers. Cleared Gauntlet floors light them (JS). {% endcomment %}
+       running out to the right. {% endcomment %}
   <div class="hero-skyline" aria-hidden="true">
     <span class="sk sk-ct" style="--w:30px;--h:16px"></span>
     <span class="sk sk-ct" style="--w:22px;--h:24px"></span>
@@ -136,15 +135,20 @@ layout: default
     <span class="sk sk-ct" style="--w:20px;--h:18px"></span>
     <i class="sk-sea"></i>
   </div>
-  <div class="hero-city" aria-hidden="true" id="hero-city">
-    <span class="hc" style="--s:34px">♜</span>
-    <span class="hc" style="--s:50px">♝</span>
-    <span class="hc" style="--s:40px">♜</span>
-    <span class="hc" style="--s:62px">♛</span>
-    <span class="hc" style="--s:44px">♝</span>
-    <span class="hc" style="--s:56px">♚</span>
-    <span class="hc" style="--s:38px">♜</span>
-  </div>
+  {% comment %} THE DOOR — the way into the Gauntlet, top right of the hero.
+       A brass plate, ten lift lamps (your floors), an arched doorway with the
+       current boss's piece behind it and light under the door. JS below dresses
+       it in the current floor's colour. {% endcomment %}
+  <a class="gdoor hero-door" id="gauntlet-door" href="{{ '/games/the-gauntlet/' | relative_url }}"
+     aria-label="The Gauntlet — real chess vs a ladder of ten PJCC rivals">
+    <span class="gdoor-plate">THE GAUNTLET</span>
+    <span class="gdoor-pips" id="gdoor-pips" aria-hidden="true"></span>
+    <span class="gdoor-arch" aria-hidden="true">
+      <i class="gdoor-door"><b class="gdoor-glyph" id="gdoor-glyph">♛</b><u class="gdoor-knob"></u></i>
+      <i class="gdoor-seam"></i>
+    </span>
+    <span class="gdoor-sub" id="gdoor-sub">Begin the climb</span>
+  </a>
 </section>
 <style>
 /* ── #8 film title card: plate top-left, title in the lower third, horizon below ── */
@@ -164,16 +168,46 @@ layout: default
 .hero-skyline .sk-sea { flex:1 1 auto; height:2px; margin:0 10px 5px;
   background:linear-gradient(90deg, rgba(96,206,255,0), rgba(96,206,255,0.30), rgba(96,206,255,0)); }
 
-/* ── Chess City on the high ground, top right: giant piece-towers ── */
-.hero-city { position:absolute; top:16px; right:26px; display:flex; align-items:flex-end; gap:3px;
-  pointer-events:none; }
-.hero-city::after { content:''; position:absolute; left:-8px; right:-8px; bottom:-4px; height:1px;
-  background:rgba(168,121,255,0.25); }   /* the plateau edge */
-.hero-city .hc { font-size:var(--s,40px); line-height:0.92; color:#181040;
-  -webkit-text-stroke:1px rgba(168,121,255,0.30); }
-.hero-city .hc.lit { color:#221650; -webkit-text-stroke-color:rgba(245,197,24,0.55);
-  text-shadow:0 0 10px rgba(245,197,24,0.22); }
-body.sky-night .hero-city .hc.lit { text-shadow:0 0 14px rgba(245,197,24,0.4); }
+/* ── THE DOOR (shared .gdoor look — the games page wears the same one) ── */
+.gdoor { display:flex; flex-direction:column; align-items:center; gap:5px; text-decoration:none;
+  --acc:#F5C518; }
+.gdoor-plate { font-family:'Share Tech Mono',monospace; font-size:9px; font-weight:700;
+  letter-spacing:2px; color:#F5C518; background:rgba(12,8,2,0.55);
+  border:1px solid rgba(245,197,24,0.5); border-radius:3px; padding:4px 9px; white-space:nowrap; }
+.gdoor-pips { display:flex; gap:3px; }
+.gdoor-pips i { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.14); }
+.gdoor-pips i.done { background:#6bffb8; box-shadow:0 0 5px rgba(107,255,184,0.6); }
+.gdoor-pips i.cur { background:var(--acc); box-shadow:0 0 7px var(--acc);
+  animation:gdoorPip 1.8s ease-in-out infinite; }
+@keyframes gdoorPip { 50% { opacity:0.4; } }
+.gdoor-arch { position:relative; display:block; width:78px; height:100px;
+  border:2px solid rgba(245,197,24,0.6); border-bottom-width:0; border-radius:39px 39px 4px 4px;
+  overflow:hidden; box-shadow:0 0 26px -8px var(--acc);
+  /* the light BEHIND the door — the seam leaks it; hover cracks the door open */
+  background:radial-gradient(ellipse at 50% 85%, color-mix(in srgb, var(--acc) 32%, #0c0722), #0c0722 78%);
+  transition:box-shadow .2s ease; }
+.gdoor-door { position:absolute; left:5px; right:5px; top:5px; bottom:0;
+  border-radius:34px 34px 0 0; border:1px solid rgba(168,121,255,0.35);
+  background:linear-gradient(180deg, #251747 0%, #150c33 100%);
+  transform-origin:0 50%; transition:transform .35s ease; }
+.gdoor-glyph { position:absolute; left:50%; top:40%; transform:translate(-50%,-50%);
+  font-style:normal; font-weight:400; font-size:32px; line-height:1; color:var(--acc);
+  filter:drop-shadow(0 0 9px color-mix(in srgb, var(--acc) 65%, transparent)); }
+.gdoor-knob { position:absolute; right:9px; top:56%; width:5px; height:5px; border-radius:50%;
+  background:#F5C518; box-shadow:0 0 5px rgba(245,197,24,0.8); }
+.gdoor-seam { position:absolute; left:6px; right:6px; bottom:0; height:3px; background:var(--acc);
+  box-shadow:0 -2px 14px 3px color-mix(in srgb, var(--acc) 55%, transparent); }
+.gdoor-sub { font-size:11px; color:#b9a8e6; text-align:center; }
+.gdoor-sub b { color:#F5C518; }
+.gdoor:hover .gdoor-arch, .gdoor:focus-visible .gdoor-arch { box-shadow:0 0 34px -5px var(--acc); }
+.gdoor:hover .gdoor-door, .gdoor:focus-visible .gdoor-door { transform:perspective(320px) rotateY(-22deg); }
+body.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
+@media (prefers-reduced-motion: reduce) {
+  .gdoor-pips i.cur { animation:none; }
+  .gdoor-door { transition:none; }
+}
+/* where it stands on the hero */
+.hero-door { position:absolute; top:12px; right:26px; z-index:2; }
 
 /* ── #10 rain days: streaks run down the hero's window edges ── */
 .home-hero.is-rainy::before, .home-hero.is-rainy::after { content:''; position:absolute; top:0; bottom:0;
@@ -258,26 +292,36 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
 @keyframes puriSpin { to { transform:rotate(360deg); } }
 </style>
 
-{% comment %} (The Gauntlet card left the home page entirely 2026-07-10 — the games
-     page + splash still carry it; restore from git if ever missed. The climb still
-     shows here: it lights Chess City's piece-towers in the hero.) {% endcomment %}
 <script>
-// Gauntlet progress (read-only): powers the ticker's BREAKING line and lights
-// Chess City's piece-towers in the hero, one per cleared floor.
+// Gauntlet progress (read-only): powers the ticker's BREAKING line and dresses
+// THE DOOR in the hero — floor lamps, the current boss's colour and piece.
 (function () {
-  // mirrors the LADDER order in assets/games/pjcc_gauntlet.html
+  // mirrors the LADDER order / accents / glyphs in assets/games/pjcc_gauntlet.html
   var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The CEO'];
+  var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#9ff0c4','#ff6b6b','#c79bff','#ff9ec9','#ff8fd0'];
+  var GLYPHS  = ['♞','♟','♝','♞','♜','♝','♜','♝','♛','♛'];
   var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
   var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;
   for (var i = 0; i < NAMES.length; i++) { if (beaten[i]) cleared++; }
   for (var j = 0; j < NAMES.length; j++) { if (!beaten[j]) { cur = j; break; } }
   window.__gauntletProg = { cleared: cleared, cur: cur, names: NAMES };
 
-  var city = document.getElementById('hero-city');
-  if (city && cleared > 0) {
-    var towers = city.querySelectorAll('.hc');
-    for (var tw = 0; tw < Math.min(cleared, towers.length); tw++) towers[tw].classList.add('lit');
-  }
+  var door = document.getElementById('gauntlet-door');
+  if (!door) return;
+  var pipHost = document.getElementById('gdoor-pips');
+  if (pipHost) { var h = '';
+    for (var k = 0; k < NAMES.length; k++) { h += '<i class="' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></i>'; }
+    pipHost.innerHTML = h; }
+  var glyph = document.getElementById('gdoor-glyph'), sub = document.getElementById('gdoor-sub');
+  if (cur >= NAMES.length) {                      // crowned — the door stands open gold
+    if (sub) sub.innerHTML = '<b>Crowned</b> — rematch anyone';
+    door.setAttribute('href', door.getAttribute('href') + '#tower');
+  } else if (cleared > 0) {                       // mid-climb — the current floor's door
+    door.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
+    if (glyph) glyph.textContent = GLYPHS[cur] || '♛';
+    if (sub) sub.innerHTML = 'Floor <b>' + (cur + 1) + '</b> of 10';
+    door.setAttribute('href', door.getAttribute('href') + '#climb');
+  }                                               // fresh climbers keep the gold ♛ door
 })();
 </script>
 
