@@ -27,8 +27,7 @@ body_class: theme-studio
 {% comment %} Counts come live from the games registry (pjcc-games-data.js) — same source
      as the PJCC home stats — so they never go stale. Both tiles link to the arcade. {% endcomment %}
 <div class="projects-stats" id="projects-stats" aria-label="Studio at a glance">
-  <a class="pstat" href="/games/"><span class="pstat-num" id="pstat-playable">—</span><span class="pstat-lab">playable now <span class="pstat-go">&#8599;</span></span></a>
-  <a class="pstat" href="/games/"><span class="pstat-num" id="pstat-dev">—</span><span class="pstat-lab">in the lab <span class="pstat-go">&#8599;</span></span></a>
+  <a class="pstat" href="/games/"><span class="pstat-num" id="pstat-playable">—</span><span class="pstat-lab">Playable Games <span class="pstat-go">&#8599;</span></span></a>
 </div>
 
 <style>
@@ -103,16 +102,27 @@ body_class: theme-studio
 
 {% comment %} Moved here from the PJCC home (2026-07-08) — the studio's own clocks. {% endcomment %}
 {% comment %} ── 7. CHESS CLOCK ───────────────────────────────────── {% endcomment %}
-<div class="chess-clock-wrap">
-  <div class="chess-clock-label">Time in Development</div>
-  <div class="chess-clock-display" id="chess-clock-display">0d 00:00:00</div>
-  <div class="chess-milestone-wrap" id="chess-milestone-wrap"></div>
-  <div class="home-mission-countdown">
+<div class="pj-counters">
+  <div class="pj-counter">
+    <div class="chess-clock-label">Time in Development</div>
+    <div class="chess-clock-display" id="chess-clock-display">0d 00:00:00</div>
+    <div class="chess-milestone-wrap" id="chess-milestone-wrap"></div>
+  </div>
+  <div class="pj-counter">
     <div class="home-mc-label">◈ Episode 1 Premiere Countdown</div>
     <div class="home-mc-display" id="home-mc-display">—</div>
     <div class="home-mc-target">TARGET: 2027.10.21</div>
   </div>
 </div>
+<style>
+/* the studio's two clocks, side by side (Nate 2026-07-12) */
+.pj-counters { display: flex; flex-wrap: wrap; gap: 14px; margin: 18px 0 6px; }
+.pj-counter { flex: 1 1 240px; text-align: center; padding: 16px 12px;
+  background: linear-gradient(135deg, #1f1147 0%, #2d1b69 100%);
+  border: 1px solid rgba(126, 201, 183, 0.28); border-radius: 12px; }
+.pj-counter .chess-clock-label { margin-bottom: 8px; }
+.pj-counter .chess-milestone-wrap:empty { display: none; }
+</style>
 <script>
 // Chess clock
 (function() {
@@ -289,10 +299,12 @@ body_class: theme-studio
 
 <style>
 .games-index-heading { color: #F5C518; margin-top: 2.4rem; }
-.games-index { list-style: none; padding: 0; margin: 0.6rem 0 1.4rem; }
+/* condensed into columns 2026-07-12 (Nate) — a tight multi-column index, not a tall list */
+.games-index { list-style: none; padding: 0; margin: 0.6rem 0 1.4rem;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0 24px; }
 .games-index li {
   display: flex; align-items: baseline; gap: 8px;
-  padding: 8px 0; border-bottom: 1px solid rgba(245,197,24,0.18);
+  padding: 6px 0; border-bottom: 1px solid rgba(245,197,24,0.14);
 }
 .games-index a { color: #f0e6ff; text-decoration: none; font-weight: 700; }
 .games-index a:hover { color: #ffd740; }
@@ -304,9 +316,9 @@ body_class: theme-studio
 .games-index-note { font-size: 0.8rem; color: #9a7fd4; }
 .games-index-term { font-size: 0.8rem; color: #ff6b6b; }
 
-/* Studio-at-a-glance stat counters (links, like the PJCC home stats) */
-.projects-stats { display: flex; flex-wrap: wrap; gap: 14px; margin: 18px 0 6px; }
-.pstat { flex: 1 1 120px; min-width: 120px; text-align: center; padding: 14px 10px;
+/* Studio-at-a-glance stat counter (a single centered "Playable Games" tile) */
+.projects-stats { display: flex; justify-content: center; flex-wrap: wrap; gap: 14px; margin: 18px 0 6px; }
+.pstat { flex: 0 1 260px; min-width: 200px; text-align: center; padding: 14px 10px;
   background: linear-gradient(135deg, #1f1147 0%, #2d1b69 100%);
   border: 1px solid rgba(245,197,24,0.3); border-radius: 12px;
   text-decoration: none; transition: transform .12s, border-color .12s; }
@@ -326,10 +338,8 @@ body_class: theme-studio
     return !g.hidden && !g.soon && g.playable !== false &&
       (g.cat === 'learn' || g.cat === 'arcade' || g.cat === 'isle');
   }).length + 1;   // +1: The Gauntlet lives outside the registry at /games/the-gauntlet/
-  var dev = PJCC_GAMES.filter(function (g) { return g.cat === 'dev'; }).length;
-  function set(id, n) { var e = document.getElementById(id); if (e) e.textContent = n; }
-  set('pstat-playable', playable);
-  set('pstat-dev', dev);
+  var e = document.getElementById('pstat-playable');
+  if (e) e.textContent = playable;
 })();
 </script>
 
