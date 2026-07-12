@@ -299,13 +299,19 @@
     to   { transform:translateX(0);     opacity:1; }   /* drifted into the right gutter */
   }
 
-  /* Idea #3 — the periodic sigil bloom among the drifters
-     (2026-07-11: dimmer again + 7.5% faster fade per Nate — 2s → 1.85s) */
+  /* Idea #3 — the sigil bloom (the "ACCcccccc" carving that flashes on entry).
+     2026-07-11 (Nate: "I don't see them anymore"): the earlier dimming passes
+     (→0.11 opacity) sank it below visibility. Root cause: at z-index:0 it sat
+     BEHIND the opaque quad grid, so only a sliver in the centre cross-gutter
+     ever showed — no opacity could fix that. Now it flashes IN FRONT (z-index:6)
+     as a translucent gold "transmission ghost" over the grid centre — on theme
+     with the SIGNAL/decrypt cold-open — then fades. pointer-events:none, so it
+     never blocks a click; it clears the quad LABELS (they're centred, it isn't). */
   .studio-drift-sigil { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.96);
-    z-index:0; pointer-events:none; opacity:0; filter:drop-shadow(0 0 10px rgba(245,197,24,0.07));
+    z-index:6; pointer-events:none; opacity:0; filter:drop-shadow(0 0 16px rgba(245,197,24,0.28));
     transition:opacity 1.85s ease, transform 1.85s ease; }
   .studio-drift-sigil .pjcc-sigil { font-size:1.8rem; }
-  .studio-drift-sigil.is-bloom { opacity:0.11; transform:translate(-50%,-50%) scale(1.0); }
+  .studio-drift-sigil.is-bloom { opacity:0.34; transform:translate(-50%,-50%) scale(1.0); }
 
   /* Idea #9 — replay-intro control (bottom-left, subtle) */
   .studio-replay { position:fixed; left:18px; bottom:16px; z-index:3; display:inline-flex; align-items:center; gap:6px;
@@ -510,11 +516,15 @@
     // switched on, which otherwise leaves you stuck on the full-screen colour.
     if (warp) window.addEventListener('pageshow', function () { warp.className = 'studio-warp'; });
 
-    // #3 — every so often a faint sigil blooms among the drifters, then dissolves.
+    // #3 — a gold sigil blooms among the drifters, then dissolves. It fires
+    // RIGHT ON ENTRY now (Nate) — promptly on a return visit, and just after the
+    // cold-open clears on a first visit (so it isn't wasted behind the overlay).
     var sig = document.getElementById('studio-drift-sigil');
     if (sig && !reduce) {
-      var bloom = function () { sig.classList.add('is-bloom'); setTimeout(function () { sig.classList.remove('is-bloom'); }, 4200); };
-      setTimeout(function () { bloom(); setInterval(bloom, 26000); }, 9000);
+      var bloom = function () { sig.classList.add('is-bloom'); setTimeout(function () { sig.classList.remove('is-bloom'); }, 2600); };
+      var seen = false; try { seen = !!localStorage.getItem('mcpuppy_seen'); } catch (e) {}
+      var firstDelay = seen ? 2200 : 8600;
+      setTimeout(function () { bloom(); setInterval(bloom, 26000); }, firstDelay);
     }
 
     // Shuffle the planted sigil seal's glyphs (A + the c-stones) on each load,
