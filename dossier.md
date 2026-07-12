@@ -16,7 +16,9 @@ permalink: /dossier/
   </div>
   <div class="cc-clock" id="cc-clock">--:--:-- UTC</div>
 </div>
-<p class="cc-greet" id="cc-greet">Establishing uplink…</p>
+<!-- One identity slot: shows the greeting instantly, then UPGRADES IN PLACE to your
+     operative header once the account loads (no second "Your operative" section). -->
+<div id="dsr-top"><p class="cc-greet" id="cc-greet">Establishing uplink…</p></div>
 
 <div class="cc-grid">
   <div class="cc-mod cc-mod--daily">
@@ -59,13 +61,11 @@ permalink: /dossier/
 })();
 </script>
 
-<!-- ════════ YOUR IDENTITY — the Forge (instant, works signed-out & offline) ════════ -->
-<h2 class="dsr-h">◆ Your identity</h2>
+<!-- ── Identity forge — build your look (instant; signed-out & offline) ── -->
 <div id="forge-mount"></div>
-<p class="pjcc-sub" style="margin-top:6px" id="forge-sync-note">Build your operative <em>and</em> your companion — base, skin tone, aura, headwear, emblem, name, and story. Change anything, any time. <span id="forge-sync-state">Saved on this device; <a href="#dossier">sign in</a> to carry it across every device.</span></p>
+<p class="pjcc-sub" style="margin-top:6px" id="forge-sync-note">Build your operative <em>and</em> your companion — base, skin tone, aura, headwear, emblem, name, and story. Change anything, any time. <span id="forge-sync-state">Saved on this device; <a href="#dossier-body">sign in</a> to carry it across every device.</span></p>
 
-<!-- ════════ YOUR OPERATIVE (loads with your account) ════════ -->
-<h2 class="dsr-h" id="dossier">◆ Your operative</h2>
+<!-- ── Operative record — loads with your account, inline into the one dossier ── -->
 <div id="dossier-body"><p class="lb-empty">Loading your record…</p></div>
 
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
@@ -97,6 +97,7 @@ permalink: /dossier/
 
   function renderGreet(){
     var greet = $('cc-greet');
+    if (!greet) return;   // once the account loads, the operative header replaces this slot
     try { if (window.PJCC && PJCC.getProfile) { var p = PJCC.getProfile();
       if (p && p.codename) { greet.innerHTML = 'Welcome back, <b>' + esc(p.codename) + '</b>. The board is yours.'; return; } } } catch(e){}
     greet.innerHTML = 'Uplink open. Your record is below — <a href="#dossier-body">claim a codename</a> to log it across every device.';
@@ -149,6 +150,8 @@ permalink: /dossier/
 /* Operative profile — loads with your account (separate from the instant strip above). */
 (function () {
   var el = document.getElementById('dossier-body');
+  var top = document.getElementById('dsr-top');   // the unified identity slot (upgrades in place)
+  function setTop(html) { if (top) top.innerHTML = html; }
   var GAMES = {
     'the-gauntlet': ['The Gauntlet', 'cleared'], 'clearance-delta': ['Clearance: DELTA', 'score'],
     'notation-run': ['Notation Blitz', 'score'], 'notation-accuracy': ['Notation · Timing', 'precision'], 'fork-in-the-road': ['Fork in the Road', 'solved'],
@@ -160,7 +163,7 @@ permalink: /dossier/
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
   function render() {
-    if (!PJCC.enabled) { el.innerHTML = '<p class="lb-empty">The operative network is offline — your local bests still count toward the missions above.</p>'; return; }
+    if (!PJCC.enabled) { setTop('<p class="cc-greet">The operative network is offline — your local bests still count toward the missions above.</p>'); el.innerHTML = ''; return; }
     var user = PJCC.currentUser();
     var prof = PJCC.getProfile();
     if (!user) return renderLogin();
@@ -169,6 +172,7 @@ permalink: /dossier/
   }
 
   function renderLogin() {
+    setTop('<p class="cc-greet">Uplink open — build your look below, or <a href="#dsr-login">sign in</a> to sync your operative across every device.</p>');
     el.innerHTML =
       '<div class="dsr-card"><h2 class="dsr-h">Operative sign-in</h2>' +
       '<p class="pjcc-sub">Enter your email and we will send a one-click login link. Your operative — codename, avatar, credits — follows you across every device.</p>' +
@@ -189,6 +193,7 @@ permalink: /dossier/
   }
 
   function renderClaim() {
+    setTop('<p class="cc-greet">Signed in — one last step: choose your codename below.</p>');
     el.innerHTML =
       '<div class="dsr-card"><h2 class="dsr-h">Choose your codename</h2>' +
       '<div class="ml-form"><input id="dsr-name" type="text" maxlength="24" class="pjcc-input" placeholder="codename"><button id="dsr-claim" class="pjcc-btn">Claim</button></div>' +
@@ -213,7 +218,9 @@ permalink: /dossier/
     var lvl = PJCC.companionLevel(totalPlays);
     var theme = PJCC.themeFor(prof);
 
-    var html = '<div class="dsr-head" style="background:' + theme.bg + ';border-color:' + theme.accent + '">' +
+    // The identity HEADER rises to the top slot (upgrading the greeting in place);
+    // everything below is the record, which flows inline in the one dossier.
+    var head = '<div class="dsr-head" style="background:' + theme.bg + ';border-color:' + theme.accent + '">' +
       '<div class="dsr-avatar" style="border-color:' + theme.accent + '">' + PJCC.avatarEmoji(prof) + '<span class="dsr-lvl" style="background:' + theme.accent + '">Lv ' + lvl.level + '</span>' + (window.PJCCPet ? '<span class="dsr-pet-badge">' + PJCCPet.petEmoji() + '</span>' : '') + '</div>' +
       '<div><div class="dsr-name" style="color:' + theme.accent + '">' + esc(prof.codename) + (title ? ' <span class="dsr-title-flair">' + esc(title) + '</span>' : '') + '</div>' +
       '<div class="dsr-rank">' + esc(rank.name) + ' · <span class="pjcc-credits">' + credits + ' credits</span></div></div>' +
@@ -224,7 +231,7 @@ permalink: /dossier/
       '<button class="pjcc-btn-ghost" id="dsr-out">Sign out</button></div>';
 
     var xpPct = lvl.span ? Math.round(lvl.into / lvl.span * 100) : 100;
-    html += '<div class="dsr-companion">' +
+    var html = '<div class="dsr-companion">' +
       '<div id="pet-mood-card"></div>' +
       '<div class="dsr-comp-stage" style="margin-top:14px;">Operative progress · Lv ' + lvl.level + ' ' + esc(lvl.stage) + '</div>' +
       '<div class="dsr-xp"><div class="dsr-xp-fill" style="width:' + xpPct + '%"></div></div>' +
@@ -306,7 +313,8 @@ permalink: /dossier/
       '<p class="pjcc-sub">Share your link — when a friend signs up through it, you each earn 10 credits.</p>' +
       '<div class="dsr-invite"><input id="dsr-invite" class="pjcc-input" readonly value="' + esc(link) + '"><button id="dsr-copy" class="pjcc-btn">Copy</button></div>';
 
-    el.innerHTML = html;
+    setTop(head);          // identity header → the top slot (upgrades the greeting in place)
+    el.innerHTML = html;   // the record → below the modules + forge, one continuous flow
 
     if (window.PJCCPet) PJCCPet.renderCard(document.getElementById('pet-mood-card'), stats);
     Array.prototype.forEach.call(el.querySelectorAll('.dsr-title-chip'), function (b) {
@@ -361,7 +369,7 @@ permalink: /dossier/
     var el = document.getElementById('forge-sync-state');
     if (!el) return;
     if (PJCC.enabled && PJCC.currentUser()) el.innerHTML = '<span style="color:#6bffb8">✓ Signed in — synced across your devices.</span>';
-    else el.innerHTML = 'Saved on this device; <a href="#dossier">sign in</a> to carry it across every device.';
+    else el.innerHTML = 'Saved on this device; <a href="#dossier-body">sign in</a> to carry it across every device.';
   }
 
   PJCC.onChange(function () { render(); syncNote(); });
