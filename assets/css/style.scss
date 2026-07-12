@@ -1057,13 +1057,11 @@ pre code {
   /* phones: half the runs — 8 drips read the same at 0.10 opacity */
   .home-drips .drip:nth-child(even) { display: none; }
 }
-/* overnight: the paint cools, slows, and nearly sleeps
-   (2026-07-11 perf: the old saturate/hue-rotate filter re-rendered the whole
-   layer every frame — night is now just dimmer + slower) */
+/* overnight: the paint cools */
 body.sky-night .home-drips { opacity: 0.055; }
-body.sky-night .home-drips .drip { animation-duration: calc(var(--dur, 8s) * 1.6); }
-/* scrolled out of view → the paint stops moving (class set by home JS) */
-.home-drips.is-asleep .drip { animation-play-state: paused; }
+/* 2026-07-11 (Nate): the drips are now FROZEN — static paint, no animation. Kills
+   16 always-animating layers at ~zero visual cost (they're ~0.10 opacity ambient).
+   The .drip--fall/--blob motion rules below are likewise dropped. */
 .drip {
   position: absolute;
   top: 0;
@@ -1074,8 +1072,6 @@ body.sky-night .home-drips .drip { animation-duration: calc(var(--dur, 8s) * 1.6
   /* --b = per-drip brightness (default 1); lets each run read brighter or dimmer */
   background: linear-gradient(180deg, rgba(var(--col), calc(0.72 * var(--b, 1))) 0%, rgba(var(--col), calc(0.42 * var(--b, 1))) 40%, rgba(var(--col), calc(0.12 * var(--b, 1))) 75%, transparent 100%);
   transform-origin: top center;
-  animation: drip-run var(--dur, 8s) ease-in-out infinite;
-  animation-delay: var(--delay, 0s);
 }
 @keyframes drip-run {
   0%, 100% { transform: scaleY(0.9);  opacity: 0.82; }
@@ -1085,38 +1081,23 @@ body.sky-night .home-drips .drip { animation-duration: calc(var(--dur, 8s) * 1.6
 /* --- Shape variants: a livelier, more organic drip field. Every variant keeps the
    --x/--w/--len/--col/--dur/--delay knobs; the modifier class changes form + motion. --- */
 
-/* teardrop blob — a rounded body (no long run) that gently swells */
+/* teardrop blob — a rounded body (no long run) */
 .drip--blob {
   height: calc(var(--w) * 2.6);
   border-radius: 48% 48% 50% 50% / 38% 38% 62% 62%;
   background: radial-gradient(ellipse at 46% 32%, rgba(var(--col), calc(0.68 * var(--b, 1))), rgba(var(--col), calc(0.26 * var(--b, 1))) 62%, transparent 82%);
-  animation: drip-bob var(--dur, 7s) ease-in-out infinite;
-}
-@keyframes drip-bob {
-  0%, 100% { transform: translateY(0)   scaleY(1);    opacity: 0.82; }
-  50%      { transform: translateY(4px) scaleY(1.08); opacity: 1; }
 }
 
-/* a detached droplet that falls the length of the run, then resets */
+/* a detached droplet part-way down the run (static now) */
 .drip--fall {
   width: calc(var(--w) * 1.1); height: calc(var(--w) * 1.6);
   border-radius: 50% 50% 50% 50% / 38% 38% 62% 62%;
   background: radial-gradient(circle at 44% 30%, rgba(var(--col), calc(0.85 * var(--b, 1))), rgba(var(--col), calc(0.32 * var(--b, 1))) 66%, transparent 82%);
-  animation: drip-fall var(--dur, 6s) cubic-bezier(.55, 0, .9, .45) infinite;
-}
-@keyframes drip-fall {
-  0%   { transform: translateY(0)                 scaleY(0.7);  opacity: 0; }
-  10%  { opacity: 0.95; }
-  72%  { opacity: 0.8; }
-  100% { transform: translateY(var(--len, 120px)) scaleY(1.35); opacity: 0; }
+  transform: translateY(calc(var(--len, 120px) * 0.45));   /* frozen mid-fall so it reads as a droplet, not a dot at the top */
 }
 
 /* skinny trickle */
 .drip--thin { width: 2px; }
-
-@media (prefers-reduced-motion: reduce) {
-  .drip { animation: none; }
-}
 
 /* (.stats-inner + .hstat tiles removed 2026-07-11 — the home counters left 2026-07-10; restore from git.) */
 
@@ -5891,13 +5872,15 @@ body.sky-dusk  .aurora-band { filter: hue-rotate(22deg) saturate(1.25); }
 body.sky-night .aurora-band { filter: brightness(0.82) saturate(1.35); }
 
 @keyframes aurora-drift {
-  /* 2026-07-11 TEMP crank (Nate wants to SEE the arcs) — peak 0.09 → 0.72.
-     These are the slow drifting violet bands behind the first screen. Dial back
-     to 0.05/0.09 (and wrap day 0.55 / night 0.85) once identified. */
-  0%   { transform: translateX(-55%) skewX(-14deg); opacity: 0.52; }
-  50%  { opacity: 0.72; }
-  100% { transform: translateX(55%) skewX(-14deg); opacity: 0.52; }
+  /* the slow drifting violet bands behind the first screen. 2026-07-11: Nate
+     wanted them clearly VISIBLE (was near-invisible at 0.05/0.09) — set to a
+     real ambient level. Easy to nudge here. */
+  0%   { transform: translateX(-55%) skewX(-14deg); opacity: 0.34; }
+  50%  { opacity: 0.48; }
+  100% { transform: translateX(55%) skewX(-14deg); opacity: 0.34; }
 }
+/* pause the drift while it's scrolled off-screen (class set by home JS) */
+.aurora-wrap.is-asleep .aurora-band { animation-play-state: paused; }
 .aurora-wrap {
   position: absolute;
   /* 2026-07-11 perf: the sky is the first screen, not the whole page —

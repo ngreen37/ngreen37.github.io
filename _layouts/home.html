@@ -331,10 +331,9 @@ body.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
    paint: the hero wears a different sky per phase, a sun rises and sets, the
    moon takes the night watch. (Aurora filters ride the BANDS, not the wrap —
    see the perf note in style.scss.) ── */
-{% comment %} TEMP crank (2026-07-11 Nate: "crank up the aurora 200% so I know what
-     you're talking about") — wrap at full + the band peak opacity boosted in
-     style.scss. This is diagnostic; dial back once Nate's seen them. {% endcomment %}
-body.sky-day  .aurora-wrap { opacity:1; }
+{% comment %} 2026-07-11: aurora brightened to a clearly-visible level (Nate wanted
+     to see it) — band peak opacity is set in style.scss (aurora-drift). {% endcomment %}
+body.sky-day  .aurora-wrap { opacity:0.7; }
 body.sky-dawn .aurora-band { filter:hue-rotate(40deg); }
 body.sky-dusk .aurora-band { filter:hue-rotate(-18deg) saturate(1.25); }
 body.sky-night .aurora-wrap { opacity:1; }
@@ -827,9 +826,10 @@ function ctParts() {
   }, window.__htDone);
 })();
 
-// perf — the paint field only moves while it's on screen; scrolled away, it sleeps.
+// perf — the aurora only drifts while it's on screen; scrolled away, it sleeps.
+// (The drips no longer animate at all now, so this watches the aurora instead.)
 (function () {
-  var field = document.getElementById('home-drips');
+  var field = document.querySelector('.aurora-wrap');
   if (!field || !('IntersectionObserver' in window)) return;
   var io = new IntersectionObserver(function (entries) {
     entries.forEach(function (e) { field.classList.toggle('is-asleep', !e.isIntersecting); });
