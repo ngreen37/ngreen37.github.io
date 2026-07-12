@@ -2476,18 +2476,26 @@ body.theme-bw .page-body em {
   to   { background-position: 220% center; }
 }
 
-/* the letter that flickers — it shimmers with the rest now (the flat-gold
-   version was "way too distinct", Nate 2026-07-11), and betrays itself only
-   once every 12 seconds: a quick double-stutter, like a tired neon sign. */
+/* the letter that flickers — the tell that opens the classified page.
+   2026-07-12 (Nate: "the O is black and not working properly"): as a child <a>
+   it was INHERITING the parent's `-webkit-text-fill-color: transparent`
+   (the shimmer clip) but painting no background of its own, so the glyph fell
+   through to the dark page = looked black. Fix: give it an EXPLICIT fill so it
+   can never go transparent — a warm pale gold that matches the shimmering
+   letters at a glance but sits a hair off on a stare — plus a gentle,
+   ever-present flicker (never fully off), like a tired neon letter. */
 .tagline-main-tagline .tg-x {
   text-decoration: none;
-  animation: tgx-flick 12s linear infinite;
+  -webkit-text-fill-color: #efd39b;
+  color: #efd39b;
+  animation: tgx-flick 6s ease-in-out infinite;
 }
 @keyframes tgx-flick {
-  0%, 96.4%, 98.4%, 100% { opacity: 1; }
-  96.8% { opacity: 0.25; }
-  97.4% { opacity: 0.85; }
-  98%   { opacity: 0.4; }
+  0%, 100%   { opacity: 1; }
+  43%, 57%   { opacity: 1; }
+  47%        { opacity: 0.78; }
+  50%        { opacity: 0.9; }
+  53%        { opacity: 0.74; }
 }
 .tagline-main-tagline .tg-x:hover,
 .tagline-main-tagline .tg-x:focus {

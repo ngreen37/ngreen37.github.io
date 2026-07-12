@@ -131,28 +131,28 @@
 
         <a href="{{ '/pjcc/' | relative_url }}" class="studio-quad studio-quad--pjcc" data-enter="PJCC — the world · the cast, the story, the journey">
           <span class="studio-quad-title" data-jp="PJCC">PJCC</span>
-          {% assign vis_char_count = 0 %}{% for c in site.characters %}{% unless site.hidden_character_urls contains c.url %}{% assign vis_char_count = vis_char_count | plus: 1 %}{% endunless %}{% endfor %}{% assign vis_loc_count = 0 %}{% for c in site.locations %}{% unless site.hidden_location_urls contains c.url %}{% assign vis_loc_count = vis_loc_count | plus: 1 %}{% endunless %}{% endfor %}<span class="studio-quad-peek">{{ vis_char_count }} characters · {{ vis_loc_count }} locations</span>
+          <span class="studio-quad-sub" data-jp="登場人物と世界へ">Meet the cast. Walk the world.</span>
         </a>
 
         <a href="{{ '/projects/' | relative_url }}" class="studio-quad studio-quad--mcpuppy" data-enter="McPuppy Studios — the studio · the build, made in the open">
           <span class="studio-quad-title" data-jp="マクパピー・スタジオ">McPuppy Studios</span>
-          <span class="studio-quad-peek">blog · dispatches · press kit</span>
+          <span class="studio-quad-sub" data-jp="公開制作中">The studio, built in the open.</span>
         </a>
 
         <a href="{{ '/games/' | relative_url }}" class="studio-quad studio-quad--games" data-enter="The Arcade — the PJCC world at play · chess games + the Gauntlet">
           <span class="studio-quad-title" data-jp="ゲーム">Games</span>
-          <span class="studio-quad-peek">the arcade + the Gauntlet</span>
+          <span class="studio-quad-sub" data-jp="アーケードとガントレット">The arcade &amp; the Gauntlet.</span>
         </a>
 
         {% if site.patreon_url and site.patreon_url != '' %}
         <a href="{{ site.patreon_url }}" class="studio-quad studio-quad--patreon" target="_blank" rel="noopener" data-enter="Back the build — support the animation">
           <span class="studio-quad-title" data-jp="Patreon">Patreon</span>
-          <span class="studio-quad-peek">fuel the animation</span>
+          <span class="studio-quad-sub" data-jp="アニメを支援">Fuel the animation.</span>
         </a>
         {% else %}
         <a class="studio-quad studio-quad--patreon studio-quad-soon" aria-disabled="true" data-enter="Back the build — support the animation">
           <span class="studio-quad-title" data-jp="Patreon">Patreon</span>
-          <span class="studio-quad-peek">fuel the animation</span>
+          <span class="studio-quad-sub" data-jp="アニメを支援">Fuel the animation.</span>
         </a>
         {% endif %}
 
@@ -205,7 +205,7 @@
 
       {% comment %} Formal studio footer — minimal; replaces the old creed line. {% endcomment %}
       <footer class="studio-footer">
-        <b>McPuppy&nbsp;Studios</b> &middot; &copy; {{ site.time | date: "%Y" }} &middot; <span data-jp="不許複製・禁無断転載">All rights reserved</span>
+        <b>McPuppy&nbsp;Studios</b> &middot; &copy; {{ site.time | date: "%Y" }} &middot; <span class="studio-footer-sig">a million stories, built in the open</span> &middot; <span data-jp="不許複製・禁無断転載">all rights reserved</span>
       </footer>
       <script>
         // June 13. No announcement.
@@ -280,23 +280,31 @@
   .studio-lean { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0;
     transition:opacity .4s ease, background .4s ease; }
   .studio-lean.is-on { opacity:1; }
-  .studio-lean.lean-pjcc    { background:radial-gradient(circle at 28% 30%, rgba(120,60,230,0.052) 0%, rgba(120,60,230,0.036) 25%, rgba(120,60,230,0.021) 45%, rgba(120,60,230,0.010) 65%, rgba(120,60,230,0.003) 82%, transparent 100%); }
-  .studio-lean.lean-mcpuppy { background:radial-gradient(circle at 72% 30%, rgba(225,228,255,0.026) 0%, rgba(225,228,255,0.018) 25%, rgba(225,228,255,0.011) 45%, rgba(225,228,255,0.005) 65%, rgba(225,228,255,0.0015) 82%, transparent 100%); }
-  .studio-lean.lean-games   { background:radial-gradient(circle at 28% 72%, rgba(60,188,252,0.047) 0%, rgba(60,188,252,0.033) 25%, rgba(60,188,252,0.019) 45%, rgba(60,188,252,0.009) 65%, rgba(60,188,252,0.0027) 82%, transparent 100%); }
-  .studio-lean.lean-patreon { background:radial-gradient(circle at 72% 72%, rgba(45,196,130,0.047) 0%, rgba(45,196,130,0.033) 25%, rgba(45,196,130,0.019) 45%, rgba(45,196,130,0.009) 65%, rgba(45,196,130,0.0027) 82%, transparent 100%); }
+  /* 2026-07-12 (Nate): pull each glow into the TRUE CORNER of its quadrant
+     (PJCC top-left · McPuppy top-right · Games bottom-left · Patreon bottom-right)
+     and brighten ~25% so the lean reads clearly. */
+  .studio-lean.lean-pjcc    { background:radial-gradient(circle at 10% 12%, rgba(120,60,230,0.065) 0%, rgba(120,60,230,0.045) 25%, rgba(120,60,230,0.026) 45%, rgba(120,60,230,0.013) 65%, rgba(120,60,230,0.004) 82%, transparent 100%); }
+  .studio-lean.lean-mcpuppy { background:radial-gradient(circle at 90% 12%, rgba(225,228,255,0.033) 0%, rgba(225,228,255,0.023) 25%, rgba(225,228,255,0.014) 45%, rgba(225,228,255,0.006) 65%, rgba(225,228,255,0.002) 82%, transparent 100%); }
+  .studio-lean.lean-games   { background:radial-gradient(circle at 10% 88%, rgba(60,188,252,0.059) 0%, rgba(60,188,252,0.041) 25%, rgba(60,188,252,0.024) 45%, rgba(60,188,252,0.011) 65%, rgba(60,188,252,0.003) 82%, transparent 100%); }
+  .studio-lean.lean-patreon { background:radial-gradient(circle at 90% 88%, rgba(45,196,130,0.059) 0%, rgba(45,196,130,0.041) 25%, rgba(45,196,130,0.024) 45%, rgba(45,196,130,0.011) 65%, rgba(45,196,130,0.003) 82%, transparent 100%); }
 
   /* Secret ✦ — a small, dim star (dimmer than every other drifter) that starts
-     off-screen, then drifts in from the right after 5 seconds and rests in the
-     right gutter. Still the hidden /classified/ link (inherits pointer-events). */
+     fully off-screen to the right and FLIES IN, resting in the right gutter.
+     2026-07-12 (Nate: "it just sits there"): the old CSS fly-in ran on a fixed 5s
+     delay — which, on a first visit, happens entirely BEHIND the ~8.6s cold-open
+     overlay, so by the time you see the page it's already parked. Now it's parked
+     off-screen and the fly-in is triggered by JS once the page is actually visible
+     (see the splash-interactions script: .is-in added after the cold-open clears). */
   #drift-secret {
     left:auto; bottom:auto; right:4.5%; top:34%;
     font-size:28px;
-    color:rgba(205,205,230,0.05);          /* dimmer than the rest (they sit 0.07–0.13) */
-    animation:secret-star-enter 1.5s ease-out 5s both;
+    color:rgba(205,205,230,0.10);          /* dim — a hair brighter so the flight reads */
+    opacity:0; transform:translateX(180px);
+    animation:none;
   }
-  @keyframes secret-star-enter {
-    from { transform:translateX(200px); opacity:0; }   /* off-screen to the right */
-    to   { transform:translateX(0);     opacity:1; }   /* drifted into the right gutter */
+  #drift-secret.is-in {
+    opacity:1; transform:translateX(0);
+    transition:transform 1.5s cubic-bezier(.22,.61,.36,1), opacity 1.4s ease-out;
   }
 
   /* Idea #3 — the sigil bloom (the "ACCcccccc" carving that flashes on entry).
@@ -309,9 +317,9 @@
      never blocks a click; it clears the quad LABELS (they're centred, it isn't). */
   .studio-drift-sigil { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.96);
     z-index:6; pointer-events:none; opacity:0; filter:drop-shadow(0 0 16px rgba(245,197,24,0.28));
-    transition:opacity 1.18s ease, transform 1.18s ease; }  /* 2026-07-11: fade faster again (1.39→1.18s) */
+    transition:opacity 0.88s ease, transform 0.88s ease; }  /* 2026-07-12: fade 25% faster again (1.18→0.88s) */
   .studio-drift-sigil .pjcc-sigil { font-size:1.8rem; }
-  .studio-drift-sigil.is-bloom { opacity:0.217; transform:translate(-50%,-50%) scale(1.0); }  /* dimmed again (0.255→0.217) */
+  .studio-drift-sigil.is-bloom { opacity:0.145; transform:translate(-50%,-50%) scale(1.0); }  /* 2026-07-12: dimmed 33% again (0.217→0.145) */
 
   /* Idea #9 — replay-intro control (bottom-left, subtle) */
   .studio-replay { position:fixed; left:18px; bottom:16px; z-index:3; display:inline-flex; align-items:center; gap:6px;
@@ -386,6 +394,7 @@
   @media (prefers-reduced-motion: reduce){
     .studio-lean, .studio-warp, .studio-drift-sigil { transition:none; }
     .studio-drift-sigil { display:none; }
+    #drift-secret { opacity:0.10; transform:none; transition:none; }   /* no fly-in — just rest in place */
     .drift-piece { animation:none !important; }
     .studio-quad { animation:none !important; }
     .studio-corner-logo { animation:none !important; }
@@ -540,8 +549,15 @@
       glyphs.forEach(function (g) { seal.appendChild(g); });
     }
 
-    // Secret ✦ slides in from the right after 5s — handled entirely in CSS
-    // (#drift-secret / @keyframes secret-star-enter); no JS needed.
+    // Secret ✦ flies in from the right — but only once the page is actually
+    // visible. On a first visit that means AFTER the ~8.6s cold-open clears
+    // (otherwise the flight is wasted behind the overlay); on a return visit,
+    // shortly after load. Parked off-screen in CSS until .is-in is added.
+    var star = document.getElementById('drift-secret');
+    if (star && !reduce) {
+      var seenStar = false; try { seenStar = !!localStorage.getItem('mcpuppy_seen'); } catch (e) {}
+      setTimeout(function () { star.classList.add('is-in'); }, seenStar ? 1400 : 9400);
+    }
   })();
   </script>
 

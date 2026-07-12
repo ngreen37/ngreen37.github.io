@@ -78,6 +78,20 @@
   }
 
   function current() { try { return localStorage.getItem(KEY) || 'en'; } catch (e) { return 'en'; } }
+  // In-memory source of truth for the active language. Set synchronously at the TOP
+  // of apply() so the async MT queue (pump) is gated on the language we're switching
+  // TO — not the stale localStorage value during the pass that enqueues the work.
+  var LANG = current();
+
+  // Button label + a lightweight "translating…" state while machine-translation is
+  // still landing (long paragraphs arrive a beat after the instant dictionary flip).
+  function setBtnLabel() {
+    var btn = document.getElementById('lang-toggle');
+    if (!btn) return;
+    var working = (LANG === 'jp') && (active > 0 || queue.length > 0);
+    btn.textContent = (LANG === 'jp' ? 'EN' : '日本語') + (working ? ' …' : '');
+    btn.setAttribute('aria-busy', working ? 'true' : 'false');
+  }
 
   // ---- what NOT to translate ------------------------------------------------
   var SKIP_TAGS = { SCRIPT:1, STYLE:1, NOSCRIPT:1, CODE:1, PRE:1, KBD:1, SAMP:1,
@@ -202,7 +216,7 @@
     pump();
   }
   function pump() {
-    if (current() !== 'jp') return;
+    if (LANG !== 'jp') return;
     while (active < MT_CONCURRENCY && queue.length) {
       var key = queue.shift();
       active++;
@@ -211,19 +225,32 @@
           active--;
           if (t) {
             cache[k] = t; saveCache();
-            if (current() === 'jp' && pending[k]) pending[k].forEach(function (n) {
+            if (LANG === 'jp' && pending[k]) pending[k].forEach(function (n) {
               if (n.__pjEn !== undefined && document.contains(n)) setNode(n, n.__pjEn, t);
             });
+          } else {
+            delete queued[k];   // transient failure (cold start / rate-limit) — let it retry on a later toggle
           }
           delete pending[k];
+          setBtnLabel();
           pump();
         });
       })(key);
     }
+    setBtnLabel();
   }
 
   // ---- apply / toggle -------------------------------------------------------
   function apply(lang) {
+    // Commit the language FIRST — in memory AND storage — BEFORE walking the DOM.
+    // translateTree() enqueues machine-translation work and calls pump(), which is
+    // gated on LANG === 'jp'. If we set the language AFTER (as it used to be), that
+    // first enqueue pass runs while LANG is still 'en', pump() bails, and nothing
+    // machine-translates on the first click. (Root cause of "toggle does nothing the
+    // first time, then half-works." — Nate 2026-07-12)
+    LANG = lang;
+    try { localStorage.setItem(KEY, lang); } catch (e) {}
+
     // author-marked rich content: <tag data-jp="日本語">English</tag>
     Array.prototype.forEach.call(document.querySelectorAll('[data-jp]'), function (el) {
       var en = el.getAttribute('data-en-html');
@@ -233,9 +260,7 @@
     translateTree(document.body, lang);
 
     document.documentElement.setAttribute('lang', lang === 'jp' ? 'ja' : 'en');
-    var btn = document.getElementById('lang-toggle');
-    if (btn) btn.textContent = (lang === 'jp') ? 'EN' : '日本語';
-    try { localStorage.setItem(KEY, lang); } catch (e) {}
+    setBtnLabel();
     ensureObserver();
   }
 
@@ -249,7 +274,7 @@
   function ensureObserver() {
     if (observer || !window.MutationObserver) return;
     observer = new MutationObserver(function (muts) {
-      if (current() !== 'jp') return;
+      if (LANG !== 'jp') return;
       var roots = [];
       muts.forEach(function (m) {
         if (m.type === 'characterData' && m.target) { roots.push(m.target); return; }
