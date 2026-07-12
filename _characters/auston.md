@@ -11,6 +11,7 @@ chapters: 0,1
 dossier_clearance: DELTA
 dossier_secret: Subject's bravery consistently exceeds her size. Origin of nerve — unknown.
 last_seen: CHECKER TOWN
+field_note: "Auston sat down at a shogi board she couldn't read, in a game she'd never played, across from people who'd studied for years — and she stayed. She'll tell you courage isn't the absence of nerves; it's staying in the chair one move longer than the fear wants you to."
 ---
 
 Auston is Nate's younger sister — four years younger, and about ten years braver than her older brother. While he is all forward motion and big dreams, Auston is curious, fearless, and quietly the sharpest pattern-spotter in the family.

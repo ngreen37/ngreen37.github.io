@@ -46,6 +46,13 @@ layout: default
 
   </div>
 
+  {% if page.field_note %}
+  <aside class="char-fieldnote">
+    <span class="char-fieldnote-eyebrow">&#9672; Field Note</span>
+    <p>{{ page.field_note }}</p>
+  </aside>
+  {% endif %}
+
   {% if page.dossier_clearance %}
   <div class="char-dossier">
     <div class="char-dossier-bar">
@@ -129,4 +136,11 @@ layout: default
   .leitmotif-btn:hover { background: #F5C518; color: #1a0f3d; }
   .leitmotif-btn.playing { animation: leitPulse 0.9s ease; }
   @keyframes leitPulse { 0% { box-shadow: 0 0 0 0 rgba(245,197,24,0.5); } 100% { box-shadow: 0 0 0 14px rgba(245,197,24,0); } }
+
+  /* Field Note — one short, warm anecdote per character that models a good value. */
+  .char-fieldnote { max-width: 720px; margin: 20px 0 4px; padding: 14px 18px;
+    background: rgba(245,197,24,0.06); border-left: 3px solid #F5C518; border-radius: 8px; }
+  .char-fieldnote-eyebrow { display: block; font-family: 'Share Tech Mono', monospace; font-size: 0.66rem;
+    letter-spacing: 0.14em; color: #F5C518; text-transform: uppercase; margin-bottom: 6px; }
+  .char-fieldnote p { margin: 0; color: #e7dcff; font-style: italic; line-height: 1.55; }
 </style>

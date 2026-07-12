@@ -11,6 +11,7 @@ chapters: 0,1
 dossier_clearance: DELTA
 dossier_secret: Subject may be unaware of his own significance to the mission.
 last_seen: CHECKER TOWN
+field_note: "Ask Nate why he's really walking to Chess City and he'll talk about the ranks, the climb, the games. Ask his sister and she'll tell you the truth: he's building a place big enough for her. The biggest dreams are rarely just for the dreamer."
 ---
 
 The story's guide and driving force. A young man from Checker Town with big dreams, a strong work ethic, and a deep bond with his dog, Princess.

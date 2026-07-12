@@ -10,6 +10,7 @@ chapters: 0, 1
 dossier_clearance: DELTA
 dossier_secret: Knows more about Checker Town history than he admits. Although other options for him are few and far in between,  staying is a choice he has made deliberately.
 last_seen: CHECKER TOWN
+field_note: "Maxwell teases Nate about the dream every chance he gets. But catch him on the right evening, going on about fixing up Checker Town, and you'll hear it — he doesn't think small dreams are worthless. He just wishes staying were brave, too. Sometimes the hardest thing to tell a friend is that you'll miss him."
 ---
 
 **Maxwell** is Nate's oldest friend -- and in some ways, a great obstacle. Not through malice, but through the quiet weight of complacency.

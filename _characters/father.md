@@ -10,6 +10,7 @@ chapters: 1,2
 dossier_clearance: DELTA
 dossier_secret: Works in the Sand Mines. Has seen something down there. Will not discuss it.
 last_seen: THE SAND MINES
+field_note: "He works the Sand Mines and won't say a word about it, but he'll spend a whole hour explaining why the news that matters is never on the front page. What he hands down to his kids isn't money — it's the habit of looking where no one else bothers to."
 ---
 
 Nate's source of stability and some wisdom
