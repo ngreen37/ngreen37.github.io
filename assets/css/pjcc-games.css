@@ -85,6 +85,9 @@
 .gcard-body p { font-size:0.72rem; line-height:1.4; margin:0; }
 .gcard-best { display:inline-block; margin-top:6px; font-size:0.62rem; letter-spacing:0.03em; text-transform:uppercase;
   border-radius:4px; padding:1px 7px; }
+/* a quiet "engine-verified" mark (#12) — the puzzles here are re-proved in CI */
+.gcard-engine { display:block; margin-top:6px; font-size:0.54rem; letter-spacing:0.05em; text-transform:uppercase;
+  color:#9fe0d0; opacity:0.8; cursor:help; }
 .gcard-new, .gcard-soon, .gcard-dead { position:absolute; top:8px; right:9px; font-size:0.56rem; font-weight:900;
   letter-spacing:0.05em; border-radius:999px; padding:2px 7px; }
 

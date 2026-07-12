@@ -6,8 +6,8 @@
    ============================================================ */
 window.PJCC_GAMES = [
   { slug:'notation-run',      name:'Notation Blitz',     cryptic:'Squares, on the beat.',          icon:'♫', accent:'#f8d800', cat:'learn',  score:['notation-run','score'] },
-  { slug:'fork-in-the-road',  name:'Fork in the Road',   cryptic:'Spot the only move.',            icon:'⚔', accent:'#00e436', cat:'dev',    score:['fork-in-the-road','solved'] },
-  { slug:'pirc-protocol',     name:'The Pirc Protocol',  cryptic:'Learn the book by heart.',       icon:'♚', accent:'#fc9838', cat:'dev',    score:['pirc-protocol','score'], neu:'2026-06-22' },
+  { slug:'fork-in-the-road',  name:'Fork in the Road',   cryptic:'Spot the only move.',            icon:'⚔', accent:'#00e436', cat:'dev',    score:['fork-in-the-road','solved'], engine:true },
+  { slug:'pirc-protocol',     name:'The Pirc Protocol',  cryptic:'Learn the book by heart.',       icon:'♚', accent:'#fc9838', cat:'dev',    score:['pirc-protocol','score'], neu:'2026-06-22', engine:true },
   // Shogi Island — slow-rolled 2026-07-04: pulled from the hub/halls; reachable only via the floating 将 icon on the splash. Restore by uncommenting.
   // { slug:'shogi-island',      name:'Shogi Island',       cryptic:'Foreign rules. Familiar war.',   icon:'将', accent:'#fcbcb0', cat:'isle',   score:['shogi-island','solved'] },
   { slug:'clearance-delta',   name:'Clearance: DELTA',   cryptic:'Answer, or stay outside.',       icon:'Δ', accent:'#ff77a8', cat:'learn',  score:['clearance-delta','score'] },
@@ -23,7 +23,7 @@ window.PJCC_GAMES = [
   { slug:'chess-city',        name:'Chess City',         cryptic:'Platform the cursed board — the pieces have teeth.', icon:'♜', accent:'#ff5b6e', cat:'dev', score:['chess-city','score'], neu:'2026-06-25' },
   { slug:'the-gambit',        name:'The Gambit',         cryptic:'Lay down your best. The board decides.', icon:'♟', accent:'#f8d800', cat:'dev' },
   // ── The Vault (unlockable) ──
-  { slug:'blindfold-puzzles', name:'Blindfold Puzzles',  cryptic:'No board. Only your mind.',      icon:'◻', accent:'#c9a7ff', cat:'vault', score:['blindfold','solved'], locked:true },
+  { slug:'blindfold-puzzles', name:'Blindfold Puzzles',  cryptic:'No board. Only your mind.',      icon:'◻', accent:'#c9a7ff', cat:'vault', score:['blindfold','solved'], locked:true, engine:true },
   // ── Terminated (retired roster) ──
   { slug:'knights-tour',      name:"Knight's Tour",      cryptic:'Touch every square. Once.',      icon:'♞', accent:'#c96bff', cat:'terminated', score:['knights-tour','score'] },
   { slug:'ferry-delayed',     name:'Ferry Delayed',      cryptic:'No departure date announced.',   icon:'⛴', accent:'#9aa0b8', cat:'terminated', playable:false },

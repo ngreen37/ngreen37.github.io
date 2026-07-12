@@ -29,12 +29,15 @@
       var neu = isNew(g.neu) ? '<span class="gcard-new">NEW</span>' : '';
       var soon = g.soon ? '<span class="gcard-soon">SOON</span>' : '';
       var dbadge = dead ? '<span class="gcard-dead">DELAYED</span>' : '';
+      // quiet, honest mark: this game's chess content is re-proved in CI
+      // (tests/validate-chess.js — perft-verified referee + a Stockfish second opinion).
+      var eng = g.engine ? '<span class="gcard-engine" title="Every puzzle here is re-proved against a perft-verified referee — with Stockfish as a second opinion — in CI.">⚙ engine-verified</span>' : '';
       var icon = dead ? g.icon : (locked ? '🔒' : g.icon);
       // Short descriptions removed from hall cards (kept only as the unlock/delayed hint).
       var descHtml = dead ? '<p>Non-playable — ' + esc(g.cryptic) + '</p>'
         : (locked ? '<p>Locked — flawless Fast run in Notation Blitz</p>' : '');
       var inner = neu + soon + dbadge + '<span class="gcard-icon">' + icon + '</span>' +
-        '<span class="gcard-body"><h3>' + esc(g.name) + '</h3>' + descHtml + chip + '</span>';
+        '<span class="gcard-body"><h3>' + esc(g.name) + '</h3>' + descHtml + chip + eng + '</span>';
       if (dead) return '<div class="gcard dead" style="--accent:' + g.accent + '">' + inner + '</div>';
       return '<a class="gcard' + (locked ? ' locked' : '') + (g.soon ? ' soon' : '') + '" href="' + url(g.slug) +
         '" style="--accent:' + g.accent + '" data-slug="' + g.slug + '" data-name="' + esc(g.name) + '">' + inner + '</a>';
