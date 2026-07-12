@@ -38,6 +38,17 @@
     shades:{ em: '🕶️', name: 'Shades',  need: 60 },
     crown: { em: '👑', name: 'Crown',   need: 90 }
   };
+  // seasonal cosmetics (#8) — exactly one is "in season" at a time; free to wear while
+  // it's around, then it rotates out (a cosmetic you had to be here to catch).
+  var SEASONAL = [
+    { key: 's-winter', em: '❄️', name: 'Snow Flurry',  months: [11, 0, 1] },
+    { key: 's-spring', em: '🌸', name: 'Spring Bloom', months: [2, 3, 4] },
+    { key: 's-summer', em: '👒', name: 'Sun Hat',      months: [5, 6, 7] },
+    { key: 's-autumn', em: '🍁', name: 'Autumn Leaf',  months: [8, 9, 10] }
+  ];
+  function currentSeasonal() { var m = new Date().getMonth(); return SEASONAL.filter(function (x) { return x.months.indexOf(m) !== -1; })[0] || null; }
+  function cosDef(key) { return COSMETICS[key] || SEASONAL.filter(function (x) { return x.key === key; })[0] || null; }
+  function cosEmOf(key) { var d = cosDef(key); return d ? d.em : ''; }
 
   // ---- state (localStorage, lazy time-decay) --------------------------------
   var KEY = 'pjcc.pet.v3', SND_KEY = 'pjcc.pet.sound';
@@ -48,6 +59,7 @@
     return {
       pet: 'dog', names: {}, cosmetics: {}, ownedCos: ['none', 'bow'],
       hunger: 78, energy: 82, affection: 30, bond: 6, calm: false, dug: false,
+      seenBest: {}, bestInit: false,
       tick: Date.now(), lastAny: Date.now(), lastPet: 0, lastFeed: 0, lastPlay: 0, createdAt: Date.now()
     };
   }
@@ -97,8 +109,28 @@
     return newest && (Date.now() - Date.parse(newest.updated_at || 0)) < 180000;   // played in the last 3 min
   }
 
+  // #7 — the companion celebrates a NEW PERSONAL BEST. We remember each game's best
+  // between dossier visits; if one climbed, the pet is "so proud". The first sighting
+  // just sets a baseline (so it doesn't fire on your very first visit).
+  var cheerBest = false;
+  function checkNewBest(stats) {
+    if (!stats || !stats.length) return false;
+    var s = load(), improved = false;
+    if (!s.bestInit) {
+      stats.forEach(function (st) { s.seenBest[st.game] = st.best_score || 0; });
+      s.bestInit = true; save(s); return false;
+    }
+    stats.forEach(function (st) {
+      var prev = s.seenBest[st.game] || 0;
+      if ((st.best_score || 0) > prev) { s.seenBest[st.game] = st.best_score; improved = true; }
+    });
+    if (improved) { s.lastAny = Date.now(); save(s); }
+    return improved;
+  }
+
   function mood(s) {
     s = s || load();
+    if (cheerBest) return { emoji: '🏆', state: 'So proud!', line: 'A new best — I knew you had it in you!' };
     if (isNight() && (Date.now() - s.lastAny > 90000)) return { emoji: '😴', state: 'Napping', line: 'Curled up for the night.' };
     if (s.hunger < 25) return { emoji: '🍽️', state: 'Hungry', line: 'Tummy rumbling.' };
     if (s.affection < 20) return { emoji: '🥺', state: 'Lonely', line: 'Missed you.' };
@@ -215,7 +247,13 @@
     save(s); refresh();
   }
   function actCosmetic(key) {
-    var s = load(), c = COSMETICS[key]; if (!c) return;
+    var s = load();
+    if (key.indexOf('s-') === 0) {                    // seasonal — free while in season (#8)
+      var sea = currentSeasonal();
+      if (!sea || sea.key !== key) { toast('That one is out of season — catch it next time!'); return; }
+      s.cosmetics[s.pet] = key; save(s); refresh(); return;
+    }
+    var c = COSMETICS[key]; if (!c) return;
     if (s.ownedCos.indexOf(key) === -1) {
       if (bondInfo(s).bond < c.need) { toast(c.name + ' unlocks at Bond ' + c.need + '.'); return; }
       s.ownedCos.push(key);
@@ -230,8 +268,9 @@
   function need(cls, em, v) { return '<span class="pc-need">' + em + '<span class="pc-bar ' + cls + '"><i style="width:' + Math.round(v) + '%"></i></span></span>'; }
   function renderCard(el, stats) {
     mountCard = el; if (stats) lastStats = stats;
+    if (checkNewBest(stats)) cheerBest = true;
     var s = load(), bi = bondInfo(s), m = mood(s), p = PETS[s.pet];
-    var cosKey = s.cosmetics[s.pet], cosEm = cosKey && COSMETICS[cosKey] ? COSMETICS[cosKey].em : '';
+    var cosKey = s.cosmetics[s.pet], cosEm = cosEmOf(cosKey);
     el.innerHTML =
       '<div class="pet-card' + (s.calm ? ' is-calm' : '') + '">' +
         '<div class="pc-stage"><span style="filter:' + tintFilter() + '">' + petEmojiFor(s, bi) + '</span>' + (cosEm ? '<span class="pc-acc">' + cosEm + '</span>' : '') + '</div>' +
@@ -254,7 +293,8 @@
       document.body.appendChild(denEl);
     }
     denEl.classList.remove('hidden'); document.body.style.overflow = 'hidden'; renderDen();
-    if (playedRecently()) setTimeout(function () { fxBurst('🎉'); }, 250);   // reacts to your play (#11)
+    if (cheerBest) { setTimeout(function () { fxBurst('🏆'); fxBurst('🎉'); }, 250); cheerBest = false; renderDen(); }   // new personal best (#7)
+    else if (playedRecently()) setTimeout(function () { fxBurst('🎉'); }, 250);                                          // reacts to your play (#11)
   }
   function closeDen() { if (denEl) denEl.classList.add('hidden'); document.body.style.overflow = ''; }
 
@@ -266,7 +306,7 @@
     if (!denEl) return;
     var s = load(), p = PETS[s.pet], bi = bondInfo(s), m = mood(s), tod = timeOfDay();
     var napping = isNight() && (Date.now() - s.lastAny > 90000);
-    var cosKey = s.cosmetics[s.pet] || 'none', cosEm = COSMETICS[cosKey] ? COSMETICS[cosKey].em : '';
+    var cosKey = s.cosmetics[s.pet] || 'none', cosEm = cosEmOf(cosKey);
     var stars = ''; for (var i = 0; i < tod.stars; i++) stars += '<span class="star" style="top:' + (6 + Math.random() * 60) + '%;left:' + (Math.random() * 96) + '%;animation-delay:' + (Math.random() * 3).toFixed(1) + 's"></span>';
 
     var html = '<div class="den' + (s.calm ? ' is-calm' : '') + '">';
@@ -315,7 +355,8 @@
     });
     html += '</div></div>';
 
-    // cosmetics — the only collectible, unlocked by Bond (#2/#19)
+    // cosmetics — the only collectible, unlocked by Bond (#2/#19); plus the current
+    // seasonal drop, free to wear while it's in season (#8).
     html += '<div class="den-section"><h3>Cosmetics <span class="den-note">— unlock as your Bond deepens</span></h3><div class="den-grid">';
     Object.keys(COSMETICS).forEach(function (key) {
       var c = COSMETICS[key], owned = s.ownedCos.indexOf(key) !== -1 || c.need === 0, on = cosKey === key;
@@ -323,6 +364,11 @@
       html += '<div class="den-cell' + (on ? ' on' : '') + (locked ? ' locked' : '') + '" data-cos="' + key + '">' +
         '<div class="ce">' + (c.em || '🚫') + '</div><div class="cn">' + c.name + '</div>' + (locked ? '<div class="ck">Bond ' + c.need + '</div>' : '') + '</div>';
     });
+    var sea = currentSeasonal();
+    if (sea) {
+      html += '<div class="den-cell' + (cosKey === sea.key ? ' on' : '') + '" data-cos="' + sea.key + '" title="In season now — wear it while it lasts!">' +
+        '<div class="ce">' + sea.em + '</div><div class="cn">' + sea.name + '</div><div class="ck" style="color:#6bffb8">in season</div></div>';
+    }
     html += '</div></div>';
 
     html += '</div></div>';
