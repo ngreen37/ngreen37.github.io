@@ -1,313 +1,133 @@
 /* =============================================================================
- * PJCC Companion — the pet system.
+ * PJCC Companion v3 — ONE evolving companion (2026-07-12 rebuild, Nate).
  * -----------------------------------------------------------------------------
- * 12 pets (dog/cat/bird/turtle × 3), each named with its own personality. An
- * inline mood card on the Dossier drills into a full "Companion Den" with
- * petting, feeding, resting, fetch, tricks, a daily check-in, dress-up, a
- * game-themed skill tree with species ultimates, growth stages, day/night, and
- * species sounds. Care state lives in localStorage (instant + offline); the
- * chosen avatar + pet also persist to the account via PJCC so they follow you.
+ * Gone (declutter): the skill tree, species ultimates, the treats currency, the
+ * 12-pet adoption grind, the human-avatar picker (that's the Identity Forge's
+ * job), and the bio block. In their place:
+ *   • ONE companion you bond with and grow — defaults to Princess's own (#9/#10)
+ *   • a free pick of 4 species (dog/cat/bird/turtle) — a choice, not a collection (#3)
+ *   • a single BOND track that gates evolution + cosmetics (#1)
+ *   • cosmetics as the ONLY collectible axis (#2/#19), unlocked by Bond
+ *   • three care actions: Pet · Feed · Play — no currency (#6/#7)
+ *   • it REACTS to your real play (#11) and NAPS at night (#15)
+ *   • a max-Bond "dig" that unearths an ARG token (#17)
+ *   • a share card (#18) and a CALM mode — silent, never interrupts (#20)
+ * The companion only makes NOISES, never talks (earlier ruling).
  *
- *   PJCCPet.renderCard(el, stats)  -> draw the inline mood card into `el`
- *   PJCCPet.openDen(stats)         -> open the full drill-in overlay
+ * Public API preserved:  PJCCPet.renderCard(el, stats) · openDen(stats) ·
+ *   closeDen() · petEmoji() · mood()
  * ========================================================================== */
 (function () {
   'use strict';
 
-  // ---- catalogues ---------------------------------------------------------
+  // ---- the four friends (one per species; dog is Princess's canon default) --
   var PETS = {
-    'dog-1': { sp: 'dog', name: 'Biscuit', em: '🐕', baby: '🐶', fav: 'bone',  persona: 'Loyal and bouncy — lives for the next round.', trait: 'Fetcher' },
-    'dog-2': { sp: 'dog', name: 'Pixel',   em: '🐩', baby: '🐶', fav: 'jerky', persona: 'Prim and clever — never a hair out of place.',  trait: 'Show-off' },
-    'dog-3': { sp: 'dog', name: 'Tank',    em: '🦮', baby: '🐶', fav: 'steak', persona: 'Steady and brave — always on duty.',           trait: 'Guardian' },
-    'cat-1': { sp: 'cat', name: 'Mochi',   em: '🐈', baby: '🐱', fav: 'fish',  persona: 'A sleepy gourmand who naps through danger.',    trait: 'Napper' },
-    'cat-2': { sp: 'cat', name: 'Domino',  em: '🐱', baby: '🐱', fav: 'milk',  persona: 'A playful trickster, all paws and pounce.',     trait: 'Pouncer' },
-    'cat-3': { sp: 'cat', name: 'Sphinx',  em: '😼', baby: '🐱', fav: 'cream', persona: 'Sly and smug — knows more than it lets on.',    trait: 'Schemer' },
-    'bird-1':{ sp: 'bird', name: 'Pip',    em: '🐦', baby: '🐤', fav: 'seeds', persona: 'A cheery early riser, always singing.',         trait: 'Songbird' },
-    'bird-2':{ sp: 'bird', name: 'Sunny',  em: '🦜', baby: '🐤', fav: 'fruit', persona: 'A chatty parrot who repeats your best lines.',  trait: 'Mimic' },
-    'bird-3':{ sp: 'bird', name: 'Newton', em: '🦉', baby: '🐤', fav: 'berries',persona: 'A wise night owl, calm under pressure.',        trait: 'Scholar' },
-    'turtle-1':{ sp: 'turtle', name: 'Sheldon', em: '🐢', baby: '🥚', fav: 'lettuce', persona: 'Slow, steady, unshakeably calm.',        trait: 'Stoic' },
-    'turtle-2':{ sp: 'turtle', name: 'Boulder', em: '🐢', baby: '🥚', fav: 'melon',   persona: 'A tough old shell that takes every hit.', trait: 'Bulwark' },
-    'turtle-3':{ sp: 'turtle', name: 'Zen',     em: '🐢', baby: '🥚', fav: 'kelp',    persona: 'A meditative sage of the slow path.',     trait: 'Sage' }
+    dog:    { name: 'Biscuit', stages: ['Pup', 'Hound', 'Legend Hound'],   ems: ['🐶', '🐕', '🦮'], persona: "Princess's own — loyal, bright, and always at your heel.", trait: 'Loyal',  snd: { type: 'square',   f: 240,  f2: 170 }, canon: true },
+    cat:    { name: 'Mochi',   stages: ['Kitten', 'Cat', 'Grand Feline'],   ems: ['🐱', '🐈', '😼'], persona: 'A clever, unbothered little strategist.',                trait: 'Clever', snd: { type: 'sine',     f: 640,  f2: 840 } },
+    bird:   { name: 'Pip',     stages: ['Chick', 'Flyer', 'Sky Marshal'],   ems: ['🐤', '🐦', '🦉'], persona: 'A cheery riser who remembers every move you make.',      trait: 'Bright', snd: { type: 'triangle', f: 1200, f2: 1750 } },
+    turtle: { name: 'Sheldon', stages: ['Hatchling', 'Shellback', 'Ancient'], ems: ['🥚', '🐢', '🐢'], persona: 'Slow, steady, and unshakeably calm.',                  trait: 'Steady', snd: { type: 'sine',     f: 150,  f2: 110 } }
   };
-  var PET_ORDER = Object.keys(PETS);
-  var TREATS = { bone:'🦴', jerky:'🥓', steak:'🥩', fish:'🐟', milk:'🥛', cream:'🍦', seeds:'🌾', fruit:'🍓', berries:'🫐', lettuce:'🥬', melon:'🍈', kelp:'🌿' };
-  var SPECIES = {
-    dog:    { idle:'idle-wag',   stages:['Pup','Hound','Companion','Legend Hound'] },
-    cat:    { idle:'idle-blink', stages:['Kitten','Cat','Mouser','Grand Feline'] },
-    bird:   { idle:'idle-hop',   stages:['Chick','Fledgling','Flyer','Sky Marshal'] },
-    turtle: { idle:'idle-plod',  stages:['Hatchling','Shellback','Elder','Ancient One'] }
-  };
-  var NAMES = { 'clearance-delta':'Clearance: DELTA','notation-run':'Notation Blitz','fork-in-the-road':'Fork in the Road','sand-mine-depths':'Sand Mine Depths','pirc-protocol':'Pirc Protocol','shogi-island':'Shogi Island','blindfold':'Blindfold Puzzles','tower-defense':'Siege on Chess City','sky-run':'Sky Run' };
-  function gameName(k) { return NAMES[k] || k || 'the games'; }
+  var PET_ORDER = ['dog', 'cat', 'bird', 'turtle'];
 
-  var SKILLS = [
-    { key:'quick-paws', em:'🐾', name:'Quick Paws', desc:'Fetch & trick cooldowns halved.', cost:1, col:0, tier:0 },
-    { key:'metronome',  em:'🎵', name:'Metronome',  desc:'+50% XP from feeding.',           cost:1, col:0, tier:1, req:'quick-paws' },
-    { key:'showtime',   em:'🌟', name:'Showtime',   desc:'Tricks give double affection.',   cost:2, col:0, tier:2, req:'metronome' },
-    { key:'iron-belly', em:'🛡️', name:'Iron Belly', desc:'Hunger falls 40% slower.',        cost:1, col:1, tier:0 },
-    { key:'deep-rest',  em:'😴', name:'Deep Rest',  desc:'Resting restores energy 60% faster.', cost:1, col:1, tier:1, req:'iron-belly' },
-    { key:'comfy-den',  em:'🏠', name:'Comfy Den',  desc:'Energy never drops below 20.',    cost:2, col:1, tier:2, req:'deep-rest' },
-    { key:'sharp-nose', em:'👃', name:'Sharp Nose', desc:'Daily check-in gives +1 treat.',  cost:1, col:2, tier:0 },
-    { key:'treat-radar',em:'📡', name:'Treat Radar',desc:'Fetch usually returns a treat.',  cost:1, col:2, tier:1, req:'sharp-nose' },
-    { key:'big-heart',  em:'💗', name:'Big Heart',  desc:'Affection fades 50% slower.',     cost:2, col:2, tier:2, req:'treat-radar' }
-  ];
-  var ULTIMATES = {
-    dog:    { key:'u-dog',    em:'🦴', name:'Best Friend',   desc:'Affection never falls below 50, and petting counts double.', cost:3 },
-    cat:    { key:'u-cat',    em:'🐾', name:'Nine Lives',    desc:'Hunger never falls below 30.', cost:3 },
-    bird:   { key:'u-bird',   em:'🌅', name:'Early Bird',    desc:'Claim the daily check-in twice a day.', cost:3 },
-    turtle: { key:'u-turtle', em:'🧘', name:'Ancient Wisdom',desc:'All XP gains boosted by 25%.', cost:3 }
-  };
-  var ACCESSORIES = {
-    none:  { em:'',    name:'None',    need:0 },
-    bow:   { em:'🎀', name:'Bow',     need:0 },
-    scarf: { em:'🧣', name:'Scarf',   need:2 },
-    hat:   { em:'🎩', name:'Top Hat', need:3 },
-    shades:{ em:'🕶️', name:'Shades',  need:4 },
-    crown: { em:'👑', name:'Crown',   need:6 }
+  // cosmetics — the ONLY collectible now, unlocked as Bond deepens (#2/#19)
+  var COSMETICS = {
+    none:  { em: '',    name: 'None',    need: 0 },
+    bow:   { em: '🎀', name: 'Bow',     need: 0 },
+    scarf: { em: '🧣', name: 'Scarf',   need: 20 },
+    hat:   { em: '🎩', name: 'Top Hat', need: 40 },
+    shades:{ em: '🕶️', name: 'Shades',  need: 60 },
+    crown: { em: '👑', name: 'Crown',   need: 90 }
   };
 
-  // ---- state (localStorage, with lazy time-decay) -------------------------
-  var KEY = 'pjcc.pet.v2', SND_KEY = 'pjcc.pet.sound';
-  var HUNGER_RATE = 3.5, ENERGY_DECAY = 1.5, REST_RATE = 22, AFFECTION_DECAY = 0.8;
+  // ---- state (localStorage, lazy time-decay) --------------------------------
+  var KEY = 'pjcc.pet.v3', SND_KEY = 'pjcc.pet.sound';
+  var HUNGER_RATE = 3.2, ENERGY_REGEN = 7, AFFECTION_DECAY = 0.7;
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 
   function blank() {
     return {
-      avatar:'human-1', pet:'dog-1', adopted:['dog-1'], names:{}, accessories:{}, ownedAcc:['none','bow'],
-      hunger:75, energy:80, affection:25, bond:1, bondFlag:false, xp:0, skills:{}, treats:3,
-      resting:false, tick:Date.now(), lastDaily:'', dailyCount:0,
-      lastPet:0, lastFetch:0, lastTrick:0, createdAt:Date.now()
+      pet: 'dog', names: {}, cosmetics: {}, ownedCos: ['none', 'bow'],
+      hunger: 78, energy: 82, affection: 30, bond: 6, calm: false, dug: false,
+      tick: Date.now(), lastAny: Date.now(), lastPet: 0, lastFeed: 0, lastPlay: 0, createdAt: Date.now()
     };
+  }
+  function migrate(s) {
+    // carry a v2 pet choice forward if the player had one (best-effort)
+    try {
+      var old = JSON.parse(localStorage.getItem('pjcc.pet.v2'));
+      if (old && old.pet) { var sp = String(old.pet).split('-')[0]; if (PETS[sp]) s.pet = sp; }
+    } catch (e) {}
+    return s;
   }
   function load() {
     var s = null;
     try { s = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
-    if (!s) s = blank();
+    if (!s) s = migrate(blank());
     var d = blank(); for (var k in d) if (s[k] === undefined) s[k] = d[k];
-    if (!PETS[s.pet]) s.pet = 'dog-1';
-    // mirror the account's chosen pet/avatar if present
-    try { if (window.PJCC && PJCC.getProfile) { var pr = PJCC.getProfile(); if (pr && pr.companion) { if (pr.companion.pet && PETS[pr.companion.pet]) s.pet = pr.companion.pet; if (pr.companion.avatar) s.avatar = pr.companion.avatar; } } } catch (e) {}
-    // lazy decay since last tick
+    if (!PETS[s.pet]) s.pet = 'dog';
+    // mirror the account's chosen pet if present
+    try { if (window.PJCC && PJCC.getProfile) { var pr = PJCC.getProfile(); if (pr && pr.companion && pr.companion.pet) { var sp = String(pr.companion.pet).split('-')[0]; if (PETS[sp]) s.pet = sp; } } } catch (e) {}
     var now = Date.now(), hrs = Math.max(0, (now - (s.tick || now)) / 3600000);
     if (hrs > 0.0004) {
-      var e = effects(s);
-      s.hunger = clamp(s.hunger - hrs * HUNGER_RATE * e.hungerMul, e.hungerFloor, 100);
-      if (s.resting) s.energy = clamp(s.energy + hrs * REST_RATE * e.restMul, 0, 100);
-      else s.energy = clamp(s.energy - hrs * ENERGY_DECAY, e.energyFloor, 100);
-      s.affection = clamp(s.affection - hrs * AFFECTION_DECAY * e.affMul, e.affFloor, 100);
+      s.hunger = clamp(s.hunger - hrs * HUNGER_RATE, 0, 100);
+      s.energy = clamp(s.energy + hrs * ENERGY_REGEN, 0, 100);   // energy recovers on its own — no Rest button
+      s.affection = clamp(s.affection - hrs * AFFECTION_DECAY, 0, 100);
       s.tick = now;
     }
     return s;
   }
-  function save(s) { normBond(s); try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
+  function save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
 
-  // Bond ticks up each time you max out affection (and resets the latch when it
-  // dips), giving a "fill the heart to deepen the bond" loop that gates dress-up.
-  var bondUp = false;
-  function normBond(s) {
-    if (s.affection >= 98 && !s.bondFlag) { s.bond = Math.min(10, (s.bond || 1) + 1); s.bondFlag = true; bondUp = true; }
-    if (s.affection < 80) s.bondFlag = false;
+  // ---- derived --------------------------------------------------------------
+  function bondInfo(s) {
+    var b = clamp(s.bond, 0, 100);
+    var stage = b < 34 ? 0 : b < 70 ? 1 : 2;   // baby / grown / elder
+    var level = Math.min(10, 1 + Math.floor(b / 10));
+    return { bond: b, stage: stage, level: level };
   }
+  function petEmojiFor(s, bi) { var p = PETS[s.pet]; return p.ems[(bi || bondInfo(s)).stage]; }
+  function displayName(s) { return s.names[s.pet] || PETS[s.pet].name; }
+  function localHour() { return new Date().getHours(); }
+  function isNight() { var h = localHour(); return h < 7 || h >= 20; }
 
-  function effects(s) {
-    var h = function (k) { return !!(s.skills && s.skills[k]); };
-    var e = { hungerMul:1, restMul:1, affMul:1, hungerFloor:0, energyFloor:0, affFloor:0,
-              feedXp:1, xpMul:1, cdMul:1, dailyTreatBonus:0, fetchTreatChance:0.25, petMul:1, trickAffMul:1, dailyTimes:1 };
-    if (h('iron-belly')) e.hungerMul *= 0.6;
-    if (h('deep-rest'))  e.restMul *= 1.6;
-    if (h('comfy-den'))  e.energyFloor = Math.max(e.energyFloor, 20);
-    if (h('metronome'))  e.feedXp *= 1.5;
-    if (h('showtime'))   e.trickAffMul *= 2;
-    if (h('quick-paws')) e.cdMul *= 0.5;
-    if (h('sharp-nose')) e.dailyTreatBonus += 1;
-    if (h('treat-radar')) e.fetchTreatChance = 0.7;
-    if (h('big-heart'))  e.affMul *= 0.5;
-    if (h('u-dog'))    { e.affFloor = Math.max(e.affFloor, 50); e.petMul *= 2; }
-    if (h('u-cat'))    e.hungerFloor = Math.max(e.hungerFloor, 30);
-    if (h('u-bird'))   e.dailyTimes = 2;
-    if (h('u-turtle')) e.xpMul *= 1.25;
-    return e;
+  var lastStats = [];
+  function playedRecently() {
+    if (!lastStats || !lastStats.length) return false;
+    var newest = lastStats.slice().sort(function (a, b) { return Date.parse(b.updated_at || 0) - Date.parse(a.updated_at || 0); })[0];
+    return newest && (Date.now() - Date.parse(newest.updated_at || 0)) < 180000;   // played in the last 3 min
   }
-
-  function levelInfo(s) {
-    var L = 1, req = 0;
-    while (L < 12) { var need = 80 + (L - 1) * 50; if (s.xp >= req + need) { req += need; L++; } else break; }
-    var toNext = 80 + (L - 1) * 50, into = s.xp - req;
-    var sp = PETS[s.pet].sp, stages = SPECIES[sp].stages;
-    var stage = stages[Math.min(stages.length - 1, Math.floor((L - 1) / 3))];
-    return { level:L, into:into, span:toNext, stage:stage, pct:Math.round(into / toNext * 100) };
-  }
-  function spentSP(s) { var t = 0; SKILLS.forEach(function (k) { if (s.skills[k.key]) t += k.cost; }); for (var sp in ULTIMATES) if (s.skills[ULTIMATES[sp].key]) t += ULTIMATES[sp].cost; return t; }
-  function availSP(s) { return (levelInfo(s).level - 1) - spentSP(s); }
-  function addXP(s, amt) { s.xp += Math.round(amt * effects(s).xpMul); }
 
   function mood(s) {
-    if (s.resting) return { emoji:'😴', state:'Napping', line:'Resting up — energy is recharging.' };
-    if (s.hunger < 25)    return { emoji:'🍽️', state:'Hungry',  line:'Tummy rumbling — time for a treat.' };
-    if (s.energy < 22)    return { emoji:'🥱', state:'Tired',   line:'Worn out — a nap would help.' };
-    if (s.affection < 20) return { emoji:'🥺', state:'Lonely',  line:'Could really use some attention.' };
-    var score = s.affection * 0.45 + s.hunger * 0.3 + s.energy * 0.25;
-    if (score >= 78) return { emoji:'🤩', state:'Ecstatic', line:'Over the moon to see you!' };
-    if (score >= 58) return { emoji:'😄', state:'Happy',    line:'Bright-eyed and bushy-tailed.' };
-    if (score >= 38) return { emoji:'🙂', state:'Content',  line:'Doing just fine.' };
-    return { emoji:'😟', state:'Restless', line:'A bit out of sorts — spend some time together.' };
+    s = s || load();
+    if (isNight() && (Date.now() - s.lastAny > 90000)) return { emoji: '😴', state: 'Napping', line: 'Curled up for the night.' };
+    if (s.hunger < 25) return { emoji: '🍽️', state: 'Hungry', line: 'Tummy rumbling.' };
+    if (s.affection < 20) return { emoji: '🥺', state: 'Lonely', line: 'Missed you.' };
+    if (playedRecently()) return { emoji: '🤩', state: 'Cheering', line: 'Saw your run — amazing!' };
+    var score = s.affection * 0.5 + s.hunger * 0.3 + s.energy * 0.2;
+    if (score >= 72) return { emoji: '😄', state: 'Happy', line: 'Bright-eyed and by your side.' };
+    if (score >= 45) return { emoji: '🙂', state: 'Content', line: 'Doing just fine.' };
+    return { emoji: '😟', state: 'Restless', line: 'Spend a little time together?' };
   }
-  // The companion doesn't TALK — it makes noises (Nate 2026-07-12). Species sounds,
-  // shaded by mood (sleepy / hungry / happy / just-hanging-out). Turtles mostly act.
+
+  // The companion makes NOISES, never talks — shaded by mood. Turtles mostly act.
   var NOISES = {
-    dog:    { tired:['*yawn*… wuff.', 'mrrf…'],               hungry:['Whine… wuff?', 'Arrooo?'],        happy:['Woof woof!', 'Arf! Arf!', 'Bork!', 'Wuff wuff!'], base:['Woof.', 'Wuff.', 'Boof.'] },
-    cat:    { tired:['…mrr.', '*slow stretch* mrow.'],         hungry:['Meow? Meow!', 'Mrrp?'],            happy:['Mrrow!', 'Purrrr~', 'Mew! Mew!'],                base:['Purr…', 'Mrrow.', 'Mew.'] },
-    bird:   { tired:['…chirp.', '*ruffles feathers*'],         hungry:['Cheep?! Cheep?!', 'Peep! Peep!'],  happy:['Tweet tweet!', 'Cheep cheep!', 'Chirrup!'],       base:['Chirp.', 'Tweet~', 'Trill~'] },
-    turtle: { tired:['…zzz.'],                                 hungry:['*hopeful stare*'],                 happy:['…hff! (a happy little hiss)', '*slow, pleased blink*'], base:['…hm.', '*slow blink*', '…hff.'] }
+    dog:    { tired: ['*yawn*… wuff.', 'mrrf…'], hungry: ['Whine… wuff?', 'Arrooo?'], happy: ['Woof woof!', 'Arf! Arf!', 'Bork!'], base: ['Woof.', 'Wuff.', 'Boof.'] },
+    cat:    { tired: ['…mrr.', '*slow stretch* mrow.'], hungry: ['Meow? Meow!', 'Mrrp?'], happy: ['Mrrow!', 'Purrrr~', 'Mew! Mew!'], base: ['Purr…', 'Mrrow.', 'Mew.'] },
+    bird:   { tired: ['…chirp.', '*ruffles feathers*'], hungry: ['Cheep?! Cheep?!', 'Peep! Peep!'], happy: ['Tweet tweet!', 'Cheep cheep!', 'Chirrup!'], base: ['Chirp.', 'Tweet~', 'Trill~'] },
+    turtle: { tired: ['…zzz.'], hungry: ['*hopeful stare*'], happy: ['…hff! (a happy little hiss)', '*slow, pleased blink*'], base: ['…hm.', '*slow blink*', '…hff.'] }
   };
   function petNoise(s) {
-    var N = NOISES[PETS[s.pet].sp], set;
-    if (s.resting) set = N.tired;
+    var N = NOISES[s.pet], set;
+    if (isNight() && (Date.now() - s.lastAny > 90000)) set = N.tired;
     else if (s.hunger < 25) set = N.hungry;
-    else if (s.affection >= 58 && s.energy >= 22) set = N.happy;
+    else if (playedRecently() || s.affection >= 58) set = N.happy;
     else set = N.base;
     return set[Math.floor(Math.random() * set.length)];
   }
-  function favGame() {
-    if (!lastStats || !lastStats.length) return '—';
-    var best = lastStats.slice().sort(function (a, b) { return (b.plays || 0) - (a.plays || 0); })[0];
-    return best ? gameName(best.game) : '—';
-  }
 
-  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]; }); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
-  // ---- sound (species voice) ---------------------------------------------
-  var actx = null, soundOn = true;
-  try { soundOn = localStorage.getItem(SND_KEY) !== '0'; } catch (e) {}
-  function sound() {
-    if (!soundOn) return;
-    var s = load(), sp = PETS[s.pet].sp;
-    try {
-      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-      if (actx.state === 'suspended') actx.resume();
-      var o = actx.createOscillator(), g = actx.createGain(); o.connect(g); g.connect(actx.destination);
-      var t = actx.currentTime;
-      var cfg = { dog:{type:'square',f:240,f2:170}, cat:{type:'sine',f:640,f2:840}, bird:{type:'triangle',f:1200,f2:1750}, turtle:{type:'sine',f:150,f2:110} }[sp];
-      o.type = cfg.type; o.frequency.setValueAtTime(cfg.f, t); o.frequency.exponentialRampToValueAtTime(cfg.f2, t + 0.12);
-      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.18, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
-      o.start(t); o.stop(t + 0.26);
-    } catch (e) {}
-  }
-
-  // ---- den DOM effects ----------------------------------------------------
-  function fxBurst(em) {
-    var stage = denEl && denEl.querySelector('.den-stage'); if (!stage) return;
-    for (var i = 0; i < 6; i++) {
-      var d = document.createElement('span'); d.className = 'den-fx'; d.textContent = em;
-      d.style.left = (38 + Math.random() * 24) + '%'; d.style.animationDelay = (Math.random() * 0.3) + 's';
-      stage.appendChild(d); (function (n) { setTimeout(function () { n.remove(); }, 2600); })(d);
-    }
-  }
-  function bounce(cls) { var pet = denEl && denEl.querySelector('.den-pet'); if (!pet) return; pet.classList.remove('happy', 'trick'); void pet.offsetWidth; pet.classList.add(cls); }
-  function toast(msg) { var t = document.createElement('div'); t.className = 'den-toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(function () { t.remove(); }, 2200); }
-  function flushBond() { if (bondUp) { bondUp = false; toast('💞 Bond deepened!'); } }
-
-  // ---- actions ------------------------------------------------------------
-  function actPet() {
-    var s = load(), now = Date.now();
-    if (now - s.lastPet < 1400) return;
-    var e = effects(s);
-    s.affection = clamp(s.affection + 8 * e.petMul, 0, 100); addXP(s, 3); s.lastPet = now; s.tick = now;
-    save(s); refresh(); sound(); bounce('happy'); fxBurst('💗'); flushBond();
-  }
-  function actFeed(fav) {
-    var s = load(), cost = fav ? 2 : 1;
-    if (s.treats < cost) { toast('Out of treats — fetch, or check in daily.'); return; }
-    var e = effects(s), p = PETS[s.pet];
-    s.treats -= cost;
-    s.hunger = clamp(s.hunger + (fav ? 42 : 26), e.hungerFloor, 100);
-    s.affection = clamp(s.affection + (fav ? 10 : 5), 0, 100);
-    s.xp += Math.round((fav ? 14 : 8) * e.feedXp * e.xpMul); s.tick = Date.now();
-    save(s); refresh(); sound(); bounce('happy'); fxBurst(fav ? TREATS[p.fav] : '🦴'); flushBond();
-    if (fav) toast(displayName(s) + ' adores ' + TREATS[p.fav] + '!');
-  }
-  function actRest() { var s = load(); s.resting = !s.resting; s.tick = Date.now(); save(s); sound(); refresh(); }
-  function actTrick() {
-    var s = load();
-    if (s.resting) { toast('Wake them first.'); return; }
-    if (s.affection < 40) { toast('Bond to 40 affection first — pet and play.'); return; }
-    if (s.energy < 10) { toast('Too tired for tricks — let them rest.'); return; }
-    var now = Date.now(), e = effects(s);
-    if (now - s.lastTrick < 4000 * e.cdMul) { toast('Catching their breath…'); return; }
-    s.energy = clamp(s.energy - 8, e.energyFloor, 100);
-    s.affection = clamp(s.affection + 6 * e.trickAffMul, 0, 100);
-    addXP(s, 7); s.lastTrick = now; s.tick = now;
-    save(s); refresh(); sound(); bounce('trick'); fxBurst('✨'); flushBond();
-  }
-  function actFetch() {
-    var s = load();
-    if (s.resting) { toast('They are napping.'); return; }
-    if (s.energy < 12) { toast('Too tired to fetch — rest first.'); return; }
-    var now = Date.now(), e = effects(s);
-    if (now - s.lastFetch < 6000 * e.cdMul) { toast('Still chasing the last one!'); return; }
-    s.energy = clamp(s.energy - 10, e.energyFloor, 100); addXP(s, 10); s.affection = clamp(s.affection + 3, 0, 100);
-    var got = Math.random() < e.fetchTreatChance; if (got) s.treats += 1;
-    s.lastFetch = now; s.tick = now;
-    save(s); refresh(); sound(); bounce('happy'); fxBurst(got ? '🦴' : '🎾'); flushBond();
-    toast(got ? displayName(s) + ' brought back a treat! 🦴' : displayName(s) + ' fetched the ball! +XP');
-  }
-  function actDaily() {
-    var s = load(), today = new Date().toISOString().slice(0, 10), e = effects(s);
-    if (s.lastDaily !== today) s.dailyCount = 0;
-    if (s.lastDaily === today && s.dailyCount >= e.dailyTimes) { toast('Already checked in. Come back later!'); return; }
-    s.lastDaily = today; s.dailyCount++;
-    var treats = 2 + e.dailyTreatBonus; s.treats += treats;
-    s.affection = clamp(s.affection + 8, 0, 100); addXP(s, 15); s.tick = Date.now();
-    save(s); refresh(); sound(); fxBurst('🎁'); flushBond();
-    toast('Daily check-in: +' + treats + ' treats, +XP! 🎁');
-  }
-  function actAdopt(key) {
-    if (!PETS[key]) return;
-    var s = load();
-    if (s.adopted.indexOf(key) === -1) {
-      var cost = 5;
-      if (s.treats < cost) { toast('Adopting ' + PETS[key].name + ' costs ' + cost + ' treats.'); return; }
-      s.treats -= cost; s.adopted.push(key); toast('Adopted ' + PETS[key].name + '! 🎉');
-    }
-    s.pet = key; s.tick = Date.now(); save(s);
-    try { if (window.PJCC && PJCC.setPet) PJCC.setPet(key); } catch (e) {}
-    sound(); refresh();
-  }
-  function actRename() {
-    var s = load(), cur = displayName(s);
-    var nm = window.prompt('Name your companion:', cur); if (nm === null) return;
-    nm = String(nm).trim().slice(0, 16);
-    if (nm) s.names[s.pet] = nm; else delete s.names[s.pet];
-    save(s); refresh();
-  }
-  function actAcc(key) {
-    var s = load(), a = ACCESSORIES[key]; if (!a) return;
-    if (s.ownedAcc.indexOf(key) === -1) {
-      if (s.bond < a.need) { toast(a.name + ' unlocks at Bond ' + a.need + '.'); return; }
-      s.ownedAcc.push(key);
-    }
-    s.accessories[s.pet] = key; save(s); refresh();
-  }
-  function actSkill(key) {
-    var s = load();
-    var def = SKILLS.filter(function (k) { return k.key === key; })[0];
-    if (!def) for (var sp in ULTIMATES) if (ULTIMATES[sp].key === key) def = ULTIMATES[sp];
-    if (!def || s.skills[key]) return;
-    if (key.indexOf('u-') === 0 && ULTIMATES[PETS[s.pet].sp].key !== key) { toast('That ultimate belongs to another species.'); return; }
-    if (def.req && !s.skills[def.req]) { var rq = SKILLS.filter(function (k) { return k.key === def.req; })[0]; toast('Unlock ' + (rq ? rq.name : 'the prior skill') + ' first.'); return; }
-    if (availSP(s) < def.cost) { toast('Need ' + def.cost + ' skill point(s) — level up your pet.'); return; }
-    s.skills[key] = true; save(s); sound(); refresh(); toast('Learned ' + def.name + '! ' + def.em);
-  }
-  function actAvatar(key) {
-    var s = load(); s.avatar = key; save(s);
-    try { if (window.PJCC && PJCC.setAvatar) PJCC.setAvatar(key).then(refresh).catch(function () {}); } catch (e) {}
-    refresh();
-  }
-  function actSound() { soundOn = !soundOn; try { localStorage.setItem(SND_KEY, soundOn ? '1' : '0'); } catch (e) {} if (soundOn) sound(); refresh(); }
-
-  function displayName(s) { return s.names[s.pet] || PETS[s.pet].name; }
-  function petEmojiFor(s, li) { var p = PETS[s.pet]; return (li || levelInfo(s)).level < 3 ? p.baby : p.em; }
-  // Coat tint chosen in the Identity Forge (pjcc-creator.js) recolours the pet here too.
+  // coat tint chosen in the Identity Forge recolours the pet here too
   function tintFilter() {
     try {
       var id = JSON.parse(localStorage.getItem('pjcc.identity.v1')) || {};
@@ -318,19 +138,105 @@
     } catch (e) { return ''; }
   }
 
-  // ---- rendering: inline mood card ---------------------------------------
-  var mountCard = null, lastStats = [], denEl = null;
-  function need(cls, em, v) { return '<span class="pc-need">' + em + '<span class="pc-bar ' + cls + '"><i style="width:' + Math.round(v) + '%"></i></span></span>'; }
+  // ---- sound (species voice) — silenced entirely in Calm mode ---------------
+  var actx = null, soundOn = true;
+  try { soundOn = localStorage.getItem(SND_KEY) !== '0'; } catch (e) {}
+  function sound() {
+    var s = load();
+    if (!soundOn || s.calm) return;   // Calm mode = never a peep (#20)
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === 'suspended') actx.resume();
+      var o = actx.createOscillator(), g = actx.createGain(); o.connect(g); g.connect(actx.destination);
+      var t = actx.currentTime, cfg = PETS[s.pet].snd;
+      o.type = cfg.type; o.frequency.setValueAtTime(cfg.f, t); o.frequency.exponentialRampToValueAtTime(cfg.f2, t + 0.12);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.16, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+      o.start(t); o.stop(t + 0.26);
+    } catch (e) {}
+  }
 
+  // ---- den DOM effects ------------------------------------------------------
+  var denEl = null;
+  function fxBurst(em) {
+    var s = load(); if (s.calm) return;                 // Calm mode: no bursts
+    var stage = denEl && denEl.querySelector('.den-stage'); if (!stage) return;
+    for (var i = 0; i < 6; i++) {
+      var d = document.createElement('span'); d.className = 'den-fx'; d.textContent = em;
+      d.style.left = (38 + Math.random() * 24) + '%'; d.style.animationDelay = (Math.random() * 0.3) + 's';
+      stage.appendChild(d); (function (n) { setTimeout(function () { n.remove(); }, 2600); })(d);
+    }
+  }
+  function bounce(cls) { var s = load(); if (s.calm) return; var pet = denEl && denEl.querySelector('.den-pet'); if (!pet) return; pet.classList.remove('happy', 'trick'); void pet.offsetWidth; pet.classList.add(cls); }
+  function toast(msg) { var t = document.createElement('div'); t.className = 'den-toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(function () { t.remove(); }, 2200); }
+
+  // bond helper — nudges the relationship, and fires the max-bond ARG dig once (#17)
+  function addBond(s, amt) {
+    var before = s.bond;
+    s.bond = clamp(s.bond + amt, 0, 100);
+    if (before < 100 && s.bond >= 100 && !s.dug) {
+      s.dug = true;
+      try { localStorage.setItem('frag_companion', '1'); } catch (e) {}
+      setTimeout(function () { toast('🗝️ ' + displayName(s) + ' dug up a buried token! (fragment recovered)'); }, 400);
+    }
+  }
+
+  // ---- actions --------------------------------------------------------------
+  function actPet() {
+    var s = load(), now = Date.now();
+    if (now - s.lastPet < 1200) return;
+    s.affection = clamp(s.affection + 8, 0, 100); addBond(s, 0.6); s.lastPet = now; s.lastAny = now; s.tick = now;
+    save(s); refresh(); sound(); bounce('happy'); fxBurst('💗');
+  }
+  function actFeed() {
+    var s = load(), now = Date.now();
+    if (now - s.lastFeed < 2500) { toast('Still nibbling the last one!'); return; }
+    s.hunger = clamp(s.hunger + 30, 0, 100); s.affection = clamp(s.affection + 4, 0, 100); addBond(s, 0.4);
+    s.lastFeed = now; s.lastAny = now; s.tick = now;
+    save(s); refresh(); sound(); bounce('happy'); fxBurst('🦴');
+  }
+  function actPlay() {
+    var s = load(), now = Date.now();
+    if (s.energy < 12) { toast('Worn out — they need a little rest first.'); return; }
+    if (now - s.lastPlay < 3500) { toast('Catching their breath…'); return; }
+    s.energy = clamp(s.energy - 12, 0, 100); s.affection = clamp(s.affection + 6, 0, 100); addBond(s, 1.4);
+    s.lastPlay = now; s.lastAny = now; s.tick = now;
+    save(s); refresh(); sound(); bounce('trick'); fxBurst('🎾');
+  }
+  function actPick(key) {                                  // choose your friend — free (#3)
+    if (!PETS[key]) return;
+    var s = load(); s.pet = key; s.lastAny = Date.now(); save(s);
+    try { if (window.PJCC && PJCC.setPet) PJCC.setPet(key); } catch (e) {}
+    sound(); refresh();
+  }
+  function actRename() {
+    var s = load(), nm = window.prompt('Name your companion:', displayName(s)); if (nm === null) return;
+    nm = String(nm).trim().slice(0, 16);
+    if (nm) s.names[s.pet] = nm; else delete s.names[s.pet];
+    save(s); refresh();
+  }
+  function actCosmetic(key) {
+    var s = load(), c = COSMETICS[key]; if (!c) return;
+    if (s.ownedCos.indexOf(key) === -1) {
+      if (bondInfo(s).bond < c.need) { toast(c.name + ' unlocks at Bond ' + c.need + '.'); return; }
+      s.ownedCos.push(key);
+    }
+    s.cosmetics[s.pet] = key; save(s); refresh();
+  }
+  function actCalm() { var s = load(); s.calm = !s.calm; save(s); toast(s.calm ? 'Calm mode on — a quiet, still companion.' : 'Calm mode off.'); refresh(); }
+  function actSound() { soundOn = !soundOn; try { localStorage.setItem(SND_KEY, soundOn ? '1' : '0'); } catch (e) {} if (soundOn) sound(); refresh(); }
+
+  // ---- inline mood card (on the Dossier) ------------------------------------
+  var mountCard = null;
+  function need(cls, em, v) { return '<span class="pc-need">' + em + '<span class="pc-bar ' + cls + '"><i style="width:' + Math.round(v) + '%"></i></span></span>'; }
   function renderCard(el, stats) {
     mountCard = el; if (stats) lastStats = stats;
-    var s = load(), p = PETS[s.pet], m = mood(s), li = levelInfo(s);
-    var accKey = s.accessories[s.pet], accEm = accKey && ACCESSORIES[accKey] ? ACCESSORIES[accKey].em : '';
+    var s = load(), bi = bondInfo(s), m = mood(s), p = PETS[s.pet];
+    var cosKey = s.cosmetics[s.pet], cosEm = cosKey && COSMETICS[cosKey] ? COSMETICS[cosKey].em : '';
     el.innerHTML =
-      '<div class="pet-card">' +
-        '<div class="pc-stage ' + SPECIES[p.sp].idle + '"><span style="filter:' + tintFilter() + '">' + petEmojiFor(s, li) + '</span>' + (accEm ? '<span class="pc-acc">' + accEm + '</span>' : '') + '</div>' +
+      '<div class="pet-card' + (s.calm ? ' is-calm' : '') + '">' +
+        '<div class="pc-stage"><span style="filter:' + tintFilter() + '">' + petEmojiFor(s, bi) + '</span>' + (cosEm ? '<span class="pc-acc">' + cosEm + '</span>' : '') + '</div>' +
         '<div class="pc-info">' +
-          '<div class="pc-name">' + esc(displayName(s)) + ' <small>' + p.trait + ' · Lv ' + li.level + ' ' + li.stage + '</small></div>' +
+          '<div class="pc-name">' + esc(displayName(s)) + ' <small>' + p.trait + ' · Bond ' + bi.level + ' · ' + p.stages[bi.stage] + '</small></div>' +
           '<div class="pc-mood">' + m.emoji + ' <b>' + m.state + '</b> — ' + esc(m.line) + '</div>' +
           '<div class="pc-needs">' + need('hunger', '🍖', s.hunger) + need('energy', '⚡', s.energy) + need('bond', '💗', s.affection) + '</div>' +
         '</div>' +
@@ -339,7 +245,7 @@
     var b = el.querySelector('#pc-open'); if (b) b.onclick = function () { openDen(lastStats); };
   }
 
-  // ---- rendering: the Den overlay ----------------------------------------
+  // ---- the Den overlay ------------------------------------------------------
   function openDen(stats) {
     if (stats) lastStats = stats;
     if (!denEl) {
@@ -348,157 +254,126 @@
       document.body.appendChild(denEl);
     }
     denEl.classList.remove('hidden'); document.body.style.overflow = 'hidden'; renderDen();
+    if (playedRecently()) setTimeout(function () { fxBurst('🎉'); }, 250);   // reacts to your play (#11)
   }
   function closeDen() { if (denEl) denEl.classList.add('hidden'); document.body.style.overflow = ''; }
 
-  function timeOfDay() { var h = new Date().getHours(); if (h >= 7 && h < 17) return { cls:'day', orb:'☀️', stars:0 }; if (h >= 17 && h < 20) return { cls:'dusk', orb:'🌇', stars:0 }; return { cls:'night', orb:'🌙', stars:14 }; }
-
-  function meter(cls, label, v) {
-    return '<div class="den-meter"><div class="m-top"><span>' + label + '</span><b>' + Math.round(v) + '</b></div>' +
-      '<div class="m-bar ' + cls + '"><i style="width:' + Math.round(v) + '%"></i></div></div>';
-  }
+  function timeOfDay() { var h = localHour(); if (h >= 7 && h < 17) return { cls: 'day', orb: '☀️', stars: 0 }; if (h >= 17 && h < 20) return { cls: 'dusk', orb: '🌇', stars: 0 }; return { cls: 'night', orb: '🌙', stars: 14 }; }
+  function meter(cls, label, v) { return '<div class="den-meter"><div class="m-top"><span>' + label + '</span><b>' + Math.round(v) + '</b></div><div class="m-bar ' + cls + '"><i style="width:' + Math.round(v) + '%"></i></div></div>'; }
+  function btn(id, em, label, sub) { return '<button class="den-btn" id="' + id + '"><span class="be">' + em + '</span>' + label + (sub ? '<small>' + sub + '</small>' : '') + '</button>'; }
 
   function renderDen() {
     if (!denEl) return;
-    var s = load(), p = PETS[s.pet], m = mood(s), li = levelInfo(s), e = effects(s);
-    var tod = timeOfDay();
-    var accKey = s.accessories[s.pet] || 'none', accEm = ACCESSORIES[accKey] ? ACCESSORIES[accKey].em : '';
+    var s = load(), p = PETS[s.pet], bi = bondInfo(s), m = mood(s), tod = timeOfDay();
+    var napping = isNight() && (Date.now() - s.lastAny > 90000);
+    var cosKey = s.cosmetics[s.pet] || 'none', cosEm = COSMETICS[cosKey] ? COSMETICS[cosKey].em : '';
     var stars = ''; for (var i = 0; i < tod.stars; i++) stars += '<span class="star" style="top:' + (6 + Math.random() * 60) + '%;left:' + (Math.random() * 96) + '%;animation-delay:' + (Math.random() * 3).toFixed(1) + 's"></span>';
 
-    var html = '<div class="den">';
+    var html = '<div class="den' + (s.calm ? ' is-calm' : '') + '">';
 
-    // --- stage (time-of-day, pet, bubble, name) ---
+    // stage — sky, pet, noise bubble, name
     html += '<div class="den-stage ' + tod.cls + '">' +
       '<div class="den-sky">' + stars + '<span class="orb">' + tod.orb + '</span></div>' +
-      '<div class="den-head"><span class="den-eyebrow">Companion Den · ' + SPECIES[p.sp].stages[0] + ' wing</span>' +
+      '<div class="den-head"><span class="den-eyebrow">Companion Den' + (p.canon ? ' · Princess\'s own' : '') + '</span>' +
         '<button class="den-close" id="den-x" title="Close">✕</button></div>' +
-      '<div class="den-bubble den-bubble--noise">' + esc(petNoise(s)) + '</div>' +
+      (s.calm ? '' : '<div class="den-bubble den-bubble--noise">' + esc(petNoise(s)) + '</div>') +
       '<div class="den-pet-wrap">' +
-        '<span class="den-pet ' + SPECIES[p.sp].idle + (s.resting ? ' asleep' : '') + '" id="den-pet" style="filter:' + tintFilter() + '">' + petEmojiFor(s, li) + '</span>' +
-        (accEm ? '<span class="den-acc-em">' + accEm + '</span>' : '') +
-        (s.resting ? '<span class="den-zzz">💤</span>' : '') +
+        '<span class="den-pet' + (napping ? ' asleep' : '') + '" id="den-pet" style="filter:' + tintFilter() + '">' + petEmojiFor(s, bi) + '</span>' +
+        (cosEm ? '<span class="den-acc-em">' + cosEm + '</span>' : '') +
+        (napping ? '<span class="den-zzz">💤</span>' : '') +
       '</div>' +
       '<div class="den-name-row"><span class="den-name">' + esc(displayName(s)) +
         ' <button class="den-close" id="den-rename" title="Rename" style="width:24px;height:24px;font-size:12px;vertical-align:middle;">✏️</button>' +
-        '<small>' + m.emoji + ' ' + m.state + ' · ' + p.trait + ' ' + p.sp + ' · Lv ' + li.level + ' ' + li.stage + '</small></span></div>' +
+        '<small>' + m.emoji + ' ' + m.state + ' · ' + p.trait + ' ' + s.pet + ' · Bond ' + bi.level + ' ' + p.stages[bi.stage] + '</small></span></div>' +
       '</div>';
 
-    // --- body ---
     html += '<div class="den-body">';
 
-    // meters
+    // meters + bond
     html += '<div class="den-meters">' +
-      meter('hunger', '🍖 Fullness', s.hunger) + meter('energy', '⚡ Energy', s.energy) +
-      meter('affection', '💗 Affection', s.affection) +
-      '<div class="den-meter"><div class="m-top"><span>⭐ XP to Lv ' + (li.level + 1) + '</span><b>' + li.into + '/' + li.span + '</b></div><div class="m-bar xp"><i style="width:' + li.pct + '%"></i></div></div>' +
+      meter('hunger', '🍖 Fullness', s.hunger) + meter('energy', '⚡ Energy', s.energy) + meter('affection', '💗 Affection', s.affection) +
+      '<div class="den-meter"><div class="m-top"><span>💞 Bond ' + bi.level + '/10</span><b>' + Math.round(bi.bond) + '/100</b></div><div class="m-bar xp"><i style="width:' + Math.round(bi.bond) + '%"></i></div></div>' +
       '</div>';
-    html += '<div class="den-xp-row"><span class="den-lvl">Lv ' + li.level + '</span><span class="den-stagelbl">' + li.stage + '</span>' +
-      '<span class="den-sp">🎓 ' + availSP(s) + ' skill pt' + (availSP(s) === 1 ? '' : 's') + '</span>' +
-      '<span class="den-sp">💞 Bond ' + s.bond + '/10</span>' +
-      '<span style="margin-left:auto"><button class="den-btn" id="den-sound" style="padding:5px 10px;">' + (soundOn ? '🔊' : '🔇') + '</button></span></div>';
 
-    // care actions
-    html += '<div class="den-section"><h3>Care</h3>' +
-      '<div class="den-treats">Treats: <b>' + s.treats + '</b> 🦴</div>' +
-      '<div class="den-actions">' +
-        btn('den-pet-btn', '💗', 'Pet', 'free') +
-        btn('den-feed', '🦴', 'Feed', '1 treat') +
-        btn('den-fav', TREATS[p.fav], 'Favourite', '2 treats') +
-        btn('den-rest', s.resting ? '☀️' : '😴', s.resting ? 'Wake' : 'Rest', s.resting ? 'get up' : 'recharge', false, s.resting) +
-        btn('den-fetch', '🎾', 'Fetch', '+XP, treats') +
-        btn('den-trick', '✨', 'Trick', 'affection') +
-        btn('den-daily', '🎁', 'Daily', s.lastDaily === new Date().toISOString().slice(0,10) && s.dailyCount >= e.dailyTimes ? 'done' : 'claim') +
+    // care — three buttons, no currency
+    html += '<div class="den-section"><h3>Care</h3><div class="den-actions">' +
+      btn('den-pet-btn', '💗', 'Pet', 'free') + btn('den-feed', '🦴', 'Feed', 'fills them up') + btn('den-play', '🎾', 'Play', 'deepens Bond') +
+      '</div>' +
+      '<div class="den-toolbar">' +
+        '<button class="den-btn den-btn--wide" id="den-share"><span class="be">📸</span>Share card</button>' +
+        '<button class="den-btn den-btn--wide' + (s.calm ? ' on' : '') + '" id="den-calm"><span class="be">' + (s.calm ? '🌙' : '🔔') + '</span>' + (s.calm ? 'Calm: on' : 'Calm mode') + '</button>' +
+        '<button class="den-btn den-btn--wide" id="den-sound"><span class="be">' + (soundOn ? '🔊' : '🔇') + '</span>' + (soundOn ? 'Sound' : 'Muted') + '</button>' +
       '</div></div>';
 
-    // skill tree
-    html += '<div class="den-section"><h3>Skill tree <span style="color:#9a7fd4;font-weight:600;font-size:.8rem">— spend points earned by levelling</span></h3>' +
-      '<div class="den-tree">';
-    var byCell = {}; SKILLS.forEach(function (k) { byCell[k.tier + '-' + k.col] = k; });
-    for (var tier = 0; tier < 3; tier++) for (var col = 0; col < 3; col++) {
-      var k = byCell[tier + '-' + col]; if (!k) { html += '<div></div>'; continue; }
-      html += skillCell(s, k);
-    }
-    var ult = ULTIMATES[p.sp];
-    html += skillCell(s, ult, true);
-    html += '</div></div>';
-
-    // dress-up
-    html += '<div class="den-section"><h3>Dress-up <span style="color:#9a7fd4;font-weight:600;font-size:.8rem">— unlocks with Bond</span></h3><div class="den-grid">';
-    Object.keys(ACCESSORIES).forEach(function (key) {
-      var a = ACCESSORIES[key], owned = s.ownedAcc.indexOf(key) !== -1 || a.need === 0, on = accKey === key;
-      var locked = !owned && s.bond < a.need;
-      html += '<div class="den-cell' + (on ? ' on' : '') + (locked ? ' locked' : '') + '" data-acc="' + key + '">' +
-        '<div class="ce">' + (a.em || '🚫') + '</div><div class="cn">' + a.name + '</div>' + (locked ? '<div class="ck">Bond ' + a.need + '</div>' : '') + '</div>';
-    });
-    html += '</div></div>';
-
-    // roster (collection / adopt / swap)
-    html += '<div class="den-section"><h3>Companions <span style="color:#9a7fd4;font-weight:600;font-size:.8rem">— adopt new friends for 5 treats</span></h3><div class="den-grid">';
+    // choose your friend — a free pick of four (#3)
+    html += '<div class="den-section"><h3>Choose your friend <span class="den-note">— it becomes your one companion; switch any time</span></h3><div class="den-grid">';
     PET_ORDER.forEach(function (key) {
-      var pp = PETS[key], have = s.adopted.indexOf(key) !== -1, on = s.pet === key;
-      html += '<div class="den-cell' + (on ? ' on' : '') + '" data-pet="' + key + '" title="' + esc(pp.persona) + '">' +
-        '<div class="ce">' + pp.em + '</div><div class="cn">' + esc(s.names[key] || pp.name) + '</div>' +
-        '<div class="ck">' + (have ? (on ? 'active' : 'adopted') : '🦴×5') + '</div></div>';
+      var pp = PETS[key], on = s.pet === key;
+      html += '<div class="den-cell' + (on ? ' on' : '') + '" data-pick="' + key + '" title="' + esc(pp.persona) + '">' +
+        '<div class="ce">' + pp.ems[1] + '</div><div class="cn">' + esc(s.names[key] || pp.name) + '</div>' +
+        '<div class="ck">' + (on ? 'yours' : (pp.canon ? 'Princess\'s' : 'meet')) + '</div></div>';
     });
     html += '</div></div>';
 
-    // operative avatar (the human face)
-    html += '<div class="den-section"><h3>Operative avatar</h3><div class="den-grid">';
-    (PJCC && PJCC.AVATAR_FREE ? PJCC.AVATAR_FREE : []).forEach(function (key) {
-      var on = s.avatar === key, label = (PJCC.HUMAN_LABELS && PJCC.HUMAN_LABELS[key]) || '';
-      html += '<div class="den-cell' + (on ? ' on' : '') + '" data-av="' + key + '"><div class="ce">' + PJCC.AVATARS[key] + '</div><div class="cn">' + esc(label) + '</div></div>';
+    // cosmetics — the only collectible, unlocked by Bond (#2/#19)
+    html += '<div class="den-section"><h3>Cosmetics <span class="den-note">— unlock as your Bond deepens</span></h3><div class="den-grid">';
+    Object.keys(COSMETICS).forEach(function (key) {
+      var c = COSMETICS[key], owned = s.ownedCos.indexOf(key) !== -1 || c.need === 0, on = cosKey === key;
+      var locked = !owned && bi.bond < c.need;
+      html += '<div class="den-cell' + (on ? ' on' : '') + (locked ? ' locked' : '') + '" data-cos="' + key + '">' +
+        '<div class="ce">' + (c.em || '🚫') + '</div><div class="cn">' + c.name + '</div>' + (locked ? '<div class="ck">Bond ' + c.need + '</div>' : '') + '</div>';
     });
     html += '</div></div>';
 
-    // bio
-    var days = Math.max(0, Math.floor((Date.now() - s.createdAt) / 86400000));
-    html += '<div class="den-section"><h3>Dossier</h3><div class="den-bio">' +
-      '<b>' + esc(displayName(s)) + '</b> — ' + esc(p.persona) + '<br>' +
-      'Species: <b>' + p.sp + '</b> · Signature trait: <b>' + p.trait + '</b><br>' +
-      'Favourite treat: <b>' + TREATS[p.fav] + ' ' + p.fav + '</b> · Known you <b>' + days + '</b> day' + (days === 1 ? '' : 's') + '<br>' +
-      'Your most-played game: <b>' + esc(favGame()) + '</b> · Companions adopted: <b>' + s.adopted.length + '/' + PET_ORDER.length + '</b>' +
-      '</div></div>';
-
-    html += '</div></div>'; // body, den
+    html += '</div></div>';
     denEl.innerHTML = html;
     wireDen();
-  }
-
-  function btn(id, em, label, sub, disabled, on) {
-    return '<button class="den-btn' + (on ? ' on' : '') + '" id="' + id + '"' + (disabled ? ' disabled' : '') + '>' +
-      '<span class="be">' + em + '</span>' + label + (sub ? '<small>' + sub + '</small>' : '') + '</button>';
-  }
-  function skillCell(s, k, isUlt) {
-    var owned = !!s.skills[k.key];
-    var reqOk = !k.req || !!s.skills[k.req];
-    var can = !owned && reqOk && availSP(s) >= k.cost;
-    var cls = owned ? 'owned' : (can ? 'can' : 'locked');
-    return '<div class="den-skill ' + cls + (isUlt ? ' ult' : '') + '" data-skill="' + k.key + '">' +
-      '<div class="se">' + k.em + '</div><div class="sn">' + (isUlt ? '★ ' : '') + k.name + '</div>' +
-      '<div class="sd">' + k.desc + '</div>' +
-      '<div class="scost">' + (owned ? '✓ learned' : k.cost + ' pt' + (k.cost === 1 ? '' : 's')) + '</div></div>';
   }
 
   function wireDen() {
     var q = function (id) { return denEl.querySelector('#' + id); };
     var on = function (id, fn) { var el = q(id); if (el) el.onclick = fn; };
-    on('den-x', closeDen); on('den-rename', actRename); on('den-sound', actSound);
-    on('den-pet-btn', actPet); on('den-feed', function () { actFeed(false); }); on('den-fav', function () { actFeed(true); });
-    on('den-rest', actRest); on('den-fetch', actFetch); on('den-trick', actTrick); on('den-daily', actDaily);
+    on('den-x', closeDen); on('den-rename', actRename);
+    on('den-pet-btn', actPet); on('den-feed', actFeed); on('den-play', actPlay);
+    on('den-share', shareCard); on('den-calm', actCalm); on('den-sound', actSound);
     var pet = q('den-pet'); if (pet) pet.onclick = actPet;
-    Array.prototype.forEach.call(denEl.querySelectorAll('[data-skill]'), function (c) { c.onclick = function () { actSkill(c.getAttribute('data-skill')); }; });
-    Array.prototype.forEach.call(denEl.querySelectorAll('[data-acc]'), function (c) { c.onclick = function () { actAcc(c.getAttribute('data-acc')); }; });
-    Array.prototype.forEach.call(denEl.querySelectorAll('[data-pet]'), function (c) { c.onclick = function () { actAdopt(c.getAttribute('data-pet')); }; });
-    Array.prototype.forEach.call(denEl.querySelectorAll('[data-av]'), function (c) { c.onclick = function () { actAvatar(c.getAttribute('data-av')); }; });
+    Array.prototype.forEach.call(denEl.querySelectorAll('[data-pick]'), function (c) { c.onclick = function () { actPick(c.getAttribute('data-pick')); }; });
+    Array.prototype.forEach.call(denEl.querySelectorAll('[data-cos]'), function (c) { c.onclick = function () { actCosmetic(c.getAttribute('data-cos')); }; });
+  }
+
+  // ---- share card (#18) -----------------------------------------------------
+  function shareCard() {
+    var s = load(), bi = bondInfo(s), p = PETS[s.pet];
+    var c = document.createElement('canvas'); c.width = 600; c.height = 340; var g = c.getContext('2d');
+    var grad = g.createLinearGradient(0, 0, 600, 340); grad.addColorStop(0, '#1f1147'); grad.addColorStop(1, '#34206f');
+    g.fillStyle = grad; g.fillRect(0, 0, 600, 340);
+    g.strokeStyle = '#F5C518'; g.lineWidth = 6; g.strokeRect(10, 10, 580, 320);
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = '120px sans-serif'; g.fillText(petEmojiFor(s, bi), 140, 150);
+    g.textAlign = 'left';
+    g.fillStyle = '#F5C518'; g.font = 'bold 42px Poppins, system-ui, sans-serif'; g.fillText(displayName(s), 250, 110);
+    g.fillStyle = '#cdbcf2'; g.font = '22px Inter, system-ui, sans-serif'; g.fillText(p.stages[bi.stage] + ' · ' + p.trait, 250, 152);
+    g.fillStyle = '#6bffb8'; g.font = 'bold 30px Poppins, system-ui, sans-serif'; g.fillText('Bond ' + bi.level + ' / 10', 250, 200);
+    g.fillStyle = '#9a7fd4'; g.font = '16px Inter, system-ui, sans-serif'; g.fillText('mcpuppystudios.com · my PJCC companion', 30, 312);
+    c.toBlob(function (blob) {
+      if (!blob) return;
+      var file = new File([blob], 'pjcc-companion.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: 'My PJCC companion', text: displayName(s) + ' — mcpuppystudios.com' }).catch(function () {});
+      } else {
+        var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'pjcc-companion.png'; a.click();
+      }
+    }, 'image/png');
   }
 
   function refresh() { if (mountCard) renderCard(mountCard, lastStats); if (denEl && !denEl.classList.contains('hidden')) renderDen(); }
-
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && denEl && !denEl.classList.contains('hidden')) closeDen(); });
 
   window.PJCCPet = {
     PETS: PETS, renderCard: renderCard, openDen: openDen, closeDen: closeDen,
-    petEmoji: function () { var s = load(); return petEmojiFor(s); },
-    mood: function () { return mood(load()); }
+    petEmoji: function () { return petEmojiFor(load()); },
+    mood: function () { return mood(load()); },
+    // games can call this to make the companion celebrate a fresh best (#11)
+    cheer: function () { var s = load(); s.lastAny = Date.now(); save(s); if (denEl && !denEl.classList.contains('hidden')) { fxBurst('🎉'); } refresh(); }
   };
 })();

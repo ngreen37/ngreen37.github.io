@@ -116,11 +116,6 @@
 .m-bar.affection > i { background: linear-gradient(90deg, #ff8fd0, #ff6b9d); }
 .m-bar.xp > i { background: linear-gradient(90deg, #c9a7ff, #F5C518); }
 
-.den-xp-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
-.den-lvl { background: #F5C518; color: #1a0f3d; font-weight: 800; border-radius: 8px; padding: 4px 10px; font-size: 0.82rem; }
-.den-stagelbl { color: #6bffb8; font-weight: 700; font-size: 0.82rem; }
-.den-sp { color: #ffd166; font-weight: 700; font-size: 0.8rem; }
-
 /* action buttons */
 .den-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(108px, 1fr)); gap: 8px; }
 .den-btn { background: #2D1B69; color: #f0e6ff; border: 1px solid #6b5fa0; border-radius: 10px; padding: 10px 8px;
@@ -132,8 +127,11 @@
 .den-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .den-btn.on { border-color: #6bffb8; background: rgba(107,255,184,0.12); }
 
-.den-treats { color: #ffd166; font-weight: 700; font-size: 0.82rem; margin-bottom: 8px; }
-.den-treats b { color: #fff; }
+/* secondary toolbar (share / calm / sound) — a wide horizontal row */
+.den-toolbar { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.den-btn--wide { flex: 1 1 110px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 10px; }
+.den-btn--wide .be { display: inline; font-size: 16px; margin: 0; }
+.den-note { color: #9a7fd4; font-weight: 600; font-size: 0.72rem; }
 
 /* roster / dress-up grids */
 .den-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(74px, 1fr)); gap: 9px; }
@@ -146,22 +144,9 @@
 .den-cell .cn { font-size: 0.66rem; color: #cdbcf2; margin-top: 3px; font-weight: 700; }
 .den-cell .ck { font-size: 0.6rem; color: #9a7fd4; }
 
-/* skill tree */
-.den-tree { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
-.den-skill { background: #160c33; border: 1px solid #4a3a7a; border-radius: 10px; padding: 9px 8px; text-align: center; position: relative; }
-.den-skill.owned { border-color: #6bffb8; background: rgba(107,255,184,0.08); }
-.den-skill.can { border-color: #F5C518; cursor: pointer; }
-.den-skill.can:hover { background: #3a2580; }
-.den-skill.locked { opacity: 0.5; }
-.den-skill .se { font-size: 22px; }
-.den-skill .sn { font-size: 0.72rem; color: #f0e6ff; font-weight: 800; margin: 2px 0; }
-.den-skill .sd { font-size: 0.64rem; color: #9a7fd4; line-height: 1.3; }
-.den-skill .scost { font-size: 0.64rem; color: #ffd166; margin-top: 3px; font-weight: 700; }
-.den-skill.ult { grid-column: 1 / -1; border-style: dashed; }
-.den-skill.ult.owned { border-style: solid; }
+/* (skill tree, dress-up bio + treats-currency CSS removed 2026-07-12 with the
+   companion v3 rebuild — those systems are gone; restore from git if needed.) */
 
-.den-bio { color: #b9a8e6; font-size: 0.78rem; line-height: 1.5; background: #160c33; border: 1px solid #4a3a7a; border-radius: 10px; padding: 10px 12px; }
-.den-bio b { color: #f0e6ff; }
 .den-toast { position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%); z-index: 1100;
   background: #F5C518; color: #1a0f3d; font-weight: 800; padding: 9px 18px; border-radius: 999px; box-shadow: 0 6px 20px rgba(0,0,0,0.4);
   animation: den-toast .3s ease; }
@@ -172,6 +157,5 @@
 }
 @media (max-width: 520px) {
   .den-meters { grid-template-columns: 1fr; }
-  .den-tree { grid-template-columns: 1fr 1fr; }
   .den-pet { font-size: 78px; }
 }

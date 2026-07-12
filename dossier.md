@@ -247,7 +247,7 @@ permalink: /dossier/
     html += '<h2 class="dsr-h">The journey</h2><div class="dsr-map">';
     wp.stops.forEach(function (s, i) {
       html += '<div class="dsr-stop ' + (s.reached ? 'reached' : '') + '">' +
-        '<div class="dsr-here">' + (i === wp.furthest ? PJCC.avatarEmoji(prof) : '') + '</div>' +
+        '<div class="dsr-here">' + (i === wp.furthest ? PJCC.avatarEmoji(prof) + (window.PJCCPet ? '<span class="dsr-here-pet" title="Your companion walks with you">' + PJCCPet.petEmoji() + '</span>' : '') : '') + '</div>' +
         '<div class="dsr-dot"></div><div class="dsr-stop-name">' + esc(s.name) + '</div></div>';
     });
     html += '</div>';
@@ -429,7 +429,8 @@ permalink: /dossier/
 /* A connector lights gold only when BOTH stops it joins are reached. Otherwise a
    gold bar dangles left off a dim, unreached stop (Nate 2026-07-12). */
 .dsr-stop.reached + .dsr-stop.reached::before { background: #F5C518; }
-.dsr-here { height: 20px; font-size: 18px; }
+.dsr-here { height: 20px; font-size: 18px; white-space: nowrap; }
+.dsr-here-pet { font-size: 13px; margin-left: -1px; vertical-align: 2px; }   /* the companion, trotting alongside (#12) */
 .dsr-dot { width: 14px; height: 14px; border-radius: 50%; background: #3a2a72; border: 2px solid #6b5fa0; margin: 0 auto 6px; position: relative; z-index: 1; }
 .dsr-stop.reached .dsr-dot { background: #F5C518; border-color: #F5C518; box-shadow: 0 0 10px rgba(245,197,24,0.6); }
 .dsr-stop-name { color: #9a7fd4; font-size: 0.7rem; line-height: 1.2; }
