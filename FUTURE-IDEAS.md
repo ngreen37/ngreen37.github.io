@@ -645,6 +645,25 @@ Town, Bob-Proctor mindset) and **Michael** (Chess City, truly righteous); **The 
 - **Blender cutscene intros** — short rendered clips as intros / loading screens / season trailers. *(Saved favorite.)*
 - **Backend (Supabase)** — unlocks the cross-cutting features: guilds/houses, async duels, the Writers'
   Room gallery, shared tallies, the cosmetics store.
+- **📱 The PJCC app — the LAUNCH** *(the PWA is built; only the launch is future)*. It ships **private by
+  default**: `ENABLED = false` in [`assets/js/pwa-register.js`](assets/js/pwa-register.js) means the public
+  gets **nothing** — no manifest, no service worker, no install prompt. Nate designs it privately with
+  **`?pwa=on`** on any page (his browser only; **`?pwa=off`** tears it back down). Deferred **~a year** by
+  his own call (2026-07-12). Three staged steps, in order:
+  - **Step 1 — flip it public.** Literally one line (`ENABLED = true`). The site becomes installable for
+    everyone: home-screen icon, full-screen launch (no browser bars), offline play, the install bar.
+    **Nate's call alone** — never flip this without him asking.
+  - **Step 2 — Google Play (do Android FIRST).** $25 one-time + an ID-verified developer account. Wrap the
+    PWA as a **TWA via Bubblewrap** — **buildable from Windows**, no Mac needed. Needs
+    `/.well-known/assetlinks.json` on the site. Watch out: new *personal* Play accounts must run a
+    ~20-tester / 14-day closed test before they can publish to production.
+  - **Step 3 — Apple App Store (the hard one).** $99/yr + a **Capacitor** wrap, and **Mac access for Xcode —
+    the real blocker, since Nate is on Windows** (a cloud-Mac build service is the workaround). Apple
+    guideline **4.2 rejects thin website wrappers**, so the *games* must be the app's spine. If phone/social
+    login stays, Apple also requires Sign in with Apple + in-app account deletion.
+  - **Grander-PWA polish while it's still private:** iOS splash screens (`apple-touch-startup-image`) ·
+    richer offline precache · an "Install" entry point in the nav/footer · settle `start_url`
+    (`/pjcc/` today vs `/games/`) · settle the icon (gold crown today vs the McPuppy paw).
 
 ## My honest read — if you only chase three
 1. **Av1 + Av5's audio drama** — together they *ship the story* before animation can. The main quest.
