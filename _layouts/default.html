@@ -550,8 +550,17 @@
       if (prof) { elr.innerHTML = PJCC.avatarEmoji(prof) + ' ' + esc(prof.codename); elr.classList.add('in'); }
       else { elr.textContent = '⬡ Sign in'; elr.classList.remove('in'); }
     }
+    // Instant render from the cached codename/avatar — no wait on the (deferred) SDK (#15).
+    (function () {
+      if (!PJCC.enabled) { elr.hidden = true; return; }
+      var c, e;
+      try { c = localStorage.getItem('pjcc.codename'); e = localStorage.getItem('pjcc.avataremoji'); } catch (x) {}
+      elr.hidden = false;
+      if (c) { elr.innerHTML = (e || '⬡') + ' ' + esc(c); elr.classList.add('in'); }
+      else { elr.textContent = '⬡ Sign in'; }
+    })();
     PJCC.onChange(upd);
-    PJCC.ready.then(upd);
+    PJCC.ready.then(upd);   // reconcile once the SDK settles
   })();
   </script>
   <style>

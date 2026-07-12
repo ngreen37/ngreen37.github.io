@@ -109,12 +109,13 @@
   window.PJCC = PJCC;
 
   function emit() {
-    // Cache the codename so light pages (e.g. the splash) can greet a returning
-    // operative without loading the whole SDK. Cleared on sign-out.
+    // Cache the codename + avatar so light pages (the nav pill, the splash) can
+    // show a returning operative INSTANTLY, without waiting on the SDK. Cleared
+    // on sign-out. (#15 — keeps the account SDK off the critical path everywhere.)
     try {
       var c = profile && profile.codename;
-      if (c) localStorage.setItem('pjcc.codename', c);
-      else localStorage.removeItem('pjcc.codename');
+      if (c) { localStorage.setItem('pjcc.codename', c); localStorage.setItem('pjcc.avataremoji', PJCC.avatarEmoji(profile)); }
+      else { localStorage.removeItem('pjcc.codename'); localStorage.removeItem('pjcc.avataremoji'); }
     } catch (e) {}
     listeners.forEach(function (fn) { try { fn(); } catch (e) {} });
   }
@@ -153,7 +154,7 @@
   }
 
   // --- init ------------------------------------------------------------------
-  PJCC.ready = (async function () {
+  async function initPJCC() {
     if (!configured) return false;   // keys not set yet -> stay in local-only mode
     try {
       await loadSDK();
@@ -181,7 +182,18 @@
       PJCC.enabled = false;          // SDK failed to load -> graceful fallback
       return false;
     }
-  })();
+  }
+  // #15 — DEFER the ~100KB Supabase SDK off every page's critical render path:
+  // start init at idle (2s cap so account pages still light up promptly). Light
+  // pages render the nav pill from the cached codename/avatar meanwhile; pages
+  // that await PJCC.ready (dossier, games, character pages) still get the live
+  // account — just a beat after first paint. Auth behaviour is otherwise unchanged.
+  PJCC.ready = new Promise(function (resolve) {
+    if (!configured) { resolve(false); return; }
+    var start = function () { initPJCC().then(resolve, function () { resolve(false); }); };
+    if (window.requestIdleCallback) requestIdleCallback(start, { timeout: 2000 });
+    else setTimeout(start, 150);
+  });
 
   // --- auth ------------------------------------------------------------------
   // Single-flight: a double-tap on "Send login link" (easy on phones) must not
