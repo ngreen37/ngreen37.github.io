@@ -146,6 +146,8 @@ layout: default
     <b class="hs-star" style="--sx:74%;--sy:44%"></b>
     <b class="hs-star" style="--sx:83%;--sy:20%"></b>
   </div>
+  {% comment %} rain lives here now — inside the hero, only visible on rain days {% endcomment %}
+  <div class="hero-rain" aria-hidden="true"></div>
   <p class="hero-eyebrow">McPuppy Studios Presents</p>
   <div class="hero-board" aria-hidden="true"></div>
   <h1 class="hero-title">Princess and the Journey<br>to Chess City</h1>
@@ -283,14 +285,22 @@ body.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 /* where it stands on the hero */
 .hero-door { position:absolute; top:12px; right:26px; z-index:2; }
 
-/* ── #10 rain days: streaks run down the hero's window edges ── */
-.home-hero.is-rainy::before, .home-hero.is-rainy::after { content:''; position:absolute; top:0; bottom:0;
-  width:7px; pointer-events:none; opacity:0.45;
-  background:repeating-linear-gradient(180deg, transparent 0 26px, rgba(96,206,255,0.24) 26px 34px);
-  animation:heroRain 2.6s linear infinite; }
-.home-hero.is-rainy::before { left:6px; }
-.home-hero.is-rainy::after { right:6px; animation-delay:-1.3s; }
-@keyframes heroRain { to { background-position:0 60px; } }
+/* ── #10 rain days: the rain falls INSIDE the hero only now (2026-07-11 Nate).
+   Gone: the two side "window-edge" streaks (they animated background-position =
+   a per-frame repaint, a known lag pattern) AND the full-screen rain layer.
+   What's left: two oversized sheets sliding on transform (compositor-only),
+   clipped to the hero box. Only present on rain days (~2 in 10). ── */
+.hero-rain { position:absolute; inset:0; border-radius:inherit; overflow:hidden;
+  pointer-events:none; opacity:0; transition:opacity .5s ease; }
+.home-hero.is-rainy .hero-rain { opacity:1; }
+.hero-rain::before, .hero-rain::after { content:''; position:absolute;
+  left:-30%; right:-30%; top:-50%; bottom:-50%; will-change:transform; }
+.hero-rain::before { background:repeating-linear-gradient(102deg, transparent 0 14px, rgba(120,170,255,0.10) 14px 15px);
+  animation:hero-rain-a .7s linear infinite; }
+.hero-rain::after { background:repeating-linear-gradient(102deg, transparent 0 33px, rgba(120,170,255,0.07) 33px 34px);
+  animation:hero-rain-b .95s linear infinite; }
+@keyframes hero-rain-a { to { transform:translate3d(-22px,120px,0); } }
+@keyframes hero-rain-b { to { transform:translate3d(-40px,150px,0); } }
 
 /* ── #9 letterbox: two bands frame the first arrival, then lift ── */
 .letterbox { position:fixed; left:0; right:0; height:9vh; background:#050310; z-index:11500;
@@ -304,12 +314,12 @@ body.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
    paint: the hero wears a different sky per phase, a sun rises and sets, the
    moon takes the night watch. (Aurora filters ride the BANDS, not the wrap —
    see the perf note in style.scss.) ── */
-{% comment %} (day/night wrap opacities pre-scaled by the 0.67 base in style.scss —
-     2026-07-11 Nate asked for the aurora arcs a third dimmer across the board.) {% endcomment %}
-body.sky-day  .aurora-wrap { opacity:0.37; }
+{% comment %} (aurora restored to full brightness 2026-07-11 — the earlier 33%
+     dim was me MISreading "the ACCC" as these arcs; it's the splash sigil.) {% endcomment %}
+body.sky-day  .aurora-wrap { opacity:0.55; }
 body.sky-dawn .aurora-band { filter:hue-rotate(40deg); }
 body.sky-dusk .aurora-band { filter:hue-rotate(-18deg) saturate(1.25); }
-body.sky-night .aurora-wrap { opacity:0.57; }
+body.sky-night .aurora-wrap { opacity:0.85; }
 
 .hero-sky { position:absolute; inset:0; border-radius:inherit; overflow:hidden; pointer-events:none; }
 .hs-orb { position:absolute; display:none; border-radius:50%; }
@@ -339,8 +349,11 @@ body.sky-dusk .hs-orb { display:block; right:calc(16% - 14px); bottom:-8px; widt
   opacity:0.8;
   background:radial-gradient(circle at 40% 36%, #ffd9a0, #e0662e 74%);
   box-shadow:0 0 30px 9px rgba(224,102,46,0.22); }
+{% comment %} the arc now RUNS THROUGH the sun (2026-07-11 Nate) — its right end
+     (the ellipse's 3-o'clock point) lands on the sun's centre at the horizon,
+     not above it. height 170→163% raises that point ~8px onto the sun. {% endcomment %}
 body.sky-dusk .hero-sky::before { content:''; position:absolute;
-  left:16%; right:16%; top:16%; height:170%; border-radius:50%;
+  left:16%; right:16%; top:16%; height:163%; border-radius:50%;
   border:1px dashed rgba(255,205,150,0.20);
   -webkit-mask-image:linear-gradient(90deg, transparent 0, rgba(0,0,0,0.55) 35%, #000 80%);
   mask-image:linear-gradient(90deg, transparent 0, rgba(0,0,0,0.55) 35%, #000 80%); }
@@ -352,10 +365,11 @@ body.sky-night .home-hero { border-color:#2a1d5e;
 body.sky-night .hs-orb { display:block; left:32%; top:16px; width:22px; height:22px;
   background:radial-gradient(circle at 38% 34%, #f4f0ff, #b9b2d6 66%, #8f88b4 100%);
   box-shadow:0 0 26px 8px rgba(220,214,255,0.16), inset -5px -4px 7px rgba(80,70,130,0.55); }
-{% comment %} the moon rides a small, very dim arc (2026-07-11 Nate) — echoes the
-     dusk sun's path, but fainter and shorter, cresting just behind the moon. {% endcomment %}
+{% comment %} the moon rides a small, very dim arc (2026-07-11 Nate) — now the arc
+     crest sits AT the moon's centre (top:27px = moon top 16px + 11px radius), so
+     it runs THROUGH the middle of the moon instead of cresting above it. {% endcomment %}
 body.sky-night .hero-sky::before { content:''; position:absolute;
-  left:14%; right:52%; top:5%; height:120%; border-radius:50%;
+  left:18%; right:52%; top:27px; height:110%; border-radius:50%;
   border:1px dashed rgba(220,214,255,0.11);
   -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 42%, #000 58%, transparent 100%);
   mask-image:linear-gradient(90deg, transparent 0, #000 42%, #000 58%, transparent 100%); }
@@ -470,7 +484,7 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
 {% comment %} (#13 town square + #17 op-strip + #15 sea divider removed 2026-07-10 —
      the cast is CARDS again; restore the square from git if ever missed.) {% endcomment %}
 @media (prefers-reduced-motion: reduce) {
-  .home-hero.is-rainy::before, .home-hero.is-rainy::after { animation: none; }
+  .hero-rain::before, .hero-rain::after { animation: none; }
 }
 
 .char-row-tools { display: flex; justify-content: flex-end; align-items: center; gap: 14px; margin-top: 8px; }
@@ -591,12 +605,16 @@ function ctParts() {
       ? 'WEATHER: RAIN OVER CHECKER TOWN — THE SEA IS ROUGH — ALL CROSSINGS POSTPONED'
       : 'WEATHER: SEA MIST IN THE LOWER SECTORS — VISIBILITY POOR — LIGHTHOUSE ON DOUBLE DUTY', null, true);
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    var w = document.createElement('div');
-    w.className = 'ct-weather ct-weather--' + (rain ? 'rain' : 'mist');
-    w.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(w);
-    // #10 — on rain days the hero carries streaks down its window edges
-    if (rain) { var hh = document.querySelector('.home-hero'); if (hh) hh.classList.add('is-rainy'); }
+    // Rain is now HERO-ONLY (2026-07-11 Nate: contain it, drop the full-screen
+    // layer that lagged). Mist stays a soft full-screen fog (cheap: opacity only).
+    if (rain) {
+      var hh = document.querySelector('.home-hero'); if (hh) hh.classList.add('is-rainy');
+    } else {
+      var w = document.createElement('div');
+      w.className = 'ct-weather ct-weather--mist';
+      w.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(w);
+    }
   })();
 
   // ---- BREAKING (studio-wide): one line in _data/breaking.yml runs the plate ----
