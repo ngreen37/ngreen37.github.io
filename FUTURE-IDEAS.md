@@ -26,7 +26,7 @@ in every cheaper form first, build an audience that owns itself, and make people
 a frame renders. Five braided threads:
 
 1. **Ship the show early** — production-as-content (Pilot animatic, tracker, Writers' Room) + an audio drama.
-2. **Own the audience** — the dispatch (newsletter) + Press Pass: durable, un-algorithmed channels.
+2. **Own the audience** — the dispatch (newsletter) + Patreon: durable, un-algorithmed channels.
 3. **Make them love her** — Princess as a companion; the bond pays off the day she gets a voice.
 4. **The arcade is the funnel** — a deep chess arcade that pulls players into the Academy (the business most likely to fund the animation).
 5. **One mystery over all of it** — the spy/ARG layer (Subject Zero, the crash, the Construction Co.) ties games + lore + show into one self-marketing puzzle.
@@ -268,7 +268,7 @@ radical-transparency burn page · a "cover PJCC" creator kit · refundable merch
 > - ★ **The living credits crawl** — a perpetual, embeddable public credits page that grows with every supporter (every embed is an advert).
 >
 > *Reach engines (each purchase markets the show):*
-> - ⛁ **Pay-it-forward passes** — buy a Press Pass for a stranger or a classroom; a wall of gifted passes.
+> - ⛁ **Pay-it-forward memberships** — buy a supporter membership for a stranger or a classroom; a wall of gifted seats.
 > - ★ **Sponsor the Game of the Week** — a patron underwrites one week; a tasteful "brought to you by" card.
 > - ⛁ **Name-your-price arcade bundle** — pay-what-you-want download (offline arcade + art pack); funds *and* spreads.
 > - ⛁ **The Chess City Passport** — annual membership, stamped per season/episode; digital + physical, with a renewal ritual.
@@ -380,7 +380,7 @@ channel to **write to Nate directly with suggestions**, with a **guaranteed resp
 real one. **The hook:** if a suggestion is **already in the pipeline**, tell them, show them where it sits, and
 **reward them** for landing on the same wavelength (credits · a goal card · a founding credit). Turns the usual
 suggestion-box void into a relationship, and makes backers feel *heard* — the single best retention lever a
-solo studio has. Ties to **Av10** (Patreon/funding) and the **Press Pass** (founding-operative perk). **Build
+solo studio has. Ties to **Av10** (Patreon/funding). **Build
 notes (post-billing):** gate behind a Patreon tier flag on the profile; a simple authenticated compose box →
 email/inbox; a lightweight "matches an existing roadmap item" tag so the reward path is one click. Parked in
 coming-soon until the payments layer is live.
@@ -400,7 +400,7 @@ not a scramble.
   no twitch · splash quads · games on touch). The full-site Japanese toggle. The ARG/portal rites (Shogi gate)
   still fire. Favicon / meta / Open-Graph for clean link-sharing.
 - **Phase 4 — Funding rails (Patreon).** **Decision: reserve now, promote at the flare.** Claim the handle +
-  stand up one honest "Founding Operative" tier (mirror the Press Pass) so the site's "Patreon · coming soon"
+  stand up one honest "Founding Operative" tier so the site's "Patreon · coming soon"
   links (splash quad · Goods · Direct Line) resolve to a real page — but keep it **quiet**; don't hard-launch
   into 0 patrons with coming-soon perks. Once the URL exists, swap those links to point at it. Ties to **Av10**.
 - **Phase 5 — The launch flare (the trigger).** The moment that earns traffic — the **Blender/Godot game demo**
@@ -512,13 +512,12 @@ and combination over new clutter. ★ = low-lift · ⛁ = wants backend.*
 
 **Audience & funding (Av10)**
 25. ★ **The dispatch capture** — one tasteful newsletter sign-up on the home page (the owned, un-algorithmed channel).
-26. **Founding-operative ribbon** — Press Pass holders see a quiet badge on their home page.
-27. ★ **"Support the build" micro-card** — tied to the current deliverable goal (the Animator's Fund bar).
+26. ★ **"Support the build" micro-card** — tied to the current deliverable goal (the Animator's Fund bar).
 
 **Polish / structure**
-28. ★ **North-star declutter** — collapse the stats bar to one elegant line; cut anything not serving the five threads.
-29. **Seasonal reskin** — advent, the anniversary of the crash, premiere week (Av9 live-ops).
-30. ★ **Fix the dead stat** — "Posts Written" is stale (blog's gone); swap for a live number like "Operatives enlisted" or "Games played this week."
+27. ★ **North-star declutter** — collapse the stats bar to one elegant line; cut anything not serving the five threads.
+28. **Seasonal reskin** — advent, the anniversary of the crash, premiere week (Av9 live-ops).
+29. ★ **Fix the dead stat** — "Posts Written" is stale (blog's gone); swap for a live number like "Operatives enlisted" or "Games played this week."
 
 ---
 
@@ -574,12 +573,12 @@ Town, Bob-Proctor mindset) and **Michael** (Chess City, truly righteous); **The 
   **Av26 (the daily ritual hub)** — one 3-minute daily loop instead of scattered dailies.
 - **The Pilot page — REMOVED ENTIRELY** *(2026-07-07; Nate: "let me build some stuff first — it's too busy
   for the nothing I've created so far")*. `production.md` deleted; links stripped from the nav dropdown,
-  dossier quick-launch, ⌘K palette, JP dict, the mailing-list "tracker" link, and the Press-Pass
-  "Frame the Scene" perk. **Restore the whole page (or any piece) from git.** It held, in its final form:
+  dossier quick-launch, ⌘K palette, JP dict, and the mailing-list "tracker" link.
+  **Restore the whole page (or any piece) from git.** It held, in its final form:
   the hero, the Writers' Room CTA, the **pilot animatic** ("Fell From the Sky" — 8 shots, scratch VO,
   leitmotif temp score, per-shot notes with pinned director comments), and the **production tracker**
   (Pilot + Ch.1). Earlier pulls (2026-07-06), all also in git:
-  - **Fund the Frame** — the Press-Pass funding plate under the tracker ("you're moving the needle").
+  - **Fund the Frame** — the funding plate under the tracker ("you're moving the needle").
   - **Frame the Scene** — the two-take art-direction polls: the opening-shot poll and **Princess's color key**
     (warm-violet vs cool-slate); local votes + seeded tallies; a live community tally was the planned upgrade.
   - **Open the Booth** — community voice auditions (coming-soon block; "first up, Auston the Bomber").
@@ -667,7 +666,7 @@ Town, Bob-Proctor mindset) and **Michael** (Chess City, truly righteous); **The 
 
 ## My honest read — if you only chase three
 1. **Av1 + Av5's audio drama** — together they *ship the story* before animation can. The main quest.
-2. **Av10 (newsletter + Press Pass)** — the owned, durable funding layer.
+2. **Av10 (newsletter + Patreon)** — the owned, durable funding layer.
 3. **Av6 (Princess companion)** — the cheapest emotional stickiness; most likely to make people *love* the brand.
 
 *Honorable mention: Av3 (Academy) is the strongest standalone business but a real second job; Av2 (ARG)
@@ -811,7 +810,7 @@ Brothers** and the **Commentators** are placeholders (Boomer/Tempo/Sunny) — co
 - **You get tagged upon entry to Chess City.** A worldbuilding beat: cross into Chess City and you're **tagged** —
   badged, logged, marked at the gate. Gives the city a controlled, bureaucratic edge against cozy Checker Town,
   and quietly **explains the site's own onboarding** (you arrive → you're issued a codename / dossier / clearance —
-  the Press Pass). Ripe for Princess's arc: the one who's tagged like everyone else **rises to Queen** — and could
+  the dossier). Ripe for Princess's arc: the one who's tagged like everyone else **rises to Queen** — and could
   rewrite the tagging system. *(Open: who's "I" — Nate, or Princess?)*
 
 **Story ideas (2026-07-07 — Nate):**

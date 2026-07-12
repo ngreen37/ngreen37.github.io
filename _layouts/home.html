@@ -59,7 +59,6 @@ layout: default
       <span class="ticker-item ticker-item--promo">◆ UPCOMING — A GODOT ROGUELITE BUILT FROM THE BLENDER ASSETS. MADE IN THE OPEN.</span>
       <span class="ticker-item">OFFICIAL: CHESS CITY HAS NOT RESPONDED TO CHECKER TOWN PASSAGE PERMIT REQUEST — DAY 47</span>
       <span class="ticker-item">PRINCESS WINS CHECKER TOWN INFORMAL CHESS TOURNAMENT — REMATCH PENDING</span>
-      <span class="ticker-item ticker-item--promo">◆ THE PRESS PASS: BECOME A FOUNDING OPERATIVE — OWN A PIECE OF THE JOURNEY → /PRESS-PASS/</span>
       <span class="ticker-item">SHADOW ACTIVITY NEAR THE CRASH SITE — CONSTRUCTION EQUIPMENT UNACCOUNTED FOR</span>
       <span class="ticker-item">MCPUPPY STUDIOS DISPATCH UPDATED {{ site.time | date: "%Y.%m.%d" }} — OPERATIVE NGREEN37 ON DUTY</span>
     </div>
@@ -375,40 +374,24 @@ body.sky-day .hero-sky::before { content:''; position:absolute; inset:0; pointer
     radial-gradient(74px 22px at 63% 21%, rgba(255,255,255,0.55), transparent 74%),
     radial-gradient(46px 15px at 30% 48%, rgba(255,255,255,0.45), transparent 72%); }
 
-/* DUSK — it sets deep amber on the other side of town.
-   2026-07-11 (Nate): the sun steps into the background — dimmer, half-sunk at
-   the sea line — and a faint dashed arc traces its path down so the "setting"
-   reads at a glance. The arc is one static ellipse: its right end meets the
-   half-sunk sun at the horizon, and a mask fades it off toward the east. */
+/* DUSK — it sets deep amber on the other side of town: the sun steps into the
+   background, dimmer and half-sunk at the sea line.
+   (The faint dashed path-arc was removed 2026-07-12 — Nate: the sky reads well
+   enough on its own now. Restore from git if it's ever missed.) */
 body.sky-dusk .home-hero { background:linear-gradient(160deg, #150b36 0%, #3a1e5e 45%, #7c3452 78%, #b0501f 108%); }
 body.sky-dusk .hs-orb { display:block; right:calc(16% - 14px); bottom:-8px; width:28px; height:28px;
   opacity:0.8;
   background:radial-gradient(circle at 40% 36%, #ffd9a0, #e0662e 74%);
   box-shadow:0 0 30px 9px rgba(224,102,46,0.22); }
-{% comment %} the arc now RUNS THROUGH the sun (2026-07-11 Nate) — its right end
-     (the ellipse's 3-o'clock point) lands on the sun's centre at the horizon,
-     not above it. height 170→163% raises that point ~8px onto the sun. {% endcomment %}
-body.sky-dusk .hero-sky::before { content:''; position:absolute;
-  left:16%; right:16%; top:16%; height:163%; border-radius:50%;
-  border:1px dashed rgba(255,205,150,0.20);
-  -webkit-mask-image:linear-gradient(90deg, transparent 0, rgba(0,0,0,0.55) 35%, #000 80%);
-  mask-image:linear-gradient(90deg, transparent 0, rgba(0,0,0,0.55) 35%, #000 80%); }
 body.sky-dusk .hero-skyline .sk-ct { border-top-color:rgba(255,150,80,0.45); }
 
-/* NIGHT — a pale moon, stars out, windows warm */
+/* NIGHT — a pale moon, stars out, windows warm.
+   (The moon's dim path-arc was removed 2026-07-12 alongside the dusk one — Nate.) */
 body.sky-night .home-hero { border-color:#2a1d5e;
   background:linear-gradient(150deg, #0a0728 0%, #1d1252 55%, #05030f 100%); }
 body.sky-night .hs-orb { display:block; left:32%; top:16px; width:22px; height:22px;
   background:radial-gradient(circle at 38% 34%, #f4f0ff, #b9b2d6 66%, #8f88b4 100%);
   box-shadow:0 0 26px 8px rgba(220,214,255,0.16), inset -5px -4px 7px rgba(80,70,130,0.55); }
-{% comment %} the moon rides a small, very dim arc (2026-07-11 Nate) — now the arc
-     crest sits AT the moon's centre (top:27px = moon top 16px + 11px radius), so
-     it runs THROUGH the middle of the moon instead of cresting above it. {% endcomment %}
-body.sky-night .hero-sky::before { content:''; position:absolute;
-  left:18%; right:52%; top:27px; height:110%; border-radius:50%;
-  border:1px dashed rgba(220,214,255,0.11);
-  -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 42%, #000 58%, transparent 100%);
-  mask-image:linear-gradient(90deg, transparent 0, #000 42%, #000 58%, transparent 100%); }
 body.sky-night .hs-star { display:block; }
 body.sky-night .hs-star--tw { animation:hsTwinkle 3.4s ease-in-out infinite; }
 body.sky-night .hs-star--tw:last-of-type { animation-delay:-1.7s; }

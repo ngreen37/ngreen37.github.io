@@ -49,7 +49,7 @@
     'Academy': 'アカデミー',
     'Your Dossier': 'あなたのファイル', 'Dossier': 'ファイル', 'Operative Dossier': '機密ファイル',
     'Command Center': '司令部', 'Projects': 'プロジェクト', 'Blog': 'ブログ', 'Build Log': 'ビルドログ',
-    'Mailing List': 'メール登録', 'Press Pass': 'プレスパス', 'For Educators': '教育者向け',
+    'Mailing List': 'メール登録', 'For Educators': '教育者向け',
     'About / Contact': '概要・連絡', 'Contact': '連絡先', 'About': '概要', 'Support': 'サポート',
     'Leaderboard': 'ランキング', 'Leaderboards': 'ランキング', 'Hall of Fame': '殿堂',
     'Home': 'ホーム', 'Patreon': 'Patreon', 'Coming Soon': '近日公開', 'The World': 'ザ・ワールド',

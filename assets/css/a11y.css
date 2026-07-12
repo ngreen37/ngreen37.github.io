@@ -24,10 +24,10 @@ input:focus-visible,
 }
 
 /* Comfortable tap targets on the interactive controls we built */
-.pjcc-btn, .pjcc-btn-ghost, .lb-tab, .jb-btn,
-.dsr-title-chip, .pjcc-pick, .lang-toggle, .games-lb-link {
+.pjcc-btn, .pjcc-btn-ghost, .lb-tab,
+.dsr-title-chip, .pjcc-pick, .lang-toggle {
   min-height: 40px;
 }
 @media (max-width: 620px) {
-  .pjcc-btn, .pjcc-btn-ghost, .lb-tab, .jb-btn { min-height: 44px; }
+  .pjcc-btn, .pjcc-btn-ghost, .lb-tab { min-height: 44px; }
 }

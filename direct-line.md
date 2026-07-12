@@ -14,7 +14,7 @@ brand: mcpuppy
 <div class="dl-steps">
   <div class="dl-step"><span class="dl-step-n">1</span><div><strong>{% if site.patreon_url and site.patreon_url != '' %}<a href="{{ site.patreon_url }}" target="_blank" rel="noopener">Back the studio on Patreon.</a>{% else %}Back the studio on Patreon.{% endif %}</strong> The Direct Line unlocks there.</div></div>
   <div class="dl-step"><span class="dl-step-n">2</span><div><strong>Send a suggestion.</strong> A game, character, feature, fix.</div></div>
-  <div class="dl-step"><span class="dl-step-n">3</span><div><strong>Get a guaranteed reply.</strong> A real answer, from me.</div></div>
+  <div class="dl-step"><span class="dl-step-n">3</span><div><strong>Get a guaranteed reply.</strong> A real answer, from me — always genuine, and always appropriate for all ages.</div></div>
   <div class="dl-step"><span class="dl-step-n">4</span><div><strong>Already on the roadmap?</strong> You hear first — and get rewarded.</div></div>
 </div>
 
@@ -28,7 +28,7 @@ brand: mcpuppy
 
 <div class="dl-cta">
   {% if site.patreon_url and site.patreon_url != '' %}<a class="dl-btn" href="{{ site.patreon_url }}" target="_blank" rel="noopener">Open the Direct Line on Patreon →</a>{% else %}<a class="dl-btn" href="/mailing-list/">Tell me when it opens →</a>{% endif %}
-  <a class="dl-btn dl-btn--ghost" href="/press-pass/">See the Press Pass</a>
+  <a class="dl-btn dl-btn--ghost" href="/mailing-list/">Join the dispatch</a>
 </div>
 
 <style>

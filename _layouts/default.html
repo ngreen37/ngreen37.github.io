@@ -8,7 +8,7 @@
   {%- assign brand = 'pjcc' -%}
   {%- if page.layout == 'post' -%}{%- assign brand = 'mcpuppy' -%}{%- endif -%}
   {%- if page.body_class contains 'theme-bw' -%}{%- assign brand = 'mcpuppy' -%}{%- endif -%}
-  {%- assign mc_urls = '/projects/,/blog/,/mailing-list/,/press-pass/,/educators/,/about/,/contact/' | split: ',' -%}
+  {%- assign mc_urls = '/projects/,/blog/,/mailing-list/,/educators/,/about/,/contact/' | split: ',' -%}
   {%- for u in mc_urls -%}{%- if page.url == u -%}{%- assign brand = 'mcpuppy' -%}{%- break -%}{%- endif -%}{%- endfor -%}
 {%- endunless -%}
 <!DOCTYPE html>
@@ -119,9 +119,8 @@
         <div class="nav-links">
           <a class="page-link" href="{{ '/blog/' | relative_url }}">Build Log</a>
           <div class="nav-dd" data-dd>
-            <a class="page-link nav-dd-trigger" href="{{ '/press-pass/' | relative_url }}" aria-haspopup="true" aria-expanded="false">Support <span class="nav-dd-caret" aria-hidden="true">&#9662;</span></a>
+            <a class="page-link nav-dd-trigger" href="{{ '/direct-line/' | relative_url }}" aria-haspopup="true" aria-expanded="false">Support <span class="nav-dd-caret" aria-hidden="true">&#9662;</span></a>
             <div class="nav-dd-menu" role="menu">
-              <a class="page-link" role="menuitem" href="{{ '/press-pass/' | relative_url }}">Press Pass</a>
               <a class="page-link" role="menuitem" href="{{ '/direct-line/' | relative_url }}">Direct Line</a>
               <a class="page-link" role="menuitem" href="{{ '/goods/' | relative_url }}">Merch</a>
               <a class="page-link" role="menuitem" href="{{ '/mailing-list/' | relative_url }}">Mailing List</a>
@@ -168,7 +167,6 @@
         <button class="share-tx-btn" id="share-tx-btn">&#9672; Share This Transmission</button>
         <button class="flourish-toggle" id="flourish-toggle" type="button" aria-pressed="false" title="Quiet the ambient motion across the whole site">✨ Reduce motion</button>
         <span id="chess-city-permit-slot"></span>
-        <span id="press-credential-slot"></span>
       </div>
       <script>
       /* Reduce-flourish toggle — quiets ambient motion site-wide (weather, glyphs,
@@ -396,12 +394,6 @@
     try {
       if (localStorage.getItem('chess_city_entry')) {
         slot.innerHTML = '<span class="chess-city-permit">&#9812; CHESS CITY — ENTRY PERMIT GRANTED</span>';
-      }
-    } catch(e) {}
-    var pslot = document.getElementById('press-credential-slot');
-    try {
-      if (pslot && localStorage.getItem('pjcc.presscred.v1')) {
-        pslot.innerHTML = '<a href="/press-pass/" class="chess-city-permit" style="text-decoration:none;">&#127915; FOUNDING OPERATIVE</a>';
       }
     } catch(e) {}
   })();

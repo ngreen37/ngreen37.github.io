@@ -10,7 +10,7 @@ permalink: /mailing-list/
 
 <div class="ml-hero">
   <div class="ml-eyebrow">◈ Checker Town Bureau of Dispatch</div>
-  <p class="ml-intro">The dispatch is the studio's <b>owned channel</b> — no algorithm decides who hears from us. It's the front row for <i>watching the show get made</i>: dev-logs, game drops, art reveals, and the occasional intercepted transmission. It's also where the <a href="{{ '/press-pass/' | relative_url }}">Press Pass founders list</a> opens <b>first</b>.</p>
+  <p class="ml-intro">The dispatch is the studio's <b>owned channel</b> — no algorithm decides who hears from us. It's the front row for <i>watching the show get made</i>: dev-logs, game drops, art reveals, and the occasional intercepted transmission.</p>
 </div>
 
 <form id="ml-form" class="ml-form" novalidate>
@@ -27,7 +27,7 @@ permalink: /mailing-list/
   <div class="ml-cell"><span class="ml-cell-ico">🕹️</span><b>Game drops</b><small>every new game and major update the day it ships.</small></div>
   <div class="ml-cell"><span class="ml-cell-ico">✎</span><b>Dev-log &amp; art</b><small>boards, color keys, and what moved in production.</small></div>
   <div class="ml-cell"><span class="ml-cell-ico">📡</span><b>Intercepted transmissions</b><small>in-universe lore beats and the odd classified leak.</small></div>
-  <div class="ml-cell"><span class="ml-cell-ico">🎟</span><b>Founders-list first</b><small>the <a href="{{ '/press-pass/' | relative_url }}">Press Pass</a> and any limited slots open here first.</small></div>
+  <div class="ml-cell"><span class="ml-cell-ico">🎟</span><b>First in line</b><small>any limited slots open to the dispatch first.</small></div>
   <div class="ml-cell"><span class="ml-cell-ico">🎸</span><b>Score reveals</b><small>the first PJCC theme — recorded live on guitar &amp; drums — drops here, on camera, before streaming.</small></div>
 </div>
 

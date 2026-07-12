@@ -12,7 +12,6 @@ body_class: theme-studio
   <a href="/blog/">Blog</a>
   <a href="/goods/">Merch</a>
   <a href="/mailing-list/">Mailing List</a>
-  <a href="/press-pass/">Press Pass</a>
   <a href="/direct-line/">Direct Line</a>
   <a href="/educators/">For Educators</a>
 </nav>
@@ -245,17 +244,6 @@ body_class: theme-studio
     </ul>
   </div>
 
-  <div class="project-card project-card-soon">
-    <div class="project-card-corner-piece" aria-hidden="true">♞</div>
-    <div class="project-card-header">
-      <span class="project-status project-status-soon">Coming Soon</span>
-      <h2 class="project-title">Press Pass</h2>
-    </div>
-    <p class="project-desc">Don't hold your breath!</p>
-    <div class="project-links">
-      <a href="/press-pass/" class="project-link">Press Pass &rarr;</a>
-    </div>
-  </div>
 
   <div class="project-card project-card-soon">
     <div class="project-card-corner-piece" aria-hidden="true">♛</div>
@@ -284,13 +272,13 @@ body_class: theme-studio
       <li>Thank you <strong>Laura</strong>, for your generosity.</li>
       <li>Thank you <strong>Josh</strong>, for listening to the initial ideas with patience and either feigned or real excitement, doesn't matter, and for the keyboard and mousepad that saved me <em>WEEKS</em> over time.</li>
       <li>Thank you <strong>Kim</strong>, for letting me show you initial progress when I was still keeping it private.</li>
-      <li>Thank you <strong>Aunt Barb</strong>, for being someone that I can't help but want to talk to like closest family. You accelerated PJCC significantly.</li>
+      <li>Thank you <strong>Aunt Barb</strong>, for being someone that I can't help but want to talk to, as closest family. You accelerated PJCC significantly.</li>
       <li>Thank you <strong>Tucker</strong>, for inspiring me with your greatness. You are a big role model to me.</li>
     </ul>
   </div>
 
   <div class="mcp-thanks-block">
-    <h3 class="mcp-thanks-sub">For the endless inspiration, McPuppy Studios would like to thank</h3>
+    <h3 class="mcp-thanks-sub">For the endless inspiration, McPuppy Studios would like to thank:</h3>
     <p class="mcp-thanks-muses">Norm Macdonald &middot; The Meadowlands &middot; The Lawrence Arms &middot; Trey Parker and Matt Stone &middot; Orson Scott Card &middot; John Steakley &middot; Neville Goddard</p>
   </div>
 </section>

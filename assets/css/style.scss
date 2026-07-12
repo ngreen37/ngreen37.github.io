@@ -332,7 +332,6 @@ ul, ol {
 }
 
 body.theme-bw .nav-toggle-bar     { background: #cccccc; }
-body.theme-contact .nav-toggle-bar { background: #00ff41; }
 
 /* --- Main Content Area --- */
 .page-content {
@@ -423,8 +422,7 @@ h3 {
 /* --- Unified Tag Styles --- */
 .tag,
 .blog-tags .tag,
-.post-tags .tag,
-.tags-list li a {
+.post-tags .tag {
   display: inline-block;
   background: #2D1B69;
   color: #F5C518;
@@ -441,8 +439,7 @@ h3 {
 
 .tag:hover,
 .blog-tags .tag:hover,
-.post-tags .tag:hover,
-.tags-list li a:hover {
+.post-tags .tag:hover {
   background: #5B2D8E;
   text-decoration: none;
   color: #F5C518;
@@ -1089,10 +1086,6 @@ pre code {
     border-top-color: rgba(255, 255, 255, 0.1);
   }
 
-  body.theme-contact .site-nav.is-open {
-    border-top-color: rgba(0, 255, 65, 0.12);
-  }
-
   /* Stack the rebuilt nav (brand · links · hop) in the hamburger sheet */
   .site-nav {
     padding: 12px 14px;
@@ -1617,7 +1610,6 @@ body.theme-studio .page-title { color: #f2efe8; border-bottom-color: #2a2830; }
 body.theme-studio .page-body { color: #c9c6d0; }
 body.theme-studio .projects-intro { color: #b9b4c4; border-left: 2px solid #caa24a; padding-left: 14px; font-style: italic; }
 body.theme-studio .projects-footer-note { color: #8a8592; }
-body.theme-studio .games-index-heading { color: #caa24a; }
 
 body.theme-bw {
   background-color: #080808;
@@ -2548,29 +2540,24 @@ body.theme-bw .ribbon-track {
 
 .character-card,
 .location-card,
-.evo-index-card,
 .post {
   animation: card-rise 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .character-card:nth-child(2),
 .location-card:nth-child(2),
-.evo-index-card:nth-child(2),
 .post:nth-child(2) { animation-delay: 0.08s; }
 
 .character-card:nth-child(3),
 .location-card:nth-child(3),
-.evo-index-card:nth-child(3),
 .post:nth-child(3) { animation-delay: 0.16s; }
 
 .character-card:nth-child(4),
 .location-card:nth-child(4),
-.evo-index-card:nth-child(4),
 .post:nth-child(4) { animation-delay: 0.24s; }
 
 .character-card:nth-child(n+5),
 .location-card:nth-child(n+5),
-.evo-index-card:nth-child(n+5),
 .post:nth-child(n+5) { animation-delay: 0.32s; }
 
 /* =============================================================
@@ -2706,56 +2693,9 @@ body.theme-bw .about-contact-btn {
 
 
 
-/* =============================================================
-   Theme: Contact / About  (body.theme-contact)
-   DOS / Old-PC Green — primary #00ff41, dark bg #030a02
-   ============================================================= */
-
-body.theme-contact {
-  background-color: #030a02;
-  color: #9affb0;
-}
-
-body.theme-contact h1,
-body.theme-contact h2,
-body.theme-contact h3 {
-  color: #00ff41;
-}
-
-body.theme-contact a {
-  color: #00cc33;
-  &:hover { color: #00ff41; }
-}
-
-body.theme-contact .site-header {
-  background: #010601;
-  border-image: linear-gradient(to right, rgba(0, 255, 65, 0.68) 50%, rgba(255, 255, 255, 0.68) 50%) 1;
-}
-
-body.theme-contact .site-nav {
-  border-top-color: rgba(0, 255, 65, 0.12);
-}
-
-
-
-body.theme-contact .about-contact-btn {
-  color: #030a02;
-  background: #00ff41;
-  border-color: #00ff41;
-}
-
-body.theme-contact .site-footer {
-  background: #010601;
-  border-top-color: rgba(0, 255, 65, 0.68);
-}
-
-body.theme-contact .footer-copy {
-  color: #1a4024;
-}
-
-body.theme-contact .ribbon-track {
-  color: rgba(0, 255, 65, 0.07);
-}
+/* (The DOS-green `body.theme-contact` theme was swept 2026-07-12 — no page sets
+   `body_class: theme-contact` any more, so none of it could ever paint. Restore
+   from git if the old contact/about look is ever wanted back.) */
 
 
 
@@ -4206,8 +4146,7 @@ body.theme-classified {
   transition: transform 0.52s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.char-flip-card:hover .char-flip-inner,
-.char-flip-card.is-flipped .char-flip-inner {
+.char-flip-card:hover .char-flip-inner {
   transform: rotateY(180deg);
 }
 
@@ -6016,8 +5955,8 @@ textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
 }
 .share-tx-flash.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* 25 — Mission countdown on home */
-.home-mission-countdown { text-align: center; margin-top: 12px; padding: 12px 0 4px; }
+/* 25 — Mission countdown (the wrapper is .pj-counter on /projects/; the old
+   .home-mission-countdown wrapper class was swept 2026-07-12 — nothing emits it) */
 .home-mc-label { font-family: 'Share Tech Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: rgba(126, 201, 183, 0.8); text-transform: uppercase; margin-bottom: 5px; }
 .home-mc-display { font-family: 'Share Tech Mono', monospace; font-size: clamp(16px, 2.5vw, 24px); color: #9fe0d0; letter-spacing: 0.1em; }
 .home-mc-target { font-family: 'Share Tech Mono', monospace; font-size: 10px; font-weight: 700; color: rgba(126, 201, 183, 0.55); letter-spacing: 0.14em; margin-top: 4px; }

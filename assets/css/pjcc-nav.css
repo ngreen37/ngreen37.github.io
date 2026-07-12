@@ -55,9 +55,6 @@
 }
 .nav-hop:hover .nav-hop-arrow,
 .nav-hop:focus-visible .nav-hop-arrow { transform: translateX(4px); opacity: 1; }
-/* the hop is a single link — keep the brand tint but drop the side-specific
-   border so it looks right whichever side it lands on */
-.nav-group--hop { opacity: 0.92; border-left: none; border-right: none; }
 
 /* ---- 3. Sticky condense on scroll ------------------------------------ */
 @media (min-width: 701px) {

@@ -43,7 +43,7 @@ finished-film competitions while pre-pilot — those exist specifically to fund 
 | **Platform/brand creator funds** | Sponsorship | Chess platforms, edu brands, animation-tool makers (see partnerships below). |
 
 **Honest take:** most formal grants are **region-locked and slow**. The realistic near-term money is
-**(1) the Press Pass / direct support**, **(2) a Kickstarter tied to a physical product**, and
+**(1) direct support (Patreon / the dispatch)**, **(2) a Kickstarter tied to a physical product**, and
 **(3) regional arts council** project grants. Festivals are for **reach and credibility** more than
 cash, pre-pilot.
 

@@ -29,7 +29,6 @@
       { t: 'McPuppy Studios',  s: 'Studio hub & progress',                u: '/projects/',           ic: '🐾', b: 'mcpuppy', k: 'mcpuppy studio projects progress hub' },
       { t: 'Build Log (Blog)', s: 'Episode archive',                      u: '/blog/',               ic: '✍', b: 'mcpuppy', k: 'blog build log episodes posts writing' },
       { t: 'Mailing List',     s: 'Get dispatches by email',              u: '/mailing-list/',       ic: '✉', b: 'mcpuppy', k: 'mailing list email subscribe newsletter' },
-      { t: 'Press Pass',       s: 'Become a founding operative',          u: '/press-pass/',         ic: '🎟', b: 'mcpuppy', k: 'press pass founding operative support patron' },
       { t: 'For Educators',    s: 'Use PJCC in the classroom',            u: '/educators/',          ic: '🍎', b: 'mcpuppy', k: 'educators teachers classroom school lessons' },
       { t: 'About / Contact',  s: 'Who & how to reach us',                u: '/about/',              ic: '☎', b: 'mcpuppy', k: 'about contact reach email who studio' },
       { t: 'The Splash',       s: 'The front door',                       u: '/',                    ic: '⬛', b: 'mcpuppy', k: 'home splash front door start landing' }
