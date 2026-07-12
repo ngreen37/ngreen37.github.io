@@ -1,27 +1,90 @@
-/* pwa-register.js — registers the service worker and owns the install / update UI.
+/* pwa-register.js — the PWA's single on/off gate + install/update UI.
  *
- * Injects its own DOM + CSS so it works on EVERY layout (default, studio-home, game,
- * easter-eggs) without editing any <body>. Themed to match the site (deep purple + gold).
+ * PRIVATE BY DEFAULT. While ENABLED is false, the general public gets NOTHING:
+ * no web-app manifest, no service worker, no install prompt — every page behaves
+ * exactly as it did before the PWA existed.
  *
- *   • Registers /sw.js (secure contexts only).
- *   • "Update ready" toast when a new version has been fetched → tap to refresh.
- *   • Custom "Install app" bar on Chrome/Edge/Android (beforeinstallprompt).
- *   • A one-time "Add to Home Screen" hint on iOS Safari (which has no install prompt).
- *   • Nothing shows once the app is already installed (display-mode: standalone), and
- *     dismissals are remembered so it never nags.
+ *   • Preview it privately (your browser only): visit any page with ?pwa=on
+ *     (turn it back off with ?pwa=off — that also unregisters the preview worker).
+ *   • Launch it for EVERYONE: set  ENABLED = true  below (one line) and ship.
+ *
+ * When active it: injects the manifest + Apple home-screen meta, registers /sw.js,
+ * shows an "update ready" toast, a custom install bar (Chrome/Android), and a
+ * one-time iOS "Add to Home Screen" hint. It builds its own themed UI, so it works
+ * on every layout without editing any <body>.
  */
 (function () {
   'use strict';
 
+  // ── LAUNCH SWITCH ─────────────────────────────────────────────────────────
+  var ENABLED = false;   // ← flip to true to make the whole site installable for everyone
+  // ──────────────────────────────────────────────────────────────────────────
+
+  var LS_DEV               = 'pjcc.pwa.dev';
   var LS_INSTALL_DISMISSED = 'pjcc.pwa.installDismissed';
   var LS_IOS_HINTED        = 'pjcc.pwa.iosHinted';
+
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function lsDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
+
+  // ?pwa=on / ?pwa=off → persistent private-preview flag (this browser only)
+  var forcedOff = false;
+  try {
+    var q = new URLSearchParams(location.search);
+    if (q.get('pwa') === 'on')  lsSet(LS_DEV, '1');
+    if (q.get('pwa') === 'off') { lsDel(LS_DEV); forcedOff = true; }
+  } catch (e) {}
+
+  var active = ENABLED || lsGet(LS_DEV) === '1';
+
+  if (!active) {
+    // Public path: touch nothing. If someone explicitly turned preview OFF, also
+    // tear down any service worker / caches a previous preview left behind.
+    if (forcedOff) teardownPreview();
+    return;
+  }
+
+  function teardownPreview() {
+    try {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function (rs) {
+          rs.forEach(function (r) { r.unregister(); });
+        }).catch(function () {});
+      }
+      if (window.caches && caches.keys) {
+        caches.keys().then(function (ks) {
+          ks.forEach(function (k) { if (k.indexOf('pjcc-') === 0) caches.delete(k); });
+        }).catch(function () {});
+      }
+    } catch (e) {}
+  }
+
+  /* ---- inject the manifest + Apple meta (only now that we're active) ---- */
+  function injectHead() {
+    if (document.getElementById('pjcc-manifest')) return;
+    var link = document.createElement('link');
+    link.id = 'pjcc-manifest'; link.rel = 'manifest'; link.href = '/manifest.json';
+    document.head.appendChild(link);
+    var apple = document.createElement('link');
+    apple.rel = 'apple-touch-icon'; apple.href = '/assets/images/pwa/apple-touch-icon.png';
+    document.head.appendChild(apple);
+    var metas = {
+      'mobile-web-app-capable': 'yes',
+      'apple-mobile-web-app-capable': 'yes',
+      'apple-mobile-web-app-status-bar-style': 'black-translucent',
+      'apple-mobile-web-app-title': 'PJCC',
+      'application-name': 'PJCC'
+    };
+    Object.keys(metas).forEach(function (n) {
+      var m = document.createElement('meta'); m.name = n; m.content = metas[n]; document.head.appendChild(m);
+    });
+  }
 
   function standalone() {
     return window.matchMedia('(display-mode: standalone)').matches ||
            window.navigator.standalone === true;
   }
-  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
-  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
 
   /* ---- styles (injected once) ---- */
   function injectStyles() {
@@ -55,7 +118,7 @@
     document.head.appendChild(s);
   }
 
-  /* ---- a bottom bar: {icon, title, subtitle, actionLabel, onAction} ---- */
+  /* ---- a bottom bar: {icon, title, subtitle, actionLabel, onAction, onDismiss} ---- */
   function makeBar(opts) {
     injectStyles();
     var bar = document.createElement('div');
@@ -96,7 +159,6 @@
 
     bar.appendChild(frag);
     document.body.appendChild(bar);
-    // next frame → slide in
     requestAnimationFrame(function () { requestAnimationFrame(function () { bar.classList.add('in'); }); });
     return bar;
   }
@@ -106,7 +168,7 @@
     setTimeout(function () { try { bar.remove(); } catch (e) {} }, 480);
   }
 
-  /* ---- 1. service worker registration + update flow ---- */
+  /* ---- service worker registration + update flow ---- */
   function registerSW() {
     if (!('serviceWorker' in navigator)) return;
     if (!(window.isSecureContext || location.hostname === 'localhost')) return;
@@ -119,17 +181,14 @@
     });
 
     navigator.serviceWorker.register('/sw.js').then(function (reg) {
-      // A new worker is installing → when it's ready AND we're already controlled, offer refresh.
       reg.addEventListener('updatefound', function () {
         var nw = reg.installing;
         if (!nw) return;
         nw.addEventListener('statechange', function () {
-          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
-            offerUpdate(nw);
-          }
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) offerUpdate(nw);
         });
       });
-    }).catch(function () { /* registration failed — the site still works, just not offline */ });
+    }).catch(function () { /* registration failed — site still works, just not offline */ });
   }
 
   var updateBar = null;
@@ -145,7 +204,7 @@
     });
   }
 
-  /* ---- 2. install prompt (Chrome/Edge/Android) ---- */
+  /* ---- install prompt (Chrome/Edge/Android) ---- */
   var deferredPrompt = null;
   var installBar = null;
   window.addEventListener('beforeinstallprompt', function (e) {
@@ -172,7 +231,7 @@
     if (installBar) { hide(installBar); installBar = null; }
   });
 
-  /* ---- 3. iOS Safari hint (no beforeinstallprompt there) ---- */
+  /* ---- iOS Safari hint (no beforeinstallprompt there) ---- */
   function maybeIosHint() {
     if (standalone()) return;
     if (lsGet(LS_IOS_HINTED)) return;
@@ -181,7 +240,6 @@
                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); // iPadOS
     var isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
     if (!isIOS || !isSafari) return;
-    // Don't pounce on first paint; wait until they've settled in a little.
     setTimeout(function () {
       makeBar({
         icon: '➕', // ➕
@@ -196,6 +254,8 @@
     registerSW();
     if (!standalone()) maybeIosHint();
   }
+
+  injectHead();                       // manifest + app meta, now that we're active
   if (document.readyState === 'complete') boot();
   else window.addEventListener('load', boot);
 })();

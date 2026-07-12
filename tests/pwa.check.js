@@ -64,15 +64,21 @@ if (exists('assets/js/pwa-register.js')) {
   const reg = read('assets/js/pwa-register.js');
   ok(/serviceWorker/.test(reg) && /register\(/.test(reg), 'pwa-register.js registers the service worker');
   ok(/beforeinstallprompt/.test(reg), 'pwa-register.js handles the install prompt');
+  // gated private-by-default: a launch switch + a per-browser preview flag
+  ok(/var\s+ENABLED\s*=\s*(true|false)/.test(reg), 'pwa-register.js has the ENABLED launch switch');
+  ok(/pjcc\.pwa\.dev/.test(reg) && /pwa['"]?\)?\s*===\s*['"]on['"]/.test(reg), 'pwa-register.js supports ?pwa=on private preview');
+  // manifest + apple meta are injected by JS (kept OUT of the public HTML)
+  ok(/manifest\.json/.test(reg), 'pwa-register.js injects the manifest when active');
+  ok(/apple-touch-icon/.test(reg), 'pwa-register.js injects the apple-touch-icon when active');
 }
 
 /* ---- the include + every head layout pulls it in ---- */
 ok(exists('_includes/pwa-head.html'), '_includes/pwa-head.html exists');
 if (exists('_includes/pwa-head.html')) {
   const inc = read('_includes/pwa-head.html');
-  ok(/rel=["']manifest["']/.test(inc), 'pwa-head include links the manifest');
   ok(/pwa-register\.js/.test(inc), 'pwa-head include loads pwa-register.js');
-  ok(/apple-touch-icon/.test(inc), 'pwa-head include sets the apple-touch-icon');
+  // the public HTML must NOT advertise the manifest while the PWA is private
+  ok(!/rel=["']manifest["']/.test(inc), 'pwa-head include does not statically expose the manifest');
 }
 ['default', 'studio-home', 'game', 'easter-eggs'].forEach((layout) => {
   const rel = '_layouts/' + layout + '.html';

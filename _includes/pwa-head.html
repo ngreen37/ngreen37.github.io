@@ -1,16 +1,8 @@
 {%- comment -%}
-  PWA / installability — one include, pulled into every <head> (default, studio-home,
-  game, easter-eggs layouts). Carries the web-app manifest link, the Apple home-screen
-  meta, and the service-worker registration + install UI (assets/js/pwa-register.js).
-  This is the single source of truth for <meta name="theme-color">, so the individual
-  layouts no longer set their own.
+  PWA hook — one line, pulled into every <head> (default, studio-home, game,
+  easter-eggs layouts). This script is INERT by default: unless the PWA is switched
+  on (ENABLED in pwa-register.js) or previewed privately (?pwa=on), it injects
+  nothing, registers no service worker, and shows no install prompt — the public
+  site behaves exactly as it did before. Flip ENABLED to launch for everyone.
 {%- endcomment -%}
-<link rel="manifest" href="{{ '/manifest.json' | relative_url }}">
-<meta name="theme-color" content="#0a0714">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="PJCC">
-<meta name="application-name" content="PJCC">
-<link rel="apple-touch-icon" href="{{ '/assets/images/pwa/apple-touch-icon.png' | relative_url }}">
 <script src="{{ '/assets/js/pwa-register.js' | relative_url }}" defer></script>
