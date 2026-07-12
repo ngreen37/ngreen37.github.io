@@ -611,6 +611,15 @@ Town, Bob-Proctor mindset) and **Michael** (Chess City, truly righteous); **The 
 - **Site-wide Princess speech** — removed; movement-only (talk ideas live in Av6).
 - **The "Creator" bio** — replaced with the mysterious "Operator."
 - **The Build Playlist jukebox** — removed entirely; *re-use: original PJCC chiptune over Spotify embeds.*
+- **⚙ Perf — don't load `pjcc-profile.js` on content pages** *(deferred 2026-07-12; the SAFE half of #15 already
+  shipped)*. The Supabase SDK (~100KB) is already **idle-deferred off the critical path site-wide**, and the nav
+  pill renders instantly from cached `pjcc.codename`/`pjcc.avataremoji`. The *remaining* step is to skip loading
+  the profile script **entirely** on pages that never need accounts (character bios, `/style/`, blog posts). **Why
+  it's parked:** that script is also the **auth backbone** (session-keep-alive + magic-link callback catch), it's
+  **go-live-critical**, and real Supabase sign-in **can't be tested locally** — so a mistake could silently break
+  login. **Priority: LOW** — the felt win is already banked; the leftover is a download saving that matters only at
+  traffic we don't have yet, cached after first visit anyway. **Do it only inside a dedicated auth/perf pass where a
+  live login (phone + desktop) is tested right after** — never casually. Ties to [[pjcc-profile-system]], [[go-live-push]].
 
 ---
 
