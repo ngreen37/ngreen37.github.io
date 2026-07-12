@@ -273,6 +273,9 @@ body.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 .gdoor[data-grand="5"] .gdoor-arch::after { content:'👑'; opacity:1; font-size:14px; top:3px; }
 .gdoor[data-grand="4"] .gdoor-seam,
 .gdoor[data-grand="5"] .gdoor-seam { height:4px; box-shadow:0 -3px 20px 5px color-mix(in srgb, var(--acc) 62%, transparent); }
+/* CROWNED — all ten floors BEATEN: the door rests AJAR, light spilling from within. */
+.gdoor[data-grand="5"] .gdoor-door { transform:perspective(320px) rotateY(-15deg); }
+.gdoor[data-grand="5"] .gdoor-seam { height:5px; box-shadow:0 -3px 28px 7px color-mix(in srgb, var(--acc) 74%, transparent); }
 
 @media (prefers-reduced-motion: reduce) {
   .gdoor-pips i.cur { animation:none; }
@@ -338,7 +341,22 @@ body.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 @keyframes hero-bolt {
   0% { opacity:0; } 4% { opacity:0.92; } 10% { opacity:0.12; }
   17% { opacity:0.7; } 28% { opacity:0.04; } 100% { opacity:0; } }
-@media (prefers-reduced-motion: reduce) { .hero-lightning { display:none; } }
+
+/* Every so often a strike backlights the distant Chess City skyline for a beat —
+   a dark silhouette in FRONT of the flash. Rare (1-in-4 heavy strikes), brief. */
+.hero-skyflash { position:absolute; left:0; right:0; bottom:0; height:52%; z-index:2; pointer-events:none; opacity:0;
+  background:linear-gradient(180deg, #08060f 0%, #08060f 74%, rgba(8,6,15,0.55) 100%);
+  clip-path:polygon(0% 100%,0% 60%,5% 60%,5% 47%,9% 47%,9% 60%,13% 60%,13% 52%,17% 52%,
+    17% 30%,20% 30%,20% 20%,22% 20%,22% 30%,25% 30%,25% 60%,31% 60%,31% 50%,35% 50%,35% 60%,
+    39% 60%,39% 40%,45% 40%,45% 60%,52% 60%,52% 48%,56% 48%,56% 60%,60% 60%,60% 52%,64% 52%,
+    64% 34%,67% 34%,67% 24%,69% 24%,69% 34%,72% 34%,72% 60%,80% 60%,80% 49%,84% 49%,84% 60%,
+    92% 60%,92% 54%,96% 54%,96% 60%,100% 60%,100% 100%); }
+.hero-skyflash.lit { animation:sky-silhouette 0.9s ease-out; }
+@keyframes sky-silhouette {
+  0% { opacity:0; } 6% { opacity:0.9; } 16% { opacity:0.18; }
+  26% { opacity:0.55; } 40% { opacity:0; } 100% { opacity:0; } }
+
+@media (prefers-reduced-motion: reduce) { .hero-lightning, .hero-skyflash { display:none; } }
 
 /* ── #9 letterbox: two bands frame the first arrival, then lift ── */
 .letterbox { position:fixed; left:0; right:0; height:9vh; background:#050310; z-index:11500;
@@ -698,10 +716,17 @@ function ctParts() {
       bolt.className = 'hero-lightning';
       bolt.setAttribute('aria-hidden', 'true');
       hero.appendChild(bolt);
+      var sky = document.createElement('div');   // the distant Chess City skyline, backlit on rare strikes
+      sky.className = 'hero-skyflash';
+      sky.setAttribute('aria-hidden', 'true');
+      hero.appendChild(sky);
       (function strike() {
         setTimeout(function () {
           if (idx === 2) {                       // only when it's really coming down
             bolt.classList.remove('flash'); void bolt.offsetWidth; bolt.classList.add('flash');
+            if (Math.random() < 0.25) {          // ~1-in-4 strikes reveal the skyline
+              sky.classList.remove('lit'); void sky.offsetWidth; sky.classList.add('lit');
+            }
           }
           strike();
         }, 9000 + Math.random() * 17000);

@@ -121,6 +121,9 @@ permalink: /games/
 .gdoor[data-grand="5"] .gdoor-arch::after { content:'👑'; opacity:1; font-size:14px; top:3px; }
 .gdoor[data-grand="4"] .gdoor-seam,
 .gdoor[data-grand="5"] .gdoor-seam { height:4px; box-shadow:0 -3px 20px 5px color-mix(in srgb, var(--acc) 62%, transparent); }
+/* CROWNED — all ten floors BEATEN: the door rests AJAR, light spilling from within. */
+.gdoor[data-grand="5"] .gdoor-door { transform:perspective(320px) rotateY(-15deg); }
+.gdoor[data-grand="5"] .gdoor-seam { height:5px; box-shadow:0 -3px 28px 7px color-mix(in srgb, var(--acc) 74%, transparent); }
 
 @media (prefers-reduced-motion: reduce){
   .ghub-doorway { animation:none; }
