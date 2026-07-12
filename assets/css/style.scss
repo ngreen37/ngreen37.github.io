@@ -5904,6 +5904,33 @@ body.theme-classified {
   transition: border-color 0.2s, color 0.2s; text-transform: uppercase;
 }
 .share-tx-btn:hover { border-color: #F5C518; color: #F5C518; }
+
+/* ── "Reduce flourish" (#16) — a manual still-site preference (footer toggle),
+   like prefers-reduced-motion but opt-in. Quiets the AMBIENT, looping motion
+   site-wide; the news ticker + one-shot entrances stay. Class rides on <html>. ── */
+.reduce-flourish .home-glyphs-track,
+.reduce-flourish .ribbon-track,
+.reduce-flourish .hero-rain::before,
+.reduce-flourish .hero-rain::after,
+.reduce-flourish .hero-lightning,
+.reduce-flourish .hero-skyflash,
+.reduce-flourish .drift-piece,
+.reduce-flourish .studio-drift-sigil,
+.reduce-flourish .studio-quad--patreon::before,
+.reduce-flourish .studio-corner-logo { animation: none !important; }
+.reduce-flourish .home-hero.is-rainy .hero-rain { opacity: 0 !important; }
+.reduce-flourish .studio-lean { display: none !important; }
+
+.flourish-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; border: 1px solid rgba(245, 197, 24, 0.28);
+  color: rgba(245, 197, 24, 0.6); font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: 0.14em; padding: 5px 14px;
+  cursor: pointer; border-radius: 3px;
+  transition: border-color 0.2s, color 0.2s; text-transform: uppercase;
+}
+.flourish-toggle:hover { border-color: #F5C518; color: #F5C518; }
+.flourish-toggle[aria-pressed="true"] { border-color: #6bffb8; color: #6bffb8; }
 .share-tx-flash {
   position: fixed; bottom: 88px; left: 50%;
   transform: translateX(-50%) translateY(10px);

@@ -7,6 +7,8 @@
   <meta name="description" content="Home of Princess and the Journey to Chess City (PJCC) — an animated series in the making, plus an arcade of free chess games, all built in the open by McPuppy Studios.">
   <link rel="canonical" href="{{ '/' | absolute_url }}">
   <meta name="theme-color" content="#0a0714">
+  <!-- honor the site-wide "reduce flourish" preference here too (before paint) -->
+  <script>try{if(localStorage.getItem('pjcc.flourish')==='0')document.documentElement.classList.add('reduce-flourish');}catch(e){}</script>
 
   <!-- Social / Open Graph (rich previews when the homepage is shared) -->
   {% assign og_img = site.image | default: '/assets/images/Princess_Color_v01.jpg' %}

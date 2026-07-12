@@ -16,6 +16,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- "Reduce flourish" — a manual still-site preference (like prefers-reduced-motion,
+       but opt-in). Applied to <html> here, before any paint, so there's no flash. -->
+  <script>try{if(localStorage.getItem('pjcc.flourish')==='0')document.documentElement.classList.add('reduce-flourish');}catch(e){}</script>
   <title>{% if page.title %}{{ page.title }} | {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
   <meta name="description" content="{{ page.description | default: site.description }}">
   <link rel="canonical" href="{{ page.url | absolute_url }}">
@@ -161,9 +164,31 @@
       <div class="fragment-counter" id="fragment-counter"></div>
       <div class="footer-actions">
         <button class="share-tx-btn" id="share-tx-btn">&#9672; Share This Transmission</button>
+        <button class="flourish-toggle" id="flourish-toggle" type="button" aria-pressed="false" title="Quiet the ambient motion across the whole site">✨ Reduce motion</button>
         <span id="chess-city-permit-slot"></span>
         <span id="press-credential-slot"></span>
       </div>
+      <script>
+      /* Reduce-flourish toggle — quiets ambient motion site-wide (weather, glyphs,
+         splash drifters, the sigil…). Persists in localStorage; applied on <html>
+         before paint by the head script above. */
+      (function () {
+        var b = document.getElementById('flourish-toggle');
+        if (!b) return;
+        function reduced() { try { return localStorage.getItem('pjcc.flourish') === '0'; } catch (e) { return false; } }
+        function sync() {
+          var on = reduced();
+          document.documentElement.classList.toggle('reduce-flourish', on);
+          b.setAttribute('aria-pressed', on ? 'true' : 'false');
+          b.textContent = on ? '✨ Motion: reduced' : '✨ Reduce motion';
+        }
+        b.addEventListener('click', function () {
+          try { localStorage.setItem('pjcc.flourish', reduced() ? '1' : '0'); } catch (e) {}
+          sync();
+        });
+        sync();
+      })();
+      </script>
     </div>
   </footer>
 
