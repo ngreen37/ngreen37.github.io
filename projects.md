@@ -24,12 +24,6 @@ body_class: theme-studio
 .studio-hub a:hover { border-color: #F5C518; color: #F5C518; }
 </style>
 
-{% comment %} Counts come live from the games registry (pjcc-games-data.js) — same source
-     as the PJCC home stats — so they never go stale. Both tiles link to the arcade. {% endcomment %}
-<div class="projects-stats" id="projects-stats" aria-label="Studio at a glance">
-  <a class="pstat" href="/games/"><span class="pstat-num" id="pstat-playable">—</span><span class="pstat-lab">Playable Games <span class="pstat-go">&#8599;</span></span></a>
-</div>
-
 <style>
 /* ---- Featured "Completed, playable now" card (Notation Blitz) ---- */
 .project-card-featured {
@@ -277,70 +271,45 @@ body_class: theme-studio
 
 </div>
 
-<h2 class="games-index-heading">All Games</h2>
-<ul class="games-index">
-  <li><a href="/games/the-gauntlet/">The Gauntlet <span class="ver">v1.2</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/notation-run/">Notation Blitz <span class="ver">v3.9</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/fork-in-the-road/">Fork in the Road <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/pirc-protocol/">The Pirc Protocol <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/clearance-delta/">Clearance: DELTA <span class="ver">v1.5</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/sky-run/">Sky Run <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/sand-mine-depths/">Sand Mine Depths <span class="ver">v3.0</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/tower-defense/">Siege on Chess City <span class="ver">v2.4</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/dungeon/">Princess Dungeon</a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/murphys-law/">Murphy's Law</a> <span class="games-index-note">— in development</span></li>
-  <li><a href="/games/blindfold-puzzles/">Blindfold Puzzles <span class="ver">v2.2</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/knights-tour/">Knight's Tour <span class="ver">v2.0</span></a> <span class="games-index-done">Completed</span></li>
-  <li><a href="/games/battle-room/">The Battle Room</a> <span class="games-index-note">— in development</span></li>
-  <li><a href="/games/follow-the-dog/">Follow the Dog</a> <span class="games-index-note">— in development</span></li>
-  <li><a href="/games/chess-city/">Chess City</a> <span class="games-index-note">— in development</span></li>
-  <li><a href="/games/the-gambit/">The Gambit</a> <span class="games-index-note">— in development</span></li>
-</ul>
+{% comment %} ── SPECIAL THANKS ─────────────────────────────────────
+     Out-of-the-way, near the foot of the studio page, but given real weight.
+     Wording is Nate's, kept verbatim (2026-07-12). {% endcomment %}
+<section class="mcp-thanks" aria-label="Special thanks">
+  <div class="mcp-thanks-rule" aria-hidden="true"></div>
+
+  <div class="mcp-thanks-block">
+    <h2 class="mcp-thanks-h">The Creator would like to thank</h2>
+    <ul class="mcp-thanks-people">
+      <li>Thank you <strong>Laura</strong>, for your overall generosity and saying to me that you believed I am capable of something special.</li>
+      <li>Thank you <strong>Josh</strong>, for listening to the initial ideas with patience and either feigned or real excitement, doesn't matter, and for the keyboard and mousepad that saved me <em>WEEKS</em> over time.</li>
+      <li>Thank you <strong>Kim</strong>, for letting me show you initial progress when I was still keeping it private.</li>
+      <li>Thank you <strong>Aunt Barb</strong>, for being someone that I can't help but want to talk to like closest family. You accelerated PJCC significantly.</li>
+      <li>Thank you <strong>Tucker</strong>, for inspiring me with your greatness. You are a big role model to me.</li>
+    </ul>
+  </div>
+
+  <div class="mcp-thanks-block">
+    <h3 class="mcp-thanks-sub">For the endless inspiration, McPuppy Studios would like to thank</h3>
+    <p class="mcp-thanks-muses">Norm Macdonald &middot; The Meadowlands &middot; The Lawrence Arms &middot; Trey Parker and Matt Stone &middot; Orson Scott Card &middot; John Steakley &middot; Neville Goddard</p>
+  </div>
+</section>
 
 <style>
-.games-index-heading { color: #F5C518; margin-top: 2.4rem; }
-/* condensed into columns 2026-07-12 (Nate) — a tight multi-column index, not a tall list */
-.games-index { list-style: none; padding: 0; margin: 0.6rem 0 1.4rem;
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0 24px; }
-.games-index li {
-  display: flex; align-items: baseline; gap: 8px;
-  padding: 6px 0; border-bottom: 1px solid rgba(245,197,24,0.14);
-}
-.games-index a { color: #f0e6ff; text-decoration: none; font-weight: 700; }
-.games-index a:hover { color: #ffd740; }
-.games-index .ver { font-size: 0.72em; color: #ff8fd0; vertical-align: super; }
-.games-index-done {
-  font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em;
-  color: #04110a; background: #6bffb8; border-radius: 999px; padding: 2px 8px; font-weight: 800;
-}
-.games-index-note { font-size: 0.8rem; color: #9a7fd4; }
-.games-index-term { font-size: 0.8rem; color: #ff6b6b; }
-
-/* Studio-at-a-glance stat counter (a single centered "Playable Games" tile) */
-.projects-stats { display: flex; justify-content: center; flex-wrap: wrap; gap: 14px; margin: 18px 0 6px; }
-.pstat { flex: 0 1 260px; min-width: 200px; text-align: center; padding: 14px 10px;
-  background: linear-gradient(135deg, #1f1147 0%, #2d1b69 100%);
-  border: 1px solid rgba(245,197,24,0.3); border-radius: 12px;
-  text-decoration: none; transition: transform .12s, border-color .12s; }
-.pstat:hover { transform: translateY(-2px); border-color: #F5C518; }
-.pstat-go { color: #F5C518; font-size: 0.8em; }
-.pstat-num { display: block; font-size: 2rem; font-weight: 800; color: #F5C518; line-height: 1; }
-.pstat-lab { display: block; margin-top: 6px; font-size: 0.74rem; text-transform: uppercase;
-  letter-spacing: 0.08em; color: #c9b6ef; }
+/* Special thanks — quiet, but it carries weight (Nate 2026-07-12) */
+.mcp-thanks { max-width: 640px; margin: 3.6rem auto 1rem; padding: 0 4px; text-align: center; }
+.mcp-thanks-rule { width: 70px; height: 2px; margin: 0 auto 1.8rem;
+  background: linear-gradient(90deg, transparent, #F5C518, transparent); }
+.mcp-thanks-block { margin: 0 0 2.2rem; }
+.mcp-thanks-h { color: #F5C518; font-size: 1.15rem; letter-spacing: 0.04em; margin: 0 0 1.1rem; }
+.mcp-thanks-people { list-style: none; padding: 0; margin: 0; text-align: left; }
+.mcp-thanks-people li { color: #d9ccf5; font-size: 0.96rem; line-height: 1.6;
+  padding: 0.7rem 0; border-bottom: 1px solid rgba(245,197,24,0.1); }
+.mcp-thanks-people li:last-child { border-bottom: none; }
+.mcp-thanks-people strong { color: #fff; font-weight: 700; }
+.mcp-thanks-people em { color: #ffd740; font-style: normal; font-weight: 700; letter-spacing: 0.03em; }
+.mcp-thanks-sub { color: #cdbcf2; font-size: 0.86rem; font-weight: 600; letter-spacing: 0.03em;
+  text-transform: uppercase; margin: 0 0 0.7rem; }
+.mcp-thanks-muses { color: #b7a4e0; font-size: 0.95rem; line-height: 1.9; margin: 0; font-style: italic; }
 </style>
-
-<script src="/assets/js/pjcc-games-data.js"></script>
-<script>
-(function () {
-  if (!window.PJCC_GAMES) return;
-  // "Playable now" mirrors the PJCC home stat: open halls (Learn/Arcade/Isle), not hidden or coming-soon.
-  var playable = PJCC_GAMES.filter(function (g) {
-    return !g.hidden && !g.soon && g.playable !== false &&
-      (g.cat === 'learn' || g.cat === 'arcade' || g.cat === 'isle');
-  }).length + 1;   // +1: The Gauntlet lives outside the registry at /games/the-gauntlet/
-  var e = document.getElementById('pstat-playable');
-  if (e) e.textContent = playable;
-})();
-</script>
 
 <p class="projects-footer-note">Check out the <a href="/blog/">blog</a> for more updates.</p>
