@@ -33,6 +33,3 @@ Jerry represents that inner sense of dread one gets in certain situations — th
 
 ## A word from Jerry
 *"Don't get comfortable. Comfortable is how they get you."*
-
-## Art
-*Illustration coming soon.*

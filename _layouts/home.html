@@ -840,34 +840,7 @@ function ctParts() {
 })();
 
 
-// #10 — once a session Princess takes the high road, straight through the hero,
-// and brushes the title on her way past. Movement only, as always.
-(function () {
-  var walker = document.getElementById('princess-walker');
-  var hero = document.querySelector('.home-hero');
-  var title = document.querySelector('.hero-title');
-  if (!walker || !hero || !title) return;
-  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  try { if (sessionStorage.getItem('pjcc.home.herowalk')) return; } catch (e) { return; }
-  var armed = true;
-  walker.addEventListener('animationstart', function (e) {
-    if (e.animationName !== 'pawn-walk' || !armed) return;
-    if (window.scrollY > 60) return;                 // hero off-screen — normal stroll
-    armed = false;
-    try { sessionStorage.setItem('pjcc.home.herowalk', '1'); } catch (e2) {}
-    var r = hero.getBoundingClientRect();
-    walker.style.bottom = Math.max(40, window.innerHeight - r.bottom + 4) + 'px';
-    setTimeout(function () {                         // mid-stroll: the bump
-      title.classList.add('ht-nudge');
-      setTimeout(function () { title.classList.remove('ht-nudge'); }, 2400);
-    }, 6800);
-  });
-  walker.addEventListener('animationend', function (e) {
-    if (e.animationName !== 'pawn-walk') return;
-    walker.style.bottom = '';                        // back to her usual path
-  });
-})();
-
+// (#10 Princess's hero walk-through removed 2026-07-12 with the companion — restore from git.)
 // (#14 DOOR CHECK removed 2026-07-10 — restore from git if ever missed.)
 
 // ⠀

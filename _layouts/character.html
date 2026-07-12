@@ -2,6 +2,13 @@
 layout: default
 ---
 
+{% comment %} 2026-07-12 (Nate) — this page was stripped back to the character itself:
+     the "Theme" leitmotif button, the Field Note aside, the Operative Dossier panel
+     and the Story Appearances timeline were all removed. The front-matter keys they
+     read (field_note, dossier_clearance, last_seen, chapters) are intentionally LEFT
+     in the character files, so nothing is lost and any of it can be restored by
+     putting the block back. Restore from git. {% endcomment %}
+
 <div class="character-top-nav">
   <a href="{{ '/characters/' | relative_url }}" class="back-btn">&larr; Back to Characters</a>
   {% comment %} Only show the Evolution Log link when a matching evolution exists
@@ -18,7 +25,6 @@ layout: default
       {% if page.full_name and page.full_name != "Name Undetermined" %}
         <p class="character-fullname">{{ page.full_name }}</p>
       {% endif %}
-      <button type="button" class="leitmotif-btn" id="leitmotif-btn" data-name="{{ page.title }}">♪ Hear {{ page.title }}'s theme</button>
     </div>
     {% if page.role %}
       <span class="character-role-badge">{{ page.role }}</span>
@@ -46,101 +52,9 @@ layout: default
 
   </div>
 
-  {% if page.field_note %}
-  <aside class="char-fieldnote">
-    <span class="char-fieldnote-eyebrow">&#9672; Field Note</span>
-    <p>{{ page.field_note }}</p>
-  </aside>
-  {% endif %}
-
-  {% if page.dossier_clearance %}
-  <div class="char-dossier">
-    <div class="char-dossier-bar">
-      <span class="char-dossier-eyebrow">&#9672; OPERATIVE DOSSIER</span>
-      <span class="char-dossier-clearance">{{ page.dossier_clearance }} CLEARANCE</span>
-    </div>
-    <div class="char-dossier-grid">
-      <div class="char-dossier-field">
-        <span class="char-dossier-key">LAST SEEN</span>
-        <span class="char-dossier-val">{{ page.last_seen | default: "UNKNOWN" }}</span>
-      </div>
-      {% if page.piece %}
-      <div class="char-dossier-field">
-        <span class="char-dossier-key">PIECE DESIGNATION</span>
-        <span class="char-dossier-val">{{ page.piece }}</span>
-      </div>
-      {% endif %}
-      {% if page.role %}
-      <div class="char-dossier-field">
-        <span class="char-dossier-key">ROLE</span>
-        <span class="char-dossier-val">{{ page.role }}</span>
-      </div>
-      {% endif %}
-    </div>
-  </div>
-  {% endif %}
-
-  {% if page.chapters %}
-  {% assign ch_list = page.chapters | split: "," %}
-  <div class="char-timeline">
-    <div class="char-timeline-label">Story Appearances</div>
-    <div class="char-timeline-track">
-      {% assign all_chs = "0,1,2,3,4,5,6,7" | split: "," %}
-      {% assign ch_names = "Backstory,Ch.1 Checker Town,Ch.2 First Move,Ch.3 The Journey,Ch.4 The Sea,Ch.5 Shogi Island,Ch.6 Chess City,Ch.7 The Tournament" | split: "," %}
-      {% for ch in all_chs %}
-        {% assign is_active = false %}
-        {% for pch in ch_list %}
-          {% assign pch_t = pch | strip %}
-          {% if pch_t == ch %}{% assign is_active = true %}{% break %}{% endif %}
-        {% endfor %}
-        {% assign ch_name = ch_names[forloop.index0] %}
-        <div class="char-ch-dot{% if is_active %} char-ch-dot--active{% endif %}" title="{{ ch_name }}">
-          <span class="char-ch-label">{% if ch == "0" %}B{% else %}{{ ch }}{% endif %}</span>
-        </div>
-        {% unless forloop.last %}
-        <div class="char-ch-line{% if is_active %} char-ch-line--active{% endif %}"></div>
-        {% endunless %}
-      {% endfor %}
-    </div>
-    <div class="char-timeline-hint">Hover dots for chapter names</div>
-  </div>
-  {% endif %}
-
 </article>
 
 <script>
   // Lore Codex: mark this character's file as recovered once you've read it.
   try { localStorage.setItem('codex.char.' + {{ page.slug | jsonify }}, '1'); } catch (e) {}
 </script>
-
-<script src="{{ '/assets/js/pjcc-leitmotif.js' | relative_url }}"></script>
-<script>
-  (function () {
-    var btn = document.getElementById('leitmotif-btn');
-    if (!btn) return;
-    if (!(window.AudioContext || window.webkitAudioContext)) { btn.style.display = 'none'; return; }
-    btn.addEventListener('click', function () {
-      if (window.PJCCLeitmotif) PJCCLeitmotif.play(btn.getAttribute('data-name'));
-      btn.classList.remove('playing'); void btn.offsetWidth; btn.classList.add('playing');
-    });
-  })();
-</script>
-
-<style>
-  .leitmotif-btn {
-    margin-top: 10px; display: inline-flex; align-items: center; gap: 6px;
-    background: rgba(245,197,24,0.12); color: #F5C518; border: 1px solid #b8902a;
-    border-radius: 999px; padding: 6px 14px; font-family: inherit; font-size: 0.82rem;
-    font-weight: 700; cursor: pointer; transition: all 0.15s;
-  }
-  .leitmotif-btn:hover { background: #F5C518; color: #1a0f3d; }
-  .leitmotif-btn.playing { animation: leitPulse 0.9s ease; }
-  @keyframes leitPulse { 0% { box-shadow: 0 0 0 0 rgba(245,197,24,0.5); } 100% { box-shadow: 0 0 0 14px rgba(245,197,24,0); } }
-
-  /* Field Note — one short, warm anecdote per character that models a good value. */
-  .char-fieldnote { max-width: 720px; margin: 20px 0 4px; padding: 14px 18px;
-    background: rgba(245,197,24,0.06); border-left: 3px solid #F5C518; border-radius: 8px; }
-  .char-fieldnote-eyebrow { display: block; font-family: 'Share Tech Mono', monospace; font-size: 0.66rem;
-    letter-spacing: 0.14em; color: #F5C518; text-transform: uppercase; margin-bottom: 6px; }
-  .char-fieldnote p { margin: 0; color: #e7dcff; font-style: italic; line-height: 1.55; }
-</style>

@@ -25,6 +25,3 @@ With Nate since birth, Argus keeps his head down, does his part, and shows up ev
 
 ## Role in the Story
 Argus represents steady loyalty -- the backbone of any good team. His gradual growth as a chess player mirrors his growth as a character: not flashy, but real.
-
-## Art
-*Illustration coming soon.*

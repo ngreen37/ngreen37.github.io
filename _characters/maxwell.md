@@ -25,6 +25,3 @@ Growing up together in Checker Town, Maxwell and Nate were inseparable. But wher
 
 ## Role in the Story
 Maxwell represents the pull of staying put -- the voice that says the dream isn't worth chasing. His presence gives Nate's journey its emotional stakes: leaving town means leaving him behind, too.
-
-## Art
-*Illustration coming soon.*

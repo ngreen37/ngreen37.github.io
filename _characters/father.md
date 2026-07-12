@@ -26,6 +26,3 @@ Works the mines but never discusses it.  Not home a lot.  Seems aloof, but there
 
 ## Role in the Story
 He imparts wisdom from time to time, but since he is not home often, his selflessness, attitude, and passion for life are what he provides to the people around him
-
-## Art
-*Illustration coming soon.*

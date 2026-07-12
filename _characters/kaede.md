@@ -28,6 +28,3 @@ Kaede grew up on **Shogi Island**, she and her brother were both to be part of a
 Kaede is the bridge between Checker Town and Shogi Island — the friendly face of a language and a world the crew doesn't understand yet. She **leads all the Japanese teaching** — the **[Reading Room](/games/reading-room/)** and the Academy's **Shogi** dojo alike — with her younger brother **[Matsu](/characters/matsu/)** helping.
 
 - 「ようこそ、読書室へ。」 — "Welcome to the Reading Room."
-
-## Art
-*Illustration coming soon.*

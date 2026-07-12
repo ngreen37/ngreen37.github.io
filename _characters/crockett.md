@@ -26,6 +26,3 @@ Where Argus is steady, Crockett is chaotic. He is happy-go-lucky, and is the onl
 
 ## Role in the Story
 Crockett is often oblivious to the world around him, for better or for worse.  Distracted easily, and gets the group in sticky situations as a result. He reminds us to take in the moment and be who we are.
-
-## Art
-*Illustration coming soon.*

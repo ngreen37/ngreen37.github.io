@@ -565,6 +565,24 @@ Town, Bob-Proctor mindset) and **Michael** (Chess City, truly righteous); **The 
 ---
 
 ## 🅿️ Parked (pulled from the live site, kept so the work isn't lost)
+
+- **🐾 The player's OWN companion** *(2026-07-12 — Nate's call)*. Princess used to be **your**
+  companion: a site-wide walker plus a "Princess & You" panel on her page (training XP, a bond
+  meter, daily walks, memories). That was removed — **Princess is her own character, not the
+  visitor's pet.** The idea that survives: **the player should get a companion of their own** —
+  earned/chosen, with its own name and growth, so the bond is *theirs* and Princess stays a
+  character in the story rather than a pet mechanic. All the machinery (XP curve, bond meter,
+  walk loop, memory log) is worth reusing. **Restore the old code from git:** `pjcc-princess.js`,
+  `pjcc-princess-companion.js`, the `.princess-walker` block in `style.scss`, the walker markup in
+  `_layouts/default.html`, the gallery-visit script in `fan-art.md`, and the "Princess & You"
+  section in `_characters/princess.md` — all as of the commit before this one.
+- **🪞 Real vs. Rendered — the Mirror Protocol** *(2026-07-12 — Nate: "save RvR for later")*. The
+  drag-divider slider on Princess's page comparing her 3D render against a photo of the real dog.
+  Pulled off the character page for now, **not abandoned**. The reusable `.img-compare` component
+  went with it. Natural future home: an **"Day 1 vs Now" evolution comparison** (already proposed in
+  `_pjcc/flair-log.md` #32), or the Blender/production build-log. **Restore from git:** the
+  `.img-compare` + `.rvr-*` blocks in `assets/css/style.scss` and the `rvr-section` markup + slider
+  script in `_characters/princess.md`, as of the commit before this one.
 - **The Daily Dispatch** *(pulled 2026-07-06)* — the daily word-drop game at `/daily/` (Wordle-style seeded
   drop, shared daily board, dispatch streak, share card). Page deleted + every link stripped (nav dropdown,
   mobile quick-nav → now Academy, PJCC-home card, dossier quick-launch, ⌘K palette, JP dict). The

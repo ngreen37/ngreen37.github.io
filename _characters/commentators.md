@@ -23,6 +23,3 @@ The **three commentators** are the voice of the tournaments — the booth that c
 
 ## Role in the Story
 The commentators turn a chess game into an **spectacle** — they're the connective tissue between the games and the show: their banter is where rules get explained, further plot lines, and add comic relief. 
-
-## Art
-*Illustration coming soon.*

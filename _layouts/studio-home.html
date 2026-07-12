@@ -292,23 +292,36 @@
   .studio-lean.lean-games   { background:radial-gradient(circle at 10% 88%, rgba(60,188,252,0.059) 0%, rgba(60,188,252,0.041) 25%, rgba(60,188,252,0.024) 45%, rgba(60,188,252,0.011) 65%, rgba(60,188,252,0.003) 82%, transparent 100%); }
   .studio-lean.lean-patreon { background:radial-gradient(circle at 90% 88%, rgba(45,196,130,0.059) 0%, rgba(45,196,130,0.041) 25%, rgba(45,196,130,0.024) 45%, rgba(45,196,130,0.011) 65%, rgba(45,196,130,0.003) 82%, transparent 100%); }
 
-  /* Secret ✦ — a small, dim star (dimmer than every other drifter) that starts
-     fully off-screen to the right and FLIES IN, resting in the right gutter.
-     2026-07-12 (Nate: "it just sits there"): the old CSS fly-in ran on a fixed 5s
-     delay — which, on a first visit, happens entirely BEHIND the ~8.6s cold-open
-     overlay, so by the time you see the page it's already parked. Now it's parked
-     off-screen and the fly-in is triggered by JS once the page is actually visible
-     (see the splash-interactions script: .is-in added after the cold-open clears). */
+  /* Secret ✦ — the (very dim) star that is also the door to /classified/.
+     2026-07-12 (Nate: "it stops at like 80% to the right"): it used to fly IN and
+     PARK in the right gutter — an eased transition that decelerated to a halt, which
+     is exactly what he was seeing. Now it CROSSES: it enters off the right edge and
+     travels at a CONSTANT speed (linear) all the way off the LEFT edge, passing
+     BEHIND the quad grid on the way (.studio-drifters is z-index:0, the quads sit
+     above it — so it slides behind the panels and reappears in the gutters).
+     It's also dimmer now (0.10 → 0.06).
+     It REPEATS on a long cycle: the flight is the first 12s of a 48s loop, and it's
+     parked invisibly off-screen for the rest. That matters because this star is the
+     only way in to /classified/ — a single one-shot flight would make the secret
+     unreachable for anyone who didn't catch it. Now you can always wait for the next
+     pass. (JS adds .is-in once the cold-open clears; see the splash script.) */
   #drift-secret {
-    left:auto; bottom:auto; right:4.5%; top:34%;
+    left:auto; bottom:auto; right:-8%; top:34%;
     font-size:28px;
-    color:rgba(205,205,230,0.10);          /* dim — a hair brighter so the flight reads */
-    opacity:0; transform:translateX(180px);
+    color:rgba(205,205,230,0.06);          /* dimmer than every other drifter */
+    opacity:0;
     animation:none;
+    will-change:transform;
   }
-  #drift-secret.is-in {
-    opacity:1; transform:translateX(0);
-    transition:transform 1.5s cubic-bezier(.22,.61,.36,1), opacity 1.4s ease-out;
+  #drift-secret.is-in { animation:secret-fly 48s linear infinite; }
+  /* transform is declared only at the two ends of the flight, so it interpolates in
+     ONE straight linear segment = genuinely constant speed. */
+  @keyframes secret-fly {
+    0%   { transform:translateX(0);              opacity:0; }
+    1%   { opacity:1; }
+    24%  { opacity:1; }
+    25%  { transform:translateX(calc(-120vw));   opacity:0; }
+    100% { transform:translateX(calc(-120vw));   opacity:0; }
   }
 
   /* Idea #3 — the sigil bloom (the "ACCcccccc" carving that flashes on entry).
@@ -398,7 +411,8 @@
   @media (prefers-reduced-motion: reduce){
     .studio-lean, .studio-warp, .studio-drift-sigil { transition:none; }
     .studio-drift-sigil { display:none; }
-    #drift-secret { opacity:0.10; transform:none; transition:none; }   /* no fly-in — just rest in place */
+    /* no flight — park it visibly in the right gutter so the secret stays reachable */
+    #drift-secret { right:4.5%; opacity:0.10; transform:none; transition:none; animation:none !important; }
     .drift-piece { animation:none !important; }
     .studio-quad { animation:none !important; }
     .studio-corner-logo { animation:none !important; }
@@ -553,10 +567,11 @@
       glyphs.forEach(function (g) { seal.appendChild(g); });
     }
 
-    // Secret ✦ flies in from the right — but only once the page is actually
+    // Secret ✦ starts its crossing (right → behind the quads → off the left edge,
+    // constant speed, repeating every 48s) — but only once the page is actually
     // visible. On a first visit that means AFTER the ~8.6s cold-open clears
-    // (otherwise the flight is wasted behind the overlay); on a return visit,
-    // shortly after load. Parked off-screen in CSS until .is-in is added.
+    // (otherwise the first pass is wasted behind the overlay); on a return visit,
+    // shortly after load. Parked off-screen in CSS until .is-in starts the loop.
     var star = document.getElementById('drift-secret');
     if (star && !reduce) {
       var seenStar = false; try { seenStar = !!localStorage.getItem('mcpuppy_seen'); } catch (e) {}

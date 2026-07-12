@@ -3636,97 +3636,18 @@ body.theme-classified {
    IMAGE COMPARISON — Drag-divider (shared component)
    ============================================================= */
 
-.img-compare {
-  position: relative;
-  overflow: hidden;
-  cursor: ew-resize;
-  border-radius: 8px;
-  touch-action: none;
-  user-select: none;
-}
-
-.img-compare img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  pointer-events: none;
-}
-
-.img-compare-after {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-}
-
-.img-compare-after img {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.img-compare-handle {
-  position: absolute;
-  top: 0; bottom: 0;
-  width: 3px;
-  background: rgba(255,255,255,0.9);
-  cursor: ew-resize;
-  transform: translateX(-50%);
-  z-index: 10;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 36px;
-    height: 36px;
-    background: rgba(255,255,255,0.95);
-    border-radius: 50%;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.5);
-  }
-
-  &::after {
-    content: '◀▶';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 10px;
-    color: #000;
-    letter-spacing: 1px;
-    z-index: 1;
-  }
-}
-
-.img-compare-label {
-  position: absolute;
-  bottom: 12px;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  padding: 3px 9px;
-  border-radius: 3px;
-  pointer-events: none;
-  z-index: 5;
-  background: rgba(0,0,0,0.65);
-}
-
-.img-compare-label-left  { left: 12px;  color: rgba(255,255,255,0.75); }
-.img-compare-label-right { right: 12px; color: rgba(255,140,0,0.9); }
 
 
 
 
 
 
-.rvr-section { margin-top: 30px; padding-top: 22px; border-top: 1px solid rgba(245,197,24,0.12); }
-.rvr-eyebrow { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: rgba(196,181,253,0.42); margin-bottom: 5px; }
-.rvr-title { font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 700; color: #c4b5fd; margin-bottom: 14px; }
+
+
+
+
+
+
 
 /* =============================================================
    WORLD MAP PAGE
@@ -4276,97 +4197,15 @@ body.theme-classified {
    Character Chapter Timeline
    ============================================================= */
 
-.char-timeline {
-  margin-top: 32px;
-  padding-top: 24px;
-  border-top: 1px solid rgba(100, 38, 220, 0.15);
-}
 
-.char-timeline-label {
-  font-family: 'Poppins', sans-serif;
-  font-size: 10px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: rgba(196, 181, 253, 0.4);
-  margin-bottom: 14px;
-}
 
-.char-timeline-track {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  padding-bottom: 4px;
-}
 
-.char-ch-dot {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: default;
-  transition: border-color 0.2s, background 0.2s;
-  position: relative;
 
-  &:hover::after {
-    content: attr(title);
-    position: absolute;
-    bottom: calc(100% + 6px);
-    left: 50%;
-    transform: translateX(-50%);
-    white-space: nowrap;
-    background: rgba(10, 5, 25, 0.95);
-    color: rgba(196, 181, 253, 0.9);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 1px;
-    padding: 3px 7px;
-    border-radius: 4px;
-    border: 1px solid rgba(100, 38, 220, 0.3);
-    pointer-events: none;
-    z-index: 10;
-  }
-}
 
-.char-ch-dot--active {
-  border-color: rgba(245, 197, 24, 0.65);
-  background: rgba(245, 197, 24, 0.12);
-}
 
-.char-ch-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.3);
-}
 
-.char-ch-dot--active .char-ch-label {
-  color: rgba(245, 197, 24, 0.85);
-}
 
-.char-ch-line {
-  flex: 1;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.08);
-  min-width: 8px;
-  max-width: 32px;
-}
 
-.char-ch-line--active {
-  background: rgba(245, 197, 24, 0.3);
-}
-
-.char-timeline-hint {
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.18);
-  margin-top: 8px;
-  font-style: italic;
-}
 
 /* =============================================================
    Redacted Hold-to-Reveal
@@ -4572,92 +4411,8 @@ body.theme-classified {
   100% { transform: translateX(-50%); }
 }
 
-/* =============================================================
-   Princess Walker
-   ============================================================= */
-
-.princess-walker {
-  position: fixed;
-  bottom: 18px;
-  left: 110vw;
-  z-index: 9000;
-  pointer-events: auto;
-  cursor: pointer;
-  opacity: 0;
-  line-height: 1;
-  filter: drop-shadow(0 6px 7px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 9px rgba(245, 197, 24, 0.45));
-  user-select: none;
-  will-change: transform;
-}
-
-/* 2026-07-11 perf: the stroll used to animate `left` — a layout + repaint every
-   frame for 14 seconds (with two drop-shadows re-rendering), every page, every
-   couple of minutes. It rides transform now; the bob moved to the inner figure
-   so the walk owns the outer transform. */
-.princess-walker.is-walking {
-  opacity: 1;
-  animation: pawn-walk 14s linear forwards;
-}
-
-@keyframes pawn-walk {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(calc(-110vw - 60px)); }
-}
-
-.princess-walker.is-walking .princess-3d { animation: pawn-bob 0.42s ease-in-out infinite; }
-.princess-walker.is-walking .princess-3d.is-cheering { animation: p3d-spin 0.9s ease-in-out; }
-
-@keyframes pawn-bob {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-7px); }
-}
-
-/* Little 3D figurine of Princess — a glossy crowned pawn that gently turns */
-.princess-3d {
-  position: relative;
-  width: 30px;
-  height: 46px;
-  transform-style: preserve-3d;
-  animation: p3d-wobble 2.6s ease-in-out infinite;
-}
-
-
-
-
-
-
-
-
-
-@keyframes p3d-wobble {
-  0%, 100% { transform: rotateY(-24deg) rotateZ(-3deg); }
-  50%      { transform: rotateY(24deg) rotateZ(3deg); }
-}
-
-/* Dog-render walker — her real 3D portrait as a plain circular token (no crown, no
-   gold ring — removed 2026-06-25). Overrides the old figurine. */
-.princess-3d.princess-dog { width: 40px; height: 40px; animation: none; }
-.princess-dog .p3d-img {
-  display: block; width: 40px; height: 40px; border-radius: 50%;
-  object-fit: cover; object-position: top center;
-  box-shadow: inset 0 0 6px rgba(0,0,0,0.35);
-  /* the sway lives on the img so the bob (on .princess-3d) can run alongside */
-  animation: dog-sway 2.8s ease-in-out infinite;
-}
-@keyframes dog-sway { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
-
-/* easter-egg cheer when clicked */
-.princess-3d.is-cheering { animation: p3d-spin 0.9s ease-in-out; }
-
-@keyframes p3d-spin {
-  0%   { transform: rotateY(0deg) scale(1); }
-  50%  { transform: rotateY(360deg) scale(1.28); }
-  100% { transform: rotateY(720deg) scale(1); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .princess-3d, .princess-3d.princess-dog { animation: none; }
-}
+/* The Princess Walker / companion CSS was removed 2026-07-12 with the feature
+   (she was the visitor's pet; she isn't any more). Restore from git. */
 
 /* =============================================================
    Character Name Glitch
@@ -5376,67 +5131,13 @@ body.theme-classified {
    Character Dossier Panel
    ============================================================= */
 
-.char-dossier {
-  margin-top: 32px;
-  border: 1px solid rgba(245, 197, 24, 0.18);
-  border-radius: 8px;
-  background: rgba(245, 197, 24, 0.025);
-  overflow: hidden;
-}
 
-.char-dossier-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
-  background: rgba(245, 197, 24, 0.055);
-  border-bottom: 1px solid rgba(245, 197, 24, 0.12);
-  flex-wrap: wrap;
-  gap: 6px;
-}
 
-.char-dossier-eyebrow {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  color: rgba(245, 197, 24, 0.55);
-  text-transform: uppercase;
-}
 
-.char-dossier-clearance {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  color: rgba(245, 197, 24, 0.32);
-  text-transform: uppercase;
-}
 
-.char-dossier-grid {
-  display: flex;
-  gap: 28px;
-  padding: 14px 16px 10px;
-  flex-wrap: wrap;
-}
 
-.char-dossier-field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
 
-.char-dossier-key {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 8px;
-  letter-spacing: 0.15em;
-  color: rgba(255, 255, 255, 0.22);
-  text-transform: uppercase;
-}
 
-.char-dossier-val {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.62);
-}
 
 
 

@@ -340,46 +340,5 @@ permalink: /fan-art/
 })();
 </script>
 
-<script>
-// Princess visits the gallery — every so often she wanders up to a hung piece,
-// pauses in front of it, and wags. Dormant while the wall is empty.
-(function () {
-  var pieces = document.querySelectorAll('.fa-piece');
-  var walker = document.getElementById('princess-walker');
-  if (!pieces.length || !walker) return;
-  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  var visiting = false;
-  function visit() {
-    if (visiting || walker.classList.contains('is-walking')) { schedule(); return; }
-    var vis = Array.prototype.filter.call(pieces, function (p) {
-      var r = p.getBoundingClientRect();
-      return r.top < window.innerHeight - 140 && r.bottom > 140;
-    });
-    if (!vis.length) { schedule(); return; }
-    var r = vis[Math.floor(Math.random() * vis.length)].getBoundingClientRect();
-    var x = Math.max(10, Math.min(window.innerWidth - 50, r.left + r.width / 2 - 15));
-    visiting = true;
-    walker.classList.add('is-visiting');
-    walker.style.left = x + 'px';
-    setTimeout(function () {                       // arrived — wag at the art
-      walker.classList.add('is-wagging');
-      setTimeout(function () {                     // done — head home
-        walker.classList.remove('is-wagging');
-        walker.style.left = '110vw';
-        setTimeout(function () {
-          walker.classList.remove('is-visiting'); walker.style.left = '';
-          visiting = false; schedule();
-        }, 5200);
-      }, 3400);
-    }, 5200);
-  }
-  function schedule() { setTimeout(visit, 30000 + Math.random() * 45000); }
-  setTimeout(visit, 12000);
-})();
-</script>
-<style>
-/* the gallery visit: she slides in on `left`, then wags in front of the art */
-.princess-walker.is-visiting { opacity: 1; transition: left 5s ease-in-out; }
-.princess-walker.is-wagging .princess-3d { animation: princess-wag 0.55s ease-in-out 6; }
-@keyframes princess-wag { 0%,100% { transform: rotate(0); } 30% { transform: rotate(-9deg); } 70% { transform: rotate(9deg); } }
-</style>
+{% comment %} "Princess visits the gallery" removed 2026-07-12 with the site-wide companion
+     (she was the visitor's pet; she isn't any more). Restore from git. {% endcomment %}

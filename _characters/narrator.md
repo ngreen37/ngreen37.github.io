@@ -28,6 +28,3 @@ He was born and raised in Checker Town, a place where hope is in short supply an
 Nate is the lens through which we experience Checker Town, Chess City, and the world in between. His relationship with Princess is the emotional core of the series.
 
 With their father often away, he quietly became a second father to his younger sister, [Auston](/characters/auston/) — two years younger and the person he is really doing all of this for. That paternal bond, formed before he was ever ready for it, is what turns his ambition into something selfless: he isn't only chasing a better life, he's building one big enough for her.
-
-## Art
-*Illustration coming soon.*

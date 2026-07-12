@@ -27,7 +27,7 @@ const PRECACHE = [
   '/assets/css/pjcc-portal.css', '/assets/css/pjcc-nav.css',
   '/assets/js/pjcc-time.js', '/assets/js/pjcc-nav.js', '/assets/js/pjcc-config.js',
   '/assets/js/pjcc-profile.js', '/assets/js/pjcc-lang.js', '/assets/js/pjcc-flair.js',
-  '/assets/js/pjcc-portal.js', '/assets/js/pjcc-princess.js', '/assets/js/pwa-register.js',
+  '/assets/js/pjcc-portal.js', '/assets/js/pwa-register.js',
   '/assets/images/pwa/icon-192.png', '/assets/images/pwa/icon-512.png',
   '/assets/images/pwa/apple-touch-icon.png', '/assets/images/favicon.svg',
 ];

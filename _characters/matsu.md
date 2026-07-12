@@ -27,6 +27,3 @@ Matsu and Kaede grew up on Shogi Island. He chose to stay on Shogi Island, but s
 An **Ancillary character** and the Shogi Island anchor — the reason the island feels lived-in rather than a stop on a map. Kaede leads the Japanese teaching everywhere; Matsu is her **helper** — where she teaches you to *understand* the island, he helps you *respect* it.
 
 「松は枯れない。」 — *Matsu wa karenai.* — "The pine does not wither."
-
-## Art
-*Illustration coming soon.*

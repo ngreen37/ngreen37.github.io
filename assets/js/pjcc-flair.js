@@ -147,19 +147,7 @@
       burst(r.left + r.width / 2, r.top + r.height / 2);
     });
 
-    // Princess easter egg: spin + woof + sparkles
-    var walker = document.getElementById('princess-walker');
-    var fig = document.getElementById('princess-3d');
-    if (walker && fig) {
-      walker.addEventListener('click', function () {
-        var r = fig.getBoundingClientRect();
-        if (!reduce) {
-          fig.classList.remove('is-cheering'); void fig.offsetWidth; fig.classList.add('is-cheering');
-          setTimeout(function () { fig.classList.remove('is-cheering'); }, 950);
-        }
-        burst(r.left + r.width / 2, r.top, ['❤', '✨', '♟']); // ❤ ✨ ♟
-      });
-    }
+    // (The Princess click easter egg went with the companion — removed 2026-07-12.)
   }
 
   ready(function () {

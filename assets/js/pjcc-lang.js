@@ -96,7 +96,7 @@
   // ---- what NOT to translate ------------------------------------------------
   var SKIP_TAGS = { SCRIPT:1, STYLE:1, NOSCRIPT:1, CODE:1, PRE:1, KBD:1, SAMP:1,
                     TEXTAREA:1, INPUT:1, SELECT:1, OPTION:1, CANVAS:1, SVG:1 };
-  var SKIP_SEL = '[data-no-translate], .notranslate, .pjcc-sigil, .princess-walker,' +
+  var SKIP_SEL = '[data-no-translate], .notranslate, .pjcc-sigil,' +
                  ' #nav-operative, #lang-toggle, .world-ticker-wrap, .footer-ribbon-wrap,' +
                  ' [contenteditable], .pjcc-credits, .dsr-name, .lb-name, .cmdk-trigger-kbd';
   function skip(node) {

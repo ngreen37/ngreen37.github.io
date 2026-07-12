@@ -31,6 +31,3 @@ She believes in him completely, and is willing to give her energy to the cause w
 The sibling companion who adds emotional depth to Nate while also providing a chance to share her journey. Chess City stops being only about Nate's ambition the moment you understand he is also doing it for **her** — to build a life big enough for a little sister who may need a little push to reach for the stars. 
 
 At the Academy's **Shogi** hall she's the **first student**, never the teacher — Kaede leads the dojo, with her brother Matsu helping. Auston just never leaves the board, so when you sit down to play she's the one across from you, practicing move for move.
-
-## Art
-*Illustration coming soon.*
