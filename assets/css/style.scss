@@ -1036,68 +1036,9 @@ pre code {
 /* (The home counters, the "basement", and its street band were all removed
    2026-07-10 — the home page now ends at the cast. Restore from git.) */
 
-/* --- Paint drips: one element per run so each can vary and animate on its own.
-   Each <span> carries --x (position), --w (width), --len (length), --col (rgb),
-   --dur (speed) and --delay. Wider runs get slower durations, so they drip a
-   little more lazily than the skinny ones. --- */
-.home-drips {
-  /* 2026-07-10: the drips left the basement band — they wash the FIRST SCREEN
-     as a VERY dim ambient layer, layered exactly like the aurora.
-     2026-07-11 perf: capped at 100vh (was full page height — a huge composited
-     surface) + paint containment; the JS sleeps the field when scrolled away. */
-  position: absolute; top: 0; left: 0; right: 0; height: 100vh;
-  overflow: hidden; pointer-events: none; z-index: 0;
-  opacity: 0.10;
-  contain: layout style paint;
-  /* (2026-07-11 perf: the bottom-fade mask removed — a mask over a layer full of
-     animating children re-rasterizes the whole group per frame on iOS, and each
-     run's own gradient already fades to transparent) */
-}
-@media (max-width: 700px) {
-  /* phones: half the runs — 8 drips read the same at 0.10 opacity */
-  .home-drips .drip:nth-child(even) { display: none; }
-}
-/* overnight: the paint cools */
-body.sky-night .home-drips { opacity: 0.055; }
-/* 2026-07-11 (Nate): the drips are now FROZEN — static paint, no animation. Kills
-   16 always-animating layers at ~zero visual cost (they're ~0.10 opacity ambient).
-   The .drip--fall/--blob motion rules below are likewise dropped. */
-.drip {
-  position: absolute;
-  top: 0;
-  left: var(--x);
-  width: var(--w);
-  height: var(--len);
-  border-radius: 0 0 var(--w) var(--w);
-  /* --b = per-drip brightness (default 1); lets each run read brighter or dimmer */
-  background: linear-gradient(180deg, rgba(var(--col), calc(0.72 * var(--b, 1))) 0%, rgba(var(--col), calc(0.42 * var(--b, 1))) 40%, rgba(var(--col), calc(0.12 * var(--b, 1))) 75%, transparent 100%);
-  transform-origin: top center;
-}
-@keyframes drip-run {
-  0%, 100% { transform: scaleY(0.9);  opacity: 0.82; }
-  50%      { transform: scaleY(1.07); opacity: 1; }
-}
-
-/* --- Shape variants: a livelier, more organic drip field. Every variant keeps the
-   --x/--w/--len/--col/--dur/--delay knobs; the modifier class changes form + motion. --- */
-
-/* teardrop blob — a rounded body (no long run) */
-.drip--blob {
-  height: calc(var(--w) * 2.6);
-  border-radius: 48% 48% 50% 50% / 38% 38% 62% 62%;
-  background: radial-gradient(ellipse at 46% 32%, rgba(var(--col), calc(0.68 * var(--b, 1))), rgba(var(--col), calc(0.26 * var(--b, 1))) 62%, transparent 82%);
-}
-
-/* a detached droplet part-way down the run (static now) */
-.drip--fall {
-  width: calc(var(--w) * 1.1); height: calc(var(--w) * 1.6);
-  border-radius: 50% 50% 50% 50% / 38% 38% 62% 62%;
-  background: radial-gradient(circle at 44% 30%, rgba(var(--col), calc(0.85 * var(--b, 1))), rgba(var(--col), calc(0.32 * var(--b, 1))) 66%, transparent 82%);
-  transform: translateY(calc(var(--len, 120px) * 0.45));   /* frozen mid-fall so it reads as a droplet, not a dot at the top */
-}
-
-/* skinny trickle */
-.drip--thin { width: 2px; }
+/* (Paint drips removed 2026-07-12 — Nate: "we aren't using them." The whole
+   .home-drips / .drip* field + markup is gone; restore from git before this
+   commit if ever missed.) */
 
 /* (.stats-inner + .hstat tiles removed 2026-07-11 — the home counters left 2026-07-10; restore from git.) */
 
@@ -5871,58 +5812,9 @@ body.theme-classified {
 
 /* (11 — ink-wipe block removed 2026-07-11 — no markup anywhere.) */
 
-/* 12 — Aurora bands on PJCC page */
-/* Time-of-day sky — the aurora keeps Checker Town time (class set by home JS).
-   2026-07-11 perf: the tint sits on the BANDS, not the wrap — a filter on the
-   full first-screen wrap re-rendered the whole layer every animation frame. */
-body.sky-dawn  .aurora-band { filter: hue-rotate(-24deg) brightness(1.12); }
-body.sky-dusk  .aurora-band { filter: hue-rotate(22deg) saturate(1.25); }
-body.sky-night .aurora-band { filter: brightness(0.82) saturate(1.35); }
-
-@keyframes aurora-drift {
-  /* the slow drifting violet bands behind the first screen. 2026-07-11: Nate
-     wanted them clearly VISIBLE (was near-invisible at 0.05/0.09) — set to a
-     real ambient level. Easy to nudge here. */
-  0%   { transform: translateX(-55%) skewX(-14deg); opacity: 0.34; }
-  50%  { opacity: 0.48; }
-  100% { transform: translateX(55%) skewX(-14deg); opacity: 0.34; }
-}
-/* pause the drift while it's scrolled off-screen (class set by home JS) */
-.aurora-wrap.is-asleep .aurora-band { animation-play-state: paused; }
-.aurora-wrap {
-  position: absolute;
-  /* 2026-07-11 perf: the sky is the first screen, not the whole page —
-     capping the layer at 100vh shrinks the composited surface dramatically */
-  top: 0; left: 0; right: 0; height: 100vh;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 0;
-  contain: layout style paint;
-}
-.aurora-band {
-  position: absolute;
-  left: -70%;
-  width: 60%;
-  border-radius: 50%;
-  pointer-events: none;
-}
-.aurora-band:nth-child(1) {
-  top: 8%; height: 180px;
-  background: linear-gradient(180deg, #5B2D8E 0%, transparent 100%);
-  animation: aurora-drift 22s ease-in-out infinite;
-}
-.aurora-band:nth-child(2) {
-  top: 38%; height: 110px;
-  background: linear-gradient(180deg, #2D1B69 0%, transparent 100%);
-  animation: aurora-drift 17s ease-in-out infinite;
-  animation-delay: -7s;
-}
-.aurora-band:nth-child(3) {
-  top: 62%; height: 150px;
-  background: linear-gradient(180deg, #5B2D8E 0%, #0a0714 70%, transparent 100%);
-  animation: aurora-drift 28s ease-in-out infinite;
-  animation-delay: -14s;
-}
+/* (12 — Aurora bands removed 2026-07-12, Nate. The whole .aurora-wrap/.aurora-band
+   system + its markup + the offscreen-pause observer are gone; the hero's ambient
+   glow is now the sky-phase gradient + the weather. Restore from git if missed.) */
 
 /* 13 — Location fake weather */
 .loc-weather {
