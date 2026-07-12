@@ -19,6 +19,10 @@
   <!-- "Reduce flourish" — a manual still-site preference (like prefers-reduced-motion,
        but opt-in). Applied to <html> here, before any paint, so there's no flash. -->
   <script>try{if(localStorage.getItem('pjcc.flourish')==='0')document.documentElement.classList.add('reduce-flourish');}catch(e){}</script>
+  <!-- Shared town clock (one source of truth for Eastern time / date / weather) +
+       the town-wide weather class, set before paint so the whole site shares the day. -->
+  <script src="{{ '/assets/js/pjcc-time.js' | relative_url }}"></script>
+  <script>try{var w=window.PJCC_TIME&&PJCC_TIME.weather();if(w&&w.kind!=='clear'){document.documentElement.classList.add('town-'+w.kind);document.addEventListener('DOMContentLoaded',function(){var o=document.createElement('div');o.className='town-weather-overlay';o.setAttribute('aria-hidden','true');document.body.appendChild(o);});}}catch(e){}</script>
   <title>{% if page.title %}{{ page.title }} | {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
   <meta name="description" content="{{ page.description | default: site.description }}">
   <link rel="canonical" href="{{ page.url | absolute_url }}">

@@ -5931,6 +5931,15 @@ body.theme-classified {
 }
 .flourish-toggle:hover { border-color: #F5C518; color: #F5C518; }
 .flourish-toggle[aria-pressed="true"] { border-color: #6bffb8; color: #6bffb8; }
+
+/* ── Town-wide weather (#2) — the whole town shares one forecast (PJCC_TIME): on
+   rain/mist days a soft atmospheric wash tints EVERY page (academy included).
+   Static + opacity-only (no per-frame cost — the animated rain stays hero-only,
+   which is what fixed the old full-screen-rain lag). Off under reduce-flourish. ── */
+.town-weather-overlay { position: fixed; inset: 0; z-index: 9990; pointer-events: none; opacity: 0; transition: opacity 0.8s ease; }
+html.town-rain .town-weather-overlay { opacity: 1; background: linear-gradient(180deg, rgba(90,120,180,0.10) 0%, rgba(40,60,110,0.05) 100%); }
+html.town-mist .town-weather-overlay { opacity: 1; background: radial-gradient(120% 80% at 50% 0%, rgba(205,214,235,0.11), rgba(205,214,235,0.04) 60%, transparent); }
+html.reduce-flourish .town-weather-overlay { display: none; }
 .share-tx-flash {
   position: fixed; bottom: 88px; left: 50%;
   transform: translateX(-50%) translateY(10px);

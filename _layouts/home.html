@@ -606,6 +606,7 @@ body:has(.home-flow) .footer-ribbon-wrap { display: none; }
 // (and every visitor, wherever they are) shares one clock. DST-aware via Intl;
 // falls back to the visitor's local time only if Intl time zones are missing.
 function ctParts() {
+  if (window.PJCC_TIME) return PJCC_TIME.parts();   // one town clock — assets/js/pjcc-time.js
   try {
     var f = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour12: false,
       year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit' });

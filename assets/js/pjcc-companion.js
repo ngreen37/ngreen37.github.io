@@ -99,8 +99,8 @@
   }
   function petEmojiFor(s, bi) { var p = PETS[s.pet]; return p.ems[(bi || bondInfo(s)).stage]; }
   function displayName(s) { return s.names[s.pet] || PETS[s.pet].name; }
-  function localHour() { return new Date().getHours(); }
-  function isNight() { var h = localHour(); return h < 7 || h >= 20; }
+  function localHour() { try { if (window.PJCC_TIME) return PJCC_TIME.hour(); } catch (e) {} return new Date().getHours(); }
+  function isNight() { var h = localHour(); return h < 7 || h >= 20; }   // town time now (pjcc-time.js)
 
   var lastStats = [];
   function playedRecently() {
