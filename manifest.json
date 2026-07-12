@@ -1,0 +1,69 @@
+{
+  "id": "/pjcc/",
+  "name": "PJCC — Princess and the Journey to Chess City",
+  "short_name": "PJCC",
+  "description": "A free arcade of chess games and the world of Princess and the Journey to Chess City, built in the open by McPuppy Studios.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "/pjcc/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#0a0714",
+  "theme_color": "#0a0714",
+  "categories": ["games", "education", "entertainment"],
+  "icons": [
+    { "src": "/assets/images/pwa/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/images/pwa/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/images/pwa/icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/assets/images/pwa/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/assets/images/pwa/icon-mono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "monochrome" }
+  ],
+  "shortcuts": [
+    {
+      "name": "The Gauntlet",
+      "short_name": "Gauntlet",
+      "description": "Climb the ladder of ten PJCC opponents.",
+      "url": "/games/the-gauntlet/?source=pwa",
+      "icons": [{ "src": "/assets/images/pwa/icon-96.png", "sizes": "96x96", "type": "image/png" }]
+    },
+    {
+      "name": "All Games",
+      "short_name": "Games",
+      "description": "The PJCC arcade — choose your hall.",
+      "url": "/games/?source=pwa",
+      "icons": [{ "src": "/assets/images/pwa/icon-96.png", "sizes": "96x96", "type": "image/png" }]
+    },
+    {
+      "name": "Academy",
+      "short_name": "Academy",
+      "description": "Learn chess, belt by belt.",
+      "url": "/academy/?source=pwa",
+      "icons": [{ "src": "/assets/images/pwa/icon-96.png", "sizes": "96x96", "type": "image/png" }]
+    },
+    {
+      "name": "Leaderboards",
+      "short_name": "Boards",
+      "description": "See where you rank across the arcade.",
+      "url": "/leaderboards/?source=pwa",
+      "icons": [{ "src": "/assets/images/pwa/icon-96.png", "sizes": "96x96", "type": "image/png" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/assets/images/pwa/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Choose your hall in the PJCC arcade"
+    },
+    {
+      "src": "/assets/images/pwa/screenshot-wide.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "The world of Princess and the Journey to Chess City"
+    }
+  ]
+}

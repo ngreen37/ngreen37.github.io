@@ -6,7 +6,6 @@
   <title>McPuppy Studios — Princess and the Journey to Chess City</title>
   <meta name="description" content="Home of Princess and the Journey to Chess City (PJCC) — an animated series in the making, plus an arcade of free chess games, all built in the open by McPuppy Studios.">
   <link rel="canonical" href="{{ '/' | absolute_url }}">
-  <meta name="theme-color" content="#0a0714">
   <!-- honor the site-wide "reduce flourish" preference here too (before paint) -->
   <script>try{if(localStorage.getItem('pjcc.flourish')==='0')document.documentElement.classList.add('reduce-flourish');}catch(e){}</script>
 
@@ -57,6 +56,7 @@
   {% comment %} Shogi-gate rite runs on the splash (pjcc-portal.js below); load its
        styles too so the rite UI + the planted .pjcc-sigil render correctly. {% endcomment %}
   <link rel="stylesheet" href="{{ '/assets/css/pjcc-portal.css' | relative_url }}">
+  {% include pwa-head.html %}
 </head>
 <body class="studio-body">
 

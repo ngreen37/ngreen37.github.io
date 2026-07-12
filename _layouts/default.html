@@ -26,7 +26,6 @@
   <title>{% if page.title %}{{ page.title }} | {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
   <meta name="description" content="{{ page.description | default: site.description }}">
   <link rel="canonical" href="{{ page.url | absolute_url }}">
-  <meta name="theme-color" content="#0a0714">
   {%- comment -%} Slow-rolled pages stay out of Google: anything flagged noindex,
        plus every hidden character/location from _config.yml. {%- endcomment -%}
   {% if page.noindex or site.hidden_character_urls contains page.url or site.hidden_location_urls contains page.url %}<meta name="robots" content="noindex">{% endif %}
@@ -79,6 +78,7 @@
   <link rel="stylesheet" href="{{ '/assets/css/pjcc-flair.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/pjcc-portal.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/pjcc-nav.css' | relative_url }}">
+  {% include pwa-head.html %}
 </head>
 <body{% if page.body_class %} class="{{ page.body_class }}"{% endif %}>
 
