@@ -31,6 +31,20 @@ permalink: /fan-art/
 </div>
 <input type="file" id="fa-file" accept="image/*" hidden>
 
+<!-- ── Submit for review: uploads the card image to a PRIVATE staging bucket +
+     a fan_submissions row. Nothing goes public — McPuppy reviews, then hangs the
+     keepers on The Wall via _data/fanart.yml. Shows only once a picture is on the card. ── -->
+<div class="fa-submit no-print" id="fa-submit" hidden>
+  <div class="fa-submit-head">Happy with it? Send it to McPuppy.</div>
+  <div class="fa-submit-row">
+    <input id="fa-title" class="fa-input" type="text" maxlength="60" placeholder="Title (optional)">
+    <input id="fa-by" class="fa-input" type="text" maxlength="30" placeholder="Your name or codename (optional)">
+  </div>
+  <button class="fa-btn fa-btn--gold" id="fa-send" type="button">Submit to McPuppy ▸</button>
+  <div class="fa-send-msg" id="fa-send-msg" role="status"></div>
+  <div class="fa-submit-fine">Your picture is sent privately for review — it only appears on the wall if McPuppy hangs it.</div>
+</div>
+
 <!-- ── The Wall ──────────────────────────────────────────────── -->
 <section class="fa-wall no-print">
   {% assign art = site.data.fanart %}
@@ -59,7 +73,7 @@ permalink: /fan-art/
     <a class="fa-empty-plus" href="/contact/" aria-label="Send in your art">＋</a>
   </div>
   {% endif %}
-  <p class="fa-submit-note"><a href="/contact/">Send it in</a> — every piece is screened, then hung by McPuppy.</p>
+  <p class="fa-submit-note">Made something above? Hit <b>Submit to McPuppy</b> — every piece is screened, then hung.</p>
 </section>
 
 <style>
@@ -71,6 +85,18 @@ permalink: /fan-art/
 .fa-btn--gold { background:#F5C518; color:#1a0f3d; border-color:#F5C518; }
 .fa-btn--gold:hover { background:#ffd740; }
 .fa-btn--ghost { background:transparent; }
+
+/* ---- submit-for-review panel ---- */
+.fa-submit { max-width:560px; margin:1.2rem auto 0; text-align:center;
+  background:rgba(80,30,180,0.12); border:1px solid #4a3a86; border-radius:14px; padding:16px 18px; }
+.fa-submit-head { color:#f0e6ff; font-weight:800; margin-bottom:10px; }
+.fa-submit-row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:12px; }
+.fa-input { flex:1 1 200px; max-width:240px; background:#0f0826; color:#f0e6ff; border:1px solid #4a3a86;
+  border-radius:10px; padding:9px 12px; font-family:inherit; font-size:0.9rem; }
+.fa-input:focus { outline:none; border-color:#F5C518; }
+.fa-send-msg { min-height:1.2em; margin-top:10px; font-size:0.86rem; color:#9fe0d0; font-weight:700; }
+.fa-send-msg.err { color:#ff9ec9; }
+.fa-submit-fine { margin-top:8px; font-size:0.72rem; color:#9a8fc0; }
 
 /* ---- crayon mode ---- */
 .fa-crayons { max-width:520px; margin:0 auto 1.4rem; text-align:center; }
@@ -230,6 +256,87 @@ permalink: /fan-art/
       try { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
     });
   })();
+})();
+</script>
+
+<script>
+// ── Submit for review → PRIVATE Supabase staging (bucket + fan_submissions row).
+//    Nothing is published: McPuppy reviews in the dashboard, then hangs keepers on
+//    The Wall via _data/fanart.yml. Reuses the site's PJCC_CONFIG + supabase SDK. ──
+(function () {
+  var CFG = window.PJCC_CONFIG;
+  var SDK_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+  var BUCKET = 'fan-submissions';
+  var card = document.getElementById('fan-card');
+  var img = document.getElementById('fa-img');
+  var panel = document.getElementById('fa-submit');
+  var sendBtn = document.getElementById('fa-send');
+  var msgEl = document.getElementById('fa-send-msg');
+  var titleEl = document.getElementById('fa-title');
+  var byEl = document.getElementById('fa-by');
+  if (!card || !panel || !sendBtn) return;
+
+  // the panel appears only once a picture is on the card
+  function sync() { panel.hidden = !card.classList.contains('has-img'); }
+  sync();
+  try { new MutationObserver(sync).observe(card, { attributes: true, attributeFilter: ['class'] }); } catch (e) {}
+
+  // prefill the name if they're a signed-in operative
+  try { if (window.PJCC && PJCC.getProfile) { var p = PJCC.getProfile(); if (p && p.codename && byEl) byEl.value = p.codename; } } catch (e) {}
+
+  function msg(text, isErr) { msgEl.textContent = text; msgEl.classList.toggle('err', !!isErr); }
+
+  function loadSDK() {
+    return new Promise(function (res, rej) {
+      if (window.supabase && window.supabase.createClient) return res();
+      var s = document.createElement('script'); s.src = SDK_URL; s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+  var client = null;
+  function getClient() {
+    if (client) return Promise.resolve(client);
+    if (!CFG || !CFG.SUPABASE_URL || !CFG.SUPABASE_ANON_KEY) return Promise.reject(new Error('offline'));
+    return loadSDK().then(function () { client = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY); return client; });
+  }
+
+  // downscale to <=1200px PNG so uploads stay small
+  function toBlob() {
+    return new Promise(function (res, rej) {
+      var im = new Image();
+      im.onload = function () {
+        var max = 1200, w = im.naturalWidth, h = im.naturalHeight, sc = Math.min(1, max / Math.max(w, h));
+        var c = document.createElement('canvas'); c.width = Math.round(w * sc); c.height = Math.round(h * sc);
+        c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+        c.toBlob(function (b) { b ? res(b) : rej(new Error('encode')); }, 'image/png');
+      };
+      im.onerror = function () { rej(new Error('image')); };
+      im.src = img.src;
+    });
+  }
+
+  sendBtn.addEventListener('click', function () {
+    if (!card.classList.contains('has-img')) { msg('Add a picture first.', true); return; }
+    if (!CFG || !CFG.SUPABASE_URL) { msg('Submissions are offline right now — email it to nathgreen37@gmail.com.', true); return; }
+    sendBtn.disabled = true; sendBtn.textContent = 'Sending…'; msg('');
+    var title = (titleEl.value || '').trim().slice(0, 60);
+    var by = (byEl.value || '').trim().slice(0, 30);
+    Promise.all([getClient(), toBlob()]).then(function (r) {
+      var sb = r[0], blob = r[1];
+      if (blob.size > 5 * 1024 * 1024) throw new Error('That image is too large (max 5MB).');
+      var path = 'incoming/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.png';
+      return sb.storage.from(BUCKET).upload(path, blob, { contentType: 'image/png', upsert: false })
+        .then(function (up) { if (up.error) throw up.error; return sb.from('fan_submissions').insert({ title: title || null, by: by || null, path: path }); })
+        .then(function (ins) { if (ins.error) throw ins.error; });
+    }).then(function () {
+      panel.querySelector('.fa-submit-row').style.display = 'none';
+      sendBtn.style.display = 'none';
+      msg('🎉 Sent to McPuppy for review! If it makes the wall, you\'ll see it here.');
+    }).catch(function (err) {
+      sendBtn.disabled = false; sendBtn.textContent = 'Submit to McPuppy ▸';
+      msg((err && err.message && err.message !== 'offline') ? ('Could not send — ' + err.message) : 'Could not send — please try again, or email it to nathgreen37@gmail.com.', true);
+    });
+  });
 })();
 </script>
 
