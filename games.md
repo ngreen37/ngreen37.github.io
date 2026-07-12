@@ -103,6 +103,25 @@ permalink: /games/
 .gdoor-sub b { color:#F5C518; }
 .gdoor:hover .gdoor-arch, .gdoor:focus-visible .gdoor-arch { box-shadow:0 0 34px -5px var(--acc); }
 .gdoor:hover .gdoor-door, .gdoor:focus-visible .gdoor-door { transform:perspective(320px) rotateY(-22deg); }
+
+/* ── GRANDEUR: the door grows richer the higher you climb (Nate 2026-07-12) —
+   kept in sync with the home hero's copy. data-grand 0..5 from cleared floors. ── */
+.gdoor[data-grand="1"] .gdoor-arch { border-color:rgba(245,197,24,0.72); box-shadow:0 0 30px -7px var(--acc); }
+.gdoor[data-grand="2"] .gdoor-arch { border-color:rgba(245,197,24,0.85); border-width:3px; box-shadow:0 0 36px -6px var(--acc), inset 0 0 18px -7px var(--acc); }
+.gdoor[data-grand="3"] .gdoor-arch { border-color:#F5C518; border-width:3px; box-shadow:0 0 44px -4px var(--acc), inset 0 0 22px -6px var(--acc); }
+.gdoor[data-grand="4"] .gdoor-arch { border-color:#ffe07a; border-width:3px; box-shadow:0 0 52px -3px var(--acc), inset 0 0 26px -5px var(--acc); }
+.gdoor[data-grand="5"] .gdoor-arch { border-color:#fff2b0; border-width:4px; box-shadow:0 0 64px 0 var(--acc), inset 0 0 30px -4px var(--acc); }
+.gdoor[data-grand="3"] .gdoor-glyph,
+.gdoor[data-grand="4"] .gdoor-glyph { filter:drop-shadow(0 0 13px var(--acc)); }
+.gdoor[data-grand="5"] .gdoor-glyph { filter:drop-shadow(0 0 16px var(--acc)) drop-shadow(0 0 5px #fff); }
+.gdoor-arch::after { content:''; position:absolute; left:50%; top:6px; transform:translateX(-50%);
+  font-size:12px; line-height:1; opacity:0; z-index:2; pointer-events:none; text-shadow:0 0 6px var(--acc); }
+.gdoor[data-grand="3"] .gdoor-arch::after,
+.gdoor[data-grand="4"] .gdoor-arch::after { content:'◆'; color:var(--acc); opacity:0.92; }
+.gdoor[data-grand="5"] .gdoor-arch::after { content:'👑'; opacity:1; font-size:14px; top:3px; }
+.gdoor[data-grand="4"] .gdoor-seam,
+.gdoor[data-grand="5"] .gdoor-seam { height:4px; box-shadow:0 -3px 20px 5px color-mix(in srgb, var(--acc) 62%, transparent); }
+
 @media (prefers-reduced-motion: reduce){
   .ghub-doorway { animation:none; }
   .gdoor-pips i.cur { animation:none; }
@@ -173,6 +192,8 @@ permalink: /games/
   for (var j = 0; j < NAMES.length; j++) { if (!beaten[j]) { cur = j; break; } }
   var door = document.getElementById('gauntlet-door');
   if (!door) return;
+  // grandeur tier — the door grows richer with every floor cleared (in sync with the home hero)
+  door.setAttribute('data-grand', cleared === 0 ? 0 : cleared <= 2 ? 1 : cleared <= 4 ? 2 : cleared <= 6 ? 3 : cleared <= 9 ? 4 : 5);
   var pipHost = document.getElementById('gdoor-pips');
   if (pipHost) { var h = '';
     for (var k = 0; k < NAMES.length; k++) { h += '<i class="' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></i>'; }
