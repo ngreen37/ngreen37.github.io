@@ -280,7 +280,8 @@ body_class: theme-studio
   <div class="mcp-thanks-block">
     <h2 class="mcp-thanks-h">The Creator would like to thank</h2>
     <ul class="mcp-thanks-people">
-      <li>Thank you <strong>Laura</strong>, for your overall generosity and saying to me that you believed I am capable of something special.</li>
+      <li>Thank you <strong>mom</strong>, for always being there and providing a road map to a successful life.</li>
+      <li>Thank you <strong>Laura</strong>, for your generosity.</li>
       <li>Thank you <strong>Josh</strong>, for listening to the initial ideas with patience and either feigned or real excitement, doesn't matter, and for the keyboard and mousepad that saved me <em>WEEKS</em> over time.</li>
       <li>Thank you <strong>Kim</strong>, for letting me show you initial progress when I was still keeping it private.</li>
       <li>Thank you <strong>Aunt Barb</strong>, for being someone that I can't help but want to talk to like closest family. You accelerated PJCC significantly.</li>

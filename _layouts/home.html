@@ -132,8 +132,11 @@ layout: default
     <b class="hs-star" style="--sx:90%;--sy:38%;--ss:3px"></b>
     <b class="hs-star" style="--sx:20%;--sy:10%"></b>
   </div>
-  {% comment %} rain lives here now — inside the hero, only visible on rain days {% endcomment %}
-  <div class="hero-rain" aria-hidden="true"></div>
+  {% comment %} The rain is no longer the hero's own (2026-07-12): the town weather now
+       falls on EVERY page (pjcc-weather.js → .town-weather-overlay), so the hero would
+       have doubled up. What stays here is the hero's one exclusive trick — rare strikes
+       backlight the distant Chess City skyline. The town engine lights it. {% endcomment %}
+  <div class="hero-skyflash" aria-hidden="true"></div>
   <p class="hero-eyebrow">McPuppy Studios Presents</p>
   <div class="hero-board" aria-hidden="true"></div>
   <h1 class="hero-title">Princess and the Journey<br>to Chess City</h1>
@@ -296,63 +299,12 @@ body.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 /* where it stands on the hero */
 .hero-door { position:absolute; top:12px; right:26px; z-index:2; }
 
-/* ── #10 rain days: the rain falls INSIDE the hero only now (2026-07-11 Nate).
-   Gone: the two side "window-edge" streaks (they animated background-position =
-   a per-frame repaint, a known lag pattern) AND the full-screen rain layer.
-   What's left: two oversized sheets sliding on transform (compositor-only),
-   clipped to the hero box. Only present on rain days (~2 in 10). ── */
-.hero-rain { position:absolute; inset:0; border-radius:inherit; overflow:hidden;
-  pointer-events:none; opacity:0; transition:opacity .5s ease; }
-.home-hero.is-rainy .hero-rain { opacity:1; }
-/* 2026-07-11 (Nate: less line-y, fewer): short SPARSE streaks instead of solid
-   full-height lines. Each streak is baked into the background (a tiny radial
-   dash, tiled), so the sheet just SLIDES (transform = compositor-only, same
-   cheap cost as before) and the pattern falls with it. Two depths = texture.
-   translateY == the tile height, so the loop is seamless. */
-.hero-rain::before, .hero-rain::after { content:''; position:absolute;
-  left:-40%; right:-40%; top:-70%; bottom:-70%; will-change:transform; }
-/* 2026-07-11 (Nate: not so perfectly vertical / rows): each tile holds a few
-   streaks at IRREGULAR spots (no grid), and the whole sheet is tilted a few
-   degrees (not vertical). The two layers use different tiles, angles + speeds
-   so they never line up. Still transform-only (same cheap cost); translateY ==
-   tile height so the fall loops seamlessly (rotate stays constant in the frame). */
-.hero-rain::before {
-  background-image:
-    radial-gradient(1.3px 10px at 20% 16%, rgba(178,210,255,0.42), transparent 60%),
-    radial-gradient(1.1px 13px at 63% 52%, rgba(178,210,255,0.36), transparent 60%),
-    radial-gradient(1.2px 8px  at 86% 80%, rgba(178,210,255,0.30), transparent 60%);
-  background-size:104px 132px; animation:hero-rain-a 1.25s linear infinite; }
-.hero-rain::after {
-  background-image:
-    radial-gradient(1px 9px  at 38% 34%, rgba(178,210,255,0.26), transparent 60%),
-    radial-gradient(0.9px 6px at 79% 7%,  rgba(178,210,255,0.20), transparent 60%);
-  background-size:138px 168px; animation:hero-rain-b 1.95s linear infinite; }
-@keyframes hero-rain-a { from { transform:rotate(8deg)  translateY(-132px); } to { transform:rotate(8deg)  translateY(0); } }
-@keyframes hero-rain-b { from { transform:rotate(13deg) translateY(-168px); } to { transform:rotate(13deg) translateY(0); } }
-
-/* ── weather system (2026-07-12 Nate): the rain wanders between three
-   intensities over the evening (JS random-walk in the forecast block), and on
-   stormy nights lightning flickers now and then. Cost stays tiny: intensity is
-   just opacity + animation-SPEED on the same two transform-sliding sheets (the
-   translate distance is unchanged, so the loop stays seamless); lightning is a
-   brief opacity flash on one extra layer. ── */
-.home-hero.is-rain-light .hero-rain { opacity:0.5; }
-.home-hero.is-rain-light .hero-rain::before { animation-duration:1.75s; }
-.home-hero.is-rain-light .hero-rain::after  { animation-duration:2.7s; }
-.home-hero.is-rain-med   .hero-rain { opacity:0.82; }
-.home-hero.is-rain-heavy .hero-rain { opacity:1; }
-.home-hero.is-rain-heavy .hero-rain::before { animation-duration:0.82s; }
-.home-hero.is-rain-heavy .hero-rain::after  { animation-duration:1.35s; }
-
-.hero-lightning { position:absolute; inset:0; border-radius:inherit; pointer-events:none; z-index:1;
-  background:
-    linear-gradient(180deg, rgba(228,240,255,0.6), rgba(210,226,255,0.12) 55%, transparent 78%),
-    radial-gradient(150% 130% at 50% -6%, rgba(234,244,255,0.96) 0%, rgba(196,216,255,0.42) 46%, transparent 82%);
-  opacity:0; }
-.hero-lightning.flash { animation:hero-bolt 0.9s ease-out; }
-@keyframes hero-bolt {
-  0% { opacity:0; } 4% { opacity:0.92; } 10% { opacity:0.12; }
-  17% { opacity:0.7; } 28% { opacity:0.04; } 100% { opacity:0; } }
+/* ── Rain retired from the hero (2026-07-12 Nate: "all weathers on all screens").
+   The rain, the mist, the intensity random-walk and the lightning flash are now
+   TOWN-WIDE — they fall on every page from .town-weather-overlay (style.scss +
+   assets/js/pjcc-weather.js), which also covers the hero. Keeping a second copy
+   here would just double the rain on this one page. Restore from git if missed.
+   The hero keeps exactly one exclusive trick, below: the skyline silhouette. ── */
 
 /* Every so often a strike backlights the distant Chess City skyline for a beat —
    a dark silhouette in FRONT of the flash. Rare (1-in-4 heavy strikes), brief. */
@@ -368,7 +320,7 @@ body.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
   0% { opacity:0; } 6% { opacity:0.9; } 16% { opacity:0.18; }
   26% { opacity:0.55; } 40% { opacity:0; } 100% { opacity:0; } }
 
-@media (prefers-reduced-motion: reduce) { .hero-lightning, .hero-skyflash { display:none; } }
+@media (prefers-reduced-motion: reduce) { .hero-skyflash { display:none; } }
 
 /* ── #9 letterbox: two bands frame the first arrival, then lift ── */
 .letterbox { position:fixed; left:0; right:0; height:9vh; background:#050310; z-index:11500;
@@ -397,9 +349,25 @@ body.sky-dawn .hero-skyline .sk-ct { border-top-color:rgba(255,170,110,0.5); }
 /* DAY — an actual blue daytime SKY (2026-07-12 Nate: day looked like night). A big,
    bright, unmistakable sun (distinct from the pale night moon) + a few soft clouds. */
 body.sky-day .home-hero { background:linear-gradient(180deg, #1f5aa8 0%, #3f83cf 48%, #7ab4e6 100%); }
-body.sky-day .hs-orb { display:block; left:15%; top:16px; width:44px; height:44px;
+body.sky-day .hs-orb { display:block; left:15%; top:24px; width:44px; height:44px;
   background:radial-gradient(circle at 40% 38%, #fffefb 0%, #fff3b8 34%, #ffd84a 70%, #f5b800 100%);
   box-shadow:0 0 42px 15px rgba(255,216,74,0.5), 0 0 96px 34px rgba(255,216,74,0.22); }
+{% comment %} 2026-07-12 (Nate: "the sun still kind of looks like the moon") — give it
+     actual RAYS, so the silhouette itself says "sun" and can never be read as the
+     pale night orb. ::before = 16 spokes (a repeating-conic-gradient masked to a ring
+     so they radiate from the rim outward); ::after = a warm corona. The spokes turn
+     once every 90s — transform-only, so the cost is nil. {% endcomment %}
+body.sky-day .hs-orb::before { content:''; position:absolute; inset:-20px; border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,
+    rgba(255,231,130,0.90) 0deg 3.2deg, transparent 3.2deg 22.5deg);
+  -webkit-mask-image:radial-gradient(circle, transparent 47%, #000 55%, #000 72%, transparent 100%);
+          mask-image:radial-gradient(circle, transparent 47%, #000 55%, #000 72%, transparent 100%);
+  animation:hs-sun-rays 90s linear infinite; }
+body.sky-day .hs-orb::after { content:''; position:absolute; inset:-11px; border-radius:50%;
+  background:radial-gradient(circle, rgba(255,238,160,0.34), transparent 70%); }
+@keyframes hs-sun-rays { to { transform:rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { body.sky-day .hs-orb::before { animation:none; } }
+html.reduce-flourish body.sky-day .hs-orb::before { animation:none; }
 /* soft clouds so it clearly reads as a sky (static paint; away from sun + door) */
 body.sky-day .hero-sky::before { content:''; position:absolute; inset:0; pointer-events:none;
   background:
@@ -560,10 +528,6 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
 <style>
 {% comment %} (#13 town square + #17 op-strip + #15 sea divider removed 2026-07-10 —
      the cast is CARDS again; restore the square from git if ever missed.) {% endcomment %}
-@media (prefers-reduced-motion: reduce) {
-  .hero-rain::before, .hero-rain::after { animation: none; }
-}
-
 .char-row-tools { display: flex; justify-content: flex-end; align-items: center; gap: 14px; margin-top: 8px; }
 .home-shuffle { display: inline-flex; align-items: center; gap: 6px;
   background: rgba(80,30,180,0.2); color: #b9a8e6; border: 1px solid rgba(150,65,255,0.4);
@@ -685,75 +649,16 @@ function ctParts() {
     wrap.classList.add('is-night');
   }
 
-  // ---- THE FORECAST: seeded by the date, so the whole town shares the weather ----
+  // ---- THE FORECAST on the ticker. The weather ITSELF (rain/mist/lightning) is no
+  // longer rendered here: it's town-wide now and falls on every page, drawn by
+  // assets/js/pjcc-weather.js. This just reports the day's forecast on the wire. ----
   (function() {
     var roll = daySeed() % 10;                    // 0–2 rain · 3 mist · 4–9 clear
     if (roll > 3) return;
-    var rain = roll !== 3;
-    item(rain
+    item(roll !== 3
       ? 'WEATHER: RAIN OVER CHECKER TOWN — THE SEA IS ROUGH — ALL CROSSINGS POSTPONED'
       : 'WEATHER: SEA MIST IN THE LOWER SECTORS — VISIBILITY POOR — LIGHTHOUSE ON DOUBLE DUTY', null, true);
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    // Rain is HERO-ONLY (contained; the full-screen layer used to lag). Mist stays
-    // a soft full-screen fog (cheap: opacity only).
-    if (rain) {
-      var hh = document.querySelector('.home-hero');
-      if (hh) { hh.classList.add('is-rainy'); startWeather(hh); }
-    } else {
-      var w = document.createElement('div');
-      w.className = 'ct-weather ct-weather--mist';
-      w.setAttribute('aria-hidden', 'true');
-      document.body.appendChild(w);
-    }
   })();
-
-  // ---- THE WEATHER ENGINE (2026-07-12 Nate) — the rain wanders light↔heavy over
-  // the evening, and stormy nights get lightning. All compositor-cheap: intensity
-  // is opacity + fall-speed on the existing sheets; lightning is a brief flash. ----
-  function startWeather(hero) {
-    var LEVELS = ['light', 'med', 'heavy'];
-    // seed the starting intensity off the day (decorrelated from the rain roll),
-    // so different days open on different weather.
-    var idx = (daySeed() >> 3) % 3;
-    function setLevel(i) {
-      idx = Math.max(0, Math.min(2, i));
-      hero.classList.remove('is-rain-light', 'is-rain-med', 'is-rain-heavy');
-      hero.classList.add('is-rain-' + LEVELS[idx]);
-    }
-    setLevel(idx);
-
-    // random-walk the intensity every ~40–80s so it "varies throughout the night".
-    (function wander() {
-      setTimeout(function () {
-        setLevel(idx + (Math.random() < 0.5 ? -1 : 1));
-        wander();
-      }, 40000 + Math.random() * 40000);
-    })();
-
-    // lightning on heavy nights: a flash now and then. Gated to dusk/night for mood.
-    var storm = document.body.classList.contains('sky-night') || document.body.classList.contains('sky-dusk');
-    if (storm) {
-      var bolt = document.createElement('div');
-      bolt.className = 'hero-lightning';
-      bolt.setAttribute('aria-hidden', 'true');
-      hero.appendChild(bolt);
-      var sky = document.createElement('div');   // the distant Chess City skyline, backlit on rare strikes
-      sky.className = 'hero-skyflash';
-      sky.setAttribute('aria-hidden', 'true');
-      hero.appendChild(sky);
-      (function strike() {
-        setTimeout(function () {
-          if (idx === 2) {                       // only when it's really coming down
-            bolt.classList.remove('flash'); void bolt.offsetWidth; bolt.classList.add('flash');
-            if (Math.random() < 0.25) {          // ~1-in-4 strikes reveal the skyline
-              sky.classList.remove('lit'); void sky.offsetWidth; sky.classList.add('lit');
-            }
-          }
-          strike();
-        }, 9000 + Math.random() * 17000);
-      })();
-    }
-  }
 
   // ---- BREAKING (studio-wide): one line in _data/breaking.yml runs the plate ----
   (function() {

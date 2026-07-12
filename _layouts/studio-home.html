@@ -57,6 +57,7 @@
   {% comment %} Shogi-gate rite runs on the splash (pjcc-portal.js below); load its
        styles too so the rite UI + the planted .pjcc-sigil render correctly. {% endcomment %}
   <link rel="stylesheet" href="{{ '/assets/css/pjcc-portal.css' | relative_url }}">
+  {% include town-weather.html %}
   {% include pwa-head.html %}
 </head>
 <body class="studio-body">

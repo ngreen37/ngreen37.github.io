@@ -1,0 +1,10 @@
+{%- comment -%}
+  One town clock + one forecast, on EVERY screen (2026-07-12 Nate: "I want all
+  weathers to carry over to all screens"). Pulled into every <head> (default,
+  studio-home, game, easter-eggs). pjcc-time.js is the shared clock; the inline
+  line sets the weather class before paint so there's no flash of clear sky; then
+  pjcc-weather.js builds the (compositor-cheap) rain/mist/lightning layers.
+{%- endcomment -%}
+<script src="{{ '/assets/js/pjcc-time.js' | relative_url }}"></script>
+<script>try{var w=window.PJCC_TIME&&PJCC_TIME.weather();if(w&&w.kind!=='clear')document.documentElement.classList.add('town-'+w.kind);}catch(e){}</script>
+<script src="{{ '/assets/js/pjcc-weather.js' | relative_url }}" defer></script>

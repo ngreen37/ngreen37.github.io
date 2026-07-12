@@ -4624,34 +4624,9 @@ body.theme-classified {
 .world-ticker-wrap.is-night .ticker-badge { background: #2d1b69; color: #e3d6ff; }
 .world-ticker-wrap.is-night .ticker-badge-live { background: #4a3a86; }
 
-/* Checker Town weather — date-seeded; the whole town shares the forecast */
-.ct-weather { position: fixed; inset: 0; z-index: 2; pointer-events: none; overflow: hidden;
-  contain: layout style paint; }
-/* 2026-07-11 perf: rain used to animate background-position on a full-screen
-   fixed layer — a whole-viewport repaint every frame. Each sheet is now an
-   oversized pseudo-element sliding on transform (compositor-only). */
-.ct-weather--rain::before, .ct-weather--rain::after {
-  content: ''; position: absolute; left: -80px; right: -10px; top: -260px; bottom: 0;
-  will-change: transform;
-}
-.ct-weather--rain::before {
-  background: repeating-linear-gradient(105deg, transparent 0 16px, rgba(150, 175, 255, 0.045) 16px 17px);
-  animation: ct-rain-a 0.7s linear infinite;
-}
-.ct-weather--rain::after {
-  background: repeating-linear-gradient(105deg, transparent 0 41px, rgba(150, 175, 255, 0.06) 41px 42px);
-  animation: ct-rain-b 0.7s linear infinite;
-}
-@keyframes ct-rain-a { from { transform: translate3d(0,0,0); } to { transform: translate3d(-30px,120px,0); } }
-@keyframes ct-rain-b { from { transform: translate3d(0,0,0); } to { transform: translate3d(-60px,240px,0); } }
-.ct-weather--mist {
-  background: linear-gradient(180deg, transparent 55%, rgba(180, 190, 220, 0.07) 78%, rgba(180, 190, 220, 0.12) 100%);
-  animation: ct-mist 9s ease-in-out infinite;
-}
-@keyframes ct-mist {
-  0%, 100% { opacity: 0.7; }
-  50%      { opacity: 1; }
-}
+/* The old .ct-weather layer (home-page-only mist / unused rain) was retired
+   2026-07-12: the town weather now renders on EVERY page via .town-weather-overlay
+   (see pjcc-weather.js + the town-weather block further down). */
 
 @keyframes ticker-scroll {
   0%   { transform: translateX(0); }
@@ -5910,16 +5885,14 @@ body.theme-classified {
    site-wide; the news ticker + one-shot entrances stay. Class rides on <html>. ── */
 .reduce-flourish .home-glyphs-track,
 .reduce-flourish .ribbon-track,
-.reduce-flourish .hero-rain::before,
-.reduce-flourish .hero-rain::after,
-.reduce-flourish .hero-lightning,
 .reduce-flourish .hero-skyflash,
 .reduce-flourish .drift-piece,
 .reduce-flourish .studio-drift-sigil,
 .reduce-flourish .studio-quad--patreon::before,
 .reduce-flourish .studio-corner-logo { animation: none !important; }
-.reduce-flourish .home-hero.is-rainy .hero-rain { opacity: 0 !important; }
 .reduce-flourish .studio-lean { display: none !important; }
+/* (the town weather layer hides itself entirely under reduce-flourish — see the
+   .town-weather-overlay block; the hero no longer carries its own rain.) */
 
 .flourish-toggle {
   display: inline-flex; align-items: center; gap: 6px;
@@ -5936,10 +5909,86 @@ body.theme-classified {
    rain/mist days a soft atmospheric wash tints EVERY page (academy included).
    Static + opacity-only (no per-frame cost — the animated rain stays hero-only,
    which is what fixed the old full-screen-rain lag). Off under reduce-flourish. ── */
-.town-weather-overlay { position: fixed; inset: 0; z-index: 9990; pointer-events: none; opacity: 0; transition: opacity 0.8s ease; }
-html.town-rain .town-weather-overlay { opacity: 1; background: linear-gradient(180deg, rgba(90,120,180,0.10) 0%, rgba(40,60,110,0.05) 100%); }
-html.town-mist .town-weather-overlay { opacity: 1; background: radial-gradient(120% 80% at 50% 0%, rgba(205,214,235,0.11), rgba(205,214,235,0.04) 60%, transparent); }
+/* 2026-07-12 (Nate: "I want all weathers to carry over to all screens"): this is no
+   longer just a colour wash — the REAL weather now falls on every page (the hero no
+   longer owns the rain). Built by assets/js/pjcc-weather.js.
+   PERF — the whole ballgame, since a full-screen rain layer is what lagged the site
+   on 2026-07-11: the container is position:fixed + overflow:hidden, so the layer is
+   capped at the VIEWPORT and never grows with the document; and every moving part
+   animates transform/opacity ONLY (compositor, zero repaint). Nothing animates
+   background-position. Off entirely under reduce-flourish. */
+.town-weather-overlay { position: fixed; inset: 0; z-index: 9990; pointer-events: none;
+  overflow: hidden; contain: layout style paint; }
 html.reduce-flourish .town-weather-overlay { display: none; }
+@media (prefers-reduced-motion: reduce) { .tw-rain, .tw-mist, .tw-bolt { display: none; } }
+
+/* the atmospheric wash — static, opacity-only (still tints the page even when every
+   moving part is switched off) */
+.town-weather-overlay::before { content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s ease; }
+html.town-rain .town-weather-overlay::before { opacity: 1; background: linear-gradient(180deg, rgba(90,120,180,0.10) 0%, rgba(40,60,110,0.05) 100%); }
+html.town-mist .town-weather-overlay::before { opacity: 1; background: radial-gradient(120% 80% at 50% 0%, rgba(205,214,235,0.11), rgba(205,214,235,0.04) 60%, transparent); }
+
+/* RAIN — the hero's exact recipe (sparse streaks baked into a tiled background, two
+   tilted sheets at different depths/speeds), now over the whole viewport. The sheets
+   only SLIDE; translateY == the tile height, so the fall loops seamlessly. */
+.tw-rain { position: absolute; inset: 0; opacity: 0; transition: opacity 0.6s ease; }
+html.town-rain .tw-rain { opacity: 1; }
+.tw-rain::before, .tw-rain::after { content: ''; position: absolute;
+  left: -40%; right: -40%; top: -70%; bottom: -70%; will-change: transform; }
+.tw-rain::before {
+  background-image:
+    radial-gradient(1.3px 10px at 20% 16%, rgba(178,210,255,0.42), transparent 60%),
+    radial-gradient(1.1px 13px at 63% 52%, rgba(178,210,255,0.36), transparent 60%),
+    radial-gradient(1.2px 8px  at 86% 80%, rgba(178,210,255,0.30), transparent 60%);
+  background-size: 104px 132px; animation: tw-rain-a 1.25s linear infinite; }
+.tw-rain::after {
+  background-image:
+    radial-gradient(1px 9px  at 38% 34%, rgba(178,210,255,0.26), transparent 60%),
+    radial-gradient(0.9px 6px at 79% 7%,  rgba(178,210,255,0.20), transparent 60%);
+  background-size: 138px 168px; animation: tw-rain-b 1.95s linear infinite; }
+@keyframes tw-rain-a { from { transform: rotate(8deg)  translateY(-132px); } to { transform: rotate(8deg)  translateY(0); } }
+@keyframes tw-rain-b { from { transform: rotate(13deg) translateY(-168px); } to { transform: rotate(13deg) translateY(0); } }
+
+/* intensity — the storm wanders light↔heavy (the engine sets these on <html>) */
+html.town-rain-light .tw-rain { opacity: 0.5; }
+html.town-rain-light .tw-rain::before { animation-duration: 1.75s; }
+html.town-rain-light .tw-rain::after  { animation-duration: 2.7s; }
+html.town-rain-med   .tw-rain { opacity: 0.82; }
+html.town-rain-heavy .tw-rain { opacity: 1; }
+html.town-rain-heavy .tw-rain::before { animation-duration: 0.82s; }
+html.town-rain-heavy .tw-rain::after  { animation-duration: 1.35s; }
+
+/* MIST — sea fog: two soft banks that drift back and forth (alternate = seamless,
+   no jump-cut) and pool toward the bottom of the screen, like it does on the water. */
+.tw-mist { position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s ease; }
+html.town-mist .tw-mist { opacity: 1; }
+.tw-mist::before, .tw-mist::after { content: ''; position: absolute;
+  top: 0; bottom: 0; left: -25%; right: -25%; will-change: transform; }
+.tw-mist::before {
+  background:
+    radial-gradient(46% 34% at 20% 82%, rgba(205,214,235,0.15), transparent 72%),
+    radial-gradient(40% 30% at 62% 92%, rgba(205,214,235,0.12), transparent 74%),
+    radial-gradient(36% 26% at 88% 74%, rgba(205,214,235,0.09), transparent 76%);
+  animation: tw-mist-a 48s ease-in-out infinite alternate; }
+.tw-mist::after {
+  background:
+    radial-gradient(44% 28% at 35% 96%, rgba(190,202,228,0.12), transparent 74%),
+    radial-gradient(50% 34% at 78% 86%, rgba(190,202,228,0.08), transparent 76%);
+  animation: tw-mist-b 71s ease-in-out infinite alternate; }
+@keyframes tw-mist-a { from { transform: translate3d(-7%,0,0); } to { transform: translate3d(7%,0,0); } }
+@keyframes tw-mist-b { from { transform: translate3d(5%,0,0); }  to { transform: translate3d(-6%,0,0); } }
+
+/* LIGHTNING — stormy dusk/nights only, and only when it's really coming down. A brief
+   full-screen flash; opacity-only. Softer than the old hero bolt (0.92 → 0.55) because
+   it now fires over every page, text included. */
+.tw-bolt { position: absolute; inset: 0; opacity: 0;
+  background:
+    radial-gradient(70% 45% at 50% 0%, rgba(220,232,255,0.55), transparent 70%),
+    linear-gradient(180deg, rgba(200,220,255,0.28), transparent 60%); }
+.tw-bolt.flash { animation: tw-bolt 0.9s ease-out; }
+@keyframes tw-bolt {
+  0% { opacity: 0; } 4% { opacity: 0.55; } 10% { opacity: 0.08; }
+  17% { opacity: 0.42; } 28% { opacity: 0.03; } 100% { opacity: 0; } }
 
 /* ── #17 keyboard focus — a consistent gold ring on every interactive element,
    the custom ones included (quads, the Gauntlet door, game cards, den controls,
