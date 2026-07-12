@@ -5940,6 +5940,21 @@ body.theme-classified {
 html.town-rain .town-weather-overlay { opacity: 1; background: linear-gradient(180deg, rgba(90,120,180,0.10) 0%, rgba(40,60,110,0.05) 100%); }
 html.town-mist .town-weather-overlay { opacity: 1; background: radial-gradient(120% 80% at 50% 0%, rgba(205,214,235,0.11), rgba(205,214,235,0.04) 60%, transparent); }
 html.reduce-flourish .town-weather-overlay { display: none; }
+
+/* ── #17 keyboard focus — a consistent gold ring on every interactive element,
+   the custom ones included (quads, the Gauntlet door, game cards, den controls,
+   toggles). Shows only for keyboard navigation (:focus-visible), never on a mouse
+   click. The outline follows each element's own border-radius. ── */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
+textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid #F5C518; outline-offset: 2px;
+}
+.studio-quad:focus-visible, .gdoor:focus-visible, .gcard:focus-visible,
+.den-btn:focus-visible, .den-cell:focus-visible, .den-open-btn:focus-visible,
+.flourish-toggle:focus-visible, .share-tx-btn:focus-visible,
+.studio-corner-lang:focus-visible, .lang-toggle:focus-visible {
+  outline: 2px solid #F5C518; outline-offset: 3px;
+}
 .share-tx-flash {
   position: fixed; bottom: 88px; left: 50%;
   transform: translateX(-50%) translateY(10px);
