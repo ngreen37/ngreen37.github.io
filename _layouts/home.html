@@ -83,9 +83,14 @@ layout: default
   /* top padding clears the door zone (door bottom ≈ 115px) so the title can
      never run underneath it at any phone width */
   .home-hero { padding: 122px 22px 54px; min-height: 190px; margin-bottom: 30px; }
-  .hero-title { font-size: 24px; letter-spacing: -0.5px; }
+  /* nowrap stops the title's letters (which overshoot in scale as they type in)
+     from bumping "…ey" to a second line for a frame, then snapping back (Nate). */
+  .hero-title { font-size: 21px; letter-spacing: -0.5px; white-space: nowrap; }
   .hero-eyebrow { display: none; }
-  .hero-skyline { height: 34px; left: 16px; right: 16px; }
+  /* reel the Checker-Town stacks into the left third: narrower + only four of them */
+  .hero-skyline { height: 34px; left: 16px; right: 16px; gap: 4px; }
+  .hero-skyline .sk-ct { width: 15px !important; }
+  .hero-skyline span.sk-ct:nth-of-type(n+5) { display: none; }
   .hero-board { bottom: 30px; height: 64px; }
   .hero-door { transform: scale(0.72); transform-origin: top right; top: 10px; right: 14px; }
   .gdoor-sub { display: none; }
@@ -119,6 +124,13 @@ layout: default
     <b class="hs-star" style="--sx:66%;--sy:28%;--ss:3px"></b>
     <b class="hs-star" style="--sx:74%;--sy:44%"></b>
     <b class="hs-star" style="--sx:83%;--sy:20%"></b>
+    <b class="hs-star" style="--sx:6%;--sy:52%"></b>
+    <b class="hs-star hs-star--tw" style="--sx:31%;--sy:18%;--ss:3px"></b>
+    <b class="hs-star" style="--sx:44%;--sy:52%"></b>
+    <b class="hs-star" style="--sx:62%;--sy:46%"></b>
+    <b class="hs-star hs-star--tw" style="--sx:70%;--sy:16%"></b>
+    <b class="hs-star" style="--sx:90%;--sy:38%;--ss:3px"></b>
+    <b class="hs-star" style="--sx:20%;--sy:10%"></b>
   </div>
   {% comment %} rain lives here now — inside the hero, only visible on rain days {% endcomment %}
   <div class="hero-rain" aria-hidden="true"></div>
@@ -132,12 +144,12 @@ layout: default
   {% comment %} Checker Town (left) = stacks of checkers, 7px per disc; the sea runs
        across; Chess City (right) = buildings shaped like the back rank. {% endcomment %}
   <div class="hero-skyline" aria-hidden="true">
-    <span class="sk sk-ct" style="--w:24px;--h:14px"></span>
-    <span class="sk sk-ct" style="--w:24px;--h:28px"></span>
-    <span class="sk sk-ct" style="--w:24px;--h:7px"></span>
-    <span class="sk sk-ct" style="--w:24px;--h:21px"></span>
-    <span class="sk sk-ct" style="--w:24px;--h:14px"></span>
-    <span class="sk sk-ct" style="--w:24px;--h:21px"></span>
+    <span class="sk sk-ct" style="--w:24px;--h:11px"></span>
+    <span class="sk sk-ct" style="--w:24px;--h:19px"></span>
+    <span class="sk sk-ct" style="--w:24px;--h:6px"></span>
+    <span class="sk sk-ct" style="--w:24px;--h:15px"></span>
+    <span class="sk sk-ct" style="--w:24px;--h:11px"></span>
+    <span class="sk sk-ct" style="--w:24px;--h:15px"></span>
     <i class="sk-sea"></i>
     <span class="sk sk-cc sk-cc--rook"   style="--w:20px;--h:22px"></span>
     <span class="sk sk-cc sk-cc--bishop" style="--w:16px;--h:30px"></span>
@@ -372,7 +384,8 @@ body.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 .hero-sky { position:absolute; inset:0; border-radius:inherit; overflow:hidden; pointer-events:none; }
 .hs-orb { position:absolute; display:none; border-radius:50%; }
 .hs-star { position:absolute; display:none; left:var(--sx); top:var(--sy);
-  width:var(--ss,2px); height:var(--ss,2px); border-radius:50%; background:#e8dcff; }
+  width:var(--ss,2px); height:var(--ss,2px); border-radius:50%; background:#fdf9ff;
+  box-shadow:0 0 3px 0.5px rgba(232,220,255,0.75); }
 
 /* DAWN — the sun comes up rose-gold over the rooftops */
 body.sky-dawn .home-hero { background:linear-gradient(163deg, #1a0f3d 0%, #3d2b6e 42%, #86395c 76%, #b85a38 104%); }
@@ -381,11 +394,18 @@ body.sky-dawn .hs-orb { display:block; left:16%; bottom:42px; width:30px; height
   box-shadow:0 0 46px 14px rgba(255,157,92,0.30); }
 body.sky-dawn .hero-skyline .sk-ct { border-top-color:rgba(255,170,110,0.5); }
 
-/* DAY — a high gold sun, clear light */
-body.sky-day .home-hero { background:linear-gradient(150deg, #1a1160 0%, #35267c 55%, #14204a 100%); }
-body.sky-day .hs-orb { display:block; left:24%; top:20px; width:26px; height:26px;
-  background:radial-gradient(circle at 38% 34%, #fff8dc, #F5C518 70%);
-  box-shadow:0 0 36px 10px rgba(245,197,24,0.28); }
+/* DAY — an actual blue daytime SKY (2026-07-12 Nate: day looked like night). A big,
+   bright, unmistakable sun (distinct from the pale night moon) + a few soft clouds. */
+body.sky-day .home-hero { background:linear-gradient(180deg, #1f5aa8 0%, #3f83cf 48%, #7ab4e6 100%); }
+body.sky-day .hs-orb { display:block; left:15%; top:16px; width:44px; height:44px;
+  background:radial-gradient(circle at 40% 38%, #fffefb 0%, #fff3b8 34%, #ffd84a 70%, #f5b800 100%);
+  box-shadow:0 0 42px 15px rgba(255,216,74,0.5), 0 0 96px 34px rgba(255,216,74,0.22); }
+/* soft clouds so it clearly reads as a sky (static paint; away from sun + door) */
+body.sky-day .hero-sky::before { content:''; position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(58px 19px at 41% 30%, rgba(255,255,255,0.72), transparent 72%),
+    radial-gradient(74px 22px at 63% 21%, rgba(255,255,255,0.55), transparent 74%),
+    radial-gradient(46px 15px at 30% 48%, rgba(255,255,255,0.45), transparent 72%); }
 
 /* DUSK — it sets deep amber on the other side of town.
    2026-07-11 (Nate): the sun steps into the background — dimmer, half-sunk at
