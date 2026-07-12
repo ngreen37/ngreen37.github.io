@@ -45,6 +45,41 @@ Princess is the reason everything happens. The journey to Chess City begins beca
   })();
 </script>
 
+## The Ascension
+
+<p class="pp-intro">She believes she will one day be a <a class="pp-broken" href="{{ '/characters/the-queen/' | relative_url }}">[QUEEN]</a>. The more of her world you explore, the more the board seems to agree — though no one will say it out loud.</p>
+
+<div class="pp-ascension" id="pp-ascension">
+  <div class="pp-asc-top"><span class="pp-asc-label">◈ ASCENSION</span><span class="pp-asc-tier" id="pp-asc-tier">—</span></div>
+  <div class="pp-asc-bar"><i id="pp-asc-fill" style="width:0%"></i></div>
+  <p class="pp-asc-whisper" id="pp-asc-whisper">—</p>
+  <p class="pp-asc-foot">Spoiler-safe by design — this only ever hints. Where it leads is hers to reach.</p>
+</div>
+<script>
+(function () {
+  // A quiet "ascension" read that DEEPENS with your real progress (fragments found,
+  // Gauntlet floors cleared, games touched) and reveals flavour — never plot.
+  var WHISPERS = [
+    'The board only knows her as a Checker Town dog. For now.',
+    'Word travels fast. A dog who can learn anything is hard to keep quiet about.',
+    'In the right rooms, they have started to say her name.',
+    'Some pieces move a little differently when she is near.',
+    'The far towers have taken notice. No one will say why.',
+    'There is a chair at the end of every board. She is getting closer to hers.'
+  ];
+  var TIERS = ['UNRANKED', 'A RUMOUR', 'A NAME', 'A PRESENCE', 'A LEGEND', '—— ??? ——'];
+  function countKeys(re) { var n = 0; try { for (var i = 0; i < localStorage.length; i++) { if (re.test(localStorage.key(i))) n++; } } catch (e) {} return n; }
+  function cleared() { try { var p = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}, b = p.beaten || {}, c = 0; for (var k in b) if (b[k]) c++; return c; } catch (e) { return 0; } }
+  var frags = countKeys(/^frag_/), games = countKeys(/^pjcc\.best\./), floors = cleared();
+  var pct = Math.min(100, frags * 9 + floors * 5 + games * 4);
+  var tier = pct < 10 ? 0 : pct < 30 ? 1 : pct < 50 ? 2 : pct < 72 ? 3 : pct < 92 ? 4 : 5;
+  var fill = document.getElementById('pp-asc-fill'), tEl = document.getElementById('pp-asc-tier'), wEl = document.getElementById('pp-asc-whisper');
+  if (fill) setTimeout(function () { fill.style.width = Math.max(5, pct) + '%'; }, 60);
+  if (tEl) tEl.textContent = TIERS[tier];
+  if (wEl) wEl.textContent = WHISPERS[tier];
+})();
+</script>
+
 <style>
   .pp-broken { font-family: 'Courier New', monospace; font-size: 0.88em; color: #9a7fd4; text-decoration: none; border-bottom: 1px dashed rgba(154,127,212,0.55); }
   .pp-broken:hover { color: #F5C518; border-bottom-color: rgba(245,197,24,0.6); }
@@ -73,6 +108,17 @@ Princess is the reason everything happens. The journey to Chess City begins beca
   .pp-mem-head { color: #c9a7ff; font-weight: 700; margin-bottom: 6px; }
   .pp-mem ul { margin: 0; padding-left: 18px; color: #c9a7ff; font-size: 0.86rem; line-height: 1.7; }
   .pp-mem-empty { color: #9a7fd4; font-size: 0.85rem; }
+
+  /* The Ascension — a spoiler-safe status read that deepens with real progress. */
+  .pp-ascension { max-width: 640px; margin: 14px 0; padding: 16px 18px; border-radius: 14px;
+    background: linear-gradient(135deg, rgba(31,17,71,0.7), rgba(45,27,105,0.5)); border: 1px solid #4a2f8a; }
+  .pp-asc-top { display: flex; justify-content: space-between; align-items: baseline; }
+  .pp-asc-label { font-family: 'Share Tech Mono', monospace; font-size: 0.68rem; letter-spacing: 0.16em; color: #ff8fd0; }
+  .pp-asc-tier { font-family: 'Share Tech Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em; color: #F5C518; }
+  .pp-asc-bar { height: 8px; background: #160c33; border: 1px solid #4a2f8a; border-radius: 999px; overflow: hidden; margin: 8px 0; }
+  .pp-asc-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg,#6b5fa0,#ff8fd0,#F5C518); transition: width 1.2s ease; }
+  .pp-asc-whisper { color: #e7dcff; font-style: italic; margin: 6px 0 2px; }
+  .pp-asc-foot { color: #9a7fd4; font-size: 0.8rem; margin: 4px 0 0; }
 </style>
 
 ## Art
