@@ -19,27 +19,11 @@ permalink: /dossier/
 <p class="cc-greet" id="cc-greet">Establishing uplink…</p>
 
 <div class="cc-grid">
-  <div class="cc-mod cc-mod--clock">
-    <div class="cc-mod-label">◆ Mission clock — Ep.01</div>
-    <div class="cc-count" id="cc-count">—</div>
-    <div class="cc-count-lbl">days to premiere · Oct 21, 2027</div>
-    <div class="cc-devdays" id="cc-devdays"></div>
-  </div>
-
   <div class="cc-mod cc-mod--daily">
     <div class="cc-mod-label">◆ Today's mission</div>
     <div class="cc-daily-task" id="cc-daily-task">—</div>
     <div class="cc-daily-status" id="cc-daily-status">—</div>
     <a class="cc-btn cc-btn-gold" id="cc-daily-go" href="#">Deploy ▸</a>
-  </div>
-
-  <div class="cc-mod cc-mod--launch">
-    <div class="cc-mod-label">◆ Quick launch</div>
-    <div class="cc-launch">
-      <a href="{{ '/games/' | relative_url }}">🕹️ The Arcade</a>
-      <a href="{{ '/academy/' | relative_url }}">🎓 Academy</a>
-      <a href="{{ '/leaderboards/' | relative_url }}">🏆 Leaderboards</a>
-    </div>
   </div>
 
   <div class="cc-mod cc-mod--frags">
@@ -107,15 +91,9 @@ permalink: /dossier/
   function best(game){ try { if (window.PJCC && PJCC.localBest) return PJCC.localBest(game); return parseInt(localStorage.getItem('pjcc.best.'+game),10)||0; } catch(e){ return 0; } }
   function gameUrl(slug){ return '{{ "/games/" | relative_url }}'.replace(/\/$/,'') + '/' + slug + '/'; }
   function has(k){ try { return !!localStorage.getItem(k); } catch(e){ return false; } }
-  var START = Date.UTC(2026,2,1,4,0,0), PREMIERE = Date.UTC(2027,9,21,4,0,0);
 
   function tick(){ var d=new Date(); $('cc-clock').textContent = ('0'+d.getUTCHours()).slice(-2)+':'+('0'+d.getUTCMinutes()).slice(-2)+':'+('0'+d.getUTCSeconds()).slice(-2)+' UTC'; }
   tick(); setInterval(tick, 1000);
-
-  (function(){ var now=Date.now();
-    $('cc-count').textContent = Math.max(0, Math.ceil((PREMIERE-now)/86400000)).toLocaleString();
-    $('cc-devdays').textContent = 'Day ' + Math.max(0, Math.floor((now-START)/86400000)).toLocaleString() + ' of building in the open';
-  })();
 
   function renderGreet(){
     var greet = $('cc-greet');
@@ -301,20 +279,27 @@ permalink: /dossier/
     html += '<button class="dsr-title-chip ' + (equipped === '' ? 'on' : '') + '" data-title="">None</button></div>' +
       '<p class="pjcc-sub">Unlock more through achievements and the <a href="/shopkeeper/">Shopkeeper</a>.</p>';
 
-    html += '<h2 class="dsr-h">Service record <span class="pjcc-sub" style="font-weight:normal">· 👻 = the creator\'s mark to chase</span></h2><table class="lb-table"><tbody>';
-    Object.keys(GAMES).forEach(function (key) {
-      var s = stats.filter(function (x) { return x.game === key; })[0];
-      var best = s ? s.best_score : 0;
-      var g = PJCC.vsGhost(key, best);
-      var ghostCell = '';
-      if (g) ghostCell = g.beat
-        ? '<span class="dsr-ghost beat">✓ beat 👻 ' + g.target + '</span>'
-        : '<span class="dsr-ghost">👻 ' + g.target + ' · ' + (g.target - best) + ' to go</span>';
-      html += '<tr><td class="lb-name">' + esc(GAMES[key][0]) + '</td>' +
-        '<td class="pjcc-sub">' + (s ? (s.plays + ' runs') : 'not yet played') + '</td>' +
-        '<td class="lb-score">' + (s ? s.best_score + ' ' + GAMES[key][1] : '—') + (ghostCell ? ' <br>' + ghostCell : '') + '</td></tr>';
+    // Condensed 2026-07-12 (Nate): only games you've actually PLAYED, one tight row
+    // each (name · best · a small ✓ when you've passed the creator's ghost). The
+    // full never-played roster + "X to go" chase text is gone.
+    var played = Object.keys(GAMES).filter(function (key) {
+      return stats.filter(function (x) { return x.game === key; })[0];
     });
-    html += '</tbody></table>';
+    html += '<h2 class="dsr-h">Service record <span class="pjcc-sub" style="font-weight:normal">· 👻 = beat the creator</span></h2>';
+    if (!played.length) {
+      html += '<p class="lb-empty">No missions logged yet — play anything and your record starts here.</p>';
+    } else {
+      html += '<table class="lb-table"><tbody>';
+      played.forEach(function (key) {
+        var s = stats.filter(function (x) { return x.game === key; })[0];
+        var g = PJCC.vsGhost(key, s.best_score);
+        var ghost = (g && g.beat) ? ' <span class="dsr-ghost beat">✓👻</span>' : '';
+        html += '<tr><td class="lb-name">' + esc(GAMES[key][0]) + '</td>' +
+          '<td class="pjcc-sub">' + s.plays + ' runs</td>' +
+          '<td class="lb-score">' + s.best_score + ' ' + GAMES[key][1] + ghost + '</td></tr>';
+      });
+      html += '</tbody></table>';
+    }
 
     var link = PJCC.inviteLink(prof);
     html += '<h2 class="dsr-h">Invite an operative</h2>' +
@@ -395,8 +380,8 @@ permalink: /dossier/
 .cc-muted { color: #7d6bb0; } .cc-ok { color: #6bffb8; }
 .cc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
 .cc-mod { background: rgba(20,12,45,0.6); border: 1px solid #3a2a6a; border-radius: 12px; padding: 14px; position: relative; }
-.cc-mod--frags, .cc-mod--launch { grid-column: span 2; }
-@media (max-width: 560px){ .cc-mod--frags, .cc-mod--launch { grid-column: span 1; } }
+.cc-mod--frags { grid-column: span 2; }
+@media (max-width: 560px){ .cc-mod--frags { grid-column: span 1; } }
 .cc-mod-label { font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; color: #9a7fd4; text-transform: uppercase; margin-bottom: 10px; }
 .cc-btn { display: inline-block; background: #221444; border: 1px solid #4a2f8a; color: #c9a7ff; border-radius: 999px; padding: 8px 14px; font-weight: 700; text-decoration: none; font-size: 0.85rem; transition: all 0.14s; }
 .cc-btn:hover { border-color: #F5C518; color: #fff; }
@@ -404,7 +389,6 @@ permalink: /dossier/
 .cc-btn-gold:hover { background: #ffd740; color: #1a0f3d; }
 .cc-count { font-family: 'Share Tech Mono', monospace; font-size: 2.6rem; font-weight: 800; color: #F5C518; line-height: 1; }
 .cc-count-lbl { color: #9a7fd4; font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
-.cc-devdays { color: #7d6bb0; font-size: 0.8rem; margin-top: 10px; }
 .cc-daily-task { color: #f0e6ff; font-weight: 700; line-height: 1.4; }
 .cc-daily-status { font-size: 0.84rem; margin: 8px 0 12px; }
 .cc-frag-count { color: #F5C518; }
@@ -414,9 +398,6 @@ permalink: /dossier/
 .cc-frag-ic { display: block; font-size: 22px; }
 .cc-frag-n { display: block; font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: #c9a7ff; margin-top: 4px; letter-spacing: 0.04em; }
 .cc-frag-note { color: #9a7fd4; font-size: 0.82rem; margin-top: 10px; }
-.cc-launch { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
-.cc-launch a { background: rgba(45,27,105,0.5); border: 1px solid #3a2a6a; border-radius: 10px; padding: 12px; text-decoration: none; color: #c9a7ff; font-weight: 600; font-size: 0.88rem; transition: all 0.14s; }
-.cc-launch a:hover { border-color: #F5C518; color: #fff; transform: translateY(-2px); }
 
 /* ---- operative profile ---- */
 .dsr-card { background: #160c33; border: 1px solid #6b5fa0; border-radius: 12px; padding: 1.2rem 1.4rem; max-width: 560px; }
@@ -445,7 +426,9 @@ permalink: /dossier/
 .dsr-stop { position: relative; flex: 1 0 86px; text-align: center; }
 .dsr-stop::before { content: ''; position: absolute; top: 26px; left: -50%; width: 100%; height: 2px; background: #3a2a72; z-index: 0; }
 .dsr-stop:first-child::before { display: none; }
-.dsr-stop.reached::before { background: #F5C518; }
+/* A connector lights gold only when BOTH stops it joins are reached. Otherwise a
+   gold bar dangles left off a dim, unreached stop (Nate 2026-07-12). */
+.dsr-stop.reached + .dsr-stop.reached::before { background: #F5C518; }
 .dsr-here { height: 20px; font-size: 18px; }
 .dsr-dot { width: 14px; height: 14px; border-radius: 50%; background: #3a2a72; border: 2px solid #6b5fa0; margin: 0 auto 6px; position: relative; z-index: 1; }
 .dsr-stop.reached .dsr-dot { background: #F5C518; border-color: #F5C518; box-shadow: 0 0 10px rgba(245,197,24,0.6); }

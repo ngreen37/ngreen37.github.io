@@ -90,6 +90,8 @@
   background: #fff; color: #2a1b55; border-radius: 12px; padding: 7px 12px; font-size: 0.82rem; font-weight: 600; line-height: 1.35; }
 .den-bubble::after { content: ""; position: absolute; top: -7px; left: 50%; transform: translateX(-50%);
   border: 7px solid transparent; border-bottom-color: #fff; border-top: 0; }
+/* the companion doesn't talk — it makes noises; render them as a soft sound, not speech */
+.den-bubble--noise { font-style: italic; color: #4a3a86; letter-spacing: 0.3px; }
 
 .den-name-row { position: relative; z-index: 2; margin-top: 8px; }
 .den-name { color: #fff; font-size: 1.3rem; font-weight: 800; text-shadow: 0 1px 6px rgba(0,0,0,0.4); }

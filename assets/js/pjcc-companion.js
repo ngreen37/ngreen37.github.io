@@ -32,10 +32,10 @@
   var PET_ORDER = Object.keys(PETS);
   var TREATS = { bone:'🦴', jerky:'🥓', steak:'🥩', fish:'🐟', milk:'🥛', cream:'🍦', seeds:'🌾', fruit:'🍓', berries:'🫐', lettuce:'🥬', melon:'🍈', kelp:'🌿' };
   var SPECIES = {
-    dog:    { idle:'idle-wag',   stages:['Pup','Hound','Companion','Legend Hound'],  say:"Woof! Let's fetch a high score." },
-    cat:    { idle:'idle-blink', stages:['Kitten','Cat','Mouser','Grand Feline'],    say:'I permit you to admire me.' },
-    bird:   { idle:'idle-hop',   stages:['Chick','Fledgling','Flyer','Sky Marshal'], say:'Tweet — I memorised your best line!' },
-    turtle: { idle:'idle-plod',  stages:['Hatchling','Shellback','Elder','Ancient One'], say:'Slow and steady wins the board.' }
+    dog:    { idle:'idle-wag',   stages:['Pup','Hound','Companion','Legend Hound'] },
+    cat:    { idle:'idle-blink', stages:['Kitten','Cat','Mouser','Grand Feline'] },
+    bird:   { idle:'idle-hop',   stages:['Chick','Fledgling','Flyer','Sky Marshal'] },
+    turtle: { idle:'idle-plod',  stages:['Hatchling','Shellback','Elder','Ancient One'] }
   };
   var NAMES = { 'clearance-delta':'Clearance: DELTA','notation-run':'Notation Blitz','fork-in-the-road':'Fork in the Road','sand-mine-depths':'Sand Mine Depths','pirc-protocol':'Pirc Protocol','shogi-island':'Shogi Island','blindfold':'Blindfold Puzzles','tower-defense':'Siege on Chess City','sky-run':'Sky Run' };
   function gameName(k) { return NAMES[k] || k || 'the games'; }
@@ -152,18 +152,21 @@
     if (score >= 38) return { emoji:'🙂', state:'Content',  line:'Doing just fine.' };
     return { emoji:'😟', state:'Restless', line:'A bit out of sorts — spend some time together.' };
   }
-  function speech(s, m) {
-    var p = PETS[s.pet], hour = new Date().getHours(), lines = [m.line, SPECIES[p.sp].say];
-    if (hour < 6) lines.push('The board sleeps… but I am awake with you.');
-    else if (hour < 12) lines.push('Morning! Ready for a run at the games?');
-    else if (hour < 18) lines.push('Afternoon patrol of Chess City?');
-    else lines.push('Evening — perfect for a quiet puzzle.');
-    if (lastStats && lastStats.length) {
-      var last = lastStats.slice().sort(function (a, b) { return Date.parse(b.updated_at || 0) - Date.parse(a.updated_at || 0); })[0];
-      if (last) lines.push('That ' + gameName(last.game) + ' run was something!');
-    }
-    if (s.affection >= 90) lines.push('You are my favourite operative, you know.');
-    return lines[Math.floor(Math.random() * lines.length)];
+  // The companion doesn't TALK — it makes noises (Nate 2026-07-12). Species sounds,
+  // shaded by mood (sleepy / hungry / happy / just-hanging-out). Turtles mostly act.
+  var NOISES = {
+    dog:    { tired:['*yawn*… wuff.', 'mrrf…'],               hungry:['Whine… wuff?', 'Arrooo?'],        happy:['Woof woof!', 'Arf! Arf!', 'Bork!', 'Wuff wuff!'], base:['Woof.', 'Wuff.', 'Boof.'] },
+    cat:    { tired:['…mrr.', '*slow stretch* mrow.'],         hungry:['Meow? Meow!', 'Mrrp?'],            happy:['Mrrow!', 'Purrrr~', 'Mew! Mew!'],                base:['Purr…', 'Mrrow.', 'Mew.'] },
+    bird:   { tired:['…chirp.', '*ruffles feathers*'],         hungry:['Cheep?! Cheep?!', 'Peep! Peep!'],  happy:['Tweet tweet!', 'Cheep cheep!', 'Chirrup!'],       base:['Chirp.', 'Tweet~', 'Trill~'] },
+    turtle: { tired:['…zzz.'],                                 hungry:['*hopeful stare*'],                 happy:['…hff! (a happy little hiss)', '*slow, pleased blink*'], base:['…hm.', '*slow blink*', '…hff.'] }
+  };
+  function petNoise(s) {
+    var N = NOISES[PETS[s.pet].sp], set;
+    if (s.resting) set = N.tired;
+    else if (s.hunger < 25) set = N.hungry;
+    else if (s.affection >= 58 && s.energy >= 22) set = N.happy;
+    else set = N.base;
+    return set[Math.floor(Math.random() * set.length)];
   }
   function favGame() {
     if (!lastStats || !lastStats.length) return '—';
@@ -369,7 +372,7 @@
       '<div class="den-sky">' + stars + '<span class="orb">' + tod.orb + '</span></div>' +
       '<div class="den-head"><span class="den-eyebrow">Companion Den · ' + SPECIES[p.sp].stages[0] + ' wing</span>' +
         '<button class="den-close" id="den-x" title="Close">✕</button></div>' +
-      '<div class="den-bubble">' + esc(speech(s, m)) + '</div>' +
+      '<div class="den-bubble den-bubble--noise">' + esc(petNoise(s)) + '</div>' +
       '<div class="den-pet-wrap">' +
         '<span class="den-pet ' + SPECIES[p.sp].idle + (s.resting ? ' asleep' : '') + '" id="den-pet" style="filter:' + tintFilter() + '">' + petEmojiFor(s, li) + '</span>' +
         (accEm ? '<span class="den-acc-em">' + accEm + '</span>' : '') +
