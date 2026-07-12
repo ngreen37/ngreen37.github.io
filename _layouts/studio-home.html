@@ -309,9 +309,9 @@
      never blocks a click; it clears the quad LABELS (they're centred, it isn't). */
   .studio-drift-sigil { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.96);
     z-index:6; pointer-events:none; opacity:0; filter:drop-shadow(0 0 16px rgba(245,197,24,0.28));
-    transition:opacity 1.85s ease, transform 1.85s ease; }
+    transition:opacity 1.39s ease, transform 1.39s ease; }  /* 2026-07-11: fade 25% faster (1.85→1.39s) */
   .studio-drift-sigil .pjcc-sigil { font-size:1.8rem; }
-  .studio-drift-sigil.is-bloom { opacity:0.34; transform:translate(-50%,-50%) scale(1.0); }
+  .studio-drift-sigil.is-bloom { opacity:0.255; transform:translate(-50%,-50%) scale(1.0); }  /* dim 25% (0.34→0.255) */
 
   /* Idea #9 — replay-intro control (bottom-left, subtle) */
   .studio-replay { position:fixed; left:18px; bottom:16px; z-index:3; display:inline-flex; align-items:center; gap:6px;
@@ -523,7 +523,7 @@
     if (sig && !reduce) {
       var bloom = function () { sig.classList.add('is-bloom'); setTimeout(function () { sig.classList.remove('is-bloom'); }, 2600); };
       var seen = false; try { seen = !!localStorage.getItem('mcpuppy_seen'); } catch (e) {}
-      var firstDelay = seen ? 2200 : 8600;
+      var firstDelay = seen ? 500 : 8600;   // 2026-07-11: appear FIRST on a return visit (was 2200ms)
       setTimeout(function () { bloom(); setInterval(bloom, 26000); }, firstDelay);
     }
 

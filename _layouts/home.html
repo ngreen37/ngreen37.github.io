@@ -94,7 +94,7 @@ layout: default
 <style>
 /* ── #1 the chyron: flush under the site header, gold rule below, hero follows.
    2026-07-10: the station plate (LIVE · CHECKER TOWN NEWS) sits ABOVE the crawl. ── */
-.world-ticker-wrap { flex-direction: column; align-items: stretch; margin: -40px -28px 26px; border-top: none; }
+.world-ticker-wrap { flex-direction: column; align-items: stretch; margin: -20px -28px 26px; border-top: none; }
 .ticker-badge { align-self: flex-start; padding: 5px 16px 5px 18px; gap: 8px; }
 .ticker-badge-name { font-size: 10px; }
 .ticker-outer { padding: 8px 0 10px; }
@@ -299,13 +299,25 @@ body.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
    cheap cost as before) and the pattern falls with it. Two depths = texture.
    translateY == the tile height, so the loop is seamless. */
 .hero-rain::before, .hero-rain::after { content:''; position:absolute;
-  left:-10%; right:-10%; top:-45%; bottom:-45%; will-change:transform; }
-.hero-rain::before { background-image:radial-gradient(1.3px 11px at 50% 50%, rgba(178,210,255,0.42), transparent 62%);
-  background-size:44px 66px; animation:hero-rain-a 1.0s linear infinite; }
-.hero-rain::after { background-image:radial-gradient(1px 8px at 50% 50%, rgba(178,210,255,0.24), transparent 62%);
-  background-size:66px 99px; animation:hero-rain-b 1.55s linear infinite; }
-@keyframes hero-rain-a { to { transform:translateY(66px); } }
-@keyframes hero-rain-b { to { transform:translateY(99px); } }
+  left:-40%; right:-40%; top:-70%; bottom:-70%; will-change:transform; }
+/* 2026-07-11 (Nate: not so perfectly vertical / rows): each tile holds a few
+   streaks at IRREGULAR spots (no grid), and the whole sheet is tilted a few
+   degrees (not vertical). The two layers use different tiles, angles + speeds
+   so they never line up. Still transform-only (same cheap cost); translateY ==
+   tile height so the fall loops seamlessly (rotate stays constant in the frame). */
+.hero-rain::before {
+  background-image:
+    radial-gradient(1.3px 10px at 20% 16%, rgba(178,210,255,0.42), transparent 60%),
+    radial-gradient(1.1px 13px at 63% 52%, rgba(178,210,255,0.36), transparent 60%),
+    radial-gradient(1.2px 8px  at 86% 80%, rgba(178,210,255,0.30), transparent 60%);
+  background-size:104px 132px; animation:hero-rain-a 1.25s linear infinite; }
+.hero-rain::after {
+  background-image:
+    radial-gradient(1px 9px  at 38% 34%, rgba(178,210,255,0.26), transparent 60%),
+    radial-gradient(0.9px 6px at 79% 7%,  rgba(178,210,255,0.20), transparent 60%);
+  background-size:138px 168px; animation:hero-rain-b 1.95s linear infinite; }
+@keyframes hero-rain-a { from { transform:rotate(8deg)  translateY(-132px); } to { transform:rotate(8deg)  translateY(0); } }
+@keyframes hero-rain-b { from { transform:rotate(13deg) translateY(-168px); } to { transform:rotate(13deg) translateY(0); } }
 
 /* ── #9 letterbox: two bands frame the first arrival, then lift ── */
 .letterbox { position:fixed; left:0; right:0; height:9vh; background:#050310; z-index:11500;
@@ -319,12 +331,13 @@ body.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
    paint: the hero wears a different sky per phase, a sun rises and sets, the
    moon takes the night watch. (Aurora filters ride the BANDS, not the wrap —
    see the perf note in style.scss.) ── */
-{% comment %} (aurora restored to full brightness 2026-07-11 — the earlier 33%
-     dim was me MISreading "the ACCC" as these arcs; it's the splash sigil.) {% endcomment %}
-body.sky-day  .aurora-wrap { opacity:0.55; }
+{% comment %} TEMP crank (2026-07-11 Nate: "crank up the aurora 200% so I know what
+     you're talking about") — wrap at full + the band peak opacity boosted in
+     style.scss. This is diagnostic; dial back once Nate's seen them. {% endcomment %}
+body.sky-day  .aurora-wrap { opacity:1; }
 body.sky-dawn .aurora-band { filter:hue-rotate(40deg); }
 body.sky-dusk .aurora-band { filter:hue-rotate(-18deg) saturate(1.25); }
-body.sky-night .aurora-wrap { opacity:0.85; }
+body.sky-night .aurora-wrap { opacity:1; }
 
 .hero-sky { position:absolute; inset:0; border-radius:inherit; overflow:hidden; pointer-events:none; }
 .hs-orb { position:absolute; display:none; border-radius:50%; }

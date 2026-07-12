@@ -5891,9 +5891,12 @@ body.sky-dusk  .aurora-band { filter: hue-rotate(22deg) saturate(1.25); }
 body.sky-night .aurora-band { filter: brightness(0.82) saturate(1.35); }
 
 @keyframes aurora-drift {
-  0%   { transform: translateX(-55%) skewX(-14deg); opacity: 0.05; }
-  50%  { opacity: 0.09; }
-  100% { transform: translateX(55%) skewX(-14deg); opacity: 0.05; }
+  /* 2026-07-11 TEMP crank (Nate wants to SEE the arcs) — peak 0.09 → 0.72.
+     These are the slow drifting violet bands behind the first screen. Dial back
+     to 0.05/0.09 (and wrap day 0.55 / night 0.85) once identified. */
+  0%   { transform: translateX(-55%) skewX(-14deg); opacity: 0.52; }
+  50%  { opacity: 0.72; }
+  100% { transform: translateX(55%) skewX(-14deg); opacity: 0.52; }
 }
 .aurora-wrap {
   position: absolute;
