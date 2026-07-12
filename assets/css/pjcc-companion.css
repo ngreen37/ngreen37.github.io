@@ -72,15 +72,8 @@
 .den-zzz { position: absolute; top: -4px; right: -8px; font-size: 22px; color: #cdbcf2; animation: den-zzz 2.4s ease-in-out infinite; }
 @keyframes den-zzz { 0% { opacity: 0; transform: translateY(4px); } 40% { opacity: 1; } 100% { opacity: 0; transform: translateY(-14px); } }
 
-/* species idle animations */
-.idle-wag   { animation: idle-wag 1.1s ease-in-out infinite; transform-origin: 50% 80%; }
-.idle-blink { animation: idle-blink 3.4s ease-in-out infinite; }
-.idle-hop   { animation: idle-hop 1.3s ease-in-out infinite; }
-.idle-plod  { animation: idle-plod 3.2s ease-in-out infinite; }
-@keyframes idle-wag { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
-@keyframes idle-blink { 0%,92%,100% { transform: scaleY(1); } 96% { transform: scaleY(0.82); } }
-@keyframes idle-hop { 0%,100% { transform: translateY(0); } 45% { transform: translateY(-12px); } }
-@keyframes idle-plod { 0%,100% { transform: translateX(-4px) rotate(-2deg); } 50% { transform: translateX(4px) rotate(2deg); } }
+/* (species idle animations removed 2026-07-12 with the companion v3 rebuild — the
+   pet no longer wears a per-species idle class; restore from git if wanted.) */
 .den-pet.trick { animation: den-trick 0.8s ease; }
 @keyframes den-trick { 0% { transform: rotate(0) scale(1); } 50% { transform: rotate(360deg) scale(1.25); } 100% { transform: rotate(360deg) scale(1); } }
 .den-pet.happy { animation: den-bounce 0.5s ease; }
@@ -153,7 +146,7 @@
 @keyframes den-toast { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .idle-wag, .idle-blink, .idle-hop, .idle-plod, .den-zzz, .den-fx, .den-sky .star { animation: none; }
+  .den-zzz, .den-fx, .den-sky .star { animation: none; }
 }
 @media (max-width: 520px) {
   .den-meters { grid-template-columns: 1fr; }
