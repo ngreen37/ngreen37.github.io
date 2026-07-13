@@ -7,6 +7,7 @@
  * States:
  *   offline (keys unset) -> hidden
  *   logged out           -> email + "Send login link"
+ *   link sent            -> tap the link, or type the 6-digit code (installed app)
  *   logged in, no profile-> claim a codename
  *   logged in, no avatar -> pick an avatar
  *   logged in, complete  -> avatar · codename · rank · credits · 🏆 · sign out
@@ -30,6 +31,26 @@
     return e;
   }
 
+  // In the installed app a tapped link opens Safari and signs THAT in instead, so
+  // the same email also carries a code you can type right here.
+  function renderCode(bar, email) {
+    bar.innerHTML =
+      '<span class="pjcc-label">✉ Sent. Tap the link, or type the 6-digit code:</span>' +
+      '<input id="pjcc-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="pjcc-input" placeholder="000000">' +
+      '<button id="pjcc-verify" class="pjcc-btn">Sign in</button>' +
+      '<span id="pjcc-code-msg" class="pjcc-label"></span>';
+    bind('pjcc-verify', function () {
+      var code = (document.getElementById('pjcc-code').value || '').trim();
+      var btn = document.getElementById('pjcc-verify');
+      if (!code || btn.disabled) return;
+      btn.disabled = true; btn.textContent = 'Checking…';
+      PJCC.verifyCode(email, code).then(render).catch(function () {
+        btn.disabled = false; btn.textContent = 'Sign in';
+        document.getElementById('pjcc-code-msg').textContent = 'That code did not work.';
+      });
+    });
+  }
+
   function render() {
     var bar = container();
     if (!PJCC.enabled) { bar.style.display = 'none'; return; }
@@ -51,7 +72,7 @@
         if (btn.disabled) return;                       // one email per click, not per tap-tap
         btn.disabled = true; btn.textContent = 'Sending…';
         PJCC.signInMagic(email).then(function () {
-          bar.innerHTML = '<span class="pjcc-label">✉ Check your email for a login link, then return here.</span>';
+          renderCode(bar, email);
         }).catch(function () {
           btn.disabled = false; btn.textContent = 'Send login link';
         });

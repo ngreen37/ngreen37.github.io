@@ -172,7 +172,7 @@ permalink: /dossier/
     setTop('<p class="cc-greet">Uplink open — build your look below, or <a href="#dsr-login">sign in</a> to sync your operative across every device.</p>');
     el.innerHTML =
       '<div class="dsr-card"><h2 class="dsr-h">Operative sign-in</h2>' +
-      '<p class="pjcc-sub">Enter your email and we will send a one-click login link. Your operative — codename, avatar, credits — follows you across every device.</p>' +
+      '<p class="pjcc-sub">Enter your email and we will send a login link and a 6-digit code. Your operative — codename, avatar, credits — follows you across every device.</p>' +
       '<div class="ml-form"><input id="dsr-email" type="email" class="pjcc-input" placeholder="you@email.com"><button id="dsr-login" class="pjcc-btn">Send login link</button></div>' +
       '<p id="dsr-msg" class="pjcc-sub"></p></div>';
     document.getElementById('dsr-login').onclick = function () {
@@ -182,9 +182,30 @@ permalink: /dossier/
       if (btn.disabled) return;                       // one email per click, not per tap-tap
       btn.disabled = true; btn.textContent = 'Sending…';
       PJCC.signInMagic(email).then(function () {
-        document.getElementById('dsr-msg').textContent = '✉ Check your email for the login link, then return here.';
+        renderCode(email);
       }).catch(function () {
         btn.disabled = false; btn.textContent = 'Send login link';
+      });
+    };
+  }
+
+  // The code path exists for the installed app: a tapped link always opens Safari,
+  // which signs in the browser and leaves the app signed out.
+  function renderCode(email) {
+    setTop('<p class="cc-greet">Link sent — tap it, or type the code below to sign in right here.</p>');
+    el.innerHTML =
+      '<div class="dsr-card"><h2 class="dsr-h">Enter your code</h2>' +
+      '<p class="pjcc-sub">We sent <strong>' + esc(email) + '</strong> a login link and a 6-digit code. Either one works.</p>' +
+      '<div class="ml-form"><input id="dsr-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="pjcc-input" placeholder="000000"><button id="dsr-verify" class="pjcc-btn">Sign in</button></div>' +
+      '<p id="dsr-msg" class="pjcc-sub"></p></div>';
+    document.getElementById('dsr-verify').onclick = function () {
+      var code = document.getElementById('dsr-code').value.trim();
+      var btn = document.getElementById('dsr-verify');
+      if (!code || btn.disabled) return;
+      btn.disabled = true; btn.textContent = 'Checking…';
+      PJCC.verifyCode(email, code).then(render).catch(function () {
+        btn.disabled = false; btn.textContent = 'Sign in';
+        document.getElementById('dsr-msg').textContent = 'That code did not work — check it, or send a new one.';
       });
     };
   }

@@ -7,7 +7,8 @@
  *   PJCC.enabled               -> true if Supabase keys are configured
  *   PJCC.currentUser()         -> auth user object, or null if guest
  *   PJCC.getProfile()          -> {codename, companion, credits, rank} | null
- *   PJCC.signInMagic(email)    -> sends a magic login link
+ *   PJCC.signInMagic(email)    -> emails a login link AND a 6-digit code
+ *   PJCC.verifyCode(email, c)  -> signs in with that code (the installed-app path)
  *   PJCC.claimCodename(name)   -> creates the profile row after first login
  *   PJCC.signOut()
  *   PJCC.saveScore(game, score, extras)  -> writes score (server if logged in,
@@ -211,6 +212,21 @@
       setTimeout(function () { magicInFlight = null; magicInFlightEmail = ''; }, 30000);
     });
     return magicInFlight;
+  };
+
+  // The 6-digit code is the ONLY sign-in that works inside the installed iOS app:
+  // a tapped link always opens Safari, and an iOS home-screen app keeps its own
+  // storage jar, so the link signs in the browser and the app stays a stranger.
+  // Typing the code keeps the whole exchange inside the app's own jar.
+  PJCC.verifyCode = async function (email, code) {
+    if (!sb) throw new Error('profiles offline');
+    code = String(code || '').replace(/\D/g, '');
+    if (code.length !== 6) throw new Error('bad code');
+    var r = await sb.auth.verifyOtp({ email: email, token: code, type: 'email' });
+    if (r.error) throw r.error;
+    await refreshSession();
+    emit();
+    return r.data;
   };
 
   PJCC.signOut = async function () {
