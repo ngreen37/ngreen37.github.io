@@ -46,8 +46,6 @@
          coloured glow from that quad's corner. Toggled by the console JS below. {% endcomment %}
     <div class="studio-lean" id="studio-lean" aria-hidden="true"></div>
 
-    <div class="studio-welcome-bg" aria-hidden="true">WELCOME</div>
-
     <div class="studio-drifters">
       <a href="{{ '/characters/princess/' | relative_url }}" class="drift-piece" aria-label="Princess character page">♞</a>
       <a href="{{ '/locations/' | relative_url }}" class="drift-piece" aria-label="Locations">♛</a>
@@ -88,13 +86,13 @@
         <span class="tagline-word">Games.</span>
         <span class="tagline-word tagline-main">
           <span class="tagline-main-studio">McPuppy Studios</span>
-          {% comment %} The "o" is the door to /classified/. It looks EXACTLY like its
-               neighbours (it inherits the shimmer's text-clip) and flickers like a radio
-               dropout. The glyph lives in the inner <i> so the flicker can use
-               `visibility` — the only property that reaches a text-clipped glyph — while
-               the <a> around it keeps its hit box and stays clickable mid-dropout.
-               See _sass/_pjcc-04-flair.scss. {% endcomment %}
-          <span class="tagline-main-tagline">A Million St<a class="tg-x" href="{{ '/classified/' | relative_url }}" tabindex="-1" aria-hidden="true"><i class="tg-x-glyph">o</i></a>ries to Tell</span>
+          {% comment %} The second "i" in "Million" is the door to /classified/. It looks
+               EXACTLY like its neighbours (it inherits the shimmer's text-clip) and flickers
+               like a radio dropout — mid-dropout the word reads "A Mill on". The glyph lives
+               in the inner <i> so the flicker can use `visibility` — the only property that
+               reaches a text-clipped glyph — while the <a> around it keeps its hit box and
+               stays clickable mid-dropout. See _sass/_pjcc-04-flair.scss. {% endcomment %}
+          <span class="tagline-main-tagline">A Mill<a class="tg-x" href="{{ '/classified/' | relative_url }}" tabindex="-1" aria-hidden="true"><i class="tg-x-glyph">i</i></a>on Stories to Tell</span>
         </span>
       </div>
 
@@ -294,19 +292,25 @@
     animation:none;
     will-change:transform;
   }
-  #drift-secret.is-in { animation:secret-fly 48s linear infinite; }
+  /* The 7s delay (Nate, 2026-07-13: "have it only come into frame after 7 seconds") holds
+     the star off-screen before its FIRST crossing, so the page settles before anything moves
+     through it. animation-delay only applies to the first iteration — every later pass comes
+     round on the plain 48s loop, which is what we want: a beat of stillness on arrival, then
+     a star every 48s forever. It stays invisible during the delay because fill-mode is `none`
+     and the base rule is opacity:0. */
+  #drift-secret.is-in { animation:secret-fly 48s linear 7s infinite; }
   /* transform is declared only at the two ends of the flight, so it interpolates in
      ONE straight linear segment = genuinely constant speed.
-     2026-07-12 (Nate: "have the star move 7.5% slower"): the crossing is the first
-     slice of the 48s loop, so its SPEED is set by how much of the loop it gets. It
-     used to cross in 25% of 48s = 12.0s; 7.5% slower = 12.0/0.925 ≈ 12.97s = 27%.
-     The 48s repeat is deliberately left alone — that's the wait between passes, not
-     the star's speed, and this is the only door to /classified/. */
+     The crossing is the first slice of the 48s loop, so its SPEED is set by how much of the
+     loop it gets. History: 25% of 48s = 12.0s → 7.5% slower = 27% (12.97s) → and now
+     (2026-07-13, "slow the star down 10%") 12.97/0.9 ≈ 14.4s = 30% of the loop.
+     The 48s repeat is deliberately left alone — that's the wait BETWEEN passes, not the
+     star's speed, and this is the only door to /classified/. */
   @keyframes secret-fly {
     0%   { transform:translateX(0);              opacity:0; }
     1%   { opacity:1; }
-    26%  { opacity:1; }
-    27%  { transform:translateX(calc(-120vw));   opacity:0; }
+    29%  { opacity:1; }
+    30%  { transform:translateX(calc(-120vw));   opacity:0; }
     100% { transform:translateX(calc(-120vw));   opacity:0; }
   }
 
@@ -595,15 +599,16 @@
       seatTheQuads();   // reduced motion / no sigil: no beat to wait for
     }
 
-    // Secret ✦ starts its crossing (right → behind the quads → off the left edge,
-    // constant speed, repeating every 48s) — but only once the page is actually
-    // visible. On a first visit that means AFTER the ~8.6s cold-open clears
-    // (otherwise the first pass is wasted behind the overlay); on a return visit,
-    // shortly after load. Parked off-screen in CSS until .is-in starts the loop.
+    // Secret ✦ is ARMED here; the CSS then holds it off-screen for 7s before the first
+    // crossing (right → behind the quads → off the left edge, constant speed, every 48s).
+    // We only arm it once the page is actually visible: on a first visit that means AFTER
+    // the ~8.6s cold-open clears (otherwise the first pass is wasted behind the overlay);
+    // on a return visit, immediately — so the star enters ~7s in, which is the beat Nate
+    // asked for. Parked off-screen in CSS until .is-in starts the loop.
     var star = document.getElementById('drift-secret');
     if (star && !reduce) {
       var seenStar = false; try { seenStar = !!localStorage.getItem('mcpuppy_seen'); } catch (e) {}
-      setTimeout(function () { star.classList.add('is-in'); }, seenStar ? 1400 : 9400);
+      setTimeout(function () { star.classList.add('is-in'); }, seenStar ? 400 : 8800);
     }
   })();
   </script>

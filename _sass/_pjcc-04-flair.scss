@@ -2,16 +2,10 @@
    Studio Landing — Keyframe Animations  (flair)
    ============================================================= */
 
-/* The WELCOME watermark breathes. NOTE: this keyframe animates `opacity`, so it WINS over
-   the static `opacity` on .studio-welcome-bg — that declaration is only the no-animation
-   fallback. If you want to change how visible the watermark is, change it HERE.
-   2026-07-12: peak pulled 0.06 → 0.035. It never mattered before, because the watermark
-   was dark-navy-on-black and effectively invisible; with the town sky behind the splash it
-   suddenly had a bright midday sky to show up against. Tuned against that worst case. */
-@keyframes welcome-breathe {
-  0%, 100% { opacity: 0.035; }
-  50%       { opacity: 0.008; }
-}
+/* `welcome-breathe` lived here — removed 2026-07-13 with the WELCOME watermark it drove.
+   See the note in _pjcc-02-studio.scss for why. It is also the standing example of a real
+   CSS trap: it animated `opacity`, so it silently OVERRODE the static `opacity` on
+   .studio-welcome-bg — two rounds of editing that static value changed nothing on screen. */
 
 @keyframes quad-appear {
   from { opacity: 0; transform: translateY(16px) scale(0.97); }
@@ -155,6 +149,15 @@ body.theme-bw .page-body em {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: tagline-shimmer 4s linear infinite;
+
+  /* The top of the final "l" in "Tell" used to look shaved off. It wasn't being CLIPPED —
+     it was never PAINTED. There is no italic Poppins in assets/fonts, so this italic is
+     SYNTHETIC: Chrome shears the upright glyphs. A sheared glyph's top-right leans past the
+     element's right edge, and `background-clip: text` can only paint gradient that exists
+     inside the background box — so the overhanging corner got nothing. The padding widens
+     the box until the lean fits inside it. Symmetric, so the line stays optically centred.
+     Verified in Chrome by outlining the background box: the old edge cut through the l. */
+  padding: 0.06em 0.3em;
 }
 
 @keyframes tagline-shimmer {
@@ -163,6 +166,9 @@ body.theme-bw .page-body em {
 }
 
 /* ── the letter that flickers — the tell that opens the classified page ──────
+   The letter is the SECOND "i" in "Million" (moved off the "o" in "Stories" 2026-07-13, at
+   Nate's ask). It's the better door: when it drops out, the word reads "A Mill on" — a
+   sentence that still parses, so the eye snags on the meaning before it finds the link.
    2026-07-12 (Nate: "make it exactly like the other characters, but it flickers,
    like a radio disruption"). Two facts, both verified in a real Chrome render:
 
@@ -170,8 +176,8 @@ body.theme-bw .page-body em {
       INHERITS, so a link with `color: inherit; -webkit-text-fill-color: inherit`
       goes transparent exactly like a plain letter, and the parent's clipped
       gradient paints straight through its glyph — pixel-identical to its
-      neighbours. (The old "solid #efd39b fill" workaround is what made the "o"
-      read as a different, non-shimmering letter. Gone.)
+      neighbours. (The old "solid #efd39b fill" workaround is what made the letter
+      read as a different, non-shimmering one. Gone.)
 
    2. The parent paints that glyph, not the link — so `opacity` and `filter` on
       the <a> do NOTHING to it. The one property that reaches a text-clipped
@@ -714,8 +720,8 @@ body.theme-bw .about-contact-btn {
 }
 
 .project-status-active .project-status-dot {
+  --dot-ring: rgba(0, 196, 58, 0.7);
   background: rgba(0, 196, 58, 0.9);
-  animation: status-dot-pulse-green 2.2s ease-in-out infinite;
 }
 
 .project-status-soon {
@@ -725,16 +731,24 @@ body.theme-bw .about-contact-btn {
 }
 
 
+/* Flair D — the pulsing dot on active/live projects.
+   ─────────────────────────────────────────────────────────────────────────────
+   REBUILT 2026-07-13 after the perf audit (`npm run perf`) caught it red-handed.
 
+   It used to expand a ring by animating BOX-SHADOW spread:
+       0%,100% { box-shadow: 0 0 0 0  rgba(0,196,58,0.7); }
+       50%     { box-shadow: 0 0 0 5px rgba(0,196,58,0); }
+   box-shadow is a PAINT property. It cannot be composited, so every frame Chrome
+   repainted the dot on the main thread — and the audit priced these TWO SIX-PIXEL DOTS
+   at 67ms of main-thread work per second, easily the most expensive thing on the McPuppy
+   home page. More than the whole town sky. More than the weather.
 
-
-@keyframes status-dot-pulse-green {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 196, 58, 0.7); }
-  50%       { opacity: 0.55; box-shadow: 0 0 0 5px rgba(0, 196, 58, 0); }
-}
-
-/* Flair D — pulsing dot for active/live projects */
+   Same look, built the compositor's way: the ring is a real pseudo-element that SCALES and
+   FADES. transform + opacity only, so it never touches the main thread again.
+   (scale 2.7 ≈ the old 6px dot + 5px of spread on each side.) */
 .project-status-dot {
+  --dot-ring: rgba(255, 255, 255, 0.5);
+  position: relative;
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -744,9 +758,30 @@ body.theme-bw .about-contact-btn {
   animation: status-dot-pulse 2.2s ease-in-out infinite;
 }
 
+.project-status-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--dot-ring);
+  pointer-events: none;
+  animation: status-dot-ring 2.2s ease-in-out infinite;
+}
+
 @keyframes status-dot-pulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5); }
-  50%       { opacity: 0.55; box-shadow: 0 0 0 5px rgba(255, 255, 255, 0); }
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+
+@keyframes status-dot-ring {
+  0%, 100% { transform: scale(1);   opacity: 0.7; }
+  50%      { transform: scale(2.7); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-status-dot,
+  .project-status-dot::after { animation: none; }
+  .project-status-dot::after { opacity: 0; }
 }
 
 .project-desc {
@@ -758,16 +793,8 @@ body.theme-bw .about-contact-btn {
   em { color: #aaa; font-style: italic; }
 }
 
-.project-details {
-  list-style: none;
-  padding: 0;
-  margin: 8px 0 0;
-  font-size: 13px;
-  color: #555;
-
-  li { margin-bottom: 2px; }
-  strong { color: #777; font-weight: 600; }
-}
+/* .project-details — the "Format: / Status:" lists under the studio cards. Removed
+   2026-07-13 (Nate): the last three were saying what the description already said. */
 
 .project-links {
   display: flex;

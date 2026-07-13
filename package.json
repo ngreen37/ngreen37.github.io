@@ -10,6 +10,7 @@
     "test:pwa": "node tests/pwa.check.js",
     "test:css": "node tests/css.check.js",
     "sweep": "node tests/sweep.js",
+    "perf": "node tests/perf.js",
     "gen:icons": "node tests/gen-pwa-icons.js",
     "gen:splash": "node tests/gen-ios-splash.js",
     "gen:favicon": "node tests/gen-favicon.js",

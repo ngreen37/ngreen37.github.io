@@ -19,10 +19,28 @@ permalink: /games/
    the whole title every frame; it wears the mid glow statically now.) */
 .ghub-title { text-shadow:0 0 34px rgba(255,190,80,0.7), 0 3px 0 #6b4416, 0 5px 16px rgba(0,0,0,0.78); }
 
-.ghub-head::after { content:""; display:block; height:2px; width:190px; margin:16px auto 0; border-radius:2px;
-  background:linear-gradient(90deg, transparent 0%, #ffcf6b 50%, transparent 100%); background-size:220% 100%;
-  box-shadow:0 0 16px rgba(255,175,60,0.65); animation:ghub-sweep 5s ease-in-out infinite; }
-@keyframes ghub-sweep { 0%,100% { background-position:120% 0; } 50% { background-position:-20% 0; } }
+/* The gold rule under the header, with a shimmer that sweeps along it.
+   ─────────────────────────────────────────────────────────────────────────────
+   REBUILT 2026-07-13 after `npm run perf` caught it. It used to be one pseudo-element
+   animating BACKGROUND-POSITION:
+       @keyframes ghub-sweep { 0%,100% { background-position:120% 0 } 50% { background-position:-20% 0 } }
+   background-position is a PAINT property — it repaints the element every single frame on
+   the main thread. It is the exact pattern the 2026-07-11 lag hunt banned site-wide, and
+   that pass fixed the text-shadow on the line ABOVE this one and the drop-shadow filters
+   BELOW it, and walked straight past this. It survived because a 190×2px bar is invisible
+   in a profile — until you ablate it and the frame time drops.
+
+   Now: a TRACK that clips (.ghub-rule) and a wider SHIMMER inside it (i) that translates.
+   transform only, so it rides the compositor and costs nothing. Identical on screen. */
+.ghub-rule { position:relative; overflow:hidden; height:2px; width:190px; margin:16px auto 0;
+  border-radius:2px; background:rgba(255,175,60,0.18); box-shadow:0 0 16px rgba(255,175,60,0.45); }
+.ghub-rule i { position:absolute; top:0; left:0; height:100%; width:60%; border-radius:2px;
+  background:linear-gradient(90deg, transparent 0%, #ffcf6b 50%, transparent 100%);
+  animation:ghub-shimmer 5s ease-in-out infinite; will-change:transform; }
+@keyframes ghub-shimmer {
+  0%, 100% { transform:translateX(190px); }
+  50%      { transform:translateX(-114px); }   /* 60% of 190px = 114px — fully off the left */
+}
 
 /* the ENTER tag fades + slides in on hover */
 .ghub-portal .ghp-enter { transform:translateX(4px); transition:opacity .14s, transform .18s; }
@@ -59,11 +77,11 @@ permalink: /games/
 }
 
 @media (prefers-reduced-motion: reduce){
-  .ghub, .ghub::before, .ghub-title, .ghub-head::after,
+  .ghub, .ghub::before, .ghub-title, .ghub-rule i,
   .ghub-portal .ghp-glyph, .ghub-portal .ghp-glyph::before, .ghub-portal .ghp-glyph::after { animation:none; }
   .ghub { opacity:1; transform:none; }
 }
-@media (max-width:600px){ .ghub-head::after { width:140px; } }
+@media (max-width:600px){ .ghub-rule { width:140px; } }
 
 /* ---- HEIGHT PASS (2026-07-12, Nate: "can we reduce its height?") ------------
    The door above went from a ~175px column to a ~90px row. The rest of the page
@@ -76,7 +94,7 @@ permalink: /games/
 .ghub-title { font-size:clamp(26px,5.4vw,40px); }
 .ghub-eyebrow { margin:0 0 5px; }
 .ghub-sub { margin:6px 0 0; }
-.ghub-head::after { margin:10px auto 0; }
+.ghub-rule { margin:10px auto 0; }
 .ghub-portal { min-height:150px; padding:16px 12px 13px; }
 .ghub-portal .ghp-glyph { font-size:2.7rem; }
 .ghub-portal .ghp-blurb { margin-top:4px; }
@@ -199,6 +217,9 @@ permalink: /games/
     <p class="ghub-eyebrow">◆ The PJCC Arcade</p>
     <h1 class="ghub-title">Choose Your Hall</h1>
     <p class="ghub-sub">Claim a codename · climb the global boards</p>
+    <!-- the gold rule. Two real elements, not a pseudo: the outer one is the track and clips,
+         the inner one is the shimmer and slides. See the note by @ghub-shimmer. -->
+    <div class="ghub-rule" aria-hidden="true"><i></i></div>
   </div>
 
   <!-- the active halls -->

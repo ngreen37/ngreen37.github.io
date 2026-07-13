@@ -39,25 +39,22 @@ permalink: /academy/
   </div>
 </div>
 
-<!-- ===== Find your starting point (was: "Take the exam") ===== -->
-<div class="ac-place" id="ac-place">
-  <div class="ac-place-head">
-    <div class="ac-place-lead"><b>New here?</b> Five quick questions and we'll put you in the right spot.</div>
-    <button class="ac-place-start" id="ac-place-start" type="button">Find my starting point ▸</button>
-  </div>
-  <div class="ac-place-quiz" id="ac-place-quiz" hidden></div>
-  <div class="ac-place-result" id="ac-place-result" hidden></div>
-</div>
+{% comment %} THE PLACEMENT EXAM was removed 2026-07-13 (Nate: "really streamline and make it
+     not so overwhelming"). It was a five-question quiz in a box of its own, and it was BROKEN
+     in the way this site keeps breaking: score 3–4 and it sent you to "Argus & the Rival" via
+     THE PIRC PROTOCOL; score 5 and it sent you to BLINDFOLD PUZZLES. Neither is a live game
+     (In Development / Vault). So the better you did, the more certainly it walked you into a
+     wall. And with one hall open, a placement test has exactly one possible answer — it asked
+     five questions to tell everybody the same thing. Restore from git if the other halls open
+     and it's ever worth re-asking.
 
-{% comment %} The DAILY HOMEWORK module (a task + a 🔥 streak flame + "Do it ▸") was removed
-     2026-07-12. Two reasons. It's a DAILY, and every other daily on this site has already
-     been deleted — Clearance's, Siege's, the Daily Dispatch, the dossier's. And Nate's brief
-     for this page was "INVITING. Simple. Warm." — a homework streak that you can BREAK is
-     pressure, which is the opposite of all three. Restore from git if it's missed. {% endcomment %}
+     The DAILY HOMEWORK module (a task + a 🔥 streak flame) went 2026-07-12: every other daily
+     on this site is already deleted, and a streak you can BREAK is pressure — the opposite of
+     "inviting, simple, warm". {% endcomment %}
 
 <!-- ===== The path ===== -->
 <h2 class="ac-h2">The path</h2>
-<p class="ac-path-lead" id="ac-path-lead">Start with Auston. One hall at a time — the rest open as they're built.</p>
+<p class="ac-path-lead" id="ac-path-lead">Open Auston's Bootcamp to see the lessons. The rest of the halls open as they're built.</p>
 <div class="ac-courses" id="ac-courses"></div>
 
 <!-- ===== Free-play board (collapsed) ===== -->
@@ -378,26 +375,38 @@ window.ACCERT = (function () {
       document.getElementById('ac-next-go').textContent = 'Leaderboards ▸';
     }
 
-    // courses — an OPEN hall shows its lessons; a hall that isn't built yet says so, warmly,
-    // and offers the one thing it can: go meet the person who'll teach it.
+    /* Courses — SMALL boxes (2026-07-13, Nate: "make all the boxes small. You should click
+       into the Bootcamp to learn more about it. Really streamline and make it not so
+       overwhelming").
+
+       Every hall is now the same small tile: a glyph, a name, a line, a state. The one that's
+       OPEN is a <details> — click it and it unfolds into the blurb, the teacher and the four
+       lessons. Closed, five halls take about the room one used to. The lesson list is still
+       one click away; it just isn't shouted at someone who only came to look.
+
+       The halls that aren't built are plain tiles, not <details>: there is nothing behind
+       them to open, and a box that opens onto an apology is worse than a box that doesn't
+       open. Each one still offers the one true thing it has — go meet whoever will teach it. */
     var cw = document.getElementById('ac-courses'); cw.innerHTML = '';
     COURSES.forEach(function(c){
-      var el = document.createElement('div');
-      el.className = 'ac-course' + (c.soon ? ' ac-course--soon' : '');
-      el.style.setProperty('--acc', c.accent);
-
       if (c.soon) {
-        el.innerHTML =
-          '<div class="ac-course-head">' +
-            '<div class="ac-course-ico">' + c.ico + '</div>' +
-            '<div><div class="ac-course-title">' + esc(c.title) + '</div>' +
-            '<div class="ac-course-sub">' + esc(c.sub) + '</div></div>' +
-            '<div class="ac-course-prog ac-course-prog--soon">Building</div>' +
-          '</div>' +
-          '<p class="ac-course-blurb">' + esc(c.blurb) + '</p>' +
-          '<p class="ac-soon-note">This hall isn\'t open yet. ' +
-            '<a href="' + charUrl(c.slug) + '">Meet ' + esc(c.who) + ' →</a></p>';
-        cw.appendChild(el);
+        // The whole tile is the link — one row, exactly as tall as the Bootcamp's summary.
+        // (It used to carry a separate "Meet X →" line underneath, which made every LOCKED
+        //  hall taller than the one hall that's actually open. The important box was the
+        //  smallest box on the page.)
+        var t = document.createElement('a');
+        t.className = 'ac-course ac-course--soon';
+        t.href = charUrl(c.slug);
+        t.title = 'Not built yet — meet ' + c.who + ', who will teach it';
+        t.style.setProperty('--acc', c.accent);
+        t.innerHTML =
+          '<span class="ac-course-head">' +
+            '<span class="ac-course-ico">' + c.ico + '</span>' +
+            '<span class="ac-course-name"><b class="ac-course-title">' + esc(c.title) + '</b>' +
+              '<small class="ac-course-sub">' + esc(c.sub) + '</small></span>' +
+            '<span class="ac-course-prog ac-course-prog--soon">Building</span>' +
+          '</span>';
+        cw.appendChild(t);
         return;
       }
 
@@ -409,16 +418,24 @@ window.ACCERT = (function () {
           '<span class="ac-lesson-txt"><b>' + esc(l.t) + '</b><small>' + esc(l.d) + '</small></span>' +
           '<a class="ac-lesson-go" href="' + gameUrl(l.go) + '">play ▸</a></li>';
       }).join('');
+
+      var el = document.createElement('details');
+      el.className = 'ac-course ac-course--open';
+      el.style.setProperty('--acc', c.accent);
       el.innerHTML =
-        '<div class="ac-course-head">' +
-          '<div class="ac-course-ico">' + c.ico + '</div>' +
-          '<div><div class="ac-course-title">' + esc(c.title) + '</div>' +
-          '<div class="ac-course-sub">' + esc(c.sub) + '</div></div>' +
-          '<button class="ac-intro-btn" type="button" data-who="' + esc(c.who) + '" data-say="' + esc(c.blurb) + '" aria-label="Hear ' + esc(c.who) + '\'s intro">▶</button>' +
-          '<div class="ac-course-prog">' + cdone + '/' + c.lessons.length + '</div>' +
-        '</div>' +
-        '<p class="ac-course-blurb">' + esc(c.blurb) + ' <a href="' + charUrl(c.slug) + '">Meet ' + esc(c.who) + ' →</a></p>' +
-        '<ul class="ac-lessons">' + lessonsHtml + '</ul>';
+        '<summary class="ac-course-head">' +
+          '<span class="ac-course-ico">' + c.ico + '</span>' +
+          '<span class="ac-course-name"><b class="ac-course-title">' + esc(c.title) + '</b>' +
+            '<small class="ac-course-sub">' + esc(c.sub) + '</small></span>' +
+          '<span class="ac-course-prog">' + cdone + '/' + c.lessons.length + '</span>' +
+        '</summary>' +
+        '<div class="ac-course-body">' +
+          '<p class="ac-course-blurb">' + esc(c.blurb) + '</p>' +
+          '<p class="ac-course-meet">' +
+            '<button class="ac-intro-btn" type="button" data-who="' + esc(c.who) + '" data-say="' + esc(c.blurb) + '" aria-label="Hear ' + esc(c.who) + '\'s intro">▶</button>' +
+            '<a href="' + charUrl(c.slug) + '">Meet ' + esc(c.who) + ' →</a></p>' +
+          '<ul class="ac-lessons">' + lessonsHtml + '</ul>' +
+        '</div>';
       cw.appendChild(el);
     });
 
@@ -499,8 +516,8 @@ window.ACCERT = (function () {
 (function () {
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]; }); }
-  function best(game) { try { if (window.PJCC && PJCC.localBest) return PJCC.localBest(game); return parseInt(localStorage.getItem('pjcc.best.' + game), 10) || 0; } catch (e) { return 0; } }
-  function gameUrl(slug) { return '{{ "/games/" | relative_url }}'.replace(/\/$/, '') + '/' + slug + '/'; }
+  /* (`best()` and `gameUrl()` used to live here for the daily homework and the placement exam.
+     Both modules are gone, and they were the only callers, so they went too.) */
 
   // ---- voiced character intros: leitmotif + browser speech ----
   document.addEventListener('click', function (e) {
@@ -519,48 +536,13 @@ window.ACCERT = (function () {
     b.classList.remove('playing'); void b.offsetWidth; b.classList.add('playing');
   });
 
-  // ---- placement exam ----
-  var QS = [
-    { q: 'Where does the White king start the game?', a: ['e1', 'd1', 'e8', 'a1'], c: 0 },
-    { q: 'Which piece jumps in an "L" shape?', a: ['Bishop', 'Knight', 'Rook', 'Pawn'], c: 1 },
-    { q: 'A bishop moves along…', a: ['Files', 'Ranks', 'Diagonals', 'L-shapes'], c: 2 },
-    { q: 'Attacking two pieces with one move is a…', a: ['Pin', 'Skewer', 'Fork', 'Castle'], c: 2 },
-    { q: 'Is the square d5 light or dark?', a: ['Light', 'Dark'], c: 0 }
-  ];
-  var pStart = $('ac-place-start');
-  if (pStart) pStart.onclick = function () {
-    var quiz = $('ac-place-quiz'), res = $('ac-place-result'); res.hidden = true; quiz.hidden = false; pStart.style.display = 'none';
-    quiz.innerHTML = QS.map(function (q, i) {
-      return '<div class="ac-pq"><div class="ac-pq-q">' + (i + 1) + '. ' + esc(q.q) + '</div><div class="ac-pq-a">' +
-        q.a.map(function (opt, j) { return '<button type="button" class="ac-pq-opt" data-q="' + i + '" data-j="' + j + '">' + esc(opt) + '</button>'; }).join('') + '</div></div>';
-    }).join('') + '<button type="button" class="ac-place-start" id="ac-place-submit">See my placement ▸</button>';
-    var picks = {};
-    Array.prototype.forEach.call(quiz.querySelectorAll('.ac-pq-opt'), function (o) {
-      o.onclick = function () {
-        var qi = o.getAttribute('data-q'); picks[qi] = +o.getAttribute('data-j');
-        Array.prototype.forEach.call(quiz.querySelectorAll('.ac-pq-opt[data-q="' + qi + '"]'), function (x) { x.classList.remove('sel'); });
-        o.classList.add('sel');
-      };
-    });
-    $('ac-place-submit').onclick = function () {
-      var score = 0; QS.forEach(function (q, i) { if (picks[i] === q.c) score++; });
-      var path = score <= 2 ? { t: "Start with Auston's Bootcamp", d: 'Lock in the board and pieces first.', go: 'notation-run' }
-        : score <= 4 ? { t: "Jump to Argus & the Rival", d: 'You know the basics — build openings and tactics.', go: 'pirc-protocol' }
-        : { t: "Straight to Princess's Vision Hall", d: 'Strong start! Train board vision and the endgame.', go: 'blindfold-puzzles' };
-      try { localStorage.setItem('pjcc.academy.placement', JSON.stringify({ score: score, when: Date.now() })); } catch (_) {}
-      quiz.hidden = true; res.hidden = false;
-      res.innerHTML = '<div class="ac-place-score">You scored ' + score + ' / ' + QS.length + '</div>' +
-        '<div class="ac-place-rec"><b>' + esc(path.t) + '</b><br>' + esc(path.d) + '</div>' +
-        '<a class="ac-place-start" href="' + gameUrl(path.go) + '">Begin ▸</a> ' +
-        '<button type="button" class="ac-print-btn" id="ac-place-redo">Retake</button>';
-      $('ac-place-redo').onclick = function () { res.hidden = true; pStart.style.display = ''; };
-    };
-  };
+  /* (The PLACEMENT EXAM engine went 2026-07-13 with its markup — see the note up in the
+     page body. Short version: three of its five outcomes routed students to games that
+     aren't live, and with one hall open it had one possible answer anyway.
 
-  /* (The DAILY HOMEWORK engine — a date-seeded task + a localStorage streak flame —
-     was removed 2026-07-12 with its markup. It was a DAILY, and every other daily on this
-     site is already deleted; and three of its six tasks pointed at Fork in the Road, The
-     Pirc Protocol and Knight's Tour, which are not live games. Restore from git.) */
+     The DAILY HOMEWORK engine — a date-seeded task + a localStorage streak flame — went
+     2026-07-12, likewise: three of its six tasks pointed at Fork in the Road, The Pirc
+     Protocol and Knight's Tour, none of which are live games. Both restore from git.) */
 
   // ---- sandbox board (free-move, no rules) ----
   (function () {
@@ -663,75 +645,99 @@ window.ACCERT = (function () {
 </script>
 
 <style>
-.ac-hero { text-align: center; max-width: 720px; margin: 0 auto 10px; }
-.ac-crest { font-size: 54px; color: #F5C518; line-height: 1; text-shadow: 0 0 22px rgba(245,197,24,0.4); }
-.ac-tagline { color: #c9a7ff; font-size: 1.05rem; line-height: 1.6; }
-.ac-tagline strong { color: #F5C518; }
-.ac-safe { color: #8a72c0; font-size: 0.82rem; margin-top: 4px; }
+.ac-hero { text-align: center; max-width: 720px; margin: 0 auto 4px; }
+.ac-crest { font-size: 38px; color: #F5C518; line-height: 1; text-shadow: 0 0 22px rgba(245,197,24,0.4); }
 
-/* belt */
-.ac-belt-wrap { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; background: linear-gradient(135deg,#1f1147,#2d1b69);
-  border: 1px solid rgba(245,197,24,0.3); border-radius: 14px; padding: 16px 20px; margin: 16px 0; }
-.ac-belt-now { display: flex; align-items: center; gap: 12px; }
-.ac-belt-ico { font-size: 40px; color: #F5C518; line-height: 1; }
-.ac-belt-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #9a7fd4; }
-.ac-belt-name { font-size: 1.4rem; font-weight: 800; color: #f0e6ff; }
+/* belt — slimmed 2026-07-13 with everything else on this page */
+.ac-belt-wrap { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; background: linear-gradient(135deg,#1f1147,#2d1b69);
+  border: 1px solid rgba(245,197,24,0.3); border-radius: var(--r-md); padding: 11px 15px; margin: 12px 0; }
+.ac-belt-now { display: flex; align-items: center; gap: 10px; }
+.ac-belt-ico { font-size: 28px; color: #F5C518; line-height: 1; }
+.ac-belt-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: #9a7fd4; }
+.ac-belt-name { font-size: 1.1rem; font-weight: 800; color: #f0e6ff; }
 .ac-belt-bar-wrap { flex: 1 1 260px; min-width: 240px; }
-.ac-belt-next { font-size: 0.85rem; color: #c9a7ff; margin-bottom: 6px; }
+.ac-belt-next { font-size: 0.78rem; color: #c9a7ff; margin-bottom: 5px; }
 .ac-belt-next b { color: #F5C518; }
-.ac-belt-bar { height: 10px; background: rgba(157,127,212,0.16); border: 1px solid #4a2f8a; border-radius: 999px; overflow: hidden; }
+.ac-belt-bar { height: 7px; background: rgba(157,127,212,0.16); border: 1px solid #4a2f8a; border-radius: 999px; overflow: hidden; }
 .ac-belt-fill { height: 100%; width: 0; background: linear-gradient(90deg,#6b5fa0,#F5C518); transition: width 0.9s ease; }
-.ac-belt-ladder { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
-.ac-pip { width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
-  background: rgba(20,12,45,0.6); border: 1px solid #3a2a6a; color: #7d6bb0; font-size: 15px; }
+.ac-belt-ladder { display: flex; gap: 5px; margin-top: 7px; flex-wrap: wrap; }
+.ac-pip { width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
+  background: rgba(20,12,45,0.6); border: 1px solid #3a2a6a; color: #7d6bb0; font-size: 12px; }
 .ac-pip.got { color: #1a0f3d; background: #F5C518; border-color: #F5C518; }
 .ac-pip.cur { box-shadow: 0 0 0 2px #ff8fd0; }
 /* the belts that aren't awardable yet — visible, so you can see where the road goes,
    but plainly not on offer */
 .ac-pip.soon { opacity: 0.32; border-style: dashed; }
 
-/* recommended next */
-.ac-next-card { background: rgba(245,197,24,0.09); border: 1px solid #F5C518; border-radius: 16px; padding: 18px 20px; margin: 18px 0; box-shadow: 0 0 26px rgba(245,197,24,0.14); }
-.ac-next-eyebrow { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.1em; color: #F5C518; font-weight: 700; margin-bottom: 8px; }
-.ac-next-row { display: flex; align-items: center; gap: 14px; }
-.ac-next-ico { font-size: 38px; flex: 0 0 auto; }
+/* recommended next — the one loud thing left on the page, and the only one that should be:
+   it's the invitation. Everything around it got quieter so this could stay bright. */
+.ac-next-card { background: rgba(245,197,24,0.09); border: 1px solid #F5C518; border-radius: var(--r-lg); padding: 14px 16px; margin: 14px 0; box-shadow: 0 0 26px rgba(245,197,24,0.14); }
+.ac-next-eyebrow { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: #F5C518; font-weight: 700; margin-bottom: 7px; }
+.ac-next-row { display: flex; align-items: center; gap: 12px; }
+.ac-next-ico { font-size: 30px; flex: 0 0 auto; }
 .ac-next-body { min-width: 0; flex: 1; }
-.ac-next-title { font-size: 1.15rem; font-weight: 800; color: #f0e6ff; }
-.ac-next-desc { color: #c9a7ff; font-size: 0.9rem; }
-.ac-next-who { color: #9a7fd4; font-size: 0.82rem; margin-top: 2px; }
+.ac-next-title { font-size: 1rem; font-weight: 800; color: #f0e6ff; }
+.ac-next-desc { color: #c9a7ff; font-size: 0.85rem; }
+.ac-next-who { color: #9a7fd4; font-size: 0.76rem; margin-top: 2px; }
 .ac-next-go { flex: 0 0 auto; background: #F5C518; color: #1a0f3d; font-weight: 800; text-decoration: none;
-  border-radius: 999px; padding: 10px 18px; white-space: nowrap; }
+  border-radius: 999px; padding: 9px 16px; white-space: nowrap; }
 .ac-next-go:hover { background: #ffd740; }
 
-/* courses */
-.ac-h2 { color: #F5C518; margin: 28px 0 6px; }
-.ac-path-lead { color: #c9a7ff; font-size: 0.92rem; margin: 0 0 14px; }
-.ac-courses { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
-.ac-course { background: rgba(45,27,105,0.5); border: 1px solid var(--edge-soft); border-left: 4px solid var(--acc, #F5C518); border-radius: var(--r-md); padding: 14px 16px; }
-.ac-course-head { display: flex; align-items: center; gap: 10px; }
-.ac-course-ico { font-size: 28px; color: var(--acc); width: 36px; text-align: center; }
-.ac-course-title { font-weight: 800; color: #f0e6ff; }
-.ac-course-sub { font-size: 0.78rem; color: #9a7fd4; }
-.ac-course-prog { margin-left: auto; font-family: 'Courier New', monospace; font-weight: 800; color: var(--acc); }
-.ac-course-blurb { color: #c9a7ff; font-size: 0.86rem; line-height: 1.5; margin: 8px 0; }
-.ac-course-blurb a { color: var(--acc); white-space: nowrap; }
+/* ── The path: five SMALL halls (2026-07-13) ──────────────────────────────────
+   Nate: "make all the boxes small. You should click into the Bootcamp to learn more about
+   it." Every hall is the same compact tile — glyph, name, one line, a state chip. The open
+   one is a <details>: clicking the tile unfolds the blurb, the teacher and the lessons.
+   Closed, the whole path is about the height one card used to be. */
+.ac-h2 { color: #F5C518; margin: 24px 0 6px; font-size: 1.15rem; }
+.ac-path-lead { color: #c9a7ff; font-size: 0.86rem; margin: 0 0 12px; }
+/* align-items:start is load-bearing. Grid rows STRETCH by default, so the moment you open
+   the Bootcamp its whole row grows with it — and the "Building" tiles beside it inflate into
+   tall empty boxes to match. Each tile keeps its own height instead. */
+.ac-courses { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px; align-items: start; }
+.ac-course { background: rgba(45,27,105,0.5); border: 1px solid var(--edge-soft);
+  border-left: 3px solid var(--acc, #F5C518); border-radius: var(--r-sm); padding: 9px 12px; }
 
-/* ── A hall that isn't built yet (2026-07-12) ─────────────────────────────────
-   Deliberately QUIET, not barred: dimmer, flat-backed, a soft dashed left edge instead
-   of the bright accent bar. The point isn't "you can't have this" — it's "this is coming,
-   here's who's teaching it, go say hello". It carries no lesson list and no checkboxes,
-   so nothing here can send a student at a game that doesn't exist. */
-.ac-course--soon { background: rgba(45,27,105,0.24); border-color: #2c2050;
-  border-left: 4px dashed color-mix(in srgb, var(--acc) 45%, transparent); }
+.ac-course-head { display: flex; align-items: center; gap: 9px; }
+.ac-course-ico { font-size: 20px; color: var(--acc); width: 24px; text-align: center; flex: 0 0 auto; }
+.ac-course-name { min-width: 0; flex: 1; }
+.ac-course-title { display: block; font-weight: 700; color: #f0e6ff; font-size: 0.9rem; line-height: 1.25; }
+.ac-course-sub { display: block; font-size: 0.72rem; color: #9a7fd4; }
+.ac-course-prog { flex: 0 0 auto; font-family: 'Share Tech Mono', monospace; font-weight: 700;
+  font-size: 0.78rem; color: var(--acc); }
+
+/* the OPEN hall — a details/summary tile. The marker is ours, on the right, so the row
+   reads as one thing you can press rather than a card with a twisty bolted on. */
+.ac-course--open > summary { list-style: none; cursor: pointer; }
+.ac-course--open > summary::-webkit-details-marker { display: none; }
+.ac-course--open > summary::after { content: '▸'; color: #9a7fd4; flex: 0 0 auto;
+  transition: transform 0.2s ease; }
+.ac-course--open[open] > summary::after { transform: rotate(90deg); }
+.ac-course--open > summary:hover .ac-course-title { color: #ffd740; }
+.ac-course-body { padding-top: 8px; margin-top: 8px; border-top: 1px solid rgba(157,127,212,0.14); }
+.ac-course-blurb { color: #c9a7ff; font-size: 0.82rem; line-height: 1.5; margin: 0 0 8px; font-style: italic; }
+.ac-course-meet { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 0.8rem; }
+.ac-course-meet a { color: var(--acc); white-space: nowrap; }
+
+/* ── A hall that isn't built yet ──────────────────────────────────────────────
+   Deliberately QUIET, not barred: dimmer, flat-backed, a soft dashed left edge instead of
+   the bright accent bar. And NOT a <details> — there is nothing behind it to open, and a
+   box that unfolds onto an apology is worse than one that doesn't unfold. It carries no
+   lesson list and no checkboxes, so nothing here can send a student at a game that doesn't
+   exist. It offers the one true thing it has: go meet whoever will teach it. */
+.ac-course--soon { display: block; text-decoration: none; background: rgba(45,27,105,0.24);
+  border-color: #2c2050; border-left: 3px dashed color-mix(in srgb, var(--acc) 45%, transparent);
+  transition: border-color 0.15s ease, background 0.15s ease; }
 .ac-course--soon .ac-course-ico { opacity: 0.5; }
 .ac-course--soon .ac-course-title { color: #b8a8dd; }
-.ac-course--soon .ac-course-blurb { color: #8f7fbb; }
-.ac-course-prog--soon { font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; font-weight: 700;
-  letter-spacing: 0.14em; text-transform: uppercase; color: #8f7fbb; background: rgba(20,12,45,0.6);
-  border: 1px solid #3a2a6a; border-radius: 999px; padding: 3px 9px; }
-.ac-soon-note { color: #8f7fbb; font-size: 0.8rem; margin: 8px 0 0; }
-.ac-soon-note a { color: var(--acc); white-space: nowrap; }
-.ac-lessons { list-style: none; padding: 0; margin: 6px 0 0; }
+.ac-course--soon:hover { background: rgba(45,27,105,0.4); border-color: #3a2a6a;
+  border-left-color: var(--acc); }
+.ac-course--soon:hover .ac-course-title { color: #f0e6ff; }
+.ac-course--soon:hover .ac-course-ico { opacity: 1; }
+.ac-course-prog--soon { font-family: 'Share Tech Mono', monospace; font-size: 0.58rem; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: #8f7fbb; background: rgba(20,12,45,0.6);
+  border: 1px solid #3a2a6a; border-radius: 999px; padding: 2px 7px; white-space: nowrap; }
+.ac-lessons { list-style: none; padding: 0; margin: 8px 0 0; }
 .ac-lesson { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid rgba(157,127,212,0.14); }
 .ac-check { font-size: 15px; color: #7d6bb0; flex: 0 0 auto; width: 18px; text-align: center; }
 .ac-lesson.done .ac-check { color: #6bffb8; }
@@ -782,33 +788,18 @@ window.ACCERT = (function () {
 .cert-line { font-size: 12px; color: #777; margin-top: 8px; }
 .cert-sig { display: flex; justify-content: space-between; margin-top: 26px; font-size: 12px; color: #444; }
 
-/* intro voice button */
-.ac-intro-btn { background: transparent; border: 1px solid var(--acc, #6b5fa0); color: var(--acc, #c9a7ff); border-radius: 999px; width: 30px; height: 30px; cursor: pointer; font-size: 0.8rem; flex: 0 0 auto; margin-left: auto; }
+/* intro voice button — it lives INSIDE the opened hall now, next to "Meet Auston →", not in
+   the summary row. In the summary it would have been a button inside a <summary>, where a
+   click both fires the voice AND folds the tile shut under you. */
+.ac-intro-btn { background: transparent; border: 1px solid var(--acc, #6b5fa0); color: var(--acc, #c9a7ff);
+  border-radius: 999px; width: 24px; height: 24px; cursor: pointer; font-size: 0.68rem; flex: 0 0 auto;
+  line-height: 1; padding: 0; }
 .ac-intro-btn:hover { background: var(--acc, #F5C518); color: #1a0f3d; }
 .ac-intro-btn.playing { animation: acPulse 0.9s ease; }
 @keyframes acPulse { 0% { box-shadow: 0 0 0 0 rgba(245,197,24,0.5); } 100% { box-shadow: 0 0 0 12px rgba(245,197,24,0); } }
-.ac-course-head .ac-course-prog { margin-left: 8px; }
 
-/* placement exam */
-.ac-place { background: rgba(45,27,105,0.4); border: 1px solid #3a2a6a; border-radius: 12px; padding: 14px 16px; margin: 14px 0; }
-.ac-place-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.ac-place-lead { color: #cfc3ee; flex: 1; }
-.ac-place-lead b { color: #F5C518; }
-.ac-place-start { display: inline-block; background: #F5C518; color: #1a0f3d; font-weight: 800; border: none; border-radius: 999px; padding: 9px 16px; cursor: pointer; font-family: inherit; text-decoration: none; }
-.ac-place-start:hover { background: #ffd740; }
-.ac-place-quiz { margin-top: 12px; display: grid; gap: 10px; }
-.ac-pq-q { color: #f0e6ff; font-weight: 600; margin-bottom: 6px; }
-.ac-pq-a { display: flex; gap: 6px; flex-wrap: wrap; }
-.ac-pq-opt { background: #221444; border: 1px solid #4a2f8a; color: #c9a7ff; border-radius: 8px; padding: 7px 12px; cursor: pointer; font-family: inherit; }
-.ac-pq-opt:hover { border-color: #F5C518; }
-.ac-pq-opt.sel { background: #6bffb8; color: #06210f; border-color: #6bffb8; font-weight: 700; }
-.ac-place-result { margin-top: 12px; }
-.ac-place-score { color: #9a7fd4; font-size: 0.85rem; }
-.ac-place-rec { color: #f0e6ff; margin: 6px 0 10px; }
-.ac-place-rec b { color: #F5C518; }
-
-/* daily homework */
-/* (the .ac-hw* daily-homework styles were removed 2026-07-12 with the module) */
+/* (the .ac-place* / .ac-pq* placement-exam styles went 2026-07-13 with the module,
+   and the .ac-hw* daily-homework styles went 2026-07-12 with theirs) */
 
 /* collapsible sections — free-play board · teacher tools */
 .ac-fold { background: rgba(45,27,105,0.28); border: 1px solid #3a2a6a; border-radius: 12px; margin: 16px 0; overflow: hidden; }

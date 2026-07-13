@@ -22,75 +22,23 @@ body_class: theme-studio
 .studio-hub a:hover { border-color: #F5C518; color: #F5C518; }
 </style>
 
-<style>
-/* ---- Featured "Completed, playable now" card (Notation Blitz) ---- */
-.project-card-featured {
-  position: relative;
-  overflow: hidden;
-  border: 2px solid #F5C518 !important;
-  background: linear-gradient(135deg, #1f1147 0%, #34206f 100%) !important;
-  animation: blitzGlow 2.4s ease-in-out infinite;
-}
-@keyframes blitzGlow {
-  0%, 100% { box-shadow: 0 0 16px 2px rgba(245,197,24,0.35), inset 0 0 34px rgba(245,197,24,0.05); }
-  50%      { box-shadow: 0 0 34px 7px rgba(245,197,24,0.7),  inset 0 0 44px rgba(245,197,24,0.12); }
-}
-.project-card-featured .project-title { color: #F5C518 !important; }
-.project-title .ver { font-size: 0.62em; color: #ff8fd0; vertical-align: super; letter-spacing: 1px; }
-.project-card-featured .project-desc { color: #e3d6ff !important; }
-.project-card-featured .project-details,
-.project-card-featured .project-details li { color: #c9b6ef !important; }
-.project-card-featured .project-details strong { color: #fff !important; }
-.project-card-featured .project-card-corner-piece { color: rgba(245,197,24,0.22) !important; }
+{% comment %} DEAD CSS REMOVED 2026-07-13 (dead-code audit). ~65 lines of page-local styles for
+     TWO CARDS THAT NO LONGER EXIST on this page: the gold "featured / playable now" treatment
+     built for Notation Blitz (.project-card-featured, .featured-ribbon, .project-status-done,
+     .project-link-play, .project-title .ver, @keyframes blitzGlow/donePulse/playPulse) and the
+     red TERMINATED state (.project-card-terminated, .project-status-terminated,
+     .project-link-terminated, @keyframes termBlink). Both cards were cut long ago; their
+     styles kept shipping to every visitor.
 
-.project-status-done {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: #6bffb8; color: #04110a !important; font-weight: 800;
-  border-radius: 999px; padding: 4px 12px; letter-spacing: 0.3px;
-}
-.project-status-done .project-status-dot { background: #04110a; animation: donePulse 1.3s ease-in-out infinite; }
-@keyframes donePulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } }
+     Worth knowing WHY the sweep never caught this: tests/sweep.js reads class DECLARATIONS out
+     of _sass/ only, so CSS written inline in a page's own style block is invisible to it — it
+     can never be reported as dead. Anything page-local has to be found by hand.
 
-.featured-ribbon {
-  position: absolute; top: 16px; right: -42px; transform: rotate(45deg);
-  background: #ff8fd0; color: #1a0f3d; font-weight: 900; font-size: 11px; letter-spacing: 1.5px;
-  padding: 5px 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.45); z-index: 2;
-}
-.project-link-play {
-  background: #F5C518 !important; color: #1a0f3d !important; font-weight: 900 !important;
-  border: none !important; border-radius: 999px !important; padding: 9px 22px !important;
-  box-shadow: 0 0 14px rgba(245,197,24,0.55); animation: playPulse 1.5s ease-in-out infinite;
-}
-.project-link-play:hover { background: #ffd740 !important; }
-@keyframes playPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.07); } }
-
-/* ---- TERMINATED card (a distinct red state) ---- */
-.project-card-terminated {
-  position: relative;
-  border: 2px solid #ff3b3b !important;
-  background: linear-gradient(135deg, #2a0d12 0%, #160709 100%) !important;
-  box-shadow: 0 0 16px 1px rgba(255,59,59,0.28);
-}
-.project-card-terminated .project-title { color: #ff6b6b !important; }
-.project-card-terminated .project-desc { color: #f0cccc !important; }
-.project-card-terminated .project-details,
-.project-card-terminated .project-details li { color: #d6a8a8 !important; }
-.project-card-terminated .project-details strong { color: #fff !important; }
-.project-card-terminated .project-card-corner-piece { color: rgba(255,59,59,0.25) !important; }
-.project-status-terminated {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: #ff3b3b; color: #fff !important; font-weight: 800;
-  border-radius: 999px; padding: 4px 12px; letter-spacing: 2px;
-}
-.project-status-terminated .project-status-dot { background: #fff; animation: termBlink 1s steps(1) infinite; }
-@keyframes termBlink { 0%,49% { opacity: 1; } 50%,100% { opacity: 0.25; } }
-.project-link-terminated {
-  background: #ff3b3b !important; color: #fff !important; font-weight: 800 !important;
-  border: none !important; border-radius: 999px !important; padding: 9px 22px !important;
-  box-shadow: 0 0 12px rgba(255,59,59,0.5);
-}
-.project-link-terminated:hover { background: #ff5e5e !important; }
-</style>
+     (And do NOT write the literal tag name in a comment like this one. Liquid strips comments
+     at build time so the site is fine, but every tool that reads the RAW file — the test
+     harness, a scraper, an editor's folding — sees a style block opening here and swallows the
+     real CSS below it. That cost me a confusing render.)
+     Restore: git show ea5a2c5 -- projects.md {% endcomment %}
 
 {% comment %} ── THE STUDIO'S TWO CLOCKS ──────────────────────────────────────────────
      Rebuilt 2026-07-12 (Nate: "significantly reduce the size of the counter boxes and
@@ -116,7 +64,7 @@ body_class: theme-studio
     <span class="pj-clock-dot" aria-hidden="true"></span>
     <span class="pj-clock-k">In development</span>
     <span class="pj-clock-n" id="pj-days">—</span>
-    <span class="pj-clock-c" id="pj-since">days · since 1 Mar 2026</span>
+    <span class="pj-clock-c">days · since 1 Mar 2026</span>
   </div>
   <div class="pj-clock">
     <span class="pj-clock-k">Episode 1</span>
@@ -140,7 +88,7 @@ body_class: theme-studio
   font-size: 1.7rem; font-weight: 800; line-height: 1.15; color: #f2efe8; }
 .pj-clock-c { grid-row: 2; font-family: 'Share Tech Mono', monospace; font-size: 11px;
   color: #8a8592; }
-.pj-clock-tag { color: #caa24a; }
+/* .pj-clock-tag (the gold ★ milestone tag) went with the milestones, 2026-07-13. */
 @media (max-width: 560px){
   .pj-clocks { grid-template-columns: 1fr; }
   .pj-clock + .pj-clock { border-left: none; border-top: 1px solid #2a2830; }
@@ -149,34 +97,24 @@ body_class: theme-studio
 </style>
 <script>
 /* Both clocks, one timer, once a minute. Days is the only unit that means anything on a
-   project this long — the old to-the-second stopwatch just made the page fidget. */
+   project this long — the old to-the-second stopwatch just made the page fidget.
+
+   MILESTONES REMOVED 2026-07-13 (Nate: "remove the 100 day award and remove any future
+   milestone markers from occurring. we're past that!"). There was a table of them — 30 / 60
+   / 100 / 180 / 365 / 500 days — and whichever was highest showed as a gold ★ tag on the
+   context line. A studio that congratulates itself for still existing is a studio with
+   nothing else to report, and this page now has plenty. The line just states the start date.
+   The whole mechanism is gone, not disabled, so no future one can fire either. */
 (function () {
   var START  = 1772337600000;                        // 1 Mar 2026 00:00 EDT
   var TARGET = Date.parse('2027-10-21T04:00:00Z');   // midnight EDT
-  var MILESTONES = [
-    [500, '500 days — no signs of stopping'],
-    [365, 'one year in'],
-    [180, 'half a year in'],
-    [100, '100 days'],
-    [60,  'two months deep'],
-    [30,  '30 days in the game']
-  ];
-  var days  = document.getElementById('pj-days');
-  var since = document.getElementById('pj-since');
-  var eta   = document.getElementById('pj-eta');
-  if (!days || !eta || !since) return;
+  var days = document.getElementById('pj-days');
+  var eta  = document.getElementById('pj-eta');
+  if (!days || !eta) return;
 
   function tick() {
-    var d = Math.floor(Math.max(0, Date.now() - START) / 86400000);
-    days.textContent = d.toLocaleString();
-    eta.textContent = Math.ceil(Math.max(0, TARGET - Date.now()) / 86400000).toLocaleString();
-    var hit = '';
-    for (var i = 0; i < MILESTONES.length; i++) {        // biggest one passed wins
-      if (d >= MILESTONES[i][0]) { hit = MILESTONES[i][1]; break; }
-    }
-    since.innerHTML = hit
-      ? 'days · <span class="pj-clock-tag">★ ' + hit + '</span>'
-      : 'days · since 1 Mar 2026';
+    days.textContent = Math.floor(Math.max(0, Date.now() - START) / 86400000).toLocaleString();
+    eta.textContent  = Math.ceil(Math.max(0, TARGET - Date.now()) / 86400000).toLocaleString();
   }
   tick();
   setInterval(tick, 60000);
@@ -194,14 +132,15 @@ body_class: theme-studio
       </span>
       <h2 class="project-title">Princess and the Journey to Chess City</h2>
     </div>
-    <p class="project-desc">The flagship project.</p>
-    <ul class="project-details">
-      <li><strong>Format:</strong> Animated series</li>
-    </ul>
-    {% comment %} The "Blog" link was removed from the flagship card 2026-07-12 (Nate). The
-         Build Log already has its own chip in the studio hub at the top of this page AND its
-         own slot in the McPuppy nav; a third door to it, hanging off the flagship, made the
-         flagship look like it was mainly a blog. {% endcomment %}
+    <p class="project-desc">The flagship project. An animated series.</p>
+    {% comment %} The "Format: Animated series" detail list was removed 2026-07-13 (Nate) —
+         it said the same thing as the description, in a heavier way, so the description says
+         it now. The "Blog" link went 2026-07-12: the Build Log already has a chip in the
+         studio hub above AND a slot in the McPuppy nav, and a third door hanging off the
+         flagship made the flagship look like it was mainly a blog. {% endcomment %}
+    <div class="project-links">
+      <a href="/pjcc/" class="project-link">Enter PJCC &rarr;</a>
+    </div>
   </div>
 
   <div class="project-card project-card-soon">
@@ -211,10 +150,6 @@ body_class: theme-studio
       <h2 class="project-title">Blender Animations</h2>
     </div>
     <p class="project-desc">See the universe grow!</p>
-    <ul class="project-details">
-      <li><strong>Format:</strong> Short clips</li>
-      <li><strong>Status:</strong> Clips posted as they're ready</li>
-    </ul>
   </div>
 
   <div class="project-card project-card-active">
@@ -249,9 +184,6 @@ body_class: theme-studio
       <h2 class="project-title">Code &amp; Tools</h2>
     </div>
     <p class="project-desc">Select projects others may find useful to be posted here.</p>
-    <ul class="project-details">
-      <li><strong>Status:</strong> Projects linked when published</li>
-    </ul>
   </div>
 
 
@@ -271,44 +203,41 @@ body_class: theme-studio
 
 {% comment %} ── SPECIAL THANKS ─────────────────────────────────────
      Out-of-the-way, near the foot of the studio page, but given real weight.
-     Wording is Nate's, kept verbatim (2026-07-12). {% endcomment %}
+
+     2026-07-13 (Nate: "much smaller text. Remove all the 'for etc.'. just list out the names,
+     instead."): it was seven ruled rows, each a sentence explaining WHY that person is thanked
+     — a credits crawl in the middle of a studio page, and the longest thing on it. The reasons
+     were his and they were good, but a thank-you that has to be READ is asking the visitor for
+     something. Names only now, one quiet line, in the same shape as the muses block right below
+     it — so the two read as one credit roll instead of two competing formats. The reasons are
+     in the git history if he ever wants them on a page of their own.
+     ───────────────────────────────────────────────────────────── {% endcomment %}
 <section class="mcp-thanks" aria-label="Special thanks">
   <div class="mcp-thanks-rule" aria-hidden="true"></div>
 
   <div class="mcp-thanks-block">
-    <h2 class="mcp-thanks-h">The Creator would like to thank</h2>
-    <ul class="mcp-thanks-people">
-      <li>Thank you <strong>Mom</strong>, for always being there and providing a road map to a successful life.</li>
-      <li>Thank you <strong>Chels</strong>, for being an amazing sibling and friend. I love you.</li>
-      <li>Thank you <strong>Laura</strong>, for your generosity.</li>
-      <li>Thank you <strong>Josh</strong>, for listening to the initial ideas with patience and either feigned or real excitement, doesn't matter.</li>
-      <li>Thank you <strong>Kim</strong>, for letting me show you initial progress before anyone.</li>
-      <li>Thank you <strong>Aunt Barb</strong>, for being someone that I can't help but talk wide-openly with. You accelerated PJCC significantly.</li>
-      <li>Thank you <strong>Tucker</strong>, for inspiring me with your greatness.</li>
-    </ul>
+    <h3 class="mcp-thanks-sub">The Creator would like to thank</h3>
+    <p class="mcp-thanks-names">Mom &middot; Chels &middot; Laura &middot; Josh &middot; Kim &middot; Aunt Barb &middot; Tucker</p>
   </div>
 
   <div class="mcp-thanks-block">
-    <h3 class="mcp-thanks-sub">For the endless inspiration, McPuppy Studios would like to thank:</h3>
+    <h3 class="mcp-thanks-sub">For the endless inspiration, McPuppy Studios would like to thank</h3>
     <p class="mcp-thanks-muses">Norm Macdonald &middot; The Meadowlands &middot; The Lawrence Arms &middot; Trey Parker and Matt Stone &middot; Orson Scott Card &middot; John Steakley &middot; Neville Goddard &middot; Jesse Green</p>
   </div>
 </section>
 
 <style>
 /* Special thanks — quiet, but it carries weight (Nate 2026-07-12) */
-.mcp-thanks { max-width: 640px; margin: 3.6rem auto 1rem; padding: 0 4px; text-align: center; }
-.mcp-thanks-rule { width: 70px; height: 2px; margin: 0 auto 1.8rem;
+.mcp-thanks { max-width: 640px; margin: 3.2rem auto 1rem; padding: 0 4px; text-align: center; }
+.mcp-thanks-rule { width: 70px; height: 2px; margin: 0 auto 1.6rem;
   background: linear-gradient(90deg, transparent, #F5C518, transparent); }
-.mcp-thanks-block { margin: 0 0 2.2rem; }
-.mcp-thanks-h { color: #F5C518; font-size: 1.15rem; letter-spacing: 0.04em; margin: 0 0 1.1rem; }
-.mcp-thanks-people { list-style: none; padding: 0; margin: 0; text-align: left; }
-.mcp-thanks-people li { color: #d9ccf5; font-size: 0.96rem; line-height: 1.6;
-  padding: 0.7rem 0; border-bottom: 1px solid rgba(245,197,24,0.1); }
-.mcp-thanks-people li:last-child { border-bottom: none; }
-.mcp-thanks-people strong { color: #fff; font-weight: 700; }
-.mcp-thanks-sub { color: #cdbcf2; font-size: 0.86rem; font-weight: 600; letter-spacing: 0.03em;
-  text-transform: uppercase; margin: 0 0 0.7rem; }
-.mcp-thanks-muses { color: #b7a4e0; font-size: 0.95rem; line-height: 1.9; margin: 0; font-style: italic; }
+.mcp-thanks-block { margin: 0 0 1.7rem; }
+.mcp-thanks-sub { color: #cdbcf2; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.05em;
+  text-transform: uppercase; margin: 0 0 0.5rem; }
+/* the names carry the section, so they're the one thing here with any weight —
+   still small, but brighter than the label above them */
+.mcp-thanks-names { color: #e6dcff; font-size: 0.86rem; line-height: 1.85; margin: 0; }
+.mcp-thanks-muses { color: #b7a4e0; font-size: 0.82rem; line-height: 1.85; margin: 0; font-style: italic; }
 </style>
 
 <p class="projects-footer-note">Check out the <a href="/blog/">blog</a> for more updates.</p>

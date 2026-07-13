@@ -18,35 +18,15 @@ body.studio-body {
   overflow: hidden;
 }
 
-/* The WELCOME watermark.
-   2026-07-12: it was `color: #1b1540; opacity: 0.08` — a dark navy word on a BLACK
-   splash, which composites to about #020104. It has been invisible the entire time.
-   Putting the sky behind the splash is what exposed it: against a bright day sky the
-   same rule suddenly painted an enormous pale word across the bottom third of the page.
+/* REMOVED 2026-07-13 — the WELCOME watermark (`.studio-welcome-bg`, a fixed 17.7vw word
+   across the bottom, breathing on a 10s opacity loop; keyframe `welcome-breathe` went with it).
 
-   So it's a real watermark now: WHITE, very low alpha. That reads the same faint way at
-   every hour — a hint on the night sky, a hint on the day sky — instead of vanishing on
-   one and shouting on the other. It's decoration; it should never compete with the quads,
-   and at this alpha it can't. */
-.studio-welcome-bg {
-  position: fixed;
-  bottom: -0.28em;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: 'Poppins', sans-serif;
-  font-size: 17.7vw;
-  font-weight: 800;
-  color: #ffffff;
-  /* Fallback only — `welcome-breathe` animates opacity and therefore WINS over this.
-     To change how visible the watermark is, edit the keyframe in _pjcc-04-flair.scss. */
-  opacity: 0.035;
-  white-space: nowrap;
-  pointer-events: none;
-  z-index: 0;
-  letter-spacing: 0.08em;
-  user-select: none;
-  animation: welcome-breathe 10s ease-in-out infinite;
-}
+   It was `color: #1b1540; opacity: 0.08` on a BLACK splash — about #020104 composited. It was
+   invisible for its entire life; nobody had ever actually seen it. Putting the town sky behind
+   the splash is what exposed it, and keeping it would have meant INTRODUCING a giant pale word
+   under the quads rather than preserving anything. The sky already does the job it was there
+   for (depth behind the content), and the page is itself the welcome.
+   Restore: git show ea5a2c5 -- _sass/_pjcc-02-studio.scss _sass/_pjcc-04-flair.scss */
 
 .studio-content {
   position: relative;
@@ -457,12 +437,7 @@ html.reduce-flourish .studio-quad-grid .studio-quad--patreon .studio-quad-title:
     min-height: 120px;
   }
 
-  .studio-welcome-bg {
-    font-size: 26vw;
-    letter-spacing: 0.04em;
-  }
 
-  
 
   .studio-drifters {
     display: none;

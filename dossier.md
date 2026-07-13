@@ -246,13 +246,29 @@ permalink: /dossier/
     html += '<button class="dsr-title-chip ' + (equipped === '' ? 'on' : '') + '" data-title="">None</button></div>' +
       '<p class="pjcc-sub">Unlock more through achievements and the <a href="/shopkeeper/">Shopkeeper</a>.</p>';
 
-    // Condensed 2026-07-12 (Nate): only games you've actually PLAYED, one tight row
-    // each (name · best · a small ✓ when you've passed the creator's ghost). The
-    // full never-played roster + "X to go" chase text is gone.
+    /* SERVICE RECORD — folded shut by default (2026-07-13, Nate: "can we make the service
+       record section collapse and expand? Default Collapse? I'm trying to cut down on all
+       the noise").
+
+       It's the right one to fold. Everything else on this dossier answers "who am I / where
+       am I / what's next" — questions you have every visit. The service record answers "what
+       have I already done", which you look up occasionally and deliberately. And it's the one
+       block that GROWS: every new game you touch adds a row, so the page gets noisier the
+       more you play it, which is exactly backwards. Folded, the summary still carries the
+       headline (how many games are logged) — so it isn't hiding anything, it's just not
+       reciting it.
+
+       Condensed 2026-07-12: only games you've actually PLAYED, one tight row each
+       (name · runs · best · a ✓ when you've passed the creator's ghost). */
     var played = Object.keys(GAMES).filter(function (key) {
       return stats.filter(function (x) { return x.game === key; })[0];
     });
-    html += '<h2 class="dsr-h">Service record <span class="pjcc-sub" style="font-weight:normal">· 👻 = beat the creator</span></h2>';
+    html += '<details class="dsr-fold"><summary class="dsr-fold-sum">' +
+      '<span class="dsr-fold-t">Service record</span>' +
+      '<span class="dsr-fold-hint">' + (played.length
+        ? played.length + (played.length === 1 ? ' game logged' : ' games logged') + ' · 👻 = beat the creator'
+        : 'nothing logged yet') +
+      '</span></summary><div class="dsr-fold-body">';
     if (!played.length) {
       html += '<p class="lb-empty">No missions logged yet — play anything and your record starts here.</p>';
     } else {
@@ -267,6 +283,7 @@ permalink: /dossier/
       });
       html += '</tbody></table>';
     }
+    html += '</div></details>';
 
     var link = PJCC.inviteLink(prof);
     html += '<h2 class="dsr-h">Invite an operative</h2>' +
@@ -347,6 +364,21 @@ permalink: /dossier/
 /* ---- operative profile ---- */
 .dsr-card { background: var(--surface-2); border: 1px solid #6b5fa0; border-radius: var(--r-md); padding: 1.2rem 1.4rem; max-width: 560px; }
 .dsr-h { color: #F5C518; margin: 1.6rem 0 0.6rem; font-size: 1.05rem; }
+
+/* a foldable section — the service record (shut by default; see the note in the renderer).
+   Styled to read as a heading you can press, NOT as a card: same gold, same weight, same
+   place in the flow as a .dsr-h. The only new thing on the page is the twisty. */
+.dsr-fold { margin: 1.6rem 0 0.6rem; }
+.dsr-fold > summary { list-style: none; cursor: pointer; display: flex; align-items: baseline;
+  gap: 9px; flex-wrap: wrap; }
+.dsr-fold > summary::-webkit-details-marker { display: none; }
+.dsr-fold > summary::before { content: '▸'; color: #9a7fd4; align-self: center;
+  transition: transform 0.2s ease; }
+.dsr-fold[open] > summary::before { transform: rotate(90deg); }
+.dsr-fold > summary:hover .dsr-fold-t { color: #ffd740; }
+.dsr-fold-t { color: #F5C518; font-size: 1.05rem; font-weight: 700; }
+.dsr-fold-hint { color: #9a7fd4; font-size: 0.8rem; }
+.dsr-fold-body { padding-top: 0.6rem; }
 .dsr-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; background: linear-gradient(135deg,#1f1147,#34206f); border: 1px solid #F5C518; border-radius: 12px; padding: 14px 18px; }
 .dsr-avatar { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 34px; border-radius: 50%; background: radial-gradient(circle at 35% 30%,#3a2a72,#160c33); border: 2px solid #F5C518; box-shadow: 0 0 14px rgba(245,197,24,0.5); position: relative; flex-shrink: 0; }
 /* the identity column: name, rank+credits+streak, then the XP bar — one card, not four */
