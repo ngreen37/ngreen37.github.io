@@ -12,5 +12,9 @@
   lightning layers.
 {%- endcomment -%}
 <script>{% include pjcc-time.js %}</script>
-<script>try{var w=window.PJCC_TIME&&PJCC_TIME.weather();if(w&&w.kind!=='clear')document.documentElement.classList.add('town-'+w.kind);}catch(e){}</script>
+{%- comment -%} Both classes go on <html> BEFORE first paint, so there's no flash of the
+     wrong sky/weather. `sky-<phase>` used to be set on <body> by the home page only —
+     which meant the whole day/night clock existed on ONE page while the weather fell on
+     every page. Now the entire town shares the same hour. {%- endcomment -%}
+<script>try{var T=window.PJCC_TIME;if(T){document.documentElement.classList.add('sky-'+T.phase());var w=T.weather();if(w&&w.kind!=='clear')document.documentElement.classList.add('town-'+w.kind);}}catch(e){}</script>
 <script src="{{ '/assets/js/pjcc-weather.js' | relative_url }}" defer></script>

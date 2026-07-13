@@ -105,6 +105,11 @@
       <div class="footer-actions">
         <button class="share-tx-btn" id="share-tx-btn">&#9672; Share This Transmission</button>
         <button class="flourish-toggle" id="flourish-toggle" type="button" aria-pressed="false" title="Quiet the ambient motion across the whole site">✨ Reduce motion</button>
+        {%- comment -%} The install entry point: an invitation you can FIND, never one that
+             pounces. Starts hidden and stays hidden unless the PWA is switched on and the
+             browser says the app is actually installable (pwa-register.js unhides it). So
+             while the PWA is private, nobody ever sees this. {%- endcomment -%}
+        <button class="pwa-install-btn" id="pwa-install-btn" type="button" hidden>⬇ Install app</button>
         <span id="chess-city-permit-slot"></span>
       </div>
     </div>

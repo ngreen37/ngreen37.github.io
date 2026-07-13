@@ -88,11 +88,30 @@ function builtDynamically(name) {
   return null;
 }
 
-const dead = [], dynamic = [];
+/* ---- the ALLOWLIST of runtime-built class names ------------------------------------
+ * Class names assembled at runtime ('town-' + kind, ep-card--accent-{{ i }}) are
+ * INVISIBLE to every tool: grep can't find them, this sweep can't verify them, and the
+ * next person to tidy up will delete live CSS. They are a trap, so the rule is:
+ * DON'T ADD NEW ONES. Build a fixed set of classes and pick between them instead.
+ *
+ * These two already exist and are legitimate, so they're allowed by name. Anything else
+ * that turns up FAILS the sweep — which forces a conscious decision rather than a quiet
+ * accumulation of un-checkable CSS. If you truly need another, add it here on purpose.
+ */
+const ALLOWED_DYNAMIC = [
+  'town-',             // pjcc-weather.js:  'town-' + kind, 'town-rain-' + level
+  'sky-',              // town-weather.html: 'sky-' + phase
+  'ep-card--accent-',  // blog.md (Liquid):  ep-card--accent-{{ accent }}
+];
+const allowedDyn = (cls) => ALLOWED_DYNAMIC.some((p) => cls.startsWith(p));
+
+const dead = [], dynamic = [], unlistedDynamic = [];
 for (const [cls, where] of declared) {
   if (usedSomewhere(cls)) continue;
   const dyn = builtDynamically(cls);
-  (dyn ? dynamic : dead).push({ cls, where, dyn });
+  if (!dyn) { dead.push({ cls, where }); continue; }
+  dynamic.push({ cls, where, dyn });
+  if (!allowedDyn(cls)) unlistedDynamic.push({ cls, where, dyn });
 }
 
 const deadFrames = [];
@@ -133,4 +152,26 @@ deadJs.forEach(f => line('    ' + rel(f)));
 
 line('\n— DYNAMIC (built at runtime — DO NOT DELETE, listed so you know why they look unused): ' + dynamic.length);
 dynamic.sort((a, b) => a.cls.localeCompare(b.cls)).forEach(d => line('    .' + d.cls + '   ← built from "' + d.dyn + '"'));
-line('');
+
+/* ---- verdict: this is a GATE, not just a report --------------------------------
+ * It fails on dead code (so "0 dead" actually stays 0 instead of quietly rotting) and
+ * on any NEW runtime-built class name (so the un-checkable-CSS trap can't spread). */
+const rot = dead.length + deadFrames.length + deadJs.length;
+let failed = false;
+
+if (rot > 0) {
+  failed = true;
+  line('\n✗ FAIL — ' + rot + ' dead thing(s) above. Delete them (git keeps them), or the');
+  line('         rot compounds until nobody dares touch the stylesheet again.');
+}
+if (unlistedDynamic.length) {
+  failed = true;
+  line('\n✗ FAIL — ' + unlistedDynamic.length + ' NEW runtime-built class name(s):');
+  unlistedDynamic.forEach(d => line('    .' + d.cls + '   ← built from "' + d.dyn + '"'));
+  line('         Names assembled at runtime are invisible to grep and to this sweep, so the');
+  line('         next cleanup deletes live CSS. Prefer a fixed set of classes you switch');
+  line('         between. If you really need this one, add its prefix to ALLOWED_DYNAMIC.');
+}
+
+line(failed ? '\nRESULT: FAIL\n' : '\nRESULT: PASS — nothing dead, no new un-checkable class names\n');
+process.exit(failed ? 1 : 0);

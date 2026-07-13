@@ -25,11 +25,13 @@
   if (!T) return;
 
   var w = T.weather();
-  if (!w || w.kind === 'clear') return;
-
-  var kind = w.kind;                       // 'rain' | 'mist'
+  var kind = (w && w.kind) || 'clear';     // 'rain' | 'mist' | 'clear'
   var root = document.documentElement;
-  root.classList.add('town-' + kind);      // drives the static wash (set early, no flash)
+
+  // sky-<phase> + town-<kind> are already on <html> (set before paint by the head
+  // include); re-assert defensively in case this ran standalone.
+  root.classList.add('sky-' + T.phase());
+  if (kind !== 'clear') root.classList.add('town-' + kind);
 
   function reduced() {
     try { if (localStorage.getItem('pjcc.flourish') === '0') return true; } catch (e) {}
@@ -38,12 +40,16 @@
 
   function boot() {
     if (document.querySelector('.town-weather-overlay')) return;   // never double up
+    // The overlay is built on EVERY day, not just wet ones: on a clear day it still
+    // carries the sky-phase tint (dawn warmth / night cool), which is what makes the
+    // whole town share the hour instead of only the hero.
     var o = document.createElement('div');
     o.className = 'town-weather-overlay';
     o.setAttribute('aria-hidden', 'true');
     document.body.appendChild(o);
 
-    if (reduced()) return;                 // wash only — no moving parts
+    if (kind === 'clear') return;          // nothing falling — just the phase tint
+    if (reduced()) return;                 // wash + tint only — no moving parts
 
     var layer = document.createElement('div');
     layer.className = (kind === 'rain') ? 'tw-rain' : 'tw-mist';

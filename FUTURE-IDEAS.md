@@ -517,7 +517,7 @@ and combination over new clutter. ★ = low-lift · ⛁ = wants backend.*
 **Polish / structure**
 27. ★ **North-star declutter** — collapse the stats bar to one elegant line; cut anything not serving the five threads.
 28. **Seasonal reskin** — advent, the anniversary of the crash, premiere week (Av9 live-ops).
-29. ★ **Fix the dead stat** — "Posts Written" is stale (blog's gone); swap for a live number like "Operatives enlisted" or "Games played this week."
+29. ~~**Fix the dead stat** — "Posts Written" is stale~~ *(RESOLVED 2026-07-12: no such stat exists any more — it went with an earlier stats-bar cut, and the blog is very much alive at `/blog/`, where `site.posts.size` is a live, correct count. This entry was the stale thing, not the site.)* **What's still worth doing:** the counters on `/projects/` are a chess-milestone and a premiere countdown — a genuinely live number like "Operatives enlisted" or "Games played this week" would be a better third.
 
 ---
 

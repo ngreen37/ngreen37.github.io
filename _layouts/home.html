@@ -229,7 +229,7 @@ layout: default
 .sk-cc--king::after { bottom:calc(100% + 4px); left:50%; transform:translateX(-50%);
   width:7px; height:2px; background:#14113a; }
 /* Chess City warms at night — a few windows come on */
-body.sky-night .hero-skyline .sk-cc { background:repeating-linear-gradient(180deg,
+html.sky-night .hero-skyline .sk-cc { background:repeating-linear-gradient(180deg,
     rgba(255,214,140,0.16) 0 1px, #0d0a26 1px 6px, #14113a 6px 8px); }
 
 /* ── THE DOOR (shared .gdoor look — the games page wears the same one) ── */
@@ -265,7 +265,7 @@ body.sky-night .hero-skyline .sk-cc { background:repeating-linear-gradient(180de
 .gdoor-sub b { color:#F5C518; }
 .gdoor:hover .gdoor-arch, .gdoor:focus-visible .gdoor-arch { box-shadow:0 0 34px -5px var(--acc); }
 .gdoor:hover .gdoor-door, .gdoor:focus-visible .gdoor-door { transform:perspective(320px) rotateY(-22deg); }
-body.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
+html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 
 /* ── GRANDEUR: the door grows richer the higher you climb (Nate 2026-07-12).
    data-grand 0..5 set by the hydration JS from cleared floors. All static (no
@@ -339,16 +339,16 @@ body.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
   box-shadow:0 0 3px 0.5px rgba(232,220,255,0.75); }
 
 /* DAWN — the sun comes up rose-gold over the rooftops */
-body.sky-dawn .home-hero { background:linear-gradient(163deg, #1a0f3d 0%, #3d2b6e 42%, #86395c 76%, #b85a38 104%); }
-body.sky-dawn .hs-orb { display:block; left:16%; bottom:42px; width:30px; height:30px;
+html.sky-dawn .home-hero { background:linear-gradient(163deg, #1a0f3d 0%, #3d2b6e 42%, #86395c 76%, #b85a38 104%); }
+html.sky-dawn .hs-orb { display:block; left:16%; bottom:42px; width:30px; height:30px;
   background:radial-gradient(circle at 40% 36%, #ffe9c9, #ff9d5c 72%);
   box-shadow:0 0 46px 14px rgba(255,157,92,0.30); }
-body.sky-dawn .hero-skyline .sk-ct { border-top-color:rgba(255,170,110,0.5); }
+html.sky-dawn .hero-skyline .sk-ct { border-top-color:rgba(255,170,110,0.5); }
 
 /* DAY — an actual blue daytime SKY (2026-07-12 Nate: day looked like night). A big,
    bright, unmistakable sun (distinct from the pale night moon) + a few soft clouds. */
-body.sky-day .home-hero { background:linear-gradient(180deg, #1f5aa8 0%, #3f83cf 48%, #7ab4e6 100%); }
-body.sky-day .hs-orb { display:block; left:15%; top:24px; width:44px; height:44px;
+html.sky-day .home-hero { background:linear-gradient(180deg, #1f5aa8 0%, #3f83cf 48%, #7ab4e6 100%); }
+html.sky-day .hs-orb { display:block; left:15%; top:24px; width:44px; height:44px;
   background:radial-gradient(circle at 40% 38%, #fffefb 0%, #fff3b8 34%, #ffd84a 70%, #f5b800 100%);
   box-shadow:0 0 42px 15px rgba(255,216,74,0.5), 0 0 96px 34px rgba(255,216,74,0.22); }
 {% comment %} 2026-07-12 (Nate: "the sun still kind of looks like the moon") — give it
@@ -356,19 +356,19 @@ body.sky-day .hs-orb { display:block; left:15%; top:24px; width:44px; height:44p
      pale night orb. ::before = 16 spokes (a repeating-conic-gradient masked to a ring
      so they radiate from the rim outward); ::after = a warm corona. The spokes turn
      once every 90s — transform-only, so the cost is nil. {% endcomment %}
-body.sky-day .hs-orb::before { content:''; position:absolute; inset:-20px; border-radius:50%;
+html.sky-day .hs-orb::before { content:''; position:absolute; inset:-20px; border-radius:50%;
   background:repeating-conic-gradient(from 0deg,
     rgba(255,231,130,0.90) 0deg 3.2deg, transparent 3.2deg 22.5deg);
   -webkit-mask-image:radial-gradient(circle, transparent 47%, #000 55%, #000 72%, transparent 100%);
           mask-image:radial-gradient(circle, transparent 47%, #000 55%, #000 72%, transparent 100%);
   animation:hs-sun-rays 90s linear infinite; }
-body.sky-day .hs-orb::after { content:''; position:absolute; inset:-11px; border-radius:50%;
+html.sky-day .hs-orb::after { content:''; position:absolute; inset:-11px; border-radius:50%;
   background:radial-gradient(circle, rgba(255,238,160,0.34), transparent 70%); }
 @keyframes hs-sun-rays { to { transform:rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { body.sky-day .hs-orb::before { animation:none; } }
-html.reduce-flourish body.sky-day .hs-orb::before { animation:none; }
+@media (prefers-reduced-motion: reduce) { html.sky-day .hs-orb::before { animation:none; } }
+html.reduce-flourish html.sky-day .hs-orb::before { animation:none; }
 /* soft clouds so it clearly reads as a sky (static paint; away from sun + door) */
-body.sky-day .hero-sky::before { content:''; position:absolute; inset:0; pointer-events:none;
+html.sky-day .hero-sky::before { content:''; position:absolute; inset:0; pointer-events:none;
   background:
     radial-gradient(58px 19px at 41% 30%, rgba(255,255,255,0.72), transparent 72%),
     radial-gradient(74px 22px at 63% 21%, rgba(255,255,255,0.55), transparent 74%),
@@ -378,23 +378,23 @@ body.sky-day .hero-sky::before { content:''; position:absolute; inset:0; pointer
    background, dimmer and half-sunk at the sea line.
    (The faint dashed path-arc was removed 2026-07-12 — Nate: the sky reads well
    enough on its own now. Restore from git if it's ever missed.) */
-body.sky-dusk .home-hero { background:linear-gradient(160deg, #150b36 0%, #3a1e5e 45%, #7c3452 78%, #b0501f 108%); }
-body.sky-dusk .hs-orb { display:block; right:calc(16% - 14px); bottom:-8px; width:28px; height:28px;
+html.sky-dusk .home-hero { background:linear-gradient(160deg, #150b36 0%, #3a1e5e 45%, #7c3452 78%, #b0501f 108%); }
+html.sky-dusk .hs-orb { display:block; right:calc(16% - 14px); bottom:-8px; width:28px; height:28px;
   opacity:0.8;
   background:radial-gradient(circle at 40% 36%, #ffd9a0, #e0662e 74%);
   box-shadow:0 0 30px 9px rgba(224,102,46,0.22); }
-body.sky-dusk .hero-skyline .sk-ct { border-top-color:rgba(255,150,80,0.45); }
+html.sky-dusk .hero-skyline .sk-ct { border-top-color:rgba(255,150,80,0.45); }
 
 /* NIGHT — a pale moon, stars out, windows warm.
    (The moon's dim path-arc was removed 2026-07-12 alongside the dusk one — Nate.) */
-body.sky-night .home-hero { border-color:#2a1d5e;
+html.sky-night .home-hero { border-color:#2a1d5e;
   background:linear-gradient(150deg, #0a0728 0%, #1d1252 55%, #05030f 100%); }
-body.sky-night .hs-orb { display:block; left:32%; top:16px; width:22px; height:22px;
+html.sky-night .hs-orb { display:block; left:32%; top:16px; width:22px; height:22px;
   background:radial-gradient(circle at 38% 34%, #f4f0ff, #b9b2d6 66%, #8f88b4 100%);
   box-shadow:0 0 26px 8px rgba(220,214,255,0.16), inset -5px -4px 7px rgba(80,70,130,0.55); }
-body.sky-night .hs-star { display:block; }
-body.sky-night .hs-star--tw { animation:hsTwinkle 3.4s ease-in-out infinite; }
-body.sky-night .hs-star--tw:last-of-type { animation-delay:-1.7s; }
+html.sky-night .hs-star { display:block; }
+html.sky-night .hs-star--tw { animation:hsTwinkle 3.4s ease-in-out infinite; }
+html.sky-night .hs-star--tw:last-of-type { animation-delay:-1.7s; }
 @keyframes hsTwinkle { 0%,100% { opacity:1; } 50% { opacity:0.2; } }
 @media (prefers-reduced-motion: reduce) { .hs-star--tw { animation:none; } }
 
@@ -741,12 +741,8 @@ function ctParts() {
   });
 })();
 
-// The sky keeps Checker Town time — US EASTERN — dawn, day, dusk, night.
-(function () {
-  var h = ctParts().h;
-  var phase = (h >= 5 && h < 8) ? 'dawn' : (h >= 8 && h < 17) ? 'day' : (h >= 17 && h < 20) ? 'dusk' : 'night';
-  document.body.classList.add('sky-' + phase);
-})();
+// The sky phase (dawn/day/dusk/night) is now set SITE-WIDE on <html> before paint by
+// _includes/town-weather.html — the whole town shares the clock, not just this hero.
 
 // (The cc-window egg left with the window itself, 2026-07-10 — THE DOOR in the
 //  hero carries the climb now.)
