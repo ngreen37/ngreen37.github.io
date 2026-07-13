@@ -273,7 +273,7 @@ body_class: theme-studio
       <li>Thank you <strong>Laura</strong>, for your generosity.</li>
       <li>Thank you <strong>Josh</strong>, for listening to the initial ideas with patience and either feigned or real excitement, doesn't matter.</li>
       <li>Thank you <strong>Kim</strong>, for letting me show you initial progress before anyone.</li>
-      <li>Thank you <strong>Aunt Barb</strong>, for being someone that I can't help but talk wide-openly, as closest family. You accelerated PJCC significantly.</li>
+      <li>Thank you <strong>Aunt Barb</strong>, for being someone that I can't help but talk wide-openly with, as closest family. You accelerated PJCC significantly.</li>
       <li>Thank you <strong>Tucker</strong>, for inspiring me with your greatness. You are a big role model to me.</li>
     </ul>
   </div>
