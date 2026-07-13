@@ -195,17 +195,24 @@ permalink: /dossier/
     setTop('<p class="cc-greet">Link sent — tap it, or type the code below to sign in right here.</p>');
     el.innerHTML =
       '<div class="dsr-card"><h2 class="dsr-h">Enter your code</h2>' +
-      '<p class="pjcc-sub">We sent <strong>' + esc(email) + '</strong> a login link and a 6-digit code. Either one works.</p>' +
-      '<div class="ml-form"><input id="dsr-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="pjcc-input" placeholder="000000"><button id="dsr-verify" class="pjcc-btn">Sign in</button></div>' +
+      '<p class="pjcc-sub">We sent <strong>' + esc(email) + '</strong> a login link and a code. Either one works.</p>' +
+      '<div class="ml-form"><input id="dsr-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" class="pjcc-input" placeholder="code"><button id="dsr-verify" class="pjcc-btn">Sign in</button></div>' +
       '<p id="dsr-msg" class="pjcc-sub"></p></div>';
     document.getElementById('dsr-verify').onclick = function () {
       var code = document.getElementById('dsr-code').value.trim();
       var btn = document.getElementById('dsr-verify');
       if (!code || btn.disabled) return;
       btn.disabled = true; btn.textContent = 'Checking…';
-      PJCC.verifyCode(email, code).then(render).catch(function () {
+      // Promise.resolve() so a SYNCHRONOUS throw is caught as well — a stale cached
+      // pjcc-profile.js has no verifyCode, and that used to freeze the button.
+      Promise.resolve().then(function () {
+        return PJCC.verifyCode(email, code);
+      }).then(render).catch(function (e) {
         btn.disabled = false; btn.textContent = 'Sign in';
-        document.getElementById('dsr-msg').textContent = 'That code did not work — check it, or send a new one.';
+        document.getElementById('dsr-msg').textContent =
+          !PJCC.verifyCode ? 'Close and reopen the app to update, then try again.'
+          : (e && e.message === 'bad code') ? 'Type the whole code from the email.'
+          : 'That code did not work — check it, or send a new one.';
       });
     };
   }

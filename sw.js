@@ -13,7 +13,7 @@
  */
 'use strict';
 
-const VERSION    = 'pjcc-pwa-v2';   // v2: one stylesheet + the arcade is warmed offline
+const VERSION    = 'pjcc-pwa-v3';   // v3: purge the shell that still held the pre-code pjcc-profile.js
 const SHELL      = 'pjcc-shell-' + VERSION;
 const RUNTIME    = 'pjcc-runtime-' + VERSION;
 const OFFLINE_URL = '/offline.html';

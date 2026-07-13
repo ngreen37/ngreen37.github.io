@@ -31,12 +31,18 @@
     return e;
   }
 
+  function codeError(e) {
+    if (!PJCC.verifyCode) return 'Close and reopen the app to update, then try again.';
+    if (e && e.message === 'bad code') return 'Type the whole code from the email.';
+    return 'That code did not work — check it, or send a new one.';
+  }
+
   // In the installed app a tapped link opens Safari and signs THAT in instead, so
   // the same email also carries a code you can type right here.
   function renderCode(bar, email) {
     bar.innerHTML =
-      '<span class="pjcc-label">✉ Sent. Tap the link, or type the 6-digit code:</span>' +
-      '<input id="pjcc-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="pjcc-input" placeholder="000000">' +
+      '<span class="pjcc-label">✉ Sent. Tap the link, or type the code from the email:</span>' +
+      '<input id="pjcc-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" class="pjcc-input" placeholder="code">' +
       '<button id="pjcc-verify" class="pjcc-btn">Sign in</button>' +
       '<span id="pjcc-code-msg" class="pjcc-label"></span>';
     bind('pjcc-verify', function () {
@@ -44,9 +50,14 @@
       var btn = document.getElementById('pjcc-verify');
       if (!code || btn.disabled) return;
       btn.disabled = true; btn.textContent = 'Checking…';
-      PJCC.verifyCode(email, code).then(render).catch(function () {
+      // Promise.resolve() so a SYNCHRONOUS throw lands in .catch too. A stale cached
+      // pjcc-profile.js (no verifyCode) used to throw before .catch was attached and
+      // freeze the button on "Checking…" forever — silent, and impossible to guess at.
+      Promise.resolve().then(function () {
+        return PJCC.verifyCode(email, code);
+      }).then(render).catch(function (e) {
         btn.disabled = false; btn.textContent = 'Sign in';
-        document.getElementById('pjcc-code-msg').textContent = 'That code did not work.';
+        document.getElementById('pjcc-code-msg').textContent = codeError(e);
       });
     });
   }

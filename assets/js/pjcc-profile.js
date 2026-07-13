@@ -218,10 +218,12 @@
   // a tapped link always opens Safari, and an iOS home-screen app keeps its own
   // storage jar, so the link signs in the browser and the app stays a stranger.
   // Typing the code keeps the whole exchange inside the app's own jar.
+  // Don't hard-code the length: Supabase's OTP length is a project setting (ours
+  // emails 8 digits, not the documented default 6). Take whatever digits they typed.
   PJCC.verifyCode = async function (email, code) {
     if (!sb) throw new Error('profiles offline');
     code = String(code || '').replace(/\D/g, '');
-    if (code.length !== 6) throw new Error('bad code');
+    if (code.length < 6 || code.length > 10) throw new Error('bad code');
     var r = await sb.auth.verifyOtp({ email: email, token: code, type: 'email' });
     if (r.error) throw r.error;
     await refreshSession();
