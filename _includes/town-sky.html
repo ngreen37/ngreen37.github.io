@@ -1,0 +1,89 @@
+{%- comment -%}
+  ══════════════════════════════════════════════════════════════════════════════
+  THE TOWN SKY — the whole town lives under one sky, on every page.
+  ──────────────────────────────────────────────────────────────────────────────
+  2026-07-12 (Nate: "the other pages, I thought we were going to give them
+  day/dusk/night/dawn themes, like the PJCC page? Let's really make that a thing").
+  Up to now the hour existed in exactly two places: the PJCC hero's full sky, and a
+  0.03–0.07 colour wash over everything else — technically town-wide, invisible in
+  practice.
+
+  This is the real thing: a fixed, full-viewport sky sitting BEHIND every page
+  (z-index:-1, so it paints over the flat body colour and under every card, header
+  and footer). You see it in the gutters, above and below the content — the town is
+  now a place the pages sit inside, instead of a colour they're tinted with.
+
+  It's STATIC MARKUP, not JS-built: `sky-<phase>` and `cloud-<n>` are already on
+  <html> before first paint (see town-weather.html), so the sky is correct on the
+  very first frame with no flash and no layout work.
+
+  Stacking, and it matters — Nate: "the stars should always fall BEHIND the moon.
+  Unless it's a shooting star":
+      stars (1) → orb, sun or moon (2) → shooting stars (3) → clouds (4)
+  So a shooting star can streak across the moon's face, and cloud can pass in front
+  of the lot. Nothing else may sit between the stars and the orb.
+
+  PERF (the 2026-07-11 lag rules, which this obeys to the letter): the container is
+  position:fixed + overflow:hidden + contain, so it is capped at the VIEWPORT and
+  never grows with the document. Every moving part animates transform/opacity ONLY —
+  no background-position anywhere, no filter on any wrapper of an animating child.
+  Off entirely under reduce-flourish / prefers-reduced-motion, which leaves the
+  static sky (gradient + orb) exactly as it is.
+  ══════════════════════════════════════════════════════════════════════════════
+{%- endcomment -%}
+<div class="town-sky" aria-hidden="true">
+
+  {%- comment -%} 1 · the stars. Night only. Two of every handful twinkle; the rest are
+       fixed points, because a sky where every star pulses reads as a screensaver. {%- endcomment -%}
+  <div class="ts-stars">
+    <b class="ts-star" style="--sx:6%;--sy:9%"></b>
+    <b class="ts-star ts-star--tw" style="--sx:13%;--sy:22%"></b>
+    <b class="ts-star" style="--sx:19%;--sy:6%;--ss:3px"></b>
+    <b class="ts-star" style="--sx:24%;--sy:31%"></b>
+    <b class="ts-star ts-star--tw" style="--sx:31%;--sy:14%"></b>
+    <b class="ts-star" style="--sx:37%;--sy:26%;--ss:3px"></b>
+    <b class="ts-star" style="--sx:43%;--sy:8%"></b>
+    <b class="ts-star" style="--sx:49%;--sy:35%"></b>
+    <b class="ts-star ts-star--tw" style="--sx:55%;--sy:18%;--ss:3px"></b>
+    <b class="ts-star" style="--sx:61%;--sy:5%"></b>
+    <b class="ts-star" style="--sx:67%;--sy:29%"></b>
+    <b class="ts-star ts-star--tw" style="--sx:73%;--sy:12%"></b>
+    <b class="ts-star" style="--sx:79%;--sy:24%;--ss:3px"></b>
+    <b class="ts-star" style="--sx:86%;--sy:7%"></b>
+    <b class="ts-star ts-star--tw" style="--sx:92%;--sy:20%"></b>
+    <b class="ts-star" style="--sx:96%;--sy:33%"></b>
+    <b class="ts-star" style="--sx:9%;--sy:44%"></b>
+    <b class="ts-star" style="--sx:28%;--sy:48%;--ss:3px"></b>
+    <b class="ts-star ts-star--tw" style="--sx:64%;--sy:44%"></b>
+    <b class="ts-star" style="--sx:88%;--sy:47%"></b>
+  </div>
+
+  {%- comment -%} 2 · the orb: one element, four looks. The day sun grows rays; the night
+       moon gets a crater shadow. Sits ABOVE the stars, always. {%- endcomment -%}
+  <i class="ts-orb"></i>
+
+  {%- comment -%} 3 · shooting stars. Night only, and the one thing allowed in FRONT of the
+       moon. Three of them on long, deliberately coprime cycles (29s · 43s · 67s) with a
+       streak that lasts barely a second — so they never fall in a pattern you can read,
+       and most of the time the sky is simply still. No JS: the sky is idle markup and the
+       compositor does the rest. {%- endcomment -%}
+  <b class="ts-shoot ts-shoot--1"></b>
+  <b class="ts-shoot ts-shoot--2"></b>
+  <b class="ts-shoot ts-shoot--3"></b>
+
+  {%- comment -%} 4 · the cloud deck. Cover is a daily roll from the town clock
+       (PJCC_TIME.clouds() → html.cloud-0..3), so the whole town gets the same sky, and it's
+       decorrelated from the rain roll — a clear day can still be a cloudy one, and a starry
+       night can still have cloud crossing it. Two banks drifting at different speeds
+       (transform only) so the deck never repeats visibly. {%- endcomment -%}
+  <div class="ts-clouds">
+    <div class="ts-cloud-bank ts-cloud-bank--near"></div>
+    <div class="ts-cloud-bank ts-cloud-bank--far"></div>
+  </div>
+
+  {%- comment -%} 5 · the far horizon: the town's own light, low and warm, along the foot of
+       the sky. It's what stops the backdrop reading as "a gradient" and starts it reading as
+       "somewhere". {%- endcomment -%}
+  <div class="ts-horizon"></div>
+
+</div>

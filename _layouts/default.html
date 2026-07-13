@@ -19,6 +19,14 @@
 </head>
 <body{% if page.body_class %} class="{{ page.body_class }}"{% endif %}>
 
+  {%- comment -%} The town sky — day/dusk/night/dawn behind EVERY page, not just the PJCC
+       hero. Fixed, full-viewport, z-index:-1, so it sits under the header, the cards and
+       the footer and shows through everywhere they don't. See _sass/_pjcc-20-town-sky.scss.
+       First child of <body> on purpose: it must not be inside anything that could make a
+       stacking context, or the negative z-index would trap it in front of the content
+       instead of behind it. {%- endcomment -%}
+  {% include town-sky.html %}
+
   <header class="site-header">
     <div class="wrapper header-inner">
 

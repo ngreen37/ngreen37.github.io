@@ -2,6 +2,15 @@
 <html lang="en">
 <head>
   {% include head.html raw_title="McPuppy Studios — Princess and the Journey to Chess City" description="Home of Princess and the Journey to Chess City (PJCC) — an animated series in the making, plus an arcade of free chess games, all built in the open by McPuppy Studios." %}
+  {%- comment -%} Hand the opening beat over to JS: the sigil blooms and fades, THEN the four
+       quads take their seats (see the splash script at the foot of this file). This flag is
+       what holds them back, and it's set here — before first paint — so there's no flash of
+       four boxes appearing and then being hidden.
+
+       It is deliberately set BY SCRIPT rather than written into the markup: with JS off, this
+       line never runs, `html.splash-seq` is never added, and the quads keep their plain CSS
+       entrance. The gate can't strand anyone on an empty splash. {%- endcomment -%}
+  <script>document.documentElement.classList.add('splash-seq');</script>
 </head>
 <body class="studio-body">
 
@@ -66,7 +75,13 @@
         <span class="tagline-word">Games.</span>
         <span class="tagline-word tagline-main">
           <span class="tagline-main-studio">McPuppy Studios</span>
-          <span class="tagline-main-tagline">A Million St<a class="tg-x" href="{{ '/classified/' | relative_url }}" tabindex="-1" aria-hidden="true">o</a>ries to Tell</span>
+          {% comment %} The "o" is the door to /classified/. It looks EXACTLY like its
+               neighbours (it inherits the shimmer's text-clip) and flickers like a radio
+               dropout. The glyph lives in the inner <i> so the flicker can use
+               `visibility` — the only property that reaches a text-clipped glyph — while
+               the <a> around it keeps its hit box and stays clickable mid-dropout.
+               See _sass/_pjcc-04-flair.scss. {% endcomment %}
+          <span class="tagline-main-tagline">A Million St<a class="tg-x" href="{{ '/classified/' | relative_url }}" tabindex="-1" aria-hidden="true"><i class="tg-x-glyph">o</i></a>ries to Tell</span>
         </span>
       </div>
 
@@ -142,13 +157,11 @@
       })();
       </script>
 
-      {% comment %} Planted sigil (Av13/Av2 breadcrumb): one A, eight c's — the first two
-           cut large, then five medium, the last cut small. Matches the gate incantation
-           (A, then two capital C's, then six lowercase). Faint by design. Protected from
-           translation via .pjcc-sigil. {% endcomment %}
-      <div class="studio-sigil-seal" aria-hidden="true" title="Cut into the threshold stone. The first two struck large, the last struck small.">
-        <span class="pjcc-sigil faint"><i class="sg-a">A</i><i class="sg-c big">C</i><i class="sg-c big">C</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c sm">c</i></span>
-      </div>
+      {% comment %} The planted sigil SEAL (a second, static "ACCcccccc" carving that sat
+           under the Gauntlet with a "threshold stone" tooltip) was REMOVED 2026-07-12 —
+           Nate circled it and asked for it gone. The sigil still BLOOMS on entry
+           (.studio-drift-sigil, above), which is the moment he wanted kept; this was just
+           a duplicate of it sitting there permanently. Restore from git if it's missed. {% endcomment %}
 
       {% comment %} Formal studio footer — minimal; replaces the old creed line. {% endcomment %}
       <footer class="studio-footer">
@@ -197,18 +210,8 @@
   .studio-gauntlet .sg-tower i.done { background:#6bffb8; }
   .studio-gauntlet .sg-tower i.cur { background:#F5C518; box-shadow:0 0 5px #F5C518; }
 
-  /* Planted sigil seal — a faint ARG breadcrumb under the Gauntlet.
-     Kept very faint here, and no hover brighten (overrides the site-wide
-     .pjcc-sigil.faint:hover from pjcc-portal.css), scoped to the splash. */
-  .studio-sigil-seal { text-align:center; margin:16px auto 0; line-height:1; }
-  .studio-sigil-seal .pjcc-sigil { font-size:1.05rem; }
-  .studio-sigil-seal .pjcc-sigil.faint,
-  .studio-sigil-seal .pjcc-sigil.faint:hover { opacity:0.12; transition:none; }
-  /* All the c-stones share one colour here (overrides the gold big / faded small
-     from pjcc-portal.css); sizes still vary so the shuffled scatter reads. */
-  .studio-sigil-seal .pjcc-sigil .sg-c,
-  .studio-sigil-seal .pjcc-sigil .sg-c.big,
-  .studio-sigil-seal .pjcc-sigil .sg-c.sm { color:#6b5fa0; text-shadow:none; opacity:1; }
+  /* (The .studio-sigil-seal block — the static ACCcccccc carving under the Gauntlet and
+     its "threshold stone" tooltip — was removed 2026-07-12 with its markup.) */
 
   /* Formal studio footer — minimal, muted, monospace (matches the dispatch aesthetic) */
   .studio-footer { text-align:center; margin:16px auto 0; max-width:480px;
@@ -223,17 +226,32 @@
   /* Breathing room between the "A Million Stories" tagline and the quad grid */
   .studio-content .studio-tagline { margin-bottom: 20px; }
 
-  /* Idea #1 — the page leans toward the hovered quad (glow from its corner) */
-  .studio-lean { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0;
-    transition:opacity .4s ease, background .4s ease; }
+  /* Idea #1 — the page leans toward the hovered quad.
+     2026-07-12 (Nate: "I want it just to be the corresponding CORNER, instead — cut
+     the height in half and place them accordingly"). It used to be a full-viewport
+     layer with the glow's centre parked in a corner, so the wash bled across the
+     whole screen and read as "that whole side lights up". Now the layer itself is a
+     QUARTER of the window (50% × 50%) pinned to the matching corner, and the glow
+     fills it — so only that corner lifts. One element, moved by four classes; the
+     brand colour rides in --lean so there's a single gradient recipe to keep. */
+  .studio-lean { position:fixed; width:50%; height:50%; z-index:0; pointer-events:none; opacity:0;
+    transition:opacity .4s ease; }
   .studio-lean.is-on { opacity:1; }
-  /* 2026-07-12 (Nate): pull each glow into the TRUE CORNER of its quadrant
-     (PJCC top-left · McPuppy top-right · Games bottom-left · Patreon bottom-right)
-     and brighten ~25% so the lean reads clearly. */
-  .studio-lean.lean-pjcc    { background:radial-gradient(circle at 10% 12%, rgba(120,60,230,0.065) 0%, rgba(120,60,230,0.045) 25%, rgba(120,60,230,0.026) 45%, rgba(120,60,230,0.013) 65%, rgba(120,60,230,0.004) 82%, transparent 100%); }
-  .studio-lean.lean-mcpuppy { background:radial-gradient(circle at 90% 12%, rgba(225,228,255,0.033) 0%, rgba(225,228,255,0.023) 25%, rgba(225,228,255,0.014) 45%, rgba(225,228,255,0.006) 65%, rgba(225,228,255,0.002) 82%, transparent 100%); }
-  .studio-lean.lean-games   { background:radial-gradient(circle at 10% 88%, rgba(60,188,252,0.059) 0%, rgba(60,188,252,0.041) 25%, rgba(60,188,252,0.024) 45%, rgba(60,188,252,0.011) 65%, rgba(60,188,252,0.003) 82%, transparent 100%); }
-  .studio-lean.lean-patreon { background:radial-gradient(circle at 90% 88%, rgba(45,196,130,0.059) 0%, rgba(45,196,130,0.041) 25%, rgba(45,196,130,0.024) 45%, rgba(45,196,130,0.011) 65%, rgba(45,196,130,0.003) 82%, transparent 100%); }
+  .studio-lean[class*="lean-"] {
+    background:radial-gradient(circle at var(--lx) var(--ly),
+      rgba(var(--lean), 0.085) 0%, rgba(var(--lean), 0.055) 28%, rgba(var(--lean), 0.028) 52%,
+      rgba(var(--lean), 0.010) 74%, transparent 100%); }
+  .studio-lean.lean-pjcc    { top:0; left:0;   --lx:14%; --ly:16%; --lean:120,60,230; }
+  .studio-lean.lean-mcpuppy { top:0; right:0;  --lx:86%; --ly:16%; --lean:225,228,255; }
+  .studio-lean.lean-games   { bottom:0; left:0;  --lx:14%; --ly:84%; --lean:60,188,252; }
+  /* Patreon's corner is CORAL now, not green (Nate: "green isn't working") — it's
+     Patreon's own colour, which is the point: the one door on the splash that leads
+     off the site is the one lit in a colour the site doesn't otherwise own. */
+  .studio-lean.lean-patreon { bottom:0; right:0; --lx:86%; --ly:84%; --lean:255,106,96; }
+  /* McPuppy is a pale wash and needs a touch more to register at all */
+  .studio-lean.lean-mcpuppy { background:radial-gradient(circle at 86% 16%,
+      rgba(225,228,255,0.055) 0%, rgba(225,228,255,0.034) 28%, rgba(225,228,255,0.017) 52%,
+      rgba(225,228,255,0.006) 74%, transparent 100%); }
 
   /* Secret ✦ — the (very dim) star that is also the door to /classified/.
      2026-07-12 (Nate: "it stops at like 80% to the right"): it used to fly IN and
@@ -258,28 +276,53 @@
   }
   #drift-secret.is-in { animation:secret-fly 48s linear infinite; }
   /* transform is declared only at the two ends of the flight, so it interpolates in
-     ONE straight linear segment = genuinely constant speed. */
+     ONE straight linear segment = genuinely constant speed.
+     2026-07-12 (Nate: "have the star move 7.5% slower"): the crossing is the first
+     slice of the 48s loop, so its SPEED is set by how much of the loop it gets. It
+     used to cross in 25% of 48s = 12.0s; 7.5% slower = 12.0/0.925 ≈ 12.97s = 27%.
+     The 48s repeat is deliberately left alone — that's the wait between passes, not
+     the star's speed, and this is the only door to /classified/. */
   @keyframes secret-fly {
     0%   { transform:translateX(0);              opacity:0; }
     1%   { opacity:1; }
-    24%  { opacity:1; }
-    25%  { transform:translateX(calc(-120vw));   opacity:0; }
+    26%  { opacity:1; }
+    27%  { transform:translateX(calc(-120vw));   opacity:0; }
     100% { transform:translateX(calc(-120vw));   opacity:0; }
   }
 
   /* Idea #3 — the sigil bloom (the "ACCcccccc" carving that flashes on entry).
-     2026-07-11 (Nate: "I don't see them anymore"): the earlier dimming passes
-     (→0.11 opacity) sank it below visibility. Root cause: at z-index:0 it sat
-     BEHIND the opaque quad grid, so only a sliver in the centre cross-gutter
-     ever showed — no opacity could fix that. Now it flashes IN FRONT (z-index:6)
-     as a translucent gold "transmission ghost" over the grid centre — on theme
-     with the SIGNAL/decrypt cold-open — then fades. pointer-events:none, so it
-     never blocks a click; it clears the quad LABELS (they're centred, it isn't). */
+     It flashes IN FRONT of the grid (z-index:6) as a translucent gold "transmission
+     ghost" — on theme with the SIGNAL/decrypt cold-open — then fades. pointer-events:
+     none, so it never blocks a click.
+
+     2026-07-12 (Nate: "I want the ACCCC animation to clearly pop-up BEFORE the
+     quadrants do, right now it shows up after. It should fade 10% faster, and THEN
+     the quadrants appear."). Both halves of that:
+       · it now GATES the quads — see .studio-quad-grid.is-lit below and the splash
+         script. The sigil blooms over an empty stage, fades, and only then do the
+         four boxes take their seats. (It used to lose the race outright: the quads
+         ran their CSS entrance at 0.1–0.64s while the sigil waited on a timer.)
+       · the fade-out is 10% faster: 0.88s → 0.792s. The pop-IN is quicker still
+         (0.42s) so it lands as a flash, not a swell — that's the "clearly pop-up".
+         Two transitions, because the .is-bloom rule supplies the timing on the way
+         in and the base rule supplies it on the way out. */
   .studio-drift-sigil { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.96);
     z-index:6; pointer-events:none; opacity:0; filter:drop-shadow(0 0 16px rgba(245,197,24,0.28));
-    transition:opacity 0.88s ease, transform 0.88s ease; }  /* 2026-07-12: fade 25% faster again (1.18→0.88s) */
+    transition:opacity 0.792s ease, transform 0.792s ease; }
   .studio-drift-sigil .pjcc-sigil { font-size:1.8rem; }
-  .studio-drift-sigil.is-bloom { opacity:0.145; transform:translate(-50%,-50%) scale(1.0); }  /* 2026-07-12: dimmed 33% again (0.217→0.145) */
+  .studio-drift-sigil.is-bloom { opacity:0.145; transform:translate(-50%,-50%) scale(1.0);
+    transition:opacity 0.42s ease-out, transform 0.42s ease-out; }
+
+  /* THE GATE. `splash-seq` is set on <html> by the script below, so this only ever
+     applies when the JS that opens the gate is actually running — with no JS the
+     quads keep their plain CSS entrance from _pjcc-02-studio.scss and nobody is left
+     staring at four empty holes. */
+  html.splash-seq .studio-quad { animation:none; opacity:0; }
+  html.splash-seq .studio-quad-grid.is-lit .studio-quad { opacity:1; }
+  html.splash-seq .studio-quad-grid.is-lit .studio-quad:nth-child(1) { animation:quad-appear 1.3s ease 0s    both; }
+  html.splash-seq .studio-quad-grid.is-lit .studio-quad:nth-child(2) { animation:quad-appear 1.3s ease 0.18s both; }
+  html.splash-seq .studio-quad-grid.is-lit .studio-quad:nth-child(3) { animation:quad-appear 1.3s ease 0.36s both; }
+  html.splash-seq .studio-quad-grid.is-lit .studio-quad:nth-child(4) { animation:quad-appear 1.3s ease 0.54s both; }
 
   /* Idea #9 — replay-intro control (bottom-left, subtle) */
   .studio-replay { position:fixed; left:18px; bottom:16px; z-index:3; display:inline-flex; align-items:center; gap:6px;
@@ -331,8 +374,7 @@
     /* the mini floor indicator stays — it's tiny and it's the whole story */
 
     /* drop the purely decorative pieces so everything fits one screen */
-    .studio-footer,
-    .studio-sigil-seal { display:none; }
+    .studio-footer { display:none; }
 
     /* keep the corner controls tucked clear of the quad block */
     .studio-corner-img { height:44px; }
@@ -360,6 +402,9 @@
     .studio-quad { animation:none !important; }
     .studio-corner-logo { animation:none !important; }
     .studio-tagline, .studio-tagline * { animation:none !important; }
+    /* there's no sigil to wait for, so nothing gates the quads — show them outright
+       (belt and braces: the script also opens the gate immediately under reduced motion) */
+    html.splash-seq .studio-quad { opacity:1 !important; }
   }
   </style>
 
@@ -486,28 +531,48 @@
     // switched on, which otherwise leaves you stuck on the full-screen colour.
     if (warp) window.addEventListener('pageshow', function () { warp.className = 'studio-warp'; });
 
-    // #3 — a gold sigil blooms among the drifters, then dissolves. It fires
-    // RIGHT ON ENTRY now (Nate) — promptly on a return visit, and just after the
-    // cold-open clears on a first visit (so it isn't wasted behind the overlay).
-    var sig = document.getElementById('studio-drift-sigil');
-    if (sig && !reduce) {
-      var bloom = function () { sig.classList.add('is-bloom'); setTimeout(function () { sig.classList.remove('is-bloom'); }, 2600); };
-      var seen = false; try { seen = !!localStorage.getItem('mcpuppy_seen'); } catch (e) {}
-      var firstDelay = seen ? 500 : 8600;   // 2026-07-11: appear FIRST on a return visit (was 2200ms)
-      setTimeout(function () { bloom(); setInterval(bloom, 26000); }, firstDelay);
-    }
+    // ── #3 — THE OPENING BEAT: sigil, then quads. ──────────────────────────────
+    // 2026-07-12 (Nate: the ACCCC "shows up after" the quads — he wants it to pop up
+    // clearly BEFORE them, fade, and THEN the boxes appear).
+    //
+    // The quads used to win that race by default: they ran a pure-CSS staggered
+    // entrance at 0.10–0.64s while the sigil sat on a timer, so on a first visit the
+    // cold-open hid the whole entrance and you met the quads already seated with the
+    // sigil blooming over the top of them. So the quads are GATED now — held at
+    // opacity:0 until this script says go (see html.splash-seq in the stylesheet
+    // above; without JS the CSS entrance runs as before and nothing is ever stuck).
+    //
+    // The beat, in order: bloom in (0.42s) · hold (0.7s) · fade out (0.792s, the "10%
+    // faster") · quads take their seats. Later blooms are ambient and don't re-gate.
+    var sig  = document.getElementById('studio-drift-sigil');
+    var grid = document.querySelector('.studio-quad-grid');
+    var lit  = false;
+    function seatTheQuads() { if (!lit && grid) { lit = true; grid.classList.add('is-lit'); } }
 
-    // Shuffle the planted sigil seal's glyphs (A + the c-stones) on each load,
-    // so the carving reads a little differently every visit. Sizes ride along
-    // with each glyph, so the big/small scatter randomizes too.
-    var seal = document.querySelector('.studio-sigil-seal .pjcc-sigil');
-    if (seal) {
-      var glyphs = Array.prototype.slice.call(seal.children);
-      for (var i = glyphs.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var tmp = glyphs[i]; glyphs[i] = glyphs[j]; glyphs[j] = tmp;
-      }
-      glyphs.forEach(function (g) { seal.appendChild(g); });
+    if (sig && grid && !reduce) {
+      var BLOOM_IN = 420, HOLD = 700, FADE_OUT = 792;
+      var bloom = function () {
+        sig.classList.add('is-bloom');
+        setTimeout(function () { sig.classList.remove('is-bloom'); }, BLOOM_IN + HOLD);
+      };
+      var seen = false; try { seen = !!localStorage.getItem('mcpuppy_seen'); } catch (e) {}
+      // On a first visit, wait out the cold-open — otherwise the whole beat plays
+      // behind an opaque overlay and the visitor arrives to a finished stage.
+      var firstDelay = seen ? 260 : 8800;
+
+      setTimeout(function () {
+        bloom();
+        // the quads follow the sigil ALL the way out, not partway
+        setTimeout(seatTheQuads, BLOOM_IN + HOLD + FADE_OUT);
+        setInterval(bloom, 26000);
+      }, firstDelay);
+
+      // Failsafe: if anything above throws or a timer is starved (a backgrounded tab
+      // throttles setTimeout), the quads must not stay invisible. The splash is the
+      // front door.
+      setTimeout(seatTheQuads, firstDelay + 6000);
+    } else {
+      seatTheQuads();   // reduced motion / no sigil: no beat to wait for
     }
 
     // Secret ✦ starts its crossing (right → behind the quads → off the left edge,

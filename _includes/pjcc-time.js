@@ -13,6 +13,7 @@
  *   PJCC_TIME.phase()   -> 'dawn' | 'day' | 'dusk' | 'night'
  *   PJCC_TIME.daySeed() -> uint32 seeded by the Eastern date (one town, one day)
  *   PJCC_TIME.weather() -> { kind: 'rain'|'mist'|'clear', roll, phase }
+ *   PJCC_TIME.clouds()  -> 0 (clear) | 1 (a few) | 2 (broken) | 3 (overcast)
  * ========================================================================== */
 (function () {
   'use strict';
@@ -45,5 +46,16 @@
     var roll = daySeed() % 10;
     return { kind: roll <= 2 ? 'rain' : (roll === 3 ? 'mist' : 'clear'), roll: roll, phase: phase() };
   }
-  window.PJCC_TIME = { parts: parts, hour: hour, dateStr: dateStr, phase: phase, daySeed: daySeed, weather: weather };
+  // Cloud cover — its own roll, so "clear" days still get weather in the sky and a
+  // starry night isn't always a bare one (Nate: "sometimes it's cloudy, sometimes
+  // it's both"). Shifted well clear of the rain roll's low bits so the two don't
+  // move together. Rain and mist force real cover — it can't pour out of a bare sky.
+  function clouds() {
+    var w = weather().kind;
+    if (w === 'rain') return 3;
+    if (w === 'mist') return 2;
+    return [0, 0, 1, 1, 1, 2, 2, 0, 1, 3][(daySeed() >>> 11) % 10];
+  }
+  window.PJCC_TIME = { parts: parts, hour: hour, dateStr: dateStr, phase: phase,
+                       daySeed: daySeed, weather: weather, clouds: clouds };
 })();

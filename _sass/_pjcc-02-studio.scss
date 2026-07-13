@@ -206,9 +206,16 @@ body.studio-body {
     transition: background-image 0.25s;
   }
 
+  /* 2026-07-12 (Nate: "give the McPuppy quadrant a different font"). The other three
+     quads are all Poppins — the studio now speaks in a SERIF, like a production
+     company's title card. It's a system stack, so it costs nothing to load and it's
+     the one voice on the splash that isn't the PJCC voice. */
   .studio-quad-title {
+    font-family: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(17px, 2.2vw, 25px);
     color: #e6e6e9;
-    letter-spacing: 0.5px;
+    letter-spacing: 1.4px;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.10);
     position: relative;
     z-index: 1;
@@ -287,57 +294,89 @@ body.studio-body {
   }
 }
 
-/* Patreon quad (bottom-right) — "the patron's grove": deep forest deepening into
-   jade with a soft green footlight glow. Rich and calm; reads premium and sits
-   fully apart from the gold PJCC quad and the electric-blue games quad. */
-.studio-quad-grid .studio-quad--patreon {
-  background: linear-gradient(150deg, #0c1f16 0%, #17482f 48%, #23885b 100%);
-  border-color: rgba(45, 196, 130, 0.6);
+/* Patreon quad (bottom-right) — THE PATRON'S TICKET.
+   2026-07-12 (Nate: "change around the format of the Patreon quadrant completely,
+   and its corresponding light-up corner. Green isn't working.") The old "patron's
+   grove" was a deep-green panel shaped exactly like the other three — a fifth brand
+   colour that belonged to nothing on this site, wearing the same clothes as its
+   neighbours.
 
+   It's a torn TICKET STUB now, and it's Patreon's own coral — the one colour on the
+   splash that's borrowed from the thing it actually links to, so it reads as "an
+   outside door" rather than a fourth room of the house. Format is deliberately unlike
+   the other quads: a punched dashed rule inside the border, a stamped monospace title,
+   and a warm footlight under it instead of a glow behind it. */
+.studio-quad-grid .studio-quad--patreon {
+  background: linear-gradient(150deg, #2a0d10 0%, #6d2029 46%, #b8383c 100%);
+  border-color: rgba(255, 106, 96, 0.62);
+
+  /* the stub's perforation — a dashed rule set in from the border */
   &::before {
     content: '';
     position: absolute;
-    inset: 0;
-    border-radius: 14px;
+    inset: 7px;
+    border-radius: 9px;
     pointer-events: none;
     z-index: 0;
-    background: radial-gradient(circle at 50% 128%, rgba(90, 230, 160, 0.46) 0%, rgba(45, 196, 130, 0.16) 40%, transparent 68%);
-    animation: patreon-hearth 3.4s ease-in-out infinite;
+    border: 1px dashed rgba(255, 208, 200, 0.34);
+    transition: border-color 0.25s;
+  }
+
+  /* the footlight: a warm bar of light along the bottom edge, breathing */
+  .studio-quad-title::after {
+    content: '';
+    position: absolute;
+    left: -40%; right: -40%; bottom: -68px; height: 74px;
+    background: radial-gradient(60% 100% at 50% 100%, rgba(255, 140, 110, 0.55) 0%, rgba(255, 90, 80, 0.18) 45%, transparent 72%);
+    pointer-events: none;
+    z-index: -1;
+    animation: patreon-footlight 3.4s ease-in-out infinite;
   }
 
   .studio-quad-title {
-    color: #cdeede;
-    text-shadow: 0 0 22px rgba(60, 210, 140, 0.5);
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: 400;
+    font-size: clamp(16px, 2vw, 23px);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #ffe4de;
+    text-shadow: 0 0 18px rgba(255, 106, 96, 0.55);
     position: relative;
     z-index: 1;
   }
 
   .studio-quad-sub {
-    color: rgba(205, 238, 222, 0.9);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+    font-family: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+    font-style: italic;
+    font-size: 13px;
+    letter-spacing: 0.2px;
+    color: rgba(255, 226, 220, 0.88);
     position: relative;
     z-index: 1;
   }
 
   &::after {
-    background: linear-gradient(135deg, rgba(90, 230, 160, 0.253) 0%, transparent 60%);
+    background: linear-gradient(135deg, rgba(255, 160, 140, 0.22) 0%, transparent 60%);
   }
 
   &:hover {
-    background: linear-gradient(150deg, #123021 0%, #206e4f 48%, #36c88c 100%);
-    border-color: #4fd699;
-    box-shadow: 0 0 46px rgba(45, 196, 130, 0.34), 0 14px 42px rgba(8, 28, 18, 0.6);
+    background: linear-gradient(150deg, #3a1216 0%, #8d2932 46%, #e04a4a 100%);
+    border-color: #ff6a60;
+    box-shadow: 0 0 46px rgba(255, 106, 96, 0.32), 0 14px 42px rgba(40, 10, 12, 0.6);
     transform: translateY(-5px);
+
+    &::before { border-color: rgba(255, 228, 222, 0.72); }
   }
 }
 
-@keyframes patreon-hearth {
-  0%, 100% { opacity: 0.7; transform: scale(1); }
-  50%      { opacity: 1; transform: scale(1.06); }
+@keyframes patreon-footlight {
+  0%, 100% { opacity: 0.62; transform: scaleY(1); }
+  50%      { opacity: 1;    transform: scaleY(1.10); }
 }
+@media (prefers-reduced-motion: reduce) {
+  .studio-quad-grid .studio-quad--patreon .studio-quad-title::after { animation: none; }
+}
+html.reduce-flourish .studio-quad-grid .studio-quad--patreon .studio-quad-title::after { animation: none; }
 
 /* Blank placeholder quad */
 

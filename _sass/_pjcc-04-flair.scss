@@ -156,36 +156,65 @@ body.theme-bw .page-body em {
   to   { background-position: 220% center; }
 }
 
-/* the letter that flickers — the tell that opens the classified page.
-   2026-07-12 (Nate: "the O is black and not working properly"): as a child <a>
-   it was INHERITING the parent's `-webkit-text-fill-color: transparent`
-   (the shimmer clip) but painting no background of its own, so the glyph fell
-   through to the dark page = looked black. Fix: give it an EXPLICIT fill so it
-   can never go transparent — a warm pale gold that matches the shimmering
-   letters at a glance but sits a hair off on a stare — plus a gentle,
-   ever-present flicker (never fully off), like a tired neon letter. */
-.tagline-main-tagline .tg-x {
+/* ── the letter that flickers — the tell that opens the classified page ──────
+   2026-07-12 (Nate: "make it exactly like the other characters, but it flickers,
+   like a radio disruption"). Two facts, both verified in a real Chrome render:
+
+   1. The <a> takes the parent's shimmer for free. `-webkit-text-fill-color`
+      INHERITS, so a link with `color: inherit; -webkit-text-fill-color: inherit`
+      goes transparent exactly like a plain letter, and the parent's clipped
+      gradient paints straight through its glyph — pixel-identical to its
+      neighbours. (The old "solid #efd39b fill" workaround is what made the "o"
+      read as a different, non-shimmering letter. Gone.)
+
+   2. The parent paints that glyph, not the link — so `opacity` and `filter` on
+      the <a> do NOTHING to it. The one property that reaches a text-clipped
+      glyph is `visibility`. That's the flicker: the letter drops OUT of the word
+      for a few frames at a time — a signal dropout, not a dimmer. Exactly the
+      radio-disruption read we want on the one letter that's a hidden door.
+
+   The glyph therefore lives in an inner <i> that blinks, while the <a> around it
+   stays visible and keeps its hit box — so the door is clickable even mid-dropout
+   (checked with elementFromPoint). Never let the flicker land on the <a> itself. */
+.tagline-main-tagline .tg-x,
+.tagline-main-tagline .tg-x-glyph {
   text-decoration: none;
-  -webkit-text-fill-color: #efd39b;
-  color: #efd39b;
-  animation: tgx-flick 6s ease-in-out infinite;
+  color: inherit;
+  -webkit-text-fill-color: inherit;
+  font-style: inherit;
 }
-@keyframes tgx-flick {
-  0%, 100%   { opacity: 1; }
-  43%, 57%   { opacity: 1; }
-  47%        { opacity: 0.78; }
-  50%        { opacity: 0.9; }
-  53%        { opacity: 0.74; }
+.tagline-main-tagline .tg-x-glyph {
+  animation: tgx-radio 7.5s steps(1, end) infinite;
 }
-.tagline-main-tagline .tg-x:hover,
-.tagline-main-tagline .tg-x:focus {
-  -webkit-text-fill-color: #ffd740;
-  color: #ffd740;
+/* Bursts of interference, not a metronome: long clean stretches, then a stutter of
+   dropouts, then clean again. `visibility` only flips ON a keyframe (any interval
+   with a `visible` endpoint reads visible the whole way), so each dropout needs a
+   PAIR of hidden keyframes to actually hold — hence the tight duplicates. */
+@keyframes tgx-radio {
+  0%,    26.0%  { visibility: visible; }
+  26.1%, 26.5%  { visibility: hidden; }
+  26.6%, 27.3%  { visibility: visible; }
+  27.4%, 27.6%  { visibility: hidden; }
+  27.7%, 57.0%  { visibility: visible; }
+  57.1%, 57.3%  { visibility: hidden; }
+  57.4%, 58.1%  { visibility: visible; }
+  58.2%, 58.9%  { visibility: hidden; }
+  59.0%, 59.4%  { visibility: visible; }
+  59.5%, 59.7%  { visibility: hidden; }
+  59.8%, 88.4%  { visibility: visible; }
+  88.5%, 88.8%  { visibility: hidden; }
+  88.9%, 100%   { visibility: visible; }
+}
+/* hovering steadies the signal — you found it, it stops hiding */
+.tagline-main-tagline .tg-x:hover .tg-x-glyph,
+.tagline-main-tagline .tg-x:focus .tg-x-glyph {
   animation: none;
+  visibility: visible;
 }
 @media (prefers-reduced-motion: reduce) {
-  .tagline-main-tagline .tg-x { animation: none; }
+  .tagline-main-tagline .tg-x-glyph { animation: none; visibility: visible; }
 }
+html.reduce-flourish .tagline-main-tagline .tg-x-glyph { animation: none; visibility: visible; }
 
 @keyframes tagline-w1 {
   0%      { opacity: 0; }

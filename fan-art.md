@@ -100,7 +100,9 @@ permalink: /fan-art/
 
 /* ---- crayon mode ---- */
 .fa-crayons { max-width:520px; margin:0 auto 1.4rem; text-align:center; }
-#fa-canvas { width:100%; max-width:480px; aspect-ratio:1/1; background:#fff; border:3px solid #002e6d;
+/* the drawing surface is dimmed to match the card, but kept a shade lighter than it —
+   crayon needs somewhere bright to land */
+#fa-canvas { width:100%; max-width:480px; aspect-ratio:1/1; background:#eeebe3; border:3px solid #002e6d;
   border-radius:14px; touch-action:none; cursor:crosshair; display:block; margin:0 auto 12px; }
 .fa-cray-row { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:12px; }
 .fa-cray { width:32px; height:46px; border:none; cursor:pointer; background:var(--c); padding:0;
@@ -124,8 +126,17 @@ permalink: /fan-art/
 .fa-h2--museum::after { content:''; display:block; width:210px; height:5px; margin:7px auto 0;
   border-top:1px solid #F5C518; border-bottom:1px solid #F5C518; }
 
-/* ---- the card (print-friendly navy/gold/white) ---- */
-.fan-card { max-width:560px; margin:0 auto; background:#fff; border:3px solid #002e6d; border-radius:18px;
+/* ---- the card (print-friendly navy/gold/paper) ----
+   2026-07-12 (Nate: "the Fan Art upload box is TOO bright. The white is too bright.
+   Can we dim it?"). It was #fff — a pure-white block the size of a poster, sitting on
+   a near-black purple page. That's the brightest thing on the whole site by a mile.
+   It's PAPER now (--fa-paper), a warm off-white that still reads as a card you'd pin
+   up, and the drop frame inside it is dimmer again.
+   The print rule at the foot of this file puts the pure white BACK for printing —
+   the glare is a screen problem, and dimming the paper on a printout would just waste
+   ink and grey out the card. */
+.fan-card { --fa-paper:#e8e4da; --fa-paper-lit:#eeebe3; --fa-paper-dim:#d6d9e0;
+  max-width:560px; margin:0 auto; background:var(--fa-paper); border:3px solid #002e6d; border-radius:18px;
   padding:26px 26px 20px; position:relative; color:#002e6d; }
 .fan-card::before { content:''; position:absolute; inset:8px; border:1.5px solid #e3b008; border-radius:12px; pointer-events:none; }
 .fc-eyebrow { text-align:center; font-size:11px; letter-spacing:5px; text-transform:uppercase; color:#e3b008; font-weight:800; }
@@ -133,7 +144,7 @@ permalink: /fan-art/
 .fc-star { color:#e3b008; font-size:0.55em; vertical-align:0.28em; margin:0 9px; }
 .fc-brand-sub { text-align:center; font-size:14px; font-weight:700; color:#0a3f8a; margin-bottom:14px; }
 .fc-frame { position:relative; width:100%; aspect-ratio:1/1; max-height:4.6in; margin:0 auto;
-  background:radial-gradient(circle at 50% 40%, #fff 0%, #eaf2fc 78%); border:2px dashed transparent; border-radius:14px;
+  background:radial-gradient(circle at 50% 40%, var(--fa-paper-lit) 0%, var(--fa-paper-dim) 78%); border:2px dashed transparent; border-radius:14px;
   overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer; }
 /* no border once art is in the frame — the picture stands on its own */
 .fan-card.has-img .fc-frame { border:none; cursor:default; }
@@ -178,6 +189,10 @@ permalink: /fan-art/
   #fan-card { position: absolute; left: 0; top: 0; width: 100%; max-width: 100%; margin: 0; }
   .no-print { display: none !important; }
   .fc-hint { display: none !important; }
+  /* the card is dimmed ON SCREEN only (it was blinding on a dark page). On paper the
+     white comes back — nobody wants a grey card, and the printer would only be laying
+     down ink to make it. */
+  #fan-card { --fa-paper:#ffffff; --fa-paper-lit:#ffffff; --fa-paper-dim:#f2f6fc; }
 }
 </style>
 

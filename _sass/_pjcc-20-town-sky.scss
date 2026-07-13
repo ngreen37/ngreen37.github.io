@@ -1,0 +1,428 @@
+/* =============================================================================
+ * THE TOWN SKY — day / dusk / night / dawn, on every page (2026-07-12)
+ * -----------------------------------------------------------------------------
+ * Nate: "The other pages, I thought we were going to give them day/dusk/night/dawn
+ * themes, like the PJCC page? Let's really make that a thing. If that means making
+ * hero banners, we could talk about that."
+ *
+ * It's two surfaces, and between them the hour is unmissable on every screen:
+ *
+ *   1. .town-sky   — a fixed, full-viewport sky BEHIND the whole page. Markup in
+ *                    _includes/town-sky.html, pulled into _layouts/default.html.
+ *                    At z-index:-1 it paints over the flat body colour and under
+ *                    every card, header and footer, so it fills the gutters and the
+ *                    space above and below the content: the page now sits INSIDE
+ *                    the town rather than being tinted by it.
+ *
+ *   2. .page-title — the <h1> of every `layout: page` page becomes a SKY BANNER
+ *                    (the "hero banner" Nate floated), carrying the same sky at the
+ *                    top of the card. Zero new markup, and it's the half that reads
+ *                    on a phone, where there are no gutters to show the backdrop.
+ *
+ * Both read the same two classes, set on <html> before first paint by the head
+ * include: `sky-<phase>` and `cloud-<0..3>`.
+ *
+ * PALETTE: the same four skies as the PJCC hero, pitched a stop or two deeper. The
+ * hero can afford a bright noon blue — it's a contained band with big white type on
+ * it. Full-viewport behind a dark-purple UI, that same blue would fight every card
+ * on the site, so the town wears the dusk-ward version of each phase. Same sky, same
+ * hour, quieter voice.
+ *
+ * PERF — the 2026-07-11 lag rules, obeyed to the letter:
+ *   · fixed + overflow:hidden + contain → the layer is capped at the VIEWPORT and
+ *     never grows with the document (this is what broke the old full-screen rain).
+ *   · every moving part animates transform/opacity ONLY. Nothing animates
+ *     background-position. No filter on any wrapper of an animating child.
+ *   · all motion off under reduce-flourish and prefers-reduced-motion; the static
+ *     sky (gradient + orb + stars) stays, because that's paint, not motion.
+ * ========================================================================== */
+
+.town-sky {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  contain: layout style paint;
+  /* the fallback sky, if the clock never runs: the flat colour the site always had */
+  background: #0f0c1a;
+}
+
+/* ── the moving parts, in their fixed order ────────────────────────────────────
+   stars (1) → orb (2) → shooting stars (3) → clouds (4). Nate: "the stars should
+   always fall BEHIND the moon. Unless it's a shooting star." Don't reorder these. */
+.ts-stars  { position: absolute; inset: 0; z-index: 1; display: none; }
+.ts-orb    { position: absolute; z-index: 2; display: none; border-radius: 50%; }
+.ts-shoot  { position: absolute; z-index: 3; display: none; }
+.ts-clouds { position: absolute; inset: 0; z-index: 4; opacity: 0; transition: opacity 1.4s ease; }
+.ts-horizon { position: absolute; left: 0; right: 0; bottom: 0; height: 32%; z-index: 0; }
+
+.ts-star {
+  position: absolute;
+  left: var(--sx); top: var(--sy);
+  width: var(--ss, 2px); height: var(--ss, 2px);
+  border-radius: 50%;
+  background: #fdf9ff;
+  box-shadow: 0 0 3px 0.5px rgba(232, 220, 255, 0.75);
+}
+
+/* ── DAWN — rose-gold coming up over the rooftops ──────────────────────────── */
+html.sky-dawn .town-sky {
+  background: linear-gradient(180deg, #150c33 0%, #2a1a56 34%, #572b55 70%, #8a4a37 100%);
+}
+html.sky-dawn .ts-orb {
+  display: block;
+  left: 7%; bottom: 16%;
+  width: 58px; height: 58px;
+  background: radial-gradient(circle at 40% 36%, #ffe9c9, #ff9d5c 72%);
+  box-shadow: 0 0 100px 30px rgba(255, 157, 92, 0.20);
+}
+html.sky-dawn .ts-horizon {
+  background: linear-gradient(180deg, transparent, rgba(255, 150, 90, 0.14));
+}
+
+/* ── DAY — a real blue sky, pitched down so the UI can live on it ──────────── */
+html.sky-day .town-sky {
+  background: linear-gradient(180deg, #133463 0%, #24558f 46%, #3d78bd 100%);
+}
+html.sky-day .ts-orb {
+  display: block;
+  left: 6%; top: 20%;
+  width: 62px; height: 62px;
+  background: radial-gradient(circle at 40% 38%, #fffefb 0%, #fff3b8 34%, #ffd84a 70%, #f5b800 100%);
+  box-shadow: 0 0 54px 20px rgba(255, 216, 74, 0.42), 0 0 130px 48px rgba(255, 216, 74, 0.16);
+}
+/* rays, so the silhouette itself says "sun" and can never be read as the pale moon
+   (the hero learned this lesson on 2026-07-12; the town sky inherits it). Spokes are
+   a conic gradient masked to a ring, turning once every 90s — transform only. */
+html.sky-day .ts-orb::before {
+  content: '';
+  position: absolute; inset: -26px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg,
+    rgba(255, 231, 130, 0.80) 0deg 3.2deg, transparent 3.2deg 22.5deg);
+  -webkit-mask-image: radial-gradient(circle, transparent 47%, #000 55%, #000 72%, transparent 100%);
+          mask-image: radial-gradient(circle, transparent 47%, #000 55%, #000 72%, transparent 100%);
+  animation: ts-sun-rays 90s linear infinite;
+}
+html.sky-day .ts-orb::after {
+  content: '';
+  position: absolute; inset: -14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 238, 160, 0.30), transparent 70%);
+}
+@keyframes ts-sun-rays { to { transform: rotate(360deg); } }
+html.sky-day .ts-horizon {
+  background: linear-gradient(180deg, transparent, rgba(160, 205, 245, 0.16));
+}
+
+/* ── DUSK — the sun sets deep amber on the other side of town ──────────────── */
+html.sky-dusk .town-sky {
+  background: linear-gradient(180deg, #150b36 0%, #331b53 40%, #6b2f49 74%, #93411c 100%);
+}
+html.sky-dusk .ts-orb {
+  display: block;
+  right: 7%; bottom: 11%;
+  width: 52px; height: 52px;
+  opacity: 0.88;
+  background: radial-gradient(circle at 40% 36%, #ffd9a0, #e0662e 74%);
+  box-shadow: 0 0 76px 24px rgba(224, 102, 46, 0.20);
+}
+html.sky-dusk .ts-horizon {
+  background: linear-gradient(180deg, transparent, rgba(224, 102, 46, 0.18));
+}
+/* dusk keeps the first stars of the evening — faint, and only the high ones */
+html.sky-dusk .ts-stars { display: block; opacity: 0.35; }
+html.sky-dusk .ts-star { opacity: 0.7; }
+
+/* ── NIGHT — the moon takes the watch, the stars come out behind it ────────── */
+html.sky-night .town-sky {
+  background: linear-gradient(180deg, #06041a 0%, #120c3a 48%, #1b1145 78%, #0a0722 100%);
+}
+html.sky-night .ts-stars { display: block; }
+/* The moon hangs on the LEFT. It used to sit at right:8%, which put it a couple of
+   inches from the page banner's own little moon — two moons in one screenshot, which
+   reads as a bug, not a sky. The banner keeps the right end; the sky takes the left. */
+html.sky-night .ts-orb {
+  display: block;
+  left: 8%; top: 13%;
+  width: 46px; height: 46px;
+  background: radial-gradient(circle at 38% 34%, #f4f0ff, #b9b2d6 66%, #8f88b4 100%);
+  box-shadow: 0 0 44px 14px rgba(220, 214, 255, 0.14),
+              inset -9px -7px 13px rgba(80, 70, 130, 0.55);
+}
+html.sky-night .ts-horizon {
+  background: linear-gradient(180deg, transparent, rgba(120, 100, 220, 0.10));
+}
+.ts-star--tw { animation: ts-twinkle 3.4s ease-in-out infinite; }
+.ts-star--tw:nth-of-type(2n)  { animation-delay: -1.7s; }
+.ts-star--tw:nth-of-type(3n)  { animation-delay: -0.9s; }
+@keyframes ts-twinkle { 0%, 100% { opacity: 1; } 50% { opacity: 0.22; } }
+
+/* ── SHOOTING STARS — night only, and the one thing allowed in FRONT of the moon.
+   A 2px head with a tapered tail behind it, thrown across the sky on a diagonal.
+   Three of them, on long coprime cycles (29s · 43s · 67s), each visible for barely a
+   second of its cycle: the sky is still almost all of the time, and the streaks never
+   land in a rhythm you can predict. Transform + opacity only. ─────────────────── */
+html.sky-night .ts-shoot {
+  display: block;
+  width: 2px; height: 2px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0;
+  /* the tail — drawn behind the head, pointing back up the flight path */
+  box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.9);
+}
+html.sky-night .ts-shoot::after {
+  content: '';
+  position: absolute;
+  right: 1px; top: 0;
+  width: 90px; height: 1px;
+  transform-origin: right center;
+  transform: rotate(-24deg);
+  background: linear-gradient(270deg, rgba(255, 255, 255, 0.85), rgba(190, 205, 255, 0.25) 45%, transparent 100%);
+}
+html.sky-night .ts-shoot--1 { top: 12%; left: 78%; animation: ts-shoot-fall 29s linear infinite; }
+html.sky-night .ts-shoot--2 { top: 4%;  left: 46%; animation: ts-shoot-fall 43s linear infinite 11s; }
+html.sky-night .ts-shoot--3 { top: 22%; left: 92%; animation: ts-shoot-fall 67s linear infinite 26s; }
+/* 0 → 4% of the cycle is the streak; the other 96% it's parked, invisible, off-stage. */
+@keyframes ts-shoot-fall {
+  0%             { transform: translate3d(0, 0, 0);            opacity: 0; }
+  0.4%           { opacity: 1; }
+  3.4%           { opacity: 1; }
+  4%             { transform: translate3d(-46vw, 20vw, 0);     opacity: 0; }
+  100%           { transform: translate3d(-46vw, 20vw, 0);     opacity: 0; }
+}
+
+/* ── THE CLOUD DECK — a daily roll, decorrelated from the rain ─────────────────
+   Nate: "Sometimes it's cloudy, sometimes it's both." Cover comes from
+   PJCC_TIME.clouds() → html.cloud-0..3, so the whole town shares one deck; a clear
+   day can still be a cloudy one, and a starry night can still have cloud crossing it
+   (the clouds sit in FRONT of the stars and the moon, which is what sells it).
+   Rain forces overcast — it can't pour out of a bare sky.
+   Two banks at different speeds so the deck never visibly repeats. Each bank is one
+   element carrying a handful of soft radial "puffs", translated across — transform
+   only, no background-position, no filter. ────────────────────────────────────── */
+/* The banks run the FULL height of the sky, not just the top of it. They used to be
+   62% tall and pinned to the top — which is exactly the strip the sticky header and the
+   page card cover, so on a "cloudy" day you could barely find a cloud. The puffs are
+   spread from 8% to 84% now, so the deck reads in the gutters and across the open sky
+   below the content, which is where the sky is actually visible. */
+.ts-cloud-bank {
+  position: absolute;
+  top: 0; left: 0;
+  width: 200%; height: 100%;
+  will-change: transform;
+}
+.ts-cloud-bank--near {
+  background:
+    radial-gradient(90px  26px at 6%  22%, rgba(255,255,255,0.55), transparent 72%),
+    radial-gradient(130px 34px at 17% 58%, rgba(255,255,255,0.45), transparent 74%),
+    radial-gradient(70px  22px at 27% 12%, rgba(255,255,255,0.38), transparent 72%),
+    radial-gradient(150px 38px at 36% 76%, rgba(255,255,255,0.50), transparent 74%),
+    radial-gradient(100px 28px at 45% 34%, rgba(255,255,255,0.42), transparent 72%),
+    radial-gradient(120px 32px at 56% 66%, rgba(255,255,255,0.46), transparent 74%),
+    radial-gradient(80px  24px at 66% 18%, rgba(255,255,255,0.40), transparent 72%),
+    radial-gradient(140px 34px at 76% 48%, rgba(255,255,255,0.44), transparent 74%),
+    radial-gradient(95px  26px at 88% 80%, rgba(255,255,255,0.38), transparent 72%),
+    radial-gradient(110px 30px at 96% 30%, rgba(255,255,255,0.42), transparent 74%);
+  animation: ts-drift-near 190s linear infinite;
+}
+.ts-cloud-bank--far {
+  opacity: 0.6;
+  background:
+    radial-gradient(160px 30px at 11% 44%, rgba(255,255,255,0.34), transparent 74%),
+    radial-gradient(110px 24px at 24% 84%, rgba(255,255,255,0.28), transparent 72%),
+    radial-gradient(180px 36px at 41% 26%, rgba(255,255,255,0.32), transparent 74%),
+    radial-gradient(130px 28px at 58% 90%, rgba(255,255,255,0.26), transparent 72%),
+    radial-gradient(170px 34px at 72% 60%, rgba(255,255,255,0.30), transparent 74%),
+    radial-gradient(120px 26px at 90% 14%, rgba(255,255,255,0.26), transparent 72%);
+  animation: ts-drift-far 320s linear infinite;
+}
+/* each bank is 200% wide and carries the same puffs across both halves, so sliding it
+   exactly -50% lands it back where it started — a seamless loop with one keyframe. */
+@keyframes ts-drift-near { to { transform: translate3d(-50%, 0, 0); } }
+@keyframes ts-drift-far  { to { transform: translate3d(-50%, 0, 0); } }
+
+html.cloud-1 .ts-clouds { opacity: 0.22; }
+html.cloud-2 .ts-clouds { opacity: 0.46; }
+html.cloud-3 .ts-clouds { opacity: 0.72; }
+/* Cloud is lit by whatever's in the sky: white by day, ember at dawn/dusk, and a cold
+   slate at night (a white cloud on a night sky reads as fog, not cloud). One filter —
+   on the CLOUD layer itself, which has no animating children of its own; the banks
+   inside it move, and they're siblings of nothing that's being filtered. */
+html.sky-dawn  .ts-clouds { opacity: 0; }
+html.sky-dawn.cloud-1 .ts-clouds { opacity: 0.20; }
+html.sky-dawn.cloud-2 .ts-clouds { opacity: 0.40; }
+html.sky-dawn.cloud-3 .ts-clouds { opacity: 0.62; }
+html.sky-dawn  .ts-cloud-bank { background-color: transparent; }
+html.sky-dawn  .ts-clouds,
+html.sky-dusk  .ts-clouds { mix-blend-mode: screen; }
+html.sky-night .ts-clouds { opacity: 0; }
+html.sky-night.cloud-1 .ts-clouds { opacity: 0.13; }
+html.sky-night.cloud-2 .ts-clouds { opacity: 0.28; }
+html.sky-night.cloud-3 .ts-clouds { opacity: 0.44; }
+
+/* ── quiet it all down on request ─────────────────────────────────────────────
+   The sky itself is PAINT, not motion — the gradient, the orb, the stars and the
+   cloud deck all stay. What stops is the moving: drifting cloud, turning rays,
+   twinkling, and the shooting stars. */
+html.reduce-flourish .ts-cloud-bank,
+html.reduce-flourish .ts-star--tw,
+html.reduce-flourish .ts-orb::before { animation: none !important; }
+html.reduce-flourish .ts-shoot { display: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .ts-cloud-bank, .ts-star--tw, .ts-orb::before { animation: none !important; }
+  .ts-shoot { display: none !important; }
+}
+
+/* ═════════════════════════════════════════════════════════════════════════════
+   THE PAGE SKY BANNER — the same hour, at the top of every `layout: page` card.
+   ─────────────────────────────────────────────────────────────────────────────
+   The backdrop above only shows in the gutters, which means on a phone it barely
+   shows at all. This is the half that always reads: the page's own <h1> is pulled
+   full-bleed to the card's edges and wears the sky behind it. No new markup — it's
+   the title that was already there, standing under the same sky as everything else.
+   ═════════════════════════════════════════════════════════════════════════════ */
+.page-title {
+  position: relative;
+  overflow: hidden;
+  /* full-bleed to the card's edges: cancels .page-card's 36px/44px padding */
+  margin: -36px -44px 26px;
+  padding: 30px 44px 24px;
+  /* the card's 16px radius, less its 1px border */
+  border-radius: 15px 15px 0 0;
+  border-bottom: 2px solid rgba(61, 43, 138, 0.9);
+  background: linear-gradient(180deg, #241a52 0%, #1c1540 100%);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+/* the banner's own little sun/moon, tucked in the right end */
+.page-title::before {
+  content: '';
+  position: absolute;
+  right: 34px; top: 50%;
+  width: 26px; height: 26px;
+  margin-top: -13px;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+/* …and its weather: stars by night, cloud by day. Static paint, no motion — a banner
+   this size doesn't need a sky show, it needs to say the hour at a glance. */
+.page-title::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+html.sky-dawn .page-title {
+  background: linear-gradient(180deg, #1d1140 0%, #3d2159 55%, #7c3d3a 100%);
+  border-bottom-color: rgba(255, 150, 90, 0.45);
+}
+html.sky-dawn .page-title::before {
+  opacity: 1;
+  background: radial-gradient(circle at 40% 36%, #ffe9c9, #ff9d5c 72%);
+  box-shadow: 0 0 34px 10px rgba(255, 157, 92, 0.32);
+}
+
+html.sky-day .page-title {
+  background: linear-gradient(180deg, #133463 0%, #24558f 100%);
+  border-bottom-color: rgba(160, 205, 245, 0.42);
+}
+html.sky-day .page-title::before {
+  opacity: 1;
+  background: radial-gradient(circle at 40% 38%, #fffefb 0%, #fff3b8 34%, #ffd84a 70%, #f5b800 100%);
+  box-shadow: 0 0 32px 11px rgba(255, 216, 74, 0.45);
+}
+/* The banner's cloud follows the town's cover roll, same as the sky — on a clear day the
+   banner is clear. (It used to paint cloud unconditionally, which meant a bare-sky day
+   still had three white smudges sitting over the title.) */
+html.sky-day.cloud-2 .page-title::after,
+html.sky-day.cloud-3 .page-title::after,
+html.sky-dawn.cloud-2 .page-title::after,
+html.sky-dawn.cloud-3 .page-title::after,
+html.sky-dusk.cloud-2 .page-title::after,
+html.sky-dusk.cloud-3 .page-title::after {
+  opacity: 1;
+  background:
+    radial-gradient(80px 20px at 20% 28%, rgba(255,255,255,0.22), transparent 72%),
+    radial-gradient(110px 24px at 46% 66%, rgba(255,255,255,0.15), transparent 74%),
+    radial-gradient(70px 18px at 68% 24%, rgba(255,255,255,0.13), transparent 72%);
+}
+html.sky-day.cloud-3 .page-title::after,
+html.sky-dawn.cloud-3 .page-title::after,
+html.sky-dusk.cloud-3 .page-title::after { opacity: 1.0; }
+html.sky-day.cloud-2 .page-title::after,
+html.sky-dawn.cloud-2 .page-title::after,
+html.sky-dusk.cloud-2 .page-title::after { opacity: 0.6; }
+
+html.sky-dusk .page-title {
+  background: linear-gradient(180deg, #180d3a 0%, #4a2350 52%, #8a3d20 100%);
+  border-bottom-color: rgba(224, 102, 46, 0.5);
+}
+html.sky-dusk .page-title::before {
+  opacity: 1;
+  background: radial-gradient(circle at 40% 36%, #ffd9a0, #e0662e 74%);
+  box-shadow: 0 0 30px 9px rgba(224, 102, 46, 0.3);
+}
+
+html.sky-night .page-title {
+  background: linear-gradient(180deg, #07051c 0%, #150e3d 60%, #1b1145 100%);
+  border-bottom-color: rgba(120, 100, 220, 0.4);
+}
+html.sky-night .page-title::before {
+  opacity: 1;
+  background: radial-gradient(circle at 38% 34%, #f4f0ff, #b9b2d6 66%, #8f88b4 100%);
+  box-shadow: 0 0 26px 8px rgba(220, 214, 255, 0.16),
+              inset -5px -4px 8px rgba(80, 70, 130, 0.55);
+}
+/* the banner's stars — behind the moon, same as the sky (::after paints under ::before) */
+html.sky-night .page-title::after {
+  opacity: 1;
+  background:
+    radial-gradient(1.5px 1.5px at 12% 32%, #fdf9ff, transparent),
+    radial-gradient(1.5px 1.5px at 26% 66%, #fdf9ff, transparent),
+    radial-gradient(2px   2px   at 38% 24%, #fdf9ff, transparent),
+    radial-gradient(1.5px 1.5px at 52% 58%, #fdf9ff, transparent),
+    radial-gradient(1.5px 1.5px at 64% 30%, #fdf9ff, transparent),
+    radial-gradient(2px   2px   at 78% 68%, #fdf9ff, transparent),
+    radial-gradient(1.5px 1.5px at 88% 38%, #fdf9ff, transparent);
+}
+
+/* the studio's pages stay monochrome — same hour, no hue. The town is in colour;
+   McPuppy Studios is the black-and-white half of the site, and a coral dawn behind
+   a B&W page would just look like a bug. */
+body.theme-bw .town-sky,
+body.theme-studio .town-sky { background: #0a0a0c; }
+body.theme-bw .ts-orb,
+body.theme-bw .ts-shoot,
+body.theme-bw .ts-clouds,
+body.theme-studio .ts-orb,
+body.theme-studio .ts-shoot,
+body.theme-studio .ts-clouds { display: none; }
+body.theme-bw .ts-stars,
+body.theme-studio .ts-stars { display: block; opacity: 0.18; }
+body.theme-bw .page-title,
+body.theme-studio .page-title {
+  background: linear-gradient(180deg, #17161c 0%, #101015 100%);
+  border-bottom-color: #2a2830;
+}
+body.theme-bw .page-title::before,
+body.theme-bw .page-title::after,
+body.theme-studio .page-title::before,
+body.theme-studio .page-title::after { display: none; }
+
+@media (max-width: 700px) {
+  /* the card drops to 24px/20px padding — the banner has to follow it exactly or it
+     stops being full-bleed and starts being a floating grey box */
+  .page-title {
+    margin: -24px -20px 20px;
+    padding: 22px 20px 18px;
+  }
+  .page-title::before { right: 18px; width: 20px; height: 20px; margin-top: -10px; }
+  /* the sun/moon is nearer the title on a phone — pull the text clear of it */
+  .page-title { padding-right: 54px; }
+}
