@@ -65,42 +65,89 @@ permalink: /games/
 }
 @media (max-width:600px){ .ghub-head::after { width:140px; } }
 
-/* ---- THE DOOR — the Gauntlet stands above the halls as a doorway now
-   (the big MAIN QUEST banner retired 2026-07-10 — "takes up too much of the
-   Games Page"; restore from git). Same .gdoor the home hero wears. ---- */
+/* ---- HEIGHT PASS (2026-07-12, Nate: "can we reduce its height?") ------------
+   The door above went from a ~175px column to a ~90px row. The rest of the page
+   was simply generous: a 52px title with 22px of air under it, a 30px gap above the
+   Sealed / Retired divider, and portals sized for a bigger screen than they need.
+   Nothing is removed here — every hall, the trophy, the door and the divider all
+   still stand. It's just tightened, and the whole hall now lands ~200px shorter. */
+.ghub { padding:18px 16px 22px; }
+.ghub-head { margin:2px 0 14px; }
+.ghub-title { font-size:clamp(26px,5.4vw,40px); }
+.ghub-eyebrow { margin:0 0 5px; }
+.ghub-sub { margin:6px 0 0; }
+.ghub-head::after { margin:10px auto 0; }
+.ghub-portal { min-height:150px; padding:16px 12px 13px; }
+.ghub-portal .ghp-glyph { font-size:2.7rem; }
+.ghub-portal .ghp-blurb { margin-top:4px; }
+.ghub-portal .ghp-count { margin-top:7px; }
+.ghub-divider { margin:18px 4px 10px; }
+.ghub-grid--sub .ghub-portal { min-height:104px; padding:12px 10px 10px; }
+.ghub-grid--sub .ghp-glyph { font-size:2rem; }
+@media (max-width:560px){
+  .ghub-portal { min-height:128px; }
+  .ghub-grid--sub .ghub-portal { min-height:96px; }
+}
+
+/* ---- THE DOOR — the Gauntlet stands above the halls as a doorway.
+   (The big MAIN QUEST banner was retired 2026-07-10 — "takes up too much of the
+   Games Page"; restore from git.)
+
+   2026-07-12 (Nate: "can we reduce the games hall's height? I see opportunity on
+   the gauntlet link") — and he was right, this was the single tallest thing on the
+   page. It was a COLUMN: plate, pips, a 108px arch, then the sub line, stacked =
+   ~175px before the grid even starts.
+
+   It's a ROW here now: the arch on the left, the plate/pips/sub stacked beside it.
+   Same door, same pieces, ~90px instead of ~175. Laid out with grid rather than
+   reordered markup, so the HTML is still the door the home hero uses.
+
+   NOTE — the home hero has its OWN copy of .gdoor and it stays a COLUMN: it sits in
+   a wide hero with room to spare, and the vertical door is the better shape there.
+   The two copies are deliberately different now; don't "sync" this back. ---- */
 .ghub-doorway { position:relative; z-index:2; display:flex; justify-content:center;
-  margin:0 auto 20px; animation:ghub-wake .6s ease both; }
-.gdoor { display:flex; flex-direction:column; align-items:center; gap:5px; text-decoration:none;
-  --acc:#F5C518; }
-.gdoor-plate { font-family:'Share Tech Mono','Courier New',monospace; font-size:10px; font-weight:700;
+  margin:0 auto 14px; animation:ghub-wake .6s ease both; }
+.gdoor { display:grid; grid-template-columns:auto minmax(0,1fr);
+  grid-template-areas:"arch plate" "arch pips" "arch sub";
+  align-content:center; align-items:center; column-gap:16px; row-gap:5px;
+  text-decoration:none; --acc:#F5C518; }
+.gdoor-plate { grid-area:plate; justify-self:start; align-self:end;
+  font-family:'Share Tech Mono','Courier New',monospace; font-size:10px; font-weight:700;
   letter-spacing:2px; color:#F5C518; background:rgba(12,8,2,0.55);
   border:1px solid rgba(245,197,24,0.5); border-radius:3px; padding:4px 10px; white-space:nowrap; }
-.gdoor-pips { display:flex; gap:3px; }
+.gdoor-pips { grid-area:pips; display:flex; gap:3px; }
 .gdoor-pips i { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.14); }
 .gdoor-pips i.done { background:#6bffb8; box-shadow:0 0 5px rgba(107,255,184,0.6); }
 .gdoor-pips i.cur { background:var(--acc); box-shadow:0 0 7px var(--acc);
   animation:gdoorPip 1.8s ease-in-out infinite; }
 @keyframes gdoorPip { 50% { opacity:0.4; } }
-.gdoor-arch { position:relative; display:block; width:84px; height:108px;
-  border:2px solid rgba(245,197,24,0.6); border-bottom-width:0; border-radius:42px 42px 4px 4px;
+.gdoor-arch { grid-area:arch; position:relative; display:block; width:72px; height:92px;
+  border:2px solid rgba(245,197,24,0.6); border-bottom-width:0; border-radius:36px 36px 4px 4px;
   overflow:hidden; box-shadow:0 0 26px -8px var(--acc);
   background:radial-gradient(ellipse at 50% 85%, color-mix(in srgb, var(--acc) 32%, #0c0722), #0c0722 78%);
   transition:box-shadow .2s ease; }
 .gdoor-door { position:absolute; left:5px; right:5px; top:5px; bottom:0;
-  border-radius:37px 37px 0 0; border:1px solid rgba(168,121,255,0.35);
+  border-radius:31px 31px 0 0; border:1px solid rgba(168,121,255,0.35);
   background:linear-gradient(180deg, #251747 0%, #150c33 100%);
   transform-origin:0 50%; transition:transform .35s ease; }
 .gdoor-glyph { position:absolute; left:50%; top:40%; transform:translate(-50%,-50%);
-  font-style:normal; font-weight:400; font-size:34px; line-height:1; color:var(--acc);
+  font-style:normal; font-weight:400; font-size:29px; line-height:1; color:var(--acc);
   filter:drop-shadow(0 0 9px color-mix(in srgb, var(--acc) 65%, transparent)); }
-.gdoor-knob { position:absolute; right:10px; top:56%; width:5px; height:5px; border-radius:50%;
+.gdoor-knob { position:absolute; right:9px; top:56%; width:5px; height:5px; border-radius:50%;
   background:#F5C518; box-shadow:0 0 5px rgba(245,197,24,0.8); }
 .gdoor-seam { position:absolute; left:6px; right:6px; bottom:0; height:3px; background:var(--acc);
   box-shadow:0 -2px 14px 3px color-mix(in srgb, var(--acc) 55%, transparent); }
-.gdoor-sub { font-size:0.82rem; color:#e7d6b0; text-align:center; max-width:34ch; }
+.gdoor-sub { grid-area:sub; align-self:start; font-size:0.82rem; color:#e7d6b0; text-align:left; max-width:34ch; }
 .gdoor-sub b { color:#F5C518; }
 .gdoor:hover .gdoor-arch, .gdoor:focus-visible .gdoor-arch { box-shadow:0 0 34px -5px var(--acc); }
 .gdoor:hover .gdoor-door, .gdoor:focus-visible .gdoor-door { transform:perspective(320px) rotateY(-22deg); }
+@media (max-width:480px){
+  .gdoor { column-gap:12px; }
+  .gdoor-arch { width:58px; height:76px; border-radius:29px 29px 4px 4px; }
+  .gdoor-door { border-radius:24px 24px 0 0; }
+  .gdoor-glyph { font-size:24px; }
+  .gdoor-sub { font-size:0.75rem; }
+}
 
 /* ── GRANDEUR: the door grows richer the higher you climb (Nate 2026-07-12) —
    kept in sync with the home hero's copy. data-grand 0..5 from cleared floors. ── */
@@ -132,7 +179,7 @@ permalink: /games/
 
 <!-- ===== THE HALLS — Gauntlet Legends portal screen (pick a hall; no games here) ===== -->
 <div class="ghub">
-  <a class="ghub-trophy" href="{{ '/leaderboards/' | relative_url }}" aria-label="Leaderboards & Hall of Fame" title="Leaderboards &amp; Hall of Fame">🏆</a>
+  <a class="ghub-trophy" href="{{ '/leaderboards/' | relative_url }}" aria-label="Leaderboards" title="Leaderboards">🏆</a>
 
   <!-- ── THE DOOR: the Gauntlet, above the halls ── -->
   <div class="ghub-doorway">
@@ -157,8 +204,8 @@ permalink: /games/
   <!-- the active halls -->
   <div class="ghub-grid" id="ghub-grid"></div>
 
-  <!-- sealed & retired — set apart, lower -->
-  <div class="ghub-divider"><span>Sealed &amp; Retired</span></div>
+  <!-- sealed / retired — set apart, lower -->
+  <div class="ghub-divider"><span>Sealed / Retired</span></div>
   <div class="ghub-grid ghub-grid--sub" id="ghub-grid-sub"></div>
 </div>
 

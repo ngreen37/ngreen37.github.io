@@ -10,7 +10,6 @@ body_class: theme-studio
 <nav class="studio-hub" aria-label="McPuppy Studios sections">
   <a href="/pjcc/">PJCC</a>
   <a href="/blog/">Blog</a>
-  <a href="/goods/">Merch</a>
   <a href="/mailing-list/">Mailing List</a>
   <a href="/direct-line/">Direct Line</a>
   <a href="/educators/">For Educators</a>
@@ -252,9 +251,9 @@ body_class: theme-studio
       <h2 class="project-title">Merch</h2>
     </div>
     <p class="project-desc">Don't hold your breath!</p>
-    <div class="project-links">
-      <a href="/goods/" class="project-link">Take a look &rarr;</a>
-    </div>
+    {% comment %} The "Take a look →" link out to /goods/ was removed 2026-07-12 (Nate).
+         The PAGE is deliberately kept and still builds — he wants it later; it just isn't
+         linked from anywhere for now. Restore this one line to re-list it. {% endcomment %}
   </div>
 
 </div>
@@ -268,13 +267,13 @@ body_class: theme-studio
   <div class="mcp-thanks-block">
     <h2 class="mcp-thanks-h">The Creator would like to thank</h2>
     <ul class="mcp-thanks-people">
-      <li>Thank you <strong>mom</strong>, for always being there and providing a road map to a successful life.</li>
-      <li>Thank you <strong>Chelsea</strong>, my Sister, for being an amazing sibling and friend. I love you.</li>
+      <li>Thank you <strong>Mom</strong>, for always being there and providing a road map to a successful life.</li>
+      <li>Thank you <strong>Chels</strong>, for being an amazing sibling and friend. I love you.</li>
       <li>Thank you <strong>Laura</strong>, for your generosity.</li>
       <li>Thank you <strong>Josh</strong>, for listening to the initial ideas with patience and either feigned or real excitement, doesn't matter.</li>
       <li>Thank you <strong>Kim</strong>, for letting me show you initial progress before anyone.</li>
-      <li>Thank you <strong>Aunt Barb</strong>, for being someone that I can't help but talk wide-openly with, as closest family. You accelerated PJCC significantly.</li>
-      <li>Thank you <strong>Tucker</strong>, for inspiring me with your greatness. You are a big role model to me.</li>
+      <li>Thank you <strong>Aunt Barb</strong>, for being someone that I can't help but talk wide-openly with. You accelerated PJCC significantly.</li>
+      <li>Thank you <strong>Tucker</strong>, for inspiring me with your greatness.</li>
     </ul>
   </div>
 

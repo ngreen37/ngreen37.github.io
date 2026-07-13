@@ -202,13 +202,6 @@
 
 
 
-.ow-name {
-  font-family: 'Poppins', sans-serif;
-  font-size: 17px;
-  font-weight: 700;
-  color: #F5C518;
-  line-height: 1.2;
-}
 
 
 
@@ -218,17 +211,8 @@
 
 
 
-.ow-tag {
-  display: inline-block;
-  font-size: 8px;
-  letter-spacing: 0.16em;
-  color: #00ff41;
-  border: 1px solid #030a02;
-  background: rgba(0, 255, 65, 0.06);
-  padding: 3px 10px;
-  border-radius: 2px;
-  text-transform: uppercase;
-}
+
+
 
 
 
@@ -256,14 +240,11 @@
 
 
 
-/* ── Fragment Grid ─────────────────────────────────── */
+/* (.ow-name / .ow-tag / .frag-grid — leftovers from an old operative-watch widget and
+   the dossier's fragment grid — deleted 2026-07-12. Nothing had used them for a long
+   time; they only looked ALIVE to the dead-code sweep because their names were
+   substrings of markup that this same batch removed from the dossier.) */
 
-.frag-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 7px;
-  padding: 14px 14px 8px;
-}
 
 
 

@@ -52,7 +52,7 @@ A page-by-page checklist for the read-everything text pass before launch.
 ## Core & standalone pages (~17)
 - [ ] **Hubs:** index *(splash)* · pjcc *(home)* · projects *(McPuppy hub)* · the-world · characters · locations · games
 - [ ] **World/ARG:** dispatch · classified · archive · recovery · dead-drop · shogi-gate · constellation *(daily removed from the site 2026-07-06)*
-- [ ] **Player:** dossier · shopkeeper · leaderboards · hall-of-fame
+- [ ] **Player:** dossier · shopkeeper · leaderboards *(hall-of-fame removed from the site 2026-07-12 — parked in FUTURE-IDEAS)*
 - [ ] **Studio/funding:** about · contact · educators · mailing-list · goods · direct-line *(press-pass removed from the site 2026-07-12 — redundant)*
 - [ ] **Misc:** academy · chess-lessons · command-center · quotes *(production/The Pilot + writers-room removed from the site 2026-07-07)*
 

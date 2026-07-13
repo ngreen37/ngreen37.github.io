@@ -34,15 +34,11 @@ permalink: /leaderboards/
   })();
   </script>
 
-  <a class="lb-hof-link lbtv-hof" href="{{ '/hall-of-fame/' | relative_url }}">
-    <span class="lbtv-hof-cup">🏆</span>
-    <span style="flex:1;min-width:0;">
-      <span class="lbtv-hof-eyebrow">Seasons &amp; champions</span>
-      <span class="lbtv-hof-title">Hall of Fame</span>
-      <span class="lbtv-hof-sub">Every month is a Tour — see who's crowned this season and the past champions.</span>
-    </span>
-    <span class="lbtv-hof-arrow">&rarr;</span>
-  </a>
+  {% comment %} The Hall of Fame plate that stood here was removed 2026-07-12 (Nate: "remove
+       the hall of fame completely, from all pages"). The whole feature — the /hall-of-fame/
+       page, PJCC.HALL_OF_FAME, the season-champion framing — is gone with it, and the idea is
+       parked in FUTURE-IDEAS. It was a trophy case with nothing in it: no season has ever
+       closed, so it advertised an empty room on the busiest page in the arcade. {% endcomment %}
 
   <div class="lb-tabs" id="lb-tabs"></div>
   <div class="lbtv-screen">
@@ -66,16 +62,23 @@ permalink: /leaderboards/
 .lbtv-show { margin-left:auto; color:#9a8fd4; font-size:0.7rem; }
 .lbtv-sub { color:#b9a8e6; font-size:0.88rem; }
 
-/* Hall of Fame plate */
-.lbtv-hof { display:flex; align-items:center; gap:12px; background:linear-gradient(135deg,#241452,#3a2d1a);
-  border:1px solid var(--tv-gold); border-radius:12px; padding:13px 18px; margin:0 0 1.1rem; text-decoration:none;
-  color:#f0e6ff; box-shadow:0 0 22px -10px var(--tv-gold); }
-.lbtv-hof:hover { box-shadow:0 0 30px -8px var(--tv-gold); }
-.lbtv-hof-cup { font-size:1.7rem; line-height:1; }
-.lbtv-hof-eyebrow { display:block; font-size:0.66rem; letter-spacing:0.12em; text-transform:uppercase; color:#e9c75a; }
-.lbtv-hof-title { display:block; font-weight:800; color:#fff; }
-.lbtv-hof-sub { display:block; font-size:0.8rem; color:#cdbcf2; }
-.lbtv-hof-arrow { flex-shrink:0; color:var(--tv-gold); font-weight:900; }
+/* (the Hall of Fame plate + its styles were removed 2026-07-12 with the feature) */
+
+/* ── SPLIT BOARD — one chip, two boards (2026-07-12, Nate) ────────────────────
+   Siege is one game with two modes scored in different units (score / wave), so a
+   single table can't hold them — but they were never two games, and they shouldn't
+   eat two chips in the tab row. One "Siege on Chess City" chip now opens both boards
+   side by side. Stacks on a phone; the screen is only ~360px wide there and two
+   tables abreast would be unreadable. */
+.lb-split { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+.lb-split-col { min-width:0; }
+.lb-split-h { display:flex; align-items:center; gap:8px; margin:6px 0 8px;
+  font-family:'Courier New',monospace; font-size:0.74rem; font-weight:900; letter-spacing:0.12em;
+  text-transform:uppercase; color:var(--tv-gold); }
+.lb-split-dot { width:7px; height:7px; border-radius:50%; background:var(--tv-gold); flex-shrink:0;
+  box-shadow:0 0 8px var(--tv-gold); }
+.lb-split .lb-table { width:100%; }
+@media (max-width:640px){ .lb-split { grid-template-columns:1fr; gap:10px; } }
 
 /* channel-chip tabs */
 .lbtv .lb-tabs { gap:6px; }

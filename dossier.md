@@ -5,62 +5,39 @@ permalink: /dossier/
 ---
 
 
-<!-- ════════ COMMAND STRIP (renders instantly — works signed-out & offline) ════════ -->
-<div class="cc-head">
-  <div>
-    <div class="cc-kicker">◈ Operative uplink</div>
-    <h1 class="cc-title">Your Dossier</h1>
-  </div>
-  <div class="cc-clock" id="cc-clock">--:--:-- UTC</div>
-</div>
+{% comment %} ════════════════════════════════════════════════════════════════════════
+     THE DOSSIER — cut down hard, 2026-07-12 (Nate: "there's WAY too much going on on
+     the dossier page. We need to cut it way down").
+
+     It had THIRTEEN stacked blocks. What went, and why:
+
+       · the live UTC clock — decoration, and pure spy-cosplay on a page that's really
+         just "your profile". (See the standing note about not overdoing the operative
+         theme.)
+       · "Today's mission" — a daily task module. Every other daily on this site has
+         already been deleted (Clearance's, Siege's, the Daily Dispatch). This one was
+         also quietly BROKEN: three of its six tasks pointed at Fork in the Road, The
+         Pirc Protocol and Knight's Tour — games that were pruned from the site.
+       · the fragment-recovery grid — a six-cell duplicate of the fragment counter that
+         already sits in the site footer on every page.
+       · the standalone Gauntlet "climb" module — folded into The Journey below, where
+         "where am I in the world" already lives. It was the second progress widget.
+       · the Season strip — its only payoff was the Hall of Fame, which is gone.
+       · the Clearance ladder — eleven rungs, most of them showing ▒▒ REDACTED ▒▒. The
+         one line that mattered (your rank) is in the header.
+       · the separate pet-mood card and XP block — folded into the header.
+
+     What's left is a profile: who you are · your look · where you are · your record ·
+     bring a friend. Restore any of it from git.
+     ═════════════════════════════════════════════════════════════════════════════ {% endcomment %}
+
 <!-- One identity slot: shows the greeting instantly, then UPGRADES IN PLACE to your
-     operative header once the account loads (no second "Your operative" section). -->
-<div id="dsr-top"><p class="cc-greet" id="cc-greet">Establishing uplink…</p></div>
-
-<div class="cc-grid">
-  <div class="cc-mod cc-mod--daily">
-    <div class="cc-mod-label">◆ Today's mission</div>
-    <div class="cc-daily-task" id="cc-daily-task">—</div>
-    <div class="cc-daily-status" id="cc-daily-status">—</div>
-    <a class="cc-btn cc-btn-gold" id="cc-daily-go" href="#">Deploy ▸</a>
-  </div>
-
-  <div class="cc-mod cc-mod--frags">
-    <div class="cc-mod-label">◆ Fragment recovery <span id="cc-frag-count" class="cc-frag-count"></span></div>
-    <div class="cc-frag-grid" id="cc-frag-grid"></div>
-    <div class="cc-frag-note" id="cc-frag-note"></div>
-  </div>
-
-  <div class="cc-mod cc-mod--climb">
-    <div class="cc-mod-label">◆ The Gauntlet — your climb</div>
-    <div class="cc-count" id="cc-climb-rank" style="font-size:1.2rem;line-height:1.15;">—</div>
-    <div class="cc-count-lbl" id="cc-climb-sub">—</div>
-    <a class="cc-btn cc-btn-gold" id="cc-climb-go" href="{{ '/games/the-gauntlet/' | relative_url }}" style="margin-top:8px;">Enter the tower ▸</a>
-  </div>
-</div>
-
-<script>
-/* The Climb — the Gauntlet rank surfaced sitewide (#6). Reads the game's own
-   localStorage, so it renders for everyone (guest, offline, signed-in). */
-(function () {
-  var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The CEO'];
-  var RANKS = ['Recruit','Checker-Town Champion','Sand-Mine Survivor','Sea-Crosser','Isle-Tested','Gatebreaker','Tower Initiate','Floor-Fighter','Near the Summit',"At the CEO's Door",'Champion of Chess City'];
-  var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
-  var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;
-  for (var i = 0; i < NAMES.length; i++) { if (beaten[i]) cleared++; }
-  for (var j = 0; j < NAMES.length; j++) { if (!beaten[j]) { cur = j; break; } }
-  var rk = document.getElementById('cc-climb-rank'), sub = document.getElementById('cc-climb-sub'), go = document.getElementById('cc-climb-go');
-  if (rk) rk.textContent = cleared > 0 ? RANKS[cleared] : 'Unranked';
-  if (sub) sub.textContent = (cleared === 0) ? 'Begin the climb — Floor 1 of 10'
-    : (cur >= NAMES.length) ? 'Crowned — all ten floors cleared 👑'
-    : 'Floor ' + (cur + 1) + ' of 10 · ' + NAMES[cur] + ' next';
-  if (go && cleared > 0) { go.setAttribute('href', go.getAttribute('href') + '#climb'); go.textContent = (cur >= NAMES.length) ? 'The tower ▸' : 'Continue ▸'; }
-})();
-</script>
+     operative header once the account loads. Renders signed-out & offline. -->
+<div id="dsr-top"><p class="cc-greet" id="cc-greet">Loading your dossier…</p></div>
 
 <!-- ── Identity forge — build your look (instant; signed-out & offline) ── -->
 <div id="forge-mount"></div>
-<p class="pjcc-sub" style="margin-top:6px" id="forge-sync-note">Build your operative <em>and</em> your companion — base, skin tone, aura, headwear, emblem, name, and story. Change anything, any time. <span id="forge-sync-state">Saved on this device; <a href="#dossier-body">sign in</a> to carry it across every device.</span></p>
+<p class="pjcc-sub" style="margin-top:6px" id="forge-sync-note">Build your operative <em>and</em> your companion. Change anything, any time. <span id="forge-sync-state">Saved on this device; <a href="#dossier-body">sign in</a> to carry it across every device.</span></p>
 
 <!-- ── Operative record — loads with your account, inline into the one dossier ── -->
 <div id="dossier-body"><p class="lb-empty">Loading your record…</p></div>
@@ -81,65 +58,22 @@ permalink: /dossier/
 </script>
 
 <script>
-/* Command strip — instant, no network dependency (slow connections still get a useful page). */
+/* The greeting — instant, no network dependency, so a slow connection still lands on a
+   useful page. It's replaced in place by the operative header once the account loads.
+   (The UTC clock, the daily-mission module and the fragment grid that used to live in
+   this script were all cut 2026-07-12 — see the note at the top of this file.) */
 (function () {
-  function $(id){ return document.getElementById(id); }
   function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
-  function best(game){ try { if (window.PJCC && PJCC.localBest) return PJCC.localBest(game); return parseInt(localStorage.getItem('pjcc.best.'+game),10)||0; } catch(e){ return 0; } }
-  function gameUrl(slug){ return '{{ "/games/" | relative_url }}'.replace(/\/$/,'') + '/' + slug + '/'; }
-  function has(k){ try { return !!localStorage.getItem(k); } catch(e){ return false; } }
-
-  function tick(){ var d=new Date(); $('cc-clock').textContent = ('0'+d.getUTCHours()).slice(-2)+':'+('0'+d.getUTCMinutes()).slice(-2)+':'+('0'+d.getUTCSeconds()).slice(-2)+' UTC'; }
-  tick(); setInterval(tick, 1000);
-
   function renderGreet(){
-    var greet = $('cc-greet');
+    var greet = document.getElementById('cc-greet');
     if (!greet) return;   // once the account loads, the operative header replaces this slot
     try { if (window.PJCC && PJCC.getProfile) { var p = PJCC.getProfile();
-      if (p && p.codename) { greet.innerHTML = 'Welcome back, <b>' + esc(p.codename) + '</b>. The board is yours.'; return; } } } catch(e){}
-    greet.innerHTML = 'Uplink open. Your record is below — <a href="#dossier-body">claim a codename</a> to log it across every device.';
+      if (p && p.codename) { greet.innerHTML = 'Welcome back, <b>' + esc(p.codename) + '</b>.'; return; } } } catch(e){}
+    greet.innerHTML = 'Your record is below — <a href="#dossier-body">claim a codename</a> to carry it across every device.';
   }
   renderGreet();
   if (window.PJCC && PJCC.ready) PJCC.ready.then(renderGreet);
   if (window.PJCC && PJCC.onChange) PJCC.onChange(renderGreet);
-
-  // daily mission (date-seeded, local check)
-  (function(){
-    var TASKS = [
-      { t:'Score 600+ in Notation Blitz', go:'notation-run', ok:function(){ return best('notation-run')>=600; } },
-      { t:'Solve 5 in Fork in the Road', go:'fork-in-the-road', ok:function(){ return best('fork-in-the-road')>=5; } },
-      { t:'Reach 300+ in The Pirc Protocol', go:'pirc-protocol', ok:function(){ return best('pirc-protocol')>=300; } },
-      { t:'Hold the gate in Siege on Chess City', go:'tower-defense', ok:function(){ return best('tower-defense')>=1; } },
-      { t:'Complete a Knight’s Tour', go:'knights-tour', ok:function(){ return best('knights-tour')>=1; } },
-      { t:'Score 100+ points in Sand Mine Depths', go:'sand-mine-depths', ok:function(){ return best('sand-mine-depths')>=100; } }
-    ];
-    function seed(s){ var h=2166136261; for(var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
-    var d=new Date(), ds=d.getUTCFullYear()+'-'+(d.getUTCMonth()+1)+'-'+d.getUTCDate();
-    var task = TASKS[seed(ds)%TASKS.length];
-    $('cc-daily-task').textContent = task.t;
-    $('cc-daily-go').href = gameUrl(task.go);
-    function refresh(){ $('cc-daily-status').innerHTML = task.ok() ? '<b class="cc-ok">✓ complete</b>' : '<span class="cc-muted">awaiting completion</span>'; }
-    refresh();
-    document.addEventListener('visibilitychange', function(){ if(!document.hidden) refresh(); });
-  })();
-
-  // fragment recovery grid (ARG — all local)
-  (function(){
-    var ORIGIN = [
-      { k:'frag_classified', n:'CLASSIFIED', i:'🗎' }, { k:'frag_archive', n:'THE ARCHIVE', i:'🗄' },
-      { k:'frag_dispatch', n:'DEAD DROP', i:'📡' }, { k:'frag_recovery', n:'RECOVERY SIGNAL', i:'🧭' },
-      { k:'frag_konami', n:"OPERATOR'S CODE", i:'🎮' }, { k:'frag_qd', n:'HYPERSPEED BOX', i:'⚡' }
-    ];
-    var grid = $('cc-frag-grid'); var got = 0;
-    ORIGIN.forEach(function(f){ var have=has(f.k); if(have) got++;
-      var cell=document.createElement('div'); cell.className='cc-frag'+(have?' got':'');
-      cell.innerHTML='<span class="cc-frag-ic">'+(have?f.i:'🔒')+'</span><span class="cc-frag-n">'+esc(have?f.n:'ENCRYPTED')+'</span>';
-      cell.title = have ? f.n+' — recovered' : 'Locked'; grid.appendChild(cell); });
-    $('cc-frag-count').textContent = got + ' / 6';
-    $('cc-frag-note').innerHTML = got>=6
-      ? 'All six recovered — the <a href="{{ '/classified/' | relative_url }}">origin</a> is unsealed.'
-      : (6-got) + ' fragment' + ((6-got)===1?'':'s') + ' to unseal the origin. Read files, dig deep, poke the edges.';
-  })();
 })();
 </script>
 
@@ -245,54 +179,55 @@ permalink: /dossier/
 
     // The identity HEADER rises to the top slot (upgrading the greeting in place);
     // everything below is the record, which flows inline in the one dossier.
+    // ONE header carries the whole identity now: who you are, your rank, your credits,
+    // your level AND your progress to the next one. The XP bar used to be a separate
+    // block below, next to a separate pet-mood card, under a separate streak flame —
+    // four cards to say "here's you".
+    var xpPct = lvl.span ? Math.round(lvl.into / lvl.span * 100) : 100;
+    var stk = PJCC.streakInfo();
+    var streakChip = stk.current > 0
+      ? '<span class="dsr-streak" title="Any game you play keeps the flame. Longest run: ' + stk.best + ' days.">🔥 ' + stk.current + 'd</span>'
+      : '';
     var head = '<div class="dsr-head" style="background:' + theme.bg + ';border-color:' + theme.accent + '">' +
       '<div class="dsr-avatar" style="border-color:' + theme.accent + '">' + PJCC.avatarEmoji(prof) + '<span class="dsr-lvl" style="background:' + theme.accent + '">Lv ' + lvl.level + '</span>' + (window.PJCCPet ? '<span class="dsr-pet-badge">' + PJCCPet.petEmoji() + '</span>' : '') + '</div>' +
-      '<div><div class="dsr-name" style="color:' + theme.accent + '">' + esc(prof.codename) + (title ? ' <span class="dsr-title-flair">' + esc(title) + '</span>' : '') + '</div>' +
-      '<div class="dsr-rank">' + esc(rank.name) + ' · <span class="pjcc-credits">' + credits + ' credits</span></div></div>' +
+      '<div class="dsr-ident">' +
+        '<div class="dsr-name" style="color:' + theme.accent + '">' + esc(prof.codename) + (title ? ' <span class="dsr-title-flair">' + esc(title) + '</span>' : '') + '</div>' +
+        '<div class="dsr-rank">' + esc(rank.name) + ' · <span class="pjcc-credits">' + credits + ' credits</span> ' + streakChip + '</div>' +
+        '<div class="dsr-xp"><div class="dsr-xp-fill" style="width:' + xpPct + '%"></div></div>' +
+        '<div class="pjcc-sub">' + (lvl.next ? ((lvl.span - lvl.into) + ' more rounds to Lv ' + (lvl.level + 1)) : 'Max level — top dog of the board.') + '</div>' +
+      '</div>' +
       '<span class="pjcc-spacer"></span>' +
       '<button class="pjcc-btn" id="dsr-share">📸 Share card</button>' +
       '<a class="pjcc-trophy" href="/shopkeeper/">🛒 Shopkeeper</a>' +
       '<a class="pjcc-trophy" href="/leaderboards/">🏆 Leaderboards</a>' +
       '<button class="pjcc-btn-ghost" id="dsr-out">Sign out</button></div>';
 
-    var xpPct = lvl.span ? Math.round(lvl.into / lvl.span * 100) : 100;
-    var html = '<div class="dsr-companion">' +
-      '<div id="pet-mood-card"></div>' +
-      '<div class="dsr-comp-stage" style="margin-top:14px;">Operative progress · Lv ' + lvl.level + ' ' + esc(lvl.stage) + '</div>' +
-      '<div class="dsr-xp"><div class="dsr-xp-fill" style="width:' + xpPct + '%"></div></div>' +
-      '<div class="pjcc-sub">' + (lvl.next ? ((lvl.span - lvl.into) + ' more rounds to Lv ' + (lvl.level + 1)) : 'Max level — top dog of the board.') + '</div></div>';
-
-    var stk = PJCC.streakInfo();
-    var flameOn = stk.current > 0;
-    html += '<div class="dsr-flame ' + (flameOn ? 'lit' : 'cold') + '" style="--acc:' + theme.accent + '">' +
-      '<div class="dsr-flame-icon">' + (flameOn ? '🔥' : '🕯️') + '</div>' +
-      '<div class="dsr-flame-body">' +
-        '<div class="dsr-flame-num">' + stk.current + '<span> day' + (stk.current === 1 ? '' : 's') + ' active' + (stk.playedToday ? '' : ' — play today to keep it!') + '</span></div>' +
-        '<div class="pjcc-sub">Longest run: ' + stk.best + ' days. Any game you play counts toward the flame.</div>' +
-      '</div></div>';
-
-    var season = PJCC.seasonInfo();
-    html += '<div class="dsr-season"><span class="dsr-season-tag">SEASON</span> <b>' + esc(season.name) + '</b>' +
-      ' <span class="pjcc-sub">· ' + season.daysLeft + ' day' + (season.daysLeft === 1 ? '' : 's') + ' left · winners enter the <a href="/hall-of-fame/">Hall of Fame</a></span></div>';
+    // WHERE YOU ARE — one block, not two. The Gauntlet floor used to be its own module
+    // up in the command strip; it belongs here, beside the map, because it's the same
+    // question. Read from the game's own save, so it's right even signed out.
+    var GNAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The CEO'];
+    var gprog = {}; try { gprog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
+    var gbeaten = gprog.beaten || {}, gcur = GNAMES.length;
+    for (var gj = 0; gj < GNAMES.length; gj++) { if (!gbeaten[gj]) { gcur = gj; break; } }
+    var climbLine = (gcur >= GNAMES.length)
+      ? '<b>Crowned</b> — all ten floors cleared 👑'
+      : 'The Gauntlet · <b>Floor ' + (gcur + 1) + ' of 10</b> — ' + esc(GNAMES[gcur]) + ' next';
 
     var wp = PJCC.worldProgress(stats);
-    html += '<h2 class="dsr-h">The journey</h2><div class="dsr-map">';
+    var html = '<h2 class="dsr-h">The journey</h2><div class="dsr-map">';
     wp.stops.forEach(function (s, i) {
       html += '<div class="dsr-stop ' + (s.reached ? 'reached' : '') + '">' +
         '<div class="dsr-here">' + (i === wp.furthest ? PJCC.avatarEmoji(prof) + (window.PJCCPet ? '<span class="dsr-here-pet" title="Your companion walks with you">' + PJCCPet.petEmoji() + '</span>' : '') : '') + '</div>' +
         '<div class="dsr-dot"></div><div class="dsr-stop-name">' + esc(s.name) + '</div></div>';
     });
     html += '</div>';
-
-    html += '<h2 class="dsr-h">Clearance ladder</h2><div class="dsr-ladder">';
-    PJCC.RANKS.forEach(function (r) {
-      var got = credits >= r.min;
-      html += '<div class="dsr-rung ' + (got ? 'got' : 'locked') + '">' +
-        '<div class="dsr-rung-top"><span class="dsr-rung-name">' + esc(r.name) + '</span>' +
-        '<span class="dsr-rung-min">' + r.min + ' cr</span></div>' +
-        '<div class="dsr-frag">' + (got ? esc(r.frag) : '▒▒▒▒ REDACTED — clearance ' + r.name + ' required ▒▒▒▒') + '</div></div>';
-    });
-    html += '</div>';
+    // Keep the URL a plain literal — the link gate (tests/links.check.js) reads hrefs out of
+    // the source, and a path spliced together inside the attribute reads to it as a broken
+    // link. Build the fragment separately and append it.
+    var climbHref = '/games/the-gauntlet/';
+    if (gcur > 0) climbHref += '#climb';
+    html += '<a class="dsr-climb" href="' + climbHref + '">' +
+      '<span class="dsr-climb-glyph">♛</span><span>' + climbLine + '</span><span class="dsr-climb-go">▸</span></a>';
 
     html += '<h2 class="dsr-h">Achievements</h2><div class="dsr-ach-grid">';
     PJCC.earnedAchievements(prof, stats).forEach(function (a) {
@@ -341,7 +276,8 @@ permalink: /dossier/
     setTop(head);          // identity header → the top slot (upgrades the greeting in place)
     el.innerHTML = html;   // the record → below the modules + forge, one continuous flow
 
-    if (window.PJCCPet) PJCCPet.renderCard(document.getElementById('pet-mood-card'), stats);
+    // (the pet-mood CARD was cut 2026-07-12 — the companion still rides on the avatar
+    //  badge and walks the journey map, which is where you actually look for it.)
     Array.prototype.forEach.call(el.querySelectorAll('.dsr-title-chip'), function (b) {
       b.onclick = function () { PJCC.setTitle(b.getAttribute('data-title')).then(render); };
     });
@@ -403,58 +339,35 @@ permalink: /dossier/
 </script>
 
 <style>
-/* ---- command strip ---- */
-.cc-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid #3a2a6a; padding-bottom: 10px; }
-.cc-kicker { font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; letter-spacing: 0.14em; color: #ff8fd0; text-transform: uppercase; }
-.cc-title { color: #F5C518; margin: 2px 0 0; font-size: 1.7rem; }
-.cc-clock { font-family: 'Share Tech Mono', monospace; color: #6bffb8; font-size: 0.9rem; }
+/* ---- the greeting (the whole "command strip" — clock, daily-mission module, fragment
+       grid, climb module — was cut 2026-07-12 with its styles; see the note up top) ---- */
 .cc-greet { color: #c9a7ff; margin: 12px 0 16px; }
-.cc-greet a, .cc-frag-note a { color: #F5C518; }
-.cc-muted { color: #7d6bb0; } .cc-ok { color: #6bffb8; }
-.cc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
-.cc-mod { background: rgba(20,12,45,0.6); border: 1px solid #3a2a6a; border-radius: 12px; padding: 14px; position: relative; }
-.cc-mod--frags { grid-column: span 2; }
-@media (max-width: 560px){ .cc-mod--frags { grid-column: span 1; } }
-.cc-mod-label { font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; color: #9a7fd4; text-transform: uppercase; margin-bottom: 10px; }
-.cc-btn { display: inline-block; background: #221444; border: 1px solid #4a2f8a; color: #c9a7ff; border-radius: 999px; padding: 8px 14px; font-weight: 700; text-decoration: none; font-size: 0.85rem; transition: all 0.14s; }
-.cc-btn:hover { border-color: #F5C518; color: #fff; }
-.cc-btn-gold { background: #F5C518; color: #1a0f3d; border-color: #F5C518; }
-.cc-btn-gold:hover { background: #ffd740; color: #1a0f3d; }
-.cc-count { font-family: 'Share Tech Mono', monospace; font-size: 2.6rem; font-weight: 800; color: #F5C518; line-height: 1; }
-.cc-count-lbl { color: #9a7fd4; font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
-.cc-daily-task { color: #f0e6ff; font-weight: 700; line-height: 1.4; }
-.cc-daily-status { font-size: 0.84rem; margin: 8px 0 12px; }
-.cc-frag-count { color: #F5C518; }
-.cc-frag-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
-.cc-frag { background: rgba(45,27,105,0.5); border: 1px solid #3a2a6a; border-radius: 10px; padding: 10px 6px; text-align: center; opacity: 0.6; }
-.cc-frag.got { opacity: 1; border-color: #F5C518; box-shadow: 0 0 14px rgba(245,197,24,0.15); }
-.cc-frag-ic { display: block; font-size: 22px; }
-.cc-frag-n { display: block; font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: #c9a7ff; margin-top: 4px; letter-spacing: 0.04em; }
-.cc-frag-note { color: #9a7fd4; font-size: 0.82rem; margin-top: 10px; }
+.cc-greet a { color: #F5C518; }
 
 /* ---- operative profile ---- */
 .dsr-card { background: #160c33; border: 1px solid #6b5fa0; border-radius: 12px; padding: 1.2rem 1.4rem; max-width: 560px; }
 .dsr-h { color: #F5C518; margin: 1.6rem 0 0.6rem; font-size: 1.05rem; }
 .dsr-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; background: linear-gradient(135deg,#1f1147,#34206f); border: 1px solid #F5C518; border-radius: 12px; padding: 14px 18px; }
-.dsr-avatar { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 34px; border-radius: 50%; background: radial-gradient(circle at 35% 30%,#3a2a72,#160c33); border: 2px solid #F5C518; box-shadow: 0 0 14px rgba(245,197,24,0.5); position: relative; }
+.dsr-avatar { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 34px; border-radius: 50%; background: radial-gradient(circle at 35% 30%,#3a2a72,#160c33); border: 2px solid #F5C518; box-shadow: 0 0 14px rgba(245,197,24,0.5); position: relative; flex-shrink: 0; }
+/* the identity column: name, rank+credits+streak, then the XP bar — one card, not four */
+.dsr-ident { min-width: 200px; flex: 1 1 220px; }
 .dsr-name { color: #F5C518; font-size: 1.3rem; font-weight: 800; }
-.dsr-rank { color: #b9a8e6; font-size: 0.88rem; }
-.dsr-ladder { display: flex; flex-direction: column; gap: 8px; max-width: 640px; }
-.dsr-rung { border: 1px solid #6b5fa0; border-radius: 8px; padding: 9px 12px; }
-.dsr-rung.got { border-color: #F5C518; background: rgba(245,197,24,0.06); }
-.dsr-rung.locked { opacity: 0.6; }
-.dsr-rung-top { display: flex; justify-content: space-between; }
-.dsr-rung-name { color: #f0e6ff; font-weight: 700; }
-.dsr-rung-min { color: #9a7fd4; font-size: 0.78rem; }
-.dsr-frag { color: #c9b6ef; font-size: 0.84rem; margin-top: 4px; font-style: italic; }
-.dsr-rung.locked .dsr-frag { letter-spacing: 1px; font-style: normal; }
+.dsr-rank { color: #b9a8e6; font-size: 0.88rem; margin-bottom: 6px; }
+.dsr-streak { display: inline-block; font-size: 0.76rem; font-weight: 700; color: #ffb066; background: rgba(255,140,60,0.14); border: 1px solid rgba(255,140,60,0.45); border-radius: 999px; padding: 1px 8px; margin-left: 4px; }
 .dsr-lvl { position: absolute; bottom: -6px; right: -6px; background: #F5C518; color: #1a0f3d; font-size: 0.6rem; font-weight: 800; border-radius: 999px; padding: 1px 6px; border: 2px solid #160c33; }
 .dsr-pet-badge { position: absolute; bottom: -7px; left: -7px; font-size: 22px; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.55)); }
 .dsr-title-flair { font-size: 0.7rem; vertical-align: middle; background: rgba(245,197,24,0.16); color: #F5C518; border: 1px solid #F5C518; border-radius: 999px; padding: 2px 9px; margin-left: 8px; letter-spacing: 0.04em; font-weight: 700; }
-.dsr-companion { background: #160c33; border: 1px solid #6b5fa0; border-radius: 12px; padding: 12px 16px; margin-top: 12px; max-width: 560px; }
-.dsr-comp-stage { color: #6bffb8; font-weight: 800; margin-bottom: 6px; }
-.dsr-xp { background: #221347; border: 1px solid #6b5fa0; border-radius: 999px; height: 10px; overflow: hidden; margin-bottom: 4px; }
+.dsr-xp { background: #221347; border: 1px solid #6b5fa0; border-radius: 999px; height: 8px; overflow: hidden; margin-bottom: 4px; }
 .dsr-xp-fill { background: linear-gradient(90deg,#6bffb8,#F5C518); height: 100%; }
+/* the climb, folded in under the journey map — it used to be its own module up top */
+.dsr-climb { display: flex; align-items: center; gap: 10px; margin-top: 6px; max-width: 560px;
+  background: linear-gradient(135deg, rgba(42,28,14,0.9), rgba(58,42,16,0.92)); border: 1px solid #F5C518;
+  border-radius: 10px; padding: 10px 14px; color: #e7d6b0; text-decoration: none; font-size: 0.88rem;
+  transition: box-shadow .14s, transform .12s; }
+.dsr-climb:hover { transform: translateY(-1px); box-shadow: 0 0 22px -8px #F5C518; text-decoration: none; color: #fff; }
+.dsr-climb b { color: #F5C518; }
+.dsr-climb-glyph { color: #F5C518; font-size: 1.2rem; line-height: 1; flex-shrink: 0; }
+.dsr-climb-go { margin-left: auto; color: #F5C518; font-weight: 900; flex-shrink: 0; }
 .dsr-map { display: flex; gap: 0; overflow-x: auto; padding: 18px 4px 6px; max-width: 100%; }
 .dsr-stop { position: relative; flex: 1 0 86px; text-align: center; }
 .dsr-stop::before { content: ''; position: absolute; top: 26px; left: -50%; width: 100%; height: 2px; background: #3a2a72; z-index: 0; }
@@ -479,10 +392,8 @@ permalink: /dossier/
 .dsr-title-chip { background: #2D1B69; color: #cdbcf2; border: 1px solid #6b5fa0; border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: 0.82rem; font-weight: 700; }
 .dsr-title-chip:hover { border-color: #F5C518; color: #fff; }
 .dsr-title-chip.on { background: #F5C518; color: #1a0f3d; border-color: #F5C518; }
-.dsr-flame { display:flex; align-items:center; gap:12px; background:#160c33; border:1px solid #6b5fa0; border-radius:12px; padding:12px 16px; margin-top:12px; max-width:560px; }
-.dsr-flame.lit { border-color: var(--acc,#F5C518); }
-.dsr-flame-icon { font-size:30px; } .dsr-flame-num { color:#f0e6ff; font-weight:800; font-size:1.2rem; } .dsr-flame-num span { color:#9a7fd4; font-weight:400; font-size:0.8rem; }
-.dsr-season { margin-top:12px; color:#c9b6ef; } .dsr-season-tag { font-family:'Share Tech Mono',monospace; font-size:0.66rem; letter-spacing:0.1em; color:#1a0f3d; background:#6bffb8; border-radius:4px; padding:2px 7px; }
+/* (the standalone streak FLAME card and the SEASON strip were cut 2026-07-12 — the streak
+    is a chip in the header now, and the season's only payoff was the Hall of Fame.) */
 .dsr-ghost { display:inline-block; font-size:0.74rem; color:#9a7fd4; } .dsr-ghost.beat { color:#6bffb8; }
 .dsr-invite { display: flex; gap: 8px; flex-wrap: wrap; max-width: 560px; }
 .dsr-invite input { flex: 1 1 280px; }

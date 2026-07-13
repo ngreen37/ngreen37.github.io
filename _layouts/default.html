@@ -67,9 +67,11 @@
           <a class="page-link" href="{{ '/blog/' | relative_url }}">Build Log</a>
           <div class="nav-dd" data-dd>
             <a class="page-link nav-dd-trigger" href="{{ '/direct-line/' | relative_url }}" aria-haspopup="true" aria-expanded="false">Support <span class="nav-dd-caret" aria-hidden="true">&#9662;</span></a>
+            {%- comment -%} Merch was pulled from this menu 2026-07-12 (Nate). /goods/ still
+                 builds and is still reachable by URL — he wants it back later — it's just
+                 not advertised while it's months away. Restore the one line to re-list it. {%- endcomment -%}
             <div class="nav-dd-menu" role="menu">
               <a class="page-link" role="menuitem" href="{{ '/direct-line/' | relative_url }}">Direct Line</a>
-              <a class="page-link" role="menuitem" href="{{ '/goods/' | relative_url }}">Merch</a>
               <a class="page-link" role="menuitem" href="{{ '/mailing-list/' | relative_url }}">Mailing List</a>
               <a class="page-link" role="menuitem" href="{{ '/educators/' | relative_url }}">For Educators</a>
             </div>

@@ -674,11 +674,10 @@
       .slice(0, limit || 25);
   };
 
-  // Hall of Fame: past season champions. Add an entry here at the close of each
-  // season (newest first). season = "Mon YYYY" label; champ = winning codename.
-  PJCC.HALL_OF_FAME = [
-    // { season: 'May 2026', tour: 'Sand Mine Circuit', champ: 'CODENAME', note: 'First champion of the Journey.' }
-  ];
+  // (PJCC.HALL_OF_FAME — the list of past season champions — was removed 2026-07-12
+  //  with the Hall of Fame itself (Nate: "remove it completely, from all pages"). It
+  //  never held a single entry: no season has ever closed. The idea is parked in
+  //  FUTURE-IDEAS; restore this array and /hall-of-fame/ from git if it comes back.)
 
   // --- companion pet-mood (decays with time since last played) ---------------
   PJCC.petMood = function (stats) {

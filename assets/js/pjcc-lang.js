@@ -51,7 +51,7 @@
     'Command Center': '司令部', 'Projects': 'プロジェクト', 'Blog': 'ブログ', 'Build Log': 'ビルドログ',
     'Mailing List': 'メール登録', 'For Educators': '教育者向け',
     'About / Contact': '概要・連絡', 'Contact': '連絡先', 'About': '概要', 'Support': 'サポート',
-    'Leaderboard': 'ランキング', 'Leaderboards': 'ランキング', 'Hall of Fame': '殿堂',
+    'Leaderboard': 'ランキング', 'Leaderboards': 'ランキング',
     'Home': 'ホーム', 'Patreon': 'Patreon', 'Coming Soon': '近日公開', 'The World': 'ザ・ワールド',
     'The Goods': 'グッズ', 'Merch': 'グッズ', 'The Direct Line': 'ダイレクトライン', 'Direct Line': 'ダイレクトライン',
     'Podcast & Blog': 'ポッドキャスト・ブログ', 'Play Now': 'プレイ', 'Play': 'プレイ',
