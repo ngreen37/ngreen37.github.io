@@ -107,7 +107,7 @@ permalink: /dossier/
     el.innerHTML =
       '<div class="dsr-card"><h2 class="dsr-h">Operative sign-in</h2>' +
       '<p class="pjcc-sub">Enter your email and we will send a login link and a 6-digit code. Your operative — codename, avatar, credits — follows you across every device.</p>' +
-      '<div class="ml-form"><input id="dsr-email" type="email" class="pjcc-input" placeholder="you@email.com"><button id="dsr-login" class="pjcc-btn">Send login link</button></div>' +
+      '<div class="ml-form"><input id="dsr-email" type="email" class="pjcc-input" aria-label="Email address" placeholder="you@email.com"><button id="dsr-login" class="pjcc-btn">Send login link</button></div>' +
       '<p id="dsr-msg" class="pjcc-sub"></p></div>';
     document.getElementById('dsr-login').onclick = function () {
       var email = document.getElementById('dsr-email').value.trim();
@@ -130,7 +130,7 @@ permalink: /dossier/
     el.innerHTML =
       '<div class="dsr-card"><h2 class="dsr-h">Enter your code</h2>' +
       '<p class="pjcc-sub">We sent <strong>' + esc(email) + '</strong> a login link and a code. Either one works.</p>' +
-      '<div class="ml-form"><input id="dsr-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" class="pjcc-input" placeholder="code"><button id="dsr-verify" class="pjcc-btn">Sign in</button></div>' +
+      '<div class="ml-form"><input id="dsr-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" class="pjcc-input" aria-label="Sign-in code" placeholder="code"><button id="dsr-verify" class="pjcc-btn">Sign in</button></div>' +
       '<p id="dsr-msg" class="pjcc-sub"></p></div>';
     document.getElementById('dsr-verify').onclick = function () {
       var code = document.getElementById('dsr-code').value.trim();
@@ -379,6 +379,11 @@ permalink: /dossier/
 .dsr-fold-t { color: #F5C518; font-size: 1.05rem; font-weight: 700; }
 .dsr-fold-hint { color: #9a7fd4; font-size: 0.8rem; }
 .dsr-fold-body { padding-top: 0.6rem; }
+
+/* 2026-07-13 touch sweep: the inline "sign in" link in the greeting measured 53x20. */
+@media (pointer: coarse) {
+  .cc-greet a { display: inline-block; padding: 9px 4px; margin: -9px 0; }
+}
 .dsr-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; background: linear-gradient(135deg,#1f1147,#34206f); border: 1px solid #F5C518; border-radius: 12px; padding: 14px 18px; }
 .dsr-avatar { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 34px; border-radius: 50%; background: radial-gradient(circle at 35% 30%,#3a2a72,#160c33); border: 2px solid #F5C518; box-shadow: 0 0 14px rgba(245,197,24,0.5); position: relative; flex-shrink: 0; }
 /* the identity column: name, rank+credits+streak, then the XP bar — one card, not four */

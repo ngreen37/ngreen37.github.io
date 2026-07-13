@@ -141,7 +141,10 @@ permalink: /fan-art/
   max-width:560px; margin:0 auto; background:var(--fa-paper); border:3px solid #002e6d; border-radius:var(--r-lg);
   padding:26px 26px 20px; position:relative; color:#002e6d; }
 .fan-card::before { content:''; position:absolute; inset:8px; border:1.5px solid #e3b008; border-radius:12px; pointer-events:none; }
-.fc-eyebrow { text-align:center; font-size:11px; letter-spacing:5px; text-transform:uppercase; color:#e3b008; font-weight:800; }
+/* a11y sweep 2026-07-13: the gold #e3b008 read 1.6:1 on the paper — the worst contrast on
+   the site. Poster TEXT now wears a dark ANTIQUE gold (5.2:1); the star glyph and the inner
+   border keep the bright gold — ink and ornament are different jobs. */
+.fc-eyebrow { text-align:center; font-size:11px; letter-spacing:5px; text-transform:uppercase; color:#77570a; font-weight:800; }
 .fc-brand { text-align:center; font-size:60px; font-weight:900; letter-spacing:4px; color:#002e6d; line-height:1; margin:3px 0 1px; }
 .fc-star { color:#e3b008; font-size:0.55em; vertical-align:0.28em; margin:0 9px; }
 .fc-brand-sub { text-align:center; font-size:14px; font-weight:700; color:#0a3f8a; margin-bottom:14px; }
@@ -158,7 +161,7 @@ permalink: /fan-art/
 .fc-hint-big { display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px;
   font-size:30px; line-height:1; margin-bottom:8px; border:1.5px solid #9bb4d8; border-radius:10px; color:#5b7bb0; }
 .fc-flourish { text-align:center; margin-top:14px; font-size:13px; letter-spacing:2px; color:#002e6d; font-weight:800; }
-.fc-pc { color:#e3b008; }
+.fc-pc { color:#77570a; }
 
 /* ---- the wall ---- */
 .fa-wall { max-width:920px; margin:2.4rem auto 0; }

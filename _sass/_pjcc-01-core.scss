@@ -421,7 +421,9 @@ body.theme-bw .nav-toggle-bar     { background: #cccccc; }
 }
 
 .footer-copy {
-  color: #6b5a8e;
+  /* 2026-07-13 a11y sweep: was #6b5a8e — 3.2:1 against the dark footer, under the 4.5:1
+     floor for 12px text. Same violet family, one step lighter → ~5:1. */
+  color: #9182b8;
   font-size: 12px;
 }
 
@@ -1059,7 +1061,9 @@ pre code {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #6b5a8e;
+  /* a11y sweep: #6b5a8e read 3.1:1 on the #12093a chip at 10px — the smallest text on the
+     page needs contrast the most, not the least. Same family, lighter. */
+  color: #9a89c4;
   background: #12093a;
   padding: 3px 10px;
   border-radius: 999px;
@@ -1198,4 +1202,20 @@ pre code {
   .stat-number {
     font-size: 60px;
   }
+}
+
+/* ═══ TOUCH ERGONOMICS (2026-07-13 phone/a11y sweep) ══════════════════════════
+   Every control here measured UNDER 40px in a real 390px render — below the
+   Apple(44)/Android(48) tap floors. `pointer: coarse` targets fingers only, so
+   the desktop look doesn't change. This block sits at the END of core because
+   media queries add no specificity: the mobile overrides above would win a tie
+   against anything declared earlier.
+   (Deliberate exception: the splash's flickering-letter door stays tiny —
+   a 44px hit box on one glyph of a word would give the secret away.) */
+@media (pointer: coarse) {
+  .nav-toggle { padding: 12px 12px; }
+  .nav-operative { padding: 10px 12px !important; }
+  .nav-brand { padding: 9px 8px; }
+  .site-nav .page-link { padding-top: 10px; padding-bottom: 10px; }
+  .nav-hop { padding-top: 8px; padding-bottom: 8px; }
 }

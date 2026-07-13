@@ -279,3 +279,8 @@
   .cmdk-trigger-ico { font-size: 1.15rem; }
 
 }
+
+/* 2026-07-13 touch sweep: the palette trigger measured 31x32 on a phone. */
+@media (pointer: coarse) {
+  .cmdk-trigger { padding: 10px 12px 10px 13px; }
+}

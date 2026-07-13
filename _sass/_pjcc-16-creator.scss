@@ -166,3 +166,8 @@
   .forge-preview-wrap .idn-av { --idn-size: 88px; }
   .idn-card .idn-actions { flex-direction: row; width: 100%; }
 }
+
+/* 2026-07-13 touch sweep: "tweak" measured 54x20 on a phone. */
+@media (pointer: coarse) {
+  .idn-edit-btn { padding: 9px 14px !important; }
+}

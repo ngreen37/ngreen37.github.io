@@ -92,7 +92,7 @@ permalink: /academy/
     <p class="ac-tool-p">Generate a code, hand it out. <span class="ac-muted">(Local — no accounts.)</span></p>
     <div class="ac-tool-row">
       <button class="ac-print-btn" id="ac-class-gen" type="button">Generate class code</button>
-      <input id="ac-class-join" class="ac-tool-in" placeholder="enter a class code" maxlength="12" autocomplete="off">
+      <input id="ac-class-join" class="ac-tool-in" aria-label="Class code" placeholder="enter a class code" maxlength="12" autocomplete="off">
       <button class="ac-print-btn" id="ac-class-save" type="button">Join</button>
     </div>
     <div class="ac-tool-out" id="ac-class-out"></div>
@@ -111,7 +111,7 @@ permalink: /academy/
     <div class="ac-tool-h">✅ Verify a certificate</div>
     <p class="ac-tool-p">Paste a certificate's <code>CTA-…</code> code to confirm it.</p>
     <div class="ac-tool-row">
-      <input id="ac-verify-in" class="ac-tool-in ac-verify-in" placeholder="CTA-…" autocomplete="off">
+      <input id="ac-verify-in" class="ac-tool-in ac-verify-in" aria-label="Certificate code" placeholder="CTA-…" autocomplete="off">
       <button class="ac-print-btn" id="ac-verify-btn" type="button">Verify</button>
     </div>
     <div class="ac-tool-out" id="ac-verify-out"></div>
@@ -828,7 +828,7 @@ window.ACCERT = (function () {
 .ac-tool-h { color: #F5C518; font-weight: 800; margin-bottom: 4px; }
 .ac-tool-p { color: #9a7fd4; font-size: 0.82rem; line-height: 1.5; }
 .ac-tool-p code { color: #9fe8ff; }
-.ac-muted { color: #7d6bb0; }
+.ac-muted { color: #9d8ecb; }   /* a11y sweep 2026-07-13: was #7d6bb0 at 3.7:1 on the tool card */
 .ac-tool-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
 .ac-tool-in { background: #160c33; border: 1px solid #4a2f8a; border-radius: 8px; padding: 8px 10px; color: #f0e6ff; font-family: inherit; font-size: 0.85rem; flex: 1; min-width: 120px; }
 .ac-tool-in:focus { outline: none; border-color: #F5C518; }
@@ -862,6 +862,15 @@ body.ac-gold .ac-belt-bar { background: rgba(245,197,24,0.12); border-color: #8a
 body.ac-gold .ac-belt-fill { background: linear-gradient(90deg,#caa84a,#ffd740); }
 body.ac-gold .ac-pip { background: rgba(58,44,7,0.7); border-color: #8a6d10; color: #caa84a; }
 body.ac-gold .ac-pip.got { background: #F5C518; border-color: #F5C518; color: #1a0f3d; }
+
+/* 2026-07-13 touch sweep: the voice button (24x24) and the per-lesson "play" links (41x23)
+   measured under the tap floor on a real phone render. Fingers get bigger boxes; the
+   desktop look is untouched. */
+@media (pointer: coarse) {
+  .ac-intro-btn { width: 38px; height: 38px; font-size: 0.85rem; }
+  .ac-lesson-go { padding: 10px 8px; margin: -10px -8px -10px 0; }
+  .ac-soon-note { padding: 9px 0; }
+}
 </style>
 
 <script>

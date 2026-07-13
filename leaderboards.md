@@ -55,7 +55,9 @@ permalink: /leaderboards/
   border-radius:10px; padding:10px 16px; margin:2px 0 12px;
   font-family:'Courier New',monospace; letter-spacing:0.14em; }
 .lbtv-live { display:inline-flex; align-items:center; gap:7px; color:#fff; font-weight:900; font-size:0.78rem;
-  background:var(--tv-red); border-radius:6px; padding:3px 10px; }
+  /* a11y sweep 2026-07-13: white on --tv-red was 3.2:1; the LIVE chip wears a deeper
+     broadcast red (4.9:1) while the border accent keeps the bright one. */
+  background:#d92638; border-radius:6px; padding:3px 10px; }
 .lbtv-live i { width:8px; height:8px; border-radius:50%; background:#fff; animation:lbtvBlink 1.1s ease-in-out infinite; }
 @keyframes lbtvBlink { 0%,100%{ opacity:1; } 50%{ opacity:0.25; } }
 .lbtv-net { color:var(--tv-gold); font-weight:900; font-size:0.78rem; }

@@ -467,6 +467,13 @@
 .flourish-toggle:hover { border-color: #F5C518; color: #F5C518; }
 .flourish-toggle[aria-pressed="true"] { border-color: #6bffb8; color: #6bffb8; }
 
+/* 2026-07-13 touch sweep: both footer buttons measured ~24px tall at 9px type in a real
+   390px render. Fingers get a taller box and a legible size; desktop is untouched. */
+@media (pointer: coarse) {
+  .share-tx-btn,
+  .flourish-toggle { padding: 12px 16px; font-size: 10px; }
+}
+
 /* ── Town-wide weather (#2) — the whole town shares one forecast (PJCC_TIME): on
    rain/mist days a soft atmospheric wash tints EVERY page (academy included).
    Static + opacity-only (no per-frame cost — the animated rain stays hero-only,

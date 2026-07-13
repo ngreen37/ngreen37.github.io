@@ -662,3 +662,8 @@ body.theme-bw .post-content {
   border-left: 2px solid rgba(255, 255, 255, 0.07);
   padding-left: 20px;
 }
+
+/* 2026-07-13 touch sweep: the splash's fixed corner CONTACT link measured 73x29. */
+@media (pointer: coarse) {
+  .studio-corner-about { padding: 10px 12px; }
+}

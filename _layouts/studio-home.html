@@ -355,6 +355,12 @@
     opacity:0.55; transition:opacity .15s, border-color .15s, color .15s; }
   .studio-replay:hover { opacity:1; border-color:#F5C518; color:#F5C518; }
   .studio-replay .sr-icon { font-size:12px; }
+  /* 2026-07-13 touch sweep: replay (107x27) + the lang toggle (50x24) measured under the
+     tap floor on a phone. Fingers get taller boxes; desktop look unchanged. */
+  @media (pointer: coarse) {
+    .studio-replay { padding:12px 14px; }
+    .studio-corner-lang { padding:11px 13px !important; }
+  }
 
   /* Idea #5 — the brand-coloured enter wipe */
   .studio-warp { position:fixed; inset:0; z-index:60; pointer-events:none; opacity:0; transform:scale(1.04);
