@@ -4,8 +4,6 @@ title: Games
 permalink: /games/
 ---
 
-<link rel="stylesheet" href="{{ '/assets/css/pjcc-games.css' | relative_url }}">
-<link rel="stylesheet" href="{{ '/assets/css/pjcc-warp.css' | relative_url }}">
 
 <style>
 /* Hall-select — dark "Gauntlet Legends" theme (base lives in pjcc-games.css).

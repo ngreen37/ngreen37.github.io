@@ -52,16 +52,16 @@
   ],
   "screenshots": [
     {
-      "src": "/assets/images/pwa/screenshot-mobile.png",
+      "src": "/assets/images/pwa/screenshot-mobile.jpg",
       "sizes": "390x844",
-      "type": "image/png",
+      "type": "image/jpeg",
       "form_factor": "narrow",
       "label": "Choose your hall in the PJCC arcade"
     },
     {
-      "src": "/assets/images/pwa/screenshot-wide.png",
+      "src": "/assets/images/pwa/screenshot-wide.jpg",
       "sizes": "1280x800",
-      "type": "image/png",
+      "type": "image/jpeg",
       "form_factor": "wide",
       "label": "The world of Princess and the Journey to Chess City"
     }

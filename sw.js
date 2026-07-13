@@ -13,23 +13,49 @@
  */
 'use strict';
 
-const VERSION    = 'pjcc-pwa-v1';
+const VERSION    = 'pjcc-pwa-v2';   // v2: one stylesheet + the arcade is warmed offline
 const SHELL      = 'pjcc-shell-' + VERSION;
 const RUNTIME    = 'pjcc-runtime-' + VERSION;
-const FONTS      = 'pjcc-fonts-' + VERSION;
 const OFFLINE_URL = '/offline.html';
 
-/* Precached up front so the app opens even fully offline. Tolerant: a single missing
- * file won't fail the whole install (unlike cache.addAll). */
+/* THE SHELL — precached at install so the app opens even fully offline. Tolerant: a
+ * single missing file won't fail the whole install (unlike cache.addAll). Small, so
+ * install stays fast. NOTE: the site now compiles to ONE stylesheet (style.css). */
 const PRECACHE = [
   '/', '/pjcc/', '/games/', OFFLINE_URL, '/manifest.json',
-  '/assets/css/style.css', '/assets/css/a11y.css', '/assets/css/pjcc-flair.css',
-  '/assets/css/pjcc-portal.css', '/assets/css/pjcc-nav.css',
-  '/assets/js/pjcc-time.js', '/assets/js/pjcc-nav.js', '/assets/js/pjcc-config.js',
+  '/assets/css/style.css',
+  '/assets/js/pjcc-nav.js', '/assets/js/pjcc-config.js', '/assets/js/pjcc-weather.js',
   '/assets/js/pjcc-profile.js', '/assets/js/pjcc-lang.js', '/assets/js/pjcc-flair.js',
-  '/assets/js/pjcc-portal.js', '/assets/js/pwa-register.js',
+  '/assets/js/pjcc-portal.js', '/assets/js/pwa-register.js', '/assets/js/pjcc-eggs.js',
   '/assets/images/pwa/icon-192.png', '/assets/images/pwa/icon-512.png',
   '/assets/images/pwa/apple-touch-icon.png', '/assets/images/favicon.svg',
+];
+
+/* THE ARCADE — the whole point of installing: the games play with no signal.
+ * These are WARMED IN THE BACKGROUND after activation rather than precached at
+ * install, because it's ~1.3 MB: blocking install on it would stall the very first
+ * page load. Warming after activate means the shell is instantly ready and the games
+ * quietly fill in behind it. Tolerant + one-time (already-cached entries are skipped).
+ * Includes the vendored Stockfish — without it the chess games can't think offline. */
+const GAMES = [
+  '/assets/games/pjcc_gauntlet.html', '/assets/games/pjcc_blindfold.html',
+  '/assets/games/pjcc_fork.html', '/assets/games/pjcc_pirc.html',
+  '/assets/games/notation_run.html', '/assets/games/pjcc_clearance.html',
+  '/assets/games/pjcc_sandmine.html', '/assets/games/pjcc_shogi.html',
+  '/assets/games/pjcc_sky_run.html', '/assets/games/pjcc_space_run.html',
+  '/assets/games/pjcc_tour.html', '/assets/games/pjcc_tower_defense.html',
+  '/assets/games/pjcc_chess_city.html', '/assets/games/pjcc_battle_room.html',
+  '/assets/games/pjcc_murphys_law.html', '/assets/games/pjcc_reading_room.html',
+  '/assets/games/pjcc_princess_dungeon.html', '/assets/games/pjcc_zoomies.html',
+  '/assets/js/pjcc-chess.js', '/assets/js/pjcc-chess-ai.js', '/assets/js/pjcc-gauntlet-engine.js',
+  '/assets/vendor/stockfish/stockfish.js', '/assets/vendor/stockfish/stockfish.wasm',
+  // the self-hosted webfaces the site actually paints with (latin subsets only — the
+  // latin-ext ones are unicode-range gated and fetched on demand, so don't warm them)
+  '/assets/fonts/Poppins-400-latin.woff2', '/assets/fonts/Poppins-600-latin.woff2',
+  '/assets/fonts/Poppins-700-latin.woff2', '/assets/fonts/Poppins-800-latin.woff2',
+  '/assets/fonts/Inter-400-latin.woff2', '/assets/fonts/Inter-500-latin.woff2',
+  '/assets/fonts/Inter-600-latin.woff2', '/assets/fonts/ShareTechMono-400-latin.woff2',
+  '/assets/fonts/PressStart2P-400-latin.woff2',
 ];
 
 self.addEventListener('install', (event) => {
@@ -42,31 +68,43 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
-    const keep = new Set([SHELL, RUNTIME, FONTS]);
+    const keep = new Set([SHELL, RUNTIME]);
     const names = await caches.keys();
     await Promise.all(names.map((n) => (keep.has(n) ? null : caches.delete(n))));
     await self.clients.claim();
+    warmArcade();                       // fire-and-forget: fill the arcade behind the shell
   })());
 });
+
+/* Pull the arcade into the cache in the background, a few files at a time so we never
+ * saturate the connection. Anything already cached is skipped, so this is cheap on
+ * every activation after the first. Failures are ignored — a game that misses the warm
+ * still caches itself the first time it's played (stale-while-revalidate). */
+async function warmArcade() {
+  try {
+    const cache = await caches.open(RUNTIME);
+    for (let i = 0; i < GAMES.length; i += 4) {
+      await Promise.allSettled(GAMES.slice(i, i + 4).map(async (url) => {
+        if (await cache.match(url)) return;                 // already have it
+        const res = await fetch(url, { cache: 'no-cache' });
+        if (res && res.ok) await cache.put(url, res);
+      }));
+    }
+  } catch (e) { /* offline during warm — the games will cache on first play */ }
+}
 
 // Let the page trigger an immediate update (the "refresh to update" toast).
 self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });
 
-const isFont = (url) =>
-  url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
-
+/* (The Google-Fonts cache branch is gone: the webfonts are SELF-HOSTED now, so they're
+ * just same-origin static assets and fall through to stale-while-revalidate below —
+ * which also means they work in the installed app with no network at all.) */
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;                 // never cache mutations
   const url = new URL(req.url);
-
-  // Google Fonts: stale-while-revalidate in their own cache.
-  if (isFont(url)) {
-    event.respondWith(staleWhileRevalidate(req, FONTS));
-    return;
-  }
 
   // Anything not same-origin (Supabase, translate Worker, analytics, Patreon…) → passthrough.
   if (url.origin !== self.location.origin) return;

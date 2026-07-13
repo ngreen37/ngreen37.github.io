@@ -1,0 +1,632 @@
+/* =============================================================
+   McPuppy Studios Landing Page
+   ============================================================= */
+
+body.studio-body {
+  background: #000;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.studio-page {
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.studio-welcome-bg {
+  position: fixed;
+  bottom: -0.28em;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Poppins', sans-serif;
+  font-size: 17.7vw;
+  font-weight: 800;
+  color: #1b1540;
+  opacity: 0.08;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 0;
+  letter-spacing: 0.08em;
+  user-select: none;
+  animation: welcome-breathe 10s ease-in-out infinite;
+}
+
+.studio-content {
+  position: relative;
+  z-index: 1;
+  background: #000;
+  width: 100%;
+  max-width: 960px;
+  padding: 36px 28px 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 36px;
+  animation: studio-fade-in 1.3s ease forwards;
+}
+
+.studio-corner-logo {
+  position: fixed;
+  top: 22px;
+  left: 28px;
+  z-index: 2;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  animation: logo-bob 5s ease-in-out infinite;
+}
+
+.studio-corner-about {
+  position: fixed;
+  top: 22px;
+  right: 28px;
+  z-index: 2;
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(0, 204, 51, 0.7);
+  text-decoration: none;
+  padding: 5px 14px;
+  border: 1.5px solid rgba(0, 255, 65, 0.28);
+  border-radius: 999px;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+
+  &:hover {
+    color: #000;
+    border-color: #00ff41;
+    background: #00ff41;
+    text-decoration: none;
+  }
+}
+
+.studio-corner-img {
+  height: 64px;
+  width: auto;
+  filter: invert(1);
+  opacity: 0.72;
+  display: block;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+
+
+
+
+.studio-quad-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  width: 100%;
+  position: relative;
+  z-index: 1;   /* keeps the quads above the secret-star intro float */
+}
+
+.studio-quad {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.22);
+  border: 2px solid #3a3a3a;
+  border-radius: 16px;
+  padding: 56px 28px;
+  text-decoration: none;
+  min-height: 190px;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.25s, background 0.25s, transform 0.15s;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.088) 0%, transparent 65%);
+    opacity: 0;
+    transition: opacity 0.25s;
+    border-radius: 14px;
+    pointer-events: none;
+  }
+
+  &:hover {
+    border-color: #ffffff;
+    background: rgba(255, 255, 255, 0.32);
+    transform: translateY(-3px);
+    text-decoration: none;
+
+    &::after {
+      opacity: 1;
+    }
+  }
+}
+
+/* Staggered entrance — each card slides up individually */
+.studio-quad:nth-child(1) { animation: quad-appear 1.3s ease 0.10s both; }
+.studio-quad:nth-child(2) { animation: quad-appear 1.3s ease 0.28s both; }
+.studio-quad:nth-child(3) { animation: quad-appear 1.3s ease 0.46s both; }
+.studio-quad:nth-child(4) { animation: quad-appear 1.3s ease 0.64s both; }
+
+/* PJCC quad (top-left) — rich purple background, gold title */
+.studio-quad-grid .studio-quad--pjcc {
+  /* ~10% brighter, with a softer/later fade into the dark end (Nate 2026-06-30) */
+  background: linear-gradient(145deg, rgba(48, 20, 112, 0.82) 0%, rgba(114, 48, 246, 0.7) 58%, rgba(74, 24, 166, 0.62) 100%);
+  border-color: rgba(245, 197, 24, 0.48);
+
+  .studio-quad-title {
+    color: #F5C518;
+    text-shadow: 0 0 22px rgba(245, 197, 24, 0.4);
+  }
+
+  .studio-quad-sub {
+    color: rgba(245, 197, 24, 0.52);
+  }
+
+  &::after {
+    background: linear-gradient(135deg, rgba(245, 197, 24, 0.154) 0%, transparent 65%);
+  }
+
+  &:hover {
+    background: linear-gradient(145deg, rgba(92, 39, 214, 0.86) 0%, rgba(172, 85, 255, 0.8) 58%, rgba(124, 37, 236, 0.74) 100%);
+    border-color: #F5C518;
+    box-shadow: 0 0 44px rgba(245, 197, 24, 0.18), 0 14px 44px rgba(100, 38, 220, 0.5);
+    transform: translateY(-5px);
+  }
+}
+
+/* McPuppy quad (top-right) — black & white; inverts to a white card on hover */
+.studio-quad-grid .studio-quad--mcpuppy {
+  background: linear-gradient(150deg, #0e0e12 0%, #232329 50%, #131317 100%);
+  border-color: rgba(255, 255, 255, 0.24);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    pointer-events: none;
+    z-index: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.10) 1px, transparent 1.5px);
+    background-size: 11px 11px;
+    transition: background-image 0.25s;
+  }
+
+  .studio-quad-title {
+    color: #e6e6e9;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.10);
+    position: relative;
+    z-index: 1;
+  }
+
+  .studio-quad-sub {
+    color: rgba(255, 255, 255, 0.62);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    position: relative;
+    z-index: 1;
+  }
+
+  &::after {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.176) 0%, transparent 60%);
+  }
+
+  &:hover {
+    background: #c7c7d1;
+    border-color: rgba(255, 255, 255, 0.42);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.42);
+    transform: translateY(-4px);
+
+    .studio-quad-title { color: #0a0a0a; text-shadow: none; }
+    .studio-quad-sub { color: rgba(10, 10, 10, 0.74); }
+
+    &::before {
+      background-image: radial-gradient(rgba(0, 0, 0, 0.14) 1px, transparent 1.5px);
+    }
+  }
+}
+
+/* Games quad (bottom-left) — arcade neon over a faint chessboard */
+/* Games quad (bottom-left) — "arcade cabinet": NES electric-blue with CRT
+   scanlines, tying the splash to the Mega Man-style arcade the games now use. */
+.studio-quad-grid .studio-quad--games {
+  background: linear-gradient(150deg, #08183f 0%, #123099 55%, #0a1a44 100%);
+  border-color: rgba(60, 188, 252, 0.5);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent 0 3px, rgba(60, 188, 252, 0.07) 3px 4px),
+      radial-gradient(circle at 50% 122%, rgba(60, 188, 252, 0.22) 0%, transparent 60%);
+    opacity: 0.85;
+  }
+
+  .studio-quad-title {
+    color: #3cbcfc;
+    text-shadow: 2px 2px 0 #0a1aa0, 0 0 20px rgba(60, 188, 252, 0.55);
+    position: relative;
+    z-index: 1;
+  }
+
+  .studio-quad-sub {
+    color: rgba(180, 212, 255, 0.82);
+    position: relative;
+    z-index: 1;
+  }
+
+  &::after {
+    background: linear-gradient(135deg, rgba(60, 188, 252, 0.198) 0%, transparent 60%);
+  }
+
+  &:hover {
+    background: linear-gradient(150deg, #0e2468 0%, #193edb 55%, #10255c 100%);
+    border-color: #3cbcfc;
+    box-shadow: 0 0 44px rgba(60, 188, 252, 0.3), 0 14px 40px rgba(8, 20, 70, 0.6);
+    transform: translateY(-5px);
+  }
+}
+
+/* Patreon quad (bottom-right) — "the patron's grove": deep forest deepening into
+   jade with a soft green footlight glow. Rich and calm; reads premium and sits
+   fully apart from the gold PJCC quad and the electric-blue games quad. */
+.studio-quad-grid .studio-quad--patreon {
+  background: linear-gradient(150deg, #0c1f16 0%, #17482f 48%, #23885b 100%);
+  border-color: rgba(45, 196, 130, 0.6);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(circle at 50% 128%, rgba(90, 230, 160, 0.46) 0%, rgba(45, 196, 130, 0.16) 40%, transparent 68%);
+    animation: patreon-hearth 3.4s ease-in-out infinite;
+  }
+
+  .studio-quad-title {
+    color: #cdeede;
+    text-shadow: 0 0 22px rgba(60, 210, 140, 0.5);
+    position: relative;
+    z-index: 1;
+  }
+
+  .studio-quad-sub {
+    color: rgba(205, 238, 222, 0.9);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+  }
+
+  &::after {
+    background: linear-gradient(135deg, rgba(90, 230, 160, 0.253) 0%, transparent 60%);
+  }
+
+  &:hover {
+    background: linear-gradient(150deg, #123021 0%, #206e4f 48%, #36c88c 100%);
+    border-color: #4fd699;
+    box-shadow: 0 0 46px rgba(45, 196, 130, 0.34), 0 14px 42px rgba(8, 28, 18, 0.6);
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes patreon-hearth {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50%      { opacity: 1; transform: scale(1.06); }
+}
+
+/* Blank placeholder quad */
+
+
+/* "Coming soon" quad (e.g. Patreon) — shown, but not yet clickable. */
+.studio-quad-soon {
+  cursor: default;
+  opacity: 0.6;
+
+  &:hover { transform: none !important; box-shadow: none !important; }
+  .studio-quad-sub { color: rgba(255, 255, 255, 0.5); }
+}
+
+/* Sandbox / Command Center quad — sandy desert operative feel */
+
+
+
+
+.studio-quad-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(18px, 2.4vw, 28px);
+  font-weight: 800;
+  color: #ffffff;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.studio-quad-sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  line-height: 1.6;
+  transition: opacity 0.3s;
+}
+
+.studio-quad:hover .studio-quad-sub {
+  opacity: 0;
+}
+
+/* Keep subtext visible on hover/tap for the branded quads (Patreon included —
+   on mobile the :hover/active state was fading "Support the Project" away). */
+.studio-quad-grid .studio-quad--pjcc:hover .studio-quad-sub,
+.studio-quad-grid .studio-quad--mcpuppy:hover .studio-quad-sub,
+.studio-quad-grid .studio-quad--games:hover .studio-quad-sub,
+.studio-quad-grid .studio-quad--patreon:hover .studio-quad-sub,
+.studio-quad-grid .studio-quad--patreon:active .studio-quad-sub {
+  opacity: 1;
+}
+
+@media (max-width: 600px) {
+  .studio-quad-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .studio-quad {
+    padding: 38px 20px;
+    min-height: 120px;
+  }
+
+  .studio-welcome-bg {
+    font-size: 26vw;
+    letter-spacing: 0.04em;
+  }
+
+  
+
+  .studio-drifters {
+    display: none;
+  }
+
+  .studio-corner-about {
+    font-size: 9px;
+    padding: 6px 10px;
+    letter-spacing: 1px;
+    top: 16px;
+    right: 14px;
+  }
+}
+
+/* =============================================================
+   Black & White Theme  (body.theme-bw)
+   Applied to: Blog, Chess Lessons, Contact
+   ============================================================= */
+
+/* =============================================================
+   Studio Theme  (body.theme-studio)
+   The McPuppy Studios page — a quiet, unique studio look: warm
+   graphite + a single brass accent. Grown from theme-bw; nothing
+   flashy, and distinct from the bright-gold PJCC palette.
+   ============================================================= */
+body.theme-studio { background-color: #0c0b10; color: #c9c6d0; }
+body.theme-studio h1, body.theme-studio h2, body.theme-studio h3,
+body.theme-studio h4, body.theme-studio h5, body.theme-studio h6 { color: #f2efe8; }
+body.theme-studio a { color: #caa24a; }
+body.theme-studio a:hover { color: #e6c877; }
+body.theme-studio .site-header { background: #0a090e; border-image: linear-gradient(to right, #3a3730 60%, #caa24a 60%) 1; }
+body.theme-studio .site-footer { background: #0a090e; border-top-color: #caa24a; }
+body.theme-studio .footer-copy { color: #6a6660; }
+body.theme-studio .page-card { background: #131218; border-color: #2a2830; box-shadow: 0 12px 40px rgba(0,0,0,0.7); }
+body.theme-studio .page-title { color: #f2efe8; border-bottom-color: #2a2830; }
+body.theme-studio .page-body { color: #c9c6d0; }
+body.theme-studio .projects-intro { color: #b9b4c4; border-left: 2px solid #caa24a; padding-left: 14px; font-style: italic; }
+body.theme-studio .projects-footer-note { color: #8a8592; }
+
+body.theme-bw {
+  background-color: #080808;
+  color: #cccccc;
+}
+
+body.theme-bw h1,
+body.theme-bw h2,
+body.theme-bw h3,
+body.theme-bw h4,
+body.theme-bw h5,
+body.theme-bw h6 {
+  color: #ffffff;
+}
+
+body.theme-bw a {
+  color: #aaaaaa;
+
+  &:hover {
+    color: #ffffff;
+  }
+}
+
+/* Header */
+body.theme-bw .site-header {
+  background: #000000;
+  border-image: linear-gradient(to right, #555555 50%, #ffffff 50%) 1;
+}
+
+body.theme-bw .site-nav {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Footer */
+body.theme-bw .site-footer {
+  background: #000000;
+  border-top-color: #ffffff;
+}
+
+body.theme-bw .footer-copy {
+  color: #555555;
+}
+
+/* Page card */
+body.theme-bw .page-card {
+  background: #111111;
+  border-color: #2a2a2a;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
+}
+
+body.theme-bw .page-title {
+  color: #ffffff;
+  border-bottom-color: #2a2a2a;
+}
+
+body.theme-bw .page-body {
+  color: #cccccc;
+}
+
+/* h2/h3 in page body */
+body.theme-bw h2 {
+  color: #ffffff;
+  border-bottom-color: #2a2a2a;
+}
+
+body.theme-bw h3 {
+  color: #dddddd;
+}
+
+/* Blog list */
+
+
+
+
+/* Tags */
+body.theme-bw .tag,
+body.theme-bw .blog-tags .tag {
+  background: #181818;
+  color: #bbbbbb;
+  border-color: #333333;
+
+  &:hover {
+    background: #333333;
+    color: #ffffff;
+  }
+}
+
+/* Back button */
+body.theme-bw .back-btn {
+  color: #777777;
+  border-color: #333333;
+
+  &:hover {
+    color: #ffffff;
+    border-color: #ffffff;
+  }
+}
+
+/* Stat cards (Chess Lessons) */
+body.theme-bw .lessons-stats {
+  gap: 24px;
+}
+
+body.theme-bw .stat-card {
+  background: #0d0d0d;
+  border-color: #ffffff;
+}
+
+body.theme-bw .stat-number {
+  color: #ffffff;
+}
+
+body.theme-bw .stat-label {
+  color: #666666;
+}
+
+body.theme-bw .lessons-info p {
+  color: #cccccc;
+}
+
+body.theme-bw .lessons-info strong {
+  color: #ffffff;
+}
+
+/* Post (individual blog posts also get B&W via their layout → default) */
+body.theme-bw .post {
+  background: #111111;
+  border-color: #2a2a2a;
+}
+
+body.theme-bw .post-header h1,
+body.theme-bw .post-title {
+  color: #ffffff;
+}
+
+body.theme-bw .post-meta {
+  color: #555555;
+}
+
+body.theme-bw .post-content {
+  color: #cccccc;
+}
+
+body.theme-bw .post-content strong {
+  color: #ffffff;
+}
+
+body.theme-bw .post-nav a {
+  background: #181818;
+  color: #cccccc;
+  border-color: #2a2a2a;
+
+  &:hover {
+    background: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+  }
+}
+
+/* Blog-post flair: reading progress bar */
+.reading-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  z-index: 2000;
+  background: linear-gradient(to right, #F5C518, #c4b5fd, #F5C518);
+  pointer-events: none;
+  transition: width 0.08s linear;
+}
+
+body.theme-bw .reading-progress-bar {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+/* Blog-post flair: meta monospace + post left-rule */
+body.theme-bw .post-meta {
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  letter-spacing: 1.5px;
+}
+
+body.theme-bw .post-content {
+  border-left: 2px solid rgba(255, 255, 255, 0.07);
+  padding-left: 20px;
+}

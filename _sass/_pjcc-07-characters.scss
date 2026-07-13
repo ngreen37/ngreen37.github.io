@@ -1,0 +1,489 @@
+/* =============================================================
+   Now Playing widget (blog posts)
+   ============================================================= */
+
+
+
+
+
+
+
+/* =============================================================
+   Character Flip Cards (characters index)
+   ============================================================= */
+
+.char-flip-page { max-width: 900px; margin: 0 auto; }
+
+
+
+.char-flip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 18px;
+}
+
+.char-flip-card {
+  height: 230px;
+  perspective: 900px;
+  cursor: pointer;
+}
+
+.char-flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.52s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.char-flip-card:hover .char-flip-inner {
+  transform: rotateY(180deg);
+}
+
+.char-flip-front,
+.char-flip-back {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  padding: 22px 18px;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Characters theme = violet "personnel dossier" (recoloured 2026-07-06,
+   the Characters pillar purple --c:#a879ff). */
+.char-flip-front {
+  background: rgba(46, 26, 78, 0.55);
+  border: 1px solid rgba(168, 121, 255, 0.4);
+}
+
+.char-flip-back {
+  background: rgba(18, 10, 34, 0.92);
+  border: 1px solid rgba(168, 121, 255, 0.32);
+  transform: rotateY(180deg);
+  justify-content: flex-start;
+  align-items: flex-start;
+  text-align: left;
+  gap: 8px;
+}
+
+.char-flip-piece {
+  font-size: 48px;
+  color: rgba(190, 150, 255, 0.7);
+  margin-bottom: 10px;
+  line-height: 1;
+}
+
+.char-flip-name {
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.88);
+  margin-bottom: 4px;
+}
+
+.char-flip-role {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(200, 178, 250, 0.55);
+}
+
+.char-flip-back-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: rgba(190, 150, 255, 0.5);
+  margin-bottom: 4px;
+  align-self: center;
+}
+
+.char-flip-clearance {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+
+
+.char-flip-link {
+  font-family: 'Poppins', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(190, 150, 255, 0.85);
+  text-decoration: none;
+  align-self: flex-end;
+  margin-top: auto;
+
+  &:hover {
+    color: #a879ff;
+    text-decoration: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .char-flip-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .char-flip-card { height: 200px; }
+  .char-flip-piece { font-size: 36px; }
+}
+
+/* =============================================================
+   Pieces Grid (Characters Page)
+   ============================================================= */
+
+
+
+
+
+
+
+.piece-name {
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #F5C518;
+  margin-bottom: 10px;
+}
+
+
+
+
+
+
+
+/* =============================================================
+   Character Chapter Timeline
+   ============================================================= */
+
+
+
+
+
+
+
+
+
+
+
+/* =============================================================
+   Redacted Hold-to-Reveal
+   ============================================================= */
+
+.c-reveal {
+  cursor: cell;
+  transition: color 0.2s;
+  user-select: none;
+}
+
+.c-reveal.is-revealing {
+  color: rgba(245, 197, 24, 0.95) !important;
+  letter-spacing: 0.02em;
+}
+
+/* =============================================================
+   Nav Transition Overlay
+   ============================================================= */
+
+.nav-transition {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+
+.nav-transition.is-visible {
+  opacity: 1;
+}
+
+.nav-transition-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #00ff41;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
+}
+
+/* =============================================================
+   World Status Ticker
+   ============================================================= */
+
+/* A formal broadcast ticker: gold station plate on the left (with a live dot),
+   hard gold rules top & bottom, and the headline crawl beside it. */
+.world-ticker-wrap {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  margin: 24px -28px 0;
+  background: #05030d;
+  border-top: 2px solid #F5C518;
+  border-bottom: 2px solid #F5C518;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.ticker-badge {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #F5C518;
+  color: #1a0f3d;
+  padding: 8px 16px 8px 20px;
+  /* an angled trailing edge, like a lower-third plate */
+  clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+}
+
+.ticker-badge-name {
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.ticker-badge-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: #fff;
+  background: #6a26dc;   /* PJCC purple — Nate vetoed the red */
+  border-radius: 3px;
+  padding: 3px 7px;
+
+  i {
+    width: 6px; height: 6px; border-radius: 50%; background: #fff;
+    animation: ticker-live-blink 1.4s steps(1) infinite;
+  }
+}
+
+@keyframes ticker-live-blink {
+  0%, 60% { opacity: 1; }
+  61%, 100% { opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-badge-live i { animation: none; }
+}
+
+/* a small badge when the reader has paused the ticker */
+.world-ticker-wrap.is-paused::after {
+  content: '⏸ PAUSED — TAP TO RESUME';
+  position: absolute; top: 50%; right: 28px; transform: translateY(-50%); z-index: 3;
+  font-family: 'Share Tech Mono', monospace; font-size: 9px; letter-spacing: 0.14em;
+  color: #ff8fd0;
+  background: rgba(5, 3, 13, 0.92);
+  padding: 3px 8px;
+}
+
+.ticker-outer {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  align-self: center;
+  padding: 10px 0;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
+}
+
+@media (max-width: 560px) {
+  .ticker-badge { padding: 6px 12px 6px 14px; gap: 7px; }
+  .ticker-badge-name { font-size: 9px; }
+}
+
+.ticker-track {
+  display: inline-block;
+  white-space: nowrap;
+  animation: ticker-scroll 155s linear infinite;
+  will-change: transform;
+}
+
+/* Pause the scroll while a reader taps or backgrounds the app. Hover-pause is
+   MOUSE-ONLY: on touch screens a tap leaves :hover stuck on, which froze the
+   crawl on phones until the next tap elsewhere (found 2026-07-11). */
+@media (hover: hover) {
+  .world-ticker-wrap:hover .ticker-track { animation-play-state: paused; }
+}
+.world-ticker-wrap.is-paused .ticker-track,
+.world-ticker-wrap.is-hidden .ticker-track {
+  animation-play-state: paused;
+}
+
+.ticker-item {
+  display: inline-block;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  color: #F5C518;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 0 0 0 64px;
+
+  &::after {
+    content: ' ◈';
+    color: rgba(245, 197, 24, 0.28);
+    margin-left: 8px;
+  }
+}
+
+/* studio promos (new / upcoming features) read distinctly from in-world news */
+.ticker-item--promo {
+  color: #ff8fd0;
+  font-weight: 700;
+
+  &::after {
+    content: ' ◆';
+    color: rgba(255, 143, 208, 0.4);
+  }
+}
+
+/* BREAKING takeover — the plate inverts and means it */
+.world-ticker-wrap.is-breaking { border-color: #ffd740; }
+.world-ticker-wrap.is-breaking .ticker-badge { background: #1a0f3d; color: #F5C518; }
+.world-ticker-wrap.is-breaking .ticker-badge-live { background: #F5C518; color: #1a0f3d; }
+.world-ticker-wrap.is-breaking .ticker-badge-live i { background: #1a0f3d; }
+.ticker-item--breaking { color: #fff; font-weight: 700; }
+
+/* Record Watch — live standings called in from the boards */
+.ticker-item--record { color: #6bffb8; font-weight: 700; }
+
+/* the Night Desk — the overnight shift runs a dimmer plate */
+.world-ticker-wrap.is-night { border-color: rgba(245, 197, 24, 0.45); }
+.world-ticker-wrap.is-night .ticker-badge { background: #2d1b69; color: #e3d6ff; }
+.world-ticker-wrap.is-night .ticker-badge-live { background: #4a3a86; }
+
+/* The old .ct-weather layer (home-page-only mist / unused rain) was retired
+   2026-07-12: the town weather now renders on EVERY page via .town-weather-overlay
+   (see pjcc-weather.js + the town-weather block further down). */
+
+@keyframes ticker-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* The Princess Walker / companion CSS was removed 2026-07-12 with the feature
+   (she was the visitor's pet; she isn't any more). Restore from git. */
+
+/* =============================================================
+   Character Name Glitch
+   ============================================================= */
+
+.char-chip-name.is-glitching {
+  color: rgba(196, 181, 253, 0.95);
+  text-shadow: 2px 0 rgba(245, 197, 24, 0.45), -2px 0 rgba(220, 80, 80, 0.45);
+  letter-spacing: 0.04em;
+}
+
+/* =============================================================
+   Konami Flash
+   ============================================================= */
+
+.konami-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+  opacity: 0;
+  background: transparent;
+}
+
+.konami-flash.is-active {
+  animation: konami-flash-anim 1.5s ease-out forwards;
+}
+
+@keyframes konami-flash-anim {
+  0%   { background: rgba(255, 140,  0, 0);    opacity: 1; }
+  4%   { background: rgba(255, 255, 255, 0.95); opacity: 1; }
+  8%   { background: rgba(255, 160,  0, 0.88); opacity: 1; }
+  16%  { background: rgba(255, 200, 40, 0.6);  opacity: 1; }
+  28%  { background: rgba(255, 140,  0, 0.72); opacity: 1; }
+  48%  { background: rgba(255, 140,  0, 0.22); opacity: 1; }
+  78%  { background: rgba(255, 140,  0, 0.06); opacity: 1; }
+  100% { background: rgba(255, 140,  0, 0);    opacity: 0; }
+}
+
+/* =============================================================
+   CRT Glitch (classified page)
+   ============================================================= */
+
+@keyframes crt-glitch {
+  0%, 87%, 100% { transform: none; filter: none; }
+  88%           { transform: translateX(-3px) skewX(-0.4deg); filter: hue-rotate(12deg); }
+  88.5%         { transform: translateX(5px);  filter: hue-rotate(-10deg) brightness(1.12); }
+  89%           { transform: translateX(-1px); filter: none; }
+  93%           { transform: none; filter: none; }
+  93.5%         { transform: translateX(4px);  filter: brightness(0.86); }
+  93.8%         { transform: none; filter: none; }
+}
+
+body.theme-classified {
+  animation: crt-flicker 10s linear infinite, crt-glitch 24s step-end infinite;
+}
+
+/* =============================================================
+   Story Arc Progress Bar (blog)
+   ============================================================= */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* =============================================================
+   Chess Milestone Badge
+   ============================================================= */
+
+.chess-milestone-wrap {
+  text-align: center;
+  margin-top: 10px;
+  min-height: 28px;
+}
+
+.chess-milestone {
+  display: inline-block;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: rgba(126, 201, 183, 0.68);
+  padding: 4px 14px;
+  border: 1px solid rgba(126, 201, 183, 0.22);
+  border-radius: 4px;
+  animation: milestone-glow 4.5s ease-in-out infinite;
+}
+
+@keyframes milestone-glow {
+  0%, 100% { border-color: rgba(126, 201, 183, 0.22); color: rgba(126, 201, 183, 0.68); }
+  50%       { border-color: rgba(126, 201, 183, 0.6); color: rgba(159, 224, 208, 1.0);  }
+}
+
+/* =============================================================
+   Fragments Easter Egg Link
+   ============================================================= */

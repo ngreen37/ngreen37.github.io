@@ -4,7 +4,6 @@ title: Leaderboards
 permalink: /leaderboards/
 ---
 
-<link rel="stylesheet" href="{{ '/assets/css/pjcc-profile.css' | relative_url }}">
 
 <!-- ===== THE BROADCAST — standings as a live sports feed (the commentators' channel) ===== -->
 <div class="lbtv">

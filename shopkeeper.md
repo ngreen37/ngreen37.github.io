@@ -4,7 +4,6 @@ title: Shopkeeper
 permalink: /shopkeeper/
 ---
 
-<link rel="stylesheet" href="{{ '/assets/css/pjcc-profile.css' | relative_url }}">
 
 <p class="qm-intro">The Shopkeeper keeps the gear. Spend the credits you earn in the games on field avatars — and switch back to any of your eight free operative faces whenever you like. Your <strong>companion pet</strong> is raised over in the <a href="/dossier/">Companion Den</a> on your Dossier.</p>
 

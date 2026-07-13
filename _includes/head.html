@@ -1,0 +1,80 @@
+{%- comment -%}
+  ═══════════════════════════════════════════════════════════════════════════════
+  THE HEAD. One file. Every layout uses it.
+  ───────────────────────────────────────────────────────────────────────────────
+  There used to be FOUR hand-maintained <head>s (default, studio-home, game,
+  easter-eggs). studio-home even carried a copy-pasted duplicate of default's
+  JSON-LD — its own comment admitted it. Every head change had to be made four
+  times, and forgetting one was silent. (Adding the PWA and the weather each cost
+  four edits; that is what prompted this.)
+
+  Optional include params — everything else is inferred from front matter:
+    raw_title=".."   a complete <title>, no " | PJCC" suffix (the splash uses this)
+    description=".." override the meta/OG description
+    noindex=true     keep it out of Google
+    nofollow=true    …and don't follow its links (the classified page)
+  ═══════════════════════════════════════════════════════════════════════════════
+{%- endcomment -%}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+{%- comment -%} "Reduce flourish" — an opt-in still-site preference. Applied to <html>
+     BEFORE any paint, so there's no flash of motion. {%- endcomment -%}
+<script>try{if(localStorage.getItem('pjcc.flourish')==='0')document.documentElement.classList.add('reduce-flourish');}catch(e){}</script>
+{% include town-weather.html %}
+
+{%- assign desc = include.description | default: page.description | default: site.description -%}
+{%- assign og_img = page.image | default: site.image -%}
+{%- assign og_title = include.raw_title | default: page.title | default: site.title -%}
+
+<title>{% if include.raw_title %}{{ include.raw_title }}{% elsif page.tab_title %}{{ page.tab_title }}{% elsif page.title %}{{ page.title }} | {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
+<meta name="description" content="{{ desc }}">
+<link rel="canonical" href="{{ page.url | absolute_url }}">
+<meta name="theme-color" content="#0a0714">
+
+{%- comment -%} Slow-rolled pages stay out of Google: anything flagged noindex, plus
+     every hidden character/location from _config.yml. {%- endcomment -%}
+{% if include.noindex or page.noindex or site.hidden_character_urls contains page.url or site.hidden_location_urls contains page.url %}<meta name="robots" content="noindex{% if include.nofollow %}, nofollow{% endif %}">{% endif %}
+
+{%- comment -%} Structured data: who we are + what the site is (Knowledge Graph food).
+     ONE copy now — this used to be duplicated in studio-home.html. {%- endcomment -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "{{ site.url }}/#org",
+      "name": "McPuppy Studios",
+      "url": "{{ site.url }}/",
+      "logo": "{{ site.url }}{{ site.image }}",
+      "sameAs": ["{{ site.patreon_url }}"]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "{{ site.url }}/#website",
+      "url": "{{ site.url }}/",
+      "name": "Princess and the Journey to Chess City",
+      "alternateName": ["PJCC", "McPuppy Studios"],
+      "publisher": { "@id": "{{ site.url }}/#org" }
+    }
+  ]
+}
+</script>
+
+{%- comment -%} Social / Open Graph — rich previews when a link is shared. {%- endcomment -%}
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="McPuppy Studios">
+<meta property="og:title" content="{{ og_title }}">
+<meta property="og:description" content="{{ desc }}">
+<meta property="og:url" content="{{ page.url | absolute_url }}">
+<meta property="og:image" content="{{ og_img | absolute_url }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ og_title }}">
+<meta name="twitter:description" content="{{ desc }}">
+<meta name="twitter:image" content="{{ og_img | absolute_url }}">
+
+<link rel="icon" href="{{ '/assets/images/favicon.svg' | relative_url }}" type="image/svg+xml">
+{%- comment -%} ONE stylesheet: every partial in _sass/ compiles into this. {%- endcomment -%}
+<link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+{% include pwa-head.html %}

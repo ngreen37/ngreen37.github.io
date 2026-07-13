@@ -4,7 +4,6 @@ title: PJCC Chess Academy
 permalink: /academy/
 ---
 
-<link rel="stylesheet" href="{{ '/assets/css/pjcc-profile.css' | relative_url }}">
 
 <div class="ac-hero">
   <div class="ac-crest">♚</div>

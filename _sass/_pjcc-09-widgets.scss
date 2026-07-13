@@ -1,0 +1,697 @@
+/* =============================================================
+   Chess Lessons — Daily Puzzle Widget
+   ============================================================= */
+
+.chess-puzzle-widget {
+  margin-top: 32px;
+  padding: 24px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
+}
+
+.chess-puzzle-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: rgba(255,255,255,0.28);
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+.puzzle-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.puzzle-date {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: rgba(255,255,255,0.22);
+  text-transform: uppercase;
+}
+
+.puzzle-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+.puzzle-board-img {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  border-radius: 6px;
+  display: block;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.puzzle-solve-btn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.5);
+  text-decoration: none;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 4px;
+  padding: 8px 22px;
+  transition: border-color 0.15s, color 0.15s;
+
+  &:hover {
+    border-color: rgba(245, 197, 24, 0.45);
+    color: rgba(245, 197, 24, 0.88);
+  }
+}
+
+/* =============================================================
+   Character Dossier Panel
+   ============================================================= */
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* (Arc Panel near-unlock glow removed 2026-07-11 — dead since the film strip left.) */
+
+/* =============================================================
+   COMMAND CENTER — SANDBOX PAGE (/sandbox/)
+   ============================================================= */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ── Grid ──────────────────────────────────────────── */
+
+
+
+
+
+
+
+
+
+
+
+/* ── Console Feed ──────────────────────────────────── */
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ── Constellation ─────────────────────────────────── */
+
+
+
+
+
+/* Shared SVG opacity pulses — 5 timings, applied via class on <circle> elements */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ── Operative Rank ────────────────────────────────── */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ── Mission Countdown ─────────────────────────────── */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ── Opening Intel ─────────────────────────────────── */
+
+
+
+
+
+
+
+.ow-name {
+  font-family: 'Poppins', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: #F5C518;
+  line-height: 1.2;
+}
+
+
+
+
+
+
+
+
+
+.ow-tag {
+  display: inline-block;
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  color: #00ff41;
+  border: 1px solid #030a02;
+  background: rgba(0, 255, 65, 0.06);
+  padding: 3px 10px;
+  border-radius: 2px;
+  text-transform: uppercase;
+}
+
+
+
+/* ── Asset Values ──────────────────────────────────── */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ── Fragment Grid ─────────────────────────────────── */
+
+.frag-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+  padding: 14px 14px 8px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ── Footer note ───────────────────────────────────── */
+
+
+
+/* =============================================================
+   ROUND 6 — Items 1–40
+   ============================================================= */
+
+/* 1 — Gold shimmer headings */
+
+
+
+/* (2 — chess notation watermark + arc-section flair removed 2026-07-11 — no markup anywhere.) */
+
+/* 3 — CRT scanline animation on classified */
+@keyframes crt-scan {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 80px; }
+}
+.theme-classified .classified-scanlines {
+  animation: crt-scan 6s linear infinite;
+}
+
+/* 7 — Data stream card hover */
+.data-stream-card { position: relative; overflow: hidden; }
+.ds-flow {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 24px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7px;
+  color: #00ff41;
+  line-height: 1.3;
+  opacity: 0;
+  transition: opacity 0.2s;
+  word-break: break-all;
+  white-space: normal;
+  padding: 0 2px;
+}
+.data-stream-card:hover .ds-flow { opacity: 0.65; }
+
+/* (8 — arc panel floating star removed 2026-07-11 — dead since the film strip left.) */
+
+/* 9 — Transmission Received toast */
+.tx-toast {
+  position: fixed;
+  bottom: 32px;
+  right: 24px;
+  z-index: 9999;
+  background: #12093a;
+  border: 1px solid rgba(245, 197, 24, 0.5);
+  border-left: 3px solid #F5C518;
+  padding: 12px 18px;
+  font-family: 'Share Tech Mono', monospace;
+  color: #F5C518;
+  letter-spacing: 0.08em;
+  max-width: 300px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(16px);
+  transition: opacity 0.28s, transform 0.28s;
+}
+.tx-toast.is-visible { opacity: 1; transform: translateX(0); }
+.tx-toast-header {
+  font-size: 8px;
+  color: rgba(245, 197, 24, 0.45);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.tx-toast-body { font-size: 11px; color: #FFE566; line-height: 1.5; }
+
+/* 10 — Classified redaction static hover */
+@keyframes redact-static {
+  0%, 100% { letter-spacing: 0; opacity: 1; }
+  30%  { letter-spacing: 0.5px; opacity: 0.7; }
+  60%  { letter-spacing: -0.3px; opacity: 0.85; }
+}
+.theme-classified .c-reveal:not(.is-revealing):hover {
+  animation: redact-static 0.2s ease-in-out infinite;
+}
+
+/* (11 — ink-wipe block removed 2026-07-11 — no markup anywhere.) */
+
+/* (12 — Aurora bands removed 2026-07-12, Nate. The whole .aurora-wrap/.aurora-band
+   system + its markup + the offscreen-pause observer are gone; the hero's ambient
+   glow is now the sky-phase gradient + the weather. Restore from git if missed.) */
+
+/* 13 — Location fake weather */
+.loc-weather {
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(18, 9, 58, 0.65);
+  border: 1px solid rgba(245, 197, 24, 0.18);
+  border-radius: 6px; padding: 12px 18px; margin-bottom: 20px;
+  font-family: 'Share Tech Mono', monospace;
+}
+.loc-weather-icon { font-size: 22px; flex-shrink: 0; }
+.loc-weather-data { display: flex; flex-direction: column; gap: 2px; }
+.loc-weather-label { font-size: 8px; letter-spacing: 0.2em; color: rgba(245, 197, 24, 0.4); text-transform: uppercase; }
+.loc-weather-temp { font-size: 15px; color: #F5C518; }
+.loc-weather-cond { font-size: 11px; color: #9b87c0; line-height: 1.4; }
+
+/* 14 — Back-to-top button */
+.back-to-top {
+  position: fixed;
+  bottom: 28px; right: 24px;
+  z-index: 8999;
+  width: 38px; height: 38px;
+  background: #12093a;
+  border: 1px solid rgba(245, 197, 24, 0.35);
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: #F5C518;
+  cursor: pointer; opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.3s, transform 0.3s, color 0.2s, border-color 0.2s;
+  text-decoration: none; user-select: none;
+}
+.back-to-top.is-visible { opacity: 1; transform: translateY(0); }
+.back-to-top:hover { color: #FFE566; border-color: #FFE566; transform: translateY(-3px); text-decoration: none; }
+.back-to-top.is-promoted { font-size: 16px; }
+
+/* 15 — Arrow-key character navigator */
+.char-flip-card.is-focused .char-flip-inner {
+  box-shadow: 0 0 0 2px #a879ff, 0 0 22px rgba(168, 121, 255, 0.3);
+}
+
+
+/* 16 — Dead Drop page */
+.dead-drop-wrap {
+  max-width: 680px; margin: 0 auto; padding: 2rem 1rem 3rem;
+  font-family: 'Share Tech Mono', monospace;
+}
+.dead-drop-eyebrow { font-size: 9px; letter-spacing: 0.22em; color: rgba(245, 197, 24, 0.4); text-transform: uppercase; margin-bottom: 8px; }
+.dead-drop-title { font-size: clamp(22px, 4vw, 34px); color: #F5C518; font-weight: 800; font-family: 'Poppins', sans-serif; margin-bottom: 4px; }
+.dead-drop-date { font-size: 10px; color: #4a3870; letter-spacing: 0.14em; margin-bottom: 28px; }
+.dead-drop-body { border-left: 2px solid rgba(245, 197, 24, 0.25); padding-left: 20px; color: #ddd6f3; font-size: 13px; line-height: 2; margin-bottom: 28px; }
+.dead-drop-footer { font-size: 9px; color: rgba(107, 90, 142, 0.55); letter-spacing: 0.14em; border-top: 1px solid rgba(245, 197, 24, 0.1); padding-top: 16px; }
+
+/* 18 — Fragment Recovery */
+.recovery-wrap { max-width: 820px; margin: 0 auto; padding: 2rem 1rem 3rem; font-family: 'Share Tech Mono', monospace; }
+.recovery-header { text-align: center; margin-bottom: 32px; }
+.recovery-title { font-size: clamp(20px, 3.5vw, 30px); color: #F5C518; font-weight: 800; font-family: 'Poppins', sans-serif; margin-bottom: 6px; }
+.recovery-sub { font-size: 11px; color: rgba(155, 135, 192, 0.65); letter-spacing: 0.12em; }
+.recovery-doc { background: rgba(10, 7, 20, 0.88); border: 1px solid rgba(245, 197, 24, 0.2); border-radius: 6px; padding: 28px 32px; line-height: 2.4; font-size: 14px; color: #ddd6f3; }
+.rw { display: inline-block; cursor: default; margin: 0 2px; user-select: none; position: relative; }
+.rw-inner {
+  display: inline-block;
+  color: transparent;
+  background: rgba(245, 197, 24, 0.1);
+  border-radius: 2px;
+  padding: 0 3px;
+  transition: background 0.4s, color 0.4s;
+  white-space: nowrap;
+  min-width: 2ch;
+  position: relative;
+}
+.rw-inner::before { content: attr(data-b); color: rgba(245, 197, 24, 0.6); position: absolute; left: 3px; }
+.rw.is-revealing .rw-inner { background: rgba(245, 197, 24, 0.08); }
+.rw.is-revealing .rw-inner::before { color: rgba(245, 197, 24, 0.4); }
+.rw.is-revealed .rw-inner { color: #ddd6f3; background: rgba(245, 197, 24, 0.04); }
+.rw.is-revealed .rw-inner::before { content: ''; }
+.recovery-progress { margin-top: 18px; text-align: center; font-size: 10px; color: rgba(245, 197, 24, 0.45); letter-spacing: 0.2em; }
+.recovery-complete { margin-top: 22px; padding: 18px 24px; background: rgba(245, 197, 24, 0.04); border: 1px solid rgba(245, 197, 24, 0.28); border-radius: 6px; text-align: center; color: #FFE566; font-size: 12px; letter-spacing: 0.1em; line-height: 1.7; display: none; }
+.recovery-complete.is-visible { display: block; }
+
+/* 20 — Share This Transmission */
+.share-tx-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; border: 1px solid rgba(245, 197, 24, 0.28);
+  color: rgba(245, 197, 24, 0.6); font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: 0.14em; padding: 5px 14px;
+  cursor: pointer; border-radius: 3px;
+  transition: border-color 0.2s, color 0.2s; text-transform: uppercase;
+}
+.share-tx-btn:hover { border-color: #F5C518; color: #F5C518; }
+
+/* ── "Reduce flourish" (#16) — a manual still-site preference (footer toggle),
+   like prefers-reduced-motion but opt-in. Quiets the AMBIENT, looping motion
+   site-wide; the news ticker + one-shot entrances stay. Class rides on <html>. ── */
+.reduce-flourish .home-glyphs-track,
+.reduce-flourish .ribbon-track,
+.reduce-flourish .hero-skyflash,
+.reduce-flourish .drift-piece,
+.reduce-flourish .studio-drift-sigil,
+.reduce-flourish .studio-quad--patreon::before,
+.reduce-flourish .studio-corner-logo { animation: none !important; }
+.reduce-flourish .studio-lean { display: none !important; }
+/* (the town weather layer hides itself entirely under reduce-flourish — see the
+   .town-weather-overlay block; the hero no longer carries its own rain.) */
+
+.flourish-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; border: 1px solid rgba(245, 197, 24, 0.28);
+  color: rgba(245, 197, 24, 0.6); font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: 0.14em; padding: 5px 14px;
+  cursor: pointer; border-radius: 3px;
+  transition: border-color 0.2s, color 0.2s; text-transform: uppercase;
+}
+.flourish-toggle:hover { border-color: #F5C518; color: #F5C518; }
+.flourish-toggle[aria-pressed="true"] { border-color: #6bffb8; color: #6bffb8; }
+
+/* ── Town-wide weather (#2) — the whole town shares one forecast (PJCC_TIME): on
+   rain/mist days a soft atmospheric wash tints EVERY page (academy included).
+   Static + opacity-only (no per-frame cost — the animated rain stays hero-only,
+   which is what fixed the old full-screen-rain lag). Off under reduce-flourish. ── */
+/* 2026-07-12 (Nate: "I want all weathers to carry over to all screens"): this is no
+   longer just a colour wash — the REAL weather now falls on every page (the hero no
+   longer owns the rain). Built by assets/js/pjcc-weather.js.
+   PERF — the whole ballgame, since a full-screen rain layer is what lagged the site
+   on 2026-07-11: the container is position:fixed + overflow:hidden, so the layer is
+   capped at the VIEWPORT and never grows with the document; and every moving part
+   animates transform/opacity ONLY (compositor, zero repaint). Nothing animates
+   background-position. Off entirely under reduce-flourish. */
+/* z-index 900: ABOVE the page content, but BELOW the interactive overlays — the ⌘K
+   command palette (1000), the nav sheet, toasts and the letterbox. At the old 9990 the
+   rain fell over the top of the open search modal, which looked broken. Weather is
+   atmosphere; it must never sit on top of something you're trying to use. */
+.town-weather-overlay { position: fixed; inset: 0; z-index: 900; pointer-events: none;
+  overflow: hidden; contain: layout style paint; }
+html.reduce-flourish .town-weather-overlay { display: none; }
+@media (prefers-reduced-motion: reduce) { .tw-rain, .tw-mist, .tw-bolt { display: none; } }
+
+/* the atmospheric wash — static, opacity-only (still tints the page even when every
+   moving part is switched off) */
+.town-weather-overlay::before { content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s ease; }
+html.town-rain .town-weather-overlay::before { opacity: 1; background: linear-gradient(180deg, rgba(90,120,180,0.10) 0%, rgba(40,60,110,0.05) 100%); }
+html.town-mist .town-weather-overlay::before { opacity: 1; background: radial-gradient(120% 80% at 50% 0%, rgba(205,214,235,0.11), rgba(205,214,235,0.04) 60%, transparent); }
+
+/* RAIN — the hero's exact recipe (sparse streaks baked into a tiled background, two
+   tilted sheets at different depths/speeds), now over the whole viewport. The sheets
+   only SLIDE; translateY == the tile height, so the fall loops seamlessly. */
+.tw-rain { position: absolute; inset: 0; opacity: 0; transition: opacity 0.6s ease; }
+html.town-rain .tw-rain { opacity: 1; }
+.tw-rain::before, .tw-rain::after { content: ''; position: absolute;
+  left: -40%; right: -40%; top: -70%; bottom: -70%; will-change: transform; }
+.tw-rain::before {
+  background-image:
+    radial-gradient(1.3px 10px at 20% 16%, rgba(178,210,255,0.42), transparent 60%),
+    radial-gradient(1.1px 13px at 63% 52%, rgba(178,210,255,0.36), transparent 60%),
+    radial-gradient(1.2px 8px  at 86% 80%, rgba(178,210,255,0.30), transparent 60%);
+  background-size: 104px 132px; animation: tw-rain-a 1.25s linear infinite; }
+.tw-rain::after {
+  background-image:
+    radial-gradient(1px 9px  at 38% 34%, rgba(178,210,255,0.26), transparent 60%),
+    radial-gradient(0.9px 6px at 79% 7%,  rgba(178,210,255,0.20), transparent 60%);
+  background-size: 138px 168px; animation: tw-rain-b 1.95s linear infinite; }
+@keyframes tw-rain-a { from { transform: rotate(8deg)  translateY(-132px); } to { transform: rotate(8deg)  translateY(0); } }
+@keyframes tw-rain-b { from { transform: rotate(13deg) translateY(-168px); } to { transform: rotate(13deg) translateY(0); } }
+
+/* intensity — the storm wanders light↔heavy (the engine sets these on <html>) */
+html.town-rain-light .tw-rain { opacity: 0.5; }
+html.town-rain-light .tw-rain::before { animation-duration: 1.75s; }
+html.town-rain-light .tw-rain::after  { animation-duration: 2.7s; }
+html.town-rain-med   .tw-rain { opacity: 0.82; }
+html.town-rain-heavy .tw-rain { opacity: 1; }
+html.town-rain-heavy .tw-rain::before { animation-duration: 0.82s; }
+html.town-rain-heavy .tw-rain::after  { animation-duration: 1.35s; }
+
+/* MIST — sea fog: two soft banks that drift back and forth (alternate = seamless,
+   no jump-cut) and pool toward the bottom of the screen, like it does on the water. */
+.tw-mist { position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s ease; }
+html.town-mist .tw-mist { opacity: 1; }
+.tw-mist::before, .tw-mist::after { content: ''; position: absolute;
+  top: 0; bottom: 0; left: -25%; right: -25%; will-change: transform; }
+.tw-mist::before {
+  background:
+    radial-gradient(46% 34% at 20% 82%, rgba(205,214,235,0.15), transparent 72%),
+    radial-gradient(40% 30% at 62% 92%, rgba(205,214,235,0.12), transparent 74%),
+    radial-gradient(36% 26% at 88% 74%, rgba(205,214,235,0.09), transparent 76%);
+  animation: tw-mist-a 48s ease-in-out infinite alternate; }
+.tw-mist::after {
+  background:
+    radial-gradient(44% 28% at 35% 96%, rgba(190,202,228,0.12), transparent 74%),
+    radial-gradient(50% 34% at 78% 86%, rgba(190,202,228,0.08), transparent 76%);
+  animation: tw-mist-b 71s ease-in-out infinite alternate; }
+@keyframes tw-mist-a { from { transform: translate3d(-7%,0,0); } to { transform: translate3d(7%,0,0); } }
+@keyframes tw-mist-b { from { transform: translate3d(5%,0,0); }  to { transform: translate3d(-6%,0,0); } }
+
+/* LIGHTNING — stormy dusk/nights only, and only when it's really coming down. A brief
+   full-screen flash; opacity-only. Softer than the old hero bolt (0.92 → 0.55) because
+   it now fires over every page, text included. */
+.tw-bolt { position: absolute; inset: 0; opacity: 0;
+  background:
+    radial-gradient(70% 45% at 50% 0%, rgba(220,232,255,0.55), transparent 70%),
+    linear-gradient(180deg, rgba(200,220,255,0.28), transparent 60%); }
+.tw-bolt.flash { animation: tw-bolt 0.9s ease-out; }
+@keyframes tw-bolt {
+  0% { opacity: 0; } 4% { opacity: 0.55; } 10% { opacity: 0.08; }
+  17% { opacity: 0.42; } 28% { opacity: 0.03; } 100% { opacity: 0; } }
+
+/* ── #17 keyboard focus — a consistent gold ring on every interactive element,
+   the custom ones included (quads, the Gauntlet door, game cards, den controls,
+   toggles). Shows only for keyboard navigation (:focus-visible), never on a mouse
+   click. The outline follows each element's own border-radius. ── */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
+textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid #F5C518; outline-offset: 2px;
+}
+.studio-quad:focus-visible, .gdoor:focus-visible, .gcard:focus-visible,
+.den-btn:focus-visible, .den-cell:focus-visible, .den-open-btn:focus-visible,
+.flourish-toggle:focus-visible, .share-tx-btn:focus-visible,
+.studio-corner-lang:focus-visible, .lang-toggle:focus-visible {
+  outline: 2px solid #F5C518; outline-offset: 3px;
+}
+.share-tx-flash {
+  position: fixed; bottom: 88px; left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  z-index: 9998; background: #12093a;
+  border: 1px solid rgba(245, 197, 24, 0.45);
+  padding: 10px 24px; font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; color: #FFE566; letter-spacing: 0.14em;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+}
+.share-tx-flash.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* 25 — Mission countdown (the wrapper is .pj-counter on /projects/; the old
+   .home-mission-countdown wrapper class was swept 2026-07-12 — nothing emits it) */
+.home-mc-label { font-family: 'Share Tech Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: rgba(126, 201, 183, 0.8); text-transform: uppercase; margin-bottom: 5px; }
+.home-mc-display { font-family: 'Share Tech Mono', monospace; font-size: clamp(16px, 2.5vw, 24px); color: #9fe0d0; letter-spacing: 0.1em; }
+.home-mc-target { font-family: 'Share Tech Mono', monospace; font-size: 10px; font-weight: 700; color: rgba(126, 201, 183, 0.55); letter-spacing: 0.14em; margin-top: 4px; }
+
+/* 26 — 500 Incident Report */
+.incident-wrap { max-width: 680px; margin: 4rem auto; padding: 0 1.5rem; font-family: 'Share Tech Mono', monospace; }
+.incident-stamp { font-size: 9px; letter-spacing: 0.22em; color: rgba(245, 197, 24, 0.4); text-transform: uppercase; margin-bottom: 10px; }
+.incident-code { font-size: clamp(60px, 14vw, 110px); color: rgba(245, 197, 24, 0.1); font-weight: 900; font-family: 'Poppins', sans-serif; line-height: 1; margin-bottom: -14px; }
+.incident-title { font-size: clamp(20px, 4vw, 32px); color: #F5C518; font-weight: 800; font-family: 'Poppins', sans-serif; margin-bottom: 8px; }
+.incident-body { color: #9b87c0; font-size: 12px; line-height: 1.9; border-left: 2px solid rgba(245, 197, 24, 0.18); padding-left: 16px; margin: 20px 0; }
+.incident-home-link { display: inline-block; color: #F5C518; text-decoration: none; font-size: 11px; letter-spacing: 0.1em; border: 1px solid rgba(245, 197, 24, 0.3); padding: 8px 18px; border-radius: 3px; transition: border-color 0.2s, background 0.2s; }
+.incident-home-link:hover { border-color: #F5C518; background: rgba(245, 197, 24, 0.05); text-decoration: none; }
+
+/* 28 — Chess City entry permit badge */
+.chess-city-permit {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(18, 9, 58, 0.95);
+  border: 1px solid rgba(245, 197, 24, 0.42);
+  padding: 3px 10px; border-radius: 3px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; color: #F5C518; letter-spacing: 0.1em; vertical-align: middle;
+}
+
+/* 30 — World State banner */
+.world-state-banner { background: rgba(10, 7, 20, 0.75); border-left: 3px solid #9b87c0; border-radius: 0 6px 6px 0; padding: 14px 20px; margin-bottom: 24px; font-family: 'Share Tech Mono', monospace; }
+.world-state-eyebrow { font-size: 8px; letter-spacing: 0.22em; color: rgba(155, 135, 192, 0.5); text-transform: uppercase; margin-bottom: 6px; }
+.world-state-text { font-size: 13px; color: #9b87c0; line-height: 1.6; }
+.world-state-date { font-size: 9px; color: rgba(107, 90, 142, 0.5); margin-top: 5px; letter-spacing: 0.1em; }
+
+/* 33 — Chess Lessons: Opening of Week */
+.cl-opening { margin: 28px 0; background: rgba(13, 8, 30, 0.7); border: 1px solid rgba(245, 197, 24, 0.18); border-radius: 6px; padding: 18px 22px; font-family: 'Share Tech Mono', monospace; }
+.cl-opening-label { font-size: 9px; letter-spacing: 0.22em; color: rgba(245, 197, 24, 0.42); text-transform: uppercase; margin-bottom: 10px; }
+.cl-opening-eco { font-size: 10px; color: #00ff41; letter-spacing: 0.1em; margin-bottom: 4px; }
+.cl-opening-name { font-size: 16px; color: #F5C518; font-weight: 700; font-family: 'Poppins', sans-serif; margin-bottom: 8px; }
+.cl-opening-moves { font-size: 12px; color: #9b87c0; padding: 6px 10px; background: rgba(45, 27, 105, 0.3); border-radius: 3px; letter-spacing: 0.06em; margin-bottom: 8px; }
+.cl-opening-note { font-size: 11px; color: rgba(196, 181, 253, 0.6); line-height: 1.7; font-style: italic; }
+
+/* 34 — Piece hierarchy */
+.cl-piece-chart { margin: 28px 0; font-family: 'Share Tech Mono', monospace; }
+.cl-piece-chart-label { font-size: 9px; letter-spacing: 0.22em; color: rgba(245, 197, 24, 0.42); text-transform: uppercase; margin-bottom: 14px; }
+.cl-piece-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.cl-piece-sym { font-size: 20px; width: 28px; text-align: center; color: #ddd6f3; flex-shrink: 0; }
+.cl-piece-name { font-size: 10px; color: #9b87c0; width: 58px; letter-spacing: 0.06em; flex-shrink: 0; }
+.cl-piece-bar-wrap { flex: 1; height: 7px; background: rgba(255, 255, 255, 0.05); border-radius: 2px; overflow: hidden; }
+.cl-piece-bar { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #2D1B69 0%, #F5C518 100%); width: 0; transition: width 1.3s cubic-bezier(0.22, 1, 0.36, 1); }
+.cl-piece-val { font-size: 12px; color: #FFE566; width: 22px; text-align: right; flex-shrink: 0; }
+
+/* 35 — Endgame position of week */
+.cl-endgame { margin: 28px 0; background: rgba(10, 7, 20, 0.7); border: 1px solid rgba(155, 135, 192, 0.18); border-radius: 6px; padding: 18px 22px; font-family: 'Share Tech Mono', monospace; }
+.cl-endgame-label { font-size: 9px; letter-spacing: 0.22em; color: rgba(155, 135, 192, 0.48); text-transform: uppercase; margin-bottom: 10px; }
+.cl-endgame-week { font-size: 10px; color: #4a3870; margin-bottom: 6px; letter-spacing: 0.08em; }
+.cl-endgame-name { font-size: 15px; color: #9b87c0; font-weight: 700; font-family: 'Poppins', sans-serif; margin-bottom: 6px; }
+.cl-endgame-desc { font-size: 11px; color: rgba(196, 181, 253, 0.58); line-height: 1.7; margin-bottom: 12px; }
+.cl-endgame-link { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; color: #9b87c0; text-decoration: none; border: 1px solid rgba(155, 135, 192, 0.28); padding: 5px 12px; border-radius: 3px; transition: color 0.2s, border-color 0.2s; }
+.cl-endgame-link:hover { color: #ddd6f3; border-color: #9b87c0; text-decoration: none; }
+
+/* 37 — Blindfold training toggle */
+.cl-blindfold-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-family: 'Share Tech Mono', monospace; }
+.cl-blindfold-label { font-size: 10px; color: rgba(245, 197, 24, 0.45); letter-spacing: 0.12em; }
+.cl-blindfold-toggle { background: transparent; border: 1px solid rgba(245, 197, 24, 0.28); color: rgba(245, 197, 24, 0.55); font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 0.1em; padding: 4px 12px; cursor: pointer; border-radius: 3px; transition: border-color 0.2s, color 0.2s, background 0.2s; }
+.cl-blindfold-toggle:hover, .cl-blindfold-toggle.is-active { border-color: #F5C518; color: #F5C518; background: rgba(245, 197, 24, 0.05); }
+.cl-blindfold-overlay { display: none; padding: 48px 20px; text-align: center; background: rgba(10, 7, 20, 0.95); border: 1px solid rgba(245, 197, 24, 0.18); border-radius: 6px; color: #F5C518; font-family: 'Share Tech Mono', monospace; font-size: 13px; letter-spacing: 0.08em; line-height: 1.8; }
+#chess-embed-wrap.is-blindfold .chess-embed-container { display: none; }
+#chess-embed-wrap.is-blindfold .lessons-game-coming-soon { display: none; }
+#chess-embed-wrap.is-blindfold .cl-blindfold-overlay { display: block; }
+
+/* 39 — Chess resources briefing */
+.cl-resources { margin: 28px 0; font-family: 'Share Tech Mono', monospace; }
+.cl-resources-label { font-size: 9px; letter-spacing: 0.22em; color: rgba(167, 139, 250, 0.5); text-transform: uppercase; margin-bottom: 14px; }
+.cl-resource-card { display: flex; align-items: flex-start; gap: 14px; background: rgba(13, 8, 30, 0.7); border: 1px solid rgba(167, 139, 250, 0.16); border-left: 2px solid #a78bfa; border-radius: 4px; padding: 12px 16px; margin-bottom: 10px; text-decoration: none; transition: border-color 0.2s, background 0.2s; }
+.cl-resource-card:hover { border-left-color: #F5C518; border-color: rgba(245, 197, 24, 0.25); background: rgba(18, 9, 58, 0.65); text-decoration: none; }
+.cl-resource-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.cl-resource-info { display: flex; flex-direction: column; gap: 3px; }
+.cl-resource-name { font-size: 12px; color: #F5C518; }
+.cl-resource-desc { font-size: 10px; color: rgba(155, 135, 192, 0.68); line-height: 1.5; }
+.cl-resource-tag { display: inline-block; font-size: 8px; color: rgba(167, 139, 250, 0.65); border: 1px solid rgba(167, 139, 250, 0.22); padding: 1px 6px; border-radius: 2px; }
+
+/* 40 — Tactics streak */
+.cl-streak { display: flex; align-items: center; gap: 12px; padding: 12px 18px; background: rgba(10, 7, 20, 0.7); border: 1px solid rgba(245, 197, 24, 0.18); border-radius: 6px; margin: 16px 0; font-family: 'Share Tech Mono', monospace; }
+.cl-streak-fire { font-size: 22px; }
+.cl-streak-info { display: flex; flex-direction: column; gap: 2px; }
+.cl-streak-label { font-size: 9px; letter-spacing: 0.2em; color: rgba(245, 197, 24, 0.42); text-transform: uppercase; }
+.cl-streak-count { font-size: 20px; color: #FFE566; font-weight: 700; line-height: 1; }
+.cl-streak-sub { font-size: 9px; color: rgba(155, 135, 192, 0.48); letter-spacing: 0.08em; }
+
+/* 22/38 — Daily scenario */
+.cl-scenario { margin: 28px 0; background: rgba(18, 9, 58, 0.55); border: 1px solid rgba(245, 197, 24, 0.2); border-radius: 6px; padding: 18px 22px; font-family: 'Share Tech Mono', monospace; }
+.cl-scenario-label { font-size: 9px; letter-spacing: 0.22em; color: rgba(245, 197, 24, 0.42); text-transform: uppercase; margin-bottom: 10px; }
+.cl-scenario-day { font-size: 10px; color: #4a3870; margin-bottom: 6px; letter-spacing: 0.08em; }
+.cl-scenario-title { font-size: 15px; color: #FFE566; font-weight: 700; font-family: 'Poppins', sans-serif; margin-bottom: 8px; }
+.cl-scenario-body { font-size: 12px; color: #9b87c0; line-height: 1.8; }
+.cl-scenario-tag { display: inline-block; font-size: 9px; letter-spacing: 0.1em; color: #00ff41; border: 1px solid rgba(0, 255, 65, 0.28); padding: 2px 8px; border-radius: 2px; margin-top: 10px; }

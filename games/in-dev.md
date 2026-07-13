@@ -4,8 +4,6 @@ title: In Development
 permalink: /games/in-dev/
 ---
 
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ '/assets/css/pjcc-games.css' | relative_url }}">
 
 <div id="games-hall" class="hall hall--dev" data-hall="dev" data-base="{{ '/games/' | relative_url }}" style="--accent:#ffb020;">
   <div class="hall-bar">

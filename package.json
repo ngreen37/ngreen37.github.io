@@ -4,12 +4,11 @@
   "description": "README:  New Project - Princess and the Journey to Chess City\r This is a repository to blog my progress on PJCC.  I have never written a story or done animation or built a website or used GitHub, but here goes nothing.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "eleventy --serve",
-    "build": "eleventy",
+    "test": "npm run test:css && npm run test:pwa && npm run test:links && npm run sweep",
     "test:games": "node tests/chess.check.js && node tests/gauntlet.check.js && node tests/skyrun.check.js && node tests/ftd.check.js && node tests/sandmine.check.js && node tests/shogi.check.js && node tests/pwa.check.js && node tests/links.check.js",
     "test:links": "node tests/links.check.js",
     "test:pwa": "node tests/pwa.check.js",
+    "test:css": "node tests/css.check.js",
     "sweep": "node tests/sweep.js",
     "test:chess": "node tests/chess.check.js",
     "test:accuracy": "node tests/validate-chess.js",
@@ -35,6 +34,7 @@
     "@11ty/eleventy": "^3.1.5"
   },
   "devDependencies": {
-    "puppeteer-core": "^25.3.0"
+    "puppeteer-core": "^25.3.0",
+    "sass": "^1.101.0"
   }
 }

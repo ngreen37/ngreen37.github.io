@@ -4,7 +4,6 @@ title: Mailing List
 permalink: /mailing-list/
 ---
 
-<link rel="stylesheet" href="{{ '/assets/css/pjcc-profile.css' | relative_url }}">
 
 <div class="ml-refbanner" id="ml-refbanner" hidden></div>
 

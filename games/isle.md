@@ -4,7 +4,6 @@ title: Shogi Isle
 permalink: /games/isle/
 ---
 
-<link rel="stylesheet" href="{{ '/assets/css/pjcc-games.css' | relative_url }}">
 
 <div id="games-hall" class="hall hall--isle" data-hall="isle" data-base="{{ '/games/' | relative_url }}" style="--accent:#e0483c;">
   <div class="hall-bar">

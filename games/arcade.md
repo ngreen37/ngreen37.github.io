@@ -4,8 +4,6 @@ title: Arcade
 permalink: /games/arcade/
 ---
 
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ '/assets/css/pjcc-games.css' | relative_url }}">
 
 <div id="games-hall" class="hall hall--mm2" data-hall="arcade" data-base="{{ '/games/' | relative_url }}">
   <div class="hall-bar">

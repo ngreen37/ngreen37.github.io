@@ -1,64 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>McPuppy Studios — Princess and the Journey to Chess City</title>
-  <meta name="description" content="Home of Princess and the Journey to Chess City (PJCC) — an animated series in the making, plus an arcade of free chess games, all built in the open by McPuppy Studios.">
-  <link rel="canonical" href="{{ '/' | absolute_url }}">
-  <meta name="theme-color" content="#0a0714">
-  <!-- honor the site-wide "reduce flourish" preference here too (before paint) -->
-  <script>try{if(localStorage.getItem('pjcc.flourish')==='0')document.documentElement.classList.add('reduce-flourish');}catch(e){}</script>
-
-  <!-- Social / Open Graph (rich previews when the homepage is shared) -->
-  {% assign og_img = site.image | default: '/assets/images/Princess_Color_v01.jpg' %}
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="McPuppy Studios">
-  <meta property="og:title" content="McPuppy Studios — Princess and the Journey to Chess City">
-  <meta property="og:description" content="A cartoon series, an arcade of chess games, and a whole world built in the open.">
-  <meta property="og:url" content="{{ '/' | absolute_url }}">
-  <meta property="og:image" content="{{ og_img | absolute_url }}">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="McPuppy Studios — Princess and the Journey to Chess City">
-  <meta name="twitter:description" content="A cartoon series, an arcade of chess games, and a whole world built in the open.">
-  <meta name="twitter:image" content="{{ og_img | absolute_url }}">
-
-  <!-- Structured data: who we are + what the site is (this layout has its own head,
-       so it carries its own copy of the block in default.html) -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Organization",
-        "@id": "{{ site.url }}/#org",
-        "name": "McPuppy Studios",
-        "url": "{{ site.url }}/",
-        "logo": "{{ site.url }}/assets/images/pjcc-share-card.png",
-        "sameAs": ["{{ site.patreon_url }}"]
-      },
-      {
-        "@type": "WebSite",
-        "@id": "{{ site.url }}/#website",
-        "url": "{{ site.url }}/",
-        "name": "Princess and the Journey to Chess City",
-        "alternateName": ["PJCC", "McPuppy Studios"],
-        "publisher": { "@id": "{{ site.url }}/#org" }
-      }
-    ]
-  }
-  </script>
-
-  <link rel="icon" href="{{ '/assets/images/favicon.svg' | relative_url }}" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
-  {% comment %} Shogi-gate rite runs on the splash (pjcc-portal.js below); load its
-       styles too so the rite UI + the planted .pjcc-sigil render correctly. {% endcomment %}
-  <link rel="stylesheet" href="{{ '/assets/css/pjcc-portal.css' | relative_url }}">
-  {% include town-weather.html %}
-  {% include pwa-head.html %}
+  {% include head.html raw_title="McPuppy Studios — Princess and the Journey to Chess City" description="Home of Princess and the Journey to Chess City (PJCC) — an animated series in the making, plus an arcade of free chess games, all built in the open by McPuppy Studios." %}
 </head>
 <body class="studio-body">
 

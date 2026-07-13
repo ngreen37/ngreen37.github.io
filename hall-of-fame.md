@@ -4,7 +4,6 @@ title: Hall of Fame
 permalink: /hall-of-fame/
 ---
 
-<link rel="stylesheet" href="{{ '/assets/css/pjcc-profile.css' | relative_url }}">
 
 <div class="hof-wrap">
   <div class="hof-head">

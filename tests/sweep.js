@@ -37,6 +37,7 @@ const files = walk(ROOT, []);
 const rel = f => path.relative(ROOT, f).split(path.sep).join('/');
 const read = f => { try { return fs.readFileSync(f, 'utf8'); } catch (e) { return ''; } };
 
+// stylesheets now live as partials in _sass/ (compiled into one style.css by Jekyll)
 const cssFiles = files.filter(f => /\.(scss|css)$/i.test(f) && !/vendor/.test(rel(f)));
 // everything a class name could be referenced from (markup, Liquid, and JS)
 const srcFiles = files.filter(f => /\.(html|md|js|json|yml)$/i.test(f) && !/vendor/.test(rel(f)));

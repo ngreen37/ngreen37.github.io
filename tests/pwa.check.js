@@ -80,10 +80,19 @@ if (exists('_includes/pwa-head.html')) {
   // the public HTML must NOT advertise the manifest while the PWA is private
   ok(!/rel=["']manifest["']/.test(inc), 'pwa-head include does not statically expose the manifest');
 }
+/* The four layouts no longer each pull pwa-head in themselves — they all share ONE
+ * head (_includes/head.html), and that is what pulls in the PWA + weather. Check the
+ * real chain: every layout -> head.html -> pwa-head.html. */
+ok(exists('_includes/head.html'), '_includes/head.html exists (the single shared head)');
+if (exists('_includes/head.html')) {
+  const head = read('_includes/head.html');
+  ok(/\{%\s*include\s+pwa-head\.html\s*%\}/.test(head), 'the shared head includes pwa-head.html');
+  ok(/\{%\s*include\s+town-weather\.html\s*%\}/.test(head), 'the shared head includes town-weather.html');
+}
 ['default', 'studio-home', 'game', 'easter-eggs'].forEach((layout) => {
   const rel = '_layouts/' + layout + '.html';
-  const has = exists(rel) && /\{%\s*include\s+pwa-head\.html\s*%\}/.test(read(rel));
-  ok(has, layout + '.html includes pwa-head.html');
+  const has = exists(rel) && /\{%\s*include\s+head\.html/.test(read(rel));
+  ok(has, layout + '.html uses the shared head');
 });
 
 /* ---- report ---- */

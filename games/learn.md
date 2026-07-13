@@ -4,7 +4,6 @@ title: Learn
 permalink: /games/learn/
 ---
 
-<link rel="stylesheet" href="{{ '/assets/css/pjcc-games.css' | relative_url }}">
 
 <div id="games-hall" class="hall hall--study" data-hall="learn" data-base="{{ '/games/' | relative_url }}" style="--accent:#5fe08a;">
   <div class="hall-bar">

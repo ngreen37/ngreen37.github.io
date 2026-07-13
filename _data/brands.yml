@@ -1,0 +1,24 @@
+# Which pages belong to which brand.
+#
+# The site carries TWO brands and the nav must never show both at once:
+#   PJCC     — the world, the characters, the games   (the default)
+#   McPuppy  — the studio: the business pages + the build log
+#
+# This file is the single source of truth for the McPuppy side. It used to be a
+# comma-separated string buried in _layouts/default.html, which meant every time a
+# studio page was added or removed you had to remember to go edit a Liquid string in
+# a layout — and if you forgot, the page silently wore the wrong nav. (Removing the
+# Press Pass hit exactly that.)
+#
+# Add or remove a line here and the nav follows. Any page can still override this
+# outright with `brand: mcpuppy` / `brand: pjcc` in its own front matter, and posts
+# are always McPuppy.
+mcpuppy_urls:
+  - /projects/
+  - /blog/
+  - /mailing-list/
+  - /educators/
+  - /about/
+  - /contact/
+  - /direct-line/
+  - /goods/

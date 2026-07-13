@@ -4,9 +4,6 @@ title: Your Dossier
 permalink: /dossier/
 ---
 
-<link rel="stylesheet" href="{{ '/assets/css/pjcc-profile.css' | relative_url }}">
-<link rel="stylesheet" href="{{ '/assets/css/pjcc-companion.css' | relative_url }}">
-<link rel="stylesheet" href="{{ '/assets/css/pjcc-creator.css' | relative_url }}">
 
 <!-- ════════ COMMAND STRIP (renders instantly — works signed-out & offline) ════════ -->
 <div class="cc-head">

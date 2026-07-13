@@ -4,8 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Murphy's Law</title>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
+  /* Self-hosted (2026-07-12) — was a third-party request to Google Fonts, which also
+     meant the game lost its face when played offline in the installed app. */
+  @font-face {
+    font-family: 'Press Start 2P'; font-style: normal; font-weight: 400; font-display: swap;
+    src: url("/assets/fonts/PressStart2P-400-latin.woff2") format("woff2");
+  }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: #000; overflow: hidden;
     font-family: 'Press Start 2P', monospace; -webkit-tap-highlight-color: transparent; }

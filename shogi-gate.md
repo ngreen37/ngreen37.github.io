@@ -7,7 +7,6 @@ permalink: /shogi-gate/
 description: "Access withheld. The ferry does not run for those who do not know the way back."
 ---
 
-<link rel="stylesheet" href="{{ '/assets/css/pjcc-portal.css' | relative_url }}">
 
 <div class="sgate-wrap">
 

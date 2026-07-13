@@ -1,7 +1,7 @@
 # Site settings
 title: PJCC
 description: Princess and the Journey to Chess City (PJCC) — an animated series in the making, plus a free arcade of chess games, built in the open by McPuppy Studios.
-image: /assets/images/pjcc-share-card.png   # default social/share card (1200×630)
+image: /assets/images/pjcc-share-card.jpg   # default social/share card (1200×630)
 baseurl: ""        # leave empty for root
 url: "https://mcpuppystudios.com"
 permalink: /:year/:month/:day/:title/
@@ -11,6 +11,13 @@ permalink: /:year/:month/:day/:title/
 plugins:
   - jekyll-sitemap
   - jekyll-seo-tag
+
+# Ship MINIFIED CSS. Jekyll compiles assets/css/style.scss on every build; by default
+# it emits the expanded, fully-commented stylesheet (~140 KB of source). `compressed`
+# strips comments and whitespace on the way out — the source stays readable, only the
+# served file shrinks. Free win, no code changes.
+sass:
+  style: compressed
 
 # ── Support / funding links ──────────────────────────────────────────────
 # Single source of truth for the whole site. The splash Patreon quad and the

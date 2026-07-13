@@ -4,7 +4,6 @@ title: Terminated
 permalink: /games/terminated/
 ---
 
-<link rel="stylesheet" href="{{ '/assets/css/pjcc-games.css' | relative_url }}">
 
 <div id="games-hall" class="hall hall--default" data-hall="terminated" data-base="{{ '/games/' | relative_url }}" style="--accent:#fc5454;">
   <div class="hall-bar">

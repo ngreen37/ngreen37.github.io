@@ -2,81 +2,20 @@
   Context-aware brand: decide which nav set to show so the bar never carries both.
   PJCC (the world / the games) is the default. McPuppy (the studio / the business pages,
   the build-log blog, and posts) flips it. A page can force either with `brand:` front matter.
+  The McPuppy page list lives in _data/brands.yml — ONE place to edit, no Liquid string
+  surgery in this layout every time a studio page comes or goes.
 {%- endcomment -%}
 {%- assign brand = page.brand -%}
 {%- unless brand -%}
   {%- assign brand = 'pjcc' -%}
   {%- if page.layout == 'post' -%}{%- assign brand = 'mcpuppy' -%}{%- endif -%}
   {%- if page.body_class contains 'theme-bw' -%}{%- assign brand = 'mcpuppy' -%}{%- endif -%}
-  {%- assign mc_urls = '/projects/,/blog/,/mailing-list/,/educators/,/about/,/contact/' | split: ',' -%}
-  {%- for u in mc_urls -%}{%- if page.url == u -%}{%- assign brand = 'mcpuppy' -%}{%- break -%}{%- endif -%}{%- endfor -%}
+  {%- if site.data.brands.mcpuppy_urls contains page.url -%}{%- assign brand = 'mcpuppy' -%}{%- endif -%}
 {%- endunless -%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- "Reduce flourish" — a manual still-site preference (like prefers-reduced-motion,
-       but opt-in). Applied to <html> here, before any paint, so there's no flash. -->
-  <script>try{if(localStorage.getItem('pjcc.flourish')==='0')document.documentElement.classList.add('reduce-flourish');}catch(e){}</script>
-  {% include town-weather.html %}
-  <title>{% if page.title %}{{ page.title }} | {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
-  <meta name="description" content="{{ page.description | default: site.description }}">
-  <link rel="canonical" href="{{ page.url | absolute_url }}">
-  <meta name="theme-color" content="#0a0714">
-  {%- comment -%} Slow-rolled pages stay out of Google: anything flagged noindex,
-       plus every hidden character/location from _config.yml. {%- endcomment -%}
-  {% if page.noindex or site.hidden_character_urls contains page.url or site.hidden_location_urls contains page.url %}<meta name="robots" content="noindex">{% endif %}
-
-  <!-- Structured data: who we are + what the site is (Google Knowledge Graph food) -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Organization",
-        "@id": "{{ site.url }}/#org",
-        "name": "McPuppy Studios",
-        "url": "{{ site.url }}/",
-        "logo": "{{ site.url }}/assets/images/pjcc-share-card.png",
-        "sameAs": ["{{ site.patreon_url }}"]
-      },
-      {
-        "@type": "WebSite",
-        "@id": "{{ site.url }}/#website",
-        "url": "{{ site.url }}/",
-        "name": "Princess and the Journey to Chess City",
-        "alternateName": ["PJCC", "McPuppy Studios"],
-        "publisher": { "@id": "{{ site.url }}/#org" }
-      }
-    ]
-  }
-  </script>
-
-  <!-- Social / Open Graph (rich previews when a link is shared) -->
-  {% assign og_title = page.title | default: site.title %}
-  {% assign og_img = page.image | default: site.image | default: '/assets/images/Princess_Color_v01.jpg' %}
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="McPuppy Studios">
-  <meta property="og:title" content="{{ og_title }}">
-  <meta property="og:description" content="{{ page.description | default: site.description }}">
-  <meta property="og:url" content="{{ page.url | absolute_url }}">
-  <meta property="og:image" content="{{ og_img | absolute_url }}">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="{{ og_title }}">
-  <meta name="twitter:description" content="{{ page.description | default: site.description }}">
-  <meta name="twitter:image" content="{{ og_img | absolute_url }}">
-
-  <link rel="icon" href="{{ '/assets/images/favicon.svg' | relative_url }}" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
-  <link rel="stylesheet" href="{{ '/assets/css/a11y.css' | relative_url }}">
-  <link rel="stylesheet" href="{{ '/assets/css/pjcc-flair.css' | relative_url }}">
-  <link rel="stylesheet" href="{{ '/assets/css/pjcc-portal.css' | relative_url }}">
-  <link rel="stylesheet" href="{{ '/assets/css/pjcc-nav.css' | relative_url }}">
-  {% include pwa-head.html %}
+  {% include head.html %}
 </head>
 <body{% if page.body_class %} class="{{ page.body_class }}"{% endif %}>
 
@@ -168,27 +107,6 @@
         <button class="flourish-toggle" id="flourish-toggle" type="button" aria-pressed="false" title="Quiet the ambient motion across the whole site">✨ Reduce motion</button>
         <span id="chess-city-permit-slot"></span>
       </div>
-      <script>
-      /* Reduce-flourish toggle — quiets ambient motion site-wide (weather, glyphs,
-         splash drifters, the sigil…). Persists in localStorage; applied on <html>
-         before paint by the head script above. */
-      (function () {
-        var b = document.getElementById('flourish-toggle');
-        if (!b) return;
-        function reduced() { try { return localStorage.getItem('pjcc.flourish') === '0'; } catch (e) { return false; } }
-        function sync() {
-          var on = reduced();
-          document.documentElement.classList.toggle('reduce-flourish', on);
-          b.setAttribute('aria-pressed', on ? 'true' : 'false');
-          b.textContent = on ? '✨ Motion: reduced' : '✨ Reduce motion';
-        }
-        b.addEventListener('click', function () {
-          try { localStorage.setItem('pjcc.flourish', reduced() ? '1' : '0'); } catch (e) {}
-          sync();
-        });
-        sync();
-      })();
-      </script>
     </div>
   </footer>
 
@@ -216,348 +134,28 @@
   <button class="back-to-top" id="back-to-top" aria-label="Back to top">♟</button>
 
 
-  <script>
-  (function() {
-    var secrets = {
-      'e4':    ['e4', 'The first move. Every great journey starts here.'],
-      'Nf3':   ['Nf3', 'Pattern recognized. The knight knows the way.'],
-      'd4':    ['d4', 'The Queen\'s pawn. Solid. Methodical. Like building a website.'],
-      'O-O':   ['O-O', 'Castled. Sometimes you protect what matters most.'],
-      'Qd5':   ['Qd5', 'An aggressive queen. She\'s going somewhere. → /classified/'],
-      'Ke2':   ['Ke2', 'The king walks forward. Brave. Unusual. Keep going.'],
-      'h4':    ['h4', 'A flank attack. Nobody expects it. Neither did Princess.']
-    };
-    var buf = '';
-    var timer = null;
-    var lastQd5 = 0;
-    var toast = document.getElementById('chess-toast');
-    var toastMove = document.getElementById('chess-toast-move');
-    var toastMsg  = document.getElementById('chess-toast-msg');
-
-    function playChessClick() {
-      try {
-        var ctx = new (window.AudioContext || window.webkitAudioContext)();
-        var osc = ctx.createOscillator(); var gain = ctx.createGain();
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(700, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(160, ctx.currentTime + 0.09);
-        gain.gain.setValueAtTime(0.22, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.13);
-        osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.13);
-      } catch(e) {}
-    }
-
-    function showToast(move, msg) {
-      playChessClick();
-      toastMove.textContent = move;
-      toastMsg.textContent  = msg;
-      toast.classList.add('is-visible');
-      setTimeout(function() { toast.classList.remove('is-visible'); }, 3800);
-    }
-
-    document.addEventListener('keydown', function(e) {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-      if (e.key === 'Escape') { buf = ''; return; }
-      if (e.key.length === 1) {
-        buf += e.key;
-        if (buf.length > 5) buf = buf.slice(-5);
-        clearTimeout(timer);
-        timer = setTimeout(function() { buf = ''; }, 1800);
-        for (var move in secrets) {
-          if (buf.endsWith(move)) {
-            if (move === 'Qd5') {
-              var now = Date.now();
-              if (now - lastQd5 < 30000) { window.location.href = '/archive/'; return; }
-              lastQd5 = now;
-              try { localStorage.setItem('frag_qd5', '1'); } catch(e) {}
-            }
-            showToast(secrets[move][0], secrets[move][1]);
-            buf = '';
-            break;
-          }
-        }
-      }
-    });
-  })();
-  </script>
 
   <!-- Konami Code + amber flash (#9 tx toast) -->
   <div class="konami-flash" id="konami-flash" aria-hidden="true"></div>
-  <script>
-  (function() {
-    var seq = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
-    var pos = 0;
-    document.addEventListener('keydown', function(e) {
-      if (e.key === seq[pos]) { pos++; } else { pos = (e.key === seq[0]) ? 1 : 0; }
-      if (pos === seq.length) {
-        pos = 0;
-        var flash = document.getElementById('konami-flash');
-        flash.classList.remove('is-active');
-        void flash.offsetWidth;
-        flash.classList.add('is-active');
-        setTimeout(function() { flash.classList.remove('is-active'); }, 1500);
-        try { localStorage.setItem('frag_konami', '1'); } catch(e) {}
-        showTxToast('CLEARANCE LEVEL: OMEGA — She already knows you\'re here.');
-      }
-    });
-  })();
-  </script>
 
-  <script>
-  // Transmission Received toast helper (#9)
-  function showTxToast(msg, duration) {
-    var t = document.getElementById('tx-toast');
-    var b = document.getElementById('tx-toast-body');
-    if (!t || !b) return;
-    b.textContent = msg;
-    t.classList.add('is-visible');
-    setTimeout(function() { t.classList.remove('is-visible'); }, duration || 4500);
-  }
-  </script>
 
-  <script>
-  // Back-to-top floating button (#14)
-  (function() {
-    var btn = document.getElementById('back-to-top');
-    if (!btn) return;
-    window.addEventListener('scroll', function() {
-      btn.classList.toggle('is-visible', window.scrollY > 400);
-    }, { passive: true });
-    btn.addEventListener('click', function() {
-      btn.textContent = '♛';
-      btn.classList.add('is-promoted');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      setTimeout(function() { btn.textContent = '♟'; btn.classList.remove('is-promoted'); }, 1200);
-    });
-  })();
-  </script>
 
-  <script>
-  // Share This Transmission (#20)
-  (function() {
-    var btn   = document.getElementById('share-tx-btn');
-    var flash = document.getElementById('share-tx-flash');
-    if (!btn || !flash) return;
-    btn.addEventListener('click', function() {
-      var url = location.href;
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(url).then(function() { showFlash(); }).catch(function() { fallback(url); });
-      } else { fallback(url); }
-    });
-    function fallback(url) {
-      var ta = document.createElement('textarea');
-      ta.value = url;
-      ta.style.cssText = 'position:fixed;opacity:0;';
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand('copy'); } catch(e) {}
-      document.body.removeChild(ta);
-      showFlash();
-    }
-    function showFlash() {
-      flash.classList.add('is-visible');
-      setTimeout(function() { flash.classList.remove('is-visible'); }, 2400);
-    }
-  })();
-  </script>
 
-  <script>
-  // Morse code logo easter egg — 3 rapid taps (#21)
-  (function() {
-    var logo = document.querySelector('.site-logo');
-    if (!logo) return;
-    var taps = 0; var timer = null;
-    logo.addEventListener('click', function(e) {
-      e.preventDefault();
-      taps++;
-      clearTimeout(timer);
-      timer = setTimeout(function() {
-        if (taps >= 3) {
-          var flash = document.getElementById('konami-flash');
-          if (flash) { flash.classList.remove('is-active'); void flash.offsetWidth; flash.classList.add('is-active'); setTimeout(function() { flash.classList.remove('is-active'); }, 900); }
-          showTxToast('— — — / . — . — / — — . — / — . — — — MORSE SIGNAL CONFIRMED');
-        } else {
-          window.location.href = logo.getAttribute('href') || '/';
-        }
-        taps = 0;
-      }, 400);
-    });
-  })();
-  </script>
 
-  <script>
-  // Chess City Entry Permit badge in footer (#28)
-  (function() {
-    var slot = document.getElementById('chess-city-permit-slot');
-    if (!slot) return;
-    try {
-      if (localStorage.getItem('chess_city_entry')) {
-        slot.innerHTML = '<span class="chess-city-permit">&#9812; CHESS CITY — ENTRY PERMIT GRANTED</span>';
-      }
-    } catch(e) {}
-  })();
-  </script>
 
-  <script>
-  // Data stream cards — inject DS flow on hover (#7)
-  (function() {
-    var hex = '0123456789ABCDEF';
-    function rh() { return hex[Math.floor(Math.random()*16)] + hex[Math.floor(Math.random()*16)]; }
-    function startDs(card) {
-      if (card._dsFlow) return;
-      var d = document.createElement('div');
-      d.className = 'ds-flow';
-      card.insertBefore(d, card.firstChild);
-      card._dsFlow = d;
-      card._dsIv = setInterval(function() {
-        var s = '';
-        for (var i = 0; i < 60; i++) s += rh() + (i % 4 === 3 ? '\n' : ' ');
-        d.textContent = s;
-      }, 120);
-    }
-    function stopDs(card) {
-      if (card._dsIv) clearInterval(card._dsIv);
-      if (card._dsFlow) { try { card.removeChild(card._dsFlow); } catch(e) {} card._dsFlow = null; }
-    }
-    document.querySelectorAll('.data-stream-card').forEach(function(card) {
-      card.addEventListener('mouseenter', function() { startDs(card); });
-      card.addEventListener('mouseleave', function() { stopDs(card); });
-    });
-  })();
-  </script>
 
   <!-- The site-wide Princess walker/companion was REMOVED 2026-07-12 (Nate): Princess is
        her own character, not the visitor's pet. Players get a companion of their own
        later (parked in FUTURE-IDEAS). Restore the walker from git if ever wanted. -->
 
   <!-- Character name glitch on hover -->
-  <script>
-  (function() {
-    var gc = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789░▒▓';
-    document.addEventListener('mouseover', function(e) {
-      var chip = e.target.closest('.char-chip');
-      if (!chip) return;
-      var n = chip.querySelector('.char-chip-name');
-      if (!n || n._glitching) return;
-      n._glitching = true;
-      n.classList.add('is-glitching');
-      var real = n.textContent;
-      var i = 0;
-      var iv = setInterval(function() {
-        if (i >= real.length) {
-          clearInterval(iv);
-          n.textContent = real;
-          n.classList.remove('is-glitching');
-          n._glitching = false;
-          return;
-        }
-        n.textContent = real.slice(0, i) + real.slice(i).split('').map(function(c) {
-          return c === ' ' ? ' ' : gc[Math.floor(Math.random() * gc.length)];
-        }).join('');
-        i++;
-      }, 55);
-    });
-  })();
-  </script>
 
-  <script>
-    (function () {
-      var toggle = document.getElementById('nav-toggle');
-      var nav    = document.getElementById('site-nav');
-      if (!toggle || !nav) return;
-      toggle.addEventListener('click', function () {
-        var open = nav.classList.toggle('is-open');
-        toggle.classList.toggle('is-open', open);
-        toggle.setAttribute('aria-expanded', String(open));
-      });
-      document.addEventListener('click', function (e) {
-        if (nav.classList.contains('is-open') &&
-            !nav.contains(e.target) && !toggle.contains(e.target)) {
-          nav.classList.remove('is-open');
-          toggle.classList.remove('is-open');
-          toggle.setAttribute('aria-expanded', 'false');
-        }
-      });
-      nav.querySelectorAll('.page-link').forEach(function (link) {
-        link.addEventListener('click', function () {
-          nav.classList.remove('is-open');
-          toggle.classList.remove('is-open');
-          toggle.setAttribute('aria-expanded', 'false');
-        });
-      });
-    })();
-  </script>
 
-  <script>
-  (function() {
-    var el = document.getElementById('fragment-counter');
-    if (!el) return;
-    var count = 0;
-    try { for (var k in localStorage) { if (k.indexOf('frag_') === 0) count++; } } catch(e) {}
-    if (count > 0) el.textContent = '[' + count + '/∞ FRAGMENTS RECOVERED]';
-  })();
-  </script>
 
-  <script>
-  // Murphy's Law, as a function. Ask it anything.
-  window.murphysLaw = function () {
-    try { localStorage.setItem('frag_murphys_law', '1'); } catch (e) {}
-    try { console.log('...called it!'); } catch (e) {}
-    return false;
-  };
-
-  // June 13. No announcement.
-  (function () {
-    var d = new Date();
-    if (d.getMonth() !== 5 || d.getDate() !== 13) return;
-    var el = document.querySelector('.footer-copy');
-    if (el) el.textContent = el.textContent.replace('McPuppy Studios.', 'McPuppy Studios · for Princess.');
-  })();
-  </script>
 
   <!-- Operative identity in the nav (site-wide) -->
   <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
-  <script>
-  (function () {
-    var elr = document.getElementById('nav-operative');
-    if (!elr || !window.PJCC) return;
-    function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-    function upd() {
-      if (!PJCC.enabled) { elr.hidden = true; return; }
-      elr.hidden = false;
-      var prof = PJCC.getProfile();
-      if (prof) { elr.innerHTML = PJCC.avatarEmoji(prof) + ' ' + esc(prof.codename); elr.classList.add('in'); }
-      else { elr.textContent = '⬡ Sign in'; elr.classList.remove('in'); }
-    }
-    // Instant render from the cached codename/avatar — no wait on the (deferred) SDK (#15).
-    (function () {
-      if (!PJCC.enabled) { elr.hidden = true; return; }
-      var c, e;
-      try { c = localStorage.getItem('pjcc.codename'); e = localStorage.getItem('pjcc.avataremoji'); } catch (x) {}
-      elr.hidden = false;
-      if (c) { elr.innerHTML = (e || '⬡') + ' ' + esc(c); elr.classList.add('in'); }
-      else { elr.textContent = '⬡ Sign in'; }
-    })();
-    PJCC.onChange(upd);
-    PJCC.ready.then(upd);   // reconcile once the SDK settles
-  })();
-  </script>
-  <style>
-  .nav-operative {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: #2D1B69; border: 1px solid #6b5fa0; border-radius: 999px;
-    padding: 5px 12px; margin-right: 8px;
-    color: #cdbcf2; text-decoration: none; font-size: 0.82rem; font-weight: 700;
-    white-space: nowrap;   /* phones: never wrap "Sign in" into a tall oval */
-  }
-  .nav-operative:hover { border-color: #F5C518; color: #fff; }
-  .nav-operative.in { border-color: #F5C518; color: #F5C518; }
-  .lang-toggle { background: transparent; color: #9a7fd4; border: 1px solid #6b5fa0; border-radius: 999px;
-    padding: 5px 12px; margin-right: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
-  .lang-toggle:hover { border-color: #F5C518; color: #F5C518; }
-  </style>
   <script src="{{ '/assets/js/pjcc-lang.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pjcc-flair.js' | relative_url }}" defer></script>
   <!-- Av13 — the Shogi Island Gate: perform the rite (one A, eight C's, two larger) anywhere to open it -->
@@ -586,6 +184,7 @@
 
   {% comment %} The mobile quick-nav bar was removed 2026-07-07 ("that go-to thing on the
        bottom of the pages") — restore from git if it's ever missed. {% endcomment %}
+  <script src="{{ '/assets/js/pjcc-eggs.js' | relative_url }}" defer></script>
   <script src="{{ '/assets/js/pjcc-nav.js' | relative_url }}" defer></script>
 
 
