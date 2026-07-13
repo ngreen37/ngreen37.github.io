@@ -564,8 +564,104 @@ Town, Bob-Proctor mindset) and **Michael** (Chess City, truly righteous); **The 
 
 ---
 
+# 🧵 Twenty for cohesiveness & ingenuity *(2026-07-12 — Nate asked)*
+
+Written straight after a batch that touched the splash, the sky, the games hall, the dossier,
+the Academy and the studio page — so these are things actually noticed while in there, not a
+brainstorm from outside. The first ten are **cohesion** (make it feel like one place). The
+second ten are **ingenuity** (the clever, cheap, memorable stuff).
+
+### Cohesion — make it read as one world
+
+1. **The header is the only thing on screen that refuses to admit what time it is.** The sky
+   now runs behind every page, and the sticky header sits in front of it as a flat black bar.
+   Give it a phase-tinted underlay — dark enough that the nav stays legible, warm at dawn,
+   cool at night. One rule per phase, zero new markup.
+2. **The splash is the one page with no sky.** It's the front door, and it's the only screen
+   that doesn't share the town's hour or its weather. Wire `town-sky` into `studio-home` —
+   behind the quads, under the drifters. Your first impression becomes *the world*.
+3. **A surface kit.** `.page-card`, `.ghub-portal`, `.project-card`, `.dsr-head`, `.ac-course`
+   and `.fan-card` each invent their own radius, border and shadow. Three custom properties on
+   `:root` (`--surface`, `--edge`, `--lift`), applied everywhere, and the site stops feeling
+   *assembled* and starts feeling *machined*.
+4. **The weather should be noticed by the world, not just drawn on it.** It rains on every page
+   now — and the news ticker never mentions it, no character mentions it, nothing gets wet. One
+   line: on a wet day the day desk opens with the forecast. Cheap, and it makes the sky feel
+   *observed* instead of *rendered*.
+5. **Write the voice chart down.** Poppins, Inter, Share Tech Mono, Press Start 2P and (as of
+   today) a system serif for McPuppy. That's not too many — but nothing records *which font
+   speaks for which brand*, so it will drift. One panel on `/style/` fixes that forever.
+6. **Every game should wear the town's sky.** The games are their own HTML shells. If
+   `PJCC_TIME` set their background phase too, playing Sand Mine at night would *feel* like
+   night. Same clock, same town, no new art.
+7. **The journey map is the site's real spine — use it more than once.** The dossier has the
+   map of stops (Checker Town → the Sea → Chess City). That's the actual shape of the world.
+   A one-line version of it in the games hall would tell a player where they are *in the
+   world*, not just in a menu.
+8. **Kill the second Gauntlet door.** The home hero and the games hall carry two hand-maintained
+   copies of the same door, and two copies of the LADDER names/accents/glyphs in JS, with a
+   comment on each begging you to keep them in sync. One include + one data file. They will
+   drift; they already have.
+9. **The teachers don't mention what they teach.** Auston runs the only open Academy hall — his
+   character page doesn't say so. One line on each teacher's page ("Auston teaches the
+   squares") ties the cast to the arcade for the price of a sentence each.
+10. **One "not yet" voice.** Unbuilt things currently say: *Coming Soon · In Development ·
+    Building · Not ready yet — months away · Don't hold your breath! · Sealed / Retired*. Pick
+    **two** — one for *being built*, one for *retired* — and use them everywhere. This is the
+    no-excuses rule applied to labels.
+
+### Ingenuity — the cheap, strange, memorable stuff
+
+11. **The sky remembers.** Store the phase you last arrived in. Come back at a different hour
+    and the ticker says, once, quietly: *"Last seen: dusk."* Free continuity, no mechanics.
+12. **One secret that only exists in the rain.** The town has real, town-wide weather now.
+    Make exactly one easter egg depend on it — a reflection in the Chess City windows, a
+    figure on the Sea. People will *talk* about that one.
+13. **The shooting star is a wish.** One crosses the night sky now. Make it clickable for the
+    ~1 second it's visible. Catching one gives something tiny and lovely — a fragment, a line
+    from Princess, one credit. Almost nobody will catch one. That's the point.
+14. **Put the Gauntlet's opponents where they live.** The Tidecaller belongs in the Sea. The
+    Sand-Mine Foreman belongs in the Sand Mine. One line on each *location* page naming who
+    holds it, and the tower stops being a menu and becomes a map.
+15. **"New since your last visit."** The Build Log exists, but someone who came last week has
+    no idea what changed. One quiet line under the nav on the PJCC home, read from
+    `localStorage`. No email, no popup — private by default, in both senses.
+16. **June 13 already works. Give the town three more.** Princess's birthday puts *"for
+    Princess"* in the splash footer with no announcement. Same one-line pattern for the first
+    commit and the Episode 1 premiere. Nobody is told; the people who notice, notice.
+17. **The Night Desk should run out of things to say.** It's a bored overnight employee. Let
+    the number of ticker items *drop* after 2am and the tone flatten out. A desk with nothing
+    left to report at 4am is funnier than any joke that could be written for it.
+18. **One number that's about other people.** Every counter on the site is derived from a date
+    — days in development, days to Episode 1. Nothing reflects *anyone else being here*. One
+    honest live number ("games played this week") would make the place feel inhabited.
+19. **Print the certificate under the sky it was earned in.** The Academy already generates a
+    certificate with a verify code. Give it the town's sky behind it, at the hour it was
+    awarded. A kid's certificate that says *awarded at dusk* is a small, strange, memorable
+    object — and it costs about one CSS rule.
+20. **Nobody knows the arcade works offline.** The service worker warms 18 games and Stockfish;
+    the whole thing runs on a plane. That is genuinely rare, and the site never says so. One
+    line in the games hall — *"These games work offline."* Not a prompt. A fact.
+
+---
+
 ## 🅿️ Parked (pulled from the live site, kept so the work isn't lost)
 
+- **🏆 The Hall of Fame & Seasons** *(2026-07-12 — Nate: "remove the hall of fame completely,
+  from all pages, but add it to Future Ideas")*. Every month was a **Tour** — a leg of the
+  Journey. You scored season points by playing anything; whoever logged the most action by
+  month's end was crowned and entered the Hall of Fame *forever*. **Why it was pulled:** it was
+  a trophy case with nothing in it. No season has ever closed, so `PJCC.HALL_OF_FAME` was an
+  empty array — and the page advertised an empty room from the busiest surface in the arcade
+  (a gold plate at the top of `/leaderboards/`) and from the dossier.
+  **What it needs before it comes back:** (1) actual players, (2) a season that has actually
+  *closed*, and (3) an answer to "what does the champion get?" that isn't just a name on a
+  list — a cosmetic, a title flair, a permanent mark somewhere in the world. A champion who
+  wins nothing is a leaderboard with extra steps.
+  **Restore from git:** `hall-of-fame.md`, `PJCC.HALL_OF_FAME` in `assets/js/pjcc-profile.js`,
+  the `.lbtv-hof` plate + styles in `leaderboards.md`, and the `.dsr-season` strip in
+  `dossier.md` — all as of the commit before `c12773e`. `PJCC.seasonInfo()` and
+  `PJCC.seasonRace()` are still in the codebase and still work.
 - **🐾 The player's OWN companion** *(2026-07-12 — Nate's call)*. Princess used to be **your**
   companion: a site-wide walker plus a "Princess & You" panel on her page (training XP, a bond
   meter, daily walks, memories). That was removed — **Princess is her own character, not the

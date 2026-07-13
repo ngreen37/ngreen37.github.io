@@ -234,24 +234,31 @@
      QUARTER of the window (50% × 50%) pinned to the matching corner, and the glow
      fills it — so only that corner lifts. One element, moved by four classes; the
      brand colour rides in --lean so there's a single gradient recipe to keep. */
-  .studio-lean { position:fixed; width:50%; height:50%; z-index:0; pointer-events:none; opacity:0;
+  .studio-lean { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0;
     transition:opacity .4s ease; }
   .studio-lean.is-on { opacity:1; }
+  /* The layer stays FULL-VIEWPORT and the GRADIENT is what's cornered: an explicitly
+     sized circle (44vmin) anchored in the matching quadrant, which decays to nothing
+     well inside the window. Sizing the layer itself to 50%×50% was the obvious move and
+     it's wrong — the gradient doesn't reach zero alpha before it hits the box's inner
+     edges, so you can see the box: a faint seam ruling the screen into quarters. Fade
+     the light, not the element. */
   .studio-lean[class*="lean-"] {
-    background:radial-gradient(circle at var(--lx) var(--ly),
-      rgba(var(--lean), 0.085) 0%, rgba(var(--lean), 0.055) 28%, rgba(var(--lean), 0.028) 52%,
-      rgba(var(--lean), 0.010) 74%, transparent 100%); }
-  .studio-lean.lean-pjcc    { top:0; left:0;   --lx:14%; --ly:16%; --lean:120,60,230; }
-  .studio-lean.lean-mcpuppy { top:0; right:0;  --lx:86%; --ly:16%; --lean:225,228,255; }
-  .studio-lean.lean-games   { bottom:0; left:0;  --lx:14%; --ly:84%; --lean:60,188,252; }
+    background:radial-gradient(circle 44vmin at var(--lx) var(--ly),
+      rgba(var(--lean), 0.095) 0%, rgba(var(--lean), 0.060) 30%, rgba(var(--lean), 0.030) 54%,
+      rgba(var(--lean), 0.010) 76%, transparent 100%); }
+  .studio-lean.lean-pjcc    { --lx:11%; --ly:14%; --lean:120,60,230; }
+  .studio-lean.lean-mcpuppy { --lx:89%; --ly:14%; --lean:225,228,255; }
+  .studio-lean.lean-games   { --lx:11%; --ly:86%; --lean:60,188,252; }
   /* Patreon's corner is CORAL now, not green (Nate: "green isn't working") — it's
      Patreon's own colour, which is the point: the one door on the splash that leads
      off the site is the one lit in a colour the site doesn't otherwise own. */
-  .studio-lean.lean-patreon { bottom:0; right:0; --lx:86%; --ly:84%; --lean:255,106,96; }
-  /* McPuppy is a pale wash and needs a touch more to register at all */
-  .studio-lean.lean-mcpuppy { background:radial-gradient(circle at 86% 16%,
-      rgba(225,228,255,0.055) 0%, rgba(225,228,255,0.034) 28%, rgba(225,228,255,0.017) 52%,
-      rgba(225,228,255,0.006) 74%, transparent 100%); }
+  .studio-lean.lean-patreon { --lx:89%; --ly:86%; --lean:255,106,96; }
+  /* McPuppy is a pale wash on a dark page and needs a touch more to register at all */
+  .studio-lean.lean-mcpuppy {
+    background:radial-gradient(circle 44vmin at 89% 14%,
+      rgba(225,228,255,0.060) 0%, rgba(225,228,255,0.038) 30%, rgba(225,228,255,0.019) 54%,
+      rgba(225,228,255,0.006) 76%, transparent 100%); }
 
   /* Secret ✦ — the (very dim) star that is also the door to /classified/.
      2026-07-12 (Nate: "it stops at like 80% to the right"): it used to fly IN and
