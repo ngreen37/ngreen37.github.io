@@ -269,8 +269,9 @@ body_class: theme-studio
     <h2 class="mcp-thanks-h">The Creator would like to thank</h2>
     <ul class="mcp-thanks-people">
       <li>Thank you <strong>mom</strong>, for always being there and providing a road map to a successful life.</li>
+      <li>Thank you <strong>Chelsea</strong>, my Sister, for being an amazing sibling and friend. I love you.</li>
       <li>Thank you <strong>Laura</strong>, for your generosity.</li>
-      <li>Thank you <strong>Josh</strong>, for listening to the initial ideas with patience and either feigned or real excitement, doesn't matter, and for the keyboard and mousepad that saved me <em>WEEKS</em> over time.</li>
+      <li>Thank you <strong>Josh</strong>, for listening to the initial ideas with patience and either feigned or real excitement, doesn't matter.</li>
       <li>Thank you <strong>Kim</strong>, for letting me show you initial progress when I was still keeping it private.</li>
       <li>Thank you <strong>Aunt Barb</strong>, for being someone that I can't help but want to talk to, as closest family. You accelerated PJCC significantly.</li>
       <li>Thank you <strong>Tucker</strong>, for inspiring me with your greatness. You are a big role model to me.</li>
@@ -279,7 +280,7 @@ body_class: theme-studio
 
   <div class="mcp-thanks-block">
     <h3 class="mcp-thanks-sub">For the endless inspiration, McPuppy Studios would like to thank:</h3>
-    <p class="mcp-thanks-muses">Norm Macdonald &middot; The Meadowlands &middot; The Lawrence Arms &middot; Trey Parker and Matt Stone &middot; Orson Scott Card &middot; John Steakley &middot; Neville Goddard</p>
+    <p class="mcp-thanks-muses">Norm Macdonald &middot; The Meadowlands &middot; The Lawrence Arms &middot; Trey Parker and Matt Stone &middot; Orson Scott Card &middot; John Steakley &middot; Neville Goddard &middot; Jesse Green</p>
   </div>
 </section>
 
@@ -295,7 +296,6 @@ body_class: theme-studio
   padding: 0.7rem 0; border-bottom: 1px solid rgba(245,197,24,0.1); }
 .mcp-thanks-people li:last-child { border-bottom: none; }
 .mcp-thanks-people strong { color: #fff; font-weight: 700; }
-.mcp-thanks-people em { color: #ffd740; font-style: normal; font-weight: 700; letter-spacing: 0.03em; }
 .mcp-thanks-sub { color: #cdbcf2; font-size: 0.86rem; font-weight: 600; letter-spacing: 0.03em;
   text-transform: uppercase; margin: 0 0 0.7rem; }
 .mcp-thanks-muses { color: #b7a4e0; font-size: 0.95rem; line-height: 1.9; margin: 0; font-style: italic; }
