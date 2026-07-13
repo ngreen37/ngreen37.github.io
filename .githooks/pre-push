@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+# pre-push — the last line of defence before the live site.
+#
+# WHY THIS EXISTS: the site is built by GitHub Pages (Jekyll) on push, and a broken
+# stylesheet does NOT fail loudly. Jekyll just fails the build, the deploy silently keeps
+# serving the OLD site, and the only signal is an email you might not read for a day. By
+# then you've moved on and have no idea which push did it.
+#
+# So: nothing leaves this machine until it actually compiles and the checks pass.
+#
+#   npm test  =  test:css  (style.scss really compiles — the site-breaker)
+#              + test:pwa  (manifest/SW/icons all wired and present)
+#              + test:links (no internal link 404s)
+#              + sweep     (no dead CSS/JS, no new un-checkable class names)
+#
+# Wired up automatically by `npm install` (the "prepare" script points Git's hooksPath
+# at .githooks/). To wire it by hand:  git config core.hooksPath .githooks
+#
+# Genuinely need to push past it (a WIP branch, a hotfix):  git push --no-verify
+#
+set -e
+
+printf '\n\033[1m▸ pre-push:\033[0m running the gates before this reaches the live site…\n'
+
+if ! command -v npm >/dev/null 2>&1; then
+  printf '\033[33m  ! npm not found — skipping the gates. Push allowed.\033[0m\n'
+  exit 0
+fi
+
+if ! npm test --silent; then
+  printf '\n\033[31m✗ PUSH BLOCKED — the checks above failed.\033[0m\n'
+  printf '  Pushing this would likely break, or silently stale, the live site.\n'
+  printf '  Fix it, or push anyway with:  git push --no-verify\n\n'
+  exit 1
+fi
+
+printf '\n\033[32m✓ gates passed — pushing.\033[0m\n\n'
+exit 0
