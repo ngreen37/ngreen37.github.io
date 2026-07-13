@@ -163,7 +163,7 @@ body_class: theme-studio
     </div>
     <p class="project-desc">An All-Ages online Chess Academy, set in the PJCC universe! Contact me for more.</p>
     <div class="project-links">
-      <a href="/chess-lessons/" class="project-link">Visit the Academy &rarr;</a>
+      <a href="/academy/" class="project-link">Visit the Academy &rarr;</a>
       <a href="/contact/" class="project-link">Contact &rarr;</a>
     </div>
   </div>
@@ -240,4 +240,4 @@ body_class: theme-studio
 .mcp-thanks-muses { color: #b7a4e0; font-size: 0.82rem; line-height: 1.85; margin: 0; font-style: italic; }
 </style>
 
-<p class="projects-footer-note">Check out the <a href="/blog/">blog</a> for more updates.</p>
+

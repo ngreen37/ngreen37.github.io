@@ -37,7 +37,7 @@ permalink: /dossier/
 
 <!-- ── Identity forge — build your look (instant; signed-out & offline) ── -->
 <div id="forge-mount"></div>
-<p class="pjcc-sub" style="margin-top:6px" id="forge-sync-note">Build your operative <em>and</em> your companion. Change anything, any time. <span id="forge-sync-state">Saved on this device; <a href="#dossier-body">sign in</a> to carry it across every device.</span></p>
+<p class="pjcc-sub" style="margin-top:6px" id="forge-sync-note">Build your operative <em>and</em> your companion. Change anything, any time. <span id="forge-sync-state">Saved on this device; <a href="#dossier-body">sign in</a> to keep it.</span></p>
 
 <!-- ── Operative record — loads with your account, inline into the one dossier ── -->
 <div id="dossier-body"><p class="lb-empty">Loading your record…</p></div>
@@ -106,7 +106,7 @@ permalink: /dossier/
     setTop('<p class="cc-greet">Uplink open — build your look below, or <a href="#dsr-login">sign in</a> to sync your operative across every device.</p>');
     el.innerHTML =
       '<div class="dsr-card"><h2 class="dsr-h">Operative sign-in</h2>' +
-      '<p class="pjcc-sub">Enter your email and we will send a login link and a 6-digit code. Your operative — codename, avatar, credits — follows you across every device.</p>' +
+      '<p class="pjcc-sub">Enter your email and we will send a login link and a 6-digit code. Your codename, avatar and credits follow you.</p>' +
       '<div class="ml-form"><input id="dsr-email" type="email" class="pjcc-input" aria-label="Email address" placeholder="you@email.com"><button id="dsr-login" class="pjcc-btn">Send login link</button></div>' +
       '<p id="dsr-msg" class="pjcc-sub"></p></div>';
     document.getElementById('dsr-login').onclick = function () {

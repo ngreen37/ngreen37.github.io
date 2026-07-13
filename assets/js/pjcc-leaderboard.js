@@ -26,7 +26,6 @@
       { key: 'clearance-delta', label: 'Clearance: DELTA', unit: 'score'   },
       { key: 'notation-run',    label: 'Notation Blitz',   unit: 'score'   },
       { key: 'sand-mine-depths',label: 'Sand Mine Depths', unit: 'points'  },
-      { key: 'blindfold',       label: 'Blindfold Puzzles',unit: 'solved'  },
       { key: 'siege',           label: 'Siege on Chess City', split: [
         { key: 'tower-defense', label: 'Campaign', unit: 'score' },
         { key: 'siege-endless', label: 'Endless',  unit: 'wave'  }
