@@ -14,6 +14,19 @@
 </head>
 <body class="studio-body">
 
+  {%- comment -%} THE SPLASH LIVES IN THE TOWN TOO (2026-07-12 — cohesion pass #2).
+       Every other page has stood under the town's sky since this morning. The splash —
+       the FRONT DOOR, the first thing anyone ever sees — was the one screen that didn't
+       know what time it was or whether it was raining. It sat on flat black while the
+       world it advertises had weather.
+
+       Same include, same z-index:-1, same rule: it must be a direct child of <body>, or
+       the negative z-index gets trapped in front of the content instead of behind it.
+
+       The drifters (z-index:0), the ✦ star, the hover-lean and the quads all sit ABOVE
+       it and are untouched. What changed is what's behind them. {%- endcomment -%}
+  {% include town-sky.html %}
+
   <!-- ── TRANSMISSION OVERLAY (first visit) ─────────────────── -->
   <div class="transmission-overlay" id="transmission-overlay">
     <div class="transmission-scanlines"></div>

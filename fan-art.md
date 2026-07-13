@@ -135,8 +135,10 @@ permalink: /fan-art/
    The print rule at the foot of this file puts the pure white BACK for printing —
    the glare is a screen problem, and dimming the paper on a printout would just waste
    ink and grey out the card. */
+/* the fan card is a PRINT POSTER — the navy/gold/paper and the fat 3px border are the
+   whole point, and they stay. Only its radius joins the shared scale. */
 .fan-card { --fa-paper:#e8e4da; --fa-paper-lit:#eeebe3; --fa-paper-dim:#d6d9e0;
-  max-width:560px; margin:0 auto; background:var(--fa-paper); border:3px solid #002e6d; border-radius:18px;
+  max-width:560px; margin:0 auto; background:var(--fa-paper); border:3px solid #002e6d; border-radius:var(--r-lg);
   padding:26px 26px 20px; position:relative; color:#002e6d; }
 .fan-card::before { content:''; position:absolute; inset:8px; border:1.5px solid #e3b008; border-radius:12px; pointer-events:none; }
 .fc-eyebrow { text-align:center; font-size:11px; letter-spacing:5px; text-transform:uppercase; color:#e3b008; font-weight:800; }

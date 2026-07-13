@@ -707,7 +707,7 @@ window.ACCERT = (function () {
 .ac-h2 { color: #F5C518; margin: 28px 0 6px; }
 .ac-path-lead { color: #c9a7ff; font-size: 0.92rem; margin: 0 0 14px; }
 .ac-courses { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
-.ac-course { background: rgba(45,27,105,0.5); border: 1px solid #3a2a6a; border-left: 4px solid var(--acc, #F5C518); border-radius: 12px; padding: 14px 16px; }
+.ac-course { background: rgba(45,27,105,0.5); border: 1px solid var(--edge-soft); border-left: 4px solid var(--acc, #F5C518); border-radius: var(--r-md); padding: 14px 16px; }
 .ac-course-head { display: flex; align-items: center; gap: 10px; }
 .ac-course-ico { font-size: 28px; color: var(--acc); width: 36px; text-align: center; }
 .ac-course-title { font-weight: 800; color: #f0e6ff; }

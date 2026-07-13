@@ -392,6 +392,55 @@ html.sky-night .page-title::after {
     radial-gradient(1.5px 1.5px at 88% 38%, #fdf9ff, transparent);
 }
 
+/* ═════════════════════════════════════════════════════════════════════════════
+   THE HEADER KEEPS TOWN TIME (2026-07-12 — cohesion pass #1)
+   ─────────────────────────────────────────────────────────────────────────────
+   With the sky running behind every page, the sticky header became the one thing on
+   screen that refused to admit what time it was: a flat #0a0714 bar, identical at
+   dawn and at midnight, sitting in front of a sky that changed all day.
+
+   It's phase-tinted now — but only just. This is CHROME, and the nav links, the gold
+   "Hello" pill and the logo all have to stay legible against it at every hour, so
+   every one of these stays firmly in the dark end. It's the difference between a bar
+   that looks black and a bar that looks like the top of the sky. If you find yourself
+   wanting to push one of these brighter: don't. The sky is the sky's job.
+
+   The gold/silver border-image underneath is untouched — that's the brand line, and it
+   doesn't answer to the weather.
+   ═════════════════════════════════════════════════════════════════════════════ */
+html.sky-dawn  .site-header { background: linear-gradient(180deg, #1c1030 0%, #120a1c 100%); }
+html.sky-day   .site-header { background: linear-gradient(180deg, #0d1a2e 0%, #0a1120 100%); }
+html.sky-dusk  .site-header { background: linear-gradient(180deg, #1a0e26 0%, #100815 100%); }
+html.sky-night .site-header { background: linear-gradient(180deg, #080622 0%, #060412 100%); }
+
+/* A hairline of the hour along the very top of the bar — the one place the header is
+   allowed to actually show a colour, because nothing has to be read on top of it. */
+.site-header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.2s ease;
+}
+html.sky-dawn  .site-header::before { opacity: 1; background: linear-gradient(90deg, transparent, rgba(255,157,92,0.55), transparent); }
+html.sky-day   .site-header::before { opacity: 1; background: linear-gradient(90deg, transparent, rgba(140,195,245,0.45), transparent); }
+html.sky-dusk  .site-header::before { opacity: 1; background: linear-gradient(90deg, transparent, rgba(224,102,46,0.5), transparent); }
+html.sky-night .site-header::before { opacity: 1; background: linear-gradient(90deg, transparent, rgba(160,150,255,0.32), transparent); }
+
+/* The FOOTER is the same problem at the other end — and tinting the header only made it
+   obvious: a hard black slab pinned under a bright midday sky. It's the GROUND, so it
+   stays the darkest thing on the page at every hour; it just stops pretending the hour
+   isn't happening. Header and footer now read as a matched pair of chrome, top and
+   bottom, with the sky running between them. */
+html.sky-dawn  .site-footer { background: #150c25; }
+html.sky-day   .site-footer { background: #0a1220; }
+html.sky-dusk  .site-footer { background: #140a1c; }
+html.sky-night .site-footer { background: #06040f; }
+body.theme-bw .site-footer,
+body.theme-studio .site-footer { background: #0a090e; }
+
 /* the studio's pages stay monochrome — same hour, no hue. The town is in colour;
    McPuppy Studios is the black-and-white half of the site, and a coral dawn behind
    a B&W page would just look like a bug. */
@@ -414,6 +463,21 @@ body.theme-bw .page-title::before,
 body.theme-bw .page-title::after,
 body.theme-studio .page-title::before,
 body.theme-studio .page-title::after { display: none; }
+/* …and their headers keep town time WITHOUT the hue: the phase moves the brightness,
+   never the colour. A coral dawn behind a black-and-white studio page would read as a
+   bug, not as an hour. */
+body.theme-bw .site-header,
+body.theme-studio .site-header { background: #0a090e; }
+html.sky-day    body.theme-bw .site-header,
+html.sky-day    body.theme-studio .site-header { background: #131218; }
+html.sky-dawn   body.theme-bw .site-header,
+html.sky-dawn   body.theme-studio .site-header { background: #0f0e13; }
+html.sky-dusk   body.theme-bw .site-header,
+html.sky-dusk   body.theme-studio .site-header { background: #0c0b0f; }
+html.sky-night  body.theme-bw .site-header,
+html.sky-night  body.theme-studio .site-header { background: #050508; }
+body.theme-bw .site-header::before,
+body.theme-studio .site-header::before { display: none; }
 
 @media (max-width: 700px) {
   /* the card drops to 24px/20px padding — the banner has to follow it exactly or it

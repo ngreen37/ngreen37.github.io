@@ -632,15 +632,79 @@ function ctParts() {
     wrap.classList.add('is-night');
   }
 
-  // ---- THE FORECAST on the ticker. The weather ITSELF (rain/mist/lightning) is no
-  // longer rendered here: it's town-wide now and falls on every page, drawn by
-  // assets/js/pjcc-weather.js. This just reports the day's forecast on the wire. ----
+  // ---- THE FORECAST on the wire (2026-07-12 — cohesion pass #4) -----------------
+  // The weather ITSELF is town-wide now and falls on every page (pjcc-weather.js). This
+  // is the town NOTICING it — the one thing that turns weather from something drawn on
+  // the site into something the world can see.
+  //
+  // Three things were wrong before:
+  //   1. It only ever said ONE sentence per condition. Every rainy day, forever, the
+  //      same words.
+  //   2. It never mentioned CLOUD at all — and cloud cover is its own daily roll now
+  //      (PJCC_TIME.clouds()), so most days had a sky nobody on the wire could see.
+  //   3. Worst: it read the DAY DESK's formal copy at 3 a.m., straight into the middle
+  //      of the Night Desk's crawl. The desk changes voice overnight; the forecast
+  //      didn't. A bored overnight employee does not say "ALL CROSSINGS POSTPONED".
+  //
+  // Nobody SPEAKS here — this is the news desk, not a character. It just reports.
+  // Seeded off the day, so the whole town gets the same forecast in the same words.
   (function() {
-    var roll = daySeed() % 10;                    // 0–2 rain · 3 mist · 4–9 clear
-    if (roll > 3) return;
-    item(roll !== 3
-      ? 'WEATHER: RAIN OVER CHECKER TOWN — THE SEA IS ROUGH — ALL CROSSINGS POSTPONED'
-      : 'WEATHER: SEA MIST IN THE LOWER SECTORS — VISIBILITY POOR — LIGHTHOUSE ON DOUBLE DUTY', null, true);
+    var W = window.PJCC_TIME;
+    if (!W) return;
+    var kind   = W.weather().kind;                 // 'rain' | 'mist' | 'clear'
+    var cover  = W.clouds();                       // 0 clear · 1 a few · 2 broken · 3 overcast
+    var night  = ctParts().h < 6;                  // the Night Desk has the wire
+    var pick   = function (lines) { return lines[(daySeed() >>> 5) % lines.length]; };
+
+    // The DAY DESK — formal, factual, never cute. It is a news desk.
+    var DAY = {
+      rain: [
+        'WEATHER: RAIN OVER CHECKER TOWN — THE SEA IS ROUGH — ALL CROSSINGS POSTPONED',
+        'WEATHER: HEAVY RAIN CONTINUES ACROSS ALL SECTORS — RESIDENTS ADVISED TO STAY IN',
+        'WEATHER: STORM FRONT OVER THE BAY — THE FERRY WAS ALREADY DELAYED — NOW IT IS ALSO WET'
+      ],
+      mist: [
+        'WEATHER: SEA MIST IN THE LOWER SECTORS — VISIBILITY POOR — LIGHTHOUSE ON DOUBLE DUTY',
+        'WEATHER: FOG ROLLING IN OFF THE WATER — THE FAR SHORE HAS NOT BEEN SEEN SINCE DAWN'
+      ],
+      cloud: [
+        'WEATHER: OVERCAST OVER CHECKER TOWN — NO SUN EXPECTED — NO RAIN EXPECTED EITHER',
+        'WEATHER: HEAVY CLOUD COVER TOWN-WIDE — THE BOARD IN THE PLAZA IS IN SHADOW ALL DAY'
+      ],
+      fair: [
+        'WEATHER: CLEAR SKIES OVER CHECKER TOWN — THE SEA IS CALM — ALL CROSSINGS ON SCHEDULE',
+        'WEATHER: FAIR AND BRIGHT ACROSS ALL SECTORS — A GOOD DAY FOR THE OUTDOOR BOARDS'
+      ]
+    };
+
+    // The NIGHT DESK — the same bored overnight employee who wrote the rest of the
+    // crawl. Deadpan, unbothered, technically accurate. Still not a character.
+    var NIGHT = {
+      rain: [
+        'IT IS RAINING. I CAN HEAR IT ON THE ROOF OF THE NEWS DESK. THAT IS THE REPORT',
+        'WEATHER: WET. THE SEA IS TAKING IT PERSONALLY',
+        'RAIN CONTINUES. THE FERRY REMAINS DELAYED, THOUGH NOT, I THINK, BECAUSE OF THIS'
+      ],
+      mist: [
+        'THERE IS FOG. THE LIGHTHOUSE IS DOING ITS BEST. WE ARE ALL DOING OUR BEST',
+        'WEATHER: YOU CANNOT SEE ANYTHING. THIS IS ALSO TRUE ON CLEAR NIGHTS, TO BE FAIR'
+      ],
+      cloud: [
+        'CLOUD COVER TONIGHT. NO STARS. THE MOON IS UP THERE SOMEWHERE, PRESUMABLY, STILL AT IT',
+        'WEATHER: OVERCAST. NOTHING TO LOOK AT. GO TO BED'
+      ],
+      fair: [
+        'CLEAR SKIES TONIGHT. EVERY STAR IS OUT. NONE OF THEM ARE DOING ANYTHING',
+        'WEATHER: CLEAR. IF YOU WATCH LONG ENOUGH SOMETHING WILL CROSS IT. IT ALWAYS DOES'
+      ]
+    };
+
+    var desk = night ? NIGHT : DAY;
+    var band = (kind === 'rain') ? 'rain'
+             : (kind === 'mist') ? 'mist'
+             : (cover >= 2)      ? 'cloud'
+             : 'fair';
+    item(pick(desk[band]), null, true);
   })();
 
   // ---- BREAKING (studio-wide): one line in _data/breaking.yml runs the plate ----

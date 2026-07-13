@@ -345,7 +345,7 @@ permalink: /dossier/
 .cc-greet a { color: #F5C518; }
 
 /* ---- operative profile ---- */
-.dsr-card { background: #160c33; border: 1px solid #6b5fa0; border-radius: 12px; padding: 1.2rem 1.4rem; max-width: 560px; }
+.dsr-card { background: var(--surface-2); border: 1px solid #6b5fa0; border-radius: var(--r-md); padding: 1.2rem 1.4rem; max-width: 560px; }
 .dsr-h { color: #F5C518; margin: 1.6rem 0 0.6rem; font-size: 1.05rem; }
 .dsr-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; background: linear-gradient(135deg,#1f1147,#34206f); border: 1px solid #F5C518; border-radius: 12px; padding: 14px 18px; }
 .dsr-avatar { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 34px; border-radius: 50%; background: radial-gradient(circle at 35% 30%,#3a2a72,#160c33); border: 2px solid #F5C518; box-shadow: 0 0 14px rgba(245,197,24,0.5); position: relative; flex-shrink: 0; }

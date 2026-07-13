@@ -571,23 +571,14 @@ the Academy and the studio page — so these are things actually noticed while i
 brainstorm from outside. The first ten are **cohesion** (make it feel like one place). The
 second ten are **ingenuity** (the clever, cheap, memorable stuff).
 
+> **Cohesion 1–4 SHIPPED 2026-07-12** — the header (and footer) keep town time; the splash
+> stands under the town sky; the surface kit (`--r-sm/md/lg`, `--surface`, `--edge`, `--lift`)
+> is declared in `_pjcc-01-core.scss` and adopted site-wide; and the news desk now reports the
+> weather in its own voice (formal by day, deadpan on the Night Desk) *and* reports cloud,
+> which it never did. Numbering below is left alone so the rest still line up.
+
 ### Cohesion — make it read as one world
 
-1. **The header is the only thing on screen that refuses to admit what time it is.** The sky
-   now runs behind every page, and the sticky header sits in front of it as a flat black bar.
-   Give it a phase-tinted underlay — dark enough that the nav stays legible, warm at dawn,
-   cool at night. One rule per phase, zero new markup.
-2. **The splash is the one page with no sky.** It's the front door, and it's the only screen
-   that doesn't share the town's hour or its weather. Wire `town-sky` into `studio-home` —
-   behind the quads, under the drifters. Your first impression becomes *the world*.
-3. **A surface kit.** `.page-card`, `.ghub-portal`, `.project-card`, `.dsr-head`, `.ac-course`
-   and `.fan-card` each invent their own radius, border and shadow. Three custom properties on
-   `:root` (`--surface`, `--edge`, `--lift`), applied everywhere, and the site stops feeling
-   *assembled* and starts feeling *machined*.
-4. **The weather should be noticed by the world, not just drawn on it.** It rains on every page
-   now — and the news ticker never mentions it, no character mentions it, nothing gets wet. One
-   line: on a wet day the day desk opens with the forecast. Cheap, and it makes the sky feel
-   *observed* instead of *rendered*.
 5. **Write the voice chart down.** Poppins, Inter, Share Tech Mono, Press Start 2P and (as of
    today) a system serif for McPuppy. That's not too many — but nothing records *which font
    speaks for which brand*, so it will drift. One panel on `/style/` fixes that forever.
