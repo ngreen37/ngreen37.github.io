@@ -181,37 +181,11 @@
 
 /* (Arc Lore Typewriter styles removed 2026-07-11 — dead since the film strip left; restore from git.) */
 
-/* =============================================================
-   Chess Clock
-   ============================================================= */
-
-.chess-clock-wrap {
-  text-align: center;
-  padding: 28px 0 16px;
-  width: 100%;
-}
-
-.chess-clock-label {
-  font-family: 'Poppins', sans-serif;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: rgba(126, 201, 183, 0.72);
-  margin-bottom: 8px;
-}
-
-.chess-clock-display {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: clamp(20px, 3.5vw, 32px);
-  color: rgba(126, 201, 183, 0.5);
-  letter-spacing: 0.12em;
-  transition: color 0.3s;
-
-  &:hover {
-    color: rgba(126, 201, 183, 0.82);
-  }
-}
+/* (The teal CHESS-CLOCK styles lived here. Removed 2026-07-12 when the studio counters
+   were rebuilt as the .pj-clocks ribbon in projects.md — Nate: "significantly reduce the
+   size... change both formats completely. It looks really out of place now." They were the
+   last of the PJCC purple-and-teal palette on a page that is now theme-studio monochrome.
+   Restore from git.) */
 
 /* =============================================================
    Episode Card Index (blog page)

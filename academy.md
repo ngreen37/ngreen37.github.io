@@ -39,29 +39,25 @@ permalink: /academy/
   </div>
 </div>
 
-<!-- ===== Placement exam ===== -->
+<!-- ===== Find your starting point (was: "Take the exam") ===== -->
 <div class="ac-place" id="ac-place">
   <div class="ac-place-head">
-    <div class="ac-place-lead"><b>New here?</b></div>
-    <button class="ac-place-start" id="ac-place-start" type="button">Take the exam ▸</button>
+    <div class="ac-place-lead"><b>New here?</b> Five quick questions and we'll put you in the right spot.</div>
+    <button class="ac-place-start" id="ac-place-start" type="button">Find my starting point ▸</button>
   </div>
   <div class="ac-place-quiz" id="ac-place-quiz" hidden></div>
   <div class="ac-place-result" id="ac-place-result" hidden></div>
 </div>
 
-<!-- ===== Daily homework ===== -->
-<div class="ac-hw" id="ac-hw">
-  <div class="ac-hw-flame" id="ac-hw-flame">🔥</div>
-  <div class="ac-hw-body">
-    <div class="ac-hw-eyebrow">Daily homework</div>
-    <div class="ac-hw-task" id="ac-hw-task">—</div>
-    <div class="ac-hw-status" id="ac-hw-status">—</div>
-  </div>
-  <a class="ac-hw-go" id="ac-hw-go" href="#">Do it ▸</a>
-</div>
+{% comment %} The DAILY HOMEWORK module (a task + a 🔥 streak flame + "Do it ▸") was removed
+     2026-07-12. Two reasons. It's a DAILY, and every other daily on this site has already
+     been deleted — Clearance's, Siege's, the Daily Dispatch, the dossier's. And Nate's brief
+     for this page was "INVITING. Simple. Warm." — a homework streak that you can BREAK is
+     pressure, which is the opposite of all three. Restore from git if it's missed. {% endcomment %}
 
-<!-- ===== Courses ===== -->
-<h2 class="ac-h2">The full path</h2>
+<!-- ===== The path ===== -->
+<h2 class="ac-h2">The path</h2>
+<p class="ac-path-lead" id="ac-path-lead">Start with Auston. One hall at a time — the rest open as they're built.</p>
 <div class="ac-courses" id="ac-courses"></div>
 
 <!-- ===== Free-play board (collapsed) ===== -->
@@ -252,66 +248,79 @@ window.ACCERT = (function () {
   function mindsEyeTrophy() { try { var s = JSON.parse(localStorage.getItem('pjcc.blindfold.v2')); return !!(s && s.trophy); } catch (e) { return false; } }
 
   // ---- Faculty & courses: each lesson is a target in a game you already have ----
+  /* ═══════════════════════════════════════════════════════════════════════════════
+     THE PATH — rebuilt 2026-07-12 (Nate: "the Full Path is way too much. Let's
+     re-arrange all of it. Best judgment — we're going for INVITING. Simple. Warm. And
+     completely lock all of them except the first one, so I can work on it exclusively
+     before people are on the site.")
+
+     It was FIVE halls and SEVENTEEN lessons — but the real problem wasn't the size, it
+     was that most of it was BROKEN. Eight of those seventeen lessons sent a student to
+     a game that isn't live:
+        · Argus's whole hall  → The Pirc Protocol   (In Development)
+        · The Rival's hall    → Fork in the Road    (In Development)
+        · Princess's hall     → Blindfold Puzzles   (Vault — locked)
+        · Maxwell's lesson 2  → Knight's Tour       (TERMINATED)
+     A beginner following "the full path" walked straight into a wall, four times over.
+
+     So: ONE hall is open, and it's the one whose lessons all point at finished, live
+     games — Auston's, on Notation Blitz and Sand Mine Depths. The other four are shown
+     as what they are: halls that aren't built yet. No lesson lists, no dead links, no
+     checkboxes nobody can tick. You can see where the road goes; you just can't walk it
+     yet.
+
+     Adding a hall back = give it a `lessons` array and drop `soon: true`. The belts,
+     the progress bar, the "start here" card, the certificate and the teacher checklist
+     all read from the open halls, so they scale on their own.
+     ═══════════════════════════════════════════════════════════════════════════════ */
   var COURSES = [
     { id: 'fundamentals', who: 'Auston', slug: 'auston', ico: '💣', accent: '#ffd36b',
-      title: "Auston's Bootcamp", sub: 'Fundamentals — the board & the pieces',
+      title: "Auston's Bootcamp", sub: 'The board & the pieces',
       blurb: '"You gotta know where everything is before it goes boom."',
       lessons: [
-        { t: 'Learn the coordinates', d: 'Play one run of Notation Blitz.', go: 'notation-run', done: function(){ return best('notation-run') >= 1; } },
-        { t: 'Read at tempo', d: 'Score 600+ in a Notation Blitz run.', go: 'notation-run', done: function(){ return best('notation-run') >= 600; } },
-        { t: 'Coordinates on instinct', d: 'Score 1,200+ in Notation Blitz.', go: 'notation-run', done: function(){ return best('notation-run') >= 1200; } },
+        { t: 'Learn the squares', d: 'Play one run of Notation Blitz.', go: 'notation-run', done: function(){ return best('notation-run') >= 1; } },
+        { t: 'Read them at tempo', d: 'Score 600+ in a Notation Blitz run.', go: 'notation-run', done: function(){ return best('notation-run') >= 600; } },
+        { t: 'Know them without thinking', d: 'Score 1,200+ in Notation Blitz.', go: 'notation-run', done: function(){ return best('notation-run') >= 1200; } },
         { t: "The knight's geometry", d: 'Make one descent into Sand Mine Depths.', go: 'sand-mine-depths', done: function(){ return best('sand-mine-depths') >= 1; } }
       ] },
-    { id: 'openings', who: 'Argus', slug: 'argus', ico: '♘', accent: '#8fe3ff',
-      title: "Argus's Opening Repertoire", sub: 'Openings — the first ten moves',
-      blurb: 'Drill the book until it is muscle memory.',
-      lessons: [
-        { t: 'Play the book', d: 'Complete a line in The Pirc Protocol.', go: 'pirc-protocol', done: function(){ return best('pirc-protocol') >= 1; } },
-        { t: 'Know the ideas', d: 'Reach 300+ in The Pirc Protocol.', go: 'pirc-protocol', done: function(){ return best('pirc-protocol') >= 300; } },
-        { t: 'Two openings deep', d: 'Reach 700+ — the repertoire takes shape.', go: 'pirc-protocol', done: function(){ return best('pirc-protocol') >= 700; } }
-      ] },
-    { id: 'tactics', who: 'The Rival', slug: 'rival', ico: '♞', accent: '#ff8fd0',
-      title: "The Rival's Tactics Dojo", sub: 'Tactics — forks, pins, skewers, mates',
-      blurb: 'Find the move that wins material.',
-      lessons: [
-        { t: 'First forks', d: 'Solve 3 puzzles in Fork in the Road.', go: 'fork-in-the-road', done: function(){ return best('fork-in-the-road') >= 3; } },
-        { t: 'Pins & skewers', d: 'Solve 8 in Fork in the Road.', go: 'fork-in-the-road', done: function(){ return best('fork-in-the-road') >= 8; } },
-        { t: 'Tactical storm', d: 'Solve 15 in Fork in the Road.', go: 'fork-in-the-road', done: function(){ return best('fork-in-the-road') >= 15; } },
-        { t: 'Blind tactics', d: 'Solve 3 Blindfold Puzzles.', go: 'blindfold-puzzles', done: function(){ return best('blindfold') >= 3; } }
-      ] },
-    { id: 'vision', who: 'Princess', slug: 'princess', ico: '♛', accent: '#F5C518',
+
+    // ── Not built yet. No `lessons`, so they can't be walked, counted, or linked into.
+    { id: 'openings', who: 'Argus', slug: 'argus', ico: '♘', accent: '#8fe3ff', soon: true,
+      title: "Argus's Opening Repertoire", sub: 'The first ten moves',
+      blurb: 'Drill the book until it is muscle memory.' },
+    { id: 'tactics', who: 'The Rival', slug: 'rival', ico: '♞', accent: '#ff8fd0', soon: true,
+      title: "The Rival's Tactics Dojo", sub: 'Forks, pins, skewers, mates',
+      blurb: 'Find the move that wins material.' },
+    { id: 'vision', who: 'Princess', slug: 'princess', ico: '♛', accent: '#F5C518', soon: true,
       title: "Princess's Vision Hall", sub: 'Board vision & endgames',
-      blurb: 'Princess plays it all in her head.',
-      lessons: [
-        { t: 'See without seeing', d: 'Solve 5 Blindfold Puzzles.', go: 'blindfold-puzzles', done: function(){ return best('blindfold') >= 5; } },
-        { t: 'Deeper vision', d: 'Solve 12 Blindfold Puzzles.', go: 'blindfold-puzzles', done: function(){ return best('blindfold') >= 12; } },
-        { t: "The Mind's Eye", d: 'Beat the CEO in a full blind game.', go: 'blindfold-puzzles', done: function(){ return mindsEyeTrophy(); } }
-      ] },
-    { id: 'strategy', who: 'Maxwell', slug: 'maxwell', ico: '♖', accent: '#9fe8ff',
-      title: "Maxwell's Long Game", sub: 'Strategy — plans, structure & the long view',
-      blurb: 'Nobody sits with a position longer. Think in plans, not just moves.',
-      lessons: [
-        { t: 'Hold the line', d: 'Play a round of Siege on Chess City.', go: 'tower-defense', done: function(){ return best('tower-defense') >= 1; } },
-        { t: 'Plan the route', d: 'Complete a Knight\'s Tour.', go: 'knights-tour', done: function(){ return best('knights-tour') >= 1; } },
-        { t: 'Take the long way', d: 'Fly a run of Sky Run.', go: 'sky-run', done: function(){ return best('sky-run') >= 1; } }
-      ] }
+      blurb: 'Princess plays it all in her head.' },
+    { id: 'strategy', who: 'Maxwell', slug: 'maxwell', ico: '♖', accent: '#9fe8ff', soon: true,
+      title: "Maxwell's Long Game", sub: 'Plans, structure & the long view',
+      blurb: 'Nobody sits with a position longer. Think in plans, not just moves.' }
   ];
 
+  // Belts scale to what's actually WALKABLE — four lessons, five belts. The two big ones
+  // stay on the ladder, greyed, because seeing where the road ends is half the invitation.
   var BELTS = [
     { n: 'Checker', ico: '⛂', need: 0 },
-    { n: 'Pawn', ico: '♙', need: 3 },
-    { n: 'Knight', ico: '♘', need: 6 },
-    { n: 'Bishop', ico: '♗', need: 9 },
-    { n: 'Rook', ico: '♖', need: 12 },
-    { n: 'Queen', ico: '♕', need: 15 },
-    { n: 'Chess City Citizen', ico: '♚', need: 17 }
+    { n: 'Pawn', ico: '♙', need: 1 },
+    { n: 'Knight', ico: '♘', need: 2 },
+    { n: 'Bishop', ico: '♗', need: 3 },
+    { n: 'Rook', ico: '♖', need: 4 },
+    { n: 'Queen', ico: '♕', need: 99, soon: true },
+    { n: 'Chess City Citizen', ico: '♚', need: 99, soon: true }
   ];
 
   // ---- progress ----
-  function allLessons() { var a = []; COURSES.forEach(function(c){ c.lessons.forEach(function(l){ a.push({ c: c, l: l }); }); }); return a; }
+  // Only OPEN halls have lessons, so every count below is automatically about the part of
+  // the Academy a student can actually walk.
+  function openCourses() { return COURSES.filter(function(c){ return !c.soon && c.lessons; }); }
+  function allLessons() { var a = []; openCourses().forEach(function(c){ c.lessons.forEach(function(l){ a.push({ c: c, l: l }); }); }); return a; }
   function doneCount() { var n = 0; allLessons().forEach(function(x){ if (x.l.done()) n++; }); return n; }
-  function beltFor(n) { var b = BELTS[0]; for (var i = 0; i < BELTS.length; i++) if (n >= BELTS[i].need) b = BELTS[i]; return b; }
-  function nextBelt(n) { for (var i = 0; i < BELTS.length; i++) if (n < BELTS[i].need) return BELTS[i]; return null; }
+  function beltFor(n) { var b = BELTS[0]; for (var i = 0; i < BELTS.length; i++) if (!BELTS[i].soon && n >= BELTS[i].need) b = BELTS[i]; return b; }
+  // Only ever chase a belt you can actually reach — the two `soon` belts arrive with the
+  // halls that award them, and until then "95 more lessons → Queen" would be a lie.
+  function nextBelt(n) { for (var i = 0; i < BELTS.length; i++) if (!BELTS[i].soon && n < BELTS[i].need) return BELTS[i]; return null; }
 
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   function gameUrl(slug){ return '{{ "/games/" | relative_url }}'.replace(/\/$/, '') + '/' + slug + '/'; }
@@ -330,15 +339,17 @@ window.ACCERT = (function () {
       document.getElementById('ac-belt-next').innerHTML = (next.need - done) + ' more lesson' + ((next.need - done) === 1 ? '' : 's') + ' → <b>' + esc(next.n) + '</b> belt';
     } else {
       fill.style.width = '100%';
-      document.getElementById('ac-belt-next').innerHTML = '🎓 <b>Graduated</b> — you are a Chess City Citizen!';
+      document.getElementById('ac-belt-next').innerHTML = '🎓 <b>Rook belt</b> — you\'ve finished every lesson that\'s open. The next halls are being built.';
     }
-    // ladder
+    // ladder — the two belts that aren't awardable yet sit greyed at the end, so you can
+    // see where the road goes without being told you're 95 lessons from it
     var lad = document.getElementById('ac-belt-ladder'); lad.innerHTML = '';
     BELTS.forEach(function(b){
-      var got = done >= b.need;
+      var got = !b.soon && done >= b.need;
       var pip = document.createElement('span');
-      pip.className = 'ac-pip' + (got ? ' got' : '') + (b.n === belt.n ? ' cur' : '');
-      pip.title = b.n + (got ? ' ✓' : ' · ' + b.need + ' lessons');
+      pip.className = 'ac-pip' + (got ? ' got' : '') + (b.soon ? ' soon' : '') + (b.n === belt.n ? ' cur' : '');
+      pip.title = b.soon ? b.n + ' · opens with a later hall'
+                         : b.n + (got ? ' ✓' : ' · ' + b.need + ' lesson' + (b.need === 1 ? '' : 's'));
       pip.innerHTML = b.ico;
       lad.appendChild(pip);
     });
@@ -359,18 +370,38 @@ window.ACCERT = (function () {
     } else {
       card.hidden = false;
       document.getElementById('ac-next-ico').textContent = '🎓';
-      document.getElementById('ac-next-title').textContent = 'You have completed every lesson.';
-      document.getElementById('ac-next-desc').textContent = 'Print your Chess City Citizen certificate below — then keep your skills sharp on the leaderboards.';
-      document.getElementById('ac-next-who').innerHTML = 'The whole faculty salutes you.';
+      document.getElementById('ac-next-ico').style.color = '#ffd36b';
+      document.getElementById('ac-next-title').textContent = "You've finished Auston's Bootcamp.";
+      document.getElementById('ac-next-desc').textContent = 'Print your certificate below. The next halls are still being built — come back and they\'ll be waiting.';
+      document.getElementById('ac-next-who').innerHTML = 'Auston is proud of you. He would never say it.';
       document.getElementById('ac-next-go').href = '{{ "/leaderboards/" | relative_url }}';
       document.getElementById('ac-next-go').textContent = 'Leaderboards ▸';
     }
 
-    // courses
+    // courses — an OPEN hall shows its lessons; a hall that isn't built yet says so, warmly,
+    // and offers the one thing it can: go meet the person who'll teach it.
     var cw = document.getElementById('ac-courses'); cw.innerHTML = '';
     COURSES.forEach(function(c){
+      var el = document.createElement('div');
+      el.className = 'ac-course' + (c.soon ? ' ac-course--soon' : '');
+      el.style.setProperty('--acc', c.accent);
+
+      if (c.soon) {
+        el.innerHTML =
+          '<div class="ac-course-head">' +
+            '<div class="ac-course-ico">' + c.ico + '</div>' +
+            '<div><div class="ac-course-title">' + esc(c.title) + '</div>' +
+            '<div class="ac-course-sub">' + esc(c.sub) + '</div></div>' +
+            '<div class="ac-course-prog ac-course-prog--soon">Building</div>' +
+          '</div>' +
+          '<p class="ac-course-blurb">' + esc(c.blurb) + '</p>' +
+          '<p class="ac-soon-note">This hall isn\'t open yet. ' +
+            '<a href="' + charUrl(c.slug) + '">Meet ' + esc(c.who) + ' →</a></p>';
+        cw.appendChild(el);
+        return;
+      }
+
       var cdone = c.lessons.filter(function(l){ return l.done(); }).length;
-      var el = document.createElement('div'); el.className = 'ac-course'; el.style.setProperty('--acc', c.accent);
       var lessonsHtml = c.lessons.map(function(l){
         var ok = l.done();
         return '<li class="ac-lesson' + (ok ? ' done' : '') + '">' +
@@ -391,10 +422,11 @@ window.ACCERT = (function () {
       cw.appendChild(el);
     });
 
-    // teacher checklist + belt
+    // teacher checklist + belt — open halls only, so a teacher never prints a worksheet
+    // for a lesson that can't be done
     var tc = document.getElementById('ws-checklist'); tc.innerHTML = '';
     document.getElementById('ws-belt').textContent = 'Current belt: ' + belt.n + '  (' + done + ' / ' + total + ' lessons complete)';
-    COURSES.forEach(function(c){
+    openCourses().forEach(function(c){
       var sec = '<div class="ws-course"><b>' + esc(c.title) + '</b> — ' + esc(c.who) + '</div><ul class="ws-list">';
       c.lessons.forEach(function(l){ sec += '<li>' + (l.done() ? '☑' : '☐') + ' ' + esc(l.t) + ' <i>(' + esc(l.d) + ')</i></li>'; });
       sec += '</ul>';
@@ -525,38 +557,10 @@ window.ACCERT = (function () {
     };
   };
 
-  // ---- daily homework (feeds a streak flame) ----
-  (function () {
-    var TASKS = [
-      { t: 'Score 600+ in Notation Blitz', go: 'notation-run', ok: function () { return best('notation-run') >= 600; } },
-      { t: 'Solve 5 in Fork in the Road', go: 'fork-in-the-road', ok: function () { return best('fork-in-the-road') >= 5; } },
-      { t: 'Reach 300+ in The Pirc Protocol', go: 'pirc-protocol', ok: function () { return best('pirc-protocol') >= 300; } },
-      { t: 'Solve 3 Blindfold Puzzles', go: 'blindfold-puzzles', ok: function () { return best('blindfold') >= 3; } },
-      { t: 'Play a round of Siege on Chess City', go: 'tower-defense', ok: function () { return best('tower-defense') >= 1; } },
-      { t: "Complete a Knight's Tour", go: 'knights-tour', ok: function () { return best('knights-tour') >= 1; } }
-    ];
-    function ds(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
-    function today() { return ds(new Date()); }
-    function yday() { var d = new Date(); d.setDate(d.getDate() - 1); return ds(d); }
-    function seed(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
-    function load() { try { return JSON.parse(localStorage.getItem('pjcc.academy.hw')) || {}; } catch (e) { return {}; } }
-    function save(o) { try { localStorage.setItem('pjcc.academy.hw', JSON.stringify(o)); } catch (e) {} }
-    var task = TASKS[seed(today()) % TASKS.length];
-    var flame = $('ac-hw-flame'), tEl = $('ac-hw-task'), sEl = $('ac-hw-status'), go = $('ac-hw-go');
-    if (!tEl) return;
-    tEl.textContent = 'Today: ' + task.t; go.href = gameUrl(task.go);
-    function refresh() {
-      var st = load(), doneToday = st.last === today();
-      if (!doneToday && task.ok()) { st.streak = (st.last === yday()) ? (st.streak || 0) + 1 : 1; st.last = today(); save(st); doneToday = true; }
-      var streak = doneToday ? (st.streak || 1) : (st.last === yday() ? (st.streak || 0) : 0);
-      flame.textContent = doneToday ? '🔥' : '🪵'; flame.style.opacity = doneToday ? 1 : 0.5;
-      sEl.innerHTML = doneToday
-        ? '<b style="color:#6bffb8">Done ✓</b> · ' + (st.streak || 1) + '-day streak ' + ((st.streak || 1) >= 3 ? '🔥' : '')
-        : 'Not done yet · streak ' + (streak || 0) + (streak ? '' : ' — start one today!');
-    }
-    refresh();
-    document.addEventListener('visibilitychange', function () { if (!document.hidden) refresh(); });
-  })();
+  /* (The DAILY HOMEWORK engine — a date-seeded task + a localStorage streak flame —
+     was removed 2026-07-12 with its markup. It was a DAILY, and every other daily on this
+     site is already deleted; and three of its six tasks pointed at Fork in the Road, The
+     Pirc Protocol and Knight's Tour, which are not live games. Restore from git.) */
 
   // ---- sandbox board (free-move, no rules) ----
   (function () {
@@ -682,6 +686,9 @@ window.ACCERT = (function () {
   background: rgba(20,12,45,0.6); border: 1px solid #3a2a6a; color: #7d6bb0; font-size: 15px; }
 .ac-pip.got { color: #1a0f3d; background: #F5C518; border-color: #F5C518; }
 .ac-pip.cur { box-shadow: 0 0 0 2px #ff8fd0; }
+/* the belts that aren't awardable yet — visible, so you can see where the road goes,
+   but plainly not on offer */
+.ac-pip.soon { opacity: 0.32; border-style: dashed; }
 
 /* recommended next */
 .ac-next-card { background: rgba(245,197,24,0.09); border: 1px solid #F5C518; border-radius: 16px; padding: 18px 20px; margin: 18px 0; box-shadow: 0 0 26px rgba(245,197,24,0.14); }
@@ -697,7 +704,8 @@ window.ACCERT = (function () {
 .ac-next-go:hover { background: #ffd740; }
 
 /* courses */
-.ac-h2 { color: #F5C518; margin: 28px 0 10px; }
+.ac-h2 { color: #F5C518; margin: 28px 0 6px; }
+.ac-path-lead { color: #c9a7ff; font-size: 0.92rem; margin: 0 0 14px; }
 .ac-courses { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
 .ac-course { background: rgba(45,27,105,0.5); border: 1px solid #3a2a6a; border-left: 4px solid var(--acc, #F5C518); border-radius: 12px; padding: 14px 16px; }
 .ac-course-head { display: flex; align-items: center; gap: 10px; }
@@ -707,6 +715,22 @@ window.ACCERT = (function () {
 .ac-course-prog { margin-left: auto; font-family: 'Courier New', monospace; font-weight: 800; color: var(--acc); }
 .ac-course-blurb { color: #c9a7ff; font-size: 0.86rem; line-height: 1.5; margin: 8px 0; }
 .ac-course-blurb a { color: var(--acc); white-space: nowrap; }
+
+/* ── A hall that isn't built yet (2026-07-12) ─────────────────────────────────
+   Deliberately QUIET, not barred: dimmer, flat-backed, a soft dashed left edge instead
+   of the bright accent bar. The point isn't "you can't have this" — it's "this is coming,
+   here's who's teaching it, go say hello". It carries no lesson list and no checkboxes,
+   so nothing here can send a student at a game that doesn't exist. */
+.ac-course--soon { background: rgba(45,27,105,0.24); border-color: #2c2050;
+  border-left: 4px dashed color-mix(in srgb, var(--acc) 45%, transparent); }
+.ac-course--soon .ac-course-ico { opacity: 0.5; }
+.ac-course--soon .ac-course-title { color: #b8a8dd; }
+.ac-course--soon .ac-course-blurb { color: #8f7fbb; }
+.ac-course-prog--soon { font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: #8f7fbb; background: rgba(20,12,45,0.6);
+  border: 1px solid #3a2a6a; border-radius: 999px; padding: 3px 9px; }
+.ac-soon-note { color: #8f7fbb; font-size: 0.8rem; margin: 8px 0 0; }
+.ac-soon-note a { color: var(--acc); white-space: nowrap; }
 .ac-lessons { list-style: none; padding: 0; margin: 6px 0 0; }
 .ac-lesson { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid rgba(157,127,212,0.14); }
 .ac-check { font-size: 15px; color: #7d6bb0; flex: 0 0 auto; width: 18px; text-align: center; }
@@ -784,14 +808,7 @@ window.ACCERT = (function () {
 .ac-place-rec b { color: #F5C518; }
 
 /* daily homework */
-.ac-hw { display: flex; align-items: center; gap: 14px; background: linear-gradient(135deg,#2a1a1a,#2d1b69); border: 1px solid #6a4a1a; border-radius: 12px; padding: 12px 16px; margin: 14px 0; }
-.ac-hw-flame { font-size: 34px; flex: 0 0 auto; }
-.ac-hw-body { flex: 1; min-width: 0; }
-.ac-hw-eyebrow { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: #ffb066; }
-.ac-hw-task { color: #f0e6ff; font-weight: 700; }
-.ac-hw-status { color: #9a7fd4; font-size: 0.82rem; }
-.ac-hw-go { flex: 0 0 auto; background: #ffb066; color: #1a0f3d; font-weight: 800; text-decoration: none; border-radius: 999px; padding: 9px 16px; white-space: nowrap; }
-.ac-hw-go:hover { background: #ffc98a; }
+/* (the .ac-hw* daily-homework styles were removed 2026-07-12 with the module) */
 
 /* collapsible sections — free-play board · teacher tools */
 .ac-fold { background: rgba(45,27,105,0.28); border: 1px solid #3a2a6a; border-radius: 12px; margin: 16px 0; overflow: hidden; }

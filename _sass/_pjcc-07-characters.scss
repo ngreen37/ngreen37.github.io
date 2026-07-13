@@ -457,32 +457,7 @@ body.theme-classified {
 
 
 
-/* =============================================================
-   Chess Milestone Badge
-   ============================================================= */
-
-.chess-milestone-wrap {
-  text-align: center;
-  margin-top: 10px;
-  min-height: 28px;
-}
-
-.chess-milestone {
-  display: inline-block;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  color: rgba(126, 201, 183, 0.68);
-  padding: 4px 14px;
-  border: 1px solid rgba(126, 201, 183, 0.22);
-  border-radius: 4px;
-  animation: milestone-glow 4.5s ease-in-out infinite;
-}
-
-@keyframes milestone-glow {
-  0%, 100% { border-color: rgba(126, 201, 183, 0.22); color: rgba(126, 201, 183, 0.68); }
-  50%       { border-color: rgba(126, 201, 183, 0.6); color: rgba(159, 224, 208, 1.0);  }
-}
+/* (the Chess Milestone badge went with the clock rebuild, 2026-07-12 — see _pjcc-06-world.) */
 
 /* =============================================================
    Fragments Easter Egg Link

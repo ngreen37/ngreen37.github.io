@@ -92,85 +92,95 @@ body_class: theme-studio
 .project-link-terminated:hover { background: #ff5e5e !important; }
 </style>
 
-{% comment %} Moved here from the PJCC home (2026-07-08) — the studio's own clocks. {% endcomment %}
-{% comment %} ── 7. CHESS CLOCK ───────────────────────────────────── {% endcomment %}
-<div class="pj-counters">
-  <div class="pj-counter">
-    <div class="chess-clock-label">Time in Development</div>
-    <div class="chess-clock-display" id="chess-clock-display">0d 00:00:00</div>
-    <div class="chess-milestone-wrap" id="chess-milestone-wrap"></div>
+{% comment %} ── THE STUDIO'S TWO CLOCKS ──────────────────────────────────────────────
+     Rebuilt 2026-07-12 (Nate: "significantly reduce the size of the counter boxes and
+     change both formats completely. It looks really out of place now").
+
+     He's right on both counts, and the "out of place" is the interesting one: this page
+     is `theme-studio` — McPuppy's warm monochrome, #131218 cards and a #caa24a gold. The
+     counters were two big PURPLE-and-TEAL boxes: the last survivors of the PJCC palette,
+     on a page that stopped being PJCC. They were shouting in a colour the room no longer
+     speaks.
+
+     Format, completely changed: they were two tall centred cards each running a
+     `134d 07:22:41` stopwatch, ticking every second. A two-year project measured to the
+     SECOND is a gag, not information — and it cost two 1Hz timers on an otherwise static
+     page.
+
+     They're a slim TWO-CELL RIBBON now: one big honest number (days), one quiet line of
+     context, in the studio's own gold. Half the height, and the clock ticks once a minute
+     instead of sixty times. The milestone rides on the context line as a small gold tag
+     instead of owning a whole row of its own. ─────────────────────────────────────── {% endcomment %}
+<div class="pj-clocks">
+  <div class="pj-clock">
+    <span class="pj-clock-dot" aria-hidden="true"></span>
+    <span class="pj-clock-k">In development</span>
+    <span class="pj-clock-n" id="pj-days">—</span>
+    <span class="pj-clock-c" id="pj-since">days · since 1 Mar 2026</span>
   </div>
-  <div class="pj-counter">
-    <div class="home-mc-label">◈ Episode 1 Premiere Countdown</div>
-    <div class="home-mc-display" id="home-mc-display">—</div>
-    <div class="home-mc-target">TARGET: 2027.10.21</div>
+  <div class="pj-clock">
+    <span class="pj-clock-k">Episode 1</span>
+    <span class="pj-clock-n" id="pj-eta">—</span>
+    <span class="pj-clock-c">days out · 21 Oct 2027</span>
   </div>
 </div>
 <style>
-/* the studio's two clocks, side by side (Nate 2026-07-12) */
-.pj-counters { display: flex; flex-wrap: wrap; gap: 14px; margin: 18px 0 6px; }
-.pj-counter { flex: 1 1 240px; text-align: center; padding: 16px 12px;
-  background: linear-gradient(135deg, #1f1147 0%, #2d1b69 100%);
-  border: 1px solid rgba(126, 201, 183, 0.28); border-radius: 12px; }
-.pj-counter .chess-clock-label { margin-bottom: 8px; }
-.pj-counter .chess-milestone-wrap:empty { display: none; }
+.pj-clocks { display: grid; grid-template-columns: 1fr 1fr; margin: 16px 0 22px;
+  background: #131218; border: 1px solid #2a2830; border-radius: 10px; overflow: hidden; }
+.pj-clock { display: grid; grid-template-columns: auto auto 1fr; align-items: baseline;
+  gap: 2px 8px; padding: 12px 16px; }
+.pj-clock + .pj-clock { border-left: 1px solid #2a2830; }
+/* the "still working" pulse — the only motion left in the ribbon */
+.pj-clock-dot { grid-row: 1; width: 6px; height: 6px; border-radius: 50%; background: #caa24a;
+  align-self: center; animation: pjPulse 2.4s ease-in-out infinite; }
+@keyframes pjPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+.pj-clock-k { grid-row: 1; font-family: 'Share Tech Mono', monospace; font-size: 10px;
+  letter-spacing: 0.18em; text-transform: uppercase; color: #8a8592; white-space: nowrap; }
+.pj-clock-n { grid-row: 2; grid-column: 1 / 3; font-family: 'Poppins', sans-serif;
+  font-size: 1.7rem; font-weight: 800; line-height: 1.15; color: #f2efe8; }
+.pj-clock-c { grid-row: 2; font-family: 'Share Tech Mono', monospace; font-size: 11px;
+  color: #8a8592; }
+.pj-clock-tag { color: #caa24a; }
+@media (max-width: 560px){
+  .pj-clocks { grid-template-columns: 1fr; }
+  .pj-clock + .pj-clock { border-left: none; border-top: 1px solid #2a2830; }
+}
+@media (prefers-reduced-motion: reduce){ .pj-clock-dot { animation: none; } }
 </style>
 <script>
-// Chess clock
-(function() {
-  var clockEl = document.getElementById('chess-clock-display');
-  if (!clockEl) return;
-  var startMs = 1772337600000; // March 1, 2026 00:00 EDT (04:00 UTC)
-  function pad(n) { return n < 10 ? '0' + n : String(n); }
+/* Both clocks, one timer, once a minute. Days is the only unit that means anything on a
+   project this long — the old to-the-second stopwatch just made the page fidget. */
+(function () {
+  var START  = 1772337600000;                        // 1 Mar 2026 00:00 EDT
+  var TARGET = Date.parse('2027-10-21T04:00:00Z');   // midnight EDT
+  var MILESTONES = [
+    [500, '500 days — no signs of stopping'],
+    [365, 'one year in'],
+    [180, 'half a year in'],
+    [100, '100 days'],
+    [60,  'two months deep'],
+    [30,  '30 days in the game']
+  ];
+  var days  = document.getElementById('pj-days');
+  var since = document.getElementById('pj-since');
+  var eta   = document.getElementById('pj-eta');
+  if (!days || !eta || !since) return;
+
   function tick() {
-    var elapsed = Math.max(0, Date.now() - startMs);
-    var d = Math.floor(elapsed / 86400000);
-    var h = Math.floor((elapsed % 86400000) / 3600000);
-    var m = Math.floor((elapsed % 3600000) / 60000);
-    var s = Math.floor((elapsed % 60000) / 1000);
-    clockEl.textContent = d + 'd ' + pad(h) + ':' + pad(m) + ':' + pad(s);
+    var d = Math.floor(Math.max(0, Date.now() - START) / 86400000);
+    days.textContent = d.toLocaleString();
+    eta.textContent = Math.ceil(Math.max(0, TARGET - Date.now()) / 86400000).toLocaleString();
+    var hit = '';
+    for (var i = 0; i < MILESTONES.length; i++) {        // biggest one passed wins
+      if (d >= MILESTONES[i][0]) { hit = MILESTONES[i][1]; break; }
+    }
+    since.innerHTML = hit
+      ? 'days · <span class="pj-clock-tag">★ ' + hit + '</span>'
+      : 'days · since 1 Mar 2026';
   }
   tick();
-  setInterval(tick, 1000);
+  setInterval(tick, 60000);
 })();
-
-// Milestone badges
-(function() {
-  var milestones = [
-    [30,  '★ 30 DAYS IN THE GAME'],
-    [60,  '★ TWO MONTHS DEEP'],
-    [100, '★ 100 DAYS'],
-    [180, '★ HALF A YEAR'],
-    [365, '★ ONE YEAR IN DEVELOPMENT'],
-    [500, '★ 500 DAYS — NO SIGNS OF STOPPING']
-  ];
-  var mWrap = document.getElementById('chess-milestone-wrap');
-  if (!mWrap) return;
-  var days = Math.floor(Math.max(0, Date.now() - 1772337600000) / 86400000);
-  var label = '';
-  for (var i = milestones.length - 1; i >= 0; i--) {
-    if (days >= milestones[i][0]) { label = milestones[i][1]; break; }
-  }
-  if (label) mWrap.innerHTML = '<span class="chess-milestone">' + label + '</span>';
-})();
-
-// Mission countdown to Episode 1 (#25)
-(function() {
-  var el = document.getElementById('home-mc-display');
-  if (!el) return;
-  var target = new Date('2027-10-21T04:00:00Z').getTime(); // midnight EDT
-  function pad(n) { return n < 10 ? '0' + n : String(n); }
-  function tick() {
-    var diff = Math.max(0, target - Date.now());
-    var d = Math.floor(diff / 86400000);
-    var h = Math.floor((diff % 86400000) / 3600000);
-    var m = Math.floor((diff % 3600000) / 60000);
-    var s = Math.floor((diff % 60000) / 1000);
-    el.textContent = d + 'd ' + pad(h) + ':' + pad(m) + ':' + pad(s);
-  }
-  tick(); setInterval(tick, 1000);
-})();
-
 </script>
 
 <div class="projects-list">
@@ -188,9 +198,10 @@ body_class: theme-studio
     <ul class="project-details">
       <li><strong>Format:</strong> Animated series</li>
     </ul>
-    <div class="project-links">
-      <a href="/blog/" class="project-link">Blog</a>
-    </div>
+    {% comment %} The "Blog" link was removed from the flagship card 2026-07-12 (Nate). The
+         Build Log already has its own chip in the studio hub at the top of this page AND its
+         own slot in the McPuppy nav; a third door to it, hanging off the flagship, made the
+         flagship look like it was mainly a blog. {% endcomment %}
   </div>
 
   <div class="project-card project-card-soon">

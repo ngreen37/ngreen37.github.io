@@ -605,11 +605,9 @@ textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
 }
 .share-tx-flash.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* 25 — Mission countdown (the wrapper is .pj-counter on /projects/; the old
-   .home-mission-countdown wrapper class was swept 2026-07-12 — nothing emits it) */
-.home-mc-label { font-family: 'Share Tech Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: rgba(126, 201, 183, 0.8); text-transform: uppercase; margin-bottom: 5px; }
-.home-mc-display { font-family: 'Share Tech Mono', monospace; font-size: clamp(16px, 2.5vw, 24px); color: #9fe0d0; letter-spacing: 0.1em; }
-.home-mc-target { font-family: 'Share Tech Mono', monospace; font-size: 10px; font-weight: 700; color: rgba(126, 201, 183, 0.55); letter-spacing: 0.14em; margin-top: 4px; }
+/* 25 — Mission countdown: REBUILT 2026-07-12 as the .pj-clocks ribbon, which lives in
+   projects.md with its own styles. The teal .home-mc-* readout that used to sit here went
+   with it — see the note in _pjcc-06-world.scss. Restore from git. */
 
 /* 26 — 500 Incident Report */
 .incident-wrap { max-width: 680px; margin: 4rem auto; padding: 0 1.5rem; font-family: 'Share Tech Mono', monospace; }
