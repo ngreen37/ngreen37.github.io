@@ -90,15 +90,17 @@ body_class: theme-bw
     background: rgba(255,255,255,0.04); border: 2px solid var(--cc); color: var(--cc);
   }
   .cc-id { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  @media (pointer: coarse) { .cc-name { padding: 8px 4px; margin: -8px -4px; display: inline-block; } }  /* touch sweep 2026-07-13 */
   .cc-name { font-weight: 800; font-size: 1.1rem; color: #f2ecdd; text-decoration: none; }
   .cc-name:hover { color: var(--cc); }
   .cc-kanji { font-weight: 500; color: var(--cc); opacity: 0.85; }
   .cc-spec { font-size: 0.76rem; color: #9a927f; }
   .cc-rate { font-size: 0.82rem; color: #d9d0bd; display: flex; align-items: center; gap: 6px; margin-top: 2px; }
   .cc-rate b { color: #F5C518; }
-  .cc-count { color: #7d7566; }
+  .cc-count { color: #93897a; }  /* a11y 2026-07-13: was 4.0:1 */
 
-  .cc-stars { position: relative; display: inline-block; color: #45403a; letter-spacing: 1px; white-space: nowrap; }
+  /* a11y 2026-07-13: the rating stars were #45403a — 1.8:1, unreadable. */
+  .cc-stars { position: relative; display: inline-block; color: #a89778; letter-spacing: 1px; white-space: nowrap; }
   .cc-stars-on { position: absolute; left: 0; top: 0; overflow: hidden; color: #F5C518; white-space: nowrap; }
   .cc-stars.mini { font-size: 0.8rem; }
 

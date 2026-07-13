@@ -662,7 +662,7 @@ textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
 /* 35 — Endgame position of week */
 .cl-endgame { margin: 28px 0; background: rgba(10, 7, 20, 0.7); border: 1px solid rgba(155, 135, 192, 0.18); border-radius: 6px; padding: 18px 22px; font-family: 'Share Tech Mono', monospace; }
 .cl-endgame-label { font-size: 9px; letter-spacing: 0.22em; color: rgba(155, 135, 192, 0.48); text-transform: uppercase; margin-bottom: 10px; }
-.cl-endgame-week { font-size: 10px; color: #4a3870; margin-bottom: 6px; letter-spacing: 0.08em; }
+.cl-endgame-week { font-size: 10px; color: #9d8ecb; /* a11y 2026-07-13: was 1.9:1 */ margin-bottom: 6px; letter-spacing: 0.08em; }
 .cl-endgame-name { font-size: 15px; color: #9b87c0; font-weight: 700; font-family: 'Poppins', sans-serif; margin-bottom: 6px; }
 .cl-endgame-desc { font-size: 11px; color: rgba(196, 181, 253, 0.58); line-height: 1.7; margin-bottom: 12px; }
 .cl-endgame-link { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; color: #9b87c0; text-decoration: none; border: 1px solid rgba(155, 135, 192, 0.28); padding: 5px 12px; border-radius: 3px; transition: color 0.2s, border-color 0.2s; }
@@ -700,7 +700,16 @@ textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
 /* 22/38 — Daily scenario */
 .cl-scenario { margin: 28px 0; background: rgba(18, 9, 58, 0.55); border: 1px solid rgba(245, 197, 24, 0.2); border-radius: 6px; padding: 18px 22px; font-family: 'Share Tech Mono', monospace; }
 .cl-scenario-label { font-size: 9px; letter-spacing: 0.22em; color: rgba(245, 197, 24, 0.42); text-transform: uppercase; margin-bottom: 10px; }
-.cl-scenario-day { font-size: 10px; color: #4a3870; margin-bottom: 6px; letter-spacing: 0.08em; }
+.cl-scenario-day { font-size: 10px; color: #9d8ecb; /* a11y 2026-07-13: was 1.9:1 */ margin-bottom: 6px; letter-spacing: 0.08em; }
 .cl-scenario-title { font-size: 15px; color: #FFE566; font-weight: 700; font-family: 'Poppins', sans-serif; margin-bottom: 8px; }
 .cl-scenario-body { font-size: 12px; color: #9b87c0; line-height: 1.8; }
 .cl-scenario-tag { display: inline-block; font-size: 9px; letter-spacing: 0.1em; color: #00ff41; border: 1px solid rgba(0, 255, 65, 0.28); padding: 2px 8px; border-radius: 2px; margin-top: 10px; }
+
+/* 2026-07-13 touch sweep: the lessons page's standalone controls measured under the tap
+   floor on a phone (profile link 186x13, blindfold toggle 105x35, Lichess link 126x30). */
+@media (pointer: coarse) {
+  .game-feed-profile-link { display: inline-block; padding: 12px 4px; }
+  .puzzle-solve-btn { padding: 12px 22px; }
+  .cl-blindfold-toggle { padding: 11px 14px; }
+  .cl-endgame-link { display: inline-block; padding: 11px 10px; }
+}

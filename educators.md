@@ -34,7 +34,7 @@ permalink: /educators/
 <h2 class="ed-h2">◈ Classroom Art Kiosk</h2>
 <div class="ed-free">
   <p>Print a PJCC fan-art card for every student — names pre-filled, one card per page. They draw, you hang. Anything special? <a href="/fan-art/">Send it in</a> — every piece is screened, then hung by McPuppy.</p>
-  <textarea id="ek-names" class="ek-names" rows="6" placeholder="One student name per line…" autocomplete="off"></textarea>
+  <textarea id="ek-names" class="ek-names" rows="6" aria-label="Student names" placeholder="One student name per line…" autocomplete="off"></textarea>
   <div class="ed-free-cta">
     <button class="ed-btn ed-btn-gold" id="ek-print" type="button">🖨 Print the card stack</button>
     <span class="ek-msg" id="ek-msg"></span>

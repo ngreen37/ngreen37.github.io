@@ -131,7 +131,7 @@ permalink: /mailing-list/
 .ml-msg { min-height: 1.3em; font-size: 0.9rem; }
 .ml-msg.ok { color: #6bffb8; }
 .ml-msg.err { color: #ff6b6b; }
-.ml-fineprint { color: #7d6bb0; font-size: 0.8rem; margin-top: 2px; }
+.ml-fineprint { color: #9d8ecb; /* a11y 2026-07-13: was 3.7:1 */ font-size: 0.8rem; margin-top: 2px; }
 
 .ml-h2 { color: #F5C518; margin: 26px 0 10px; font-size: 1.1rem; }
 .ml-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
@@ -147,7 +147,7 @@ permalink: /mailing-list/
 .ml-sample-subject { color: #F5C518; font-weight: 700; padding: 12px 12px 4px; font-size: 0.95rem; }
 .ml-sample-body { padding: 4px 12px 12px; }
 .ml-sample-body p { color: #cfc3ee; font-size: 0.86rem; line-height: 1.6; margin: 0 0 8px; }
-.ml-sample-note { color: #7d6bb0; font-size: 0.84rem; margin-top: 8px; }
+.ml-sample-note { color: #9d8ecb; /* a11y 2026-07-13: was 3.7:1 */ font-size: 0.84rem; margin-top: 8px; }
 
 .ml-refnote { color: #9a7fd4; max-width: 600px; line-height: 1.6; }
 .ml-refnote b { color: #c9a7ff; }

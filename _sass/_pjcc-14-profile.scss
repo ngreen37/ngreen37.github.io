@@ -125,3 +125,9 @@
 .dsr-ghost { display:inline-block; font-size:0.74rem; color:#c9a7ff; background:rgba(157,127,212,0.16);
   border-radius:6px; padding:1px 7px; margin-top:2px; }
 .dsr-ghost.beat { color:#6bffb8; background:rgba(107,255,184,0.14); }
+
+/* 2026-07-13 touch sweep: the shared input/button pair measured ~31px tall on a phone
+   (dossier email + code, mailing-list signup). */
+@media (pointer: coarse) {
+  .pjcc-input, .pjcc-btn { padding-top: 11px; padding-bottom: 11px; }
+}

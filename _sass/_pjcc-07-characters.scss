@@ -462,3 +462,8 @@ body.theme-classified {
 /* =============================================================
    Fragments Easter Egg Link
    ============================================================= */
+
+/* 2026-07-13 touch sweep: "View Full File →" measured 76x18 on a phone. */
+@media (pointer: coarse) {
+  .char-flip-link { display: inline-block; padding: 10px 6px; margin: -10px -6px; }
+}

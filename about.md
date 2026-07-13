@@ -72,6 +72,7 @@ body_class: theme-hello
 .contact-calc-cursor { display:inline-block; width:9px; height:1em; background:var(--aqua); margin-left:2px;
   vertical-align:text-bottom; animation: hello-blink .65s step-end infinite; }
 
+@media (pointer: coarse) { .hello-email { padding: 12px 16px !important; } }  /* touch sweep 2026-07-13: was 221x27 */
 .hello-email { font-family:'Poppins',sans-serif; font-weight:700; letter-spacing:.4px; text-decoration:none;
   font-size:clamp(16px,2.4vw,22px); color:var(--gold); animation: hello-glow 3.6s ease-in-out infinite; }
 .hello-email:hover { color:#fff; text-shadow:0 0 24px rgba(255,210,74,0.9); animation:none; text-decoration:none; }
