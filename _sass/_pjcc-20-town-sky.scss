@@ -105,8 +105,9 @@ html.sky-day .ts-orb::before {
   content: '';
   position: absolute; inset: -26px;
   border-radius: 50%;
+  /* 8 soft rays, not 16 machine-cut ones (2026-07-14 — matches the hero sun) */
   background: repeating-conic-gradient(from 0deg,
-    rgba(255, 231, 130, 0.80) 0deg 3.2deg, transparent 3.2deg 22.5deg);
+    rgba(255, 231, 130, 0.62) 0deg 4.5deg, transparent 4.5deg 45deg);
   -webkit-mask-image: radial-gradient(circle, transparent 47%, #000 55%, #000 72%, transparent 100%);
           mask-image: radial-gradient(circle, transparent 47%, #000 55%, #000 72%, transparent 100%);
   animation: ts-sun-rays 90s linear infinite;

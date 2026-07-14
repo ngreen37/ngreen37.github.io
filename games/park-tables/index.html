@@ -210,8 +210,9 @@ a move a day is plenty.</p>
         html += '<h2 class="pt-h">' + (iAmCreator ? 'Waiting for the Creator' : 'Open tables') + '</h2>' +
           (openH || '<p class="lb-empty">No open seats right now — leave a table open and someone will find it.</p>');
 
-        if (r[3].rows.length) {
-          html += '<h2 class="pt-h">Finished</h2>' + r[3].rows.map(function (m) {
+        var finished = r[3].rows.filter(function (m) { return m.win_reason !== 'withdrawn'; });
+        if (finished.length) {
+          html += '<h2 class="pt-h">Finished</h2>' + finished.map(function (m) {
             var white = m.white === me;
             var won = (m.result === '1-0' && white) || (m.result === '0-1' && !white);
             return '<div class="pt-row pt-row-done"><span class="pt-row-vs">vs <b>' +
@@ -364,7 +365,8 @@ a move a day is plenty.</p>
         ? '<div class="pt-tools"><div class="pt-emotes">' + M.EMOTES.map(function (t, i2) {
             return '<button class="pt-emote" data-emote="' + i2 + '">' + esc(t) + '</button>';
           }).join('') + '</div>' +
-          (m.status === 'active' ? '<button class="pjcc-btn-ghost pt-resign" id="pt-resign">Resign</button>' : '') + '</div>'
+          (m.status === 'active' ? '<button class="pjcc-btn-ghost pt-resign" id="pt-resign">Resign</button>' : '') +
+          (m.status === 'open' && white ? '<button class="pjcc-btn-ghost pt-resign" id="pt-withdraw">Withdraw the table</button>' : '') + '</div>'
         : '');
 
     document.getElementById('pt-back').onclick = function(){ cur = null; lobby(); };
@@ -381,6 +383,13 @@ a move a day is plenty.</p>
     if (rs) rs.onclick = function(){
       if (!confirm('Resign this game?')) return;
       M.finish(m.id, white ? '0-1' : '1-0', 'resignation').then(function(){ openTable(m.id); }).catch(function(e){ toast(e.message); });
+    };
+    // fold up an OPEN table nobody has claimed (2026-07-14) — it vanishes from the
+    // lobby for everyone; withdrawn tables never show in Finished and never rate
+    var wd = document.getElementById('pt-withdraw');
+    if (wd) wd.onclick = function(){
+      if (!confirm('Take this table down?')) return;
+      M.finish(m.id, '1/2-1/2', 'withdrawn').then(function(){ cur = null; lobby(); }).catch(function(e){ toast(e.message); });
     };
     if (myTurn && !g.result) {
       Array.prototype.forEach.call(app.querySelectorAll('.pt-sq'), function (b) {

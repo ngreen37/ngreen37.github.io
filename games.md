@@ -255,8 +255,9 @@ permalink: /games/
 .gdoor[data-grand="0"] .gdoor-knob { display:none; }
 .gdoor[data-grand="0"] .gdoor-glyph { font-size:26px; opacity:0.55; filter:none; color:#3a2612; }
 .gdoor[data-grand="0"] .gdoor-seam { height:2px; box-shadow:0 -2px 10px 2px color-mix(in srgb, var(--acc) 38%, transparent); }
+.gdoor[data-grand="0"] .gdoor-door { transition:transform .5s cubic-bezier(.3,1.25,.4,1); }
 .gdoor[data-grand="0"]:hover .gdoor-door,
-.gdoor[data-grand="0"]:focus-visible .gdoor-door { transform:scaleX(0.45) skewY(-5deg); }
+.gdoor[data-grand="0"]:focus-visible .gdoor-door { transform:perspective(150px) rotateY(46deg) scaleX(.68) skewY(-3deg); }
 
 @media (prefers-reduced-motion: reduce){
   .ghub-doorway { animation:none; }

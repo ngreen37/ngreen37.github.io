@@ -64,173 +64,14 @@ own_title: true
 {% comment %} The FREE-PLAY BOARD left this page 2026-07-14 (Nate: "move that to Learn
      in Games Hall") — it lives at /games/free-play/ now, listed in the Learn hall. {% endcomment %}
 
-<!-- ===== For teachers & parents (collapsed) ===== -->
-<details class="ac-fold ac-fold-teacher">
-<summary><span class="ac-fold-t">🏫 For teachers &amp; parents</span><span class="ac-fold-hint">worksheets · certificates · class codes · progress export</span></summary>
-<div class="ac-fold-body">
-<p class="ac-class-intro">The student's name below flows onto every printout.</p>
-<div class="ac-class-row">
-  <label class="ac-name-field">Student name
-    <input type="text" id="ac-student" placeholder="e.g. Princess" maxlength="40" autocomplete="off">
-  </label>
-  <button class="ac-print-btn" id="ac-print-work">🖨 Worksheet packet</button>
-  <button class="ac-print-btn" id="ac-print-curric">🖨 Curriculum</button>
-  <button class="ac-print-btn" id="ac-print-teacher">🖨 Progress sheet</button>
-  <button class="ac-print-btn ac-print-cert" id="ac-print-cert">🏅 Certificate</button>
-</div>
+{% comment %} The whole For-Teachers-&-Parents apparatus (printables, class codes,
+     progress export, certificate verify) was REMOVED 2026-07-14 — Nate: "Completely
+     remove it. Cut it WAY down." Restore from git before this date. {% endcomment %}
 
-<!-- ===== School-pilot kit: class codes + progress export ===== -->
-<div class="ac-tools">
-  <div class="ac-tool">
-    <div class="ac-tool-h">🎟 Class code</div>
-    <p class="ac-tool-p">Generate a code, hand it out. <span class="ac-muted">(Local — no accounts.)</span></p>
-    <div class="ac-tool-row">
-      <button class="ac-print-btn" id="ac-class-gen" type="button">Generate class code</button>
-      <input id="ac-class-join" class="ac-tool-in" aria-label="Class code" placeholder="enter a class code" maxlength="12" autocomplete="off">
-      <button class="ac-print-btn" id="ac-class-save" type="button">Join</button>
-    </div>
-    <div class="ac-tool-out" id="ac-class-out"></div>
-  </div>
-  <div class="ac-tool">
-    <div class="ac-tool-h">📊 Progress export</div>
-    <p class="ac-tool-p">Save progress to a file, or load it back.</p>
-    <div class="ac-tool-row">
-      <button class="ac-print-btn" id="ac-export" type="button">⬇ Export (.json)</button>
-      <button class="ac-print-btn" id="ac-copy-sum" type="button">⧉ Copy summary</button>
-      <label class="ac-print-btn ac-file-btn">⬆ Import<input type="file" id="ac-import" accept="application/json" hidden></label>
-    </div>
-    <div class="ac-tool-out" id="ac-export-out"></div>
-  </div>
-  <div class="ac-tool">
-    <div class="ac-tool-h">✅ Verify a certificate</div>
-    <p class="ac-tool-p">Paste a certificate's <code>CTA-…</code> code to confirm it.</p>
-    <div class="ac-tool-row">
-      <input id="ac-verify-in" class="ac-tool-in ac-verify-in" aria-label="Certificate code" placeholder="CTA-…" autocomplete="off">
-      <button class="ac-print-btn" id="ac-verify-btn" type="button">Verify</button>
-    </div>
-    <div class="ac-tool-out" id="ac-verify-out"></div>
-  </div>
-</div>
-</div>
-</details>
-
-<!-- ===== Printable sheets (hidden on screen) ===== -->
-<div class="ac-print" id="sheet-worksheet">
-  <!-- Page 1 — coordinates -->
-  <div class="ws-page">
-    <div class="ws-head"><span>PJCC Chess Academy · Worksheet Packet</span><span id="ws-name-1">Name: ____________________</span></div>
-    <h1 class="ws-title">1 · Coordinate Quest</h1>
-    <p class="ws-sub">The board has 8 files (a–h, left to right) and 8 ranks (1–8, bottom to top). Each square has a name like <b>e4</b>.</p>
-    <div class="ws-board" id="ws-board"></div>
-    <ol class="ws-q">
-      <li>Write the name of the square where the <b>white king</b> starts: ____________</li>
-      <li>Name <b>three</b> squares on the <b>e-file</b>: ________  ________  ________</li>
-      <li>Name <b>three</b> squares on the <b>4th rank</b>: ________  ________  ________</li>
-      <li>On an <b>empty board</b>, a knight on <b>g1</b> can jump to <b>f3</b>, <b>h3</b>, or ________ — three squares in all</li>
-      <li>Colour the square <b>d5</b>. Is it light or dark? ____________</li>
-      <li>Bonus: which two squares are in the <b>corners on White's side</b>? ________ and ________</li>
-    </ol>
-    <p class="ws-foot">Then play <b>Notation Blitz</b> in the Academy to check your answers at speed!</p>
-  </div>
-  <!-- Page 2 — how the pieces move -->
-  <div class="ws-page">
-    <div class="ws-head"><span>PJCC Chess Academy · Worksheet Packet</span><span>Name: ____________________</span></div>
-    <h1 class="ws-title">2 · How the Pieces Move</h1>
-    <p class="ws-sub">Draw arrows from each piece to <b>every</b> square it could move to from the centre of an empty board.</p>
-    <ol class="ws-q">
-      <li>The <b>rook</b> (♖) moves in straight lines. How many squares can it reach from <b>d4</b>? ______</li>
-      <li>The <b>bishop</b> (♗) moves on diagonals. What colour squares does a bishop on <b>c1</b> always stay on? ____________</li>
-      <li>The <b>queen</b> (♕) moves like a rook <b>and</b> a bishop. From <b>d4</b>, can she reach <b>h8</b>? ______</li>
-      <li>The <b>knight</b> (♘) jumps in an L. List all squares a knight on <b>d4</b> can reach: ______________________</li>
-      <li>The <b>pawn</b> (♙) moves forward but captures diagonally. From <b>e2</b>, where can it move on its first turn? ____________</li>
-      <li>Bonus: why can a <b>bishop</b> never visit every square on the board? ____________</li>
-    </ol>
-    <p class="ws-foot">Practice the knight's jump in <b>Sand Mine Depths</b>.</p>
-  </div>
-  <!-- Page 3 — first tactics -->
-  <div class="ws-page">
-    <div class="ws-head"><span>PJCC Chess Academy · Worksheet Packet</span><span>Name: ____________________</span></div>
-    <h1 class="ws-title">3 · First Tactics</h1>
-    <p class="ws-sub">A <b>fork</b> attacks two pieces at once. A <b>pin</b> traps a piece in front of a more valuable one. A <b>skewer</b> is a pin in reverse.</p>
-    <ol class="ws-q">
-      <li>What do we call one piece attacking <b>two</b> enemy pieces at the same time? ____________</li>
-      <li>Which piece is famous for forking the king and queen with its L-jump? ____________</li>
-      <li>If a knight forks the <b>king</b> and a <b>rook</b>, which must move — and what do you win? ____________</li>
-      <li>A <b>pin</b> against the <b>king</b> is special because the pinned piece legally cannot move <b>off the line of the</b> ____________.</li>
-      <li>Draw a fork: place a white knight so it attacks the <b>black king</b> and a <b>black rook</b> at the same time. (Use the back of the page.)</li>
-      <li>Bonus: name the three tactics above in order of how often you think they appear: ____________</li>
-    </ol>
-    <p class="ws-foot">Then prove it in <b>Fork in the Road</b> — solve 3 to finish the lesson.</p>
-  </div>
-</div>
-
-<div class="ac-print" id="sheet-teacher">
-  <div class="ws-head"><span>PJCC Chess Academy — Progress Report</span><span id="ws-name-2">Student: ____________________</span></div>
-  <h1 class="ws-title">Teacher Progress Sheet</h1>
-  <div class="ws-belt" id="ws-belt">Current belt: —</div>
-  <div id="ws-checklist"></div>
-  <p class="ws-foot">Date: ______________  ·  Instructor signature: ____________________</p>
-</div>
-
-<div class="ac-print ac-cert" id="sheet-cert">
-  <div class="cert-border">
-    <div class="cert-crest">♚</div>
-    <div class="cert-academy">PJCC Chess Academy</div>
-    <div class="cert-presents">This certifies that</div>
-    <div class="cert-name" id="cert-name">Cadet</div>
-    <div class="cert-has">has earned the rank of</div>
-    <div class="cert-belt" id="cert-belt">Checker</div>
-    <div class="cert-line" id="cert-line">— completed lessons across the Academy —</div>
-    <div class="cert-sig"><div>♘ Argus &nbsp; ♞ The Rival &nbsp; ♛ Princess</div><div class="cert-date" id="cert-date"></div></div>
-    <div class="cert-code-wrap">Verify at mcpuppystudios.com/academy &nbsp;·&nbsp; <span class="cert-code" id="cert-code"></span></div>
-  </div>
-</div>
-
-<div class="ac-print" id="sheet-curric">
-  <div class="ws-page">
-    <div class="ws-head"><span>PJCC Chess Academy</span><span>Class: ____________________</span></div>
-    <h1 class="ws-title">A 6-Week Curriculum — Teacher Plan</h1>
-    <p class="ws-sub">A ready-to-run unit. Each week pairs a short lesson with an in-Academy game and a worksheet page.</p>
-    <table class="ws-curric">
-      <tr><th>Week</th><th>Focus</th><th>Faculty · Game</th><th>Homework</th></tr>
-      <tr><td>1</td><td>The board &amp; coordinates</td><td>Auston · Notation Blitz</td><td>Worksheet 1</td></tr>
-      <tr><td>2</td><td>How the pieces move</td><td>Auston · Sand Mine Depths</td><td>Worksheet 2</td></tr>
-      <tr><td>3</td><td>Openings — the first moves</td><td>Argus · The Pirc Protocol</td><td>Play one line</td></tr>
-      <tr><td>4</td><td>Tactics — forks &amp; pins</td><td>The Rival · Fork in the Road</td><td>Worksheet 3 · solve 3</td></tr>
-      <tr><td>5</td><td>Strategy — the long game</td><td>Maxwell · Siege on Chess City</td><td>Play one siege</td></tr>
-      <tr><td>6</td><td>Board vision</td><td>Princess · Blindfold Puzzles</td><td>Solve 5 blind</td></tr>
-    </table>
-    <p class="ws-foot">Belts: a new belt every ~3–4 lessons (see the live ladder on the Academy page). Print each student's certificate at the end — the code on it verifies right on the site.</p>
-  </div>
-</div>
 
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-leitmotif.js' | relative_url }}"></script>
-<script>
-// Deterministic, offline certificate codes — verifiable on this page, no backend.
-window.ACCERT = (function () {
-  function b64u(s) { return btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
-  function unb64u(s) { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return decodeURIComponent(escape(atob(s))); }
-  function ck(s) { var n = 0; for (var i = 0; i < s.length; i++) n = (n + s.charCodeAt(i) * (i + 1)) % 1296; var c = n.toString(36).toUpperCase(); while (c.length < 2) c = '0' + c; return c; }
-  function make(o) {
-    var name = String(o.name || 'Cadet').replace(/\|/g, ' ').slice(0, 40);
-    var b = b64u([name, o.belt, o.done, o.total, o.date].join('|'));
-    return 'CTA-' + b + '-' + ck(b);
-  }
-  function verify(code) {
-    try {
-      var m = String(code).trim().replace(/\s+/g, '').match(/^CTA-(.+)-([A-Za-z0-9]{2})$/);
-      if (!m) return null;
-      if (ck(m[1]) !== m[2].toUpperCase()) return { valid: false };
-      var p = unb64u(m[1]).split('|');
-      if (p.length < 5) return { valid: false };
-      return { valid: true, name: p[0], belt: p[1], done: +p[2], total: +p[3], date: p[4] };
-    } catch (e) { return { valid: false }; }
-  }
-  return { make: make, verify: verify };
-})();
-</script>
 <script>
 (function () {
   function best(game) {
@@ -428,71 +269,13 @@ window.ACCERT = (function () {
       cw.appendChild(el);
     });
 
-    // teacher checklist + belt — open halls only, so a teacher never prints a worksheet
-    // for a lesson that can't be done
-    var tc = document.getElementById('ws-checklist'); tc.innerHTML = '';
-    document.getElementById('ws-belt').textContent = 'Current belt: ' + belt.n + '  (' + done + ' / ' + total + ' lessons complete)';
-    openCourses().forEach(function(c){
-      var sec = '<div class="ws-course"><b>' + esc(c.title) + '</b> — ' + esc(c.who) + '</div><ul class="ws-list">';
-      c.lessons.forEach(function(l){ sec += '<li>' + (l.done() ? '☑' : '☐') + ' ' + esc(l.t) + ' <i>(' + esc(l.d) + ')</i></li>'; });
-      sec += '</ul>';
-      var d = document.createElement('div'); d.innerHTML = sec; tc.appendChild(d);
-    });
-
-    // certificate text + verifiable code
-    document.getElementById('cert-belt').textContent = belt.n;
-    document.getElementById('cert-line').textContent = '— ' + done + ' of ' + total + ' Academy lessons completed —';
-    var cc = document.getElementById('cert-code');
-    if (cc && window.ACCERT) {
-      var nm = (document.getElementById('ac-student').value || 'Cadet').trim() || 'Cadet';
-      cc.textContent = ACCERT.make({ name: nm, belt: belt.n, done: done, total: total, date: new Date().toISOString().slice(0, 10) });
-    }
   }
 
-  // ---- student name (local only) ----
-  var nameIn = document.getElementById('ac-student');
-  try { nameIn.value = localStorage.getItem('pjcc.academy.student') || ''; } catch (e) {}
-  function syncName() {
-    var nm = (nameIn.value || '').trim();
-    try { localStorage.setItem('pjcc.academy.student', nm); } catch (e) {}
-    var disp = nm || 'Cadet';
-    document.getElementById('cert-name').textContent = disp;
-    document.getElementById('ws-name-1').textContent = 'Name: ' + (nm || '____________________');
-    document.getElementById('ws-name-2').textContent = 'Student: ' + (nm || '____________________');
-  }
-  nameIn.addEventListener('input', syncName);
 
-  // ---- worksheet board (printable 8x8) ----
-  (function () {
-    var b = document.getElementById('ws-board'); if (!b) return;
-    var files = 'abcdefgh';
-    for (var r = 8; r >= 1; r--) {
-      var lab = document.createElement('div'); lab.className = 'ws-cell ws-lab'; lab.textContent = r; b.appendChild(lab);
-      for (var f = 0; f < 8; f++) {
-        var c = document.createElement('div');
-        c.className = 'ws-cell ' + (((f + r) % 2 === 0) ? 'ws-dark' : 'ws-light');
-        b.appendChild(c);
-      }
-    }
-    var corner = document.createElement('div'); corner.className = 'ws-cell ws-lab'; b.appendChild(corner);
-    for (var f2 = 0; f2 < 8; f2++) { var l = document.createElement('div'); l.className = 'ws-cell ws-lab'; l.textContent = files[f2]; b.appendChild(l); }
-  })();
 
-  // ---- printing (visibility-isolated sheet) ----
-  function printSheet(id) {
-    var s = document.getElementById(id); if (!s) return;
-    document.getElementById('cert-date').textContent = new Date().toLocaleDateString();
-    s.classList.add('printing-active'); document.body.classList.add('ac-printing');
-    window.print();
-  }
-  window.addEventListener('afterprint', function () {
-    document.body.classList.remove('ac-printing');
-    Array.prototype.forEach.call(document.querySelectorAll('.printing-active'), function (e) { e.classList.remove('printing-active'); });
-  });
-  document.getElementById('ac-print-work').onclick = function () { printSheet('sheet-worksheet'); };
-  document.getElementById('ac-print-curric').onclick = function () { printSheet('sheet-curric'); };
-  document.getElementById('ac-print-teacher').onclick = function () { printSheet('sheet-teacher'); };
-  document.getElementById('ac-print-cert').onclick = function () { printSheet('sheet-cert'); };
+
+
+
 
   syncName();
   if (window.PJCC && PJCC.ready && PJCC.ready.then) { PJCC.ready.then(render); }
@@ -535,69 +318,11 @@ window.ACCERT = (function () {
 
   // (The free-play sandbox board moved to /games/free-play/ — 2026-07-14, Nate.)
 
-  // ---- class code (local) ----
-  (function () {
-    var KEY = 'pjcc.academy.class';
-    function rnd() { var s = '', a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; for (var i = 0; i < 6; i++) s += a[(Math.random() * a.length) | 0]; return 'CT-' + s; }
-    function get() { try { return localStorage.getItem(KEY) || ''; } catch (e) { return ''; } }
-    function set(v) { try { if (v) localStorage.setItem(KEY, v); else localStorage.removeItem(KEY); } catch (e) {} }
-    var out = $('ac-class-out'); if (!out) return;
-    function show() {
-      var v = get();
-      out.innerHTML = v ? ('In class <b>' + esc(v) + '</b> · <button type="button" class="ac-link-btn" id="ac-class-leave">leave</button>') : '';
-      var lv = $('ac-class-leave'); if (lv) lv.onclick = function () { set(''); show(); };
-    }
-    var gen = $('ac-class-gen'); if (gen) gen.onclick = function () { var code = rnd(); set(code); $('ac-class-join').value = code; out.innerHTML = 'New class code: <b>' + esc(code) + '</b> — hand it to students. '; show(); };
-    var sv = $('ac-class-save'); if (sv) sv.onclick = function () { var v = ($('ac-class-join').value || '').trim().toUpperCase(); if (v) { set(v); show(); } };
-    show();
-  })();
 
-  // ---- progress export / import / summary ----
-  (function () {
-    function gather() {
-      var o = { when: new Date().toISOString(), student: '', data: {} };
-      try { o.student = localStorage.getItem('pjcc.academy.student') || ''; } catch (e) {}
-      try { for (var k in localStorage) { if (/^pjcc\.(best|skyrun|blindfold|academy)/.test(k)) o.data[k] = localStorage.getItem(k); } } catch (e) {}
-      return o;
-    }
-    var ex = $('ac-export'); if (ex) ex.onclick = function () {
-      var blob = new Blob([JSON.stringify(gather(), null, 2)], { type: 'application/json' });
-      var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'academy-progress.json'; a.click();
-      setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
-    };
-    var cs = $('ac-copy-sum'); if (cs) cs.onclick = function () {
-      var name = '';
-      try { name = localStorage.getItem('pjcc.academy.student') || 'Cadet'; } catch (e) { name = 'Cadet'; }
-      var belt = ($('ws-belt') ? $('ws-belt').textContent : '');
-      var txt = 'PJCC Chess Academy — ' + name + '\n' + belt;
-      function ok() { $('ac-export-out').textContent = '✓ summary copied'; setTimeout(function () { $('ac-export-out').textContent = ''; }, 1600); }
-      if (navigator.clipboard) navigator.clipboard.writeText(txt).then(ok).catch(ok); else ok();
-    };
-    var im = $('ac-import'); if (im) im.onchange = function () {
-      var f = im.files[0]; if (!f) return; var rd = new FileReader();
-      rd.onload = function () {
-        try {
-          var o = JSON.parse(rd.result);
-          if (o && o.data) { for (var k in o.data) localStorage.setItem(k, o.data[k]); if (o.student) localStorage.setItem('pjcc.academy.student', o.student); $('ac-export-out').textContent = '✓ imported — reloading…'; setTimeout(function () { location.reload(); }, 700); }
-          else $('ac-export-out').textContent = 'That file did not look right.';
-        } catch (e) { $('ac-export-out').textContent = 'Could not read that file.'; }
-      };
-      rd.readAsText(f);
-    };
-  })();
 
-  // ---- verify a certificate code ----
-  (function () {
-    var btn = $('ac-verify-btn'); if (!btn) return;
-    btn.onclick = function () {
-      var out = $('ac-verify-out');
-      var r = window.ACCERT ? ACCERT.verify($('ac-verify-in').value) : null;
-      if (!r) { out.className = 'ac-tool-out err'; out.textContent = 'That is not a Checker Town certificate code.'; return; }
-      if (!r.valid) { out.className = 'ac-tool-out err'; out.textContent = '⚠ Invalid or altered code — it does not check out.'; return; }
-      out.className = 'ac-tool-out ok';
-      out.innerHTML = '✅ Valid · <b>' + esc(r.name) + '</b> earned the <b>' + esc(r.belt) + '</b> belt (' + r.done + '/' + r.total + ' lessons) on ' + esc(r.date) + '.';
-    };
-  })();
+
+
+
 })();
 </script>
 
@@ -708,45 +433,10 @@ window.ACCERT = (function () {
 .ac-lesson-go { flex: 0 0 auto; color: var(--acc); font-size: 0.8rem; font-weight: 700; text-decoration: none; }
 .ac-lesson-go:hover { text-decoration: underline; }
 
-/* classroom */
-.ac-class-intro { color: #c9a7ff; max-width: 720px; }
-.ac-class-intro a { color: #F5C518; }
-.ac-class-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin: 12px 0; }
-.ac-name-field { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; color: #9a7fd4; }
-.ac-name-field input { background: #160c33; border: 1px solid #4a2f8a; border-radius: 8px; padding: 9px 12px; color: #f0e6ff;
-  font-family: inherit; font-size: 0.95rem; min-width: 200px; }
-.ac-print-btn { background: #2D1B69; color: #c9a7ff; border: 1px solid #4a2f8a; border-radius: 999px; padding: 10px 16px;
-  cursor: pointer; font-weight: 700; font-family: inherit; }
-.ac-print-btn:hover { border-color: #F5C518; color: #fff; }
-.ac-print-cert { background: #F5C518; color: #1a0f3d; border-color: #F5C518; }
-.ac-print-cert:hover { background: #ffd740; color: #1a0f3d; }
 
-/* printable sheets — hidden on screen */
-.ac-print { display: none; color: #111; background: #fff; }
-.ws-head { display: flex; justify-content: space-between; font-size: 12px; color: #444; border-bottom: 2px solid #222; padding-bottom: 6px; }
-.ws-title { font-size: 24px; margin: 10px 0 4px; color: #1a0f3d; }
-.ws-sub { font-size: 13px; color: #333; margin-bottom: 10px; }
-.ws-board { display: grid; grid-template-columns: 28px repeat(8, 38px); grid-auto-rows: 38px; margin: 8px 0 14px; }
-.ws-cell { display: flex; align-items: center; justify-content: center; font-size: 12px; }
-.ws-lab { color: #555; font-weight: bold; }
-.ws-light { background: #efe6d2; border: 1px solid #b9a98a; }
-.ws-dark { background: #b9986a; border: 1px solid #8a6f48; }
-.ws-q { font-size: 14px; line-height: 2; color: #111; }
-.ws-foot { font-size: 12px; color: #555; margin-top: 14px; }
-.ws-belt { font-weight: bold; margin: 10px 0; }
-.ws-course { margin-top: 10px; }
-.ws-list { list-style: none; padding-left: 4px; font-size: 13px; line-height: 1.7; }
-.ws-list i { color: #666; }
-/* certificate */
-.ac-cert .cert-border { border: 6px double #b8902a; border-radius: 10px; padding: 30px; text-align: center; max-width: 700px; margin: 0 auto; background: #fffdf5; }
-.cert-crest { font-size: 50px; color: #b8902a; }
-.cert-academy { font-size: 20px; letter-spacing: 2px; color: #1a0f3d; font-weight: bold; }
-.cert-presents { margin-top: 18px; color: #555; }
-.cert-name { font-size: 32px; font-weight: bold; color: #1a0f3d; border-bottom: 1px solid #ccc; display: inline-block; padding: 0 24px 4px; margin: 6px 0; }
-.cert-has { color: #555; }
-.cert-belt { font-size: 26px; color: #b8902a; font-weight: bold; margin: 4px 0; }
-.cert-line { font-size: 12px; color: #777; margin-top: 8px; }
-.cert-sig { display: flex; justify-content: space-between; margin-top: 26px; font-size: 12px; color: #444; }
+
+/* (all printable-sheet, worksheet and certificate styles went 2026-07-14 with the
+   For-Teachers-&-Parents apparatus — restore from git.) */
 
 /* intro voice button — it lives INSIDE the opened hall now, next to "Meet Auston →", not in
    the summary row. In the summary it would have been a button inside a <summary>, where a
@@ -761,52 +451,8 @@ window.ACCERT = (function () {
 /* (the .ac-place* / .ac-pq* placement-exam styles went 2026-07-13 with the module,
    and the .ac-hw* daily-homework styles went 2026-07-12 with theirs) */
 
-/* collapsible sections — free-play board · teacher tools */
-.ac-fold { background: rgba(45,27,105,0.28); border: 1px solid #3a2a6a; border-radius: 12px; margin: 16px 0; overflow: hidden; }
-.ac-fold > summary { list-style: none; cursor: pointer; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding: 14px 18px; }
-.ac-fold > summary::-webkit-details-marker { display: none; }
-.ac-fold > summary::before { content: '▸'; color: #9a7fd4; align-self: center; transition: transform 0.2s ease; }
-.ac-fold[open] > summary::before { transform: rotate(90deg); }
-.ac-fold > summary:hover .ac-fold-t { color: #ffd740; }
-.ac-fold-t { color: #F5C518; font-weight: 800; font-size: 1.05rem; }
-.ac-fold-hint { color: #9a7fd4; font-size: 0.82rem; }
-.ac-fold-body { padding: 2px 18px 18px; }
-.ac-fold-body > .ac-class-intro:first-child { margin-top: 0; }
-
-/* sandbox board */
-/* (free-play board styles moved with it to /games/free-play/ — 2026-07-14) */
-
-/* classroom tools */
-.ac-tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin: 12px 0; }
-.ac-tool { background: rgba(45,27,105,0.45); border: 1px solid #3a2a6a; border-radius: 12px; padding: 14px; }
-.ac-tool-h { color: #F5C518; font-weight: 800; margin-bottom: 4px; }
-.ac-tool-p { color: #9a7fd4; font-size: 0.82rem; line-height: 1.5; }
-.ac-tool-p code { color: #9fe8ff; }
-.ac-muted { color: #9d8ecb; }   /* a11y sweep 2026-07-13: was #7d6bb0 at 3.7:1 on the tool card */
-.ac-tool-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
-.ac-tool-in { background: #160c33; border: 1px solid #4a2f8a; border-radius: 8px; padding: 8px 10px; color: #f0e6ff; font-family: inherit; font-size: 0.85rem; flex: 1; min-width: 120px; }
-.ac-tool-in:focus { outline: none; border-color: #F5C518; }
-.ac-tool-out { margin-top: 8px; font-size: 0.84rem; color: #c9a7ff; min-height: 1em; }
-.ac-tool-out.ok { color: #6bffb8; }
-.ac-tool-out.err { color: #ff8f9e; }
-.ac-link-btn { background: none; border: none; color: #ff8fd0; cursor: pointer; font-family: inherit; text-decoration: underline; padding: 0; }
-.ac-file-btn { cursor: pointer; }
-.ac-verify-in { font-family: 'Courier New', monospace; }
-
-/* certificate code + curriculum table (print) */
-.cert-code-wrap { margin-top: 14px; font-size: 11px; color: #777; }
-.cert-code { font-family: 'Courier New', monospace; color: #1a0f3d; letter-spacing: 1px; }
-.ws-page { page-break-after: always; }
-.ws-page:last-child { page-break-after: auto; }
-.ws-curric { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
-.ws-curric th, .ws-curric td { border: 1px solid #999; padding: 6px 8px; text-align: left; color: #111; }
-.ws-curric th { background: #eee; }
-
-@media print {
-  body.ac-printing * { visibility: hidden !important; }
-  body.ac-printing .ac-print.printing-active, body.ac-printing .ac-print.printing-active * { visibility: visible !important; }
-  body.ac-printing .ac-print.printing-active { display: block; position: absolute; left: 0; top: 0; width: 100%; padding: 18px; }
-}
+/* (the fold, classroom-tools and print-CSS blocks went 2026-07-14 with the
+   For-Teachers-&-Parents apparatus.) */
 
 /* promotion state — the ladder in Chess City gold. Found, never given. */
 body.ac-gold .ac-belt-wrap { background: linear-gradient(135deg,#3a2c07,#5c4708); border-color: rgba(245,197,24,0.75); box-shadow: 0 0 30px rgba(245,197,24,0.18); }

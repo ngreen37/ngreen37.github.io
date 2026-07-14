@@ -235,7 +235,7 @@ body_class: theme-studio
 
   <div class="mcp-thanks-block">
     <h3 class="mcp-thanks-sub">For the endless inspiration, McPuppy Studios would like to thank</h3>
-    <p class="mcp-thanks-muses">Norm Macdonald &middot; The Meadowlands &middot; The Lawrence Arms &middot; Trey Parker and Matt Stone &middot; Orson Scott Card &middot; John Steakley &middot; Neville Goddard &middot; Jesse Green</p>
+    <p class="mcp-thanks-muses">Norm Macdonald &middot; The Meadowlands &middot; The Lawrence Arms (My favorite band) &middot; Jim Croce (My favorite songwriter) &middot; Trey Parker and Matt Stone &middot; Orson Scott Card &middot; John Steakley &middot; Neville Goddard &middot; Jesse Green</p>
   </div>
 </section>
 

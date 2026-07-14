@@ -56,8 +56,9 @@
       <a href="{{ '/games/' | relative_url }}" class="drift-piece" aria-label="The games hall">♞</a>
       <a href="{{ '/academy/' | relative_url }}" class="drift-piece" aria-label="PJCC Chess Academy">♜</a>
       <a href="{{ '/blog/' | relative_url }}" class="drift-piece" aria-label="Blog">¶</a>
-      <a href="{{ '/games/reading-room/' | relative_url }}" class="drift-piece" aria-label="The Reading Room 読書室">あ</a>
-      <a href="{{ '/games/shogi-island/' | relative_url }}" class="drift-piece" aria-label="Shogi Island 将棋の島">将</a>
+      {% comment %} (the あ Reading Room + 将 Shogi Isle drifters were REMOVED 2026-07-14
+           — Nate works on those two privately now. The pages still build; he reaches
+           them by URL: /games/reading-room/ and /games/shogi-island/.) {% endcomment %}
       <a href="{{ '/games/park-tables/' | relative_url }}" class="drift-piece" aria-label="The Park Tables — play a human, or the Creator">♟</a>
       <a href="{{ '/classified/' | relative_url }}" class="drift-piece" id="drift-secret" aria-label="???">✦</a>
     </div>
@@ -143,6 +144,9 @@
            hydrated from the game's own localStorage, so a returning player is pulled straight
            back to their next opponent. Decorative bits are dropped on phones to keep the splash
            on one screen. {% endcomment %}
+      {% comment %} 2026-07-14 (Nate): the Park Tables stand PARALLEL to the Gauntlet —
+           the two headline ways to play real chess, side by side. {% endcomment %}
+      <div class="studio-calls">
       <a class="studio-gauntlet" id="studio-gauntlet" href="{{ '/games/the-gauntlet/' | relative_url }}">
         <span class="sg-glyph" aria-hidden="true">♛</span>
         <span class="sg-text">
@@ -150,12 +154,21 @@
         </span>
         <span class="sg-tower" id="sg-tower" aria-hidden="true"></span>
       </a>
+      <a class="studio-gauntlet studio-park" href="{{ '/games/park-tables/' | relative_url }}">
+        <span class="sg-glyph sg-glyph--park" aria-hidden="true">♟</span>
+        <span class="sg-text">
+          <b class="sg-title" data-jp="パークで対局">Sit at the Park Tables</b>
+        </span>
+        <span class="sg-park-tag" aria-hidden="true">PVP · RATED</span>
+      </a>
+      </div>
       <script>
       // Splash Gauntlet — mini-tower + boss-of-the-moment, hydrated from the game's save (offline/signed-out OK).
       (function () {
-        var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The CEO'];
+        var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The Executive Assistant'];
         // mirrors the LADDER accents in assets/games/pjcc_gauntlet.html — keep in sync
-        var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#9ff0c4','#ff6b6b','#c79bff','#ff9ec9','#ff8fd0'];
+        // (public floors only; the three secret floors never show on the splash)
+        var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#9ff0c4','#ff6b6b','#c79bff','#ff9ec9','#f5c518'];
         var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
         var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;
         for (var i = 0; i < NAMES.length; i++) { if (beaten[i]) cleared++; }
@@ -212,11 +225,24 @@
   <div class="studio-warp" id="studio-warp" aria-hidden="true"></div>
 
   <style>
+  /* the two headline calls stand side by side (2026-07-14: Park Tables parallel
+     to the Gauntlet); they stack on narrow screens */
+  .studio-calls { display:flex; gap:12px; max-width:760px; margin:18px auto 0; flex-wrap:wrap; justify-content:center; }
+  .studio-calls .studio-gauntlet { flex:1 1 300px; margin:0; max-width:none; }
   .studio-gauntlet { display:flex; align-items:center; gap:14px; max-width:500px; margin:18px auto 0; text-decoration:none;
     position:relative; overflow:hidden;
     background:linear-gradient(135deg, rgba(42,28,14,0.92), rgba(58,42,16,0.94)); border:2px solid #F5C518; border-radius:15px;
     padding:12px 18px; box-shadow:0 0 26px -12px #F5C518, inset 0 0 42px -26px rgba(245,197,24,0.5);
     transition:transform .12s, box-shadow .12s; }
+  /* the Park Tables twin — same plate grammar, park green */
+  .studio-park { background:linear-gradient(135deg, rgba(12,38,28,0.92), rgba(16,52,38,0.94)); border-color:#6bffb8;
+    box-shadow:0 0 26px -12px #6bffb8, inset 0 0 42px -26px rgba(107,255,184,0.5); }
+  .studio-park:hover { box-shadow:0 0 36px -8px #6bffb8, inset 0 0 42px -26px rgba(107,255,184,0.5); }
+  .studio-park::before { background:radial-gradient(circle, rgba(107,255,184,0.14), transparent 70%); }
+  .studio-park .sg-glyph--park { color:#6bffb8; }
+  .sg-park-tag { margin-left:auto; flex-shrink:0; font-family:'Share Tech Mono',monospace; font-size:9px;
+    letter-spacing:0.16em; color:rgba(107,255,184,0.75); border:1px solid rgba(107,255,184,0.35);
+    border-radius:999px; padding:3px 8px; position:relative; z-index:1; }
   .studio-gauntlet::before { content:''; position:absolute; right:-40px; top:-40px; width:150px; height:150px; border-radius:50%;
     background:radial-gradient(circle, rgba(245,197,24,0.16), transparent 70%); pointer-events:none; }
   .studio-gauntlet:hover { transform:translateY(-2px); box-shadow:0 0 36px -8px #F5C518, inset 0 0 42px -26px rgba(245,197,24,0.5); }
@@ -269,10 +295,9 @@
   .studio-lean.lean-pjcc    { --lx:11%; --ly:14%; --lean:120,60,230; }
   .studio-lean.lean-mcpuppy { --lx:89%; --ly:14%; --lean:225,228,255; }
   .studio-lean.lean-games   { --lx:11%; --ly:86%; --lean:60,188,252; }
-  /* Patreon's corner is CORAL now, not green (Nate: "green isn't working") — it's
-     Patreon's own colour, which is the point: the one door on the splash that leads
-     off the site is the one lit in a colour the site doesn't otherwise own. */
-  .studio-lean.lean-patreon { --lx:89%; --ly:86%; --lean:255,106,96; }
+  /* Patreon's corner glows LANTERN GOLD now (2026-07-14 dusk retheme — the coral
+     ticket clashed with the evening palette; the card is a dusk lantern). */
+  .studio-lean.lean-patreon { --lx:89%; --ly:86%; --lean:255,190,100; }
   /* McPuppy is a pale wash on a dark page and needs a touch more to register at all */
   .studio-lean.lean-mcpuppy {
     background:radial-gradient(circle 44vmin at 89% 14%,

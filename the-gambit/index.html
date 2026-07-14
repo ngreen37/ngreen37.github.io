@@ -32,7 +32,10 @@ permalink: /the-gambit/
       <div class="gambit-coin" id="gm-coin">♟</div>
     </div>
     <h2 class="gambit-tagline">Lay it down. See what the board gives back.</h2>
-    <p class="gambit-lede">Goals are <strong>5% strategy, 95% mindset.</strong> The board doesn't reward the safe bet — it rewards the one hard thing: giving up the very best you have and trusting the path anyway. You must learn how to <b class="gm-gold">let go</b>.</p>
+    <p class="gambit-lede">In chess, and in life, <strong>sacrifice</strong> is vital — the Art of Letting Go.
+    You don't <strong>need</strong> these things. Sacrifice comes in <strong><em>many</em></strong> forms;
+    in the PJCC world, you simply roll the dice on credits you've earned by playing.
+    You must learn how to <b class="gm-gold">let go</b>.</p>
 
     <div class="gm-wallet">
       <span class="gm-chip">◈ <b id="gm-bal">0</b> credits</span>
@@ -62,7 +65,7 @@ permalink: /the-gambit/
     <div class="gm-courage">
       <div class="gm-courage-head"><span>Courage</span><span id="gm-odds">no offering yet</span></div>
       <div class="gm-courage-bar"><div class="gm-courage-fill" id="gm-fill"></div></div>
-      <p class="gm-note" id="gm-note">Small, safe offerings barely move the needle. Your <b>best</b> item — or <b>85%+ of your credits</b> — tilts the odds significantly your way.</p>
+      <p class="gm-note" id="gm-note">A modest offering is close to a coin flip. Your <b>best</b> item — or <b>85%+ of your credits</b> — tilts the odds significantly your way.</p>
     </div>
 
     <p class="gm-warn">⚠ You may get <b>nothing</b>. The offering is gone either way — the courage is the point.</p>
@@ -108,8 +111,11 @@ permalink: /the-gambit/
     if (selColl) { iv = Math.min(1, selColl.value / 50); if (bestVal > 0 && selColl.value >= bestVal) iv = Math.max(iv, 0.95); }
     return Math.max(0, Math.min(1, Math.max(cf, iv)));
   }
-  function winChance(c) { return 0.20 + 0.42 * c; }   // 20% timid -> 62% bold
-  function multFor(c)   { return 1.15 + 0.95 * c; }    // 1.15x -> 2.10x
+  // 2026-07-14 (Nate: "don't belittle the small bets TOO much — more of a
+  // fifty-fifty gamble"): a modest offering is a near coin flip now; boldness
+  // still tilts the wheel meaningfully, it just isn't the only way to play.
+  function winChance(c) { return 0.48 + 0.24 * c; }   // ~48% modest -> 72% bold
+  function multFor(c)   { return 1.5 + 0.7 * c; }      // 1.5x -> 2.2x
 
   // ---- rendering ----
   function render() {
@@ -141,7 +147,7 @@ permalink: /the-gambit/
     else { $('gm-odds').textContent = Math.round(winChance(c) * 100) + '% · up to ' + Math.round(ov * multFor(c)) + ' back'; }
     if (c >= 0.85) $('gm-note').innerHTML = '🔥 <b>Bold.</b> The odds lean your way — and the boldest wins can hand back a <b>boon</b> you don\'t own yet.';
     else if (c >= 0.4) $('gm-note').innerHTML = 'Getting braver. Give your <b>best</b> item — or <b>85%+ of your credits</b> — to really tilt the board.';
-    else $('gm-note').innerHTML = 'Small, safe offerings barely move the needle. Your <b>best</b> item — or <b>85%+ of your credits</b> — tilts the odds significantly your way.';
+    else $('gm-note').innerHTML = 'A modest offering is close to a coin flip. Your <b>best</b> item — or <b>85%+ of your credits</b> — tilts the odds significantly your way.';
     if (loadOwed() > 0) $('gm-note').innerHTML = '✦ <b>The board remembers what you laid down.</b> ' + $('gm-note').innerHTML;
 
     // offer button + cooldown

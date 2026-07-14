@@ -377,9 +377,10 @@ body.theme-bw .ribbon-track {
   cursor: pointer;
   transition: color 0.3s;
 
-  /* Order matches the markup in studio-home.html (2026-07-14 rewire):
-     1 ♛ Princess · 2 ♞ Games · 3 ♜ Academy · 4 ¶ Blog · 5 あ Reading Room ·
-     6 将 Shogi Isle · 7 ♟ Park Tables · 8 ✦ /classified/ (#drift-secret, own rule). */
+  /* Order matches the markup in studio-home.html (2026-07-14, second rewire —
+     the あ / 将 drifters are GONE; Nate works those games privately by URL):
+     1 ♛ Princess · 2 ♞ Games · 3 ♜ Academy · 4 ¶ Blog · 5 ♟ Park Tables ·
+     6 ✦ /classified/ (#drift-secret, own id rule — nth position irrelevant). */
   &:nth-child(1) {          /* ♛ → Princess */
     left: 7%;
     bottom: 12%;
@@ -408,23 +409,7 @@ body.theme-bw .ribbon-track {
     color: rgba(200, 200, 200, 0.077);
     animation-delay: 7s;
   }
-  &:nth-child(5) {          /* あ → the Reading Room (−25% 2026-07-14) */
-    left: 17%;
-    bottom: 28%;
-    font-size: 42px;
-    color: rgba(200, 200, 200, 0.054);
-    animation-delay: 19s;
-  }
-  &:nth-child(6) {   /* 将 — Shogi Island (−25%): parked in the right gutter so it clears
-                        the centred (solid-black) content panel and reads like the あ drifter. */
-    left: 89%;
-    bottom: 40%;
-    font-size: 40px;
-    color: rgba(255, 180, 40, 0.098);
-    animation: piece-drift 46s linear infinite;
-    animation-delay: 5s;
-  }
-  &:nth-child(7) {          /* ♟ → the Park Tables (new 2026-07-14; park green) */
+  &:nth-child(5) {          /* ♟ → the Park Tables (park green) */
     left: 55%;
     bottom: 32%;
     font-size: 44px;

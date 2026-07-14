@@ -33,16 +33,18 @@ fragment_key: frag_classified
 
     <blockquote class="secret-letter">
       <div class="secret-file-tab">REDACTED FILE</div>
-      <p>One human on Earth, leading up to population of Checker Town, knew of this.
-      Bill Alpine, 35 yrs. Worked for ICC's Expanse Branch.</p>
+      <p>One human on Earth, leading up to population of Checker Town, knew of Subject's
+      abilities — the one that TAUGHT her this technique. Bill Alpine, 35 yrs.
+      Worked for ICC's Expanse Branch.</p>
       <footer>page 1 of 3 · edge-charred</footer>
     </blockquote>
 
     <blockquote class="secret-letter secret-letter--alt">
       <div class="secret-file-tab">REDACTED FILE</div>
-      <p>Number of Humans aware of this at time of event is unknown, but believed to be
-      less than ten.</p>
-      <footer>page 2 of 3 · water-damaged</footer>
+      <p>Number of Humans aware at time of event is unknown, but believed to be
+      less than ten. Despite recent developments STRONGLY suggesting otherwise,
+      optimism is significantly UP around camp. Progress came when w—</p>
+      <footer>page 2 of 3 · water-damaged · the rest is gone</footer>
     </blockquote>
 
     <blockquote class="secret-letter">
@@ -70,6 +72,7 @@ fragment_key: frag_classified
       <span class="rx" role="img" aria-label="redacted">███████</span> The story of the dog who can
       learn anything is still unfolding, but hope in keeping our control is slipping amongst my men.</p>
       <p>They don't even know how lost it is. I do.</p>
+      <div class="secret-memo-sign">— Lt. Jenkins · 53rd Battalion · ICC</div>
       <footer class="secret-memo-cite">— Recovered File #001 from the Chess City Release Act of 2078 —
       Petition to Pull Records from the high-profile court case ALPINE&nbsp;vs.&nbsp;(ICC)&nbsp;Interplanetary&nbsp;Conduct&nbsp;Council</footer>
     </div>
@@ -80,12 +83,10 @@ fragment_key: frag_classified
   <div class="secret-destruct" id="secret-destruct">
     <div class="secret-destruct-label">⚠ &nbsp;READ CAREFULLY. THEN DESTROY.</div>
     <button class="secret-burn-btn" id="secret-burn-btn" type="button" onclick="igniteSequence()">▸ &nbsp;INITIATE BURN SEQUENCE</button>
-    <div class="secret-destruct-note">Don't worry. It's just for show.</div>
   </div>
 
   <footer class="secret-footer">
     <a href="{{ '/' | relative_url }}" class="secret-return">⊘&nbsp;&nbsp;RETURN TO SURFACE</a>
-    <div class="secret-footer-note">This page does not exist.</div>
   </footer>
 
 </div>
@@ -94,6 +95,7 @@ fragment_key: frag_classified
 <div class="burn-count" id="burn-count" aria-hidden="true"><span id="burn-number"></span></div>
 <div class="burn-overlay" id="burn-overlay" aria-hidden="true">
   <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+  <div class="burn-word" id="burn-word">✦ FRAGMENT RECOVERED — the fire keeps your secret</div>
 </div>
 
 <style>
@@ -173,7 +175,6 @@ fragment_key: frag_classified
 .secret-burn-btn:hover { background:rgba(255,91,58,0.14); color:#ff8a66;
   box-shadow:0 0 24px rgba(255,91,58,0.35), 0 0 70px rgba(255,91,58,0.12); }
 .secret-burn-btn:disabled { opacity:.7; cursor:default; }
-.secret-destruct-note { margin-top:14px; font-size:10px; letter-spacing:2px; color:rgba(255,140,0,0.4); }
 
 /* countdown digits */
 .burn-count { position:fixed; inset:0; z-index:11000; display:none; align-items:center; justify-content:center;
@@ -213,7 +214,14 @@ fragment_key: frag_classified
   color:var(--gold); text-decoration:none; border:2px solid rgba(255,210,74,0.6); border-radius:999px; padding:11px 28px;
   transition:transform .2s, background .2s, color .2s; }
 .secret-return:hover { transform:translateY(-3px); background:var(--gold); color:#0a0500; }
-.secret-footer-note { margin-top:22px; font-size:11px; letter-spacing:1.5px; color:rgba(255,140,0,0.4); }
+.secret-memo-sign { margin-top:14px; font-family:'Share Tech Mono',ui-monospace,monospace;
+  font-size:12px; letter-spacing:1px; color:var(--gold); }
+/* the burner's reward line — rides the flame wall up */
+.burn-word { position:absolute; left:0; right:0; top:38%; text-align:center; opacity:0;
+  font-family:'Poppins',sans-serif; font-weight:800; font-size:clamp(13px,3vw,19px); letter-spacing:2px;
+  color:#ffe9bf; text-shadow:0 0 22px rgba(255,140,0,0.8); }
+.burn-overlay.is-burning .burn-word { animation:burn-word-in 1.4s ease .5s both; }
+@keyframes burn-word-in { 0%{ opacity:0; transform:translateY(14px); } 100%{ opacity:1; transform:translateY(0); } }
 
 @media (max-width:600px){ .secret-core, .secret-letter { padding:22px 18px; } .secret-page { padding:40px 16px 70px; } }
 
@@ -243,8 +251,10 @@ fragment_key: frag_classified
   io.observe(el);
 })();
 
-/* BURN AFTER READING — restored 2026-07-14. Three, two, one, and the flame wall
-   takes the page back to the surface. It's just for show; the file returns. */
+/* BURN AFTER READING — three, two, one, and the flame wall takes the page back to
+   the surface. Burning is REWARDED (2026-07-14 Nate): the burner recovers a
+   fragment (frag_burned → the site-wide fragment counter). Return to Surface stays
+   a plain walk home — no reward, no penalty. */
 function igniteSequence() {
   var btn = document.getElementById('secret-burn-btn');
   var overlay = document.getElementById('burn-overlay');
@@ -253,6 +263,7 @@ function igniteSequence() {
   var page = document.getElementById('secret-page');
   if (!btn || !overlay) return;
   btn.disabled = true; btn.textContent = '▸   BURNING…';
+  try { localStorage.setItem('frag_burned', '1'); } catch (e) {}
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var home = '{{ "/" | relative_url }}' || '/';
   if (reduce) { window.location.href = home; return; }
@@ -263,7 +274,7 @@ function igniteSequence() {
       count.classList.remove('on');
       overlay.classList.add('is-burning');
       if (page) page.classList.add('is-burning');
-      setTimeout(function () { window.location.href = home; }, 1750);
+      setTimeout(function () { window.location.href = home; }, 2600);   // a beat to read the reward
       return;
     }
     num.textContent = n;

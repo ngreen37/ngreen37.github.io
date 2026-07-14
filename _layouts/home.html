@@ -151,20 +151,22 @@ layout: default
   {% comment %} 2026-07-14 (Nate): both shores are DOORS — the checker stacks walk you
        into Checker Town, the piece-buildings sail you to Chess City. {% endcomment %}
   <div class="hero-skyline">
+    {% comment %} 2026-07-14 (Nate): Checker Town SMALLER and more checker-like;
+         Chess City TALLER — the two shores should read as different worlds. {% endcomment %}
     <a class="sk-town-link" href="{{ '/locations/checker-town/' | relative_url }}" aria-label="Checker Town">
-      <span class="sk sk-ct" style="--w:24px;--h:11px"></span>
-      <span class="sk sk-ct" style="--w:24px;--h:19px"></span>
-      <span class="sk sk-ct" style="--w:24px;--h:6px"></span>
-      <span class="sk sk-ct" style="--w:24px;--h:15px"></span>
-      <span class="sk sk-ct" style="--w:24px;--h:11px"></span>
-      <span class="sk sk-ct" style="--w:24px;--h:15px"></span>
+      <span class="sk sk-ct" style="--w:18px;--h:8px"></span>
+      <span class="sk sk-ct" style="--w:18px;--h:14px"></span>
+      <span class="sk sk-ct" style="--w:18px;--h:5px"></span>
+      <span class="sk sk-ct" style="--w:18px;--h:11px"></span>
+      <span class="sk sk-ct" style="--w:18px;--h:8px"></span>
+      <span class="sk sk-ct" style="--w:18px;--h:11px"></span>
     </a>
     <i class="sk-sea" aria-hidden="true"></i>
     <a class="sk-town-link" href="{{ '/locations/chess-city/' | relative_url }}" aria-label="Chess City">
-      <span class="sk sk-cc sk-cc--rook"   style="--w:20px;--h:22px"></span>
-      <span class="sk sk-cc sk-cc--bishop" style="--w:16px;--h:30px"></span>
-      <span class="sk sk-cc sk-cc--queen"  style="--w:22px;--h:34px"></span>
-      <span class="sk sk-cc sk-cc--king"   style="--w:18px;--h:28px"></span>
+      <span class="sk sk-cc sk-cc--rook"   style="--w:20px;--h:34px"></span>
+      <span class="sk sk-cc sk-cc--bishop" style="--w:16px;--h:46px"></span>
+      <span class="sk sk-cc sk-cc--queen"  style="--w:22px;--h:52px"></span>
+      <span class="sk sk-cc sk-cc--king"   style="--w:18px;--h:42px"></span>
     </a>
   </div>
   {% comment %} THE DOOR — the way into the Gauntlet, top right of the hero.
@@ -197,7 +199,7 @@ layout: default
    2026-07-11 (Nate): the "rooftops" are now what Checker Town is actually made
    of — stacks of checkers. Uniform diameter, 7px per disc (a 1px rim seam +
    a shaded face), black stacks and dark-red stacks alternating. ── */
-.hero-skyline { position:absolute; left:26px; right:26px; bottom:0; height:48px;
+.hero-skyline { position:absolute; left:26px; right:26px; bottom:0; height:62px;
   display:flex; align-items:flex-end; gap:5px; pointer-events:none; }
 /* both shores are links (2026-07-14): the anchors re-enable the pointer the skyline
    turned off, keep the stack layout, and light their rooftops gold on hover */
@@ -206,12 +208,14 @@ layout: default
 .sk-town-link:hover .sk, .sk-town-link:focus-visible .sk { border-top-color:#F5C518; }
 .hero-skyline .sk { flex:0 0 auto; width:var(--w,16px); height:var(--h,20px);
   background:#0c0722; border-top:1px solid rgba(168,121,255,0.30); }
-.hero-skyline .sk-ct { border-radius:5px 5px 2px 2px; border-top-color:rgba(245,197,24,0.28);
+/* rounder tops + stronger disc seams (2026-07-14): shorter, chunkier stacks that
+   read as CHECKERS piled up, not buildings */
+.hero-skyline .sk-ct { border-radius:8px 8px 2px 2px; border-top-color:rgba(245,197,24,0.34);
   background:repeating-linear-gradient(180deg,
-    rgba(200,170,255,0.22) 0 1px, #0e0826 1px 4px, #181040 4px 7px); }
-.hero-skyline span.sk-ct:nth-of-type(2n) { border-top-color:rgba(255,130,130,0.35);
+    rgba(200,170,255,0.34) 0 1px, #0e0826 1px 3px, #181040 3px 6px); }
+.hero-skyline span.sk-ct:nth-of-type(2n) { border-top-color:rgba(255,130,130,0.42);
   background:repeating-linear-gradient(180deg,
-    rgba(255,150,150,0.24) 0 1px, #230b1d 1px 4px, #35122a 4px 7px); }
+    rgba(255,150,150,0.36) 0 1px, #230b1d 1px 3px, #35122a 3px 6px); }
 .hero-skyline .sk-sea { flex:1 1 auto; height:2px; margin:0 10px 5px;
   background:linear-gradient(90deg, rgba(96,206,255,0), rgba(96,206,255,0.30), rgba(96,206,255,0)); }
 
@@ -348,8 +352,9 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 .gdoor[data-grand="0"] .gdoor-glyph { font-size:26px; opacity:0.55; filter:none; color:#3a2612; } /* a stitched emblem, not a lit one */
 .gdoor[data-grand="0"] .gdoor-seam { height:2px; box-shadow:0 -2px 10px 2px color-mix(in srgb, var(--acc) 38%, transparent); }
 /* a hand pushes it aside FROM THE MIDDLE — the cloth bunches toward the edge */
+.gdoor[data-grand="0"] .gdoor-door { transition:transform .5s cubic-bezier(.3,1.25,.4,1); }
 .gdoor[data-grand="0"]:hover .gdoor-door,
-.gdoor[data-grand="0"]:focus-visible .gdoor-door { transform:scaleX(0.45) skewY(-5deg); }
+.gdoor[data-grand="0"]:focus-visible .gdoor-door { transform:perspective(150px) rotateY(46deg) scaleX(.68) skewY(-3deg); }
 
 @media (prefers-reduced-motion: reduce) {
   .gdoor-pips i.cur { animation:none; }
@@ -417,8 +422,10 @@ html.sky-day .hs-orb { display:block; left:15%; top:24px; width:44px; height:44p
      so they radiate from the rim outward); ::after = a warm corona. The spokes turn
      once every 90s — transform-only, so the cost is nil. {% endcomment %}
 html.sky-day .hs-orb::before { content:''; position:absolute; inset:-20px; border-radius:50%;
+  /* 2026-07-14 (Nate: rays "a bit too unnatural — pull it back"): 16 spokes → 8,
+     slightly wider and softer, so it reads sun-lit rather than machine-cut */
   background:repeating-conic-gradient(from 0deg,
-    rgba(255,231,130,0.90) 0deg 3.2deg, transparent 3.2deg 22.5deg);
+    rgba(255,231,130,0.7) 0deg 4.5deg, transparent 4.5deg 45deg);
   -webkit-mask-image:radial-gradient(circle, transparent 47%, #000 55%, #000 72%, transparent 100%);
           mask-image:radial-gradient(circle, transparent 47%, #000 55%, #000 72%, transparent 100%);
   animation:hs-sun-rays 90s linear infinite; }

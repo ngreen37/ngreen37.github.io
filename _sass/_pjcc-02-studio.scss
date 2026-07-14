@@ -304,9 +304,14 @@ body.studio-body {
    outside door" rather than a fourth room of the house. Format is deliberately unlike
    the other quads: a punched dashed rule inside the border, a stamped monospace title,
    and a warm footlight under it instead of a glow behind it. */
+/* 2026-07-14 (Nate: "Give Patreon a different theme completely — it doesn't suit
+   the dusk tone"). The coral ticket is retired for a DUSK LANTERN: the card wears
+   the splash's own evening plums, and one warm candle-glow burns along its foot —
+   support keeps the light on. Still visibly the outside door: the dashed ticket
+   perforation and stamped monospace title stay, re-struck in lantern gold. */
 .studio-quad-grid .studio-quad--patreon {
-  background: linear-gradient(150deg, #2a0d10 0%, #6d2029 46%, #b8383c 100%);
-  border-color: rgba(255, 106, 96, 0.62);
+  background: linear-gradient(150deg, #17102b 0%, #261a44 52%, #3a2450 100%);
+  border-color: rgba(255, 196, 110, 0.5);
 
   /* the stub's perforation — a dashed rule set in from the border */
   &::before {
@@ -316,16 +321,16 @@ body.studio-body {
     border-radius: 9px;
     pointer-events: none;
     z-index: 0;
-    border: 1px dashed rgba(255, 208, 200, 0.34);
+    border: 1px dashed rgba(255, 214, 150, 0.3);
     transition: border-color 0.25s;
   }
 
-  /* the footlight: a warm bar of light along the bottom edge, breathing */
+  /* the lantern: a warm pool of candle-light along the bottom edge, breathing */
   .studio-quad-title::after {
     content: '';
     position: absolute;
     left: -40%; right: -40%; bottom: -68px; height: 74px;
-    background: radial-gradient(60% 100% at 50% 100%, rgba(255, 140, 110, 0.55) 0%, rgba(255, 90, 80, 0.18) 45%, transparent 72%);
+    background: radial-gradient(60% 100% at 50% 100%, rgba(255, 190, 100, 0.5) 0%, rgba(255, 150, 60, 0.16) 45%, transparent 72%);
     pointer-events: none;
     z-index: -1;
     animation: patreon-footlight 3.4s ease-in-out infinite;
@@ -337,8 +342,8 @@ body.studio-body {
     font-size: clamp(16px, 2vw, 23px);
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: #ffe4de;
-    text-shadow: 0 0 18px rgba(255, 106, 96, 0.55);
+    color: #ffe6c0;
+    text-shadow: 0 0 18px rgba(255, 190, 100, 0.5);
     position: relative;
     z-index: 1;
   }
@@ -348,22 +353,22 @@ body.studio-body {
     font-style: italic;
     font-size: 13px;
     letter-spacing: 0.2px;
-    color: rgba(255, 226, 220, 0.88);
+    color: rgba(255, 235, 205, 0.85);
     position: relative;
     z-index: 1;
   }
 
   &::after {
-    background: linear-gradient(135deg, rgba(255, 160, 140, 0.22) 0%, transparent 60%);
+    background: linear-gradient(135deg, rgba(255, 200, 120, 0.18) 0%, transparent 60%);
   }
 
   &:hover {
-    background: linear-gradient(150deg, #3a1216 0%, #8d2932 46%, #e04a4a 100%);
-    border-color: #ff6a60;
-    box-shadow: 0 0 46px rgba(255, 106, 96, 0.32), 0 14px 42px rgba(40, 10, 12, 0.6);
+    background: linear-gradient(150deg, #1d1536 0%, #302152 52%, #4a2f62 100%);
+    border-color: #ffcf7a;
+    box-shadow: 0 0 46px rgba(255, 190, 100, 0.28), 0 14px 42px rgba(16, 10, 30, 0.6);
     transform: translateY(-5px);
 
-    &::before { border-color: rgba(255, 228, 222, 0.72); }
+    &::before { border-color: rgba(255, 228, 190, 0.7); }
   }
 }
 
