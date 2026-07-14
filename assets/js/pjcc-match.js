@@ -17,17 +17,13 @@
   'use strict';
   var C = window.PJCCChess;
 
-  /* The eight phrases — the ENTIRE chat. Preset lines only, no typed text anywhere,
+  /* The four phrases — the ENTIRE chat. Preset lines only, no typed text anywhere,
      which is the whole child-safety story. Indexes are what's stored server-side. */
   var EMOTES = [
-    'Good luck!',            // 0
-    'Nice move.',            // 1
-    'Hmm…',                  // 2
-    'Good game.',            // 3
-    'Thanks for the game!',  // 4
-    'Well played.',          // 5
-    'See you at the tables.',// 6
-    '🐶'                     // 7
+    'Good luck!',   // 0
+    'Nice move.',   // 1
+    'Good game.',   // 2
+    '🐶'            // 3
   ];
 
   function db() { return window.PJCC && PJCC.db ? PJCC.db() : null; }

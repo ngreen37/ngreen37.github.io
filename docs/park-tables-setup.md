@@ -117,7 +117,7 @@ create or replace function public.send_emote(p_id uuid, p_code smallint)
 returns void language plpgsql security definer set search_path = public as $$
 declare m matches%rowtype;
 begin
-  if p_code < 0 or p_code > 7 then raise exception 'no such phrase'; end if;
+  if p_code < 0 or p_code > 3 then raise exception 'no such phrase'; end if;
   select * into m from matches where id = p_id for update;
   if m.id is null then raise exception 'no table'; end if;
   if auth.uid() = m.white then
