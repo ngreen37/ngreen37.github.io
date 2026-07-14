@@ -8,7 +8,8 @@ window.PJCC_GAMES = [
   { slug:'notation-run',      name:'Notation Blitz',     cryptic:'Squares, on the beat.',          icon:'♫', accent:'#f8d800', cat:'learn',  score:['notation-run','score'] },
   // moved out of the Academy 2026-07-14 (Nate) — a quiet no-rules thinking board
   { slug:'free-play',         name:'Free-Play Board',    cryptic:'A quiet board to think on.',     icon:'♟', accent:'#9fe8c0', cat:'learn' },
-  { slug:'fork-in-the-road',  name:'Fork in the Road',   cryptic:'Spot the only move.',            icon:'⚔', accent:'#00e436', cat:'dev',    score:['fork-in-the-road','solved'], engine:true },
+  // back to Learn 2026-07-14 (Nate: "pump this out as our main Puzzle Feature")
+  { slug:'fork-in-the-road',  name:'Fork in the Road',   cryptic:'Spot the only move.',            icon:'⚔', accent:'#00e436', cat:'learn',  score:['fork-in-the-road','solved'], engine:true },
   { slug:'pirc-protocol',     name:'The Pirc Protocol',  cryptic:'Learn the book by heart.',       icon:'♚', accent:'#fc9838', cat:'dev',    score:['pirc-protocol','score'], neu:'2026-06-22', engine:true },
   // Shogi Island — slow-rolled 2026-07-04: pulled from the hub/halls; reachable only via the floating 将 icon on the splash. Restore by uncommenting.
   // { slug:'shogi-island',      name:'Shogi Island',       cryptic:'Foreign rules. Familiar war.',   icon:'将', accent:'#fcbcb0', cat:'isle',   score:['shogi-island','solved'] },

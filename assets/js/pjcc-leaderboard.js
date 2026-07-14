@@ -26,6 +26,8 @@
       // Elo, everyone starts 250). Only operatives with a finished rated game appear.
       { key: '__rating__',      label: 'PJCC Rating',      unit: 'rating'  },
       { key: 'the-gauntlet',    label: 'The Gauntlet',     unit: 'cleared' },
+      // restored 2026-07-14 with Fork's promotion to the main puzzle feature
+      { key: 'fork-in-the-road', label: 'Fork in the Road', unit: 'solved' },
       { key: 'clearance-delta', label: 'Clearance: DELTA', unit: 'score'   },
       { key: 'notation-run',    label: 'Notation Blitz',   unit: 'score'   },
       { key: 'sand-mine-depths',label: 'Sand Mine Depths', unit: 'points'  },

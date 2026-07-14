@@ -31,6 +31,9 @@
   }
   .float-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
   #hint-btn { bottom: 84px; right: 10px; background: #ff8fd0; color: #3a0a2a; padding: 7px 14px; font-size: 12px; }
+  #report-btn { bottom: 84px; left: 10px; background: rgba(20,12,45,0.8); color: #9a7fd4;
+    border: 1px solid #4a3a86; padding: 6px 11px; font-size: 10px; letter-spacing: 0.06em; }
+  #report-btn:hover { color: #ffd36b; border-color: #ffd36b; }
   #menu-btn { top: 10px; right: 10px; background: #163a36; color: #cfeee6; padding: 5px 12px; font-size: 11px; border: 1px solid #2a6a5e; }
   .float-btn.hidden { display: none; }
 
@@ -69,6 +72,7 @@
   <canvas id="canvas" width="480" height="500"></canvas>
   <button class="float-btn hidden" id="menu-btn">☰ menu</button>
   <button class="float-btn hidden" id="hint-btn">🐾 Hint</button>
+  <button class="float-btn hidden" id="report-btn" title="Something wrong with this puzzle? Send it to McPuppy">⚑ report</button>
 
   <div class="overlay" id="menu-screen">
     <div class="eyebrow">The Road to Chess City</div>
@@ -201,7 +205,8 @@ function genKnightFork(diff, rnd){
     if (!escapes.length) continue;                              // would be mate/stuck — retry
     const E = escapes[rnd()*escapes.length|0];
     const pieces = ['K'+alg(wk.x,wk.y), 'N'+alg(O.x,O.y), 'k'+alg(T1.x,T1.y), big.toLowerCase()+alg(T2.x,T2.y)];
-    addDistractors(pieces, used, Math.max(0, Math.min(3, diff-4)), rnd, [S, T1, T2, O]);
+    // the top of the road carries more clutter now (2026-07-14 difficulty spread)
+    addDistractors(pieces, used, Math.max(0, Math.min(diff >= 8 ? 5 : 3, diff-4)), rnd, [S, T1, T2, O]);
     const line = [
       [alg(O.x,O.y)+alg(S.x,S.y), 'N'+alg(S.x,S.y)+'+'],
       [alg(T1.x,T1.y)+alg(E.x,E.y), 'K'+alg(E.x,E.y)],
@@ -209,7 +214,8 @@ function genKnightFork(diff, rnd){
     ];
     const tn = big === 'Q' ? 'queen' : 'rook';
     return { theme:'Knight Fork', cat:'fork', goal:'Win the '+tn+'.', side:'w',
-      hint:'A knight leap that checks the king and forks the '+tn+'.', pieces, line };
+      hint:'A knight leap that checks the king and forks the '+tn+'.', pieces, line,
+      explain:'From '+alg(S.x,S.y)+' the knight gives check and attacks the '+tn+' on '+alg(T2.x,T2.y)+' at the same time. The king must answer the check — nothing can save the '+tn+'.' };
   }
   return null;
 }
@@ -227,10 +233,11 @@ function genBackRankMate(diff, rnd){
     const wk = placeFar(used, [ek], rnd, fx); if (!wk) continue;
     used.add(k2(wk));
     const pieces = ['K'+alg(wk.x,wk.y), heavy+alg(fx,ry), 'k'+alg(ek.x,ek.y), 'p'+alg(fp[0].x,fp[0].y), 'p'+alg(fp[1].x,fp[1].y)];
-    addDistractors(pieces, used, Math.max(0, Math.min(2, diff-5)), rnd, [ek, {x:fx,y:0}, {x:fx,y:ry}]);
+    addDistractors(pieces, used, Math.max(0, Math.min(diff >= 8 ? 4 : 2, diff-5)), rnd, [ek, {x:fx,y:0}, {x:fx,y:ry}]);
     const line = [[alg(fx,ry)+alg(fx,0), heavy+alg(fx,0)+'#']];
     return { theme:'Back Rank', cat:'mate', goal:'Mate in one.', side:'w',
-      hint:'The back rank is fatally weak — bring a heavy piece down.', pieces, line };
+      hint:'The back rank is fatally weak — bring a heavy piece down.', pieces, line,
+      explain:'The king\'s own pawns seal its escape. '+(heavy==='Q'?'The queen':'The rook')+' drops to '+alg(fx,0)+' and the back rank has no answer — checkmate.' };
   }
   return null;
 }
@@ -264,7 +271,8 @@ function genSkewer(diff, rnd){
       [alg(kx,cy)+alg(kx,qy), 'Rx'+alg(kx,qy)],
     ];
     return { theme:'Skewer', cat:'skewer', goal:'Win the queen.', side:'w',
-      hint:'Check along the line — the king steps aside and the queen falls.', pieces, line };
+      hint:'Check along the line — the king steps aside and the queen falls.', pieces, line,
+      explain:'The rook checks straight down the file. The king has to step off the line — and the queen standing directly behind it on '+alg(kx,qy)+' falls.' };
   }
   return null;
 }
@@ -311,6 +319,13 @@ function puzzleSane(p){
   } catch(e){ return false; }
 }
 
+// Each puzzle wears an honest RATING chip (2026-07-14 — the "main puzzle feature"
+// pass): motif base + how deep in the road you are + real board clutter.
+function puzzleRating(p, diff){
+  const base = { mate: 340, skewer: 520, fork: 640 }[p.cat] || 500;
+  const clutter = Math.max(0, p.pieces.length - 4) * 45;
+  return Math.round((base + diff * 72 + clutter) / 10) * 10;
+}
 function genPuzzle(diff, rnd){
   rnd = rnd || Math.random;
   for (let a = 0; a < 14; a++){
@@ -322,13 +337,13 @@ function genPuzzle(diff, rnd){
     else if (roll < pMate + pSkew) p = genSkewer(diff, rnd);
     else p = genKnightFork(diff, rnd);
     if (!p) p = genKnightFork(diff, rnd) || genBackRankMate(diff, rnd) || genSkewer(diff, rnd);
-    if (p && puzzleSane(p)) { p.id = 'g' + (genPuzzle._n = (genPuzzle._n||0) + 1); return p; }
+    if (p && puzzleSane(p)) { p.id = 'g' + (genPuzzle._n = (genPuzzle._n||0) + 1); p.rating = puzzleRating(p, diff); return p; }
   }
   // guaranteed fallbacks — still gated; the last resort is a known-sane composition
   const fb = [genKnightFork(2, rnd), genBackRankMate(2, rnd), genSkewer(2, rnd)].find(q => q && puzzleSane(q));
-  if (fb){ fb.id = 'g' + (genPuzzle._n = (genPuzzle._n||0) + 1); return fb; }
-  return { id:'g0', theme:'Back Rank', goal:'Mate in one.', side:'w', hint:'Down the file to the back rank.',
-      pieces:['Kg1','Rd2','kh8','pg7','ph7'], line:[['d2d8','Rd8#']] };
+  if (fb){ fb.id = 'g' + (genPuzzle._n = (genPuzzle._n||0) + 1); fb.rating = puzzleRating(fb, 2); return fb; }
+  return { id:'g0', theme:'Back Rank', cat:'mate', goal:'Mate in one.', side:'w', hint:'Down the file to the back rank.',
+      rating:400, pieces:['Kg1','Rd2','kh8','pg7','ph7'], line:[['d2d8','Rd8#']] };
 }
 
 function parseBoard(p) {
@@ -488,6 +503,7 @@ function loadPuzzle(){
   }
   G = { p, board: parseBoard(p), step: 0, selected: null, wrong: 0, clean: true, revealed: false, hintLevel: 0, phase: 'await', orient: p.side };
   document.getElementById('hint-btn').classList.remove('hidden');
+  document.getElementById('report-btn').classList.remove('hidden');
   updateHintBtn();
   bannerT = -1;
 }
@@ -544,11 +560,14 @@ function puzzleSolved(){
 }
 
 // Teaching card shown after each solve — names the motif and explains the idea.
+// 2026-07-14: prefers the puzzle's OWN square-by-square explanation (attached at
+// generation) over the generic motif blurb, and shows the puzzle's rating.
 let explainCard = null, explainTimer = null;
 function showExplain(){
   const mt = MOTIFS[G.p.theme] || { icon:'★', name:G.p.theme, color:C.good, explain:'' };
-  explainCard = { icon: mt.icon, color: mt.color || C.good, text: mt.explain, t: 0,
-    name: G.p.boss ? (mt.name + ' · ' + G.p.boss.name) : mt.name };
+  const nm = (G.p.boss ? (mt.name + ' · ' + G.p.boss.name) : mt.name) +
+    (G.p.rating ? ' · rated ~' + G.p.rating : '');
+  explainCard = { icon: mt.icon, color: mt.color || C.good, text: G.p.explain || mt.explain, t: 0, name: nm };
   clearTimeout(explainTimer);   // no auto-advance — the player taps OK when ready, so there's time to read it
 }
 function advanceFromExplain(){ clearTimeout(explainTimer); explainCard = null; nextPuzzle(); }
@@ -777,9 +796,9 @@ function loop(now){
 
 // ---- Screens ----
 function hideOverlays(){ ['menu-screen','summary-screen'].forEach(id=>document.getElementById(id).classList.add('hidden')); }
-function showMenu(){ G=null; run=null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('hint-btn').classList.add('hidden'); hideOverlays(); updateJourneyLine(); document.getElementById('menu-screen').classList.remove('hidden'); }
+function showMenu(){ G=null; run=null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('hint-btn').classList.add('hidden'); document.getElementById('report-btn').classList.add('hidden'); hideOverlays(); updateJourneyLine(); document.getElementById('menu-screen').classList.remove('hidden'); }
 function showSummary(){
-  G = null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('hint-btn').classList.add('hidden');
+  G = null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('hint-btn').classList.add('hidden'); document.getElementById('report-btn').classList.add('hidden');
   const s = run.stats;
   if (run.mode === 'journey'){
     const reg = REGIONS[regionFor(run.step)], done = run.step >= JOURNEY_LEN;
@@ -818,6 +837,21 @@ function showSummary(){
 function go(){ initAudio(); if (actx.state === 'suspended') actx.resume(); }
 document.getElementById('journey-btn').addEventListener('click', ()=>{ go(); startRun('journey'); });
 document.getElementById('daily-btn').addEventListener('click', ()=>{ go(); startRun('daily'); });
+// ⚑ report a broken puzzle — opens the player's mail app with everything McPuppy
+// needs prefilled (2026-07-14). The address is already public on /about/.
+document.getElementById('report-btn').addEventListener('click', ()=>{
+  const p = G && G.p; if (!p) return;
+  const body = 'Hi McPuppy — I think this Fork in the Road puzzle is broken.\n\n' +
+    'What looked wrong:\n(type here)\n\n— puzzle data (please leave this part in) —\n' +
+    'id: ' + p.id + '\ntheme: ' + p.theme + '\ngoal: ' + p.goal +
+    '\npieces: ' + p.pieces.join(' ') + '\nline: ' + p.line.map(x=>x[1]).join(' ') +
+    '\nrating: ~' + (p.rating || '?') + '\nmode: ' + (run ? run.mode : '?') +
+    (run && run.mode === 'journey' ? ' · step ' + run.step : '');
+  const href = 'mailto:nathgreen37@gmail.com?subject=' +
+    encodeURIComponent('Broken puzzle report — Fork in the Road') +
+    '&body=' + encodeURIComponent(body);
+  try { (window.top || window).location.href = href; } catch(e){ window.location.href = href; }
+});
 document.getElementById('menu-btn').addEventListener('click', showMenu);
 document.getElementById('sum-again').addEventListener('click', ()=>{ go(); startRun(run ? run.mode : 'journey'); });
 document.getElementById('sum-menu').addEventListener('click', showMenu);
