@@ -5,9 +5,12 @@ permalink: /projects/
 body_class: theme-studio
 ---
 
-<p class="projects-intro">An independent studio created to build PJCC.</p>
-
-<nav class="studio-hub" aria-label="McPuppy Studios sections">
+{% comment %} ── THE MASTER LINKS (2026-07-14 Nate: "make all the links look more like
+     Master links — take out the five links just above the counters, and re-work them
+     all at the top"). The little pill chips became a command bar: one ruled band at
+     the very top of the page, five equal doors, studio monochrome with the gold on
+     hover. Same five destinations, real presence. {% endcomment %}
+<nav class="studio-master" aria-label="McPuppy Studios sections">
   <a href="/pjcc/">PJCC</a>
   <a href="/blog/">Blog</a>
   <a href="/mailing-list/">Mailing List</a>
@@ -15,12 +18,22 @@ body_class: theme-studio
   <a href="/educators/">For Educators</a>
 </nav>
 <style>
-.studio-hub { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 18px; }
-.studio-hub a { font-size: 0.82rem; font-weight: 700; text-decoration: none; color: #cdbcf2;
-  background: rgba(110,95,160,0.18); border: 1px solid #4a3a86; border-radius: 999px; padding: 6px 14px;
-  transition: border-color .15s, color .15s; }
-.studio-hub a:hover { border-color: #F5C518; color: #F5C518; }
+.studio-master { display: flex; flex-wrap: wrap; margin: 2px 0 18px;
+  background: #131218; border: 1px solid #2a2830; border-radius: 10px; overflow: hidden; }
+.studio-master a { flex: 1 1 auto; text-align: center; padding: 13px 16px;
+  font-family: 'Share Tech Mono', monospace; font-size: 12px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: #cdc7d4; text-decoration: none;
+  border-right: 1px solid #2a2830; transition: color .15s, background .15s; }
+.studio-master a:last-child { border-right: none; }
+.studio-master a:hover { color: #F5C518; background: rgba(245,197,24,0.05); text-decoration: none; }
+@media (max-width: 560px){
+  .studio-master { flex-direction: column; }
+  .studio-master a { border-right: none; border-bottom: 1px solid #2a2830; padding: 12px 16px; }
+  .studio-master a:last-child { border-bottom: none; }
+}
 </style>
+
+<p class="projects-intro">An independent studio created to build PJCC.</p>
 
 {% comment %} DEAD CSS REMOVED 2026-07-13 (dead-code audit). ~65 lines of page-local styles for
      TWO CARDS THAT NO LONGER EXIST on this page: the gold "featured / playable now" treatment

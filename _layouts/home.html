@@ -557,7 +557,11 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
   animation: ribbon-scroll 412s linear infinite; animation-direction: reverse; /* left-to-right (Nate 2026-07-12); 206s→412s = half speed (2026-07-13) */
   pointer-events: none;
   user-select: none; -webkit-user-select: none; -moz-user-select: none; }
-body:has(.home-flow) .footer-ribbon-wrap { display: none; }
+/* (the footer piece-band is hidden SITE-WIDE now — 2026-07-14 splotch cull — so the
+   old home-only hide is gone with it) */
+/* ONE orb town-wide (2026-07-14): the hero paints its own sun/moon diorama, so the
+   fixed sky's arcing orb stands down here — otherwise the gutters grow a second one. */
+body:has(.home-flow) .ts-orb { display: none !important; }
 @media (prefers-reduced-motion: reduce) { .home-glyphs-track { animation: none; } }
 </style>
 

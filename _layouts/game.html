@@ -129,6 +129,11 @@
 </head>
 <body>
 
+  {% comment %} The town sky reaches the game halls too (2026-07-14 Nate: the sun/moon
+       arc "includes game and academy pages"). Must stay a DIRECT child of <body> —
+       see _sass/_pjcc-20-town-sky.scss. {% endcomment %}
+  {% include town-sky.html %}
+
   <header class="site-header">
     <div class="wrapper game-topbar">
       <a class="game-brand" href="{{ '/pjcc/' | relative_url }}"><span aria-hidden="true">&#9819;</span> PJCC</a>

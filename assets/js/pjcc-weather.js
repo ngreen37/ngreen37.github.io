@@ -33,6 +33,15 @@
   root.classList.add('sky-' + T.phase());
   if (kind !== 'clear') root.classList.add('town-' + kind);
 
+  // The orb's hour-arc position (--orb-x/--orb-y) is set before paint by the head
+  // include; re-plot every 5 minutes so a long-open tab watches the sun actually
+  // travel. (Position only — the phase class swap still needs a reload, fine.)
+  if (T.orb) setInterval(function () {
+    var o = T.orb();
+    root.style.setProperty('--orb-x', o.x.toFixed(1) + '%');
+    root.style.setProperty('--orb-y', o.y.toFixed(1) + '%');
+  }, 300000);
+
   function reduced() {
     try { if (localStorage.getItem('pjcc.flourish') === '0') return true; } catch (e) {}
     return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);

@@ -83,6 +83,11 @@ Not everyone believes Chess City is paradise. There is a belief among some -- th
   color: rgba(245,197,24,0.42); transform: rotate(-1.4deg); }
 .cc-gate-graffiti span { font-style: normal; font-size: 0.72rem; color: rgba(157,127,212,0.45); }
 
+/* The footer's piece-band is hidden site-wide (2026-07-14 declutter) but LIVES ON
+   here: at the gates of Chess City a border of pieces is the skyline, not clutter —
+   and the Whisper below needs it. */
+.footer-ribbon-wrap { display: flex; }
+
 /* The Whisper, made small: on this page only, the white rook in the border is awake. */
 .ribbon-track .rt-alive { position: relative; display: inline-block; }
 .rt-alive .rt-eye { position: absolute; width: 0.09em; height: 0.09em; border-radius: 50%;

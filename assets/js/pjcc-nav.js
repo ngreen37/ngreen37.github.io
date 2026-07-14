@@ -27,8 +27,8 @@
       { t: 'Merch',            s: 'Not ready yet — months away',          u: '/goods/',              ic: '🃏', b: 'mcpuppy', k: 'goods goal cards stationery merch follow the dog mindset coming soon physical' },
       { t: 'The Direct Line',  s: 'Write to me directly',                 u: '/direct-line/',        ic: '✉️', b: 'mcpuppy', k: 'direct line suggestions patreon contact write feedback guaranteed response' },
       { t: 'McPuppy Studios',  s: 'Studio hub & progress',                u: '/projects/',           ic: '🐾', b: 'mcpuppy', k: 'mcpuppy studio projects progress hub' },
-      { t: 'Build Log (Blog)', s: 'Episode archive',                      u: '/blog/',               ic: '✍', b: 'mcpuppy', k: 'blog build log episodes posts writing' },
-      { t: 'Mailing List',     s: 'Get dispatches by email',              u: '/mailing-list/',       ic: '✉', b: 'mcpuppy', k: 'mailing list email subscribe newsletter' },
+      { t: 'Blog',             s: 'Episode archive',                      u: '/blog/',               ic: '✍', b: 'mcpuppy', k: 'blog build log episodes posts writing' },
+      { t: 'Mailing List',     s: 'Get updates by email',                 u: '/mailing-list/',       ic: '✉', b: 'mcpuppy', k: 'mailing list email subscribe newsletter' },
       { t: 'For Educators',    s: 'Use PJCC in the classroom',            u: '/educators/',          ic: '🍎', b: 'mcpuppy', k: 'educators teachers classroom school lessons' },
       { t: 'About / Contact',  s: 'Who & how to reach us',                u: '/about/',              ic: '☎', b: 'mcpuppy', k: 'about contact reach email who studio' },
       { t: 'The Splash',       s: 'The front door',                       u: '/',                    ic: '⬛', b: 'mcpuppy', k: 'home splash front door start landing' }

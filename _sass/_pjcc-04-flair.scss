@@ -285,8 +285,13 @@ html.reduce-flourish .tagline-main-tagline .tg-x-glyph { animation: none; visibi
    ============================================================= */
 
 /* the glyphs are now a faint band BEHIND the footer copy (absolute), not a row
-   above it — and shorter (2026-07-11 Nate). */
+   above it — and shorter (2026-07-11 Nate).
+   2026-07-14 (Nate: "little splotches on the bottom — can we remove? Looks like they
+   may be on all pages"): HIDDEN SITE-WIDE now. The markup + these rules stay because
+   Chess City re-enables the band on its own page — the awake-rook Whisper egg lives
+   in it, and on that page a border of pieces is lore, not noise. */
 .footer-ribbon-wrap {
+  display: none;
   position: absolute;
   inset: 0;
   display: flex;

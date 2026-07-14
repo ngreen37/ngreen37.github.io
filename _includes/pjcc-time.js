@@ -20,12 +20,12 @@
   function parts() {
     try {
       var f = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour12: false,
-        year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit' });
+        year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
       var p = {}; f.formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
-      return { h: parseInt(p.hour, 10) % 24, ds: p.year + '-' + p.month + '-' + p.day };
+      return { h: parseInt(p.hour, 10) % 24, m: parseInt(p.minute, 10) || 0, ds: p.year + '-' + p.month + '-' + p.day };
     } catch (e) {
       var d = new Date();
-      return { h: d.getHours(), ds: d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() };
+      return { h: d.getHours(), m: d.getMinutes(), ds: d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() };
     }
   }
   function hour() { return parts().h; }
@@ -56,6 +56,16 @@
     if (w === 'mist') return 2;
     return [0, 0, 1, 1, 1, 2, 2, 0, 1, 3][(daySeed() >>> 11) % 10];
   }
+  // Where the ONE orb hangs (2026-07-14 Nate: "the sun and moon should follow an arc
+  // ... on all pages"). The sun's window is 5:00→20:00, the moon's 20:00→5:00; t runs
+  // 0→1 across the window, rising on the LEFT horizon, apex mid-window, setting RIGHT.
+  // x/y are viewport-percent for the fixed sky layer (set as --orb-x/--orb-y on <html>).
+  function orb() {
+    var p = parts(), mins = p.h * 60 + p.m, t;
+    if (mins >= 300 && mins < 1200) t = (mins - 300) / 900;          // the sun
+    else t = (((mins - 1200) + 1440) % 1440) / 540;                  // the moon
+    return { t: t, x: 6 + 88 * t, y: 74 - 60 * Math.sin(Math.PI * t) };
+  }
   window.PJCC_TIME = { parts: parts, hour: hour, dateStr: dateStr, phase: phase,
-                       daySeed: daySeed, weather: weather, clouds: clouds };
+                       daySeed: daySeed, weather: weather, clouds: clouds, orb: orb };
 })();

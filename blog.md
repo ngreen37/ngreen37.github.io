@@ -6,7 +6,7 @@ body_class: theme-bw
 ---
 
 <div class="ep-index">
-  <div class="ep-index-eyebrow">McPuppy Studios — The Build Log</div>
+  <div class="ep-index-eyebrow">McPuppy Studios — The Blog</div>
   <h1 class="ep-index-title">Episode Archive</h1>
   <p class="ep-index-sub">{{ site.posts.size }} episodes so far. In order from the beginning.</p>
 

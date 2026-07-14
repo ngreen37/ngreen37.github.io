@@ -52,7 +52,13 @@
    stars (1) → orb (2) → shooting stars (3) → clouds (4). Nate: "the stars should
    always fall BEHIND the moon. Unless it's a shooting star." Don't reorder these. */
 .ts-stars  { position: absolute; inset: 0; z-index: 1; display: none; }
-.ts-orb    { position: absolute; z-index: 2; display: none; border-radius: 50%; }
+/* The orb rides the HOUR ARC (2026-07-14 Nate: "-180 to 180 degrees on all pages"):
+   town-weather.html computes --orb-x/--orb-y from the Eastern clock (PJCC_TIME.orb() —
+   sun 5:00→20:00, moon 20:00→5:00, rises left / apex mid-window / sets right) and
+   pjcc-weather.js re-plots every 5 minutes for long-open tabs. The per-phase rules
+   below only carry LOOKS + a no-JS fallback spot; translate centres it on the point. */
+.ts-orb    { position: absolute; z-index: 2; display: none; border-radius: 50%;
+  transform: translate(-50%, -50%); }
 .ts-shoot  { position: absolute; z-index: 3; display: none; }
 .ts-clouds { position: absolute; inset: 0; z-index: 4; opacity: 0; transition: opacity 1.4s ease; }
 .ts-horizon { position: absolute; left: 0; right: 0; bottom: 0; height: 32%; z-index: 0; }
@@ -72,7 +78,7 @@ html.sky-dawn .town-sky {
 }
 html.sky-dawn .ts-orb {
   display: block;
-  left: 7%; bottom: 16%;
+  left: var(--orb-x, 12%); top: var(--orb-y, 72%);
   width: 58px; height: 58px;
   background: radial-gradient(circle at 40% 36%, #ffe9c9, #ff9d5c 72%);
   box-shadow: 0 0 100px 30px rgba(255, 157, 92, 0.20);
@@ -87,7 +93,7 @@ html.sky-day .town-sky {
 }
 html.sky-day .ts-orb {
   display: block;
-  left: 6%; top: 20%;
+  left: var(--orb-x, 50%); top: var(--orb-y, 18%);
   width: 62px; height: 62px;
   background: radial-gradient(circle at 40% 38%, #fffefb 0%, #fff3b8 34%, #ffd84a 70%, #f5b800 100%);
   box-shadow: 0 0 54px 20px rgba(255, 216, 74, 0.42), 0 0 130px 48px rgba(255, 216, 74, 0.16);
@@ -122,7 +128,7 @@ html.sky-dusk .town-sky {
 }
 html.sky-dusk .ts-orb {
   display: block;
-  right: 7%; bottom: 11%;
+  left: var(--orb-x, 88%); top: var(--orb-y, 72%);
   width: 52px; height: 52px;
   opacity: 0.88;
   background: radial-gradient(circle at 40% 36%, #ffd9a0, #e0662e 74%);
@@ -140,12 +146,13 @@ html.sky-night .town-sky {
   background: linear-gradient(180deg, #06041a 0%, #120c3a 48%, #1b1145 78%, #0a0722 100%);
 }
 html.sky-night .ts-stars { display: block; }
-/* The moon hangs on the LEFT. It used to sit at right:8%, which put it a couple of
-   inches from the page banner's own little moon — two moons in one screenshot, which
-   reads as a bug, not a sky. The banner keeps the right end; the sky takes the left. */
+/* ONE moon in the whole town (2026-07-14 Nate — he caught the pair at 11:45pm: the
+   banner's little moon top-right AND this one after scrolling). The banner's orb is
+   deleted below; the sky's moon is the only moon, it rides the hour arc, and because
+   this layer is position:fixed it's on screen without scrolling anywhere. */
 html.sky-night .ts-orb {
   display: block;
-  left: 8%; top: 13%;
+  left: var(--orb-x, 30%); top: var(--orb-y, 22%);
   width: 46px; height: 46px;
   background: radial-gradient(circle at 38% 34%, #f4f0ff, #b9b2d6 66%, #8f88b4 100%);
   box-shadow: 0 0 44px 14px rgba(220, 214, 255, 0.14),
@@ -414,18 +421,11 @@ html.reduce-flourish .ts-shoot { display: none !important; }
   background: linear-gradient(180deg, #241a52 0%, #1c1540 100%);
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
 }
-/* the banner's own little sun/moon, tucked in the right end */
-.page-title::before {
-  content: '';
-  position: absolute;
-  right: 34px; top: 50%;
-  width: 26px; height: 26px;
-  margin-top: -13px;
-  border-radius: 50%;
-  opacity: 0;
-  transition: opacity 0.8s ease;
-}
-/* …and its weather: stars by night, cloud by day. Static paint, no motion — a banner
+/* (The banner's OWN little sun/moon — .page-title::before — was deleted 2026-07-14:
+   at night it made a SECOND moon two inches from the sky's (Nate caught the pair at
+   11:45pm). The town keeps exactly one orb, on the fixed sky, riding the hour arc.
+   The banner keeps its gradients, cloud and stars below. Restore from git.) */
+/* the banner's weather: stars by night, cloud by day. Static paint, no motion — a banner
    this size doesn't need a sky show, it needs to say the hour at a glance. */
 .page-title::after {
   content: '';
@@ -440,20 +440,9 @@ html.sky-dawn .page-title {
   background: linear-gradient(180deg, #1d1140 0%, #3d2159 55%, #7c3d3a 100%);
   border-bottom-color: rgba(255, 150, 90, 0.45);
 }
-html.sky-dawn .page-title::before {
-  opacity: 1;
-  background: radial-gradient(circle at 40% 36%, #ffe9c9, #ff9d5c 72%);
-  box-shadow: 0 0 34px 10px rgba(255, 157, 92, 0.32);
-}
-
 html.sky-day .page-title {
   background: linear-gradient(180deg, #133463 0%, #24558f 100%);
   border-bottom-color: rgba(160, 205, 245, 0.42);
-}
-html.sky-day .page-title::before {
-  opacity: 1;
-  background: radial-gradient(circle at 40% 38%, #fffefb 0%, #fff3b8 34%, #ffd84a 70%, #f5b800 100%);
-  box-shadow: 0 0 32px 11px rgba(255, 216, 74, 0.45);
 }
 /* The banner's cloud follows the town's cover roll, same as the sky — on a clear day the
    banner is clear. (It used to paint cloud unconditionally, which meant a bare-sky day
@@ -481,23 +470,11 @@ html.sky-dusk .page-title {
   background: linear-gradient(180deg, #180d3a 0%, #4a2350 52%, #8a3d20 100%);
   border-bottom-color: rgba(224, 102, 46, 0.5);
 }
-html.sky-dusk .page-title::before {
-  opacity: 1;
-  background: radial-gradient(circle at 40% 36%, #ffd9a0, #e0662e 74%);
-  box-shadow: 0 0 30px 9px rgba(224, 102, 46, 0.3);
-}
-
 html.sky-night .page-title {
   background: linear-gradient(180deg, #07051c 0%, #150e3d 60%, #1b1145 100%);
   border-bottom-color: rgba(120, 100, 220, 0.4);
 }
-html.sky-night .page-title::before {
-  opacity: 1;
-  background: radial-gradient(circle at 38% 34%, #f4f0ff, #b9b2d6 66%, #8f88b4 100%);
-  box-shadow: 0 0 26px 8px rgba(220, 214, 255, 0.16),
-              inset -5px -4px 8px rgba(80, 70, 130, 0.55);
-}
-/* the banner's stars — behind the moon, same as the sky (::after paints under ::before) */
+/* the banner's stars */
 html.sky-night .page-title::after {
   opacity: 1;
   background:
