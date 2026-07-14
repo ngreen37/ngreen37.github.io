@@ -229,7 +229,9 @@
   display: flex;
   align-items: stretch;
   margin: 24px -28px 0;
-  background: #05030d;
+  /* transparent since 2026-07-14 (Nate: "the black to the right of it should go
+     away, and you should see background") — the gold plate + rules carry the bar */
+  background: transparent;
   border-top: 2px solid #F5C518;
   border-bottom: 2px solid #F5C518;
   overflow: hidden;

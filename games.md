@@ -226,21 +226,37 @@ permalink: /games/
    the light behind leaking through the tears. Still unmistakably a doorway.
    (KEEP IN SYNC with the twin copy in _layouts/home.html.) */
 .gdoor[data-grand="0"] .gdoor-arch { border-color:rgba(245,197,24,0.38); box-shadow:0 0 18px -10px var(--acc); }
+/* tan/brown worn cloth with holes; pushed aside FROM THE MIDDLE on hover (2026-07-14) */
 .gdoor[data-grand="0"] .gdoor-door {
   left:7px; right:7px; top:12px;
-  border:0; border-top:3px solid rgba(168,121,255,0.45);   /* the rod it hangs from */
+  border:0; border-top:3px solid rgba(122,94,58,0.8);
   border-radius:3px 3px 0 0;
   background:
-    linear-gradient(100deg, rgba(0,0,0,0) 30%, rgba(0,0,0,0.25) 36%, rgba(0,0,0,0) 43%),
-    linear-gradient(84deg,  rgba(0,0,0,0) 62%, rgba(0,0,0,0.20) 68%, rgba(0,0,0,0) 75%),
-    linear-gradient(180deg, #37294f 0%, #221838 100%);
+    linear-gradient(100deg, rgba(0,0,0,0) 30%, rgba(58,38,16,0.35) 36%, rgba(0,0,0,0) 43%),
+    linear-gradient(84deg,  rgba(0,0,0,0) 62%, rgba(58,38,16,0.28) 68%, rgba(0,0,0,0) 75%),
+    linear-gradient(180deg, #a8845c 0%, #7c5a38 55%, #5e4226 100%);
   clip-path:polygon(0 0, 100% 0, 100% 72%, 89% 95%, 76% 76%, 63% 98%, 48% 79%, 34% 96%, 21% 78%, 10% 93%, 0 76%);
+  -webkit-mask-image:
+    radial-gradient(circle 3px at 26% 38%, transparent 98%, #000 100%),
+    radial-gradient(circle 2px at 64% 24%, transparent 98%, #000 100%),
+    radial-gradient(circle 4px at 74% 58%, transparent 98%, #000 100%),
+    radial-gradient(circle 2px at 38% 70%, transparent 98%, #000 100%),
+    radial-gradient(circle 3px at 52% 49%, transparent 98%, #000 100%);
+  mask-image:
+    radial-gradient(circle 3px at 26% 38%, transparent 98%, #000 100%),
+    radial-gradient(circle 2px at 64% 24%, transparent 98%, #000 100%),
+    radial-gradient(circle 4px at 74% 58%, transparent 98%, #000 100%),
+    radial-gradient(circle 2px at 38% 70%, transparent 98%, #000 100%),
+    radial-gradient(circle 3px at 52% 49%, transparent 98%, #000 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+  transform-origin: 84% 50%;
 }
 .gdoor[data-grand="0"] .gdoor-knob { display:none; }
-.gdoor[data-grand="0"] .gdoor-glyph { font-size:26px; opacity:0.7; filter:none; }
+.gdoor[data-grand="0"] .gdoor-glyph { font-size:26px; opacity:0.55; filter:none; color:#3a2612; }
 .gdoor[data-grand="0"] .gdoor-seam { height:2px; box-shadow:0 -2px 10px 2px color-mix(in srgb, var(--acc) 38%, transparent); }
 .gdoor[data-grand="0"]:hover .gdoor-door,
-.gdoor[data-grand="0"]:focus-visible .gdoor-door { transform:skewX(-7deg) translateX(4px); }
+.gdoor[data-grand="0"]:focus-visible .gdoor-door { transform:scaleX(0.45) skewY(-5deg); }
 
 @media (prefers-reduced-motion: reduce){
   .ghub-doorway { animation:none; }
@@ -319,8 +335,8 @@ permalink: /games/
 // THE DOOR resume state — same climb data the game + homepage read.
 (function () {
   // mirrors the LADDER order / accents / glyphs in assets/games/pjcc_gauntlet.html — keep in sync
-  var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The CEO'];
-  var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#9ff0c4','#ff6b6b','#c79bff','#ff9ec9','#ff8fd0'];
+  var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The Executive Assistant'];
+  var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#9ff0c4','#ff6b6b','#c79bff','#ff9ec9','#f5c518'];
   var GLYPHS  = ['♞','♟','♝','♞','♜','♝','♜','♝','♛','♛'];
   var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
   var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;

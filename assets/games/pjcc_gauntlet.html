@@ -231,77 +231,104 @@ var LIGHT = '#6a5aa0', DARK = '#3d2a7a';
 // Hand-mapped to the real strength config (Stockfish skill 0→20 via skillForRung, plus
 // the persona's blunder rate and think time) — not measured, but honest about the curve.
 var LADDER = [
-  { name:'The Checker Town Open Champion', glyph:'♞', accent:'#8fe3ff', region:'Checker Town', elo:400,
+  { name:'The Checker Town Open Champion', glyph:'♞', accent:'#8fe3ff', region:'Checker Town', elo:350,
     blurb:'Floor 1 belongs to whoever holds the Checker Town Chess Open title. The current holder: a loyal guard-dog who learned the game slow — and never lets go.',
     win:'A bark, then a lick of your hand. The reigning champion of Checker Town yields the road.',
     persona:{ depth:1, blunder:0.32, mat:1, pst:0.4, aggr:4, timeMs:220 },
     react:{ intro:['*a proud, rolling growl* The reigning champ says hello.'],
       blunder:['*GRRR* — a gift for the pack!','*snap* Mine now.','Bad move. *bark bark*'],
       good:['*whine* ...good one.','*ears flatten* Hrrr.','*backs up a step*'] } },
-  { name:'The Sand-Mine Foreman', glyph:'♟', accent:'#fcbc3c', region:'The Sand Mines', elo:550,
+  { name:'The Sand-Mine Foreman', glyph:'♟', accent:'#fcbc3c', region:'The Sand Mines', elo:500,
     blurb:'Runs the CEO\'s pits. A grinder who counts every grain — and every pawn.',
     win:'The Foreman spits in the dust. "...Take the lift up. You earned it."',
     persona:{ depth:2, blunder:0.2, mat:1.25, pst:0.4, aggr:1, timeMs:320 },
     react:{ intro:['Down here, everything has a price. Even your pieces.'],
       blunder:['Mine. Everything down here is mine.','Ka-ching. Straight to the vault.'],
       good:['Tch. Off the books, that one.','...didn\'t log that.'] } },
-  { name:'The Tidecaller', glyph:'♝', accent:'#56d0ff', region:'The Sea', elo:700,
+  { name:'The Tidecaller', glyph:'♝', accent:'#56d0ff', region:'The Sea', elo:650,
     blurb:'Keeper of the crossing. Slow, deep, and impossible to rush.',
     win:'The tide pulls back and a path opens. "Cross. The far shore is waiting."',
     persona:{ depth:2, blunder:0.12, mat:1, pst:0.95, aggr:0, timeMs:440 },
     react:{ intro:['The sea is patient. So am I.'],
       blunder:['The current takes what you drop.','You reached too far from shore.'],
       good:['...the tide turns. Briefly.','Hm. A strong stroke.'] } },
-  { name:'The Shogi Sentinel', glyph:'♞', accent:'#fcbcb0', region:'Shogi Isle', elo:850,
+  { name:'The Shogi Sentinel', glyph:'♞', accent:'#fcbcb0', region:'Shogi Isle', elo:800,
     blurb:'Trained on foreign rules. Sees forks three moves before you do.',
     win:'The Sentinel bows, precisely. "Your blade is honest. Pass."',
     persona:{ depth:3, blunder:0.08, mat:1, pst:1, aggr:2, timeMs:520 },
     react:{ intro:['Foreign rules. Familiar war.'],
       blunder:['A fork you never saw.','Two pieces, one blow.'],
       good:['...unexpected. Noted.','A clean cut.'] } },
-  { name:'The City Gatekeeper', glyph:'♜', accent:'#ffb066', region:'Chess City gates', elo:1000,
+  { name:'The City Gatekeeper', glyph:'♜', accent:'#ffb066', region:'Chess City gates', elo:950,
     blurb:'The last wall before the tower. Solid, patient, gives nothing away.',
     win:'The Gatekeeper steps aside. The great doors of the tower groan open.',
     persona:{ depth:3, blunder:0.05, mat:1, pst:1, aggr:1, timeMs:560 },
     react:{ intro:['None shall pass. Prove me wrong.'],
       blunder:['Careless. The gate does not forgive.','You left it open. I walked through.'],
       good:['...Acceptable. Barely.','The wall still holds.'] } },
-  { name:'The Auditor', glyph:'♝', accent:'#9ff0c4', region:'Tower · Lower Floors', elo:1200,
+  { name:'The Auditor', glyph:'♝', accent:'#9ff0c4', region:'Tower · Lower Floors', elo:1100,
     blurb:'The CEO\'s numbers-man. Cold, exact, and allergic to waste.',
     win:'The Auditor closes the ledger. "Your account... balances. Go up."',
     persona:{ depth:3, blunder:0.03, mat:1, pst:1.05, aggr:1, timeMs:620 },
     react:{ intro:['Every move is a line item. Yours won\'t add up.'],
       blunder:['Filed under: loss.','A deficit. As projected.'],
       good:['...an unaccounted gain.','Recalculating your worth.'] } },
-  { name:'The Enforcer', glyph:'♜', accent:'#ff6b6b', region:'Tower · Mid Floors', elo:1400,
+  { name:'The Enforcer', glyph:'♜', accent:'#ff6b6b', region:'Tower · Mid Floors', elo:1250,
     blurb:'The CEO\'s muscle. Comes straight at your king and never blinks.',
     win:'The Enforcer cracks his knuckles, then steps back. "...boss\'ll want to see you."',
     persona:{ depth:3, blunder:0.02, mat:1, pst:1, aggr:6, timeMs:680 },
     react:{ intro:['The boss says you don\'t reach the top. I make sure.'],
       blunder:['Down you go.','That\'s the one that hurts.'],
       good:['Tch. Lucky.','...you\'ve got some fight.'] } },
-  { name:'The Vice President', glyph:'♝', accent:'#c79bff', region:'Tower · Upper Floors', elo:1650,
+  { name:'The Vice President', glyph:'♝', accent:'#c79bff', region:'Tower · Upper Floors', elo:1400,
     blurb:'Polished, ruthless, one office below the top. Runs the floor like clockwork.',
     win:'The VP straightens a cufflink. "Impressive. The corner office is... one flight up."',
     persona:{ depth:4, blunder:0.01, mat:1, pst:1.1, aggr:2, timeMs:760 },
     react:{ intro:['I run this floor. The CEO runs the rest.'],
       blunder:['Sloppy. That won\'t fly up here.','A rookie line.'],
       good:['...where did you train?','Hm. Sharp.'] } },
-  { name:'The Heir Apparent', glyph:'♛', accent:'#ff9ec9', region:'Tower · The Antechamber', elo:1900,
+  { name:'The Heir Apparent', glyph:'♛', accent:'#ff9ec9', region:'Tower · The Antechamber', elo:1600,
     blurb:'First in line for the crown, waiting at the CEO\'s door. Your equal, your foil — punishes every loose move.',
     win:'"...Well played." The Heir Apparent means it, this time. "He\'s through there. Good luck."',
     persona:{ depth:4, blunder:0.0, mat:1, pst:1.1, aggr:2, timeMs:820 },
     react:{ intro:['Let\'s see what you\'ve really got.'],
       blunder:['Sloppy. I expected better from you.','That\'s the move that loses the game.'],
       good:['...Where did you learn that?','Sharp. But I\'m still standing.'] } },
-  { name:'The CEO', glyph:'♛', accent:'#ff8fd0', region:'Chess City · The Top Floor', elo:2200,
+  { name:'The Executive Assistant', glyph:'♛', accent:'#f5c518', region:'Chess City · The Top Floor', elo:1800,
+    blurb:'Nobody simply walks in on the CEO. Every appointment, every elevator key, every excuse — she manages all of them. Beat the calendar first.',
+    win:'She closes the appointment ledger, unhurried. "…He\'ll see you now."',
+    persona:{ depth:4, blunder:0.005, mat:1, pst:1.15, aggr:2, timeMs:880 },
+    react:{ intro:['You don\'t have an appointment.'],
+      blunder:['Noted. Filed. Used.','That\'s going in the minutes.'],
+      good:['…rescheduling.','Hm. He\'ll want to hear about you.'] } },
+  // ── THE SECRET FLOORS (2026-07-14 Nate: "make 3 secret opponents up to 2400.
+  //    The CEO should be the first secret opponent"). Hidden from the tower until
+  //    Floor 10 is beaten; the elevator keeps going. ──
+  { name:'The CEO', glyph:'♛', accent:'#ff8fd0', region:'The Corner Office', elo:2000, secret:true,
     blurb:'Top of the tallest building in Chess City. He does not lose. Usually.',
     win:'The CEO stares at the board a long time. Then, quietly: "...How?"',
     persona:{ depth:5, blunder:0.0, mat:1, pst:1.2, aggr:1, timeMs:950 },
     react:{ intro:['You should not have made it this far.'],
       blunder:['Predictable.','As expected. You overreach.'],
-      good:['...Interesting. Recalculating.','Where did THAT come from.'] } }
+      good:['...Interesting. Recalculating.','Where did THAT come from.'] } },
+  { name:'The Chairman', glyph:'♚', accent:'#e8e2ff', region:'The Boardroom in the Clouds', elo:2200, secret:true,
+    blurb:'The CEO answers to someone. The board answers to him.',
+    win:'"The board will hear of this." He almost, almost smiles.',
+    persona:{ depth:5, blunder:0.0, mat:1, pst:1.2, aggr:2, timeMs:1250 },
+    react:{ intro:['The company is a chessboard. I own the table.'],
+      blunder:['Acquired.','A hostile takeover of one square.'],
+      good:['…point of order.','Unbudgeted. Impressive.'] } },
+  { name:'The Founder', glyph:'♔', accent:'#fff2b0', region:'The Vault Below the Tower', elo:2400, secret:true,
+    blurb:'The tower was his idea. So was the game. The elevator only comes down here for whoever beat everyone above.',
+    win:'The Founder sets his king down gently. "It was always going to be you."',
+    persona:{ depth:5, blunder:0.0, mat:1, pst:1.3, aggr:1, timeMs:1700 },
+    react:{ intro:['I built this game. Show me it outgrew me.'],
+      blunder:['I designed that trap forty years ago.','Still mine.'],
+      good:['…I never taught that.','The game grows.'] } }
 ];
+// the public tower is TEN floors; everything past it is the elevator's secret
+var VISIBLE = 10;
+function secretOpen(prog){ return !!(prog && prog.beaten && prog.beaten[VISIBLE - 1]); }
 function randColor(){ return Math.random() < 0.5 ? 'w' : 'b'; }   // colours drawn fresh each match
 
 // ---- progress ----
@@ -445,11 +472,16 @@ function endGame(result){
   if (playerWon){
     prog.beaten[G.idx] = true;
     if (G.idx + 1 > prog.unlocked) prog.unlocked = Math.min(LADDER.length, G.idx + 1);
-    var isFinal = (G.idx + 1 === LADDER.length);
-    if (isFinal) prog.secret = true;
+    var isFinal = (G.idx + 1 === LADDER.length);       // the Founder — nothing above
+    var isCEO   = (G.idx === VISIBLE);                 // the map moment stays HIS
+    var isTop   = (G.idx === VISIBLE - 1);             // floor 10 — the elevator reveal
+    if (isCEO) prog.secret = true;
     saveProg(prog);
-    eye = 'Rung ' + (G.idx+1) + ' cleared'; title = 'VICTORY ♛';
-    msg = G.rung.win + (isFinal ? ' You stand atop the tallest building in Chess City. As the CEO turns away, a folded map slips from his coat — the Sand Mines, stamped with his own seal. He owns them. The arrow points straight down, all the way to the bottom.' : '');
+    eye = (G.idx < VISIBLE ? 'Rung ' + (G.idx+1) + ' cleared' : 'Secret floor cleared'); title = 'VICTORY ♛';
+    msg = G.rung.win +
+      (isTop ? ' Behind her desk, the elevator hums. Its panel has three unmarked buttons above the top floor.' : '') +
+      (isCEO ? ' As the CEO turns away, a folded map slips from his coat — the Sand Mines, stamped with his own seal. He owns them. The arrow points straight down, all the way to the bottom.' : '') +
+      (isFinal ? ' Below the vault, the tower. Above it, everything. There is no one left to beat.' : '');
   } else if (draw){
     eye = 'Draw — you held the line'; title = 'A DRAW';
     msg = (({ stalemate:'Stalemate — the king has no move, but no check.',
@@ -471,9 +503,10 @@ function endGame(result){
   }
   var row = document.getElementById('over-row'); row.innerHTML = '';
   if (playerWon && G.idx+1 < LADDER.length){
-    addBtn(row, 'NEXT CHALLENGER ▸', 'btn-gold', function(){ startRung(G.idx+1); });
+    addBtn(row, G.idx === VISIBLE - 1 ? '▲ TAKE THE ELEVATOR' : 'NEXT CHALLENGER ▸', 'btn-gold', function(){ startRung(G.idx+1); });
+    // the CEO's map also opens the way down, secret climb or not
+    if (G.idx === VISIBLE) addBtn(row, '▾ THE MAP — SAND MINE DEPTHS', 'btn-ghost', function(){ try { (window.top||window).location.href = '/games/sand-mine-depths/'; } catch(e){ window.location.href = '/games/sand-mine-depths/'; } });
   } else if (playerWon){
-    // final rung cleared — the secret map points down to the Sand Mine Depths
     addBtn(row, '▾ DESCEND — SAND MINE DEPTHS', 'btn-gold', function(){ try { (window.top||window).location.href = '/games/sand-mine-depths/'; } catch(e){ window.location.href = '/games/sand-mine-depths/'; } });
   } else if (!playerWon){
     addBtn(row, 'TRY AGAIN', 'btn-gold', function(){ startRung(G.idx); });
@@ -514,7 +547,9 @@ function showBossCard(idx){
   var rung = LADDER[idx], pc = randColor(), prog = loadProg(), beaten = !!prog.beaten[idx], acc = rung.accent;
   var portrait = document.getElementById('boss-portrait');
   portrait.textContent = rung.glyph; portrait.style.color = acc; portrait.style.borderColor = acc;
-  document.getElementById('boss-eye').textContent = (beaten?'Rematch':'Challenger') + ' · Floor ' + (idx+1) + ' of ' + LADDER.length + ' · Rated ' + rung.elo;
+  document.getElementById('boss-eye').textContent = (beaten?'Rematch':'Challenger') + ' · ' +
+    (idx < VISIBLE ? 'Floor ' + (idx+1) + ' of ' + VISIBLE : 'Secret Floor ' + (idx - VISIBLE + 1) + ' of ' + (LADDER.length - VISIBLE)) +
+    ' · Rated ' + rung.elo;
   document.getElementById('boss-name').textContent = rung.name;
   var sub = document.getElementById('boss-sub'); sub.textContent = rung.region; sub.style.color = acc;
   var pips = document.getElementById('boss-pips'); pips.textContent = pipStr(strengthOf(rung.persona)); pips.style.color = acc;
@@ -605,8 +640,9 @@ function refreshMenu(){
   if (!btn||!pline) return;
   var cleared=Object.keys(prog.beaten||{}).length;
   if (cleared===0){ btn.textContent='▶ ENTER THE TOWER'; pline.style.display='none'; if(tbtn) tbtn.style.display='none'; }
-  else if (cur>=LADDER.length){ btn.textContent='♛ THE TOWER'; pline.style.display=''; pline.innerHTML='<b style="color:#6bffb8">Crowned.</b> You cleared all ten — rematch anyone from the tower.'; if(tbtn) tbtn.style.display='none'; }
-  else { btn.textContent='▶ CONTINUE — FLOOR '+(cur+1); pline.style.display=''; pline.innerHTML='Pick up where you left off — <b style="color:#F5C518">'+LADDER[cur].name+'</b> awaits on Floor '+(cur+1)+' of '+LADDER.length+'.'; if(tbtn) tbtn.style.display=''; }
+  else if (cur>=LADDER.length){ btn.textContent='♛ THE TOWER'; pline.style.display=''; pline.innerHTML='<b style="color:#6bffb8">Crowned.</b> The tower — and everything above and below it — is yours. Rematch anyone.'; if(tbtn) tbtn.style.display='none'; }
+  else if (cur>=VISIBLE){ btn.textContent='▶ CONTINUE — THE SECRET FLOORS'; pline.style.display=''; pline.innerHTML='The elevator keeps going — <b style="color:#F5C518">'+LADDER[cur].name+'</b> is waiting.'; if(tbtn) tbtn.style.display=''; }
+  else { btn.textContent='▶ CONTINUE — FLOOR '+(cur+1); pline.style.display=''; pline.innerHTML='Pick up where you left off — <b style="color:#F5C518">'+LADDER[cur].name+'</b> awaits on Floor '+(cur+1)+' of '+VISIBLE+'.'; if(tbtn) tbtn.style.display=''; }
 }
 // "Play" resumes at your CURRENT opponent (straight to the boss card, one tap to the board) —
 // no need to walk the tower each time. Fresh climbers and the crowned see the whole tower.
@@ -641,7 +677,7 @@ function setupPortrait(rung, idx){
   var opp=document.getElementById('opp'); if(!opp) return;
   document.getElementById('opp-glyph').textContent=rung.glyph;
   document.getElementById('opp-name').textContent=rung.name;
-  document.getElementById('opp-sub').textContent='Rung '+(idx+1)+'/'+LADDER.length+' · '+rung.region+' · Rated '+rung.elo;
+  document.getElementById('opp-sub').textContent=(idx < VISIBLE ? 'Rung '+(idx+1)+'/'+VISIBLE : 'Secret '+(idx-VISIBLE+1)+'/'+(LADDER.length-VISIBLE))+' · '+rung.region+' · Rated '+rung.elo;
   document.getElementById('opp-face').style.borderColor=rung.accent;
   document.getElementById('opp-bubble').classList.remove('show');
   setMood(MOODS.neutral);
@@ -732,7 +768,15 @@ function showLadder(){
   hideOverlays();
   var prog = loadProg(), cur = nextFloor(prog), host = document.getElementById('rungs'); host.innerHTML = '';
   var lastZone = null, curEl = null;
-  for (var i = LADDER.length - 1; i >= 0; i--){         // top floor (CEO) down to the street (Argus)
+  // the secret floors exist only for those who beat the top of the public tower
+  var top = (secretOpen(prog) ? LADDER.length : VISIBLE) - 1;
+  if (!secretOpen(prog)){
+    var hint = document.createElement('div'); hint.className = 'tw-zone';
+    hint.style.color = '#6b5fa0';
+    hint.innerHTML = '<span class="tz-name">the elevator panel has three unmarked buttons</span><span class="tz-line"></span>';
+    host.appendChild(hint);
+  }
+  for (var i = top; i >= 0; i--){                       // top floor down to the street
     var rung = LADDER[i], unlocked = i <= prog.unlocked, beaten = !!prog.beaten[i], isCur = (i === cur);
     var zone = zoneOf(rung.region);
     if (zone !== lastZone){                              // #7 — region band header
@@ -748,7 +792,7 @@ function showLadder(){
              :            '<span class="tw-chip" style="background:#1a1330;color:#7a6aae">🔒 LOCKED</span>';
     el.innerHTML =
       '<div class="tw-badge" style="border-color:'+rung.accent+';color:'+rung.accent+'">'+rung.glyph+'</div>' +
-      '<div class="tw-body"><div class="tw-name">'+(i+1)+'. '+rung.name+'</div>' +
+      '<div class="tw-body"><div class="tw-name">'+(i < VISIBLE ? (i+1)+'. ' : '★ ')+rung.name+'</div>' +
         '<div class="tw-sub">Rated '+rung.elo+' · '+playstyleOf(rung.persona)+' · '+difficultyOf(rung.persona)+' · ♔/♚ drawn</div>' +
         (isCur?'<span class="tw-here">YOU ARE HERE</span>':'') +
       '</div>' + chip;
