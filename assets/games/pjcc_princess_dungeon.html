@@ -212,7 +212,11 @@
   }
 
   function resetRoom() {
-    // on a hit: rebuild the floor's opening position, keep relics & remaining hp
+    // on a hit: rebuild the floor's opening position, keep relics & remaining hp.
+    // The room's capture-essence comes back too (2026-07-14): the enemies respawn,
+    // so their +5s must not stay banked — otherwise capture→get hit→capture again
+    // farms essence for free while hearts last.
+    S.essence = Math.max(0, S.essence - S.roomCaps * 5);
     S.hero = { r: S.start.r, c: S.start.c, pr: S.start.r, pc: S.start.c };
     S.enemies = S.enemiesStart.map(function (e) { return { type: e.type, r: e.r, c: e.c, pr: e.r, pc: e.c }; });
     S.roomCaps = 0;
@@ -470,12 +474,13 @@
     ctx.fillRect(0, 0, W, HUD_H);
     // hearts
     for (var i = 0; i < S.maxHp; i++) drawHeart(16 + i * 22, 24, 8, i < S.hp);
-    // depth + biome
+    // depth + biome — right-aligned CLEAR of the DOM ☰ menu button, which floats
+    // over the canvas top-right and was eating "FLOOR n" down to "FL" (2026-07-14)
     ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
     ctx.fillStyle = GOLD; ctx.font = '900 16px "Trebuchet MS",sans-serif';
-    ctx.fillText('FLOOR ' + S.depth, W - 14, 20);
+    ctx.fillText('FLOOR ' + S.depth, W - 96, 20);
     ctx.fillStyle = '#b9a8e6'; ctx.font = '11px "Trebuchet MS",sans-serif';
-    ctx.fillText(bm.name, W - 14, 40);
+    ctx.fillText(bm.name, W - 96, 40);
     // essence + relic glyphs
     ctx.textAlign = 'left';
     ctx.fillStyle = '#cdbcf2'; ctx.font = '12px "Trebuchet MS",sans-serif';
@@ -589,6 +594,35 @@
   }
   cv.addEventListener('click', hit);
   cv.addEventListener('touchstart', function (e) { e.preventDefault(); hit(e); }, { passive: false });
+
+  // keyboard (2026-07-14): arrows/WASD step, Q·E·Z·C diagonals, Space waits.
+  // Everything routes through playerActed, so illegal squares are simply ignored.
+  document.addEventListener('keydown', function (e) {
+    if (mode !== 'play' || busy || !S) return;
+    var k = e.key, d = null;
+    if (k === 'ArrowUp' || k === 'w' || k === 'W') d = [-1, 0];
+    else if (k === 'ArrowDown' || k === 's' || k === 'S') d = [1, 0];
+    else if (k === 'ArrowLeft' || k === 'a' || k === 'A') d = [0, -1];
+    else if (k === 'ArrowRight' || k === 'd' || k === 'D') d = [0, 1];
+    else if (k === 'q' || k === 'Q') d = [-1, -1];
+    else if (k === 'e' || k === 'E') d = [-1, 1];
+    else if (k === 'z' || k === 'Z') d = [1, -1];
+    else if (k === 'c' || k === 'C') d = [1, 1];
+    else if (k === ' ') { e.preventDefault(); playerActed(S.hero.r, S.hero.c); return; }
+    if (d) { e.preventDefault(); playerActed(S.hero.r + d[0], S.hero.c + d[1]); }
+  });
+
+  // ---- test hook: instant state accessors for the puppeteer harness.
+  // (Unlike shogi's __shogiTest this does NO engine work — safe to call.) ----
+  window.__dgTest = {
+    state: function () {
+      return S ? { mode: mode, busy: busy, depth: S.depth, hp: S.hp, maxHp: S.maxHp,
+        essence: S.essence, hero: [S.hero.r, S.hero.c], exit: [S.exit.r, S.exit.c],
+        enemies: S.enemies.map(function (e) { return [e.type, e.r, e.c]; }),
+        reach: Object.keys(S.reach), threat: Object.keys(S.threat) } : { mode: mode };
+    },
+    tap: function (r, c) { playerActed(r, c); }
+  };
 
   // ---- overlays / boot ------------------------------------------------------
   function show(id, on) { document.getElementById(id).classList.toggle('hidden', !on); }

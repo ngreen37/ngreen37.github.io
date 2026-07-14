@@ -727,6 +727,45 @@ second ten are **ingenuity** (the clever, cheap, memorable stuff).
 
 ---
 
+## ◈ CREDITS THAT MEAN SOMETHING — 20 ideas (2026-07-14, Nate: "we need credits to mean something. Think hard on it")
+
+All inside the [game-monetization-ethics] rails: cosmetics, rituals and access — never power,
+never pay-to-win, never real money. Grouped by what they feed.
+
+**Identity (you wear it)**
+1. **Park Tables board skins** — buy square palettes for YOUR games; your opponent sees them too, so it's status at the table.
+2. **Piece sets** — Quartermaster carved sets (driftwood, jade, tide-glass) that skin every chess game you play site-wide.
+3. **Rating-chip finishes** — bronze/silver/gold metallic polish on your "Rated ___" chip once you can afford it.
+4. **Dossier trim tiers** — gold-leaf borders and a wax seal on your operative file.
+5. **Victory flourishes** — a purchased win-chime + confetti color that plays when YOU win at the tables.
+
+**The companion (the cute engine)**
+6. **Pet outfits** — bandanas, tiny hats, scarves; pure cosmetics on the companion everyone already loves.
+7. **Treats** — 2cr triggers the trick animation; a joy sink with zero power.
+8. **Den furniture** — rugs, lamps, a bookshelf for the pet's room; the den becomes a credit gallery.
+
+**The town (the world remembers you)**
+9. **Sky lantern** — 10cr floats a paper lantern across YOUR town sky for a day.
+10. **The Statue of the Pup** — a COMMUNITY sink: every credit anyone burns adds to a global counter; the plaza statue is built in visible stages and unveils a lore plaque at each stage. The whole town builds it together.
+11. **Table plaques** — preset engravings ("The Old Oak Table", "Winner Stays") shown on your open tables in the lobby.
+12. **Chess City window** — a dossier diorama apartment you furnish piece by piece.
+13. **Personal weather** — 25cr makes it rain on YOUR sky for a day (the town's roll is untouched).
+14. **Orb trail** — a faint comet tail on your sun/moon arc, just for you.
+
+**Ritual & lore (credits as courage)**
+15. **The Gambit IS the credit furnace** — lean in: the Monument (100cr inscription, preset lines), the protected first offering, pay-it-forward blessings for the next stranger.
+16. **Clearance bribes** — the "…or bribery" egg made real: 50cr skips ONE Clearance question, stamped BRIBED on the result (a cosmetic shame-badge people will want).
+17. **Lore keys** — credit-priced Subject Zero fragment early-unlocks (the rank ladder still unlocks them free later — impatience, not power).
+
+**Access & occasions (still never power)**
+18. **Season cosmetic track** — each month's Season (they already exist) gets 3 buyable palette items that retire forever when the month ends; scarcity without pressure.
+19. **Jukebox requests** — 5cr queues a McPuppy track as your personal site soundtrack for the session.
+20. **Gift a boon** — spend credits to leave a small cosmetic gift on a friend's dossier with a preset note ("Well played." — the Park Tables phrases, reused). Generosity as the flex.
+
+**The one to build first:** #1 + #2 (Park Tables skins/sets) — the rating ladder gives credits an ARENA;
+status next to a number people compete for is the strongest meaning credits can have. #10 is the
+long-game community heartbeat.
+
 ## 📣 The three plays (2026-07-13 — Nate asked: socials, streaming, app stores)
 
 ### The Socials Play
