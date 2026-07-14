@@ -286,6 +286,81 @@ html.sky-night .ts-shoot--3 { top: 22%; left: 92%; animation: ts-shoot-fall 67s 
 @keyframes ts-drift-near { to { transform: translate3d(-50%, 0, 0); } }
 @keyframes ts-drift-far  { to { transform: translate3d(-50%, 0, 0); } }
 
+/* ── the shape clouds (2026-07-13 Nate: rare clouds that VAGUELY look like a rook /
+   a dog — "like when you are with a friend pointing at clouds"). Same puff grammar
+   as the banks, arranged so the outline only SUGGESTS the shape: the rook is a
+   column with three separated puffs on top (the gaps are the crenellation read),
+   the dog is a profile — body, head, snout, one floppy ear, tail up.
+   Rarity: shape-rook / shape-dog land on <html> ~1 day in 4 each (town-weather.html,
+   same day seed as the rest of the forecast), and the crossing itself holds a long
+   off-screen stretch. Parked at left:100%, carried across by transform only — with
+   animation off (reduce-flourish) they simply never enter the frame. */
+.ts-cloud-shape {
+  position: absolute;
+  left: 100%;
+  display: none;
+  will-change: transform;
+}
+html.shape-rook .ts-cloud--rook { display: block; }
+html.shape-dog  .ts-cloud--dog  { display: block; }
+
+/* (Puff-anatomy rule, learned the hard way twice now: the visible core of one of
+   these soft gradients ends around 45% of its radius, so neighbouring parts must
+   OVERLAP THEIR CORES or the shape falls apart into floating dots. Every value
+   below was placed against a rendered screenshot, not guessed.) */
+.ts-cloud--rook {
+  top: 9%;
+  width: 300px; height: 210px;
+  background:
+    /* the soft halo that keeps it reading as cloud first, rook second */
+    radial-gradient(110px 70px at 50% 52%, rgba(255,255,255,0.10), transparent 72%),
+    /* three level teeth with daylight between them — the crenellations */
+    radial-gradient(24px 32px at 35% 14%, rgba(255,255,255,0.55), transparent 62%),
+    radial-gradient(24px 34px at 50% 13%, rgba(255,255,255,0.56), transparent 62%),
+    radial-gradient(24px 32px at 65% 14%, rgba(255,255,255,0.55), transparent 62%),
+    /* the platform pushed up under the teeth */
+    radial-gradient(78px 30px at 50% 26%, rgba(255,255,255,0.55), transparent 66%),
+    /* the tower: three stacked, core-overlapping puffs, widening downward */
+    radial-gradient(52px 44px at 50% 40%, rgba(255,255,255,0.52), transparent 64%),
+    radial-gradient(56px 44px at 50% 55%, rgba(255,255,255,0.52), transparent 64%),
+    radial-gradient(62px 44px at 50% 70%, rgba(255,255,255,0.52), transparent 64%),
+    /* the base it sits on */
+    radial-gradient(90px 32px at 50% 84%, rgba(255,255,255,0.55), transparent 66%);
+  animation: ts-shape-cross 340s linear infinite;
+}
+.ts-cloud--dog {
+  top: 30%;
+  width: 360px; height: 180px;
+  background:
+    radial-gradient(140px 60px at 50% 55%, rgba(255,255,255,0.10), transparent 72%),
+    /* body, shoulders, rump */
+    radial-gradient(95px 42px at 55% 58%, rgba(255,255,255,0.52), transparent 66%),
+    radial-gradient(58px 42px at 40% 48%, rgba(255,255,255,0.50), transparent 64%),
+    radial-gradient(56px 42px at 71% 52%, rgba(255,255,255,0.50), transparent 64%),
+    /* the neck, bridging head to shoulder */
+    radial-gradient(42px 36px at 31% 44%, rgba(255,255,255,0.50), transparent 62%),
+    /* head, snout forward, one floppy ear */
+    radial-gradient(44px 38px at 22% 38%, rgba(255,255,255,0.55), transparent 62%),
+    radial-gradient(30px 20px at 12% 42%, rgba(255,255,255,0.52), transparent 60%),
+    radial-gradient(19px 26px at 24% 28%, rgba(255,255,255,0.50), transparent 58%),
+    /* the tail: a lift puff on the rump, then the tip curling up */
+    radial-gradient(24px 26px at 76% 42%, rgba(255,255,255,0.46), transparent 60%),
+    radial-gradient(16px 30px at 79% 32%, rgba(255,255,255,0.46), transparent 60%),
+    /* the faintest hint of legs — any stronger and it stops being a cloud */
+    radial-gradient(15px 24px at 44% 72%, rgba(255,255,255,0.32), transparent 60%),
+    radial-gradient(15px 24px at 64% 72%, rgba(255,255,255,0.32), transparent 60%);
+  /* longer cycle + negative delay: the two shapes stay out of step, and a page can
+     load mid-crossing instead of always starting with an empty sky */
+  animation: ts-shape-cross 430s linear -150s infinite;
+}
+/* deck pace (the near bank covers a viewport in ~190s), then hold off-screen left —
+   0% and the hold are both outside the frame, so the loop-around jump is invisible */
+@keyframes ts-shape-cross {
+  0%   { transform: translate3d(0, 0, 0); }
+  62%  { transform: translate3d(calc(-100vw - 380px), 0, 0); }
+  100% { transform: translate3d(calc(-100vw - 380px), 0, 0); }
+}
+
 html.cloud-1 .ts-clouds { opacity: 0.22; }
 html.cloud-2 .ts-clouds { opacity: 0.46; }
 html.cloud-3 .ts-clouds { opacity: 0.72; }
@@ -310,11 +385,12 @@ html.sky-night.cloud-3 .ts-clouds { opacity: 0.44; }
    cloud deck all stay. What stops is the moving: drifting cloud, turning rays,
    twinkling, and the shooting stars. */
 html.reduce-flourish .ts-cloud-bank,
+html.reduce-flourish .ts-cloud-shape,
 html.reduce-flourish .ts-star--tw,
 html.reduce-flourish .ts-orb::before { animation: none !important; }
 html.reduce-flourish .ts-shoot { display: none !important; }
 @media (prefers-reduced-motion: reduce) {
-  .ts-cloud-bank, .ts-star--tw, .ts-orb::before { animation: none !important; }
+  .ts-cloud-bank, .ts-cloud-shape, .ts-star--tw, .ts-orb::before { animation: none !important; }
   .ts-shoot { display: none !important; }
 }
 

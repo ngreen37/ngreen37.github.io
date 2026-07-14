@@ -79,6 +79,15 @@
   <div class="ts-clouds">
     <div class="ts-cloud-bank ts-cloud-bank--near"></div>
     <div class="ts-cloud-bank ts-cloud-bank--far"></div>
+    {%- comment -%} 4b · the shape clouds (2026-07-13 Nate: "like when you are with a
+         friend pointing at clouds — 'that one looks like a rook'"). Two of them: a rook
+         and a dog, VAGUELY — soft puffs that only suggest the outline. Rare twice over:
+         each only exists on ~1 day in 4 (shape-rook / shape-dog, rolled from the same
+         day seed as the rest of the weather in town-weather.html, so the whole town
+         points at the same cloud), and within the day each spends half its long cycle
+         off-screen. Parked at left:100% so with animation off they simply never enter. {%- endcomment -%}
+    <i class="ts-cloud-shape ts-cloud--rook"></i>
+    <i class="ts-cloud-shape ts-cloud--dog"></i>
   </div>
 
   {%- comment -%} 5 · the far horizon: the town's own light, low and warm, along the foot of

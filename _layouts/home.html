@@ -409,12 +409,16 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
    extra elements, no falling pieces, no hero thump — cheap AND loud.) */
 .hero-title .ht-l { display:inline-block; }
 .hero-title.ht-run .ht-l { opacity:0; }
-.hero-title .ht-l.ht-in { animation:htIn .5s cubic-bezier(.2,1.35,.35,1) both; }
+/* (2026-07-13 Nate: "a little too bouncy — take the bounce down 33%". Every
+   bounce amplitude ×0.67: squash 0.94→0.96, rebound 1.03→1.02, the 3px/-2px
+   settle → 2px/-1.3px, and the easing's overshoot 1.35→1.23. The 48px fall
+   itself is untouched — it's the landing that calmed down, not the drop.) */
+.hero-title .ht-l.ht-in { animation:htIn .5s cubic-bezier(.2,1.23,.35,1) both; }
 @keyframes htIn {
   0%   { opacity:0; color:#fff8dc; transform:translateY(-48px) scale(1.6);
          text-shadow:0 0 24px rgba(245,197,24,0.95), 0 0 6px rgba(255,255,255,0.9); }
-  55%  { opacity:1; transform:translateY(3px) scale(0.94); }
-  78%  { color:#ffe27a; transform:translateY(-2px) scale(1.03);
+  55%  { opacity:1; transform:translateY(2px) scale(0.96); }
+  78%  { color:#ffe27a; transform:translateY(-1.3px) scale(1.02);
          text-shadow:0 0 10px rgba(245,197,24,0.4); }
   100% { opacity:1; color:#F5C518; transform:none; text-shadow:none; }
 }
