@@ -150,7 +150,7 @@ select id, email from auth.users order by created_at limit 5;
 Then (replace with YOUR id — the account whose codename is Mr. McPuppy):
 
 ```sql
-insert into public.match_config (creator_id) values ('PASTE-YOUR-UUID-HERE');
+insert into public.match_config (creator_id) values ('893bf6fe-4fe1-43b1-a272-50717d5a02f0');
 ```
 
 ## Step 3 — list the game
