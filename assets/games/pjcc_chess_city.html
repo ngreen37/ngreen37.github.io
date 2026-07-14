@@ -87,7 +87,7 @@
         <div class="tbtn" data-k="jump">▲</div>
       </div>
     </div>
-    <div class="pad-hint">← → move · ▲ jump · ● fire</div>
+    <div class="pad-hint">← → move · <b>Space</b> or <b>↑</b> jump · <b>X</b> fire — on touch: ▲ jump · ● fire</div>
   </div>
 
 <script>
@@ -116,11 +116,15 @@
     { x: 1010, y: GY, w: 790, h: 200 },
     { x: 1900, y: GY, w: 1100, h: 200 },
     { x: 3080, y: GY, w: 1120, h: 200 },
-    // floating platforms (thick enough not to tunnel)
-    { x: 560, y: 300, w: 120, h: 26 },
-    { x: 1180, y: 286, w: 140, h: 26 },
-    { x: 2050, y: 300, w: 120, h: 26 },
-    { x: 2680, y: 276, w: 150, h: 26 }
+    // floating platforms (thick enough not to tunnel).
+    // 2026-07-14 (Nate: "princess can't reach certain ledges"): jump physics cap the
+    // rise at v²/2g = 9.4²/(2·0.5) ≈ 88px above the ground (GY=384), so tops at
+    // y 276/286 were UNREACHABLE. All four now sit at 304–316 (66–80px rises) —
+    // clearly makeable with a full jump.
+    { x: 560, y: 316, w: 120, h: 26 },
+    { x: 1180, y: 310, w: 140, h: 26 },
+    { x: 2050, y: 316, w: 120, h: 26 },
+    { x: 2680, y: 304, w: 150, h: 26 }
   ];
   var SPAWNS = [
     { t: 'pawn', x: 380 }, { t: 'pawn', x: 432 }, { t: 'pawn', x: 484 },
@@ -176,6 +180,8 @@
     else if (k === 'arrowup' || k === 'w' || k === ' ') setKey('jump', false);
     else if (k === 'x' || k === 'j') setKey('fire', false);
   });
+  // fast state hook for the puppeteer harness (read-only; no gameplay effect)
+  window.__ccTest = { get player(){ return player; }, get shots(){ return shots; }, get state(){ return state; }, setKey: setKey };
   Array.prototype.forEach.call(document.querySelectorAll('.tbtn'), function (b) {
     var key = b.getAttribute('data-k');
     function down(e) { e.preventDefault(); setKey(key, true); }
@@ -327,7 +333,9 @@
     if (player.onGround) lastGroundX = player.x;
     if (player.y > H + 80) { hurtPlayer(1, player.x); if (player.hp > 0) { player.x = lastGroundX; player.y = GY - player.h - 4; player.vx = 0; player.vy = 0; } }
     player.fireCd -= dt;
-    if (K.fire && player.fireCd <= 0) { addShot(player.face > 0 ? player.x + player.w : player.x, player.y + 14, player.face * 7.4, 0, 'player'); player.fireCd = 270; sShoot(); }
+    // shots leave at HIP height (y+30), not chest (y+14) — chest-height rounds
+    // sailed a pixel over every pawn's head (2026-07-14, Nate: "fires OVER enemies")
+    if (K.fire && player.fireCd <= 0) { addShot(player.face > 0 ? player.x + player.w : player.x, player.y + 30, player.face * 7.4, 0, 'player'); player.fireCd = 270; sShoot(); }
     if (player.x > player.maxX) { score += Math.floor((player.x - player.maxX) / 10); player.maxX = player.x; }
 
     // enemies

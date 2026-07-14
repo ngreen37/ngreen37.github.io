@@ -30,7 +30,7 @@ canvas{display:block;width:100%;height:100%;}
     <div id="overlay" class="show">
       <h2>PJCC: FOLLOW THE DOG</h2>
       <div class="sub">— CHESS CITY INVITATIONAL —</div>
-      <p>The CEO hurls chess pieces at you.<br>Each piece forms a connected track.<br>Follow the dog — skate onto it and ride to the end.</p>
+      <p>It starts in the Chess City streets.<br>The CEO hurls chess pieces — each one lands as a track.<br>Follow the dog, jump piece to piece…<br>and don't stop when the road leaves the ground.</p>
       <button id="startBtn">ENGAGE</button>
     </div>
   </div>
@@ -193,6 +193,10 @@ document.addEventListener('keyup',e=>{keys[e.key]=false;});
 
 // ── PHYSICS ───────────────────────────────────────────────────────────────
 const GRAV=0.55,JUMP_V=6;
+// Princess skates like she does around the neighborhood (2026-07-14 Nate: jumps
+// "shorter and more fluid (slower)" — curbs and sticks, not moon-leaps): a lower
+// hop under lighter gravity = a low, floaty, practiced little arc.
+const PGRAV=0.30,PJUMP=3.4;
 
 function lerpX(laneT){return LANE_X[0]+laneT*(LANE_X[LANES-1]-LANE_X[0])/(LANES-1);}
 
@@ -290,7 +294,7 @@ function updatePrincess(){
   } else {pr.ridingGroup=null;pr.onPiece=false;}
 
   if(!pr.onPiece){
-    pr.vy-=GRAV;pr.groundY+=pr.vy;
+    pr.vy-=PGRAV;pr.groundY+=pr.vy;
     if(pr.groundY<=0&&pr.vy<=0){
       pr.groundY=0;pr.vy=0;
       const grp=segUnder(pr.laneT,pr.z);
@@ -298,10 +302,17 @@ function updatePrincess(){
     }
   }
 
+  // ONE hop per PIECE (2026-07-14 Nate): she used to bounce square to square; now
+  // she rides the whole piece and hops only as it runs out beneath her — the way
+  // you pop a curb at the end of the block, not every crack in the pavement.
   pr.jumpTimer--;
-  if(pr.onPiece&&best&&pr.jumpTimer<=0&&best.grp.segs[0]&&best.grp.segs[0].zStart>pr.z+80){
-    pr.vy=JUMP_V*0.8;pr.onPiece=false;pr.ridingGroup=null;pr.jumpTimer=22;
-    emit(pr.z,pr.targetLane,5,false);
+  if(pr.onPiece&&pr.jumpTimer<=0&&pr.ridingGroup){
+    const remaining=Math.max(...pr.ridingGroup.segs.map(s=>s.zStart))-pr.z;
+    const nextAhead=best&&best.grp!==pr.ridingGroup;
+    if(remaining<16&&nextAhead){
+      pr.vy=PJUMP;pr.onPiece=false;pr.ridingGroup=null;pr.jumpTimer=34;
+      emit(pr.z,pr.targetLane,5,false);
+    }
   }
 }
 
@@ -367,17 +378,57 @@ function emit(wz,lane,height,gold){
 function addText(txt,x,y,col,life){g.texts.push({txt,x,y:y||H*0.5,col,life,max:life});}
 
 // ── DRAW ──────────────────────────────────────────────────────────────────
+// The run STARTS in the Chess City streets and lifts into space (2026-07-14 Nate:
+// "early rounds in the Chess city streets, and then eventually get into space").
+// stageMix: 0 = streets (dusk sky, skyline, lit windows) → 1 = deep space.
+function stageMix(){
+  const d=g?g.dist:0;
+  return Math.max(0,Math.min(1,(d-200)/120));
+}
+// a deterministic skyline, built once per run
+function cityline(){
+  if(g.cityBld)return g.cityBld;
+  const b=[];let x=0,seed=9;
+  const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
+  while(x<1.05){const w=0.035+rnd()*0.06,h=0.05+rnd()*0.14;b.push({x,w,h,win:rnd()});x+=w+0.008;}
+  g.cityBld=b;return b;
+}
 function drawStars(){
-  ctx.fillStyle='#00000a';ctx.fillRect(0,0,W,H);
+  const m=stageMix(),hor=HORIZON();
+  // sky: warm street dusk cross-fades to void
+  if(m<1){
+    const sky=ctx.createLinearGradient(0,0,0,hor+40);
+    sky.addColorStop(0,'#181034');sky.addColorStop(0.7,'#2c1746');sky.addColorStop(1,'#4a2350');
+    ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+  } else {ctx.fillStyle='#00000a';ctx.fillRect(0,0,W,H);}
+  if(m>0){ctx.fillStyle=`rgba(0,0,10,${m})`;ctx.fillRect(0,0,W,H);}
+  // stars fade in as the streets fall away (a few faint ones show even at dusk)
   g.stars.forEach(s=>{
     s.sy+=s.spd*0.001;if(s.sy>1)s.sy=0;
-    const bright=s.sy;
+    const bright=s.sy*(0.15+0.85*m);
     ctx.fillStyle=`rgba(200,180,255,${bright*0.8})`;
     ctx.beginPath();ctx.arc(s.sx*W,s.sy*H,s.s,0,Math.PI*2);ctx.fill();
   });
+  // the Chess City skyline slides by until the road lifts off
+  if(m<1){
+    const a=1-m,off=((g.dist||0)*0.0012)%1;
+    ctx.globalAlpha=a;
+    cityline().forEach(bd=>{
+      let bx=bd.x-off;if(bx<-0.15)bx+=1.05+0.15;
+      const px=bx*W,pw=bd.w*W,ph=bd.h*H,py=hor-ph;
+      ctx.fillStyle='#0b0620';ctx.fillRect(px,py,pw,ph+6);
+      if(bd.win>0.3){ctx.fillStyle='rgba(255,211,107,0.5)';
+        for(let wy=py+6;wy<hor-4;wy+=9){for(let wx2=px+3;wx2<px+pw-3;wx2+=7){
+          if(((wx2*7+wy*13)|0)%5===0)ctx.fillRect(wx2,wy,2,3);
+        }}}
+    });
+    ctx.globalAlpha=1;
+  }
   const nb=ctx.createRadialGradient(W*0.5,H*0.2,0,W*0.5,H*0.2,W*0.5);
-  nb.addColorStop(0,'rgba(80,0,160,0.12)');nb.addColorStop(1,'rgba(0,0,0,0)');
+  nb.addColorStop(0,`rgba(80,0,160,${0.12*m})`);nb.addColorStop(1,'rgba(0,0,0,0)');
   ctx.fillStyle=nb;ctx.fillRect(0,0,W,H*0.5);
+  // the lift-off beat, once per run
+  if(m>0&&m<1&&!g.liftAnnounced){g.liftAnnounced=true;addText('◈ the road leaves the ground…',W/2,hor-44,'#F5C518',150);}
 }
 
 function drawGrid(){
