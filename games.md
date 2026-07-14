@@ -188,6 +188,27 @@ permalink: /games/
 .gdoor[data-grand="5"] .gdoor-door { transform:perspective(320px) rotateY(-15deg); }
 .gdoor[data-grand="5"] .gdoor-seam { height:5px; box-shadow:0 -3px 28px 7px color-mix(in srgb, var(--acc) 74%, transparent); }
 
+/* FLOOR ZERO (Nate 2026-07-13): before a single floor is cleared there is no door
+   at all — just a tattered cloth hung on a rod across the arch, hem torn ragged,
+   the light behind leaking through the tears. Still unmistakably a doorway.
+   (KEEP IN SYNC with the twin copy in _layouts/home.html.) */
+.gdoor[data-grand="0"] .gdoor-arch { border-color:rgba(245,197,24,0.38); box-shadow:0 0 18px -10px var(--acc); }
+.gdoor[data-grand="0"] .gdoor-door {
+  left:7px; right:7px; top:12px;
+  border:0; border-top:3px solid rgba(168,121,255,0.45);   /* the rod it hangs from */
+  border-radius:3px 3px 0 0;
+  background:
+    linear-gradient(100deg, rgba(0,0,0,0) 30%, rgba(0,0,0,0.25) 36%, rgba(0,0,0,0) 43%),
+    linear-gradient(84deg,  rgba(0,0,0,0) 62%, rgba(0,0,0,0.20) 68%, rgba(0,0,0,0) 75%),
+    linear-gradient(180deg, #37294f 0%, #221838 100%);
+  clip-path:polygon(0 0, 100% 0, 100% 72%, 89% 95%, 76% 76%, 63% 98%, 48% 79%, 34% 96%, 21% 78%, 10% 93%, 0 76%);
+}
+.gdoor[data-grand="0"] .gdoor-knob { display:none; }
+.gdoor[data-grand="0"] .gdoor-glyph { font-size:26px; opacity:0.7; filter:none; }
+.gdoor[data-grand="0"] .gdoor-seam { height:2px; box-shadow:0 -2px 10px 2px color-mix(in srgb, var(--acc) 38%, transparent); }
+.gdoor[data-grand="0"]:hover .gdoor-door,
+.gdoor[data-grand="0"]:focus-visible .gdoor-door { transform:skewX(-7deg) translateX(4px); }
+
 @media (prefers-reduced-motion: reduce){
   .ghub-doorway { animation:none; }
   .gdoor-pips i.cur { animation:none; }
