@@ -463,14 +463,13 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
 {% comment %} (the #16 title sheen removed 2026-07-11 — its mix-blend-mode forced an
      extra compositing pass and Nate cut it in the lag sweep. The ♛-crowning finale
      + #15 shop light went 2026-07-10. Restore any from git.) {% endcomment %}
-/* #20 — the veil (you were never meant to see this rule) */
+/* #20 — the veil (you were never meant to see this rule).
+   2026-07-14 (Nate): the rotating conic light that spun during the katakana flip
+   — his "light-up rotating squares" — is gone; too much animation for a whisper
+   of an egg. The flip keeps only this soft violet wash in and out. */
 .puri-veil { position:fixed; inset:0; z-index:12000; pointer-events:none; opacity:0; transition:opacity .48s ease;
   background:radial-gradient(circle at 50% 42%, rgba(124,77,255,0.34), rgba(10,7,20,0) 62%); }
-.puri-veil::before { content:''; position:absolute; inset:-40%; border-radius:50%; mix-blend-mode:screen;
-  background:conic-gradient(from 0deg, rgba(245,197,24,0.13), rgba(124,77,255,0.2), rgba(91,224,192,0.12), rgba(245,197,24,0.13));
-  animation:puriSpin 1.4s linear infinite; }
 .puri-veil.is-on { opacity:1; }
-@keyframes puriSpin { to { transform:rotate(360deg); } }
 </style>
 
 <script>

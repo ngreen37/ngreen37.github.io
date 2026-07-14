@@ -314,7 +314,7 @@
 .ticker-track {
   display: inline-block;
   white-space: nowrap;
-  animation: ticker-scroll 155s linear infinite;
+  animation: ticker-scroll 170s linear infinite;  /* 155s → 170s = 10% slower (Nate 2026-07-14) */
   will-change: transform;
 }
 

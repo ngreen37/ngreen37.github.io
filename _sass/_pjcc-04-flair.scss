@@ -202,20 +202,23 @@ body.theme-bw .page-body em {
    dropouts, then clean again. `visibility` only flips ON a keyframe (any interval
    with a `visible` endpoint reads visible the whole way), so each dropout needs a
    PAIR of hidden keyframes to actually hold — hence the tight duplicates. */
+/* (2026-07-14 Nate: "the flickering i is GREAT. make the flickers 25% subtler" —
+   every dropout window below is 25% shorter than it was; the clean stretches and
+   the burst rhythm are untouched.) */
 @keyframes tgx-radio {
-  0%,    26.0%  { visibility: visible; }
-  26.1%, 26.5%  { visibility: hidden; }
-  26.6%, 27.3%  { visibility: visible; }
-  27.4%, 27.6%  { visibility: hidden; }
-  27.7%, 57.0%  { visibility: visible; }
-  57.1%, 57.3%  { visibility: hidden; }
-  57.4%, 58.1%  { visibility: visible; }
-  58.2%, 58.9%  { visibility: hidden; }
-  59.0%, 59.4%  { visibility: visible; }
-  59.5%, 59.7%  { visibility: hidden; }
-  59.8%, 88.4%  { visibility: visible; }
-  88.5%, 88.8%  { visibility: hidden; }
-  88.9%, 100%   { visibility: visible; }
+  0%,     26.0%  { visibility: visible; }
+  26.1%,  26.4%  { visibility: hidden; }
+  26.5%,  27.3%  { visibility: visible; }
+  27.4%,  27.55% { visibility: hidden; }
+  27.65%, 57.0%  { visibility: visible; }
+  57.1%,  57.25% { visibility: hidden; }
+  57.35%, 58.1%  { visibility: visible; }
+  58.2%,  58.72% { visibility: hidden; }
+  58.82%, 59.4%  { visibility: visible; }
+  59.5%,  59.65% { visibility: hidden; }
+  59.75%, 88.4%  { visibility: visible; }
+  88.5%,  88.72% { visibility: hidden; }
+  88.82%, 100%   { visibility: visible; }
 }
 /* hovering steadies the signal — you found it, it stops hiding */
 .tagline-main-tagline .tg-x:hover .tg-x-glyph,
@@ -369,49 +372,59 @@ body.theme-bw .ribbon-track {
   cursor: pointer;
   transition: color 0.3s;
 
-  &:nth-child(1) {
+  /* Order matches the markup in studio-home.html (2026-07-14 rewire):
+     1 ♛ Princess · 2 ♞ Games · 3 ♜ Academy · 4 ¶ Blog · 5 あ Reading Room ·
+     6 将 Shogi Isle · 7 ♟ Park Tables · 8 ✦ /classified/ (#drift-secret, own rule). */
+  &:nth-child(1) {          /* ♛ → Princess */
     left: 7%;
     bottom: 12%;
     font-size: 64px;
     color: rgba(245, 197, 24, 0.11);
     animation-delay: 0s;
   }
-  &:nth-child(2) {
+  &:nth-child(2) {          /* ♞ → the games hall (−15% 2026-07-14) */
     left: 71%;
     bottom: 22%;
     font-size: 52px;
-    color: rgba(160, 100, 255, 0.10);
+    color: rgba(160, 100, 255, 0.085);
     animation-delay: 13s;
   }
-  &:nth-child(3) {
+  &:nth-child(3) {          /* ♜ → the Academy (−15%) */
     left: 38%;
     bottom: 7%;
     font-size: 58px;
-    color: rgba(245, 197, 24, 0.09);
+    color: rgba(245, 197, 24, 0.077);
     animation-delay: 26s;
   }
-  &:nth-child(4) {
+  &:nth-child(4) {          /* ¶ → the blog (−15%) */
     left: 83%;
     bottom: 16%;
     font-size: 53px;
-    color: rgba(200, 200, 200, 0.09);
+    color: rgba(200, 200, 200, 0.077);
     animation-delay: 7s;
   }
-  &:nth-child(5) {
+  &:nth-child(5) {          /* あ → the Reading Room (−25% 2026-07-14) */
     left: 17%;
     bottom: 28%;
     font-size: 42px;
-    color: rgba(200, 200, 200, 0.072);   /* secret star — dimmed 10% */
+    color: rgba(200, 200, 200, 0.054);
     animation-delay: 19s;
   }
-  &:nth-child(6) {   /* 将 — Shogi Island: parked in the right gutter so it clears the
-                        centred (solid-black) content panel and reads like the あ drifter. */
+  &:nth-child(6) {   /* 将 — Shogi Island (−25%): parked in the right gutter so it clears
+                        the centred (solid-black) content panel and reads like the あ drifter. */
     left: 89%;
     bottom: 40%;
     font-size: 40px;
-    color: rgba(255, 180, 40, 0.13);
+    color: rgba(255, 180, 40, 0.098);
     animation: piece-drift 46s linear infinite;
     animation-delay: 5s;
+  }
+  &:nth-child(7) {          /* ♟ → the Park Tables (new 2026-07-14; park green) */
+    left: 55%;
+    bottom: 32%;
+    font-size: 44px;
+    color: rgba(107, 255, 184, 0.10);
+    animation-delay: 31s;
   }
 
   &:hover {

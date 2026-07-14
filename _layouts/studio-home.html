@@ -46,13 +46,19 @@
          coloured glow from that quad's corner. Toggled by the console JS below. {% endcomment %}
     <div class="studio-lean" id="studio-lean" aria-hidden="true"></div>
 
+    {% comment %} 2026-07-14 (Nate): every drifter now leads somewhere true — the QUEEN
+         to Princess (it went to Locations, which read as nowhere), the KNIGHT to the
+         games hall, the ROOK to the PJCC Chess Academy, the ¶ to the blog (the ✍
+         pen-in-hand is retired), and a NEW ♟ to the Park Tables. Positions/dims live
+         in _pjcc-04-flair.scss nth-child rules — markup ORDER is load-bearing. {% endcomment %}
     <div class="studio-drifters">
-      <a href="{{ '/characters/princess/' | relative_url }}" class="drift-piece" aria-label="Princess character page">♞</a>
-      <a href="{{ '/locations/' | relative_url }}" class="drift-piece" aria-label="Locations">♛</a>
-      <a href="{{ '/characters/' | relative_url }}" class="drift-piece" aria-label="All characters">♜</a>
-      <a href="{{ '/blog/' | relative_url }}" class="drift-piece" aria-label="Blog">✍</a>
+      <a href="{{ '/characters/princess/' | relative_url }}" class="drift-piece" aria-label="Princess character page">♛</a>
+      <a href="{{ '/games/' | relative_url }}" class="drift-piece" aria-label="The games hall">♞</a>
+      <a href="{{ '/academy/' | relative_url }}" class="drift-piece" aria-label="PJCC Chess Academy">♜</a>
+      <a href="{{ '/blog/' | relative_url }}" class="drift-piece" aria-label="Blog">¶</a>
       <a href="{{ '/games/reading-room/' | relative_url }}" class="drift-piece" aria-label="The Reading Room 読書室">あ</a>
       <a href="{{ '/games/shogi-island/' | relative_url }}" class="drift-piece" aria-label="Shogi Island 将棋の島">将</a>
+      <a href="{{ '/games/park-tables/' | relative_url }}" class="drift-piece" aria-label="The Park Tables — play a human, or the Creator">♟</a>
       <a href="{{ '/classified/' | relative_url }}" class="drift-piece" id="drift-secret" aria-label="???">✦</a>
     </div>
 
@@ -176,7 +182,9 @@
 
       {% comment %} Formal studio footer — minimal; replaces the old creed line. {% endcomment %}
       <footer class="studio-footer">
-        <b>McPuppy&nbsp;Studios</b> &middot; &copy; {{ site.time | date: "%Y" }} &middot; <span class="studio-footer-sig">a million stories, built in the open</span> &middot; <span data-jp="不許複製・禁無断転載">all rights reserved</span>
+        {%- comment -%} 2026-07-14 (Nate): "cut it at 2026" — the built-in-the-open sig
+             is gone; the line ends at the year plus all-rights. {%- endcomment -%}
+        <b>McPuppy&nbsp;Studios</b> &middot; &copy; {{ site.time | date: "%Y" }} &middot; <span data-jp="不許複製・禁無断転載">all rights reserved</span>
       </footer>
       <script>
         // June 13. No announcement.
@@ -287,7 +295,7 @@
   #drift-secret {
     left:auto; bottom:auto; right:-8%; top:34%;
     font-size:28px;
-    color:rgba(205,205,230,0.06);          /* dimmer than every other drifter */
+    color:rgba(205,205,230,0.054);         /* dimmer than every other drifter (−10% again, 2026-07-14) */
     opacity:0;
     animation:none;
     will-change:transform;
@@ -302,16 +310,17 @@
   /* transform is declared only at the two ends of the flight, so it interpolates in
      ONE straight linear segment = genuinely constant speed.
      The crossing is the first slice of the 48s loop, so its SPEED is set by how much of the
-     loop it gets. History: 25% of 48s = 12.0s → 7.5% slower = 27% (12.97s) → and now
-     (2026-07-13, "slow the star down 10%") 12.97/0.9 ≈ 14.4s = 30% of the loop.
+     loop it gets. History: 25% of 48s = 12.0s → 7.5% slower = 27% (12.97s) →
+     2026-07-13 ("slow the star down 10%") 14.4s = 30% → and now (2026-07-14, another
+     10%) 14.4/0.9 = 16.0s = 33.3% of the loop.
      The 48s repeat is deliberately left alone — that's the wait BETWEEN passes, not the
      star's speed, and this is the only door to /classified/. */
   @keyframes secret-fly {
-    0%   { transform:translateX(0);              opacity:0; }
-    1%   { opacity:1; }
-    29%  { opacity:1; }
-    30%  { transform:translateX(calc(-120vw));   opacity:0; }
-    100% { transform:translateX(calc(-120vw));   opacity:0; }
+    0%    { transform:translateX(0);              opacity:0; }
+    1%    { opacity:1; }
+    32.3% { opacity:1; }
+    33.3% { transform:translateX(calc(-120vw));   opacity:0; }
+    100%  { transform:translateX(calc(-120vw));   opacity:0; }
   }
 
   /* Idea #3 — the sigil bloom (the "ACCcccccc" carving that flashes on entry).
@@ -330,11 +339,13 @@
          (0.42s) so it lands as a flash, not a swell — that's the "clearly pop-up".
          Two transitions, because the .is-bloom rule supplies the timing on the way
          in and the base rule supplies it on the way out. */
+  /* 2026-07-14 (Nate): the sigil bloom, quieter again — 33% smaller (1.8→1.2rem),
+     15% dimmer (0.145→0.123), and the fade-out 25% faster (0.792→0.594s). */
   .studio-drift-sigil { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.96);
     z-index:6; pointer-events:none; opacity:0; filter:drop-shadow(0 0 16px rgba(245,197,24,0.28));
-    transition:opacity 0.792s ease, transform 0.792s ease; }
-  .studio-drift-sigil .pjcc-sigil { font-size:1.8rem; }
-  .studio-drift-sigil.is-bloom { opacity:0.145; transform:translate(-50%,-50%) scale(1.0);
+    transition:opacity 0.594s ease, transform 0.594s ease; }
+  .studio-drift-sigil .pjcc-sigil { font-size:1.2rem; }
+  .studio-drift-sigil.is-bloom { opacity:0.123; transform:translate(-50%,-50%) scale(1.0);
     transition:opacity 0.42s ease-out, transform 0.42s ease-out; }
 
   /* THE GATE. `splash-seq` is set on <html> by the script below, so this only ever
@@ -410,7 +421,7 @@
     .studio-corner-img { height:44px; }
     .studio-corner-logo { top:14px; left:14px; }
     .studio-replay { left:12px; bottom:12px; font-size:9px; }
-    .studio-drift-sigil .pjcc-sigil { font-size:1.7rem; }
+    .studio-drift-sigil .pjcc-sigil { font-size:1.15rem; }
   }
 
   /* Short / landscape phones — also drop the tagline and tighten the quads so it
@@ -455,7 +466,7 @@
         var iv = setInterval(function() {
           el.textContent += text[i]; i++;
           if (i >= text.length) { clearInterval(iv); if (cb) cb(); }
-        }, 32);
+        }, 16);   /* 32→16ms/char — the whole cold-open halved (Nate 2026-07-14) */
         timers.push(function(){ clearInterval(iv); });
       }, delay);
     }
@@ -471,8 +482,8 @@
       document.getElementById('t-headline').classList.add('is-visible');
       later(function() {
         document.getElementById('t-sub').classList.add('is-visible');
-        later(dismiss, 2200);
-      }, 400);
+        later(dismiss, 1100);
+      }, 200);
     }
 
     // Reset to a clean slate so the cold-open can replay on demand.
@@ -489,10 +500,10 @@
       reset();
       // Reduced motion: skip the typing, just reveal the headline, then dismiss.
       if (reduce) { later(reveal, 200); return; }
-      type('t1', 'SIGNAL ACQUIRED FROM: ████████████', 300, function() {
-        type('t2', 'ORIGIN: INTERPLANETARY CONSTRUCTION CO.', 200, function() {
-          type('t3', 'DECRYPTING TRANSMISSION…', 200, function() {
-            later(reveal, 600);
+      type('t1', 'SIGNAL ACQUIRED FROM: ████████████', 150, function() {
+        type('t2', 'ORIGIN: INTERPLANETARY CONSTRUCTION CO.', 100, function() {
+          type('t3', 'DECRYPTING TRANSMISSION…', 100, function() {
+            later(reveal, 300);
           });
         });
       });
@@ -588,7 +599,8 @@
       var seen = false; try { seen = !!localStorage.getItem('mcpuppy_seen'); } catch (e) {}
       // On a first visit, wait out the cold-open — otherwise the whole beat plays
       // behind an opaque overlay and the visitor arrives to a finished stage.
-      var firstDelay = seen ? 260 : 8800;
+      // (Cold-open halved 2026-07-14: ~8.6s → ~4.4s, so this waits 4400 now.)
+      var firstDelay = seen ? 260 : 4400;
 
       setTimeout(function () {
         bloom();
@@ -608,13 +620,13 @@
     // Secret ✦ is ARMED here; the CSS then holds it off-screen for 7s before the first
     // crossing (right → behind the quads → off the left edge, constant speed, every 48s).
     // We only arm it once the page is actually visible: on a first visit that means AFTER
-    // the ~8.6s cold-open clears (otherwise the first pass is wasted behind the overlay);
-    // on a return visit, immediately — so the star enters ~7s in, which is the beat Nate
-    // asked for. Parked off-screen in CSS until .is-in starts the loop.
+    // the ~4.4s cold-open clears (halved 2026-07-14; otherwise the first pass is wasted
+    // behind the overlay); on a return visit, immediately — so the star enters ~7s in,
+    // which is the beat Nate asked for. Parked off-screen in CSS until .is-in starts.
     var star = document.getElementById('drift-secret');
     if (star && !reduce) {
       var seenStar = false; try { seenStar = !!localStorage.getItem('mcpuppy_seen'); } catch (e) {}
-      setTimeout(function () { star.classList.add('is-in'); }, seenStar ? 400 : 8800);
+      setTimeout(function () { star.classList.add('is-in'); }, seenStar ? 400 : 4400);
     }
   })();
   </script>
