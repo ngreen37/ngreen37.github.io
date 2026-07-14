@@ -214,33 +214,75 @@ html.sky-night .ts-shoot--3 { top: 22%; left: 92%; animation: ts-shoot-fall 67s 
   width: 200%; height: 100%;
   will-change: transform;
 }
+/* ── 2026-07-13 (Nate: "make the clouds a little more Cloud-like") ─────────────
+   Each cloud used to be ONE lone ellipse, which reads as a smudge, not a cloud. A cloud
+   has ANATOMY: a wide flat-bottomed base with two or three domed lumps bumping out of
+   its top. So each cloud is now a CLUSTER of four radial-gradients — base + three domes,
+   the middle dome tallest. Still one static background painted once and slid by
+   transform, so the perf story is unchanged.
+
+   Also fixed while in here: the old puff positions did NOT actually repeat between the
+   two halves of the 200%-wide bank, despite the comment below claiming they did — so
+   every 190s the deck jumped subtly at the loop seam. Every cluster in [0–50%] now has
+   an exact twin at +50%, which is what makes the -50% slide truly seamless. */
 .ts-cloud-bank--near {
   background:
-    radial-gradient(90px  26px at 6%  22%, rgba(255,255,255,0.55), transparent 72%),
-    radial-gradient(130px 34px at 17% 58%, rgba(255,255,255,0.45), transparent 74%),
-    radial-gradient(70px  22px at 27% 12%, rgba(255,255,255,0.38), transparent 72%),
-    radial-gradient(150px 38px at 36% 76%, rgba(255,255,255,0.50), transparent 74%),
-    radial-gradient(100px 28px at 45% 34%, rgba(255,255,255,0.42), transparent 72%),
-    radial-gradient(120px 32px at 56% 66%, rgba(255,255,255,0.46), transparent 74%),
-    radial-gradient(80px  24px at 66% 18%, rgba(255,255,255,0.40), transparent 72%),
-    radial-gradient(140px 34px at 76% 48%, rgba(255,255,255,0.44), transparent 74%),
-    radial-gradient(95px  26px at 88% 80%, rgba(255,255,255,0.38), transparent 72%),
-    radial-gradient(110px 30px at 96% 30%, rgba(255,255,255,0.42), transparent 74%);
+    /* cloud A @ 8% 24%  (base + 3 domes) — twin at 58% */
+    radial-gradient(120px 26px at 8%  24%, rgba(255,255,255,0.48), transparent 70%),
+    radial-gradient(46px  34px at 6.5% 21.8%, rgba(255,255,255,0.44), transparent 66%),
+    radial-gradient(60px  46px at 8.2% 21%, rgba(255,255,255,0.50), transparent 66%),
+    radial-gradient(40px  28px at 10%  22.2%, rgba(255,255,255,0.40), transparent 66%),
+    radial-gradient(120px 26px at 58% 24%, rgba(255,255,255,0.48), transparent 70%),
+    radial-gradient(46px  34px at 56.5% 21.8%, rgba(255,255,255,0.44), transparent 66%),
+    radial-gradient(60px  46px at 58.2% 21%, rgba(255,255,255,0.50), transparent 66%),
+    radial-gradient(40px  28px at 60%  22.2%, rgba(255,255,255,0.40), transparent 66%),
+    /* cloud B @ 21% 60% — bigger, lower — twin at 71% */
+    radial-gradient(160px 32px at 21% 60%, rgba(255,255,255,0.46), transparent 70%),
+    radial-gradient(64px  48px at 19.5% 57.4%, rgba(255,255,255,0.48), transparent 66%),
+    radial-gradient(80px  60px at 22%  56.6%, rgba(255,255,255,0.52), transparent 66%),
+    radial-gradient(52px  36px at 24.2% 57.8%, rgba(255,255,255,0.42), transparent 66%),
+    radial-gradient(160px 32px at 71% 60%, rgba(255,255,255,0.46), transparent 70%),
+    radial-gradient(64px  48px at 69.5% 57.4%, rgba(255,255,255,0.48), transparent 66%),
+    radial-gradient(80px  60px at 72%  56.6%, rgba(255,255,255,0.52), transparent 66%),
+    radial-gradient(52px  36px at 74.2% 57.8%, rgba(255,255,255,0.42), transparent 66%),
+    /* cloud C @ 34% 38% — small and high — twin at 84% */
+    radial-gradient(95px  22px at 34% 38%, rgba(255,255,255,0.40), transparent 70%),
+    radial-gradient(42px  30px at 32.8% 35.8%, rgba(255,255,255,0.40), transparent 66%),
+    radial-gradient(52px  38px at 34.4% 35.2%, rgba(255,255,255,0.44), transparent 66%),
+    radial-gradient(95px  22px at 84% 38%, rgba(255,255,255,0.40), transparent 70%),
+    radial-gradient(42px  30px at 82.8% 35.8%, rgba(255,255,255,0.40), transparent 66%),
+    radial-gradient(52px  38px at 84.4% 35.2%, rgba(255,255,255,0.44), transparent 66%),
+    /* cloud D @ 45% 79% — low roller — twin at 95% */
+    radial-gradient(150px 30px at 45% 79%, rgba(255,255,255,0.44), transparent 70%),
+    radial-gradient(58px  42px at 43.4% 76.4%, rgba(255,255,255,0.46), transparent 66%),
+    radial-gradient(72px  54px at 45.8% 75.6%, rgba(255,255,255,0.48), transparent 66%),
+    radial-gradient(46px  32px at 47.8% 77%, rgba(255,255,255,0.38), transparent 66%),
+    radial-gradient(150px 30px at 95% 79%, rgba(255,255,255,0.44), transparent 70%),
+    radial-gradient(58px  42px at 93.4% 76.4%, rgba(255,255,255,0.46), transparent 66%),
+    radial-gradient(72px  54px at 95.8% 75.6%, rgba(255,255,255,0.48), transparent 66%),
+    radial-gradient(46px  32px at 97.8% 77%, rgba(255,255,255,0.38), transparent 66%);
   animation: ts-drift-near 190s linear infinite;
 }
 .ts-cloud-bank--far {
   opacity: 0.6;
   background:
-    radial-gradient(160px 30px at 11% 44%, rgba(255,255,255,0.34), transparent 74%),
-    radial-gradient(110px 24px at 24% 84%, rgba(255,255,255,0.28), transparent 72%),
-    radial-gradient(180px 36px at 41% 26%, rgba(255,255,255,0.32), transparent 74%),
-    radial-gradient(130px 28px at 58% 90%, rgba(255,255,255,0.26), transparent 72%),
-    radial-gradient(170px 34px at 72% 60%, rgba(255,255,255,0.30), transparent 74%),
-    radial-gradient(120px 26px at 90% 14%, rgba(255,255,255,0.26), transparent 72%);
+    /* far clouds: longer, flatter, one soft dome — haze with a hint of shape */
+    radial-gradient(180px 26px at 11% 46%, rgba(255,255,255,0.30), transparent 72%),
+    radial-gradient(76px  40px at 12%  43.6%, rgba(255,255,255,0.30), transparent 66%),
+    radial-gradient(180px 26px at 61% 46%, rgba(255,255,255,0.30), transparent 72%),
+    radial-gradient(76px  40px at 62%  43.6%, rgba(255,255,255,0.30), transparent 66%),
+    radial-gradient(150px 24px at 27% 86%, rgba(255,255,255,0.26), transparent 72%),
+    radial-gradient(62px  34px at 28%  83.6%, rgba(255,255,255,0.26), transparent 66%),
+    radial-gradient(150px 24px at 77% 86%, rgba(255,255,255,0.26), transparent 72%),
+    radial-gradient(62px  34px at 78%  83.6%, rgba(255,255,255,0.26), transparent 66%),
+    radial-gradient(200px 30px at 42% 22%, rgba(255,255,255,0.28), transparent 72%),
+    radial-gradient(84px  44px at 43.5% 19.4%, rgba(255,255,255,0.28), transparent 66%),
+    radial-gradient(200px 30px at 92% 22%, rgba(255,255,255,0.28), transparent 72%),
+    radial-gradient(84px  44px at 93.5% 19.4%, rgba(255,255,255,0.28), transparent 66%);
   animation: ts-drift-far 320s linear infinite;
 }
-/* each bank is 200% wide and carries the same puffs across both halves, so sliding it
-   exactly -50% lands it back where it started — a seamless loop with one keyframe. */
+/* each bank is 200% wide and every cluster in [0–50%] has an exact twin at +50%, so
+   sliding -50% lands it back where it started — a seamless loop with one keyframe. */
 @keyframes ts-drift-near { to { transform: translate3d(-50%, 0, 0); } }
 @keyframes ts-drift-far  { to { transform: translate3d(-50%, 0, 0); } }
 

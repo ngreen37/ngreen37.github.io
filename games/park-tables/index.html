@@ -1,0 +1,305 @@
+---
+layout: page
+title: "The Park Tables"
+permalink: /games/park-tables/
+description: "Correspondence chess in the Checker Town park — play another operative, or challenge McPuppy himself. Real rules, preset phrases only."
+---
+
+{% comment %} ══════════════════════════════════════════════════════════════════════
+     THE PARK TABLES — player-vs-player chess (2026-07-13, Nate: "let's build
+     matchmaking. Both for other users and match-up against me").
+
+     One system, not two: CORRESPONDENCE over Supabase, polled every ~4s while the tab
+     is open. Two people online = feels live; a move a day = works identically. The
+     server (SECURITY DEFINER functions, docs/park-tables-setup.md) enforces seat/turn/
+     claim; the perft-verified PJCCChess engine in every client enforces legality by
+     replaying the whole move list on load.
+
+     Chat is EIGHT PRESET PHRASES (PJCCMatch.EMOTES) — no typed text anywhere, which is
+     the entire child-safety story.
+
+     NATE-GATED: dark until docs/park-tables-setup.md is run (the page then says the
+     tables are being set up); listed in the Arcade by uncommenting one line in
+     assets/js/pjcc-games-data.js.
+     ══════════════════════════════════════════════════════════════════════ {% endcomment %}
+
+<p class="pt-lead">Park benches, stone boards, no clocks. Play another operative — or leave
+a challenge for <b>McPuppy</b> and he'll play you back. It's your move whenever you visit;
+a move a day is plenty.</p>
+
+<div id="pt-app"><p class="lb-empty">Setting up the tables…</p></div>
+
+<script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-chess.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-match.js' | relative_url }}"></script>
+<script>
+(function () {
+  'use strict';
+  var C = window.PJCCChess, M = window.PJCCMatch;
+  var app = document.getElementById('pt-app');
+  var GLYPH = { P:'♙',N:'♘',B:'♗',R:'♖',Q:'♕',K:'♔', p:'♟',n:'♞',b:'♝',r:'♜',q:'♛',k:'♚' };
+  var timer = null, creatorId = null;
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function stopPolling(){ if (timer) { clearTimeout(timer); timer = null; } }
+  function uid(){ var u = PJCC.currentUser(); return u ? u.id : null; }
+
+  /* ── LOBBY ─────────────────────────────────────────────────────────────── */
+  function lobby(){
+    stopPolling();
+    if (!PJCC.enabled || !M.ready()) {
+      app.innerHTML = '<p class="lb-empty">The park is offline right now — the games in the <a href="/games/">Arcade</a> still work.</p>'; return;
+    }
+    if (!uid() || !PJCC.getProfile()) {
+      app.innerHTML = '<div class="pt-gate"><p>You need a codename to sit at a table.</p>' +
+        '<a class="pjcc-btn" href="/dossier/">Sign in at the Dossier ▸</a></div>'; return;
+    }
+    app.innerHTML = '<p class="lb-empty">Walking to the park…</p>';
+    Promise.all([M.openTables(), M.myTables(uid()), M.creatorId(), M.myFinished(uid())]).then(function (r) {
+      var open = r[0], mine = r[1]; creatorId = r[2];
+      if (open.missing || mine.missing) {
+        app.innerHTML = '<p class="lb-empty">The tables are being set up — check back soon.</p>'; return;
+      }
+      var me = uid(), iAmCreator = creatorId && me === creatorId;
+      var html = '<div class="pt-actions">' +
+        '<button class="pjcc-btn" id="pt-new-creator">♛ Challenge McPuppy</button>' +
+        '<button class="pjcc-btn-ghost" id="pt-new-open">⚔ Open a table</button></div>';
+
+      var minesH = mine.rows.map(function (m) {
+        var white = m.white === me, oppName = white ? (m.black_name || (m.vs_creator ? 'waiting for McPuppy…' : 'waiting for a challenger…')) : m.white_name;
+        var myTurn = m.status === 'active' && ((m.fen.split(' ')[1] === 'w') === white);
+        return '<button class="pt-row" data-open="' + m.id + '">' +
+          '<span class="pt-row-vs">' + (white ? '⬜' : '⬛') + ' vs <b>' + esc(oppName) + '</b></span>' +
+          '<span class="pt-row-state ' + (myTurn ? 'go' : '') + '">' +
+          (m.status === 'open' ? 'OPEN' : myTurn ? 'YOUR MOVE' : 'their move') + '</span></button>';
+      }).join('');
+      html += '<h2 class="pt-h">Your tables</h2>' + (minesH || '<p class="lb-empty">None yet — open one above.</p>');
+
+      var claimable = open.rows.filter(function (m) {
+        if (m.white === me) return false;
+        return m.vs_creator ? iAmCreator : true;
+      });
+      var openH = claimable.map(function (m) {
+        return '<button class="pt-row" data-claim="' + m.id + '">' +
+          '<span class="pt-row-vs">' + (m.vs_creator ? '♛ ' : '') + '<b>' + esc(m.white_name) + '</b> is waiting</span>' +
+          '<span class="pt-row-state go">SIT DOWN</span></button>';
+      }).join('');
+      html += '<h2 class="pt-h">' + (iAmCreator ? 'Waiting for the Creator' : 'Open tables') + '</h2>' +
+        (openH || '<p class="lb-empty">No open seats right now — leave a table open and someone will find it.</p>');
+
+      if (r[3].rows.length) {
+        html += '<h2 class="pt-h">Finished</h2>' + r[3].rows.map(function (m) {
+          var white = m.white === me;
+          var won = (m.result === '1-0' && white) || (m.result === '0-1' && !white);
+          return '<div class="pt-row pt-row-done"><span class="pt-row-vs">vs <b>' +
+            esc(white ? m.black_name : m.white_name) + '</b></span><span class="pt-row-state">' +
+            (m.result === '1/2-1/2' ? 'draw' : won ? '✓ won' : 'lost') + ' · ' + esc(m.win_reason || '') + '</span></div>';
+        }).join('');
+      }
+      app.innerHTML = html;
+
+      document.getElementById('pt-new-creator').onclick = function(){ newTable(true); };
+      document.getElementById('pt-new-open').onclick = function(){ newTable(false); };
+      Array.prototype.forEach.call(app.querySelectorAll('[data-open]'), function (b) {
+        b.onclick = function(){ openTable(b.getAttribute('data-open')); };
+      });
+      Array.prototype.forEach.call(app.querySelectorAll('[data-claim]'), function (b) {
+        b.onclick = function(){
+          b.disabled = true;
+          M.claim(b.getAttribute('data-claim')).then(function(){ openTable(b.getAttribute('data-claim')); })
+            .catch(function(e){ b.disabled = false; toast(e.message); lobby(); });
+        };
+      });
+      timer = setTimeout(lobby, 20000);          // quiet lobby refresh
+    });
+  }
+
+  function newTable(vsCreator){
+    app.innerHTML = '<p class="lb-empty">Setting up the board…</p>';
+    M.create(vsCreator).then(function(id){ openTable(id); })
+      .catch(function(e){ toast(e.message); lobby(); });
+  }
+
+  /* ── TABLE (one game) ──────────────────────────────────────────────────── */
+  var cur = null, sel = -1, lastEmoteSeen = '';
+
+  function openTable(id){
+    stopPolling(); sel = -1;
+    M.get(id).then(function (m) {
+      if (!m) { toast('That table is gone.'); return lobby(); }
+      cur = m; renderTable(); schedulePoll();
+    });
+  }
+
+  function schedulePoll(){
+    stopPolling();
+    if (!cur || cur.status === 'done') return;
+    var g = M.replayGame(cur.moves);
+    var white = cur.white === uid();
+    var myTurn = cur.status === 'active' && g.valid && ((g.S.turn === 'w') === white);
+    timer = setTimeout(function () {
+      M.get(cur.id).then(function (m) {
+        if (!m) return;
+        var changed = !cur || m.moves !== cur.moves || m.status !== cur.status ||
+          m.emote_w_at !== cur.emote_w_at || m.emote_b_at !== cur.emote_b_at;
+        cur = m;
+        if (changed) renderTable();
+        schedulePoll();
+      });
+    }, myTurn ? 12000 : 4000);   // fast while waiting on them; lazy when it's on you
+  }
+
+  function renderTable(){
+    var m = cur, me = uid(), white = m.white === me;
+    var g = M.replayGame(m.moves);
+    if (!g.valid) {
+      app.innerHTML = '<div class="pt-gate"><p>This game record is damaged — the referee is voiding the table.</p>' +
+        '<button class="pjcc-btn-ghost" id="pt-back">← Back to the park</button></div>';
+      document.getElementById('pt-back').onclick = lobby;
+      if (m.status !== 'done') M.finish(m.id, '1/2-1/2', 'voided').catch(function(){});
+      return;
+    }
+    var S = g.S;
+    var myTurn = m.status === 'active' && ((S.turn === 'w') === white);
+    var oppName = white ? (m.black_name || (m.vs_creator ? 'McPuppy (not seated yet)' : 'an open seat')) : m.white_name;
+
+    // status line
+    var state;
+    if (m.status === 'open') state = m.vs_creator ? 'Challenge left for McPuppy — he\'ll play back. Check in later.' : 'Table is open — waiting for a challenger.';
+    else if (m.status === 'done') state = 'Finished: ' + m.result + (m.win_reason ? ' · ' + esc(m.win_reason) : '');
+    else if (g.result) state = 'Position is final — closing the table…';
+    else state = myTurn ? 'Your move.' : 'Their move — this page checks by itself.';
+
+    // board (flipped for black)
+    var rows = '';
+    for (var vr = 0; vr < 8; vr++) {
+      for (var vf = 0; vf < 8; vf++) {
+        var r = white ? vr : 7 - vr, f = white ? vf : 7 - vf, i = r * 8 + f;
+        var p = S.b[i];
+        rows += '<button class="pt-sq ' + (((r + f) % 2 === 0) ? 'lt' : 'dk') + (i === sel ? ' sel' : '') +
+          '" data-sq="' + i + '"' + (myTurn ? '' : ' tabindex="-1"') + '>' +
+          (p ? '<span class="pt-pc ' + (p === p.toUpperCase() ? 'w' : 'b') + '">' + GLYPH[p] + '</span>' : '') + '</button>';
+      }
+    }
+
+    // move list, paired
+    var mvs = '';
+    for (var k = 0; k < g.sans.length; k += 2) {
+      mvs += '<span class="pt-mv"><i>' + (k / 2 + 1) + '.</i> ' + g.sans[k] + ' ' + (g.sans[k + 1] || '') + '</span> ';
+    }
+
+    // latest phrase from either side (preset codes only — the entire chat)
+    var say = '';
+    var wAt = m.emote_w_at || '', bAt = m.emote_b_at || '';
+    if (m.emote_w != null || m.emote_b != null) {
+      var theirs = (wAt > bAt) ? { n: m.white_name, c: m.emote_w } : { n: m.black_name, c: m.emote_b };
+      if (theirs.c != null) say = '<div class="pt-say">💬 <b>' + esc(theirs.n) + ':</b> ' + esc(M.EMOTES[theirs.c] || '…') + '</div>';
+    }
+
+    app.innerHTML =
+      '<div class="pt-table-head"><button class="pjcc-btn-ghost" id="pt-back">← The park</button>' +
+      '<span class="pt-vs">' + (white ? '⬜ You' : '⬛ You') + ' vs <b>' + esc(oppName) + '</b></span></div>' +
+      '<p class="pt-state' + (myTurn ? ' go' : '') + '">' + state + '</p>' +
+      '<div class="pt-board" role="grid" aria-label="Chess board">' + rows + '</div>' +
+      say +
+      '<div class="pt-moves">' + (mvs || '<span class="pjcc-sub">No moves yet.</span>') + '</div>' +
+      (m.status !== 'done'
+        ? '<div class="pt-tools"><div class="pt-emotes">' + M.EMOTES.map(function (t, i2) {
+            return '<button class="pt-emote" data-emote="' + i2 + '">' + esc(t) + '</button>';
+          }).join('') + '</div>' +
+          (m.status === 'active' ? '<button class="pjcc-btn-ghost pt-resign" id="pt-resign">Resign</button>' : '') + '</div>'
+        : '');
+
+    document.getElementById('pt-back').onclick = function(){ cur = null; lobby(); };
+    Array.prototype.forEach.call(app.querySelectorAll('[data-emote]'), function (b) {
+      b.onclick = function(){ M.emote(m.id, +b.getAttribute('data-emote')).then(function(){ toast('Sent.'); }).catch(function(e){ toast(e.message); }); };
+    });
+    var rs = document.getElementById('pt-resign');
+    if (rs) rs.onclick = function(){
+      if (!confirm('Resign this game?')) return;
+      M.finish(m.id, white ? '0-1' : '1-0', 'resignation').then(function(){ openTable(m.id); }).catch(function(e){ toast(e.message); });
+    };
+    if (myTurn && !g.result) {
+      Array.prototype.forEach.call(app.querySelectorAll('.pt-sq'), function (b) {
+        b.onclick = function(){ tap(+b.getAttribute('data-sq')); };
+      });
+    }
+    // terminal position not yet recorded → either player records the honest result
+    if (m.status === 'active' && g.result) {
+      var res = g.result === 'checkmate' ? (S.turn === 'w' ? '0-1' : '1-0') : '1/2-1/2';
+      M.finish(m.id, res, g.result).then(function(){ openTable(m.id); }).catch(function(){});
+    }
+  }
+
+  function tap(i){
+    var m = cur, white = m.white === uid();
+    var g = M.replayGame(m.moves), S = g.S;
+    var mine = S.b[i] && (S.b[i] === S.b[i].toUpperCase()) === white;
+    if (sel === -1 || mine) { sel = mine ? i : -1; return renderTable2(); }
+    var mv = C.findMove(S, sel, i, null);            // promotion: queen (v1)
+    if (!mv) { sel = -1; return renderTable2(); }
+    var uci = C.nameFromSq(sel) + C.nameFromSq(i) + (mv.promo ? 'q' : '');
+    var nS = C.makeMove(S, mv);
+    sel = -1;
+    M.move(m.id, uci, C.toFEN(nS)).then(function(){
+      cur.moves = (cur.moves + ' ' + uci).trim(); cur.fen = C.toFEN(nS);
+      renderTable(); schedulePoll();
+    }).catch(function(e){ toast(e.message); openTable(m.id); });
+  }
+  // re-render that keeps selection highlighting cheap
+  function renderTable2(){ renderTable(); }
+
+  function toast(msg){ try { if (window.showTxToast) return showTxToast(msg); } catch(e){} console.log(msg); }
+
+  if (window.PJCC && PJCC.ready && PJCC.ready.then) PJCC.ready.then(lobby); else lobby();
+  document.addEventListener('visibilitychange', function(){
+    if (document.hidden) stopPolling();
+    else if (cur) openTable(cur.id); else lobby();
+  });
+})();
+</script>
+
+<style>
+.pt-lead { color: #c9a7ff; max-width: 640px; }
+.pt-gate { text-align: center; padding: 26px 0; }
+.pt-gate .pjcc-btn { text-decoration: none; display: inline-block; margin-top: 8px; }
+.pt-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0 4px; }
+.pt-h { color: #F5C518; font-size: 1rem; margin: 20px 0 8px; }
+.pt-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%;
+  background: var(--surface-2); border: 1px solid var(--edge-soft); border-radius: var(--r-sm);
+  padding: 12px 14px; margin: 6px 0; color: #ddd6f3; font-family: inherit; font-size: 0.92rem;
+  cursor: pointer; text-align: left; }
+.pt-row:hover { border-color: #F5C518; }
+.pt-row-done { cursor: default; opacity: 0.75; }
+.pt-row-done:hover { border-color: var(--edge-soft); }
+.pt-row-state { font-family: 'Share Tech Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em;
+  color: #9a7fd4; white-space: nowrap; }
+.pt-row-state.go { color: #6bffb8; font-weight: 700; }
+
+.pt-table-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 10px 0 4px; }
+.pt-vs { color: #ddd6f3; }
+.pt-state { color: #9a7fd4; font-size: 0.9rem; margin: 4px 0 10px; }
+.pt-state.go { color: #6bffb8; }
+.pt-board { display: grid; grid-template-columns: repeat(8, 1fr); width: 100%; max-width: 420px;
+  aspect-ratio: 1; border: 2px solid var(--edge); border-radius: 6px; overflow: hidden;
+  touch-action: manipulation; }
+.pt-sq { border: none; padding: 0; margin: 0; display: flex; align-items: center; justify-content: center;
+  font-size: clamp(20px, 6vw, 34px); line-height: 1; cursor: pointer; }
+.pt-sq.lt { background: #cfc3ee; }
+.pt-sq.dk { background: #5b4a96; }
+.pt-sq.sel { box-shadow: inset 0 0 0 3px #6bffb8; }
+.pt-pc.w { color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.55); }
+.pt-pc.b { color: #14092e; }
+.pt-say { margin: 10px 0 0; color: #ffd36b; font-size: 0.92rem; }
+.pt-moves { margin: 10px 0; color: #b9a3e8; font-size: 0.85rem; line-height: 1.9; max-width: 420px;
+  user-select: text; -webkit-user-select: text; }
+.pt-mv i { color: #7d6bb0; font-style: normal; }
+.pt-tools { margin-top: 8px; max-width: 420px; }
+.pt-emotes { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.pt-emote { background: rgba(45,27,105,0.5); border: 1px solid var(--edge-soft); color: #c9a7ff;
+  border-radius: 999px; padding: 7px 12px; font-family: inherit; font-size: 0.78rem; cursor: pointer; }
+.pt-emote:hover { border-color: #F5C518; color: #F5C518; }
+.pt-resign { font-size: 0.8rem; }
+@media (pointer: coarse) { .pt-emote { padding: 11px 14px; } }
+</style>

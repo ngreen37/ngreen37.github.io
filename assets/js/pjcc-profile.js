@@ -80,6 +80,9 @@
     HUMAN_LABELS: HUMAN_LABELS,
     RANKS: RANKS,
     currentUser: function () { return sb ? (sb.auth.__user || null) : null; },
+    // The raw Supabase client, for modules with their own tables (pjcc-match.js /
+    // the Park Tables). Null until init — callers await PJCC.ready first.
+    db: function () { return sb || null; },
     getProfile: function () { return profile; },
     avatarEmoji: function (prof) {
       // A face built in the Identity Forge (companion.look) wins site-wide, so

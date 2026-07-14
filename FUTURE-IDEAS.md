@@ -727,6 +727,54 @@ second ten are **ingenuity** (the clever, cheap, memorable stuff).
 
 ---
 
+## 📣 The three plays (2026-07-13 — Nate asked: socials, streaming, app stores)
+
+### The Socials Play
+**This week (free, 20 min):** reserve @McPuppyStudios on YouTube, TikTok, Instagram, X, Facebook,
+Reddit — before a squatter does. Bio + link to mcpuppystudios.com, then SILENCE. A reserved empty
+account costs nothing; a lost handle costs the name.
+**Start POSTING only when Blender output exists.** The unit of content is one vertical clip
+(15–45s): a render going wireframe→lit, Princess's walk cycle, a sky timelapse. Make it ONCE,
+post to TikTok + Reels + YouTube Shorts simultaneously — same file, three audiences. Cadence
+beats volume: 2/week sustained beats 10 in launch week then nothing.
+**Order:** YouTube first (the archive + the search engine), short-form second (discovery),
+X/Facebook parked. Reddit is PARTICIPATION, not promotion — be a real member of r/blender +
+r/godot posting WIPs; the profile link does the marketing.
+**The sanity rule:** socials point AT the site, never replace it. The site is home; clips are flyers.
+
+### The Streaming Play
+**Never build streaming into the site — embed it.** Stream to YouTube Live (free, auto-archives
+every stream). The site gets ONE page: /live/ — the player when live, the archive playlist when
+not. Zero bandwidth cost, zero infra.
+**Three formats, one per week max:** ① build-with-me (Blender/Godot, screen+voice, no face-cam
+needed), ② chess night at the Park Tables (play challengers live — the matchmaking build becomes
+a ritual), ③ monthly Q&A once there's anyone to ask.
+**Value before an audience: reps + library.** The first 20 streams are practice nobody watches —
+that's a feature, not a waste. When the trailer hits and 500 people look you up, they find two
+years of archived honest work. That library IS the studio's credibility.
+**Gear: none.** OBS (free) + current mic. Upgrade nothing until streams clear 10 concurrents.
+
+### The App Store Play
+**Costs, plainly:** Google Play = $25 ONE-TIME. Apple = $99/YEAR forever, or the app is delisted.
+No meaningful tiers. Year one ≈ $124, then $99/yr.
+**The trigger, not a date:** ship when EITHER (a) Episode 1 releases (catch the install surge) or
+(b) the PWA shows real weekly return visitors. Never before — don't start Apple's meter for zero
+users.
+**The path (Android first):** flip the PWA public (the ENABLED switch — already built) → wrap
+with Capacitor/Bubblewrap into an .aab → Play Console $25 + listing + content rating + data-safety
+form → review ≈ days. iOS after: needs a Mac (or a cloud Mac ~$25/mo for one build month), Xcode +
+Capacitor, App Store Connect listing, review 1–3 days — expect one rejection round; kid-adjacent
+apps get COPPA/privacy-label scrutiny.
+**One warning:** Apple rejects thin webview wrappers (guideline 4.2) — lead the store build with
+the offline arcade, which already works and feels native.
+
+### Park Tables v2 (the matchmaking follow-ups)
+Supabase Realtime channels instead of polling (true live feel) · clocks/blitz mode · draw offers ·
+under-promotion picker · spectator links · a Park Tables leaderboard (wins as a channel) · credits
+for finished games ONLY after an anti-abuse think (two accounts shaking hands is free credits).
+
+---
+
 ## 🛠️ The long game (bigger bets, mostly not web code)
 - **The Godot roguelite** — a Binding-of-Isaac game from the Blender assets; start with ONE web-exported
   room wired to the leaderboard, then layer rooms → items → floors. Princess Dungeon is its web prototype
