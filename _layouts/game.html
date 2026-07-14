@@ -158,10 +158,12 @@
 
       <!-- Game-over funnel: catch arcade players for the dispatch (Avenue 10) -->
       <div class="game-dispatch">
-        <div class="game-dispatch-text"><b>Enjoyed it?</b> New games and the pilot drop to the dispatch first — no spam, unsubscribe anytime.</div>
+        {%- comment -%} 2026-07-14 (Nate: "is that a mailing list prompt? Make it clear
+             what it is. I don't really like the term 'dispatch'") — it says what it is now. {%- endcomment -%}
+        <div class="game-dispatch-text"><b>Join the mailing list</b> — new games and the pilot land in your inbox first. No spam, unsubscribe anytime.</div>
         <form id="gd-form" class="game-dispatch-form" novalidate>
           <input id="gd-email" type="email" class="pjcc-input" placeholder="you@email.com" autocomplete="email" aria-label="Email address" required>
-          <button type="submit" class="pjcc-btn">Get the next one</button>
+          <button type="submit" class="pjcc-btn">Join the list</button>
         </form>
         <p id="gd-msg" class="game-dispatch-msg" role="status"></p>
       </div>

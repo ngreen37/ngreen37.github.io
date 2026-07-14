@@ -23,7 +23,8 @@ window.PJCC_GAMES = [
   { slug:'battle-room',       name:'The Battle Room',    cryptic:'Chess as an action sequence.',   icon:'⚔', accent:'#56d0ff', cat:'dev', score:['battle-room','score'], neu:'2026-06-22' },
   { slug:'follow-the-dog',    name:'Follow the Dog',     cryptic:'Trust the run. Follow her.',     icon:'✦', accent:'#8fb8ff', cat:'dev' },
   { slug:'chess-city',        name:'Chess City',         cryptic:'Platform the cursed board — the pieces have teeth.', icon:'♜', accent:'#ff5b6e', cat:'dev', score:['chess-city','score'], neu:'2026-06-25' },
-  { slug:'the-gambit',        name:'The Gambit',         cryptic:'Lay down your best. The board decides.', icon:'♟', accent:'#f8d800', cat:'dev' },
+  // The Gambit — LEFT the games section entirely (Nate 2026-07-14). It lives at
+  // /the-gambit/ as its own ritual room, doored from the foot of the PJCC home.
   // ── The Vault (unlockable) ──
   { slug:'blindfold-puzzles', name:'Blindfold Puzzles',  cryptic:'No board. Only your mind.',      icon:'◻', accent:'#c9a7ff', cat:'vault', score:['blindfold','solved'], locked:true, engine:true },
   // ── Terminated (retired roster) ──

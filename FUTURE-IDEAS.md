@@ -338,7 +338,7 @@ you're about to build export to **OpenXR** (Godot has first-class VR), so VR is 
 separate build. **Scope: far future** (post-flare, post-Godot-v1); a Quest build of one battle room is the
 someday-milestone. Parked here mainly so the 3D pipeline is built **VR-aware from day one.**
 
-**Av17 — The Gambit (the altar of sacrifice)** — *v1 is live at `/games/the-gambit/`* (offer credits + an owned
+**Av17 — The Gambit (the altar of sacrifice)** — *v1 is live at `/the-gambit/` — its own room off the PJCC home since 2026-07-14* (offer credits + an owned
 collectable; a **Courage meter** shows the real odds before you commit; guardrails: never real money, a daily cap,
 a cooldown, a two-tap "no takebacks"). **v2 roadmap (from the brainstorm below):** the Uncle presiding · non-fungible
 / altar-only rewards + canon fragments · sacrificing the streak-flame / rank · hold-to-offer · the Monument · a

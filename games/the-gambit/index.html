@@ -1,9 +1,16 @@
 ---
-layout: game
+layout: page
 title: "The Gambit"
 description: "The board's oldest wager: lay down what you've earned — credits and collectables — and the board sometimes gives back more. The boldest sacrifices tilt the odds. Never real money."
-permalink: /games/the-gambit/
+permalink: /the-gambit/
 ---
+{% comment %} 2026-07-14 (Nate): the Gambit LEFT the games section entirely — no arcade
+     card, no In Development shelf, no game layout. It lives at /the-gambit/ now as its
+     own ritual room off the PJCC page (one quiet door at the foot of the PJCC home).
+     Same commit: "assume it's already done" removed; "You must learn how to let go"
+     added (let go in gold); odds copy softened to "significantly"; the altar RESTS
+     after every sacrifice (leave or refresh to return); and bold losses build real
+     momentum — the board remembers (pjcc.gambit.owed) and repays on later wins. {% endcomment %}
 
 <div class="gambit">
 
@@ -25,7 +32,7 @@ permalink: /games/the-gambit/
       <div class="gambit-coin" id="gm-coin">♟</div>
     </div>
     <h2 class="gambit-tagline">Lay it down. See what the board gives back.</h2>
-    <p class="gambit-lede">Goals are <strong>5% strategy, 95% mindset.</strong> The board doesn't reward the safe bet — it rewards the one hard thing: giving up the very best you have and trusting the path anyway. <em>Assume it's already done.</em></p>
+    <p class="gambit-lede">Goals are <strong>5% strategy, 95% mindset.</strong> The board doesn't reward the safe bet — it rewards the one hard thing: giving up the very best you have and trusting the path anyway. You must learn how to <b class="gm-gold">let go</b>.</p>
 
     <div class="gm-wallet">
       <span class="gm-chip">◈ <b id="gm-bal">0</b> credits</span>
@@ -55,10 +62,10 @@ permalink: /games/the-gambit/
     <div class="gm-courage">
       <div class="gm-courage-head"><span>Courage</span><span id="gm-odds">no offering yet</span></div>
       <div class="gm-courage-bar"><div class="gm-courage-fill" id="gm-fill"></div></div>
-      <p class="gm-note" id="gm-note">Small, safe offerings barely move the needle. Your <b>best</b> item — or <b>85%+ of your credits</b> — tilts the odds hard your way.</p>
+      <p class="gm-note" id="gm-note">Small, safe offerings barely move the needle. Your <b>best</b> item — or <b>85%+ of your credits</b> — tilts the odds significantly your way.</p>
     </div>
 
-    <p class="gm-warn">⚠ You may get <b>nothing</b>. The offering is gone either way — the courage is the point. Never real money.</p>
+    <p class="gm-warn">⚠ You may get <b>nothing</b>. The offering is gone either way — the courage is the point.</p>
     <button class="btn-offer" id="gm-offer" disabled>Bring an offering</button>
     <div class="gm-cooldown" id="gm-cooldown"></div>
 
@@ -66,19 +73,24 @@ permalink: /games/the-gambit/
   </div>
 </div>
 
-<div class="game-info">
-  <p><strong>How to play.</strong> Lay down credits and/or a collectable, then offer it to the board. Courage tilts the odds; sometimes it gives back more, sometimes nothing. Never real money.</p>
-</div>
-
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
 <script>
 (function () {
   'use strict';
-  var CAP = 3, COOL = 45000, LK = 'pjcc.gambit.v1';
+  var CAP = 3, COOL = 45000, LK = 'pjcc.gambit.v1', OWED = 'pjcc.gambit.owed';
   var $ = function (id) { return document.getElementById(id); };
   var gate = $('gm-gate'), main = $('gm-main');
   var me = null, credits = 0, owned = [], bestVal = 0, selColl = null, offerCredits = 0, armed = false, busy = false, coolTimer = null;
+  // rested = the altar closes after EVERY sacrifice (Nate 2026-07-14): you leave the
+  // screen or refresh to come back. Not persisted — leaving IS the reset.
+  var rested = false;
+
+  // ---- THE BOARD REMEMBERS (Nate 2026-07-14): an all-in / 85%+ sacrifice that comes
+  // back empty is never wasted — a debt marker builds, scaled to how much was lost,
+  // and future offerings quietly carry better odds until a win repays it. ----
+  function loadOwed() { var n; try { n = parseInt(localStorage.getItem(OWED), 10); } catch (e) {} return isNaN(n) ? 0 : Math.max(0, n); }
+  function saveOwed(n) { try { localStorage.setItem(OWED, String(Math.max(0, Math.round(n)))); } catch (e) {} }
 
   // ---- daily cap + cooldown (local; a ritual, not a grind) ----
   function today() { return (window.PJCC && PJCC.dayStamp) ? PJCC.dayStamp() : new Date().toISOString().slice(0,10); }
@@ -127,13 +139,15 @@ permalink: /games/the-gambit/
     var ov = offerValue();
     if (ov <= 0) { $('gm-odds').textContent = 'no offering yet'; }
     else { $('gm-odds').textContent = Math.round(winChance(c) * 100) + '% · up to ' + Math.round(ov * multFor(c)) + ' back'; }
-    if (c >= 0.85) $('gm-note').innerHTML = '🔥 <b>Bold.</b> The odds lean hard your way — and the boldest wins can hand back a <b>boon</b> you don\'t own yet.';
+    if (c >= 0.85) $('gm-note').innerHTML = '🔥 <b>Bold.</b> The odds lean your way — and the boldest wins can hand back a <b>boon</b> you don\'t own yet.';
     else if (c >= 0.4) $('gm-note').innerHTML = 'Getting braver. Give your <b>best</b> item — or <b>85%+ of your credits</b> — to really tilt the board.';
-    else $('gm-note').innerHTML = 'Small, safe offerings barely move the needle. Your <b>best</b> item — or <b>85%+ of your credits</b> — tilts the odds hard your way.';
+    else $('gm-note').innerHTML = 'Small, safe offerings barely move the needle. Your <b>best</b> item — or <b>85%+ of your credits</b> — tilts the odds significantly your way.';
+    if (loadOwed() > 0) $('gm-note').innerHTML = '✦ <b>The board remembers what you laid down.</b> ' + $('gm-note').innerHTML;
 
     // offer button + cooldown
     var cl = coolLeft(), btn = $('gm-offer');
-    if (left <= 0) { btn.disabled = true; btn.textContent = 'Come back tomorrow'; armed = false; }
+    if (rested) { btn.disabled = true; btn.textContent = 'The altar rests'; armed = false; }
+    else if (left <= 0) { btn.disabled = true; btn.textContent = 'Come back tomorrow'; armed = false; }
     else if (cl > 0) { btn.disabled = true; armed = false; }
     else if (ov <= 0) { btn.disabled = true; btn.textContent = 'Bring an offering'; armed = false; }
     else { btn.disabled = false; btn.textContent = armed ? 'Commit — no takebacks' : 'Offer to the board'; btn.classList.toggle('armed', armed); }
@@ -155,18 +169,29 @@ permalink: /games/the-gambit/
     try {
       if (credOffer > 0) await PJCC.spendCredits(credOffer);
       if (coll) await PJCC.burnCollectable(coll.kind, coll.key);
-      var win = Math.random() < winChance(c), reward = 0, boon = null;
+      // the board's memory tilts the wheel: past bold losses buy up to +28% here
+      var owed = loadOwed();
+      var win = Math.random() < Math.min(0.90, winChance(c) + Math.min(0.28, owed * 0.002));
+      var reward = 0, boon = null, repay = 0;
       if (win) {
         reward = Math.max(1, Math.round(ov * multFor(c)));
+        if (owed > 0) {                       // an old sacrifice comes home
+          repay = Math.min(owed, Math.max(1, Math.round(ov * 0.5)));
+          reward += repay;
+          saveOwed(owed - repay);
+        }
         await PJCC.grantCredits(reward);
         if (c >= 0.85 && Math.random() < 0.35) {
           var un = PJCC.unownedCollectables();
           if (un.length) { boon = un[Math.floor(Math.random() * un.length)]; await PJCC.grantCollectable(boon.kind, boon.key); }
         }
+      } else if (c >= 0.85) {
+        // an all-in / best-item / 85%+ loss is banked, scaled to what was lost
+        saveOwed(owed + Math.round(ov * 0.6));
       }
       bumpCap();
-      // let the coin spin a beat, then reveal
-      setTimeout(function () { coin.classList.remove('spin'); reveal(win, ov, reward, boon, coll); refresh(); busy = false; }, 900);
+      // let the coin spin a beat, then reveal — and the altar closes behind it
+      setTimeout(function () { coin.classList.remove('spin'); reveal(win, ov, reward, boon, coll, repay, c); rested = true; refresh(); busy = false; }, 900);
     } catch (e) {
       coin.classList.remove('spin'); busy = false;
       $('gm-result').hidden = false;
@@ -176,18 +201,22 @@ permalink: /games/the-gambit/
     }
   }
 
-  function reveal(win, ov, reward, boon, coll) {
+  function reveal(win, ov, reward, boon, coll, repay, c) {
     armed = false; selColl = null; offerCredits = 0;
     var box = $('gm-result'); box.hidden = false; box.className = 'gm-result ' + (win ? 'win' : 'loss');
+    var rest = '<p class="gm-rest">The altar rests now. Leave it be — come back fresh.</p>';
     if (win) {
       var boonLine = boon ? '<p class="gm-boon">✦ A boon: the board hands you <b>' + boon.label + '</b> ' + boon.glyph + ' — yours to keep.</p>' : '';
+      var repayLine = repay ? '<p class="gm-boon">✦ And an old sacrifice comes home: <b>+' + repay + '</b> the board owed you.</p>' : '';
       box.innerHTML = '<div class="gm-res-title">THE BOARD ANSWERS ✦</div>' +
-        '<p>You laid down <b>' + ov + '</b> and it gives back <b>' + reward + '</b> credits.</p>' + boonLine +
-        '<p class="gm-res-creed">You let go, and the path provided. <b>Follow the dog.</b></p>';
+        '<p>You laid down <b>' + ov + '</b> and it gives back <b>' + reward + '</b> credits.</p>' + repayLine + boonLine +
+        '<p class="gm-res-creed">You let go, and the path provided. <b>Follow the dog.</b></p>' + rest;
     } else {
+      var remembers = (c >= 0.85)
+        ? '<p class="gm-boon">✦ A sacrifice this bold is never wasted here. <b>The board remembers</b> — your next offerings carry its debt.</p>' : '';
       box.innerHTML = '<div class="gm-res-title">THE BOARD KEEPS IT</div>' +
-        '<p>Your offering' + (coll ? ' — including <b>' + coll.label + '</b> ' + coll.glyph + ' —' : '') + ' is gone. Nothing comes back.</p>' +
-        '<p class="gm-res-creed">The courage <em>was</em> the point. Real commitment isn\'t safe. Come back braver.</p>';
+        '<p>Your offering' + (coll ? ' — including <b>' + coll.label + '</b> ' + coll.glyph + ' —' : '') + ' is gone. Nothing comes back.</p>' + remembers +
+        '<p class="gm-res-creed">The courage <em>was</em> the point. Real commitment isn\'t safe. Come back braver.</p>' + rest;
     }
   }
 
@@ -300,6 +329,7 @@ permalink: /games/the-gambit/
 .gm-result b { color: #f0e6ff; }
 .gm-boon { color: #ffe08a !important; }
 .gm-res-creed { color: #e3d6ff !important; font-style: italic; }
-.game-info a { color: #F5C518; }
+.gm-rest { color: #9a7fd4 !important; font-size: 0.84rem !important; font-style: italic; }
+.gm-gold { color: #F5C518; }
 @media (max-width: 600px){ .gambit-coin { font-size: 3.4rem; } .gambit-tagline { font-size: 1.15rem; } }
 </style>

@@ -10,12 +10,19 @@ permalink: /fan-art/
   <button class="fa-btn fa-btn--ghost" id="fa-reset" type="button">Reset</button>
 </div>
 
-<!-- ── Crayon mode: fat crayons, straight onto the card, nothing uploaded ── -->
+<!-- ── Crayon mode: crayons + five pencil weights + an any-color picker,
+     straight onto the card, nothing uploaded. ("Start over" removed 2026-07-14 —
+     it duplicated Reset and confused; Reset now wipes the drawing too.) ── -->
 <div class="fa-crayons no-print" id="fa-crayons" hidden>
   <canvas id="fa-canvas" width="480" height="480"></canvas>
   <div class="fa-cray-row" id="fa-cray-row"></div>
+  <div class="fa-wt-row" id="fa-wt-row" role="group" aria-label="Pencil weights"></div>
+  <div class="fa-color-row">
+    <label class="fa-color-lab" for="fa-pick-color">Any color:</label>
+    <input type="color" id="fa-pick-color" value="#d0342c" aria-label="Pick any color">
+    <input type="text" id="fa-rgb" class="fa-input fa-rgb" maxlength="16" placeholder="#hex or r,g,b" aria-label="Type a hex or RGB color">
+  </div>
   <div class="fa-cray-tools">
-    <button class="fa-btn fa-btn--ghost" id="fa-cray-clear" type="button">Start over</button>
     <button class="fa-btn fa-btn--gold" id="fa-cray-done" type="button">Put it on the card ▸</button>
   </div>
 </div>
@@ -102,8 +109,23 @@ permalink: /fan-art/
 .fa-crayons { max-width:520px; margin:0 auto 1.4rem; text-align:center; }
 /* the drawing surface is dimmed to match the card, but kept a shade lighter than it —
    crayon needs somewhere bright to land */
-#fa-canvas { width:100%; max-width:480px; aspect-ratio:1/1; background:#eeebe3; border:3px solid #002e6d;
+#fa-canvas { width:100%; max-width:480px; aspect-ratio:1/1; background:#ece8dd; border:3px solid #002e6d;
   border-radius:14px; touch-action:none; cursor:crosshair; display:block; margin:0 auto 12px; }
+/* five pencil weights — the dot is the mark it makes */
+.fa-wt-row { display:flex; gap:10px; justify-content:center; align-items:center; margin-bottom:10px; }
+.fa-wt { display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:50%;
+  background:rgba(80,30,180,0.18); border:2px solid rgba(150,65,255,0.45); cursor:pointer; padding:0; }
+.fa-wt i { display:block; border-radius:50%; background:#e6dcff; }
+.fa-wt:hover { border-color:#F5C518; }
+.fa-wt.on { border-color:#F5C518; }
+.fa-wt.on i { background:#F5C518; }
+/* the any-color row: native wheel + typed hex/RGB */
+.fa-color-row { display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+.fa-color-lab { color:#cdbcf2; font-size:0.82rem; font-weight:700; }
+#fa-pick-color { width:48px; height:40px; padding:2px; background:#0f0826;
+  border:2px solid rgba(150,65,255,0.6); border-radius:10px; cursor:pointer; }
+.fa-rgb { max-width:132px; }
+@media (pointer:coarse){ .fa-wt { width:44px; height:44px; } }
 .fa-cray-row { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:12px; }
 .fa-cray { width:32px; height:46px; border:none; cursor:pointer; background:var(--c); padding:0;
   clip-path:polygon(50% 0, 86% 16%, 86% 100%, 14% 100%, 14% 16%);
@@ -226,6 +248,8 @@ permalink: /fan-art/
 
   document.getElementById('fa-reset').addEventListener('click', function () {
     img.removeAttribute('src'); card.classList.remove('has-img'); try { localStorage.removeItem(STORE); } catch (e) {}
+    // "Start over" was folded into Reset (2026-07-14): one button wipes the card AND the easel
+    try { if (window.__faPaper) window.__faPaper(); } catch (e) {}
   });
 
   // ---- Crayon mode: fat crayons on a white page; "done" drops it on the card ----
@@ -234,27 +258,61 @@ permalink: /fan-art/
     if (!box || !cv || !cv.getContext) return;
     var ctx = cv.getContext('2d');
     var COLORS = ['#d0342c', '#e8862c', '#f2c22e', '#3f9b45', '#2d6fc2', '#7a4bbf', '#8a5a2b', '#2b2b2b'];
-    var color = COLORS[0], drawing = false, last = null;
-    function paper() { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, cv.width, cv.height); }
+    var WEIGHTS = [3, 7, 13, 22, 34];      // five pencils, feather → fat crayon (2026-07-14)
+    var color = COLORS[0], weight = 13, drawing = false, last = null;
+    // warm paper, not pure white — "darken the white main box a bit" (2026-07-14)
+    function paper() { ctx.fillStyle = '#ece8dd'; ctx.fillRect(0, 0, cv.width, cv.height); }
     paper();
+    window.__faPaper = paper;              // Reset (top of page) wipes the easel too
     var row = document.getElementById('fa-cray-row');
+    function unCray() { Array.prototype.forEach.call(row.children, function (x) { x.classList.remove('on'); }); }
     COLORS.forEach(function (c, i) {
       var b = document.createElement('button');
       b.type = 'button'; b.className = 'fa-cray' + (i === 0 ? ' on' : '');
       b.style.setProperty('--c', c); b.setAttribute('aria-label', 'crayon');
       b.onclick = function () {
         color = c;
-        Array.prototype.forEach.call(row.children, function (x) { x.classList.remove('on'); });
+        unCray();
         b.classList.add('on');
       };
       row.appendChild(b);
+    });
+    // five pencil weights — dots sized like the mark they make
+    var wrow = document.getElementById('fa-wt-row');
+    if (wrow) WEIGHTS.forEach(function (w) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'fa-wt' + (w === weight ? ' on' : '');
+      b.setAttribute('aria-label', 'pencil weight ' + w);
+      b.innerHTML = '<i style="width:' + (4 + w * 0.7) + 'px;height:' + (4 + w * 0.7) + 'px"></i>';
+      b.onclick = function () {
+        weight = w;
+        Array.prototype.forEach.call(wrow.children, function (x) { x.classList.remove('on'); });
+        b.classList.add('on');
+      };
+      wrow.appendChild(b);
+    });
+    // the any-color pickers: the native wheel, or a typed #hex / r,g,b
+    var pickC = document.getElementById('fa-pick-color'), rgbIn = document.getElementById('fa-rgb');
+    function setFreeColor(c) { color = c; unCray(); }
+    if (pickC) pickC.addEventListener('input', function () { setFreeColor(pickC.value); });
+    if (rgbIn) rgbIn.addEventListener('change', function () {
+      var v = rgbIn.value.trim();
+      var m = v.match(/^(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})$/);
+      if (m) { setFreeColor('rgb(' + Math.min(255, +m[1]) + ',' + Math.min(255, +m[2]) + ',' + Math.min(255, +m[3]) + ')'); return; }
+      if (/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v)) {
+        var hex = v[0] === '#' ? v : '#' + v;
+        setFreeColor(hex);
+        if (pickC && hex.length === 7) pickC.value = hex;
+        return;
+      }
+      rgbIn.value = '';                    // not a color — quietly clear
     });
     function pos(e) {
       var r = cv.getBoundingClientRect();
       return { x: (e.clientX - r.left) * (cv.width / r.width), y: (e.clientY - r.top) * (cv.height / r.height) };
     }
     function stroke(a, b) {
-      ctx.strokeStyle = color; ctx.lineWidth = 13; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.strokeStyle = color; ctx.lineWidth = weight; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
       ctx.globalAlpha = 0.88;   // the slightly waxy, layered crayon look
       ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
       ctx.globalAlpha = 1;
@@ -269,7 +327,6 @@ permalink: /fan-art/
       box.hidden = !box.hidden;
       if (!box.hidden) { try { box.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }
     });
-    document.getElementById('fa-cray-clear').addEventListener('click', paper);
     document.getElementById('fa-cray-done').addEventListener('click', function () {
       show(cv.toDataURL('image/png'));
       box.hidden = true;

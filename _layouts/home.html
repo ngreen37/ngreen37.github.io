@@ -530,6 +530,11 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
   </div>
 </section>
 
+{% comment %} The Gambit's one door (2026-07-14 Nate: "move the gambit out of In
+     Development and out of the Games section altogether. Put it somewhere off the
+     PJCC page"): a ritual, not a game — one quiet entrance at the foot of the town. {% endcomment %}
+<p class="home-gambit-door"><a href="{{ '/the-gambit/' | relative_url }}">♟ The Gambit — lay down your best; the board decides.</a></p>
+
 {% comment %} ── the chess-glyph wire, relocated here 2026-07-11 (Nate): a faint
      sliding rank of pieces just under "Meet them all", above the footer's gold
      rule. Moved up out of the footer (its band is hidden on home, below). {% endcomment %}
@@ -548,6 +553,12 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
 .home-shuffle:hover { border-color: #F5C518; color: #F5C518; }
 .char-row.just-shuffled .char-chip { animation: chipIn .42s ease both; }
 @keyframes chipIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+
+/* the Gambit's quiet door at the foot of the town */
+.home-gambit-door { text-align: center; margin: 26px 0 0; font-size: 0.85rem; }
+.home-gambit-door a { color: #9a7fd4; text-decoration: none;
+  border-bottom: 1px dotted rgba(154,127,212,0.5); padding-bottom: 2px; }
+.home-gambit-door a:hover { color: #F5C518; border-bottom-color: #F5C518; }
 
 /* the relocated glyph wire — sits under the cast, above the footer rule; the
    footer's own copy is hidden on the home so the pieces live in one place. */

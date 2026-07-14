@@ -23,7 +23,7 @@
       { t: 'Your Dossier',     s: 'Your profile & operative',             u: '/dossier/',            ic: '⬡', b: 'pjcc', k: 'dossier profile account sign in login operative identity forge' },
       { t: 'Leaderboards',     s: 'Operative standings',                  u: '/leaderboards/',       ic: '🏆', b: 'pjcc', k: 'leaderboards standings scores rank high' },
       { t: 'Fan Art',          s: 'The fan wall + a printable PJCC card',  u: '/fan-art/',            ic: '🎨', b: 'pjcc', k: 'fan art wall gallery printable card make picture upload print pdf submit' },
-      { t: 'The Gambit',       s: 'Sacrifice your best — coming soon',    u: '/games/the-gambit/',   ic: '🎲', b: 'pjcc', k: 'gambit sacrifice offering altar wager risk reward credits collectables coming soon' },
+      { t: 'The Gambit',       s: 'Lay down your best — the board decides', u: '/the-gambit/',       ic: '🎲', b: 'pjcc', k: 'gambit sacrifice offering altar wager risk reward credits collectables let go' },
       { t: 'Merch',            s: 'Not ready yet — months away',          u: '/goods/',              ic: '🃏', b: 'mcpuppy', k: 'goods goal cards stationery merch follow the dog mindset coming soon physical' },
       { t: 'The Direct Line',  s: 'Write to me directly',                 u: '/direct-line/',        ic: '✉️', b: 'mcpuppy', k: 'direct line suggestions patreon contact write feedback guaranteed response' },
       { t: 'McPuppy Studios',  s: 'Studio hub & progress',                u: '/projects/',           ic: '🐾', b: 'mcpuppy', k: 'mcpuppy studio projects progress hub' },
