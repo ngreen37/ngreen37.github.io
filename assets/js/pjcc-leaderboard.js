@@ -22,6 +22,9 @@
     // two games either, and they don't deserve two chips in the row.
     var BOARDS = [
       { key: '__overall__',     label: 'Overall',          unit: 'credits' },
+      // __rating__ = the PJCC Rating ladder from the Park Tables (profiles.pjcc_rating,
+      // Elo, everyone starts 250). Only operatives with a finished rated game appear.
+      { key: '__rating__',      label: 'PJCC Rating',      unit: 'rating'  },
       { key: 'the-gauntlet',    label: 'The Gauntlet',     unit: 'cleared' },
       { key: 'clearance-delta', label: 'Clearance: DELTA', unit: 'score'   },
       { key: 'notation-run',    label: 'Notation Blitz',   unit: 'score'   },
@@ -70,6 +73,19 @@
         var rows = await PJCC.cumulativeLeaderboard(PAGE, offset);
         return rows.map(function (r) {
           return { codename: r.codename, companion: r.companion, value: r.credits, rankName: PJCC.rankFor(r.credits).name };
+        });
+      }
+      if (active === '__rating__') {
+        var d = PJCC.db ? PJCC.db() : null;
+        if (!d) return [];
+        var pr = await d.from('profiles').select('codename,companion,pjcc_rating,rated_games')
+          .gt('rated_games', 0)
+          .order('pjcc_rating', { ascending: false }).order('codename', { ascending: true })
+          .range(offset, offset + PAGE - 1);
+        if (pr.error || !pr.data) return [];    // pre-upgrade server → empty board, not a crash
+        return pr.data.map(function (p) {
+          return { codename: p.codename, companion: p.companion, value: p.pjcc_rating,
+                   rankName: p.rated_games + ' rated game' + (p.rated_games === 1 ? '' : 's') };
         });
       }
       var grows = await PJCC.gameLeaderboard(active, PAGE, offset);

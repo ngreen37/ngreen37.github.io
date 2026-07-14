@@ -14,8 +14,8 @@ window.PJCC_GAMES = [
   // Reading Room — slow-rolled 2026-07-04: pulled from the hub/halls; reachable only via the floating あ icon on the splash. Restore by uncommenting.
   // { slug:'reading-room',      name:'The Reading Room',   cryptic:'Learn to read, one mark at a time.', icon:'あ', accent:'#ff5050', cat:'isle', soon:true, score:['reading-room','score'], neu:'2026-06-22' },
   { slug:'sky-run',           name:'Sky Run',            cryptic:'Climb the falling pieces.',      icon:'♞', accent:'#3cbcfc', cat:'arcade', score:['sky-run','score'] },
-  // The Park Tables — BUILT 2026-07-13, dark until docs/park-tables-setup.md is run (Nate-gated). Uncomment to list:
-  { slug:'park-tables',       name:'The Park Tables',    cryptic:'Play a human. Or the Creator.',  icon:'♟', accent:'#6bffb8', cat:'arcade', engine:true },
+  // The Park Tables — LIVE, but NOT an arcade card (Nate 2026-07-14): it stands beside
+  // the Gauntlet as a featured entrance on games.md and has its own splash glyph. Don't re-add here.
   { slug:'sand-mine-depths',  name:'Sand Mine Depths',   cryptic:"Descend. Don't look back.",      icon:'⛏', accent:'#fcbc3c', cat:'arcade', score:['sand-mine-depths','points'] },
   { slug:'tower-defense',     name:'Siege on Chess City',cryptic:'Hold the gates.',                icon:'🏰', accent:'#ff77a8', cat:'arcade', score:['tower-defense','score'] },
   { slug:'dungeon',           name:'Princess Dungeon',   cryptic:'Every room is a tactic.',        icon:'♟', accent:'#ff77a8', cat:'dev', score:['dungeon','floors'], neu:'2026-06-22' },
