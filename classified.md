@@ -1,14 +1,14 @@
 ---
 sitemap: false
 layout: easter-eggs
-title: THE SECRET
+title: THE ALPINE FILE
 permalink: /classified/
 fragment_key: frag_classified
 ---
 
 <!-- if you're reading this, you're already home -->
 
-<div class="secret-page">
+<div class="secret-page" id="secret-page">
 
   <header class="secret-header">
     <div class="secret-ping"><span>⊙</span></div>
@@ -19,62 +19,81 @@ fragment_key: frag_classified
       <span class="secret-stamp">CLASSIFIED</span>
       <span class="secret-stamp secret-stamp--over">DECLASSIFIED</span>
     </div>
-    <h1 class="secret-title">THE SECRET</h1>
-    <p class="secret-sub">THE ONE FILE THAT WAS NEVER ABOUT A CONSPIRACY</p>
+    <h1 class="secret-title">THE ALPINE FILE</h1>
+    <p class="secret-sub">RECOVERED FILE #001 · CHESS CITY RELEASE ACT OF 2078</p>
     <div class="secret-coords">
       ORIGIN:&nbsp;CHECKER&nbsp;TOWN &nbsp;·&nbsp; SUBJECT:&nbsp;PRINCESS &nbsp;·&nbsp; STATUS:&nbsp;<span class="secret-grant">ALREADY DONE</span>
     </div>
   </header>
 
-  <!-- ══════════ WRITTEN FROM THE END ══════════ -->
-  <p class="secret-intro">
-    You found this file late. By the time you opened it, it was already over.
-    She learned the board, then the city, then everything the city was afraid of. The other files still
-    ask what happened to her — where she came from, what fell, who covered it up. This one doesn't ask.
-    <strong>It already knows how it ends.</strong> So did she. That was always the difference.
-  </p>
-
-  <!-- ══════════ THE SENTENCE THAT HARDENS ══════════ -->
-  <section class="secret-core">
-    <div class="secret-core-eyebrow">DECRYPTED — HELD, UNTIL IT HELD</div>
-    <p class="secret-harden" id="secret-harden">She was always going to rise. She simply knew it first.</p>
-    <p class="secret-core-note">
-      It came in faint. You stayed with it. It hardened. Nothing changed but the attention you gave it —
-      which, as it happens, is the whole of it.
-    </p>
-  </section>
-
-  <!-- ══════════ THE UNCLE'S FILE — BARBADOS (kept basic; expand later) ══════════ -->
+  <!-- ══════════ THE REDACTED FILES (Nate's text, 2026-07-14 — the <redacted>
+       marks render as true black bars; nothing hides behind them to inspect) ══════════ -->
   <section class="secret-letters">
-    <div class="secret-letters-label">RECOVERED — THE UNCLE'S FILE · BARBADOS</div>
+    <div class="secret-letters-label">PETITION GRANTED — THREE PAGES SURVIVE</div>
 
     <blockquote class="secret-letter">
-      <p>— the old man kept telling me I was already home. I was soaked through, a thousand miles from it,
-      and he just said: no. You are already there. Feel it.</p>
-      <p>I got home that year. Every part of it the way he said.</p>
-      <footer>fragment · water-damaged</footer>
+      <div class="secret-file-tab">REDACTED FILE</div>
+      <p>One human on Earth, leading up to population of Checker Town, knew of this.
+      Bill Alpine, 35 yrs. Worked for ICC's Expanse Branch.</p>
+      <footer>page 1 of 3 · edge-charred</footer>
     </blockquote>
 
     <blockquote class="secret-letter secret-letter--alt">
-      <p>They'll tell the girl it was luck. Let them.</p>
-      <p>I taught her one thing only: decide how it ends, then live like it already did. She took to it
-      faster than I ever could. The Dad says I'm filling her head with nonsense.</p>
-      <p>Watch her anyway.</p>
-      <footer>fragment · margin note</footer>
+      <div class="secret-file-tab">REDACTED FILE</div>
+      <p>Number of Humans aware of this at time of event is unknown, but believed to be
+      less than ten.</p>
+      <footer>page 2 of 3 · water-damaged</footer>
+    </blockquote>
+
+    <blockquote class="secret-letter">
+      <div class="secret-file-tab">REDACTED FILE</div>
+      <p>Person of Interest: Nate <span class="rx" role="img" aria-label="redacted">█████████</span>
+      — took in Princess and was main participant in
+      <span class="rx" role="img" aria-label="redacted">██████████</span>.</p>
+      <footer>page 3 of 3 · the name is struck in every copy</footer>
     </blockquote>
   </section>
 
-  <!-- ══════════ CLOSE ══════════ -->
-  <p class="secret-close">
-    The dog knew before any of them. <strong>She followed the dog.</strong> Now you know what she was following.
-  </p>
+  <!-- ══════════ THE FOUND FILE — the memo itself. It develops like a photograph
+       when you reach it (the old hardening trick, reused where it belongs). ══════════ -->
+  <section class="secret-core">
+    <div class="secret-core-eyebrow">FOUND FILE</div>
+    <div class="secret-memo" id="secret-memo">
+      <div class="secret-memo-date">March 1st, 2022</div>
+      <p>If you somehow found this file, congratulations,
+      <span class="rx" role="img" aria-label="redacted">████████</span> but you're too late.
+      <strong>It's already done.</strong> Once Subject learned what Belief was, she just needed
+      to learn how, and, <span class="rx" role="img" aria-label="redacted">██████</span>
+      <span class="rx" role="img" aria-label="redacted">███████████</span> and that
+      <span class="rx" role="img" aria-label="redacted">████</span> Convict #48125 made a
+      decision for all of us, didn't he? <span class="rx" role="img" aria-label="redacted">█████████</span>
+      <span class="rx" role="img" aria-label="redacted">███████</span> The story of the dog who can
+      learn anything is still unfolding, but hope in keeping our control is slipping amongst my men.</p>
+      <p>They don't even know how lost it is. I do.</p>
+      <footer class="secret-memo-cite">— Recovered File #001 from the Chess City Release Act of 2078 —
+      Petition to Pull Records from the high-profile court case ALPINE&nbsp;vs.&nbsp;(ICC)&nbsp;Interplanetary&nbsp;Conduct&nbsp;Council</footer>
+    </div>
+  </section>
+
+  <!-- ══════════ BURN AFTER READING (restored 2026-07-14 — Nate: "bring the burn
+       function back"; countdown + flame wall + return to the surface, as before) ══════════ -->
+  <div class="secret-destruct" id="secret-destruct">
+    <div class="secret-destruct-label">⚠ &nbsp;READ CAREFULLY. THEN DESTROY.</div>
+    <button class="secret-burn-btn" id="secret-burn-btn" type="button" onclick="igniteSequence()">▸ &nbsp;INITIATE BURN SEQUENCE</button>
+    <div class="secret-destruct-note">Don't worry. It's just for show.</div>
+  </div>
 
   <footer class="secret-footer">
-    <div class="secret-carry">— DO NOT BURN THIS ONE. CARRY IT WITH YOU. —</div>
     <a href="{{ '/' | relative_url }}" class="secret-return">⊘&nbsp;&nbsp;RETURN TO SURFACE</a>
-    <div class="secret-footer-note">This page does not exist. The feeling does.</div>
+    <div class="secret-footer-note">This page does not exist.</div>
   </footer>
 
+</div>
+
+<!-- the burn hardware: countdown digits + the flame wall -->
+<div class="burn-count" id="burn-count" aria-hidden="true"><span id="burn-number"></span></div>
+<div class="burn-overlay" id="burn-overlay" aria-hidden="true">
+  <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
 </div>
 
 <style>
@@ -82,7 +101,7 @@ fragment_key: frag_classified
   --amber:#ff8c00; --gold:#ffd24a; --warm:#ffe9bf; }
 
 /* header */
-.secret-header { text-align: center; margin-bottom: 40px; }
+.secret-header { text-align: center; margin-bottom: 44px; }
 .secret-ping { font-size: 30px; color: var(--gold); animation: secret-pulse 2.4s ease-in-out infinite; }
 @keyframes secret-pulse { 0%,100%{ transform:scale(1); opacity:.7; } 50%{ transform:scale(1.18); opacity:1; text-shadow:0 0 22px var(--gold);} }
 .secret-statusbar { display:flex; gap:12px; justify-content:center; align-items:center; flex-wrap:wrap;
@@ -96,58 +115,100 @@ fragment_key: frag_classified
   color:#0a0500; background:var(--gold); border-color:var(--gold); box-shadow:0 0 26px rgba(255,210,74,0.55);
   animation: secret-slam 1s cubic-bezier(.2,1.4,.4,1) .5s both; }
 @keyframes secret-slam { 0%{ opacity:0; transform:translate(-50%,-50%) rotate(-11deg) scale(2.4);} 100%{ opacity:1; transform:translate(-50%,-50%) rotate(-11deg) scale(1);} }
-.secret-title { font-family:'Poppins',sans-serif; font-weight:800; font-size:clamp(40px,9vw,72px); letter-spacing:8px;
+.secret-title { font-family:'Poppins',sans-serif; font-weight:800; font-size:clamp(34px,7.6vw,64px); letter-spacing:7px;
   color:var(--gold); margin:14px 0 8px; text-shadow:0 0 30px rgba(255,210,74,0.45); }
 .secret-sub { font-size:11px; letter-spacing:4px; color:rgba(255,140,0,0.66); margin:0 0 18px; }
 .secret-coords { font-size:11px; letter-spacing:1.5px; color:rgba(255,140,0,0.5); }
 .secret-grant { color:var(--gold); }
 
-/* intro — written from the end */
-.secret-intro { font-size:16px; line-height:1.95; color:var(--warm); text-align:center; margin:0 auto 48px; max-width:620px; }
-.secret-intro em { color:rgba(255,140,0,0.85); font-style:italic; }
-.secret-intro strong { color:var(--gold); }
+/* the redaction bar — a TRUE bar: the blocks are the content, nothing hides behind it */
+.rx { color:#050200; background:#050200; border-radius:2px; padding:0 2px;
+  box-shadow:0 0 0 1px rgba(255,140,0,0.14); user-select:none; -webkit-user-select:none;
+  letter-spacing:-1px; white-space:nowrap; }
 
-/* the centerpiece — luminous frame that holds the hardening line */
-.secret-core { text-align:center; padding:44px 30px; border-radius:18px; margin:0 0 44px; position:relative; overflow:hidden;
-  background:radial-gradient(120% 130% at 50% 0%, rgba(255,160,30,0.16), rgba(10,5,0,0.2) 65%);
-  border:1px solid rgba(255,170,40,0.32); box-shadow:0 0 60px -18px rgba(255,170,40,0.5) inset; }
-.secret-core::before { content:""; position:absolute; inset:0 0 auto 0; height:3px;
-  background:linear-gradient(90deg, transparent, var(--gold), transparent); animation:secret-sweep 5s linear infinite; }
-@keyframes secret-sweep { 0%{ transform:translateX(-100%);} 100%{ transform:translateX(100%);} }
-.secret-core-eyebrow { font-size:10px; letter-spacing:4px; color:rgba(255,210,74,0.8); margin-bottom:24px; }
-
-/* #8 — the sentence that hardens. Starts faint + blurred + spaced; the JS below
-   lets it settle into full clarity once, and it stays hardened (assumption → fact). */
-.secret-harden { font-family:'Poppins',sans-serif; font-weight:800; font-size:clamp(20px,3.4vw,30px); line-height:1.5;
-  color:var(--warm); margin:0 auto 18px; max-width:600px; text-shadow:0 0 24px rgba(255,200,90,0.3);
-  filter:blur(7px); opacity:0.2; letter-spacing:0.32em;
-  transition:filter 6.5s ease, opacity 6.5s ease, letter-spacing 6.5s ease; }
-.secret-harden.is-set { filter:blur(0); opacity:1; letter-spacing:0.01em; }
-.secret-core-note { font-size:14px; line-height:1.8; color:rgba(255,233,191,0.78); margin:18px auto 0; max-width:540px; }
-
-/* the Uncle's file — worn, typed field-note fragments */
+/* the three surviving pages — worn, typed, slightly askew */
 .secret-letters { margin:0 0 44px; display:grid; gap:18px; }
 .secret-letters-label { font-size:10px; letter-spacing:4px; color:rgba(255,210,74,0.72); text-align:center; margin-bottom:2px; }
-.secret-letter { position:relative; margin:0; padding:22px 24px; border-radius:6px;
+.secret-letter { position:relative; margin:0; padding:26px 24px 22px; border-radius:6px;
   background:linear-gradient(180deg, rgba(60,44,20,0.5), rgba(38,26,10,0.5));
   border:1px solid rgba(255,180,80,0.18); box-shadow:0 12px 30px -20px rgba(0,0,0,0.85);
   transform:rotate(-0.6deg); }
 .secret-letter--alt { transform:rotate(0.7deg); }
+.secret-file-tab { position:absolute; top:-9px; left:16px; font-size:9px; letter-spacing:3px;
+  color:rgba(255,140,0,0.85); background:#160d02; border:1px solid rgba(255,140,0,0.35);
+  border-radius:3px; padding:2px 9px; }
 .secret-letter p { font-family:'Share Tech Mono', ui-monospace, monospace; font-size:14.5px; line-height:1.85;
   color:rgba(255,233,191,0.9); margin:0 0 10px; }
 .secret-letter p:last-of-type { margin-bottom:0; }
 .secret-letter footer { margin-top:14px; font-size:10px; letter-spacing:2px; text-transform:uppercase;
   color:rgba(255,140,0,0.5); }
 
-/* close */
-.secret-close { text-align:center; font-size:16px; line-height:1.9; color:var(--warm); max-width:600px; margin:0 auto; }
-.secret-close strong { color:var(--gold); }
+/* the found file — the luminous frame holds the memo; it DEVELOPS on arrival */
+.secret-core { padding:40px 30px; border-radius:18px; margin:0 0 44px; position:relative; overflow:hidden;
+  background:radial-gradient(120% 130% at 50% 0%, rgba(255,160,30,0.16), rgba(10,5,0,0.2) 65%);
+  border:1px solid rgba(255,170,40,0.32); box-shadow:0 0 60px -18px rgba(255,170,40,0.5) inset; }
+.secret-core::before { content:""; position:absolute; inset:0 0 auto 0; height:3px;
+  background:linear-gradient(90deg, transparent, var(--gold), transparent); animation:secret-sweep 5s linear infinite; }
+@keyframes secret-sweep { 0%{ transform:translateX(-100%);} 100%{ transform:translateX(100%);} }
+.secret-core-eyebrow { text-align:center; font-size:10px; letter-spacing:4px; color:rgba(255,210,74,0.8); margin-bottom:22px; }
+.secret-memo { max-width:600px; margin:0 auto;
+  filter:blur(6px); opacity:0.25; transition:filter 3.2s ease, opacity 3.2s ease; }
+.secret-memo.is-set { filter:blur(0); opacity:1; }
+.secret-memo-date { font-family:'Share Tech Mono',ui-monospace,monospace; font-size:12px; letter-spacing:2px;
+  color:var(--gold); margin-bottom:14px; }
+.secret-memo p { font-family:'Share Tech Mono', ui-monospace, monospace; font-size:14.5px; line-height:2.0;
+  color:rgba(255,233,191,0.92); margin:0 0 14px; }
+.secret-memo strong { color:var(--gold); }
+.secret-memo-cite { margin-top:18px; font-size:10.5px; letter-spacing:1.5px; line-height:1.9;
+  text-transform:uppercase; color:rgba(255,140,0,0.55); }
+
+/* burn after reading */
+.secret-destruct { text-align:center; margin:54px 0 0; padding-top:36px; border-top:1px solid rgba(255,140,0,0.12); }
+.secret-destruct-label { font-size:11px; letter-spacing:3px; color:var(--amber); margin-bottom:16px;
+  animation: secret-glow 4.5s ease-in-out infinite; }
+@keyframes secret-glow { 0%,100%{ text-shadow:0 0 14px rgba(255,140,0,0.18);} 50%{ text-shadow:0 0 30px rgba(255,140,0,0.5);} }
+.secret-burn-btn { font-family:'Share Tech Mono','Courier New',monospace; font-size:13px; letter-spacing:3px;
+  text-transform:uppercase; color:#ff5b3a; background:rgba(60,10,0,0.35); border:1px solid rgba(255,91,58,0.5);
+  border-radius:2px; padding:13px 34px; cursor:pointer; transition:background .2s, box-shadow .2s, color .2s; }
+.secret-burn-btn:hover { background:rgba(255,91,58,0.14); color:#ff8a66;
+  box-shadow:0 0 24px rgba(255,91,58,0.35), 0 0 70px rgba(255,91,58,0.12); }
+.secret-burn-btn:disabled { opacity:.7; cursor:default; }
+.secret-destruct-note { margin-top:14px; font-size:10px; letter-spacing:2px; color:rgba(255,140,0,0.4); }
+
+/* countdown digits */
+.burn-count { position:fixed; inset:0; z-index:11000; display:none; align-items:center; justify-content:center;
+  pointer-events:none; }
+.burn-count.on { display:flex; }
+.burn-count span { font-family:'Poppins',sans-serif; font-weight:800; font-size:clamp(90px,24vw,220px);
+  color:#ff5b3a; text-shadow:0 0 60px rgba(255,91,58,0.7); animation:burn-tick 0.7s ease both; }
+@keyframes burn-tick { 0%{ transform:scale(1.6); opacity:0; } 30%{ opacity:1; } 100%{ transform:scale(0.92); opacity:.9; } }
+
+/* the flame wall — transform/opacity only; embers are the <i> children */
+.burn-overlay { position:fixed; inset:0; z-index:10999; pointer-events:none; opacity:0;
+  background:
+    linear-gradient(0deg, #000 0%, #1a0500 30%, #7a1d00 55%, #ff6a00 74%, #ffc23a 86%, transparent 100%);
+  transform:translateY(102%); }
+.burn-overlay.is-burning { animation:burn-rise 1.7s cubic-bezier(.55,.06,.68,.19) both; pointer-events:auto; }
+@keyframes burn-rise { 0%{ transform:translateY(102%); opacity:1; } 70%{ transform:translateY(0); opacity:1; } 100%{ transform:translateY(0); opacity:1; } }
+.burn-overlay i { position:absolute; bottom:-12px; width:5px; height:5px; border-radius:50%;
+  background:#ffc23a; box-shadow:0 0 8px 2px rgba(255,150,40,0.8); opacity:0; }
+.burn-overlay.is-burning i { animation:burn-ember 1.4s ease-out both; }
+@keyframes burn-ember { 0%{ transform:translateY(0) scale(1); opacity:0; } 15%{ opacity:1; }
+  100%{ transform:translateY(-92vh) scale(0.4); opacity:0; } }
+.burn-overlay i:nth-child(1){ left:6%;  animation-delay:.05s; } .burn-overlay i:nth-child(2){ left:14%; animation-delay:.30s; }
+.burn-overlay i:nth-child(3){ left:23%; animation-delay:.12s; } .burn-overlay i:nth-child(4){ left:31%; animation-delay:.42s; }
+.burn-overlay i:nth-child(5){ left:40%; animation-delay:.02s; } .burn-overlay i:nth-child(6){ left:49%; animation-delay:.33s; }
+.burn-overlay i:nth-child(7){ left:57%; animation-delay:.18s; } .burn-overlay i:nth-child(8){ left:66%; animation-delay:.48s; }
+.burn-overlay i:nth-child(9){ left:74%; animation-delay:.08s; } .burn-overlay i:nth-child(10){ left:82%; animation-delay:.38s; }
+.burn-overlay i:nth-child(11){ left:90%; animation-delay:.22s; } .burn-overlay i:nth-child(12){ left:96%; animation-delay:.14s; }
+/* the page itself chars and crumples as the wall rises */
+.secret-page.is-burning { transform-origin:50% 100%;
+  animation:burn-char 1.7s cubic-bezier(.55,.06,.68,.19) both; }
+@keyframes burn-char { 0%{ transform:none; opacity:1; } 60%{ opacity:.9; }
+  100%{ transform:translateY(-3vh) scale(0.96) rotate(0.6deg); opacity:0; } }
 
 /* footer */
-.secret-footer { text-align:center; margin-top:54px; }
-.secret-carry { font-size:11px; letter-spacing:3px; color:var(--gold); margin-bottom:24px;
-  animation: secret-glow 4.5s ease-in-out infinite; }
-@keyframes secret-glow { 0%,100%{ text-shadow:0 0 14px rgba(255,200,90,0.18);} 50%{ text-shadow:0 0 30px rgba(255,210,120,0.45);} }
+.secret-footer { text-align:center; margin-top:40px; }
 .secret-return { display:inline-block; font-family:'Poppins',sans-serif; font-weight:800; letter-spacing:2px; font-size:13px;
   color:var(--gold); text-decoration:none; border:2px solid rgba(255,210,74,0.6); border-radius:999px; padding:11px 28px;
   transition:transform .2s, background .2s, color .2s; }
@@ -157,28 +218,58 @@ fragment_key: frag_classified
 @media (max-width:600px){ .secret-core, .secret-letter { padding:22px 18px; } .secret-page { padding:40px 16px 70px; } }
 
 @media (prefers-reduced-motion: reduce){
-  .secret-ping, .secret-dots, .secret-stamp--over, .secret-core::before, .secret-carry { animation:none; }
+  .secret-ping, .secret-dots, .secret-stamp--over, .secret-core::before, .secret-destruct-label { animation:none; }
+  .secret-memo { filter:none; opacity:1; transition:none; }
 }
 </style>
 
-<noscript><style>.secret-harden { filter:none; opacity:1; letter-spacing:0.01em; }</style></noscript>
+<noscript><style>.secret-memo { filter:none; opacity:1; }</style></noscript>
 
 <script>
-/* #8 — the sentence hardens the longer you attend to it, then stays hardened:
-   an assumption, though faint, if persisted in, hardens into fact. */
+/* the found file develops like a photograph once you reach it — one-way */
 (function () {
-  var el = document.getElementById('secret-harden');
+  var el = document.getElementById('secret-memo');
   if (!el) return;
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduce || !('IntersectionObserver' in window)) { el.style.transition = 'none'; el.classList.add('is-set'); return; }
   var io = new IntersectionObserver(function (entries) {
     entries.forEach(function (e) {
       if (e.isIntersecting) {
-        setTimeout(function () { el.classList.add('is-set'); }, 500);
-        io.disconnect();               // one-way: once it hardens, it stays fact
+        setTimeout(function () { el.classList.add('is-set'); }, 350);
+        io.disconnect();
       }
     });
-  }, { threshold: 0.6 });
+  }, { threshold: 0.35 });
   io.observe(el);
 })();
+
+/* BURN AFTER READING — restored 2026-07-14. Three, two, one, and the flame wall
+   takes the page back to the surface. It's just for show; the file returns. */
+function igniteSequence() {
+  var btn = document.getElementById('secret-burn-btn');
+  var overlay = document.getElementById('burn-overlay');
+  var count = document.getElementById('burn-count');
+  var num = document.getElementById('burn-number');
+  var page = document.getElementById('secret-page');
+  if (!btn || !overlay) return;
+  btn.disabled = true; btn.textContent = '▸   BURNING…';
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var home = '{{ "/" | relative_url }}' || '/';
+  if (reduce) { window.location.href = home; return; }
+  var n = 3;
+  count.classList.add('on');
+  (function tick() {
+    if (n < 1) {
+      count.classList.remove('on');
+      overlay.classList.add('is-burning');
+      if (page) page.classList.add('is-burning');
+      setTimeout(function () { window.location.href = home; }, 1750);
+      return;
+    }
+    num.textContent = n;
+    num.style.animation = 'none'; void num.offsetWidth; num.style.animation = '';
+    n--;
+    setTimeout(tick, 750);
+  })();
+}
 </script>
