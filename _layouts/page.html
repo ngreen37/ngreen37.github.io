@@ -3,7 +3,10 @@ layout: default
 ---
 
 <div class="page-card">
-  <h1 class="page-title">{{ page.title }}</h1>
+  {%- comment -%} `own_title: true` lets a page place the sky banner ITSELF (the Academy
+       puts its belt ribbon above it, 2026-07-14 Nate). The page must then render
+       <h1 class="page-title">…</h1> in its own body or it ships headless. {%- endcomment -%}
+  {%- unless page.own_title -%}<h1 class="page-title">{{ page.title }}</h1>{%- endunless -%}
   <div class="page-body">
     {{ content }}
   </div>

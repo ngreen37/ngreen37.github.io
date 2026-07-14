@@ -1,0 +1,74 @@
+---
+layout: game
+title: "Free-Play Board"
+description: "A quiet chess board to think on — set up any position, move anything anywhere. No rules, no clock, no score."
+permalink: /games/free-play/
+---
+
+{% comment %} Moved OUT of the Academy 2026-07-14 (Nate: "Free-play board, move that to
+     Learn in Games Hall"). Same board, same no-rules spirit: it's a thinking table,
+     not a referee. Listed in the Learn hall via pjcc-games-data.js. {% endcomment %}
+
+<div class="fp-wrap">
+  <div class="fp-tools">
+    <button class="fp-btn" id="fp-reset" type="button">↺ Reset pieces</button>
+    <button class="fp-btn" id="fp-clear" type="button">⌫ Clear board</button>
+    <span class="fp-hint" id="fp-hint">Tap a piece to pick it up.</span>
+  </div>
+  <div class="fp-board" id="fp-board"></div>
+</div>
+
+<div class="game-info">
+  <p><strong>How to play.</strong> There are no rules here — tap a piece, tap where it goes. Set up positions, replay ideas, think out loud.</p>
+</div>
+
+<script>
+(function () {
+  var host = document.getElementById('fp-board'); if (!host) return;
+  var GLYPH = { r: '♜', n: '♞', b: '♝', q: '♛', k: '♚', p: '♟', R: '♖', N: '♘', B: '♗', Q: '♕', K: '♔', P: '♙' };
+  var board = new Array(64).fill(''), sel = -1;
+  var hint = document.getElementById('fp-hint');
+  function reset() {
+    board = new Array(64).fill('');
+    var back = ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'];
+    for (var f = 0; f < 8; f++) { board[f] = back[f]; board[8 + f] = 'p'; board[48 + f] = 'P'; board[56 + f] = back[f].toUpperCase(); }
+    sel = -1; draw();
+  }
+  function draw() {
+    host.innerHTML = '';
+    for (var i = 0; i < 64; i++) {
+      var rr = (i / 8) | 0, cc = i % 8;
+      var cell = document.createElement('div');
+      cell.className = 'fp-c ' + (((rr + cc) % 2 === 0) ? 'lt' : 'dk') + (i === sel ? ' sel' : '');
+      cell.setAttribute('data-i', i);
+      if (board[i]) cell.textContent = GLYPH[board[i]] || '';
+      host.appendChild(cell);
+    }
+  }
+  host.addEventListener('click', function (e) {
+    var c = e.target.closest('.fp-c'); if (!c) return; var i = +c.getAttribute('data-i');
+    if (sel === -1) { if (board[i]) { sel = i; if (hint) hint.textContent = 'Now tap a destination.'; } }
+    else { if (i !== sel) { board[i] = board[sel]; board[sel] = ''; } sel = -1; if (hint) hint.textContent = 'Tap a piece to pick it up.'; }
+    draw();
+  });
+  document.getElementById('fp-reset').onclick = reset;
+  document.getElementById('fp-clear').onclick = function () { board = new Array(64).fill(''); sel = -1; draw(); };
+  reset();
+})();
+</script>
+
+<style>
+.fp-wrap { max-width: 480px; margin: 0 auto; }
+.fp-tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+.fp-btn { background: rgba(80,30,180,0.25); color: #F5C518; border: 1px solid rgba(150,65,255,0.5);
+  border-radius: 999px; padding: 8px 14px; font-family: inherit; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
+.fp-btn:hover { border-color: #F5C518; }
+.fp-hint { color: #9a7fd4; font-size: 0.82rem; }
+.fp-board { display: grid; grid-template-columns: repeat(8, 1fr); width: 100%; aspect-ratio: 1;
+  border: 2px solid #6b5fa0; border-radius: 6px; overflow: hidden; touch-action: manipulation; }
+.fp-c { display: flex; align-items: center; justify-content: center; font-size: clamp(20px, 6.5vw, 38px);
+  cursor: pointer; user-select: none; line-height: 1; }
+.fp-c.lt { background: #efe6d2; color: #2a1a06; }
+.fp-c.dk { background: #b9986a; color: #1a0f06; }
+.fp-c.sel { box-shadow: 0 0 0 3px #6bffb8 inset; }
+</style>

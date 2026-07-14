@@ -124,7 +124,7 @@
         '<span class="pjcc-sub">' + esc(rankName) + ' · <span class="pjcc-credits">' + prof.credits + ' credits</span></span>' +
       '</div>' +
       '<span class="pjcc-spacer"></span>' +
-      '<a class="pjcc-trophy" href="/dossier/">🗂 Dossier</a>' +
+      '<a class="pjcc-trophy" href="/dossier/">🗂 Profile</a>' +
       '<a class="pjcc-trophy" href="/leaderboards/">🏆 Leaderboards</a>' +
       '<button id="pjcc-edit" class="pjcc-btn-ghost">Change avatar</button>' +
       '<button id="pjcc-out" class="pjcc-btn-ghost">Sign out</button>';

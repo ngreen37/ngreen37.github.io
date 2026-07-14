@@ -47,7 +47,7 @@
     'Games': 'ゲーム', 'Characters': 'キャラクター',
     'Characters & Locations': 'キャラクターとロケーション', 'Locations': 'ロケーション',
     'Academy': 'アカデミー',
-    'Your Dossier': 'あなたのファイル', 'Dossier': 'ファイル', 'Operative Dossier': '機密ファイル',
+    'Your Dossier': 'あなたのファイル', 'Dossier': 'ファイル', 'Operative Dossier': '機密ファイル', 'Your Profile': 'あなたのプロフィール', 'Profile': 'プロフィール',
     'Command Center': '司令部', 'Projects': 'プロジェクト', 'Blog': 'ブログ', 'Build Log': 'ビルドログ',
     'Mailing List': 'メール登録', 'For Educators': '教育者向け',
     'About / Contact': '概要・連絡', 'Contact': '連絡先', 'About': '概要', 'Support': 'サポート',

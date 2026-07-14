@@ -13,7 +13,7 @@
  */
 'use strict';
 
-const VERSION    = 'pjcc-pwa-v3';   // v3: purge the shell that still held the pre-code pjcc-profile.js
+const VERSION    = 'pjcc-pwa-v4';   // v4: drop the deleted terminated games (tour/zoomies) + dark battle-room from the warm list
 const SHELL      = 'pjcc-shell-' + VERSION;
 const RUNTIME    = 'pjcc-runtime-' + VERSION;
 const OFFLINE_URL = '/offline.html';
@@ -43,10 +43,10 @@ const GAMES = [
   '/assets/games/notation_run.html', '/assets/games/pjcc_clearance.html',
   '/assets/games/pjcc_sandmine.html', '/assets/games/pjcc_shogi.html',
   '/assets/games/pjcc_sky_run.html', '/assets/games/pjcc_space_run.html',
-  '/assets/games/pjcc_tour.html', '/assets/games/pjcc_tower_defense.html',
-  '/assets/games/pjcc_chess_city.html', '/assets/games/pjcc_battle_room.html',
+  '/assets/games/pjcc_tower_defense.html',
+  '/assets/games/pjcc_chess_city.html',
   '/assets/games/pjcc_murphys_law.html', '/assets/games/pjcc_reading_room.html',
-  '/assets/games/pjcc_princess_dungeon.html', '/assets/games/pjcc_zoomies.html',
+  '/assets/games/pjcc_princess_dungeon.html',
   '/assets/js/pjcc-chess.js', '/assets/js/pjcc-chess-ai.js', '/assets/js/pjcc-gauntlet-engine.js',
   '/assets/vendor/stockfish/stockfish.js', '/assets/vendor/stockfish/stockfish.wasm',
   // the self-hosted webfaces the site actually paints with (latin subsets only — the

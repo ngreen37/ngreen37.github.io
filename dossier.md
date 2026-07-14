@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Your Dossier
+title: Your Profile
 permalink: /dossier/
 ---
 
@@ -33,7 +33,7 @@ permalink: /dossier/
 
 <!-- One identity slot: shows the greeting instantly, then UPGRADES IN PLACE to your
      operative header once the account loads. Renders signed-out & offline. -->
-<div id="dsr-top"><p class="cc-greet" id="cc-greet">Loading your dossier…</p></div>
+<div id="dsr-top"><p class="cc-greet" id="cc-greet">Loading your profile…</p></div>
 
 <!-- ── Identity forge — build your look (instant; signed-out & offline) ── -->
 <div id="forge-mount"></div>
@@ -87,7 +87,7 @@ permalink: /dossier/
     'the-gauntlet': ['The Gauntlet', 'cleared'], 'clearance-delta': ['Clearance: DELTA', 'score'],
     'notation-run': ['Notation Blitz', 'score'], 'notation-accuracy': ['Notation · Timing', 'precision'], 'fork-in-the-road': ['Fork in the Road', 'solved'],
     'sand-mine-depths': ['Sand Mine Depths', 'points'], 'pirc-protocol': ['Pirc Protocol', 'flawless'],
-    'shogi-island': ['Shogi Island', 'solved'], 'reading-room': ['The Reading Room', 'score'], 'knights-tour': ["Knight's Tour", 'score'],
+    'shogi-island': ['Shogi Island', 'solved'], 'reading-room': ['The Reading Room', 'score'],
     'blindfold': ['Blindfold Puzzles', 'solved'], 'tower-defense': ['Siege on Chess City', 'score'],
     'siege-endless': ['Siege · Endless', 'wave'], 'sky-run': ['Sky Run', 'score'], 'dungeon': ['Princess Dungeon', 'floors']
   };

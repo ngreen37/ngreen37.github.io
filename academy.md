@@ -2,14 +2,14 @@
 layout: page
 title: PJCC Chess Academy
 permalink: /academy/
+own_title: true
 ---
 
+{% comment %} 2026-07-14 (Nate): the belt ribbon now stands ABOVE the title (own_title
+     lets this page place the sky banner itself), the ♚ crest under the title is gone,
+     and the whole top reads: your belt → the name of the school → your next move. {% endcomment %}
 
-<div class="ac-hero">
-  <div class="ac-crest">♚</div>
-</div>
-
-<!-- ===== Belt + progress ===== -->
+<!-- ===== Belt + progress — the ribbon above the school's name ===== -->
 <div class="ac-belt-wrap">
   <div class="ac-belt-now">
     <div class="ac-belt-ico" id="ac-belt-ico">⛂</div>
@@ -25,15 +25,15 @@ permalink: /academy/
   </div>
 </div>
 
-<!-- ===== Recommended next ===== -->
+<h1 class="page-title">PJCC Chess Academy</h1>
+
+<!-- ===== Recommended next — small and quiet (2026-07-14) ===== -->
 <div class="ac-next-card" id="ac-next-card" hidden>
-  <div class="ac-next-eyebrow">▶ Start here · your next move</div>
   <div class="ac-next-row">
     <div class="ac-next-ico" id="ac-next-ico">♟</div>
     <div class="ac-next-body">
+      <div class="ac-next-eyebrow">Your next move</div>
       <div class="ac-next-title" id="ac-next-title">—</div>
-      <div class="ac-next-desc" id="ac-next-desc">—</div>
-      <div class="ac-next-who" id="ac-next-who">—</div>
     </div>
     <a class="ac-next-go" id="ac-next-go" href="#">Start ▸</a>
   </div>
@@ -52,23 +52,17 @@ permalink: /academy/
      on this site is already deleted, and a streak you can BREAK is pressure — the opposite of
      "inviting, simple, warm". {% endcomment %}
 
-<!-- ===== The path ===== -->
+<!-- ===== The path (open halls only — Building moved below, 2026-07-14) ===== -->
 <h2 class="ac-h2">The path</h2>
-<p class="ac-path-lead" id="ac-path-lead">Open Auston's Bootcamp to see the lessons. The rest of the halls open as they're built.</p>
+<p class="ac-path-lead" id="ac-path-lead">Open Auston's Bootcamp to see the lessons.</p>
 <div class="ac-courses" id="ac-courses"></div>
 
-<!-- ===== Free-play board (collapsed) ===== -->
-<details class="ac-fold">
-<summary><span class="ac-fold-t">♟ Free-play board</span><span class="ac-fold-hint">a quiet board to think on — no rules, no score</span></summary>
-<div class="ac-fold-body">
-<div class="ac-sb-tools">
-  <button class="ac-print-btn" id="ac-sb-reset" type="button">↺ Reset pieces</button>
-  <button class="ac-print-btn" id="ac-sb-clear" type="button">⌫ Clear board</button>
-  <span class="ac-sb-hint" id="ac-sb-hint">Tap a piece to pick it up.</span>
-</div>
-<div class="ac-sb" id="ac-sb"></div>
-</div>
-</details>
+<!-- ===== Being built — the halls that aren't open yet, in their own quiet row ===== -->
+<h2 class="ac-h2 ac-h2--soon">Being built</h2>
+<div class="ac-courses ac-courses--soonwrap" id="ac-courses-soon"></div>
+
+{% comment %} The FREE-PLAY BOARD left this page 2026-07-14 (Nate: "move that to Learn
+     in Games Hall") — it lives at /games/free-play/ now, listed in the Learn hall. {% endcomment %}
 
 <!-- ===== For teachers & parents (collapsed) ===== -->
 <details class="ac-fold ac-fold-teacher">
@@ -151,7 +145,7 @@ permalink: /academy/
       <li>The <b>pawn</b> (♙) moves forward but captures diagonally. From <b>e2</b>, where can it move on its first turn? ____________</li>
       <li>Bonus: why can a <b>bishop</b> never visit every square on the board? ____________</li>
     </ol>
-    <p class="ws-foot">Practice the knight's jump in <b>Sand Mine Depths</b> and <b>Knight's Tour</b>.</p>
+    <p class="ws-foot">Practice the knight's jump in <b>Sand Mine Depths</b>.</p>
   </div>
   <!-- Page 3 — first tactics -->
   <div class="ws-page">
@@ -200,7 +194,7 @@ permalink: /academy/
     <table class="ws-curric">
       <tr><th>Week</th><th>Focus</th><th>Faculty · Game</th><th>Homework</th></tr>
       <tr><td>1</td><td>The board &amp; coordinates</td><td>Auston · Notation Blitz</td><td>Worksheet 1</td></tr>
-      <tr><td>2</td><td>How the pieces move</td><td>Auston · Sand Mine / Knight's Tour</td><td>Worksheet 2</td></tr>
+      <tr><td>2</td><td>How the pieces move</td><td>Auston · Sand Mine Depths</td><td>Worksheet 2</td></tr>
       <tr><td>3</td><td>Openings — the first moves</td><td>Argus · The Pirc Protocol</td><td>Play one line</td></tr>
       <tr><td>4</td><td>Tactics — forks &amp; pins</td><td>The Rival · Fork in the Road</td><td>Worksheet 3 · solve 3</td></tr>
       <tr><td>5</td><td>Strategy — the long game</td><td>Maxwell · Siege on Chess City</td><td>Play one siege</td></tr>
@@ -351,7 +345,7 @@ window.ACCERT = (function () {
       lad.appendChild(pip);
     });
 
-    // recommended next
+    // recommended next — one line + one button (2026-07-14: "EVEN less wordy")
     var rec = null;
     var ordered = allLessons();
     for (var i = 0; i < ordered.length; i++) { if (!ordered[i].l.done()) { rec = ordered[i]; break; } }
@@ -361,18 +355,14 @@ window.ACCERT = (function () {
       document.getElementById('ac-next-ico').textContent = rec.c.ico;
       document.getElementById('ac-next-ico').style.color = rec.c.accent;
       document.getElementById('ac-next-title').textContent = rec.l.t;
-      document.getElementById('ac-next-desc').textContent = rec.l.d;
-      document.getElementById('ac-next-who').innerHTML = 'with <b style="color:' + rec.c.accent + '">' + esc(rec.c.who) + '</b> · ' + esc(rec.c.sub);
       document.getElementById('ac-next-go').href = gameUrl(rec.l.go);
     } else {
       card.hidden = false;
       document.getElementById('ac-next-ico').textContent = '🎓';
       document.getElementById('ac-next-ico').style.color = '#ffd36b';
-      document.getElementById('ac-next-title').textContent = "You've finished Auston's Bootcamp.";
-      document.getElementById('ac-next-desc').textContent = 'Print your certificate below. The next halls are still being built — come back and they\'ll be waiting.';
-      document.getElementById('ac-next-who').innerHTML = 'Auston is proud of you. He would never say it.';
+      document.getElementById('ac-next-title').textContent = 'Bootcamp finished — print your certificate below.';
       document.getElementById('ac-next-go').href = '{{ "/leaderboards/" | relative_url }}';
-      document.getElementById('ac-next-go').textContent = 'Leaderboards ▸';
+      document.getElementById('ac-next-go').textContent = 'Boards ▸';
     }
 
     /* Courses — SMALL boxes (2026-07-13, Nate: "make all the boxes small. You should click
@@ -388,12 +378,11 @@ window.ACCERT = (function () {
        them to open, and a box that opens onto an apology is worse than a box that doesn't
        open. Each one still offers the one true thing it has — go meet whoever will teach it. */
     var cw = document.getElementById('ac-courses'); cw.innerHTML = '';
+    var sw = document.getElementById('ac-courses-soon'); if (sw) sw.innerHTML = '';
     COURSES.forEach(function(c){
       if (c.soon) {
-        // The whole tile is the link — one row, exactly as tall as the Bootcamp's summary.
-        // (It used to carry a separate "Meet X →" line underneath, which made every LOCKED
-        //  hall taller than the one hall that's actually open. The important box was the
-        //  smallest box on the page.)
+        // Building halls live in their OWN row below the path now (2026-07-14 Nate) —
+        // the whole tile is still the link to whoever will teach it.
         var t = document.createElement('a');
         t.className = 'ac-course ac-course--soon';
         t.href = charUrl(c.slug);
@@ -406,7 +395,7 @@ window.ACCERT = (function () {
               '<small class="ac-course-sub">' + esc(c.sub) + '</small></span>' +
             '<span class="ac-course-prog ac-course-prog--soon">Building</span>' +
           '</span>';
-        cw.appendChild(t);
+        (sw || cw).appendChild(t);
         return;
       }
 
@@ -544,39 +533,7 @@ window.ACCERT = (function () {
      2026-07-12, likewise: three of its six tasks pointed at Fork in the Road, The Pirc
      Protocol and Knight's Tour, none of which are live games. Both restore from git.) */
 
-  // ---- sandbox board (free-move, no rules) ----
-  (function () {
-    var host = $('ac-sb'); if (!host) return;
-    var GLYPH = { r: '♜', n: '♞', b: '♝', q: '♛', k: '♚', p: '♟', R: '♖', N: '♘', B: '♗', Q: '♕', K: '♔', P: '♙' };
-    var board = new Array(64).fill(''), sel = -1;
-    function reset() {
-      board = new Array(64).fill('');
-      var back = ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'];
-      for (var f = 0; f < 8; f++) { board[f] = back[f]; board[8 + f] = 'p'; board[48 + f] = 'P'; board[56 + f] = back[f].toUpperCase(); }
-      sel = -1; draw();
-    }
-    function draw() {
-      host.innerHTML = '';
-      for (var i = 0; i < 64; i++) {
-        var rr = (i / 8) | 0, cc = i % 8;
-        var cell = document.createElement('div');
-        cell.className = 'ac-sb-c ' + (((rr + cc) % 2 === 0) ? 'lt' : 'dk') + (i === sel ? ' sel' : '');
-        cell.setAttribute('data-i', i);
-        if (board[i]) cell.textContent = GLYPH[board[i]] || '';
-        host.appendChild(cell);
-      }
-    }
-    host.addEventListener('click', function (e) {
-      var c = e.target.closest('.ac-sb-c'); if (!c) return; var i = +c.getAttribute('data-i'); var hint = $('ac-sb-hint');
-      if (sel === -1) { if (board[i]) { sel = i; if (hint) hint.textContent = 'Now tap a destination.'; } }
-      else { if (i !== sel) { board[i] = board[sel]; board[sel] = ''; } sel = -1; if (hint) hint.textContent = 'Tap a piece to pick it up.'; }
-      draw();
-    });
-    var rb = $('ac-sb-reset'), cb = $('ac-sb-clear');
-    if (rb) rb.onclick = reset;
-    if (cb) cb.onclick = function () { board = new Array(64).fill(''); sel = -1; draw(); };
-    reset();
-  })();
+  // (The free-play sandbox board moved to /games/free-play/ — 2026-07-14, Nate.)
 
   // ---- class code (local) ----
   (function () {
@@ -645,12 +602,16 @@ window.ACCERT = (function () {
 </script>
 
 <style>
-.ac-hero { text-align: center; max-width: 720px; margin: 0 auto 4px; }
-.ac-crest { font-size: 38px; color: #F5C518; line-height: 1; text-shadow: 0 0 22px rgba(245,197,24,0.4); }
+/* (the ♚ crest under the title was deleted 2026-07-14 — Nate.) */
 
-/* belt — slimmed 2026-07-13 with everything else on this page */
-.ac-belt-wrap { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; background: linear-gradient(135deg,#1f1147,#2d1b69);
-  border: 1px solid rgba(245,197,24,0.3); border-radius: var(--r-md); padding: 11px 15px; margin: 12px 0; }
+/* the mid-page sky banner: own_title puts it BELOW the belt ribbon, so undo the
+   card-top geometry the shared rule assumes (it normally cancels the card padding) */
+.page-body > .page-title { margin: 14px -44px 22px; border-radius: 0; }
+@media (max-width: 700px){ .page-body > .page-title { margin: 12px -20px 18px; } }
+
+/* belt — the ribbon above the school's name (2026-07-14), slimmer than ever */
+.ac-belt-wrap { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; background: linear-gradient(135deg,#1f1147,#2d1b69);
+  border: 1px solid rgba(245,197,24,0.3); border-radius: var(--r-md); padding: 9px 14px; margin: 0 0 4px; }
 .ac-belt-now { display: flex; align-items: center; gap: 10px; }
 .ac-belt-ico { font-size: 28px; color: #F5C518; line-height: 1; }
 .ac-belt-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: #9a7fd4; }
@@ -669,18 +630,16 @@ window.ACCERT = (function () {
    but plainly not on offer */
 .ac-pip.soon { opacity: 0.32; border-style: dashed; }
 
-/* recommended next — the one loud thing left on the page, and the only one that should be:
-   it's the invitation. Everything around it got quieter so this could stay bright. */
-.ac-next-card { background: rgba(245,197,24,0.09); border: 1px solid #F5C518; border-radius: var(--r-lg); padding: 14px 16px; margin: 14px 0; box-shadow: 0 0 26px rgba(245,197,24,0.14); }
-.ac-next-eyebrow { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: #F5C518; font-weight: 700; margin-bottom: 7px; }
-.ac-next-row { display: flex; align-items: center; gap: 12px; }
-.ac-next-ico { font-size: 30px; flex: 0 0 auto; }
+/* recommended next — smaller and quieter again (2026-07-14: "a little smaller and
+   EVEN less wordy"): one icon, one line, one button. */
+.ac-next-card { background: rgba(245,197,24,0.09); border: 1px solid #F5C518; border-radius: var(--r-md); padding: 9px 13px; margin: 12px 0; box-shadow: 0 0 18px rgba(245,197,24,0.1); }
+.ac-next-eyebrow { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: #F5C518; font-weight: 700; }
+.ac-next-row { display: flex; align-items: center; gap: 11px; }
+.ac-next-ico { font-size: 24px; flex: 0 0 auto; }
 .ac-next-body { min-width: 0; flex: 1; }
-.ac-next-title { font-size: 1rem; font-weight: 800; color: #f0e6ff; }
-.ac-next-desc { color: #c9a7ff; font-size: 0.85rem; }
-.ac-next-who { color: #9a7fd4; font-size: 0.76rem; margin-top: 2px; }
+.ac-next-title { font-size: 0.94rem; font-weight: 800; color: #f0e6ff; }
 .ac-next-go { flex: 0 0 auto; background: #F5C518; color: #1a0f3d; font-weight: 800; text-decoration: none;
-  border-radius: 999px; padding: 9px 16px; white-space: nowrap; }
+  border-radius: 999px; padding: 8px 15px; white-space: nowrap; }
 .ac-next-go:hover { background: #ffd740; }
 
 /* ── The path: five SMALL halls (2026-07-13) ──────────────────────────────────
@@ -689,6 +648,7 @@ window.ACCERT = (function () {
    one is a <details>: clicking the tile unfolds the blurb, the teacher and the lessons.
    Closed, the whole path is about the height one card used to be. */
 .ac-h2 { color: #F5C518; margin: 24px 0 6px; font-size: 1.15rem; }
+.ac-h2--soon { color: #9a7fd4; font-size: 0.95rem; margin-top: 28px; }
 .ac-path-lead { color: #c9a7ff; font-size: 0.86rem; margin: 0 0 12px; }
 /* align-items:start is load-bearing. Grid rows STRETCH by default, so the moment you open
    the Bootcamp its whole row grows with it — and the "Building" tiles beside it inflate into
@@ -814,13 +774,7 @@ window.ACCERT = (function () {
 .ac-fold-body > .ac-class-intro:first-child { margin-top: 0; }
 
 /* sandbox board */
-.ac-sb-tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
-.ac-sb-hint { color: #9a7fd4; font-size: 0.82rem; }
-.ac-sb { display: grid; grid-template-columns: repeat(8, 1fr); width: 100%; max-width: 400px; aspect-ratio: 1; border: 2px solid #6b5fa0; border-radius: 6px; overflow: hidden; }
-.ac-sb-c { display: flex; align-items: center; justify-content: center; font-size: clamp(18px, 6vw, 30px); cursor: pointer; user-select: none; line-height: 1; }
-.ac-sb-c.lt { background: #efe6d2; color: #2a1a06; }
-.ac-sb-c.dk { background: #b9986a; color: #1a0f06; }
-.ac-sb-c.sel { box-shadow: 0 0 0 3px #6bffb8 inset; }
+/* (free-play board styles moved with it to /games/free-play/ — 2026-07-14) */
 
 /* classroom tools */
 .ac-tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin: 12px 0; }
