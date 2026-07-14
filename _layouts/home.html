@@ -532,6 +532,9 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
   if (!door) return;
   // grandeur tier — the door grows richer with every floor cleared
   door.setAttribute('data-grand', cleared === 0 ? 0 : cleared <= 2 ? 1 : cleared <= 4 ? 2 : cleared <= 6 ? 3 : cleared <= 9 ? 4 : 5);
+  // ...and the LEAF hanging in the arch belongs to the place you're about to
+  // enter (1-based floor). Cloth, mine timber, tide-gate — see _pjcc-09-widgets.
+  if (cur < NAMES.length) door.setAttribute('data-floor', cur + 1);
   var pipHost = document.getElementById('gdoor-pips');
   if (pipHost) { var h = '';
     for (var k = 0; k < NAMES.length; k++) { h += '<i class="' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></i>'; }

@@ -126,6 +126,17 @@ prototype (`/games/dungeon/`) is the playable spec; the Godot build is the same 
 - **P8 Ship v1:** tune vs the ghost; announce with a Blender trailer.
 - **Anti-overscope:** P0–P3 are the real risk. Get **one beautiful web-exported room** live before floors, relics, or bosses.
 
+### 🌊 The scene Nate wants to render *(2026-07-14, his words: "one important scene")*
+**A chessboard on the open sea, its ranks rising and falling on a sine/cosine wave.**
+The board is the water — files and ranks bend with the swell, pieces stay upright on
+their squares while the squares themselves roll. Cheap in Blender: a subdivided plane
+with a checker material, displaced by `sin(x·a + t) + cos(y·b + t)` (a Wave modifier or
+a two-term displacement in geometry nodes); pieces parented to the surface so they ride
+it. Sits on top of the **Tidecaller** (Gauntlet Floor 3, The Sea) — this is *his* board.
+Use it as a cutscene intro / title card ([[idea-blender-cutscene-intros]]) and, further
+out, as the Tidecaller's actual battle backdrop. **The Floor-3 door on the site is the
+first sketch of it** — a checkerboard riding a sampled sine (`_pjcc-09-widgets.scss`).
+
 ---
 
 # 🛣️ The Avenues

@@ -713,3 +713,140 @@ textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
   .cl-blindfold-toggle { padding: 11px 14px; }
   .cl-endgame-link { display: inline-block; padding: 11px 10px; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THE GAUNTLET DOOR — ONE LEAF PER FLOOR  (Nate 2026-07-14)
+   ──────────────────────────────────────────────────────────────────────────
+   The ARCH is the brand: same frame on every floor, growing richer with the
+   climb (`data-grand` 0..5, in the two page copies). The LEAF hanging in it
+   belongs to the PLACE you are about to enter (`data-floor`, 1-based, set by
+   the same hydration JS on the home hero and the games page).
+
+     1  Checker Town      a tattered cloth        (lives with data-grand="0")
+     2  The Sand Mines    timber + iron mine door
+     3  The Sea           a barnacled tide-gate
+
+   These live HERE, in the one stylesheet, and not inline in the two page
+   copies — the twins have drifted before. Every layer is static paint; the
+   only motion is transform/opacity (see [[css-perf-lessons]]).
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── FLOOR 2 · THE SAND-MINE FOREMAN — the pit door ───────────────────────
+   Rough planks, two iron ledgers and a diagonal brace, four rivets, a ring
+   for a handle. It is HEAVY: it opens slowly, and not very far. ── */
+.gdoor[data-floor="2"] .gdoor-door {
+  border: 1px solid rgba(60, 44, 26, 0.9);
+  background:
+    /* rivets at the ledger ends */
+    radial-gradient(circle 1.6px at 13% 30%, #c9b48c, transparent 100%),
+    radial-gradient(circle 1.6px at 87% 30%, #c9b48c, transparent 100%),
+    radial-gradient(circle 1.6px at 13% 72%, #c9b48c, transparent 100%),
+    radial-gradient(circle 1.6px at 87% 72%, #c9b48c, transparent 100%),
+    /* the diagonal brace */
+    linear-gradient(-58deg, transparent 46%, rgba(58, 58, 66, 0.8) 46% 52%, transparent 52%),
+    /* two iron ledgers */
+    linear-gradient(180deg, transparent 0 27%, rgba(58, 58, 66, 0.92) 27% 33%, transparent 33%),
+    linear-gradient(180deg, transparent 0 69%, rgba(58, 58, 66, 0.92) 69% 75%, transparent 75%),
+    /* plank seams + a little grain */
+    repeating-linear-gradient(90deg, rgba(30, 20, 10, 0.5) 0 1.5px, transparent 1.5px 12px),
+    linear-gradient(180deg, #7a5c39 0%, #5c4326 60%, #402d18 100%);
+  transform-origin: 0 50%;
+  transition: transform .55s cubic-bezier(.35, .05, .2, 1);   /* slow, heavy */
+}
+.gdoor[data-floor="2"] .gdoor-knob {                 /* an iron pull-ring */
+  width: 8px; height: 8px; background: transparent;
+  border: 2px solid #9a8a72; box-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
+}
+.gdoor[data-floor="2"] .gdoor-glyph { color: #e8dcc0; opacity: 0.8;   /* chalked on */
+  filter: drop-shadow(0 0 6px rgba(252, 188, 60, 0.45)); }
+.gdoor[data-floor="2"]:hover .gdoor-door,
+.gdoor[data-floor="2"]:focus-visible .gdoor-door {
+  transform: perspective(320px) rotateY(-16deg);
+}
+
+/* ── FLOOR 3 · THE TIDECALLER — the tide-gate ─────────────────────────────
+   Bleached driftwood gone grey-green, two bands of verdigris copper, and a
+   crust of barnacles where the water reaches. The sea has been ON this door.
+
+   The wet third of it is A CHESSBOARD RIDING A SINE WAVE — the crest is a
+   clip-path sampled off a real sine (two cycles), and the whole wet zone
+   drifts on a slow swell. That is deliberate: it is the same picture as the
+   Blender scene Nate wants — a chessboard on the open sea, the ranks rising
+   and falling on a sine/cosine. The door is the first sketch of it.
+   Light comes from BELOW here, the way it does underwater. ── */
+.gdoor[data-floor="3"] .gdoor-arch {
+  background: radial-gradient(ellipse at 50% 88%,
+    color-mix(in srgb, var(--acc) 42%, #05202b), #06121c 78%);
+}
+.gdoor[data-floor="3"] .gdoor-door {
+  border: 1px solid rgba(120, 180, 180, 0.45);
+  background:
+    /* barnacles — they crust ABOVE the swell, at the high-water mark */
+    radial-gradient(circle 2px   at 19% 34%, rgba(232, 246, 242, 0.85), transparent 100%),
+    radial-gradient(circle 1.3px at 26% 40%, rgba(232, 246, 242, 0.6),  transparent 100%),
+    radial-gradient(circle 2px   at 76% 37%, rgba(232, 246, 242, 0.8),  transparent 100%),
+    radial-gradient(circle 1.3px at 69% 42%, rgba(232, 246, 242, 0.55), transparent 100%),
+    /* a knot or two in the old wood */
+    radial-gradient(ellipse 3px 2px at 41% 24%, rgba(24, 44, 44, 0.5), transparent 100%),
+    radial-gradient(ellipse 2px 3px at 78% 33%, rgba(24, 44, 44, 0.4), transparent 100%),
+    /* the verdigris strap across the head of the door */
+    linear-gradient(180deg, transparent 0 12%, rgba(84, 190, 170, 0.62) 12% 18%,
+                    rgba(40, 110, 100, 0.5) 18% 20%, transparent 20%),
+    /* salt bleaching + damp rising up the planks */
+    repeating-linear-gradient(90deg, rgba(10, 34, 42, 0.45) 0 1px, transparent 1px 12px),
+    linear-gradient(180deg, #93a49c 0%, #6d8480 38%, #47635f 66%, #2c4650 100%);
+  transform-origin: 0 50%;
+  transition: transform .6s cubic-bezier(.25, 1.2, .4, 1);    /* buoyant */
+}
+/* THE FRONT SWELL — a chessboard riding a sine wave. The crest is a sampled
+   sine (two cycles); the drop-shadow rims it in foam, because a drop-shadow
+   follows the CLIPPED shape and a plain gradient could not. */
+.gdoor[data-floor="3"] .gdoor-door::before {
+  content: ''; position: absolute; left: -8px; right: -8px; bottom: 0; height: 46%;
+  z-index: 1; pointer-events: none;
+  background: repeating-conic-gradient(rgba(214, 244, 250, 0.30) 0% 25%, rgba(5, 38, 52, 0.46) 0% 50%);
+  background-size: 9px 9px;
+  /* y = 27% − 20%·sin(2·2πx), sampled every 3.6% — dense enough that the straight
+     segments of polygon() read as a curve. Sparse points give you a zigzag. */
+  clip-path: polygon(0% 27%, 3.6% 18.3%, 7.1% 11.4%, 10.7% 7.5%, 14.3% 7.5%, 17.9% 11.4%,
+    21.4% 18.3%, 25% 27%, 28.6% 35.7%, 32.1% 42.6%, 35.7% 46.5%, 39.3% 46.5%, 42.9% 42.6%,
+    46.4% 35.7%, 50% 27%, 53.6% 18.3%, 57.1% 11.4%, 60.7% 7.5%, 64.3% 7.5%, 67.9% 11.4%,
+    71.4% 18.3%, 75% 27%, 78.6% 35.7%, 82.1% 42.6%, 85.7% 46.5%, 89.3% 46.5%, 92.9% 42.6%,
+    96.4% 35.7%, 100% 27%, 100% 100%, 0 100%);
+  filter: drop-shadow(0 -1.5px 0 rgba(226, 250, 255, 0.72));   /* foam on the crest */
+  animation: gdoorSwell 9s ease-in-out infinite;
+}
+/* THE BACK SWELL — deeper water, half a phase behind, drifting the other way */
+.gdoor[data-floor="3"] .gdoor-door::after {
+  content: ''; position: absolute; left: -8px; right: -8px; bottom: 0; height: 56%;
+  z-index: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(28, 96, 116, 0.72), rgba(8, 44, 62, 0.86));
+  /* y = 20% − 11%·sin(2π(3x + 0.35)) — three shorter cycles, out of phase */
+  clip-path: polygon(0% 11.1%, 3.3% 16.6%, 6.7% 23.4%, 10% 28.9%, 13.3% 31%, 16.7% 28.9%,
+    20% 23.4%, 23.3% 16.6%, 26.7% 11.1%, 30% 9%, 33.3% 11.1%, 36.7% 16.6%, 40% 23.4%,
+    43.3% 28.9%, 46.7% 31%, 50% 28.9%, 53.3% 23.4%, 56.7% 16.6%, 60% 11.1%, 63.3% 9%,
+    66.7% 11.1%, 70% 16.6%, 73.3% 23.4%, 76.7% 28.9%, 80% 31%, 83.3% 28.9%, 86.7% 23.4%,
+    90% 16.6%, 93.3% 11.1%, 96.7% 9%, 100% 11.1%, 100% 100%, 0 100%);
+  filter: drop-shadow(0 -1px 0 rgba(190, 236, 244, 0.4));
+  animation: gdoorSwell 13s ease-in-out infinite reverse;
+}
+.gdoor[data-floor="3"] .gdoor-glyph {                /* the Tidecaller rides above the swell */
+  z-index: 3; top: 32%;
+}
+.gdoor[data-floor="3"] .gdoor-knob {                 /* a porthole, not a knob */
+  z-index: 3; width: 9px; height: 9px; right: 8px; top: 30%;
+  background: rgba(86, 208, 255, 0.45); border: 2px solid #cfe9e2;
+  box-shadow: 0 0 7px rgba(86, 208, 255, 0.8);
+}
+.gdoor[data-floor="3"]:hover .gdoor-door,
+.gdoor[data-floor="3"]:focus-visible .gdoor-door {   /* it lifts on the water as it opens */
+  transform: perspective(320px) rotateY(-26deg) rotateZ(-1.5deg) translateY(-2px);
+}
+@keyframes gdoorSwell {
+  0%, 100% { transform: translate3d(-3px, 0, 0); }
+  50%      { transform: translate3d(3px, -1px, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gdoor[data-floor="3"] .gdoor-door::before,
+  .gdoor[data-floor="3"] .gdoor-door::after { animation: none; }
+}

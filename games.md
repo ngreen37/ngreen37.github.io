@@ -347,6 +347,8 @@ permalink: /games/
   if (!door) return;
   // grandeur tier — the door grows richer with every floor cleared (in sync with the home hero)
   door.setAttribute('data-grand', cleared === 0 ? 0 : cleared <= 2 ? 1 : cleared <= 4 ? 2 : cleared <= 6 ? 3 : cleared <= 9 ? 4 : 5);
+  // the leaf in the arch belongs to the place you're about to enter (see _pjcc-09-widgets)
+  if (cur < NAMES.length) door.setAttribute('data-floor', cur + 1);
   var pipHost = document.getElementById('gdoor-pips');
   if (pipHost) { var h = '';
     for (var k = 0; k < NAMES.length; k++) { h += '<i class="' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></i>'; }
