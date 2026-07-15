@@ -432,8 +432,16 @@ body.theme-bw .ribbon-track {
     animation-delay: -31s;
   }
 
-  &:hover {
+  /* 2026-07-15 (Nate: the glyphs "don't always light up and offer a link upon hover").
+     They were a slow-MOVING target: the cursor would land on one, it drifted out from
+     under the pointer before the hover registered, and you'd chase it. Freezing the
+     drift on hover/focus makes the glyph stop dead the instant it's pointed at — it
+     lights gold and holds still, so the link is easy to land and click. Focus-visible
+     gets the same treatment for keyboard users. */
+  &:hover,
+  &:focus-visible {
     color: rgba(245, 197, 24, 0.55);
+    animation-play-state: paused;
   }
 }
 

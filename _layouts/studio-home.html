@@ -443,6 +443,14 @@
     .studio-gauntlet .sg-glyph { font-size:1.5rem; }
     .studio-gauntlet .sg-title { font-size:0.9rem; }
     /* the mini floor indicator stays — it's tiny and it's the whole story */
+    /* 2026-07-15 (Nate: the park/gauntlet plates "need some layout improvement"). On a
+       phone they stack full-width, and they were mismatched — the Gauntlet's vertical
+       tower made it tall while the Park plate stayed squat, and the "PVP · RATED" tag
+       floated off at the far edge with a dead gap in the middle. Match their heights and
+       centre each plate's contents so the two read as a tidy, equal pair. */
+    .studio-calls .studio-gauntlet { min-height:68px; justify-content:center; }
+    .studio-calls .sg-park-tag { margin-left:0; }
+    .studio-gauntlet .sg-tower { align-self:center; }
 
     /* drop the purely decorative pieces so everything fits one screen */
     .studio-footer { display:none; }
@@ -667,7 +675,10 @@
     font-size: 11px; font-weight: 700; letter-spacing: 1px; background: rgba(20,12,45,0.55); color: #c9a7ff;
     border: 1px solid #4a3a86; border-radius: 999px; padding: 5px 12px; cursor: pointer; }
   .studio-corner-lang:hover { border-color: #F5C518; color: #F5C518; }
-  @media (max-width: 600px){ .studio-corner-lang { top: 44px; right: 14px; font-size: 9px; padding: 4px 9px; } }
+  /* 2026-07-15 (Nate): on a phone the touch-padded Contact pill grew tall enough to
+     collide with 日本語 below it — drop the toggle to clear it (16px Contact top +
+     its ~34px tapped height, then a gap). */
+  @media (max-width: 600px){ .studio-corner-lang { top: 60px; right: 14px; font-size: 9px; padding: 4px 9px; } }
   </style>
   <script src="{{ '/assets/js/pjcc-lang.js' | relative_url }}"></script>
 

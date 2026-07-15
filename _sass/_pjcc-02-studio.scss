@@ -110,6 +110,12 @@ body.studio-body {
   width: 100%;
   position: relative;
   z-index: 1;   /* keeps the quads above the secret-star intro float */
+  /* 2026-07-15 (Nate: "the quadrants should be the same size"). Left to itself each
+     grid ROW sizes to its own content, so a two-line sub in the top row made PJCC /
+     McPuppy taller than Games / Patreon below. `1fr` rows force every row to the
+     tallest, so all four boxes match at any width. (On desktop min-height already
+     wins, so this only bites on the phone where the mismatch showed.) */
+  grid-auto-rows: 1fr;
 }
 
 .studio-quad {

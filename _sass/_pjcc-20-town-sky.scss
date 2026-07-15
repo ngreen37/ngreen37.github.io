@@ -96,7 +96,9 @@ html.sky-day .ts-orb {
   left: var(--orb-x, 50%); top: var(--orb-y, 18%);
   width: 62px; height: 62px;
   background: radial-gradient(circle at 40% 38%, #fffefb 0%, #fff3b8 34%, #ffd84a 70%, #f5b800 100%);
-  box-shadow: 0 0 54px 20px rgba(255, 216, 74, 0.42), 0 0 130px 48px rgba(255, 216, 74, 0.16);
+  /* 2026-07-15 (Nate: "the sun is a bit too powerful") — the halo pulled back ~25%
+     so it stops washing up into the top-right corner controls on the splash. */
+  box-shadow: 0 0 44px 14px rgba(255, 216, 74, 0.30), 0 0 100px 32px rgba(255, 216, 74, 0.10);
 }
 /* rays, so the silhouette itself says "sun" and can never be read as the pale moon
    (the hero learned this lesson on 2026-07-12; the town sky inherits it). Spokes are
@@ -106,17 +108,19 @@ html.sky-day .ts-orb::before {
   position: absolute; inset: -26px;
   border-radius: 50%;
   /* 8 soft rays, not 16 machine-cut ones (2026-07-14 — matches the hero sun) */
+  /* 2026-07-15 (Nate): spokes softened 0.62→0.48 with the halo pull-back below. */
   background: repeating-conic-gradient(from 0deg,
-    rgba(255, 231, 130, 0.62) 0deg 4.5deg, transparent 4.5deg 45deg);
+    rgba(255, 231, 130, 0.48) 0deg 4.5deg, transparent 4.5deg 45deg);
   -webkit-mask-image: radial-gradient(circle, transparent 47%, #000 55%, #000 72%, transparent 100%);
           mask-image: radial-gradient(circle, transparent 47%, #000 55%, #000 72%, transparent 100%);
-  animation: ts-sun-rays 90s linear infinite;
+  /* 2026-07-15 (Nate: "slow the sun ray rotation 10 percent") — 90s → 99s. */
+  animation: ts-sun-rays 99s linear infinite;
 }
 html.sky-day .ts-orb::after {
   content: '';
   position: absolute; inset: -14px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 238, 160, 0.30), transparent 70%);
+  background: radial-gradient(circle, rgba(255, 238, 160, 0.22), transparent 70%);
 }
 @keyframes ts-sun-rays { to { transform: rotate(360deg); } }
 html.sky-day .ts-horizon {
