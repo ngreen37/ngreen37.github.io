@@ -185,12 +185,16 @@ a move a day is plenty.</p>
           '<button class="pt-card" id="pt-new-open"><span class="pt-card-icon">⚔</span>' +
           '<span class="pt-card-t">Open a table<br><i>Any operative can sit down.</i></span></button></div>';
 
-        // Drop any dead "vs myself" table — an old challenge with no possible opponent
-        // (you can't sit across from yourself; the Creator can't challenge the Creator).
-        // Hide it AND withdraw it in the DB so it stops reappearing (2026-07-15 Nate:
-        // "My matchup vs myself is still showing up").
+        // Drop any dead "vs myself" table — an old challenge with no possible opponent.
+        // A self-match is EITHER both seats being you, OR a "Challenge McPuppy" table the
+        // Creator opened against himself and that's STILL OPEN (waiting on himself). It is
+        // NOT a real vs_creator game the Creator already accepted from an operative — there
+        // white is the operative, black is the Creator, and status is active; that must
+        // survive. (2026-07-15: the earlier `m.vs_creator && iAmCreator` test was too broad
+        // and would have withdrawn every game Nate plays against a fan.)
         var myRows = mine.rows.filter(function (m) {
-          var selfMatch = (m.white === me && m.black === me) || (m.vs_creator && iAmCreator);
+          var selfMatch = (m.white === me && m.black === me) ||
+                          (m.vs_creator && iAmCreator && m.white === me && m.status === 'open');
           if (selfMatch && m.status !== 'finished') {
             try { M.finish(m.id, '1/2-1/2', 'withdrawn'); } catch (e) {}
             return false;
