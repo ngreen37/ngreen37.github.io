@@ -28,8 +28,10 @@ table with RLS and **no client read policy** — browsers never see it; only the
 
 ## Living with it
 
-- **Sanity check** (after step 2): `select public.is_codename_allowed('Princess');` → `true`;
-  `select public.is_codename_allowed('d4mn');` → `false`.
+- **Sanity check** (after step 2): `select count(*) from public.blocked_terms;` → ~2,500+ (the
+  seed loaded); `select public.is_codename_allowed('bastard');` → `false`;
+  `select public.is_codename_allowed('Princess');` → `true`. (Mild words like "damn"/"crap"
+  aren't in the upstream list and return `true` — expected, not a bug.)
 - **Rescue a false positive** (the "Scunthorpe problem" — an innocent name caught by a
   substring): allowlist its *normalized* form.
   ```sql

@@ -92,10 +92,12 @@ create trigger profiles_codename_guard_t
   for each row execute function public.profiles_codename_guard();
 
 -- ── After Step 2 (the seed), sanity-check in the SQL Editor:
---     select public.is_codename_allowed('Princess');  -- true  (clean)
---     select public.is_codename_allowed('Argus');     -- true  (clean)
---     select public.is_codename_allowed('damn');      -- false (mild word in the list)
---     select public.is_codename_allowed('d4mn');      -- false (de-leet catches it)
+--     select count(*) from public.blocked_terms;      -- ~2500+ (proves the seed loaded)
+--     select public.is_codename_allowed('Princess');  -- true   (clean)
+--     select public.is_codename_allowed('bastard');   -- false  (this one IS on the list)
+--     select public.is_codename_allowed('b4st4rd');   -- false  (de-leet catches it)
+--   NOTE: mild words like 'damn'/'crap'/'hell' are NOT in the LDNOOBW upstream, so they
+--   return TRUE — that's expected, not a failure. Test with a term you know is on the list.
 --
 -- ── To rescue an innocent name the substring rule catches, allowlist its NORMALIZED
 --    form (see what it normalizes to first):
