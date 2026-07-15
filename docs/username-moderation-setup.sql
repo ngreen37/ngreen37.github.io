@@ -9,7 +9,7 @@
 --  Strictness: STRICT / SUBSTRING (Nate's call). A codename is blocked if its
 --  normalized form CONTAINS any blocked term anywhere — after we defeat the usual
 --  dodges: case, accents/diacritics, full-width & unicode look-alikes (NFKC),
---  leetspeak (0→o, 4→a, 3→e, @→a, $→s …), punctuation/emoji, and 3+ char runs
+--  leetspeak (0→o, 4→a, 3→e, 6/9→g, @→a, $→s …), punctuation/emoji, and 3+ char runs
 --  ("sluuur"). The `codename_allow` table rescues innocent collisions
 --  (the "Scunthorpe problem") by exact normalized name.
 --
@@ -43,7 +43,7 @@ returns text language sql stable set search_path = public as $$
     regexp_replace(                                    -- 3) keep letters of ALL scripts; drop the rest
       translate(                                       -- 2) de-leet
         unaccent(lower(normalize(coalesce(p,''), NFKC))),  -- 1) NFKC-fold, lowercase, strip accents
-        '0134578@$!|', 'oieastbasii'
+        '013456789@$!|', 'oieasgtbgasii'   -- incl. 6/9→g (the ni66er/ni99er dodge)
       ),
       '[^[:alpha:]]', '', 'g'
     ),
