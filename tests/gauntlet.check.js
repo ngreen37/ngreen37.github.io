@@ -46,11 +46,11 @@ const PKEY = 'pjcc.gauntlet.v2';
     ok(await visible('ladder-screen'), 'fresh climber lands on the tower list (orientation)');
 
     // --- Crowned player goes to the tower to rematch anyone ---
-    // "Crowned" = EVERY floor beaten, public AND the three secret ones (added 2026-07-14).
-    // Beating only the ten public floors no longer crowns you — it REVEALS the secret
-    // floors and continues you to the CEO's boss card, so seed the whole ladder here.
-    const all = {}; for (let n = 0; n < 20; n++) all[n] = true;   // generous: covers all rungs
-    await seed({ unlocked: 20, beaten: all });
+    // "Crowned" = the TEN public floors beaten (2026-07-15 Nate: "Crowned is still the
+    // first ten"). The three secret floors are optional bonus beyond the crown, so a
+    // champion lands on the whole tower to choose (rematch, or take on a secret floor).
+    const all = {}; for (let n = 0; n < 10; n++) all[n] = true;
+    await seed({ unlocked: 10, beaten: all });
     await page.click('#play-btn'); await sleep(200);
     ok(await visible('ladder-screen'), 'crowned player opens the tower (rematch anyone)');
 

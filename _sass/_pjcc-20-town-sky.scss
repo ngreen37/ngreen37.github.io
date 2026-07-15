@@ -369,6 +369,27 @@ html.shape-dog  .ts-cloud--dog  { display: block; }
   100% { transform: translate3d(calc(-100vw - 380px), 0, 0); }
 }
 
+/* ── the LONG-cloud day (2026-07-15 Nate: "sometimes the clouds get really loooong,
+   like clouds do — a little more transparent than the fluffy ones"). Real stratus:
+   very wide, very flat streaks, and LOWER-alpha than the cumulus puffs above (~0.24
+   vs the banks' ~0.5). Two of them, at different heights + speeds, so the whole sky
+   reads as long-and-wispy rather than fluffy. Gated by html.shape-long, rolled from
+   the same day seed as the rest of the forecast (town-weather.html, ~1 day in 4), and
+   like the other shapes they live inside .ts-clouds so they only show on a cloudy day
+   and ride the same off-screen-parked crossing (no motion under reduce-flourish). ── */
+html.shape-long .ts-cloud--long { display: block; }
+.ts-cloud--long {
+  height: 84px;
+  background:
+    /* one long, soft spine + a few flatter wisps trailing off it */
+    radial-gradient(340px 20px at 50% 50%, rgba(255,255,255,0.26), transparent 80%),
+    radial-gradient(190px 13px at 26% 44%, rgba(255,255,255,0.20), transparent 76%),
+    radial-gradient(210px 12px at 70% 57%, rgba(255,255,255,0.20), transparent 76%),
+    radial-gradient(120px 9px  at 88% 48%, rgba(255,255,255,0.15), transparent 74%);
+}
+.ts-cloud--long-a { top: 19%; width: 740px; animation: ts-shape-cross 520s linear infinite; }
+.ts-cloud--long-b { top: 41%; width: 600px; animation: ts-shape-cross 470s linear -230s infinite; }
+
 html.cloud-1 .ts-clouds { opacity: 0.22; }
 html.cloud-2 .ts-clouds { opacity: 0.46; }
 html.cloud-3 .ts-clouds { opacity: 0.72; }

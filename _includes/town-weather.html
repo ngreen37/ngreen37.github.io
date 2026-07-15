@@ -19,5 +19,5 @@
 {%- comment -%} The shape-cloud roll (rook/dog days) rides the same day seed, off bits the
      rain (%10) and cover (>>>11) rolls don't use — ~1 day in 4 each, only when there is
      any cloud at all to point at. {%- endcomment -%}
-<script>try{var T=window.PJCC_TIME;if(T){var R=document.documentElement;R.classList.add('sky-'+T.phase());var w=T.weather();if(w&&w.kind!=='clear')R.classList.add('town-'+w.kind);var c=T.clouds();R.classList.add('cloud-'+c);if(c){var s=T.daySeed();if((s>>>3)%4===0)R.classList.add('shape-rook');if((s>>>7)%4===1)R.classList.add('shape-dog');}var ob=T.orb();R.style.setProperty('--orb-x',ob.x.toFixed(1)+'%');R.style.setProperty('--orb-y',ob.y.toFixed(1)+'%');}}catch(e){}</script>
+<script>try{var T=window.PJCC_TIME;if(T){var R=document.documentElement;R.classList.add('sky-'+T.phase());var w=T.weather();if(w&&w.kind!=='clear')R.classList.add('town-'+w.kind);var c=T.clouds();R.classList.add('cloud-'+c);if(c){var s=T.daySeed();if((s>>>3)%4===0)R.classList.add('shape-rook');if((s>>>7)%4===1)R.classList.add('shape-dog');if((s>>>11)%4===2)R.classList.add('shape-long');}var ob=T.orb();R.style.setProperty('--orb-x',ob.x.toFixed(1)+'%');R.style.setProperty('--orb-y',ob.y.toFixed(1)+'%');}}catch(e){}</script>
 <script src="{{ '/assets/js/pjcc-weather.js' | relative_url }}" defer></script>

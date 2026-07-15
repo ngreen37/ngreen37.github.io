@@ -319,6 +319,8 @@ var LADDER = [
   { name:'The CEO', glyph:'♛', accent:'#ff8fd0', region:'The Corner Office', elo:2000, secret:true,
     blurb:'Top of the tallest building in Chess City. He does not lose. Usually.',
     win:'The CEO stares at the board a long time. Then, quietly: "...How?"',
+    // LORE DROP — reward for beating a secret floor (2026-07-15 Nate). DRAFT copy, his to rewrite.
+    lore:'A memo header slips into view, one you were not meant to see. His company is one of a dozen that quietly share the map between them. He answers upward.',
     persona:{ depth:5, blunder:0.0, mat:1, pst:1.2, aggr:1, timeMs:950 },
     react:{ intro:['You should not have made it this far.'],
       blunder:['Predictable.','As expected. You overreach.'],
@@ -326,6 +328,7 @@ var LADDER = [
   { name:'The Chairman', glyph:'♚', accent:'#e8e2ff', region:'The Boardroom in the Clouds', elo:2200, secret:true,
     blurb:'The CEO answers to someone. The board answers to him.',
     win:'"The board will hear of this." He almost, almost smiles.',
+    lore:'Above the clouds the boardroom keeps thirteen chairs. Twelve are filled. No one there will say who the last one waits for.',
     persona:{ depth:5, blunder:0.0, mat:1, pst:1.2, aggr:2, timeMs:1250 },
     react:{ intro:['The company is a chessboard. I own the table.'],
       blunder:['Acquired.','A hostile takeover of one square.'],
@@ -333,6 +336,7 @@ var LADDER = [
   { name:'The Founder', glyph:'♔', accent:'#fff2b0', region:'The Vault Below the Tower', elo:2400, secret:true,
     blurb:'The tower was his idea. So was the game. The elevator only comes down here for whoever beat everyone above.',
     win:'The Founder sets his king down gently. "It was always going to be you."',
+    lore:'He built the whole game, he says, to find a single player who could beat it. On his desk sits a photograph older than you: a young dog caught mid-leap, eyes shut, head tilted just so. "I have been patient," he says.',
     persona:{ depth:5, blunder:0.0, mat:1, pst:1.3, aggr:1, timeMs:1700 },
     react:{ intro:['I built this game. Show me it outgrew me.'],
       blunder:['I designed that trap forty years ago.','Still mine.'],
@@ -487,14 +491,26 @@ function endGame(result){
     if (G.idx + 1 > prog.unlocked) prog.unlocked = Math.min(LADDER.length, G.idx + 1);
     var isFinal = (G.idx + 1 === LADDER.length);       // the Founder — nothing above
     var isCEO   = (G.idx === VISIBLE);                 // the map moment stays HIS
-    var isTop   = (G.idx === VISIBLE - 1);             // floor 10 — the elevator reveal
+    var isTop   = (G.idx === VISIBLE - 1);             // floor 10 — THE CORONATION
+    var isSecret= (G.idx >= VISIBLE);                  // a bonus floor, for the strongest
     if (isCEO) prog.secret = true;
     saveProg(prog);
-    eye = (G.idx < VISIBLE ? 'Rung ' + (G.idx+1) + ' cleared' : 'Secret floor cleared'); title = 'VICTORY ♛';
-    msg = G.rung.win +
-      (isTop ? ' Behind her desk, the elevator hums. Its panel has three unmarked buttons above the top floor.' : '') +
-      (isCEO ? ' As the CEO turns away, a folded map slips from his coat — the Sand Mines, stamped with his own seal. He owns them. The arrow points straight down, all the way to the bottom.' : '') +
-      (isFinal ? ' Below the vault, the tower. Above it, everything. There is no one left to beat.' : '');
+    if (isTop){
+      // CROWNED — beating the ten public floors IS the crown (2026-07-15 Nate). The
+      // secret floors are optional bonus content beyond it.
+      eye = 'The tower is yours'; title = 'CROWNED ♛';
+      msg = G.rung.win + ' The floor goes quiet, then loud — Checker Town has its champion. Somewhere far below, a small dog shuts her eyes and, just for a second, stands a little taller. And above the top floor, the elevator panel shows three unmarked buttons: the climb is won, but the descent is a choice.';
+    } else if (isSecret){
+      // Bonus floor cleared — the reward is a LORE DROP.
+      eye = 'Secret floor cleared'; title = 'VICTORY ♛';
+      msg = G.rung.win +
+        (isCEO ? ' As the CEO turns away, a folded map slips from his coat — the Sand Mines, stamped with his own seal. He owns them. The arrow points straight down, all the way to the bottom.' : '') +
+        (G.rung.lore ? '   ◈ FRAGMENT RECOVERED — ' + G.rung.lore : '') +
+        (isFinal ? '   Below the vault, the tower. Above it, everything. There is no one left to beat.' : '');
+    } else {
+      eye = 'Rung ' + (G.idx+1) + ' cleared'; title = 'VICTORY ♛';
+      msg = G.rung.win;
+    }
   } else if (draw){
     eye = 'Draw — you held the line'; title = 'A DRAW';
     msg = (({ stalemate:'Stalemate — the king has no move, but no check.',
@@ -663,15 +679,17 @@ function refreshMenu(){
   if (!btn||!pline) return;
   var cleared=Object.keys(prog.beaten||{}).length;
   if (cleared===0){ btn.textContent='▶ ENTER THE TOWER'; pline.style.display='none'; if(tbtn) tbtn.style.display='none'; }
-  else if (cur>=LADDER.length){ btn.textContent='♛ THE TOWER'; pline.style.display=''; pline.innerHTML='<b style="color:#6bffb8">Crowned.</b> The tower — and everything above and below it — is yours. Rematch anyone.'; if(tbtn) tbtn.style.display='none'; }
-  else if (cur>=VISIBLE){ btn.textContent='▶ CONTINUE — THE SECRET FLOORS'; pline.style.display=''; pline.innerHTML='The elevator keeps going — <b style="color:#F5C518">'+LADDER[cur].name+'</b> is waiting.'; if(tbtn) tbtn.style.display=''; }
+  else if (cur>=LADDER.length){ btn.textContent='♛ THE TOWER'; pline.style.display=''; pline.innerHTML='<b style="color:#6bffb8">Crowned</b> — and the secret floors are yours too. Rematch anyone.'; if(tbtn) tbtn.style.display='none'; }
+  else if (cur>=VISIBLE){ btn.textContent='▶ THE SECRET FLOORS'; pline.style.display=''; pline.innerHTML='<b style="color:#6bffb8">Crowned.</b> All ten floors are yours. The elevator keeps going — <b style="color:#F5C518">'+LADDER[cur].name+'</b> waits below, and drops lore for those who reach it.'; if(tbtn) tbtn.style.display=''; }
   else { btn.textContent='▶ CONTINUE — FLOOR '+(cur+1); pline.style.display=''; pline.innerHTML='Pick up where you left off — <b style="color:#F5C518">'+LADDER[cur].name+'</b> awaits on Floor '+(cur+1)+' of '+VISIBLE+'.'; if(tbtn) tbtn.style.display=''; }
 }
 // "Play" resumes at your CURRENT opponent (straight to the boss card, one tap to the board) —
 // no need to walk the tower each time. Fresh climbers and the crowned see the whole tower.
 function resume(){
   var prog=loadProg(), cur=nextFloor(prog), cleared=Object.keys(prog.beaten||{}).length;
-  if (cleared===0 || cur>=LADDER.length) showLadder();
+  // Fresh climbers AND the crowned (all ten public floors done) see the whole tower, so a
+  // champion can choose to rematch or take on a secret floor rather than being force-fed one.
+  if (cleared===0 || cur>=VISIBLE) showLadder();
   else showBossCard(cur);
 }
 
