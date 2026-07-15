@@ -275,21 +275,12 @@
 
 
 
-/* =============================================================
-   Fragment Counter (footer)
-   ============================================================= */
-
-.fragment-counter {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  color: rgba(245, 197, 24, 0.28);
-  margin-top: 8px;
-  transition: color 0.3s;
-
-  &:not(:empty) { cursor: default; }
-  &:not(:empty):hover { color: rgba(245, 197, 24, 0.6); }
-}
+/* The footer "[N/∞ FRAGMENTS RECOVERED]" counter was RETIRED 2026-07-15 (Nate:
+   "eliminate it for now … remove the relative text from the bottom of all pages").
+   The easter eggs still set their frag_* flags in localStorage — harmless — but
+   nothing surfaces the tally anymore. Restore this block + the #fragment-counter
+   markup (default.html) + the populating IIFE (pjcc-eggs.js) from git to bring it
+   back. */
 
 /* =============================================================
    Header Signal Disruption

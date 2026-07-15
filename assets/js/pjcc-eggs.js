@@ -277,13 +277,9 @@ function showTxToast(msg, duration) {
     });
   })();
 
-(function() {
-  var el = document.getElementById('fragment-counter');
-  if (!el) return;
-  var count = 0;
-  try { for (var k in localStorage) { if (k.indexOf('frag_') === 0) count++; } } catch(e) {}
-  if (count > 0) el.textContent = '[' + count + '/∞ FRAGMENTS RECOVERED]';
-})();
+// The footer FRAGMENTS-RECOVERED counter was retired 2026-07-15 (Nate). The eggs
+// still write their frag_* flags; nothing surfaces the tally now. (Element +
+// CSS removed too — see default.html and _pjcc-08-features.scss.)
 
 // Murphy's Law, as a function. Ask it anything.
 window.murphysLaw = function () {

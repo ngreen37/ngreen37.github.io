@@ -163,10 +163,10 @@ layout: default
     </a>
     <i class="sk-sea" aria-hidden="true"></i>
     <a class="sk-town-link" href="{{ '/locations/chess-city/' | relative_url }}" aria-label="Chess City">
-      <span class="sk sk-cc sk-cc--rook"   style="--w:20px;--h:34px"></span>
-      <span class="sk sk-cc sk-cc--bishop" style="--w:16px;--h:46px"></span>
-      <span class="sk sk-cc sk-cc--queen"  style="--w:22px;--h:52px"></span>
-      <span class="sk sk-cc sk-cc--king"   style="--w:18px;--h:42px"></span>
+      <span class="sk sk-cc sk-cc--rook"   style="--w:20px;--h:29px"></span>
+      <span class="sk sk-cc sk-cc--bishop" style="--w:16px;--h:39px"></span>
+      <span class="sk sk-cc sk-cc--queen"  style="--w:22px;--h:44px"></span>
+      <span class="sk sk-cc sk-cc--king"   style="--w:18px;--h:36px"></span>
     </a>
   </div>
   {% comment %} THE DOOR — the way into the Gauntlet, top right of the hero.
@@ -360,8 +360,10 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
   .gdoor-pips i.cur { animation:none; }
   .gdoor-door { transition:none; }
 }
-/* where it stands on the hero */
-.hero-door { position:absolute; top:12px; right:26px; z-index:2; }
+/* where it stands on the hero — scaled down ~12% (2026-07-15 Nate: shrink the door
+   a touch so it stops overlapping the Chess City towers, which also came down). */
+.hero-door { position:absolute; top:12px; right:26px; z-index:2;
+  transform:scale(0.88); transform-origin:top right; }
 
 /* ── Rain retired from the hero (2026-07-12 Nate: "all weathers on all screens").
    The rain, the mist, the intensity random-walk and the lightning flash are now

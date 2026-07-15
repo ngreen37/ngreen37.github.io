@@ -850,3 +850,195 @@ textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
   .gdoor[data-floor="3"] .gdoor-door::before,
   .gdoor[data-floor="3"] .gdoor-door::after { animation: none; }
 }
+
+/* ── FLOOR 4 · THE SHOGI SENTINEL — the shoji screen  (Nate 2026-07-15) ───────
+   A tasteful Japanese door: warm washi paper glowing from behind, a kumiko
+   lattice of thin wood mullions, a dark timber surround, and a red torii lintel
+   across the head. It does not swing — a shoji screen SLIDES. On hover it slides
+   to the side into its pocket, the way you'd actually open one. ── */
+.gdoor[data-floor="4"] .gdoor-arch {                 /* warm paper-lantern light behind */
+  background: radial-gradient(ellipse at 50% 82%,
+    color-mix(in srgb, #ffdca8 40%, #1a0f0a), #140b07 78%);
+}
+.gdoor[data-floor="4"] .gdoor-door {
+  border: 2px solid #3a241a;                         /* the timber frame */
+  border-radius: 30px 30px 0 0;
+  background:
+    /* the red torii lintel across the top */
+    linear-gradient(180deg, #b23a2e 0 9%, rgba(178,58,46,0) 9%),
+    /* kumiko — a fine wood lattice, vertical then horizontal mullions */
+    repeating-linear-gradient(90deg, rgba(74,48,32,0.9) 0 1px, transparent 1px 12px),
+    repeating-linear-gradient(180deg, rgba(74,48,32,0.9) 0 1px, transparent 1px 15px),
+    /* the washi paper itself, lit from within */
+    linear-gradient(180deg, #f6e6c8 0%, #efdab4 100%);
+  transform-origin: 100% 50%;                        /* slides toward its pocket */
+  transition: transform .5s cubic-bezier(.4, 0, .2, 1);
+}
+.gdoor[data-floor="4"] .gdoor-glyph {                /* an ink-stamped kanji feel */
+  color: #2a1a12; opacity: 0.82; filter: none;
+  text-shadow: 0 0 4px rgba(178, 58, 46, 0.35);
+}
+.gdoor[data-floor="4"] .gdoor-knob {                 /* the little recessed finger-pull */
+  right: 10px; width: 4px; height: 14px; border-radius: 2px;
+  background: rgba(58, 36, 26, 0.7); box-shadow: none;
+}
+.gdoor[data-floor="4"]:hover .gdoor-door,
+.gdoor[data-floor="4"]:focus-visible .gdoor-door {   /* slide open, don't swing */
+  transform: translateX(58%) scaleX(0.92);
+}
+
+/* ── FLOOR 5 · THE CITY GATEKEEPER — the brass portcullis ─────────────────────
+   Chess City's gate: vertical brass bars behind a heavy horizontal band, a warm
+   metallic sheen. It LIFTS like a portcullis rather than swinging. ── */
+.gdoor[data-floor="5"] .gdoor-door {
+  border: 1px solid rgba(120, 82, 30, 0.9);
+  background:
+    /* two horizontal cross-bands */
+    linear-gradient(180deg, transparent 0 16%, rgba(180,130,60,0.85) 16% 22%, transparent 22%),
+    linear-gradient(180deg, transparent 0 74%, rgba(180,130,60,0.85) 74% 80%, transparent 80%),
+    /* the vertical bars of the grille */
+    repeating-linear-gradient(90deg,
+      #caa250 0 3px, #7a5a24 3px 5px, transparent 5px 11px),
+    /* dark behind the grille */
+    linear-gradient(180deg, #2a1e0c, #170f05);
+  transform-origin: 50% 100%;
+  transition: transform .5s cubic-bezier(.3, .7, .2, 1);
+}
+.gdoor[data-floor="5"] .gdoor-knob {                 /* a brass ring low on the gate */
+  width: 8px; height: 8px; right: 50%; margin-right: -4px; top: 66%;
+  background: transparent; border: 2px solid #e0b968; box-shadow: 0 0 4px rgba(224,185,104,0.6);
+}
+.gdoor[data-floor="5"] .gdoor-glyph { color: #f0c674; }
+.gdoor[data-floor="5"]:hover .gdoor-door,
+.gdoor[data-floor="5"]:focus-visible .gdoor-door {   /* the portcullis rises */
+  transform: translateY(-64%);
+}
+
+/* ── FLOOR 6 · THE AUDITOR — the frosted-glass office door ────────────────────
+   The Tower's lower floors: a brushed-steel frame, a translucent frosted panel
+   with a horizontal push-bar, a faint nameplate line. Corporate calm. ── */
+.gdoor[data-floor="6"] .gdoor-door {
+  border: 2px solid #8fa0a6;
+  border-radius: 30px 30px 2px 2px;
+  background:
+    /* the push-bar */
+    linear-gradient(180deg, transparent 0 52%, rgba(150,168,174,0.95) 52% 57%, transparent 57%),
+    /* a nameplate smudge */
+    linear-gradient(180deg, transparent 0 24%, rgba(159,240,196,0.18) 24% 30%, transparent 30%),
+    /* frosted glass — soft vertical banding + a cool wash */
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 6px, rgba(200,224,224,0.02) 6px 12px),
+    linear-gradient(180deg, rgba(150,190,196,0.5), rgba(90,120,128,0.62));
+  backdrop-filter: none;
+  transition: transform .4s ease;
+}
+.gdoor[data-floor="6"] .gdoor-knob {                 /* the bar's mount */
+  right: 12px; top: 54%; width: 4px; height: 4px; background: #cfe0e0; box-shadow: none;
+}
+.gdoor[data-floor="6"] .gdoor-glyph { color: #d6efe4; opacity: 0.7; }
+.gdoor[data-floor="6"]:hover .gdoor-door,
+.gdoor[data-floor="6"]:focus-visible .gdoor-door {
+  transform: perspective(320px) rotateY(-24deg);
+}
+
+/* ── FLOOR 7 · THE ENFORCER — the riveted security door ───────────────────────
+   Mid-tower, where the polite part ends: a dark steel slab, rivets down the
+   sides, a red status light and a card-reader slot. It barely opens. ── */
+.gdoor[data-floor="7"] .gdoor-door {
+  border: 1px solid #1c1c22;
+  background:
+    /* rivets down both jambs */
+    radial-gradient(circle 1.5px at 10% 12%, #6b6b76, transparent 100%),
+    radial-gradient(circle 1.5px at 10% 40%, #6b6b76, transparent 100%),
+    radial-gradient(circle 1.5px at 10% 68%, #6b6b76, transparent 100%),
+    radial-gradient(circle 1.5px at 90% 12%, #6b6b76, transparent 100%),
+    radial-gradient(circle 1.5px at 90% 40%, #6b6b76, transparent 100%),
+    radial-gradient(circle 1.5px at 90% 68%, #6b6b76, transparent 100%),
+    /* the red status light */
+    radial-gradient(circle 2.5px at 74% 30%, #ff5a5a, rgba(255,90,90,0.15) 60%, transparent 100%),
+    /* the reader slot */
+    linear-gradient(180deg, transparent 0 46%, rgba(20,20,26,0.95) 46% 50%, transparent 50%),
+    /* brushed steel */
+    repeating-linear-gradient(180deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #3a3a42 0%, #26262c 100%);
+  transition: transform .5s cubic-bezier(.35, .05, .2, 1);
+}
+.gdoor[data-floor="7"] .gdoor-knob { display: none; }
+.gdoor[data-floor="7"] .gdoor-glyph { color: #ff9a9a; opacity: 0.8;
+  filter: drop-shadow(0 0 5px rgba(255,90,90,0.5)); }
+.gdoor[data-floor="7"]:hover .gdoor-door,
+.gdoor[data-floor="7"]:focus-visible .gdoor-door {
+  transform: perspective(340px) rotateY(-13deg);    /* heavy — opens a crack */
+}
+
+/* ── FLOOR 8 · THE VICE PRESIDENT — the walnut executive door ─────────────────
+   Upper floors: dark polished walnut, two raised panels, a brass lever and a
+   thin brass kickplate. Old money. ── */
+.gdoor[data-floor="8"] .gdoor-door {
+  border: 1px solid #241017;
+  background:
+    /* two raised panels, drawn with inset-looking borders */
+    linear-gradient(180deg, transparent 8% , rgba(0,0,0,0.28) 8% 9%, transparent 9% 40%,
+                    rgba(255,255,255,0.05) 40% 41%, transparent 41%),
+    linear-gradient(180deg, transparent 48%, rgba(0,0,0,0.28) 48% 49%, transparent 49% 88%,
+                    rgba(255,255,255,0.05) 88% 89%, transparent 89%),
+    /* brass kickplate at the foot */
+    linear-gradient(180deg, transparent 0 92%, rgba(198,150,70,0.8) 92% 100%),
+    /* walnut grain */
+    repeating-linear-gradient(92deg, rgba(40,18,26,0.4) 0 1px, transparent 1px 9px),
+    linear-gradient(180deg, #5a2f3a 0%, #3d1f28 60%, #2a141b 100%);
+  transition: transform .45s ease;
+}
+.gdoor[data-floor="8"] .gdoor-knob {                 /* a brass lever handle */
+  right: 9px; top: 50%; width: 10px; height: 3px; border-radius: 2px;
+  background: #d9b56a; box-shadow: 0 0 5px rgba(217,181,106,0.7);
+}
+.gdoor[data-floor="8"] .gdoor-glyph { color: #e8c98a;
+  filter: drop-shadow(0 0 8px rgba(199,155,255,0.45)); }
+.gdoor[data-floor="8"]:hover .gdoor-door,
+.gdoor[data-floor="8"]:focus-visible .gdoor-door {
+  transform: perspective(320px) rotateY(-22deg);
+}
+
+/* ── FLOOR 9 · THE HEIR APPARENT — the gilded antechamber door ────────────────
+   The last room before the top: rose-and-gold, a tall arched inset panel, gold
+   filigree, a ring handle. It shimmers. ── */
+.gdoor[data-floor="9"] .gdoor-door {
+  border: 2px solid #b98a5a;
+  border-radius: 32px 32px 2px 2px;
+  background:
+    /* the arched inset panel */
+    radial-gradient(120% 90% at 50% 100%, rgba(255,255,255,0.14) 0 40%, transparent 42%),
+    /* gold filigree hints, top corners */
+    radial-gradient(circle 5px at 22% 16%, rgba(240,205,130,0.5), transparent 70%),
+    radial-gradient(circle 5px at 78% 16%, rgba(240,205,130,0.5), transparent 70%),
+    /* a gilt vertical seam up the middle */
+    linear-gradient(90deg, transparent 48%, rgba(240,205,130,0.6) 49.5% 50.5%, transparent 52%),
+    /* rose lacquer */
+    linear-gradient(180deg, #7a3a5a 0%, #5a2846 60%, #3f1c33 100%);
+  transition: transform .45s ease;
+}
+.gdoor[data-floor="9"] .gdoor-door::after {          /* a slow travelling shimmer */
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(115deg, transparent 40%, rgba(255,235,190,0.22) 50%, transparent 60%);
+  background-size: 240% 100%;
+  animation: gdoorSheen 6s ease-in-out infinite;
+}
+.gdoor[data-floor="9"] .gdoor-knob {                 /* a gold ring */
+  right: 9px; top: 52%; width: 8px; height: 8px; background: transparent;
+  border: 2px solid #f0cd82; box-shadow: 0 0 6px rgba(240,205,130,0.8);
+}
+.gdoor[data-floor="9"] .gdoor-glyph { color: #ffd9ea;
+  filter: drop-shadow(0 0 9px rgba(255,158,201,0.6)); }
+.gdoor[data-floor="9"]:hover .gdoor-door,
+.gdoor[data-floor="9"]:focus-visible .gdoor-door {
+  transform: perspective(320px) rotateY(-20deg);
+}
+@keyframes gdoorSheen {
+  0%, 100% { background-position: 130% 0; }
+  50%      { background-position: -30% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gdoor[data-floor="9"] .gdoor-door::after { animation: none; }
+}
+/* Floor 10 (The Executive Assistant) keeps the plain gold leaf — the grandeur
+   tiers already crown the summit, so it needs no bespoke material. */

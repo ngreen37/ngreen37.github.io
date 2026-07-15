@@ -245,7 +245,7 @@
   gap: 10px;
   background: #F5C518;
   color: #1a0f3d;
-  padding: 8px 16px 8px 20px;
+  padding: 5px 16px 5px 20px;   /* trimmed 8→5 (2026-07-15 Nate: the bar was too tall) */
   /* an angled trailing edge, like a lower-third plate */
   clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
 }
@@ -255,7 +255,7 @@
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.14em;
-  line-height: 1.25;
+  line-height: 1.1;
   text-transform: uppercase;
 }
 
@@ -270,7 +270,7 @@
   color: #fff;
   background: #6a26dc;   /* PJCC purple — Nate vetoed the red */
   border-radius: 3px;
-  padding: 3px 7px;
+  padding: 2px 6px;
 
   i {
     width: 6px; height: 6px; border-radius: 50%; background: #fff;
@@ -303,7 +303,7 @@
   overflow: hidden;
   white-space: nowrap;
   align-self: center;
-  padding: 10px 0;
+  padding: 6px 0;   /* trimmed 10→6 (2026-07-15) — this was the tallest element in the bar */
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
   mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
 }

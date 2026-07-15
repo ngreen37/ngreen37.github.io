@@ -219,8 +219,18 @@
 <script>
 "use strict";
 var C = window.PJCCChess, AI = window.PJCCChessAI, ENGINE = window.PJCCGauntletEngine;
-// Rung -> Stockfish Skill Level (0..20). Rung 1 plays gently; the top floor is full strength.
-function skillForRung(idx){ var n = LADDER.length - 1; return n > 0 ? Math.round(idx * 20 / n) : 20; }
+// Rung -> Stockfish Skill Level (0..20), driven by the ADVERTISED house rating.
+// The old version ramped skill LINEARLY over all 13 rungs, ignoring the elo labels —
+// so the Shogi Sentinel (labelled 800) ran at skill 5, which plays ~1600 (Nate
+// 2026-07-15: "seems stronger than 800"). Stockfish's skill 0 is ALREADY ~1350, so
+// nothing below that can be reached by lowering skill further — every floor advertised
+// under 1400 pins to skill 0 and gets its weakness from the persona's blunder rate +
+// short think time instead. Above 1400 the skill ramps up to a full-strength Founder.
+function skillForRung(idx){
+  var elo = (LADDER[idx] && LADDER[idx].elo) || 800;
+  if (elo < 1400) return 0;
+  return Math.min(20, Math.round(3 + (elo - 1400) * 0.017));   // 1400→3 … 2400→20
+}
 var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 var W = 440, H = 500, TILE = 50, BOARD = TILE*8, BX = (W-BOARD)/2, BY = 78;
 var PAL = { wFill:'#f3ecd6', wEdge:'#4a3618', bFill:'#241a3c', bEdge:'#efe4ff' };
@@ -234,35 +244,35 @@ var LADDER = [
   { name:'The Checker Town Open Champion', glyph:'♞', accent:'#8fe3ff', region:'Checker Town', elo:350,
     blurb:'Floor 1 belongs to whoever holds the Checker Town Chess Open title. The current holder: a loyal guard-dog who learned the game slow — and never lets go.',
     win:'Argus admits defeat. The reigning champion of Checker Town yields the road.',
-    persona:{ depth:1, blunder:0.32, mat:1, pst:0.4, aggr:4, timeMs:220 },
+    persona:{ depth:1, blunder:0.36, mat:1, pst:0.4, aggr:4, timeMs:220 },
     react:{ intro:['*a proud, rolling growl* The reigning champ says hello.'],
       blunder:['*GRRR* — a gift for the pack!','*snap* Mine now.','Bad move. *bark bark*'],
       good:['*whine* ...good one.','*ears flatten* Hrrr.','*backs up a step*'] } },
   { name:'The Sand-Mine Foreman', glyph:'♟', accent:'#fcbc3c', region:'The Sand Mines', elo:500,
     blurb:'Runs the CEO\'s pits. A grinder who counts every grain — and every pawn.',
     win:'The mine goes quiet — every pick, every cart, every lamp. The Foreman stares at the board a long moment, spits in the dust, and pulls the lift lever himself. "...Take it up. You earned it." Somewhere below, the dark keeps counting.',
-    persona:{ depth:2, blunder:0.2, mat:1.25, pst:0.4, aggr:1, timeMs:320 },
+    persona:{ depth:2, blunder:0.28, mat:1.25, pst:0.4, aggr:1, timeMs:320 },
     react:{ intro:['Down here, everything has a price. Even your pieces.'],
       blunder:['Mine. Everything down here is mine.','Ka-ching. Straight to the vault.'],
       good:['Tch. Off the books, that one.','...didn\'t log that.'] } },
   { name:'The Tidecaller', glyph:'♝', accent:'#56d0ff', region:'The Sea', elo:650,
     blurb:'Keeper of the crossing. Slow, deep, and impossible to rush.',
     win:'The tide pulls back and a path opens. "Cross. The far shore is waiting."',
-    persona:{ depth:2, blunder:0.12, mat:1, pst:0.95, aggr:0, timeMs:440 },
+    persona:{ depth:2, blunder:0.2, mat:1, pst:0.95, aggr:0, timeMs:440 },
     react:{ intro:['The sea is patient. So am I.'],
       blunder:['The current takes what you drop.','You reached too far from shore.'],
       good:['...the tide turns. Briefly.','Hm. A strong stroke.'] } },
   { name:'The Shogi Sentinel', glyph:'♞', accent:'#fcbcb0', region:'Shogi Isle', elo:800,
     blurb:'Trained on foreign rules. Sees forks three moves before you do.',
     win:'The Sentinel bows, precisely. "Your blade is honest. Pass."',
-    persona:{ depth:3, blunder:0.08, mat:1, pst:1, aggr:2, timeMs:520 },
+    persona:{ depth:3, blunder:0.16, mat:1, pst:1, aggr:2, timeMs:520 },
     react:{ intro:['Foreign rules. Familiar war.'],
       blunder:['A fork you never saw.','Two pieces, one blow.'],
       good:['...unexpected. Noted.','A clean cut.'] } },
   { name:'The City Gatekeeper', glyph:'♜', accent:'#ffb066', region:'Chess City gates', elo:950,
     blurb:'The last wall before the tower. Solid, patient, gives nothing away.',
     win:'The Gatekeeper steps aside. The great doors of the tower groan open.',
-    persona:{ depth:3, blunder:0.05, mat:1, pst:1, aggr:1, timeMs:560 },
+    persona:{ depth:3, blunder:0.1, mat:1, pst:1, aggr:1, timeMs:560 },
     react:{ intro:['None shall pass. Prove me wrong.'],
       blunder:['Careless. The gate does not forgive.','You left it open. I walked through.'],
       good:['...Acceptable. Barely.','The wall still holds.'] } },
@@ -357,6 +367,7 @@ function startRung(idx, pc){
   setupPortrait(rung, idx);
   G.roundStartMat = matPOV(G.S, G.pc);
   boothLast = 0;
+  setTimeout(function(){ if (G) announceColor(); }, 260);
   setTimeout(function(){ if (G && !G.over) reactOpp('intro'); }, 650);
   setTimeout(function(){ if (G && !G.over) callOut('open', true); }, 900);   // #5 — booth opens the broadcast
   setTimeout(function(){ if (G && !G.over) callOut('open', true); }, 4200);
@@ -597,6 +608,16 @@ function spawnConfetti(colors, n){
     c.style.animationDelay=(Math.random()*0.5).toFixed(2)+'s';
     fx.appendChild(c);
   }
+}
+// Colours are redrawn EVERY match (randColor in startRung), so a retry can flip the
+// board on you. Say so plainly at the start of each game (Nate 2026-07-15: "when you
+// lose and retry it should randomize … and show the user you are doing so").
+function announceColor(){
+  var fx=document.getElementById('fx'); if(!fx||!G) return;
+  fx.classList.remove('hidden');
+  var white = (G.pc==='w');
+  heroBurst(white?'♙':'♟', white?'YOU PLAY WHITE':'YOU PLAY BLACK', white?'#ffffff':'#c79bff');
+  setTimeout(function(){ if(G && !G.over && !fxTimer) clearFx(); }, 1900);
 }
 function heroBurst(glyph, word, color){
   var fx=document.getElementById('fx'); if(!fx) return;

@@ -64,7 +64,13 @@
     var p = parts(), mins = p.h * 60 + p.m, t;
     if (mins >= 300 && mins < 1200) t = (mins - 300) / 900;          // the sun
     else t = (((mins - 1200) + 1440) % 1440) / 540;                  // the moon
-    return { t: t, x: 6 + 88 * t, y: 74 - 60 * Math.sin(Math.PI * t) };
+    // A 210° circular sweep (2026-07-15 Nate: "-210 to 210 degrees … starts/ends
+    // too low"). The half-sine before this pinned both ends AT the horizon (y=74).
+    // Now the orb enters ~62% up the LEFT side, apexes near the top (y≈10), and
+    // exits ~62% up the RIGHT — a grander arc that no longer skims the horizon at
+    // dawn/dusk. a runs -105°→+105° (a 210° arc) as t goes 0→1.
+    var a = (-105 + 210 * t) * Math.PI / 180;
+    return { t: t, x: 50 + 45.5 * Math.sin(a), y: 51 - 41 * Math.cos(a) };
   }
   window.PJCC_TIME = { parts: parts, hour: hour, dateStr: dateStr, phase: phase,
                        daySeed: daySeed, weather: weather, clouds: clouds, orb: orb };

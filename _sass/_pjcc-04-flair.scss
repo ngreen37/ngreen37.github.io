@@ -290,11 +290,16 @@ html.reduce-flourish .tagline-main-tagline .tg-x-glyph { animation: none; visibi
    may be on all pages"): HIDDEN SITE-WIDE now. The markup + these rules stay because
    Chess City re-enables the band on its own page — the awake-rook Whisper egg lives
    in it, and on that page a border of pieces is lore, not noise. */
+/* HIDDEN site-wide (the 2026-07-14 "splotch cull" intended this, but a duplicate
+   `display:flex` right under the `display:none` was overriding it, so the footer
+   piece-band kept showing on every page — that was the SECOND row of glyphs Nate
+   saw stacked under the PJCC page's own .home-glyphs wire, 2026-07-15). The home
+   page keeps its single .home-glyphs ribbon; every other page now has none.
+   Restore by flipping this back to `display:flex`. */
 .footer-ribbon-wrap {
   display: none;
   position: absolute;
   inset: 0;
-  display: flex;
   align-items: center;
   overflow: hidden;
   pointer-events: none;
@@ -381,40 +386,47 @@ body.theme-bw .ribbon-track {
      the あ / 将 drifters are GONE; Nate works those games privately by URL):
      1 ♛ Princess · 2 ♞ Games · 3 ♜ Academy · 4 ¶ Blog · 5 ♟ Park Tables ·
      6 ✦ /classified/ (#drift-secret, own id rule — nth position irrelevant). */
+  /* NEGATIVE delays (2026-07-15): a POSITIVE delay leaves a drifter frozen at its
+     start position until the delay elapses — the Rook sat dead still for 26s on
+     load, which is exactly why Nate saw it "not move / not link." Negative delays
+     start each one PART-WAY through the 39s rise, so every drifter is already in
+     motion (and at a different height) the instant the page paints. Phases are
+     spread across the visible band (6%–88% ≈ 2.3s–34.3s) so none loads mid-fade. */
   &:nth-child(1) {          /* ♛ → Princess */
     left: 7%;
     bottom: 12%;
     font-size: 64px;
     color: rgba(245, 197, 24, 0.11);
-    animation-delay: 0s;
+    animation-delay: -4s;
   }
   &:nth-child(2) {          /* ♞ → the games hall (−15% 2026-07-14) */
     left: 71%;
     bottom: 22%;
     font-size: 52px;
     color: rgba(160, 100, 255, 0.085);
-    animation-delay: 13s;
+    animation-delay: -12s;
   }
-  &:nth-child(3) {          /* ♜ → the Academy (−15%) */
+  &:nth-child(3) {          /* ♜ → the Academy (−15%) — bumped a touch brighter so it
+                               reads as a live thing, not a smudge */
     left: 38%;
     bottom: 7%;
     font-size: 58px;
-    color: rgba(245, 197, 24, 0.077);
-    animation-delay: 26s;
+    color: rgba(245, 197, 24, 0.11);
+    animation-delay: -19s;
   }
   &:nth-child(4) {          /* ¶ → the blog (−15%) */
     left: 83%;
     bottom: 16%;
     font-size: 53px;
-    color: rgba(200, 200, 200, 0.077);
-    animation-delay: 7s;
+    color: rgba(200, 200, 200, 0.095);
+    animation-delay: -26s;
   }
   &:nth-child(5) {          /* ♟ → the Park Tables (park green) */
     left: 55%;
     bottom: 32%;
     font-size: 44px;
     color: rgba(107, 255, 184, 0.10);
-    animation-delay: 31s;
+    animation-delay: -31s;
   }
 
   &:hover {
