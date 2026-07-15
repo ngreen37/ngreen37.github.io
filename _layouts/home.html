@@ -622,10 +622,11 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
   border-bottom: 1px dotted rgba(154,127,212,0.5); padding-bottom: 2px; }
 .home-gambit-door a:hover { color: #F5C518; border-bottom-color: #F5C518; }
 
-/* The chess glyphs live in the BLACK FOOTER band on the home page (2026-07-15) — the
-   footer's own `.footer-ribbon-wrap` is hidden site-wide, so re-show it here only. On
-   the dark footer the pieces are a faint texture, not splotches on the purple sky. */
-body:has(.home-flow) .footer-ribbon-wrap { display: flex; }
+/* The footer chess-glyph band is GONE from the home page too now (2026-07-15 Nate: even
+   in the black footer the faint pieces read as "transparent jellybeans" — reset the
+   footer clean). It was re-shown here only; that re-enable is deleted, so the footer
+   ribbon is now hidden on EVERY normal page (Chess City still re-enables its own for the
+   awake-rook egg). Restore: `body:has(.home-flow) .footer-ribbon-wrap { display: flex; }` */
 /* ONE orb town-wide (2026-07-14): the hero paints its own sun/moon diorama, so the
    fixed sky's arcing orb stands down here — otherwise the gutters grow a second one. */
 body:has(.home-flow) .ts-orb { display: none !important; }
