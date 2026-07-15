@@ -321,7 +321,7 @@
   #drift-secret {
     left:auto; bottom:auto; right:-8%; top:34%;
     font-size:28px;
-    color:rgba(205,205,230,0.054);         /* dimmer than every other drifter (−10% again, 2026-07-14) */
+    color:rgba(205,205,230,0.046);         /* dimmer still — −15% (2026-07-15) */
     opacity:0;
     animation:none;
     will-change:transform;
@@ -337,15 +337,15 @@
      ONE straight linear segment = genuinely constant speed.
      The crossing is the first slice of the 48s loop, so its SPEED is set by how much of the
      loop it gets. History: 25% of 48s = 12.0s → 7.5% slower = 27% (12.97s) →
-     2026-07-13 ("slow the star down 10%") 14.4s = 30% → and now (2026-07-14, another
-     10%) 14.4/0.9 = 16.0s = 33.3% of the loop.
+     2026-07-13 ("slow the star down 10%") 14.4s = 30% → 2026-07-14 (another 10%)
+     16.0s = 33.3% → 2026-07-15 (another 10%) 16.0/0.9 = 17.6s = 36.6% of the loop.
      The 48s repeat is deliberately left alone — that's the wait BETWEEN passes, not the
      star's speed, and this is the only door to /classified/. */
   @keyframes secret-fly {
     0%    { transform:translateX(0);              opacity:0; }
     1%    { opacity:1; }
-    32.3% { opacity:1; }
-    33.3% { transform:translateX(calc(-120vw));   opacity:0; }
+    35.6% { opacity:1; }
+    36.6% { transform:translateX(calc(-120vw));   opacity:0; }
     100%  { transform:translateX(calc(-120vw));   opacity:0; }
   }
 
