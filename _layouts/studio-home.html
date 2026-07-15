@@ -365,15 +365,18 @@
          (0.42s) so it lands as a flash, not a swell — that's the "clearly pop-up".
          Two transitions, because the .is-bloom rule supplies the timing on the way
          in and the base rule supplies it on the way out. */
-  /* The sigil bloom keeps getting quieter: 33% smaller (1.8→1.2rem), then dimmer
+  /* The sigil bloom kept getting quieter: 33% smaller (1.8→1.2rem), then dimmer
      0.145→0.123→0.111→0.100, and the fade-out faster 0.792→0.594→0.475s (2026-07-15).
+     Then Nate lost sight of it on Replay Intro, so it comes BACK UP: brightness +15%
+     (0.100→0.115) and the whole bloom LENGTHENED 15% (fade-out 0.475→0.546s here, and
+     BLOOM_IN/HOLD in the JS below), so it lingers long enough to catch (2026-07-15).
      The fade-OUT is timed by THIS base rule (is-bloom supplies only the fade-IN). */
   .studio-drift-sigil { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.96);
     z-index:6; pointer-events:none; opacity:0; filter:drop-shadow(0 0 16px rgba(245,197,24,0.28));
-    transition:opacity 0.475s ease, transform 0.475s ease; }
+    transition:opacity 0.546s ease, transform 0.546s ease; }
   .studio-drift-sigil .pjcc-sigil { font-size:1.2rem; }
-  .studio-drift-sigil.is-bloom { opacity:0.100; transform:translate(-50%,-50%) scale(1.0);
-    transition:opacity 0.42s ease-out, transform 0.42s ease-out; }
+  .studio-drift-sigil.is-bloom { opacity:0.115; transform:translate(-50%,-50%) scale(1.0);
+    transition:opacity 0.483s ease-out, transform 0.483s ease-out; }
 
   /* THE GATE. `splash-seq` is set on <html> by the script below, so this only ever
      applies when the JS that opens the gate is actually running — with no JS the
@@ -618,7 +621,7 @@
     function seatTheQuads() { if (!lit && grid) { lit = true; grid.classList.add('is-lit'); } }
 
     if (sig && grid && !reduce) {
-      var BLOOM_IN = 420, HOLD = 700, FADE_OUT = 475;   // matches the CSS fade-out above
+      var BLOOM_IN = 483, HOLD = 805, FADE_OUT = 546;   // lengthened 15% (2026-07-15); FADE_OUT matches the CSS above
       var bloom = function () {
         sig.classList.add('is-bloom');
         setTimeout(function () { sig.classList.remove('is-bloom'); }, BLOOM_IN + HOLD);
