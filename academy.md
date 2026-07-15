@@ -58,7 +58,7 @@ own_title: true
 </div>
 
 <h2 class="ac-h2 ac-h2--soft">A school that's still being built</h2>
-<p class="ac-note">This is the ground floor. The Academy grows one honest lesson at a time — and the pieces you drill today get their real Blender renders as the studio models the set, on the same road that leads to the game in Godot and, one day, the show. You're early. That's the whole point.</p>
+<p class="ac-note">This is the ground floor. The Academy grows one honest lesson at a time — and the pieces you drill today get their real Blender renders as the studio models the set, on the same road that leads to the game in Godot and, one day, the show. You're early. Watch it grow. Participate, if you wish. <a href="{{ '/contact/' | relative_url }}">Contact me</a>.</p>
 
 <script>
 // The hero evolves with the visitor: Bootcamp progress (local-only) changes the CTA + the

@@ -112,6 +112,66 @@ body.studio-body {
   pointer-events: none;
 }
 
+/* ── FOUR SEASONAL LOGO LAYOUTS (2026-07-15 Nate: "make the McPuppy logo have four matching
+   season layouts… turn the current one into summer"). One matching emblem pinned to the
+   wordmark + a faint seasonal halo on the logo itself; the town's own season class on <html>
+   picks which of the four shows, so the logo turns over with the calendar. The emblem shapes
+   and tints mirror the town-sky season particles for cohesion. Emblem is decorative only. ── */
+.corner-season {   /* pinned to the top-right shoulder of the "McP" mark, not the far end of the wordmark */
+  position: absolute;
+  top: -4px;
+  left: 54px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  animation: cs-breathe 6s ease-in-out infinite;
+}
+.cs-mote { width: 13px; height: 13px; display: block; }
+@media (max-width: 600px) { .corner-season { left: 37px; top: -5px; } }
+
+/* summer — a small sun (the original look becomes the summer layout) */
+html.season-summer .cs-mote {
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, #fff3c2, #ffcf4a 70%);
+  box-shadow: 0 0 10px 2px rgba(255, 207, 74, 0.6);
+}
+html.season-summer .studio-corner-img { filter: invert(1) drop-shadow(0 0 7px rgba(255, 207, 74, 0.45)); }
+
+/* fall — an amber leaf */
+html.season-fall .cs-mote {
+  border-radius: 60% 12% 60% 12%;
+  transform: rotate(38deg);
+  background: linear-gradient(150deg, #f0a24a, #d6782a);
+  box-shadow: 0 0 8px rgba(214, 120, 42, 0.5);
+}
+html.season-fall .studio-corner-img { filter: invert(1) drop-shadow(0 0 7px rgba(214, 120, 42, 0.4)); }
+
+/* winter — a pale frost dot */
+html.season-winter .cs-mote {
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, #ffffff, #bcdcf5 72%);
+  box-shadow: 0 0 9px 2px rgba(150, 194, 235, 0.6);
+}
+html.season-winter .studio-corner-img { filter: invert(1) drop-shadow(0 0 7px rgba(150, 194, 235, 0.42)); }
+
+/* spring — a soft petal/bud */
+html.season-spring .cs-mote {
+  border-radius: 60% 12% 60% 12%;
+  transform: rotate(38deg);
+  background: linear-gradient(150deg, #ffd0e2, #8cd496);
+  box-shadow: 0 0 8px rgba(140, 212, 150, 0.5);
+}
+html.season-spring .studio-corner-img { filter: invert(1) drop-shadow(0 0 7px rgba(140, 212, 150, 0.42)); }
+
+@keyframes cs-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.92; }
+  50%      { transform: scale(1.12); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .corner-season { animation: none; } }
+
 
 
 

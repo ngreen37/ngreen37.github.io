@@ -30,7 +30,7 @@
       { t: 'Blog',             s: 'Episode archive',                      u: '/blog/',               ic: '✍', b: 'mcpuppy', k: 'blog build log episodes posts writing' },
       { t: 'Mailing List',     s: 'Get updates by email',                 u: '/mailing-list/',       ic: '✉', b: 'mcpuppy', k: 'mailing list email subscribe newsletter' },
       { t: 'For Educators',    s: 'Use PJCC in the classroom',            u: '/educators/',          ic: '🍎', b: 'mcpuppy', k: 'educators teachers classroom school lessons' },
-      { t: 'About / Contact',  s: 'Who & how to reach us',                u: '/about/',              ic: '☎', b: 'mcpuppy', k: 'about contact reach email who studio' },
+      { t: 'Contact',          s: 'Who & how to reach us',                u: '/contact/',            ic: '☎', b: 'mcpuppy', k: 'about contact reach email who studio hello' },
       { t: 'The Splash',       s: 'The front door',                       u: '/',                    ic: '⬛', b: 'mcpuppy', k: 'home splash front door start landing' }
     ];
 

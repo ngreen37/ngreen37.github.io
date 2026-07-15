@@ -44,8 +44,26 @@ permalink: /leaderboards/
   <div class="lbtv-screen">
     <div id="lb-body"><p class="lb-empty">Tuning in…</p></div>
   </div>
-  <div class="lbtv-ticker" aria-hidden="true"><span>◆ FROM THE BOOTH — "Every credit counts, folks." · "A NEW challenger on the board!" · "The tower does not climb itself." · "That score will NOT stand for long." ◆</span></div>
+  <div class="lbtv-ticker" aria-hidden="true">
+    <span class="lbtv-booth">◆ FROM THE BOOTH</span>
+    <span class="lbtv-quote" id="lbtv-quote">"Every credit counts, folks."</span>
+  </div>
 </div>
+
+<script>
+// The booth speaks one line at a time now (Nate 2026-07-15) — a slow cross-fade through the
+// pool instead of a marquee of all of them strung together. Reduced-motion holds the first line.
+(function () {
+  var el = document.getElementById('lbtv-quote'); if (!el) return;
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var quotes = ['"Every credit counts, folks."', '"A NEW challenger on the board!"', '"The tower does not climb itself."'];
+  var i = 0;
+  setInterval(function () {
+    el.style.opacity = '0';
+    setTimeout(function () { i = (i + 1) % quotes.length; el.textContent = quotes[i]; el.style.opacity = '1'; }, 420);
+  }, 4200);
+})();
+</script>
 
 <style>
 /* ===== broadcast chrome ===== */
@@ -95,12 +113,13 @@ permalink: /leaderboards/
 .lbtv-screen::after { content:''; position:absolute; inset:0; pointer-events:none; border-radius:12px;
   background:repeating-linear-gradient(0deg, rgba(255,255,255,0.022) 0 1px, transparent 1px 3px); }
 
-/* the booth ticker */
-.lbtv-ticker { margin-top:10px; overflow:hidden; white-space:nowrap; border:1px solid #3a2a6a; border-radius:8px;
-  background:#0d0824; font-family:'Courier New',monospace; font-size:0.72rem; color:#8fb8ff; padding:6px 0; }
-.lbtv-ticker span { display:inline-block; padding-left:100%; animation:lbtvTick 38s linear infinite; }
-@keyframes lbtvTick { 0%{ transform:translateX(0); } 100%{ transform:translateX(-100%); } }
-@media (prefers-reduced-motion: reduce){ .lbtv-live i, .lbtv-ticker span { animation:none; } .lbtv-ticker span { padding-left:0; } }
+/* the booth — one line at a time, cross-fading (was a marquee of all lines at once) */
+.lbtv-ticker { margin-top:10px; border:1px solid #3a2a6a; border-radius:8px;
+  background:#0d0824; font-family:'Courier New',monospace; font-size:0.72rem; padding:7px 12px;
+  display:flex; align-items:center; justify-content:center; gap:10px; min-height:30px; text-align:center; }
+.lbtv-booth { color:#6f5fb0; flex-shrink:0; letter-spacing:0.08em; font-weight:900; }
+.lbtv-quote { color:#8fb8ff; transition:opacity 0.42s ease; }
+@media (prefers-reduced-motion: reduce){ .lbtv-live i { animation:none; } }
 </style>
 
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>

@@ -838,7 +838,7 @@ function go(){ initAudio(); if (actx.state === 'suspended') actx.resume(); }
 document.getElementById('journey-btn').addEventListener('click', ()=>{ go(); startRun('journey'); });
 document.getElementById('daily-btn').addEventListener('click', ()=>{ go(); startRun('daily'); });
 // ⚑ report a broken puzzle — opens the player's mail app with everything McPuppy
-// needs prefilled (2026-07-14). The address is already public on /about/.
+// needs prefilled (2026-07-14). The address is already public on /contact/.
 document.getElementById('report-btn').addEventListener('click', ()=>{
   const p = G && G.p; if (!p) return;
   const body = 'Hi McPuppy — I think this Fork in the Road puzzle is broken.\n\n' +

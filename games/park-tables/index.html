@@ -140,6 +140,29 @@ a move a day is plenty.</p>
     var r = iAmWhite ? m.rating_b : m.rating_w;
     return (r == null) ? '' : ' (' + r + ')';
   }
+  // An open table is a board that's SET but not yet started — a queued game (Nate 2026-07-15:
+  // "not just an info bar, but a queued chessboard overhead view, none of the pieces moved, and
+  // no color designated"). One overhead starting position, built once and reused: pieces sit in
+  // a single neutral ink so neither seat is coloured until someone sits down.
+  var _qboard = null;
+  function queuedBoard(){
+    if (_qboard) return _qboard;
+    var back = ['r','n','b','q','k','b','n','r'];
+    var GL = { p:'♟', r:'♜', n:'♞', b:'♝', q:'♛', k:'♚' };
+    var sq = '', pc = '';
+    for (var y = 0; y < 8; y++){
+      for (var x = 0; x < 8; x++){
+        var dark = (x + y) % 2 === 1;
+        sq += '<rect x="' + (x*10) + '" y="' + (y*10) + '" width="10" height="10" fill="' + (dark ? '#b07a48' : '#f0e2c6') + '"/>';
+        var g = y === 0 ? GL[back[x]] : y === 1 ? GL.p : y === 6 ? GL.p : y === 7 ? GL[back[x]] : null;
+        if (g) pc += '<text x="' + (x*10 + 5) + '" y="' + (y*10 + 7.9) + '" text-anchor="middle" font-size="8.6" ' +
+          'fill="#2e2b33" stroke="rgba(255,255,255,0.28)" stroke-width="0.35">' + g + '</text>';
+      }
+    }
+    _qboard = '<svg class="pt-qboard" viewBox="0 0 80 80" width="66" height="66" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect x="0" y="0" width="80" height="80" rx="3" fill="#0d0824"/>' + sq + pc + '</svg>';
+    return _qboard;
+  }
   function fmtLeft(ms){
     if (ms <= 0) return 'no time';
     var h = Math.floor(ms / 3600000), d = Math.floor(h / 24);
@@ -218,7 +241,8 @@ a move a day is plenty.</p>
           return m.vs_creator ? iAmCreator : true;
         });
         var openH = claimable.map(function (m) {
-          return '<button class="pt-row" data-claim="' + m.id + '">' +
+          return '<button class="pt-row pt-row--queued" data-claim="' + m.id + '">' +
+            queuedBoard() +
             '<span class="pt-row-vs">' + (m.vs_creator ? '♛ ' : '') + '<b>' + esc(m.white_name) + (m.rating_w != null ? ' (' + m.rating_w + ')' : '') + '</b> is waiting' +
             '<i class="pt-row-chips">' + chips(m) + '</i></span>' +
             '<span class="pt-row-state go">SIT DOWN</span></button>';
@@ -486,6 +510,11 @@ a move a day is plenty.</p>
 .pt-row-state { font-family: 'Share Tech Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em;
   color: #9a7fd4; white-space: nowrap; }
 .pt-row-state.go { color: #6bffb8; font-weight: 700; }
+/* a queued (open) table shows its board, set and waiting — no sides chosen yet */
+.pt-row--queued { align-items: center; gap: 12px; }
+.pt-row--queued .pt-row-vs { flex: 1; min-width: 0; }
+.pt-qboard { flex-shrink: 0; display: block; border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.4); }
 .pt-up { color: #6bffb8; } .pt-dn { color: #ff8a8a; }
 
 .pt-table-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 10px 0 4px; }
