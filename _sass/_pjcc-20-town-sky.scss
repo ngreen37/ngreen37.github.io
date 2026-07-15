@@ -653,6 +653,17 @@ body.theme-bw .ts-clouds,
 body.theme-studio .ts-orb,
 body.theme-studio .ts-shoot,
 body.theme-studio .ts-clouds { display: none; }
+/* 2026-07-15 (Nate: Direct Line — and any McPuppy page — should keep the studio's
+   black-and-white sky "instead of the seasons"): kill the seasonal tint, the drifting
+   particles and the night constellations on the mono themes. The town stays in colour;
+   McPuppy is the black-and-white half of the site, and a warm autumn tint behind a
+   B&W page reads as a bug. */
+body.theme-bw .ts-season-fx,
+body.theme-bw .ts-season-tint,
+body.theme-bw .ts-constellations,
+body.theme-studio .ts-season-fx,
+body.theme-studio .ts-season-tint,
+body.theme-studio .ts-constellations { display: none; }
 body.theme-bw .ts-stars,
 body.theme-studio .ts-stars { display: block; opacity: 0.18; }
 body.theme-bw .page-title,

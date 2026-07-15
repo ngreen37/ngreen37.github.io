@@ -377,6 +377,9 @@
   .studio-drift-sigil .pjcc-sigil { font-size:1.2rem; }
   .studio-drift-sigil.is-bloom { opacity:0.115; transform:translate(-50%,-50%) scale(1.0);
     transition:opacity 0.483s ease-out, transform 0.483s ease-out; }
+  /* 2026-07-15 (Nate: the ACCcccc "ONLY shows up at night time") — belt-and-braces so
+     it can never bloom by day even if a stray timer fires; the JS gate is the primary. */
+  html:not(.sky-night) .studio-drift-sigil { display:none; }
 
   /* THE GATE. `splash-seq` is set on <html> by the script below, so this only ever
      applies when the JS that opens the gate is actually running — with no JS the
@@ -628,7 +631,11 @@
     var lit  = false;
     function seatTheQuads() { if (!lit && grid) { lit = true; grid.classList.add('is-lit'); } }
 
-    if (sig && grid && !reduce) {
+    // 2026-07-15 (Nate: "the ACCcccc, maybe it ONLY shows up at night time"). The sigil
+    // bloom is now a NIGHT-ONLY beat. By day (or under reduced motion) there's no sigil
+    // to wait on, so the quads simply take their seats.
+    var isNight = document.documentElement.classList.contains('sky-night');
+    if (sig && grid && !reduce && isNight) {
       var BLOOM_IN = 483, HOLD = 805, FADE_OUT = 546;   // lengthened 15% (2026-07-15); FADE_OUT matches the CSS above
       var bloom = function () {
         sig.classList.add('is-bloom');
@@ -651,8 +658,15 @@
       // throttles setTimeout), the quads must not stay invisible. The splash is the
       // front door.
       setTimeout(seatTheQuads, firstDelay + 6000);
+    } else if (grid && !reduce) {
+      // Daytime: no bloom to gate the quads, so they seat on the same cadence — after
+      // the cold-open on a first visit, at once on a return.
+      var seenDay = false; try { seenDay = !!localStorage.getItem('mcpuppy_seen'); } catch (e) {}
+      var dayDelay = seenDay ? 260 : 4400;
+      setTimeout(seatTheQuads, dayDelay);
+      setTimeout(seatTheQuads, dayDelay + 6000);   // failsafe
     } else {
-      seatTheQuads();   // reduced motion / no sigil: no beat to wait for
+      seatTheQuads();   // reduced motion: no beat to wait for
     }
 
     // Secret ✦ is ARMED here; the CSS then holds it off-screen for 7s before the first
@@ -665,6 +679,23 @@
     if (star && !reduce) {
       var seenStar = false; try { seenStar = !!localStorage.getItem('mcpuppy_seen'); } catch (e) {}
       setTimeout(function () { star.classList.add('is-in'); }, seenStar ? 400 : 4400);
+    }
+
+    // Drifters — hovering drops the drift to a QUARTER speed (Nate 2026-07-15: "slow
+    // them down by 75%", not a dead stop). playbackRate is smooth (no jump) and the CSS
+    // lights the glyph gold at the same beat, so it's easy to land the link. Desktop
+    // pointers only — the drifters are hidden on phones, and :hover sticks on touch.
+    // (The pointer-events fix in _pjcc-02-studio.scss is what makes the Rook / Park pawn
+    // reachable behind the content in the first place.)
+    if (window.matchMedia && matchMedia('(hover: hover)').matches) {
+      Array.prototype.forEach.call(document.querySelectorAll('.drift-piece'), function (d) {
+        if (d.id === 'drift-secret') return;   // the ✦ keeps its own fly-across timing
+        var rate = function (r) { if (d.getAnimations) d.getAnimations().forEach(function (a) { a.playbackRate = r; }); };
+        d.addEventListener('mouseenter', function () { rate(0.25); });
+        d.addEventListener('mouseleave', function () { rate(1); });
+        d.addEventListener('focus', function () { rate(0.25); });
+        d.addEventListener('blur', function () { rate(1); });
+      });
     }
   })();
   </script>

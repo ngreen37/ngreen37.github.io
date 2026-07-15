@@ -115,10 +115,14 @@ own_title: true
   font-size: clamp(28px, 8vw, 48px); color: #F5C518; }
 .ac-strip span { display: inline-block; opacity: 0; transform: translateY(14px);
   filter: drop-shadow(0 3px 8px rgba(0,0,0,0.5));
-  animation: acRise 0.6s ease forwards, acBob 3.6s ease-in-out infinite;
+  /* 2026-07-15 (Nate: "smooth out the movement of the chess pieces near the very top").
+     The bob was a quick, 6px hop on a 3.6s loop — read as a jiggle. Now it's a slow,
+     4px sine-eased breath (4.8s), so the row rises into formation and then just
+     drifts. Same wave stagger, calmer motion. */
+  animation: acRise 0.6s ease forwards, acBob 4.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
   animation-delay: calc(var(--i) * 0.14s), calc(1.1s + var(--i) * 0.14s); }
 @keyframes acRise { to { opacity: 1; transform: none; } }
-@keyframes acBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes acBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 .ac-lead { max-width: 560px; margin: 0 auto 18px; color: #e7dcff; font-size: 1.04rem; line-height: 1.62; }
 .ac-cta { display: inline-block; background: #F5C518; color: #1a0f3d; font-weight: 800; text-decoration: none;
   border-radius: 999px; padding: 12px 24px; font-size: 1rem; box-shadow: 0 6px 22px -6px rgba(245,197,24,0.5);

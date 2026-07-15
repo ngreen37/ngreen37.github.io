@@ -46,7 +46,20 @@ body.studio-body {
   align-items: center;
   gap: 36px;
   animation: studio-fade-in 1.3s ease forwards;
+  /* 2026-07-15 (Nate: the Rook drifter "doesn't hover over at all"). The floating
+     glyphs sit BEHIND this column (drifters z-index:0, content z-index:1), so any
+     drifter passing under the centred content — the Rook at 38%, the Park pawn at
+     55% — could never be pointed at; it wasn't the /academy/ link, it was the column
+     eating the hover. The column carries no background of its own, so it has no
+     business swallowing pointer events in its gutters: make it transparent to the
+     pointer and re-arm only the things you actually click (below). A hover in the
+     gaps now falls straight through to the drifter behind it. */
+  pointer-events: none;
 }
+.studio-content .studio-quad,
+.studio-content .studio-gauntlet,
+.studio-content .studio-footer a,
+.studio-content .tagline-main-tagline .tg-x { pointer-events: auto; }
 
 .studio-corner-logo {
   position: fixed;

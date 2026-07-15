@@ -230,7 +230,7 @@ body_class: theme-studio
 
   <div class="mcp-thanks-block">
     <h3 class="mcp-thanks-sub">The Creator would like to thank</h3>
-    <p class="mcp-thanks-names">Mom &middot; Chels &middot; Laura &middot; Josh &middot; Kim &middot; Aunt Barb &middot; Tucker</p>
+    <p class="mcp-thanks-names">Mom &middot; Chels &middot; Laura &middot; Josh &middot; Kim &middot; Aunt Barb &middot; Tucker &middot; Jacob &middot; Garrett &middot; Dominic</p>
   </div>
 
   <div class="mcp-thanks-block">

@@ -3,6 +3,7 @@ layout: page
 title: The Direct Line
 permalink: /direct-line/
 brand: mcpuppy
+body_class: theme-studio
 ---
 
 <div class="dl-head">

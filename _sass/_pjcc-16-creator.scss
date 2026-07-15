@@ -113,7 +113,12 @@
   background: #160c33; border: 1px solid #4a3a7a; border-radius: 10px; padding: 8px 2px; text-align: center;
   cursor: pointer; transition: border-color .12s, transform .08s, background .12s; position: relative;
 }
-.forge-cell:hover { border-color: #F5C518; transform: translateY(-2px); }
+/* 2026-07-15 (Nate: the customize options "take two clicks to toggle"). These cells are
+   <div>s with a :hover style, and on a touch screen the FIRST tap only applies the hover
+   (the lift) — the SECOND tap fires the select. Gating the hover behind `hover: hover`
+   means a finger never triggers the hover state, so one tap toggles. Same fix the site
+   uses elsewhere for touch. */
+@media (hover: hover) { .forge-cell:hover { border-color: #F5C518; transform: translateY(-2px); } }
 .forge-cell.on { border-color: #6bffb8; box-shadow: 0 0 10px rgba(107,255,184,0.25); background: rgba(107,255,184,0.08); }
 .forge-cell .fc-em { font-size: 26px; line-height: 1; display: block; }
 .forge-cell .fc-n { font-size: 0.6rem; color: #9a7fd4; margin-top: 3px; font-weight: 700; line-height: 1.1; }
@@ -124,7 +129,7 @@
   width: 34px; height: 34px; border-radius: 50%; cursor: pointer; border: 2px solid transparent;
   position: relative; transition: transform .08s; box-shadow: inset 0 0 0 2px rgba(0,0,0,.25);
 }
-.forge-sw:hover { transform: scale(1.1); }
+@media (hover: hover) { .forge-sw:hover { transform: scale(1.1); } }
 .forge-sw.on { border-color: #fff; box-shadow: 0 0 0 2px #140c30, 0 0 10px var(--sw, #fff); }
 .forge-sw.none { background: #221347; display: flex; align-items: center; justify-content: center; color: #9a7fd4; font-size: 16px; }
 
@@ -137,6 +142,12 @@
 }
 .forge-field input:focus, .forge-field textarea:focus { outline: none; border-color: #F5C518; }
 .forge-field .fld-count { float: right; font-weight: 600; color: #6b5fa0; }
+/* the "🎲 Give me a title" dice under the Role field (2026-07-15 Nate) */
+.forge-title-rand { justify-self: start; margin-top: -4px; background: #221347; color: #cdbcf2;
+  border: 1px solid #4a3a7a; border-radius: 8px; padding: 7px 12px; font-family: inherit;
+  font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: border-color .12s, color .12s; }
+@media (hover: hover) { .forge-title-rand:hover { border-color: #F5C518; color: #F5C518; } }
+.forge-title-rand:active { transform: scale(0.98); }
 
 /* footer actions */
 .forge-foot { display: flex; gap: 10px; align-items: center; margin-top: 20px; flex-wrap: wrap; }

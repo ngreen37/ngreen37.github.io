@@ -414,10 +414,14 @@ html.sky-dawn .hero-skyline .sk-ct { border-top-color:rgba(255,170,110,0.5); }
 
 /* DAY — an actual blue daytime SKY (2026-07-12 Nate: day looked like night). A big,
    bright, unmistakable sun (distinct from the pale night moon) + a few soft clouds. */
-html.sky-day .home-hero { background:linear-gradient(180deg, #1f5aa8 0%, #3f83cf 48%, #7ab4e6 100%); }
+{% comment %} 2026-07-15 (Nate: "the Daytime looks GREAT — just dim the sun and the blue
+     by a touch, like 7.5%"). The blue gradient is knocked down ~7.5% across all three
+     stops, and the sun's glow/rays/corona below come down the same amount. The sun DISC
+     is left alone — it's the shape that says "sun"; only its aura dims. {% endcomment %}
+html.sky-day .home-hero { background:linear-gradient(180deg, #1d539b 0%, #3a79c0 48%, #71a7d5 100%); }
 html.sky-day .hs-orb { display:block; left:15%; top:24px; width:44px; height:44px;
   background:radial-gradient(circle at 40% 38%, #fffefb 0%, #fff3b8 34%, #ffd84a 70%, #f5b800 100%);
-  box-shadow:0 0 42px 15px rgba(255,216,74,0.5), 0 0 96px 34px rgba(255,216,74,0.22); }
+  box-shadow:0 0 42px 15px rgba(255,216,74,0.46), 0 0 96px 34px rgba(255,216,74,0.20); }
 {% comment %} 2026-07-12 (Nate: "the sun still kind of looks like the moon") — give it
      actual RAYS, so the silhouette itself says "sun" and can never be read as the
      pale night orb. ::before = 16 spokes (a repeating-conic-gradient masked to a ring
@@ -427,21 +431,32 @@ html.sky-day .hs-orb::before { content:''; position:absolute; inset:-20px; borde
   /* 2026-07-14 (Nate: rays "a bit too unnatural — pull it back"): 16 spokes → 8,
      slightly wider and softer, so it reads sun-lit rather than machine-cut */
   background:repeating-conic-gradient(from 0deg,
-    rgba(255,231,130,0.7) 0deg 4.5deg, transparent 4.5deg 45deg);
+    rgba(255,231,130,0.65) 0deg 4.5deg, transparent 4.5deg 45deg);
   -webkit-mask-image:radial-gradient(circle, transparent 47%, #000 55%, #000 72%, transparent 100%);
           mask-image:radial-gradient(circle, transparent 47%, #000 55%, #000 72%, transparent 100%);
   animation:hs-sun-rays 90s linear infinite; }
 html.sky-day .hs-orb::after { content:''; position:absolute; inset:-11px; border-radius:50%;
-  background:radial-gradient(circle, rgba(255,238,160,0.34), transparent 70%); }
+  background:radial-gradient(circle, rgba(255,238,160,0.31), transparent 70%); }
 @keyframes hs-sun-rays { to { transform:rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { html.sky-day .hs-orb::before { animation:none; } }
 html.reduce-flourish html.sky-day .hs-orb::before { animation:none; }
-/* soft clouds so it clearly reads as a sky (static paint; away from sun + door) */
+/* soft clouds so it clearly reads as a sky (static paint; away from sun + door).
+   2026-07-15 (Nate: "the clouds in the daytime don't really look like clouds — stretch
+   those out … a more cloudy day"). They were three lone flat ovals = smudges. Now each
+   is a STRETCHED cloud with anatomy — a long flat base with two soft domes bumping out of
+   its top — the same puff grammar the town-sky deck uses. Two of them, kept up in the
+   sky band and off-centre so they clear the centred title, the eyebrow and the door. */
 html.sky-day .hero-sky::before { content:''; position:absolute; inset:0; pointer-events:none;
   background:
-    radial-gradient(58px 19px at 41% 30%, rgba(255,255,255,0.72), transparent 72%),
-    radial-gradient(74px 22px at 63% 21%, rgba(255,255,255,0.55), transparent 74%),
-    radial-gradient(46px 15px at 30% 48%, rgba(255,255,255,0.45), transparent 72%); }
+    /* cloud A — long, low, left-of-centre */
+    radial-gradient(160px 12px at 40% 26%, rgba(255,255,255,0.52), transparent 82%),
+    radial-gradient(52px 20px at 35% 22%, rgba(255,255,255,0.5), transparent 72%),
+    radial-gradient(66px 25px at 41% 21%, rgba(255,255,255,0.55), transparent 72%),
+    radial-gradient(44px 18px at 46% 22.5%, rgba(255,255,255,0.46), transparent 72%),
+    /* cloud B — a second, higher and right-of-centre */
+    radial-gradient(140px 11px at 62% 15%, rgba(255,255,255,0.44), transparent 82%),
+    radial-gradient(46px 18px at 58% 11.5%, rgba(255,255,255,0.42), transparent 72%),
+    radial-gradient(58px 22px at 63% 11%, rgba(255,255,255,0.46), transparent 72%); }
 
 /* DUSK — it sets deep amber on the other side of town: the sun steps into the
    background, dimmer and half-sunk at the sea line.

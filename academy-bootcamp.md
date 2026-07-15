@@ -46,9 +46,11 @@ own_title: true
   <div class="bc-grad-ico" aria-hidden="true">🎖️</div>
   <h2 class="bc-grad-h">That's the whole army.</h2>
   <p class="bc-grad-p" id="bc-grad-p"></p>
+  {% comment %} The "free board" CTA was removed 2026-07-15 (Nate: "take out the Free
+       Board completely. We'll do it later."). The Free-Play Board page still builds at
+       /games/free-play/; restore the one <a> to re-list it. {% endcomment %}
   <div class="bc-grad-cta">
-    <a class="bc-btn bc-btn--go" href="{{ '/games/free-play/' | relative_url }}">Put it together on a free board ▸</a>
-    <a class="bc-btn" href="{{ '/academy/' | relative_url }}">Back to the Academy</a>
+    <a class="bc-btn bc-btn--go" href="{{ '/academy/' | relative_url }}">Back to the Academy ▸</a>
   </div>
 </div>
 

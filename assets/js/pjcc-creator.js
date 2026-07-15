@@ -329,6 +329,18 @@
     if (sc) ov.querySelector('.forge-body').scrollTop = sc;
   }
 
+  // Preset titles for the "give me a title" dice (2026-07-15 Nate: "a random title from
+   // a preset list, like Foreman of the Sand Mines"). All grounded in the PJCC world; ≤40
+   // chars to fit the Role field. Add freely.
+  var TITLES = [
+    'Foreman of the Sand Mines', 'The Tidecaller', 'Warden of Checker Town',
+    'Gatekeeper of Chess City', 'Sentinel of Shogi Island', 'The Auditor',
+    'Keeper of the Park Tables', 'The Night Desk Correspondent', 'Quartermaster of the Arcade',
+    'Rook of the Eastern Wall', 'The Pawn Who Would Be Queen', 'Herald of Chess City',
+    'Steward of the Reading Room', 'Champion of the Checker Town Open', 'The City Gatekeeper',
+    'Envoy of the Construction Co.', 'Foreman of the Gauntlet', 'The Ferry Master'
+  ];
+
   function operativePanel(look) {
     var h = '';
     // base
@@ -351,10 +363,11 @@
     h += '<div class="forge-section"><h3>Emblem <small>— a badge that follows your name</small></h3><div class="forge-grid">';
     Object.keys(EMBLEMS).forEach(function (k) { h += cell(look.emblem === k, EMBLEMS[k].em, EMBLEMS[k].n, 'data-emblem="' + k + '"'); });
     h += '</div></div>';
-    // text
-    h += '<div class="forge-section"><h3>Name & story <small>— change it any time</small></h3><div class="forge-fields">' +
-      field('op-name', 'Call sign', 'text', 24, look.name, 'What do they call you?') +
-      field('op-role', 'Role / title', 'text', 40, look.role, 'e.g. Tactician of the Sand Mines') +
+    // text (2026-07-15 Nate: "take out the Call sign" — your codename IS your call sign,
+    // set once when you claim it; the Forge no longer duplicates it. Title gets a dice.)
+    h += '<div class="forge-section"><h3>Title &amp; story <small>— change it any time</small></h3><div class="forge-fields">' +
+      field('op-role', 'Role / title', 'text', 40, look.role, 'e.g. Foreman of the Sand Mines') +
+      '<button type="button" class="forge-title-rand" id="op-role-rand">🎲 Give me a title</button>' +
       field('op-bio',  'Bio', 'textarea', 120, look.bio, 'One line about your operative…') +
       '</div></div>';
     return h;
@@ -405,9 +418,16 @@
     Array.prototype.forEach.call(ov.querySelectorAll('[data-tint]'), function (c) { c.onclick = function () { patchPet({ tint: c.getAttribute('data-tint') }); }; });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-paura]'), function (c) { c.onclick = function () { patchPet({ aura: c.getAttribute('data-paura') }); }; });
     // text fields — live, debounced persist, no full re-render (keeps focus)
-    textField('op-name', 24, function (v) { liveOp({ name: v }); });
     textField('op-role', 40, function (v) { liveOp({ role: v }); });
     textField('op-bio', 120, function (v) { liveOp({ bio: v }); });
+    // 🎲 give me a title — fills the Role field from the preset list, live.
+    var roleRand = q('#op-role-rand');
+    if (roleRand) roleRand.onclick = function () {
+      var t = TITLES[Math.floor(Math.random() * TITLES.length)];
+      var inp = q('#op-role'); if (inp) inp.value = t;
+      var c = q('#op-role-c'); if (c) c.textContent = t.length + '/40';
+      liveOp({ role: t });
+    };
     textField('pet-name', 16, function (v) { setPetName(v); var n = ov.querySelector('.fp-name'); if (n) n.textContent = v || petName(); emit(); });
     textField('pet-bio', 120, function (v) { livePet({ bio: v }); });
   }
