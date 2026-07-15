@@ -19,7 +19,7 @@
       { t: 'Games',            s: 'The Arcade — play now',                u: '/games/',              ic: '♟', b: 'pjcc', k: 'arcade play games blitz' },
       { t: 'Characters',       s: 'Meet the cast',                        u: '/characters/',         ic: '♞', b: 'pjcc', k: 'characters cast people princess kaede world' },
       { t: 'Locations',        s: 'Places in the world',                  u: '/locations/',          ic: '⛰', b: 'pjcc', k: 'locations places checker town chess city' },
-      { t: 'Academy',          s: 'Gamified chess curriculum',            u: '/academy/',            ic: '♔', b: 'pjcc', k: 'academy learn chess lessons belts curriculum' },
+      { t: 'Academy',          s: 'Learn chess from the ground up',            u: '/academy/',            ic: '♔', b: 'pjcc', k: 'academy learn chess lessons pieces bootcamp curriculum' },
       { t: 'Your Profile',     s: 'Your codename, companion & record',             u: '/dossier/',            ic: '⬡', b: 'pjcc', k: 'dossier profile account sign in login operative identity forge' },
       { t: 'Leaderboards',     s: 'Operative standings',                  u: '/leaderboards/',       ic: '🏆', b: 'pjcc', k: 'leaderboards standings scores rank high' },
       { t: 'Fan Art',          s: 'The fan wall + a printable PJCC card',  u: '/fan-art/',            ic: '🎨', b: 'pjcc', k: 'fan art wall gallery printable card make picture upload print pdf submit' },

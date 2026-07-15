@@ -11,7 +11,7 @@ chapters: 0,1
 dossier_clearance: DELTA
 dossier_secret: Subject's bravery consistently exceeds her size. Origin of nerve — unknown.
 last_seen: CHECKER TOWN
-field_note: "Auston sat down at a shogi board she couldn't read, in a game she'd never played, across from people who'd studied for years — and she stayed. She'll tell you courage isn't the absence of nerves; it's staying in the chair one move longer than the fear wants you to."
+field_note: "Auston sat down at a board she couldn't read yet, in a game she'd never played, across from people who'd studied for years — and she stayed. She'll tell you courage isn't the absence of nerves; it's staying in the chair one move longer than the fear wants you to."
 ---
 
 Auston is Nate's younger sister — four years younger, and about ten years braver than her older brother. While he is all forward motion and big dreams, Auston is curious, fearless, and quietly the sharpest pattern-spotter in the family.
@@ -19,7 +19,7 @@ Auston is Nate's younger sister — four years younger, and about ten years brav
 ## Traits
 - Bright and careful
 - Fearless in a way that worries others, but she knows what she is doing
-- Took one look at the island's puzzle game, **shogi**, and never looked back
+- Took one look at the board and never looked back — the fastest study in the family
 - Adores her big brother, and thus isn't shy about telling him when he's wrong
 
 ## Background
@@ -30,4 +30,4 @@ She believes in him completely, and is willing to give her energy to the cause w
 ## Role in the Story
 The sibling companion who adds emotional depth to Nate while also providing a chance to share her journey. Chess City stops being only about Nate's ambition the moment you understand he is also doing it for **her** — to build a life big enough for a little sister who may need a little push to reach for the stars. 
 
-At the Academy's **Shogi** hall she's the **first student**, never the teacher — Kaede leads the dojo, with her brother Matsu helping. Auston just never leaves the board, so when you sit down to play she's the one across from you, practicing move for move.
+At the Academy she runs **Bootcamp** — the first hall, where every recruit learns how the pieces move. She'll be the first to tell you she isn't the strongest player in Checker Town; she's just the one who never left the board, and there's nobody better to start with.
