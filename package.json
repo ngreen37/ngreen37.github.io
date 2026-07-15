@@ -12,6 +12,7 @@
     "sweep": "node tests/sweep.js",
     "perf": "node tests/perf.js",
     "gen:icons": "node tests/gen-pwa-icons.js",
+    "gen:blocklist": "node tests/gen-blocklist.js",
     "gen:splash": "node tests/gen-ios-splash.js",
     "gen:favicon": "node tests/gen-favicon.js",
     "test:chess": "node tests/chess.check.js",

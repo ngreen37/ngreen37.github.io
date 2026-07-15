@@ -246,9 +246,21 @@
     if (!u) throw new Error('not signed in');
     name = String(name || '').trim().slice(0, 24);
     if (!name) throw new Error('codename required');
+    // Moderation: the DB trigger (docs/username-moderation-setup.sql) is the real,
+    // unbypassable gate. This RPC is just a friendly pre-check so we can say no
+    // before inserting. If the RPC isn't deployed yet it returns an error/null and
+    // we fall straight through — moderation is simply inactive until the SQL is run.
+    try {
+      var chk = await sb.rpc('is_codename_allowed', { p: name });
+      if (chk && chk.data === false) throw new Error("that codename isn't allowed — try another");
+    } catch (e) {
+      if (e && /isn't allowed/.test(e.message || '')) throw e;
+      /* RPC missing / offline: let the insert (and the trigger, once live) decide */
+    }
     var r = await sb.from('profiles').insert({ id: u.id, codename: name }).select().maybeSingle();
     if (r.error) {
       if (r.error.code === '23505') throw new Error('codename taken');   // unique violation
+      if (/PJCC_CODENAME_BLOCKED/.test(r.error.message || '')) throw new Error("that codename isn't allowed — try another");
       throw r.error;
     }
     profile = r.data;
