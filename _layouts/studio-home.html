@@ -146,20 +146,21 @@
            on one screen. {% endcomment %}
       {% comment %} 2026-07-14 (Nate): the Park Tables stand PARALLEL to the Gauntlet —
            the two headline ways to play real chess, side by side. {% endcomment %}
+      {% comment %} Park Tables leads, the Gauntlet follows (2026-07-15 Nate: "flipped"). {% endcomment %}
       <div class="studio-calls">
-      <a class="studio-gauntlet" id="studio-gauntlet" href="{{ '/games/the-gauntlet/' | relative_url }}">
-        <span class="sg-glyph" aria-hidden="true">♛</span>
-        <span class="sg-text">
-          <b class="sg-title" data-jp="ガントレットに挑め">Enter the Gauntlet</b>
-        </span>
-        <span class="sg-tower" id="sg-tower" aria-hidden="true"></span>
-      </a>
       <a class="studio-gauntlet studio-park" href="{{ '/games/park-tables/' | relative_url }}">
         <span class="sg-glyph sg-glyph--park" aria-hidden="true">♟</span>
         <span class="sg-text">
           <b class="sg-title" data-jp="パークで対局">Sit at the Park Tables</b>
         </span>
         <span class="sg-park-tag" aria-hidden="true">PVP · RATED</span>
+      </a>
+      <a class="studio-gauntlet" id="studio-gauntlet" href="{{ '/games/the-gauntlet/' | relative_url }}">
+        <span class="sg-glyph" aria-hidden="true">♛</span>
+        <span class="sg-text">
+          <b class="sg-title" data-jp="ガントレットに挑め">Enter the Gauntlet</b>
+        </span>
+        <span class="sg-tower" id="sg-tower" aria-hidden="true"></span>
       </a>
       </div>
       <script>
@@ -364,13 +365,14 @@
          (0.42s) so it lands as a flash, not a swell — that's the "clearly pop-up".
          Two transitions, because the .is-bloom rule supplies the timing on the way
          in and the base rule supplies it on the way out. */
-  /* 2026-07-14 (Nate): the sigil bloom, quieter again — 33% smaller (1.8→1.2rem),
-     15% dimmer (0.145→0.123), and the fade-out 25% faster (0.792→0.594s). */
+  /* The sigil bloom keeps getting quieter: 33% smaller (1.8→1.2rem), then dimmer
+     0.145→0.123→0.111→0.100, and the fade-out faster 0.792→0.594→0.475s (2026-07-15).
+     The fade-OUT is timed by THIS base rule (is-bloom supplies only the fade-IN). */
   .studio-drift-sigil { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.96);
     z-index:6; pointer-events:none; opacity:0; filter:drop-shadow(0 0 16px rgba(245,197,24,0.28));
-    transition:opacity 0.594s ease, transform 0.594s ease; }
+    transition:opacity 0.475s ease, transform 0.475s ease; }
   .studio-drift-sigil .pjcc-sigil { font-size:1.2rem; }
-  .studio-drift-sigil.is-bloom { opacity:0.111; transform:translate(-50%,-50%) scale(1.0);  /* −10% again, 2026-07-15 */
+  .studio-drift-sigil.is-bloom { opacity:0.100; transform:translate(-50%,-50%) scale(1.0);
     transition:opacity 0.42s ease-out, transform 0.42s ease-out; }
 
   /* THE GATE. `splash-seq` is set on <html> by the script below, so this only ever
@@ -616,7 +618,7 @@
     function seatTheQuads() { if (!lit && grid) { lit = true; grid.classList.add('is-lit'); } }
 
     if (sig && grid && !reduce) {
-      var BLOOM_IN = 420, HOLD = 700, FADE_OUT = 792;
+      var BLOOM_IN = 420, HOLD = 700, FADE_OUT = 475;   // matches the CSS fade-out above
       var bloom = function () {
         sig.classList.add('is-bloom');
         setTimeout(function () { sig.classList.remove('is-bloom'); }, BLOOM_IN + HOLD);

@@ -185,7 +185,19 @@ a move a day is plenty.</p>
           '<button class="pt-card" id="pt-new-open"><span class="pt-card-icon">⚔</span>' +
           '<span class="pt-card-t">Open a table<br><i>Any operative can sit down.</i></span></button></div>';
 
-        var minesH = mine.rows.map(function (m) {
+        // Drop any dead "vs myself" table — an old challenge with no possible opponent
+        // (you can't sit across from yourself; the Creator can't challenge the Creator).
+        // Hide it AND withdraw it in the DB so it stops reappearing (2026-07-15 Nate:
+        // "My matchup vs myself is still showing up").
+        var myRows = mine.rows.filter(function (m) {
+          var selfMatch = (m.white === me && m.black === me) || (m.vs_creator && iAmCreator);
+          if (selfMatch && m.status !== 'finished') {
+            try { M.finish(m.id, '1/2-1/2', 'withdrawn'); } catch (e) {}
+            return false;
+          }
+          return true;
+        });
+        var minesH = myRows.map(function (m) {
           var white = m.white === me, oppName = white ? (m.black_name || (m.vs_creator ? 'waiting for McPuppy…' : 'waiting for a challenger…')) : m.white_name;
           var myTurn = m.status === 'active' && ((m.fen.split(' ')[1] === 'w') === white);
           var claimable = timeoutClaimable(m);

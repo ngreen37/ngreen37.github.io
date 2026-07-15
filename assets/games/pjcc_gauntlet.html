@@ -176,7 +176,7 @@
       <div class="lg-eyebrow">THE TOWER LOBBY · FAN ART, HUNG BY McPUPPY</div>
       <div class="lg-row" id="lg-row"></div>
     </div>
-    <div class="row"><button class="btn btn-ghost" id="ladder-back">◂ Back</button></div>
+    <div class="row"><button class="btn btn-ghost" id="ladder-back">◂ Back</button><button class="btn btn-ghost" id="ladder-reset">↺ Reset climb</button></div>
   </div>
   <style>
   /* Tower Lobby Gallery — the site's fan wall, hung inside the tower */
@@ -848,6 +848,13 @@ function showLadder(){
 document.getElementById('play-btn').onclick = resume;
 (function(){ var t=document.getElementById('tower-btn'); if(t) t.onclick = showLadder; })();
 document.getElementById('ladder-back').onclick = showMenu;
+// Reset the whole climb — every cleared floor (public AND secret) back to the street.
+document.getElementById('ladder-reset').onclick = function(){
+  if (!window.confirm('Reset the whole Gauntlet? Every cleared floor — public and secret — goes back to the street, and the secret floors re-hide. This can\'t be undone.')) return;
+  try { localStorage.removeItem(PKEY); } catch(e){}
+  G = null;
+  showLadder();   // redraw the tower from a clean slate so you can see it reset
+};
 document.getElementById('menu-btn').onclick = showLadder;
 document.getElementById('resign-btn').onclick = function(){ if (G && !G.over) endGame('resign'); };
 
