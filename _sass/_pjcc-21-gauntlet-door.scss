@@ -1,0 +1,107 @@
+/* =============================================================================
+ * THE GAUNTLET DOOR (.gdoor) — now a SHARED partial (2026-07-15).
+ * -----------------------------------------------------------------------------
+ * The brass arch door — floor lamps, the boss's piece behind it, light under the
+ * door, and the grandeur/floor-zero states — used to live as an INLINE <style> copy
+ * in BOTH _layouts/home.html (the hero) and games.md ("two copies kept in sync").
+ * The splash now wants the same door beside the Park Table (Nate 2026-07-15: "mirror
+ * what we did on the PJCC page for the Gauntlet link"), so the canonical rules move
+ * here where every page can reach them.
+ *
+ * The two inline copies are left in place for now (identical rules; an inline <style>
+ * in <body> still wins over this file in <head>, so home/games are visually unchanged
+ * and zero-risk). They can be deleted later to make this the single source.
+ *
+ * `.hero-door` positioning stays in home.html — that's where the door STANDS, not what
+ * it looks like. The splash positions its own copy.
+ * ========================================================================== */
+.gdoor { display:flex; flex-direction:column; align-items:center; gap:5px; text-decoration:none;
+  --acc:#F5C518; }
+.gdoor-plate { font-family:'Share Tech Mono',monospace; font-size:9px; font-weight:700;
+  letter-spacing:2px; color:#F5C518; background:rgba(12,8,2,0.55);
+  border:1px solid rgba(245,197,24,0.5); border-radius:3px; padding:4px 9px; white-space:nowrap; }
+.gdoor-pips { display:flex; gap:3px; }
+.gdoor-pips i { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.14); }
+.gdoor-pips i.done { background:#6bffb8; box-shadow:0 0 5px rgba(107,255,184,0.6); }
+.gdoor-pips i.cur { background:var(--acc); box-shadow:0 0 7px var(--acc);
+  animation:gdoorPip 1.8s ease-in-out infinite; }
+@keyframes gdoorPip { 50% { opacity:0.4; } }
+.gdoor-arch { position:relative; display:block; width:78px; height:100px;
+  border:2px solid rgba(245,197,24,0.6); border-bottom-width:0; border-radius:39px 39px 4px 4px;
+  overflow:hidden; box-shadow:0 0 26px -8px var(--acc);
+  background:radial-gradient(ellipse at 50% 85%, color-mix(in srgb, var(--acc) 32%, #0c0722), #0c0722 78%);
+  transition:box-shadow .2s ease; }
+.gdoor-door { position:absolute; left:5px; right:5px; top:5px; bottom:0;
+  border-radius:34px 34px 0 0; border:1px solid rgba(168,121,255,0.35);
+  background:linear-gradient(180deg, #251747 0%, #150c33 100%);
+  transform-origin:0 50%; transition:transform .35s ease; }
+.gdoor-glyph { position:absolute; left:50%; top:40%; transform:translate(-50%,-50%);
+  font-style:normal; font-weight:400; font-size:32px; line-height:1; color:var(--acc);
+  filter:drop-shadow(0 0 9px color-mix(in srgb, var(--acc) 65%, transparent)); }
+.gdoor-knob { position:absolute; right:9px; top:56%; width:5px; height:5px; border-radius:50%;
+  background:#F5C518; box-shadow:0 0 5px rgba(245,197,24,0.8); }
+.gdoor-seam { position:absolute; left:6px; right:6px; bottom:0; height:3px; background:var(--acc);
+  box-shadow:0 -2px 14px 3px color-mix(in srgb, var(--acc) 55%, transparent); }
+.gdoor-sub { font-size:11px; color:#b9a8e6; text-align:center; }
+.gdoor-sub b { color:#F5C518; }
+.gdoor:hover .gdoor-arch, .gdoor:focus-visible .gdoor-arch { box-shadow:0 0 34px -5px var(--acc); }
+.gdoor:hover .gdoor-door, .gdoor:focus-visible .gdoor-door { transform:perspective(320px) rotateY(-22deg); }
+html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
+
+/* GRANDEUR: the door grows richer the higher you climb (data-grand 0..5). */
+.gdoor[data-grand="1"] .gdoor-arch { border-color:rgba(245,197,24,0.72); box-shadow:0 0 30px -7px var(--acc); }
+.gdoor[data-grand="2"] .gdoor-arch { border-color:rgba(245,197,24,0.85); border-width:3px; box-shadow:0 0 36px -6px var(--acc), inset 0 0 18px -7px var(--acc); }
+.gdoor[data-grand="3"] .gdoor-arch { border-color:#F5C518; border-width:3px; box-shadow:0 0 44px -4px var(--acc), inset 0 0 22px -6px var(--acc); }
+.gdoor[data-grand="4"] .gdoor-arch { border-color:#ffe07a; border-width:3px; box-shadow:0 0 52px -3px var(--acc), inset 0 0 26px -5px var(--acc); }
+.gdoor[data-grand="5"] .gdoor-arch { border-color:#fff2b0; border-width:4px; box-shadow:0 0 64px 0 var(--acc), inset 0 0 30px -4px var(--acc); }
+.gdoor[data-grand="3"] .gdoor-glyph,
+.gdoor[data-grand="4"] .gdoor-glyph { filter:drop-shadow(0 0 13px var(--acc)); }
+.gdoor[data-grand="5"] .gdoor-glyph { filter:drop-shadow(0 0 16px var(--acc)) drop-shadow(0 0 5px #fff); }
+.gdoor-arch::after { content:''; position:absolute; left:50%; top:6px; transform:translateX(-50%);
+  font-size:12px; line-height:1; opacity:0; z-index:2; pointer-events:none; text-shadow:0 0 6px var(--acc); }
+.gdoor[data-grand="3"] .gdoor-arch::after,
+.gdoor[data-grand="4"] .gdoor-arch::after { content:'◆'; color:var(--acc); opacity:0.92; }
+.gdoor[data-grand="5"] .gdoor-arch::after { content:'👑'; opacity:1; font-size:14px; top:3px; }
+.gdoor[data-grand="4"] .gdoor-seam,
+.gdoor[data-grand="5"] .gdoor-seam { height:4px; box-shadow:0 -3px 20px 5px color-mix(in srgb, var(--acc) 62%, transparent); }
+.gdoor[data-grand="5"] .gdoor-door { transform:perspective(320px) rotateY(-15deg); }
+.gdoor[data-grand="5"] .gdoor-seam { height:5px; box-shadow:0 -3px 28px 7px color-mix(in srgb, var(--acc) 74%, transparent); }
+
+/* FLOOR ZERO — a tattered cloth hung on a rod, worn holes leaking the backlight. */
+.gdoor[data-grand="0"] .gdoor-arch { border-color:rgba(245,197,24,0.38); box-shadow:0 0 18px -10px var(--acc); }
+.gdoor[data-grand="0"] .gdoor-door {
+  left:7px; right:7px; top:12px;
+  border:0; border-top:3px solid rgba(122,94,58,0.8);
+  border-radius:3px 3px 0 0;
+  background:
+    linear-gradient(100deg, rgba(0,0,0,0) 30%, rgba(58,38,16,0.35) 36%, rgba(0,0,0,0) 43%),
+    linear-gradient(84deg,  rgba(0,0,0,0) 62%, rgba(58,38,16,0.28) 68%, rgba(0,0,0,0) 75%),
+    linear-gradient(180deg, #a8845c 0%, #7c5a38 55%, #5e4226 100%);
+  clip-path:polygon(0 0, 100% 0, 100% 72%, 89% 95%, 76% 76%, 63% 98%, 48% 79%, 34% 96%, 21% 78%, 10% 93%, 0 76%);
+  -webkit-mask-image:
+    radial-gradient(circle 3px at 26% 38%, transparent 98%, #000 100%),
+    radial-gradient(circle 2px at 64% 24%, transparent 98%, #000 100%),
+    radial-gradient(circle 4px at 74% 58%, transparent 98%, #000 100%),
+    radial-gradient(circle 2px at 38% 70%, transparent 98%, #000 100%),
+    radial-gradient(circle 3px at 52% 49%, transparent 98%, #000 100%);
+  mask-image:
+    radial-gradient(circle 3px at 26% 38%, transparent 98%, #000 100%),
+    radial-gradient(circle 2px at 64% 24%, transparent 98%, #000 100%),
+    radial-gradient(circle 4px at 74% 58%, transparent 98%, #000 100%),
+    radial-gradient(circle 2px at 38% 70%, transparent 98%, #000 100%),
+    radial-gradient(circle 3px at 52% 49%, transparent 98%, #000 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+  transform-origin: 84% 50%;
+}
+.gdoor[data-grand="0"] .gdoor-knob { display:none; }
+.gdoor[data-grand="0"] .gdoor-glyph { font-size:26px; opacity:0.55; filter:none; color:#3a2612; }
+.gdoor[data-grand="0"] .gdoor-seam { height:2px; box-shadow:0 -2px 10px 2px color-mix(in srgb, var(--acc) 38%, transparent); }
+.gdoor[data-grand="0"] .gdoor-door { transition:transform .5s cubic-bezier(.3,1.25,.4,1); }
+.gdoor[data-grand="0"]:hover .gdoor-door,
+.gdoor[data-grand="0"]:focus-visible .gdoor-door { transform:perspective(150px) rotateY(46deg) scaleX(.68) skewY(-3deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .gdoor-pips i.cur { animation:none; }
+  .gdoor-door { transition:none; }
+}

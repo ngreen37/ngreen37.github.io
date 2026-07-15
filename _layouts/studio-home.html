@@ -148,43 +148,66 @@
            the two headline ways to play real chess, side by side. {% endcomment %}
       {% comment %} Park Tables leads, the Gauntlet follows (2026-07-15 Nate: "flipped"). {% endcomment %}
       <div class="studio-calls">
-      <a class="studio-gauntlet studio-park" href="{{ '/games/park-tables/' | relative_url }}">
-        <span class="sg-glyph sg-glyph--park" aria-hidden="true">♟</span>
-        <span class="sg-text">
-          <b class="sg-title" data-jp="パークで対局">Sit at the Park Tables</b>
+
+      {% comment %} Park Tables — a warm little park chess table, not a plate (2026-07-15
+           Nate: "make a park table with a chessboard on it instead… warm, inviting, and
+           MINIMAL words"). Pure-CSS scene drawn in the style block below. {% endcomment %}
+      <a class="studio-scene studio-scene--park" href="{{ '/games/park-tables/' | relative_url }}">
+        <span class="pt-plate" data-jp="パークテーブル">PARK TABLES</span>
+        <span class="pt-scene" aria-hidden="true">
+          <span class="pt-shadow"></span>
+          <span class="pt-stool pt-stool--l"></span>
+          <span class="pt-stool pt-stool--r"></span>
+          <span class="pt-post"></span>
+          <span class="pt-board"></span>
         </span>
-        <span class="sg-park-tag" aria-hidden="true">PVP · RATED</span>
+        <span class="pt-sub" data-jp="どうぞおかけください">Pull up a chair</span>
       </a>
-      <a class="studio-gauntlet" id="studio-gauntlet" href="{{ '/games/the-gauntlet/' | relative_url }}">
-        <span class="sg-glyph" aria-hidden="true">♛</span>
-        <span class="sg-text">
-          <b class="sg-title" data-jp="ガントレットに挑め">Enter the Gauntlet</b>
+
+      {% comment %} The Gauntlet — the SAME brass door as the PJCC hero, mirrored here
+           (2026-07-15 Nate). Shared .gdoor styles: _sass/_pjcc-21-gauntlet-door.scss.
+           The script below hydrates lamps + boss + grandeur from the player's save. {% endcomment %}
+      <a class="gdoor studio-scene studio-scene--gauntlet" id="studio-gdoor" href="{{ '/games/the-gauntlet/' | relative_url }}"
+         aria-label="The Gauntlet — real chess vs a ladder of ten PJCC rivals">
+        <span class="gdoor-plate" data-jp="ガントレット">THE GAUNTLET</span>
+        <span class="gdoor-pips" id="studio-gdoor-pips" aria-hidden="true"></span>
+        <span class="gdoor-arch" aria-hidden="true">
+          <i class="gdoor-door"><b class="gdoor-glyph" id="studio-gdoor-glyph">♛</b><u class="gdoor-knob"></u></i>
+          <i class="gdoor-seam"></i>
         </span>
-        <span class="sg-tower" id="sg-tower" aria-hidden="true"></span>
+        <span class="gdoor-sub" id="studio-gdoor-sub">Begin the climb</span>
       </a>
+
       </div>
       <script>
-      // Splash Gauntlet — mini-tower + boss-of-the-moment, hydrated from the game's save (offline/signed-out OK).
+      // Splash Gauntlet DOOR — mirrors the PJCC hero's door (floor lamps, the current
+      // boss's colour + piece, grandeur tier), hydrated from the game's save (offline/
+      // signed-out OK). Keep NAMES/ACCENTS/GLYPHS in sync with pjcc_gauntlet.html.
       (function () {
         var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The Executive Assistant'];
-        // mirrors the LADDER accents in assets/games/pjcc_gauntlet.html — keep in sync
-        // (public floors only; the three secret floors never show on the splash)
         var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#9ff0c4','#ff6b6b','#c79bff','#ff9ec9','#f5c518'];
+        var GLYPHS  = ['♞','♟','♝','♞','♜','♝','♜','♝','♛','♛'];
         var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
         var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;
         for (var i = 0; i < NAMES.length; i++) { if (beaten[i]) cleared++; }
         for (var j = 0; j < NAMES.length; j++) { if (!beaten[j]) { cur = j; break; } }
-        // mini tower: floors 0..9 rendered bottom-up (CSS column-reverse), current floor lit gold.
-        var tower = document.getElementById('sg-tower');
-        if (tower) { var h = '';
+        var door = document.getElementById('studio-gdoor');
+        if (!door) return;
+        door.setAttribute('data-grand', cleared === 0 ? 0 : cleared <= 2 ? 1 : cleared <= 4 ? 2 : cleared <= 6 ? 3 : cleared <= 9 ? 4 : 5);
+        var pipHost = document.getElementById('studio-gdoor-pips');
+        if (pipHost) { var h = '';
           for (var k = 0; k < NAMES.length; k++) { h += '<i class="' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></i>'; }
-          tower.innerHTML = h; }
-        var link = document.getElementById('studio-gauntlet');
-        if (cleared > 0 && cur < NAMES.length) {
-          if (link) link.setAttribute('href', link.getAttribute('href') + '#climb');
-        } else if (cur >= NAMES.length) {
-          if (link) link.setAttribute('href', link.getAttribute('href') + '#tower');
-        }
+          pipHost.innerHTML = h; }
+        var glyph = document.getElementById('studio-gdoor-glyph'), sub = document.getElementById('studio-gdoor-sub');
+        if (cur >= NAMES.length) {                       // crowned
+          if (sub) sub.innerHTML = '<b>Crowned</b>';
+          door.setAttribute('href', door.getAttribute('href') + '#tower');
+        } else if (cleared > 0) {                        // mid-climb — the current floor's door
+          door.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
+          if (glyph) glyph.textContent = GLYPHS[cur] || '♛';
+          if (sub) sub.innerHTML = 'Floor <b>' + (cur + 1) + '</b> of 10';
+          door.setAttribute('href', door.getAttribute('href') + '#climb');
+        }                                                // fresh climbers keep the gold ♛ floor-zero cloth
       })();
       </script>
 
@@ -226,35 +249,53 @@
   <div class="studio-warp" id="studio-warp" aria-hidden="true"></div>
 
   <style>
-  /* the two headline calls stand side by side (2026-07-14: Park Tables parallel
-     to the Gauntlet); they stack on narrow screens */
-  .studio-calls { display:flex; gap:12px; max-width:760px; margin:18px auto 0; flex-wrap:wrap; justify-content:center; }
-  .studio-calls .studio-gauntlet { flex:1 1 300px; margin:0; max-width:none; }
-  .studio-gauntlet { display:flex; align-items:center; gap:14px; max-width:500px; margin:18px auto 0; text-decoration:none;
-    position:relative; overflow:hidden;
-    background:linear-gradient(135deg, rgba(42,28,14,0.92), rgba(58,42,16,0.94)); border:2px solid #F5C518; border-radius:15px;
-    padding:12px 18px; box-shadow:0 0 26px -12px #F5C518, inset 0 0 42px -26px rgba(245,197,24,0.5);
-    transition:transform .12s, box-shadow .12s; }
-  /* the Park Tables twin — same plate grammar, park green */
-  .studio-park { background:linear-gradient(135deg, rgba(12,38,28,0.92), rgba(16,52,38,0.94)); border-color:#6bffb8;
-    box-shadow:0 0 26px -12px #6bffb8, inset 0 0 42px -26px rgba(107,255,184,0.5); }
-  .studio-park:hover { box-shadow:0 0 36px -8px #6bffb8, inset 0 0 42px -26px rgba(107,255,184,0.5); }
-  .studio-park::before { background:radial-gradient(circle, rgba(107,255,184,0.14), transparent 70%); }
-  .studio-park .sg-glyph--park { color:#6bffb8; }
-  .sg-park-tag { margin-left:auto; flex-shrink:0; font-family:'Share Tech Mono',monospace; font-size:9px;
-    letter-spacing:0.16em; color:rgba(107,255,184,0.75); border:1px solid rgba(107,255,184,0.35);
-    border-radius:999px; padding:3px 8px; position:relative; z-index:1; }
-  .studio-gauntlet::before { content:''; position:absolute; right:-40px; top:-40px; width:150px; height:150px; border-radius:50%;
-    background:radial-gradient(circle, rgba(245,197,24,0.16), transparent 70%); pointer-events:none; }
-  .studio-gauntlet:hover { transform:translateY(-2px); box-shadow:0 0 36px -8px #F5C518, inset 0 0 42px -26px rgba(245,197,24,0.5); }
-  .studio-gauntlet .sg-glyph { font-size:2.1rem; line-height:1; color:#F5C518; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.55)); flex-shrink:0; position:relative; z-index:1; }
-  .studio-gauntlet .sg-text { display:flex; flex-direction:column; line-height:1.22; min-width:0; position:relative; z-index:1; }
-  .studio-gauntlet .sg-title { color:#fff; font-size:1.05rem; font-weight:800; margin:1px 0; }
-  /* mini tower thumbnail — a slim vertical preview of the climb (ground floor at the bottom) */
-  .studio-gauntlet .sg-tower { display:flex; flex-direction:column-reverse; gap:2px; width:15px; flex-shrink:0; align-self:center; position:relative; z-index:1; }
-  .studio-gauntlet .sg-tower i { height:3px; border-radius:1px; background:rgba(255,255,255,0.14); }
-  .studio-gauntlet .sg-tower i.done { background:#6bffb8; }
-  .studio-gauntlet .sg-tower i.cur { background:#F5C518; box-shadow:0 0 5px #F5C518; }
+  /* ── The two headline calls (2026-07-15 Nate): a warm PARK TABLE and the brass
+       GAUNTLET DOOR, standing side by side. They're little SCENES now, not plates — the
+       door mirrors the PJCC hero (.gdoor, shared partial); the park table is drawn below.
+       Aligned at the foot so both sit on the same ground line. ── */
+  .studio-calls { display:flex; gap:38px; max-width:560px; margin:22px auto 0; flex-wrap:wrap;
+    justify-content:center; align-items:flex-end; }
+  .studio-scene { flex:0 0 auto; text-decoration:none; }
+  .studio-scene--gauntlet { transition:transform .12s; }
+
+  /* ── The park chess table ─────────────────────────────────────────────────────
+     A little pedestal table with an 8×8 board laid nearly flat on top, two stools
+     pulled up. Warm wood + cream. Pure CSS, static paint. ── */
+  .studio-scene--park { display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .pt-plate { font-family:'Share Tech Mono',monospace; font-size:9px; font-weight:700; letter-spacing:2px;
+    color:#7ff0c0; background:rgba(6,22,15,0.55); border:1px solid rgba(107,255,184,0.5);
+    border-radius:3px; padding:4px 9px; white-space:nowrap; }
+  .pt-scene { position:relative; width:108px; height:104px; }
+  .pt-shadow { position:absolute; left:50%; bottom:4px; transform:translateX(-50%); width:84px; height:13px;
+    border-radius:50%; background:radial-gradient(ellipse, rgba(0,0,0,0.45), transparent 72%); }
+  /* the pedestal post + its foot */
+  .pt-post { position:absolute; left:50%; bottom:10px; transform:translateX(-50%); width:10px; height:46px;
+    background:linear-gradient(#8a6a44,#4a3320); border-radius:2px; }
+  .pt-post::after { content:''; position:absolute; left:50%; bottom:-3px; transform:translateX(-50%);
+    width:28px; height:6px; border-radius:50%; background:#3a2916; }
+  /* the tabletop — an 8×8 board laid FLAT and seen from above-front. The
+     perspective() is what tips it back into the table plane (a plain rotateX just
+     squashes it into a standing sign); wider-than-tall + strong perspective makes it a
+     trapezoid you read as a surface. Warm walnut + cream. */
+  .pt-board { position:absolute; left:50%; top:20px; width:88px; height:70px;
+    transform:translateX(-50%) perspective(150px) rotateX(52deg); transform-origin:50% 50%;
+    border-radius:5px; border:3px solid #6b4a2a;
+    background-color:#efe1c4;
+    background-image:conic-gradient(#9c6a3c 90deg, #efe1c4 90deg 180deg, #9c6a3c 180deg 270deg, #efe1c4 270deg);
+    background-size:22px 17.5px;
+    box-shadow:0 14px 16px -8px rgba(0,0,0,0.5); }
+  /* the table-edge lip under the front of the top, so it reads as a solid surface */
+  .pt-board::after { content:''; position:absolute; left:-3px; right:-3px; bottom:-7px; height:8px;
+    border-radius:0 0 6px 6px; background:linear-gradient(#5e4226, #3a2916); transform:rotateX(0); }
+  /* two little stools pulled up to the table, peeking out beside the pedestal foot */
+  .pt-stool { position:absolute; bottom:6px; width:18px; height:11px; z-index:2; }
+  .pt-stool::before { content:''; position:absolute; top:0; left:0; right:0; height:7px; border-radius:50%;
+    background:linear-gradient(#9a7550,#5e4226); box-shadow:0 3px 5px -2px rgba(0,0,0,0.5); }
+  .pt-stool::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+    width:4px; height:7px; background:#4a3320; }
+  .pt-stool--l { left:9px; } .pt-stool--r { right:9px; }
+  .pt-sub { font-size:11px; color:#a9e6ca; text-align:center; }
+  .studio-scene--park:hover .pt-board { box-shadow:0 13px 24px -8px rgba(107,255,184,0.42); }
 
   /* (The .studio-sigil-seal block — the static ACCcccccc carving under the Gauntlet and
      its "threshold stone" tooltip — was removed 2026-07-12 with its markup.) */
@@ -442,18 +483,9 @@
     .studio-quad-sub { font-size:0.64rem; }
     .studio-quad-peek { display:none; }            /* no room on phones — keep it clean */
 
-    .studio-gauntlet { max-width:100%; margin-top:0; padding:8px 14px; gap:10px; }
-    .studio-gauntlet .sg-glyph { font-size:1.5rem; }
-    .studio-gauntlet .sg-title { font-size:0.9rem; }
-    /* the mini floor indicator stays — it's tiny and it's the whole story */
-    /* 2026-07-15 (Nate: the park/gauntlet plates "need some layout improvement"). On a
-       phone they stack full-width, and they were mismatched — the Gauntlet's vertical
-       tower made it tall while the Park plate stayed squat, and the "PVP · RATED" tag
-       floated off at the far edge with a dead gap in the middle. Match their heights and
-       centre each plate's contents so the two read as a tidy, equal pair. */
-    .studio-calls .studio-gauntlet { min-height:68px; justify-content:center; }
-    .studio-calls .sg-park-tag { margin-left:0; }
-    .studio-gauntlet .sg-tower { align-self:center; }
+    /* the two scenes (park table + gauntlet door) stay SIDE BY SIDE on a phone —
+       they're compact enough — just pull the gap in so the pair fits the width */
+    .studio-calls { gap:20px; margin-top:8px; }
 
     /* drop the purely decorative pieces so everything fits one screen */
     .studio-footer { display:none; }
@@ -471,7 +503,7 @@
     .studio-tagline { display:none; }
     .studio-content { gap:10px; padding:12px 14px; }
     .studio-quad { min-height:72px; padding:12px 10px; }
-    .studio-gauntlet { padding:7px 12px; }
+    .studio-calls { gap:16px; margin-top:4px; }
   }
 
   /* Idea #9 — respect reduced motion: freeze the splash's ambient animation */
@@ -604,7 +636,7 @@
         });
       };
       Array.prototype.forEach.call(quads, function (q) { var b = brandOf(q); if (b) wire(q, b); });
-      var gaunt = document.querySelector('.studio-gauntlet');
+      var gaunt = document.querySelector('.studio-scene--gauntlet');
       if (gaunt) wire(gaunt, 'gauntlet');
     }
 
