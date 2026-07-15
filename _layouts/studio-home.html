@@ -46,11 +46,11 @@
          coloured glow from that quad's corner. Toggled by the console JS below. {% endcomment %}
     <div class="studio-lean" id="studio-lean" aria-hidden="true"></div>
 
-    {% comment %} 2026-07-14 (Nate): every drifter now leads somewhere true — the QUEEN
-         to Princess (it went to Locations, which read as nowhere), the KNIGHT to the
-         games hall, the ROOK to the PJCC Chess Academy, the ¶ to the blog (the ✍
-         pen-in-hand is retired), and a NEW ♟ to the Park Tables. Positions/dims live
-         in _pjcc-04-flair.scss nth-child rules — markup ORDER is load-bearing. {% endcomment %}
+    {% comment %} Every drifter leads somewhere true — the QUEEN to Princess, the KNIGHT
+         to the games hall, the ROOK to the PJCC Chess Academy, the ¶ to the blog (the ✍
+         pen-in-hand is retired), and the ♟ to Fan Art (2026-07-15 Nate — was Park
+         Tables, which already has its own big plate below). Positions/dims live in
+         _pjcc-04-flair.scss nth-child rules — markup ORDER is load-bearing. {% endcomment %}
     <div class="studio-drifters">
       <a href="{{ '/characters/princess/' | relative_url }}" class="drift-piece" aria-label="Princess character page">♛</a>
       <a href="{{ '/games/' | relative_url }}" class="drift-piece" aria-label="The games hall">♞</a>
@@ -59,7 +59,7 @@
       {% comment %} (the あ Reading Room + 将 Shogi Isle drifters were REMOVED 2026-07-14
            — Nate works on those two privately now. The pages still build; he reaches
            them by URL: /games/reading-room/ and /games/shogi-island/.) {% endcomment %}
-      <a href="{{ '/games/park-tables/' | relative_url }}" class="drift-piece" aria-label="The Park Tables — play a human, or the Creator">♟</a>
+      <a href="{{ '/fan-art/' | relative_url }}" class="drift-piece" aria-label="Fan Art">♟</a>
       <a href="{{ '/classified/' | relative_url }}" class="drift-piece" id="drift-secret" aria-label="???">✦</a>
     </div>
 

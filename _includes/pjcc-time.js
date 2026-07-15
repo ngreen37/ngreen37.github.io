@@ -72,6 +72,14 @@
     var a = (-105 + 210 * t) * Math.PI / 180;
     return { t: t, x: 50 + 45.5 * Math.sin(a), y: 51 - 41 * Math.cos(a) };
   }
+  // The PJCC calendar season, from the Eastern MONTH (2026-07-15 Nate: "have a set
+  // PJCC calendar … summer now, and build Fall/Winter/Spring per the calendar"). Simple
+  // meteorological quarters, one season for the whole town, turning over on the 1st:
+  // Dec–Feb winter · Mar–May spring · Jun–Aug summer · Sep–Nov fall.
+  function season() {
+    var mo = parseInt(parts().ds.slice(5, 7), 10) || 1;
+    return (mo === 12 || mo <= 2) ? 'winter' : mo <= 5 ? 'spring' : mo <= 8 ? 'summer' : 'fall';
+  }
   window.PJCC_TIME = { parts: parts, hour: hour, dateStr: dateStr, phase: phase,
-                       daySeed: daySeed, weather: weather, clouds: clouds, orb: orb };
+                       daySeed: daySeed, weather: weather, clouds: clouds, orb: orb, season: season };
 })();

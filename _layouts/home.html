@@ -107,7 +107,7 @@ layout: default
    52px bottom margin + the page's 60px bottom padding stacked into a big empty
    gap under "Meet them all" before the footer's gold rule. Pull both in. ── */
 .home-flow .home-section--cast { margin-bottom: 0; }
-.page-content:has(.home-flow) { padding-bottom: 20px; }
+.page-content:has(.home-flow) { padding-bottom: 6px; }   /* tightened 20→6 to help the page fit one window (2026-07-15) */
 </style>
 
 {% comment %} ── 1. HERO ─────────────────────────────────────────── {% endcomment %}
@@ -582,12 +582,12 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
      PJCC page"): a ritual, not a game — one quiet entrance at the foot of the town. {% endcomment %}
 <p class="home-gambit-door"><a href="{{ '/the-gambit/' | relative_url }}">♟ The Gambit — lay down your best; the board decides.</a></p>
 
-{% comment %} ── the chess-glyph wire, relocated here 2026-07-11 (Nate): a faint
-     sliding rank of pieces just under "Meet them all", above the footer's gold
-     rule. Moved up out of the footer (its band is hidden on home, below). {% endcomment %}
-<div class="home-glyphs" aria-hidden="true">
-  <div class="home-glyphs-track">&#9818; &#9819; &#9820; &#9821; &#9822; &#9817; &#9814; &#9815; &#9816; &#9813; &#9812; &nbsp; &#9818; &#9819; &#9820; &#9821; &#9822; &#9817; &#9814; &#9815; &#9816; &#9813; &#9812; &nbsp; &#9818; &#9819; &#9820; &#9821; &#9822; &#9817; &#9814; &#9815; &#9816; &#9813; &#9812; &nbsp; &#9818; &#9819; &#9820; &#9821; &#9822; &#9817; &#9814; &#9815; &#9816; &#9813; &#9812; &nbsp; &#9818; &#9819; &#9820; &#9821; &#9822; &#9817; &#9814; &#9815; &#9816; &#9813; &#9812; &nbsp; &#9818; &#9819; &#9820; &#9821; &#9822; &#9817; &#9814; &#9815; &#9816; &#9813; &#9812; &nbsp; &#9818; &#9819; &#9820; &#9821; &#9822; &#9817; &#9814; &#9815; &#9816; &#9813; &#9812; &nbsp; &#9818; &#9819; &#9820; &#9821; &#9822; &#9817; &#9814; &#9815; &#9816; &#9813; &#9812; &nbsp;</div>
-</div>
+{% comment %} The chess-glyph wire MOVED BACK INTO THE FOOTER 2026-07-15 (Nate: "move
+     the glyphs down into the black area below and cut the purple space"). Floating on
+     the town-sky gradient above the footer, those faint pieces read as "splotches";
+     inside the black footer band they're a subtle texture. Re-enabled there for the
+     home page only (see the .footer-ribbon-wrap rule in the style block below), and
+     this floating row is gone with its purple gap. {% endcomment %}
 <style>
 {% comment %} (#13 town square + #17 op-strip + #15 sea divider removed 2026-07-10 —
      the cast is CARDS again; restore the square from git if ever missed.) {% endcomment %}
@@ -601,26 +601,19 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
 .char-row.just-shuffled .char-chip { animation: chipIn .42s ease both; }
 @keyframes chipIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
 
-/* the Gambit's quiet door at the foot of the town */
-.home-gambit-door { text-align: center; margin: 26px 0 0; font-size: 0.85rem; }
+/* the Gambit's quiet door at the foot of the town — tighter now the glyph row is gone */
+.home-gambit-door { text-align: center; margin: 14px 0 0; font-size: 0.85rem; }
 .home-gambit-door a { color: #9a7fd4; text-decoration: none;
   border-bottom: 1px dotted rgba(154,127,212,0.5); padding-bottom: 2px; }
 .home-gambit-door a:hover { color: #F5C518; border-bottom-color: #F5C518; }
 
-/* the relocated glyph wire — sits under the cast, above the footer rule; the
-   footer's own copy is hidden on the home so the pieces live in one place. */
-.home-glyphs { overflow: hidden; margin: 6px 0 0; line-height: 1; }
-.home-glyphs-track { display: inline-block; white-space: nowrap;
-  font-size: 40px; color: rgba(255,255,255,0.045); /* 10% dimmer (Nate 2026-07-13) */ letter-spacing: 24px;
-  animation: ribbon-scroll 412s linear infinite; animation-direction: reverse; /* left-to-right (Nate 2026-07-12); 206s→412s = half speed (2026-07-13) */
-  pointer-events: none;
-  user-select: none; -webkit-user-select: none; -moz-user-select: none; }
-/* (the footer piece-band is hidden SITE-WIDE now — 2026-07-14 splotch cull — so the
-   old home-only hide is gone with it) */
+/* The chess glyphs live in the BLACK FOOTER band on the home page (2026-07-15) — the
+   footer's own `.footer-ribbon-wrap` is hidden site-wide, so re-show it here only. On
+   the dark footer the pieces are a faint texture, not splotches on the purple sky. */
+body:has(.home-flow) .footer-ribbon-wrap { display: flex; }
 /* ONE orb town-wide (2026-07-14): the hero paints its own sun/moon diorama, so the
    fixed sky's arcing orb stands down here — otherwise the gutters grow a second one. */
 body:has(.home-flow) .ts-orb { display: none !important; }
-@media (prefers-reduced-motion: reduce) { .home-glyphs-track { animation: none; } }
 </style>
 
 {% comment %} (Story Arc film-strip removed 2026-06-22 — the chapter beats are now

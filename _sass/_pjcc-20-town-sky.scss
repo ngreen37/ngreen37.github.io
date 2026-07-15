@@ -369,6 +369,69 @@ html.shape-dog  .ts-cloud--dog  { display: block; }
   100% { transform: translate3d(calc(-100vw - 380px), 0, 0); }
 }
 
+/* ══════════════════════════════════════════════════════════════════════════════
+   THE SEASONS (2026-07-15 Nate) — a set PJCC calendar, one season town-wide, turning
+   on the 1st (PJCC_TIME.season() → html.season-summer|fall|winter|spring). Two subtle
+   signals: a faint tint, and a handful of drifting particles. All transform/opacity,
+   viewport-capped, and OFF under reduced-motion / reduce-flourish.
+   ══════════════════════════════════════════════════════════════════════════════ */
+/* the tint — a whisper of the season's colour, low and warm along the foot of the sky
+   (winter is a cool wash from the top). Kept at ~0.05 alpha so it never fights the hour. */
+.ts-season-tint { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+html.season-summer .ts-season-tint { background: radial-gradient(120% 82% at 50% 100%, rgba(255, 186, 92, 0.055), transparent 68%); }
+html.season-fall   .ts-season-tint { background: radial-gradient(120% 82% at 50% 100%, rgba(214, 120, 42, 0.06),  transparent 68%); }
+html.season-winter .ts-season-tint { background: linear-gradient(180deg, rgba(150, 194, 235, 0.05), transparent 58%); }
+html.season-spring .ts-season-tint { background: radial-gradient(120% 82% at 50% 100%, rgba(140, 212, 150, 0.05),  transparent 68%); }
+
+/* the particles — six of them, hidden until a season claims them */
+.ts-season-fx { position: absolute; inset: 0; z-index: 3; pointer-events: none; overflow: hidden; opacity: 0; }
+.ts-season-fx b { position: absolute; left: var(--fx); top: -6%; opacity: 0; will-change: transform; }
+
+/* FALL — leaves tumbling down */
+html.season-fall .ts-season-fx { opacity: 1; }
+html.season-fall .ts-season-fx b { width: 7px; height: 5px; border-radius: 60% 12% 60% 12%;
+  background: linear-gradient(135deg, #d98a3a, #a9531f);
+  animation: season-fall var(--fdur) linear var(--fd) infinite; }
+@keyframes season-fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  9% { opacity: 0.5; } 90% { opacity: 0.5; }
+  100% { transform: translateY(114vh) rotate(300deg); opacity: 0; }
+}
+/* WINTER — slow snow, a little sideways drift */
+html.season-winter .ts-season-fx { opacity: 1; }
+html.season-winter .ts-season-fx b { width: 4px; height: 4px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.72); box-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
+  animation: season-snow calc(var(--fdur) * 1.7) linear var(--fd) infinite; }
+@keyframes season-snow {
+  0% { transform: translate(0, 0); opacity: 0; }
+  12% { opacity: 0.75; } 88% { opacity: 0.75; }
+  100% { transform: translate(16px, 114vh); opacity: 0; }
+}
+/* SPRING — petals, drifting the other way */
+html.season-spring .ts-season-fx { opacity: 1; }
+html.season-spring .ts-season-fx b { width: 6px; height: 5px; border-radius: 60% 12% 60% 12%;
+  background: rgba(255, 190, 214, 0.72);
+  animation: season-petal calc(var(--fdur) * 1.3) linear var(--fd) infinite; }
+@keyframes season-petal {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.6; } 90% { opacity: 0.6; }
+  100% { transform: translate(-26px, 114vh) rotate(240deg); opacity: 0; }
+}
+/* SUMMER — fireflies, but only on a summer NIGHT; they hover near the low sky */
+html.season-summer.sky-night .ts-season-fx { opacity: 1; }
+html.season-summer.sky-night .ts-season-fx b { top: auto; bottom: var(--fy);
+  width: 4px; height: 4px; border-radius: 50%;
+  background: rgba(255, 226, 138, 0.9); box-shadow: 0 0 6px rgba(255, 212, 96, 0.85);
+  animation: season-fly calc(var(--fdur) * 1.9) ease-in-out var(--fd) infinite; }
+@keyframes season-fly {
+  0%, 100% { transform: translate(0, 0); opacity: 0.08; }
+  25% { transform: translate(11px, -13px); opacity: 0.9; }
+  50% { transform: translate(-7px, -5px); opacity: 0.35; }
+  75% { transform: translate(9px, -17px); opacity: 0.8; }
+}
+@media (prefers-reduced-motion: reduce) { .ts-season-fx { display: none; } }
+.reduce-flourish .ts-season-fx { display: none; }
+
 /* ── VAGUE CONSTELLATIONS (2026-07-15 Nate) — PJCC-universe shapes that appear at
    random on a night sky: the Crown, the Loyal Hound, the Tower, the Pawn's Path, the
    Bone. Faint dots joined by fainter lines; they only SUGGEST the shape. Night only,

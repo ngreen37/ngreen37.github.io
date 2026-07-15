@@ -114,6 +114,21 @@
   <b class="ts-shoot ts-shoot--2"></b>
   <b class="ts-shoot ts-shoot--3"></b>
 
+  {%- comment -%} 3b · THE SEASON (2026-07-15 Nate: "a set PJCC calendar … subtle things
+       to signal the season"). `season-<name>` is on <html> before paint (town-weather.html).
+       A faint per-season tint, plus a handful of drifting particles: leaves in fall, snow
+       in winter, petals in spring, fireflies on a summer NIGHT. Transform/opacity only,
+       viewport-capped, off under reduced-motion / reduce-flourish. {%- endcomment -%}
+  <div class="ts-season-tint"></div>
+  <div class="ts-season-fx" aria-hidden="true">
+    <b style="--fx:6%;--fy:34%;--fd:0s;--fdur:14s"></b>
+    <b style="--fx:24%;--fy:22%;--fd:5s;--fdur:17s"></b>
+    <b style="--fx:44%;--fy:38%;--fd:9s;--fdur:13s"></b>
+    <b style="--fx:63%;--fy:26%;--fd:3s;--fdur:19s"></b>
+    <b style="--fx:80%;--fy:40%;--fd:11s;--fdur:15s"></b>
+    <b style="--fx:92%;--fy:30%;--fd:7s;--fdur:16s"></b>
+  </div>
+
   {%- comment -%} 4 · the cloud deck. Cover is a daily roll from the town clock
        (PJCC_TIME.clouds() → html.cloud-0..3), so the whole town gets the same sky, and it's
        decorrelated from the rain roll — a clear day can still be a cloudy one, and a starry
