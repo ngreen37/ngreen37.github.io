@@ -18,6 +18,13 @@ combination** over new surface area.
 - **Rename the experience** — "The Ascent / Coronation Run." Wire it explicitly to Princess's canon arc (she can learn anything → she rises to Queen): the climb this whole world is about. Framing + copy, zero code.
 - **The climb as a journey across the world map** — the roster already mirrors the regions (Checker Town → Sand Mines → Sea → Shogi Isle → the tower); present it as a map you traverse so the Gauntlet visibly ties every location and game together.
 - **Advertise that it has a real ending** — lean into the coronation payoff (beating the CEO = the Princess → Queen moment + the secret ▾ DESCEND). Tease it ("Ten stand between a recruit and the crown"); the natural home for a short Blender cutscene intro.
+- **A NEW CHAMPION EACH TIME (2026-07-15, Nate — "maybe a running-thing"):** the
+  Checker Town Chess Open always has a *fresh* winner, so **Floor 1 is often a new
+  opponent** — a rotating cast of first-floor champions instead of a fixed Argus. Plays
+  as a running gag (the title never stays put) and keeps the bottom of the tower feeling
+  alive on replays. Note the knock-on: the win text currently names Argus, and Argus is
+  canon Floor 1 — a rotation means Floor 1's name/glyph/blurb come from a small pool
+  (Argus among them), and all of them stay wordless per the "only humans talk" rule.
 - **★ THE PRESENTATION CLIMBS WITH YOU (2026-07-15, Nate: "I love this concept")** — the higher you climb, the grander the *staging* gets, not just the opponent. The board itself dresses up floor by floor: a plain park set at the bottom → a nicer board + framing → **commentators arrive** (the booth is already built — bring it in around the mid floors) → **a crowd** fills in behind the players in the upper floors → and the summit is a **trophy + a ceremony** (podium, confetti, a rendered Blender coronation beat). Ties straight into the per-floor door art (cloth → mine → sea → shoji → city → tower) and the Princess→Queen payoff. Mostly CSS/staging layered on the existing booth + celebrate() confetti; the ceremony is the natural first real Blender cutscene. Sequence the reveals so each floor *feels* like a bigger stage than the last.
 
 ## ★ North star (the direction)

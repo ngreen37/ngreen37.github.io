@@ -128,17 +128,20 @@
     return improved;
   }
 
+  // The companion is an ANIMAL, and in the PJCC universe only humans talk (2026-07-15
+  // Nate). So every mood line DESCRIBES the pet from the outside — never first-person
+  // speech. (The NOISES table below was already sound-only.)
   function mood(s) {
     s = s || load();
-    if (cheerBest) return { emoji: '🏆', state: 'So proud!', line: 'A new best — I knew you had it in you!' };
+    if (cheerBest) return { emoji: '🏆', state: 'So proud!', line: 'Glowing over your new best.' };
     if (isNight() && (Date.now() - s.lastAny > 90000)) return { emoji: '😴', state: 'Napping', line: 'Curled up for the night.' };
     if (s.hunger < 25) return { emoji: '🍽️', state: 'Hungry', line: 'Tummy rumbling.' };
-    if (s.affection < 20) return { emoji: '🥺', state: 'Lonely', line: 'Missed you.' };
-    if (playedRecently()) return { emoji: '🤩', state: 'Cheering', line: 'Saw your run — amazing!' };
+    if (s.affection < 20) return { emoji: '🥺', state: 'Lonely', line: 'Restless without you around.' };
+    if (playedRecently()) return { emoji: '🤩', state: 'Cheering', line: 'Still buzzing from your run.' };
     var score = s.affection * 0.5 + s.hunger * 0.3 + s.energy * 0.2;
     if (score >= 72) return { emoji: '😄', state: 'Happy', line: 'Bright-eyed and by your side.' };
-    if (score >= 45) return { emoji: '🙂', state: 'Content', line: 'Doing just fine.' };
-    return { emoji: '😟', state: 'Restless', line: 'Spend a little time together?' };
+    if (score >= 45) return { emoji: '🙂', state: 'Content', line: 'Settled and easy.' };
+    return { emoji: '😟', state: 'Restless', line: 'Angling for a little attention.' };
   }
 
   // The companion makes NOISES, never talks — shaded by mood. Turtles mostly act.

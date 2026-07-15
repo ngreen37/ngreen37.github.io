@@ -245,9 +245,11 @@ var LADDER = [
     blurb:'Floor 1 belongs to whoever holds the Checker Town Chess Open title. The current holder: a loyal guard-dog who learned the game slow — and never lets go.',
     win:'Argus admits defeat. The reigning champion of Checker Town yields the road.',
     persona:{ depth:1, blunder:0.36, mat:1, pst:0.4, aggr:4, timeMs:220 },
-    react:{ intro:['*a proud, rolling growl* The reigning champ says hello.'],
-      blunder:['*GRRR* — a gift for the pack!','*snap* Mine now.','Bad move. *bark bark*'],
-      good:['*whine* ...good one.','*ears flatten* Hrrr.','*backs up a step*'] } },
+    // Argus is a DOG — in the PJCC universe only humans talk (2026-07-15 Nate), so
+    // the champion of Checker Town answers in growls, barks and body language, no words.
+    react:{ intro:['*a proud, rolling growl, hackles high*'],
+      blunder:['*a low, pleased GRRR*','*snap!*','*bark bark*'],
+      good:['*a small, startled whine*','*ears flatten* Hrrr.','*backs up a step*'] } },
   { name:'The Sand-Mine Foreman', glyph:'♟', accent:'#fcbc3c', region:'The Sand Mines', elo:500,
     blurb:'Runs the CEO\'s pits. A grinder who counts every grain — and every pawn.',
     win:'The mine goes quiet — every pick, every cart, every lamp. The Foreman stares at the board a long moment, spits in the dust, and pulls the lift lever himself. "...Take it up. You earned it." Somewhere below, the dark keeps counting.',
