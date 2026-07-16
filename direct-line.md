@@ -29,7 +29,7 @@ body_class: theme-studio
 
 <div class="dl-cta">
   {% if site.patreon_url and site.patreon_url != '' %}<a class="dl-btn" href="{{ site.patreon_url }}" target="_blank" rel="noopener">Open the Direct Line on Patreon →</a>{% else %}<a class="dl-btn" href="/mailing-list/">Tell me when it opens →</a>{% endif %}
-  <a class="dl-btn dl-btn--ghost" href="/mailing-list/">Join the dispatch</a>
+  <a class="dl-btn dl-btn--ghost" href="/mailing-list/">Join The Bulletin</a>
 </div>
 
 <style>

@@ -162,10 +162,9 @@ permalink: /games/
 /* ---- THE GAMBIT entrance — same row grammar, but a wager altar: a glowing ♟ coin
    floating over a small stone altar. Amber accent = the wager (never real money). ---- */
 .gmdoor { display:grid; grid-template-columns:auto minmax(0,1fr);
-  grid-template-areas:"scene plate" "scene sub"; align-content:center; align-items:center;
-  column-gap:16px; row-gap:5px; text-decoration:none; --acc:#e8b34a; }
+  grid-template-areas:"scene plate"; align-content:center; align-items:center;
+  column-gap:16px; text-decoration:none; --acc:#e8b34a; }
 .gmdoor .gdoor-plate { grid-area:plate; color:#e8b34a; border-color:rgba(232,179,74,0.5); }
-.gmdoor .gdoor-sub { grid-area:sub; }
 .gm-scene { grid-area:scene; position:relative; width:72px; height:92px; }
 .gm-altar { position:absolute; left:50%; bottom:12px; transform:translateX(-50%);
   width:40px; height:22px; background:linear-gradient(180deg,#3a2d5a,#221936);
@@ -337,7 +336,6 @@ permalink: /games/
         <b class="gm-coin">♟</b>
         <i class="gm-altar"></i>
       </span>
-      <span class="gdoor-sub">Lay down your best. <b>The board decides.</b></span>
     </a>
   </div>
 

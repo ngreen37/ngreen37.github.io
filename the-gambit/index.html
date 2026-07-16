@@ -32,7 +32,7 @@ permalink: /the-gambit/
       <div class="gambit-coin" id="gm-coin">♟</div>
     </div>
     <h2 class="gambit-tagline">Lay it down. See what the board gives back.</h2>
-    <p class="gambit-lede">In chess, and in life, <strong>sacrifice</strong> is vital — the Art of Letting Go.
+    <p class="gambit-lede">In chess, and in life, <strong>sacrifice</strong> is vital.
     You don't <strong>need</strong> these things. Sacrifice comes in <strong><em>many</em></strong> forms;
     in the PJCC world, you simply roll the dice on credits you've earned by playing.
     You must learn how to <b class="gm-gold">let go</b>.</p>
@@ -68,7 +68,7 @@ permalink: /the-gambit/
       <p class="gm-note" id="gm-note">A modest offering is close to a coin flip. Your <b>best</b> item — or <b>85%+ of your credits</b> — tilts the odds significantly your way.</p>
     </div>
 
-    <p class="gm-warn">⚠ You may get <b>nothing</b>. The offering is gone either way — the courage is the point.</p>
+    <p class="gm-warn">⚠ You may get <b>nothing</b> — the courage is the point.</p>
     <button class="btn-offer" id="gm-offer" disabled>Bring an offering</button>
     <div class="gm-cooldown" id="gm-cooldown"></div>
 
@@ -216,7 +216,7 @@ permalink: /the-gambit/
       var repayLine = repay ? '<p class="gm-boon">✦ And an old sacrifice comes home: <b>+' + repay + '</b> the board owed you.</p>' : '';
       box.innerHTML = '<div class="gm-res-title">THE BOARD ANSWERS ✦</div>' +
         '<p>You laid down <b>' + ov + '</b> and it gives back <b>' + reward + '</b> credits.</p>' + repayLine + boonLine +
-        '<p class="gm-res-creed">You let go, and the path provided. <b>Follow the dog.</b></p>' + rest;
+        '<p class="gm-res-creed">You let go, and the path provided.</p>' + rest;
     } else {
       var remembers = (c >= 0.85)
         ? '<p class="gm-boon">✦ A sacrifice this bold is never wasted here. <b>The board remembers</b> — your next offerings carry its debt.</p>' : '';
