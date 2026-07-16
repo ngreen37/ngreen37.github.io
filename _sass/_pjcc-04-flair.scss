@@ -296,8 +296,13 @@ html.reduce-flourish .tagline-main-tagline .tg-x-glyph { animation: none; visibi
    saw stacked under the PJCC page's own .home-glyphs wire, 2026-07-15). The home
    page keeps its single .home-glyphs ribbon; every other page now has none.
    Restore by flipping this back to `display:flex`. */
+/* RESTORED site-wide 2026-07-15 (Nate: "bring the chess-piece glyphs back; I liked those").
+   The real "jellybean" floaters were the town-sky CLOUD puffs bleeding behind content, not
+   this band — those are now splash-only (see _pjcc-20-town-sky.scss). This ribbon sits INSIDE
+   the opaque footer (overflow-hidden, solid bg), so the faint pieces read as texture, not
+   splotches. Chess City's own re-enable is now redundant but harmless. */
 .footer-ribbon-wrap {
-  display: none;
+  display: flex;
   position: absolute;
   inset: 0;
   align-items: center;

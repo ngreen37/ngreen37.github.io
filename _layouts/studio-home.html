@@ -74,6 +74,14 @@
     <a href="{{ '/contact/' | relative_url }}" class="studio-corner-about" data-jp="お問い合わせ">Contact</a>
     <button class="studio-corner-lang" id="lang-toggle" type="button" aria-label="Toggle language">日本語</button>
 
+    <!-- The studio "shop light" — glows when the Creator shipped within 24h; hover tells you
+         the GitHub streak (restored + moved here 2026-07-15, Nate). -->
+    <div class="studio-light" id="studio-light" tabindex="0" role="img"
+         data-built="{{ site.time | date_to_xmlschema }}" aria-label="Studio status">
+      <span class="sl-bulb" aria-hidden="true"></span>
+      <span class="sl-tip" id="sl-tip"></span>
+    </div>
+
     <!-- Logo pinned top-left — carries a seasonal emblem (summer/fall/winter/spring) -->
     <div class="studio-corner-logo">
       <img src="{{ '/assets/images/mcpuppy-logo-horizontal.svg' | relative_url }}"
@@ -749,8 +757,85 @@
   <!-- Av13 — the Shogi Island Gate rite works on the splash too -->
   <script src="{{ '/assets/js/pjcc-portal.js' | relative_url }}" defer></script>
 
-  <!-- Cloudflare Web Analytics (was missing on the splash — the most-visited page) -->
-  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "46881c52a7e741a2954c7f09a9759305"}'></script>
+  <!-- The studio shop light — status + GitHub streak -->
+  <style>
+  .studio-light { position: fixed; right: 16px; bottom: 16px; z-index: 4; width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center; }
+  .sl-bulb { width: 13px; height: 13px; border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #6b6b74, #33333a);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.08); transition: background .4s, box-shadow .4s; }
+  .studio-light.on .sl-bulb { background: radial-gradient(circle at 40% 35%, #fff2c2, #ffcf4a 72%);
+    box-shadow: 0 0 12px 3px rgba(255,207,74,0.6), 0 0 0 1px rgba(255,207,74,0.5);
+    animation: sl-glow 2.8s ease-in-out infinite; }
+  @keyframes sl-glow {
+    0%,100% { box-shadow: 0 0 10px 2px rgba(255,207,74,0.5), 0 0 0 1px rgba(255,207,74,0.5); }
+    50%     { box-shadow: 0 0 17px 5px rgba(255,207,74,0.85), 0 0 0 1px rgba(255,207,74,0.6); }
+  }
+  .sl-tip { position: absolute; right: 0; bottom: calc(100% + 8px); width: 224px; padding: 9px 12px;
+    background: rgba(14,9,30,0.96); border: 1px solid #4a3a86; border-radius: 9px; color: #e9e2ff;
+    font-family: 'Poppins', sans-serif; font-size: 11px; line-height: 1.5; text-align: left;
+    opacity: 0; transform: translateY(4px); pointer-events: none; transition: opacity .18s, transform .18s;
+    box-shadow: 0 12px 30px -10px rgba(0,0,0,0.7); }
+  .sl-tip b { color: #F5C518; }
+  .studio-light:hover .sl-tip, .studio-light:focus .sl-tip, .studio-light:focus-within .sl-tip { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { .studio-light.on .sl-bulb { animation: none; } }
+  </style>
+  <script>
+  // The shop light: ON when the site last shipped (built) within 24h. The hover tooltip
+  // reports the Creator's GitHub streak — fetched from the public events API, cached 6h,
+  // and gracefully blank on rate-limit/offline. (Nate 2026-07-15.)
+  (function () {
+    var el = document.getElementById('studio-light'), tip = document.getElementById('sl-tip');
+    if (!el || !tip) return;
+    var built = Date.parse(el.getAttribute('data-built') || '') || 0;
+    var on = built && (Date.now() - built) < 24 * 3600 * 1000;
+    el.classList.toggle('on', !!on);
+
+    function ymd(d) { return d.toISOString().slice(0, 10); }
+    function computeStreak(events) {
+      var days = {};
+      events.forEach(function (e) { if (e && e.created_at) days[e.created_at.slice(0, 10)] = true; });
+      var oneDay = 86400000, now = new Date();
+      var cur = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      if (!days[ymd(cur)]) cur = new Date(cur.getTime() - oneDay);   // today may not be posted yet
+      var streak = 0;
+      while (days[ymd(cur)]) { streak++; cur = new Date(cur.getTime() - oneDay); }
+      var active = 0, c2 = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      for (var i = 0; i < 100; i++) { if (days[ymd(c2)]) active++; c2 = new Date(c2.getTime() - oneDay); }
+      return { streak: streak, active: active };
+    }
+    function getStreak(cb) {
+      try {
+        var c = JSON.parse(localStorage.getItem('pjcc.streak') || 'null');
+        if (c && Date.now() - c.t < 6 * 3600 * 1000) return cb(c.v);
+      } catch (e) {}
+      if (!window.fetch) return cb(null);
+      fetch('https://api.github.com/users/ngreen37/events/public?per_page=100')
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (evts) {
+          if (!Array.isArray(evts)) return cb(null);
+          var s = computeStreak(evts);
+          try { localStorage.setItem('pjcc.streak', JSON.stringify({ t: Date.now(), v: s })); } catch (e) {}
+          cb(s);
+        })
+        .catch(function () { cb(null); });
+    }
+    function render(streak) {
+      var base = on
+        ? 'The Creator is either currently working, or has shipped an improvement in the last 24 hours.'
+        : 'The studio light is low right now — nothing shipped in the last 24 hours.';
+      var stats = '';
+      if (streak) {
+        var dl = streak.streak === 1 ? 'day' : 'days';
+        stats = ' This is <b>' + streak.streak + ' ' + dl + '</b> in a row, and <b>' + streak.active + ' out of the last 100</b>.';
+      }
+      tip.innerHTML = base + stats;
+      el.setAttribute('aria-label', tip.textContent);
+    }
+    render(null);
+    getStreak(render);
+  })();
+  </script>
 
 </body>
 </html>

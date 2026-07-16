@@ -33,37 +33,50 @@ body_class: theme-studio
 </div>
 
 <style>
+/* Direct Line — an "open comms line" in McPuppy graphite: monochrome panels with a single
+   live teal SIGNAL accent + an on-air pulse (Nate 2026-07-15: "modify the accents… be
+   creative"). Reads as a private hotline that's LIVE, not the arcade gold. */
 .dl-head { max-width:680px; margin:0 auto 1.8rem; text-align:center; }
-.dl-eyebrow { font-family:'Share Tech Mono',monospace; font-size:0.72rem; letter-spacing:0.16em; text-transform:uppercase; color:#9a8fc0; }
-.dl-soon { color:#1a0f3d; background:#F5C518; border-radius:999px; padding:1px 10px; font-weight:800; }
+.dl-eyebrow { font-family:'Share Tech Mono',monospace; font-size:0.72rem; letter-spacing:0.16em; text-transform:uppercase; color:#8b9096; }
+.dl-soon { color:#08110f; background:#4fd1c5; border-radius:999px; padding:1px 10px 1px 8px; font-weight:800;
+  display:inline-flex; align-items:center; gap:5px; }
+.dl-soon::before { content:''; width:6px; height:6px; border-radius:50%; background:#08110f;
+  box-shadow:0 0 0 0 rgba(8,17,15,0.6); animation:dl-onair 1.6s ease-in-out infinite; }
+@keyframes dl-onair { 0%,100%{ opacity:1; } 50%{ opacity:0.35; } }
 .dl-title { font-size:2.4rem; font-weight:900; color:#fff; margin:0.4rem 0 0.5rem; }
-.dl-sub { color:#cdbcf2; font-size:1.02rem; line-height:1.6; }
-.dl-sub strong { color:#f0e6ff; }
+.dl-sub { color:#c9c9d0; font-size:1.02rem; line-height:1.6; }
+.dl-sub strong { color:#f2f2f4; }
 
 .dl-steps { max-width:680px; margin:0 auto 1.6rem; display:flex; flex-direction:column; gap:10px; }
-.dl-step { display:flex; gap:14px; align-items:flex-start; background:rgba(110,95,160,0.12);
-  border:1px solid #4a3a86; border-radius:12px; padding:13px 16px; color:#cdbcf2; font-size:0.95rem; line-height:1.5; }
-.dl-step strong { color:#f0e6ff; }
-.dl-step-n { flex-shrink:0; width:26px; height:26px; border-radius:50%; background:#F5C518; color:#1a0f3d;
+.dl-step { display:flex; gap:14px; align-items:flex-start; background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.13); border-radius:12px; padding:13px 16px; color:#c9c9d0; font-size:0.95rem; line-height:1.5;
+  border-left:3px solid rgba(79,209,197,0.55); }
+.dl-step strong { color:#fff; }
+.dl-step-n { flex-shrink:0; width:26px; height:26px; border-radius:50%; background:#4fd1c5; color:#08110f;
   font-weight:900; font-size:0.85rem; display:flex; align-items:center; justify-content:center; }
 
-.dl-note { max-width:680px; margin:0 auto 1.2rem; color:#a896d4; font-size:0.92rem; line-height:1.6; text-align:center; }
-.dl-note strong { color:#F5C518; }
+.dl-note { max-width:680px; margin:0 auto 1.2rem; color:#9a9aa2; font-size:0.92rem; line-height:1.6; text-align:center; }
+.dl-note strong { color:#4fd1c5; }
 .dl-cta { max-width:680px; margin:0 auto; display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
 .dl-btn { display:inline-block; text-decoration:none; font-weight:800; font-size:0.92rem; border-radius:999px;
-  padding:11px 22px; background:#F5C518; color:#1a0f3d; border:2px solid #F5C518; transition:transform .12s, filter .12s; }
-.dl-btn:hover { transform:translateY(-2px); filter:brightness(1.07); }
-.dl-btn--ghost { background:transparent; color:#F5C518; }
-.dl-btn--ghost:hover { background:rgba(245,197,24,0.1); }
+  padding:11px 22px; background:#4fd1c5; color:#08110f; border:2px solid #4fd1c5; transition:transform .12s, filter .12s; }
+.dl-btn:hover { transform:translateY(-2px); filter:brightness(1.08); }
+.dl-btn--ghost { background:transparent; color:#7fe3d8; border-color:rgba(79,209,197,0.6); }
+.dl-btn--ghost:hover { background:rgba(79,209,197,0.12); }
+/* out-specify body.theme-studio a (gold) so the CTA text + inline links wear the signal teal */
+.dl-cta a.dl-btn { color:#08110f; }
+.dl-cta a.dl-btn--ghost { color:#7fe3d8; }
+.dl-step a, .dl-level a { color:#7fe3d8; }
 
 .dl-levels { max-width:680px; margin:0 auto 1.6rem; }
-.dl-levels-head { color:#F5C518; font-weight:800; font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; text-align:center; margin-bottom:10px; }
-.dl-level { display:flex; gap:12px; align-items:flex-start; background:rgba(110,95,160,0.1); border:1px solid #4a3a86;
-  border-radius:12px; padding:13px 16px; color:#cdbcf2; font-size:0.95rem; line-height:1.5; margin-bottom:10px; }
-.dl-level strong { color:#f0e6ff; }
-.dl-level a { color:#F5C518; }
-.dl-level--top { border-color:#6b5fa0; border-left:3px solid #F5C518; }
+.dl-levels-head { color:#7fe3d8; font-weight:800; font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; text-align:center; margin-bottom:10px; }
+.dl-level { display:flex; gap:12px; align-items:flex-start; background:rgba(255,255,255,0.045); border:1px solid rgba(255,255,255,0.13);
+  border-radius:12px; padding:13px 16px; color:#c9c9d0; font-size:0.95rem; line-height:1.5; margin-bottom:10px; }
+.dl-level strong { color:#fff; }
+.dl-level a { color:#7fe3d8; }
+.dl-level--top { border-color:rgba(255,255,255,0.2); border-left:3px solid #4fd1c5; }
 .dl-level-badge { flex-shrink:0; font-size:0.62rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase;
-  color:#cdbcf2; background:rgba(245,197,24,0.14); border:1px solid #6b5fa0; border-radius:999px; padding:3px 10px; white-space:nowrap; }
-.dl-level-badge--top { color:#1a0f3d; background:#F5C518; border-color:#F5C518; }
+  color:#c9c9d0; background:rgba(79,209,197,0.14); border:1px solid rgba(255,255,255,0.2); border-radius:999px; padding:3px 10px; white-space:nowrap; }
+.dl-level-badge--top { color:#08110f; background:#4fd1c5; border-color:#4fd1c5; }
+@media (prefers-reduced-motion: reduce){ .dl-soon::before { animation:none; } }
 </style>

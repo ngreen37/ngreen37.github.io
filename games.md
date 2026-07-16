@@ -158,6 +158,35 @@ permalink: /games/
   .ptd-w, .ptd-b { font-size:17px; top:13px; }
   .ptd-w { left:10px; } .ptd-b { right:10px; }
 }
+
+/* ---- THE GAMBIT entrance — same row grammar, but a wager altar: a glowing ♟ coin
+   floating over a small stone altar. Amber accent = the wager (never real money). ---- */
+.gmdoor { display:grid; grid-template-columns:auto minmax(0,1fr);
+  grid-template-areas:"scene plate" "scene sub"; align-content:center; align-items:center;
+  column-gap:16px; row-gap:5px; text-decoration:none; --acc:#e8b34a; }
+.gmdoor .gdoor-plate { grid-area:plate; color:#e8b34a; border-color:rgba(232,179,74,0.5); }
+.gmdoor .gdoor-sub { grid-area:sub; }
+.gm-scene { grid-area:scene; position:relative; width:72px; height:92px; }
+.gm-altar { position:absolute; left:50%; bottom:12px; transform:translateX(-50%);
+  width:40px; height:22px; background:linear-gradient(180deg,#3a2d5a,#221936);
+  border:1px solid rgba(232,179,74,0.45); border-radius:3px; box-shadow:0 0 20px -8px var(--acc); }
+.gm-altar::before { content:''; position:absolute; left:-5px; right:-5px; top:-6px; height:7px;
+  background:linear-gradient(180deg,#4a3a6e,#2c2148); border:1px solid rgba(232,179,74,0.4);
+  border-radius:2px; }
+.gm-glow { position:absolute; left:50%; top:22px; transform:translateX(-50%); width:38px; height:48px;
+  background:radial-gradient(ellipse at 50% 100%, rgba(232,179,74,0.42), transparent 70%);
+  filter:blur(1px); animation:gm-pulse 2.6s ease-in-out infinite; }
+.gm-coin { position:absolute; left:50%; top:8px; transform:translateX(-50%); font-size:28px; line-height:1;
+  color:#f5d27a; filter:drop-shadow(0 0 8px rgba(232,179,74,0.85)); transition:transform .25s, filter .25s; }
+.gmdoor:hover .gm-coin, .gmdoor:focus-visible .gm-coin { transform:translateX(-50%) translateY(-4px);
+  filter:drop-shadow(0 0 15px rgba(232,179,74,1)); }
+.gmdoor:hover .gm-glow, .gmdoor:focus-visible .gm-glow { animation-duration:1.3s; }
+@keyframes gm-pulse { 0%,100%{ opacity:0.4; } 50%{ opacity:0.95; } }
+@media (prefers-reduced-motion: reduce){ .gm-glow { animation:none; } }
+@media (max-width:480px){
+  .gm-scene { width:58px; height:78px; }
+  .gm-coin { font-size:23px; top:6px; } .gm-altar { width:34px; }
+}
 .gdoor { display:grid; grid-template-columns:auto minmax(0,1fr);
   grid-template-areas:"arch plate" "arch pips" "arch sub";
   align-content:center; align-items:center; column-gap:16px; row-gap:5px;
@@ -191,7 +220,8 @@ permalink: /games/
 .gdoor-sub { grid-area:sub; align-self:start; font-size:0.82rem; color:#e7d6b0; text-align:left; max-width:34ch; }
 .gdoor-sub b { color:#F5C518; }
 .gdoor:hover .gdoor-arch, .gdoor:focus-visible .gdoor-arch { box-shadow:0 0 34px -5px var(--acc); }
-.gdoor:hover .gdoor-door, .gdoor:focus-visible .gdoor-door { transform:perspective(320px) rotateY(-22deg); }
+/* opens like a shogi screen — the panel SLIDES LEFT instead of swinging (Nate 2026-07-15) */
+.gdoor:hover .gdoor-door, .gdoor:focus-visible .gdoor-door { transform:translateX(-60%); }
 @media (max-width:480px){
   .gdoor { column-gap:12px; }
   .gdoor-arch { width:58px; height:76px; border-radius:29px 29px 4px 4px; }
@@ -218,7 +248,7 @@ permalink: /games/
 .gdoor[data-grand="4"] .gdoor-seam,
 .gdoor[data-grand="5"] .gdoor-seam { height:4px; box-shadow:0 -3px 20px 5px color-mix(in srgb, var(--acc) 62%, transparent); }
 /* CROWNED — all ten floors BEATEN: the door rests AJAR, light spilling from within. */
-.gdoor[data-grand="5"] .gdoor-door { transform:perspective(320px) rotateY(-15deg); }
+.gdoor[data-grand="5"] .gdoor-door { transform:translateX(-10%); }
 .gdoor[data-grand="5"] .gdoor-seam { height:5px; box-shadow:0 -3px 28px 7px color-mix(in srgb, var(--acc) 74%, transparent); }
 
 /* FLOOR ZERO (Nate 2026-07-13): before a single floor is cleared there is no door
@@ -257,7 +287,7 @@ permalink: /games/
 .gdoor[data-grand="0"] .gdoor-seam { height:2px; box-shadow:0 -2px 10px 2px color-mix(in srgb, var(--acc) 38%, transparent); }
 .gdoor[data-grand="0"] .gdoor-door { transition:transform .5s cubic-bezier(.3,1.25,.4,1); }
 .gdoor[data-grand="0"]:hover .gdoor-door,
-.gdoor[data-grand="0"]:focus-visible .gdoor-door { transform:perspective(150px) rotateY(46deg) scaleX(.68) skewY(-3deg); }
+.gdoor[data-grand="0"]:focus-visible .gdoor-door { transform:translateX(-58%); }
 
 @media (prefers-reduced-motion: reduce){
   .ghub-doorway { animation:none; }
@@ -294,6 +324,20 @@ permalink: /games/
         <i class="ptd-board"></i><i class="ptd-leg"></i><i class="ptd-foot"></i>
       </span>
       <span class="gdoor-sub">Play a human. <b>Or the Creator.</b></span>
+    </a>
+
+    <!-- ── THE GAMBIT: the wager altar, drawn as a door (2026-07-15 Nate: "make the
+         Gambit a link like the gauntlet… some sort of drawing, and not text"). A glowing
+         ♟ coin floating over a small altar; amber accent = the wager. Never real money. ── -->
+    <a class="gmdoor" href="{{ '/the-gambit/' | relative_url }}"
+       aria-label="The Gambit — wager what you've earned; the board sometimes gives back more. Never real money.">
+      <span class="gdoor-plate">THE GAMBIT</span>
+      <span class="gm-scene" aria-hidden="true">
+        <i class="gm-glow"></i>
+        <b class="gm-coin">♟</b>
+        <i class="gm-altar"></i>
+      </span>
+      <span class="gdoor-sub">Lay down your best. <b>The board decides.</b></span>
     </a>
   </div>
 

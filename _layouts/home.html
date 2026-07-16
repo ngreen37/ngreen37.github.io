@@ -43,17 +43,16 @@ layout: default
   <div class="ticker-outer">
     <div class="ticker-track" id="world-ticker-track">
       <span class="ticker-item">CHECKER TOWN CHECKER PIECE SUPPLY AT ALL-TIME LOW — BOARD SHORTAGE REPORTED IN SECTOR 3</span>
-      <span class="ticker-item ticker-item--promo">◆ NEW — THE IDENTITY FORGE: BUILD YOUR OWN OPERATIVE &amp; COMPANION, RENAME ANYTIME → /DOSSIER/</span>
+      <span class="ticker-item ticker-item--promo">◆ NEW — THE IDENTITY FORGE: BUILD YOUR OWN OPERATIVE &amp; COMPANION, RENAME ANYTIME</span>
       <span class="ticker-item">CHESS CITY TOURNAMENT ENROLLMENT NOW OPEN — LIMITED SPOTS REMAINING — APPLICATIONS CLOSE END OF SEASON</span>
-      <span class="ticker-item ticker-item--promo">◆ NEW — THE GAUNTLET: REAL CHESS VS A LADDER OF PJCC RIVALS → /GAMES/THE-GAUNTLET/</span>
-      <span class="ticker-item ticker-item--promo">◆ NEW — THE PARK TABLES: PLAY ANOTHER OPERATIVE, OR CHALLENGE McPUPPY HIMSELF → /GAMES/PARK-TABLES/</span>
+      <span class="ticker-item ticker-item--promo">◆ NEW — THE GAUNTLET: REAL CHESS VS A LADDER OF PJCC RIVALS</span>
+      <span class="ticker-item ticker-item--promo">◆ NEW — THE PARK TABLES: PLAY ANOTHER OPERATIVE, OR CHALLENGE McPUPPY HIMSELF</span>
       <span class="ticker-item">SHOGI ISLAND FERRY DELAYED FOR THIRD CONSECUTIVE WEEK — NO DEPARTURE DATE ANNOUNCED — 将棋の島 : フェリー3週連続遅延中 / 出発日未定</span>
-      <span class="ticker-item ticker-item--promo">◆ NEW — HIDDEN PORTALS: SOME DOORS YOU OPEN BY SOLVING, NOT CLICKING. LISTEN FOR THE OCTAVE.</span>
       <span class="ticker-item">INTERPLANETARY CONSTRUCTION CO. DENIES ALL VESSEL WRECKAGE CLAIMS — INVESTIGATION CONTINUES</span>
-      <span class="ticker-item ticker-item--promo">◆ THE ARCADE: CLAIM A CODENAME &amp; CLIMB THE GLOBAL BOARDS → /GAMES/</span>
+      <span class="ticker-item ticker-item--promo">◆ THE ARCADE: CLAIM A CODENAME &amp; CLIMB THE GLOBAL BOARDS</span>
       <span class="ticker-item">CHESS CITY LEAFS ADVANCE TO FINALS — ROSTER ANNOUNCEMENT EXPECTED SHORTLY</span>
       <span class="ticker-item">PJCC RATING SYSTEM RATIFIED — EVERY OPERATIVE TO START AT 250 — FIRST LADDER STANDINGS EXPECTED SHORTLY</span>
-      <span class="ticker-item ticker-item--promo">◆ THE ACADEMY: A FREE, GAMIFIED CHESS CURRICULUM — EARN YOUR BELTS → /ACADEMY/</span>
+      <span class="ticker-item ticker-item--promo">◆ THE ACADEMY: A FREE, GAMIFIED CHESS CURRICULUM — EARN YOUR BELTS</span>
       <span class="ticker-item">CHECKER PIECE PRICES REACH RECORD HIGH — ECONOMISTS CITE THE CRASH AS ORIGIN POINT</span>
       <span class="ticker-item">UNKNOWN VESSEL SPOTTED OFF COAST — AUTHORITIES INVESTIGATING — PUBLIC ADVISED TO REMAIN CALM</span>
       <span class="ticker-item">METEOROLOGISTS CONFIRM A CLOUD RESEMBLING A ROOK IS DUE SUNDAY — A SECOND CLOUD, RESEMBLING A DOG, ALSO DUE — NO FURTHER QUESTIONS</span>
@@ -168,6 +167,15 @@ layout: default
       <span class="sk sk-cc sk-cc--queen"  style="--w:22px;--h:44px"></span>
       <span class="sk sk-cc sk-cc--king"   style="--w:18px;--h:36px"></span>
     </a>
+    {% comment %} The Park Tables live in the Checker Town park — a little table set up
+         over the town (Nate 2026-07-15: "put that same Park table link over Checker Town").
+         Links to the same place as the splash's park table. {% endcomment %}
+    <a class="hero-park" href="{{ '/games/park-tables/' | relative_url }}"
+       aria-label="The Park Tables — play another operative in the Checker Town park">
+      <i class="hp-board" aria-hidden="true"></i>
+      <i class="hp-post" aria-hidden="true"></i>
+      <i class="hp-foot" aria-hidden="true"></i>
+    </a>
   </div>
   {% comment %} THE DOOR — the way into the Gauntlet, top right of the hero.
        A brass plate, ten lift lamps (your floors), an arched doorway with the
@@ -218,6 +226,22 @@ layout: default
     rgba(255,150,150,0.36) 0 1px, #230b1d 1px 3px, #35122a 3px 6px); }
 .hero-skyline .sk-sea { flex:1 1 auto; height:2px; margin:0 10px 5px;
   background:linear-gradient(90deg, rgba(96,206,255,0), rgba(96,206,255,0.30), rgba(96,206,255,0)); }
+
+/* ── THE PARK TABLES: a little park table set over the Checker Town stacks — the park
+   lives in Checker Town, so a table stands over the town (Nate 2026-07-15). Green accent
+   = the park; links to the same place as the splash's park table. ── */
+.hero-park { position:absolute; left:14px; bottom:16px; z-index:3; width:46px; height:36px;
+  text-decoration:none; pointer-events:auto; }
+.hp-board { position:absolute; left:3px; top:0; width:40px; height:20px;
+  transform:perspective(120px) rotateX(54deg); transform-origin:50% 100%;
+  background:repeating-conic-gradient(#efe1c4 0 25%, #b07a48 0 50%); background-size:11px 11px;
+  border:1px solid rgba(107,255,184,0.55); border-radius:3px;
+  box-shadow:0 0 15px -5px #6bffb8; transition:box-shadow .2s ease; }
+.hp-post { position:absolute; left:50%; bottom:3px; transform:translateX(-50%);
+  width:6px; height:14px; background:#241a3a; border-radius:2px; }
+.hp-foot { position:absolute; left:50%; bottom:0; transform:translateX(-50%);
+  width:22px; height:3px; background:#241a3a; border-radius:2px; }
+.hero-park:hover .hp-board, .hero-park:focus-visible .hp-board { box-shadow:0 0 24px -3px #6bffb8; }
 
 /* ── Chess City: the far shore (2026-07-11 Nate). Cool-blue building bodies with
    faint floor lines, each topped by a back-rank piece's silhouette: a rook's
@@ -284,7 +308,8 @@ html.sky-night .hero-skyline .sk-cc { background:repeating-linear-gradient(180de
 .gdoor-sub { font-size:11px; color:#b9a8e6; text-align:center; }
 .gdoor-sub b { color:#F5C518; }
 .gdoor:hover .gdoor-arch, .gdoor:focus-visible .gdoor-arch { box-shadow:0 0 34px -5px var(--acc); }
-.gdoor:hover .gdoor-door, .gdoor:focus-visible .gdoor-door { transform:perspective(320px) rotateY(-22deg); }
+/* opens like a shogi screen — the panel SLIDES LEFT instead of swinging (Nate 2026-07-15) */
+.gdoor:hover .gdoor-door, .gdoor:focus-visible .gdoor-door { transform:translateX(-60%); }
 html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 
 /* ── GRANDEUR: the door grows richer the higher you climb (Nate 2026-07-12).
@@ -308,7 +333,7 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 .gdoor[data-grand="4"] .gdoor-seam,
 .gdoor[data-grand="5"] .gdoor-seam { height:4px; box-shadow:0 -3px 20px 5px color-mix(in srgb, var(--acc) 62%, transparent); }
 /* CROWNED — all ten floors BEATEN: the door rests AJAR, light spilling from within. */
-.gdoor[data-grand="5"] .gdoor-door { transform:perspective(320px) rotateY(-15deg); }
+.gdoor[data-grand="5"] .gdoor-door { transform:translateX(-10%); }
 .gdoor[data-grand="5"] .gdoor-seam { height:5px; box-shadow:0 -3px 28px 7px color-mix(in srgb, var(--acc) 74%, transparent); }
 
 /* FLOOR ZERO (Nate 2026-07-13): before a single floor is cleared there is no door
@@ -354,7 +379,7 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 /* a hand pushes it aside FROM THE MIDDLE — the cloth bunches toward the edge */
 .gdoor[data-grand="0"] .gdoor-door { transition:transform .5s cubic-bezier(.3,1.25,.4,1); }
 .gdoor[data-grand="0"]:hover .gdoor-door,
-.gdoor[data-grand="0"]:focus-visible .gdoor-door { transform:perspective(150px) rotateY(46deg) scaleX(.68) skewY(-3deg); }
+.gdoor[data-grand="0"]:focus-visible .gdoor-door { transform:translateX(-58%); }
 
 @media (prefers-reduced-motion: reduce) {
   .gdoor-pips i.cur { animation:none; }
@@ -592,10 +617,10 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
   </div>
 </section>
 
-{% comment %} The Gambit's one door (2026-07-14 Nate: "move the gambit out of In
-     Development and out of the Games section altogether. Put it somewhere off the
-     PJCC page"): a ritual, not a game — one quiet entrance at the foot of the town. {% endcomment %}
-<p class="home-gambit-door"><a href="{{ '/the-gambit/' | relative_url }}">♟ The Gambit — lay down your best; the board decides.</a></p>
+{% comment %} The Gambit moved to the Games page as a drawn altar-door (2026-07-15 Nate:
+     "make the Gambit a link like the gauntlet, on the Games Page… make it some sort of
+     drawing, and not text… remove it from the PJCC page"). Its old quiet text link here
+     is gone; the entrance now lives beside the Gauntlet + Park Tables doors in games.md. {% endcomment %}
 
 {% comment %} The chess-glyph wire MOVED BACK INTO THE FOOTER 2026-07-15 (Nate: "move
      the glyphs down into the black area below and cut the purple space"). Floating on
@@ -616,11 +641,6 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
 .char-row.just-shuffled .char-chip { animation: chipIn .42s ease both; }
 @keyframes chipIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
 
-/* the Gambit's quiet door at the foot of the town — tighter now the glyph row is gone */
-.home-gambit-door { text-align: center; margin: 14px 0 0; font-size: 0.85rem; }
-.home-gambit-door a { color: #9a7fd4; text-decoration: none;
-  border-bottom: 1px dotted rgba(154,127,212,0.5); padding-bottom: 2px; }
-.home-gambit-door a:hover { color: #F5C518; border-bottom-color: #F5C518; }
 
 /* The footer chess-glyph band is GONE from the home page too now (2026-07-15 Nate: even
    in the black footer the faint pieces read as "transparent jellybeans" — reset the

@@ -36,6 +36,7 @@ a move a day is plenty.</p>
 <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-chess.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-match.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-game-review.js' | relative_url }}"></script>
 <script>
 (function () {
   'use strict';
@@ -228,11 +229,13 @@ a move a day is plenty.</p>
           var white = m.white === me, oppName = white ? (m.black_name || (m.vs_creator ? 'waiting for McPuppy…' : 'waiting for a challenger…')) : m.white_name;
           var myTurn = m.status === 'active' && ((m.fen.split(' ')[1] === 'w') === white);
           var claimable = timeoutClaimable(m);
-          return '<button class="pt-row" data-open="' + m.id + '">' +
-            '<span class="pt-row-vs">' + (white ? '⬜' : '⬛') + ' vs <b>' + esc(oppName) + esc(oppRating(m, white)) + '</b>' +
+          var isOpen = m.status === 'open';   // still queued — show the set board, no side badge yet
+          return '<button class="pt-row' + (isOpen ? ' pt-row--queued' : '') + '" data-open="' + m.id + '">' +
+            (isOpen ? queuedBoard() : '') +
+            '<span class="pt-row-vs">' + (isOpen ? '' : (white ? '⬜' : '⬛') + ' ') + 'vs <b>' + esc(oppName) + esc(oppRating(m, white)) + '</b>' +
             '<i class="pt-row-chips">' + chips(m) + '</i></span>' +
             '<span class="pt-row-state ' + ((myTurn || claimable) ? 'go' : '') + '">' +
-            (m.status === 'open' ? 'OPEN' : claimable ? '⏱ FLAG DOWN' : myTurn ? 'YOUR MOVE' : 'their move') + '</span></button>';
+            (isOpen ? 'OPEN' : claimable ? '⏱ FLAG DOWN' : myTurn ? 'YOUR MOVE' : 'their move') + '</span></button>';
         }).join('');
         html += '<h2 class="pt-h">Your tables</h2>' + (minesH || '<p class="lb-empty">None yet — open one above. You can keep several going at once.</p>');
 
@@ -251,14 +254,18 @@ a move a day is plenty.</p>
           (openH || '<p class="lb-empty">No open seats right now — leave a table open and someone will find it.</p>');
 
         var finished = r[3].rows.filter(function (m) { return m.win_reason !== 'withdrawn'; });
+        var finishedById = {}, canReview = window.PJCCReview && PJCCReview.enabled();
         if (finished.length) {
           html += '<h2 class="pt-h">Finished</h2>' + finished.map(function (m) {
+            finishedById[m.id] = m;
             var white = m.white === me;
             var won = (m.result === '1-0' && white) || (m.result === '0-1' && !white);
+            var canRev = canReview && (m.moves || '').trim();
             return '<div class="pt-row pt-row-done"><span class="pt-row-vs">vs <b>' +
               esc(white ? m.black_name : m.white_name) + '</b></span><span class="pt-row-state">' +
               (m.result === '1/2-1/2' ? 'draw' : won ? '✓ won' : 'lost') + ' · ' + esc(m.win_reason || '') +
-              myDelta(m, white) + '</span></div>';
+              myDelta(m, white) + '</span>' +
+              (canRev ? '<button class="pt-review-btn" data-review="' + m.id + '">🔍 Review</button>' : '') + '</div>';
           }).join('');
         }
         app.innerHTML = html;
@@ -274,6 +281,13 @@ a move a day is plenty.</p>
             b.disabled = true;
             M.claim(b.getAttribute('data-claim')).then(function(){ openTable(b.getAttribute('data-claim')); })
               .catch(function(e){ b.disabled = false; toast(e.message); lobby(); });
+          };
+        });
+        Array.prototype.forEach.call(app.querySelectorAll('[data-review]'), function (b) {
+          b.onclick = function(e){
+            e.stopPropagation();
+            var m = finishedById[b.getAttribute('data-review')];
+            if (m && window.PJCCReview) PJCCReview.open(m.moves, { whiteName: m.white_name, blackName: m.black_name, result: m.result });
           };
         });
         timer = setTimeout(lobby, 20000);          // quiet lobby refresh
@@ -407,9 +421,13 @@ a move a day is plenty.</p>
           }).join('') + '</div>' +
           (m.status === 'active' ? '<button class="pjcc-btn-ghost pt-resign" id="pt-resign">Resign</button>' : '') +
           (m.status === 'open' && white ? '<button class="pjcc-btn-ghost pt-resign" id="pt-withdraw">Withdraw the table</button>' : '') + '</div>'
-        : '');
+        : (window.PJCCReview && PJCCReview.enabled() && (m.moves || '').trim()
+            ? '<div class="pt-tools"><button class="pjcc-btn" id="pt-review">🔍 Review this game</button></div>'
+            : ''));
 
     document.getElementById('pt-back').onclick = function(){ cur = null; lobby(); };
+    var rv = document.getElementById('pt-review');
+    if (rv) rv.onclick = function(){ PJCCReview.open(m.moves, { whiteName: m.white_name, blackName: m.black_name, result: m.result }); };
     var fl = document.getElementById('pt-flag');
     if (fl) fl.onclick = function(){
       fl.disabled = true;
@@ -515,6 +533,9 @@ a move a day is plenty.</p>
 .pt-row--queued .pt-row-vs { flex: 1; min-width: 0; }
 .pt-qboard { flex-shrink: 0; display: block; border-radius: 4px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.4); }
+.pt-review-btn { flex-shrink: 0; background: #241847; border: 1px solid #4a3a86; color: #cdbcf2;
+  border-radius: 8px; padding: 5px 10px; font-size: 0.72rem; font-weight: 700; cursor: pointer; margin-left: 6px; }
+.pt-review-btn:hover { border-color: #F5C518; color: #F5C518; }
 .pt-up { color: #6bffb8; } .pt-dn { color: #ff8a8a; }
 
 .pt-table-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 10px 0 4px; }
