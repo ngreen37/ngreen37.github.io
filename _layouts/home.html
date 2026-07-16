@@ -172,9 +172,11 @@ layout: default
        its Gauntlet link counterpart"), a direct child of the hero like the door is:
        inside .hero-skyline its absolute coords resolve against the skyline strip and
        top:12 lands at the hero's FOOT. Links to the same place as the splash's table. {% endcomment %}
+  {% comment %} 2026-07-16 (Nate): "replace the PJCC Park Table link to match the
+       splash" — the PLAY A GAME plate is gone, the caption reads "Play Chess", and
+       the stools sit EAST/WEST like two players squared up. {% endcomment %}
   <a class="hero-park" href="{{ '/games/park-tables/' | relative_url }}"
-     aria-label="Play a Game — the Park Tables, real chess against another operative in the Checker Town park">
-    <span class="hp-plate">PLAY A GAME</span>
+     aria-label="Park Tables — play chess against another operative in the Checker Town park">
     <span class="hp-table" aria-hidden="true">
       <i class="hp-shadow"></i>
       <i class="hp-stool hp-stool--l"></i>
@@ -182,6 +184,7 @@ layout: default
       <i class="hp-post"></i>
       <i class="hp-board"></i>
     </span>
+    <span class="hp-sub" data-jp="チェスをしよう">Play Chess</span>
   </a>
   {% comment %} THE DOOR — the way into the Gauntlet, top right of the hero.
        A brass plate, ten lift lamps (your floors), an arched doorway with the
@@ -242,17 +245,15 @@ layout: default
 .hero-park { position:absolute; left:26px; top:12px; z-index:3;
   display:flex; flex-direction:column; align-items:center; gap:5px;
   text-decoration:none; pointer-events:auto; }
-/* The plate sits ABOVE the table and the whole unit mirrors the Gauntlet door's
-   footprint (arch 78×100 + its plate) — the hero's two ways to play, matched in
-   weight. Since 2026-07-16 it stands TOP-LEFT on the door's own horizontal (top:12),
-   the two of them bookending the centred studio plate. Plate grammar = .gdoor-plate. */
-.hp-plate { font-family:'Share Tech Mono',monospace; font-size:9px; font-weight:700; letter-spacing:2px;
-  color:#7ff0c0; background:rgba(6,22,15,0.55); border:1px solid rgba(107,255,184,0.5);
-  border-radius:3px; padding:4px 9px; white-space:nowrap; transition:color .15s, border-color .15s; }
+/* The whole unit mirrors the Gauntlet door's footprint — the hero's two ways to
+   play, matched in weight. Since 2026-07-16 it stands TOP-LEFT on the door's own
+   horizontal (top:12), the two of them bookending the centred studio plate.
+   2026-07-16 later (Nate): matched to the SPLASH table — plate gone, "Play Chess"
+   caption, stools EAST/WEST, true 8×8 tabletop. */
 /* the scene — a pedestal park table with two stools, drawn like the splash's,
    scaled to the door's arch */
-.hp-table { position:relative; width:96px; height:100px; }
-.hp-shadow { position:absolute; left:50%; bottom:2px; transform:translateX(-50%); width:78px; height:12px;
+.hp-table { position:relative; width:114px; height:100px; }
+.hp-shadow { position:absolute; left:50%; bottom:2px; transform:translateX(-50%); width:96px; height:12px;
   border-radius:50%; background:radial-gradient(ellipse, rgba(0,0,0,0.45), transparent 72%); }
 .hp-post { position:absolute; left:50%; bottom:7px; transform:translateX(-50%); width:9px; height:42px;
   background:linear-gradient(#8a6a44,#4a3320); border-radius:2px; }
@@ -263,18 +264,18 @@ layout: default
   border-radius:5px; border:3px solid #6b4a2a;
   background-color:#efe1c4;
   background-image:conic-gradient(#9c6a3c 90deg, #efe1c4 90deg 180deg, #9c6a3c 180deg 270deg, #efe1c4 270deg);
-  background-size:20.5px 16px;
+  background-size:25% 25%;   /* exactly 4 tiles of 2×2 = a true 8×8, light on the right */
   box-shadow:0 13px 15px -8px rgba(0,0,0,0.5), 0 0 18px -6px rgba(107,255,184,0.5);
   transition:box-shadow .2s ease; }
 .hp-board::after { content:''; position:absolute; left:-3px; right:-3px; bottom:-7px; height:8px;
   border-radius:0 0 6px 6px; background:linear-gradient(#5e4226,#3a2916); }
-.hp-stool { position:absolute; bottom:4px; width:16px; height:10px; z-index:2; }
+.hp-stool { position:absolute; width:16px; height:10px; }
 .hp-stool::before { content:''; position:absolute; top:0; left:0; right:0; height:6px; border-radius:50%;
   background:linear-gradient(#9a7550,#5e4226); box-shadow:0 3px 5px -2px rgba(0,0,0,0.5); }
 .hp-stool::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%);
   width:4px; height:6px; background:#4a3320; }
-.hp-stool--l { left:8px; } .hp-stool--r { right:8px; }
-.hero-park:hover .hp-plate, .hero-park:focus-visible .hp-plate { color:#bafce0; border-color:rgba(107,255,184,0.85); }
+.hp-stool--l { left:0; bottom:18px; } .hp-stool--r { right:0; bottom:18px; }
+.hp-sub { font-size:11px; color:#a9e6ca; text-align:center; }
 .hero-park:hover .hp-board, .hero-park:focus-visible .hp-board { box-shadow:0 13px 22px -8px rgba(0,0,0,0.5), 0 0 26px -4px #6bffb8; }
 /* ⚠ This media override must live AFTER the base .hp-* rules above — media queries
    add no specificity, so put it any earlier and the base rules silently win.

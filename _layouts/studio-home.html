@@ -76,9 +76,11 @@
 
     <!-- The Creator's DESK LAMP (2026-07-16, Nate: "like the pixar lamp but not exactly";
          same day: "make it bigger, add another rod from stem to head") — a two-rod
-         anglepoise now, lit when the site shipped within TWELVE hours. -->
-    <div class="studio-light" id="studio-light" tabindex="0" role="img"
-         data-built="{{ site.time | date_to_xmlschema }}" aria-label="Studio status">
+         anglepoise now, lit when the site shipped within TWELVE hours.
+         Since 2026-07-16 (later): the lamp is a LINK to the Direct Line — the light on
+         the Creator's desk leads to the line that reaches his desk. -->
+    <a class="studio-light" id="studio-light" href="{{ '/direct-line/' | relative_url }}"
+       data-built="{{ site.time | date_to_xmlschema }}" aria-label="Studio status — open the Direct Line">
       <span class="sl-lamp" aria-hidden="true">
         <i class="sl-cone"></i>
         <i class="sl-arm"></i>
@@ -88,7 +90,7 @@
         <i class="sl-base"></i>
       </span>
       <span class="sl-tip" id="sl-tip"></span>
-    </div>
+    </a>
 
     <!-- Logo pinned top-left — carries a seasonal emblem (summer/fall/winter/spring) -->
     <div class="studio-corner-logo">
@@ -176,8 +178,8 @@
          aria-label="Park Tables — play chess">
         <span class="pt-scene" aria-hidden="true">
           <span class="pt-shadow"></span>
-          <span class="pt-stool pt-stool--far"></span>
-          <span class="pt-stool pt-stool--near"></span>
+          <span class="pt-stool pt-stool--l"></span>
+          <span class="pt-stool pt-stool--r"></span>
           <span class="pt-post"></span>
           <span class="pt-board"></span>
         </span>
@@ -275,21 +277,23 @@
        GAUNTLET DOOR, standing side by side. They're little SCENES now, not plates — the
        door mirrors the PJCC hero (.gdoor, shared partial); the park table is drawn below.
        Aligned at the foot so both sit on the same ground line. ── */
-  /* 2026-07-16 (Nate): wider breathing room between the two scenes (38px → 64px) —
-     the header plates are gone, so the pictures carry it and need the separation. */
-  .studio-calls { display:flex; gap:64px; max-width:560px; margin:22px auto 0; flex-wrap:wrap;
+  /* 2026-07-16 (Nate): wider breathing room between the two scenes — 38px → 64px,
+     then "even further… like 128px" the same day. Phones keep their tighter gaps
+     (in the media queries below) so the pair still fits one screen. */
+  .studio-calls { display:flex; gap:128px; max-width:560px; margin:22px auto 0; flex-wrap:wrap;
     justify-content:center; align-items:flex-end; }
   .studio-scene { flex:0 0 auto; text-decoration:none; }
   .studio-scene--gauntlet { transition:transform .12s; }
 
   /* ── The park chess table ─────────────────────────────────────────────────────
      A little pedestal table with an 8×8 board laid nearly flat on top, two stools
-     on OPPOSING sides — one near, one far — a game about to start (Nate 2026-07-16).
-     Warm wood + cream. Pure CSS, static paint. (The PARK TABLES plate was removed
-     the same day — "the pictures are good enough".) ── */
+     on OPPOSING sides — EAST and WEST since 2026-07-16 later ("left/right instead
+     of up/down"), flanking the table like two players squared up. Warm wood +
+     cream. Pure CSS, static paint. (The PARK TABLES plate was removed the same
+     day — "the pictures are good enough".) ── */
   .studio-scene--park { display:flex; flex-direction:column; align-items:center; gap:6px; }
-  .pt-scene { position:relative; width:108px; height:104px; }
-  .pt-shadow { position:absolute; left:50%; bottom:4px; transform:translateX(-50%); width:84px; height:13px;
+  .pt-scene { position:relative; width:128px; height:104px; }
+  .pt-shadow { position:absolute; left:50%; bottom:4px; transform:translateX(-50%); width:108px; height:13px;
     border-radius:50%; background:radial-gradient(ellipse, rgba(0,0,0,0.45), transparent 72%); }
   /* the pedestal post + its foot */
   .pt-post { position:absolute; left:50%; bottom:10px; transform:translateX(-50%); width:10px; height:46px;
@@ -305,21 +309,25 @@
     border-radius:5px; border:3px solid #6b4a2a;
     background-color:#efe1c4;
     background-image:conic-gradient(#9c6a3c 90deg, #efe1c4 90deg 180deg, #9c6a3c 180deg 270deg, #efe1c4 270deg);
-    background-size:22px 17.5px;
+    /* 25% 25% = exactly 4 tiles of 2×2 squares — a TRUE 8×8, light square in the
+       bottom-right, no matter what box-sizing does to the paint area. The old fixed
+       px size painted 8 squares into a border-shrunk box and cut off the last
+       rank/file (Nate 2026-07-16, pictured). */
+    background-size:25% 25%;
     box-shadow:0 14px 16px -8px rgba(0,0,0,0.5); }
   /* the table-edge lip under the front of the top, so it reads as a solid surface */
   .pt-board::after { content:''; position:absolute; left:-3px; right:-3px; bottom:-7px; height:8px;
     border-radius:0 0 6px 6px; background:linear-gradient(#5e4226, #3a2916); transform:rotateX(0); }
-  /* two little stools on OPPOSING sides of the table — the NEAR one in front (painted
-     over the pedestal foot, z-index:2), the FAR one peeking above the board's far edge
-     (no z-index, so the board — later in the DOM — occludes its legs). */
+  /* two little stools on OPPOSING sides of the table — EAST and WEST (Nate 2026-07-16
+     later: "left/right instead of up/down"). No z-index: the board (later in the DOM)
+     covers the sliver where each stool tucks under the tabletop's side. */
   .pt-stool { position:absolute; width:18px; height:11px; }
   .pt-stool::before { content:''; position:absolute; top:0; left:0; right:0; height:7px; border-radius:50%;
     background:linear-gradient(#9a7550,#5e4226); box-shadow:0 3px 5px -2px rgba(0,0,0,0.5); }
   .pt-stool::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%);
     width:4px; height:7px; background:#4a3320; }
-  .pt-stool--near { bottom:0; left:50%; margin-left:-9px; z-index:2; }
-  .pt-stool--far  { top:29px; left:50%; margin-left:-8px; width:16px; height:10px; }
+  .pt-stool--l { left:0; bottom:20px; }
+  .pt-stool--r { right:0; bottom:20px; }
   .pt-sub { font-size:11px; color:#a9e6ca; text-align:center; }
   .studio-scene--park:hover .pt-board { box-shadow:0 13px 24px -8px rgba(107,255,184,0.42); }
 
@@ -828,6 +836,7 @@
   .studio-light.on .sl-head { box-shadow: inset 0 -4px 6px rgba(255,207,74,0.55), 0 0 14px 2px rgba(255,207,74,0.35); }
   .studio-light.on .sl-cone { opacity: 0.6; animation: sl-warm 3.2s ease-in-out infinite; }
   @keyframes sl-warm { 0%,100% { opacity: 0.52; } 50% { opacity: 0.7; } }
+  .studio-light { text-decoration: none; }   /* it's a link now — no underline ghosts in the tip */
   .sl-tip { position: absolute; right: 0; bottom: calc(100% + 8px); width: 224px; padding: 9px 12px;
     background: rgba(14,9,30,0.96); border: 1px solid #4a3a86; border-radius: 9px; color: #e9e2ff;
     font-family: 'Poppins', sans-serif; font-size: 11px; line-height: 1.5; text-align: left;
@@ -847,10 +856,11 @@
     var built = Date.parse(el.getAttribute('data-built') || '') || 0;
     var on = built && (Date.now() - built) < 12 * 3600 * 1000;
     el.classList.toggle('on', !!on);
-    tip.textContent = on
+    var status = on
       ? 'The Creator is either currently working, or has shipped an improvement in the last 12 hours.'
       : 'The lamp is dark right now — nothing shipped in the last 12 hours.';
-    el.setAttribute('aria-label', tip.textContent);
+    tip.innerHTML = status + '<br><b>✉ The Direct Line →</b>';
+    el.setAttribute('aria-label', status + ' Open the Direct Line.');
   })();
   </script>
 

@@ -99,6 +99,13 @@ permalink: /games/
 .ghub-divider { margin:18px 4px 10px; }
 .ghub-grid--sub .ghub-portal { min-height:104px; padding:12px 10px 10px; }
 .ghub-grid--sub .ghp-glyph { font-size:2rem; }
+/* 2026-07-16 (Nate): the lower row reads 🏆 · Vault · Terminated · Gambit altar —
+   the trophy stands LEFT of the Vault (doubled, see .ghub-trophy), the altar RIGHT
+   of Terminated. The sub grid drops to two columns since it only holds the halls. */
+.ghub-subrow { position:relative; z-index:2; display:flex; align-items:center;
+  justify-content:center; gap:14px; flex-wrap:wrap; }
+.ghub-subrow .ghub-grid--sub { flex:0 1 440px; grid-template-columns:repeat(2,1fr); }
+.ghub-subrow .gmdoor { flex:0 0 auto; }
 @media (max-width:560px){
   .ghub-portal { min-height:128px; }
   .ghub-grid--sub .ghub-portal { min-height:96px; }
@@ -293,7 +300,6 @@ permalink: /games/
 
 <!-- ===== THE HALLS — Gauntlet Legends portal screen (pick a hall; no games here) ===== -->
 <div class="ghub">
-  <a class="ghub-trophy" href="{{ '/leaderboards/' | relative_url }}" aria-label="Leaderboards" title="Leaderboards">🏆</a>
 
   <!-- ── THE DOOR: the Gauntlet, above the halls ── -->
   <div class="ghub-doorway">
@@ -321,19 +327,6 @@ permalink: /games/
       <span class="gdoor-sub">Play a human. <b>Or the Creator.</b></span>
     </a>
 
-    <!-- ── THE GAMBIT: the wager altar, drawn as a door (2026-07-15 Nate: "make the
-         Gambit a link like the gauntlet… some sort of drawing, and not text"). A glowing
-         ♟ coin floating over a small altar; amber accent = the wager. Never real money. ── -->
-    {%- comment -%} the "THE GAMBIT" plate came off 2026-07-16 (Nate) — the glowing
-         altar IS the link now, unlabelled. The aria-label still names it. {%- endcomment -%}
-    <a class="gmdoor" href="{{ '/the-gambit/' | relative_url }}"
-       aria-label="The Gambit — wager what you've earned; the board sometimes gives back more. Never real money.">
-      <span class="gm-scene" aria-hidden="true">
-        <i class="gm-glow"></i>
-        <b class="gm-coin">♟</b>
-        <i class="gm-altar"></i>
-      </span>
-    </a>
   </div>
 
   <div class="ghub-head">
@@ -349,9 +342,26 @@ permalink: /games/
   <!-- the active halls -->
   <div class="ghub-grid" id="ghub-grid"></div>
 
-  <!-- sealed / retired — set apart, lower -->
+  <!-- sealed / retired — set apart, lower. 2026-07-16 (Nate): this row gained
+       neighbours — the 🏆 Leaderboards (doubled) stands LEFT of the Vault, and the
+       Gambit altar (moved down from the doorway) stands RIGHT of Terminated. -->
   <div class="ghub-divider"><span>Sealed / Retired</span></div>
-  <div class="ghub-grid ghub-grid--sub" id="ghub-grid-sub"></div>
+  <div class="ghub-subrow">
+    <a class="ghub-trophy" href="{{ '/leaderboards/' | relative_url }}" aria-label="Leaderboards" title="Leaderboards">🏆</a>
+    <div class="ghub-grid ghub-grid--sub" id="ghub-grid-sub"></div>
+    <!-- ── THE GAMBIT: the wager altar (2026-07-15 Nate: "make the Gambit a link like
+         the gauntlet… some sort of drawing, and not text"). A glowing ♟ coin floating
+         over a small altar; amber accent = the wager. Never real money. The "THE
+         GAMBIT" plate came off 2026-07-16 — the altar IS the link, aria names it. ── -->
+    <a class="gmdoor" href="{{ '/the-gambit/' | relative_url }}"
+       aria-label="The Gambit — wager what you've earned; the board sometimes gives back more. Never real money.">
+      <span class="gm-scene" aria-hidden="true">
+        <i class="gm-glow"></i>
+        <b class="gm-coin">♟</b>
+        <i class="gm-altar"></i>
+      </span>
+    </a>
+  </div>
 </div>
 
 <script src="{{ '/assets/js/pjcc-games-data.js' | relative_url }}"></script>
