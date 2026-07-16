@@ -38,7 +38,10 @@
 }
 
 /* ── the park table — drawn once, used thrice ── */
-.pkt-sub { font-size: 11px; color: #a9e6ca; text-align: center; }
+/* the caption's shadow earns its keep on the PJCC hero, where it floats over the
+   DAY sky (mint on a sunlit blue read washy — 2026-07-16 a11y pass) */
+.pkt-sub { font-size: 11px; color: #a9e6ca; text-align: center;
+  text-shadow: 0 1px 4px rgba(10, 8, 24, 0.6); }
 .pkt-scene { position: relative; display: block; width: 200px; height: 104px; }
 .pkt-shadow { position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%);
   width: 176px; height: 13px; border-radius: 50%;
