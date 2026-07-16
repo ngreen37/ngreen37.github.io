@@ -14,8 +14,9 @@
  *     per page.
  *
  *  2. THE PARK TABLE (.pkt-*) — the one canonical drawing of the park chess table:
- *     "Play Chess" caption ABOVE, big stools EAST/WEST with daylight between them
- *     and the table, true 8×8 tabletop (light square bottom-right). Markup lives in
+ *     no caption (the drawing is the invitation; aria-labels name the link), stools
+ *     EAST/WEST with flush seats + base plates, true 8×8 tabletop with the pattern
+ *     rotated so it reads "white on the right" from both stools. Markup lives in
  *     _includes/park-table.html; used by the splash, the PJCC hero, and the games
  *     hall. Pages position the unit — they never redraw it.
  * ========================================================================== */
