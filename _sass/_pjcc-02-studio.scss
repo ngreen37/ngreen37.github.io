@@ -40,11 +40,14 @@ body.studio-body {
   background: transparent;
   width: 100%;
   max-width: 960px;
-  padding: 36px 28px 56px;
+  /* 2026-07-16 (Nate): "reduce the page height a few pixels to make it one window" —
+     the content column measured 917px tall and a 1536×864 laptop window scrolled 53px.
+     padding 36/56 → 26/34 and gap 36 → 28 pull it to ~840, one clean window. */
+  padding: 26px 28px 34px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 36px;
+  gap: 28px;
   animation: studio-fade-in 1.3s ease forwards;
   /* 2026-07-15 (Nate: the Rook drifter "doesn't hover over at all"). The floating
      glyphs sit BEHIND this column (drifters z-index:0, content z-index:1), so any

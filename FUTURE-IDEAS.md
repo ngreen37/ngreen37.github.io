@@ -1045,3 +1045,11 @@ two-line "full story" card unfolds beneath the ticker; the lore drips out throug
 
 **Parked (2026-07-08):** PJCC-home idea #12 — **Postcard from the road:** a rotating polaroid of one
 location with a handwritten one-liner on the back, linking to its page. (Nate: "for a later date.")
+
+---
+
+## 📚 Recommended to me (personal — separate from PJCC)
+
+*Things people recommend to Nate. Not site features, not canon — just a shelf so nothing gets lost.*
+
+- **The Age of Reason — Jean-Paul Sartre** *(added 2026-07-16)*
