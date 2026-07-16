@@ -3,6 +3,7 @@ layout: page
 title: Auston's Bootcamp Basics
 permalink: /academy/bootcamp/
 own_title: true
+body_class: theme-academy
 ---
 
 {% comment %} LESSON 1 of the rebuilt Academy (2026-07-15, Nate: "tear it down and build it
@@ -234,9 +235,19 @@ own_title: true
 </script>
 
 <style>
-.bc-crumb { font-size: 0.8rem; color: #9a7fd4; margin: 0 0 4px; }
-.bc-crumb a { color: #c9a7ff; text-decoration: none; }
-.bc-crumb a:hover { color: #F5C518; }
+/* ══ ACADEMY THEME — "first light on the training field" (2026-07-16; see academy.md).
+   Pine greens + warm paper + ember copper, fresh-leaf green for progress. ══ */
+body.theme-academy .page-card { background: linear-gradient(165deg, #101d16 0%, #16281d 52%, #0b1710 100%);
+  border-color: #2c4636; box-shadow: 0 14px 44px rgba(0, 10, 4, 0.6); }
+body.theme-academy .page-body { color: #cfd8c8; }
+body.theme-academy .page-title { color: #f2eddd;
+  background: linear-gradient(180deg, #0d1811 0%, #16281d 62%, #2c4028 88%, #6a5426 100%);
+  border-bottom: 2px solid #e08a3c; }
+body.theme-academy .page-body h2 { border-bottom-color: #2c4636; }
+
+.bc-crumb { font-size: 0.8rem; color: #8fae94; margin: 0 0 4px; }
+.bc-crumb a { color: #b9d0bd; text-decoration: none; }
+.bc-crumb a:hover { color: #ffb347; }
 
 /* own_title: the sky banner sits under the crumb; undo the card-top geometry the shared rule assumes */
 .page-body > .page-title { margin: 10px -44px 18px; border-radius: 0; }
@@ -244,30 +255,30 @@ own_title: true
 
 /* Auston, speaking */
 .bc-coach { display: flex; gap: 12px; align-items: flex-start; margin: 0 0 14px;
-  background: linear-gradient(135deg, #241a4d, #2d1b69); border: 1px solid rgba(245,197,24,0.3);
-  border-left: 4px solid #ffd36b; border-radius: var(--r-md, 12px); padding: 12px 15px; }
+  background: linear-gradient(135deg, #172a1e, #1e3626); border: 1px solid rgba(224,138,60,0.35);
+  border-left: 4px solid #e08a3c; border-radius: var(--r-md, 12px); padding: 12px 15px; }
 .bc-coach-ico { font-size: 30px; line-height: 1; flex: 0 0 auto; }
-.bc-coach-who { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: #ffd36b; font-weight: 700; margin-bottom: 3px; }
-.bc-coach-say { margin: 0; color: #f0e6ff; font-size: 0.96rem; line-height: 1.55; }
+.bc-coach-who { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: #ffb347; font-weight: 700; margin-bottom: 3px; }
+.bc-coach-say { margin: 0; color: #eee9d8; font-size: 0.96rem; line-height: 1.55; }
 .bc-flash { animation: bcFlash 0.5s ease; }
-@keyframes bcFlash { 0% { color: #ffd740; } 100% { color: #f0e6ff; } }
+@keyframes bcFlash { 0% { color: #ffb347; } 100% { color: #eee9d8; } }
 
 /* the six drills */
 .bc-picker { display: flex; flex-wrap: wrap; gap: 7px; margin: 0 0 14px; }
-.bc-chip { display: inline-flex; align-items: center; gap: 7px; background: rgba(45,27,105,0.5);
-  border: 1px solid var(--edge-soft, #3a2a6a); border-radius: 999px; padding: 6px 13px; cursor: pointer;
-  color: #c9a7ff; font-family: inherit; font-size: 0.86rem; transition: border-color 0.15s, background 0.15s, color 0.15s; }
+.bc-chip { display: inline-flex; align-items: center; gap: 7px; background: rgba(23,42,30,0.7);
+  border: 1px solid #2c4636; border-radius: 999px; padding: 6px 13px; cursor: pointer;
+  color: #b9d0bd; font-family: inherit; font-size: 0.86rem; transition: border-color 0.15s, background 0.15s, color 0.15s; }
 .bc-chip-g { font-size: 1.15rem; line-height: 1; }
-.bc-chip:hover { border-color: #ffd36b; color: #f0e6ff; }
-.bc-chip.cur { background: rgba(245,197,24,0.14); border-color: #F5C518; color: #fff; }
-.bc-chip.got .bc-chip-n { color: #9bffd0; }
-.bc-chip-ok { color: #6bffb8; font-weight: 800; }
+.bc-chip:hover { border-color: #e08a3c; color: #f2eddd; }
+.bc-chip.cur { background: rgba(224,138,60,0.16); border-color: #e08a3c; color: #fff; }
+.bc-chip.got .bc-chip-n { color: #8fe3a2; }
+.bc-chip-ok { color: #8fe3a2; font-weight: 800; }
 
 /* the board */
 .bc-stage { max-width: 460px; margin: 0 auto; }
 .bc-board { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr);
   aspect-ratio: 1; width: 100%; container-type: inline-size;
-  border: 3px solid #6b5fa0; border-radius: 8px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+  border: 3px solid #54422c; border-radius: 8px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.5);
   touch-action: manipulation; }
 .bc-sq { position: relative; display: flex; align-items: center; justify-content: center; }
 .bc-sq.lt { background: #efe6d2; }
@@ -277,44 +288,51 @@ own_title: true
 .bc-pc.b { color: #241436; text-shadow: 0 1px 0 rgba(255,255,255,0.35); }
 .bc-pc.land { animation: bcLand 0.28s ease; }
 @keyframes bcLand { 0% { transform: translateY(-16%) scale(1.16); } 100% { transform: none; } }
-.bc-sq.from::before { content: ''; position: absolute; inset: 0; background: rgba(245,197,24,0.16); z-index: 0; }
+.bc-sq.from::before { content: ''; position: absolute; inset: 0; background: rgba(224,138,60,0.18); z-index: 0; }
 .bc-sq.go { cursor: pointer; }
 .bc-sq.go::after { content: ''; width: 26%; height: 26%; border-radius: 50%;
-  background: rgba(60,40,120,0.5); box-shadow: 0 0 0 2px rgba(245,197,24,0.75); }
-.bc-sq.go:hover::after, .bc-sq.go:focus::after { background: rgba(245,197,24,0.85); }
-.bc-sq.cap { cursor: pointer; box-shadow: inset 0 0 0 4px rgba(245,197,24,0.85); }
-.bc-sq:focus { outline: 2px solid #F5C518; outline-offset: -2px; }
+  background: rgba(30,54,38,0.55); box-shadow: 0 0 0 2px rgba(224,138,60,0.8); }
+.bc-sq.go:hover::after, .bc-sq.go:focus::after { background: rgba(224,138,60,0.85); }
+/* a square you can CAPTURE on gets the same dot as any other legal square (Nate
+   2026-07-16: "those should ALSO have dots") — floated above the piece — plus the
+   ring that marks the contact */
+.bc-sq.cap { cursor: pointer; box-shadow: inset 0 0 0 4px rgba(224,138,60,0.85); }
+.bc-sq.cap::after { content: ''; position: absolute; inset: 0; margin: auto; width: 26%; height: 26%;
+  border-radius: 50%; background: rgba(30,54,38,0.55); box-shadow: 0 0 0 2px rgba(224,138,60,0.8);
+  z-index: 2; pointer-events: none; }
+.bc-sq.cap:hover::after, .bc-sq.cap:focus::after { background: rgba(224,138,60,0.85); }
+.bc-sq:focus { outline: 2px solid #e08a3c; outline-offset: -2px; }
 .bc-rank, .bc-file { position: absolute; font-size: 9px; font-style: normal; font-family: 'Share Tech Mono', monospace; color: rgba(40,20,10,0.5); }
 .bc-sq.dk .bc-rank, .bc-sq.dk .bc-file { color: rgba(255,255,255,0.5); }
 .bc-rank { top: 2px; left: 3px; }
 .bc-file { bottom: 1px; right: 3px; }
 
 .bc-under { display: flex; align-items: center; justify-content: space-between; margin-top: 9px; gap: 10px; }
-.bc-moves { font-size: 0.8rem; color: #9a7fd4; font-family: 'Share Tech Mono', monospace; }
-.bc-reset { background: transparent; border: 1px solid #4a3a86; color: #c9a7ff; border-radius: 999px;
+.bc-moves { font-size: 0.8rem; color: #8fae94; font-family: 'Share Tech Mono', monospace; }
+.bc-reset { background: transparent; border: 1px solid #3b5a45; color: #b9d0bd; border-radius: 999px;
   padding: 6px 12px; font-size: 0.78rem; cursor: pointer; font-family: inherit; }
-.bc-reset:hover { border-color: #F5C518; color: #F5C518; }
+.bc-reset:hover { border-color: #e08a3c; color: #ffb347; }
 
 /* the roll call of what you've drilled */
 .bc-prog { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 18px auto 0; max-width: 460px; justify-content: center; }
 .bc-pip { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
-  background: rgba(20,12,45,0.6); border: 1px solid #3a2a6a; color: #7d6bb0; font-size: 14px; }
-.bc-pip.got { background: #6bffb8; border-color: #6bffb8; color: #0a2a1c; }
-.bc-pip-label { margin-left: 6px; font-size: 0.78rem; color: #c9a7ff; font-family: 'Share Tech Mono', monospace; font-weight: 700; }
+  background: rgba(10,20,14,0.65); border: 1px solid #2c4636; color: #5d7a63; font-size: 14px; }
+.bc-pip.got { background: #8fe3a2; border-color: #8fe3a2; color: #0a2a1c; }
+.bc-pip-label { margin-left: 6px; font-size: 0.78rem; color: #b9d0bd; font-family: 'Share Tech Mono', monospace; font-weight: 700; }
 
-/* graduation */
+/* graduation — the ember lit at the end of the drill */
 .bc-grad { margin: 22px auto 0; max-width: 520px; text-align: center;
-  background: linear-gradient(135deg, #3a2c07, #5c4708); border: 1px solid rgba(245,197,24,0.6);
-  border-radius: var(--r-md, 12px); padding: 20px 18px; box-shadow: 0 0 34px rgba(245,197,24,0.15); }
+  background: linear-gradient(135deg, #33200c, #4c3010); border: 1px solid rgba(224,138,60,0.6);
+  border-radius: var(--r-md, 12px); padding: 20px 18px; box-shadow: 0 0 34px rgba(224,138,60,0.16); }
 .bc-grad-ico { font-size: 38px; }
-.bc-grad-h { color: #ffd740; margin: 6px 0 8px; font-size: 1.3rem; }
+.bc-grad-h { color: #ffb347; margin: 6px 0 8px; font-size: 1.3rem; }
 .bc-grad-p { color: #f0e6cf; font-size: 0.94rem; line-height: 1.6; margin: 0 0 14px; }
 .bc-grad-cta { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 .bc-btn { text-decoration: none; border-radius: 999px; padding: 9px 16px; font-weight: 700; font-size: 0.86rem;
-  border: 1px solid #caa84a; color: #e6d28a; }
-.bc-btn:hover { border-color: #ffd740; color: #fff; }
-.bc-btn--go { background: #F5C518; color: #1a0f3d; border-color: #F5C518; }
-.bc-btn--go:hover { background: #ffd740; color: #1a0f3d; }
+  border: 1px solid #b07a3c; color: #e8c89a; }
+.bc-btn:hover { border-color: #ffb347; color: #fff; }
+.bc-btn--go { background: #e08a3c; color: #140e06; border-color: #e08a3c; }
+.bc-btn--go:hover { background: #f09b4d; color: #140e06; }
 .bc-rise { animation: bcRise 0.5s ease; }
 @keyframes bcRise { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: none; } }
 

@@ -248,11 +248,18 @@ a move a day is plenty.</p>
     else if (botThinking) state = esc(bot.name) + ' is thinking…';
     else state = 'Your move.';
 
+    // legal-move dots for the selected piece — capture squares get the dot too
+    var hints = {};
+    if (botSel !== -1 && myTurn) {
+      var lm = C.legalMoves(S);
+      for (var h = 0; h < lm.length; h++) if (lm[h].from === botSel) hints[lm[h].to] = 1;
+    }
     var rows = '';
     for (var r = 0; r < 8; r++) {
       for (var f = 0; f < 8; f++) {
         var i = r * 8 + f, p = S.b[i];
         rows += '<button class="pt-sq ' + (((r + f) % 2 === 0) ? 'lt' : 'dk') + (i === botSel ? ' sel' : '') +
+          (i in hints ? ' hint' : '') +
           '" data-bsq="' + i + '"' + (myTurn ? '' : ' tabindex="-1"') + '>' +
           (p ? '<span class="pt-pc ' + (p === p.toUpperCase() ? 'w' : 'b') + '">' + GLYPH[p] + '</span>' : '') + '</button>';
       }
@@ -544,6 +551,14 @@ a move a day is plenty.</p>
       if (m.control_secs) state += ' ' + fmtLeft(clockSince(m) + m.control_secs * 1000 - Date.now()) + ' on your clock.';
     } else state = canClaim ? 'Their time is up.' : 'Their move — this page checks by itself.';
 
+    // where the selected piece can go — one dot per legal destination, INCLUDING
+    // squares holding a piece it can take (Nate 2026-07-16: "those should ALSO have dots")
+    var hints = {};
+    if (sel !== -1 && myTurn && !g.result) {
+      var lm = C.legalMoves(S);
+      for (var h = 0; h < lm.length; h++) if (lm[h].from === sel) hints[lm[h].to] = 1;
+    }
+
     // board (flipped for black)
     var rows = '';
     for (var vr = 0; vr < 8; vr++) {
@@ -551,6 +566,7 @@ a move a day is plenty.</p>
         var r = white ? vr : 7 - vr, f = white ? vf : 7 - vf, i = r * 8 + f;
         var p = S.b[i];
         rows += '<button class="pt-sq ' + (((r + f) % 2 === 0) ? 'lt' : 'dk') + (i === sel ? ' sel' : '') +
+          (i in hints ? ' hint' : '') +
           '" data-sq="' + i + '"' + (myTurn ? '' : ' tabindex="-1"') + '>' +
           (p ? '<span class="pt-pc ' + (p === p.toUpperCase() ? 'w' : 'b') + '">' + GLYPH[p] + '</span>' : '') + '</button>';
       }
@@ -714,11 +730,16 @@ a move a day is plenty.</p>
 .pt-board { display: grid; grid-template-columns: repeat(8, 1fr); width: 100%; max-width: 420px;
   aspect-ratio: 1; border: 2px solid var(--edge); border-radius: 6px; overflow: hidden;
   touch-action: manipulation; margin-top: 8px; }
-.pt-sq { border: none; padding: 0; margin: 0; display: flex; align-items: center; justify-content: center;
+.pt-sq { position: relative; border: none; padding: 0; margin: 0; display: flex; align-items: center; justify-content: center;
   font-size: clamp(20px, 6vw, 34px); line-height: 1; cursor: pointer; }
 .pt-sq.lt { background: #cfc3ee; }
 .pt-sq.dk { background: #5b4a96; }
 .pt-sq.sel { box-shadow: inset 0 0 0 3px #6bffb8; }
+/* legal-move dots — the SAME dot whether the square is empty or holds a piece you can
+   take (Nate 2026-07-16); it floats above the piece so captures read as options too */
+.pt-sq.hint::after { content: ''; position: absolute; inset: 0; margin: auto; width: 34%; height: 34%;
+  border-radius: 50%; background: rgba(13,8,36,0.32); box-shadow: 0 0 0 2px rgba(107,255,184,0.9);
+  z-index: 2; pointer-events: none; }
 .pt-pc.w { color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.55); }
 .pt-pc.b { color: #14092e; }
 .pt-say { margin: 10px 0 0; color: #ffd36b; font-size: 0.92rem; }

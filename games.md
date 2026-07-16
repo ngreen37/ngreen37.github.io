@@ -15,9 +15,7 @@ permalink: /games/
 .ghub::before { animation:ghub-twinkle 6s ease-in-out infinite; }
 @keyframes ghub-twinkle { 0%,100% { opacity:.4; } 50% { opacity:.72; } }
 
-/* (2026-07-11 perf: the glow no longer breathes — animating text-shadow repaints
-   the whole title every frame; it wears the mid glow statically now.) */
-.ghub-title { text-shadow:0 0 34px rgba(255,190,80,0.7), 0 3px 0 #6b4416, 0 5px 16px rgba(0,0,0,0.78); }
+/* (.ghub-title rules deleted 2026-07-16 with the "Choose Your Hall" heading.) */
 
 /* The gold rule under the header, with a shimmer that sweeps along it.
    ─────────────────────────────────────────────────────────────────────────────
@@ -77,7 +75,7 @@ permalink: /games/
 }
 
 @media (prefers-reduced-motion: reduce){
-  .ghub, .ghub::before, .ghub-title, .ghub-rule i,
+  .ghub, .ghub::before, .ghub-rule i,
   .ghub-portal .ghp-glyph, .ghub-portal .ghp-glyph::before, .ghub-portal .ghp-glyph::after { animation:none; }
   .ghub { opacity:1; transform:none; }
 }
@@ -91,7 +89,6 @@ permalink: /games/
    still stand. It's just tightened, and the whole hall now lands ~200px shorter. */
 .ghub { padding:18px 16px 22px; }
 .ghub-head { margin:2px 0 14px; }
-.ghub-title { font-size:clamp(26px,5.4vw,40px); }
 .ghub-eyebrow { margin:0 0 5px; }
 .ghub-sub { margin:6px 0 0; }
 .ghub-rule { margin:10px auto 0; }
@@ -340,8 +337,9 @@ permalink: /games/
   </div>
 
   <div class="ghub-head">
-    <p class="ghub-eyebrow">◆ The PJCC Arcade</p>
-    <h1 class="ghub-title">Choose Your Hall</h1>
+    {%- comment -%} "Choose Your Hall" removed 2026-07-16 (Nate). The eyebrow is the
+         page's h1 now so the hall keeps a real heading. {%- endcomment -%}
+    <h1 class="ghub-eyebrow">◆ The PJCC Arcade</h1>
     <p class="ghub-sub">Claim a codename · climb the global boards</p>
     <!-- the gold rule. Two real elements, not a pseudo: the outer one is the track and clips,
          the inner one is the shimmer and slides. See the note by @ghub-shimmer. -->
