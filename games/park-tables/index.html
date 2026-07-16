@@ -36,6 +36,8 @@ a move a day is plenty.</p>
 <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-chess.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-match.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-chess-ai.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-gauntlet-engine.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-game-review.js' | relative_url }}"></script>
 <script>
 (function () {
@@ -68,7 +70,7 @@ a move a day is plenty.</p>
   }
   if (window.PJCC && PJCC.ready && PJCC.ready.then) PJCC.ready.then(route); else route();
   if (window.PJCC && PJCC.onChange) PJCC.onChange(function(){
-    if (!cur && keyNow() !== authKey) route();     // never clobber an open game or mid-typing
+    if (!cur && !botCur && keyNow() !== authKey) route();   // never clobber an open game or mid-typing
   });
 
   /* ── GATE 1: sign in, right here (email code; the emailed link also lands back
@@ -186,6 +188,149 @@ a move a day is plenty.</p>
     return ' <b class="' + (d >= 0 ? 'pt-up' : 'pt-dn') + '">' + (d >= 0 ? '+' : '') + d + '</b>';
   }
 
+  /* ── THE BOTS (2026-07-16, Nate: "Set up 3 bots: Argus, Auston, Father
+        (easy, medium, hard)"). Three park regulars who always have a seat free.
+        Entirely LOCAL: the same referee-verified board, with the Gauntlet's
+        Stockfish bridge as the opponent (engine proposes, referee disposes —
+        an illegal engine move can never reach the board). No Supabase row, no
+        rating, no clock — casual by definition. You play White. The game
+        lives in localStorage so a refresh sits you right back down. ── */
+  var BOTS = {
+    argus:  { name: 'Argus',  icon: '♝', diff: 'Easy',   skill: 0,  movetime: 140, blunder: 0.22 },
+    auston: { name: 'Auston', icon: '♜', diff: 'Medium', skill: 6,  movetime: 350, blunder: 0.04 },
+    father: { name: 'Father', icon: '♚', diff: 'Hard',   skill: 16, movetime: 900, blunder: 0 }
+  };
+  var BOT_KEY = 'pjcc.park.bot.v1';
+  var botCur = null, botSel = -1, botThinking = false, botSeq = 0;
+
+  function botLoad(){ try { return JSON.parse(localStorage.getItem(BOT_KEY)) || null; } catch (e) { return null; } }
+  function botSave(st){ try { localStorage.setItem(BOT_KEY, JSON.stringify(st)); } catch (e) {} }
+  function botsReady(){ return !!(window.PJCCGauntletEngine && BOTS); }
+
+  function botStart(id){
+    stopPolling(); cur = null; botSel = -1; botThinking = false; botSeq++;
+    var saved = botLoad();
+    // resume an unfinished game against the same regular; otherwise a fresh board
+    if (!(saved && saved.bot === id && !saved.done && M.replayGame(saved.moves || '').valid)) {
+      saved = { bot: id, moves: '', done: 0 };
+      botSave(saved);
+      try { PJCCGauntletEngine.newGame(); } catch (e) {}
+    }
+    botCur = saved;
+    // resumed mid-reply (refreshed while the bot was thinking): it's Black's move
+    // with no engine in flight — kick the think again instead of stalling.
+    var g0 = M.replayGame(saved.moves || '');
+    if (!saved.done && g0.valid && !g0.result && g0.S.turn === 'b') botThink(saved, g0.S);
+    else botRender();
+  }
+
+  function botFinish(st, g){
+    st.done = 1;
+    st.result = g.result === 'checkmate' ? (g.S.turn === 'w' ? '0-1' : '1-0') : '1/2-1/2';
+    st.reason = g.result;
+    botSave(st);
+  }
+
+  function botRender(){
+    var st = botCur; if (!st) return;
+    var bot = BOTS[st.bot], g = M.replayGame(st.moves || '');
+    if (!g.valid) { botCur = null; try { localStorage.removeItem(BOT_KEY); } catch (e) {} return lobby(); }
+    var S = g.S;
+    if (!st.done && g.result) botFinish(st, g);
+    var myTurn = !st.done && !botThinking && S.turn === 'w';
+
+    var state;
+    if (st.done) {
+      var iWon = st.result === '1-0';
+      state = 'Finished: ' + st.result + ' · ' + esc(st.reason || '') +
+        (st.result === '1/2-1/2' ? '' : iWon ? ' — you win.' : ' — ' + esc(bot.name) + ' wins.');
+    }
+    else if (botThinking) state = esc(bot.name) + ' is thinking…';
+    else state = 'Your move.';
+
+    var rows = '';
+    for (var r = 0; r < 8; r++) {
+      for (var f = 0; f < 8; f++) {
+        var i = r * 8 + f, p = S.b[i];
+        rows += '<button class="pt-sq ' + (((r + f) % 2 === 0) ? 'lt' : 'dk') + (i === botSel ? ' sel' : '') +
+          '" data-bsq="' + i + '"' + (myTurn ? '' : ' tabindex="-1"') + '>' +
+          (p ? '<span class="pt-pc ' + (p === p.toUpperCase() ? 'w' : 'b') + '">' + GLYPH[p] + '</span>' : '') + '</button>';
+      }
+    }
+    var mvs = '';
+    for (var k = 0; k < g.sans.length; k += 2) {
+      mvs += '<span class="pt-mv"><i>' + (k / 2 + 1) + '.</i> ' + g.sans[k] + ' ' + (g.sans[k + 1] || '') + '</span> ';
+    }
+
+    app.innerHTML =
+      '<div class="pt-table-head"><button class="pjcc-btn-ghost" id="pt-back">← The park</button>' +
+      '<span class="pt-vs">⬜ You vs <b>' + bot.icon + ' ' + esc(bot.name) + '</b></span>' +
+      '<i class="pt-row-chips">Casual · ' + esc(bot.diff) + ' bot · no clock</i></div>' +
+      '<p class="pt-state' + (myTurn ? ' go' : '') + '">' + state + '</p>' +
+      '<div class="pt-board" role="grid" aria-label="Chess board">' + rows + '</div>' +
+      '<div class="pt-moves">' + (mvs || '<span class="pjcc-sub">No moves yet.</span>') + '</div>' +
+      '<div class="pt-tools">' +
+        (st.done
+          ? ((window.PJCCReview && PJCCReview.enabled() && (st.moves || '').trim())
+              ? '<button class="pjcc-btn" id="pt-bot-review">🔍 Review this game</button> ' : '') +
+            '<button class="pjcc-btn" id="pt-bot-again">Play again</button>'
+          : '<button class="pjcc-btn-ghost pt-resign" id="pt-bot-resign">Resign</button>') +
+      '</div>';
+
+    document.getElementById('pt-back').onclick = function(){ botCur = null; botSeq++; lobby(); };
+    var ag = document.getElementById('pt-bot-again');
+    if (ag) ag.onclick = function(){ try { localStorage.removeItem(BOT_KEY); } catch (e) {} botStart(st.bot); };
+    var rv = document.getElementById('pt-bot-review');
+    if (rv) rv.onclick = function(){
+      var prof = PJCC.getProfile();
+      PJCCReview.open(st.moves, { whiteName: (prof && prof.codename) || 'You', blackName: bot.name, result: st.result });
+    };
+    var rs = document.getElementById('pt-bot-resign');
+    if (rs) rs.onclick = function(){
+      if (!confirm('Resign this game?')) return;
+      st.done = 1; st.result = '0-1'; st.reason = 'resignation'; botSave(st); botRender();
+    };
+    if (myTurn) {
+      Array.prototype.forEach.call(app.querySelectorAll('[data-bsq]'), function (b) {
+        b.onclick = function(){ botTap(+b.getAttribute('data-bsq')); };
+      });
+    }
+  }
+
+  function botTap(i){
+    var st = botCur; if (!st || st.done || botThinking) return;
+    var g = M.replayGame(st.moves || ''), S = g.S;
+    if (S.turn !== 'w') return;
+    var mine = S.b[i] && S.b[i] === S.b[i].toUpperCase();
+    if (botSel === -1 || mine) { botSel = mine ? i : -1; return botRender(); }
+    var mv = C.findMove(S, botSel, i, null);           // promotion: queen (matches human tables)
+    if (!mv) { botSel = -1; return botRender(); }
+    var uci = C.nameFromSq(botSel) + C.nameFromSq(i) + (mv.promo ? 'q' : '');
+    botSel = -1;
+    st.moves = ((st.moves || '') + ' ' + uci).trim();
+    botSave(st);
+    var g2 = M.replayGame(st.moves);
+    if (g2.result) { botFinish(st, g2); return botRender(); }
+    botThink(st, g2.S);
+  }
+
+  function botThink(st, S){
+    var bot = BOTS[st.bot], tok = ++botSeq;
+    botThinking = true; botRender();
+    PJCCGauntletEngine.move(S, { skill: bot.skill, movetime: bot.movetime, blunder: bot.blunder })
+      .then(function (mv) {
+        if (tok !== botSeq || botCur !== st) return;   // left the table — drop the reply
+        botThinking = false;
+        if (!mv) { botFinish(st, M.replayGame(st.moves)); return botRender(); }
+        var uci = C.nameFromSq(mv.from) + C.nameFromSq(mv.to) + (mv.promo || '');
+        st.moves = (st.moves + ' ' + uci).trim();
+        botSave(st);
+        var g = M.replayGame(st.moves);
+        if (g.result) botFinish(st, g);
+        botRender();
+      });
+  }
+
   /* ── LOBBY ─────────────────────────────────────────────────────────────── */
   function lobby(){
     stopPolling();
@@ -208,6 +353,19 @@ a move a day is plenty.</p>
             '<span class="pt-card-t">Challenge McPuppy<br><i>The Creator plays back.</i></span></button>') +
           '<button class="pt-card" id="pt-new-open"><span class="pt-card-icon">⚔</span>' +
           '<span class="pt-card-t">Open a table<br><i>Any operative can sit down.</i></span></button></div>';
+
+        // the park regulars — three bots, always seated, instant game (Argus/Auston/Father)
+        if (botsReady()) {
+          var botSaved = botLoad();
+          html += '<h2 class="pt-h">Play a bot</h2><div class="pt-actions pt-bots">' +
+            Object.keys(BOTS).map(function (id) {
+              var b = BOTS[id];
+              var resume = botSaved && botSaved.bot === id && !botSaved.done && (botSaved.moves || '').trim();
+              return '<button class="pt-card pt-bot" data-bot="' + id + '">' +
+                '<span class="pt-card-icon">' + b.icon + '</span>' +
+                '<span class="pt-card-t">' + b.name + '<br><i>' + b.diff + (resume ? ' · resume' : '') + '</i></span></button>';
+            }).join('') + '</div>';
+        }
 
         // Drop any dead "vs myself" table — an old challenge with no possible opponent.
         // A self-match is EITHER both seats being you, OR a "Challenge McPuppy" table the
@@ -273,6 +431,12 @@ a move a day is plenty.</p>
         var nc = document.getElementById('pt-new-creator');
         if (nc) nc.onclick = function(){ optionsSheet(true); };
         document.getElementById('pt-new-open').onclick = function(){ optionsSheet(false); };
+        if (botsReady()) {
+          try { PJCCGauntletEngine.warmup(); } catch (e) {}
+          Array.prototype.forEach.call(app.querySelectorAll('[data-bot]'), function (b) {
+            b.onclick = function(){ botStart(b.getAttribute('data-bot')); };
+          });
+        }
         Array.prototype.forEach.call(app.querySelectorAll('[data-open]'), function (b) {
           b.onclick = function(){ openTable(b.getAttribute('data-open')); };
         });
@@ -478,8 +642,9 @@ a move a day is plenty.</p>
   }
 
   document.addEventListener('visibilitychange', function(){
-    if (document.hidden) stopPolling();
-    else if (cur) openTable(cur.id); else if (keyNow() === authKey && uid() && PJCC.getProfile()) lobby();
+    if (document.hidden) return stopPolling();
+    if (botCur) return;                              // a bot game is local — nothing to refresh
+    if (cur) openTable(cur.id); else if (keyNow() === authKey && uid() && PJCC.getProfile()) lobby();
   });
 })();
 </script>
@@ -506,6 +671,10 @@ a move a day is plenty.</p>
 .pt-card:hover { border-color: #F5C518; }
 .pt-card-icon { font-size: 26px; color: #F5C518; }
 .pt-card-t i { font-style: normal; color: #9a7fd4; font-size: 0.78rem; }
+/* the three park regulars sit in one tighter row (Argus / Auston / Father) */
+.pt-bots { margin-top: 4px; }
+.pt-bots .pt-card { flex: 1 1 140px; padding: 11px 14px; }
+.pt-bots .pt-card-icon { font-size: 22px; }
 
 .pt-sheet { max-width: 460px; padding: 16px 0; }
 .pt-sheet-l { font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; letter-spacing: 0.14em;
