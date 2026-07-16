@@ -73,11 +73,11 @@ Custom 404 "Signal Lost" page.
 - Redacted lore fields and coordinates
 - Visiting marks `frag_404` in localStorage
 
-### /characters/the-queen/
-CLEARANCE DENIED page (tab title: "CLEARANCE DENIED"). Reached only from the broken-looking
-`[QUEEN]` link in Princess's Traits — she was taught, possibly by accident, that she will one
-day be a queen. The file "has a date on it; it is not today." Payoff = her spoiler arc.
-Visiting marks `frag_queen` in localStorage.
+### /characters/the-queen/ — RETIRED 2026-07-16
+The CLEARANCE DENIED page, Princess's `[QUEEN]` trait link, and her Ascension panel were
+all removed (Nate: the queen arc "will be revealed a different way"). Restore from git
+before the 2026-07-16 removal commit. `frag_queen` keys already minted in visitors'
+localStorage still count toward the footer fragment total (the counter reads any `frag_*`).
 
 ---
 
@@ -96,7 +96,7 @@ Each hidden page and key interaction stores a `frag_*` key in `localStorage`. Th
 | `frag_404` | Hit a 404 page |
 | `frag_qd5` | Type Qd5 (first time) |
 | `frag_konami` | Konami code |
-| `frag_queen` | Visit /characters/the-queen/ (Princess's [QUEEN] link) |
+| `frag_queen` | RETIRED 2026-07-16 (page + [QUEEN] link removed; old keys still count) |
 | `frag_promotion` | Type e8=Q on /academy/ |
 
 ---
