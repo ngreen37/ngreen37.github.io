@@ -167,21 +167,22 @@ layout: default
       <span class="sk sk-cc sk-cc--queen"  style="--w:22px;--h:44px"></span>
       <span class="sk sk-cc sk-cc--king"   style="--w:18px;--h:36px"></span>
     </a>
-    {% comment %} The Park Tables live in the Checker Town park — a little table set up
-         over the town (Nate 2026-07-15: "put that same Park table link over Checker Town").
-         Links to the same place as the splash's park table. {% endcomment %}
-    <a class="hero-park" href="{{ '/games/park-tables/' | relative_url }}"
-       aria-label="Play a Game — the Park Tables, real chess against another operative in the Checker Town park">
-      <span class="hp-plate">PLAY A GAME</span>
-      <span class="hp-table" aria-hidden="true">
-        <i class="hp-shadow"></i>
-        <i class="hp-stool hp-stool--l"></i>
-        <i class="hp-stool hp-stool--r"></i>
-        <i class="hp-post"></i>
-        <i class="hp-board"></i>
-      </span>
-    </a>
   </div>
+  {% comment %} The Park Tables — TOP-LEFT since 2026-07-16 (Nate: "same horizontal as
+       its Gauntlet link counterpart"), a direct child of the hero like the door is:
+       inside .hero-skyline its absolute coords resolve against the skyline strip and
+       top:12 lands at the hero's FOOT. Links to the same place as the splash's table. {% endcomment %}
+  <a class="hero-park" href="{{ '/games/park-tables/' | relative_url }}"
+     aria-label="Play a Game — the Park Tables, real chess against another operative in the Checker Town park">
+    <span class="hp-plate">PLAY A GAME</span>
+    <span class="hp-table" aria-hidden="true">
+      <i class="hp-shadow"></i>
+      <i class="hp-stool hp-stool--l"></i>
+      <i class="hp-stool hp-stool--r"></i>
+      <i class="hp-post"></i>
+      <i class="hp-board"></i>
+    </span>
+  </a>
   {% comment %} THE DOOR — the way into the Gauntlet, top right of the hero.
        A brass plate, ten lift lamps (your floors), an arched doorway with the
        current boss's piece behind it and light under the door. JS below dresses
@@ -201,11 +202,14 @@ layout: default
 /* ── #8 film title card: plate top-left, title in the lower third, horizon below ── */
 .home-hero { position: relative; display:flex; flex-direction:column; justify-content:flex-end;
   min-height:224px; }
-.hero-eyebrow { position:absolute; top:14px; left:16px; margin:0; font-family:'Share Tech Mono',monospace;
+/* top-CENTRE now, quieter (Nate 2026-07-16: middle + 15% more transparent) — the top row
+   reads park table (left) · plate (centre) · Gauntlet door (right) */
+.hero-eyebrow { position:absolute; top:14px; left:50%; transform:translateX(-50%); margin:0;
+  font-family:'Share Tech Mono',monospace;
   font-size:9px; letter-spacing:2px; color:#8a72c0; border:1px solid rgba(138,114,192,0.4);
-  border-radius:3px; padding:5px 9px; text-decoration:none;
-  transition:color .15s, border-color .15s; }
-.hero-eyebrow:hover { color:#F5C518; border-color:rgba(245,197,24,0.6); text-decoration:none; }
+  border-radius:3px; padding:5px 9px; text-decoration:none; opacity:0.85; white-space:nowrap;
+  transition:color .15s, border-color .15s, opacity .15s; }
+.hero-eyebrow:hover { color:#F5C518; border-color:rgba(245,197,24,0.6); text-decoration:none; opacity:1; }
 .hero-title { margin-bottom:0; }
 
 /* ── #7 the horizon (basic shapes): Checker Town's skyline + the sea.
@@ -235,12 +239,13 @@ layout: default
 /* ── THE PARK TABLES: a little park table set over the Checker Town stacks — the park
    lives in Checker Town, so a table stands over the town (Nate 2026-07-15). Green accent
    = the park; links to the same place as the splash's park table. ── */
-.hero-park { position:absolute; left:16px; bottom:12px; z-index:3;
+.hero-park { position:absolute; left:26px; top:12px; z-index:3;
   display:flex; flex-direction:column; align-items:center; gap:5px;
   text-decoration:none; pointer-events:auto; }
 /* The plate sits ABOVE the table and the whole unit mirrors the Gauntlet door's
    footprint (arch 78×100 + its plate) — the hero's two ways to play, matched in
-   weight (Nate 2026-07-16). Plate grammar = .gdoor-plate, in park green. */
+   weight. Since 2026-07-16 it stands TOP-LEFT on the door's own horizontal (top:12),
+   the two of them bookending the centred studio plate. Plate grammar = .gdoor-plate. */
 .hp-plate { font-family:'Share Tech Mono',monospace; font-size:9px; font-weight:700; letter-spacing:2px;
   color:#7ff0c0; background:rgba(6,22,15,0.55); border:1px solid rgba(107,255,184,0.5);
   border-radius:3px; padding:4px 9px; white-space:nowrap; transition:color .15s, border-color .15s; }
@@ -271,25 +276,12 @@ layout: default
 .hp-stool--l { left:8px; } .hp-stool--r { right:8px; }
 .hero-park:hover .hp-plate, .hero-park:focus-visible .hp-plate { color:#bafce0; border-color:rgba(107,255,184,0.85); }
 .hero-park:hover .hp-board, .hero-park:focus-visible .hp-board { box-shadow:0 13px 22px -8px rgba(0,0,0,0.5), 0 0 26px -4px #6bffb8; }
-/* ⚠ These media overrides must live AFTER the base .hp-* rules above — media queries
-   add no specificity, so put them any earlier and the base rules silently win. */
-/* Tablets (≤899, not ≤700 like the door): the park stands bottom-LEFT where the
-   centered title's first line reaches at tablet widths — full size would collide. */
-@media (max-width: 899px) {
-  .hero-park { transform: scale(0.72); transform-origin: bottom left; left: 8px; bottom: 6px; }
-}
-/* Phones: a uniform scale() would blur the plate text and fight the drawing's
-   internal coordinates — the drawing shrinks with REAL geometry instead. Plate
-   stays crisp at 7px; the stools are unreadable this small and step out. */
+/* ⚠ This media override must live AFTER the base .hp-* rules above — media queries
+   add no specificity, so put it any earlier and the base rules silently win.
+   Top-left + bottom-anchored title = no collision to manage any more; phones simply
+   scale the whole unit 0.72, exactly like the door does on the other side. */
 @media (max-width: 700px) {
-  .hero-park { transform: none; left: 2px; bottom: 0; gap: 2px; }
-  .hp-plate { font-size: 7px; letter-spacing: 1.5px; padding: 3px 7px; }
-  .hp-table { width: 44px; height: 42px; }
-  .hp-board { top: 6px; width: 38px; height: 28px; background-size: 9.5px 7px; border-width: 2px; }
-  .hp-post { width: 5px; height: 16px; bottom: 4px; }
-  .hp-post::after { width: 14px; height: 3px; }
-  .hp-shadow { width: 34px; height: 6px; }
-  .hp-stool { display: none; }
+  .hero-park { transform: scale(0.72); transform-origin: top left; left: 10px; top: 10px; }
 }
 
 /* ── Chess City: the far shore (2026-07-11 Nate). Cool-blue building bodies with

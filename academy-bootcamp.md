@@ -244,6 +244,9 @@ body.theme-academy .page-title { color: #f2eddd;
   background: linear-gradient(180deg, #0d1811 0%, #16281d 62%, #2c4028 88%, #6a5426 100%);
   border-bottom: 2px solid #e08a3c; }
 body.theme-academy .page-body h2 { border-bottom-color: #2c4636; }
+/* the sides join the theme — pine sky + first-light horizon (see academy.md) */
+body.theme-academy .town-sky { background: linear-gradient(180deg, #0a130e 0%, #0e1a12 55%, #142016 100%); }
+body.theme-academy .ts-horizon { background: linear-gradient(180deg, rgba(0,0,0,0), rgba(224,138,60,0.09) 74%, rgba(224,138,60,0.15)); }
 
 .bc-crumb { font-size: 0.8rem; color: #8fae94; margin: 0 0 4px; }
 .bc-crumb a { color: #b9d0bd; text-decoration: none; }

@@ -121,6 +121,12 @@ body.theme-academy .page-title { color: #f2eddd;
   background: linear-gradient(180deg, #0d1811 0%, #16281d 62%, #2c4028 88%, #6a5426 100%);
   border-bottom: 2px solid #e08a3c; }
 body.theme-academy .page-body h2 { border-bottom-color: #2c4636; }
+/* the SIDES join the theme too (Nate 2026-07-16: "the green middle clashes with the
+   purple sides") — the fixed town-sky behind the card turns deep pine, and the horizon
+   glow warms to first-light copper. Same trick theme-bw uses; these land after the
+   html.sky-* phase rules so they win every phase. */
+body.theme-academy .town-sky { background: linear-gradient(180deg, #0a130e 0%, #0e1a12 55%, #142016 100%); }
+body.theme-academy .ts-horizon { background: linear-gradient(180deg, rgba(0,0,0,0), rgba(224,138,60,0.09) 74%, rgba(224,138,60,0.15)); }
 
 .page-body > .page-title { margin: 10px -44px 20px; border-radius: 0; }
 @media (max-width: 700px) { .page-body > .page-title { margin: 8px -20px 16px; } }
@@ -131,14 +137,16 @@ body.theme-academy .page-body h2 { border-bottom-color: #2c4636; }
   font-size: clamp(28px, 8vw, 48px); color: #e8b25c; }
 .ac-strip span { display: inline-block; opacity: 0; transform: translateY(14px);
   filter: drop-shadow(0 3px 8px rgba(0,0,0,0.5));
-  /* 2026-07-15 (Nate: "smooth out the movement of the chess pieces near the very top").
-     The bob was a quick, 6px hop on a 3.6s loop — read as a jiggle. Now it's a slow,
-     4px sine-eased breath (4.8s), so the row rises into formation and then just
-     drifts. Same wave stagger, calmer motion. */
-  animation: acRise 0.6s ease forwards, acBob 4.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  /* 2026-07-16 (Nate: "can they move more fluid? pretty choppy"). The choppiness was
+     the browser re-rasterizing the glyph each frame — a 4px drift over seconds moves
+     in visible whole-pixel snaps. will-change promotes each piece to its own
+     compositor layer, so the float interpolates at sub-pixel smoothness; the drift
+     itself is a touch deeper and slower (6px / 6.4s sine) so it reads as floating. */
+  will-change: transform;
+  animation: acRise 0.6s ease forwards, acBob 6.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
   animation-delay: calc(var(--i) * 0.14s), calc(1.1s + var(--i) * 0.14s); }
 @keyframes acRise { to { opacity: 1; transform: none; } }
-@keyframes acBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes acBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 .ac-lead { max-width: 560px; margin: 0 auto 18px; color: #e9e4d3; font-size: 1.04rem; line-height: 1.62; }
 .ac-cta { display: inline-block; background: #e08a3c; color: #140e06; font-weight: 800; text-decoration: none;
   border-radius: 999px; padding: 12px 24px; font-size: 1rem; box-shadow: 0 6px 22px -6px rgba(224,138,60,0.55);

@@ -158,11 +158,9 @@ permalink: /games/
 
 /* ---- THE GAMBIT entrance — same row grammar, but a wager altar: a glowing ♟ coin
    floating over a small stone altar. Amber accent = the wager (never real money). ---- */
-.gmdoor { display:grid; grid-template-columns:auto minmax(0,1fr);
-  grid-template-areas:"scene plate"; align-content:center; align-items:center;
-  column-gap:16px; text-decoration:none; --acc:#e8b34a; }
-.gmdoor .gdoor-plate { grid-area:plate; color:#e8b34a; border-color:rgba(232,179,74,0.5); }
-.gm-scene { grid-area:scene; position:relative; width:72px; height:92px; }
+.gmdoor { display:flex; align-items:center; justify-content:center;
+  text-decoration:none; --acc:#e8b34a; }
+.gm-scene { position:relative; width:72px; height:92px; }
 .gm-altar { position:absolute; left:50%; bottom:12px; transform:translateX(-50%);
   width:40px; height:22px; background:linear-gradient(180deg,#3a2d5a,#221936);
   border:1px solid rgba(232,179,74,0.45); border-radius:3px; box-shadow:0 0 20px -8px var(--acc); }
@@ -325,9 +323,10 @@ permalink: /games/
     <!-- ── THE GAMBIT: the wager altar, drawn as a door (2026-07-15 Nate: "make the
          Gambit a link like the gauntlet… some sort of drawing, and not text"). A glowing
          ♟ coin floating over a small altar; amber accent = the wager. Never real money. ── -->
+    {%- comment -%} the "THE GAMBIT" plate came off 2026-07-16 (Nate) — the glowing
+         altar IS the link now, unlabelled. The aria-label still names it. {%- endcomment -%}
     <a class="gmdoor" href="{{ '/the-gambit/' | relative_url }}"
        aria-label="The Gambit — wager what you've earned; the board sometimes gives back more. Never real money.">
-      <span class="gdoor-plate">THE GAMBIT</span>
       <span class="gm-scene" aria-hidden="true">
         <i class="gm-glow"></i>
         <b class="gm-coin">♟</b>

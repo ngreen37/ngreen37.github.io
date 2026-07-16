@@ -74,11 +74,16 @@
     <a href="{{ '/contact/' | relative_url }}" class="studio-corner-about" data-jp="お問い合わせ">Contact</a>
     <button class="studio-corner-lang" id="lang-toggle" type="button" aria-label="Toggle language">日本語</button>
 
-    <!-- The studio "shop light" — glows when the Creator shipped within 24h; hover tells you
-         the GitHub streak (restored + moved here 2026-07-15, Nate). -->
+    <!-- The Creator's DESK LAMP (2026-07-16, Nate: "like the pixar lamp but not exactly") —
+         lit when the site shipped within SIX hours. Streak stats removed same day. -->
     <div class="studio-light" id="studio-light" tabindex="0" role="img"
          data-built="{{ site.time | date_to_xmlschema }}" aria-label="Studio status">
-      <span class="sl-bulb" aria-hidden="true"></span>
+      <span class="sl-lamp" aria-hidden="true">
+        <i class="sl-cone"></i>
+        <i class="sl-arm"></i>
+        <i class="sl-head"></i>
+        <i class="sl-base"></i>
+      </span>
       <span class="sl-tip" id="sl-tip"></span>
     </div>
 
@@ -771,20 +776,30 @@
   <!-- Av13 — the Shogi Island Gate rite works on the splash too -->
   <script src="{{ '/assets/js/pjcc-portal.js' | relative_url }}" defer></script>
 
-  <!-- The studio shop light — status + GitHub streak -->
+  <!-- The Creator's desk lamp — pure CSS, angled over the page like it's working late -->
   <style>
-  .studio-light { position: fixed; right: 16px; bottom: 16px; z-index: 4; width: 30px; height: 30px;
-    display: flex; align-items: center; justify-content: center; }
-  .sl-bulb { width: 13px; height: 13px; border-radius: 50%;
-    background: radial-gradient(circle at 40% 35%, #6b6b74, #33333a);
-    box-shadow: 0 0 0 1px rgba(255,255,255,0.08); transition: background .4s, box-shadow .4s; }
-  .studio-light.on .sl-bulb { background: radial-gradient(circle at 40% 35%, #fff2c2, #ffcf4a 72%);
-    box-shadow: 0 0 12px 3px rgba(255,207,74,0.6), 0 0 0 1px rgba(255,207,74,0.5);
-    animation: sl-glow 2.8s ease-in-out infinite; }
-  @keyframes sl-glow {
-    0%,100% { box-shadow: 0 0 10px 2px rgba(255,207,74,0.5), 0 0 0 1px rgba(255,207,74,0.5); }
-    50%     { box-shadow: 0 0 17px 5px rgba(255,207,74,0.85), 0 0 0 1px rgba(255,207,74,0.6); }
-  }
+  .studio-light { position: fixed; right: 14px; bottom: 12px; z-index: 4; width: 46px; height: 50px; }
+  .sl-lamp { position: absolute; inset: 0; }
+  /* the round base it stands on */
+  .sl-base { position: absolute; right: 6px; bottom: 0; width: 26px; height: 6px; border-radius: 50%;
+    background: linear-gradient(180deg, #4a4a55, #2c2c34); box-shadow: 0 1px 3px rgba(0,0,0,0.6); }
+  /* the arm, leaning forward from the base */
+  .sl-arm { position: absolute; right: 15px; bottom: 4px; width: 3px; height: 29px; border-radius: 2px;
+    background: linear-gradient(180deg, #5c5c66, #3a3a44); transform: rotate(20deg); transform-origin: bottom center; }
+  /* the dome head, nodding down-left over the page */
+  .sl-head { position: absolute; right: 16px; top: 6px; width: 20px; height: 13px;
+    border-radius: 10px 10px 3px 3px;
+    background: linear-gradient(165deg, #6b6b74, #33333a);
+    box-shadow: inset 0 -2px 3px rgba(0,0,0,0.4);
+    transform: rotate(-38deg); transform-origin: 80% 90%; transition: box-shadow .4s; }
+  /* the throw of light out of the head — dark until the studio ships */
+  .sl-cone { position: absolute; right: 22px; top: 14px; width: 26px; height: 30px;
+    clip-path: polygon(88% 0, 100% 18%, 42% 100%, 0 74%);
+    background: linear-gradient(205deg, rgba(255,224,138,0.85), rgba(255,207,74,0.05));
+    opacity: 0; transform: rotate(-6deg); transition: opacity .5s; pointer-events: none; }
+  .studio-light.on .sl-head { box-shadow: inset 0 -3px 5px rgba(255,207,74,0.55), 0 0 10px 1px rgba(255,207,74,0.35); }
+  .studio-light.on .sl-cone { opacity: 0.6; animation: sl-warm 3.2s ease-in-out infinite; }
+  @keyframes sl-warm { 0%,100% { opacity: 0.52; } 50% { opacity: 0.7; } }
   .sl-tip { position: absolute; right: 0; bottom: calc(100% + 8px); width: 224px; padding: 9px 12px;
     background: rgba(14,9,30,0.96); border: 1px solid #4a3a86; border-radius: 9px; color: #e9e2ff;
     font-family: 'Poppins', sans-serif; font-size: 11px; line-height: 1.5; text-align: left;
@@ -792,62 +807,21 @@
     box-shadow: 0 12px 30px -10px rgba(0,0,0,0.7); }
   .sl-tip b { color: #F5C518; }
   .studio-light:hover .sl-tip, .studio-light:focus .sl-tip, .studio-light:focus-within .sl-tip { opacity: 1; transform: none; }
-  @media (prefers-reduced-motion: reduce) { .studio-light.on .sl-bulb { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .studio-light.on .sl-cone { animation: none; } }
   </style>
   <script>
-  // The shop light: ON when the site last shipped (built) within 24h. The hover tooltip
-  // reports the Creator's GitHub streak — fetched from the public events API, cached 6h,
-  // and gracefully blank on rate-limit/offline. (Nate 2026-07-15.)
+  // The lamp is LIT when the site last shipped (built) within SIX hours (Nate 2026-07-16:
+  // 24h → 6h; the GitHub streak line removed — "that isn't working").
   (function () {
     var el = document.getElementById('studio-light'), tip = document.getElementById('sl-tip');
     if (!el || !tip) return;
     var built = Date.parse(el.getAttribute('data-built') || '') || 0;
-    var on = built && (Date.now() - built) < 24 * 3600 * 1000;
+    var on = built && (Date.now() - built) < 6 * 3600 * 1000;
     el.classList.toggle('on', !!on);
-
-    function ymd(d) { return d.toISOString().slice(0, 10); }
-    function computeStreak(events) {
-      var days = {};
-      events.forEach(function (e) { if (e && e.created_at) days[e.created_at.slice(0, 10)] = true; });
-      var oneDay = 86400000, now = new Date();
-      var cur = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-      if (!days[ymd(cur)]) cur = new Date(cur.getTime() - oneDay);   // today may not be posted yet
-      var streak = 0;
-      while (days[ymd(cur)]) { streak++; cur = new Date(cur.getTime() - oneDay); }
-      var active = 0, c2 = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-      for (var i = 0; i < 100; i++) { if (days[ymd(c2)]) active++; c2 = new Date(c2.getTime() - oneDay); }
-      return { streak: streak, active: active };
-    }
-    function getStreak(cb) {
-      try {
-        var c = JSON.parse(localStorage.getItem('pjcc.streak') || 'null');
-        if (c && Date.now() - c.t < 6 * 3600 * 1000) return cb(c.v);
-      } catch (e) {}
-      if (!window.fetch) return cb(null);
-      fetch('https://api.github.com/users/ngreen37/events/public?per_page=100')
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (evts) {
-          if (!Array.isArray(evts)) return cb(null);
-          var s = computeStreak(evts);
-          try { localStorage.setItem('pjcc.streak', JSON.stringify({ t: Date.now(), v: s })); } catch (e) {}
-          cb(s);
-        })
-        .catch(function () { cb(null); });
-    }
-    function render(streak) {
-      var base = on
-        ? 'The Creator is either currently working, or has shipped an improvement in the last 24 hours.'
-        : 'The studio light is low right now — nothing shipped in the last 24 hours.';
-      var stats = '';
-      if (streak) {
-        var dl = streak.streak === 1 ? 'day' : 'days';
-        stats = ' This is <b>' + streak.streak + ' ' + dl + '</b> in a row, and <b>' + streak.active + ' out of the last 100</b>.';
-      }
-      tip.innerHTML = base + stats;
-      el.setAttribute('aria-label', tip.textContent);
-    }
-    render(null);
-    getStreak(render);
+    tip.textContent = on
+      ? 'The Creator is either currently working, or has shipped an improvement in the last 6 hours.'
+      : 'The lamp is dark right now — nothing shipped in the last 6 hours.';
+    el.setAttribute('aria-label', tip.textContent);
   })();
   </script>
 
