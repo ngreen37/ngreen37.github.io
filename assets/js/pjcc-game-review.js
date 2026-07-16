@@ -5,10 +5,11 @@
  *  so a full review costs the studio $0 — which is exactly why we can promise it
  *  free, forever, with no "one free review then pay" wall.
  *
- *  PRIVATE BY DEFAULT (per the site rule): while ENABLED = false the public sees
- *  no Review button at all. Preview it privately in your browser with ?review=on
- *  on any page (?review=off to turn it back off). Launch for everyone = flip
- *  ENABLED to true below (one line).
+ *  LIVE since 2026-07-16 (Nate: "let's turn reviews on") — ENABLED = true, everyone
+ *  sees the Review button. The ?review=on/?review=off preview flag still works and
+ *  is now a no-op while ENABLED is true. Same day: the BEST MOVE ARROW — when a
+ *  played move wasn't the engine's best, a green arrow on the board points out
+ *  what the best move was, alongside the existing "best was …" text.
  *
  *  It reuses the vendored single-threaded Stockfish (the Gauntlet's engine) on its
  *  OWN worker, tuned for evaluation instead of throttled play, and the perft-
@@ -24,7 +25,7 @@
 (function (root) {
   'use strict';
 
-  var ENABLED = false;                     // ← flip to true to launch for everyone
+  var ENABLED = true;                      // LIVE for everyone (Nate 2026-07-16)
   var LS_DEV  = 'pjcc.review.preview';
   var MOVETIME = 190;                       // ms per position — shallow but honest club-level
 
@@ -177,17 +178,18 @@
         var cpLoss   = Math.max(0, cpBefore - cpAfter);
         var isBest   = bests[k] ? (bests[k] === moves[k].uci) : (winLoss < 1);
         var cls      = classOf(isBest, winLoss);
-        var bestSan  = null;
+        var bestSan  = null, bestFrom = null, bestTo = null;
         if (!isBest && bests[k]) {
           try {
             var Cc = C(), Sb = Cc.parseFEN(fens[k]), bu = bests[k];
             var bm = Cc.findMove(Sb, Cc.sqFromName(bu.slice(0, 2)), Cc.sqFromName(bu.slice(2, 4)), bu[4] || null);
-            if (bm) bestSan = Cc.toSAN(Sb, bm);
+            if (bm) { bestSan = Cc.toSAN(Sb, bm); bestFrom = bm.from; bestTo = bm.to; }
           } catch (e) {}
         }
         var a = accFromLoss(winLoss); accSum[mover] += a; accN[mover] += 1;
         plies.push({ n: k, san: moves[k].san, mover: mover, cls: cls, winLoss: winLoss,
-                     cpLoss: cpLoss, bestSan: bestSan, from: moves[k].from, to: moves[k].to });
+                     cpLoss: cpLoss, bestSan: bestSan, bestFrom: bestFrom, bestTo: bestTo,
+                     from: moves[k].from, to: moves[k].to });
       }
       var turning = plies.filter(function (p) { return p.cls === 'blunder' || p.cls === 'mistake'; })
                          .sort(function (a, b) { return b.winLoss - a.winLoss; }).slice(0, 3);
@@ -249,7 +251,7 @@
     document.head.appendChild(s);
   }
 
-  function boardSVG(fen, hi) {
+  function boardSVG(fen, hi, arrow) {
     var S = C().parseFEN(fen), b = S.b, sq = '', pc = '', mk = '';
     for (var i = 0; i < 64; i++) {
       var x = i % 8, y = (i / 8) | 0, dark = (x + y) % 2 === 1;
@@ -264,8 +266,28 @@
           '" stroke-width="0.3">' + g + '</text>';
       }
     }
+    // BEST MOVE ARROW (Nate 2026-07-16): when the played move wasn't the engine's
+    // best, a green arrow points from where the best move started to where it went.
+    // Drawn ABOVE the pieces so it can't hide under them.
+    var ar = '';
+    if (arrow && arrow.from != null && arrow.to != null && arrow.from !== arrow.to) {
+      var x1 = (arrow.from % 8) * 10 + 5, y1 = ((arrow.from / 8) | 0) * 10 + 5;
+      var x2 = (arrow.to % 8) * 10 + 5,  y2 = ((arrow.to / 8) | 0) * 10 + 5;
+      var dx = x2 - x1, dy = y2 - y1, len = Math.sqrt(dx * dx + dy * dy);
+      var ux = dx / len, uy = dy / len;                 // unit vector along the arrow
+      var bx = x2 - ux * 3.4, by = y2 - uy * 3.4;       // where the head begins
+      var pxp = -uy, pyp = ux;                          // perpendicular, for the head's corners
+      ar = '<g opacity="0.9">' +
+        '<line x1="' + (x1 + ux * 2).toFixed(1) + '" y1="' + (y1 + uy * 2).toFixed(1) +
+          '" x2="' + bx.toFixed(1) + '" y2="' + by.toFixed(1) +
+          '" stroke="#2fbf71" stroke-width="1.8" stroke-linecap="round"/>' +
+        '<polygon points="' + x2.toFixed(1) + ',' + y2.toFixed(1) + ' ' +
+          (bx + pxp * 2.1).toFixed(1) + ',' + (by + pyp * 2.1).toFixed(1) + ' ' +
+          (bx - pxp * 2.1).toFixed(1) + ',' + (by - pyp * 2.1).toFixed(1) +
+          '" fill="#2fbf71"/></g>';
+    }
     return '<svg viewBox="0 0 80 80" width="240" height="240" xmlns="http://www.w3.org/2000/svg" style="border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.4)">' +
-      sq + mk + pc + '</svg>';
+      sq + mk + pc + ar + '</svg>';
   }
 
   function open(movesStr, meta) {
@@ -363,7 +385,10 @@
     function show(i) {
       k = Math.max(0, Math.min(rep.fens.length - 1, i));
       var hi = k > 0 ? rep.moves[k - 1] : null;
-      document.getElementById('pgr-board').innerHTML = boardSVG(rep.fens[k], hi);
+      // the best-move arrow: any move that wasn't the engine's best gets pointed out
+      var pk = k > 0 ? rep.plies[k - 1] : null;
+      var arrow = (pk && pk.bestFrom != null) ? { from: pk.bestFrom, to: pk.bestTo } : null;
+      document.getElementById('pgr-board').innerHTML = boardSVG(rep.fens[k], hi, arrow);
       var ev = rep.evalW[k], pct = 50 + Math.max(-1, Math.min(1, ev / 800)) * 50;
       document.getElementById('pgr-evalfill').style.height = pct.toFixed(0) + '%';
       var plyLbl = document.getElementById('pgr-ply'), best = document.getElementById('pgr-best');
@@ -372,7 +397,7 @@
         var p = rep.plies[k - 1], num = Math.floor((k - 1) / 2) + 1;
         plyLbl.textContent = num + (p.mover === 'w' ? '. ' : '… ') + p.san;
         best.innerHTML = MARK[p.cls] + ' <b style="color:inherit">' + LABEL[p.cls] + '</b>' +
-          (p.bestSan && p.cls !== 'best' && p.cls !== 'good' ? ' — best was <b>' + esc(p.bestSan) + '</b>' : '');
+          (p.bestSan ? ' — best was <b style="color:#2fbf71">' + esc(p.bestSan) + '</b> <span style="color:#2fbf71">➤</span>' : '');
       }
       Array.prototype.forEach.call(document.querySelectorAll('.pgr-mv'), function (el) {
         el.classList.toggle('sel', +el.getAttribute('data-k') === k);

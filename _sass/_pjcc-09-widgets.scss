@@ -871,7 +871,9 @@ textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
     /* the washi paper itself, lit from within */
     linear-gradient(180deg, #f6e6c8 0%, #efdab4 100%);
   transform-origin: 0% 50%;                          /* slides LEFT toward its pocket (Nate 2026-07-15) */
-  transition: transform .5s cubic-bezier(.4, 0, .2, 1);
+  /* 2026-07-16 (Nate: "the Sentinel door is moving a bit slow" — he was right): .5s with a
+     slow-start ease read as sluggish. Now .38s, fast out of the gate, soft into the pocket. */
+  transition: transform .38s cubic-bezier(.22, .8, .32, 1);
 }
 .gdoor[data-floor="4"] .gdoor-glyph {                /* an ink-stamped kanji feel */
   color: #2a1a12; opacity: 0.82; filter: none;

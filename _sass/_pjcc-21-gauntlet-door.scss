@@ -34,7 +34,11 @@
 .gdoor-door { position:absolute; left:5px; right:5px; top:5px; bottom:0;
   border-radius:34px 34px 0 0; border:1px solid rgba(168,121,255,0.35);
   background:linear-gradient(180deg, #251747 0%, #150c33 100%);
-  transform-origin:0 50%; transition:transform .35s ease; }
+  transform-origin:0 50%; transition:transform .35s ease;
+  /* pre-promote the panel (2026-07-16 splash audit): without this the slide's first
+     frame rasterizes the whole panel — 67ms hitch on a throttled phone for the
+     gradient-heavy floor doors. One tiny always-on texture instead. */
+  will-change:transform; }
 .gdoor-glyph { position:absolute; left:50%; top:40%; transform:translate(-50%,-50%);
   font-style:normal; font-weight:400; font-size:32px; line-height:1; color:var(--acc);
   filter:drop-shadow(0 0 9px color-mix(in srgb, var(--acc) 65%, transparent)); }

@@ -134,16 +134,29 @@ body.studio-body {
 
 /* summer — a tuft of grass along the BOTTOM of the paw (Nate 2026-07-15: "switch the sun
    to some grass on the bottom of the paw. Remove the sun."). Sits at the foot of the mark
-   instead of perched on top, so summer reads as a sunny lawn rather than a blazing sun. */
+   instead of perched on top, so summer reads as a sunny lawn rather than a blazing sun.
+   2026-07-16 (Nate): "thin out the grass and add a small rosebush. We don't want to
+   overpower the McPuppy logo" — the dense hedge became five spaced blades on a low turf
+   line, and a little rosebush (::after) blooms at the right end of the lawn. */
 html.season-summer .corner-season {
   top: auto; bottom: -3px; left: 6px; width: 56px; height: 14px;
   align-items: flex-end; animation: none;
 }
 html.season-summer .cs-mote {
-  width: 100%; height: 14px; border-radius: 0; box-shadow: none;
+  width: 100%; height: 12px; border-radius: 0; box-shadow: none;
   background: linear-gradient(180deg, #9ad9a2, #4e9d5e);
-  clip-path: polygon(0 45%, 5% 10%, 11% 46%, 18% 4%, 26% 46%, 34% 12%, 44% 2%, 53% 46%,
-    62% 8%, 71% 44%, 80% 6%, 89% 46%, 96% 14%, 100% 40%, 100% 100%, 0 100%);
+  clip-path: polygon(0 68%, 4% 24%, 8% 68%, 18% 68%, 22% 10%, 26% 68%, 38% 68%, 42% 28%,
+    46% 68%, 57% 68%, 61% 14%, 65% 68%, 100% 68%, 100% 100%, 0 100%);
+}
+html.season-summer .corner-season::after {   /* the rosebush — a round mound with three blooms */
+  content: '';
+  position: absolute; right: -1px; bottom: 0; width: 15px; height: 11px;
+  border-radius: 50% 50% 42% 42% / 68% 68% 32% 32%;
+  background:
+    radial-gradient(circle 1.8px at 3.5px 4px,   #e8607e 97%, transparent),
+    radial-gradient(circle 1.5px at 9px 2.8px,   #d94a6a 97%, transparent),
+    radial-gradient(circle 1.8px at 11.5px 6.5px, #e8607e 97%, transparent),
+    linear-gradient(180deg, #5aa869, #3d7d4c);
 }
 html.season-summer .studio-corner-img { filter: invert(1) drop-shadow(0 0 6px rgba(140, 212, 150, 0.4)); }
 
