@@ -189,7 +189,8 @@ a move a day is plenty.</p>
     for (var y = 0; y < 8; y++){
       for (var x = 0; x < 8; x++){
         var dark = (x + y) % 2 === 1;
-        sq += '<rect x="' + (x*10) + '" y="' + (y*10) + '" width="10" height="10" fill="' + (dark ? '#b07a48' : '#f0e2c6') + '"/>';
+        // inline SVG reads the page's chess-canon tokens; fallbacks match the partial
+        sq += '<rect x="' + (x*10) + '" y="' + (y*10) + '" width="10" height="10" fill="' + (dark ? 'var(--chess-dk, #9c5f33)' : 'var(--chess-lt, #e9d3a4)') + '"/>';
         var g = y === 0 ? GL[back[x]] : y === 1 ? GL.p : y === 6 ? GL.p : y === 7 ? GL[back[x]] : null;
         if (g) pc += '<text x="' + (x*10 + 5) + '" y="' + (y*10 + 7.9) + '" text-anchor="middle" font-size="8.6" ' +
           'fill="#2e2b33" stroke="rgba(255,255,255,0.28)" stroke-width="0.35">' + g + '</text>';
@@ -773,23 +774,28 @@ a move a day is plenty.</p>
    · .last = the gold last-move squares; .pt-arrow = the gold last-move arrow. */
 .pt-board { display: grid; grid-template-columns: repeat(8, 1fr); grid-auto-rows: 1fr;
   width: 100%; max-width: 420px; position: relative;
-  aspect-ratio: 1; border: 3px solid #4a3320; border-radius: 6px; overflow: hidden;
+  aspect-ratio: 1; border: 3px solid var(--chess-frame, #4a3320); border-radius: 6px; overflow: hidden;
   touch-action: manipulation; margin-top: 8px;
   box-shadow: 0 12px 28px -12px rgba(0,0,0,0.65); will-change: transform; }
 .pt-sq { position: relative; border: none; padding: 0; margin: 0; display: flex; align-items: center; justify-content: center;
   font-size: clamp(22px, 6.5vw, 38px); line-height: 1; cursor: pointer; }
-.pt-sq.lt { background-color: #f0e2c6; }
-.pt-sq.dk { background-color: #b07a48; }
-.pt-sq.last { background-image: linear-gradient(rgba(245,197,24,0.42), rgba(245,197,24,0.42)); }
+/* the woods + grain come from THE CHESS CANON (_pjcc-22-chess-canon.scss) — every
+   board on the site draws the same tokens (Nate 2026-07-16: "always uniform") */
+.pt-sq.lt { background-color: var(--chess-lt); background-image: var(--chess-grain); }
+.pt-sq.dk { background-color: var(--chess-dk); background-image: var(--chess-grain); }
+.pt-sq.last { background-image: linear-gradient(rgba(245,197,24,0.42), rgba(245,197,24,0.42)), var(--chess-grain); }
 .pt-sq.sel { box-shadow: inset 0 0 0 3px #6bffb8; }
 /* legal-move dots — the SAME dot whether the square is empty or holds a piece you can
    take (Nate 2026-07-16); it floats above the piece so captures read as options too */
 .pt-sq.hint::after { content: ''; position: absolute; inset: 0; margin: auto; width: 34%; height: 34%;
   border-radius: 50%; background: rgba(38,25,10,0.30); box-shadow: 0 0 0 2px rgba(107,255,184,0.9);
   z-index: 2; pointer-events: none; }
-/* pieces: cream with an ink outline vs ink with a light rim — readable on both woods */
-.pt-pc.w { color: #f7f3ea; -webkit-text-stroke: 1px #3a3145; text-shadow: 0 2px 3px rgba(0,0,0,0.35); }
-.pt-pc.b { color: #26232b; -webkit-text-stroke: 1px rgba(255,255,255,0.25); text-shadow: 0 2px 3px rgba(0,0,0,0.3); }
+/* the pieces — the canon's cartoon livery: solid fills, fat outlines, flat shadow */
+/* paint-order:stroke = outline drawn UNDER the fill — without it the centered
+   stroke eats thin glyphs (the pawn read as the wrong colour) */
+.pt-pc.w, .pt-pc.b { paint-order: stroke fill; }
+.pt-pc.w { color: var(--piece-w-fill); -webkit-text-stroke: 0.09em var(--piece-w-line); text-shadow: 0 2px 0 rgba(0,0,0,0.18); }
+.pt-pc.b { color: var(--piece-b-fill); -webkit-text-stroke: 0.09em var(--piece-b-line); text-shadow: 0 2px 0 rgba(0,0,0,0.22); }
 /* the last-move arrow, drawn over everything; clicks pass through */
 .pt-arrow { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
 .pt-say { margin: 10px 0 0; color: #ffd36b; font-size: 0.92rem; }

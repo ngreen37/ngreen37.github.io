@@ -253,17 +253,21 @@
 
   function boardSVG(fen, hi, arrow) {
     var S = C().parseFEN(fen), b = S.b, sq = '', pc = '', mk = '';
+    // colours come from THE CHESS CANON tokens (_pjcc-22-chess-canon.scss) — the
+    // review board matches the Park Tables + Academy boards (Nate: "always uniform").
+    // Inline SVG resolves var(--…) from the page; fallbacks mirror the partial.
     for (var i = 0; i < 64; i++) {
       var x = i % 8, y = (i / 8) | 0, dark = (x + y) % 2 === 1;
-      sq += '<rect x="' + (x * 10) + '" y="' + (y * 10) + '" width="10" height="10" fill="' + (dark ? '#b07a48' : '#f0e2c6') + '"/>';
+      sq += '<rect x="' + (x * 10) + '" y="' + (y * 10) + '" width="10" height="10" fill="' + (dark ? 'var(--chess-dk, #9c5f33)' : 'var(--chess-lt, #e9d3a4)') + '"/>';
       if (hi && (i === hi.from || i === hi.to))
         mk += '<rect x="' + (x * 10) + '" y="' + (y * 10) + '" width="10" height="10" fill="rgba(245,197,24,0.42)"/>';
       var p = b[i];
       if (p) {
         var white = p === p.toUpperCase(), g = GLYPH[p.toLowerCase()];
         pc += '<text x="' + (x * 10 + 5) + '" y="' + (y * 10 + 7.9) + '" text-anchor="middle" font-size="8.6" ' +
-          'fill="' + (white ? '#f7f3ea' : '#26232b') + '" stroke="' + (white ? '#26232b' : 'rgba(255,255,255,0.25)') +
-          '" stroke-width="0.3">' + g + '</text>';
+          'fill="' + (white ? 'var(--piece-w-fill, #fff)' : 'var(--piece-b-fill, #4a3585)') +
+          '" stroke="' + (white ? 'var(--piece-w-line, #2f2440)' : 'var(--piece-b-line, #f2e9ff)') +
+          '" stroke-width="0.42">' + g + '</text>';
       }
     }
     // BEST MOVE ARROW (Nate 2026-07-16): when the played move wasn't the engine's

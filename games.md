@@ -130,38 +130,12 @@ permalink: /games/
 .ghub-doorway { position:relative; z-index:2; display:flex; justify-content:center;
   flex-wrap:wrap; gap:14px 54px; margin:0 auto 14px; animation:ghub-wake .6s ease both; }
 
-/* ---- THE PARK TABLES entrance — the Gauntlet's row grammar, but a stone table
-   in the park instead of a door: checkered tabletop on a pedestal, one white and
-   one black piece waiting across from each other. Green accent = the park. ---- */
-.ptdoor { display:grid; grid-template-columns:auto minmax(0,1fr);
-  grid-template-areas:"scene plate" "scene tag" "scene sub";
-  align-content:center; align-items:center; column-gap:16px; row-gap:5px;
-  text-decoration:none; --acc:#6bffb8; }
-.ptdoor .gdoor-plate { grid-area:plate; color:#6bffb8; border-color:rgba(107,255,184,0.5); }
-.ptd-tag { grid-area:tag; font-family:'Share Tech Mono','Courier New',monospace; font-size:9px;
-  letter-spacing:0.14em; color:#5fae8b; }
-.ptdoor .gdoor-sub { grid-area:sub; }
-.ptd-scene { grid-area:scene; position:relative; width:72px; height:92px; }
-.ptd-board { position:absolute; left:6px; top:34px; width:60px; height:56px;
-  transform:perspective(150px) rotateX(58deg); transform-origin:50% 100%;
-  background:repeating-conic-gradient(rgba(200,170,255,0.32) 0% 25%, rgba(16,10,38,0.92) 0% 50%);
-  background-size:15px 15px; border:1px solid rgba(107,255,184,0.55); border-radius:4px;
-  box-shadow:0 0 22px -6px var(--acc); transition:box-shadow .2s ease; }
-.ptd-leg { position:absolute; left:50%; bottom:7px; transform:translateX(-50%);
-  width:8px; height:16px; background:#241a4e; border-radius:2px; }
-.ptd-foot { position:absolute; left:50%; bottom:4px; transform:translateX(-50%);
-  width:30px; height:4px; background:#241a4e; border-radius:2px; }
-.ptd-w, .ptd-b { position:absolute; top:16px; font-size:21px; line-height:1; font-weight:400; }
-.ptd-w { left:13px; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,0.7); }
-.ptd-b { right:13px; color:#c9a7ff; text-shadow:0 1px 2px rgba(0,0,0,0.7); }
-.ptdoor:hover .ptd-board, .ptdoor:focus-visible .ptd-board { box-shadow:0 0 32px -3px var(--acc); }
-@media (max-width:480px){
-  .ptdoor { column-gap:12px; }
-  .ptd-scene { width:58px; height:78px; }
-  .ptd-board { left:4px; top:28px; width:50px; height:46px; }
-  .ptd-w, .ptd-b { font-size:17px; top:13px; }
-  .ptd-w { left:10px; } .ptd-b { right:10px; }
-}
+/* ---- THE PARK TABLES entrance — since 2026-07-16 it's the ONE canonical park-table
+   unit (Nate: "they should always be uniform"): _includes/park-table.html +
+   _pjcc-22-chess-canon.scss draw it; this page only lays it out. (The old side-view
+   drawing with the plate/tag/♙♟ lives in git before this commit.) ---- */
+.ptdoor { display:flex; flex-direction:column; align-items:center; gap:6px;
+  text-decoration:none; }
 
 /* ---- THE GAMBIT entrance — same row grammar, but a wager altar: a glowing ♟ coin
    floating over a small stone altar. Amber accent = the wager (never real money). ---- */
@@ -315,16 +289,14 @@ permalink: /games/
     </a>
 
     <!-- ── THE PARK TABLES: matchmaking stands beside the Gauntlet (Nate 2026-07-14:
-         "take it out of the arcade and place it prominently, same as Gauntlet") ── -->
+         "take it out of the arcade and place it prominently, same as Gauntlet").
+         2026-07-16 (Nate): "they should always be uniform" — the old side-view drawing
+         (plate + tag + ♙♟ + caption) is replaced by the ONE canonical park-table unit
+         (shared include + _pjcc-22-chess-canon.scss), same as the splash and the PJCC
+         hero. Restore the old drawing from git before this commit if it's missed. ── -->
     <a class="ptdoor" href="{{ '/games/park-tables/' | relative_url }}"
        aria-label="The Park Tables — play another operative or challenge McPuppy; rated games move your PJCC Rating">
-      <span class="gdoor-plate">THE PARK TABLES</span>
-      <span class="ptd-tag" aria-hidden="true">PVP · PJCC RATED · A MOVE A DAY</span>
-      <span class="ptd-scene" aria-hidden="true">
-        <b class="ptd-w">♙</b><b class="ptd-b">♟</b>
-        <i class="ptd-board"></i><i class="ptd-leg"></i><i class="ptd-foot"></i>
-      </span>
-      <span class="gdoor-sub">Play a human. <b>Or the Creator.</b></span>
+      {% include park-table.html %}
     </a>
 
   </div>

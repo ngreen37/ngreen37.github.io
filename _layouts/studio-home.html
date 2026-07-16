@@ -168,22 +168,12 @@
       {% comment %} Park Tables leads, the Gauntlet follows (2026-07-15 Nate: "flipped"). {% endcomment %}
       <div class="studio-calls">
 
-      {% comment %} Park Tables — a warm little park chess table, not a plate (2026-07-15
-           Nate: "make a park table with a chessboard on it instead… warm, inviting, and
-           MINIMAL words"). Pure-CSS scene drawn in the style block below.
-           2026-07-16 (Nate): the PARK TABLES header plate is gone ("the pictures are good
-           enough"), the caption reads "Play Chess", and the stools sit on OPPOSING sides
-           of the table — one near, one far — like a game about to start. {% endcomment %}
+      {% comment %} Park Tables — the ONE canonical park-table drawing (2026-07-16 Nate:
+           "they should always be uniform"): shared include + _pjcc-22-chess-canon.scss.
+           This page only positions it. {% endcomment %}
       <a class="studio-scene studio-scene--park" href="{{ '/games/park-tables/' | relative_url }}"
          aria-label="Park Tables — play chess">
-        <span class="pt-scene" aria-hidden="true">
-          <span class="pt-shadow"></span>
-          <span class="pt-stool pt-stool--l"></span>
-          <span class="pt-stool pt-stool--r"></span>
-          <span class="pt-post"></span>
-          <span class="pt-board"></span>
-        </span>
-        <span class="pt-sub" data-jp="チェスをしよう">Play Chess</span>
+        {% include park-table.html %}
       </a>
 
       {% comment %} The Gauntlet — the SAME brass door as the PJCC hero, mirrored here
@@ -285,51 +275,11 @@
   .studio-scene { flex:0 0 auto; text-decoration:none; }
   .studio-scene--gauntlet { transition:transform .12s; }
 
-  /* ── The park chess table ─────────────────────────────────────────────────────
-     A little pedestal table with an 8×8 board laid nearly flat on top, two stools
-     on OPPOSING sides — EAST and WEST since 2026-07-16 later ("left/right instead
-     of up/down"), flanking the table like two players squared up. Warm wood +
-     cream. Pure CSS, static paint. (The PARK TABLES plate was removed the same
-     day — "the pictures are good enough".) ── */
+  /* ── The park chess table — the drawing itself is the SHARED canon now
+     (2026-07-16 Nate: "they should always be uniform"): markup in
+     _includes/park-table.html, styles in _sass/_pjcc-22-chess-canon.scss (.pkt-*).
+     This page only lays the unit out. ── */
   .studio-scene--park { display:flex; flex-direction:column; align-items:center; gap:6px; }
-  .pt-scene { position:relative; width:128px; height:104px; }
-  .pt-shadow { position:absolute; left:50%; bottom:4px; transform:translateX(-50%); width:108px; height:13px;
-    border-radius:50%; background:radial-gradient(ellipse, rgba(0,0,0,0.45), transparent 72%); }
-  /* the pedestal post + its foot */
-  .pt-post { position:absolute; left:50%; bottom:10px; transform:translateX(-50%); width:10px; height:46px;
-    background:linear-gradient(#8a6a44,#4a3320); border-radius:2px; }
-  .pt-post::after { content:''; position:absolute; left:50%; bottom:-3px; transform:translateX(-50%);
-    width:28px; height:6px; border-radius:50%; background:#3a2916; }
-  /* the tabletop — an 8×8 board laid FLAT and seen from above-front. The
-     perspective() is what tips it back into the table plane (a plain rotateX just
-     squashes it into a standing sign); wider-than-tall + strong perspective makes it a
-     trapezoid you read as a surface. Warm walnut + cream. */
-  .pt-board { position:absolute; left:50%; top:20px; width:88px; height:70px;
-    transform:translateX(-50%) perspective(150px) rotateX(52deg); transform-origin:50% 50%;
-    border-radius:5px; border:3px solid #6b4a2a;
-    background-color:#efe1c4;
-    background-image:conic-gradient(#9c6a3c 90deg, #efe1c4 90deg 180deg, #9c6a3c 180deg 270deg, #efe1c4 270deg);
-    /* 25% 25% = exactly 4 tiles of 2×2 squares — a TRUE 8×8, light square in the
-       bottom-right, no matter what box-sizing does to the paint area. The old fixed
-       px size painted 8 squares into a border-shrunk box and cut off the last
-       rank/file (Nate 2026-07-16, pictured). */
-    background-size:25% 25%;
-    box-shadow:0 14px 16px -8px rgba(0,0,0,0.5); }
-  /* the table-edge lip under the front of the top, so it reads as a solid surface */
-  .pt-board::after { content:''; position:absolute; left:-3px; right:-3px; bottom:-7px; height:8px;
-    border-radius:0 0 6px 6px; background:linear-gradient(#5e4226, #3a2916); transform:rotateX(0); }
-  /* two little stools on OPPOSING sides of the table — EAST and WEST (Nate 2026-07-16
-     later: "left/right instead of up/down"). No z-index: the board (later in the DOM)
-     covers the sliver where each stool tucks under the tabletop's side. */
-  .pt-stool { position:absolute; width:18px; height:11px; }
-  .pt-stool::before { content:''; position:absolute; top:0; left:0; right:0; height:7px; border-radius:50%;
-    background:linear-gradient(#9a7550,#5e4226); box-shadow:0 3px 5px -2px rgba(0,0,0,0.5); }
-  .pt-stool::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%);
-    width:4px; height:7px; background:#4a3320; }
-  .pt-stool--l { left:0; bottom:20px; }
-  .pt-stool--r { right:0; bottom:20px; }
-  .pt-sub { font-size:11px; color:#a9e6ca; text-align:center; }
-  .studio-scene--park:hover .pt-board { box-shadow:0 13px 24px -8px rgba(107,255,184,0.42); }
 
   /* (The .studio-sigil-seal block — the static ACCcccccc carving under the Gauntlet and
      its "threshold stone" tooltip — was removed 2026-07-12 with its markup.) */

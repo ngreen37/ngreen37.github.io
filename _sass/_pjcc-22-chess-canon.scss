@@ -1,0 +1,76 @@
+/* =============================================================================
+ * THE CHESS CANON  (2026-07-16 Nate: "they should always be uniform — we'll just
+ * call it the chessboards, the pieces")
+ * -----------------------------------------------------------------------------
+ * ONE source of truth for how chess looks anywhere on the site.
+ *
+ *  1. THE TOKENS (:root custom properties) — the board woods, the grain, and the
+ *     two piece liveries. Every board draws from these:
+ *       · Park Tables gameplay board   (games/park-tables/index.html — .pt-sq/.pt-pc)
+ *       · Academy drill board          (academy-bootcamp.md — .bc-sq/.bc-pc)
+ *       · Game-review board + queued-table minis (inline SVGs — they use var(--…) fills)
+ *       · the park-table DRAWING's tabletop below
+ *     Change a colour here and every board on the site follows. Never fork these
+ *     per page.
+ *
+ *  2. THE PARK TABLE (.pkt-*) — the one canonical drawing of the park chess table:
+ *     "Play Chess" caption ABOVE, big stools EAST/WEST with daylight between them
+ *     and the table, true 8×8 tabletop (light square bottom-right). Markup lives in
+ *     _includes/park-table.html; used by the splash, the PJCC hero, and the games
+ *     hall. Pages position the unit — they never redraw it.
+ * ========================================================================== */
+
+:root {
+  /* the woods */
+  --chess-lt: #e9d3a4;         /* sun-bleached maple */
+  --chess-dk: #9c5f33;         /* oiled walnut */
+  --chess-frame: #4a3320;      /* the timber border round every board */
+  /* the grain — one streak pattern laid over BOTH square colours */
+  --chess-grain: repeating-linear-gradient(94deg,
+      rgba(74, 42, 18, 0.10) 0 1.5px, rgba(0, 0, 0, 0) 1.5px 6px,
+      rgba(74, 42, 18, 0.05) 6px 8px,  rgba(0, 0, 0, 0) 8px 13px);
+  /* the pieces — slightly cartoonish: solid fills, fat outlines, flat sticker
+     shadow (Nate 2026-07-16). "Black" wears PJCC purple, not flat black. */
+  --piece-w-fill: #ffffff;
+  --piece-w-line: #2f2440;
+  --piece-b-fill: #4a3585;
+  --piece-b-line: #f2e9ff;
+}
+
+/* ── the park table — drawn once, used thrice ── */
+.pkt-sub { font-size: 11px; color: #a9e6ca; text-align: center; }
+.pkt-scene { position: relative; display: block; width: 200px; height: 104px; }
+.pkt-shadow { position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%);
+  width: 176px; height: 13px; border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.45), transparent 72%); }
+/* the pedestal post + its foot */
+.pkt-post { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
+  width: 10px; height: 46px; background: linear-gradient(#8a6a44, #4a3320); border-radius: 2px; }
+.pkt-post::after { content: ''; position: absolute; left: 50%; bottom: -3px; transform: translateX(-50%);
+  width: 28px; height: 6px; border-radius: 50%; background: #3a2916; }
+/* the tabletop — 8×8 laid nearly flat; 25%×25% = exactly 4 conic tiles of 2×2
+   squares, light in the bottom-right, whatever box-sizing does to the paint area */
+.pkt-board { position: absolute; left: 50%; top: 20px; width: 88px; height: 70px;
+  transform: translateX(-50%) perspective(150px) rotateX(52deg); transform-origin: 50% 50%;
+  border-radius: 5px; border: 3px solid var(--chess-frame);
+  background-color: var(--chess-lt);
+  background-image: conic-gradient(var(--chess-dk) 90deg, var(--chess-lt) 90deg 180deg,
+    var(--chess-dk) 180deg 270deg, var(--chess-lt) 270deg);
+  background-size: 25% 25%;
+  box-shadow: 0 14px 16px -8px rgba(0, 0, 0, 0.5);
+  transition: box-shadow .2s ease; }
+/* the table-edge lip under the front of the top, so it reads as a solid surface */
+.pkt-board::after { content: ''; position: absolute; left: -3px; right: -3px; bottom: -7px; height: 8px;
+  border-radius: 0 0 6px 6px; background: linear-gradient(#5e4226, #3a2916); }
+/* the stools — EAST and WEST, doubled, pulled clear of the table (Nate 2026-07-16:
+   "double the size of the stools and separate them a bit") */
+.pkt-stool { position: absolute; width: 36px; height: 22px; }
+.pkt-stool::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 14px; border-radius: 50%;
+  background: linear-gradient(#9a7550, #5e4226); box-shadow: 0 4px 7px -3px rgba(0, 0, 0, 0.5); }
+.pkt-stool::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 8px; height: 12px; background: #4a3320; }
+.pkt-stool--l { left: 0; bottom: 10px; }
+.pkt-stool--r { right: 0; bottom: 10px; }
+/* the tabletop glows park-mint from whatever anchor carries the unit */
+a:hover .pkt-board, a:focus-visible .pkt-board {
+  box-shadow: 0 14px 24px -8px rgba(0, 0, 0, 0.5), 0 0 26px -4px #6bffb8; }
