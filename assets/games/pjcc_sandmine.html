@@ -108,7 +108,9 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const W = 480, H = 500;
-const COLS = 6, ROWS = 7, TILE = 56;
+// 8×8 since 2026-07-16 (Nate) — a full chessboard-sized shaft. TILE dropped 56→50
+// so the taller grid still fits the 480×500 canvas (board 400×400, foot at y=470).
+const COLS = 8, ROWS = 8, TILE = 50;
 const BX = (W - COLS * TILE) / 2, BY = 70;
 
 const C = { gold:'#F5C518', teal:'#5be0c0', bad:'#ff5b5b', ink:'#fff3da', muted:'#c9a36a' };
@@ -207,7 +209,9 @@ function newFloor(){
   if (f >= 4) pool.push('N', 'B');
   if (f >= 6) pool.push('B', 'R');
   if (f >= 8) pool.push('R', 'Q');
-  const count = Math.min(2 + Math.floor(f / 2), 6);
+  // the 8×8 shaft holds ~50% more ground than the old 6×7 — one extra piece keeps
+  // the pressure honest, and the cap rises with the room (2026-07-16 resize)
+  const count = Math.min(3 + Math.floor(f / 2), 8);
   S.enemies = [];
   const taken = new Set([key(S.princess.x, S.princess.y), key(sx, sy)]);
   // Early floors gather the pieces up top with Princess (rows 1–2) so the pawn

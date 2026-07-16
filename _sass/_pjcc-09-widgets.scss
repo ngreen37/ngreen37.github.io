@@ -888,22 +888,39 @@ textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
   transform: translateX(-58%) scaleX(0.92);
 }
 
-/* ── FLOOR 5 · THE CITY GATEKEEPER — the brass portcullis ─────────────────────
-   Chess City's gate: vertical brass bars behind a heavy horizontal band, a warm
-   metallic sheen. It LIFTS like a portcullis rather than swinging. ── */
+/* ── FLOOR 5 · THE CITY GATEKEEPER — the GATES of Chess City ──────────────────
+   2026-07-16 (Nate: the straight vertical bars read as "an old-timey jail cell";
+   "connect Title-of-Opponent to the Door design more clearly"). A city gate now,
+   unmistakably: the arch wears the gatehouse's SANDSTONE block courses, the panel
+   is heavy TIMBER gates, and over them hangs a true brass PORTCULLIS — a lattice
+   in both directions with a spiked foot, not jail bars. It still LIFTS. ── */
+.gdoor[data-floor="5"] .gdoor-arch {
+  border-color: #b09468;
+  background:
+    repeating-linear-gradient(180deg, rgba(224, 200, 150, 0.14) 0 1px, transparent 1px 12px),
+    repeating-linear-gradient(90deg,  rgba(224, 200, 150, 0.09) 0 1px, transparent 1px 16px),
+    linear-gradient(180deg, #4a3c26, #261e10);
+}
 .gdoor[data-floor="5"] .gdoor-door {
   border: 1px solid rgba(120, 82, 30, 0.9);
   background:
-    /* two horizontal cross-bands */
-    linear-gradient(180deg, transparent 0 16%, rgba(180,130,60,0.85) 16% 22%, transparent 22%),
-    linear-gradient(180deg, transparent 0 74%, rgba(180,130,60,0.85) 74% 80%, transparent 80%),
-    /* the vertical bars of the grille */
+    /* the portcullis lattice — verticals AND crossbars, brass over shadow */
     repeating-linear-gradient(90deg,
-      #caa250 0 3px, #7a5a24 3px 5px, transparent 5px 11px),
-    /* dark behind the grille */
-    linear-gradient(180deg, #2a1e0c, #170f05);
+      rgba(202, 162, 80, 0.95) 0 3px, rgba(122, 90, 36, 0.9) 3px 4px, transparent 4px 14px),
+    repeating-linear-gradient(180deg,
+      rgba(202, 162, 80, 0.9) 0 3px, rgba(122, 90, 36, 0.85) 3px 4px, transparent 4px 16px),
+    /* the heavy timber gates standing behind it */
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 9px),
+    linear-gradient(180deg, #6e4e2c 0%, #47301a 100%);
   transform-origin: 50% 100%;
   transition: transform .5s cubic-bezier(.3, .7, .2, 1);
+}
+/* the spiked foot of the portcullis — rides up with the grille when it lifts */
+.gdoor[data-floor="5"] .gdoor-door::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 7px;
+  background: linear-gradient(180deg, #caa250, #7a5a24);
+  clip-path: polygon(0 0, 100% 0, 100% 30%, 92% 100%, 84% 30%, 76% 100%, 68% 30%,
+    60% 100%, 52% 30%, 44% 100%, 36% 30%, 28% 100%, 20% 30%, 12% 100%, 4% 30%, 0 30%);
 }
 .gdoor[data-floor="5"] .gdoor-knob {                 /* a brass ring low on the gate */
   width: 8px; height: 8px; right: 50%; margin-right: -4px; top: 66%;

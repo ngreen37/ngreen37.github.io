@@ -150,12 +150,14 @@ html.season-summer .corner-season {
   align-items: flex-end; animation: none;
 }
 /* (2026-07-16 later, Nate: "move the rosebush from the right side to the left side" —
-   bush and lawn mirrored: flat turf on the LEFT under the bush, blades to the right.) */
+   bush and lawn mirrored: flat turf on the LEFT under the bush, blades to the right.
+   Same evening: "the four grass strands a bit shorter and skinnier" — the blades'
+   peaks dropped ~40% closer to the turf and each triangle narrowed to ~5px wide.) */
 html.season-summer .cs-mote {
   width: 100%; height: 12px; border-radius: 0; box-shadow: none;
   background: linear-gradient(180deg, #9ad9a2, #4e9d5e);
-  clip-path: polygon(0 68%, 35% 68%, 39% 14%, 43% 68%, 54% 68%, 58% 28%, 62% 68%,
-    74% 68%, 78% 10%, 82% 68%, 92% 68%, 96% 24%, 100% 68%, 100% 100%, 0 100%);
+  clip-path: polygon(0 68%, 36.5% 68%, 39% 32%, 41.5% 68%, 55.5% 68%, 58% 42%, 60.5% 68%,
+    75.5% 68%, 78% 28%, 80.5% 68%, 93.5% 68%, 96% 40%, 98.5% 68%, 100% 68%, 100% 100%, 0 100%);
 }
 html.season-summer .corner-season::after {   /* the rosebush — a round mound with three blooms */
   content: '';
@@ -295,11 +297,16 @@ html.season-spring .studio-corner-img { filter: invert(1) drop-shadow(0 0 7px rg
   }
 }
 
-/* McPuppy quad (top-right) — black & white; inverts to a white card on hover */
-.studio-quad-grid .studio-quad--mcpuppy {
-  background: linear-gradient(150deg, #0e0e12 0%, #232329 50%, #131317 100%);
-  border-color: rgba(255, 255, 255, 0.24);
+/* Academy quad (top-right) — FIRST LIGHT ON THE TRAINING FIELD: pine greens with an
+   ember-copper title and a faint dawn glow rising from the card's foot. Matches
+   theme-academy (never purple/gold — that's PJCC's livery).
+   2026-07-16 evening (Nate): this seat belonged to the B&W McPuppy quad — the studio
+   now rides the ♜ rook drifter instead. Restore the old quad from git if it returns. */
+.studio-quad-grid .studio-quad--academy {
+  background: linear-gradient(150deg, rgba(14, 42, 30, 0.9) 0%, rgba(31, 79, 55, 0.78) 55%, rgba(16, 48, 34, 0.72) 100%);
+  border-color: rgba(103, 200, 150, 0.45);
 
+  /* the dawn light coming up over the field's edge */
   &::before {
     content: '';
     position: absolute;
@@ -307,51 +314,31 @@ html.season-spring .studio-corner-img { filter: invert(1) drop-shadow(0 0 7px rg
     border-radius: 14px;
     pointer-events: none;
     z-index: 0;
-    background-image: radial-gradient(rgba(255, 255, 255, 0.10) 1px, transparent 1.5px);
-    background-size: 11px 11px;
-    transition: background-image 0.25s;
+    background: radial-gradient(circle at 50% 118%, rgba(232, 149, 106, 0.22) 0%, transparent 58%);
   }
 
-  /* 2026-07-12 (Nate: "give the McPuppy quadrant a different font"). The other three
-     quads are all Poppins — the studio now speaks in a SERIF, like a production
-     company's title card. It's a system stack, so it costs nothing to load and it's
-     the one voice on the splash that isn't the PJCC voice. */
   .studio-quad-title {
-    font-family: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
-    font-weight: 400;
-    font-size: clamp(17px, 2.2vw, 25px);
-    color: #e6e6e9;
-    letter-spacing: 1.4px;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.10);
+    color: #e8956a;
+    text-shadow: 0 0 18px rgba(232, 149, 106, 0.35);
     position: relative;
     z-index: 1;
   }
 
   .studio-quad-sub {
-    color: rgba(255, 255, 255, 0.62);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.1em;
+    color: rgba(169, 230, 202, 0.72);
     position: relative;
     z-index: 1;
   }
 
   &::after {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.176) 0%, transparent 60%);
+    background: linear-gradient(135deg, rgba(140, 220, 175, 0.16) 0%, transparent 60%);
   }
 
   &:hover {
-    background: #c7c7d1;
-    border-color: rgba(255, 255, 255, 0.42);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.42);
-    transform: translateY(-4px);
-
-    .studio-quad-title { color: #0a0a0a; text-shadow: none; }
-    .studio-quad-sub { color: rgba(10, 10, 10, 0.74); }
-
-    &::before {
-      background-image: radial-gradient(rgba(0, 0, 0, 0.14) 1px, transparent 1.5px);
-    }
+    background: linear-gradient(150deg, rgba(20, 62, 44, 0.94) 0%, rgba(42, 108, 74, 0.85) 55%, rgba(22, 66, 46, 0.8) 100%);
+    border-color: #67c896;
+    box-shadow: 0 0 44px rgba(103, 200, 150, 0.22), 0 14px 40px rgba(10, 40, 26, 0.55);
+    transform: translateY(-5px);
   }
 }
 
@@ -532,7 +519,7 @@ html.reduce-flourish .studio-quad-grid .studio-quad--patreon .studio-quad-title:
 /* Keep subtext visible on hover/tap for the branded quads (Patreon included —
    on mobile the :hover/active state was fading "Support the Project" away). */
 .studio-quad-grid .studio-quad--pjcc:hover .studio-quad-sub,
-.studio-quad-grid .studio-quad--mcpuppy:hover .studio-quad-sub,
+.studio-quad-grid .studio-quad--academy:hover .studio-quad-sub,
 .studio-quad-grid .studio-quad--games:hover .studio-quad-sub,
 .studio-quad-grid .studio-quad--patreon:hover .studio-quad-sub,
 .studio-quad-grid .studio-quad--patreon:active .studio-quad-sub {

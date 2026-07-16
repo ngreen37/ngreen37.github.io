@@ -34,13 +34,16 @@
   if (kind !== 'clear') root.classList.add('town-' + kind);
 
   // The orb's hour-arc position (--orb-x/--orb-y) is set before paint by the head
-  // include; re-plot every 5 minutes so a long-open tab watches the sun actually
+  // include; re-plot every 2 minutes so a long-open tab watches the sun actually
   // travel. (Position only — the phase class swap still needs a reload, fine.)
+  // 2026-07-16 (Nate: the shift read "a little unnaturally" at 5-min hops) — smaller,
+  // more frequent steps here + a 3s ease on .ts-orb in _pjcc-20-town-sky.scss turn
+  // the hop into a drift you can't catch happening.
   if (T.orb) setInterval(function () {
     var o = T.orb();
     root.style.setProperty('--orb-x', o.x.toFixed(1) + '%');
     root.style.setProperty('--orb-y', o.y.toFixed(1) + '%');
-  }, 300000);
+  }, 120000);
 
   function reduced() {
     try { if (localStorage.getItem('pjcc.flourish') === '0') return true; } catch (e) {}

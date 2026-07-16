@@ -47,14 +47,15 @@
     <div class="studio-lean" id="studio-lean" aria-hidden="true"></div>
 
     {% comment %} Every drifter leads somewhere true — the QUEEN to Princess, the KNIGHT
-         to the games hall, the ROOK to the PJCC Chess Academy, the ¶ to the blog (the ✍
+         to the games hall, the ROOK to McPuppy Studios (2026-07-16 evening Nate: the
+         Academy took the quad, so the studio took the rook), the ¶ to the blog (the ✍
          pen-in-hand is retired), and the ♟ to Fan Art (2026-07-15 Nate — was Park
          Tables, which already has its own big plate below). Positions/dims live in
          _pjcc-04-flair.scss nth-child rules — markup ORDER is load-bearing. {% endcomment %}
     <div class="studio-drifters">
       <a href="{{ '/characters/princess/' | relative_url }}" class="drift-piece" aria-label="Princess character page">♛</a>
       <a href="{{ '/games/' | relative_url }}" class="drift-piece" aria-label="The games hall">♞</a>
-      <a href="{{ '/academy/' | relative_url }}" class="drift-piece" aria-label="PJCC Chess Academy">♜</a>
+      <a href="{{ '/projects/' | relative_url }}" class="drift-piece" aria-label="McPuppy Studios — the studio">♜</a>
       <a href="{{ '/blog/' | relative_url }}" class="drift-piece" aria-label="Blog">¶</a>
       {% comment %} (the あ Reading Room + 将 Shogi Isle drifters were REMOVED 2026-07-14
            — Nate works on those two privately now. The pages still build; he reaches
@@ -122,10 +123,12 @@
         </span>
       </div>
 
-      {% comment %} Quad layout: PJCC (top-left) · McPuppy (top-right, B&W) ·
-           Games (bottom-left) · Patreon (bottom-right). Each box has its own look.
-           data-enter = the context-aware brand line shown in the console on hover/focus,
-           making the McPuppy-studio / PJCC-world split explicit. {% endcomment %}
+      {% comment %} Quad layout: PJCC (top-left) · Academy (top-right, first-light
+           pine + ember copper) · Games (bottom-left) · Patreon (bottom-right). Each
+           box has its own look. data-enter = the context-aware brand line shown in
+           the console on hover/focus. 2026-07-16 evening (Nate): the B&W McPuppy
+           quad is retired — the Academy takes its seat, and the studio now rides
+           the ♜ rook drifter instead. Restore the old quad from git if it returns. {% endcomment %}
       <div class="studio-quad-grid">
 
         <a href="{{ '/pjcc/' | relative_url }}" class="studio-quad studio-quad--pjcc" data-enter="PJCC — the world · the cast, the story, the journey">
@@ -133,9 +136,9 @@
           <span class="studio-quad-sub" data-jp="登場人物と世界へ">Meet the cast. Walk the world.</span>
         </a>
 
-        <a href="{{ '/projects/' | relative_url }}" class="studio-quad studio-quad--mcpuppy" data-enter="McPuppy Studios — the studio · the build, made in the open">
-          <span class="studio-quad-title" data-jp="マクパピー・スタジオ">McPuppy Studios</span>
-          <span class="studio-quad-sub" data-jp="公開制作中">The studio, built in the open.</span>
+        <a href="{{ '/academy/' | relative_url }}" class="studio-quad studio-quad--academy" data-enter="The Academy — learn the game · first light on the training field">
+          <span class="studio-quad-title" data-jp="アカデミー">Academy</span>
+          <span class="studio-quad-sub" data-jp="チェスを学ぼう">Learn the game.</span>
         </a>
 
         <a href="{{ '/games/' | relative_url }}" class="studio-quad studio-quad--games" data-enter="The Arcade — the PJCC world at play · chess games + the Gauntlet">
@@ -268,11 +271,12 @@
        door mirrors the PJCC hero (.gdoor, shared partial); the park table is drawn below.
        Aligned at the foot so both sit on the same ground line. ── */
   /* 2026-07-16 (Nate): wider breathing room between the two scenes — 38px → 64px,
-     then "even further… like 128px" the same day. Phones keep their tighter gaps
-     (in the media queries below) so the pair still fits one screen. */
-  .studio-calls { display:flex; gap:128px; max-width:560px; margin:8px auto 0; flex-wrap:wrap;
-    justify-content:center; align-items:flex-end; }
-  .studio-scene { flex:0 0 auto; text-decoration:none; }
+     then "even further… like 128px", then that evening: "directly under the middle
+     of the respective quadrant columns". So the calls row now IS the quad grid —
+     same two columns, same 22px gap — and each scene centres in its column. */
+  .studio-calls { display:grid; grid-template-columns:1fr 1fr; gap:22px; width:100%;
+    margin:8px auto 0; justify-items:center; align-items:end; }
+  .studio-scene { text-decoration:none; }
   .studio-scene--gauntlet { transition:transform .12s; }
 
   /* ── The park chess table — the drawing itself is the SHARED canon now
@@ -319,16 +323,13 @@
       rgba(var(--lean), 0.095) 0%, rgba(var(--lean), 0.060) 30%, rgba(var(--lean), 0.030) 54%,
       rgba(var(--lean), 0.010) 76%, transparent 100%); }
   .studio-lean.lean-pjcc    { --lx:11%; --ly:14%; --lean:120,60,230; }
-  .studio-lean.lean-mcpuppy { --lx:89%; --ly:14%; --lean:225,228,255; }
+  /* the Academy's corner lifts PINE-GREEN — first light on the training field
+     (2026-07-16 evening: the Academy quad replaced the B&W McPuppy one) */
+  .studio-lean.lean-academy { --lx:89%; --ly:14%; --lean:103,200,150; }
   .studio-lean.lean-games   { --lx:11%; --ly:86%; --lean:60,188,252; }
   /* Patreon's corner glows LANTERN GOLD now (2026-07-14 dusk retheme — the coral
      ticket clashed with the evening palette; the card is a dusk lantern). */
   .studio-lean.lean-patreon { --lx:89%; --ly:86%; --lean:255,190,100; }
-  /* McPuppy is a pale wash on a dark page and needs a touch more to register at all */
-  .studio-lean.lean-mcpuppy {
-    background:radial-gradient(circle 44vmin at 89% 14%,
-      rgba(225,228,255,0.060) 0%, rgba(225,228,255,0.038) 30%, rgba(225,228,255,0.019) 54%,
-      rgba(225,228,255,0.006) 76%, transparent 100%); }
 
   /* Secret ✦ — the (very dim) star that is also the door to /classified/.
      2026-07-12 (Nate: "it stops at like 80% to the right"): it used to fly IN and
@@ -451,7 +452,7 @@
     transition:opacity .34s ease, transform .34s ease; }
   .studio-warp.is-on { opacity:0.70; transform:scale(1); pointer-events:auto; }
   .studio-warp.warp-pjcc     { background:radial-gradient(circle at 28% 30%, #6a26dc, #1a0f3d 70%); }
-  .studio-warp.warp-mcpuppy  { background:radial-gradient(circle at 72% 30%, #2a2a2e, #050507 70%); }
+  .studio-warp.warp-academy  { background:radial-gradient(circle at 72% 30%, #1f5a3d, #06140d 70%); }
   .studio-warp.warp-games    { background:radial-gradient(circle at 28% 72%, #0e2aa0, #03102c 70%); }
   .studio-warp.warp-patreon  { background:radial-gradient(circle at 72% 72%, #1f7a52, #07140e 70%); }
   .studio-warp.warp-gauntlet { background:radial-gradient(circle at 50% 60%, #b8901f, #1a0f0a 70%); }
@@ -483,8 +484,8 @@
     .studio-quad-peek { display:none; }            /* no room on phones — keep it clean */
 
     /* the two scenes (park table + gauntlet door) stay SIDE BY SIDE on a phone —
-       they're compact enough — just pull the gap in so the pair fits the width */
-    .studio-calls { gap:28px; margin-top:8px; }
+       the grid keeps them under their quad columns; just match the quads' 9px gap */
+    .studio-calls { gap:9px; margin-top:8px; }
 
     /* drop the purely decorative pieces so everything fits one screen */
     .studio-footer { display:none; }
@@ -502,7 +503,7 @@
     .studio-tagline { display:none; }
     .studio-content { gap:10px; padding:12px 14px; }
     .studio-quad { min-height:72px; padding:12px 10px; }
-    .studio-calls { gap:22px; margin-top:4px; }
+    .studio-calls { gap:9px; margin-top:4px; }
   }
 
   /* Idea #9 — respect reduced motion: freeze the splash's ambient animation */
@@ -606,7 +607,7 @@
     var lean = document.getElementById('studio-lean');
     var warp = document.getElementById('studio-warp');
     var quads = document.querySelectorAll('.studio-quad[data-enter]');
-    function brandOf(el) { var m = (el.className || '').match(/studio-quad--(pjcc|mcpuppy|games|patreon)/); return m ? m[1] : null; }
+    function brandOf(el) { var m = (el.className || '').match(/studio-quad--(pjcc|academy|games|patreon)/); return m ? m[1] : null; }
 
     // #1 — the page leans toward the hovered/focused quad.
     if (lean) {
@@ -781,9 +782,11 @@
     background: linear-gradient(165deg, #6b6b74, #33333a);
     box-shadow: inset 0 -4px 5px rgba(0,0,0,0.4);
     transform: rotate(22deg); transform-origin: 80% 90%; transition: box-shadow .4s; }
-  /* the throw of light out of the head — dark until the studio ships */
-  .sl-cone { position: absolute; right: 39px; top: 16px; width: 45px; height: 54px;
-    clip-path: polygon(88% 0, 100% 18%, 42% 100%, 0 74%);
+  /* the throw of light out of the head — dark until the studio ships.
+     2026-07-16 evening (Nate): the beam WIDENED a touch at both the mouth and the
+     far end, and runs a little shorter — a fuller, stubbier throw. */
+  .sl-cone { position: absolute; right: 39px; top: 16px; width: 48px; height: 48px;
+    clip-path: polygon(82% 0, 100% 24%, 48% 100%, 0 64%);
     background: linear-gradient(205deg, rgba(255,224,138,0.85), rgba(255,207,74,0.05));
     opacity: 0; transform: rotate(-6deg); transition: opacity .5s; pointer-events: none; }
   .studio-light.on .sl-head { box-shadow: inset 0 -4px 6px rgba(255,207,74,0.55), 0 0 14px 2px rgba(255,207,74,0.35); }

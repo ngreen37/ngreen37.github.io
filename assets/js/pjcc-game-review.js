@@ -326,7 +326,7 @@
     analyzeGame(movesStr, function (done, tot) {
       total = tot;
       var st = document.getElementById('pgr-status'), bar = document.getElementById('pgr-bar');
-      if (st) st.textContent = 'Analysing… move ' + Math.min(done, tot) + ' of ' + tot;
+      if (st) st.textContent = 'Analyzing… move ' + Math.min(done, tot) + ' of ' + tot;
       if (bar) bar.style.width = Math.round(done / tot * 100) + '%';
     }).then(function (rep) {
       if (!ov.isConnected) return;

@@ -60,9 +60,32 @@ a move a day is plenty.</p>
     var list = (movesStr || '').trim().split(/\s+/);
     var u = list[list.length - 1];
     if (!u || !/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(u)) return null;
-    return { from: C.sqFromName(u.slice(0, 2)), to: C.sqFromName(u.slice(2, 4)) };
+    // mover: odd count = White just moved (2026-07-16 Nate: during play the arrow
+    // only marks the OPPONENT's move — you know what you just did)
+    return { from: C.sqFromName(u.slice(0, 2)), to: C.sqFromName(u.slice(2, 4)),
+             mover: list.length % 2 === 1 ? 'w' : 'b' };
   }
   function lastCls(last, i){ return (last && (i === last.from || i === last.to)) ? ' last' : ''; }
+  // ── the material count (2026-07-16 Nate: "+x notation, showing how much one player
+  //    is up, in terms of chess piece value") — pawn 1 · minor 3 · rook 5 · queen 9.
+  //    The chip rides beside whichever name is ahead; even material shows nothing.
+  var MATV = { p:1, n:3, b:3, r:5, q:9, k:0 };
+  function matChip(S, forWhite){
+    var d = 0;
+    for (var i = 0; i < 64; i++){ var p = S.b[i]; if (!p) continue;
+      d += (p === p.toUpperCase() ? 1 : -1) * MATV[p.toLowerCase()]; }
+    var up = forWhite ? d : -d;
+    return up > 0 ? ' <em class="pt-mat">+' + up + '</em>' : '';
+  }
+  // ── the scoresheet — one move pair per LINE, white and black side by side
+  //    (2026-07-16 Nate: "put them vertically side-by-side — there's plenty of space")
+  function moveRows(sans){
+    var h = '';
+    for (var k = 0; k < sans.length; k += 2){
+      h += '<i>' + (k / 2 + 1) + '.</i><span>' + sans[k] + '</span><span>' + (sans[k + 1] || '') + '</span>';
+    }
+    return h;
+  }
   function arrowSVG(last, asWhite){
     if (!last || last.from === last.to) return '';
     function xy(i){
@@ -299,17 +322,15 @@ a move a day is plenty.</p>
           (p ? '<span class="pt-pc ' + (p === p.toUpperCase() ? 'w' : 'b') + '">' + GLYPH[p.toLowerCase()] + '</span>' : '') + '</button>';
       }
     }
-    var mvs = '';
-    for (var k = 0; k < g.sans.length; k += 2) {
-      mvs += '<span class="pt-mv"><i>' + (k / 2 + 1) + '.</i> ' + g.sans[k] + ' ' + (g.sans[k + 1] || '') + '</span> ';
-    }
+    var mvs = moveRows(g.sans);
 
     app.innerHTML =
       '<div class="pt-table-head"><button class="pjcc-btn-ghost" id="pt-back">← The park</button>' +
-      '<span class="pt-vs">⬜ You vs <b>' + bot.icon + ' ' + esc(bot.name) + '</b></span>' +
+      '<span class="pt-vs">⬜ You' + matChip(S, true) + ' vs <b>' + bot.icon + ' ' + esc(bot.name) + '</b>' + matChip(S, false) + '</span>' +
       '<i class="pt-row-chips">Casual · ' + esc(bot.diff) + ' bot · no clock</i></div>' +
       '<p class="pt-state' + (myTurn ? ' go' : '') + '">' + state + '</p>' +
-      '<div class="pt-board" role="grid" aria-label="Chess board">' + rows + arrowSVG(last, true) + '</div>' +
+      '<div class="pt-board" role="grid" aria-label="Chess board">' + rows +
+        (last && last.mover === 'b' ? arrowSVG(last, true) : '') + '</div>' +
       '<div class="pt-moves">' + (mvs || '<span class="pjcc-sub">No moves yet.</span>') + '</div>' +
       '<div class="pt-tools">' +
         (st.done
@@ -608,11 +629,8 @@ a move a day is plenty.</p>
       }
     }
 
-    // move list, paired
-    var mvs = '';
-    for (var k = 0; k < g.sans.length; k += 2) {
-      mvs += '<span class="pt-mv"><i>' + (k / 2 + 1) + '.</i> ' + g.sans[k] + ' ' + (g.sans[k + 1] || '') + '</span> ';
-    }
+    // the scoresheet — one pair per line (see moveRows)
+    var mvs = moveRows(g.sans);
 
     // latest phrase from either side (preset codes only — the entire chat)
     var say = '';
@@ -624,11 +642,12 @@ a move a day is plenty.</p>
 
     app.innerHTML =
       '<div class="pt-table-head"><button class="pjcc-btn-ghost" id="pt-back">← The park</button>' +
-      '<span class="pt-vs">' + (white ? '⬜ You' : '⬛ You') + ' vs <b>' + esc(oppName) + esc(oppRating(m, white)) + '</b></span>' +
+      '<span class="pt-vs">' + (white ? '⬜ You' : '⬛ You') + matChip(S, white) + ' vs <b>' + esc(oppName) + esc(oppRating(m, white)) + '</b>' + matChip(S, !white) + '</span>' +
       '<i class="pt-row-chips">' + chips(m) + '</i></div>' +
       '<p class="pt-state' + (myTurn ? ' go' : '') + '">' + state + '</p>' +
       (canClaim ? '<button class="pjcc-btn" id="pt-flag">⏱ Their time is up — claim the win</button>' : '') +
-      '<div class="pt-board" role="grid" aria-label="Chess board">' + rows + arrowSVG(last, white) + '</div>' +
+      '<div class="pt-board" role="grid" aria-label="Chess board">' + rows +
+        (last && ((last.mover === 'w') !== white) ? arrowSVG(last, white) : '') + '</div>' +
       say +
       '<div class="pt-moves">' + (mvs || '<span class="pjcc-sub">No moves yet.</span>') + '</div>' +
       (m.status !== 'done'
@@ -799,9 +818,20 @@ a move a day is plenty.</p>
 /* the last-move arrow, drawn over everything; clicks pass through */
 .pt-arrow { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
 .pt-say { margin: 10px 0 0; color: #ffd36b; font-size: 0.92rem; }
-.pt-moves { margin: 10px 0; color: #b9a3e8; font-size: 0.85rem; line-height: 1.9; max-width: 420px;
+/* the SCORESHEET (2026-07-16 Nate: "vertically side-by-side"): one move pair per
+   line — number · White's move · Black's move — scrolling inside its own box once
+   the game runs long. Three grid children per pair (see moveRows). */
+.pt-moves { margin: 10px auto; color: #b9a3e8; font-size: 0.85rem; line-height: 1.8;
+  display: grid; grid-template-columns: auto 1fr 1fr; column-gap: 14px; align-items: baseline;
+  width: 200px; max-height: 240px; overflow-y: auto; padding: 4px 10px;
+  border: 1px solid rgba(122,94,190,0.25); border-radius: 8px;
   user-select: text; -webkit-user-select: text; }
-.pt-mv i { color: #7d6bb0; font-style: normal; }
+.pt-moves i { color: #7d6bb0; font-style: normal; text-align: right; }
+.pt-moves .pjcc-sub { grid-column: 1 / -1; text-align: center; }
+/* the material chip — who's up, and by how much, in piece value */
+.pt-mat { font-style: normal; font-family: 'Share Tech Mono', monospace; font-size: 0.78rem;
+  color: #6bffb8; background: rgba(30,60,44,0.55); border: 1px solid rgba(107,255,184,0.35);
+  border-radius: 999px; padding: 1px 7px; vertical-align: 1px; }
 .pt-tools { margin-top: 8px; max-width: 420px; }
 .pt-emotes { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .pt-emote { background: rgba(45,27,105,0.5); border: 1px solid var(--edge-soft); color: #c9a7ff;

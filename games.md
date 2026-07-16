@@ -101,11 +101,15 @@ permalink: /games/
 .ghub-grid--sub .ghp-glyph { font-size:2rem; }
 /* 2026-07-16 (Nate): the lower row reads 🏆 · Vault · Terminated · Gambit altar —
    the trophy stands LEFT of the Vault (doubled, see .ghub-trophy), the altar RIGHT
-   of Terminated. The sub grid drops to two columns since it only holds the halls. */
+   of Terminated. The sub grid drops to two columns since it only holds the halls.
+   2026-07-16 evening (Nate: "center the Trophy and the Altar a little more"): the two
+   flanks sit in EQUAL 96px boxes with a wider, even gap, so the halls stay dead centre
+   and the trophy/altar read as matched bookends rather than hugging the grid. */
 .ghub-subrow { position:relative; z-index:2; display:flex; align-items:center;
-  justify-content:center; gap:14px; flex-wrap:wrap; }
+  justify-content:center; gap:30px; flex-wrap:wrap; }
 .ghub-subrow .ghub-grid--sub { flex:0 1 440px; grid-template-columns:repeat(2,1fr); }
-.ghub-subrow .gmdoor { flex:0 0 auto; }
+.ghub-subrow .ghub-trophy,
+.ghub-subrow .gmdoor { flex:0 0 96px; display:flex; align-items:center; justify-content:center; }
 @media (max-width:560px){
   .ghub-portal { min-height:128px; }
   .ghub-grid--sub .ghub-portal { min-height:96px; }
@@ -162,14 +166,12 @@ permalink: /games/
   .gm-scene { width:58px; height:78px; }
   .gm-coin { font-size:23px; top:6px; } .gm-altar { width:34px; }
 }
+/* (2026-07-16 evening plate parity: the plate + sub caption rows are gone, so the
+   door is just the arch with its ten lift-pips beside it) */
 .gdoor { display:grid; grid-template-columns:auto minmax(0,1fr);
-  grid-template-areas:"arch plate" "arch pips" "arch sub";
+  grid-template-areas:"arch pips";
   align-content:center; align-items:center; column-gap:16px; row-gap:5px;
   text-decoration:none; --acc:#F5C518; }
-.gdoor-plate { grid-area:plate; justify-self:start; align-self:end;
-  font-family:'Share Tech Mono','Courier New',monospace; font-size:10px; font-weight:700;
-  letter-spacing:2px; color:#F5C518; background:rgba(12,8,2,0.55);
-  border:1px solid rgba(245,197,24,0.5); border-radius:3px; padding:4px 10px; white-space:nowrap; }
 .gdoor-pips { grid-area:pips; display:flex; gap:3px; }
 .gdoor-pips i { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.14); }
 .gdoor-pips i.done { background:#6bffb8; box-shadow:0 0 5px rgba(107,255,184,0.6); }
@@ -193,8 +195,6 @@ permalink: /games/
   background:#F5C518; box-shadow:0 0 5px rgba(245,197,24,0.8); }
 .gdoor-seam { position:absolute; left:6px; right:6px; bottom:0; height:3px; background:var(--acc);
   box-shadow:0 -2px 14px 3px color-mix(in srgb, var(--acc) 55%, transparent); }
-.gdoor-sub { grid-area:sub; align-self:start; font-size:0.82rem; color:#e7d6b0; text-align:left; max-width:34ch; }
-.gdoor-sub b { color:#F5C518; }
 .gdoor:hover .gdoor-arch, .gdoor:focus-visible .gdoor-arch { box-shadow:0 0 34px -5px var(--acc); }
 /* opens like a shogi screen — the panel SLIDES LEFT instead of swinging (Nate 2026-07-15) */
 .gdoor:hover .gdoor-door, .gdoor:focus-visible .gdoor-door { transform:translateX(-60%); }
@@ -203,7 +203,6 @@ permalink: /games/
   .gdoor-arch { width:58px; height:76px; border-radius:29px 29px 4px 4px; }
   .gdoor-door { border-radius:24px 24px 0 0; }
   .gdoor-glyph { font-size:24px; }
-  .gdoor-sub { font-size:0.75rem; }
 }
 
 /* ── GRANDEUR: the door grows richer the higher you climb (Nate 2026-07-12) —
@@ -277,15 +276,15 @@ permalink: /games/
 
   <!-- ── THE DOOR: the Gauntlet, above the halls ── -->
   <div class="ghub-doorway">
+    {%- comment -%} 2026-07-16 evening (Nate): PLATE PARITY — the THE GAUNTLET plate
+         and the "Begin the climb" caption are gone everywhere, like the splash. {%- endcomment -%}
     <a class="gdoor" id="gauntlet-door" href="{{ '/games/the-gauntlet/' | relative_url }}"
        aria-label="The Gauntlet — real chess vs a ladder of ten PJCC rivals">
-      <span class="gdoor-plate">THE GAUNTLET</span>
       <span class="gdoor-pips" id="gdoor-pips" aria-hidden="true"></span>
       <span class="gdoor-arch" aria-hidden="true">
         <i class="gdoor-door"><b class="gdoor-glyph" id="gdoor-glyph">♛</b><u class="gdoor-knob"></u></i>
         <i class="gdoor-seam"></i>
       </span>
-      <span class="gdoor-sub" id="gdoor-sub">Begin the climb — <b>Floor 1</b> awaits.</span>
     </a>
 
     <!-- ── THE PARK TABLES: matchmaking stands beside the Gauntlet (Nate 2026-07-14:
@@ -375,17 +374,14 @@ permalink: /games/
   if (pipHost) { var h = '';
     for (var k = 0; k < NAMES.length; k++) { h += '<i class="' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></i>'; }
     pipHost.innerHTML = h; }
-  var glyph = document.getElementById('gdoor-glyph'), sub = document.getElementById('gdoor-sub');
+  // (the gdoor-sub caption is gone — 2026-07-16 plate parity; the pips carry progress)
+  var glyph = document.getElementById('gdoor-glyph');
   if (cur >= NAMES.length) {
-    if (sub) sub.innerHTML = '<b>Crowned.</b> All ten cleared — rematch anyone.';
     door.setAttribute('href', door.getAttribute('href') + '#tower');
   } else if (cleared > 0) {
     door.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
     if (glyph) glyph.textContent = GLYPHS[cur] || '♛';
-    if (sub) sub.innerHTML = 'Floor ' + (cur + 1) + ' of 10 — <b>' + NAMES[cur] + '</b> awaits.';
     door.setAttribute('href', door.getAttribute('href') + '#climb');
-  } else {
-    if (sub) sub.innerHTML = 'Begin the climb — <b>Floor 1: ' + NAMES[0] + '</b>.';
   }
 })();
 </script>

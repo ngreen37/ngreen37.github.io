@@ -55,10 +55,14 @@
 /* The orb rides the HOUR ARC (2026-07-14 Nate: "-180 to 180 degrees on all pages"):
    town-weather.html computes --orb-x/--orb-y from the Eastern clock (PJCC_TIME.orb() —
    sun 5:00→20:00, moon 20:00→5:00, rises left / apex mid-window / sets right) and
-   pjcc-weather.js re-plots every 5 minutes for long-open tabs. The per-phase rules
-   below only carry LOOKS + a no-JS fallback spot; translate centres it on the point. */
+   pjcc-weather.js re-plots every 2 minutes for long-open tabs. The per-phase rules
+   below only carry LOOKS + a no-JS fallback spot; translate centres it on the point.
+   The 3s ease turns each re-plot into a drift instead of a hop (2026-07-16 Nate: the
+   shift read "a little unnaturally"). left/top transitions cost layout, but this is
+   one small element easing once every two minutes — not a running animation. */
 .ts-orb    { position: absolute; z-index: 2; display: none; border-radius: 50%;
-  transform: translate(-50%, -50%); }
+  transform: translate(-50%, -50%); transition: left 3s ease, top 3s ease; }
+@media (prefers-reduced-motion: reduce) { .ts-orb { transition: none; } }
 .ts-shoot  { position: absolute; z-index: 3; display: none; }
 .ts-clouds { position: absolute; inset: 0; z-index: 4; opacity: 0; transition: opacity 1.4s ease; }
 .ts-horizon { position: absolute; left: 0; right: 0; bottom: 0; height: 32%; z-index: 0; }

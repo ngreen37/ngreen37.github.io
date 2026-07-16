@@ -38,42 +38,48 @@
 }
 
 /* ── the park table — drawn once, used thrice ── */
-/* the caption's shadow earns its keep on the PJCC hero, where it floats over the
-   DAY sky (mint on a sunlit blue read washy — 2026-07-16 a11y pass) */
-.pkt-sub { font-size: 11px; color: #a9e6ca; text-align: center;
-  text-shadow: 0 1px 4px rgba(10, 8, 24, 0.6); }
-.pkt-scene { position: relative; display: block; width: 200px; height: 104px; }
+/* (the "Play Chess" caption came OFF 2026-07-16 evening — Nate: the drawing alone is
+   the invitation; every page's aria-label still names the link. The whole unit also
+   came down 5% the same pass.) */
+.pkt-scene { position: relative; display: block; width: 190px; height: 99px; }
 .pkt-shadow { position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%);
-  width: 176px; height: 13px; border-radius: 50%;
+  width: 167px; height: 12px; border-radius: 50%;
   background: radial-gradient(ellipse, rgba(0, 0, 0, 0.45), transparent 72%); }
 /* the pedestal post + its foot */
 .pkt-post { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
-  width: 10px; height: 46px; background: linear-gradient(#8a6a44, #4a3320); border-radius: 2px; }
+  width: 9px; height: 44px; background: linear-gradient(#8a6a44, #4a3320); border-radius: 2px; }
 .pkt-post::after { content: ''; position: absolute; left: 50%; bottom: -3px; transform: translateX(-50%);
-  width: 28px; height: 6px; border-radius: 50%; background: #3a2916; }
+  width: 27px; height: 6px; border-radius: 50%; background: #3a2916; }
 /* the tabletop — 8×8 laid nearly flat; 25%×25% = exactly 4 conic tiles of 2×2
-   squares, light in the bottom-right, whatever box-sizing does to the paint area */
-.pkt-board { position: absolute; left: 50%; top: 20px; width: 88px; height: 70px;
+   squares, whatever box-sizing does to the paint area. The pattern is ROTATED a
+   quarter-turn (light corners top-right + bottom-left): the players sit EAST and
+   WEST, so this is "white on the right" from BOTH stools (Nate 2026-07-16). */
+.pkt-board { position: absolute; left: 50%; top: 19px; width: 84px; height: 66px;
   transform: translateX(-50%) perspective(150px) rotateX(52deg); transform-origin: 50% 50%;
   border-radius: 5px; border: 3px solid var(--chess-frame);
   background-color: var(--chess-lt);
-  background-image: conic-gradient(var(--chess-dk) 90deg, var(--chess-lt) 90deg 180deg,
-    var(--chess-dk) 180deg 270deg, var(--chess-lt) 270deg);
+  background-image: conic-gradient(var(--chess-lt) 90deg, var(--chess-dk) 90deg 180deg,
+    var(--chess-lt) 180deg 270deg, var(--chess-dk) 270deg);
   background-size: 25% 25%;
   box-shadow: 0 14px 16px -8px rgba(0, 0, 0, 0.5);
   transition: box-shadow .2s ease; }
 /* the table-edge lip under the front of the top, so it reads as a solid surface */
 .pkt-board::after { content: ''; position: absolute; left: -3px; right: -3px; bottom: -7px; height: 8px;
   border-radius: 0 0 6px 6px; background: linear-gradient(#5e4226, #3a2916); }
-/* the stools — EAST and WEST, doubled, pulled clear of the table (Nate 2026-07-16:
-   "double the size of the stools and separate them a bit") */
-.pkt-stool { position: absolute; width: 36px; height: 22px; }
-.pkt-stool::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 14px; border-radius: 50%;
+/* the stools — EAST and WEST. 2026-07-16 evening (Nate): 15% smaller, the seat sits
+   FLUSH on its stand, and the stand gets a little base plate of its own. */
+.pkt-stool { position: absolute; width: 31px; height: 19px; }
+.pkt-stool::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 12px; border-radius: 50%;
   background: linear-gradient(#9a7550, #5e4226); box-shadow: 0 4px 7px -3px rgba(0, 0, 0, 0.5); }
+/* one pseudo, two layers: the 7px-wide stand tucked under the seat, and the 13px
+   base plate it stands on */
 .pkt-stool::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-  width: 8px; height: 12px; background: #4a3320; }
-.pkt-stool--l { left: 0; bottom: 10px; }
-.pkt-stool--r { right: 0; bottom: 10px; }
+  width: 13px; height: 9px;
+  background:
+    linear-gradient(#4a3320, #4a3320) top center / 7px 7px no-repeat,
+    linear-gradient(#3a2916, #3a2916) bottom center / 13px 3px no-repeat; }
+.pkt-stool--l { left: 0; bottom: 9px; }
+.pkt-stool--r { right: 0; bottom: 9px; }
 /* the tabletop glows park-mint from whatever anchor carries the unit */
 a:hover .pkt-board, a:focus-visible .pkt-board {
   box-shadow: 0 14px 24px -8px rgba(0, 0, 0, 0.5), 0 0 26px -4px #6bffb8; }

@@ -233,6 +233,14 @@ function skillForRung(idx){
   if (elo < 1400) return 0;
   return Math.min(20, Math.round(3 + (elo - 1400) * 0.017));   // 1400→3 … 2400→20
 }
+// THE CLOCK (2026-07-16 Nate: "introduce time clock after round 4. Round 5, you get
+// 15 minutes. Round 6 17 min 30 seconds. Round 7 20 minutes, and so on") — the
+// player's whole-game clock, +2:30 per floor past 5, secret floors included
+// (Floor 11 = 30:00 … Floor 13 = 35:00). The RIVAL takes no clock at all — they
+// just ponder now and then (see aiTurnSoon).
+function clockMsFor(idx){ return idx >= 4 ? (15 + 2.5 * (idx - 4)) * 60000 : 0; }
+function fmtClock(ms){ var s = Math.max(0, Math.ceil(ms / 1000)); var m = (s / 60) | 0; s = s % 60;
+  return m + ':' + (s < 10 ? '0' : '') + s; }
 var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 var W = 440, H = 500, TILE = 50, BOARD = TILE*8, BX = (W-BOARD)/2, BY = 78;
 var PAL = { wFill:'#f3ecd6', wEdge:'#4a3618', bFill:'#241a3c', bEdge:'#efe4ff' };
@@ -251,70 +259,81 @@ var LADDER = [
     // the champion of Checker Town answers in growls, barks and body language, no words.
     react:{ intro:['*a proud, rolling growl, hackles high*'],
       blunder:['*a low, pleased GRRR*','*snap!*','*bark bark*'],
-      good:['*a small, startled whine*','*ears flatten* Hrrr.','*backs up a step*'] } },
+      good:['*a small, startled whine*','*ears flatten* Hrrr.','*backs up a step*'],
+      // an animal ponders in growls and a crooked ?!? (Nate 2026-07-16)
+      ponder:['*grrr…*','?!?'] } },
   { name:'The Sand-Mine Foreman', glyph:'♟', accent:'#fcbc3c', region:'The Sand Mines', elo:500,
     blurb:'Runs the CEO\'s pits. A grinder who counts every grain — and every pawn.',
     win:'The mine goes quiet — every pick, every cart, every lamp. The Foreman stares at the board a long moment, spits in the dust, and pulls the lift lever himself. "...Take it up. You earned it." Somewhere below, the dark keeps counting.',
     persona:{ depth:2, blunder:0.28, mat:1.25, pst:0.4, aggr:1, timeMs:320 },
     react:{ intro:['Down here, everything has a price. Even your pieces.'],
       blunder:['Mine. Everything down here is mine.','Ka-ching. Straight to the vault.'],
-      good:['Tch. Off the books, that one.','...didn\'t log that.'] } },
+      good:['Tch. Off the books, that one.','...didn\'t log that.'],
+      ponder:['Hold on. I\'m counting.'] } },
   { name:'The Tidecaller', glyph:'♝', accent:'#56d0ff', region:'The Sea', elo:650,
     blurb:'Keeper of the crossing. Slow, deep, and impossible to rush.',
     win:'The tide pulls back and a path opens. "Cross. The far shore is waiting."',
     persona:{ depth:2, blunder:0.2, mat:1, pst:0.95, aggr:0, timeMs:440 },
     react:{ intro:['The sea is patient. So am I.'],
       blunder:['The current takes what you drop.','You reached too far from shore.'],
-      good:['...the tide turns. Briefly.','Hm. A strong stroke.'] } },
+      good:['...the tide turns. Briefly.','Hm. A strong stroke.'],
+      ponder:['The sea takes its time. So do I.'] } },
   { name:'The Shogi Sentinel', glyph:'♞', accent:'#fcbcb0', region:'Shogi Isle', elo:800,
     blurb:'Trained on foreign rules. Sees forks three moves before you do.',
-    win:'The Sentinel bows, precisely. "Your blade is honest. Pass."',
+    win:'The Sentinel bows. "Your blade is true. We shall meet again, but for now, proceed."',
     persona:{ depth:3, blunder:0.16, mat:1, pst:1, aggr:2, timeMs:520 },
     react:{ intro:['Foreign rules. Familiar war.'],
       blunder:['A fork you never saw.','Two pieces, one blow.'],
-      good:['...unexpected. Noted.','A clean cut.'] } },
+      good:['...unexpected. Noted.','A clean cut.'],
+      ponder:['A moment. The blade must be certain.'] } },
   { name:'The City Gatekeeper', glyph:'♜', accent:'#ffb066', region:'Chess City gates', elo:950,
     blurb:'The last wall before the tower. Solid, patient, gives nothing away.',
     win:'The Gatekeeper steps aside. The great doors of the tower groan open.',
     persona:{ depth:3, blunder:0.1, mat:1, pst:1, aggr:1, timeMs:560 },
     react:{ intro:['None shall pass. Prove me wrong.'],
       blunder:['Careless. The gate does not forgive.','You left it open. I walked through.'],
-      good:['...Acceptable. Barely.','The wall still holds.'] } },
+      good:['...Acceptable. Barely.','The wall still holds.'],
+      ponder:['The gate opens for no one in a hurry.'] } },
   { name:'The Auditor', glyph:'♝', accent:'#9ff0c4', region:'Tower · Lower Floors', elo:1100,
     blurb:'The CEO\'s numbers-man. Cold, exact, and allergic to waste.',
     win:'The Auditor closes the ledger. "Your account... balances. Go up."',
     persona:{ depth:3, blunder:0.03, mat:1, pst:1.05, aggr:1, timeMs:620 },
     react:{ intro:['Every move is a line item. Yours won\'t add up.'],
       blunder:['Filed under: loss.','A deficit. As projected.'],
-      good:['...an unaccounted gain.','Recalculating your worth.'] } },
+      good:['...an unaccounted gain.','Recalculating your worth.'],
+      ponder:['One moment. Re-running the numbers.'] } },
   { name:'The Enforcer', glyph:'♜', accent:'#ff6b6b', region:'Tower · Mid Floors', elo:1250,
     blurb:'The CEO\'s muscle. Comes straight at your king and never blinks.',
     win:'The Enforcer cracks his knuckles, then steps back. "...boss\'ll want to see you."',
     persona:{ depth:3, blunder:0.02, mat:1, pst:1, aggr:6, timeMs:680 },
     react:{ intro:['The boss says you don\'t reach the top. I make sure.'],
       blunder:['Down you go.','That\'s the one that hurts.'],
-      good:['Tch. Lucky.','...you\'ve got some fight.'] } },
+      good:['Tch. Lucky.','...you\'ve got some fight.'],
+      ponder:['Quiet. Thinking.'] } },
   { name:'The Vice President', glyph:'♝', accent:'#c79bff', region:'Tower · Upper Floors', elo:1400,
     blurb:'Polished, ruthless, one office below the top. Runs the floor like clockwork.',
     win:'The VP straightens a cufflink. "Impressive. The corner office is... one flight up."',
     persona:{ depth:4, blunder:0.01, mat:1, pst:1.1, aggr:2, timeMs:760 },
     react:{ intro:['I run this floor. The CEO runs the rest.'],
       blunder:['Sloppy. That won\'t fly up here.','A rookie line.'],
-      good:['...where did you train?','Hm. Sharp.'] } },
+      good:['...where did you train?','Hm. Sharp.'],
+      ponder:['Hold my calls.'] } },
   { name:'The Heir Apparent', glyph:'♛', accent:'#ff9ec9', region:'Tower · The Antechamber', elo:1600,
     blurb:'First in line for the crown, waiting at the CEO\'s door. Your equal, your foil — punishes every loose move.',
     win:'"...Well played." The Heir Apparent means it, this time. "He\'s through there. Good luck."',
     persona:{ depth:4, blunder:0.0, mat:1, pst:1.1, aggr:2, timeMs:820 },
     react:{ intro:['Let\'s see what you\'ve really got.'],
       blunder:['Sloppy. I expected better from you.','That\'s the move that loses the game.'],
-      good:['...Where did you learn that?','Sharp. But I\'m still standing.'] } },
+      good:['...Where did you learn that?','Sharp. But I\'m still standing.'],
+      ponder:['Wait. You\'ve actually got me thinking.'] } },
   { name:'The Executive Assistant', glyph:'♛', accent:'#f5c518', region:'Chess City · The Top Floor', elo:1800,
     blurb:'Nobody simply walks in on the CEO. Every appointment, every elevator key, every excuse — she manages all of them. Beat the calendar first.',
     win:'She closes the appointment ledger, unhurried. "…He\'ll see you now."',
     persona:{ depth:4, blunder:0.005, mat:1, pst:1.15, aggr:2, timeMs:880 },
     react:{ intro:['You don\'t have an appointment.'],
       blunder:['Noted. Filed. Used.','That\'s going in the minutes.'],
-      good:['…rescheduling.','Hm. He\'ll want to hear about you.'] } },
+      good:['…rescheduling.','Hm. He\'ll want to hear about you.'],
+      ponder:['One moment — checking his calendar.'] } },
   // ── THE SECRET FLOORS (2026-07-14 Nate: "make 3 secret opponents up to 2400.
   //    The CEO should be the first secret opponent"). Hidden from the tower until
   //    Floor 10 is beaten; the elevator keeps going. ──
@@ -326,7 +345,8 @@ var LADDER = [
     persona:{ depth:5, blunder:0.0, mat:1, pst:1.2, aggr:1, timeMs:950 },
     react:{ intro:['You should not have made it this far.'],
       blunder:['Predictable.','As expected. You overreach.'],
-      good:['...Interesting. Recalculating.','Where did THAT come from.'] } },
+      good:['...Interesting. Recalculating.','Where did THAT come from.'],
+      ponder:['You may wait.'] } },
   { name:'The Chairman', glyph:'♚', accent:'#e8e2ff', region:'The Boardroom in the Clouds', elo:2200, secret:true,
     blurb:'The CEO answers to someone. The board answers to him.',
     win:'"The board will hear of this." He almost, almost smiles.',
@@ -334,7 +354,8 @@ var LADDER = [
     persona:{ depth:5, blunder:0.0, mat:1, pst:1.2, aggr:2, timeMs:1250 },
     react:{ intro:['The company is a chessboard. I own the table.'],
       blunder:['Acquired.','A hostile takeover of one square.'],
-      good:['…point of order.','Unbudgeted. Impressive.'] } },
+      good:['…point of order.','Unbudgeted. Impressive.'],
+      ponder:['The board deliberates.'] } },
   { name:'The Founder', glyph:'♔', accent:'#fff2b0', region:'The Vault Below the Tower', elo:2400, secret:true,
     blurb:'The tower was his idea. So was the game. The elevator only comes down here for whoever beat everyone above.',
     win:'The Founder sets his king down gently. "It was always going to be you."',
@@ -342,7 +363,8 @@ var LADDER = [
     persona:{ depth:5, blunder:0.0, mat:1, pst:1.3, aggr:1, timeMs:1700 },
     react:{ intro:['I built this game. Show me it outgrew me.'],
       blunder:['I designed that trap forty years ago.','Still mine.'],
-      good:['…I never taught that.','The game grows.'] } }
+      good:['…I never taught that.','The game grows.'],
+      ponder:['Forty years on this game. Allow me one more minute.'] } }
 ];
 // the public tower is TEN floors; everything past it is the elevator's secret
 var VISIBLE = 10;
@@ -369,6 +391,10 @@ function startRung(idx, pc){
   bumpRep();
   if (ENGINE){ ENGINE.warmup(); ENGINE.newGame(); }   // boot Stockfish in the background for this match
   G.legal = C.legalMoves(G.S);
+  // the player's clock (floors 5+): counts down on YOUR turn only; run dry = flag fall
+  G.clockOn = clockMsFor(idx) > 0;
+  G.clockMs = clockMsFor(idx);
+  G.clockTick = (G.clockOn && G.S.turn === G.pc) ? Date.now() : null;
   hideOverlays();
   document.getElementById('menu-btn').classList.remove('hidden');
   document.getElementById('resign-btn').classList.remove('hidden');
@@ -417,6 +443,8 @@ cv.addEventListener('pointerdown', function(e){
 });
 
 function applyPlayerMove(m){
+  // bank the think time this move cost (the clock only runs on the player's turn)
+  if (G.clockOn && G.clockTick){ G.clockMs = Math.max(0, G.clockMs - (Date.now() - G.clockTick)); G.clockTick = null; }
   G.roundStartMat = matPOV(G.S, G.pc);   // material before this move; judged after the reply
   G.last = { from:m.from, to:m.to };
   G.log.push(C.toSAN(G.S, m));
@@ -430,7 +458,20 @@ function applyPlayerMove(m){
   if (psan.indexOf('#')<0){ if (psan.indexOf('+')>=0) callOut('pcheck'); else if (psan.indexOf('x')>=0 && Math.random()<0.34) callOut('pcap'); }
   aiTurnSoon();
 }
-function aiTurnSoon(){ G.thinking = true; setTimeout(aiMove, 280); }
+// The rival takes NO clock — instead they randomly PONDER (2026-07-16 Nate): about
+// one move in seven, past the opening, they sit on it for a few seconds and say so
+// in their own voice (react.ponder — Argus, being a dog, growls or throws a crooked
+// ?!?). Pure theatre; the engine think itself is unchanged.
+function aiTurnSoon(){
+  G.thinking = true;
+  var delay = 280;
+  if (G.log.length > 4 && Math.random() < 0.14){
+    delay = 2600 + Math.random() * 3200;
+    var myG = G;
+    setTimeout(function(){ if (G === myG && !G.over && G.thinking) reactOpp('ponder'); }, 420);
+  }
+  setTimeout(aiMove, delay);
+}
 // Ask the engine (Stockfish, throttled to this rung) for a move, then apply it in a guarded
 // callback. The bridge always resolves with a referee-legal move (or null) and never hangs;
 // if it's somehow unavailable we fall straight back to the built-in negamax.
@@ -455,6 +496,7 @@ function applyAiMove(myG, S, m){
   var res = C.gameResult(G.S, rep);
   if (res){ endGame(res); return; }
   G.legal = C.legalMoves(G.S);
+  if (G.clockOn) G.clockTick = Date.now();   // the reply landed — your clock runs again
   var esan = G.log[G.log.length-1] || '';
   if (esan.indexOf('#')<0){ if (esan.indexOf('+')>=0) callOut('echeck'); else if (esan.indexOf('x')>=0 && Math.random()<0.30) callOut('ecap'); }
   judgeRound();   // react to how the player just played, now that the reply has landed
@@ -485,7 +527,7 @@ function endGame(result){
   document.getElementById('resign-btn').classList.add('hidden');
   var prog = loadProg(), playerWon = false, draw = false, title, msg, eye;
   if (result === 'checkmate'){ playerWon = (G.S.turn !== G.pc); }   // side to move is mated
-  else if (result === 'resign'){ playerWon = false; }
+  else if (result === 'resign' || result === 'flag'){ playerWon = false; }
   else { draw = true; }                                              // stalemate / material / fifty / threefold
 
   if (playerWon){
@@ -522,8 +564,9 @@ function endGame(result){
           ' Half a point: you held your ground, but the rung only opens on a win. Line up and go again.';
   } else {
     prog.losses = (prog.losses || 0) + 1; saveProg(prog);   // the Chess City checkpoint keeps count
-    eye = 'Defeat'; title = result === 'resign' ? 'YOU RESIGNED' : 'CHECKMATED';
-    msg = 'The ' + G.rung.name + ' holds the line. Study the board and try again.';
+    eye = 'Defeat'; title = result === 'resign' ? 'YOU RESIGNED' : result === 'flag' ? 'FLAG FALL ⏱' : 'CHECKMATED';
+    msg = (result === 'flag' ? 'Your clock ran dry. ' : '') +
+      'The ' + G.rung.name.replace(/^The\s+/,'') + ' holds the line. Study the board and try again.';
   }
   // record to the profile / leaderboard
   if (window.PJCC && PJCC.saveScore){
@@ -589,7 +632,9 @@ function showBossCard(idx){
   document.getElementById('boss-bio').textContent = rung.blurb;   // a little intro for each opponent
   document.getElementById('boss-quote').textContent = '“' + (rung.react && rung.react.intro ? rung.react.intro[0] : rung.blurb) + '”';
   var note = document.getElementById('boss-note'), youW = (pc==='w');
-  note.textContent = youW ? '♔ You play White this round' : '♚ You play Black this round';
+  // floors 5+ announce the clock (2026-07-16 Nate) — yours only; the rival never runs one
+  note.textContent = (youW ? '♔ You play White this round' : '♚ You play Black this round') +
+    (clockMsFor(idx) > 0 ? ' · ⏱ ' + fmtClock(clockMsFor(idx)) + ' on your clock — your rival takes none' : '');
   note.style.color = youW ? '#efe7cf' : '#8fe3ff';
   var row = document.getElementById('boss-row'); row.innerHTML = '';
   addBtn(row, beaten ? 'REMATCH ▸' : 'FIGHT ▸', 'btn-gold', function(){ startRung(idx, pc); });
@@ -699,7 +744,7 @@ function resume(){
 var PVAL = { p:100, n:320, b:330, r:500, q:900, k:0 };
 function matPOV(S, pc){ var s=0, i, p; for(i=0;i<64;i++){ p=S.b[i]; if(!p) continue;
   s += (C.colorOf(p)===pc ? 1 : -1) * (PVAL[p.toLowerCase()]||0); } return s; }
-var MOODS = { intro:'🙂', blunder:'😏', good:'😟', neutral:'🙂' };
+var MOODS = { intro:'🙂', blunder:'😏', good:'😟', ponder:'🤔', neutral:'🙂' };
 var bubbleTimer=null, moodTimer=null;
 function setMood(emoji){ var el=document.getElementById('opp-mood'); if(el) el.textContent=emoji; }
 function showBubble(text, mood){
@@ -744,6 +789,9 @@ function render(){
   var grd = ctx.createLinearGradient(0,0,0,H); grd.addColorStop(0,'#1a1040'); grd.addColorStop(1,'#0c0820');
   ctx.fillStyle = grd; ctx.fillRect(0,0,W,H);
   if (!G){ return; }
+  // flag fall — the render loop is the referee's stopwatch (floors 5+ only)
+  if (!G.over && G.clockOn && G.clockTick &&
+      G.clockMs - (Date.now() - G.clockTick) <= 0){ endGame('flag'); }
   drawHud();
   // board frame
   ctx.fillStyle = '#0e0a26'; roundRect(BX-6, BY-6, BOARD+12, BOARD+12, 9); ctx.fill();
@@ -797,6 +845,15 @@ function drawHud(){
   ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='bold 11px Trebuchet MS';
   var status = G.over ? '' : (G.thinking ? '… ' + G.rung.name.replace(/^The\s+/,'') + ' is thinking' : (G.S.turn===G.pc ? 'Your move' : ''));
   ctx.fillStyle = '#cdbcf2'; ctx.fillText(status, bx-10, by+bh/2);
+  // the player's clock (floors 5+) — bottom-left, under the board frame; the rival
+  // has no clock at all (they just ponder). Red once you're under a minute.
+  if (G.clockOn){
+    var left = Math.max(0, G.clockMs - (G.clockTick ? Date.now() - G.clockTick : 0));
+    var low = left < 60000;
+    ctx.font='bold 12px Trebuchet MS'; ctx.textAlign='left'; ctx.textBaseline='middle';
+    ctx.fillStyle = low ? '#ff5a7a' : '#cdbcf2';
+    ctx.fillText('⏱ ' + fmtClock(left) + (G.over ? '' : (G.clockTick ? '' : ' · held')), BX - 6, H - 8);
+  }
 }
 function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 function loop(){ render(); raf = requestAnimationFrame(loop); }
