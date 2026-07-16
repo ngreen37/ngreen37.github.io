@@ -41,6 +41,24 @@
 - Role: check on Princess when narrator gets sent away
 - Teams up with Garrett to find the dogs
 
+**The Scam Artist Uncle (Family)** — LORE ONLY for now (Nate 2026-07-16: "Don't put him
+on the site yet"). No page, no characters.csv row until Nate calls the reveal.
+- Marked: **Family**. His arc plays a powerful role in the story as **the cautionary tale**.
+- Best-selling book: **"Earn $$$ While You Sleep."**
+- The book is derived from a school project he came up with as a child: **"I Earn $$$
+  While You Sleep."** A childish, selfish thought that, with a manipulative tweak,
+  earns soulless income.
+- The book is affirmations that don't really work — and slipped in there, subtly, are
+  prompts to buy his book (the tone slightly changes when they arrive).
+- He's your favorite uncle at first. That changes quickly.
+- Over the seasons he looks more and more tired, and sad — as if his soul is being
+  sucked out of him.
+- His wife doesn't love him. His kids don't much care for him — they latch on to
+  Nate's father for paternal love instead.
+- Thematic counterweight: Nate earns his way with work, sacrifice, and real care
+  (Country Club, teaching chess, cleaning schools at night); the Uncle "earns" in his
+  sleep and it hollows him. Same town, same hunger for a better life — opposite roads.
+
 **Main Inspirations**
 - Jesse
 - The Meadowlands

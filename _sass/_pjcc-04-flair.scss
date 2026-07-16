@@ -198,6 +198,14 @@ body.theme-bw .page-body em {
 .tagline-main-tagline .tg-x-glyph {
   animation: tgx-radio 7.5s steps(1, end) infinite;
 }
+/* 2026-07-16 (Nate): "at night, the 'i' secret doesn't flicker" — after dark the ✦ star
+   takes the /classified/ shift (studio-home.html hides it by day), so the 'i' settles
+   into the word and gives nothing away. Day: flickering 'i', no star. Night: flying
+   star, steady 'i'. Subtle on purpose. */
+html.sky-night .tagline-main-tagline .tg-x-glyph {
+  animation: none;
+  visibility: visible;
+}
 /* Bursts of interference, not a metronome: long clean stretches, then a stutter of
    dropouts, then clean again. `visibility` only flips ON a keyframe (any interval
    with a `visible` endpoint reads visible the whole way), so each dropout needs a

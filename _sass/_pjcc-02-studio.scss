@@ -72,6 +72,10 @@ body.studio-body {
   animation: logo-bob 5s ease-in-out infinite;
 }
 
+/* 2026-07-16 (Nate): "we went away from the old-computer green" — the Contact pill
+   drops the matrix green for the splash's own lavender chrome, matching the 日本語
+   toggle below it so the two corner pills read as a set. Hover goes gold like
+   everything else on the splash. */
 .studio-corner-about {
   position: fixed;
   top: 22px;
@@ -82,10 +86,11 @@ body.studio-body {
   font-weight: 600;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: rgba(0, 204, 51, 0.7);
+  color: #c9a7ff;
+  background: rgba(20, 12, 45, 0.55);
   text-decoration: none;
   padding: 5px 14px;
-  border: 1.5px solid rgba(0, 255, 65, 0.28);
+  border: 1.5px solid #4a3a86;
   border-radius: 999px;
   user-select: none;
   -webkit-user-select: none;
@@ -93,9 +98,8 @@ body.studio-body {
   transition: color 0.2s, border-color 0.2s, background 0.2s;
 
   &:hover {
-    color: #000;
-    border-color: #00ff41;
-    background: #00ff41;
+    color: #F5C518;
+    border-color: #F5C518;
     text-decoration: none;
   }
 }

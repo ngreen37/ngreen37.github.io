@@ -433,21 +433,9 @@ html.season-summer.sky-night .ts-season-fx b { top: auto; bottom: var(--fy);
   50% { transform: translate(-7px, -5px); opacity: 0.35; }
   75% { transform: translate(9px, -17px); opacity: 0.8; }
 }
-/* SUMMER (day) — pollen / dandelion fluff drifting on the warm air (Nate 2026-07-15:
-   the daytime summer signal; fireflies above stay night-only). A lazy S-drift downward. */
-html.season-summer:not(.sky-night) .ts-season-fx { opacity: 1; }
-html.season-summer:not(.sky-night) .ts-season-fx b { width: 5px; height: 5px; border-radius: 50%;
-  background: radial-gradient(circle at 40% 40%, rgba(255, 252, 235, 0.95), rgba(238, 228, 180, 0.45) 70%);
-  box-shadow: 0 0 5px rgba(255, 248, 214, 0.55);
-  animation: season-pollen calc(var(--fdur) * 2.2) ease-in-out var(--fd) infinite; }
-@keyframes season-pollen {
-  0%   { transform: translate(0, 0); opacity: 0; }
-  10%  { opacity: 0.85; }
-  32%  { transform: translate(24px, 26vh); }
-  58%  { transform: translate(-16px, 54vh); }
-  82%  { transform: translate(22px, 82vh); opacity: 0.75; }
-  100% { transform: translate(-8px, 118vh); opacity: 0; }
-}
+/* SUMMER (day) — the pollen/dandelion-fluff drift was REMOVED 2026-07-16 (Nate:
+   "Take out the pollen"). Summer days now have a clean sky; the fireflies above
+   keep summer nights. Restore the block from git before 66c643c if it's missed. */
 @media (prefers-reduced-motion: reduce) { .ts-season-fx { display: none; } }
 .reduce-flourish .ts-season-fx { display: none; }
 
