@@ -203,6 +203,8 @@
         var door = document.getElementById('studio-gdoor');
         if (!door) return;
         door.setAttribute('data-grand', cleared === 0 ? 0 : cleared <= 2 ? 1 : cleared <= 4 ? 2 : cleared <= 6 ? 3 : cleared <= 9 ? 4 : 5);
+        // the per-floor door dressing (shoji screen on floor 4, etc.) — MATCH the PJCC hero (Nate 2026-07-15)
+        if (cur < NAMES.length) door.setAttribute('data-floor', cur + 1);
         var pipHost = document.getElementById('studio-gdoor-pips');
         if (pipHost) { var h = '';
           for (var k = 0; k < NAMES.length; k++) { h += '<i class="' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></i>'; }

@@ -870,7 +870,7 @@ textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
     repeating-linear-gradient(180deg, rgba(74,48,32,0.9) 0 1px, transparent 1px 15px),
     /* the washi paper itself, lit from within */
     linear-gradient(180deg, #f6e6c8 0%, #efdab4 100%);
-  transform-origin: 100% 50%;                        /* slides toward its pocket */
+  transform-origin: 0% 50%;                          /* slides LEFT toward its pocket (Nate 2026-07-15) */
   transition: transform .5s cubic-bezier(.4, 0, .2, 1);
 }
 .gdoor[data-floor="4"] .gdoor-glyph {                /* an ink-stamped kanji feel */
@@ -882,8 +882,8 @@ textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
   background: rgba(58, 36, 26, 0.7); box-shadow: none;
 }
 .gdoor[data-floor="4"]:hover .gdoor-door,
-.gdoor[data-floor="4"]:focus-visible .gdoor-door {   /* slide open, don't swing */
-  transform: translateX(58%) scaleX(0.92);
+.gdoor[data-floor="4"]:focus-visible .gdoor-door {   /* slide open to the LEFT, don't swing (Nate 2026-07-15) */
+  transform: translateX(-58%) scaleX(0.92);
 }
 
 /* ── FLOOR 5 · THE CITY GATEKEEPER — the brass portcullis ─────────────────────

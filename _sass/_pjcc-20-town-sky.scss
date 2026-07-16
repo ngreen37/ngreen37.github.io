@@ -686,6 +686,16 @@ body.theme-studio .ts-season-tint,
 body.theme-studio .ts-constellations { display: none; }
 body.theme-bw .ts-stars,
 body.theme-studio .ts-stars { display: block; opacity: 0.18; }
+/* THE FLOATER CULL (Nate 2026-07-15 — still saw "jellybeans" after the cloud fix; the
+   remainder were the STARS at dusk/night). Every DISCRETE sky element — clouds (also hidden
+   above), stars, constellations, shooting stars — reads as a splotch behind flat page content
+   because there's no sky context there. So the whole discrete layer is SPLASH-ONLY now
+   (body.studio-body keeps its full sky). Content pages keep the SMOOTH sky only: the gradient,
+   the warm horizon glow, and the season particles (pollen/snow/etc). This must sit AFTER the
+   theme-bw/studio star re-show to win. */
+body:not(.studio-body) .ts-stars,
+body:not(.studio-body) .ts-constellations,
+body:not(.studio-body) .ts-shoot { display: none; }
 body.theme-bw .page-title,
 body.theme-studio .page-title {
   background: linear-gradient(180deg, #17161c 0%, #101015 100%);
