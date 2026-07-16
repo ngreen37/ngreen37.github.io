@@ -444,6 +444,16 @@
   html.splash-seq .studio-quad-grid.is-lit .studio-quad:nth-child(3) { animation:quad-appear 1.3s ease 0.36s both; }
   html.splash-seq .studio-quad-grid.is-lit .studio-quad:nth-child(4) { animation:quad-appear 1.3s ease 0.54s both; }
 
+  /* The two headline calls (Park Table + Gauntlet door) ride in on the SAME gate as
+     the quads (2026-07-15 Nate: on a Back-nav they were already visible while the quads
+     seated, which read oddly). Held at opacity:0 until the script opens the gate, then a
+     gentle rise starting just as the last quad lands. A container-level fade (transition,
+     not animation) — it never holds a transform that could fight the door's inner slide.
+     No `splash-seq`/no JS = no hiding, so the calls always show without the script. */
+  html.splash-seq .studio-calls { opacity:0; transform:translateY(16px);
+    transition:opacity .85s ease .5s, transform .85s ease .5s; }
+  html.splash-seq .studio-calls.is-lit { opacity:1; transform:none; }
+
   /* Idea #9 — replay-intro control (bottom-left, subtle) */
   .studio-replay { position:fixed; left:18px; bottom:16px; z-index:3; display:inline-flex; align-items:center; gap:6px;
     background:rgba(20,12,45,0.55); color:#c9a7ff; border:1px solid #4a3a86; border-radius:999px; padding:5px 11px;
@@ -530,6 +540,7 @@
     /* there's no sigil to wait for, so nothing gates the quads — show them outright
        (belt and braces: the script also opens the gate immediately under reduced motion) */
     html.splash-seq .studio-quad { opacity:1 !important; }
+    html.splash-seq .studio-calls { opacity:1 !important; transform:none !important; transition:none !important; }
   }
   </style>
 
@@ -672,7 +683,8 @@
     var sig  = document.getElementById('studio-drift-sigil');
     var grid = document.querySelector('.studio-quad-grid');
     var lit  = false;
-    function seatTheQuads() { if (!lit && grid) { lit = true; grid.classList.add('is-lit'); } }
+    var calls = document.querySelector('.studio-calls');
+    function seatTheQuads() { if (!lit && grid) { lit = true; grid.classList.add('is-lit'); if (calls) calls.classList.add('is-lit'); } }
 
     // 2026-07-15 (Nate: "the ACCcccc, maybe it ONLY shows up at night time"). The sigil
     // bloom is now a NIGHT-ONLY beat. By day (or under reduced motion) there's no sigil

@@ -94,6 +94,11 @@ layout: default
   .hero-board { bottom: 30px; height: 64px; }
   .hero-door { transform: scale(0.72); transform-origin: top right; top: 10px; right: 14px; }
   .gdoor-sub { display: none; }
+  /* phones: keep the labelled park table compact and pinned to the bottom-left
+     corner so it hugs Checker Town and never rises into the title (Nate 2026-07-15). */
+  .hero-park { left: 8px; bottom: 8px; gap: 2px; }
+  .hero-park .hp-table { transform: scale(0.85); transform-origin: center bottom; }
+  .hero-park .hp-plate { font-size: 7px; letter-spacing: 1px; padding: 2px 6px; }
 }
 
 /* ── #2 one-screen desktop ── */
@@ -171,10 +176,13 @@ layout: default
          over the town (Nate 2026-07-15: "put that same Park table link over Checker Town").
          Links to the same place as the splash's park table. {% endcomment %}
     <a class="hero-park" href="{{ '/games/park-tables/' | relative_url }}"
-       aria-label="The Park Tables — play another operative in the Checker Town park">
-      <i class="hp-board" aria-hidden="true"></i>
-      <i class="hp-post" aria-hidden="true"></i>
-      <i class="hp-foot" aria-hidden="true"></i>
+       aria-label="Play a Game — the Park Tables, real chess against another operative in the Checker Town park">
+      <span class="hp-table" aria-hidden="true">
+        <i class="hp-board"></i>
+        <i class="hp-post"></i>
+        <i class="hp-foot"></i>
+      </span>
+      <span class="hp-plate">PLAY A GAME</span>
     </a>
   </div>
   {% comment %} THE DOOR — the way into the Gauntlet, top right of the hero.
@@ -230,8 +238,16 @@ layout: default
 /* ── THE PARK TABLES: a little park table set over the Checker Town stacks — the park
    lives in Checker Town, so a table stands over the town (Nate 2026-07-15). Green accent
    = the park; links to the same place as the splash's park table. ── */
-.hero-park { position:absolute; left:14px; bottom:16px; z-index:3; width:46px; height:36px;
+.hero-park { position:absolute; left:12px; bottom:20px; z-index:3;
+  display:flex; flex-direction:column; align-items:center; gap:4px;
   text-decoration:none; pointer-events:auto; }
+/* a little plate over the table so it reads as clearly as the Gauntlet door does
+   (Nate 2026-07-15: "raise it higher + make clear what it is — a header like the
+   Gauntlet: Play a Game"). Green plate = the park, matching the splash's PARK TABLES. */
+.hp-plate { font-family:'Share Tech Mono',monospace; font-size:8px; font-weight:700; letter-spacing:1.5px;
+  color:#7ff0c0; background:rgba(6,22,15,0.62); border:1px solid rgba(107,255,184,0.5);
+  border-radius:3px; padding:3px 8px; white-space:nowrap; transition:color .15s, border-color .15s; }
+.hp-table { position:relative; width:46px; height:34px; }
 .hp-board { position:absolute; left:3px; top:0; width:40px; height:20px;
   transform:perspective(120px) rotateX(54deg); transform-origin:50% 100%;
   background:repeating-conic-gradient(#efe1c4 0 25%, #b07a48 0 50%); background-size:11px 11px;
@@ -241,6 +257,7 @@ layout: default
   width:6px; height:14px; background:#241a3a; border-radius:2px; }
 .hp-foot { position:absolute; left:50%; bottom:0; transform:translateX(-50%);
   width:22px; height:3px; background:#241a3a; border-radius:2px; }
+.hero-park:hover .hp-plate, .hero-park:focus-visible .hp-plate { color:#bafce0; border-color:rgba(107,255,184,0.85); }
 .hero-park:hover .hp-board, .hero-park:focus-visible .hp-board { box-shadow:0 0 24px -3px #6bffb8; }
 
 /* ── Chess City: the far shore (2026-07-11 Nate). Cool-blue building bodies with

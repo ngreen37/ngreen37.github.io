@@ -248,13 +248,28 @@ permalink: /the-gambit/
     });
   }
 
+  // Re-decide gate vs. altar every time auth/profile changes. The session often
+  // lands AFTER PJCC.ready — a restore that arrives via onAuthStateChange (token
+  // refresh, or the installed iOS app hydrating its own storage jar) resolves a
+  // beat late — so a ONE-SHOT check at boot strands a signed-in player on the
+  // "claim a codename" gate forever. This is the same root bug the Park Tables
+  // fixed: listen to PJCC.onChange and re-route, never render the gate just once.
+  var wired = false;
+  function applyAuth() {
+    if (PJCC.currentUser() && PJCC.getProfile()) {
+      gate.hidden = true; main.hidden = false;
+      if (!wired) { wire(); wired = true; }
+      refresh();
+    } else {
+      showGate();
+    }
+  }
+
   function boot() {
     if (!window.PJCC || !PJCC.enabled) { showGate('The board is offline right now — the altar can\'t weigh your offerings. Try again later.'); return; }
     PJCC.ready.then(function () {
-      if (!PJCC.currentUser() || !PJCC.getProfile()) { showGate(); return; }
-      gate.hidden = true; main.hidden = false;
-      wire(); refresh();
-      PJCC.onChange(function () { if (PJCC.getProfile()) refresh(); });
+      applyAuth();
+      PJCC.onChange(applyAuth);
     }).catch(function () { showGate('The board is offline right now. Try again later.'); });
   }
   function showGate(msg) { main.hidden = true; gate.hidden = false; if (msg) $('gm-gate-msg').textContent = msg; }
