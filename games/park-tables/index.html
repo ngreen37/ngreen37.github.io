@@ -44,11 +44,44 @@ a move a day is plenty.</p>
   'use strict';
   var C = window.PJCCChess, M = window.PJCCMatch;
   var app = document.getElementById('pt-app');
+  /* Boards render the FILLED glyph for BOTH sides (GLYPH[p.toLowerCase()]) and colour
+     the fill cream/ink in CSS — the outline glyphs (♙♘…) have nothing to fill, so
+     "white" pieces came out as dark wireframes (2026-07-16 board glow-up). */
   var GLYPH = { P:'♙',N:'♘',B:'♗',R:'♖',Q:'♕',K:'♔', p:'♟',n:'♞',b:'♝',r:'♜',q:'♛',k:'♚' };
   var timer = null, creatorId = null, myRate = null;
 
   function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   function stopPolling(){ if (timer) { clearTimeout(timer); timer = null; } }
+
+  // ── last-move dressing (2026-07-16 Nate: "…and arrows") — the gold from/to squares
+  //    plus a gold arrow over the board, chess.com-style, for whatever just happened.
+  //    Both the bot boards and the live tables use these.
+  function lastMove(movesStr){
+    var list = (movesStr || '').trim().split(/\s+/);
+    var u = list[list.length - 1];
+    if (!u || !/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(u)) return null;
+    return { from: C.sqFromName(u.slice(0, 2)), to: C.sqFromName(u.slice(2, 4)) };
+  }
+  function lastCls(last, i){ return (last && (i === last.from || i === last.to)) ? ' last' : ''; }
+  function arrowSVG(last, asWhite){
+    if (!last || last.from === last.to) return '';
+    function xy(i){
+      var r = (i / 8) | 0, f = i % 8;
+      return { x: (asWhite ? f : 7 - f) + 0.5, y: (asWhite ? r : 7 - r) + 0.5 };
+    }
+    var a = xy(last.from), b = xy(last.to);
+    var dx = b.x - a.x, dy = b.y - a.y, len = Math.sqrt(dx * dx + dy * dy);
+    var ux = dx / len, uy = dy / len;
+    var hx = b.x - ux * 0.34, hy = b.y - uy * 0.34, px = -uy, py = ux;
+    return '<svg class="pt-arrow" viewBox="0 0 8 8" aria-hidden="true">' +
+      '<g opacity="0.5">' +
+      '<line x1="' + (a.x + ux * 0.22).toFixed(2) + '" y1="' + (a.y + uy * 0.22).toFixed(2) +
+        '" x2="' + hx.toFixed(2) + '" y2="' + hy.toFixed(2) +
+        '" stroke="#F5C518" stroke-width="0.17" stroke-linecap="round"/>' +
+      '<polygon fill="#F5C518" points="' + b.x.toFixed(2) + ',' + b.y.toFixed(2) + ' ' +
+        (hx + px * 0.21).toFixed(2) + ',' + (hy + py * 0.21).toFixed(2) + ' ' +
+        (hx - px * 0.21).toFixed(2) + ',' + (hy - py * 0.21).toFixed(2) + '"/></g></svg>';
+  }
   function uid(){ var u = PJCC.currentUser(); return u ? u.id : null; }
   function toast(msg){ try { if (window.showTxToast) return showTxToast(msg); } catch(e){} console.log(msg); }
 
@@ -254,14 +287,15 @@ a move a day is plenty.</p>
       var lm = C.legalMoves(S);
       for (var h = 0; h < lm.length; h++) if (lm[h].from === botSel) hints[lm[h].to] = 1;
     }
+    var last = lastMove(st.moves);
     var rows = '';
     for (var r = 0; r < 8; r++) {
       for (var f = 0; f < 8; f++) {
         var i = r * 8 + f, p = S.b[i];
         rows += '<button class="pt-sq ' + (((r + f) % 2 === 0) ? 'lt' : 'dk') + (i === botSel ? ' sel' : '') +
-          (i in hints ? ' hint' : '') +
+          (i in hints ? ' hint' : '') + lastCls(last, i) +
           '" data-bsq="' + i + '"' + (myTurn ? '' : ' tabindex="-1"') + '>' +
-          (p ? '<span class="pt-pc ' + (p === p.toUpperCase() ? 'w' : 'b') + '">' + GLYPH[p] + '</span>' : '') + '</button>';
+          (p ? '<span class="pt-pc ' + (p === p.toUpperCase() ? 'w' : 'b') + '">' + GLYPH[p.toLowerCase()] + '</span>' : '') + '</button>';
       }
     }
     var mvs = '';
@@ -274,7 +308,7 @@ a move a day is plenty.</p>
       '<span class="pt-vs">⬜ You vs <b>' + bot.icon + ' ' + esc(bot.name) + '</b></span>' +
       '<i class="pt-row-chips">Casual · ' + esc(bot.diff) + ' bot · no clock</i></div>' +
       '<p class="pt-state' + (myTurn ? ' go' : '') + '">' + state + '</p>' +
-      '<div class="pt-board" role="grid" aria-label="Chess board">' + rows + '</div>' +
+      '<div class="pt-board" role="grid" aria-label="Chess board">' + rows + arrowSVG(last, true) + '</div>' +
       '<div class="pt-moves">' + (mvs || '<span class="pjcc-sub">No moves yet.</span>') + '</div>' +
       '<div class="pt-tools">' +
         (st.done
@@ -560,15 +594,16 @@ a move a day is plenty.</p>
     }
 
     // board (flipped for black)
+    var last = lastMove(m.moves);
     var rows = '';
     for (var vr = 0; vr < 8; vr++) {
       for (var vf = 0; vf < 8; vf++) {
         var r = white ? vr : 7 - vr, f = white ? vf : 7 - vf, i = r * 8 + f;
         var p = S.b[i];
         rows += '<button class="pt-sq ' + (((r + f) % 2 === 0) ? 'lt' : 'dk') + (i === sel ? ' sel' : '') +
-          (i in hints ? ' hint' : '') +
+          (i in hints ? ' hint' : '') + lastCls(last, i) +
           '" data-sq="' + i + '"' + (myTurn ? '' : ' tabindex="-1"') + '>' +
-          (p ? '<span class="pt-pc ' + (p === p.toUpperCase() ? 'w' : 'b') + '">' + GLYPH[p] + '</span>' : '') + '</button>';
+          (p ? '<span class="pt-pc ' + (p === p.toUpperCase() ? 'w' : 'b') + '">' + GLYPH[p.toLowerCase()] + '</span>' : '') + '</button>';
       }
     }
 
@@ -592,7 +627,7 @@ a move a day is plenty.</p>
       '<i class="pt-row-chips">' + chips(m) + '</i></div>' +
       '<p class="pt-state' + (myTurn ? ' go' : '') + '">' + state + '</p>' +
       (canClaim ? '<button class="pjcc-btn" id="pt-flag">⏱ Their time is up — claim the win</button>' : '') +
-      '<div class="pt-board" role="grid" aria-label="Chess board">' + rows + '</div>' +
+      '<div class="pt-board" role="grid" aria-label="Chess board">' + rows + arrowSVG(last, white) + '</div>' +
       say +
       '<div class="pt-moves">' + (mvs || '<span class="pjcc-sub">No moves yet.</span>') + '</div>' +
       (m.status !== 'done'
@@ -727,21 +762,36 @@ a move a day is plenty.</p>
 .pt-vs { color: #ddd6f3; }
 .pt-state { color: #9a7fd4; font-size: 0.9rem; margin: 4px 0 10px; }
 .pt-state.go { color: #6bffb8; }
-.pt-board { display: grid; grid-template-columns: repeat(8, 1fr); width: 100%; max-width: 420px;
-  aspect-ratio: 1; border: 2px solid var(--edge); border-radius: 6px; overflow: hidden;
-  touch-action: manipulation; margin-top: 8px; }
+/* ── THE BOARD (2026-07-16 Nate: "the PJCC version of chess.com — nice pieces, board,
+   feel, and arrows", after the square-size bug): ──
+   · grid-auto-rows:1fr is THE bug fix — without it the implicit rows were `auto`, so
+     each rank's height flexed with its content and squares re-shaped as pieces moved.
+   · warm walnut + cream, the SAME wood as the review board and the splash's park-table
+     drawing — a wooden board on a stone park table, not a purple screen.
+   · will-change promotes the board to its own layer, which flips glyph antialiasing
+     from subpixel (the red/blue fringe Nate screenshotted) to grayscale. One texture.
+   · .last = the gold last-move squares; .pt-arrow = the gold last-move arrow. */
+.pt-board { display: grid; grid-template-columns: repeat(8, 1fr); grid-auto-rows: 1fr;
+  width: 100%; max-width: 420px; position: relative;
+  aspect-ratio: 1; border: 3px solid #4a3320; border-radius: 6px; overflow: hidden;
+  touch-action: manipulation; margin-top: 8px;
+  box-shadow: 0 12px 28px -12px rgba(0,0,0,0.65); will-change: transform; }
 .pt-sq { position: relative; border: none; padding: 0; margin: 0; display: flex; align-items: center; justify-content: center;
-  font-size: clamp(20px, 6vw, 34px); line-height: 1; cursor: pointer; }
-.pt-sq.lt { background: #cfc3ee; }
-.pt-sq.dk { background: #5b4a96; }
+  font-size: clamp(22px, 6.5vw, 38px); line-height: 1; cursor: pointer; }
+.pt-sq.lt { background-color: #f0e2c6; }
+.pt-sq.dk { background-color: #b07a48; }
+.pt-sq.last { background-image: linear-gradient(rgba(245,197,24,0.42), rgba(245,197,24,0.42)); }
 .pt-sq.sel { box-shadow: inset 0 0 0 3px #6bffb8; }
 /* legal-move dots — the SAME dot whether the square is empty or holds a piece you can
    take (Nate 2026-07-16); it floats above the piece so captures read as options too */
 .pt-sq.hint::after { content: ''; position: absolute; inset: 0; margin: auto; width: 34%; height: 34%;
-  border-radius: 50%; background: rgba(13,8,36,0.32); box-shadow: 0 0 0 2px rgba(107,255,184,0.9);
+  border-radius: 50%; background: rgba(38,25,10,0.30); box-shadow: 0 0 0 2px rgba(107,255,184,0.9);
   z-index: 2; pointer-events: none; }
-.pt-pc.w { color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.55); }
-.pt-pc.b { color: #14092e; }
+/* pieces: cream with an ink outline vs ink with a light rim — readable on both woods */
+.pt-pc.w { color: #f7f3ea; -webkit-text-stroke: 1px #3a3145; text-shadow: 0 2px 3px rgba(0,0,0,0.35); }
+.pt-pc.b { color: #26232b; -webkit-text-stroke: 1px rgba(255,255,255,0.25); text-shadow: 0 2px 3px rgba(0,0,0,0.3); }
+/* the last-move arrow, drawn over everything; clicks pass through */
+.pt-arrow { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
 .pt-say { margin: 10px 0 0; color: #ffd36b; font-size: 0.92rem; }
 .pt-moves { margin: 10px 0; color: #b9a3e8; font-size: 0.85rem; line-height: 1.9; max-width: 420px;
   user-select: text; -webkit-user-select: text; }
