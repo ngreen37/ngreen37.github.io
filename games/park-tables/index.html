@@ -35,6 +35,7 @@ a move a day is plenty.</p>
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-chess.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-openings.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-match.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-chess-ai.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-gauntlet-engine.js' | relative_url }}"></script>
@@ -295,6 +296,46 @@ a move a day is plenty.</p>
     if (st.result === '1-0') markWin();            // you play White at every bot table
   }
 
+  // The opening's name, shown live as a game follows known theory (Nate 2026-07-17:
+  // "during the game, can the opening name pop up?"). Once a game leaves book the
+  // deepest name reached keeps showing — the opening is a property of the whole game.
+  function openingCap(movesStr){
+    var nm = (window.PJCCOpenings && window.PJCCOpenings.name) ? window.PJCCOpenings.name(movesStr || '') : null;
+    return nm ? '<p class="pt-open">📖 ' + esc(nm) + '</p>' : '';
+  }
+
+  // Promotion picker (2026-07-17 Nate: pawns were silently auto-queening — the engine
+  // supports under-promotion, but callers passed no choice so findMove fell back to a
+  // queen every time). When a human pushes a pawn to the last rank we ask which piece.
+  // cb receives 'q' | 'r' | 'b' | 'n', or null if they dismiss (the move is abandoned).
+  // Filled glyphs for BOTH sides (canon: the outline ♕ set won't take a fill) — the
+  // side is carried by a colour class on the dialog instead.
+  var PROMO_G = { q:'♛', r:'♜', b:'♝', n:'♞' };
+  function promptPromotion(white, cb){
+    var done = false;
+    var ov = document.createElement('div'); ov.className = 'pt-promo-ov';
+    ov.innerHTML = '<div class="pt-promo pt-promo--' + (white ? 'w' : 'b') + '" role="dialog" aria-label="Choose promotion piece">' +
+      '<p class="pt-promo-h">Promote to…</p><div class="pt-promo-row">' +
+      ['q','r','b','n'].map(function(p){
+        var nm = { q:'Queen', r:'Rook', b:'Bishop', n:'Knight' }[p];
+        return '<button class="pt-promo-b" data-p="' + p + '" aria-label="' + nm + '">' + PROMO_G[p] + '</button>';
+      }).join('') + '</div></div>';
+    document.body.appendChild(ov);
+    function finish(p){ if (done) return; done = true; try { ov.remove(); } catch (e) {} cb(p); }
+    ov.addEventListener('click', function(e){
+      var b = e.target.closest('[data-p]');
+      if (b) return finish(b.getAttribute('data-p'));
+      if (e.target === ov) finish(null);                 // click the backdrop = cancel
+    });
+    document.addEventListener('keydown', function esc2(e){
+      if (!ov.isConnected) { document.removeEventListener('keydown', esc2); return; }
+      var k = e.key.toLowerCase();
+      if (k === 'escape') { finish(null); document.removeEventListener('keydown', esc2); }
+      else if (k === 'q' || k === 'r' || k === 'b' || k === 'n') { finish(k); document.removeEventListener('keydown', esc2); }
+    });
+    var first = ov.querySelector('.pt-promo-b'); if (first) first.focus();
+  }
+
   function botRender(){
     var st = botCur; if (!st) return;
     var bot = BOTS[st.bot], g = M.replayGame(st.moves || '');
@@ -339,6 +380,7 @@ a move a day is plenty.</p>
       '<div class="pt-table-head"><button class="pjcc-btn-ghost" id="pt-back">← The park</button>' +
       '<i class="pt-row-chips">Casual · ' + esc(bot.diff) + ' bot · no clock</i></div>' +
       '<p class="pt-state' + (myTurn ? ' go' : '') + '">' + state + '</p>' +
+      openingCap(st.moves) +
       // board (with its nameplates) LEFT, the scoresheet RIGHT (2026-07-17 Nate:
       // "notation should be to the right of the game") — .pt-arena stacks on phones
       '<div class="pt-arena"><div class="pt-boardwrap">' +
@@ -384,10 +426,22 @@ a move a day is plenty.</p>
     if (S.turn !== 'w') return;
     var mine = S.b[i] && S.b[i] === S.b[i].toUpperCase();
     if (botSel === -1 || mine) { botSel = mine ? i : -1; return botRender(); }
-    var mv = C.findMove(S, botSel, i, null);           // promotion: queen (matches human tables)
+    var from = botSel;
+    var mv = C.findMove(S, from, i, null);
     if (!mv) { botSel = -1; return botRender(); }
-    var uci = C.nameFromSq(botSel) + C.nameFromSq(i) + (mv.promo ? 'q' : '');
     botSel = -1;
+    if (mv.promo) {                                     // last-rank pawn → ask which piece (you're White)
+      return promptPromotion(true, function(choice){
+        if (!choice) return botRender();               // dismissed — the move is abandoned
+        var pm = C.findMove(S, from, i, choice);
+        botCommitMove(st, from, i, pm || mv);
+      });
+    }
+    botCommitMove(st, from, i, mv);
+  }
+
+  function botCommitMove(st, from, to, mv){
+    var uci = C.nameFromSq(from) + C.nameFromSq(to) + (mv.promo ? mv.promo.toLowerCase() : '');
     st.moves = ((st.moves || '') + ' ' + uci).trim();
     botSave(st);
     var g2 = M.replayGame(st.moves);
@@ -671,6 +725,7 @@ a move a day is plenty.</p>
       '<div class="pt-table-head"><button class="pjcc-btn-ghost" id="pt-back">← The park</button>' +
       '<i class="pt-row-chips">' + chips(m) + '</i></div>' +
       '<p class="pt-state' + (myTurn ? ' go' : '') + '">' + state + '</p>' +
+      openingCap(m.moves) +
       (canClaim ? '<button class="pjcc-btn" id="pt-flag">⏱ Their time is up — claim the win</button>' : '') +
       // board (with nameplates + the chat line) LEFT, scoresheet RIGHT (2026-07-17 Nate)
       '<div class="pt-arena"><div class="pt-boardwrap">' +
@@ -736,11 +791,23 @@ a move a day is plenty.</p>
     var g = M.replayGame(m.moves), S = g.S;
     var mine = S.b[i] && (S.b[i] === S.b[i].toUpperCase()) === white;
     if (sel === -1 || mine) { sel = mine ? i : -1; return renderTable(); }
-    var mv = C.findMove(S, sel, i, null);            // promotion: queen (v1)
+    var from = sel;
+    var mv = C.findMove(S, from, i, null);
     if (!mv) { sel = -1; return renderTable(); }
-    var uci = C.nameFromSq(sel) + C.nameFromSq(i) + (mv.promo ? 'q' : '');
-    var nS = C.makeMove(S, mv);
     sel = -1;
+    if (mv.promo) {                                  // promoting pawn → pick a piece (your colour)
+      return promptPromotion(white, function(choice){
+        if (!choice) return renderTable();           // dismissed — abandon the move
+        var pm = C.findMove(S, from, i, choice);
+        commitLiveMove(m, S, from, i, pm || mv);
+      });
+    }
+    commitLiveMove(m, S, from, i, mv);
+  }
+
+  function commitLiveMove(m, S, from, to, mv){
+    var uci = C.nameFromSq(from) + C.nameFromSq(to) + (mv.promo ? mv.promo.toLowerCase() : '');
+    var nS = C.makeMove(S, mv);
     M.move(m.id, uci, C.toFEN(nS)).then(function(){
       cur.moves = (cur.moves + ' ' + uci).trim(); cur.fen = C.toFEN(nS);
       renderTable(); schedulePoll();
@@ -823,6 +890,24 @@ a move a day is plenty.</p>
   font-size: 0.72rem; letter-spacing: 0.06em; color: #9a7fd4; }
 .pt-state { color: #9a7fd4; font-size: 0.9rem; margin: 4px 0 10px; }
 .pt-state.go { color: #6bffb8; }
+/* the live opening name (📖 Ruy Lopez…) — quiet, sits under the turn line */
+.pt-open { color: #c3b4ff; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.02em; margin: -4px 0 10px; }
+/* promotion picker — pawn reaches the last rank, you choose the piece (canon colours) */
+.pt-promo-ov { position: fixed; inset: 0; z-index: 9998; background: rgba(8,5,22,0.72);
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+  display: flex; align-items: center; justify-content: center; padding: 16px; }
+.pt-promo { background: #1a1140; border: 1px solid #4a3a86; border-radius: 14px; padding: 16px 18px;
+  box-shadow: 0 24px 60px -18px rgba(0,0,0,0.7); text-align: center; }
+.pt-promo-h { margin: 0 0 12px; color: #F5C518; font-weight: 700; font-size: 0.95rem; }
+.pt-promo-row { display: flex; gap: 8px; }
+.pt-promo-b { width: 58px; height: 58px; font-size: 36px; line-height: 1; cursor: pointer;
+  background: var(--chess-lt, #e9d3a4); border: 2px solid #4a3a86; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  paint-order: stroke fill; -webkit-text-stroke: 1.4px var(--piece-w-line, #2f2440);
+  transition: border-color .15s, transform .1s; }
+.pt-promo--w .pt-promo-b { color: var(--piece-w-fill, #ffffff); }
+.pt-promo--b .pt-promo-b { color: var(--piece-b-fill, #4a3585); -webkit-text-stroke-color: var(--piece-b-line, #f2e9ff); }
+.pt-promo-b:hover, .pt-promo-b:focus-visible { border-color: #F5C518; transform: translateY(-2px); outline: none; }
 /* ── THE BOARD (2026-07-16 Nate: "the PJCC version of chess.com — nice pieces, board,
    feel, and arrows", after the square-size bug): ──
    · grid-auto-rows:1fr is THE bug fix — without it the implicit rows were `auto`, so
