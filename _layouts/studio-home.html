@@ -901,13 +901,14 @@
   .sl-elbow { position: absolute; right: 14px; top: 38px; width: 9px; height: 9px; border-radius: 50%;
     background: radial-gradient(circle at 35% 30%, #7a7a85, #33333a); box-shadow: 0 1px 3px rgba(0,0,0,0.5); }
   /* the dome head over the page — 2026-07-16 (Nate): "open the face of the light
-     head outward roughly 60 degrees clockwise" — was rotate(-38deg), now +22deg:
-     the mouth points down at the page, matching where the light actually shines. */
+     head outward roughly 60 degrees clockwise" — rotate(-38deg) → +22deg. Then
+     2026-07-17 (Nate): "tilt the lamp head open another 10 or so degrees to match the
+     light ray" → +32deg: the lit mouth now points straight down the cone. */
   .sl-head { position: absolute; right: 28px; top: 2px; width: 35px; height: 21px;
     border-radius: 17px 17px 5px 5px;
     background: linear-gradient(165deg, #6b6b74, #33333a);
     box-shadow: inset 0 -4px 5px rgba(0,0,0,0.4);
-    transform: rotate(22deg); transform-origin: 80% 90%; transition: box-shadow .4s; }
+    transform: rotate(32deg); transform-origin: 80% 90%; transition: box-shadow .4s; }
   /* the throw of light out of the head — dark until the studio ships.
      2026-07-16 evening (Nate): the beam WIDENED a touch at both the mouth and the
      far end, and runs a little shorter — a fuller, stubbier throw. */
