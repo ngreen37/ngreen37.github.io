@@ -129,8 +129,8 @@
     if (winLoss < 20) return 'mistake';
     return 'blunder';
   }
-  var LABEL = { best: 'Best', good: 'Good', ok: 'Solid', inaccuracy: 'Inaccuracy', mistake: 'Mistake', blunder: 'Blunder' };
-  var MARK  = { best: '★', good: '✓', ok: '·', inaccuracy: '?!', mistake: '?', blunder: '??' };
+  var LABEL = { book: 'Book', best: 'Best', good: 'Good', ok: 'Solid', inaccuracy: 'Inaccuracy', mistake: 'Mistake', blunder: 'Blunder' };
+  var MARK  = { book: '📖', best: '★', good: '✓', ok: '·', inaccuracy: '?!', mistake: '?', blunder: '??' };
 
   /* ─────────────────────────── replay + analyse ──────────────────────────────── */
   function replay(movesStr) {
@@ -170,23 +170,31 @@
         var stm = fens[i].split(' ')[1];               // side to move at position i
         evalW.push(stm === 'w' ? evals[i] : -evals[i]); // graph in White's favour
       }
+      // Opening theory (Nate: the first moves "are usually book moves", not blunders).
+      // A move that follows a known line is tagged Book and left out of the accuracy
+      // math — it measures preparation, not calculation. Degrades to no book if the
+      // module isn't present.
+      var op = (root.PJCCOpenings && root.PJCCOpenings.classify)
+        ? root.PJCCOpenings.classify(moves.map(function (m) { return m.uci; }))
+        : { bookPlies: 0, name: null, eco: null };
       for (var k = 0; k < N; k++) {
         var mover = moves[k].mover;                     // 'w' | 'b'
+        var inBook   = k < op.bookPlies;
         var cpBefore = evals[k];                        // mover POV (mover is side to move at k)
         var cpAfter  = -evals[k + 1];                   // after the move it's the opponent's POV → negate
         var winLoss  = Math.max(0, winPct(cpBefore) - winPct(cpAfter));
         var cpLoss   = Math.max(0, cpBefore - cpAfter);
         var isBest   = bests[k] ? (bests[k] === moves[k].uci) : (winLoss < 1);
-        var cls      = classOf(isBest, winLoss);
+        var cls      = inBook ? 'book' : classOf(isBest, winLoss);
         var bestSan  = null, bestFrom = null, bestTo = null;
-        if (!isBest && bests[k]) {
+        if (!inBook && !isBest && bests[k]) {
           try {
             var Cc = C(), Sb = Cc.parseFEN(fens[k]), bu = bests[k];
             var bm = Cc.findMove(Sb, Cc.sqFromName(bu.slice(0, 2)), Cc.sqFromName(bu.slice(2, 4)), bu[4] || null);
             if (bm) { bestSan = Cc.toSAN(Sb, bm); bestFrom = bm.from; bestTo = bm.to; }
           } catch (e) {}
         }
-        var a = accFromLoss(winLoss); accSum[mover] += a; accN[mover] += 1;
+        if (!inBook) { var a = accFromLoss(winLoss); accSum[mover] += a; accN[mover] += 1; }
         plies.push({ n: k, san: moves[k].san, mover: mover, cls: cls, winLoss: winLoss,
                      cpLoss: cpLoss, bestSan: bestSan, bestFrom: bestFrom, bestTo: bestTo,
                      from: moves[k].from, to: moves[k].to });
@@ -195,6 +203,7 @@
                          .sort(function (a, b) { return b.winLoss - a.winLoss; }).slice(0, 3);
       return {
         fens: fens, moves: moves, evalW: evalW, plies: plies, turning: turning,
+        opening: op,
         accuracy: { w: accN.w ? Math.round(accSum.w / accN.w * 10) / 10 : null,
                     b: accN.b ? Math.round(accSum.b / accN.b * 10) / 10 : null }
       };
@@ -241,6 +250,8 @@
       '.pgr-mv .pgr-no{color:#7d6bb0;font-family:"Share Tech Mono",monospace}' +
       '.pgr-mv .pgr-san{font-weight:700}' +
       '.pgr-tag{font-size:.7rem;font-weight:800;padding:1px 7px;border-radius:99px;white-space:nowrap}' +
+      '.pgr-opening{text-align:center;font-size:.82rem;color:#cdbcf2;margin:0 0 10px}.pgr-opening b{color:#d9c9ff}.pgr-opening small{color:#8f82c8;letter-spacing:.05em}' +
+      '.pgr-c-book{color:#c3b4ff;background:rgba(160,140,230,.14)}' +
       '.pgr-c-best{color:#6bffb8;background:rgba(107,255,184,.12)}.pgr-c-good{color:#a9e5ff;background:rgba(120,190,255,.1)}' +
       '.pgr-c-ok{color:#c7bdf0;background:rgba(160,150,220,.1)}.pgr-c-inaccuracy{color:#ffd77a;background:rgba(245,197,24,.12)}' +
       '.pgr-c-mistake{color:#ff9e6b;background:rgba(255,140,80,.14)}.pgr-c-blunder{color:#ff6b6b;background:rgba(255,80,80,.16)}' +
@@ -374,9 +385,14 @@
       }).join('') + '</div>';
     }
 
+    var openH = (rep.opening && rep.opening.name)
+      ? '<div class="pgr-opening">📖 <b>' + esc(rep.opening.name) + '</b>' +
+          (rep.opening.eco ? ' <small>' + esc(rep.opening.eco) + '</small>' : '') + '</div>'
+      : '';
     body.innerHTML =
       '<div class="pgr-acc"><div class="pgr-accbox"><b>' + accW + '%</b><small>White accuracy</small></div>' +
         '<div class="pgr-accbox"><b>' + accB + '%</b><small>Black accuracy</small></div></div>' +
+      openH +
       graph +
       '<div class="pgr-grid"><div class="pgr-left">' +
         '<div class="pgr-boardwrap"><div class="pgr-bar"><i id="pgr-evalfill"></i></div><div id="pgr-board"></div></div>' +
