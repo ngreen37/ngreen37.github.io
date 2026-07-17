@@ -104,11 +104,16 @@
       <span class="sl-beam" id="sl-beam" aria-hidden="true"></span>
     </a>
 
-    <!-- Logo pinned top-left — carries a seasonal emblem (summer/fall/winter/spring) -->
+    <!-- Logo pinned top-left — carries a seasonal emblem (summer/fall/winter/spring).
+         2026-07-17 (Nate, splash check #15 — "Both"): the wordmark is now a LINK to
+         /projects/, the way a site logo always is. The studio also rides the ♜ rook
+         drifter (lore) and the footer signature (below) — convention + lore, both. -->
     <div class="studio-corner-logo">
-      <img src="{{ '/assets/images/mcpuppy-logo-horizontal.svg' | relative_url }}"
-           alt="McPuppy Studios"
-           class="studio-corner-img">
+      <a href="{{ '/projects/' | relative_url }}" class="studio-corner-logo-link" aria-label="McPuppy Studios — the studio">
+        <img src="{{ '/assets/images/mcpuppy-logo-horizontal.svg' | relative_url }}"
+             alt="McPuppy Studios"
+             class="studio-corner-img">
+      </a>
       <span class="corner-season" aria-hidden="true"><i class="cs-mote"></i></span>
     </div>
 
@@ -266,8 +271,11 @@
       {% comment %} Formal studio footer — minimal; replaces the old creed line. {% endcomment %}
       <footer class="studio-footer">
         {%- comment -%} 2026-07-14 (Nate): "cut it at 2026" — the built-in-the-open sig
-             is gone; the line ends at the year plus all-rights. {%- endcomment -%}
-        <b>McPuppy&nbsp;Studios</b> &middot; &copy; {{ site.time | date: "%Y" }} &middot; <span data-jp="不許複製・禁無断転載">all rights reserved</span>
+             is gone; the line ends at the year plus all-rights.
+             2026-07-17 (Nate, splash check #15 — "Both"): the signature is the studio's
+             primary link now, to /projects/ — and it's the one the lamp beam lands on,
+             so the light falls on a door you can walk through. {%- endcomment -%}
+        <a href="{{ '/projects/' | relative_url }}" class="studio-foot-link"><b>McPuppy&nbsp;Studios</b></a> &middot; &copy; {{ site.time | date: "%Y" }} &middot; <span data-jp="不許複製・禁無断転載">all rights reserved</span>
       </footer>
       <script>
         // June 13. No announcement.
@@ -322,6 +330,9 @@
     font-family:'Share Tech Mono', monospace; font-size:11px; letter-spacing:0.12em;
     color:rgba(180,170,210,0.5); }
   .studio-footer b { color:rgba(214,204,238,0.78); font-weight:700; letter-spacing:0.16em; }
+  /* #15 — the signature is a link; keep it looking like the signature, gold on hover */
+  .studio-foot-link { text-decoration:none; transition:filter .2s; }
+  .studio-foot-link:hover b, .studio-foot-link:focus-visible b { color:#F5C518; }
 
   /* Idea #4 — per-quad "what's inside" peek: retired so the boxes no longer
      expand on hover. Markup kept for screen readers / future use. */
@@ -972,7 +983,7 @@
     document.body.classList.toggle('lamp-lit', !!on);
     var status = on
       ? 'The Creator is either currently working, or has shipped an improvement in the last 12 hours.'
-      : 'The lamp is dark right now — nothing shipped in the last 12 hours.';
+      : 'The lamp’s off — the Creator has stepped away from the desk. Nothing has shipped in the last 12 hours, but the line stays open.';
     tip.innerHTML = status + '<br><b>✉ The Direct Line →</b>';
     el.setAttribute('aria-label', status + ' Open the Direct Line.');
 

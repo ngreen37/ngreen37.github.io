@@ -201,6 +201,18 @@ scene (cheapest pilot test) · per-game SFX toggle + unified palette · leitmoti
 ambience loop · the casting call · streaming once themes exist · reactive music · "hum the theme" toy ·
 a podcast feed.
 
+> ★ **THE HIDDEN TRACK** *(2026-07-17 Nate — "bring back the hidden track like on CDs; that was fun."
+> References he loves: The Lawrence Arms' 3 secret tracks on* Cocktails & Dreams*, NOFX's funny one on*
+> Punk in Drublic*, Pennywise burying arguably their best — "Unknown Road" / "Slowdown").* The design is
+> ready; it needs ONE audio asset (a McPuppy-original chiptune, or a track Nate points at) to go live.
+> **The mechanism — the faithful CD trick:** a small McPuppy player on `/projects/` (or the splash) whose
+> transport can **rewind BEFORE 0:00** into a *pregap* — hold ◀◀ at the start of track 1 and the counter
+> runs to −3:00, revealing the ghost track (exactly how you reached the pre-gap cut on a real CD). Alt
+> gesture for the same reward: after the last listed track, a long silence, then the bonus fades in
+> ("ghost track"). Unlisted on purpose — no label in the tracklist; found, not shown. Ties to the ACC
+> **musical rite** already in Av13 (tap A–C–C) as a sibling secret, and to the McPuppy B/W studio brand.
+> **Nate's one call:** which track is the hidden one (record/point at it), then this ships.
+
 **Av6 — Princess companion + the Identity Forge:** react to live game results · seasonal outfits +
 holiday lines · persistent chattiness/mute setting · "walk you to" page suggestions · a mood/needs
 (tamagotchi) loop · she learns your codename (accounts) · a fetch micro-interaction · milestone gifts she

@@ -452,12 +452,18 @@ function recordTactic(cat, clean){
 
 // Region-gate bosses — a tougher, themed puzzle guards each leg of the road.
 const GATES = [200, 400, 600, 800, 1000];
+// These region-gate bosses are Gauntlet ladder characters. `rated` = their ONE
+// canonical rating, taken straight from the Gauntlet roster (2026-07-17 Nate: "the
+// true rating is the Gauntlet rating — make it uniform across everything"). The 200/
+// 400/… keys are Princess's JOURNEY DISTANCE (0–1000), not a rating; the boss card
+// shows the canonical `rated` so a character never wears two numbers. (The CEO's
+// Champion is Fork-only — no Gauntlet peer, so no rating claim.)
 const BOSS = {
-  200:  { name: 'The Mine Foreman',     blurb: 'guards the road into the Sand Mines' },
-  400:  { name: 'The Tidecaller',       blurb: 'holds the sea crossing' },
-  600:  { name: 'The Shogi Sentinel',   blurb: 'bars the way to Shogi Isle' },
-  800:  { name: 'The City Gatekeeper',  blurb: 'stands at the gates of Chess City' },
-  1000: { name: "The CEO's Champion",   blurb: 'the last guardian before Chess City' }
+  200:  { name: 'The Sand-Mine Foreman', rated: 500,  blurb: 'guards the road into the Sand Mines' },
+  400:  { name: 'The Tidecaller',        rated: 650,  blurb: 'holds the sea crossing' },
+  600:  { name: 'The Shogi Sentinel',    rated: 800,  blurb: 'bars the way to Shogi Isle' },
+  800:  { name: 'The City Gatekeeper',   rated: 950,  blurb: 'stands at the gates of Chess City' },
+  1000: { name: "The CEO's Champion",                 blurb: 'the last guardian before Chess City' }
 };
 function gateAt(step){ return GATES.includes(step) ? BOSS[step] : null; }
 function loadProg(){ try { return Object.assign({ step:0, diff:2, best:0 }, JSON.parse(localStorage.getItem(PROG_KEY)) || {}); } catch(e){ return { step:0, diff:2, best:0 }; } }
@@ -565,8 +571,12 @@ function puzzleSolved(){
 let explainCard = null, explainTimer = null;
 function showExplain(){
   const mt = MOTIFS[G.p.theme] || { icon:'★', name:G.p.theme, color:C.good, explain:'' };
-  const nm = (G.p.boss ? (mt.name + ' · ' + G.p.boss.name) : mt.name) +
-    (G.p.rating ? ' · rated ~' + G.p.rating : '');
+  // A BOSS shows the CHARACTER's one canonical Gauntlet rating (no tilde — it's fixed,
+  // not a puzzle estimate), so e.g. the City Gatekeeper always reads 950 here and in
+  // the Gauntlet. A plain puzzle keeps its own approximate ~rating (2026-07-17 Nate).
+  const nm = G.p.boss
+    ? (mt.name + ' · ' + G.p.boss.name + (G.p.boss.rated ? ' · rated ' + G.p.boss.rated : ''))
+    : (mt.name + (G.p.rating ? ' · rated ~' + G.p.rating : ''));
   explainCard = { icon: mt.icon, color: mt.color || C.good, text: G.p.explain || mt.explain, t: 0, name: nm };
   clearTimeout(explainTimer);   // no auto-advance — the player taps OK when ready, so there's time to read it
 }

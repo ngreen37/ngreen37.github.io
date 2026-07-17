@@ -74,6 +74,10 @@ body.studio-body {
   -webkit-user-select: none;
   animation: logo-bob 5s ease-in-out infinite;
 }
+/* #15 (2026-07-17 Nate: "Both") — the wordmark is a real link to /projects/ now.
+   The container stays pointer-events:none (so the season emblem never eats a click);
+   only the anchor re-arms, the way a site logo always leads home. */
+.studio-corner-logo-link { pointer-events: auto; display: inline-block; -webkit-tap-highlight-color: transparent; }
 
 /* 2026-07-16 (Nate): "we went away from the old-computer green" — the Contact pill
    drops the matrix green for the splash's own lavender chrome, matching the 日本語

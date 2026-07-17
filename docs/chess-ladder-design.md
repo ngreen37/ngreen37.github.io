@@ -81,22 +81,39 @@ not own rule-correctness. **Stockfish (C)** is the wrong tool for a beatable, ch
 
 ## 4. Opponent roster (the rungs)
 
-Escalating, lore-grounded, mirroring the world's regions (Checker Town → Sand Mines → Sea →
-Shogi Isle → Chess City) and Siege's boss cadence. Each is a config: `{ depth, blunderRate,
-eval weights, book? }` plus portrait, accent, and flavor lines.
+> ⚠ **This table MIRRORS THE LIVE TOWER (2026-07-17 Nate: "update ladder-design to
+> match live tower, always").** The single source of truth is the `LADDER` array in
+> `assets/games/pjcc_gauntlet.html`; the ratings here are each rival's `elo`, and the
+> **same rating is used everywhere that character appears** (the Fork region-gates,
+> any bio). If the live roster changes, change this table in the same commit.
 
-| # | Opponent | Region | Personality | Strength |
-|---|----------|--------|-------------|----------|
-| 1 | **Checker-Town Recruit** (a pawn conscript) | Checker Town | barely knows the moves; grabby | depth 1, high blunder — tutorial-tier |
-| 2 | **The Checker Town Open Champion** (title-based — currently a loyal guard-dog) | Checker Town | loyal, aggressive, chases captures | depth 1–2, attack-weighted |
-| 3 | **The Sand-Mine Foreman** | Sand Mines | grinder, materialistic | depth 2 |
-| 4 | **The Tidecaller** | The Sea | slow, defensive, positional | depth 2–3, king-safety eval |
-| 5 | **The Shogi Sentinel** | Shogi Isle | tricky, loves forks/tactics | depth 3, low blunder |
-| 6 | **The City Gatekeeper** | Chess City gates | solid all-rounder | depth 3–4 |
-| 7 | **The Heir Apparent** | — | your foil; plays the Pirc | depth 4 + opening book, ~no blunder |
-| 8 | **The CEO** | Chess City | the climax | depth 4–5 + book + best ordering |
+The public tower is **ten floors** (350 → 1800); above Floor 10 the elevator keeps
+going to **three SECRET floors** (2000 / 2200 / 2400), revealed only after Floor 10 is
+cleared (the door + splash mirror the ten only — see [[gauntlet-secret-floors]]).
+Escalating and lore-grounded, mirroring the world's regions (Checker Town → Sand Mines
+→ Sea → Shogi Isle → Chess City → the CEO's Tower). Each rung is a `persona`
+(`{ depth, blunder, mat, pst, aggr, timeMs }`) driving a Stockfish skill level, plus
+portrait, accent, glyph, and flavor lines.
 
-Optional secret rung: **The King** — a gimmick/endgame challenge.
+| Floor | Opponent | Rating | Region |
+|---|----------|-------|--------|
+| 1 | **The Checker Town Open Champion** (a title — currently Argus, a loyal guard-dog; answers only in growls) | 350 | Checker Town |
+| 2 | **The Sand-Mine Foreman** | 500 | The Sand Mines |
+| 3 | **The Tidecaller** | 650 | The Sea |
+| 4 | **The Shogi Sentinel** | 800 | Shogi Isle |
+| 5 | **The City Gatekeeper** | 950 | Chess City gates |
+| 6 | **The Auditor** | 1100 | Tower · Lower Floors |
+| 7 | **The Enforcer** (the Jail Gate) | 1250 | Tower · Mid Floors |
+| 8 | **The Vice President** | 1400 | Tower · Upper Floors |
+| 9 | **The Heir Apparent** | 1600 | Tower · The Antechamber |
+| 10 | **The Executive Assistant** — the coronation | 1800 | Chess City · The Top Floor |
+| — | *secret floors below (revealed after Floor 10):* | | |
+| 11 | **The CEO** | 2000 | The Corner Office |
+| 12 | **The Chairman** | 2200 | The Boardroom in the Clouds |
+| 13 | **The Founder** | 2400 | The Vault Below the Tower |
+
+Clocks (player only, floors 5+): 20:00 at Floor 5, +2:30 per floor, up to 40:00 on the
+deepest secret floor. The rival takes no clock — it ponders instead.
 
 ## 5. Difficulty & personality
 
