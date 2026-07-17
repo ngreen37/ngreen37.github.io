@@ -445,14 +445,30 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
    paint: the hero wears a different sky per phase, a sun rises and sets, the
    moon takes the night watch. ── */
 .hero-sky { position:absolute; inset:0; border-radius:inherit; overflow:hidden; pointer-events:none; }
-.hs-orb { position:absolute; display:none; border-radius:50%; }
+/* 2026-07-17 (Nate: "sun is in an odd spot at 7:52am … do we have a good set arc?").
+   The hero sun used to be pinned to ONE hard-coded spot per phase — so through the whole
+   dawn window (5–8am) it sat frozen at its sunrise height and read wrong by 7:52. It now
+   rides the SAME hour-arc the background town-sky uses: --orb-x/--orb-y are set before
+   first paint (town-weather.html) and re-plotted every 2 min (pjcc-weather.js), so it
+   rises low-left, climbs and crosses high above the centred title, and sets low-right at
+   the skyline. Centre-anchored (translate -50%) so the arc coords land on the disc's
+   middle; the per-phase rules below keep only the LOOK (colour · size · glow · rays). */
+.hs-orb { position:absolute; display:none; border-radius:50%;
+  /* x rides the shared arc straight; y is compressed into this short banner's clear
+     band so the apex lands just BELOW the eyebrow (--orb-y 10%→apex 30%, 62%→edge 68%)
+     — the sun clears the "…Presents" pill at noon and still sets to the rooftops. */
+  left:var(--orb-x, 15%); top:calc(var(--orb-y, 26%) * 0.731 + 22.7%);
+  transform:translate(-50%, -50%);
+  transition:left 3s ease, top 3s ease; }
+@media (prefers-reduced-motion: reduce) { .hs-orb { transition:none; } }
+html.reduce-flourish .hs-orb { transition:none; }
 .hs-star { position:absolute; display:none; left:var(--sx); top:var(--sy);
   width:var(--ss,2px); height:var(--ss,2px); border-radius:50%; background:#fdf9ff;
   box-shadow:0 0 3px 0.5px rgba(232,220,255,0.75); }
 
 /* DAWN — the sun comes up rose-gold over the rooftops */
 html.sky-dawn .home-hero { background:linear-gradient(163deg, #1a0f3d 0%, #3d2b6e 42%, #86395c 76%, #b85a38 104%); }
-html.sky-dawn .hs-orb { display:block; left:16%; bottom:42px; width:30px; height:30px;
+html.sky-dawn .hs-orb { display:block; width:30px; height:30px;
   background:radial-gradient(circle at 40% 36%, #ffe9c9, #ff9d5c 72%);
   box-shadow:0 0 46px 14px rgba(255,157,92,0.30); }
 html.sky-dawn .hero-skyline .sk-ct { border-top-color:rgba(255,170,110,0.5); }
@@ -464,7 +480,7 @@ html.sky-dawn .hero-skyline .sk-ct { border-top-color:rgba(255,170,110,0.5); }
      stops, and the sun's glow/rays/corona below come down the same amount. The sun DISC
      is left alone — it's the shape that says "sun"; only its aura dims. {% endcomment %}
 html.sky-day .home-hero { background:linear-gradient(180deg, #1d539b 0%, #3a79c0 48%, #71a7d5 100%); }
-html.sky-day .hs-orb { display:block; left:15%; top:24px; width:44px; height:44px;
+html.sky-day .hs-orb { display:block; width:44px; height:44px;
   background:radial-gradient(circle at 40% 38%, #fffefb 0%, #fff3b8 34%, #ffd84a 70%, #f5b800 100%);
   box-shadow:0 0 42px 15px rgba(255,216,74,0.46), 0 0 96px 34px rgba(255,216,74,0.20); }
 {% comment %} 2026-07-12 (Nate: "the sun still kind of looks like the moon") — give it
@@ -508,7 +524,7 @@ html.sky-day .hero-sky::before { content:''; position:absolute; inset:0; pointer
    (The faint dashed path-arc was removed 2026-07-12 — Nate: the sky reads well
    enough on its own now. Restore from git if it's ever missed.) */
 html.sky-dusk .home-hero { background:linear-gradient(160deg, #150b36 0%, #3a1e5e 45%, #7c3452 78%, #b0501f 108%); }
-html.sky-dusk .hs-orb { display:block; right:calc(16% - 14px); bottom:-8px; width:28px; height:28px;
+html.sky-dusk .hs-orb { display:block; width:28px; height:28px;
   opacity:0.8;
   background:radial-gradient(circle at 40% 36%, #ffd9a0, #e0662e 74%);
   box-shadow:0 0 30px 9px rgba(224,102,46,0.22); }
@@ -518,7 +534,7 @@ html.sky-dusk .hero-skyline .sk-ct { border-top-color:rgba(255,150,80,0.45); }
    (The moon's dim path-arc was removed 2026-07-12 alongside the dusk one — Nate.) */
 html.sky-night .home-hero { border-color:#2a1d5e;
   background:linear-gradient(150deg, #0a0728 0%, #1d1252 55%, #05030f 100%); }
-html.sky-night .hs-orb { display:block; left:32%; top:16px; width:22px; height:22px;
+html.sky-night .hs-orb { display:block; width:22px; height:22px;
   background:radial-gradient(circle at 38% 34%, #f4f0ff, #b9b2d6 66%, #8f88b4 100%);
   box-shadow:0 0 26px 8px rgba(220,214,255,0.16), inset -5px -4px 7px rgba(80,70,130,0.55); }
 html.sky-night .hs-star { display:block; }
