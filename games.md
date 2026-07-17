@@ -171,6 +171,7 @@ permalink: /games/
 .gdoor { display:grid; grid-template-columns:auto minmax(0,1fr);
   grid-template-areas:"arch pips";
   align-content:center; align-items:center; column-gap:16px; row-gap:5px;
+  position:relative;   /* anchors the pips whisper below the unit */
   text-decoration:none; --acc:#F5C518; }
 .gdoor-pips { grid-area:pips; display:flex; gap:3px; }
 .gdoor-pips i { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.14); }
@@ -178,6 +179,16 @@ permalink: /games/
 .gdoor-pips i.cur { background:var(--acc); box-shadow:0 0 7px var(--acc);
   animation:gdoorPip 1.8s ease-in-out infinite; }
 @keyframes gdoorPip { 50% { opacity:0.4; } }
+/* #14 — the pips whisper (twin of _pjcc-21-gauntlet-door.scss — keep in sync):
+   hover/focus the door and the lift-pips say "Floor N of 10"; aria-label carries
+   the same fact for screen readers. Absolute, so the door never reflows. */
+.gdoor-whisper { position:absolute; top:calc(100% + 5px); left:50%;
+  transform:translate(-50%, -2px); white-space:nowrap;
+  font-family:'Share Tech Mono', ui-monospace, monospace; font-size:9px; letter-spacing:0.14em;
+  color:rgba(233,226,255,0.62); text-shadow:0 0 8px rgba(0,0,0,0.6);
+  opacity:0; transition:opacity .3s ease, transform .3s ease; pointer-events:none; }
+.gdoor:hover .gdoor-whisper,
+.gdoor:focus-visible .gdoor-whisper { opacity:1; transform:translate(-50%, 0); }
 .gdoor-arch { grid-area:arch; position:relative; display:block; width:72px; height:92px;
   border:2px solid rgba(245,197,24,0.6); border-bottom-width:0; border-radius:36px 36px 4px 4px;
   overflow:hidden; box-shadow:0 0 26px -8px var(--acc);
@@ -281,6 +292,7 @@ permalink: /games/
     <a class="gdoor" id="gauntlet-door" href="{{ '/games/the-gauntlet/' | relative_url }}"
        aria-label="The Gauntlet — real chess vs a ladder of ten PJCC rivals">
       <span class="gdoor-pips" id="gdoor-pips" aria-hidden="true"></span>
+      <span class="gdoor-whisper" id="gdoor-whisper" aria-hidden="true"></span>
       <span class="gdoor-arch" aria-hidden="true">
         <i class="gdoor-door"><b class="gdoor-glyph" id="gdoor-glyph">♛</b><u class="gdoor-knob"></u></i>
         <i class="gdoor-seam"></i>
@@ -375,6 +387,11 @@ permalink: /games/
     for (var k = 0; k < NAMES.length; k++) { h += '<i class="' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></i>'; }
     pipHost.innerHTML = h; }
   // (the gdoor-sub caption is gone — 2026-07-16 plate parity; the pips carry progress)
+  // #14 — the pips whisper: hover the door and the dots say what they mean
+  var floorLine = cur >= NAMES.length ? 'Crowned — 10 of 10' : 'Floor ' + (cur + 1) + ' of 10';
+  var wh = document.getElementById('gdoor-whisper');
+  if (wh) wh.textContent = floorLine;
+  door.setAttribute('aria-label', door.getAttribute('aria-label') + ' ' + floorLine + '.');
   var glyph = document.getElementById('gdoor-glyph');
   if (cur >= NAMES.length) {
     door.setAttribute('href', door.getAttribute('href') + '#tower');

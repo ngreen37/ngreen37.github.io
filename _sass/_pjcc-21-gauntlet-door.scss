@@ -18,6 +18,7 @@
 /* (the .gdoor-plate + .gdoor-sub rules are gone — 2026-07-16 evening plate parity:
    no door anywhere carries the THE GAUNTLET plate or a caption any more) */
 .gdoor { display:flex; flex-direction:column; align-items:center; gap:5px; text-decoration:none;
+  position:relative;   /* anchors the pips whisper (the home hero's absolute wins there) */
   --acc:#F5C518; }
 .gdoor-pips { display:flex; gap:3px; }
 .gdoor-pips i { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.14); }
@@ -25,6 +26,19 @@
 .gdoor-pips i.cur { background:var(--acc); box-shadow:0 0 7px var(--acc);
   animation:gdoorPip 1.8s ease-in-out infinite; }
 @keyframes gdoorPip { 50% { opacity:0.4; } }
+/* #14 (2026-07-16 splash check): the PIPS WHISPER — hover/focus the door and the
+   anonymous dots say what they mean: "Floor N of 10" (or "Crowned — 10 of 10").
+   Absolutely positioned under the door so it never reflows the unit; aria-hidden
+   (each page's hydration script appends the same fact to the door's aria-label,
+   so screen readers hear it too). Text is set by that script — keep the three
+   doors (splash · home hero · games hall) in sync. */
+.gdoor-whisper { position:absolute; top:calc(100% + 5px); left:50%;
+  transform:translate(-50%, -2px); white-space:nowrap;
+  font-family:'Share Tech Mono', ui-monospace, monospace; font-size:9px; letter-spacing:0.14em;
+  color:rgba(233,226,255,0.62); text-shadow:0 0 8px rgba(0,0,0,0.6);
+  opacity:0; transition:opacity .3s ease, transform .3s ease; pointer-events:none; }
+.gdoor:hover .gdoor-whisper,
+.gdoor:focus-visible .gdoor-whisper { opacity:1; transform:translate(-50%, 0); }
 .gdoor-arch { position:relative; display:block; width:78px; height:100px;
   border:2px solid rgba(245,197,24,0.6); border-bottom-width:0; border-radius:39px 39px 4px 4px;
   overflow:hidden; box-shadow:0 0 26px -8px var(--acc);

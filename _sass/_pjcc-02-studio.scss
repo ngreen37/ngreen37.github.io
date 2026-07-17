@@ -382,6 +382,12 @@ html.reduce-flourish .quad-mote { display: none; }
   border-color: rgba(103, 200, 150, 0.45);
 
   /* the dawn light coming up over the field's edge */
+  /* #12 (2026-07-16 splash check): ULTRA-SLOW SUNRISE — hover, and first light comes
+     up over the training field: the dawn pool climbs the card and swells over a 6s
+     ease, then sinks back just as slowly when you leave. transform/opacity only, and
+     the layer grows from its own horizon (transform-origin 50% 100%). will-change
+     pre-promotes it so the FIRST hover can't hitch (css-perf lesson #5); the quad's
+     overflow:hidden keeps the risen light inside the frame. */
   &::before {
     content: '';
     position: absolute;
@@ -390,6 +396,17 @@ html.reduce-flourish .quad-mote { display: none; }
     pointer-events: none;
     z-index: 0;
     background: radial-gradient(circle at 50% 118%, rgba(232, 149, 106, 0.22) 0%, transparent 58%);
+    opacity: 0.85;
+    transform: translateY(0) scale(1);
+    transform-origin: 50% 100%;
+    will-change: transform;
+    transition: transform 6s ease-out, opacity 6s ease-out;
+  }
+
+  &:hover::before,
+  &:focus-visible::before {
+    opacity: 1;
+    transform: translateY(-12px) scale(1.14);
   }
 
   .studio-quad-title {
@@ -496,6 +513,10 @@ html.reduce-flourish .quad-mote { display: none; }
   }
 
   /* the lantern: a warm pool of candle-light along the bottom edge, breathing */
+  /* #13 (2026-07-16 splash check): it breathes like a CANDLE now — a 7s cycle of
+     slow swells with small asymmetric wavers (a sine loop reads as a machine; a
+     candle never repeats itself evenly). Rhymes with the Creator's desk lamp:
+     two warm lights, one "keep it on" story. Opacity/scaleY only. */
   .studio-quad-title::after {
     content: '';
     position: absolute;
@@ -503,7 +524,7 @@ html.reduce-flourish .quad-mote { display: none; }
     background: radial-gradient(60% 100% at 50% 100%, rgba(255, 190, 100, 0.5) 0%, rgba(255, 150, 60, 0.16) 45%, transparent 72%);
     pointer-events: none;
     z-index: -1;
-    animation: patreon-footlight 3.4s ease-in-out infinite;
+    animation: patreon-footlight 7s ease-in-out infinite;
   }
 
   .studio-quad-title {
@@ -543,11 +564,16 @@ html.reduce-flourish .quad-mote { display: none; }
 }
 
 @keyframes patreon-footlight {
-  0%, 100% { opacity: 0.62; transform: scaleY(1); }
-  50%      { opacity: 1;    transform: scaleY(1.10); }
+  0%, 100% { opacity: 0.60; transform: scaleY(1); }
+  22%      { opacity: 0.82; transform: scaleY(1.05); }
+  34%      { opacity: 0.70; transform: scaleY(1.02); }
+  55%      { opacity: 0.95; transform: scaleY(1.08); }
+  71%      { opacity: 0.78; transform: scaleY(1.03); }
+  86%      { opacity: 0.88; transform: scaleY(1.06); }
 }
 @media (prefers-reduced-motion: reduce) {
   .studio-quad-grid .studio-quad--patreon .studio-quad-title::after { animation: none; }
+  .studio-quad-grid .studio-quad--academy::before { transition: none; }
 }
 html.reduce-flourish .studio-quad-grid .studio-quad--patreon .studio-quad-title::after { animation: none; }
 

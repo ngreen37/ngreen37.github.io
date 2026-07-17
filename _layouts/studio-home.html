@@ -209,6 +209,7 @@
       <a class="gdoor studio-scene studio-scene--gauntlet" id="studio-gdoor" href="{{ '/games/the-gauntlet/' | relative_url }}"
          aria-label="The Gauntlet — real chess vs a ladder of ten PJCC rivals">
         <span class="gdoor-pips" id="studio-gdoor-pips" aria-hidden="true"></span>
+        <span class="gdoor-whisper" id="studio-gdoor-whisper" aria-hidden="true"></span>
         <span class="gdoor-arch" aria-hidden="true">
           <i class="gdoor-door"><b class="gdoor-glyph" id="studio-gdoor-glyph">♛</b><u class="gdoor-knob"></u></i>
           <i class="gdoor-seam"></i>
@@ -237,6 +238,12 @@
         if (pipHost) { var h = '';
           for (var k = 0; k < NAMES.length; k++) { h += '<i class="' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></i>'; }
           pipHost.innerHTML = h; }
+        // #14 — the pips whisper: hover the door and the dots say what they mean
+        // (aria-label gets the same fact, so screen readers hear it too)
+        var floorLine = cur >= NAMES.length ? 'Crowned — 10 of 10' : 'Floor ' + (cur + 1) + ' of 10';
+        var wh = document.getElementById('studio-gdoor-whisper');
+        if (wh) wh.textContent = floorLine;
+        door.setAttribute('aria-label', door.getAttribute('aria-label') + ' ' + floorLine + '.');
         var glyph = document.getElementById('studio-gdoor-glyph'), sub = document.getElementById('studio-gdoor-sub');
         if (cur >= NAMES.length) {                       // crowned
           if (sub) sub.innerHTML = '<b>Crowned</b>';
