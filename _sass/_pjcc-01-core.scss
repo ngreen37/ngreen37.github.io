@@ -155,11 +155,15 @@ ul, ol {
 }
 
 /* --- Header Top Bar --- */
+/* 2026-07-17 (Nate: "condense the area of the nav, the vertical one — it's way too
+   big"). The header stacks two rows — the logo row + the nav row — and the 80px logo
+   made the whole thing tower. Tightened: a 52px logo and slimmer row padding pull the
+   header's vertical footprint down ~40px on every page (McPuppy + PJCC alike). */
 .header-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 16px 8px;
+  padding: 6px 16px 5px;
   border-bottom: 1px solid rgba(61, 43, 138, 0.2);
 }
 
@@ -203,7 +207,7 @@ ul, ol {
 }
 
 .logo-stacked {
-  height: 80px;
+  height: 52px;   /* was 80px — condensed 2026-07-17 (Nate: the nav area is too big) */
   width: auto;
   display: block;
   filter: invert(1) grayscale(0.35);
@@ -219,7 +223,7 @@ ul, ol {
   align-items: center;
   gap: 16px;
   width: 100%;
-  padding: 12px 18px;
+  padding: 7px 18px;   /* was 12px — condensed 2026-07-17 with the header */
   border-top: 1px solid rgba(110, 95, 160, 0.28);
 }
 .site-nav[data-brand="mcpuppy"] { border-top-color: rgba(200, 200, 200, 0.22); }

@@ -556,6 +556,11 @@
     /* the two scenes (park table + gauntlet door) stay SIDE BY SIDE on a phone —
        the grid keeps them under their quad columns; just match the quads' 9px gap */
     .studio-calls { gap:9px; margin-top:8px; }
+    /* 2026-07-17 (Nate, mobile app): "the table and gauntlet link are too big." The
+       park TABLE shrinks globally via the canon (_pjcc-22-chess-canon.scss — so it's
+       smaller on the games hall + PJCC hero too); here we match the GAUNTLET door to
+       it. transform only; the reserved cell is unchanged (no reflow). */
+    .studio-scene--gauntlet { transform: scale(0.68); transform-origin: center top; }
 
     /* drop the purely decorative pieces so everything fits one screen */
     .studio-footer { display:none; }

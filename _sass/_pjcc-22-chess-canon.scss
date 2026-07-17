@@ -43,6 +43,11 @@
    the invitation; every page's aria-label still names the link. The whole unit also
    came down 5% the same pass.) */
 .pkt-scene { position: relative; display: block; width: 190px; height: 99px; }
+/* 2026-07-17 (Nate, mobile): "the table … [is] too big." The drawing is a fixed 190px
+   unit — half a phone's width. Scale it to a thumbnail on phones EVERYWHERE it appears
+   (splash calls, games-hall doorway, PJCC hero). transform only; the reserved box is
+   unchanged, so no page reflows — the drawing just sits smaller inside it. */
+@media (max-width: 600px) { .pkt-scene { transform: scale(0.68); transform-origin: center top; } }
 .pkt-shadow { position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%);
   width: 167px; height: 12px; border-radius: 50%;
   background: radial-gradient(ellipse, rgba(0, 0, 0, 0.45), transparent 72%);
