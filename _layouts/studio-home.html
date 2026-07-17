@@ -981,8 +981,8 @@
     // #5/#6 — the page knows the lamp is burning: the footer signature warms under it
     document.body.classList.toggle('lamp-lit', !!on);
     var status = on
-      ? 'The Creator is either currently working, or has shipped an improvement in the last 12 hours.'
-      : 'The lamp’s off — the Creator has stepped away from the desk. Nothing has shipped in the last 12 hours, but the line stays open.';
+      ? 'Creator is currently working or was during last 12 hours.'
+      : 'No movement in last 12 hours — Creator has stepped away. All is well; the line stays open.';
     tip.innerHTML = status + '<br><b>✉ The Direct Line →</b>';
     el.setAttribute('aria-label', status + ' Open the Direct Line.');
     // (the aimed horizontal beam was removed 2026-07-17 — Nate: "it doesn't work.")
