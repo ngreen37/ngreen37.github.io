@@ -603,6 +603,17 @@
       overlay.classList.add('is-done');
       try { localStorage.setItem('mcpuppy_seen', '1'); } catch (e) {}
       setTimeout(function() { overlay.style.display = 'none'; }, 950);
+      // #19 (2026-07-16 splash check) — the studio noticed you walk in: as the
+      // cold-open clears, the desk lamp flicks ON for a couple of seconds, then
+      // settles back to the truth (it stays lit only if something actually
+      // shipped in the last 12 hours — see the lamp script). Already-lit lamps
+      // are left alone, and the flash never arms the beam or the footer warmth —
+      // those stay honest (the truth class on <body> is set once, at load).
+      var lamp = document.getElementById('studio-light');
+      if (lamp && !lamp.classList.contains('on')) {
+        lamp.classList.add('on');
+        setTimeout(function () { lamp.classList.remove('on'); }, 2950);
+      }
     }
 
     function reveal() {

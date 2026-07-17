@@ -958,34 +958,38 @@ textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
   transform: perspective(320px) rotateY(-24deg);
 }
 
-/* ── FLOOR 7 · THE ENFORCER — the riveted security door ───────────────────────
-   Mid-tower, where the polite part ends: a dark steel slab, rivets down the
-   sides, a red status light and a card-reader slot. It barely opens. ── */
+/* ── FLOOR 7 · THE ENFORCER — THE JAIL GATE ───────────────────────────────────
+   (2026-07-16 Nate: "Let's use the Jail Gate somewhere, for sure — that was
+   cool.") This grille was born as the City Gatekeeper's door; when Floor 5
+   became a true city gate, the bars found their real owner — the Enforcer runs
+   the tower's holding floor. Re-struck from brass to cold iron, the red status
+   light kept watching between the bars, and the whole gate LIFTS on hover —
+   slower than the old portcullis, because this one is heavy.
+   (The riveted steel slab it replaces: git show 8177df1 -- this file.) ── */
 .gdoor[data-floor="7"] .gdoor-door {
-  border: 1px solid #1c1c22;
+  border: 1px solid #3c3f47;
   background:
-    /* rivets down both jambs */
-    radial-gradient(circle 1.5px at 10% 12%, #6b6b76, transparent 100%),
-    radial-gradient(circle 1.5px at 10% 40%, #6b6b76, transparent 100%),
-    radial-gradient(circle 1.5px at 10% 68%, #6b6b76, transparent 100%),
-    radial-gradient(circle 1.5px at 90% 12%, #6b6b76, transparent 100%),
-    radial-gradient(circle 1.5px at 90% 40%, #6b6b76, transparent 100%),
-    radial-gradient(circle 1.5px at 90% 68%, #6b6b76, transparent 100%),
-    /* the red status light */
+    /* two horizontal cross-bands */
+    linear-gradient(180deg, transparent 0 16%, rgba(140,148,162,0.85) 16% 22%, transparent 22%),
+    linear-gradient(180deg, transparent 0 74%, rgba(140,148,162,0.85) 74% 80%, transparent 80%),
+    /* the red status light, watching between the bars */
     radial-gradient(circle 2.5px at 74% 30%, #ff5a5a, rgba(255,90,90,0.15) 60%, transparent 100%),
-    /* the reader slot */
-    linear-gradient(180deg, transparent 0 46%, rgba(20,20,26,0.95) 46% 50%, transparent 50%),
-    /* brushed steel */
-    repeating-linear-gradient(180deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 3px),
-    linear-gradient(180deg, #3a3a42 0%, #26262c 100%);
-  transition: transform .5s cubic-bezier(.35, .05, .2, 1);
+    /* the vertical bars of the grille */
+    repeating-linear-gradient(90deg, #8a90a0 0 3px, #3a3e48 3px 5px, transparent 5px 11px),
+    /* the dark of the cell behind the bars */
+    linear-gradient(180deg, #14151c, #0a0b10);
+  transform-origin: 50% 100%;
+  transition: transform .7s cubic-bezier(.4, .05, .2, 1);   /* heavy iron — a slow lift */
 }
-.gdoor[data-floor="7"] .gdoor-knob { display: none; }
-.gdoor[data-floor="7"] .gdoor-glyph { color: #ff9a9a; opacity: 0.8;
+.gdoor[data-floor="7"] .gdoor-knob {                 /* an iron ring low on the gate */
+  width: 8px; height: 8px; right: 50%; margin-right: -4px; top: 66%;
+  background: transparent; border: 2px solid #aab2c4; box-shadow: 0 0 4px rgba(170,178,196,0.5);
+}
+.gdoor[data-floor="7"] .gdoor-glyph { color: #ff9a9a; opacity: 0.85;
   filter: drop-shadow(0 0 5px rgba(255,90,90,0.5)); }
 .gdoor[data-floor="7"]:hover .gdoor-door,
-.gdoor[data-floor="7"]:focus-visible .gdoor-door {
-  transform: perspective(340px) rotateY(-13deg);    /* heavy — opens a crack */
+.gdoor[data-floor="7"]:focus-visible .gdoor-door {   /* the jail gate lifts */
+  transform: translateY(-64%);
 }
 
 /* ── FLOOR 8 · THE VICE PRESIDENT — the walnut executive door ─────────────────

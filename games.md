@@ -280,6 +280,15 @@ permalink: /games/
   .gdoor-pips i.cur { animation:none; }
   .gdoor-door { transition:none; }
 }
+
+/* the master reset — one quiet switch at the foot of the hall (2026-07-16 Nate) */
+.ghub-reset-row { text-align:center; margin-top:26px; }
+.ghub-reset { background:none; border:1px solid rgba(154,127,212,0.35); border-radius:999px;
+  color:#7d6bb0; font-family:'Share Tech Mono', monospace; font-size:10px;
+  letter-spacing:0.12em; padding:6px 14px; cursor:pointer;
+  transition:color .2s, border-color .2s; }
+.ghub-reset:hover { color:#ff8a8a; border-color:#ff8a8a; }
+.ghub-reset[disabled] { opacity:0.6; cursor:default; }
 </style>
 
 <!-- ===== THE HALLS — Gauntlet Legends portal screen (pick a hall; no games here) ===== -->
@@ -345,6 +354,16 @@ permalink: /games/
       </span>
     </a>
   </div>
+
+  {%- comment -%} 2026-07-16 (Nate: "A reset button for all games, really… Make sure
+       to offer a confirmation") — ONE quiet switch at the foot of the hall wipes
+       every game's LOCAL progress on this device: pjcc.best.* bests, the Gauntlet
+       climb + its half-played board, the bot-table game, the blindfold unlock, the
+       splash win-glint. Egg fragments and everything on the server (profile, rated
+       games, leaderboards) are deliberately untouched. {%- endcomment -%}
+  <div class="ghub-reset-row">
+    <button class="ghub-reset" id="ghub-reset" type="button">↺ reset local game progress</button>
+  </div>
 </div>
 
 <script src="{{ '/assets/js/pjcc-games-data.js' | relative_url }}"></script>
@@ -400,6 +419,32 @@ permalink: /games/
     if (glyph) glyph.textContent = GLYPHS[cur] || '♛';
     door.setAttribute('href', door.getAttribute('href') + '#climb');
   }
+})();
+
+// The hall's master reset (2026-07-16 Nate: "A reset button for all games, really" —
+// with an are-you-sure). LOCAL progress only: personal bests (pjcc.best.*), the
+// Gauntlet climb + its half-played board, the bot-table game, the blindfold unlock,
+// the splash win-glint. Server records (profile, rated games, leaderboards) and
+// easter-egg fragments are untouched. Reloads after, so the door resets on screen.
+(function () {
+  var btn = document.getElementById('ghub-reset');
+  if (!btn) return;
+  btn.onclick = function () {
+    if (!window.confirm('Reset ALL local game progress on this device?\n\nThis clears: personal bests, the Gauntlet climb (and any half-played board), your bot-table game, and arcade unlocks.\n\nYour profile, rated games and the leaderboards are NOT touched. This can\'t be undone.')) return;
+    try {
+      var kill = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf('pjcc.best.') === 0) kill.push(k);
+      }
+      kill.push('pjcc.gauntlet.v2', 'pjcc.gauntlet.game.v1', 'pjcc.park.bot.v1',
+                'pjcc.blindfold.unlocked', 'pjcc.pt.winday');
+      kill.forEach(function (k) { try { localStorage.removeItem(k); } catch (e) {} });
+    } catch (e) {}
+    btn.textContent = '✓ progress reset';
+    btn.disabled = true;
+    setTimeout(function () { location.reload(); }, 900);
+  };
 })();
 </script>
 

@@ -235,10 +235,12 @@ function skillForRung(idx){
 }
 // THE CLOCK (2026-07-16 Nate: "introduce time clock after round 4. Round 5, you get
 // 15 minutes. Round 6 17 min 30 seconds. Round 7 20 minutes, and so on") — the
-// player's whole-game clock, +2:30 per floor past 5, secret floors included
-// (Floor 11 = 30:00 … Floor 13 = 35:00). The RIVAL takes no clock at all — they
-// just ponder now and then (see aiTurnSoon).
-function clockMsFor(idx){ return idx >= 4 ? (15 + 2.5 * (idx - 4)) * 60000 : 0; }
+// player's whole-game clock, +2:30 per floor past 5, secret floors included.
+// 2026-07-16 later (Nate, after playing it: 15:00 was tight for a 950-rated crowd):
+// "Bump every round up five minutes" — the base is 20:00 now, so Floor 5 = 20:00,
+// Floor 6 = 22:30 … Floor 10 = 32:30, and the secret floors reach 40:00. The RIVAL
+// still takes no clock at all — they just ponder now and then (see aiTurnSoon).
+function clockMsFor(idx){ return idx >= 4 ? (20 + 2.5 * (idx - 4)) * 60000 : 0; }
 function fmtClock(ms){ var s = Math.max(0, Math.ceil(ms / 1000)); var m = (s / 60) | 0; s = s % 60;
   return m + ':' + (s < 10 ? '0' : '') + s; }
 var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
@@ -376,9 +378,51 @@ var PKEY = 'pjcc.gauntlet.v2';
 function loadProg(){ try { return Object.assign({ unlocked:0, beaten:{} }, JSON.parse(localStorage.getItem(PKEY))||{}); } catch(e){ return { unlocked:0, beaten:{} }; } }
 function saveProg(p){ try { localStorage.setItem(PKEY, JSON.stringify(p)); } catch(e){} }
 
+// ---- THE MID-GAME SAVE (2026-07-16 Nate: "add a save, in case they leave and come
+// back, or refresh") ----. Before this, a reload mid-match silently forfeited the
+// board. Now every move writes the whole match — position, move log, rep counts,
+// the spotted pawn, and the clock's REMAINING time (also re-banked every 10s while
+// your clock runs, so a refresh can't wind time back) — and the page boots straight
+// back onto the board. The save clears the moment a match ends, a new one starts,
+// or the climb is reset.
+var SKEY = 'pjcc.gauntlet.game.v1';
+function saveGame(){
+  if (!G || G.over) return;
+  var ms = G.clockMs;
+  if (G.clockOn && G.clockTick) ms = Math.max(0, G.clockMs - (Date.now() - G.clockTick));
+  try { localStorage.setItem(SKEY, JSON.stringify({ v:1, idx:G.idx, pc:G.pc, fen:C.toFEN(G.S),
+    reps:G.reps, log:G.log, clockOn:G.clockOn, clockMs:ms, crockett:G.crockett, last:G.last })); } catch(e){}
+}
+function clearSave(){ try { localStorage.removeItem(SKEY); } catch(e){} }
+function restoreMatch(sv){
+  if (!sv || sv.v !== 1 || !LADDER[sv.idx] || (sv.pc !== 'w' && sv.pc !== 'b')) return false;
+  var rung = LADDER[sv.idx], S;
+  try { S = C.parseFEN(sv.fen); } catch(e){ return false; }
+  if (!S || C.gameResult(S, (sv.reps && sv.reps[C.posKey(S)]) || 1)) return false;   // stale/finished
+  G = { idx:sv.idx, rung:rung, persona:rung.persona, pc:sv.pc,
+        S:S, reps:sv.reps || {}, sel:-1, legal:[], over:false, result:null,
+        last:sv.last || null, thinking:false, promo:null, log:sv.log || [],
+        roundStartMat:null, crockett:(sv.crockett == null ? -1 : sv.crockett) };
+  if (ENGINE){ ENGINE.warmup(); ENGINE.newGame(); }
+  G.legal = C.legalMoves(G.S);
+  G.clockOn = !!sv.clockOn;
+  G.clockMs = sv.clockMs || 0;
+  G.clockTick = (G.clockOn && G.S.turn === G.pc) ? Date.now() : null;
+  hideOverlays();
+  document.getElementById('menu-btn').classList.remove('hidden');
+  document.getElementById('resign-btn').classList.remove('hidden');
+  setupPortrait(rung, sv.idx);
+  boothLast = 0;
+  if (G.S.turn !== G.pc) aiTurnSoon();   // saved mid-reply — the rival finishes thinking
+  return true;
+}
+// while your clock runs, re-bank the remaining time every 10s (see saveGame)
+setInterval(function(){ if (G && !G.over && G.clockOn && G.clockTick) saveGame(); }, 10000);
+
 // ---- runtime ----
 var G = null, raf = null;
 function startRung(idx, pc){
+  clearSave();   // a fresh board supersedes any half-played save
   var rung = LADDER[idx];
   pc = (pc === 'w' || pc === 'b') ? pc : randColor();   // random unless the boss card already drew one
   G = { idx:idx, rung:rung, persona:rung.persona, pc:pc,
@@ -454,6 +498,7 @@ function applyPlayerMove(m){
   var res = C.gameResult(G.S, rep);
   if (res){ endGame(res); return; }
   G.legal = C.legalMoves(G.S);
+  saveGame();   // the board survives a refresh from this move on
   var psan = G.log[G.log.length-1] || '';
   if (psan.indexOf('#')<0){ if (psan.indexOf('+')>=0) callOut('pcheck'); else if (psan.indexOf('x')>=0 && Math.random()<0.34) callOut('pcap'); }
   aiTurnSoon();
@@ -497,6 +542,7 @@ function applyAiMove(myG, S, m){
   if (res){ endGame(res); return; }
   G.legal = C.legalMoves(G.S);
   if (G.clockOn) G.clockTick = Date.now();   // the reply landed — your clock runs again
+  saveGame();
   var esan = G.log[G.log.length-1] || '';
   if (esan.indexOf('#')<0){ if (esan.indexOf('+')>=0) callOut('echeck'); else if (esan.indexOf('x')>=0 && Math.random()<0.30) callOut('ecap'); }
   judgeRound();   // react to how the player just played, now that the reply has landed
@@ -522,6 +568,7 @@ function openPromo(from, to){
 
 // ---- end of game ----
 function endGame(result){
+  clearSave();   // the match is decided — nothing left to resume
   G.over = true; G.result = result; G.thinking = false; G.sel = -1;
   hideBooth();
   document.getElementById('resign-btn').classList.add('hidden');
@@ -931,6 +978,7 @@ document.getElementById('ladder-back').onclick = showMenu;
 document.getElementById('ladder-reset').onclick = function(){
   if (!window.confirm('Reset the whole Gauntlet? Every cleared floor — public and secret — goes back to the street, and the secret floors re-hide. This can\'t be undone.')) return;
   try { localStorage.removeItem(PKEY); } catch(e){}
+  clearSave();   // the half-played board goes with the climb
   G = null;
   showLadder();   // redraw the tower from a clean slate so you can see it reset
 };
@@ -950,6 +998,10 @@ if (window.PJCC && PJCC.ready) PJCC.ready.then(function(){
 // open state: the homepage/splash "Continue the climb" deep-link (#climb / #continue) drops you
 // straight at your CURRENT opponent's boss card; #tower forces the full tower; else the title screen.
 (function(){
+  // a half-played board beats every other entrance (2026-07-16 Nate: the mid-game
+  // save) — leave and come back, or refresh, and you're back at the same position
+  var sv = null; try { sv = JSON.parse(localStorage.getItem(SKEY)); } catch(e){}
+  if (sv && restoreMatch(sv)) return;
   var h = (location.hash||'').toLowerCase();
   if (h === '#tower') showLadder();
   else if (h === '#climb' || h === '#continue') resume();

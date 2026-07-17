@@ -57,6 +57,9 @@
 html.sky-dawn  .pkt-shadow { transform: translateX(-50%) scaleX(1.45); transform-origin: 24% 50%; opacity: 0.8; }
 html.sky-dusk  .pkt-shadow { transform: translateX(-50%) scaleX(1.5);  transform-origin: 78% 50%; opacity: 0.85; }
 html.sky-night .pkt-shadow { transform: translateX(-50%) scaleX(1.18); opacity: 0.5; }
+/* the shadow's 3s ease is motion too — both quiet switches freeze it (#20 courtesy) */
+html.reduce-flourish .pkt-shadow { transition: none; }
+@media (prefers-reduced-motion: reduce) { .pkt-shadow { transition: none; } }
 /* the pedestal post + its foot */
 .pkt-post { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
   width: 9px; height: 44px; background: linear-gradient(#8a6a44, #4a3320); border-radius: 2px; }

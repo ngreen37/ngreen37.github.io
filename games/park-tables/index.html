@@ -331,13 +331,20 @@ a move a day is plenty.</p>
     }
     var mvs = moveRows(g.sans);
 
+    // the nameplates (2026-07-16 Nate: "user names on top and bottom, +x to the
+    // right of the username, rating next to the username") — opponent above the
+    // board, you below it; the material chip rides after whichever name is ahead
+    var prof = PJCC.getProfile();
     app.innerHTML =
       '<div class="pt-table-head"><button class="pjcc-btn-ghost" id="pt-back">← The park</button>' +
-      '<span class="pt-vs">⬜ You' + matChip(S, true) + ' vs <b>' + bot.icon + ' ' + esc(bot.name) + '</b>' + matChip(S, false) + '</span>' +
       '<i class="pt-row-chips">Casual · ' + esc(bot.diff) + ' bot · no clock</i></div>' +
       '<p class="pt-state' + (myTurn ? ' go' : '') + '">' + state + '</p>' +
+      '<div class="pt-plate">' + bot.icon + ' <b>' + esc(bot.name) + '</b>' +
+        ' <i class="pt-plate-rate">(' + esc(bot.diff) + ' bot)</i>' + matChip(S, false) + '</div>' +
       '<div class="pt-board" role="grid" aria-label="Chess board">' + rows +
         (last && last.mover === 'b' ? arrowSVG(last, true) : '') + '</div>' +
+      '<div class="pt-plate pt-plate--me">⬜ <b>' + esc((prof && prof.codename) || 'You') + '</b>' +
+        (myRate ? ' <i class="pt-plate-rate">(' + myRate.rating + ')</i>' : '') + matChip(S, true) + '</div>' +
       '<div class="pt-moves">' + (mvs || '<span class="pjcc-sub">No moves yet.</span>') + '</div>' +
       '<div class="pt-tools">' +
         (st.done
@@ -650,14 +657,23 @@ a move a day is plenty.</p>
       if (theirs.c != null) say = '<div class="pt-say">💬 <b>' + esc(theirs.n) + ':</b> ' + esc(M.EMOTES[theirs.c] || '…') + '</div>';
     }
 
+    // the nameplates (2026-07-16 Nate): opponent on top, you below — codenames, the
+    // rating in parens beside each name, the +x material chip to the RIGHT of it
+    var myName = (white ? m.white_name : m.black_name) || 'You';
+    var myR = white ? m.rating_w : m.rating_b;
+    if (myR == null && myRate) myR = myRate.rating;
+    var oppR = oppRating(m, white).trim();
     app.innerHTML =
       '<div class="pt-table-head"><button class="pjcc-btn-ghost" id="pt-back">← The park</button>' +
-      '<span class="pt-vs">' + (white ? '⬜ You' : '⬛ You') + matChip(S, white) + ' vs <b>' + esc(oppName) + esc(oppRating(m, white)) + '</b>' + matChip(S, !white) + '</span>' +
       '<i class="pt-row-chips">' + chips(m) + '</i></div>' +
       '<p class="pt-state' + (myTurn ? ' go' : '') + '">' + state + '</p>' +
       (canClaim ? '<button class="pjcc-btn" id="pt-flag">⏱ Their time is up — claim the win</button>' : '') +
+      '<div class="pt-plate">' + (white ? '⬛' : '⬜') + ' <b>' + esc(oppName) + '</b>' +
+        (oppR ? ' <i class="pt-plate-rate">' + esc(oppR) + '</i>' : '') + matChip(S, !white) + '</div>' +
       '<div class="pt-board" role="grid" aria-label="Chess board">' + rows +
         (last && ((last.mover === 'w') !== white) ? arrowSVG(last, white) : '') + '</div>' +
+      '<div class="pt-plate pt-plate--me">' + (white ? '⬜' : '⬛') + ' <b>' + esc(myName) + '</b>' +
+        (myR != null ? ' <i class="pt-plate-rate">(' + myR + ')</i>' : '') + matChip(S, white) + '</div>' +
       say +
       '<div class="pt-moves">' + (mvs || '<span class="pjcc-sub">No moves yet.</span>') + '</div>' +
       (m.status !== 'done'
@@ -791,7 +807,13 @@ a move a day is plenty.</p>
 .pt-up { color: #6bffb8; } .pt-dn { color: #ff8a8a; }
 
 .pt-table-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 10px 0 4px; }
-.pt-vs { color: #ddd6f3; }
+/* the nameplates — opponent above the board, you below it (2026-07-16 Nate);
+   rating rides in quiet mono parens, the +x chip to the right of the name */
+.pt-plate { max-width: 420px; margin: 6px 0; color: #ddd6f3; }
+.pt-plate b { color: #fff; }
+.pt-plate--me { margin-bottom: 10px; }
+.pt-plate-rate { font-style: normal; font-family: 'Share Tech Mono', monospace;
+  font-size: 0.72rem; letter-spacing: 0.06em; color: #9a7fd4; }
 .pt-state { color: #9a7fd4; font-size: 0.9rem; margin: 4px 0 10px; }
 .pt-state.go { color: #6bffb8; }
 /* ── THE BOARD (2026-07-16 Nate: "the PJCC version of chess.com — nice pieces, board,

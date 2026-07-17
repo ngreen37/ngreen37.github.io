@@ -63,6 +63,10 @@
 .ts-orb    { position: absolute; z-index: 2; display: none; border-radius: 50%;
   transform: translate(-50%, -50%); transition: left 3s ease, top 3s ease; }
 @media (prefers-reduced-motion: reduce) { .ts-orb { transition: none; } }
+/* #20 (2026-07-16 splash check): the site's OWN flourish switch gets the same
+   courtesy as the OS setting — under reduce-flourish the orb re-plots in a hop,
+   not a 3s glide. A transition is motion too; both switches must freeze it. */
+html.reduce-flourish .ts-orb { transition: none; }
 .ts-shoot  { position: absolute; z-index: 3; display: none; }
 .ts-clouds { position: absolute; inset: 0; z-index: 4; opacity: 0; transition: opacity 1.4s ease; }
 .ts-horizon { position: absolute; left: 0; right: 0; bottom: 0; height: 32%; z-index: 0; }
@@ -229,6 +233,15 @@ html.sky-night .ts-shoot--3 { top: 22%; left: 92%; animation: ts-shoot-fall 67s 
   top: 0; left: 0;
   width: 200%; height: 100%;
   will-change: transform;
+}
+/* #18 (2026-07-16 splash check): CAP THE BANKS ON PHONES. Each bank is a composited
+   layer 200% of the viewport wide, held at the device's full pixel ratio — on a
+   DPR-3 phone that's ~20MB of GPU texture PER BANK, the compositor's biggest
+   customer on the page. Phones only ever show cloud in the top band of the sky
+   (the content column covers the rest), so the layer is cut to the top 62% there —
+   roughly 8MB back per bank, no visible change. Desktop keeps the full deck. */
+@media (max-width: 600px) {
+  .ts-cloud-bank { height: 62%; }
 }
 /* ── 2026-07-13 (Nate: "make the clouds a little more Cloud-like") ─────────────
    Each cloud used to be ONE lone ellipse, which reads as a smudge, not a cloud. A cloud
