@@ -3,6 +3,7 @@ layout: page
 title: McPuppy Studios
 permalink: /projects/
 body_class: theme-studio
+own_title: true
 ---
 
 {% comment %} ── THE MASTER LINKS (2026-07-14 Nate: "make all the links look more like
@@ -31,6 +32,15 @@ body_class: theme-studio
   .studio-master a { border-right: none; border-bottom: 1px solid #2a2830; padding: 12px 16px; }
   .studio-master a:last-child { border-bottom: none; }
 }
+</style>
+
+{% comment %} own_title (2026-07-17 Nate: "move the links … to ABOVE the McP Title") —
+     the master-links bar now rides ABOVE the studio's name banner instead of under it.
+     The banner still full-bleeds to the card edges even though it now sits mid-body. {% endcomment %}
+<h1 class="page-title">McPuppy Studios</h1>
+<style>
+.page-body > .page-title { margin: 2px -44px 24px; border-radius: 0; }
+@media (max-width: 700px) { .page-body > .page-title { margin: 2px -20px 18px; } }
 </style>
 
 <p class="projects-intro">An independent studio created to build PJCC.</p>
@@ -72,19 +82,9 @@ body_class: theme-studio
      context, in the studio's own gold. Half the height, and the clock ticks once a minute
      instead of sixty times. The milestone rides on the context line as a small gold tag
      instead of owning a whole row of its own. ─────────────────────────────────────── {% endcomment %}
-<div class="pj-clocks">
-  <div class="pj-clock">
-    <span class="pj-clock-dot" aria-hidden="true"></span>
-    <span class="pj-clock-k">In development</span>
-    <span class="pj-clock-n" id="pj-days">—</span>
-    <span class="pj-clock-c">days · since 1 Mar 2026</span>
-  </div>
-  <div class="pj-clock">
-    <span class="pj-clock-k">Episode 1</span>
-    <span class="pj-clock-n" id="pj-eta">—</span>
-    <span class="pj-clock-c">days out · 21 Oct 2027</span>
-  </div>
-</div>
+{% comment %} The two clocks now render at the FOOT of the page, just above the
+     thank-yous (2026-07-17 Nate: "move the counters to the bottom, just above the Thank
+     Yous") — the markup + its tick script live down there; these styles stay here. {% endcomment %}
 <style>
 .pj-clocks { display: grid; grid-template-columns: 1fr 1fr; margin: 16px 0 22px;
   background: #131218; border: 1px solid #2a2830; border-radius: 10px; overflow: hidden; }
@@ -108,32 +108,6 @@ body_class: theme-studio
 }
 @media (prefers-reduced-motion: reduce){ .pj-clock-dot { animation: none; } }
 </style>
-<script>
-/* Both clocks, one timer, once a minute. Days is the only unit that means anything on a
-   project this long — the old to-the-second stopwatch just made the page fidget.
-
-   MILESTONES REMOVED 2026-07-13 (Nate: "remove the 100 day award and remove any future
-   milestone markers from occurring. we're past that!"). There was a table of them — 30 / 60
-   / 100 / 180 / 365 / 500 days — and whichever was highest showed as a gold ★ tag on the
-   context line. A studio that congratulates itself for still existing is a studio with
-   nothing else to report, and this page now has plenty. The line just states the start date.
-   The whole mechanism is gone, not disabled, so no future one can fire either. */
-(function () {
-  var START  = 1772337600000;                        // 1 Mar 2026 00:00 EDT
-  var TARGET = Date.parse('2027-10-21T04:00:00Z');   // midnight EDT
-  var days = document.getElementById('pj-days');
-  var eta  = document.getElementById('pj-eta');
-  if (!days || !eta) return;
-
-  function tick() {
-    days.textContent = Math.floor(Math.max(0, Date.now() - START) / 86400000).toLocaleString();
-    eta.textContent  = Math.ceil(Math.max(0, TARGET - Date.now()) / 86400000).toLocaleString();
-  }
-  tick();
-  setInterval(tick, 60000);
-})();
-</script>
-
 <div class="projects-list">
 
   <div class="project-card project-card-active">
@@ -225,6 +199,39 @@ body_class: theme-studio
      it — so the two read as one credit roll instead of two competing formats. The reasons are
      in the git history if he ever wants them on a page of their own.
      ───────────────────────────────────────────────────────────── {% endcomment %}
+{% comment %} THE STUDIO'S TWO CLOCKS — moved to the foot 2026-07-17 (Nate: "move the
+     counters to the bottom, just above the Thank Yous"). The markup + tick script ride
+     together here so the script still finds its elements at parse time; the styles live
+     up top with the master-links block. {% endcomment %}
+<div class="pj-clocks">
+  <div class="pj-clock">
+    <span class="pj-clock-dot" aria-hidden="true"></span>
+    <span class="pj-clock-k">In development</span>
+    <span class="pj-clock-n" id="pj-days">—</span>
+    <span class="pj-clock-c">days · since 1 Mar 2026</span>
+  </div>
+  <div class="pj-clock">
+    <span class="pj-clock-k">Episode 1</span>
+    <span class="pj-clock-n" id="pj-eta">—</span>
+    <span class="pj-clock-c">days out · 21 Oct 2027</span>
+  </div>
+</div>
+<script>
+(function () {
+  var START  = 1772337600000;                        // 1 Mar 2026 00:00 EDT
+  var TARGET = Date.parse('2027-10-21T04:00:00Z');   // midnight EDT
+  var days = document.getElementById('pj-days');
+  var eta  = document.getElementById('pj-eta');
+  if (!days || !eta) return;
+  function tick() {
+    days.textContent = Math.floor(Math.max(0, Date.now() - START) / 86400000).toLocaleString();
+    eta.textContent  = Math.ceil(Math.max(0, TARGET - Date.now()) / 86400000).toLocaleString();
+  }
+  tick();
+  setInterval(tick, 60000);
+})();
+</script>
+
 <section class="mcp-thanks" aria-label="Special thanks">
   <div class="mcp-thanks-rule" aria-hidden="true"></div>
 
