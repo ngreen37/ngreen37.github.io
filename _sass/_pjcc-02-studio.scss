@@ -79,6 +79,9 @@ body.studio-body {
    drops the matrix green for the splash's own lavender chrome, matching the 日本語
    toggle below it so the two corner pills read as a set. Hover goes gold like
    everything else on the splash. */
+/* 2026-07-16 evening (splash check #3): the two pills now share ONE spec — Poppins
+   600 · 11px on a 15px line · 1.5px tracking · 5px 14px padding · 1.5px border —
+   keep .studio-corner-lang (inline in _layouts/studio-home.html) in step. */
 .studio-corner-about {
   position: fixed;
   top: 22px;
@@ -87,6 +90,7 @@ body.studio-body {
   font-family: 'Poppins', sans-serif;
   font-size: 11px;
   font-weight: 600;
+  line-height: 15px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: #c9a7ff;
@@ -202,6 +206,77 @@ html.season-spring .studio-corner-img { filter: invert(1) drop-shadow(0 0 7px rg
   50%      { transform: scale(1.12); opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) { .corner-season { animation: none; } }
+
+/* ── #11 (2026-07-16 splash check): ONE seasonal mote drifts off the PJCC quad — the
+   season calendar walks into the room instead of waiting in the logo corner. A single
+   particle sheds from the quad's inner shoulder, drifts into the grid's crossing and
+   dissolves; most of each cycle is stillness. Skins mirror .cs-mote / the town-sky
+   season particles (leaf / frost / petal; summer is a warm ember-mote that RISES —
+   pollen by day, firefly by night). Transform/opacity only. The mote is an
+   absolutely-positioned child of the quad GRID, not of the quad: absolute children
+   of a grid container take no grid slot (so the quads' nth-child entrance rules are
+   untouched) and the quad's own overflow:hidden can't clip the drift. */
+.quad-mote {
+  position: absolute;
+  left: 46.5%;
+  top: 16%;
+  width: 11px;
+  height: 11px;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  animation: quad-mote-drift 24s ease-in-out infinite;
+}
+/* fall — an amber leaf tumbling off the quad */
+html.season-fall .quad-mote {
+  border-radius: 60% 12% 60% 12%;
+  background: linear-gradient(150deg, #f0a24a, #d6782a);
+  box-shadow: 0 0 6px rgba(214, 120, 42, 0.4);
+}
+/* winter — a frost mote settling */
+html.season-winter .quad-mote {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, #ffffff, #bcdcf5 72%);
+  box-shadow: 0 0 8px 2px rgba(150, 194, 235, 0.5);
+}
+/* spring — a petal on the air */
+html.season-spring .quad-mote {
+  border-radius: 60% 12% 60% 12%;
+  background: linear-gradient(150deg, #ffd0e2, #8cd496);
+  box-shadow: 0 0 6px rgba(140, 212, 150, 0.4);
+}
+/* summer — a warm ember-mote that rises off the gold title instead of falling */
+html.season-summer .quad-mote {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #ffe9b0, #f5c518 70%);
+  box-shadow: 0 0 8px 2px rgba(245, 197, 24, 0.45);
+  animation-name: quad-mote-rise;
+  animation-duration: 26s;
+}
+@keyframes quad-mote-drift {
+  0%   { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  6%   { opacity: 0.85; }
+  26%  { transform: translate(30px, 56px) rotate(140deg); opacity: 0.85; }
+  44%  { transform: translate(6px, 116px) rotate(260deg); opacity: 0; }
+  100% { transform: translate(6px, 116px) rotate(260deg); opacity: 0; }
+}
+@keyframes quad-mote-rise {
+  0%   { transform: translate(0, 0); opacity: 0; }
+  8%   { opacity: 0.9; }
+  24%  { transform: translate(20px, -42px); opacity: 0.9; }
+  40%  { transform: translate(-4px, -88px); opacity: 0; }
+  100% { transform: translate(-4px, -88px); opacity: 0; }
+}
+/* held with the quads, so nothing drifts over an empty stage during the opening
+   beat (JS-off never sets splash-seq, so nothing is ever stuck hidden) */
+html.splash-seq .studio-quad-grid:not(.is-lit) .quad-mote { display: none; }
+@media (max-width: 600px) { .quad-mote { display: none; } }
+@media (prefers-reduced-motion: reduce) { .quad-mote { display: none; } }
+html.reduce-flourish .quad-mote { display: none; }
 
 
 
@@ -545,6 +620,7 @@ html.reduce-flourish .studio-quad-grid .studio-quad--patreon .studio-quad-title:
 
   .studio-corner-about {
     font-size: 9px;
+    line-height: 12px;
     padding: 6px 10px;
     letter-spacing: 1px;
     top: 16px;

@@ -281,11 +281,18 @@ a move a day is plenty.</p>
     else botRender();
   }
 
+  /* the splash remembers a win (2026-07-16 splash check #10): ANY Park Tables win —
+     live or bot — stamps today here, and the splash's park table answers with one
+     gold square glinting for the rest of the day (.pkt-won in the chess canon).
+     Same-browser day string on both ends, so the stamp expires itself at midnight. */
+  function markWin(){ try { localStorage.setItem('pjcc.pt.winday', new Date().toDateString()); } catch (e) {} }
+
   function botFinish(st, g){
     st.done = 1;
     st.result = g.result === 'checkmate' ? (g.S.turn === 'w' ? '0-1' : '1-0') : '1/2-1/2';
     st.reason = g.result;
     botSave(st);
+    if (st.result === '1-0') markWin();            // you play White at every bot table
   }
 
   function botRender(){
@@ -575,6 +582,9 @@ a move a day is plenty.</p>
         var changed = !cur || m.moves !== cur.moves || m.status !== cur.status ||
           m.emote_w_at !== cur.emote_w_at || m.emote_b_at !== cur.emote_b_at ||
           claimNow !== lastClaimable;
+        // a win landing while we watch (recorded from the other side) → splash glint
+        if (cur && cur.status !== 'done' && m.status === 'done' &&
+            ((m.result === '1-0' && m.white === uid()) || (m.result === '0-1' && m.black === uid()))) markWin();
         cur = m; lastClaimable = claimNow;
         if (changed) renderTable();
         schedulePoll();
@@ -666,7 +676,7 @@ a move a day is plenty.</p>
     var fl = document.getElementById('pt-flag');
     if (fl) fl.onclick = function(){
       fl.disabled = true;
-      M.claimTimeout(m.id).then(function(){ openTable(m.id); })
+      M.claimTimeout(m.id).then(function(){ markWin(); openTable(m.id); })
         .catch(function(e){ fl.disabled = false; toast(e.message); });
     };
     Array.prototype.forEach.call(app.querySelectorAll('[data-emote]'), function (b) {
@@ -692,6 +702,8 @@ a move a day is plenty.</p>
     // terminal position not yet recorded → either player records the honest result
     if (m.status === 'active' && g.result) {
       var res = g.result === 'checkmate' ? (S.turn === 'w' ? '0-1' : '1-0') : '1/2-1/2';
+      // the position is final in my favour regardless of which client records it
+      if ((res === '1-0' && white) || (res === '0-1' && !white)) markWin();
       M.finish(m.id, res, g.result).then(function(){ openTable(m.id); }).catch(function(){});
     }
   }

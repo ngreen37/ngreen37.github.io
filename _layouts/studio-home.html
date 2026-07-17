@@ -64,6 +64,14 @@
       <a href="{{ '/classified/' | relative_url }}" class="drift-piece" id="drift-secret" aria-label="???">✦</a>
     </div>
 
+    {% comment %} #9 (2026-07-16 splash check) — ON THE HOUR, the ✦ rewards the patient:
+         one bright streak with a comet tail, right to left, then the sky goes back to
+         its dim 48s patrol. Night-only like the star itself, and decorative only —
+         the slow ✦ above stays the actual door to /classified/. Kept OUTSIDE
+         .studio-drifters so the drifters' nth-child position rules never shift.
+         Fired by the splash script below. {% endcomment %}
+    <b class="drift-streak" id="drift-streak" aria-hidden="true">✦</b>
+
     {% comment %} Idea #3 — every so often a faint sigil blooms among the drifters,
          then dissolves: the Av13 portal glyph, foreshadowed. Skipped under
          reduced-motion. Built once, pulsed by the JS below. {% endcomment %}
@@ -83,6 +91,8 @@
     <a class="studio-light" id="studio-light" href="{{ '/direct-line/' | relative_url }}"
        data-built="{{ site.time | date_to_xmlschema }}" aria-label="Studio status — open the Direct Line">
       <span class="sl-lamp" aria-hidden="true">
+        <i class="sl-glow"></i>
+        <i class="sl-desk"></i>
         <i class="sl-cone"></i>
         <i class="sl-arm"></i>
         <i class="sl-arm2"></i>
@@ -91,6 +101,7 @@
         <i class="sl-base"></i>
       </span>
       <span class="sl-tip" id="sl-tip"></span>
+      <span class="sl-beam" id="sl-beam" aria-hidden="true"></span>
     </a>
 
     <!-- Logo pinned top-left — carries a seasonal emblem (summer/fall/winter/spring) -->
@@ -104,13 +115,17 @@
     <div class="studio-content">
 
       <!-- Tagline at top center (where logo was) -->
+      {% comment %} Word order = the belief's arc (2026-07-16 splash check #8): the
+           cycle now CLIMBS to the destination — Animation, the animated series — and
+           lands there last, right before the studio's name. (The spans' order IS the
+           schedule: tagline-w1..w7 in _pjcc-04-flair.scss fire by nth-child.) {% endcomment %}
       <div class="studio-tagline" aria-hidden="true">
         <span class="tagline-word">Chess.</span>
         <span class="tagline-word">Blog.</span>
         <span class="tagline-word">Podcast.</span>
-        <span class="tagline-word">Animation.</span>
         <span class="tagline-word">Academy.</span>
         <span class="tagline-word">Games.</span>
+        <span class="tagline-word">Animation.</span>
         <span class="tagline-word tagline-main">
           <span class="tagline-main-studio">McPuppy Studios</span>
           {% comment %} The second "i" in "Million" is the door to /classified/. It looks
@@ -157,6 +172,13 @@
           <span class="studio-quad-sub" data-jp="アニメを支援">Fuel the animation.</span>
         </a>
         {% endif %}
+
+        {% comment %} #11 (2026-07-16 splash check) — ONE seasonal mote sheds off the
+             PJCC quad (leaf / frost / petal; a rising ember-mote in summer) and
+             dissolves into the room — the season calendar carried into the page, not
+             just the logo corner. Styled per html.season-* in _pjcc-02-studio.scss;
+             absolutely positioned, so it takes no grid slot. {% endcomment %}
+        <i class="quad-mote" aria-hidden="true"></i>
 
       </div>
 
@@ -380,6 +402,29 @@
     100%  { transform:translateX(calc(-120vw));   opacity:0; }
   }
 
+  /* #9 — THE HOURLY REWARD (2026-07-16 splash check): at the top of each hour the ✦
+     STREAKS — brighter, faster, and trailing a comet tail — one pass right-to-left,
+     then the sky returns to the patient 48s patrol. Same layer as the drifters
+     (z-index:0, behind the content), transform/opacity only, one 1.7s flight per
+     hour. The JS below re-arms it against the local clock, so a watcher can learn
+     the ritual: the star falls on the hour. */
+  .drift-streak { position:fixed; right:-8%; top:26%; z-index:0; font-size:28px;
+    color:rgba(235,232,255,0.6); text-shadow:0 0 9px rgba(200,190,255,0.7);
+    opacity:0; pointer-events:none; will-change:transform; }
+  .drift-streak::after { content:''; position:absolute; left:100%; top:50%;
+    width:150px; height:2px; transform:translateY(-50%);
+    background:linear-gradient(90deg, rgba(210,205,255,0.55), transparent 85%); }
+  .drift-streak.go { animation:streak-fly 1.7s linear both; }
+  @keyframes streak-fly {
+    0%   { transform:translateX(0);       opacity:0; }
+    8%   { opacity:1; }
+    84%  { opacity:1; }
+    100% { transform:translateX(-130vw);  opacity:0; }
+  }
+  html:not(.sky-night) .drift-streak { display:none; }
+  html.reduce-flourish .drift-streak { display:none !important; }
+  @media (prefers-reduced-motion: reduce) { .drift-streak { display:none !important; } }
+
   /* Idea #3 — the sigil bloom (the "ACCcccccc" carving that flashes on entry).
      It flashes IN FRONT of the grid (z-index:6) as a translucent gold "transmission
      ghost" — on theme with the SIGNAL/decrypt cold-open — then fades. pointer-events:
@@ -444,7 +489,8 @@
      tap floor on a phone. Fingers get taller boxes; desktop look unchanged. */
   @media (pointer: coarse) {
     .studio-replay { padding:12px 14px; }
-    .studio-corner-lang { padding:11px 13px !important; }
+    /* matches Contact's coarse padding (splash check #3 — the pills stay twins tapped) */
+    .studio-corner-lang { padding:10px 12px !important; }
   }
 
   /* Idea #5 — the brand-coloured enter wipe */
@@ -715,6 +761,40 @@
       setTimeout(function () { star.classList.add('is-in'); }, seenStar ? 400 : 4400);
     }
 
+    // #9 — ON THE HOUR the ✦ streaks with a comet tail: the patient watcher's
+    // reward. Armed against the LOCAL clock (so "on the hour" means the viewer's
+    // hour) and re-armed after every firing, so a long-lived tab keeps the ritual.
+    // Skipped while the tab is hidden or the sky isn't night — the star only flies
+    // after dark, same shift as its slow patrol.
+    var streakEl = document.getElementById('drift-streak');
+    if (streakEl && !reduce) {
+      var streakFire = function () {
+        if (document.hidden) return;
+        if (!document.documentElement.classList.contains('sky-night')) return;
+        streakEl.style.top = (16 + Math.random() * 26) + '%';   // a different lane each hour
+        streakEl.classList.remove('go');
+        void streakEl.offsetWidth;                               // restart the one-shot flight
+        streakEl.classList.add('go');
+      };
+      var streakArm = function () {
+        var d = new Date();
+        var wait = ((60 - d.getMinutes()) * 60 - d.getSeconds()) * 1000 - d.getMilliseconds();
+        setTimeout(function () { streakFire(); streakArm(); }, Math.max(wait, 1000));
+      };
+      streakArm();
+    }
+
+    // #10 — the doors remember you: win a Park Tables game today (live or bot) and
+    // ONE gold square on the splash's park table glints until midnight. The game
+    // stamps localStorage 'pjcc.pt.winday'; the glint style is canon
+    // (_pjcc-22-chess-canon.scss .pkt-won).
+    try {
+      if (localStorage.getItem('pjcc.pt.winday') === new Date().toDateString()) {
+        var pktWon = document.querySelector('.studio-scene--park .pkt-scene');
+        if (pktWon) pktWon.classList.add('pkt-won');
+      }
+    } catch (e) {}
+
     // Drifters — hovering drops the drift to a QUARTER speed (Nate 2026-07-15: "slow
     // them down by 75%", not a dead stop). playbackRate is smooth (no jump) and the CSS
     // lights the glyph gold at the same beat, so it's easy to land the link. Desktop
@@ -739,14 +819,20 @@
   /* 2026-07-16 (Nate): "a little more space between Contact and the Japanese toggle" —
      top 54 → 64 (and 60 → 66 on phones), a clear breath between the two pills even
      with touch padding on. */
+  /* 2026-07-16 evening (splash check #3, Nate: "Let's do this"): the two corner pills
+     now wear ONE spec — Poppins 600 · 11px on a 15px line · 1.5px tracking ·
+     uppercase · 5px 14px padding · 1.5px border — so Contact and 日本語 read as a
+     set (the uppercase also dresses the toggle's "EN" state to match). Keep in step
+     with .studio-corner-about in _pjcc-02-studio.scss. */
   .studio-corner-lang { position: fixed; top: 64px; right: 28px; z-index: 3; font-family: 'Poppins', sans-serif;
-    font-size: 11px; font-weight: 700; letter-spacing: 1px; background: rgba(20,12,45,0.55); color: #c9a7ff;
-    border: 1px solid #4a3a86; border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+    font-size: 11px; font-weight: 600; line-height: 15px; letter-spacing: 1.5px; text-transform: uppercase;
+    background: rgba(20,12,45,0.55); color: #c9a7ff;
+    border: 1.5px solid #4a3a86; border-radius: 999px; padding: 5px 14px; cursor: pointer; }
   .studio-corner-lang:hover { border-color: #F5C518; color: #F5C518; }
   /* 2026-07-15 (Nate): on a phone the touch-padded Contact pill grew tall enough to
      collide with 日本語 below it — drop the toggle to clear it (16px Contact top +
-     its ~34px tapped height, then a gap). */
-  @media (max-width: 600px){ .studio-corner-lang { top: 66px; right: 14px; font-size: 9px; padding: 4px 9px; } }
+     its ~34px tapped height, then a gap). Phone metrics mirror Contact's too. */
+  @media (max-width: 600px){ .studio-corner-lang { top: 66px; right: 14px; font-size: 9px; line-height: 12px; letter-spacing: 1px; padding: 6px 10px; } }
   </style>
   <script src="{{ '/assets/js/pjcc-lang.js' | relative_url }}"></script>
 
@@ -792,6 +878,54 @@
   .studio-light.on .sl-head { box-shadow: inset 0 -4px 6px rgba(255,207,74,0.55), 0 0 14px 2px rgba(255,207,74,0.35); }
   .studio-light.on .sl-cone { opacity: 0.6; animation: sl-warm 3.2s ease-in-out infinite; }
   @keyframes sl-warm { 0%,100% { opacity: 0.52; } 50% { opacity: 0.7; } }
+
+  /* #4 (2026-07-16 splash check) — A SLIVER OF DESK: a dark wood edge runs in from
+     the screen corner under the lamp's base, so the lamp is standing on the
+     Creator's desk instead of floating in the sky — "working late", grounded. The
+     slab runs off the right edge of the window (the rest of the desk is out of
+     frame) and its top lines up under the base plate. */
+  .sl-desk { position: absolute; left: -34px; right: -40px; bottom: -7px; height: 8px;
+    border-radius: 4px 0 0 2px;
+    background: linear-gradient(180deg, #5a4128, #43301c 45%, #2b1e10);
+    box-shadow: 0 -1px 0 rgba(255,235,200,0.10), 0 4px 10px rgba(0,0,0,0.45);
+    pointer-events: none; }
+  .sl-desk::after { content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 3px;
+    border-radius: 0 0 0 3px; background: #1c130a; }
+  /* when the lamp burns, its light catches the desk edge */
+  .studio-light.on .sl-desk { box-shadow: 0 -1px 0 rgba(255,207,74,0.25), 0 4px 10px rgba(0,0,0,0.45); }
+
+  /* #5 (2026-07-16 splash check) — THE THROW: when the lamp is lit, a long beam
+     reaches across the room and lands on the footer's McPuppy Studios signature —
+     when the studio ships, the light literally falls on the studio's name. The
+     script below AIMS it (origin = the head's mouth, target = the signature's
+     centre) and re-aims on resize/scroll, so it lands at any window size; the
+     footer is display:none on phones, so the beam simply never arms there. Faint
+     by day — the sun washes it out — and static: no animation of its own. */
+  .sl-beam { position: fixed; z-index: 2; height: 110px; pointer-events: none; opacity: 0;
+    transform-origin: left 50%;
+    /* far end kept narrow (~68px) — wider read as a grey panel over the footer, not light */
+    clip-path: polygon(0 47%, 0 53%, 100% 81%, 100% 19%);
+    background: linear-gradient(90deg, rgba(255,224,138,0.38), rgba(255,214,96,0.10) 55%, rgba(255,196,90,0.26) 100%);
+    transition: opacity .6s; }
+  .studio-light.on .sl-beam.is-aimed { opacity: 0.11; }
+  /* the pool where it lands: the signature warms under the light */
+  body.lamp-lit .studio-footer b { color: #ffe2ac; text-shadow: 0 0 14px rgba(255,207,74,0.45); }
+
+  /* #6 (2026-07-16 splash check, DOUBLE YES) — AFTER DARK, THE BEACON: at night the
+     lit lamp becomes the page's only warm light. The beam more than doubles, the
+     head burns hotter, a wide still pool of warmth settles into the corner, and the
+     signature glows brighter under it. All state, no new animation — the only thing
+     that ever moves is the cone's existing candle-breath. */
+  html.sky-night .studio-light.on .sl-beam.is-aimed { opacity: 0.26; }
+  html.sky-night .studio-light.on .sl-cone { opacity: 0.85; animation-name: sl-warm-night; }
+  @keyframes sl-warm-night { 0%,100% { opacity: 0.72; } 50% { opacity: 0.94; } }
+  html.sky-night .studio-light.on .sl-head { box-shadow: inset 0 -4px 6px rgba(255,207,74,0.75), 0 0 24px 5px rgba(255,207,74,0.5); }
+  .sl-glow { position: absolute; right: -46px; bottom: -20px; width: 320px; height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255,200,90,0.15), transparent 72%);
+    opacity: 0; transition: opacity 1.2s; pointer-events: none; }
+  html.sky-night .studio-light.on .sl-glow { opacity: 1; }
+  html.sky-night body.lamp-lit .studio-footer b { color: #ffedc8; text-shadow: 0 0 18px rgba(255,207,74,0.65); }
   .studio-light { text-decoration: none; }   /* it's a link now — no underline ghosts in the tip */
   .sl-tip { position: absolute; right: 0; bottom: calc(100% + 8px); width: 224px; padding: 9px 12px;
     background: rgba(14,9,30,0.96); border: 1px solid #4a3a86; border-radius: 9px; color: #e9e2ff;
@@ -800,7 +934,11 @@
     box-shadow: 0 12px 30px -10px rgba(0,0,0,0.7); }
   .sl-tip b { color: #F5C518; }
   .studio-light:hover .sl-tip, .studio-light:focus .sl-tip, .studio-light:focus-within .sl-tip { opacity: 1; transform: none; }
-  @media (prefers-reduced-motion: reduce) { .studio-light.on .sl-cone { animation: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    /* the night rule above raises specificity, so it's named here too */
+    .studio-light.on .sl-cone,
+    html.sky-night .studio-light.on .sl-cone { animation: none; }
+  }
   </style>
   <script>
   // The lamp is LIT when the site last shipped (built) within TWELVE hours (Nate
@@ -812,11 +950,40 @@
     var built = Date.parse(el.getAttribute('data-built') || '') || 0;
     var on = built && (Date.now() - built) < 12 * 3600 * 1000;
     el.classList.toggle('on', !!on);
+    // #5/#6 — the page knows the lamp is burning: the footer signature warms under it
+    document.body.classList.toggle('lamp-lit', !!on);
     var status = on
       ? 'The Creator is either currently working, or has shipped an improvement in the last 12 hours.'
       : 'The lamp is dark right now — nothing shipped in the last 12 hours.';
     tip.innerHTML = status + '<br><b>✉ The Direct Line →</b>';
     el.setAttribute('aria-label', status + ' Open the Direct Line.');
+
+    // #5 — AIM THE THROW at the footer's McPuppy Studios signature. Origin is the
+    // lamp head's mouth (measured, so it tracks the head's pose), target is the
+    // signature's centre; the beam is a fixed wedge rotated between the two, so it
+    // lands at ANY window size. Re-aimed on resize/scroll and again when the fonts
+    // settle (the footer shifts a few px when Share Tech Mono lands). If the lamp
+    // is dark or the footer is hidden (phones), the beam never arms.
+    var beam = document.getElementById('sl-beam');
+    function aim() {
+      if (!beam) return;
+      var sig = document.querySelector('.studio-footer b');
+      var head = el.querySelector('.sl-head');
+      var s = sig ? sig.getBoundingClientRect() : null;
+      if (!on || !head || !s || !s.width) { beam.classList.remove('is-aimed'); return; }
+      var h = head.getBoundingClientRect();
+      var x0 = h.left + h.width * 0.2, y0 = h.bottom - h.height * 0.3;
+      var dx = (s.left + s.width / 2) - x0, dy = (s.top + s.height / 2) - y0;
+      beam.style.left = x0 + 'px';
+      beam.style.top = (y0 - 55) + 'px';           // 55 = half the wedge's height
+      beam.style.width = Math.sqrt(dx * dx + dy * dy) + 'px';
+      beam.style.transform = 'rotate(' + Math.atan2(dy, dx) + 'rad)';
+      beam.classList.add('is-aimed');
+    }
+    aim();
+    window.addEventListener('resize', aim);
+    window.addEventListener('scroll', aim, { passive: true });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(aim);
   })();
   </script>
 
