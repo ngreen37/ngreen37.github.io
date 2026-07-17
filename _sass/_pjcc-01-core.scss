@@ -248,6 +248,10 @@ ul, ol {
 .nav-brand--pjcc:hover, .nav-brand--pjcc:focus-visible { color: #ffd740; }
 .nav-brand--mcpuppy { color: #ececec; }
 .nav-brand--mcpuppy:hover, .nav-brand--mcpuppy:focus-visible { color: #ffffff; }
+/* Paw-only home button on McPuppy pages — the wordmark lives in the logo above,
+   so the nav badge drops its duplicate name and stands as a single tidy glyph. */
+.nav-brand--glyphonly { padding: 2px 4px; }
+.nav-brand--glyphonly .nav-brand-glyph { font-size: 1.32rem; }
 
 /* Primary links — grouped left next to the brand (not floating in the center) */
 .nav-links {

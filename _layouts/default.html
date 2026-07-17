@@ -61,8 +61,8 @@
       <nav class="site-nav" id="site-nav" data-brand="{{ brand }}">
         {% if brand == 'mcpuppy' %}
         {% comment %} ── McPuppy: studio · Build Log · Support ▾ · → PJCC ── {% endcomment %}
-        <a class="nav-brand nav-brand--mcpuppy" href="{{ '/projects/' | relative_url }}">
-          <span class="nav-brand-glyph" aria-hidden="true">🐾</span><span class="nav-brand-name">McPuppy Studios</span>
+        <a class="nav-brand nav-brand--mcpuppy nav-brand--glyphonly" href="{{ '/projects/' | relative_url }}" aria-label="McPuppy Studios — home">
+          <span class="nav-brand-glyph" aria-hidden="true">🐾</span>
         </a>
         <div class="nav-links">
           <a class="page-link" href="{{ '/blog/' | relative_url }}">Blog</a>
