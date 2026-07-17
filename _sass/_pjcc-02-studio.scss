@@ -69,6 +69,8 @@ body.studio-body {
   top: 22px;
   left: 28px;
   z-index: 2;
+  line-height: 0;   /* kill the inline-block baseline strut so this box == the img box,
+                       so the season emblem's % anchoring tracks the art at any size */
   pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
@@ -154,7 +156,12 @@ body.studio-body {
    overpower the McPuppy logo" — the dense hedge became five spaced blades on a low turf
    line, and a little rosebush (::after) blooms at the right end of the lawn. */
 html.season-summer .corner-season {
-  top: auto; bottom: -3px; left: 6px; width: 56px; height: 14px;
+  /* the lawn sits at the FOOT OF THE PAW. The paw base is at 89% of the art
+     (viewBox 89/100), so bottom:8% lands the turf just under it — and because it's a
+     percentage of the (gap-free) logo box, it tracks correctly on phone AND desktop
+     (2026-07-17 Nate: "the grass is a bit low relative to the logo"; the old -3px
+     floated it ~4px below the paw). */
+  top: auto; bottom: 8%; left: 6px; width: 56px; height: 14px;
   align-items: flex-end; animation: none;
 }
 /* (2026-07-16 later, Nate: "move the rosebush from the right side to the left side" —
@@ -178,10 +185,6 @@ html.season-summer .corner-season::after {   /* the rosebush — a round mound w
     linear-gradient(180deg, #5aa869, #3d7d4c);
 }
 html.season-summer .studio-corner-img { filter: invert(1) drop-shadow(0 0 6px rgba(140, 212, 150, 0.4)); }
-/* Mobile: the wordmark SVG carries bottom whitespace, so the lawn sat ~12px BELOW the
-   visible mark (Nate 2026-07-17: "the grass is a bit low relative to the logo"). The
-   img is capped to 44px here, so raise the lawn to tuck right under the wordmark. */
-@media (max-width: 600px) { html.season-summer .corner-season { bottom: 8px; } }
 
 /* fall — an amber leaf */
 html.season-fall .cs-mote {
