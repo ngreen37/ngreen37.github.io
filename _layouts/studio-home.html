@@ -962,7 +962,8 @@
     opacity: 0; transform: translateY(4px); pointer-events: none; transition: opacity .18s, transform .18s;
     box-shadow: 0 12px 30px -10px rgba(0,0,0,0.7); }
   .sl-tip b { color: #F5C518; }
-  .studio-light:hover .sl-tip, .studio-light:focus .sl-tip, .studio-light:focus-within .sl-tip { opacity: 1; transform: none; }
+  .studio-light:hover .sl-tip, .studio-light:focus .sl-tip, .studio-light:focus-within .sl-tip,
+  .studio-light.tip-open .sl-tip { opacity: 1; transform: none; }
   @media (prefers-reduced-motion: reduce) {
     /* the night rule above raises specificity, so it's named here too */
     .studio-light.on .sl-cone,
@@ -987,6 +988,19 @@
     tip.innerHTML = status + '<br><b>✉ The Direct Line →</b>';
     el.setAttribute('aria-label', status + ' Open the Direct Line.');
     // (the aimed horizontal beam was removed 2026-07-17 — Nate: "it doesn't work.")
+
+    // On phones there's no hover, so the status message was unreachable without just
+    // tapping through to the Direct Line (Nate 2026-07-17). Deliver it on TAP instead:
+    // the first tap opens the tip (message + the line), a second tap follows through.
+    var noHover = window.matchMedia && matchMedia('(hover: none)').matches;
+    if (noHover) {
+      el.addEventListener('click', function (e) {
+        if (!el.classList.contains('tip-open')) { e.preventDefault(); el.classList.add('tip-open'); }
+      });
+      document.addEventListener('click', function (e) {
+        if (!el.contains(e.target) && el.classList.contains('tip-open')) { el.classList.remove('tip-open'); el.blur(); }
+      });
+    }
   })();
   </script>
 

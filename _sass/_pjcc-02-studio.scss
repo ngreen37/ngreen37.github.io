@@ -178,6 +178,10 @@ html.season-summer .corner-season::after {   /* the rosebush — a round mound w
     linear-gradient(180deg, #5aa869, #3d7d4c);
 }
 html.season-summer .studio-corner-img { filter: invert(1) drop-shadow(0 0 6px rgba(140, 212, 150, 0.4)); }
+/* Mobile: the wordmark SVG carries bottom whitespace, so the lawn sat ~12px BELOW the
+   visible mark (Nate 2026-07-17: "the grass is a bit low relative to the logo"). The
+   img is capped to 44px here, so raise the lawn to tuck right under the wordmark. */
+@media (max-width: 600px) { html.season-summer .corner-season { bottom: 8px; } }
 
 /* fall — an amber leaf */
 html.season-fall .cs-mote {
