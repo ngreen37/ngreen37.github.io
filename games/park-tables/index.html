@@ -339,13 +339,17 @@ a move a day is plenty.</p>
       '<div class="pt-table-head"><button class="pjcc-btn-ghost" id="pt-back">← The park</button>' +
       '<i class="pt-row-chips">Casual · ' + esc(bot.diff) + ' bot · no clock</i></div>' +
       '<p class="pt-state' + (myTurn ? ' go' : '') + '">' + state + '</p>' +
-      '<div class="pt-plate">' + bot.icon + ' <b>' + esc(bot.name) + '</b>' +
-        ' <i class="pt-plate-rate">(' + esc(bot.diff) + ' bot)</i>' + matChip(S, false) + '</div>' +
-      '<div class="pt-board" role="grid" aria-label="Chess board">' + rows +
-        (last && last.mover === 'b' ? arrowSVG(last, true) : '') + '</div>' +
-      '<div class="pt-plate pt-plate--me">⬜ <b>' + esc((prof && prof.codename) || 'You') + '</b>' +
-        (myRate ? ' <i class="pt-plate-rate">(' + myRate.rating + ')</i>' : '') + matChip(S, true) + '</div>' +
-      '<div class="pt-moves">' + (mvs || '<span class="pjcc-sub">No moves yet.</span>') + '</div>' +
+      // board (with its nameplates) LEFT, the scoresheet RIGHT (2026-07-17 Nate:
+      // "notation should be to the right of the game") — .pt-arena stacks on phones
+      '<div class="pt-arena"><div class="pt-boardwrap">' +
+        '<div class="pt-plate">' + bot.icon + ' <b>' + esc(bot.name) + '</b>' +
+          ' <i class="pt-plate-rate">(' + esc(bot.diff) + ' bot)</i>' + matChip(S, false) + '</div>' +
+        '<div class="pt-board" role="grid" aria-label="Chess board">' + rows +
+          (last && last.mover === 'b' ? arrowSVG(last, true) : '') + '</div>' +
+        '<div class="pt-plate pt-plate--me">⬜ <b>' + esc((prof && prof.codename) || 'You') + '</b>' +
+          (myRate ? ' <i class="pt-plate-rate">(' + myRate.rating + ')</i>' : '') + matChip(S, true) + '</div>' +
+      '</div>' +
+      '<div class="pt-moves">' + (mvs || '<span class="pjcc-sub">No moves yet.</span>') + '</div></div>' +
       '<div class="pt-tools">' +
         (st.done
           ? ((window.PJCCReview && PJCCReview.enabled() && (st.moves || '').trim())
@@ -668,14 +672,17 @@ a move a day is plenty.</p>
       '<i class="pt-row-chips">' + chips(m) + '</i></div>' +
       '<p class="pt-state' + (myTurn ? ' go' : '') + '">' + state + '</p>' +
       (canClaim ? '<button class="pjcc-btn" id="pt-flag">⏱ Their time is up — claim the win</button>' : '') +
-      '<div class="pt-plate">' + (white ? '⬛' : '⬜') + ' <b>' + esc(oppName) + '</b>' +
-        (oppR ? ' <i class="pt-plate-rate">' + esc(oppR) + '</i>' : '') + matChip(S, !white) + '</div>' +
-      '<div class="pt-board" role="grid" aria-label="Chess board">' + rows +
-        (last && ((last.mover === 'w') !== white) ? arrowSVG(last, white) : '') + '</div>' +
-      '<div class="pt-plate pt-plate--me">' + (white ? '⬜' : '⬛') + ' <b>' + esc(myName) + '</b>' +
-        (myR != null ? ' <i class="pt-plate-rate">(' + myR + ')</i>' : '') + matChip(S, white) + '</div>' +
-      say +
-      '<div class="pt-moves">' + (mvs || '<span class="pjcc-sub">No moves yet.</span>') + '</div>' +
+      // board (with nameplates + the chat line) LEFT, scoresheet RIGHT (2026-07-17 Nate)
+      '<div class="pt-arena"><div class="pt-boardwrap">' +
+        '<div class="pt-plate">' + (white ? '⬛' : '⬜') + ' <b>' + esc(oppName) + '</b>' +
+          (oppR ? ' <i class="pt-plate-rate">' + esc(oppR) + '</i>' : '') + matChip(S, !white) + '</div>' +
+        '<div class="pt-board" role="grid" aria-label="Chess board">' + rows +
+          (last && ((last.mover === 'w') !== white) ? arrowSVG(last, white) : '') + '</div>' +
+        '<div class="pt-plate pt-plate--me">' + (white ? '⬜' : '⬛') + ' <b>' + esc(myName) + '</b>' +
+          (myR != null ? ' <i class="pt-plate-rate">(' + myR + ')</i>' : '') + matChip(S, white) + '</div>' +
+        say +
+      '</div>' +
+      '<div class="pt-moves">' + (mvs || '<span class="pjcc-sub">No moves yet.</span>') + '</div></div>' +
       (m.status !== 'done'
         ? '<div class="pt-tools"><div class="pt-emotes">' + M.EMOTES.map(function (t, i2) {
             return '<button class="pt-emote" data-emote="' + i2 + '">' + esc(t) + '</button>';
@@ -852,14 +859,25 @@ a move a day is plenty.</p>
 /* the last-move arrow, drawn over everything; clicks pass through */
 .pt-arrow { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
 .pt-say { margin: 10px 0 0; color: #ffd36b; font-size: 0.92rem; }
+/* THE ARENA (2026-07-17 Nate: "the notation should be to the right of the game" —
+   it used to sit centered BELOW the board). Board column LEFT, scoresheet RIGHT;
+   wraps to stacked on a phone so nothing squeezes. */
+.pt-arena { display: flex; align-items: flex-start; gap: 20px; flex-wrap: wrap; }
+.pt-boardwrap { flex: 1 1 340px; min-width: 0; max-width: 420px; }
 /* the SCORESHEET (2026-07-16 Nate: "vertically side-by-side"): one move pair per
    line — number · White's move · Black's move — scrolling inside its own box once
-   the game runs long. Three grid children per pair (see moveRows). */
-.pt-moves { margin: 10px auto; color: #b9a3e8; font-size: 0.85rem; line-height: 1.8;
+   the game runs long. Three grid children per pair (see moveRows).
+   In the arena it stands to the RIGHT of the board and rises to match its height. */
+.pt-moves { margin: 40px 0 0; color: #b9a3e8; font-size: 0.85rem; line-height: 1.8;
   display: grid; grid-template-columns: auto 1fr 1fr; column-gap: 14px; align-items: baseline;
-  width: 200px; max-height: 240px; overflow-y: auto; padding: 4px 10px;
+  flex: 0 1 210px; align-self: stretch; align-content: start;
+  max-height: 420px; overflow-y: auto; padding: 4px 10px;
   border: 1px solid rgba(122,94,190,0.25); border-radius: 8px;
   user-select: text; -webkit-user-select: text; }
+/* phone: notation drops back under the board, full width */
+@media (max-width: 560px){
+  .pt-moves { margin: 12px 0 0; flex-basis: 100%; align-self: auto; max-height: 200px; }
+}
 .pt-moves i { color: #7d6bb0; font-style: normal; text-align: right; }
 .pt-moves .pjcc-sub { grid-column: 1 / -1; text-align: center; }
 /* the material chip — who's up, and by how much, in piece value */

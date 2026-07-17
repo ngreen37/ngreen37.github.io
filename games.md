@@ -102,14 +102,16 @@ permalink: /games/
 /* 2026-07-16 (Nate): the lower row reads 🏆 · Vault · Terminated · Gambit altar —
    the trophy stands LEFT of the Vault (doubled, see .ghub-trophy), the altar RIGHT
    of Terminated. The sub grid drops to two columns since it only holds the halls.
-   2026-07-16 evening (Nate: "center the Trophy and the Altar a little more"): the two
-   flanks sit in EQUAL 96px boxes with a wider, even gap, so the halls stay dead centre
-   and the trophy/altar read as matched bookends rather than hugging the grid. */
+   2026-07-17 (Nate: "center the leaderboard trophy and the altar"): the flanks were
+   pushed to the page edges by a wide 440px hall block + 30px gaps. Now the four items
+   — 🏆 · Vault · Terminated · altar — form ONE tight centred cluster: a narrower hall
+   block, a smaller even gap, and slimmer flanks, so the trophy and altar sit in close
+   beside the halls, centred, instead of reading as far-flung bookends. */
 .ghub-subrow { position:relative; z-index:2; display:flex; align-items:center;
-  justify-content:center; gap:30px; flex-wrap:wrap; }
-.ghub-subrow .ghub-grid--sub { flex:0 1 440px; grid-template-columns:repeat(2,1fr); }
+  justify-content:center; gap:16px; flex-wrap:wrap; }
+.ghub-subrow .ghub-grid--sub { flex:0 1 340px; grid-template-columns:repeat(2,1fr); }
 .ghub-subrow .ghub-trophy,
-.ghub-subrow .gmdoor { flex:0 0 96px; display:flex; align-items:center; justify-content:center; }
+.ghub-subrow .gmdoor { flex:0 0 80px; display:flex; align-items:center; justify-content:center; }
 @media (max-width:560px){
   .ghub-portal { min-height:128px; }
   .ghub-grid--sub .ghub-portal { min-height:96px; }
@@ -166,14 +168,13 @@ permalink: /games/
   .gm-scene { width:58px; height:78px; }
   .gm-coin { font-size:23px; top:6px; } .gm-altar { width:34px; }
 }
-/* (2026-07-16 evening plate parity: the plate + sub caption rows are gone, so the
-   door is just the arch with its ten lift-pips beside it) */
-.gdoor { display:grid; grid-template-columns:auto minmax(0,1fr);
-  grid-template-areas:"arch pips";
-  align-content:center; align-items:center; column-gap:16px; row-gap:5px;
+/* (2026-07-16 evening plate parity: the plate + sub caption rows are gone.)
+   2026-07-17 (Nate: "on the games hall it's to the side, and weird") — the door is a
+   COLUMN now, like the splash + hero: arch on top, the ten lift-pips BELOW it. */
+.gdoor { display:flex; flex-direction:column; align-items:center; gap:6px;
   position:relative;   /* anchors the pips whisper below the unit */
   text-decoration:none; --acc:#F5C518; }
-.gdoor-pips { grid-area:pips; display:flex; gap:3px; }
+.gdoor-pips { display:flex; gap:3px; }
 .gdoor-pips i { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.14); }
 .gdoor-pips i.done { background:#6bffb8; box-shadow:0 0 5px rgba(107,255,184,0.6); }
 .gdoor-pips i.cur { background:var(--acc); box-shadow:0 0 7px var(--acc);
@@ -189,7 +190,7 @@ permalink: /games/
   opacity:0; transition:opacity .3s ease, transform .3s ease; pointer-events:none; }
 .gdoor:hover .gdoor-whisper,
 .gdoor:focus-visible .gdoor-whisper { opacity:1; transform:translate(-50%, 0); }
-.gdoor-arch { grid-area:arch; position:relative; display:block; width:72px; height:92px;
+.gdoor-arch { position:relative; display:block; width:72px; height:92px;
   border:2px solid rgba(245,197,24,0.6); border-bottom-width:0; border-radius:36px 36px 4px 4px;
   overflow:hidden; box-shadow:0 0 26px -8px var(--acc);
   background:radial-gradient(ellipse at 50% 85%, color-mix(in srgb, var(--acc) 32%, #0c0722), #0c0722 78%);
@@ -300,12 +301,12 @@ permalink: /games/
          and the "Begin the climb" caption are gone everywhere, like the splash. {%- endcomment -%}
     <a class="gdoor" id="gauntlet-door" href="{{ '/games/the-gauntlet/' | relative_url }}"
        aria-label="The Gauntlet — real chess vs a ladder of ten PJCC rivals">
-      <span class="gdoor-pips" id="gdoor-pips" aria-hidden="true"></span>
-      <span class="gdoor-whisper" id="gdoor-whisper" aria-hidden="true"></span>
       <span class="gdoor-arch" aria-hidden="true">
         <i class="gdoor-door"><b class="gdoor-glyph" id="gdoor-glyph">♛</b><u class="gdoor-knob"></u></i>
         <i class="gdoor-seam"></i>
       </span>
+      <span class="gdoor-pips" id="gdoor-pips" aria-hidden="true"></span>
+      <span class="gdoor-whisper" id="gdoor-whisper" aria-hidden="true"></span>
     </a>
 
     <!-- ── THE PARK TABLES: matchmaking stands beside the Gauntlet (Nate 2026-07-14:

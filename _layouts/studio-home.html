@@ -101,7 +101,6 @@
         <i class="sl-base"></i>
       </span>
       <span class="sl-tip" id="sl-tip"></span>
-      <span class="sl-beam" id="sl-beam" aria-hidden="true"></span>
     </a>
 
     <!-- Logo pinned top-left — carries a seasonal emblem (summer/fall/winter/spring).
@@ -145,34 +144,38 @@
 
       {% comment %} Quad layout: PJCC (top-left) · Academy (top-right, first-light
            pine + ember copper) · Games (bottom-left) · Patreon (bottom-right). Each
-           box has its own look. data-enter = the context-aware brand line shown in
-           the console on hover/focus. 2026-07-16 evening (Nate): the B&W McPuppy
-           quad is retired — the Academy takes its seat, and the studio now rides
-           the ♜ rook drifter instead. Restore the old quad from git if it returns. {% endcomment %}
+           box has its own look. 2026-07-16 evening (Nate): the B&W McPuppy quad is
+           retired — the Academy takes its seat, and the studio now rides the ♜ rook
+           drifter instead. Restore the old quad from git if it returns.
+           2026-07-17 (Nate, splash check #16 — "delete the ghost"): the `data-enter`
+           brand lines are gone. They fed a "threshold console" removed back on
+           2026-07-12; the strings sat here invisible ever since. The splash JS now
+           selects `.studio-quad` directly (it only needed the elements, never the
+           text). {% endcomment %}
       <div class="studio-quad-grid">
 
-        <a href="{{ '/pjcc/' | relative_url }}" class="studio-quad studio-quad--pjcc" data-enter="PJCC — the world · the cast, the story, the journey">
+        <a href="{{ '/pjcc/' | relative_url }}" class="studio-quad studio-quad--pjcc">
           <span class="studio-quad-title" data-jp="PJCC">PJCC</span>
           <span class="studio-quad-sub" data-jp="登場人物と世界へ">Meet the cast. Walk the world.</span>
         </a>
 
-        <a href="{{ '/academy/' | relative_url }}" class="studio-quad studio-quad--academy" data-enter="The Academy — learn the game · first light on the training field">
+        <a href="{{ '/academy/' | relative_url }}" class="studio-quad studio-quad--academy">
           <span class="studio-quad-title" data-jp="アカデミー">Academy</span>
           <span class="studio-quad-sub" data-jp="チェスを学ぼう">Learn the game.</span>
         </a>
 
-        <a href="{{ '/games/' | relative_url }}" class="studio-quad studio-quad--games" data-enter="The Arcade — the PJCC world at play · chess games + the Gauntlet">
+        <a href="{{ '/games/' | relative_url }}" class="studio-quad studio-quad--games">
           <span class="studio-quad-title" data-jp="ゲーム">Games</span>
           <span class="studio-quad-sub" data-jp="アーケードとガントレット">The arcade &amp; the Gauntlet.</span>
         </a>
 
         {% if site.patreon_url and site.patreon_url != '' %}
-        <a href="{{ site.patreon_url }}" class="studio-quad studio-quad--patreon" target="_blank" rel="noopener" data-enter="Back the build — support the animation">
+        <a href="{{ site.patreon_url }}" class="studio-quad studio-quad--patreon" target="_blank" rel="noopener">
           <span class="studio-quad-title" data-jp="Patreon">Patreon</span>
           <span class="studio-quad-sub" data-jp="アニメを支援">Fuel the animation.</span>
         </a>
         {% else %}
-        <a class="studio-quad studio-quad--patreon studio-quad-soon" aria-disabled="true" data-enter="Back the build — support the animation">
+        <a class="studio-quad studio-quad--patreon studio-quad-soon" aria-disabled="true">
           <span class="studio-quad-title" data-jp="Patreon">Patreon</span>
           <span class="studio-quad-sub" data-jp="アニメを支援">Fuel the animation.</span>
         </a>
@@ -211,14 +214,17 @@
            The script below hydrates lamps + boss + grandeur from the player's save.
            2026-07-16 (Nate): the THE GAUNTLET header plate + the caption are both gone
            for now — the door alone is the invitation (aria-label still names it). {% endcomment %}
+      {% comment %} arch on top, pips BELOW it (2026-07-17 Nate: "move the five out of
+           ten dots from the top to the bottom across all") — markup order = flex-column
+           order; the whisper stays absolute below the unit. {% endcomment %}
       <a class="gdoor studio-scene studio-scene--gauntlet" id="studio-gdoor" href="{{ '/games/the-gauntlet/' | relative_url }}"
          aria-label="The Gauntlet — real chess vs a ladder of ten PJCC rivals">
-        <span class="gdoor-pips" id="studio-gdoor-pips" aria-hidden="true"></span>
-        <span class="gdoor-whisper" id="studio-gdoor-whisper" aria-hidden="true"></span>
         <span class="gdoor-arch" aria-hidden="true">
           <i class="gdoor-door"><b class="gdoor-glyph" id="studio-gdoor-glyph">♛</b><u class="gdoor-knob"></u></i>
           <i class="gdoor-seam"></i>
         </span>
+        <span class="gdoor-pips" id="studio-gdoor-pips" aria-hidden="true"></span>
+        <span class="gdoor-whisper" id="studio-gdoor-whisper" aria-hidden="true"></span>
       </a>
 
       </div>
@@ -681,7 +687,7 @@
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var lean = document.getElementById('studio-lean');
     var warp = document.getElementById('studio-warp');
-    var quads = document.querySelectorAll('.studio-quad[data-enter]');
+    var quads = document.querySelectorAll('.studio-quad');   // #16: was [data-enter]; the elements are all the wiring needs
     function brandOf(el) { var m = (el.className || '').match(/studio-quad--(pjcc|academy|games|patreon)/); return m ? m[1] : null; }
 
     // #1 — the page leans toward the hovered/focused quad.
@@ -923,29 +929,17 @@
   /* when the lamp burns, its light catches the desk edge */
   .studio-light.on .sl-desk { box-shadow: 0 -1px 0 rgba(255,207,74,0.25), 0 4px 10px rgba(0,0,0,0.45); }
 
-  /* #5 (2026-07-16 splash check) — THE THROW: when the lamp is lit, a long beam
-     reaches across the room and lands on the footer's McPuppy Studios signature —
-     when the studio ships, the light literally falls on the studio's name. The
-     script below AIMS it (origin = the head's mouth, target = the signature's
-     centre) and re-aims on resize/scroll, so it lands at any window size; the
-     footer is display:none on phones, so the beam simply never arms there. Faint
-     by day — the sun washes it out — and static: no animation of its own. */
-  .sl-beam { position: fixed; z-index: 2; height: 110px; pointer-events: none; opacity: 0;
-    transform-origin: left 50%;
-    /* far end kept narrow (~68px) — wider read as a grey panel over the footer, not light */
-    clip-path: polygon(0 47%, 0 53%, 100% 81%, 100% 19%);
-    background: linear-gradient(90deg, rgba(255,224,138,0.38), rgba(255,214,96,0.10) 55%, rgba(255,196,90,0.26) 100%);
-    transition: opacity .6s; }
-  .studio-light.on .sl-beam.is-aimed { opacity: 0.11; }
-  /* the pool where it lands: the signature warms under the light */
+  /* #5 (2026-07-16) THE THROW — the aimed horizontal beam across the room to the
+     footer signature — was REMOVED 2026-07-17 (Nate: "get rid of that horizontal
+     light from the lamp… it doesn't work"). What stays is the quiet tell that the
+     lamp is lit: the studio's own name warms a touch. (Restore the beam from git
+     before this commit if it's ever wanted back.) */
   body.lamp-lit .studio-footer b { color: #ffe2ac; text-shadow: 0 0 14px rgba(255,207,74,0.45); }
 
   /* #6 (2026-07-16 splash check, DOUBLE YES) — AFTER DARK, THE BEACON: at night the
-     lit lamp becomes the page's only warm light. The beam more than doubles, the
-     head burns hotter, a wide still pool of warmth settles into the corner, and the
-     signature glows brighter under it. All state, no new animation — the only thing
-     that ever moves is the cone's existing candle-breath. */
-  html.sky-night .studio-light.on .sl-beam.is-aimed { opacity: 0.26; }
+     lit lamp becomes the page's only warm light. The head burns hotter, a wide still
+     pool of warmth settles into the corner, and the signature glows brighter. All
+     state, no new animation — the only thing that moves is the cone's candle-breath. */
   html.sky-night .studio-light.on .sl-cone { opacity: 0.85; animation-name: sl-warm-night; }
   @keyframes sl-warm-night { 0%,100% { opacity: 0.72; } 50% { opacity: 0.94; } }
   html.sky-night .studio-light.on .sl-head { box-shadow: inset 0 -4px 6px rgba(255,207,74,0.75), 0 0 24px 5px rgba(255,207,74,0.5); }
@@ -986,33 +980,7 @@
       : 'The lamp’s off — the Creator has stepped away from the desk. Nothing has shipped in the last 12 hours, but the line stays open.';
     tip.innerHTML = status + '<br><b>✉ The Direct Line →</b>';
     el.setAttribute('aria-label', status + ' Open the Direct Line.');
-
-    // #5 — AIM THE THROW at the footer's McPuppy Studios signature. Origin is the
-    // lamp head's mouth (measured, so it tracks the head's pose), target is the
-    // signature's centre; the beam is a fixed wedge rotated between the two, so it
-    // lands at ANY window size. Re-aimed on resize/scroll and again when the fonts
-    // settle (the footer shifts a few px when Share Tech Mono lands). If the lamp
-    // is dark or the footer is hidden (phones), the beam never arms.
-    var beam = document.getElementById('sl-beam');
-    function aim() {
-      if (!beam) return;
-      var sig = document.querySelector('.studio-footer b');
-      var head = el.querySelector('.sl-head');
-      var s = sig ? sig.getBoundingClientRect() : null;
-      if (!on || !head || !s || !s.width) { beam.classList.remove('is-aimed'); return; }
-      var h = head.getBoundingClientRect();
-      var x0 = h.left + h.width * 0.2, y0 = h.bottom - h.height * 0.3;
-      var dx = (s.left + s.width / 2) - x0, dy = (s.top + s.height / 2) - y0;
-      beam.style.left = x0 + 'px';
-      beam.style.top = (y0 - 55) + 'px';           // 55 = half the wedge's height
-      beam.style.width = Math.sqrt(dx * dx + dy * dy) + 'px';
-      beam.style.transform = 'rotate(' + Math.atan2(dy, dx) + 'rad)';
-      beam.classList.add('is-aimed');
-    }
-    aim();
-    window.addEventListener('resize', aim);
-    window.addEventListener('scroll', aim, { passive: true });
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(aim);
+    // (the aimed horizontal beam was removed 2026-07-17 — Nate: "it doesn't work.")
   })();
   </script>
 
