@@ -2,6 +2,11 @@
 layout: default
 ---
 
+{% comment %} One-sun guard (2026-07-18): mark the PJCC home so the fixed town-sky orb is
+     hidden here without relying on :has() (older iOS webviews drop it → two suns). Runs
+     during parse, before the sky paints. {% endcomment %}
+<script>document.documentElement.classList.add('is-pjcc-home');</script>
+
 {% comment %} Day counter: March 1 2026 00:00 EDT (04:00 UTC) = Unix 1772337600 {% endcomment %}
 {% assign start_ts   = 1772337600 %}
 {% assign now_ts     = site.time | date: "%s" | plus: 0 %}
@@ -657,9 +662,14 @@ html.reduce-flourish .hero-title { animation:none; }
    footer clean). It was re-shown here only; that re-enable is deleted, so the footer
    ribbon is now hidden on EVERY normal page (Chess City still re-enables its own for the
    awake-rook egg). Restore: `body:has(.home-flow) .footer-ribbon-wrap { display: flex; }` */
-/* ONE orb town-wide (2026-07-14): the hero paints its own sun/moon diorama, so the
-   fixed sky's arcing orb stands down here — otherwise the gutters grow a second one. */
-body:has(.home-flow) .ts-orb { display: none !important; }
+/* ONE orb, PERIOD (2026-07-14, reinforced 2026-07-18 Nate: "there should only be one
+   uniform sun"). The hero paints its own arcing sun, so the fixed town sky's orb stands
+   down on the home — else you get TWO suns (the exact pair Nate caught with the moon).
+   ⚠ `:has()` is dropped whole by older iOS webviews (the installed app), which let the
+   second sun back in — so a JS-set class (html.is-pjcc-home, set at the top of this
+   layout) hides it the robust way too. Belt and braces. */
+body:has(.home-flow) .ts-orb,
+html.is-pjcc-home .ts-orb { display: none !important; }
 
 /* ── 1b. THE TWO WAYS TO PLAY — the entrances moved out of the hero's corners into
    this roomy, labelled row (2026-07-17 Nate: "move the links to below the hero, use
@@ -681,6 +691,10 @@ body:has(.home-flow) .ts-orb { display: none !important; }
 .play-art { flex:1 1 auto; display:flex; align-items:center; justify-content:center;
   width:100%; position:relative; }
 .play-art .pkt-scene, .play-card.gdoor .gdoor-arch { position:relative; }
+/* the Gauntlet's ten floor-pips belong BELOW the arch, not in a row beside it
+   (2026-07-18 Nate, mobile: "fix the 10 dots"). .play-art is a row by default, which
+   put the arch and the 10 dots side by side — stack them for the door card. */
+.play-card.gdoor .play-art { flex-direction:column; gap:8px; }
 .play-name { font-family:'Poppins',sans-serif; font-weight:700; font-size:15px;
   color:#F5C518; line-height:1.2; }
 .play-sub { font-style:normal; font-size:11px; letter-spacing:0.02em; color:#c6b8ec;
