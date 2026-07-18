@@ -61,24 +61,12 @@ permalink: /games/
 .ghub-eyebrow { margin:0 0 5px; }
 .ghub-sub { margin:6px 0 0; }
 .ghub-rule { margin:10px auto 0; }
-/* 2026-07-18 (Nate): the 🏆 Leaderboards trophy + the Gambit altar moved UP to the
-   hall's TOP-LEFT, standing together, inset a little from the corner ("center it in a
-   bit") instead of flanking the Sealed/Retired row at the foot. That row below is now
-   just the two dormant halls (Vault · Terminated), centred. */
-.ghub { position:relative; }   /* anchor the top-left corner cluster */
-.ghub-corner { position:absolute; top:16px; left:40px; z-index:4;
-  display:flex; align-items:center; gap:14px; }
-.ghub-corner .ghub-trophy { font-size:30px; line-height:1; text-decoration:none;
-  filter:drop-shadow(0 0 10px rgba(245,197,24,0.4)); transition:transform .16s ease, filter .16s ease; }
-.ghub-corner .ghub-trophy:hover, .ghub-corner .ghub-trophy:focus-visible {
-  transform:translateY(-2px); filter:drop-shadow(0 0 16px rgba(245,197,24,0.72)); }
-.ghub-corner .gm-scene { transform:scale(0.82); transform-origin:center bottom; }
-@media (max-width:760px){
-  /* it can't sit beside the centred doorway on narrow screens without crowding it —
-     flow it in as a small left-aligned row at the very top instead. */
-  .ghub-corner { position:static; margin:0 0 2px 6px; }
-}
-/* (.ghub-subrow + the sealed/retired sub-grid were removed 2026-07-18 with the taxonomy.) */
+/* 2026-07-18 (Nate): "move the leaderboard and the altar around, and the park table" —
+   the four featured entrances (🏆 Leaderboards · the Gauntlet · Park Tables · the Gambit
+   altar) now share ONE centred, evenly-spaced, bottom-aligned row (.ghub-doorway) instead
+   of a lopsided top-left cluster. (.ghub-corner + .ghub-subrow were removed here.) */
+.ghub { position:relative; }
+.ghub-doorway .ghub-trophy { align-self:flex-end; }   /* baseline-align with the door/table */
 
 /* ---- THE DOOR — the Gauntlet stands above the halls as a doorway.
    (The big MAIN QUEST banner was retired 2026-07-10 — "takes up too much of the
@@ -97,7 +85,8 @@ permalink: /games/
    a wide hero with room to spare, and the vertical door is the better shape there.
    The two copies are deliberately different now; don't "sync" this back. ---- */
 .ghub-doorway { position:relative; z-index:2; display:flex; justify-content:center;
-  flex-wrap:wrap; gap:14px 54px; margin:0 auto 14px; animation:ghub-wake .6s ease both; }
+  align-items:flex-end; flex-wrap:wrap; gap:18px clamp(20px, 4vw, 48px);
+  margin:0 auto 14px; animation:ghub-wake .6s ease both; }
 
 /* ---- THE PARK TABLES entrance — since 2026-07-16 it's the ONE canonical park-table
    unit (Nate: "they should always be uniform"): _includes/park-table.html +
@@ -257,7 +246,11 @@ permalink: /games/
 /* ── THE COMBINED GAMES GRID (2026-07-18): one area, no taxonomy. Uses the shared
    .cat-games / .gcard system (hall--default purple theme) + one new honest tag. ── */
 .ghub-all { margin: 6px 2px 0; position:relative; z-index:2; }
-.ghub-all .cat-games { grid-template-columns: repeat(auto-fill, minmax(212px, 1fr)); }
+/* 12 UNIFORM boxes (2026-07-18 Nate: "make them uniform"): grid-auto-rows:1fr equalises
+   every row to the tallest, and the cards stretch to fill — so all 12 are the same height
+   regardless of a score chip / IN DEV tag / 2-line name. Content stays top-aligned. */
+.ghub-all .cat-games { grid-template-columns: repeat(auto-fill, minmax(212px, 1fr)); grid-auto-rows: 1fr; }
+.ghub-all .gcard { height: 100%; }
 /* reserve the top-right corner so a title never runs UNDER the badge (the IN DEV /
    LOCKED chips are absolutely positioned there) */
 .ghub-all .gcard-body h3 { padding-right: 50px; }
@@ -269,25 +262,13 @@ permalink: /games/
 <!-- ===== THE HALLS — Gauntlet Legends portal screen (pick a hall; no games here) ===== -->
 <div class="ghub">
 
-  <!-- ── TOP-LEFT CLUSTER: the Leaderboards trophy + the Gambit altar, promoted up
-       here together (2026-07-18 Nate: "move the Leaderboard trophy to top left, but
-       center it in a little bit… move the altar next to the trophy"). Inset from the
-       corner so they don't jam the edge. They used to flank the Sealed/Retired row
-       at the foot of the hall. ── -->
-  <div class="ghub-corner">
-    <a class="ghub-trophy" href="{{ '/leaderboards/' | relative_url }}" aria-label="Leaderboards" title="Leaderboards">🏆</a>
-    <a class="gmdoor" href="{{ '/the-gambit/' | relative_url }}"
-       aria-label="The Gambit — wager what you've earned; the board sometimes gives back more. Never real money.">
-      <span class="gm-scene" aria-hidden="true">
-        <i class="gm-glow"></i>
-        <b class="gm-coin">♟</b>
-        <i class="gm-altar"></i>
-      </span>
-    </a>
-  </div>
-
-  <!-- ── THE DOOR: the Gauntlet, above the halls ── -->
+  <!-- ── THE FEATURED ROW (2026-07-18 Nate: "move the leaderboard and the altar around,
+       and the park table") — the four featured entrances stand in ONE balanced, evenly
+       spaced centered row now, not a lopsided top-left cluster:
+       🏆 Leaderboards · the Gauntlet · Park Tables · the Gambit altar. ── -->
   <div class="ghub-doorway">
+    <a class="ghub-trophy" href="{{ '/leaderboards/' | relative_url }}" aria-label="Leaderboards" title="Leaderboards">🏆</a>
+
     {%- comment -%} 2026-07-16 evening (Nate): PLATE PARITY — the THE GAUNTLET plate
          and the "Begin the climb" caption are gone everywhere, like the splash. {%- endcomment -%}
     <a class="gdoor" id="gauntlet-door" href="{{ '/games/the-gauntlet/' | relative_url }}"
@@ -309,6 +290,15 @@ permalink: /games/
     <a class="ptdoor" href="{{ '/games/park-tables/' | relative_url }}"
        aria-label="The Park Tables — play another operative or challenge McPuppy; rated games move your PJCC Rating">
       {% include park-table.html %}
+    </a>
+
+    <a class="gmdoor" href="{{ '/the-gambit/' | relative_url }}"
+       aria-label="The Gambit — wager what you've earned; the board sometimes gives back more. Never real money.">
+      <span class="gm-scene" aria-hidden="true">
+        <i class="gm-glow"></i>
+        <b class="gm-coin">♟</b>
+        <i class="gm-altar"></i>
+      </span>
     </a>
 
   </div>
