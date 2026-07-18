@@ -27,18 +27,10 @@
        it and are untouched. What changed is what's behind them. {%- endcomment -%}
   {% include town-sky.html %}
 
-  <!-- ── TRANSMISSION OVERLAY (first visit) ─────────────────── -->
-  <div class="transmission-overlay" id="transmission-overlay">
-    <div class="transmission-scanlines"></div>
-    <div class="transmission-inner">
-      <div class="transmission-line" id="t1"></div>
-      <div class="transmission-line" id="t2"></div>
-      <div class="transmission-line" id="t3"></div>
-      <div class="transmission-headline" id="t-headline">McPuppy Studios</div>
-      <div class="transmission-sub" id="t-sub">A Million Stories to Tell</div>
-    </div>
-    <div class="transmission-skip">click anywhere to skip</div>
-  </div>
+  <!-- (The first-visit TRANSMISSION OVERLAY cold-open — the black "SIGNAL / DECRYPTING…"
+       intro with amber text — was removed 2026-07-18, Nate: "take out replay intro and
+       that black page with orange lettering entirely." The splash opens straight onto
+       the studio now. Its CSS lived in _pjcc-05-classified.scss; restore both from git.) -->
 
   <div class="studio-page">
 
@@ -296,11 +288,8 @@
 
     </div>
 
-    {% comment %} Idea #9 — replay the cold-open. Subtle, bottom-left; clears the
-         "seen" flag and re-runs the transmission. {% endcomment %}
-    <button class="studio-replay" type="button" id="studio-replay" aria-label="Replay the intro transmission">
-      <span class="sr-icon" aria-hidden="true">↻</span><span class="sr-label" data-jp="イントロを再生">replay intro</span>
-    </button>
+    {% comment %} (The "↻ replay intro" control was removed 2026-07-18 with the cold-open
+         it replayed — Nate: "take out replay intro… entirely.") {% endcomment %}
 
   </div>
 
@@ -502,17 +491,10 @@
     transition:opacity .85s ease .5s, transform .85s ease .5s; }
   html.splash-seq .studio-calls.is-lit { opacity:1; transform:none; }
 
-  /* Idea #9 — replay-intro control (bottom-left, subtle) */
-  .studio-replay { position:fixed; left:18px; bottom:16px; z-index:3; display:inline-flex; align-items:center; gap:6px;
-    background:rgba(20,12,45,0.55); color:#c9a7ff; border:1px solid #4a3a86; border-radius:999px; padding:5px 11px;
-    font-family:'Share Tech Mono', ui-monospace, monospace; font-size:10px; letter-spacing:0.08em; cursor:pointer;
-    opacity:0.55; transition:opacity .15s, border-color .15s, color .15s; }
-  .studio-replay:hover { opacity:1; border-color:#F5C518; color:#F5C518; }
-  .studio-replay .sr-icon { font-size:12px; }
-  /* 2026-07-13 touch sweep: replay (107x27) + the lang toggle (50x24) measured under the
-     tap floor on a phone. Fingers get taller boxes; desktop look unchanged. */
+  /* (The .studio-replay "↻ replay intro" pill was removed 2026-07-18 with the cold-open.) */
+  /* 2026-07-13 touch sweep: the lang toggle (50x24) measured under the tap floor on a
+     phone. Fingers get a taller box; desktop look unchanged. */
   @media (pointer: coarse) {
-    .studio-replay { padding:12px 14px; }
     /* matches Contact's coarse padding (splash check #3 — the pills stay twins tapped) */
     .studio-corner-lang { padding:10px 12px !important; }
   }
@@ -568,7 +550,6 @@
     /* keep the corner controls tucked clear of the quad block */
     .studio-corner-img { height:44px; }
     .studio-corner-logo { top:14px; left:14px; }
-    .studio-replay { left:12px; bottom:12px; font-size:9px; }
     .studio-drift-sigil .pjcc-sigil { font-size:1.15rem; }
   }
 
@@ -598,93 +579,10 @@
   }
   </style>
 
-  <script>
-  (function() {
-    var overlay = document.getElementById('transmission-overlay');
-    if (!overlay) return;
-    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var timers = [];
-    function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
-    function clearAll() { timers.forEach(clearTimeout); timers = []; }
-
-    function type(id, text, delay, cb) {
-      later(function() {
-        var el = document.getElementById(id);
-        if (!el) return;
-        var i = 0;
-        var iv = setInterval(function() {
-          el.textContent += text[i]; i++;
-          if (i >= text.length) { clearInterval(iv); if (cb) cb(); }
-        }, 16);   /* 32→16ms/char — the whole cold-open halved (Nate 2026-07-14) */
-        timers.push(function(){ clearInterval(iv); });
-      }, delay);
-    }
-
-    function dismiss() {
-      clearAll();
-      overlay.classList.add('is-done');
-      try { localStorage.setItem('mcpuppy_seen', '1'); } catch (e) {}
-      setTimeout(function() { overlay.style.display = 'none'; }, 950);
-      // #19 (2026-07-16 splash check) — the studio noticed you walk in: as the
-      // cold-open clears, the desk lamp flicks ON for a couple of seconds, then
-      // settles back to the truth (it stays lit only if something actually
-      // shipped in the last 12 hours — see the lamp script). Already-lit lamps
-      // are left alone, and the flash never arms the beam or the footer warmth —
-      // those stay honest (the truth class on <body> is set once, at load).
-      var lamp = document.getElementById('studio-light');
-      if (lamp && !lamp.classList.contains('on')) {
-        lamp.classList.add('on');
-        setTimeout(function () { lamp.classList.remove('on'); }, 2950);
-      }
-    }
-
-    function reveal() {
-      document.getElementById('t-headline').classList.add('is-visible');
-      later(function() {
-        document.getElementById('t-sub').classList.add('is-visible');
-        later(dismiss, 1100);
-      }, 200);
-    }
-
-    // Reset to a clean slate so the cold-open can replay on demand.
-    function reset() {
-      clearAll();
-      ['t1', 't2', 't3'].forEach(function(id) { var el = document.getElementById(id); if (el) el.textContent = ''; });
-      document.getElementById('t-headline').classList.remove('is-visible');
-      document.getElementById('t-sub').classList.remove('is-visible');
-      overlay.classList.remove('is-done');
-      overlay.style.display = '';
-    }
-
-    function play() {
-      reset();
-      // Reduced motion: skip the typing, just reveal the headline, then dismiss.
-      if (reduce) { later(reveal, 200); return; }
-      type('t1', 'SIGNAL ACQUIRED FROM: ████████████', 150, function() {
-        type('t2', 'ORIGIN: INTERPLANETARY CONSTRUCTION CO.', 100, function() {
-          type('t3', 'DECRYPTING TRANSMISSION…', 100, function() {
-            later(reveal, 300);
-          });
-        });
-      });
-    }
-
-    overlay.addEventListener('click', dismiss);
-
-    // First visit auto-plays; afterwards it stays hidden until you replay it.
-    var seen = false;
-    try { seen = !!localStorage.getItem('mcpuppy_seen'); } catch (e) {}
-    if (seen) overlay.style.display = 'none';
-    else play();
-
-    // Idea #9 — the replay control re-runs the cold-open any time.
-    var replay = document.getElementById('studio-replay');
-    if (replay) replay.addEventListener('click', function() {
-      try { localStorage.removeItem('mcpuppy_seen'); } catch (e) {}
-      play();
-    });
-  })();
-  </script>
+  <!-- (The first-visit cold-open script — typed the "SIGNAL / DECRYPTING…" transmission,
+       revealed "McPuppy Studios", set the mcpuppy_seen flag, and flicked the lamp on as it
+       cleared — was removed 2026-07-18 with the overlay + replay control. The splash now
+       opens straight onto the studio; the sigil/quads/star below no longer wait it out.) -->
 
   <!-- Splash interactions: #1 bg-lean · #3 sigil bloom · #5 themed enter-wipe -->
   <script>
@@ -761,11 +659,9 @@
         sig.classList.add('is-bloom');
         setTimeout(function () { sig.classList.remove('is-bloom'); }, BLOOM_IN + HOLD);
       };
-      var seen = false; try { seen = !!localStorage.getItem('mcpuppy_seen'); } catch (e) {}
-      // On a first visit, wait out the cold-open — otherwise the whole beat plays
-      // behind an opaque overlay and the visitor arrives to a finished stage.
-      // (Cold-open halved 2026-07-14: ~8.6s → ~4.4s, so this waits 4400 now.)
-      var firstDelay = seen ? 260 : 4400;
+      // (The cold-open was removed 2026-07-18, so there's nothing to wait out — the
+      // sigil beat starts almost at once on every visit.)
+      var firstDelay = 260;
 
       setTimeout(function () {
         bloom();
@@ -779,10 +675,9 @@
       // front door.
       setTimeout(seatTheQuads, firstDelay + 6000);
     } else if (grid && !reduce) {
-      // Daytime: no bloom to gate the quads, so they seat on the same cadence — after
-      // the cold-open on a first visit, at once on a return.
-      var seenDay = false; try { seenDay = !!localStorage.getItem('mcpuppy_seen'); } catch (e) {}
-      var dayDelay = seenDay ? 260 : 4400;
+      // Daytime: no bloom to gate the quads, and no cold-open to wait out (removed
+      // 2026-07-18) — they just take their seats almost at once.
+      var dayDelay = 260;
       setTimeout(seatTheQuads, dayDelay);
       setTimeout(seatTheQuads, dayDelay + 6000);   // failsafe
     } else {
@@ -791,14 +686,12 @@
 
     // Secret ✦ is ARMED here; the CSS then holds it off-screen for 7s before the first
     // crossing (right → behind the quads → off the left edge, constant speed, every 48s).
-    // We only arm it once the page is actually visible: on a first visit that means AFTER
-    // the ~4.4s cold-open clears (halved 2026-07-14; otherwise the first pass is wasted
-    // behind the overlay); on a return visit, immediately — so the star enters ~7s in,
-    // which is the beat Nate asked for. Parked off-screen in CSS until .is-in starts.
+    // The cold-open that used to gate this on a first visit is gone (2026-07-18), so it
+    // arms right away — the star still enters ~7s in via its CSS delay. Parked off-screen
+    // until .is-in starts.
     var star = document.getElementById('drift-secret');
     if (star && !reduce) {
-      var seenStar = false; try { seenStar = !!localStorage.getItem('mcpuppy_seen'); } catch (e) {}
-      setTimeout(function () { star.classList.add('is-in'); }, seenStar ? 400 : 4400);
+      setTimeout(function () { star.classList.add('is-in'); }, 400);
     }
 
     // #9 — ON THE HOUR the ✦ streaks with a comet tail: the patient watcher's
@@ -888,8 +781,9 @@
      then "bring the lamp a bit away from the right corner" — right 14 → 40.) */
   .studio-light { position: fixed; right: 40px; bottom: 12px; z-index: 4; width: 82px; height: 92px; }
   .sl-lamp { position: absolute; inset: 0; }
-  /* the round base it stands on */
-  .sl-base { position: absolute; right: 10px; bottom: 0; width: 45px; height: 10px; border-radius: 50%;
+  /* the round base it stands on — trimmed a bit smaller 2026-07-18 (Nate: "make the base
+     a bit smaller"); right nudged so it stays centred under the stem as it shrinks. */
+  .sl-base { position: absolute; right: 14px; bottom: 0; width: 37px; height: 8px; border-radius: 50%;
     background: linear-gradient(180deg, #4a4a55, #2c2c34); box-shadow: 0 1px 5px rgba(0,0,0,0.6); }
   /* the stem — the lower rod, leaning back from the base up to the elbow */
   .sl-arm { position: absolute; right: 30px; bottom: 6px; width: 5px; height: 45px; border-radius: 3px;
@@ -912,7 +806,10 @@
   /* the throw of light out of the head — dark until the studio ships.
      2026-07-16 evening (Nate): the beam WIDENED a touch at both the mouth and the
      far end, and runs a little shorter — a fuller, stubbier throw. */
-  .sl-cone { position: absolute; right: 39px; top: 16px; width: 48px; height: 48px;
+  /* 2026-07-18 (Nate: "make flush the ray of light with the lamp head where the bulb
+     sits") — the cone was tucked up so its mouth meets the lit underside of the head
+     (top 16→10, right 39→41) instead of starting a few px below it with a dark gap. */
+  .sl-cone { position: absolute; right: 41px; top: 10px; width: 48px; height: 48px;
     clip-path: polygon(82% 0, 100% 24%, 48% 100%, 0 64%);
     background: linear-gradient(205deg, rgba(255,224,138,0.85), rgba(255,207,74,0.05));
     opacity: 0; transform: rotate(-6deg); transition: opacity .5s; pointer-events: none; }

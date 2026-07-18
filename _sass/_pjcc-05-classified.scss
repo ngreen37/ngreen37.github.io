@@ -474,101 +474,12 @@ body.theme-classified {
   .classified-return-btn { letter-spacing: 2px; padding: 12px 24px; }
 }
 
-/* =============================================================
-   TRANSMISSION OVERLAY — First-visit cinema intro
-   ============================================================= */
-
-.transmission-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: opacity 0.9s ease;
-}
-
-.transmission-overlay.is-done {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.transmission-scanlines {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    0deg, transparent 0px, transparent 3px,
-    rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px
-  );
-  z-index: 1;
-}
-
-.transmission-inner {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  padding: 40px 28px;
-  max-width: 720px;
-  width: 90%;
-}
-
-.transmission-line {
-  font-family: 'Share Tech Mono', 'Courier New', monospace;
-  font-size: 11px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: rgba(255, 140, 0, 0.55);
-  margin-bottom: 8px;
-  min-height: 1.6em;
-}
-
-.transmission-headline {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 800;
-  font-size: clamp(44px, 10vw, 100px);
-  color: #ffffff;
-  letter-spacing: -2px;
-  line-height: 1;
-  margin-top: 28px;
-  opacity: 0;
-  transition: opacity 0.6s ease;
-
-  &.is-visible { opacity: 1; }
-}
-
-.transmission-sub {
-  font-family: 'Poppins', sans-serif;
-  font-size: clamp(12px, 1.8vw, 16px);
-  font-weight: 600;
-  color: rgba(245, 197, 24, 0.75);
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  margin-top: 12px;
-  opacity: 0;
-  transition: opacity 0.6s ease 0.3s;
-
-  &.is-visible { opacity: 1; }
-}
-
-.transmission-skip {
-  position: absolute;
-  bottom: 28px;
-  right: 28px;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 2px;
-  color: rgba(255,255,255,0.22);
-  text-transform: uppercase;
-  animation: t-skip-pulse 2.5s ease-in-out infinite;
-}
-
-@keyframes t-skip-pulse {
-  0%, 100% { opacity: 0.22; }
-  50%       { opacity: 0.5; }
-}
+/* (The TRANSMISSION OVERLAY — the first-visit "SIGNAL ACQUIRED / DECRYPTING…" cold-open,
+   amber-on-black — and its "replay intro" control were removed 2026-07-18, Nate: "take out
+   replay intro and that black page with orange lettering entirely." The splash now opens
+   straight onto the studio; no first-visit gate, no mcpuppy_seen key. Restore the whole
+   block + its markup/JS in _layouts/studio-home.html from git before this commit if the
+   cinema open is ever wanted back.) */
 
 /* =============================================================
    CHESS NOTATION — Global secret listener toast
