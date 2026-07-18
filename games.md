@@ -99,19 +99,26 @@ permalink: /games/
 .ghub-divider { margin:18px 4px 10px; }
 .ghub-grid--sub .ghub-portal { min-height:104px; padding:12px 10px 10px; }
 .ghub-grid--sub .ghp-glyph { font-size:2rem; }
-/* 2026-07-16 (Nate): the lower row reads 🏆 · Vault · Terminated · Gambit altar —
-   the trophy stands LEFT of the Vault (doubled, see .ghub-trophy), the altar RIGHT
-   of Terminated. The sub grid drops to two columns since it only holds the halls.
-   2026-07-17 (Nate: "center the leaderboard trophy and the altar"): the flanks were
-   pushed to the page edges by a wide 440px hall block + 30px gaps. Now the four items
-   — 🏆 · Vault · Terminated · altar — form ONE tight centred cluster: a narrower hall
-   block, a smaller even gap, and slimmer flanks, so the trophy and altar sit in close
-   beside the halls, centred, instead of reading as far-flung bookends. */
+/* 2026-07-18 (Nate): the 🏆 Leaderboards trophy + the Gambit altar moved UP to the
+   hall's TOP-LEFT, standing together, inset a little from the corner ("center it in a
+   bit") instead of flanking the Sealed/Retired row at the foot. That row below is now
+   just the two dormant halls (Vault · Terminated), centred. */
+.ghub { position:relative; }   /* anchor the top-left corner cluster */
+.ghub-corner { position:absolute; top:16px; left:40px; z-index:4;
+  display:flex; align-items:center; gap:14px; }
+.ghub-corner .ghub-trophy { font-size:30px; line-height:1; text-decoration:none;
+  filter:drop-shadow(0 0 10px rgba(245,197,24,0.4)); transition:transform .16s ease, filter .16s ease; }
+.ghub-corner .ghub-trophy:hover, .ghub-corner .ghub-trophy:focus-visible {
+  transform:translateY(-2px); filter:drop-shadow(0 0 16px rgba(245,197,24,0.72)); }
+.ghub-corner .gm-scene { transform:scale(0.82); transform-origin:center bottom; }
+@media (max-width:760px){
+  /* it can't sit beside the centred doorway on narrow screens without crowding it —
+     flow it in as a small left-aligned row at the very top instead. */
+  .ghub-corner { position:static; margin:0 0 2px 6px; }
+}
 .ghub-subrow { position:relative; z-index:2; display:flex; align-items:center;
   justify-content:center; gap:16px; flex-wrap:wrap; }
 .ghub-subrow .ghub-grid--sub { flex:0 1 340px; grid-template-columns:repeat(2,1fr); }
-.ghub-subrow .ghub-trophy,
-.ghub-subrow .gmdoor { flex:0 0 80px; display:flex; align-items:center; justify-content:center; }
 @media (max-width:560px){
   .ghub-portal { min-height:128px; }
   .ghub-grid--sub .ghub-portal { min-height:96px; }
@@ -295,6 +302,23 @@ permalink: /games/
 <!-- ===== THE HALLS — Gauntlet Legends portal screen (pick a hall; no games here) ===== -->
 <div class="ghub">
 
+  <!-- ── TOP-LEFT CLUSTER: the Leaderboards trophy + the Gambit altar, promoted up
+       here together (2026-07-18 Nate: "move the Leaderboard trophy to top left, but
+       center it in a little bit… move the altar next to the trophy"). Inset from the
+       corner so they don't jam the edge. They used to flank the Sealed/Retired row
+       at the foot of the hall. ── -->
+  <div class="ghub-corner">
+    <a class="ghub-trophy" href="{{ '/leaderboards/' | relative_url }}" aria-label="Leaderboards" title="Leaderboards">🏆</a>
+    <a class="gmdoor" href="{{ '/the-gambit/' | relative_url }}"
+       aria-label="The Gambit — wager what you've earned; the board sometimes gives back more. Never real money.">
+      <span class="gm-scene" aria-hidden="true">
+        <i class="gm-glow"></i>
+        <b class="gm-coin">♟</b>
+        <i class="gm-altar"></i>
+      </span>
+    </a>
+  </div>
+
   <!-- ── THE DOOR: the Gauntlet, above the halls ── -->
   <div class="ghub-doorway">
     {%- comment -%} 2026-07-16 evening (Nate): PLATE PARITY — the THE GAUNTLET plate
@@ -335,25 +359,12 @@ permalink: /games/
   <!-- the active halls -->
   <div class="ghub-grid" id="ghub-grid"></div>
 
-  <!-- sealed / retired — set apart, lower. 2026-07-16 (Nate): this row gained
-       neighbours — the 🏆 Leaderboards (doubled) stands LEFT of the Vault, and the
-       Gambit altar (moved down from the doorway) stands RIGHT of Terminated. -->
+  <!-- sealed / retired — set apart, lower. The 🏆 Leaderboards + the Gambit altar that
+       used to flank this row moved to the top-left cluster 2026-07-18 (Nate); this row is
+       now just the two dormant halls (Vault · Terminated), centred. -->
   <div class="ghub-divider"><span>Sealed / Retired</span></div>
   <div class="ghub-subrow">
-    <a class="ghub-trophy" href="{{ '/leaderboards/' | relative_url }}" aria-label="Leaderboards" title="Leaderboards">🏆</a>
     <div class="ghub-grid ghub-grid--sub" id="ghub-grid-sub"></div>
-    <!-- ── THE GAMBIT: the wager altar (2026-07-15 Nate: "make the Gambit a link like
-         the gauntlet… some sort of drawing, and not text"). A glowing ♟ coin floating
-         over a small altar; amber accent = the wager. Never real money. The "THE
-         GAMBIT" plate came off 2026-07-16 — the altar IS the link, aria names it. ── -->
-    <a class="gmdoor" href="{{ '/the-gambit/' | relative_url }}"
-       aria-label="The Gambit — wager what you've earned; the board sometimes gives back more. Never real money.">
-      <span class="gm-scene" aria-hidden="true">
-        <i class="gm-glow"></i>
-        <b class="gm-coin">♟</b>
-        <i class="gm-altar"></i>
-      </span>
-    </a>
   </div>
 
   {%- comment -%} 2026-07-16 (Nate: "A reset button for all games, really… Make sure
