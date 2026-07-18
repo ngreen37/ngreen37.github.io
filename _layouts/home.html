@@ -80,25 +80,23 @@ layout: default
    eyebrow plate and the door's caption step aside; sun/moon + plate + lamps
    + door keep the story without the crowd. ── */
 @media (max-width: 700px) {
-  /* top padding clears the door zone (door bottom ≈ 115px) so the title can
-     never run underneath it at any phone width */
-  .home-hero { padding: 122px 22px 46px; min-height: 190px; margin-bottom: 26px; }
-  /* nowrap stops the title's letters (which overshoot in scale as they type in)
-     from bumping "…ey" to a second line for a frame, then snapping back (Nate). */
-  .hero-title { font-size: 21px; letter-spacing: -0.5px; white-space: nowrap; }
+  /* the doors left the hero (they're .home-plays below now), so the top no longer
+     has to clear a door zone — the hero opens up (2026-07-17). */
+  .home-hero { padding: 54px 22px 40px; min-height: 188px; margin-bottom: 20px; }
+  .hero-title { font-size: 22px; letter-spacing: -0.5px; white-space: nowrap; }
   .hero-eyebrow { display: none; }
   /* reel the Checker-Town stacks into the left third: narrower + only four of them */
   .hero-skyline { height: 34px; left: 16px; right: 16px; gap: 4px; }
   .hero-skyline .sk-ct { width: 15px !important; }
   .hero-skyline span.sk-ct:nth-of-type(n+5) { display: none; }
   .hero-board { bottom: 30px; height: 64px; }
-  .hero-door { transform: scale(0.72); transform-origin: top right; top: 10px; right: 14px; }
 }
 
 /* ── #2 one-screen desktop ── */
 @media (min-width: 900px) {
-  .home-hero { padding: 46px 40px 56px; margin-bottom: 18px; }
-  .hero-title { font-size: clamp(30px, 4.2vw, 44px); }
+  .home-hero { padding: 58px 40px 70px; margin-bottom: 14px; }
+  /* bigger, more confident — the title is the poster now (2026-07-17) */
+  .hero-title { font-size: clamp(34px, 4.8vw, 52px); }
 }
 
 /* ── trim the tail (2026-07-11 Nate): the cast is the last section, so its
@@ -167,37 +165,43 @@ layout: default
       <span class="sk sk-cc sk-cc--king"   style="--w:18px;--h:36px"></span>
     </a>
   </div>
-  {% comment %} The Park Tables — TOP-LEFT since 2026-07-16 (Nate: "same horizontal as
-       its Gauntlet link counterpart"), a direct child of the hero like the door is:
-       inside .hero-skyline its absolute coords resolve against the skyline strip and
-       top:12 lands at the hero's FOOT. Links to the same place as the splash's table. {% endcomment %}
-  {% comment %} 2026-07-16 (Nate): "they should always be uniform" — the table is the
-       ONE canonical drawing (shared include + _pjcc-22-chess-canon.scss). {% endcomment %}
-  <a class="hero-park" href="{{ '/games/park-tables/' | relative_url }}"
+  {% comment %} The two entrances used to be jammed into the hero's corners (Park
+       Tables top-left, the Gauntlet door top-right). They moved OUT to a roomy row
+       below the hero 2026-07-17 (Nate: "move the links to below the hero… use the
+       leftover space for balance"). See .home-plays right after this section. {% endcomment %}
+</section>
+
+{% comment %} ── 1b. THE TWO WAYS TO PLAY — the entrances, given room + a name. Same two
+     canonical drawings (the Park Table shared include + the Gauntlet door). The Gauntlet
+     anchor keeps id="gauntlet-door" and its inner ids so the progress JS still dresses
+     it (floor pips, boss colour + glyph, grandeur tier). {% endcomment %}
+<section class="home-plays" aria-label="Ways to play">
+  <a class="play-card" href="{{ '/games/park-tables/' | relative_url }}"
      aria-label="Park Tables — play chess against another operative in the Checker Town park">
-    {% include park-table.html %}
+    <span class="play-art">{% include park-table.html %}</span>
+    <b class="play-name">Park Tables</b>
+    <i class="play-sub">Play another operative — or McPuppy himself</i>
   </a>
-  {% comment %} THE DOOR — the way into the Gauntlet, top right of the hero:
-       ten lift lamps (your floors) and an arched doorway with the current boss's
-       piece behind it and light under the door. JS below dresses it in the current
-       floor's colour. 2026-07-16 evening (Nate): PLATE PARITY with the splash —
-       the THE GAUNTLET plate and the "Begin the climb" caption are gone everywhere;
-       the door alone is the invitation (aria-label still names it). {% endcomment %}
-  <!-- arch on top, pips BELOW (2026-07-17 Nate: "move the five out of ten dots… to the bottom across all") -->
-  <a class="gdoor hero-door" id="gauntlet-door" href="{{ '/games/the-gauntlet/' | relative_url }}"
+  <a class="play-card gdoor" id="gauntlet-door" href="{{ '/games/the-gauntlet/' | relative_url }}"
      aria-label="The Gauntlet — real chess vs a ladder of ten PJCC rivals">
-    <span class="gdoor-arch" aria-hidden="true">
-      <i class="gdoor-door"><b class="gdoor-glyph" id="gdoor-glyph">♛</b><u class="gdoor-knob"></u></i>
-      <i class="gdoor-seam"></i>
+    <span class="play-art">
+      <span class="gdoor-arch" aria-hidden="true">
+        <i class="gdoor-door"><b class="gdoor-glyph" id="gdoor-glyph">♛</b><u class="gdoor-knob"></u></i>
+        <i class="gdoor-seam"></i>
+      </span>
+      <span class="gdoor-pips" id="gdoor-pips" aria-hidden="true"></span>
     </span>
-    <span class="gdoor-pips" id="gdoor-pips" aria-hidden="true"></span>
-    <span class="gdoor-whisper" id="gdoor-whisper" aria-hidden="true"></span>
+    <b class="play-name">The Gauntlet</b>
+    <i class="play-sub">Real chess vs a ladder of ten rivals</i>
   </a>
 </section>
 <style>
 /* ── #8 film title card: plate top-left, title in the lower third, horizon below ── */
+/* Poster-first (2026-07-17 Nate): more sky above, the title low and large over the
+   horizon. The two play-doors no longer live in here — they're .home-plays below — so
+   the hero is just sky · title · horizon now. */
 .home-hero { position: relative; display:flex; flex-direction:column; justify-content:flex-end;
-  min-height:224px; }
+  min-height:296px; }
 /* top-CENTRE now, quieter (Nate 2026-07-16: middle + 15% more transparent) — the top row
    reads park table (left) · plate (centre) · Gauntlet door (right) */
 .hero-eyebrow { position:absolute; top:14px; left:50%; transform:translateX(-50%); margin:0;
@@ -232,28 +236,10 @@ layout: default
 .hero-skyline .sk-sea { flex:1 1 auto; height:2px; margin:0 10px 5px;
   background:linear-gradient(90deg, rgba(96,206,255,0), rgba(96,206,255,0.30), rgba(96,206,255,0)); }
 
-/* ── THE PARK TABLES: a little park table set over the Checker Town stacks — the park
-   lives in Checker Town, so a table stands over the town (Nate 2026-07-15). Green accent
-   = the park; links to the same place as the splash's park table. ── */
-.hero-park { position:absolute; left:26px; top:12px; z-index:3;
-  display:flex; flex-direction:column; align-items:center; gap:5px;
-  text-decoration:none; pointer-events:auto; }
-/* The whole unit mirrors the Gauntlet door's footprint — the hero's two ways to
-   play, matched in weight. Since 2026-07-16 it stands TOP-LEFT on the door's own
-   horizontal (top:12), the two of them bookending the centred studio plate.
-   2026-07-16 later (Nate: "they should always be uniform") — the table DRAWING is
-   the shared canon (_includes/park-table.html + _pjcc-22-chess-canon.scss); only
-   the positioning lives here. */
-/* ⚠ These media overrides must live AFTER the base .hero-park rule above — media
-   queries add no specificity, so put them any earlier and the base rule silently wins.
-   The canonical table is 200px wide now, so mid-size screens squeeze it a little
-   before phones take it down to 0.72, exactly like the door on the other side. */
-@media (max-width: 900px) {
-  .hero-park { transform: scale(0.85); transform-origin: top left; }
-}
-@media (max-width: 700px) {
-  .hero-park { transform: scale(0.72); transform-origin: top left; left: 10px; top: 10px; }
-}
+/* (The .hero-park absolute-positioning rules were removed 2026-07-17 — the Park Table
+   moved out of the hero corner into .home-plays below. The drawing itself is still the
+   shared canon include; .play-art now hosts it. Restore from git if the corner is ever
+   wanted back.) */
 
 /* ── Chess City: the far shore (2026-07-11 Nate). Cool-blue building bodies with
    faint floor lines, each topped by a back-rank piece's silhouette: a rook's
@@ -405,10 +391,9 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
   .gdoor-pips i.cur { animation:none; }
   .gdoor-door { transition:none; }
 }
-/* where it stands on the hero — scaled down ~12% (2026-07-15 Nate: shrink the door
-   a touch so it stops overlapping the Chess City towers, which also came down). */
-.hero-door { position:absolute; top:12px; right:26px; z-index:2;
-  transform:scale(0.88); transform-origin:top right; }
+/* (.hero-door absolute positioning removed 2026-07-17 — the Gauntlet door moved out of
+   the hero corner into .home-plays below, where .play-art hosts it. The .gdoor look +
+   grandeur tiers above are unchanged and still drive it.) */
 
 /* ── Rain retired from the hero (2026-07-12 Nate: "all weathers on all screens").
    The rain, the mist, the intensity random-walk and the lightning flash are now
@@ -433,11 +418,10 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 
 @media (prefers-reduced-motion: reduce) { .hero-skyflash { display:none; } }
 
-/* ── #9 letterbox: two bands frame the first arrival, then lift ── */
-.letterbox { position:fixed; left:0; right:0; height:9vh; background:#050310; z-index:11500;
-  pointer-events:none; transition:transform 1.1s cubic-bezier(.6,0,.3,1); }
-.letterbox--top { top:0; } .letterbox--bot { bottom:0; }
-.letterbox--top.lift { transform:translateY(-101%); } .letterbox--bot.lift { transform:translateY(101%); }
+/* (#9 the black letterbox bands were removed 2026-07-17 — Nate: "drop the intro, the
+   black intro with the orange text." The page no longer opens behind black bars; the
+   title simply rises up once (see .hero-title animation below). Restore from git if
+   the cinematic open is ever wanted back.) */
 
 {% comment %} (#19 board-grid underlay removed 2026-07-10 — restore from git if missed.) {% endcomment %}
 
@@ -543,30 +527,16 @@ html.sky-night .hs-star--tw:last-of-type { animation-delay:-1.7s; }
 @keyframes hsTwinkle { 0%,100% { opacity:1; } 50% { opacity:0.2; } }
 @media (prefers-reduced-motion: reduce) { .hs-star--tw { animation:none; } }
 
-/* ── #18 first arrival: the page takes its seats after the title (JS staggers) ── */
-body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
-  opacity:0; transform:translateY(8px); }
-.arrive-in { transition:opacity .7s ease, transform .7s ease; opacity:1 !important; transform:none !important; }
+/* (#18 the staged "takes its seats" first-arrival fade went with the intro 2026-07-17 —
+   the ticker + cast just render now; nothing adds .first-arrival / .arrive-in anymore.) */
 
-/* #9 — the title types itself in, one letter at a time, every visit.
-   (2026-07-11 evening: dramatic again — each letter slams down white-hot from
-   above, squashes, and cools to gold. Still just the letters themselves: no
-   extra elements, no falling pieces, no hero thump — cheap AND loud.) */
-.hero-title .ht-l { display:inline-block; }
-.hero-title.ht-run .ht-l { opacity:0; }
-/* (2026-07-13 Nate: "a little too bouncy — take the bounce down 33%". Every
-   bounce amplitude ×0.67: squash 0.94→0.96, rebound 1.03→1.02, the 3px/-2px
-   settle → 2px/-1.3px, and the easing's overshoot 1.35→1.23. The 48px fall
-   itself is untouched — it's the landing that calmed down, not the drop.) */
-.hero-title .ht-l.ht-in { animation:htIn .5s cubic-bezier(.2,1.23,.35,1) both; }
-@keyframes htIn {
-  0%   { opacity:0; color:#fff8dc; transform:translateY(-48px) scale(1.6);
-         text-shadow:0 0 24px rgba(245,197,24,0.95), 0 0 6px rgba(255,255,255,0.9); }
-  55%  { opacity:1; transform:translateY(2px) scale(0.96); }
-  78%  { color:#ffe27a; transform:translateY(-1.3px) scale(1.02);
-         text-shadow:0 0 10px rgba(245,197,24,0.4); }
-  100% { opacity:1; color:#F5C518; transform:none; text-shadow:none; }
-}
+/* #9 — the title simply RISES up once, calm and confident (2026-07-17 Nate: "drop the
+   intro… we can do without it"). The per-letter white-hot typing (its JS is gone below)
+   read as a 2000s intro gate; this is one quiet CSS animation, no gate, no JS. */
+.hero-title { animation:heroRise 0.9s cubic-bezier(.2,.8,.25,1) both; }
+@keyframes heroRise { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
+@media (prefers-reduced-motion: reduce) { .hero-title { animation:none; } }
+html.reduce-flourish .hero-title { animation:none; }
 
 /* the board the title lands on — always there, quiet (non-animatic) */
 .hero-board { position:absolute; left:50%; bottom:40px; width:min(620px, 86%); height:96px;
@@ -690,6 +660,37 @@ body.first-arrival .world-ticker-wrap, body.first-arrival .home-section--cast {
 /* ONE orb town-wide (2026-07-14): the hero paints its own sun/moon diorama, so the
    fixed sky's arcing orb stands down here — otherwise the gutters grow a second one. */
 body:has(.home-flow) .ts-orb { display: none !important; }
+
+/* ── 1b. THE TWO WAYS TO PLAY — the entrances moved out of the hero's corners into
+   this roomy, labelled row (2026-07-17 Nate: "move the links to below the hero, use
+   the leftover space for balance"). Two equal cards; the same canon drawings, given
+   air + a name. The .gdoor card keeps the door look/grandeur it always had. ── */
+.home-plays { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:18px;
+  margin:0 0 30px; }
+/* both cards are a centred column: the drawing floats up, the name+sub pin to the
+   foot so the two labels line up even though the two drawings differ in height */
+.play-card { position:relative; display:flex; flex-direction:column; align-items:center;
+  justify-content:flex-end; gap:9px; min-height:190px; padding:22px 16px 20px;
+  text-align:center; text-decoration:none; border-radius:16px;
+  background:linear-gradient(180deg, rgba(40,28,92,0.5), rgba(18,12,48,0.5));
+  border:1px solid rgba(122,86,224,0.30);
+  transition:border-color .18s ease, transform .18s ease, box-shadow .18s ease; }
+.play-card:hover, .play-card:focus-visible { border-color:#F5C518; transform:translateY(-3px);
+  box-shadow:0 16px 30px -18px rgba(0,0,0,0.7); text-decoration:none; }
+/* the drawings sit in normal flow now — drop any inherited absolute positioning */
+.play-art { flex:1 1 auto; display:flex; align-items:center; justify-content:center;
+  width:100%; position:relative; }
+.play-art .pkt-scene, .play-card.gdoor .gdoor-arch { position:relative; }
+.play-name { font-family:'Poppins',sans-serif; font-weight:700; font-size:15px;
+  color:#F5C518; line-height:1.2; }
+.play-sub { font-style:normal; font-size:11px; letter-spacing:0.02em; color:#c6b8ec;
+  line-height:1.35; max-width:26ch; }
+@media (max-width: 600px) {
+  .home-plays { gap:11px; margin-bottom:24px; }
+  .play-card { min-height:150px; padding:16px 9px 14px; border-radius:13px; gap:6px; }
+  .play-name { font-size:12.5px; }
+  .play-sub { font-size:9.5px; }
+}
 </style>
 
 {% comment %} (Story Arc film-strip removed 2026-06-22 — the chapter beats are now
@@ -1008,67 +1009,11 @@ function ctParts() {
   });
 })();
 
-// #9 — the title types itself in, one letter at a time, on EVERY visit
-// (2026-07-11: was first-visit-only; the letterbox + staged arrival below stay
-// first-visit-only via the introseen key. The falling pieces / white-hot
-// landings / hero thump were cut in the lag sweep; restore from git.)
-(function () {
-  var t = document.querySelector('.hero-title');
-  if (!t) return;
-  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  try {
-    window.__firstArrival = !localStorage.getItem('pjcc.home.introseen');
-    if (window.__firstArrival) localStorage.setItem('pjcc.home.introseen', '1');
-  } catch (e) {}
-  t.setAttribute('aria-label', t.textContent.replace(/\s+/g, ' '));
-  var letters = [];
-  Array.prototype.slice.call(t.childNodes).forEach(function (n) {
-    if (n.nodeType !== 3) return;                    // wrap text; leave the <br> alone
-    var frag = document.createDocumentFragment();
-    String(n.nodeValue).split('').forEach(function (ch) {
-      if (!ch.trim()) { frag.appendChild(document.createTextNode(ch)); return; }
-      var s = document.createElement('span');
-      s.className = 'ht-l'; s.textContent = ch; s.setAttribute('aria-hidden', 'true');
-      frag.appendChild(s); letters.push(s);
-    });
-    t.replaceChild(frag, n);
-  });
-  if (!letters.length) return;
-  t.classList.add('ht-run');
-  letters.forEach(function (s, i) {
-    setTimeout(function () { s.classList.add('ht-in'); }, 200 + i * 42);
-  });
-  // then the title goes back to plain text (kerning and all)
-  window.__htDone = 200 + letters.length * 42 + 500;
-  setTimeout(function () {
-    t.classList.remove('ht-run');
-    letters.forEach(function (s) {
-      if (s.parentNode) s.parentNode.replaceChild(document.createTextNode(s.textContent), s);
-    });
-    t.normalize(); t.removeAttribute('aria-label');
-  }, window.__htDone);
-})();
-
-// #9 + #18 — first arrival only: the page opens letterboxed, and the rest of
-// the furniture takes its seats one by one. (The title types on every visit
-// now, so this keys off __firstArrival, not just __htDone.)
-(function () {
-  if (!window.__htDone || !window.__firstArrival) return;
-  var lbT = document.createElement('div'), lbB = document.createElement('div');
-  lbT.className = 'letterbox letterbox--top'; lbB.className = 'letterbox letterbox--bot';
-  document.body.appendChild(lbT); document.body.appendChild(lbB);
-  setTimeout(function () {
-    lbT.classList.add('lift'); lbB.classList.add('lift');
-    setTimeout(function () { try { lbT.remove(); lbB.remove(); } catch (e) {} }, 1400);
-  }, window.__htDone + 600);
-  document.body.classList.add('first-arrival');
-  ['.world-ticker-wrap', '.home-section--cast']
-    .forEach(function (sel, i) {
-      var el = document.querySelector(sel);
-      if (!el) return;
-      setTimeout(function () { el.classList.add('arrive-in'); }, window.__htDone + 250 + i * 170);
-    });
-})();
+// (2026-07-17 Nate: "drop the intro — the black intro with the orange text.")
+// The per-letter white-hot title typing AND the first-arrival black letterbox were
+// removed here. The title now just rises up once via a pure-CSS animation
+// (.hero-title { animation:heroRise }), so there's no JS gate and no per-visit
+// localStorage key anymore. Restore both from git before this commit if ever missed.
 
 
 // (#10 Princess's hero walk-through removed 2026-07-12 with the companion — restore from git.)

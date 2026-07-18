@@ -1023,11 +1023,13 @@ pre code {
 
 
 
-/* Character chip row — 4 columns */
+/* Character chip row — 4 columns. Cards trimmed smaller 2026-07-17 (Nate: "make the
+   character boxes smaller") so the cast reads as a light teaser under the new hero,
+   not four big tiles. */
 .char-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  gap: 14px;
 }
 
 .char-chip {
@@ -1037,10 +1039,10 @@ pre code {
   text-align: center;
   background: #1c1540;
   border: 1px solid #3d2b8a;
-  border-radius: 12px;
-  padding: 26px 14px 20px;
+  border-radius: 10px;
+  padding: 17px 12px 13px;
   text-decoration: none;
-  gap: 10px;
+  gap: 7px;
   transition: border-color 0.2s, transform 0.15s;
 
   &:hover {
@@ -1051,14 +1053,14 @@ pre code {
 }
 
 .char-chip-icon {
-  font-size: 34px;
+  font-size: 26px;
   color: #c4b5fd;
   line-height: 1;
 }
 
 .char-chip-name {
   font-family: 'Poppins', sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   color: #F5C518;
   line-height: 1.3;
