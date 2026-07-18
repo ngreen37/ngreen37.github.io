@@ -2,11 +2,6 @@
 layout: default
 ---
 
-{% comment %} One-sun guard (2026-07-18): mark the PJCC home so the fixed town-sky orb is
-     hidden here without relying on :has() (older iOS webviews drop it → two suns). Runs
-     during parse, before the sky paints. {% endcomment %}
-<script>document.documentElement.classList.add('is-pjcc-home');</script>
-
 {% comment %} Day counter: March 1 2026 00:00 EDT (04:00 UTC) = Unix 1772337600 {% endcomment %}
 {% assign start_ts   = 1772337600 %}
 {% assign now_ts     = site.time | date: "%s" | plus: 0 %}
@@ -116,24 +111,13 @@ layout: default
   {% comment %} #16 — the sky, played UP (2026-07-11): sun/moon + stars + a hero
        gradient per phase. Everything here is STATIC paint (no per-frame cost);
        the only motion is two 2px stars twinkling at night. {% endcomment %}
-  <div class="hero-sky" aria-hidden="true">
-    <i class="hs-orb"></i>
-    <b class="hs-star" style="--sx:12%;--sy:24%"></b>
-    <b class="hs-star hs-star--tw" style="--sx:26%;--sy:40%"></b>
-    <b class="hs-star" style="--sx:38%;--sy:14%;--ss:3px"></b>
-    <b class="hs-star" style="--sx:49%;--sy:32%"></b>
-    <b class="hs-star hs-star--tw" style="--sx:57%;--sy:12%"></b>
-    <b class="hs-star" style="--sx:66%;--sy:28%;--ss:3px"></b>
-    <b class="hs-star" style="--sx:74%;--sy:44%"></b>
-    <b class="hs-star" style="--sx:83%;--sy:20%"></b>
-    <b class="hs-star" style="--sx:6%;--sy:52%"></b>
-    <b class="hs-star hs-star--tw" style="--sx:31%;--sy:18%;--ss:3px"></b>
-    <b class="hs-star" style="--sx:44%;--sy:52%"></b>
-    <b class="hs-star" style="--sx:62%;--sy:46%"></b>
-    <b class="hs-star hs-star--tw" style="--sx:70%;--sy:16%"></b>
-    <b class="hs-star" style="--sx:90%;--sy:38%;--ss:3px"></b>
-    <b class="hs-star" style="--sx:20%;--sy:10%"></b>
-  </div>
+  {% comment %} SKY COLLAPSED 2026-07-18 (Nate: "collapse the two systems"). The hero used
+       to paint its OWN sky here — a second sun (.hs-orb), its own stars, its own per-phase
+       gradient — on top of the site-wide town sky. That's the two-sun problem at the root.
+       The hero is TRANSPARENT now and the ONE shared town sky (_pjcc-20-town-sky.scss:
+       gradient + arcing sun/moon + stars + clouds) shows straight through it. The hero
+       keeps only its own foreground: the title, the Checker Town↔Chess City skyline, and
+       the rare lightning that backlights it. Restore the hero sky from git if ever missed. {% endcomment %}
   {% comment %} The rain is no longer the hero's own (2026-07-12): the town weather now
        falls on EVERY page (pjcc-weather.js → .town-weather-overlay), so the hero would
        have doubled up. What stays here is the hero's one exclusive trick — rare strikes
@@ -433,104 +417,24 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 /* ── #16 the sky keeps town time — played UP 2026-07-11. Four looks, all static
    paint: the hero wears a different sky per phase, a sun rises and sets, the
    moon takes the night watch. ── */
-.hero-sky { position:absolute; inset:0; border-radius:inherit; overflow:hidden; pointer-events:none; }
-/* 2026-07-17 (Nate: "sun is in an odd spot at 7:52am … do we have a good set arc?").
-   The hero sun used to be pinned to ONE hard-coded spot per phase — so through the whole
-   dawn window (5–8am) it sat frozen at its sunrise height and read wrong by 7:52. It now
-   rides the SAME hour-arc the background town-sky uses: --orb-x/--orb-y are set before
-   first paint (town-weather.html) and re-plotted every 2 min (pjcc-weather.js), so it
-   rises low-left, climbs and crosses high above the centred title, and sets low-right at
-   the skyline. Centre-anchored (translate -50%) so the arc coords land on the disc's
-   middle; the per-phase rules below keep only the LOOK (colour · size · glow · rays). */
-.hs-orb { position:absolute; display:none; border-radius:50%;
-  /* x rides the shared arc straight; y is compressed into this short banner's clear
-     band so the apex lands just BELOW the eyebrow (--orb-y 10%→apex 30%, 62%→edge 68%)
-     — the sun clears the "…Presents" pill at noon and still sets to the rooftops. */
-  left:var(--orb-x, 15%); top:calc(var(--orb-y, 26%) * 0.731 + 22.7%);
-  transform:translate(-50%, -50%);
-  transition:left 3s ease, top 3s ease; }
-@media (prefers-reduced-motion: reduce) { .hs-orb { transition:none; } }
-html.reduce-flourish .hs-orb { transition:none; }
-.hs-star { position:absolute; display:none; left:var(--sx); top:var(--sy);
-  width:var(--ss,2px); height:var(--ss,2px); border-radius:50%; background:#fdf9ff;
-  box-shadow:0 0 3px 0.5px rgba(232,220,255,0.75); }
+/* ── SKY COLLAPSED 2026-07-18 (Nate: "collapse the two systems") — the hero paints NO
+   sky of its own now. It's transparent, and the ONE shared town sky (its gradient +
+   arcing sun/moon + stars + clouds, _pjcc-20-town-sky.scss) shows straight through it —
+   so there is exactly one sun, site-wide. The old .hero-sky / .hs-orb / .hs-star and the
+   per-phase .home-hero gradients + clouds are all deleted. A soft floor-scrim keeps the
+   gold title + the skyline legible on any phase; the two skyline tints stay. ── */
+.home-hero { background:transparent; }
+.home-hero::before { content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+  border-radius:inherit; background:linear-gradient(180deg, transparent 46%, rgba(8,6,24,0.30) 100%); }
 
-/* DAWN — the sun comes up rose-gold over the rooftops */
-html.sky-dawn .home-hero { background:linear-gradient(163deg, #1a0f3d 0%, #3d2b6e 42%, #86395c 76%, #b85a38 104%); }
-html.sky-dawn .hs-orb { display:block; width:30px; height:30px;
-  background:radial-gradient(circle at 40% 36%, #ffe9c9, #ff9d5c 72%);
-  box-shadow:0 0 46px 14px rgba(255,157,92,0.30); }
+/* the foreground skyline still warms at dawn/dusk — it's the hero's own, not the sky */
 html.sky-dawn .hero-skyline .sk-ct { border-top-color:rgba(255,170,110,0.5); }
 
-/* DAY — an actual blue daytime SKY (2026-07-12 Nate: day looked like night). A big,
-   bright, unmistakable sun (distinct from the pale night moon) + a few soft clouds. */
-{% comment %} 2026-07-15 (Nate: "the Daytime looks GREAT — just dim the sun and the blue
-     by a touch, like 7.5%"). The blue gradient is knocked down ~7.5% across all three
-     stops, and the sun's glow/rays/corona below come down the same amount. The sun DISC
-     is left alone — it's the shape that says "sun"; only its aura dims. {% endcomment %}
-html.sky-day .home-hero { background:linear-gradient(180deg, #1d539b 0%, #3a79c0 48%, #71a7d5 100%); }
-html.sky-day .hs-orb { display:block; width:44px; height:44px;
-  background:radial-gradient(circle at 40% 38%, #fffefb 0%, #fff3b8 34%, #ffd84a 70%, #f5b800 100%);
-  box-shadow:0 0 42px 15px rgba(255,216,74,0.46), 0 0 96px 34px rgba(255,216,74,0.20); }
-{% comment %} 2026-07-12 (Nate: "the sun still kind of looks like the moon") — give it
-     actual RAYS, so the silhouette itself says "sun" and can never be read as the
-     pale night orb. ::before = 16 spokes (a repeating-conic-gradient masked to a ring
-     so they radiate from the rim outward); ::after = a warm corona. The spokes turn
-     once every 90s — transform-only, so the cost is nil. {% endcomment %}
-html.sky-day .hs-orb::before { content:''; position:absolute; inset:-20px; border-radius:50%;
-  /* 2026-07-14 (Nate: rays "a bit too unnatural — pull it back"): 16 spokes → 8,
-     slightly wider and softer, so it reads sun-lit rather than machine-cut */
-  background:repeating-conic-gradient(from 0deg,
-    rgba(255,231,130,0.65) 0deg 4.5deg, transparent 4.5deg 45deg);
-  -webkit-mask-image:radial-gradient(circle, transparent 47%, #000 55%, #000 72%, transparent 100%);
-          mask-image:radial-gradient(circle, transparent 47%, #000 55%, #000 72%, transparent 100%);
-  animation:hs-sun-rays 90s linear infinite; }
-html.sky-day .hs-orb::after { content:''; position:absolute; inset:-11px; border-radius:50%;
-  background:radial-gradient(circle, rgba(255,238,160,0.31), transparent 70%); }
-@keyframes hs-sun-rays { to { transform:rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { html.sky-day .hs-orb::before { animation:none; } }
-html.reduce-flourish html.sky-day .hs-orb::before { animation:none; }
-/* soft clouds so it clearly reads as a sky (static paint; away from sun + door).
-   2026-07-15 (Nate: "the clouds in the daytime don't really look like clouds — stretch
-   those out … a more cloudy day"). They were three lone flat ovals = smudges. Now each
-   is a STRETCHED cloud with anatomy — a long flat base with two soft domes bumping out of
-   its top — the same puff grammar the town-sky deck uses. Two of them, kept up in the
-   sky band and off-centre so they clear the centred title, the eyebrow and the door. */
-html.sky-day .hero-sky::before { content:''; position:absolute; inset:0; pointer-events:none;
-  background:
-    /* cloud A — long, low, left-of-centre */
-    radial-gradient(160px 12px at 40% 26%, rgba(255,255,255,0.52), transparent 82%),
-    radial-gradient(52px 20px at 35% 22%, rgba(255,255,255,0.5), transparent 72%),
-    radial-gradient(66px 25px at 41% 21%, rgba(255,255,255,0.55), transparent 72%),
-    radial-gradient(44px 18px at 46% 22.5%, rgba(255,255,255,0.46), transparent 72%),
-    /* cloud B — a second, higher and right-of-centre */
-    radial-gradient(140px 11px at 62% 15%, rgba(255,255,255,0.44), transparent 82%),
-    radial-gradient(46px 18px at 58% 11.5%, rgba(255,255,255,0.42), transparent 72%),
-    radial-gradient(58px 22px at 63% 11%, rgba(255,255,255,0.46), transparent 72%); }
-
-/* DUSK — it sets deep amber on the other side of town: the sun steps into the
-   background, dimmer and half-sunk at the sea line.
-   (The faint dashed path-arc was removed 2026-07-12 — Nate: the sky reads well
-   enough on its own now. Restore from git if it's ever missed.) */
-html.sky-dusk .home-hero { background:linear-gradient(160deg, #150b36 0%, #3a1e5e 45%, #7c3452 78%, #b0501f 108%); }
-html.sky-dusk .hs-orb { display:block; width:28px; height:28px;
-  opacity:0.8;
-  background:radial-gradient(circle at 40% 36%, #ffd9a0, #e0662e 74%);
-  box-shadow:0 0 30px 9px rgba(224,102,46,0.22); }
+/* (DAY/DUSK/NIGHT hero skies + the hero sun/rays/corona/clouds/stars were all removed
+   2026-07-18 — that whole diorama is what the shared town sky already does. The only
+   per-phase hero rules left are the dusk/night foreground touches below.) */
 html.sky-dusk .hero-skyline .sk-ct { border-top-color:rgba(255,150,80,0.45); }
-
-/* NIGHT — a pale moon, stars out, windows warm.
-   (The moon's dim path-arc was removed 2026-07-12 alongside the dusk one — Nate.) */
-html.sky-night .home-hero { border-color:#2a1d5e;
-  background:linear-gradient(150deg, #0a0728 0%, #1d1252 55%, #05030f 100%); }
-html.sky-night .hs-orb { display:block; width:22px; height:22px;
-  background:radial-gradient(circle at 38% 34%, #f4f0ff, #b9b2d6 66%, #8f88b4 100%);
-  box-shadow:0 0 26px 8px rgba(220,214,255,0.16), inset -5px -4px 7px rgba(80,70,130,0.55); }
-html.sky-night .hs-star { display:block; }
-html.sky-night .hs-star--tw { animation:hsTwinkle 3.4s ease-in-out infinite; }
-html.sky-night .hs-star--tw:last-of-type { animation-delay:-1.7s; }
-@keyframes hsTwinkle { 0%,100% { opacity:1; } 50% { opacity:0.2; } }
-@media (prefers-reduced-motion: reduce) { .hs-star--tw { animation:none; } }
+html.sky-night .home-hero { border-color:#2a1d5e; }
 
 /* (#18 the staged "takes its seats" first-arrival fade went with the intro 2026-07-17 —
    the ticker + cast just render now; nothing adds .first-arrival / .arrive-in anymore.) */
@@ -662,14 +566,10 @@ html.reduce-flourish .hero-title { animation:none; }
    footer clean). It was re-shown here only; that re-enable is deleted, so the footer
    ribbon is now hidden on EVERY normal page (Chess City still re-enables its own for the
    awake-rook egg). Restore: `body:has(.home-flow) .footer-ribbon-wrap { display: flex; }` */
-/* ONE orb, PERIOD (2026-07-14, reinforced 2026-07-18 Nate: "there should only be one
-   uniform sun"). The hero paints its own arcing sun, so the fixed town sky's orb stands
-   down on the home — else you get TWO suns (the exact pair Nate caught with the moon).
-   ⚠ `:has()` is dropped whole by older iOS webviews (the installed app), which let the
-   second sun back in — so a JS-set class (html.is-pjcc-home, set at the top of this
-   layout) hides it the robust way too. Belt and braces. */
-body:has(.home-flow) .ts-orb,
-html.is-pjcc-home .ts-orb { display: none !important; }
+/* ONE orb, PERIOD (2026-07-18 Nate: "collapse the two systems"). The hero no longer paints
+   its own sun — it's transparent onto the shared town sky — so the town orb is the ONE sun
+   and it SHOWS on the home now (the old hide that stood it down here is gone; there's no
+   second sun to collide with anymore). */
 
 /* ── 1b. THE TWO WAYS TO PLAY — the entrances moved out of the hero's corners into
    this roomy, labelled row (2026-07-17 Nate: "move the links to below the hero, use
