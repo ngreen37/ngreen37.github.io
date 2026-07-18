@@ -40,43 +40,12 @@ permalink: /games/
   50%      { transform:translateX(-114px); }   /* 60% of 190px = 114px — fully off the left */
 }
 
-/* the ENTER tag fades + slides in on hover */
-.ghub-portal .ghp-enter { transform:translateX(4px); transition:opacity .14s, transform .18s; }
-.ghub-portal:hover .ghp-enter, .ghub-portal:active .ghp-enter { transform:translateX(0); }
-
-/* ---- Gauntlet Legends portal treatment: glowing gateways with rune-rings ---- */
-.ghub-portal > span { position:relative; z-index:1; }               /* label + glyph ride above the glow */
-.ghub-portal::after { content:""; position:absolute; inset:0; z-index:0; pointer-events:none; border-radius:inherit;
-  opacity:.4; transition:opacity .18s ease;
-  background:radial-gradient(78% 46% at 50% 0%, color-mix(in srgb, var(--c) 45%, transparent), transparent 72%); }
-.ghub-portal:hover::after, .ghub-portal:focus-visible::after, .ghub-portal:active::after { opacity:.92; }
-/* the torch glow — static since 2026-07-11 (five glyphs animating drop-shadow
-   filters = per-frame re-render each; the hover rings carry the life now) */
-.ghub-portal .ghp-glyph { filter:drop-shadow(0 0 16px color-mix(in srgb, var(--c) 75%, transparent)); }
-/* a rotating dashed rune-ring + a counter-rotating inner ring behind the glyph */
-.ghub-portal .ghp-glyph::before, .ghub-portal .ghp-glyph::after { content:""; position:absolute; left:50%; top:50%;
-  border-radius:50%; z-index:-1; transform:translate(-50%,-50%); pointer-events:none; }
-.ghub-portal .ghp-glyph::before { width:90px; height:90px; opacity:.5;
-  border:2px dashed color-mix(in srgb, var(--c) 60%, transparent);
-  box-shadow:0 0 24px color-mix(in srgb, var(--c) 38%, transparent), inset 0 0 16px color-mix(in srgb, var(--c) 20%, transparent);
-  animation:ghp-ring 11s linear infinite; }
-.ghub-portal .ghp-glyph::after { width:68px; height:68px; opacity:.45;
-  border:1px solid color-mix(in srgb, var(--c) 45%, transparent); animation:ghp-ring 8s linear infinite reverse; }
-.ghub-portal:hover .ghp-glyph::before { opacity:.95; animation-duration:5s; }
-.ghub-portal:hover .ghp-glyph::after  { opacity:.8; }
-@keyframes ghp-ring { from { transform:translate(-50%,-50%) rotate(0deg); } to { transform:translate(-50%,-50%) rotate(360deg); } }
-@media (max-width:560px){
-  .ghub-portal .ghp-glyph::before { width:72px; height:72px; }
-  .ghub-portal .ghp-glyph::after  { width:54px; height:54px; }
-}
-@media (max-width:700px){
-  /* phones: the ten rune-rings rest (2 per portal × 5, always spinning) */
-  .ghub-portal .ghp-glyph::before, .ghub-portal .ghp-glyph::after { animation:none; }
-}
+/* (The category-portal treatment — the glowing gateways, spinning rune-rings and ENTER
+   tags — was removed 2026-07-18 with the portals themselves; the hall is one games grid
+   now, using the shared .gcard cards. See games.md markup + _pjcc-15-games.scss.) */
 
 @media (prefers-reduced-motion: reduce){
-  .ghub, .ghub::before, .ghub-rule i,
-  .ghub-portal .ghp-glyph, .ghub-portal .ghp-glyph::before, .ghub-portal .ghp-glyph::after { animation:none; }
+  .ghub, .ghub::before, .ghub-rule i { animation:none; }
   .ghub { opacity:1; transform:none; }
 }
 @media (max-width:600px){ .ghub-rule { width:140px; } }
@@ -92,13 +61,6 @@ permalink: /games/
 .ghub-eyebrow { margin:0 0 5px; }
 .ghub-sub { margin:6px 0 0; }
 .ghub-rule { margin:10px auto 0; }
-.ghub-portal { min-height:150px; padding:16px 12px 13px; }
-.ghub-portal .ghp-glyph { font-size:2.7rem; }
-.ghub-portal .ghp-blurb { margin-top:4px; }
-.ghub-portal .ghp-count { margin-top:7px; }
-.ghub-divider { margin:18px 4px 10px; }
-.ghub-grid--sub .ghub-portal { min-height:104px; padding:12px 10px 10px; }
-.ghub-grid--sub .ghp-glyph { font-size:2rem; }
 /* 2026-07-18 (Nate): the 🏆 Leaderboards trophy + the Gambit altar moved UP to the
    hall's TOP-LEFT, standing together, inset a little from the corner ("center it in a
    bit") instead of flanking the Sealed/Retired row at the foot. That row below is now
@@ -116,13 +78,7 @@ permalink: /games/
      flow it in as a small left-aligned row at the very top instead. */
   .ghub-corner { position:static; margin:0 0 2px 6px; }
 }
-.ghub-subrow { position:relative; z-index:2; display:flex; align-items:center;
-  justify-content:center; gap:16px; flex-wrap:wrap; }
-.ghub-subrow .ghub-grid--sub { flex:0 1 340px; grid-template-columns:repeat(2,1fr); }
-@media (max-width:560px){
-  .ghub-portal { min-height:128px; }
-  .ghub-grid--sub .ghub-portal { min-height:96px; }
-}
+/* (.ghub-subrow + the sealed/retired sub-grid were removed 2026-07-18 with the taxonomy.) */
 
 /* ---- THE DOOR — the Gauntlet stands above the halls as a doorway.
    (The big MAIN QUEST banner was retired 2026-07-10 — "takes up too much of the
@@ -297,6 +253,17 @@ permalink: /games/
   transition:color .2s, border-color .2s; }
 .ghub-reset:hover { color:#ff8a8a; border-color:#ff8a8a; }
 .ghub-reset[disabled] { opacity:0.6; cursor:default; }
+
+/* ── THE COMBINED GAMES GRID (2026-07-18): one area, no taxonomy. Uses the shared
+   .cat-games / .gcard system (hall--default purple theme) + one new honest tag. ── */
+.ghub-all { margin: 6px 2px 0; position:relative; z-index:2; }
+.ghub-all .cat-games { grid-template-columns: repeat(auto-fill, minmax(212px, 1fr)); }
+/* reserve the top-right corner so a title never runs UNDER the badge (the IN DEV /
+   LOCKED chips are absolutely positioned there) */
+.ghub-all .gcard-body h3 { padding-right: 50px; }
+/* the plain "IN DEV" tag on half-built games — same badge family, amber */
+.hall--default .gcard-dev { position:absolute; top:8px; right:9px; font-size:0.54rem; font-weight:900;
+  letter-spacing:0.04em; border-radius:999px; padding:2px 7px; background:#ffb020; color:#1a0f3d; }
 </style>
 
 <!-- ===== THE HALLS — Gauntlet Legends portal screen (pick a hall; no games here) ===== -->
@@ -356,15 +323,13 @@ permalink: /games/
     <div class="ghub-rule" aria-hidden="true"><i></i></div>
   </div>
 
-  <!-- the active halls -->
-  <div class="ghub-grid" id="ghub-grid"></div>
-
-  <!-- sealed / retired — set apart, lower. The 🏆 Leaderboards + the Gambit altar that
-       used to flank this row moved to the top-left cluster 2026-07-18 (Nate); this row is
-       now just the two dormant halls (Vault · Terminated), centred. -->
-  <div class="ghub-divider"><span>Sealed / Retired</span></div>
-  <div class="ghub-subrow">
-    <div class="ghub-grid ghub-grid--sub" id="ghub-grid-sub"></div>
+  <!-- ── ALL THE GAMES, ONE GRID (2026-07-18 Nate: "get rid of the taxonomy and combine
+       the games. Get rid of the terminated section"). The old Learn / Arcade / In-Dev /
+       Vault / Terminated category PORTALS are gone. pjcc-hall.js (data-hall="all") lists
+       every playable game here in one grid — in-development ones wear a plain IN DEV tag,
+       the vault game shows locked, and the terminated roster is dropped entirely. ── -->
+  <div id="games-hall" class="ghub-all hall--default" data-hall="all" data-base="{{ '/games/' | relative_url }}">
+    <div class="cat-games"></div>
   </div>
 
   {%- comment -%} 2026-07-16 (Nate: "A reset button for all games, really… Make sure
@@ -379,24 +344,10 @@ permalink: /games/
 </div>
 
 <script src="{{ '/assets/js/pjcc-games-data.js' | relative_url }}"></script>
+<!-- the combined grid: pjcc-hall.js reads data-hall="all" and lists every playable game
+     (in-dev tagged, vault locked, terminated dropped) — replaces the old category portals. -->
+<script src="{{ '/assets/js/pjcc-hall.js' | relative_url }}"></script>
 <script>
-(function () {
-  var base = '{{ "/games/" | relative_url }}'.replace(/\/$/, '');
-  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
-  function portal(key) {
-    var c = PJCC_CATS[key];
-    var n = PJCC_GAMES.filter(function (g) { return g.cat === key; }).length;
-    return '<a class="ghub-portal" href="' + base + '/' + c.route + '/" style="--c:' + c.accent + '" data-warp>' +
-      '<span class="ghp-enter">ENTER ▸</span>' +
-      '<span class="ghp-glyph">' + c.glyph + '</span>' +
-      '<span class="ghp-name">' + esc(c.name) + '</span>' +
-      '<span class="ghp-blurb">' + esc(c.blurb) + '</span>' +
-      '<span class="ghp-count">' + n + ' game' + (n === 1 ? '' : 's') + '</span></a>';
-  }
-  document.getElementById('ghub-grid').innerHTML = ['learn', 'arcade', 'dev'].map(portal).join('');
-  document.getElementById('ghub-grid-sub').innerHTML = ['vault', 'terminated'].map(portal).join('');
-})();
-
 // THE DOOR resume state — same climb data the game + homepage read.
 (function () {
   // mirrors the LADDER order / accents / glyphs in assets/games/pjcc_gauntlet.html — keep in sync

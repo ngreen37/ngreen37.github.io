@@ -20,7 +20,12 @@
   function isNew(d) { if (!d) return false; var t = Date.parse(d + 'T00:00:00'); return !isNaN(t) && (Date.now() - t) / 86400000 <= 21; }
 
   function render() {
-    var list = window.PJCC_GAMES.filter(function (g) { return g.cat === hall; });
+    // data-hall="all" (the combined Games Hall, 2026-07-18 Nate: "combine the games…
+    // get rid of the terminated section") = every game EXCEPT terminated / non-playable,
+    // in one grid. A single hall key still filters to just that category's games.
+    var list = window.PJCC_GAMES.filter(function (g) {
+      return hall === 'all' ? (g.cat !== 'terminated' && g.playable !== false) : g.cat === hall;
+    });
     grid.innerHTML = list.map(function (g) {
       var dead = g.playable === false;
       var locked = g.locked && !unlocked();
@@ -28,6 +33,9 @@
       var chip = (b > 0 && g.score) ? '<span class="gcard-best">★ ' + b.toLocaleString() + ' ' + g.score[1] + '</span>' : '';
       var neu = isNew(g.neu) ? '<span class="gcard-new">NEW</span>' : '';
       var soon = g.soon ? '<span class="gcard-soon">SOON</span>' : '';
+      // in the combined grid, in-development games wear a plain honest tag (no taxonomy,
+      // just the truth per-tile) so nothing half-built reads as finished.
+      var indev = (hall === 'all' && g.cat === 'dev') ? '<span class="gcard-dev">IN DEV</span>' : '';
       var dbadge = dead ? '<span class="gcard-dead">DELAYED</span>' : '';
       // quiet, honest mark: this game's chess content is re-proved in CI
       // (tests/validate-chess.js — perft-verified referee + a Stockfish second opinion).
@@ -36,7 +44,7 @@
       // Short descriptions removed from hall cards (kept only as the unlock/delayed hint).
       var descHtml = dead ? '<p>Non-playable — ' + esc(g.cryptic) + '</p>'
         : (locked ? '<p>Locked — flawless Fast run in Notation Blitz</p>' : '');
-      var inner = neu + soon + dbadge + '<span class="gcard-icon">' + icon + '</span>' +
+      var inner = neu + soon + indev + dbadge + '<span class="gcard-icon">' + icon + '</span>' +
         '<span class="gcard-body"><h3>' + esc(g.name) + '</h3>' + descHtml + chip + eng + '</span>';
       if (dead) return '<div class="gcard dead" style="--accent:' + g.accent + '">' + inner + '</div>';
       return '<a class="gcard' + (locked ? ' locked' : '') + (g.soon ? ' soon' : '') + '" href="' + url(g.slug) +
