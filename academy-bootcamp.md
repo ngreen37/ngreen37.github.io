@@ -279,21 +279,32 @@ body.theme-academy .ts-horizon { background: linear-gradient(180deg, rgba(0,0,0,
 
 /* the board */
 .bc-stage { max-width: 460px; margin: 0 auto; }
+/* BOARD/PIECE UPGRADE ported from Park Tables 2026-07-18 (Nate: "same board
+   everywhere… upgrade the pieces"): recessed DEPTH (inset shadows) so it sits like a
+   real board, a soft top-left key-light over the grain, and carved pieces (thinner
+   crisper outline + a grounding shadow). Same canon woods/livery — just lit. */
 .bc-board { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr);
   aspect-ratio: 1; width: 100%; container-type: inline-size;
-  border: 3px solid var(--chess-frame, #4a3320); border-radius: 8px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  border: 3px solid var(--chess-frame, #4a3320); border-radius: 8px; overflow: hidden;
+  box-shadow: 0 18px 36px -14px rgba(0,0,0,.72), inset 0 3px 9px rgba(255,255,255,.06),
+    inset 0 -12px 22px rgba(0,0,0,.32);
   touch-action: manipulation; }
 .bc-sq { position: relative; display: flex; align-items: center; justify-content: center; }
 /* the woods + grain + piece liveries come from THE CHESS CANON
    (_pjcc-22-chess-canon.scss) — the Academy board and the Park Tables board are
-   the same board (Nate 2026-07-16: "always uniform") */
-.bc-sq.lt { background-color: var(--chess-lt); background-image: var(--chess-grain); }
-.bc-sq.dk { background-color: var(--chess-dk); background-image: var(--chess-grain); }
-.bc-pc { font-size: 32px; font-size: 9cqw; line-height: 1; user-select: none; position: relative; z-index: 1; }
+   the same board (Nate 2026-07-16: "always uniform"). The key-light gradient sits
+   OVER the grain (same as .pt-sq). */
+.bc-sq.lt { background-color: var(--chess-lt);
+  background-image: linear-gradient(152deg, rgba(255,252,240,.14), rgba(0,0,0,.04) 62%), var(--chess-grain); }
+.bc-sq.dk { background-color: var(--chess-dk);
+  background-image: linear-gradient(152deg, rgba(255,240,214,.10), rgba(0,0,0,.10) 62%), var(--chess-grain); }
+.bc-pc { font-size: 34px; font-size: 10.5cqw; line-height: 1; user-select: none; position: relative; z-index: 1; }
 /* paint-order:stroke = outline drawn UNDER the fill — see the chess canon note */
 .bc-pc.w, .bc-pc.b { paint-order: stroke fill; }
-.bc-pc.w { color: var(--piece-w-fill); -webkit-text-stroke: 0.09em var(--piece-w-line); text-shadow: 0 2px 0 rgba(0,0,0,0.18); }
-.bc-pc.b { color: var(--piece-b-fill); -webkit-text-stroke: 0.09em var(--piece-b-line); text-shadow: 0 2px 0 rgba(0,0,0,0.22); }
+.bc-pc.w { color: var(--piece-w-fill); -webkit-text-stroke: 0.062em var(--piece-w-line);
+  text-shadow: 0 .5px 0 rgba(255,255,255,.35), 0 1.5px 1.5px rgba(0,0,0,.30), 0 3px 5px rgba(0,0,0,.24); }
+.bc-pc.b { color: var(--piece-b-fill); -webkit-text-stroke: 0.062em var(--piece-b-line);
+  text-shadow: 0 .5px 0 rgba(180,160,235,.30), 0 1.5px 1.5px rgba(0,0,0,.36), 0 3px 5px rgba(0,0,0,.30); }
 .bc-pc.land { animation: bcLand 0.28s ease; }
 @keyframes bcLand { 0% { transform: translateY(-16%) scale(1.16); } 100% { transform: none; } }
 .bc-sq.from::before { content: ''; position: absolute; inset: 0; background: rgba(224,138,60,0.18); z-index: 0; }

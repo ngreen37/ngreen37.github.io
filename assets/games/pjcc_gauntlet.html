@@ -245,8 +245,13 @@ function fmtClock(ms){ var s = Math.max(0, Math.ceil(ms / 1000)); var m = (s / 6
   return m + ':' + (s < 10 ? '0' : '') + s; }
 var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 var W = 440, H = 500, TILE = 50, BOARD = TILE*8, BX = (W-BOARD)/2, BY = 78;
-var PAL = { wFill:'#f3ecd6', wEdge:'#4a3618', bFill:'#241a3c', bEdge:'#efe4ff' };
-var LIGHT = '#6a5aa0', DARK = '#3d2a7a';
+// THE CHESS CANON (2026-07-18 Nate: "same board everywhere") — the Gauntlet used to
+// draw a purple board with ivory/ebony pieces. It now wears the site's ONE board:
+// walnut + cream woods and the white/purple piece livery, mirroring the :root tokens
+// in _sass/_pjcc-22-chess-canon.scss (--chess-lt/dk, --piece-w/b-fill/line). Keep in
+// sync if the canon colours ever move.
+var PAL = { wFill:'#ffffff', wEdge:'#2f2440', bFill:'#4a3585', bEdge:'#f2e9ff' };
+var LIGHT = '#e9d3a4', DARK = '#9c5f33';
 
 // ---- The ladder (alternating colors; strict — no takebacks/hints) ----
 // elo = each rival's ASSIGNED house rating (Nate 2026-07-13: "display their ratings").
@@ -841,7 +846,7 @@ function render(){
       G.clockMs - (Date.now() - G.clockTick) <= 0){ endGame('flag'); }
   drawHud();
   // board frame
-  ctx.fillStyle = '#0e0a26'; roundRect(BX-6, BY-6, BOARD+12, BOARD+12, 9); ctx.fill();
+  ctx.fillStyle = '#4a3320'; roundRect(BX-6, BY-6, BOARD+12, BOARD+12, 9); ctx.fill();   // canon timber frame
   ctx.strokeStyle = G.rung.accent; ctx.lineWidth = 3; roundRect(BX-6, BY-6, BOARD+12, BOARD+12, 9); ctx.stroke();
   // squares (true colors regardless of flip)
   for (var i=0;i<64;i++){ var r=(i/8)|0, f=i%8, s=idxToScreen(i);
@@ -859,13 +864,18 @@ function render(){
       ctx.fillStyle='rgba(107,255,184,0.65)';
       if (cap){ ctx.lineWidth=4; ctx.strokeStyle='rgba(107,255,184,0.7)'; ctx.beginPath(); ctx.arc(d.x,d.y,TILE*0.42,0,7); ctx.stroke(); }
       else { ctx.beginPath(); ctx.arc(d.x,d.y,7,0,7); ctx.fill(); } }); }
-  // coordinate labels (oriented to the player)
-  ctx.fillStyle='rgba(255,255,255,0.32)'; ctx.font='9px Trebuchet MS';
+  // coordinate labels (oriented to the player). Embossed — a light underlay then a dark
+  // fill — so they read on BOTH the cream and the walnut squares of the canon board.
+  ctx.font='bold 9px Trebuchet MS';
   for (var n=0;n<8;n++){
     var file = G.pc==='w' ? String.fromCharCode(97+n) : String.fromCharCode(97+(7-n));
     var rank = G.pc==='w' ? 8-n : n+1;
-    ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText(file, BX+n*TILE+3, BY+BOARD-2);
-    ctx.textBaseline='top'; ctx.fillText(rank, BX+2, BY+n*TILE+2);
+    ctx.textAlign='left'; ctx.textBaseline='bottom';
+    ctx.fillStyle='rgba(255,248,232,0.45)'; ctx.fillText(file, BX+n*TILE+3.6, BY+BOARD-1.4);
+    ctx.fillStyle='rgba(46,32,18,0.62)';    ctx.fillText(file, BX+n*TILE+3,   BY+BOARD-2);
+    ctx.textBaseline='top';
+    ctx.fillStyle='rgba(255,248,232,0.45)'; ctx.fillText(rank, BX+2.6, BY+n*TILE+2.6);
+    ctx.fillStyle='rgba(46,32,18,0.62)';    ctx.fillText(rank, BX+2,   BY+n*TILE+2);
   }
   // pieces
   for (var j=0;j<64;j++){ var p=G.S.b[j]; if(!p) continue; var c=cellXY(j);
