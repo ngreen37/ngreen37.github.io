@@ -175,12 +175,12 @@
   for (var k = 0; k < n && k < cons.length; k++) cons[k].classList.add('show');
 })();
 </script>
-{%- comment -%} DEPTH & PARALLAX (2026-07-19, the modernization mission) — ease the
-     sky's layers toward the pointer, and a touch on scroll, so it reads as depth rather
-     than a flat backdrop. Sets --par-x/--par-y (pointer, -1..1) and --par-s (scroll,
-     0..1) on .town-sky; the SCSS does the rest (transform only, far layers move least).
-     Bails entirely on touch / under prefers-reduced-motion / reduce-flourish, so those
-     visitors get the sky exactly as it was. rAF-lerped — no work between frames. {%- endcomment -%}
+{%- comment -%} DEPTH ON SCROLL (2026-07-19, the modernization mission) — ease --par-s
+     (scroll, normalised 0..1 over the first 600px) onto .town-sky so the SCSS can drift
+     the near cloud up a little faster than the far stars: depth as you move through the
+     town. transform only, rAF-lerped, no work between frames. Bails under
+     prefers-reduced-motion / reduce-flourish, so those visitors get the sky as it was.
+     (The earlier pointer-tilt was dropped — a background shouldn't chase the cursor.) {%- endcomment -%}
 <script>
 (function () {
   var sky = document.querySelector('.town-sky');
@@ -188,26 +188,13 @@
   // both quiet switches freeze it, same as every other bit of sky motion
   if (matchMedia('(prefers-reduced-motion: reduce)').matches ||
       document.documentElement.classList.contains('reduce-flourish')) return;
-  var fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
-  var tx = 0, ty = 0, ts = 0, cx = 0, cy = 0, cs = 0, raf = null;
+  var ts = 0, cs = 0, raf = null;
   function frame() {
-    cx += (tx - cx) * 0.12; cy += (ty - cy) * 0.12; cs += (ts - cs) * 0.15;
-    sky.style.setProperty('--par-x', cx.toFixed(3));
-    sky.style.setProperty('--par-y', cy.toFixed(3));
+    cs += (ts - cs) * 0.15;
     sky.style.setProperty('--par-s', cs.toFixed(3));
-    raf = (Math.abs(tx - cx) > 0.001 || Math.abs(ty - cy) > 0.001 || Math.abs(ts - cs) > 0.002)
-      ? requestAnimationFrame(frame) : null;
+    raf = (Math.abs(ts - cs) > 0.002) ? requestAnimationFrame(frame) : null;
   }
   function kick() { if (!raf) raf = requestAnimationFrame(frame); }
-  if (fine) {
-    window.addEventListener('pointermove', function (e) {
-      tx = (e.clientX / window.innerWidth - 0.5) * 2;    // -1 … 1
-      ty = (e.clientY / window.innerHeight - 0.5) * 2;
-      kick();
-    }, { passive: true });
-    window.addEventListener('pointerleave', function () { tx = 0; ty = 0; kick(); });   // settle back to centre
-  }
-  // scroll parallax (works on touch too), normalised 0..1 over the first 600px and capped
   window.addEventListener('scroll', function () {
     ts = Math.min((window.scrollY || window.pageYOffset || 0) / 600, 1);
     kick();

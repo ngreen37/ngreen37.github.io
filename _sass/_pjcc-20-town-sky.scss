@@ -532,35 +532,27 @@ html.reduce-flourish .ts-shoot { display: none !important; }
   .ts-shoot { display: none !important; }
 }
 
-/* ── DEPTH & PARALLAX (2026-07-19, the modernization mission) ──────────────────
-   The one flat sky gains DEPTH: its layers slide by DIFFERENT amounts toward the
-   pointer, and a touch as you scroll, so the near cloud reads nearer than the far
-   stars. Pure progressive enhancement — the script at the foot of
-   _includes/town-sky.html eases --par-x / --par-y (pointer, -1..1) and --par-s
-   (scroll, 0..1) onto .town-sky. With no JS, on a touch screen, or under either quiet
-   switch, every var stays 0 and the sky is PIXEL-IDENTICAL to before.
-   The rules obey the house perf law: transform ONLY, and the translate lives on the
-   LAYER CONTAINER, whose animated children (drifting banks, falling leaves, turning
-   sun rays) are left untouched inside — so nothing here fights an existing animation.
-   Far layers move least, near layers most; the orb tilts a touch with the pointer. ── */
-.town-sky { --par-x: 0; --par-y: 0; --par-s: 0; }
+/* ── DEPTH ON SCROLL (2026-07-19, the modernization mission) ───────────────────
+   The one flat sky gains DEPTH as you move through the town: near cloud drifts up a
+   little faster than the far stars while the page scrolls, so the layers separate.
+   (An earlier pass also tilted the sky toward the POINTER — but a background that
+   chases the cursor, and especially a sun/moon that follows it, read as gimmicky.
+   Cursor-reactivity is being saved for the reinvented hero / an interactive toy,
+   where it's a foreground thing you mean to touch. The orb no longer moves at all.)
+   Pure progressive enhancement — the script at the foot of _includes/town-sky.html
+   eases --par-s (scroll, 0..1) onto .town-sky. No JS, or under either quiet switch =
+   every var 0, sky PIXEL-IDENTICAL to before. transform ONLY; the translate rides the
+   LAYER CONTAINER so the drifting banks / falling leaves inside are untouched. ── */
+.town-sky { --par-s: 0; }
 @media (prefers-reduced-motion: no-preference) {
   /* stars + constellations = the far distance: the least travel */
   html:not(.reduce-flourish) .ts-stars,
   html:not(.reduce-flourish) .ts-constellations {
-    transform: translate3d(calc(var(--par-x) * 5px), calc(var(--par-y) * 5px + var(--par-s) * -8px), 0);
-  }
-  /* season particles sit mid-depth */
-  html:not(.reduce-flourish) .ts-season-fx {
-    transform: translate3d(calc(var(--par-x) * 9px), calc(var(--par-y) * 9px), 0);
+    transform: translate3d(0, calc(var(--par-s) * -9px), 0);
   }
   /* cloud is the nearest layer — it travels the most */
   html:not(.reduce-flourish) .ts-clouds {
-    transform: translate3d(calc(var(--par-x) * 14px), calc(var(--par-y) * 10px + var(--par-s) * -14px), 0);
-  }
-  /* the orb keeps its centring translate; a small pointer tilt rides on top */
-  html:not(.reduce-flourish) .ts-orb {
-    transform: translate(calc(-50% + var(--par-x) * 8px), calc(-50% + var(--par-y) * 8px));
+    transform: translate3d(0, calc(var(--par-s) * -20px), 0);
   }
 }
 
