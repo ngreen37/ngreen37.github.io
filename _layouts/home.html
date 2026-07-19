@@ -89,6 +89,10 @@ layout: default
   .hero-skyline { height: 34px; left: 16px; right: 16px; gap: 4px; }
   .hero-skyline .sk-ct { width: 15px !important; }
   .hero-skyline span.sk-ct:nth-of-type(n+5) { display: none; }
+  /* the taller desktop Chess City (2026-07-19) scales back to its old height on the
+     compact phone hero, so the mobile poster is unchanged. .sk.sk-cc out-specifies
+     the base `.hero-skyline .sk { height:var(--h) }` rule regardless of source order. */
+  .hero-skyline .sk.sk-cc { height: calc(var(--h) * 0.72); }
   .hero-board { bottom: 30px; height: 64px; }
 }
 
@@ -148,10 +152,13 @@ layout: default
     </a>
     <i class="sk-sea" aria-hidden="true"></i>
     <a class="sk-town-link" href="{{ '/locations/chess-city/' | relative_url }}" aria-label="Chess City">
-      <span class="sk sk-cc sk-cc--rook"   style="--w:20px;--h:29px"></span>
-      <span class="sk sk-cc sk-cc--bishop" style="--w:16px;--h:39px"></span>
-      <span class="sk sk-cc sk-cc--queen"  style="--w:22px;--h:44px"></span>
-      <span class="sk sk-cc sk-cc--king"   style="--w:18px;--h:36px"></span>
+      {% comment %} Chess City TALLER again 2026-07-19 (Nate) — the far shore now rises
+           like a real skyline (was 29/39/44/36). Mobile scales these back to ~the old
+           height so the compact phone hero is unchanged (see the max-width:700px block). {% endcomment %}
+      <span class="sk sk-cc sk-cc--rook"   style="--w:20px;--h:40px"></span>
+      <span class="sk sk-cc sk-cc--bishop" style="--w:16px;--h:54px"></span>
+      <span class="sk sk-cc sk-cc--queen"  style="--w:22px;--h:60px"></span>
+      <span class="sk sk-cc sk-cc--king"   style="--w:18px;--h:50px"></span>
     </a>
   </div>
   {% comment %} The two entrances used to be jammed into the hero's corners (Park
@@ -205,7 +212,7 @@ layout: default
    2026-07-11 (Nate): the "rooftops" are now what Checker Town is actually made
    of — stacks of checkers. Uniform diameter, 7px per disc (a 1px rim seam +
    a shaded face), black stacks and dark-red stacks alternating. ── */
-.hero-skyline { position:absolute; left:26px; right:26px; bottom:0; height:62px;
+.hero-skyline { position:absolute; left:26px; right:26px; bottom:0; height:74px;
   display:flex; align-items:flex-end; gap:5px; pointer-events:none; }
 /* both shores are links (2026-07-14): the anchors re-enable the pointer the skyline
    turned off, keep the stack layout, and light their rooftops gold on hover */
