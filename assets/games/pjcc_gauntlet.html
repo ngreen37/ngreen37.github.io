@@ -10,6 +10,7 @@
 <script src="/assets/js/pjcc-chess.js"></script>
 <script src="/assets/js/pjcc-chess-ai.js"></script>
 <script src="/assets/js/pjcc-gauntlet-engine.js"></script>
+<script src="/assets/js/pjcc-game-review.js"></script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body { user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color:transparent; }
@@ -132,8 +133,6 @@
   /* ---- victory / defeat celebration layer ---- */
   .fx { position:absolute; inset:0; z-index:16; pointer-events:none; overflow:hidden; border-radius:12px; }
   .fx.hidden { display:none; }
-  .confetti { position:absolute; top:-16px; width:9px; height:14px; border-radius:2px; will-change:transform; animation:confettiFall linear forwards; }
-  @keyframes confettiFall { 0%{ transform:translateY(-16px) rotate(0deg); opacity:1; } 100%{ transform:translateY(700px) rotate(720deg); opacity:0.85; } }
   .fx-hero { position:absolute; left:50%; top:40%; transform:translate(-50%,-50%) scale(0); text-align:center; transition:opacity .4s; }
   .fx-hero.show { animation:fxHeroPop 1s cubic-bezier(.2,1.5,.4,1) forwards; }
   @keyframes fxHeroPop { 0%{ transform:translate(-50%,-50%) scale(0) rotate(-12deg); opacity:0; } 55%{ transform:translate(-50%,-50%) scale(1.16) rotate(4deg); opacity:1; } 100%{ transform:translate(-50%,-50%) scale(1) rotate(0deg); opacity:1; } }
@@ -396,7 +395,7 @@ function saveGame(){
   var ms = G.clockMs;
   if (G.clockOn && G.clockTick) ms = Math.max(0, G.clockMs - (Date.now() - G.clockTick));
   try { localStorage.setItem(SKEY, JSON.stringify({ v:1, idx:G.idx, pc:G.pc, fen:C.toFEN(G.S),
-    reps:G.reps, log:G.log, clockOn:G.clockOn, clockMs:ms, crockett:G.crockett, last:G.last })); } catch(e){}
+    reps:G.reps, log:G.log, uci:G.uci, clockOn:G.clockOn, clockMs:ms, crockett:G.crockett, last:G.last })); } catch(e){}
 }
 function clearSave(){ try { localStorage.removeItem(SKEY); } catch(e){} }
 function restoreMatch(sv){
@@ -406,7 +405,7 @@ function restoreMatch(sv){
   if (!S || C.gameResult(S, (sv.reps && sv.reps[C.posKey(S)]) || 1)) return false;   // stale/finished
   G = { idx:sv.idx, rung:rung, persona:rung.persona, pc:sv.pc,
         S:S, reps:sv.reps || {}, sel:-1, legal:[], over:false, result:null,
-        last:sv.last || null, thinking:false, promo:null, log:sv.log || [],
+        last:sv.last || null, thinking:false, promo:null, log:sv.log || [], uci:sv.uci || [],
         roundStartMat:null, crockett:(sv.crockett == null ? -1 : sv.crockett) };
   if (ENGINE){ ENGINE.warmup(); ENGINE.newGame(); }
   G.legal = C.legalMoves(G.S);
@@ -432,7 +431,7 @@ function startRung(idx, pc){
   pc = (pc === 'w' || pc === 'b') ? pc : randColor();   // random unless the boss card already drew one
   G = { idx:idx, rung:rung, persona:rung.persona, pc:pc,
         S:C.parseFEN(C.START_FEN), reps:{}, sel:-1, legal:[], over:false, result:null,
-        last:null, thinking:false, promo:null, log:[], roundStartMat:null,
+        last:null, thinking:false, promo:null, log:[], uci:[], roundStartMat:null,
         // the opposition's e-pawn: a small white dog with black spots rides along
         // every match — usually the first one sacrificed, never seems to mind.
         // Unlabeled by design; the spots are the whole of it.
@@ -497,6 +496,7 @@ function applyPlayerMove(m){
   G.roundStartMat = matPOV(G.S, G.pc);   // material before this move; judged after the reply
   G.last = { from:m.from, to:m.to };
   G.log.push(C.toSAN(G.S, m));
+  G.uci.push(C.nameFromSq(m.from) + C.nameFromSq(m.to) + (m.promo ? m.promo.toLowerCase() : ''));   // for game review
   G.S = C.makeMove(G.S, m); G.sel = -1;
   trackCrockett(m);
   var rep = bumpRep();
@@ -539,6 +539,7 @@ function applyAiMove(myG, S, m){
   if (!m){ G.thinking=false; var res0=C.gameResult(G.S, G.reps[C.posKey(G.S)]||1); if(res0) endGame(res0); return; }
   G.last = { from:m.from, to:m.to };
   G.log.push(C.toSAN(G.S, m));
+  G.uci.push(C.nameFromSq(m.from) + C.nameFromSq(m.to) + (m.promo ? m.promo.toLowerCase() : ''));   // for game review
   G.S = C.makeMove(G.S, m);
   trackCrockett(m);
   var rep = bumpRep();
@@ -637,15 +638,27 @@ function endGame(result){
   } else if (!playerWon){
     addBtn(row, 'TRY AGAIN', 'btn-gold', function(){ startRung(G.idx); });
   }
+  // 🔍 Game review — the same always-free, in-browser Stockfish review as the Park
+  // Tables (Nate 2026-07-19). Capture the game NOW; G is reused by the next match.
+  if (window.PJCCReview && PJCCReview.enabled() && G.uci.length){
+    var revMoves = G.uci.join(' '), youWhite = (G.pc === 'w');
+    var prof = (window.PJCC && PJCC.getProfile) ? PJCC.getProfile() : null;
+    var youName = (prof && prof.codename) || 'You', oppName = G.rung.name;
+    var revResult = draw ? '1/2-1/2' : ((playerWon ? youWhite : !youWhite) ? '1-0' : '0-1');
+    addBtn(row, '🔍 REVIEW GAME', 'btn-ghost', function(){
+      PJCCReview.open(revMoves, { whiteName: youWhite ? youName : oppName,
+                                  blackName: youWhite ? oppName : youName, result: revResult });
+    });
+  }
   addBtn(row, 'THE LADDER', 'btn-ghost', showLadder);
   document.getElementById('over-eye').textContent = eye;
   document.getElementById('over-title').textContent = title;
   document.getElementById('over-msg').textContent = msg;
-  // a little celebration first — you on a win, the opponent on a loss — then the result card
-  var showOver = function(){ document.getElementById('over-screen').classList.remove('hidden'); };
-  if (playerWon){ celebrate('win'); setTimeout(showOver, 1000); }
-  else if (!draw){ celebrate('loss', G.rung); setTimeout(showOver, 1000); }
-  else { showOver(); }
+  // Straight to the result card — no mid-board celebration (Nate 2026-07-19: the purple
+  // "VICTORY / X WINS" burst popped over the board and bled onto the result screen).
+  // clearFx() wipes any lingering start-of-game "YOU PLAY WHITE/BLACK" hero.
+  clearFx();
+  document.getElementById('over-screen').classList.remove('hidden');
 }
 function addBtn(row, label, cls, fn){ var b=document.createElement('button'); b.className='btn '+cls; b.textContent=label; b.onclick=fn; row.appendChild(b); }
 
@@ -711,21 +724,9 @@ function bcast(voice, line, force){
 }
 function hideBooth(){ var el=document.getElementById('booth'), c=document.getElementById('booth-card'); if(el) el.classList.add('hidden'); if(c) c.classList.remove('show'); clearTimeout(boothTimer); }
 
-// ---- celebration layer: confetti + a hero glyph for wins (you) and losses (the opponent) ----
+// ---- start-of-game hero layer: a single hero glyph announcing your colour ----
+// (The end-of-game confetti/celebration was removed 2026-07-19 — no burst over the board.)
 var fxTimer=null;
-function spawnConfetti(colors, n){
-  var fx=document.getElementById('fx'); if(!fx) return;
-  for(var i=0;i<n;i++){
-    var c=document.createElement('div'); c.className='confetti';
-    c.style.left=(Math.random()*100)+'%';
-    c.style.background=colors[(Math.random()*colors.length)|0];
-    c.style.width=(6+Math.random()*6).toFixed(1)+'px';
-    c.style.height=(10+Math.random()*8).toFixed(1)+'px';
-    c.style.animationDuration=(1.5+Math.random()*1.5).toFixed(2)+'s';
-    c.style.animationDelay=(Math.random()*0.5).toFixed(2)+'s';
-    fx.appendChild(c);
-  }
-}
 // Colours are redrawn EVERY match (randColor in startRung), so a retry can flip the
 // board on you. Say so plainly at the start of each game (Nate 2026-07-15: "when you
 // lose and retry it should randomize … and show the user you are doing so").
@@ -743,20 +744,8 @@ function heroBurst(glyph, word, color){
   fx.appendChild(h); void h.offsetWidth; h.classList.add('show');
   setTimeout(function(){ h.style.opacity='0'; }, 1500);   // step aside for the result card
 }
-function celebrate(kind, rung){
-  var fx=document.getElementById('fx'); if(!fx) return;
-  fx.innerHTML=''; fx.classList.remove('hidden');
-  if(kind==='win'){
-    spawnConfetti(['#F5C518','#6bffb8','#ff8fd0','#8fe3ff','#ffffff'], 72);
-    heroBurst('♛','VICTORY','#F5C518');
-  } else {   // the opponent celebrates
-    var acc=(rung&&rung.accent)||'#ff9ec9', gl=(rung&&rung.glyph)||'♛',
-        nm=(rung?rung.name.replace(/^The\s+/,''):'The champion');
-    spawnConfetti([acc,'#ffffff','#9a7fd4'], 48);
-    heroBurst(gl, (nm+' wins').toUpperCase(), acc);
-  }
-  clearTimeout(fxTimer); fxTimer=setTimeout(clearFx, 3400);
-}
+// (The old end-of-game celebrate() burst was removed 2026-07-19 — see endGame. The fx
+// layer now only carries the start-of-game "YOU PLAY WHITE/BLACK" hero via announceColor.)
 function clearFx(){ var fx=document.getElementById('fx'); if(fx){ fx.classList.add('hidden'); fx.innerHTML=''; } clearTimeout(fxTimer); }
 var CALL = {
   open:[ ['randy',"Live from the booth — {opp} steps to the board!"],

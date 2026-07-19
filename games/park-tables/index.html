@@ -254,9 +254,13 @@ a move a day is plenty.</p>
         rating, no clock — casual by definition. You play White. The game
         lives in localStorage so a refresh sits you right back down. ── */
   var BOTS = {
-    argus:  { name: 'Argus',  icon: '♝', diff: 'Easy',   skill: 0,  movetime: 140, blunder: 0.22 },
-    auston: { name: 'Auston', icon: '♜', diff: 'Medium', skill: 6,  movetime: 350, blunder: 0.04 },
-    father: { name: 'Father', icon: '♚', diff: 'Hard',   skill: 16, movetime: 900, blunder: 0 }
+    argus:  { name: 'Argus',  icon: '♝', diff: 'Easy',   skill: 0,  movetime: 140,  blunder: 0.22 },
+    auston: { name: 'Auston', icon: '♜', diff: 'Medium', skill: 6,  movetime: 350,  blunder: 0.04 },
+    father: { name: 'Father', icon: '♚', diff: 'Hard',   skill: 16, movetime: 900,  blunder: 0 },
+    // Robert — the Chess City rival, added as the Expert seat (2026-07-19 Nate). Full
+    // Stockfish strength, no blunders. The icons are a difficulty ramp (♝→♜→♚→♛), not
+    // canon pieces, so the queen marks the top tier.
+    robert: { name: 'Robert', icon: '♛', diff: 'Expert', skill: 20, movetime: 1200, blunder: 0 }
   };
   var BOT_KEY = 'pjcc.park.bot.v1';
   var botCur = null, botSel = -1, botThinking = false, botSeq = 0;
