@@ -49,6 +49,48 @@
 
   --lift:    0 12px 40px rgba(0, 0, 0, 0.5);
   --lift-sm: 0 6px 18px rgba(0, 0, 0, 0.35);
+
+  /* ═══ THE TYPE & RHYTHM SCALE (2026-07-19 — the modernization foundation) ═══
+     Same idea as the Surface Kit above: declare the scale ONCE, use it everywhere,
+     so the site stops picking font-sizes and margins by feel. These are the base the
+     bold-reinvention type pass builds on (docs/modernization-2026-07.md). Purely
+     additive — defining them changes nothing until a rule opts in.
+
+     TYPE — a fluid modular scale. Each --step clamps between a phone size and a
+     desktop size, so headings grow with the viewport with no media queries. Ratio
+     runs ~1.2 on a phone → ~1.33 on a wide screen (confident, not shouty).
+       --step--1 fine print · 0 body · 1 lead · 2 h4 · 3 h3 · 4 h2 · 5 h1 · 6 hero */
+  --step--1: clamp(0.80rem, 0.76rem + 0.18vw, 0.90rem);
+  --step-0:  clamp(1.00rem, 0.96rem + 0.20vw, 1.13rem);
+  --step-1:  clamp(1.20rem, 1.10rem + 0.50vw, 1.50rem);
+  --step-2:  clamp(1.44rem, 1.28rem + 0.80vw, 2.00rem);
+  --step-3:  clamp(1.73rem, 1.48rem + 1.24vw, 2.67rem);
+  --step-4:  clamp(2.07rem, 1.68rem + 1.95vw, 3.55rem);
+  --step-5:  clamp(2.49rem, 1.90rem + 2.95vw, 4.74rem);
+  --step-6:  clamp(2.99rem, 2.10rem + 4.45vw, 6.31rem);
+
+  /* SPACING — one rhythm, powers of a ~1.5 step. Use for margin/padding/gap so
+     vertical rhythm agrees across the site. */
+  --space-1: 0.25rem;   /*  4px */
+  --space-2: 0.5rem;    /*  8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.5rem;    /* 24px */
+  --space-6: 2rem;      /* 32px */
+  --space-7: 3rem;      /* 48px */
+  --space-8: 4.5rem;    /* 72px */
+
+  /* MOTION — the shared easings + durations for reveals, transitions, hovers, so
+     movement across the site feels like one hand (obeys the perf law: consumers
+     animate transform/opacity only). */
+  --ease-out:    cubic-bezier(0.20, 0.80, 0.25, 1);
+  --ease-spring: cubic-bezier(0.20, 1.60, 0.35, 1);
+  --dur-fast: 0.15s;
+  --dur-med:  0.30s;
+  --dur-slow: 0.60s;
+
+  /* the page's max readable measure + the standard content gutter */
+  --measure: 68rem;
 }
 
 /* --- Reset & Box Sizing --- */

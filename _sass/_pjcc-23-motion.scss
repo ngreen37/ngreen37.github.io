@@ -1,0 +1,35 @@
+/* =============================================================================
+ * MOTION LAYER (2026-07-19 — the modernization mission)
+ * -----------------------------------------------------------------------------
+ * Two site-wide, modern touches, both PURE progressive enhancement:
+ *
+ *  1. SCROLL REVEAL — opt any element in with `data-reveal` and it rises + fades the
+ *     first time it enters the viewport (driven by assets/js/pjcc-reveal.js). Content
+ *     is only ever HIDDEN when <html class="js-reveal"> is set (in <head>, before first
+ *     paint) AND motion is allowed — so JS-off and reduced-motion visitors always see
+ *     everything, with no flash and nothing ever stranded.
+ *
+ *  2. VIEW TRANSITIONS — same-origin navigations cross-fade where the browser supports
+ *     it (Chromium today), and are simply ignored everywhere else.
+ *
+ * Obeys the house perf law: transform + opacity only, and the reveal transition is a
+ * one-shot (it's removed from the work list once `.is-in` lands). Uses the shared
+ * motion tokens from _pjcc-01-core.scss (--dur-slow, --ease-out).
+ * ========================================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+  html.js-reveal:not(.reduce-flourish) [data-reveal] {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity var(--dur-slow) var(--ease-out),
+                transform var(--dur-slow) var(--ease-out);
+  }
+  html.js-reveal:not(.reduce-flourish) [data-reveal].is-in {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Same-origin cross-document navigations get a soft cross-fade. Unsupported browsers
+   ignore the at-rule entirely, so this is a no-cost enhancement. */
+@view-transition { navigation: auto; }

@@ -171,7 +171,7 @@ layout: default
      canonical drawings (the Park Table shared include + the Gauntlet door). The Gauntlet
      anchor keeps id="gauntlet-door" and its inner ids so the progress JS still dresses
      it (floor pips, boss colour + glyph, grandeur tier). {% endcomment %}
-<section class="home-plays" aria-label="Ways to play">
+<section class="home-plays" aria-label="Ways to play" data-reveal>
   <a class="play-card" href="{{ '/games/park-tables/' | relative_url }}"
      aria-label="Park Tables — play chess against another operative in the Checker Town park">
     <span class="play-art">{% include park-table.html %}</span>
@@ -521,7 +521,7 @@ html.reduce-flourish .hero-title { animation:none; }
 </script>
 
 {% comment %} ── 4. CHARACTER TEASER — four random faces, reshuffled each visit ──── {% endcomment %}
-<section class="home-section home-section--cast">
+<section class="home-section home-section--cast" data-reveal>
   {% comment %} All main-cast chips are rendered (ancillary excluded); the JS below shows a
        random four as CARDS (the town-square experiment was reverted 2026-07-10).
        "Meet them all" + shuffle both live BELOW the grid. {% endcomment %}

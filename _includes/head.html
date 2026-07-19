@@ -21,6 +21,10 @@
 {%- comment -%} "Reduce flourish" — an opt-in still-site preference. Applied to <html>
      BEFORE any paint, so there's no flash of motion. {%- endcomment -%}
 <script>try{if(localStorage.getItem('pjcc.flourish')==='0')document.documentElement.classList.add('reduce-flourish');}catch(e){}</script>
+{%- comment -%} Mark that JS is live BEFORE first paint, so the scroll-reveal CSS may hide
+     [data-reveal] elements without ever flashing them on a JS-off/reduced-motion load
+     (those never get hidden — see _sass/_pjcc-23-motion.scss + assets/js/pjcc-reveal.js). {%- endcomment -%}
+<script>document.documentElement.classList.add('js-reveal');</script>
 {% include town-weather.html %}
 
 {%- assign desc = include.description | default: page.description | default: site.description -%}
