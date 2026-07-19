@@ -62,8 +62,13 @@
   // x/y are viewport-percent for the fixed sky layer (set as --orb-x/--orb-y on <html>).
   function orb() {
     var p = parts(), mins = p.h * 60 + p.m, t;
-    if (mins >= 300 && mins < 1200) t = (mins - 300) / 900;          // the sun
-    else t = (((mins - 1200) + 1440) % 1440) / 540;                  // the moon
+    if (mins >= 300 && mins < 1200) t = (mins - 300) / 900;          // the sun — linear across its 15h window
+    // The moon's window is only 9h wide, so a LINEAR rise leaves it hanging low all
+    // evening — it's barely up at 8:52pm when everyone's actually looking (Nate
+    // 2026-07-18: "the moon looks kinda low … it's 8:52"). Ease it up off the horizon:
+    // t^0.6 pulls the climb forward so the moon is well up the sky by mid-evening and
+    // still sets clean on the right at dawn (endpoints t=0/1 are unchanged).
+    else t = Math.pow((((mins - 1200) + 1440) % 1440) / 540, 0.6);   // the moon
     // A 210° circular sweep (2026-07-15 Nate: "-210 to 210 degrees … starts/ends
     // too low"). The half-sine before this pinned both ends AT the horizon (y=74).
     // Now the orb enters ~62% up the LEFT side, apexes near the top (y≈10), and
