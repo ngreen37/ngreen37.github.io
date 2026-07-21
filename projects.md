@@ -110,7 +110,7 @@ body_class: theme-studio
          studio hub above AND a slot in the McPuppy nav, and a third door hanging off the
          flagship made the flagship look like it was mainly a blog. {% endcomment %}
     <div class="project-links">
-      <a href="/pjcc/" class="project-link">Enter PJCC &rarr;</a>
+      <a href="/" class="project-link">Enter PJCC &rarr;</a>
     </div>
   </div>
 

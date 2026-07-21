@@ -13,10 +13,16 @@ layout: default
 {
   "@context": "https://schema.org",
   "@type": "TVSeries",
-  "@id": "{{ site.url }}/pjcc/#show",
+  {%- comment -%} Root-anchored since the front-door flip (2026-07-21). This block is the
+       rich-result entity for the show, and it was the ONLY schema on the site still
+       pointing at /pjcc/ — head.html's Organization and WebSite nodes were already
+       anchored at the root, where head.html has always named the WebSite "Princess and
+       the Journey to Chess City". Moving these two makes the schema true rather than
+       merely consistent. {%- endcomment -%}
+  "@id": "{{ site.url }}/#show",
   "name": "Princess and the Journey to Chess City",
   "alternateName": "PJCC",
-  "url": "{{ site.url }}/pjcc/",
+  "url": "{{ site.url }}/",
   "image": "{{ site.url }}/assets/images/pjcc-share-card.jpg",
   "description": "An animated series in the making: Princess, a dog from Checker Town, journeys toward Chess City. Built in the open by McPuppy Studios, with a free arcade of chess games set in the show's world.",
   "genre": ["Animation", "Family", "Adventure"],

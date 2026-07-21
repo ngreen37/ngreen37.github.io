@@ -15,7 +15,7 @@
 
     // Destinations (b = brand tag for the little pill).
     var DEST = [
-      { t: 'PJCC Home',        s: 'Princess & the Journey to Chess City', u: '/pjcc/',               ic: '◆', b: 'pjcc',    k: 'home princess journey chess city pjcc start' },
+      { t: 'PJCC Home',        s: 'Princess & the Journey to Chess City', u: '/',               ic: '◆', b: 'pjcc',    k: 'home princess journey chess city pjcc start' },
       { t: 'Games',            s: 'The Arcade — play now',                u: '/games/',              ic: '♟', b: 'pjcc', k: 'arcade play games blitz' },
       { t: 'Characters',       s: 'Meet the cast',                        u: '/characters/',         ic: '♞', b: 'pjcc', k: 'characters cast people princess kaede world' },
       { t: 'Locations',        s: 'Places in the world',                  u: '/locations/',          ic: '⛰', b: 'pjcc', k: 'locations places checker town chess city' },
@@ -31,7 +31,6 @@
       { t: 'Mailing List',     s: 'Get updates by email',                 u: '/mailing-list/',       ic: '✉', b: 'mcpuppy', k: 'mailing list email subscribe newsletter' },
       { t: 'For Educators',    s: 'Use PJCC in the classroom',            u: '/educators/',          ic: '🍎', b: 'mcpuppy', k: 'educators teachers classroom school lessons' },
       { t: 'Contact',          s: 'Who & how to reach us',                u: '/contact/',            ic: '☎', b: 'mcpuppy', k: 'about contact reach email who studio hello' },
-      { t: 'The Splash',       s: 'The front door',                       u: '/',                    ic: '⬛', b: 'mcpuppy', k: 'home splash front door start landing' }
     ];
 
     var active = 0;

@@ -38,7 +38,7 @@ The belt ladder flips from Checker Town purple to Chess City gold (`body.ac-gold
 ## Ambient / Random
 
 ### The Katakana Pass (PJCC home)
-**Trigger:** none — a **15% chance** on each load of `/pjcc/` (once per session; skipped if you have reduced-motion on, or if the site is already set to Japanese).
+**Trigger:** none — a **15% chance** on each load of the front door (`/` since the 2026-07-21 flip; was `/pjcc/`) (once per session; skipped if you have reduced-motion on, or if the site is already set to Japanese).
 
 A veil fades over the page and every word on it transliterates into katakana — done live by a hand-rolled romaji→kana converter (doubled consonants become ッ, `sh`/`ch` get their own rows, a terminal `n` becomes ン), so it reads as the town's own signage rather than a translation. It holds for three seconds, then fades back to English.
 

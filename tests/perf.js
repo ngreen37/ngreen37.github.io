@@ -44,7 +44,7 @@ const REPS = 4;              // per condition; median
 const SETTLE_MS = 3500;
 
 const PAGES = [
-  { name: 'PJCC home',    url: '/pjcc/' },
+  { name: 'PJCC home',    url: '/' },
   { name: 'Games hall',   url: '/games/' },
   { name: 'McPuppy home', url: '/projects/' },
   { name: 'Splash',       url: '/' },

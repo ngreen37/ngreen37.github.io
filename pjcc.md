@@ -1,9 +1,22 @@
 ---
 layout: home
 title: Princess and the Journey to Chess City
-permalink: /pjcc/
+permalink: /
+tab_title: McPuppy Studios — Princess and the Journey to Chess City
+description: Home of Princess and the Journey to Chess City (PJCC) — an animated series in the making, plus an arcade of free chess games, all built in the open by McPuppy Studios.
 body_class: full-sky
 ---
+
+{% comment %} THIS IS THE FRONT DOOR NOW (2026-07-21). `permalink` moved from /pjcc/ to
+     "/" and index.md became a redirect stub at the old address. See
+     docs/front-door-2026-07-21.md — Nate: "we can't have five landing pages."
+
+     `tab_title` and `description` are carried over VERBATIM from the splash's
+     head.html include, so the flip does not change the site's most important <title> or
+     its meta/OG description by a single character. Without tab_title the shared head
+     would build "Princess and the Journey to Chess City | PJCC" and quietly rewrite what
+     search results say. Any change to those two lines is visitor-facing wording and is
+     Nate's call, not a side effect of moving a permalink. {% endcomment %}
 
 {% comment %} `full-sky` (2026-07-21) opts this page into the WHOLE town sky — the cloud
      deck, the starfield, the constellations and the shooting stars — which until now
