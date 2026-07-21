@@ -120,48 +120,28 @@ permalink: /games/
   .gm-scene { width:58px; height:78px; }
   .gm-coin { font-size:23px; top:6px; } .gm-altar { width:34px; }
 }
-/* (2026-07-16 evening plate parity: the plate + sub caption rows are gone.)
+/* ── THE GAUNTLET DOOR on the games hall — SIZE ONLY ──────────────────────────────
+   2026-07-16 evening: plate parity, the plate + sub caption rows are gone.
    2026-07-17 (Nate: "on the games hall it's to the side, and weird") — the door is a
-   COLUMN now, like the splash + hero: arch on top, the ten lift-pips BELOW it. */
-.gdoor { display:flex; flex-direction:column; align-items:center; gap:6px;
-  position:relative;   /* anchors the pips whisper below the unit */
-  text-decoration:none; --acc:#F5C518; }
-.gdoor-pips { display:flex; gap:3px; }
-.gdoor-pips i { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.14); }
-.gdoor-pips i.done { background:#6bffb8; box-shadow:0 0 5px rgba(107,255,184,0.6); }
-.gdoor-pips i.cur { background:var(--acc); box-shadow:0 0 7px var(--acc);
-  animation:gdoorPip 1.8s ease-in-out infinite; }
-@keyframes gdoorPip { 50% { opacity:0.4; } }
-/* #14 — the pips whisper (twin of _pjcc-21-gauntlet-door.scss — keep in sync):
-   hover/focus the door and the lift-pips say "Floor N of 10"; aria-label carries
-   the same fact for screen readers. Absolute, so the door never reflows. */
-.gdoor-whisper { position:absolute; top:calc(100% + 5px); left:50%;
-  transform:translate(-50%, -2px); white-space:nowrap;
-  font-family:'Share Tech Mono', ui-monospace, monospace; font-size:9px; letter-spacing:0.14em;
-  color:rgba(233,226,255,0.62); text-shadow:0 0 8px rgba(0,0,0,0.6);
-  opacity:0; transition:opacity .3s ease, transform .3s ease; pointer-events:none; }
-.gdoor:hover .gdoor-whisper,
-.gdoor:focus-visible .gdoor-whisper { opacity:1; transform:translate(-50%, 0); }
-.gdoor-arch { position:relative; display:block; width:72px; height:92px;
-  border:2px solid rgba(245,197,24,0.6); border-bottom-width:0; border-radius:36px 36px 4px 4px;
-  overflow:hidden; box-shadow:0 0 26px -8px var(--acc);
-  background:radial-gradient(ellipse at 50% 85%, color-mix(in srgb, var(--acc) 32%, #0c0722), #0c0722 78%);
-  transition:box-shadow .2s ease; }
-.gdoor-door { position:absolute; left:5px; right:5px; top:5px; bottom:0;
-  border-radius:31px 31px 0 0; border:1px solid rgba(168,121,255,0.35);
-  background:linear-gradient(180deg, #251747 0%, #150c33 100%);
-  transform-origin:0 50%; transition:transform .35s ease;
-  will-change:transform; /* pre-promote — kills the first-frame raster hitch (2026-07-16 audit) */ }
-.gdoor-glyph { position:absolute; left:50%; top:40%; transform:translate(-50%,-50%);
-  font-style:normal; font-weight:400; font-size:29px; line-height:1; color:var(--acc);
-  filter:drop-shadow(0 0 9px color-mix(in srgb, var(--acc) 65%, transparent)); }
-.gdoor-knob { position:absolute; right:9px; top:56%; width:5px; height:5px; border-radius:50%;
-  background:#F5C518; box-shadow:0 0 5px rgba(245,197,24,0.8); }
-.gdoor-seam { position:absolute; left:6px; right:6px; bottom:0; height:3px; background:var(--acc);
-  box-shadow:0 -2px 14px 3px color-mix(in srgb, var(--acc) 55%, transparent); }
-.gdoor:hover .gdoor-arch, .gdoor:focus-visible .gdoor-arch { box-shadow:0 0 34px -5px var(--acc); }
-/* opens like a shogi screen — the panel SLIDES LEFT instead of swinging (Nate 2026-07-15) */
-.gdoor:hover .gdoor-door, .gdoor:focus-visible .gdoor-door { transform:translateX(-60%); }
+   COLUMN here, like the splash and the hero: arch on top, the ten lift-pips BELOW it.
+
+   2026-07-21: the ~110 lines of .gdoor LOOK that stood here are gone. They were a
+   hand-maintained copy of _sass/_pjcc-21-gauntlet-door.scss, labelled "kept in sync"
+   in both files, and they had already drifted apart. The partial is the single source
+   now; _layouts/home.html dropped its copy in the same pass.
+
+   What is left is the one thing that was never a duplicate: this door is DELIBERATELY
+   SMALLER than the canonical 78x100. It stands in a row beside the Gambit altar, whose
+   .gm-scene is 72x92 — the two have to match or the row looks broken. So these rules
+   override size and nothing else. Page-local <style> sits in <body> and the partial is
+   in <head>, so at equal specificity these win on order.
+
+   Floor zero is safe from them: .gdoor[data-grand="0"] .gdoor-door is (0,3,0) and beats
+   the bare .gdoor-door below, so the tattered cloth keeps its own 3px radius. ── */
+.gdoor { gap:6px; }                                    /* 5px in the partial */
+.gdoor-arch { width:72px; height:92px; border-radius:36px 36px 4px 4px; }
+.gdoor-door { border-radius:31px 31px 0 0; }
+.gdoor-glyph { font-size:29px; }
 @media (max-width:480px){
   .gdoor { column-gap:12px; }
   .gdoor-arch { width:58px; height:76px; border-radius:29px 29px 4px 4px; }
@@ -169,69 +149,9 @@ permalink: /games/
   .gdoor-glyph { font-size:24px; }
 }
 
-/* ── GRANDEUR: the door grows richer the higher you climb (Nate 2026-07-12) —
-   kept in sync with the home hero's copy. data-grand 0..5 from cleared floors. ── */
-.gdoor[data-grand="1"] .gdoor-arch { border-color:rgba(245,197,24,0.72); box-shadow:0 0 30px -7px var(--acc); }
-.gdoor[data-grand="2"] .gdoor-arch { border-color:rgba(245,197,24,0.85); border-width:3px; box-shadow:0 0 36px -6px var(--acc), inset 0 0 18px -7px var(--acc); }
-.gdoor[data-grand="3"] .gdoor-arch { border-color:#F5C518; border-width:3px; box-shadow:0 0 44px -4px var(--acc), inset 0 0 22px -6px var(--acc); }
-.gdoor[data-grand="4"] .gdoor-arch { border-color:#ffe07a; border-width:3px; box-shadow:0 0 52px -3px var(--acc), inset 0 0 26px -5px var(--acc); }
-.gdoor[data-grand="5"] .gdoor-arch { border-color:#fff2b0; border-width:4px; box-shadow:0 0 64px 0 var(--acc), inset 0 0 30px -4px var(--acc); }
-.gdoor[data-grand="3"] .gdoor-glyph,
-.gdoor[data-grand="4"] .gdoor-glyph { filter:drop-shadow(0 0 13px var(--acc)); }
-.gdoor[data-grand="5"] .gdoor-glyph { filter:drop-shadow(0 0 16px var(--acc)) drop-shadow(0 0 5px #fff); }
-.gdoor-arch::after { content:''; position:absolute; left:50%; top:6px; transform:translateX(-50%);
-  font-size:12px; line-height:1; opacity:0; z-index:2; pointer-events:none; text-shadow:0 0 6px var(--acc); }
-.gdoor[data-grand="3"] .gdoor-arch::after,
-.gdoor[data-grand="4"] .gdoor-arch::after { content:'◆'; color:var(--acc); opacity:0.92; }
-.gdoor[data-grand="5"] .gdoor-arch::after { content:'👑'; opacity:1; font-size:14px; top:3px; }
-.gdoor[data-grand="4"] .gdoor-seam,
-.gdoor[data-grand="5"] .gdoor-seam { height:4px; box-shadow:0 -3px 20px 5px color-mix(in srgb, var(--acc) 62%, transparent); }
-/* CROWNED — all ten floors BEATEN: the door rests AJAR, light spilling from within. */
-.gdoor[data-grand="5"] .gdoor-door { transform:translateX(-10%); }
-.gdoor[data-grand="5"] .gdoor-seam { height:5px; box-shadow:0 -3px 28px 7px color-mix(in srgb, var(--acc) 74%, transparent); }
-
-/* FLOOR ZERO (Nate 2026-07-13): before a single floor is cleared there is no door
-   at all — just a tattered cloth hung on a rod across the arch, hem torn ragged,
-   the light behind leaking through the tears. Still unmistakably a doorway.
-   (KEEP IN SYNC with the twin copy in _layouts/home.html.) */
-.gdoor[data-grand="0"] .gdoor-arch { border-color:rgba(245,197,24,0.38); box-shadow:0 0 18px -10px var(--acc); }
-/* tan/brown worn cloth with holes; pushed aside FROM THE MIDDLE on hover (2026-07-14) */
-.gdoor[data-grand="0"] .gdoor-door {
-  left:7px; right:7px; top:12px;
-  border:0; border-top:3px solid rgba(122,94,58,0.8);
-  border-radius:3px 3px 0 0;
-  background:
-    linear-gradient(100deg, rgba(0,0,0,0) 30%, rgba(58,38,16,0.35) 36%, rgba(0,0,0,0) 43%),
-    linear-gradient(84deg,  rgba(0,0,0,0) 62%, rgba(58,38,16,0.28) 68%, rgba(0,0,0,0) 75%),
-    linear-gradient(180deg, #a8845c 0%, #7c5a38 55%, #5e4226 100%);
-  clip-path:polygon(0 0, 100% 0, 100% 72%, 89% 95%, 76% 76%, 63% 98%, 48% 79%, 34% 96%, 21% 78%, 10% 93%, 0 76%);
-  -webkit-mask-image:
-    radial-gradient(circle 3px at 26% 38%, transparent 98%, #000 100%),
-    radial-gradient(circle 2px at 64% 24%, transparent 98%, #000 100%),
-    radial-gradient(circle 4px at 74% 58%, transparent 98%, #000 100%),
-    radial-gradient(circle 2px at 38% 70%, transparent 98%, #000 100%),
-    radial-gradient(circle 3px at 52% 49%, transparent 98%, #000 100%);
-  mask-image:
-    radial-gradient(circle 3px at 26% 38%, transparent 98%, #000 100%),
-    radial-gradient(circle 2px at 64% 24%, transparent 98%, #000 100%),
-    radial-gradient(circle 4px at 74% 58%, transparent 98%, #000 100%),
-    radial-gradient(circle 2px at 38% 70%, transparent 98%, #000 100%),
-    radial-gradient(circle 3px at 52% 49%, transparent 98%, #000 100%);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
-  transform-origin: 84% 50%;
-}
-.gdoor[data-grand="0"] .gdoor-knob { display:none; }
-.gdoor[data-grand="0"] .gdoor-glyph { font-size:26px; opacity:0.55; filter:none; color:#3a2612; }
-.gdoor[data-grand="0"] .gdoor-seam { height:2px; box-shadow:0 -2px 10px 2px color-mix(in srgb, var(--acc) 38%, transparent); }
-.gdoor[data-grand="0"] .gdoor-door { transition:transform .5s cubic-bezier(.3,1.25,.4,1); }
-.gdoor[data-grand="0"]:hover .gdoor-door,
-.gdoor[data-grand="0"]:focus-visible .gdoor-door { transform:translateX(-58%); }
-
+/* the doorway row's own entrance animation (the .gdoor motion prefs live in the partial) */
 @media (prefers-reduced-motion: reduce){
   .ghub-doorway { animation:none; }
-  .gdoor-pips i.cur { animation:none; }
-  .gdoor-door { transition:none; }
 }
 
 /* the master reset — one quiet switch at the foot of the hall (2026-07-16 Nate) */

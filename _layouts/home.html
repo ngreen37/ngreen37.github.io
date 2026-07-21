@@ -2,10 +2,10 @@
 layout: default
 ---
 
-{% comment %} Day counter: March 1 2026 00:00 EDT (04:00 UTC) = Unix 1772337600 {% endcomment %}
-{% assign start_ts   = 1772337600 %}
-{% assign now_ts     = site.time | date: "%s" | plus: 0 %}
-{% assign days_since = now_ts | minus: start_ts | divided_by: 86400 | plus: 1 %}
+{% comment %} (2026-07-21) The `days_since` day counter that stood here — start_ts /
+     now_ts / days_since, March 1 2026 as Unix 1772337600 — is deleted. Nothing on this
+     page has read it in a long time; the two live counters are on /projects/ and compute
+     themselves in JS. {% endcomment %}
 
 {% comment %} Structured data: the show itself — this is what lets Google build a
      rich result (name, poster image) for "Princess and the Journey to Chess City". {% endcomment %}
@@ -270,126 +270,25 @@ layout: default
 html.sky-night .hero-skyline .sk-cc { background:repeating-linear-gradient(180deg,
     rgba(255,214,140,0.16) 0 1px, #0d0a26 1px 6px, #14113a 6px 8px); }
 
-/* ── THE DOOR (shared .gdoor look — the games page wears the same one) ── */
-/* (plate + sub rules gone — 2026-07-16 evening plate parity with the splash) */
-.gdoor { display:flex; flex-direction:column; align-items:center; gap:5px; text-decoration:none;
-  --acc:#F5C518; }
-.gdoor-pips { display:flex; gap:3px; }
-.gdoor-pips i { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.14); }
-.gdoor-pips i.done { background:#6bffb8; box-shadow:0 0 5px rgba(107,255,184,0.6); }
-.gdoor-pips i.cur { background:var(--acc); box-shadow:0 0 7px var(--acc);
-  animation:gdoorPip 1.8s ease-in-out infinite; }
-@keyframes gdoorPip { 50% { opacity:0.4; } }
-/* #14 — the pips whisper (twin of _pjcc-21-gauntlet-door.scss — keep in sync):
-   hover/focus the door and the dots say "Floor N of 10". aria-label carries the
-   same fact for screen readers; .hero-door is already position:absolute, which
-   anchors this. */
-.gdoor-whisper { position:absolute; top:calc(100% + 5px); left:50%;
-  transform:translate(-50%, -2px); white-space:nowrap;
-  font-family:'Share Tech Mono', ui-monospace, monospace; font-size:9px; letter-spacing:0.14em;
-  color:rgba(233,226,255,0.62); text-shadow:0 0 8px rgba(0,0,0,0.6);
-  opacity:0; transition:opacity .3s ease, transform .3s ease; pointer-events:none; }
-.gdoor:hover .gdoor-whisper,
-.gdoor:focus-visible .gdoor-whisper { opacity:1; transform:translate(-50%, 0); }
-.gdoor-arch { position:relative; display:block; width:78px; height:100px;
-  border:2px solid rgba(245,197,24,0.6); border-bottom-width:0; border-radius:39px 39px 4px 4px;
-  overflow:hidden; box-shadow:0 0 26px -8px var(--acc);
-  /* the light BEHIND the door — the seam leaks it; hover cracks the door open */
-  background:radial-gradient(ellipse at 50% 85%, color-mix(in srgb, var(--acc) 32%, #0c0722), #0c0722 78%);
-  transition:box-shadow .2s ease; }
-.gdoor-door { position:absolute; left:5px; right:5px; top:5px; bottom:0;
-  border-radius:34px 34px 0 0; border:1px solid rgba(168,121,255,0.35);
-  background:linear-gradient(180deg, #251747 0%, #150c33 100%);
-  transform-origin:0 50%; transition:transform .35s ease;
-  will-change:transform; /* pre-promote — kills the first-frame raster hitch (2026-07-16 audit) */ }
-.gdoor-glyph { position:absolute; left:50%; top:40%; transform:translate(-50%,-50%);
-  font-style:normal; font-weight:400; font-size:32px; line-height:1; color:var(--acc);
-  filter:drop-shadow(0 0 9px color-mix(in srgb, var(--acc) 65%, transparent)); }
-.gdoor-knob { position:absolute; right:9px; top:56%; width:5px; height:5px; border-radius:50%;
-  background:#F5C518; box-shadow:0 0 5px rgba(245,197,24,0.8); }
-.gdoor-seam { position:absolute; left:6px; right:6px; bottom:0; height:3px; background:var(--acc);
-  box-shadow:0 -2px 14px 3px color-mix(in srgb, var(--acc) 55%, transparent); }
-.gdoor:hover .gdoor-arch, .gdoor:focus-visible .gdoor-arch { box-shadow:0 0 34px -5px var(--acc); }
-/* opens like a shogi screen — the panel SLIDES LEFT instead of swinging (Nate 2026-07-15) */
-.gdoor:hover .gdoor-door, .gdoor:focus-visible .gdoor-door { transform:translateX(-60%); }
-html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
+/* ── THE DOOR — the look lives in _sass/_pjcc-21-gauntlet-door.scss ────────────────
+   2026-07-21: the ~120-line inline copy of .gdoor that stood here is DELETED. It was
+   one of three (this, games.md, and the shared partial), kept in sync by hand and
+   annotated "keep in sync" in all three — which is a standing invitation to drift, and
+   they had: games.md is 72x92 while this and the partial were 78x100.
 
-/* ── GRANDEUR: the door grows richer the higher you climb (Nate 2026-07-12).
-   data-grand 0..5 set by the hydration JS from cleared floors. All static (no
-   per-frame cost): escalating glow + border, a brightening glyph, and a keystone
-   gem that becomes a crown at the summit. ── */
-.gdoor[data-grand="1"] .gdoor-arch { border-color:rgba(245,197,24,0.72); box-shadow:0 0 30px -7px var(--acc); }
-.gdoor[data-grand="2"] .gdoor-arch { border-color:rgba(245,197,24,0.85); border-width:3px; box-shadow:0 0 36px -6px var(--acc), inset 0 0 18px -7px var(--acc); }
-.gdoor[data-grand="3"] .gdoor-arch { border-color:#F5C518; border-width:3px; box-shadow:0 0 44px -4px var(--acc), inset 0 0 22px -6px var(--acc); }
-.gdoor[data-grand="4"] .gdoor-arch { border-color:#ffe07a; border-width:3px; box-shadow:0 0 52px -3px var(--acc), inset 0 0 26px -5px var(--acc); }
-.gdoor[data-grand="5"] .gdoor-arch { border-color:#fff2b0; border-width:4px; box-shadow:0 0 64px 0 var(--acc), inset 0 0 30px -4px var(--acc); }
-.gdoor[data-grand="3"] .gdoor-glyph,
-.gdoor[data-grand="4"] .gdoor-glyph { filter:drop-shadow(0 0 13px var(--acc)); }
-.gdoor[data-grand="5"] .gdoor-glyph { filter:drop-shadow(0 0 16px var(--acc)) drop-shadow(0 0 5px #fff); }
-/* keystone ornament at the arch peak (inside the arch, so overflow:hidden is fine) */
-.gdoor-arch::after { content:''; position:absolute; left:50%; top:6px; transform:translateX(-50%);
-  font-size:12px; line-height:1; opacity:0; z-index:2; pointer-events:none; text-shadow:0 0 6px var(--acc); }
-.gdoor[data-grand="3"] .gdoor-arch::after,
-.gdoor[data-grand="4"] .gdoor-arch::after { content:'◆'; color:var(--acc); opacity:0.92; }
-.gdoor[data-grand="5"] .gdoor-arch::after { content:'👑'; opacity:1; font-size:14px; top:3px; }
-.gdoor[data-grand="4"] .gdoor-seam,
-.gdoor[data-grand="5"] .gdoor-seam { height:4px; box-shadow:0 -3px 20px 5px color-mix(in srgb, var(--acc) 62%, transparent); }
-/* CROWNED — all ten floors BEATEN: the door rests AJAR, light spilling from within. */
-.gdoor[data-grand="5"] .gdoor-door { transform:translateX(-10%); }
-.gdoor[data-grand="5"] .gdoor-seam { height:5px; box-shadow:0 -3px 28px 7px color-mix(in srgb, var(--acc) 74%, transparent); }
+   Verified byte-for-byte equivalent before removing: the door was rendered across all
+   six grandeur tiers with the inline block and with the partial alone, and every
+   computed property of .gdoor / -arch / -door / -glyph / -knob / -seam / -pips /
+   -whisper / arch::after matched exactly. The partial is now the ONLY source for this
+   page. games.md keeps a small block of its own, but only the SIZE overrides that make
+   its door match the Gambit altar standing next to it — not a second copy of the look.
 
-/* FLOOR ZERO (Nate 2026-07-13): before a single floor is cleared there is no door
-   at all — just a tattered cloth hung on a rod across the arch, hem torn ragged,
-   the light behind leaking through the tears. Still unmistakably a doorway: same
-   arch, same seam of light at the foot. The climb starts from nothing.
-   (KEEP IN SYNC with the twin copy in games.md.) */
-.gdoor[data-grand="0"] .gdoor-arch { border-color:rgba(245,197,24,0.38); box-shadow:0 0 18px -10px var(--acc); }
-/* 2026-07-14 (Nate): the cloth is TAN/BROWN now, with worn HOLES the backlight
-   leaks through (mask layers intersect — each layer punches its one hole; where
-   masks are unsupported the cloth is simply unholed). */
-.gdoor[data-grand="0"] .gdoor-door {
-  left:7px; right:7px; top:12px;
-  border:0; border-top:3px solid rgba(122,94,58,0.8);      /* the rod it hangs from */
-  border-radius:3px 3px 0 0;
-  background:
-    /* a couple of worn creases down the cloth */
-    linear-gradient(100deg, rgba(0,0,0,0) 30%, rgba(58,38,16,0.35) 36%, rgba(0,0,0,0) 43%),
-    linear-gradient(84deg,  rgba(0,0,0,0) 62%, rgba(58,38,16,0.28) 68%, rgba(0,0,0,0) 75%),
-    linear-gradient(180deg, #a8845c 0%, #7c5a38 55%, #5e4226 100%);
-  /* the ragged hem — the notches let the arch's backlight through */
-  clip-path:polygon(0 0, 100% 0, 100% 72%, 89% 95%, 76% 76%, 63% 98%, 48% 79%, 34% 96%, 21% 78%, 10% 93%, 0 76%);
-  -webkit-mask-image:
-    radial-gradient(circle 3px at 26% 38%, transparent 98%, #000 100%),
-    radial-gradient(circle 2px at 64% 24%, transparent 98%, #000 100%),
-    radial-gradient(circle 4px at 74% 58%, transparent 98%, #000 100%),
-    radial-gradient(circle 2px at 38% 70%, transparent 98%, #000 100%),
-    radial-gradient(circle 3px at 52% 49%, transparent 98%, #000 100%);
-  mask-image:
-    radial-gradient(circle 3px at 26% 38%, transparent 98%, #000 100%),
-    radial-gradient(circle 2px at 64% 24%, transparent 98%, #000 100%),
-    radial-gradient(circle 4px at 74% 58%, transparent 98%, #000 100%),
-    radial-gradient(circle 2px at 38% 70%, transparent 98%, #000 100%),
-    radial-gradient(circle 3px at 52% 49%, transparent 98%, #000 100%);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
-  /* the push comes from the MIDDLE, gathering the cloth toward the right edge */
-  transform-origin: 84% 50%;
-}
-.gdoor[data-grand="0"] .gdoor-knob { display:none; }      /* cloth has no knob */
-.gdoor[data-grand="0"] .gdoor-glyph { font-size:26px; opacity:0.55; filter:none; color:#3a2612; } /* a stitched emblem, not a lit one */
-.gdoor[data-grand="0"] .gdoor-seam { height:2px; box-shadow:0 -2px 10px 2px color-mix(in srgb, var(--acc) 38%, transparent); }
-/* a hand pushes it aside FROM THE MIDDLE — the cloth bunches toward the edge */
-.gdoor[data-grand="0"] .gdoor-door { transition:transform .5s cubic-bezier(.3,1.25,.4,1); }
-.gdoor[data-grand="0"]:hover .gdoor-door,
-.gdoor[data-grand="0"]:focus-visible .gdoor-door { transform:translateX(-58%); }
+   One deliberate gain: the partial puts position:relative on .gdoor, which this copy
+   lacked. The pips whisper is absolute, so here it used to anchor to .play-card; now it
+   anchors to the door itself, which is what it was written for.
 
-@media (prefers-reduced-motion: reduce) {
-  .gdoor-pips i.cur { animation:none; }
-  .gdoor-door { transition:none; }
-}
-/* (.hero-door absolute positioning removed 2026-07-17 — the Gauntlet door moved out of
-   the hero corner into .home-plays below, where .play-art hosts it. The .gdoor look +
-   grandeur tiers above are unchanged and still drive it.) */
+   (The .hero-door absolute positioning went 2026-07-17 when the door moved out of the
+   hero corner into .home-plays below, where .play-art hosts it.) ── */
 
 /* ── Rain retired from the hero (2026-07-12 Nate: "all weathers on all screens").
    The rain, the mist, the intensity random-walk and the lightning flash are now
@@ -462,9 +361,12 @@ html.reduce-flourish .hero-title { animation:none; }
   -webkit-mask-image:radial-gradient(ellipse at 50% 100%, #000 32%, transparent 74%);
   mask-image:radial-gradient(ellipse at 50% 100%, #000 32%, transparent 74%); }
 
-/* #10 — she brushes past; the title takes the bump, then settles */
-.hero-title { position:relative; transition:transform 1.6s cubic-bezier(.2,1.6,.35,1); }
-.hero-title.ht-nudge { transform:rotate(-1.2deg); }
+/* (#10 "she brushes past and the title takes the bump" is gone — 2026-07-21. The class
+   that tilted it, .ht-nudge, was declared here but nothing has added it since its JS was
+   removed, so the bump has not happened in a long time. The transition that served it
+   went too; the title's entrance is the heroRise animation above. position:relative stays
+   — it is what the title's own stacking depends on.) */
+.hero-title { position:relative; }
 
 {% comment %} (the #16 title sheen removed 2026-07-11 — its mix-blend-mode forced an
      extra compositing pass and Nate cut it in the lag sweep. The ♛-crowning finale
@@ -622,8 +524,14 @@ html.reduce-flourish .hero-title { animation:none; }
 
 </div><!-- /.home-flow -->
 
-<script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
+{% comment %} (2026-07-21) The second <script src> pair for pjcc-config.js and
+     pjcc-profile.js that stood here is DELETED. _layouts/default.html already loads both
+     at the foot of every page; this copy existed only so window.PJCC would be defined
+     early enough for the Record Watch ticker line below, which tested for it once and
+     gave up. pjcc-profile.js is an IIFE ending in `window.PJCC = PJCC`, so running it a
+     second time built a second object over the first and orphaned anything registered
+     against it. Record Watch now waits for DOMContentLoaded instead — see the comment on
+     that block. {% endcomment %}
 <script>
 // (The Story Arc film-strip's JS — drag scroll, lore typewriter, locked-panel
 //  flicker, ✦ float — was removed 2026-07-11; the strip itself left 2026-06-22.
@@ -882,20 +790,35 @@ function ctParts() {
     ['sky-run',          'SKY RUN'],
     ['fork-in-the-road', 'FORK IN THE ROAD']
   ];
-  if (!window.PJCC || !PJCC.ready) return;
-  var ds = ctParts().ds;                            // Eastern date — same board for the whole town
-  var h = 2166136261;
-  for (var i = 0; i < ds.length; i++) { h ^= ds.charCodeAt(i); h = Math.imul(h, 16777619); }
-  var pick = BOARDS[(h >>> 0) % BOARDS.length];
-  PJCC.ready.then(function () {
-    if (!PJCC.enabled || !PJCC.leaderboard) return;
-    PJCC.leaderboard(pick[0], { limit: 1 }).then(function (rows) {
-      var top = rows && rows[0];
-      if (!top || !top.codename || !window.PJCCTicker) return;
-      PJCCTicker.add('RECORD WATCH — ' + String(top.codename).toUpperCase() + ' HOLDS ' + pick[1] +
-        ' AT ' + top.score + ' — THE RECORD STANDS', 'ticker-item--record');
-    }).catch(function () {});
-  });
+  // WAIT for PJCC rather than testing for it (2026-07-21). This used to read
+  // `if (!window.PJCC || !PJCC.ready) return;` and run immediately — which only worked
+  // because this layout loaded pjcc-config.js and pjcc-profile.js AGAIN, right above this
+  // script, purely to have PJCC defined this early. _layouts/default.html already loads
+  // both at the foot of every page, so that second pair executed pjcc-profile.js twice;
+  // it is an IIFE that ends in `window.PJCC = PJCC`, so the later copy replaced the object
+  // the earlier one had built and orphaned anything already registered against it.
+  //
+  // DOMContentLoaded fires after the whole document is parsed, default.html's trailing
+  // scripts included, so PJCC is reliably there by then and the duplicate pair could go.
+  // A signed-out or offline visitor still just gets no Record Watch line, as before.
+  var start = function () {
+    if (!window.PJCC || !PJCC.ready) return;
+    var ds = ctParts().ds;                          // Eastern date — same board for the whole town
+    var h = 2166136261;
+    for (var i = 0; i < ds.length; i++) { h ^= ds.charCodeAt(i); h = Math.imul(h, 16777619); }
+    var pick = BOARDS[(h >>> 0) % BOARDS.length];
+    PJCC.ready.then(function () {
+      if (!PJCC.enabled || !PJCC.leaderboard) return;
+      PJCC.leaderboard(pick[0], { limit: 1 }).then(function (rows) {
+        var top = rows && rows[0];
+        if (!top || !top.codename || !window.PJCCTicker) return;
+        PJCCTicker.add('RECORD WATCH — ' + String(top.codename).toUpperCase() + ' HOLDS ' + pick[1] +
+          ' AT ' + top.score + ' — THE RECORD STANDS', 'ticker-item--record');
+      }).catch(function () {});
+    });
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
 })();
 
 // The sky phase (dawn/day/dusk/night) is now set SITE-WIDE on <html> before paint by
