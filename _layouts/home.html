@@ -82,25 +82,29 @@ layout: default
 @media (max-width: 700px) {
   /* the doors left the hero (they're .home-plays below now), so the top no longer
      has to clear a door zone — the hero opens up (2026-07-17). */
-  .home-hero { padding: 54px 22px 40px; min-height: 188px; margin-bottom: 20px; }
-  .hero-title { font-size: 22px; letter-spacing: -0.5px; white-space: nowrap; }
+  .home-hero { padding: 46px 20px 34px; min-height: 300px; margin-bottom: 20px; }
+  /* the poster still reads as a poster on a phone: two lines, big, no nowrap squeeze */
+  .hero-title { font-size: clamp(26px, 8.4vw, 38px); letter-spacing: -0.5px; }
   .hero-eyebrow { display: none; }
-  /* reel the Checker-Town stacks into the left third: narrower + only four of them */
-  .hero-skyline { height: 34px; left: 16px; right: 16px; gap: 4px; }
-  .hero-skyline .sk-ct { width: 15px !important; }
-  .hero-skyline span.sk-ct:nth-of-type(n+5) { display: none; }
-  /* the taller desktop Chess City (2026-07-19) scales back to its old height on the
-     compact phone hero, so the mobile poster is unchanged. .sk.sk-cc out-specifies
-     the base `.hero-skyline .sk { height:var(--h) }` rule regardless of source order. */
-  .hero-skyline .sk.sk-cc { height: calc(var(--h) * 0.72); }
+  /* (the .hero-skyline phone rules went with the skyline itself, 2026-07-21) */
   .hero-board { bottom: 30px; height: 64px; }
+  /* the tagline block is a fixed 110px by default — too tall under a phone title */
+  .hero-tagline,
+  .hero-tagline .tagline-word,
+  .hero-tagline .tagline-main { height: 62px; }
+  .hero-tagline .tagline-word { line-height: 62px; font-size: 10px; letter-spacing: 3px; }
+  .hero-tagline .tagline-main-tagline { font-size: 15px; }
+  .hero-tagline .tagline-main-studio { font-size: 9px; letter-spacing: 4px; }
+  .hero-world { font-size: 10px; gap: 10px; margin-top: 10px; }
 }
 
 /* ── #2 one-screen desktop ── */
 @media (min-width: 900px) {
-  .home-hero { padding: 58px 40px 70px; margin-bottom: 14px; }
-  /* bigger, more confident — the title is the poster now (2026-07-17) */
-  .hero-title { font-size: clamp(34px, 4.8vw, 52px); }
+  .home-hero { padding: 58px 40px 54px; margin-bottom: 14px; }
+  /* THE POSTER (2026-07-21) — this is the site's front door now, so the title is sized
+     like one: was clamp(34px, 4.8vw, 52px). The lower bound clears the "small type"
+     complaint on the modernization doc's list outright. */
+  .hero-title { font-size: clamp(44px, 6vw, 76px); }
 }
 
 /* ── trim the tail (2026-07-11 Nate): the cast is the last section, so its
@@ -127,44 +131,83 @@ layout: default
        have doubled up. What stays here is the hero's one exclusive trick — rare strikes
        backlight the distant Chess City skyline. The town engine lights it. {% endcomment %}
   <div class="hero-skyflash" aria-hidden="true"></div>
-  {% comment %} 2026-07-14 (Nate): the eyebrow is a DOOR now — it leads to the studio. {% endcomment %}
+  {% comment %} 2026-07-14 (Nate): the eyebrow is a DOOR now — it leads to the studio.
+       2026-07-21: this now sits above a tagline whose last line ALSO says "McPuppy
+       Studios", so the studio is credited twice within 200px. Cutting it is a
+       visitor-facing wording change, so it is in the batch for Nate rather than done
+       here. {% endcomment %}
   <a class="hero-eyebrow" href="{{ '/projects/' | relative_url }}">McPuppy Studios Presents</a>
   <div class="hero-board" aria-hidden="true"></div>
-  <h1 class="hero-title">Princess and the Journey<br>to Chess City</h1>
-  {% comment %} (the cc-window egg AND the piece-tower city are gone — 2026-07-10
-       evening Nate asked for THE DOOR back in their place; restore from git.) {% endcomment %}
-  {% comment %} #7 — the horizon: Checker Town's low rooftops at street level, the sea
-       running out to the right. {% endcomment %}
-  {% comment %} Checker Town (left) = stacks of checkers, 7px per disc; the sea runs
-       across; Chess City (right) = buildings shaped like the back rank. {% endcomment %}
-  {% comment %} 2026-07-14 (Nate): both shores are DOORS — the checker stacks walk you
-       into Checker Town, the piece-buildings sail you to Chess City. {% endcomment %}
-  <div class="hero-skyline">
-    {% comment %} 2026-07-14 (Nate): Checker Town SMALLER and more checker-like;
-         Chess City TALLER — the two shores should read as different worlds. {% endcomment %}
-    <a class="sk-town-link" href="{{ '/locations/checker-town/' | relative_url }}" aria-label="Checker Town">
-      <span class="sk sk-ct" style="--w:18px;--h:8px"></span>
-      <span class="sk sk-ct" style="--w:18px;--h:14px"></span>
-      <span class="sk sk-ct" style="--w:18px;--h:5px"></span>
-      <span class="sk sk-ct" style="--w:18px;--h:11px"></span>
-      <span class="sk sk-ct" style="--w:18px;--h:8px"></span>
-      <span class="sk sk-ct" style="--w:18px;--h:11px"></span>
-    </a>
-    <i class="sk-sea" aria-hidden="true"></i>
-    <a class="sk-town-link" href="{{ '/locations/chess-city/' | relative_url }}" aria-label="Chess City">
-      {% comment %} Chess City TALLER again 2026-07-19 (Nate) — the far shore now rises
-           like a real skyline (was 29/39/44/36). Mobile scales these back to ~the old
-           height so the compact phone hero is unchanged (see the max-width:700px block). {% endcomment %}
-      <span class="sk sk-cc sk-cc--rook"   style="--w:20px;--h:40px"></span>
-      <span class="sk sk-cc sk-cc--bishop" style="--w:16px;--h:54px"></span>
-      <span class="sk sk-cc sk-cc--queen"  style="--w:22px;--h:60px"></span>
-      <span class="sk sk-cc sk-cc--king"   style="--w:18px;--h:50px"></span>
-    </a>
+  {% comment %} No <br> (2026-07-21). The hard break after "Journey" was tuned for a 52px
+       title; at poster size the first line no longer fits, so the break landed mid-phrase
+       and the title read "Princess and the / Journey / to Chess City". `text-wrap:balance`
+       in the stylesheet lets the browser choose even lines at whatever size the clamp
+       lands on, which is the only thing that works across a 360px phone and a 2560px
+       display. {% endcomment %}
+  <h1 class="hero-title">Princess and the Journey to Chess City</h1>
+
+  {% comment %} ── THE TAGLINE, brought over from the splash (2026-07-21) ──────────────
+       The seven-word cycle in Nate's arc order (2026-07-16: the cycle CLIMBS to the
+       destination — Animation, the animated series — and lands there last, right before
+       the studio's name). Same markup and the same .studio-tagline / .tagline-* CSS in
+       _sass/_pjcc-04-flair.scss; none of it was ever scoped to the splash.
+
+       It carries the flickering "i" — the SECOND "i" in "Million", which is the day-shift
+       door to /classified/. That door has to move with the tagline or /classified/ is
+       unreachable for twelve hours a day (the ✦ star takes the night shift; it arrives in
+       the next step). The glyph must stay inside the inner <i>: within background-clip:
+       text, `visibility` is the only property that reaches the letter, and the <a> around
+       it has to stay visible to keep its hit box while the glyph drops out.
+
+       aria-hidden is DELIBERATELY NOT set here, unlike on the splash. This is the site's
+       front door and that attribute was the reason it had no descriptive copy at all for
+       a screen reader or for Google. {% endcomment %}
+  <div class="studio-tagline hero-tagline">
+    <span class="tagline-word">Chess.</span>
+    <span class="tagline-word">Blog.</span>
+    <span class="tagline-word">Podcast.</span>
+    <span class="tagline-word">Academy.</span>
+    <span class="tagline-word">Games.</span>
+    <span class="tagline-word">Animation.</span>
+    <span class="tagline-word tagline-main">
+      <span class="tagline-main-studio">McPuppy Studios</span>
+      <span class="tagline-main-tagline">A Mill<a class="tg-x" href="{{ '/classified/' | relative_url }}" tabindex="-1" aria-hidden="true"><i class="tg-x-glyph">i</i></a>on Stories to Tell</span>
+    </span>
   </div>
-  {% comment %} The two entrances used to be jammed into the hero's corners (Park
-       Tables top-left, the Gauntlet door top-right). They moved OUT to a roomy row
-       below the hero 2026-07-17 (Nate: "move the links to below the hero… use the
-       leftover space for balance"). See .home-plays right after this section. {% endcomment %}
+
+  {% comment %} ── THE WORLD — two links where the flat skyline used to be ─────────────
+       2026-07-21. The CSS-shape skyline is DELETED: six checker stacks built from
+       repeating-linear-gradient, a 2px sea, and four piece-topped towers drawn with
+       ::before/::after clip-paths — about 60 lines of flat vector shapes. It is item #1
+       on the modernization doc's own list of what reads "stuck in time", and it was the
+       largest single piece of it on the site.
+
+       Both shores were already links (2026-07-14 Nate: "both shores are DOORS"), but only
+       as aria-labels on silhouettes — so the two most important places in the world were
+       invisible to anyone who didn't hover a shape. They are named text now. When there
+       is a rendered Chess City to show, it goes here; a drawing that says "we could not
+       draw it yet" is worse than a line that simply names the place.
+       Restore the skyline: git show <this commit>^ -- _layouts/home.html {% endcomment %}
+  <p class="hero-world">
+    <a href="{{ '/locations/checker-town/' | relative_url }}">Checker Town</a>
+    <i aria-hidden="true">→</i>
+    <a href="{{ '/locations/chess-city/' | relative_url }}">Chess City</a>
+  </p>
+
+  {% comment %} ── THE SIGIL BLOOM — the opening beat, ported from the splash ──────────
+       The ACCcccccc carving blooms over the hero and dissolves. Night-only (2026-07-15
+       Nate: "the ACCcccc, maybe it ONLY shows up at night time") and skipped under
+       reduced motion, exactly as on the splash, with the same 483/805/546ms timing.
+
+       Two things changed in the port. It is position:ABSOLUTE inside the hero rather than
+       fixed to the viewport, so it blooms over the poster instead of over whatever you
+       have scrolled to. And it no longer GATES anything: on the splash it held the four
+       quads back until it faded, which needed a failsafe timer so a backgrounded tab
+       could not strand you on an empty page. There are no quads here and the hero is
+       plain HTML, so there is nothing to hold back and nothing to strand. {% endcomment %}
+  <div class="studio-drift-sigil hero-sigil" id="hero-sigil" aria-hidden="true">
+    <span class="pjcc-sigil"><i class="sg-a">A</i><i class="sg-c big">C</i><i class="sg-c big">C</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c sm">c</i></span>
+  </div>
 </section>
 
 {% comment %} ── 1b. THE TWO WAYS TO PLAY — the entrances, given room + a name. Same two
@@ -208,67 +251,61 @@ layout: default
 .hero-eyebrow:hover { color:#F5C518; border-color:rgba(245,197,24,0.6); text-decoration:none; opacity:1; }
 .hero-title { margin-bottom:0; }
 
-/* ── #7 the horizon (basic shapes): Checker Town's skyline + the sea.
-   2026-07-11 (Nate): the "rooftops" are now what Checker Town is actually made
-   of — stacks of checkers. Uniform diameter, 7px per disc (a 1px rim seam +
-   a shaded face), black stacks and dark-red stacks alternating. ── */
-.hero-skyline { position:absolute; left:26px; right:26px; bottom:0; height:74px;
-  display:flex; align-items:flex-end; gap:5px; pointer-events:none; }
-/* both shores are links (2026-07-14): the anchors re-enable the pointer the skyline
-   turned off, keep the stack layout, and light their rooftops gold on hover */
-.sk-town-link { display:flex; align-items:flex-end; gap:5px; pointer-events:auto;
+/* ── THE WORLD LINE — what replaced the flat skyline (2026-07-21) ──────────────────
+   Deleted with the markup: .hero-skyline and its ~60 lines of CSS-shape art — six
+   checker stacks built from repeating-linear-gradient, the 2px sea, and four Chess City
+   towers whose rook merlons, bishop mitre, queen crown and king cross were all drawn
+   with ::before/::after clip-paths. It was the biggest piece of the "flat CSS-shape art"
+   the modernization doc lists as reason #1 the site reads stuck in time.
+
+   What stands in its place is two named links. Both shores were already doors
+   (2026-07-14 Nate), but only as aria-labels on silhouettes, so the two most important
+   places in the world were invisible unless you happened to hover a shape.
+   Restore the drawing: git show <this commit>^ -- _layouts/home.html ── */
+.hero-world { display:flex; align-items:center; justify-content:center; gap:14px;
+  margin:14px 0 0; font-family:'Share Tech Mono', monospace; font-size:12px;
+  letter-spacing:0.18em; text-transform:uppercase; }
+.hero-world a { color:rgba(214,204,238,0.72); text-decoration:none;
+  border-bottom:1px solid rgba(214,204,238,0.22); padding-bottom:2px;
+  transition:color .18s ease, border-color .18s ease; }
+.hero-world a:hover, .hero-world a:focus-visible { color:#F5C518; border-color:#F5C518;
   text-decoration:none; }
-.sk-town-link:hover .sk, .sk-town-link:focus-visible .sk { border-top-color:#F5C518; }
-.hero-skyline .sk { flex:0 0 auto; width:var(--w,16px); height:var(--h,20px);
-  background:#0c0722; border-top:1px solid rgba(168,121,255,0.30); }
-/* rounder tops + stronger disc seams (2026-07-14): shorter, chunkier stacks that
-   read as CHECKERS piled up, not buildings */
-.hero-skyline .sk-ct { border-radius:8px 8px 2px 2px; border-top-color:rgba(245,197,24,0.34);
-  background:repeating-linear-gradient(180deg,
-    rgba(200,170,255,0.34) 0 1px, #0e0826 1px 3px, #181040 3px 6px); }
-.hero-skyline span.sk-ct:nth-of-type(2n) { border-top-color:rgba(255,130,130,0.42);
-  background:repeating-linear-gradient(180deg,
-    rgba(255,150,150,0.36) 0 1px, #230b1d 1px 3px, #35122a 3px 6px); }
-.hero-skyline .sk-sea { flex:1 1 auto; height:2px; margin:0 10px 5px;
-  background:linear-gradient(90deg, rgba(96,206,255,0), rgba(96,206,255,0.30), rgba(96,206,255,0)); }
+/* the arrow between them IS the journey the show is named after — keep it quiet */
+.hero-world i { font-style:normal; color:rgba(214,204,238,0.34); }
 
-/* (The .hero-park absolute-positioning rules were removed 2026-07-17 — the Park Table
-   moved out of the hero corner into .home-plays below. The drawing itself is still the
-   shared canon include; .play-art now hosts it. Restore from git if the corner is ever
-   wanted back.) */
+/* ── THE TAGLINE in the hero (2026-07-21) ──────────────────────────────────────────
+   The cycle's look is entirely _sass/_pjcc-04-flair.scss (.studio-tagline / .tagline-*),
+   shared with the splash. Only placement is set here: on the splash it is a top-of-page
+   banner, here it is the poster's subtitle and sits directly under the title.
+   The 110px height is the cycle's own — every word is absolutely positioned inside it,
+   so the block cannot collapse and the words cannot push each other around. */
+.hero-tagline { margin-top:2px; }
+/* the tg-x link needs no pointer-events re-arm here: that rule exists on the splash only
+   because .studio-content turns pointers off for the whole stage. Nothing does that here. */
 
-/* ── Chess City: the far shore (2026-07-11 Nate). Cool-blue building bodies with
-   faint floor lines, each topped by a back-rank piece's silhouette: a rook's
-   crenellations, a bishop's mitre, a queen's crown, a king's cross. All static
-   paint drawn from the element + its ::before/::after — no extra markup. ── */
-.hero-skyline .sk-cc { position:relative; margin-left:3px;
-  border-radius:2px 2px 0 0; border-top:1px solid rgba(150,200,255,0.34);
-  background:repeating-linear-gradient(180deg,
-    rgba(150,190,255,0.13) 0 1px, #0d0a26 1px 6px, #14113a 6px 8px); }
-.hero-skyline .sk-cc::before, .hero-skyline .sk-cc::after { content:''; position:absolute; }
+/* ── THE SIGIL BLOOM in the hero (2026-07-21) ──────────────────────────────────────
+   Ported from the splash, where it is position:fixed and blooms over the whole viewport.
+   Here it is ABSOLUTE inside .home-hero so it blooms over the poster — the hero is
+   position:relative already, which is what anchors it.
 
-/* rook — three merlons */
-.sk-cc--rook::before { bottom:100%; left:50%; transform:translateX(-50%);
-  width:3px; height:5px; background:#14113a; box-shadow:-5px 0 #14113a, 5px 0 #14113a;
-  border-top:1px solid rgba(150,200,255,0.34); }
-/* bishop — a pointed mitre with a diagonal slit */
-.sk-cc--bishop::before { bottom:100%; left:50%; transform:translateX(-50%);
-  width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent;
-  border-bottom:11px solid #14113a; }
-.sk-cc--bishop::after { bottom:calc(100% + 4px); left:50%;
-  transform:translateX(-50%) rotate(22deg); width:2px; height:5px; background:rgba(150,200,255,0.45); }
-/* queen — a three-point crown */
-.sk-cc--queen::before { bottom:100%; left:50%; transform:translateX(-50%);
-  width:16px; height:8px; background:#14113a;
-  clip-path:polygon(0% 100%, 100% 100%, 100% 45%, 83% 0%, 66% 45%, 50% 0%, 34% 45%, 17% 0%, 0% 45%); }
-/* king — a cross */
-.sk-cc--king::before { bottom:100%; left:50%; transform:translateX(-50%);
-  width:2px; height:9px; background:#14113a; }
-.sk-cc--king::after { bottom:calc(100% + 4px); left:50%; transform:translateX(-50%);
-  width:7px; height:2px; background:#14113a; }
-/* Chess City warms at night — a few windows come on */
-html.sky-night .hero-skyline .sk-cc { background:repeating-linear-gradient(180deg,
-    rgba(255,214,140,0.16) 0 1px, #0d0a26 1px 6px, #14113a 6px 8px); }
+   The timings match the splash exactly (fade-out 0.546s here, fade-in 0.483s on
+   .is-bloom) because they were tuned by hand: brightness 0.115 and a bloom lengthened
+   15% on 2026-07-15 so it lingers long enough to catch. z-index:6 puts it in FRONT of
+   the title, which is the point — it is a transmission ghost passing over the poster —
+   and pointer-events:none keeps it from ever eating a click. */
+.hero-sigil { position:absolute; top:44%; left:50%;
+  transform:translate(-50%,-50%) scale(0.96);
+  z-index:6; pointer-events:none; opacity:0;
+  filter:drop-shadow(0 0 16px rgba(245,197,24,0.28));
+  transition:opacity 0.546s ease, transform 0.546s ease; }
+.hero-sigil .pjcc-sigil { font-size:1.5rem; }
+.hero-sigil.is-bloom { opacity:0.115; transform:translate(-50%,-50%) scale(1.0);
+  transition:opacity 0.483s ease-out, transform 0.483s ease-out; }
+/* night only (2026-07-15 Nate: "the ACCcccc, maybe it ONLY shows up at night time") —
+   belt and braces alongside the JS gate, so a stray timer can never bloom it by day */
+html:not(.sky-night) .hero-sigil { display:none; }
+@media (prefers-reduced-motion: reduce) { .hero-sigil { display:none; } }
+html.reduce-flourish .hero-sigil { display:none; }
 
 /* ── THE DOOR — the look lives in _sass/_pjcc-21-gauntlet-door.scss ────────────────
    2026-07-21: the ~120-line inline copy of .gdoor that stood here is DELETED. It was
@@ -328,18 +365,15 @@ html.sky-night .hero-skyline .sk-cc { background:repeating-linear-gradient(180de
    arcing sun/moon + stars + clouds, _pjcc-20-town-sky.scss) shows straight through it —
    so there is exactly one sun, site-wide. The old .hero-sky / .hs-orb / .hs-star and the
    per-phase .home-hero gradients + clouds are all deleted. A soft floor-scrim keeps the
-   gold title + the skyline legible on any phase; the two skyline tints stay. ── */
+   gold title legible on any phase. ── */
 .home-hero { background:transparent; }
 .home-hero::before { content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
   border-radius:inherit; background:linear-gradient(180deg, transparent 46%, rgba(8,6,24,0.30) 100%); }
 
-/* the foreground skyline still warms at dawn/dusk — it's the hero's own, not the sky */
-html.sky-dawn .hero-skyline .sk-ct { border-top-color:rgba(255,170,110,0.5); }
-
 /* (DAY/DUSK/NIGHT hero skies + the hero sun/rays/corona/clouds/stars were all removed
-   2026-07-18 — that whole diorama is what the shared town sky already does. The only
-   per-phase hero rules left are the dusk/night foreground touches below.) */
-html.sky-dusk .hero-skyline .sk-ct { border-top-color:rgba(255,150,80,0.45); }
+   2026-07-18 — that whole diorama is what the shared town sky already does. The two
+   dawn/dusk rules that warmed the checker stacks went with the skyline on 2026-07-21;
+   the hero's per-phase look is now entirely the shared sky showing through it.) */
 html.sky-night .home-hero { border-color:#2a1d5e; }
 
 /* (#18 the staged "takes its seats" first-arrival fade went with the intro 2026-07-17 —
@@ -366,7 +400,11 @@ html.reduce-flourish .hero-title { animation:none; }
    removed, so the bump has not happened in a long time. The transition that served it
    went too; the title's entrance is the heroRise animation above. position:relative stays
    — it is what the title's own stacking depends on.) */
-.hero-title { position:relative; }
+/* balance replaces the old hard <br> (2026-07-21): the browser picks even lines at
+   whatever size the clamp resolves to. max-width keeps the longest line from running the
+   full card width at desktop, which is what makes it read as a poster rather than a
+   headline. Browsers without text-wrap:balance simply wrap normally — no fallback needed. */
+.hero-title { position:relative; text-wrap:balance; max-width:16ch; margin-left:auto; margin-right:auto; }
 
 {% comment %} (the #16 title sheen removed 2026-07-11 — its mix-blend-mode forced an
      extra compositing pass and Nate cut it in the lag sweep. The ♛-crowning finale
@@ -379,6 +417,36 @@ html.reduce-flourish .hero-title { animation:none; }
   background:radial-gradient(circle at 50% 42%, rgba(124,77,255,0.34), rgba(10,7,20,0) 62%); }
 .puri-veil.is-on { opacity:1; }
 </style>
+
+<script>
+// THE SIGIL BLOOM (2026-07-21) — the opening beat, brought over from the splash.
+// The ACCcccccc carving blooms over the poster and dissolves, then returns every 26s.
+//
+// Night only, and skipped under either quiet switch — the same gates the splash uses.
+// Timings are the splash's, unchanged: bloom in 483ms, hold 805ms, fade out 546ms (the
+// fade-out is timed by the base .hero-sigil rule in the stylesheet above; .is-bloom
+// supplies only the fade-in).
+//
+// What did NOT come across is the GATE. On the splash this beat holds the four quads at
+// opacity:0 until it clears, which needs two failsafe timers so a backgrounded tab can't
+// strand a visitor on an empty front door. There are no quads here — the hero is plain
+// HTML that paints on the first frame — so the bloom is purely ambient and there is
+// nothing it can strand.
+(function () {
+  var sig = document.getElementById('hero-sigil');
+  if (!sig) return;
+  if (!document.documentElement.classList.contains('sky-night')) return;
+  if (document.documentElement.classList.contains('reduce-flourish')) return;
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var BLOOM_IN = 483, HOLD = 805;
+  function bloom() {
+    sig.classList.add('is-bloom');
+    setTimeout(function () { sig.classList.remove('is-bloom'); }, BLOOM_IN + HOLD);
+  }
+  setTimeout(function () { bloom(); setInterval(bloom, 26000); }, 260);
+})();
+</script>
 
 <script>
 // Gauntlet progress (read-only): powers the ticker's BREAKING line and dresses
