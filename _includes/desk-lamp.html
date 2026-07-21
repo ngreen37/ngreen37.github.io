@@ -1,0 +1,68 @@
+{%- comment -%}
+  ══════════════════════════════════════════════════════════════════════════════
+  THE CREATOR'S DESK LAMP — markup + the twelve-hour check.  (shared since 2026-07-21)
+  ──────────────────────────────────────────────────────────────────────────────
+  The lamp is LIT when the site last shipped within twelve hours (Nate 2026-07-16:
+  "shine the light when there HAS been a commit in the last 12 hours"). A push rebuilds
+  the site, so `site.time` IS the last commit — no API, no build step, no rate limit.
+  Lit or dark it links to the Direct Line: the light on the Creator's desk leads to the
+  line that reaches his desk.
+
+  The drawing is _sass/_pjcc-24-desk-lamp.scss, which sizes the lamp but never PLACES it.
+  Each caller positions it: the splash pins it to the corner of the viewport, the front
+  door stands it in the flow of a band. Wrap this include in something positioned.
+
+  Caller may pass `id` to make the element addressable; it defaults to studio-light.
+  ══════════════════════════════════════════════════════════════════════════════
+{%- endcomment -%}
+{%- assign lamp_id = include.id | default: 'studio-light' -%}
+<a class="studio-light" id="{{ lamp_id }}" href="{{ '/direct-line/' | relative_url }}"
+   data-built="{{ site.time | date_to_xmlschema }}"
+   aria-label="Studio status — open the Direct Line">
+  <span class="sl-lamp" aria-hidden="true">
+    <i class="sl-desk"></i>
+    <i class="sl-cone"></i>
+    <i class="sl-arm"></i>
+    <i class="sl-arm2"></i>
+    <i class="sl-elbow"></i>
+    <i class="sl-head"></i>
+    <i class="sl-base"></i>
+  </span>
+  <span class="sl-tip"></span>
+</a>
+<script>
+(function () {
+  // Scoped by class, not by id, so a page can carry the lamp under any id — and so this
+  // keeps working if a page ever shows more than one.
+  var lamps = document.querySelectorAll('.studio-light');
+  if (!lamps.length) return;
+  var lit = false;
+  Array.prototype.forEach.call(lamps, function (el) {
+    var tip = el.querySelector('.sl-tip');
+    if (!tip) return;
+    var built = Date.parse(el.getAttribute('data-built') || '') || 0;
+    var on = !!(built && (Date.now() - built) < 12 * 3600 * 1000);
+    if (on) lit = true;
+    el.classList.toggle('on', on);
+    var status = on
+      ? 'Creator is currently working or was during last 12 hours.'
+      : 'No movement in last 12 hours — Creator has stepped away. All is well; the line stays open.';
+    tip.innerHTML = status + '<br><b>&#9993; The Direct Line &rarr;</b>';
+    el.setAttribute('aria-label', status + ' Open the Direct Line.');
+
+    // On phones there is no hover, so the status was unreachable without tapping straight
+    // through to the Direct Line (Nate 2026-07-17). Deliver it on TAP instead: the first
+    // tap opens the tip, a second follows the link.
+    if (window.matchMedia && matchMedia('(hover: none)').matches) {
+      el.addEventListener('click', function (e) {
+        if (!el.classList.contains('tip-open')) { e.preventDefault(); el.classList.add('tip-open'); }
+      });
+      document.addEventListener('click', function (e) {
+        if (!el.contains(e.target) && el.classList.contains('tip-open')) { el.classList.remove('tip-open'); el.blur(); }
+      });
+    }
+  });
+  // the page knows the lamp is burning — the splash warms its footer signature under it
+  document.body.classList.toggle('lamp-lit', lit);
+})();
+</script>

@@ -254,6 +254,34 @@ layout: default
     </a>
   </p>
 </section>
+
+{% comment %} ── 1c. THE STUDIO IS AWAKE ─────────────────────────────────────────────
+     2026-07-21. Through-line #5 asks for a dated cadence — visible proof that someone is
+     still building this. Until now the front door answered that with fiction: a ticker of
+     invented Checker Town headlines. This answers it with a fact.
+
+     The lamp is lit when the site last shipped within twelve hours, straight off
+     site.time, so it cannot drift out of date or lie. Beside it: the actual title and
+     date of the newest post, linked.
+
+     This is also the first time the front door has ADMITTED THE BLOG EXISTS. The only
+     route to it from the splash was a drifting ¶ glyph that is display:none on phones —
+     so on a phone there has never been one at all.
+
+     The lamp keeps everything it had: the twelve-hour check, both tooltip strings, the
+     Direct Line link, the phone tap-to-reveal, and the hotter night burn. It is the same
+     include the splash uses; only where it stands is different. {% endcomment %}
+<section class="home-awake" aria-label="From the studio" data-reveal>
+  <span class="awake-lamp">{% include desk-lamp.html id="home-lamp" %}</span>
+  <div class="awake-copy">
+    <span class="awake-label">Building in the open</span>
+    {% if site.posts.first %}
+    <a class="awake-post" href="{{ site.posts.first.url | relative_url }}">{{ site.posts.first.title }}</a>
+    <span class="awake-date">{{ site.posts.first.date | date: "%-d %B %Y" }}</span>
+    {% endif %}
+    <a class="awake-more" href="{{ '/blog/' | relative_url }}">Read the build log &rarr;</a>
+  </div>
+</section>
 <style>
 /* ── #8 film title card: plate top-left, title in the lower third, horizon below ── */
 /* Poster-first (2026-07-17 Nate): more sky above, the title low and large over the
@@ -617,7 +645,42 @@ html.reduce-flourish .hero-title { animation:none; }
 .home-cta-park-art .pkt-scene { position:absolute; top:0; left:0;
   transform:scale(0.52); transform-origin:top left; }
 
+/* ── 1c. THE STUDIO IS AWAKE — the lamp beside the last thing that shipped ──────────
+   The lamp's drawing is _sass/_pjcc-24-desk-lamp.scss, which sizes it and deliberately
+   never places it. This is its placement here: standing in the flow of the band rather
+   than pinned to a corner of the window the way the splash stands it. It needs
+   position:relative because every part of the lamp is absolute inside it, and the desk
+   sliver's negative side offsets are re-set so the slab is a short plank under the base
+   instead of running off the edge of the screen. ── */
+.home-awake { display:flex; align-items:flex-end; justify-content:center; gap:26px;
+  margin:0 0 34px; padding:0 8px; }
+.awake-lamp { position:relative; display:block; width:82px; height:92px; flex:0 0 auto; }
+.awake-lamp .studio-light { position:absolute; inset:0; }
+.awake-lamp .sl-desk { left:-18px; right:-18px; border-radius:3px; }
+.awake-lamp .sl-desk::after { border-radius:0 0 3px 3px; }
+/* the tip is anchored to the lamp's right edge by the partial; in a centred band that
+   would hang off toward the copy, so pull it back over the lamp */
+.awake-lamp .sl-tip { right:auto; left:-52px; }
+
+.awake-copy { display:flex; flex-direction:column; align-items:flex-start; gap:3px;
+  padding-bottom:6px; min-width:0; }
+.awake-label { font-family:'Share Tech Mono', monospace; font-size:10px; letter-spacing:0.18em;
+  text-transform:uppercase; color:rgba(214,204,238,0.5); }
+.awake-post { font-family:'Poppins',sans-serif; font-weight:700; font-size:15px; color:#F5C518;
+  text-decoration:none; line-height:1.3; }
+.awake-post:hover, .awake-post:focus-visible { text-decoration:underline; }
+.awake-date { font-family:'Share Tech Mono', monospace; font-size:10.5px;
+  color:rgba(214,204,238,0.45); }
+.awake-more { margin-top:5px; font-size:11.5px; color:#c6b8ec; text-decoration:none;
+  border-bottom:1px solid rgba(198,184,236,0.28); padding-bottom:1px; }
+.awake-more:hover, .awake-more:focus-visible { color:#F5C518; border-color:#F5C518;
+  text-decoration:none; }
+
 @media (max-width: 600px) {
+  .home-awake { gap:16px; margin-bottom:26px; }
+  .awake-lamp { transform:scale(0.78); transform-origin:bottom center; width:64px; height:72px; }
+  .awake-post { font-size:13px; }
+  .awake-more { font-size:10.5px; }
   .home-cta { margin-bottom:26px; }
   .home-gdoor .gdoor-arch { width:96px; height:124px; border-radius:48px 48px 4px 4px; }
   .home-gdoor .gdoor-door { border-radius:43px 43px 0 0; }

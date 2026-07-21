@@ -1,0 +1,96 @@
+/* =============================================================================
+ * THE CREATOR'S DESK LAMP (.studio-light) — a shared partial since 2026-07-21
+ * -----------------------------------------------------------------------------
+ * A pure-CSS anglepoise, angled over the page like someone is working late. It is LIT
+ * when the site last shipped within twelve hours (Nate 2026-07-16: "shine the light when
+ * there HAS been a commit in the last 12 hours" — a push rebuilds the site, so the build
+ * stamp IS the last commit and no API is needed). Lit or dark, it links to the Direct
+ * Line: the light on the Creator's desk leads to the line that reaches his desk.
+ *
+ * It lived as an inline <style> in _layouts/studio-home.html while the splash was the
+ * only place it stood. The front-door rebuild (docs/front-door-2026-07-21.md) gives it a
+ * second home — a real section on the front door, beside the last thing that shipped —
+ * so the drawing moves here where both can reach it.
+ *
+ * THE ONE RULE FOR CALLERS: this file draws the lamp and never places it. `.studio-light`
+ * has a size and no position, so each page decides where it stands. The splash pins it to
+ * the bottom-right corner of the viewport; the front door stands it in the flow of a
+ * band. Put positioning in the page, not here, or the two will fight.
+ *
+ * Sizes are Nate's, arrived at over several passes: grown ~40% on 2026-07-16 when the
+ * single arm became a two-rod anglepoise ("make it bigger, add another rod from stem to
+ * head"), then everything ×1.25 the same day, the head opened +32deg total so its lit
+ * mouth points straight down the cone, the cone tucked flush to the head 2026-07-18, and
+ * the base trimmed smaller the same day. Don't round these off.
+ * ========================================================================== */
+.studio-light { width: 82px; height: 92px; text-decoration: none; }
+.sl-lamp { position: absolute; inset: 0; }
+
+/* the round base it stands on */
+.sl-base { position: absolute; right: 14px; bottom: 0; width: 37px; height: 8px; border-radius: 50%;
+  background: linear-gradient(180deg, #4a4a55, #2c2c34); box-shadow: 0 1px 5px rgba(0,0,0,0.6); }
+/* the stem — the lower rod, leaning back from the base up to the elbow */
+.sl-arm { position: absolute; right: 30px; bottom: 6px; width: 5px; height: 45px; border-radius: 3px;
+  background: linear-gradient(180deg, #5c5c66, #3a3a44); transform: rotate(18deg); transform-origin: bottom center; }
+/* the upper rod — stem to head, leaning the other way (the anglepoise elbow) */
+.sl-arm2 { position: absolute; right: 15px; top: 10px; width: 5px; height: 31px; border-radius: 3px;
+  background: linear-gradient(180deg, #63636d, #3a3a44); transform: rotate(-35deg); transform-origin: bottom center; }
+/* the elbow joint where the two rods meet */
+.sl-elbow { position: absolute; right: 14px; top: 38px; width: 9px; height: 9px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #7a7a85, #33333a); box-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+/* the dome head over the page */
+.sl-head { position: absolute; right: 28px; top: 2px; width: 35px; height: 21px;
+  border-radius: 17px 17px 5px 5px;
+  background: linear-gradient(165deg, #6b6b74, #33333a);
+  box-shadow: inset 0 -4px 5px rgba(0,0,0,0.4);
+  transform: rotate(32deg); transform-origin: 80% 90%; transition: box-shadow .4s; }
+/* the throw of light out of the head — dark until the studio ships */
+.sl-cone { position: absolute; right: 41px; top: 10px; width: 48px; height: 48px;
+  clip-path: polygon(82% 0, 100% 24%, 48% 100%, 0 64%);
+  background: linear-gradient(205deg, rgba(255,224,138,0.85), rgba(255,207,74,0.05));
+  opacity: 0; transform: rotate(-6deg); transition: opacity .5s; pointer-events: none; }
+.studio-light.on .sl-head { box-shadow: inset 0 -4px 6px rgba(255,207,74,0.55), 0 0 14px 2px rgba(255,207,74,0.35); }
+.studio-light.on .sl-cone { opacity: 0.6; animation: sl-warm 3.2s ease-in-out infinite; }
+@keyframes sl-warm { 0%,100% { opacity: 0.52; } 50% { opacity: 0.7; } }
+
+/* A SLIVER OF DESK (#4, 2026-07-16 splash check): a dark wood edge under the base, so the
+   lamp stands on the Creator's desk instead of floating. On the splash the slab runs off
+   the right edge of the window — the rest of the desk is out of frame — which is why the
+   left/right offsets are a caller's business and not set here. */
+.sl-desk { position: absolute; bottom: -7px; height: 8px;
+  left: -34px; right: -40px;
+  border-radius: 4px 0 0 2px;
+  background: linear-gradient(180deg, #5a4128, #43301c 45%, #2b1e10);
+  box-shadow: 0 -1px 0 rgba(255,235,200,0.10), 0 4px 10px rgba(0,0,0,0.45);
+  pointer-events: none; }
+.sl-desk::after { content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 3px;
+  border-radius: 0 0 0 3px; background: #1c130a; }
+/* when the lamp burns, its light catches the desk edge */
+.studio-light.on .sl-desk { box-shadow: 0 -1px 0 rgba(255,207,74,0.25), 0 4px 10px rgba(0,0,0,0.45); }
+
+/* AFTER DARK, THE BEACON (#6, 2026-07-16, Nate: "DOUBLE YES") — at night the lit lamp is
+   the page's only warm light. The head burns hotter. All state, no new animation; the
+   only thing that moves is the cone's candle-breath.
+   (The wide radial pool that used to settle around it at night was removed 2026-07-18 —
+   "an odd faint sphere … works better without.") */
+html.sky-night .studio-light.on .sl-cone { opacity: 0.85; animation-name: sl-warm-night; }
+@keyframes sl-warm-night { 0%,100% { opacity: 0.72; } 50% { opacity: 0.94; } }
+html.sky-night .studio-light.on .sl-head { box-shadow: inset 0 -4px 6px rgba(255,207,74,0.75), 0 0 24px 5px rgba(255,207,74,0.5); }
+
+/* the status tooltip — the lamp says whether the Creator has been at the desk */
+.sl-tip { position: absolute; right: 0; bottom: calc(100% + 8px); width: 224px; padding: 9px 12px;
+  background: rgba(14,9,30,0.96); border: 1px solid #4a3a86; border-radius: 9px; color: #e9e2ff;
+  font-family: 'Poppins', sans-serif; font-size: 11px; line-height: 1.5; text-align: left;
+  opacity: 0; transform: translateY(4px); pointer-events: none; transition: opacity .18s, transform .18s;
+  box-shadow: 0 12px 30px -10px rgba(0,0,0,0.7); z-index: 3; }
+.sl-tip b { color: #F5C518; }
+.studio-light:hover .sl-tip, .studio-light:focus .sl-tip, .studio-light:focus-within .sl-tip,
+.studio-light.tip-open .sl-tip { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* the night rule above raises specificity, so it is named here too */
+  .studio-light.on .sl-cone,
+  html.sky-night .studio-light.on .sl-cone { animation: none; }
+}
+html.reduce-flourish .studio-light.on .sl-cone,
+html.reduce-flourish html.sky-night .studio-light.on .sl-cone { animation: none; }
