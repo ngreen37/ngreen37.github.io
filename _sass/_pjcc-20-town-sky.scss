@@ -76,7 +76,11 @@
    no orb motion left for either switch to turn off. */
 .ts-orb    { position: absolute; z-index: 2; display: none; border-radius: 50%;
   transform: translate(-50%, -50%); }
-.ts-shoot  { position: absolute; z-index: 3; display: none; }
+/* the streaks live in a group now (2026-07-21) so the sky veil has one thing to fade —
+   their own opacity is keyframe-driven, so it can't take the veil directly. The group
+   carries the z-index the streaks used to hold, so the stacking order is unchanged. */
+.ts-shoots { position: absolute; inset: 0; z-index: 3; }
+.ts-shoot  { position: absolute; display: none; }
 .ts-clouds { position: absolute; inset: 0; z-index: 4; opacity: 0; transition: opacity 1.4s ease; }
 .ts-horizon { position: absolute; left: 0; right: 0; bottom: 0; height: 32%; z-index: 0; }
 
@@ -510,7 +514,10 @@ html.cloud-3 .ts-clouds { opacity: 0.72; }
    instead of an actual sky (Nate 2026-07-15, arrows on the screenshot). The deck is now
    SPLASH-ONLY: the splash (body.studio-body) keeps its full sky; every content page keeps
    the calmer sky — gradient, stars, horizon, season particles — with no floating puffs. */
-body:not(.studio-body) .ts-clouds { display: none; }
+/* 2026-07-21: `.full-sky` is exempt too — see THE SKY VEIL at the foot of this file. It
+   is the front door's opt-in to the whole sky, and it doesn't reintroduce the splotches
+   because the discrete layers fade out as you scroll off the hero. */
+body:not(.studio-body):not(.full-sky) .ts-clouds { display: none; }
 /* Cloud is lit by whatever's in the sky: white by day, ember at dawn/dusk, and a cold
    slate at night (a white cloud on a night sky reads as fog, not cloud). One filter —
    on the CLOUD layer itself, which has no animating children of its own; the banks
@@ -756,10 +763,14 @@ body.theme-studio .ts-stars { display: block; opacity: 0.18; }
    because there's no sky context there. So the whole discrete layer is SPLASH-ONLY now
    (body.studio-body keeps its full sky). Content pages keep the SMOOTH sky only: the gradient,
    the warm horizon glow, and the season particles (pollen/snow/etc). This must sit AFTER the
-   theme-bw/studio star re-show to win. */
-body:not(.studio-body) .ts-stars,
-body:not(.studio-body) .ts-constellations,
-body:not(.studio-body) .ts-shoot { display: none; }
+   theme-bw/studio star re-show to win.
+   2026-07-21: `.full-sky` opts back in — see THE SKY VEIL at the foot of this file. The
+   splotches were never caused by the stars existing; they were caused by the stars sitting
+   behind flat CONTENT. The veil fixes that directly by fading the discrete layers out as
+   the hero scrolls away, instead of banning them from every page but one. */
+body:not(.studio-body):not(.full-sky) .ts-stars,
+body:not(.studio-body):not(.full-sky) .ts-constellations,
+body:not(.studio-body):not(.full-sky) .ts-shoots { display: none; }
 body.theme-bw .page-title,
 body.theme-studio .page-title {
   background: linear-gradient(180deg, #17161c 0%, #101015 100%);
@@ -796,3 +807,62 @@ body.theme-studio .site-header::before { display: none; }
   /* the sun/moon is nearer the title on a phone — pull the text clear of it */
   .page-title { padding-right: 54px; }
 }
+
+/* ═════════════════════════════════════════════════════════════════════════════
+   THE SKY VEIL — the full sky belongs to the front door's hero, and only there
+   ─────────────────────────────────────────────────────────────────────────────
+   2026-07-21, for the front-door rebuild (docs/front-door-2026-07-21.md).
+
+   The problem this replaces: the discrete sky layers — clouds, stars, constellations,
+   shooting stars — were banned outright from every page except the splash, because
+   behind flat page content they read as floating splotches ("jellybeans", Nate
+   2026-07-15). That fix worked, but it treated the symptom: it assumed a page either IS
+   the sky or ISN'T. The new front door is both — a real sky at the top, ordinary content
+   below it.
+
+   So a page can now opt in with `body_class: full-sky`, and the discrete layers FADE as
+   the hero scrolls away. At the top you get the whole sky; by the time any body copy has
+   risen into view there is nothing floating behind it. The bug is fixed where it
+   actually lives — the layers were never wrong, their position relative to the content
+   was.
+
+   The driver is free: _includes/town-sky.html already eases `--par-s` (scroll, 0..1 over
+   the first 600px) onto .town-sky for the parallax. The veil is its complement. No second
+   scroll listener, no new rAF loop.
+
+   WHERE THE VEIL IS APPLIED, and why each one differs — every layer already carries an
+   opacity that means something (cloud cover for the day, the dimmer dusk starfield), and
+   CSS cannot add a second opacity to one element. So the veil rides a DIFFERENT element
+   in each case and the two compose naturally:
+     · clouds  — on the BANKS and SHAPES inside the deck, so the deck's nine
+                 phase/cover opacities upstream are untouched.
+     · stars   — on .ts-stars itself. Its children can't take it: .ts-star--tw twinkles
+                 by keyframe, which would override an element opacity.
+     · constellations — on the container; .ts-constel.show keeps its own fade.
+     · shooting stars — on the .ts-shoots group added for exactly this reason.
+   All opacity, no filters, no masks, nothing that costs layout or a rasterization pass.
+   ═════════════════════════════════════════════════════════════════════════════ */
+body.full-sky .town-sky { --sky-veil: calc(1 - var(--par-s, 0)); }
+
+body.full-sky .ts-cloud-bank,
+body.full-sky .ts-cloud-shape { opacity: var(--sky-veil, 1); }
+body.full-sky .ts-stars       { opacity: var(--sky-veil, 1); }
+/* dusk shows a dimmer starfield (0.35 upstream); keep that and veil it */
+html.sky-dusk body.full-sky .ts-stars { opacity: calc(0.35 * var(--sky-veil, 1)); }
+body.full-sky .ts-constellations { opacity: var(--sky-veil, 1); }
+body.full-sky .ts-shoots         { opacity: var(--sky-veil, 1); }
+
+/* Both quiet switches turn the scroll driver OFF, which would pin the veil at 1 and
+   leave the discrete layers parked behind the content — the original bug, for exactly
+   the visitors least likely to want it. They fall back to the old behavior: the smooth
+   sky only. The gradient, the orb and the horizon still carry the hour. */
+@media (prefers-reduced-motion: reduce) {
+  body.full-sky .ts-clouds,
+  body.full-sky .ts-stars,
+  body.full-sky .ts-constellations,
+  body.full-sky .ts-shoots { display: none; }
+}
+html.reduce-flourish body.full-sky .ts-clouds,
+html.reduce-flourish body.full-sky .ts-stars,
+html.reduce-flourish body.full-sky .ts-constellations,
+html.reduce-flourish body.full-sky .ts-shoots { display: none; }

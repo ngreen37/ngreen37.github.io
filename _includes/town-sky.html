@@ -110,9 +110,16 @@
        streak that lasts barely a second — so they never fall in a pattern you can read,
        and most of the time the sky is simply still. No JS: the sky is idle markup and the
        compositor does the rest. {%- endcomment -%}
-  <b class="ts-shoot ts-shoot--1"></b>
-  <b class="ts-shoot ts-shoot--2"></b>
-  <b class="ts-shoot ts-shoot--3"></b>
+  {%- comment -%} The wrapper (2026-07-21) exists so the SKY VEIL has something to fade.
+       Each streak's own opacity is driven by its keyframes, so setting opacity on the
+       <b> itself would be overridden mid-flight; the veil rides the group instead and
+       the two compose. It also carries the z-index:3 the streaks used to hold, so the
+       stars → orb → shooting stars → clouds order is unchanged. {%- endcomment -%}
+  <div class="ts-shoots">
+    <b class="ts-shoot ts-shoot--1"></b>
+    <b class="ts-shoot ts-shoot--2"></b>
+    <b class="ts-shoot ts-shoot--3"></b>
+  </div>
 
   {%- comment -%} 3b · THE SEASON (2026-07-15 Nate: "a set PJCC calendar … subtle things
        to signal the season"). `season-<name>` is on <html> before paint (town-weather.html).
