@@ -35,7 +35,7 @@
   <div class="studio-page">
 
     {% comment %} Idea #1 — the page leans toward the quad you hover: a soft brand-
-         coloured glow from that quad's corner. Toggled by the console JS below. {% endcomment %}
+         colored glow from that quad's corner. Toggled by the console JS below. {% endcomment %}
     <div class="studio-lean" id="studio-lean" aria-hidden="true"></div>
 
     {% comment %} Every drifter leads somewhere true — the QUEEN to Princess, the KNIGHT
@@ -124,7 +124,7 @@
         <span class="tagline-word tagline-main">
           <span class="tagline-main-studio">McPuppy Studios</span>
           {% comment %} The second "i" in "Million" is the door to /classified/. It looks
-               EXACTLY like its neighbours (it inherits the shimmer's text-clip) and flickers
+               EXACTLY like its neighbors (it inherits the shimmer's text-clip) and flickers
                like a radio dropout — mid-dropout the word reads "A Mill on". The glyph lives
                in the inner <i> so the flicker can use `visibility` — the only property that
                reaches a text-clipped glyph — while the <a> around it keeps its hit box and
@@ -221,7 +221,7 @@
       </div>
       <script>
       // Splash Gauntlet DOOR — mirrors the PJCC hero's door (floor lamps, the current
-      // boss's colour + piece, grandeur tier), hydrated from the game's save (offline/
+      // boss's color + piece, grandeur tier), hydrated from the game's save (offline/
       // signed-out OK). Keep NAMES/ACCENTS/GLYPHS in sync with pjcc_gauntlet.html.
       (function () {
         var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The Executive Assistant'];
@@ -292,7 +292,7 @@
 
   </div>
 
-  {% comment %} Idea #5 — themed enter-transition: a quick brand-coloured wipe when you
+  {% comment %} Idea #5 — themed enter-transition: a quick brand-colored wipe when you
        pick a quad, so the splash feels like a portal. Driven by the console JS. {% endcomment %}
   <div class="studio-warp" id="studio-warp" aria-hidden="true"></div>
 
@@ -304,7 +304,7 @@
   /* 2026-07-16 (Nate): wider breathing room between the two scenes — 38px → 64px,
      then "even further… like 128px", then that evening: "directly under the middle
      of the respective quadrant columns". So the calls row now IS the quad grid —
-     same two columns, same 22px gap — and each scene centres in its column. */
+     same two columns, same 22px gap — and each scene centers in its column. */
   .studio-calls { display:grid; grid-template-columns:1fr 1fr; gap:22px; width:100%;
     margin:8px auto 0; justify-items:center; align-items:end; }
   .studio-scene { text-decoration:none; }
@@ -338,11 +338,11 @@
   /* Idea #1 — the page leans toward the hovered quad.
      2026-07-12 (Nate: "I want it just to be the corresponding CORNER, instead — cut
      the height in half and place them accordingly"). It used to be a full-viewport
-     layer with the glow's centre parked in a corner, so the wash bled across the
+     layer with the glow's center parked in a corner, so the wash bled across the
      whole screen and read as "that whole side lights up". Now the layer itself is a
      QUARTER of the window (50% × 50%) pinned to the matching corner, and the glow
      fills it — so only that corner lifts. One element, moved by four classes; the
-     brand colour rides in --lean so there's a single gradient recipe to keep. */
+     brand color rides in --lean so there's a single gradient recipe to keep. */
   .studio-lean { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0;
     transition:opacity .4s ease; }
   .studio-lean.is-on { opacity:1; }
@@ -498,7 +498,7 @@
     .studio-corner-lang { padding:10px 12px !important; }
   }
 
-  /* Idea #5 — the brand-coloured enter wipe */
+  /* Idea #5 — the brand-colored enter wipe */
   .studio-warp { position:fixed; inset:0; z-index:60; pointer-events:none; opacity:0; transform:scale(1.04);
     transition:opacity .34s ease, transform .34s ease; }
   .studio-warp.is-on { opacity:0.70; transform:scale(1); pointer-events:auto; }
@@ -605,7 +605,7 @@
       });
     }
 
-    // #5 — a brand-coloured wipe on click, then navigate. Plain same-tab clicks only,
+    // #5 — a brand-colored wipe on click, then navigate. Plain same-tab clicks only,
     // so middle/⌘/ctrl-click (open in new tab) and the external Patreon link are untouched.
     if (warp && !reduce) {
       var wire = function (el, key) {
@@ -626,7 +626,7 @@
 
     // Clear the wipe whenever the page is shown again — in particular a Back
     // navigation restores this page from the bfcache with the overlay still
-    // switched on, which otherwise leaves you stuck on the full-screen colour.
+    // switched on, which otherwise leaves you stuck on the full-screen color.
     if (warp) window.addEventListener('pageshow', function () { warp.className = 'studio-warp'; });
 
     // ── #3 — THE OPENING BEAT: sigil, then quads. ──────────────────────────────

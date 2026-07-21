@@ -16,7 +16,7 @@
  * position. The container is position:fixed + overflow:hidden, so the layer is
  * capped at the VIEWPORT and never grows with the document.
  *
- * Honors "reduce flourish" and prefers-reduced-motion: the static colour wash
+ * Honors "reduce flourish" and prefers-reduced-motion: the static color wash
  * still tints the page, but every moving part is dropped.
  * ========================================================================== */
 (function () {
@@ -32,7 +32,7 @@
   // mcpuppy pages"). The studio's pages are the monochrome half of the site — theme-bw
   // (the blog, posts, Contact, Direct Line, the lessons page) and theme-studio
   // (/projects/). The town sky was already stripped of hue on them; the weather layer
-  // never was, so they still got a coloured phase wash and falling rain. Bail before
+  // never was, so they still got a colored phase wash and falling rain. Bail before
   // anything is built: no overlay, no rain/mist sheets, no lightning timers, and no
   // 2-minute orb re-plot for an orb that is display:none on these pages anyway.
   // The CSS in _sass/_pjcc-20-town-sky.scss hides the overlay too, in case a cached copy
@@ -47,16 +47,61 @@
   if (kind !== 'clear') root.classList.add('town-' + kind);
 
   // The orb's hour-arc position (--orb-x/--orb-y) is set before paint by the head
-  // include; re-plot every 2 minutes so a long-open tab watches the sun actually
-  // travel. (Position only — the phase class swap still needs a reload, fine.)
-  // 2026-07-16 (Nate: the shift read "a little unnaturally" at 5-min hops) — smaller,
-  // more frequent steps here + a 3s ease on .ts-orb in _pjcc-20-town-sky.scss turn
-  // the hop into a drift you can't catch happening.
-  if (T.orb) setInterval(function () {
-    var o = T.orb();
-    root.style.setProperty('--orb-x', o.x.toFixed(1) + '%');
-    root.style.setProperty('--orb-y', o.y.toFixed(1) + '%');
-  }, 120000);
+  // include; re-plot on a timer so a long-open tab watches the sun actually travel.
+  // (Position only — the phase class swap still needs a reload, fine.)
+  // 2026-07-16 (Nate: the shift read "a little unnaturally" at 5-min hops) — the answer
+  // then was smaller steps (2 minutes) plus a 3s ease on .ts-orb, to turn the hop into a
+  // drift you couldn't catch happening.
+  //
+  // 2026-07-21 (Nate: "if you stay on a screen long enough, the moon (or sun) can shift
+  // dramatically across screen. It's disconcerting"). The 2-minute step itself is small.
+  // What made it dramatic was the 3s ease being handed moves it was never sized for:
+  //
+  //   · A BACKGROUND TAB throttles setInterval to about once a minute, and a fully
+  //     hidden one can be frozen for as long as the browser likes. Come back after an
+  //     hour and the next tick applies an hour of travel — and the transition faithfully
+  //     SLIDES the orb across the sky over three seconds. A moving thing is exactly what
+  //     the eye is built to catch, so that slide is all you can look at. This is the
+  //     complaint.
+  //   · At 5:00 and 20:00 the arc swaps between the sun's window and the moon's, so the
+  //     orb legitimately belongs on the far horizon. A long-open tab animates that as one
+  //     enormous sweep, while the sky around it is still painted for the old phase (the
+  //     phase class only changes on reload).
+  //   · Just after moonrise the moon climbs fast on purpose (the t^0.6 lift in
+  //     pjcc-time.js, so it isn't still scraping the horizon at 8:52pm). At 20:00 a
+  //     single 2-minute step was 5.2% of the viewport — a glide you can absolutely watch
+  //     happen.
+  //
+  // Measured, at the old 2-minute cadence: the sun's biggest step was 0.37% of the
+  // viewport, the moon's 5.2%, the 5:00 and 20:00 hand-offs 88% (the orb genuinely
+  // changes horizons), and an hour of background-tab staleness 11%. The last two were
+  // being played as three-second animations.
+  //
+  // The fix is to stop animating the orb at all and instead re-plot it OFTEN ENOUGH that
+  // each step is beneath noticing: every 30 seconds instead of every 2 minutes. That puts
+  // the sun at 0.09% per step and the moon under 0.5% within five minutes of moonrise
+  // (its worst single step, in the first 30 seconds of the evening, is 2.3% and it decays
+  // fast). Compare the 5-minute hop that read "a little unnaturally" on 2026-07-16, which
+  // ran to 9%. Nothing slides, so there is nothing to catch; a tab returning from the
+  // background is simply already correct instead of sweeping into place; and the
+  // 5:00/20:00 hand-off stops being a three-second journey across the sky.
+  //
+  // It also gets the sky back onside with the perf law: the ease was a transition on
+  // left/top, the two properties that cost layout. There is now no animated layout in the
+  // sky at all — just a style write on a timer. orb() itself is untouched, so where the
+  // orb belongs at any given minute is exactly what it always was.
+  if (T.orb) {
+    var plot = function () {
+      var o = T.orb();
+      root.style.setProperty('--orb-x', o.x.toFixed(1) + '%');
+      root.style.setProperty('--orb-y', o.y.toFixed(1) + '%');
+    };
+    setInterval(plot, 30000);
+    // A hidden tab's timer is throttled or frozen, so it comes back holding a stale
+    // position. Re-plot the moment it is looked at again, rather than leaving it wrong
+    // until the next tick.
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) plot(); });
+  }
 
   function reduced() {
     try { if (localStorage.getItem('pjcc.flourish') === '0') return true; } catch (e) {}

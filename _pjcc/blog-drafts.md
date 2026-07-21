@@ -31,7 +31,7 @@ Voice preserved as written — not cleaned up.
 
 ## March 27th
 
-- Today is Friday, and my normal Saturday shift is cancelled so I have a good opportunity to spend all of Saturday, all of Sunday, and even the first half of Monday to move the ball forward with some meaningful work!  I'm excited.
+- Today is Friday, and my normal Saturday shift is canceled so I have a good opportunity to spend all of Saturday, all of Sunday, and even the first half of Monday to move the ball forward with some meaningful work!  I'm excited.
 
 - One really nice thing that I lucked into is that when things twist and turn at work, it matters less because I have multiple gigs.
 

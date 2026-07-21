@@ -30,7 +30,7 @@ const SVG = fs.readFileSync(path.join(ROOT, 'assets', 'images', 'favicon.svg'), 
 function faviconHTML(size) {
   let mark = SVG
     .replace(/fill="#111"/g, 'fill="#F5C518"')     // paw -> brand gold (same palette as the app icon)
-    .replace(/fill="white"/g, 'fill="#160c33"')    // the "McP" knockout -> the tile colour
+    .replace(/fill="white"/g, 'fill="#160c33"')    // the "McP" knockout -> the tile color
     .replace(/width="100" height="100"/, `width="${Math.round(size * 0.82)}" height="${Math.round(size * 0.82)}"`);
   // At 16px the "McP" lettering is illegible mush and just muddies the shape. Drop it and
   // let the paw silhouette carry the identity — simplifying the mark at tiny sizes is the
@@ -61,7 +61,7 @@ function buildIco(pngs) {
     dir.writeUInt8(p.size >= 256 ? 0 : p.size, b + 1);   // height
     dir.writeUInt8(0, b + 2);                            // palette count
     dir.writeUInt8(0, b + 3);                            // reserved
-    dir.writeUInt16LE(1, b + 4);                         // colour planes
+    dir.writeUInt16LE(1, b + 4);                         // color planes
     dir.writeUInt16LE(32, b + 6);                        // bits per pixel
     dir.writeUInt32LE(p.buf.length, b + 8);              // bytes of payload
     dir.writeUInt32LE(offset, b + 12);                   // offset to payload

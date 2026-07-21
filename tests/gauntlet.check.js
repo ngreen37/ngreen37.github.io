@@ -2,8 +2,8 @@
 // Drives the REAL game in headless Chrome. Locks in the 2026-07-05 UX rules:
 //   - Resume: mid-climb "Continue" jumps straight to the CURRENT opponent's boss card
 //     (not the tower list); fresh + crowned players open the full tower.
-//   - Colours are drawn at random each match, and the colour the boss card ANNOUNCES is
-//     the colour actually played.
+//   - Colors are drawn at random each match, and the color the boss card ANNOUNCES is
+//     the color actually played.
 // (Engine correctness — perft, posKey/threefold — is covered separately by chess.check.js.)
 //   run:  npm run test:gauntlet
 const path = require('path');
@@ -54,11 +54,11 @@ const PKEY = 'pjcc.gauntlet.v2';
     await page.click('#play-btn'); await sleep(200);
     ok(await visible('ladder-screen'), 'crowned player opens the tower (rematch anyone)');
 
-    // --- Random colours: the announced colour is the colour actually played ---
+    // --- Random colors: the announced color is the color actually played ---
     let mism = 0, sawW = 0, sawB = 0;
     for (let k = 0; k < 14; k++) {
       await seed(MID);
-      await page.click('#play-btn'); await sleep(120);          // boss card draws the colour
+      await page.click('#play-btn'); await sleep(120);          // boss card draws the color
       const announced = /White/.test(await text('boss-note')) ? 'w' : 'b';
       announced === 'w' ? sawW++ : sawB++;
       await page.evaluate(() => { const b = document.querySelector('#boss-row .btn-gold'); b && b.click(); });
@@ -66,9 +66,9 @@ const PKEY = 'pjcc.gauntlet.v2';
       const pc = await page.evaluate(() => (window.__t.G() || {}).pc);
       if (pc !== announced) mism++;
     }
-    ok(mism === 0, 'boss-card colour note matched the played colour every start (mismatches: ' + mism + ')');
-    ok(sawW > 0 && sawB > 0, 'colours actually randomise across starts  [W:' + sawW + ' B:' + sawB + ']');
+    ok(mism === 0, 'boss-card color note matched the played color every start (mismatches: ' + mism + ')');
+    ok(sawW > 0 && sawB > 0, 'colors actually randomise across starts  [W:' + sawW + ' B:' + sawB + ']');
   }, { rewriteAssets: true });   // the Gauntlet loads the REAL chess engine via /assets/*
 
-  process.exit(report('The Gauntlet — resume + random colours', results, errors) ? 0 : 1);
+  process.exit(report('The Gauntlet — resume + random colors', results, errors) ? 0 : 1);
 })();

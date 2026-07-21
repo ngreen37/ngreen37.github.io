@@ -176,7 +176,7 @@ body.theme-bw .page-body em {
       INHERITS, so a link with `color: inherit; -webkit-text-fill-color: inherit`
       goes transparent exactly like a plain letter, and the parent's clipped
       gradient paints straight through its glyph — pixel-identical to its
-      neighbours. (The old "solid #efd39b fill" workaround is what made the letter
+      neighbors. (The old "solid #efd39b fill" workaround is what made the letter
       read as a different, non-shimmering one. Gone.)
 
    2. The parent paints that glyph, not the link — so `opacity` and `filter` on
@@ -656,7 +656,7 @@ body.theme-bw .about-contact-btn {
 .project-card {
   position: relative;
   overflow: hidden;
-  background: #111;                /* the studio's own mono fill — colour is identity… */
+  background: #111;                /* the studio's own mono fill — color is identity… */
   border: 1px solid #252525;
   border-radius: var(--r-md);      /* …but the GEOMETRY comes from the shared surface kit */
   padding: 19px 28px 19px 32px;

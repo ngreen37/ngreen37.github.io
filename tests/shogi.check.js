@@ -48,7 +48,7 @@ function engineChecks() {
   ok(setEq(dests('N','P'), ['2,3','2,5']), 'Knight (▲): the two forward L-jumps, nothing else');
   ok(setEq(dests('S','P'), ['3,3','3,4','3,5','5,3','5,5']), 'Silver (▲): forward + all four diagonals');
   ok(setEq(dests('G','P'), GOLDSET), 'Gold (▲): orthogonals + forward diagonals (6 squares)');
-  ok(setEq(dests('K','P'), ['3,3','3,4','3,5','4,3','4,5','5,3','5,4','5,5']), 'King: all 8 neighbours');
+  ok(setEq(dests('K','P'), ['3,3','3,4','3,5','4,3','4,5','5,3','5,4','5,5']), 'King: all 8 neighbors');
   ok(setEq(dests('B','P'), DIAG16), 'Bishop: full diagonal slides (16 from center)');
   ok(setEq(dests('R','P'), ORTH16), 'Rook: full orthogonal slides (16 from center)');
   ok(setEq(dests('+B','P'), DIAG16.concat(['3,4','5,4','4,3','4,5'])), 'Horse (+B): bishop + one orthogonal step');

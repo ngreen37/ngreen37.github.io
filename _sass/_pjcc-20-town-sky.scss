@@ -9,7 +9,7 @@
  *
  *   1. .town-sky   — a fixed, full-viewport sky BEHIND the whole page. Markup in
  *                    _includes/town-sky.html, pulled into _layouts/default.html.
- *                    At z-index:-1 it paints over the flat body colour and under
+ *                    At z-index:-1 it paints over the flat body color and under
  *                    every card, header and footer, so it fills the gutters and the
  *                    space above and below the content: the page now sits INSIDE
  *                    the town rather than being tinted by it.
@@ -44,7 +44,7 @@
   pointer-events: none;
   overflow: hidden;
   contain: layout style paint;
-  /* the fallback sky, if the clock never runs: the flat colour the site always had */
+  /* the fallback sky, if the clock never runs: the flat color the site always had */
   background: #0f0c1a;
 }
 
@@ -55,18 +55,27 @@
 /* The orb rides the HOUR ARC (2026-07-14 Nate: "-180 to 180 degrees on all pages"):
    town-weather.html computes --orb-x/--orb-y from the Eastern clock (PJCC_TIME.orb() —
    sun 5:00→20:00, moon 20:00→5:00, rises left / apex mid-window / sets right) and
-   pjcc-weather.js re-plots every 2 minutes for long-open tabs. The per-phase rules
-   below only carry LOOKS + a no-JS fallback spot; translate centres it on the point.
-   The 3s ease turns each re-plot into a drift instead of a hop (2026-07-16 Nate: the
-   shift read "a little unnaturally"). left/top transitions cost layout, but this is
-   one small element easing once every two minutes — not a running animation. */
+   pjcc-weather.js re-plots it on a timer for long-open tabs. The per-phase rules
+   below only carry LOOKS + a no-JS fallback spot; translate centers it on the point. */
+/* 2026-07-21 (Nate: the orb "can shift dramatically across screen … disconcerting") —
+   THE ORB NO LONGER ANIMATES. It used to carry `transition: left 3s ease, top 3s ease`
+   so each re-plot glided instead of hopping. The trouble is that a transition animates
+   whatever it is given, including moves it was never sized for: a background tab's timer
+   is throttled or frozen, so returning to one after an hour handed the ease an hour of
+   travel — 11% of the viewport — and it slid the orb across the sky over three seconds.
+   The 5:00/20:00 hand-off between the sun's arc and the moon's was worse still at 88%
+   (the orb really does change horizons), and the moon's fast climb off the horizon put
+   one 2-minute step at 5.2%.
+   pjcc-weather.js now re-plots every 30 seconds instead of every 2 minutes, so the sun
+   moves 0.09% of the viewport per step and the moon settles under 0.5% within five
+   minutes of moonrise — far below noticing, against the 9% the 5-minute hop reached back
+   when it read "a little unnaturally" on 2026-07-16. With steps that small the
+   ease has nothing left to do, and dropping it means the sky animates no layout at all
+   (left/top were the two properties the perf law warns about). The reduced-motion and
+   reduce-flourish overrides that used to cancel this transition went with it — there is
+   no orb motion left for either switch to turn off. */
 .ts-orb    { position: absolute; z-index: 2; display: none; border-radius: 50%;
-  transform: translate(-50%, -50%); transition: left 3s ease, top 3s ease; }
-@media (prefers-reduced-motion: reduce) { .ts-orb { transition: none; } }
-/* #20 (2026-07-16 splash check): the site's OWN flourish switch gets the same
-   courtesy as the OS setting — under reduce-flourish the orb re-plots in a hop,
-   not a 3s glide. A transition is motion too; both switches must freeze it. */
-html.reduce-flourish .ts-orb { transition: none; }
+  transform: translate(-50%, -50%); }
 .ts-shoot  { position: absolute; z-index: 3; display: none; }
 .ts-clouds { position: absolute; inset: 0; z-index: 4; opacity: 0; transition: opacity 1.4s ease; }
 .ts-horizon { position: absolute; left: 0; right: 0; bottom: 0; height: 32%; z-index: 0; }
@@ -334,7 +343,7 @@ html.shape-rook .ts-cloud--rook { display: block; }
 html.shape-dog  .ts-cloud--dog  { display: block; }
 
 /* (Puff-anatomy rule, learned the hard way twice now: the visible core of one of
-   these soft gradients ends around 45% of its radius, so neighbouring parts must
+   these soft gradients ends around 45% of its radius, so neighboring parts must
    OVERLAP THEIR CORES or the shape falls apart into floating dots. Every value
    below was placed against a rendered screenshot, not guessed.) */
 .ts-cloud--rook {
@@ -396,7 +405,7 @@ html.shape-dog  .ts-cloud--dog  { display: block; }
    signals: a faint tint, and a handful of drifting particles. All transform/opacity,
    viewport-capped, and OFF under reduced-motion / reduce-flourish.
    ══════════════════════════════════════════════════════════════════════════════ */
-/* the tint — a whisper of the season's colour, low and warm along the foot of the sky
+/* the tint — a whisper of the season's color, low and warm along the foot of the sky
    (winter is a cool wash from the top). Kept at ~0.05 alpha so it never fights the hour. */
 .ts-season-tint { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 html.season-summer .ts-season-tint { background: radial-gradient(120% 82% at 50% 100%, rgba(255, 186, 92, 0.055), transparent 68%); }
@@ -664,7 +673,7 @@ html.sky-dusk  .site-header { background: linear-gradient(180deg, #1a0e26 0%, #1
 html.sky-night .site-header { background: linear-gradient(180deg, #080622 0%, #060412 100%); }
 
 /* A hairline of the hour along the very top of the bar — the one place the header is
-   allowed to actually show a colour, because nothing has to be read on top of it. */
+   allowed to actually show a color, because nothing has to be read on top of it. */
 .site-header::before {
   content: '';
   position: absolute;
@@ -691,7 +700,7 @@ html.sky-night .site-footer { background: #06040f; }
 body.theme-bw .site-footer,
 body.theme-studio .site-footer { background: #0a090e; }
 
-/* the studio's pages stay monochrome — same hour, no hue. The town is in colour;
+/* the studio's pages stay monochrome — same hour, no hue. The town is in color;
    McPuppy Studios is the black-and-white half of the site, and a coral dawn behind
    a B&W page would just look like a bug. */
 body.theme-bw .town-sky,
@@ -704,7 +713,7 @@ body.theme-studio .ts-shoot,
 body.theme-studio .ts-clouds { display: none; }
 /* 2026-07-15 (Nate: Direct Line — and any McPuppy page — should keep the studio's
    black-and-white sky "instead of the seasons"): kill the seasonal tint, the drifting
-   particles and the night constellations on the mono themes. The town stays in colour;
+   particles and the night constellations on the mono themes. The town stays in color;
    McPuppy is the black-and-white half of the site, and a warm autumn tint behind a
    B&W page reads as a bug. */
 body.theme-bw .ts-season-fx,
@@ -718,8 +727,8 @@ body.theme-studio .ts-constellations { display: none; }
    weather layer is a SEPARATE element built on <body> by assets/js/pjcc-weather.js
    (.town-weather-overlay, styled in _pjcc-09-widgets.scss) and it was never gated on the
    mono themes — so a black-and-white page still got the coral-dawn / blue-day / purple-dusk
-   phase wash on ::after, the blue rain or grey mist wash on ::before, and the falling
-   .tw-rain / .tw-mist / .tw-bolt layers on top. Colour and drifting streaks over a
+   phase wash on ::after, the blue rain or gray mist wash on ::before, and the falling
+   .tw-rain / .tw-mist / .tw-bolt layers on top. Color and drifting streaks over a
    monochrome studio page read as a bug, exactly like the seasonal tint did.
    Hiding the CONTAINER takes its two pseudo-elements and every child with it, so this one
    rule is the whole fix; nothing else sets `display` on the overlay. This partial imports
@@ -761,7 +770,7 @@ body.theme-bw .page-title::after,
 body.theme-studio .page-title::before,
 body.theme-studio .page-title::after { display: none; }
 /* …and their headers keep town time WITHOUT the hue: the phase moves the brightness,
-   never the colour. A coral dawn behind a black-and-white studio page would read as a
+   never the color. A coral dawn behind a black-and-white studio page would read as a
    bug, not as an hour. */
 body.theme-bw .site-header,
 body.theme-studio .site-header { background: #0a090e; }
@@ -778,7 +787,7 @@ body.theme-studio .site-header::before { display: none; }
 
 @media (max-width: 700px) {
   /* the card drops to 24px/20px padding — the banner has to follow it exactly or it
-     stops being full-bleed and starts being a floating grey box */
+     stops being full-bleed and starts being a floating gray box */
   .page-title {
     margin: -24px -20px 20px;
     padding: 22px 20px 18px;

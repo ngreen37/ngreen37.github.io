@@ -124,7 +124,7 @@ prototype (`/games/dungeon/`) is the playable spec; the Godot build is the same 
 ### 🎮 Godot build plan (Princess Dungeon → 3D), condensed
 *Engine: **Godot 4.x** (GDScript, free). Assets: **Blender** → `.glb`. Each phase ends runnable.*
 - **P0 Pipeline:** Blender → `.glb` → renders in Godot. Pick the grid (N×N, match the prototype).
-- **P1 Grey-box room:** GridMap board, King-step hero (tween), TurnManager; step on Stairs = win.
+- **P1 Gray-box room:** GridMap board, King-step hero (tween), TurnManager; step on Stairs = win.
 - **P2 Art:** model/rig Princess + piece-enemies (idle + hop/attack anims); biome board materials.
 - **P3 Rules:** port the prototype's movement/attack logic to GDScript; the threat telegraph; hearts.
 - **P4 Relics & run:** stacking move-relics + a 3-relic choice screen; track run state.
@@ -591,7 +591,7 @@ Town, Bob-Proctor mindset) and **Michael** (Chess City, truly righteous); **The 
 27. **Checker Town Field Guide** — a printable art-book leave-behind (Av4 physical).
 28. ⛁ **Journey tracker** — your operative's position on the road to Chess City, advancing with progress.
 29. **Seasonal location reskins** — advent, the anniversary of the crash, premiere week (Av9 live-ops).
-30. 🎬 **The Pieces gallery (moved here from Characters)** — the **six Blender board-pieces** (pawn/rook/bishop/knight/queen/king, each scaled to the Battle-Room concept, Princess = the knight). *Belongs in the **Evolution Log** as renders land* — show concept → grey-box → final per piece. Frame it as "the board itself is a place." (This is where the old `## Pieces` section now lives.)
+30. 🎬 **The Pieces gallery (moved here from Characters)** — the **six Blender board-pieces** (pawn/rook/bishop/knight/queen/king, each scaled to the Battle-Room concept, Princess = the knight). *Belongs in the **Evolution Log** as renders land* — show concept → gray-box → final per piece. Frame it as "the board itself is a place." (This is where the old `## Pieces` section now lives.)
 
 ---
 

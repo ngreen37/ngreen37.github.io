@@ -24,7 +24,7 @@ const OUT = path.join(ROOT, 'assets', 'images', 'pwa');
 fs.mkdirSync(OUT, { recursive: true });
 
 /* ── The mark: a five-ish-point royal crown (Princess → PJCC), drawn in a 0..100
- *    box so it scales crisply to any icon size. `pad` shrinks it toward centre for
+ *    box so it scales crisply to any icon size. `pad` shrinks it toward center for
  *    maskable safe-zone; `mono` renders a flat white silhouette on transparency. ── */
 function crownSVG(size, { maskable = false, mono = false } = {}) {
   const scale = maskable ? 0.70 : 1;                 // maskable: keep well inside the safe circle

@@ -239,7 +239,7 @@ var selMutators = {};                                   // id -> true (chosen on
 function mutatorBonus() { var b = 0; MUTATORS.forEach(function (m) { if (selMutators[m.id]) b += m.bonus; }); return b; }
 function mutBonusFromObj(muts) { var b = 0; MUTATORS.forEach(function (m) { if (muts[m.id]) b += m.bonus; }); return b; }
 
-/* ============ tower catalogue ============ */
+/* ============ tower catalog ============ */
 var TOWERS = {
   pawn:   { name: 'Pawn Picket', glyph: '♙', cost: 50,  range: 92,  dmg: 8,  rate: 0.55, splash: 0,  color: '#dfe6ff', free:false, sniper:false, lore: 'Checker Town conscripts. Cheap, quick, everywhere.' },
   knight: { name: 'Argus Outpost', glyph: '♘', cost: 110, range: 96, dmg: 13, rate: 1.05, splash: 46, color: '#8fe3ff', free:false, sniper:false, lore: "Argus the guard-dog's kennel — splashes the whole pack." },
@@ -490,7 +490,7 @@ var RELS = [
   // --- same-piece formations ---
   { a:'pawn',  b:'pawn',  name:'Pawn Chain',    glyph:'⛓', color:'#dfe6ff', desc:'phalanx · +18% fire, +15% dmg',          aFx:{ rate:0.85, dmg:1.15 } },
   { a:'knight',b:'knight',name:"Knights' Fork",  glyph:'✶', color:'#8fe3ff', desc:'fork zone · +35% splash, +15% dmg',      aFx:{ splashMul:1.35, dmg:1.15 } },
-  { a:'bishop',b:'bishop',name:'Bishop Pair',    glyph:'❖', color:'#c79bff', desc:'both colours · +18% range, +12% dmg',    aFx:{ range:1.18, dmg:1.12 } },
+  { a:'bishop',b:'bishop',name:'Bishop Pair',    glyph:'❖', color:'#c79bff', desc:'both colors · +18% range, +12% dmg',    aFx:{ range:1.18, dmg:1.12 } },
   { a:'rook',  b:'rook',  name:'Battery',        glyph:'▦', color:'#ffb066', desc:'doubled rooks · +30% splash, +20% dmg',  aFx:{ splashMul:1.30, dmg:1.20 } },
   // --- a pawn supports a piece ---
   { a:'pawn',  b:'knight',name:'Outpost',        glyph:'⌂', color:'#8fe3ff', desc:'entrenched knight · +20% range, +15% dmg', aFx:{ rate:0.90 }, bFx:{ range:1.20, dmg:1.15 } },
@@ -505,7 +505,7 @@ var RELS = [
   { a:'bishop',b:'queen', name:'Pin',            glyph:'⊕', color:'#ff8fd0', desc:'pins the lane · slows, no blink',       aFx:{ pin:true, dmg:1.10 }, bFx:{ range:1.10 } },
   { a:'rook',  b:'queen', name:'Heavy Battery',  glyph:'▥', color:'#ff8fd0', desc:'siege barrage · +25% splash, +15% dmg', aFx:{ splashMul:1.25, dmg:1.15 }, bFx:{ splashMul:1.25, dmg:1.15 } }
 ];
-// PAIRFX[selfKind][neighbourKind] = { rel, fx } — what a tower of selfKind gains from that neighbour.
+// PAIRFX[selfKind][neighborKind] = { rel, fx } — what a tower of selfKind gains from that neighbor.
 var PAIRFX = {};
 (function () {
   function reg(self, neigh, rel, fx) { (PAIRFX[self] || (PAIRFX[self] = {}))[neigh] = { rel: rel, fx: fx || {} }; }
@@ -515,7 +515,7 @@ var PAIRFX = {};
     if (R.a !== R.b) reg(R.b, R.a, rel, R.bFx);
   });
 })();
-// Distinct neighbour kinds within bonding range of a tower.
+// Distinct neighbor kinds within bonding range of a tower.
 function neighborKinds(tw) {
   var set = {};
   for (var i = 0; i < G.towers.length; i++) {

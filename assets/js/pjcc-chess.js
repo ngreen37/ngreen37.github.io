@@ -126,7 +126,7 @@ function legalMoves(S){
 function isCheckmate(S){ return inCheck(S,S.turn) && legalMoves(S).length===0; }
 function isStalemate(S){ return !inCheck(S,S.turn) && legalMoves(S).length===0; }
 
-// Light-square vs dark-square colour of a board index (for the bishop-vs-bishop draw).
+// Light-square vs dark-square color of a board index (for the bishop-vs-bishop draw).
 function sqColor(i){ var r=(i/8)|0, f=i%8; return (r+f)&1; }
 function insufficientMaterial(S){
   var minors=[];   // [colorOfPiece, squareColor]
@@ -135,7 +135,7 @@ function insufficientMaterial(S){
     if(pl==='b'||pl==='n') minors.push([colorOf(p), pl, sqColor(i)]); }
   if(minors.length===0) return true;                          // K vs K
   if(minors.length===1) return true;                          // K + single minor vs K
-  if(minors.length===2 && minors[0][1]==='b' && minors[1][1]==='b' && minors[0][2]===minors[1][2]) return true; // KB vs KB, same colour
+  if(minors.length===2 && minors[0][1]==='b' && minors[1][1]==='b' && minors[0][2]===minors[1][2]) return true; // KB vs KB, same color
   return false;
 }
 // Repetition key: position identity ignoring the move clocks (board + turn + rights + ep).

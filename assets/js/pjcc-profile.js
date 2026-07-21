@@ -33,7 +33,7 @@
   var profile = null;       // cached profile row
   var listeners = [];
 
-  // Avatar catalogue: key -> emoji. Stored on profile.companion.avatar.
+  // Avatar catalog: key -> emoji. Stored on profile.companion.avatar.
   // The operative's *face* is one of 8 free humans; the companion *pet* is a
   // separate slot (companion.pet) driven by the pet system in pjcc-companion.js.
   // SHOP avatars are bought with credits.
@@ -191,7 +191,7 @@
   // start init at idle (2s cap so account pages still light up promptly). Light
   // pages render the nav pill from the cached codename/avatar meanwhile; pages
   // that await PJCC.ready (dossier, games, character pages) still get the live
-  // account — just a beat after first paint. Auth behaviour is otherwise unchanged.
+  // account — just a beat after first paint. Auth behavior is otherwise unchanged.
   PJCC.ready = new Promise(function (resolve) {
     if (!configured) { resolve(false); return; }
     var start = function () { initPJCC().then(resolve, function () { resolve(false); }); };
@@ -373,7 +373,7 @@
 
   // Persist the full operative look built in the Identity Forge (pjcc-creator.js).
   // Stored as companion.look = { base, tone, glyph, aura, hat, emblem, name, role, bio }.
-  // glyph is the resolved emoji so avatarEmoji() can render it without the catalogue.
+  // glyph is the resolved emoji so avatarEmoji() can render it without the catalog.
   PJCC.setLook = async function (look) { return updateCompanion({ look: look || {} }); };
 
   // --- credits / store -------------------------------------------------------

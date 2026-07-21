@@ -45,7 +45,7 @@ a move a day is plenty.</p>
   'use strict';
   var C = window.PJCCChess, M = window.PJCCMatch;
   var app = document.getElementById('pt-app');
-  /* Boards render the FILLED glyph for BOTH sides (GLYPH[p.toLowerCase()]) and colour
+  /* Boards render the FILLED glyph for BOTH sides (GLYPH[p.toLowerCase()]) and color
      the fill cream/ink in CSS — the outline glyphs (♙♘…) have nothing to fill, so
      "white" pieces came out as dark wireframes (2026-07-16 board glow-up). */
   var GLYPH = { P:'♙',N:'♘',B:'♗',R:'♖',Q:'♕',K:'♔', p:'♟',n:'♞',b:'♝',r:'♜',q:'♛',k:'♚' };
@@ -203,7 +203,7 @@ a move a day is plenty.</p>
   // An open table is a board that's SET but not yet started — a queued game (Nate 2026-07-15:
   // "not just an info bar, but a queued chessboard overhead view, none of the pieces moved, and
   // no color designated"). One overhead starting position, built once and reused: pieces sit in
-  // a single neutral ink so neither seat is coloured until someone sits down.
+  // a single neutral ink so neither seat is colored until someone sits down.
   var _qboard = null;
   function queuedBoard(){
     if (_qboard) return _qboard;
@@ -322,7 +322,7 @@ a move a day is plenty.</p>
   // queen every time). When a human pushes a pawn to the last rank we ask which piece.
   // cb receives 'q' | 'r' | 'b' | 'n', or null if they dismiss (the move is abandoned).
   // Filled glyphs for BOTH sides (canon: the outline ♕ set won't take a fill) — the
-  // side is carried by a colour class on the dialog instead.
+  // side is carried by a color class on the dialog instead.
   var PROMO_G = { q:'♛', r:'♜', b:'♝', n:'♞' };
   function promptPromotion(white, cb){
     var done = false;
@@ -810,7 +810,7 @@ a move a day is plenty.</p>
     var mv = C.findMove(S, from, i, null);
     if (!mv) { sel = -1; return renderTable(); }
     sel = -1;
-    if (mv.promo) {                                  // promoting pawn → pick a piece (your colour)
+    if (mv.promo) {                                  // promoting pawn → pick a piece (your color)
       return promptPromotion(white, function(choice){
         if (!choice) return renderTable();           // dismissed — abandon the move
         var pm = C.findMove(S, from, i, choice);
@@ -907,7 +907,7 @@ a move a day is plenty.</p>
 .pt-state.go { color: #6bffb8; }
 /* the live opening name (📖 Ruy Lopez…) — quiet, sits under the turn line */
 .pt-open { color: #c3b4ff; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.02em; margin: -4px 0 10px; }
-/* promotion picker — pawn reaches the last rank, you choose the piece (canon colours) */
+/* promotion picker — pawn reaches the last rank, you choose the piece (canon colors) */
 .pt-promo-ov { position: fixed; inset: 0; z-index: 9998; background: rgba(8,5,22,0.72);
   -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
   display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -945,7 +945,7 @@ a move a day is plenty.</p>
 /* the woods + grain come from THE CHESS CANON (_pjcc-22-chess-canon.scss) — every
    board on the site draws the same tokens (Nate 2026-07-16: "always uniform") */
 /* a soft top-left key light over the wood + grain (upgraded 2026-07-17) — gentle
-   dimension so the squares read like a lit surface, not flat colour swatches */
+   dimension so the squares read like a lit surface, not flat color swatches */
 .pt-sq.lt { background-color: var(--chess-lt);
   background-image: linear-gradient(152deg, rgba(255,252,240,0.14), rgba(0,0,0,0.04) 62%), var(--chess-grain); }
 .pt-sq.dk { background-color: var(--chess-dk);
@@ -967,7 +967,7 @@ a move a day is plenty.</p>
   z-index: 2; pointer-events: none; }
 /* the pieces — the canon's cartoon livery: solid fills, fat outlines, flat shadow */
 /* paint-order:stroke = outline drawn UNDER the fill — without it the centered
-   stroke eats thin glyphs (the pawn read as the wrong colour) */
+   stroke eats thin glyphs (the pawn read as the wrong color) */
 /* upgraded 2026-07-17 — solid canon fills (reliable; a gradient text-fill fights the
    stroke and inverts the livery), a crisper thinner outline, and a SOFT grounding
    shadow in place of the flat sticker offset, so a piece reads carved and sitting on

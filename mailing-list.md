@@ -109,7 +109,7 @@ body_class: theme-studio
 <style>
 /* The Bulletin — McPuppy Studios' owned channel, in graphite with a single INK-BLUE
    accent (the studio's letter/broadcast signature — distinct from the arcade gold and
-   the Direct Line's live teal). Monochrome panels, one signal colour. */
+   the Direct Line's live teal). Monochrome panels, one signal color. */
 .ml-hero { max-width: 680px; }
 .ml-eyebrow { font-family: 'Share Tech Mono', monospace; font-size: 0.72rem; letter-spacing: 0.16em; color: #8b9096; text-transform: uppercase; margin-bottom: 6px; }
 .ml-intro { color: #c9c9d0; max-width: 680px; line-height: 1.65; }

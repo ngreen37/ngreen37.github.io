@@ -478,7 +478,7 @@
    Static + opacity-only (no per-frame cost — the animated rain stays hero-only,
    which is what fixed the old full-screen-rain lag). Off under reduce-flourish. ── */
 /* 2026-07-12 (Nate: "I want all weathers to carry over to all screens"): this is no
-   longer just a colour wash — the REAL weather now falls on every page (the hero no
+   longer just a color wash — the REAL weather now falls on every page (the hero no
    longer owns the rain). Built by assets/js/pjcc-weather.js.
    PERF — the whole ballgame, since a full-screen rain layer is what lagged the site
    on 2026-07-11: the container is position:fixed + overflow:hidden, so the layer is
@@ -493,7 +493,7 @@
   overflow: hidden; contain: layout style paint; }
 /* reduce-flourish kills the MOVING parts only (below) — the sky tint and the weather
    wash are static paint, so they stay. Killing the whole overlay would have thrown out
-   the day/night colour with the motion. */
+   the day/night color with the motion. */
 html.reduce-flourish .tw-rain,
 html.reduce-flourish .tw-mist,
 html.reduce-flourish .tw-bolt { display: none; }
@@ -504,7 +504,7 @@ html.reduce-flourish .tw-bolt { display: none; }
    on every page. It now rides on <html>, set before paint for every screen, and this
    is its site-wide expression: a very low-opacity wash so the ENTIRE town visibly
    shares the hour. Deliberately faint (0.03–0.07) — it should read as mood, never as
-   a colour cast over your text. The hero still paints its full sky on top of this. */
+   a color cast over your text. The hero still paints its full sky on top of this. */
 .town-weather-overlay::after { content: ''; position: absolute; inset: 0; opacity: 0;
   transition: opacity 1.2s ease; }
 html.sky-dawn .town-weather-overlay::after {
@@ -764,7 +764,7 @@ textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
 }
 
 /* ── FLOOR 3 · THE TIDECALLER — the tide-gate ─────────────────────────────
-   Bleached driftwood gone grey-green, two bands of verdigris copper, and a
+   Bleached driftwood gone gray-green, two bands of verdigris copper, and a
    crust of barnacles where the water reaches. The sea has been ON this door.
 
    The wet third of it is A CHESSBOARD RIDING A SINE WAVE — the crest is a
@@ -1039,7 +1039,7 @@ textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
     linear-gradient(180deg, #7a3a5a 0%, #5a2846 60%, #3f1c33 100%);
   transition: transform .45s ease;
 }
-.gdoor[data-floor="9"] .gdoor-door::after {          /* a slow travelling shimmer */
+.gdoor[data-floor="9"] .gdoor-door::after {          /* a slow traveling shimmer */
   content: ''; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(115deg, transparent 40%, rgba(255,235,190,0.22) 50%, transparent 60%);
   background-size: 240% 100%;

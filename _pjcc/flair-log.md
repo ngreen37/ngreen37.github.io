@@ -23,7 +23,7 @@ Running log of all proposed, accepted, and declined flair and website features a
 - Card-rise animation on content cards (characters, locations, blog, etc.)
 - Floating drifter chess pieces on studio home (linked to characters/locations)
 - Podcast + Blog floaters on studio home
-- Gradient border split: pawn divider + header line (gold/grey split at 50%)
+- Gradient border split: pawn divider + header line (gold/gray split at 50%)
 - Pawn spin on hover (nav divider)
 - Gold-to-purple custom scrollbar
 - Corner logo bob (studio home logo, 5s float loop)

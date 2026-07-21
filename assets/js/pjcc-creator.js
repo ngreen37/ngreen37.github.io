@@ -20,7 +20,7 @@
 (function () {
   'use strict';
 
-  // ---- catalogues ---------------------------------------------------------
+  // ---- catalogs ---------------------------------------------------------
   // Bases either carry a full `glyph`, or a `head`+`role` pair we join with a
   // zero-width joiner (🧑 + ‍ + 🚀 = 🧑‍🚀). `tone` flags whether a Fitzpatrick
   // skin-tone modifier combines cleanly (plain people: yes; VS16/role faces: no).
@@ -91,7 +91,7 @@
     shield:  { em:'🛡️', n:'Shield' },
     heart:   { em:'❤️', n:'Heart' }
   };
-  // Aura = the glow ring + the operative's personal accent colour.
+  // Aura = the glow ring + the operative's personal accent color.
   var AURAS = {
     gold:    '#F5C518', jade:   '#6bffb8', crimson: '#ff6b6b', sakura: '#ff8fd0',
     azure:   '#6bbfff', violet: '#b07bff', amber:   '#ff9f43', mono:   '#cdbcf2',
@@ -352,7 +352,7 @@
     TONES.forEach(function (t) { h += swatch(look.tone === t.key, t.sw, 'data-tone="' + t.key + '"'); });
     h += '</div></div>';
     // aura
-    h += '<div class="forge-section"><h3>Aura <small>— your signature colour</small></h3><div class="forge-sw-row">';
+    h += '<div class="forge-section"><h3>Aura <small>— your signature color</small></h3><div class="forge-sw-row">';
     AURA_ORDER.forEach(function (k) { h += swatch(look.aura === k, AURAS[k], 'data-aura="' + k + '"'); });
     h += '</div></div>';
     // headwear

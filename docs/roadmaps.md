@@ -42,10 +42,10 @@ step-by-step in `FUTURE-IDEAS.md`.
 in 3D — embedded on the site and wired to the leaderboard, plus a short Blender Princess clip. **Window:
 late June → December 2026.**
 
-- **Month 1 (July):** P0 pipeline (Blender → `.glb` → renders in Godot) + tool fundamentals + P1 grey-box
+- **Month 1 (July):** P0 pipeline (Blender → `.glb` → renders in Godot) + tool fundamentals + P1 gray-box
   room (capsule hero, King-step movement, TurnManager, step-on-Stairs = win). *Milestone: you walk a
   capsule around a board in 3D.*
-- **Month 2 (Aug):** P3 — port the proven movement/threat/attack logic to GDScript so the grey-box room
+- **Month 2 (Aug):** P3 — port the proven movement/threat/attack logic to GDScript so the gray-box room
   **plays like the 2D prototype**, then **P6 web-export it early** (ugly but LIVE on the site, posting to
   the `dungeon` board). *Milestone: a real, if ugly, room is playable in a browser and de-risked.*
 - **Month 3 (Sep):** P2 — model/rig **Princess + 2–3 chess-piece enemies** in Blender; swap out the
@@ -88,7 +88,7 @@ roll straight into the Vertical Slice (the Princess rig is already done). Best o
 - **Months 1–2 (Jul–Aug):** Roadmap 2 compressed — learn Blender by **building the Princess rig + a
   30‑sec story clip.** **🚀 Mini-flare #1: ship the clip** (your first non-zero views, and proof people
   care about her).
-- **Month 3 (Sep):** P0–P1 Godot pipeline + grey-box room (you already know Blender now, so this is faster).
+- **Month 3 (Sep):** P0–P1 Godot pipeline + gray-box room (you already know Blender now, so this is faster).
 - **Month 4 (Oct):** P3 rules → plays like the 2D prototype → **P6 web-export early.**
 - **Month 5 (Nov):** P2 drop in the **already-built** Princess rig + enemies; P4 relics + run loop.
 - **Month 6 (Dec):** P7 juice + polish, reuse the clip as the intro, **SHIP the playable room.**
@@ -126,11 +126,11 @@ micro-montage. *Recommendation: the "follow the dog" shot — simplest, most on-
 - **Week 1 — Target + asset audit.** Lock the one-sentence beat and shot count (1–3 shots). Open your existing
   Princess file; confirm the rig **poses and animates cleanly** (a 2-second idle/walk test); fix anything broken.
   Set up the scene/project file. *Done when:* the beat is one sentence and Princess moves in a test scene.
-- **Week 2 — Blockout / previs.** Grey-box the environment (a Checker-Town corner from simple shapes), place the
+- **Week 2 — Blockout / previs.** Gray-box the environment (a Checker-Town corner from simple shapes), place the
   **camera**, and block the whole beat with rough timing — a 3D animatic at the target length. No materials yet.
   *Done when:* rough camera + rough motion plays start-to-finish at ~30–60s.
 - **Week 3 — Animate the hero beat.** Refine the one motion that carries it (the trot + look-back, or the look-up)
-  on the existing rig; add light secondary motion (ears, tail). *Done when:* the performance reads emotionally even in grey-box.
+  on the existing rig; add light secondary motion (ears, tail). *Done when:* the performance reads emotionally even in gray-box.
 - **Week 4 — Set dressing + lighting test.** Dress the environment to "PJCC" (materials + a few set pieces), set
   final **lighting + framing**, and do a **low-sample test render** of a few frames. *Done when:* one still frame
   looks like the show, and you have a Month-2 render plan.

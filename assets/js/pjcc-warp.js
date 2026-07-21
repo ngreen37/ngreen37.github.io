@@ -1,7 +1,7 @@
 /* ============================================================
    PJCC warp — click a hub tile marked [data-warp] and the whole screen
-   blooms to that tile's colour (its --c accent), then navigates. It mirrors
-   the splash quads' enter-wipe, but reads the colour per-tile, so the same
+   blooms to that tile's color (its --c accent), then navigates. It mirrors
+   the splash quads' enter-wipe, but reads the color per-tile, so the same
    file lights up the Games halls, The World pillars, and future hubs.
 
    Event-delegated on the document, so it also covers tiles injected after
@@ -21,7 +21,7 @@
 
   // Clear the wipe when the page is shown again. A Back navigation restores the
   // page from the bfcache with the overlay still on, which otherwise leaves you
-  // stuck staring at the full-screen colour.
+  // stuck staring at the full-screen color.
   window.addEventListener('pageshow', function () { warp.classList.remove('is-on'); });
 
   function accent(el) {
@@ -42,7 +42,7 @@
     e.preventDefault();
     if (reduce) { window.location.href = href; return; }
 
-    // Bloom from the tile's own position, so the colour spreads from where you tapped.
+    // Bloom from the tile's own position, so the color spreads from where you tapped.
     var r = el.getBoundingClientRect();
     var cx = Math.round((r.left + r.width / 2) / window.innerWidth * 100);
     var cy = Math.round((r.top + r.height / 2) / window.innerHeight * 100);

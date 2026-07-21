@@ -2,12 +2,12 @@
 layout: page
 title: Visual Language
 permalink: /style/
-description: The colours, type, and motifs that make PJCC and McPuppy Studios look like one world — kept in the open.
+description: The colors, type, and motifs that make PJCC and McPuppy Studios look like one world — kept in the open.
 ---
 
 <p class="vl-intro">The look of Checker Town, Chess City, and the studio behind them — the palette, the type, and the motifs — kept in one place so everything we build (the site today, the game tomorrow) reads as a single world. Built in the open, this included.</p>
 
-<h2 class="vl-h">Colour</h2>
+<h2 class="vl-h">Color</h2>
 <p class="vl-sub">Deep operative purples, one unmistakable gold, and a small set of signal accents.</p>
 
 <div class="vl-swatches">
@@ -24,7 +24,7 @@ description: The colours, type, and motifs that make PJCC and McPuppy Studios lo
   <div class="vl-sw" style="--c:#3cbcfc;--t:#03102c"><span>Arcade Blue</span><code>#3cbcfc</code></div>
   <div class="vl-sw" style="--c:#ff3b3b;--t:#fff"><span>Terminated Red</span><code>#ff3b3b</code></div>
 </div>
-<p class="vl-note">Gold is the one true accent — used sparingly, it means "this matters." The purples carry the mood; the signal colours (green = go / verified, red = retired, blue = arcade, rose = flair) each mean one thing and are never decorative.</p>
+<p class="vl-note">Gold is the one true accent — used sparingly, it means "this matters." The purples carry the mood; the signal colors (green = go / verified, red = retired, blue = arcade, rose = flair) each mean one thing and are never decorative.</p>
 
 <h2 class="vl-h">Type</h2>
 <div class="vl-type">

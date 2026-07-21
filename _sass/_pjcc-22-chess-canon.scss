@@ -10,7 +10,7 @@
  *       · Academy drill board          (academy-bootcamp.md — .bc-sq/.bc-pc)
  *       · Game-review board + queued-table minis (inline SVGs — they use var(--…) fills)
  *       · the park-table DRAWING's tabletop below
- *     Change a colour here and every board on the site follows. Never fork these
+ *     Change a color here and every board on the site follows. Never fork these
  *     per page.
  *
  *  2. THE PARK TABLE (.pkt-*) — the one canonical drawing of the park chess table:
@@ -26,7 +26,7 @@
   --chess-lt: #e9d3a4;         /* sun-bleached maple */
   --chess-dk: #9c5f33;         /* oiled walnut */
   --chess-frame: #4a3320;      /* the timber border round every board */
-  /* the grain — one streak pattern laid over BOTH square colours */
+  /* the grain — one streak pattern laid over BOTH square colors */
   --chess-grain: repeating-linear-gradient(94deg,
       rgba(74, 42, 18, 0.10) 0 1.5px, rgba(0, 0, 0, 0) 1.5px 6px,
       rgba(74, 42, 18, 0.05) 6px 8px,  rgba(0, 0, 0, 0) 8px 13px);
@@ -56,7 +56,7 @@
    The sun rises screen-LEFT and sets screen-RIGHT (_pjcc-20-town-sky.scss), so the
    shadow leans AWAY from it — long to the right at dawn, noon-short by day (the
    base rule above), long to the left at dusk, faint and soft under the moon. The
-   off-centre transform-origins do the leaning: the scale grows the ellipse away
+   off-center transform-origins do the leaning: the scale grows the ellipse away
    from the sun while the edge nearest the post stays put. transform/opacity only;
    the 3s ease matches the orb's own re-plot drift if the phase turns over mid-visit. */
 html.sky-dawn  .pkt-shadow { transform: translateX(-50%) scaleX(1.45); transform-origin: 24% 50%; opacity: 0.8; }

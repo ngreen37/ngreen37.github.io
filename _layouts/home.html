@@ -170,7 +170,7 @@ layout: default
 {% comment %} ── 1b. THE TWO WAYS TO PLAY — the entrances, given room + a name. Same two
      canonical drawings (the Park Table shared include + the Gauntlet door). The Gauntlet
      anchor keeps id="gauntlet-door" and its inner ids so the progress JS still dresses
-     it (floor pips, boss colour + glyph, grandeur tier). {% endcomment %}
+     it (floor pips, boss color + glyph, grandeur tier). {% endcomment %}
 <section class="home-plays" aria-label="Ways to play" data-reveal>
   <a class="play-card" href="{{ '/games/park-tables/' | relative_url }}"
      aria-label="Park Tables — play chess against another operative in the Checker Town park">
@@ -198,8 +198,8 @@ layout: default
    the hero is just sky · title · horizon now. */
 .home-hero { position: relative; display:flex; flex-direction:column; justify-content:flex-end;
   min-height:296px; }
-/* top-CENTRE now, quieter (Nate 2026-07-16: middle + 15% more transparent) — the top row
-   reads park table (left) · plate (centre) · Gauntlet door (right) */
+/* top-CENTER now, quieter (Nate 2026-07-16: middle + 15% more transparent) — the top row
+   reads park table (left) · plate (center) · Gauntlet door (right) */
 .hero-eyebrow { position:absolute; top:14px; left:50%; transform:translateX(-50%); margin:0;
   font-family:'Share Tech Mono',monospace;
   font-size:9px; letter-spacing:2px; color:#8a72c0; border:1px solid rgba(138,114,192,0.4);
@@ -480,7 +480,7 @@ html.reduce-flourish .hero-title { animation:none; }
 
 <script>
 // Gauntlet progress (read-only): powers the ticker's BREAKING line and dresses
-// THE DOOR in the hero — floor lamps, the current boss's colour and piece.
+// THE DOOR in the hero — floor lamps, the current boss's color and piece.
 (function () {
   // mirrors the LADDER order / accents / glyphs in assets/games/pjcc_gauntlet.html
   var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The Executive Assistant'];
@@ -579,7 +579,7 @@ html.reduce-flourish .hero-title { animation:none; }
    second sun to collide with anymore). */
 
 /* ── 1b. THE TWO WAYS TO PLAY — the entrances moved out of the hero's corners into
-   this roomy, labelled row (2026-07-17 Nate: "move the links to below the hero, use
+   this roomy, labeled row (2026-07-17 Nate: "move the links to below the hero, use
    the leftover space for balance"). Two equal cards; the same canon drawings, given
    air + a name. The .gdoor card keeps the door look/grandeur it always had. ── */
 .home-plays { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:18px;

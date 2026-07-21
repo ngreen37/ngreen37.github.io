@@ -401,5 +401,5 @@ permalink: /games/
 })();
 </script>
 
-<!-- Enter a hall → the screen blooms to that hall's colour, like the splash quads. -->
+<!-- Enter a hall → the screen blooms to that hall's color, like the splash quads. -->
 <script src="{{ '/assets/js/pjcc-warp.js' | relative_url }}"></script>

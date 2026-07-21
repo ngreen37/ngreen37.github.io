@@ -163,7 +163,7 @@
   <div class="overlay" id="menu-screen">
     <div class="eyebrow">The Ascent · the climb to the crown</div>
     <div class="big-title">THE GAUNTLET</div>
-    <div class="blurb">Ten champions stand between <b style="color:#8fe3ff">Checker Town</b> and the top of the <b style="color:#ff8fd0">CEO</b>'s tower. Real chess, one game at a time — beat one to climb to the next. Colours are drawn each game. No takebacks. Only a win opens the next door.</div>
+    <div class="blurb">Ten champions stand between <b style="color:#8fe3ff">Checker Town</b> and the top of the <b style="color:#ff8fd0">CEO</b>'s tower. Real chess, one game at a time — beat one to climb to the next. Colors are drawn each game. No takebacks. Only a win opens the next door.</div>
     <div class="blurb" id="menu-progress" style="display:none; margin-top:-4px;"></div>
     <div class="row"><button class="btn btn-gold" id="play-btn">▶ ENTER THE TOWER</button></div>
     <div class="row"><button class="btn btn-ghost" id="tower-btn" style="display:none">☰ Browse the tower</button></div>
@@ -222,7 +222,7 @@
 var C = window.PJCCChess, AI = window.PJCCChessAI, ENGINE = window.PJCCGauntletEngine;
 // Rung -> Stockfish Skill Level (0..20), driven by the ADVERTISED house rating.
 // The old version ramped skill LINEARLY over all 13 rungs, ignoring the elo labels —
-// so the Shogi Sentinel (labelled 800) ran at skill 5, which plays ~1600 (Nate
+// so the Shogi Sentinel (labeled 800) ran at skill 5, which plays ~1600 (Nate
 // 2026-07-15: "seems stronger than 800"). Stockfish's skill 0 is ALREADY ~1350, so
 // nothing below that can be reached by lowering skill further — every floor advertised
 // under 1400 pins to skill 0 and gets its weakness from the persona's blunder rate +
@@ -248,7 +248,7 @@ var W = 440, H = 500, TILE = 50, BOARD = TILE*8, BX = (W-BOARD)/2, BY = 78;
 // draw a purple board with ivory/ebony pieces. It now wears the site's ONE board:
 // walnut + cream woods and the white/purple piece livery, mirroring the :root tokens
 // in _sass/_pjcc-22-chess-canon.scss (--chess-lt/dk, --piece-w/b-fill/line). Keep in
-// sync if the canon colours ever move.
+// sync if the canon colors ever move.
 var PAL = { wFill:'#ffffff', wEdge:'#2f2440', bFill:'#4a3585', bEdge:'#f2e9ff' };
 var LIGHT = '#e9d3a4', DARK = '#9c5f33';
 
@@ -375,7 +375,7 @@ var LADDER = [
 // the public tower is TEN floors; everything past it is the elevator's secret
 var VISIBLE = 10;
 function secretOpen(prog){ return !!(prog && prog.beaten && prog.beaten[VISIBLE - 1]); }
-function randColor(){ return Math.random() < 0.5 ? 'w' : 'b'; }   // colours drawn fresh each match
+function randColor(){ return Math.random() < 0.5 ? 'w' : 'b'; }   // colors drawn fresh each match
 
 // ---- progress ----
 var PKEY = 'pjcc.gauntlet.v2';
@@ -511,7 +511,7 @@ function applyPlayerMove(m){
 // The rival takes NO clock — instead they randomly PONDER (2026-07-16 Nate): about
 // one move in seven, past the opening, they sit on it for a few seconds and say so
 // in their own voice (react.ponder — Argus, being a dog, growls or throws a crooked
-// ?!?). Pure theatre; the engine think itself is unchanged.
+// ?!?). Pure theater; the engine think itself is unchanged.
 function aiTurnSoon(){
   G.thinking = true;
   var delay = 280;
@@ -724,10 +724,10 @@ function bcast(voice, line, force){
 }
 function hideBooth(){ var el=document.getElementById('booth'), c=document.getElementById('booth-card'); if(el) el.classList.add('hidden'); if(c) c.classList.remove('show'); clearTimeout(boothTimer); }
 
-// ---- start-of-game hero layer: a single hero glyph announcing your colour ----
+// ---- start-of-game hero layer: a single hero glyph announcing your color ----
 // (The end-of-game confetti/celebration was removed 2026-07-19 — no burst over the board.)
 var fxTimer=null;
-// Colours are redrawn EVERY match (randColor in startRung), so a retry can flip the
+// Colors are redrawn EVERY match (randColor in startRung), so a retry can flip the
 // board on you. Say so plainly at the start of each game (Nate 2026-07-15: "when you
 // lose and retry it should randomize … and show the user you are doing so").
 function announceColor(){

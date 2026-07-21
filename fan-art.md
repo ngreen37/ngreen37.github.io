@@ -156,7 +156,7 @@ permalink: /fan-art/
    up, and the drop frame inside it is dimmer again.
    The print rule at the foot of this file puts the pure white BACK for printing —
    the glare is a screen problem, and dimming the paper on a printout would just waste
-   ink and grey out the card. */
+   ink and gray out the card. */
 /* the fan card is a PRINT POSTER — the navy/gold/paper and the fat 3px border are the
    whole point, and they stay. Only its radius joins the shared scale. */
 .fan-card { --fa-paper:#e8e4da; --fa-paper-lit:#eeebe3; --fa-paper-dim:#d6d9e0;
@@ -217,7 +217,7 @@ permalink: /fan-art/
   .no-print { display: none !important; }
   .fc-hint { display: none !important; }
   /* the card is dimmed ON SCREEN only (it was blinding on a dark page). On paper the
-     white comes back — nobody wants a grey card, and the printer would only be laying
+     white comes back — nobody wants a gray card, and the printer would only be laying
      down ink to make it. */
   #fan-card { --fa-paper:#ffffff; --fa-paper-lit:#ffffff; --fa-paper-dim:#f2f6fc; }
 }

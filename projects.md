@@ -70,7 +70,7 @@ own_title: true
      He's right on both counts, and the "out of place" is the interesting one: this page
      is `theme-studio` — McPuppy's warm monochrome, #131218 cards and a #caa24a gold. The
      counters were two big PURPLE-and-TEAL boxes: the last survivors of the PJCC palette,
-     on a page that stopped being PJCC. They were shouting in a colour the room no longer
+     on a page that stopped being PJCC. They were shouting in a color the room no longer
      speaks.
 
      Format, completely changed: they were two tall centred cards each running a

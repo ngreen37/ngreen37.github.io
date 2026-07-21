@@ -44,7 +44,7 @@ function targets(S, sq) { return new Set(movesFrom(S, sq).map(m => E.nameFromSq(
 function setEq(a, b) { return a.size === b.size && [...a].every(x => b.has(x)); }
 function isLight(sq) { const f = sq.charCodeAt(0) - 96, r = +sq[1]; return (f + r) % 2 === 1; }
 
-/* Forced mate for the side to move within `plies` (odd), against EVERY defence. */
+/* Forced mate for the side to move within `plies` (odd), against EVERY defense. */
 function mateForced(S, plies) {
   if (plies <= 0) return false;
   for (const m of E.legalMoves(S)) {
@@ -100,7 +100,7 @@ function testAcademyFacts() {
   // rook alone-ish on d4 (kings tucked away, not interfering)
   const R = E.parseFEN(fenKQonly([['R', 'd4'], ['K', 'h1'], ['k', 'a8']], 'w'));
   ok(movesFrom(R, 'd4').length === 14, 'WS2: rook on d4 (open board) reaches 14 squares');
-  // bishop colour invariance: c1 is dark; every reachable square stays dark
+  // bishop color invariance: c1 is dark; every reachable square stays dark
   ok(!isLight('c1'), 'WS2: c1 is a dark square');
   const B = E.parseFEN(fenKQonly([['B', 'c1'], ['K', 'h1'], ['k', 'a8']], 'w'));
   ok([...targets(B, 'c1')].every(sq => !isLight(sq)), 'WS2: a bishop on c1 only ever reaches dark squares');
@@ -206,7 +206,7 @@ async function testPirc(browser, port) {
       });
       out.lines.push({ id, name: card.name, plies: card.moves.length, errs, finalFEN: C.toFEN(S) });
       if (card.blunderAt != null) {
-        // replay to just AFTER the blunder, then re-prove: trainee mates vs EVERY defence
+        // replay to just AFTER the blunder, then re-prove: trainee mates vs EVERY defense
         let T = C.parseFEN(C.START_FEN);
         for (let i = 0; i <= card.blunderAt; i++) {
           const [uci] = card.moves[i];
@@ -229,7 +229,7 @@ async function testPirc(browser, port) {
   }
   for (const T of res.traps) {
     ok(!T.err && T.forced && T.lastIsMate,
-      `trap "${T.name}": post-blunder FORCED mate vs every defence within ${T.remaining} plies` + (T.err ? ' -> ' + T.err : ''));
+      `trap "${T.name}": post-blunder FORCED mate vs every defense within ${T.remaining} plies` + (T.err ? ' -> ' + T.err : ''));
   }
   await page.close();
   return res.lines.filter(l => !l.errs.length && !/^trap-/.test(l.id)).map(l => ({ id: l.id, fen: l.finalFEN }));
@@ -385,7 +385,7 @@ async function testFork(browser, port) {
         const sign = p.side === 'w' ? 1 : -1;
         const gain = sign * (mat(S.b) - mat(S0.b));
         if (gain < 300) { out.bad.push(i + ':line-gains-only-' + gain + ' ' + toFEN(p)); continue; }
-        // …and (sampled) hold up against EVERY defence: exact-depth alpha-beta proof.
+        // …and (sampled) hold up against EVERY defense: exact-depth alpha-beta proof.
         // search() returns ABSOLUTE material for the mover, so subtract the start balance.
         if (deepChecked < 120) {
           deepChecked++;

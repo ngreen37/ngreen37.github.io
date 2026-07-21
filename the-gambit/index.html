@@ -103,7 +103,7 @@ permalink: /the-gambit/
   function coolLeft() { return Math.max(0, COOL - (Date.now() - (loadCap().lastTs || 0))); }
   function bumpCap() { var o = loadCap(); o.count += 1; o.lastTs = Date.now(); saveCap(o); }
 
-  // ---- the maths: courage -> odds ----
+  // ---- the math: courage -> odds ----
   function offerValue() { return offerCredits + (selColl ? selColl.value : 0); }
   function courage() {
     var cf = credits > 0 ? offerCredits / credits : 0;

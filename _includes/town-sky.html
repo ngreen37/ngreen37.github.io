@@ -5,13 +5,13 @@
   2026-07-12 (Nate: "the other pages, I thought we were going to give them
   day/dusk/night/dawn themes, like the PJCC page? Let's really make that a thing").
   Up to now the hour existed in exactly two places: the PJCC hero's full sky, and a
-  0.03–0.07 colour wash over everything else — technically town-wide, invisible in
+  0.03–0.07 color wash over everything else — technically town-wide, invisible in
   practice.
 
   This is the real thing: a fixed, full-viewport sky sitting BEHIND every page
-  (z-index:-1, so it paints over the flat body colour and under every card, header
+  (z-index:-1, so it paints over the flat body color and under every card, header
   and footer). You see it in the gutters, above and below the content — the town is
-  now a place the pages sit inside, instead of a colour they're tinted with.
+  now a place the pages sit inside, instead of a color they're tinted with.
 
   It's STATIC MARKUP, not JS-built: `sky-<phase>` and `cloud-<n>` are already on
   <html> before first paint (see town-weather.html), so the sky is correct on the

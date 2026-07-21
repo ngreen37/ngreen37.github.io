@@ -27,7 +27,7 @@ never re-derive them by eye.**
 
 ---
 
-## 1 · The grey-box room (P1) — "walk a capsule around a board in 3D"
+## 1 · The gray-box room (P1) — "walk a capsule around a board in 3D"
 
 This is the Month-1 milestone from the roadmap. Build one scene, paste one script, press F5.
 

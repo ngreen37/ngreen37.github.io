@@ -18,7 +18,7 @@
    Every panel on this site used to invent its own geometry. A quick census of
    the corner radius alone: .ac-course 12 · .dsr-card 12 · .ghub-portal 12 ·
    .project-card 14 · .page-card 16 · .fan-card 18. Borders ran 1px, 2px and 3px
-   with five different edge colours. Nothing was *wrong* — but nothing agreed
+   with five different edge colors. Nothing was *wrong* — but nothing agreed
    either, and that's exactly why the site read as ASSEMBLED rather than MACHINED.
 
    So: one scale, declared once, used everywhere.
@@ -29,9 +29,9 @@
      --surface / --surface-2    the two card fills
      --lift / --lift-sm         the two shadows
 
-   BRAND SURFACES KEEP THEIR COLOUR. The arcade portal stays neon, the studio card
+   BRAND SURFACES KEEP THEIR COLOR. The arcade portal stays neon, the studio card
    stays monochrome, the fan card stays a print poster — they just stop inventing
-   their own GEOMETRY. Colour is identity; radius is not.
+   their own GEOMETRY. Color is identity; radius is not.
 
    Adding a new panel? Use these. If you find yourself typing a raw `border-radius`,
    you're either adding a fourth radius (don't) or you've found a genuine exception

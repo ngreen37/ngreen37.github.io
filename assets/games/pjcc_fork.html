@@ -225,7 +225,7 @@ function genBackRankMate(diff, rnd){
     const ek = rnd() < 0.5 ? {x:7,y:0} : {x:0,y:0};            // black king cornered on its back rank
     const dirIn = ek.x === 7 ? -1 : 1;
     const fp = [{x:ek.x, y:1}, {x:ek.x+dirIn, y:1}];           // own pawns box the front
-    const fx = ek.x + dirIn * (2 + (rnd()*3|0));               // delivery file, toward centre
+    const fx = ek.x + dirIn * (2 + (rnd()*3|0));               // delivery file, toward center
     if (fx < 1 || fx > 6) continue;
     const ry = 1 + (rnd()*5|0);                                // heavy piece starts on the file
     const heavy = (diff >= 5 && rnd() < 0.4) ? 'Q' : 'R';
@@ -283,7 +283,7 @@ function genSkewer(diff, rnd){
 //  2. Every ply of the stored line is a legal move for the side playing it.
 //  3. Mate puzzles: the line really ends in checkmate.
 //  4. Material puzzles ("win the queen/rook"): an exact-depth search proves the
-//     mover nets >= a clean minor piece (+300) against EVERY defence — so a king
+//     mover nets >= a clean minor piece (+300) against EVERY defense — so a king
 //     recapturing the forking knight can never turn "win the rook" into a mere trade.
 function matSum(b){ let s=0; const V={P:100,N:320,B:330,R:500,Q:900,K:0};
   for (let y=0;y<8;y++) for (let x=0;x<8;x++){ const p=b[y][x]; if (p) s += (p.c==='w'?1:-1)*V[p.t]; }
@@ -683,7 +683,7 @@ function drawHeader(){
   ctx.fillStyle = '#ff8fd0'; roundRect(12, 12, 150, 26, 13); ctx.fill();
   ctx.fillStyle = '#3a0a2a'; ctx.font = 'bold 13px Trebuchet MS'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
   ctx.fillText('⚔ ' + p.theme.toUpperCase(), 22, 26);
-  // YOU-ARE badge — make the player's colour unmistakable, with the goal alongside
+  // YOU-ARE badge — make the player's color unmistakable, with the goal alongside
   const youW = (p.side === 'w');
   const youTxt = (youW ? '♔ YOU PLAY WHITE' : '♚ YOU PLAY BLACK') + '  ·  ' + p.goal;
   ctx.font = 'bold 13px Trebuchet MS'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';

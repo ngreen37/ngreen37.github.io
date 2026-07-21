@@ -132,7 +132,7 @@
   var LABEL = { book: 'Book', best: 'Best', good: 'Good', ok: 'Solid', inaccuracy: 'Inaccuracy', mistake: 'Mistake', blunder: 'Blunder' };
   var MARK  = { book: '📖', best: '★', good: '✓', ok: '·', inaccuracy: '?!', mistake: '?', blunder: '??' };
 
-  /* ─────────────────────────── replay + analyse ──────────────────────────────── */
+  /* ─────────────────────────── replay + analyze ──────────────────────────────── */
   function replay(movesStr) {
     var Cc = C(), S = Cc.parseFEN(Cc.START_FEN);
     var fens = [Cc.toFEN(S)], moves = [];
@@ -149,7 +149,7 @@
     return { fens: fens, moves: moves };
   }
 
-  // Analyse a whole game → report. onProgress(done,total) is called as it grinds.
+  // Analyze a whole game → report. onProgress(done,total) is called as it grinds.
   function analyzeGame(movesStr, onProgress) {
     var r = replay(movesStr), fens = r.fens, moves = r.moves, N = moves.length;
     var evals = new Array(fens.length), bests = new Array(fens.length);
@@ -264,7 +264,7 @@
 
   function boardSVG(fen, hi, arrow) {
     var S = C().parseFEN(fen), b = S.b, sq = '', pc = '', mk = '';
-    // colours come from THE CHESS CANON tokens (_pjcc-22-chess-canon.scss) — the
+    // colors come from THE CHESS CANON tokens (_pjcc-22-chess-canon.scss) — the
     // review board matches the Park Tables + Academy boards (Nate: "always uniform").
     // Inline SVG resolves var(--…) from the page; fallbacks mirror the partial.
     for (var i = 0; i < 64; i++) {

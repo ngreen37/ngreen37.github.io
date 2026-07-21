@@ -313,7 +313,7 @@ const RAW = {
     ['e2e4','e4'],['e7e5','e5'],['g1f3','Nf3'],['b8c6','Nc6'],['f1b5','Bb5'],['a7a6','a6'],
     ['b5a4','Ba4'],['g8f6','Nf6'],['e1g1','O-O','K'],['f8e7','Be7'],['f1e1','Re1'],['b7b5','b5'],
     ['a4b3','Bb3'],['d7d6','d6'],['c2c3','c3'],['e8g8','O-O','K'] ] },
-  'ruy-berlin': { deck: 'ruy', name: 'Berlin Defence', side: 'w', moves: [
+  'ruy-berlin': { deck: 'ruy', name: 'Berlin Defense', side: 'w', moves: [
     ['e2e4','e4'],['e7e5','e5'],['g1f3','Nf3'],['b8c6','Nc6'],['f1b5','Bb5'],['g8f6','Nf6'],
     ['e1g1','O-O','K'],['f6e4','Nxe4'],['d2d4','d4'],['e4d6','Nd6'],['b5c6','Bxc6'],['d7c6','dxc6'],
     ['d4e5','dxe5'],['d6f5','Nf5'],['d1d8','Qxd8+'],['e8d8','Kxd8'] ] },
@@ -333,7 +333,7 @@ const RAW = {
     ['d2d4','d4'],['d7d5','d5'],['c2c4','c4'],['e7e6','e6'],['b1c3','Nc3'],['g8f6','Nf6'],
     ['c1g5','Bg5'],['f8e7','Be7'],['e2e3','e3'],['e8g8','O-O','K'],['g1f3','Nf3'],['h7h6','h6'],
     ['g5h4','Bh4'],['b7b6','b6'] ] },
-  'queens-slav': { deck: 'queens', name: 'Slav Defence', side: 'w', moves: [
+  'queens-slav': { deck: 'queens', name: 'Slav Defense', side: 'w', moves: [
     ['d2d4','d4'],['d7d5','d5'],['c2c4','c4'],['c7c6','c6'],['g1f3','Nf3'],['g8f6','Nf6'],
     ['b1c3','Nc3'],['d5c4','dxc4'],['a2a4','a4'],['c8f5','Bf5'],['e2e3','e3'],['e7e6','e6'],
     ['f1c4','Bxc4'],['f8b4','Bb4'] ] },
@@ -345,7 +345,7 @@ const RAW = {
     ['g1f3','Nf3'],['b8d7','Nd7'] ] },
 
   // ---- BLUNDER TRAPS ----  every refutation below is a machine-verified FORCED mate
-  // (proved offline: after the marked blunder, the trainee mates against EVERY defence).
+  // (proved offline: after the marked blunder, the trainee mates against EVERY defense).
   // blunderAt = index of the opponent's losing move; you play the punishment.
   'trap-legal': { deck: 'trap', name: "Légal's Mate", side: 'w', blunderAt: 11, moves: [
     ['e2e4','e4'],['e7e5','e5'],['g1f3','Nf3'],['b8c6','Nc6'],['f1c4','Bc4'],['d7d6','d6'],
@@ -363,17 +363,17 @@ const RAW = {
 
 const DECKS = [
   { id: 'pirc', name: 'Pirc Defense', side: 'Black', glyph: '♞', color: '#c96bff',
-    sub: "The Rival's signature defence" },
+    sub: "The Rival's signature defense" },
   { id: 'italian', name: 'Italian Game', side: 'White', glyph: '♝', color: '#F5C518',
-    sub: 'Classical fight for the centre' },
+    sub: 'Classical fight for the center' },
   { id: 'scandi', name: 'Scandinavian', side: 'Black', glyph: '♛', color: '#6bbfff',
-    sub: 'Strike at the centre move one' },
+    sub: 'Strike at the center move one' },
   { id: 'ruy', name: 'Ruy López', side: 'White', glyph: '♗', color: '#ff9f6b',
     sub: 'The Spanish — pressure the knight' },
   { id: 'sicilian', name: 'Sicilian Defense', side: 'Black', glyph: '♞', color: '#6bff9f',
     sub: "Black's fighting answer to 1.e4" },
   { id: 'queens', name: "Queen's Gambit", side: 'White', glyph: '♛', color: '#b0c4ff',
-    sub: 'Offer the c-pawn, seize the centre' },
+    sub: 'Offer the c-pawn, seize the center' },
   { id: 'caro', name: 'Caro-Kann', side: 'Black', glyph: '♟', color: '#d0a0ff',
     sub: 'Solid as a rock' },
   { id: 'trap', name: 'Blunder Traps', side: 'both sides', glyph: '☠', color: '#ff5b8a',
@@ -444,12 +444,12 @@ const LINEMETA = {
   'italian-piano':      { eco:'C54', ref:'Giuoco Piano — tactics catalogued by Greco in the 1600s.' },
   'scandi-main':        { eco:'B01', ref:'Scandinavian — the classical 3…Qa5 main line.' },
   'scandi-modern':      { eco:'B01', ref:'Scandinavian — the modern 3…Nf6 lines.' },
-  'ruy-morphy':         { eco:'C84', ref:'Closed Ruy López, Morphy Defence — …a6, …Be7, …O-O; the great main road of the Spanish.' },
+  'ruy-morphy':         { eco:'C84', ref:'Closed Ruy López, Morphy Defense — …a6, …Be7, …O-O; the great main road of the Spanish.' },
   'ruy-berlin':         { eco:'C67', ref:'The Berlin "Wall" — after Qxd8+ Kxd8 Black gives up castling for a rock-solid endgame. Kramnik used it to dethrone Kasparov, 2000.' },
-  'sicilian-najdorf':   { eco:'B90', ref:'Najdorf Sicilian — 5…a6, the most analysed opening in chess; Fischer & Kasparov’s weapon.' },
+  'sicilian-najdorf':   { eco:'B90', ref:'Najdorf Sicilian — 5…a6, the most analyzed opening in chess; Fischer & Kasparov’s weapon.' },
   'sicilian-dragon':    { eco:'B76', ref:'Dragon Sicilian — …g6 fianchetto; opposite-side castling and a race to mate.' },
   'queens-qgd':         { eco:'D37', ref:'Queen’s Gambit Declined — classical …e6 with Bg5; rock-solid, a World-Championship staple.' },
-  'queens-slav':        { eco:'D17', ref:'Slav Defence — …c6 holds d5; …dxc4 then …Bf5 frees the light-squared bishop.' },
+  'queens-slav':        { eco:'D17', ref:'Slav Defense — …c6 holds d5; …dxc4 then …Bf5 frees the light-squared bishop.' },
   'caro-classical':     { eco:'B19', ref:'Caro-Kann Classical — …Bf5 develops the bishop before …e6; famously hard to crack.' },
   'trap-legal':         { eco:'TRAP', ref:'Légal’s Mate (1750). After the greedy …Bxd1??, the queen sac pays off: Bxf7+ Ke7 Nd5#. (Decline with …dxe5 and White just wins the bishop.)' },
   'trap-scholar':       { eco:'TRAP', ref:'Scholar’s Mate. …Nf6?? ignores the threat to f7 — Qxf7# ends it. Defend with …Qe7 or …g6 instead.' },
@@ -732,7 +732,7 @@ canvas.addEventListener('pointerdown', e => {
   const piece = G.board[cell.y][cell.x];
 
   if (!G.selected) {
-    // must select a piece of the trained colour
+    // must select a piece of the trained color
     if (piece && piece.c === G.orient) {
       G.selected = cell;
     } else { wiggle(); }
@@ -1018,7 +1018,7 @@ function drawBottomHUD() {
   if (!G || !session) return;
   const y = H - 22;
   const deck = DECKS.find(d => d.id === G.line.deck);
-  // left: the named opening + variation, always on show (the defence/attack)
+  // left: the named opening + variation, always on show (the defense/attack)
   ctx.fillStyle = C.muted; ctx.font = '11px Trebuchet MS';
   ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
   ctx.fillText('📖 ' + deck.name + ' — ' + G.line.name, 12, y);
