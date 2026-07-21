@@ -713,6 +713,32 @@ body.theme-bw .ts-constellations,
 body.theme-studio .ts-season-fx,
 body.theme-studio .ts-season-tint,
 body.theme-studio .ts-constellations { display: none; }
+/* NO WEATHER ON THE STUDIO'S PAGES (2026-07-21 Nate: "get the weather off all
+   black/white mcpuppy pages"). The sky above was already made monochrome here, but the
+   weather layer is a SEPARATE element built on <body> by assets/js/pjcc-weather.js
+   (.town-weather-overlay, styled in _pjcc-09-widgets.scss) and it was never gated on the
+   mono themes — so a black-and-white page still got the coral-dawn / blue-day / purple-dusk
+   phase wash on ::after, the blue rain or grey mist wash on ::before, and the falling
+   .tw-rain / .tw-mist / .tw-bolt layers on top. Colour and drifting streaks over a
+   monochrome studio page read as a bug, exactly like the seasonal tint did.
+   Hiding the CONTAINER takes its two pseudo-elements and every child with it, so this one
+   rule is the whole fix; nothing else sets `display` on the overlay. This partial imports
+   AFTER _pjcc-09-widgets (see assets/css/style.scss), so it also wins on order.
+   pjcc-weather.js skips building the layer on these pages at all — this is belt-and-braces
+   for a cached script, and the thing the dead-CSS sweep can see. The town keeps its
+   weather; McPuppy Studios is indoors. */
+body.theme-bw .town-weather-overlay,
+body.theme-studio .town-weather-overlay { display: none; }
+/* …and the HORIZON GLOW with it. Caught in the screenshot repro for the change above:
+   with the weather layer gone, a black-and-white page STILL had a coral band across its
+   lower third, because .ts-horizon washes the ground warm at dawn (255,150,90) and dusk
+   (224,102,46) and was never part of the mono cull — the block above flattens
+   .town-sky's own background but the horizon sits on top of it as a separate layer.
+   That is the very thing the comment above calls a bug ("a coral dawn behind a B&W page
+   would just look like a bug"); it was simply unfinished. The studio's sky is now
+   genuinely one flat monochrome field at every hour. The town keeps its warm horizon. */
+body.theme-bw .ts-horizon,
+body.theme-studio .ts-horizon { display: none; }
 body.theme-bw .ts-stars,
 body.theme-studio .ts-stars { display: block; opacity: 0.18; }
 /* THE FLOATER CULL (Nate 2026-07-15 — still saw "jellybeans" after the cloud fix; the

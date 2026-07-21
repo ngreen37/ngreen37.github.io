@@ -28,6 +28,19 @@
   var kind = (w && w.kind) || 'clear';     // 'rain' | 'mist' | 'clear'
   var root = document.documentElement;
 
+  // McPUPPY STUDIOS HAS NO WEATHER (2026-07-21 Nate: "get the weather off all black/white
+  // mcpuppy pages"). The studio's pages are the monochrome half of the site — theme-bw
+  // (the blog, posts, Contact, Direct Line, the lessons page) and theme-studio
+  // (/projects/). The town sky was already stripped of hue on them; the weather layer
+  // never was, so they still got a coloured phase wash and falling rain. Bail before
+  // anything is built: no overlay, no rain/mist sheets, no lightning timers, and no
+  // 2-minute orb re-plot for an orb that is display:none on these pages anyway.
+  // The CSS in _sass/_pjcc-20-town-sky.scss hides the overlay too, in case a cached copy
+  // of this script runs. body exists here — this script is deferred, so it runs after the
+  // document is parsed.
+  var body = document.body;
+  if (body && (body.classList.contains('theme-bw') || body.classList.contains('theme-studio'))) return;
+
   // sky-<phase> + town-<kind> are already on <html> (set before paint by the head
   // include); re-assert defensively in case this ran standalone.
   root.classList.add('sky-' + T.phase());
