@@ -224,6 +224,42 @@ honest hedge, and it is why Step 0 is written to be shippable entirely on its ow
 
 ## Status log
 
-- **2026-07-21** — Written. Nothing from this plan has been built. Step 0 is the next
-  action and is awaiting Nate's go-ahead on the retitle wording (its mechanical half can
-  ship without it).
+- **2026-07-21** — Written. Nothing built yet.
+- **2026-07-21 (same session)** — **BUILT AND FLIPPED.** Nate: "let's get it done right.
+  We can't have five landing pages lol." Every step below shipped to `main`, each as its
+  own commit with its own verification:
+
+  | Step | What shipped | Commit |
+  |---|---|---|
+  | 0 | `/projects/` stops being a second home — the five-door `.studio-master` bar deleted, `own_title` + the full-bleed hack gone, Special Thanks recolored onto the studio's brass | `10aeab2` |
+  | 1 | One Gauntlet-door stylesheet instead of three; the duplicate PJCC init and two dead rules removed | `d49c200` |
+  | 2 | `full-sky` + **the sky veil** — a page can own the whole sky without the discrete layers floating behind its content | `6a9c969` |
+  | 3 | The poster hero: `clamp(44px,6vw,76px)` title, the cycling tagline with the flickering "i", the sigil bloom — and the flat CSS skyline deleted | `1db88cb` |
+  | 4a | The ✦ secret star + hourly comet moved into the shared sky | `273ec38` |
+  | 4b | One CTA: the Gauntlet door at 124×160, Park Tables demoted to a line | `6a77a1f` |
+  | 4c | "The studio is awake" — the desk lamp beside the newest post; the lamp became a shared partial + include | `2820c01` |
+  | flip | `/` is the front door, `/pjcc/` is a hand-authored redirect stub | `a1a9439` |
+
+  **Deviations from the plan, and why.** The Step 5 soak was skipped — Nate asked for the
+  swap in the same session. Two things the plan asserted turned out to be wrong under
+  test and were fixed: the secret ✦ cannot live *inside* `.town-sky` (it is `z-index:-1`
+  and `pointer-events:none`, so the link would be unclickable), and `z-index:0` was not
+  enough for it either on a normal scrolling page. The drifters and the seasonal mote
+  were **not** ported to the hero — see below.
+
+  **Still open:**
+  - The wording batch (below) is unsent. Nothing visitor-facing was reworded; the flip
+    deliberately pins `tab_title` and `description` so the `<title>` and meta description
+    did not change by a character.
+  - The hero eyebrow still reads "McPuppy Studios Presents" directly above a tagline
+    whose last line also says "McPuppy Studios". Cutting it is wording, so it waits.
+  - The three surviving drifters (♛ ¶ ♟) and the seasonal quad-mote were not ported.
+    They are decorative and the hero is stronger without more moving parts; if they are
+    wanted, the sky veil is the mechanism to hang them on.
+  - The ticker is untouched. Retiring it means deleting ~50 authored strings — wording.
+  - `_layouts/studio-home.html` and the splash-only blocks of `_pjcc-02-studio.scss` are
+    still in the repo, unreferenced, deliberately: one week of easy rollback. Deleting
+    them is the cleanup step, and the dead-CSS sweep stays green until it happens because
+    an unreferenced layout still counts as a reference.
+  - `npm run perf` has not been run against the merged front door. It is by construction
+    the worst-case page on the site.
