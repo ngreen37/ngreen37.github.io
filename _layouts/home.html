@@ -210,29 +210,49 @@ layout: default
   </div>
 </section>
 
-{% comment %} ── 1b. THE TWO WAYS TO PLAY — the entrances, given room + a name. Same two
-     canonical drawings (the Park Table shared include + the Gauntlet door). The Gauntlet
-     anchor keeps id="gauntlet-door" and its inner ids so the progress JS still dresses
-     it (floor pips, boss color + glyph, grandeur tier). {% endcomment %}
-<section class="home-plays" aria-label="Ways to play" data-reveal>
-  <a class="play-card" href="{{ '/games/park-tables/' | relative_url }}"
-     aria-label="Park Tables — play chess against another operative in the Checker Town park">
-    <span class="play-art">{% include park-table.html %}</span>
-    <b class="play-name">Park Tables</b>
-    <i class="play-sub">Play another operative — or McPuppy himself</i>
-  </a>
-  <a class="play-card gdoor" id="gauntlet-door" href="{{ '/games/the-gauntlet/' | relative_url }}"
+{% comment %} ── 1b. THE ONE CTA — the Gauntlet ─────────────────────────────────────
+     2026-07-21. This was two equal cards, Park Tables and the Gauntlet side by side
+     (2026-07-17: "the two ways to play"). Two equal doors is a menu, and a front door
+     that offers a stranger two choices has made none — through-line #7 asks for one
+     promise and ONE call.
+
+     The Gauntlet wins that slot on the merits. It is real chess against a ladder you
+     climb, it needs no account, it works offline, and it REMEMBERS you: the arch is
+     dressed from localStorage before you touch anything — your floor's boss colour and
+     piece, the grandeur tier your climb has earned, ten pips showing exactly where you
+     stopped. That is the most alive thing on the site, and on a front door it is worth
+     more than a second box beside it.
+
+     Park Tables is not gone, it is DEMOTED to the line underneath, because it is
+     correspondence chess behind a Supabase sign-in — a fine second move and the wrong
+     thing to ask a stranger for first. Its canonical drawing stays as the band's art,
+     win-glint and all.
+
+     The anchor keeps id="gauntlet-door" and its inner ids or the hydration script
+     silently stops dressing it. It also FINALLY carries .gdoor-whisper: the script has
+     set that element since it was written, but the markup never had one, so "Floor N of
+     10" has never appeared on this page. Step 1 deferred adding it to a card that was
+     about to be replaced; this is the replacement. {% endcomment %}
+<section class="home-cta" aria-label="Play" data-reveal>
+  <a class="gdoor home-gdoor" id="gauntlet-door" href="{{ '/games/the-gauntlet/' | relative_url }}"
      aria-label="The Gauntlet — real chess vs a ladder of ten PJCC rivals">
-    <span class="play-art">
-      <span class="gdoor-arch" aria-hidden="true">
-        <i class="gdoor-door"><b class="gdoor-glyph" id="gdoor-glyph">♛</b><u class="gdoor-knob"></u></i>
-        <i class="gdoor-seam"></i>
-      </span>
-      <span class="gdoor-pips" id="gdoor-pips" aria-hidden="true"></span>
+    <span class="gdoor-arch" aria-hidden="true">
+      <i class="gdoor-door"><b class="gdoor-glyph" id="gdoor-glyph">♛</b><u class="gdoor-knob"></u></i>
+      <i class="gdoor-seam"></i>
     </span>
-    <b class="play-name">The Gauntlet</b>
-    <i class="play-sub">Real chess vs a ladder of ten rivals</i>
+    <span class="gdoor-pips" id="gdoor-pips" aria-hidden="true"></span>
+    <span class="gdoor-whisper" id="gdoor-whisper" aria-hidden="true"></span>
   </a>
+  <b class="home-cta-name">The Gauntlet</b>
+  <i class="home-cta-sub">Real chess vs a ladder of ten rivals. No account, no download.</i>
+
+  <p class="home-cta-alt">
+    <a class="home-cta-park" href="{{ '/games/park-tables/' | relative_url }}"
+       aria-label="Park Tables — play chess against another operative in the Checker Town park">
+      <span class="home-cta-park-art" aria-hidden="true">{% include park-table.html %}</span>
+      <span>Or take a seat at the Park Tables &rarr;</span>
+    </a>
+  </p>
 </section>
 <style>
 /* ── #8 film title card: plate top-left, title in the lower third, horizon below ── */
@@ -548,39 +568,65 @@ html.reduce-flourish .hero-title { animation:none; }
    and it SHOWS on the home now (the old hide that stood it down here is gone; there's no
    second sun to collide with anymore). */
 
-/* ── 1b. THE TWO WAYS TO PLAY — the entrances moved out of the hero's corners into
-   this roomy, labeled row (2026-07-17 Nate: "move the links to below the hero, use
-   the leftover space for balance"). Two equal cards; the same canon drawings, given
-   air + a name. The .gdoor card keeps the door look/grandeur it always had. ── */
-.home-plays { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:18px;
-  margin:0 0 30px; }
-/* both cards are a centred column: the drawing floats up, the name+sub pin to the
-   foot so the two labels line up even though the two drawings differ in height */
-.play-card { position:relative; display:flex; flex-direction:column; align-items:center;
-  justify-content:flex-end; gap:9px; min-height:190px; padding:22px 16px 20px;
-  text-align:center; text-decoration:none; border-radius:16px;
-  background:linear-gradient(180deg, rgba(40,28,92,0.5), rgba(18,12,48,0.5));
-  border:1px solid rgba(122,86,224,0.30);
-  transition:border-color .18s ease, transform .18s ease, box-shadow .18s ease; }
-.play-card:hover, .play-card:focus-visible { border-color:#F5C518; transform:translateY(-3px);
-  box-shadow:0 16px 30px -18px rgba(0,0,0,0.7); text-decoration:none; }
-/* the drawings sit in normal flow now — drop any inherited absolute positioning */
-.play-art { flex:1 1 auto; display:flex; align-items:center; justify-content:center;
-  width:100%; position:relative; }
-.play-art .pkt-scene, .play-card.gdoor .gdoor-arch { position:relative; }
-/* the Gauntlet's ten floor-pips belong BELOW the arch, not in a row beside it
-   (2026-07-18 Nate, mobile: "fix the 10 dots"). .play-art is a row by default, which
-   put the arch and the 10 dots side by side — stack them for the door card. */
-.play-card.gdoor .play-art { flex-direction:column; gap:8px; }
-.play-name { font-family:'Poppins',sans-serif; font-weight:700; font-size:15px;
-  color:#F5C518; line-height:1.2; }
-.play-sub { font-style:normal; font-size:11px; letter-spacing:0.02em; color:#c6b8ec;
-  line-height:1.35; max-width:26ch; }
+/* ── 1b. THE ONE CTA — the Gauntlet, given the whole band (2026-07-21) ─────────────
+   Replaces .home-plays / .play-card: two equal cards side by side, which is a menu.
+   The door stands alone and BIG now, with Park Tables as one line beneath it.
+
+   The arch is scaled by overriding its four size declarations, exactly the way games.md
+   does for its smaller door — never by transform:scale(), which would blur nothing but
+   would also scale the 2px border and the seam glow into something the canon doesn't
+   own. Everything else about the door — grandeur tiers, floor dressing, the shoji slide
+   on hover, floor zero's tattered cloth — comes from _sass/_pjcc-21-gauntlet-door.scss
+   untouched. ── */
+.home-cta { display:flex; flex-direction:column; align-items:center; text-align:center;
+  margin:0 0 34px; }
+.home-gdoor { gap:11px; }
+.home-gdoor .gdoor-arch { width:124px; height:160px; border-radius:62px 62px 5px 5px; }
+.home-gdoor .gdoor-door { border-radius:56px 56px 0 0; }
+.home-gdoor .gdoor-glyph { font-size:50px; }
+.home-gdoor .gdoor-knob { right:13px; width:6px; height:6px; }
+.home-gdoor .gdoor-pips i { width:7px; height:7px; }
+/* floor zero's cloth hangs from a rod inset in px, tuned for the 78px arch — widen the
+   inset with the arch so the cloth still reads as hung ACROSS the doorway, not as a
+   narrow strip down the middle of it */
+.home-gdoor.gdoor[data-grand="0"] .gdoor-door { left:11px; right:11px; top:18px; }
+.home-gdoor.gdoor[data-grand="0"] .gdoor-glyph { font-size:40px; }
+
+.home-cta-name { font-family:'Poppins',sans-serif; font-weight:800;
+  font-size:clamp(20px, 2.2vw, 26px); color:#F5C518; line-height:1.2; margin-top:14px; }
+.home-cta-sub { font-style:normal; font-size:13px; letter-spacing:0.01em; color:#c6b8ec;
+  line-height:1.45; max-width:34ch; margin-top:5px; }
+
+/* Park Tables — the second move, not the first. One line, the canon drawing beside it. */
+.home-cta-alt { margin:22px 0 0; }
+.home-cta-park { display:inline-flex; align-items:center; gap:12px; text-decoration:none;
+  font-family:'Share Tech Mono', monospace; font-size:12px; letter-spacing:0.1em;
+  color:rgba(214,204,238,0.72); padding:8px 14px; border-radius:999px;
+  border:1px solid rgba(122,86,224,0.28);
+  transition:color .18s ease, border-color .18s ease; }
+.home-cta-park:hover, .home-cta-park:focus-visible { color:#F5C518; border-color:#F5C518;
+  text-decoration:none; }
+/* The park table shrinks to a chip beside the words. The drawing is the shared canon
+   (_includes/park-table.html + _pjcc-22-chess-canon.scss); only the scale is ours.
+   A transform does not change layout size, so scaling the box itself left the chip
+   spilling out under the pill — the element still reserved its full 190x99 while the
+   paint had shrunk to the middle. Instead the box is declared at the SCALED size and the
+   drawing is anchored top-left inside it, so the reserved space and the paint agree. */
+.home-cta-park-art { display:block; position:relative; width:99px; height:51px;
+  flex:0 0 auto; }
+.home-cta-park-art .pkt-scene { position:absolute; top:0; left:0;
+  transform:scale(0.52); transform-origin:top left; }
+
 @media (max-width: 600px) {
-  .home-plays { gap:11px; margin-bottom:24px; }
-  .play-card { min-height:150px; padding:16px 9px 14px; border-radius:13px; gap:6px; }
-  .play-name { font-size:12.5px; }
-  .play-sub { font-size:9.5px; }
+  .home-cta { margin-bottom:26px; }
+  .home-gdoor .gdoor-arch { width:96px; height:124px; border-radius:48px 48px 4px 4px; }
+  .home-gdoor .gdoor-door { border-radius:43px 43px 0 0; }
+  .home-gdoor .gdoor-glyph { font-size:39px; }
+  .home-gdoor.gdoor[data-grand="0"] .gdoor-door { left:9px; right:9px; top:14px; }
+  .home-cta-sub { font-size:11.5px; }
+  .home-cta-park { font-size:10px; gap:8px; padding:7px 11px; }
+  .home-cta-park-art { width:80px; height:42px; }
+  .home-cta-park-art .pkt-scene { transform:scale(0.42); }
 }
 </style>
 
