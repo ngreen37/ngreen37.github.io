@@ -3,45 +3,29 @@ layout: page
 title: McPuppy Studios
 permalink: /projects/
 body_class: theme-studio
-own_title: true
 ---
 
-{% comment %} ── THE MASTER LINKS (2026-07-14 Nate: "make all the links look more like
-     Master links — take out the five links just above the counters, and re-work them
-     all at the top"). The little pill chips became a command bar: one ruled band at
-     the very top of the page, five equal doors, studio monochrome with the gold on
-     hover. Same five destinations, real presence. {% endcomment %}
-<nav class="studio-master" aria-label="McPuppy Studios sections">
-  <a href="/pjcc/">PJCC</a>
-  <a href="/blog/">Blog</a>
-  <a href="/mailing-list/">Mailing List</a>
-  <a href="/direct-line/">Direct Line</a>
-  <a href="/educators/">For Educators</a>
-</nav>
-<style>
-.studio-master { display: flex; flex-wrap: wrap; margin: 2px 0 18px;
-  background: #131218; border: 1px solid #2a2830; border-radius: 10px; overflow: hidden; }
-.studio-master a { flex: 1 1 auto; text-align: center; padding: 13px 16px;
-  font-family: 'Share Tech Mono', monospace; font-size: 12px; font-weight: 700;
-  letter-spacing: 0.14em; text-transform: uppercase; color: #cdc7d4; text-decoration: none;
-  border-right: 1px solid #2a2830; transition: color .15s, background .15s; }
-.studio-master a:last-child { border-right: none; }
-.studio-master a:hover { color: #F5C518; background: rgba(245,197,24,0.05); text-decoration: none; }
-@media (max-width: 560px){
-  .studio-master { flex-direction: column; }
-  .studio-master a { border-right: none; border-bottom: 1px solid #2a2830; padding: 12px 16px; }
-  .studio-master a:last-child { border-bottom: none; }
-}
-</style>
+{% comment %} ── THIS PAGE STOPPED BEING A SECOND HOME (2026-07-21) ─────────────────
+     Nate: "Perhaps McPuppy page should simply be 'About The Studio'… we can't have five
+     landing pages." Step 0 of docs/front-door-2026-07-21.md.
 
-{% comment %} own_title (2026-07-17 Nate: "move the links … to ABOVE the McP Title") —
-     the master-links bar now rides ABOVE the studio's name banner instead of under it.
-     The banner still full-bleeds to the card edges even though it now sits mid-body. {% endcomment %}
-<h1 class="page-title">McPuppy Studios</h1>
-<style>
-.page-body > .page-title { margin: 2px -44px 24px; border-radius: 0; }
-@media (max-width: 700px) { .page-body > .page-title { margin: 2px -20px 18px; } }
-</style>
+     What was here: a `.studio-master` command bar — five equal doors (PJCC · Blog ·
+     Mailing List · Direct Line · For Educators) ruled across the very top of the page.
+     It was the single thing making /projects/ read as a landing page rather than a page
+     ABOUT something, and every one of its five destinations is already in the McPuppy
+     nav in the site header, two of them twice. A page whose first element is a nav bar
+     is a hub; a page whose first element is a title and a sentence is an about page.
+
+     Going with it: `own_title: true` and the hand-placed <h1> + its -44px full-bleed
+     hack. Those existed ONLY so the title could sit BELOW the master bar (2026-07-17
+     Nate: "move the links … to ABOVE the McP Title"). With no bar to sit below,
+     _layouts/page.html renders the sky-banner title normally again and the override is
+     just a way to get it subtly wrong.
+
+     The address does NOT change: /projects/ is referenced from _data/brands.yml,
+     _layouts/default.html (the 🐾 badge and the McPuppy hop), _layouts/home.html,
+     assets/js/pjcc-nav.js and tests/perf.js. The identity changes; the URL never does.
+     Restore the bar: git show <this commit>^ -- projects.md {% endcomment %}
 
 <p class="projects-intro">An independent studio created to build PJCC.</p>
 
@@ -248,16 +232,32 @@ own_title: true
 
 <style>
 /* Special thanks — quiet, but it carries weight (Nate 2026-07-12) */
+/* 2026-07-21: recolored into the room it lives in. These four were the last of the PJCC
+   palette on this page — a lilac label (#cdbcf2), near-white lavender names (#e6dcff),
+   a violet muses line (#b7a4e0) and an arcade-gold rule (#F5C518) — sitting inside
+   theme-studio's warm monochrome. Exactly the complaint Nate made about the counters on
+   2026-07-12 ("shouting in a color the room no longer speaks"), just never applied here.
+   Now on the studio's own scale: #f2efe8 for the names (same as .pj-clock-n, and they
+   stay the one thing here with weight), #8a8592 for both labels (same as .pj-clock-k),
+   and the studio's brass #caa24a for the rule. Same sizes, same hierarchy, one accent
+   per room. The NAMES THEMSELVES are Nate's dedication and are not to be edited.
+
+   The label needs the extra `.mcp-thanks` on the front to land: it's an <h3>, and
+   `body.theme-studio h1..h6 { color:#f2efe8 }` (_pjcc-02-studio.scss:680) out-specifies a
+   lone class no matter what order the page's own <style> comes in. Which means the old
+   lilac #cdbcf2 was never actually rendering — the label has been the same near-white as
+   the names this whole time, flattening the hierarchy the comment below describes. Two
+   classes (0,2,0) beat one class plus two types (0,1,2), so this one sticks. */
 .mcp-thanks { max-width: 640px; margin: 3.2rem auto 1rem; padding: 0 4px; text-align: center; }
 .mcp-thanks-rule { width: 70px; height: 2px; margin: 0 auto 1.6rem;
-  background: linear-gradient(90deg, transparent, #F5C518, transparent); }
+  background: linear-gradient(90deg, transparent, #caa24a, transparent); }
 .mcp-thanks-block { margin: 0 0 1.7rem; }
-.mcp-thanks-sub { color: #cdbcf2; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.05em;
-  text-transform: uppercase; margin: 0 0 0.5rem; }
+.mcp-thanks .mcp-thanks-sub { color: #8a8592; font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 0.05em; text-transform: uppercase; margin: 0 0 0.5rem; }
 /* the names carry the section, so they're the one thing here with any weight —
    still small, but brighter than the label above them */
-.mcp-thanks-names { color: #e6dcff; font-size: 0.86rem; line-height: 1.85; margin: 0; }
-.mcp-thanks-muses { color: #b7a4e0; font-size: 0.82rem; line-height: 1.85; margin: 0; font-style: italic; }
+.mcp-thanks-names { color: #f2efe8; font-size: 0.86rem; line-height: 1.85; margin: 0; }
+.mcp-thanks-muses { color: #8a8592; font-size: 0.82rem; line-height: 1.85; margin: 0; font-style: italic; }
 </style>
 
 
