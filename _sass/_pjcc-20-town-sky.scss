@@ -556,10 +556,14 @@ html.reduce-flourish .ts-shoot { display: none !important; }
    Cursor-reactivity is being saved for the reinvented hero / an interactive toy,
    where it's a foreground thing you mean to touch. The orb no longer moves at all.)
    Pure progressive enhancement — the script at the foot of _includes/town-sky.html
-   eases --par-s (scroll, 0..1) onto .town-sky. No JS, or under either quiet switch =
+   eases --par-s (scroll, 0..1) onto <html>. No JS, or under either quiet switch =
    every var 0, sky PIXEL-IDENTICAL to before. transform ONLY; the translate rides the
-   LAYER CONTAINER so the drifting banks / falling leaves inside are untouched. ── */
-.town-sky { --par-s: 0; }
+   LAYER CONTAINER so the drifting banks / falling leaves inside are untouched.
+   2026-07-21: --par-s is declared on :root, not on .town-sky, and the script sets it on
+   <html> to match. The sky veil below reads it too, and so does the secret ✦ — which is
+   a SIBLING of .town-sky (it has to be; the sky is z-index:-1 and unclickable), so it
+   could never have inherited a value scoped to the sky element. ── */
+:root { --par-s: 0; }
 @media (prefers-reduced-motion: no-preference) {
   /* stars + constellations = the far distance: the least travel */
   html:not(.reduce-flourish) .ts-stars,
@@ -842,7 +846,8 @@ body.theme-studio .site-header::before { display: none; }
      · shooting stars — on the .ts-shoots group added for exactly this reason.
    All opacity, no filters, no masks, nothing that costs layout or a rasterization pass.
    ═════════════════════════════════════════════════════════════════════════════ */
-body.full-sky .town-sky { --sky-veil: calc(1 - var(--par-s, 0)); }
+/* on <body>, not on .town-sky — the secret ✦ is a sibling of the sky and needs it too */
+body.full-sky { --sky-veil: calc(1 - var(--par-s, 0)); }
 
 body.full-sky .ts-cloud-bank,
 body.full-sky .ts-cloud-shape { opacity: var(--sky-veil, 1); }
@@ -866,3 +871,92 @@ html.reduce-flourish body.full-sky .ts-clouds,
 html.reduce-flourish body.full-sky .ts-stars,
 html.reduce-flourish body.full-sky .ts-constellations,
 html.reduce-flourish body.full-sky .ts-shoots { display: none; }
+
+/* ═════════════════════════════════════════════════════════════════════════════
+   THE SECRET ✦ — the night-shift door to /classified/
+   ─────────────────────────────────────────────────────────────────────────────
+   Moved out of _layouts/studio-home.html 2026-07-21 (docs/front-door-2026-07-21.md).
+   Markup: _includes/town-sky.html, as a sibling of .town-sky rather than a child — the
+   sky is z-index:-1 and pointer-events:none, so a link inside it would paint behind
+   every card and could never be clicked.
+
+   Shown on the two pages that are a front door: the splash while it lasts, and any page
+   that opts into `full-sky`. Everywhere else it stays hidden, so the secret keeps being
+   something you find at the door rather than a fixture on every screen.
+   ═════════════════════════════════════════════════════════════════════════════ */
+/* z-index 5, not 0 — and this is the whole reason the move needed testing. On the splash
+   the star sat at 0, BEHIND the content, and was still clickable only because
+   .studio-content sets pointer-events:none across the whole stage with a small re-arm
+   allowlist. An ordinary scrolling page has no such thing: at z-index 0 the star is
+   behind every card and a click at its center lands on the card instead, which
+   elementFromPoint confirmed. At 5 it is above page content and far below the sticky
+   header (100), the weather overlay (900) and every modal (1000+).
+   Only the 28px glyph takes pointer events — the full-viewport wrapper stays
+   pointer-events:none — so the most it can ever intercept is a click that lands exactly
+   on a mostly-invisible star, at night, during the 17s of each 48s it is in frame. That
+   is the same bargain the splash struck, and arguably it is the secret working. */
+.ts-secret-wrap { position: fixed; inset: 0; z-index: 5; pointer-events: none;
+  overflow: hidden; opacity: var(--sky-veil, 1); }
+body:not(.studio-body):not(.full-sky) .ts-secret-wrap { display: none; }
+/* 2026-07-16 (Nate): "the secret star only floats at night" — by day the sky is empty
+   and the flickering 'i' holds the door; after dark they swap. Two doors, one per
+   shift, so /classified/ is always reachable. */
+html:not(.sky-night) .ts-secret-wrap { display: none; }
+
+/* The star itself. Deliberately at the edge of visibility (dimmed twice on 2026-07-15,
+   0.10 → 0.06 → the value here) — it is meant to be caught, not offered. */
+.ts-secret { position: absolute; right: -8%; top: 34%;
+  font-size: 28px; line-height: 1;
+  color: rgba(205, 205, 230, 0.046);
+  text-decoration: none; opacity: 0;
+  pointer-events: auto; cursor: pointer;
+  will-change: transform; }
+
+/* It CROSSES, it does not park. An earlier version eased to a halt in the right gutter
+   (2026-07-12 Nate: "it stops at like 80% to the right"); now it enters off the right
+   edge and travels at a CONSTANT speed all the way off the left, passing behind the
+   content on the way. The flight is the first stretch of a 48s loop and it is parked
+   off-screen for the rest — a one-shot flight would make the secret unreachable to
+   anyone who missed it, so there is always another pass coming.
+
+   The 7s delay holds it off-screen before the FIRST crossing so the page settles before
+   anything moves through it. animation-delay only applies to the first iteration, which
+   is exactly right: a beat of stillness on arrival, then a star every 48s forever.
+   Speed history: 12.0s of the loop → 12.97 → 14.4 → 16.0 → 17.6s (36.6%), each step a
+   "slow it another 10%" from Nate. The 48s repeat is the WAIT between passes and is
+   deliberately untouched by those. */
+.ts-secret.is-in { animation: secret-fly 48s linear 7s infinite; }
+@keyframes secret-fly {
+  0%    { transform: translateX(0);            opacity: 0; }
+  1%    { opacity: 1; }
+  35.6% { opacity: 1; }
+  36.6% { transform: translateX(-120vw);       opacity: 0; }
+  100%  { transform: translateX(-120vw);       opacity: 0; }
+}
+
+/* THE HOURLY REWARD — at the top of each hour the ✦ streaks: brighter, faster, with a
+   comet tail, one pass, then the sky returns to its patient patrol. The watcher can
+   learn the ritual. Decorative only; the slow star above stays the actual door. */
+.ts-streak { position: absolute; right: -8%; top: 26%; font-size: 28px; line-height: 1;
+  color: rgba(235, 232, 255, 0.6); text-shadow: 0 0 9px rgba(200, 190, 255, 0.7);
+  opacity: 0; pointer-events: none; will-change: transform; }
+.ts-streak::after { content: ''; position: absolute; left: 100%; top: 50%;
+  width: 150px; height: 2px; transform: translateY(-50%);
+  background: linear-gradient(90deg, rgba(210, 205, 255, 0.55), transparent 85%); }
+.ts-streak.go { animation: streak-fly 1.7s linear both; }
+@keyframes streak-fly {
+  0%   { transform: translateX(0);      opacity: 0; }
+  8%   { opacity: 1; }
+  84%  { opacity: 1; }
+  100% { transform: translateX(-130vw); opacity: 0; }
+}
+html.reduce-flourish .ts-streak { display: none !important; }
+@media (prefers-reduced-motion: reduce) { .ts-streak { display: none !important; } }
+
+/* Under reduced motion there is no flight, so the star would never enter frame and the
+   night door would simply not exist. Park it visibly in the right gutter instead: no
+   motion, and the secret stays reachable. (Same bargain the splash struck.) */
+@media (prefers-reduced-motion: reduce) {
+  .ts-secret { right: 4.5%; opacity: 0.10; transform: none; animation: none !important; }
+}
+html.reduce-flourish .ts-secret { right: 4.5%; opacity: 0.10; transform: none; animation: none !important; }

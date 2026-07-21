@@ -53,16 +53,21 @@
            — Nate works on those two privately now. The pages still build; he reaches
            them by URL: /games/reading-room/ and /games/shogi-island/.) {% endcomment %}
       <a href="{{ '/fan-art/' | relative_url }}" class="drift-piece" aria-label="Fan Art">♟</a>
-      <a href="{{ '/classified/' | relative_url }}" class="drift-piece" id="drift-secret" aria-label="???">✦</a>
     </div>
 
-    {% comment %} #9 (2026-07-16 splash check) — ON THE HOUR, the ✦ rewards the patient:
-         one bright streak with a comet tail, right to left, then the sky goes back to
-         its dim 48s patrol. Night-only like the star itself, and decorative only —
-         the slow ✦ above stays the actual door to /classified/. Kept OUTSIDE
-         .studio-drifters so the drifters' nth-child position rules never shift.
-         Fired by the splash script below. {% endcomment %}
-    <b class="drift-streak" id="drift-streak" aria-hidden="true">✦</b>
+    {% comment %} THE SECRET ✦ AND ITS HOURLY COMET MOVED OUT 2026-07-21 — they now live
+         in _includes/town-sky.html as .ts-secret / .ts-streak, styled in
+         _sass/_pjcc-20-town-sky.scss. This page still gets both, because it includes
+         town-sky.html at the top of <body>; nothing is lost here.
+
+         Why they moved: /classified/ has exactly two doors working opposite shifts —
+         the flickering "i" by day, this star by night — and both had to stop belonging
+         to the splash before the splash can retire (docs/front-door-2026-07-21.md).
+         In the shared include they are legitimately viewport-fixed, they cost nothing on
+         pages that don't show them, and there is one copy instead of a copy per front
+         door. Removing #drift-secret from .studio-drifters above also shortens that list
+         to five, which is fine: the star had its own id rule, so no nth-child position
+         shifts. {% endcomment %}
 
     {% comment %} Idea #3 — every so often a faint sigil blooms among the drifters,
          then dissolves: the Av13 portal glyph, foreshadowed. Skipped under
@@ -365,77 +370,15 @@
      ticket clashed with the evening palette; the card is a dusk lantern). */
   .studio-lean.lean-patreon { --lx:89%; --ly:86%; --lean:255,190,100; }
 
-  /* Secret ✦ — the (very dim) star that is also the door to /classified/.
-     2026-07-12 (Nate: "it stops at like 80% to the right"): it used to fly IN and
-     PARK in the right gutter — an eased transition that decelerated to a halt, which
-     is exactly what he was seeing. Now it CROSSES: it enters off the right edge and
-     travels at a CONSTANT speed (linear) all the way off the LEFT edge, passing
-     BEHIND the quad grid on the way (.studio-drifters is z-index:0, the quads sit
-     above it — so it slides behind the panels and reappears in the gutters).
-     It's also dimmer now (0.10 → 0.06).
-     It REPEATS on a long cycle: the flight is the first 12s of a 48s loop, and it's
-     parked invisibly off-screen for the rest. That matters because this star is the
-     only way in to /classified/ — a single one-shot flight would make the secret
-     unreachable for anyone who didn't catch it. Now you can always wait for the next
-     pass. (JS adds .is-in once the cold-open clears; see the splash script.) */
-  #drift-secret {
-    left:auto; bottom:auto; right:-8%; top:34%;
-    font-size:28px;
-    color:rgba(205,205,230,0.046);         /* dimmer still — −15% (2026-07-15) */
-    opacity:0;
-    animation:none;
-    will-change:transform;
-  }
-  /* The 7s delay (Nate, 2026-07-13: "have it only come into frame after 7 seconds") holds
-     the star off-screen before its FIRST crossing, so the page settles before anything moves
-     through it. animation-delay only applies to the first iteration — every later pass comes
-     round on the plain 48s loop, which is what we want: a beat of stillness on arrival, then
-     a star every 48s forever. It stays invisible during the delay because fill-mode is `none`
-     and the base rule is opacity:0. */
-  #drift-secret.is-in { animation:secret-fly 48s linear 7s infinite; }
-  /* 2026-07-16 (Nate): "the secret star only floats at night" — by day the sky is
-     empty and the flickering 'i' in Million holds the door; after dark they swap:
-     the star flies and the 'i' steadies (see _pjcc-04-flair.scss). Two doors, one
-     per shift — /classified/ is always reachable. */
-  html:not(.sky-night) #drift-secret { display:none; }
-  /* transform is declared only at the two ends of the flight, so it interpolates in
-     ONE straight linear segment = genuinely constant speed.
-     The crossing is the first slice of the 48s loop, so its SPEED is set by how much of the
-     loop it gets. History: 25% of 48s = 12.0s → 7.5% slower = 27% (12.97s) →
-     2026-07-13 ("slow the star down 10%") 14.4s = 30% → 2026-07-14 (another 10%)
-     16.0s = 33.3% → 2026-07-15 (another 10%) 16.0/0.9 = 17.6s = 36.6% of the loop.
-     The 48s repeat is deliberately left alone — that's the wait BETWEEN passes, not the
-     star's speed, and this is the only door to /classified/. */
-  @keyframes secret-fly {
-    0%    { transform:translateX(0);              opacity:0; }
-    1%    { opacity:1; }
-    35.6% { opacity:1; }
-    36.6% { transform:translateX(calc(-120vw));   opacity:0; }
-    100%  { transform:translateX(calc(-120vw));   opacity:0; }
-  }
-
-  /* #9 — THE HOURLY REWARD (2026-07-16 splash check): at the top of each hour the ✦
-     STREAKS — brighter, faster, and trailing a comet tail — one pass right-to-left,
-     then the sky returns to the patient 48s patrol. Same layer as the drifters
-     (z-index:0, behind the content), transform/opacity only, one 1.7s flight per
-     hour. The JS below re-arms it against the local clock, so a watcher can learn
-     the ritual: the star falls on the hour. */
-  .drift-streak { position:fixed; right:-8%; top:26%; z-index:0; font-size:28px;
-    color:rgba(235,232,255,0.6); text-shadow:0 0 9px rgba(200,190,255,0.7);
-    opacity:0; pointer-events:none; will-change:transform; }
-  .drift-streak::after { content:''; position:absolute; left:100%; top:50%;
-    width:150px; height:2px; transform:translateY(-50%);
-    background:linear-gradient(90deg, rgba(210,205,255,0.55), transparent 85%); }
-  .drift-streak.go { animation:streak-fly 1.7s linear both; }
-  @keyframes streak-fly {
-    0%   { transform:translateX(0);       opacity:0; }
-    8%   { opacity:1; }
-    84%  { opacity:1; }
-    100% { transform:translateX(-130vw);  opacity:0; }
-  }
-  html:not(.sky-night) .drift-streak { display:none; }
-  html.reduce-flourish .drift-streak { display:none !important; }
-  @media (prefers-reduced-motion: reduce) { .drift-streak { display:none !important; } }
+  /* THE SECRET ✦ AND ITS HOURLY COMET MOVED OUT 2026-07-21 — everything that drew them
+     (#drift-secret, .drift-streak, @keyframes secret-fly, @keyframes streak-fly, the
+     night-only gates and the reduced-motion parking) now lives in
+     _sass/_pjcc-20-town-sky.scss as .ts-secret / .ts-streak, with the markup in
+     _includes/town-sky.html. This page still shows both — it includes town-sky.html at
+     the top of <body> — and now so does the new front door, which is the point: the two
+     doors to /classified/ work opposite shifts (the flickering 'i' by day, the star by
+     night) and both had to stop belonging to the splash before it can retire.
+     See docs/front-door-2026-07-21.md. */
 
   /* Idea #3 — the sigil bloom (the "ACCcccccc" carving that flashes on entry).
      It flashes IN FRONT of the grid (z-index:6) as a translucent gold "transmission
@@ -565,8 +508,9 @@
   @media (prefers-reduced-motion: reduce){
     .studio-lean, .studio-warp, .studio-drift-sigil { transition:none; }
     .studio-drift-sigil { display:none; }
-    /* no flight — park it visibly in the right gutter so the secret stays reachable */
-    #drift-secret { right:4.5%; opacity:0.10; transform:none; transition:none; animation:none !important; }
+    /* (the secret ✦'s reduced-motion parking moved to _pjcc-20-town-sky.scss with the
+       star itself, 2026-07-21 — it still parks visibly in the gutter so the door stays
+       reachable, it is just no longer this page's business.) */
     .drift-piece { animation:none !important; }
     .studio-quad { animation:none !important; }
     .studio-corner-logo { animation:none !important; }
@@ -683,38 +627,9 @@
       seatTheQuads();   // reduced motion: no beat to wait for
     }
 
-    // Secret ✦ is ARMED here; the CSS then holds it off-screen for 7s before the first
-    // crossing (right → behind the quads → off the left edge, constant speed, every 48s).
-    // The cold-open that used to gate this on a first visit is gone (2026-07-18), so it
-    // arms right away — the star still enters ~7s in via its CSS delay. Parked off-screen
-    // until .is-in starts.
-    var star = document.getElementById('drift-secret');
-    if (star && !reduce) {
-      setTimeout(function () { star.classList.add('is-in'); }, 400);
-    }
-
-    // #9 — ON THE HOUR the ✦ streaks with a comet tail: the patient watcher's
-    // reward. Armed against the LOCAL clock (so "on the hour" means the viewer's
-    // hour) and re-armed after every firing, so a long-lived tab keeps the ritual.
-    // Skipped while the tab is hidden or the sky isn't night — the star only flies
-    // after dark, same shift as its slow patrol.
-    var streakEl = document.getElementById('drift-streak');
-    if (streakEl && !reduce) {
-      var streakFire = function () {
-        if (document.hidden) return;
-        if (!document.documentElement.classList.contains('sky-night')) return;
-        streakEl.style.top = (16 + Math.random() * 26) + '%';   // a different lane each hour
-        streakEl.classList.remove('go');
-        void streakEl.offsetWidth;                               // restart the one-shot flight
-        streakEl.classList.add('go');
-      };
-      var streakArm = function () {
-        var d = new Date();
-        var wait = ((60 - d.getMinutes()) * 60 - d.getSeconds()) * 1000 - d.getMilliseconds();
-        setTimeout(function () { streakFire(); streakArm(); }, Math.max(wait, 1000));
-      };
-      streakArm();
-    }
+    // (The secret ✦'s arming and the hourly comet's clock both moved to
+    //  _includes/town-sky.html on 2026-07-21, along with the star itself. This page still
+    //  gets both from that include; they simply are not the splash's job any more.)
 
     // #10 — the doors remember you: win a Park Tables game today (live or bot) and
     // ONE gold square on the splash's park table glints until midnight. The game
@@ -735,7 +650,8 @@
     // reachable behind the content in the first place.)
     if (window.matchMedia && matchMedia('(hover: hover)').matches) {
       Array.prototype.forEach.call(document.querySelectorAll('.drift-piece'), function (d) {
-        if (d.id === 'drift-secret') return;   // the ✦ keeps its own fly-across timing
+        // (the `if (d.id === 'drift-secret') return` guard is gone with the star itself,
+        //  2026-07-21 — the ✦ is no longer a .drift-piece, so there is nothing to skip)
         var rate = function (r) { if (d.getAnimations) d.getAnimations().forEach(function (a) { a.playbackRate = r; }); };
         d.addEventListener('mouseenter', function () { rate(0.25); });
         d.addEventListener('mouseleave', function () { rate(1); });

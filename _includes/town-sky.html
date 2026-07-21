@@ -166,6 +166,36 @@
   <div class="ts-horizon"></div>
 
 </div>
+
+{%- comment -%}
+  ══════════════════════════════════════════════════════════════════════════════
+  THE SECRET ✦ — the night-shift door to /classified/  (moved here 2026-07-21)
+  ──────────────────────────────────────────────────────────────────────────────
+  This lived in _layouts/studio-home.html, which was fine while the splash was the
+  only front door. It is moving here for the front-door rebuild
+  (docs/front-door-2026-07-21.md) so it belongs to the SKY rather than to one page.
+
+  /classified/ has exactly two doors and they work opposite shifts: the flickering "i"
+  in "A Million Stories to Tell" holds the day, and this star holds the night
+  (2026-07-16 Nate: "the secret star only floats at night" / "at night the 'i' secret
+  doesn't flicker"). Lose either half and the whole classified → archive → recovery →
+  dispatch wing goes dark for twelve hours a day, so this had to move before the splash
+  can retire.
+
+  It sits OUTSIDE .town-sky on purpose. The sky is z-index:-1 and pointer-events:none —
+  a link in there would paint behind every card on the page and could not be clicked.
+  Out here it is a direct child of <body> at z-index:0, exactly the footing
+  .studio-drifters gave it on the splash: above the sky, below the content, clickable.
+  ══════════════════════════════════════════════════════════════════════════════
+{%- endcomment -%}
+<div class="ts-secret-wrap">
+  {%- comment -%} the slow patrol: one crossing every 48s, all night. {%- endcomment -%}
+  <a class="ts-secret" href="{{ '/classified/' | relative_url }}" aria-label="???">&#10022;</a>
+  {%- comment -%} #9 (2026-07-16 splash check) — ON THE HOUR the ✦ streaks with a comet
+       tail: one bright pass, then back to the dim patrol. Decorative twin of the star
+       above; the slow one is the actual door. {%- endcomment -%}
+  <b class="ts-streak" aria-hidden="true">&#10022;</b>
+</div>
 {%- comment -%} The constellation roll: night only, once per visit. 10% all · 50% two ·
      30% one · 10% none — mostly the sky shows one or none, so spotting the whole set is
      a rare night. Cheap and JS-light; nothing animates but a slow opacity fade. {%- endcomment -%}
@@ -182,6 +212,45 @@
   for (var k = 0; k < n && k < cons.length; k++) cons[k].classList.add('show');
 })();
 </script>
+{%- comment -%} THE SECRET ✦ — arming (moved from _layouts/studio-home.html 2026-07-21).
+     Two timers, both cheap, both night-only:
+       · the star is ARMED shortly after load; the CSS then holds it off-screen for 7s
+         before its first crossing and repeats it every 48s forever.
+       · the comet is re-armed against the LOCAL clock so "on the hour" means the
+         viewer's hour, and re-armed after every firing so a long-lived tab keeps the
+         ritual. Skipped while the tab is hidden — a streak nobody can see is just work.
+     Both bail unless the wrapper is actually on the page, so this costs nothing on the
+     pages where the secret isn't shown. {%- endcomment -%}
+<script>
+(function () {
+  var wrap = document.querySelector('.ts-secret-wrap');
+  if (!wrap) return;
+  var reduce = (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) ||
+               document.documentElement.classList.contains('reduce-flourish');
+  // Under reduced motion the CSS parks the star visibly in the gutter instead of flying
+  // it, so arming would only fight that — the door is already reachable.
+  if (reduce) return;
+
+  var star = wrap.querySelector('.ts-secret');
+  if (star) setTimeout(function () { star.classList.add('is-in'); }, 400);
+
+  var streak = wrap.querySelector('.ts-streak');
+  if (!streak) return;
+  function fire() {
+    if (document.hidden) return;
+    if (!document.documentElement.classList.contains('sky-night')) return;
+    streak.style.top = (16 + Math.random() * 26) + '%';   // a different lane each hour
+    streak.classList.remove('go');
+    void streak.offsetWidth;                              // restart the one-shot flight
+    streak.classList.add('go');
+  }
+  (function arm() {
+    var d = new Date();
+    var wait = ((60 - d.getMinutes()) * 60 - d.getSeconds()) * 1000 - d.getMilliseconds();
+    setTimeout(function () { fire(); arm(); }, Math.max(wait, 1000));
+  })();
+})();
+</script>
 {%- comment -%} DEPTH ON SCROLL (2026-07-19, the modernization mission) — ease --par-s
      (scroll, normalised 0..1 over the first 600px) onto .town-sky so the SCSS can drift
      the near cloud up a little faster than the far stars: depth as you move through the
@@ -190,15 +259,19 @@
      (The earlier pointer-tilt was dropped — a background shouldn't chase the cursor.) {%- endcomment -%}
 <script>
 (function () {
-  var sky = document.querySelector('.town-sky');
-  if (!sky || !window.matchMedia || !window.requestAnimationFrame) return;
+  // 2026-07-21: set on <html>, not on .town-sky. The sky veil and the secret ✦ read this
+  // too, and the ✦ is a SIBLING of the sky (it has to be — the sky is z-index:-1 and
+  // pointer-events:none, so a link inside it could never be clicked), which means a
+  // value scoped to the sky element could never reach it.
+  var root = document.documentElement;
+  if (!document.querySelector('.town-sky') || !window.matchMedia || !window.requestAnimationFrame) return;
   // both quiet switches freeze it, same as every other bit of sky motion
   if (matchMedia('(prefers-reduced-motion: reduce)').matches ||
-      document.documentElement.classList.contains('reduce-flourish')) return;
+      root.classList.contains('reduce-flourish')) return;
   var ts = 0, cs = 0, raf = null;
   function frame() {
     cs += (ts - cs) * 0.15;
-    sky.style.setProperty('--par-s', cs.toFixed(3));
+    root.style.setProperty('--par-s', cs.toFixed(3));
     raf = (Math.abs(ts - cs) > 0.002) ? requestAnimationFrame(frame) : null;
   }
   function kick() { if (!raf) raf = requestAnimationFrame(frame); }
