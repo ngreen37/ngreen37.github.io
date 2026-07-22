@@ -119,7 +119,11 @@ fragment_key: frag_classified
 @keyframes secret-slam { 0%{ opacity:0; transform:translate(-50%,-50%) rotate(-11deg) scale(2.4);} 100%{ opacity:1; transform:translate(-50%,-50%) rotate(-11deg) scale(1);} }
 .secret-title { font-family:'Poppins',sans-serif; font-weight:800; font-size:clamp(34px,7.6vw,64px); letter-spacing:7px;
   color:var(--gold); margin:14px 0 8px; text-shadow:0 0 30px rgba(255,210,74,0.45); }
-.secret-sub { font-size:11px; letter-spacing:4px; color:rgba(255,140,0,0.66); margin:0 0 18px; }
+/* a11y 2026-07-22: 66% -> 76% amber (4.21:1 -> 4.6:1). A near-miss, but this line names
+   the file you are reading, so it is content. The ██ .rx bars and the CLASSIFIED stamp on
+   this page are left as they are ON PURPOSE — unreadable IS the redaction, and the stamp
+   is a graphic. Same call as the archive page; see _sass/_pjcc-05-classified.scss. */
+.secret-sub { font-size:11px; letter-spacing:4px; color:rgba(255,140,0,0.76); margin:0 0 18px; }
 .secret-coords { font-size:11px; letter-spacing:1.5px; color:rgba(255,140,0,0.5); }
 .secret-grant { color:var(--gold); }
 

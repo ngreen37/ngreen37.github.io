@@ -669,8 +669,12 @@ textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
 
 /* 37 — Blindfold training toggle */
 .cl-blindfold-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-family: 'Share Tech Mono', monospace; }
-.cl-blindfold-label { font-size: 10px; color: rgba(245, 197, 24, 0.45); letter-spacing: 0.12em; }
-.cl-blindfold-toggle { background: transparent; border: 1px solid rgba(245, 197, 24, 0.28); color: rgba(245, 197, 24, 0.55); font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 0.1em; padding: 4px 12px; cursor: pointer; border-radius: 3px; transition: border-color 0.2s, color 0.2s, background 0.2s; }
+/* a11y 2026-07-22: the whole Chess Lessons page ran its small labels at 28-68% alpha,
+   which measured 2.27-4.2:1 against the card — nine AA failures, the worst cluster on the
+   site. Alphas raised to clear 4.5:1; the gold and lavender hues are unchanged, so the
+   page still reads the same, just legibly. */
+.cl-blindfold-label { font-size: 10px; color: rgba(245, 197, 24, 0.78); letter-spacing: 0.12em; }
+.cl-blindfold-toggle { background: transparent; border: 1px solid rgba(245, 197, 24, 0.28); color: rgba(245, 197, 24, 0.82); font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 0.1em; padding: 8px 14px; cursor: pointer; border-radius: 3px; transition: border-color 0.2s, color 0.2s, background 0.2s; }
 .cl-blindfold-toggle:hover, .cl-blindfold-toggle.is-active { border-color: #F5C518; color: #F5C518; background: rgba(245, 197, 24, 0.05); }
 .cl-blindfold-overlay { display: none; padding: 48px 20px; text-align: center; background: rgba(10, 7, 20, 0.95); border: 1px solid rgba(245, 197, 24, 0.18); border-radius: 6px; color: #F5C518; font-family: 'Share Tech Mono', monospace; font-size: 13px; letter-spacing: 0.08em; line-height: 1.8; }
 #chess-embed-wrap.is-blindfold .chess-embed-container { display: none; }
@@ -685,16 +689,16 @@ textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
 .cl-resource-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
 .cl-resource-info { display: flex; flex-direction: column; gap: 3px; }
 .cl-resource-name { font-size: 12px; color: #F5C518; }
-.cl-resource-desc { font-size: 10px; color: rgba(155, 135, 192, 0.68); line-height: 1.5; }
-.cl-resource-tag { display: inline-block; font-size: 8px; color: rgba(167, 139, 250, 0.65); border: 1px solid rgba(167, 139, 250, 0.22); padding: 1px 6px; border-radius: 2px; }
+.cl-resource-desc { font-size: 11px; color: rgba(179, 162, 214, 0.95); line-height: 1.55; }
+.cl-resource-tag { display: inline-block; font-size: 9px; color: rgba(186, 165, 252, 0.95); border: 1px solid rgba(167, 139, 250, 0.22); padding: 1px 6px; border-radius: 2px; }
 
 /* 40 — Tactics streak */
 .cl-streak { display: flex; align-items: center; gap: 12px; padding: 12px 18px; background: rgba(10, 7, 20, 0.7); border: 1px solid rgba(245, 197, 24, 0.18); border-radius: 6px; margin: 16px 0; font-family: 'Share Tech Mono', monospace; }
 .cl-streak-fire { font-size: 22px; }
 .cl-streak-info { display: flex; flex-direction: column; gap: 2px; }
-.cl-streak-label { font-size: 9px; letter-spacing: 0.2em; color: rgba(245, 197, 24, 0.42); text-transform: uppercase; }
+.cl-streak-label { font-size: 10px; letter-spacing: 0.2em; color: rgba(245, 197, 24, 0.78); text-transform: uppercase; }
 .cl-streak-count { font-size: 20px; color: #FFE566; font-weight: 700; line-height: 1; }
-.cl-streak-sub { font-size: 9px; color: rgba(155, 135, 192, 0.48); letter-spacing: 0.08em; }
+.cl-streak-sub { font-size: 10px; color: rgba(179, 162, 214, 0.95); letter-spacing: 0.08em; }
 
 /* 22/38 — Daily scenario */
 .cl-scenario { margin: 28px 0; background: rgba(18, 9, 58, 0.55); border: 1px solid rgba(245, 197, 24, 0.2); border-radius: 6px; padding: 18px 22px; font-family: 'Share Tech Mono', monospace; }

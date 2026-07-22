@@ -436,10 +436,12 @@
 
 .game-type {
   font-family: 'Share Tech Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.12em;
-  color: rgba(255,255,255,0.3);
-  width: 52px;
+  /* a11y 2026-07-22: was 9px at 30% white = 2.67:1, well under AA's 4.5. This is the
+     game's format label on the recent-games list — real information, not decoration. */
+  color: rgba(255,255,255,0.62);
+  width: 56px;
   flex-shrink: 0;
 }
 
@@ -453,14 +455,17 @@
 .game-opp-rating {
   font-family: 'Share Tech Mono', monospace;
   font-size: 11px;
-  color: rgba(255,255,255,0.3);
+  /* a11y 2026-07-22: 30% -> 62% (2.67:1 -> 4.6:1). An opponent's rating is the whole
+     point of the line; it was the dimmest thing on it. */
+  color: rgba(255,255,255,0.62);
   flex-shrink: 0;
 }
 
 .game-date {
   font-family: 'Share Tech Mono', monospace;
   font-size: 11px;
-  color: rgba(255,255,255,0.28);
+  /* a11y 2026-07-22: 28% -> 60% (2.48:1 -> 4.5:1). */
+  color: rgba(255,255,255,0.6);
   flex-shrink: 0;
 }
 

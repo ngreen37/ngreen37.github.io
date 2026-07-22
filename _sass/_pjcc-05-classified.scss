@@ -100,7 +100,10 @@ body.theme-classified {
   font-size: 11px;
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: rgba(255, 140, 0, 0.55);
+  /* a11y 2026-07-22: 55% -> 82% amber (3.19:1 -> 4.6:1). Note the status line also
+     BREATHES via status-breathe, so 0.55 was its brightest frame, not its dimmest —
+     the keyframes are raised to match below. */
+  color: rgba(255, 140, 0, 0.82);
   border-top: 1px solid rgba(255, 140, 0, 0.18);
   border-bottom: 1px solid rgba(255, 140, 0, 0.18);
   padding: 9px 0;
@@ -113,6 +116,13 @@ body.theme-classified {
   animation: status-breathe 6s ease-in-out infinite;
 }
 
+/* DELIBERATELY LEFT DIM (a11y sweep 2026-07-22). Two things on this page measure far
+   below AA and are supposed to:
+     · .classified-redact — the ████ bars. Unreadable IS the redaction; "fixing" the
+       contrast would un-censor the joke.
+     · .classified-dots — three blinking dots, pure decoration carrying no meaning.
+   Everything on this page that a reader is actually meant to READ was raised to clear
+   4.5:1 in the same pass. */
 .classified-dots {
   color: rgba(255, 140, 0, 0.3);
   animation: dot-blink 1.2s step-end infinite;
@@ -124,7 +134,8 @@ body.theme-classified {
 }
 
 @keyframes status-breathe {
-  0%, 100% { opacity: 0.55; }
+  /* floor raised with the color above so the breath never dips below AA */
+  0%, 100% { opacity: 0.82; }
   50%       { opacity: 1; }
 }
 
@@ -328,7 +339,9 @@ body.theme-classified {
   font-size: 10px;
   letter-spacing: 2.5px;
   text-transform: uppercase;
-  color: rgba(255, 140, 0, 0.45);
+  /* a11y 2026-07-22: 45% -> 80% (2.45:1 -> 4.5:1). This labels WHICH fragment you are
+     reading — information, not atmosphere. */
+  color: rgba(255, 140, 0, 0.8);
 }
 
 .classified-file-tag {
@@ -348,7 +361,9 @@ body.theme-classified {
   font-size: 10px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: rgba(255, 140, 0, 0.28);
+  /* a11y 2026-07-22: 28% -> 78% (1.57:1 -> 4.5:1) — this was the least readable real
+     text on the site. */
+  color: rgba(255, 140, 0, 0.78);
   margin-left: auto;
 }
 
@@ -381,8 +396,11 @@ body.theme-classified {
 
 
 .classified-note {
-  font-size: 12px;
-  color: rgba(255, 140, 0, 0.42);
+  /* a11y 2026-07-22: 12px at 42% amber = 2.26:1. This is PROSE — the reader is meant to
+     read it, and it carries the payoff of the fragment. 13px at 88% clears AA and the
+     italic amber still reads as a margin note on a terminal. */
+  font-size: 13px;
+  color: rgba(255, 140, 0, 0.88);
   font-style: italic;
   border-left: 2px solid rgba(255, 140, 0, 0.18);
   padding-left: 12px;
