@@ -13,7 +13,7 @@ The place where the story begins. Checker Town is a struggling community where m
 - Close enough to see what lies beyond, far enough that getting there feels impossible
 
 ## Who Lives Here
-Nate and his family, Maxwell, and Michael all call Checker Town home. Princess does too. It is the place they are all, in different ways, trying to escape -- or make peace with.
+Nate and his family, Maxwell, and Robert all call Checker Town home. Princess does too. It is the place they are all, in different ways, trying to escape -- or make peace with.
 
 ## Role in the Story
 Checker Town is the world the story starts in and the world the story keeps pulling back to. It represents everything Nate is fighting against, and everything he risks losing by leaving.

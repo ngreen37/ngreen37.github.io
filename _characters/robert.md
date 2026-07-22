@@ -13,7 +13,7 @@ dossier_secret: Reads the same three books on a loop and quotes them like script
 last_seen: CHESS CITY
 ---
 
-**Robert** is the **Chess City rival** — the local hotshot who treats the board like a stage and the mind like a muscle. He talks like **Bob Proctor**: all mindset, manifestation, and unshakeable certainty. Where Michael is quietly righteous, Robert is *loud* about belief — and, to everyone's irritation, often right.
+**Robert** is the **Checker Town rival** — the local hotshot who treats the board like a stage and the mind like a muscle. He talks like **Bob Proctor**: all mindset, manifestation, and unshakeable certainty. Where Michael is quietly righteous, Robert is *loud* about belief — and, to everyone's irritation, often right.
 
 ## Traits
 - Speaks in **mindset axioms**: his signature line is *"goals are 5% strategy, 95% mindset"*

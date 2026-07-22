@@ -32,18 +32,19 @@
   }
 
   /* ── WHERE THE BAR STANDS depends on what it is saying (2026-07-22) ─────────────
-   * The front door sells the Gauntlet with "Real chess vs a ladder of ten rivals. No
-   * account, no download." One tap later this bar was the first thing on the page —
-   * an email field and a "Send login link" button, with the game pushed off the
-   * bottom of a phone screen. The site's only call to action led with the exact thing
-   * it had just promised you would not need.
+   * You do not need an account to play the games. This bar was the first thing on
+   * every game page anyway — an email field and a "Send login link" button, with the
+   * game itself pushed off the bottom of a phone screen. A stranger who tapped the
+   * front door's one call to action met a login before they met the board.
    *
    * So the ask moves to where it is earned: for a signed-OUT visitor the bar drops
    * below the game, beside the mailing list, as one quiet line. Every signed-IN state
    * still stands at the top — an identity row (rank, credits, the codename you
    * claimed) is a reward and a status light, not a toll gate, and a player who has one
-   * wants it in view. Nothing about signing in changed: same label, same field, same
-   * button, one tap further down the page.
+   * wants it in view. Nothing about signing in changed: same field, same button, one
+   * tap further down the page. The account is FREE and the label now says so, because
+   * the reason to make one is the Gambit's altar and a 1v1 across the Park Tables —
+   * not permission to play.
    * ──────────────────────────────────────────────────────────────────────────────── */
   function slotTop(bar) {
     var h = document.querySelector('.game-page-header');
@@ -112,7 +113,7 @@
         return;
       }
       bar.innerHTML =
-        '<span class="pjcc-label">Save your operative across every game &amp; device:</span>' +
+        '<span class="pjcc-label"><strong>Free account.</strong> Save your operative across every game &amp; device:</span>' +
         '<input id="pjcc-email" type="email" class="pjcc-input" placeholder="you@email.com">' +
         '<button id="pjcc-login" class="pjcc-btn">Send login link</button>';
       var mail = document.getElementById('pjcc-email');

@@ -95,6 +95,10 @@ layout: default
   /* letter-spacing stays at 0 here too — the outline needs the room (see the title
      card block below). */
   .hero-title { font-size: clamp(26px, 8.4vw, 38px); }
+  /* the lede costs vertical room on the screen where room is scarcest, so it is smaller
+     and tighter here — the door under it has to stay on the first screen, which is the
+     whole reason the line moved up. */
+  .hero-lede { font-size: 13.5px; margin-top: 9px; max-width: 30ch; }
   .hero-eyebrow { display: none; }
   /* (the .hero-skyline phone rules went with the skyline itself, 2026-07-21) */
   .hero-board { bottom: 30px; height: 64px; }
@@ -216,6 +220,20 @@ layout: default
        display. {% endcomment %}
   <h1 class="hero-title">Princess and the Journey to Chess City</h1>
 
+  {% comment %} ── THE LEDE (2026-07-22, Nate) ────────────────────────────────────────
+       A stranger's first screen said the title, then a tagline cycling ONE WORD at a
+       time — land at the wrong second and the only sentence under a show's name is
+       "Blog." The one line that actually explains the site was the Gauntlet's, and it
+       sat at the very bottom edge of a 390x844 phone: above the fold by a few pixels on
+       that device, below it on anything shorter. So it moves up here where the eye
+       already is, and the door below keeps a shorter line of its own.
+
+       It no longer says "no account, no download" (Nate: "my pitch has never been that
+       — the account is free"). The games do not need one; an account is what opens the
+       Gambit's altar and a 1v1 across the Park Tables. That belongs where the account
+       is actually asked for, not in the promise on the front door. {% endcomment %}
+  <p class="hero-lede">Real chess vs a ladder of ten rivals — free, in your browser.</p>
+
   {% comment %} ── THE TAGLINE, brought over from the splash (2026-07-21) ──────────────
        The seven-word cycle in Nate's arc order (2026-07-16: the cycle CLIMBS to the
        destination — Animation, the animated series — and lands there last, right before
@@ -320,7 +338,9 @@ layout: default
     <span class="gdoor-whisper" id="gdoor-whisper" aria-hidden="true"></span>
   </a>
   <b class="home-cta-name">The Gauntlet</b>
-  <i class="home-cta-sub">Real chess vs a ladder of ten rivals. No account, no download.</i>
+  {% comment %} the long version of this line is the hero's lede now (2026-07-22) — this
+       one says the thing the door itself cannot: what the climb costs you. {% endcomment %}
+  <i class="home-cta-sub">Ten floors. Beat one to open the next.</i>
 
   <p class="home-cta-alt">
     <a class="home-cta-park" href="{{ '/games/park-tables/' | relative_url }}"
@@ -374,6 +394,13 @@ layout: default
   transition:color .15s, border-color .15s, opacity .15s; }
 .hero-eyebrow:hover { color:#F5C518; border-color:rgba(245,197,24,0.6); text-decoration:none; opacity:1; }
 .hero-title { margin-bottom:0; }
+
+/* the lede — the one plain sentence on the first screen. Sized between the title and
+   the tagline so it reads as the title's answer rather than as another headline, and
+   width-capped so it breaks into two short lines instead of one long one. */
+.hero-lede { margin:12px auto 0; max-width:34ch; text-wrap:balance;
+  font-size:15px; line-height:1.45; color:rgba(233,226,250,0.9);
+  text-shadow:0 1px 6px rgba(8,4,24,0.75); }
 
 /* ── THE WORLD LINE — what replaced the flat skyline (2026-07-21) ──────────────────
    Deleted with the markup: .hero-skyline and its ~60 lines of CSS-shape art — six
