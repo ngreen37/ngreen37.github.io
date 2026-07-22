@@ -121,8 +121,12 @@ they were hidden there precisely because they were the only route to those place
   proposal: it makes them legitimately viewport-fixed instead of needing fiddly
   re-anchoring, and it protects the `/classified/` wing.
 - A scroll-linked `--sky-veil` driver (one rAF-throttled listener, opacity only) fading the
-  clouds and stars out across the first 100vh. This is a better permanent fix for the
-  "jellybeans" bug than today's `body:not(.studio-body){display:none}` hack.
+  clouds and stars out across the first 100vh. Better layering than today's
+  `body:not(.studio-body){display:none}` hack. *(Corrected 2026-07-22: this was written up
+  as a fix for the "jellybeans" bug. It was not one — the jellybeans were
+  `.flair-weathering` footer splats in `pjcc-flair.js`, found and deleted 2026-07-22. The
+  veil is still the right call for layering; it just never had anything to do with that
+  bug. See `docs/jellybeans-2026-07-22.md`.)*
 - Make the lamp's tooltip **name** what shipped — about six lines of Liquid writing
   `site.posts.first.title` into the lit-state string. Turns "something happened" into "this
   happened."

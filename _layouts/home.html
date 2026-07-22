@@ -594,7 +594,13 @@ html.reduce-flourish .hero-title { animation:none; }
 
 /* The footer chess-glyph band is GONE from the home page too now (2026-07-15 Nate: even
    in the black footer the faint pieces read as "transparent jellybeans" — reset the
-   footer clean). It was re-shown here only; that re-enable is deleted, so the footer
+   footer clean).
+   ⚠ 2026-07-22: the actual jellybeans turned out to be `.flair-weathering`, blurred
+   splats that pjcc-flair.js appended to the bottom of the footer — RIGHT ON TOP of this
+   glyph band, which is very likely why the band kept getting blamed. Those are deleted
+   now. If the glyph ribbon is wanted back on the home page, the restore line is below and
+   nothing is standing in its way any more.
+   It was re-shown here only; that re-enable is deleted, so the footer
    ribbon is now hidden on EVERY normal page (Chess City still re-enables its own for the
    awake-rook egg). Restore: `body:has(.home-flow) .footer-ribbon-wrap { display: flex; }` */
 /* ONE orb, PERIOD (2026-07-18 Nate: "collapse the two systems"). The hero no longer paints

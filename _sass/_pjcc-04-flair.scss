@@ -305,10 +305,16 @@ html.reduce-flourish .tagline-main-tagline .tg-x-glyph { animation: none; visibi
    page keeps its single .home-glyphs ribbon; every other page now has none.
    Restore by flipping this back to `display:flex`. */
 /* RESTORED site-wide 2026-07-15 (Nate: "bring the chess-piece glyphs back; I liked those").
-   The real "jellybean" floaters were the town-sky CLOUD puffs bleeding behind content, not
-   this band — those are now splash-only (see _pjcc-20-town-sky.scss). This ribbon sits INSIDE
-   the opaque footer (overflow-hidden, solid bg), so the faint pieces read as texture, not
-   splotches. Chess City's own re-enable is now redundant but harmless. */
+   This ribbon sits INSIDE the opaque footer (overflow-hidden, solid bg), so the faint
+   pieces read as texture, not splotches. Chess City's own re-enable is now redundant but
+   harmless. */
+/* ⚠ CORRECTION 2026-07-22. The line that used to sit here said the "jellybean" floaters
+   were the town-sky CLOUD puffs and that making them splash-only had fixed it. THAT WAS
+   WRONG, and it stayed wrong in the repo for a week. The jellybeans were
+   `.flair-weathering` — a strip of blurred pastel splats that assets/js/pjcc-flair.js
+   appended to the foot of this very footer, one more for each day a visitor had ever
+   come back. They are deleted now (2026-07-22); the post-mortem is in pjcc-flair.js.
+   Neither this ribbon nor the clouds were ever the cause. */
 .footer-ribbon-wrap {
   display: flex;
   position: absolute;

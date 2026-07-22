@@ -66,45 +66,25 @@
      background gold pieces." The premiere-milestone crown gathering went with
      them, since it was made of these seven pieces. Restore both from git.) ---- */
 
-  /* ---- #16 The wall remembers you — return visits leave a little more paint
-     at the foot of every page. One coat per day, capped, never a word.
-     Deterministic per visit-count: old splats stay put, new ones join. ---- */
-  function setupWeathering() {
-    var footer = document.querySelector('.site-footer');
-    if (!footer) return;
-    var KEY = 'pjcc.weathering', st = { d: 0, last: '' };
-    try { st = JSON.parse(localStorage.getItem(KEY)) || st; } catch (e) {}
-    var t = new Date(), ds = t.getFullYear() + '-' + (t.getMonth() + 1) + '-' + t.getDate();
-    if (st.last !== ds) {
-      st.d = Math.min(40, (st.d || 0) + 1); st.last = ds;
-      try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {}
-    }
-    var n = Math.min(18, Math.max(0, (st.d || 0) - 1));   // day one: the wall is clean
-    if (!n) return;
-    function rnd(seed) {
-      var x = Math.imul(seed ^ (seed >>> 15), 2246822519);
-      x = Math.imul(x ^ (x >>> 13), 3266489917);
-      return ((x ^= x >>> 16) >>> 0) / 4294967296;
-    }
-    var COLS = ['245,197,24', '176,142,255', '91,224,192', '255,143,208', '138,99,240', '255,168,60'];
-    if (getComputedStyle(footer).position === 'static') footer.style.position = 'relative';
-    var wrap = document.createElement('div');
-    wrap.className = 'flair-weathering';
-    wrap.setAttribute('aria-hidden', 'true');
-    for (var i = 0; i < n; i++) {
-      var b = i * 7 + 3;
-      var w = 9 + rnd(b + 1) * 18, hgt = w * (0.5 + rnd(b + 2) * 0.45);
-      var sp = document.createElement('i');
-      sp.style.cssText = 'left:' + (rnd(b) * 97).toFixed(1) + '%;bottom:' + (rnd(b + 3) * 10).toFixed(1) + 'px;' +
-        'width:' + w.toFixed(1) + 'px;height:' + hgt.toFixed(1) + 'px;' +
-        'background:rgba(' + COLS[i % COLS.length] + ',' + (0.045 + rnd(b + 4) * 0.05).toFixed(3) + ');' +
-        'border-radius:' + (35 + rnd(b + 5) * 30).toFixed(0) + '% ' + (65 - rnd(b + 6) * 30).toFixed(0) + '% ' +
-        (48 + rnd(b + 2) * 22).toFixed(0) + '% ' + (40 + rnd(b + 1) * 25).toFixed(0) + '%;' +
-        'transform:rotate(' + (rnd(b + 5) * 360).toFixed(0) + 'deg);';
-      wrap.appendChild(sp);
-    }
-    footer.appendChild(wrap);
-  }
+  /* ---- #16 "The wall remembers you" — DELETED 2026-07-22. THIS WAS THE JELLYBEANS.
+     It drew one soft blurred splat per day you had ever visited, capped at 18, pinned
+     along the bottom 30px of the footer on EVERY page (.flair-weathering, styled in
+     _sass/_pjcc-11-flair.scss): 9–27px, irregular four-value border-radius, random
+     rotation, blur(0.6px), in gold / lavender / teal / pink / purple / orange at
+     4.5–9.5% alpha. That is a jellybean.
+
+     It went unfound twice because it is INVISIBLE TO A FRESH BROWSER: the count is
+     `min(18, visitDays - 1)`, so day one draws nothing and every screenshot, headless
+     check and first-load repro came back clean. Only a returning visitor ever saw it,
+     and it grew by one a day, which is exactly why Nate reported "somehow MORE of them"
+     (he was on day 12 and counted 11). The 2026-07-14/15 investigations blamed the
+     town-sky cloud puffs and the footer glyph ribbon instead, "fixed" those, and wrote
+     the wrong conclusion into three files — see the corrected notes in
+     _pjcc-04-flair.scss and _pjcc-20-town-sky.scss.
+
+     If a return-visit reward is ever wanted again, it must be something a visitor can
+     READ as intentional (a line, a count, a mark that means something), not ambient
+     dirt at the foot of the page. Restore from git if that day comes. ---- */
 
   /* ---- Piece-burst confetti ---- */
   function burst(x, y, glyphs) {
@@ -154,6 +134,5 @@
     try { setupReveal(); } catch (e) {}
     try { setupTilt(); } catch (e) {}
     try { setupBursts(); } catch (e) {}
-    try { setupWeathering(); } catch (e) {}
   });
 })();

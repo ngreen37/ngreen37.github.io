@@ -40,10 +40,11 @@
   will-change: transform, opacity;
 }
 
-/* ---- #16 return-visit weathering (site-wide, wordless; static, so it stays
-   under reduced motion too) ---- */
-.flair-weathering { position: absolute; left: 0; right: 0; bottom: 0; height: 30px; pointer-events: none; overflow: hidden; }
-.flair-weathering i { position: absolute; display: block; filter: blur(0.6px); }
+/* ---- #16 return-visit weathering — DELETED 2026-07-22 along with its builder in
+   assets/js/pjcc-flair.js. THESE WERE THE JELLYBEANS: a 30px strip of blurred
+   pastel splats across the foot of every page, one more each day you came back.
+   The full post-mortem, including why two earlier hunts blamed the wrong layer,
+   is in the comment that replaced setupWeathering(). ---- */
 
 @media (prefers-reduced-motion: reduce) {
   .flair-reveal { opacity: 1; transform: none; filter: none; transition: none; }

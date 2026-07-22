@@ -510,10 +510,18 @@ html.shape-long .ts-cloud--long { display: block; }
 html.cloud-1 .ts-clouds { opacity: 0.22; }
 html.cloud-2 .ts-clouds { opacity: 0.46; }
 html.cloud-3 .ts-clouds { opacity: 0.72; }
-/* The cloud puffs read as "jellybean" splotches when they drift behind flat page content
-   instead of an actual sky (Nate 2026-07-15, arrows on the screenshot). The deck is now
-   SPLASH-ONLY: the splash (body.studio-body) keeps its full sky; every content page keeps
-   the calmer sky — gradient, stars, horizon, season particles — with no floating puffs. */
+/* The deck is SPLASH-ONLY: the splash (body.studio-body) keeps its full sky; every
+   content page keeps the calmer sky — gradient, stars, horizon, season particles — with
+   no floating puffs.
+   ⚠ WHY, CORRECTED 2026-07-22: this cull was made on 2026-07-15 in the belief that the
+   puffs WERE the "jellybeans" Nate had drawn arrows at. They were not. The jellybeans
+   were `.flair-weathering`, a strip of blurred pastel splats that pjcc-flair.js appended
+   to the footer, one per day of return visits — invisible on a first load, which is why
+   every check came back clean and the blame kept landing on whatever ambient layer was
+   nearby. That is deleted now (see assets/js/pjcc-flair.js for the post-mortem).
+   The cull is KEPT anyway, on its own merits: a hard-edged puff behind body copy still
+   reads as a stray shape, and the calmer content-page sky is the look we want. But it
+   was never the fix it was recorded as, and it should not be cited as one. */
 /* 2026-07-21: `.full-sky` is exempt too — see THE SKY VEIL at the foot of this file. It
    is the front door's opt-in to the whole sky, and it doesn't reintroduce the splotches
    because the discrete layers fade out as you scroll off the hero. */
@@ -761,8 +769,13 @@ body.theme-bw .ts-horizon,
 body.theme-studio .ts-horizon { display: none; }
 body.theme-bw .ts-stars,
 body.theme-studio .ts-stars { display: block; opacity: 0.18; }
-/* THE FLOATER CULL (Nate 2026-07-15 — still saw "jellybeans" after the cloud fix; the
-   remainder were the STARS at dusk/night). Every DISCRETE sky element — clouds (also hidden
+/* THE FLOATER CULL (Nate 2026-07-15 — still saw "jellybeans" after the cloud fix, which
+   was read at the time as "the remainder must be the STARS at dusk/night").
+   ⚠ CORRECTED 2026-07-22: he still saw them because NEITHER the clouds nor the stars were
+   ever drawing them. The jellybeans were `.flair-weathering` in pjcc-flair.js — footer
+   splats that accrue one per day of return visits, so they survived both culls and kept
+   multiplying. Deleted 2026-07-22. This cull stays for the look it gives, not as a fix.
+   Every DISCRETE sky element — clouds (also hidden
    above), stars, constellations, shooting stars — reads as a splotch behind flat page content
    because there's no sky context there. So the whole discrete layer is SPLASH-ONLY now
    (body.studio-body keeps its full sky). Content pages keep the SMOOTH sky only: the gradient,
@@ -819,10 +832,11 @@ body.theme-studio .site-header::before { display: none; }
 
    The problem this replaces: the discrete sky layers — clouds, stars, constellations,
    shooting stars — were banned outright from every page except the splash, because
-   behind flat page content they read as floating splotches ("jellybeans", Nate
-   2026-07-15). That fix worked, but it treated the symptom: it assumed a page either IS
-   the sky or ISN'T. The new front door is both — a real sky at the top, ordinary content
-   below it.
+   behind flat page content they read as floating splotches — which on 2026-07-15 was
+   believed to be the "jellybeans" Nate had marked up. It wasn't (that was
+   `.flair-weathering`, deleted 2026-07-22 — see assets/js/pjcc-flair.js). The ban still
+   assumed a page either IS the sky or ISN'T, and the new front door is both — a real sky
+   at the top, ordinary content below it.
 
    So a page can now opt in with `body_class: full-sky`, and the discrete layers FADE as
    the hero scrolls away. At the top you get the whole sky; by the time any body copy has
