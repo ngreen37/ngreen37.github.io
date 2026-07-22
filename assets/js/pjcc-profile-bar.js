@@ -31,6 +31,36 @@
     return e;
   }
 
+  /* ── WHERE THE BAR STANDS depends on what it is saying (2026-07-22) ─────────────
+   * The front door sells the Gauntlet with "Real chess vs a ladder of ten rivals. No
+   * account, no download." One tap later this bar was the first thing on the page —
+   * an email field and a "Send login link" button, with the game pushed off the
+   * bottom of a phone screen. The site's only call to action led with the exact thing
+   * it had just promised you would not need.
+   *
+   * So the ask moves to where it is earned: for a signed-OUT visitor the bar drops
+   * below the game, beside the mailing list, as one quiet line. Every signed-IN state
+   * still stands at the top — an identity row (rank, credits, the codename you
+   * claimed) is a reward and a status light, not a toll gate, and a player who has one
+   * wants it in view. Nothing about signing in changed: same label, same field, same
+   * button, one tap further down the page.
+   * ──────────────────────────────────────────────────────────────────────────────── */
+  function slotTop(bar) {
+    var h = document.querySelector('.game-page-header');
+    // compare against the ELEMENT sibling: markup whitespace is a text node, so a
+    // nextSibling check would report "not in place" every time and re-insert on
+    // every render, tearing out whatever the visitor was typing.
+    if (h && h.parentNode && bar.previousElementSibling !== h) h.parentNode.insertBefore(bar, h.nextSibling);
+  }
+  function slotBottom(bar) {
+    var d = document.querySelector('.game-dispatch');
+    if (d && d.parentNode && bar.nextElementSibling !== d) d.parentNode.insertBefore(bar, d);
+  }
+
+  // Whether the visitor has opened the sign-in offer. Module-level so a re-render
+  // (PJCC.onChange fires on token refresh) leaves an opened form open.
+  var offerOpen = false;
+
   function codeError(e) {
     if (!PJCC.verifyCode) return 'Close and reopen the app to update, then try again.';
     if (e && e.message === 'bad code') return 'Type the whole code from the email.';
@@ -72,10 +102,21 @@
     var prof = PJCC.getProfile();
 
     if (!user) {
+      // below the game, and closed until asked for — see the placement note above
+      slotBottom(bar);
+      if (!offerOpen) {
+        bar.className = 'pjcc-bar pjcc-bar-quiet';
+        bar.innerHTML =
+          '<button id="pjcc-offer" class="pjcc-btn-ghost">Save your operative across every game &amp; device &rarr;</button>';
+        bind('pjcc-offer', function () { offerOpen = true; render(); });
+        return;
+      }
       bar.innerHTML =
         '<span class="pjcc-label">Save your operative across every game &amp; device:</span>' +
         '<input id="pjcc-email" type="email" class="pjcc-input" placeholder="you@email.com">' +
         '<button id="pjcc-login" class="pjcc-btn">Send login link</button>';
+      var mail = document.getElementById('pjcc-email');
+      if (mail) mail.focus();   // it was opened deliberately; don't make them tap twice
       bind('pjcc-login', function () {
         var email = (document.getElementById('pjcc-email').value || '').trim();
         if (!email) return;
@@ -90,6 +131,10 @@
       });
       return;
     }
+
+    // signed in from here down: the bar is an identity row, so it goes back to the top
+    offerOpen = false;
+    slotTop(bar);
 
     if (!prof) {
       bar.innerHTML =
