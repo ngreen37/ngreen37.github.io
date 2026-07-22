@@ -257,13 +257,14 @@ layout: default
          piece clears the bottom of CHECKER TOWN -> CHESS CITY by 9px at these sizes and
          COLLIDES at the next step up. So the pieces grew by dropping --b as much as they
          gained in height — bigger against the bigger squares, same headroom. {%- endcomment -%}
-    {%- comment -%} --o was 1, now 0.85 (2026-07-22, Nate: "make the chess pieces a little
-         transparent, to match the checker pieces"). The checkers sit at 0.34–0.52; a hair
-         of that on the pieces lets the sky graze the fill so they share the checkers' air
-         without greying out — full 0.5 would turn ivory to slate. {%- endcomment -%}
-    <span class="hp hp-cs hp-cs--w" style="--x:64%;  --b:16px; --w:34px; --o:0.85">{% include chess-piece.html piece='bishop' side='w' %}</span>
-    <span class="hp hp-cs hp-cs--b" style="--x:69.5%;--b:5px;  --w:50px; --o:0.85">{% include chess-piece.html piece='king'   side='b' %}</span>
-    <span class="hp hp-cs hp-cs--w" style="--x:75%;  --b:2px;  --w:42px; --o:0.85">{% include chess-piece.html piece='queen'  side='w' %}</span>
+    {%- comment -%} --o was 1, then 0.85, now 0.72 (2026-07-22, Nate again: "make the chess
+         pieces a little more transparent on the hero"). The checkers sit at 0.34–0.52; a
+         hair of that on the pieces lets the sky graze the fill so they share the checkers'
+         air without greying out — full 0.5 would turn ivory to slate, so 0.72 is a step
+         toward them, not all the way to them. {%- endcomment -%}
+    <span class="hp hp-cs hp-cs--w" style="--x:64%;  --b:16px; --w:34px; --o:0.72">{% include chess-piece.html piece='bishop' side='w' %}</span>
+    <span class="hp hp-cs hp-cs--b" style="--x:69.5%;--b:5px;  --w:50px; --o:0.72">{% include chess-piece.html piece='king'   side='b' %}</span>
+    <span class="hp hp-cs hp-cs--w" style="--x:75%;  --b:2px;  --w:42px; --o:0.72">{% include chess-piece.html piece='queen'  side='w' %}</span>
   </div>
   {% comment %} No <br> (2026-07-21). The hard break after "Journey" was tuned for a 52px
        title; at poster size the first line no longer fits, so the break landed mid-phrase
@@ -381,6 +382,14 @@ layout: default
      10" has never appeared on this page. Step 1 deferred adding it to a card that was
      about to be replaced; this is the replacement. {% endcomment %}
 <section class="home-cta" aria-label="Play" data-reveal>
+  {% comment %} SIDE BY SIDE AGAIN (2026-07-22, Nate: "move the gauntlet to the left, and the
+       park tables on the right, on the same horizontal"). Step 1 earlier the same day had
+       narrowed this to ONE door on the reasoning that a front door should ask one thing;
+       Nate's call reverses that. The Gauntlet and the Park Tables now stand as a pair on one
+       row — the climb on the left, the seat on the right — each keeping its own three-part
+       stack (art · gold name · sub). .home-cta is the flex ROW that lays them out and folds
+       back to a column on phones. {% endcomment %}
+  <div class="home-cta-main">
   <a class="gdoor home-gdoor" id="gauntlet-door" href="{{ '/games/the-gauntlet/' | relative_url }}"
      aria-label="The Gauntlet — real chess vs a ladder of ten PJCC rivals">
     <span class="gdoor-arch" aria-hidden="true">
@@ -394,19 +403,20 @@ layout: default
   {% comment %} the long version of this line is the hero's lede now (2026-07-22) — this
        one says the thing the door itself cannot: what the climb costs you. {% endcomment %}
   <i class="home-cta-sub">Ten floors. Beat one to open the next.</i>
+  </div>
 
   {% comment %} 2026-07-22 (Nate): Park Tables was a one-line pill — table chip on the left,
        text on the right. He asked for it rebuilt in the Gauntlet's own shape: the drawing
        centered and BIG to match the door, a bold-gold title under it like "The Gauntlet",
-       and the "take a seat" line beneath that. So it is the same three-part stack as the
-       door above — art, gold name, sub — the second move presented like the first, just
-       lower on the page. {% endcomment %}
+       and a line beneath. So it is the same three-part stack as the door — art, gold name,
+       sub — the seat presented like the climb, now beside it on the same row rather than
+       below (see SIDE BY SIDE at the top of this section). {% endcomment %}
   <div class="home-cta-alt">
     <a class="home-cta-park" href="{{ '/games/park-tables/' | relative_url }}"
        aria-label="Park Tables — play chess against another operative in the Checker Town park">
       <span class="home-cta-park-art" aria-hidden="true">{% include park-table.html %}</span>
       <b class="home-cta-park-name">Park Tables</b>
-      <span class="home-cta-park-sub">Or take a seat at the Park Tables &rarr;</span>
+      <span class="home-cta-park-sub">Play Chess Now</span>
     </a>
   </div>
 </section>
@@ -935,8 +945,17 @@ html.reduce-flourish .hero-title { animation:none; }
    move it down"). The door's arch throws an ~18px glow (box-shadow 0 0 26px -8px) that was
    landing on the hero card's bottom border. The gap clears it; the door shrank in the same
    pass, which claws most of that 22px back off the fold. */
-.home-cta { display:flex; flex-direction:column; align-items:center; text-align:center;
-  margin:22px 0 34px; }
+.home-cta { display:flex; flex-flow:row wrap; align-items:flex-end; justify-content:center;
+  gap:26px 54px; text-align:center; margin:22px 0 34px; }
+/* SIDE BY SIDE (2026-07-22, Nate: "move the gauntlet to the left, and the park tables on the
+   right, on the same horizontal") — was a centered COLUMN of one door; now a ROW of two
+   stacks. align-items:flex-end stands both on the SAME GROUND LINE, which lands the two gold
+   names on one baseline and the two sub-lines on another — so the tall narrow door and the
+   wide short table read as a matched pair of labels even though the drawings differ in
+   height (centering them floats the table mid-door and staggers the names). The phone rule
+   below folds the row to a column — and re-sets align-items to center there, because in a
+   COLUMN flex-end would push both stacks against the right edge. */
+.home-cta-main { display:flex; flex-direction:column; align-items:center; }
 /* the door SHRANK 124×160 → 108×138 (Nate, same note: "shrink the door a bit"). Every
    inner measure that was tuned to 124 scales with it — the radii, the glyph, floor zero's
    cloth inset — or the proportions drift. */
@@ -957,11 +976,11 @@ html.reduce-flourish .hero-title { animation:none; }
 .home-cta-sub { font-style:normal; font-size:13px; letter-spacing:0.01em; color:#c6b8ec;
   line-height:1.45; max-width:34ch; margin-top:5px; }
 
-/* Park Tables — the second move, built in the FIRST move's shape now (2026-07-22). It
-   mirrors the Gauntlet group above: centered column, big drawing, a bold-gold name, then
-   the line. Same axis as the door (both are centered by .home-cta), so the two reads as a
-   pair — one door you climb, one table you sit at. */
-.home-cta-alt { margin:40px 0 0; }
+/* Park Tables — the seat beside the climb (2026-07-22). It mirrors the Gauntlet group to
+   its left: a centered column, big drawing, a bold-gold name, then the line. The row gap on
+   .home-cta sets the space between the two now, so the old 40px top margin is gone; the
+   phone rule adds vertical spacing back when the row folds to a column. */
+.home-cta-alt { margin:0; }
 .home-cta-park { display:flex; flex-direction:column; align-items:center; gap:12px;
   text-decoration:none; color:inherit;
   transition:color .18s ease; }
@@ -1019,7 +1038,7 @@ html.reduce-flourish .hero-title { animation:none; }
   .awake-lamp { transform:scale(0.78); transform-origin:bottom center; width:64px; height:72px; }
   .awake-post { font-size:13px; }
   .awake-more { font-size:10.5px; }
-  .home-cta { margin-bottom:26px; }
+  .home-cta { flex-direction:column; align-items:center; gap:34px; margin-bottom:26px; }
   .home-gdoor .gdoor-arch { width:92px; height:118px; border-radius:46px 46px 4px 4px; }
   .home-gdoor .gdoor-door { border-radius:41px 41px 0 0; }
   .home-gdoor .gdoor-glyph { font-size:37px; }
