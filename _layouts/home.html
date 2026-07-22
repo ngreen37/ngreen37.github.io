@@ -140,7 +140,39 @@ layout: default
      behind it. Now that there are PIECES on it, that overlap is a collision — the pawns
      landed on top of "Chess City". The extra room is the board's stage; the flow content
      above it does not move relative to itself. */
-  .home-hero { padding: 58px 40px 104px; margin-bottom: 14px; }
+  .home-hero { padding: 42px 40px 104px; margin-bottom: 0; }
+  .hero-lede { margin-top: 8px; }
+
+  /* ── THE DESKTOP DOOR (2026-07-22, Nate: "go on the desktop problem") ──────────────
+     Measured on the live site, the Gauntlet door — the front page's ONE call to action —
+     was cut off or entirely below the fold on every common desktop:
+
+        1440x900 cut by 152px · 1920x1080 cut by 102px · 1440x820 fully below
+        1536x730 fully below  · 2560x1300 the only size that showed it
+
+     It predates the lede (it was 97px past the fold before that line went in), and it is
+     the reverse of the phone, where the door lands with room to spare. A stranger on a
+     laptop met a poster and no way in.
+
+     Nothing here is a redesign — it is 152px reclaimed from four places that were spending
+     it on air, which is why the hero still reads as a poster:
+
+       · the TITLE now breaks in TWO lines instead of three (max-width 16ch -> 21ch). Same
+         typeface, same 76px, ~84px shorter. At 16ch "Princess and the Journey to Chess
+         City" could only ever be three short lines; at 21ch `text-wrap:balance` finds two
+         even ones, and a wider two-line lockup is MORE poster, not less.
+       · the TAGLINE block is a fixed 110px tall to hold one cycling word of ~14px. 76px
+         still clears it with air to spare — 34px back.
+       · hero top padding 58 -> 42 and the gap under it 14 -> 8 — 22px back.
+
+     What is NOT touched: the 104px bottom padding, which is load-bearing. The board sits
+     at bottom:40px and the tallest piece reaches ~64px above it, so anything less puts
+     the king through the world line. Verified after the fact at five viewport sizes. ── */
+  .hero-title { max-width: 21ch; }
+  .hero-tagline,
+  .hero-tagline .tagline-word,
+  .hero-tagline .tagline-main { height: 76px; }
+  .hero-tagline .tagline-word { line-height: 76px; }
   /* THE POSTER (2026-07-21) — this is the site's front door now, so the title is sized
      like one: was clamp(34px, 4.8vw, 52px). The lower bound clears the "small type"
      complaint on the modernization doc's list outright. */
@@ -225,9 +257,13 @@ layout: default
          piece clears the bottom of CHECKER TOWN -> CHESS CITY by 9px at these sizes and
          COLLIDES at the next step up. So the pieces grew by dropping --b as much as they
          gained in height — bigger against the bigger squares, same headroom. {%- endcomment -%}
-    <span class="hp hp-cs hp-cs--w" style="--x:64%;  --b:16px; --w:34px; --o:0.88">{% include chess-piece.html piece='bishop' side='w' %}</span>
-    <span class="hp hp-cs hp-cs--b" style="--x:69.5%;--b:5px;  --w:50px; --o:0.95">{% include chess-piece.html piece='king'   side='b' %}</span>
-    <span class="hp hp-cs hp-cs--w" style="--x:75%;  --b:2px;  --w:42px; --o:0.92">{% include chess-piece.html piece='queen'  side='w' %}</span>
+    {%- comment -%} --o is 1 for all three (2026-07-22, Nate: "make the queen and bishop
+         white"). They already wore the canon white — at 0.88/0.92 opacity, which let the
+         sky through the fill and greyed them. Ivory pieces have to actually be ivory; the
+         atmosphere comes from the drop-shadow now, not from thinning the paint. {%- endcomment -%}
+    <span class="hp hp-cs hp-cs--w" style="--x:64%;  --b:16px; --w:34px; --o:1">{% include chess-piece.html piece='bishop' side='w' %}</span>
+    <span class="hp hp-cs hp-cs--b" style="--x:69.5%;--b:5px;  --w:50px; --o:1">{% include chess-piece.html piece='king'   side='b' %}</span>
+    <span class="hp hp-cs hp-cs--w" style="--x:75%;  --b:2px;  --w:42px; --o:1">{% include chess-piece.html piece='queen'  side='w' %}</span>
   </div>
   {% comment %} No <br> (2026-07-21). The hard break after "Journey" was tuned for a 52px
        title; at poster size the first line no longer fits, so the break landed mid-phrase
@@ -249,7 +285,7 @@ layout: default
        — the account is free"). The games do not need one; an account is what opens the
        Gambit's altar and a 1v1 across the Park Tables. That belongs where the account
        is actually asked for, not in the promise on the front door. {% endcomment %}
-  <p class="hero-lede">Real chess vs a ladder of ten rivals — free, in your browser.</p>
+  <p class="hero-lede">Real Chess and other chess games — free, in your browser.</p>
 
   {% comment %} ── THE TAGLINE, brought over from the splash (2026-07-21) ──────────────
        The seven-word cycle in Nate's arc order (2026-07-16: the cycle CLIMBS to the
@@ -713,6 +749,14 @@ html.reduce-flourish .hero-title { animation:none; }
 /* the fills live in the canon (_pjcc-22-chess-canon.scss) with every other piece colour
    on the site — all the hero owns is how big they are and what light they stand in. */
 .hp-cs .cpc { width:100%; height:100%; }
+/* BLACK on the banner, not canon purple (2026-07-22, Nate: "turn the purple pieces on the
+   banner to black"). This is a DELIBERATE, hero-only fork of --piece-b-fill and the only
+   one on the site: every real board still wears PJCC purple for its dark side. It is a
+   banner, not a board — the piece here is scenery standing against a sky, and at 50px the
+   purple was already reading as black anyway. #12101a keeps a trace of the world's violet
+   in it so it sits in the picture instead of punching a hole in it; the pale --piece-b-line
+   contour is what keeps it a piece and not a smudge after dark. */
+.hp-cs--b .cpc { fill:#12101a; }
 .hp-cs--b { filter:drop-shadow(0 0 0.7px var(--piece-b-line)) drop-shadow(0 0 0.7px var(--piece-b-line))
          drop-shadow(0 calc(var(--d) * 0.045) calc(var(--d) * 0.07) rgba(0,0,0,0.5)); }
 
