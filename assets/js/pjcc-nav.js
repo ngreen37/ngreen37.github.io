@@ -21,16 +21,16 @@
       { t: 'Locations',        s: 'Places in the world',                  u: '/locations/',          ic: '⛰', b: 'pjcc', k: 'locations places checker town chess city' },
       { t: 'Academy',          s: 'Learn chess from the ground up',            u: '/academy/',            ic: '♔', b: 'pjcc', k: 'academy learn chess lessons pieces bootcamp curriculum' },
       { t: 'Your Profile',     s: 'Your codename, companion & record',             u: '/dossier/',            ic: '⬡', b: 'pjcc', k: 'dossier profile account sign in login operative identity forge' },
-      { t: 'Leaderboards',     s: 'Operative standings',                  u: '/leaderboards/',       ic: '🏆', b: 'pjcc', k: 'leaderboards standings scores rank high' },
+      { t: 'Leaderboards',     s: 'Top scores across the games',          u: '/leaderboards/',       ic: '🏆', b: 'pjcc', k: 'leaderboards standings scores rank high' },
       { t: 'Fan Art',          s: 'The fan wall + a printable PJCC card',  u: '/fan-art/',            ic: '🎨', b: 'pjcc', k: 'fan art wall gallery printable card make picture upload print pdf submit' },
       { t: 'The Gambit',       s: 'Lay down your best — the board decides', u: '/the-gambit/',       ic: '🎲', b: 'pjcc', k: 'gambit sacrifice offering altar wager risk reward credits collectables let go' },
       { t: 'Merch',            s: 'Not ready yet — months away',          u: '/goods/',              ic: '🃏', b: 'mcpuppy', k: 'goods goal cards stationery merch follow the dog mindset coming soon physical' },
       { t: 'The Direct Line',  s: 'Write to me directly',                 u: '/direct-line/',        ic: '✉️', b: 'mcpuppy', k: 'direct line suggestions patreon contact write feedback guaranteed response' },
-      { t: 'McPuppy Studios',  s: 'Studio hub & progress',                u: '/projects/',           ic: '🐾', b: 'mcpuppy', k: 'mcpuppy studio projects progress hub' },
-      { t: 'Blog',             s: 'Episode archive',                      u: '/blog/',               ic: '✍', b: 'mcpuppy', k: 'blog build log episodes posts writing' },
+      { t: 'About the Studio', s: 'Who makes PJCC, and how far along it is', u: '/projects/',         ic: '🐾', b: 'mcpuppy', k: 'mcpuppy studio projects progress about who nate hub' },
+      { t: 'Blog',             s: 'The build log — every episode so far',   u: '/blog/',               ic: '✍', b: 'mcpuppy', k: 'blog build log episodes posts writing' },
       { t: 'Mailing List',     s: 'Get updates by email',                 u: '/mailing-list/',       ic: '✉', b: 'mcpuppy', k: 'mailing list email subscribe newsletter' },
       { t: 'For Educators',    s: 'Use PJCC in the classroom',            u: '/educators/',          ic: '🍎', b: 'mcpuppy', k: 'educators teachers classroom school lessons' },
-      { t: 'Contact',          s: 'Who & how to reach us',                u: '/contact/',            ic: '☎', b: 'mcpuppy', k: 'about contact reach email who studio hello' },
+      { t: 'Contact',          s: 'Say hello — and who is behind this',     u: '/contact/',            ic: '☎', b: 'mcpuppy', k: 'about contact reach email who studio hello' },
     ];
 
     var active = 0;

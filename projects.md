@@ -1,9 +1,22 @@
 ---
 layout: page
-title: McPuppy Studios
+title: About the Studio
 permalink: /projects/
 body_class: theme-studio
+tab_title: About McPuppy Studios | PJCC
+description: Who makes Princess and the Journey to Chess City — the one-person studio behind the games, the Academy, the blog and the animated series in progress.
 ---
+
+{% comment %} 2026-07-22 (Nate: "About the Studio is fine"). The on-page title is now
+     "About the Studio", which is what this page actually is — the last piece of the
+     "five landing pages" problem from docs/front-door-2026-07-21.md.
+
+     `tab_title` is set deliberately. Without it the <title> would have become
+     "About the Studio | PJCC" and the studio's own NAME would have vanished from the
+     browser tab and from search results for the one page that is about the studio. The
+     visible heading can be plain because the page is already inside McPuppy chrome; the
+     tab has no such context and has to carry the brand. `description` is new for the
+     same reason — this page never had one. {% endcomment %}
 
 {% comment %} ── THIS PAGE STOPPED BEING A SECOND HOME (2026-07-21) ─────────────────
      Nate: "Perhaps McPuppy page should simply be 'About The Studio'… we can't have five

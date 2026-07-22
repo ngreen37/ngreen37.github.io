@@ -88,25 +88,44 @@ layout: default
 @media (max-width: 700px) {
   /* the doors left the hero (they're .home-plays below now), so the top no longer
      has to clear a door zone — the hero opens up (2026-07-17). */
-  .home-hero { padding: 46px 20px 34px; min-height: 300px; margin-bottom: 20px; }
+  /* bottom padding 34px → 78px, same reason as the desktop rule: the board carries
+     pieces now and needs clear air below the world line. */
+  .home-hero { padding: 46px 20px 78px; min-height: 300px; margin-bottom: 20px; }
   /* the poster still reads as a poster on a phone: two lines, big, no nowrap squeeze */
-  .hero-title { font-size: clamp(26px, 8.4vw, 38px); letter-spacing: -0.5px; }
+  /* letter-spacing stays at 0 here too — the outline needs the room (see the title
+     card block below). */
+  .hero-title { font-size: clamp(26px, 8.4vw, 38px); }
   .hero-eyebrow { display: none; }
   /* (the .hero-skyline phone rules went with the skyline itself, 2026-07-21) */
   .hero-board { bottom: 30px; height: 64px; }
+  /* the board is shorter and narrower on a phone, so the pieces follow it down and the
+     back row of each town is dropped — seven pieces across a 320px board is clutter, and
+     the ones that go are the small faint ones doing the least work. What remains still
+     says the same thing: discs on the left, standing pieces on the right. */
+  .hero-pieces { bottom: 30px; height: 36px; }
+  .hero-pieces .hp:nth-child(1),
+  .hero-pieces .hp:nth-child(5) { display: none; }
+  .hero-pieces .hp-ck { width: calc(var(--w) * 0.72); height: calc(var(--w) * 0.72 * 0.44); }
+  .hero-pieces .hp-cs { font-size: calc(var(--w) * 0.72); }
   /* the tagline block is a fixed 110px by default — too tall under a phone title */
   .hero-tagline,
   .hero-tagline .tagline-word,
   .hero-tagline .tagline-main { height: 62px; }
   .hero-tagline .tagline-word { line-height: 62px; font-size: 10px; letter-spacing: 3px; }
   .hero-tagline .tagline-main-tagline { font-size: 15px; }
-  .hero-tagline .tagline-main-studio { font-size: 9px; letter-spacing: 4px; }
+  {% comment %} (the .tagline-main-studio phone rule went with the span it sized —
+       2026-07-22, Nate cut that line from the tagline.) {% endcomment %}
   .hero-world { font-size: 10px; gap: 10px; margin-top: 10px; }
 }
 
 /* ── #2 one-screen desktop ── */
 @media (min-width: 900px) {
-  .home-hero { padding: 58px 40px 54px; margin-bottom: 14px; }
+  /* bottom padding 54px → 104px (2026-07-22): the board is absolutely positioned at
+     bottom:40px, so it used to sit in the same band as the world line and read as texture
+     behind it. Now that there are PIECES on it, that overlap is a collision — the pawns
+     landed on top of "Chess City". The extra room is the board's stage; the flow content
+     above it does not move relative to itself. */
+  .home-hero { padding: 58px 40px 104px; margin-bottom: 14px; }
   /* THE POSTER (2026-07-21) — this is the site's front door now, so the title is sized
      like one: was clamp(34px, 4.8vw, 52px). The lower bound clears the "small type"
      complaint on the modernization doc's list outright. */
@@ -138,12 +157,41 @@ layout: default
        backlight the distant Chess City skyline. The town engine lights it. {% endcomment %}
   <div class="hero-skyflash" aria-hidden="true"></div>
   {% comment %} 2026-07-14 (Nate): the eyebrow is a DOOR now — it leads to the studio.
-       2026-07-21: this now sits above a tagline whose last line ALSO says "McPuppy
-       Studios", so the studio is credited twice within 200px. Cutting it is a
-       visitor-facing wording change, so it is in the batch for Nate rather than done
-       here. {% endcomment %}
+       2026-07-21: this sat above a tagline whose last line ALSO said "McPuppy Studios",
+       so the studio was credited twice within 200px. 2026-07-22, Nate's call on which
+       one goes: "I like the McPuppy Presents up top; cut the one above 'Million Stories
+       to Tell'." So the eyebrow STAYS and the tagline's studio line is gone — see the
+       tagline below. {% endcomment %}
   <a class="hero-eyebrow" href="{{ '/projects/' | relative_url }}">McPuppy Studios Presents</a>
   <div class="hero-board" aria-hidden="true"></div>
+
+  {% comment %} ── THE TWO TOWNS, IN THEIR OWN PIECES (2026-07-22, Nate) ───────────────
+       "slightly transparent red/black checker pieces on the left side of the
+       checkerboard … and black and white chess pieces on the right … to help elucidate
+       the disparity between the two towns, with their game pieces to symbolize."
+
+       So the board under the title is shared ground with a different game played at each
+       end. Checker Town's draughts lie FLAT — they are discs on a board, so they take the
+       board's own foreshortening and read as ellipses. Chess City's pieces STAND, so they
+       are upright glyphs with a cast shadow beneath. That contrast is the point: one town
+       plays a game you look down on, the other plays a game that looks back at you.
+
+       The chess pieces take their colors from the CHESS CANON tokens
+       (_sass/_pjcc-22-chess-canon.scss), never their own — so "white" and PJCC's purple
+       "black" match every real board on the site. Restyling is a token edit, as always.
+       Filled glyphs only (♟♜♞): the outline forms (♙♖♘) will not take a fill.
+
+       Everything here is static paint inside an aria-hidden layer — no animation, no
+       hit target, nothing for a screen reader to read out. {% endcomment %}
+  <div class="hero-pieces" aria-hidden="true">
+    <span class="hp hp-ck hp-ck--r" style="--x:17%;  --b:30px; --w:17px; --o:0.34"></span>
+    <span class="hp hp-ck hp-ck--b" style="--x:25.5%;--b:20px; --w:22px; --o:0.44"></span>
+    <span class="hp hp-ck hp-ck--r" style="--x:33%;  --b:8px;  --w:27px; --o:0.52"></span>
+    <span class="hp hp-ck hp-ck--b" style="--x:20%;  --b:4px;  --w:29px; --o:0.5"></span>
+    <span class="hp hp-cs hp-cs--b" style="--x:65%;  --b:30px; --w:26px; --o:0.5">&#9820;</span>
+    <span class="hp hp-cs hp-cs--w" style="--x:73.5%;--b:14px; --w:34px; --o:0.6">&#9822;</span>
+    <span class="hp hp-cs hp-cs--b" style="--x:81%;  --b:3px;  --w:40px; --o:0.58">&#9823;</span>
+  </div>
   {% comment %} No <br> (2026-07-21). The hard break after "Journey" was tuned for a 52px
        title; at poster size the first line no longer fits, so the break landed mid-phrase
        and the title read "Princess and the / Journey / to Chess City". `text-wrap:balance`
@@ -175,8 +223,14 @@ layout: default
     <span class="tagline-word">Academy.</span>
     <span class="tagline-word">Games.</span>
     <span class="tagline-word">Animation.</span>
+    {% comment %} The "McPuppy Studios" line that used to sit above this one is CUT
+         (2026-07-22, Nate: "cut the one above 'Million Stories to Tell'"). The studio is
+         still credited — by the .hero-eyebrow at the top of the hero, which he kept and
+         which is also the door to /projects/. `.tagline-main` is a centered flex column,
+         so the remaining line simply centers itself; no other change was needed. The
+         .tagline-main-studio rule stays in _pjcc-04-flair.scss — the retired splash
+         layout still uses it. {% endcomment %}
     <span class="tagline-word tagline-main">
-      <span class="tagline-main-studio">McPuppy Studios</span>
       <span class="tagline-main-tagline">A Mill<a class="tg-x" href="{{ '/classified/' | relative_url }}" tabindex="-1" aria-hidden="true"><i class="tg-x-glyph">i</i></a>on Stories to Tell</span>
     </span>
   </div>
@@ -459,6 +513,88 @@ html.reduce-flourish .hero-title { animation:none; }
    full card width at desktop, which is what makes it read as a poster rather than a
    headline. Browsers without text-wrap:balance simply wrap normally — no fallback needed. */
 .hero-title { position:relative; text-wrap:balance; max-width:16ch; margin-left:auto; margin-right:auto; }
+
+/* ── THE TITLE CARD (2026-07-22, Nate: "make the PJCC title a fun text") ────────────
+   It was flat gold Poppins — a headline, not a logo, on a page whose whole destination
+   is an animated series. This is the film-logo treatment: the same typeface and the same
+   gold, given a thick dark outline and a short extrude underneath so it sits ON the sky
+   instead of floating in front of it.
+
+   `paint-order: stroke fill` is load-bearing, exactly as it is in the chess canon.
+   Without it the stroke paints ON TOP of the fill and eats inward from every edge, which
+   at this weight closes up the counters in "e", "o" and "ss" and turns the word into a
+   blob. With it the stroke sits behind and the letterforms stay intact.
+
+   The stroke scales with the type (a fixed 5px is a hairline at 76px and a smear at
+   26px). Tracking goes from -1px to 0: a heavy outline expands every glyph outward by
+   half its width, so negative tracking that looked tight before now runs letters into
+   each other.
+
+   The outline earns its keep beyond looks — the title sits over the shared town sky,
+   which is gold at dusk and pale at noon, and dark-outlined gold stays legible on both
+   where flat gold did not. Static paint; nothing here animates, so heroRise above is
+   still the only motion on the title. ── */
+.hero-title {
+  letter-spacing:0;
+  paint-order:stroke fill;
+  -webkit-text-stroke:clamp(2.5px, 0.42vw, 5px) #1b1136;
+  text-shadow:
+    0 2px 0 rgba(43,26,88,0.9),          /* the extrude — two flat steps … */
+    0 4px 0 rgba(17,10,44,0.85),
+    0 10px 22px rgba(0,0,0,0.55);        /* … then the ground shadow under it */
+}
+/* Safari/Chrome only ever needed the -webkit- form; Firefox 128+ ships unprefixed. Both
+   are set so no engine falls back to an unstroked title. */
+@supports (text-stroke: 1px black) {
+  .hero-title { text-stroke:clamp(2.5px, 0.42vw, 5px) #1b1136; }
+}
+
+/* ── THE TWO TOWNS' PIECES on the board (2026-07-22, Nate) ──────────────────────────
+   Why this is a SIBLING of .hero-board and not a child: the board is tipped away with
+   `perspective(430px) rotateX(58deg)`, and a transform applies to every descendant. Any
+   chess piece parented to it would be laid flat on its face along with the squares. The
+   checkers WANT that foreshortening, so they fake it with a squashed ellipse instead of
+   inheriting it; the chess pieces must stand up, so they live outside the transform
+   entirely and are simply placed over the board's visible footprint.
+
+   That footprint is what this box is: the board declares 96px of height, but tipped 58°
+   through a 430px perspective it only covers about 52px on screen, measured from the same
+   40px baseline. Pieces are positioned by `bottom`, so each one stands on the surface
+   rather than hanging from the top of the box. --x is the position across the board, --b
+   how far back, --w the size, --o the transparency. Further back = smaller and fainter,
+   which is the only depth cue here — nothing moves. ── */
+.hero-pieces { position:absolute; left:50%; bottom:40px; width:min(620px, 86%); height:52px;
+  transform:translateX(-50%); pointer-events:none; z-index:0; }
+.hp { position:absolute; left:var(--x); bottom:var(--b); opacity:var(--o); }
+
+/* CHECKER TOWN — draughts lying flat. The 0.44 ratio is the board's own tilt read back
+   onto a circle, so the discs sit IN the surface rather than on top of it. The first
+   box-shadow is the disc's edge (its thickness); the second is what it casts. */
+.hp-ck { width:var(--w); height:calc(var(--w) * 0.44); border-radius:50%;
+  transform:translateX(-50%);
+  background:radial-gradient(ellipse at 50% 26%, var(--ck-hi), var(--ck) 72%);
+  box-shadow:0 calc(var(--w) * 0.085) 0 var(--ck-dk),
+             0 calc(var(--w) * 0.16) calc(var(--w) * 0.18) rgba(0,0,0,0.5); }
+.hp-ck--r { --ck:#a8322c; --ck-hi:#dd5c4c; --ck-dk:#651c18; }
+.hp-ck--b { --ck:#1e1729; --ck-hi:#3d3153; --ck-dk:#0b0814; }
+
+/* CHESS CITY — pieces standing. Colors come from the canon tokens, never from here, so
+   these match the Park Tables board, the Academy board and every review board on the
+   site. PJCC's "black" is purple (--piece-b-fill) by canon, which also happens to be the
+   only way a dark piece stays visible against a night sky. */
+/* the -0.13em nudge: a glyph's ink does not fill its em box (there is descender room
+   under the baseline), so a piece positioned purely by `bottom` floats above the surface
+   it is meant to be standing on. This drops it back onto the board. */
+.hp-cs { font-size:var(--w); line-height:1; display:block;
+  bottom:calc(var(--b) - var(--w) * 0.13); transform:translateX(-50%);
+  paint-order:stroke fill;
+  /* the outline scales with the piece: a flat 1.5px is a fat cartoon line on a 26px
+     rook and a hairline on a 40px pawn, and at this size a heavy stroke makes a
+     semi-transparent piece read as hollow line-art instead of a solid silhouette. */
+  -webkit-text-stroke:calc(var(--w) * 0.042) var(--piece-w-line);
+  color:var(--piece-w-fill);
+  filter:drop-shadow(0 calc(var(--w) * 0.07) calc(var(--w) * 0.09) rgba(0,0,0,0.55)); }
+.hp-cs--b { color:var(--piece-b-fill); -webkit-text-stroke-color:var(--piece-b-line); }
 
 {% comment %} (the #16 title sheen removed 2026-07-11 — its mix-blend-mode forced an
      extra compositing pass and Nate cut it in the lag sweep. The ♛-crowning finale
