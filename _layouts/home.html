@@ -105,8 +105,12 @@ layout: default
   .hero-pieces { bottom: 30px; height: 36px; }
   .hero-pieces .hp:nth-child(1),
   .hero-pieces .hp:nth-child(5) { display: none; }
-  .hero-pieces .hp-ck { width: calc(var(--w) * 0.72); height: calc(var(--w) * 0.72 * 0.44); }
-  .hero-pieces .hp-cs { font-size: calc(var(--w) * 0.72); }
+  /* 0.72 → 0.62 (2026-07-22), and set once as a SCALE rather than twice as a size: the
+     pieces stand a fixed PERCENTAGE apart, and a phone board is 335px where the desktop
+     one is 620 — so the same percentages are barely half the distance in pixels. At the
+     old scale the new huddles fused into one blob. Shrinking the pieces by the difference
+     keeps the phone gaps reading like the desktop gaps. */
+  .hero-pieces .hp { --s: 0.62; }
   /* the tagline block is a fixed 110px by default — too tall under a phone title */
   .hero-tagline,
   .hero-tagline .tagline-word,
@@ -183,14 +187,26 @@ layout: default
 
        Everything here is static paint inside an aria-hidden layer — no animation, no
        hit target, nothing for a screen reader to read out. {% endcomment %}
+  {% comment %} 2026-07-22, second pass (Nate): "put them closer together, as if they are
+       preparing for a physical battle. Same with the checker pieces; they are too spaced
+       out." Both towns were a scatter across their half of the board — decoration. Now
+       each is a HUDDLE: within a town the pieces stand a piece-width apart and the front
+       row overlaps the back, and the two towns have moved in off the rim toward each
+       other. The board reads as a stand-off with a gap in the middle rather than as
+       texture at both edges.
+
+       The cast is his too: white Queen, black King, white Bishop. King is the tallest and
+       centered, the two whites flank it — one back, one front. "Black" is the CANON purple
+       (--piece-b-fill), same as every board on the site; say the word and I'll fork a
+       literally-black one for this hero only. {% endcomment %}
   <div class="hero-pieces" aria-hidden="true">
-    <span class="hp hp-ck hp-ck--r" style="--x:17%;  --b:30px; --w:17px; --o:0.34"></span>
-    <span class="hp hp-ck hp-ck--b" style="--x:25.5%;--b:20px; --w:22px; --o:0.44"></span>
-    <span class="hp hp-ck hp-ck--r" style="--x:33%;  --b:8px;  --w:27px; --o:0.52"></span>
-    <span class="hp hp-ck hp-ck--b" style="--x:20%;  --b:4px;  --w:29px; --o:0.5"></span>
-    <span class="hp hp-cs hp-cs--b" style="--x:65%;  --b:30px; --w:26px; --o:0.5">&#9820;</span>
-    <span class="hp hp-cs hp-cs--w" style="--x:73.5%;--b:14px; --w:34px; --o:0.6">&#9822;</span>
-    <span class="hp hp-cs hp-cs--b" style="--x:81%;  --b:3px;  --w:40px; --o:0.58">&#9823;</span>
+    <span class="hp hp-ck hp-ck--r" style="--x:29%;  --b:24px; --w:17px; --o:0.34"></span>
+    <span class="hp hp-ck hp-ck--b" style="--x:32.5%;--b:16px; --w:22px; --o:0.44"></span>
+    <span class="hp hp-ck hp-ck--r" style="--x:35.5%;--b:5px;  --w:27px; --o:0.52"></span>
+    <span class="hp hp-ck hp-ck--b" style="--x:30.5%;--b:1px;  --w:29px; --o:0.5"></span>
+    <span class="hp hp-cs hp-cs--w" style="--x:64%;  --b:24px; --w:28px; --o:0.88">&#9821;</span>
+    <span class="hp hp-cs hp-cs--b" style="--x:69.5%;--b:9px;  --w:42px; --o:0.95">&#9818;</span>
+    <span class="hp hp-cs hp-cs--w" style="--x:75%;  --b:2px;  --w:34px; --o:0.92">&#9819;</span>
   </div>
   {% comment %} No <br> (2026-07-21). The hard break after "Journey" was tuned for a 52px
        title; at poster size the first line no longer fits, so the break landed mid-phrase
@@ -565,18 +581,43 @@ html.reduce-flourish .hero-title { animation:none; }
    which is the only depth cue here — nothing moves. ── */
 .hero-pieces { position:absolute; left:50%; bottom:40px; width:min(620px, 86%); height:52px;
   transform:translateX(-50%); pointer-events:none; z-index:0; }
-.hp { position:absolute; left:var(--x); bottom:var(--b); opacity:var(--o); }
+/* --w is the piece's size at desktop and --s the scale the viewport asks for (the phone
+   rule sets it); --d is the size everything below actually measures itself against. Going
+   through one derived value is what keeps a piece in proportion when it shrinks — scaling
+   only `width` while the wall, the rim shadow and the outline still divided the DESKTOP
+   size gave a phone-sized top face on a full-height can. */
+.hp { --s:1; --d:calc(var(--w) * var(--s));
+  position:absolute; left:var(--x); bottom:var(--b); opacity:var(--o); }
 
-/* CHECKER TOWN — draughts lying flat. The 0.44 ratio is the board's own tilt read back
-   onto a circle, so the discs sit IN the surface rather than on top of it. The first
-   box-shadow is the disc's edge (its thickness); the second is what it casts. */
-.hp-ck { width:var(--w); height:calc(var(--w) * 0.44); border-radius:50%;
+/* CHECKER TOWN — draughts lying flat. 2026-07-22 (Nate): "less rounded on the edges …
+   more of a can-shape, with the height reduced." It was ONE squashed ellipse with a soft
+   shadow under it, which from any angle reads as a lozenge — a rounded pebble. A real
+   checker is a short cylinder: a flat top face, a straight wall, no roundover anywhere.
+
+   So the element is now only the TOP FACE (0.44 → 0.28 of the width: flatter, which is
+   also the "height reduced" — a can seen from above shows less of itself), and the wall
+   is built from stacked ZERO-BLUR box-shadows. Each step is the same ellipse offset a
+   fraction of a pixel further down, so their union has dead-straight sides and picks up
+   the ellipse's curve only where it must, at the bottom rim. A blurred shadow or a
+   border-radius here would put the roundover straight back.
+
+   Shadows paint in order, first on top, so the near-side steps come first: --ck-mid for
+   the lit upper wall, --ck-dk for the shaded lower wall, and only the last entry is
+   blurred — that one is the shadow the piece casts on the board. */
+.hp-ck { --t:calc(var(--d) * 0.17);                       /* the wall's height */
+  width:var(--d); height:calc(var(--d) * 0.28); border-radius:50%;
   transform:translateX(-50%);
-  background:radial-gradient(ellipse at 50% 26%, var(--ck-hi), var(--ck) 72%);
-  box-shadow:0 calc(var(--w) * 0.085) 0 var(--ck-dk),
-             0 calc(var(--w) * 0.16) calc(var(--w) * 0.18) rgba(0,0,0,0.5); }
-.hp-ck--r { --ck:#a8322c; --ck-hi:#dd5c4c; --ck-dk:#651c18; }
-.hp-ck--b { --ck:#1e1729; --ck-hi:#3d3153; --ck-dk:#0b0814; }
+  background:radial-gradient(ellipse at 50% 22%, var(--ck-hi), var(--ck) 84%);
+  box-shadow:
+    0 calc(var(--t) * 0.16) 0 var(--ck-mid),
+    0 calc(var(--t) * 0.34) 0 var(--ck-mid),
+    0 calc(var(--t) * 0.52) 0 var(--ck-mid),
+    0 calc(var(--t) * 0.70) 0 var(--ck-dk),
+    0 calc(var(--t) * 0.86) 0 var(--ck-dk),
+    0 var(--t)              0 var(--ck-dk),
+    0 calc(var(--t) + var(--d) * 0.05) calc(var(--d) * 0.14) rgba(0,0,0,0.5); }
+.hp-ck--r { --ck:#a8322c; --ck-hi:#dd5c4c; --ck-mid:#8a2823; --ck-dk:#5e1a16; }
+.hp-ck--b { --ck:#1e1729; --ck-hi:#3d3153; --ck-mid:#15101f; --ck-dk:#0a0713; }
 
 /* CHESS CITY — pieces standing. Colors come from the canon tokens, never from here, so
    these match the Park Tables board, the Academy board and every review board on the
@@ -585,15 +626,24 @@ html.reduce-flourish .hero-title { animation:none; }
 /* the -0.13em nudge: a glyph's ink does not fill its em box (there is descender room
    under the baseline), so a piece positioned purely by `bottom` floats above the surface
    it is meant to be standing on. This drops it back onto the board. */
-.hp-cs { font-size:var(--w); line-height:1; display:block;
-  bottom:calc(var(--b) - var(--w) * 0.13); transform:translateX(-50%);
+/* SOLID, with a contour and nothing else (2026-07-22, Nate: "make them solid colors — no
+   outline except maybe around the outside of each piece"). Two things were making them
+   read as line-art rather than as pieces: they were half-transparent (0.5–0.6, so the sky
+   came through the fill), and the stroke was heavy enough to be a drawn line in its own
+   right. Opacity is now 0.88–0.95 — enough atmosphere that they still belong to the
+   painting, not so little that you see through a king.
+
+   `paint-order:stroke fill` is what keeps the remaining stroke an OUTSIDE contour: the
+   stroke is centred on the glyph's edge, so painting it BEHIND the fill leaves only its
+   outer half showing and the fill stays one flat color right up to the edge. Drop it and
+   the line eats inward and hollows the piece out. Width 0.042 → 0.028em: still a
+   silhouette against a bright noon sky, no longer a cartoon keyline. */
+.hp-cs { font-size:var(--d); line-height:1; display:block;
+  bottom:calc(var(--b) - var(--d) * 0.13); transform:translateX(-50%);
   paint-order:stroke fill;
-  /* the outline scales with the piece: a flat 1.5px is a fat cartoon line on a 26px
-     rook and a hairline on a 40px pawn, and at this size a heavy stroke makes a
-     semi-transparent piece read as hollow line-art instead of a solid silhouette. */
-  -webkit-text-stroke:calc(var(--w) * 0.042) var(--piece-w-line);
+  -webkit-text-stroke:calc(var(--d) * 0.028) var(--piece-w-line);
   color:var(--piece-w-fill);
-  filter:drop-shadow(0 calc(var(--w) * 0.07) calc(var(--w) * 0.09) rgba(0,0,0,0.55)); }
+  filter:drop-shadow(0 calc(var(--d) * 0.07) calc(var(--d) * 0.09) rgba(0,0,0,0.55)); }
 .hp-cs--b { color:var(--piece-b-fill); -webkit-text-stroke-color:var(--piece-b-line); }
 
 {% comment %} (the #16 title sheen removed 2026-07-11 — its mix-blend-mode forced an
