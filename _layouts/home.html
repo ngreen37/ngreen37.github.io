@@ -257,13 +257,13 @@ layout: default
          piece clears the bottom of CHECKER TOWN -> CHESS CITY by 9px at these sizes and
          COLLIDES at the next step up. So the pieces grew by dropping --b as much as they
          gained in height — bigger against the bigger squares, same headroom. {%- endcomment -%}
-    {%- comment -%} --o is 1 for all three (2026-07-22, Nate: "make the queen and bishop
-         white"). They already wore the canon white — at 0.88/0.92 opacity, which let the
-         sky through the fill and greyed them. Ivory pieces have to actually be ivory; the
-         atmosphere comes from the drop-shadow now, not from thinning the paint. {%- endcomment -%}
-    <span class="hp hp-cs hp-cs--w" style="--x:64%;  --b:16px; --w:34px; --o:1">{% include chess-piece.html piece='bishop' side='w' %}</span>
-    <span class="hp hp-cs hp-cs--b" style="--x:69.5%;--b:5px;  --w:50px; --o:1">{% include chess-piece.html piece='king'   side='b' %}</span>
-    <span class="hp hp-cs hp-cs--w" style="--x:75%;  --b:2px;  --w:42px; --o:1">{% include chess-piece.html piece='queen'  side='w' %}</span>
+    {%- comment -%} --o was 1, now 0.85 (2026-07-22, Nate: "make the chess pieces a little
+         transparent, to match the checker pieces"). The checkers sit at 0.34–0.52; a hair
+         of that on the pieces lets the sky graze the fill so they share the checkers' air
+         without greying out — full 0.5 would turn ivory to slate. {%- endcomment -%}
+    <span class="hp hp-cs hp-cs--w" style="--x:64%;  --b:16px; --w:34px; --o:0.85">{% include chess-piece.html piece='bishop' side='w' %}</span>
+    <span class="hp hp-cs hp-cs--b" style="--x:69.5%;--b:5px;  --w:50px; --o:0.85">{% include chess-piece.html piece='king'   side='b' %}</span>
+    <span class="hp hp-cs hp-cs--w" style="--x:75%;  --b:2px;  --w:42px; --o:0.85">{% include chess-piece.html piece='queen'  side='w' %}</span>
   </div>
   {% comment %} No <br> (2026-07-21). The hard break after "Journey" was tuned for a 52px
        title; at poster size the first line no longer fits, so the break landed mid-phrase
@@ -395,13 +395,20 @@ layout: default
        one says the thing the door itself cannot: what the climb costs you. {% endcomment %}
   <i class="home-cta-sub">Ten floors. Beat one to open the next.</i>
 
-  <p class="home-cta-alt">
+  {% comment %} 2026-07-22 (Nate): Park Tables was a one-line pill — table chip on the left,
+       text on the right. He asked for it rebuilt in the Gauntlet's own shape: the drawing
+       centered and BIG to match the door, a bold-gold title under it like "The Gauntlet",
+       and the "take a seat" line beneath that. So it is the same three-part stack as the
+       door above — art, gold name, sub — the second move presented like the first, just
+       lower on the page. {% endcomment %}
+  <div class="home-cta-alt">
     <a class="home-cta-park" href="{{ '/games/park-tables/' | relative_url }}"
        aria-label="Park Tables — play chess against another operative in the Checker Town park">
       <span class="home-cta-park-art" aria-hidden="true">{% include park-table.html %}</span>
-      <span>Or take a seat at the Park Tables &rarr;</span>
+      <b class="home-cta-park-name">Park Tables</b>
+      <span class="home-cta-park-sub">Or take a seat at the Park Tables &rarr;</span>
     </a>
-  </p>
+  </div>
 </section>
 
 {% comment %} ── 1c. THE STUDIO IS AWAKE ─────────────────────────────────────────────
@@ -757,7 +764,13 @@ html.reduce-flourish .hero-title { animation:none; }
    in it so it sits in the picture instead of punching a hole in it; the pale --piece-b-line
    contour is what keeps it a piece and not a smudge after dark. */
 .hp-cs--b .cpc { fill:#12101a; }
-.hp-cs--b { filter:drop-shadow(0 0 0.7px var(--piece-b-line)) drop-shadow(0 0 0.7px var(--piece-b-line))
+/* the king's contour is DARK GREY, not the pale --piece-b-line (2026-07-22, Nate: "take
+   the white outline of the king piece on the hero, and make it dark grey"). A black piece
+   wants a black-adjacent edge, not a white one — #43434d is light enough to still separate
+   the silhouette from the near-black fill, dark enough to read as part of the piece rather
+   than a rim-light around it. (Trade-off: the pale line was legibility insurance on a night
+   sky; a dark-grey king leans on its drop-shadow there instead.) */
+.hp-cs--b { filter:drop-shadow(0 0 0.7px #43434d) drop-shadow(0 0 0.7px #43434d)
          drop-shadow(0 calc(var(--d) * 0.045) calc(var(--d) * 0.07) rgba(0,0,0,0.5)); }
 
 {% comment %} (the #16 title sheen removed 2026-07-11 — its mix-blend-mode forced an
@@ -918,44 +931,57 @@ html.reduce-flourish .hero-title { animation:none; }
    own. Everything else about the door — grandeur tiers, floor dressing, the shoji slide
    on hover, floor zero's tattered cloth — comes from _sass/_pjcc-21-gauntlet-door.scss
    untouched. ── */
+/* margin-top 0 → 22px (2026-07-22, Nate: "the door … overlaps the bottom of the hero …
+   move it down"). The door's arch throws an ~18px glow (box-shadow 0 0 26px -8px) that was
+   landing on the hero card's bottom border. The gap clears it; the door shrank in the same
+   pass, which claws most of that 22px back off the fold. */
 .home-cta { display:flex; flex-direction:column; align-items:center; text-align:center;
-  margin:0 0 34px; }
+  margin:22px 0 34px; }
+/* the door SHRANK 124×160 → 108×138 (Nate, same note: "shrink the door a bit"). Every
+   inner measure that was tuned to 124 scales with it — the radii, the glyph, floor zero's
+   cloth inset — or the proportions drift. */
 .home-gdoor { gap:11px; }
-.home-gdoor .gdoor-arch { width:124px; height:160px; border-radius:62px 62px 5px 5px; }
-.home-gdoor .gdoor-door { border-radius:56px 56px 0 0; }
-.home-gdoor .gdoor-glyph { font-size:50px; }
-.home-gdoor .gdoor-knob { right:13px; width:6px; height:6px; }
+.home-gdoor .gdoor-arch { width:108px; height:138px; border-radius:54px 54px 5px 5px; }
+.home-gdoor .gdoor-door { border-radius:49px 49px 0 0; }
+.home-gdoor .gdoor-glyph { font-size:44px; }
+.home-gdoor .gdoor-knob { right:12px; width:6px; height:6px; }
 .home-gdoor .gdoor-pips i { width:7px; height:7px; }
 /* floor zero's cloth hangs from a rod inset in px, tuned for the 78px arch — widen the
    inset with the arch so the cloth still reads as hung ACROSS the doorway, not as a
    narrow strip down the middle of it */
-.home-gdoor.gdoor[data-grand="0"] .gdoor-door { left:11px; right:11px; top:18px; }
-.home-gdoor.gdoor[data-grand="0"] .gdoor-glyph { font-size:40px; }
+.home-gdoor.gdoor[data-grand="0"] .gdoor-door { left:10px; right:10px; top:16px; }
+.home-gdoor.gdoor[data-grand="0"] .gdoor-glyph { font-size:35px; }
 
 .home-cta-name { font-family:'Poppins',sans-serif; font-weight:800;
   font-size:clamp(20px, 2.2vw, 26px); color:#F5C518; line-height:1.2; margin-top:14px; }
 .home-cta-sub { font-style:normal; font-size:13px; letter-spacing:0.01em; color:#c6b8ec;
   line-height:1.45; max-width:34ch; margin-top:5px; }
 
-/* Park Tables — the second move, not the first. One line, the canon drawing beside it. */
-.home-cta-alt { margin:22px 0 0; }
-.home-cta-park { display:inline-flex; align-items:center; gap:12px; text-decoration:none;
-  font-family:'Share Tech Mono', monospace; font-size:12px; letter-spacing:0.1em;
-  color:rgba(214,204,238,0.72); padding:8px 14px; border-radius:999px;
-  border:1px solid rgba(122,86,224,0.28);
-  transition:color .18s ease, border-color .18s ease; }
-.home-cta-park:hover, .home-cta-park:focus-visible { color:#F5C518; border-color:#F5C518;
-  text-decoration:none; }
-/* The park table shrinks to a chip beside the words. The drawing is the shared canon
-   (_includes/park-table.html + _pjcc-22-chess-canon.scss); only the scale is ours.
-   A transform does not change layout size, so scaling the box itself left the chip
-   spilling out under the pill — the element still reserved its full 190x99 while the
-   paint had shrunk to the middle. Instead the box is declared at the SCALED size and the
-   drawing is anchored top-left inside it, so the reserved space and the paint agree. */
-.home-cta-park-art { display:block; position:relative; width:99px; height:51px;
+/* Park Tables — the second move, built in the FIRST move's shape now (2026-07-22). It
+   mirrors the Gauntlet group above: centered column, big drawing, a bold-gold name, then
+   the line. Same axis as the door (both are centered by .home-cta), so the two reads as a
+   pair — one door you climb, one table you sit at. */
+.home-cta-alt { margin:40px 0 0; }
+.home-cta-park { display:flex; flex-direction:column; align-items:center; gap:12px;
+  text-decoration:none; color:inherit;
+  transition:color .18s ease; }
+/* the drawing grew ~130px wide to sit level with the door (Nate: "make the table bigger
+   to match gauntlet door"). Same box-equals-paint trick as before: a transform does not
+   reflow, so the box is declared at the SCALED size and the canon drawing (190×99) is
+   anchored top-left inside it and scaled to fill — reserved space and paint agree, and the
+   table cannot spill onto the title beneath it. */
+.home-cta-park-art { display:block; position:relative; width:133px; height:69px;
   flex:0 0 auto; }
 .home-cta-park-art .pkt-scene { position:absolute; top:0; left:0;
-  transform:scale(0.52); transform-origin:top left; }
+  transform:scale(0.70); transform-origin:top left; }
+/* the gold title, the Gauntlet's own type (Nate: "in Bold Gold like the words 'The
+   Gauntlet'") — literally the .home-cta-name recipe. */
+.home-cta-park-name { font-family:'Poppins',sans-serif; font-weight:800;
+  font-size:clamp(20px, 2.2vw, 26px); color:#F5C518; line-height:1.2; }
+.home-cta-park-sub { font-family:'Share Tech Mono', monospace; font-size:12px;
+  letter-spacing:0.1em; color:rgba(214,204,238,0.72); transition:color .18s ease; }
+.home-cta-park:hover .home-cta-park-sub, .home-cta-park:focus-visible .home-cta-park-sub {
+  color:#F5C518; }
 
 /* ── 1c. THE STUDIO IS AWAKE — the lamp beside the last thing that shipped ──────────
    The lamp's drawing is _sass/_pjcc-24-desk-lamp.scss, which sizes it and deliberately
@@ -994,14 +1020,17 @@ html.reduce-flourish .hero-title { animation:none; }
   .awake-post { font-size:13px; }
   .awake-more { font-size:10.5px; }
   .home-cta { margin-bottom:26px; }
-  .home-gdoor .gdoor-arch { width:96px; height:124px; border-radius:48px 48px 4px 4px; }
-  .home-gdoor .gdoor-door { border-radius:43px 43px 0 0; }
-  .home-gdoor .gdoor-glyph { font-size:39px; }
-  .home-gdoor.gdoor[data-grand="0"] .gdoor-door { left:9px; right:9px; top:14px; }
+  .home-gdoor .gdoor-arch { width:92px; height:118px; border-radius:46px 46px 4px 4px; }
+  .home-gdoor .gdoor-door { border-radius:41px 41px 0 0; }
+  .home-gdoor .gdoor-glyph { font-size:37px; }
+  .home-gdoor.gdoor[data-grand="0"] .gdoor-door { left:8px; right:8px; top:13px; }
   .home-cta-sub { font-size:11.5px; }
-  .home-cta-park { font-size:10px; gap:8px; padding:7px 11px; }
-  .home-cta-park-art { width:80px; height:42px; }
-  .home-cta-park-art .pkt-scene { transform:scale(0.42); }
+  /* the table keeps pace with the phone door — a touch smaller than desktop but still the
+     big centered drawing, not the old chip. */
+  .home-cta-park-art { width:112px; height:58px; }
+  .home-cta-park-art .pkt-scene { transform:scale(0.59); }
+  .home-cta-park-name { font-size:19px; }
+  .home-cta-park-sub { font-size:10px; }
 }
 </style>
 

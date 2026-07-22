@@ -77,6 +77,31 @@ html.sky-night .studio-light.on .sl-cone { opacity: 0.85; animation-name: sl-war
 @keyframes sl-warm-night { 0%,100% { opacity: 0.72; } 50% { opacity: 0.94; } }
 html.sky-night .studio-light.on .sl-head { box-shadow: inset 0 -4px 6px rgba(255,207,74,0.75), 0 0 24px 5px rgba(255,207,74,0.5); }
 
+/* ── ASLEEP WHEN THE STUDIO IS DARK (2026-07-22, Nate: "when the working lamp is off,
+   let's fold it up and put the head down, as if it's asleep") ─────────────────────────
+   The default pose is the WORKING pose — neck up, head angled over the page ready to
+   burn. `.on` is added by the include's script when the site shipped inside twelve hours;
+   the hours it is dark, the lamp should look like it clocked out, not like it is poised
+   over an empty desk. So `:not(.on)` folds the anglepoise down over its own base: the
+   upper rod swings toward vertical, the elbow settles, and the head nods forward and down
+   the way a head does when someone dozes at the desk.
+
+   Everything transitions, so at the twelve-hour mark it doesn't teleport — it nods off.
+   The parts are separately-positioned siblings (not nested), so each is posed by hand and
+   the values are eyeballed against a render; treat them as a set. ── */
+/* the wrapper carries the whole upper arm+head; inert until the fold is applied */
+.sl-upper { position: absolute; inset: 0; transform-origin: 63px 42px; /* the elbow */
+  transition: transform .6s ease; }
+/* THE NOD-OFF. The working pose already reaches the head down-left over the page; asleep,
+   the head noses all the way down and settles onto the desk while the upper arm sags a
+   little — the stem still stands but the head has drooped, the way a bird tucks its head
+   to sleep. Kept to a small sag + a head rotation so nothing detaches from the arm; the
+   .6s transitions mean it nods off at the twelve-hour mark instead of snapping. Values
+   eyeballed against a render; treat them as a set. */
+.studio-light:not(.on) .sl-upper { transform: translateY(7px) rotate(10deg); }
+.studio-light .sl-head { transition: transform .6s ease; }
+.studio-light:not(.on) .sl-head { transform: rotate(94deg); }
+
 /* the status tooltip — the lamp says whether the Creator has been at the desk */
 .sl-tip { position: absolute; right: 0; bottom: calc(100% + 8px); width: 224px; padding: 9px 12px;
   background: rgba(14,9,30,0.96); border: 1px solid #4a3a86; border-radius: 9px; color: #e9e2ff;

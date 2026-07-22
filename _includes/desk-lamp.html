@@ -19,14 +19,23 @@
 <a class="studio-light" id="{{ lamp_id }}" href="{{ '/direct-line/' | relative_url }}"
    data-built="{{ site.time | date_to_xmlschema }}"
    aria-label="Studio status — open the Direct Line">
+  {%- comment -%} The upper arm, elbow, head and cone are wrapped in .sl-upper so the lamp
+       can FOLD as a rigid unit when it sleeps (2026-07-22) — the wrapper rotates about the
+       elbow, swinging the head down while it stays attached to the lower arm, instead of
+       each part being flung separately. .sl-upper is position:absolute;inset:0, so its
+       children keep the exact coordinates they had as direct siblings; with no fold applied
+       (the lit state) it is completely inert. The desk, lower arm and base stay put — the
+       parts that rest ON the desk. {%- endcomment -%}
   <span class="sl-lamp" aria-hidden="true">
     <i class="sl-desk"></i>
-    <i class="sl-cone"></i>
     <i class="sl-arm"></i>
-    <i class="sl-arm2"></i>
-    <i class="sl-elbow"></i>
-    <i class="sl-head"></i>
     <i class="sl-base"></i>
+    <i class="sl-upper">
+      <i class="sl-cone"></i>
+      <i class="sl-arm2"></i>
+      <i class="sl-elbow"></i>
+      <i class="sl-head"></i>
+    </i>
   </span>
   <span class="sl-tip"></span>
 </a>
