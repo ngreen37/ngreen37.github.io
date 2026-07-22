@@ -101,7 +101,10 @@ layout: default
   .hero-lede { font-size: 13.5px; margin-top: 9px; max-width: 30ch; }
   .hero-eyebrow { display: none; }
   /* (the .hero-skyline phone rules went with the skyline itself, 2026-07-21) */
-  .hero-board { bottom: 30px; height: 64px; }
+  /* height is aspect-ratio's job now (2026-07-22) — the 8 files stay square only while
+     height tracks width/4, and a fixed 64px here would have squashed them back into
+     stripes on exactly the screen where the board is narrowest. */
+  .hero-board { bottom: 30px; }
   /* the board is shorter and narrower on a phone, so the pieces follow it down and the
      back row of each town is dropped — seven pieces across a 320px board is clutter, and
      the ones that go are the small faint ones doing the least work. What remains still
@@ -114,7 +117,11 @@ layout: default
      one is 620 — so the same percentages are barely half the distance in pixels. At the
      old scale the new huddles fused into one blob. Shrinking the pieces by the difference
      keeps the phone gaps reading like the desktop gaps. */
-  .hero-pieces .hp { --s: 0.62; }
+  /* 0.62 → 0.56 (2026-07-22): the drawn pieces are taller than the glyphs they replaced
+     AND their box is all ink — a glyph box carries empty ascender room above the piece,
+     which was quietly acting as clearance. Measured on the live phone hero, 0.62 left the
+     king 2px under the world line where the old art had 6. This buys it back. */
+  .hero-pieces .hp { --s: 0.56; }
   /* the tagline block is a fixed 110px by default — too tall under a phone title */
   .hero-tagline,
   .hero-tagline .tagline-word,
@@ -207,10 +214,20 @@ layout: default
     <span class="hp hp-ck hp-ck--r" style="--x:29%;  --b:24px; --w:17px; --o:0.34"></span>
     <span class="hp hp-ck hp-ck--b" style="--x:32.5%;--b:16px; --w:22px; --o:0.44"></span>
     <span class="hp hp-ck hp-ck--r" style="--x:35.5%;--b:5px;  --w:27px; --o:0.52"></span>
-    <span class="hp hp-ck hp-ck--b" style="--x:30.5%;--b:1px;  --w:29px; --o:0.5"></span>
-    <span class="hp hp-cs hp-cs--w" style="--x:64%;  --b:24px; --w:28px; --o:0.88">&#9821;</span>
-    <span class="hp hp-cs hp-cs--b" style="--x:69.5%;--b:9px;  --w:42px; --o:0.95">&#9818;</span>
-    <span class="hp hp-cs hp-cs--w" style="--x:75%;  --b:2px;  --w:34px; --o:0.92">&#9819;</span>
+    {%- comment -%} 2026-07-22 (Nate): "move the bottom black checker a little higher, and
+         to the left so it has its own room but it's also on the board." Was 30.5% / 1px —
+         tucked under the red one and sitting on the board's very front lip. 26% / 7px
+         gives it clear air on both sides and puts a rank of squares underneath it.
+    {%- endcomment -%}
+    <span class="hp hp-ck hp-ck--b" style="--x:26%;  --b:7px;  --w:29px; --o:0.5"></span>
+    {%- comment -%} --w is a HEIGHT for these (the art shares a 60x130 viewBox), and the
+         ceiling is not taste, it is the world line: measured on the live hero, the tallest
+         piece clears the bottom of CHECKER TOWN -> CHESS CITY by 9px at these sizes and
+         COLLIDES at the next step up. So the pieces grew by dropping --b as much as they
+         gained in height — bigger against the bigger squares, same headroom. {%- endcomment -%}
+    <span class="hp hp-cs hp-cs--w" style="--x:64%;  --b:16px; --w:34px; --o:0.88">{% include chess-piece.html piece='bishop' side='w' %}</span>
+    <span class="hp hp-cs hp-cs--b" style="--x:69.5%;--b:5px;  --w:50px; --o:0.95">{% include chess-piece.html piece='king'   side='b' %}</span>
+    <span class="hp hp-cs hp-cs--w" style="--x:75%;  --b:2px;  --w:42px; --o:0.92">{% include chess-piece.html piece='queen'  side='w' %}</span>
   </div>
   {% comment %} No <br> (2026-07-21). The hard break after "Journey" was tuned for a 52px
        title; at poster size the first line no longer fits, so the break landed mid-phrase
@@ -538,11 +555,34 @@ html.sky-night .home-hero { border-color:#2a1d5e; }
 @media (prefers-reduced-motion: reduce) { .hero-title { animation:none; } }
 html.reduce-flourish .hero-title { animation:none; }
 
-/* the board the title lands on — always there, quiet (non-animatic) */
-.hero-board { position:absolute; left:50%; bottom:40px; width:min(620px, 86%); height:96px;
+/* the board the title lands on — always there, quiet (non-animatic)
+
+   EIGHT FILES, BIGGER SQUARES (2026-07-22, Nate). It was a 64px conic tile on a 620px
+   board — 32px squares, NINETEEN of them across. That is not a chessboard, it is
+   graph paper: at that count the squares are smaller than the pieces standing on them
+   and the eye reads texture instead of a board.
+
+   The count is now fixed at 8 no matter how wide the board gets, which takes two
+   changes working together. `background-size: 25% 100%` makes each conic tile a
+   quarter of the width and the full height, and one tile carries 2x2 squares — so
+   eight files, exactly, at every screen size. `aspect-ratio: 4/1` is what keeps them
+   SQUARE: it ties height to width/4, which is the tile's own width, so a tile is as
+   tall as it is wide and stays that way from a 335px phone board to a 620px desktop
+   one. A fixed pixel height could only be right at one width.
+
+   The board grew 96px -> 155px doing that, but it grows AWAY from you, not toward:
+   transform-origin is the near edge, so the front rank — the ground the pieces stand
+   on — has not moved a pixel. Two ranks show instead of three.
+
+   The fade is untouched and is doing more work than before (Nate: "use the fade
+   function to give it the same feel"). It is a MASK, written in percentages, so it
+   rescales with the board on its own: the squares dissolve before they reach any
+   edge, which is what keeps a hard-edged checker pattern from looking like a rug
+   dropped on the sky. Bigger squares would have shown that edge; they still don't. */
+.hero-board { position:absolute; left:50%; bottom:40px; width:min(560px, 84%); aspect-ratio:4 / 1;
   transform:translateX(-50%) perspective(430px) rotateX(58deg); transform-origin:50% 100%;
   background:repeating-conic-gradient(rgba(200,170,255,0.10) 0% 25%, rgba(14,8,32,0.14) 0% 50%);
-  background-size:64px 64px; pointer-events:none;
+  background-size:25% 100%; pointer-events:none;
   -webkit-mask-image:radial-gradient(ellipse at 50% 100%, #000 32%, transparent 74%);
   mask-image:radial-gradient(ellipse at 50% 100%, #000 32%, transparent 74%); }
 
@@ -653,25 +693,28 @@ html.reduce-flourish .hero-title { animation:none; }
 /* the -0.13em nudge: a glyph's ink does not fill its em box (there is descender room
    under the baseline), so a piece positioned purely by `bottom` floats above the surface
    it is meant to be standing on. This drops it back onto the board. */
-/* SOLID, with a contour and nothing else (2026-07-22, Nate: "make them solid colors — no
-   outline except maybe around the outside of each piece"). Two things were making them
-   read as line-art rather than as pieces: they were half-transparent (0.5–0.6, so the sky
-   came through the fill), and the stroke was heavy enough to be a drawn line in its own
-   right. Opacity is now 0.88–0.95 — enough atmosphere that they still belong to the
-   painting, not so little that you see through a king.
+/* DRAWN PIECES, not glyphs (2026-07-22, Nate: "I meant actual pieces, that a human would
+   use on a physical chessboard. The symbols look out-of-place"). The art is
+   _includes/chess-piece.html — Staunton profiles at a shared 60x130 viewBox, so --w is a
+   HEIGHT here and the three pieces size against each other the way real ones do.
 
-   `paint-order:stroke fill` is what keeps the remaining stroke an OUTSIDE contour: the
-   stroke is centred on the glyph's edge, so painting it BEHIND the fill leaves only its
-   outer half showing and the fill stays one flat color right up to the edge. Drop it and
-   the line eats inward and hollows the piece out. Width 0.042 → 0.028em: still a
-   silhouette against a bright noon sky, no longer a cartoon keyline. */
-.hp-cs { font-size:var(--d); line-height:1; display:block;
-  bottom:calc(var(--b) - var(--d) * 0.13); transform:translateX(-50%);
-  paint-order:stroke fill;
-  -webkit-text-stroke:calc(var(--d) * 0.028) var(--piece-w-line);
-  color:var(--piece-w-fill);
-  filter:drop-shadow(0 calc(var(--d) * 0.07) calc(var(--d) * 0.09) rgba(0,0,0,0.55)); }
-.hp-cs--b { color:var(--piece-b-fill); -webkit-text-stroke-color:var(--piece-b-line); }
+   No -webkit-text-stroke any more, because there is no text. The contour is the stacked
+   drop-shadow below, and that is the point: a filter runs on the RENDERED silhouette, so
+   it traces the outside of the merged piece and never the seams between the shapes it is
+   built from. Two hairline passes make the edge, the third is the shadow the piece casts
+   on the board. Solid colour inside, one line around the outside — nothing in between.
+
+   Opacity still sits at 0.88–0.95: enough atmosphere to belong to the painting, not so
+   little that you can see through a king. */
+.hp-cs { display:block; width:calc(var(--d) * 0.46); height:var(--d);
+  bottom:var(--b); transform:translateX(-50%);
+  filter:drop-shadow(0 0 0.7px var(--piece-w-line)) drop-shadow(0 0 0.7px var(--piece-w-line))
+         drop-shadow(0 calc(var(--d) * 0.045) calc(var(--d) * 0.07) rgba(0,0,0,0.5)); }
+/* the fills live in the canon (_pjcc-22-chess-canon.scss) with every other piece colour
+   on the site — all the hero owns is how big they are and what light they stand in. */
+.hp-cs .cpc { width:100%; height:100%; }
+.hp-cs--b { filter:drop-shadow(0 0 0.7px var(--piece-b-line)) drop-shadow(0 0 0.7px var(--piece-b-line))
+         drop-shadow(0 calc(var(--d) * 0.045) calc(var(--d) * 0.07) rgba(0,0,0,0.5)); }
 
 {% comment %} (the #16 title sheen removed 2026-07-11 — its mix-blend-mode forced an
      extra compositing pass and Nate cut it in the lag sweep. The ♛-crowning finale

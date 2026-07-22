@@ -38,6 +38,19 @@
   --piece-b-line: #f2e9ff;
 }
 
+/* ── THE DRAWN PIECES (2026-07-22) ──────────────────────────────────────────────
+   `_includes/chess-piece.html` — Staunton profiles as SVG, for places where the
+   Unicode glyphs read as type instead of as objects (Nate: "actual pieces, that a
+   human would use on a physical chessboard"). The art carries NO colour of its own;
+   it wears the canon fills below, same as every board on the site, so restyling the
+   pieces is still one token edit and the drawings can never drift from the glyphs.
+
+   Size and position belong to the caller — a piece is only ever as big as the thing
+   it stands on. First caller is the front door's hero band. ── */
+.cpc { display: block; fill: var(--piece-w-fill); }
+.cpc--w { fill: var(--piece-w-fill); }
+.cpc--b { fill: var(--piece-b-fill); }
+
 /* ── the park table — drawn once, used thrice ── */
 /* (the "Play Chess" caption came OFF 2026-07-16 evening — Nate: the drawing alone is
    the invitation; every page's aria-label still names the link. The whole unit also
