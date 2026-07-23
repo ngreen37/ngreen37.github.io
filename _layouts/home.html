@@ -140,7 +140,7 @@ layout: default
      landed on top of "Chess City". The extra room is the board's stage; the flow content
      above it does not move relative to itself. */
   .home-hero { padding: 42px 40px 104px; margin-bottom: 0; }
-  .hero-lede { margin-top: 8px; }
+  .hero-lede { margin-top: var(--space-2); }  /* 8px = --space-2 exact (adoption) */
 
   /* ── THE DESKTOP DOOR (2026-07-22, Nate: "go on the desktop problem") ──────────────
      Measured on the live site, the Gauntlet door — the front page's ONE call to action —
@@ -934,7 +934,7 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
 .char-row-tools { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-4); margin-top: var(--space-2); }  /* adoption pass 2026-07-23: gap 14→16, margin 8=--space-2 exact */
 .home-shuffle { display: inline-flex; align-items: center; gap: 6px;
   background: rgba(80,30,180,0.2); color: #b9a8e6; border: 1px solid rgba(150,65,255,0.4);
-  border-radius: 999px; height: 26px; padding: 0 12px; cursor: pointer; font-size: 13px; line-height: 1;
+  border-radius: 999px; height: 26px; padding: 0 var(--space-3); cursor: pointer; font-size: 13px; line-height: 1;  /* 12px = --space-3 exact; 999px pill + 26px height stay literal */
   transition: border-color .15s, color .15s; }
 .home-shuffle span { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 .home-shuffle:hover { border-color: #F5C518; color: #F5C518; }
@@ -973,7 +973,7 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
    landing on the hero card's bottom border. The gap clears it; the door shrank in the same
    pass, which claws most of that 22px back off the fold. */
 .home-cta { display:flex; flex-flow:row wrap; align-items:flex-end; justify-content:center;
-  gap:26px 54px; text-align:center; margin:22px 0 34px; }
+  gap:26px 54px; text-align:center; margin:22px 0 var(--space-6); }  /* section rhythm: bottom 34→32 (--space-6). 22px top + the 26/54 pair-gap stay literal (glow clearance + tuned door↔table spacing) */
 /* SIDE BY SIDE (2026-07-22, Nate: "move the gauntlet to the left, and the park tables on the
    right, on the same horizontal") — was a centered COLUMN of one door; now a ROW of two
    stacks. align-items:flex-end stands both on the SAME GROUND LINE, which lands the two gold
@@ -1008,7 +1008,7 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
    .home-cta sets the space between the two now, so the old 40px top margin is gone; the
    phone rule adds vertical spacing back when the row folds to a column. */
 .home-cta-alt { margin:0; }
-.home-cta-park { display:flex; flex-direction:column; align-items:center; gap:12px;
+.home-cta-park { display:flex; flex-direction:column; align-items:center; gap:var(--space-3);  /* 12px exact (adoption) */
   text-decoration:none; color:inherit;
   transition:color .18s ease; }
 /* the drawing grew to sit level with the door (Nate: "make the table bigger to match gauntlet
@@ -1038,7 +1038,7 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
    sliver's negative side offsets are re-set so the slab is a short plank under the base
    instead of running off the edge of the screen. ── */
 .home-awake { display:flex; align-items:flex-end; justify-content:center; gap:26px;
-  margin:0 0 34px; padding:0 8px; }
+  margin:0 0 var(--space-6); padding:0 var(--space-2); }  /* section rhythm: bottom 34→32 (--space-6); 8px pad = --space-2 exact. gap:26px (lamp↔copy) stays literal */
 .awake-lamp { position:relative; display:block; width:82px; height:92px; flex:0 0 auto; }
 .awake-lamp .studio-light { position:absolute; inset:0; }
 .awake-lamp .sl-desk { left:-18px; right:-18px; border-radius:3px; }
@@ -1062,7 +1062,7 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
   text-decoration:none; }
 
 @media (max-width: 600px) {
-  .home-awake { gap:16px; margin-bottom:26px; }
+  .home-awake { gap:var(--space-4); margin-bottom:26px; }  /* 16px = --space-4 exact (adoption) */
   .awake-lamp { transform:scale(0.78); transform-origin:bottom center; width:64px; height:72px; }
   .awake-post { font-size:13px; }
   .awake-more { font-size:10.5px; }
