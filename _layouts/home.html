@@ -273,7 +273,25 @@ layout: default
        in the stylesheet lets the browser choose even lines at whatever size the clamp
        lands on, which is the only thing that works across a 360px phone and a 2560px
        display. {% endcomment %}
-  <h1 class="hero-title">Princess and the Journey to Chess City</h1>
+  {% comment %} FUN FLAIR (2026-07-22, Nate: "give the hero title a fun flair"). Each WORD is
+       its own .ht-w span so it can carry a gentle tilt AND its own glint (a bright ::after copy
+       revealed through a sweeping mask band; the per-word delay makes it travel L→R). The ✦ are
+       decorative twinkles. data-w feeds the glint's ::after copy. aria-label carries the clean
+       title so a screen reader hears it once, not the spans / ::after copies / sparkles. Styles:
+       .ht-w / .ht-spark / @keyframes htShine + htTwinkle below. {% endcomment %}
+  <h1 class="hero-title" aria-label="Princess and the Journey to Chess City">
+    <span class="ht-w" data-w="Princess">Princess</span>
+    <span class="ht-w" data-w="and">and</span>
+    <span class="ht-w" data-w="the">the</span>
+    <span class="ht-w" data-w="Journey">Journey</span>
+    <span class="ht-w" data-w="to">to</span>
+    <span class="ht-w" data-w="Chess">Chess</span>
+    <span class="ht-w" data-w="City">City</span>
+    <i class="ht-spark ht-spark--1" aria-hidden="true">&#10022;</i>
+    <i class="ht-spark ht-spark--2" aria-hidden="true">&#10022;</i>
+    <i class="ht-spark ht-spark--3" aria-hidden="true">&#10022;</i>
+    <i class="ht-spark ht-spark--4" aria-hidden="true">&#10022;</i>
+  </h1>
 
   {% comment %} ── THE LEDE (2026-07-22, Nate) ────────────────────────────────────────
        A stranger's first screen said the title, then a tagline cycling ONE WORD at a
@@ -651,40 +669,92 @@ html.reduce-flourish .hero-title { animation:none; }
    headline. Browsers without text-wrap:balance simply wrap normally — no fallback needed. */
 .hero-title { position:relative; text-wrap:balance; max-width:16ch; margin-left:auto; margin-right:auto; }
 
-/* ── THE TITLE CARD (2026-07-22, Nate: "make the PJCC title a fun text") ────────────
-   It was flat gold Poppins — a headline, not a logo, on a page whose whole destination
-   is an animated series. This is the film-logo treatment: the same typeface and the same
-   gold, given a thick dark outline and a short extrude underneath so it sits ON the sky
-   instead of floating in front of it.
+/* ── THE TITLE CARD + ITS FUN FLAIR ─────────────────────────────────────────────────
+   (2026-07-22, Nate: "make the PJCC title a fun text", then "give the hero title a fun
+   flair" → shimmer sweep + playful letters + twinkle sparkles.)
 
-   `paint-order: stroke fill` is load-bearing, exactly as it is in the chess canon.
-   Without it the stroke paints ON TOP of the fill and eats inward from every edge, which
-   at this weight closes up the counters in "e", "o" and "ss" and turns the word into a
-   blob. With it the stroke sits behind and the letterforms stay intact.
+   The film-logo treatment — Poppins gold, thick dark outline, a short extrude so it sits ON
+   the sky rather than in front of it — now lives on each WORD (.ht-w) instead of the whole
+   h1, because the flair needs per-word control: a gentle tilt, and a glint that travels word
+   by word. `paint-order: stroke fill` is still load-bearing, exactly as in the chess canon:
+   without it the stroke paints ON TOP of the fill and eats inward, closing up the counters in
+   "e/o/ss". The stroke scales with the type (a fixed 5px is a hairline at 76px, a smear at
+   26px) and earns its keep on legibility too — the title sits over the shared town sky, gold
+   at dusk and pale at noon, and dark-outlined gold reads on both.
 
-   The stroke scales with the type (a fixed 5px is a hairline at 76px and a smear at
-   26px). Tracking goes from -1px to 0: a heavy outline expands every glyph outward by
-   half its width, so negative tracking that looked tight before now runs letters into
-   each other.
+   THREE FLAIRS, all built to stay cheap (the perf rule is transform/opacity; the one
+   position-animation here is a brief per-word mask sweep, not an always-on ambient layer):
+     · SHIMMER SWEEP — a bright copy of each word (::after) is revealed only through a narrow
+       diagonal mask band that sweeps across via mask-position; a per-word delay makes the
+       glint travel L→R. The base word is SOLID gold with a normal text-shadow extrude —
+       deliberately NOT background-clip:text, because text-shadow paints OVER a clipped fill
+       and would hide the gold (verified: the extrude wins and the letters go dark). So the
+       glint is an OVERLAY, not the fill, and there is no filter anywhere.
+     · PLAYFUL LETTERS — each word carries a static ±1.5° tilt and a 1px up/down stagger.
+       Static transforms, zero per-frame cost; reads as storybook hand-lettering.
+     · TWINKLE SPARKLES — four ✦ around the lockup, fading and scaling on their own timers.
+   The h1 carries aria-label with the clean title, so a screen reader hears it once — not the
+   seven per-word spans, the ::after copies, or the decorative sparkles. ── */
+.hero-title { letter-spacing:0; }
 
-   The outline earns its keep beyond looks — the title sits over the shared town sky,
-   which is gold at dusk and pale at noon, and dark-outlined gold stays legible on both
-   where flat gold did not. Static paint; nothing here animates, so heroRise above is
-   still the only motion on the title. ── */
-.hero-title {
-  letter-spacing:0;
+.ht-w {
+  position:relative; display:inline-block; color:#F5C518;
   paint-order:stroke fill;
   -webkit-text-stroke:clamp(2.5px, 0.42vw, 5px) #1b1136;
   text-shadow:
     0 2px 0 rgba(43,26,88,0.9),          /* the extrude — two flat steps … */
     0 4px 0 rgba(17,10,44,0.85),
     0 10px 22px rgba(0,0,0,0.55);        /* … then the ground shadow under it */
+  transform:rotate(var(--rot,0deg)) translateY(var(--ty,0));
 }
-/* Safari/Chrome only ever needed the -webkit- form; Firefox 128+ ships unprefixed. Both
-   are set so no engine falls back to an unstroked title. */
-@supports (text-stroke: 1px black) {
-  .hero-title { text-stroke:clamp(2.5px, 0.42vw, 5px) #1b1136; }
+/* Safari/Chrome only ever needed the -webkit- form; Firefox 128+ ships unprefixed. */
+@supports (text-stroke: 1px black) { .ht-w { text-stroke:clamp(2.5px, 0.42vw, 5px) #1b1136; } }
+
+/* the glint: a bright copy of the word, shown only through a sweeping diagonal mask band */
+.ht-w::after {
+  content:attr(data-w); position:absolute; left:0; top:0; pointer-events:none;
+  color:#FFFBEA; -webkit-text-stroke:0;
+  -webkit-mask-image:linear-gradient(105deg, transparent 42%, #000 50%, transparent 58%);
+          mask-image:linear-gradient(105deg, transparent 42%, #000 50%, transparent 58%);
+  -webkit-mask-size:280% 100%; mask-size:280% 100%;
+  -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
+  -webkit-mask-position:120% 0; mask-position:120% 0;
+  animation:htShine 7s ease-in-out infinite; animation-delay:var(--sd,0s);
 }
+/* playful per-word tilt + stagger, and the glint's travel order (reading order).
+   nth-child 1..7 are the seven word spans; the four sparkles are children 8..11. */
+.ht-w:nth-child(1){ --rot:-1.5deg; --ty:1px;  --sd:0s;   }
+.ht-w:nth-child(2){ --rot:1.5deg;  --ty:-1px; --sd:.05s; }
+.ht-w:nth-child(3){ --rot:-1.5deg; --ty:1px;  --sd:.10s; }
+.ht-w:nth-child(4){ --rot:1.5deg;  --ty:-1px; --sd:.15s; }
+.ht-w:nth-child(5){ --rot:-1.5deg; --ty:1px;  --sd:.20s; }
+.ht-w:nth-child(6){ --rot:1.5deg;  --ty:-1px; --sd:.25s; }
+.ht-w:nth-child(7){ --rot:-1.5deg; --ty:1px;  --sd:.30s; }
+@keyframes htShine {
+  0%   { -webkit-mask-position:120% 0; mask-position:120% 0; }   /* band off right = pure gold */
+  13%  { -webkit-mask-position:-40% 0; mask-position:-40% 0; }   /* swept across once … */
+  100% { -webkit-mask-position:-40% 0; mask-position:-40% 0; }   /* … then rest as gold */
+}
+
+/* the twinkle sparkles around the lockup (absolute inside the position:relative h1) */
+.ht-spark { position:absolute; z-index:5; pointer-events:none; color:#FFE98A;
+  font-style:normal; font-family:'Segoe UI Symbol','Apple Symbols',system-ui,sans-serif;
+  text-shadow:0 0 6px rgba(245,197,24,0.9), 0 0 12px rgba(245,197,24,0.5);
+  animation:htTwinkle 3.6s ease-in-out infinite; }
+.ht-spark--1 { top:-4%;   left:6%;   font-size:20px; animation-delay:0s;   }
+.ht-spark--2 { top:8%;    right:4%;  font-size:28px; animation-delay:1.2s; }
+.ht-spark--3 { bottom:2%; left:30%;  font-size:15px; animation-delay:.5s;  }
+.ht-spark--4 { bottom:12%; right:22%; font-size:22px; animation-delay:2s;  }
+@keyframes htTwinkle { 0%,100% { opacity:.15; transform:scale(.6); } 50% { opacity:1; transform:scale(1); } }
+
+/* both quiet switches still it: no glint sweep, no twinkle. The static tilt stays — it is not
+   motion. (heroRise on the h1 is already gated by these two switches above.) */
+@media (prefers-reduced-motion: reduce) {
+  .ht-w::after { animation:none; -webkit-mask-position:-40% 0; mask-position:-40% 0; }
+  .ht-spark { animation:none; opacity:.9; }
+}
+html.reduce-flourish .ht-w::after { animation:none; -webkit-mask-position:-40% 0; mask-position:-40% 0; }
+html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
 
 /* ── THE TWO TOWNS' PIECES on the board (2026-07-22, Nate) ──────────────────────────
    Why this is a SIBLING of .hero-board and not a child: the board is tipped away with
