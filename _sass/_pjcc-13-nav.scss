@@ -77,7 +77,7 @@
   max-width: 560px;
   background: #140a2e;
   border: 1px solid #5a4a96;
-  border-radius: 16px;
+  border-radius: var(--r-lg);
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
   overflow: hidden;
   animation: cmdkPop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -130,7 +130,7 @@
   align-items: center;
   gap: 12px;
   padding: 9px 11px;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: #e3d6ff;
   text-decoration: none;
   cursor: pointer;
@@ -262,7 +262,7 @@
   padding: 11px 12px;
   background: rgba(80, 30, 180, 0.14);
   border: 1px solid rgba(150, 65, 255, 0.28);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   color: #e9e2ff;
   transform: none;
   transition: background 0.16s, border-color 0.16s, transform 0.12s;

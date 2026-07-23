@@ -5,7 +5,7 @@
    ============================================================ */
 
 /* ---------------- THE HUB (Gauntlet Legends) ---------------- */
-.ghub { position: relative; padding: 26px 18px 34px; margin: 0 0 1.4rem; border-radius: 14px; overflow: hidden;
+.ghub { position: relative; padding: 26px 18px 34px; margin: 0 0 1.4rem; border-radius: var(--r-md); overflow: hidden;
   background:
     radial-gradient(120% 80% at 50% -10%, rgba(120,60,20,0.5), transparent 60%),
     radial-gradient(80% 60% at 50% 120%, rgba(80,30,120,0.4), transparent 60%),
@@ -108,7 +108,7 @@
 
 /* ---------------- LEARN HALL = THE STUDY ---------------- */
 /* A quiet analysis room at night: warm lamplight, serif headings, index-card games. */
-.hall--study { position:relative; padding:26px 22px 30px; border-radius:10px; overflow:hidden;
+.hall--study { position:relative; padding:26px 22px 30px; border-radius:var(--r-sm); overflow:hidden;
   background:
     radial-gradient(120% 70% at 50% -10%, rgba(255,214,140,0.10), transparent 60%),
     linear-gradient(165deg, #161a17 0%, #0d100e 100%);

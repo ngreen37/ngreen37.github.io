@@ -36,7 +36,7 @@
 .idn-card {
   display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
   background: linear-gradient(135deg, #1f1147, #34206f); border: 1px solid #6b5fa0;
-  border-radius: 14px; padding: 16px 18px; margin: 6px 0 4px;
+  border-radius: var(--r-md); padding: 16px 18px; margin: 6px 0 4px;
 }
 .idn-card .idn-meta { flex: 1 1 220px; min-width: 200px; }
 .idn-card .idn-name { color: #F5C518; font-weight: 800; font-size: 1.18rem; line-height: 1.15; }
@@ -68,7 +68,7 @@
 .forge-ov.hidden { display: none; }
 @keyframes forge-fade { from { opacity: 0; } to { opacity: 1; } }
 .forge {
-  width: min(820px, 100%); border-radius: 16px; border: 1px solid #F5C518; overflow: hidden;
+  width: min(820px, 100%); border-radius: var(--r-lg); border: 1px solid #F5C518; overflow: hidden;
   box-shadow: 0 24px 60px rgba(0,0,0,0.6); color: #f0e6ff; background: linear-gradient(180deg, #1b1140, #140c30);
 }
 
@@ -110,7 +110,7 @@
 /* part grids (base, hats, emblems, pets) */
 .forge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 8px; }
 .forge-cell {
-  background: #160c33; border: 1px solid #4a3a7a; border-radius: 10px; padding: 8px 2px; text-align: center;
+  background: #160c33; border: 1px solid #4a3a7a; border-radius: var(--r-sm); padding: 8px 2px; text-align: center;
   cursor: pointer; transition: border-color .12s, transform .08s, background .12s; position: relative;
 }
 /* 2026-07-15 (Nate: the customize options "take two clicks to toggle"). These cells are
@@ -152,12 +152,12 @@
 /* footer actions */
 .forge-foot { display: flex; gap: 10px; align-items: center; margin-top: 20px; flex-wrap: wrap; }
 .forge-save {
-  background: linear-gradient(135deg, #F5C518, #ffd740); color: #1a0f3d; border: none; border-radius: 10px;
+  background: linear-gradient(135deg, #F5C518, #ffd740); color: #1a0f3d; border: none; border-radius: var(--r-sm);
   padding: 11px 22px; font-weight: 800; cursor: pointer; font-family: inherit; font-size: 0.92rem;
 }
 .forge-save:hover { box-shadow: 0 0 16px rgba(245,197,24,0.5); }
 .forge-save:active { transform: scale(0.98); }
-.forge-rand { background: #2D1B69; color: #f0e6ff; border: 1px solid #6b5fa0; border-radius: 10px; padding: 11px 16px; cursor: pointer; font-family: inherit; font-weight: 700; font-size: 0.88rem; }
+.forge-rand { background: #2D1B69; color: #f0e6ff; border: 1px solid #6b5fa0; border-radius: var(--r-sm); padding: 11px 16px; cursor: pointer; font-family: inherit; font-weight: 700; font-size: 0.88rem; }
 .forge-rand:hover { border-color: #F5C518; }
 .forge-den-link { margin-left: auto; color: #9a7fd4; font-size: 0.8rem; font-weight: 700; background: none; border: none; cursor: pointer; text-decoration: underline; font-family: inherit; }
 .forge-den-link:hover { color: #F5C518; }

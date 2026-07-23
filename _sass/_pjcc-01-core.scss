@@ -473,7 +473,7 @@ h3 {
 .post {
   background: #1c1540;
   padding: 40px 48px;
-  border-radius: 16px;
+  border-radius: var(--r-lg);
   border: 1px solid #3d2b8a;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
@@ -532,7 +532,7 @@ pre {
   background: #080610;
   color: #e2e8f0;
   padding: 18px;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   border: 1px solid #2d2060;
   overflow-x: auto;
   margin-bottom: 1.2em;
@@ -619,7 +619,7 @@ pre code {
   min-width: 180px;
   background: #12093a;
   border: 2px solid #F5C518;
-  border-radius: 16px;
+  border-radius: var(--r-lg);
   padding: 36px 24px;
   text-align: center;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
@@ -682,7 +682,7 @@ pre code {
 .character-card {
   background: #1c1540;
   padding: 40px 48px;
-  border-radius: 16px;
+  border-radius: var(--r-lg);
   border: 1px solid #3d2b8a;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
@@ -742,7 +742,7 @@ pre code {
   aspect-ratio: 3 / 4;
   background: #12093a;
   border: 2px dashed #3d2b8a;
-  border-radius: 14px;
+  border-radius: var(--r-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -807,7 +807,7 @@ pre code {
 .location-card {
   background: #1c1540;
   padding: 40px 48px;
-  border-radius: 16px;
+  border-radius: var(--r-lg);
   border: 1px solid #3d2b8a;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
@@ -852,7 +852,7 @@ pre code {
   height: 420px;
   background: #12093a;
   border: 2px dashed #3d2b8a;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -864,7 +864,7 @@ pre code {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   display: block;
 }
 
@@ -1017,7 +1017,7 @@ pre code {
   text-align: center;
   background: #1c1540;
   border: 1px solid #3d2b8a;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   padding: 17px 12px 13px;
   text-decoration: none;
   gap: 7px;

@@ -86,7 +86,7 @@
 .tag-post-card {
   background: #1c1540;
   border: 1px solid #3d2b8a;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   padding: 24px 28px;
   transition: border-color 0.2s, transform 0.2s;
 
@@ -214,7 +214,7 @@
 .evo-card {
   background: #1c1540;
   padding: 40px 48px;
-  border-radius: 16px;
+  border-radius: var(--r-lg);
   border: 1px solid #3d2b8a;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
@@ -355,7 +355,7 @@
   z-index: 1;
   background: #1c1540;
   border: 1px solid #3d2b8a;
-  border-radius: 16px;
+  border-radius: var(--r-lg);
   padding: 32px;
   max-width: 860px;
   width: 100%;
@@ -441,7 +441,7 @@
 
   .evo-lightbox-panel {
     padding: 24px 18px;
-    border-radius: 12px;
+    border-radius: var(--r-md);
   }
 
   .character-top-nav {

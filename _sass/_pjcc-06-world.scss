@@ -11,7 +11,7 @@
 
 .wm-svg-container {
   width: 100%;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   overflow: hidden;
   border: 1px solid rgba(245,197,24,0.12);
   background: #020008;
@@ -124,7 +124,7 @@
   width: 100%;
   background: radial-gradient(ellipse at 50% 50%, rgba(28,12,65,0.65) 0%, rgba(2,0,10,0.96) 70%);
   border: 1px solid rgba(245,197,24,0.1);
-  border-radius: 16px;
+  border-radius: var(--r-lg);
   overflow: hidden;
 }
 
