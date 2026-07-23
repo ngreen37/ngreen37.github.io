@@ -30,7 +30,7 @@ body_class: theme-bw
   <!-- ══════════ PRINCESS ══════════ -->
   <figure class="hello-princess">
     <img src="{{ site.baseurl }}/assets/images/Princess-3.jpg" alt="Princess in her Minnesota Wild jersey" class="hello-princess-img">
-    <figcaption class="hello-princess-cap">Princess Sophia McPuppy — the real one.</figcaption>
+    <figcaption class="hello-princess-cap">Princess Sophia McPuppy.</figcaption>
   </figure>
 
   <!-- ══════════ THE OPERATOR (< 10 words) ══════════ -->

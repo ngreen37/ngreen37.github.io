@@ -30,13 +30,21 @@
   <header class="site-header">
     <div class="wrapper header-inner">
 
-      <!-- Top bar: logo left, about/contact + hamburger right -->
+      <!-- Top bar: hamburger + logo LEFT (2026-07-23 Nate — the drawer opens from the left,
+           so its trigger belongs there), controls RIGHT. -->
       <div class="header-top">
-        <a class="site-logo" href="{{ '/' | relative_url }}">
-          <img src="{{ '/assets/images/mcpuppy-logo-stacked.svg' | relative_url }}"
-               alt="McPuppy Studios"
-               class="logo-stacked">
-        </a>
+        <div class="header-top-left">
+          <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+          </button>
+          <a class="site-logo" href="{{ '/' | relative_url }}">
+            <img src="{{ '/assets/images/mcpuppy-logo-stacked.svg' | relative_url }}"
+                 alt="McPuppy Studios"
+                 class="logo-stacked">
+          </a>
+        </div>
         <div class="header-top-right">
           <button class="cmdk-trigger" id="cmdk-trigger" type="button" aria-label="Open the command menu" aria-keyshortcuts="Meta+K Control+K" title="Search & jump (Ctrl/⌘ K)">
             <span class="cmdk-trigger-ico" aria-hidden="true">⌕</span>
@@ -47,11 +55,6 @@
           <a class="nav-operative" id="nav-operative" href="{{ '/dossier/' | relative_url }}" title="Your Profile — sign in or open it" hidden>Sign in</a>
           {%- comment -%} 2026-07-16 (Nate): "Hello" → "Contact", to match the splash's pill. {%- endcomment -%}
           <a class="about-contact-btn" href="{{ '/contact/' | relative_url }}" data-jp="お問い合わせ">Contact</a>
-          <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
-            <span class="nav-toggle-bar"></span>
-            <span class="nav-toggle-bar"></span>
-            <span class="nav-toggle-bar"></span>
-          </button>
         </div>
       </div>
 

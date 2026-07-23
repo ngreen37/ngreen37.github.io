@@ -298,7 +298,15 @@ ul, ol {
   }
 }
 
-/* --- Header top-right group (about btn + hamburger) --- */
+/* --- Header top-left group (hamburger + logo) — 2026-07-23, the drawer's trigger sits by
+   the logo on the left, next to the drawer it opens. --- */
+.header-top-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* --- Header top-right group (⌘K · 日本語 · sign-in · Contact) --- */
 .header-top-right {
   display: flex;
   align-items: center;
