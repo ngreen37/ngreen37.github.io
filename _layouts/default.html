@@ -36,8 +36,9 @@
   <header class="site-header">
     <div class="wrapper header-inner">
 
-      <!-- Top bar: hamburger + logo LEFT (2026-07-23 Nate — the drawer opens from the left,
-           so its trigger belongs there), controls RIGHT. -->
+      <!-- Top bar: hamburger LEFT (2026-07-23 Nate — the drawer opens from the left, so its
+           trigger belongs there), the McPuppy logo CENTERED, controls RIGHT. The header is a
+           3-column grid (see .header-top) so the badge sits dead-center of the header. -->
       <div class="header-top">
         <div class="header-top-left">
           <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
@@ -45,12 +46,12 @@
             <span class="nav-toggle-bar"></span>
             <span class="nav-toggle-bar"></span>
           </button>
-          <a class="site-logo" href="{{ '/' | relative_url }}">
-            <img src="{{ '/assets/images/mcpuppy-logo-stacked.svg' | relative_url }}"
-                 alt="McPuppy Studios"
-                 class="logo-stacked">
-          </a>
         </div>
+        <a class="site-logo" href="{{ '/' | relative_url }}">
+          <img src="{{ '/assets/images/mcpuppy-logo-stacked.svg' | relative_url }}"
+               alt="McPuppy Studios"
+               class="logo-stacked">
+        </a>
         <div class="header-top-right">
           <button class="cmdk-trigger" id="cmdk-trigger" type="button" aria-label="Open the command menu" aria-keyshortcuts="Meta+K Control+K" title="Search & jump (Ctrl/⌘ K)">
             <span class="cmdk-trigger-ico" aria-hidden="true">⌕</span>

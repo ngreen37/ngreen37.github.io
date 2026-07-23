@@ -48,6 +48,18 @@
   background: #0f0c1a;
 }
 
+/* ── DOCK CLEARANCE (2026-07-23, Nate: the sun "shouldn't be tucked away" behind the
+   open menu) — on desktop the nav is a docked rail on the left (see _pjcc-13-nav.scss).
+   Start the sky just to the RIGHT of that rail so the orb's arc (--orb-x maps across the
+   sky box) rises in the OPEN instead of behind the menu — the morning sun no longer
+   hides at the rail's edge. The rail is opaque, so the strip behind it is never seen.
+   Insets match the rail widths: 246px docked-open, 66px collapsed. Below 901px the rail
+   is an off-canvas overlay, so the sky stays full-width (default inset:0). ── */
+@media (min-width: 901px) {
+  .town-sky { left: 246px; }
+  body.nav-collapsed .town-sky { left: 66px; }
+}
+
 /* ── the moving parts, in their fixed order ────────────────────────────────────
    stars (1) → orb (2) → shooting stars (3) → clouds (4). Nate: "the stars should
    always fall BEHIND the moon. Unless it's a shooting star." Don't reorder these. */
