@@ -356,7 +356,16 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
   body.nav-collapsed .drawer-head,
   body.nav-collapsed .drawer-div,
   body.nav-collapsed .drawer-mini { display: none; }
-  body.nav-collapsed .site-header .site-nav.drawer .page-link.drawer-link { justify-content: center; padding: 11px 0; }
+  /* The hover label (below) is positioned just OUTSIDE the rail's right edge. The rail's
+     base `overflow-y: auto` forces `overflow-x` to compute to `auto` as well (you can't have
+     one axis visible and the other not), which CLIPPED the label to a sliver at the edge —
+     it read as unfurling BEHIND the page (2026-07-23 bug). Collapsed the rail is icons-only
+     and never tall enough to want the scroll, so it can go `overflow: visible` and let the
+     label escape in front of the content. `position: relative` on the link makes the label
+     anchor to the hovered ICON explicitly, instead of relying on the :hover transform below
+     to happen to establish the containing block. */
+  body.nav-collapsed .site-header .site-nav.drawer { overflow: visible; }
+  body.nav-collapsed .site-header .site-nav.drawer .page-link.drawer-link { position: relative; justify-content: center; padding: 11px 0; }
   body.nav-collapsed .drawer-link .dl-txt { display: none; }
   /* hover a collapsed icon → its NAME flies out to the right as a small label */
   body.nav-collapsed .drawer-link:hover .dl-txt,
