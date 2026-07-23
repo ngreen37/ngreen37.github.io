@@ -1,22 +1,22 @@
 ---
 layout: home
 title: Princess and the Journey to Chess City
-permalink: /
-tab_title: McPuppy Studios — Princess and the Journey to Chess City
-description: Home of Princess and the Journey to Chess City (PJCC) — an animated series in the making, plus an arcade of free chess games, all built in the open by McPuppy Studios.
+permalink: /pjcc/
+tab_title: Princess and the Journey to Chess City — PJCC by McPuppy Studios
+description: Princess and the Journey to Chess City (PJCC) — an animated series in the making, plus an arcade of free chess games. Meet the cast, wander the world, and see the fan art.
 body_class: full-sky
 ---
 
-{% comment %} THIS IS THE FRONT DOOR NOW (2026-07-21). `permalink` moved from /pjcc/ to
-     "/" and index.md became a redirect stub at the old address. See
-     docs/front-door-2026-07-21.md — Nate: "we can't have five landing pages."
+{% comment %} THE PJCC WORLD LANDING (2026-07-22). `permalink` moved BACK from "/" to
+     "/pjcc/": mcpuppystudios.com's front door is now the black/white McPuppy home
+     (index.md), and PJCC is the fifth drawer link — a one-page landing into the world.
+     See docs/front-door-2026-07-21.md for the first flip; Nate directed this second one.
 
-     `tab_title` and `description` are carried over VERBATIM from the splash's
-     head.html include, so the flip does not change the site's most important <title> or
-     its meta/OG description by a single character. Without tab_title the shared head
-     would build "Princess and the Journey to Chess City | PJCC" and quietly rewrite what
-     search results say. Any change to those two lines is visitor-facing wording and is
-     Nate's call, not a side effect of moving a permalink. {% endcomment %}
+     This keeps the cinematic hero (title, tagline, town sky) built on 2026-07-21, and adds
+     a band of BIG doors to the world — Characters · Locations · Fan Art — because that is
+     what the PJCC link is FOR now (Play/Gauntlet/Academy have their own drawer links).
+     `/pjcc/` is a REAL page again, so the sw.js precache and any installed PWA still
+     resolve; the manifest `id` stays `/pjcc/` and is never touched. {% endcomment %}
 
 {% comment %} `full-sky` (2026-07-21) opts this page into the WHOLE town sky — the cloud
      deck, the starfield, the constellations and the shooting stars — which until now

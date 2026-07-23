@@ -13,7 +13,7 @@
  */
 'use strict';
 
-const VERSION    = 'pjcc-pwa-v5';   // v5: the front-door flip — "/" is PJCC now, /pjcc/ is a redirect stub (2026-07-21)
+const VERSION    = 'pjcc-pwa-v6';   // v6: second front-door move — "/" is the McPuppy home now, /pjcc/ is the PJCC landing (2026-07-22)
 const SHELL      = 'pjcc-shell-' + VERSION;
 const RUNTIME    = 'pjcc-runtime-' + VERSION;
 const OFFLINE_URL = '/offline.html';
@@ -21,13 +21,13 @@ const OFFLINE_URL = '/offline.html';
 /* THE SHELL — precached at install so the app opens even fully offline. Tolerant: a
  * single missing file won't fail the whole install (unlike cache.addAll). Small, so
  * install stays fast. NOTE: the site now compiles to ONE stylesheet (style.css). */
-/* BOTH '/' AND '/pjcc/' STAY IN THIS LIST (2026-07-21). The front-door flip made "/" the
- * PJCC home and left /pjcc/ as a redirect stub — but both are still REAL pages that
- * return 200, and dropping the stub would break every phone that installed the app
- * before the flip: start_url is baked into the launcher at install time, so those
- * launchers still open /pjcc/?source=pwa regardless of what manifest.json says now.
- * Worse, this precache runs under Promise.allSettled, so a 404 here fails SILENTLY and
- * the app serves a stale shell rather than reporting anything. */
+/* BOTH '/' AND '/pjcc/' STAY IN THIS LIST (2026-07-22). After the second front-door move
+ * "/" is the McPuppy Studios home and /pjcc/ is the PJCC world landing — BOTH real pages
+ * returning 200. Keeping both matters for the same reason as before: start_url is baked
+ * into a launcher at install time, so a phone that installed the app while /pjcc/ was the
+ * start_url still opens /pjcc/?source=pwa regardless of manifest.json today. This precache
+ * runs under Promise.allSettled, so a 404 here would fail SILENTLY and serve a stale shell
+ * rather than reporting anything — so neither URL may 404. */
 const PRECACHE = [
   '/', '/pjcc/', '/games/', OFFLINE_URL, '/manifest.json',
   '/assets/css/style.css',

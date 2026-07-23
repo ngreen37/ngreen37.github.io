@@ -267,3 +267,21 @@ honest hedge, and it is why Step 0 is written to be shippable entirely on its ow
     an unreferenced layout still counts as a reference.
   - `npm run perf` has not been run against the merged front door. It is by construction
     the worst-case page on the site.
+
+- **2026-07-22 — THE SECOND MOVE.** Nate: "The website URL is mcpuppystudios.com, so our
+  home page must be a black/white McPuppy Home page." So the front door moved again:
+
+  | URL | Now serves | File |
+  |---|---|---|
+  | `/` | The **McPuppy Studios** home — black/white studio landing that also surfaces the six drawer destinations (PJCC featured) + the newest build-log post | `index.md` (was the `/pjcc/` stub) |
+  | `/pjcc/` | The **PJCC world landing** — the cinematic hero kept, plus a band of big doors: Characters · Locations · Fan Art | `pjcc.md` (permalink moved back from `/`) |
+  | `/projects/` | Unchanged content, retitled **Projects** (was "About the Studio") | `projects.md` |
+
+  Also this session: the header nav became a **left drawer** (site-wide, `#site-nav.drawer`
+  in `_layouts/default.html` + `_sass/_pjcc-13-nav.scss`; the old brand-bar CSS was deleted,
+  sweep stays green) with six links — Play Now→Park Tables · Gauntlet · Puzzles→Fork in the
+  Road · Academy · PJCC · Projects. Park Tables + Fork in the Road were pulled from the games
+  hall (they're drawer links now; Fork via a `noHall` flag). `manifest.json` `id` still
+  `/pjcc/` (untouched); `start_url` still `/`; `sw.js` VERSION → `v6` (both `/` and `/pjcc/`
+  are still real 200 pages, both precached). The TVSeries JSON-LD `@id`/`url` → `/pjcc/`.
+  Both flips verified with `npm test` green + puppeteer screenshots of the home + drawer.

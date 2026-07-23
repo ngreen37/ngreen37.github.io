@@ -1,75 +1,18 @@
 /* merged from assets/css/pjcc-nav.css (2026-07-12) */
 /* ============================================================
    PJCC nav enhancements (loaded site-wide via default.html):
-     1. "The World" dropdown
-     2. Single hop to the other brand
-     3. Sticky condense on scroll (header → watermark + ⌘K)
-     4. ⌘K command palette
-     5. Mobile-only icon nav
+     1. Sticky condense on scroll (header → watermark + ⌘K)
+     2. ⌘K command palette
+     3. THE LEFT DRAWER (at the foot of this file)
+   (The old "World dropdown" + brand-hop rules were deleted 2026-07-22 with the horizontal
+   nav — the left drawer replaced them; git keeps them.)
    ============================================================ */
 
-/* ---- 1. "The World" dropdown ----------------------------------------- */
-.nav-dd { position: relative; display: inline-flex; }
-.nav-dd-trigger { display: inline-flex; align-items: center; gap: 5px; }
-.nav-dd-caret { font-size: 0.78em; transition: transform 0.18s ease; }
-.nav-dd:hover .nav-dd-caret,
-.nav-dd:focus-within .nav-dd-caret { transform: rotate(180deg); }
-
-.nav-dd-menu {
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 50%;
-  transform: translateX(-50%) translateY(-6px);
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  min-width: 224px;
-  padding: 11px;
-  background: #140a2e;
-  border: 1px solid #4a3a86;
-  border-radius: 13px;
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.16s ease, transform 0.16s ease;
-  z-index: 130;
-}
-/* invisible bridge so the menu survives the cursor crossing the gap */
-.nav-dd-menu::before {
-  content: '';
-  position: absolute;
-  top: -12px; left: 0; right: 0; height: 12px;
-}
-.nav-dd:hover .nav-dd-menu,
-.nav-dd:focus-within .nav-dd-menu {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(-50%) translateY(0);
-}
-.nav-dd-menu .page-link { width: 100%; text-align: center; }
-
-/* ---- 2. Single hop to the other brand -------------------------------- */
-.nav-hop-arrow {
-  display: inline-block;
-  opacity: 0.55;
-  transition: transform 0.18s ease, opacity 0.18s ease;
-}
-.nav-hop:hover .nav-hop-arrow,
-.nav-hop:focus-visible .nav-hop-arrow { transform: translateX(4px); opacity: 1; }
-
-/* ---- 3. Sticky condense on scroll ------------------------------------ */
+/* ---- 1. Sticky condense on scroll ------------------------------------ */
+/* 2026-07-22: the nav is now an off-canvas drawer (below), not an in-flow second row, so
+   the old "hide .site-nav on scroll" rules are gone — there is nothing in the header flow
+   to condense but the logo + ⌘K pill. */
 @media (min-width: 701px) {
-  .site-header .site-nav {
-    max-height: 260px;
-    transition: max-height 0.3s ease, opacity 0.22s ease;
-  }
-  .site-header.is-condensed .site-nav {
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    pointer-events: none;
-    border-top-color: transparent;
-  }
   .site-header.is-condensed .logo-stacked { height: 46px; }
   .site-header.is-condensed .header-top { padding-top: 6px; padding-bottom: 6px; }
   .site-header.is-condensed .cmdk-trigger { border-color: #F5C518; color: #F5C518; }
@@ -255,41 +198,119 @@
         including a persistent backdrop-filter — cleaned out 2026-07-11) ------ */
 
 @media (max-width: 700px) {
-  /* 2026-07-15 (Nate: "do the same menu update for the McPuppy side"). The Support
-     dropdown used to open as a full-width STACKED block in the sheet, which is what kept
-     the McPuppy menu tall while the PJCC side went horizontal. Flatten it INTO the row:
-     `display:contents` dissolves the .nav-dd and .nav-dd-menu boxes so their links become
-     direct pills in the centred flex row. The "Support ▾" heading steps aside — each of
-     its three destinations is now its own pill (Blog · Direct Line · Mailing List · For
-     Educators), matching the PJCC side. */
-  .nav-dd { display: contents; }
-  /* .site-nav specificity to beat `.site-nav .page-link { display:inline-block }` */
-  .site-nav .nav-dd-trigger { display: none; }
-  .nav-dd-menu {
-    display: contents;
-    position: static;
-    transform: none;
-    opacity: 1;
-    visibility: visible;
-    box-shadow: none;
-    background: none;
-    border: none;
-    min-width: 0;
-  }
-  /* the flattened sub-links become row pills, not full-width rows (overrides line 49) */
-  .nav-dd-menu .page-link { width: auto; }
-  .nav-dd-menu::before { display: none; }
-  .nav-dd-caret { display: none; }
-
-  /* compact ⌘K trigger: icon only */
+  /* compact ⌘K trigger: icon only (the mobile "World dropdown" flatten rules were deleted
+     2026-07-22 with the horizontal nav — the drawer replaced them). */
   .cmdk-trigger-label,
   .cmdk-trigger-kbd { display: none; }
   .cmdk-trigger { padding: 6px 9px; margin-right: 4px; }
   .cmdk-trigger-ico { font-size: 1.15rem; }
-
 }
 
 /* 2026-07-13 touch sweep: the palette trigger measured 31x32 on a phone. */
 @media (pointer: coarse) {
   .cmdk-trigger { padding: 10px 12px 10px 13px; }
+}
+
+/* ============================================================
+   THE LEFT DRAWER (2026-07-22) — the header nav became an off-canvas left
+   drawer, one six-link set site-wide (Nate: "the header nav idea is old-school
+   … move those buttons to the left"). #site-nav is the sliding panel; the
+   hamburger (#nav-toggle) opens it (pjcc-eggs.js toggles .is-open + closes on
+   outside-click / link-tap); .nav-backdrop is a DOM sibling, so the pure-CSS
+   `#site-nav.is-open ~ .nav-backdrop` dims the page with no extra JS. These
+   rules override the old horizontal .site-nav grid + brand pills.
+   ============================================================ */
+/* the hamburger now shows on every width (base was display:none; desktop-hidden) */
+.nav-toggle { display: flex; }
+/* keep the top bar (logo, ⌘K, hamburger) above the backdrop so the X stays tappable */
+.header-top { position: relative; z-index: 160; }
+
+/* the panel — off-canvas left, slides in on .is-open. position:fixed collapses the
+   two-row header down to just the top bar. High specificity beats the base + mobile
+   .site-nav rules (grid / max-height:0). */
+.site-header .site-nav.drawer {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: min(84vw, 320px);
+  display: flex; flex-direction: column; align-items: stretch;
+  grid-template-columns: none;
+  gap: 6px;
+  max-height: none;
+  opacity: 1;
+  overflow-y: auto;
+  padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, #140a2e 0%, #0d0720 100%);
+  border-top: 0;
+  border-right: 1px solid #4a3a86;
+  box-shadow: 8px 0 40px rgba(0, 0, 0, 0.55);
+  transform: translateX(-102%);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 200;
+}
+.site-header .site-nav.drawer.is-open { transform: none; opacity: 1; }
+/* the obsolete desktop condense-hide + mobile max-height animation must not clip it */
+.site-header.is-condensed .site-nav.drawer { max-height: none; opacity: 1; overflow-y: auto; pointer-events: auto; }
+
+.drawer-head { padding: 4px 8px 12px; margin-bottom: 8px; border-bottom: 1px solid rgba(110, 95, 160, 0.28); }
+.drawer-brand { display: block; font-family: 'Poppins', sans-serif; font-weight: 800; letter-spacing: 0.14em; color: #F5C518; font-size: 1.05rem; }
+.drawer-sub { display: block; margin-top: 2px; font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: #9a8fd4; }
+
+/* the six links — full-width rows (override .site-nav .page-link pills) */
+.site-header .site-nav.drawer .page-link.drawer-link {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%;
+  padding: 11px 12px;
+  background: rgba(80, 30, 180, 0.14);
+  border: 1px solid rgba(150, 65, 255, 0.28);
+  border-radius: 12px;
+  color: #e9e2ff;
+  transform: none;
+  transition: background 0.16s, border-color 0.16s, transform 0.12s;
+}
+.site-header .site-nav.drawer .page-link.drawer-link:hover,
+.site-header .site-nav.drawer .page-link.drawer-link:focus-visible {
+  background: rgba(110, 45, 230, 0.5);
+  border-color: rgba(200, 130, 255, 0.9);
+  color: #fff;
+  transform: translateX(3px);
+}
+.dl-ico { flex: 0 0 auto; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+  font-size: 1.15rem; line-height: 1; border-radius: 9px; background: rgba(245, 197, 24, 0.12); color: #F5C518; }
+.dl-txt { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; text-align: left; }
+.dl-txt b { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.98rem; }
+.dl-txt small { font-size: 0.72rem; color: #a896d4; }
+
+/* PJCC stands out (Nate: "you can make PJCC stand out if you like") */
+.site-header .site-nav.drawer .page-link.drawer-link--pjcc {
+  background: linear-gradient(135deg, rgba(245, 197, 24, 0.18), rgba(150, 65, 255, 0.2));
+  border-color: rgba(245, 197, 24, 0.6);
+}
+.drawer-link--pjcc .dl-txt b { color: #F5C518; }
+
+.drawer-div { height: 1px; margin: 10px 4px; background: rgba(110, 95, 160, 0.28); }
+.drawer-mini { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 2px 8px 6px; }
+.drawer-mini a { font-size: 0.78rem; color: #9a8fd4; text-decoration: none; }
+.drawer-mini a:hover { color: #F5C518; }
+
+/* the dim backdrop — a sibling, shown purely by the open state (no JS) */
+.nav-backdrop {
+  position: fixed; inset: 0; z-index: 150;
+  background: rgba(6, 4, 16, 0.6);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+.site-nav.drawer.is-open ~ .nav-backdrop { opacity: 1; pointer-events: auto; }
+
+/* On McPuppy (black-&-white) pages the drawer keeps the same dark panel but drops the
+   purple cast, so it reads as one neutral overlay on both brands. */
+body.theme-bw .site-header .site-nav.drawer,
+body.theme-studio .site-header .site-nav.drawer { background: linear-gradient(180deg, #16151b 0%, #0c0b10 100%); border-right-color: #3a3730; }
+body.theme-bw .site-header .site-nav.drawer .page-link.drawer-link,
+body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link { background: rgba(180, 180, 180, 0.06); border-color: #3a3730; }
+body.theme-bw .site-header .site-nav.drawer .page-link.drawer-link:hover,
+body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { background: rgba(255, 255, 255, 0.1); border-color: #caa24a; }
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header .site-nav.drawer { transition: none; }
+  .nav-backdrop { transition: none; }
 }

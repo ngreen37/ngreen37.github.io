@@ -15,8 +15,12 @@
 
     // Destinations (b = brand tag for the little pill).
     var DEST = [
-      { t: 'PJCC Home',        s: 'Princess & the Journey to Chess City', u: '/',               ic: '◆', b: 'pjcc',    k: 'home princess journey chess city pjcc start' },
-      { t: 'Games',            s: 'The Arcade — play now',                u: '/games/',              ic: '♟', b: 'pjcc', k: 'arcade play games blitz' },
+      { t: 'Home',             s: 'McPuppy Studios — the front door',     u: '/',                        ic: '🐾', b: 'mcpuppy', k: 'home mcpuppy studios front door start' },
+      { t: 'PJCC',             s: 'The world — cast, places, fan art',    u: '/pjcc/',                   ic: '◆', b: 'pjcc',    k: 'pjcc world princess journey chess city landing home' },
+      { t: 'Play Now',         s: 'Sit at the Park Tables',               u: '/games/park-tables/',      ic: '▶', b: 'pjcc',    k: 'play now park tables live game match rated correspondence' },
+      { t: 'The Gauntlet',     s: 'Climb the tower of ten',               u: '/games/the-gauntlet/',     ic: '♛', b: 'pjcc',    k: 'gauntlet tower climb ladder ten floors bosses' },
+      { t: 'Puzzles',          s: 'Fork in the Road',                     u: '/games/fork-in-the-road/', ic: '⚔', b: 'pjcc',    k: 'puzzles fork in the road tactics only move solve' },
+      { t: 'All Games',        s: 'The Arcade — the whole grid',          u: '/games/',                  ic: '♟', b: 'pjcc',    k: 'arcade play games blitz all hall grid' },
       { t: 'Characters',       s: 'Meet the cast',                        u: '/characters/',         ic: '♞', b: 'pjcc', k: 'characters cast people princess kaede world' },
       { t: 'Locations',        s: 'Places in the world',                  u: '/locations/',          ic: '⛰', b: 'pjcc', k: 'locations places checker town chess city' },
       { t: 'Academy',          s: 'Learn chess from the ground up',            u: '/academy/',            ic: '♔', b: 'pjcc', k: 'academy learn chess lessons pieces bootcamp curriculum' },
@@ -26,7 +30,7 @@
       { t: 'The Gambit',       s: 'Lay down your best — the board decides', u: '/the-gambit/',       ic: '🎲', b: 'pjcc', k: 'gambit sacrifice offering altar wager risk reward credits collectables let go' },
       { t: 'Merch',            s: 'Not ready yet — months away',          u: '/goods/',              ic: '🃏', b: 'mcpuppy', k: 'goods goal cards stationery merch follow the dog mindset coming soon physical' },
       { t: 'The Direct Line',  s: 'Write to me directly',                 u: '/direct-line/',        ic: '✉️', b: 'mcpuppy', k: 'direct line suggestions patreon contact write feedback guaranteed response' },
-      { t: 'About the Studio', s: 'Who makes PJCC, and how far along it is', u: '/projects/',         ic: '🐾', b: 'mcpuppy', k: 'mcpuppy studio projects progress about who nate hub' },
+      { t: 'Projects',         s: 'Inside McPuppy Studios — the roadmap', u: '/projects/',           ic: '📋', b: 'mcpuppy', k: 'projects mcpuppy studio progress about who nate hub roadmap thanks counters' },
       { t: 'Blog',             s: 'The build log — every episode so far',   u: '/blog/',               ic: '✍', b: 'mcpuppy', k: 'blog build log episodes posts writing' },
       { t: 'Mailing List',     s: 'Get updates by email',                 u: '/mailing-list/',       ic: '✉', b: 'mcpuppy', k: 'mailing list email subscribe newsletter' },
       { t: 'For Educators',    s: 'Use PJCC in the classroom',            u: '/educators/',          ic: '🍎', b: 'mcpuppy', k: 'educators teachers classroom school lessons' },

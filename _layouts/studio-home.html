@@ -222,7 +222,7 @@
       // signed-out OK). Keep NAMES/ACCENTS/GLYPHS in sync with pjcc_gauntlet.html.
       (function () {
         var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The Executive Assistant'];
-        var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#9ff0c4','#ff6b6b','#c79bff','#ff9ec9','#f5c518'];
+        var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#3fae7a','#ff6b6b','#c79bff','#ff9ec9','#f5c518']; // [5] Auditor: ledger-green (2026-07-22)
         var GLYPHS  = ['♞','♟','♝','♞','♜','♝','♜','♝','♛','♛'];
         var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
         var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;

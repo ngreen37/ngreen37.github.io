@@ -106,6 +106,29 @@
   .boss-portrait { width:96px; height:96px; border-radius:50%; display:flex; align-items:center; justify-content:center;
     font-size:52px; background:radial-gradient(circle at 42% 34%, #241452, #0c0820); border:3px solid #6b5fa0;
     box-shadow:0 0 34px -6px currentColor; margin-bottom:12px; }
+
+  /* ---- #4b THE CHALLENGER'S DOOR — the cool site door, brought into the game (2026-07-22
+     Nate: "incorporate the cool door into the Gauntlet game"). It stands OVER the portrait
+     and slides open to reveal the challenger when the card appears, themed to the floor's
+     accent (--bacc). Floor six wears the frosted-glass AUDITOR treatment. Standalone page,
+     so these rules mirror _sass/_pjcc-21-gauntlet-door.scss inline. Transform-only slide. */
+  .boss-stage { position:relative; width:104px; height:116px; margin:0 auto 12px; }
+  .boss-stage .boss-portrait { position:absolute; left:50%; bottom:0; transform:translateX(-50%); margin:0; }
+  .bgate { position:absolute; inset:0; border-radius:52px 52px 8px 8px; overflow:hidden; pointer-events:none;
+    border:2px solid var(--bacc,#F5C518); border-bottom:0; box-shadow:0 0 26px -6px var(--bacc,#F5C518); }
+  .bgate-door { position:absolute; left:4px; right:4px; top:4px; bottom:0; border-radius:48px 48px 0 0;
+    border:1px solid rgba(168,121,255,0.4); background:linear-gradient(180deg,#251747,#150c33);
+    transform-origin:0 50%; transition:transform .6s cubic-bezier(.3,.9,.3,1); will-change:transform; }
+  .bgate-seam { position:absolute; left:6px; right:6px; bottom:0; height:3px; background:var(--bacc,#F5C518);
+    box-shadow:0 -2px 14px 3px var(--bacc,#F5C518); }
+  .bgate.open .bgate-door { transform:translateX(-108%); }
+  .bgate.floor6 .bgate-door { border-color:rgba(120,200,165,0.5);
+    background:linear-gradient(180deg, rgba(228,246,238,0.16), rgba(150,196,176,0.10)),
+      repeating-linear-gradient(118deg, rgba(255,255,255,0.06) 0 2px, rgba(255,255,255,0) 2px 5px); }
+  .bgate.floor6 .bgate-door::after { content:'AUDIT'; position:absolute; left:50%; top:54%; transform:translateX(-50%);
+    font-family:'Share Tech Mono',monospace; font-size:8px; letter-spacing:0.16em; color:#3a2a12;
+    background:linear-gradient(180deg,#dcb65e,#a97f2e); border:1px solid #7c5a1e; border-radius:1px; padding:1px 5px; }
+  @media (prefers-reduced-motion: reduce){ .bgate-door { transition:none; } }
   .boss-name { font-size:24px; font-weight:900; color:#fff; letter-spacing:0.5px; text-shadow:0 2px 12px rgba(0,0,0,0.6); }
   .boss-sub { font-size:11px; letter-spacing:2px; text-transform:uppercase; margin:4px 0 10px; }
   .boss-pips { font-size:15px; letter-spacing:3px; margin-bottom:8px; }
@@ -205,7 +228,10 @@
 
   <div class="overlay hidden" id="boss-screen">
     <div class="eyebrow" id="boss-eye">Next challenger</div>
-    <div class="boss-portrait" id="boss-portrait">♛</div>
+    <div class="boss-stage">
+      <div class="boss-portrait" id="boss-portrait">♛</div>
+      <div class="bgate" id="boss-gate" aria-hidden="true"><i class="bgate-door"></i><i class="bgate-seam"></i></div>
+    </div>
     <div class="boss-name" id="boss-name">—</div>
     <div class="boss-sub" id="boss-sub">—</div>
     <div class="boss-pips" id="boss-pips">—</div>
@@ -300,7 +326,7 @@ var LADDER = [
       blunder:['Careless. The gate does not forgive.','You left it open. I walked through.'],
       good:['...Acceptable. Barely.','The wall still holds.'],
       ponder:['The gate opens for no one in a hurry.'] } },
-  { name:'The Auditor', glyph:'♝', accent:'#9ff0c4', region:'Tower · Lower Floors', elo:1100,
+  { name:'The Auditor', glyph:'♝', accent:'#3fae7a', region:'Tower · Lower Floors', elo:1100,
     blurb:'The CEO\'s numbers-man. Cold, exact, and allergic to waste.',
     win:'The Auditor closes the ledger. "Your account... balances. Go up."',
     persona:{ depth:3, blunder:0.03, mat:1, pst:1.05, aggr:1, timeMs:620 },
@@ -686,6 +712,16 @@ function showBossCard(idx){
   var rung = LADDER[idx], pc = randColor(), prog = loadProg(), beaten = !!prog.beaten[idx], acc = rung.accent;
   var portrait = document.getElementById('boss-portrait');
   portrait.textContent = rung.glyph; portrait.style.color = acc; portrait.style.borderColor = acc;
+  // #4b — the challenger's door: closed on show, themed to the floor's accent, then slid
+  // open a beat later to reveal the portrait beneath (floor 6 = the frosted Auditor door).
+  var gate = document.getElementById('boss-gate');
+  if (gate){
+    gate.style.setProperty('--bacc', acc);
+    gate.classList.toggle('floor6', idx === 5);   // index 5 = The Auditor
+    gate.classList.remove('open');
+    void gate.offsetWidth;                          // restart the slide each reveal
+    setTimeout(function(){ if (gate.isConnected) gate.classList.add('open'); }, 480);
+  }
   document.getElementById('boss-eye').textContent = (beaten?'Rematch':'Challenger') + ' · ' +
     (idx < VISIBLE ? 'Floor ' + (idx+1) + ' of ' + VISIBLE : 'Secret Floor ' + (idx - VISIBLE + 1) + ' of ' + (LADDER.length - VISIBLE)) +
     ' · Rated ' + rung.elo;

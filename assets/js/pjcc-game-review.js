@@ -242,7 +242,9 @@
       '.pgr-nav span{font-size:.78rem;color:#9a8fd4;min-width:88px;text-align:center}' +
       '.pgr-acc{display:flex;gap:10px;justify-content:center;margin-bottom:10px}' +
       '.pgr-accbox{flex:1;max-width:180px;background:#1c1140;border:1px solid #2a1f52;border-radius:10px;padding:8px 10px;text-align:center}' +
-      '.pgr-accbox b{display:block;font-size:1.3rem;color:#fff}.pgr-accbox small{color:#9a8fd4;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase}' +
+      '.pgr-accbox b{display:block;font-size:1.3rem;color:#fff}.pgr-accbox small{color:#9a8fd4;font-size:.7rem;letter-spacing:.06em}' +
+      '.pgr-chip{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:middle;border:1px solid #6a5a9a}' +
+      '.pgr-chip-w{background:#f0eee8}.pgr-chip-b{background:#4a3585}' +
       '.pgr-graph{width:100%;height:46px;display:block;margin:4px 0 12px;background:#0f0a26;border:1px solid #2a1f52;border-radius:8px}' +
       '.pgr-moves{max-height:320px;overflow:auto;font-size:.85rem}' +
       '.pgr-mv{display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:center;padding:5px 8px;border-radius:7px;cursor:pointer}' +
@@ -345,17 +347,23 @@
         document.getElementById('pgr-body').innerHTML = '<p class="pgr-note">No moves to review yet.</p>';
         return;
       }
-      renderReport(ov, rep);
+      renderReport(ov, rep, meta);
     }).catch(function () {
       var b = document.getElementById('pgr-body');
       if (b) b.innerHTML = '<p class="pgr-note">The review couldn\'t finish on this browser. It\'s always free when it runs — try again on desktop.</p>';
     });
   }
 
-  function renderReport(ov, rep) {
+  function renderReport(ov, rep, meta) {
+    meta = meta || {};
     var body = document.getElementById('pgr-body');
     var accW = rep.accuracy.w == null ? '—' : rep.accuracy.w.toFixed(1);
     var accB = rep.accuracy.b == null ? '—' : rep.accuracy.b.toFixed(1);
+    // Name the accuracy boxes (Nate 2026-07-22: "the review has the colors … swapped").
+    // The math attributes each move to its own color correctly; the confusion was that an
+    // unnamed "White accuracy / Black accuracy" reads as reversed when YOU played Black. So
+    // tie each score to the actual player + a color chip — no ambiguity about whose it is.
+    var wName = esc(meta.whiteName || 'White'), bName = esc(meta.blackName || 'Black');
     // eval graph (White POV), a compact sparkline
     var W = 460, H = 46, N = rep.evalW.length;
     var pts = rep.evalW.map(function (e, i) {
@@ -390,8 +398,9 @@
           (rep.opening.eco ? ' <small>' + esc(rep.opening.eco) + '</small>' : '') + '</div>'
       : '';
     body.innerHTML =
-      '<div class="pgr-acc"><div class="pgr-accbox"><b>' + accW + '%</b><small>White accuracy</small></div>' +
-        '<div class="pgr-accbox"><b>' + accB + '%</b><small>Black accuracy</small></div></div>' +
+      '<div class="pgr-acc">' +
+        '<div class="pgr-accbox"><b>' + accW + '%</b><small><span class="pgr-chip pgr-chip-w"></span>' + wName + ' · White</small></div>' +
+        '<div class="pgr-accbox"><b>' + accB + '%</b><small><span class="pgr-chip pgr-chip-b"></span>' + bName + ' · Black</small></div></div>' +
       openH +
       graph +
       '<div class="pgr-grid"><div class="pgr-left">' +

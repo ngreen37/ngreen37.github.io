@@ -11,7 +11,10 @@ window.PJCC_GAMES = [
   // at /games/free-play/. Restore by uncommenting this one line.
   // { slug:'free-play',         name:'Free-Play Board',    cryptic:'A quiet board to think on.',     icon:'♟', accent:'#9fe8c0', cat:'learn' },
   // back to Learn 2026-07-14 (Nate: "pump this out as our main Puzzle Feature")
-  { slug:'fork-in-the-road',  name:'Fork in the Road',   cryptic:'Spot the only move.',            icon:'⚔', accent:'#00e436', cat:'learn',  score:['fork-in-the-road','solved'], engine:true },
+  // noHall (2026-07-22 Nate: "Take Fork in the Road OUT of the games page") — Fork is the
+  // "Puzzles" link in the site drawer now, so it is hidden from the combined games grid.
+  // The game + its page are untouched; only the hall card is suppressed (see pjcc-hall.js).
+  { slug:'fork-in-the-road',  name:'Fork in the Road',   cryptic:'Spot the only move.',            icon:'⚔', accent:'#00e436', cat:'learn',  score:['fork-in-the-road','solved'], engine:true, noHall:true },
   { slug:'pirc-protocol',     name:'The Pirc Protocol',  cryptic:'Learn the book by heart.',       icon:'♚', accent:'#fc9838', cat:'dev',    score:['pirc-protocol','score'], neu:'2026-06-22', engine:true },
   // Shogi Island — slow-rolled 2026-07-04: pulled from the hub/halls; reachable only via the floating 将 icon on the splash. Restore by uncommenting.
   // { slug:'shogi-island',      name:'Shogi Island',       cryptic:'Foreign rules. Familiar war.',   icon:'将', accent:'#fcbcb0', cat:'isle',   score:['shogi-island','solved'] },

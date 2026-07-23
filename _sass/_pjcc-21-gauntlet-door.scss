@@ -117,6 +117,40 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 .gdoor[data-grand="0"]:hover .gdoor-door,
 .gdoor[data-grand="0"]:focus-visible .gdoor-door { transform:translateX(-58%); }
 
+/* ── FLOOR SIX — THE AUDITOR'S DOOR (2026-07-22, Nate: "make it look like more of an
+   auditor's door … the green looks odd, and it doesn't really open"). A frosted-glass
+   OFFICE door with a brass nameplate, in a deep ledger-green instead of the old mint. The
+   ♝ reads as a blurred silhouette behind the pebbled glass; on hover the whole pane slides
+   aside like a real office door (the slide is the partial's default, kept — the frosted
+   glass just makes the OPENING visible, since you now see the lit interior appear). Applies
+   wherever the Gauntlet door represents floor 6 (games hall + PJCC hero), keyed on the
+   data-floor the hydration scripts set. No backdrop-filter (it animates → perf); the frost
+   is faked with translucent gradients + a grain, so the slide stays compositor-only. ── */
+.gdoor[data-floor="6"] { --acc:#3fae7a; }
+.gdoor[data-floor="6"] .gdoor-door {
+  border:1px solid rgba(120,200,165,0.5);
+  background:
+    linear-gradient(180deg, rgba(228,246,238,0.17), rgba(150,196,176,0.10)),
+    repeating-linear-gradient(118deg, rgba(255,255,255,0.06) 0 2px, rgba(255,255,255,0) 2px 5px);
+  box-shadow: inset 0 0 14px rgba(63,174,122,0.28);
+}
+/* the piece behind the glass — a soft silhouette, not a crisp glyph (one static raster;
+   it rides the panel's composited slide, so no per-frame filter cost) */
+.gdoor[data-floor="6"] .gdoor-glyph {
+  top:38%; color:rgba(214,242,228,0.5);
+  filter:blur(1.4px) drop-shadow(0 0 6px rgba(63,174,122,0.45)); }
+/* the brass nameplate riveted across the door */
+.gdoor[data-floor="6"] .gdoor-door::after {
+  content:'AUDIT'; position:absolute; left:50%; top:60%; transform:translateX(-50%);
+  font-family:'Share Tech Mono', ui-monospace, monospace; font-size:6px; letter-spacing:0.16em;
+  color:#3a2a12; background:linear-gradient(180deg,#dcb65e,#a97f2e);
+  border:1px solid #7c5a1e; border-radius:1px; padding:1px 4px;
+  box-shadow:0 1px 2px rgba(0,0,0,0.5); }
+/* the round knob becomes a horizontal office lever */
+.gdoor[data-floor="6"] .gdoor-knob {
+  width:7px; height:2px; border-radius:1px; top:52%; right:8px;
+  background:#dcb65e; box-shadow:0 0 4px rgba(220,180,90,0.7); }
+
 @media (prefers-reduced-motion: reduce) {
   .gdoor-pips i.cur { animation:none; }
   .gdoor-door { transition:none; }

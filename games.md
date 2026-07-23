@@ -201,16 +201,10 @@ permalink: /games/
       <span class="gdoor-whisper" id="gdoor-whisper" aria-hidden="true"></span>
     </a>
 
-    <!-- ── THE PARK TABLES: matchmaking stands beside the Gauntlet (Nate 2026-07-14:
-         "take it out of the arcade and place it prominently, same as Gauntlet").
-         2026-07-16 (Nate): "they should always be uniform" — the old side-view drawing
-         (plate + tag + ♙♟ + caption) is replaced by the ONE canonical park-table unit
-         (shared include + _pjcc-22-chess-canon.scss), same as the splash and the PJCC
-         hero. Restore the old drawing from git before this commit if it's missed. ── -->
-    <a class="ptdoor" href="{{ '/games/park-tables/' | relative_url }}"
-       aria-label="The Park Tables — play another operative or challenge McPuppy; rated games move your PJCC Rating">
-      {% include park-table.html %}
-    </a>
+    {%- comment -%} THE PARK TABLES entrance was removed from the games hall 2026-07-22
+         (Nate: "Get rid of the Park table link"). Park Tables is the "Play Now" link in the
+         site drawer now, so the games hall no longer duplicates it. The .ptdoor CSS above is
+         left in place (harmless, unused) in case the entrance is ever restored. {%- endcomment -%}
 
     <a class="gmdoor" href="{{ '/the-gambit/' | relative_url }}"
        aria-label="The Gambit — wager what you've earned; the board sometimes gives back more. Never real money.">
@@ -262,7 +256,7 @@ permalink: /games/
 (function () {
   // mirrors the LADDER order / accents / glyphs in assets/games/pjcc_gauntlet.html — keep in sync
   var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The Executive Assistant'];
-  var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#9ff0c4','#ff6b6b','#c79bff','#ff9ec9','#f5c518'];
+  var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#3fae7a','#ff6b6b','#c79bff','#ff9ec9','#f5c518']; // [5] Auditor: ledger-green, was mint #9ff0c4 (2026-07-22)
   var GLYPHS  = ['♞','♟','♝','♞','♜','♝','♜','♝','♛','♛'];
   var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
   var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;

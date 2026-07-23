@@ -13,16 +13,15 @@ layout: default
 {
   "@context": "https://schema.org",
   "@type": "TVSeries",
-  {%- comment -%} Root-anchored since the front-door flip (2026-07-21). This block is the
-       rich-result entity for the show, and it was the ONLY schema on the site still
-       pointing at /pjcc/ — head.html's Organization and WebSite nodes were already
-       anchored at the root, where head.html has always named the WebSite "Princess and
-       the Journey to Chess City". Moving these two makes the schema true rather than
-       merely consistent. {%- endcomment -%}
-  "@id": "{{ site.url }}/#show",
+  {%- comment -%} The rich-result entity for the show. Anchored to /pjcc/ (2026-07-22): the
+       show's page is the PJCC landing again after the second front-door move, while `/` is
+       now the McPuppy Studios home. head.html's Organization + WebSite nodes stay
+       root-anchored (the WebSite is the studio's site as a whole); the TVSeries points at
+       the world's own page so the schema is true. {%- endcomment -%}
+  "@id": "{{ site.url }}/pjcc/#show",
   "name": "Princess and the Journey to Chess City",
   "alternateName": "PJCC",
-  "url": "{{ site.url }}/",
+  "url": "{{ site.url }}/pjcc/",
   "image": "{{ site.url }}/assets/images/pjcc-share-card.jpg",
   "description": "An animated series in the making: Princess, a dog from Checker Town, journeys toward Chess City. Built in the open by McPuppy Studios, with a free arcade of chess games set in the show's world.",
   "genre": ["Animation", "Family", "Adventure"],
@@ -377,6 +376,47 @@ layout: default
   </div>
 </section>
 
+{% comment %} ── THE WORLD (2026-07-22) — the reason the PJCC drawer link exists. PJCC is
+     the fifth drawer link now, and its job is the WORLD, not the games (Play, Gauntlet and
+     Academy each have their own link). So the landing leads with three big doors into it —
+     Characters · Locations · Fan Art — right under the hero. {% endcomment %}
+<section class="home-world" aria-label="Explore the world" data-reveal>
+  <style>
+  .home-world { max-width:820px; margin:30px auto 6px; padding:0 14px; }
+  .home-world-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .hw-door { display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center;
+    text-decoration:none; padding:22px 14px; border-radius:16px;
+    background:linear-gradient(180deg, rgba(40,24,80,.6), rgba(18,10,40,.7));
+    border:1px solid rgba(150,65,255,.4); box-shadow:0 10px 30px -14px rgba(0,0,0,.7);
+    transition:transform .16s ease, border-color .16s ease, box-shadow .16s ease; }
+  .hw-door:hover, .hw-door:focus-visible { transform:translateY(-4px); text-decoration:none;
+    border-color:#F5C518; box-shadow:0 16px 40px -14px rgba(245,197,24,.35); }
+  .hw-ico { font-size:2.2rem; line-height:1; color:#F5C518;
+    filter:drop-shadow(0 0 10px rgba(245,197,24,.5)); }
+  .hw-name { font-family:'Poppins',sans-serif; font-weight:800; font-size:1.12rem; color:#fff; letter-spacing:.01em; }
+  .hw-sub { font-size:.8rem; color:#c6b8ec; }
+  @media (max-width:560px){ .home-world-grid { grid-template-columns:1fr; } }
+  @media (prefers-reduced-motion: reduce){ .hw-door { transition:none; } }
+  </style>
+  <div class="home-world-grid">
+    <a class="hw-door" href="{{ '/characters/' | relative_url }}">
+      <span class="hw-ico" aria-hidden="true">&#9822;</span>
+      <span class="hw-name">Characters</span>
+      <span class="hw-sub">Meet the cast</span>
+    </a>
+    <a class="hw-door" href="{{ '/locations/' | relative_url }}">
+      <span class="hw-ico" aria-hidden="true">&#9978;</span>
+      <span class="hw-name">Locations</span>
+      <span class="hw-sub">Wander the world</span>
+    </a>
+    <a class="hw-door" href="{{ '/fan-art/' | relative_url }}">
+      <span class="hw-ico" aria-hidden="true">&#127912;</span>
+      <span class="hw-name">Fan Art</span>
+      <span class="hw-sub">The fan wall</span>
+    </a>
+  </div>
+</section>
+
 {% comment %} ── 1b. THE ONE CTA — the Gauntlet ─────────────────────────────────────
      2026-07-21. This was two equal cards, Park Tables and the Gauntlet side by side
      (2026-07-17: "the two ways to play"). Two equal doors is a menu, and a front door
@@ -690,7 +730,8 @@ html.reduce-flourish .hero-title { animation:none; }
        deliberately NOT background-clip:text, because text-shadow paints OVER a clipped fill
        and would hide the gold (verified: the extrude wins and the letters go dark). So the
        glint is an OVERLAY, not the fill, and there is no filter anywhere.
-     · PLAYFUL LETTERS — each word carries a static ±1.5° tilt and a 1px up/down stagger.
+     · PLAYFUL LETTERS — each word carries a static ±0.9° tilt and a 1px up/down stagger.
+       (Straightened from ±1.5° by 40% on 2026-07-22, Nate: "too tilted.")
        Static transforms, zero per-frame cost; reads as storybook hand-lettering.
      · TWINKLE SPARKLES — four ✦ around the lockup, fading and scaling on their own timers.
    The h1 carries aria-label with the clean title, so a screen reader hears it once — not the
@@ -723,13 +764,13 @@ html.reduce-flourish .hero-title { animation:none; }
 }
 /* playful per-word tilt + stagger, and the glint's travel order (reading order).
    nth-child 1..7 are the seven word spans; the four sparkles are children 8..11. */
-.ht-w:nth-child(1){ --rot:-1.5deg; --ty:1px;  --sd:0s;   }
-.ht-w:nth-child(2){ --rot:1.5deg;  --ty:-1px; --sd:.05s; }
-.ht-w:nth-child(3){ --rot:-1.5deg; --ty:1px;  --sd:.10s; }
-.ht-w:nth-child(4){ --rot:1.5deg;  --ty:-1px; --sd:.15s; }
-.ht-w:nth-child(5){ --rot:-1.5deg; --ty:1px;  --sd:.20s; }
-.ht-w:nth-child(6){ --rot:1.5deg;  --ty:-1px; --sd:.25s; }
-.ht-w:nth-child(7){ --rot:-1.5deg; --ty:1px;  --sd:.30s; }
+.ht-w:nth-child(1){ --rot:-0.9deg; --ty:1px;  --sd:0s;   }
+.ht-w:nth-child(2){ --rot:0.9deg;  --ty:-1px; --sd:.05s; }
+.ht-w:nth-child(3){ --rot:-0.9deg; --ty:1px;  --sd:.10s; }
+.ht-w:nth-child(4){ --rot:0.9deg;  --ty:-1px; --sd:.15s; }
+.ht-w:nth-child(5){ --rot:-0.9deg; --ty:1px;  --sd:.20s; }
+.ht-w:nth-child(6){ --rot:0.9deg;  --ty:-1px; --sd:.25s; }
+.ht-w:nth-child(7){ --rot:-0.9deg; --ty:1px;  --sd:.30s; }
 @keyframes htShine {
   0%   { -webkit-mask-position:120% 0; mask-position:120% 0; }   /* band off right = pure gold */
   13%  { -webkit-mask-position:-40% 0; mask-position:-40% 0; }   /* swept across once … */
@@ -912,7 +953,7 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
 (function () {
   // mirrors the LADDER order / accents / glyphs in assets/games/pjcc_gauntlet.html
   var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The Executive Assistant'];
-  var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#9ff0c4','#ff6b6b','#c79bff','#ff9ec9','#f5c518'];
+  var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#3fae7a','#ff6b6b','#c79bff','#ff9ec9','#f5c518']; // [5] Auditor: ledger-green, was mint #9ff0c4 (2026-07-22)
   var GLYPHS  = ['♞','♟','♝','♞','♜','♝','♜','♝','♛','♛'];
   var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
   var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;

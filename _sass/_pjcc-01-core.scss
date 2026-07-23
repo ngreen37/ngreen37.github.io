@@ -255,10 +255,10 @@ ul, ol {
   filter: invert(1) grayscale(0.35);
 }
 
-/* --- Navigation (rebuilt for go-live) ---
-   Layout: brand badge (left) · primary links + one dropdown (center) · a quiet hop
-   to the other brand (right). Context-aware via [data-brand]; flatter than the old
-   gradient panels. The ⌘K palette (top-right) reaches everything not in the bar. */
+/* --- Navigation — now an off-canvas left drawer (2026-07-22) ---
+   The context-aware brand bar (badge · links · hop) was retired; #site-nav is a fixed
+   left drawer, styled in _sass/_pjcc-13-nav.scss under "THE LEFT DRAWER". These base rules
+   only size the element — the drawer rules override display/position. ⌘K reaches the rest. */
 .site-nav {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -268,87 +268,8 @@ ul, ol {
   padding: 7px 18px;   /* was 12px — condensed 2026-07-17 with the header */
   border-top: 1px solid rgba(110, 95, 160, 0.28);
 }
-.site-nav[data-brand="mcpuppy"] { border-top-color: rgba(200, 200, 200, 0.22); }
-
-/* Brand badge — the home link for the world you're in */
-.nav-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  text-decoration: none;
-  font-family: 'Poppins', sans-serif;
-  font-weight: 800;
-  letter-spacing: 1.6px;
-  text-transform: uppercase;
-  white-space: nowrap;
-  transition: color 0.15s, transform 0.15s;
-}
-.nav-brand:hover, .nav-brand:focus-visible { text-decoration: none; transform: translateY(-1px); }
-.nav-brand-glyph { font-size: 1.2rem; line-height: 1; }
-.nav-brand-name { font-size: 13px; }
-.nav-brand--pjcc { color: #F5C518; }
-.nav-brand--pjcc:hover, .nav-brand--pjcc:focus-visible { color: #ffd740; }
-.nav-brand--mcpuppy { color: #ececec; }
-.nav-brand--mcpuppy:hover, .nav-brand--mcpuppy:focus-visible { color: #ffffff; }
-/* Paw-only home button on McPuppy pages — the wordmark lives in the logo above,
-   so the nav badge drops its duplicate name and stands as a single tidy glyph. */
-.nav-brand--glyphonly { padding: 2px 4px; }
-.nav-brand--glyphonly .nav-brand-glyph { font-size: 1.32rem; }
-
-/* Primary links — grouped left next to the brand (not floating in the center) */
-.nav-links {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-/* Hop to the other brand — a quiet ghost pill on the right */
-.nav-hop {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  justify-self: end;
-  font-family: 'Poppins', sans-serif;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  text-decoration: none;
-  white-space: nowrap;
-  padding: 6px 15px;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  transition: color 0.2s, border-color 0.2s, background 0.2s, transform 0.15s;
-}
-.nav-hop--mcpuppy { color: #cfcfcf; border-color: rgba(200, 200, 200, 0.4); }
-.nav-hop--mcpuppy:hover, .nav-hop--mcpuppy:focus-visible {
-  color: #fff; border-color: #fff; background: rgba(255, 255, 255, 0.08);
-  text-decoration: none; transform: translateY(-1px);
-}
-.nav-hop--pjcc { color: #F5C518; border-color: rgba(245, 197, 24, 0.45); }
-.nav-hop--pjcc:hover, .nav-hop--pjcc:focus-visible {
-  color: #ffd740; border-color: #F5C518; background: rgba(245, 197, 24, 0.1);
-  text-decoration: none; transform: translateY(-1px);
-}
-
-/* --- McPuppy-context pills go monochrome ([data-brand] beats .site-nav .page-link) --- */
-.site-nav[data-brand="mcpuppy"] .page-link {
-  color: #d8d8d8;
-  border-color: #555555;
-  background: rgba(180, 180, 180, 0.08);
-
-  &:visited { color: #d8d8d8; }
-
-  &:hover {
-    background: #ffffff;
-    color: #080808;
-    border-color: #ffffff;
-    text-decoration: none;
-    transform: translateY(-2px);
-  }
-}
-.site-nav[data-brand="mcpuppy"] .nav-dd-menu { background: #141210; border-color: #555555; }
+/* (the .nav-brand / .nav-links / .nav-hop / [data-brand] pill rules were deleted 2026-07-22
+   with the horizontal nav — the left drawer replaced them; git keeps them.) */
 
 .site-nav .page-link {
   font-family: 'Poppins', sans-serif;
@@ -1186,27 +1107,6 @@ pre code {
     text-align: center;
   }
 
-  .nav-brand { justify-content: center; }
-
-  /* 2026-07-15 (Nate: "the menu takes up way too much space when expanded — the links
-     should be horizontal"). The pills used to stack one-per-row, turning five links
-     into a tall column. They wrap in a centred row now, so the sheet is a couple of
-     rows tall instead of the whole screen. (A full-width child like the McPuppy
-     "Support ▾" group still breaks to its own line — flex-wrap handles it.) */
-  .nav-links {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    width: 100%;
-    gap: 8px;
-  }
-
-  .nav-hop {
-    justify-self: center;
-    width: 100%;
-    justify-content: center;
-  }
-
   .site-nav .page-link {
     font-size: 12px;
     padding: 4px 10px;
@@ -1274,7 +1174,5 @@ pre code {
 @media (pointer: coarse) {
   .nav-toggle { padding: 12px 12px; }
   .nav-operative { padding: 10px 12px !important; }
-  .nav-brand { padding: 9px 8px; }
   .site-nav .page-link { padding-top: 10px; padding-bottom: 10px; }
-  .nav-hop { padding-top: 8px; padding-bottom: 8px; }
 }

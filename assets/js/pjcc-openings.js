@@ -127,7 +127,51 @@
     ['A09', 'Réti, Advance Variation', 'Nf3 d5 c4'],
     ['A01', 'Nimzo-Larsen Attack', 'b3'],
     ['A02', "Bird's Opening", 'f4'],
-    ['A00', 'Grob Opening', 'g4']
+    ['A03', "Bird's, Dutch Variation", 'f4 d5'],
+    ['A00', 'Grob Opening', 'g4'],
+    // ── EVERY OTHER FIRST MOVE (2026-07-22 Nate: "load in all the openings, including
+    //    the non-traditional ones" — so an offbeat first move is named THEORY, not an
+    //    inaccuracy). One row per remaining legal opening move that carries a name. ──
+    ['A00', 'Anderssen Opening', 'a3'],
+    ['A00', 'Ware Opening', 'a4'],
+    ['A00', 'Saragossa Opening', 'c3'],
+    ['A00', 'Mieses Opening', 'd3'],
+    ['A00', "Van't Kruijs Opening", 'e3'],
+    ['A00', 'Barnes Opening', 'f3'],
+    ['A00', 'Hungarian Opening', 'g3'],
+    ['A00', 'Benko / KIA Setup', 'g3 g6'],
+    ['A00', 'Clemenz Opening', 'h3'],
+    ['A00', 'Kádas Opening', 'h4'],
+    ['A00', 'Durkin (Sodium) Attack', 'Na3'],
+    ['A00', 'Dunst (Van Geet) Opening', 'Nc3'],
+    ['A00', 'Amar (Paris) Opening', 'Nh3'],
+    ['A00', 'Polish (Sokolsky) Opening', 'b4'],
+    ['A00', 'Polish, e5 Line', 'b4 e5'],
+    // ── OFFBEAT REPLIES + GAMBITS the curated main lines above skip over ──────────
+    ['B00', 'Owen Defense', 'e4 b6'],
+    ['B00', 'St. George Defense', 'e4 a6'],
+    ['B00', 'Borg (Grob Reversed) Defense', 'e4 g5'],
+    ['B00', 'Fred Defense', 'e4 f5'],
+    ['C40', 'Latvian Gambit', 'e4 e5 Nf3 f5'],
+    ['C40', 'Elephant Gambit', 'e4 e5 Nf3 d5'],
+    ['C50', 'Hungarian Defense', 'e4 e5 Nf3 Nc6 Bc4 Be7'],
+    ['C21', 'Danish Gambit', 'e4 e5 d4 exd4 c3'],
+    ['C44', 'Scotch Gambit', 'e4 e5 Nf3 Nc6 d4 exd4 Bc4'],
+    ['C44', 'Göring Gambit', 'e4 e5 Nf3 Nc6 d4 exd4 c3'],
+    ['C36', 'Falkbeer Countergambit', 'e4 e5 f4 d5'],
+    ['B21', 'Sicilian, Smith-Morra Gambit', 'e4 c5 d4 cxd4 c3'],
+    ['B20', 'Sicilian, Wing Gambit', 'e4 c5 b4'],
+    ['B23', 'Sicilian, Grand Prix Attack', 'e4 c5 Nc3 Nc6 f4'],
+    ['B27', 'Sicilian, Hyperaccelerated Dragon', 'e4 c5 Nf3 g6'],
+    ['A40', 'Englund Gambit', 'd4 e5'],
+    ['A40', "Queen's Pawn, Modern Defense", 'd4 g6'],
+    ['A53', 'Old Indian Defense', 'd4 Nf6 c4 d6'],
+    ['A50', "Black Knights' Tango", 'd4 Nf6 c4 Nc6'],
+    ['A51', 'Budapest Gambit', 'd4 Nf6 c4 e5'],
+    ['D00', 'Blackmar-Diemer Gambit', 'd4 d5 e4'],
+    ['D01', 'Richter-Veresov Attack', 'd4 d5 Nc3 Nf6 Bg5'],
+    ['A46', 'Torre Attack', 'd4 Nf6 Nf3 e6 Bg5'],
+    ['A45', 'Queen\'s Pawn, Barry/Colle Setup', 'd4 Nf6 Nf3']
   ];
 
   function norm(s) { return String(s).replace(/[+#!?]/g, ''); }

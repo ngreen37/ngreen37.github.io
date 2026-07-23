@@ -55,45 +55,55 @@
         </div>
       </div>
 
-      <!-- Context-aware nav (rebuilt for go-live): brand badge · grouped links + one dropdown · one hop.
-           PJCC links on PJCC pages, McPuppy links on McPuppy pages — never both. Dossier = the operative
-           pill (top-right); ⌘K reaches everything else. -->
-      <nav class="site-nav" id="site-nav" data-brand="{{ brand }}">
-        {% if brand == 'mcpuppy' %}
-        {% comment %} ── McPuppy: studio · Build Log · Support ▾ · → PJCC ── {% endcomment %}
-        <a class="nav-brand nav-brand--mcpuppy nav-brand--glyphonly" href="{{ '/projects/' | relative_url }}" aria-label="McPuppy Studios — home">
-          <span class="nav-brand-glyph" aria-hidden="true">🐾</span>
-        </a>
-        <div class="nav-links">
-          <a class="page-link" href="{{ '/blog/' | relative_url }}">Blog</a>
-          <div class="nav-dd" data-dd>
-            <a class="page-link nav-dd-trigger" href="{{ '/direct-line/' | relative_url }}" aria-haspopup="true" aria-expanded="false">Support <span class="nav-dd-caret" aria-hidden="true">&#9662;</span></a>
-            {%- comment -%} Merch was pulled from this menu 2026-07-12 (Nate). /goods/ still
-                 builds and is still reachable by URL — he wants it back later — it's just
-                 not advertised while it's months away. Restore the one line to re-list it. {%- endcomment -%}
-            <div class="nav-dd-menu" role="menu">
-              <a class="page-link" role="menuitem" href="{{ '/direct-line/' | relative_url }}">Direct Line</a>
-              <a class="page-link" role="menuitem" href="{{ '/mailing-list/' | relative_url }}">Mailing List</a>
-              <a class="page-link" role="menuitem" href="{{ '/educators/' | relative_url }}">For Educators</a>
-            </div>
-          </div>
+      <!-- ── THE LEFT DRAWER (2026-07-22) ─────────────────────────────────────────────
+           Nate: "the header nav idea is old-school … we're moving those buttons to the
+           left." The context-aware two-branch header bar is retired; ONE six-link set now
+           lives in an off-canvas left drawer, site-wide. #nav-toggle (the hamburger, now
+           shown on every width) opens #site-nav — pjcc-eggs.js toggles `.is-open` and
+           closes it on outside-click / link-tap. `.nav-backdrop` is a DOM SIBLING so
+           `#site-nav.is-open ~ .nav-backdrop` can dim the page with no extra JS. The six
+           links + their targets are Nate's: Play Now→Park Tables, Gauntlet, Puzzles→Fork
+           in the Road, Academy, PJCC→the world landing, Projects→the studio. ⌘K still
+           reaches everything else. Drawer look lives in _sass/_pjcc-13-nav.scss. -->
+      <nav class="site-nav drawer" id="site-nav" aria-label="Site navigation">
+        <div class="drawer-head">
+          <span class="drawer-brand">&#9819; PJCC</span>
+          <span class="drawer-sub">by McPuppy Studios</span>
         </div>
-        <a class="nav-hop nav-hop--pjcc" href="{{ '/' | relative_url }}">PJCC <span class="nav-hop-arrow" aria-hidden="true">&rarr;</span></a>
-        {% else %}
-        {% comment %} ── PJCC: world · Games · The World ▾ · → McPuppy ── {% endcomment %}
-        <a class="nav-brand nav-brand--pjcc" href="{{ '/' | relative_url }}">
-          <span class="nav-brand-glyph" aria-hidden="true">&#9819;</span><span class="nav-brand-name">PJCC</span>
+
+        <a class="page-link drawer-link" href="{{ '/games/park-tables/' | relative_url }}">
+          <span class="dl-ico" aria-hidden="true">&#9654;</span>
+          <span class="dl-txt"><b>Play Now</b><small>Sit at the Park Tables</small></span>
         </a>
-        <div class="nav-links">
-          <a class="page-link" href="{{ '/games/' | relative_url }}">Games</a>
-          <a class="page-link" href="{{ '/academy/' | relative_url }}">Academy</a>
-          <a class="page-link" href="{{ '/characters/' | relative_url }}">Characters</a>
-          <a class="page-link" href="{{ '/locations/' | relative_url }}">Locations</a>
-          <a class="page-link" href="{{ '/fan-art/' | relative_url }}">Fan Art</a>
+        <a class="page-link drawer-link" href="{{ '/games/the-gauntlet/' | relative_url }}">
+          <span class="dl-ico" aria-hidden="true">&#9819;</span>
+          <span class="dl-txt"><b>The Gauntlet</b><small>Climb the tower of ten</small></span>
+        </a>
+        <a class="page-link drawer-link" href="{{ '/games/fork-in-the-road/' | relative_url }}">
+          <span class="dl-ico" aria-hidden="true">&#9876;</span>
+          <span class="dl-txt"><b>Puzzles</b><small>Fork in the Road</small></span>
+        </a>
+        <a class="page-link drawer-link" href="{{ '/academy/' | relative_url }}">
+          <span class="dl-ico" aria-hidden="true">&#9812;</span>
+          <span class="dl-txt"><b>Academy</b><small>Learn chess from scratch</small></span>
+        </a>
+        <a class="page-link drawer-link drawer-link--pjcc" href="{{ '/pjcc/' | relative_url }}">
+          <span class="dl-ico" aria-hidden="true">&#9670;</span>
+          <span class="dl-txt"><b>PJCC</b><small>The world — cast, places, fan art</small></span>
+        </a>
+        <a class="page-link drawer-link" href="{{ '/projects/' | relative_url }}">
+          <span class="dl-ico" aria-hidden="true">&#128062;</span>
+          <span class="dl-txt"><b>Projects</b><small>Inside McPuppy Studios</small></span>
+        </a>
+
+        <div class="drawer-div" aria-hidden="true"></div>
+        <div class="drawer-mini">
+          <a href="{{ '/blog/' | relative_url }}">Blog</a>
+          <a href="{{ '/contact/' | relative_url }}">Contact</a>
+          <a href="{{ '/leaderboards/' | relative_url }}">Leaderboards</a>
         </div>
-        <a class="nav-hop nav-hop--mcpuppy" href="{{ '/projects/' | relative_url }}">McPuppy Studios <span class="nav-hop-arrow" aria-hidden="true">&rarr;</span></a>
-        {% endif %}
       </nav>
+      <div class="nav-backdrop" id="nav-backdrop" aria-hidden="true"></div>
 
     </div>
   </header>

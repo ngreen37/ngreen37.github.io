@@ -44,8 +44,11 @@
   background: linear-gradient(165deg, #6b6b74, #33333a);
   box-shadow: inset 0 -4px 5px rgba(0,0,0,0.4);
   transform: rotate(32deg); transform-origin: 80% 90%; transition: box-shadow .4s; }
-/* the throw of light out of the head — dark until the studio ships */
-.sl-cone { position: absolute; right: 41px; top: 10px; width: 48px; height: 48px;
+/* the throw of light out of the head — dark until the studio ships.
+   2026-07-22 (Nate: "move the ray slightly SouthEast so it looks like it's coming from the
+   center of the desk-lamp head") — nudged right+down (right 41→37, top 10→14) so the beam's
+   narrow source sits under the middle of the head instead of off its upper-left corner. */
+.sl-cone { position: absolute; right: 37px; top: 14px; width: 48px; height: 48px;
   clip-path: polygon(82% 0, 100% 24%, 48% 100%, 0 64%);
   background: linear-gradient(205deg, rgba(255,224,138,0.85), rgba(255,207,74,0.05));
   opacity: 0; transform: rotate(-6deg); transition: opacity .5s; pointer-events: none; }
@@ -57,8 +60,11 @@
    lamp stands on the Creator's desk instead of floating. On the splash the slab runs off
    the right edge of the window — the rest of the desk is out of frame — which is why the
    left/right offsets are a caller's business and not set here. */
+/* 2026-07-22 (Nate: "reduce the length of the wooden base the lamp sits on") — the slab
+   ran -34/-40px past the lamp on each side; pulled in to -12/-16 so it reads as a desk edge
+   under the lamp, not a plank running the width of the band. */
 .sl-desk { position: absolute; bottom: -7px; height: 8px;
-  left: -34px; right: -40px;
+  left: -12px; right: -16px;
   border-radius: 4px 0 0 2px;
   background: linear-gradient(180deg, #5a4128, #43301c 45%, #2b1e10);
   box-shadow: 0 -1px 0 rgba(255,235,200,0.10), 0 4px 10px rgba(0,0,0,0.45);

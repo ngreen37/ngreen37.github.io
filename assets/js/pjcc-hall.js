@@ -24,7 +24,10 @@
     // get rid of the terminated section") = every game EXCEPT terminated / non-playable,
     // in one grid. A single hall key still filters to just that category's games.
     var list = window.PJCC_GAMES.filter(function (g) {
-      return hall === 'all' ? (g.cat !== 'terminated' && g.playable !== false) : g.cat === hall;
+      // `noHall` games are reachable elsewhere (e.g. Fork in the Road = the drawer's
+      // Puzzles link) and are hidden from the combined grid; a single-category hall still
+      // shows everything in that category.
+      return hall === 'all' ? (g.cat !== 'terminated' && g.playable !== false && !g.noHall) : g.cat === hall;
     });
     grid.innerHTML = list.map(function (g) {
       var dead = g.playable === false;

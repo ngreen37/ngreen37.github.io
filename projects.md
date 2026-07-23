@@ -1,10 +1,10 @@
 ---
 layout: page
-title: About the Studio
+title: Projects
 permalink: /projects/
 body_class: theme-studio
-tab_title: About McPuppy Studios | PJCC
-description: Who makes Princess and the Journey to Chess City — the one-person studio behind the games, the Academy, the blog and the animated series in progress.
+tab_title: Projects — McPuppy Studios
+description: The projects inside McPuppy Studios — the animated series, the Academy, the games and the blog — and how far along each one is.
 ---
 
 {% comment %} 2026-07-22 (Nate: "About the Studio is fine"). The on-page title is now
