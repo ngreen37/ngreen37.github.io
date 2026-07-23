@@ -21,10 +21,7 @@
       { t: 'The Gauntlet',     s: 'Climb the tower of ten',               u: '/games/the-gauntlet/',     ic: '♛', b: 'pjcc',    k: 'gauntlet tower climb ladder ten floors bosses' },
       { t: 'Puzzles',          s: 'Fork in the Road',                     u: '/games/fork-in-the-road/', ic: '⚔', b: 'pjcc',    k: 'puzzles fork in the road tactics only move solve' },
       { t: 'All Games',        s: 'The Arcade — the whole grid',          u: '/games/',                  ic: '♟', b: 'pjcc',    k: 'arcade play games blitz all hall grid' },
-      { t: 'Characters',       s: 'Meet the cast',                        u: '/characters/',         ic: '♞', b: 'pjcc', k: 'characters cast people princess kaede world' },
-      { t: 'Locations',        s: 'Places in the world',                  u: '/locations/',          ic: '⛰', b: 'pjcc', k: 'locations places checker town chess city' },
       { t: 'Academy',          s: 'Learn chess from the ground up',            u: '/academy/',            ic: '♔', b: 'pjcc', k: 'academy learn chess lessons pieces bootcamp curriculum' },
-      { t: 'Your Profile',     s: 'Your codename, companion & record',             u: '/dossier/',            ic: '⬡', b: 'pjcc', k: 'dossier profile account sign in login operative identity forge' },
       { t: 'Leaderboards',     s: 'Top scores across the games',          u: '/leaderboards/',       ic: '🏆', b: 'pjcc', k: 'leaderboards standings scores rank high' },
       { t: 'Fan Art',          s: 'The fan wall + a printable PJCC card',  u: '/fan-art/',            ic: '🎨', b: 'pjcc', k: 'fan art wall gallery printable card make picture upload print pdf submit' },
       { t: 'The Gambit',       s: 'Lay down your best — the board decides', u: '/the-gambit/',       ic: '🎲', b: 'pjcc', k: 'gambit sacrifice offering altar wager risk reward credits collectables let go' },
@@ -34,7 +31,6 @@
       { t: 'Blog',             s: 'The build log — every episode so far',   u: '/blog/',               ic: '✍', b: 'mcpuppy', k: 'blog build log episodes posts writing' },
       { t: 'Mailing List',     s: 'Get updates by email',                 u: '/mailing-list/',       ic: '✉', b: 'mcpuppy', k: 'mailing list email subscribe newsletter' },
       { t: 'For Educators',    s: 'Use PJCC in the classroom',            u: '/educators/',          ic: '🍎', b: 'mcpuppy', k: 'educators teachers classroom school lessons' },
-      { t: 'Contact',          s: 'Say hello — and who is behind this',     u: '/contact/',            ic: '☎', b: 'mcpuppy', k: 'about contact reach email who studio hello' },
     ];
 
     var active = 0;
@@ -75,7 +71,7 @@
 
       if (!results.length) {
         list.innerHTML = '<li class="cmdk-empty">Nothing matches “' + esc(q) +
-          '”. Try “games”, “profile”, or “blog”.</li>';
+          '”. Try “games”, “academy”, or “blog”.</li>';
         active = -1;
         return;
       }
