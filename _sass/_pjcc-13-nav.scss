@@ -326,9 +326,17 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
    the slide-in overlay defined above. See the toggle logic in pjcc-eggs.js.
    ══════════════════════════════════════════════════════════════════════════════ */
 @media (min-width: 901px) {
+  /* ONE source of truth for the docked-rail width (2026-07-23). The rail itself, the
+     page + footer offset, AND the town-sky dock-clearance (_pjcc-20-town-sky.scss) all
+     read --rail-w — so retuning the rail is a one-line change and nothing drifts out of
+     sync (before this, 246/66 were hardcoded in both files: change one, get a sky seam).
+     Collapsing just REASSIGNS the variable, and every consumer follows in lockstep. */
+  :root { --rail-w: 246px; }
+  body.nav-collapsed { --rail-w: 66px; }
+
   .site-header .site-nav.drawer {
     top: 0; bottom: 0;
-    width: 246px;
+    width: var(--rail-w);
     padding-top: 78px;          /* clear the full-width sticky header (~66px) above it */
     transform: none;            /* docked — always visible, no slide */
     transition: width 0.22s ease;
@@ -336,17 +344,15 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
     z-index: 90;                /* under the header (100), over the content */
   }
   .nav-backdrop { display: none; }
-  /* header goes full-bleed on desktop so the hamburger + logo pin to the far LEFT — directly
-     above the rail — instead of floating at the centered content margin. */
+  /* header goes full-bleed on desktop so the hamburger pins to the far LEFT — directly
+     above the rail — with the McPuppy logo centered across the header. */
   .site-header .wrapper { max-width: none; padding-left: 20px; padding-right: 24px; }
   /* push the page + footer to the right of the rail (the header stays full-width on top) */
   .page-content,
-  .site-footer { padding-left: 246px; transition: padding-left 0.22s ease; }
+  .site-footer { padding-left: var(--rail-w); transition: padding-left 0.22s ease; }
 
-  /* ── collapsed → an icons-only rail ── */
-  body.nav-collapsed .site-header .site-nav.drawer { width: 66px; }
-  body.nav-collapsed .page-content,
-  body.nav-collapsed .site-footer { padding-left: 66px; }
+  /* ── collapsed → an icons-only rail. The WIDTH + offsets now follow --rail-w above
+     (reassigned to 66px on body.nav-collapsed); only the LOOK changes here. ── */
   body.nav-collapsed .drawer-head,
   body.nav-collapsed .drawer-div,
   body.nav-collapsed .drawer-mini { display: none; }

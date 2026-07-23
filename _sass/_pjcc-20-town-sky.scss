@@ -53,11 +53,11 @@
    Start the sky just to the RIGHT of that rail so the orb's arc (--orb-x maps across the
    sky box) rises in the OPEN instead of behind the menu — the morning sun no longer
    hides at the rail's edge. The rail is opaque, so the strip behind it is never seen.
-   Insets match the rail widths: 246px docked-open, 66px collapsed. Below 901px the rail
-   is an off-canvas overlay, so the sky stays full-width (default inset:0). ── */
+   The inset READS --rail-w (defined in _pjcc-13-nav.scss), so it tracks the rail's width
+   automatically — 246px open, 66px collapsed — with no duplicated magic number. Below
+   901px this rule doesn't apply, so the sky stays full-width (default inset:0). ── */
 @media (min-width: 901px) {
-  .town-sky { left: 246px; }
-  body.nav-collapsed .town-sky { left: 66px; }
+  .town-sky { left: var(--rail-w, 246px); }
 }
 
 /* ── the moving parts, in their fixed order ────────────────────────────────────
