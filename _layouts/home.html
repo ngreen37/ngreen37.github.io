@@ -348,20 +348,11 @@ layout: default
        hop deeper, via the Locations world-door below (→ /locations/). Restore either the two
        links or the older skyline from git: git show <prev>^ -- _layouts/home.html {% endcomment %}
 
-  {% comment %} ── THE SIGIL BLOOM — the opening beat, ported from the splash ──────────
-       The ACCcccccc carving blooms over the hero and dissolves. Night-only (2026-07-15
-       Nate: "the ACCcccc, maybe it ONLY shows up at night time") and skipped under
-       reduced motion, exactly as on the splash, with the same 483/805/546ms timing.
-
-       Two things changed in the port. It is position:ABSOLUTE inside the hero rather than
-       fixed to the viewport, so it blooms over the poster instead of over whatever you
-       have scrolled to. And it no longer GATES anything: on the splash it held the four
-       quads back until it faded, which needed a failsafe timer so a backgrounded tab
-       could not strand you on an empty page. There are no quads here and the hero is
-       plain HTML, so there is nothing to hold back and nothing to strand. {% endcomment %}
-  <div class="studio-drift-sigil hero-sigil" id="hero-sigil" aria-hidden="true">
-    <span class="pjcc-sigil"><i class="sg-a">A</i><i class="sg-c big">C</i><i class="sg-c big">C</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c">c</i><i class="sg-c sm">c</i></span>
-  </div>
+  {% comment %} (THE SIGIL BLOOM removed 2026-07-23, Nate, hero-declutter pass — the
+       ACCcccccc carving that bloomed over the poster every 26s at night is gone: markup
+       here, its CSS (.hero-sigil) and its JS below all removed. The .studio-drift-sigil /
+       .pjcc-sigil / .sg-* styles stay in _pjcc-02-studio.scss for the retired splash layout.
+       Restore the hero instance from git: git show <prev>^ -- _layouts/home.html {% endcomment %}
 </section>
 
 {% comment %} ── THE WORLD (2026-07-22) — the reason the PJCC drawer link exists. PJCC is
@@ -540,29 +531,8 @@ layout: default
 /* the tg-x link needs no pointer-events re-arm here: that rule exists on the splash only
    because .studio-content turns pointers off for the whole stage. Nothing does that here. */
 
-/* ── THE SIGIL BLOOM in the hero (2026-07-21) ──────────────────────────────────────
-   Ported from the splash, where it is position:fixed and blooms over the whole viewport.
-   Here it is ABSOLUTE inside .home-hero so it blooms over the poster — the hero is
-   position:relative already, which is what anchors it.
-
-   The timings match the splash exactly (fade-out 0.546s here, fade-in 0.483s on
-   .is-bloom) because they were tuned by hand: brightness 0.115 and a bloom lengthened
-   15% on 2026-07-15 so it lingers long enough to catch. z-index:6 puts it in FRONT of
-   the title, which is the point — it is a transmission ghost passing over the poster —
-   and pointer-events:none keeps it from ever eating a click. */
-.hero-sigil { position:absolute; top:44%; left:50%;
-  transform:translate(-50%,-50%) scale(0.96);
-  z-index:6; pointer-events:none; opacity:0;
-  filter:drop-shadow(0 0 16px rgba(245,197,24,0.28));
-  transition:opacity 0.546s ease, transform 0.546s ease; }
-.hero-sigil .pjcc-sigil { font-size:1.5rem; }
-.hero-sigil.is-bloom { opacity:0.115; transform:translate(-50%,-50%) scale(1.0);
-  transition:opacity 0.483s ease-out, transform 0.483s ease-out; }
-/* night only (2026-07-15 Nate: "the ACCcccc, maybe it ONLY shows up at night time") —
-   belt and braces alongside the JS gate, so a stray timer can never bloom it by day */
-html:not(.sky-night) .hero-sigil { display:none; }
-@media (prefers-reduced-motion: reduce) { .hero-sigil { display:none; } }
-html.reduce-flourish .hero-sigil { display:none; }
+/* (.hero-sigil — the SIGIL BLOOM's CSS — removed 2026-07-23 with its markup + JS, Nate,
+   hero-declutter pass. Restore from git: git show <prev>^ -- _layouts/home.html) */
 
 /* ── THE DOOR — the look lives in _sass/_pjcc-21-gauntlet-door.scss ────────────────
    2026-07-21: the ~120-line inline copy of .gdoor that stood here is DELETED. It was
@@ -879,35 +849,8 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
 .puri-veil.is-on { opacity:1; }
 </style>
 
-<script>
-// THE SIGIL BLOOM (2026-07-21) — the opening beat, brought over from the splash.
-// The ACCcccccc carving blooms over the poster and dissolves, then returns every 26s.
-//
-// Night only, and skipped under either quiet switch — the same gates the splash uses.
-// Timings are the splash's, unchanged: bloom in 483ms, hold 805ms, fade out 546ms (the
-// fade-out is timed by the base .hero-sigil rule in the stylesheet above; .is-bloom
-// supplies only the fade-in).
-//
-// What did NOT come across is the GATE. On the splash this beat holds the four quads at
-// opacity:0 until it clears, which needs two failsafe timers so a backgrounded tab can't
-// strand a visitor on an empty front door. There are no quads here — the hero is plain
-// HTML that paints on the first frame — so the bloom is purely ambient and there is
-// nothing it can strand.
-(function () {
-  var sig = document.getElementById('hero-sigil');
-  if (!sig) return;
-  if (!document.documentElement.classList.contains('sky-night')) return;
-  if (document.documentElement.classList.contains('reduce-flourish')) return;
-  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-  var BLOOM_IN = 483, HOLD = 805;
-  function bloom() {
-    sig.classList.add('is-bloom');
-    setTimeout(function () { sig.classList.remove('is-bloom'); }, BLOOM_IN + HOLD);
-  }
-  setTimeout(function () { bloom(); setInterval(bloom, 26000); }, 260);
-})();
-</script>
+{% comment %} (THE SIGIL BLOOM's JS removed 2026-07-23, Nate — the whole beat, markup + CSS
+     + this script, is gone. Restore from git: git show <prev>^ -- _layouts/home.html) {% endcomment %}
 
 <script>
 // Gauntlet progress (read-only): powers the ticker's BREAKING line and dresses
