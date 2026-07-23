@@ -347,6 +347,13 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
   /* header goes full-bleed on desktop so the hamburger pins to the far LEFT — directly
      above the rail — with the McPuppy logo centered across the header. */
   .site-header .wrapper { max-width: none; padding-left: 20px; padding-right: 24px; }
+  /* Cap the rail with its own trigger: the collapsed rail centres its icons on x≈33 (66px
+     rail), but the hamburger's default padding put its bars' centre at x≈53. Pull it 20px
+     left so it sits DIRECTLY above the icon column it toggles. (Only the hamburger lives in
+     .header-top-left; the logo is the centre grid column, so this moves nothing else. When
+     the rail is expanded its labelled icons sit a touch right of this — the collapsed column
+     is the one the eye lines up against, and this alignment is measured to it.) */
+  .header-top-left { transform: translateX(-20px); }
   /* push the page + footer to the right of the rail (the header stays full-width on top) */
   .page-content,
   .site-footer { padding-left: var(--rail-w); transition: padding-left 0.22s ease; }
@@ -359,12 +366,23 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
   /* The hover label (below) is positioned just OUTSIDE the rail's right edge. The rail's
      base `overflow-y: auto` forces `overflow-x` to compute to `auto` as well (you can't have
      one axis visible and the other not), which CLIPPED the label to a sliver at the edge —
-     it read as unfurling BEHIND the page (2026-07-23 bug). Collapsed the rail is icons-only
-     and never tall enough to want the scroll, so it can go `overflow: visible` and let the
-     label escape in front of the content. `position: relative` on the link makes the label
-     anchor to the hovered ICON explicitly, instead of relying on the :hover transform below
-     to happen to establish the containing block. */
+     it read as unfurling BEHIND the page (2026-07-23 bug). Collapsed the rail is icons-only,
+     so it can go `overflow: visible` and let the label escape in front of the content.
+     `position: relative` on the link makes the label anchor to the hovered ICON explicitly,
+     instead of relying on the :hover transform below to happen to establish the containing
+     block. (The short-window case where those seven icons WOULD want the scroll is guarded
+     right below — visible only holds while the whole column fits.) */
   body.nav-collapsed .site-header .site-nav.drawer { overflow: visible; }
+  /* Guard the short-window edge: `overflow: visible` above means a rail taller than the
+     window can't scroll, so below ~520px of viewport height the seven icons would spill
+     past the fold, unreachable. On a window that short, restore the scrollable column so
+     every icon stays reachable; the hover label re-clips there (overflow-x: hidden), an
+     accepted trade on a window too short to show the rail in full anyway. 520px is the
+     measured content height of the collapsed rail (78px header clearance + 7 × 63px + pad) —
+     keep this cut in step with it if the icon count or sizing changes. */
+  @media (max-height: 520px) {
+    body.nav-collapsed .site-header .site-nav.drawer { overflow: hidden auto; }
+  }
   body.nav-collapsed .site-header .site-nav.drawer .page-link.drawer-link { position: relative; justify-content: center; padding: 11px 0; }
   body.nav-collapsed .drawer-link .dl-txt { display: none; }
   /* hover a collapsed icon → its NAME flies out to the right as a small label */

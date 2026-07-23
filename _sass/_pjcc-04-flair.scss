@@ -158,6 +158,25 @@ body.theme-bw .page-body em {
      the box until the lean fits inside it. Symmetric, so the line stays optically centred.
      Verified in Chrome by outlining the background box: the old edge cut through the l. */
   padding: 0.06em 0.3em;
+
+  /* ── THE LIT-SIGN GLOW (2026-07-23, Nate: "give it more of a light-up display look, so it
+     seems more natural that the 'i' will flicker") ────────────────────────────────────────
+     A warm halo behind the letters so the line reads as an ILLUMINATED sign — a warm-white
+     core (frosted-bulb) inside a gold-into-amber bloom. The point is the flicker: on a FLAT
+     line a dropped 'i' reads as a rendering glitch; on a lit sign the same dropout reads as
+     one dark bulb in a warm row — a sign with a bad bulb, which is exactly the tell we want.
+     When the 'i' goes visibility:hidden its glyph isn't painted, so its share of this filter
+     vanishes with it and that spot goes dark on its own — no extra rule needed.
+
+     It MUST be `filter: drop-shadow`, never `text-shadow`: this text is painted through
+     `background-clip: text` (transparent fill), and a text-shadow paints OVER that clipped
+     fill and hides the gradient. drop-shadow casts the glow from the letters' alpha, behind
+     them. Blur is in `em` so it scales DOWN with the font on phones (cheaper there), and it's
+     a STATIC filter — the only motion on this line is the pre-existing shimmer. */
+  filter:
+    drop-shadow(0 0 0.08em rgba(255, 240, 190, 0.75))
+    drop-shadow(0 0 0.28em rgba(245, 197, 24, 0.45))
+    drop-shadow(0 0 0.60em rgba(245, 150, 20, 0.24));
 }
 
 @keyframes tagline-shimmer {
