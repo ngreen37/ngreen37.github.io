@@ -255,25 +255,44 @@ function showTxToast(msg, duration) {
     var toggle = document.getElementById('nav-toggle');
     var nav    = document.getElementById('site-nav');
     if (!toggle || !nav) return;
+    // The nav is responsive (2026-07-23). DESKTOP (>=901px): the rail is DOCKED OPEN by
+    // default and the hamburger COLLAPSES it to an icons-only rail — remembered in
+    // localStorage, restored before paint by the inline script in default.html. MOBILE:
+    // the hamburger OPENS/CLOSES the slide-in overlay, as before. Keep the breakpoint in
+    // sync with _sass/_pjcc-13-nav.scss (@media min-width:901px).
+    var COLLAPSE_KEY = 'pjcc.nav.collapsed';
+    function isDesktop() { return !!(window.matchMedia && matchMedia('(min-width: 901px)').matches); }
+
+    // reflect the docked-rail state on the hamburger for a11y (expanded = rail is open)
+    if (isDesktop()) toggle.setAttribute('aria-expanded', String(!document.body.classList.contains('nav-collapsed')));
+
+    function closeOverlay() {
+      nav.classList.remove('is-open');
+      toggle.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+
     toggle.addEventListener('click', function () {
-      var open = nav.classList.toggle('is-open');
-      toggle.classList.toggle('is-open', open);
-      toggle.setAttribute('aria-expanded', String(open));
-    });
-    document.addEventListener('click', function (e) {
-      if (nav.classList.contains('is-open') &&
-          !nav.contains(e.target) && !toggle.contains(e.target)) {
-        nav.classList.remove('is-open');
-        toggle.classList.remove('is-open');
-        toggle.setAttribute('aria-expanded', 'false');
+      if (isDesktop()) {
+        var collapsed = document.body.classList.toggle('nav-collapsed');
+        toggle.setAttribute('aria-expanded', String(!collapsed));
+        try { localStorage.setItem(COLLAPSE_KEY, collapsed ? '1' : '0'); } catch (e) {}
+      } else {
+        var open = nav.classList.toggle('is-open');
+        toggle.classList.toggle('is-open', open);
+        toggle.setAttribute('aria-expanded', String(open));
       }
     });
+
+    // outside-click closes ONLY the mobile overlay; the docked desktop rail stays put
+    document.addEventListener('click', function (e) {
+      if (!isDesktop() && nav.classList.contains('is-open') &&
+          !nav.contains(e.target) && !toggle.contains(e.target)) closeOverlay();
+    });
+
+    // a link tap dismisses the mobile overlay; on the docked rail it just navigates
     nav.querySelectorAll('.page-link').forEach(function (link) {
-      link.addEventListener('click', function () {
-        nav.classList.remove('is-open');
-        toggle.classList.remove('is-open');
-        toggle.setAttribute('aria-expanded', 'false');
-      });
+      link.addEventListener('click', function () { if (!isDesktop()) closeOverlay(); });
     });
   })();
 

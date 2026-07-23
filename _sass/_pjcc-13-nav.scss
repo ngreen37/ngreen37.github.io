@@ -314,3 +314,53 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
   .site-header .site-nav.drawer { transition: none; }
   .nav-backdrop { transition: none; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   COLLAPSIBLE DOCKED RAIL — desktop only (2026-07-23, Nate: "keep the framework, but the
+   menu items should display by default; the hamburger minimizes them"). At ≥901px the
+   drawer stops being a slide-in overlay and DOCKS OPEN on the left; the page + footer
+   reflow to its right. The hamburger toggles `body.nav-collapsed`, shrinking it to an
+   icons-only rail (hover an icon → its label flies out). The choice is remembered in
+   localStorage (`pjcc.nav.collapsed`) and restored before paint by an inline script in
+   default.html, so it doesn't flash. Below 901px nothing here applies — the drawer stays
+   the slide-in overlay defined above. See the toggle logic in pjcc-eggs.js.
+   ══════════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 901px) {
+  .site-header .site-nav.drawer {
+    top: 0; bottom: 0;
+    width: 246px;
+    padding-top: 78px;          /* clear the full-width sticky header (~66px) above it */
+    transform: none;            /* docked — always visible, no slide */
+    transition: width 0.22s ease;
+    box-shadow: none;           /* docked, not a modal */
+    z-index: 90;                /* under the header (100), over the content */
+  }
+  .nav-backdrop { display: none; }
+  /* header goes full-bleed on desktop so the hamburger + logo pin to the far LEFT — directly
+     above the rail — instead of floating at the centered content margin. */
+  .site-header .wrapper { max-width: none; padding-left: 20px; padding-right: 24px; }
+  /* push the page + footer to the right of the rail (the header stays full-width on top) */
+  .page-content,
+  .site-footer { padding-left: 246px; transition: padding-left 0.22s ease; }
+
+  /* ── collapsed → an icons-only rail ── */
+  body.nav-collapsed .site-header .site-nav.drawer { width: 66px; }
+  body.nav-collapsed .page-content,
+  body.nav-collapsed .site-footer { padding-left: 66px; }
+  body.nav-collapsed .drawer-head,
+  body.nav-collapsed .drawer-div,
+  body.nav-collapsed .drawer-mini { display: none; }
+  body.nav-collapsed .site-header .site-nav.drawer .page-link.drawer-link { justify-content: center; padding: 11px 0; }
+  body.nav-collapsed .drawer-link .dl-txt { display: none; }
+  /* hover a collapsed icon → its NAME flies out to the right as a small label */
+  body.nav-collapsed .drawer-link:hover .dl-txt,
+  body.nav-collapsed .drawer-link:focus-visible .dl-txt {
+    display: block; position: absolute; left: calc(100% + 8px); top: 50%; transform: translateY(-50%);
+    white-space: nowrap; background: #1a1040; border: 1px solid #4a3a86; border-radius: 8px;
+    padding: 6px 11px; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5); z-index: 5; pointer-events: none;
+  }
+  body.nav-collapsed .drawer-link:hover .dl-txt small,
+  body.nav-collapsed .drawer-link:focus-visible .dl-txt small { display: none; }
+  body.theme-bw.nav-collapsed .drawer-link:hover .dl-txt,
+  body.theme-studio.nav-collapsed .drawer-link:hover .dl-txt { background: #17161c; border-color: #3a3730; }
+}

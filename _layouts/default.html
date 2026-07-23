@@ -18,6 +18,12 @@
   {% include head.html %}
 </head>
 <body{% if page.body_class %} class="{{ page.body_class }}"{% endif %}>
+  <script>
+    /* Restore the docked-rail collapsed state BEFORE paint so it never flashes open on
+       desktop (the full logic + persistence lives in pjcc-eggs.js). Runs inside <body>, so
+       document.body already exists. Only meaningful at >=901px, where the CSS acts on it. */
+    try { if (localStorage.getItem('pjcc.nav.collapsed') === '1') document.body.classList.add('nav-collapsed'); } catch (e) {}
+  </script>
 
   {%- comment -%} The town sky — day/dusk/night/dawn behind EVERY page, not just the PJCC
        hero. Fixed, full-viewport, z-index:-1, so it sits under the header, the cards and
