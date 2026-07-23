@@ -132,8 +132,13 @@ body.theme-academy .ts-horizon { background: linear-gradient(180deg, rgba(0,0,0,
 @media (max-width: 700px) { .page-body > .page-title { margin: 8px -20px 16px; } }
 
 /* ── The hero: the pieces rise into formation, then breathe ──────────────────── */
-.ac-hero { text-align: center; margin: 4px 0 10px; }
-.ac-strip { display: flex; gap: min(3.4vw, 20px); justify-content: center; line-height: 1; margin: 4px 0 16px;
+/* TOKEN-ADOPTED 2026-07-23: exact-match spacing/padding → --space-* (the CTA padding, the
+   lesson padding, the strip/hero margins). Left literal on purpose: the -44px title bleed
+   (geometry), the piece-size + lead font clamps, the pill radii, and the font-sizes that form
+   a deliberate hierarchy (0.6/0.82/0.9/1.04rem) the --step-* range would flatten. --r-sm is
+   already adopted on .ac-lesson below. */
+.ac-hero { text-align: center; margin: var(--space-1) 0 10px; }  /* 4px = --space-1 exact; 10px literal */
+.ac-strip { display: flex; gap: min(3.4vw, 20px); justify-content: center; line-height: 1; margin: var(--space-1) 0 var(--space-4);
   font-size: clamp(28px, 8vw, 48px); color: #e8b25c; }
 .ac-strip span { display: inline-block; opacity: 0; transform: translateY(14px);
   filter: drop-shadow(0 3px 8px rgba(0,0,0,0.5));
@@ -149,7 +154,7 @@ body.theme-academy .ts-horizon { background: linear-gradient(180deg, rgba(0,0,0,
 @keyframes acBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 .ac-lead { max-width: 560px; margin: 0 auto 18px; color: #e9e4d3; font-size: 1.04rem; line-height: 1.62; }
 .ac-cta { display: inline-block; background: #e08a3c; color: #140e06; font-weight: 800; text-decoration: none;
-  border-radius: 999px; padding: 12px 24px; font-size: 1rem; box-shadow: 0 6px 22px -6px rgba(224,138,60,0.55);
+  border-radius: 999px; padding: var(--space-3) var(--space-5); font-size: 1rem; box-shadow: 0 6px 22px -6px rgba(224,138,60,0.55);  /* padding 12/24 = --space-3/--space-5 exact */
   transition: transform 0.12s, box-shadow 0.12s; }
 .ac-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 28px -6px rgba(224,138,60,0.65); }
 
@@ -157,7 +162,7 @@ body.theme-academy .ts-horizon { background: linear-gradient(180deg, rgba(0,0,0,
 .ac-h2 { color: #ffb347; margin: 28px 0 10px; font-size: 1.15rem; }
 .ac-h2--soft { color: #8fae94; font-size: 1rem; margin-top: 30px; }
 .ac-lessons { display: flex; flex-direction: column; gap: 10px; max-width: 640px; }
-.ac-lesson { display: flex; align-items: center; gap: 14px; padding: 13px 16px; text-decoration: none;
+.ac-lesson { display: flex; align-items: center; gap: 14px; padding: 13px var(--space-4); text-decoration: none;  /* 16px = --space-4 exact; 13px + 14px gap stay literal */
   background: rgba(23,42,30,0.7); border: 1px solid #2c4636;
   border-left: 3px solid #e08a3c; border-radius: var(--r-sm, 8px); transition: border-color 0.15s, background 0.15s; }
 .ac-lesson--open:hover { border-color: #e08a3c; background: rgba(28,52,37,0.85); }

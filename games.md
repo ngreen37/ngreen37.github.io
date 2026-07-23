@@ -56,7 +56,7 @@ permalink: /games/
    Sealed / Retired divider, and portals sized for a bigger screen than they need.
    Nothing is removed here — every hall, the trophy, the door and the divider all
    still stand. It's just tightened, and the whole hall now lands ~200px shorter. */
-.ghub { padding:18px 16px 22px; }
+.ghub { padding:18px var(--space-4) 22px; }  /* adoption: horizontal 16px = --space-4 exact; the 18/22 vertical stay literal (height-pass-tuned). This hall is almost all bespoke scene geometry — the altar, the sized door, the badges — so there's little else to tokenize; the game cards use the shared .gcard system already. */
 .ghub-head { margin:2px 0 14px; }
 .ghub-eyebrow { margin:0 0 5px; }
 .ghub-sub { margin:6px 0 0; }

@@ -83,10 +83,12 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
      thank-yous (2026-07-17 Nate: "move the counters to the bottom, just above the Thank
      Yous") — the markup + its tick script live down there; these styles stay here. {% endcomment %}
 <style>
-.pj-clocks { display: grid; grid-template-columns: 1fr 1fr; margin: 16px 0 22px;
-  background: #131218; border: 1px solid #2a2830; border-radius: 10px; overflow: hidden; }
+.pj-clocks { display: grid; grid-template-columns: 1fr 1fr; margin: var(--space-4) 0 var(--space-5);
+  background: #131218; border: 1px solid #2a2830; border-radius: var(--r-sm); overflow: hidden; }
+  /* adoption: margin 16→--space-4 (exact) / 22→24 (--space-5, 2px rhythm snap); border-radius 10px = --r-sm exact (a small panel — could move to --r-md per the Surface Kit, but --r-sm keeps the current look) */
 .pj-clock { display: grid; grid-template-columns: auto auto 1fr; align-items: baseline;
-  gap: 2px 8px; padding: 12px 16px; }
+  gap: 2px var(--space-2); padding: var(--space-3) var(--space-4); }
+  /* adoption: col-gap 8px = --space-2, padding 12/16 = --space-3/--space-4 (all exact); the 2px row-gap stays literal (below the scale) */
 .pj-clock + .pj-clock { border-left: 1px solid #2a2830; }
 /* the "still working" pulse — the only motion left in the ribbon */
 .pj-clock-dot { grid-row: 1; width: 6px; height: 6px; border-radius: 50%; background: #caa24a;
@@ -261,12 +263,15 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
    lilac #cdbcf2 was never actually rendering — the label has been the same near-white as
    the names this whole time, flattening the hierarchy the comment below describes. Two
    classes (0,2,0) beat one class plus two types (0,1,2), so this one sticks. */
-.mcp-thanks { max-width: 640px; margin: 3.2rem auto 1rem; padding: 0 4px; text-align: center; }
+.mcp-thanks { max-width: 640px; margin: 3.2rem auto var(--space-4); padding: 0 var(--space-1); text-align: center; }
+  /* adoption: bottom 1rem = --space-4, padding 4px = --space-1 (exact); 3.2rem top stays literal */
 .mcp-thanks-rule { width: 70px; height: 2px; margin: 0 auto 1.6rem;
   background: linear-gradient(90deg, transparent, #caa24a, transparent); }
 .mcp-thanks-block { margin: 0 0 1.7rem; }
 .mcp-thanks .mcp-thanks-sub { color: #8a8592; font-size: 0.72rem; font-weight: 600;
-  letter-spacing: 0.05em; text-transform: uppercase; margin: 0 0 0.5rem; }
+  letter-spacing: 0.05em; text-transform: uppercase; margin: 0 0 var(--space-2); }
+  /* adoption: 0.5rem = --space-2 exact. The three thanks font-sizes (0.72/0.82/0.86rem) stay
+     literal ON PURPOSE — they're a deliberate size hierarchy the --step--1 range would flatten. */
 /* the names carry the section, so they're the one thing here with any weight —
    still small, but brighter than the label above them */
 .mcp-thanks-names { color: #f2efe8; font-size: 0.86rem; line-height: 1.85; margin: 0; }
