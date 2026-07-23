@@ -285,3 +285,17 @@ honest hedge, and it is why Step 0 is written to be shippable entirely on its ow
   `/pjcc/` (untouched); `start_url` still `/`; `sw.js` VERSION → `v6` (both `/` and `/pjcc/`
   are still real 200 pages, both precached). The TVSeries JSON-LD `@id`/`url` → `/pjcc/`.
   Both flips verified with `npm test` green + puppeteer screenshots of the home + drawer.
+
+- **2026-07-23 — THE INTRO.** Nate: "It's weird to go to mcpuppystudios.com and it goes to
+  PJCC. The splash made sense but was too much. So let's do a compromise: a black/white,
+  2-second typing intro that says 'McPuppy Studios Presents', then it opens to the PJCC
+  site." So `/` is no longer the studio landing — it's a **standalone black-&-white intro**
+  (`index.md`, no site chrome) that types "McPuppy Studios Presents" (CSS `steps(24)`
+  typewriter), holds, then `location.replace('/pjcc/')` at ~1.85s. Plays **once per session**
+  (a `<head>` script redirects instantly on repeat visits, keyed on `sessionStorage
+  mcp.intro.seen`, so the header logo → `/` doesn't replay it); skippable on any click/key;
+  honors reduced motion; `<noscript>` meta-refresh fallback. **This is the slot Nate's
+  Blender animations drop into later** — swap `.intro-stage` for a `<video>`/`<canvas>` and
+  keep the forward logic. The studio-landing version of `index.md` is superseded (its content
+  lives on at `/projects/`; recover the landing from git). `sw.js` VERSION → `v7`. Verified
+  with puppeteer (mid-type + full line).

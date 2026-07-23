@@ -13,7 +13,7 @@
  */
 'use strict';
 
-const VERSION    = 'pjcc-pwa-v6';   // v6: second front-door move — "/" is the McPuppy home now, /pjcc/ is the PJCC landing (2026-07-22)
+const VERSION    = 'pjcc-pwa-v7';   // v7: "/" is now the "McPuppy Studios Presents" intro that hands off to /pjcc/ (2026-07-23)
 const SHELL      = 'pjcc-shell-' + VERSION;
 const RUNTIME    = 'pjcc-runtime-' + VERSION;
 const OFFLINE_URL = '/offline.html';
