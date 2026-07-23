@@ -57,13 +57,13 @@ The base everything else stands on, plus the motion layer that kills "static."
 
 | # | Item | Effort | Status |
 |---|------|--------|--------|
-| 1 | **Design tokens** — a type scale (`--step-*`), spacing rhythm (`--space-*`), radius/elevation, in a new `_sass` partial. The single source future work reads. | M | ▢ next |
-| 2 | **Confident type** — a self-hosted *variable* display font; bigger, tighter headings; more generous body line-height. Apply to headings first. | M | ▢ |
-| 3 | **Whitespace + grid pass** — consistent spacing scale + a responsive grid; the cramped retro feel eases immediately. | M | ▢ |
+| 1 | **Design tokens** — a type scale (`--step-*`), spacing rhythm (`--space-*`), radius/elevation, in a new `_sass` partial. The single source future work reads. | M | ✅ 2026-07-19 — shipped in `_pjcc-01-core.scss` (`--step-*`, `--space-*`, `--r-*`, `--lift`, `--ease-*`) |
+| 2 | **Confident type** — a self-hosted *variable* display font; bigger, tighter headings; more generous body line-height. Apply to headings first. | M | ◐ the fluid scale shipped; the variable-font swap is the open half |
+| 3 | **Whitespace + grid pass** — consistent spacing scale + a responsive grid; the cramped retro feel eases immediately. | M | ◐ spacing tokens shipped + adoption started; the responsive grid is open |
 | 4 | **Town-sky depth + parallax** — layers drift toward the pointer + on scroll; far moves least, near most. | S | ✅ 2026-07-19 (76e3a94) |
-| 5 | **Scroll-reveal layer** — `data-reveal` fade/rise on enter (IntersectionObserver, reduced-motion aware). | S | ▢ |
-| 6 | **Page transitions** — the View Transitions API for cross-page morphs; app-like for ~20 lines. | S | ▢ |
-| 7 | **Micro-interactions** — unified hover/press on buttons, cards, chips (lift + glow), from the tokens. | S | ▢ |
+| 5 | **Scroll-reveal layer** — `data-reveal` fade/rise on enter (IntersectionObserver, reduced-motion aware). | S | ✅ — `pjcc-reveal.js` / `data-reveal` (live on the landing) |
+| 6 | **Page transitions** — the View Transitions API for cross-page morphs; app-like for ~20 lines. | S | ✅ — `@view-transition { navigation: auto }` (`_pjcc-23-motion.scss`) |
+| 7 | **Micro-interactions** — unified hover/press on buttons, cards, chips (lift + glow), from the tokens. | S | ◐ ad-hoc hovers exist; not yet unified from the motion tokens |
 
 ## Phase 2 — The front door, reinvented (bold)
 
@@ -122,3 +122,18 @@ screenshot before it hits `main`.
 - **2026-07-19** — Kickoff. Direction = bold reinvention. Shipped: town-sky depth + parallax
   (#4). Also that day (pre-mission): taller Chess City hero towers; Gauntlet game review +
   Robert the Expert bot.
+- **2026-07-23** — **Status reconciled against the code.** A Phase-1 audit found the
+  foundation further along than this table claimed. The type + spacing tokens (#1) shipped in
+  `_pjcc-01-core.scss` on 2026-07-19; scroll-reveal (#5) is live via `pjcc-reveal.js` /
+  `data-reveal`; View Transitions (#6) are on site-wide. So **all three of the original "start
+  here" cheap moves are done** — the columns above now say so. The next cheap win shifted from
+  *adding* tokens to **adopting** them: retiring the hand-tuned px in `_layouts/home.html` onto
+  `--step-*` / `--space-*` / `--r-*`. Started with the cleanest component — the three world-doors
+  on the PJCC landing (radius → `--r-lg`, gaps → `--space-*`, name/sub type → `--step-0`/`--step--1`,
+  hover → `--dur-fast`/`--ease-out`) plus the hero lede + cast-tools rhythm. The poster geometry
+  (the hero title clamp, the two-town pieces board, the CTA baseline alignment) is deliberately
+  left literal — those are mechanical constants, not design-system values. Also this session
+  (hero declutter, Nate): removed the "Checker Town → Chess City" world-line links + arrow, and
+  the per-word title glint (the sweep). The list itself was re-worked for the current front-door
+  shape (2-sec intro → single PJCC landing + left rail); several items re-pointed onto the intro
+  slot as the Blender drop-in.

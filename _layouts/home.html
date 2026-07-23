@@ -129,7 +129,7 @@ layout: default
   .hero-tagline .tagline-main-tagline { font-size: 15px; }
   {% comment %} (the .tagline-main-studio phone rule went with the span it sized —
        2026-07-22, Nate cut that line from the tagline.) {% endcomment %}
-  .hero-world { font-size: 10px; gap: 10px; margin-top: 10px; }
+  /* (.hero-world phone rule removed with the world-line links, 2026-07-23) */
 }
 
 /* ── #2 one-screen desktop ── */
@@ -273,11 +273,11 @@ layout: default
        lands on, which is the only thing that works across a 360px phone and a 2560px
        display. {% endcomment %}
   {% comment %} FUN FLAIR (2026-07-22, Nate: "give the hero title a fun flair"). Each WORD is
-       its own .ht-w span so it can carry a gentle tilt AND its own glint (a bright ::after copy
-       revealed through a sweeping mask band; the per-word delay makes it travel L→R). The ✦ are
-       decorative twinkles. data-w feeds the glint's ::after copy. aria-label carries the clean
-       title so a screen reader hears it once, not the spans / ::after copies / sparkles. Styles:
-       .ht-w / .ht-spark / @keyframes htShine + htTwinkle below. {% endcomment %}
+       its own .ht-w span so it can carry a gentle tilt. (Its per-word GLINT — a bright ::after
+       copy revealed through a sweeping mask band — was removed 2026-07-23; the data-w attrs
+       below are now dormant but kept on the spans so the glint is a one-edit restore.) The ✦
+       are decorative twinkles. aria-label carries the clean title so a screen reader hears it
+       once, not the spans / sparkles. Styles: .ht-w / .ht-spark / @keyframes htTwinkle below. {% endcomment %}
   <h1 class="hero-title" aria-label="Princess and the Journey to Chess City">
     <span class="ht-w" data-w="Princess">Princess</span>
     <span class="ht-w" data-w="and">and</span>
@@ -341,24 +341,12 @@ layout: default
     </span>
   </div>
 
-  {% comment %} ── THE WORLD — two links where the flat skyline used to be ─────────────
-       2026-07-21. The CSS-shape skyline is DELETED: six checker stacks built from
-       repeating-linear-gradient, a 2px sea, and four piece-topped towers drawn with
-       ::before/::after clip-paths — about 60 lines of flat vector shapes. It is item #1
-       on the modernization doc's own list of what reads "stuck in time", and it was the
-       largest single piece of it on the site.
-
-       Both shores were already links (2026-07-14 Nate: "both shores are DOORS"), but only
-       as aria-labels on silhouettes — so the two most important places in the world were
-       invisible to anyone who didn't hover a shape. They are named text now. When there
-       is a rendered Chess City to show, it goes here; a drawing that says "we could not
-       draw it yet" is worse than a line that simply names the place.
-       Restore the skyline: git show <this commit>^ -- _layouts/home.html {% endcomment %}
-  <p class="hero-world">
-    <a href="{{ '/locations/checker-town/' | relative_url }}">Checker Town</a>
-    <i aria-hidden="true">→</i>
-    <a href="{{ '/locations/chess-city/' | relative_url }}">Chess City</a>
-  </p>
+  {% comment %} ── THE WORLD LINE — removed 2026-07-23 (Nate, hero-declutter) ────────────
+       This hero once carried two named links, "Checker Town → Chess City", with a quiet
+       arrow between them — the text that replaced the deleted flat CSS skyline (2026-07-21).
+       Nate cut the links and the arrow in the declutter pass. Both places stay reachable one
+       hop deeper, via the Locations world-door below (→ /locations/). Restore either the two
+       links or the older skyline from git: git show <prev>^ -- _layouts/home.html {% endcomment %}
 
   {% comment %} ── THE SIGIL BLOOM — the opening beat, ported from the splash ──────────
        The ACCcccccc carving blooms over the hero and dissolves. Night-only (2026-07-15
@@ -382,19 +370,26 @@ layout: default
      Characters · Locations · Fan Art — right under the hero. {% endcomment %}
 <section class="home-world" aria-label="Explore the world" data-reveal>
   <style>
-  .home-world { max-width:820px; margin:30px auto 6px; padding:0 14px; }
-  .home-world-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
-  .hw-door { display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center;
-    text-decoration:none; padding:22px 14px; border-radius:16px;
+  /* TOKEN-ADOPTED 2026-07-23 (the adoption pass). The values that are RHYTHM, TYPE, RADIUS
+     and MOTION now read the design tokens (_pjcc-01-core.scss): spacing → --space-*, corner
+     → --r-lg, name/sub type → --step-0/--step--1, hover → --dur-fast/--ease-out. Only the
+     BRAND look stays literal — the purple gradient, the gold edge, the icon's gold glow, and
+     the tuned lift/hover shadows — because color and signature glow are identity, geometry is
+     not. The rhythm nudges are ≤2px (14→16, 22→24, 30→32) and snap the card onto the site's
+     one scale; the type steps make the name/sub fluid instead of frozen. */
+  .home-world { max-width:820px; margin:var(--space-6) auto var(--space-2); padding:0 var(--space-4); }
+  .home-world-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-4); }
+  .hw-door { display:flex; flex-direction:column; align-items:center; gap:var(--space-2); text-align:center;
+    text-decoration:none; padding:var(--space-5) var(--space-4); border-radius:var(--r-lg);
     background:linear-gradient(180deg, rgba(40,24,80,.6), rgba(18,10,40,.7));
     border:1px solid rgba(150,65,255,.4); box-shadow:0 10px 30px -14px rgba(0,0,0,.7);
-    transition:transform .16s ease, border-color .16s ease, box-shadow .16s ease; }
+    transition:transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
   .hw-door:hover, .hw-door:focus-visible { transform:translateY(-4px); text-decoration:none;
     border-color:#F5C518; box-shadow:0 16px 40px -14px rgba(245,197,24,.35); }
   .hw-ico { font-size:2.2rem; line-height:1; color:#F5C518;
     filter:drop-shadow(0 0 10px rgba(245,197,24,.5)); }
-  .hw-name { font-family:'Poppins',sans-serif; font-weight:800; font-size:1.12rem; color:#fff; letter-spacing:.01em; }
-  .hw-sub { font-size:.8rem; color:#c6b8ec; }
+  .hw-name { font-family:'Poppins',sans-serif; font-weight:800; font-size:var(--step-0); color:#fff; letter-spacing:.01em; }
+  .hw-sub { font-size:var(--step--1); color:#c6b8ec; }
   @media (max-width:560px){ .home-world-grid { grid-template-columns:1fr; } }
   @media (prefers-reduced-motion: reduce){ .hw-door { transition:none; } }
   </style>
@@ -527,31 +522,13 @@ layout: default
 /* the lede — the one plain sentence on the first screen. Sized between the title and
    the tagline so it reads as the title's answer rather than as another headline, and
    width-capped so it breaks into two short lines instead of one long one. */
-.hero-lede { margin:12px auto 0; max-width:34ch; text-wrap:balance;
+.hero-lede { margin:var(--space-3) auto 0; max-width:34ch; text-wrap:balance;  /* 12px = --space-3, exact (adoption pass, 2026-07-23) */
   font-size:15px; line-height:1.45; color:rgba(233,226,250,0.9);
   text-shadow:0 1px 6px rgba(8,4,24,0.75); }
 
-/* ── THE WORLD LINE — what replaced the flat skyline (2026-07-21) ──────────────────
-   Deleted with the markup: .hero-skyline and its ~60 lines of CSS-shape art — six
-   checker stacks built from repeating-linear-gradient, the 2px sea, and four Chess City
-   towers whose rook merlons, bishop mitre, queen crown and king cross were all drawn
-   with ::before/::after clip-paths. It was the biggest piece of the "flat CSS-shape art"
-   the modernization doc lists as reason #1 the site reads stuck in time.
-
-   What stands in its place is two named links. Both shores were already doors
-   (2026-07-14 Nate), but only as aria-labels on silhouettes, so the two most important
-   places in the world were invisible unless you happened to hover a shape.
-   Restore the drawing: git show <this commit>^ -- _layouts/home.html ── */
-.hero-world { display:flex; align-items:center; justify-content:center; gap:14px;
-  margin:14px 0 0; font-family:'Share Tech Mono', monospace; font-size:12px;
-  letter-spacing:0.18em; text-transform:uppercase; }
-.hero-world a { color:rgba(214,204,238,0.72); text-decoration:none;
-  border-bottom:1px solid rgba(214,204,238,0.22); padding-bottom:2px;
-  transition:color .18s ease, border-color .18s ease; }
-.hero-world a:hover, .hero-world a:focus-visible { color:#F5C518; border-color:#F5C518;
-  text-decoration:none; }
-/* the arrow between them IS the journey the show is named after — keep it quiet */
-.hero-world i { font-style:normal; color:rgba(214,204,238,0.34); }
+/* (.hero-world — the "Checker Town → Chess City" links + the arrow between — REMOVED
+   2026-07-23, Nate, hero-declutter pass. Both places remain reachable via the Locations
+   world-door (→ /locations/). Restore from git: git show <prev>^ -- _layouts/home.html) */
 
 /* ── THE TAGLINE in the hero (2026-07-21) ──────────────────────────────────────────
    The cycle's look is entirely _sass/_pjcc-04-flair.scss (.studio-tagline / .tagline-*),
@@ -715,27 +692,25 @@ html.reduce-flourish .hero-title { animation:none; }
 
    The film-logo treatment — Poppins gold, thick dark outline, a short extrude so it sits ON
    the sky rather than in front of it — now lives on each WORD (.ht-w) instead of the whole
-   h1, because the flair needs per-word control: a gentle tilt, and a glint that travels word
-   by word. `paint-order: stroke fill` is still load-bearing, exactly as in the chess canon:
+   h1, because the flair needs per-word control: a gentle tilt (the per-word glint that used to
+   travel across the words was removed 2026-07-23). `paint-order: stroke fill` is still
+   load-bearing, exactly as in the chess canon:
    without it the stroke paints ON TOP of the fill and eats inward, closing up the counters in
    "e/o/ss". The stroke scales with the type (a fixed 5px is a hairline at 76px, a smear at
    26px) and earns its keep on legibility too — the title sits over the shared town sky, gold
    at dusk and pale at noon, and dark-outlined gold reads on both.
 
-   THREE FLAIRS, all built to stay cheap (the perf rule is transform/opacity; the one
-   position-animation here is a brief per-word mask sweep, not an always-on ambient layer):
-     · SHIMMER SWEEP — a bright copy of each word (::after) is revealed only through a narrow
-       diagonal mask band that sweeps across via mask-position; a per-word delay makes the
-       glint travel L→R. The base word is SOLID gold with a normal text-shadow extrude —
-       deliberately NOT background-clip:text, because text-shadow paints OVER a clipped fill
-       and would hide the gold (verified: the extrude wins and the letters go dark). So the
-       glint is an OVERLAY, not the fill, and there is no filter anywhere.
+   TWO FLAIRS now, both built to stay cheap (the perf rule is transform/opacity):
+     · (SHIMMER SWEEP — a swept mask-band glint on a bright ::after copy of each word — was
+       REMOVED 2026-07-23, Nate, hero-declutter pass. The base word keeps its SOLID gold with a
+       text-shadow extrude, deliberately NOT background-clip:text, because text-shadow paints
+       OVER a clipped fill and would hide the gold. Restore the glint from git.)
      · PLAYFUL LETTERS — each word carries a static ±0.9° tilt and a 1px up/down stagger.
        (Straightened from ±1.5° by 40% on 2026-07-22, Nate: "too tilted.")
        Static transforms, zero per-frame cost; reads as storybook hand-lettering.
      · TWINKLE SPARKLES — four ✦ around the lockup, fading and scaling on their own timers.
    The h1 carries aria-label with the clean title, so a screen reader hears it once — not the
-   seven per-word spans, the ::after copies, or the decorative sparkles. ── */
+   seven per-word spans or the decorative sparkles. ── */
 .hero-title { letter-spacing:0; }
 
 .ht-w {
@@ -751,31 +726,19 @@ html.reduce-flourish .hero-title { animation:none; }
 /* Safari/Chrome only ever needed the -webkit- form; Firefox 128+ ships unprefixed. */
 @supports (text-stroke: 1px black) { .ht-w { text-stroke:clamp(2.5px, 0.42vw, 5px) #1b1136; } }
 
-/* the glint: a bright copy of the word, shown only through a sweeping diagonal mask band */
-.ht-w::after {
-  content:attr(data-w); position:absolute; left:0; top:0; pointer-events:none;
-  color:#FFFBEA; -webkit-text-stroke:0;
-  -webkit-mask-image:linear-gradient(105deg, transparent 42%, #000 50%, transparent 58%);
-          mask-image:linear-gradient(105deg, transparent 42%, #000 50%, transparent 58%);
-  -webkit-mask-size:280% 100%; mask-size:280% 100%;
-  -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
-  -webkit-mask-position:120% 0; mask-position:120% 0;
-  animation:htShine 7s ease-in-out infinite; animation-delay:var(--sd,0s);
-}
-/* playful per-word tilt + stagger, and the glint's travel order (reading order).
+/* (the per-word GLINT — a bright ::after copy of each word revealed through a sweeping
+   diagonal mask band, plus its @keyframes htShine — was REMOVED 2026-07-23, Nate, in the
+   hero-declutter pass. The static per-word tilt/stagger below STAYS (it is not motion), and
+   the twinkle sparkles stay. Restore the glint from git: git show <prev>^ -- _layouts/home.html) */
+/* playful per-word tilt + stagger (the glint's travel order went with the glint, 2026-07-23).
    nth-child 1..7 are the seven word spans; the four sparkles are children 8..11. */
-.ht-w:nth-child(1){ --rot:-0.9deg; --ty:1px;  --sd:0s;   }
-.ht-w:nth-child(2){ --rot:0.9deg;  --ty:-1px; --sd:.05s; }
-.ht-w:nth-child(3){ --rot:-0.9deg; --ty:1px;  --sd:.10s; }
-.ht-w:nth-child(4){ --rot:0.9deg;  --ty:-1px; --sd:.15s; }
-.ht-w:nth-child(5){ --rot:-0.9deg; --ty:1px;  --sd:.20s; }
-.ht-w:nth-child(6){ --rot:0.9deg;  --ty:-1px; --sd:.25s; }
-.ht-w:nth-child(7){ --rot:-0.9deg; --ty:1px;  --sd:.30s; }
-@keyframes htShine {
-  0%   { -webkit-mask-position:120% 0; mask-position:120% 0; }   /* band off right = pure gold */
-  13%  { -webkit-mask-position:-40% 0; mask-position:-40% 0; }   /* swept across once … */
-  100% { -webkit-mask-position:-40% 0; mask-position:-40% 0; }   /* … then rest as gold */
-}
+.ht-w:nth-child(1){ --rot:-0.9deg; --ty:1px;  }
+.ht-w:nth-child(2){ --rot:0.9deg;  --ty:-1px; }
+.ht-w:nth-child(3){ --rot:-0.9deg; --ty:1px;  }
+.ht-w:nth-child(4){ --rot:0.9deg;  --ty:-1px; }
+.ht-w:nth-child(5){ --rot:-0.9deg; --ty:1px;  }
+.ht-w:nth-child(6){ --rot:0.9deg;  --ty:-1px; }
+.ht-w:nth-child(7){ --rot:-0.9deg; --ty:1px;  }
 
 /* the twinkle sparkles around the lockup (absolute inside the position:relative h1) */
 .ht-spark { position:absolute; z-index:5; pointer-events:none; color:#FFE98A;
@@ -788,13 +751,12 @@ html.reduce-flourish .hero-title { animation:none; }
 .ht-spark--4 { bottom:12%; right:22%; font-size:22px; animation-delay:2s;  }
 @keyframes htTwinkle { 0%,100% { opacity:.15; transform:scale(.6); } 50% { opacity:1; transform:scale(1); } }
 
-/* both quiet switches still it: no glint sweep, no twinkle. The static tilt stays — it is not
-   motion. (heroRise on the h1 is already gated by these two switches above.) */
+/* the quiet switches still the twinkle. The static per-word tilt stays — it is not motion.
+   (heroRise on the h1 is already gated by these two switches above. The glint's own
+   reduced-motion stops went with the glint itself, 2026-07-23.) */
 @media (prefers-reduced-motion: reduce) {
-  .ht-w::after { animation:none; -webkit-mask-position:-40% 0; mask-position:-40% 0; }
   .ht-spark { animation:none; opacity:.9; }
 }
-html.reduce-flourish .ht-w::after { animation:none; -webkit-mask-position:-40% 0; mask-position:-40% 0; }
 html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
 
 /* ── THE TWO TOWNS' PIECES on the board (2026-07-22, Nate) ──────────────────────────
@@ -1026,7 +988,7 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
 <style>
 {% comment %} (#13 town square + #17 op-strip + #15 sea divider removed 2026-07-10 —
      the cast is CARDS again; restore the square from git if ever missed.) {% endcomment %}
-.char-row-tools { display: flex; justify-content: flex-end; align-items: center; gap: 14px; margin-top: 8px; }
+.char-row-tools { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-4); margin-top: var(--space-2); }  /* adoption pass 2026-07-23: gap 14→16, margin 8=--space-2 exact */
 .home-shuffle { display: inline-flex; align-items: center; gap: 6px;
   background: rgba(80,30,180,0.2); color: #b9a8e6; border: 1px solid rgba(150,65,255,0.4);
   border-radius: 999px; height: 26px; padding: 0 12px; cursor: pointer; font-size: 13px; line-height: 1;
