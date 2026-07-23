@@ -14,9 +14,8 @@ body_class: theme-bw
 
 <div class="hello-page">
 
-  <!-- ══════════ SAY HELLO ══════════ -->
+  <!-- ══════════ GET IN TOUCH ══════════ -->
   <section class="hello-hero">
-    <p class="hello-eyebrow" data-jp="ご挨拶">Say Hello</p>
     <h1 class="hello-headline" data-jp="お問い合わせ">Get in touch.</h1>
     <div class="hello-methods">
       <div class="hello-calc-wrap" id="contact-calc-wrap">
@@ -30,7 +29,7 @@ body_class: theme-bw
   <!-- ══════════ PRINCESS ══════════ -->
   <figure class="hello-princess">
     <img src="{{ site.baseurl }}/assets/images/Princess-3.jpg" alt="Princess in her Minnesota Wild jersey" class="hello-princess-img">
-    <figcaption class="hello-princess-cap">Princess Sophia McPuppy.</figcaption>
+    <figcaption class="hello-princess-cap">Princess Sophia McPuppy</figcaption>
   </figure>
 
   <!-- ══════════ THE OPERATOR (< 10 words) ══════════ -->
@@ -63,10 +62,8 @@ body_class: theme-bw
   background:linear-gradient(90deg, #e8e8ee, #8a8a92 50%, #f4f4f6);
   background-size:200% 100%; animation: hello-aurora 7s linear infinite; }
 
-.hello-eyebrow { font-family:'Poppins',sans-serif; font-size:11px; font-weight:700; text-transform:uppercase;
-  letter-spacing:5px; color:#b8b8c0; margin:0 0 14px; }
 .hello-headline { font-family:'Poppins',sans-serif; font-weight:800; letter-spacing:-1px; line-height:1.05;
-  font-size:clamp(38px,6.5vw,66px); margin:0 0 36px;
+  font-size:clamp(40px,6.83vw,69px); margin:0 0 36px;
   background:linear-gradient(100deg, #fff 0%, #d0d0d6 60%, #8a8a92 100%);
   -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
   display:inline-block; overflow:hidden; white-space:nowrap; border-right:3px solid #e8e8ee;
@@ -107,7 +104,9 @@ body_class: theme-bw
 
 .hello-lessons { text-align:center; margin:30px auto 0; max-width:520px; font-size:15px; line-height:1.7;
   color:var(--mut); }
-.hello-lessons a { color:#fff; font-weight:700; }
+.hello-lessons a { color:#fff; font-weight:700; text-decoration:underline; text-underline-offset:3px;
+  text-decoration-thickness:1.5px; text-shadow:0 0 14px rgba(255,255,255,0.5); transition:text-shadow .2s; }
+.hello-lessons a:hover { text-shadow:0 0 22px rgba(255,255,255,0.85); }
 
 @keyframes hello-rise { from{opacity:0; transform:translateY(26px) scale(.98);} to{opacity:1; transform:none;} }
 @keyframes hello-aurora { to { background-position:200% 0; } }
