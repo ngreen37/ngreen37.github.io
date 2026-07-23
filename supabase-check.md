@@ -37,7 +37,7 @@ brand: mcpuppy
   .hc-run:disabled { opacity: 0.5; cursor: default; }
   .hc-list { max-width: 720px; margin: 1.4rem 0; display: flex; flex-direction: column; gap: 8px; }
   .hc-row { display: flex; gap: 12px; align-items: flex-start; background: rgba(45,27,105,0.4);
-    border: 1px solid #3a2a6a; border-left-width: 3px; border-radius: 10px; padding: 12px 14px; }
+    border: 1px solid #3a2a6a; border-left-width: 3px; border-radius: var(--r-sm); padding: 12px 14px; }
   .hc-row.ok { border-left-color: #6bffb8; }
   .hc-row.bad { border-left-color: #ff6b6b; }
   .hc-row.run { border-left-color: #9fe8ff; }
@@ -47,11 +47,11 @@ brand: mcpuppy
   .hc-detail { color: #b9a8e0; font-size: 0.8rem; margin-top: 2px; word-break: break-word; }
   .hc-detail code { background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
   .hc-hint { color: #ffc9a0; font-size: 0.8rem; margin-top: 4px; }
-  .hc-summary { font-weight: 800; font-size: 1.05rem; padding: 12px 14px; border-radius: 10px; }
+  .hc-summary { font-weight: 800; font-size: 1.05rem; padding: 12px 14px; border-radius: var(--r-sm); }
   .hc-summary.ok { color: #6bffb8; background: rgba(107,255,184,0.08); border: 1px solid #2f6b50; }
   .hc-summary.bad { color: #ff9a9a; background: rgba(255,107,107,0.08); border: 1px solid #6b2f2f; }
   .hc-manual { max-width: 720px; background: rgba(45,27,105,0.3); border: 1px solid #3a2a6a;
-    border-radius: 12px; padding: 16px 20px; margin-top: 1.6rem; }
+    border-radius: var(--r-md); padding: 16px 20px; margin-top: 1.6rem; }
   .hc-manual h2 { color: #F5C518; font-size: 1.05rem; margin: 0 0 8px; }
   .hc-manual p, .hc-manual li { color: #cdbcf2; line-height: 1.6; }
   .hc-manual code { background: rgba(0,0,0,0.3); padding: 1px 6px; border-radius: 4px; color: #9fe8ff; }

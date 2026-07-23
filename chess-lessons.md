@@ -80,7 +80,7 @@ body_class: theme-bw
 
   .cc-card {
     background: #161512; border: 1px solid rgba(245,197,24,0.16);
-    border-top: 3px solid var(--cc); border-radius: 12px; padding: 16px 16px 18px;
+    border-top: 3px solid var(--cc); border-radius: var(--r-md); padding: 16px 16px 18px;
     display: flex; flex-direction: column;
   }
   .cc-top { display: flex; gap: 12px; align-items: center; }
@@ -122,7 +122,7 @@ body_class: theme-bw
   .cc-wall-label { font-size: 0.72rem; letter-spacing: 0.2em; color: #9a927f; text-align: center; margin-bottom: 12px; }
   .cc-wall-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
   @media (min-width: 720px) { .cc-wall-grid { grid-template-columns: repeat(3, 1fr); } }
-  .cc-mini { background: #161512; border: 1px solid rgba(245,197,24,0.12); border-radius: 10px; padding: 12px 14px; }
+  .cc-mini { background: #161512; border: 1px solid rgba(245,197,24,0.12); border-radius: var(--r-sm); padding: 12px 14px; }
   .cc-mini p { margin: 6px 0 6px; font-size: 0.82rem; color: #e6ddca; line-height: 1.5; font-style: italic; }
   .cc-mini cite { font-size: 0.72rem; color: #9a927f; font-style: normal; }
 </style>

@@ -70,7 +70,7 @@ permalink: /leaderboards/
 .lbtv { --tv-red:#ff4d5e; --tv-gold:#F5C518; }
 .lbtv-topbar { display:flex; align-items:center; gap:14px; flex-wrap:wrap;
   background:linear-gradient(90deg,#1a1040,#2d1b69 55%,#1a1040); border:1px solid #4a3a86; border-left:4px solid var(--tv-red);
-  border-radius:10px; padding:10px 16px; margin:2px 0 12px;
+  border-radius:var(--r-sm); padding:10px 16px; margin:2px 0 12px;
   font-family:'Courier New',monospace; letter-spacing:0.14em; }
 .lbtv-live { display:inline-flex; align-items:center; gap:7px; color:#fff; font-weight:900; font-size:0.78rem;
   /* a11y sweep 2026-07-13: white on --tv-red was 3.2:1; the LIVE chip wears a deeper
@@ -108,9 +108,9 @@ permalink: /leaderboards/
 .lbtv .lb-tab.active { background:var(--tv-gold); border-color:var(--tv-gold); color:#1a0f3d; box-shadow:0 0 14px -4px var(--tv-gold); }
 
 /* the screen: standings inside a CRT-ish monitor */
-.lbtv-screen { position:relative; background:#0d0824; border:1px solid #3a2a6a; border-radius:12px; padding:8px 12px;
+.lbtv-screen { position:relative; background:#0d0824; border:1px solid #3a2a6a; border-radius:var(--r-md); padding:8px 12px;
   box-shadow:inset 0 0 44px rgba(0,0,0,0.55), 0 0 26px -16px var(--tv-gold); overflow:hidden; }
-.lbtv-screen::after { content:''; position:absolute; inset:0; pointer-events:none; border-radius:12px;
+.lbtv-screen::after { content:''; position:absolute; inset:0; pointer-events:none; border-radius:var(--r-md);
   background:repeating-linear-gradient(0deg, rgba(255,255,255,0.022) 0 1px, transparent 1px 3px); }
 
 /* the booth — one line at a time, cross-fading (was a marquee of all lines at once) */

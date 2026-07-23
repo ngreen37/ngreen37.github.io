@@ -131,7 +131,7 @@ permalink: /shopkeeper/
 .qm-bal strong { color: #6bffb8; }
 .qm-h { color: #F5C518; font-size: 1rem; margin: 1.4rem 0 0.6rem; }
 .qm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; max-width: 720px; }
-.qm-item { background: #160c33; border: 1px solid #6b5fa0; border-radius: 12px; padding: 14px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.qm-item { background: #160c33; border: 1px solid #6b5fa0; border-radius: var(--r-md); padding: 14px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .qm-item.on { border-color: #F5C518; box-shadow: 0 0 14px rgba(245,197,24,0.3); }
 .qm-emoji { font-size: 38px; }
 .qm-title-label { font-size: 0.95rem; font-weight: 800; color: #F5C518; min-height: 38px; display: flex; align-items: center; justify-content: center; text-align: center; }

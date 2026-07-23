@@ -114,12 +114,12 @@ permalink: /educators/
 .ed-note { color: #9a7fd4; max-width: 720px; line-height: 1.6; }
 
 .ed-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-.ed-cell { background: rgba(45,27,105,0.45); border: 1px solid #3a2a6a; border-radius: 12px; padding: 14px; }
+.ed-cell { background: rgba(45,27,105,0.45); border: 1px solid #3a2a6a; border-radius: var(--r-md); padding: 14px; }
 .ed-ico { font-size: 24px; display: block; margin-bottom: 4px; }
 .ed-cell b { color: #f0e6ff; display: block; margin-bottom: 2px; }
 .ed-cell small { color: #9a7fd4; font-size: 0.82rem; line-height: 1.5; }
 
-.ed-free { background: rgba(107,255,184,0.06); border: 1px solid #2f6b50; border-radius: 12px; padding: 16px; max-width: 720px; }
+.ed-free { background: rgba(107,255,184,0.06); border: 1px solid #2f6b50; border-radius: var(--r-md); padding: 16px; max-width: 720px; }
 .ed-free p { color: #cfc3ee; line-height: 1.6; margin-bottom: 12px; }
 .ed-free-cta, .ed-contact { display: flex; gap: 10px; flex-wrap: wrap; }
 .ed-btn { display: inline-block; background: #221444; border: 1px solid #4a2f8a; color: #c9a7ff; border-radius: 999px; padding: 10px 18px; font-weight: 700; text-decoration: none; transition: all 0.14s; }
@@ -128,7 +128,7 @@ permalink: /educators/
 .ed-btn-gold:hover { background: #ffd740; color: #1a0f3d; }
 
 .ed-tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; align-items: stretch; }
-.ed-tier { position: relative; display: flex; flex-direction: column; background: rgba(45,27,105,0.5); border: 1px solid #3a2a6a; border-radius: 14px; padding: 16px; }
+.ed-tier { position: relative; display: flex; flex-direction: column; background: rgba(45,27,105,0.5); border: 1px solid #3a2a6a; border-radius: var(--r-md); padding: 16px; }
 .ed-tier-feature { border-color: #F5C518; box-shadow: 0 0 20px rgba(245,197,24,0.15); }
 .ed-flag { position: absolute; top: -10px; right: 14px; background: #9fe8ff; color: #0a2230; font-size: 0.62rem; font-weight: 800; border-radius: 999px; padding: 3px 10px; text-transform: uppercase; }
 .ed-tier-name { font-size: 1.1rem; font-weight: 800; color: #f0e6ff; }
@@ -139,7 +139,7 @@ permalink: /educators/
 
 /* ---- classroom art kiosk ---- */
 .ek-names { display: block; width: 100%; max-width: 420px; background: #160c33; border: 1px solid #4a2f8a;
-  border-radius: 10px; padding: 10px 12px; color: #f0e6ff; font-family: inherit; font-size: 0.92rem;
+  border-radius: var(--r-sm); padding: 10px 12px; color: #f0e6ff; font-family: inherit; font-size: 0.92rem;
   margin-bottom: 12px; resize: vertical; }
 .ek-names:focus { outline: none; border-color: #F5C518; }
 .ek-msg { color: #ff8f9e; font-size: 0.84rem; align-self: center; }
@@ -150,17 +150,17 @@ permalink: /educators/
   body.ek-printing * { visibility: hidden !important; }
   body.ek-printing .ek-print, body.ek-printing .ek-print * { visibility: visible !important; }
   body.ek-printing .ek-print { display: block; position: absolute; left: 0; top: 0; width: 100%; }
-  .ek-card { page-break-after: always; border: 3px solid #002e6d; border-radius: 18px; padding: 26px;
+  .ek-card { page-break-after: always; border: 3px solid #002e6d; border-radius: var(--r-lg); padding: 26px;
     max-width: 6.6in; margin: 0 auto; color: #002e6d; background: #fff; position: relative; }
   .ek-card::before { content: ''; position: absolute; inset: 8px; border: 1.5px solid #e3b008;
-    border-radius: 12px; pointer-events: none; }
+    border-radius: var(--r-md); pointer-events: none; }
   .ek-eyebrow { text-align: center; font-size: 11px; letter-spacing: 5px; text-transform: uppercase;
     color: #e3b008; font-weight: 800; }
   .ek-brand { text-align: center; font-size: 54px; font-weight: 900; letter-spacing: 4px; line-height: 1;
     margin: 4px 0 16px; }
   .ek-star { color: #e3b008; font-size: 0.55em; vertical-align: 0.28em; margin: 0 9px; }
   .ek-frame { width: 100%; aspect-ratio: 1 / 1; max-height: 5.4in; border: 2px dashed #9bb4d8;
-    border-radius: 14px; }
+    border-radius: var(--r-md); }
   .ek-artist { text-align: center; margin-top: 14px; font-size: 15px; }
 }
 </style>

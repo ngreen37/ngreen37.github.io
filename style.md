@@ -62,11 +62,11 @@ description: The colors, type, and motifs that make PJCC and McPuppy Studios loo
 .vl-body { color: #f0e6ff; max-width: 720px; line-height: 1.6; }
 .vl-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin: 1rem 0; }
 .vl-sw { background: var(--c); color: var(--t, #1a0f3d); border: 1px solid rgba(255,255,255,0.14);
-  border-radius: 10px; padding: 22px 12px 10px; display: flex; flex-direction: column; gap: 4px; }
+  border-radius: var(--r-sm); padding: 22px 12px 10px; display: flex; flex-direction: column; gap: 4px; }
 .vl-sw span { font-weight: 800; font-size: 0.86rem; }
 .vl-sw code { font-family: 'Share Tech Mono', monospace; font-size: 0.72rem; opacity: 0.85; }
 .vl-type { display: flex; flex-direction: column; gap: 14px; margin: 1rem 0; max-width: 780px; }
-.vl-type-row { background: #160c33; border: 1px solid #3a2a6a; border-radius: 12px; padding: 16px 18px; }
+.vl-type-row { background: #160c33; border: 1px solid #3a2a6a; border-radius: var(--r-md); padding: 16px 18px; }
 .vl-type-sample { margin-bottom: 8px; line-height: 1.2; }
 .vl-type-meta { color: #9a7fd4; font-size: 0.82rem; }
 .vl-type-meta b { color: #f0e6ff; }

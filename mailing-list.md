@@ -130,7 +130,7 @@ body_class: theme-studio
 
 .ml-h2 { color: #f2efe8; margin: 26px 0 10px; font-size: 1.1rem; border-left: 3px solid #5b8def; padding-left: 10px; }
 .ml-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-.ml-cell { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.13); border-left: 3px solid rgba(91,141,239,0.55); border-radius: 12px; padding: 13px 14px; }
+.ml-cell { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.13); border-left: 3px solid rgba(91,141,239,0.55); border-radius: var(--r-md); padding: 13px 14px; }
 .ml-cell-ico { font-size: 22px; display: block; margin-bottom: 4px; }
 .ml-cell b { color: #f2f2f4; display: block; font-size: 0.92rem; }
 .ml-cell small { color: #a6a6ae; font-size: 0.8rem; line-height: 1.5; display: block; margin-top: 2px; }
@@ -140,5 +140,5 @@ body_class: theme-studio
 .ml-invite { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; max-width: 600px; }
 .ml-invite-input { flex: 1; min-width: 200px; font-size: 0.82rem; color: #8fb2ff; }
 .ml-share-flash { color: #6bd39a; font-size: 0.84rem; display: inline-block; min-height: 1.2em; margin-top: 4px; }
-.ml-refbanner { background: rgba(91,141,239,0.10); border: 1px solid rgba(91,141,239,0.5); border-radius: 12px; padding: 12px 16px; margin-bottom: 14px; color: #bcd0ff; font-size: 0.9rem; }
+.ml-refbanner { background: rgba(91,141,239,0.10); border: 1px solid rgba(91,141,239,0.5); border-radius: var(--r-md); padding: 12px 16px; margin-bottom: 14px; color: #bcd0ff; font-size: 0.9rem; }
 </style>

@@ -30,7 +30,7 @@ brand: mcpuppy
   .sc-sub code, .sc-note code { background: rgba(0,0,0,0.3); padding: 1px 6px; border-radius: 4px; color: #9fe8ff; }
   .sc-note { color: #ffc9a0; font-size: 0.88rem; }
   .sc-stage { max-width: 720px; margin: 1rem 0; }
-  #sc-canvas { width: 100%; height: auto; border: 2px solid #F5C518; border-radius: 10px; display: block; }
+  #sc-canvas { width: 100%; height: auto; border: 2px solid #F5C518; border-radius: var(--r-sm); display: block; }
   .sc-tools { display: flex; align-items: center; gap: 14px; }
   .sc-btn { background: #F5C518; color: #1a0f3d; font-weight: 800; font-size: 1rem; border: none;
     border-radius: 999px; padding: 11px 24px; cursor: pointer; font-family: inherit; }

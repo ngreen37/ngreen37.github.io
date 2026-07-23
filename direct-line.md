@@ -49,7 +49,7 @@ body_class: theme-studio
 
 .dl-steps { max-width:680px; margin:0 auto 1.6rem; display:flex; flex-direction:column; gap:10px; }
 .dl-step { display:flex; gap:14px; align-items:flex-start; background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.13); border-radius:12px; padding:13px 16px; color:#c9c9d0; font-size:0.95rem; line-height:1.5;
+  border:1px solid rgba(255,255,255,0.13); border-radius:var(--r-md); padding:13px 16px; color:#c9c9d0; font-size:0.95rem; line-height:1.5;
   border-left:3px solid rgba(79,209,197,0.55); }
 .dl-step strong { color:#fff; }
 .dl-step-n { flex-shrink:0; width:26px; height:26px; border-radius:50%; background:#4fd1c5; color:#08110f;
@@ -71,7 +71,7 @@ body_class: theme-studio
 .dl-levels { max-width:680px; margin:0 auto 1.6rem; }
 .dl-levels-head { color:#7fe3d8; font-weight:800; font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; text-align:center; margin-bottom:10px; }
 .dl-level { display:flex; gap:12px; align-items:flex-start; background:rgba(255,255,255,0.045); border:1px solid rgba(255,255,255,0.13);
-  border-radius:12px; padding:13px 16px; color:#c9c9d0; font-size:0.95rem; line-height:1.5; margin-bottom:10px; }
+  border-radius:var(--r-md); padding:13px 16px; color:#c9c9d0; font-size:0.95rem; line-height:1.5; margin-bottom:10px; }
 .dl-level strong { color:#fff; }
 .dl-level a { color:#7fe3d8; }
 .dl-level--top { border-color:rgba(255,255,255,0.2); border-left:3px solid #4fd1c5; }

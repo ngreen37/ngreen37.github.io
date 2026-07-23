@@ -150,7 +150,7 @@ fragment_key: frag_classified
   color:rgba(255,140,0,0.5); }
 
 /* the found file — the luminous frame holds the memo; it DEVELOPS on arrival */
-.secret-core { padding:40px 30px; border-radius:18px; margin:0 0 44px; position:relative; overflow:hidden;
+.secret-core { padding:40px 30px; border-radius:var(--r-lg); margin:0 0 44px; position:relative; overflow:hidden;
   background:radial-gradient(120% 130% at 50% 0%, rgba(255,160,30,0.16), rgba(10,5,0,0.2) 65%);
   border:1px solid rgba(255,170,40,0.32); box-shadow:0 0 60px -18px rgba(255,170,40,0.5) inset; }
 .secret-core::before { content:""; position:absolute; inset:0 0 auto 0; height:3px;

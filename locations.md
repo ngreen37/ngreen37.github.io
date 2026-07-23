@@ -47,7 +47,7 @@ permalink: /locations/
   padding-bottom: 6px; margin: 26px 0 14px; }
 .loc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
 .loc-card { position: relative; display: flex; flex-direction: column; text-decoration: none; overflow: hidden;
-  border: 1px solid rgba(107,191,255,0.35); border-radius: 14px; padding: 16px 16px 15px;
+  border: 1px solid rgba(107,191,255,0.35); border-radius: var(--r-md); padding: 16px 16px 15px;
   background:
     repeating-linear-gradient(0deg, transparent 0 17px, rgba(107,191,255,0.05) 17px 18px),
     repeating-linear-gradient(90deg, transparent 0 17px, rgba(107,191,255,0.05) 17px 18px),

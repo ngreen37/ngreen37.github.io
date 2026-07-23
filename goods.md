@@ -71,7 +71,7 @@ brand: mcpuppy
 
 /* ---- Gold goal cards (fanned mockups) ---- */
 .goods-cards { display:flex; justify-content:center; align-items:center; min-height:300px; perspective:1000px; }
-.goal-card { position:relative; width:170px; height:248px; border-radius:16px; margin:0 -26px;
+.goal-card { position:relative; width:170px; height:248px; border-radius:var(--r-lg); margin:0 -26px;
   display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:18px 14px;
   background:linear-gradient(155deg, #fbe48a 0%, #e7b53a 38%, #b8860b 100%);
   border:2px solid #fff3c4; box-shadow:0 16px 40px rgba(0,0,0,0.5), inset 0 0 22px rgba(255,255,255,0.35);

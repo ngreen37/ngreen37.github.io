@@ -95,11 +95,11 @@ permalink: /fan-art/
 
 /* ---- submit-for-review panel ---- */
 .fa-submit { max-width:560px; margin:1.2rem auto 0; text-align:center;
-  background:rgba(80,30,180,0.12); border:1px solid #4a3a86; border-radius:14px; padding:16px 18px; }
+  background:rgba(80,30,180,0.12); border:1px solid #4a3a86; border-radius:var(--r-md); padding:16px 18px; }
 .fa-submit-head { color:#f0e6ff; font-weight:800; margin-bottom:10px; }
 .fa-submit-row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:12px; }
 .fa-input { flex:1 1 200px; max-width:240px; background:#0f0826; color:#f0e6ff; border:1px solid #4a3a86;
-  border-radius:10px; padding:9px 12px; font-family:inherit; font-size:0.9rem; }
+  border-radius:var(--r-sm); padding:9px 12px; font-family:inherit; font-size:0.9rem; }
 .fa-input:focus { outline:none; border-color:#F5C518; }
 .fa-send-msg { min-height:1.2em; margin-top:10px; font-size:0.86rem; color:#9fe0d0; font-weight:700; }
 .fa-send-msg.err { color:#ff9ec9; }
@@ -110,7 +110,7 @@ permalink: /fan-art/
 /* the drawing surface is dimmed to match the card, but kept a shade lighter than it —
    crayon needs somewhere bright to land */
 #fa-canvas { width:100%; max-width:480px; aspect-ratio:1/1; background:#ece8dd; border:3px solid #002e6d;
-  border-radius:14px; touch-action:none; cursor:crosshair; display:block; margin:0 auto 12px; }
+  border-radius:var(--r-md); touch-action:none; cursor:crosshair; display:block; margin:0 auto 12px; }
 /* five pencil weights — the dot is the mark it makes */
 .fa-wt-row { display:flex; gap:10px; justify-content:center; align-items:center; margin-bottom:10px; }
 .fa-wt { display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:50%;
@@ -123,7 +123,7 @@ permalink: /fan-art/
 .fa-color-row { display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
 .fa-color-lab { color:#cdbcf2; font-size:0.82rem; font-weight:700; }
 #fa-pick-color { width:48px; height:40px; padding:2px; background:#0f0826;
-  border:2px solid rgba(150,65,255,0.6); border-radius:10px; cursor:pointer; }
+  border:2px solid rgba(150,65,255,0.6); border-radius:var(--r-sm); cursor:pointer; }
 .fa-rgb { max-width:132px; }
 @media (pointer:coarse){ .fa-wt { width:44px; height:44px; } }
 .fa-cray-row { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:12px; }
@@ -162,7 +162,7 @@ permalink: /fan-art/
 .fan-card { --fa-paper:#e8e4da; --fa-paper-lit:#eeebe3; --fa-paper-dim:#d6d9e0;
   max-width:560px; margin:0 auto; background:var(--fa-paper); border:3px solid #002e6d; border-radius:var(--r-lg);
   padding:26px 26px 20px; position:relative; color:#002e6d; }
-.fan-card::before { content:''; position:absolute; inset:8px; border:1.5px solid #e3b008; border-radius:12px; pointer-events:none; }
+.fan-card::before { content:''; position:absolute; inset:8px; border:1.5px solid #e3b008; border-radius:var(--r-md); pointer-events:none; }
 /* a11y sweep 2026-07-13: the gold #e3b008 read 1.6:1 on the paper — the worst contrast on
    the site. Poster TEXT now wears a dark ANTIQUE gold (5.2:1); the star glyph and the inner
    border keep the bright gold — ink and ornament are different jobs. */
@@ -171,7 +171,7 @@ permalink: /fan-art/
 .fc-star { color:#e3b008; font-size:0.55em; vertical-align:0.28em; margin:0 9px; }
 .fc-brand-sub { text-align:center; font-size:14px; font-weight:700; color:#0a3f8a; margin-bottom:14px; }
 .fc-frame { position:relative; width:100%; aspect-ratio:1/1; max-height:4.6in; margin:0 auto;
-  background:radial-gradient(circle at 50% 40%, var(--fa-paper-lit) 0%, var(--fa-paper-dim) 78%); border:2px dashed transparent; border-radius:14px;
+  background:radial-gradient(circle at 50% 40%, var(--fa-paper-lit) 0%, var(--fa-paper-dim) 78%); border:2px dashed transparent; border-radius:var(--r-md);
   overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer; }
 /* no border once art is in the frame — the picture stands on its own */
 .fan-card.has-img .fc-frame { border:none; cursor:default; }
@@ -181,7 +181,7 @@ permalink: /fan-art/
 .fc-hint { text-align:center; color:#5b7bb0; font-size:14px; padding:18px; }
 /* the plus wears a small, plain border — the only frame on an empty card */
 .fc-hint-big { display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px;
-  font-size:30px; line-height:1; margin-bottom:8px; border:1.5px solid #9bb4d8; border-radius:10px; color:#5b7bb0; }
+  font-size:30px; line-height:1; margin-bottom:8px; border:1.5px solid #9bb4d8; border-radius:var(--r-sm); color:#5b7bb0; }
 .fc-flourish { text-align:center; margin-top:14px; font-size:13px; letter-spacing:2px; color:#002e6d; font-weight:800; }
 .fc-pc { color:#77570a; }
 
@@ -189,13 +189,13 @@ permalink: /fan-art/
 .fa-wall { max-width:920px; margin:2.4rem auto 0; }
 .fa-h2 { color:#F5C518; font-size:1.3rem; font-weight:800; text-align:center; margin:0 0 0.5rem; }
 .fa-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; margin:1rem 0; }
-.fa-piece { margin:0; background:#160c33; border:1px solid #4a3a86; border-radius:12px; overflow:hidden; transition:transform .12s, border-color .12s; }
+.fa-piece { margin:0; background:#160c33; border:1px solid #4a3a86; border-radius:var(--r-md); overflow:hidden; transition:transform .12s, border-color .12s; }
 .fa-piece:hover { transform:translateY(-3px); border-color:#F5C518; }
 .fa-piece img { display:block; width:100%; height:200px; object-fit:cover; background:#fff; }
 .fa-piece figcaption { padding:10px 12px; font-size:0.82rem; }
 .fa-piece-title { color:#f0e6ff; font-weight:700; }
 .fa-piece-by { color:#9a8fc0; }
-.fa-empty { text-align:center; padding:2rem 1rem 2.4rem; border:1px dashed #4a3a86; border-radius:14px; margin:1rem 0; color:#cdbcf2; }
+.fa-empty { text-align:center; padding:2rem 1rem 2.4rem; border:1px dashed #4a3a86; border-radius:var(--r-md); margin:1rem 0; color:#cdbcf2; }
 /* the inviting plus — a warm, glowing button that begs to be pressed */
 .fa-empty-plus { display:inline-flex; align-items:center; justify-content:center; width:72px; height:72px;
   margin-top:10px; border-radius:50%; text-decoration:none; font-size:2.4rem; line-height:1; font-weight:800;

@@ -89,14 +89,14 @@ body_class: theme-bw
 /* one photo of Princess */
 .hello-princess { margin:46px auto 0; text-align:center; max-width:380px;
   animation: hello-rise .9s cubic-bezier(.22,1,.36,1) .15s both; }
-.hello-princess-img { width:100%; border-radius:18px; display:block;
+.hello-princess-img { width:100%; border-radius:var(--r-lg); display:block;
   border:1px solid rgba(255,255,255,0.2); box-shadow:0 20px 48px -22px rgba(0,0,0,0.7); }
 .hello-princess-cap { margin:14px 0 0; font-size:13px; letter-spacing:.3px; color:var(--mut);
   font-family:'Poppins',sans-serif; }
 
 /* operator — one short line */
 .hello-operator { display:flex; align-items:center; justify-content:center; gap:12px; margin:46px auto 0;
-  padding:22px; max-width:560px; border-radius:16px; background:var(--panel);
+  padding:22px; max-width:560px; border-radius:var(--r-lg); background:var(--panel);
   border:1px solid rgba(255,255,255,0.14); }
 .hello-operator-glyph { font-size:26px; color:#e8e8ee; opacity:.85; }
 .hello-operator-line { margin:0; font-family:'Poppins',sans-serif; font-size:clamp(16px,2.4vw,20px);

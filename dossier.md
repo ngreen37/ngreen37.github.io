@@ -384,7 +384,7 @@ permalink: /dossier/
 @media (pointer: coarse) {
   .cc-greet a { display: inline-block; padding: 9px 4px; margin: -9px 0; }
 }
-.dsr-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; background: linear-gradient(135deg,#1f1147,#34206f); border: 1px solid #F5C518; border-radius: 12px; padding: 14px 18px; }
+.dsr-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; background: linear-gradient(135deg,#1f1147,#34206f); border: 1px solid #F5C518; border-radius: var(--r-md); padding: 14px 18px; }
 .dsr-avatar { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 34px; border-radius: 50%; background: radial-gradient(circle at 35% 30%,#3a2a72,#160c33); border: 2px solid #F5C518; box-shadow: 0 0 14px rgba(245,197,24,0.5); position: relative; flex-shrink: 0; }
 /* the identity column: name, rank+credits+streak, then the XP bar — one card, not four */
 .dsr-ident { min-width: 200px; flex: 1 1 220px; }
@@ -399,7 +399,7 @@ permalink: /dossier/
 /* the climb, folded in under the journey map — it used to be its own module up top */
 .dsr-climb { display: flex; align-items: center; gap: 10px; margin-top: 6px; max-width: 560px;
   background: linear-gradient(135deg, rgba(42,28,14,0.9), rgba(58,42,16,0.92)); border: 1px solid #F5C518;
-  border-radius: 10px; padding: 10px 14px; color: #e7d6b0; text-decoration: none; font-size: 0.88rem;
+  border-radius: var(--r-sm); padding: 10px 14px; color: #e7d6b0; text-decoration: none; font-size: 0.88rem;
   transition: box-shadow .14s, transform .12s; }
 .dsr-climb:hover { transform: translateY(-1px); box-shadow: 0 0 22px -8px #F5C518; text-decoration: none; color: #fff; }
 .dsr-climb b { color: #F5C518; }
@@ -419,7 +419,7 @@ permalink: /dossier/
 .dsr-stop-name { color: #9a7fd4; font-size: 0.7rem; line-height: 1.2; }
 .dsr-stop.reached .dsr-stop-name { color: #f0e6ff; }
 .dsr-ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; max-width: 720px; }
-.dsr-ach { background: #160c33; border: 1px solid #6b5fa0; border-radius: 10px; padding: 12px; text-align: center; }
+.dsr-ach { background: #160c33; border: 1px solid #6b5fa0; border-radius: var(--r-sm); padding: 12px; text-align: center; }
 .dsr-ach.got { border-color: #F5C518; box-shadow: 0 0 10px rgba(245,197,24,0.2); }
 .dsr-ach.locked { opacity: 0.4; filter: grayscale(0.6); }
 .dsr-ach-icon { font-size: 26px; }
