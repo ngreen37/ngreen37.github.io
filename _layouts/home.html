@@ -261,8 +261,8 @@ layout: default
          for "a little more transparent"). The checkers sit at 0.34–0.52; each step lets more
          sky graze the fill so the pieces breathe the checkers' air — full 0.5 would turn ivory
          to slate, so 0.62 is near the floor, just above the top of the checkers' range. The
-         black KING fights this: more transparency fades it into a night sky, so its grey was
-         lifted in the same pass to keep it standing out (see .hp-cs--b below). {%- endcomment -%}
+         black KING fights this: more transparency fades it into a night sky, so it gets its
+         own treatment — a white keyline — to keep it standing out (see .hp-cs--b below). {%- endcomment -%}
     <span class="hp hp-cs hp-cs--w" style="--x:64%;  --b:16px; --w:34px; --o:0.62">{% include chess-piece.html piece='bishop' side='w' %}</span>
     <span class="hp hp-cs hp-cs--b" style="--x:69.5%;--b:5px;  --w:50px; --o:0.62">{% include chess-piece.html piece='king'   side='b' %}</span>
     <span class="hp hp-cs hp-cs--w" style="--x:75%;  --b:2px;  --w:42px; --o:0.62">{% include chess-piece.html piece='queen'  side='w' %}</span>
@@ -774,23 +774,24 @@ html.reduce-flourish .hero-title { animation:none; }
    purple was already reading as black anyway. #12101a keeps a trace of the world's violet
    in it so it sits in the picture instead of punching a hole in it; the pale --piece-b-line
    contour is what keeps it a piece and not a smudge after dark.
-   LIFTED #12101a → #343140 (2026-07-22, Nate: "make the black king a little more grey, so it
-   stands out in the hero"). The near-black king vanished into the night sky — doubly so once
-   the pieces went more transparent (0.72 → 0.62 above) — so it becomes a dark SLATE grey,
-   violet trace kept (B still the highest channel). Checked over night/dusk/day skies: at this
-   value it reads against the dark sky where near-black disappeared, and still holds as a dark
-   piece against a pale day one. Its contour lifts with it, just below. */
-.hp-cs--b .cpc { fill:#343140; }
-/* the king's contour is DARK GREY, not the pale --piece-b-line (2026-07-22, Nate: "take
-   the white outline of the king piece on the hero, and make it dark grey"). A black piece
-   wants a black-adjacent edge, not a white one — the contour is light enough to still separate
-   the silhouette from the fill, dark enough to read as part of the piece rather than a
-   rim-light around it. (Trade-off: the pale line was legibility insurance on a night sky; a
-   dark-grey king leans on its drop-shadow there instead.)
-   #43434d → #54525f (2026-07-22): the FILL went grey too (above), so the contour lifts a
-   step with it — it has to stay lighter than the #343140 fill or the edge closes up and the
-   king reads as a flat grey blob. Still dark grey, just enough to keep the silhouette. */
-.hp-cs--b { filter:drop-shadow(0 0 0.7px #54525f) drop-shadow(0 0 0.7px #54525f)
+   LIFTED #12101a → #343140 (2026-07-22, Nate: "make the black king a little more grey"), then
+   PULLED BACK #343140 → #282531 (2026-07-22, Nate: "make the black king a little blacker, and
+   give it some white tracing to give it depth"). So the body is near-black again — violet
+   trace kept, B the highest channel — and it stops leaning on a grey body to separate from
+   the sky: the WHITE keyline below does that now, reading as a lit edge that gives the flat
+   silhouette some depth. Checked over night/dusk/day: the white trace pops it on the dark
+   skies, the dark body carries it on the pale day one. */
+.hp-cs--b .cpc { fill:#282531; }
+/* the king's contour is a WHITE keyline (2026-07-22, Nate: "give it some white tracing to
+   give it depth"). This reverses the earlier dark-grey edge: once the body went blacker again
+   (#282531 above), a dark edge on a dark body closes up into a flat blob, so the trace goes
+   the other way — a crisp white line around the whole silhouette. On the night/dusk skies it
+   reads as a lit rim and lifts the piece off the background; on the pale day sky it fades, but
+   the dark body carries the separation there anyway. Two passes: a solid white keyline plus a
+   softer one to thicken it without a hard aliased step. The white pieces keep their own dark
+   --piece-w-line edge, so the two towns stay opposite — dark piece / white edge here, white
+   piece / dark edge there. */
+.hp-cs--b { filter:drop-shadow(0 0 0.8px #ffffff) drop-shadow(0 0 0.8px rgba(255,255,255,0.75))
          drop-shadow(0 calc(var(--d) * 0.045) calc(var(--d) * 0.07) rgba(0,0,0,0.5)); }
 
 {% comment %} (the #16 title sheen removed 2026-07-11 — its mix-blend-mode forced an
