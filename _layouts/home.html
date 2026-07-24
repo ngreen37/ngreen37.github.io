@@ -359,7 +359,8 @@ layout: default
      the fifth drawer link now, and its job is the WORLD, not the games (Play, Gauntlet and
      Academy each have their own link). So the landing leads with three big doors into it —
      Characters · Locations · Fan Art — right under the hero. {% endcomment %}
-<section class="home-world" aria-label="Explore the world" data-reveal>
+<section class="home-world" aria-labelledby="h-world" data-reveal>
+  <h2 id="h-world" class="sr-only">Explore the world</h2>
   <style>
   /* TOKEN-ADOPTED 2026-07-23 (the adoption pass). The values that are RHYTHM, TYPE, RADIUS
      and MOTION now read the design tokens (_pjcc-01-core.scss): spacing → --space-*, corner
@@ -426,7 +427,8 @@ layout: default
      set that element since it was written, but the markup never had one, so "Floor N of
      10" has never appeared on this page. Step 1 deferred adding it to a card that was
      about to be replaced; this is the replacement. {% endcomment %}
-<section class="home-cta" aria-label="Play" data-reveal>
+<section class="home-cta" aria-labelledby="h-play" data-reveal>
+  <h2 id="h-play" class="sr-only">Play chess</h2>
   {% comment %} SIDE BY SIDE AGAIN (2026-07-22, Nate: "move the gauntlet to the left, and the
        park tables on the right, on the same horizontal"). Step 1 earlier the same day had
        narrowed this to ONE door on the reasoning that a front door should ask one thing;
@@ -482,7 +484,8 @@ layout: default
      The lamp keeps everything it had: the twelve-hour check, both tooltip strings, the
      Direct Line link, the phone tap-to-reveal, and the hotter night burn. It is the same
      include the splash uses; only where it stands is different. {% endcomment %}
-<section class="home-awake" aria-label="From the studio" data-reveal>
+<section class="home-awake" aria-labelledby="h-studio" data-reveal>
+  <h2 id="h-studio" class="sr-only">From the studio</h2>
   <span class="awake-lamp">{% include desk-lamp.html id="home-lamp" %}</span>
   <div class="awake-copy">
     <span class="awake-label">Building in the open</span>
@@ -898,7 +901,8 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
 </script>
 
 {% comment %} ── 4. CHARACTER TEASER — four random faces, reshuffled each visit ──── {% endcomment %}
-<section class="home-section home-section--cast" data-reveal>
+<section class="home-section home-section--cast" aria-labelledby="h-cast" data-reveal>
+  <h2 id="h-cast" class="sr-only">Meet the cast</h2>
   {% comment %} All main-cast chips are rendered (ancillary excluded); the JS below shows a
        random four as CARDS (the town-square experiment was reverted 2026-07-10).
        "Meet them all" + shuffle both live BELOW the grid. {% endcomment %}

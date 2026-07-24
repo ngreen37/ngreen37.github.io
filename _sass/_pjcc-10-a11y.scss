@@ -32,3 +32,18 @@ input:focus-visible,
 @media (max-width: 620px) {
   .pjcc-btn, .pjcc-btn-ghost, .lb-tab { min-height: 44px; }
 }
+
+/* Visually hidden, but present for assistive tech (2026-07-24). The PJCC home had only its
+   <h1> — every section below was an aria-label landmark with no HEADING, and many screen-
+   reader users skim a page by its heading outline. These <h2>s (one per section, wired via
+   aria-labelledby so the region name and the heading are one string) restore that outline
+   with ZERO visual change. Uses the clip pattern, not display:none — the latter would hide
+   it from screen readers too. The :not(:focus) guard lets the same class serve a focusable
+   skip-link later (it would un-hide on focus). */
+.sr-only:not(:focus):not(:focus-within) {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%);
+  white-space: nowrap;
+}
