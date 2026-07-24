@@ -339,7 +339,13 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
     width: var(--rail-w);
     padding-top: 78px;          /* clear the full-width sticky header (~66px) above it */
     transform: none;            /* docked — always visible, no slide */
-    transition: width 0.22s ease;
+    /* The width SNAPS between collapsed/expanded (2026-07-23, Nate). Animating it widened the
+       rail through every intermediate size, and the labels reflowed at each one — at ~66px
+       "Sit at the Park Tables" wrapped to a stack of lines, so the row shot up to nearly the
+       full window height, then collapsed to its real height as the rail reached 246px. That
+       was the "items span the whole screen then shrink" flash. With no width transition they
+       lay out at the final width immediately, landing in their final spot at once. */
+    transition: none;
     box-shadow: none;           /* docked, not a modal */
     z-index: 90;                /* under the header (100), over the content */
   }
@@ -354,9 +360,11 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
      the rail is expanded its labelled icons sit a touch right of this — the collapsed column
      is the one the eye lines up against, and this alignment is measured to it.) */
   .header-top-left { transform: translateX(-20px); }
-  /* push the page + footer to the right of the rail (the header stays full-width on top) */
+  /* push the page + footer to the right of the rail (the header stays full-width on top).
+     Snaps with the rail width (no glide), so the whole toggle lands in its final spot at once
+     rather than the page sliding while the rail has already jumped. */
   .page-content,
-  .site-footer { padding-left: var(--rail-w); transition: padding-left 0.22s ease; }
+  .site-footer { padding-left: var(--rail-w); transition: none; }
 
   /* ── collapsed → an icons-only rail. The WIDTH + offsets now follow --rail-w above
      (reassigned to 66px on body.nav-collapsed); only the LOOK changes here. ── */
@@ -384,34 +392,40 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
     body.nav-collapsed .site-header .site-nav.drawer { overflow: hidden auto; }
   }
   body.nav-collapsed .site-header .site-nav.drawer .page-link.drawer-link { position: relative; justify-content: center; padding: 11px 0; }
-  /* THE HOVER LABEL — a tooltip chip that SLIDES out to the right on hover (2026-07-23,
-     Nate: "make the items slide to the right when hovered — right now they instantly
-     appear"). It's ALWAYS in the DOM as a transparent, out-of-flow chip (absolute, so the
-     icon stays centred), then it fades + slides into place on hover/focus. display:none
-     can't be transitioned, so the reveal is opacity + transform (both compositor-cheap),
-     not display. It starts ~10px left — tucked at the rail edge — and glides out, reading
-     as the label emerging from behind the rail. Anchors to the link (position:relative,
-     above). */
+  /* THE HOVER LABEL — on hover the words SLIDE OUT from the button to the right and land in
+     their resting spot (2026-07-23, Nate: "the words should slide out from the button out to
+     the right and land on the same spot"). The chip is ALWAYS in the DOM as an out-of-flow
+     absolute chip (so the icon stays centred), hidden and tucked ~26px LEFT — back over the
+     button — then it glides right to left:calc(100% + 8px) on hover. display:none can't be
+     transitioned, so the reveal is opacity + transform (both compositor-cheap).
+
+     The slide transition is declared ONLY on the :hover/:focus state below — NOT here — on
+     purpose. A transition on the base rule also fires when you COLLAPSE the rail (the label's
+     opacity goes 1→0 as it switches from the expanded in-flow label to this hidden chip),
+     which flashed every title for a frame before it vanished. With the transition only on the
+     hover state, hover animates IN, but collapsing just hides the chips at once — no flash. */
   body.nav-collapsed .drawer-link .dl-txt {
     display: block; position: absolute; left: calc(100% + 8px); top: 50%;
-    transform: translateY(-50%) translateX(-10px);
+    transform: translateY(-50%) translateX(-26px);
     white-space: nowrap; background: #1a1040; border: 1px solid #4a3a86; border-radius: 8px;
     padding: 6px 11px; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5); z-index: 5; pointer-events: none;
     opacity: 0;
-    transition: opacity var(--dur-fast) var(--ease-out),
-                transform var(--dur-med) var(--ease-out);
   }
   body.nav-collapsed .drawer-link .dl-txt small { display: none; }
   body.nav-collapsed .drawer-link:hover .dl-txt,
   body.nav-collapsed .drawer-link:focus-visible .dl-txt {
     opacity: 1; transform: translateY(-50%) translateX(0);
+    transition: opacity var(--dur-fast) var(--ease-out),
+                transform var(--dur-med) var(--ease-out);
   }
   body.theme-bw.nav-collapsed .drawer-link .dl-txt,
   body.theme-studio.nav-collapsed .drawer-link .dl-txt { background: #17161c; border-color: #3a3730; }
-  /* the instant appear is fine (Nate) — under reduced motion / reduced flourish we simply
-     drop the glide and the chip snaps to place. */
+  /* reduced motion / reduced flourish: drop the glide (the label just appears on hover).
+     The transition lives on the :hover state now, so that's where it's cancelled. */
   @media (prefers-reduced-motion: reduce) {
-    body.nav-collapsed .drawer-link .dl-txt { transition: none; }
+    body.nav-collapsed .drawer-link:hover .dl-txt,
+    body.nav-collapsed .drawer-link:focus-visible .dl-txt { transition: none; }
   }
 }
-html.reduce-flourish body.nav-collapsed .drawer-link .dl-txt { transition: none; }
+html.reduce-flourish body.nav-collapsed .drawer-link:hover .dl-txt,
+html.reduce-flourish body.nav-collapsed .drawer-link:focus-visible .dl-txt { transition: none; }
