@@ -117,6 +117,55 @@ tokens → type → whitespace/grid → scroll reveals → view transitions. Pha
 is the first *bold* piece once the foundation is set. Everything verified with a repro
 screenshot before it hits `main`.
 
+## The 2026-07-23 rework — the 20 re-pointed for the current front door
+
+The original 20 (the phase tables above) were written against the OLD shape (splash-as-menu +
+horizontal nav). After the front-door rework — a 2-second B/W intro → the single PJCC landing →
+a left docked rail — several items changed target or turned out already-shipped. This is the
+re-pointed read. **Legend:** ✅ shipped · ↻ re-pointed · ◐ open · ✂ fold/defer.
+
+**Identity & type**
+1. Bigger display type — ↻ the scale shipped; the real work is ADOPTING it (main pages + radius
+   site-wide done 2026-07-23; see the `modernization-mission` memory).
+2. Variable headline font — ◐ the fluid scale shipped; the variable-font swap is the open half.
+3. Unify the two brands into one token system — ◐ radius now unified via `--r-*`; color/edge/
+   surface tokens exist but card/button look is still partly ad-hoc per page.
+4. Dark/light toggle — ✂ defer; the site already shifts by time-of-day + brand, and a manual
+   toggle fights the authored day/night sky.
+
+**Motion & the hero**
+5. One moving hero — ↻ BIG re-point: the flat skyline is already deleted; the moving-image slot
+   is now **the B/W intro card** (`index.md`), engineered as the Blender drop-in.
+6. Parallax depth — ✅ shipped.
+7. Scroll-reveal — ✅ shipped (`pjcc-reveal.js` / `data-reveal`); could extend to more sections.
+8. Page transitions — ✅ shipped (`@view-transition { navigation: auto }`).
+
+**The 3D / series payoff**
+9. Homepage 3D toy — ◐ needs a model; the clean landing hero is its natural home.
+10. Sizzle / animatic — ↻ collapses into #5: the intro card IS the sizzle slot.
+11. Swap glyph/emoji placeholders for renders — ◐ ongoing (world-door icons + hero pieces first).
+
+**Games & Academy as the product**
+12. Unified Arcade shell — ◐ open; Gauntlet / Park Tables / review already share DNA.
+13. Academy as a real path — ◐ in progress (framework rebuilt; next = next-lesson / streak / avatars).
+14. Dynamic OG cards — ◐ open; cheap "shared links look modern" win.
+
+**Modern web craft**
+15. Performance budget — ◐ half-built (`npm run perf` prices features; no enforced thresholds;
+    the merged landing has no baseline yet).
+16. Accessibility — ✅ mostly (reduced-motion strong; contrast 24→0). Keep it per-change.
+17. Ship the PWA — ◐ built but PRIVATE, gated on the `ENABLED` flip; iOS in-app sign-in untested.
+18. Signature sound layer — ◐ open (the jukebox is the seed).
+
+**Front door & growth loop**
+19. World-map navigation — ↻ re-point: not primary chrome any more (nav is a rail) — becomes the
+    destination behind the **Locations** door on the landing.
+20. Cadence + newsletter — ◐ open; the seed is already on the landing (the "Building in the open" band).
+
+**The new cheapest wins** (the old "start here" three are done): (a) token adoption — mostly done;
+(b) put something moving in the intro slot (#5/#10); (c) a hold-the-line hero declutter — ✅ DONE
+2026-07-23 (world-line links, per-word glint, and the sigil bloom all cut).
+
 ## Status log
 
 - **2026-07-19** — Kickoff. Direction = bold reinvention. Shipped: town-sky depth + parallax
