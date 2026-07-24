@@ -108,14 +108,18 @@ permalink: /leaderboards/
 .lbtv .lb-tab.active { background:var(--tv-gold); border-color:var(--tv-gold); color:#1a0f3d; box-shadow:0 0 14px -4px var(--tv-gold); }
 
 /* the screen: standings inside a CRT-ish monitor */
-.lbtv-screen { position:relative; background:#0d0824; border:1px solid #3a2a6a; border-radius:var(--r-md); padding:8px 12px;
-  box-shadow:inset 0 0 44px rgba(0,0,0,0.55), 0 0 26px -16px var(--tv-gold); overflow:hidden; }
+/* the CRT screen + booth are TRANSLUCENT (2026-07-23, Nate: "see the moon through the boxes")
+   so the town sky shows through the leaderboard box like the games hall. They sit inside the
+   (now also translucent) .page-card, so a lighter alpha keeps the two layers from stacking back
+   to opaque; the inner glow is eased for the same reason. */
+.lbtv-screen { position:relative; background:rgba(13,8,36,0.58); border:1px solid #3a2a6a; border-radius:var(--r-md); padding:8px 12px;
+  box-shadow:inset 0 0 44px rgba(0,0,0,0.4), 0 0 26px -16px var(--tv-gold); overflow:hidden; }
 .lbtv-screen::after { content:''; position:absolute; inset:0; pointer-events:none; border-radius:var(--r-md);
   background:repeating-linear-gradient(0deg, rgba(255,255,255,0.022) 0 1px, transparent 1px 3px); }
 
 /* the booth — one line at a time, cross-fading (was a marquee of all lines at once) */
 .lbtv-ticker { margin-top:10px; border:1px solid #3a2a6a; border-radius:8px;
-  background:#0d0824; font-family:'Courier New',monospace; font-size:0.72rem; padding:7px 12px;
+  background:rgba(13,8,36,0.58); font-family:'Courier New',monospace; font-size:0.72rem; padding:7px 12px;
   display:flex; align-items:center; justify-content:center; gap:10px; min-height:30px; text-align:center; }
 .lbtv-booth { color:#6f5fb0; flex-shrink:0; letter-spacing:0.08em; font-weight:900; }
 .lbtv-quote { color:#8fb8ff; transition:opacity 0.42s ease; }

@@ -42,7 +42,15 @@
   --r-md: 12px;
   --r-lg: 16px;
 
-  --surface:    #1c1540;
+  /* --surface is TRANSLUCENT (2026-07-23, Nate: "make the boxes more transparent so we can
+     see the moon"). It backs .page-card — the content box on every layout:page page — so the
+     town sky (moon + stars at night) now glows faintly through every page's main panel, the
+     same treatment the games hall got. 0.66 is a little more see-through than the games hall's
+     first pass; the hall was matched to it. Only .page-card reads --surface, and the McPuppy
+     theme-bw/theme-studio pages override .page-card with an opaque black (their sky has no
+     moon), so this is scoped to the PJCC sky pages. Kept opaque enough that light body text
+     stays readable over both the dark night sky and the medium-blue day sky (verified). */
+  --surface:    rgba(28, 21, 64, 0.66);
   --surface-2:  #160c33;
   --edge:       #3d2b8a;
   --edge-soft:  #3a2a6a;
