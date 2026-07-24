@@ -56,7 +56,12 @@ permalink: /games/
    Sealed / Retired divider, and portals sized for a bigger screen than they need.
    Nothing is removed here — every hall, the trophy, the door and the divider all
    still stand. It's just tightened, and the whole hall now lands ~200px shorter. */
-.ghub { padding:18px var(--space-4) 22px; }  /* adoption: horizontal 16px = --space-4 exact; the 18/22 vertical stay literal (height-pass-tuned). This hall is almost all bespoke scene geometry — the altar, the sized door, the badges — so there's little else to tokenize; the game cards use the shared .gcard system already. */
+.ghub { padding:18px var(--space-4) 14px; margin-bottom:0.7rem; }  /* adoption: horizontal 16px = --space-4 exact. Vertical trimmed 2026-07-24 (Nate: "make the games hall fit on one window on PC") — bottom padding 22→14, box margin 1.4rem→0.7rem. */
+/* ONE-WINDOW FIT (2026-07-24) — the global .page-content bottom padding is 60px, a big empty
+   gap between this box and the footer. This rule ONLY exists on /games/ (games.md's <style> is
+   page-local), so it trims that gap here and nowhere else. All reclaimed space is empty — no
+   content moved. Tunable: say the word for more or less. */
+.page-content { padding-bottom:28px; }
 .ghub-head { margin:2px 0 14px; }
 .ghub-eyebrow { margin:0 0 5px; }
 .ghub-sub { margin:6px 0 0; }
@@ -155,7 +160,7 @@ permalink: /games/
 }
 
 /* the master reset — one quiet switch at the foot of the hall (2026-07-16 Nate) */
-.ghub-reset-row { text-align:center; margin-top:26px; }
+.ghub-reset-row { text-align:center; margin-top:14px; }  /* was 26px — one-window trim 2026-07-24 */
 .ghub-reset { background:none; border:1px solid rgba(154,127,212,0.35); border-radius:999px;
   color:#7d6bb0; font-family:'Share Tech Mono', monospace; font-size:10px;
   letter-spacing:0.12em; padding:6px 14px; cursor:pointer;
@@ -174,9 +179,22 @@ permalink: /games/
 /* reserve the top-right corner so a title never runs UNDER the badge (the IN DEV /
    LOCKED chips are absolutely positioned there) */
 .ghub-all .gcard-body h3 { padding-right: 50px; }
-/* the plain "IN DEV" tag on half-built games — same badge family, amber */
-.hall--default .gcard-dev { position:absolute; top:8px; right:9px; font-size:0.54rem; font-weight:900;
-  letter-spacing:0.04em; border-radius:999px; padding:2px 7px; background:#ffb020; color:#1a0f3d; }
+/* IN DEV — a caution-tape WATERMARK across the whole card (2026-07-24, Nate: "make the In Dev
+   symbol more prominent … maybe like a watermarked-caution-tape-like symbol that spans the whole
+   game box"). Was a small amber corner pill. pointer-events:none keeps the card clickable; the
+   stripe wash + the banner are translucent so the game's icon and name still read through.
+   overflow:hidden + border-radius:inherit clip the diagonal banner to the card's rounded corners.
+   The span's own "IN DEV" text is hidden (font-size:0) — the ::after carries the styled banner. */
+.hall--default .gcard-dev { position:absolute; inset:0; z-index:3; pointer-events:none;
+  overflow:hidden; border-radius:inherit; padding:0; font-size:0; letter-spacing:0; color:transparent;
+  background:repeating-linear-gradient(-45deg, rgba(245,197,24,0.16) 0 15px, rgba(12,8,24,0.18) 15px 30px); }
+.hall--default .gcard-dev::after { content:"IN DEV";
+  position:absolute; left:50%; top:50%; width:200%; padding:5px 0; text-align:center;
+  transform:translate(-50%,-50%) rotate(-14deg);
+  font-family:'Poppins',sans-serif; font-weight:900; font-size:0.95rem; letter-spacing:0.34em;
+  color:#1a0f3d; background:rgba(255,185,25,0.62);
+  border-top:3px dashed rgba(26,15,61,0.72); border-bottom:3px dashed rgba(26,15,61,0.72);
+  box-shadow:0 4px 16px rgba(0,0,0,0.4); }
 </style>
 
 <!-- ===== THE HALLS — Gauntlet Legends portal screen (pick a hall; no games here) ===== -->
