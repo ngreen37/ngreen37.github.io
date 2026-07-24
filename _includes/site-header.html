@@ -47,27 +47,38 @@
 
       <!-- ── THE LEFT DRAWER (2026-07-22) ─────────────────────────────────────────────
            Nate: "the header nav idea is old-school … we're moving those buttons to the
-           left." The context-aware two-branch header bar is retired; ONE six-link set now
+           left." The context-aware two-branch header bar is retired; ONE seven-link set now
            lives in an off-canvas left drawer, site-wide. #nav-toggle (the hamburger, now
            shown on every width) opens #site-nav — pjcc-eggs.js toggles `.is-open` and
            closes it on outside-click / link-tap. `.nav-backdrop` is a DOM SIBLING so
-           `#site-nav.is-open ~ .nav-backdrop` can dim the page with no extra JS. The six
-           links + their targets are Nate's: Play Now→Park Tables, Gauntlet, Puzzles→Fork
-           in the Road, Academy, PJCC→the world landing, Projects→the studio. ⌘K still
-           reaches everything else. Drawer look lives in _sass/_pjcc-13-nav.scss. -->
+           `#site-nav.is-open ~ .nav-backdrop` can dim the page with no extra JS. The SEVEN
+           links were REORDERED 2026-07-24 (Nate's compass call — lead with home, then group
+           play): PJCC→the world (home) · Games→the arcade hub · The Gauntlet · Play Now→Park
+           Tables · Puzzles→Fork in the Road · Academy · Projects→the studio. PJCC keeps the
+           gold `--pjcc` highlight as the home anchor at the top; order is MARKUP order (no
+           nth-child depends on it). ⌘K still reaches everything else. Drawer look lives in
+           _sass/_pjcc-13-nav.scss. -->
       <nav class="site-nav drawer" id="site-nav" aria-label="Site navigation">
         <div class="drawer-head">
           <span class="drawer-brand">&#9819; PJCC</span>
           <span class="drawer-sub">by McPuppy Studios</span>
         </div>
 
-        <a class="page-link drawer-link" href="{{ '/games/park-tables/' | relative_url }}">
-          <span class="dl-ico" aria-hidden="true">&#9654;</span>
-          <span class="dl-txt"><b>Play Now</b><small>Sit at the Park Tables</small></span>
+        <a class="page-link drawer-link drawer-link--pjcc" href="{{ '/pjcc/' | relative_url }}">
+          <span class="dl-ico" aria-hidden="true">&#9670;</span>
+          <span class="dl-txt"><b>PJCC</b><small>The world — cast, places, fan art</small></span>
+        </a>
+        <a class="page-link drawer-link" href="{{ '/games/' | relative_url }}">
+          <span class="dl-ico" aria-hidden="true">&#9823;</span>
+          <span class="dl-txt"><b>Games</b><small>The Arcade — the whole grid</small></span>
         </a>
         <a class="page-link drawer-link" href="{{ '/games/the-gauntlet/' | relative_url }}">
           <span class="dl-ico" aria-hidden="true">&#9819;</span>
           <span class="dl-txt"><b>The Gauntlet</b><small>Climb the tower of ten</small></span>
+        </a>
+        <a class="page-link drawer-link" href="{{ '/games/park-tables/' | relative_url }}">
+          <span class="dl-ico" aria-hidden="true">&#9654;</span>
+          <span class="dl-txt"><b>Play Now</b><small>Sit at the Park Tables</small></span>
         </a>
         <a class="page-link drawer-link" href="{{ '/games/fork-in-the-road/' | relative_url }}">
           <span class="dl-ico" aria-hidden="true">&#9876;</span>
@@ -76,14 +87,6 @@
         <a class="page-link drawer-link" href="{{ '/academy/' | relative_url }}">
           <span class="dl-ico" aria-hidden="true">&#9812;</span>
           <span class="dl-txt"><b>Academy</b><small>Learn chess from scratch</small></span>
-        </a>
-        <a class="page-link drawer-link" href="{{ '/games/' | relative_url }}">
-          <span class="dl-ico" aria-hidden="true">&#9823;</span>
-          <span class="dl-txt"><b>Games</b><small>The Arcade — the whole grid</small></span>
-        </a>
-        <a class="page-link drawer-link drawer-link--pjcc" href="{{ '/pjcc/' | relative_url }}">
-          <span class="dl-ico" aria-hidden="true">&#9670;</span>
-          <span class="dl-txt"><b>PJCC</b><small>The world — cast, places, fan art</small></span>
         </a>
         <a class="page-link drawer-link" href="{{ '/projects/' | relative_url }}">
           <span class="dl-ico" aria-hidden="true">&#128062;</span>
