@@ -1087,6 +1087,32 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
 {% comment %} (the basement / #20 street band removed 2026-07-10 — the page now ends
      at the cast; restore from git if ever missed.) {% endcomment %}
 
+{% comment %} ── REPLAY THE INTRO — a faint utility link (2026-07-23, Nate: "give me a replay
+     intro button, real faint, so I can see the welcome"). It returns to `/` — the "McPuppy
+     Studios Presents" typing intro (index.md) — after clearing `mcp.intro.seen`, the
+     once-per-session flag that otherwise makes `/` skip straight to /pjcc/. So the card
+     actually PLAYS, then hands back to /pjcc/ on its own ~2s later. Kept deliberately dim;
+     it brightens on hover/focus so it's findable without competing with the page. Only on
+     /pjcc/ — this layout (home.html) is used by nothing else. ── {% endcomment %}
+<div class="home-replay-wrap">
+  <a class="home-replay" href="{{ '/' | relative_url }}"
+     onclick="try{sessionStorage.removeItem('mcp.intro.seen')}catch(e){}"
+     aria-label="Replay the McPuppy Studios intro">&#8635;&nbsp;Replay intro</a>
+</div>
+<style>
+  .home-replay-wrap { text-align: center; margin: 26px 0 4px; }
+  .home-replay {
+    display: inline-flex; align-items: center;
+    font-family: 'Share Tech Mono', ui-monospace, monospace;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: rgba(233, 226, 250, 0.2);              /* real faint, as asked */
+    text-shadow: 0 1px 4px rgba(8, 4, 24, 0.6);   /* stays legible on any sky phase */
+    text-decoration: none;
+    transition: color 0.25s ease;
+  }
+  .home-replay:hover, .home-replay:focus-visible { color: rgba(233, 226, 250, 0.62); text-decoration: none; }
+</style>
+
 </div><!-- /.home-flow -->
 
 {% comment %} (2026-07-21) The second <script src> pair for pjcc-config.js and
