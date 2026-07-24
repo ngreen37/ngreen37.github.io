@@ -22,7 +22,7 @@ fragment_key: frag_classified
     <h1 class="secret-title">THE ALPINE FILE</h1>
     <p class="secret-sub">RECOVERED FILE #001 · CHESS CITY RELEASE ACT OF 2078</p>
     <div class="secret-coords">
-      ORIGIN:&nbsp;CHECKER&nbsp;TOWN &nbsp;·&nbsp; SUBJECT:&nbsp;PRINCESS &nbsp;·&nbsp; STATUS:&nbsp;<span class="secret-grant">ALREADY DONE</span>
+      ORIGIN:&nbsp;CHECKER&nbsp;TOWN &nbsp;·&nbsp; SUBJECT:&nbsp;PRINCESS &nbsp;·&nbsp; STATUS:&nbsp;<span class="secret-grant">COMPLETED</span>
     </div>
   </header>
 

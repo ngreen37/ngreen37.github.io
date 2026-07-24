@@ -384,16 +384,34 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
     body.nav-collapsed .site-header .site-nav.drawer { overflow: hidden auto; }
   }
   body.nav-collapsed .site-header .site-nav.drawer .page-link.drawer-link { position: relative; justify-content: center; padding: 11px 0; }
-  body.nav-collapsed .drawer-link .dl-txt { display: none; }
-  /* hover a collapsed icon → its NAME flies out to the right as a small label */
-  body.nav-collapsed .drawer-link:hover .dl-txt,
-  body.nav-collapsed .drawer-link:focus-visible .dl-txt {
-    display: block; position: absolute; left: calc(100% + 8px); top: 50%; transform: translateY(-50%);
+  /* THE HOVER LABEL — a tooltip chip that SLIDES out to the right on hover (2026-07-23,
+     Nate: "make the items slide to the right when hovered — right now they instantly
+     appear"). It's ALWAYS in the DOM as a transparent, out-of-flow chip (absolute, so the
+     icon stays centred), then it fades + slides into place on hover/focus. display:none
+     can't be transitioned, so the reveal is opacity + transform (both compositor-cheap),
+     not display. It starts ~10px left — tucked at the rail edge — and glides out, reading
+     as the label emerging from behind the rail. Anchors to the link (position:relative,
+     above). */
+  body.nav-collapsed .drawer-link .dl-txt {
+    display: block; position: absolute; left: calc(100% + 8px); top: 50%;
+    transform: translateY(-50%) translateX(-10px);
     white-space: nowrap; background: #1a1040; border: 1px solid #4a3a86; border-radius: 8px;
     padding: 6px 11px; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5); z-index: 5; pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-out),
+                transform var(--dur-med) var(--ease-out);
   }
-  body.nav-collapsed .drawer-link:hover .dl-txt small,
-  body.nav-collapsed .drawer-link:focus-visible .dl-txt small { display: none; }
-  body.theme-bw.nav-collapsed .drawer-link:hover .dl-txt,
-  body.theme-studio.nav-collapsed .drawer-link:hover .dl-txt { background: #17161c; border-color: #3a3730; }
+  body.nav-collapsed .drawer-link .dl-txt small { display: none; }
+  body.nav-collapsed .drawer-link:hover .dl-txt,
+  body.nav-collapsed .drawer-link:focus-visible .dl-txt {
+    opacity: 1; transform: translateY(-50%) translateX(0);
+  }
+  body.theme-bw.nav-collapsed .drawer-link .dl-txt,
+  body.theme-studio.nav-collapsed .drawer-link .dl-txt { background: #17161c; border-color: #3a3730; }
+  /* the instant appear is fine (Nate) — under reduced motion / reduced flourish we simply
+     drop the glide and the chip snaps to place. */
+  @media (prefers-reduced-motion: reduce) {
+    body.nav-collapsed .drawer-link .dl-txt { transition: none; }
+  }
 }
+html.reduce-flourish body.nav-collapsed .drawer-link .dl-txt { transition: none; }

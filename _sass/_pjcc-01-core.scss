@@ -240,19 +240,16 @@ ul, ol {
 }
 
 /* --- Site Logo (header) --- */
-/* The logo reads as a faded watermark by default (still a clickable link to home),
-   and lifts toward full strength on hover/focus. */
+/* The logo is a faded WATERMARK, not a link (2026-07-23, Nate: "I want it to be a
+   watermark, not a link to the PJCC site"). It no longer navigates — the single-click →
+   home handler was pulled from the Morse egg in pjcc-eggs.js; the hidden 3-tap Morse egg
+   stays. So: a steady faded mark, no hover lift, no pointer cursor. */
 .site-logo {
   display: block;
   line-height: 0;
   text-decoration: none;
   opacity: 0.38;
-  transition: opacity 0.25s;
-
-  &:hover, &:focus-visible {
-    opacity: 0.92;
-    text-decoration: none;
-  }
+  cursor: default;
 }
 
 .logo-stacked {

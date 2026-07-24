@@ -179,9 +179,9 @@ function showTxToast(msg, duration) {
         var flash = document.getElementById('konami-flash');
         if (flash) { flash.classList.remove('is-active'); void flash.offsetWidth; flash.classList.add('is-active'); setTimeout(function() { flash.classList.remove('is-active'); }, 900); }
         showTxToast('— — — / . — . — / — — . — / — . — — — MORSE SIGNAL CONFIRMED');
-      } else {
-        window.location.href = logo.getAttribute('href') || '/';
       }
+      // Single/double clicks no longer navigate — the header logo is a WATERMARK, not a
+      // link (2026-07-23, Nate). The 3-tap Morse egg above is all that remains.
       taps = 0;
     }, 400);
   });

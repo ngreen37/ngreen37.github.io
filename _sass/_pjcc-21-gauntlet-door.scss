@@ -120,20 +120,31 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 /* ── FLOOR SIX — THE AUDITOR'S DOOR (2026-07-22, Nate: "make it look like more of an
    auditor's door … the green looks odd, and it doesn't really open"). A frosted-glass
    OFFICE door with a brass nameplate, in a deep ledger-green instead of the old mint. The
-   ♝ reads as a blurred silhouette behind the pebbled glass; on hover the whole pane slides
-   aside like a real office door (the slide is the partial's default, kept — the frosted
-   glass just makes the OPENING visible, since you now see the lit interior appear). Applies
-   wherever the Gauntlet door represents floor 6 (games hall + PJCC hero), keyed on the
-   data-floor the hydration scripts set. No backdrop-filter (it animates → perf); the frost
-   is faked with translucent gradients + a grain, so the slide stays compositor-only. ── */
+   ♝ reads as a blurred silhouette behind the pebbled glass; on hover the whole pane SWINGS
+   open on its left hinge like a real office door (2026-07-23, Nate: "the audit door doesn't
+   open — make it swing open on hover"; the base partial only SLID it, which on a dark frosted
+   pane read as no change — see the swing override at the foot of this block). The frost makes
+   the OPENING visible as the lit interior appears. Applies wherever the Gauntlet door
+   represents floor 6 (games hall + PJCC hero), keyed on the data-floor the hydration scripts
+   set. No backdrop-filter (it animates → perf); the frost is faked with translucent gradients
+   + a grain, so the swing stays compositor-only. ── */
 .gdoor[data-floor="6"] { --acc:#3fae7a; }
 .gdoor[data-floor="6"] .gdoor-door {
-  border:1px solid rgba(120,200,165,0.5);
+  border:1px solid rgba(120,200,165,0.55);
+  /* a touch more PRESENT than a clear pane (0.17/0.10 → 0.30/0.21) so that when it swings
+     aside on hover its absence reads against the darker interior — otherwise open looked
+     just like closed. Still frosted glass: you read the silhouette through it, not past it. */
   background:
-    linear-gradient(180deg, rgba(228,246,238,0.17), rgba(150,196,176,0.10)),
-    repeating-linear-gradient(118deg, rgba(255,255,255,0.06) 0 2px, rgba(255,255,255,0) 2px 5px);
+    linear-gradient(180deg, rgba(228,246,238,0.30), rgba(150,196,176,0.21)),
+    repeating-linear-gradient(118deg, rgba(255,255,255,0.07) 0 2px, rgba(255,255,255,0) 2px 5px);
   box-shadow: inset 0 0 14px rgba(63,174,122,0.28);
 }
+/* the interior lights as the door opens — a warm ledger-green spill on the right where the
+   pane swings away, so the OPENING reads as a lit office rather than a dark gap (repaints
+   once on hover, like the arch's glow bump — not per-frame). */
+.gdoor[data-floor="6"]:hover .gdoor-arch,
+.gdoor[data-floor="6"]:focus-visible .gdoor-arch {
+  background:radial-gradient(ellipse at 66% 62%, rgba(63,174,122,0.42), #0c0722 74%); }
 /* the piece behind the glass — a soft silhouette, not a crisp glyph (one static raster;
    it rides the panel's composited slide, so no per-frame filter cost) */
 .gdoor[data-floor="6"] .gdoor-glyph {
@@ -150,6 +161,15 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 .gdoor[data-floor="6"] .gdoor-knob {
   width:7px; height:2px; border-radius:1px; top:52%; right:8px;
   background:#dcb65e; box-shadow:0 0 4px rgba(220,180,90,0.7); }
+/* THE SWING (2026-07-23) — floor six opens on a HINGE instead of the partial's default
+   slide. Hinged on the LEFT edge (origin already 0 50% from .gdoor-door; the lever is on
+   the right, so the right edge is the free edge), rotateY back into the frame through a
+   little perspective — the door foreshortens open and the lit interior + gold seam show
+   through the gap. rotateY overrides the base translateX slide (higher specificity), and it
+   is compositor-only on the already-promoted panel. */
+.gdoor[data-floor="6"] .gdoor-door { transition:transform .42s var(--ease-out); }
+.gdoor[data-floor="6"]:hover .gdoor-door,
+.gdoor[data-floor="6"]:focus-visible .gdoor-door { transform:perspective(640px) rotateY(-76deg); }
 
 @media (prefers-reduced-motion: reduce) {
   .gdoor-pips i.cur { animation:none; }
