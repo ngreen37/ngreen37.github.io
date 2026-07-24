@@ -89,10 +89,27 @@
     ['B01', 'Scandinavian, Main Line', 'e4 d5 exd5 Qxd5 Nc3 Qa5'],
     ['B02', 'Alekhine Defense', 'e4 Nf6'],
     ['B06', 'Modern Defense', 'e4 g6'],
+    ['B07', 'Pirc / Rat Defense', 'e4 d6'],
     ['B07', 'Pirc Defense', 'e4 d6 d4 Nf6 Nc3'],
     ['B00', 'Nimzowitsch Defense', 'e4 Nc6'],
     // ── 1.d4 ─────────────────────────────────────────────────────────────────
     ['A40', "Queen's Pawn Opening", 'd4'],
+    // 1.d4 sidesteps that are THEORY, not inaccuracies (2026-07-24 Nate: 1.d4 e6 is the
+    // Horwitz Defense — chess.com names it, so it must never score ?!). Each row names the
+    // reply; the transposition rows below carry the whole early tree back into known lines,
+    // so a Horwitz move order stays "book" until it actually leaves theory.
+    ['A40', "Queen's Pawn, Horwitz Defense", 'd4 e6'],
+    ['C00', 'French Defense (by transposition)', 'd4 e6 e4 d5'],
+    ['D30', "Queen's Gambit Declined (by transposition)", 'd4 e6 c4 d5'],
+    ['E20', 'Nimzo-Indian Defense (by transposition)', 'd4 e6 c4 Nf6 Nc3 Bb4'],
+    ['E11', 'Bogo-Indian Defense (by transposition)', 'd4 e6 c4 Nf6 Nf3 Bb4+'],
+    ['E12', "Queen's Indian Defense (by transposition)", 'd4 e6 c4 Nf6 Nf3 b6'],
+    ['A80', 'Dutch Defense (by transposition)', 'd4 e6 c4 f5'],
+    ['A40', 'English Defense', 'd4 b6'],
+    ['A40', 'English Defense', 'd4 e6 c4 b6'],
+    ['A41', "Queen's Pawn, Wade Defense", 'd4 d6'],
+    ['A40', "Queen's Knight (Mikenas) Defense", 'd4 Nc6'],
+    ['A43', 'Old Benoni Defense', 'd4 c5'],
     ['D00', "Queen's Pawn Game", 'd4 d5'],
     ['D02', 'London System', 'd4 d5 Nf3 Nf6 Bf4'],
     ['D06', "Queen's Gambit", 'd4 d5 c4'],
@@ -171,7 +188,21 @@
     ['D00', 'Blackmar-Diemer Gambit', 'd4 d5 e4'],
     ['D01', 'Richter-Veresov Attack', 'd4 d5 Nc3 Nf6 Bg5'],
     ['A46', 'Torre Attack', 'd4 Nf6 Nf3 e6 Bg5'],
-    ['A45', 'Queen\'s Pawn, Barry/Colle Setup', 'd4 Nf6 Nf3']
+    ['A45', 'Queen\'s Pawn, Barry/Colle Setup', 'd4 Nf6 Nf3'],
+    // ── DEEPER MAIN LINES (2026-07-24) — keep the popular openings "in book" a few plies
+    //    longer, so ordinary theory in the MIDDLE of the opening isn't scored as mistakes.
+    //    (build() marks every prefix book, so these carry their whole main line, not just
+    //    the final position.) Any line the engine can't reproduce is dropped, never fatal.
+    ['C50', 'Italian Game, Giuoco Pianissimo', 'e4 e5 Nf3 Nc6 Bc4 Bc5 c3 Nf6 d3 d6'],
+    ['C65', 'Ruy Lopez, Berlin Defense', 'e4 e5 Nf3 Nc6 Bb5 Nf6 O-O Nxe4'],
+    ['C88', 'Ruy Lopez, Closed', 'e4 e5 Nf3 Nc6 Bb5 a6 Ba4 Nf6 O-O Be7 Re1 b5 Bb3 d6 c3 O-O'],
+    ['C42', 'Petrov, Classical', 'e4 e5 Nf3 Nf6 Nxe5 d6 Nf3 Nxe4'],
+    ['B90', 'Sicilian, Najdorf, English Attack', 'e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 a6 Be3'],
+    ['B76', 'Sicilian, Dragon, Yugoslav Attack', 'e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 g6 Be3 Bg7 f3 O-O'],
+    ['C11', 'French, Steinitz Variation', 'e4 e6 d4 d5 Nc3 Nf6 e5 Nfd7'],
+    ['D37', 'QGD, Main Line', 'd4 d5 c4 e6 Nc3 Nf6 Nf3 Be7 Bf4 O-O'],
+    ['D85', 'Grünfeld, Exchange', 'd4 Nf6 c4 g6 Nc3 d5 cxd5 Nxd5 e4 Nxc3 bxc3 Bg7'],
+    ['E97', "King's Indian, Classical Main Line", 'd4 Nf6 c4 g6 Nc3 Bg7 e4 d6 Nf3 O-O Be2 e5']
   ];
 
   function norm(s) { return String(s).replace(/[+#!?]/g, ''); }
