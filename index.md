@@ -1,4 +1,13 @@
 ---
+# `/` is a SELF-CONTAINED intro card — it must render with NO site layout (the full
+# <!DOCTYPE html> lives right below). `layout: null` is an explicit guard, not decoration:
+# with the key merely ABSENT, GitHub Pages was serving the PJCC home at `/` instead of the
+# intro — its build re-emitted this file from a stale cache entry that still recorded an
+# OLD `layout: home`, wrapping index.md's front matter in the home layout and dropping the
+# intro body. Verified 2026-07-24 (origin source was already the intro; the built `/` was
+# home content with index.md's own title/description). Pinning it null forces the standalone
+# render every build, and defends the page against any future layout default. (2026-07-24)
+layout: null
 permalink: /
 tab_title: McPuppy Studios
 description: McPuppy Studios presents Princess and the Journey to Chess City — an animated series in the making, a chess academy, and a world of free chess games.
