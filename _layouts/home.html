@@ -359,7 +359,7 @@ layout: default
     <a class="hw-door" href="{{ '/fan-art/' | relative_url }}">
       <span class="hw-ico" aria-hidden="true">&#127912;</span>
       <span class="hw-name">Fan Art</span>
-      <span class="hw-sub">The fan wall</span>
+      <span class="hw-sub">Browse the wall</span>
     </a>
   </div>
 </section>
@@ -396,7 +396,11 @@ layout: default
      Restore the two doors from git: git show <prev>^ -- _layouts/home.html {%- endcomment -%}
 <section class="home-play-nudge" aria-labelledby="h-play" data-reveal>
   <h2 id="h-play" class="sr-only">Play chess</h2>
-  <p>Ready to play? <a href="{{ '/games/the-gauntlet/' | relative_url }}">Climb the Gauntlet &rarr;</a></p>
+  <a class="home-play-btn" href="{{ '/games/' | relative_url }}">
+    <span class="hpb-ico" aria-hidden="true">&#9819;</span>
+    <span class="hpb-txt"><b>Play the Games</b><small>The Gauntlet, Park Tables &amp; the arcade</small></span>
+    <span class="hpb-arrow" aria-hidden="true">&rarr;</span>
+  </a>
 </section>
 
 {% comment %} ── 1c. THE STUDIO IS AWAKE ─────────────────────────────────────────────
@@ -448,8 +452,14 @@ layout: default
    the tagline so it reads as the title's answer rather than as another headline, and
    width-capped so it breaks into two short lines instead of one long one. */
 .hero-lede { margin:var(--space-3) auto 0; max-width:34ch; text-wrap:balance;  /* 12px = --space-3, exact (adoption pass, 2026-07-23) */
-  font-size:15px; line-height:1.45; color:rgba(233,226,250,0.9);
-  text-shadow:0 1px 6px rgba(8,4,24,0.75); }
+  font-size:15px; line-height:1.45; color:#f3ecff;
+  /* LIT-UP "brite-lite" glow (2026-07-24, Nate) — the lede reads like a warm lit marquee, so the
+     hidden "i" dropping out looks like a bulb flickering OFF, not just a gap. STATIC (no animated
+     shadow — the perf rule); the "i"'s own visibility flicker also hides this inherited glow on
+     that one letter. Warm incandescent stack: crisp white core → amber bloom → wide halo, then
+     the dark drop keeps it legible on the pale day sky. */
+  text-shadow:0 0 1px rgba(255,255,255,0.9), 0 0 6px rgba(255,224,150,0.5),
+    0 0 15px rgba(255,198,108,0.32), 0 1px 6px rgba(8,4,24,0.8); }
 
 /* the flickering-"i" DAY door to /classified/, REHOMED here 2026-07-24 from the cut studio
    tagline. Reuses the GLOBAL @keyframes tgx-radio (_pjcc-04-flair.scss). The lede is plain text
@@ -467,12 +477,25 @@ html.reduce-flourish .hero-lede .tg-x-glyph { animation:none; visibility:visible
 
 /* THE PLAY NUDGE — the games CTA, demoted 2026-07-24 (was the big Gauntlet + Park Tables
    doors). One quiet line on the world page; games already have four drawer links. */
+/* THE PLAY BUTTON — the games' one clear entry from the world page (2026-07-24, Nate: "the games
+   and gauntlet are kind of hard to find off the home page"). A single modest pill to the arcade
+   hub (/games/, where the Gauntlet + Park Tables + everything live) — findable, but not the two
+   big competing doors the compass pass removed. Styled like the .hw-door world doors above so the
+   page reads as one system: explore the world (three doors), then play (one button). */
 .home-play-nudge { text-align:center; margin:var(--space-5) 0 var(--space-6); }
-.home-play-nudge p { margin:0; font-family:'Share Tech Mono', monospace; font-size:13px;
-  letter-spacing:0.04em; color:rgba(214,204,238,0.66); }
-.home-play-nudge a { color:#c6b8ec; text-decoration:none; border-bottom:1px solid rgba(198,184,236,0.3);
-  padding-bottom:1px; transition:color .18s ease, border-color .18s ease; }
-.home-play-nudge a:hover, .home-play-nudge a:focus-visible { color:#F5C518; border-color:#F5C518; }
+.home-play-btn { display:inline-flex; align-items:center; gap:12px; text-decoration:none;
+  padding:12px 20px; border-radius:var(--r-md);
+  background:linear-gradient(180deg, rgba(80,30,180,.35), rgba(40,20,90,.4));
+  border:1px solid rgba(150,65,255,.45); box-shadow:0 8px 24px -12px rgba(0,0,0,.6);
+  transition:transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
+.home-play-btn:hover, .home-play-btn:focus-visible { transform:translateY(-2px);
+  border-color:#F5C518; box-shadow:0 12px 30px -12px rgba(245,197,24,.3); }
+.hpb-ico { font-size:1.5rem; line-height:1; color:#F5C518; filter:drop-shadow(0 0 8px rgba(245,197,24,.45)); }
+.hpb-txt { display:flex; flex-direction:column; text-align:left; line-height:1.25; }
+.hpb-txt b { font-family:'Poppins',sans-serif; font-weight:700; font-size:1rem; color:#fff; }
+.hpb-txt small { font-size:0.72rem; color:#c6b8ec; }
+.hpb-arrow { color:#F5C518; font-size:1.1rem; }
+@media (prefers-reduced-motion: reduce){ .home-play-btn { transition:none; } }
 
 /* (.hero-world — the "Checker Town → Chess City" links + the arrow between — REMOVED
    2026-07-23, Nate, hero-declutter pass. Both places remain reachable via the Locations
