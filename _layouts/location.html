@@ -21,9 +21,16 @@ layout: default
 
   <div class="location-art">
     {% if page.video %}
-      <video class="location-video" controls loop muted playsinline>
-        <source src="{{ page.video | relative_url }}" type="video/mp4">
-        <source src="{{ page.video | relative_url }}">
+      {%- comment -%} 2026-07-24: sources are typed correctly per extension now (a bare .mkv
+           tagged type="video/mp4" was a claim no browser could honor), an optional WebM can
+           lead for a smaller file, and it plays as ambient art — autoplay + muted + loop +
+           inline (muted is what lets iOS/Safari autoplay at all). Add `poster:` in front
+           matter for a first-frame still while it loads / under reduced motion. {%- endcomment -%}
+      <video class="location-video" autoplay loop muted playsinline preload="metadata"
+             {% if page.poster %}poster="{{ page.poster | relative_url }}"{% endif %}>
+        {% if page.video_webm %}<source src="{{ page.video_webm | relative_url }}" type="video/webm">{% endif %}
+        {%- assign vext = page.video | split: '.' | last | downcase -%}
+        <source src="{{ page.video | relative_url }}"{% if vext == 'mp4' %} type="video/mp4"{% elsif vext == 'webm' %} type="video/webm"{% endif %}>
         Your browser does not support the video tag.
       </video>
     {% else %}

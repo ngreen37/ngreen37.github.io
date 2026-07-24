@@ -63,6 +63,7 @@
   }
 
   function showToast(move, msg) {
+    if (!toast || !toastMove || !toastMsg) return;   // pages without the toast markup (e.g. game pages): no-op, no throw
     playChessClick();
     toastMove.textContent = move;
     toastMsg.textContent  = msg;
@@ -103,10 +104,12 @@
     if (pos === seq.length) {
       pos = 0;
       var flash = document.getElementById('konami-flash');
-      flash.classList.remove('is-active');
-      void flash.offsetWidth;
-      flash.classList.add('is-active');
-      setTimeout(function() { flash.classList.remove('is-active'); }, 1500);
+      if (flash) {                                   // absent on pages without the flash overlay (e.g. game pages)
+        flash.classList.remove('is-active');
+        void flash.offsetWidth;
+        flash.classList.add('is-active');
+        setTimeout(function() { flash.classList.remove('is-active'); }, 1500);
+      }
       try { localStorage.setItem('frag_konami', '1'); } catch(e) {}
       showTxToast('CLEARANCE LEVEL: OMEGA — She already knows you\'re here.');
     }

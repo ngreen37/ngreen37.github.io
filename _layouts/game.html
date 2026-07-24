@@ -103,20 +103,10 @@
       padding-top: 0;
     }
 
-    .lang-toggle { background: transparent; color: #9a7fd4; border: 1px solid #6b5fa0; border-radius: 999px;
-      padding: 5px 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin-left: 6px; }
-    .lang-toggle:hover { border-color: #F5C518; color: #F5C518; }
-
-    /* Clean, minimal game-page top bar (replaces the old menu nav) */
-    .game-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px;
-      padding: 0.7rem 0; border-bottom: 1px solid #2a1f52; }
-    .game-brand { display: inline-flex; align-items: center; gap: 7px; text-decoration: none;
-      color: #F5C518; font-weight: 900; font-size: 1.05rem; letter-spacing: 0.06em; }
-    .game-brand:hover { filter: brightness(1.1); }
-    .game-topbar-right { display: flex; align-items: center; gap: 6px; }
-    .game-back { text-decoration: none; color: #9a7fd4; font-size: 0.82rem; font-weight: 700;
-      border: 1px solid #6b5fa0; border-radius: 999px; padding: 5px 12px; }
-    .game-back:hover { border-color: #F5C518; color: #F5C518; }
+    /* The bespoke game-page top bar + its own .lang-toggle style were removed 2026-07-24
+       ("put the nav menu on all pages") — game pages now use the SHARED site header
+       (_includes/site-header.html), so the drawer, ⌘K, language toggle and Contact are
+       identical to every other page and the lang-toggle inherits the site-wide style. */
 
     .game-dispatch { max-width: 860px; margin: 1.8rem auto 0; background: rgba(45,27,105,0.4); border: 1px solid #3a2a6a; border-radius: 12px; padding: 14px 16px; }
     .game-dispatch-text { color: #cfc3ee; font-size: 0.9rem; margin-bottom: 8px; }
@@ -128,21 +118,19 @@
   </style>
 </head>
 <body>
+  <script>
+    /* Restore the docked-rail collapsed state BEFORE paint so the desktop rail never flashes
+       open (full logic + persistence in pjcc-eggs.js; only meaningful at >=901px). Added to
+       game pages 2026-07-24 when they adopted the shared header. */
+    try { if (localStorage.getItem('pjcc.nav.collapsed') === '1') document.body.classList.add('nav-collapsed'); } catch (e) {}
+  </script>
 
   {% comment %} The town sky reaches the game halls too (2026-07-14 Nate: the sun/moon
        arc "includes game and academy pages"). Must stay a DIRECT child of <body> —
        see _sass/_pjcc-20-town-sky.scss. {% endcomment %}
   {% include town-sky.html %}
 
-  <header class="site-header">
-    <div class="wrapper game-topbar">
-      <a class="game-brand" href="{{ '/' | relative_url }}"><span aria-hidden="true">&#9819;</span> PJCC</a>
-      <div class="game-topbar-right">
-        <a class="game-back" href="{{ '/games/' | relative_url }}">&larr; All Games</a>
-        <button class="lang-toggle" id="lang-toggle" type="button" aria-label="Toggle language">日本語</button>
-      </div>
-    </div>
-  </header>
+  {% include site-header.html %}
 
   <main class="page-content" aria-label="Content">
     <div class="wrapper">
@@ -213,6 +201,34 @@
 
   <!-- Av13 — the Shogi Island Gate rite works on game pages too -->
   <script src="{{ '/assets/js/pjcc-portal.js' | relative_url }}" defer></script>
+
+  {%- comment -%} SHARED HEADER CHROME (2026-07-24, "nav on all pages"). The ⌘K palette
+       overlay + the two scripts the shared header needs: pjcc-eggs.js opens/closes the drawer
+       (the hamburger, and the docked-rail collapse on desktop) and pjcc-nav.js runs ⌘K plus
+       the sticky condense-on-scroll. Kept deliberately lean — the toasts / back-to-top /
+       page-transition veil that default.html also carries are left OFF game pages; their
+       scripts each guard on the missing elements, so nothing errors. {%- endcomment -%}
+  <div class="cmdk-overlay" id="cmdk-overlay" hidden>
+    <div class="cmdk-backdrop" data-cmdk-close></div>
+    <div class="cmdk-panel" role="dialog" aria-modal="true" aria-label="Command menu">
+      <div class="cmdk-input-row">
+        <span class="cmdk-input-ico" aria-hidden="true">⌕</span>
+        <input class="cmdk-input" id="cmdk-input" type="text" autocomplete="off" autocorrect="off"
+               autocapitalize="off" spellcheck="false"
+               placeholder="Search the world — games, characters, the studio…"
+               aria-label="Search and jump to a page" aria-controls="cmdk-list" aria-expanded="true">
+        <kbd class="cmdk-esc">esc</kbd>
+      </div>
+      <ul class="cmdk-list" id="cmdk-list" role="listbox" aria-label="Results"></ul>
+      <div class="cmdk-foot">
+        <span><kbd>↑</kbd><kbd>↓</kbd>&nbsp;move</span>
+        <span><kbd>↵</kbd>&nbsp;open</span>
+        <span><kbd>esc</kbd>&nbsp;close</span>
+      </div>
+    </div>
+  </div>
+  <script src="{{ '/assets/js/pjcc-eggs.js' | relative_url }}" defer></script>
+  <script src="{{ '/assets/js/pjcc-nav.js' | relative_url }}" defer></script>
 
   <!-- Cloudflare Web Analytics -->
   <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "46881c52a7e741a2954c7f09a9759305"}'></script>

@@ -1,0 +1,103 @@
+{%- comment -%}
+  THE SITE HEADER — extracted to a shared include 2026-07-24 (Nate: "put the nav menu on
+  all pages"). One copy, used by _layouts/default.html AND _layouts/game.html, so the
+  hamburger + centered logo + ⌘K + language + Contact + the left drawer are byte-identical
+  everywhere and can only be edited in one place.
+
+  What makes it work wherever it's dropped:
+    · #nav-toggle (hamburger) + #site-nav (the drawer) are wired by pjcc-eggs.js — mobile:
+      slide-in overlay; desktop (≥901px): a docked collapsible rail (see _pjcc-13-nav.scss).
+    · #cmdk-trigger opens the ⌘K palette (pjcc-nav.js) — needs the .cmdk-overlay markup +
+      pjcc-nav.js on the page.
+    · #lang-toggle → pjcc-lang.js · #nav-operative → pjcc-profile.js.
+  A host layout must therefore also carry: the pre-paint nav-collapsed restore script, the
+  shared overlays (.cmdk-overlay et al.), and pjcc-eggs.js + pjcc-nav.js.
+{%- endcomment -%}
+  <header class="site-header">
+    <div class="wrapper header-inner">
+
+      <!-- Top bar: hamburger LEFT (2026-07-23 Nate — the drawer opens from the left, so its
+           trigger belongs there), the McPuppy logo CENTERED, controls RIGHT. The header is a
+           3-column grid (see .header-top) so the badge sits dead-center of the header. -->
+      <div class="header-top">
+        <div class="header-top-left">
+          <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+          </button>
+        </div>
+        <span class="site-logo">
+          <img src="{{ '/assets/images/mcpuppy-logo-stacked.svg' | relative_url }}"
+               alt="McPuppy Studios"
+               class="logo-stacked">
+        </span>
+        <div class="header-top-right">
+          <button class="cmdk-trigger" id="cmdk-trigger" type="button" aria-label="Open the command menu" aria-keyshortcuts="Meta+K Control+K" title="Search & jump (Ctrl/⌘ K)">
+            <span class="cmdk-trigger-ico" aria-hidden="true">⌕</span>
+            <span class="cmdk-trigger-label">Jump to…</span>
+            <span class="cmdk-trigger-kbd" aria-hidden="true"><span class="cmdk-mod">⌘</span>K</span>
+          </button>
+          <button class="lang-toggle" id="lang-toggle" type="button" aria-label="Toggle language">日本語</button>
+          <a class="nav-operative" id="nav-operative" href="{{ '/dossier/' | relative_url }}" title="Your Profile — sign in or open it" hidden>Sign in</a>
+          {%- comment -%} 2026-07-16 (Nate): "Hello" → "Contact", to match the splash's pill. {%- endcomment -%}
+          <a class="about-contact-btn" href="{{ '/contact/' | relative_url }}" data-jp="お問い合わせ">Contact</a>
+        </div>
+      </div>
+
+      <!-- ── THE LEFT DRAWER (2026-07-22) ─────────────────────────────────────────────
+           Nate: "the header nav idea is old-school … we're moving those buttons to the
+           left." The context-aware two-branch header bar is retired; ONE six-link set now
+           lives in an off-canvas left drawer, site-wide. #nav-toggle (the hamburger, now
+           shown on every width) opens #site-nav — pjcc-eggs.js toggles `.is-open` and
+           closes it on outside-click / link-tap. `.nav-backdrop` is a DOM SIBLING so
+           `#site-nav.is-open ~ .nav-backdrop` can dim the page with no extra JS. The six
+           links + their targets are Nate's: Play Now→Park Tables, Gauntlet, Puzzles→Fork
+           in the Road, Academy, PJCC→the world landing, Projects→the studio. ⌘K still
+           reaches everything else. Drawer look lives in _sass/_pjcc-13-nav.scss. -->
+      <nav class="site-nav drawer" id="site-nav" aria-label="Site navigation">
+        <div class="drawer-head">
+          <span class="drawer-brand">&#9819; PJCC</span>
+          <span class="drawer-sub">by McPuppy Studios</span>
+        </div>
+
+        <a class="page-link drawer-link" href="{{ '/games/park-tables/' | relative_url }}">
+          <span class="dl-ico" aria-hidden="true">&#9654;</span>
+          <span class="dl-txt"><b>Play Now</b><small>Sit at the Park Tables</small></span>
+        </a>
+        <a class="page-link drawer-link" href="{{ '/games/the-gauntlet/' | relative_url }}">
+          <span class="dl-ico" aria-hidden="true">&#9819;</span>
+          <span class="dl-txt"><b>The Gauntlet</b><small>Climb the tower of ten</small></span>
+        </a>
+        <a class="page-link drawer-link" href="{{ '/games/fork-in-the-road/' | relative_url }}">
+          <span class="dl-ico" aria-hidden="true">&#9876;</span>
+          <span class="dl-txt"><b>Puzzles</b><small>Fork in the Road</small></span>
+        </a>
+        <a class="page-link drawer-link" href="{{ '/academy/' | relative_url }}">
+          <span class="dl-ico" aria-hidden="true">&#9812;</span>
+          <span class="dl-txt"><b>Academy</b><small>Learn chess from scratch</small></span>
+        </a>
+        <a class="page-link drawer-link" href="{{ '/games/' | relative_url }}">
+          <span class="dl-ico" aria-hidden="true">&#9823;</span>
+          <span class="dl-txt"><b>Games</b><small>The Arcade — the whole grid</small></span>
+        </a>
+        <a class="page-link drawer-link drawer-link--pjcc" href="{{ '/pjcc/' | relative_url }}">
+          <span class="dl-ico" aria-hidden="true">&#9670;</span>
+          <span class="dl-txt"><b>PJCC</b><small>The world — cast, places, fan art</small></span>
+        </a>
+        <a class="page-link drawer-link" href="{{ '/projects/' | relative_url }}">
+          <span class="dl-ico" aria-hidden="true">&#128062;</span>
+          <span class="dl-txt"><b>Projects</b><small>Inside McPuppy Studios</small></span>
+        </a>
+
+        <div class="drawer-div" aria-hidden="true"></div>
+        <div class="drawer-mini">
+          <a href="{{ '/blog/' | relative_url }}">Blog</a>
+          <a href="{{ '/contact/' | relative_url }}">Contact</a>
+          <a href="{{ '/leaderboards/' | relative_url }}">Leaderboards</a>
+        </div>
+      </nav>
+      <div class="nav-backdrop" id="nav-backdrop" aria-hidden="true"></div>
+
+    </div>
+  </header>

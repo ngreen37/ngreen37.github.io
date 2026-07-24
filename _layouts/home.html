@@ -256,15 +256,15 @@ layout: default
          piece clears the bottom of CHECKER TOWN -> CHESS CITY by 9px at these sizes and
          COLLIDES at the next step up. So the pieces grew by dropping --b as much as they
          gained in height — bigger against the bigger squares, same headroom. {%- endcomment -%}
-    {%- comment -%} --o was 1, then 0.85, then 0.72, now 0.62 (2026-07-22, Nate keeps asking
+    {%- comment -%} --o was 1, then 0.85, then 0.72, now 0.55 (2026-07-24, Nate keeps asking
          for "a little more transparent"). The checkers sit at 0.34–0.52; each step lets more
          sky graze the fill so the pieces breathe the checkers' air — full 0.5 would turn ivory
-         to slate, so 0.62 is near the floor, just above the top of the checkers' range. The
+         to slate, so 0.55 (2026-07-24) sits just above the top of the checkers' range. The
          black KING fights this: more transparency fades it into a night sky, so it gets its
          own treatment — a white keyline — to keep it standing out (see .hp-cs--b below). {%- endcomment -%}
-    <span class="hp hp-cs hp-cs--w" style="--x:64%;  --b:16px; --w:34px; --o:0.62">{% include chess-piece.html piece='bishop' side='w' %}</span>
-    <span class="hp hp-cs hp-cs--b" style="--x:69.5%;--b:5px;  --w:50px; --o:0.62">{% include chess-piece.html piece='king'   side='b' %}</span>
-    <span class="hp hp-cs hp-cs--w" style="--x:75%;  --b:2px;  --w:42px; --o:0.62">{% include chess-piece.html piece='queen'  side='w' %}</span>
+    <span class="hp hp-cs hp-cs--w" style="--x:64%;  --b:16px; --w:34px; --o:0.55">{% include chess-piece.html piece='bishop' side='w' %}</span>
+    <span class="hp hp-cs hp-cs--b" style="--x:69.5%;--b:5px;  --w:50px; --o:0.55">{% include chess-piece.html piece='king'   side='b' %}</span>
+    <span class="hp hp-cs hp-cs--w" style="--x:75%;  --b:2px;  --w:42px; --o:0.55">{% include chess-piece.html piece='queen'  side='w' %}</span>
   </div>
   {% comment %} No <br> (2026-07-21). The hard break after "Journey" was tuned for a 52px
        title; at poster size the first line no longer fits, so the break landed mid-phrase
@@ -833,8 +833,11 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
    the dark body carries the separation there anyway. Two passes: a solid white keyline plus a
    softer one to thicken it without a hard aliased step. The white pieces keep their own dark
    --piece-w-line edge, so the two towns stay opposite — dark piece / white edge here, white
-   piece / dark edge there. */
-.hp-cs--b { filter:drop-shadow(0 0 0.8px #ffffff) drop-shadow(0 0 0.8px rgba(255,255,255,0.75))
+   piece / dark edge there.
+   (2026-07-24, Nate: both white passes DIMMED a step — 0.8px#fff+0.75 → 0.7px@0.7+0.42 — so
+   the king's rim reads a little softer. Compounds with the pieces going to --o:0.55, so the
+   king is fainter overall now; hold the keyline here if it starts to vanish after dark.) */
+.hp-cs--b { filter:drop-shadow(0 0 0.7px rgba(255,255,255,0.7)) drop-shadow(0 0 0.7px rgba(255,255,255,0.42))
          drop-shadow(0 calc(var(--d) * 0.045) calc(var(--d) * 0.07) rgba(0,0,0,0.5)); }
 
 {% comment %} (the #16 title sheen removed 2026-07-11 — its mix-blend-mode forced an
