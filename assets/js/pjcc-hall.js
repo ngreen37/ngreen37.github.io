@@ -44,11 +44,18 @@
       // (tests/validate-chess.js — perft-verified referee + a Stockfish second opinion).
       var eng = g.engine ? '<span class="gcard-engine" title="Every puzzle here is re-proved against a perft-verified referee — with Stockfish as a second opinion — in CI.">⚙ engine-verified</span>' : '';
       var icon = dead ? g.icon : (locked ? '🔒' : g.icon);
-      // Short descriptions removed from hall cards (kept only as the unlock/delayed hint).
+      // Short descriptions were removed from the halls as a declutter — but each WORKING
+      // (playable, shipped, non-dev) game gets its cryptic line back as a flavor tag, so
+      // the combined grid reads as a set of distinct little worlds instead of a uniform
+      // list (2026-07-24 Nate: "unique, fun box designs … different text, different feels,
+      // for each"). The bespoke per-slug looks live in games.md's page-local <style>; the
+      // in-dev tiles keep the caution-tape watermark, locked/dead keep their hint.
       var descHtml = dead ? '<p>Non-playable — ' + esc(g.cryptic) + '</p>'
         : (locked ? '<p>Locked — flawless Fast run in Notation Blitz</p>' : '');
+      var tag = (!dead && !locked && !g.soon && g.cat !== 'dev' && g.cryptic)
+        ? '<p class="gcard-tag">' + esc(g.cryptic) + '</p>' : '';
       var inner = neu + soon + indev + dbadge + '<span class="gcard-icon">' + icon + '</span>' +
-        '<span class="gcard-body"><h3>' + esc(g.name) + '</h3>' + descHtml + chip + eng + '</span>';
+        '<span class="gcard-body"><h3>' + esc(g.name) + '</h3>' + descHtml + tag + chip + eng + '</span>';
       if (dead) return '<div class="gcard dead" style="--accent:' + g.accent + '">' + inner + '</div>';
       return '<a class="gcard' + (locked ? ' locked' : '') + (g.soon ? ' soon' : '') + '" href="' + url(g.slug) +
         '" style="--accent:' + g.accent + '" data-slug="' + g.slug + '" data-name="' + esc(g.name) + '">' + inner + '</a>';

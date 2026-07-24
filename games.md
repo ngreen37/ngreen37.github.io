@@ -195,6 +195,111 @@ permalink: /games/
   color:#1a0f3d; background:rgba(255,185,25,0.62);
   border-top:3px dashed rgba(26,15,61,0.72); border-bottom:3px dashed rgba(26,15,61,0.72);
   box-shadow:0 4px 16px rgba(0,0,0,0.4); }
+
+/* ═══ UNIQUE BOX DESIGNS — the five working games (2026-07-24, Nate: "give the working
+   games unique, fun box designs … different text, different feels, for each. Play around.
+   Have fun."). Each shipped tile becomes its own little world: a themed ground, a scrap of
+   ambient motion, its cryptic line (rendered by pjcc-hall.js as .gcard-tag) and a one-word
+   eyebrow. The IN-DEV tiles keep the caution-tape watermark; these five are the playable
+   ones. ALL motion is transform/opacity only (the site perf rule) and folds flat under
+   reduced-motion at the very bottom of this block. Specificity `.ghub-all .gcard[data-slug]`
+   (0,3,x) clears the shared `.hall--default .gcard` (0,2,0) themes in _pjcc-15-games.scss. ══ */
+.ghub-all .gcard[data-slug] { overflow:hidden; }
+/* the icon + copy ride ABOVE each card's ambient ::before decoration — but ONLY these two,
+   so the IN-DEV watermark (.gcard-dev, position:absolute z-index:3) and the corner badges
+   keep their own positioning and still paint over the tile. */
+.ghub-all .gcard[data-slug] > .gcard-icon,
+.ghub-all .gcard[data-slug] > .gcard-body { position:relative; z-index:1; }
+.ghub-all .gcard-tag { margin:0.2rem 0 0; font-size:0.72rem; line-height:1.4; color:#cdbdf0; }
+/* the one-word eyebrow above each working title — visual shared, the word set per slug */
+.ghub-all .gcard[data-slug="notation-run"]  .gcard-body h3::before,
+.ghub-all .gcard[data-slug="clearance-delta"] .gcard-body h3::before,
+.ghub-all .gcard[data-slug="sky-run"]        .gcard-body h3::before,
+.ghub-all .gcard[data-slug="sand-mine-depths"] .gcard-body h3::before,
+.ghub-all .gcard[data-slug="tower-defense"]  .gcard-body h3::before {
+  display:block; margin:0 0 3px; font:800 0.5rem/1 'Share Tech Mono',monospace;
+  letter-spacing:0.18em; text-transform:uppercase; opacity:0.72; color:var(--accent); }
+
+/* ── 1 · NOTATION BLITZ — a metronome over sheet-music staff lines ── */
+.ghub-all .gcard[data-slug="notation-run"] {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 9px, rgba(248,216,0,0.10) 9px 10px),
+    linear-gradient(135deg,#2a2410,#1c1836);
+  border-color:#f8d800; }
+.ghub-all .gcard[data-slug="notation-run"] .gcard-body h3::before { content:"Rhythm drill"; }
+.ghub-all .gcard[data-slug="notation-run"] .gcard-icon {
+  transform-origin:50% 88%; animation:nb-tick 1.4s ease-in-out infinite; }
+@keyframes nb-tick { 0%,100%{ transform:rotate(-15deg); } 50%{ transform:rotate(15deg); } }
+.ghub-all .gcard[data-slug="notation-run"]:hover .gcard-icon { animation-duration:0.55s; }
+
+/* ── 2 · CLEARANCE: DELTA — a security terminal: scanline, sweeping bar, blinking cursor ── */
+.ghub-all .gcard[data-slug="clearance-delta"] {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 3px, rgba(255,119,168,0.05) 3px 4px),
+    linear-gradient(160deg,#1c0f1f,#150a2e);
+  border:1px dashed #ff77a8; }
+.ghub-all .gcard[data-slug="clearance-delta"] .gcard-body h3::before { content:"Clearance check"; }
+.ghub-all .gcard[data-slug="clearance-delta"]::before {
+  content:''; position:absolute; left:0; right:0; top:0; height:22%; z-index:0; pointer-events:none;
+  background:linear-gradient(180deg, rgba(255,119,168,0.24), transparent);
+  animation:cd-scan 3.4s linear infinite; }
+@keyframes cd-scan { 0%{ transform:translateY(-40%); } 100%{ transform:translateY(520%); } }
+.ghub-all .gcard[data-slug="clearance-delta"] .gcard-icon { animation:cd-led 1.7s steps(1,end) infinite; }
+@keyframes cd-led { 0%,62%{ opacity:1; } 63%,100%{ opacity:0.42; } }
+.ghub-all .gcard[data-slug="clearance-delta"] .gcard-tag::after {
+  content:'▊'; margin-left:3px; color:#ff77a8; animation:cd-cursor 1.05s steps(1,end) infinite; }
+@keyframes cd-cursor { 0%,50%{ opacity:1; } 51%,100%{ opacity:0; } }
+
+/* ── 3 · SKY RUN — an updraft: pieces drift down the sky, the knight bobs and leaps ── */
+.ghub-all .gcard[data-slug="sky-run"] {
+  background:linear-gradient(180deg,#123a5e 0%,#0e2140 58%,#191340 100%);
+  border-color:#3cbcfc; }
+.ghub-all .gcard[data-slug="sky-run"] .gcard-body h3::before { content:"Going up ↑"; }
+.ghub-all .gcard[data-slug="sky-run"]::before {
+  content:'♟  ♞  ♜'; position:absolute; top:-4px; right:10px; z-index:0; pointer-events:none;
+  font-size:0.78rem; letter-spacing:5px; white-space:nowrap; color:rgba(160,210,255,0.20);
+  animation:sky-fall 6s linear infinite; }
+@keyframes sky-fall {
+  0%{ transform:translateY(-12px); opacity:0; } 18%{ opacity:1; } 100%{ transform:translateY(74px); opacity:0; } }
+.ghub-all .gcard[data-slug="sky-run"] .gcard-icon { animation:sky-bob 2.4s ease-in-out infinite; }
+@keyframes sky-bob { 0%,100%{ transform:translateY(2px); } 50%{ transform:translateY(-3px); } }
+.ghub-all .gcard[data-slug="sky-run"]:hover .gcard-icon { animation-duration:0.9s; }
+
+/* ── 4 · SAND MINE DEPTHS — a descent into the dark, torchlight flickering, pick swinging ── */
+.ghub-all .gcard[data-slug="sand-mine-depths"] {
+  background:linear-gradient(180deg,#3a2a10 0%,#241708 45%,#0d0904 100%);
+  border-color:#fcbc3c; }
+.ghub-all .gcard[data-slug="sand-mine-depths"] .gcard-body h3::before { content:"Going down ↓"; }
+.ghub-all .gcard[data-slug="sand-mine-depths"]::before {
+  content:''; position:absolute; left:6%; top:-24%; width:62%; height:64%; z-index:0; pointer-events:none;
+  background:radial-gradient(ellipse at 50% 0%, rgba(252,188,60,0.30), transparent 70%);
+  animation:sm-flicker 2.8s ease-in-out infinite; }
+@keyframes sm-flicker { 0%,100%{ opacity:0.55; } 45%{ opacity:0.9; } 70%{ opacity:0.4; } }
+.ghub-all .gcard[data-slug="sand-mine-depths"] .gcard-icon {
+  transform-origin:72% 22%; animation:sm-swing 3s ease-in-out infinite; }
+@keyframes sm-swing { 0%,100%{ transform:rotate(-8deg); } 50%{ transform:rotate(7deg); } }
+
+/* ── 5 · SIEGE ON CHESS CITY — a rampart: crenellations up top, a torch ember guttering ── */
+.ghub-all .gcard[data-slug="tower-defense"] {
+  background:linear-gradient(180deg,#2a1420,#191030);
+  border-color:#ff77a8; }
+.ghub-all .gcard[data-slug="tower-defense"] .gcard-body h3::before { content:"Hold the line"; }
+.ghub-all .gcard[data-slug="tower-defense"]::before {
+  content:''; position:absolute; left:0; right:0; top:0; height:6px; z-index:0; pointer-events:none;
+  background:repeating-linear-gradient(90deg, rgba(255,119,168,0.7) 0 8px, transparent 8px 16px); }
+.ghub-all .gcard[data-slug="tower-defense"]::after {
+  content:''; position:absolute; right:11px; top:11px; width:8px; height:8px; border-radius:50%; z-index:0; pointer-events:none;
+  background:radial-gradient(circle, #ffd08a, #ff7b3a 70%, transparent);
+  animation:td-torch 1.8s ease-in-out infinite; }
+@keyframes td-torch { 0%,100%{ opacity:0.5; transform:scale(0.9); } 50%{ opacity:1; transform:scale(1.15); } }
+.ghub-all .gcard[data-slug="tower-defense"]:hover .gcard-icon { transform:scale(1.12); }
+
+@media (prefers-reduced-motion: reduce){
+  .ghub-all .gcard[data-slug] .gcard-icon,
+  .ghub-all .gcard[data-slug]::before,
+  .ghub-all .gcard[data-slug]::after,
+  .ghub-all .gcard[data-slug] .gcard-tag::after { animation:none !important; }
+}
 </style>
 
 <!-- ===== THE HALLS — Gauntlet Legends portal screen (pick a hall; no games here) ===== -->
