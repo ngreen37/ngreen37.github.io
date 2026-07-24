@@ -121,14 +121,7 @@ layout: default
      which was quietly acting as clearance. Measured on the live phone hero, 0.62 left the
      king 2px under the world line where the old art had 6. This buys it back. */
   .hero-pieces .hp { --s: 0.56; }
-  /* the tagline block is a fixed 110px by default — too tall under a phone title */
-  .hero-tagline,
-  .hero-tagline .tagline-word,
-  .hero-tagline .tagline-main { height: 62px; }
-  .hero-tagline .tagline-word { line-height: 62px; font-size: 10px; letter-spacing: 3px; }
-  .hero-tagline .tagline-main-tagline { font-size: 15px; }
-  {% comment %} (the .tagline-main-studio phone rule went with the span it sized —
-       2026-07-22, Nate cut that line from the tagline.) {% endcomment %}
+  /* (.hero-tagline phone sizing removed 2026-07-24 with the tagline cut.) */
   /* (.hero-world phone rule removed with the world-line links, 2026-07-23) */
 }
 
@@ -168,10 +161,7 @@ layout: default
      at bottom:40px and the tallest piece reaches ~64px above it, so anything less puts
      the king through the world line. Verified after the fact at five viewport sizes. ── */
   .hero-title { max-width: 21ch; }
-  .hero-tagline,
-  .hero-tagline .tagline-word,
-  .hero-tagline .tagline-main { height: 76px; }
-  .hero-tagline .tagline-word { line-height: 76px; }
+  /* (.hero-tagline desktop sizing removed 2026-07-24 with the tagline cut.) */
   /* THE POSTER (2026-07-21) — this is the site's front door now, so the title is sized
      like one: was clamp(34px, 4.8vw, 52px). The lower bound clears the "small type"
      complaint on the modernization doc's list outright. */
@@ -292,54 +282,24 @@ layout: default
     <i class="ht-spark ht-spark--4" aria-hidden="true">&#10022;</i>
   </h1>
 
-  {% comment %} ── THE LEDE (2026-07-22, Nate) ────────────────────────────────────────
-       A stranger's first screen said the title, then a tagline cycling ONE WORD at a
-       time — land at the wrong second and the only sentence under a show's name is
-       "Blog." The one line that actually explains the site was the Gauntlet's, and it
-       sat at the very bottom edge of a 390x844 phone: above the fold by a few pixels on
-       that device, below it on anything shorter. So it moves up here where the eye
-       already is, and the door below keeps a shorter line of its own.
+  {%- comment -%} REFOCUSED to the WORLD 2026-07-24 (Nate, "commit it to the world"). Was a
+       games/site pitch ("Real chess and more…"); now it LEADS with the show — the animated
+       series, the destination — and puts the arcade second, matching this page's actual job.
+       It also became the new home of the flickering-"i" DAY door to /classified/ (rehomed from
+       the cut studio tagline below; the ✦ star in town-sky stays the night door). The visible
+       egg is aria-hidden; an .sr-only "i" beside it keeps "making" whole for screen readers.
+       Flicker CSS = `.hero-lede .tg-x*` in the style block below, reusing @keyframes tgx-radio. {%- endcomment -%}
+  <p class="hero-lede">An animated series in the mak<a class="tg-x" href="{{ '/classified/' | relative_url }}" tabindex="-1" aria-hidden="true"><i class="tg-x-glyph">i</i></a><i class="sr-only">i</i>ng — and a free chess arcade set in its world.</p>
 
-       It no longer says "no account, no download" (Nate: "my pitch has never been that
-       — the account is free"). The games do not need one; an account is what opens the
-       Gambit's altar and a 1v1 across the Park Tables. That belongs where the account
-       is actually asked for, not in the promise on the front door. {% endcomment %}
-  <p class="hero-lede">Real chess and more — free, in your browser.</p>
-
-  {% comment %} ── THE TAGLINE, brought over from the splash (2026-07-21) ──────────────
-       The seven-word cycle in Nate's arc order (2026-07-16: the cycle CLIMBS to the
-       destination — Animation, the animated series — and lands there last, right before
-       the studio's name). Same markup and the same .studio-tagline / .tagline-* CSS in
-       _sass/_pjcc-04-flair.scss; none of it was ever scoped to the splash.
-
-       It carries the flickering "i" — the SECOND "i" in "Million", which is the day-shift
-       door to /classified/. That door has to move with the tagline or /classified/ is
-       unreachable for twelve hours a day (the ✦ star takes the night shift; it arrives in
-       the next step). The glyph must stay inside the inner <i>: within background-clip:
-       text, `visibility` is the only property that reaches the letter, and the <a> around
-       it has to stay visible to keep its hit box while the glyph drops out.
-
-       aria-hidden is DELIBERATELY NOT set here, unlike on the splash. This is the site's
-       front door and that attribute was the reason it had no descriptive copy at all for
-       a screen reader or for Google. {% endcomment %}
-  <div class="studio-tagline hero-tagline">
-    <span class="tagline-word">Chess.</span>
-    <span class="tagline-word">Blog.</span>
-    <span class="tagline-word">Podcast.</span>
-    <span class="tagline-word">Academy.</span>
-    <span class="tagline-word">Games.</span>
-    <span class="tagline-word">Animation.</span>
-    {% comment %} The "McPuppy Studios" line that used to sit above this one is CUT
-         (2026-07-22, Nate: "cut the one above 'Million Stories to Tell'"). The studio is
-         still credited — by the .hero-eyebrow at the top of the hero, which he kept and
-         which is also the door to /projects/. `.tagline-main` is a centered flex column,
-         so the remaining line simply centers itself; no other change was needed. The
-         .tagline-main-studio rule stays in _pjcc-04-flair.scss — the retired splash
-         layout still uses it. {% endcomment %}
-    <span class="tagline-word tagline-main">
-      <span class="tagline-main-tagline">A Mill<a class="tg-x" href="{{ '/classified/' | relative_url }}" tabindex="-1" aria-hidden="true"><i class="tg-x-glyph">i</i></a>on Stories to Tell</span>
-    </span>
-  </div>
+  {%- comment -%} THE STUDIO TAGLINE CYCLE was CUT here 2026-07-24 (Nate, "commit it to the
+       world"). It read Chess · Blog · Podcast · Academy · Games · Animation · "A Million
+       Stories to Tell" — the STUDIO's output menu, a front-door pitch left over from when this
+       page WAS the site's front door (that moved to index.md 2026-07-23). On the world landing
+       it spoke for McPuppy, not for Princess's world, so it competed with the page's one job.
+       The flickering-"i" /classified/ DAY door it carried is rehomed into the lede above (the
+       night ✦ star is unchanged in town-sky). The .studio-tagline / .tagline-* CSS stays in
+       _pjcc-04-flair.scss — the retired splash layout still references it. Restore the cycle
+       from git: git show <prev>^ -- _layouts/home.html {%- endcomment -%}
 
   {% comment %} ── THE WORLD LINE — removed 2026-07-23 (Nate, hero-declutter) ────────────
        This hero once carried two named links, "Checker Town → Chess City", with a quiet
@@ -427,45 +387,16 @@ layout: default
      set that element since it was written, but the markup never had one, so "Floor N of
      10" has never appeared on this page. Step 1 deferred adding it to a card that was
      about to be replaced; this is the replacement. {% endcomment %}
-<section class="home-cta" aria-labelledby="h-play" data-reveal>
+{%- comment -%} THE GAMES CTA, DEMOTED to a quiet line (2026-07-24, Nate "commit it to the
+     world"). This was the big Gauntlet door + Park Tables pair — the loudest thing on a page
+     whose job is the WORLD, and redundant with the four games links already in the drawer (Play
+     Now, Gauntlet, Puzzles, Games). Now one subtle nudge. The Gauntlet's inline progress script
+     below still runs — it also sets window.__gauntletProg for the ticker — and its door-dressing
+     half simply no-ops now that #gauntlet-door is gone (it guards on the missing element).
+     Restore the two doors from git: git show <prev>^ -- _layouts/home.html {%- endcomment -%}
+<section class="home-play-nudge" aria-labelledby="h-play" data-reveal>
   <h2 id="h-play" class="sr-only">Play chess</h2>
-  {% comment %} SIDE BY SIDE AGAIN (2026-07-22, Nate: "move the gauntlet to the left, and the
-       park tables on the right, on the same horizontal"). Step 1 earlier the same day had
-       narrowed this to ONE door on the reasoning that a front door should ask one thing;
-       Nate's call reverses that. The Gauntlet and the Park Tables now stand as a pair on one
-       row — the climb on the left, the seat on the right — each keeping its own three-part
-       stack (art · gold name · sub). .home-cta is the flex ROW that lays them out and folds
-       back to a column on phones. {% endcomment %}
-  <div class="home-cta-main">
-  <a class="gdoor home-gdoor" id="gauntlet-door" href="{{ '/games/the-gauntlet/' | relative_url }}"
-     aria-label="The Gauntlet — real chess vs a ladder of ten PJCC rivals">
-    <span class="gdoor-arch" aria-hidden="true">
-      <i class="gdoor-door"><b class="gdoor-glyph" id="gdoor-glyph">♛</b><u class="gdoor-knob"></u></i>
-      <i class="gdoor-seam"></i>
-    </span>
-    <span class="gdoor-pips" id="gdoor-pips" aria-hidden="true"></span>
-    <span class="gdoor-whisper" id="gdoor-whisper" aria-hidden="true"></span>
-  </a>
-  <b class="home-cta-name">The Gauntlet</b>
-  {% comment %} the long version of this line is the hero's lede now (2026-07-22) — this
-       one says the thing the door itself cannot: what the climb costs you. {% endcomment %}
-  <i class="home-cta-sub">Ten floors. Beat one to open the next.</i>
-  </div>
-
-  {% comment %} 2026-07-22 (Nate): Park Tables was a one-line pill — table chip on the left,
-       text on the right. He asked for it rebuilt in the Gauntlet's own shape: the drawing
-       centered and BIG to match the door, a bold-gold title under it like "The Gauntlet",
-       and a line beneath. So it is the same three-part stack as the door — art, gold name,
-       sub — the seat presented like the climb, now beside it on the same row rather than
-       below (see SIDE BY SIDE at the top of this section). {% endcomment %}
-  <div class="home-cta-alt">
-    <a class="home-cta-park" href="{{ '/games/park-tables/' | relative_url }}"
-       aria-label="Park Tables — play chess against another operative in the Checker Town park">
-      <span class="home-cta-park-art" aria-hidden="true">{% include park-table.html %}</span>
-      <b class="home-cta-park-name">Park Tables</b>
-      <span class="home-cta-park-sub">Play Chess Now</span>
-    </a>
-  </div>
+  <p>Ready to play? <a href="{{ '/games/the-gauntlet/' | relative_url }}">Climb the Gauntlet &rarr;</a></p>
 </section>
 
 {% comment %} ── 1c. THE STUDIO IS AWAKE ─────────────────────────────────────────────
@@ -520,6 +451,29 @@ layout: default
   font-size:15px; line-height:1.45; color:rgba(233,226,250,0.9);
   text-shadow:0 1px 6px rgba(8,4,24,0.75); }
 
+/* the flickering-"i" DAY door to /classified/, REHOMED here 2026-07-24 from the cut studio
+   tagline. Reuses the GLOBAL @keyframes tgx-radio (_pjcc-04-flair.scss). The lede is plain text
+   (not background-clip:text like the tagline was), so `visibility` simply drops the glyph out =
+   the same "signal dropout" read. Night settles it (the ✦ star takes the night shift); hover /
+   focus and reduced-motion steady it too. The <a> stays visible so it keeps its hit box; only
+   the inner <i> glyph flickers. An .sr-only "i" sits beside it (see the markup) so screen
+   readers still hear "making". */
+.hero-lede .tg-x, .hero-lede .tg-x-glyph { text-decoration:none; color:inherit; -webkit-text-fill-color:inherit; font-style:inherit; }
+.hero-lede .tg-x-glyph { animation:tgx-radio 7.5s steps(1, end) infinite; }
+html.sky-night .hero-lede .tg-x-glyph { animation:none; visibility:visible; }
+.hero-lede .tg-x:hover .tg-x-glyph, .hero-lede .tg-x:focus .tg-x-glyph { animation:none; visibility:visible; }
+@media (prefers-reduced-motion: reduce) { .hero-lede .tg-x-glyph { animation:none; visibility:visible; } }
+html.reduce-flourish .hero-lede .tg-x-glyph { animation:none; visibility:visible; }
+
+/* THE PLAY NUDGE — the games CTA, demoted 2026-07-24 (was the big Gauntlet + Park Tables
+   doors). One quiet line on the world page; games already have four drawer links. */
+.home-play-nudge { text-align:center; margin:var(--space-5) 0 var(--space-6); }
+.home-play-nudge p { margin:0; font-family:'Share Tech Mono', monospace; font-size:13px;
+  letter-spacing:0.04em; color:rgba(214,204,238,0.66); }
+.home-play-nudge a { color:#c6b8ec; text-decoration:none; border-bottom:1px solid rgba(198,184,236,0.3);
+  padding-bottom:1px; transition:color .18s ease, border-color .18s ease; }
+.home-play-nudge a:hover, .home-play-nudge a:focus-visible { color:#F5C518; border-color:#F5C518; }
+
 /* (.hero-world — the "Checker Town → Chess City" links + the arrow between — REMOVED
    2026-07-23, Nate, hero-declutter pass. Both places remain reachable via the Locations
    world-door (→ /locations/). Restore from git: git show <prev>^ -- _layouts/home.html) */
@@ -530,7 +484,7 @@ layout: default
    banner, here it is the poster's subtitle and sits directly under the title.
    The 110px height is the cycle's own — every word is absolutely positioned inside it,
    so the block cannot collapse and the words cannot push each other around. */
-.hero-tagline { margin-top:2px; }
+/* (.hero-tagline placement rule removed 2026-07-24 with the tagline cut.) */
 /* the tg-x link needs no pointer-events re-arm here: that rule exists on the splash only
    because .studio-content turns pointers off for the whole stage. Nothing does that here. */
 
@@ -965,77 +919,11 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
    and it SHOWS on the home now (the old hide that stood it down here is gone; there's no
    second sun to collide with anymore). */
 
-/* ── 1b. THE ONE CTA — the Gauntlet, given the whole band (2026-07-21) ─────────────
-   Replaces .home-plays / .play-card: two equal cards side by side, which is a menu.
-   The door stands alone and BIG now, with Park Tables as one line beneath it.
-
-   The arch is scaled by overriding its four size declarations, exactly the way games.md
-   does for its smaller door — never by transform:scale(), which would blur nothing but
-   would also scale the 2px border and the seam glow into something the canon doesn't
-   own. Everything else about the door — grandeur tiers, floor dressing, the shoji slide
-   on hover, floor zero's tattered cloth — comes from _sass/_pjcc-21-gauntlet-door.scss
-   untouched. ── */
-/* margin-top 0 → 22px (2026-07-22, Nate: "the door … overlaps the bottom of the hero …
-   move it down"). The door's arch throws an ~18px glow (box-shadow 0 0 26px -8px) that was
-   landing on the hero card's bottom border. The gap clears it; the door shrank in the same
-   pass, which claws most of that 22px back off the fold. */
-.home-cta { display:flex; flex-flow:row wrap; align-items:flex-end; justify-content:center;
-  gap:26px 54px; text-align:center; margin:22px 0 var(--space-6); }  /* section rhythm: bottom 34→32 (--space-6). 22px top + the 26/54 pair-gap stay literal (glow clearance + tuned door↔table spacing) */
-/* SIDE BY SIDE (2026-07-22, Nate: "move the gauntlet to the left, and the park tables on the
-   right, on the same horizontal") — was a centered COLUMN of one door; now a ROW of two
-   stacks. align-items:flex-end stands both on the SAME GROUND LINE, which lands the two gold
-   names on one baseline and the two sub-lines on another — so the tall narrow door and the
-   wide short table read as a matched pair of labels even though the drawings differ in
-   height (centering them floats the table mid-door and staggers the names). The phone rule
-   below folds the row to a column — and re-sets align-items to center there, because in a
-   COLUMN flex-end would push both stacks against the right edge. */
-.home-cta-main { display:flex; flex-direction:column; align-items:center; }
-/* the door SHRANK 124×160 → 108×138 (Nate, same note: "shrink the door a bit"). Every
-   inner measure that was tuned to 124 scales with it — the radii, the glyph, floor zero's
-   cloth inset — or the proportions drift. */
-.home-gdoor { gap:11px; }
-.home-gdoor .gdoor-arch { width:108px; height:138px; border-radius:54px 54px 5px 5px; }
-.home-gdoor .gdoor-door { border-radius:49px 49px 0 0; }
-.home-gdoor .gdoor-glyph { font-size:44px; }
-.home-gdoor .gdoor-knob { right:12px; width:6px; height:6px; }
-.home-gdoor .gdoor-pips i { width:7px; height:7px; }
-/* floor zero's cloth hangs from a rod inset in px, tuned for the 78px arch — widen the
-   inset with the arch so the cloth still reads as hung ACROSS the doorway, not as a
-   narrow strip down the middle of it */
-.home-gdoor.gdoor[data-grand="0"] .gdoor-door { left:10px; right:10px; top:16px; }
-.home-gdoor.gdoor[data-grand="0"] .gdoor-glyph { font-size:35px; }
-
-.home-cta-name { font-family:'Poppins',sans-serif; font-weight:800;
-  font-size:clamp(20px, 2.2vw, 26px); color:#F5C518; line-height:1.2; margin-top:14px; }
-.home-cta-sub { font-style:normal; font-size:13px; letter-spacing:0.01em; color:#c6b8ec;
-  line-height:1.45; max-width:34ch; margin-top:5px; }
-
-/* Park Tables — the seat beside the climb (2026-07-22). It mirrors the Gauntlet group to
-   its left: a centered column, big drawing, a bold-gold name, then the line. The row gap on
-   .home-cta sets the space between the two now, so the old 40px top margin is gone; the
-   phone rule adds vertical spacing back when the row folds to a column. */
-.home-cta-alt { margin:0; }
-.home-cta-park { display:flex; flex-direction:column; align-items:center; gap:var(--space-3);  /* 12px exact (adoption) */
-  text-decoration:none; color:inherit;
-  transition:color .18s ease; }
-/* the drawing grew to sit level with the door (Nate: "make the table bigger to match gauntlet
-   door", then 2026-07-22 "make the park table link a bit bigger" → scale 0.70 → 0.80, box
-   ~150px wide). Same box-equals-paint trick as before: a transform does not reflow, so the box
-   is declared at the SCALED size and the canon drawing (190×99) is anchored top-left inside it
-   and scaled to fill — reserved space and paint agree, and the table cannot spill onto the
-   title beneath it. */
-.home-cta-park-art { display:block; position:relative; width:152px; height:79px;
-  flex:0 0 auto; }
-.home-cta-park-art .pkt-scene { position:absolute; top:0; left:0;
-  transform:scale(0.80); transform-origin:top left; }
-/* the gold title, the Gauntlet's own type (Nate: "in Bold Gold like the words 'The
-   Gauntlet'") — literally the .home-cta-name recipe. */
-.home-cta-park-name { font-family:'Poppins',sans-serif; font-weight:800;
-  font-size:clamp(20px, 2.2vw, 26px); color:#F5C518; line-height:1.2; }
-.home-cta-park-sub { font-family:'Share Tech Mono', monospace; font-size:12px;
-  letter-spacing:0.1em; color:rgba(214,204,238,0.72); transition:color .18s ease; }
-.home-cta-park:hover .home-cta-park-sub, .home-cta-park:focus-visible .home-cta-park-sub {
-  color:#F5C518; }
+/* (── 1b. THE ONE CTA CSS — the .home-cta / .home-gdoor / .home-cta-park door + table styles
+   — was REMOVED 2026-07-24 when the games CTA was demoted to the quiet .home-play-nudge line
+   (Nate, "commit it to the world"). The nudge's own small styles live up in the hero style
+   block, beside the rehomed classified-"i" egg. Restore the doors + this CSS from git if they
+   ever return: git show <prev>^ -- _layouts/home.html) */
 
 /* ── 1c. THE STUDIO IS AWAKE — the lamp beside the last thing that shipped ──────────
    The lamp's drawing is _sass/_pjcc-24-desk-lamp.scss, which sizes it and deliberately
@@ -1073,18 +961,7 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
   .awake-lamp { transform:scale(0.78); transform-origin:bottom center; width:64px; height:72px; }
   .awake-post { font-size:13px; }
   .awake-more { font-size:10.5px; }
-  .home-cta { flex-direction:column; align-items:center; gap:34px; margin-bottom:26px; }
-  .home-gdoor .gdoor-arch { width:92px; height:118px; border-radius:46px 46px 4px 4px; }
-  .home-gdoor .gdoor-door { border-radius:41px 41px 0 0; }
-  .home-gdoor .gdoor-glyph { font-size:37px; }
-  .home-gdoor.gdoor[data-grand="0"] .gdoor-door { left:8px; right:8px; top:13px; }
-  .home-cta-sub { font-size:11.5px; }
-  /* the table keeps pace with the phone door — a touch smaller than desktop but still the
-     big centered drawing, not the old chip. */
-  .home-cta-park-art { width:112px; height:58px; }
-  .home-cta-park-art .pkt-scene { transform:scale(0.59); }
-  .home-cta-park-name { font-size:19px; }
-  .home-cta-park-sub { font-size:10px; }
+  /* (.home-cta / .home-gdoor / .home-cta-park phone rules removed 2026-07-24 — CTA demoted.) */
 }
 </style>
 
