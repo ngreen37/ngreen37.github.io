@@ -89,9 +89,12 @@ permalink: /games/
    NOTE — the home hero has its OWN copy of .gdoor and it stays a COLUMN: it sits in
    a wide hero with room to spare, and the vertical door is the better shape there.
    The two copies are deliberately different now; don't "sync" this back. ---- */
-.ghub-doorway { position:relative; z-index:2; display:flex; justify-content:center;
+/* 2026-07-25 (Nate): spread the two featured entrances apart — Gauntlet door LEFT, trophy
+   RIGHT — rather than clustering them centre. A centred max-width band + space-between sits
+   them over the inner columns (≈ the Pirc + Clearance boxes); nudge the width to taste. */
+.ghub-doorway { position:relative; z-index:2; display:flex; justify-content:space-between;
   align-items:flex-end; flex-wrap:wrap; gap:18px clamp(20px, 4vw, 48px);
-  margin:0 auto 14px; animation:ghub-wake .6s ease both; }
+  max-width:min(62%, 560px); margin:0 auto 14px; animation:ghub-wake .6s ease both; }
 
 /* ---- THE PARK TABLES entrance — since 2026-07-16 it's the ONE canonical park-table
    unit (Nate: "they should always be uniform"): _includes/park-table.html +
@@ -271,34 +274,50 @@ permalink: /games/
 @keyframes sky-bob { 0%,100%{ transform:translateY(2px); } 50%{ transform:translateY(-3px); } }
 .ghub-all .gcard[data-slug="sky-run"]:hover .gcard-icon { animation-duration:0.9s; }
 
-/* ── 4 · SAND MINE DEPTHS — a descent into the dark, torchlight flickering, pick swinging ── */
+/* ── 4 · SAND MINE DEPTHS — RETHEMED 2026-07-25 (Nate: give it a different box theme): a
+   seam of ORE cutting through the rock, a glint travelling down it, and the pick digging. ── */
 .ghub-all .gcard[data-slug="sand-mine-depths"] {
-  background:linear-gradient(180deg,#4a3818 0%,#2c1e0c 45%,#100b06 100%);
+  background:linear-gradient(180deg,#43331a 0%,#281c0d 50%,#100b06 100%);
   border-color:#fcbc3c; }
 .ghub-all .gcard[data-slug="sand-mine-depths"] .gcard-body h3::before { content:"Going down ↓"; }
+/* the ore seam, struck diagonally across the rock */
 .ghub-all .gcard[data-slug="sand-mine-depths"]::before {
-  content:''; position:absolute; left:6%; top:-24%; width:62%; height:64%; z-index:0; pointer-events:none;
-  background:radial-gradient(ellipse at 50% 0%, rgba(252,188,60,0.30), transparent 70%);
-  animation:sm-flicker 2.8s ease-in-out infinite; }
-@keyframes sm-flicker { 0%,100%{ opacity:0.55; } 45%{ opacity:0.9; } 70%{ opacity:0.4; } }
+  content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background:linear-gradient(62deg, transparent 44%, rgba(252,188,60,0.15) 47%, rgba(255,238,196,0.42) 50%,
+    rgba(252,188,60,0.15) 53%, transparent 56%); }
+/* a glint that travels along the seam */
+.ghub-all .gcard[data-slug="sand-mine-depths"]::after {
+  content:''; position:absolute; top:-25%; bottom:-25%; left:0; width:26%; z-index:0; pointer-events:none;
+  background:linear-gradient(62deg, transparent 45%, rgba(255,255,255,0.42) 50%, transparent 55%);
+  animation:sm-glint 3.6s ease-in-out infinite; }
+@keyframes sm-glint { 0%{ transform:translateX(-70%); opacity:0; } 35%,65%{ opacity:1; } 100%{ transform:translateX(370%); opacity:0; } }
 .ghub-all .gcard[data-slug="sand-mine-depths"] .gcard-icon {
-  transform-origin:72% 22%; animation:sm-swing 3s ease-in-out infinite; }
-@keyframes sm-swing { 0%,100%{ transform:rotate(-8deg); } 50%{ transform:rotate(7deg); } }
+  transform-origin:60% 32%; animation:sm-dig 1.5s ease-in-out infinite; }
+@keyframes sm-dig { 0%,100%{ transform:translateY(-2px) rotate(-11deg); } 55%{ transform:translateY(2px) rotate(6deg); } }
 
-/* ── 5 · SIEGE ON CHESS CITY — a rampart: crenellations up top, a torch ember guttering ── */
+/* ── 5 · SIEGE ON CHESS CITY — RETHEMED 2026-07-25 (Nate: a different box theme): battle
+   SMOKE drifting over the walls, an ember rising off the siege, the keep bracing. ── */
 .ghub-all .gcard[data-slug="tower-defense"] {
-  background:linear-gradient(180deg,#3c1b30,#20143c);
+  background:linear-gradient(180deg,#3a1b2e,#211440);
   border-color:#ff77a8; }
 .ghub-all .gcard[data-slug="tower-defense"] .gcard-body h3::before { content:"Hold the line"; }
+/* two soft banks of smoke drifting back and forth over the ramparts */
 .ghub-all .gcard[data-slug="tower-defense"]::before {
-  content:''; position:absolute; left:0; right:0; top:0; height:6px; z-index:0; pointer-events:none;
-  background:repeating-linear-gradient(90deg, rgba(255,119,168,0.7) 0 8px, transparent 8px 16px); }
+  content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(62% 54% at 22% 84%, rgba(255,150,120,0.22), transparent 72%),
+    radial-gradient(54% 48% at 80% 92%, rgba(200,120,255,0.18), transparent 72%);
+  animation:td-smoke 6s ease-in-out infinite alternate; }
+@keyframes td-smoke { 0%{ transform:translateX(-6%); } 100%{ transform:translateX(6%); } }
+/* an ember spark rising from the fighting */
 .ghub-all .gcard[data-slug="tower-defense"]::after {
-  content:''; position:absolute; right:11px; top:11px; width:8px; height:8px; border-radius:50%; z-index:0; pointer-events:none;
-  background:radial-gradient(circle, #ffd08a, #ff7b3a 70%, transparent);
-  animation:td-torch 1.8s ease-in-out infinite; }
-@keyframes td-torch { 0%,100%{ opacity:0.5; transform:scale(0.9); } 50%{ opacity:1; transform:scale(1.15); } }
-.ghub-all .gcard[data-slug="tower-defense"]:hover .gcard-icon { transform:scale(1.12); }
+  content:''; position:absolute; left:15%; bottom:9px; width:6px; height:6px; border-radius:50%; z-index:0; pointer-events:none;
+  background:radial-gradient(circle, #ffe0a8, #ff7b3a 70%, transparent);
+  animation:td-ember 2.8s ease-in-out infinite; }
+@keyframes td-ember { 0%{ transform:translateY(0) scale(1); opacity:0; } 18%{ opacity:1; } 100%{ transform:translateY(-46px) scale(0.5); opacity:0; } }
+.ghub-all .gcard[data-slug="tower-defense"] .gcard-icon { animation:td-brace 2.4s ease-in-out infinite; }
+@keyframes td-brace { 0%,100%{ transform:translateX(0); } 25%{ transform:translateX(-1.5px); } 75%{ transform:translateX(1.5px); } }
+.ghub-all .gcard[data-slug="tower-defense"]:hover .gcard-icon { animation-duration:0.5s; }
 
 @media (prefers-reduced-motion: reduce){
   .ghub-all .gcard[data-slug] .gcard-icon,
@@ -316,10 +335,9 @@ permalink: /games/
        spaced centered row now, not a lopsided top-left cluster:
        🏆 Leaderboards · the Gauntlet · Park Tables · the Gambit altar. ── -->
   <div class="ghub-doorway">
-    <a class="ghub-trophy" href="{{ '/leaderboards/' | relative_url }}" aria-label="Leaderboards" title="Leaderboards">🏆</a>
-
-    {%- comment -%} 2026-07-16 evening (Nate): PLATE PARITY — the THE GAUNTLET plate
-         and the "Begin the climb" caption are gone everywhere, like the splash. {%- endcomment -%}
+    {%- comment -%} 2026-07-25 (Nate): the Gauntlet door anchors the LEFT (over the Pirc box),
+         the trophy anchors the RIGHT (over Clearance) — the row spreads them apart now instead
+         of clustering them centre. PLATE PARITY kept: no plate, no "Begin the climb" caption. {%- endcomment -%}
     <a class="gdoor" id="gauntlet-door" href="{{ '/games/the-gauntlet/' | relative_url }}"
        aria-label="The Gauntlet — real chess vs a ladder of ten PJCC rivals">
       <span class="gdoor-arch" aria-hidden="true">
@@ -329,6 +347,7 @@ permalink: /games/
       <span class="gdoor-pips" id="gdoor-pips" aria-hidden="true"></span>
       <span class="gdoor-whisper" id="gdoor-whisper" aria-hidden="true"></span>
     </a>
+    <a class="ghub-trophy" href="{{ '/leaderboards/' | relative_url }}" aria-label="Leaderboards" title="Leaderboards">🏆</a>
 
     {%- comment -%} THE PARK TABLES entrance was removed from the games hall 2026-07-22
          (Nate: "Get rid of the Park table link"). Park Tables is the "Play Now" link in the
