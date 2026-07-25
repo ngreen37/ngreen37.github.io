@@ -104,6 +104,12 @@ permalink: /games/
    floating over a small stone altar. Amber accent = the wager (never real money). ---- */
 .gmdoor { display:flex; align-items:center; justify-content:center;
   text-decoration:none; --acc:#e8b34a; }
+/* THE GAMBIT ALTAR IN THE GRID (2026-07-24 Nate: "put it down there … don't give it a box") —
+   the altar is now the LAST item of the games grid, next to Blindfold Puzzles. No card box; it
+   fills its cell height, centers, and is scaled up a little so it reads at grid scale. Placed +
+   kept in the grid by the small script at the foot of this file. */
+.ghub-all .gmdoor--grid { height:100%; min-height:130px; }
+.ghub-all .gmdoor--grid .gm-scene { transform:scale(1.2); transform-origin:center; }
 .gm-scene { position:relative; width:72px; height:92px; }
 .gm-altar { position:absolute; left:50%; bottom:12px; transform:translateX(-50%);
   width:40px; height:22px; background:linear-gradient(180deg,#3a2d5a,#221936);
@@ -223,8 +229,8 @@ permalink: /games/
 /* ── 1 · NOTATION BLITZ — a metronome over sheet-music staff lines ── */
 .ghub-all .gcard[data-slug="notation-run"] {
   background:
-    repeating-linear-gradient(0deg, transparent 0 9px, rgba(248,216,0,0.10) 9px 10px),
-    linear-gradient(135deg,#2a2410,#1c1836);
+    repeating-linear-gradient(0deg, transparent 0 9px, rgba(248,216,0,0.12) 9px 10px),
+    linear-gradient(135deg,#3b3016,#27213c);
   border-color:#f8d800; }
 .ghub-all .gcard[data-slug="notation-run"] .gcard-body h3::before { content:"Rhythm drill"; }
 .ghub-all .gcard[data-slug="notation-run"] .gcard-icon {
@@ -235,8 +241,8 @@ permalink: /games/
 /* ── 2 · CLEARANCE: DELTA — a security terminal: scanline, sweeping bar, blinking cursor ── */
 .ghub-all .gcard[data-slug="clearance-delta"] {
   background:
-    repeating-linear-gradient(0deg, transparent 0 3px, rgba(255,119,168,0.05) 3px 4px),
-    linear-gradient(160deg,#1c0f1f,#150a2e);
+    repeating-linear-gradient(0deg, transparent 0 3px, rgba(255,119,168,0.06) 3px 4px),
+    linear-gradient(160deg,#33172f,#1d1033);
   border:1px dashed #ff77a8; }
 .ghub-all .gcard[data-slug="clearance-delta"] .gcard-body h3::before { content:"Clearance check"; }
 .ghub-all .gcard[data-slug="clearance-delta"]::before {
@@ -252,7 +258,7 @@ permalink: /games/
 
 /* ── 3 · SKY RUN — an updraft: pieces drift down the sky, the knight bobs and leaps ── */
 .ghub-all .gcard[data-slug="sky-run"] {
-  background:linear-gradient(180deg,#123a5e 0%,#0e2140 58%,#191340 100%);
+  background:linear-gradient(180deg,#164a6c 0%,#122b50 58%,#1b1644 100%);
   border-color:#3cbcfc; }
 .ghub-all .gcard[data-slug="sky-run"] .gcard-body h3::before { content:"Going up ↑"; }
 .ghub-all .gcard[data-slug="sky-run"]::before {
@@ -267,7 +273,7 @@ permalink: /games/
 
 /* ── 4 · SAND MINE DEPTHS — a descent into the dark, torchlight flickering, pick swinging ── */
 .ghub-all .gcard[data-slug="sand-mine-depths"] {
-  background:linear-gradient(180deg,#3a2a10 0%,#241708 45%,#0d0904 100%);
+  background:linear-gradient(180deg,#4a3818 0%,#2c1e0c 45%,#100b06 100%);
   border-color:#fcbc3c; }
 .ghub-all .gcard[data-slug="sand-mine-depths"] .gcard-body h3::before { content:"Going down ↓"; }
 .ghub-all .gcard[data-slug="sand-mine-depths"]::before {
@@ -281,7 +287,7 @@ permalink: /games/
 
 /* ── 5 · SIEGE ON CHESS CITY — a rampart: crenellations up top, a torch ember guttering ── */
 .ghub-all .gcard[data-slug="tower-defense"] {
-  background:linear-gradient(180deg,#2a1420,#191030);
+  background:linear-gradient(180deg,#3c1b30,#20143c);
   border-color:#ff77a8; }
 .ghub-all .gcard[data-slug="tower-defense"] .gcard-body h3::before { content:"Hold the line"; }
 .ghub-all .gcard[data-slug="tower-defense"]::before {
@@ -329,14 +335,10 @@ permalink: /games/
          site drawer now, so the games hall no longer duplicates it. The .ptdoor CSS above is
          left in place (harmless, unused) in case the entrance is ever restored. {%- endcomment -%}
 
-    <a class="gmdoor" href="{{ '/the-gambit/' | relative_url }}"
-       aria-label="The Gambit — wager what you've earned; the board sometimes gives back more. Never real money.">
-      <span class="gm-scene" aria-hidden="true">
-        <i class="gm-glow"></i>
-        <b class="gm-coin">♟</b>
-        <i class="gm-altar"></i>
-      </span>
-    </a>
+    {%- comment -%} THE GAMBIT ALTAR moved OUT of this featured row 2026-07-24 (Nate: "move the
+         altar into the bottom right corner next to Blindfold Puzzles — don't give it a box, just
+         put it down there"). It's appended as the last item of the games grid below by the small
+         script at the foot of this file. The featured row is Leaderboards + the Gauntlet now. {%- endcomment -%}
 
   </div>
 
@@ -374,6 +376,22 @@ permalink: /games/
 <!-- the combined grid: pjcc-hall.js reads data-hall="all" and lists every playable game
      (in-dev tagged, vault locked, terminated dropped) — replaces the old category portals. -->
 <script src="{{ '/assets/js/pjcc-hall.js' | relative_url }}"></script>
+<!-- THE GAMBIT ALTAR in the grid (2026-07-24) — append it as the LAST grid item so it lands in
+     the cell right after Blindfold Puzzles (bottom-right). No .gcard = no box; no title. pjcc-hall
+     renders the grid TWICE (initial, then again once the profile bests load), so an observer
+     re-places the altar whenever the grid's children are rebuilt. -->
+<script>
+(function () {
+  var grid = document.querySelector('#games-hall .cat-games');
+  if (!grid) return;
+  var HTML = '<a class="gmdoor gmdoor--grid" href="{{ '/the-gambit/' | relative_url }}"' +
+    ' aria-label="The Gambit — wager what you’ve earned; the board sometimes gives back more. Never real money.">' +
+    '<span class="gm-scene" aria-hidden="true"><i class="gm-glow"></i><b class="gm-coin">♟</b><i class="gm-altar"></i></span></a>';
+  function place() { if (!grid.querySelector('.gmdoor--grid')) grid.insertAdjacentHTML('beforeend', HTML); }
+  place();
+  new MutationObserver(place).observe(grid, { childList: true });
+})();
+</script>
 <script>
 // THE DOOR resume state — same climb data the game + homepage read.
 (function () {
