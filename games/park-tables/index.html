@@ -647,15 +647,64 @@ a move a day is plenty.</p>
       .catch(function () { lobbyRetry(); });
   }
 
-  /* ── NEW TABLE OPTIONS (rated/casual + clock, chess.com style) ───────────── */
+  /* ── PULL UP A SEAT — the three tables, each with a personality ───────────
+     (2026-07-25 Nate: "Tables with personalities — 100%. Let's try it.") Instead of a
+     bare rated/clock form, the "open a table" (and "challenge McPuppy") door now offers
+     three named benches, each a PRESET over the (rated + per-move clock) the server
+     already understands and each given its own accent + one-line character. Tapping a
+     seat opens that table straight away. "Custom table…" still reveals the raw controls
+     for an exact setup, so nothing is lost. The personality is a CLIENT label — the
+     created row is only rated + control_secs, so there's no new server column. */
   var newRated = true, newControl = 86400;
-  function optionsSheet(vsCreator){
+  var SEATS = [
+    { id:'study', glyph:'♟', name:'The Study Table', accent:'#7ad0a8',
+      rated:false, secs:259200, tag:'Casual · 3 days a move',
+      line:'No rating on the line — take your time and think it through.' },
+    { id:'arena', glyph:'♛', name:'The Arena', accent:'#F5C518',
+      rated:true, secs:86400, tag:'Rated · 1 day a move',
+      line:'Your PJCC Rating rides on every move. All business.' },
+    { id:'bench', glyph:'♞', name:'The Blitz Bench', accent:'#f2a154',
+      rated:true, secs:3600, tag:'Rated · 1 hour a move',
+      line:'Quick tempo — sit down, move, and keep it moving.' }
+  ];
+  function createSeat(vsCreator, seat){
+    app.innerHTML = '<p class="lb-empty">Setting up the board…</p>';
+    M.create(vsCreator, seat.rated, seat.secs).then(function (id) { openTable(id); })
+      .catch(function (e) { toast(e.message); lobby(); });
+  }
+  function optionsSheet(vsCreator, custom){
     stopPolling();
+    var head = vsCreator ? '♛ Challenge McPuppy' : '⚔ Open a table';
+    if (!custom){
+      var seatsH = SEATS.map(function (s) {
+        return '<button class="pt-seat" data-seat="' + s.id + '" style="--seat:' + s.accent + '">' +
+          '<span class="pt-seat-ico">' + s.glyph + '</span>' +
+          '<span class="pt-seat-t"><b>' + s.name + '</b><em>' + s.tag + '</em>' +
+          '<small>' + s.line + '</small></span></button>';
+      }).join('');
+      app.innerHTML = '<div class="pt-sheet">' +
+        '<h2 class="pt-gate-h">' + head + '</h2>' +
+        '<p class="pt-sheet-l">Pull up a seat</p>' +
+        '<div class="pt-seats">' + seatsH + '</div>' +
+        '<div class="pt-gate-row"><button class="pjcc-btn-ghost" id="pt-custom">Custom table…</button>' +
+        '<button class="pjcc-btn-ghost" id="pt-cancel">← Back</button></div></div>';
+      Array.prototype.forEach.call(app.querySelectorAll('[data-seat]'), function (b) {
+        b.onclick = function () {
+          var id = b.getAttribute('data-seat'), s = null;
+          for (var i = 0; i < SEATS.length; i++) if (SEATS[i].id === id) s = SEATS[i];
+          if (s) createSeat(vsCreator, s);
+        };
+      });
+      document.getElementById('pt-custom').onclick = function () { optionsSheet(vsCreator, true); };
+      document.getElementById('pt-cancel').onclick = lobby;
+      return;
+    }
+    // Custom — the raw rated + clock controls, for anyone who wants an exact board.
     var ctlH = M.CONTROLS.map(function (c) {
       return '<button class="pt-pill' + ((c.secs || null) === newControl ? ' on' : '') + '" data-ctl="' + (c.secs || '') + '">' + c.label + '</button>';
     }).join('');
     app.innerHTML = '<div class="pt-sheet">' +
-      '<h2 class="pt-gate-h">' + (vsCreator ? '♛ Challenge McPuppy' : '⚔ Open a table') + '</h2>' +
+      '<h2 class="pt-gate-h">' + head + ' · custom</h2>' +
       '<p class="pt-sheet-l">Stakes</p>' +
       '<div class="pt-pills">' +
         '<button class="pt-pill' + (newRated ? ' on' : '') + '" data-rated="1">Rated — moves your rating</button>' +
@@ -663,18 +712,18 @@ a move a day is plenty.</p>
       '<p class="pt-sheet-l">Clock (per move)</p>' +
       '<div class="pt-pills">' + ctlH + '</div>' +
       '<div class="pt-gate-row"><button class="pjcc-btn" id="pt-start">Set the board ▸</button>' +
-      '<button class="pjcc-btn-ghost" id="pt-cancel">← Back</button></div></div>';
+      '<button class="pjcc-btn-ghost" id="pt-cancel">← Seats</button></div></div>';
     Array.prototype.forEach.call(app.querySelectorAll('[data-rated]'), function (b) {
-      b.onclick = function(){ newRated = b.getAttribute('data-rated') === '1'; optionsSheet(vsCreator); };
+      b.onclick = function () { newRated = b.getAttribute('data-rated') === '1'; optionsSheet(vsCreator, true); };
     });
     Array.prototype.forEach.call(app.querySelectorAll('[data-ctl]'), function (b) {
-      b.onclick = function(){ var v = b.getAttribute('data-ctl'); newControl = v ? +v : null; optionsSheet(vsCreator); };
+      b.onclick = function () { var v = b.getAttribute('data-ctl'); newControl = v ? +v : null; optionsSheet(vsCreator, true); };
     });
-    document.getElementById('pt-cancel').onclick = lobby;
-    document.getElementById('pt-start').onclick = function(){
+    document.getElementById('pt-cancel').onclick = function () { optionsSheet(vsCreator, false); };
+    document.getElementById('pt-start').onclick = function () {
       app.innerHTML = '<p class="lb-empty">Setting up the board…</p>';
-      M.create(vsCreator, newRated, newControl).then(function(id){ openTable(id); })
-        .catch(function(e){ toast(e.message); lobby(); });
+      M.create(vsCreator, newRated, newControl).then(function (id) { openTable(id); })
+        .catch(function (e) { toast(e.message); lobby(); });
     };
   }
 
@@ -912,6 +961,23 @@ a move a day is plenty.</p>
 .pt-pill { background: rgba(45,27,105,0.5); border: 1px solid var(--edge-soft); color: #c9a7ff;
   border-radius: 999px; padding: 8px 13px; font-family: inherit; font-size: 0.8rem; cursor: pointer; }
 .pt-pill.on { border-color: #F5C518; color: #F5C518; background: rgba(245,197,24,0.08); }
+
+/* ── THE SEATS — personality tables (2026-07-25). Each bench wears its own accent
+   stripe; --seat is set inline per seat, gold as the fallback. */
+.pt-seats { display: flex; flex-direction: column; gap: 8px; margin: 2px 0; }
+.pt-seat { display: flex; align-items: flex-start; gap: 13px; width: 100%; text-align: left;
+  background: var(--surface-2); border: 1px solid var(--edge-soft);
+  border-left: 3px solid var(--seat, #F5C518); border-radius: var(--r-sm);
+  padding: 13px 15px; color: #ddd6f3; font-family: inherit; cursor: pointer;
+  transition: border-color .16s ease, transform .16s ease; }
+.pt-seat:hover { border-color: var(--seat, #F5C518); transform: translateX(3px); }
+.pt-seat-ico { font-size: 25px; line-height: 1; color: var(--seat, #F5C518); flex: none; }
+.pt-seat-t { display: flex; flex-direction: column; gap: 3px; }
+.pt-seat-t b { color: #f3ecff; font-size: 1rem; }
+.pt-seat-t em { font-style: normal; font-family: 'Share Tech Mono', monospace;
+  font-size: 0.68rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--seat, #9a7fd4); }
+.pt-seat-t small { color: #b6a3dd; font-size: 0.82rem; line-height: 1.4; }
+@media (prefers-reduced-motion: reduce) { .pt-seat { transition: none; } .pt-seat:hover { transform: none; } }
 
 .pt-h { color: #F5C518; font-size: 1rem; margin: 20px 0 8px; }
 .pt-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%;
