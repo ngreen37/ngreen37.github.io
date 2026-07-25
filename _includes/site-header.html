@@ -68,17 +68,20 @@
           <span class="dl-ico" aria-hidden="true">&#9670;</span>
           <span class="dl-txt"><b>PJCC</b><small>The world — cast, places, fan art</small></span>
         </a>
-        <a class="page-link drawer-link" href="{{ '/games/' | relative_url }}">
-          <span class="dl-ico" aria-hidden="true">&#9823;</span>
-          <span class="dl-txt"><b>Games</b><small>The Arcade — the whole grid</small></span>
+        {%- comment -%} 2026-07-25 (Nate: "switch the position of Play Now and Games. I want
+             Play Now to be prominent."): Play Now rises to just under PJCC; Games drops below
+             the Gauntlet. Order is markup order — no nth-child depends on it. {%- endcomment -%}
+        <a class="page-link drawer-link" href="{{ '/games/park-tables/' | relative_url }}">
+          <span class="dl-ico" aria-hidden="true">&#9654;</span>
+          <span class="dl-txt"><b>Play Now</b><small>Sit at the Park Tables</small></span>
         </a>
         <a class="page-link drawer-link" href="{{ '/games/the-gauntlet/' | relative_url }}">
           <span class="dl-ico" aria-hidden="true">&#9819;</span>
           <span class="dl-txt"><b>The Gauntlet</b><small>Climb the tower of ten</small></span>
         </a>
-        <a class="page-link drawer-link" href="{{ '/games/park-tables/' | relative_url }}">
-          <span class="dl-ico" aria-hidden="true">&#9654;</span>
-          <span class="dl-txt"><b>Play Now</b><small>Sit at the Park Tables</small></span>
+        <a class="page-link drawer-link" href="{{ '/games/' | relative_url }}">
+          <span class="dl-ico" aria-hidden="true">&#9823;</span>
+          <span class="dl-txt"><b>Games</b><small>The Arcade — the whole grid</small></span>
         </a>
         <a class="page-link drawer-link" href="{{ '/games/fork-in-the-road/' | relative_url }}">
           {%- comment -%} ♞ knight = the forking piece (2026-07-24 Nate: a "puzzle piece" without
