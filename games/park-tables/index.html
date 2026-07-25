@@ -72,7 +72,7 @@ a move a day is plenty.</p>
              ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(GLYPH[p.toLowerCase()], 64, 70); }
     }
   }
-  var timer = null, creatorId = null, myRate = null;
+  var timer = null, creatorId = null, myRate = null, lobbyTries = 0;
 
   function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   function stopPolling(){ if (timer) { clearTimeout(timer); timer = null; } }
@@ -508,8 +508,23 @@ a move a day is plenty.</p>
   function lobby(){
     stopPolling();
     app.innerHTML = '<p class="lb-empty">Walking to the park…</p>';
+    // First-load resilience (2026-07-25 Nate: "hitting play now the first time … it says
+    // 'walking to the park' but never loads — I always have to refresh"). On a COLD visit a
+    // Supabase call can reject — or hang — before the restored session is attached, and with no
+    // catch the loader sat there forever. Now a reject OR a 6s hang auto-retries a few times
+    // (short backoff), then offers a manual retry — no page refresh needed. `done` makes sure
+    // the guard and a late resolve can't both fire.
+    var done = false;
+    function lobbyRetry(){
+      if (done) return; done = true; clearTimeout(guard);
+      if (lobbyTries < 3) { lobbyTries++; timer = setTimeout(lobby, 700 * lobbyTries); return; }
+      app.innerHTML = '<p class="lb-empty">The park didn’t load. <button class="pjcc-btn-ghost" id="pt-retry">Try again</button></p>';
+      var rb = document.getElementById('pt-retry'); if (rb) rb.onclick = function(){ lobbyTries = 0; lobby(); };
+    }
+    var guard = setTimeout(lobbyRetry, 6000);
     Promise.all([M.openTables(), M.myTables(uid()), M.creatorId(), M.myFinished(uid()), M.myRating(uid())])
       .then(function (r) {
+        if (done) return; done = true; clearTimeout(guard); lobbyTries = 0;
         var open = r[0], mine = r[1]; creatorId = r[2]; myRate = r[4];
         if (open.missing || mine.missing) {
           app.innerHTML = '<p class="lb-empty">The tables are being set up — check back soon.</p>'; return;
@@ -628,7 +643,8 @@ a move a day is plenty.</p>
           };
         });
         timer = setTimeout(lobby, 20000);          // quiet lobby refresh
-      });
+      })
+      .catch(function () { lobbyRetry(); });
   }
 
   /* ── NEW TABLE OPTIONS (rated/casual + clock, chess.com style) ───────────── */
