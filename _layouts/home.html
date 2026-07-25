@@ -827,8 +827,13 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
    2026-07-14 (Nate): the rotating conic light that spun during the katakana flip
    — his "light-up rotating squares" — is gone; too much animation for a whisper
    of an egg. The flip keeps only this soft violet wash in and out. */
-.puri-veil { position:fixed; inset:0; z-index:12000; pointer-events:none; opacity:0; transition:opacity .48s ease;
-  background:radial-gradient(circle at 50% 42%, rgba(124,77,255,0.34), rgba(10,7,20,0) 62%); }
+/* 2026-07-25 (Nate: "fade it in, and fade it out … a little too stark"): the wash used to
+   only dim the CENTER at 34% with clear edges, so the instant English→kana swap underneath
+   was plainly visible = stark. It now covers the whole viewport enough to MASK the swap, and
+   fades slower (.7s), so the Japanese dissolves in and back out instead of snapping. The JS
+   swap fires at the fade's peak (its delays match this duration). */
+.puri-veil { position:fixed; inset:0; z-index:12000; pointer-events:none; opacity:0; transition:opacity .7s ease;
+  background:radial-gradient(circle at 50% 44%, rgba(46,28,86,0.92), rgba(12,8,22,0.82) 82%); }
 .puri-veil.is-on { opacity:1; }
 </style>
 
@@ -1452,10 +1457,10 @@ function ctParts() {
         setTimeout(function () {
           swapped.forEach(function (pr) { pr[0].nodeValue = pr[1]; });
           veil.classList.remove('is-on');
-          setTimeout(function () { try { veil.remove(); } catch (e) {} }, 600);
-        }, 480);
+          setTimeout(function () { try { veil.remove(); } catch (e) {} }, 750);
+        }, 700);       // swap back at the veil's peak (matches the .7s fade)
       }, 3000);
-    }, 480);
+    }, 700);           // first swap at the veil's peak (matches the .7s fade)
   }
   go.kana = kana;
   window.__puri = go;
