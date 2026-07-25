@@ -429,3 +429,22 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
 }
 html.reduce-flourish body.nav-collapsed .drawer-link:hover .dl-txt,
 html.reduce-flourish body.nav-collapsed .drawer-link:focus-visible .dl-txt { transition: none; }
+
+/* ── "It's your move at the park" nudge (2026-07-25, Nate) ────────────────────
+   pjcc-mymove.js adds .has-move to the hamburger and .dl-move to the Play Now
+   drawer link whenever a Park Tables game is waiting on YOUR move. A calm gold
+   dot (no pulse) on the always-visible hamburger is the main "come back" cue;
+   inside the drawer the Play Now link goes gold with an "It's your move" subtitle. */
+.nav-toggle.has-move { position: relative; }
+.nav-toggle.has-move::after {
+  content: ""; position: absolute; top: -1px; right: -1px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #F5C518; box-shadow: 0 0 6px rgba(245, 197, 24, 0.75);
+}
+.drawer-link.dl-move .dl-ico { color: #F5C518; }
+.drawer-link.dl-move .dl-txt small { color: #F5C518; }
+.drawer-link.dl-move .dl-txt b::after {
+  content: ""; display: inline-block; width: 7px; height: 7px; margin-left: 7px;
+  border-radius: 50%; background: #F5C518; box-shadow: 0 0 6px rgba(245, 197, 24, 0.7);
+  vertical-align: middle;
+}
