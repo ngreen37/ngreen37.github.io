@@ -35,6 +35,7 @@ a move a day is plenty.</p>
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-chess.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-pieces.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-openings.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-match.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-chess-ai.js' | relative_url }}"></script>
@@ -49,6 +50,28 @@ a move a day is plenty.</p>
      the fill cream/ink in CSS — the outline glyphs (♙♘…) have nothing to fill, so
      "white" pieces came out as dark wireframes (2026-07-16 board glow-up). */
   var GLYPH = { P:'♙',N:'♘',B:'♗',R:'♖',Q:'♕',K:'♔', p:'♟',n:'♞',b:'♝',r:'♜',q:'♛',k:'♚' };
+  // THE DRAWN PIECE SET (2026-07-24 Nate: "the level-9 Gauntlet board and pieces — make that
+  // the board and pieces used for Park Tables"). Each square now holds a <canvas class=pt-pc>
+  // that PJCCPieces.draw — the shared canvas renderer the Gauntlet uses — paints with the canon
+  // livery read live from the :root tokens: a bold outline + grounded shadow that stays crisp,
+  // where the old CSS text-glyph muddied. paintPieces() runs after every board render; if the
+  // renderer isn't loaded it draws the filled glyph onto the canvas so a board never goes empty.
+  function ptPAL(){ var s = getComputedStyle(document.documentElement);
+    function v(k,d){ var x = s.getPropertyValue(k).trim(); return x || d; }
+    return { wFill:v('--piece-w-fill','#fff'), wEdge:v('--piece-w-line','#2f2440'),
+             bFill:v('--piece-b-fill','#4a3585'), bEdge:v('--piece-b-line','#f2e9ff') }; }
+  function pcNode(p){ return '<canvas class="pt-pc" width="128" height="128" data-p="' + p + '"></canvas>'; }
+  function paintPieces(root){
+    var cs = (root || document).querySelectorAll('canvas.pt-pc[data-p]'), PAL = ptPAL();
+    for (var i = 0; i < cs.length; i++){
+      var cv = cs[i], p = cv.getAttribute('data-p'); if (!p) continue;
+      var ctx = cv.getContext('2d'); ctx.clearRect(0, 0, 128, 128);
+      var white = p === p.toUpperCase();
+      if (window.PJCCPieces){ PJCCPieces.draw(ctx, 64, 64, 104, p.toUpperCase(), white ? 'w' : 'b', PAL); }
+      else { ctx.fillStyle = white ? PAL.wFill : PAL.bFill; ctx.font = '900 96px "Segoe UI Symbol","Apple Symbols",serif';
+             ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(GLYPH[p.toLowerCase()], 64, 70); }
+    }
+  }
   var timer = null, creatorId = null, myRate = null;
 
   function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
@@ -380,7 +403,7 @@ a move a day is plenty.</p>
         rows += '<button class="pt-sq ' + (((r + f) % 2 === 0) ? 'lt' : 'dk') + (i === botSel ? ' sel' : '') +
           (i in hints ? ' hint' : '') + lastCls(last, i) +
           '" data-bsq="' + i + '"' + (myTurn ? '' : ' tabindex="-1"') + '>' +
-          (p ? '<span class="pt-pc ' + (p === p.toUpperCase() ? 'w' : 'b') + '">' + GLYPH[p.toLowerCase()] + '</span>' : '') +
+          (p ? pcNode(p) : '') +
           coCells(r === 7, f === 0, f, r) + '</button>';
       }
     }
@@ -427,6 +450,7 @@ a move a day is plenty.</p>
       if (!confirm('Resign this game?')) return;
       st.done = 1; st.result = '0-1'; st.reason = 'resignation'; botSave(st); botRender();
     };
+    paintPieces(app);
     if (myTurn) {
       Array.prototype.forEach.call(app.querySelectorAll('[data-bsq]'), function (b) {
         b.onclick = function(){ botTap(+b.getAttribute('data-bsq')); };
@@ -714,7 +738,7 @@ a move a day is plenty.</p>
         rows += '<button class="pt-sq ' + (((r + f) % 2 === 0) ? 'lt' : 'dk') + (i === sel ? ' sel' : '') +
           (i in hints ? ' hint' : '') + lastCls(last, i) +
           '" data-sq="' + i + '"' + (myTurn ? '' : ' tabindex="-1"') + '>' +
-          (p ? '<span class="pt-pc ' + (p === p.toUpperCase() ? 'w' : 'b') + '">' + GLYPH[p.toLowerCase()] + '</span>' : '') +
+          (p ? pcNode(p) : '') +
           coCells(vr === 7, vf === 0, f, r) + '</button>';
       }
     }
@@ -787,6 +811,7 @@ a move a day is plenty.</p>
       if (!confirm('Take this table down?')) return;
       M.finish(m.id, '1/2-1/2', 'withdrawn').then(function(){ cur = null; lobby(); }).catch(function(e){ toast(e.message); });
     };
+    paintPieces(app);
     if (myTurn && !g.result) {
       Array.prototype.forEach.call(app.querySelectorAll('.pt-sq'), function (b) {
         b.onclick = function(){ tap(+b.getAttribute('data-sq')); };
@@ -965,18 +990,13 @@ a move a day is plenty.</p>
 .pt-sq.hint::after { content: ''; position: absolute; inset: 0; margin: auto; width: 34%; height: 34%;
   border-radius: 50%; background: rgba(38,25,10,0.30); box-shadow: 0 0 0 2px rgba(107,255,184,0.9);
   z-index: 2; pointer-events: none; }
-/* the pieces — the canon's cartoon livery: solid fills, fat outlines, flat shadow */
-/* paint-order:stroke = outline drawn UNDER the fill — without it the centered
-   stroke eats thin glyphs (the pawn read as the wrong color) */
-/* upgraded 2026-07-17 — solid canon fills (reliable; a gradient text-fill fights the
-   stroke and inverts the livery), a crisper thinner outline, and a SOFT grounding
-   shadow in place of the flat sticker offset, so a piece reads carved and sitting on
-   the wood. paint-order:stroke keeps the outline under the fill (protects thin glyphs). */
-.pt-pc.w, .pt-pc.b { paint-order: stroke fill; }
-.pt-pc.w { color: var(--piece-w-fill); -webkit-text-stroke: 0.062em var(--piece-w-line);
-  text-shadow: 0 0.5px 0 rgba(255,255,255,0.35), 0 1.5px 1.5px rgba(0,0,0,0.30), 0 3px 5px rgba(0,0,0,0.24); }
-.pt-pc.b { color: var(--piece-b-fill); -webkit-text-stroke: 0.062em var(--piece-b-line);
-  text-shadow: 0 0.5px 0 rgba(180,160,235,0.30), 0 1.5px 1.5px rgba(0,0,0,0.36), 0 3px 5px rgba(0,0,0,0.30); }
+/* the pieces — the shared DRAWN set now (2026-07-24, Nate: the Gauntlet's board/pieces on
+   Park Tables). Each is a <canvas class="pt-pc"> filling its square; PJCCPieces.draw paints the
+   canon livery (bold outline + grounded shadow) in JS — see paintPieces() at the top of the
+   script. The drawing already insets the piece to ~81%, so it sits centered with air around it.
+   The coordinate marks and the legal-move dot stack ABOVE it (later in the DOM / z-index:2).
+   pointer-events:none so a tap always reaches the .pt-sq button beneath. */
+.pt-pc { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
 /* the last-move arrow, drawn over everything; clicks pass through */
 .pt-arrow { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
 .pt-say { margin: 10px 0 0; color: #ffd36b; font-size: 0.92rem; }

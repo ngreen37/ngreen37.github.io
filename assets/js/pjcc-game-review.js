@@ -307,6 +307,54 @@
       sq + mk + pc + ar + '</svg>';
   }
 
+  // THE DRAWN BOARD (2026-07-24 Nate: "the level-9 Gauntlet board and pieces — make that the
+  // board used for … the review"). Same canon woods, but the pieces are the shared DRAWN set
+  // (PJCCPieces.draw — the exact renderer the Gauntlet uses), which stays crisp at review size
+  // where the tiny SVG glyphs muddied and read colour-inverted. Squares/highlight/arrow are
+  // canvas too, so it's one texture. Woods + livery still come straight from the canon tokens.
+  // Falls back to the SVG board wherever PJCCPieces isn't loaded, so a review never renders empty.
+  var REVIEW_PX = 240;
+  function drawBoard(host, fen, hi, arrow) {
+    if (!host) return;
+    if (!window.PJCCPieces) { host.innerHTML = boardSVG(fen, hi, arrow); return; }
+    var dpr = Math.min(2, window.devicePixelRatio || 1), tile = REVIEW_PX / 8;
+    var cv = host.firstChild;
+    if (!cv || cv.tagName !== 'CANVAS') {
+      host.innerHTML = ''; cv = document.createElement('canvas');
+      cv.style.width = REVIEW_PX + 'px'; cv.style.height = REVIEW_PX + 'px';
+      cv.style.borderRadius = '6px'; cv.style.boxShadow = '0 4px 16px rgba(0,0,0,.4)';
+      cv.style.display = 'block'; host.appendChild(cv);
+    }
+    cv.width = REVIEW_PX * dpr; cv.height = REVIEW_PX * dpr;
+    var ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, REVIEW_PX, REVIEW_PX);
+    var css = getComputedStyle(document.documentElement);
+    function v(k, d) { var x = css.getPropertyValue(k).trim(); return x || d; }
+    var LT = v('--chess-lt', '#e9d3a4'), DK = v('--chess-dk', '#9c5f33');
+    var PAL = { wFill: v('--piece-w-fill', '#fff'), wEdge: v('--piece-w-line', '#2f2440'),
+                bFill: v('--piece-b-fill', '#4a3585'), bEdge: v('--piece-b-line', '#f2e9ff') };
+    var S = C().parseFEN(fen), b = S.b, i, x, y;
+    for (i = 0; i < 64; i++) {
+      x = i % 8; y = (i / 8) | 0;
+      ctx.fillStyle = ((x + y) % 2 === 1) ? DK : LT; ctx.fillRect(x * tile, y * tile, tile, tile);
+      if (hi && (i === hi.from || i === hi.to)) { ctx.fillStyle = 'rgba(245,197,24,0.42)'; ctx.fillRect(x * tile, y * tile, tile, tile); }
+    }
+    for (i = 0; i < 64; i++) {
+      var p = b[i]; if (!p) continue; x = i % 8; y = (i / 8) | 0;
+      PJCCPieces.draw(ctx, x * tile + tile / 2, y * tile + tile / 2, tile * 0.82, p.toUpperCase(), p === p.toUpperCase() ? 'w' : 'b', PAL);
+    }
+    if (arrow && arrow.from != null && arrow.to != null && arrow.from !== arrow.to) {
+      var x1 = (arrow.from % 8) * tile + tile / 2, y1 = ((arrow.from / 8) | 0) * tile + tile / 2;
+      var x2 = (arrow.to % 8) * tile + tile / 2, y2 = ((arrow.to / 8) | 0) * tile + tile / 2;
+      var dx = x2 - x1, dy = y2 - y1, len = Math.sqrt(dx * dx + dy * dy) || 1, ux = dx / len, uy = dy / len;
+      var hl = tile * 0.34, bx = x2 - ux * hl, by = y2 - uy * hl, pxp = -uy, pyp = ux, hw = tile * 0.21;
+      ctx.globalAlpha = 0.9; ctx.strokeStyle = '#2fbf71'; ctx.fillStyle = '#2fbf71';
+      ctx.lineWidth = tile * 0.18; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x1 + ux * tile * 0.2, y1 + uy * tile * 0.2); ctx.lineTo(bx, by); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(bx + pxp * hw, by + pyp * hw); ctx.lineTo(bx - pxp * hw, by - pyp * hw); ctx.closePath(); ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+
   function open(movesStr, meta) {
     meta = meta || {};
     styles();
@@ -417,7 +465,7 @@
       // the best-move arrow: any move that wasn't the engine's best gets pointed out
       var pk = k > 0 ? rep.plies[k - 1] : null;
       var arrow = (pk && pk.bestFrom != null) ? { from: pk.bestFrom, to: pk.bestTo } : null;
-      document.getElementById('pgr-board').innerHTML = boardSVG(rep.fens[k], hi, arrow);
+      drawBoard(document.getElementById('pgr-board'), rep.fens[k], hi, arrow);
       var ev = rep.evalW[k], pct = 50 + Math.max(-1, Math.min(1, ev / 800)) * 50;
       document.getElementById('pgr-evalfill').style.height = pct.toFixed(0) + '%';
       var plyLbl = document.getElementById('pgr-ply'), best = document.getElementById('pgr-best');
