@@ -843,6 +843,36 @@ Supabase Realtime channels instead of polling (true live feel) · clocks/blitz m
 under-promotion picker · spectator links · a Park Tables leaderboard (wins as a channel) · credits
 for finished games ONLY after an anti-abuse think (two accounts shaking hands is free credits).
 
+#### ★ The Park Tables build-out — GREENLIT 2026-07-25 (Nate loved 1–4, banked 5)
+*A five-thread plan to grow the tables from "a matchmaking page" into a **place**. Nate: "Yes, love
+number 1 and 2. Number 3 FOR SURE including the Princess avatar watching. Do number four as well.
+LOVE number 5, let's save it." Build order I proposed: **#2 identity + #1 living lobby first** (highest
+leverage, ties every existing system together), then #3, then #4; #5 is the big communal set-piece.*
+
+1. **The park as a *place*, not a list.** The lobby becomes the actual park: the bots are **seated
+   regulars** at named tables with a live status line ("Argus is thinking…", "Father just took a rook"),
+   and the scene reads the **town sky** — busy & bright by day, one lamplit table + Night-Desk quiet
+   after dark. You *walk up* to a table instead of clicking a row. (Ambient/CSS + the local bot state
+   already exists; status lines are flavor.)
+2. **One identity across the whole site.** Wire the Park Tables **PJCC Rating → the Clearance ladder**
+   (RECRUIT → DELTA → GAMMA → BETA → OMEGA); your codename wears a **clearance pip** that climbs as you
+   do, so the quiz game, the tables, and the Profile speak one language. Plus **earned, cosmetic-only**
+   board/piece skins (first win · beat a bot · reach a rating · review 10 games) — free unlocks, zero
+   advantage (see [[game-monetization-ethics]]). *The clearance-pip slice is the contained first build.*
+3. **Playing the Creator is an *event* — + a nemesis + Princess watches.** A **recurring rival** (a
+   persistent operative who keeps re-challenging you); beating them enough **unlocks a lore FILE** (same
+   reveal beat as Clearance: DELTA), tying the tables to the episodic story. And the **Princess avatar
+   watches your game** — she perks up / reacts on a **brilliant move** (flagged by the free
+   [[game-review]] engine), extending the existing win-glint. *(Nate: "FOR SURE including the Princess.")*
+4. **Every game quietly teaches.** After any Park Tables game, one tap → **"your one turning point"**
+   (the biggest eval swing) as a mini-lesson, and an offer to **turn your blunder into a Fork-in-the-Road
+   puzzle** ("you missed this"). Review → puzzle → Academy, one loop. Rides the review engine that's
+   already wired into finished games. Ties to [[accuracy-above-all]] + the Academy.
+5. **★ THE CONSULTATION GAME (banked — "LOVE number 5").** The whole community plays **one board against
+   McPuppy** — **one move a day, the most-voted move wins.** Preset/vote only, so it stays child-safe by
+   construction; a genuine recurring **event** the blog/Dispatch can narrate move by move (a slow, shared
+   game vs the Creator). Wants backend (a daily tally + a vote RPC) — the big set-piece, sequenced last.
+
 ---
 
 ## 🛠️ The long game (bigger bets, mostly not web code)
