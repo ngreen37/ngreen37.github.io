@@ -6,13 +6,13 @@ date: 2026-03-20
 tags: [home, vinyl, lisa, reality, lifestyle]
 ---
 ### Listening to: LiSA - traumerei
+<iframe src="https://open.spotify.com/embed/track/24GwFhh1ByRhPuCBrTQhlW" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
+-	All is well in Michigan, USA.  I'm working 8am to 11:30pm with about four hours in between spanning two jobs, soon-to-be three (chess lessons are coming back!).  It's okay.  It's not that hard, honestly, as long as I live relatively clean. However, I don't like how it affects the dog.  I walk or skate with her many days, but sometimes two or three days will go by where I just take her out quick and then nap in-between shifts.  No good.  I don't have neighbors I can rely on, or the money to put her in a day care 1-2 times a week.  I can make a better effort to take her out for walks in the morning, but I feel stuck in a cycle of work-sleep-work-sleep etc sometimes.
 
--	All is well in MI.  I'm working 8am to 11:30pm with about four hours in between spanning two jobs, soon-to-be three (chess lessons are coming back!).  It's okay.  It's not that hard, honestly, as long as I live relatively clean. I don't like how it affects the dog.  I walk or skate with her many days, but sometimes two or three days will go by where I just take her out quick and then nap in-between shifts.  No good.  I can make a better effort to take her out for walks in the morning, but I feel stuck in a cycle of work-sleep-work-sleep etc sometimes.
+-	I feel like the only way to execute this in any sort of realistic timeline is to eventually get myself down to one job or 40 hours a week.  I'm doing maybe 60 now, which is do-able but it takes all day and can be hard to be productive during breaks.  I DO get Saturday PM to Monday PM off usually, however, which is a full weekend that I can take advantage of!  But to really put it in full-gear I'd love to whittle it down some.  I am a ways from that, though, lol
 
--	I feel like the only way to execute this in any sort of realistic timeline is to eventually get myself down to one job or 40 hours a week.  I'm doing maybe 60 now, which is do-able but it takes all day and can be hard be productive during breaks.  I do get Saturday PM to Monday PM off usually, however, which is a full weekend that I can take advantage of!  But to really put it in full-gear I'd love to whittle it down, some.  I'm a ways from that, though, lol so let's get rid of that thought
-
-- Motivation is fleeting and causes burn out.  Disciplined inspiration is the way to go, for me.  Easier said than done.  But incorporating "Rest" and "Working regular jobs" can and should also be on the to-do list for PJCC. Not only is it necessary, but it helps me keep me in the "REALITY" stage and not the "Fantasy" one
+- Motivation is fleeting and causes burn out.  Disciplined inspiration is the way to go, for me.  Easier said than done.  But incorporating "Rest" and "Working regular jobs" can (and should) also be on the to-do list for PJCC. Not only is it necessary, but it helps me keep me in the "REALITY" stage and not the "Fantasy" one
 
 
 ### What I worked on: 

@@ -6,17 +6,17 @@ tags: [Productive Avoidance, Blender, Princess, Hockey, Basketball, Wild, Timber
 ---
 ### Listening to: Bad Religion - Generator
 
-aaaaaaaaaaaaaaaaaahhh! Oh yeah!  Oh-oh yeah!  Big blender day today, so Bad Religion is perfect.  All evening, in between Wolves and Wild playoff games.  That's right; I am from Minnesota and I root for my teams with great passion. I have yet to witness a championship in any of the four major sports (hockey, basketball, football, and baseball). Not even a finals APPEARANCE.  
+aaaaaaaaaaaaaaaaaahhh! Oh yeah!  Oh-oh yeah!  Big blender day today, so Bad Religion is perfect.  All evening, in between Wolves and Wild playoff games.  That's right; I am from Minnesota, USA, and I root for my teams with great passion. I have yet to witness a championship in any of the four major sports (hockey, basketball, football, and baseball). Not even a finals APPEARANCE.  
 
-Perhaps the Wild, who look good despite being down 2-1 in the series, can go all the way this year; the Wolves can definitely get past Denver in the first round, but I am less confident about them facing a stacked OKC or a Wemby-led San Antonio team.  But our squad is very good as well, and will cheer them on no matter what.   
+Perhaps the Wild, who look good despite being down 2-1 in the series, can go all the way this year; the Wolves can definitely get past Denver in the first round, but I am less confident about them facing a stacked OKC or a Wemby-led San Antonio team.  Our squad is very good as well, and I would cheer them on no matter what.   
 
-**Edit** Wild win in OT!!!! What a tip-in by Boldy!  Wolves look good nearing the half; Naz Reid playing particularly well and ohhhh noooo Anthony Edwards is hobbling off the court.  omg.  I hope he is okay.  
+**Edit** Wild win in OT!!!! What a tip-in by Matt Boldy!  Wolves look good nearing the half; Naz Reid playing particularly well and ohhhh noooo Anthony Edwards is hobbling off the court.  Oh NO.  I hope he is okay.  
 
-**Edit** Ant is out for the game but the Wolves are playing really well with Dosunmu leading the way with a career-high 43(!). what an overall great day.  My teams won and PJCC took a huge leap forward. Princess has some color, the sea scene has some sea, and the website looks cleeean.  I'm going to try and plant some easter eggs in there, too.  
+**Edit** Ant is out for the game but the Wolves are playing really well with Ayo Dosunmu leading the way with a career-high 43(!). what an overall great day.  My teams won and PJCC took a huge leap forward. Princess has some color, the sea scene has some sea, and the website looks cleeean.  I'm going to try and plant some easter eggs in there, too.  
 
 ### What I worked on:
-  - Lots of Blender.  I created a dog structure!  It kind of looks like Catdog, lol.  The idea is to just get something I can use for now, and I will detail it later
-    - So I have a master Princess file that I will link into my scenes, and any updates to her will automatically pull through!  Very cool.  
+  - Lots of Blender.  I created a dog structure!  Kennie says it kind of looks like Catdog, lol.  The idea is to just get something I can use for now, and I will detail it later
+    - Then I will have a master Princess file that I will link into my scenes, and any updates to her will automatically pull through!  Very cool.  
 
 ### What's next:
   - Well it's still early on a Saturday and my early errand-running is done and so is my nice walk with a friend (and of course Princess).  I hope to get the sea scene started, since I have a block of time to work
@@ -24,3 +24,5 @@ Perhaps the Wild, who look good despite being down 2-1 in the series, can go all
       - Maybe Nate gets seasick, let's plant that early in the story.  
       - Princess needs a way to gain equity as a chess player, so that is a perfect opportunity (I'm thinking the chess games are in a battle-room style, like Ender's Game sort of. Maybe there is a gamepad or similar device that is used, that Princess can learn to control)
     - And, importantly, a quick five-second sea animation, with cool aquatic themed pieces, is PERFECT for a portion of a thirty-second trailer, which is one of my early goals
+
+    These are lofty goals, but it's important to aim high.  Even if you miss, that trajection is still a foundation to build off of later.  Besides, a healthy level of delusion has always kinda been my signature trait.  

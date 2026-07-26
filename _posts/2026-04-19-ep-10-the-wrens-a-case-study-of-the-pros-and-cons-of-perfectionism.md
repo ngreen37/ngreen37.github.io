@@ -5,8 +5,10 @@ date: 2026-04-19
 tags: [Wrens, Perfectionism, Princess, Blender]
 ---
 ### Listening to: The Wrens - Everyone Choose Sides
+<iframe src="https://open.spotify.com/embed/track/0320GL1aqQgsi7uDYSMEQ0" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
-The Meadowlands (2003) is one of my all-time favorite albums, and the story of its creation is quite interesting and inspiring. By their own admission they felt they had a low ceiling as a band (although their second album found some indie success), and were about to break up after releasing their third album, The Meadowlands.  Using a shared house, a DIY-mentality, and the better part of a decade, they released a beautiful album.  Over-produced as far as one could take it, they found themselves needing to learn the songs and tour, as if they were a cover band playing their own music.  Needless to say, they did not produce a fourth album, but The Meadowlands will forever be an important part of my life. 
+The Meadowlands (2003) is one of my all-time favorite albums, and the story of its creation is quite interesting and inspiring. By their own admission they felt they had a low ceiling as a band (although their second album found some indie success), and were about to break up after releasing their third album: The Meadowlands.  Using a shared house, a DIY-mentality, and the better part of a decade, they released a BEAUTIFUL album.  Over-produced as far as one could take it, they found themselves needing to learn their own songs again in order to tour, as if they were a cover band.  Fascinating.  Needless to say, they did not produce a fourth album, but The Meadowlands will forever be an important part of my life and a HUGE inspiration to me.  
+- Everywhere I go, if I see a record store, I will pop in just to look for the vinyl (or even a CD version - I only own a digital version).  Never find it, and I don't have high hopes considering it's out-of-print.  But, you never know what life can bring you.   
 
 ### What I worked on:
   - Creating a Princess character is harder than I thought, but progress is being made!  I am trying to finish the blocking tonight
@@ -24,4 +26,4 @@ The Meadowlands (2003) is one of my all-time favorite albums, and the story of i
 
   would feel like a major accomplishment.  We'll see.  It's playoff hockey time, which makes it easier to sit on my computer, but harder to stay focused.  
   
-      Is that what a Catch 22 is?  I forget.  
+      Is that what a Catch 22 is?  I forget.  Keasbey Nights is a great album, though.  
