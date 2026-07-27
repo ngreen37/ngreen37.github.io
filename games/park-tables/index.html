@@ -663,9 +663,12 @@ a move a day is plenty.</p>
     { id:'arena', glyph:'♛', name:'The Arena', accent:'#F5C518',
       rated:true, secs:86400, tag:'Rated · 1 day a move',
       line:'Your PJCC Rating rides on every move. All business.' },
-    { id:'bench', glyph:'♞', name:'The Blitz Bench', accent:'#f2a154',
+    // NOT called "blitz" on purpose (2026-07-25): every table here is CORRESPONDENCE with a
+    // PER-MOVE clock, so an hour a move is the fastest the park currently goes. Real blitz
+    // (a 5/10/15-minute TOTAL game clock) is a different clock system — see FUTURE-IDEAS.
+    { id:'bench', glyph:'♞', name:'The Quick Bench', accent:'#f2a154',
       rated:true, secs:3600, tag:'Rated · 1 hour a move',
-      line:'Quick tempo — sit down, move, and keep it moving.' }
+      line:'The fastest bench in the park — an hour a move, no dawdling.' }
   ];
   function createSeat(vsCreator, seat){
     app.innerHTML = '<p class="lb-empty">Setting up the board…</p>';

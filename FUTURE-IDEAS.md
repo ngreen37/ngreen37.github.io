@@ -843,6 +843,33 @@ Supabase Realtime channels instead of polling (true live feel) · clocks/blitz m
 under-promotion picker · spectator links · a Park Tables leaderboard (wins as a channel) · credits
 for finished games ONLY after an anti-abuse think (two accounts shaking hands is free credits).
 
+#### ⏱ REAL BLITZ — a total game clock (5 / 10 / 15 / 30 / 60) *(Nate, 2026-07-25)*
+*His ask: "Shouldn't Blitz Bench be more like a total 5 minute game? And then a 10, 15, 30, and 60
+options?" — the right instinct, and it's a **different clock system**, not a preset. Banked with the
+shape written down so it's a build, not a rethink.*
+
+**Why it isn't a one-line change** — everything at the tables today is **correspondence**:
+- The clock is **per-move**, not a total bank (`control_secs` = seconds allowed for ONE move).
+- The server **whitelists three values** — `p_control_secs not in (3600, 86400, 259200)` raises
+  (`docs/park-tables-setup.md`). A 300-second table is refused today.
+- A flag **only falls when the opponent claims it** (`claim_timeout`) — nothing auto-flags.
+- The board **polls every ~4s**, which is fine for a day a move and useless for a 5-minute game.
+
+**What a real blitz table needs (in order):**
+1. **SQL** — a `mode` ('per_move' | 'total') + `ms_w` / `ms_b` time banks on `matches`; widen the
+   whitelist to the classic set (300/600/900/1800/3600). `play_move` decrements the mover's bank by
+   `now() - last_move_at` and **auto-flags at zero** (the server already does this exact arithmetic in
+   `claim_timeout` — it moves, it isn't invented).
+2. **Client** — a ticking clock per nameplate (local countdown, re-synced from the server on every
+   move), plus a low-time state. The nameplates (`.pt-plate`) are already the natural home.
+3. **Sync** — **Supabase Realtime channels instead of the 4s poll** (already listed above as the v2
+   upgrade); blitz is the feature that finally *requires* it.
+4. **Then** the seat picker gains a real "Blitz" bench and the 5/10/15/30/60 options.
+
+**Sequencing note:** this is the single biggest jump the tables can make (it turns correspondence into
+*live chess*), and it's also the one that most wants the Realtime upgrade first. Worth doing — after
+the identity/lobby slices, or whenever Nate wants live play more than he wants polish.
+
 #### ★ The Park Tables build-out — GREENLIT 2026-07-25 (Nate loved 1–4, banked 5)
 *A five-thread plan to grow the tables from "a matchmaking page" into a **place**. Nate: "Yes, love
 number 1 and 2. Number 3 FOR SURE including the Princess avatar watching. Do number four as well.
