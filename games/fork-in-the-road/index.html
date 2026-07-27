@@ -1,14 +1,14 @@
 ---
 layout: game
-title: "Fork in the Road v2.2"
-description: "Adaptive chess-tactics journey. Spot the fork or mate and play the winning move, 1,000 steps to Chess City."
+title: "Puzzles · Fork in the Road"
+description: "The PJCC puzzle room. Chess tactics puzzles — forks, pins, skewers, discoveries, back-rank mates and winning material. One winning move each."
 permalink: /games/fork-in-the-road/
 ---
 
 <div class="game-frame-wrap fork-frame">
   <iframe
     src="{{ '/assets/games/pjcc_fork.html' | relative_url }}"
-    title="PJCC Fork in the Road"
+    title="PJCC Puzzles — Fork in the Road"
     allowfullscreen
     scrolling="no"
   ></iframe>
@@ -20,6 +20,8 @@ permalink: /games/fork-in-the-road/
 @media (max-width: 640px) { .fork-frame iframe { height: 560px; } }
 </style>
 
-<div class="game-info">
-  <p><strong>How to play.</strong> Click a piece, then its target square, to play the one winning move — a fork, skewer, or mate.</p>
-</div>
+{%- comment -%} 2026-07-27 (Nate: "This is no longer a game, really, it's our Puzzle area…
+     There's a lot of words there; let's cut a lot of those out. They'll figure it out.
+     Remove the How to Play below as well."). The page is the puzzle room now: the title
+     says Puzzles, the description names the motifs, and the instruction block below the
+     frame is gone — the board teaches itself with green dots and a hint button. {%- endcomment -%}

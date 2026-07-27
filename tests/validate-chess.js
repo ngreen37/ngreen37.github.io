@@ -131,18 +131,23 @@ function testAcademyFacts() {
 
 /* ============ 3. KNIGHT TABLES IN OTHER GAMES ============ */
 function testKnightTables() {
-  section("3 · Knight-move tables (Sand Mine, Knight's Tour)");
+  section('3 · Knight-move tables');
   const TRUE_KN = new Set(['-2,-1', '-2,1', '-1,-2', '-1,2', '1,-2', '1,2', '2,-1', '2,1']);
   const grab = (file, varName) => {
-    const src = fs.readFileSync(path.join(ROOT, 'assets/games', file), 'utf8');
+    const f = path.join(ROOT, 'assets/games', file);
+    if (!fs.existsSync(f)) return undefined;      // game retired — see below
+    const src = fs.readFileSync(f, 'utf8');
     const m = src.match(new RegExp(varName + '\\s*=\\s*(\\[\\[[^\\]]*\\](?:\\s*,\\s*\\[[^\\]]*\\])*\\s*\\])'));
     if (!m) return null;
     return new Set(vm.runInNewContext('(' + m[1] + ')').map(p => p.join(',')));
   };
   const sm = grab('pjcc_sandmine.html', 'const KN');
   ok(sm && setEq(sm, TRUE_KN), 'Sand Mine Depths: knight offsets are exactly the true 8');
+  // Knight's Tour was DELETED in the 2026-07-14 declutter; this gate kept reading its
+  // file and crashed the whole accuracy run with ENOENT (found 2026-07-27). A retired
+  // game is skipped, not failed — but a game that still exists must still be correct.
   const kt = grab('pjcc_tour.html', 'var MOVES');
-  ok(kt && setEq(kt, TRUE_KN), "Knight's Tour: knight offsets are exactly the true 8");
+  if (kt !== undefined) ok(kt && setEq(kt, TRUE_KN), "Knight's Tour: knight offsets are exactly the true 8");
 }
 
 /* ============ shared: local HTTP + Chrome ============ */
@@ -378,7 +383,8 @@ async function testFork(browser, port) {
         S = C.makeMove(S, m);
       }
       if (!lineOK) continue;
-      if (p.cat === 'mate' || /mate/i.test(p.goal)) {
+      // \b, or the goal "Win material." matches on m-a-t-e and gets audited as a mate
+      if (p.cat === 'mate' || /\bmate\b/i.test(p.goal)) {
         if (!C.isCheckmate(S)) out.bad.push(i + ':line-does-not-mate ' + toFEN(p));
       } else {
         // material after the line must favor the mover…

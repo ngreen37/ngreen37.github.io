@@ -59,6 +59,34 @@
     { key: 'sp-eagle', price: 35 }, { key: 'sp-dragon', price: 50 }
   ];
 
+  /* ── THE VAULT — collectables that are NOT for sale (2026-07-27) ──────────────
+     Nate: "maybe donating one, you have a chance to get a DIFFERENT collectable
+     (even ones that AREN'T in the shop)."
+
+     These have no price and appear in no shop. The ONLY way to hold one is to lay
+     something down at the Gambit altar and have the board hand it back. They flow
+     through the normal plumbing — avatars land in companion.owned (so setAvatar
+     accepts them), titles carry rule:'vault', themes stay out of THEME_SHOP — so
+     the Dossier and the Quartermaster can equip them with no special-casing.
+
+     `value` is credits-equivalent, used by the altar's courage meter if one is ever
+     laid back down. Names are mine and Nate's veto is open. ─────────────────── */
+  var VAULT_AVATARS = { 'vt-comet': '☄️', 'vt-candle': '🕯️', 'vt-mask': '🎭' };
+  var VAULT = [
+    { kind: 'avatar', key: 'vt-comet',  value: 70, label: 'The Comet' },
+    { kind: 'avatar', key: 'vt-candle', value: 55, label: 'The Altar Keeper' },
+    { kind: 'avatar', key: 'vt-mask',   value: 60, label: 'The Understudy' },
+    { kind: 'title',  key: 'letgo',     value: 65, label: 'One Who Let Go' },
+    { kind: 'title',  key: 'openhand',  value: 50, label: 'Open Hand' },
+    { kind: 'theme',  key: 'ember',     value: 60, label: 'Altar Ember' },
+    { kind: 'theme',  key: 'hollow',    value: 45, label: 'Empty Hands' }
+  ];
+  Object.keys(VAULT_AVATARS).forEach(function (k) { AVATARS[k] = VAULT_AVATARS[k]; });
+  function vaultEntry(kind, key) {
+    for (var i = 0; i < VAULT.length; i++) if (VAULT[i].kind === kind && VAULT[i].key === key) return VAULT[i];
+    return null;
+  }
+
   // Rank ladder by total credits. Each rank unredacts a Subject Zero fragment.
   var RANKS = [
     { name: 'Recruit',          min: 0,    frag: 'SUBJECT ZERO — file sealed. You have just enough clearance to know it exists.' },
@@ -503,16 +531,31 @@
   }
 
   // --- achievements ----------------------------------------------------------
+  /* ── ACHIEVEMENTS — re-cut 2026-07-27 (Nate: "Get rid of the Shogi or Reading Room
+     achievements. Go through the achievements and update them.")
+
+     Two things were wrong beyond the ask. SHOGI SCHOLAR asked for a score on Shogi
+     Island — a game that's been slow-rolled off the site since 2026-07-04, so nobody
+     could earn it. And GLOBETROTTER was measured against the world map, which still
+     LISTED Shogi Island — so "play every game" was unwinnable for everyone. Both are
+     now measured against games a visitor can actually reach today.
+
+     The thresholds moved too: they were set when Fork was a small side game, and
+     "solve 5" is not an achievement now that it's the whole puzzle room. Anything
+     here should take a real session to earn. ─────────────────────────────────── */
   var ACHIEVEMENTS = [
-    { key: 'first-contact', icon: '📡', label: 'First Contact',  desc: 'Claim your codename',            test: function (c) { return !!c.profile; } },
-    { key: 'tactician',     icon: '⚔', label: 'Tactician',      desc: 'Solve 5+ in Fork in the Road',  test: function (c) { return c.best('fork-in-the-road') >= 5; } },
-    { key: 'deep-miner',    icon: '⛏', label: 'Deep Miner',     desc: 'Score 100 in Sand Mine Depths', test: function (c) { return c.best('sand-mine-depths') >= 100; } },
-    { key: 'analyst',       icon: 'Δ', label: 'Analyst',        desc: 'Score 500+ in Clearance: DELTA',test: function (c) { return c.best('clearance-delta') >= 500; } },
-    { key: 'on-the-beat',   icon: '♫', label: 'On the Beat',    desc: 'Score 1000+ in Notation Blitz', test: function (c) { return c.best('notation-run') >= 1000; } },
-    { key: 'shogi-scholar', icon: '将', label: 'Shogi Scholar',  desc: 'Read 9/10 on Shogi Island',     test: function (c) { return c.best('shogi-island') >= 9; } },
-    { key: 'globetrotter',  icon: '🗺', label: 'Globetrotter',   desc: 'Play every game at least once',  test: function (c) { return WORLDMAP.every(function (s) { return !s.game || c.played(s.game); }); } },
-    { key: 'dedicated',     icon: '🔥', label: 'Dedicated',      desc: 'Play 50 rounds total',          test: function (c) { return c.totalPlays >= 50; } },
-    { key: 'collector',     icon: '🛒', label: 'Collector',      desc: 'Own a Shopkeeper avatar',       test: function (c) { return !!(c.profile && c.profile.companion && (c.profile.companion.owned || []).length); } }
+    { key: 'first-contact', icon: '📡', label: 'First Contact',  desc: 'Claim your codename',              test: function (c) { return !!c.profile; } },
+    { key: 'tactician',     icon: '⚔', label: 'Tactician',      desc: 'Solve 25 puzzles',                 test: function (c) { return c.best('fork-in-the-road') >= 25; } },
+    { key: 'deep-miner',    icon: '⛏', label: 'Deep Miner',     desc: 'Score 100 in Sand Mine Depths',    test: function (c) { return c.best('sand-mine-depths') >= 100; } },
+    { key: 'analyst',       icon: 'Δ', label: 'Analyst',        desc: 'Score 500+ in Clearance: DELTA',   test: function (c) { return c.best('clearance-delta') >= 500; } },
+    { key: 'on-the-beat',   icon: '♫', label: 'On the Beat',    desc: 'Score 1000+ in Notation Blitz',    test: function (c) { return c.best('notation-run') >= 1000; } },
+    { key: 'updraft',       icon: '♞', label: 'Updraft',        desc: 'Score 2500+ in Sky Run',           test: function (c) { return c.best('sky-run') >= 2500; } },
+    { key: 'held-the-gate', icon: '🏰', label: 'Held the Gate',  desc: 'Score 2000+ in Siege on Chess City', test: function (c) { return c.best('tower-defense') >= 2000; } },
+    { key: 'the-climb',     icon: '♛', label: 'The Climb',      desc: 'Beat 3 floors of the Gauntlet',    test: function (c) { return c.best('the-gauntlet') >= 3; } },
+    { key: 'crowned',       icon: '👑', label: 'Crowned',        desc: 'Clear all ten Gauntlet floors',    test: function (c) { return c.best('the-gauntlet') >= 10; } },
+    { key: 'globetrotter',  icon: '🗺', label: 'Globetrotter',   desc: 'Play every game at least once',    test: function (c) { return WORLDMAP.every(function (s) { return !s.game || c.played(s.game); }); } },
+    { key: 'dedicated',     icon: '🔥', label: 'Dedicated',      desc: 'Play 50 rounds total',             test: function (c) { return c.totalPlays >= 50; } },
+    { key: 'collector',     icon: '🛒', label: 'Collector',      desc: 'Own something from the Shopkeeper', test: function (c) { return !!(c.profile && c.profile.companion && (c.profile.companion.owned || []).length); } }
   ];
   PJCC.ACHIEVEMENTS = ACHIEVEMENTS;
   PJCC.earnedAchievements = function (prof, stats) {
@@ -521,13 +564,17 @@
   };
 
   // --- world map (game completion -> Princess's journey) ---------------------
+  // Stops must be places a visitor can actually GO today. Shogi Island (slow-rolled off
+  // the site) and Pirc Crossing (still IN DEV) were stops nobody could light up, which
+  // also made the Globetrotter achievement unwinnable. Sky Run and the Siege took their
+  // places — both are shipped, both are on the games hall. (2026-07-27)
   var WORLDMAP = [
     { name: 'Checker Town',     game: 'notation-run' },
     { name: 'The Sand Mines',   game: 'sand-mine-depths' },
     { name: 'Fork in the Road', game: 'fork-in-the-road' },
     { name: 'Clearance HQ',     game: 'clearance-delta' },
-    { name: 'Pirc Crossing',    game: 'pirc-protocol' },
-    { name: 'Shogi Island',     game: 'shogi-island' },
+    { name: 'The Updraft',      game: 'sky-run' },
+    { name: 'The City Walls',   game: 'tower-defense' },
     { name: 'Chess City',       game: null }
   ];
   PJCC.WORLDMAP = WORLDMAP;
@@ -546,9 +593,13 @@
     'veteran':   { label: 'Veteran',             rule: 'plays:75' },
     'tactician': { label: 'Tactician',           rule: 'ach:tactician' },
     'miner':     { label: 'Mine Survivor',       rule: 'ach:deep-miner' },
-    'sensei':    { label: 'Shogi Sensei',        rule: 'ach:shogi-scholar' },
+    // 'sensei' (Shogi Sensei) retired 2026-07-27 with the shogi-scholar achievement —
+    // it hung off an achievement for a game that isn't on the site.
     'curator':   { label: 'Curator',             rule: 'buy:20' },
-    'legend':    { label: 'Legend of the Board', rule: 'buy:60' }
+    'legend':    { label: 'Legend of the Board', rule: 'buy:60' },
+    // vault titles — never for sale; the altar is the only door (see VAULT above)
+    'letgo':     { label: 'One Who Let Go',      rule: 'vault' },
+    'openhand':  { label: 'Open Hand',           rule: 'vault' }
   };
   PJCC.TITLES = TITLES;
   PJCC.TITLE_SHOP = [{ key: 'curator', price: 20 }, { key: 'legend', price: 60 }];
@@ -562,6 +613,7 @@
       if (rule.indexOf('plays:') === 0) return c.totalPlays >= parseInt(rule.slice(6), 10);
       if (rule.indexOf('ach:') === 0) return !!earned[rule.slice(4)];
       if (rule.indexOf('buy:') === 0) return ownedTitles.indexOf(key) !== -1;
+      if (rule === 'vault') return ownedTitles.indexOf(key) !== -1;   // won at the altar, never sold
       return false;
     });
   };
@@ -712,7 +764,10 @@
     'jade':    { label: 'Jade Dispatch',    price: 15, accent: '#6bffb8', bg: 'linear-gradient(135deg,#0f2a22,#143d31)' },
     'crimson': { label: 'Red Clearance',    price: 15, accent: '#ff6b6b', bg: 'linear-gradient(135deg,#2a0d12,#1a090c)' },
     'sakura':  { label: 'Shogi Sakura',     price: 25, accent: '#ff8fd0', bg: 'linear-gradient(135deg,#2a1030,#3d1640)' },
-    'mono':    { label: 'Classified Mono',  price: 25, accent: '#cdbcf2', bg: 'linear-gradient(135deg,#16161c,#27272f)' }
+    'mono':    { label: 'Classified Mono',  price: 25, accent: '#cdbcf2', bg: 'linear-gradient(135deg,#16161c,#27272f)' },
+    // vault themes — no price, absent from THEME_SHOP; the altar hands these back
+    'ember':   { label: 'Altar Ember',      accent: '#ffb066', bg: 'linear-gradient(135deg,#2e1608,#4a2410)', vault: true },
+    'hollow':  { label: 'Empty Hands',      accent: '#9a7fd4', bg: 'linear-gradient(135deg,#14102a,#241a44)', vault: true }
   };
   PJCC.THEMES = THEMES;
   PJCC.THEME_SHOP = ['jade', 'crimson', 'sakura', 'mono'];
@@ -763,14 +818,18 @@
     var comp = (profile && profile.companion) || {}, out = [];
     (comp.owned || []).forEach(function (k) {
       var a = AVATAR_SHOP.filter(function (s) { return s.key === k; })[0];
+      var v = vaultEntry('avatar', k);
       if (a) out.push({ kind: 'avatar', key: k, value: a.price, glyph: AVATARS[k] || '★', label: prettyAvatar(k) });
+      else if (v) out.push({ kind: 'avatar', key: k, value: v.value, glyph: AVATARS[k] || '★', label: v.label, vault: true });
     });
     (comp.owned_titles || []).forEach(function (k) {
       var t = PJCC.TITLE_SHOP.filter(function (s) { return s.key === k; })[0];
-      out.push({ kind: 'title', key: k, value: t ? t.price : 20, glyph: '🏷', label: (TITLES[k] && TITLES[k].label) || k });
+      var v = vaultEntry('title', k);
+      out.push({ kind: 'title', key: k, value: t ? t.price : (v ? v.value : 20), glyph: '🏷', label: (TITLES[k] && TITLES[k].label) || k, vault: !!v });
     });
     (comp.owned_themes || []).forEach(function (k) {
-      out.push({ kind: 'theme', key: k, value: (THEMES[k] && THEMES[k].price) || 15, glyph: '🎨', label: (THEMES[k] && THEMES[k].label) || k });
+      var v = vaultEntry('theme', k);
+      out.push({ kind: 'theme', key: k, value: (THEMES[k] && THEMES[k].price) || (v ? v.value : 15), glyph: '🎨', label: (THEMES[k] && THEMES[k].label) || k, vault: !!v });
     });
     return out;
   };
@@ -783,6 +842,17 @@
     PJCC.THEME_SHOP.forEach(function (k) { if (!have['theme:' + k]) out.push({ kind: 'theme', key: k, value: THEMES[k].price, glyph: '🎨', label: THEMES[k].label }); });
     return out;
   };
+  // THE VAULT — the unowned no-sale collectables. Only the altar hands these out,
+  // so this list is deliberately separate from the shop pool above.
+  PJCC.VAULT = VAULT;
+  PJCC.vaultCollectables = function () {
+    var have = {}; PJCC.ownedCollectables().forEach(function (c) { have[c.kind + ':' + c.key] = 1; });
+    return VAULT.filter(function (v) { return !have[v.kind + ':' + v.key]; }).map(function (v) {
+      return { kind: v.kind, key: v.key, value: v.value, vault: true, label: v.label,
+        glyph: v.kind === 'avatar' ? (AVATARS[v.key] || '★') : v.kind === 'title' ? '🏷' : '🎨' };
+    });
+  };
+  PJCC.isVault = function (kind, key) { return !!vaultEntry(kind, key); };
   // Award credits (positive add_credits) — the board's blessing.
   PJCC.grantCredits = async function (amount) {
     var u = PJCC.currentUser(); if (!sb || !u) throw new Error('not signed in');

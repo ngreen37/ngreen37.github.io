@@ -37,9 +37,10 @@ description: McPuppy Studios presents Princess and the Journey to Chess City —
     sense but was too much. So let's do a compromise: a black/white, 2-second typing
     intro that says 'McPuppy Studios Presents', then it opens to the PJCC site."
 
-    So `/` is a self-contained black-&-white intro card. It types the line, holds a beat
-    (~2s total), then hands off to /pjcc/ with location.replace (so Back doesn't bounce
-    you into the intro). Deliberately a STANDALONE page — no site chrome, no town sky —
+    So `/` is a self-contained black-&-white intro card. It fades up from black, types the
+    line, holds a beat, then fades back down to black and hands off to /pjcc/ with
+    location.replace (so Back doesn't bounce you into the intro). ~3s door to door — the
+    slow fades are deliberate (Nate, 2026-07-27); the card used to snap on instantly. Deliberately a STANDALONE page — no site chrome, no town sky —
     both because the intro must own the whole screen, and because this is the SLOT Nate's
     Blender animations drop into later: swap the .intro-stage markup for a <video>/<canvas>
     and keep the same forward-to-/pjcc/ logic.
@@ -58,12 +59,17 @@ description: McPuppy Studios presents Princess and the Journey to Chess City —
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; background: #000; }
     body { overflow: hidden; }
+    /* 2026-07-27 (Nate: "let's slow fade it in, and slow fade it out"). Both fades are
+       plain opacity transitions driven by two classes — .in is added on the first frame,
+       .done just before it hands off — rather than a CSS animation, so the fade-out never
+       has to fight an animation's fill state for the same property. */
     .intro-stage {
       position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
       background: #000; cursor: pointer; text-decoration: none;
-      transition: opacity .35s ease;
+      opacity: 0; transition: opacity .85s ease;
     }
-    .intro-stage.done { opacity: 0; }
+    .intro-stage.in { opacity: 1; }
+    .intro-stage.done { opacity: 0; transition: opacity .95s ease; }
     .intro-line {
       display: inline-flex; align-items: center;
       font-family: ui-monospace, "SFMono-Regular", "Courier New", monospace;
@@ -93,7 +99,7 @@ description: McPuppy Studios presents Princess and the Journey to Chess City —
     @media (prefers-reduced-motion: reduce) {
       .intro-type { animation: none; width: 24ch; }
       .intro-caret { animation: none; opacity: 1; }
-      .intro-stage { transition: none; }
+      .intro-stage { transition: none; opacity: 1; }
     }
   </style>
 </head>
@@ -120,10 +126,13 @@ description: McPuppy Studios presents Princess and the Journey to Chess City —
     var stage = document.getElementById('intro');
     var gone = false;
     function go() { if (gone) return; gone = true; location.replace(TARGET); }
-    function finish() { if (gone) return; if (stage) stage.classList.add('done'); setTimeout(go, 350); }
+    function finish() { if (gone) return; if (stage) stage.classList.add('done'); setTimeout(go, 950); }
 
     var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var timer = setTimeout(finish, reduce ? 850 : 1850);   // ~2s incl. the fade before it opens PJCC
+    // fade UP from black on the first frame (the type animation is already running under it)
+    if (stage) requestAnimationFrame(function () { stage.classList.add('in'); });
+    // ~3s door to door now: .85s up, the line types, a beat, then .95s back down to black.
+    var timer = setTimeout(finish, reduce ? 850 : 2000);
 
     // Skip on any click or key (never trap Tab, so keyboard users can reach the Skip link).
     function skip(e) { if (e.type === 'keydown' && (e.key === 'Tab' || e.metaKey || e.ctrlKey)) return;

@@ -219,20 +219,34 @@
       (emb ? '<span class="idn-emblem">' + emb + '</span>' : '');
   }
 
-  // ---- Dossier identity card ----------------------------------------------
-  var mounts = [];
+  /* ---- THE identity card ---------------------------------------------------
+     2026-07-27 (Nate: "It's odd with the two boxes and same picture… Let's combine and
+     condense. I like the customize function. We don't need the second box. We don't need
+     the @name. We don't need the fake job title").
+
+     The profile used to open with TWO cards carrying two different pictures of you: this
+     forge card (composited avatar, display name, @codename, a role line) and, right above
+     it, an account header (shop avatar, codename, rank, credits, XP). Same person, twice.
+
+     There's one card now. It keeps the look and the Customize button; the account facts
+     are injected by whoever owns them via PJCC Forge's `accountBlock` hook (the Dossier
+     registers one) so they re-appear on every re-render, including after an edit.
+     Gone: the @codename echo and the invented role line. -------------------------- */
+  var mounts = [], accountBlock = null;
+  // The host page hands us a painter: fn(slotEl) fills + wires the account strip.
+  function setAccountBlock(fn) { accountBlock = fn; refreshMounts(); }
   function renderCard(el) {
     if (!el) return;
     if (mounts.indexOf(el) === -1) mounts.push(el);
-    var look = identity(), pl = petLook(), code = accountCodename();
+    var look = identity(), pl = petLook();
     var tint = TINTS[pl.tint] || TINTS.none;
     el.innerHTML =
       '<div class="idn-card">' +
         '<div class="idn-av" id="' + uid(el) + '"></div>' +
         '<div class="idn-meta">' +
-          '<div class="idn-name">' + esc(look.displayName) + (code && look.displayName !== code ? ' <small style="color:#9a7fd4;font-weight:600;font-size:.72rem">@' + esc(code) + '</small>' : '') + '</div>' +
-          (look.role ? '<div class="idn-role">' + esc(look.role) + '</div>' : '<div class="idn-role" style="opacity:.6">Operative of Checker Town</div>') +
+          '<div class="idn-name">' + esc(look.displayName) + '</div>' +
           (look.bio ? '<div class="idn-bio">“' + esc(look.bio) + '”</div>' : '') +
+          '<div class="idn-account" data-account></div>' +
           '<div class="idn-pet-chip"><span class="ipc-em" style="filter:' + tint.f + '">' + petBaseEmoji() + '</span> ' + esc(petName()) +
             '<button class="idn-edit-btn ghost" data-open="companion" style="padding:2px 9px;font-size:.7rem;margin-left:4px">tweak</button></div>' +
         '</div>' +
@@ -244,6 +258,7 @@
     Array.prototype.forEach.call(el.querySelectorAll('[data-open]'), function (b) {
       b.onclick = function () { open(b.getAttribute('data-open')); };
     });
+    if (accountBlock) { try { accountBlock(el.querySelector('[data-account]')); } catch (e) {} }
   }
   var _uid = 0;
   function uid(el) { if (!el._idnId) el._idnId = 'idn-' + (++_uid); return el._idnId; }
@@ -466,6 +481,7 @@
 
   window.PJCCForge = {
     identity: identity, petLook: petLook, renderAvatar: renderAvatar, renderCard: renderCard,
+    setAccountBlock: setAccountBlock,
     open: open, close: close, onChange: function (fn) { listeners.push(fn); },
     BASES: BASES, AURAS: AURAS, TINTS: TINTS
   };

@@ -26,7 +26,7 @@ input:focus-visible,
 
 /* Comfortable tap targets on the interactive controls we built */
 .pjcc-btn, .pjcc-btn-ghost, .lb-tab,
-.dsr-title-chip, .pjcc-pick, .lang-toggle {
+.pjcc-pick, .lang-toggle {
   min-height: 40px;
 }
 @media (max-width: 620px) {

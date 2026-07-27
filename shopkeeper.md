@@ -95,6 +95,25 @@ permalink: /shopkeeper/
     html += '</div>';
     if (equippedTheme !== 'default') html += '<button class="pjcc-btn-ghost qm-thequip" data-k="default" style="margin-top:10px;">Reset to Operative Gold</button>';
 
+    // THE VAULT (2026-07-27) — collectables the Shopkeeper does NOT sell. They only
+    // exist if the Gambit altar handed one back, so this section appears only when
+    // you hold one, and every button here is Equip. Nothing is priced or buyable.
+    var vaultOwned = (PJCC.ownedCollectables ? PJCC.ownedCollectables() : []).filter(function (c) { return c.vault; });
+    if (vaultOwned.length) {
+      html += '<h2 class="qm-h">The Vault</h2><p class="pjcc-sub" style="margin:0 0 8px;">Not for sale — the altar gave these back.</p><div class="qm-grid">';
+      vaultOwned.forEach(function (c) {
+        var on = c.kind === 'avatar' ? (equipped === c.key)
+               : c.kind === 'title'  ? (equippedTitle === c.key)
+               : (equippedTheme === c.key);
+        var cls = c.kind === 'avatar' ? 'qm-equip' : c.kind === 'title' ? 'qm-tequip' : 'qm-thequip';
+        var action = on ? '<button class="pjcc-btn-ghost" disabled>Equipped</button>'
+                        : '<button class="pjcc-btn ' + cls + '" data-k="' + c.key + '">Equip</button>';
+        html += '<div class="qm-item qm-vault' + (on ? ' on' : '') + '"><div class="qm-emoji">' + c.glyph + '</div>' +
+          '<div class="qm-title-label">' + c.label + '</div><div class="qm-price">Vault</div>' + action + '</div>';
+      });
+      html += '</div>';
+    }
+
     el.innerHTML = html;
 
     Array.prototype.forEach.call(el.querySelectorAll('.qm-thbuy'), function (b) {
@@ -137,4 +156,9 @@ permalink: /shopkeeper/
 .qm-title-label { font-size: 0.95rem; font-weight: 800; color: #F5C518; min-height: 38px; display: flex; align-items: center; justify-content: center; text-align: center; }
 .qm-swatch { width: 100%; height: 34px; border-radius: 8px; border: 2px solid #F5C518; margin-bottom: 4px; }
 .qm-price { color: #b9a8e6; font-size: 0.78rem; }
+/* The Vault: no-sale collectables won at the altar (2026-07-27) — amber, not gold, so
+   they read as a different class of thing from anything the Shopkeeper stocks. */
+.qm-item.qm-vault { border-color: #ffb066; background: linear-gradient(160deg,#2a1608,#160c33); }
+.qm-item.qm-vault .qm-price { color: #ffb066; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.66rem; font-weight: 800; }
+.qm-item.qm-vault .qm-title-label { color: #ffd7a8; }
 </style>

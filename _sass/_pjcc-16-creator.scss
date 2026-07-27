@@ -40,7 +40,10 @@
 }
 .idn-card .idn-meta { flex: 1 1 220px; min-width: 200px; }
 .idn-card .idn-name { color: #F5C518; font-weight: 800; font-size: 1.18rem; line-height: 1.15; }
-.idn-card .idn-role { color: #cdbcf2; font-size: 0.84rem; margin-top: 2px; font-weight: 600; }
+/* .idn-role deleted 2026-07-27 with the card's invented job title ("Operative of Checker
+   Town") — Nate: "We don't need the fake job title (maybe later when the series is
+   underway)". The Role field still exists in the forge editor and still saves; it just
+   isn't printed on the profile card. */
 .idn-card .idn-bio  { color: #9a8fd0; font-size: 0.78rem; margin-top: 5px; line-height: 1.45; font-style: italic; }
 .idn-card .idn-pet-chip {
   display: inline-flex; align-items: center; gap: 6px; margin-top: 9px;

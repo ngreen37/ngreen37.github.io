@@ -57,7 +57,7 @@ permalink: /the-gambit/
 
     <!-- offer a collectable -->
     <div class="gm-panel" id="gm-coll-panel" hidden>
-      <div class="gm-label">…and lay down a collectable <span class="gm-opt">the boldest offering</span></div>
+      <div class="gm-label">…and lay down a collectable <span class="gm-opt">can come back as a different one</span></div>
       <div class="gm-coll-list" id="gm-coll-list"></div>
     </div>
 
@@ -73,6 +73,24 @@ permalink: /the-gambit/
     <div class="gm-cooldown" id="gm-cooldown"></div>
 
     <div class="gm-result" id="gm-result" hidden></div>
+  </div>
+
+  <!-- THE REVEAL (2026-07-27, Nate: "let's emphasize the whole result box… it should be
+       exciting, and instead you currently just get some text you have to scroll down to
+       see"). The outcome now TAKES OVER the screen: a curtain, a card that lands, the
+       number counting up, and a boon that gets its own moment. The quiet .gm-result box
+       above still holds the same words afterwards, as the record of what happened. -->
+  <div class="gm-reveal" id="gm-reveal" hidden>
+    <div class="gm-reveal-card" id="gm-reveal-card" role="dialog" aria-modal="true" aria-labelledby="gm-rv-title">
+      <div class="gm-rv-sparks" id="gm-rv-sparks" aria-hidden="true"></div>
+      <div class="gm-rv-eyebrow" id="gm-rv-eyebrow"></div>
+      <div class="gm-rv-figure" id="gm-rv-figure" aria-hidden="true">♟</div>
+      <div class="gm-rv-title" id="gm-rv-title"></div>
+      <div class="gm-rv-sub" id="gm-rv-sub"></div>
+      <div class="gm-rv-boon" id="gm-rv-boon" hidden></div>
+      <p class="gm-rv-creed" id="gm-rv-creed"></p>
+      <button class="btn-offer gm-rv-close" id="gm-rv-close">Take it</button>
+    </div>
   </div>
 </div>
 
@@ -148,6 +166,8 @@ permalink: /the-gambit/
     if (c >= 0.85) $('gm-note').innerHTML = '🔥 <b>Bold.</b> The odds lean your way — and the boldest wins can hand back a <b>boon</b> you don\'t own yet.';
     else if (c >= 0.4) $('gm-note').innerHTML = 'Getting braver. Give your <b>best</b> item — or <b>85%+ of your credits</b> — to really tilt the board.';
     else $('gm-note').innerHTML = 'A modest offering is close to a coin flip. Your <b>best</b> item — or <b>85%+ of your credits</b> — tilts the odds significantly your way.';
+    // with a collectable on the altar the PRIZE changes, not just the odds — say so (2026-07-27)
+    if (selColl) $('gm-note').innerHTML = '◈ <b>A collectable on the altar changes what comes back.</b> Win with one laid down and the board usually returns a <b>different</b> collectable — sometimes one <b>no shop sells</b>. ' + $('gm-note').innerHTML;
     if (loadOwed() > 0) $('gm-note').innerHTML = '✦ <b>The board remembers what you laid down.</b> ' + $('gm-note').innerHTML;
 
     // offer button + cooldown
@@ -187,9 +207,24 @@ permalink: /the-gambit/
           saveOwed(owed - repay);
         }
         await PJCC.grantCredits(reward);
-        if (c >= 0.85 && Math.random() < 0.35) {
-          var un = PJCC.unownedCollectables();
-          if (un.length) { boon = un[Math.floor(Math.random() * un.length)]; await PJCC.grantCollectable(boon.kind, boon.key); }
+        // ── WHAT COMES BACK (2026-07-27, Nate: "we should expand it to the collectables —
+        //    maybe donating one, you have a chance to get a DIFFERENT collectable, even
+        //    ones that AREN'T in the shop").
+        //    Laying down a collectable is its own kind of courage, so it carries its own
+        //    odds: win with one on the altar and the board usually hands a DIFFERENT one
+        //    back. Credits-only offerings keep the old bold-only path.
+        //    THE VAULT = collectables no shop stocks (PJCC.vaultCollectables); an offering
+        //    that included a collectable is the likeliest way to pull one.
+        var boonChance = coll ? Math.min(0.8, 0.55 + 0.25 * c) : (c >= 0.85 ? 0.35 : 0);
+        if (Math.random() < boonChance) {
+          var vault = PJCC.vaultCollectables ? PJCC.vaultCollectables() : [];
+          var shopPool = PJCC.unownedCollectables();
+          var wantVault = Math.random() < (coll ? 0.35 : 0.15);
+          var pool = (wantVault && vault.length) ? vault : (shopPool.length ? shopPool : vault);
+          if (pool.length) {
+            boon = pool[Math.floor(Math.random() * pool.length)];
+            await PJCC.grantCollectable(boon.kind, boon.key);
+          }
         }
       } else if (c >= 0.85) {
         // an all-in / best-item / 85%+ loss is banked, scaled to what was lost
@@ -212,7 +247,8 @@ permalink: /the-gambit/
     var box = $('gm-result'); box.hidden = false; box.className = 'gm-result ' + (win ? 'win' : 'loss');
     var rest = '<p class="gm-rest">The altar rests now. Leave it be — come back fresh.</p>';
     if (win) {
-      var boonLine = boon ? '<p class="gm-boon">✦ A boon: the board hands you <b>' + boon.label + '</b> ' + boon.glyph + ' — yours to keep.</p>' : '';
+      var boonLine = boon ? '<p class="gm-boon">✦ A boon: the board hands you <b>' + boon.label + '</b> ' + boon.glyph +
+        (boon.vault ? ' — <b>from the vault</b>, not sold anywhere.' : ' — yours to keep.') + '</p>' : '';
       var repayLine = repay ? '<p class="gm-boon">✦ And an old sacrifice comes home: <b>+' + repay + '</b> the board owed you.</p>' : '';
       box.innerHTML = '<div class="gm-res-title">THE BOARD ANSWERS ✦</div>' +
         '<p>You laid down <b>' + ov + '</b> and it gives back <b>' + reward + '</b> credits.</p>' + repayLine + boonLine +
@@ -224,7 +260,73 @@ permalink: /the-gambit/
         '<p>Your offering' + (coll ? ' — including <b>' + coll.label + '</b> ' + coll.glyph + ' —' : '') + ' is gone. Nothing comes back.</p>' + remembers +
         '<p class="gm-res-creed">The courage <em>was</em> the point. Real commitment isn\'t safe. Come back braver.</p>' + rest;
     }
+    showReveal(win, ov, reward, boon, coll, repay, c);
   }
+
+  // ---- THE REVEAL: the outcome takes the screen ------------------------------
+  // Tiers, loudest first: a VAULT boon (a collectable no shop sells) > any boon >
+  // a plain win > the board keeping it. Everything animated here is transform /
+  // opacity only, per the site's motion rule.
+  function showReveal(win, ov, reward, boon, coll, repay, c) {
+    var wrap = $('gm-reveal'), card = $('gm-reveal-card');
+    var vault = !!(boon && boon.vault);
+    wrap.hidden = false;
+    card.className = 'gm-reveal-card ' + (win ? (vault ? 'vault' : boon ? 'boon' : 'win') : 'loss');
+    $('gm-rv-eyebrow').textContent = win ? (vault ? 'the vault opens' : 'the board answers') : 'the board keeps it';
+    $('gm-rv-figure').textContent = boon ? boon.glyph : (win ? '✦' : '♟');
+    $('gm-rv-creed').textContent = win
+      ? 'You let go, and the path provided.'
+      : 'The courage was the point. Real commitment isn\'t safe. Come back braver.';
+
+    var titleEl = $('gm-rv-title'), subEl = $('gm-rv-sub');
+    if (win) {
+      titleEl.innerHTML = '<b class="gm-rv-num" id="gm-rv-num">0</b> <span class="gm-rv-unit">credits back</span>';
+      subEl.innerHTML = 'You laid down <b>' + ov + '</b>.' +
+        (repay ? ' <span class="gm-rv-repay">An old sacrifice came home: <b>+' + repay + '</b>.</span>' : '');
+      countTo($('gm-rv-num'), reward, 700);
+    } else {
+      titleEl.innerHTML = '<span class="gm-rv-gone">NOTHING COMES BACK</span>';
+      subEl.innerHTML = 'Your offering' + (coll ? ' — including <b>' + coll.label + '</b> ' + coll.glyph + ' —' : '') + ' is gone.' +
+        (c >= 0.85 ? ' <span class="gm-rv-repay">A sacrifice this bold is never wasted: <b>the board remembers</b>.</span>' : '');
+    }
+
+    var boonEl = $('gm-rv-boon');
+    if (boon) {
+      boonEl.hidden = false;
+      boonEl.innerHTML = (vault ? '<span class="gm-rv-ribbon">✦ from the vault · not in the shop ✦</span>' : '<span class="gm-rv-ribbon soft">a boon</span>') +
+        '<span class="gm-rv-boon-glyph">' + boon.glyph + '</span>' +
+        '<span class="gm-rv-boon-name">' + boon.label + '</span>' +
+        '<span class="gm-rv-boon-note">' + (vault
+          ? 'No shop stocks this one. Equip it at the <a href="/shopkeeper/">Quartermaster</a>.'
+          : 'Yours to keep — equip it at the <a href="/shopkeeper/">Quartermaster</a>.') + '</span>';
+    } else { boonEl.hidden = true; boonEl.innerHTML = ''; }
+
+    $('gm-rv-close').textContent = win ? 'Take it' : 'Let it go';
+    sparks(win ? (vault ? 22 : boon ? 16 : 10) : 0);
+    setTimeout(function () { try { $('gm-rv-close').focus(); } catch (e) {} }, 60);
+  }
+  function countTo(el, n, ms) {
+    if (!el) return;
+    var t0 = performance.now();
+    (function step(t) {
+      var k = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - k, 3);
+      el.textContent = Math.round(n * e);
+      if (k < 1) requestAnimationFrame(step); else el.textContent = n;
+    })(t0);
+  }
+  function sparks(n) {
+    var host = $('gm-rv-sparks'); host.innerHTML = '';
+    if (!n || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    for (var i = 0; i < n; i++) {
+      var s = document.createElement('i');
+      s.style.setProperty('--x', (Math.random() * 260 - 130).toFixed(0) + 'px');
+      s.style.setProperty('--y', (-60 - Math.random() * 190).toFixed(0) + 'px');
+      s.style.setProperty('--d', (Math.random() * 0.35).toFixed(2) + 's');
+      s.style.setProperty('--r', (Math.random() * 360 | 0) + 'deg');
+      host.appendChild(s);
+    }
+  }
+  function closeReveal() { $('gm-reveal').hidden = true; sparks(0); }
 
   // ---- load / refresh from the profile ----
   function refresh() {
@@ -246,6 +348,10 @@ permalink: /the-gambit/
       if (!armed) { armed = true; render(); return; }   // two-tap commit — a real sacrifice shouldn't be a misclick
       commit();
     });
+    // the reveal closes on the button, the curtain, or Escape
+    $('gm-rv-close').addEventListener('click', closeReveal);
+    $('gm-reveal').addEventListener('click', function (e) { if (e.target === $('gm-reveal')) closeReveal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('gm-reveal').hidden) closeReveal(); });
   }
 
   // Re-decide gate vs. altar every time auth/profile changes. The session often
@@ -352,5 +458,73 @@ permalink: /the-gambit/
 .gm-res-creed { color: #e3d6ff !important; font-style: italic; }
 .gm-rest { color: #9a7fd4 !important; font-size: 0.84rem !important; font-style: italic; }
 .gm-gold { color: #F5C518; }
-@media (max-width: 600px){ .gambit-coin { font-size: 3.4rem; } .gambit-tagline { font-size: 1.15rem; } }
+
+/* ═══ THE REVEAL — the outcome as an event, not a paragraph (2026-07-27) ═══════════
+   A curtain over the page and a card that LANDS, so the result can never be missed or
+   scrolled past. Four tiers dress the same card: .loss, .win, .boon, and .vault (a
+   collectable no shop sells — the loudest thing that can happen here).
+   Motion is transform/opacity only; every animation folds flat under reduced-motion. */
+.gm-reveal { position: fixed; inset: 0; z-index: 9000; display: flex; align-items: center; justify-content: center;
+  padding: 20px; background: rgba(8,4,20,0.86); backdrop-filter: blur(3px);
+  animation: gm-curtain .28s ease both; }
+.gm-reveal[hidden] { display: none; }
+@keyframes gm-curtain { from { opacity: 0; } to { opacity: 1; } }
+.gm-reveal-card { position: relative; width: min(460px, 100%); max-height: 88vh; overflow-y: auto; text-align: center;
+  border-radius: var(--r-lg, 16px); padding: 26px 22px 22px; border: 2px solid #4a3a86;
+  background: radial-gradient(circle at 50% 0%, #2c1a63, #150c33 78%);
+  box-shadow: 0 30px 80px -20px rgba(0,0,0,0.8);
+  animation: gm-land .42s cubic-bezier(.18,.9,.3,1.2) both; }
+@keyframes gm-land { from { opacity: 0; transform: translateY(26px) scale(0.9); } to { opacity: 1; transform: none; } }
+.gm-reveal-card.win   { border-color: #6bffb8; box-shadow: 0 0 60px -14px #6bffb8, 0 30px 80px -20px rgba(0,0,0,0.8); }
+.gm-reveal-card.boon  { border-color: #ffe08a; box-shadow: 0 0 70px -12px #ffe08a, 0 30px 80px -20px rgba(0,0,0,0.8); }
+.gm-reveal-card.vault { border-color: #ffb066; background: radial-gradient(circle at 50% 0%, #4a2410, #180d2e 78%);
+  box-shadow: 0 0 90px -10px #ffb066, 0 30px 80px -20px rgba(0,0,0,0.85); }
+.gm-reveal-card.loss  { border-color: #6b3a3a; }
+
+.gm-rv-eyebrow { font-size: 0.7rem; letter-spacing: 0.34em; text-transform: uppercase; color: #9a7fd4; }
+.gm-reveal-card.vault .gm-rv-eyebrow { color: #ffb066; }
+.gm-rv-figure { font-size: 3.4rem; line-height: 1.1; margin: 6px 0 2px;
+  filter: drop-shadow(0 6px 20px rgba(245,197,24,0.45)); animation: gm-rv-pop .5s .1s cubic-bezier(.2,1.4,.4,1) both; }
+@keyframes gm-rv-pop { from { opacity: 0; transform: scale(0.4) rotate(-18deg); } to { opacity: 1; transform: none; } }
+.gm-rv-title { font-weight: 900; font-size: 1.5rem; color: #fff; margin: 2px 0 4px; }
+.gm-rv-num { color: #6bffb8; font-size: 2.6rem; line-height: 1; }
+.gm-reveal-card.vault .gm-rv-num, .gm-reveal-card.boon .gm-rv-num { color: #ffe08a; }
+.gm-rv-unit { font-size: 0.9rem; font-weight: 800; color: #cdbcf2; letter-spacing: 0.04em; }
+.gm-rv-gone { color: #ff8fa0; letter-spacing: 0.06em; }
+.gm-rv-sub { color: #cdbcf2; font-size: 0.9rem; line-height: 1.6; }
+.gm-rv-sub b { color: #f0e6ff; }
+.gm-rv-repay { display: block; margin-top: 4px; color: #ffe08a; }
+.gm-rv-creed { color: #e3d6ff; font-style: italic; font-size: 0.86rem; margin: 12px 0 14px; }
+.gm-rv-close { margin: 0 auto; }
+
+/* the boon panel — a collectable gets its own frame, and a vault one gets a ribbon */
+.gm-rv-boon { display: flex; flex-direction: column; align-items: center; gap: 2px; margin: 14px auto 2px; padding: 14px 16px 12px;
+  border-radius: var(--r-md, 12px); border: 1px dashed #ffe08a; background: rgba(255,224,138,0.07);
+  animation: gm-rv-boon-in .45s .22s cubic-bezier(.2,1.3,.4,1) both; }
+.gm-reveal-card.vault .gm-rv-boon { border: 1px solid #ffb066; background: rgba(255,176,102,0.12); }
+@keyframes gm-rv-boon-in { from { opacity: 0; transform: translateY(10px) scale(0.94); } to { opacity: 1; transform: none; } }
+.gm-rv-ribbon { font-size: 0.62rem; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase;
+  color: #2a1608; background: #ffb066; border-radius: 999px; padding: 3px 12px; }
+.gm-rv-ribbon.soft { background: #ffe08a; color: #3a2b00; letter-spacing: 0.22em; }
+.gm-rv-boon-glyph { font-size: 2.6rem; line-height: 1.2; }
+.gm-rv-boon-name { font-weight: 900; font-size: 1.05rem; color: #ffe9c4; }
+.gm-rv-boon-note { font-size: 0.78rem; color: #cdbcf2; }
+.gm-rv-boon-note a { color: #ffb066; }
+
+/* sparks — a capped burst of light, fired only on a win */
+.gm-rv-sparks { position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: inherit; }
+.gm-rv-sparks i { position: absolute; left: 50%; top: 46%; width: 7px; height: 7px; border-radius: 2px;
+  background: #ffe08a; opacity: 0; animation: gm-spark 1.1s var(--d, 0s) ease-out both; }
+.gm-reveal-card.vault .gm-rv-sparks i { background: #ffb066; }
+@keyframes gm-spark {
+  0%   { opacity: 0; transform: translate(0,0) rotate(0) scale(0.4); }
+  18%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--x,0), var(--y,-120px)) rotate(var(--r,180deg)) scale(0.9); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gm-reveal, .gm-reveal-card, .gm-rv-figure, .gm-rv-boon { animation: none; }
+  .gm-rv-sparks { display: none; }
+}
+@media (max-width: 600px){ .gambit-coin { font-size: 3.4rem; } .gambit-tagline { font-size: 1.15rem; }
+  .gm-rv-num { font-size: 2.1rem; } .gm-rv-figure { font-size: 2.8rem; } }
 </style>

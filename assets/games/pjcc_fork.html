@@ -31,9 +31,13 @@
   }
   .float-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
   #hint-btn { bottom: 84px; right: 10px; background: #ff8fd0; color: #3a0a2a; padding: 7px 14px; font-size: 12px; }
-  #report-btn { bottom: 84px; left: 10px; background: rgba(20,12,45,0.8); color: #9a7fd4;
-    border: 1px solid #4a3a86; padding: 6px 11px; font-size: 10px; letter-spacing: 0.06em; }
-  #report-btn:hover { color: #ffd36b; border-color: #ffd36b; }
+  /* was a 10px whisper in the corner; a report you can't find is a report you never get */
+  #report-btn { bottom: 84px; left: 10px; background: rgba(20,12,45,0.85); color: #cfeee6;
+    border: 1px solid #5be0c0; padding: 7px 13px; font-size: 11px; letter-spacing: 0.04em; }
+  #report-btn:hover { color: #0a1a1c; background: #5be0c0; border-color: #5be0c0; }
+  .rep-fen { font-family: ui-monospace, 'Share Tech Mono', monospace; font-size: 10.5px; color: #5be0c0;
+    background: rgba(0,0,0,0.35); border: 1px solid #2a6a5e; border-radius: 8px; padding: 8px 10px;
+    margin: 0 0 12px; max-width: 340px; word-break: break-all; line-height: 1.5; }
   #menu-btn { top: 10px; right: 10px; background: #163a36; color: #cfeee6; padding: 5px 12px; font-size: 11px; border: 1px solid #2a6a5e; }
   .float-btn.hidden { display: none; }
 
@@ -72,15 +76,17 @@
   <canvas id="canvas" width="480" height="500"></canvas>
   <button class="float-btn hidden" id="menu-btn">☰ menu</button>
   <button class="float-btn hidden" id="hint-btn">🐾 Hint</button>
-  <button class="float-btn hidden" id="report-btn" title="Something wrong with this puzzle? Send it to McPuppy">⚑ report</button>
+  <button class="float-btn hidden" id="report-btn" title="Something wrong with this puzzle? Send it to McPuppy">⚑ Report puzzle</button>
 
+  <!-- 2026-07-27 (Nate: "There's a lot of words there; let's cut a lot of those out.
+       They'll figure it out."). The menu was a paragraph plus a three-line footnote.
+       It's the motif list and two buttons now. -->
   <div class="overlay" id="menu-screen">
-    <div class="eyebrow">The Road to Chess City</div>
+    <div class="eyebrow">PJCC Puzzles</div>
     <div class="big-title">FORK IN THE ROAD</div>
     <div class="blurb">
-      Every step toward Chess City is a tactic. Spot the
-      <b style="color:#F5C518">fork, skewer, or mate</b> and play the winning move.
-      The road runs <b>1,000 steps</b> and the puzzles <b>adapt to you</b> — solve and they sharpen, slip and they ease off.
+      One winning move, every time.<br>
+      <b style="color:#F5C518">Forks · pins · skewers · discoveries · mates · winning material</b>
     </div>
     <div class="blurb" id="journey-line" style="margin-bottom:10px;color:#5be0c0;min-height:14px;"></div>
     <div class="row">
@@ -88,10 +94,22 @@
       <button class="btn btn-ghost" id="daily-btn">DAILY LADDER</button>
     </div>
     <div class="foot">
-      <b>Journey</b>: adaptive puzzles across five regions; a boss guards each gate; progress saves to your profile.<br>
-      <b>Daily Ladder</b>: climb as far as you can — the same seeded run for everyone, resets daily.<br>
       <span class="tap" id="snd-toggle">🔊 sound: on</span> &nbsp;·&nbsp; <span class="tap" id="reset-prog">reset journey</span>
     </div>
+  </div>
+
+  <!-- the report panel (2026-07-27) -->
+  <div class="overlay hidden" id="report-screen">
+    <div class="eyebrow">Report this puzzle</div>
+    <div class="big-title" style="font-size:20px;">SOMETHING WRONG?</div>
+    <div class="blurb" style="margin-bottom:10px;">If the "winning move" isn't winning — or another move looks just as good — send it over. It goes straight to McPuppy with the position attached.</div>
+    <div class="rep-fen" id="rep-fen"></div>
+    <div class="row">
+      <button class="btn btn-gold" id="rep-mail">EMAIL IT</button>
+      <button class="btn btn-ghost" id="rep-copy">COPY IT</button>
+    </div>
+    <div class="foot" id="rep-done" style="min-height:1.4em;"></div>
+    <div class="foot"><span class="tap" id="rep-close">back to the puzzle</span></div>
   </div>
 
   <div class="overlay hidden" id="summary-screen">
@@ -162,17 +180,40 @@ function placeFar(used, avoid, rnd, banFile){
   }
   return null;
 }
-// A few harmless black-pawn distractors that can't touch the tactic.
-function addDistractors(pieces, used, n, rnd, keepClearOf){
+// ── BOARD CLUTTER ─────────────────────────────────────────────────────────────
+// 2026-07-27 (Nate: "there aren't enough pieces on the board for each given puzzle.
+// It's too easy."). Puzzles used to carry at most a few black pawns. They now carry
+// a real crowd — pawns at every level, and knights/bishops once the road sharpens —
+// so a position has to be READ instead of scanned.
+//
+// Every distractor is proved INERT before it lands: it may not influence any key
+// square of the tactic, may not touch a white piece, and may not be capturable
+// itself (free material would be a second, easier answer). Whatever slips through
+// is caught downstream by puzzleSane() + secondSolution().
+function clutterFor(diff, max){ return Math.max(1, Math.min(max, Math.round(diff * 0.7))); }
+function addDistractors(pieces, used, n, rnd, keepClearOf, rich){
   let added = 0, tries = 0;
-  while (added < n && tries < 60){
+  const TYPES = rich ? ['p','p','p','n','b'] : ['p','p','p','n'];
+  while (added < n && tries < 140){
     tries++;
-    const x = (rnd()*8)|0, y = 2 + ((rnd()*4)|0);            // ranks away from the back rank
+    const t = TYPES[(rnd()*TYPES.length)|0];
+    const x = (rnd()*8)|0, y = 1 + ((rnd()*6)|0);
     if (used.has(x+','+y)) continue;
+    // BLACK PAWNS STAY OFF THE PROMOTION RUN (found 2026-07-27 by the referee audit:
+    // "best-defense-only--220"). A black pawn on y=5 or y=6 is one or two moves from
+    // queening and the proof search runs 4 ply — so black's best defense quietly became
+    // "promote", and the tactic stopped being worth a piece. The in-game material search
+    // doesn't model promotion; the referee does. That's exactly where they disagreed.
+    if (t === 'p' && (y < 2 || y > 4)) continue;
     if (keepClearOf.some(s => Math.max(Math.abs(s.x-x), Math.abs(s.y-y)) <= 1)) continue;
-    // a black pawn here must not attack any protected square
-    if (keepClearOf.some(s => (s.x===x-1||s.x===x+1) && s.y===y+1)) continue;
-    used.add(x+','+y); pieces.push('p'+alg(x,y)); added++;
+    const cand = pieces.concat([t + alg(x, y)]);
+    const b = parseBoard({ pieces: cand });
+    // it must not see any key square, must not touch a white piece, and must not hang
+    const infl = genMoves(b, x, y);
+    if (infl.some(m => keepClearOf.some(s => s.x === m.x && s.y === m.y))) continue;
+    if (infl.some(m => b[m.y][m.x] && b[m.y][m.x].c === 'w')) continue;
+    if (isAttacked(b, x, y, 'w')) continue;
+    used.add(x+','+y); pieces.push(t + alg(x, y)); added++;
   }
 }
 
@@ -277,6 +318,195 @@ function genSkewer(diff, rnd){
   return null;
 }
 
+/* ═══ THREE MORE MOTIFS (2026-07-27) ═══════════════════════════════════════════
+   Nate: "Forks, skewers, and back ranks are great, but it's not diverse enough…
+   Winning Material should be a puzzle (a clear route to winning material as an
+   advantageous move, of course)."
+
+   Same house rule as the originals: nothing is composed from chess intuition. Each
+   one is BUILT by geometry, then has to survive puzzleSane() — legal line, and an
+   exact-depth search proving the mover nets a clean piece against EVERY defense —
+   plus secondSolution(), which throws the position out if some other move wins just
+   as easily. What you're reading below is only the construction. ══════════════ */
+
+const QDIRS = [[-1,-1],[-1,1],[1,-1],[1,1],[-1,0],[1,0],[0,-1],[0,1]];
+const RDIRS = [[-1,0],[1,0],[0,-1],[0,1]];
+function clearPath(occ, ax, ay, bx, by){          // strictly between a and b, same line
+  const dx = Math.sign(bx-ax), dy = Math.sign(by-ay);
+  let x = ax+dx, y = ay+dy;
+  while (x !== bx || y !== by){ if (occ.has(x+','+y)) return false; x += dx; y += dy; }
+  return true;
+}
+function ray(x, y, dx, dy, n){ const a = x + dx*n, b = y + dy*n; return (a>=0&&a<8&&b>=0&&b<8) ? {x:a,y:b} : null; }
+
+// ── WINNING MATERIAL — a double attack. The queen (or rook) lands on one square that
+//    CHECKS the king and hits a loose piece at the same time. The check must be
+//    answered; the loose piece is then simply taken. ──────────────────────────────
+function genDoubleAttack(diff, rnd){
+  const TVAL = { R:'rook', B:'bishop', N:'knight' };
+  for (let t = 0; t < 300; t++){
+    const useRook = diff >= 6 && rnd() < 0.4;
+    const A = useRook ? 'R' : 'Q';
+    const dirs = useRook ? RDIRS : QDIRS;
+    const S = { x: 1 + (rnd()*6|0), y: 1 + (rnd()*6|0) };            // the landing square
+    const d1 = dirs[rnd()*dirs.length|0], d2 = dirs[rnd()*dirs.length|0];
+    if (d1[0] === d2[0] && d1[1] === d2[1]) continue;
+    const K = ray(S.x, S.y, d1[0], d1[1], 2 + (rnd()*4|0));          // enemy king, >=2 away
+    const T = ray(S.x, S.y, d2[0], d2[1], 1 + (rnd()*4|0));          // the loose piece
+    if (!K || !T) continue;
+    const tt = ['R','B','N'][rnd()*3|0];
+    if (useRook && tt === 'B') continue;                              // R takes B is only +30
+    // the attacker's own start square: back down one of its lines from S
+    const d3 = dirs[rnd()*dirs.length|0];
+    const O = ray(S.x, S.y, d3[0], d3[1], 1 + (rnd()*4|0));
+    if (!O) continue;
+    const used = new Set([k2(S), k2(K), k2(T), k2(O)]);
+    if (used.size < 4) continue;
+    const wk = placeFar(used, [K, T, S, O], rnd); if (!wk) continue;
+    used.add(k2(wk));
+    if (adjc(K.x, K.y, S.x, S.y)) continue;                           // no contact check
+    if (adjc(K.x, K.y, wk.x, wk.y)) continue;
+    const pieces = [A+alg(O.x,O.y), 'K'+alg(wk.x,wk.y), 'k'+alg(K.x,K.y), tt.toLowerCase()+alg(T.x,T.y)];
+    addDistractors(pieces, used, clutterFor(diff, 6), rnd, [S, K, T, O, wk], diff >= 5);
+    const b = parseBoard({ pieces });
+    // every line the tactic depends on has to be genuinely clear
+    const occ = new Set(); pieces.forEach(s => occ.add(F(s.slice(1)) + ',' + Rk(s.slice(1))));
+    if (!clearPath(occ, O.x, O.y, S.x, S.y)) continue;
+    occ.delete(k2(O));                                                // the attacker has left O
+    if (!clearPath(occ, S.x, S.y, K.x, K.y)) continue;
+    if (!clearPath(occ, S.x, S.y, T.x, T.y)) continue;
+    // after the move the attacker must be safe, and the king must have exactly a way out
+    const nb = cloneBoard(b); nb[S.y][S.x] = nb[O.y][O.x]; nb[O.y][O.x] = null;
+    if (isAttacked(nb, S.x, S.y, 'b')) continue;                      // it would just be captured
+    if (!inCheck(nb, 'b')) continue;
+    const outs = legalMovesFor(nb, 'b');
+    if (!outs.length) continue;                                       // that's a mate, not this puzzle
+    const esc = outs.find(m => m.fx === K.x && m.fy === K.y && !(m.tx === T.x && m.ty === T.y));
+    if (!esc) continue;
+    const line = [
+      [alg(O.x,O.y)+alg(S.x,S.y), A+alg(S.x,S.y)+'+'],
+      [alg(K.x,K.y)+alg(esc.tx,esc.ty), 'K'+alg(esc.tx,esc.ty)],
+      [alg(S.x,S.y)+alg(T.x,T.y), A+'x'+alg(T.x,T.y)]
+    ];
+    return { theme:'Winning Material', cat:'material', goal:'Win material.', side:'w',
+      hint:'One move that checks the king AND attacks something loose.', pieces, line,
+      explain:'On '+alg(S.x,S.y)+' the '+(useRook?'rook':'queen')+' checks the king and eyes the '+TVAL[tt]+' on '+alg(T.x,T.y)+' at once. The check has to be answered first — then the '+TVAL[tt]+' drops.' };
+  }
+  return null;
+}
+
+// ── DISCOVERED CHECK — a white knight stands on the line between a white slider and
+//    the enemy king. It leaves WITH a capture: the check comes from behind it, so the
+//    grabbed piece can never be won back. ────────────────────────────────────────
+function genDiscovered(diff, rnd){
+  const TVAL = { R:'rook', Q:'queen', B:'bishop' };
+  for (let t = 0; t < 300; t++){
+    const useBishop = rnd() < 0.45;
+    const SL = useBishop ? 'B' : 'R';
+    const dirs = useBishop ? [[-1,-1],[-1,1],[1,-1],[1,1]] : RDIRS;
+    const d = dirs[rnd()*dirs.length|0];
+    const Sl = { x: 1 + (rnd()*6|0), y: 1 + (rnd()*6|0) };            // the slider
+    const gap = 2 + (rnd()*3|0);
+    const B  = ray(Sl.x, Sl.y, d[0], d[1], 1);                        // the blocker (our knight)
+    const K  = ray(Sl.x, Sl.y, d[0], d[1], gap);                      // enemy king behind it
+    if (!B || !K || gap < 2) continue;
+    // the knight's landing square can't be the king's, and can't still block the
+    // slider — but that second case is already impossible: the target piece sits
+    // there, so clearPath(Sl→K) below rejects it for us.
+    const jumps = kTargets(B.x, B.y).filter(j => !(j.x === K.x && j.y === K.y));
+    if (!jumps.length) continue;
+    const T = jumps[rnd()*jumps.length|0];
+    if (adjc(T.x, T.y, K.x, K.y)) continue;                           // the king could just take it
+    const tt = ['R','Q','B'][rnd()*3|0];
+    const used = new Set([k2(Sl), k2(B), k2(K), k2(T)]);
+    if (used.size < 4) continue;
+    const wk = placeFar(used, [K, T, Sl, B], rnd); if (!wk) continue;
+    used.add(k2(wk));
+    if (adjc(K.x, K.y, wk.x, wk.y)) continue;
+    const pieces = [SL+alg(Sl.x,Sl.y), 'N'+alg(B.x,B.y), 'K'+alg(wk.x,wk.y), 'k'+alg(K.x,K.y), tt.toLowerCase()+alg(T.x,T.y)];
+    addDistractors(pieces, used, clutterFor(diff, 5), rnd, [Sl, B, K, T, wk], diff >= 5);
+    const occ = new Set(); pieces.forEach(s => occ.add(F(s.slice(1)) + ',' + Rk(s.slice(1))));
+    occ.delete(k2(B));
+    if (!clearPath(occ, Sl.x, Sl.y, K.x, K.y)) continue;              // only the knight blocks it
+    const b = parseBoard({ pieces });
+    if (inCheck(b, 'b') || inCheck(b, 'w')) continue;
+    const nb = cloneBoard(b); nb[T.y][T.x] = nb[B.y][B.x]; nb[B.y][B.x] = null;
+    if (!inCheck(nb, 'b')) continue;
+    if (!legalMovesFor(nb, 'b').length) continue;                     // mate — a different puzzle
+    const line = [[alg(B.x,B.y)+alg(T.x,T.y), 'Nx'+alg(T.x,T.y)+'+']];
+    return { theme:'Discovered Check', cat:'discovered', goal:'Win material.', side:'w',
+      hint:'Something of yours is standing in front of a line at the king.', pieces, line,
+      explain:'The knight steps aside and takes the '+TVAL[tt]+' on '+alg(T.x,T.y)+' — and the '+(useBishop?'bishop':'rook')+' behind it checks the king the moment the line opens. Black has to answer the check, so the '+TVAL[tt]+' is simply gone.' };
+  }
+  return null;
+}
+
+// ── THE PIN — a ROOK pinned to its king along a DIAGONAL by our bishop. A rook cannot
+//    move diagonally, so the pin paralyses it completely. It is guarded (by a pawn), so
+//    our bishop taking it would just be a trade — the answer is to hit it with a PAWN,
+//    the one attacker it can't afford. It has to stand there and take it.
+//
+//    That guard is the whole reason this motif works. The first build had the pinned
+//    piece hanging, and the probe showed ~55% of those positions were rejected for a
+//    second solution: the pinning bishop could simply capture it, no pin required.
+//    Guarded rook (500) minus the pawn black wins back (100) still clears the +300 bar,
+//    while bishop-takes-rook-takes-bishop (+170) does not — so the pawn is the ONLY
+//    winning idea, which is exactly what makes it a puzzle. ──────────────────────
+function genPinWin(diff, rnd){
+  for (let t = 0; t < 300; t++){
+    const dirs = [[-1,-1],[-1,1],[1,-1],[1,1]];                      // a DIAGONAL pin
+    const d = dirs[rnd()*dirs.length|0];
+    const P = { x: 1 + (rnd()*6|0), y: 2 + (rnd()*4|0) };             // the pinned rook
+    const K  = ray(P.x, P.y, d[0], d[1], 1 + (rnd()*3|0));            // its king, behind it
+    const SL = ray(P.x, P.y, -d[0], -d[1], 1 + (rnd()*4|0));          // our bishop, in front
+    if (!K || !SL) continue;
+    if (P.y + 2 > 7) continue;
+    const side = rnd() < 0.5 ? -1 : 1;
+    const pawn = { x: P.x + side, y: P.y + 2 };                       // pushes once, then attacks P
+    const push = { x: pawn.x, y: P.y + 1 };
+    if (pawn.x < 0 || pawn.x > 7 || pawn.y > 6) continue;
+    if (adjc(K.x, K.y, push.x, push.y) || adjc(K.x, K.y, pawn.x, pawn.y)) continue;   // no king rescue
+    // the guard: a black pawn defending the rook, so our bishop can't just take it
+    const gx = P.x + (rnd() < 0.5 ? -1 : 1), gy = P.y - 1;            // black pawn guards downward
+    if (gx < 0 || gx > 7 || gy < 1) continue;
+    const G = { x: gx, y: gy };
+    if (adjc(K.x, K.y, G.x, G.y)) continue;
+    const used = new Set([k2(P), k2(K), k2(SL), k2(pawn), k2(push), k2(G)]);
+    if (used.size < 6) continue;
+    const wk = placeFar(used, [K, P, SL, G], rnd); if (!wk) continue;
+    used.add(k2(wk));
+    if (adjc(K.x, K.y, wk.x, wk.y)) continue;
+    const pieces = ['B'+alg(SL.x,SL.y), 'P'+alg(pawn.x,pawn.y), 'K'+alg(wk.x,wk.y),
+                    'k'+alg(K.x,K.y), 'r'+alg(P.x,P.y), 'p'+alg(G.x,G.y)];
+    addDistractors(pieces, used, clutterFor(diff, 5), rnd, [P, K, SL, pawn, push, G, wk], diff >= 6);
+    const occ = new Set(); pieces.forEach(s => occ.add(F(s.slice(1)) + ',' + Rk(s.slice(1))));
+    if (occ.has(k2(push))) continue;                                  // the push square must be empty
+    if (!clearPath(occ, SL.x, SL.y, P.x, P.y)) continue;
+    if (!clearPath(occ, P.x, P.y, K.x, K.y)) continue;
+    const b = parseBoard({ pieces });
+    if (inCheck(b, 'b') || inCheck(b, 'w')) continue;
+    if (isAttacked(b, push.x, push.y, 'b')) continue;                 // the pawn must survive the push
+    const nb = cloneBoard(b); nb[push.y][push.x] = nb[pawn.y][pawn.x]; nb[pawn.y][pawn.x] = null;
+    if (inCheck(nb, 'b')) continue;                                   // keep it quiet — no accidental check
+    // the pin has to be real: the rook must have no legal move at all
+    if (legalMovesFor(nb, 'b').some(m => m.fx === P.x && m.fy === P.y)) continue;
+    const replies = legalMovesFor(nb, 'b').filter(m => !(m.tx === push.x && m.ty === push.y));
+    if (!replies.length) continue;
+    const rep = replies[rnd()*replies.length|0];
+    const rp = nb[rep.fy][rep.fx];
+    const repSan = (rp && rp.t !== 'P' ? rp.t : '') + alg(rep.tx, rep.ty);
+    const line = [
+      [alg(pawn.x,pawn.y)+alg(push.x,push.y), alg(push.x,push.y)],
+      [alg(rep.fx,rep.fy)+alg(rep.tx,rep.ty), repSan],
+      [alg(push.x,push.y)+alg(P.x,P.y), alg(push.x,push.y)[0]+'x'+alg(P.x,P.y)]
+    ];
+    return { theme:'The Pin', cat:'pin', goal:'Win the rook.', side:'w',
+      hint:'That rook is pinned to its king — it cannot move. Attack it with something small.', pieces, line,
+      explain:'The rook on '+alg(P.x,P.y)+' is pinned to its king along the diagonal, so it cannot step away — and a rook can\'t move diagonally either. It\'s guarded, so taking it with the bishop is only a trade. The pawn walks up to '+alg(push.x,push.y)+', attacks it, and next move simply takes it.' };
+  }
+  return null;
+}
+
 // The accuracy gate: no puzzle reaches a player unless it survives a full proof.
 //  1. Nobody starts in check (a queen eyeing the white king would make the stored
 //     "solution" an illegal move).
@@ -313,34 +543,69 @@ function puzzleSane(p){
       const nb = cloneBoard(b); nb[m.ty][m.tx] = nb[m.fy][m.fx]; nb[m.fy][m.fx] = null; b = nb;
       mover = mover === 'w' ? 'b' : 'w';
     }
-    if (p.cat === 'mate' || /mate/i.test(p.goal)) return isCheckmate(b, mover);
+    // \b matters: the goal "Win material." CONTAINS the substring "mate" (m-a-t-e-rial),
+    // so the old /mate/i sent every new material puzzle down the checkmate branch and
+    // failed it for not being mate. Cost: two whole motifs generated nothing (2026-07-27).
+    if (p.cat === 'mate' || /\bmate\b/i.test(p.goal)) return isCheckmate(b, mover);
     const start = (p.side === 'w' ? 1 : -1) * matSum(b0);
-    return proveGain(b0, p.side, p.line.length + 1, -Infinity, Infinity) - start >= 300;
+    if (proveGain(b0, p.side, p.line.length + 1, -Infinity, Infinity) - start < 300) return false;
+    return !secondSolution(p, b0, start);
   } catch(e){ return false; }
+}
+
+// ── ONE ANSWER ONLY (2026-07-27) ───────────────────────────────────────────────
+// The board carries a crowd now, and a crowd can accidentally leave something else
+// hanging — at which point the puzzle has two right answers and the game calls the
+// player's perfectly good move wrong. So: if ANY other first move wins a clean piece
+// straight away (their best reply included), the position is thrown out.
+// Deliberately shallow — this hunts free lunches, not deep second combinations.
+function secondSolution(p, b0, start){
+  const foe = p.side === 'w' ? 'b' : 'w';
+  const first = uci(p.line[0][0]);
+  for (const m of legalMovesFor(b0, p.side)){
+    if (m.fx === first.fx && m.fy === first.fy && m.tx === first.tx && m.ty === first.ty) continue;
+    const nb = cloneBoard(b0); nb[m.ty][m.tx] = nb[m.fy][m.fx]; nb[m.fy][m.fx] = null;
+    if (-proveGain(nb, foe, 1, -Infinity, Infinity) - start >= 300) return true;
+  }
+  return false;
 }
 
 // Each puzzle wears an honest RATING chip (2026-07-14 — the "main puzzle feature"
 // pass): motif base + how deep in the road you are + real board clutter.
 function puzzleRating(p, diff){
-  const base = { mate: 340, skewer: 520, fork: 640 }[p.cat] || 500;
+  const base = { mate: 340, material: 480, skewer: 520, pin: 560, fork: 640, discovered: 700 }[p.cat] || 500;
   const clutter = Math.max(0, p.pieces.length - 4) * 45;
   return Math.round((base + diff * 72 + clutter) / 10) * 10;
 }
+// The motif mix. Everything is available early except the two that need a real board
+// read (the pin, the discovery), which join as the road sharpens. Weighted, not a
+// ladder of if-elses, so adding the next motif is one line (2026-07-27).
+function motifMix(diff){
+  return [
+    [genBackRankMate, diff <= 3 ? 1.0 : 0.5],   // was the plurality of the whole road
+    [genDoubleAttack, 1.4],
+    [genKnightFork,   1.1],
+    [genSkewer,       diff >= 3 ? 0.9 : 0.25],
+    [genPinWin,       diff >= 4 ? 0.9 : 0],
+    [genDiscovered,   diff >= 5 ? 0.9 : 0]
+  ].filter(e => e[1] > 0);
+}
+function pickMotif(diff, rnd){
+  const mix = motifMix(diff);
+  let total = 0; mix.forEach(e => total += e[1]);
+  let r = rnd() * total;
+  for (const [fn, w] of mix){ r -= w; if (r <= 0) return fn; }
+  return mix[0][0];
+}
 function genPuzzle(diff, rnd){
   rnd = rnd || Math.random;
-  for (let a = 0; a < 14; a++){
-    const roll = rnd();
-    const pMate = diff <= 3 ? 0.5 : 0.3;
-    const pSkew = diff >= 3 ? 0.28 : 0;     // skewers join once the road sharpens
-    let p = null;
-    if (roll < pMate) p = genBackRankMate(diff, rnd);
-    else if (roll < pMate + pSkew) p = genSkewer(diff, rnd);
-    else p = genKnightFork(diff, rnd);
-    if (!p) p = genKnightFork(diff, rnd) || genBackRankMate(diff, rnd) || genSkewer(diff, rnd);
+  for (let a = 0; a < 18; a++){
+    let p = pickMotif(diff, rnd)(diff, rnd);
+    if (!p) p = genKnightFork(diff, rnd) || genBackRankMate(diff, rnd) || genDoubleAttack(diff, rnd);
     if (p && puzzleSane(p)) { p.id = 'g' + (genPuzzle._n = (genPuzzle._n||0) + 1); p.rating = puzzleRating(p, diff); return p; }
   }
   // guaranteed fallbacks — still gated; the last resort is a known-sane composition
-  const fb = [genKnightFork(2, rnd), genBackRankMate(2, rnd), genSkewer(2, rnd)].find(q => q && puzzleSane(q));
+  const fb = [genKnightFork(2, rnd), genBackRankMate(2, rnd), genSkewer(2, rnd), genDoubleAttack(2, rnd)].find(q => q && puzzleSane(q));
   if (fb){ fb.id = 'g' + (genPuzzle._n = (genPuzzle._n||0) + 1); fb.rating = puzzleRating(fb, 2); return fb; }
   return { id:'g0', theme:'Back Rank', cat:'mate', goal:'Mate in one.', side:'w', hint:'Down the file to the back rank.',
       rating:400, pieces:['Kg1','Rd2','kh8','pg7','ph7'], line:[['d2d8','Rd8#']] };
@@ -436,10 +701,16 @@ const MOTIFS = {
   'Back Rank':   { cat:'mate',   icon:'♜', color:'#ff8fd0', name:'Back-Rank Mate',
     explain:'The king is boxed in by its own pawns. A heavy piece crashes to the last rank — nowhere to run. Checkmate.' },
   'Skewer':      { cat:'skewer', icon:'➳', color:'#ffd166', name:'Skewer',
-    explain:'A check straight through the king. It must step aside — exposing the valuable piece that was hiding right behind it.' }
+    explain:'A check straight through the king. It must step aside — exposing the valuable piece that was hiding right behind it.' },
+  'Winning Material': { cat:'material', icon:'♛', color:'#8fe3ff', name:'Winning Material',
+    explain:'One move, two jobs. It checks the king and attacks something loose at the same time — the check gets answered first, and the loose piece has nowhere to go.' },
+  'Discovered Check': { cat:'discovered', icon:'✦', color:'#c9a7ff', name:'Discovered Check',
+    explain:'The check comes from the piece that DIDN\'T move. Step the blocker aside — with a capture — and the line behind it opens onto the king.' },
+  'The Pin':     { cat:'pin',    icon:'⛓', color:'#ffb066', name:'The Pin',
+    explain:'A piece pinned to its own king cannot legally move. Attack it with something small and it just has to stand there and be taken.' }
 };
-const CAT_LABEL = { fork:'Forks', mate:'Mates', skewer:'Skewers', pin:'Pins' };
-const CAT_ORDER = ['fork','skewer','mate','pin'];
+const CAT_LABEL = { fork:'Forks', mate:'Mates', skewer:'Skewers', pin:'Pins', material:'Material', discovered:'Discoveries' };
+const CAT_ORDER = ['fork','skewer','material','discovered','pin','mate'];
 
 // Per-tactic accuracy, tracked across all runs (shown on the summary + the Dossier).
 function loadTactics(){ try { return JSON.parse(localStorage.getItem(TACT_KEY)) || {}; } catch(e){ return {}; } }
@@ -805,7 +1076,7 @@ function loop(now){
 }
 
 // ---- Screens ----
-function hideOverlays(){ ['menu-screen','summary-screen'].forEach(id=>document.getElementById(id).classList.add('hidden')); }
+function hideOverlays(){ ['menu-screen','summary-screen','report-screen'].forEach(id=>document.getElementById(id).classList.add('hidden')); }
 function showMenu(){ G=null; run=null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('hint-btn').classList.add('hidden'); document.getElementById('report-btn').classList.add('hidden'); hideOverlays(); updateJourneyLine(); document.getElementById('menu-screen').classList.remove('hidden'); }
 function showSummary(){
   G = null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('hint-btn').classList.add('hidden'); document.getElementById('report-btn').classList.add('hidden');
@@ -847,20 +1118,65 @@ function showSummary(){
 function go(){ initAudio(); if (actx.state === 'suspended') actx.resume(); }
 document.getElementById('journey-btn').addEventListener('click', ()=>{ go(); startRun('journey'); });
 document.getElementById('daily-btn').addEventListener('click', ()=>{ go(); startRun('daily'); });
-// ⚑ report a broken puzzle — opens the player's mail app with everything McPuppy
-// needs prefilled (2026-07-14). The address is already public on /contact/.
-document.getElementById('report-btn').addEventListener('click', ()=>{
-  const p = G && G.p; if (!p) return;
-  const body = 'Hi McPuppy — I think this Fork in the Road puzzle is broken.\n\n' +
+/* ⚑ REPORT A PUZZLE (rebuilt 2026-07-27 — Nate: "Maybe a Report Puzzle option that
+   comes to me somehow"). It was one small pill firing a bare mailto: from inside an
+   iframe — easy to miss, and if the browser has no mail handler the report vanished
+   with no sign anything happened.
+
+   Now it opens a panel that shows the position's FEN and offers two roads out:
+   EMAIL IT (the same prefilled mail, one tap) or COPY IT (the whole report on the
+   clipboard, to paste anywhere). Either way the player can see the report exists.
+   A real inbox/table for these is still worth building — see FUTURE-IDEAS. */
+function puzzleFEN(p){
+  const b = parseBoard(p);
+  let out = [];
+  for (let y = 0; y < 8; y++){
+    let row = '', gap = 0;
+    for (let x = 0; x < 8; x++){
+      const c = b[y][x];
+      if (!c) { gap++; continue; }
+      if (gap) { row += gap; gap = 0; }
+      row += c.c === 'w' ? c.t : c.t.toLowerCase();
+    }
+    if (gap) row += gap;
+    out.push(row);
+  }
+  return out.join('/') + ' ' + (p.side || 'w') + ' - - 0 1';
+}
+function reportText(p){
+  return 'Hi McPuppy — I think this PJCC puzzle is wrong.\n\n' +
     'What looked wrong:\n(type here)\n\n— puzzle data (please leave this part in) —\n' +
     'id: ' + p.id + '\ntheme: ' + p.theme + '\ngoal: ' + p.goal +
-    '\npieces: ' + p.pieces.join(' ') + '\nline: ' + p.line.map(x=>x[1]).join(' ') +
+    '\nFEN: ' + puzzleFEN(p) +
+    '\npieces: ' + p.pieces.join(' ') + '\nline: ' + p.line.map(x => x[1]).join(' ') +
     '\nrating: ~' + (p.rating || '?') + '\nmode: ' + (run ? run.mode : '?') +
     (run && run.mode === 'journey' ? ' · step ' + run.step : '');
+}
+document.getElementById('report-btn').addEventListener('click', ()=>{
+  const p = G && G.p; if (!p) return;
+  document.getElementById('rep-fen').textContent = puzzleFEN(p);
+  document.getElementById('rep-done').textContent = '';
+  document.getElementById('report-screen').classList.remove('hidden');
+});
+document.getElementById('rep-close').addEventListener('click', ()=>{
+  document.getElementById('report-screen').classList.add('hidden');
+});
+document.getElementById('rep-mail').addEventListener('click', ()=>{
+  const p = G && G.p; if (!p) return;
   const href = 'mailto:nathgreen37@gmail.com?subject=' +
-    encodeURIComponent('Broken puzzle report — Fork in the Road') +
-    '&body=' + encodeURIComponent(body);
+    encodeURIComponent('Puzzle report — PJCC Puzzles') + '&body=' + encodeURIComponent(reportText(p));
   try { (window.top || window).location.href = href; } catch(e){ window.location.href = href; }
+  document.getElementById('rep-done').textContent = 'Opening your mail app…';
+});
+document.getElementById('rep-copy').addEventListener('click', async ()=>{
+  const p = G && G.p; if (!p) return;
+  const txt = reportText(p);
+  try {
+    await navigator.clipboard.writeText(txt);
+    document.getElementById('rep-done').textContent = '✓ copied — paste it anywhere and send it to McPuppy';
+  } catch(e){
+    document.getElementById('rep-done').textContent = 'Copy blocked here. The FEN above is the important part.';
+  }
 });
 document.getElementById('menu-btn').addEventListener('click', showMenu);
 document.getElementById('sum-again').addEventListener('click', ()=>{ go(); startRun(run ? run.mode : 'journey'); });

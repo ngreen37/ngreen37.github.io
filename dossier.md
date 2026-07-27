@@ -188,19 +188,31 @@ permalink: /dossier/
     var streakChip = stk.current > 0
       ? '<span class="dsr-streak" title="Any game you play keeps the flame. Longest run: ' + stk.best + ' days.">🔥 ' + stk.current + 'd</span>'
       : '';
-    var head = '<div class="dsr-head" style="background:' + theme.bg + ';border-color:' + theme.accent + '">' +
-      '<div class="dsr-avatar" style="border-color:' + theme.accent + '">' + PJCC.avatarEmoji(prof) + '<span class="dsr-lvl" style="background:' + theme.accent + '">Lv ' + lvl.level + '</span>' + (window.PJCCPet ? '<span class="dsr-pet-badge">' + PJCCPet.petEmoji() + '</span>' : '') + '</div>' +
-      '<div class="dsr-ident">' +
-        '<div class="dsr-name" style="color:' + theme.accent + '">' + esc(prof.codename) + (title ? ' <span class="dsr-title-flair">' + esc(title) + '</span>' : '') + '</div>' +
-        '<div class="dsr-rank">' + esc(rank.name) + ' · <span class="pjcc-credits">' + credits + ' credits</span> ' + streakChip + '</div>' +
-        '<div class="dsr-xp"><div class="dsr-xp-fill" style="width:' + xpPct + '%"></div></div>' +
-        '<div class="pjcc-sub">' + (lvl.next ? ((lvl.span - lvl.into) + ' more rounds to Lv ' + (lvl.level + 1)) : 'Max level — top dog of the board.') + '</div>' +
-      '</div>' +
-      '<span class="pjcc-spacer"></span>' +
-      '<button class="pjcc-btn" id="dsr-share">📸 Share card</button>' +
-      '<a class="pjcc-trophy" href="/shopkeeper/">🛒 Shopkeeper</a>' +
-      '<a class="pjcc-trophy" href="/leaderboards/">🏆 Leaderboards</a>' +
-      '<button class="pjcc-btn-ghost" id="dsr-out">Sign out</button></div>';
+    /* ONE BOX (2026-07-27, Nate: "It's odd with the two boxes and same picture… combine
+       and condense. I like the customize function. We don't need the second box.").
+       These account facts used to be a whole second card, .dsr-head, stacked above the
+       identity forge card and carrying a SECOND avatar of the same person. They're now
+       painted INTO the forge card through PJCCForge.setAccountBlock, which re-runs on
+       every card render — so an edit in the forge can't wipe them. */
+    var accountHtml =
+      '<div class="dsr-rank">Lv ' + lvl.level + ' · ' + esc(rank.name) + ' · <span class="pjcc-credits">' + credits + ' credits</span> ' + streakChip + '</div>' +
+      '<div class="dsr-xp" title="' + (lvl.next ? ((lvl.span - lvl.into) + ' more rounds to Lv ' + (lvl.level + 1)) : 'Max level') + '"><div class="dsr-xp-fill" style="width:' + xpPct + '%"></div></div>' +
+      '<div class="pjcc-sub">' + (lvl.next ? ((lvl.span - lvl.into) + ' more rounds to Lv ' + (lvl.level + 1)) : 'Max level — top dog of the board.') + '</div>' +
+      '<div class="dsr-acts">' +
+        '<button class="pjcc-btn" id="dsr-share">📸 Share card</button>' +
+        '<a class="pjcc-trophy" href="/shopkeeper/">🛒 Shopkeeper</a>' +
+        '<a class="pjcc-trophy" href="/leaderboards/">🏆 Leaderboards</a>' +
+        '<button class="pjcc-btn-ghost" id="dsr-out">Sign out</button>' +
+      '</div>';
+    function paintAccount(slot) {
+      if (!slot) return;
+      slot.innerHTML = accountHtml;
+      var sb = slot.querySelector('#dsr-share');
+      if (sb) sb.onclick = function () { shareCard(prof, rank, lvl, credits, theme); };
+      var ob = slot.querySelector('#dsr-out');
+      if (ob) ob.onclick = function () { PJCC.signOut().then(function () { location.reload(); }); };
+    }
+    if (window.PJCCForge && PJCCForge.setAccountBlock) PJCCForge.setAccountBlock(paintAccount);
 
     // WHERE YOU ARE — one block, not two. The Gauntlet floor used to be its own module
     // up in the command strip; it belongs here, beside the map, because it's the same
@@ -237,14 +249,10 @@ permalink: /dossier/
     });
     html += '</div>';
 
-    var unlocked = PJCC.unlockedTitles(prof, stats);
-    var equipped = (prof.companion && prof.companion.title) || '';
-    html += '<h2 class="dsr-h">Title flair</h2><div class="dsr-titles">';
-    unlocked.forEach(function (key) {
-      html += '<button class="dsr-title-chip ' + (key === equipped ? 'on' : '') + '" data-title="' + key + '">' + esc(PJCC.TITLES[key].label) + '</button>';
-    });
-    html += '<button class="dsr-title-chip ' + (equipped === '' ? 'on' : '') + '" data-title="">None</button></div>' +
-      '<p class="pjcc-sub">Unlock more through achievements and the <a href="/shopkeeper/">Shopkeeper</a>.</p>';
+    /* TITLE FLAIR removed 2026-07-27 (Nate: "Get rid of Title flair"). It was a row of
+       chips picking a label to hang off your codename — a third identity control on a page
+       we were trying to shrink. Titles themselves still exist (the Quartermaster sells two,
+       and the altar's vault hands out two more); this page just doesn't run a picker. */
 
     /* SERVICE RECORD — folded shut by default (2026-07-13, Nate: "can we make the service
        record section collapse and expand? Default Collapse? I'm trying to cut down on all
@@ -290,24 +298,23 @@ permalink: /dossier/
       '<p class="pjcc-sub">Share your link — when a friend signs up through it, you each earn 10 credits.</p>' +
       '<div class="dsr-invite"><input id="dsr-invite" class="pjcc-input" readonly value="' + esc(link) + '"><button id="dsr-copy" class="pjcc-btn">Copy</button></div>';
 
-    setTop(head);          // identity header → the top slot (upgrades the greeting in place)
-    el.innerHTML = html;   // the record → below the modules + forge, one continuous flow
+    // The greeting slot empties once you're signed in — the identity card below IS the
+    // header now, so leaving a line here would just be a third box saying hello.
+    setTop('');
+    el.innerHTML = html;   // the record → below the one identity card, one continuous flow
 
-    // (the pet-mood CARD was cut 2026-07-12 — the companion still rides on the avatar
-    //  badge and walks the journey map, which is where you actually look for it.)
-    Array.prototype.forEach.call(el.querySelectorAll('.dsr-title-chip'), function (b) {
-      b.onclick = function () { PJCC.setTitle(b.getAttribute('data-title')).then(render); };
-    });
+    // repaint the card so the account strip lands inside it (and re-lands after any edit)
+    var forgeMount = document.getElementById('forge-mount');
+    if (forgeMount && window.PJCCForge) PJCCForge.renderCard(forgeMount);
+
     var copyBtn = document.getElementById('dsr-copy');
     if (copyBtn) copyBtn.onclick = function () {
       var inp = document.getElementById('dsr-invite'); inp.select();
       try { navigator.clipboard.writeText(inp.value); } catch (e) { document.execCommand('copy'); }
       copyBtn.textContent = 'Copied!'; setTimeout(function () { copyBtn.textContent = 'Copy'; }, 1500);
     };
-    var shareBtn = document.getElementById('dsr-share');
-    if (shareBtn) shareBtn.onclick = function () { shareCard(prof, rank, lvl, credits, theme); };
-    var outBtn = document.getElementById('dsr-out');
-    if (outBtn) outBtn.onclick = function () { PJCC.signOut().then(render); };
+    // (#dsr-share / #dsr-out live inside the identity card now and are wired by
+    //  paintAccount above, which runs on every card render.)
   }
 
   function shareCard(prof, rank, lvl, credits, theme) {
@@ -384,16 +391,13 @@ permalink: /dossier/
 @media (pointer: coarse) {
   .cc-greet a { display: inline-block; padding: 9px 4px; margin: -9px 0; }
 }
-.dsr-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; background: linear-gradient(135deg,#1f1147,#34206f); border: 1px solid #F5C518; border-radius: var(--r-md); padding: 14px 18px; }
-.dsr-avatar { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 34px; border-radius: 50%; background: radial-gradient(circle at 35% 30%,#3a2a72,#160c33); border: 2px solid #F5C518; box-shadow: 0 0 14px rgba(245,197,24,0.5); position: relative; flex-shrink: 0; }
-/* the identity column: name, rank+credits+streak, then the XP bar — one card, not four */
-.dsr-ident { min-width: 200px; flex: 1 1 220px; }
-.dsr-name { color: #F5C518; font-size: 1.3rem; font-weight: 800; }
+/* .dsr-head / .dsr-avatar / .dsr-ident / .dsr-name / .dsr-title-flair are GONE with the
+   second box (2026-07-27) — the account facts below are painted into the identity card. */
 .dsr-rank { color: #b9a8e6; font-size: 0.88rem; margin-bottom: 6px; }
+.idn-account { margin: 8px 0 2px; }
+.idn-account .pjcc-sub { font-size: 0.76rem; }
+.dsr-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
 .dsr-streak { display: inline-block; font-size: 0.76rem; font-weight: 700; color: #ffb066; background: rgba(255,140,60,0.14); border: 1px solid rgba(255,140,60,0.45); border-radius: 999px; padding: 1px 8px; margin-left: 4px; }
-.dsr-lvl { position: absolute; bottom: -6px; right: -6px; background: #F5C518; color: #1a0f3d; font-size: 0.6rem; font-weight: 800; border-radius: 999px; padding: 1px 6px; border: 2px solid #160c33; }
-.dsr-pet-badge { position: absolute; bottom: -7px; left: -7px; font-size: 22px; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.55)); }
-.dsr-title-flair { font-size: 0.7rem; vertical-align: middle; background: rgba(245,197,24,0.16); color: #F5C518; border: 1px solid #F5C518; border-radius: 999px; padding: 2px 9px; margin-left: 8px; letter-spacing: 0.04em; font-weight: 700; }
 .dsr-xp { background: #221347; border: 1px solid #6b5fa0; border-radius: 999px; height: 8px; overflow: hidden; margin-bottom: 4px; }
 .dsr-xp-fill { background: linear-gradient(90deg,#6bffb8,#F5C518); height: 100%; }
 /* the climb, folded in under the journey map — it used to be its own module up top */
@@ -425,10 +429,6 @@ permalink: /dossier/
 .dsr-ach-icon { font-size: 26px; }
 .dsr-ach-label { color: #f0e6ff; font-weight: 700; font-size: 0.84rem; margin: 4px 0 2px; }
 .dsr-ach-desc { color: #9a7fd4; font-size: 0.72rem; line-height: 1.3; }
-.dsr-titles { display: flex; flex-wrap: wrap; gap: 8px; }
-.dsr-title-chip { background: #2D1B69; color: #cdbcf2; border: 1px solid #6b5fa0; border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: 0.82rem; font-weight: 700; }
-.dsr-title-chip:hover { border-color: #F5C518; color: #fff; }
-.dsr-title-chip.on { background: #F5C518; color: #1a0f3d; border-color: #F5C518; }
 /* (the standalone streak FLAME card and the SEASON strip were cut 2026-07-12 — the streak
     is a chip in the header now, and the season's only payoff was the Hall of Fame.) */
 .dsr-ghost { display:inline-block; font-size:0.74rem; color:#9a7fd4; } .dsr-ghost.beat { color:#6bffb8; }
