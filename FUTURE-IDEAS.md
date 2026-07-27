@@ -900,6 +900,41 @@ leverage, ties every existing system together), then #3, then #4; #5 is the big 
    construction; a genuine recurring **event** the blog/Dispatch can narrate move by move (a slow, shared
    game vs the Creator). Wants backend (a daily tally + a vote RPC) — the big set-piece, sequenced last.
 
+#### 🎣 The second riff — leftovers from the same session *(2026-07-25, "keep riffing")*
+*Written while inside the tables, so each leans on something that ALREADY exists (the rating, the live
+opening-name caption, the free review engine, the correspondence poll, the town sky). ✅ = shipped that
+day. The rest are unbuilt and unclaimed — no order implied.*
+
+- ✅ **Tables with personalities** — named seats, each a preset with its own accent + character.
+  *(Nate: "100%. Love that." — SHIPPED 8a5e9a2: the Study Table / the Arena / the Quick Bench.)*
+- ✅ **"It's your move at the park"** — a quiet site-wide pip when a table waits on you.
+  *(Nate: "is awesome, let's smartly incorporate that." — SHIPPED a63d59e, `pjcc-mymove.js`.)*
+- **Odds tables (handicap = a lesson).** McPuppy or a bot plays *down material* to teach — "beat Robert
+  without his queen." An honest difficulty dial that doubles as an Academy concept (you learn to
+  **convert an advantage**, the thing the arcade currently never drills). Pairs with thread #4.
+- **"While you were away."** Come back to find your opponent moved overnight, with one warm line —
+  *"Argus moved while you slept."* Turns the 4-second poll into **getting the mail**; it's the whole
+  charm of correspondence chess, which most sites bury. Cheap: the timestamp is already on the row.
+- **Head-to-head heat.** A running record + a rivalry meter per opponent (*"You lead Auston 4–2"*).
+  Delivers the **nemesis feeling of thread #3 without inventing a character** — the tension emerges
+  from your own history. Reads finished rows that already exist.
+- **The prep seat.** A bot that plays **your own most-played opening** right back at you (read from the
+  live opening-name caption / `PJCCOpenings`). Feels eerily personal, and quietly teaches you **both
+  sides** of your favorite line.
+- **The Opening Passport.** Play N *distinct* named openings at the tables → collect stamps. Turns
+  variety into a collection and feeds thread #2's cosmetic unlocks. The opening name is already on the
+  board, so this is mostly bookkeeping. *(Flagged as one of the two best "ship this week" candidates.)*
+- **The game postcard.** One-tap share card of a won game — final position on the canon board + result
+  + opening name. The piece-canvas renderer already exists; **every share is a tiny advert for the
+  world** (same logic as the Av10 "embeds are adverts" line).
+- **Comeback of the day.** The review engine already computes the eval graph — surface the biggest
+  **lost-position → win** swing as a celebrated beat. *You were losing, you believed, you won.* The most
+  on-brand thing the tables could possibly say — straight to the Neville / New-Thought center
+  ([[moral-values-positioning]]). Strong candidate for a recurring blog/Dispatch beat.
+- **Brilliancy glint.** A review-flagged brilliant move makes **Princess perk up** *and* drops a
+  one-time **gold glint on the square** — extends the existing win-glint (canon rule in
+  [[chess-visual-canon]]) and is the natural home for thread #3's Princess-watches beat.
+
 ---
 
 ## 🛠️ The long game (bigger bets, mostly not web code)
