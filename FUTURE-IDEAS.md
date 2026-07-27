@@ -1152,6 +1152,88 @@ location with a handwritten one-liner on the back, linking to its page. (Nate: "
 
 ---
 
+## 🌙 The Night Desk should be visibly going rogue *(brainstormed 2026-07-27 — Nate: "very funny… make it more clear that the overnight employee is going rogue. Throw me 5 ideas")*
+
+The overnight crawl (midnight–6am ET, `_layouts/home.html`) already reads as one bored person.
+What's missing is *evidence* — right now the lines are funny but the SYSTEM around them still
+behaves like a normal news channel. All five put the rogue-ness in the chrome, not just the jokes.
+(House rule kept: the Night Desk is an unnamed employee, never a cast member.)
+
+1. **The badge decays as the shift wears on.** It already swaps `LIVE` → `OVERNIGHT`. Step it by
+   hour: `OVERNIGHT` (12–1) → `OVERNIGHT · UNSUPERVISED` (2–3) → `WHOEVER IS LEFT` (4) → `PLEASE`
+   (5). The station's own label is the confession. Cheapest of the five — one lookup by hour.
+2. **The machine goes slack.** Slow the crawl after 3 a.m., let one line hang on screen too long as
+   though he wandered off, and start a later line mid-sentence (`…ANYWAY, AS I WAS SAYING`) like he
+   forgot he'd stopped typing. Rogue by pacing, no new copy needed.
+3. **He edits the day's real news.** Take the actual DAY headlines and re-run them with his notes
+   bolted on: *"CHECKER PIECE SUPPLY AT ALL-TIME LOW — SECTOR 3 … (I COUNTED. THERE ARE PLENTY.)"*
+   This is the clearest "going rogue" signal available, because you can see him overwriting the
+   official wire rather than just filling dead air.
+4. **The retraction sequence.** Three consecutive, deliberately ORDERED lines (not shuffled): a
+   rumor → a bolder version of it → *"THE PREVIOUS TWO ITEMS HAVE BEEN RETRACTED BY THE PERSON WHO
+   WROTE THEM. THAT IS ALSO ME."* One person losing the plot in real time.
+5. **He leaves the desk.** In the last hour (5:00–5:59) he signs off, and the crawl empties to a
+   single repeating `DESK UNATTENDED.` Then at 6 a.m. the formal day desk snaps back and never
+   acknowledges any of it. The whiplash is the punchline.
+
+*(See also #17 in the ticker list: the Night Desk should eventually run out of things to say.)*
+
+---
+
+## 🧩 The Puzzle room — where it goes next *(brainstormed 2026-07-27, alongside the Winning Material / Discovered Check / The Pin motifs)*
+
+**Reports (Nate: "a Report Puzzle option that comes to me somehow")** — the panel now offers Email it
+/ Copy it, which is honest but still ends in a human inbox. Two upgrades:
+- **A table, not an inbox.** A Supabase `puzzle_reports` table, insert-only via RLS, written straight
+  from the game (FEN, motif, rating, mode, the move the player thought also won). One tap, no mail
+  app, nothing lost. Read them on a private page beside the leaderboards. *(Needs one migration.)*
+- **Let the machine triage them.** The game already carries a perft-verified referee and the
+  best-defense search. A report can arrive with the engine's own verdict attached — *"player says
+  Rxd4 also wins; the search agrees, +500"* — so the only reports worth reading are the ones where
+  the player is right.
+
+**Teaching**
+- **"Why was that wrong?"** After a wrong move, show the one-line refutation (*"after Rxd4, Nxd4 —
+  you're down a rook"*). Everything needed is already in the file; this is the single biggest
+  teaching upgrade left in the room.
+- **A puzzle rating for the PLAYER.** Puzzles wear ~ratings already. Give the solver an Elo (the same
+  one the Park Tables run) and serve puzzles at it — the Journey's 1–10 difficulty becomes a real,
+  comparable number, and "rated 1240 puzzles" is a much better brag than "step 340".
+
+**More shapes**
+- **Themed sets** — "ten pins", "ten discovered checks". Every puzzle already carries a `cat`; this is
+  a filter and a menu button.
+- **Motifs the generators could still build the same provable way:** deflection (the guard is dragged
+  off), the overloaded defender, trapped piece, smothered mate, zwischenzug, and promotion tactics —
+  the last one needs promotion added to the material search first (see the distractor-pawn note in
+  `pjcc_fork.html`).
+- **Puzzle of the day** — one seeded position everyone gets, with a share card carrying your time.
+
+---
+
+## 🗺 The Journey map — decide what it's FOR *(Nate asked 2026-07-27: "What function does it serve, again? What benefit is it to our cause?")*
+
+Today it is a seven-stop row on the profile that lights a dot when you've *opened* a game once, with
+your avatar parked at the furthest one. Honest read: it's a **completion checklist wearing the
+world's clothes**, and it overlaps the Service record right below it.
+
+Its one genuinely valuable job is **thematic**: this site's whole spine is Princess walking to Chess
+City, and the map is the only place a player SEES their own play mapped onto that walk. That's worth
+keeping — but it has to cost something to light a dot.
+
+Options, cheapest first:
+1. **Make the dots mean something** — light on a real threshold (a score, a floor, a solved set), not
+   on one visit. Same UI, suddenly a goal.
+2. **Make it the Gauntlet's map** — the Gauntlet roster already runs Checker Town → Sand Mines → Sea →
+   Shogi Isle → the tower. Merge the two: one map, one climb, and the row under it stops being a
+   second progress widget.
+3. **Cut it** and let the Service record carry "what have I played". Least work, least soul.
+
+*(Already fixed 2026-07-27: the stops were Shogi Island and Pirc Crossing — a hidden game and an
+in-dev one — so the map could never complete and the Globetrotter achievement was unwinnable.)*
+
+---
+
 ## 📚 Recommended to me (personal — separate from PJCC)
 
 *Things people recommend to Nate. Not site features, not canon — just a shelf so nothing gets lost.*
