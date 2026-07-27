@@ -57,7 +57,8 @@
       var inner = neu + soon + indev + dbadge + '<span class="gcard-icon">' + icon + '</span>' +
         '<span class="gcard-body"><h3>' + esc(g.name) + '</h3>' + descHtml + tag + chip + eng + '</span>';
       if (dead) return '<div class="gcard dead" style="--accent:' + g.accent + '">' + inner + '</div>';
-      return '<a class="gcard' + (locked ? ' locked' : '') + (g.soon ? ' soon' : '') + '" href="' + url(g.slug) +
+      // .is-dev lets the hall dim the half-built tiles as a set (games.md, 2026-07-27)
+      return '<a class="gcard' + (locked ? ' locked' : '') + (g.soon ? ' soon' : '') + (indev ? ' is-dev' : '') + '" href="' + url(g.slug) +
         '" style="--accent:' + g.accent + '" data-slug="' + g.slug + '" data-name="' + esc(g.name) + '">' + inner + '</a>';
     }).join('');
 

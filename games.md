@@ -196,7 +196,9 @@ permalink: /games/
    The span's own "IN DEV" text is hidden (font-size:0) — the ::after carries the styled banner. */
 .hall--default .gcard-dev { position:absolute; inset:0; z-index:3; pointer-events:none;
   overflow:hidden; border-radius:inherit; padding:0; font-size:0; letter-spacing:0; color:transparent;
-  background:repeating-linear-gradient(-45deg, rgba(245,197,24,0.16) 0 15px, rgba(12,8,24,0.18) 15px 30px); }
+  /* the stripe wash is dimmed 15% with the card plate below (2026-07-27) — on a tile
+     this is what actually READS as the box's background, so both got the same cut. */
+  background:repeating-linear-gradient(-45deg, rgba(245,197,24,0.136) 0 15px, rgba(12,8,24,0.153) 15px 30px); }
 .hall--default .gcard-dev::after { content:"IN DEV";
   position:absolute; left:50%; top:50%; width:200%; padding:5px 0; text-align:center;
   transform:translate(-50%,-50%) rotate(-14deg);
@@ -204,6 +206,16 @@ permalink: /games/
   color:#1a0f3d; background:rgba(255,185,25,0.62);
   border-top:3px dashed rgba(26,15,61,0.72); border-bottom:3px dashed rgba(26,15,61,0.72);
   box-shadow:0 4px 16px rgba(0,0,0,0.4); }
+
+/* SETTLE THE IN-DEV TILES (2026-07-27, Nate: "dim the In-Dev game just a touch, like 5-10%…
+   then dim the background of the in-dev boxes an additional 15%… the overall page looks too
+   busy"). Two dims, stacked, on the half-built tiles only (pjcc-hall.js tags them .is-dev):
+     · the whole tile — caution tape and all — sits 8% quieter than a shipped game;
+     · its plate is a further 15% darker than the hall purple (#241451 → #1f1145).
+   Point at one and it comes back up to full, so nothing here is hard to read on purpose. */
+.ghub-all .gcard.is-dev { opacity:.92; background:#1f1145;
+  transition:opacity .14s ease, transform .12s, background .12s, box-shadow .12s; }
+.ghub-all .gcard.is-dev:hover { opacity:1; background:#342468; }   /* #3d2a7a, same 15% down */
 
 /* ═══ UNIQUE BOX DESIGNS — the five working games (2026-07-24, Nate: "give the working
    games unique, fun box designs … different text, different feels, for each. Play around.
@@ -248,9 +260,11 @@ permalink: /games/
     linear-gradient(160deg,#33172f,#1d1033);
   border:1px dashed #ff77a8; }
 .ghub-all .gcard[data-slug="clearance-delta"] .gcard-body h3::before { content:"Clearance check"; }
+/* the scanning bar — dimmed 25% on 2026-07-27 with the Sand Mine glint (Nate: "same with
+   the Clearance Delta red bar that slides the color down… more subtle") */
 .ghub-all .gcard[data-slug="clearance-delta"]::before {
   content:''; position:absolute; left:0; right:0; top:0; height:22%; z-index:0; pointer-events:none;
-  background:linear-gradient(180deg, rgba(255,119,168,0.24), transparent);
+  background:linear-gradient(180deg, rgba(255,119,168,0.18), transparent);
   animation:cd-scan 3.4s linear infinite; }
 @keyframes cd-scan { 0%{ transform:translateY(-40%); } 100%{ transform:translateY(520%); } }
 .ghub-all .gcard[data-slug="clearance-delta"] .gcard-icon { animation:cd-led 1.7s steps(1,end) infinite; }
@@ -285,10 +299,11 @@ permalink: /games/
   content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
   background:linear-gradient(62deg, transparent 44%, rgba(252,188,60,0.15) 47%, rgba(255,238,196,0.42) 50%,
     rgba(252,188,60,0.15) 53%, transparent 56%); }
-/* a glint that travels along the seam */
+/* a glint that travels along the seam — dimmed 25% on 2026-07-27 (Nate: "the sand mine
+   depths box looks great, but dim 25% the gold bar that slides from left-to-right") */
 .ghub-all .gcard[data-slug="sand-mine-depths"]::after {
   content:''; position:absolute; top:-25%; bottom:-25%; left:0; width:26%; z-index:0; pointer-events:none;
-  background:linear-gradient(62deg, transparent 45%, rgba(255,255,255,0.42) 50%, transparent 55%);
+  background:linear-gradient(62deg, transparent 45%, rgba(255,255,255,0.315) 50%, transparent 55%);
   animation:sm-glint 3.6s ease-in-out infinite; }
 @keyframes sm-glint { 0%{ transform:translateX(-70%); opacity:0; } 35%,65%{ opacity:1; } 100%{ transform:translateX(370%); opacity:0; } }
 .ghub-all .gcard[data-slug="sand-mine-depths"] .gcard-icon {

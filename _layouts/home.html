@@ -1464,6 +1464,8 @@ function ctParts() {
   }
   go.kana = kana;
   window.__puri = go;
-  if (Math.random() < 0.15) setTimeout(go, 2600);   // Nate likes it — 1% was too shy (2026-07-12)
+  // 1% was too shy (2026-07-12) → 15%, and 15% turned out too eager: 2026-07-27 Nate,
+  // "I love the quick Japanese popup… but let's make it HALF as probable." Halved to 7.5%.
+  if (Math.random() < 0.075) setTimeout(go, 2600);
 })();
 </script>

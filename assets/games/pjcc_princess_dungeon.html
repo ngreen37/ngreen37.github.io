@@ -18,6 +18,10 @@
     font-family:inherit; box-shadow:0 3px 0 rgba(0,0,0,0.35); transition:transform .08s; }
   .float-btn:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,0.35); }
   #menu-btn { top:10px; right:10px; background:#2a1a5e; color:#cdbcf2; padding:5px 12px; font-size:11px; border:1px solid #6b5fa0; }
+  /* the slingshot charge — only appears once the relic is taken, and only on a floor
+     where a shot is still loaded (2026-07-27) */
+  #sling-btn { bottom:10px; left:10px; background:#3a1f52; color:#ffd7ef; padding:5px 12px; font-size:11px; border:1px solid #ff8fd0; }
+  #sling-btn.armed { background:#ff8fd0; color:#2a0f2a; border-color:#ffd7ef; }
   .float-btn.hidden { display:none; }
 
   .overlay { position:absolute; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -49,6 +53,7 @@
 <div id="stage">
   <canvas id="cv" width="420" height="540"></canvas>
   <button class="float-btn hidden" id="menu-btn">☰ menu</button>
+  <button class="float-btn hidden" id="sling-btn">◎ sling <b id="sling-n"></b></button>
 
   <!-- TITLE -->
   <div class="overlay" id="ov-title">
@@ -149,6 +154,7 @@
       hp: 3, maxHp: 3,
       essence: 0,
       diagRange: 1, orthRange: 1, knight: false,   // hero gait (King to start)
+      shotMax: 0, shots: 0,                        // slingshot charges (per floor)
       relics: [],
       hero: null, enemies: [], exit: null, start: null,
       enemiesStart: [], roomCaps: 0,
@@ -207,6 +213,8 @@
     S.enemies = enemies;
     S.enemiesStart = enemies.map(function (e) { return { type: e.type, r: e.r, c: e.c }; });
     S.roomCaps = 0;
+    S.shots = S.shotMax;      // the sling reloads on every new floor
+    aiming = false;
     recompute();
     startAnim();
   }
@@ -220,6 +228,11 @@
     S.hero = { r: S.start.r, c: S.start.c, pr: S.start.r, pc: S.start.c };
     S.enemies = S.enemiesStart.map(function (e) { return { type: e.type, r: e.r, c: e.c, pr: e.r, pc: e.c }; });
     S.roomCaps = 0;
+    // the room rewinds whole: the pieces you slung are standing again, so the shot you
+    // spent on them comes back too (same reasoning as the capture-essence refund above).
+    S.shots = S.shotMax;
+    aiming = false;
+    faints.length = 0; beam = null;
     recompute();
     startAnim();
   }
@@ -352,6 +365,7 @@
 
   function takeTurn(dest) {
     busy = true;
+    aiming = false;
     S.hero.pr = S.hero.r; S.hero.pc = S.hero.c;
     if (dest) {
       var victim = pieceAt(S.enemies, dest.r, dest.c);
@@ -372,7 +386,7 @@
     recompute();
     startAnim(function () {
       if (hit) onHit();
-      else busy = false;
+      else { busy = false; ui(); }
     });
   }
 
@@ -388,6 +402,74 @@
     if (S.hp <= 0) { busy = false; gameOver(); return; }
     resetRoom();
     busy = false;
+    ui();
+  }
+
+  /* ---- THE SLINGSHOT (2026-07-27, Nate: "Add an upgrade ability — Shoot a piece") -------
+     A ranged answer to the one thing the gait can't solve: a piece you can't safely walk
+     up to. Take the relic and you carry ONE loaded shot per floor (each extra copy of the
+     relic loads another). It reloads on every new floor, and on a room rewind.
+
+     It stays a chess lesson: the shot travels the eight queen lines and stops at the FIRST
+     piece it meets — so aiming is reading a line, and pieces standing behind another piece
+     are safe. Firing costs your turn, so the room still answers.
+
+     Nobody dies down here. A slung piece FAINTS — it tips over and gets carried off the
+     floor — which is also why it's worth the same 5 essence as a capture. ------------- */
+  var aiming = false;
+  var faints = [];       // fainted pieces, fading out  { r, c, type, t }
+  var beam = null;       // the shot itself, fading out { fr, fc, tr, tc, t }
+
+  function shotTargets() {
+    var out = [];
+    for (var d = 0; d < KING8.length; d++) {
+      var rr = S.hero.r + KING8[d][0], cc = S.hero.c + KING8[d][1];
+      while (onBoard(rr, cc)) {
+        var occ = pieceAt(S.enemies, rr, cc);
+        if (occ) { out.push(occ); break; }        // the shot stops at the first piece
+        rr += KING8[d][0]; cc += KING8[d][1];
+      }
+    }
+    return out;
+  }
+
+  function canSling() { return mode === 'play' && !busy && S && S.shots > 0; }
+
+  function setAim(on) {
+    aiming = !!on && canSling() && shotTargets().length > 0;
+    ui();
+  }
+
+  function fireAt(e) {
+    if (!canSling() || !aiming) return;
+    aiming = false;
+    S.shots--;
+    beam = { fr: S.hero.r, fc: S.hero.c, tr: e.r, tc: e.c, t: 1 };
+    faints.push({ r: e.r, c: e.c, type: e.type, t: 1 });
+    S.enemies = S.enemies.filter(function (x) { return x !== e; });
+    S.roomCaps++;
+    S.essence += 5;
+    // the shot costs a turn — the room answers exactly as it would after a move
+    busy = true;
+    S.hero.pr = S.hero.r; S.hero.pc = S.hero.c;
+    var hit = enemyTurn();
+    recompute();
+    ui();
+    startAnim(function () {
+      if (hit) onHit();
+      else { busy = false; ui(); }
+    });
+  }
+
+  // the floating sling button mirrors the state; call ui() wherever mode/busy/shots settle
+  var slingBtn, slingN;
+  function ui() {
+    if (!slingBtn) { slingBtn = document.getElementById('sling-btn'); slingN = document.getElementById('sling-n'); }
+    var on = !!S && S.shotMax > 0 && mode === 'play' && S.shots > 0;
+    slingBtn.classList.toggle('hidden', !on);
+    slingBtn.classList.toggle('armed', on && aiming);
+    if (on) slingN.textContent = S.shots > 1 ? '×' + S.shots : '';
+    if (!on) aiming = false;
   }
 
   // ---- relics ---------------------------------------------------------------
@@ -395,12 +477,14 @@
     { id: 'bishop',  ico: '♝', name: 'Bishop Dash',  desc: 'Move up to one extra square diagonally.',  apply: function () { S.diagRange++; } },
     { id: 'rook',    ico: '♜', name: 'Rook Rush',    desc: 'Move up to one extra square in a straight line.', apply: function () { S.orthRange++; } },
     { id: 'knight',  ico: '♞', name: "Knight's Blink", desc: 'Gain the knight leap — jump over anything in an L.', once: true, apply: function () { S.knight = true; } },
+    { id: 'sling',   ico: '◎', name: 'Slingshot',     desc: 'Once each floor, sling a piece off a straight line. It faints and gets carried off. Costs your turn.', apply: function () { S.shotMax++; S.shots = S.shotMax; } },
     { id: 'heart',   ico: '❤', name: 'Stone Skin',   desc: 'Gain a heart, and heal one.', apply: function () { S.maxHp++; S.hp = Math.min(S.maxHp, S.hp + 1); } },
     { id: 'essence', ico: '✦', name: 'Lost Cache',   desc: 'Bank +25 essence right now.', apply: function () { S.essence += 25; } }
   ];
 
   function offerRelics() {
     mode = 'relic';
+    ui();
     rng = makeRng((S.seed + S.depth * 40503) >>> 0);
     var avail = RELICS.filter(function (rl) { return !(rl.once && S.knight && rl.id === 'knight'); });
     // pick three distinct
@@ -416,11 +500,12 @@
       b.innerHTML = '<span class="ri">' + rl.ico + '</span><span class="rt"><span class="rn">' + rl.name + '</span><span class="rd">' + rl.desc + '</span></span>';
       b.onclick = function () {
         rl.apply();
-        if (['bishop', 'rook', 'knight'].indexOf(rl.id) !== -1) S.relics.push(rl.ico);
+        if (['bishop', 'rook', 'knight', 'sling'].indexOf(rl.id) !== -1) S.relics.push(rl.ico);
         show('ov-relic', false);
         mode = 'play';
         nextFloor();
         busy = false;
+        ui();
       };
       list.appendChild(b);
     });
@@ -430,6 +515,7 @@
   // ---- game over ------------------------------------------------------------
   function gameOver() {
     mode = 'over';
+    ui();
     var floors = Math.max(0, S.depth - 1);   // floors fully cleared
     var score = floors;
     document.getElementById('over-eyebrow').textContent = 'Reached ' + biomeFor(S.depth).name + ' · Floor ' + S.depth;
@@ -465,6 +551,93 @@
     ctx.bezierCurveTo(0, -r * 0.95, r, -r * 0.95, r, -r * 0.45);
     ctx.bezierCurveTo(r, -r * 0.1, 0, -r * 0.1, 0, r * 0.35);
     ctx.fill(); ctx.stroke();
+    ctx.restore();
+  }
+
+  /* ---- THE HERO ------------------------------------------------------------------
+     2026-07-27 (Nate: "the starting character kind of looks like a [piece] and it's
+     confusing. Can we make it a unique character that doesn't represent any one piece?
+     This should probably be a human character I create down the road, so make the
+     stand-in a human character.")
+
+     She used to be drawn with PJCCPieces as a white QUEEN, which said the wrong thing
+     twice: her gait starts as a KING's, and she isn't a piece at all — she's a person
+     walking through a board full of them.
+
+     So this is hand-drawn and deliberately NOT a chess silhouette: a small cloaked
+     traveller — hood, tunic, boots — carrying her own light. It is a STAND-IN. When the
+     real character is designed, this one function is the only thing that changes. ---- */
+  function drawHero(x, y, s) {
+    var INK = '#3a2000', SKIN = '#ffe9c4', CLOAK = '#ff8fd0', TUNIC = '#ffe27a';
+    ctx.save();
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = Math.max(1.6, s * 0.055);
+    ctx.strokeStyle = INK;
+
+    // grounded shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.32)';
+    ctx.beginPath();
+    ctx.ellipse(x, y + s * 0.42, s * 0.30, s * 0.10, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // her lantern-light, low and warm (drawn under her so it reads as spill)
+    ctx.fillStyle = 'rgba(255,226,122,0.22)';
+    ctx.beginPath();
+    ctx.ellipse(x, y + s * 0.30, s * 0.34, s * 0.18, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // boots
+    ctx.fillStyle = INK;
+    ctx.beginPath(); ctx.ellipse(x - s * 0.11, y + s * 0.38, s * 0.075, s * 0.05, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x + s * 0.11, y + s * 0.38, s * 0.075, s * 0.05, 0, 0, Math.PI * 2); ctx.fill();
+
+    // cloak — a wide bell behind the body
+    ctx.beginPath();
+    ctx.moveTo(x, y - s * 0.20);
+    ctx.quadraticCurveTo(x - s * 0.34, y - s * 0.02, x - s * 0.27, y + s * 0.36);
+    ctx.lineTo(x + s * 0.27, y + s * 0.36);
+    ctx.quadraticCurveTo(x + s * 0.34, y - s * 0.02, x, y - s * 0.20);
+    ctx.closePath();
+    ctx.fillStyle = CLOAK; ctx.fill(); ctx.stroke();
+
+    // tunic — the narrower body in front of the cloak
+    ctx.beginPath();
+    ctx.moveTo(x - s * 0.13, y - s * 0.09);
+    ctx.lineTo(x + s * 0.13, y - s * 0.09);
+    ctx.quadraticCurveTo(x + s * 0.19, y + s * 0.20, x + s * 0.16, y + s * 0.34);
+    ctx.lineTo(x - s * 0.16, y + s * 0.34);
+    ctx.quadraticCurveTo(x - s * 0.19, y + s * 0.20, x - s * 0.13, y - s * 0.09);
+    ctx.closePath();
+    ctx.fillStyle = TUNIC; ctx.fill(); ctx.stroke();
+
+    // belt
+    ctx.beginPath();
+    ctx.moveTo(x - s * 0.155, y + s * 0.10);
+    ctx.lineTo(x + s * 0.155, y + s * 0.10);
+    ctx.lineWidth = Math.max(1.4, s * 0.045); ctx.stroke();
+    ctx.lineWidth = Math.max(1.6, s * 0.055);
+
+    // the hood itself, sitting BEHIND her head so it reads as pushed back
+    ctx.beginPath();
+    ctx.arc(x, y - s * 0.225, s * 0.185, 0, Math.PI * 2);
+    ctx.fillStyle = CLOAK; ctx.fill(); ctx.stroke();
+
+    // head
+    ctx.beginPath();
+    ctx.arc(x, y - s * 0.245, s * 0.145, 0, Math.PI * 2);
+    ctx.fillStyle = SKIN; ctx.fill(); ctx.stroke();
+
+    // the hood's front edge across her brow — the face stays open
+    ctx.beginPath();
+    ctx.arc(x, y - s * 0.245, s * 0.145, Math.PI * 1.02, Math.PI * 1.98);
+    ctx.closePath();
+    ctx.fillStyle = CLOAK; ctx.fill(); ctx.stroke();
+
+    // eyes — two quiet dots, the whole face she needs at this size
+    ctx.fillStyle = INK;
+    ctx.beginPath(); ctx.arc(x - s * 0.052, y - s * 0.203, s * 0.023, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x + s * 0.052, y - s * 0.203, s * 0.023, 0, Math.PI * 2); ctx.fill();
+
     ctx.restore();
   }
 
@@ -526,6 +699,22 @@
       }
     }
 
+    // sling targets — the first piece down each of the eight lines wears a reticle
+    if (aiming && !busy && mode === 'play') {
+      var hcen = tileCenter(S.hero.r, S.hero.c);
+      var tg = shotTargets();
+      for (var s = 0; s < tg.length; s++) {
+        var tc2 = tileCenter(tg[s].r, tg[s].c);
+        ctx.save();
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = 'rgba(255,143,208,0.55)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(hcen[0], hcen[1]); ctx.lineTo(tc2[0], tc2[1]); ctx.stroke();
+        ctx.restore();
+        ctx.beginPath(); ctx.strokeStyle = '#ff8fd0'; ctx.lineWidth = 3;
+        ctx.arc(tc2[0], tc2[1], TILE * 0.44, 0, 7); ctx.stroke();
+      }
+    }
+
     // enemies (animated)
     for (var i = 0; i < S.enemies.length; i++) {
       var e = S.enemies[i];
@@ -534,13 +723,38 @@
       PJCCPieces.draw(ctx, px, py, TILE * 0.78, e.type, 'b', { bFill: '#241a3c', bEdge: '#ff9ec9' });
     }
 
-    // hero (animated, gold with a pink ring)
+    // fainted pieces — tipped over, drifting up and out (nobody dies down here)
+    for (var f = 0; f < faints.length; f++) {
+      var fa = faints[f], fc = tileCenter(fa.r, fa.c);
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, fa.t);
+      ctx.translate(fc[0], fc[1] - (1 - fa.t) * TILE * 0.30);
+      ctx.rotate((1 - fa.t) * 1.15);
+      PJCCPieces.draw(ctx, 0, 0, TILE * 0.78, fa.type, 'b', { bFill: '#241a3c', bEdge: '#ff9ec9' });
+      ctx.globalAlpha = Math.max(0, fa.t) * 0.9;
+      ctx.fillStyle = '#ffd7ef'; ctx.font = '900 ' + Math.round(TILE * 0.26) + 'px "Trebuchet MS",sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('z', TILE * 0.34, -TILE * 0.34);
+      ctx.restore();
+    }
+
+    // the shot itself, fading along its line
+    if (beam) {
+      var b1 = tileCenter(beam.fr, beam.fc), b2 = tileCenter(beam.tr, beam.tc);
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, beam.t);
+      ctx.strokeStyle = '#ffe27a'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(b1[0], b1[1]); ctx.lineTo(b2[0], b2[1]); ctx.stroke();
+      ctx.restore();
+    }
+
+    // hero (animated) — a person, not a piece; the pink ring is just "you are here"
     var hr = S.hero.pr + (S.hero.r - S.hero.pr) * t, hc = S.hero.pc + (S.hero.c - S.hero.pc) * t;
     var hx = BX + hc * TILE + TILE / 2, hy = BY + hr * TILE + TILE / 2;
     ctx.beginPath(); ctx.arc(hx, hy, TILE * 0.42, 0, 7);
     ctx.fillStyle = 'rgba(255,143,208,0.22)'; ctx.fill();
     ctx.lineWidth = 2.5; ctx.strokeStyle = '#ff8fd0'; ctx.stroke();
-    PJCCPieces.draw(ctx, hx, hy, TILE * 0.74, 'Q', 'w', { wFill: '#ffe27a', wEdge: '#7a4d00' });
+    drawHero(hx, hy, TILE * 0.82);
   }
 
   function drawFoot() {
@@ -548,8 +762,13 @@
     ctx.fillStyle = '#0c0820'; ctx.fillRect(0, y, W, FOOT_H);
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillStyle = '#6b5fa0'; ctx.font = '11px "Trebuchet MS",sans-serif';
-    var safe = busy ? '…' : (S.threat[key(S.hero.r, S.hero.c)] ? '⚠ you are in danger — move!' : 'tap a green dot · tap yourself to wait');
-    ctx.fillStyle = (S.threat[key(S.hero.r, S.hero.c)] && !busy) ? '#ff8fa8' : '#6b5fa0';
+    var danger = S.threat[key(S.hero.r, S.hero.c)] && !busy;
+    var safe = busy ? '…'
+      // kept SHORT: the ☰/sling buttons float over the canvas corners, and a long line
+      // here runs straight under the sling button (2026-07-27)
+      : aiming ? 'tap a ringed piece — it faints'
+      : (danger ? '⚠ you are in danger — move!' : 'tap a green dot · tap yourself to wait');
+    ctx.fillStyle = aiming ? '#ff8fd0' : (danger ? '#ff8fa8' : '#6b5fa0');
     ctx.fillText(safe, W / 2, y + FOOT_H / 2);
   }
 
@@ -557,6 +776,9 @@
     var t = anim ? ease(anim.t) : 1;
     ctx.clearRect(0, 0, W, cv.height);
     if (S) { drawHUD(); drawBoard(t); drawFoot(); }
+    // sling effects decay on their own clock, independent of the move tween
+    if (beam) { beam.t -= 0.07; if (beam.t <= 0) beam = null; }
+    for (var f = faints.length - 1; f >= 0; f--) { faints[f].t -= 0.028; if (faints[f].t <= 0) faints.splice(f, 1); }
     if (flash > 0) {
       ctx.fillStyle = 'rgba(255,40,70,' + (flash * 0.4) + ')';
       ctx.fillRect(0, 0, W, cv.height);
@@ -590,7 +812,16 @@
     var y = (pt.clientY - rect.top) * scale;
     if (y < BY || y >= BY + BOARD) return;
     var c = Math.floor((x - BX) / TILE), r = Math.floor((y - BY) / TILE);
-    if (onBoard(r, c)) playerActed(r, c);
+    if (!onBoard(r, c)) return;
+    if (aiming) { aimAt(r, c); return; }   // aiming takes over the board taps
+    playerActed(r, c);
+  }
+
+  // while the sling is armed, a tap either picks a ringed piece or puts it away
+  function aimAt(r, c) {
+    var tg = shotTargets();
+    for (var i = 0; i < tg.length; i++) if (tg[i].r === r && tg[i].c === c) { fireAt(tg[i]); return; }
+    setAim(false);
   }
   cv.addEventListener('click', hit);
   cv.addEventListener('touchstart', function (e) { e.preventDefault(); hit(e); }, { passive: false });
@@ -600,6 +831,9 @@
   document.addEventListener('keydown', function (e) {
     if (mode !== 'play' || busy || !S) return;
     var k = e.key, d = null;
+    // F arms / disarms the slingshot; Escape always puts it away
+    if (k === 'f' || k === 'F') { e.preventDefault(); setAim(!aiming); return; }
+    if (k === 'Escape' && aiming) { e.preventDefault(); setAim(false); return; }
     if (k === 'ArrowUp' || k === 'w' || k === 'W') d = [-1, 0];
     else if (k === 'ArrowDown' || k === 's' || k === 'S') d = [1, 0];
     else if (k === 'ArrowLeft' || k === 'a' || k === 'A') d = [0, -1];
@@ -619,9 +853,15 @@
       return S ? { mode: mode, busy: busy, depth: S.depth, hp: S.hp, maxHp: S.maxHp,
         essence: S.essence, hero: [S.hero.r, S.hero.c], exit: [S.exit.r, S.exit.c],
         enemies: S.enemies.map(function (e) { return [e.type, e.r, e.c]; }),
-        reach: Object.keys(S.reach), threat: Object.keys(S.threat) } : { mode: mode };
+        reach: Object.keys(S.reach), threat: Object.keys(S.threat),
+        shots: S.shots, shotMax: S.shotMax, aiming: aiming,
+        targets: (S.shotMax > 0 ? shotTargets() : []).map(function (e) { return [e.type, e.r, e.c]; }) } : { mode: mode };
     },
-    tap: function (r, c) { playerActed(r, c); }
+    tap: function (r, c) { playerActed(r, c); },
+    // sling hooks: grant() stands in for taking the relic, aim()/shoot() drive it
+    grant: function (n) { S.shotMax += (n || 1); S.shots = S.shotMax; ui(); },
+    aim: function (on) { setAim(on !== false); },
+    shoot: function (r, c) { aimAt(r, c); }
   };
 
   // ---- overlays / boot ------------------------------------------------------
@@ -631,7 +871,9 @@
     show('ov-title', false); show('ov-over', false); show('ov-relic', false);
     document.getElementById('menu-btn').classList.remove('hidden');
     mode = 'play'; busy = false; flash = 0;
+    faints.length = 0; beam = null;
     newRun();
+    ui();
   }
 
   document.getElementById('start-btn').onclick = begin;
@@ -640,7 +882,9 @@
     show('ov-title', true);
     document.getElementById('menu-btn').classList.add('hidden');
     mode = 'title';
+    ui();
   };
+  document.getElementById('sling-btn').onclick = function () { setAim(!aiming); };
 
   // show the operative's best on the title card
   (function () {
