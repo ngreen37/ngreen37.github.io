@@ -48,6 +48,16 @@ permalink: /leaderboards/
     <span class="lbtv-booth">◆ FROM THE BOOTH</span>
     <span class="lbtv-quote" id="lbtv-quote">"Every credit counts, folks."</span>
   </div>
+
+  {%- comment -%} 2026-07-28 (Nate): "Add an Altar link to the Leaderboard page and the Profile
+       page (the two main places where users can view their credits)." This page is where a
+       player sees the number; the altar is the only place it means anything. One quiet line —
+       the Gambit is a ritual room, not a promo. {%- endcomment -%}
+  <a class="lb-altar" href="{{ '/the-gambit/' | relative_url }}">
+    <span class="lb-altar-glyph" aria-hidden="true">&#9823;</span>
+    <span class="lb-altar-txt"><b>The Gambit</b><small>Lay credits on the altar — the board sometimes gives back more</small></span>
+    <span class="lb-altar-arw" aria-hidden="true">&rarr;</span>
+  </a>
 </div>
 
 <script>
@@ -124,6 +134,17 @@ permalink: /leaderboards/
 .lbtv-booth { color:#6f5fb0; flex-shrink:0; letter-spacing:0.08em; font-weight:900; }
 .lbtv-quote { color:#8fb8ff; transition:opacity 0.42s ease; }
 @media (prefers-reduced-motion: reduce){ .lbtv-live i { animation:none; } }
+
+/* the altar line — the credits on this page are only worth something somewhere */
+.lb-altar { display:flex; align-items:center; gap:12px; margin-top:12px; padding:11px 14px;
+  border:1px solid #3a2a6a; border-radius:var(--r-md); background:rgba(13,8,36,0.58);
+  text-decoration:none; transition:border-color .14s ease, transform .14s ease; }
+.lb-altar:hover { border-color:var(--tv-gold); transform:translateY(-2px); text-decoration:none; }
+.lb-altar-glyph { font-size:22px; line-height:1; color:var(--tv-gold); flex:0 0 auto; }
+.lb-altar-txt { flex:1; min-width:0; }
+.lb-altar-txt b { display:block; color:#f0e6ff; font-size:0.95rem; }
+.lb-altar-txt small { display:block; color:#8f83c0; font-size:0.78rem; line-height:1.5; }
+.lb-altar-arw { color:var(--tv-gold); flex:0 0 auto; }
 </style>
 
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>

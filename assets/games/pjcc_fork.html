@@ -90,8 +90,7 @@
     </div>
     <div class="blurb" id="journey-line" style="margin-bottom:10px;color:#5be0c0;min-height:14px;"></div>
     <div class="row">
-      <button class="btn btn-gold" id="journey-btn">CONTINUE JOURNEY</button>
-      <button class="btn btn-ghost" id="daily-btn">DAILY LADDER</button>
+      <button class="btn btn-gold" id="journey-btn">Continue the journey</button>
     </div>
     <div class="foot">
       <span class="tap" id="snd-toggle">🔊 sound: on</span> &nbsp;·&nbsp; <span class="tap" id="reset-prog">reset journey</span>
@@ -152,6 +151,14 @@ function Rk(a){ return 8 - parseInt(a[1], 10); }
 // scales board clutter + target value; the journey adapts to the player.
 const REGIONS = ['Checker Town', 'The Sand Mines', 'The Sea', 'Shogi Isle', 'Chess City'];
 const JOURNEY_LEN = 1000, LEG = 5;
+// TEN LEVELS on the road to Chess City (2026-07-28, Nate: "Chess City is the final
+// destination but requires 1,000 correct puzzles to reach. There are multiple (maybe 10?)
+// steps along the way. They don't need names for now - just call them level 1, level 2").
+// 100 solved puzzles per level. The five REGIONS stay as the world underneath; the LEVEL is
+// what the player is TOLD, because a number that moves ten times beats a name that moves five.
+const LEVELS = 10, LEVEL_LEN = JOURNEY_LEN / LEVELS;
+function levelFor(step){ return Math.min(LEVELS, Math.floor(step / LEVEL_LEN) + 1); }
+function intoLevel(step){ return step % LEVEL_LEN; }
 function regionFor(step){ return Math.min(4, Math.floor(step / (JOURNEY_LEN / 5))); }
 const STORY = {
   0:    'The road out of Checker Town begins — one tactic at a time.',
@@ -761,7 +768,22 @@ let refuteCard = null, refuteArrow = null;   // "why was that wrong?" — see re
 let princessHop = { from: 0, to: 0, t: 1 }; // ribbon advance animation
 
 const PROG_KEY = 'pjcc.fork.journey.v2';
-const DAILY_KEY = 'pjcc.fork.daily.v1';
+const DONE_KEY  = 'pjcc.fork.chesscity.v1';
+// REACHING CHESS CITY (2026-07-28, Nate: "A special prize for whoever is the first 100 to
+// complete this, and a special prize for everyone who completes it… it will be cosmetic at
+// this time, but we should make it a big deal").
+// Honest plumbing: the arrival is stamped LOCALLY the first time it happens, and the same
+// run writes a `finished` record to the real leaderboard through PJCC.saveScore — so the
+// order of arrival is decided by data that already exists, not by a promise. Nothing here
+// claims a prize has been handed out; it claims the arrival is ON THE RECORD, which is true.
+function loadDone(){ try { return JSON.parse(localStorage.getItem(DONE_KEY)) || null; } catch(e){ return null; } }
+function markDone(step){
+  let d = loadDone();
+  if (!d) { d = { at: new Date().toISOString(), laps: 0 }; }
+  d.laps = (d.laps || 0) + 1;
+  try { localStorage.setItem(DONE_KEY, JSON.stringify(d)); } catch(e){}
+  return d;
+}
 const TACT_KEY  = 'pjcc.fork.tactics.v1';
 
 // Motif teaching data — drives the explanation card after each solve + the hint tiers.
@@ -809,36 +831,30 @@ const BOSS = {
 function gateAt(step){ return GATES.includes(step) ? BOSS[step] : null; }
 function loadProg(){ try { return Object.assign({ step:0, diff:2, best:0 }, JSON.parse(localStorage.getItem(PROG_KEY)) || {}); } catch(e){ return { step:0, diff:2, best:0 }; } }
 function saveProg(p){ try { localStorage.setItem(PROG_KEY, JSON.stringify(p)); } catch(e){} }
-function dailySeed(){ const d = new Date(); return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
 function updateJourneyLine(){
   const pr = loadProg(), el = document.getElementById('journey-line');
   if (!el) return;
-  el.textContent = pr.step >= JOURNEY_LEN
-    ? '🏰 You reached Chess City! (step ' + pr.step + '/' + JOURNEY_LEN + ')'
-    : 'Step ' + pr.step + ' / ' + JOURNEY_LEN + ' · ' + REGIONS[regionFor(pr.step)] + ' · difficulty ' + Math.round(pr.diff) + '/10';
+  el.innerHTML = pr.step >= JOURNEY_LEN
+    ? '🏰 <b>You reached Chess City.</b> 1,000 puzzles solved.'
+    : 'Level ' + levelFor(pr.step) + ' of ' + LEVELS +
+      ' &middot; ' + intoLevel(pr.step) + '/' + LEVEL_LEN + ' this level' +
+      ' &middot; ' + pr.step + ' of ' + JOURNEY_LEN + ' to Chess City';
 }
 
 // ---- Flow ----
-function startRun(mode){
-  if (mode === 'daily'){
-    const r = rng32(dailySeed());
-    const N = 15, queue = [];
-    for (let i = 0; i < N; i++) queue.push(genPuzzle(Math.min(10, 2 + Math.round(i * 0.6)), r));  // climbs 2..10, seeded
-    run = { mode:'daily', ladder:true, queue, idx:0, legLen:N, rungs:0, slipped:false,
-            stats: { solved:0, clean:0, streak:0, best:0, hints:0 } };
-  } else {
-    const pr = loadProg();
-    run = { mode: 'journey', idx: 0, legLen: LEG, step: pr.step, diff: pr.diff, best: pr.best,
-            legStartStep: pr.step, queue: null, stats: { solved:0, clean:0, streak:0, best:0, hints:0 } };
-  }
+function startRun(){
+  // 2026-07-28: the Daily Ladder is gone (Nate: "remove the daily puzzle for now, and keep
+  // the journey"). One road, one button. Restore it from git if it ever comes back.
+  const pr = loadProg();
+  run = { mode: 'journey', idx: 0, legLen: LEG, step: pr.step, diff: pr.diff, best: pr.best,
+          legStartStep: pr.step, queue: null, stats: { solved:0, clean:0, streak:0, best:0, hints:0 } };
   hideOverlays();
   document.getElementById('menu-btn').classList.remove('hidden');
   loadPuzzle();
 }
 function loadPuzzle(){
   let p;
-  if (run.mode === 'daily') p = run.queue[run.idx];
-  else {
+  {
     const boss = gateAt(run.step + 1);          // solving this puzzle steps onto a region gate
     if (boss){
       const eff = Math.max(4, Math.min(10, Math.round(run.diff) + 3));
@@ -856,7 +872,6 @@ function loadPuzzle(){
   bannerT = -1;
 }
 function nextPuzzle(){
-  if (run.ladder && run.slipped) { showSummary(); return; }   // fell off the daily ladder
   run.idx++;
   if (run.idx >= run.legLen) { showSummary(); return; }
   princessHop = { from: run.idx - 1, to: run.idx, t: 0 };
@@ -1063,12 +1078,12 @@ function drawHeader(){
       ctx.fillText('👑 BOSS — ' + p.boss.name, W/2, 72);
     } else {
       ctx.fillStyle = C.muted; ctx.font = '11px Trebuchet MS'; ctx.textAlign = 'center';
-      ctx.fillText('🗺 ' + REGIONS[regionFor(run.step)] + ' · step ' + run.step + ' / ' + JOURNEY_LEN, W/2, 72);
+      ctx.fillText('Level ' + levelFor(run.step) + ' of ' + LEVELS + '   ·   ' + intoLevel(run.step) + ' / ' + LEVEL_LEN, W/2, 72);
     }
   }
-  // streak top-right
-  ctx.fillStyle = C.gold; ctx.font = 'bold 13px Trebuchet MS'; ctx.textAlign = 'right';
-  if (run) ctx.fillText('🔥 ' + run.stats.streak, W - 96, 26);
+  // (the live streak counter came off 2026-07-28 - Nate: "let's remove the game feel". A
+  //  streak meter burning over the board is arcade furniture; this room is for solving, not
+  //  scoring. The stats still exist and still land on the summary card.)
 }
 
 function drawBoard(){
@@ -1226,21 +1241,29 @@ function showSummary(){
     let beat = '';
     for (const k in STORY){ const st = +k; if (st > run.legStartStep && st <= run.step) beat = STORY[k]; }
     document.getElementById('sum-mode').textContent = 'Journey · ' + reg;
-    document.getElementById('sum-title').textContent = done ? 'CHESS CITY! 🏰' : 'STEP ' + run.step + ' / ' + JOURNEY_LEN;
-    document.getElementById('sum-msg').textContent = beat || ('Onward through ' + reg + '. Puzzle difficulty now ' + Math.round(run.diff) + '/10.');
-    document.getElementById('sum-again').textContent = done ? 'WALK IT AGAIN' : 'CONTINUE';
-    if (window.PJCC) PJCC.saveScore('fork-in-the-road', run.step, { credits: 1, data: { step: run.step, diff: Math.round(run.diff), best: run.best, tactics: loadTactics() } });
-  } else {
-    const perfect = run.rungs >= run.legLen;
-    document.getElementById('sum-mode').textContent = 'Daily Ladder';
-    document.getElementById('sum-title').textContent = perfect ? 'TOP OF THE LADDER! ⭐' : ('CLIMBED ' + run.rungs);
-    document.getElementById('sum-msg').textContent = perfect
-      ? 'You cleared all ' + run.legLen + ' rungs — same ladder for everyone. Come back tomorrow.'
-      : 'Reached rung ' + run.rungs + ' of ' + run.legLen + '. Same seeded ladder for everyone today.';
-    document.getElementById('sum-again').textContent = 'CLIMB AGAIN';
-    if (window.PJCC) PJCC.saveScore('fork-in-the-road', run.rungs, { credits: 1, data: { mode:'ladder', rungs: run.rungs, seed: dailySeed(), tactics: loadTactics() } });
+    if (done) {
+      // ── ARRIVAL. 1,000 puzzles. Say it like it matters, and only say what's true. ──
+      const d = markDone(run.step);
+      document.getElementById('sum-mode').textContent = 'The road ends';
+      document.getElementById('sum-title').textContent = 'CHESS CITY 🏰';
+      document.getElementById('sum-msg').innerHTML =
+        '<b>One thousand puzzles.</b> You walked the whole road — ten levels, every gate, ' +
+        'every guardian.<br><br>' +
+        '✦ <b>Everyone who reaches Chess City</b> is marked for the Citizen of Chess City ' +
+        'crest — a permanent cosmetic on your profile, never for sale.<br>' +
+        '✦ <b>The first 100 in the world</b> get the Founder’s crest instead, numbered ' +
+        'with the order you arrived in.<br><br>' +
+        'Your arrival is on the record as of <b>' + new Date(d.at).toLocaleDateString() + '</b>. ' +
+        'The crests are still being drawn — the order is already yours.';
+      document.getElementById('sum-again').textContent = 'Walk it again';
+    } else {
+      document.getElementById('sum-title').textContent = 'LEVEL ' + levelFor(run.step) + ' · ' + intoLevel(run.step) + ' / ' + LEVEL_LEN;
+      document.getElementById('sum-msg').textContent = beat || ('Level ' + levelFor(run.step) + ' of ' + LEVELS + '. ' + (JOURNEY_LEN - run.step) + ' puzzles left on the road to Chess City.');
+      document.getElementById('sum-again').textContent = 'Continue';
+    }
+    if (window.PJCC) PJCC.saveScore('fork-in-the-road', run.step, { credits: 1, data: { step: run.step, level: levelFor(run.step), diff: Math.round(run.diff), best: run.best, finished: done || undefined, finishedAt: done ? loadDone().at : undefined, tactics: loadTactics() } });
   }
-  document.getElementById('sum-solved').textContent = (run.ladder ? run.rungs : s.solved) + ' / ' + run.legLen;
+  document.getElementById('sum-solved').textContent = s.solved + ' / ' + run.legLen;
   document.getElementById('sum-clean').textContent = s.clean;
   document.getElementById('sum-streak').textContent = s.best;
   // lifetime per-tactic accuracy (forks · skewers · mates) — also surfaced on the Dossier
@@ -1256,8 +1279,7 @@ function showSummary(){
 }
 
 function go(){ initAudio(); if (actx.state === 'suspended') actx.resume(); }
-document.getElementById('journey-btn').addEventListener('click', ()=>{ go(); startRun('journey'); });
-document.getElementById('daily-btn').addEventListener('click', ()=>{ go(); startRun('daily'); });
+document.getElementById('journey-btn').addEventListener('click', ()=>{ go(); startRun(); });
 /* ⚑ REPORT A PUZZLE (rebuilt 2026-07-27 — Nate: "Maybe a Report Puzzle option that
    comes to me somehow"). It was one small pill firing a bare mailto: from inside an
    iframe — easy to miss, and if the browser has no mail handler the report vanished
@@ -1319,7 +1341,7 @@ document.getElementById('rep-copy').addEventListener('click', async ()=>{
   }
 });
 document.getElementById('menu-btn').addEventListener('click', showMenu);
-document.getElementById('sum-again').addEventListener('click', ()=>{ go(); startRun(run ? run.mode : 'journey'); });
+document.getElementById('sum-again').addEventListener('click', ()=>{ go(); startRun(); });
 document.getElementById('sum-menu').addEventListener('click', showMenu);
 document.getElementById('reset-prog').addEventListener('click', ()=>{ saveProg({ step:0, diff:2, best:0 }); updateJourneyLine(); });
 document.getElementById('snd-toggle').addEventListener('click', ()=>{ sndOn=!sndOn; if(master) master.gain.value=sndOn?0.85:0; document.getElementById('snd-toggle').textContent = sndOn?'🔊 sound: on':'🔇 sound: off'; });

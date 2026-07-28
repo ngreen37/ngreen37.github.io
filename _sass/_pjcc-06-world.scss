@@ -271,13 +271,8 @@
 .ep-card--accent-4:hover .ep-title { color: #ff7070; }
 
 
-.ep-num {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.28);
-  min-width: 48px;
-  flex-shrink: 0;
-}
+/* .ep-num (the grey "EP. 01" gutter) removed 2026-07-28 — Nate: "redundant due to my
+   titling." His post titles already carry the episode number. */
 
 .ep-card-main {
   flex: 1;

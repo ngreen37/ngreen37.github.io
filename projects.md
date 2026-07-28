@@ -40,7 +40,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
      assets/js/pjcc-nav.js and tests/perf.js. The identity changes; the URL never does.
      Restore the bar: git show <this commit>^ -- projects.md {% endcomment %}
 
-<p class="projects-intro">An independent studio created to build PJCC.</p>
+<p class="projects-intro">McPuppy is an independent studio created in March 2026, with the main goal of showing the world the beauty and value of the PJCC universe.</p>
 
 {% comment %} DEAD CSS REMOVED 2026-07-13 (dead-code audit). ~65 lines of page-local styles for
      TWO CARDS THAT NO LONGER EXIST on this page: the gold "featured / playable now" treatment

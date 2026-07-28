@@ -288,7 +288,9 @@
 .drawer-link--home .dl-txt b { color: #F5C518; }
 
 .drawer-div { height: 1px; margin: 10px 4px; background: rgba(110, 95, 160, 0.28); }
-.drawer-mini { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 2px 8px 6px; }
+/* centered 2026-07-28 — with Leaderboards gone this is a deliberate pair, not a leftovers
+   row, and a left-hugged pair under a full-width link list reads as an accident */
+.drawer-mini { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; padding: 2px 8px 6px; }
 .drawer-mini a { font-size: 0.78rem; color: #9a8fd4; text-decoration: none; }
 .drawer-mini a:hover { color: #F5C518; }
 

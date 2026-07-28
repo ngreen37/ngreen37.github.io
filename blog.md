@@ -29,7 +29,6 @@ body_class: theme-bw
 
     <a class="ep-card ep-card--accent-{{ accent }}" href="{{ post.url | relative_url }}">
       <div class="ep-card-stripe"></div>
-      <div class="ep-num">EP.&nbsp;{{ ep_num | prepend: "00" | slice: -2, 2 }}</div>
       <div class="ep-card-main">
         <div class="ep-title">{{ post.title }}</div>
         <div class="ep-logline">{{ _logline | truncatewords: 16 }}</div>
@@ -41,7 +40,6 @@ body_class: theme-bw
     {% endfor %}
     <div class="ep-card ep-card--draft" aria-hidden="true">
       <div class="ep-card-stripe"></div>
-      <div class="ep-num">EP.&nbsp;{{ site.posts.size | plus: 1 | prepend: "00" | slice: -2, 2 }}</div>
       <div class="ep-card-main">
         <div class="ep-title">[DRAFT — BUILDING]</div>
         <div class="ep-logline">Transmission incomplete. Check back soon.</div>
