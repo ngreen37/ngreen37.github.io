@@ -556,25 +556,37 @@ html.town-rain .tw-rain { opacity: 1; }
    DON'T "simplify" this back to a percentage inset — and if you change the tilt angles or
    the tile sizes, re-run the coverage check, because these two numbers encode both. */
 .tw-rain::before, .tw-rain::after { content: ''; position: absolute;
+  /* HALF-RESOLUTION, SCALED BACK UP (2026-07-28) — the cheapest big win left. The sheet is
+     drawn at HALF its needed size and the animation multiplies it by 2, so the GPU rasterizes
+     a QUARTER of the pixels: 3.6 full-screen layers become 0.9. Every number below is exactly
+     half of the geometry above it, and the tile, the streak sizes and the fall distance are
+     halved to match, so scale(2) puts the picture back where it was. What you trade is
+     sharpness — rain here is soft bright lines on a dark sky, which is the one thing that
+     survives being drawn small and blown up. Undo = double these six numbers and drop the
+     scale(2) from the two keyframes. */
   left: 50%; top: 50%;
-  width:  calc(100vw + 30vh + 100px);
-  height: calc(100vh + 30vw + 360px);
-  margin-left: calc((100vw + 30vh + 100px) * -0.5);
-  margin-top:  calc((100vh + 30vw + 360px) * -0.5);
+  width:  calc(50vw + 15vh + 50px);
+  height: calc(50vh + 15vw + 180px);
+  margin-left: calc((50vw + 15vh + 50px) * -0.5);
+  margin-top:  calc((50vh + 15vw + 180px) * -0.5);
   will-change: transform; }
 .tw-rain::before {
   background-image:
-    radial-gradient(1.3px 10px at 20% 16%, rgba(178,210,255,0.42), transparent 60%),
-    radial-gradient(1.1px 13px at 63% 52%, rgba(178,210,255,0.36), transparent 60%),
-    radial-gradient(1.2px 8px  at 86% 80%, rgba(178,210,255,0.30), transparent 60%);
-  background-size: 104px 132px; animation: tw-rain-a 1.25s linear infinite; }
+    radial-gradient(0.65px 5px   at 20% 16%, rgba(178,210,255,0.42), transparent 60%),
+    radial-gradient(0.55px 6.5px at 63% 52%, rgba(178,210,255,0.36), transparent 60%),
+    radial-gradient(0.6px  4px   at 86% 80%, rgba(178,210,255,0.30), transparent 60%);
+  background-size: 52px 66px; animation: tw-rain-a 1.25s linear infinite; }
 .tw-rain::after {
   background-image:
-    radial-gradient(1px 9px  at 38% 34%, rgba(178,210,255,0.26), transparent 60%),
-    radial-gradient(0.9px 6px at 79% 7%,  rgba(178,210,255,0.20), transparent 60%);
-  background-size: 138px 168px; animation: tw-rain-b 1.95s linear infinite; }
-@keyframes tw-rain-a { from { transform: rotate(8deg)  translateY(-132px); } to { transform: rotate(8deg)  translateY(0); } }
-@keyframes tw-rain-b { from { transform: rotate(13deg) translateY(-168px); } to { transform: rotate(13deg) translateY(0); } }
+    radial-gradient(0.5px  4.5px at 38% 34%, rgba(178,210,255,0.26), transparent 60%),
+    radial-gradient(0.45px 3px   at 79% 7%,  rgba(178,210,255,0.20), transparent 60%);
+  background-size: 69px 84px; animation: tw-rain-b 1.95s linear infinite; }
+/* scale(2) FIRST: the rotate + fall happen in the half-size sheet's own space, then the whole
+   thing is doubled — so the picture is identical to the full-size version, at a quarter of the
+   texture. The fall distances are the halved tile heights (66 = 132/2, 84 = 168/2), which is
+   what keeps the loop seamless. */
+@keyframes tw-rain-a { from { transform: scale(2) rotate(8deg)  translateY(-66px); } to { transform: scale(2) rotate(8deg)  translateY(0); } }
+@keyframes tw-rain-b { from { transform: scale(2) rotate(13deg) translateY(-84px); } to { transform: scale(2) rotate(13deg) translateY(0); } }
 
 /* intensity — the storm wanders light↔heavy (the engine sets these on <html>) */
 html.town-rain-light .tw-rain { opacity: 0.5; }

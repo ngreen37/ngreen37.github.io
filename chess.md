@@ -58,14 +58,43 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
     <p class="mc-facts">Free &middot; no account needed &middot; keeps playing with the wi-fi off</p>
   </div>
 
-  {%- comment -%} The board is a LINK, not decoration — the same canonical park-table drawing
-       the games hall and the splash use ([[chess-visual-canon]]: one drawing, never forked).
-       Next step banked in FUTURE-IDEAS: make the board itself live — one legal move to find,
-       and playing it starts the game. {%- endcomment -%}
-  <a class="mc-board" href="{{ '/games/park-tables/' | relative_url }}"
-     aria-label="Play chess — sit at a park table">
-    {% include park-table.html %}
-  </a>
+  {%- comment -%} ══ THE BOARD IS THE BUTTON (2026-07-28) ══════════════════════════════════
+       Nate: "I love the Board is the Button idea — let's do it, with the risk in mind."
+
+       A stranger does not have to be convinced to touch a chess piece. So the front door
+       does not ask them to believe a claim and then click — it puts a real position in
+       front of them and waits. One move wins. Play it and the site hands you into the
+       puzzle room mid-game; play something else and the refutation tells you the truth.
+
+       THE POSITION: 6k1/5ppp/8/8/8/8/5PPP/R5K1 w — a back-rank mate. **Ra8# is the UNIQUE
+       mate in one**, proved against the site's own perft-verified referee (20 legal moves,
+       exactly one mate) before this shipped. If you ever change a piece here, re-run that
+       proof — a front door that lies about chess is worse than no front door.
+
+       THE RISK, HANDLED: the 64 cells and the 8 pieces are STATIC MARKUP. There is no
+       blank box and no layout shift — the board is fully painted before a line of script
+       runs, and the only thing the script adds is the ability to touch it. Add ?ready=1 to
+       the URL and the page will tell you exactly how many milliseconds that gap was.
+       ═══════════════════════════════════════════════════════════════════ {%- endcomment -%}
+  <div class="mc-board" id="mc-board">
+    <div class="mcb" id="mcb" role="group" aria-label="White to play and mate in one">
+      {%- for i in (0..63) -%}
+        {%- assign r = i | divided_by: 8 -%}{%- assign c = i | modulo: 8 -%}
+        {%- assign par = r | plus: c | modulo: 2 -%}
+        <i class="mcb-sq{% if par == 1 %} d{% endif %}" data-sq="{{ i }}"></i>
+      {%- endfor -%}
+      <b class="mcb-p w" data-sq="56" data-pc="R" style="grid-area:8/1">&#9820;</b>
+      <b class="mcb-p w" data-sq="62"                style="grid-area:8/7">&#9818;</b>
+      <b class="mcb-p w" data-sq="53"                style="grid-area:7/6">&#9823;</b>
+      <b class="mcb-p w" data-sq="54"                style="grid-area:7/7">&#9823;</b>
+      <b class="mcb-p w" data-sq="55"                style="grid-area:7/8">&#9823;</b>
+      <b class="mcb-p b" data-sq="6"  data-pc="k"    style="grid-area:1/7">&#9818;</b>
+      <b class="mcb-p b" data-sq="13"                style="grid-area:2/6">&#9823;</b>
+      <b class="mcb-p b" data-sq="14"                style="grid-area:2/7">&#9823;</b>
+      <b class="mcb-p b" data-sq="15"                style="grid-area:2/8">&#9823;</b>
+    </div>
+    <p class="mcb-say" id="mcb-say">White to play. <b>Mate in one.</b></p>
+  </div>
 </section>
 
 <h2 class="mc-h2">Four ways in</h2>
@@ -166,11 +195,42 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 
 .mc-facts { margin: var(--space-4, 16px) 0 0; color: #9a7fd4; font-size: 0.86rem; letter-spacing: 0.01em; }
 
-/* The board block — a link, sized to sit beside the copy without stealing from it.
+/* ── THE LIVE BOARD ────────────────────────────────────────────────────────────────
+   Walnut + cream, filled glyphs on BOTH sides (the purple side is "black") — the one board
+   look, straight off the tokens in _pjcc-22-chess-canon.scss. Square colors are inlined here
+   rather than themed per page: this is the front door, and it must never wait on anything. */
+.mcb { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr);
+  width: min(320px, 78vw); aspect-ratio: 1; margin: 0 auto; border-radius: var(--r-sm, 6px);
+  overflow: hidden; box-shadow: 0 14px 40px rgba(0,0,0,0.5), 0 0 0 3px #2a1a55; }
+.mcb-sq { background: #efe3c8; }
+.mcb-sq.d { background: #8a6a44; }
+.mcb-p { grid-area: 1/1; display: flex; align-items: center; justify-content: center;
+  font-size: clamp(22px, 5.4vw, 30px); line-height: 1; z-index: 2; cursor: default;
+  transition: transform .28s cubic-bezier(.2,.8,.3,1), filter .15s ease; }
+.mcb-p.w { color: #fffaf0; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.55)); }
+.mcb-p.b { color: #3b2a63; filter: drop-shadow(0 1px 0 rgba(255,255,255,0.25)); }
+/* only the rook is ever touchable — the whole puzzle is one move */
+.mcb.live .mcb-p[data-pc="R"] { cursor: pointer; }
+.mcb.live .mcb-p[data-pc="R"]:hover { filter: drop-shadow(0 0 8px #F5C518); }
+.mcb-p.lift { transform: translateY(-5px) scale(1.08); filter: drop-shadow(0 0 10px #F5C518); }
+/* the one legal target, shown only after the rook is picked up */
+.mcb-sq.hint::after { content: ''; display: block; width: 30%; aspect-ratio: 1; margin: 35% auto;
+  border-radius: 50%; background: rgba(245,197,24,0.55); }
+.mcb-sq.bad  { box-shadow: inset 0 0 0 3px rgba(255,110,110,0.8); }
+.mcb-p.mated { color: #ff6e6e; }
+.mcb-say { margin: 12px 0 0; text-align: center; color: #cdbcf2; font-size: 0.9rem; min-height: 2.6em; }
+.mcb-say b { color: #F5C518; }
+.mcb-say.good b, .mcb-say.good { color: #6bffb8; }
+.mcb-ready { display: block; margin-top: 4px; color: #8a72c0; font-size: 0.72rem;
+  font-family: 'Share Tech Mono', monospace; }
+@media (prefers-reduced-motion: reduce) { .mcb-p { transition: none; } }
+
+/* The board block — sized to sit beside the copy without stealing from it.
    ⚠ .pkt-scene is a FIXED 190x99 unit and `transform: scale()` doesn't change layout size,
    so the box has to be declared at the scaled size or the drawing spills out of it (the
    same trap the ✦ star hit on the old front door). 190x1.45 = 276, 99x1.45 = 144. */
-.mc-board { display: flex; align-items: center; justify-content: center; text-decoration: none;
+.mc-board { display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-decoration: none;
   min-height: 190px; padding: var(--space-4, 16px); border-radius: var(--r-lg, 16px);
   overflow: hidden; transition: transform .18s ease; }
 .mc-board:hover { transform: translateY(-3px); text-decoration: none; }
@@ -258,3 +318,79 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   .mc-cta, .mc-door, .mc-world, .mc-board { transition: none; }
 }
 </style>
+
+<script>
+/* ══ THE BOARD IS THE BUTTON — the interaction ═══════════════════════════════════════
+   Everything above is already painted. This only adds the ability to TOUCH it, and it
+   measures how long that took, because Nate asked to feel the gap in human terms:
+   open /chess/?ready=1 and the board tells you the number under it.
+
+   The rules are hard-coded on purpose. This is ONE position with ONE answer (Ra8#,
+   proved unique against assets/js/pjcc-chess.js before shipping), so loading a 40KB
+   referee onto the front door to re-derive a fact we already proved would be the exact
+   trade this page exists to refuse. The puzzle room does it properly, with the engine —
+   and this hands you there. */
+(function () {
+  var t0 = (window.performance && performance.now) ? performance.now() : 0;
+  var board = document.getElementById('mcb'), say = document.getElementById('mcb-say');
+  if (!board || !say) return;
+
+  var ROOK = board.querySelector('.mcb-p[data-pc="R"]');
+  var KING = board.querySelector('.mcb-p[data-pc="k"]');
+  var A8   = board.querySelector('.mcb-sq[data-sq="0"]');   // top-left = a8
+  var armed = false, done = false;
+
+  function tell(html, good) { say.innerHTML = html; say.classList.toggle('good', !!good); }
+  function disarm() {
+    armed = false; ROOK.classList.remove('lift'); A8.classList.remove('hint');
+  }
+
+  ROOK.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (done) return;
+    if (armed) { disarm(); tell('White to play. <b>Mate in one.</b>'); return; }
+    armed = true;
+    ROOK.classList.add('lift'); A8.classList.add('hint');
+    tell('The rook is up. <b>Where does it go?</b>');
+  });
+
+  board.addEventListener('click', function (e) {
+    if (done) return;
+    var sq = e.target.closest ? e.target.closest('.mcb-sq') : null;
+    if (!sq || !armed) return;
+    var id = +sq.getAttribute('data-sq');
+
+    if (id === 0) {
+      /* ── Ra8#. Slide the rook up the a-file, ring the king, and hand them over. ── */
+      done = true; disarm();
+      ROOK.style.gridArea = '1/1';
+      KING.classList.add('mated');
+      tell('<b>Ra8#</b> \u2014 that\u2019s mate. The back rank was the whole board.<br>' +
+           '<span style="opacity:.75">Taking you to the puzzle room\u2026</span>', true);
+      setTimeout(function () {
+        location.href = {{ '/games/fork-in-the-road/' | relative_url | jsonify }};
+      }, 1250);
+      return;
+    }
+    /* ── anything else: tell them the truth, then let them try again ── */
+    sq.classList.add('bad');
+    setTimeout(function () { sq.classList.remove('bad'); }, 520);
+    tell('Not there \u2014 the king just steps away. <b>The mate is on the back rank</b>, ' +
+         'where his own pawns have him boxed in.');
+  });
+
+  /* Nothing above this line was needed to SEE the board — only to touch it. */
+  board.classList.add('live');
+  var ms = ((window.performance && performance.now) ? performance.now() : 0) - t0;
+  var since = (window.performance && performance.now) ? Math.round(performance.now()) : 0;
+  try {
+    if (new URLSearchParams(location.search).has('ready')) {
+      var n = document.createElement('span');
+      n.className = 'mcb-ready';
+      n.textContent = 'board paintable from the first byte \u00b7 touchable ' + since +
+                      'ms after page start \u00b7 wiring itself took ' + ms.toFixed(1) + 'ms';
+      say.appendChild(n);
+    }
+  } catch (e) {}
+})();
+</script>

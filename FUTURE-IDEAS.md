@@ -51,6 +51,19 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**
   barred gate with a padlock*. If he meant *pin the glyph to ♜ so it stops changing*, that's a one-liner.
 
 **Queued, mine not his — carried from 2026-07-28, NOT started**
+- [ ] **ONE CANVAS FOR ALL WEATHER** *(greenlit 2026-07-28 — the real end of the lag story)*.
+  Replace the two giant rotated CSS sheets with a **single viewport-sized `<canvas>`** drawing
+  particles. Texture drops from ~3.6 full-screen layers to **exactly 1**, and the cost moves to a
+  trivial amount of main-thread drawing (~150 particles is nothing). One system then covers
+  **rain · SNOW · mist · lightning**, with real drift, real wind and intensity that can actually
+  vary — instead of four separate CSS contraptions each paying for its own oversized layer.
+  Notes for whoever builds it: seed the particle field off the town date like everything else
+  ([[night-desk-rogue-decision]]); honor `reduce-flourish` + `prefers-reduced-motion` by not
+  starting the loop at all; size the canvas in CSS pixels and scale the backing store by dpr,
+  capped at 2 (a dpr-3 phone does not need three-times the particles); and stop the loop when
+  `document.hidden`. **Snow is the reason this is worth doing** — Nate asked for it, and snow
+  falls straight, so it never needed the rotation that made rain expensive in the first place.
+  *(Shipped meanwhile: the sheets are half-resolution and scaled ×2, which quartered them.)*
 - [ ] **Companion page upgrade:** switch up the pet/feed/play sounds · add **Take for a walk**
   (bond + energy) · **petting gives +1 energy** too · **remove the default pets' names** ·
   **promote the Companion Den** on the Customize screen (it's too small and tucked away).
