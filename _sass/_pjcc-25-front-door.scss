@@ -124,3 +124,43 @@ body.theme-chess .mc-table::before {
     padding: 26px 20px 24px;
   }
 }
+
+/* ── ARRIVING FROM THE INTRO ──────────────────────────────────────────────────
+   Nate, 2026-07-28: "let's fade in to the home page (after we fade out of the
+   McPuppy Presents intro)."
+
+   `/` fades its card down to black over .95s and then location.replace()s here. A
+   View Transition can't help — that API is same-document, and this is a whole new
+   navigation — so the two halves are stitched with a one-shot sessionStorage baton:
+   the intro sets it as it starts fading out, _includes/head.html spends it before
+   first paint and flags <html class="intro-arriving">, and this fades the black back
+   off. Door to door the visitor sees one continuous fade through black.
+
+   ⚠ IT IS PURE CSS ON PURPOSE — one `forwards` animation, no script to remove it.
+   A JS-removed overlay is a full-screen black sheet one thrown exception away from
+   being permanent, and it would fail on the slowest connections first, which is
+   exactly backwards. The animation ends at visibility:hidden, so it composites for
+   0.6s and then stops existing as far as the compositor is concerned; nothing here
+   is infinite and `npm run motion` prices it at zero ([[css-perf-lessons]]).
+
+   Scoped to ::after on <html> so it needs no markup in any layout, and applies to
+   whatever the intro points at — retarget the intro and the fade follows it. */
+html.intro-arriving::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: #000;
+  animation: intro-arrive 0.6s ease forwards;
+}
+@keyframes intro-arrive {
+  from { opacity: 1; }
+  to   { opacity: 0; visibility: hidden; }
+}
+/* Both quiet switches skip it entirely rather than shortening it — a visitor who asked
+   for no motion did not ask for a briefer flash of black. */
+html.reduce-flourish.intro-arriving::after { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  html.intro-arriving::after { display: none; }
+}

@@ -132,7 +132,18 @@ description: McPuppy Studios presents Princess and the Journey to Chess City —
     var stage = document.getElementById('intro');
     var gone = false;
     function go() { if (gone) return; gone = true; location.replace(TARGET); }
-    function finish() { if (gone) return; if (stage) stage.classList.add('done'); setTimeout(go, 950); }
+    /* HAND THE FADE ACROSS THE NAVIGATION (2026-07-28, Nate: "let's fade in to the home
+       page after we fade out of the McPuppy Presents intro"). Two documents can't share a
+       transition, so the intro leaves a one-shot baton in sessionStorage and the next page's
+       <head> picks it up before its first paint and fades UP from the same black this card
+       is fading DOWN to. See _includes/head.html + _sass/_pjcc-25-front-door.scss.
+
+       Set here in finish() and NOT in go(), on purpose: skipping is a request to be there
+       now, and a skip that still made you sit through a fade-in would be answering "faster"
+       with "slower". Skip stays instant. */
+    function finish() { if (gone) return;
+      try { sessionStorage.setItem('mcp.intro.handoff', '1'); } catch (e) {}
+      if (stage) stage.classList.add('done'); setTimeout(go, 950); }
 
     var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     // fade UP from black on the first frame (the type animation is already running under it)

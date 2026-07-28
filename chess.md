@@ -60,8 +60,18 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   <div class="mc-hero-copy">
     <p class="mc-eyebrow">From McPuppy Studios</p>
     <h1 class="mc-title">{{ site_name }}</h1>
-    <p class="mc-lede">Free chess for everyone — play a real game, solve one honest puzzle,
-      or start at how the pieces move.</p>
+    {%- comment -%} ══ BARE MINIMUMS (2026-07-28) ═══════════════════════════════════════
+         Nate: "The descriptions on the home page are ALL too long… These are chess people.
+         They are curious, intelligent, and they'll figure it out as they go. Redo the home
+         page descriptions with bare minimums."
+
+         Every line below was cut to the shortest TRUE version of itself. The rule used was:
+         say the thing, don't sell the thing — a chess player reading "one move wins" already
+         knows what a puzzle is and doesn't need to be told it will explain itself. Word count
+         across the page went 186 → 71. Nothing was cut that was a FACT (the referee, the free
+         review, the offline play all survive); what went was the sentence explaining the fact
+         after it had already landed. {%- endcomment -%}
+    <p class="mc-lede">Play a game, solve a puzzle, or learn the pieces.</p>
 
     {%- comment -%} THE ONE BUTTON. Park Tables because it's the only door where a stranger is
          *playing* in two taps — a park regular seats you instantly, no account, real rules,
@@ -73,7 +83,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
     </a>
     <a class="mc-cta2" href="{{ '/academy/' | relative_url }}">New to chess? Start at lesson one</a>
 
-    <p class="mc-facts">Free &middot; no account needed &middot; keeps playing with the wi-fi off</p>
+    <p class="mc-facts">Free &middot; no account &middot; works offline</p>
   </div>
 
   {%- comment -%} ══ THE BOARD IS THE BUTTON (2026-07-28) ══════════════════════════════════
@@ -95,21 +105,37 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
        the URL and the page will tell you exactly how many milliseconds that gap was.
        ═══════════════════════════════════════════════════════════════════ {%- endcomment -%}
   <div class="mc-board" id="mc-board">
+    {%- comment -%} ⚠ TWO LAYERS, and that is the FIX for the holes Nate screenshotted
+         (2026-07-28). The squares and the pieces used to be siblings in ONE grid — and CSS
+         grid places explicitly-positioned items FIRST, so the nine pieces claimed their
+         cells and the sixty-four auto-placed squares SKIPPED those cells and spilled into
+         implicit rows 9-10, where overflow:hidden clipped them. Result: nine holes of bare
+         card showing through under every piece, and the checkerboard parity scrambled from
+         the first hole onward, because the `d` class was computed from the loop index and
+         the square no longer landed where the index said. Measured: 9 squares off the board,
+         holes at exactly r1c7 · r2c6-8 · r7c6-8 · r8c1 · r8c7 — the nine occupied cells.
+
+         Squares in their own grid, pieces in another laid over it: nothing is auto-placed
+         next to anything explicit, so neither layer can push the other. {%- endcomment -%}
     <div class="mcb" id="mcb" role="group" aria-label="White to play and mate in one">
-      {%- for i in (0..63) -%}
-        {%- assign r = i | divided_by: 8 -%}{%- assign c = i | modulo: 8 -%}
-        {%- assign par = r | plus: c | modulo: 2 -%}
-        <i class="mcb-sq{% if par == 1 %} d{% endif %}" data-sq="{{ i }}"></i>
-      {%- endfor -%}
-      <b class="mcb-p w" data-sq="56" data-pc="R" style="grid-area:8/1">&#9820;</b>
-      <b class="mcb-p w" data-sq="62"                style="grid-area:8/7">&#9818;</b>
-      <b class="mcb-p w" data-sq="53"                style="grid-area:7/6">&#9823;</b>
-      <b class="mcb-p w" data-sq="54"                style="grid-area:7/7">&#9823;</b>
-      <b class="mcb-p w" data-sq="55"                style="grid-area:7/8">&#9823;</b>
-      <b class="mcb-p b" data-sq="6"  data-pc="k"    style="grid-area:1/7">&#9818;</b>
-      <b class="mcb-p b" data-sq="13"                style="grid-area:2/6">&#9823;</b>
-      <b class="mcb-p b" data-sq="14"                style="grid-area:2/7">&#9823;</b>
-      <b class="mcb-p b" data-sq="15"                style="grid-area:2/8">&#9823;</b>
+      <div class="mcb-grid">
+        {%- for i in (0..63) -%}
+          {%- assign r = i | divided_by: 8 -%}{%- assign c = i | modulo: 8 -%}
+          {%- assign par = r | plus: c | modulo: 2 -%}
+          <i class="mcb-sq{% if par == 1 %} d{% endif %}" data-sq="{{ i }}"></i>
+        {%- endfor -%}
+      </div>
+      <div class="mcb-men">
+        <b class="mcb-p w" data-sq="56" data-pc="R" style="grid-area:8/1">&#9820;</b>
+        <b class="mcb-p w" data-sq="62"                style="grid-area:8/7">&#9818;</b>
+        <b class="mcb-p w" data-sq="53"                style="grid-area:7/6">&#9823;</b>
+        <b class="mcb-p w" data-sq="54"                style="grid-area:7/7">&#9823;</b>
+        <b class="mcb-p w" data-sq="55"                style="grid-area:7/8">&#9823;</b>
+        <b class="mcb-p b" data-sq="6"  data-pc="k"    style="grid-area:1/7">&#9818;</b>
+        <b class="mcb-p b" data-sq="13"                style="grid-area:2/6">&#9823;</b>
+        <b class="mcb-p b" data-sq="14"                style="grid-area:2/7">&#9823;</b>
+        <b class="mcb-p b" data-sq="15"                style="grid-area:2/8">&#9823;</b>
+      </div>
     </div>
     <p class="mcb-say" id="mcb-say">White to play. <b>Mate in one.</b></p>
   </div>
@@ -121,22 +147,22 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   <a class="mc-door" href="{{ '/games/park-tables/' | relative_url }}">
     <span class="mc-door-ico" aria-hidden="true">&#9654;</span>
     <b>Play Now</b>
-    <small>Sit at a park table. Another player, a park regular, or McPuppy himself.</small>
+    <small>A person, a park regular, or McPuppy.</small>
   </a>
   <a class="mc-door" href="{{ '/games/the-gauntlet/' | relative_url }}">
     <span class="mc-door-ico" aria-hidden="true">&#9819;</span>
     <b>The Gauntlet</b>
-    <small>Ten floors, ten rivals, one real engine. The board grows grander the higher you climb.</small>
+    <small>Ten floors. Ten rivals.</small>
   </a>
   <a class="mc-door" href="{{ '/games/fork-in-the-road/' | relative_url }}">
     <span class="mc-door-ico" aria-hidden="true">&#9822;</span>
     <b>Puzzles</b>
-    <small>One move wins. Play the wrong one and it shows you exactly why it loses.</small>
+    <small>One move wins. Miss it and it shows you why.</small>
   </a>
   <a class="mc-door" href="{{ '/academy/' | relative_url }}">
     <span class="mc-door-ico" aria-hidden="true">&#128214;</span>
     <b>Academy</b>
-    <small>Nobody is born knowing this game. Start at the pieces, on a board you can touch.</small>
+    <small>Start at how the pieces move.</small>
   </a>
 </div>
 
@@ -144,12 +170,9 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
      says out loud. Not features; proofs. (FUTURE-IDEAS #9 asked for the offline line for
      months — this is it.) Anything added here has to survive `npm test`. {%- endcomment -%}
 <ul class="mc-true">
-  <li><b>The chess is real.</b> A perft-verified referee runs every board, with Stockfish as
-    a second opinion — and it's re-proved in CI before anything ships.</li>
-  <li><b>Every finished game gets a review.</b> Accuracy, the move it turned on, and the one
-    you missed. Free, for everyone, forever — it runs in your browser.</li>
-  <li><b>It works on a plane.</b> The whole arcade and the engine cache on first visit, so
-    the games keep working with the wi-fi off.</li>
+  <li><b>The chess is real.</b> A perft-verified referee, with Stockfish as a second opinion.</li>
+  <li><b>Every game gets a review.</b> Free, in your browser, forever.</li>
+  <li><b>It works on a plane.</b> The arcade and the engine cache on first visit.</li>
 </ul>
 
 {%- comment -%} ONE door to the world — the show is the point of all of this, but it is not
@@ -158,8 +181,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   <span class="mc-world-glyph" aria-hidden="true">&#9819;</span>
   <span class="mc-world-txt">
     <b>There is a whole world behind this board</b>
-    <small><i>Princess and the Journey to Chess City</i> — an animated series in the making.
-      Meet the cast, wander the town, see the fan wall.</small>
+    <small><i>Princess and the Journey to Chess City</i> — an animated series in the making.</small>
   </span>
   <span class="mc-world-arw" aria-hidden="true">&rarr;</span>
 </a>
@@ -235,29 +257,81 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    White's side, so it faces the way a board faces.
 
    Both sides use FILLED glyphs (♚♛♜♟) and take their colour from the tokens — the outline
-   glyphs (♔♕♖♙) will not fill, which is the same trap Park Tables hit. */
-.mcb { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr);
+   glyphs (♔♕♖♙) will not fill, which is the same trap Park Tables hit.
+
+   ⚠ SECOND PASS 2026-07-28 (Nate, with a screenshot: "can we make the board and pieces
+   uniform"). Reading the canon TOKENS was not the same as looking like the canon BOARD —
+   this one still wore a 4px shadow-ring instead of the timber border, flat wood with no
+   key light, and bare glyphs with no carved outline. It is now the same board as Park
+   Tables and the Academy drill, rule for rule: 3px --chess-frame border, 6px radius, the
+   recessed shadow stack, the 152deg key light OVER the grain, and the piece livery
+   (filled glyph + text-stroke in the opposite line colour, paint-order:stroke fill so
+   the outline sits UNDER the fill). PARK TABLE STANDARD IS THE DEFAULT FOR EVERY BOARD.
+
+   Selection colour is MINT (#6bffb8), not gold — Park Tables' own "go" colour, and it
+   also keeps the page's one-gold rule honest: the lift glow and the target dot used to be
+   the same gold as the CTA, which is three gold things on a page allowed one. */
+.mcb {
   /* 100%, NOT a vw unit. `80vw` measures the WHOLE VIEWPORT, which knows nothing about
      the wrapper's 26px and the card's 20px of padding — at 390px that asked for a 312px
      board inside a 298px column, and .mc-table's overflow:hidden quietly SLICED THE
      H-FILE OFF. It reported no page overflow precisely because it was being clipped. */
-  width: min(348px, 100%); aspect-ratio: 1; margin: 0 auto; border-radius: var(--r-sm, 6px);
-  overflow: hidden;
-  box-shadow: 0 18px 44px rgba(0,0,0,0.5), 0 0 0 4px var(--chess-frame); }
-.mcb-sq { background-color: var(--chess-lt); background-image: var(--chess-grain); }
-.mcb-sq.d { background-color: var(--chess-dk); }
-.mcb-p { grid-area: 1/1; display: flex; align-items: center; justify-content: center;
-  font-size: clamp(24px, 5.8vw, 33px); line-height: 1; z-index: 2; cursor: default;
+  position: relative; width: min(348px, 100%); aspect-ratio: 1; margin: 0 auto;
+  border: 3px solid var(--chess-frame); border-radius: 6px; overflow: hidden;
+  /* the pieces size themselves off the BOARD, not off the viewport — see .mcb-p */
+  container-type: inline-size;
+  box-shadow: 0 18px 36px -14px rgba(0,0,0,0.72), inset 0 3px 9px rgba(255,255,255,0.06),
+    inset 0 -12px 22px rgba(0,0,0,0.32); }
+/* the two layers — see the markup note. Same 8x8 geometry, stacked, so neither can
+   displace the other. */
+.mcb-grid, .mcb-men { position: absolute; inset: 0; display: grid;
+  grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); }
+/* the men layer is INERT except for the rook: click a pawn while the rook is up and the
+   click falls through to the square underneath, so the board still answers you. */
+.mcb-men { pointer-events: none; }
+.mcb-sq { position: relative; background-color: var(--chess-lt);
+  background-image: linear-gradient(152deg, rgba(255,252,240,0.14), rgba(0,0,0,0.04) 62%), var(--chess-grain); }
+.mcb-sq.d { background-color: var(--chess-dk);
+  background-image: linear-gradient(152deg, rgba(255,240,214,0.10), rgba(0,0,0,0.10) 62%), var(--chess-grain); }
+/* ── THE PIECES, matched to PJCCPieces.draw() number for number ────────────────────
+   Park Tables paints each piece onto a <canvas> with the shared renderer
+   (assets/js/pjcc-pieces.js). This page can't call it without loading script before the
+   board is usable — the one thing the front door refuses to do — but it doesn't have to,
+   because that renderer draws THE SAME FILLED GLYPHS. So every number below is lifted
+   straight out of it and re-expressed in CSS, and the two boards land on the same piece:
+
+     ctx.font = '900 ' + size + 'px "Segoe UI Symbol",…'   → font: 900 …, same stack
+     size = 104 on a 128 canvas = 81% of the square         → 10.5cqw (a square is 12.5cqw)
+     ctx.lineWidth = size * 0.085, strokeText then fillText  → -webkit-text-stroke: .085em
+                                                               + paint-order: stroke fill
+     fillText offset by (size*.035, size*.06) at 40% black   → the first text-shadow
+     ellipse(cx, cy + size*.40, size*.33, size*.11) at 32%   → ::before, in % of the square
+
+   cqw, not vw: the old clamp(24px, 5.8vw, 33px) sized the pieces off the WINDOW, so at
+   any width where the board had stopped growing the pieces kept going — they only looked
+   right at one viewport. A piece should be a fraction of its square and nothing else. */
+.mcb-p { position: relative; display: flex; align-items: center; justify-content: center;
+  font: 900 10.5cqw/1 "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols2", serif;
+  z-index: 2; cursor: default; user-select: none; paint-order: stroke fill;
   transition: transform .28s cubic-bezier(.2,.8,.3,1), filter .15s ease; }
-.mcb-p.w { color: var(--piece-w-fill); filter: drop-shadow(0 1px 1px rgba(0,0,0,0.55)); }
-.mcb-p.b { color: var(--piece-b-fill); filter: drop-shadow(0 1px 0 rgba(255,255,255,0.22)); }
+/* the shadow the piece stands in */
+.mcb-p::before { content: ''; position: absolute; left: 23.2%; top: 73.6%;
+  width: 53.6%; height: 17.9%; border-radius: 50%; background: rgba(0,0,0,0.32); }
+.mcb-p.w { color: var(--piece-w-fill); -webkit-text-stroke: 0.085em var(--piece-w-line);
+  text-shadow: 0.035em 0.06em 0 rgba(0,0,0,0.40); }
+.mcb-p.b { color: var(--piece-b-fill); -webkit-text-stroke: 0.085em var(--piece-b-line);
+  text-shadow: 0.035em 0.06em 0 rgba(0,0,0,0.40); }
 /* only the rook is ever touchable — the whole puzzle is one move */
-.mcb.live .mcb-p[data-pc="R"] { cursor: pointer; }
-.mcb.live .mcb-p[data-pc="R"]:hover { filter: drop-shadow(0 0 8px #F5C518); }
-.mcb-p.lift { transform: translateY(-5px) scale(1.08); filter: drop-shadow(0 0 10px #F5C518); }
-/* the one legal target, shown only after the rook is picked up */
-.mcb-sq.hint::after { content: ''; display: block; width: 30%; aspect-ratio: 1; margin: 35% auto;
-  border-radius: 50%; background: rgba(245,197,24,0.55); }
+.mcb.live .mcb-p[data-pc="R"] { cursor: pointer; pointer-events: auto; }
+.mcb.live .mcb-p[data-pc="R"]:hover { filter: drop-shadow(0 0 8px #6bffb8); }
+.mcb-p.lift { transform: translateY(-5px) scale(1.08); filter: drop-shadow(0 0 10px #6bffb8); }
+/* the shadow stays on the board when the piece comes off it */
+.mcb-p.lift::before { transform: translateY(5px); opacity: 0.55; }
+/* the one legal target, shown only after the rook is picked up — Park Tables' legal-move
+   dot exactly: a dark disc ringed in mint, so it reads the same on maple or walnut */
+.mcb-sq.hint::after { content: ''; position: absolute; inset: 0; margin: auto;
+  width: 34%; height: 34%; border-radius: 50%;
+  background: rgba(38,25,10,0.30); box-shadow: 0 0 0 2px rgba(107,255,184,0.9); }
 .mcb-sq.bad  { box-shadow: inset 0 0 0 3px rgba(255,110,110,0.8); }
 .mcb-p.mated { color: #ff6e6e; }
 .mcb-say { margin: 14px 0 0; text-align: center; color: var(--fd-ink-2); font-size: 0.9rem;
@@ -270,21 +344,15 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   font-family: 'Share Tech Mono', monospace; }
 @media (prefers-reduced-motion: reduce) { .mcb-p { transition: none; } }
 
-/* The board block — sized to sit beside the copy without stealing from it.
-   ⚠ .pkt-scene is a FIXED 190x99 unit and `transform: scale()` doesn't change layout size,
-   so the box has to be declared at the scaled size or the drawing spills out of it (the
-   same trap the ✦ star hit on the old front door). 190x1.45 = 276, 99x1.45 = 144. */
+/* The board block — sized to sit beside the copy without stealing from it. No hover lift:
+   this is a chessboard you play on, not a card you click, and a board that rises when the
+   mouse crosses it reads as a link and invites a click anywhere. The rook is the affordance. */
 .mc-board { display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-decoration: none;
-  min-height: 190px; padding: var(--space-4, 16px); border-radius: var(--r-lg, 16px);
-  overflow: hidden; transition: transform .18s ease; }
-.mc-board:hover { transform: translateY(-3px); text-decoration: none; }
-.mc-board .pkt-scene { transform: scale(1.45); transform-origin: center; }
+  min-height: 190px; padding: var(--space-4, 16px); }
 
 @media (max-width: 760px) {
   .mc-hero { grid-template-columns: 1fr; gap: var(--space-4, 16px); }
-  .mc-board { order: -1; min-height: 150px; padding: 0 0 var(--space-2, 8px); }
-  .mc-board .pkt-scene { transform: scale(1.15); }
+  .mc-board { order: -1; min-height: 0; padding: 0 0 var(--space-2, 8px); }
   .mc-cta { width: 100%; justify-content: center; }
     /* no underline down here: at full width it stops reading as a link and starts
      reading as a horizontal rule under the button. */
@@ -382,7 +450,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   .mc-cta2 { justify-content: center; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .mc-cta, .mc-door, .mc-world, .mc-board { transition: none; }
+  .mc-cta, .mc-door, .mc-world { transition: none; }
 }
 </style>
 
@@ -442,8 +510,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
     /* ── anything else: tell them the truth, then let them try again ── */
     sq.classList.add('bad');
     setTimeout(function () { sq.classList.remove('bad'); }, 520);
-    tell('Not there \u2014 the king just steps away. <b>The mate is on the back rank</b>, ' +
-         'where his own pawns have him boxed in.');
+    tell('Not there \u2014 the king steps away. <b>The mate is on the back rank.</b>');
   });
 
   /* Nothing above this line was needed to SEE the board — only to touch it. */

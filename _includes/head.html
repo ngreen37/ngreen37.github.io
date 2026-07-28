@@ -25,6 +25,14 @@
      [data-reveal] elements without ever flashing them on a JS-off/reduced-motion load
      (those never get hidden — see _sass/_pjcc-23-motion.scss + assets/js/pjcc-reveal.js). {%- endcomment -%}
 <script>document.documentElement.classList.add('js-reveal');</script>
+{%- comment -%} THE INTRO HAND-OFF. `/` fades the "McPuppy Studios Presents" card down to
+     black and then REPLACES the document — so the arriving page has to finish the fade the
+     intro started, from its own side. The intro drops a one-shot baton in sessionStorage;
+     this reads it, spends it, and flags <html> so the CSS can fade up from the same black
+     (_sass/_pjcc-25-front-door.scss). It has to sit HERE, above the stylesheet, so the flag
+     is on the element before the first paint — set it any later and you get exactly the
+     flash of page the fade exists to prevent. Spent immediately, so it fires once. {%- endcomment -%}
+<script>try{if(sessionStorage.getItem('mcp.intro.handoff')==='1'){sessionStorage.removeItem('mcp.intro.handoff');document.documentElement.classList.add('intro-arriving');}}catch(e){}</script>
 {% include town-weather.html %}
 
 {%- assign desc = include.description | default: page.description | default: site.description -%}
