@@ -45,6 +45,13 @@ hidden_location_urls:
   - /locations/mystery-city/
   - /locations/chess-city-elementary/
 
+# ── The cast are all PAWNS until the series promotes them ─────────────────────────
+# Every character still carries the piece they will EVENTUALLY be in their own front
+# matter (`piece:` — Princess ♞, Auston ♜, and so on); nothing there was changed. The
+# CARDS just show a pawn, because in this world you are promoted on screen, not in a
+# config file. Add a character's URL here when the series has earned them their piece.
+promoted_character_urls: []
+
 # Navigation
 header_pages:
   - index.md

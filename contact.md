@@ -100,8 +100,12 @@ body_class: theme-bw
 .hello-gh { font-family:'Poppins',sans-serif; font-weight:700; font-size:14px; letter-spacing:.4px; text-decoration:none;
   color:#e8e8ee; background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.45); border-radius:999px;
   padding:11px 30px; transition:transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .3s, background .2s, color .2s; }
-.hello-gh:hover { transform:translateY(-4px); color:#0b0b0d; background:#f4f4f6; border-color:#f4f4f6;
-  box-shadow:0 12px 34px rgba(0,0,0,0.55); text-decoration:none; }
+/* 2026-07-27 (Nate: "the hover-over is too bright"). This used to invert to a near-white
+   fill like the small Copy button does — but this pill is four times the area, so the
+   same treatment read as a flashbulb on a black page. It lifts and brightens now
+   instead of flipping: the affordance survives, the flash doesn't. */
+.hello-gh:hover { transform:translateY(-4px); color:#fff; background:rgba(255,255,255,0.16);
+  border-color:rgba(255,255,255,0.8); box-shadow:0 12px 34px rgba(0,0,0,0.55); text-decoration:none; }
 
 /* one photo of Princess */
 .hello-princess { margin:46px auto 0; text-align:center; max-width:380px;

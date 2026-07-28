@@ -13,7 +13,7 @@ permalink: /characters/
       <div class="char-flip-inner">
 
         <div class="char-flip-front">
-          <div class="char-flip-piece{% if char.piece.size > 2 %} char-flip-piece--word{% endif %}">{{ char.piece | default: "♟" }}</div>
+          {% include char-card-piece.html char=char %}
           <div class="char-flip-name">{{ char.title }}</div>
           <div class="char-flip-role">{{ char.role }}</div>
         </div>
@@ -41,7 +41,7 @@ permalink: /characters/
       <div class="char-flip-inner">
 
         <div class="char-flip-front">
-          <div class="char-flip-piece{% if char.piece.size > 2 %} char-flip-piece--word{% endif %}">{{ char.piece | default: "♟" }}</div>
+          {% include char-card-piece.html char=char %}
           <div class="char-flip-name">{{ char.title }}</div>
           <div class="char-flip-role">{{ char.role }}</div>
         </div>

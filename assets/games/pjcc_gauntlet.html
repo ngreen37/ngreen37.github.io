@@ -16,6 +16,9 @@
 <script src="/assets/js/pjcc-openings.js"></script>
 <script src="/assets/js/pjcc-replay.js"></script>
 <script src="/assets/js/pjcc-game-review.js"></script>
+<!-- the ONE Gauntlet door (2026-07-27) — the same _sass partial the games hall compiles,
+     served standalone so this shell can wear it. See assets/css/gauntlet-door.scss. -->
+<link rel="stylesheet" href="/assets/css/gauntlet-door.css">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body { user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color:transparent; }
@@ -117,26 +120,23 @@
 
   /* ---- #4b THE CHALLENGER'S DOOR — the cool site door, brought into the game (2026-07-22
      Nate: "incorporate the cool door into the Gauntlet game"). It stands OVER the portrait
-     and slides open to reveal the challenger when the card appears, themed to the floor's
-     accent (--bacc). Floor six wears the frosted-glass AUDITOR treatment. Standalone page,
-     so these rules mirror _sass/_pjcc-21-gauntlet-door.scss inline. Transform-only slide. */
+     and opens to reveal the challenger when the card appears, themed to the floor's accent.
+     2026-07-27 (Nate: "I want the Gauntlet doors to match inside the game as they do out in
+     the games hall"): the hand-copied .bgate rules that stood here are GONE. This page now
+     links /assets/css/gauntlet-door.css — the same _sass partial the site compiles — so
+     every floor treatment (the Auditor's frosted glass, the Enforcer's barred gate, the
+     V.P.'s office door, floor zero's tattered cloth, the grandeur tiers) arrives for free
+     and can never drift again. All that's left here is WHERE it stands. */
   .boss-stage { position:relative; width:104px; height:116px; margin:0 auto 12px; }
-  .boss-stage .boss-portrait { position:absolute; left:50%; bottom:0; transform:translateX(-50%); margin:0; }
-  .bgate { position:absolute; inset:0; border-radius:52px 52px 8px 8px; overflow:hidden; pointer-events:none;
-    border:2px solid var(--bacc,#F5C518); border-bottom:0; box-shadow:0 0 26px -6px var(--bacc,#F5C518); }
-  .bgate-door { position:absolute; left:4px; right:4px; top:4px; bottom:0; border-radius:48px 48px 0 0;
-    border:1px solid rgba(168,121,255,0.4); background:linear-gradient(180deg,#251747,#150c33);
-    transform-origin:0 50%; transition:transform .6s cubic-bezier(.3,.9,.3,1); will-change:transform; }
-  .bgate-seam { position:absolute; left:6px; right:6px; bottom:0; height:3px; background:var(--bacc,#F5C518);
-    box-shadow:0 -2px 14px 3px var(--bacc,#F5C518); }
-  .bgate.open .bgate-door { transform:translateX(-108%); }
-  .bgate.floor6 .bgate-door { border-color:rgba(120,200,165,0.5);
-    background:linear-gradient(180deg, rgba(228,246,238,0.16), rgba(150,196,176,0.10)),
-      repeating-linear-gradient(118deg, rgba(255,255,255,0.06) 0 2px, rgba(255,255,255,0) 2px 5px); }
-  .bgate.floor6 .bgate-door::after { content:'AUDIT'; position:absolute; left:50%; top:54%; transform:translateX(-50%);
-    font-family:'Share Tech Mono',monospace; font-size:8px; letter-spacing:0.16em; color:#3a2a12;
-    background:linear-gradient(180deg,#dcb65e,#a97f2e); border:1px solid #7c5a1e; border-radius:1px; padding:1px 5px; }
-  @media (prefers-reduced-motion: reduce){ .bgate-door { transition:none; } }
+  /* 88, not 96: the portrait sits BEHIND a transparent arch now, and at 96 (+3px border)
+     it was 2px wider than the arch — two bright slivers of the ring poked out past the
+     bottom corners of a door that was supposed to be shut. */
+  .boss-stage .boss-portrait { position:absolute; left:50%; bottom:2px; transform:translateX(-50%);
+    margin:0; width:88px; height:88px; font-size:46px; }
+  .boss-stage .gdoor { position:absolute; inset:0; align-items:center; justify-content:center; gap:0; }
+  .boss-stage .gdoor-arch { width:100px; height:116px; border-radius:50px 50px 6px 6px; }
+  .boss-stage .gdoor-door { border-radius:45px 45px 0 0; }
+  .boss-stage .gdoor-glyph { font-size:40px; }
   .boss-name { font-size:24px; font-weight:900; color:#fff; letter-spacing:0.5px; text-shadow:0 2px 12px rgba(0,0,0,0.6); }
   .boss-sub { font-size:11px; letter-spacing:2px; text-transform:uppercase; margin:4px 0 10px; }
   .boss-pips { font-size:15px; letter-spacing:3px; margin-bottom:8px; }
@@ -243,7 +243,12 @@
     <div class="eyebrow" id="boss-eye">Next challenger</div>
     <div class="boss-stage">
       <div class="boss-portrait" id="boss-portrait">♛</div>
-      <div class="bgate" id="boss-gate" aria-hidden="true"><i class="bgate-door"></i><i class="bgate-seam"></i></div>
+      <span class="gdoor gdoor--ingame" id="boss-gate" aria-hidden="true">
+        <span class="gdoor-arch">
+          <i class="gdoor-door"><b class="gdoor-glyph" id="boss-gate-glyph">♛</b><u class="gdoor-knob"></u></i>
+          <i class="gdoor-seam"></i>
+        </span>
+      </span>
     </div>
     <div class="boss-name" id="boss-name">—</div>
     <div class="boss-sub" id="boss-sub">—</div>
@@ -290,6 +295,91 @@ var W = 440, H = 500, TILE = 50, BOARD = TILE*8, BX = (W-BOARD)/2, BY = 78;
 // sync if the canon colors ever move.
 var PAL = { wFill:'#ffffff', wEdge:'#2f2440', bFill:'#4a3585', bEdge:'#f2e9ff' };
 var LIGHT = '#e9d3a4', DARK = '#9c5f33';
+
+/* ── THE SET IMPROVES AS YOU CLIMB (2026-07-27, Nate: "from level one to the end, I want
+   the board and pieces to slowly improve over each level").
+
+   FLOOR ONE IS EXACTLY THE CANON SET ABOVE — walnut, cream, white and purple, unchanged.
+   That matters: the first board a new player ever sees must not be the worst one, so the
+   climb only ever REFINES the same object rather than starting it off shabby. Every floor
+   after is one step along a single lerp: creamier lights, deeper walnut, a darker frame,
+   an inlay that appears halfway up and turns gold near the top, and pieces that go from
+   plain white/purple to ivory and royal purple rimmed in gold.
+
+   One interpolation, not eleven hand-built themes — so the canon stays the anchor and
+   there's exactly one pair of colors to edit if it ever moves. */
+var SET_TOP = { light:'#f6e8c8', dark:'#764323', frame:'#2a1a0d',
+                wFill:'#fffdf3', wEdge:'#3d2a10', bFill:'#2f1c66', bEdge:'#ffe6a6' };
+var SET_BASE = { light:LIGHT, dark:DARK, frame:'#4a3320',
+                 wFill:PAL.wFill, wEdge:PAL.wEdge, bFill:PAL.bFill, bEdge:PAL.bEdge };
+function mixHex(a, b, t){
+  var pa = parseInt(a.slice(1),16), pb = parseInt(b.slice(1),16), o = '#';
+  for (var s = 16; s >= 0; s -= 8){
+    var ca = (pa>>s)&255, cb = (pb>>s)&255, c = Math.round(ca + (cb-ca)*t);
+    o += (c < 16 ? '0' : '') + c.toString(16);
+  }
+  return o;
+}
+var SET_CACHE = {};
+function setFor(idx){
+  if (SET_CACHE[idx]) return SET_CACHE[idx];
+  var t = Math.max(0, Math.min(1, idx / (VISIBLE - 1)));   // floor 1 = 0 … floor 10 = 1
+  var s = { t:t };
+  for (var k in SET_BASE) s[k] = mixHex(SET_BASE[k], SET_TOP[k], t);
+  // the frame's inlay: nothing on the park floors, a pale bead from the middle of the
+  // tower, brass once you're in the executive suite
+  s.inlay = t < 0.28 ? null
+          : t < 0.66 ? 'rgba(226,214,190,' + (0.18 + t * 0.22).toFixed(3) + ')'
+          : 'rgba(245,197,24,' + (0.30 + t * 0.34).toFixed(3) + ')';
+  s.pal = { wFill:s.wFill, wEdge:s.wEdge, bFill:s.bFill, bEdge:s.bEdge };
+  SET_CACHE[idx] = s;
+  return s;
+}
+
+/* ── THE GALLERY (2026-07-27, Nate: "let's add another element to the Gauntlet, starting
+   round 8. A crowd, perhaps?") — from floor 8 the tower has an audience.
+
+   WHERE, and why it took two tries: the band ABOVE the board looks empty and isn't. The
+   rival's portrait chip, their speech bubble and the YOU-PLAY badge already own nearly all
+   of it, and a crowd painted behind them read as haze. The strip along the BOTTOM edge is
+   genuinely free, so the gallery stands there instead — the front row, seen from behind,
+   heads cut off by the edge of the frame. Drawn after the pieces (they're between you and
+   the board) but only ever over the frame's outer edge, never over a playable square.
+
+   It fills out as you climb — a handful of onlookers on the V.P.'s floor, standing room at
+   the top — and it stirs when material changes hands. No hooks: the draw loop notices the
+   balance move on its own. Nothing here allocates per frame. */
+var CROWD_FROM = 7;                      // index 7 = floor 8, The Vice President
+var CROWD = (function(){
+  var a = [];
+  for (var i = 0; i < 30; i++){
+    a.push({ x: Math.random(), r: 17 + Math.random() * 9,
+             ph: Math.random() * 6.28, sp: 0.5 + Math.random() * 0.6,
+             lean: (Math.random() - 0.5) * 5 });
+  }
+  a.sort(function(p, q){ return q.r - p.r; });   // big ones first = the ones nearest you
+  return a;
+})();
+function drawCrowd(idx, roar){
+  if (idx < CROWD_FROM) return;
+  // how full the house is: a handful on floor 8, standing room at the top and beyond
+  var fill = Math.min(1, 0.45 + (idx - CROWD_FROM) * 0.28);
+  var n = Math.round(CROWD.length * fill), tsec = Date.now() / 1000;
+  for (var i = 0; i < n; i++){
+    var p = CROWD[i];
+    var bob = Math.sin(tsec * p.sp * (roar > 0 ? 4.2 : 0.9) + p.ph) * (roar > 0 ? 4 : 1.2);
+    var cx = -6 + p.x * (W + 12) + p.lean;
+    var cy = H + 8 - bob;                 // mostly below the canvas: only the cap shows
+    // NOT near-black: the page behind is already near-black, and the first pass painted
+    // heads at rgba(16,9,38) on #0c0820 — a crowd you could only find with a colour picker.
+    ctx.fillStyle = 'rgba(41,28,86,0.96)';
+    ctx.beginPath(); ctx.arc(cx, cy, p.r, 0, 7); ctx.fill();
+    // one thread of rim light off the board, so a head reads as a head and not as a smudge
+    ctx.strokeStyle = roar > 0 ? 'rgba(232,214,255,0.62)' : 'rgba(178,152,240,0.44)';
+    ctx.lineWidth = 1.3;
+    ctx.beginPath(); ctx.arc(cx, cy, p.r, Math.PI * 1.12, Math.PI * 1.88); ctx.stroke();
+  }
+}
 
 // ---- The ladder (alternating colors; strict — no takebacks/hints) ----
 // elo = each rival's ASSIGNED house rating (Nate 2026-07-13: "display their ratings").
@@ -753,11 +843,18 @@ function showBossCard(idx){
   // open a beat later to reveal the portrait beneath (floor 6 = the frosted Auditor door).
   var gate = document.getElementById('boss-gate');
   if (gate){
-    gate.style.setProperty('--bacc', acc);
-    gate.classList.toggle('floor6', idx === 5);   // index 5 = The Auditor
-    gate.classList.remove('open');
-    void gate.offsetWidth;                          // restart the slide each reveal
-    setTimeout(function(){ if (gate.isConnected) gate.classList.add('open'); }, 480);
+    // Same door as the games hall, driven the same way: --acc themes it, data-floor picks
+    // the floor's treatment, data-grand the richness of the arch. The hall keys data-floor
+    // on the floor you're ABOUT to play; in here that's this rung, so they agree. (Secret
+    // floors past the public ten have no treatment of their own and get the plain door.)
+    gate.style.setProperty('--acc', acc);
+    gate.setAttribute('data-floor', idx + 1);
+    gate.setAttribute('data-grand', idx === 0 ? 0 : idx <= 2 ? 1 : idx <= 4 ? 2 : idx <= 6 ? 3 : idx <= 8 ? 4 : 5);
+    var gg = document.getElementById('boss-gate-glyph');
+    if (gg) gg.textContent = rung.glyph;
+    gate.classList.remove('is-open');
+    void gate.offsetWidth;                          // restart the opening each reveal
+    setTimeout(function(){ if (gate.isConnected) gate.classList.add('is-open'); }, 480);
   }
   document.getElementById('boss-eye').textContent = (beaten?'Rematch':'Challenger') + ' · ' +
     (idx < VISIBLE ? 'Floor ' + (idx+1) + ' of ' + VISIBLE : 'Secret Floor ' + (idx - VISIBLE + 1) + ' of ' + (LADDER.length - VISIBLE)) +
@@ -911,13 +1008,23 @@ function render(){
   // flag fall — the render loop is the referee's stopwatch (floors 5+ only)
   if (!G.over && G.clockOn && G.clockTick &&
       G.clockMs - (Date.now() - G.clockTick) <= 0){ endGame('flag'); }
+  // the set you're playing on, and the house watching you play on it (drawn at the foot
+  // of this function — they stand between you and the board)
+  var SET = setFor(G.idx);
+  var mat = matPOV(VS, 'w');
+  if (G.crowdMat === undefined) G.crowdMat = mat;
+  if (mat !== G.crowdMat){ G.crowdRoar = 1; G.crowdMat = mat; }   // something was taken
+  G.crowdRoar = Math.max(0, (G.crowdRoar || 0) - 1/90);           // ~1.5s of noise
   drawHud();
   // board frame
-  ctx.fillStyle = '#4a3320'; roundRect(BX-6, BY-6, BOARD+12, BOARD+12, 9); ctx.fill();   // canon timber frame
+  ctx.fillStyle = SET.frame; roundRect(BX-6, BY-6, BOARD+12, BOARD+12, 9); ctx.fill();   // canon timber frame
   ctx.strokeStyle = G.rung.accent; ctx.lineWidth = 3; roundRect(BX-6, BY-6, BOARD+12, BOARD+12, 9); ctx.stroke();
+  // the inlay bead — the tell that this is a better set than the one two floors down
+  if (SET.inlay){ ctx.strokeStyle = SET.inlay; ctx.lineWidth = 1.5;
+    roundRect(BX-3, BY-3, BOARD+6, BOARD+6, 6); ctx.stroke(); }
   // squares (true colors regardless of flip)
   for (var i=0;i<64;i++){ var r=(i/8)|0, f=i%8, s=idxToScreen(i);
-    ctx.fillStyle = ((r+f)%2===0) ? LIGHT : DARK;
+    ctx.fillStyle = ((r+f)%2===0) ? SET.light : SET.dark;
     ctx.fillRect(BX+s.col*TILE, BY+s.row*TILE, TILE, TILE); }
   // last move
   if (VLAST){ [VLAST.from,VLAST.to].forEach(function(sq){ var s=idxToScreen(sq);
@@ -948,7 +1055,7 @@ function render(){
   if (VW){ ctx.fillStyle = 'rgba(12,8,32,0.28)'; ctx.fillRect(BX, BY, BOARD, BOARD); }
   // pieces
   for (var j=0;j<64;j++){ var p=VS.b[j]; if(!p) continue; var c=cellXY(j);
-    PJCCPieces.draw(ctx, c.x, c.y, TILE*0.84, p.toUpperCase(), C.colorOf(p), PAL); }
+    PJCCPieces.draw(ctx, c.x, c.y, TILE*0.84, p.toUpperCase(), C.colorOf(p), SET.pal); }
   // two faint spots on the opposition's e-pawn — visually unremarkable, never explained
   if (G.crockett >= 0 && !VW && G.S.b[G.crockett]){
     var cd = cellXY(G.crockett), aiIsWhite = (G.pc !== 'w');
@@ -956,6 +1063,10 @@ function render(){
     ctx.beginPath(); ctx.arc(cd.x - TILE*0.07, cd.y + TILE*0.10, TILE*0.048, 0, 7); ctx.fill();
     ctx.beginPath(); ctx.arc(cd.x + TILE*0.10, cd.y + TILE*0.19, TILE*0.038, 0, 7); ctx.fill();
   }
+  // the gallery, from floor 8 — foreground, so after the pieces, but it only ever reaches
+  // the outer edge of the frame
+  drawCrowd(G.idx, G.crowdRoar);
+  drawClock();
   // the browsing badge goes on last — over the pieces, at the foot of the board, where
   // neither the rival's portrait bubble (top) nor the pieces can bury it
   if (VW){
@@ -979,6 +1090,10 @@ function drawHud(){
   ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='bold 11px Trebuchet MS';
   var status = G.over ? '' : (G.thinking ? '… ' + G.rung.name.replace(/^The\s+/,'') + ' is thinking' : (G.S.turn===G.pc ? 'Your move' : ''));
   ctx.fillStyle = '#cdbcf2'; ctx.fillText(status, bx-10, by+bh/2);
+}
+// The clock lives in the same strip the gallery stands in, so it is painted SEPARATELY,
+// after the crowd — otherwise floor 8 and up quietly hid how much time you had left.
+function drawClock(){
   // the player's clock (floors 5+) — bottom-left, under the board frame; the rival
   // has no clock at all (they just ponder). Red once you're under a minute.
   if (G.clockOn){

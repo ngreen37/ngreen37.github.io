@@ -236,6 +236,14 @@ On classified-layout pages, a random stamp (CLEARANCE: DELTA, EYES ONLY, CLASSIF
 
 ## Story / Lore
 
+### Everyone is a Pawn (Characters Page) — *added 2026-07-27*
+Every character card shows **♟**, whoever they are. Their real piece is already written down
+— Princess ♞, Auston ♜, Kaede ♝, and so on, in each character's own front matter — and the
+cards will show it when the series promotes them. Nobody is told this; the payoff is that a
+returning reader one day notices Princess isn't a pawn any more. Reveal one by adding their
+URL to `promoted_character_urls` in `_config.yml`; the whole mechanic is
+`_includes/char-card-piece.html`. Ties to the spine of the show: she rises to Queen.
+
 ### World Status Ticker (Home Page)
 A live scrolling news ticker at the top of the home page broadcasts fictional Checker Town Bureau of Dispatch headlines — world-building delivered as ambient atmosphere.
 
@@ -253,4 +261,4 @@ Animated count-up for Posts Written, Characters, and Locations — all pull live
 
 ---
 
-*Last updated: July 2026 (the hidden-in-plain-sight batch)*
+*Last updated: July 2026 (the hidden-in-plain-sight batch; + the pawn-promotion card mechanic, 2026-07-27)*

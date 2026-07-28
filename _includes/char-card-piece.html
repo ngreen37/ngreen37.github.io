@@ -1,0 +1,18 @@
+{%- comment -%}
+  The piece a character wears on their card.
+
+  Everyone is a PAWN right now — on purpose. Each character's own front matter
+  carries the piece they will EVENTUALLY be (`piece:`), and that stays untouched;
+  in this world you get promoted on screen, not in a config file. Princess's whole
+  arc is pawn → Queen, and the cast rising with her is the same idea told quietly.
+
+  To reveal one character's true piece, add their URL to `promoted_character_urls`
+  in _config.yml — same "delete/add one line" shape as hidden_character_urls.
+
+  Usage: {% include char-card-piece.html char=char %}
+{%- endcomment -%}
+{%- assign shown = "♟" -%}
+{%- if site.promoted_character_urls contains include.char.url -%}
+  {%- assign shown = include.char.piece | default: "♟" -%}
+{%- endif -%}
+<div class="char-flip-piece{% if shown.size > 2 %} char-flip-piece--word{% endif %}">{{ shown }}</div>

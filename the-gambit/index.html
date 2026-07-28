@@ -46,9 +46,11 @@ permalink: /the-gambit/
     <div class="gm-panel">
       <div class="gm-label">Offer credits <span id="gm-offer-cred" class="gm-val">0</span></div>
       <input type="range" id="gm-slider" class="gm-slider" min="0" max="0" value="0">
+      <!-- percentages, not fractions (Nate 2026-07-27): ¼ and ½ sat next to 85% and
+           read as three different units for the same thing. One unit now. -->
       <div class="gm-quick">
-        <button type="button" data-frac="0.25">¼</button>
-        <button type="button" data-frac="0.5">½</button>
+        <button type="button" data-frac="0.25">25%</button>
+        <button type="button" data-frac="0.5">50%</button>
         <button type="button" data-frac="0.85">85%</button>
         <button type="button" data-frac="1">All in</button>
         <button type="button" data-frac="0">Clear</button>
@@ -65,7 +67,7 @@ permalink: /the-gambit/
     <div class="gm-courage">
       <div class="gm-courage-head"><span>Courage</span><span id="gm-odds">no offering yet</span></div>
       <div class="gm-courage-bar"><div class="gm-courage-fill" id="gm-fill"></div></div>
-      <p class="gm-note" id="gm-note">A modest offering is close to a coin flip. Your <b>best</b> item — or <b>85%+ of your credits</b> — tilts the odds significantly your way.</p>
+      <p class="gm-note" id="gm-note">A modest offering leaves you on <b>long odds</b>. Your <b>best</b> item — or <b>85%+ of your credits</b> — tilts them significantly your way.</p>
     </div>
 
     <p class="gm-warn">⚠ You may get <b>nothing</b> — the courage is the point.</p>
@@ -144,13 +146,16 @@ permalink: /the-gambit/
 
        expected return ≈ 0.66x at no courage → ≈ 0.89x all-in
        (so credits still come from PLAYING; the altar is a ritual, not an income) */
+  // `pct` is the same number as `mult`, said the way the room says it now: what comes
+  // back is a PERCENTAGE of what you laid down, never a fraction or a ×multiplier
+  // (Nate 2026-07-27 — "use percentages for the AMOUNT of credits instead of fractions").
   var TIERS = [
-    { key: 'gone',  mult: 0,    w: function (c) { return 0.34 - 0.10 * c; } },
-    { key: 'half',  mult: 0.5,  w: function (c) { return 0.22 - 0.04 * c; } },
-    { key: 'even',  mult: 1,    w: function (c) { return 0.20; } },
-    { key: 'trickle', mult: 1.25, w: function (c) { return 0.14 + 0.02 * c; } },
-    { key: 'good',  mult: 1.6,  w: function (c) { return 0.08 + 0.06 * c; } },
-    { key: 'great', mult: 2.2,  w: function (c) { return 0.02 + 0.06 * c; } }
+    { key: 'gone',  mult: 0,    pct: 0,   w: function (c) { return 0.34 - 0.10 * c; } },
+    { key: 'half',  mult: 0.5,  pct: 50,  w: function (c) { return 0.22 - 0.04 * c; } },
+    { key: 'even',  mult: 1,    pct: 100, w: function (c) { return 0.20; } },
+    { key: 'trickle', mult: 1.25, pct: 125, w: function (c) { return 0.14 + 0.02 * c; } },
+    { key: 'good',  mult: 1.6,  pct: 160, w: function (c) { return 0.08 + 0.06 * c; } },
+    { key: 'great', mult: 2.2,  pct: 220, w: function (c) { return 0.02 + 0.06 * c; } }
   ];
   // The board's memory (an all-in loss banked earlier) shifts weight OFF "gone" and onto
   // the good end — it never guarantees anything, it just bends the wheel your way.
@@ -180,6 +185,19 @@ permalink: /the-gambit/
     }
     return { up: Math.round(up / sum * 100), even: Math.round(even / sum * 100),
              down: Math.round(down / sum * 100), top: TIERS[TIERS.length - 1].mult };
+  }
+  /* The odds are WORDS now, not a percentage split (Nate 2026-07-27). Three numbers on
+     one line read like a spreadsheet in a room that's meant to feel like a ritual.
+     The ladder is still honest and still ordinal — it tracks the real chance of coming
+     out ahead, which runs about 24% at no courage to ~54% all-in with the board's debt
+     behind you. Nothing is hidden: the exact split is one `od.up + '%'` away if it's
+     ever wanted back. The bottom rung says "Long odds" and means it. */
+  function oddsWord(up) {
+    return up < 27 ? 'Long odds'
+         : up < 32 ? 'Fair odds'
+         : up < 38 ? 'Good odds'
+         : up < 46 ? 'Great odds'
+         : 'Excellent odds';
   }
 
   // ---- rendering ----
@@ -211,11 +229,11 @@ permalink: /the-gambit/
     if (ov <= 0) { $('gm-odds').textContent = 'no offering yet'; }
     else {
       var od = odds(c, loadOwed());
-      $('gm-odds').textContent = '▲ ' + od.up + '%  ▬ ' + od.even + '%  ▼ ' + od.down + '% · up to ' + Math.round(ov * od.top) + ' back';
+      $('gm-odds').textContent = oddsWord(od.up) + ' · up to ' + Math.round(ov * od.top) + ' back';
     }
     if (c >= 0.85) $('gm-note').innerHTML = '🔥 <b>Bold.</b> The odds lean your way — and the boldest wins can hand back a <b>boon</b> you don\'t own yet.';
     else if (c >= 0.4) $('gm-note').innerHTML = 'Getting braver. Give your <b>best</b> item — or <b>85%+ of your credits</b> — to really tilt the board.';
-    else $('gm-note').innerHTML = 'A modest offering is close to a coin flip. Your <b>best</b> item — or <b>85%+ of your credits</b> — tilts the odds significantly your way.';
+    else $('gm-note').innerHTML = 'A modest offering leaves you on <b>long odds</b>. Your <b>best</b> item — or <b>85%+ of your credits</b> — tilts them significantly your way.';
     // with a collectable on the altar the PRIZE changes, not just the odds — say so (2026-07-27)
     if (selColl) $('gm-note').innerHTML = '◈ <b>A collectable on the altar changes what comes back.</b> Win with one laid down and the board usually returns a <b>different</b> collectable — sometimes one <b>no shop sells</b>. ' + $('gm-note').innerHTML;
     if (loadOwed() > 0) $('gm-note').innerHTML = '✦ <b>The board remembers what you laid down.</b> ' + $('gm-note').innerHTML;
@@ -306,7 +324,12 @@ permalink: /the-gambit/
     if (win) {
       var boonLine = boon ? '<p class="gm-boon">✦ A boon: the board hands you <b>' + boon.label + '</b> ' + boon.glyph +
         (boon.vault ? ' — <b>from the vault</b>, not sold anywhere.' : ' — yours to keep.') + '</p>' : '';
-      var repayLine = repay ? '<p class="gm-boon">✦ And an old sacrifice comes home: <b>+' + repay + '</b> the board owed you.</p>' : '';
+      // "And an old sacrifice comes home: +120" read as MORE on top of the total — but the
+      // repayment is already inside `reward` (commit() adds it before granting). Say
+      // "of that", and show the wheel's own share, so the two numbers add up in the
+      // reader's head the way they add up in the code (Nate 2026-07-27).
+      var repayLine = repay ? '<p class="gm-boon">✦ Of that, <b>' + repay + '</b> is an old sacrifice coming home — the wheel returned <b>' +
+        (reward - repay) + '</b>, and the board paid what it owed you.</p>' : '';
       box.innerHTML = '<div class="gm-res-title">' + (gain ? 'THE BOARD ANSWERS ✦' : 'THE BOARD RETURNS IT') + '</div>' +
         '<p>You laid down <b>' + ov + '</b> and it gives back <b>' + reward + '</b> credits.</p>' + repayLine + boonLine +
         '<p class="gm-res-creed">' + (gain ? 'You let go, and the path provided.' : 'Even. You risked it, and the board simply handed it straight back.') + '</p>' + rest;
@@ -314,9 +337,9 @@ permalink: /the-gambit/
       var half = tier.mult > 0;
       var remembers = (!half && c >= 0.85)
         ? '<p class="gm-boon">✦ A sacrifice this bold is never wasted here. <b>The board remembers</b> — your next offerings carry its debt.</p>' : '';
-      box.innerHTML = '<div class="gm-res-title">' + (half ? 'THE BOARD KEEPS HALF' : 'THE BOARD KEEPS IT') + '</div>' +
+      box.innerHTML = '<div class="gm-res-title">' + (half ? 'THE BOARD KEEPS 50%' : 'THE BOARD KEEPS IT') + '</div>' +
         '<p>Your offering' + (coll ? ' — including <b>' + coll.label + '</b> ' + coll.glyph + ' —' : '') +
-        (half ? ' is halved. <b>' + reward + '</b> comes back.' : ' is gone. Nothing comes back.') + '</p>' + remembers +
+        (half ? ' returns <b>' + tier.pct + '%</b>. <b>' + reward + '</b> comes back.' : ' is gone. Nothing comes back.') + '</p>' + remembers +
         '<p class="gm-res-creed">The courage <em>was</em> the point. Real commitment isn\'t safe. Come back braver.</p>' + rest;
     }
     showReveal(tier, ov, reward, boon, coll, repay, c);
@@ -333,7 +356,7 @@ permalink: /the-gambit/
     wrap.hidden = false;
     card.className = 'gm-reveal-card ' + (gain ? (vault ? 'vault' : boon ? 'boon' : 'win') : win ? 'even' : 'loss');
     $('gm-rv-eyebrow').textContent = vault ? 'the vault opens'
-      : gain ? 'the board answers' : win ? 'the board returns it' : half ? 'the board keeps half' : 'the board keeps it';
+      : gain ? 'the board answers' : win ? 'the board returns it' : half ? 'the board keeps 50%' : 'the board keeps it';
     $('gm-rv-figure').textContent = boon ? boon.glyph : (gain ? '✦' : win ? '◈' : '♟');
     $('gm-rv-creed').textContent = gain ? 'You let go, and the path provided.'
       : win ? 'Even. You risked it, and the board simply handed it straight back.'
@@ -342,10 +365,10 @@ permalink: /the-gambit/
     var titleEl = $('gm-rv-title'), subEl = $('gm-rv-sub');
     if (reward > 0) {
       titleEl.innerHTML = '<b class="gm-rv-num" id="gm-rv-num">0</b> <span class="gm-rv-unit">credits back</span>' +
-        (gain ? ' <span class="gm-rv-mult">×' + tier.mult + '</span>' : '');
+        (gain ? ' <span class="gm-rv-mult">' + tier.pct + '%</span>' : '');
       subEl.innerHTML = 'You laid down <b>' + ov + '</b>.' +
-        (half ? ' <span class="gm-rv-repay">The board kept half of it.</span>' : '') +
-        (repay ? ' <span class="gm-rv-repay">An old sacrifice came home: <b>+' + repay + '</b>.</span>' : '');
+        (half ? ' <span class="gm-rv-repay">The board kept 50% of it.</span>' : '') +
+        (repay ? ' <span class="gm-rv-repay"><b>' + repay + '</b> of that is an old sacrifice coming home.</span>' : '');
       countTo($('gm-rv-num'), reward, 700);
     } else {
       titleEl.innerHTML = '<span class="gm-rv-gone">NOTHING COMES BACK</span>';

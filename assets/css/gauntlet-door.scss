@@ -1,0 +1,16 @@
+---
+# Jekyll compiles this to /assets/css/gauntlet-door.css.
+#
+# THE GAUNTLET DOOR, for the standalone game shells (2026-07-27, Nate: "I want the
+# Gauntlet doors to match inside the game as they do out in the games hall").
+#
+# assets/games/*.html are plain HTML pages outside the Jekyll layouts — they don't load
+# the site stylesheet, so the game used to carry its OWN hand-copied door CSS (.bgate),
+# which knew about exactly one floor treatment and drifted from the real door the moment
+# a new one was added. This file is 12 lines of nothing: it pulls the SAME partial the
+# site's style.scss pulls, so there is one door and one place to change it.
+#
+# Deliberately does NOT import _pjcc-01-core: the game shells define their own base. The
+# partial's only token dependency (--ease-out) carries a literal fallback for that reason.
+---
+@import "pjcc-21-gauntlet-door";

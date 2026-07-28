@@ -13,7 +13,7 @@
  */
 'use strict';
 
-const VERSION    = 'pjcc-pwa-v7';   // v7: "/" is now the "McPuppy Studios Presents" intro that hands off to /pjcc/ (2026-07-23)
+const VERSION    = 'pjcc-pwa-v8';   // v8: the Gauntlet door became a real stylesheet the game links (2026-07-27); v7: "/" is the "McPuppy Studios Presents" intro that hands off to /pjcc/ (2026-07-23)
 const SHELL      = 'pjcc-shell-' + VERSION;
 const RUNTIME    = 'pjcc-runtime-' + VERSION;
 const OFFLINE_URL = '/offline.html';
@@ -55,6 +55,9 @@ const GAMES = [
   '/assets/games/pjcc_murphys_law.html', '/assets/games/pjcc_reading_room.html',
   '/assets/games/pjcc_princess_dungeon.html',
   '/assets/js/pjcc-chess.js', '/assets/js/pjcc-chess-ai.js', '/assets/js/pjcc-gauntlet-engine.js',
+  // the Gauntlet's challenger door is real CSS now, not a copy inlined in the game shell
+  // (2026-07-27) — without this the tower's doors go plain on a plane.
+  '/assets/css/gauntlet-door.css',
   '/assets/vendor/stockfish/stockfish.js', '/assets/vendor/stockfish/stockfish.wasm',
   // the self-hosted webfaces the site actually paints with (latin subsets only — the
   // latin-ext ones are unicode-range gated and fetched on demand, so don't warm them)
