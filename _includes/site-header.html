@@ -33,10 +33,20 @@
                class="logo-stacked">
         </span>
         <div class="header-top-right">
-          <button class="cmdk-trigger" id="cmdk-trigger" type="button" aria-label="Open the command menu" aria-keyshortcuts="Meta+K Control+K" title="Search & jump (Ctrl/⌘ K)">
+          {%- comment -%} 2026-07-28 — the grandparent test. This button used to read
+               "⌕ Jump to… ⌘K", and two of those three parts were doing damage:
+                 · "Jump to…" doesn't say what happens. "Search" is a word everyone on
+                   earth already knows, and it's what the button actually does.
+                 · The shortcut chip said ⌘K — the MAC symbol — on Windows, until JS
+                   swapped it a moment later. Nate is on Windows, so the wrong symbol is
+                   what he saw every time. The default is Ctrl now and pjcc-nav.js flips
+                   it to ⌘ on a Mac, which is the majority-first way round.
+               The chip is also hidden on touch (see _pjcc-13-nav.scss): a phone has no
+               Ctrl key, so it was pure noise on the device most people arrive with. {%- endcomment -%}
+          <button class="cmdk-trigger" id="cmdk-trigger" type="button" aria-label="Search the site" aria-keyshortcuts="Meta+K Control+K" title="Search and jump to any page (Ctrl K)">
             <span class="cmdk-trigger-ico" aria-hidden="true">⌕</span>
-            <span class="cmdk-trigger-label">Jump to…</span>
-            <span class="cmdk-trigger-kbd" aria-hidden="true"><span class="cmdk-mod">⌘</span>K</span>
+            <span class="cmdk-trigger-label">Search</span>
+            <span class="cmdk-trigger-kbd" aria-hidden="true">Ctrl K</span>
           </button>
           <button class="lang-toggle" id="lang-toggle" type="button" aria-label="Toggle language">日本語</button>
           <a class="nav-operative" id="nav-operative" href="{{ '/dossier/' | relative_url }}" title="Your Profile — sign in or open it" hidden>Sign in</a>

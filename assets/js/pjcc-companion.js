@@ -20,12 +20,22 @@
 (function () {
   'use strict';
 
-  // ---- the four friends (one per species; dog is Princess's canon default) --
+  /* ---- the four friends (one per species; dog is Princess's canon default) --
+     THE DEFAULT NAMES ARE GONE (Nate 2026-07-28: "Remove the names of the default pets").
+     They used to arrive pre-named — Biscuit, Mochi, Pip, Sheldon — which quietly answered
+     the one question the player should get to answer. Naming a thing is most of what
+     makes it yours, and a companion that introduces itself has already taken that.
+
+     So `name` is dropped and every species falls back to its STAGE word instead ('Pup',
+     'Kitten', 'Hatchling'…). That reads as a description rather than a name — "your Pup"
+     — so the rename prompt is an invitation instead of a correction. It also keeps
+     evolving with the bond if you never name them: Pup → Hound → Legend Hound.
+     Anyone who had already named theirs is untouched: `s.names[s.pet]` still wins. */
   var PETS = {
-    dog:    { name: 'Biscuit', stages: ['Pup', 'Hound', 'Legend Hound'],   ems: ['🐶', '🐕', '🦮'], persona: "Princess's own — loyal, bright, and always at your heel.", trait: 'Loyal',  snd: { type: 'square',   f: 240,  f2: 170 }, canon: true },
-    cat:    { name: 'Mochi',   stages: ['Kitten', 'Cat', 'Grand Feline'],   ems: ['🐱', '🐈', '😼'], persona: 'A clever, unbothered little strategist.',                trait: 'Clever', snd: { type: 'sine',     f: 640,  f2: 840 } },
-    bird:   { name: 'Pip',     stages: ['Chick', 'Flyer', 'Sky Marshal'],   ems: ['🐤', '🐦', '🦉'], persona: 'A cheery riser who remembers every move you make.',      trait: 'Bright', snd: { type: 'triangle', f: 1200, f2: 1750 } },
-    turtle: { name: 'Sheldon', stages: ['Hatchling', 'Shellback', 'Ancient'], ems: ['🥚', '🐢', '🐢'], persona: 'Slow, steady, and unshakeably calm.',                  trait: 'Steady', snd: { type: 'sine',     f: 150,  f2: 110 } }
+    dog:    { stages: ['Pup', 'Hound', 'Legend Hound'],     ems: ['🐶', '🐕', '🦮'], persona: "Princess's own — loyal, bright, and always at your heel.", trait: 'Loyal',  snd: { type: 'square',   f: 240,  f2: 170 }, canon: true },
+    cat:    { stages: ['Kitten', 'Cat', 'Grand Feline'],    ems: ['🐱', '🐈', '😼'], persona: 'A clever, unbothered little strategist.',                trait: 'Clever', snd: { type: 'sine',     f: 640,  f2: 840 } },
+    bird:   { stages: ['Chick', 'Flyer', 'Sky Marshal'],    ems: ['🐤', '🐦', '🦉'], persona: 'A cheery riser who remembers every move you make.',      trait: 'Bright', snd: { type: 'triangle', f: 1200, f2: 1750 } },
+    turtle: { stages: ['Hatchling', 'Shellback', 'Ancient'], ems: ['🥚', '🐢', '🐢'], persona: 'Slow, steady, and unshakeably calm.',                  trait: 'Steady', snd: { type: 'sine',     f: 150,  f2: 110 } }
   };
   var PET_ORDER = ['dog', 'cat', 'bird', 'turtle'];
 
@@ -60,7 +70,7 @@
       pet: 'dog', names: {}, cosmetics: {}, ownedCos: ['none', 'bow'],
       hunger: 78, energy: 82, affection: 30, bond: 6, calm: false, dug: false,
       seenBest: {}, bestInit: false,
-      tick: Date.now(), lastAny: Date.now(), lastPet: 0, lastFeed: 0, lastPlay: 0, createdAt: Date.now()
+      tick: Date.now(), lastAny: Date.now(), lastPet: 0, lastFeed: 0, lastPlay: 0, lastWalk: 0, createdAt: Date.now()
     };
   }
   function migrate(s) {
@@ -98,7 +108,14 @@
     return { bond: b, stage: stage, level: level };
   }
   function petEmojiFor(s, bi) { var p = PETS[s.pet]; return p.ems[(bi || bondInfo(s)).stage]; }
-  function displayName(s) { return s.names[s.pet] || PETS[s.pet].name; }
+  // Named by the player, or described by where they are in their own growth. Never a
+  // name we picked for them (see the PETS table).
+  function displayName(s) {
+    return s.names[s.pet] || PETS[s.pet].stages[bondInfo(s).stage];
+  }
+  // True while the player still hasn't named them — the UI uses this to ask, once,
+  // in the places where asking is welcome rather than nagging.
+  function unnamed(s) { return !s.names[s.pet]; }
   function localHour() { try { if (window.PJCC_TIME) return PJCC_TIME.hour(); } catch (e) {} return new Date().getHours(); }
   function isNight() { var h = localHour(); return h < 7 || h >= 20; }   // town time now (pjcc-time.js)
 
@@ -168,25 +185,66 @@
       var id = JSON.parse(localStorage.getItem('pjcc.identity.v1')) || {};
       var key = id.pet && id.pet.tint;
       if (!key || key === 'none') return '';
-      var T = window.PJCCForge && PJCCForge.TINTS;
-      return (T && T[key]) ? T[key].f : '';
+      // The Forge owns the coat and hands back a ready CSS filter value. It also injects
+      // the SVG <defs> the value points at, which is why we ask it rather than building
+      // the string here — a `url(#…)` with no matching filter in the document renders
+      // NOTHING AT ALL, so the two must never drift apart. (Before 2026-07-28 this read
+      // `TINTS[key].f`, a plain CSS filter string; that field is gone.)
+      return (window.PJCCForge && PJCCForge.coatFilter) ? PJCCForge.coatFilter(key) : '';
     } catch (e) { return ''; }
   }
 
-  // ---- sound (species voice) — silenced entirely in Calm mode ---------------
+  /* ---- sound — one voice per SPECIES, a different phrase per ACTION ----------
+     2026-07-28 (Nate: "update the sounds a bit, switch them up (pet/feed/play)").
+
+     Every action used to fire the exact same 260ms two-note blip. Petting, feeding and
+     playing were audibly identical, so the sound carried no information — it just
+     confirmed that a button had been pressed, which the animation already did.
+
+     Now the SPECIES still owns the voice (a turtle is still low and slow, a bird still
+     high and quick — `snd.f` is the root of every phrase), and the ACTION owns the
+     PHRASE. They're written as note lists in semitone offsets from the species root, so
+     one table re-tunes automatically for all four animals and nothing has to be
+     hand-pitched per species:
+
+       pet   two soft notes settling DOWNWARD    — being petted is calming
+       feed  three short low blips               — chewing
+       play  a bright run UP                     — excitement
+       walk  four even steps, a little trot      — going somewhere
+       pick  an open fifth                       — meeting someone new
+
+     Still silenced entirely in Calm mode (#20), still one oscillator at a time. */
   var actx = null, soundOn = true;
   try { soundOn = localStorage.getItem(SND_KEY) !== '0'; } catch (e) {}
-  function sound() {
+  // [semitones from the species root, seconds from the start, note length, peak gain]
+  var PHRASES = {
+    pet:  [[ 0, 0.00, 0.16, 0.13], [-3, 0.10, 0.22, 0.11]],
+    feed: [[-7, 0.00, 0.07, 0.13], [-7, 0.09, 0.07, 0.11], [-5, 0.18, 0.10, 0.09]],
+    play: [[ 0, 0.00, 0.09, 0.12], [ 4, 0.07, 0.09, 0.13], [ 7, 0.14, 0.09, 0.13], [12, 0.21, 0.16, 0.12]],
+    walk: [[ 0, 0.00, 0.07, 0.10], [ 5, 0.11, 0.07, 0.10], [ 0, 0.22, 0.07, 0.10], [ 5, 0.33, 0.11, 0.09]],
+    pick: [[ 0, 0.00, 0.14, 0.12], [ 7, 0.10, 0.24, 0.12]]
+  };
+  function sound(kind) {
     var s = load();
     if (!soundOn || s.calm) return;   // Calm mode = never a peep (#20)
     try {
       actx = actx || new (window.AudioContext || window.webkitAudioContext)();
       if (actx.state === 'suspended') actx.resume();
-      var o = actx.createOscillator(), g = actx.createGain(); o.connect(g); g.connect(actx.destination);
-      var t = actx.currentTime, cfg = PETS[s.pet].snd;
-      o.type = cfg.type; o.frequency.setValueAtTime(cfg.f, t); o.frequency.exponentialRampToValueAtTime(cfg.f2, t + 0.12);
-      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.16, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
-      o.start(t); o.stop(t + 0.26);
+      var t0 = actx.currentTime, cfg = PETS[s.pet].snd;
+      var notes = PHRASES[kind] || PHRASES.pet;
+      notes.forEach(function (n) {
+        var o = actx.createOscillator(), g = actx.createGain();
+        o.connect(g); g.connect(actx.destination);
+        o.type = cfg.type;
+        var f = cfg.f * Math.pow(2, n[0] / 12), t = t0 + n[1];
+        o.frequency.setValueAtTime(f, t);
+        // a small glide toward the species' second frequency keeps each animal's colour
+        o.frequency.exponentialRampToValueAtTime(Math.max(40, f * (cfg.f2 / cfg.f) * 0.35 + f * 0.65), t + n[2]);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(n[3], t + 0.015);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + n[2] + 0.04);
+        o.start(t); o.stop(t + n[2] + 0.06);
+      });
     } catch (e) {}
   }
 
@@ -219,29 +277,51 @@
   function actPet() {
     var s = load(), now = Date.now();
     if (now - s.lastPet < 1200) return;
-    s.affection = clamp(s.affection + 8, 0, 100); addBond(s, 0.6); s.lastPet = now; s.lastAny = now; s.tick = now;
-    save(s); refresh(); sound(); bounce('happy'); fxBurst('💗');
+    // +1 energy on a pet (Nate 2026-07-28). Small on purpose: it is not a way to refill
+    // the meter, it's the fact that being fussed over perks an animal up a little.
+    s.affection = clamp(s.affection + 8, 0, 100);
+    s.energy = clamp(s.energy + 1, 0, 100);
+    addBond(s, 0.6); s.lastPet = now; s.lastAny = now; s.tick = now;
+    save(s); refresh(); sound('pet'); bounce('happy'); fxBurst('💗');
   }
   function actFeed() {
     var s = load(), now = Date.now();
     if (now - s.lastFeed < 2500) { toast('Still nibbling the last one!'); return; }
     s.hunger = clamp(s.hunger + 30, 0, 100); s.affection = clamp(s.affection + 4, 0, 100); addBond(s, 0.4);
     s.lastFeed = now; s.lastAny = now; s.tick = now;
-    save(s); refresh(); sound(); bounce('happy'); fxBurst('🦴');
+    save(s); refresh(); sound('feed'); bounce('happy'); fxBurst('🦴');
   }
   function actPlay() {
     var s = load(), now = Date.now();
-    if (s.energy < 12) { toast('Worn out — they need a little rest first.'); return; }
+    if (s.energy < 12) { toast('Worn out — a walk would do them good.'); return; }
     if (now - s.lastPlay < 3500) { toast('Catching their breath…'); return; }
     s.energy = clamp(s.energy - 12, 0, 100); s.affection = clamp(s.affection + 6, 0, 100); addBond(s, 1.4);
     s.lastPlay = now; s.lastAny = now; s.tick = now;
-    save(s); refresh(); sound(); bounce('trick'); fxBurst('🎾');
+    save(s); refresh(); sound('play'); bounce('trick'); fxBurst('🎾');
+  }
+  /* TAKE FOR A WALK (Nate 2026-07-28: "Add take for a walk for bond and energy boost").
+     It is the best thing you can do for the BOND — more than play — and unlike play it
+     GIVES energy back instead of spending it. The cost is appetite: a walk makes them
+     hungry, which is what stops it being a button you just hold down, and it closes the
+     loop the Den always wanted — feed, walk, play, feed. Longest cooldown of the four,
+     because a walk should feel like an outing, not a tap. */
+  function actWalk() {
+    var s = load(), now = Date.now();
+    if (now - (s.lastWalk || 0) < 9000) { toast('Just back from one — let them settle.'); return; }
+    if (s.hunger < 12) { toast('Too hungry for a walk — feed them first.'); return; }
+    s.energy    = clamp(s.energy + 14, 0, 100);
+    s.hunger    = clamp(s.hunger - 10, 0, 100);
+    s.affection = clamp(s.affection + 5, 0, 100);
+    addBond(s, 2.2);
+    s.lastWalk = now; s.lastAny = now; s.tick = now;
+    save(s); refresh(); sound('walk'); bounce('happy'); fxBurst('🐾');
+    toast(displayName(s) + ' comes back brighter than they left.');
   }
   function actPick(key) {                                  // choose your friend — free (#3)
     if (!PETS[key]) return;
     var s = load(); s.pet = key; s.lastAny = Date.now(); save(s);
     try { if (window.PJCC && PJCC.setPet) PJCC.setPet(key); } catch (e) {}
-    sound(); refresh();
+    sound('pick'); refresh();
   }
   function actRename() {
     var s = load(), nm = window.prompt('Name your companion:', displayName(s)); if (nm === null) return;
@@ -264,7 +344,7 @@
     s.cosmetics[s.pet] = key; save(s); refresh();
   }
   function actCalm() { var s = load(); s.calm = !s.calm; save(s); toast(s.calm ? 'Calm mode on — a quiet, still companion.' : 'Calm mode off.'); refresh(); }
-  function actSound() { soundOn = !soundOn; try { localStorage.setItem(SND_KEY, soundOn ? '1' : '0'); } catch (e) {} if (soundOn) sound(); refresh(); }
+  function actSound() { soundOn = !soundOn; try { localStorage.setItem(SND_KEY, soundOn ? '1' : '0'); } catch (e) {} if (soundOn) sound('pet'); refresh(); }
 
   // ---- inline mood card (on the Dossier) ------------------------------------
   var mountCard = null;
@@ -340,7 +420,8 @@
 
     // care — three buttons, no currency
     html += '<div class="den-section"><h3>Care</h3><div class="den-actions">' +
-      btn('den-pet-btn', '💗', 'Pet', 'free') + btn('den-feed', '🦴', 'Feed', 'fills them up') + btn('den-play', '🎾', 'Play', 'deepens Bond') +
+      btn('den-pet-btn', '💗', 'Pet', '+1 energy') + btn('den-feed', '🦴', 'Feed', 'fills them up') +
+      btn('den-play', '🎾', 'Play', 'costs energy') + btn('den-walk', '🐾', 'Walk', 'energy + Bond') +
       '</div>' +
       '<div class="den-toolbar">' +
         '<button class="den-btn den-btn--wide" id="den-share"><span class="be">📸</span>Share card</button>' +
@@ -383,7 +464,7 @@
     var q = function (id) { return denEl.querySelector('#' + id); };
     var on = function (id, fn) { var el = q(id); if (el) el.onclick = fn; };
     on('den-x', closeDen); on('den-rename', actRename);
-    on('den-pet-btn', actPet); on('den-feed', actFeed); on('den-play', actPlay);
+    on('den-pet-btn', actPet); on('den-feed', actFeed); on('den-play', actPlay); on('den-walk', actWalk);
     on('den-share', shareCard); on('den-calm', actCalm); on('den-sound', actSound);
     var pet = q('den-pet'); if (pet) pet.onclick = actPet;
     Array.prototype.forEach.call(denEl.querySelectorAll('[data-pick]'), function (c) { c.onclick = function () { actPick(c.getAttribute('data-pick')); }; });
@@ -422,6 +503,22 @@
     PETS: PETS, renderCard: renderCard, openDen: openDen, closeDen: closeDen,
     petEmoji: function () { return petEmojiFor(load()); },
     mood: function () { return mood(load()); },
+    /* Naming, exported 2026-07-28 so there is ONE owner of it.
+       The Identity Forge had its own copy of this logic reading `pjcc.pet.v2` — the
+       PREVIOUS save format. The Den has been on `pjcc.pet.v3` since the 2026-07-12
+       rebuild, so a name typed into the Forge's "Companion name" field was written to a
+       store nothing reads: it looked saved, and the Den never showed it. It also meant
+       the Forge thought your active pet was `dog-1` (a v2 key) no matter what you'd
+       actually chosen. Both sides call through here now. */
+    activeKey:   function () { return load().pet; },
+    displayName: function () { return displayName(load()); },
+    unnamed:     function () { return unnamed(load()); },
+    setName:     function (nm) {
+      var s = load();
+      nm = String(nm == null ? '' : nm).trim().slice(0, 16);
+      if (nm) s.names[s.pet] = nm; else delete s.names[s.pet];
+      save(s); refresh();
+    },
     // games can call this to make the companion celebrate a fresh best (#11)
     cheer: function () { var s = load(); s.lastAny = Date.now(); save(s); if (denEl && !denEl.classList.contains('hidden')) { fxBurst('🎉'); } refresh(); }
   };

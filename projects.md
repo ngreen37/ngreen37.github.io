@@ -83,7 +83,11 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
      thank-yous (2026-07-17 Nate: "move the counters to the bottom, just above the Thank
      Yous") — the markup + its tick script live down there; these styles stay here. {% endcomment %}
 <style>
-.pj-clocks { display: grid; grid-template-columns: 1fr 1fr; margin: var(--space-4) 0 var(--space-5);
+/* ONE cell now, not two — the Episode 1 countdown was removed 2026-07-28 (see the block
+   comment down at the markup). The ribbon keeps its full width because it reads as a
+   rule across the page; the receipts row underneath is what fills the space the second
+   clock used to take. */
+.pj-clocks { display: grid; grid-template-columns: 1fr; margin: var(--space-4) 0 var(--space-3);
   background: #131218; border: 1px solid #2a2830; border-radius: var(--r-sm); overflow: hidden; }
   /* adoption: margin 16→--space-4 (exact) / 22→24 (--space-5, 2px rhythm snap); border-radius 10px = --r-sm exact (a small panel — could move to --r-md per the Surface Kit, but --r-sm keeps the current look) */
 .pj-clock { display: grid; grid-template-columns: auto auto 1fr; align-items: baseline;
@@ -106,36 +110,128 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
   .pj-clock + .pj-clock { border-left: none; border-top: 1px solid #2a2830; }
 }
 @media (prefers-reduced-motion: reduce){ .pj-clock-dot { animation: none; } }
+
+/* ── the flagship's render ──────────────────────────────────────────────────────
+   Side by side on desktop, stacked on a phone. The image is deliberately given a
+   frame and a caption rather than being bled to the card edge: it is a Blender
+   VIEWPORT GRAB (grey background, grid, 3D cursor), and a viewport grab presented as
+   finished art looks like a mistake, while the same grab presented as a work in
+   progress looks like proof. `aspect-ratio` + explicit width/height keep the card
+   from jumping when it loads. */
+.pj-flag-grid { display: grid; grid-template-columns: 260px 1fr; gap: var(--space-4) 22px;
+  align-items: center; }
+.pj-shot { margin: 0; }
+.pj-shot img { display: block; width: 100%; height: auto; aspect-ratio: 699 / 486;
+  border: 1px solid #2a2830; border-radius: var(--r-sm); background: #3b3b3b; }
+.pj-shot figcaption { margin-top: 7px; font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 0.06em; color: #8a8592; line-height: 1.5; }
+.pj-flag-body { min-width: 0; }
+@media (max-width: 620px) { .pj-flag-grid { grid-template-columns: 1fr; } }
+
+/* ── "Also on the board" — the four not-started things, at the weight they deserve ── */
+.pj-also { margin: var(--space-5) 0 var(--space-4); }
+.pj-also-h { font-family: 'Share Tech Mono', monospace; font-size: 10px;
+  letter-spacing: 0.18em; text-transform: uppercase; color: #8a8592;
+  margin: 0 0 var(--space-3); font-weight: 600; }
+.pj-also-list { list-style: none; margin: 0; padding: 0; display: grid;
+  grid-template-columns: 1fr 1fr; gap: 2px var(--space-4); }
+.pj-also-list li { display: flex; align-items: baseline; gap: 10px;
+  padding: 9px 0; border-top: 1px solid #23212a; font-size: 0.84rem;
+  color: #8a8592; line-height: 1.5; }
+.pj-also-list b { color: #4b4753; font-size: 0.95rem; flex: none; }
+.pj-also-list strong { color: #c9c4d0; font-weight: 600; }
+@media (max-width: 620px) { .pj-also-list { grid-template-columns: 1fr; } }
+
+/* ── receipts — numbers that only go up ───────────────────────────────────────── */
+.pj-receipts { margin: 0 0 var(--space-5); }
+.pj-receipts-h { font-family: 'Share Tech Mono', monospace; font-size: 10px;
+  letter-spacing: 0.18em; text-transform: uppercase; color: #8a8592;
+  margin: 0 0 var(--space-3); font-weight: 600; }
+.pj-receipts-list { list-style: none; margin: 0; padding: 0; display: flex;
+  flex-wrap: wrap; gap: var(--space-3) 0; }
+.pj-receipts-list li { flex: 1 1 128px; padding: 0 var(--space-4);
+  border-left: 1px solid #2a2830; }
+.pj-receipts-list li:first-child { border-left: none; padding-left: 0; }
+.pj-receipts-list b { display: block; font-family: 'Poppins', sans-serif;
+  font-size: 1.45rem; font-weight: 800; line-height: 1.1; color: #caa24a; }
+.pj-receipts-list span { display: block; margin-top: 3px;
+  font-family: 'Share Tech Mono', monospace; font-size: 10.5px; color: #8a8592;
+  line-height: 1.45; }
+@media (max-width: 620px) {
+  .pj-receipts-list li { flex: 1 1 40%; border-left: none; padding: 0 var(--space-2); }
+  .pj-receipts-list li:first-child { padding-left: var(--space-2); }
+}
+
+/* ── the ask ──────────────────────────────────────────────────────────────────── */
+/* full width, NOT the 640px centred column the thank-yous use. The thanks are a quiet
+   credit roll and want to be narrow; the ask is the one thing on this page we want a
+   stranger to act on, and a block that starts a third of the way across the page reads
+   as a footnote. It lines up with the project cards instead. */
+.pj-ask { margin: 3.2rem 0 var(--space-4); padding: var(--space-5) 0 0;
+  border-top: 1px solid #2a2830; }
+.pj-ask-h { font-family: 'Poppins', sans-serif; font-size: 1.05rem; font-weight: 700;
+  color: #f2efe8; margin: 0 0 var(--space-2); }
+.pj-ask-lede { color: #8a8592; font-size: 0.86rem; line-height: 1.7; margin: 0 0 var(--space-4); }
+.pj-ask-list { list-style: none; margin: 0 0 var(--space-4); padding: 0; }
+.pj-ask-list li { position: relative; padding: 0 0 var(--space-4) 22px;
+  color: #8a8592; font-size: 0.86rem; line-height: 1.75; }
+.pj-ask-list li::before { content: '♟'; position: absolute; left: 0; top: 0;
+  color: #caa24a; font-size: 0.9rem; }
+.pj-ask-list strong { display: block; color: #f2efe8; font-weight: 600; }
+.pj-ask-do { color: #e8e3da; font-size: 0.9rem; line-height: 1.75; margin: 0 0 var(--space-3); }
+.pj-ask-else { color: #8a8592; font-size: 0.82rem; line-height: 1.7; margin: 0; }
+.pj-ask a { color: #caa24a; text-decoration: underline; text-underline-offset: 3px; }
+.pj-ask a:hover { color: #e0bd66; }
 </style>
+{% comment %} ── REBUILT 2026-07-28, from the deep-dive skeptic pass ──────────────────
+     Two findings drove this, and both were about what a stranger CONCLUDES:
+
+     1. "FOUR OF SIX CARDS SAY NEXT UP." Six equal cards, four of them not started, so
+        the page's dominant visual message was *four things haven't started* — on the
+        page whose whole job is to say the studio is real. The two things actually being
+        BUILT now own the page; the four that aren't share one quiet row underneath.
+        (Nate picked this as idea #5 of ten.)
+
+     2. "THERE IS NOT ONE IMAGE ON THIS PAGE." An animation studio's public face had
+        zero art — not a render, not a frame. Chess glyphs are typography, not art. The
+        flagship card now carries the actual Blender render of Princess. It is a
+        VIEWPORT GRAB, grey background and all, and it is captioned as one on purpose:
+        an honest work-in-progress reads as a receipt, a fake-polished one reads as a
+        stock image. (A transparent-film render would let this float free of its box —
+        that's an action item in FUTURE-IDEAS.)
+     ─────────────────────────────────────────────────────────────────────── {% endcomment %}
 <div class="projects-list">
 
-  <div class="project-card project-card-active">
+  <div class="project-card project-card-active pj-flagship">
     <div class="project-card-corner-piece" aria-hidden="true">♛</div>
-    <div class="project-card-header">
-      <span class="project-status project-status-active">
-        <span class="project-status-dot"></span>
-        Building
-      </span>
-      <h2 class="project-title">Princess and the Journey to Chess City</h2>
+    <div class="pj-flag-grid">
+      <figure class="pj-shot">
+        <img src="{{ '/assets/images/Princess_Color_v01.jpg' | relative_url }}"
+             alt="An early Blender render of Princess: a small black-and-tan dog, modeled in low
+                  polygons, standing in the grey Blender viewport."
+             width="699" height="486" loading="lazy" decoding="async">
+        <figcaption>Princess &middot; first color pass, April 2026 &middot; straight out of Blender</figcaption>
+      </figure>
+      <div class="pj-flag-body">
+        <div class="project-card-header">
+          <span class="project-status project-status-active">
+            <span class="project-status-dot"></span>
+            Building
+          </span>
+          <h2 class="project-title">Princess and the Journey to Chess City</h2>
+        </div>
+        {% comment %} Idea #4 of ten, in Nate's own words (2026-07-28). The old line was
+             "The flagship project. An animated series." — which describes its POSITION in
+             the studio, not the story. This one tells you what it's about in nine words,
+             and "a dog who can learn anything" is the actual hook of the whole universe. {% endcomment %}
+        <p class="project-desc">An animated series about a dog who can learn anything.</p>
+        <div class="project-links">
+          {% comment %} was href="/" — which is the typing intro now, and bounced anyone who
+               clicked it straight back out through a redirect. Goes to the world itself. {% endcomment %}
+          <a href="/pjcc/" class="project-link">Enter PJCC &rarr;</a>
+        </div>
+      </div>
     </div>
-    <p class="project-desc">The flagship project. An animated series.</p>
-    {% comment %} The "Format: Animated series" detail list was removed 2026-07-13 (Nate) —
-         it said the same thing as the description, in a heavier way, so the description says
-         it now. The "Blog" link went 2026-07-12: the Build Log already has a chip in the
-         studio hub above AND a slot in the McPuppy nav, and a third door hanging off the
-         flagship made the flagship look like it was mainly a blog. {% endcomment %}
-    <div class="project-links">
-      <a href="/" class="project-link">Enter PJCC &rarr;</a>
-    </div>
-  </div>
-
-  <div class="project-card project-card-soon">
-    <div class="project-card-corner-piece" aria-hidden="true">♞</div>
-    <div class="project-card-header">
-      <span class="project-status project-status-soon">Next up</span>
-      <h2 class="project-title">Blender Animations</h2>
-    </div>
-    <p class="project-desc">See the universe grow!</p>
   </div>
 
   <div class="project-card project-card-active">
@@ -147,45 +243,33 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
       </span>
       <h2 class="project-title">PJCC Chess Academy</h2>
     </div>
-    <p class="project-desc">An All-Ages online Chess Academy, set in the PJCC universe! Contact me for more.</p>
+    <p class="project-desc">An All-Ages online Chess Academy, set in the PJCC universe. Free, and open now.</p>
     <div class="project-links">
       <a href="/academy/" class="project-link">Visit the Academy &rarr;</a>
-      <a href="/contact/" class="project-link">Contact &rarr;</a>
     </div>
-  </div>
-
-  <div class="project-card project-card-soon">
-    <div class="project-card-corner-piece" aria-hidden="true">♝</div>
-    <div class="project-card-header">
-      <span class="project-status project-status-soon">Next up</span>
-      <h2 class="project-title">McPuppy</h2>
-    </div>
-    <p class="project-desc">The McPuppy Studios podcast &mdash; studio updates and whatever else comes up. Winter 2026.</p>
-  </div>
-
-  <div class="project-card project-card-soon">
-    <div class="project-card-corner-piece" aria-hidden="true">♜</div>
-    <div class="project-card-header">
-      <span class="project-status project-status-soon">Next up</span>
-      <h2 class="project-title">Code &amp; Tools</h2>
-    </div>
-    <p class="project-desc">Select projects others may find useful to be posted here.</p>
-  </div>
-
-
-  <div class="project-card project-card-soon">
-    <div class="project-card-corner-piece" aria-hidden="true">♛</div>
-    <div class="project-card-header">
-      <span class="project-status project-status-soon">Next up</span>
-      <h2 class="project-title">Merch</h2>
-    </div>
-    <p class="project-desc">Goal cards and stationery. The designs come first.</p>
-    {% comment %} The "Take a look →" link out to /goods/ was removed 2026-07-12 (Nate).
-         The PAGE is deliberately kept and still builds — he wants it later; it just isn't
-         linked from anywhere for now. Restore this one line to re-list it. {% endcomment %}
   </div>
 
 </div>
+
+{% comment %} The four that haven't started, in one quiet row instead of four full cards.
+     Same information, a quarter of the visual weight — which is the correct weight for
+     "not started yet" on a page about what IS being made. The two placeholder
+     descriptions went with the demotion: "See the universe grow!" carried no information
+     on the card a partner most wants information about, and "Select projects others may
+     find useful to be posted here" was passive-voice placeholder English on a page about
+     ambition (idea #10; these two were the only lines on the page that sounded
+     unfinished, sitting next to four cards already saying NEXT UP). {% endcomment %}
+<section class="pj-also" aria-labelledby="pj-also-h">
+  <h2 class="pj-also-h" id="pj-also-h">Also on the board</h2>
+  <ul class="pj-also-list">
+    <li><b aria-hidden="true">♞</b><span><strong>Blender Animations</strong> — the first rendered scenes from the series.</span></li>
+    <li><b aria-hidden="true">♝</b><span><strong>McPuppy</strong> — the studio podcast. Winter 2026.</span></li>
+    <li><b aria-hidden="true">♜</b><span><strong>Code &amp; Tools</strong> — the pieces of this site worth handing to someone else.</span></li>
+    {% comment %} The Merch "Take a look →" link out to /goods/ was removed 2026-07-12 (Nate).
+         The PAGE is deliberately kept and still builds; it just isn't linked. {% endcomment %}
+    <li><b aria-hidden="true">♛</b><span><strong>Merch</strong> — goal cards and stationery. The designs come first.</span></li>
+  </ul>
+</section>
 
 {% comment %} ── SPECIAL THANKS ─────────────────────────────────────
      Out-of-the-way, near the foot of the studio page, but given real weight.
@@ -202,6 +286,44 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
      counters to the bottom, just above the Thank Yous"). The markup + tick script ride
      together here so the script still finds its elements at parse time; the styles live
      up top with the master-links block. {% endcomment %}
+{% comment %} ── THE EPISODE 1 COUNTDOWN IS GONE, AND RECEIPTS TOOK ITS PLACE ─────────
+     2026-07-28, Nate: "Remove the episode 1 countdown completely. Put receipts in that
+     can stay updated as we go, automatically."
+
+     The countdown was a trap and the skeptic pass named it: "149 days · since 1 Mar 2026"
+     next to "450 days out · 21 Oct 2027" showed a stranger a SELF-IMPOSED DEADLINE
+     fifteen months away with nothing counted in between. Every day it ticked, it said
+     the same thing — *still not done* — and it aged badly by construction, because the
+     only way for the number to be flattering is to move the date.
+
+     Receipts do the opposite: they only ever go up, and every one of them is something
+     that already exists. Same clock on the left, a middle where the silence was.
+
+     AUTOMATIC IS THE WHOLE POINT — a receipt you have to remember to update is a lie
+     with a delay on it. So each number is DERIVED, never typed:
+       · posts       — `site.posts | size`, recounted by Jekyll on every build. Since a
+                       post can only appear by being pushed, and a push IS a build, this
+                       can never be stale. (The old DAY 47 ticker taught us the other
+                       half of that rule: Liquid can't count TIME, because the clock
+                       keeps moving between deploys. Time is the one thing left in JS.)
+       · characters  — the cast collection minus site.hidden_character_urls, so the
+                       slow-rolled seven stay uncounted until Nate reveals them.
+       · locations   — same, minus hidden_location_urls.
+       · games       — counted at runtime from window.PJCC_GAMES, the registry that is
+                       already the single source of truth for the hall (cat learn/arcade
+                       = playable; dev/vault/terminated are not). NEVER retype this list.
+       · puzzles     — the length of the road to Chess City, which is a design constant,
+                       so it is the one number written by hand. It is marked as a goal
+                       ("to Chess City"), not as work already done.
+     ─────────────────────────────────────────────────────────────────────── {% endcomment %}
+{%- assign vis_chars = 0 -%}
+{%- for c in site.characters -%}
+  {%- unless site.hidden_character_urls contains c.url -%}{%- assign vis_chars = vis_chars | plus: 1 -%}{%- endunless -%}
+{%- endfor -%}
+{%- assign vis_locs = 0 -%}
+{%- for l in site.locations -%}
+  {%- unless site.hidden_location_urls contains l.url -%}{%- assign vis_locs = vis_locs | plus: 1 -%}{%- endunless -%}
+{%- endfor -%}
 <div class="pj-clocks">
   <div class="pj-clock">
     <span class="pj-clock-dot" aria-hidden="true"></span>
@@ -209,27 +331,103 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
     <span class="pj-clock-n" id="pj-days">—</span>
     <span class="pj-clock-c">days · since 1 Mar 2026</span>
   </div>
-  <div class="pj-clock">
-    <span class="pj-clock-k">Episode 1</span>
-    <span class="pj-clock-n" id="pj-eta">—</span>
-    <span class="pj-clock-c">days out · 21 Oct 2027</span>
-  </div>
 </div>
+
+<section class="pj-receipts" aria-label="What exists so far">
+  <h2 class="pj-receipts-h">What exists so far</h2>
+  <ul class="pj-receipts-list">
+    <li><b>{{ site.posts | size }}</b><span>build&nbsp;log posts</span></li>
+    <li id="pj-r-games" hidden><b>—</b><span>games you can play</span></li>
+    <li><b>1,000</b><span>puzzles to Chess&nbsp;City</span></li>
+    <li><b>{{ vis_chars }}</b><span>characters written</span></li>
+    <li><b>{{ vis_locs }}</b><span>places on the map</span></li>
+  </ul>
+</section>
+
+{% comment %} The registry is loaded here and nowhere else on this page. `defer` because
+     nothing above the fold depends on it, and the row stays `hidden` until it has a real
+     number — a receipt that flashes "—" is worse than no receipt. {% endcomment %}
+<script src="{{ '/assets/js/pjcc-games-data.js' | relative_url }}" defer></script>
 <script>
 (function () {
-  var START  = 1772337600000;                        // 1 Mar 2026 00:00 EDT
-  var TARGET = Date.parse('2027-10-21T04:00:00Z');   // midnight EDT
+  var START = 1772337600000;                         // 1 Mar 2026 00:00 EDT
   var days = document.getElementById('pj-days');
-  var eta  = document.getElementById('pj-eta');
-  if (!days || !eta) return;
-  function tick() {
-    days.textContent = Math.floor(Math.max(0, Date.now() - START) / 86400000).toLocaleString();
-    eta.textContent  = Math.ceil(Math.max(0, TARGET - Date.now()) / 86400000).toLocaleString();
+  if (days) {
+    var tick = function () {
+      days.textContent = Math.floor(Math.max(0, Date.now() - START) / 86400000).toLocaleString();
+    };
+    tick();
+    setInterval(tick, 60000);
   }
-  tick();
-  setInterval(tick, 60000);
+
+  // Playable = the two live categories. Anything in dev/vault/terminated is NOT a
+  // receipt, and `noHall` games (Fork in the Road lives in the drawer, not the hall)
+  // still count — they're playable, they're just not listed on /games/.
+  function games() {
+    var reg = window.PJCC_GAMES;
+    if (!Array.isArray(reg)) return;
+    var n = 0;
+    for (var i = 0; i < reg.length; i++) {
+      if (reg[i].cat === 'learn' || reg[i].cat === 'arcade') n++;
+    }
+    var li = document.getElementById('pj-r-games');
+    if (!li || !n) return;
+    li.querySelector('b').textContent = n;
+    li.hidden = false;
+  }
+  if (document.readyState === 'complete') games();
+  else window.addEventListener('load', games);
 })();
 </script>
+
+{% comment %} ── A REASON TO EMAIL ─────────────────────────────────────────────────────
+     2026-07-28, Nate: "Let's give the skeptic business partner a reason to email."
+     This is idea #6 of ten — "one ask, at the bottom, that isn't 'contact me'."
+
+     The skeptic's verdict on the old page was the sharpest line in the whole pass:
+     *he leaves without emailing — not because he's unconvinced, but because there's no
+     reason to email.* The page had "Contact me for more." More WHAT? For a school? To
+     collaborate? To buy something? A vague ask gets no replies, because answering it
+     requires the stranger to do the work of inventing what they're offering.
+
+     So: three named openings, each one a thing a specific person can recognize
+     themselves in, and a subject line handed to them so there's nothing left to invent.
+     The promise at the end ("I answer every one") is the part that actually moves
+     someone to write — and it is a promise Nate can keep at today's volume. If the
+     inbox ever gets loud, soften that line first.
+
+     ⚠ THE WORDING OF THE THREE ASKS IS NATE'S TO CHANGE. They're written from what the
+     studio demonstrably needs right now; the moment one of them is filled, or stops
+     being true, delete the <li>. An ask that is no longer real is worse than no ask.
+     Deliberately NOT here: teaching/curriculum work. Nate: "not yet because I'm not
+     quite ready" (idea #7, now an action item in FUTURE-IDEAS). ────────────── {% endcomment %}
+<section class="pj-ask" aria-labelledby="pj-ask-h">
+  <h2 class="pj-ask-h" id="pj-ask-h">What the studio needs</h2>
+  <p class="pj-ask-lede">One person builds all of this. These are the three things that
+    would move it fastest, and any one of them is worth an email.</p>
+  <ul class="pj-ask-list">
+    <li>
+      <strong>An animator who works in Blender.</strong>
+      Princess is modeled and she has a first color pass. She needs to move.
+    </li>
+    <li>
+      <strong>Anyone who has actually shipped an animated series.</strong>
+      Thirty minutes of what you wish you'd known is worth more than you think.
+    </li>
+    <li>
+      <strong>A producer or studio who works with independent animation.</strong>
+      There is a world, a cast, and a pilot script. What there isn't is a second pair of hands.
+    </li>
+  </ul>
+  <p class="pj-ask-do">
+    If one of those is you — <a href="/contact/">say hello</a>, and put the one you are in
+    the subject line. I answer every one.
+  </p>
+  <p class="pj-ask-else">
+    Not that? The <a href="/blog/">build log</a> is where all of this gets written down as
+    it happens, week by week.
+  </p>
+</section>
 
 <section class="mcp-thanks" aria-label="Special thanks">
   <div class="mcp-thanks-rule" aria-hidden="true"></div>

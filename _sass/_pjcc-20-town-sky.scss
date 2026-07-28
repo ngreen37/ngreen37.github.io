@@ -285,10 +285,34 @@ html.sky-night .ts-shoot--3 { top: 22%; left: 92%; animation: ts-shoot-fall 67s 
    page card cover, so on a "cloudy" day you could barely find a cloud. The puffs are
    spread from 8% to 84% now, so the deck reads in the gutters and across the open sky
    below the content, which is where the sky is actually visible. */
+/* ── 2026-07-28: THE BANKS ARE DRAWN AT HALF SIZE AND SCALED x2. ────────────────
+   Measured on the live site at 1536x864 dpr1.5, these two elements were 2580x864 each
+   = **38.2MB of GPU texture, 3.36 full screens** — by a wide margin the most expensive
+   thing on mcpuppystudios.com, 2.8x the rain. That is the whole reason /pjcc/ felt slow
+   next to /projects/ (5.84 screens vs 0.77).
+
+   Same trick as the rain: rasterize a quarter of the pixels and let the compositor
+   scale the layer back up. 38.2MB -> 9.6MB, and unlike rain THIS one is visually free:
+   the banks are nothing but soft radial gradients with `transparent 66-72%` falloff, and
+   upscaling a smooth gradient 2x is imperceptible. Clouds are the ideal candidate.
+
+   Why the geometry still lands in exactly the same place:
+     · A cluster at `8%` of a 100%-wide box, scaled 2x from origin 0 0, sits at 16% of
+       the sky — identical to `8%` of the old 200%-wide box. Percentages survive.
+     · Same vertically: `24%` of a 50%-tall box, doubled, is 24% of the sky.
+     · The px RADII do not survive — scale doubles them — so every px length in both
+       banks below was halved to compensate. If you add a cloud, write it at half size.
+     · The loop still works: every cluster in [0-50%] has a twin at +50%, so sliding
+       -50% of the box lands back where it started. Visually that is one viewport in
+       190s, exactly as before.
+
+   Restore full-res: width 200% / height 100%, drop `transform-origin` and `scale(2)`
+   from the keyframes, and double all 44 px lengths below. It will cost 2.5 screens. */
 .ts-cloud-bank {
   position: absolute;
   top: 0; left: 0;
-  width: 200%; height: 100%;
+  width: 100%; height: 50%;
+  transform-origin: 0 0;
   will-change: transform;
 }
 /* #18 (2026-07-16 splash check): CAP THE BANKS ON PHONES. Each bank is a composited
@@ -298,7 +322,8 @@ html.sky-night .ts-shoot--3 { top: 22%; left: 92%; animation: ts-shoot-fall 67s 
    (the content column covers the rest), so the layer is cut to the top 62% there —
    roughly 8MB back per bank, no visible change. Desktop keeps the full deck. */
 @media (max-width: 600px) {
-  .ts-cloud-bank { height: 62%; }
+  /* the top 62% of the SKY — half of that on the half-height box (see above) */
+  .ts-cloud-bank { height: 31%; }
 }
 /* ── 2026-07-13 (Nate: "make the clouds a little more Cloud-like") ─────────────
    Each cloud used to be ONE lone ellipse, which reads as a smudge, not a cloud. A cloud
@@ -314,63 +339,72 @@ html.sky-night .ts-shoot--3 { top: 22%; left: 92%; animation: ts-shoot-fall 67s 
 .ts-cloud-bank--near {
   background:
     /* cloud A @ 8% 24%  (base + 3 domes) — twin at 58% */
-    radial-gradient(120px 26px at 8%  24%, rgba(255,255,255,0.48), transparent 70%),
-    radial-gradient(46px  34px at 6.5% 21.8%, rgba(255,255,255,0.44), transparent 66%),
-    radial-gradient(60px  46px at 8.2% 21%, rgba(255,255,255,0.50), transparent 66%),
-    radial-gradient(40px  28px at 10%  22.2%, rgba(255,255,255,0.40), transparent 66%),
-    radial-gradient(120px 26px at 58% 24%, rgba(255,255,255,0.48), transparent 70%),
-    radial-gradient(46px  34px at 56.5% 21.8%, rgba(255,255,255,0.44), transparent 66%),
-    radial-gradient(60px  46px at 58.2% 21%, rgba(255,255,255,0.50), transparent 66%),
-    radial-gradient(40px  28px at 60%  22.2%, rgba(255,255,255,0.40), transparent 66%),
+    radial-gradient(60px 13px at 8%  24%, rgba(255,255,255,0.48), transparent 70%),
+    radial-gradient(23px  17px at 6.5% 21.8%, rgba(255,255,255,0.44), transparent 66%),
+    radial-gradient(30px  23px at 8.2% 21%, rgba(255,255,255,0.50), transparent 66%),
+    radial-gradient(20px  14px at 10%  22.2%, rgba(255,255,255,0.40), transparent 66%),
+    radial-gradient(60px 13px at 58% 24%, rgba(255,255,255,0.48), transparent 70%),
+    radial-gradient(23px  17px at 56.5% 21.8%, rgba(255,255,255,0.44), transparent 66%),
+    radial-gradient(30px  23px at 58.2% 21%, rgba(255,255,255,0.50), transparent 66%),
+    radial-gradient(20px  14px at 60%  22.2%, rgba(255,255,255,0.40), transparent 66%),
     /* cloud B @ 21% 60% — bigger, lower — twin at 71% */
-    radial-gradient(160px 32px at 21% 60%, rgba(255,255,255,0.46), transparent 70%),
-    radial-gradient(64px  48px at 19.5% 57.4%, rgba(255,255,255,0.48), transparent 66%),
-    radial-gradient(80px  60px at 22%  56.6%, rgba(255,255,255,0.52), transparent 66%),
-    radial-gradient(52px  36px at 24.2% 57.8%, rgba(255,255,255,0.42), transparent 66%),
-    radial-gradient(160px 32px at 71% 60%, rgba(255,255,255,0.46), transparent 70%),
-    radial-gradient(64px  48px at 69.5% 57.4%, rgba(255,255,255,0.48), transparent 66%),
-    radial-gradient(80px  60px at 72%  56.6%, rgba(255,255,255,0.52), transparent 66%),
-    radial-gradient(52px  36px at 74.2% 57.8%, rgba(255,255,255,0.42), transparent 66%),
+    radial-gradient(80px 16px at 21% 60%, rgba(255,255,255,0.46), transparent 70%),
+    radial-gradient(32px  24px at 19.5% 57.4%, rgba(255,255,255,0.48), transparent 66%),
+    radial-gradient(40px  30px at 22%  56.6%, rgba(255,255,255,0.52), transparent 66%),
+    radial-gradient(26px  18px at 24.2% 57.8%, rgba(255,255,255,0.42), transparent 66%),
+    radial-gradient(80px 16px at 71% 60%, rgba(255,255,255,0.46), transparent 70%),
+    radial-gradient(32px  24px at 69.5% 57.4%, rgba(255,255,255,0.48), transparent 66%),
+    radial-gradient(40px  30px at 72%  56.6%, rgba(255,255,255,0.52), transparent 66%),
+    radial-gradient(26px  18px at 74.2% 57.8%, rgba(255,255,255,0.42), transparent 66%),
     /* cloud C @ 34% 38% — small and high — twin at 84% */
-    radial-gradient(95px  22px at 34% 38%, rgba(255,255,255,0.40), transparent 70%),
-    radial-gradient(42px  30px at 32.8% 35.8%, rgba(255,255,255,0.40), transparent 66%),
-    radial-gradient(52px  38px at 34.4% 35.2%, rgba(255,255,255,0.44), transparent 66%),
-    radial-gradient(95px  22px at 84% 38%, rgba(255,255,255,0.40), transparent 70%),
-    radial-gradient(42px  30px at 82.8% 35.8%, rgba(255,255,255,0.40), transparent 66%),
-    radial-gradient(52px  38px at 84.4% 35.2%, rgba(255,255,255,0.44), transparent 66%),
+    radial-gradient(47.5px  11px at 34% 38%, rgba(255,255,255,0.40), transparent 70%),
+    radial-gradient(21px  15px at 32.8% 35.8%, rgba(255,255,255,0.40), transparent 66%),
+    radial-gradient(26px  19px at 34.4% 35.2%, rgba(255,255,255,0.44), transparent 66%),
+    radial-gradient(47.5px  11px at 84% 38%, rgba(255,255,255,0.40), transparent 70%),
+    radial-gradient(21px  15px at 82.8% 35.8%, rgba(255,255,255,0.40), transparent 66%),
+    radial-gradient(26px  19px at 84.4% 35.2%, rgba(255,255,255,0.44), transparent 66%),
     /* cloud D @ 45% 79% — low roller — twin at 95% */
-    radial-gradient(150px 30px at 45% 79%, rgba(255,255,255,0.44), transparent 70%),
-    radial-gradient(58px  42px at 43.4% 76.4%, rgba(255,255,255,0.46), transparent 66%),
-    radial-gradient(72px  54px at 45.8% 75.6%, rgba(255,255,255,0.48), transparent 66%),
-    radial-gradient(46px  32px at 47.8% 77%, rgba(255,255,255,0.38), transparent 66%),
-    radial-gradient(150px 30px at 95% 79%, rgba(255,255,255,0.44), transparent 70%),
-    radial-gradient(58px  42px at 93.4% 76.4%, rgba(255,255,255,0.46), transparent 66%),
-    radial-gradient(72px  54px at 95.8% 75.6%, rgba(255,255,255,0.48), transparent 66%),
-    radial-gradient(46px  32px at 97.8% 77%, rgba(255,255,255,0.38), transparent 66%);
+    radial-gradient(75px 15px at 45% 79%, rgba(255,255,255,0.44), transparent 70%),
+    radial-gradient(29px  21px at 43.4% 76.4%, rgba(255,255,255,0.46), transparent 66%),
+    radial-gradient(36px  27px at 45.8% 75.6%, rgba(255,255,255,0.48), transparent 66%),
+    radial-gradient(23px  16px at 47.8% 77%, rgba(255,255,255,0.38), transparent 66%),
+    radial-gradient(75px 15px at 95% 79%, rgba(255,255,255,0.44), transparent 70%),
+    radial-gradient(29px  21px at 93.4% 76.4%, rgba(255,255,255,0.46), transparent 66%),
+    radial-gradient(36px  27px at 95.8% 75.6%, rgba(255,255,255,0.48), transparent 66%),
+    radial-gradient(23px  16px at 97.8% 77%, rgba(255,255,255,0.38), transparent 66%);
   animation: ts-drift-near 190s linear infinite;
 }
 .ts-cloud-bank--far {
   opacity: 0.6;
   background:
     /* far clouds: longer, flatter, one soft dome — haze with a hint of shape */
-    radial-gradient(180px 26px at 11% 46%, rgba(255,255,255,0.30), transparent 72%),
-    radial-gradient(76px  40px at 12%  43.6%, rgba(255,255,255,0.30), transparent 66%),
-    radial-gradient(180px 26px at 61% 46%, rgba(255,255,255,0.30), transparent 72%),
-    radial-gradient(76px  40px at 62%  43.6%, rgba(255,255,255,0.30), transparent 66%),
-    radial-gradient(150px 24px at 27% 86%, rgba(255,255,255,0.26), transparent 72%),
-    radial-gradient(62px  34px at 28%  83.6%, rgba(255,255,255,0.26), transparent 66%),
-    radial-gradient(150px 24px at 77% 86%, rgba(255,255,255,0.26), transparent 72%),
-    radial-gradient(62px  34px at 78%  83.6%, rgba(255,255,255,0.26), transparent 66%),
-    radial-gradient(200px 30px at 42% 22%, rgba(255,255,255,0.28), transparent 72%),
-    radial-gradient(84px  44px at 43.5% 19.4%, rgba(255,255,255,0.28), transparent 66%),
-    radial-gradient(200px 30px at 92% 22%, rgba(255,255,255,0.28), transparent 72%),
-    radial-gradient(84px  44px at 93.5% 19.4%, rgba(255,255,255,0.28), transparent 66%);
+    radial-gradient(90px 13px at 11% 46%, rgba(255,255,255,0.30), transparent 72%),
+    radial-gradient(38px  20px at 12%  43.6%, rgba(255,255,255,0.30), transparent 66%),
+    radial-gradient(90px 13px at 61% 46%, rgba(255,255,255,0.30), transparent 72%),
+    radial-gradient(38px  20px at 62%  43.6%, rgba(255,255,255,0.30), transparent 66%),
+    radial-gradient(75px 12px at 27% 86%, rgba(255,255,255,0.26), transparent 72%),
+    radial-gradient(31px  17px at 28%  83.6%, rgba(255,255,255,0.26), transparent 66%),
+    radial-gradient(75px 12px at 77% 86%, rgba(255,255,255,0.26), transparent 72%),
+    radial-gradient(31px  17px at 78%  83.6%, rgba(255,255,255,0.26), transparent 66%),
+    radial-gradient(100px 15px at 42% 22%, rgba(255,255,255,0.28), transparent 72%),
+    radial-gradient(42px  22px at 43.5% 19.4%, rgba(255,255,255,0.28), transparent 66%),
+    radial-gradient(100px 15px at 92% 22%, rgba(255,255,255,0.28), transparent 72%),
+    radial-gradient(42px  22px at 93.5% 19.4%, rgba(255,255,255,0.28), transparent 66%);
   animation: ts-drift-far 320s linear infinite;
 }
 /* each bank is 200% wide and every cluster in [0–50%] has an exact twin at +50%, so
    sliding -50% lands it back where it started — a seamless loop with one keyframe. */
-@keyframes ts-drift-near { to { transform: translate3d(-50%, 0, 0); } }
-@keyframes ts-drift-far  { to { transform: translate3d(-50%, 0, 0); } }
+/* scale(2) is in BOTH keyframes, not on the element: an `animation` that sets
+   `transform` replaces the element's own transform outright, so a `transform: scale(2)`
+   on .ts-cloud-bank would be silently thrown away the moment the drift started. */
+@keyframes ts-drift-near {
+  from { transform: scale(2) translate3d(0, 0, 0); }
+  to   { transform: scale(2) translate3d(-50%, 0, 0); }
+}
+@keyframes ts-drift-far {
+  from { transform: scale(2) translate3d(0, 0, 0); }
+  to   { transform: scale(2) translate3d(-50%, 0, 0); }
+}
 
 /* ── the shape clouds (2026-07-13 Nate: rare clouds that VAGUELY look like a rook /
    a dog — "like when you are with a friend pointing at clouds"). Same puff grammar
@@ -594,9 +628,14 @@ html.reduce-flourish .ts-cloud-bank,
 html.reduce-flourish .ts-cloud-shape,
 html.reduce-flourish .ts-star--tw,
 html.reduce-flourish .ts-orb::before { animation: none !important; }
+/* the banks live at half size and are blown up BY the keyframes (see .ts-cloud-bank);
+   kill the animation and they would shrink into the top-left quarter of the sky, so the
+   scale has to be restored by hand wherever the drift is switched off. */
+html.reduce-flourish .ts-cloud-bank { transform: scale(2); }
 html.reduce-flourish .ts-shoot { display: none !important; }
 @media (prefers-reduced-motion: reduce) {
   .ts-cloud-bank, .ts-cloud-shape, .ts-star--tw, .ts-orb::before { animation: none !important; }
+  .ts-cloud-bank { transform: scale(2); }   /* see the note above — half-size layer */
   .ts-shoot { display: none !important; }
 }
 
@@ -649,7 +688,14 @@ html.reduce-flourish .ts-shoot { display: none !important; }
      banner now — it used to be the one slab that blocked it (2026-07-27). The
      text-shadow below is what keeps the title readable against a bright noon. */
   background: linear-gradient(180deg, rgba(36, 26, 82, 0.72) 0%, rgba(28, 21, 64, 0.72) 100%);
-  backdrop-filter: blur(2px);
+  /* `backdrop-filter: blur(2px)` was removed 2026-07-28. It sat on a 1042x104 band on
+     EVERY PJCC page, directly over the one part of the sky that is always in motion —
+     and a backdrop-filter re-reads and re-blurs everything beneath it on every frame
+     the backdrop changes. That is the same rule already written on .site-header
+     ("never backdrop-filter the scrim"); this banner is the same kind of scrim and got
+     missed. Nothing depended on it: the text-shadow below is what keeps the title
+     readable against a bright noon, and 2px of blur behind a 0.72-alpha slab is not
+     visible anyway. */
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
 }
 /* (The banner's OWN little sun/moon — .page-title::before — was deleted 2026-07-14:

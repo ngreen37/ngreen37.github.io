@@ -144,11 +144,14 @@
       }
     });
 
-    // Show the right modifier in the trigger pill (⌘ on mac, Ctrl elsewhere).
+    // Show the right modifier in the trigger pill. The MARKUP now ships "Ctrl K" and this
+    // upgrades it to ⌘K on a Mac — the other way round from before (2026-07-28). Windows
+    // and Android are most of the audience, and they were the ones seeing a symbol from
+    // someone else's keyboard for the first frame of every page load.
     var isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');
-    if (!isMac) {
+    if (isMac) {
       var kbd = document.querySelector('.cmdk-trigger-kbd');
-      if (kbd) kbd.textContent = 'Ctrl K';
+      if (kbd) kbd.textContent = '⌘K';
     }
   })();
 

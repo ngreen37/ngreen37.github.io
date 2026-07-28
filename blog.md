@@ -42,7 +42,7 @@ body_class: theme-bw
       <div class="ep-card-stripe"></div>
       <div class="ep-card-main">
         <div class="ep-title">[DRAFT — BUILDING]</div>
-        <div class="ep-logline">Transmission incomplete. Check back soon.</div>
+        <div class="ep-logline">Still being written. Check back soon.</div>
       </div>
       <div class="ep-date">— — —</div>
       <div class="ep-card-arrow">→</div>

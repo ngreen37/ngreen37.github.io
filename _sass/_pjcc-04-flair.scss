@@ -346,13 +346,39 @@ html.reduce-flourish .tagline-main-tagline .tg-x-glyph { animation: none; visibi
   -moz-user-select: none;
 }
 
+/* ── 2026-07-28: THE RIBBON STOPPED MOVING, and it was the most expensive thing on the
+   site that nobody could see. ───────────────────────────────────────────────────────
+   Measured on the live site at 1536×864 dpr1.5: this one strip was **8.8MB of GPU
+   texture — 0.77 of a full screen — on EVERY PAGE**, /projects/ and /contact/ included.
+   It was the *entire* always-on compositor bill of the McPuppy pages: those pages read
+   as fast, and this was the only ambient layer on them.
+
+   What it bought: glyphs at `rgba(255,255,255,0.05)` — FIVE PERCENT white — crawling
+   14,263px over 206 seconds behind the footer. At 5% alpha the motion is not
+   perceivable. We were paying a full-screen compositor layer, on every page, forever,
+   for an animation that is invisible by construction.
+
+   So the ribbon keeps its job (quiet texture under the footer) and loses the layer.
+   `animation` is gone → Chrome never promotes it → 0MB. The look is unchanged.
+
+   The track markup also dropped from 12 repeats to 3 (_layouts/default.html). Twelve
+   existed so `translateX(-50%)` could loop seamlessly; with nothing translating, the
+   strip only has to be wider than the widest footer it will ever cross, and 3 repeats
+   is ~3,500px of glyphs behind a wrap that clips at the viewport.
+
+   Restore the crawl: put `animation: ribbon-scroll 206s linear infinite;` back, restore
+   the 12 repeats, and know that it costs 0.77 screens of texture on every page.
+
+   ⚠ CORRECTION 2026-07-22, kept because it still matters: the line that used to sit
+   above said the "jellybean" floaters were the town-sky CLOUD puffs. THAT WAS WRONG and
+   it stayed wrong in the repo for a week. The jellybeans were `.flair-weathering` (see
+   pjcc-flair.js). Neither this ribbon nor the clouds were ever the cause of THAT. */
 .ribbon-track {
   display: inline-block;
   white-space: nowrap;
   font-size: 42px;
   color: rgba(255, 255, 255, 0.05);
   letter-spacing: 24px;
-  animation: ribbon-scroll 206s linear infinite;
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -361,11 +387,6 @@ html.reduce-flourish .tagline-main-tagline .tg-x-glyph { animation: none; visibi
 
 body.theme-bw .ribbon-track {
   color: rgba(255, 255, 255, 0.055);
-}
-
-@keyframes ribbon-scroll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
 }
 
 /* =============================================================
@@ -706,24 +727,9 @@ body.theme-bw .about-contact-btn {
 
 
 
-/* Flair B — diagonal hatch on "coming soon" cards */
-.project-card-soon::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 72px;
-  height: 72px;
-  background: repeating-linear-gradient(
-    -45deg,
-    rgba(255, 255, 255, 0.0) 0px,
-    rgba(255, 255, 255, 0.0) 5px,
-    rgba(255, 255, 255, 0.025) 5px,
-    rgba(255, 255, 255, 0.025) 10px
-  );
-  border-radius: 0 14px 0 0;
-  pointer-events: none;
-}
+/* Flair B (the diagonal "coming soon" hatch, .project-card-soon::after) was deleted
+   2026-07-28 with the cards it decorated: /projects/ no longer has four full Next-up
+   cards, it has one quiet "Also on the board" row. Restore from git with the cards. */
 
 /* Flair C — ghost chess piece in corner (brightens on hover) */
 .project-card-corner-piece {
@@ -787,11 +793,7 @@ body.theme-bw .about-contact-btn {
   background: rgba(0, 196, 58, 0.9);
 }
 
-.project-status-soon {
-  background: rgba(245, 197, 24, 0.06);
-  color: rgba(245, 197, 24, 0.72);
-  border: 1px solid rgba(245, 197, 24, 0.22);
-}
+/* .project-status-soon (the amber NEXT UP pill) went the same way — see Flair B above. */
 
 
 /* Flair D — the pulsing dot on active/live projects.

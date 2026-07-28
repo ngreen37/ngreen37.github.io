@@ -49,6 +49,30 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**
   audio file**, and which song it is, is his.
 - [ ] **The Enforcer door (floor 7)** — "lock the rook glyph" was built as *the rook locked behind a
   barred gate with a padlock*. If he meant *pin the glyph to ♜ so it stops changing*, that's a one-liner.
+- [ ] **Put yourself on the Projects page — an image of you and Princess.** *(Projects idea #3 of ten;
+  Nate 2026-07-28: "I'll still want to be mysterious but perhaps I can add an image of us together.")*
+  The skeptic pass found the same hole from five different directions: **nowhere on Projects, Blog or
+  Contact does it say who you are.** A partner, a grandparent and a family member all want the same
+  first fact — a person — and none of them get it. Contact says "One person behind the curtain" and
+  the name *Nate* appears nowhere on it.
+  Mysterious and present are not opposites, and "you and Princess" is the exact right amount: **a real
+  dog is a face without being an exposé.** One photo, your first name, two sentences. It doesn't need
+  your last name, your town, or your job. Slot's ready — the flagship card already carries the Blender
+  render, so a second `.pj-shot` figure drops straight in beside the studio lede.
+  *Adjacent, and mine when you want it:* **re-render Princess on a transparent film** (Blender →
+  Output → Film → Transparent). The render on the page now is a viewport grab, grey background, grid
+  and 3D cursor included — captioned honestly as one, which reads as a receipt. A transparent PNG of
+  the same pose would let her float free of the box and sit in a page margin, which was your original
+  idea for her.
+- [ ] **Build a personal chess curriculum.** *(Projects idea #7 of ten, deferred by Nate on 2026-07-28:
+  "not yet because I'm not quite ready.")* The skeptic's sharpest money note: **"I also teach chess —
+  any age, in person or online" is buried at the bottom of `/contact/` with no rate, no location and
+  no way to book. It is the only line on the entire site that could earn something today, and it's a
+  footnote.** The blocker isn't the page, it's the curriculum: what you'd actually teach, in what
+  order, to a beginner and to a club player. Once that exists it becomes a real card on Projects —
+  ages, format, how to book — and the ask on `/projects/` gains a fourth line. Deliberately left OUT
+  of the "What the studio needs" block until then; an offer you're not ready to fill is worse than
+  no offer.
 
 **Queued, mine not his — carried from 2026-07-28, NOT started**
 - [ ] **ONE CANVAS FOR ALL WEATHER** *(greenlit 2026-07-28 — the real end of the lag story)*.
@@ -64,17 +88,38 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**
   `document.hidden`. **Snow is the reason this is worth doing** — Nate asked for it, and snow
   falls straight, so it never needed the rotation that made rain expensive in the first place.
   *(Shipped meanwhile: the sheets are half-resolution and scaled ×2, which quartered them.)*
-- [ ] **Companion page upgrade:** switch up the pet/feed/play sounds · add **Take for a walk**
-  (bond + energy) · **petting gives +1 energy** too · **remove the default pets' names** ·
-  **promote the Companion Den** on the Customize screen (it's too small and tucked away).
-- [ ] **Coat ≠ whole dog.** The coat color currently paints the entire animal. It must skip the
-  **eyes** and the **nose** — and both become their own pickers: **8 eye colors** (person *and*
-  pet) and a few **nose colors**.
+- [ ] **DRAW THE COMPANION (and the person) AS PARTS.** *The blocker behind the one thing from
+  2026-07-28 that could not be built.* Nate asked for **8 eye colors** and a few **nose colors**,
+  for both the person and the pet. That cannot be done as things stand, and the reason is worth
+  writing down: **a companion is a single emoji glyph.** 🐕 is one picture. There is no eye layer
+  and no nose layer to hand a color to — only pixels — so "eye color" has nothing to attach to.
+  *(The other half of that request DID ship: the coat now recolors the coat and leaves the face
+  alone, via a saturation-keyed SVG filter. See `pjcc-creator.js` → `TINTS`.)*
+  What unlocks it: the pet and the person drawn as **composable parts** — an SVG with named
+  `.coat` / `.eye` / `.nose` paths, or Blender turnarounds exported per part. Then coat, eyes,
+  nose, and anything after them are one attribute each, and the tint filter can be deleted
+  entirely because nothing needs faking. **This is the same road as the Blender work**, which is
+  the argument for doing it there rather than inventing a second art pipeline: four species ×
+  three growth stages is twelve drawings, and Princess is already modeled.
 
 **Test on a device I don't have**
 - [ ] **iOS in-app sign-in** — the PWA is built but private (`?pwa=on`). Magic links can't sign in an
   installed app; the email-CODE path (`PJCC.verifyCode`) was written for it and has never been retested
   on his phone. Blocks the PWA launch flip.
+
+**Measure it on your own machine — 60 seconds, and it settles a question I can only guess at**
+- [ ] **Feel the 200ms yourself: open `mcpuppystudios.com/chess/?ready=1`.** The front door's board
+  is playable — tap the rook, tap a8 — and that interactivity is wired up by a script, so there is a
+  gap between *the board appears* and *the board answers*. I said it should land under 200ms and that
+  you'd never notice it; that was a prediction, not a measurement, and it was made on a headless
+  browser rather than your laptop. So the page will print the real number for you: with `?ready=1`,
+  a mono line appears under the board saying **how many milliseconds after page start the board
+  became touchable**, and how long the wiring itself took. Regular visitors never see it.
+  What to look for: **the board is fully drawn before any script runs** — all 64 squares and all 8
+  pieces are static markup, so there is no blank box and no layout shift, only a brief moment where
+  it's a picture rather than a button. If the number is small and you can't feel it, the technique is
+  proven and it can be used elsewhere. If you *can* feel it, tell me and the board gets wired at
+  first touch instead of at load. Either way we stop guessing. *(Shipped 2026-07-28 in `chess.md`.)*
 
 ---
 

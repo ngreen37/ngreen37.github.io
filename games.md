@@ -12,8 +12,13 @@ permalink: /games/
 .ghub { animation:ghub-wake .5s ease both; }
 @keyframes ghub-wake { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
 
-.ghub::before { animation:ghub-twinkle 6s ease-in-out infinite; }
-@keyframes ghub-twinkle { 0%,100% { opacity:.4; } 50% { opacity:.72; } }
+/* The ember twinkle was retired 2026-07-28. It was a 6s opacity pulse on a pseudo-element
+   covering the WHOLE panel — measured live at 1042x672, that is 6.0MB of GPU texture
+   (0.53 of a full screen) held forever so a field of embers could fade between 40% and
+   72%. Half a screen of compositor memory for a slow dimmer switch. The embers are still
+   there; they now sit at the midpoint of the pulse they used to ride, and the panel holds
+   no layer at all. Restore: put the animation back and know what it costs. */
+.ghub::before { opacity:.56; }
 
 /* (.ghub-title rules deleted 2026-07-16 with the "Choose Your Hall" heading.) */
 

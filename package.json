@@ -11,6 +11,7 @@
     "test:css": "node tests/css.check.js",
     "sweep": "node tests/sweep.js",
     "perf": "node tests/perf.js",
+    "motion": "node tests/motion.js",
     "gen:icons": "node tests/gen-pwa-icons.js",
     "gen:blocklist": "node tests/gen-blocklist.js",
     "gen:splash": "node tests/gen-ios-splash.js",

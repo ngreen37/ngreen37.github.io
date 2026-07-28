@@ -99,19 +99,101 @@
   };
   var AURA_ORDER = ['gold','jade','crimson','sakura','azure','violet','amber','mono','emerald','ice','rose','lime'];
 
-  // Coat tints for the companion: a CSS filter that recolours the pet glyph.
+  /* ── COAT TINTS — the coat, and ONLY the coat ─────────────────────────────────
+     2026-07-28, Nate: "Make it so the 'Coat' of the dog doesn't just make the whole dog
+     that color, you know? It should not include eyes… nose…"
+
+     He was right, and the old way could not do anything else. Every tint was a plain CSS
+     `filter` on the glyph — `hue-rotate(95deg) saturate(1.3)` and friends — and a filter
+     has no idea what a nose is. It rotates every pixel. Pick Jade and the dog's TONGUE
+     went olive; pick Shadow (`grayscale(1)`) and the entire animal, eyes and all, turned
+     into one flat grey silhouette. That is the "whole dog becomes that color" he saw.
+
+     THE FIX: an SVG filter that keys off SATURATION. The broad flat coat of an emoji
+     animal is mid-saturation; the features that read as a face — the black nose, the
+     black pupils, the white of the eye, the red tongue, the pink mouth — are either
+     neutral (no colour to rotate) or so saturated they stand apart from the coat. So the
+     filter builds a mask from how colourful each pixel is, tints THROUGH that mask, and
+     lets the original show everywhere else.
+
+     Verified from a render, not from theory (the "pick visual values from a render"
+     rule): dog, cat, bird, turtle and the person glyphs, every tint, side by side at
+     190px. Before: the tongue, the lips and the mouth all took the coat colour. After:
+     the coat changes and the face stays a face. The slope/intercept on the mask ramp
+     (14 / -0.35) were chosen off that render — steeper and the coat starts breaking up,
+     shallower and the features get eaten.
+
+     Graceful failure matters here: if a browser can't do the filter, the glyph renders
+     UNTINTED rather than wrong, which is the harmless direction.
+
+     STILL NOT POSSIBLE, and it's the honest reason separate eye/nose colour pickers are
+     not here: a companion is a single EMOJI GLYPH. There is no eye layer and no nose
+     layer to hand a colour to — only pixels. Choosing them separately needs the pet and
+     the person DRAWN as parts (SVG or Blender). That's in FUTURE-IDEAS as an action item.
+     ──────────────────────────────────────────────────────────────────────────── */
   var TINTS = {
-    none:    { f:'',                                              sw:'#888', n:'Natural' },
-    gold:    { f:'hue-rotate(-18deg) saturate(1.5) brightness(1.06)', sw:'#F5C518', n:'Gold' },
-    rose:    { f:'hue-rotate(300deg) saturate(1.35)',            sw:'#ff8fd0', n:'Rose' },
-    azure:   { f:'hue-rotate(180deg) saturate(1.25)',            sw:'#6bbfff', n:'Azure' },
-    jade:    { f:'hue-rotate(95deg) saturate(1.3)',              sw:'#6bffb8', n:'Jade' },
-    violet:  { f:'hue-rotate(250deg) saturate(1.4)',             sw:'#b07bff', n:'Violet' },
-    crimson: { f:'hue-rotate(330deg) saturate(1.6)',             sw:'#ff6b6b', n:'Crimson' },
-    ember:   { f:'hue-rotate(-32deg) saturate(1.7) brightness(1.12)', sw:'#ff9f43', n:'Ember' },
-    shadow:  { f:'grayscale(1) brightness(.82)',                 sw:'#555',    n:'Shadow' },
-    spirit:  { f:'grayscale(.5) brightness(1.3)',                sw:'#cdbcf2', n:'Spirit' }
+    none:    { hue:0,   sat:1,    sw:'#888',    n:'Natural' },
+    gold:    { hue:-18, sat:1.5,  sw:'#F5C518', n:'Gold' },
+    rose:    { hue:300, sat:1.35, sw:'#ff8fd0', n:'Rose' },
+    azure:   { hue:180, sat:1.25, sw:'#6bbfff', n:'Azure' },
+    jade:    { hue:95,  sat:1.3,  sw:'#6bffb8', n:'Jade' },
+    violet:  { hue:250, sat:1.4,  sw:'#b07bff', n:'Violet' },
+    crimson: { hue:330, sat:1.6,  sw:'#ff6b6b', n:'Crimson' },
+    ember:   { hue:-32, sat:1.7,  sw:'#ff9f43', n:'Ember' },
+    shadow:  { grey:1,  lum:0.82, sw:'#555',    n:'Shadow' },
+    spirit:  { grey:1,  lum:1.28, sw:'#cdbcf2', n:'Spirit' }
   };
+
+  /* The <defs> are injected once, into <body>, the first time anything asks for a coat.
+     They have to live in the DOM for `filter: url(#…)` to resolve, and they're shared by
+     all three places a companion is drawn: the Den, the Dossier mood card, and the Forge
+     preview. Injecting on demand keeps a page that never shows a pet free of them. */
+  var defsIn = false;
+  function ensureCoatDefs() {
+    if (defsIn || !document.body) return;
+    defsIn = true;
+    var f = '';
+    Object.keys(TINTS).forEach(function (k) {
+      if (k === 'none') return;
+      var t = TINTS[k];
+      // 1 · the fully tinted version of everything
+      var tinted = t.grey
+        ? '<feColorMatrix type="saturate" values="0" in="SourceGraphic" result="t0"/>' +
+          '<feComponentTransfer in="t0" result="tinted">' +
+            '<feFuncR type="linear" slope="' + t.lum + '"/>' +
+            '<feFuncG type="linear" slope="' + t.lum + '"/>' +
+            '<feFuncB type="linear" slope="' + t.lum + '"/>' +
+          '</feComponentTransfer>'
+        : '<feColorMatrix type="hueRotate" values="' + t.hue + '" in="SourceGraphic" result="t0"/>' +
+          '<feColorMatrix type="saturate" values="' + t.sat + '" in="t0" result="tinted"/>';
+      // 2 · how colourful is each pixel? (source vs its own desaturated self)
+      // 3 · that difference, pushed hard, becomes the alpha of a mask
+      // 4 · paint the tint back through the mask, over the untouched original
+      f += '<filter id="pjcc-coat-' + k + '" color-interpolation-filters="sRGB">' +
+        tinted +
+        '<feColorMatrix type="saturate" values="0" in="SourceGraphic" result="grey"/>' +
+        '<feBlend mode="difference" in="SourceGraphic" in2="grey" result="chroma"/>' +
+        '<feColorMatrix in="chroma" type="matrix" result="chromaA" values="' +
+          '0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  1 1 1 0 0"/>' +
+        '<feComponentTransfer in="chromaA" result="mask">' +
+          '<feFuncA type="linear" slope="14" intercept="-0.35"/>' +
+        '</feComponentTransfer>' +
+        '<feComposite operator="in" in="tinted" in2="mask" result="coat"/>' +
+        '<feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="coat"/></feMerge>' +
+      '</filter>';
+    });
+    var host = document.createElement('div');
+    host.setAttribute('aria-hidden', 'true');
+    host.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
+    host.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"><defs>' + f + '</defs></svg>';
+    document.body.appendChild(host);
+  }
+  // the CSS value each tint resolves to. '' for Natural — no filter, no layer, no cost.
+  function coatFilter(key) {
+    if (!key || key === 'none' || !TINTS[key]) return '';
+    ensureCoatDefs();
+    return 'url(#pjcc-coat-' + key + ')';
+  }
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]; }); }
 
@@ -164,27 +246,27 @@
     if (!BASE_MAP[op.base]) op.base = 'recruit';
     if (!AURAS[op.aura]) op.aura = 'gold';
     op.glyph = baseGlyph(op.base, op.tone);
-    op.displayName = (op.name && op.name.trim()) || accountCodename() || 'Operative';
+    op.displayName = (op.name && op.name.trim()) || accountCodename() || 'Newcomer';
     return op;
   }
   function petLook() { return loadLocal().pet; }
 
   // ---- companion bridge (shares name + active pet with the Den) -----------
-  function petState() { try { return JSON.parse(localStorage.getItem('pjcc.pet.v2')) || {}; } catch (e) { return {}; } }
-  function activePetKey() { var s = petState(); return s.pet || 'dog-1'; }
+  /* The Den (pjcc-companion.js) owns the companion's save file; the Forge only borrows
+     its name and species. It used to keep its OWN copy of that logic against
+     `pjcc.pet.v2` — one save format out of date — so a name typed here was written where
+     nothing would ever read it, and the Forge believed the active pet was always
+     `dog-1`. Everything now goes through PJCCPet, which is the single owner. Each call is
+     guarded because the Forge can render on a page where the Den script isn't loaded. */
   function petDefs() { return (window.PJCCPet && PJCCPet.PETS) || {}; }
+  function activePetKey() { return (window.PJCCPet && PJCCPet.activeKey) ? PJCCPet.activeKey() : 'dog'; }
   function petBaseEmoji() { return (window.PJCCPet && PJCCPet.petEmoji) ? PJCCPet.petEmoji() : '🐕'; }
   function petName() {
-    var s = petState(), k = activePetKey(), d = petDefs();
-    return (s.names && s.names[k]) || (d[k] ? d[k].name : 'Companion');
+    if (window.PJCCPet && PJCCPet.displayName) return PJCCPet.displayName();
+    return 'Companion';
   }
-  function setPetName(nm) {
-    var s = petState(), k = activePetKey();
-    if (!s.names) s.names = {};
-    nm = String(nm || '').trim().slice(0, 16);
-    if (nm) s.names[k] = nm; else delete s.names[k];
-    try { localStorage.setItem('pjcc.pet.v2', JSON.stringify(s)); } catch (e) {}
-  }
+  function petUnnamed() { return !!(window.PJCCPet && PJCCPet.unnamed && PJCCPet.unnamed()); }
+  function setPetName(nm) { if (window.PJCCPet && PJCCPet.setName) PJCCPet.setName(nm); }
   function petPersona() { var d = petDefs(), k = activePetKey(); return d[k] ? d[k].persona : ''; }
 
   // ---- account sync (debounced) -------------------------------------------
@@ -239,7 +321,7 @@
     if (!el) return;
     if (mounts.indexOf(el) === -1) mounts.push(el);
     var look = identity(), pl = petLook();
-    var tint = TINTS[pl.tint] || TINTS.none;
+    var coat = coatFilter(pl.tint);
     el.innerHTML =
       '<div class="idn-card">' +
         '<div class="idn-av" id="' + uid(el) + '"></div>' +
@@ -247,7 +329,7 @@
           '<div class="idn-name">' + esc(look.displayName) + '</div>' +
           (look.bio ? '<div class="idn-bio">“' + esc(look.bio) + '”</div>' : '') +
           '<div class="idn-account" data-account></div>' +
-          '<div class="idn-pet-chip"><span class="ipc-em" style="filter:' + tint.f + '">' + petBaseEmoji() + '</span> ' + esc(petName()) +
+          '<div class="idn-pet-chip"><span class="ipc-em" style="filter:' + coat + '">' + petBaseEmoji() + '</span> ' + esc(petName()) +
             '<button class="idn-edit-btn ghost" data-open="companion" style="padding:2px 9px;font-size:.7rem;margin-left:4px">tweak</button></div>' +
         '</div>' +
         '<div class="idn-actions">' +
@@ -305,14 +387,14 @@
     if (tab === 'operative') {
       html += '<div class="idn-av spin" id="forge-prev"></div>';
     } else {
-      var tint = TINTS[pl.tint] || TINTS.none;
+      var coat = coatFilter(pl.tint);
       html += '<div class="idn-av spin" id="forge-prev" style="--aura:' + auraColor(pl.aura === 'none' ? 'violet' : pl.aura) + '">' +
-        '<span class="idn-glyph" style="filter:' + tint.f + '">' + petBaseEmoji() + '</span></div>';
+        '<span class="idn-glyph" style="filter:' + coat + '">' + petBaseEmoji() + '</span></div>';
     }
     html += '</div>';
     if (tab === 'operative') {
       html += '<div class="fp-name">' + esc(look.displayName) + '</div>' +
-              '<div class="fp-role">' + esc(look.role || 'Operative of Checker Town') + '</div>';
+              '<div class="fp-role">' + esc(look.role || 'Citizen of Checker Town') + '</div>';
     } else {
       html += '<div class="fp-name">' + esc(petName()) + '</div>' +
               '<div class="fp-role">' + esc(petPersona()) + '</div>';
@@ -321,7 +403,13 @@
 
     // tabs
     html += '<div class="forge-tabs">' +
-      '<button class="forge-tab ' + (tab === 'operative' ? 'on' : '') + '" data-tab="operative"><span class="ft-em">✦</span>Operative</button>' +
+      /* The tab said "Operative" until 2026-07-28. Nate: "we don't need the spy theme" —
+         and to a first-time visitor, "Operative" is a word that has to be decoded before
+         they can tell it means THEM. "Character" needs no decoding and pairs with
+         "Companion" next to it. The data-tab key stays `operative` on purpose: it is an
+         internal identifier wired into open(), the Dossier's Customize button and the
+         saved look, and renaming it would be a migration for no gain. */
+      '<button class="forge-tab ' + (tab === 'operative' ? 'on' : '') + '" data-tab="operative"><span class="ft-em">✦</span>Character</button>' +
       '<button class="forge-tab ' + (tab === 'companion' ? 'on' : '') + '" data-tab="companion"><span class="ft-em">🐾</span>Companion</button>' +
       '</div>';
 
@@ -332,8 +420,13 @@
     html += '<div class="forge-foot">' +
       '<button class="forge-save" id="forge-done">Done</button>' +
       '<button class="forge-rand" id="forge-rand">🎲 Surprise me</button>';
-    if (tab === 'companion') html += '<button class="forge-den-link" id="forge-den">Open the Companion Den →</button>';
-    else if (window.PJCC && PJCC.currentUser && PJCC.currentUser()) html += '<span class="forge-synced">✓ synced to your account</span>';
+    // The Companion tab's footer used to carry "Open the Companion Den →" here, as a
+    // small underlined word. Removed 2026-07-28: the Den is a full panel at the TOP of
+    // that tab now (.forge-den), and two doors to the same room — one of them tiny — is
+    // exactly the "too small and tucked away" problem we just fixed. Dropping it also
+    // means BOTH tabs now show the sign-in state in the footer, which the Companion tab
+    // never did. (`#forge-den` stays wired in wireForge() if it's ever restored.)
+    if (window.PJCC && PJCC.currentUser && PJCC.currentUser()) html += '<span class="forge-synced">✓ synced to your account</span>';
     else html += '<span class="forge-den-link" id="forge-go-dossier" style="margin-left:auto">Saved on this device · sign in to sync</span>';
     html += '</div>';
 
@@ -383,18 +476,42 @@
     h += '<div class="forge-section"><h3>Title &amp; story <small>— change it any time</small></h3><div class="forge-fields">' +
       field('op-role', 'Role / title', 'text', 40, look.role, 'e.g. Foreman of the Sand Mines') +
       '<button type="button" class="forge-title-rand" id="op-role-rand">🎲 Give me a title</button>' +
-      field('op-bio',  'Bio', 'textarea', 120, look.bio, 'One line about your operative…') +
+      field('op-bio',  'Bio', 'textarea', 120, look.bio, 'One line about your character…') +
       '</div></div>';
     return h;
   }
 
   function companionPanel(pl) {
-    var tint = TINTS[pl.tint] || TINTS.none;
-    var h = '<p class="forge-section" style="color:#b9a8e6;font-size:.8rem;margin-top:4px">' +
-      'Style your active companion — <b style="color:#f0e6ff">' + esc(petName()) + '</b>. ' +
-      'Adopt new friends, feed, and train them in the Den.</p>';
+    var coat = coatFilter(pl.tint);
+    /* 2026-07-28, Nate: "The companion den is too small and tucked away. Let's promote
+       that a bit more on the Companion Customize screen."
+
+       It was a sentence — "…feed, and train them in the Den" — with the actual door to
+       the Den hidden in the toolbar at the very bottom of the panel, under the same
+       styling as Randomize and Done. So the screen that makes you care about your
+       companion pointed at the place you take care of them in its smallest available
+       voice. It leads now: a real panel at the TOP with the pet's own face on it, what
+       the Den is for in plain words, and one wide button.
+
+       The unnamed case is handled here rather than nagging elsewhere: if the player has
+       never named them (the defaults were removed the same day), the panel says so and
+       the name field is right below. Asking once, in the room where you're already
+       styling them, is an invitation; asking anywhere else would be a chore. */
+    var h = '<div class="forge-den">' +
+      '<div class="forge-den-face"><span style="filter:' + coat + '">' + petBaseEmoji() + '</span></div>' +
+      '<div class="forge-den-body">' +
+        '<b>The Companion Den</b>' +
+        '<span>Feed them, walk them, play, and watch the Bond grow. Cosmetics unlock as it does.</span>' +
+      '</div>' +
+      '<button class="forge-den-go" id="forge-den-big">Open the Den →</button>' +
+      '</div>';
+    h += '<p class="forge-section" style="color:#b9a8e6;font-size:.8rem;margin-top:4px">' +
+      (petUnnamed()
+        ? 'Your companion doesn\'t have a name yet — that\'s yours to give, down below.'
+        : 'Styling <b style="color:#f0e6ff">' + esc(petName()) + '</b>.') +
+      '</p>';
     // coat tint
-    h += '<div class="forge-section"><h3>Coat <small>— recolour your companion</small></h3><div class="forge-sw-row">';
+    h += '<div class="forge-section"><h3>Coat <small>— recolours the coat, not the face</small></h3><div class="forge-sw-row">';
     Object.keys(TINTS).forEach(function (k) { h += swatch(pl.tint === k, TINTS[k].sw, 'data-tint="' + k + '"', k === 'none'); });
     h += '</div></div>';
     // aura
@@ -404,7 +521,11 @@
     h += '</div></div>';
     // name + bio
     h += '<div class="forge-section"><h3>Name & story</h3><div class="forge-fields">' +
-      field('pet-name', 'Companion name', 'text', 16, petName(), 'Name your companion') +
+      // EMPTY while they're unnamed, not pre-filled with the fallback. petName() returns
+      // the stage word ('Pup') when there's no name, and putting that in as a VALUE would
+      // say "your companion is called Pup" one line under "doesn't have a name yet" — and
+      // would silently become their name the moment anything read the field back.
+      field('pet-name', 'Companion name', 'text', 16, petUnnamed() ? '' : petName(), 'Name your companion') +
       field('pet-bio',  'Companion bio', 'textarea', 120, pl.bio, 'A line about your companion…') +
       '</div></div>';
     return h;
@@ -423,7 +544,9 @@
     var x = q('#forge-x'); if (x) x.onclick = close;
     var done = q('#forge-done'); if (done) done.onclick = function () { toast('Identity saved'); close(); };
     var rand = q('#forge-rand'); if (rand) rand.onclick = randomize;
-    var den = q('#forge-den'); if (den) den.onclick = function () { close(); if (window.PJCCPet && PJCCPet.openDen) PJCCPet.openDen(); };
+    var toDen = function () { close(); if (window.PJCCPet && PJCCPet.openDen) PJCCPet.openDen(); };
+    var den = q('#forge-den'); if (den) den.onclick = toDen;
+    var denBig = q('#forge-den-big'); if (denBig) denBig.onclick = toDen;   // the promoted panel
     Array.prototype.forEach.call(ov.querySelectorAll('[data-tab]'), function (b) { b.onclick = function () { tab = b.getAttribute('data-tab'); renderForge(); }; });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-base]'), function (c) { c.onclick = function () { patchOp({ base: c.getAttribute('data-base') }); }; });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-tone]'), function (c) { c.onclick = function () { patchOp({ tone: c.getAttribute('data-tone') }); }; });
@@ -455,8 +578,8 @@
   // (so the field keeps focus while typing).
   function liveOp(p) {
     var s = loadLocal(); Object.assign(s.op, p); saveLocal(s); scheduleSync();
-    if (p.name !== undefined) { var n = ov.querySelector('.fp-name'); if (n) n.textContent = p.name || accountCodename() || 'Operative'; }
-    if (p.role !== undefined) { var r = ov.querySelector('.fp-role'); if (r) r.textContent = p.role || 'Operative of Checker Town'; }
+    if (p.name !== undefined) { var n = ov.querySelector('.fp-name'); if (n) n.textContent = p.name || accountCodename() || 'Newcomer'; }
+    if (p.role !== undefined) { var r = ov.querySelector('.fp-role'); if (r) r.textContent = p.role || 'Citizen of Checker Town'; }
     scheduleEmit();
   }
   function livePet(p) { var s = loadLocal(); Object.assign(s.pet, p); saveLocal(s); scheduleEmit(); }
@@ -483,6 +606,6 @@
     identity: identity, petLook: petLook, renderAvatar: renderAvatar, renderCard: renderCard,
     setAccountBlock: setAccountBlock,
     open: open, close: close, onChange: function (fn) { listeners.push(fn); },
-    BASES: BASES, AURAS: AURAS, TINTS: TINTS
+    BASES: BASES, AURAS: AURAS, TINTS: TINTS, coatFilter: coatFilter
   };
 })();
