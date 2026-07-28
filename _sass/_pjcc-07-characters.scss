@@ -372,6 +372,32 @@
 .world-ticker-wrap.is-night .ticker-badge { background: #2d1b69; color: #e3d6ff; }
 .world-ticker-wrap.is-night .ticker-badge-live { background: #4a3a86; }
 
+/* THE DESK GOES ROGUE (2026-07-27) — the chrome confesses along with the copy.
+   Which of these are running tonight is decided in _layouts/home.html (DESK). */
+
+/* the badge decays by hour, and `OVERNIGHT · UNSUPERVISED` is a long confession —
+   give the plate room on a phone rather than letting it push the station name out */
+.world-ticker-wrap.is-night .ticker-badge-live { letter-spacing: 0.12em; }
+@media (max-width: 560px) {
+  .world-ticker-wrap.is-night .ticker-badge-live { font-size: 8px; letter-spacing: 0.06em; padding: 2px 5px; }
+}
+
+/* he edits the day desk's headlines — his notes are in his own hand */
+.ticker-item--edited .tk-note { font-style: normal; color: #c9a7ff; }
+
+/* the machine goes slack: a long stretch of dead wire where he wandered off */
+.ticker-item--gap {
+  padding-left: 620px;
+  &::after { content: none; }
+}
+
+/* he left the desk — the wire repeats itself and the live dot stops pretending.
+   0.62 alpha, not the 0.5 this wanted to be: faded is the POINT, but 0.5 lands at
+   4.19:1 on the town sky and an unreadable joke is just a bug. 0.62 clears AA. */
+.ticker-item--away { color: rgba(227, 214, 255, 0.62); letter-spacing: 0.22em; }
+.world-ticker-wrap.is-away .ticker-badge-live { background: #241c3c; color: rgba(255, 255, 255, 0.55); }
+.world-ticker-wrap.is-away .ticker-badge-live i { animation: none; opacity: 0.22; }
+
 /* The old .ct-weather layer (home-page-only mist / unused rain) was retired
    2026-07-12: the town weather now renders on EVERY page via .town-weather-overlay
    (see pjcc-weather.js + the town-weather block further down). */

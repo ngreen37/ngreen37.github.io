@@ -32,11 +32,13 @@ depends on the player having a mail app. Two steps:
 - **Let the machine triage them.** The room already carries a perft-verified referee and the best-defense
   search. Attach the engine's own verdict to the report — *"player says Rxd4 also wins; the search agrees,
   +500"* — so the only reports worth opening are the ones where the **player is right**.
+- *Newly worth more:* the refutation card now **sends players here itself** — when the search likes their
+  move too, it says so and points at ⚑. Those are precisely the reports that deserve a real pipe.
 
-### 2. The Night Desk goes rogue — DECIDED, ready to build *(from "🌙 The Night Desk")*
-Ideas **1, 2, 3, 5**, with Nate's cuts: badge decays by hour minus the `WHOEVER IS LEFT` step (every night) ·
-the machine goes slack (**50%** of nights) · he edits the day's real news (**25%**) · he leaves the desk at
-5am (**25%**). Roll each off the **town date** so a night behaves like one night, not like a coin flip per refresh.
+### 2. A puzzle rating for the PLAYER *(from "🧩 The Puzzle room")*
+Puzzles wear honest ~ratings already. Give the **solver** one — the same Elo the Park Tables run — and serve
+puzzles at it. The Journey's 1–10 difficulty becomes a real, comparable number, and *"rated 1240 puzzles"* is
+a far better brag than *"step 340"*. Pairs with #3: one rating, one identity, everywhere.
 
 ### 3. Park Tables — one identity across the site *(build-out thread #2, greenlit)*
 Wire the **PJCC Rating → the Clearance ladder** (RECRUIT → DELTA → … → OMEGA) so your codename wears a
@@ -44,20 +46,20 @@ Wire the **PJCC Rating → the Clearance ladder** (RECRUIT → DELTA → … →
 Then earned, **cosmetic-only** board/piece skins (first win · beat a bot · reach a rating · review 10 games).
 *The clearance pip alone is the contained first slice.*
 
-### 4. "Why was that wrong?" *(from "🧩 The Puzzle room")*
-After a wrong move, show the one-line refutation — *"after Rxd4, Nxd4 — you're down a rook."* Everything
-needed is already in `pjcc_fork.html`. **The single biggest teaching upgrade left in the room**, and the
-difference between a puzzle app and an Academy.
-
-### 5. Every game quietly teaches *(build-out thread #4, greenlit)*
+### 4. Every game quietly teaches *(build-out thread #4, greenlit)*
 After any Park Tables game: one tap → **"your one turning point"** (the biggest eval swing) as a mini-lesson,
 plus an offer to **turn your blunder into a Fork-in-the-Road puzzle** ("you missed this"). Review → puzzle →
 Academy, one loop, riding the free review engine that's already wired into finished games.
 
-### 6. The park as a *place* *(build-out thread #1, greenlit)*
+### 5. The park as a *place* *(build-out thread #1, greenlit)*
 The lobby becomes the actual park: bots as **seated regulars** at named tables with a live status line
 ("Argus is thinking…"), the scene reading the **town sky** — busy by day, one lamplit table after dark.
 You walk up to a table instead of clicking a row. Mostly CSS + flavor over state that already exists.
+
+### 6. Every game should wear the town's sky *(cohesion #6)*
+The games are their own HTML shells with their own backgrounds. If `PJCC_TIME` set their phase too, playing
+Sand Mine at night would *feel* like night. Same clock, same town, no new art — and the strongest
+one-world signal left that costs almost nothing.
 
 ### 7. Kill the second Gauntlet door *(cohesion #8)*
 The home hero and the games hall carry **two hand-maintained copies** of the same door, and two copies of the
@@ -732,10 +734,6 @@ second ten are **ingenuity** (the clever, cheap, memorable stuff).
 16. **June 13 already works. Give the town three more.** Princess's birthday puts *"for
     Princess"* in the splash footer with no announcement. Same one-line pattern for the first
     commit and the Episode 1 premiere. Nobody is told; the people who notice, notice.
-17. **The Night Desk should run out of things to say.** It's a bored overnight employee. Let
-    the number of ticker items *drop* after 2am and the tone flatten out. A desk with nothing
-    left to report at 4am is funnier than any joke that could be written for it.
-    *(→ folded into "the machine goes slack", idea 2 of the rogue build — see PRIORITY.)*
 18. **One number that's about other people.** Every counter on the site is derived from a date
     — days in development, days to Episode 1. Nothing reflects *anyone else being here*. One
     honest live number ("games played this week") would make the place feel inhabited.
@@ -1241,36 +1239,26 @@ location with a handwritten one-liner on the back, linking to its page. (Nate: "
 
 ---
 
-## 🌙 The Night Desk should be visibly going rogue *(brainstormed 2026-07-27 — Nate: "very funny… make it more clear that the overnight employee is going rogue. Throw me 5 ideas")*
+## 🌙 The Night Desk — what's LEFT after the rogue build *(the four chosen ideas shipped 2026-07-27)*
 
-> **✅ DECIDED 2026-07-27 — building 1, 2, 3 and 5.** Nate's cuts: **#1 loses the `WHOEVER IS LEFT` step**
-> and runs *every* night; **#2 fires on 50% of nights**; **#3 and #5 on 25% each**. **#4 (the retraction
-> sequence) was not chosen.** Roll each percentage off the **town date**, not per page load, so a night is
-> a night — see PRIORITY at the top of this file.
+The badge decay, the slack night, the edited headlines and the abandoned desk are live, each
+rolled off the town date. One idea from that batch was **not** chosen and is still on the shelf:
 
-The overnight crawl (midnight–6am ET, `_layouts/home.html`) already reads as one bored person.
-What's missing is *evidence* — right now the lines are funny but the SYSTEM around them still
-behaves like a normal news channel. All five put the rogue-ness in the chrome, not just the jokes.
+- **The retraction sequence.** Three consecutive, deliberately ORDERED lines (not shuffled): a
+  rumor → a bolder version of it → *"THE PREVIOUS TWO ITEMS HAVE BEEN RETRACTED BY THE PERSON WHO
+  WROTE THEM. THAT IS ALSO ME."* One person losing the plot in real time. The hard part is that the
+  crawl is a shuffled loop with a seamless clone, so an ordered run of three needs its own
+  container — worth doing only if the desk earns another pass.
+
+Two more that would extend the same joke, if it's ever wanted:
+
+- **The day desk notices.** One morning line, once, that never explains itself:
+  *"CORRECTIONS: SEVERAL ITEMS FROM THE OVERNIGHT CRAWL HAVE BEEN REMOVED."* The whiplash currently
+  only runs one way — the day desk never acknowledging it is funny; acknowledging it *once* is funnier.
+- **The desk answers the weather.** The forecast already changes voice at midnight. On a rogue night
+  he could disagree with it outright — *"THE DAY DESK SAYS FAIR. I AM LOOKING AT RAIN."*
+
 (House rule kept: the Night Desk is an unnamed employee, never a cast member.)
-
-1. **The badge decays as the shift wears on.** It already swaps `LIVE` → `OVERNIGHT`. Step it by
-   hour: `OVERNIGHT` (12–1) → `OVERNIGHT · UNSUPERVISED` (2–3) → `WHOEVER IS LEFT` (4) → `PLEASE`
-   (5). The station's own label is the confession. Cheapest of the five — one lookup by hour.
-2. **The machine goes slack.** Slow the crawl after 3 a.m., let one line hang on screen too long as
-   though he wandered off, and start a later line mid-sentence (`…ANYWAY, AS I WAS SAYING`) like he
-   forgot he'd stopped typing. Rogue by pacing, no new copy needed.
-3. **He edits the day's real news.** Take the actual DAY headlines and re-run them with his notes
-   bolted on: *"CHECKER PIECE SUPPLY AT ALL-TIME LOW — SECTOR 3 … (I COUNTED. THERE ARE PLENTY.)"*
-   This is the clearest "going rogue" signal available, because you can see him overwriting the
-   official wire rather than just filling dead air.
-4. **The retraction sequence.** Three consecutive, deliberately ORDERED lines (not shuffled): a
-   rumor → a bolder version of it → *"THE PREVIOUS TWO ITEMS HAVE BEEN RETRACTED BY THE PERSON WHO
-   WROTE THEM. THAT IS ALSO ME."* One person losing the plot in real time.
-5. **He leaves the desk.** In the last hour (5:00–5:59) he signs off, and the crawl empties to a
-   single repeating `DESK UNATTENDED.` Then at 6 a.m. the formal day desk snaps back and never
-   acknowledges any of it. The whiplash is the punchline.
-
-*(See also #17 in the ticker list: the Night Desk should eventually run out of things to say.)*
 
 ---
 
@@ -1288,12 +1276,16 @@ human inbox. Two upgrades:
   the player is right.
 
 **Teaching**
-- **"Why was that wrong?"** After a wrong move, show the one-line refutation (*"after Rxd4, Nxd4 —
-  you're down a rook"*). Everything needed is already in the file; this is the single biggest
-  teaching upgrade left in the room.
-- **A puzzle rating for the PLAYER.** Puzzles wear ~ratings already. Give the solver an Elo (the same
-  one the Park Tables run) and serve puzzles at it — the Journey's 1–10 difficulty becomes a real,
-  comparable number, and "rated 1240 puzzles" is a much better brag than "step 340".
+- **A puzzle rating for the PLAYER** — ⭐ **promoted to PRIORITY #2** (2026-07-27). Puzzles wear
+  ~ratings already; give the solver an Elo (the same one the Park Tables run) and serve puzzles at it.
+- **Now that the refutation card exists, the next teaching move is the SECOND wrong move.** The card
+  answers *"why was that wrong?"* in one line. It does not yet notice that you keep making the same
+  KIND of mistake — three hung pieces in a row is a lesson ("you're moving before you check what's
+  attacked"), and the game already tracks per-tactic accuracy to hang it on.
+- **A deeper refutation, on demand.** The card's verdict is a material search two plies deep, which
+  is honest but shallow — it says *"looks strong too"* rather than lying when it can't tell. A "show
+  me" tap could hand that one position to the vendored Stockfish for a real answer. Nothing else in
+  the room needs the engine, so it would have to lazy-load on that tap alone.
 
 **More shapes**
 - **Themed sets** — "ten pins", "ten discovered checks". Every puzzle already carries a `cat`; this is

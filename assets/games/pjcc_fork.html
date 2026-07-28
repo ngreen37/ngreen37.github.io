@@ -672,6 +672,75 @@ function isWinningAltMove(p, b, fx, fy, tx, ty){
   return isCheckmate(nb, foe);
 }
 
+// ── WHY WAS THAT WRONG? (2026-07-27) ──────────────────────────────────────────
+// A wrong move used to get a shake and "Not the winning move" — true, and useless.
+// The room already carries a legality referee AND the material search that gates
+// every puzzle, so it can say what actually HAPPENS instead: play the move, let the
+// machine pick the opponent's strongest reply, count OUR own best answer too (so a
+// fair trade is never reported as a blunder), and name what it costs.
+//
+// The scope of the claim, stated honestly, because the card must never lie:
+//   · "that's mate"        — proved: the reply leaves you with no legal move, in check.
+//   · "you're down a rook" — a MATERIAL verdict two plies deep, our recapture included.
+//     Deeper compensation isn't searched, so the amount is a floor, not a prophecy.
+//   · "it doesn't win anything" — true by construction: secondSolution() above throws
+//     out any position where a second first move wins, so there is exactly one.
+// It never shows the solution — knowing what refutes YOUR move is not being told theirs.
+const PNAME = { P:'pawn', N:'knight', B:'bishop', R:'rook', Q:'queen', K:'king' };
+function shortSan(b, fx, fy, tx, ty){
+  const p = b[fy][fx]; if (!p) return alg(tx, ty);
+  const cap = !!b[ty][tx];
+  if (p.t === 'P') return (cap ? alg(fx, fy)[0] + 'x' : '') + alg(tx, ty);
+  return p.t + (cap ? 'x' : '') + alg(tx, ty);
+}
+// Beginner language on purpose — but only when the number really IS that thing. A
+// rook traded for a pawn is a 400-point loss, and calling that "a piece" would be a
+// small lie; lumpy amounts fall through to plain points, which is exact.
+function costLabel(cp){
+  if (Math.abs(cp - 900) <= 60) return 'the queen';
+  if (Math.abs(cp - 500) <= 60) return 'a rook';
+  if (cp >= 280 && cp <= 360)   return 'a piece';    // knight 320 · bishop 330
+  if (Math.abs(cp - 100) <= 30) return 'a pawn';
+  return null;
+}
+function refuteMove(p, b, fx, fy, tx, ty){
+  const mover = p.side, foe = mover === 'w' ? 'b' : 'w';
+  const sign  = mover === 'w' ? 1 : -1;
+  const before = sign * matSum(b);
+  const yours = shortSan(b, fx, fy, tx, ty);
+  const nb = cloneBoard(b); nb[ty][tx] = nb[fy][fx]; nb[fy][fx] = null;
+  let best = null, bestV = Infinity, mate = false;
+  for (const r of legalMovesFor(nb, foe)){
+    const rb = cloneBoard(nb); rb[r.ty][r.tx] = rb[r.fy][r.fx]; rb[r.fy][r.fx] = null;
+    const mine = legalMovesFor(rb, mover);
+    if (!mine.length){
+      if (inCheck(rb, mover)) { best = r; mate = true; break; }
+      continue;                              // stalemate: material says nothing useful here
+    }
+    // our best single answer counts, so a recapture never reads as a loss
+    let v = -Infinity;
+    for (const m of mine){
+      const mb = cloneBoard(rb); mb[m.ty][m.tx] = mb[m.fy][m.fx]; mb[m.fy][m.fx] = null;
+      const s = sign * matSum(mb); if (s > v) v = s;
+    }
+    if (v < bestV){ bestV = v; best = r; }
+  }
+  if (!best) return null;                    // no reply worth naming — stay quiet
+  const theirs = shortSan(nb, best.fx, best.fy, best.tx, best.ty);
+  const reply = { fx: best.fx, fy: best.fy, tx: best.tx, ty: best.ty };
+  if (mate) return { text: 'After ' + yours + ', ' + theirs + '# — that\'s mate.', reply, hard: true };
+  const loss = before - bestV;
+  const lost = costLabel(loss);
+  if (lost) return { text: 'After ' + yours + ', ' + theirs + ' — you\'re down ' + lost + '.', reply, hard: true };
+  if (loss >= 90) return { text: 'After ' + yours + ', ' + theirs + ' — you come out ' + Math.round(loss/100) + ' points down.', reply, hard: true };
+  // The machine likes your move too. It is NOT allowed to say "that wins nothing" here
+  // — the accuracy gate caught exactly this (a pin the puzzle wanted cashed one way,
+  // held a second way) and a card that lies is worse than no card. Say so, and hand
+  // the player the report button, because if they're right that is worth knowing.
+  if (-loss >= 280) return { text: yours + ' looks strong too — but it is not this puzzle\'s answer. Tap ⚑ if you think it should be.', reply, hard: false };
+  return { text: yours + ' is safe — but it wins nothing. ' + theirs + ', and the moment is gone.', reply, hard: false };
+}
+
 // ---- Audio ----
 let actx=null, master=null, sndOn=true;
 function initAudio(){ if(actx) return; actx=new (window.AudioContext||window.webkitAudioContext)(); master=actx.createGain(); master.gain.value=sndOn?0.85:0; master.connect(actx.destination); }
@@ -688,6 +757,7 @@ let G = null;      // current puzzle runtime
 let run = null;    // {mode, queue, idx, stats}
 let anim = null, pops = {}, confetti = [], floaters = [], shake = 0, vignette = 0;
 let arrow = null, bannerText = '', bannerColor = C.good, bannerT = -1;
+let refuteCard = null, refuteArrow = null;   // "why was that wrong?" — see refuteMove()
 let princessHop = { from: 0, to: 0, t: 1 }; // ribbon advance animation
 
 const PROG_KEY = 'pjcc.fork.journey.v2';
@@ -778,6 +848,7 @@ function loadPuzzle(){
       p = genPuzzle(eff, Math.random);
     }
   }
+  clearRefutation();
   G = { p, board: parseBoard(p), step: 0, selected: null, wrong: 0, clean: true, revealed: false, hintLevel: 0, phase: 'await', orient: p.side };
   document.getElementById('hint-btn').classList.remove('hidden');
   document.getElementById('report-btn').classList.remove('hidden');
@@ -794,6 +865,7 @@ function nextPuzzle(){
 
 function playerCorrect(){
   const p = G.p, mv = p.line[G.step];
+  clearRefutation();
   sfx('solve'); burst(uci(mv[0]).tx, uci(mv[0]).ty, true);
   doMove(mv[0], () => {
     G.step++;
@@ -806,6 +878,7 @@ function playerCorrect(){
 }
 // The player found a valid alternative — a different winning move than the stored line.
 function playerAltCorrect(fx, fy, tx, ty){
+  clearRefutation();
   sfx('solve'); burst(tx, ty, true);
   doMove(alg(fx,fy) + alg(tx,ty), () => { G.step = G.p.line.length; puzzleSolved(); });
 }
@@ -853,6 +926,7 @@ function showExplain(){
 }
 function advanceFromExplain(){ clearTimeout(explainTimer); explainCard = null; nextPuzzle(); }
 function revealSolution(){
+  clearRefutation();
   G.clean = false; G.revealed = true; G.selected = null; G.wrong = 0;
   const mv = G.p.line[G.step]; const u = uci(mv[0]);
   arrow = { fx: u.fx, fy: u.fy, tx: u.tx, ty: u.ty, t: 0 };
@@ -894,11 +968,28 @@ canvas.addEventListener('pointerdown', e => {
   } else if (G.p.line.length === 1 && isWinningAltMove(G.p, G.board, from.x, from.y, c.x, c.y)) {
     G.selected = null; G.moves = null; playerAltCorrect(from.x, from.y, c.x, c.y);   // a second, equally-valid mate
   } else {
+    const tried = { x: c.x, y: c.y };
     G.selected = null; G.moves = null; G.clean = false; G.wrong++;
     sfx('wrong'); shake = 10; vignette = 14;
-    floater(G.wrong >= 2 ? 'Try the hint 🐾' : 'Not the winning move', W/2, BY + BOARD + 6, C.pink);
+    // the nudge moved ABOVE the board — the refutation card owns the strip below it
+    if (G.wrong >= 2) floater('Try the hint 🐾', W/2, BY - 8, C.pink);
+    showRefutation(from, tried);
   }
 });
+// The card lands a beat AFTER the shake: it reads as an answer to what just happened
+// rather than part of it, and it keeps the ~5ms search off the shake's frames.
+function showRefutation(from, tried){
+  clearRefutation();
+  const p = G.p, step = G.step, b = cloneBoard(G.board);
+  setTimeout(() => {
+    if (!G || G.p !== p || G.step !== step || G.phase !== 'await') return;   // already moved on
+    const r = refuteMove(p, b, from.x, from.y, tried.x, tried.y);
+    if (!r) { floater('Not the winning move', W/2, BY + BOARD + 6, C.pink); return; }
+    refuteCard  = { text: r.text, t: 0, life: 7, color: r.hard ? C.bad : C.muted };
+    refuteArrow = { fx: r.reply.fx, fy: r.reply.fy, tx: r.reply.tx, ty: r.reply.ty, tried };
+  }, 90);
+}
+function clearRefutation(){ refuteCard = null; refuteArrow = null; }
 function updateHintBtn(){
   const b = document.getElementById('hint-btn'); if (!b) return;
   const lvl = G ? (G.hintLevel || 0) : 0;
@@ -908,6 +999,7 @@ function updateHintBtn(){
 //  1) flash the piece that moves · 2) name the motif + the idea · 3) reveal & play it.
 document.getElementById('hint-btn').addEventListener('click', () => {
   if (!G || G.phase !== 'await') return;
+  clearRefutation();                    // the hint text uses the same strip
   G.hintLevel = (G.hintLevel || 0) + 1;
   G.clean = false;
   run.stats.hints = (run.stats.hints || 0) + 1;
@@ -936,10 +1028,11 @@ function render(){
   ctx.clearRect(0,0,W,H); drawBg();
   ctx.save();
   if (shake > 0){ ctx.translate((Math.random()-0.5)*shake, (Math.random()-0.5)*shake); shake -= 0.6; }
-  if (G){ drawHeader(); drawBoard(); drawPieces(); drawArrow(); }
+  if (G){ drawHeader(); drawBoard(); drawPieces(); drawArrow(); drawRefuteArrow(); }
   ctx.restore();
   drawConfetti(); drawFloaters();
   if (run) drawRibbon();
+  if (refuteCard && !explainCard) drawRefute();
   drawBanner();
   if (explainCard) drawExplain();
   if (vignette > 0){ ctx.fillStyle = 'rgba(255,40,90,'+(vignette/14*0.22)+')'; ctx.fillRect(0,0,W,H); vignette -= 0.6; }
@@ -1000,7 +1093,29 @@ function drawPieces(){
 function drawPiece(cx, cy, p, scale, lifted){
   PJCCPieces.draw(ctx, cx, cy + (lifted ? -3 : 0), TILE * 0.84 * scale, p.t, p.c, FORK_PAL);
 }
-function drawArrow(){ if(!arrow) return; const a=cell(arrow.fx,arrow.fy), b=cell(arrow.tx,arrow.ty); const pulse=0.5+0.5*Math.sin(arrow.t*12); ctx.strokeStyle='rgba(107,255,184,'+(0.6+0.4*pulse)+')'; ctx.fillStyle=ctx.strokeStyle; ctx.lineWidth=6; ctx.lineCap='round'; const ang=Math.atan2(b.y-a.y,b.x-a.x); const ex=b.x-Math.cos(ang)*16, ey=b.y-Math.sin(ang)*16; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(ex,ey); ctx.stroke(); ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(ex-Math.cos(ang-0.5)*14,ey-Math.sin(ang-0.5)*14); ctx.lineTo(ex-Math.cos(ang+0.5)*14,ey-Math.sin(ang+0.5)*14); ctx.closePath(); ctx.fill(); }
+function paintArrow(a, b, col, w){
+  ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = w; ctx.lineCap = 'round';
+  const ang = Math.atan2(b.y-a.y, b.x-a.x), ex = b.x-Math.cos(ang)*16, ey = b.y-Math.sin(ang)*16;
+  ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(ex,ey); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(b.x,b.y);
+  ctx.lineTo(ex-Math.cos(ang-0.5)*14, ey-Math.sin(ang-0.5)*14);
+  ctx.lineTo(ex-Math.cos(ang+0.5)*14, ey-Math.sin(ang+0.5)*14);
+  ctx.closePath(); ctx.fill();
+}
+function drawArrow(){ if(!arrow) return; const pulse=0.5+0.5*Math.sin(arrow.t*12);
+  paintArrow(cell(arrow.fx,arrow.fy), cell(arrow.tx,arrow.ty), 'rgba(107,255,184,'+(0.6+0.4*pulse)+')', 6); }
+// The refutation, on the board: a dashed ring on the square you tried, and the reply
+// that punishes it. The text says it; this shows it.
+function drawRefuteArrow(){
+  if (!refuteArrow || !refuteCard) return;
+  const col = refuteCard.color;                 // same voice as the card: red bites, teal shrugs
+  ctx.save(); ctx.globalAlpha = refuteFade() * 0.92;
+  const tr = cell(refuteArrow.tried.x, refuteArrow.tried.y);
+  ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.setLineDash([5,4]);
+  ctx.strokeRect(tr.x-TILE/2+3, tr.y-TILE/2+3, TILE-6, TILE-6); ctx.setLineDash([]);
+  paintArrow(cell(refuteArrow.fx,refuteArrow.fy), cell(refuteArrow.tx,refuteArrow.ty), col, 5);
+  ctx.restore();
+}
 function drawConfetti(){ confetti.forEach(p=>{ ctx.save(); ctx.globalAlpha=Math.max(0,p.life/p.max); ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.fillStyle=p.col; ctx.fillRect(-p.sz/2,-p.sz/2,p.sz,p.sz*1.6); ctx.restore(); }); }
 function drawFloaters(){ floaters.forEach(f=>{ ctx.globalAlpha=Math.max(0,f.life/f.max); ctx.fillStyle=f.col; ctx.font='bold 14px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(f.txt,f.x,f.y); ctx.globalAlpha=1; }); }
 
@@ -1051,14 +1166,39 @@ function drawExplain(){
   ctx.fillText('OK ▸', okX + okW/2, okY + okH/2);
   ctx.globalAlpha = 1;
 }
-function wrapText(text, x, y, maxW, lh){
-  const words = text.split(' '); let line = '', yy = y;
+function wrapLines(text, maxW){
+  const words = text.split(' '), out = []; let line = '';
   for (let i = 0; i < words.length; i++){
     const test = line + words[i] + ' ';
-    if (ctx.measureText(test).width > maxW && line){ ctx.fillText(line.trim(), x, yy); line = words[i] + ' '; yy += lh; }
+    if (ctx.measureText(test).width > maxW && line){ out.push(line.trim()); line = words[i] + ' '; }
     else line = test;
   }
-  if (line) ctx.fillText(line.trim(), x, yy);
+  if (line) out.push(line.trim());
+  return out;
+}
+function wrapText(text, x, y, maxW, lh){ wrapLines(text, maxW).forEach((l, i) => ctx.fillText(l, x, y + i*lh)); }
+
+// The refutation card — one strip under the board, in the gap above the road ribbon.
+// It fades on its own; nothing to dismiss, because the player is mid-think.
+function refuteFade(){
+  if (!refuteCard) return 0;
+  return Math.min(1, refuteCard.t / 0.18) * Math.min(1, (refuteCard.life - refuteCard.t) / 0.6);
+}
+function drawRefute(){
+  refuteCard.t += 1/60;
+  if (refuteCard.t >= refuteCard.life) { clearRefutation(); return; }
+  const padX = 10, padY = 6, lh = 13, cw = W - 28, x = 14, y = BY + BOARD + 4;
+  ctx.save(); ctx.globalAlpha = refuteFade();
+  ctx.font = '11.5px Trebuchet MS'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  const lines = wrapLines(refuteCard.text, cw - padX*2 - 18).slice(0, 2);   // the strip holds two
+  const ch = padY*2 + lines.length*lh;
+  ctx.fillStyle = 'rgba(7,22,20,0.94)'; roundRect(x, y, cw, ch, 9); ctx.fill();
+  ctx.strokeStyle = refuteCard.color; ctx.lineWidth = 1.5; roundRect(x, y, cw, ch, 9); ctx.stroke();
+  ctx.fillStyle = refuteCard.color; ctx.font = 'bold 12px Trebuchet MS';
+  ctx.fillText('✗', x + padX, y + padY);
+  ctx.fillStyle = C.ink; ctx.font = '11.5px Trebuchet MS';
+  lines.forEach((l, i) => ctx.fillText(l, x + padX + 18, y + padY + i*lh));
+  ctx.restore();
 }
 function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 

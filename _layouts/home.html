@@ -1106,9 +1106,62 @@ function ctParts() {
     for (var i = 0; i < ds.length; i++) { h ^= ds.charCodeAt(i); h = Math.imul(h, 16777619); }
     return h >>> 0;
   }
+  // an edited headline: the day desk's line, plus the overnight employee's note
+  function edited(text, note) {
+    var el = document.createElement('span');
+    el.className = 'ticker-item ticker-item--edited';
+    el.appendChild(document.createTextNode(text + ' '));
+    var n = document.createElement('i');
+    n.className = 'tk-note';
+    n.textContent = note;
+    el.appendChild(n);
+    track.appendChild(el);
+  }
+
+  // ---- HOW ROGUE IS THE DESK TONIGHT? (2026-07-27) ------------------------------
+  // The overnight lines were always funny; the SYSTEM around them still behaved like
+  // a normal news channel. Now the chrome confesses too:
+  //   · the badge decays by hour           — EVERY night
+  //   · the machine goes slack after 3am   — 50% of nights
+  //   · he edits the day's real headlines  — 25% of nights
+  //   · he leaves the desk at 5am          — 25% of nights
+  //
+  // Every percentage is rolled off the TOWN DATE, never Math.random(). One extra hash
+  // of "YYYY-MM-DD" per feature at boot — no network, no storage, no repaint, nothing
+  // measurable. And it is the only way "25% of the nights" means NIGHTS: a per-load
+  // roll would blink the bit in and out on every refresh and hand two people awake at
+  // 3am two different desks. Date-seeding also makes it reproducible when testing.
+  //
+  // PREVIEW (so nobody has to sit up until 4am to see it):
+  //   ?desk=4                  run the Night Desk now, as if it were 4am
+  //   ?rogue=slack,edit,away   force those on regardless of tonight's roll
+  //   ?rogue=none              force them all off
+  var DESK = (function () {
+    var q = new URLSearchParams(location.search);
+    var h = ctParts().h, on = h < 6;
+    var forced = parseInt(q.get('desk'), 10);
+    if (forced >= 0 && forced <= 5) { h = forced; on = true; }
+    function roll(salt) {                       // one independent 0–1 stream per feature
+      var v = daySeed();
+      for (var i = 0; i < salt.length; i++) { v ^= salt.charCodeAt(i); v = Math.imul(v, 16777619); }
+      return ((v >>> 0) % 1000) / 1000;
+    }
+    var force = (q.get('rogue') || '').toLowerCase().split(',');
+    function want(name, odds) {
+      if (force.indexOf('none') >= 0) return false;
+      if (force.indexOf(name) >= 0) return true;
+      return roll(name) < odds;
+    }
+    var d = { on: on, hour: h,
+      slack: on && want('slack', 0.50),
+      edits: on && want('edit',  0.25),
+      away:  on && h === 5 && want('away', 0.25) };
+    d.slackNow = d.slack && d.hour >= 3 && !d.away;   // the drag only shows up late
+    return d;
+  })();
 
   // ---- NIGHT DESK: midnight to 6am EASTERN, the news room goes quiet ----
-  if (ctParts().h < 6) {
+  if (DESK.on) {
     // The overnight guy is bored, unsupervised, and slipping things in.
     // Management has been notified. Management is asleep.
     var NIGHT = [
@@ -1127,13 +1180,79 @@ function ctParts() {
       'IF YOU ARE READING THIS, THE NIGHT DESK THANKS YOU. IT GETS QUIET IN HERE',
       'GO TO BED. THE BOARD WILL KEEP'
     ];
+    // The DAY desk's own headlines, harvested before we clear the wire — idea 3 hands
+    // them back with notes on them. Promos are left out on purpose: those belong to the
+    // studio, not to the town, and he doesn't get to scribble on them.
+    var DAYLINES = Array.prototype.slice.call(track.children)
+      .filter(function (el) { return el.className === 'ticker-item'; })
+      .map(function (el) { return el.textContent; });
+
     track.innerHTML = '';
-    NIGHT.forEach(function(n) { item(n); });
+
+    if (DESK.away) {
+      // ── 5. HE LEAVES THE DESK (25% of nights, 5:00–5:59) ──
+      // He signs off and the wire just repeats itself until six, when the formal day
+      // desk snaps back and never acknowledges any of it. The whiplash is the joke.
+      item('THAT IS EVERYTHING I HAVE. THE DESK IS UNATTENDED UNTIL SIX. DO NOT TOUCH ANYTHING');
+      for (var u = 0; u < 6; u++) item('DESK UNATTENDED.', 'ticker-item--away');
+    } else {
+      NIGHT.forEach(function(n) { item(n); });
+
+      // ── 3. HE EDITS THE DAY'S REAL NEWS (25% of nights) ──
+      // The clearest "going rogue" signal available: you can watch him overwrite the
+      // official wire instead of just filling dead air. Which three headlines he
+      // picks is seeded off the date, so a night edits one night's paper.
+      //
+      // The generic notes never claim a FACT about the line they're stuck to, so the
+      // headlines above can be rewritten freely without turning a joke into a lie.
+      // The keyed notes are the exception, and they match on the subject, not the wording.
+      if (DESK.edits && DAYLINES.length) {
+        var KEYED = [
+          [/SUPPLY|SHORTAGE|RECORD HIGH/,        '(I COUNTED. THERE ARE PLENTY.)'],
+          [/FERRY|DELAY/,                        '(IT IS STILL OUT THERE. I CAN SEE IT FROM HERE.)'],
+          [/INVESTIGAT|AUTHORITIES|UNACCOUNTED/, '(THE INVESTIGATION IS ME. I AM SITTING DOWN.)'],
+          [/TOURNAMENT|REGISTRATION|ENROLLMENT/, '(NOBODY HAS SIGNED UP AT THIS HOUR.)'],
+          [/CLOUD|METEOROLOG|WEATHER/,           '(I WENT AND LOOKED. IT IS A DOG.)']
+        ];
+        var NOTES = [
+          '(NOBODY HAS CONFIRMED THIS. I AM LEAVING IT UP.)',
+          '(THIS IS THE THIRD NIGHT I HAVE RUN THIS ONE.)',
+          '(THE DAY DESK WROTE THIS. I AM NOT FIXING IT.)',
+          '(NO FOLLOW-UP HAS EVER BEEN FILED. I CHECKED.)',
+          '(STILL TRUE AT THIS HOUR. NOBODY ASKED ME TO VERIFY IT. I DID ANYWAY.)',
+          '(I HAVE READ THIS ELEVEN TIMES TONIGHT. IT DOES NOT IMPROVE.)'
+        ];
+        var at = daySeed() % DAYLINES.length;
+        for (var e = 0; e < 3 && e < DAYLINES.length; e++) {
+          var head = DAYLINES[(at + e * 5) % DAYLINES.length], note = null;
+          for (var k = 0; k < KEYED.length; k++) if (KEYED[k][0].test(head)) { note = KEYED[k][1]; break; }
+          edited(head, note || NOTES[(daySeed() + e) % NOTES.length]);
+        }
+      }
+
+      // ── 2. THE MACHINE GOES SLACK (50% of nights, after 3am) ──
+      // The crawl drags (SPEED, further down), then a long stretch of dead wire — he
+      // wandered off — and the line that comes back starts mid-sentence, as though he
+      // forgot he'd stopped typing. Rogue by PACING; not one new joke required.
+      // (This is also cohesion note #17: the desk runs out of things to say.)
+      if (DESK.slackNow) {
+        item('', 'ticker-item--gap');
+        item('…ANYWAY, AS I WAS SAYING. THE SEA. IT IS STILL LARGE');
+      }
+    }
+
     var nm = document.getElementById('ticker-badge-name');
     if (nm) nm.innerHTML = 'CHECKER&nbsp;TOWN NIGHT&nbsp;DESK';
+    // ── 1. THE BADGE DECAYS AS THE SHIFT WEARS ON (every night) ──
+    // The station's own label is the confession. Nate cut the `WHOEVER IS LEFT` step,
+    // so the three that are left take two hours each.
     var lt = document.getElementById('ticker-live-txt');
-    if (lt) lt.textContent = 'OVERNIGHT';
+    if (lt) lt.textContent = DESK.away    ? 'UNATTENDED'
+                           : DESK.hour < 2 ? 'OVERNIGHT'
+                           : DESK.hour < 4 ? 'OVERNIGHT · UNSUPERVISED'
+                           : 'PLEASE';
     wrap.classList.add('is-night');
+    if (DESK.away) wrap.classList.add('is-away');
   }
 
   // ---- THE FORECAST on the wire (2026-07-12 — cohesion pass #4) -----------------
@@ -1155,9 +1274,10 @@ function ctParts() {
   (function() {
     var W = window.PJCC_TIME;
     if (!W) return;
+    if (DESK.away) return;                         // nobody is at the desk to look outside
     var kind   = W.weather().kind;                 // 'rain' | 'mist' | 'clear'
     var cover  = W.clouds();                       // 0 clear · 1 a few · 2 broken · 3 overcast
-    var night  = ctParts().h < 6;                  // the Night Desk has the wire
+    var night  = DESK.on;                          // the Night Desk has the wire
     var pick   = function (lines) { return lines[(daySeed() >>> 5) % lines.length]; };
 
     // The DAY DESK — formal, factual, never cute. It is a news desk.
@@ -1240,7 +1360,8 @@ function ctParts() {
   items.forEach(function(it) { track.appendChild(it.cloneNode(true)); });
 
   // Calm, count-independent pace: a fixed px/second (lower = slower).
-  var SPEED = 48; // px per second (38 -> 48, 2026-07-10: "slightly faster")
+  // On a slack night the wire drags after 3am — see DESK, idea 2.
+  var SPEED = DESK.slackNow ? 30 : 48; // px per second (38 -> 48, 2026-07-10: "slightly faster")
   function setDuration() {
     var copyWidth = track.scrollWidth / 2;            // one copy of the set
     if (copyWidth > 0) track.style.animationDuration = Math.round(copyWidth / SPEED) + 's';

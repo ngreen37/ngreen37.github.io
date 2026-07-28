@@ -409,6 +409,88 @@ async function testFork(browser, port) {
     `referee cross-audit: ${res.n} generated puzzles (${JSON.stringify(res.cats)}), ` +
     `${res.deepChecked} proved vs best defense` +
     (res.bad.length ? ' -> ' + res.bad.slice(0, 4).join(' | ') : ''));
+
+  /* --- "Why was that wrong?" — the refutation card must never lie ---------------
+     For real generated puzzles we play EVERY wrong first move, ask the game for its
+     refutation, and re-prove the claim against the REFEREE (pjcc-chess.js), which
+     knows nothing about the game's own board code:
+       · "that is mate"          -> the referee must agree it is checkmate
+       · "you are down <thing>"  -> the referee's own 2-ply material search must
+                                    confirm a loss of at least that much
+       · "it wins nothing"       -> the mover must NOT be up a piece after all that
+     Plus: the named reply has to be a legal move, and the whole thing has to be fast
+     enough to run inside a click without dropping the frame. */
+  const ref = await page.evaluate(() => {
+    const C = window.PJCCChess;
+    const out = { n: 0, bad: [], quiet: 0, mate: 0, cost: 0, alt: 0, ms: 0 };
+    const AT_LEAST = { 'the queen': 840, 'a rook': 440, 'a piece': 280, 'a pawn': 70 };
+    function toFEN(p, side) {
+      const b = new Array(64).fill('');
+      p.pieces.forEach(s => { const t = s[0], f = s.charCodeAt(1) - 97, r = 8 - +s[2]; b[r * 8 + f] = t; });
+      return C.toFEN({ b, turn: side, cast: { K: false, Q: false, k: false, q: false }, ep: -1, half: 0, full: 1 });
+    }
+    const mat = b => b.reduce((s, q) => !q ? s :
+      s + (q === q.toUpperCase() ? 1 : -1) * ({ p: 100, n: 320, b: 330, r: 500, q: 900, k: 0 })[q.toLowerCase()], 0);
+    // the referee's own opinion: after OUR move, their best reply, our best answer
+    function worstCase(S, sign) {
+      let worst = Infinity;
+      for (const r of C.legalMoves(S)) {
+        const after = C.makeMove(S, r);
+        if (C.isCheckmate(after)) return -1e6;
+        let best = -Infinity;
+        for (const m of C.legalMoves(after)) best = Math.max(best, sign * mat(C.makeMove(after, m).b));
+        if (best === -Infinity) continue;               // stalemate — no material verdict
+        if (best < worst) worst = best;
+      }
+      return worst;
+    }
+    const t0 = performance.now();
+    for (let i = 0; i < 40; i++) {
+      const p = genPuzzle(1 + (i % 6), Math.random);
+      const b0 = parseBoard(p), sign = p.side === 'w' ? 1 : -1;
+      const S0 = C.parseFEN(toFEN(p, p.side));
+      const right = uci(p.line[0][0]);
+      const start = sign * mat(S0.b);
+      for (const m of legalMovesFor(b0, p.side)) {
+        if (m.fx === right.fx && m.fy === right.fy && m.tx === right.tx && m.ty === right.ty) continue;
+        const r = refuteMove(p, b0, m.fx, m.fy, m.tx, m.ty);
+        if (!r) continue;
+        out.n++;
+        const tag = p.theme + ' ' + toFEN(p, p.side) + ' [' + r.text + ']';
+        // the reply it names must be a legal move in the referee's eyes
+        const mine = C.findMove(S0, C.sqFromName('abcdefgh'[m.fx] + (8 - m.fy)),
+                                     C.sqFromName('abcdefgh'[m.tx] + (8 - m.ty)), null);
+        if (!mine) { out.bad.push('illegal-premise ' + tag); continue; }
+        const S1 = C.makeMove(S0, mine);
+        const theirs = C.findMove(S1, C.sqFromName('abcdefgh'[r.reply.fx] + (8 - r.reply.fy)),
+                                      C.sqFromName('abcdefgh'[r.reply.tx] + (8 - r.reply.ty)), null);
+        if (!theirs) { out.bad.push('illegal-reply ' + tag); continue; }
+        const worst = worstCase(S1, sign);
+        if (/is mate/.test(r.text)) {
+          out.mate++;
+          if (!C.isCheckmate(C.makeMove(S1, theirs))) out.bad.push('not-mate ' + tag);
+        } else if (/you're down|points down/.test(r.text)) {
+          out.cost++;
+          const pts = r.text.match(/(\d+) points down/);
+          const claimed = Object.keys(AT_LEAST).find(k => r.text.indexOf(k) >= 0);
+          const floor = pts ? (+pts[1]) * 100 - 50 : (claimed ? AT_LEAST[claimed] : 90);
+          if (start - worst < floor) out.bad.push('overstated(' + (start - worst) + '<' + floor + ') ' + tag);
+        } else if (/looks strong too/.test(r.text)) {
+          out.alt++;                                    // the card admits the machine likes it
+          if (worst - start < 280) out.bad.push('not-actually-strong(' + (worst - start) + ') ' + tag);
+        } else {
+          out.quiet++;
+          if (worst - start >= 280) out.bad.push('missed-a-win(' + (worst - start) + ') ' + tag);
+        }
+      }
+    }
+    out.ms = (performance.now() - t0) / Math.max(1, out.n);
+    return out;
+  });
+  ok(ref.bad.length === 0,
+    `refutations never lie: ${ref.n} wrong moves refuted (${ref.mate} mate, ${ref.cost} costed, ${ref.quiet} "wins nothing", ${ref.alt} "looks strong too"), ` +
+    `each re-proved vs the referee` + (ref.bad.length ? ' -> ' + ref.bad.slice(0, 3).join(' | ') : ''));
+  ok(ref.ms < 40, `a refutation costs ${ref.ms.toFixed(1)}ms — cheap enough to run inside the click`);
   await page.close();
 }
 
