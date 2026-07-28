@@ -45,18 +45,41 @@
     // Quartermaster — chess set
     'pc-knight': '♞', 'pc-bishop': '♝', 'pc-rook': '♜', 'pc-queen': '♛', 'pc-king': '♚',
     // Quartermaster — field specials
-    'sp-fox': '🦊', 'sp-owl': '🦉', 'sp-wolf': '🐺', 'sp-eagle': '🦅', 'sp-dragon': '🐉'
+    'sp-fox': '🦊', 'sp-owl': '🦉', 'sp-wolf': '🐺', 'sp-eagle': '🦅', 'sp-dragon': '🐉',
+    // Quartermaster — the long shelf (2026-07-27): things worth saving for
+    'sp-tiger': '🐯', 'sp-orca': '🐋', 'sp-raven': '🐦‍⬛', 'sp-lion': '🦁',
+    'sp-phoenix': '🔥', 'sp-kraken': '🦑', 'sp-unicorn': '🦄', 'sp-ghost': '👻',
+    'sp-robot': '🤖', 'sp-crown': '👑'
   };
   var HUMAN_LABELS = {
     'human-1': 'The Sleuth', 'human-2': 'The Shadow', 'human-3': 'The Agent', 'human-4': 'The Princess',
-    'human-5': 'The Heir', 'human-6': 'The Strategist', 'human-7': 'The Warden', 'human-8': 'The Recruit'
+    'human-5': 'The Heir', 'human-6': 'The Strategist', 'human-7': 'The Warden', 'human-8': 'The Recruit',
+    // the long shelf (names are mine — veto open)
+    'sp-tiger': 'The Tiger', 'sp-orca': 'The Orca', 'sp-raven': 'The Raven', 'sp-lion': 'The Lion',
+    'sp-ghost': 'The Ghost', 'sp-robot': 'The Machine', 'sp-kraken': 'The Kraken',
+    'sp-unicorn': 'The Unicorn', 'sp-phoenix': 'The Phoenix', 'sp-crown': 'The Crown'
   };
   var AVATAR_FREE = ['human-1', 'human-2', 'human-3', 'human-4', 'human-5', 'human-6', 'human-7', 'human-8'];
+  /* PRICES (re-set 2026-07-27 — Nate: "just by gambling everything I had a few times, I
+     got like 600 credits and bought the entire store, so let's modify prices (make them
+     more expensive) and add some new items").
+
+     The old shelf topped out at 50 and totalled 280 credits — a single lucky night at the
+     altar cleared it. It runs 25 → 400 now and totals well over 2,000, so the top of the
+     shelf is something you save toward across many sessions. Ten new faces extend the
+     climb past the dragon. (The altar's own economy was cut back in the same pass; between
+     the two, credits are earned by playing again.) */
   var AVATAR_SHOP = [
-    { key: 'pc-knight', price: 10 }, { key: 'pc-bishop', price: 10 }, { key: 'pc-rook', price: 15 },
-    { key: 'pc-queen', price: 25 }, { key: 'pc-king', price: 40 },
-    { key: 'sp-fox', price: 30 }, { key: 'sp-owl', price: 30 }, { key: 'sp-wolf', price: 35 },
-    { key: 'sp-eagle', price: 35 }, { key: 'sp-dragon', price: 50 }
+    { key: 'pc-knight', price: 25 }, { key: 'pc-bishop', price: 25 }, { key: 'pc-rook', price: 40 },
+    { key: 'pc-queen', price: 70 }, { key: 'pc-king', price: 110 },
+    { key: 'sp-fox', price: 80 }, { key: 'sp-owl', price: 80 }, { key: 'sp-wolf', price: 95 },
+    { key: 'sp-eagle', price: 95 }, { key: 'sp-dragon', price: 140 },
+    // the long shelf — new 2026-07-27
+    { key: 'sp-tiger', price: 120 }, { key: 'sp-orca', price: 130 },
+    { key: 'sp-raven', price: 150 }, { key: 'sp-lion', price: 170 },
+    { key: 'sp-ghost', price: 190 }, { key: 'sp-robot', price: 210 },
+    { key: 'sp-kraken', price: 240 }, { key: 'sp-unicorn', price: 280 },
+    { key: 'sp-phoenix', price: 320 }, { key: 'sp-crown', price: 400 }
   ];
 
   /* ── THE VAULT — collectables that are NOT for sale (2026-07-27) ──────────────
@@ -73,13 +96,13 @@
      laid back down. Names are mine and Nate's veto is open. ─────────────────── */
   var VAULT_AVATARS = { 'vt-comet': '☄️', 'vt-candle': '🕯️', 'vt-mask': '🎭' };
   var VAULT = [
-    { kind: 'avatar', key: 'vt-comet',  value: 70, label: 'The Comet' },
-    { kind: 'avatar', key: 'vt-candle', value: 55, label: 'The Altar Keeper' },
-    { kind: 'avatar', key: 'vt-mask',   value: 60, label: 'The Understudy' },
-    { kind: 'title',  key: 'letgo',     value: 65, label: 'One Who Let Go' },
-    { kind: 'title',  key: 'openhand',  value: 50, label: 'Open Hand' },
-    { kind: 'theme',  key: 'ember',     value: 60, label: 'Altar Ember' },
-    { kind: 'theme',  key: 'hollow',    value: 45, label: 'Empty Hands' }
+    { kind: 'avatar', key: 'vt-comet',  value: 260, label: 'The Comet' },
+    { kind: 'avatar', key: 'vt-candle', value: 200, label: 'The Altar Keeper' },
+    { kind: 'avatar', key: 'vt-mask',   value: 220, label: 'The Understudy' },
+    { kind: 'title',  key: 'letgo',     value: 200, label: 'One Who Let Go' },
+    { kind: 'title',  key: 'openhand',  value: 150, label: 'Open Hand' },
+    { kind: 'theme',  key: 'ember',     value: 180, label: 'Altar Ember' },
+    { kind: 'theme',  key: 'hollow',    value: 140, label: 'Empty Hands' }
   ];
   Object.keys(VAULT_AVATARS).forEach(function (k) { AVATARS[k] = VAULT_AVATARS[k]; });
   function vaultEntry(kind, key) {
@@ -602,7 +625,7 @@
     'openhand':  { label: 'Open Hand',           rule: 'vault' }
   };
   PJCC.TITLES = TITLES;
-  PJCC.TITLE_SHOP = [{ key: 'curator', price: 20 }, { key: 'legend', price: 60 }];
+  PJCC.TITLE_SHOP = [{ key: 'curator', price: 60 }, { key: 'legend', price: 180 }];
   PJCC.unlockedTitles = function (prof, stats) {
     var c = statsCtx(prof, stats);
     var earned = {}; PJCC.earnedAchievements(prof, stats).forEach(function (a) { if (a.earned) earned[a.key] = true; });
@@ -761,16 +784,20 @@
   // --- profile themes (cosmetic accent for the Dossier) ----------------------
   var THEMES = {
     'default': { label: 'Operative Gold',   price: 0,  accent: '#F5C518', bg: 'linear-gradient(135deg,#1f1147,#34206f)' },
-    'jade':    { label: 'Jade Dispatch',    price: 15, accent: '#6bffb8', bg: 'linear-gradient(135deg,#0f2a22,#143d31)' },
-    'crimson': { label: 'Red Clearance',    price: 15, accent: '#ff6b6b', bg: 'linear-gradient(135deg,#2a0d12,#1a090c)' },
-    'sakura':  { label: 'Shogi Sakura',     price: 25, accent: '#ff8fd0', bg: 'linear-gradient(135deg,#2a1030,#3d1640)' },
-    'mono':    { label: 'Classified Mono',  price: 25, accent: '#cdbcf2', bg: 'linear-gradient(135deg,#16161c,#27272f)' },
+    'jade':    { label: 'Jade Dispatch',    price: 45,  accent: '#6bffb8', bg: 'linear-gradient(135deg,#0f2a22,#143d31)' },
+    'crimson': { label: 'Red Clearance',    price: 45,  accent: '#ff6b6b', bg: 'linear-gradient(135deg,#2a0d12,#1a090c)' },
+    'sakura':  { label: 'Shogi Sakura',     price: 75,  accent: '#ff8fd0', bg: 'linear-gradient(135deg,#2a1030,#3d1640)' },
+    'mono':    { label: 'Classified Mono',  price: 75,  accent: '#cdbcf2', bg: 'linear-gradient(135deg,#16161c,#27272f)' },
+    // new stock 2026-07-27 — the deep end of the shelf
+    'tide':    { label: 'Sea Crossing',     price: 120, accent: '#56d0ff', bg: 'linear-gradient(135deg,#07253a,#0d4260)' },
+    'sandmine':{ label: 'Mine Lantern',     price: 150, accent: '#fcbc3c', bg: 'linear-gradient(135deg,#2b1d09,#4a3410)' },
+    'city':    { label: 'Chess City Neon',  price: 220, accent: '#ff77a8', bg: 'linear-gradient(135deg,#1b0f33,#3d1450)' },
     // vault themes — no price, absent from THEME_SHOP; the altar hands these back
     'ember':   { label: 'Altar Ember',      accent: '#ffb066', bg: 'linear-gradient(135deg,#2e1608,#4a2410)', vault: true },
     'hollow':  { label: 'Empty Hands',      accent: '#9a7fd4', bg: 'linear-gradient(135deg,#14102a,#241a44)', vault: true }
   };
   PJCC.THEMES = THEMES;
-  PJCC.THEME_SHOP = ['jade', 'crimson', 'sakura', 'mono'];
+  PJCC.THEME_SHOP = ['jade', 'crimson', 'sakura', 'mono', 'tide', 'sandmine', 'city'];
   PJCC.themeFor = function (prof) { var k = prof && prof.companion && prof.companion.theme; return THEMES[k] || THEMES['default']; };
   PJCC.ownedThemes = function (prof) { return ['default'].concat((prof && prof.companion && prof.companion.owned_themes) || []); };
   var SKIN_KEY = 'pjcc.skin';

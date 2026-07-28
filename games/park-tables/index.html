@@ -40,6 +40,7 @@ a move a day is plenty.</p>
 <script src="{{ '/assets/js/pjcc-match.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-chess-ai.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-gauntlet-engine.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-replay.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-game-review.js' | relative_url }}"></script>
 <script>
 (function () {
@@ -429,6 +430,7 @@ a move a day is plenty.</p>
           (myRate ? ' <i class="pt-plate-rate">(' + myRate.rating + ')</i>' : '') + matChip(S, true) + '</div>' +
       '</div>' +
       '<div class="pt-moves">' + (mvs || '<span class="pjcc-sub">No moves yet.</span>') + '</div></div>' +
+      '<div id="pt-replay"></div>' +
       '<div class="pt-tools">' +
         (st.done
           ? ((window.PJCCReview && PJCCReview.enabled() && (st.moves || '').trim())
@@ -732,6 +734,8 @@ a move a day is plenty.</p>
 
   /* ── TABLE (one game) ──────────────────────────────────────────────────── */
   var cur = null, sel = -1, lastClaimable = false;
+  // the move browser: which ply the player is looking at (null = the live position)
+  var viewPly = null, nav = null;
 
   function openTable(id){
     stopPolling(); sel = -1;
@@ -773,8 +777,15 @@ a move a day is plenty.</p>
       if (m.status !== 'done') M.finish(m.id, '1/2-1/2', 'voided').catch(function(){});
       return;
     }
-    var S = g.S;
-    var myTurn = m.status === 'active' && ((S.turn === 'w') === white);
+    /* LOOKING BACK (2026-07-27, Nate: "I want users to be able to use back/forward
+       buttons to see last moves"). viewPly holds which ply the player is browsing;
+       the board draws a position rebuilt from the move list, while the real game state
+       (g.S) still decides whose turn it is and whether the table is finished. Your move
+       is refused while you're in the past, so you can't blunder by browsing. */
+    var live = g.S, viewing = (viewPly !== null && viewPly < (g.sans || []).length);
+    var vw = viewing && window.PJCCReplay ? PJCCReplay.stateAt(m.moves, viewPly) : null;
+    var S = vw ? vw.S : live;
+    var myTurn = !viewing && m.status === 'active' && ((live.turn === 'w') === white);
     var oppName = white ? (m.black_name || (m.vs_creator ? 'McPuppy (not seated yet)' : 'an open seat')) : m.white_name;
     var canClaim = timeoutClaimable(m);
 
@@ -797,7 +808,7 @@ a move a day is plenty.</p>
     }
 
     // board (flipped for black)
-    var last = lastMove(m.moves);
+    var last = vw ? (vw.last ? { from: vw.last.from, to: vw.last.to, mover: (viewPly % 2 ? 'b' : 'w') } : null) : lastMove(m.moves);
     var rows = '';
     for (var vr = 0; vr < 8; vr++) {
       for (var vf = 0; vf < 8; vf++) {
@@ -845,6 +856,7 @@ a move a day is plenty.</p>
         say +
       '</div>' +
       '<div class="pt-moves">' + (mvs || '<span class="pjcc-sub">No moves yet.</span>') + '</div></div>' +
+      '<div id="pt-replay"></div>' +
       (m.status !== 'done'
         ? '<div class="pt-tools"><div class="pt-emotes">' + M.EMOTES.map(function (t, i2) {
             return '<button class="pt-emote" data-emote="' + i2 + '">' + esc(t) + '</button>';
@@ -855,7 +867,19 @@ a move a day is plenty.</p>
             ? '<div class="pt-tools"><button class="pjcc-btn" id="pt-review">🔍 Review this game</button></div>'
             : ''));
 
-    document.getElementById('pt-back').onclick = function(){ cur = null; lobby(); };
+    document.getElementById('pt-back').onclick = function(){ cur = null; viewPly = null; nav = null; lobby(); };
+    // the move browser. renderTable() rebuilds this whole view, so the old bar goes with
+    // it — destroy() first so its key handler doesn't pile up, and hand the new bar the
+    // ply we were on via initialPly (never go(), which would re-enter this render).
+    var rbar = document.getElementById('pt-replay');
+    if (rbar && window.PJCCReplay && (m.moves || '').trim()) {
+      if (nav) nav.destroy();
+      nav = PJCCReplay.mount(rbar, {
+        initialPly: viewPly,
+        getUci: function(){ return (cur && cur.moves) || ''; },
+        onView: function(v){ viewPly = v ? v.ply : null; renderTable(); }
+      });
+    } else if (nav) { nav.destroy(); nav = null; }
     var rv = document.getElementById('pt-review');
     if (rv) rv.onclick = function(){ PJCCReview.open(m.moves, { whiteName: m.white_name, blackName: m.black_name, result: m.result }); };
     var fl = document.getElementById('pt-flag');

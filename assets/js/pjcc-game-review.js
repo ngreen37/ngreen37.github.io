@@ -121,11 +121,23 @@
     var a = 103.1668 * Math.exp(-0.04354 * loss) - 3.1669;
     return Math.max(0, Math.min(100, a));
   }
-  function classOf(isBest, winLoss) {
+  /* 2026-07-27 — the opening is graded on a wider band than the middlegame.
+     Two reasons, both learned from Nate's 1.e4 d6 game:
+       · The book can never cover everything. The moment a game steps one ply off a
+         known line, a perfectly respectable developing move was being measured against
+         the engine's single favourite and shipped back as an "Inaccuracy".
+       · At review depth the gap between two sound opening moves is mostly noise —
+         20-30 centipawns, which is nothing, and which the same search would revise if
+         you let it think longer.
+     A real early disaster still lands: hanging a piece on move three swings far past
+     these bands and still reads Mistake or Blunder. */
+  var OPENING_PLIES = 16;                       // the first eight moves each
+  function classOf(isBest, winLoss, ply) {
     if (isBest) return 'best';
-    if (winLoss < 2)  return 'good';
-    if (winLoss < 5)  return 'ok';
-    if (winLoss < 10) return 'inaccuracy';
+    var early = ply < OPENING_PLIES;
+    if (winLoss < (early ? 3 : 2))   return 'good';
+    if (winLoss < (early ? 9 : 5))   return 'ok';
+    if (winLoss < (early ? 16 : 10)) return 'inaccuracy';
     if (winLoss < 20) return 'mistake';
     return 'blunder';
   }
@@ -185,7 +197,7 @@
         var winLoss  = Math.max(0, winPct(cpBefore) - winPct(cpAfter));
         var cpLoss   = Math.max(0, cpBefore - cpAfter);
         var isBest   = bests[k] ? (bests[k] === moves[k].uci) : (winLoss < 1);
-        var cls      = inBook ? 'book' : classOf(isBest, winLoss);
+        var cls      = inBook ? 'book' : classOf(isBest, winLoss, k);
         var bestSan  = null, bestFrom = null, bestTo = null;
         if (!inBook && !isBest && bests[k]) {
           try {

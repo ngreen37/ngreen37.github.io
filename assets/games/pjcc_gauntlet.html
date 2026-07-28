@@ -10,6 +10,11 @@
 <script src="/assets/js/pjcc-chess.js"></script>
 <script src="/assets/js/pjcc-chess-ai.js"></script>
 <script src="/assets/js/pjcc-gauntlet-engine.js"></script>
+<!-- the opening book: the Game Review already knows how to tag Book moves, but this file
+     never loaded the book, so every opening move here was judged on raw eval — which is how
+     1.e4 d6 (the Pirc) came back an "inaccuracy" (Nate, 2026-07-27). -->
+<script src="/assets/js/pjcc-openings.js"></script>
+<script src="/assets/js/pjcc-replay.js"></script>
 <script src="/assets/js/pjcc-game-review.js"></script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -25,6 +30,9 @@
   #menu-btn { top:10px; right:10px; background:#2a1a5e; color:#cdbcf2; padding:5px 12px; font-size:11px; border:1px solid #6b5fa0; }
   #resign-btn { bottom:10px; right:10px; background:#3a1530; color:#ff9ec9; padding:7px 14px; font-size:12px; border:1px solid #7a3060; }
   .float-btn.hidden { display:none; }
+  /* the move browser (pjcc-replay.js) — only on while a game is actually running */
+  #replay-bar { display:none; }
+  #replay-bar.on { display:flex; }
 
   .overlay { position:absolute; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center;
     padding:22px; text-align:center; border-radius:12px; background:radial-gradient(circle at 50% 22%, #241452 0%, #0c0820 82%); overflow-y:auto; }
@@ -176,6 +184,11 @@
       <div class="opp-bubble" id="opp-bubble"></div>
     </div>
   </div>
+
+  <!-- the move browser sits OUTSIDE #board-wrap on purpose: ☰ tower and ⚑ resign are
+       absolutely positioned against that wrapper, and a taller wrapper drops them on top
+       of the bar (2026-07-27). -->
+  <div id="replay-bar" aria-label="Move history"></div>
 
   <div class="booth hidden" id="booth" aria-hidden="true">
     <div class="booth-card" id="booth-card"><span class="booth-who" id="booth-who">RANDY</span><span class="booth-line" id="booth-line"></span></div>
@@ -451,6 +464,25 @@ setInterval(function(){ if (G && !G.over && G.clockOn && G.clockTick) saveGame()
 
 // ---- runtime ----
 var G = null, raf = null;
+/* ---- THE MOVE BROWSER (2026-07-27) ------------------------------------------
+   Back/forward through the game you're in. It reads G.uci (already kept for the
+   Game Review) and writes only G.viewPos, which render() draws instead of the live
+   board. The game underneath never pauses — the rival can even reply while you're
+   looking back, and the bar keeps your place. */
+var RN = null;
+function mountReplay(){
+  var host = document.getElementById('replay-bar');
+  if (!host || !window.PJCCReplay) return;
+  host.classList.add('on');
+  if (RN){ RN.refresh(); RN.live(); return; }
+  RN = PJCCReplay.mount(host, {
+    getUci: function(){ return (G && G.uci) || []; },
+    onView: function(v){ if (G){ G.viewPos = v; if (v) G.sel = -1; } }
+  });
+}
+function replayBumped(){ if (RN) RN.refresh(); }
+function hideReplay(){ var h = document.getElementById('replay-bar'); if (h) h.classList.remove('on'); if (G) G.viewPos = null; }
+
 function startRung(idx, pc){
   clearSave();   // a fresh board supersedes any half-played save
   var rung = LADDER[idx];
@@ -472,6 +504,7 @@ function startRung(idx, pc){
   hideOverlays();
   document.getElementById('menu-btn').classList.remove('hidden');
   document.getElementById('resign-btn').classList.remove('hidden');
+  mountReplay();
   setupPortrait(rung, idx);
   G.roundStartMat = matPOV(G.S, G.pc);
   boothLast = 0;
@@ -500,6 +533,8 @@ function cellXY(i){ var s=idxToScreen(i); return { x: BX + s.col*TILE + TILE/2, 
 // ---- input ----
 cv.addEventListener('pointerdown', function(e){
   if (!G || G.over || G.thinking || G.promo) return;
+  // browsing the history is read-only — tapping the board snaps you back to live first
+  if (RN && RN.viewing()) { e.preventDefault(); RN.live(); return; }
   if (G.S.turn !== G.pc) return;                       // not your move
   var rect = cv.getBoundingClientRect();
   var mx = (e.clientX-rect.left)*(W/rect.width), my = (e.clientY-rect.top)*(H/rect.height);
@@ -522,7 +557,8 @@ function applyPlayerMove(m){
   G.roundStartMat = matPOV(G.S, G.pc);   // material before this move; judged after the reply
   G.last = { from:m.from, to:m.to };
   G.log.push(C.toSAN(G.S, m));
-  G.uci.push(C.nameFromSq(m.from) + C.nameFromSq(m.to) + (m.promo ? m.promo.toLowerCase() : ''));   // for game review
+  G.uci.push(C.nameFromSq(m.from) + C.nameFromSq(m.to) + (m.promo ? m.promo.toLowerCase() : ''));   // for game review + the move browser
+  replayBumped();
   G.S = C.makeMove(G.S, m); G.sel = -1;
   trackCrockett(m);
   var rep = bumpRep();
@@ -565,7 +601,8 @@ function applyAiMove(myG, S, m){
   if (!m){ G.thinking=false; var res0=C.gameResult(G.S, G.reps[C.posKey(G.S)]||1); if(res0) endGame(res0); return; }
   G.last = { from:m.from, to:m.to };
   G.log.push(C.toSAN(G.S, m));
-  G.uci.push(C.nameFromSq(m.from) + C.nameFromSq(m.to) + (m.promo ? m.promo.toLowerCase() : ''));   // for game review
+  G.uci.push(C.nameFromSq(m.from) + C.nameFromSq(m.to) + (m.promo ? m.promo.toLowerCase() : ''));   // for game review + the move browser
+  replayBumped();
   G.S = C.makeMove(G.S, m);
   trackCrockett(m);
   var rep = bumpRep();
@@ -866,6 +903,11 @@ function render(){
   var grd = ctx.createLinearGradient(0,0,0,H); grd.addColorStop(0,'#1a1040'); grd.addColorStop(1,'#0c0820');
   ctx.fillStyle = grd; ctx.fillRect(0,0,W,H);
   if (!G){ return; }
+  // THE VIEWED POSITION (2026-07-27). Browsing the move history never touches G.S — the
+  // replay bar hands back a rebuilt throwaway position and the board simply draws that
+  // one instead. Everything the live game owns (clock, legal moves, the rival's turn)
+  // keeps running underneath, untouched.
+  var VW = G.viewPos, VS = VW ? VW.S : G.S, VLAST = VW ? VW.last : G.last;
   // flag fall — the render loop is the referee's stopwatch (floors 5+ only)
   if (!G.over && G.clockOn && G.clockTick &&
       G.clockMs - (Date.now() - G.clockTick) <= 0){ endGame('flag'); }
@@ -878,13 +920,13 @@ function render(){
     ctx.fillStyle = ((r+f)%2===0) ? LIGHT : DARK;
     ctx.fillRect(BX+s.col*TILE, BY+s.row*TILE, TILE, TILE); }
   // last move
-  if (G.last){ [G.last.from,G.last.to].forEach(function(sq){ var s=idxToScreen(sq);
+  if (VLAST){ [VLAST.from,VLAST.to].forEach(function(sq){ var s=idxToScreen(sq);
     ctx.fillStyle='rgba(245,197,24,0.28)'; ctx.fillRect(BX+s.col*TILE, BY+s.row*TILE, TILE, TILE); }); }
   // check
-  if (C.inCheck(G.S, G.S.turn)){ var ks=C.kingSq(G.S.b, G.S.turn); if(ks>=0){ var s2=idxToScreen(ks);
+  if (C.inCheck(VS, VS.turn)){ var ks=C.kingSq(VS.b, VS.turn); if(ks>=0){ var s2=idxToScreen(ks);
     ctx.fillStyle='rgba(255,80,110,0.5)'; ctx.fillRect(BX+s2.col*TILE, BY+s2.row*TILE, TILE, TILE); } }
   // selection + legal dots
-  if (G.sel>=0){ var ss=idxToScreen(G.sel); ctx.fillStyle='rgba(245,197,24,0.34)'; ctx.fillRect(BX+ss.col*TILE, BY+ss.row*TILE, TILE, TILE);
+  if (G.sel>=0 && !VW){ var ss=idxToScreen(G.sel); ctx.fillStyle='rgba(245,197,24,0.34)'; ctx.fillRect(BX+ss.col*TILE, BY+ss.row*TILE, TILE, TILE);
     G.legal.forEach(function(m){ if(m.from!==G.sel) return; var d=cellXY(m.to), cap=G.S.b[m.to];
       ctx.fillStyle='rgba(107,255,184,0.65)';
       if (cap){ ctx.lineWidth=4; ctx.strokeStyle='rgba(107,255,184,0.7)'; ctx.beginPath(); ctx.arc(d.x,d.y,TILE*0.42,0,7); ctx.stroke(); }
@@ -902,15 +944,25 @@ function render(){
     ctx.fillStyle='rgba(255,248,232,0.45)'; ctx.fillText(rank, BX+2.6, BY+n*TILE+2.6);
     ctx.fillStyle='rgba(46,32,18,0.62)';    ctx.fillText(rank, BX+2,   BY+n*TILE+2);
   }
+  // a dim wash under the pieces, so browsing can never be mistaken for the live board
+  if (VW){ ctx.fillStyle = 'rgba(12,8,32,0.28)'; ctx.fillRect(BX, BY, BOARD, BOARD); }
   // pieces
-  for (var j=0;j<64;j++){ var p=G.S.b[j]; if(!p) continue; var c=cellXY(j);
+  for (var j=0;j<64;j++){ var p=VS.b[j]; if(!p) continue; var c=cellXY(j);
     PJCCPieces.draw(ctx, c.x, c.y, TILE*0.84, p.toUpperCase(), C.colorOf(p), PAL); }
   // two faint spots on the opposition's e-pawn — visually unremarkable, never explained
-  if (G.crockett >= 0 && G.S.b[G.crockett]){
+  if (G.crockett >= 0 && !VW && G.S.b[G.crockett]){
     var cd = cellXY(G.crockett), aiIsWhite = (G.pc !== 'w');
     ctx.fillStyle = aiIsWhite ? 'rgba(74,54,24,0.5)' : 'rgba(239,228,255,0.26)';
     ctx.beginPath(); ctx.arc(cd.x - TILE*0.07, cd.y + TILE*0.10, TILE*0.048, 0, 7); ctx.fill();
     ctx.beginPath(); ctx.arc(cd.x + TILE*0.10, cd.y + TILE*0.19, TILE*0.038, 0, 7); ctx.fill();
+  }
+  // the browsing badge goes on last — over the pieces, at the foot of the board, where
+  // neither the rival's portrait bubble (top) nor the pieces can bury it
+  if (VW){
+    ctx.font='bold 11px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    var lw = ctx.measureText('LOOKING BACK').width + 18;
+    ctx.fillStyle='rgba(255,176,102,0.95)'; roundRect(BX+BOARD/2-lw/2, BY+BOARD-24, lw, 19, 9); ctx.fill();
+    ctx.fillStyle='#2a1608'; ctx.fillText('LOOKING BACK', BX+BOARD/2, BY+BOARD-14.5);
   }
 }
 function drawHud(){
@@ -942,7 +994,7 @@ function loop(){ render(); raf = requestAnimationFrame(loop); }
 
 // ---- screens ----
 function hideOverlays(){ ['menu-screen','ladder-screen','over-screen','boss-screen'].forEach(function(id){ document.getElementById(id).classList.add('hidden'); }); document.getElementById('promo-screen').classList.add('hidden'); clearFx(); }
-function showMenu(){ G=null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('resign-btn').classList.add('hidden'); hidePortrait(); hideBooth(); hideOverlays(); refreshMenu(); document.getElementById('menu-screen').classList.remove('hidden'); }
+function showMenu(){ hideReplay(); G=null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('resign-btn').classList.add('hidden'); hidePortrait(); hideBooth(); hideOverlays(); refreshMenu(); document.getElementById('menu-screen').classList.remove('hidden'); }
 function showLadder(){
   if (G){ G.over = true; }
   document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('resign-btn').classList.add('hidden');

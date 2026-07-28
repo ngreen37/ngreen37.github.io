@@ -91,6 +91,19 @@
     ['B06', 'Modern Defense', 'e4 g6'],
     ['B07', 'Pirc / Rat Defense', 'e4 d6'],
     ['B07', 'Pirc Defense', 'e4 d6 d4 Nf6 Nc3'],
+    /* The Pirc to real depth (2026-07-27). Nate played 1.e4 d6 and the review called it an
+       inaccuracy — "But that's the Pirc defense! And that's just the first move." Two
+       things were wrong: the Gauntlet never loaded this book at all, and even where it
+       DID load, the Pirc ran out after five plies. These three are the exact lines The
+       Pirc Protocol already teaches (and that the accuracy suite already checks against
+       Stockfish), so the book and the lesson now say the same thing. */
+    ['B07', 'Pirc Defense', 'e4 d6 d4 Nf6 Nc3 g6'],
+    ['B08', 'Pirc, Classical', 'e4 d6 d4 Nf6 Nc3 g6 Nf3 Bg7 Be2 O-O O-O c6 a4 e5'],
+    ['B09', 'Pirc, Austrian Attack', 'e4 d6 d4 Nf6 Nc3 g6 f4 Bg7 Nf3 O-O Bd3 Na6 O-O c5'],
+    ['B07', 'Pirc, 150 Attack', 'e4 d6 d4 Nf6 Nc3 g6 Be3 Bg7 Qd2 c6 f3 b5 Nge2 Nbd7'],
+    ['B06', 'Modern Defense', 'e4 g6'],
+    ['B06', 'Modern Defense', 'e4 g6 d4 Bg7'],
+    ['B06', 'Modern, Classical', 'e4 g6 d4 Bg7 Nc3 d6 Nf3 Nf6'],
     ['B00', 'Nimzowitsch Defense', 'e4 Nc6'],
     // ── 1.d4 ─────────────────────────────────────────────────────────────────
     ['A40', "Queen's Pawn Opening", 'd4'],

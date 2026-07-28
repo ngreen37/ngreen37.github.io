@@ -613,7 +613,11 @@ html.reduce-flourish .ts-shoot { display: none !important; }
   /* the card's 16px radius, less its 1px border */
   border-radius: 15px 15px 0 0;
   border-bottom: 2px solid rgba(61, 43, 138, 0.9);
-  background: linear-gradient(180deg, #241a52 0%, #1c1540 100%);
+  /* translucent, not opaque: the town sky (sun, moon, clouds) shows THROUGH the
+     banner now — it used to be the one slab that blocked it (2026-07-27). The
+     text-shadow below is what keeps the title readable against a bright noon. */
+  background: linear-gradient(180deg, rgba(36, 26, 82, 0.72) 0%, rgba(28, 21, 64, 0.72) 100%);
+  backdrop-filter: blur(2px);
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
 }
 /* (The banner's OWN little sun/moon — .page-title::before — was deleted 2026-07-14:
@@ -632,11 +636,11 @@ html.reduce-flourish .ts-shoot { display: none !important; }
 }
 
 html.sky-dawn .page-title {
-  background: linear-gradient(180deg, #1d1140 0%, #3d2159 55%, #7c3d3a 100%);
+  background: linear-gradient(180deg, rgba(29, 17, 64, 0.72) 0%, rgba(61, 33, 89, 0.72) 55%, rgba(124, 61, 58, 0.72) 100%);
   border-bottom-color: rgba(255, 150, 90, 0.45);
 }
 html.sky-day .page-title {
-  background: linear-gradient(180deg, #133463 0%, #24558f 100%);
+  background: linear-gradient(180deg, rgba(19, 52, 99, 0.72) 0%, rgba(36, 85, 143, 0.72) 100%);
   border-bottom-color: rgba(160, 205, 245, 0.42);
 }
 /* The banner's cloud follows the town's cover roll, same as the sky — on a clear day the
@@ -662,11 +666,11 @@ html.sky-dawn.cloud-2 .page-title::after,
 html.sky-dusk.cloud-2 .page-title::after { opacity: 0.6; }
 
 html.sky-dusk .page-title {
-  background: linear-gradient(180deg, #180d3a 0%, #4a2350 52%, #8a3d20 100%);
+  background: linear-gradient(180deg, rgba(24, 13, 58, 0.72) 0%, rgba(74, 35, 80, 0.72) 52%, rgba(138, 61, 32, 0.72) 100%);
   border-bottom-color: rgba(224, 102, 46, 0.5);
 }
 html.sky-night .page-title {
-  background: linear-gradient(180deg, #07051c 0%, #150e3d 60%, #1b1145 100%);
+  background: linear-gradient(180deg, rgba(7, 5, 28, 0.78) 0%, rgba(21, 14, 61, 0.78) 60%, rgba(27, 17, 69, 0.78) 100%);
   border-bottom-color: rgba(120, 100, 220, 0.4);
 }
 /* the banner's stars */

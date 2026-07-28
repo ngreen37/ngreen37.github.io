@@ -21,7 +21,16 @@ body_class: theme-bw
       <div class="hello-calc-wrap" id="contact-calc-wrap">
         <div class="hello-calc-line" id="calc-line-1"></div>
       </div>
-      <a href="mailto:nathgreen37@gmail.com" class="hello-email" id="contact-email" style="opacity:0;pointer-events:none">nathgreen37@gmail.com</a>
+      {%- comment -%} 2026-07-27 (Nate: "The mailto: links on the Contact page — not sure they
+           are working properly… take out the hyperlink and just make it copy-able text").
+           A mailto: only works if the machine has a mail client wired up; on a PC without one
+           the click does nothing at all, which is exactly what it looked like. This is plain
+           selectable text now, with a Copy button beside it — no handler required, and it
+           works the same on every machine. {%- endcomment -%}
+      <div class="hello-email" id="contact-email" style="opacity:0">
+        <span class="hello-addr" id="contact-addr">nathgreen37@gmail.com</span>
+        <button type="button" class="hello-copy" id="contact-copy">Copy</button>
+      </div>
       <a href="https://github.com/ngreen37" class="hello-gh" id="contact-gh" style="opacity:0;pointer-events:none" target="_blank" rel="noopener">♟&nbsp; GitHub — ngreen37</a>
     </div>
   </section>
@@ -40,7 +49,9 @@ body_class: theme-bw
 
   <!-- ══════════ CHESS LESSONS (one line) ══════════ -->
   <p class="hello-lessons">
-    I also teach chess — any age, in person or online. <a href="mailto:nathgreen37@gmail.com">Email me</a>.
+    I also teach chess — any age, in person or online.<br>
+    <span class="hello-addr" id="contact-addr-2">nathgreen37@gmail.com</span>
+    <button type="button" class="hello-copy" id="contact-copy-2">Copy</button>
   </p>
 
 </div>
@@ -76,10 +87,16 @@ body_class: theme-bw
 .contact-calc-cursor { display:inline-block; width:9px; height:1em; background:var(--line); margin-left:2px;
   vertical-align:text-bottom; animation: hello-blink .65s step-end infinite; }
 
-@media (pointer: coarse) { .hello-email { padding: 12px 16px !important; } }  /* touch sweep 2026-07-13: was 221x27 */
-.hello-email { font-family:'Poppins',sans-serif; font-weight:700; letter-spacing:.4px; text-decoration:none;
-  font-size:clamp(16px,2.4vw,22px); color:#fff; animation: hello-glow 3.6s ease-in-out infinite; }
-.hello-email:hover { color:#fff; text-shadow:0 0 24px rgba(255,255,255,0.9); animation:none; text-decoration:none; }
+/* the address block — plain text + a Copy button, no longer a mailto: link (2026-07-27) */
+.hello-email { display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; }
+.hello-addr { font-family:'Poppins',sans-serif; font-weight:700; letter-spacing:.4px;
+  font-size:clamp(16px,2.4vw,22px); color:#fff; animation: hello-glow 3.6s ease-in-out infinite;
+  user-select:text; -webkit-user-select:text; cursor:text; }
+.hello-copy { font-family:'Poppins',sans-serif; font-weight:700; font-size:12px; letter-spacing:.06em;
+  color:#e8e8ee; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.4);
+  border-radius:999px; padding:7px 15px; cursor:pointer; min-height:32px;
+  transition:background .2s, color .2s, border-color .2s; }
+.hello-copy:hover { background:#f4f4f6; color:#0b0b0d; border-color:#f4f4f6; }
 .hello-gh { font-family:'Poppins',sans-serif; font-weight:700; font-size:14px; letter-spacing:.4px; text-decoration:none;
   color:#e8e8ee; background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.45); border-radius:999px;
   padding:11px 30px; transition:transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .3s, background .2s, color .2s; }
@@ -151,6 +168,29 @@ body_class: theme-bw
     el.style.opacity = '1'; el.style.pointerEvents = 'auto';
     if (cb) setTimeout(cb, 600);
   }
+  // both Copy buttons: clipboard first, and if the browser refuses, select the address
+  // so a plain ⌘/Ctrl-C still works. Never a mailto:.
+  function wireCopy(btnId, addrId) {
+    var b = document.getElementById(btnId), a = document.getElementById(addrId);
+    if (!b || !a) return;
+    b.onclick = function () {
+      var txt = a.textContent.trim();
+      function done() { b.textContent = 'Copied'; setTimeout(function(){ b.textContent = 'Copy'; }, 1600); }
+      try {
+        navigator.clipboard.writeText(txt).then(done, select);
+      } catch (e) { select(); }
+      function select() {
+        try {
+          var r = document.createRange(); r.selectNodeContents(a);
+          var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+          b.textContent = 'Press Ctrl+C';
+          setTimeout(function(){ b.textContent = 'Copy'; }, 2400);
+        } catch (e2) {}
+      }
+    };
+  }
+  wireCopy('contact-copy', 'contact-addr');
+  wireCopy('contact-copy-2', 'contact-addr-2');
   typeInto(line1, 'Opening the line…', 700, function() {
     setTimeout(function() {
       wrap.style.transition = 'opacity 0.4s'; wrap.style.opacity = '0';
