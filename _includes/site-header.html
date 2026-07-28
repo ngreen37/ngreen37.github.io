@@ -80,7 +80,10 @@
           <span class="dl-txt"><b>The Gauntlet</b><small>Climb the tower of ten</small></span>
         </a>
         <a class="page-link drawer-link" href="{{ '/games/' | relative_url }}">
-          <span class="dl-ico" aria-hidden="true">&#9823;</span>
+          {%- comment -%} 2026-07-27 (Nate): the arcade's icon is a game controller now, not a
+               pawn. Every other rail icon is a chess glyph, which is exactly why this one
+               shouldn't be — the Arcade is the room that ISN'T only chess. {%- endcomment -%}
+          <span class="dl-ico" aria-hidden="true">&#127918;</span>
           <span class="dl-txt"><b>Games</b><small>The Arcade — the whole grid</small></span>
         </a>
         <a class="page-link drawer-link" href="{{ '/games/fork-in-the-road/' | relative_url }}">

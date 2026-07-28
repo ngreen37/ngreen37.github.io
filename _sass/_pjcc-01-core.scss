@@ -187,7 +187,17 @@ ul, ol {
 
 /* --- Site Header --- */
 .site-header {
-  background: #0a0714;
+  /* 2026-07-27 (Nate: "make top bar transparent so you can see sun/moon"). The header was
+     a solid slab of #0a0714 across the top of a FIXED sky — which is exactly where the sun
+     and moon spend the middle of their arc, so the town's best hours were painted over. It
+     is a scrim now, not a wall: lighter at the top where the orb passes, settling to nearly
+     solid by the nav row so the logo, ⌘K and Contact keep their contrast. Deliberately NOT
+     backdrop-filter — that repaints the blur on every scroll frame, and this bar is sticky.
+     Clouds and the orb now drift THROUGH it, which is the whole point. */
+  background: linear-gradient(180deg,
+    rgba(10, 7, 20, 0.42) 0%,
+    rgba(10, 7, 20, 0.78) 62%,
+    rgba(10, 7, 20, 0.92) 100%);
   border-bottom: 3px solid transparent;
   border-image: linear-gradient(to right, #F5C518 50%, #cccccc 50%) 1;
   padding: 0;
@@ -978,6 +988,15 @@ pre code {
 }
 
 
+
+/* 2026-07-27 compass check: on a phone the standalone "→" links measured 93×20 and 82×20 —
+   they read as buttons and were sized like body text. Padded on COARSE POINTERS ONLY, so
+   the desktop rhythm is untouched and only the thumb target grows. */
+@media (pointer: coarse) {
+  .home-section-link,
+  .awake-more { display: inline-flex; align-items: center; min-height: 40px; padding: 0 4px; }
+  .home-shuffle { min-height: 40px; }
+}
 
 .home-section-link {
   font-size: 12px;

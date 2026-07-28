@@ -333,6 +333,18 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
      Collapsing just REASSIGNS the variable, and every consumer follows in lockstep. */
   :root { --rail-w: 246px; }
   body.nav-collapsed { --rail-w: 66px; }
+  /* ── COLLAPSING MUST NOT MOVE A SINGLE ROW (2026-07-27, Nate: "make the collapsed height
+     the same as the expanded menu") ─────────────────────────────────────────────────────
+     Two things were moving them. First, rows were RAGGED: a link whose subtitle wrapped to
+     two lines stood 70px, one that didn't stood 58 — and collapsed, with no subtitle at
+     all, every row was 58. Second, hiding .drawer-head outright dropped 80px off the top,
+     so the whole column jumped UP as it narrowed.
+     Both are pinned here instead of patched: one row height for every row in both states,
+     and the head keeps its box when collapsed (invisible, fixed height so the brand can't
+     re-wrap at 66px and change it). Collapsing is now purely a width change. */
+  :root { --dl-h: 72px; --drawer-head-h: 66px; }   /* 72 = the tallest natural row (a two-line subtitle); below it that row still outgrew the rest */
+  .site-header .site-nav.drawer .page-link.drawer-link { min-height: var(--dl-h); }
+  .site-header .site-nav.drawer .drawer-head { min-height: var(--drawer-head-h); }
 
   .site-header .site-nav.drawer {
     top: 0; bottom: 0;
@@ -368,9 +380,12 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
 
   /* ── collapsed → an icons-only rail. The WIDTH + offsets now follow --rail-w above
      (reassigned to 66px on body.nav-collapsed); only the LOOK changes here. ── */
-  body.nav-collapsed .drawer-head,
   body.nav-collapsed .drawer-div,
   body.nav-collapsed .drawer-mini { display: none; }
+  /* the head keeps its BOX and loses its words — a fixed height, so "by McPuppy Studios"
+     re-wrapping at 66px can't change what it reserves */
+  body.nav-collapsed .site-header .site-nav.drawer .drawer-head {
+    visibility: hidden; height: var(--drawer-head-h); overflow: hidden; }
   /* The hover label (below) is positioned just OUTSIDE the rail's right edge. The rail's
      base `overflow-y: auto` forces `overflow-x` to compute to `auto` as well (you can't have
      one axis visible and the other not), which CLIPPED the label to a sliver at the edge —

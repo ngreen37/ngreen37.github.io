@@ -14,6 +14,7 @@
  *   PJCC_TIME.daySeed() -> uint32 seeded by the Eastern date (one town, one day)
  *   PJCC_TIME.weather() -> { kind: 'rain'|'mist'|'clear', roll, phase }
  *   PJCC_TIME.clouds()  -> 0 (clear) | 1 (a few) | 2 (broken) | 3 (overcast)
+ *   PJCC_TIME.moon()    -> { frac, lit, waxing, name } — the REAL phase tonight
  * ========================================================================== */
 (function () {
   'use strict';
@@ -77,6 +78,28 @@
     var a = (-105 + 210 * t) * Math.PI / 180;
     return { t: t, x: 50 + 45.5 * Math.sin(a), y: 51 - 41 * Math.cos(a) };
   }
+  /* THE MOON'S REAL PHASE (2026-07-27, Nate: "let's do crescent and waning moons!").
+     The town's moon was a full moon every single night of the year, which is the one thing
+     a moon never is. This is the actual synodic cycle — days since a known new moon
+     (2000-01-06 18:14 UTC), modulo 29.530588853 days — so Checker Town's moon is the moon
+     that is genuinely in the sky tonight. Anyone who looks out of a window can check it.
+       age   0 → 29.53 days into the cycle
+       frac  0 = new · 0.25 = first quarter · 0.5 = full · 0.75 = last quarter
+       lit   0 → 1, how much of the disc is lit
+       waxing/waning decides which SIDE the shadow sits on. */
+  var SYN = 29.530588853, NEW0 = 10395.26;   // 2000-01-06 18:14 UTC, in days since epoch
+  function moon(ds) {
+    ds = ds || parts().ds;
+    var days = Date.UTC(+ds.slice(0, 4), +ds.slice(5, 7) - 1, +ds.slice(8, 10)) / 86400000;
+    var age = (((days - NEW0) % SYN) + SYN) % SYN, frac = age / SYN;
+    var lit = (1 - Math.cos(frac * 2 * Math.PI)) / 2;
+    var name = frac < 0.02 || frac > 0.98 ? 'new'
+             : frac < 0.23 ? 'waxing-crescent' : frac < 0.27 ? 'first-quarter'
+             : frac < 0.48 ? 'waxing-gibbous'  : frac < 0.52 ? 'full'
+             : frac < 0.73 ? 'waning-gibbous'  : frac < 0.77 ? 'last-quarter'
+             : 'waning-crescent';
+    return { age: age, frac: frac, lit: lit, waxing: frac < 0.5, name: name };
+  }
   // The PJCC calendar season, from the Eastern MONTH (2026-07-15 Nate: "have a set
   // PJCC calendar … summer now, and build Fall/Winter/Spring per the calendar"). Simple
   // meteorological quarters, one season for the whole town, turning over on the 1st:
@@ -86,5 +109,6 @@
     return (mo === 12 || mo <= 2) ? 'winter' : mo <= 5 ? 'spring' : mo <= 8 ? 'summer' : 'fall';
   }
   window.PJCC_TIME = { parts: parts, hour: hour, dateStr: dateStr, phase: phase,
-                       daySeed: daySeed, weather: weather, clouds: clouds, orb: orb, season: season };
+                       daySeed: daySeed, weather: weather, clouds: clouds, orb: orb, season: season,
+                       moon: moon };
 })();

@@ -48,10 +48,14 @@
    2026-07-22 (Nate: "move the ray slightly SouthEast so it looks like it's coming from the
    center of the desk-lamp head") — nudged right+down (right 41→37, top 10→14) so the beam's
    narrow source sits under the middle of the head instead of off its upper-left corner. */
+/* 2026-07-27 (Nate: "rotate the light ray a few degrees, to line it up better with the
+   head of the lamp. It's just a touch off") — -6deg → -14deg. At -6 the beam's upper edge
+   sat proud of the head's mouth, so a sliver of light appeared to start outside the shade;
+   at -14 the cone's mouth meets the head's. Measured against a render of five candidates. */
 .sl-cone { position: absolute; right: 37px; top: 14px; width: 48px; height: 48px;
   clip-path: polygon(82% 0, 100% 24%, 48% 100%, 0 64%);
   background: linear-gradient(205deg, rgba(255,224,138,0.85), rgba(255,207,74,0.05));
-  opacity: 0; transform: rotate(-6deg); transition: opacity .5s; pointer-events: none; }
+  opacity: 0; transform: rotate(-14deg); transition: opacity .5s; pointer-events: none; }
 .studio-light.on .sl-head { box-shadow: inset 0 -4px 6px rgba(255,207,74,0.55), 0 0 14px 2px rgba(255,207,74,0.35); }
 .studio-light.on .sl-cone { opacity: 0.6; animation: sl-warm 3.2s ease-in-out infinite; }
 @keyframes sl-warm { 0%,100% { opacity: 0.52; } 50% { opacity: 0.7; } }
@@ -62,9 +66,12 @@
    left/right offsets are a caller's business and not set here. */
 /* 2026-07-22 (Nate: "reduce the length of the wooden base the lamp sits on") — the slab
    ran -34/-40px past the lamp on each side; pulled in to -12/-16 so it reads as a desk edge
-   under the lamp, not a plank running the width of the band. */
+   under the lamp, not a plank running the width of the band.
+   2026-07-27 (Nate: "make the base the lamp sits on a little smaller (length-wise)") —
+   -12/-16 → -4/-8. Still overhangs the lamp on both sides, so it reads as a desk it stands
+   on rather than a shelf it was placed on. */
 .sl-desk { position: absolute; bottom: -7px; height: 8px;
-  left: -12px; right: -16px;
+  left: -4px; right: -8px;
   border-radius: 4px 0 0 2px;
   background: linear-gradient(180deg, #5a4128, #43301c 45%, #2b1e10);
   box-shadow: 0 -1px 0 rgba(255,235,200,0.10), 0 4px 10px rgba(0,0,0,0.45);
@@ -98,15 +105,21 @@ html.sky-night .studio-light.on .sl-head { box-shadow: inset 0 -4px 6px rgba(255
 /* the wrapper carries the whole upper arm+head; inert until the fold is applied */
 .sl-upper { position: absolute; inset: 0; transform-origin: 63px 42px; /* the elbow */
   transition: transform .6s ease; }
-/* THE NOD-OFF. The working pose already reaches the head down-left over the page; asleep,
-   the head noses all the way down and settles onto the desk while the upper arm sags a
-   little — the stem still stands but the head has drooped, the way a bird tucks its head
-   to sleep. Kept to a small sag + a head rotation so nothing detaches from the arm; the
-   .6s transitions mean it nods off at the twelve-hour mark instead of snapping. Values
-   eyeballed against a render; treat them as a set. */
-.studio-light:not(.on) .sl-upper { transform: translateY(7px) rotate(10deg); }
-.studio-light .sl-head { transition: transform .6s ease; }
-.studio-light:not(.on) .sl-head { transform: rotate(94deg); }
+/* THE NOD-OFF — REDONE 2026-07-27 (Nate: "the lamp head rotated the wrong way; it, along
+   with the bar connected to the head, should fold INWARD instead").
+   It was rotating the head the LONG way round: 32deg → 94deg swung the shade's open mouth
+   from over-the-page all the way past straight-down to face LEFT, which read as the head
+   flipped over and staring at the wall. A real anglepoise folds the other way — the head
+   noses back IN toward its own arm and the upper rod comes up toward vertical, the way you
+   fold one to put it away.
+   So all three parts now travel INWARD: the head rotates NEGATIVE (mouth turns down and in
+   toward the stem), the upper rod swings from -35deg up to nearly plumb, and the whole
+   upper unit sags a touch at the elbow. Picked from a render of four candidates against
+   the live pose; treat the three values as a set. */
+.studio-light:not(.on) .sl-upper { transform: translateY(8px) rotate(6deg); }
+.studio-light .sl-head, .studio-light .sl-arm2 { transition: transform .6s ease; }
+.studio-light:not(.on) .sl-head { transform: rotate(-40deg); }
+.studio-light:not(.on) .sl-arm2 { transform: rotate(-4deg); }
 
 /* the status tooltip — the lamp says whether the Creator has been at the desk */
 .sl-tip { position: absolute; right: 0; bottom: calc(100% + 8px); width: 224px; padding: 9px 12px;

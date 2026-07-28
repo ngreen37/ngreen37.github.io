@@ -102,6 +102,7 @@ const ALLOWED_DYNAMIC = [
   'town-',             // pjcc-weather.js:  'town-' + kind, 'town-rain-' + level
   'sky-',              // town-weather.html: 'sky-' + phase
   'cloud-',            // town-weather.html: 'cloud-' + PJCC_TIME.clouds()  (0..3 cover)
+  'moon-',             // town-weather.html: 'moon-' + PJCC_TIME.moon().name (8 real phases)
   'ep-card--accent-',  // blog.md (Liquid):  ep-card--accent-{{ accent }}
 ];
 const allowedDyn = (cls) => ALLOWED_DYNAMIC.some((p) => cls.startsWith(p));
