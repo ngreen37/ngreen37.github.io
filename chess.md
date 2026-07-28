@@ -3,6 +3,7 @@ layout: page
 permalink: /chess/
 title: McPuppy Chess
 own_title: true
+body_class: theme-chess
 tab_title: McPuppy Chess — free chess for everyone
 description: Free chess for everyone — play a real game, solve a puzzle, or learn from scratch. Set in the world of Princess and the Journey to Chess City, by McPuppy Studios.
 ---
@@ -38,6 +39,23 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 
 {%- assign site_name = "McPuppy Chess" -%}
 
+{%- comment -%} ══ THE TABLETOP (2026-07-28) ═══════════════════════════════════════════
+     Nate: "give the new home page a clean color scheme — its own fresh layout."
+
+     The hero now sits on a surface instead of floating in the page. It's a full-bleed
+     band at the top of the card with warm light pooling under the board — so the page
+     opens on something that reads as a TABLE, which is the one image this whole site is
+     built around. The band and its palette live in _sass/_pjcc-25-front-door.scss
+     (`body.theme-chess`), because a theme belongs beside the other themes; the furniture
+     inside it stays page-local, in this page's own stylesheet block further down.
+
+     ⚠ That sentence deliberately does NOT spell the tag name. Liquid strips these comments
+     at build time so the site is fine either way — but every tool that reads the RAW file
+     (the test harness, a scraper, an editor's folding) sees a style block OPENING here and
+     swallows everything down to the real closing tag. It cost a confusing render on
+     projects.md once, where the same warning is written, and it cost one here too: the
+     whole board and all four doors silently vanished from a repro. ═══════ {%- endcomment -%}
+<section class="mc-table">
 <section class="mc-hero">
   <div class="mc-hero-copy">
     <p class="mc-eyebrow">From McPuppy Studios</p>
@@ -96,13 +114,14 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
     <p class="mcb-say" id="mcb-say">White to play. <b>Mate in one.</b></p>
   </div>
 </section>
+</section>
 
 <h2 class="mc-h2">Four ways in</h2>
 <div class="mc-doors">
   <a class="mc-door" href="{{ '/games/park-tables/' | relative_url }}">
     <span class="mc-door-ico" aria-hidden="true">&#9654;</span>
     <b>Play Now</b>
-    <small>Sit at a park table. Another operative, a park regular, or McPuppy himself.</small>
+    <small>Sit at a park table. Another player, a park regular, or McPuppy himself.</small>
   </a>
   <a class="mc-door" href="{{ '/games/the-gauntlet/' | relative_url }}">
     <span class="mc-door-ico" aria-hidden="true">&#9819;</span>
@@ -165,14 +184,15 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 
 /* HERO — copy left, board right; one column under 760px with the board FIRST, so a
    phone still opens on something that looks like chess rather than on a paragraph. */
-.mc-hero { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: var(--space-6, 32px);
-  align-items: center; margin: 0 0 var(--space-7, 44px); }
+/* inside .mc-table now, which owns the outer spacing (_pjcc-25-front-door.scss) */
+.mc-hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: var(--space-6, 32px);
+  align-items: center; margin: 0; }
 .mc-eyebrow { font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 2.4px;
-  text-transform: uppercase; color: #8a72c0; margin: 0 0 6px; }
-.mc-title { font-size: clamp(38px, 6.4vw, 64px); line-height: 1.02; font-weight: 900; color: #fff;
-  margin: 0 0 12px; letter-spacing: -0.02em; text-wrap: balance; }
-.mc-lede { color: #cdbcf2; font-size: clamp(15px, 1.9vw, 18px); line-height: 1.6; max-width: 42ch;
-  margin: 0 0 var(--space-5, 24px); }
+  text-transform: uppercase; color: var(--fd-wood); margin: 0 0 6px; opacity: 0.85; }
+.mc-title { font-size: clamp(38px, 6.4vw, 64px); line-height: 1.02; font-weight: 900;
+  color: var(--fd-ink); margin: 0 0 12px; letter-spacing: -0.02em; text-wrap: balance; }
+.mc-lede { color: var(--fd-ink-2); font-size: clamp(15px, 1.9vw, 18px); line-height: 1.6;
+  max-width: 42ch; margin: 0 0 var(--space-5, 24px); }
 
 /* THE ONE BUTTON. Nothing else on the page is gold, filled, or this size — that is the
    whole design, and it is the thing the old home page did not have. */
@@ -189,26 +209,48 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mc-cta-arw { font-size: 1.05em; transition: transform .14s ease; }
 .mc-cta:hover .mc-cta-arw { transform: translateX(3px); }
 
-.mc-cta2 { display: inline-block; margin-left: 18px; color: #cdbcf2; font-size: 0.95rem;
-  text-decoration: none; border-bottom: 1px solid rgba(205,188,242,0.35); padding-bottom: 1px; }
-.mc-cta2:hover { color: #fff; border-bottom-color: #fff; text-decoration: none; }
+.mc-cta2 { display: inline-block; margin-left: 18px; color: var(--fd-ink-2); font-size: 0.95rem;
+  text-decoration: none; border-bottom: 1px solid rgba(195,200,209,0.32); padding-bottom: 1px; }
+.mc-cta2:hover { color: var(--fd-ink); border-bottom-color: var(--fd-ink); text-decoration: none; }
 
-.mc-facts { margin: var(--space-4, 16px) 0 0; color: #9a7fd4; font-size: 0.86rem; letter-spacing: 0.01em; }
+.mc-facts { margin: var(--space-4, 16px) 0 0; color: var(--fd-ink-3); font-size: 0.86rem;
+  letter-spacing: 0.01em; }
 
-/* ── THE LIVE BOARD ────────────────────────────────────────────────────────────────
-   Walnut + cream, filled glyphs on BOTH sides (the purple side is "black") — the one board
-   look, straight off the tokens in _pjcc-22-chess-canon.scss. Square colors are inlined here
-   rather than themed per page: this is the front door, and it must never wait on anything. */
+/* ── THE LIVE BOARD — PARK-TABLE-STANDARD ──────────────────────────────────────────
+   ⚠ FIXED 2026-07-28. This board shipped with its OWN woods hard-coded — `#efe3c8`
+   light, `#8a6a44` dark, `#fffaf0` / `#3b2a63` pieces, a `#2a1a55` purple frame — none
+   of which are the canon's. It was a fifth board look on a site whose whole rule is that
+   there is exactly ONE (Nate, 2026-07-16: "they should always be uniform — we'll just
+   call it the chessboards, the pieces"). The comment above it even claimed it came
+   "straight off the tokens", which made it worse: a fork that says it isn't one.
+
+   It reads from _pjcc-22-chess-canon.scss now, like Park Tables, the Academy drill board
+   and the game-review board do — including the GRAIN, which is what stops the squares
+   reading as flat UI colour and starts them reading as wood, and the timber frame that
+   every other board on the site wears. Restyling all five is one token edit again.
+
+   Orientation is standard and was already right: a8 (top-left) light, h1 (bottom-right)
+   light, so a1 is dark. The park table DRAWING's quarter-turn ("white on the right") is a
+   different thing on purpose — its players sit east and west. This one you play from
+   White's side, so it faces the way a board faces.
+
+   Both sides use FILLED glyphs (♚♛♜♟) and take their colour from the tokens — the outline
+   glyphs (♔♕♖♙) will not fill, which is the same trap Park Tables hit. */
 .mcb { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr);
-  width: min(320px, 78vw); aspect-ratio: 1; margin: 0 auto; border-radius: var(--r-sm, 6px);
-  overflow: hidden; box-shadow: 0 14px 40px rgba(0,0,0,0.5), 0 0 0 3px #2a1a55; }
-.mcb-sq { background: #efe3c8; }
-.mcb-sq.d { background: #8a6a44; }
+  /* 100%, NOT a vw unit. `80vw` measures the WHOLE VIEWPORT, which knows nothing about
+     the wrapper's 26px and the card's 20px of padding — at 390px that asked for a 312px
+     board inside a 298px column, and .mc-table's overflow:hidden quietly SLICED THE
+     H-FILE OFF. It reported no page overflow precisely because it was being clipped. */
+  width: min(348px, 100%); aspect-ratio: 1; margin: 0 auto; border-radius: var(--r-sm, 6px);
+  overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0,0,0,0.5), 0 0 0 4px var(--chess-frame); }
+.mcb-sq { background-color: var(--chess-lt); background-image: var(--chess-grain); }
+.mcb-sq.d { background-color: var(--chess-dk); }
 .mcb-p { grid-area: 1/1; display: flex; align-items: center; justify-content: center;
-  font-size: clamp(22px, 5.4vw, 30px); line-height: 1; z-index: 2; cursor: default;
+  font-size: clamp(24px, 5.8vw, 33px); line-height: 1; z-index: 2; cursor: default;
   transition: transform .28s cubic-bezier(.2,.8,.3,1), filter .15s ease; }
-.mcb-p.w { color: #fffaf0; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.55)); }
-.mcb-p.b { color: #3b2a63; filter: drop-shadow(0 1px 0 rgba(255,255,255,0.25)); }
+.mcb-p.w { color: var(--piece-w-fill); filter: drop-shadow(0 1px 1px rgba(0,0,0,0.55)); }
+.mcb-p.b { color: var(--piece-b-fill); filter: drop-shadow(0 1px 0 rgba(255,255,255,0.22)); }
 /* only the rook is ever touchable — the whole puzzle is one move */
 .mcb.live .mcb-p[data-pc="R"] { cursor: pointer; }
 .mcb.live .mcb-p[data-pc="R"]:hover { filter: drop-shadow(0 0 8px #F5C518); }
@@ -218,10 +260,13 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   border-radius: 50%; background: rgba(245,197,24,0.55); }
 .mcb-sq.bad  { box-shadow: inset 0 0 0 3px rgba(255,110,110,0.8); }
 .mcb-p.mated { color: #ff6e6e; }
-.mcb-say { margin: 12px 0 0; text-align: center; color: #cdbcf2; font-size: 0.9rem; min-height: 2.6em; }
-.mcb-say b { color: #F5C518; }
+.mcb-say { margin: 14px 0 0; text-align: center; color: var(--fd-ink-2); font-size: 0.9rem;
+  min-height: 2.6em; }
+/* the prompt's emphasis is MAPLE, not gold - gold on this page means "the button", and a
+   bolded phrase in the same colour as the CTA quietly competes with it. */
+.mcb-say b { color: var(--fd-wood); }
 .mcb-say.good b, .mcb-say.good { color: #6bffb8; }
-.mcb-ready { display: block; margin-top: 4px; color: #8a72c0; font-size: 0.72rem;
+.mcb-ready { display: block; margin-top: 4px; color: var(--fd-ink-3); font-size: 0.72rem;
   font-family: 'Share Tech Mono', monospace; }
 @media (prefers-reduced-motion: reduce) { .mcb-p { transition: none; } }
 
@@ -238,15 +283,23 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 
 @media (max-width: 760px) {
   .mc-hero { grid-template-columns: 1fr; gap: var(--space-4, 16px); }
-  .mc-board { order: -1; min-height: 150px; }
+  .mc-board { order: -1; min-height: 150px; padding: 0 0 var(--space-2, 8px); }
   .mc-board .pkt-scene { transform: scale(1.15); }
   .mc-cta { width: 100%; justify-content: center; }
-  .mc-cta2 { display: block; margin: 14px 0 0; text-align: center; }
+    /* no underline down here: at full width it stops reading as a link and starts
+     reading as a horizontal rule under the button. */
+  .mc-cta2 { display: block; margin: 14px 0 0; text-align: center; border-bottom: none; }
 }
 
 /* SECTION HEADS — quiet; the button is the loud thing */
-.mc-h2 { color: #F5C518; font-size: 1.05rem; letter-spacing: 0.08em; text-transform: uppercase;
-  font-family: 'Share Tech Mono', monospace; margin: 0 0 var(--space-4, 16px); }
+/* Section heads are MAPLE and quiet. They used to be gold - which meant the page had a
+   gold heading, a gold button, gold door icons and a gold arrow, and "the one gold thing"
+   was a rule the page broke four times over. The rule under it is the theme's hairline,
+   not the site's purple h2 border (switched off in _pjcc-25-front-door.scss). */
+.mc-h2 { color: var(--fd-wood); font-size: 0.92rem; letter-spacing: 0.16em; text-transform: uppercase;
+  font-family: 'Share Tech Mono', monospace; font-weight: 400;
+  margin: 0 0 var(--space-4, 16px); padding-bottom: 10px;
+  border-bottom: 1px solid var(--fd-rule); }
 
 /* FOUR DOORS — explicit 4 / 2x2 / 1, never auto-fit. auto-fit put THREE across at the
    real content width and orphaned Academy on a row of its own; four doors want to read as
@@ -256,39 +309,53 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   gap: var(--space-3, 12px); margin: 0 0 var(--space-7, 44px); }
 @media (max-width: 1080px) { .mc-doors { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 520px)  { .mc-doors { grid-template-columns: 1fr; } }
-.mc-door { display: block; text-decoration: none; padding: 18px 18px 20px;
-  background: rgba(36,20,81,0.55); border: 1px solid #3a2870; border-radius: var(--r-md, 12px);
+/* Flat panels with a wood hairline along the top, not bordered boxes. Four bordered
+   cards in a row read as "card soup"; the hairline gives them a shelf to sit on and lets
+   the hover do the work. Icons are maple - see the note on .mc-h2 about gold. */
+.mc-door { position: relative; display: block; text-decoration: none; padding: 20px 18px 22px;
+  background: var(--fd-panel); border: 1px solid var(--fd-rule); border-radius: var(--r-md, 12px);
   transition: transform .14s ease, border-color .14s ease, background .14s ease; }
-.mc-door:hover { transform: translateY(-3px); border-color: #F5C518; background: rgba(46,26,100,0.7);
-  text-decoration: none; }
-.mc-door-ico { display: block; font-size: 26px; line-height: 1; color: #F5C518; margin-bottom: 10px; }
-.mc-door b { display: block; color: #fff; font-size: 1.05rem; margin-bottom: 5px; }
-.mc-door small { display: block; color: #b3a3d8; font-size: 0.84rem; line-height: 1.55; }
+.mc-door::before { content: ''; position: absolute; top: -1px; left: 14px; right: 14px; height: 2px;
+  border-radius: 2px; background: var(--fd-wood); opacity: 0.5; transition: opacity .14s ease; }
+.mc-door:hover { transform: translateY(-3px); border-color: var(--fd-grain);
+  background: var(--fd-panel-hi); text-decoration: none; }
+.mc-door:hover::before { opacity: 1; }
+.mc-door-ico { display: block; font-size: 26px; line-height: 1; color: var(--fd-wood);
+  margin-bottom: 10px; }
+.mc-door b { display: block; color: var(--fd-ink); font-size: 1.05rem; margin-bottom: 5px; }
+.mc-door small { display: block; color: var(--fd-ink-3); font-size: 0.84rem; line-height: 1.55; }
 
 /* THE TRUE THINGS — a list, not cards; facts don't need boxes */
 .mc-true { list-style: none; padding: 0; margin: 0 0 var(--space-7, 44px);
   display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-4, 16px); }
-.mc-true li { color: #b3a3d8; font-size: 0.88rem; line-height: 1.6; border-left: 2px solid #3a2870;
-  padding-left: 14px; }
-.mc-true b { display: block; color: #e8dcff; font-size: 0.95rem; margin-bottom: 3px; }
+.mc-true li { color: var(--fd-ink-3); font-size: 0.88rem; line-height: 1.6;
+  border-left: 2px solid var(--fd-rule); padding-left: 14px; }
+.mc-true b { display: block; color: var(--fd-ink-2); font-size: 0.95rem; margin-bottom: 3px; }
 
 /* THE WORLD DOOR */
+/* -- THE ONE PURPLE THING ---------------------------------------------------------
+   This is the whole colour idea of the page in one element. PJCC purple is the WORLD's
+   livery, so on the front door it appears exactly where it means something: the board's
+   "black" side (canon), and this - the single door that opens the world. Everything
+   between them is wood and ink. Purple stops being wallpaper and becomes a signpost. */
 .mc-world { display: flex; align-items: center; gap: 16px; text-decoration: none;
   padding: 18px 20px; border-radius: var(--r-lg, 16px); margin: 0 0 var(--space-6, 32px);
-  background: linear-gradient(100deg, rgba(58,34,120,0.6), rgba(26,15,61,0.5));
-  border: 1px solid #4a3890; transition: border-color .14s ease, transform .14s ease; }
-.mc-world:hover { border-color: #F5C518; transform: translateY(-2px); text-decoration: none; }
-.mc-world-glyph { font-size: 34px; line-height: 1; color: #F5C518; flex: 0 0 auto; }
+  background: linear-gradient(100deg, rgba(74,53,133,0.34), rgba(28,32,41,0.5));
+  border: 1px solid rgba(111,87,196,0.5);
+  transition: border-color .14s ease, transform .14s ease, background .14s ease; }
+.mc-world:hover { border-color: var(--fd-world); transform: translateY(-2px);
+  background: linear-gradient(100deg, rgba(74,53,133,0.5), rgba(28,32,41,0.5)); text-decoration: none; }
+.mc-world-glyph { font-size: 34px; line-height: 1; color: #b9a3e8; flex: 0 0 auto; }
 .mc-world-txt { flex: 1; min-width: 0; }
-.mc-world-txt b { display: block; color: #fff; font-size: 1rem; margin-bottom: 3px; }
-.mc-world-txt small { display: block; color: #b3a3d8; font-size: 0.84rem; line-height: 1.55; }
-.mc-world-arw { color: #F5C518; font-size: 1.2rem; flex: 0 0 auto; }
+.mc-world-txt b { display: block; color: var(--fd-ink); font-size: 1rem; margin-bottom: 3px; }
+.mc-world-txt small { display: block; color: var(--fd-ink-3); font-size: 0.84rem; line-height: 1.55; }
+.mc-world-arw { color: #b9a3e8; font-size: 1.2rem; flex: 0 0 auto; }
 @media (max-width: 560px) { .mc-world-glyph { font-size: 26px; } }
 
 /* THE STUDIO BAND — the same lamp + newest post the old home carried; it is the proof
    that someone is still building this, and it costs one include. */
 .mc-studio { display: flex; align-items: center; gap: 18px; padding: 16px 4px 0;
-  border-top: 1px solid #2a1a55; }
+  border-top: 1px solid var(--fd-rule); }
 /* ⚠ desk-lamp.html sizes the lamp but deliberately NEVER PLACES it — "wrap this include in
    something positioned" (the include says so). Without these five lines the lamp's absolutely
    positioned parts escape to the page and scatter (a blob in one corner, the desk slab drawn
@@ -302,12 +369,12 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mc-lamp .sl-tip { right: auto; left: -52px; }
 .mc-studio-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .mc-studio-label { font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 2px;
-  text-transform: uppercase; color: #8a72c0; }
-.mc-studio-post { color: #fff; font-weight: 700; text-decoration: none; font-size: 0.98rem; }
-.mc-studio-post:hover { color: #F5C518; }
-.mc-studio-date { color: #9a7fd4; font-size: 0.78rem; }
-.mc-studio-more { color: #cdbcf2; font-size: 0.84rem; text-decoration: none; margin-top: 4px; }
-.mc-studio-more:hover { color: #F5C518; }
+  text-transform: uppercase; color: var(--fd-wood); opacity: 0.85; }
+.mc-studio-post { color: var(--fd-ink); font-weight: 700; text-decoration: none; font-size: 0.98rem; }
+.mc-studio-post:hover { color: var(--fd-wood); }
+.mc-studio-date { color: var(--fd-ink-3); font-size: 0.78rem; }
+.mc-studio-more { color: var(--fd-ink-2); font-size: 0.84rem; text-decoration: none; margin-top: 4px; }
+.mc-studio-more:hover { color: var(--fd-wood); }
 
 /* phones: every door and link clears the 40px tap floor (the compass-check baseline) */
 @media (pointer: coarse) {

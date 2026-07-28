@@ -1,0 +1,126 @@
+/* =============================================================================
+ * THEME-CHESS — the front door's own room  (2026-07-28)
+ * -----------------------------------------------------------------------------
+ * Nate: "Let's give the new home page a clean color scheme — its own fresh layout.
+ * The current purple is way too much for a welcoming home page."
+ *
+ * He's right, and the diagnosis is worth writing down because it isn't "purple is
+ * bad". PJCC purple is the WORLD's livery — Checker Town at night, the cast, the
+ * dossier. It earns that everywhere it appears. But the front door is not the world;
+ * it's the doormat, and it was wearing the world's evening clothes: a purple card
+ * (`--surface`), a purple edge, purple headings, purple body text, purple link
+ * colour, a purple rule under every h2 — with the town sky showing through all of it.
+ * Seven purples deep before a stranger read a word.
+ *
+ * THE RULE THIS ROOM RUNS ON:  ONE COLOUR, ONE JOB.
+ *
+ *   GOLD   #F5C518   exactly one thing: the CTA. Unchanged and untouchable —
+ *                    if a second gold thing ever appears, the page has regressed
+ *                    to the problem the front door was built to fix.
+ *   WOOD   the chess canon's own maple + walnut (_pjcc-22-chess-canon.scss).
+ *                    Section labels, door icons, the board. The site's warmth now
+ *                    comes from the thing the site is ABOUT.
+ *   PURPLE --fd-world, used TWICE and deliberately: the "black" pieces on the board
+ *                    (that's canon, it's what purple means here) and the single card
+ *                    that opens the PJCC world. Purple stops being wallpaper and
+ *                    starts being a signpost — when you see it, it means the world.
+ *   INK    a warm neutral for everything else, so none of the above has to compete.
+ *
+ * WHY THE CARD GOES OPAQUE. `--surface` is translucent site-wide (2026-07-23, Nate:
+ * "make the boxes more transparent so we can see the moon") and that is right for the
+ * world pages — the sky IS the point there. On the front door it meant the night sky
+ * tinted every paragraph purple from behind, which no amount of re-inking the text can
+ * undo. So this one card is a solid sheet. The sky still frames it — margins, header,
+ * footer — so the page still belongs to the site; it just doesn't read THROUGH it.
+ *
+ * Scope: tokens and shared chrome live here, because that's where theme-studio,
+ * theme-bw and theme-academy live. The `.mc-*` furniture stays page-local in
+ * chess.md — it's one page's furniture, and it reads from these tokens.
+ * ========================================================================== */
+
+body.theme-chess {
+  /* the sheet */
+  --surface:   #171a20;
+  --surface-2: #1c2029;
+  --edge:      #272c36;
+  --lift:      0 18px 50px rgba(0, 0, 0, 0.55);
+
+  /* the ink — warm neutrals, three steps. All three clear AA on --surface
+     (measured: 15.9 / 9.6 / 5.6 against #171a20). */
+  --fd-ink:   #f5f3ee;
+  --fd-ink-2: #c3c8d1;
+  --fd-ink-3: #8c93a0;
+
+  /* structure */
+  --fd-rule:  #272c36;
+  --fd-panel: #1c2029;
+  --fd-panel-hi: #222732;
+
+  /* the two colours with a job */
+  --fd-wood:  var(--chess-lt);     /* maple — labels, icons, rules */
+  --fd-grain: var(--chess-dk);     /* walnut — the deeper wood note */
+  --fd-world: #6f57c4;             /* the world's purple, lifted for contrast */
+}
+
+/* ── site chrome corrections ──────────────────────────────────────────────────
+   Three global rules paint purple onto ANY page, and all three land on the front
+   door. They're corrected here rather than in the page's own <style> because they
+   belong to the theme, not to the furniture. */
+body.theme-chess {
+  /* h2's 2px #3d2b8a underline (_pjcc-01-core.scss). The front door's section
+     heads carry their own maple rule; this one would sit under it in purple. */
+  h2 { border-bottom: none; padding-bottom: 0; }
+
+  /* The default link colour is #a78bfa — purple on any anchor that doesn't set its own.
+     ⚠ SCOPED TO UNCLASSED LINKS, and that `:not([class])` is load-bearing. Written first
+     as a bare `body.theme-chess a`, it out-specified every one of the page's own link
+     rules — (0,1,1) beats the flat (0,1,0) of `.mc-cta`, `.mc-cta2`, `.mc-studio-post`
+     and `.mc-studio-more` — so the gold button's near-black label turned pale grey on
+     gold and four other links lost their colour. Caught in the render, not in the CSS.
+     This way it only reaches links that have opted out of styling entirely. */
+  .page-body a:not([class]) { color: var(--fd-ink-2); }
+  .page-body a:not([class]):hover { color: var(--fd-ink); }
+
+  .page-card { background: var(--surface); }
+}
+
+/* ── the tabletop band ────────────────────────────────────────────────────────
+   The one structural idea in the new layout: the hero sits on a surface, so the
+   page opens on something that reads as a TABLE rather than as a section of a
+   document. Full-bleed to the card's edges (cancelling .page-card's padding, the
+   same trick .page-title uses in _pjcc-20-town-sky.scss), with the wood warmth
+   coming up from underneath the board.
+
+   STATIC PAINT, NO ANIMATION — the front door is the page that just proved you can
+   take 0.77 screens of GPU texture off every page by deleting motion nobody could
+   see ([[css-perf-lessons]] #7). It is not the page to add an ambient layer to. */
+body.theme-chess .mc-table {
+  position: relative;
+  margin: -36px -44px var(--space-6, 32px);
+  padding: 40px 44px 36px;
+  border-bottom: 1px solid var(--fd-rule);
+  border-radius: var(--r-lg, 16px) var(--r-lg, 16px) 0 0;
+  background:
+    /* the pool of warm light the board sits in */
+    radial-gradient(58% 90% at 78% 46%, rgba(233, 211, 164, 0.10), transparent 68%),
+    linear-gradient(180deg, var(--fd-panel-hi), var(--surface));
+  overflow: hidden;
+}
+/* the hairline of maple along the very top, like the lit edge of a tabletop */
+body.theme-chess .mc-table::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(233, 211, 164, 0.55) 30%,
+                              rgba(233, 211, 164, 0.55) 70%, transparent);
+}
+
+@media (max-width: 700px) {
+  /* .page-card drops to 24px/20px down here (_pjcc-01-core.scss), so the bleed has
+     to match or the band pulls away from the card's edges on one axis. */
+  body.theme-chess .mc-table {
+    margin: -24px -20px var(--space-5, 24px);
+    padding: 26px 20px 24px;
+  }
+}
