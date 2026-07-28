@@ -50,6 +50,14 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**
 - [ ] **The Enforcer door (floor 7)** — "lock the rook glyph" was built as *the rook locked behind a
   barred gate with a padlock*. If he meant *pin the glyph to ♜ so it stops changing*, that's a one-liner.
 
+**Queued, mine not his — carried from 2026-07-28, NOT started**
+- [ ] **Companion page upgrade:** switch up the pet/feed/play sounds · add **Take for a walk**
+  (bond + energy) · **petting gives +1 energy** too · **remove the default pets' names** ·
+  **promote the Companion Den** on the Customize screen (it's too small and tucked away).
+- [ ] **Coat ≠ whole dog.** The coat color currently paints the entire animal. It must skip the
+  **eyes** and the **nose** — and both become their own pickers: **8 eye colors** (person *and*
+  pet) and a few **nose colors**.
+
 **Test on a device I don't have**
 - [ ] **iOS in-app sign-in** — the PWA is built but private (`?pwa=on`). Magic links can't sign in an
   installed app; the email-CODE path (`PJCC.verifyCode`) was written for it and has never been retested
