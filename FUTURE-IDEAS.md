@@ -174,6 +174,35 @@ the site has never once said so. **One line in the games hall.** Not a prompt �
 are Blender clips to post. An empty reserved account costs nothing; a lost handle costs the name. This is the
 only item on the list that gets *worse* by waiting.
 
+### ⭐ PRIORITY, GATED — "What the studio needs" *(built and pulled 2026-07-28, same day)*
+Nate: *"I like the idea of What the Studio Needs — but I'm deciding not to add animators until the series is
+actually kicking. Remove that, remove all three but keep this idea as a priority item."* Right call: a public
+ask is a **promise about where the project is**, and answering replies for a job you can't hand out yet costs
+more than the replies are worth. **The trigger, not a date: the series is actually kicking** — there's footage
+moving, and a second pair of hands would have something to do on Monday.
+
+The problem it solved is still unsolved and still the sharpest line from the skeptic pass: *he leaves without
+emailing — not because he's unconvinced, but because there's no reason to email.* "Contact me for more." More
+**what**? A vague ask gets no replies because answering it makes the stranger invent what they're offering.
+
+**Paste it back, don't rebuild it** — this is the whole thing (markup + `.pj-ask*` CSS in `projects.md` at
+commit `3d3ebcc`, the section right above `.mcp-thanks`):
+- **The three named openings**, each one a person who can recognize themselves: *an animator who works in
+  Blender* (Princess is modeled with a first color pass — she needs to move) · *anyone who has actually
+  shipped an animated series* (thirty minutes of what you wish you'd known) · *a producer or studio who
+  works with independent animation* (there's a world, a cast and a pilot script; what there isn't is a
+  second pair of hands).
+- **The subject-line trick** — "put the one you are in the subject line" — so there is nothing left to invent.
+- **"I answer every one."** That's the line that actually moves someone to write, and it's a promise Nate can
+  keep at today's volume. If the inbox ever gets loud, soften *that* line first.
+- **Full width**, lined up with the project cards — not the 640px centered column the thank-yous use. A block
+  starting a third of the way across the page reads as a footnote.
+- Deliberately still NOT on it: teaching/curriculum work (Nate: *"not yet"* — its own action item).
+
+*A cheaper half that isn't gated at all: keep the reason-to-email problem, drop the hiring. One ask that's
+true today — "tell me what's confusing about this site" or "what would make you come back" — costs nothing to
+honor and still beats "Contact me for more."*
+
 **Waiting on Nate, not on me — the Spotify hover** *(2026-07-27: "take a look at the spotify
 profile in the top-right corner. When you hover, it slides out the onboarding progress circle")*.
 Nothing like it exists on the site yet, so this is a build, not a fix, and it's outward-facing —

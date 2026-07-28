@@ -162,26 +162,9 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
   .pj-receipts-list li:first-child { padding-left: var(--space-2); }
 }
 
-/* ── the ask ──────────────────────────────────────────────────────────────────── */
-/* full width, NOT the 640px centred column the thank-yous use. The thanks are a quiet
-   credit roll and want to be narrow; the ask is the one thing on this page we want a
-   stranger to act on, and a block that starts a third of the way across the page reads
-   as a footnote. It lines up with the project cards instead. */
-.pj-ask { margin: 3.2rem 0 var(--space-4); padding: var(--space-5) 0 0;
-  border-top: 1px solid #2a2830; }
-.pj-ask-h { font-family: 'Poppins', sans-serif; font-size: 1.05rem; font-weight: 700;
-  color: #f2efe8; margin: 0 0 var(--space-2); }
-.pj-ask-lede { color: #8a8592; font-size: 0.86rem; line-height: 1.7; margin: 0 0 var(--space-4); }
-.pj-ask-list { list-style: none; margin: 0 0 var(--space-4); padding: 0; }
-.pj-ask-list li { position: relative; padding: 0 0 var(--space-4) 22px;
-  color: #8a8592; font-size: 0.86rem; line-height: 1.75; }
-.pj-ask-list li::before { content: '♟'; position: absolute; left: 0; top: 0;
-  color: #caa24a; font-size: 0.9rem; }
-.pj-ask-list strong { display: block; color: #f2efe8; font-weight: 600; }
-.pj-ask-do { color: #e8e3da; font-size: 0.9rem; line-height: 1.75; margin: 0 0 var(--space-3); }
-.pj-ask-else { color: #8a8592; font-size: 0.82rem; line-height: 1.7; margin: 0; }
-.pj-ask a { color: #caa24a; text-decoration: underline; text-underline-offset: 3px; }
-.pj-ask a:hover { color: #e0bd66; }
+/* (the .pj-ask block — "What the studio needs" — came out 2026-07-28 with its markup;
+   the styles went with it rather than sitting here waiting, because dead CSS fails the
+   sweep and, worse, quietly rots. FUTURE-IDEAS holds the spec for when it comes back.) */
 </style>
 {% comment %} ── REBUILT 2026-07-28, from the deep-dive skeptic pass ──────────────────
      Two findings drove this, and both were about what a stranger CONCLUDES:
@@ -380,54 +363,23 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
 })();
 </script>
 
-{% comment %} ── A REASON TO EMAIL ─────────────────────────────────────────────────────
-     2026-07-28, Nate: "Let's give the skeptic business partner a reason to email."
-     This is idea #6 of ten — "one ask, at the bottom, that isn't 'contact me'."
+{% comment %} ── "WHAT THE STUDIO NEEDS" WAS HERE, AND CAME BACK OUT ──────────────────
+     Built 2026-07-28 (Nate: "let's give the skeptic business partner a reason to email"),
+     removed the same evening (Nate: "I like the idea of What the Studio Needs — but I'm
+     deciding not to add animators until the series is actually kicking. Remove that,
+     remove all three but keep this idea as a priority item in future ideas").
 
-     The skeptic's verdict on the old page was the sharpest line in the whole pass:
-     *he leaves without emailing — not because he's unconvinced, but because there's no
-     reason to email.* The page had "Contact me for more." More WHAT? For a school? To
-     collaborate? To buy something? A vague ask gets no replies, because answering it
-     requires the stranger to do the work of inventing what they're offering.
+     He's right, and the reason is worth keeping: a public ask is a promise about where
+     the project IS. Asking for an animator today would have had him fielding replies for
+     a job he isn't ready to hand out, and the only thing worse than no ask is one you
+     can't honour. It comes back when the series is kicking — the spec, all three openings
+     and the subject-line trick are banked in FUTURE-IDEAS as a PRIORITY item, so it's a
+     paste-back and not a rebuild.
 
-     So: three named openings, each one a thing a specific person can recognize
-     themselves in, and a subject line handed to them so there's nothing left to invent.
-     The promise at the end ("I answer every one") is the part that actually moves
-     someone to write — and it is a promise Nate can keep at today's volume. If the
-     inbox ever gets loud, soften that line first.
-
-     ⚠ THE WORDING OF THE THREE ASKS IS NATE'S TO CHANGE. They're written from what the
-     studio demonstrably needs right now; the moment one of them is filled, or stops
-     being true, delete the <li>. An ask that is no longer real is worse than no ask.
-     Deliberately NOT here: teaching/curriculum work. Nate: "not yet because I'm not
-     quite ready" (idea #7, now an action item in FUTURE-IDEAS). ────────────── {% endcomment %}
-<section class="pj-ask" aria-labelledby="pj-ask-h">
-  <h2 class="pj-ask-h" id="pj-ask-h">What the studio needs</h2>
-  <p class="pj-ask-lede">One person builds all of this. These are the three things that
-    would move it fastest, and any one of them is worth an email.</p>
-  <ul class="pj-ask-list">
-    <li>
-      <strong>An animator who works in Blender.</strong>
-      Princess is modeled and she has a first color pass. She needs to move.
-    </li>
-    <li>
-      <strong>Anyone who has actually shipped an animated series.</strong>
-      Thirty minutes of what you wish you'd known is worth more than you think.
-    </li>
-    <li>
-      <strong>A producer or studio who works with independent animation.</strong>
-      There is a world, a cast, and a pilot script. What there isn't is a second pair of hands.
-    </li>
-  </ul>
-  <p class="pj-ask-do">
-    If one of those is you — <a href="/contact/">say hello</a>, and put the one you are in
-    the subject line. I answer every one.
-  </p>
-  <p class="pj-ask-else">
-    Not that? The <a href="/blog/">build log</a> is where all of this gets written down as
-    it happens, week by week.
-  </p>
-</section>
+     The diagnosis it was built on still stands and still isn't answered: the skeptic
+     leaves without emailing not because he's unconvinced but because there is no reason
+     to email. That gap is real; it just doesn't get filled with a hiring notice yet.
+     ──────────────────────────────────────────────────────────────────── {% endcomment %}
 
 <section class="mcp-thanks" aria-label="Special thanks">
   <div class="mcp-thanks-rule" aria-hidden="true"></div>

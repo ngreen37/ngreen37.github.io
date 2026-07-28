@@ -556,12 +556,49 @@ html.town-mist .town-weather-overlay::before { opacity: 1; background: radial-gr
    Restore the CSS rain: `git show 875d8d1 -- _sass/_pjcc-09-widgets.scss`, and know
    that it costs about 1.2 screens of texture on every page it falls on. ══════ */
 
+/* ── WHICH SIDE OF THE WINDOW THE WEATHER IS ON (2026-07-28) ───────────────────
+   Nate: "rain, snow, etc. for ALL pages should fall BEHIND the windows. BEHIND the
+   game windows, the Profile window up top, the home page boxes, the left-hand nav
+   bar (condensed or expanded), etc. … But make it show through at like a roughly
+   5-15% visibility on games, puzzles, boxes, nav (that would be a really cool
+   subtle effect)."
+
+   He's right and it was a real mistake: the weather shipped on the WASH overlay at
+   z-index 900, which is in front of the page, so it rained ON your puzzle instead
+   of outside it. Two hosts now, one storm drawn once:
+
+     .town-weather-fall    z-index: -1     the real weather, behind every window.
+                                           Sits with the town sky, which is also -1
+                                           and earlier in the DOM, so the rain falls
+                                           IN FRONT of the moon and BEHIND the page —
+                                           which is exactly where weather goes.
+     .town-weather-glass   z-index: 1200   a quarter-resolution copy at 12%, in front
+                                           of everything. Above the nav rail and the
+                                           header (both 1000) because Nate named them;
+                                           below the portal (4000) and the warp (9999),
+                                           which are whole-screen events, not windows.
+
+   WHY A LAYER AND NOT TRANSLUCENT PANELS. Making every card, rail and cabinet let
+   the weather through is dozens of edits that drift, it fights `--surface`'s job of
+   letting the MOON through, and it can never work on the arcade's <iframe>s — you
+   cannot ask another document to be see-through. A pane of rain in front of the
+   glass works everywhere, including over an iframe, and it's one rule. */
+.town-weather-fall,
+.town-weather-glass { position: fixed; inset: 0; pointer-events: none; }
+.town-weather-fall  { z-index: -1; }
+.town-weather-glass { z-index: 1200; }
+
 /* The canvas itself owns no look — it is a transparent sheet the particles are
    drawn onto. Sizing is the only thing CSS decides; pjcc-weather-canvas.js reads
    clientWidth/clientHeight back off it and matches the backing store to the dpr. */
 .tw-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-html.reduce-flourish .tw-canvas { display: none; }
-@media (prefers-reduced-motion: reduce) { .tw-canvas { display: none; } }
+/* the glass copy — the number Nate asked for lives HERE, not in the JS, so it can be
+   tuned without touching the engine. 0.12 sits in the middle of his 5-15%. */
+.tw-ghost { position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+  opacity: 0.12; }
+html.reduce-flourish .tw-canvas,
+html.reduce-flourish .tw-ghost { display: none; }
+@media (prefers-reduced-motion: reduce) { .tw-canvas, .tw-ghost { display: none; } }
 
 /* SNOW's colour wash — the cold, flat, slightly bright cast a snowy sky has. Warmer
    than the rain wash on purpose: falling snow scatters light back at you, so a snowy

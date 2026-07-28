@@ -667,6 +667,19 @@ function legalMovesFor(b, col){
   return out;
 }
 function isCheckmate(b, col){ return inCheck(b, col) && legalMovesFor(b, col).length === 0; }
+/* Every move the piece on (x,y) may ACTUALLY make (2026-07-28).
+   genMoves is PSEUDO-legal: it will happily walk a pinned piece off its pin, because the
+   generator doesn't know where your king is. legalMovesFor already applies the self-check
+   filter to a whole side; this applies the same filter to one square, so the dots the
+   player sees and the moves the room accepts come from the SAME list. That identity is
+   the fix — see the note in the pointerdown handler. */
+function legalFrom(b, x, y){
+  const p = b[y][x]; if (!p) return [];
+  return genMoves(b, x, y).filter(m => {
+    const nb = cloneBoard(b); nb[m.y][m.x] = nb[y][x]; nb[y][x] = null;
+    return !inCheck(nb, p.c);
+  });
+}
 // Is from->to a legal move for the side to move that also satisfies the puzzle goal?
 // Scoped to mate-in-one: accept ANY move that delivers mate (multi-move tactics keep their exact line).
 function isWinningAltMove(p, b, fx, fy, tx, ty){
@@ -974,11 +987,36 @@ canvas.addEventListener('pointerdown', e => {
   const c = cellFromXY(e.clientX, e.clientY); if (!c) return; e.preventDefault();
   const exp = uci(G.p.line[G.step][0]);
   const piece = G.board[c.y][c.x];
-  if (!G.selected) { if (piece && piece.c === G.orient) { G.selected = c; G.moves = genMoves(G.board, c.x, c.y); } return; }
+  if (!G.selected) { if (piece && piece.c === G.orient) { G.selected = c; G.moves = legalFrom(G.board, c.x, c.y); } return; }
   if (c.x === G.selected.x && c.y === G.selected.y) { G.selected = null; G.moves = null; return; }
-  if (piece && piece.c === G.orient) { G.selected = c; G.moves = genMoves(G.board, c.x, c.y); return; }
+  if (piece && piece.c === G.orient) { G.selected = c; G.moves = legalFrom(G.board, c.x, c.y); return; }
   const from = G.selected;
-  if (from.x === exp.fx && from.y === exp.fy && c.x === exp.tx && c.y === exp.ty) {
+  const isExpected = (from.x === exp.fx && from.y === exp.fy && c.x === exp.tx && c.y === exp.ty);
+
+  /* ⚠ AN ILLEGAL MOVE IS NOT A WRONG ANSWER (2026-07-28).
+     Nate: "You can select, say, your king, and try and move him 6 squares away. Obviously
+     that is illegal, but the game marks it as wrong, the sound is made and the screen goes
+     red. Can we clean that up?"
+
+     He's right, and it was the worst kind of bug: the room punished you for something the
+     rules already forbid, which teaches the opposite of what a puzzle room is for. The
+     `else` below assumed every tap on a square was an ATTEMPTED SOLUTION, so a king
+     dragged across the board burned the clean-solve flag, incremented the wrong count and
+     sent the whole screen red — and then the refutation search tried to explain a move
+     that could never be played.
+
+     A tap that isn't one of the piece's moves means the player put the piece down. Say
+     nothing: no sound, no shake, no vignette, no wrong count, no lost clean-solve. Only a
+     move they could legally make can be a wrong answer.
+
+     The puzzle's own solution is let through regardless — a stored answer can never be
+     rejected as illegal, and if the two ever disagreed the puzzle would be unsolvable. */
+  if (!isExpected && !(G.moves || []).some(m => m.x === c.x && m.y === c.y)) {
+    G.selected = null; G.moves = null;
+    return;
+  }
+
+  if (isExpected) {
     G.selected = null; G.moves = null; playerCorrect();
   } else if (G.p.line.length === 1 && isWinningAltMove(G.p, G.board, from.x, from.y, c.x, c.y)) {
     G.selected = null; G.moves = null; playerAltCorrect(from.x, from.y, c.x, c.y);   // a second, equally-valid mate
@@ -1071,14 +1109,24 @@ function drawHeader(){
   ctx.strokeStyle = youW ? '#caa84a' : '#5be0c0'; ctx.lineWidth = 2; roundRect(yx, yy, yw, yh, 12); ctx.stroke();
   ctx.fillStyle = youW ? '#2a2208' : '#dffff6'; ctx.textAlign = 'center';
   ctx.fillText(youTxt, W/2, yy + yh/2);
-  // journey region + step — or the boss banner when a gate puzzle is up
+  /* journey region + step — or the boss banner when a gate puzzle is up.
+     ⚠ MOVED UP TO THE CHIP ROW, 2026-07-28 (Nate, with a screenshot: "the YOU PLAY
+     WHITE/BLACK covers the level"). It sat at y=72, which is a 10px gap that three things
+     were trying to share: the badge ends at 68 including its 2px stroke, and the board's
+     frame starts at BY-6 = 74. An 11px line centred on 72 spans roughly 66-78, so it was
+     overlapped from ABOVE by the badge and from BELOW by the board — there was never room
+     there, and widening the badge (which the goal text does) only made it obvious.
+
+     The chip row has real space: the theme chip is a fixed 150px on the left and the ☰
+     menu button is an HTML overlay pinned to the right, so the middle of that row is
+     empty. Same vertical centre as the chip (y=26) so the row reads as one line. */
   if (run && run.mode === 'journey'){
     if (p.boss){
       ctx.fillStyle = C.gold; ctx.font = 'bold 12px Trebuchet MS'; ctx.textAlign = 'center';
-      ctx.fillText('👑 BOSS — ' + p.boss.name, W/2, 72);
+      ctx.fillText('👑 BOSS — ' + p.boss.name, W/2, 26);
     } else {
       ctx.fillStyle = C.muted; ctx.font = '11px Trebuchet MS'; ctx.textAlign = 'center';
-      ctx.fillText('Level ' + levelFor(run.step) + ' of ' + LEVELS + '   ·   ' + intoLevel(run.step) + ' / ' + LEVEL_LEN, W/2, 72);
+      ctx.fillText('Level ' + levelFor(run.step) + ' of ' + LEVELS + '   ·   ' + intoLevel(run.step) + ' / ' + LEVEL_LEN, W/2, 26);
     }
   }
   // (the live streak counter came off 2026-07-28 - Nate: "let's remove the game feel". A

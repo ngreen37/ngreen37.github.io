@@ -44,20 +44,26 @@ permalink: /leaderboards/
   <div class="lbtv-screen">
     <div id="lb-body"><p class="lb-empty">Tuning in…</p></div>
   </div>
-  <div class="lbtv-ticker" aria-hidden="true">
-    <span class="lbtv-booth">◆ FROM THE BOOTH</span>
-    <span class="lbtv-quote" id="lbtv-quote">"Every credit counts, folks."</span>
-  </div>
-
   {%- comment -%} 2026-07-28 (Nate): "Add an Altar link to the Leaderboard page and the Profile
        page (the two main places where users can view their credits)." This page is where a
        player sees the number; the altar is the only place it means anything. One quiet line —
-       the Gambit is a ritual room, not a promo. {%- endcomment -%}
+       the Gambit is a ritual room, not a promo.
+
+       ORDER SWAPPED 2026-07-28 evening (Nate: "switch the positions of the Booth Quotes and
+       The Gambit"). The altar now sits directly under the standings and the booth signs off
+       at the very bottom, which is the right way round: the door you might actually walk
+       through belongs next to the number that opens it, and colour commentary belongs after
+       the game, not between the score and the exit. {%- endcomment -%}
   <a class="lb-altar" href="{{ '/the-gambit/' | relative_url }}">
     <span class="lb-altar-glyph" aria-hidden="true">&#9823;</span>
     <span class="lb-altar-txt"><b>The Gambit</b><small>Lay credits on the altar — the board sometimes gives back more</small></span>
     <span class="lb-altar-arw" aria-hidden="true">&rarr;</span>
   </a>
+
+  <div class="lbtv-ticker" aria-hidden="true">
+    <span class="lbtv-booth">◆ FROM THE BOOTH</span>
+    <span class="lbtv-quote" id="lbtv-quote">"Every credit counts, folks."</span>
+  </div>
 </div>
 
 <script>
@@ -68,10 +74,14 @@ permalink: /leaderboards/
   if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   var quotes = ['"Every credit counts, folks."', '"A NEW challenger on the board!"', '"The tower does not climb itself."'];
   var i = 0;
+  // 4200ms → 16800ms, 2026-07-28 (Nate: "slow down the turnover on the Booth Quotes. Way down
+  // — like 4x"). At 4.2s a line changed while you were still reading the one before it, which
+  // makes a ticker feel like a slot machine. The cross-fade itself stays at 420ms; it's the
+  // DWELL that was wrong, not the transition.
   setInterval(function () {
     el.style.opacity = '0';
     setTimeout(function () { i = (i + 1) % quotes.length; el.textContent = quotes[i]; el.style.opacity = '1'; }, 420);
-  }, 4200);
+  }, 16800);
 })();
 </script>
 

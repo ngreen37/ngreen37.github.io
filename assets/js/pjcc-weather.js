@@ -156,8 +156,37 @@
        phase tint and the rain/snow colour wash still carry the weather, which is
        the same thing a reduced-motion visitor gets. Degrading to "calmer" is always
        the safe direction. */
-    if (window.PJCCWeather && PJCCWeather.start(kind, o)) {
+    /* ── WHERE THE WEATHER FALLS (2026-07-28) ──────────────────────────────────
+       Nate: "rain, snow, etc. for ALL pages should fall BEHIND the windows. BEHIND
+       the game windows, the Profile window up top, the home page boxes, the
+       left-hand nav bar (condensed or expanded)… But make it show through at like
+       a roughly 5-15% visibility on games, puzzles, boxes, nav."
+
+       It used to fall on ONE layer, the wash overlay at z-index 900, which is in
+       front of the page — so it rained ON your puzzle instead of outside it. Now
+       there are two hosts and the engine draws once into the first and copies it
+       into the second:
+
+         .town-weather-fall   z-index: -1    behind every window, above the sky
+         .town-weather-glass  z-index: 1200  in front of everything, held at ~12%
+
+       The wash and the lightning stay on `o` at 900, where they belong: they're
+       LIGHT, not water, and light does fall on the room. */
+    var fall = document.createElement('div');
+    fall.className = 'town-weather-fall';
+    fall.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(fall);
+
+    var glass = document.createElement('div');
+    glass.className = 'town-weather-glass';
+    glass.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(glass);
+
+    if (window.PJCCWeather && PJCCWeather.start(kind, fall, glass)) {
       if (kind === 'rain' || kind === 'snow') storm(o);
+    } else {
+      // nothing to hold — don't leave two empty fixed layers on the page
+      fall.remove(); glass.remove();
     }
   }
 

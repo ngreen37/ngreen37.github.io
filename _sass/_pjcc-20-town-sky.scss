@@ -850,8 +850,16 @@ body.theme-studio .ts-constellations { display: none; }
    pjcc-weather.js skips building the layer on these pages at all — this is belt-and-braces
    for a cached script, and the thing the dead-CSS sweep can see. The town keeps its
    weather; McPuppy Studios is indoors. */
+/* ⚠ 2026-07-28: the falling weather moved OFF this container onto two hosts of its own
+   (.town-weather-fall behind the page, .town-weather-glass in front of it — see
+   _pjcc-09-widgets.scss). Hiding the overlay alone stopped being the whole fix that day;
+   all three have to be named here or a black-and-white studio page gets rain again. */
 body.theme-bw .town-weather-overlay,
-body.theme-studio .town-weather-overlay { display: none; }
+body.theme-bw .town-weather-fall,
+body.theme-bw .town-weather-glass,
+body.theme-studio .town-weather-overlay,
+body.theme-studio .town-weather-fall,
+body.theme-studio .town-weather-glass { display: none; }
 /* …and the HORIZON GLOW with it. Caught in the screenshot repro for the change above:
    with the weather layer gone, a black-and-white page STILL had a coral band across its
    lower third, because .ts-horizon washes the ground warm at dawn (255,150,90) and dusk

@@ -85,6 +85,32 @@
   var flakeSprite = null, fogSprite = null;
   var near = [], far = [], fog = [];
 
+  /* ── THE GLASS COPY ──────────────────────────────────────────────────────────
+     2026-07-28, Nate: "rain, snow, etc. for ALL pages should fall BEHIND the
+     windows … but make it show through at like a roughly 5-15% visibility on
+     games, puzzles, boxes, nav (that would be a really cool subtle effect)."
+
+     So the weather is drawn ONCE, on the main canvas, which now sits BEHIND the
+     page. This second canvas sits in FRONT of everything and is nothing but a
+     copy of the first, held at ~12% — the same storm, seen through the glass of
+     whatever you're looking at. It works over the arcade's <iframe>s too, which
+     is why it's a layer and not a pile of translucent backgrounds: you cannot
+     make an iframe's contents let the sky through, but you can put a pane of
+     rain in front of it.
+
+     IT IS CHEAP, and only because of one decision: the copy is stored at HALF
+     LINEAR resolution (GDPR 0.5 where the main canvas caps at 1.5). Backing store
+     is w·h·4·dpr², so the ghost's texture is (0.5/1.5)² = ONE NINTH of the main
+     canvas's — a quarter of one dpr-1 screen, and far less than that on a phone,
+     where the main canvas is the one that scales up. At 12% opacity there is no
+     detail to lose; if anything the upscale reads as light diffusing through
+     glass, which is what it is meant to be. One drawImage per frame, no second
+     simulation, no second particle field.
+     ⚠ Never "improve" this by raising GDPR or by running a second particle field.
+     Either one undoes the whole reason the weather became a canvas. */
+  var GDPR = 0.5;
+  var ghost = null, gctx = null, gW = 0, gH = 0;
+
   /* ── the weather table ──────────────────────────────────────────────────────
      Everything that differs between rain and snow lives here, so adding a fourth
      kind later (ash? blossom? the Chess City parade?) is a row, not a rewrite.
@@ -93,9 +119,15 @@
        tilt   horizontal drift per unit of fall (rain leans; snow does not)
        sway   sine amplitude in px (snow only — this is what makes it read as snow)  */
   var SPEC = {
+    /* RAIN INK, -12% 2026-07-28 (Nate: "can you make the rain slightly more realistic?
+       Maybe 5-15% more transparent?"). near 0.50 → 0.44, far 0.28 → 0.25. Real rain is
+       barely a tint — you read it as motion and as the way it bends the light behind it,
+       not as white lines. Rounding down also matters for the glass copy: a drop seen
+       through the ghost lands at alpha × 0.12, and it was the NEAR sheet that made the
+       storm feel painted on. */
     rain: {
-      near: { n: 210, vy: [1150, 1600], len: [14, 26], tilt: 0.17, w: 1.15, ink: 'rgba(206,224,255,0.50)' },
-      far:  { n: 260, vy: [620, 900],   len: [8, 15],  tilt: 0.13, w: 0.75, ink: 'rgba(190,210,245,0.28)' }
+      near: { n: 210, vy: [1150, 1600], len: [14, 26], tilt: 0.17, w: 1.15, ink: 'rgba(206,224,255,0.44)' },
+      far:  { n: 260, vy: [620, 900],   len: [8, 15],  tilt: 0.13, w: 0.75, ink: 'rgba(190,210,245,0.25)' }
     },
     snow: {
       near: { n: 90,  vy: [42, 78],  r: [1.8, 3.6], sway: [10, 26], swayHz: [0.14, 0.34], alpha: [0.55, 0.92] },
@@ -211,6 +243,12 @@
     } else {
       drawMist(dt);
     }
+
+    // …and the same storm again, small and faint, in front of the page.
+    if (gctx) {
+      gctx.clearRect(0, 0, gW, gH);
+      gctx.drawImage(canvas, 0, 0, gW, gH);
+    }
   }
 
   /* ── sizing ──────────────────────────────────────────────────────────────── */
@@ -234,6 +272,14 @@
     canvas.width = Math.round(vw * DPR);
     canvas.height = Math.round(vh * DPR);
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);   // draw in CSS pixels, store at DPR
+    if (ghost) {
+      gW = Math.max(1, Math.round(vw * GDPR));
+      gH = Math.max(1, Math.round(vh * GDPR));
+      ghost.width = gW; ghost.height = gH;
+      // identity transform: the blit maps the whole source onto the whole ghost,
+      // so the ghost never needs to know what DPR the real canvas is stored at.
+      if (gctx) gctx.setTransform(1, 0, 0, 1, 0, 0);
+    }
     seedField();
   }
 
@@ -262,7 +308,7 @@
     return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }
 
-  function start(k, host) {
+  function start(k, host, glass) {
     if (!KINDS[k]) return false;
     if (quiet()) return false;
     kind = k;
@@ -273,6 +319,18 @@
       (host || document.body).appendChild(canvas);
       ctx = canvas.getContext('2d', { alpha: true });
       if (!ctx) { canvas.remove(); canvas = null; return false; }
+      /* The glass copy is OPTIONAL on purpose. If the caller doesn't hand us a
+         host for it, or the context can't be had, the weather still falls behind
+         the page exactly as it should — you just don't see it through the
+         windows. Degrade by losing the flourish, never by losing the weather. */
+      if (glass) {
+        ghost = document.createElement('canvas');
+        ghost.className = 'tw-ghost';
+        ghost.setAttribute('aria-hidden', 'true');
+        glass.appendChild(ghost);
+        gctx = ghost.getContext('2d', { alpha: true });
+        if (!gctx) { ghost.remove(); ghost = null; }
+      }
       flakeSprite = softSprite(24, 'rgba(255,255,255,0.95)');
       fogSprite = softSprite(160, 'rgba(212,222,244,0.55)');
       window.addEventListener('resize', onResize);
@@ -299,7 +357,8 @@
     // for the harness: what is actually on screen right now
     debug: function () {
       return { kind: kind, intensity: intensity, dpr: DPR, w: W, h: H,
-               near: near.length, far: far.length, fog: fog.length, running: !!raf };
+               near: near.length, far: far.length, fog: fog.length, running: !!raf,
+               ghost: !!ghost, ghostDpr: ghost ? GDPR : 0, ghostW: gW, ghostH: gH };
     }
   };
 })();
