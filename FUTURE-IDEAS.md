@@ -7,9 +7,79 @@ published: false
 The open backlog: **only what's *not* built yet.** Completed work has been cleared out of this file;
 everything here is a path not yet taken.
 
+**Start at ⭐ PRIORITY, right below.** It's the ten things worth doing next, copied up from the sections
+that follow — read it as the top of the file, and everything after it as the shelf they came off.
+
 **Operating principle — *less is more.*** We deliberately built "too much" and are paring to the most
 important, inviting elements. New ideas earn their place against that bar; prefer **depth and
 combination** over new surface area.
+
+---
+
+# ⭐ PRIORITY — the short list
+
+*Copied up from the sections below (the originals stay where they are, in context). Nothing here is a new
+idea; this is the order I'd build in if nobody said otherwise. Ten items, because a priority list of forty
+is just the backlog again.*
+
+### 1. Report-a-puzzle, plumbed properly *(from "🧩 The Puzzle room")*
+The panel in the Puzzle room offers **Email it / Copy it** today — honest, but it ends in a human inbox and
+depends on the player having a mail app. Two steps:
+- **A table, not an inbox.** A Supabase `puzzle_reports` table, insert-only via RLS, written straight from
+  the game (FEN · motif · rating · mode · the move the player thought also won). One tap, nothing lost.
+  Read them on a private page beside the leaderboards. *(One migration; the client-side insert pattern
+  already exists everywhere else on the site.)*
+- **Let the machine triage them.** The room already carries a perft-verified referee and the best-defense
+  search. Attach the engine's own verdict to the report — *"player says Rxd4 also wins; the search agrees,
+  +500"* — so the only reports worth opening are the ones where the **player is right**.
+
+### 2. The Night Desk goes rogue — DECIDED, ready to build *(from "🌙 The Night Desk")*
+Ideas **1, 2, 3, 5**, with Nate's cuts: badge decays by hour minus the `WHOEVER IS LEFT` step (every night) ·
+the machine goes slack (**50%** of nights) · he edits the day's real news (**25%**) · he leaves the desk at
+5am (**25%**). Roll each off the **town date** so a night behaves like one night, not like a coin flip per refresh.
+
+### 3. Park Tables — one identity across the site *(build-out thread #2, greenlit)*
+Wire the **PJCC Rating → the Clearance ladder** (RECRUIT → DELTA → … → OMEGA) so your codename wears a
+**clearance pip** that climbs, and the quiz game, the tables and the Profile finally speak one language.
+Then earned, **cosmetic-only** board/piece skins (first win · beat a bot · reach a rating · review 10 games).
+*The clearance pip alone is the contained first slice.*
+
+### 4. "Why was that wrong?" *(from "🧩 The Puzzle room")*
+After a wrong move, show the one-line refutation — *"after Rxd4, Nxd4 — you're down a rook."* Everything
+needed is already in `pjcc_fork.html`. **The single biggest teaching upgrade left in the room**, and the
+difference between a puzzle app and an Academy.
+
+### 5. Every game quietly teaches *(build-out thread #4, greenlit)*
+After any Park Tables game: one tap → **"your one turning point"** (the biggest eval swing) as a mini-lesson,
+plus an offer to **turn your blunder into a Fork-in-the-Road puzzle** ("you missed this"). Review → puzzle →
+Academy, one loop, riding the free review engine that's already wired into finished games.
+
+### 6. The park as a *place* *(build-out thread #1, greenlit)*
+The lobby becomes the actual park: bots as **seated regulars** at named tables with a live status line
+("Argus is thinking…"), the scene reading the **town sky** — busy by day, one lamplit table after dark.
+You walk up to a table instead of clicking a row. Mostly CSS + flavor over state that already exists.
+
+### 7. Kill the second Gauntlet door *(cohesion #8)*
+The home hero and the games hall carry **two hand-maintained copies** of the same door, and two copies of the
+LADDER names/accents/glyphs in JS, each with a comment begging you to keep them in sync. One include + one
+data file. They will drift — they already have. Cheap, and it stops a whole class of bug.
+
+### 8. One "not yet" voice *(cohesion #10)*
+Unbuilt things currently say: *Coming Soon · In Development · Building · Not ready yet — months away · Don't
+hold your breath! · Sealed / Retired.* Pick **two** — one for *being built*, one for *retired* — and use them
+everywhere. The [[no-excuses-copy]] rule applied to labels.
+
+### 9. Say that the arcade works offline *(ingenuity #20)*
+The service worker warms 18 games and Stockfish; the whole thing runs on a plane. That is genuinely rare and
+the site has never once said so. **One line in the games hall.** Not a prompt — a fact.
+
+### 10. Reserve the social handles *(the Socials Play — Nate's 20 minutes, not a build)*
+@McPuppyStudios on YouTube, TikTok, Instagram, X, Facebook, Reddit — bio + link, then **silence** until there
+are Blender clips to post. An empty reserved account costs nothing; a lost handle costs the name. This is the
+only item on the list that gets *worse* by waiting.
+
+**Waiting on Nate, not on me:** the **Journey map** decision (make the dots cost something · merge it into the
+Gauntlet's climb · cut it) — the section at the bottom of this file lays out all three.
 
 ---
 
@@ -51,7 +121,8 @@ their own sake.* New surface area should serve one of the five threads.
 opponent** — a between-moves verb tied to each persona. The **nervous challenger** shakes the board and fidgets
 with the pieces; you can **ask him to stop — and he may or may not** (a saving-throw against his composure). Argus
 can be *calmed*; the Gatekeeper ignores you; the CEO turns it back on **you.** Then: opening books for the
-Rival/CEO · a daily gauntlet · a captured-tray + move list · more rungs (the secret King). Design doc:
+Rival/CEO *(the review's book is loaded now — the BOTS still don't play from one)* · a daily gauntlet ·
+a captured-piece tray · more rungs (the secret King). *(The move browser shipped 2026-07-27 — `pjcc-replay.js`.)* Design doc:
 [`docs/chess-ladder-design.md`](docs/chess-ladder-design.md).
 
 **Notation Blitz:** Score Mode (charts the real themes — Av5 unlock) · diagonal & file lanes · coordinate
@@ -65,9 +136,11 @@ phantom-blunder review · walk-the-knight audio drills · PGN import · relic bo
 daily briefing · three lanes (rules / lore / chess history) · spot-the-lie (ARG) · question forge (UGC) ·
 clearance-gated lore · speed-vs-accuracy dial.
 
-**Fork in the Road:** endless one-life gauntlet · show-the-refutation coach · theme drills
-(fork/pin/skewer/discovery) · blitz tactics · boss-gate taunts · mistake replay (spaced repetition) ·
-race the creator ghost · construct-the-fork · daily tactic + streak · reads-you difficulty.
+**Fork in the Road — now THE PUZZLE ROOM** *(6 provable motifs as of 2026-07-27, incl. Winning Material,
+Discovered Check and The Pin; its own roadmap lives below — "🧩 The Puzzle room — where it goes next")*:
+endless one-life gauntlet · blitz tactics · boss-gate taunts · mistake replay (spaced repetition) ·
+race the creator ghost · construct-the-fork · reads-you difficulty. *(Theme drills are now a `cat` filter
+away — every puzzle carries its motif. The daily tactic + streak is live as the Daily Ladder.)*
 
 **The Pirc Protocol:** opponent personalities · weekly annotated model game (Argus's voice) · side-switcher · trap of the week ·
 repertoire builder (UGC export) · "out of book" alarm · boss: the Rival's prep.
@@ -75,7 +148,8 @@ repertoire builder (UGC export) · "out of book" alarm · boss: the Rival's prep
 **Sand Mine Depths:** light beacons + fog-of-war minimap · cave-in chains · Auston-camp one-run consumables · relic
 sets · knight-only traversal rooms · explicit biome shifts.
 
-**Shogi Island / Catch the Lion:** *(already most complex — 9×9 rules, tsume solver, AI; add carefully).*
+**Shogi Island / Catch the Lion** *(and **The Reading Room** below): both are **slow-rolled — hidden from the
+hall today** ([[slow-roll-cast]]); everything here waits on the reveal.* *(already most complex — 9×9 rules, tsume solver, AI; add carefully).*
 Handicap ladder vs the Lion AI · piece-reach trainer · tsume-of-the-day · drop-rule drills · calligraphy
 wall (JP tie) · castle drills · 9×9 stepping-stone · the Lion's moods · Codex bridge · island hot-seat duel.
 
@@ -92,9 +166,6 @@ qualifier framing · collect-a-set upgrades · legality-dodging · rival racers 
 branches · cosmetic ships · speed-tier music · near-miss combo · lean into the **"follow the dog"** creed (the
 companion you chase becomes the guide).
 
-**Knight's Tour:** rubble squares · constellation trail (→ `/constellation/`) ·
-undo-budget mode · two-knight co-op · Academy teach-mode · forcing-move knight puzzles (each one provable).
-
 **Siege on Chess City:** branching campaign map + between-battle dialogue · map editor (share by code, UGC) · aimed Princess
 hero ability · economy gambles · two-lane co-op · campaign win → Codex entry.
 > **Guardrail — don't be Bloons TD.** The difference must be *chess*: towers threaten by piece rules,
@@ -110,7 +181,7 @@ prototype (`/games/dungeon/`) is the playable spec; the Godot build is the same 
 ### 🆕 Ten new arcade concepts (replenished 2026-07-01)
 *Fresh games for the funnel — grounded in the world, cosmetics-only economy, small enough for the web-first pattern. See [[game-monetization-ethics]], [[stay-within-means]].*
 
-1. **The Ferry Crossing** — the perpetually-delayed Shogi Island ferry as a timing game: hop drifting board-tiles across the rough Sea before the gangway lifts. Pays off the "ferry delayed" running gag and the Sea region.
+1. **The Ferry Crossing** — the perpetually-delayed Shogi Island ferry as a timing game: hop drifting board-tiles across the rough Sea before the gangway lifts. Pays off the "ferry delayed" running gag and the Sea region. *(Note: a first pass — "Ferry Delayed" — was built and **deleted 2026-07-06**. If this comes back it needs a real hook, not the same minigame.)*
 2. **Endgame Escape** — a King-and-pawn roguelite: escape a collapsing board with opposition + key squares; every floor a real won/drawn study. Teaches the endgames the arcade currently skips.
 3. **The Cipher Room** — decode intercepted transmissions by solving chess-notation ciphers (files/ranks → letters). The Dead Drop / Classified / Daily Dispatch decode theme as its own game.
 4. **Crockett's Delivery** — Paperboy down Checker Town: Crockett runs the Father's paper route, dodging obstacles, belly-rub combos for accuracy. Ties Crockett + the newspaper lore.
@@ -371,9 +442,15 @@ someday-milestone. Parked here mainly so the 3D pipeline is built **VR-aware fro
 
 **Av17 — The Gambit (the altar of sacrifice)** — *v1 is live at `/the-gambit/` — its own room off the PJCC home since 2026-07-14* (offer credits + an owned
 collectable; a **Courage meter** shows the real odds before you commit; guardrails: never real money, a daily cap,
-a cooldown, a two-tap "no takebacks"). **v2 roadmap (from the brainstorm below):** the Uncle presiding · non-fungible
-/ altar-only rewards + canon fragments · sacrificing the streak-flame / rank · hold-to-offer · the Monument · a
-protected first offering · pay-it-forward.
+a cooldown, a two-tap "no takebacks").
+> **✅ Shipped 2026-07-27:** the **altar-only rewards** are real — a donated collectable can return a *different*
+> one, including **Vault** pieces that are in no shop (3 avatars · 2 titles · 2 themes, `rule:'vault'`), revealed
+> on a full-takeover result card. The odds were also retuned to a six-tier wheel that **expects to lose you
+> credits** (0.66×→0.89× by courage), which is the anti-casino math the brainstorm below asks for.
+>
+> **What's LEFT of the v2 roadmap:** the Uncle presiding · canon **fragments** as rewards · sacrificing the
+> streak-flame / rank / clearance (things that hurt, not just credits) · hold-to-offer · the Monument · a
+> protected first offering · pay-it-forward.
 
 > **Brainstorm expansion (2026-06-25):**
 > - **Who keeps the altar — the Uncle.** Give the Gambit a face: the **Uncle** (Barbados, the show's
@@ -502,9 +579,10 @@ re-skins in the current floor's accent + boss piece once a climb starts (shipped
 her · the arcade funnel · the one mystery). **Less is more** — each idea must earn its spot; prefer depth
 and combination over new clutter. ★ = low-lift · ⛁ = wants backend.*
 
-> **Nav — remaining pare-downs** *(the "The World" dropdown, context-aware nav, and icon-only mobile nav all shipped):*
-> (1) **sticky mini-bar on scroll** — shrink to just the watermark + the ⌘K command palette;
-> (2) ★ fold **Your Dossier** into a single operative avatar pill (already in the top bar) and drop the middle nav slot entirely.
+> **Nav** — *superseded 2026-07-21: the top bar became a **left drawer / collapsible desktop rail**
+> (`#site-nav.drawer`, 7 links), so the old "sticky mini-bar" and "drop the middle nav slot" notes are dead.*
+> What's still open there: whether the ⌘K palette deserves a visible handle inside the rail for people who
+> will never guess a keyboard shortcut.
 
 **Hero / first impression**
 1. ★ **Adaptive hero CTA** — first-timer sees "Meet Princess," a returning operative sees "Resume your dossier," mid-build sees "Today's mission."
@@ -590,6 +668,8 @@ Town, Bob-Proctor mindset) and **Michael** (Chess City, truly righteous); **The 
 26. 🎬 **Blender flythroughs** — short rendered location intros as loading screens / season trailers.
 27. **Checker Town Field Guide** — a printable art-book leave-behind (Av4 physical).
 28. ⛁ **Journey tracker** — your operative's position on the road to Chess City, advancing with progress.
+    *(Built, and on the Profile today — but read "🗺 The Journey map — decide what it's FOR" at the bottom
+    of this file before adding to it; the dots currently light for merely opening a game.)*
 29. **Seasonal location reskins** — advent, the anniversary of the crash, premiere week (Av9 live-ops).
 30. 🎬 **The Pieces gallery (moved here from Characters)** — the **six Blender board-pieces** (pawn/rook/bishop/knight/queen/king, each scaled to the Battle-Room concept, Princess = the knight). *Belongs in the **Evolution Log** as renders land* — show concept → gray-box → final per piece. Frame it as "the board itself is a place." (This is where the old `## Pieces` section now lives.)
 
@@ -619,7 +699,8 @@ second ten are **ingenuity** (the clever, cheap, memorable stuff).
 7. **The journey map is the site's real spine — use it more than once.** The dossier has the
    map of stops (Checker Town → the Sea → Chess City). That's the actual shape of the world.
    A one-line version of it in the games hall would tell a player where they are *in the
-   world*, not just in a menu.
+   world*, not just in a menu. *(Decide what the map is FOR first — see the section at the
+   bottom of this file; reusing a checklist twice just doubles a checklist.)*
 8. **Kill the second Gauntlet door.** The home hero and the games hall carry two hand-maintained
    copies of the same door, and two copies of the LADDER names/accents/glyphs in JS, with a
    comment on each begging you to keep them in sync. One include + one data file. They will
@@ -654,6 +735,7 @@ second ten are **ingenuity** (the clever, cheap, memorable stuff).
 17. **The Night Desk should run out of things to say.** It's a bored overnight employee. Let
     the number of ticker items *drop* after 2am and the tone flatten out. A desk with nothing
     left to report at 4am is funnier than any joke that could be written for it.
+    *(→ folded into "the machine goes slack", idea 2 of the rogue build — see PRIORITY.)*
 18. **One number that's about other people.** Every counter on the site is derived from a date
     — days in development, days to Episode 1. Nothing reflects *anyone else being here*. One
     honest live number ("games played this week") would make the place feel inhabited.
@@ -738,6 +820,11 @@ second ten are **ingenuity** (the clever, cheap, memorable stuff).
 - **Siege — the Daily mutator-roulette** *(pulled 2026-07-07 with v2.4; "maybe down the road")* — the 📅 Daily
   Siege card: one fixed day-seed for everyone (seeded map + 1–2 roulette mutators), its own global board
   (`siege-daily`, delisted from the leaderboards page; Supabase data persists). Restore from git before v2.4.
+- **♘ Knight's Tour — DELETED 2026-07-14** (with Ferry Delayed and Zoomies). Its polish list —
+  rubble squares · a constellation trail (→ `/constellation/`) · undo-budget mode · two-knight co-op ·
+  Academy teach-mode · forcing-move knight puzzles — retired with it, and is written here so the ideas
+  survive the game. **Restore from git** if the knight ever comes back; the strongest survivor is
+  *forcing-move knight puzzles*, which the Puzzle room could build provably today.
 - **Games-page search box** and **sort dropdown** — re-add if the library outgrows one screen.
 - **De-linked nav pages** (revisit with real content): World Map, Sound, Soundtrack, Press Kit, Lore Codex,
   Evolution Log. **Podcast** removed (a "Coming Winter 2026" teaser sits on the homepage). **Chess Lessons** folded into About.
@@ -839,9 +926,11 @@ apps get COPPA/privacy-label scrutiny.
 the offline arcade, which already works and feels native.
 
 ### Park Tables v2 (the matchmaking follow-ups)
-Supabase Realtime channels instead of polling (true live feel) · clocks/blitz mode · draw offers ·
-under-promotion picker · spectator links · a Park Tables leaderboard (wins as a channel) · credits
-for finished games ONLY after an anti-abuse think (two accounts shaking hands is free credits).
+Supabase Realtime channels instead of polling (true live feel) · **real** blitz clocks *(per-move clocks are
+live; a total time bank is the section below)* · draw offers · under-promotion picker · spectator links ·
+a Park Tables leaderboard (wins as a channel) · credits for finished games ONLY after an anti-abuse think
+(two accounts shaking hands is free credits). *(✅ the move browser — back/forward through a finished or
+live game — shipped 2026-07-27 on both the tables and the Gauntlet.)*
 
 #### ⏱ REAL BLITZ — a total game clock (5 / 10 / 15 / 30 / 60) *(Nate, 2026-07-25)*
 *His ask: "Shouldn't Blitz Bench be more like a total 5 minute game? And then a 10, 15, 30, and 60
@@ -1154,6 +1243,11 @@ location with a handwritten one-liner on the back, linking to its page. (Nate: "
 
 ## 🌙 The Night Desk should be visibly going rogue *(brainstormed 2026-07-27 — Nate: "very funny… make it more clear that the overnight employee is going rogue. Throw me 5 ideas")*
 
+> **✅ DECIDED 2026-07-27 — building 1, 2, 3 and 5.** Nate's cuts: **#1 loses the `WHOEVER IS LEFT` step**
+> and runs *every* night; **#2 fires on 50% of nights**; **#3 and #5 on 25% each**. **#4 (the retraction
+> sequence) was not chosen.** Roll each percentage off the **town date**, not per page load, so a night is
+> a night — see PRIORITY at the top of this file.
+
 The overnight crawl (midnight–6am ET, `_layouts/home.html`) already reads as one bored person.
 What's missing is *evidence* — right now the lines are funny but the SYSTEM around them still
 behaves like a normal news channel. All five put the rogue-ness in the chrome, not just the jokes.
@@ -1182,8 +1276,9 @@ behaves like a normal news channel. All five put the rogue-ness in the chrome, n
 
 ## 🧩 The Puzzle room — where it goes next *(brainstormed 2026-07-27, alongside the Winning Material / Discovered Check / The Pin motifs)*
 
-**Reports (Nate: "a Report Puzzle option that comes to me somehow")** — the panel now offers Email it
-/ Copy it, which is honest but still ends in a human inbox. Two upgrades:
+**Reports (Nate: "a Report Puzzle option that comes to me somehow")** — ⭐ **promoted to PRIORITY #1**
+(2026-07-27, his call). The panel now offers Email it / Copy it, which is honest but still ends in a
+human inbox. Two upgrades:
 - **A table, not an inbox.** A Supabase `puzzle_reports` table, insert-only via RLS, written straight
   from the game (FEN, motif, rating, mode, the move the player thought also won). One tap, no mail
   app, nothing lost. Read them on a private page beside the leaderboards. *(Needs one migration.)*
