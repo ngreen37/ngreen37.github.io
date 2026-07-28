@@ -28,13 +28,27 @@
  *      /projects/ 0.77 screens      <- "feels fine"
  *
  * A 7.6x spread, and it lined up exactly with what he felt. That is the whole diagnosis.
+ * After the cuts of the same day (043af32), measured live at the same size:
+ *
+ *      /pjcc/     2.89   (cloud banks quartered; the ribbon's crawl removed)
+ *      /games/    1.26   (ribbon + a whole-panel ember pulse)
+ *      /chess/    1.22   (ribbon)
+ *      /projects/ 0.00   (the ribbon WAS its entire bill)
+ *
+ * /pjcc/ is knowingly still over budget: what's left there is the rain (1.20), the news
+ * ticker (0.84) and the clouds (0.84). The rain and the clouds both go to ~0 when the
+ * one-canvas-for-all-weather item in FUTURE-IDEAS gets built; that is the plan, not an
+ * oversight. Don't "fix" it by deleting the weather.
  *
  * RUN THIS AT A REAL RESOLUTION. Headless 1280x800 dpr1 on an idle desktop GPU cannot
  * see compositor cost — that is how the rain got declared innocent the first time.
  *
  * BUDGET: keep every page under 2 screens. Under 1 is better. If a number goes up,
  * something was added; find it in the table, it names the element and its size.
- *   ORIGIN=http://localhost:4000 W=1920 H=1080 DPR=2 npm run motion
+ *   ORIGIN=http://localhost:4000 W=1920 H=1080 DPR=2 BUDGET=1.5 npm run motion
+ *
+ * NOT part of `npm test`, on purpose: it needs the deployed site and a real screen, so it
+ * is a tool you run, like `npm run perf` — a non-zero exit is information, not a blocked push.
  * ========================================================================== */
 const puppeteer = require('puppeteer-core');
 const { findChrome } = require('./harness');
@@ -59,10 +73,18 @@ const CENSUS = () => {
         const play = cs.animationPlayState;
         const iter = cs.animationIterationCount;
         const forever = /infinite/.test(iter);
+        /* MEASURE THE LAYOUT BOX, NOT THE PAINTED ONE. getBoundingClientRect() reports the
+           box AFTER transforms, and the whole point of the half-resolution trick is that a
+           layer is RASTERIZED at its layout size and then scaled up by the compositor. Price
+           the rect and a `scale(2)` layer reports its full pre-fix cost forever — which is
+           exactly what this file did on its first run, showing the cloud banks unchanged at
+           2580x864 after they had genuinely been quartered.
+           `offsetWidth/offsetHeight` are pre-transform, which is the number we want.
+           (Pseudo-elements have no offset*; their computed width/height are already
+           pre-transform, and they're also how a pseudo that overflows its host — inset:-25%
+           and friends — gets priced at its own size instead of the host's.) */
         const r = el.getBoundingClientRect();
-        // pseudo boxes can exceed the host (inset:-25% etc). Approximate with the host box
-        // widened by the pseudo's own computed width/height when they're resolvable.
-        let w = r.width, h = r.height;
+        let w = el.offsetWidth || r.width, h = el.offsetHeight || r.height;
         if (pseudo) {
           const pw = parseFloat(cs.width), ph = parseFloat(cs.height);
           if (pw > 0) w = pw;
