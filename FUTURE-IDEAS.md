@@ -80,6 +80,15 @@ the site has never once said so. **One line in the games hall.** Not a prompt �
 are Blender clips to post. An empty reserved account costs nothing; a lost handle costs the name. This is the
 only item on the list that gets *worse* by waiting.
 
+**Waiting on Nate, not on me — the Spotify hover** *(2026-07-27: "take a look at the spotify
+profile in the top-right corner. When you hover, it slides out the onboarding progress circle")*.
+Nothing like it exists on the site yet, so this is a build, not a fix, and it's outward-facing —
+so it's his call, not mine. The PJCC version: `#nav-operative` (the top-right profile pill) wears
+a thin **progress ring**; hover and it slides out with what's left to do — *claim a codename ·
+play a rated game · solve ten puzzles · beat floor one*. It'd be the first thing on the site that
+tells a signed-in visitor what to do next, which is either exactly right or exactly the nagging
+we've avoided. **Say go and it's a contained build; say no and it stays here.**
+
 **Waiting on Nate, not on me:** the **Journey map** decision (make the dots cost something · merge it into the
 Gauntlet's climb · cut it) — the section at the bottom of this file lays out all three.
 
@@ -1259,6 +1268,45 @@ Two more that would extend the same joke, if it's ever wanted:
   he could disagree with it outright — *"THE DAY DESK SAYS FAIR. I AM LOOKING AT RAIN."*
 
 (House rule kept: the Night Desk is an unnamed employee, never a cast member.)
+
+---
+
+## 🌙 Five things to do with a sky that now has real moon phases *(2026-07-27 — Nate: "let's make that some sort of easter egg, MAYBE. Give me your best five ideas; really going for a WOW factor")*
+
+The groundwork shipped today: `PJCC_TIME.moon()` returns the **genuine** synodic phase for the
+town's date, the sky draws the terminator, and overcast/rain can hide the orb entirely. That
+means the sky is now a thing a visitor can *verify against their own window* — which is the
+rarest currency a website has. All five below trade on that.
+
+1. ⭐ **THE NEW MOON DOOR.** Once a month, for the ~40 hours the moon is genuinely new, the sky
+   is black where the moon should be — and *that empty spot is clickable*. It opens a page that
+   exists on no other night. No hint, no glow, no cursor change; the only tell is that the moon
+   is missing and you went looking anyway. **This is the one.** It is unfakeable (you can't
+   brute-force a date), it rewards someone who noticed the sky changed, it costs one hit-target
+   and one page, and the story writes itself: *what the town does on the darkest night.* Pair it
+   with a fragment (`frag_newmoon`) that stays on your record forever — a badge that proves you
+   were here on a specific night. Nobody who doesn't look up will ever find it.
+2. **THE MOON REMEMBERS YOU.** Store the phase you first ever arrived under. From then on, when
+   that phase comes round again — once every 29.5 days — the sky says one line, once:
+   *"the same moon as your first night here."* Free continuity, no mechanics, and it turns a
+   calendar into a relationship. (The stronger version of ingenuity #11, "the sky remembers".)
+3. **CLOUD COVER IS A PUZZLE HINT.** On a 3-cover night you can't see the moon — so give the
+   town something to do about it. The Reading Room / Fork puzzle served on an overcast night
+   carries a **moonless variant**: same tactic, no coordinate labels. Weather that changes a
+   GAME, not just a backdrop. Cheap (one class), and it's the "every game quietly teaches"
+   thread meeting the sky.
+4. **THE ECLIPSE.** Real solar and lunar eclipse dates are published years ahead — hardcode the
+   next dozen. On those days, and only those days, the town's sky does the real thing at the
+   real hour, the Night Desk loses its composure about it, and the splash carries a one-line
+   dateline. Two eclipses a year, on the actual date, is a "wait, WHAT?" moment that no
+   competitor can copy without doing the same homework.
+5. **THE HARVEST MOON.** Four times a year the moon has a name — Harvest, Wolf, Blue, Hunter's.
+   On those nights it's bigger, warmer, and the tagline in the splash footer quietly changes to
+   the moon's name. Nothing is unlocked, nothing is announced. It's the June-13 pattern
+   (Princess's birthday) applied to something a visitor can look up and confirm.
+
+*My pick if only one gets built: **#1**, and it's not close. The others decorate the sky; #1
+makes the sky a door, and the whole site already runs on doors.*
 
 ---
 
