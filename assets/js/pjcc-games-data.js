@@ -5,38 +5,38 @@
    cat keys: learn | arcade | dev | vault | terminated
    ============================================================ */
 window.PJCC_GAMES = [
-  { slug:'notation-run',      name:'Notation Blitz',     cryptic:'Squares, on the beat.',          icon:'♫', accent:'#f8d800', cat:'learn',  score:['notation-run','score'] },
+  { slug:'notation-run',      name:'Notation Blitz',     cryptic:'Learn and keep up with the beautiful language of Chess', icon:'♫', accent:'#f8d800', cat:'learn',  score:['notation-run','score'] },
   // Free-Play Board — TAKEN OUT OF LEARN + ACADEMY 2026-07-15 (Nate: "take out the Free
   // Board completely. We'll do it later."). Delisted from the hub; the page still builds
   // at /games/free-play/. Restore by uncommenting this one line.
-  // { slug:'free-play',         name:'Free-Play Board',    cryptic:'A quiet board to think on.',     icon:'♟', accent:'#9fe8c0', cat:'learn' },
+  // { slug:'free-play',         name:'Free-Play Board',    cryptic:'A quiet board to think on',        icon:'♟', accent:'#9fe8c0', cat:'learn' },
   // back to Learn 2026-07-14 (Nate: "pump this out as our main Puzzle Feature")
   // noHall (2026-07-22 Nate: "Take Fork in the Road OUT of the games page") — Fork is the
   // "Puzzles" link in the site drawer now, so it is hidden from the combined games grid.
   // The game + its page are untouched; only the hall card is suppressed (see pjcc-hall.js).
-  { slug:'fork-in-the-road',  name:'Fork in the Road',   cryptic:'Spot the only move.',            icon:'⚔', accent:'#00e436', cat:'learn',  score:['fork-in-the-road','solved'], engine:true, noHall:true },
-  { slug:'pirc-protocol',     name:'The Pirc Protocol',  cryptic:'Learn the book by heart.',       icon:'♚', accent:'#fc9838', cat:'dev',    score:['pirc-protocol','score'], neu:'2026-06-22', engine:true },
+  { slug:'fork-in-the-road',  name:'Fork in the Road',   cryptic:'Spot the only move',               icon:'⚔', accent:'#00e436', cat:'learn',  score:['fork-in-the-road','solved'], engine:true, noHall:true },
+  { slug:'pirc-protocol',     name:'The Pirc Protocol',  cryptic:'Learn the book by heart',          icon:'♚', accent:'#fc9838', cat:'dev',    score:['pirc-protocol','score'], neu:'2026-06-22', engine:true },
   // Shogi Island — slow-rolled 2026-07-04: pulled from the hub/halls; reachable only via the floating 将 icon on the splash. Restore by uncommenting.
-  // { slug:'shogi-island',      name:'Shogi Island',       cryptic:'Foreign rules. Familiar war.',   icon:'将', accent:'#fcbcb0', cat:'isle',   score:['shogi-island','solved'] },
-  { slug:'clearance-delta',   name:'Clearance: DELTA',   cryptic:'Answer, or stay outside.',       icon:'Δ', accent:'#ff77a8', cat:'learn',  score:['clearance-delta','score'] },
+  // { slug:'shogi-island',      name:'Shogi Island',       cryptic:'Foreign rules. Familiar war',      icon:'将', accent:'#fcbcb0', cat:'isle',   score:['shogi-island','solved'] },
+  { slug:'clearance-delta',   name:'Clearance: DELTA',   cryptic:'Chess Trivia game',              icon:'Δ', accent:'#ff77a8', cat:'learn',  score:['clearance-delta','score'] },
   // Reading Room — slow-rolled 2026-07-04: pulled from the hub/halls; reachable only via the floating あ icon on the splash. Restore by uncommenting.
-  // { slug:'reading-room',      name:'The Reading Room',   cryptic:'Learn to read, one mark at a time.', icon:'あ', accent:'#ff5050', cat:'isle', soon:true, score:['reading-room','score'], neu:'2026-06-22' },
-  { slug:'sky-run',           name:'Sky Run',            cryptic:'Climb the falling pieces.',      icon:'♞', accent:'#3cbcfc', cat:'arcade', score:['sky-run','score'] },
+  // { slug:'reading-room',      name:'The Reading Room',   cryptic:'Learn to read, one mark at a time',    icon:'あ', accent:'#ff5050', cat:'isle', soon:true, score:['reading-room','score'], neu:'2026-06-22' },
+  { slug:'sky-run',           name:'Sky Run',            cryptic:'Do a barrel roll!',              icon:'♞', accent:'#3cbcfc', cat:'arcade', score:['sky-run','score'] },
   // The Park Tables — LIVE, but NOT an arcade card (Nate 2026-07-14): it stands beside
   // the Gauntlet as a featured entrance on games.md and has its own splash glyph. Don't re-add here.
-  { slug:'sand-mine-depths',  name:'Sand Mine Depths',   cryptic:"Descend. Don't look back.",      icon:'⛏', accent:'#fcbc3c', cat:'arcade', score:['sand-mine-depths','points'] },
-  { slug:'tower-defense',     name:'Siege on Chess City',cryptic:'Hold the gates.',                icon:'🏰', accent:'#ff77a8', cat:'arcade', score:['tower-defense','score'] },
-  { slug:'dungeon',           name:'Princess Dungeon',   cryptic:'Every room is a tactic.',        icon:'♟', accent:'#ff77a8', cat:'dev', score:['dungeon','floors'], neu:'2026-06-22' },
-  { slug:'murphys-law',       name:"Murphy's Law",       cryptic:'The pessimist was right.',       icon:'☹', accent:'#3cbcfc', cat:'dev', score:['murphys-law','score'], neu:'2026-06-25' },
+  { slug:'sand-mine-depths',  name:'Sand Mine Depths',   cryptic:"Descend. Don't look back",         icon:'⛏', accent:'#fcbc3c', cat:'arcade', score:['sand-mine-depths','points'] },
+  { slug:'tower-defense',     name:'Siege on Chess City',cryptic:'Hold the gates. Tower Defense',  icon:'🏰', accent:'#ff77a8', cat:'arcade', score:['tower-defense','score'] },
+  { slug:'dungeon',           name:'Princess Dungeon',   cryptic:'Every room is a tactic',           icon:'♟', accent:'#ff77a8', cat:'dev', score:['dungeon','floors'], neu:'2026-06-22' },
+  { slug:'murphys-law',       name:"Murphy's Law",       cryptic:'The pessimist was right',          icon:'☹', accent:'#3cbcfc', cat:'dev', score:['murphys-law','score'], neu:'2026-06-25' },
   // The Battle Room — TERMINATED 2026-07-14 (Nate: "make it unplayable. We'll keep
   // working on it."). Asset kept dark at assets/games/pjcc_battle_room.html; page deleted.
-  { slug:'battle-room',       name:'The Battle Room',    cryptic:'Chess as an action sequence.',   icon:'⚔', accent:'#56d0ff', cat:'terminated', playable:false },
-  { slug:'follow-the-dog',    name:'Follow the Dog',     cryptic:'Trust the run. Follow her.',     icon:'✦', accent:'#8fb8ff', cat:'dev' },
-  { slug:'chess-city',        name:'Chess City',         cryptic:'Platform the cursed board — the pieces have teeth.', icon:'♜', accent:'#ff5b6e', cat:'dev', score:['chess-city','score'], neu:'2026-06-25' },
+  { slug:'battle-room',       name:'The Battle Room',    cryptic:'Chess as an action sequence',      icon:'⚔', accent:'#56d0ff', cat:'terminated', playable:false },
+  { slug:'follow-the-dog',    name:'Follow the Dog',     cryptic:'Trust the run. Follow her',        icon:'✦', accent:'#8fb8ff', cat:'dev' },
+  { slug:'chess-city',        name:'Chess City',         cryptic:'Platform the cursed board — the pieces have teeth',    icon:'♜', accent:'#ff5b6e', cat:'dev', score:['chess-city','score'], neu:'2026-06-25' },
   // The Gambit — LEFT the games section entirely (Nate 2026-07-14). It lives at
   // /the-gambit/ as its own ritual room, doored from the foot of the PJCC home.
   // ── The Vault (unlockable) ──
-  { slug:'blindfold-puzzles', name:'Blindfold Puzzles',  cryptic:'No board. Only your mind.',      icon:'◻', accent:'#c9a7ff', cat:'vault', score:['blindfold','solved'], locked:true, engine:true },
+  { slug:'blindfold-puzzles', name:'Blindfold Puzzles',  cryptic:'No board. Only your mind',         icon:'◻', accent:'#c9a7ff', cat:'vault', score:['blindfold','solved'], locked:true, engine:true },
   // ── Terminated (retired roster) ──
   // (Knight's Tour, Ferry Delayed and Crockett's Zoomies were DELETED OUTRIGHT
   //  2026-07-14 — Nate: "Delete all the games in there, and all references to them."
@@ -48,8 +48,8 @@ window.PJCC_GAMES = [
 window.PJCC_CATS = {
   learn:      { name:'Learn',     glyph:'♟', tag:'Sharpen your game', accent:'#00e436', route:'learn',      blurb:'Tactics, openings, notation — the training halls.' },
   arcade:     { name:'Arcade',    glyph:'♞', tag:'Pure play',         accent:'#3cbcfc', route:'arcade',     blurb:'Action, chases, and run-and-gun. The loud room.' },
-  dev:        { name:'In Development', glyph:'🛠', tag:'On the workbench', accent:'#ffb020', route:'in-dev', blurb:'Half-built and humming. Peek at the workbench.' },
+  dev:        { name:'Building',   glyph:'🛠', tag:'On the workbench', accent:'#ffb020', route:'in-dev', blurb:'Half-built and humming — playable while they grow.' },
   isle:       { name:'Shogi Isle', glyph:'⛩', tag:'The island game', accent:'#e0483c', route:'isle', blurb:'The island game — foreign rules, learned across the sea.' },
   vault:      { name:'The Vault', glyph:'🔒', tag:'Unlock to enter', accent:'#9b96ad', route:'vault',  blurb:'Sealed. Earn the key and the door opens.' },
-  terminated: { name:'Terminated',glyph:'☠', tag:'Retired roster',    accent:'#fc5454', route:'terminated', blurb:'Decommissioned and delayed. Enter at your own risk.' }
+  terminated: { name:'Retired',   glyph:'☠', tag:'Off the roster',    accent:'#fc5454', route:'terminated', blurb:'Taken out of service. Kept for the record.' }
 };

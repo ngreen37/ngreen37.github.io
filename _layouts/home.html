@@ -48,22 +48,30 @@ layout: default
   <div class="ticker-outer">
     <div class="ticker-track" id="world-ticker-track">
       <span class="ticker-item">CHECKER TOWN CHECKER PIECE SUPPLY AT ALL-TIME LOW — BOARD SHORTAGE REPORTED IN SECTOR 3</span>
-      <span class="ticker-item ticker-item--promo">◆ NEW — THE IDENTITY FORGE: BUILD YOUR OWN OPERATIVE &amp; COMPANION, RENAME ANYTIME</span>
+      <span class="ticker-item ticker-item--promo">◆ THE ACADEMY: LEARN CHESS FREE — LESSON ONE IS OPEN, TAUGHT BY AUSTON ON A REAL BOARD</span>
       <span class="ticker-item">CHESS CITY TOURNAMENT ENROLLMENT NOW OPEN — LIMITED SPOTS REMAINING — APPLICATIONS CLOSE END OF SEASON</span>
-      <span class="ticker-item ticker-item--promo">◆ NEW — THE GAUNTLET: REAL CHESS VS A LADDER OF PJCC RIVALS</span>
-      <span class="ticker-item ticker-item--promo">◆ NEW — THE PARK TABLES: PLAY ANOTHER OPERATIVE, OR CHALLENGE McPUPPY HIMSELF</span>
+      <span class="ticker-item ticker-item--promo">◆ THE GAUNTLET: TEN FLOORS OF REAL CHESS — THE BOARD ITSELF GROWS GRANDER THE HIGHER YOU CLIMB</span>
+      <span class="ticker-item ticker-item--promo">◆ THE PARK TABLES: PLAY ANOTHER OPERATIVE, SIT WITH A PARK REGULAR, OR CHALLENGE McPUPPY HIMSELF</span>
       <span class="ticker-item">SHOGI ISLAND FERRY DELAYED FOR THIRD CONSECUTIVE WEEK — NO DEPARTURE DATE ANNOUNCED — 将棋の島 : フェリー3週連続遅延中 / 出発日未定</span>
       <span class="ticker-item">INTERPLANETARY CONSTRUCTION CO. DENIES ALL VESSEL WRECKAGE CLAIMS — INVESTIGATION CONTINUES</span>
-      <span class="ticker-item ticker-item--promo">◆ THE ARCADE: CLAIM A CODENAME &amp; CLIMB THE GLOBAL BOARDS</span>
+      <span class="ticker-item ticker-item--promo">◆ NEW — THE PUZZLE ROOM: PLAY THE WRONG MOVE AND IT SHOWS YOU EXACTLY WHY IT LOSES</span>
       <span class="ticker-item">CHESS CITY LEAFS ADVANCE TO FINALS — ROSTER ANNOUNCEMENT EXPECTED SHORTLY</span>
-      <span class="ticker-item">PJCC RATING SYSTEM RATIFIED — EVERY OPERATIVE TO START AT 250 — FIRST LADDER STANDINGS EXPECTED SHORTLY</span>
-      <span class="ticker-item ticker-item--promo">◆ THE ACADEMY: LEARN CHESS FREE — ONE HONEST LESSON AT A TIME, TAUGHT BY THE CAST</span>
+      <span class="ticker-item">PJCC RATING SYSTEM IN FORCE — EVERY OPERATIVE STARTS AT 250 — LADDER STANDINGS NOW POSTED AT THE PARK</span>
+      <span class="ticker-item ticker-item--promo">◆ NEW — EVERY GAME YOU FINISH GETS A FREE REVIEW: YOUR ACCURACY, THE MOVE IT TURNED ON, AND THE ONE YOU MISSED</span>
       <span class="ticker-item">CHECKER PIECE PRICES REACH RECORD HIGH — ECONOMISTS CITE THE CRASH AS ORIGIN POINT</span>
+      <span class="ticker-item">OBSERVATORY: THE MOON OVER CHECKER TOWN IS RUNNING THE SAME PHASE AS THE ONE OUTSIDE YOUR WINDOW — CONFIRMED NIGHTLY</span>
       <span class="ticker-item">UNKNOWN VESSEL SPOTTED OFF COAST — AUTHORITIES INVESTIGATING — PUBLIC ADVISED TO REMAIN CALM</span>
+      <span class="ticker-item ticker-item--promo">◆ THE ARCADE: CLAIM A CODENAME &amp; CLIMB THE GLOBAL BOARDS — FREE, AND IT KEEPS PLAYING WITH THE WI-FI OFF</span>
       <span class="ticker-item">METEOROLOGISTS CONFIRM A CLOUD RESEMBLING A ROOK IS DUE SUNDAY — A SECOND CLOUD, RESEMBLING A DOG, ALSO DUE — NO FURTHER QUESTIONS</span>
       <span class="ticker-item">CHECKER TOWN YOUTH CHESS LEAGUE REGISTRATION NOW OPEN — FORMS AVAILABLE AT THE CIVIC HALL</span>
-      <span class="ticker-item ticker-item--promo">◆ UPCOMING — A GODOT ROGUELITE BUILT FROM THE BLENDER ASSETS. MADE IN THE OPEN.</span>
-      <span class="ticker-item">OFFICIAL: CHESS CITY HAS NOT RESPONDED TO CHECKER TOWN PASSAGE PERMIT REQUEST — DAY 47</span>
+      <span class="ticker-item ticker-item--promo">◆ THE IDENTITY FORGE: BUILD YOUR OWN OPERATIVE &amp; COMPANION — FREE, AND RENAMEABLE ANY TIME YOU LIKE</span>
+      <span class="ticker-item ticker-item--promo">◆ BUILDING — A GODOT ROGUELITE FROM THE BLENDER ASSETS. MADE IN THE OPEN.</span>
+      {%- comment -%} DAY 47 was frozen in the markup since June; in a town that keeps real
+           Eastern time, one hand-typed counter that never moves is the only clock on the
+           site that lies. It counts for itself now — permit filed 22 May 2026, counted in
+           JS (NOT Liquid: Pages only rebuilds on push, so `site.time` would freeze the
+           number again between deploys). The 47 below is the no-JS fallback. {%- endcomment -%}
+      <span class="ticker-item">OFFICIAL: CHESS CITY HAS NOT RESPONDED TO CHECKER TOWN PASSAGE PERMIT REQUEST — DAY <span id="tk-permit-day">47</span></span>
       <span class="ticker-item">PRINCESS WINS CHECKER TOWN INFORMAL CHESS TOURNAMENT — REMATCH PENDING</span>
       <span class="ticker-item">SHADOW ACTIVITY NEAR THE CRASH SITE — CONSTRUCTION EQUIPMENT UNACCOUNTED FOR</span>
       <span class="ticker-item">MCPUPPY STUDIOS DISPATCH UPDATED {{ site.time | date: "%Y.%m.%d" }} — OPERATIVE NGREEN37 ON DUTY</span>
@@ -1087,6 +1095,17 @@ function ctParts() {
     wrap.addEventListener('mouseenter', function () { setRate(0.25); });
     wrap.addEventListener('mouseleave', function () { setRate(1); });
   }
+
+  // The permit counter, before anything reads or clones the wire (the Night Desk harvests
+  // these lines, and the loop clones them, so the number has to be right first).
+  (function () {
+    var d = document.getElementById('tk-permit-day');
+    if (!d) return;
+    var filed = Date.UTC(2026, 4, 22);                       // 22 May 2026 — permit filed
+    var days  = Math.floor((Date.now() - filed) / 86400000);
+    if (days > 0) d.textContent = String(days);
+    d.removeAttribute('id');            // the whole set gets cloned for the loop — no dupe ids
+  })();
 
   function item(text, cls, front) {
     var el = document.createElement('span');

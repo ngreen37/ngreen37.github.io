@@ -43,7 +43,7 @@ body_class: theme-bw
       <div class="ep-card-stripe"></div>
       <div class="ep-num">EP.&nbsp;{{ site.posts.size | plus: 1 | prepend: "00" | slice: -2, 2 }}</div>
       <div class="ep-card-main">
-        <div class="ep-title">[DRAFT — COMING SOON]</div>
+        <div class="ep-title">[DRAFT — BUILDING]</div>
         <div class="ep-logline">Transmission incomplete. Check back soon.</div>
       </div>
       <div class="ep-date">— — —</div>

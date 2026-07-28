@@ -114,7 +114,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
     <div class="project-card-header">
       <span class="project-status project-status-active">
         <span class="project-status-dot"></span>
-        In Development
+        Building
       </span>
       <h2 class="project-title">Princess and the Journey to Chess City</h2>
     </div>
@@ -132,7 +132,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
   <div class="project-card project-card-soon">
     <div class="project-card-corner-piece" aria-hidden="true">♞</div>
     <div class="project-card-header">
-      <span class="project-status project-status-soon">Coming Soon</span>
+      <span class="project-status project-status-soon">Next up</span>
       <h2 class="project-title">Blender Animations</h2>
     </div>
     <p class="project-desc">See the universe grow!</p>
@@ -143,7 +143,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
     <div class="project-card-header">
       <span class="project-status project-status-active">
         <span class="project-status-dot"></span>
-        In Development
+        Building
       </span>
       <h2 class="project-title">PJCC Chess Academy</h2>
     </div>
@@ -157,7 +157,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
   <div class="project-card project-card-soon">
     <div class="project-card-corner-piece" aria-hidden="true">♝</div>
     <div class="project-card-header">
-      <span class="project-status project-status-soon">Coming Soon</span>
+      <span class="project-status project-status-soon">Next up</span>
       <h2 class="project-title">McPuppy</h2>
     </div>
     <p class="project-desc">The McPuppy Studios podcast &mdash; studio updates and whatever else comes up. Winter 2026.</p>
@@ -166,7 +166,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
   <div class="project-card project-card-soon">
     <div class="project-card-corner-piece" aria-hidden="true">♜</div>
     <div class="project-card-header">
-      <span class="project-status project-status-soon">Coming Soon</span>
+      <span class="project-status project-status-soon">Next up</span>
       <h2 class="project-title">Code &amp; Tools</h2>
     </div>
     <p class="project-desc">Select projects others may find useful to be posted here.</p>
@@ -176,10 +176,10 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
   <div class="project-card project-card-soon">
     <div class="project-card-corner-piece" aria-hidden="true">♛</div>
     <div class="project-card-header">
-      <span class="project-status project-status-soon">Coming Soon</span>
+      <span class="project-status project-status-soon">Next up</span>
       <h2 class="project-title">Merch</h2>
     </div>
-    <p class="project-desc">Don't hold your breath!</p>
+    <p class="project-desc">Goal cards and stationery. The designs come first.</p>
     {% comment %} The "Take a look →" link out to /goods/ was removed 2026-07-12 (Nate).
          The PAGE is deliberately kept and still builds — he wants it later; it just isn't
          linked from anywhere for now. Restore this one line to re-list it. {% endcomment %}
@@ -205,7 +205,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
 <div class="pj-clocks">
   <div class="pj-clock">
     <span class="pj-clock-dot" aria-hidden="true"></span>
-    <span class="pj-clock-k">In development</span>
+    <span class="pj-clock-k">Building</span>
     <span class="pj-clock-n" id="pj-days">—</span>
     <span class="pj-clock-c">days · since 1 Mar 2026</span>
   </div>
@@ -236,7 +236,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
 
   <div class="mcp-thanks-block">
     <h3 class="mcp-thanks-sub">The Creator would like to thank</h3>
-    <p class="mcp-thanks-names">Mom &middot; Chels &middot; Laura &middot; Josh &middot; Kim &middot; Aunt Barb &middot; Tucker &middot; Jacob &middot; Garrett &middot; Dominic &middot; Chef</p>
+    <p class="mcp-thanks-names">Mom &middot; Chels &middot; Laura &middot; Josh &middot; Kim &middot; Aunt Barb &middot; Tucker &middot; Kennie &middot; Jacob &middot; Garrett &middot; Dominic &middot; Chef</p>
   </div>
 
   <div class="mcp-thanks-block">

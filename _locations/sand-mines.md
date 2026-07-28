@@ -16,4 +16,4 @@ Hard labor at the far end of a bad road. The Sand Mines are one of the few emplo
 The Sand Mines represent one of the worst-case outcomes for someone from Checker Town. Nate may end up here. Whether he does -- and whether he can leave -- is part of what drives the story forward.
 
 ## Art
-*Illustration coming soon.*
+*Art arrives with the Blender build.*

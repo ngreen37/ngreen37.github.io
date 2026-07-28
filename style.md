@@ -48,11 +48,11 @@ description: The colors, type, and motifs that make PJCC and McPuppy Studios loo
   <li><b>The Gauntlet door.</b> An arched doorway with light under it; it grows grander the higher you climb, and stands ajar once you've beaten all ten floors.</li>
   <li><b>Chess glyphs.</b> The back rank (♚ ♛ ♜ ♝ ♞) drifts faint in the background, and the world's buildings are shaped like the pieces.</li>
   <li><b>The operative dossier.</b> A light spy-file framing — clearances, codenames, "last seen" — worn warm-first, never cold.</li>
-  <li><b>The sky keeps town time.</b> Dawn / day / dusk / night, sun and moon, stars, and a shared forecast — the world runs on one Eastern clock.</li>
+  <li><b>The sky keeps town time.</b> Dawn / day / dusk / night, stars, and a shared forecast — the world runs on one Eastern clock, and the moon shows the real phase it is showing outside your window.</li>
 </ul>
 
 <h2 class="vl-h">Voice</h2>
-<p class="vl-body">Warm first, spy-flavoured second. Honest and encouraging — the games and stories model good values (curiosity, courage, showing up) without preaching. No hype, no false urgency. When something isn't ready, we say so plainly.</p>
+<p class="vl-body">Warm first, spy-flavored second. Honest and encouraging — the games and stories model good values (curiosity, courage, showing up) without preaching. No hype, no false urgency, and no apologizing for being early. Anything not finished says one of three words — <b>Building</b>, <b>Next up</b>, or <b>Retired</b> — and nothing on the site claims to exist until it does.</p>
 
 <style>
 .vl-intro { color: #c9a7ff; max-width: 720px; font-size: 1.05rem; line-height: 1.6; }

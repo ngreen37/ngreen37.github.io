@@ -17,4 +17,4 @@ Nobody knows its real name. Nobody knows exactly where it is. But everyone has h
 The mystery city lurks at the edge of the story's mythology. It may be the answer to questions the characters don't yet know how to ask.
 
 ## Art
-*Map or illustration coming soon.*
+*Map and art arrive with the Blender build.*

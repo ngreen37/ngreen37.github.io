@@ -199,7 +199,7 @@ permalink: /games/
   /* the stripe wash is dimmed 15% with the card plate below (2026-07-27) — on a tile
      this is what actually READS as the box's background, so both got the same cut. */
   background:repeating-linear-gradient(-45deg, rgba(245,197,24,0.136) 0 15px, rgba(12,8,24,0.153) 15px 30px); }
-.hall--default .gcard-dev::after { content:"IN DEV";
+.hall--default .gcard-dev::after { content:"BUILDING";
   position:absolute; left:50%; top:50%; width:200%; padding:5px 0; text-align:center;
   transform:translate(-50%,-50%) rotate(-14deg);
   font-family:'Poppins',sans-serif; font-weight:900; font-size:0.95rem; letter-spacing:0.34em;
@@ -410,8 +410,8 @@ permalink: /games/
 <!-- the combined grid: pjcc-hall.js reads data-hall="all" and lists every playable game
      (in-dev tagged, vault locked, terminated dropped) — replaces the old category portals. -->
 <script src="{{ '/assets/js/pjcc-hall.js' | relative_url }}"></script>
-<!-- THE GAMBIT ALTAR in the grid (2026-07-24) — append it as the LAST grid item so it lands in
-     the cell right after Blindfold Puzzles (bottom-right). No .gcard = no box; no title. pjcc-hall
+<!-- THE GAMBIT ALTAR in the grid (2026-07-24) — append it as the LAST grid item, so it always
+     lands in the cell after the final game (bottom-right). No .gcard = no box; no title. pjcc-hall
      renders the grid TWICE (initial, then again once the profile bests load), so an observer
      re-places the altar whenever the grid's children are rebuilt. -->
 <script>

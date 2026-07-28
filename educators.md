@@ -12,12 +12,12 @@ permalink: /educators/
 <!-- WHY IT WORKS -->
 <h2 class="ed-h2">◈ Why it works in a classroom</h2>
 <div class="ed-grid">
-  <div class="ed-cell"><span class="ed-ico">🐶</span><b>Character-led</b><small>Argus teaches openings, the Rival teaches tactics, Princess teaches endgames — kids learn from a cast they're rooting for.</small></div>
+  <div class="ed-cell"><span class="ed-ico">🐶</span><b>Character-led</b><small>Auston teaches the pieces, Crockett takes notation next, and every rival on the ladder is someone from the show — kids learn from a cast they're rooting for.</small></div>
   <div class="ed-cell"><span class="ed-ico">📶</span><b>Fully offline</b><small>Everything runs in the browser with no logins required. No accounts, no data collection, no network needed once loaded.</small></div>
   <div class="ed-cell"><span class="ed-ico">🛡️</span><b>Kid-safe by design</b><small>No chat, no ads, no purchases, no personal data. Progress is stored only on the device.</small></div>
-  <div class="ed-cell"><span class="ed-ico">🪜</span><b>Belt progression</b><small>A clear ladder from Checker to Chess City Citizen — a structure kids (and teachers) can follow lesson to lesson.</small></div>
-  <div class="ed-cell"><span class="ed-ico">🖨️</span><b>Printable worksheets</b><small>Worksheet, teacher answer-sheet, and a certificate print straight from the Academy — homework and rewards, ready to go.</small></div>
-  <div class="ed-cell"><span class="ed-ico">🕹️</span><b>13 games to practice in</b><small>Coordinates, tactics, openings, blindfold, and more — the lessons lead into real practice they want to do.</small></div>
+  <div class="ed-cell"><span class="ed-ico">🪜</span><b>A path, in order</b><small>The Academy runs one honest lesson at a time, starting at how the pieces move — so there is always exactly one next step, for the room and for each kid.</small></div>
+  <div class="ed-cell"><span class="ed-ico">🖨️</span><b>Printable art cards</b><small>A PJCC fan-art card for every student, names pre-filled, one per page — printed straight from this page, below.</small></div>
+  <div class="ed-cell"><span class="ed-ico">🕹️</span><b>Games to practice in</b><small>Coordinates, tactics, openings, a puzzle room and a ladder of rivals — the lessons lead into practice they actually want to do.</small></div>
 </div>
 
 <!-- WHAT YOU GET -->
@@ -75,16 +75,16 @@ permalink: /educators/
 </script>
 
 <!-- LICENSING (coming) -->
-<h2 class="ed-h2">◈ School &amp; district licensing <span class="ed-soon">Coming</span></h2>
-<p class="ed-note">For schools, clubs, and districts that want more, a site license is in the works — built to be the part that helps fund the show while putting it in real classrooms.</p>
+<h2 class="ed-h2">◈ School &amp; district licensing <span class="ed-soon">Next up</span></h2>
+<p class="ed-note">For schools, clubs, and districts that want more, a site license is next up — built to be the part that helps fund the show while putting it in real classrooms.</p>
 <div class="ed-tiers">
   <div class="ed-tier">
     <div class="ed-tier-name">Teacher</div>
     <div class="ed-tier-price">Free · now</div>
-    <ul><li>✓ Full Academy + arcade</li><li>✓ Printable worksheets &amp; certificates</li><li>✓ Belt ladder</li><li>✓ No accounts, fully offline</li></ul>
+    <ul><li>✓ Full Academy + arcade</li><li>✓ Printable classroom art cards</li><li>✓ Progress saved on the device</li><li>✓ No accounts, fully offline</li></ul>
   </div>
   <div class="ed-tier ed-tier-feature">
-    <div class="ed-flag">In development</div>
+    <div class="ed-flag">Building</div>
     <div class="ed-tier-name">School / Club</div>
     <div class="ed-tier-price">Site license</div>
     <ul><li>★ A teacher dashboard &amp; class progress view</li><li>★ A printable multi-week curriculum packet</li><li>★ Roster-free class codes</li><li>★ Priority support &amp; new lessons first</li></ul>

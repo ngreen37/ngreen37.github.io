@@ -19,4 +19,4 @@ Nate and his family, Maxwell, and Robert all call Checker Town home. Princess do
 Checker Town is the world the story starts in and the world the story keeps pulling back to. It represents everything Nate is fighting against, and everything he risks losing by leaving.
 
 ## Art
-*Map or illustration coming soon.*
+*Map and art arrive with the Blender build.*

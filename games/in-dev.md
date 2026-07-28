@@ -1,6 +1,6 @@
 ---
 layout: default
-title: In Development
+title: Building
 permalink: /games/in-dev/
 ---
 
@@ -11,9 +11,9 @@ permalink: /games/in-dev/
     <a class="hall-trophy" href="{{ '/leaderboards/' | relative_url }}" title="Leaderboards">🏆</a>
   </div>
   <div class="dev-titlebar">
-    <span class="dev-eyebrow">⚠ On the Workbench</span>
-    <h1 class="dev-title">🛠 In Development</h1>
-    <span class="dev-sub">building…</span>
+    <span class="dev-eyebrow">◆ On the Workbench</span>
+    <h1 class="dev-title">🛠 Building</h1>
+    <span class="dev-sub">playable while they grow</span>
   </div>
   <div class="cat-games"></div>
 </div>

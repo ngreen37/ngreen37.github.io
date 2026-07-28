@@ -16,6 +16,44 @@ combination** over new surface area.
 
 ---
 
+# ✅ ACTION ITEMS — Nate's, not mine
+
+*The standing list of things **only he can do** (an account he owns, a decision that's his to make, a
+name he has to pick). Kept here so an ended session never loses them. None are on fire; they just have
+to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**.*
+
+**Accounts & sign-ups — nothing on my side blocks these**
+- [ ] **Google Search Console** — verify `mcpuppystudios.com`, submit `/sitemap.xml`. The JSON-LD,
+  sitemap and robots have been wired and waiting since the SEO pass; until this is done, nothing is
+  telling Google the site exists.
+- [ ] **Authorize the claude.ai Google Drive connector** in claude.ai → connector settings. The OAuth
+  flow can't run from a coding session, so that capability stays dark until he clicks it.
+- [ ] **Reserve the social handles** — @McPuppyStudios on YouTube, TikTok, Instagram, X, Facebook,
+  Reddit. Bio + link, then silence until there are Blender clips to post. *The only item on this whole
+  file that gets **worse** by waiting: an empty reserved account costs nothing, a lost name costs the name.*
+- [ ] **Fan-art Supabase setup** — the public wall reads `_data/fanart.yml`; the submission table is his
+  to stand up when he wants submissions to land somewhere other than an inbox.
+
+**Decisions waiting on him**
+- [ ] **The PJCC home page / primary CTA** — *he's taking this one: PJCC moves to its own tab and the
+  home page gets remade (2026-07-28). Everything I know about the problem is in "The front door has no
+  front door" below.* Nothing to build until that lands.
+- [ ] **The Spotify-style profile ring** — hover the top-right profile pill, a progress ring slides out
+  with what's left to do. Spec'd under *Waiting on Nate* above. Outward-facing, so it's his call.
+- [ ] **The Journey map** — make the dots cost something · fold it into the Gauntlet's climb · cut it.
+  All three laid out at the bottom of this file.
+- [ ] **The hidden track** — the CD-style ghost track on the McPuppy side is built-ready; it needs **one
+  audio file**, and which song it is, is his.
+- [ ] **The Enforcer door (floor 7)** — "lock the rook glyph" was built as *the rook locked behind a
+  barred gate with a padlock*. If he meant *pin the glyph to ♜ so it stops changing*, that's a one-liner.
+
+**Test on a device I don't have**
+- [ ] **iOS in-app sign-in** — the PWA is built but private (`?pwa=on`). Magic links can't sign in an
+  installed app; the email-CODE path (`PJCC.verifyCode`) was written for it and has never been retested
+  on his phone. Blocks the PWA launch flip.
+
+---
+
 # ⭐ PRIORITY — the short list
 
 *Copied up from the sections below (the originals stay where they are, in context). Nothing here is a new
@@ -91,6 +129,60 @@ we've avoided. **Say go and it's a contained build; say no and it stays here.**
 
 **Waiting on Nate, not on me:** the **Journey map** decision (make the dots cost something · merge it into the
 Gauntlet's climb · cut it) — the section at the bottom of this file lays out all three.
+
+---
+
+## 🚪 The front door has no front door — the CTA problem, written out
+
+*(2026-07-27 compass check, re-opened 2026-07-28 at Nate's request. He's remaking the home page and
+moving PJCC to its own tab next session — this is the brief for that work, not a build order.)*
+
+**The measurement.** The PJCC home is **970 words, 31 links, four sections — and zero primary
+buttons.** Not "the button is in the wrong place": there is no styled call-to-action element on the
+page at all. Every route out is a *door tile* or a text link, and they all look equally important,
+which is the same as none of them being important.
+
+**What that costs.** On a 390px phone the first screen is: header · ticker · title · one-line lede ·
+then **Characters** and **Locations**. The first thing a visitor can do is *read about a cast they
+have never heard of*. "Play the Games" sits below the fold. A new arrival who came to play chess has
+to scroll past two doors into the fiction before the site offers them a game — and the one sentence
+that would have caught them ("a free chess arcade set in its world") is stated but not *actionable*.
+
+**Why it happened, honestly.** Every section was added as a *world* — Characters, Locations, Fan Art,
+the studio band — and worlds are browsed, not entered. Nothing was ever nominated as **the** thing to
+do. That's a hierarchy problem, not a design one, and it can't be fixed by making a tile prettier.
+
+**The rule worth keeping when the page is remade:** *one page, one obvious next action* — sized,
+colored and placed so a stranger's thumb finds it without reading anything. The Academy already does
+this and is the site's best page for exactly that reason: title → one warm sentence → one big orange
+**Start Lesson 1** button. Nothing else competes with it.
+
+**Four shapes it could take** — they're mutually exclusive; pick the promise the front door should make:
+
+1. **"Play a game right now."** One gold button above the fold → the Park Tables seat picker (or the
+   Gauntlet's first floor). Strongest for a cold visitor, weakest for the *story* — it sells the arcade
+   and lets the series introduce itself second.
+2. **"Meet Princess."** One button into a 20-second story beat — a cast card, a line of narration, a
+   Blender clip when there is one — and the arcade one scroll below. Sells the show first. This is the
+   one that fits *the belief* (Season 1 is the destination), and it's the one that needs art you don't
+   have yet, which is precisely why it's a next-session decision and not a now decision.
+3. **The board IS the button.** The hero already renders a real park table. Make it live: a position, a
+   single legal move to find, and playing it drops you into the game you just started. No copy required,
+   nothing to read, and it demonstrates the whole site in one gesture. Most PJCC-ish of the four; most
+   work.
+4. **Ask, don't assert.** Two buttons, one question: *"New here? — I want to PLAY / I want to WATCH."*
+   Splits the audience honestly instead of guessing, and every later decision inherits the answer. Cheap,
+   and it stops the page from having to be two things at once.
+
+**What I'd do if it were mine:** #1 as the shipping default, because it's the only one that works before
+the art exists — and it's a one-hour change. **#3 is the one worth building when the front door is
+rebuilt anyway**: it's the same "show, don't tell" instinct as the town sky, and no other chess site on
+earth opens with a board that starts your game when you touch it. #2 becomes obvious the day there's a
+Blender clip to put behind it.
+
+**One thing to carry over regardless:** whatever the button is, the sentence above it should stay the one
+that's already there — *"An animated series in the making — and a free chess arcade set in its world."*
+It is the clearest sentence on the site.
 
 ---
 
@@ -171,6 +263,36 @@ co-pilot couch co-op · loadout select · boss rush.
 > as the Battle Room's screen-flip: **switching view is meant to become a signature across many PJCC games** once
 > the animation pipeline lands. Web version: swap the render projection for the boss phase (a CSS/canvas transform
 > or a second draw routine) with a quick "VHS cut" transition; later it becomes a true camera cut in Godot.
+
+> **★ DO A BARREL ROLL (Nate, 2026-07-28 — the hall caption now promises it, so the game owes it).**
+> Sky Run's only defense today is *not being there*: you move, you hold ◎ FOCUS for a precise beam and a
+> visible hitbox, you bank ♟ pawns for SUMMON. There is no escape move — which is exactly the hole a roll fills.
+> 1. **The roll itself.** Double-tap left/right (swipe on a phone, or a shoulder-ish second button) → a ~250ms
+>    lateral roll with **i-frames**, ~1.5s cooldown, sprite spins through 360°. This alone is the biggest
+>    feel upgrade available in the game, and it's what anyone reading the caption already expects.
+> 2. **Deflect, don't just dodge.** Bullets crossed *during* the roll **reverse** and take your color instead
+>    of vanishing. That turns a panic button into a technique — good players will roll INTO the thickest
+>    patterns on purpose, and a boss's own volley can be sent back through its telegraphed weak-point window.
+> 3. **★ The roll is the piece you've promoted to.** She already has a rank/promotion track. Make the roll
+>    inherit it: **pawn** = a short hop · **knight** = an actual L (one lane over *and* a step up) · **bishop**
+>    = diagonal · **rook** = a full-width dash · **queen** = you choose. The escape move becomes a piece-movement
+>    drill nobody notices they're doing — the *every-game-teaches* thread, and the reason this belongs in THIS
+>    shmup and not a generic one.
+> 4. **Pay for it with pawns.** Instead of a cooldown, a roll can cost one banked ♟ — the resource you were
+>    saving for SUMMON is the one that saves you. A real decision every few seconds, and the counter already exists.
+> 5. **The voice.** Peppy is the joke everyone knows; the PJCC version is the companion yelling *"DO A BARREL
+>    ROLL!"* at the **wrong** moments — during a quiet stretch, and never when you're actually about to die.
+>    One line per run, seeded off the town date so everyone hears the same nonsense that day ([[ticker-voice]] rules
+>    don't apply here — this is a character, not the news desk).
+> 6. **The Air Show.** Count *clean* rolls (passed through ≥1 bullet, took no hit) and pay them out as their own
+>    end-of-run line — "AIR SHOW · 14 clean ×25" — so the flashy thing has a reward without polluting the survival
+>    score. Same shape as Sand Mine's HARD WAY bonus.
+> 7. **The 360, hidden.** Three rolls back-to-back without firing a shot or taking a hit → a full loop with a
+>    trail and a minted `frag_*`. Nobody finds it by accident; everybody finds it once one person says the words.
+>
+> **Cost, honestly:** 1 + 6 is an afternoon (a `roll` state on `G`, i-frames in the collision pass, a sprite
+> rotation, one HUD line). 3 is the ambitious one and wants the promotion code read first. 2 changes balance —
+> returned bullets are strong — so it needs real playtesting before it ships.
 
 **Follow the Dog** *(formerly Space Run — renamed 2026-06-23):* *(not yet wired to PJCC — do that first).* Then:
 qualifier framing · collect-a-set upgrades · legality-dodging · rival racers · daily track · tactic-shortcut

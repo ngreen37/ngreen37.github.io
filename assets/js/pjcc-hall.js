@@ -29,6 +29,18 @@
       // shows everything in that category.
       return hall === 'all' ? (g.cat !== 'terminated' && g.playable !== false && !g.noHall) : g.cat === hall;
     });
+    // FINISHED THINGS FIRST (2026-07-28, skeptic pass). The combined grid used to follow
+    // the registry's order, which put a caution-taped half-built game SECOND — the second
+    // thing a brand-new visitor met in the arcade was a tile shouting BUILDING at them.
+    // The data order is the registry's business (categories, history, comments); the hall's
+    // business is that the first screen is all things that work. Stable: the relative order
+    // inside each group is untouched, so this is one line to revert.
+    if (hall === 'all') {
+      var rank = function (g) { return g.cat === 'dev' ? 2 : (g.locked && !unlocked()) ? 1 : 0; };
+      list = list.map(function (g, i) { return { g: g, i: i }; })
+                 .sort(function (a, b) { return rank(a.g) - rank(b.g) || a.i - b.i; })
+                 .map(function (x) { return x.g; });
+    }
     grid.innerHTML = list.map(function (g) {
       var dead = g.playable === false;
       var locked = g.locked && !unlocked();
@@ -38,7 +50,7 @@
       var soon = g.soon ? '<span class="gcard-soon">SOON</span>' : '';
       // in the combined grid, in-development games wear a plain honest tag (no taxonomy,
       // just the truth per-tile) so nothing half-built reads as finished.
-      var indev = (hall === 'all' && g.cat === 'dev') ? '<span class="gcard-dev">IN DEV</span>' : '';
+      var indev = (hall === 'all' && g.cat === 'dev') ? '<span class="gcard-dev">BUILDING</span>' : '';
       var dbadge = dead ? '<span class="gcard-dead">DELAYED</span>' : '';
       // quiet, honest mark: this game's chess content is re-proved in CI
       // (tests/validate-chess.js — perft-verified referee + a Stockfish second opinion).
@@ -51,7 +63,7 @@
       // for each"). The bespoke per-slug looks live in games.md's page-local <style>; the
       // in-dev tiles keep the caution-tape watermark, locked/dead keep their hint.
       var descHtml = dead ? '<p>Non-playable — ' + esc(g.cryptic) + '</p>'
-        : (locked ? '<p>Locked — flawless Fast run in Notation Blitz</p>' : '');
+        : (locked ? '<p>Locked — flawless Fast run in Notation Blitz to unlock</p>' : '');
       var tag = (!dead && !locked && !g.soon && g.cat !== 'dev' && g.cryptic)
         ? '<p class="gcard-tag">' + esc(g.cryptic) + '</p>' : '';
       var inner = neu + soon + indev + dbadge + '<span class="gcard-icon">' + icon + '</span>' +

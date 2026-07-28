@@ -38,7 +38,7 @@ Chess City is the prize, the promise, and the obstacle. It represents a better l
 Not everyone believes Chess City is paradise. There is a belief among some -- the wary, the burned, the pessimists -- that the city is no prize at all, but a place **inhabited by evil chess pieces**: pieces with mouths and eyes, watching from behind the gates, smiling the way a trap smiles. Most dismiss it as the talk of people who never made it across the sea. One person does not. *(See [Jerry Murphy](/characters/murphy/), and [the game that bears his name](/games/murphys-law/).)*
 
 ## Art
-*Map or illustration coming soon.*
+*Map and art arrive with the Blender build.*
 
 <script>
 // Chess City is gated: the page only opens once you've WON THE GAUNTLET

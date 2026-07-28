@@ -25,4 +25,4 @@ Shogi Island exists at the edges of the story — a reminder that the world is b
 *(Traveler, take heed. The rules here are different.)*
 
 ## Art
-*Map or illustration coming soon. — 地図は後ほど。*
+*Map and art arrive with the Blender build. — 地図は後ほど。*

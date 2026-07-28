@@ -17,4 +17,4 @@ A school inside Chess City where Nate finds work -- first as a janitor, and even
 Chess City Elementary is where Nate's journey and his teaching life begin to converge. It is a place of contradiction -- close to the dream, but still at arm's length.
 
 ## Art
-*Illustration coming soon.*
+*Art arrives with the Blender build.*

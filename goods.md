@@ -7,7 +7,7 @@ brand: mcpuppy
 
 <div class="goods-head">
   <h1 class="goods-title">Merch</h1>
-  <p class="goods-sub"><span class="goods-soon">Not ready yet</span> — months away.</p>
+  <p class="goods-sub"><span class="goods-soon">Next up</span> — the designs come first.</p>
 </div>
 
 <!-- ── The Goal Card ────────────────────────────────────────── -->

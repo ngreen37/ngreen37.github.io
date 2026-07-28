@@ -19,7 +19,7 @@ body_class: theme-academy
        · a living hero (the pieces rise into formation; the CTA + path evolve with YOUR
          progress and, over time, with the school itself)
        · Lesson 1 — Auston's Bootcamp Basics: a REAL board at /academy/bootcamp/
-       · Lesson 2 — Notation Blitz with Crockett: coming soon
+       · Lesson 2 — Notation Blitz with Crockett: building
      Adding a lesson = one more `.ac-lesson` anchor here + its own page. No shared belt
      math to keep in sync any more. {% endcomment %}
 
@@ -53,7 +53,7 @@ body_class: theme-academy
       <b>Notation Blitz with Crockett</b>
       <small>Read the board out loud — name any square at a glance.</small>
     </span>
-    <span class="ac-soon">Coming soon</span>
+    <span class="ac-soon">Building</span>
   </div>
 
 </div>
@@ -178,6 +178,20 @@ body.theme-academy .ts-horizon { background: linear-gradient(180deg, rgba(0,0,0,
 .ac-soon { flex: 0 0 auto; font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; letter-spacing: 0.12em;
   text-transform: uppercase; color: #93b39a; background: rgba(10,20,14,0.65); border: 1px solid #2c4636;
   border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
+
+/* PHONE: give the lesson its own line (2026-07-28, skeptic pass). The row is
+   [01] [icon] [title + subtitle] [Start ▸] — five fixed things flanking one flexible
+   one, which on a 390px screen left the text ~165px wide: "Auston's Bootcamp Basics"
+   wrapped over three lines and its subtitle broke every three words. The row wraps
+   now — number, icon and state stay on top, the words get the full width underneath. */
+@media (max-width: 560px) {
+  .ac-lesson       { flex-wrap: wrap; gap: 8px 12px; }
+  .ac-lesson-n     { order: 1; }
+  .ac-lesson-ico   { order: 2; }
+  .ac-lesson-state,
+  .ac-soon         { order: 3; margin-left: auto; }
+  .ac-lesson-main  { order: 4; flex: 1 1 100%; }
+}
 
 .ac-note { max-width: 640px; color: #a9c2ab; font-size: 0.9rem; line-height: 1.65; }
 .ac-note a { color: #ffb347; }

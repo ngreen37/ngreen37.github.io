@@ -214,7 +214,7 @@ body_class: theme-academy
     renderPicker(); renderProg();
     if (PIECES.every(function (d) { return learned[d.k]; }) && gradEl.hidden) {
       document.getElementById('bc-grad-p').textContent =
-        "You know where every piece goes now — and that's the ground under everything else you'll ever learn here. Next up: reading the board out loud, square by square, with Crockett. He's still off fetching the ball, so it's coming soon.";
+        "You know where every piece goes now — and that's the ground under everything else you'll ever learn here. Next up: reading the board out loud, square by square, with Crockett. He's still off fetching the ball, so that one is still being built.";
       gradEl.hidden = false;
       if (!reduce) gradEl.classList.add('bc-rise');
     }

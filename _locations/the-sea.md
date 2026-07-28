@@ -5,7 +5,7 @@ title: The Sea
 location_type: North Region
 permalink: /locations/the-sea/
 # The sea scene is a Blender .mkv — browsers can't play Matroska, so it's HELD as
-# `video_pending` for now: the page shows the "Art coming soon" panel instead of a broken
+# `video_pending` for now: the page shows the "Art & Map: Building" panel instead of a broken
 # player. To go live, put a web MP4 at the path below and rename this key back to `video`.
 # Convert once ffmpeg is installed (the source is only 543 KB):
 #   ffmpeg -i assets/scenes/Sea_Scene_May_2026.mkv -c:v libx264 -crf 22 -pix_fmt yuv420p -an -movflags +faststart assets/scenes/Sea_Scene_May_2026.mp4
