@@ -35,9 +35,12 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**
   to stand up when he wants submissions to land somewhere other than an inbox.
 
 **Decisions waiting on him**
-- [ ] **The PJCC home page / primary CTA** — *he's taking this one: PJCC moves to its own tab and the
-  home page gets remade (2026-07-28). Everything I know about the problem is in "The front door has no
-  front door" below.* Nothing to build until that lands.
+- [ ] **Pick the home page's NAME.** The front door shipped 2026-07-28 as **McPuppy Chess** at
+  `/chess/`, but that's a working title — twenty candidates are in "🚪 The front door" below.
+  Swapping is one Liquid line at the top of `chess.md` (`site_name`) plus the drawer sub and the
+  ⌘K entry. Say the word and it's a two-minute change.
+- [ ] **Shape the new home page.** First pass is live and deliberately plain — hero + one gold
+  button + four doors + three true things + one door to the world. He said "we'll shape it."
 - [ ] **The Spotify-style profile ring** — hover the top-right profile pill, a progress ring slides out
   with what's left to do. Spec'd under *Waiting on Nate* above. Outward-facing, so it's his call.
 - [ ] **The Journey map** — make the dots cost something · fold it into the Gauntlet's climb · cut it.
@@ -132,10 +135,53 @@ Gauntlet's climb · cut it) — the section at the bottom of this file lays out 
 
 ---
 
-## 🚪 The front door has no front door — the CTA problem, written out
+## 🚪 The front door — SHIPPED 2026-07-28, and the twenty names
 
-*(2026-07-27 compass check, re-opened 2026-07-28 at Nate's request. He's remaking the home page and
-moving PJCC to its own tab next session — this is the brief for that work, not a build order.)*
+**✅ Built.** `/chess/` is the front door (**McPuppy Chess**, working title), `/pjcc/` is the world
+tab under Academy, and the intro card at `/` hands off to the new home. It carries **one** gold
+button — Play Chess → the Park Tables — plus four doors, three true things, and one door to the
+world. What follows is the brief it was built from, kept because the *reasoning* is what the next
+pass should argue with.
+
+### The twenty names *(Nate 2026-07-28: "rename the home page something more generic like McPuppy
+Chess, like chess.com or lichess.org — throw out 20 ideas that have a PJCC spin")*
+
+**Brand-forward** — inherits the logo, zero collisions, reads like Chess.com
+1. **McPuppy Chess** ★ *(his own instinct, and the one it shipped under)*
+2. **McPuppy Chess Club** — warmer; a club implies other people
+3. **Puppy Chess** — kid-first, and the easiest name in the world to say
+4. **McPuppy Board** — quieter, more studio than platform
+
+**Place-forward** — the world's geography, which happens to sound like a chess brand
+5. **Checker Town Chess** — the town where everyone in the story starts
+6. **Checker Town Chess Club** — the beginners' club *before* the city; most on-theme of all
+7. **Chess City** — the destination of the entire series. ⚠ collides with the `chess-city` game
+   and the location page
+8. **The Chess City Club**
+9. **Chess City Open** — a tournament name; "open" says anyone may enter
+10. **The Park Tables** — already a feature; too narrow to hold the whole site
+
+**Journey-forward** — the arc, said out loud
+11. **Pawn to Queen** — the whole series in three words, and literally what promotion is
+12. **The Climb** — ties the site to the Gauntlet
+13. **Queenside** — one word, unmistakably chess, elegant
+14. **King's Walk** — a real endgame technique *and* a road
+15. **The Long Game** — the studio's actual thesis
+
+**Board-forward** — the most "generic chess site", with a PJCC wink
+16. **Sixty-Four** ★ — the squares. Short, striking, no lore conflict, ages well
+17. **The Open Board** — free, welcoming, no account required — the site's three facts in a name
+18. **Board & Bark** — chess + dog; playful and unmistakably yours
+19. **The Chess Yard** — schoolyard, backyard: where kids actually learn this game
+20. **Follow the Board** — a spin on the creed (*follow the dog*)
+
+**My order:** 1 → 16 → 6. #1 is the safe, brand-consistent, already-shipped answer; **Sixty-Four**
+is the one a stranger would remember; **Checker Town Chess Club** is the one that makes the site
+feel like a place in the story.
+
+---
+
+*(The brief below is the 2026-07-27 compass check that started it. Kept for the next pass.)*
 
 **The measurement.** The PJCC home is **970 words, 31 links, four sections — and zero primary
 buttons.** Not "the button is in the wrong place": there is no styled call-to-action element on the
@@ -179,6 +225,18 @@ the art exists — and it's a one-hour change. **#3 is the one worth building wh
 rebuilt anyway**: it's the same "show, don't tell" instinct as the town sky, and no other chess site on
 earth opens with a board that starts your game when you touch it. #2 becomes obvious the day there's a
 Blender clip to put behind it.
+
+**→ WHAT SHIPPED (2026-07-28): #1, with #3 stubbed in.** The hero board is the canonical park-table
+drawing wrapped in the CTA link — the whole block is clickable and reads *play* — but it is still a
+DRAWING. **#3 proper is the next move on this page**: put a real position on it, one legal move to
+find, and playing that move starts the game you just began. Everything needed already exists (the
+perft-verified referee, the puzzle generator, `data-render="glyph"` boards in the Academy). That is
+the front door no other chess site has.
+
+**Also banked from the same pass:** the honest strip on the new home is only three lines long, and
+the site has more true things than that — *engine-verified puzzles · a rating that starts at 250 ·
+the arcade caching for offline · a review on every game · no ads, no freemium, no pay-to-win.* If
+that strip ever grows, it should stay a LIST of facts, never a wall of feature cards.
 
 **One thing to carry over regardless:** whatever the button is, the sentence above it should stay the one
 that's already there — *"An animated series in the making — and a free chess arcade set in its world."*

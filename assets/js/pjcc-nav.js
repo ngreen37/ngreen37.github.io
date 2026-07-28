@@ -15,8 +15,8 @@
 
     // Destinations (b = brand tag for the little pill).
     var DEST = [
-      { t: 'Home',             s: 'McPuppy Studios — the front door',     u: '/',                        ic: '🐾', b: 'mcpuppy', k: 'home mcpuppy studios front door start' },
-      { t: 'PJCC',             s: 'The world — cast, places, fan art',    u: '/pjcc/',                   ic: '◆', b: 'pjcc',    k: 'pjcc world princess journey chess city landing home' },
+      { t: 'Home',             s: 'McPuppy Chess — play, solve, learn',   u: '/chess/',                  ic: '♔', b: 'pjcc',    k: 'home mcpuppy chess front door start play free' },
+      { t: 'PJCC',             s: 'The world — cast, places, fan art',    u: '/pjcc/',                   ic: '◆', b: 'pjcc',    k: 'pjcc world princess journey chess city landing series show' },
       { t: 'Play Now',         s: 'Sit at the Park Tables',               u: '/games/park-tables/',      ic: '▶', b: 'pjcc',    k: 'play now park tables live game match rated correspondence' },
       { t: 'The Gauntlet',     s: 'Climb the tower of ten',               u: '/games/the-gauntlet/',     ic: '♛', b: 'pjcc',    k: 'gauntlet tower climb ladder ten floors bosses' },
       { t: 'Puzzles',          s: 'Fork in the Road',                     u: '/games/fork-in-the-road/', ic: '♞', b: 'pjcc',    k: 'puzzles fork in the road tactics only move solve' },
@@ -25,7 +25,7 @@
       { t: 'Leaderboards',     s: 'Top scores across the games',          u: '/leaderboards/',       ic: '🏆', b: 'pjcc', k: 'leaderboards standings scores rank high' },
       { t: 'Fan Art',          s: 'The fan wall + a printable PJCC card',  u: '/fan-art/',            ic: '🎨', b: 'pjcc', k: 'fan art wall gallery printable card make picture upload print pdf submit' },
       { t: 'The Gambit',       s: 'Lay down your best — the board decides', u: '/the-gambit/',       ic: '🎲', b: 'pjcc', k: 'gambit sacrifice offering altar wager risk reward credits collectables let go' },
-      { t: 'Merch',            s: 'Not ready yet — months away',          u: '/goods/',              ic: '🃏', b: 'mcpuppy', k: 'goods goal cards stationery merch follow the dog mindset coming soon physical' },
+      { t: 'Merch',            s: 'Next up — the designs come first',     u: '/goods/',              ic: '🃏', b: 'mcpuppy', k: 'goods goal cards stationery merch follow the dog mindset physical' },
       { t: 'The Direct Line',  s: 'Write to me directly',                 u: '/direct-line/',        ic: '✉️', b: 'mcpuppy', k: 'direct line suggestions patreon contact write feedback guaranteed response' },
       { t: 'Projects',         s: 'Inside McPuppy Studios — the roadmap', u: '/projects/',           ic: '📋', b: 'mcpuppy', k: 'projects mcpuppy studio progress about who nate hub roadmap thanks counters' },
       { t: 'Blog',             s: 'The build log — every episode so far',   u: '/blog/',               ic: '✍', b: 'mcpuppy', k: 'blog build log episodes posts writing' },

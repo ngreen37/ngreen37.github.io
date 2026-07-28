@@ -281,11 +281,11 @@
 .dl-txt small { font-size: 0.72rem; color: #a896d4; }
 
 /* PJCC stands out (Nate: "you can make PJCC stand out if you like") */
-.site-header .site-nav.drawer .page-link.drawer-link--pjcc {
+.site-header .site-nav.drawer .page-link.drawer-link--home {
   background: linear-gradient(135deg, rgba(245, 197, 24, 0.18), rgba(150, 65, 255, 0.2));
   border-color: rgba(245, 197, 24, 0.6);
 }
-.drawer-link--pjcc .dl-txt b { color: #F5C518; }
+.drawer-link--home .dl-txt b { color: #F5C518; }
 
 .drawer-div { height: 1px; margin: 10px 4px; background: rgba(110, 95, 160, 0.28); }
 .drawer-mini { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 2px 8px 6px; }

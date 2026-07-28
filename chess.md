@@ -1,0 +1,260 @@
+---
+layout: page
+permalink: /chess/
+title: McPuppy Chess
+own_title: true
+tab_title: McPuppy Chess — free chess for everyone
+description: Free chess for everyone — play a real game, solve a puzzle, or learn from scratch. Set in the world of Princess and the Journey to Chess City, by McPuppy Studios.
+---
+
+{% comment %} ══════════════════════════════════════════════════════════════════════════
+     THE NEW HOME (2026-07-28, Nate: "we're switching gears… rename the home page something
+     more generic like McPuppy Chess, like chess.com or lichess.org… give me just a basic
+     home page that encapsulates our modified direction… this is where you can help me add
+     the CTA").
+
+     WHAT CHANGED, AND WHY IT'S A DIFFERENT PAGE RATHER THAN AN EDIT:
+     The old front door was a WORLD landing — title card, cast, locations, fan art, a news
+     ticker, the full town sky. Worlds get *browsed*. A chess site gets *used*. Those want
+     opposite pages, so the world moved to /pjcc/ (its own tab, below Academy) and this is
+     the site's front door: one promise, one button, four doors, and the honest facts.
+
+     THE CTA — the thing the old home never had (measured: 970 words, 31 links, four
+     sections, ZERO primary buttons). There is exactly ONE gold button on this page and
+     everything else is quieter than it. If a second thing ever competes with it, the page
+     has regressed to the old problem.
+
+     ⚡ IT IS ALSO THE PERFORMANCE FIX. Deliberately NO `body_class: full-sky` — the cloud
+     banks, starfield, constellations and shooting stars stay on /pjcc/, where the hero is
+     the point. Measured 2026-07-28 on the live PJCC home: 29 animating elements / 14
+     distinct animations at idle, 5.4% of frames over 32ms at 6x throttle; ablating any ONE
+     layer (rain included) recovered nothing outside the noise floor, but turning ALL of
+     them off took stutter to 0.0% and the worst frame from 50ms to 17ms. It was never one
+     villain — it was the pile. So this page keeps the pile off.
+
+     THE NAME is one Liquid variable, right below. Twenty candidates are in FUTURE-IDEAS;
+     swapping to any of them is this line, the h1's alt text, and nothing else.
+     ══════════════════════════════════════════════════════════════════════════ {% endcomment %}
+
+{%- assign site_name = "McPuppy Chess" -%}
+
+<section class="mc-hero">
+  <div class="mc-hero-copy">
+    <p class="mc-eyebrow">From McPuppy Studios</p>
+    <h1 class="mc-title">{{ site_name }}</h1>
+    <p class="mc-lede">Free chess for everyone — play a real game, solve one honest puzzle,
+      or start at how the pieces move.</p>
+
+    {%- comment -%} THE ONE BUTTON. Park Tables because it's the only door where a stranger is
+         *playing* in two taps — a park regular seats you instantly, no account, real rules,
+         a real clock. {%- endcomment -%}
+    <a class="mc-cta" href="{{ '/games/park-tables/' | relative_url }}">
+      <span class="mc-cta-ico" aria-hidden="true">&#9822;</span>
+      <span class="mc-cta-txt">Play Chess</span>
+      <span class="mc-cta-arw" aria-hidden="true">&rarr;</span>
+    </a>
+    <a class="mc-cta2" href="{{ '/academy/' | relative_url }}">New to chess? Start at lesson one</a>
+
+    <p class="mc-facts">Free &middot; no account needed &middot; keeps playing with the wi-fi off</p>
+  </div>
+
+  {%- comment -%} The board is a LINK, not decoration — the same canonical park-table drawing
+       the games hall and the splash use ([[chess-visual-canon]]: one drawing, never forked).
+       Next step banked in FUTURE-IDEAS: make the board itself live — one legal move to find,
+       and playing it starts the game. {%- endcomment -%}
+  <a class="mc-board" href="{{ '/games/park-tables/' | relative_url }}"
+     aria-label="Play chess — sit at a park table">
+    {% include park-table.html %}
+  </a>
+</section>
+
+<h2 class="mc-h2">Four ways in</h2>
+<div class="mc-doors">
+  <a class="mc-door" href="{{ '/games/park-tables/' | relative_url }}">
+    <span class="mc-door-ico" aria-hidden="true">&#9654;</span>
+    <b>Play Now</b>
+    <small>Sit at a park table. Another operative, a park regular, or McPuppy himself.</small>
+  </a>
+  <a class="mc-door" href="{{ '/games/the-gauntlet/' | relative_url }}">
+    <span class="mc-door-ico" aria-hidden="true">&#9819;</span>
+    <b>The Gauntlet</b>
+    <small>Ten floors, ten rivals, one real engine. The board grows grander the higher you climb.</small>
+  </a>
+  <a class="mc-door" href="{{ '/games/fork-in-the-road/' | relative_url }}">
+    <span class="mc-door-ico" aria-hidden="true">&#9822;</span>
+    <b>Puzzles</b>
+    <small>One move wins. Play the wrong one and it shows you exactly why it loses.</small>
+  </a>
+  <a class="mc-door" href="{{ '/academy/' | relative_url }}">
+    <span class="mc-door-ico" aria-hidden="true">&#128214;</span>
+    <b>Academy</b>
+    <small>Nobody is born knowing this game. Start at the pieces, on a board you can touch.</small>
+  </a>
+</div>
+
+{%- comment -%} THE HONEST STRIP — three things that are TRUE and that no other free chess site
+     says out loud. Not features; proofs. (FUTURE-IDEAS #9 asked for the offline line for
+     months — this is it.) Anything added here has to survive `npm test`. {%- endcomment -%}
+<ul class="mc-true">
+  <li><b>The chess is real.</b> A perft-verified referee runs every board, with Stockfish as
+    a second opinion — and it's re-proved in CI before anything ships.</li>
+  <li><b>Every finished game gets a review.</b> Accuracy, the move it turned on, and the one
+    you missed. Free, for everyone, forever — it runs in your browser.</li>
+  <li><b>It works on a plane.</b> The whole arcade and the engine cache on first visit, so
+    the games keep working with the wi-fi off.</li>
+</ul>
+
+{%- comment -%} ONE door to the world — the show is the point of all of this, but it is not
+     what a stranger came here to DO. One card, warm, at the foot. {%- endcomment -%}
+<a class="mc-world" href="{{ '/pjcc/' | relative_url }}">
+  <span class="mc-world-glyph" aria-hidden="true">&#9819;</span>
+  <span class="mc-world-txt">
+    <b>There is a whole world behind this board</b>
+    <small><i>Princess and the Journey to Chess City</i> — an animated series in the making.
+      Meet the cast, wander the town, see the fan wall.</small>
+  </span>
+  <span class="mc-world-arw" aria-hidden="true">&rarr;</span>
+</a>
+
+<section class="mc-studio">
+  <span class="mc-lamp">{% include desk-lamp.html id="mc-lamp" %}</span>
+  <div class="mc-studio-copy">
+    <span class="mc-studio-label">Building in the open</span>
+    {% if site.posts.first %}
+    <a class="mc-studio-post" href="{{ site.posts.first.url | relative_url }}">{{ site.posts.first.title }}</a>
+    <span class="mc-studio-date">{{ site.posts.first.date | date: "%-d %B %Y" }}</span>
+    {% endif %}
+    <a class="mc-studio-more" href="{{ '/blog/' | relative_url }}">Read the blog &rarr;</a>
+  </div>
+</section>
+
+<style>
+/* ── McPuppy Chess — the front door ───────────────────────────────────────────────
+   Built on the shared tokens (--step-*, --space-*, --r-*) so it inherits the site's
+   type scale and radii. Page-local because it is one page's furniture; if a second
+   page ever needs a piece of it, that piece graduates to _sass/. */
+
+/* HERO — copy left, board right; one column under 760px with the board FIRST, so a
+   phone still opens on something that looks like chess rather than on a paragraph. */
+.mc-hero { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: var(--space-6, 32px);
+  align-items: center; margin: 0 0 var(--space-7, 44px); }
+.mc-eyebrow { font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 2.4px;
+  text-transform: uppercase; color: #8a72c0; margin: 0 0 6px; }
+.mc-title { font-size: clamp(38px, 6.4vw, 64px); line-height: 1.02; font-weight: 900; color: #fff;
+  margin: 0 0 12px; letter-spacing: -0.02em; text-wrap: balance; }
+.mc-lede { color: #cdbcf2; font-size: clamp(15px, 1.9vw, 18px); line-height: 1.6; max-width: 42ch;
+  margin: 0 0 var(--space-5, 24px); }
+
+/* THE ONE BUTTON. Nothing else on the page is gold, filled, or this size — that is the
+   whole design, and it is the thing the old home page did not have. */
+.mc-cta { display: inline-flex; align-items: center; gap: 12px; text-decoration: none;
+  background: linear-gradient(180deg, #ffd54a, #F5C518); color: #1a0f3d;
+  font-weight: 900; font-size: clamp(17px, 2.1vw, 20px); letter-spacing: 0.01em;
+  padding: 15px 28px; border-radius: 999px; border: 2px solid #ffe27a;
+  box-shadow: 0 10px 30px rgba(245,197,24,0.28);
+  transition: transform .14s ease, box-shadow .14s ease, filter .14s ease; }
+.mc-cta:hover { transform: translateY(-2px); filter: brightness(1.04);
+  box-shadow: 0 14px 38px rgba(245,197,24,0.4); text-decoration: none; }
+.mc-cta:active { transform: translateY(0); }
+.mc-cta-ico { font-size: 1.15em; line-height: 1; }
+.mc-cta-arw { font-size: 1.05em; transition: transform .14s ease; }
+.mc-cta:hover .mc-cta-arw { transform: translateX(3px); }
+
+.mc-cta2 { display: inline-block; margin-left: 18px; color: #cdbcf2; font-size: 0.95rem;
+  text-decoration: none; border-bottom: 1px solid rgba(205,188,242,0.35); padding-bottom: 1px; }
+.mc-cta2:hover { color: #fff; border-bottom-color: #fff; text-decoration: none; }
+
+.mc-facts { margin: var(--space-4, 16px) 0 0; color: #9a7fd4; font-size: 0.86rem; letter-spacing: 0.01em; }
+
+/* The board block — a link, sized to sit beside the copy without stealing from it.
+   ⚠ .pkt-scene is a FIXED 190x99 unit and `transform: scale()` doesn't change layout size,
+   so the box has to be declared at the scaled size or the drawing spills out of it (the
+   same trap the ✦ star hit on the old front door). 190x1.45 = 276, 99x1.45 = 144. */
+.mc-board { display: flex; align-items: center; justify-content: center; text-decoration: none;
+  min-height: 190px; padding: var(--space-4, 16px); border-radius: var(--r-lg, 16px);
+  overflow: hidden; transition: transform .18s ease; }
+.mc-board:hover { transform: translateY(-3px); text-decoration: none; }
+.mc-board .pkt-scene { transform: scale(1.45); transform-origin: center; }
+
+@media (max-width: 760px) {
+  .mc-hero { grid-template-columns: 1fr; gap: var(--space-4, 16px); }
+  .mc-board { order: -1; min-height: 150px; }
+  .mc-board .pkt-scene { transform: scale(1.15); }
+  .mc-cta { width: 100%; justify-content: center; }
+  .mc-cta2 { display: block; margin: 14px 0 0; text-align: center; }
+}
+
+/* SECTION HEADS — quiet; the button is the loud thing */
+.mc-h2 { color: #F5C518; font-size: 1.05rem; letter-spacing: 0.08em; text-transform: uppercase;
+  font-family: 'Share Tech Mono', monospace; margin: 0 0 var(--space-4, 16px); }
+
+/* FOUR DOORS — explicit 4 / 2x2 / 1, never auto-fit. auto-fit put THREE across at the
+   real content width and orphaned Academy on a row of its own; four doors want to read as
+   a set, and 2x2 is the honest fallback. (Content width varies with the docked rail, so
+   "it fits at 1280" is not something to design around.) */
+.mc-doors { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3, 12px); margin: 0 0 var(--space-7, 44px); }
+@media (max-width: 1080px) { .mc-doors { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px)  { .mc-doors { grid-template-columns: 1fr; } }
+.mc-door { display: block; text-decoration: none; padding: 18px 18px 20px;
+  background: rgba(36,20,81,0.55); border: 1px solid #3a2870; border-radius: var(--r-md, 12px);
+  transition: transform .14s ease, border-color .14s ease, background .14s ease; }
+.mc-door:hover { transform: translateY(-3px); border-color: #F5C518; background: rgba(46,26,100,0.7);
+  text-decoration: none; }
+.mc-door-ico { display: block; font-size: 26px; line-height: 1; color: #F5C518; margin-bottom: 10px; }
+.mc-door b { display: block; color: #fff; font-size: 1.05rem; margin-bottom: 5px; }
+.mc-door small { display: block; color: #b3a3d8; font-size: 0.84rem; line-height: 1.55; }
+
+/* THE TRUE THINGS — a list, not cards; facts don't need boxes */
+.mc-true { list-style: none; padding: 0; margin: 0 0 var(--space-7, 44px);
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-4, 16px); }
+.mc-true li { color: #b3a3d8; font-size: 0.88rem; line-height: 1.6; border-left: 2px solid #3a2870;
+  padding-left: 14px; }
+.mc-true b { display: block; color: #e8dcff; font-size: 0.95rem; margin-bottom: 3px; }
+
+/* THE WORLD DOOR */
+.mc-world { display: flex; align-items: center; gap: 16px; text-decoration: none;
+  padding: 18px 20px; border-radius: var(--r-lg, 16px); margin: 0 0 var(--space-6, 32px);
+  background: linear-gradient(100deg, rgba(58,34,120,0.6), rgba(26,15,61,0.5));
+  border: 1px solid #4a3890; transition: border-color .14s ease, transform .14s ease; }
+.mc-world:hover { border-color: #F5C518; transform: translateY(-2px); text-decoration: none; }
+.mc-world-glyph { font-size: 34px; line-height: 1; color: #F5C518; flex: 0 0 auto; }
+.mc-world-txt { flex: 1; min-width: 0; }
+.mc-world-txt b { display: block; color: #fff; font-size: 1rem; margin-bottom: 3px; }
+.mc-world-txt small { display: block; color: #b3a3d8; font-size: 0.84rem; line-height: 1.55; }
+.mc-world-arw { color: #F5C518; font-size: 1.2rem; flex: 0 0 auto; }
+@media (max-width: 560px) { .mc-world-glyph { font-size: 26px; } }
+
+/* THE STUDIO BAND — the same lamp + newest post the old home carried; it is the proof
+   that someone is still building this, and it costs one include. */
+.mc-studio { display: flex; align-items: center; gap: 18px; padding: 16px 4px 0;
+  border-top: 1px solid #2a1a55; }
+/* ⚠ desk-lamp.html sizes the lamp but deliberately NEVER PLACES it — "wrap this include in
+   something positioned" (the include says so). Without these five lines the lamp's absolutely
+   positioned parts escape to the page and scatter (a blob in one corner, the desk slab drawn
+   across the width, and 8px of horizontal overflow). Same placement block as `.awake-lamp`
+   in _layouts/home.html; if a third page ever needs it, graduate it to _sass/ instead of
+   copying it a third time. */
+.mc-lamp { position: relative; display: block; width: 82px; height: 92px; flex: 0 0 auto; }
+.mc-lamp .studio-light { position: absolute; inset: 0; }
+.mc-lamp .sl-desk { left: -18px; right: -18px; border-radius: 3px; }
+.mc-lamp .sl-desk::after { border-radius: 0 0 3px 3px; }
+.mc-lamp .sl-tip { right: auto; left: -52px; }
+.mc-studio-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.mc-studio-label { font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 2px;
+  text-transform: uppercase; color: #8a72c0; }
+.mc-studio-post { color: #fff; font-weight: 700; text-decoration: none; font-size: 0.98rem; }
+.mc-studio-post:hover { color: #F5C518; }
+.mc-studio-date { color: #9a7fd4; font-size: 0.78rem; }
+.mc-studio-more { color: #cdbcf2; font-size: 0.84rem; text-decoration: none; margin-top: 4px; }
+.mc-studio-more:hover { color: #F5C518; }
+
+/* phones: every door and link clears the 40px tap floor (the compass-check baseline) */
+@media (pointer: coarse) {
+  .mc-cta2, .mc-studio-more { min-height: 40px; display: flex; align-items: center; }
+  .mc-cta2 { justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mc-cta, .mc-door, .mc-world, .mc-board { transition: none; }
+}
+</style>

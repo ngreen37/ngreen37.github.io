@@ -51,26 +51,33 @@
            lives in an off-canvas left drawer, site-wide. #nav-toggle (the hamburger, now
            shown on every width) opens #site-nav — pjcc-eggs.js toggles `.is-open` and
            closes it on outside-click / link-tap. `.nav-backdrop` is a DOM SIBLING so
-           `#site-nav.is-open ~ .nav-backdrop` can dim the page with no extra JS. The SEVEN
-           links were REORDERED 2026-07-24 (Nate's compass call — lead with home, then group
-           play): PJCC→the world (home) · Games→the arcade hub · The Gauntlet · Play Now→Park
-           Tables · Puzzles→Fork in the Road · Academy · Projects→the studio. PJCC keeps the
-           gold `--pjcc` highlight as the home anchor at the top; order is MARKUP order (no
-           nth-child depends on it). ⌘K still reaches everything else. Drawer look lives in
-           _sass/_pjcc-13-nav.scss. -->
+           `#site-nav.is-open ~ .nav-backdrop` can dim the page with no extra JS. EIGHT links
+           as of 2026-07-28 (the gears switched — the site's front door is a chess site now,
+           the world is a tab): Home→/chess/ · Play Now→Park Tables · The Gauntlet · Games→the
+           arcade hub · Puzzles→Fork in the Road · Academy · PJCC→the world · Projects→the
+           studio. The gold `--home` highlight marks whichever link IS home; order is MARKUP
+           order (no nth-child depends on it). ⌘K still reaches everything else. Drawer look
+           lives in _sass/_pjcc-13-nav.scss. -->
       <nav class="site-nav drawer" id="site-nav" aria-label="Site navigation">
         <div class="drawer-head">
-          <span class="drawer-brand">&#9819; PJCC</span>
+          <span class="drawer-brand">&#9819; McPuppy Chess</span>
           <span class="drawer-sub">by McPuppy Studios</span>
         </div>
 
-        <a class="page-link drawer-link drawer-link--pjcc" href="{{ '/pjcc/' | relative_url }}">
-          <span class="dl-ico" aria-hidden="true">&#9670;</span>
-          <span class="dl-txt"><b>PJCC</b><small>The world — cast, places, fan art</small></span>
+        {%- comment -%} 2026-07-28 (Nate: "move the entire home page to the PJCC tab, and give
+             me just a basic home page… call the tab PJCC and put it below Academy"). HOME is
+             the new gold anchor at the top — /chess/, the McPuppy Chess front door — and PJCC
+             drops to seventh, under Academy, as the door to the WORLD rather than the site's
+             home. The `--pjcc` gold highlight moved with the anchor role, not with the name.
+             The header logo is a watermark, not a link, so this row is the only home link on
+             the site: don't remove it. {%- endcomment -%}
+        <a class="page-link drawer-link drawer-link--home" href="{{ '/chess/' | relative_url }}">
+          <span class="dl-ico" aria-hidden="true">&#9812;</span>
+          <span class="dl-txt"><b>Home</b><small>McPuppy Chess</small></span>
         </a>
         {%- comment -%} 2026-07-25 (Nate: "switch the position of Play Now and Games. I want
-             Play Now to be prominent."): Play Now rises to just under PJCC; Games drops below
-             the Gauntlet. Order is markup order — no nth-child depends on it. {%- endcomment -%}
+             Play Now to be prominent."): Play Now rises to just under the home anchor; Games
+             drops below the Gauntlet. Order is markup order — no nth-child depends on it. {%- endcomment -%}
         <a class="page-link drawer-link" href="{{ '/games/park-tables/' | relative_url }}">
           <span class="dl-ico" aria-hidden="true">&#9654;</span>
           <span class="dl-txt"><b>Play Now</b><small>Sit at the Park Tables</small></span>
@@ -95,6 +102,10 @@
         <a class="page-link drawer-link" href="{{ '/academy/' | relative_url }}">
           <span class="dl-ico" aria-hidden="true">&#128214;</span>
           <span class="dl-txt"><b>Academy</b><small>Learn chess from scratch</small></span>
+        </a>
+        <a class="page-link drawer-link" href="{{ '/pjcc/' | relative_url }}">
+          <span class="dl-ico" aria-hidden="true">&#9670;</span>
+          <span class="dl-txt"><b>PJCC</b><small>The world — cast, places, fan art</small></span>
         </a>
         <a class="page-link drawer-link" href="{{ '/projects/' | relative_url }}">
           <span class="dl-ico" aria-hidden="true">&#128062;</span>

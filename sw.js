@@ -13,7 +13,7 @@
  */
 'use strict';
 
-const VERSION    = 'pjcc-pwa-v8';   // v8: the Gauntlet door became a real stylesheet the game links (2026-07-27); v7: "/" is the "McPuppy Studios Presents" intro that hands off to /pjcc/ (2026-07-23)
+const VERSION    = 'pjcc-pwa-v9';   // v9: /chess/ is the new front door — the intro hands off there, /pjcc/ became the world tab (2026-07-28); v8: the Gauntlet door became a real stylesheet the game links (2026-07-27); v7: "/" is the "McPuppy Studios Presents" intro (2026-07-23)
 const SHELL      = 'pjcc-shell-' + VERSION;
 const RUNTIME    = 'pjcc-runtime-' + VERSION;
 const OFFLINE_URL = '/offline.html';
@@ -21,15 +21,15 @@ const OFFLINE_URL = '/offline.html';
 /* THE SHELL — precached at install so the app opens even fully offline. Tolerant: a
  * single missing file won't fail the whole install (unlike cache.addAll). Small, so
  * install stays fast. NOTE: the site now compiles to ONE stylesheet (style.css). */
-/* BOTH '/' AND '/pjcc/' STAY IN THIS LIST (2026-07-22). After the second front-door move
- * "/" is the McPuppy Studios home and /pjcc/ is the PJCC world landing — BOTH real pages
- * returning 200. Keeping both matters for the same reason as before: start_url is baked
- * into a launcher at install time, so a phone that installed the app while /pjcc/ was the
- * start_url still opens /pjcc/?source=pwa regardless of manifest.json today. This precache
- * runs under Promise.allSettled, so a 404 here would fail SILENTLY and serve a stale shell
- * rather than reporting anything — so neither URL may 404. */
+/* ALL THREE OF '/', '/chess/' AND '/pjcc/' STAY IN THIS LIST. '/' is the intro card,
+ * '/chess/' is the front door it hands off to (new 2026-07-28), and '/pjcc/' is the world
+ * tab — all three are real pages returning 200. Keeping the old ones matters because
+ * start_url is baked into a launcher AT INSTALL TIME: a phone that installed the app when
+ * /pjcc/ was the start_url still opens /pjcc/?source=pwa regardless of manifest.json today.
+ * This precache runs under Promise.allSettled, so a 404 here fails SILENTLY and serves a
+ * stale shell rather than reporting anything — so none of these URLs may 404. */
 const PRECACHE = [
-  '/', '/pjcc/', '/games/', OFFLINE_URL, '/manifest.json',
+  '/', '/chess/', '/pjcc/', '/games/', OFFLINE_URL, '/manifest.json',
   '/assets/css/style.css',
   '/assets/js/pjcc-nav.js', '/assets/js/pjcc-config.js', '/assets/js/pjcc-weather.js',
   '/assets/js/pjcc-profile.js', '/assets/js/pjcc-lang.js', '/assets/js/pjcc-flair.js',

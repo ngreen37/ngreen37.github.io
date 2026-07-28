@@ -31,7 +31,7 @@ description: McPuppy Studios presents Princess and the Journey to Chess City —
 
   {%- comment -%}
     ══════════════════════════════════════════════════════════════════════════════
-    THE INTRO — "McPuppy Studios Presents" → /pjcc/  (2026-07-23)
+    THE INTRO — "McPuppy Studios Presents" → /chess/  (2026-07-23; retargeted 2026-07-28)
     ──────────────────────────────────────────────────────────────────────────────
     Nate: "It's weird to go to mcpuppystudios.com and it goes to PJCC. The splash made
     sense but was too much. So let's do a compromise: a black/white, 2-second typing
@@ -43,7 +43,13 @@ description: McPuppy Studios presents Princess and the Journey to Chess City —
     slow fades are deliberate (Nate, 2026-07-27); the card used to snap on instantly. Deliberately a STANDALONE page — no site chrome, no town sky —
     both because the intro must own the whole screen, and because this is the SLOT Nate's
     Blender animations drop into later: swap the .intro-stage markup for a <video>/<canvas>
-    and keep the same forward-to-/pjcc/ logic.
+    and keep the same forward logic.
+
+    ⚠ 2026-07-28 — THE TARGET MOVED, /pjcc/ → /chess/. The front door is McPuppy Chess now
+    (a chess site: one promise, one button); /pjcc/ became the WORLD tab. Six references
+    below had to change together: the repeat-visit head script, the stage anchor, the Skip
+    link, the <noscript> refresh, the <noscript> link, and TARGET. If you retarget again,
+    change all six or one path silently keeps the old destination.
 
     Plays ONCE PER SESSION: the head script below redirects instantly on repeat visits
     (so clicking the header logo → "/" doesn't replay the 2s card every time). Skippable
@@ -52,7 +58,7 @@ description: McPuppy Studios presents Princess and the Journey to Chess City —
   {%- endcomment -%}
   <script>
     /* repeat visits this session skip straight to the world — no flash of the card */
-    try { if (sessionStorage.getItem('mcp.intro.seen') === '1') location.replace({{ '/pjcc/' | relative_url | jsonify }}); } catch (e) {}
+    try { if (sessionStorage.getItem('mcp.intro.seen') === '1') location.replace({{ '/chess/' | relative_url | jsonify }}); } catch (e) {}
   </script>
 
   <style>
@@ -104,24 +110,24 @@ description: McPuppy Studios presents Princess and the Journey to Chess City —
   </style>
 </head>
 <body>
-  <a class="intro-stage" id="intro" href="{{ '/pjcc/' | relative_url }}"
+  <a class="intro-stage" id="intro" href="{{ '/chess/' | relative_url }}"
      aria-label="Enter — McPuppy Studios presents Princess and the Journey to Chess City">
     <span class="intro-line">
       <span class="intro-type">McPuppy Studios Presents</span><span class="intro-caret" aria-hidden="true"></span>
     </span>
   </a>
-  <a class="intro-skip" href="{{ '/pjcc/' | relative_url }}">Skip &rarr;</a>
+  <a class="intro-skip" href="{{ '/chess/' | relative_url }}">Skip &rarr;</a>
 
   <noscript>
-    <meta http-equiv="refresh" content="0; url={{ '/pjcc/' | relative_url }}">
+    <meta http-equiv="refresh" content="0; url={{ '/chess/' | relative_url }}">
     <p style="color:#fff;font-family:monospace;text-align:center;margin-top:40vh">
-      <a href="{{ '/pjcc/' | relative_url }}" style="color:#fff">Enter &rarr;</a>
+      <a href="{{ '/chess/' | relative_url }}" style="color:#fff">Enter &rarr;</a>
     </p>
   </noscript>
 
   <script>
   (function () {
-    var TARGET = {{ '/pjcc/' | relative_url | jsonify }};
+    var TARGET = {{ '/chess/' | relative_url | jsonify }};
     try { sessionStorage.setItem('mcp.intro.seen', '1'); } catch (e) {}
     var stage = document.getElementById('intro');
     var gone = false;

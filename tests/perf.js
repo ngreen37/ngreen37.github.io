@@ -43,11 +43,15 @@ const COST_MS = 2500;        // unthrottled main-thread window
 const REPS = 4;              // per condition; median
 const SETTLE_MS = 3500;
 
+/* ⚠ Every URL here must be a page that STAYS PUT. `/` is the 2-second typing intro and
+ * `location.replace('/pjcc/')`s out from under the harness — the injected toolkit dies with
+ * the old document and the run crashes on `__perf is undefined`. (It listed `/` twice, as
+ * "PJCC home" and "Splash", from before the 2026-07-23 front-door flip.) Fixed 2026-07-28. */
 const PAGES = [
-  { name: 'PJCC home',    url: '/' },
+  { name: 'PJCC home',    url: '/pjcc/' },
   { name: 'Games hall',   url: '/games/' },
   { name: 'McPuppy home', url: '/projects/' },
-  { name: 'Splash',       url: '/' },
+  { name: 'Academy',      url: '/academy/' },
 ];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
