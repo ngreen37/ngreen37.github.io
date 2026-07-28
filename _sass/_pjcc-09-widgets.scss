@@ -528,8 +528,40 @@ html.town-mist .town-weather-overlay::before { opacity: 1; background: radial-gr
    only SLIDE; translateY == the tile height, so the fall loops seamlessly. */
 .tw-rain { position: absolute; inset: 0; opacity: 0; transition: opacity 0.6s ease; }
 html.town-rain .tw-rain { opacity: 1; }
+/* ⚠ THE SHEETS ARE SIZED, NOT INSET — AND THE SIZE IS THE WHOLE POINT (2026-07-28).
+   These were `left/right: -40%; top/bottom: -70%`, i.e. 180% x 240% of the viewport.
+   Each one is `will-change: transform` and always animating, so each is a permanently promoted
+   compositor texture of w*h*4*dpr² bytes — and TWO of them came to **8.6x a full-screen
+   layer**: 188MB on a retina laptop, 273MB at 4K. Nate reported severe lag on every page
+   with rain that vanished the instant he opened Projects or the Blog (the only two pages
+   where pjcc-weather.js bails and the sky is display:none) — with YouTube decoding on the
+   same GPU. He was right and the ablation test missed it twice: it ran at 1280x800 dpr1 on
+   an idle headless GPU, and `document.getAnimations()` hands back the HOST element for a
+   pseudo-element animation, so the harness measured `.tw-rain` (one viewport) instead of
+   these (8.6).
+
+   The overhang only ever existed to cover the ROTATION plus the fall's travel. Covering a
+   W x H viewport with a rect rotated θ needs W·cosθ + H·sinθ wide and W·sinθ + H·cosθ tall,
+   plus TWICE the tile height, because the box is centred and the fall's shift is one-sided.
+   The numbers below are not algebra I trusted — a harness grafted each candidate onto the
+   live page, asked getComputedStyle for the pseudo's real box, and checked all four viewport
+   corners against the rotated rectangle at the animation's extreme. 30/100/360 is the
+   smallest one that covers **every** tested viewport with room to spare (+42px on a 390x844
+   phone, +142px at 4K):
+
+       phone  390x844 dpr2    43MB → 30MB      1440p 2560x1440   122MB →  61MB
+       laptop 1512x945 dpr2  188MB → 102MB     4K    3840x2160   273MB → 129MB
+
+   Pixel-identical rain for roughly HALF the compositor memory.
+   DON'T "simplify" this back to a percentage inset — and if you change the tilt angles or
+   the tile sizes, re-run the coverage check, because these two numbers encode both. */
 .tw-rain::before, .tw-rain::after { content: ''; position: absolute;
-  left: -40%; right: -40%; top: -70%; bottom: -70%; will-change: transform; }
+  left: 50%; top: 50%;
+  width:  calc(100vw + 30vh + 100px);
+  height: calc(100vh + 30vw + 360px);
+  margin-left: calc((100vw + 30vh + 100px) * -0.5);
+  margin-top:  calc((100vh + 30vw + 360px) * -0.5);
+  will-change: transform; }
 .tw-rain::before {
   background-image:
     radial-gradient(1.3px 10px at 20% 16%, rgba(178,210,255,0.42), transparent 60%),
@@ -557,8 +589,11 @@ html.town-rain-heavy .tw-rain::after  { animation-duration: 1.35s; }
    no jump-cut) and pool toward the bottom of the screen, like it does on the water. */
 .tw-mist { position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s ease; }
 html.town-mist .tw-mist { opacity: 1; }
+/* the banks drift ±7% (see the keyframes), so ±10% of overhang covers it with room —
+   -25% was paying for 150% of the viewport to hide a 7% slide. Same reasoning as the rain
+   above, smaller stakes: mist ran ~3 full-screen layers, it now runs ~2.4. */
 .tw-mist::before, .tw-mist::after { content: ''; position: absolute;
-  top: 0; bottom: 0; left: -25%; right: -25%; will-change: transform; }
+  top: 0; bottom: 0; left: -10%; right: -10%; will-change: transform; }
 .tw-mist::before {
   background:
     radial-gradient(46% 34% at 20% 82%, rgba(205,214,235,0.15), transparent 72%),
