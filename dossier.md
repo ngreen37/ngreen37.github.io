@@ -44,6 +44,10 @@ permalink: /dossier/
 
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
+{%- comment -%} The companion is DRAWN now (2026-07-28) — pjcc-pet-art.js must load
+     BEFORE the two modules that ask it for an animal, or both fall back to the old
+     emoji with no error anywhere. {%- endcomment -%}
+<script src="{{ '/assets/js/pjcc-pet-art.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-companion.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-creator.js' | relative_url }}"></script>
 <script>

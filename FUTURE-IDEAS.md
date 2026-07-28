@@ -75,32 +75,19 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**
   no offer.
 
 **Queued, mine not his — carried from 2026-07-28, NOT started**
-- [ ] **ONE CANVAS FOR ALL WEATHER** *(greenlit 2026-07-28 — the real end of the lag story)*.
-  Replace the two giant rotated CSS sheets with a **single viewport-sized `<canvas>`** drawing
-  particles. Texture drops from ~3.6 full-screen layers to **exactly 1**, and the cost moves to a
-  trivial amount of main-thread drawing (~150 particles is nothing). One system then covers
-  **rain · SNOW · mist · lightning**, with real drift, real wind and intensity that can actually
-  vary — instead of four separate CSS contraptions each paying for its own oversized layer.
-  Notes for whoever builds it: seed the particle field off the town date like everything else
-  ([[night-desk-rogue-decision]]); honor `reduce-flourish` + `prefers-reduced-motion` by not
-  starting the loop at all; size the canvas in CSS pixels and scale the backing store by dpr,
-  capped at 2 (a dpr-3 phone does not need three-times the particles); and stop the loop when
-  `document.hidden`. **Snow is the reason this is worth doing** — Nate asked for it, and snow
-  falls straight, so it never needed the rotation that made rain expensive in the first place.
-  *(Shipped meanwhile: the sheets are half-resolution and scaled ×2, which quartered them.)*
-- [ ] **DRAW THE COMPANION (and the person) AS PARTS.** *The blocker behind the one thing from
-  2026-07-28 that could not be built.* Nate asked for **8 eye colors** and a few **nose colors**,
-  for both the person and the pet. That cannot be done as things stand, and the reason is worth
-  writing down: **a companion is a single emoji glyph.** 🐕 is one picture. There is no eye layer
-  and no nose layer to hand a color to — only pixels — so "eye color" has nothing to attach to.
-  *(The other half of that request DID ship: the coat now recolors the coat and leaves the face
-  alone, via a saturation-keyed SVG filter. See `pjcc-creator.js` → `TINTS`.)*
-  What unlocks it: the pet and the person drawn as **composable parts** — an SVG with named
-  `.coat` / `.eye` / `.nose` paths, or Blender turnarounds exported per part. Then coat, eyes,
-  nose, and anything after them are one attribute each, and the tint filter can be deleted
-  entirely because nothing needs faking. **This is the same road as the Blender work**, which is
-  the argument for doing it there rather than inventing a second art pipeline: four species ×
-  three growth stages is twelve drawings, and Princess is already modeled.
+- [ ] **THE PERSON, DRAWN — the last piece of the eye-colour ask.** ✅ The PET half shipped
+  2026-07-28: the companion is drawn out of named parts (`assets/js/pjcc-pet-art.js`), so coat,
+  **8 eye colours** and **4 nose colours** are three independent choices, proved by a test that
+  swaps one and asserts the other two fills don't move. Four species × three growth stages, with
+  the stage expressed as PROPORTIONS (a puppy is not a small dog, it's a differently-shaped one),
+  so it's one drawing read three ways. The saturation-keyed coat filter was deleted entirely —
+  ~70 lines of clever that stopped being needed.
+  **What's left:** Nate asked for eye colour on *both* person and pet, and the PERSON is still one
+  of 32 emoji (🧑 🥷 👸 …), so it still has no eye to colour. Drawing them is now a much smaller
+  job than it was — `pjcc-pet-art.js` already has the eye/iris/pupil/glint part, the palettes and
+  the outline style — but it means trading 32 ready-made characters for one drawn face plus the
+  hats and emblems that already overlay it. **That trade is Nate's call, not mine**, which is why
+  it stopped here rather than shipping a person nobody asked to lose their ninja for.
 
 **Test on a device I don't have**
 - [ ] **iOS in-app sign-in** — the PWA is built but private (`?pwa=on`). Magic links can't sign in an

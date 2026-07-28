@@ -25,8 +25,27 @@
   if (!T) return;
 
   var w = T.weather();
-  var kind = (w && w.kind) || 'clear';     // 'rain' | 'mist' | 'clear'
+  var kind = (w && w.kind) || 'clear';     // 'rain' | 'snow' | 'mist' | 'clear'
   var root = document.documentElement;
+
+  /* ── ?wx= — SEE ANY WEATHER, ON ANY DAY (2026-07-28) ────────────────────────
+     The forecast is date-seeded on purpose (one town, one day), which is right and
+     which also means snow is unreviewable until December. So: `?wx=snow`, `?wx=rain`,
+     `?wx=mist`, `?wx=clear`, with an optional intensity — `?wx=snow,heavy`.
+     Preview only; it never touches the seed, so it can't leak into anyone else's sky. */
+  var forceLevel = null;
+  try {
+    var q = new URLSearchParams(location.search).get('wx');
+    if (q) {
+      var bits = q.split(',');
+      if (/^(rain|snow|mist|clear)$/.test(bits[0])) {
+        root.classList.remove('town-rain', 'town-snow', 'town-mist');
+        kind = bits[0];
+      }
+      var lv = ['light', 'med', 'heavy'].indexOf(bits[1]);
+      if (lv !== -1) forceLevel = lv;
+    }
+  } catch (e) {}
 
   // McPUPPY STUDIOS HAS NO WEATHER (2026-07-21 Nate: "get the weather off all black/white
   // mcpuppy pages"). The studio's pages are the monochrome half of the site — theme-bw
@@ -121,11 +140,25 @@
     if (kind === 'clear') return;          // nothing falling — just the phase tint
     if (reduced()) return;                 // wash + tint only — no moving parts
 
-    var layer = document.createElement('div');
-    layer.className = (kind === 'rain') ? 'tw-rain' : 'tw-mist';
-    o.appendChild(layer);
+    /* ── ONE CANVAS FOR ALL OF IT (2026-07-28) ─────────────────────────────────
+       This used to append `.tw-rain` or `.tw-mist` — CSS contraptions built out of
+       oversized, rotated, animated pseudo-elements. Measured at 1.20 full screens of
+       GPU texture for the rain alone, after two rounds of shrinking it.
 
-    if (kind === 'rain') storm(o);
+       Now the falling weather is drawn by pjcc-weather-canvas.js onto a single
+       viewport-sized canvas: exactly one screen at native resolution, 0.44 at the
+       dpr we cap to, and the tilt that made the CSS sheets so expensive is now just
+       arithmetic in the draw call. It also brought SNOW, which in CSS would have
+       meant a third contraption.
+
+       If the canvas can't start (no 2d context — very old browser, or canvas
+       disabled), we fall through to nothing rather than to a broken layer: the
+       phase tint and the rain/snow colour wash still carry the weather, which is
+       the same thing a reduced-motion visitor gets. Degrading to "calmer" is always
+       the safe direction. */
+    if (window.PJCCWeather && PJCCWeather.start(kind, o)) {
+      if (kind === 'rain' || kind === 'snow') storm(o);
+    }
   }
 
   /* The rain wanders light↔heavy through the day, and stormy dusk/nights flicker.
@@ -133,11 +166,15 @@
   function storm(o) {
     var LEVELS = ['light', 'med', 'heavy'];
     // seed the opening intensity off the day (decorrelated from the rain roll)
-    var idx = (T.daySeed() >> 3) % 3;
+    var idx = (forceLevel !== null) ? forceLevel : (T.daySeed() >> 3) % 3;
     function setLevel(i) {
       idx = Math.max(0, Math.min(2, i));
       root.classList.remove('town-rain-light', 'town-rain-med', 'town-rain-heavy');
       root.classList.add('town-rain-' + LEVELS[idx]);
+      // The classes still drive the colour wash in CSS; the canvas takes the number
+      // and re-seeds its field, which is what actually changes how hard it's coming
+      // down now that the drops are particles instead of a background image.
+      if (window.PJCCWeather) PJCCWeather.setIntensity(idx);
     }
     setLevel(idx);
 
@@ -149,8 +186,11 @@
       }, 40000 + Math.random() * 40000);
     })();
 
-    // lightning: dusk/night only, and only when it's really coming down
+    // lightning: dusk/night only, and only when it's really coming down.
+    // Not during snow — thundersnow is real and it is also once-a-decade weather;
+    // a snowy evening that keeps flashing reads as a bug, not as a rarity.
     var ph = T.phase();
+    if (kind === 'snow') return;
     if (ph !== 'dusk' && ph !== 'night') return;
     var bolt = document.createElement('div');
     bolt.className = 'tw-bolt';

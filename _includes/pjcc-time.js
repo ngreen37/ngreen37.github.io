@@ -43,9 +43,18 @@
     return h >>> 0;
   }
   // The town forecast: 0-2 rain · 3 mist · 4-9 clear (matches the hero's roll).
+  //
+  // SNOW (2026-07-28) is NOT a new roll, and that's the point. It's the same
+  // precipitation the town already rolls, falling as snow because it's winter.
+  // One line, no new random source, no drift between "how often does it rain" and
+  // "how often does it snow" — and it means the first snow arrives in Checker Town
+  // on its own, on 1 December, without anybody remembering to switch it on.
+  // (`season()` is a function declaration below, so it's hoisted and safe here.)
   function weather() {
     var roll = daySeed() % 10;
-    return { kind: roll <= 2 ? 'rain' : (roll === 3 ? 'mist' : 'clear'), roll: roll, phase: phase() };
+    var kind = roll <= 2 ? 'rain' : (roll === 3 ? 'mist' : 'clear');
+    if (kind === 'rain' && season() === 'winter') kind = 'snow';
+    return { kind: kind, roll: roll, phase: phase() };
   }
   // Cloud cover — its own roll, so "clear" days still get weather in the sky and a
   // starry night isn't always a bare one (Nate: "sometimes it's cloudy, sometimes
@@ -53,7 +62,7 @@
   // move together. Rain and mist force real cover — it can't pour out of a bare sky.
   function clouds() {
     var w = weather().kind;
-    if (w === 'rain') return 3;
+    if (w === 'rain' || w === 'snow') return 3;   // snow needs a full deck too
     if (w === 'mist') return 2;
     return [0, 0, 1, 1, 1, 2, 2, 0, 1, 3][(daySeed() >>> 11) % 10];
   }

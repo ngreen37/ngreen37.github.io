@@ -214,3 +214,12 @@
 @media (pointer: coarse) {
   .idn-edit-btn { padding: 9px 14px !important; }
 }
+
+/* ── the drawn companion inside the Forge (2026-07-28) ─────────────────────────
+   The avatar frame was built for a text glyph (`font-size` on .idn-glyph). A drawn
+   pet is a box, so it gets one — and `--idn-size` still drives it, so every caller
+   that already sets that variable keeps working untouched. */
+.idn-av--drawn .pa-svg { width: calc(var(--idn-size, 72px) * 0.86); height: calc(var(--idn-size, 72px) * 0.86); }
+.idn-card .idn-pet-chip .ipc-em--drawn { display: inline-block; width: 22px; height: 22px; vertical-align: -5px; font-size: 0; }
+.idn-card .idn-pet-chip .ipc-em--drawn .pa-svg { width: 22px; height: 22px; }
+.forge-den-face .pa-svg { width: 46px; height: 46px; }

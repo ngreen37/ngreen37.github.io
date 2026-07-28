@@ -227,6 +227,7 @@ html.moon-last-quarter  .ts-orb { box-shadow: 0 0 34px 10px rgba(220, 214, 255, 
    consequence you can see. */
 html.cloud-3 .ts-orb  { opacity: 0.14; }
 html.town-rain .ts-orb { opacity: 0.08; }
+html.town-snow .ts-orb { opacity: 0.10; }   /* snow needs the same full deck as rain */
 html.town-mist .ts-orb { opacity: 0.30; }
 html.sky-night .ts-horizon {
   background: linear-gradient(180deg, transparent, rgba(120, 100, 220, 0.10));

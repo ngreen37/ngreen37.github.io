@@ -99,101 +99,20 @@
   };
   var AURA_ORDER = ['gold','jade','crimson','sakura','azure','violet','amber','mono','emerald','ice','rose','lime'];
 
-  /* ── COAT TINTS — the coat, and ONLY the coat ─────────────────────────────────
-     2026-07-28, Nate: "Make it so the 'Coat' of the dog doesn't just make the whole dog
-     that color, you know? It should not include eyes… nose…"
+  /* ── THE COAT FILTER IS GONE (2026-07-28) ───────────────────────────────────
+     What stood here was `TINTS`, `ensureCoatDefs()` and `coatFilter()`: a set of
+     hue/saturation numbers, a generated block of SVG <defs>, and a saturation-keyed
+     mask that recoloured an emoji companion's fur while trying not to eat its nose.
 
-     He was right, and the old way could not do anything else. Every tint was a plain CSS
-     `filter` on the glyph — `hue-rotate(95deg) saturate(1.3)` and friends — and a filter
-     has no idea what a nose is. It rotates every pixel. Pick Jade and the dog's TONGUE
-     went olive; pick Shadow (`grayscale(1)`) and the entire animal, eyes and all, turned
-     into one flat grey silhouette. That is the "whole dog becomes that color" he saw.
+     It worked, it was tuned against a render, and it is now entirely unnecessary —
+     the companion is DRAWN (assets/js/pjcc-pet-art.js), so the coat is a `fill` on
+     the shapes that are the coat. There is nothing to mask, nothing to key off
+     saturation, and nothing to re-tune when a new species is added. The eyes and the
+     nose became their own colours in the same move, which is the thing the filter
+     could never have done at any level of cleverness.
 
-     THE FIX: an SVG filter that keys off SATURATION. The broad flat coat of an emoji
-     animal is mid-saturation; the features that read as a face — the black nose, the
-     black pupils, the white of the eye, the red tongue, the pink mouth — are either
-     neutral (no colour to rotate) or so saturated they stand apart from the coat. So the
-     filter builds a mask from how colourful each pixel is, tints THROUGH that mask, and
-     lets the original show everywhere else.
-
-     Verified from a render, not from theory (the "pick visual values from a render"
-     rule): dog, cat, bird, turtle and the person glyphs, every tint, side by side at
-     190px. Before: the tongue, the lips and the mouth all took the coat colour. After:
-     the coat changes and the face stays a face. The slope/intercept on the mask ramp
-     (14 / -0.35) were chosen off that render — steeper and the coat starts breaking up,
-     shallower and the features get eaten.
-
-     Graceful failure matters here: if a browser can't do the filter, the glyph renders
-     UNTINTED rather than wrong, which is the harmless direction.
-
-     STILL NOT POSSIBLE, and it's the honest reason separate eye/nose colour pickers are
-     not here: a companion is a single EMOJI GLYPH. There is no eye layer and no nose
-     layer to hand a colour to — only pixels. Choosing them separately needs the pet and
-     the person DRAWN as parts (SVG or Blender). That's in FUTURE-IDEAS as an action item.
-     ──────────────────────────────────────────────────────────────────────────── */
-  var TINTS = {
-    none:    { hue:0,   sat:1,    sw:'#888',    n:'Natural' },
-    gold:    { hue:-18, sat:1.5,  sw:'#F5C518', n:'Gold' },
-    rose:    { hue:300, sat:1.35, sw:'#ff8fd0', n:'Rose' },
-    azure:   { hue:180, sat:1.25, sw:'#6bbfff', n:'Azure' },
-    jade:    { hue:95,  sat:1.3,  sw:'#6bffb8', n:'Jade' },
-    violet:  { hue:250, sat:1.4,  sw:'#b07bff', n:'Violet' },
-    crimson: { hue:330, sat:1.6,  sw:'#ff6b6b', n:'Crimson' },
-    ember:   { hue:-32, sat:1.7,  sw:'#ff9f43', n:'Ember' },
-    shadow:  { grey:1,  lum:0.82, sw:'#555',    n:'Shadow' },
-    spirit:  { grey:1,  lum:1.28, sw:'#cdbcf2', n:'Spirit' }
-  };
-
-  /* The <defs> are injected once, into <body>, the first time anything asks for a coat.
-     They have to live in the DOM for `filter: url(#…)` to resolve, and they're shared by
-     all three places a companion is drawn: the Den, the Dossier mood card, and the Forge
-     preview. Injecting on demand keeps a page that never shows a pet free of them. */
-  var defsIn = false;
-  function ensureCoatDefs() {
-    if (defsIn || !document.body) return;
-    defsIn = true;
-    var f = '';
-    Object.keys(TINTS).forEach(function (k) {
-      if (k === 'none') return;
-      var t = TINTS[k];
-      // 1 · the fully tinted version of everything
-      var tinted = t.grey
-        ? '<feColorMatrix type="saturate" values="0" in="SourceGraphic" result="t0"/>' +
-          '<feComponentTransfer in="t0" result="tinted">' +
-            '<feFuncR type="linear" slope="' + t.lum + '"/>' +
-            '<feFuncG type="linear" slope="' + t.lum + '"/>' +
-            '<feFuncB type="linear" slope="' + t.lum + '"/>' +
-          '</feComponentTransfer>'
-        : '<feColorMatrix type="hueRotate" values="' + t.hue + '" in="SourceGraphic" result="t0"/>' +
-          '<feColorMatrix type="saturate" values="' + t.sat + '" in="t0" result="tinted"/>';
-      // 2 · how colourful is each pixel? (source vs its own desaturated self)
-      // 3 · that difference, pushed hard, becomes the alpha of a mask
-      // 4 · paint the tint back through the mask, over the untouched original
-      f += '<filter id="pjcc-coat-' + k + '" color-interpolation-filters="sRGB">' +
-        tinted +
-        '<feColorMatrix type="saturate" values="0" in="SourceGraphic" result="grey"/>' +
-        '<feBlend mode="difference" in="SourceGraphic" in2="grey" result="chroma"/>' +
-        '<feColorMatrix in="chroma" type="matrix" result="chromaA" values="' +
-          '0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  1 1 1 0 0"/>' +
-        '<feComponentTransfer in="chromaA" result="mask">' +
-          '<feFuncA type="linear" slope="14" intercept="-0.35"/>' +
-        '</feComponentTransfer>' +
-        '<feComposite operator="in" in="tinted" in2="mask" result="coat"/>' +
-        '<feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="coat"/></feMerge>' +
-      '</filter>';
-    });
-    var host = document.createElement('div');
-    host.setAttribute('aria-hidden', 'true');
-    host.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
-    host.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"><defs>' + f + '</defs></svg>';
-    document.body.appendChild(host);
-  }
-  // the CSS value each tint resolves to. '' for Natural — no filter, no layer, no cost.
-  function coatFilter(key) {
-    if (!key || key === 'none' || !TINTS[key]) return '';
-    ensureCoatDefs();
-    return 'url(#pjcc-coat-' + key + ')';
-  }
+     Deleting ~70 lines of clever is the best outcome a clever fix can have.
+     `git show 875d8d1 -- assets/js/pjcc-creator.js` if it is ever wanted back. */
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]; }); }
 
@@ -210,7 +129,7 @@
   function defaults() {
     return {
       op:  { base:'recruit', tone:'', aura:'gold', hat:'none', emblem:'none', name:'', role:'', bio:'' },
-      pet: { tint:'none', aura:'none', bio:'' }
+      pet: { coat:'natural', eye:'brown', nose:'black', aura:'none', bio:'' }
     };
   }
   function loadLocal() {
@@ -223,7 +142,20 @@
     if (!AURAS[op.aura]) op.aura = 'gold';
     if (!HATS[op.hat]) op.hat = 'none';
     if (!EMBLEMS[op.emblem]) op.emblem = 'none';
-    if (!TINTS[pet.tint]) pet.tint = 'none';
+    /* MIGRATION off the filter era (2026-07-28). `tint` was the coat when the pet was
+       an emoji wearing an SVG filter; the drawn palette renamed two of its entries
+       (`none` was really "natural fur", and `spirit` has no equivalent — `snow` is the
+       closest). Anyone who had picked a coat keeps it. */
+    if (pet.tint && !pet.coat) {
+      pet.coat = pet.tint === 'none' ? 'natural' : pet.tint === 'spirit' ? 'snow' : pet.tint;
+      delete pet.tint;
+    }
+    var art = window.PJCCPetArt;
+    if (art) {
+      if (!art.COATS[pet.coat]) pet.coat = 'natural';
+      if (!art.EYES[pet.eye]) pet.eye = 'brown';
+      if (!art.NOSES[pet.nose]) pet.nose = 'black';
+    }
     return { op: op, pet: pet };
   }
   function saveLocal(state) {
@@ -321,7 +253,6 @@
     if (!el) return;
     if (mounts.indexOf(el) === -1) mounts.push(el);
     var look = identity(), pl = petLook();
-    var coat = coatFilter(pl.tint);
     el.innerHTML =
       '<div class="idn-card">' +
         '<div class="idn-av" id="' + uid(el) + '"></div>' +
@@ -329,7 +260,7 @@
           '<div class="idn-name">' + esc(look.displayName) + '</div>' +
           (look.bio ? '<div class="idn-bio">“' + esc(look.bio) + '”</div>' : '') +
           '<div class="idn-account" data-account></div>' +
-          '<div class="idn-pet-chip"><span class="ipc-em" style="filter:' + coat + '">' + petBaseEmoji() + '</span> ' + esc(petName()) +
+          '<div class="idn-pet-chip"><span class="ipc-em ipc-em--drawn">' + petArt(pl) + '</span> ' + esc(petName()) +
             '<button class="idn-edit-btn ghost" data-open="companion" style="padding:2px 9px;font-size:.7rem;margin-left:4px">tweak</button></div>' +
         '</div>' +
         '<div class="idn-actions">' +
@@ -387,9 +318,8 @@
     if (tab === 'operative') {
       html += '<div class="idn-av spin" id="forge-prev"></div>';
     } else {
-      var coat = coatFilter(pl.tint);
-      html += '<div class="idn-av spin" id="forge-prev" style="--aura:' + auraColor(pl.aura === 'none' ? 'violet' : pl.aura) + '">' +
-        '<span class="idn-glyph" style="filter:' + coat + '">' + petBaseEmoji() + '</span></div>';
+      html += '<div class="idn-av spin idn-av--drawn" id="forge-prev" style="--aura:' + auraColor(pl.aura === 'none' ? 'violet' : pl.aura) + '">' +
+        petArt(pl) + '</div>';
     }
     html += '</div>';
     if (tab === 'operative') {
@@ -481,8 +411,16 @@
     return h;
   }
 
+  // The drawn companion, at the bond stage the Den says it's at.
+  function petArt(pl) {
+    if (!window.PJCCPetArt) return '<span class="idn-glyph">' + petBaseEmoji() + '</span>';
+    var stage = 1;
+    try { stage = (window.PJCCPet && PJCCPet.stage) ? PJCCPet.stage() : 1; } catch (e) {}
+    return PJCCPetArt.svg({ species: activePetKey(), stage: stage,
+                            coat: pl.coat, eye: pl.eye, nose: pl.nose });
+  }
+
   function companionPanel(pl) {
-    var coat = coatFilter(pl.tint);
     /* 2026-07-28, Nate: "The companion den is too small and tucked away. Let's promote
        that a bit more on the Companion Customize screen."
 
@@ -498,7 +436,7 @@
        the name field is right below. Asking once, in the room where you're already
        styling them, is an invitation; asking anywhere else would be a chore. */
     var h = '<div class="forge-den">' +
-      '<div class="forge-den-face"><span style="filter:' + coat + '">' + petBaseEmoji() + '</span></div>' +
+      '<div class="forge-den-face">' + petArt(pl) + '</div>' +
       '<div class="forge-den-body">' +
         '<b>The Companion Den</b>' +
         '<span>Feed them, walk them, play, and watch the Bond grow. Cosmetics unlock as it does.</span>' +
@@ -510,10 +448,27 @@
         ? 'Your companion doesn\'t have a name yet — that\'s yours to give, down below.'
         : 'Styling <b style="color:#f0e6ff">' + esc(petName()) + '</b>.') +
       '</p>';
-    // coat tint
-    h += '<div class="forge-section"><h3>Coat <small>— recolours the coat, not the face</small></h3><div class="forge-sw-row">';
-    Object.keys(TINTS).forEach(function (k) { h += swatch(pl.tint === k, TINTS[k].sw, 'data-tint="' + k + '"', k === 'none'); });
-    h += '</div></div>';
+    /* ── THREE COLOURS, THREE PARTS (2026-07-28) ────────────────────────────────
+       This is what the whole "draw the companion as parts" job was for. Until today
+       there was ONE control here — Coat — and it was a filter smeared across an emoji,
+       which is why Nate could see it painting the eyes and the nose along with
+       everything else. Now each row sets a `fill` on its own shapes, so a black nose
+       stays black while the coat goes jade, and "8 eye colours" is a real sentence
+       instead of an impossible one. */
+    var A = window.PJCCPetArt;
+    if (A) {
+      h += '<div class="forge-section"><h3>Coat <small>&mdash; the fur, and only the fur</small></h3><div class="forge-sw-row">';
+      A.COAT_ORDER.forEach(function (k) { h += swatch(pl.coat === k, A.COATS[k].c, 'data-coat="' + k + '" title="' + A.COATS[k].n + '"'); });
+      h += '</div></div>';
+
+      h += '<div class="forge-section"><h3>Eyes</h3><div class="forge-sw-row">';
+      A.EYE_ORDER.forEach(function (k) { h += swatch(pl.eye === k, A.EYES[k].c, 'data-eye="' + k + '" title="' + A.EYES[k].n + '"'); });
+      h += '</div></div>';
+
+      h += '<div class="forge-section"><h3>Nose</h3><div class="forge-sw-row">';
+      A.NOSE_ORDER.forEach(function (k) { h += swatch(pl.nose === k, A.NOSES[k].c, 'data-nose="' + k + '" title="' + A.NOSES[k].n + '"'); });
+      h += '</div></div>';
+    }
     // aura
     h += '<div class="forge-section"><h3>Aura</h3><div class="forge-sw-row">';
     h += swatch(pl.aura === 'none', '#888', 'data-paura="none"', true);
@@ -553,7 +508,9 @@
     Array.prototype.forEach.call(ov.querySelectorAll('[data-aura]'), function (c) { c.onclick = function () { patchOp({ aura: c.getAttribute('data-aura') }); }; });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-hat]'), function (c) { c.onclick = function () { patchOp({ hat: c.getAttribute('data-hat') }); }; });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-emblem]'), function (c) { c.onclick = function () { patchOp({ emblem: c.getAttribute('data-emblem') }); }; });
-    Array.prototype.forEach.call(ov.querySelectorAll('[data-tint]'), function (c) { c.onclick = function () { patchPet({ tint: c.getAttribute('data-tint') }); }; });
+    Array.prototype.forEach.call(ov.querySelectorAll('[data-coat]'), function (c) { c.onclick = function () { patchPet({ coat: c.getAttribute('data-coat') }); }; });
+    Array.prototype.forEach.call(ov.querySelectorAll('[data-eye]'),  function (c) { c.onclick = function () { patchPet({ eye:  c.getAttribute('data-eye')  }); }; });
+    Array.prototype.forEach.call(ov.querySelectorAll('[data-nose]'), function (c) { c.onclick = function () { patchPet({ nose: c.getAttribute('data-nose') }); }; });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-paura]'), function (c) { c.onclick = function () { patchPet({ aura: c.getAttribute('data-paura') }); }; });
     // text fields — live, debounced persist, no full re-render (keeps focus)
     textField('op-role', 40, function (v) { liveOp({ role: v }); });
@@ -593,7 +550,10 @@
       patchOp({ base: b.key, tone: b.tone ? pick(TONES).key : '', aura: pick(AURA_ORDER),
                 hat: pick(Object.keys(HATS)), emblem: pick(Object.keys(EMBLEMS)) });
     } else {
-      patchPet({ tint: pick(Object.keys(TINTS)), aura: pick(['none'].concat(AURA_ORDER)) });
+      var A2 = window.PJCCPetArt;
+      patchPet(A2
+        ? { coat: pick(A2.COAT_ORDER), eye: pick(A2.EYE_ORDER), nose: pick(A2.NOSE_ORDER), aura: pick(['none'].concat(AURA_ORDER)) }
+        : { aura: pick(['none'].concat(AURA_ORDER)) });
     }
   }
 
@@ -606,6 +566,6 @@
     identity: identity, petLook: petLook, renderAvatar: renderAvatar, renderCard: renderCard,
     setAccountBlock: setAccountBlock,
     open: open, close: close, onChange: function (fn) { listeners.push(fn); },
-    BASES: BASES, AURAS: AURAS, TINTS: TINTS, coatFilter: coatFilter
+    BASES: BASES, AURAS: AURAS
   };
 })();

@@ -108,6 +108,36 @@
     return { bond: b, stage: stage, level: level };
   }
   function petEmojiFor(s, bi) { var p = PETS[s.pet]; return p.ems[(bi || bondInfo(s)).stage]; }
+
+  /* THE COMPANION IS DRAWN, NOT TYPED (2026-07-28). pjcc-pet-art.js returns an SVG
+     built out of named parts, so coat / eyes / nose are three separate colours
+     instead of one emoji the coat filter had to guess its way across.
+     The emoji stays as `p.ems` for the one place a glyph is still the right tool —
+     the nav pill and any 1em inline mention — and as the fallback if the art module
+     somehow isn't loaded (a page that forgot the script tag should degrade to the
+     old picture, not to a blank box). */
+  function petLook() {
+    var d = { coat: 'natural', eye: 'brown', nose: 'black' };
+    try {
+      var id = JSON.parse(localStorage.getItem('pjcc.identity.v1')) || {};
+      var pl = id.pet || {};
+      if (pl.coat) d.coat = pl.coat;
+      if (pl.eye) d.eye = pl.eye;
+      if (pl.nose) d.nose = pl.nose;
+      // migrate the old filter-era keys: `tint` was the coat, and two of its names
+      // don't exist in the drawn palette.
+      if (!pl.coat && pl.tint) d.coat = pl.tint === 'none' ? 'natural' : pl.tint === 'spirit' ? 'snow' : pl.tint;
+    } catch (e) {}
+    return d;
+  }
+  function petArt(s, bi) {
+    if (!window.PJCCPetArt) return petEmojiFor(s, bi);
+    var l = petLook();
+    return PJCCPetArt.svg({
+      species: s.pet, stage: (bi || bondInfo(s)).stage,
+      coat: l.coat, eye: l.eye, nose: l.nose
+    });
+  }
   // Named by the player, or described by where they are in their own growth. Never a
   // name we picked for them (see the PETS table).
   function displayName(s) {
@@ -180,19 +210,11 @@
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
   // coat tint chosen in the Identity Forge recolours the pet here too
-  function tintFilter() {
-    try {
-      var id = JSON.parse(localStorage.getItem('pjcc.identity.v1')) || {};
-      var key = id.pet && id.pet.tint;
-      if (!key || key === 'none') return '';
-      // The Forge owns the coat and hands back a ready CSS filter value. It also injects
-      // the SVG <defs> the value points at, which is why we ask it rather than building
-      // the string here — a `url(#…)` with no matching filter in the document renders
-      // NOTHING AT ALL, so the two must never drift apart. (Before 2026-07-28 this read
-      // `TINTS[key].f`, a plain CSS filter string; that field is gone.)
-      return (window.PJCCForge && PJCCForge.coatFilter) ? PJCCForge.coatFilter(key) : '';
-    } catch (e) { return ''; }
-  }
+  /* `tintFilter()` was deleted here 2026-07-28. It resolved the coat to a
+     saturation-keyed SVG filter — a clever way to recolour an emoji without eating
+     its nose, and completely unnecessary now that the coat is a `fill` on a path.
+     Everything it existed to work around is gone with it. Restore from git only if
+     the drawn art is ever reverted. */
 
   /* ---- sound — one voice per SPECIES, a different phrase per ACTION ----------
      2026-07-28 (Nate: "update the sounds a bit, switch them up (pet/feed/play)").
@@ -356,7 +378,7 @@
     var cosKey = s.cosmetics[s.pet], cosEm = cosEmOf(cosKey);
     el.innerHTML =
       '<div class="pet-card' + (s.calm ? ' is-calm' : '') + '">' +
-        '<div class="pc-stage"><span style="filter:' + tintFilter() + '">' + petEmojiFor(s, bi) + '</span>' + (cosEm ? '<span class="pc-acc">' + cosEm + '</span>' : '') + '</div>' +
+        '<div class="pc-stage">' + petArt(s, bi) + (cosEm ? '<span class="pc-acc">' + cosEm + '</span>' : '') + '</div>' +
         '<div class="pc-info">' +
           '<div class="pc-name">' + esc(displayName(s)) + ' <small>' + p.trait + ' · Bond ' + bi.level + ' · ' + p.stages[bi.stage] + '</small></div>' +
           '<div class="pc-mood">' + m.emoji + ' <b>' + m.state + '</b> — ' + esc(m.line) + '</div>' +
@@ -401,7 +423,7 @@
         '<button class="den-close" id="den-x" title="Close">✕</button></div>' +
       (s.calm ? '' : '<div class="den-bubble den-bubble--noise">' + esc(petNoise(s)) + '</div>') +
       '<div class="den-pet-wrap">' +
-        '<span class="den-pet' + (napping ? ' asleep' : '') + '" id="den-pet" style="filter:' + tintFilter() + '">' + petEmojiFor(s, bi) + '</span>' +
+        '<span class="den-pet' + (napping ? ' asleep' : '') + '" id="den-pet">' + petArt(s, bi) + '</span>' +
         (cosEm ? '<span class="den-acc-em">' + cosEm + '</span>' : '') +
         (napping ? '<span class="den-zzz">💤</span>' : '') +
       '</div>' +
@@ -433,8 +455,12 @@
     html += '<div class="den-section"><h3>Choose your friend <span class="den-note">— it becomes your one companion; switch any time</span></h3><div class="den-grid">';
     PET_ORDER.forEach(function (key) {
       var pp = PETS[key], on = s.pet === key;
-      html += '<div class="den-cell' + (on ? ' on' : '') + '" data-pick="' + key + '" title="' + esc(pp.persona) + '">' +
-        '<div class="ce">' + pp.ems[1] + '</div><div class="cn">' + esc(s.names[key] || pp.name) + '</div>' +
+      html += '<div class="den-cell den-cell--pet' + (on ? ' on' : '') + '" data-pick="' + key + '" title="' + esc(pp.persona) + '">' +
+        // ⚠ was `pp.name`, which stopped existing the day the default names were
+        // removed — this cell printed the word "undefined" for every unnamed species.
+        // The stage word is the same fallback displayName() uses.
+        '<div class="ce">' + (window.PJCCPetArt ? PJCCPetArt.svg({ species: key, stage: 1, coat: petLook().coat, eye: petLook().eye, nose: petLook().nose }) : pp.ems[1]) + '</div>' +
+        '<div class="cn">' + esc(s.names[key] || pp.stages[1]) + '</div>' +
         '<div class="ck">' + (on ? 'yours' : (pp.canon ? 'Princess\'s' : 'meet')) + '</div></div>';
     });
     html += '</div></div>';
@@ -474,13 +500,23 @@
   // ---- share card (#18) -----------------------------------------------------
   function shareCard() {
     var s = load(), bi = bondInfo(s), p = PETS[s.pet];
-    var c = document.createElement('canvas'); c.width = 600; c.height = 340; var g = c.getContext('2d');
-    var grad = g.createLinearGradient(0, 0, 600, 340); grad.addColorStop(0, '#1f1147'); grad.addColorStop(1, '#34206f');
-    g.fillStyle = grad; g.fillRect(0, 0, 600, 340);
-    g.strokeStyle = '#F5C518'; g.lineWidth = 6; g.strokeRect(10, 10, 580, 320);
-    g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.font = '120px sans-serif'; g.fillText(petEmojiFor(s, bi), 140, 150);
-    g.textAlign = 'left';
+    /* The portrait is an SVG now, and canvas cannot draw markup — it draws IMAGES. So
+       the art goes through an <img> with a data: URL, which means one async hop before
+       the card can be encoded. Everything below moved inside the callback for that
+       reason; drawing text first and the pet later would have raced the toBlob. */
+    var draw = function (img) {
+      var c = document.createElement('canvas'); c.width = 600; c.height = 340;
+      var g = c.getContext('2d');
+      var grad = g.createLinearGradient(0, 0, 600, 340); grad.addColorStop(0, '#1f1147'); grad.addColorStop(1, '#34206f');
+      g.fillStyle = grad; g.fillRect(0, 0, 600, 340);
+      g.strokeStyle = '#F5C518'; g.lineWidth = 6; g.strokeRect(10, 10, 580, 320);
+      g.textAlign = 'center'; g.textBaseline = 'middle';
+      if (img) g.drawImage(img, 60, 60, 170, 170);
+      else { g.font = '120px sans-serif'; g.fillText(petEmojiFor(s, bi), 140, 150); }
+      g.textAlign = 'left';
+      finish(c, g);
+    };
+    var finish = function (c, g) {
     g.fillStyle = '#F5C518'; g.font = 'bold 42px Poppins, system-ui, sans-serif'; g.fillText(displayName(s), 250, 110);
     g.fillStyle = '#cdbcf2'; g.font = '22px Inter, system-ui, sans-serif'; g.fillText(p.stages[bi.stage] + ' · ' + p.trait, 250, 152);
     g.fillStyle = '#6bffb8'; g.font = 'bold 30px Poppins, system-ui, sans-serif'; g.fillText('Bond ' + bi.level + ' / 10', 250, 200);
@@ -494,6 +530,16 @@
         var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'pjcc-companion.png'; a.click();
       }
     }, 'image/png');
+    };
+
+    // Load the portrait, then draw. If anything about the SVG upsets the decoder we
+    // still produce a card — with the emoji — rather than no card at all.
+    if (!window.PJCCPetArt) { draw(null); return; }
+    var img = new Image();
+    img.onload = function () { draw(img); };
+    img.onerror = function () { draw(null); };
+    img.src = 'data:image/svg+xml;charset=utf-8,' +
+      encodeURIComponent(petArt(s, bi).replace('<svg ', '<svg width="340" height="340" '));
   }
 
   function refresh() { if (mountCard) renderCard(mountCard, lastStats); if (denEl && !denEl.classList.contains('hidden')) renderDen(); }
@@ -511,6 +557,8 @@
        the Forge thought your active pet was `dog-1` (a v2 key) no matter what you'd
        actually chosen. Both sides call through here now. */
     activeKey:   function () { return load().pet; },
+    // the Forge draws the pet at the stage the BOND says it is, not always "grown"
+    stage:       function () { return bondInfo(load()).stage; },
     displayName: function () { return displayName(load()); },
     unnamed:     function () { return unnamed(load()); },
     setName:     function (nm) {

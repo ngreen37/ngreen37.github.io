@@ -8,8 +8,15 @@
   render-blocking round-trip on every single page. Inlined, it costs zero requests.
   The source of truth is _includes/pjcc-time.js — edit it there.
 
-  Then pjcc-weather.js (deferred, cached) builds the compositor-cheap rain/mist/
-  lightning layers.
+  Then pjcc-weather-canvas.js (the particle engine) and pjcc-weather.js (the driver
+  that reads the forecast and starts it) build the falling weather.
+
+  ⚠ ORDER MATTERS and `defer` is what makes it safe: deferred scripts run in DOCUMENT
+  ORDER, so the engine has defined window.PJCCWeather by the time the driver calls
+  PJCCWeather.start(). Swap these two lines and the driver finds nothing, silently
+  falls back to "no falling weather", and you get a clear sky on a rainy day with no
+  error in the console — the exact shape of bug that cost us a week once before
+  (a feature shipped but never loaded).
 {%- endcomment -%}
 <script>{% include pjcc-time.js %}</script>
 {%- comment -%} Both classes go on <html> BEFORE first paint, so there's no flash of the
@@ -20,4 +27,5 @@
      rain (%10) and cover (>>>11) rolls don't use — ~1 day in 4 each, only when there is
      any cloud at all to point at. {%- endcomment -%}
 <script>try{var T=window.PJCC_TIME;if(T){var R=document.documentElement;R.classList.add('sky-'+T.phase());var se=T.season();R.classList.add(se==='winter'?'season-winter':se==='spring'?'season-spring':se==='summer'?'season-summer':'season-fall');var w=T.weather();if(w&&w.kind!=='clear')R.classList.add('town-'+w.kind);var c=T.clouds();R.classList.add('cloud-'+c);if(c){var s=T.daySeed();if((s>>>3)%4===0)R.classList.add('shape-rook');if((s>>>7)%4===1)R.classList.add('shape-dog');if((s>>>11)%4===2)R.classList.add('shape-long');}var ob=T.orb();R.style.setProperty('--orb-x',ob.x.toFixed(1)+'%');R.style.setProperty('--orb-y',ob.y.toFixed(1)+'%');var mn=T.moon();R.classList.add('moon-'+mn.name);R.style.setProperty('--moon-lit',mn.lit.toFixed(3));R.style.setProperty('--moon-shift',(mn.waxing?-1:1)*(mn.lit*2).toFixed(3)+'');}}catch(e){}</script>
+<script src="{{ '/assets/js/pjcc-weather-canvas.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/pjcc-weather.js' | relative_url }}" defer></script>
