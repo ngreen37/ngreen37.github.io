@@ -79,10 +79,83 @@
     return c;
   }
 
+  /* ── THE CRYSTALS (2026-07-28, Nate: "can you make it a bit more snowflake-y though?
+     Not like too much; keep it subtle… Give heavy snow a slightly different snowflake
+     look, make both diverse, and stay on theme so they look to be from the same universe
+     (because they are)") ─────────────────────────────────────────────────────────────
+
+     Three shapes, each drawn ONCE into an offscreen canvas at load and blitted forever
+     after — the same rule as the soft blob above, for the same reason. A stroked crystal
+     built per flake per frame would cost more than every raindrop on the site combined.
+
+       'dot'      the original soft blob. Still the majority, and the ONLY thing the far
+                  sheet ever uses: those flakes are 0.9-1.9px, where a six-pointed star
+                  is three grey pixels and a lie about how much detail is there.
+       'star'     six clean spokes with a lit core. The workhorse shape — reads as a
+                  snowflake at a glance and as a bright speck if you're not looking.
+       'dendrite' six spokes with side-branches and a hexagonal heart. The showpiece,
+                  and deliberately rare: one in a field of hundreds is "it's snowing",
+                  a screen full of them is a Christmas card.
+
+     ON THEME. Same palette and the same soft edge as the rain (see the ink note below) —
+     these are drawn with a translucent white stroke and a faint glow, not as hard white
+     line art. Squint and a crystal is still just a bright speck, which is what a real one
+     is at arm's length. That's how they stay in the same universe as the drops.
+
+     THE MIX IS THE "DIVERSE" PART, and it differs by intensity — see FLAKE_MIX. */
+  function crystalSprite(size, arms, branch) {
+    var c = document.createElement('canvas');
+    c.width = c.height = size;
+    var g = c.getContext('2d');
+    var r = size / 2, len = r * 0.86;
+    g.translate(r, r);
+    /* 0.80, not 0.92 — picked off a rendered candidate strip, not guessed (four options at
+       the radii and alphas the field actually assigns). The test for "subtle" was: a crystal
+       should sit at the SAME visual weight as the soft blob it replaces, so you read a
+       snowflake instead of noticing one. 0.92 and 0.95 both pulled the eye to a single flake;
+       0.68 lost the arms. */
+    g.strokeStyle = 'rgba(255,255,255,0.80)';
+    g.lineCap = 'round';
+    g.lineWidth = Math.max(1, size * 0.045);
+    g.shadowColor = 'rgba(226,240,255,0.85)';      // the glow that keeps it soft-edged
+    g.shadowBlur = size * 0.10;
+    for (var i = 0; i < arms; i++) {
+      g.save();
+      g.rotate((Math.PI * 2 / arms) * i);
+      g.beginPath(); g.moveTo(0, 0); g.lineTo(0, -len); g.stroke();
+      if (branch) {
+        // two pairs of side-branches, the classic dendrite silhouette
+        g.lineWidth = Math.max(0.8, size * 0.032);
+        [[0.52, 0.26], [0.78, 0.17]].forEach(function (b) {
+          var y = -len * b[0], s = len * b[1];
+          g.beginPath();
+          g.moveTo(0, y); g.lineTo(-s * 0.86, y - s * 0.5);
+          g.moveTo(0, y); g.lineTo(s * 0.86, y - s * 0.5);
+          g.stroke();
+        });
+        g.lineWidth = Math.max(1, size * 0.045);
+      }
+      g.restore();
+    }
+    if (branch) {                                   // the little hexagonal heart
+      g.beginPath();
+      for (var k = 0; k < 6; k++) {
+        var a = (Math.PI / 3) * k - Math.PI / 2, x = Math.cos(a) * len * 0.17, y = Math.sin(a) * len * 0.17;
+        k ? g.lineTo(x, y) : g.moveTo(x, y);
+      }
+      g.closePath(); g.stroke();
+    }
+    // a lit core so it still reads as a speck of light when it's small or far away
+    g.shadowBlur = size * 0.16;
+    g.fillStyle = 'rgba(255,255,255,0.95)';
+    g.beginPath(); g.arc(0, 0, Math.max(0.9, size * 0.055), 0, Math.PI * 2); g.fill();
+    return c;
+  }
+
   var W = 0, H = 0, DPR = 1;
   var canvas = null, ctx = null, raf = 0, last = 0;
   var kind = null, intensity = 1, rand = Math.random;
-  var flakeSprite = null, fogSprite = null;
+  var flakeSprite = null, fogSprite = null, starSprite = null, dendriteSprite = null;
   var near = [], far = [], fog = [];
 
   /* ── THE GLASS COPY ──────────────────────────────────────────────────────────
@@ -160,6 +233,17 @@
       near: { n: 90,  vy: [42, 78],  r: [1.8, 3.6], sway: [10, 26], swayHz: [0.14, 0.34], alpha: [0.55, 0.92] },
       far:  { n: 130, vy: [18, 38],  r: [0.9, 1.9], sway: [6, 16],  swayHz: [0.08, 0.22], alpha: [0.22, 0.45] }
     },
+    /* HOW MANY OF THE NEAR FLAKES ARE SHAPED, by intensity — [star, dendrite]; the rest
+       stay soft blobs, and the FAR sheet is always all blobs (it's 1-2px; there is no
+       shape to see and pretending otherwise just makes it noisy).
+
+       This is Nate's "give heavy snow a slightly different snowflake look, make both
+       diverse". It isn't a second art style — it's the same three shapes in a different
+       mix, which is also what real weather does: a light fall is mostly small grains with
+       the odd crystal, a heavy fall is big aggregates and you can see their arms. So light
+       snow is quiet and occasionally jewelled, heavy snow is visibly crystalline, and both
+       are unmistakably the same snow. */
+    snowMix: [[0.16, 0.03], [0.24, 0.05], [0.34, 0.12]],
     mist: { n: 11, r: [180, 420], vx: [4, 13], alpha: [0.05, 0.13] }
   };
 
@@ -181,7 +265,14 @@
        coverage bug fixed, 1.55 was still the loudest setting the site has ever shipped,
        so it comes down to 1.3: a heavy shower rather than a squall. The gap between the
        three levels stays wide enough that the wander through the day is still legible. */
-    var mult = [0.55, 1, 1.3][intensity];
+    /* Rain and snow no longer share one table (2026-07-28 pm). Snow's heavy step came down
+       with rain's the same day (1.55 → 1.3), and Nate confirmed it needed only a nudge —
+       "far less distracting compared to heavy rain". But shaped crystals READ heavier than
+       blobs at the same count, so heavy snow gives back a little more to pay for its new
+       arms: 1.3 → 1.18, with medium easing to 0.95. Net it lands about where it looked
+       before the flakes grew shapes, which is the point. */
+    var MULT = { rain: [0.55, 1, 1.3], snow: [0.55, 0.95, 1.18], mist: [0.55, 1, 1.3] };
+    var mult = (MULT[kind] || MULT.rain)[intensity];
 
     if (kind === 'mist') {
       var s = SPEC.mist;
@@ -236,9 +327,33 @@
       var n = Math.round(s.n * megapx * mult / (kind === 'rain' ? blur : 1));
       n = Math.max(6, Math.min(420, n));
 
+      /* WHICH SHAPE THIS FLAKE IS. Rolled ONCE, here, off the same date-seeded PRNG as
+         everything else — so the town's snowfall is the town's, identical in every tab,
+         and a flake never changes shape mid-fall. Far sheet is always blobs (see the
+         crystal note up top); shaped flakes also skew LARGE, because a 1.8px crystal is
+         indistinguishable from a dot and only costs more to draw. */
+      var mix = SPEC.snowMix[intensity] || SPEC.snowMix[1];
+      var isNear = pair[0] === 'near';
       for (var i = 0; i < n; i++) {
         if (kind === 'rain') {
           out.push({ x: rand() * W, y: rand() * H, vy: pick(rand, s.vy), len: pick(rand, s.len) * blur });
+        } else if (kind === 'snow') {
+          var r = pick(rand, s.r), roll = rand(), shape = 0;         // 0 dot · 1 star · 2 dendrite
+          if (isNear && r > (s.r[0] + s.r[1]) * 0.42) {
+            if (roll < mix[1]) shape = 2;
+            else if (roll < mix[1] + mix[0]) shape = 1;
+          }
+          out.push({
+            x: rand() * W, y: rand() * H,
+            vy: pick(rand, s.vy), r: r,
+            sway: pick(rand, s.sway), hz: pick(rand, s.swayHz),
+            ph: rand() * Math.PI * 2, a: pick(rand, s.alpha),
+            shape: shape,
+            rot: rand() * Math.PI * 2,
+            // a shaped flake turns as it falls, slowly, and both ways. This is the one
+            // per-frame transform in the whole engine and it runs on a few dozen flakes.
+            spin: (rand() - 0.5) * 0.5
+          });
         } else {
           out.push({
             x: rand() * W, y: rand() * H,
@@ -277,7 +392,21 @@
       // the sway is what makes it read as SNOW and not as slow rain
       var x = p.x + Math.sin(t * p.hz * Math.PI * 2 + p.ph) * p.sway;
       ctx.globalAlpha = p.a;
-      ctx.drawImage(flakeSprite, x - p.r * 2, p.y - p.r * 2, p.r * 4, p.r * 4);
+      if (!p.shape) {                                   // the blob — the common case, untouched
+        ctx.drawImage(flakeSprite, x - p.r * 2, p.y - p.r * 2, p.r * 4, p.r * 4);
+        continue;
+      }
+      /* A CRYSTAL. Bigger than a blob of the same r (a six-armed flake has to span further
+         to read as one) and turning slowly as it falls. save/rotate/restore is the single
+         per-frame transform in this engine and it runs on a few dozen near flakes at 24fps
+         — measured, not assumed: see the debug() shaped count. */
+      p.rot += p.spin * dt;
+      var sp = p.shape === 2 ? dendriteSprite : starSprite, d = p.r * 4.8;
+      ctx.save();
+      ctx.translate(x, p.y);
+      ctx.rotate(p.rot);
+      ctx.drawImage(sp, -d / 2, -d / 2, d, d);
+      ctx.restore();
     }
     ctx.globalAlpha = 1;
   }
@@ -379,6 +508,12 @@
   }
   function run() {
     if (raf || !kind) return;
+    /* ⚠ THE QUIET CHECK BELONGS HERE, not only in start() (2026-07-28). Reduce-motion is a
+       SWITCH now, so an engine that has already been built can be asked to stop — and the
+       visibilitychange listener below calls run() every time the tab comes back. Without
+       this, turning motion off and then switching tabs turned it silently back on. Rule 2
+       says "not started"; this is what keeps that true after the first time. */
+    if (quiet()) return;
     last = 0;
     raf = requestAnimationFrame(frame);
   }
@@ -419,6 +554,10 @@
       }
       flakeSprite = softSprite(24, 'rgba(255,255,255,0.95)');
       fogSprite = softSprite(160, 'rgba(212,222,244,0.55)');
+      // 48px is enough for the biggest near flake (r 3.6 × 5.2 ≈ 19 CSS px) at dpr 1.25
+      // with room to spare, and it is drawn exactly twice in the lifetime of the page.
+      starSprite = crystalSprite(48, 6, false);
+      dendriteSprite = crystalSprite(48, 6, true);
       window.addEventListener('resize', onResize);
       window.addEventListener('orientationchange', onResize);
       document.addEventListener('visibilitychange', function () {
@@ -442,8 +581,12 @@
     },
     // for the harness: what is actually on screen right now
     debug: function () {
+      var shaped = 0, dend = 0;
+      for (var i = 0; i < near.length; i++) { if (near[i].shape) { shaped++; if (near[i].shape === 2) dend++; } }
       return { kind: kind, intensity: intensity, dpr: DPR, w: W, h: H,
                near: near.length, far: far.length, fog: fog.length, running: !!raf,
+               // how many flakes are crystals — the number that decides "subtle" vs "Christmas card"
+               shaped: shaped, dendrites: dend,
                ghost: !!ghost, ghostDpr: ghost ? GDPR : 0, ghostW: gW, ghostH: gH,
                // rate gate: rAF callbacks vs draws actually performed
                targetFps: FPS[kind] || 30, ticks: ticks, draws: drawn };

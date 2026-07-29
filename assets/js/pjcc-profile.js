@@ -898,6 +898,52 @@
     else throw new Error('unknown kind');
     return updateCompanion(patch);
   };
+  /* ── SELLING BACK, AT A QUARTER (2026-07-28) ─────────────────────────────────────
+     Nate: "Let's be able to sell items for 25% value. Shop, altar — I'd like to err on
+     the side of miser, as opposed to generous. We can always make it more generous if we
+     need later."
+
+     So every number here leans mean, on purpose, and every one of them is a single edit:
+       · SELL_RATE 0.25, and it FLOORS. A 25-credit piece returns 6, not 6.25 and not 7.
+         (Floor, not round, is the miser choice on every price ending in an odd quarter.)
+       · The VAULT DOESN'T SELL. Those are the no-sale collectables the altar hands back,
+         and there are two reasons they stay out. The lore one: they are the one thing on
+         the site that is yours rather than currency. The arithmetic one, which matters
+         more — the altar can return a 260-value boon, so a sell path turns "lay something
+         down and see what happens" into a repeatable 65-credit faucet. Closing it keeps
+         the altar a gamble instead of a mint.
+       · Nothing free is sellable. The eight starter faces aren't in AVATAR_SHOP, so
+         ownedCollectables() never lists them and there is nothing to sell.
+       · Sell → re-buy costs you 75%. That is the whole point: this is a way to undo a
+         purchase you regret at a real cost, not a way to shuffle credits.
+
+     Equipped gear can be sold; burnCollectable already unequips it and falls back to the
+     free defaults, so the profile can never end up wearing something it doesn't own. The
+     UI asks first — it is destructive and it cannot be undone. */
+  var SELL_RATE = 0.25;
+  PJCC.SELL_RATE = SELL_RATE;
+  PJCC.sellValue = function (kind, key) {
+    if (vaultEntry(kind, key)) return 0;                 // the vault is not for sale
+    var owned = PJCC.ownedCollectables();
+    for (var i = 0; i < owned.length; i++) {
+      if (owned[i].kind === kind && owned[i].key === key) {
+        return owned[i].vault ? 0 : Math.floor((owned[i].value || 0) * SELL_RATE);
+      }
+    }
+    return 0;                                            // you don't own it
+  };
+  PJCC.sellCollectable = async function (kind, key) {
+    var u = PJCC.currentUser(); if (!sb || !u) throw new Error('not signed in');
+    var paid = PJCC.sellValue(kind, key);
+    if (!paid) throw new Error('that one is not for sale');
+    // Burn FIRST. If the credit grant fails we have taken the item and given nothing, which
+    // is recoverable by hand; the other order hands out credits for an item still owned,
+    // which is a duplication bug and a currency faucet.
+    await PJCC.burnCollectable(kind, key);
+    await PJCC.grantCredits(paid);
+    return { paid: paid, credits: profile ? profile.credits : 0 };
+  };
+
   // Grant an owned collectable (a rare boon the board hands back).
   PJCC.grantCollectable = async function (kind, key) {
     var comp = (profile && profile.companion) || {};

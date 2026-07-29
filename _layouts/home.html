@@ -972,8 +972,17 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
   margin:0 0 var(--space-6); padding:0 var(--space-2); }  /* section rhythm: bottom 34→32 (--space-6); 8px pad = --space-2 exact. gap:26px (lamp↔copy) stays literal */
 .awake-lamp { position:relative; display:block; width:82px; height:92px; flex:0 0 auto; }
 .awake-lamp .studio-light { position:absolute; inset:0; }
-.awake-lamp .sl-desk { left:-18px; right:-18px; border-radius:3px; }
-.awake-lamp .sl-desk::after { border-radius:0 0 3px 3px; }
+/* NO DESK IN THIS BAND (2026-07-28, Nate pointed two arrows at it). The lamp partial draws
+   a wooden desk under the base, and on the SPLASH that is right — the lamp is pinned into a
+   corner of the viewport, so the plank reads as the near edge of a desk running off-screen.
+   Here it is centred in an open band of night sky, where the same plank is a brown bar
+   floating in mid-air, sticking out past the lamp on both sides with nothing beneath it.
+   It also hung 10px below .awake-lamp's own box, so the band's edge sliced its front lip
+   off — but reserving that space was rendered and did NOT fix the read, because clipping
+   was never the problem. The lamp's own round base is a complete drawing on its own, and
+   the light pool under it is all the "surface" this placement needs.
+   ⚠ .sl-desk is still live on the splash — this hides it, it doesn't delete it. */
+.awake-lamp .sl-desk { display:none; }
 /* the tip is anchored to the lamp's right edge by the partial; in a centred band that
    would hang off toward the copy, so pull it back over the lamp */
 .awake-lamp .sl-tip { right:auto; left:-52px; }

@@ -127,18 +127,48 @@
     return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }
 
-  function boot() {
-    if (document.querySelector('.town-weather-overlay')) return;   // never double up
-    // The overlay is built on EVERY day, not just wet ones: on a clear day it still
-    // carries the sky-phase tint (dawn warmth / night cool), which is what makes the
-    // whole town share the hour instead of only the hero.
-    var o = document.createElement('div');
-    o.className = 'town-weather-overlay';
-    o.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(o);
+  /* ══ "REDUCE MOTION" HAS TO BE A SWITCH, NOT A ONE-WAY DOOR (2026-07-28) ═══════
+     Nate: "when the page STARTS in reduce motion, and then you try to go back to normal,
+     nothing happens. But when it starts normal, you can toggle the rain back and forth."
 
+     Exactly right, and the asymmetry is the tell. Every OTHER flourish on the site is
+     pure CSS hanging off `html.reduce-flourish`, so it comes back the instant the class
+     does. The weather is the one thing that has to be BUILT — hosts appended, a canvas
+     created, a frame loop started — and `boot()` did that once, at load, behind an early
+     `return` on `reduced()`. Start quiet and there is nothing for the class to reveal.
+
+     Start LOUD and it looked fine only because CSS was hiding a canvas that was still
+     there… and still drawing. `display:none` does NOT stop requestAnimationFrame (the
+     rule the ENGINE's own guard exists for), so "reduce motion" was quietly leaving the
+     frame loop running on the machines least able to afford it. Both halves are the same
+     bug: the class was treated as the state instead of a consequence of it.
+
+     So: the overlay is built once (it is static paint and belongs on every page), the
+     FALLING weather is built lazily and can be started and stopped any number of times,
+     and PJCCTownWeather.refresh() is the single entry point the toggle calls. ════════ */
+  var overlayEl = null, fallEl = null, glassEl = null, stormed = false;
+
+  function boot() {
+    if (!overlayEl && !document.querySelector('.town-weather-overlay')) {
+      // The overlay is built on EVERY day, not just wet ones: on a clear day it still
+      // carries the sky-phase tint (dawn warmth / night cool), which is what makes the
+      // whole town share the hour instead of only the hero. It is static paint, so it is
+      // also exactly what a reduced-motion visitor keeps.
+      overlayEl = document.createElement('div');
+      overlayEl.className = 'town-weather-overlay';
+      overlayEl.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(overlayEl);
+    }
+    startFalling();
+  }
+
+  /* Build (or rebuild) the falling weather. Safe to call repeatedly: the hosts are made
+     once, and PJCCWeather.start() is itself idempotent — it re-sizes and resumes an engine
+     it has already built rather than making a second one. */
+  function startFalling() {
     if (kind === 'clear') return;          // nothing falling — just the phase tint
     if (reduced()) return;                 // wash + tint only — no moving parts
+    var o = overlayEl;
 
     /* ── ONE CANVAS FOR ALL OF IT (2026-07-28) ─────────────────────────────────
        This used to append `.tw-rain` or `.tw-mist` — CSS contraptions built out of
@@ -172,23 +202,47 @@
 
        The wash and the lightning stay on `o` at 900, where they belong: they're
        LIGHT, not water, and light does fall on the room. */
-    var fall = document.createElement('div');
-    fall.className = 'town-weather-fall';
-    fall.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(fall);
+    if (!fallEl) {
+      fallEl = document.createElement('div');
+      fallEl.className = 'town-weather-fall';
+      fallEl.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(fallEl);
 
-    var glass = document.createElement('div');
-    glass.className = 'town-weather-glass';
-    glass.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(glass);
+      glassEl = document.createElement('div');
+      glassEl.className = 'town-weather-glass';
+      glassEl.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(glassEl);
+    }
 
-    if (window.PJCCWeather && PJCCWeather.start(kind, fall, glass)) {
-      if (kind === 'rain' || kind === 'snow') storm(o);
+    if (window.PJCCWeather && PJCCWeather.start(kind, fallEl, glassEl)) {
+      // ⚠ ONCE. storm() arms recurring timers for the intensity wander and the lightning;
+      //   calling it again on every un-quiet would stack a second set of both.
+      if (!stormed && (kind === 'rain' || kind === 'snow')) { stormed = true; storm(o); }
     } else {
       // nothing to hold — don't leave two empty fixed layers on the page
-      fall.remove(); glass.remove();
+      fallEl.remove(); glassEl.remove(); fallEl = glassEl = null;
     }
   }
+
+  /* THE SWITCH. The reduce-motion button calls this after it flips localStorage; it reads
+     the world rather than being told what changed, so it is also correct if the OS-level
+     prefers-reduced-motion changes underneath us. Stopping cancels the frame loop for real
+     instead of leaving it drawing behind `display:none`. */
+  window.PJCCTownWeather = {
+    refresh: function () {
+      if (reduced()) { if (window.PJCCWeather) PJCCWeather.stop(); return; }
+      startFalling();
+    },
+    // for the harness — is a frame loop actually running right now?
+    running: function () {
+      try { return !!(window.PJCCWeather && PJCCWeather.debug().running); } catch (e) { return false; }
+    }
+  };
+  // The OS switch deserves the same live response as our own button.
+  try {
+    var mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mq && mq.addEventListener) mq.addEventListener('change', function () { PJCCTownWeather.refresh(); });
+  } catch (e) {}
 
   /* The rain wanders light↔heavy through the day, and stormy dusk/nights flicker.
      (Promoted from the old hero-only engine so every screen shares the same storm.) */

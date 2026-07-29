@@ -21,6 +21,22 @@ permalink: /shopkeeper/
       '<div class="qm-price">' + priceLabel + '</div>' + action.html + '</div>';
   }
 
+  /* ── SELL IT BACK, FOR A QUARTER (2026-07-28) ──────────────────────────────────
+     Returns '' unless there is genuinely something to sell, so every caller can just
+     concatenate it. PJCC.sellValue() is the single authority on the number and on what
+     is sellable at all — the Vault answers 0 there, so its tiles get no button without
+     this file needing to know why.
+
+     ⚠ ONLY WHAT YOU AREN'T WEARING. Selling equipped gear works (burnCollectable falls
+     back to the free defaults), but "I sold a thing and my face changed" is a surprise
+     nobody asked for. Take it off first. */
+  function sellBtn(kind, key, equipped) {
+    if (equipped || !PJCC.sellValue) return '';
+    var v = PJCC.sellValue(kind, key);
+    if (!v) return '';
+    return '<button class="qm-sell" data-sk="' + kind + ':' + key + '" data-v="' + v + '">Sell · ' + v + '</button>';
+  }
+
   function render() {
     if (!PJCC.enabled) { el.innerHTML = '<p class="lb-empty">The Shopkeeper is away.</p>'; return; }
     var prof = PJCC.getProfile();
@@ -52,7 +68,7 @@ permalink: /shopkeeper/
       var canAfford = (prof.credits || 0) >= item.price;
       var action;
       if (on) action = { on: true, html: '<button class="pjcc-btn-ghost" disabled>Equipped</button>' };
-      else if (isOwned) action = { on: false, html: '<button class="pjcc-btn qm-equip" data-k="' + item.key + '">Equip</button>' };
+      else if (isOwned) action = { on: false, html: '<button class="pjcc-btn qm-equip" data-k="' + item.key + '">Equip</button>' + sellBtn('avatar', item.key, on) };
       else action = { on: false, html: '<button class="pjcc-btn qm-buy" data-k="' + item.key + '"' + (canAfford ? '' : ' disabled') + '>' + (canAfford ? 'Buy · ' + item.price : item.price + ' cr') + '</button>' };
       html += tile(item.key, isOwned ? 'Owned' : item.price + ' credits', action);
     });
@@ -68,7 +84,7 @@ permalink: /shopkeeper/
       var canAfford = (prof.credits || 0) >= t.price;
       var action;
       if (on) action = '<button class="pjcc-btn-ghost" disabled>Equipped</button>';
-      else if (owned) action = '<button class="pjcc-btn qm-tequip" data-k="' + t.key + '">Equip</button>';
+      else if (owned) action = '<button class="pjcc-btn qm-tequip" data-k="' + t.key + '">Equip</button>' + sellBtn('title', t.key, on);
       else action = '<button class="pjcc-btn qm-tbuy" data-k="' + t.key + '"' + (canAfford ? '' : ' disabled') + '>' + (canAfford ? 'Buy · ' + t.price : t.price + ' cr') + '</button>';
       html += '<div class="qm-item' + (on ? ' on' : '') + '"><div class="qm-title-label">' + PJCC.TITLES[t.key].label + '</div>' +
         '<div class="qm-price">' + (owned ? 'Owned' : t.price + ' credits') + '</div>' + action + '</div>';
@@ -86,7 +102,7 @@ permalink: /shopkeeper/
       var canAfford = (prof.credits || 0) >= t.price;
       var action;
       if (on) action = '<button class="pjcc-btn-ghost" disabled>Equipped</button>';
-      else if (owned) action = '<button class="pjcc-btn qm-thequip" data-k="' + key + '">Equip</button>';
+      else if (owned) action = '<button class="pjcc-btn qm-thequip" data-k="' + key + '">Equip</button>' + sellBtn('theme', key, on);
       else action = '<button class="pjcc-btn qm-thbuy" data-k="' + key + '"' + (canAfford ? '' : ' disabled') + '>' + (canAfford ? 'Buy · ' + t.price : t.price + ' cr') + '</button>';
       html += '<div class="qm-item' + (on ? ' on' : '') + '"><div class="qm-swatch" style="background:' + t.bg + ';border-color:' + t.accent + '"></div>' +
         '<div class="qm-title-label" style="color:' + t.accent + '">' + t.label + '</div>' +
@@ -137,6 +153,30 @@ permalink: /shopkeeper/
     Array.prototype.forEach.call(el.querySelectorAll('.qm-equip'), function (b) {
       b.onclick = function () { PJCC.setAvatar(b.getAttribute('data-k')).then(render); };
     });
+    /* SELLING IS IRREVERSIBLE, so it asks — but with the button itself, not a browser
+       confirm() box. One tap arms it and says what you'll get; a second tap inside four
+       seconds does it; anything else and it forgets. Same amount of protection as a modal,
+       none of the interruption, and it can't be mistaken for a system dialog. */
+    Array.prototype.forEach.call(el.querySelectorAll('.qm-sell'), function (b) {
+      var armed = null;
+      b.onclick = function () {
+        if (!armed) {
+          b.classList.add('armed');
+          b.textContent = 'Sure? · ' + b.getAttribute('data-v');
+          armed = setTimeout(function () {
+            armed = null; b.classList.remove('armed');
+            b.textContent = 'Sell · ' + b.getAttribute('data-v');
+          }, 4000);
+          return;
+        }
+        clearTimeout(armed); armed = null;
+        var parts = b.getAttribute('data-sk').split(':');
+        b.disabled = true; b.textContent = '…';
+        PJCC.sellCollectable(parts[0], parts[1])
+          .then(function (r) { try { if (window.showTxToast) showTxToast('Sold — ' + r.paid + ' credits'); } catch (e) {} render(); })
+          .catch(function () { b.disabled = false; b.classList.remove('armed'); b.textContent = 'Try again'; });
+      };
+    });
   }
 
   PJCC.onChange(render);
@@ -158,6 +198,16 @@ permalink: /shopkeeper/
 .qm-price { color: #b9a8e6; font-size: 0.78rem; }
 /* The Vault: no-sale collectables won at the altar (2026-07-27) — amber, not gold, so
    they read as a different class of thing from anything the Shopkeeper stocks. */
+/* SELL — deliberately the quietest thing on the tile. Buying and equipping are what the
+   Quartermaster is for; selling back at a quarter is a way out of a purchase you regret,
+   not a feature to advertise. It only speaks up once it's armed. */
+.qm-sell { background: transparent; border: 1px solid rgba(185,168,230,0.32); color: #9a8fd4;
+  border-radius: 999px; font: inherit; font-size: 0.72rem; padding: 5px 11px; min-height: 32px;
+  cursor: pointer; transition: color .15s, border-color .15s, background .15s; }
+.qm-sell:hover:not(:disabled) { color: #ffb066; border-color: rgba(255,176,102,0.55); }
+.qm-sell.armed { color: #1a0f05; background: #ffb066; border-color: #ffb066; font-weight: 800; }
+.qm-sell:disabled { opacity: .5; cursor: default; }
+@media (pointer: coarse) { .qm-sell { min-height: 44px; padding: 5px 14px; } }
 .qm-item.qm-vault { border-color: #ffb066; background: linear-gradient(160deg,#2a1608,#160c33); }
 .qm-item.qm-vault .qm-price { color: #ffb066; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.66rem; font-weight: 800; }
 .qm-item.qm-vault .qm-title-label { color: #ffd7a8; }

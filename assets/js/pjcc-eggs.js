@@ -27,6 +27,12 @@
       b.addEventListener('click', function () {
         try { localStorage.setItem('pjcc.flourish', reduced() ? '1' : '0'); } catch (e) {}
         sync();
+        /* ⚠ The class is not the whole state. Every other flourish here is CSS hanging off
+           `html.reduce-flourish` and comes back with the class — but the WEATHER has to be
+           built (hosts, canvas, frame loop), and on a page that STARTED quiet there is
+           nothing for the class to reveal. This is the half that was missing: it also stops
+           the loop for real on the way down, because `display:none` doesn't stop rAF. */
+        try { if (window.PJCCTownWeather) PJCCTownWeather.refresh(); } catch (e) {}
       });
       sync();
     })();

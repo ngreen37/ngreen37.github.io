@@ -61,6 +61,12 @@ permalink: /the-gambit/
     <div class="gm-panel" id="gm-coll-panel" hidden>
       <div class="gm-label">…and lay down a collectable <span class="gm-opt">can come back as a different one</span></div>
       <div class="gm-coll-list" id="gm-coll-list"></div>
+      <!-- THE SURE THING (2026-07-28) — the altar is a gamble, so the alternative to
+           gambling belongs right here, and deliberately underneath it: pick a collectable
+           and you can either lay it down and find out, or take a quarter of its value and
+           walk. Only appears for something actually sellable, which means never for a
+           Vault piece — those came FROM this altar and aren't currency. -->
+      <div class="gm-sellrow" id="gm-sellrow" hidden></div>
     </div>
 
     <!-- courage meter -->
@@ -221,6 +227,35 @@ permalink: /the-gambit/
         list.appendChild(b);
       });
     } else { panel.hidden = true; }
+
+    /* the sure thing — shown only for a selected, sellable piece. Two taps, like the
+       offer button above it: the altar's own rule is that a real sacrifice shouldn't be
+       a misclick, and selling something you can never buy back for what you paid is the
+       same kind of decision. */
+    var sellRow = $('gm-sellrow');
+    var sv = (selColl && PJCC.sellValue) ? PJCC.sellValue(selColl.kind, selColl.key) : 0;
+    if (sv) {
+      var s = selColl;
+      sellRow.hidden = false;
+      sellRow.innerHTML = '<span>Not feeling brave? The Shopkeeper pays <b>' + sv +
+        '</b> for the ' + s.label + ' — a quarter of what it cost.</span>' +
+        '<button type="button" class="gm-sellbtn" id="gm-sell">Sell it</button>';
+      var sb = $('gm-sell'), sArmed = null;
+      sb.onclick = function () {
+        if (!sArmed) {
+          sb.classList.add('armed'); sb.textContent = 'Sure? · ' + sv;
+          sArmed = setTimeout(function () { sArmed = null; sb.classList.remove('armed'); sb.textContent = 'Sell it'; }, 4000);
+          return;
+        }
+        clearTimeout(sArmed); sArmed = null;
+        sb.disabled = true; sb.textContent = '…';
+        PJCC.sellCollectable(s.kind, s.key).then(function (r) {
+          selColl = null;
+          try { if (window.showTxToast) showTxToast('Sold — ' + r.paid + ' credits'); } catch (e) {}
+          refresh();
+        }).catch(function () { sb.disabled = false; sb.classList.remove('armed'); sb.textContent = 'Try again'; });
+      };
+    } else { sellRow.hidden = true; sellRow.innerHTML = ''; }
 
     // courage meter
     var c = courage(), pct = Math.round(c * 100);
@@ -510,6 +545,18 @@ permalink: /the-gambit/
 .gm-coll:hover { border-color: #9a7fd4; }
 .gm-coll.sel { border-color: #F5C518; background: #2a1a5e; box-shadow: 0 0 16px -5px #F5C518; }
 .gm-coll.best { box-shadow: inset 0 0 0 1px rgba(255,143,208,0.5); }
+/* the sure thing — quiet, and under the altar, because it is the boring option on purpose */
+.gm-sellrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px;
+  padding-top: 10px; border-top: 1px solid rgba(154,127,212,0.22); font-size: 0.78rem; color: #a99ad8; }
+.gm-sellrow span { flex: 1 1 200px; min-width: 0; }
+.gm-sellrow b { color: #ffb066; }
+.gm-sellbtn { background: transparent; border: 1px solid rgba(255,176,102,0.4); color: #ffb066;
+  border-radius: 999px; font: inherit; font-size: 0.76rem; font-weight: 700; padding: 7px 14px;
+  min-height: 38px; cursor: pointer; transition: color .15s, background .15s, border-color .15s; }
+.gm-sellbtn:hover:not(:disabled) { background: rgba(255,176,102,0.12); border-color: #ffb066; }
+.gm-sellbtn.armed { background: #ffb066; color: #1a0f05; border-color: #ffb066; }
+.gm-sellbtn:disabled { opacity: .5; cursor: default; }
+@media (pointer: coarse) { .gm-sellbtn { min-height: 44px; } }
 .gm-coll-glyph { font-size: 1.5rem; line-height: 1; }
 .gm-coll-name { font-size: 0.68rem; color: #cdbcf2; }
 .gm-coll-val { font-size: 0.66rem; color: #F5C518; font-weight: 800; }
