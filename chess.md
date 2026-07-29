@@ -444,9 +444,11 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mc-studio-more { color: var(--fd-ink-2); font-size: 0.84rem; text-decoration: none; margin-top: 4px; }
 .mc-studio-more:hover { color: var(--fd-wood); }
 
-/* phones: every door and link clears the 40px tap floor (the compass-check baseline) */
+/* phones: every door and link clears 44px — raised from 40 by the 2026-07-28 four-lens
+   sweep, which measured both of these at exactly 40 and flagged them. 44 is the target;
+   40 was close enough to look right and not be right. */
 @media (pointer: coarse) {
-  .mc-cta2, .mc-studio-more { min-height: 40px; display: flex; align-items: center; }
+  .mc-cta2, .mc-studio-more { min-height: 44px; display: flex; align-items: center; }
   .mc-cta2 { justify-content: center; }
 }
 @media (prefers-reduced-motion: reduce) {

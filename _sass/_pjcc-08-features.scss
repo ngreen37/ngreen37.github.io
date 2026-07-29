@@ -257,9 +257,14 @@
 .char-chip-seen {
   display: block;
   font-family: 'Share Tech Mono', monospace;
-  font-size: 8px;
+  /* 8px → 9px and alpha 0.35 → 0.8, four-lens sweep 2026-07-28. This measured 2.32:1 —
+     the worst readable-text contrast on either home page — and 8px was the smallest type
+     on the site. It is flavour, but it is flavour that carries a FACT (where a character
+     was last seen), so it has to be readable; the classified wing's redaction bars are
+     the only text here allowed to be illegible, and they're illegible on purpose. */
+  font-size: 9px;
   letter-spacing: 0.1em;
-  color: rgba(245, 197, 24, 0.35);
+  color: rgba(245, 197, 24, 0.8);
   margin-top: 3px;
 }
 

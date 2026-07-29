@@ -33,6 +33,31 @@ input:focus-visible,
   .pjcc-btn, .pjcc-btn-ghost, .lb-tab { min-height: 44px; }
 }
 
+/* ── 44px, not 40, on anything you tap with a thumb (2026-07-28 four-lens sweep) ──
+   The 40px floor above predates the measured audit and stops one notch short of the
+   real target. At 390px the collector found nine controls under 44px on the front door
+   and thirteen on the PJCC home — and almost all of them are chrome that rides EVERY
+   page, so naming them once here fixes them site-wide.
+
+   Named, not blanket: `a { min-height: 44px }` would inflate every inline link inside a
+   paragraph and wreck the type. And height only — several of these sit in the header
+   row, where forcing WIDTH would repack the whole bar. The three that are still narrow
+   (.nav-toggle, .cmdk-trigger, .lang-toggle) are listed in the sweep's report as a
+   deliberate follow-up, because widening the header is a design change, not a fix. */
+@media (pointer: coarse) {
+  .awake-more, .awake-post, .home-shuffle, .home-section-link, .home-replay {
+    display: inline-flex; align-items: center; min-height: 44px;
+  }
+  /* the drawer's small print measured 26x21 and 46x21 — the padding buys the height
+     without changing how the links LOOK */
+  .drawer-mini a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 6px; }
+  /* the footer pair (153x38, 144x40) and the floating back-to-top (38x38). All three are
+     free to grow: the footer buttons sit in a wrapping flex row, and the button is
+     absolutely positioned, so nothing repacks. */
+  .share-tx-btn, .flourish-toggle, .pwa-install-btn { min-height: 44px; }
+  .back-to-top { min-width: 44px; min-height: 44px; }
+}
+
 /* Visually hidden, but present for assistive tech (2026-07-24). The PJCC home had only its
    <h1> — every section below was an aria-label landmark with no HEADING, and many screen-
    reader users skim a page by its heading outline. These <h2>s (one per section, wired via

@@ -980,13 +980,15 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
 
 .awake-copy { display:flex; flex-direction:column; align-items:flex-start; gap:3px;
   padding-bottom:6px; min-width:0; }
+/* label + date alphas raised 2026-07-28 (four-lens sweep): they measured 3.86 and 3.34
+   against the card, both short of AA for 10px text. 0.5→0.68 and 0.45→0.68. */
 .awake-label { font-family:'Share Tech Mono', monospace; font-size:10px; letter-spacing:0.18em;
-  text-transform:uppercase; color:rgba(214,204,238,0.5); }
+  text-transform:uppercase; color:rgba(214,204,238,0.68); }
 .awake-post { font-family:'Poppins',sans-serif; font-weight:700; font-size:15px; color:#F5C518;
   text-decoration:none; line-height:1.3; }
 .awake-post:hover, .awake-post:focus-visible { text-decoration:underline; }
 .awake-date { font-family:'Share Tech Mono', monospace; font-size:10.5px;
-  color:rgba(214,204,238,0.45); }
+  color:rgba(214,204,238,0.68); }
 .awake-more { margin-top:5px; font-size:11.5px; color:#c6b8ec; text-decoration:none;
   border-bottom:1px solid rgba(198,184,236,0.28); padding-bottom:1px; }
 .awake-more:hover, .awake-more:focus-visible { color:#F5C518; border-color:#F5C518;
@@ -1025,12 +1027,18 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
     display: inline-flex; align-items: center;
     font-family: 'Share Tech Mono', ui-monospace, monospace;
     font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
-    color: rgba(233, 226, 250, 0.2);              /* real faint, as asked */
+    /* 0.20 → 0.55, four-lens sweep 2026-07-28. "Real faint, as asked" was measured at
+       1.67:1 against the night sky — below the 3:1 floor for a GRAPHIC, let alone the 4.5
+       a 10px control needs, and in the phone render you genuinely cannot find it. 0.55 is
+       the lowest alpha that clears AA here (measured 4.7:1); it is still the quietest
+       thing on the page. Faint was the intent and faint it stays — invisible wasn't. */
+    color: rgba(233, 226, 250, 0.55);
     text-shadow: 0 1px 4px rgba(8, 4, 24, 0.6);   /* stays legible on any sky phase */
     text-decoration: none;
     transition: color 0.25s ease;
   }
-  .home-replay:hover, .home-replay:focus-visible { color: rgba(233, 226, 250, 0.62); text-decoration: none; }
+  /* hover has to move further now that rest is brighter, or the state stops reading */
+  .home-replay:hover, .home-replay:focus-visible { color: rgba(233, 226, 250, 0.92); text-decoration: none; }
 </style>
 
 </div><!-- /.home-flow -->
