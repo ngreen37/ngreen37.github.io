@@ -43,8 +43,15 @@
 
   .overlay {
     position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; padding: 22px; text-align: center;
+    align-items: center; padding: 22px; text-align: center;
     border-radius: 12px; background: radial-gradient(circle at 50% 26%, #14463f 0%, #0a1a1c 82%);
+    /* ⚠ `safe center`, not `center` — and it has to scroll (2026-07-28, caught in a phone
+       render: the journey line wrapped to two lines at 390px and "Chess City" ended up
+       underneath the button, unreachable). A flex container centring content TALLER than
+       itself overflows in BOTH directions, and the overflow past the start edge cannot be
+       scrolled to — it is simply gone. `safe center` centres while there is room and falls
+       back to flex-start when there isn't, which is exactly the behaviour you always meant. */
+    justify-content: safe center; overflow-y: auto;
   }
   .overlay.hidden { display: none; }
   .big-title { font-size: 30px; font-weight: 900; color: #F5C518; letter-spacing: 1px;

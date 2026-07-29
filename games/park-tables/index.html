@@ -2,7 +2,7 @@
 layout: page
 title: "The Park Tables"
 permalink: /games/park-tables/
-description: "Correspondence chess in the Checker Town park — play another operative, or challenge McPuppy himself. PJCC Ratings, real rules, preset phrases only."
+description: "Correspondence chess in the Checker Town park — play another player, or challenge McPuppy himself. PJCC Ratings, real rules, preset phrases only."
 ---
 
 {% comment %} ══════════════════════════════════════════════════════════════════════
@@ -26,7 +26,7 @@ description: "Correspondence chess in the Checker Town park — play another ope
      the entire child-safety story.
      ══════════════════════════════════════════════════════════════════════ {% endcomment %}
 
-<p class="pt-lead">Park benches, stone boards. Play another operative — or leave a
+<p class="pt-lead">Park benches, stone boards. Play another player — or leave a
 challenge for <b>McPuppy</b> and he'll play you back. It's your move whenever you visit;
 a move a day is plenty.</p>
 
@@ -47,6 +47,33 @@ a move a day is plenty.</p>
   'use strict';
   var C = window.PJCCChess, M = window.PJCCMatch;
   var app = document.getElementById('pt-app');
+
+  /* ══ IF A SCRIPT DIDN'T ARRIVE, SAY SO — don't hang (2026-07-28) ═══════════════
+     Caught by blocking one file at a time and watching what a visitor gets. With
+     `pjcc-match.js` missing the page threw "Cannot read properties of undefined
+     (reading 'ready')"; with `pjcc-profile.js` missing it threw "PJCC is not
+     defined". BOTH left the visitor staring at "Walking to the park…" forever, with
+     no error they could see and no way onward — on the page the front door's one
+     gold button points at. A transient 503 doing exactly this was caught in the wild
+     on a skeptic walk the same day, so this is not hypothetical.
+
+     Note what DID behave: when the Supabase SDK was blocked the page degraded to the
+     honest offline message on its own. It was only the site's OWN scripts that were
+     undefended, because nothing checked they were there.
+
+     Two layers, and the second is the one that matters: the named check below is for
+     the failures we can predict, and the try/catch around route() is for the ones we
+     can't. A page may be down. It may never be *stuck*. ══════════════════════ */
+  var DOWN = '<p class="lb-empty">The park is offline right now — the games in the <a href="/games/">Arcade</a> still work.</p>';
+  function down(why) {
+    if (app) app.innerHTML = DOWN;
+    if (window.console && console.warn) console.warn('[park tables] standing down: ' + why);
+  }
+  if (!app) return;
+  if (!C || !M || !window.PJCC) {
+    return down('missing ' + [!C && 'pjcc-chess.js', !M && 'pjcc-match.js',
+                              !window.PJCC && 'pjcc-profile.js'].filter(Boolean).join(' + '));
+  }
   /* Boards render the FILLED glyph for BOTH sides (GLYPH[p.toLowerCase()]) and color
      the fill cream/ink in CSS — the outline glyphs (♙♘…) have nothing to fill, so
      "white" pieces came out as dark wireframes (2026-07-16 board glow-up). */
@@ -167,28 +194,30 @@ a move a day is plenty.</p>
           and look again, for up to PARK_WAIT. Only after that do we tell someone the
           park is shut — because that message sends them away, and it had better be true.
      ═══════════════════════════════════════════════════════════════════════════ */
-  var OFFLINE = '<p class="lb-empty">The park is offline right now — the games in the <a href="/games/">Arcade</a> still work.</p>';
   var PARK_WAIT = 9000, parkWaited = 0, parkTimer = null;
   function route(){
     authKey = keyNow();
     if (parkTimer) { clearTimeout(parkTimer); parkTimer = null; }
-    if (!PJCC.enabled) { app.innerHTML = OFFLINE; return; }   // genuinely not configured
+    if (!PJCC.enabled) return down('backend not configured');   // genuinely not configured
     if (!M.ready()) {
       if (parkWaited < PARK_WAIT) {
         parkWaited += 400;
         app.innerHTML = '<p class="lb-empty">Walking to the park…</p>';
-        parkTimer = setTimeout(route, 400);
+        parkTimer = setTimeout(safeRoute, 400);
         return;
       }
-      app.innerHTML = OFFLINE; return;
+      return down('match layer never became ready');
     }
     if (!uid()) return gateSignIn();
     if (!PJCC.getProfile()) return gateCodename();
     lobby();
   }
-  if (window.PJCC && PJCC.ready && PJCC.ready.then) PJCC.ready.then(route); else route();
+  /* every entry into route() goes through here — see the stand-down note at the top */
+  function safeRoute(){ try { route(); } catch (e) { down(String(e && e.message || e)); } }
+  if (window.PJCC && PJCC.ready && PJCC.ready.then) PJCC.ready.then(safeRoute, function(e){ down('profile layer failed: ' + e); });
+  else safeRoute();
   if (window.PJCC && PJCC.onChange) PJCC.onChange(function(){
-    if (!cur && !botCur && keyNow() !== authKey) route();   // never clobber an open game or mid-typing
+    try { if (!cur && !botCur && keyNow() !== authKey) safeRoute(); } catch (e) { down(String(e)); }
   });
 
   /* ── GATE 1: sign in, right here (email code; the emailed link also lands back
@@ -579,7 +608,7 @@ a move a day is plenty.</p>
           (iAmCreator ? '' : '<button class="pt-card" id="pt-new-creator"><span class="pt-card-icon">♛</span>' +
             '<span class="pt-card-t">Challenge McPuppy<br><i>The Creator plays back.</i></span></button>') +
           '<button class="pt-card" id="pt-new-open"><span class="pt-card-icon">⚔</span>' +
-          '<span class="pt-card-t">Open a table<br><i>Any operative can sit down.</i></span></button></div>';
+          '<span class="pt-card-t">Open a table<br><i>Anyone can sit down.</i></span></button></div>';
 
         // the park regulars — three bots, always seated, instant game (Argus/Auston/Father)
         if (botsReady()) {
