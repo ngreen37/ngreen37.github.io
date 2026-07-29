@@ -111,6 +111,29 @@
   var GDPR = 0.5;
   var ghost = null, gctx = null, gW = 0, gH = 0;
 
+  /* ── THE DRAW RATE, AND WHY IT IS NOT 60 (2026-07-28) ────────────────────────
+     The particle math was never the cost. 400 line segments in two paths is
+     nothing. The cost is that a canvas which CHANGES every frame must be cleared
+     and re-uploaded to the GPU every frame, and that bill is
+     `pixels × frames-per-second` — on a 1440×900 screen the main canvas is
+     2160×1350×4 ≈ 11.6MB, sixty times a second.
+
+     So stop drawing sixty times a second. Rain reads as rain at 30fps because the
+     streak length and your own eye supply the blur; snow is slower still and mist
+     barely moves at all. The physics is unchanged — the simulation advances by the
+     time that ACTUALLY elapsed, so the rain falls at the same speed, it is simply
+     sampled less often. Halving the rate halves the clear, the rasterisation and
+     the upload together, for both canvases.
+
+     The GHOST is the easy money: it sits at 12% opacity behind everything you are
+     actually looking at, so it can run at 10fps and no one will ever catch it.
+
+     ⚠ rAF still fires at 60 — we skip the DRAW, not the callback. That is deliberate:
+     the callback is a few microseconds and it is what keeps the timing honest. */
+  var FPS = { rain: 30, snow: 24, mist: 12 };
+  var GHOST_FPS = 10;
+  var acc = 0, gAcc = 0, drawn = 0, ticks = 0;
+
   /* ── the weather table ──────────────────────────────────────────────────────
      Everything that differs between rain and snow lives here, so adding a fourth
      kind later (ash? blossom? the Chess City parade?) is a row, not a rewrite.
@@ -166,9 +189,22 @@
       var s = spec[pair[0]], out = pair[1];
       var n = Math.round(s.n * megapx * mult);
       n = Math.max(6, Math.min(420, n));
+      /* ── SHUTTER SPEED (2026-07-28) ────────────────────────────────────────
+         Drawing half as often means a drop JUMPS twice as far between frames, and
+         if the streak stays the same length the fall stops reading as streaks and
+         starts reading as dots. Measured at 30fps: a near drop travels 51-71px
+         between draws while being 14-26px long — a gap of 2× to 5× its own length.
+
+         The fix is the real-world one. A longer gap between exposures IS a longer
+         motion blur; that is what a slow shutter does to rain in a photograph. So
+         the streak grows in exact proportion to the interval, which puts the gap
+         ratio back where 60fps had it. Brightness is unchanged, because the eye
+         integrates over time: twice the ink shown for twice as long is the same
+         light. Only a still frame looks different — and stills of rain always do. */
+      var blur = Math.min(2.2, 60 / (FPS[kind] || 30));
       for (var i = 0; i < n; i++) {
         if (kind === 'rain') {
-          out.push({ x: rand() * W, y: rand() * H, vy: pick(rand, s.vy), len: pick(rand, s.len) });
+          out.push({ x: rand() * W, y: rand() * H, vy: pick(rand, s.vy), len: pick(rand, s.len) * blur });
         } else {
           out.push({
             x: rand() * W, y: rand() * H,
@@ -226,11 +262,25 @@
 
   function frame(now) {
     raf = requestAnimationFrame(frame);
+    ticks++;
     if (!last) last = now;
     // Clamp dt: a tab that was throttled hands back a huge delta, and without this
     // every particle teleports off-screen on the first frame back.
-    var dt = Math.min(0.05, (now - last) / 1000);
+    var elapsed = Math.min(0.05, (now - last) / 1000);
     last = now;
+
+    /* ── the rate gate. Bank the elapsed time; draw only when a whole frame's worth
+       has built up, and then advance the simulation by everything we banked — so the
+       rain falls at exactly the same SPEED, it is just sampled less often. Skipping
+       the draw skips the clear, the raster and the GPU upload together. */
+    acc += elapsed;
+    gAcc += elapsed;
+    var step = 1 / (FPS[kind] || 30);
+    if (acc < step) return;
+    var dt = Math.min(0.05, acc);
+    acc = 0;
+    drawn++;
+
     var t = now / 1000;
 
     ctx.clearRect(0, 0, W, H);
@@ -244,8 +294,10 @@
       drawMist(dt);
     }
 
-    // …and the same storm again, small and faint, in front of the page.
-    if (gctx) {
+    // …and the same storm again, small and faint, in front of the page — on its own,
+    // much lazier clock. Nobody can see 10fps at 12% opacity through a card.
+    if (gctx && gAcc >= 1 / GHOST_FPS) {
+      gAcc = 0;
       gctx.clearRect(0, 0, gW, gH);
       gctx.drawImage(canvas, 0, 0, gW, gH);
     }
@@ -358,7 +410,9 @@
     debug: function () {
       return { kind: kind, intensity: intensity, dpr: DPR, w: W, h: H,
                near: near.length, far: far.length, fog: fog.length, running: !!raf,
-               ghost: !!ghost, ghostDpr: ghost ? GDPR : 0, ghostW: gW, ghostH: gH };
+               ghost: !!ghost, ghostDpr: ghost ? GDPR : 0, ghostW: gW, ghostH: gH,
+               // rate gate: rAF callbacks vs draws actually performed
+               targetFps: FPS[kind] || 30, ticks: ticks, draws: drawn };
     }
   };
 })();
