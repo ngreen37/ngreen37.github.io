@@ -47,7 +47,13 @@ const SETTLE_MS = 3500;
  * `location.replace('/pjcc/')`s out from under the harness — the injected toolkit dies with
  * the old document and the run crashes on `__perf is undefined`. (It listed `/` twice, as
  * "PJCC home" and "Splash", from before the 2026-07-23 front-door flip.) Fixed 2026-07-28. */
+/* ⚠ THE FRONT DOOR GOES FIRST, and it was MISSING until 2026-07-28's health check.
+ * When `/` stopped being the destination and /chess/ became it, this list kept the four
+ * pages it already had — so for a week the harness was measuring every page on the site
+ * EXCEPT the one every visitor lands on. A perf harness that skips the front door is
+ * measuring the wrong site. If the front door ever moves again, move this line with it. */
 const PAGES = [
+  { name: 'Front door',   url: '/chess/' },
   { name: 'PJCC home',    url: '/pjcc/' },
   { name: 'Games hall',   url: '/games/' },
   { name: 'McPuppy home', url: '/projects/' },

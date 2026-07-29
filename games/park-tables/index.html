@@ -139,11 +139,48 @@ a move a day is plenty.</p>
      Supabase restored a beat later — an expired token refreshing — left a
      signed-in visitor staring at the sign-in prompt. */
   var authKey = '';
-  function keyNow(){ return (uid() || 'out') + '|' + !!PJCC.getProfile(); }
+  /* ⚠ READINESS IS PART OF THE KEY (2026-07-28). Without it this read `uid|profile`,
+     which for a signed-out visitor is the constant string "out|false" — so onChange
+     could never re-route them, no matter what changed underneath. */
+  function keyNow(){ return (uid() || 'out') + '|' + !!PJCC.getProfile() + '|' + (M.ready() ? 'up' : 'down'); }
+
+  /* ══ THE PARK LOOKED SHUT TO EVERY SIGNED-OUT VISITOR — fixed 2026-07-28 ═══════
+     Found by driving the page cold in a real browser during a "test the games" pass;
+     every automated proof on the site was green while this was live.
+
+     THE RACE. `PJCC.ready` resolves when the PROFILE layer is ready. `M.ready()` is
+     `!!db()` — the MATCH layer's own handle on the Supabase client, built a beat later
+     off an SDK that arrives from a CDN. So `PJCC.ready.then(route)` fired with
+     `PJCC.enabled === true` and `M.ready() === false`, painted "the park is offline",
+     and stopped. Measured: enabled/ready/sdk were ALL true 516ms later — and the page
+     still said offline, and still said it after a reload with the SDK warm in cache.
+
+     WHY NOBODY CAUGHT IT. A signed-in visitor is rescued by accident: restoring the
+     session fires onChange with a genuinely different auth key, which re-routes, and by
+     then the match client exists. Signed OUT — which is every first-time visitor, and
+     the destination of the front door's one gold button — there is no auth event at all.
+
+     THE FIX, two halves, because either alone leaves a hole:
+       1. Readiness is now part of the key above, so onChange re-routes when it flips.
+       2. "Not ready yet" is no longer the same answer as "offline". While the profile
+          layer says the backend is configured, we keep saying *Walking to the park…*
+          and look again, for up to PARK_WAIT. Only after that do we tell someone the
+          park is shut — because that message sends them away, and it had better be true.
+     ═══════════════════════════════════════════════════════════════════════════ */
+  var OFFLINE = '<p class="lb-empty">The park is offline right now — the games in the <a href="/games/">Arcade</a> still work.</p>';
+  var PARK_WAIT = 9000, parkWaited = 0, parkTimer = null;
   function route(){
     authKey = keyNow();
-    if (!PJCC.enabled || !M.ready()) {
-      app.innerHTML = '<p class="lb-empty">The park is offline right now — the games in the <a href="/games/">Arcade</a> still work.</p>'; return;
+    if (parkTimer) { clearTimeout(parkTimer); parkTimer = null; }
+    if (!PJCC.enabled) { app.innerHTML = OFFLINE; return; }   // genuinely not configured
+    if (!M.ready()) {
+      if (parkWaited < PARK_WAIT) {
+        parkWaited += 400;
+        app.innerHTML = '<p class="lb-empty">Walking to the park…</p>';
+        parkTimer = setTimeout(route, 400);
+        return;
+      }
+      app.innerHTML = OFFLINE; return;
     }
     if (!uid()) return gateSignIn();
     if (!PJCC.getProfile()) return gateCodename();
