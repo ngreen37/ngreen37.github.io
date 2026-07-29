@@ -138,6 +138,26 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
       </div>
     </div>
     <p class="mcb-say" id="mcb-say">White to play. <b>Mate in one.</b></p>
+    {%- comment -%} ══ THE INVITATION, NOT THE ESCORT (2026-07-29) ═══════════════════════
+         Nate: "Don't automatically go to puzzles when you do the Home Page — but PROMPT
+         them to go to puzzles. That'll be REAL nice."
+
+         Solving used to start a 1.25s timer and then move the page out from under you.
+         Being teleported for getting something RIGHT is a punishment shaped like a
+         reward: you just did the thing, and the site took the room away before you
+         could enjoy it. So the win now hands you a door instead of walking you through
+         it — and the offer names the scale, because "solve another" is a shrug and
+         "1,000 puzzles to Chess City" is a road.
+
+         ⚠ IT IS NOT GOLD, and that is the page's one law (see the header comment). This
+         appears only AFTER an interaction, so nobody ever sees two calls to action — but
+         gold means "the primary thing" here, and there is only ever one of those.
+         ══════════════════════════════════════════════════════════════════ {%- endcomment -%}
+    <a class="mcb-next" id="mcb-next" href="{{ '/games/fork-in-the-road/' | relative_url }}" hidden>
+      <b>Solve another</b>
+      <small>1,000 puzzles to Chess City</small>
+      <i aria-hidden="true">&rarr;</i>
+    </a>
   </div>
 </section>
 </section>
@@ -217,15 +237,37 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   max-width: 42ch; margin: 0 0 var(--space-5, 24px); }
 
 /* THE ONE BUTTON. Nothing else on the page is gold, filled, or this size — that is the
-   whole design, and it is the thing the old home page did not have. */
+   whole design, and it is the thing the old home page did not have.
+
+   ⚠ RE-TONED 2026-07-29 (Nate: "the play chess button hovered-over in gold is way too
+   bright. Change that completely, both hover-over and non-hover-over"). Two separate
+   faults, and the hover was the louder one:
+
+   1. THE BODY was `#ffd54a → #F5C518` — the site's signal yellow, the same hue that marks
+      links and headings everywhere else, run at full strength across the largest filled
+      shape on the page, with a 0.28-alpha halo bleeding onto the surface behind it. It
+      read as a highlighter. Now an amber that is unmistakably the same gold family, one
+      step deeper, with the halo cut to 0.13 so the button has an EDGE instead of a glow.
+
+   2. THE HOVER WENT LIGHTER — `brightness(1.04)` plus a 0.40 halo. That is precisely the
+      complaint: the brightest thing on the page got brighter under the cursor. It goes
+      DEEPER now while the RIM lights up, so it reads as metal catching an edge-light
+      rather than a bulb being switched on. `filter` is gone entirely.
+
+   Picked from a render of five bodies × three hover treatments on the real surface, not
+   from hex arithmetic ([[pick-visual-values-from-a-render]]) — a gold's brightness is a
+   relationship with what sits behind it, and a swatch on white lies about that.
+   Contrast against the button's ink: 11.7:1 → 8.5:1 rest, 9.5:1 hover. Miles past AA. */
 .mc-cta { display: inline-flex; align-items: center; gap: 12px; text-decoration: none;
-  background: linear-gradient(180deg, #ffd54a, #F5C518); color: #1a0f3d;
+  background: linear-gradient(180deg, #e9bd3c, #cf9d18); color: #1a0f3d;
   font-weight: 900; font-size: clamp(17px, 2.1vw, 20px); letter-spacing: 0.01em;
-  padding: 15px 28px; border-radius: 999px; border: 2px solid #ffe27a;
-  box-shadow: 0 10px 30px rgba(245,197,24,0.28);
-  transition: transform .14s ease, box-shadow .14s ease, filter .14s ease; }
-.mc-cta:hover { transform: translateY(-2px); filter: brightness(1.04);
-  box-shadow: 0 14px 38px rgba(245,197,24,0.4); text-decoration: none; }
+  padding: 15px 28px; border-radius: 999px; border: 2px solid #dcb050;
+  box-shadow: 0 10px 30px rgba(245,197,24,0.13);
+  transition: transform .14s ease, box-shadow .14s ease,
+              background .14s ease, border-color .14s ease; }
+.mc-cta:hover { transform: translateY(-2px);
+  background: linear-gradient(180deg, #dfae2c, #b98c12); border-color: #e6c46a;
+  box-shadow: 0 14px 34px rgba(245,197,24,0.16); text-decoration: none; }
 .mc-cta:active { transform: translateY(0); }
 .mc-cta-ico { font-size: 1.15em; line-height: 1; }
 .mc-cta-arw { font-size: 1.05em; transition: transform .14s ease; }
@@ -342,7 +384,28 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mcb-say.good b, .mcb-say.good { color: #6bffb8; }
 .mcb-ready { display: block; margin-top: 4px; color: var(--fd-ink-3); font-size: 0.72rem;
   font-family: 'Share Tech Mono', monospace; }
-@media (prefers-reduced-motion: reduce) { .mcb-p { transition: none; } }
+
+/* THE OFFER after the mate (2026-07-29) — a door, not an escort. Wood and ink only: this
+   is the one moment a second call to action exists on the page, and it earns its place by
+   never being visible until you've already done something. It must not read as gold. */
+.mcb-next { display: inline-flex; align-items: center; gap: 12px; margin: 10px auto 0;
+  padding: 10px 18px; border-radius: 999px; text-decoration: none; text-align: left;
+  color: var(--fd-ink); background: var(--fd-panel-hi);
+  border: 1px solid var(--fd-grain);
+  animation: mcbNextIn .34s cubic-bezier(.2,.9,.3,1.2) both;
+  transition: transform .14s ease, border-color .14s ease, background .14s ease; }
+.mcb-next[hidden] { display: none; }
+.mcb-next b { display: block; font-size: 0.95rem; font-weight: 800; line-height: 1.2; }
+.mcb-next small { display: block; color: var(--fd-ink-3); font-size: 0.76rem; }
+.mcb-next i { font-style: normal; color: var(--fd-wood); font-size: 1.1rem;
+  transition: transform .14s ease; }
+.mcb-next:hover { text-decoration: none; transform: translateY(-2px);
+  border-color: var(--fd-wood); background: var(--fd-panel); }
+.mcb-next:hover i { transform: translateX(3px); }
+@keyframes mcbNextIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) { .mcb-p { transition: none; }
+  .mcb-next { animation: none; } }
 
 /* The board block — sized to sit beside the copy without stealing from it. No hover lift:
    this is a chessboard you play on, not a card you click, and a board that rises when the
@@ -432,7 +495,17 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    copying it a third time. */
 .mc-lamp { position: relative; display: block; width: 82px; height: 92px; flex: 0 0 auto; }
 .mc-lamp .studio-light { position: absolute; inset: 0; }
-.mc-lamp .sl-desk { left: -18px; right: -18px; border-radius: 3px; }
+/* THE DESK (2026-07-29, Nate: "for the Working Lamp, reduce the length of the wooden base
+   by 25% and center it"). 118px → 88px, exactly a quarter off.
+
+   "Centred" needed a decision, because the lamp DRAWING is not centred in its own 82px
+   box: the round foot spans x 31-68 (mid 49.5) while the shade and the cone of light
+   reach LEFT to about x −3. So the box's centre and the lamp's centre are 9px apart, and
+   the old −18/−18 was symmetric about the BOX — which is why the plank always looked
+   shifted left and ran off the card's edge. It is centred on the FOOT now (mid 50): the
+   plank is furniture, and furniture is centred under what stands on it, not under a beam
+   of light. Rendered all three readings against the live band before choosing. */
+.mc-lamp .sl-desk { left: 6px; right: -12px; border-radius: 3px; }
 .mc-lamp .sl-desk::after { border-radius: 0 0 3px 3px; }
 .mc-lamp .sl-tip { right: auto; left: -52px; }
 .mc-studio-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
@@ -475,6 +548,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   var ROOK = board.querySelector('.mcb-p[data-pc="R"]');
   var KING = board.querySelector('.mcb-p[data-pc="k"]');
   var A8   = board.querySelector('.mcb-sq[data-sq="0"]');   // top-left = a8
+  var NEXT = document.getElementById('mcb-next');           // the offer, revealed on the mate
   var armed = false, done = false;
 
   function tell(html, good) { say.innerHTML = html; say.classList.toggle('good', !!good); }
@@ -502,11 +576,11 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
       done = true; disarm();
       ROOK.style.gridArea = '1/1';
       KING.classList.add('mated');
-      tell('<b>Ra8#</b> \u2014 that\u2019s mate. The back rank was the whole board.<br>' +
-           '<span style="opacity:.75">Taking you to the puzzle room\u2026</span>', true);
-      setTimeout(function () {
-        location.href = {{ '/games/fork-in-the-road/' | relative_url | jsonify }};
-      }, 1250);
+      /* NO TIMER, NO location.href (2026-07-29) \u2014 see the #mcb-next markup comment.
+         The reward for solving is that the position STAYS on the screen, and the room
+         becomes a door you may choose to take. */
+      tell('<b>Ra8#</b> \u2014 that\u2019s mate. The back rank was the whole board.', true);
+      if (NEXT) { NEXT.hidden = false; }
       return;
     }
     /* ── anything else: tell them the truth, then let them try again ── */

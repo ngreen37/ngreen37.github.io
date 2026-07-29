@@ -473,6 +473,19 @@
   .flourish-toggle { padding: 12px 16px; font-size: 10px; }
 }
 
+/* The footer's control row. Written 2026-07-29, when game pages gained the same two
+   buttons — until then this div existed only in default.html and relied on inline
+   whitespace to space the buttons, which is why they drifted apart on a phone and
+   collided on a narrow desktop window.
+   ⚠ `:empty` is load-bearing, not tidiness: #chess-city-permit-slot is an empty <span>
+   most of the time, and a zero-width flex item still claims a full `gap` on both sides —
+   a permanent lopsided hole beside the last button. */
+.footer-actions {
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+  gap: 10px; margin-top: 10px;
+}
+.footer-actions > :empty { display: none; }
+
 /* ── Town-wide weather (#2) — the whole town shares one forecast (PJCC_TIME): on
    rain/mist days a soft atmospheric wash tints EVERY page (academy included).
    Static + opacity-only (no per-frame cost — the animated rain stays hero-only,

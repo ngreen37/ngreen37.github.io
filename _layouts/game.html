@@ -194,8 +194,34 @@
           <p>{{ site.description | escape }}</p>
         </div>
       </div>
+      {%- comment -%} ══ THE TWO FOOTER CONTROLS, ON GAME PAGES TOO (2026-07-29) ═══════════
+           Nate: "Let's put reduce motion and Share This Page buttons on the individual game
+           pages and the gauntlet page."
+
+           They were only ever in default.html, which game pages don't use — so the arcade,
+           the Puzzle room and the Gauntlet were the ONLY pages with no way to quiet the
+           site, and they are the pages where a moving background competes hardest with what
+           you're actually doing. Same markup, same ids, same shared styles.
+
+           ⚠ #share-tx-flash IS NOT DECORATION. The handler in pjcc-eggs.js opens with
+           `if (!btn || !flash) return;` — ship the button without the flash and you get a
+           button that copies nothing, silently, with no console error. Exactly the shape of
+           [[feature-shipped-but-never-loaded]]. Both elements or neither.
+           (pjcc-eggs.js is already loaded further down; it drives both.) {%- endcomment -%}
+      <div class="footer-inner">
+        <div class="footer-actions">
+          <button class="share-tx-btn" id="share-tx-btn">&#9672; Share this page</button>
+          <button class="flourish-toggle" id="flourish-toggle" type="button" aria-pressed="false"
+                  title="Quiet the ambient motion across the whole site">&#10024; Reduce motion</button>
+        </div>
+      </div>
     </div>
   </footer>
+  {%- comment -%} OUTSIDE the footer, exactly as in default.html. `.site-footer` carries
+       `overflow: hidden` for the glyph band; a fixed-position child should be immune to
+       that by spec, but "should be immune by spec" is not a thing to bet a feature on when
+       matching the layout that already works costs one line. {%- endcomment -%}
+  <div class="share-tx-flash" id="share-tx-flash">&#9672; LINK COPIED</div>
 
   {% comment %} No jukebox on game pages — games are PJCC-side and stay music-free. {% endcomment %}
 

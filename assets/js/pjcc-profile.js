@@ -110,6 +110,50 @@
     return null;
   }
 
+  /* ══ THE SIX BANDS (2026-07-29) ═══════════════════════════════════════════════
+     Nate: "Let's value the collectables into six categories of value, (up to
+     'ultra-rare' or 'ultra-valuable, etc)."
+
+     Rarity is DERIVED from price, never hand-assigned. One number already ranks the
+     whole catalogue and it is the number the player has been staring at all along; a
+     second, hand-kept rarity field would drift away from it the first time a price
+     changed, and then two things on the same card would disagree. Add an item at a
+     price and it lands in the right band with no further thought.
+
+     WHY THIS EXISTS AT ALL: the altar used to weigh a collectable by its raw credit
+     price, so laying down the 400-credit Crown put 400 credits in the pot and paid out
+     against that — Nate: "the collectables fetch WAY too big a reward". `stake` is the
+     fix. It is what the BOARD counts a piece as worth, which is deliberately a fraction
+     of what a shop charges (an Ultra-Rare stakes 90 against a 400 sticker). The altar is
+     not a pawn shop; it weighs the courage of the gesture, not the receipt.
+
+     THE VAULT GETS A FREE BAND. Its pieces carry credit values in the same range as the
+     mid shop shelf, but no shop stocks them and only the altar has ever handed one out —
+     that is rarity by definition, and pricing them by their number alone would rank a
+     Vault piece below a face anyone can buy on a good week.
+
+     ⚠ `min` is a floor, and the list must stay ASCENDING — the lookup takes the LAST
+     band whose floor the value clears. Names are mine; Nate's veto is open. ═══════ */
+  var BANDS = [
+    { key: 'common',    label: 'Common',     min: 0,   glyph: '◦', stake: 10, color: '#9aa3b8' },
+    { key: 'uncommon',  label: 'Uncommon',   min: 40,  glyph: '◇', stake: 18, color: '#7fd4a8' },
+    { key: 'rare',      label: 'Rare',       min: 80,  glyph: '◆', stake: 30, color: '#56d0ff' },
+    { key: 'veryrare',  label: 'Very Rare',  min: 150, glyph: '✦', stake: 45, color: '#b98fff' },
+    { key: 'legendary', label: 'Legendary',  min: 220, glyph: '✶', stake: 65, color: '#ffb066' },
+    { key: 'ultra',     label: 'Ultra-Rare', min: 320, glyph: '❈', stake: 90, color: '#ff8fd0' }
+  ];
+  /* ⚠ Attached to PJCC down in the object literal, NOT here — `var PJCC` is hoisted but
+     still undefined at this point in the file, so `PJCC.BANDS = …` up here throws.
+     `tier` is 1-6 and is the thing to compare; `key`/`label` are for display. Pass the
+     collectable's own `vault` flag — see the free-band note above. */
+  function rarityOf(value, vault) {
+    var i = 0;
+    for (var k = 0; k < BANDS.length; k++) if ((value || 0) >= BANDS[k].min) i = k;
+    if (vault) i = Math.min(BANDS.length - 1, i + 1);
+    var b = BANDS[i];
+    return { tier: i + 1, key: b.key, label: b.label, glyph: b.glyph, stake: b.stake, color: b.color };
+  }
+
   // Rank ladder by total credits. Each rank unredacts a Subject Zero fragment.
   var RANKS = [
     { name: 'Recruit',          min: 0,    frag: 'SUBJECT ZERO — file sealed. You have just enough clearance to know it exists.' },
@@ -130,6 +174,8 @@
     AVATAR_SHOP: AVATAR_SHOP,
     HUMAN_LABELS: HUMAN_LABELS,
     RANKS: RANKS,
+    BANDS: BANDS,
+    rarity: rarityOf,
     currentUser: function () { return sb ? (sb.auth.__user || null) : null; },
     // The raw Supabase client, for modules with their own tables (pjcc-match.js /
     // the Park Tables). Null until init — callers await PJCC.ready first.
@@ -858,8 +904,12 @@
       var v = vaultEntry('theme', k);
       out.push({ kind: 'theme', key: k, value: (THEMES[k] && THEMES[k].price) || (v ? v.value : 15), glyph: '🎨', label: (THEMES[k] && THEMES[k].label) || k, vault: !!v });
     });
-    return out;
+    return out.map(withBand);
   };
+  /* Every list below hands back the same shape, so nothing downstream has to remember to
+     call PJCC.rarity() — a rarity that is only right where somebody remembered to compute
+     it is worse than none. Attached HERE, in the one place all three lists funnel through. */
+  function withBand(c) { c.band = rarityOf(c.value, c.vault); return c; }
   // Collectables NOT yet owned — candidate "boons" the board can hand back.
   PJCC.unownedCollectables = function () {
     var have = {}; PJCC.ownedCollectables().forEach(function (c) { have[c.kind + ':' + c.key] = 1; });
@@ -867,7 +917,7 @@
     AVATAR_SHOP.forEach(function (a) { if (!have['avatar:' + a.key]) out.push({ kind: 'avatar', key: a.key, value: a.price, glyph: AVATARS[a.key] || '★', label: prettyAvatar(a.key) }); });
     PJCC.TITLE_SHOP.forEach(function (t) { if (!have['title:' + t.key]) out.push({ kind: 'title', key: t.key, value: t.price, glyph: '🏷', label: (TITLES[t.key] && TITLES[t.key].label) || t.key }); });
     PJCC.THEME_SHOP.forEach(function (k) { if (!have['theme:' + k]) out.push({ kind: 'theme', key: k, value: THEMES[k].price, glyph: '🎨', label: THEMES[k].label }); });
-    return out;
+    return out.map(withBand);
   };
   // THE VAULT — the unowned no-sale collectables. Only the altar hands these out,
   // so this list is deliberately separate from the shop pool above.
@@ -875,8 +925,8 @@
   PJCC.vaultCollectables = function () {
     var have = {}; PJCC.ownedCollectables().forEach(function (c) { have[c.kind + ':' + c.key] = 1; });
     return VAULT.filter(function (v) { return !have[v.kind + ':' + v.key]; }).map(function (v) {
-      return { kind: v.kind, key: v.key, value: v.value, vault: true, label: v.label,
-        glyph: v.kind === 'avatar' ? (AVATARS[v.key] || '★') : v.kind === 'title' ? '🏷' : '🎨' };
+      return withBand({ kind: v.kind, key: v.key, value: v.value, vault: true, label: v.label,
+        glyph: v.kind === 'avatar' ? (AVATARS[v.key] || '★') : v.kind === 'title' ? '🏷' : '🎨' });
     });
   };
   PJCC.isVault = function (kind, key) { return !!vaultEntry(kind, key); };

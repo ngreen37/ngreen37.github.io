@@ -68,14 +68,25 @@ description: McPuppy Studios presents Princess and the Journey to Chess City —
     /* 2026-07-27 (Nate: "let's slow fade it in, and slow fade it out"). Both fades are
        plain opacity transitions driven by two classes — .in is added on the first frame,
        .done just before it hands off — rather than a CSS animation, so the fade-out never
-       has to fight an animation's fill state for the same property. */
+       has to fight an animation's fill state for the same property.
+
+       2026-07-29 (Nate: "can we slow the fade in, fade out for the intro. Make it more
+       noticeable?") — .85s/.95s → 1.4s/1.5s, and the easing changed from `ease` to
+       `ease-in-out`, which is the half that actually makes it NOTICEABLE. `ease` front-
+       loads the change: most of the opacity moves in the first third and the tail is a
+       barely-visible crawl toward the value it already looks like it reached, so a
+       "slow" fade in `ease` reads as a quick fade followed by a wait. `ease-in-out`
+       spends its time in the MIDDLE of the range, where the eye can see the card is
+       moving. Same duration, more visible dissolve.
+
+       The three legs are a set — see the timers at the foot of the page. */
     .intro-stage {
       position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
       background: #000; cursor: pointer; text-decoration: none;
-      opacity: 0; transition: opacity .85s ease;
+      opacity: 0; transition: opacity 1.4s ease-in-out;
     }
     .intro-stage.in { opacity: 1; }
-    .intro-stage.done { opacity: 0; transition: opacity .95s ease; }
+    .intro-stage.done { opacity: 0; transition: opacity 1.5s ease-in-out; }
     .intro-line {
       display: inline-flex; align-items: center;
       font-family: ui-monospace, "SFMono-Regular", "Courier New", monospace;
@@ -143,13 +154,21 @@ description: McPuppy Studios presents Princess and the Journey to Chess City —
        with "slower". Skip stays instant. */
     function finish() { if (gone) return;
       try { sessionStorage.setItem('mcp.intro.handoff', '1'); } catch (e) {}
-      if (stage) stage.classList.add('done'); setTimeout(go, 950); }
+      if (stage) stage.classList.add('done'); setTimeout(go, 1500); }
 
     var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     // fade UP from black on the first frame (the type animation is already running under it)
     if (stage) requestAnimationFrame(function () { stage.classList.add('in'); });
-    // ~3s door to door now: .85s up, the line types, a beat, then .95s back down to black.
-    var timer = setTimeout(finish, reduce ? 850 : 2000);
+    /* THE THREE LEGS, and they must be read together (slowed 2026-07-29):
+         1.4s up  ·  hold  ·  1.5s back down to black  ≈ 4.2s door to door (was ~3s).
+       The 2600 below is measured from PAGE START, not from the end of the fade-in, so it
+       has to clear 1.4s before the card is even at full strength — at the old 2000 a 1.4s
+       fade-in would have left only 0.6s of card, and the "slower" intro would have felt
+       more rushed, not less. 2600 leaves ~1.2s of held, fully-lit card, which is about
+       how long the eye needs to read three words.
+       `setTimeout(go, 1500)` must equal the .done transition above: shorter and the
+       navigation eats the tail of the fade, longer and the screen sits black. */
+    var timer = setTimeout(finish, reduce ? 850 : 2600);
 
     // Skip on any click or key (never trap Tab, so keyboard users can reach the Skip link).
     function skip(e) { if (e.type === 'keydown' && (e.key === 'Tab' || e.metaKey || e.ctrlKey)) return;

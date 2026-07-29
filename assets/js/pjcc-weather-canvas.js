@@ -152,6 +152,36 @@
     return c;
   }
 
+  /* ── WHAT MACHINE ARE WE ON? (2026-07-29) ───────────────────────────────────
+     Levers #3 and #4 of the four banked with the rate gate. Nate: "in general,
+     performance is most important. This site can't drag down performance; that's
+     the best way to not get return customers."
+
+     Everything above this point is tuned for the machine the site is BUILT on. The
+     two dials that matter most on a weak one are the canvas's backing store and the
+     number of particles, and both can be turned down without changing the design —
+     the storm is the same storm, drawn with fewer samples.
+
+     ⚠ THE ONE RULE HERE: SILENCE IS NOT WEAKNESS. `navigator.deviceMemory` does not
+     exist in Safari at all, and a privacy-hardened desktop browser may report
+     nothing for either signal. Treating "didn't say" as "weak" would degrade the
+     weather for every iPhone and every Firefox user on a workstation. So a signal
+     only counts when it is PRESENT and LOW; absent signals mean "assume fine".
+
+     ⚠ AND `hardwareConcurrency` DOES NOT CATCH PHONES. An iPhone reports 6 cores and
+     8GB — by these two numbers it is a desktop. What actually makes a phone expensive
+     here is its pixel density, which is why `dense` is a separate dial below. */
+  var DEV = (function () {
+    var cores = navigator.hardwareConcurrency || 0;   // 0 = the browser declined to say
+    var mem = navigator.deviceMemory || 0;            // Chromium only; undefined elsewhere
+    var dpr = window.devicePixelRatio || 1;
+    return {
+      cores: cores, mem: mem,
+      weak: (cores > 0 && cores <= 4) || (mem > 0 && mem <= 4),
+      dense: dpr >= 2.5
+    };
+  })();
+
   var W = 0, H = 0, DPR = 1;
   var canvas = null, ctx = null, raf = 0, last = 0;
   var kind = null, intensity = 1, rand = Math.random;
@@ -171,17 +201,33 @@
      make an iframe's contents let the sky through, but you can put a pane of
      rain in front of it.
 
-     IT IS CHEAP, and only because of one decision: the copy is stored at HALF
-     LINEAR resolution (GDPR 0.5 where the main canvas caps at 1.5). Backing store
-     is w·h·4·dpr², so the ghost's texture is (0.5/1.5)² = ONE NINTH of the main
-     canvas's — a quarter of one dpr-1 screen, and far less than that on a phone,
-     where the main canvas is the one that scales up. At 12% opacity there is no
-     detail to lose; if anything the upscale reads as light diffusing through
-     glass, which is what it is meant to be. One drawImage per frame, no second
-     simulation, no second particle field.
+     IT IS CHEAP, and only because of one decision: the copy is stored at a
+     FRACTION of linear resolution. Backing store is w·h·4·dpr², so at GDPR 0.4
+     against the main canvas's 1.5 cap the ghost's texture is (0.4/1.5)² ≈ ONE
+     FOURTEENTH of the main canvas's. At 17% opacity there is little detail to
+     lose; the upscale reads as light diffusing through glass, which is what it is
+     meant to be. One drawImage per frame, no second simulation, no second
+     particle field.
+
+     ⚠ 0.5 → 0.4 ON 2026-07-29 (Nate: "for weather cost, do 2, 3, 4… in general,
+     performance is most important"). Lever #2 of the four banked with the rate gate.
+     36% of the ghost's pixels gone — its clear, its blit and its texture all bill on
+     that one number, and it is re-uploaded ten times a second, so the saving is
+     bandwidth as much as memory.
+
+     ⚠⚠ AND THE VALUE IS 0.4, NOT THE 0.3 I REACHED FOR FIRST, BECAUSE OF THE PHONE.
+     This is stored in CSS pixels × GDPR and then DISPLAYED at the device's own dpr,
+     so the upscale factor is `devicePixelRatio / GDPR` — 3.3× on a dpr-1 desktop but
+     TEN TIMES on a dpr-3 phone. At 0.3 the diagonal streaks visibly bead: a 1px line
+     sampled at a tenth lands on some pixels and misses others, and the dashes are
+     baked into the stored image, so the upscale enlarges them instead of blurring
+     them away. Rendered 0.5 / 0.4 / 0.3 on a 390×844 dpr-3 viewport at the SHIPPED
+     opacity before choosing — on desktop all three are identical and 0.3 would have
+     sailed through. **Judge a downscale on the densest screen it will ever land on,
+     not the one you're developing on.**
      ⚠ Never "improve" this by raising GDPR or by running a second particle field.
      Either one undoes the whole reason the weather became a canvas. */
-  var GDPR = 0.5;
+  var GDPR = 0.4;
   var ghost = null, gctx = null, gW = 0, gH = 0;
 
   /* ── THE DRAW RATE, AND WHY IT IS NOT 60 (2026-07-28) ────────────────────────
@@ -324,7 +370,14 @@
          — same ink, same density, no dotting — while still costing half the draws.
          ⚠ Rain only: snow and mist blit a fixed-size sprite, so their coverage never
          moved when the draw rate did. */
-      var n = Math.round(s.n * megapx * mult / (kind === 'rain' ? blur : 1));
+      /* ⚠ AND THINNER ON A WEAK MACHINE (lever #4, 2026-07-29). Particle count is the
+         one dial that moves the SIMULATION cost rather than the upload cost — the
+         per-frame loop, the path building, the transforms on shaped flakes. −30% is
+         chosen to be a number nobody notices: the field is randomly placed, so a
+         thinner one reads as a lighter shower, not as a broken effect, and the three
+         intensity steps are ±35% apart anyway. It compounds with the dpr cap above,
+         which is the point — a weak machine gets both. */
+      var n = Math.round(s.n * megapx * mult / (kind === 'rain' ? blur : 1) * (DEV.weak ? 0.7 : 1));
       n = Math.max(6, Math.min(420, n));
 
       /* WHICH SHAPE THIS FLAKE IS. Rolled ONCE, here, off the same date-seeded PRNG as
@@ -480,8 +533,24 @@
          mist 1.0  — 180-420px clouds of 5-13% alpha. There is nothing in a fog bank
                      that a second sample could resolve.
        On a dpr-3 phone that is 0.25 / 0.17 / 0.11 of a screen. The old CSS rain was
-       1.20 screens at ANY dpr, because it was sized in CSS pixels. */
+       1.20 screens at ANY dpr, because it was sized in CSS pixels.
+
+       ⚠ THE CAP IS DEVICE-AWARE TOO NOW (lever #3, 2026-07-29). Kind-awareness asks
+       "how crisp does this weather need to be"; device-awareness asks "how much can
+       this machine afford", and they are different questions with different answers:
+
+         DENSE SCREEN (dpr ≥ 2.5) → rain drops 1.5 → 1.25. This is the cheapest 31%
+           on the site and it is nearly invisible, because a dpr-3 phone is ALREADY
+           upscaling the 1.5 store by 2×; going to 1.25 makes that 2.4×. Two soft
+           samples versus two-and-a-bit soft samples, on a screen held at arm's
+           length, for a third of the texture.
+         WEAK MACHINE (≤4 cores or ≤4GB, and only when the browser SAID so) → 1.0
+           flat, all kinds. Rain's diagonal does go a touch steppy at 1.0; that was
+           measured and it is why 1.5 is the desktop default. On a four-core laptop
+           the trade is not close — a steppier streak beats a dropped frame. */
     var cap = kind === 'rain' ? 1.5 : kind === 'snow' ? 1.25 : 1;
+    if (DEV.dense) cap = Math.min(cap, 1.25);
+    if (DEV.weak) cap = 1;
     DPR = Math.min(window.devicePixelRatio || 1, cap);
     W = vw; H = vh;
     canvas.width = Math.round(vw * DPR);
@@ -588,6 +657,8 @@
                // how many flakes are crystals — the number that decides "subtle" vs "Christmas card"
                shaped: shaped, dendrites: dend,
                ghost: !!ghost, ghostDpr: ghost ? GDPR : 0, ghostW: gW, ghostH: gH,
+               // which machine tier we decided we're on (levers 3 + 4)
+               weak: DEV.weak, dense: DEV.dense, cores: DEV.cores, mem: DEV.mem,
                // rate gate: rAF callbacks vs draws actually performed
                targetFps: FPS[kind] || 30, ticks: ticks, draws: drawn };
     }
