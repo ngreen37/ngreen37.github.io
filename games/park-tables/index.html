@@ -65,9 +65,18 @@ a move a day is plenty.</p>
      the failures we can predict, and the try/catch around route() is for the ones we
      can't. A page may be down. It may never be *stuck*. ══════════════════════ */
   var DOWN = '<p class="lb-empty">The park is offline right now — the games in the <a href="/games/">Arcade</a> still work.</p>';
+  /* ⚠ down() is defined LATE-BINDING against the bots on purpose (2026-07-28, the bot
+     gate). "The tables are offline" is only the whole truth if there is nothing to play;
+     once the regulars run entirely in this tab, the honest answer to a dead backend is
+     "the human tables are offline, the regulars are still here." botsPanel() is hoisted,
+     so it's safe to call from here even though it's written further down. */
   function down(why) {
-    if (app) app.innerHTML = DOWN;
     if (window.console && console.warn) console.warn('[park tables] standing down: ' + why);
+    if (!app) return;
+    if (!botsReady()) { app.innerHTML = DOWN; return; }
+    app.innerHTML = '<p class="lb-empty">The tables are offline right now — but the regulars are still here.</p>' +
+      botsPanel() + '<p class="lb-empty">More games in the <a href="/games/">Arcade</a>.</p>';
+    wireBots();
   }
   if (!app) return;
   if (!C || !M || !window.PJCC) {
@@ -195,10 +204,19 @@ a move a day is plenty.</p>
           park is shut — because that message sends them away, and it had better be true.
      ═══════════════════════════════════════════════════════════════════════════ */
   var PARK_WAIT = 9000, parkWaited = 0, parkTimer = null;
+  /* ══ THE ORDER OF THESE CHECKS IS THE FEATURE (2026-07-28, the bot gate) ═══════
+     It used to wait for the MATCH layer before it would show a signed-out visitor
+     anything at all — so the first thing a stranger got from the front door's one gold
+     button was a loading message, and then a sign-in wall. But the three regulars need
+     nothing from the backend: local chess, local engine, localStorage. So the gate is
+     answered FIRST, and the match layer is only waited on by someone who has signed in
+     and is actually going to the lobby. A stranger now lands on a playable board. */
   function route(){
     authKey = keyNow();
     if (parkTimer) { clearTimeout(parkTimer); parkTimer = null; }
     if (!PJCC.enabled) return down('backend not configured');   // genuinely not configured
+    if (!uid()) return gateSignIn();            // needs only the profile layer, which is up
+    if (!PJCC.getProfile()) return gateCodename();
     if (!M.ready()) {
       if (parkWaited < PARK_WAIT) {
         parkWaited += 400;
@@ -208,8 +226,6 @@ a move a day is plenty.</p>
       }
       return down('match layer never became ready');
     }
-    if (!uid()) return gateSignIn();
-    if (!PJCC.getProfile()) return gateCodename();
     lobby();
   }
   /* every entry into route() goes through here — see the stand-down note at the top */
@@ -217,15 +233,37 @@ a move a day is plenty.</p>
   if (window.PJCC && PJCC.ready && PJCC.ready.then) PJCC.ready.then(safeRoute, function(e){ down('profile layer failed: ' + e); });
   else safeRoute();
   if (window.PJCC && PJCC.onChange) PJCC.onChange(function(){
-    try { if (!cur && !botCur && keyNow() !== authKey) safeRoute(); } catch (e) { down(String(e)); }
+    try {
+      // Never re-render a form somebody is typing into. The key carries match-layer
+      // readiness, so a late-arriving SDK plus any auth event could otherwise wipe a
+      // half-typed email or sign-in code out from under them.
+      var a = document.activeElement;
+      if (a && /^pt-(email|code|name)$/.test(a.id || '')) return;
+      if (!cur && !botCur && keyNow() !== authKey) safeRoute();
+    } catch (e) { down(String(e)); }
   });
 
   /* ── GATE 1: sign in, right here (email code; the emailed link also lands back
         on this exact page, signed in and ready). ─────────────────────────── */
   function gateSignIn(sent, email){
     stopPolling();
-    app.innerHTML = '<div class="pt-gate">' +
-      '<h2 class="pt-gate-h">Sit down at the tables</h2>' +
+    /* ══ THE BOT GATE (2026-07-28, Nate: "Go on the bot gate") ═══════════════════
+       The compass check found the site's sharpest edge here: the front door has ONE
+       gold button, it says Play Chess, and it used to land a stranger on an email
+       form. Everything the three regulars need is already in this tab — the
+       perft-verified referee, the Stockfish bridge, localStorage for the board — so
+       there was never a technical reason to charge an account for them.
+       Now: play first, sign in only when you want a PERSON. The account still buys
+       something real (people, ratings, McPuppy's own table), which is a much better
+       pitch than a toll gate. ═══════════════════════════════════════════════════ */
+    var bots = botsPanel();
+    app.innerHTML = (bots &&
+      '<div class="pt-open-park"><h2 class="pt-h">Play right now</h2>' +
+      '<p class="pt-sub">Three park regulars, always seated. No account, nothing to sign.</p>' +
+      bots + '</div>') +
+      '<div class="pt-gate">' +
+      '<h2 class="pt-gate-h">' + (bots ? 'Play a person' : 'Sit down at the tables') + '</h2>' +
+      (bots && !sent ? '<p class="pt-sub">Real opponents, PJCC Ratings and McPuppy\'s own table need a free account.</p>' : '') +
       (sent
         ? '<p>Code sent to <b>' + esc(email) + '</b>. Tap the link in the email — it comes straight back here — or type the code:</p>' +
           '<div class="pt-gate-row"><input class="pt-in" id="pt-code" inputmode="numeric" autocomplete="one-time-code" placeholder="the code" aria-label="Sign-in code">' +
@@ -257,6 +295,7 @@ a move a day is plenty.</p>
       document.getElementById('pt-code').onkeydown = function(ev){ if (ev.key === 'Enter') ver(); };
       document.getElementById('pt-again').onclick = function(){ gateSignIn(false); };
     }
+    wireBots();   // the regulars are live on the gate too — that's the point of it
   }
 
   /* ── GATE 2: claim a codename (how opponents see you) ────────────────────── */
@@ -359,6 +398,30 @@ a move a day is plenty.</p>
   function botSave(st){ try { localStorage.setItem(BOT_KEY, JSON.stringify(st)); } catch (e) {} }
   function botsReady(){ return !!(window.PJCCGauntletEngine && BOTS); }
 
+  /* ── THE THREE REGULARS, RENDERED ANYWHERE ────────────────────────────────
+     One panel, used by the signed-in lobby, by the sign-in gate, and by the
+     offline stand-down — because "who's here to play" has the same answer in all
+     three, and it is never "nobody". Returns '' if the engine didn't load, so
+     every caller can concatenate it without a guard. */
+  function botsPanel(){
+    if (!botsReady()) return '';
+    var saved = botLoad();
+    return '<div class="pt-actions pt-bots">' + Object.keys(BOTS).map(function (id) {
+      var b = BOTS[id];
+      var resume = saved && saved.bot === id && !saved.done && (saved.moves || '').trim();
+      return '<button class="pt-card pt-bot" data-bot="' + id + '">' +
+        '<span class="pt-card-icon">' + b.icon + '</span>' +
+        '<span class="pt-card-t">' + b.name + '<br><i>' + b.diff + (resume ? ' · resume' : '') + '</i></span></button>';
+    }).join('') + '</div>';
+  }
+  function wireBots(){
+    if (!botsReady()) return;
+    try { PJCCGauntletEngine.warmup(); } catch (e) {}
+    Array.prototype.forEach.call(app.querySelectorAll('[data-bot]'), function (b) {
+      b.onclick = function(){ botStart(b.getAttribute('data-bot')); };
+    });
+  }
+
   function botStart(id){
     stopPolling(); cur = null; botSel = -1; botThinking = false; botSeq++;
     var saved = botLoad();
@@ -442,7 +505,7 @@ a move a day is plenty.</p>
   function botRender(){
     var st = botCur; if (!st) return;
     var bot = BOTS[st.bot], g = M.replayGame(st.moves || '');
-    if (!g.valid) { botCur = null; try { localStorage.removeItem(BOT_KEY); } catch (e) {} return lobby(); }
+    if (!g.valid) { botCur = null; try { localStorage.removeItem(BOT_KEY); } catch (e) {} return safeRoute(); }
     var S = g.S;
     if (!st.done && g.result) botFinish(st, g);
     var myTurn = !st.done && !botThinking && S.turn === 'w';
@@ -505,7 +568,10 @@ a move a day is plenty.</p>
           : '<button class="pjcc-btn-ghost pt-resign" id="pt-bot-resign">Resign</button>') +
       '</div>';
 
-    document.getElementById('pt-back').onclick = function(){ botCur = null; botSeq++; lobby(); };
+    // ⚠ safeRoute(), not lobby(). A signed-out visitor can now be sitting at a bot board
+    //    (the bot gate), and lobby() reads PJCC.getProfile().codename — it would throw.
+    //    route() sends each visitor back to whichever park they came from.
+    document.getElementById('pt-back').onclick = function(){ botCur = null; botSeq++; safeRoute(); };
     var ag = document.getElementById('pt-bot-again');
     if (ag) ag.onclick = function(){ try { localStorage.removeItem(BOT_KEY); } catch (e) {} botStart(st.bot); };
     var rv = document.getElementById('pt-bot-review');
@@ -611,17 +677,7 @@ a move a day is plenty.</p>
           '<span class="pt-card-t">Open a table<br><i>Anyone can sit down.</i></span></button></div>';
 
         // the park regulars — three bots, always seated, instant game (Argus/Auston/Father)
-        if (botsReady()) {
-          var botSaved = botLoad();
-          html += '<h2 class="pt-h">Play a bot</h2><div class="pt-actions pt-bots">' +
-            Object.keys(BOTS).map(function (id) {
-              var b = BOTS[id];
-              var resume = botSaved && botSaved.bot === id && !botSaved.done && (botSaved.moves || '').trim();
-              return '<button class="pt-card pt-bot" data-bot="' + id + '">' +
-                '<span class="pt-card-icon">' + b.icon + '</span>' +
-                '<span class="pt-card-t">' + b.name + '<br><i>' + b.diff + (resume ? ' · resume' : '') + '</i></span></button>';
-            }).join('') + '</div>';
-        }
+        if (botsReady()) html += '<h2 class="pt-h">Play a bot</h2>' + botsPanel();
 
         // Drop any dead "vs myself" table — an old challenge with no possible opponent.
         // A self-match is EITHER both seats being you, OR a "Challenge McPuppy" table the
@@ -687,12 +743,7 @@ a move a day is plenty.</p>
         var nc = document.getElementById('pt-new-creator');
         if (nc) nc.onclick = function(){ optionsSheet(true); };
         document.getElementById('pt-new-open').onclick = function(){ optionsSheet(false); };
-        if (botsReady()) {
-          try { PJCCGauntletEngine.warmup(); } catch (e) {}
-          Array.prototype.forEach.call(app.querySelectorAll('[data-bot]'), function (b) {
-            b.onclick = function(){ botStart(b.getAttribute('data-bot')); };
-          });
-        }
+        wireBots();
         Array.prototype.forEach.call(app.querySelectorAll('[data-open]'), function (b) {
           b.onclick = function(){ openTable(b.getAttribute('data-open')); };
         });
@@ -1046,6 +1097,17 @@ a move a day is plenty.</p>
 .pt-bots { margin-top: 4px; }
 .pt-bots .pt-card { flex: 1 1 140px; padding: 11px 14px; }
 .pt-bots .pt-card-icon { font-size: 22px; }
+
+/* THE BOT GATE (2026-07-28) — the free path is FIRST and reads as the main one, and the
+   sign-in below it is a second offer rather than a wall. Gold edges on the regulars'
+   cards because this is where the gold button was pointing all along. */
+.pt-open-park { max-width: 560px; margin: 18px auto 0; text-align: center; }
+.pt-open-park .pt-h { margin: 0 0 4px; font-size: 1.15rem; }
+.pt-open-park .pt-actions { justify-content: center; }
+.pt-open-park .pt-card { border-color: rgba(245,197,24,0.38); }
+.pt-sub { color: #9a7fd4; font-size: 0.85rem; margin: 0 0 12px; }
+.pt-open-park + .pt-gate { max-width: 560px; margin-top: 24px; padding-top: 22px;
+  border-top: 1px solid var(--edge-soft); }
 
 .pt-sheet { max-width: 460px; padding: 16px 0; }
 .pt-sheet-l { font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; letter-spacing: 0.14em;

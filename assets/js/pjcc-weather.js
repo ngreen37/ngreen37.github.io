@@ -226,6 +226,12 @@
     o.appendChild(bolt);
     // the home hero keeps its own trick: rare strikes backlight the Chess City skyline
     var sky = document.querySelector('.hero-skyflash');
+    /* 9-26s → 24-64s (2026-07-28 pm, Nate: "take other steps to make it less
+       distracting"). A full-screen flash every fifteen seconds on average is a metronome,
+       and a metronome is the one thing peripheral vision cannot learn to ignore. At
+       roughly three-quarters of a minute it goes back to being weather: rare enough that
+       you look up when it happens instead of bracing for the next one. The flash itself
+       is unchanged — it was the CADENCE that was wrong, not the bolt. */
     (function strike() {
       setTimeout(function () {
         if (idx === 2) {
@@ -235,7 +241,7 @@
           }
         }
         strike();
-      }, 9000 + Math.random() * 17000);
+      }, 24000 + Math.random() * 40000);
     })();
   }
 

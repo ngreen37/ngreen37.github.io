@@ -148,9 +148,13 @@
        not as white lines. Rounding down also matters for the glass copy: a drop seen
        through the ghost lands at alpha × 0.12, and it was the NEAR sheet that made the
        storm feel painted on. */
+    /* −14% AGAIN 2026-07-28 pm (Nate: "increase [the transparency] where it is visible
+       by at least 10%"). near 0.44 → 0.38, far 0.25 → 0.22. See INK vs COVERAGE below —
+       transparency was only half the answer; the other half was how much ink is on the
+       screen at any instant, which had silently doubled. */
     rain: {
-      near: { n: 210, vy: [1150, 1600], len: [14, 26], tilt: 0.17, w: 1.15, ink: 'rgba(206,224,255,0.44)' },
-      far:  { n: 260, vy: [620, 900],   len: [8, 15],  tilt: 0.13, w: 0.75, ink: 'rgba(190,210,245,0.25)' }
+      near: { n: 210, vy: [1150, 1600], len: [14, 26], tilt: 0.17, w: 1.15, ink: 'rgba(206,224,255,0.38)' },
+      far:  { n: 260, vy: [620, 900],   len: [8, 15],  tilt: 0.13, w: 0.75, ink: 'rgba(190,210,245,0.22)' }
     },
     snow: {
       near: { n: 90,  vy: [42, 78],  r: [1.8, 3.6], sway: [10, 26], swayHz: [0.14, 0.34], alpha: [0.55, 0.92] },
@@ -170,7 +174,14 @@
     rand = rng(seed ^ 0x9E3779B9);
 
     var megapx = (W * H) / 1000000;
-    var mult = [0.55, 1, 1.55][intensity];
+    /* ── HOW HARD IT COMES DOWN (light / med / heavy) ─────────────────────────────
+       HEAVY WAS 1.55 (2026-07-28 pm, Nate: "the heavy rain is way too heavy. It's real
+       distracting so let's calm it down significantly"). Two things were wrong with it
+       and only one of them was this number — see the coverage note below. With the
+       coverage bug fixed, 1.55 was still the loudest setting the site has ever shipped,
+       so it comes down to 1.3: a heavy shower rather than a squall. The gap between the
+       three levels stays wide enough that the wander through the day is still legible. */
+    var mult = [0.55, 1, 1.3][intensity];
 
     if (kind === 'mist') {
       var s = SPEC.mist;
@@ -187,8 +198,6 @@
     var spec = SPEC[kind];
     [['near', near], ['far', far]].forEach(function (pair) {
       var s = spec[pair[0]], out = pair[1];
-      var n = Math.round(s.n * megapx * mult);
-      n = Math.max(6, Math.min(420, n));
       /* ── SHUTTER SPEED (2026-07-28) ────────────────────────────────────────
          Drawing half as often means a drop JUMPS twice as far between frames, and
          if the streak stays the same length the fall stops reading as streaks and
@@ -202,6 +211,31 @@
          integrates over time: twice the ink shown for twice as long is the same
          light. Only a still frame looks different — and stills of rain always do. */
       var blur = Math.min(2.2, 60 / (FPS[kind] || 30));
+
+      /* ══ INK vs COVERAGE — the bug the shutter fix left behind (2026-07-28 pm) ═════
+         The motion blur above is right about BRIGHTNESS and wrong about EVERYTHING
+         ELSE, and that is what "way too heavy" turned out to be.
+
+         The physics argument was: twice the ink shown for twice as long is the same
+         light, because the eye integrates over time. True — for one drop. But what makes
+         rain distracting is not the light it emits over a second, it is how much of the
+         screen is covered by a moving line AT ANY INSTANT. Doubling every streak while
+         keeping the same number of streaks doubled the instantaneous coverage of the
+         whole storm. Measured on a 1440×900 screen at heavy: 420 near streaks (the old
+         clamp) at 14-26px each was ~8400px of ink at 60fps, and ~16,800px after the
+         shutter change. Nate praised heavy rain the morning it was the first number and
+         called it "way too heavy" the day it was the second. He was reading the change
+         exactly.
+
+         So COVERAGE (n × len) is the thing to hold constant, not n. Longer streaks buy
+         continuity; they must be paid for with fewer drops. Divide the count by the same
+         factor the length was multiplied by and the storm looks like the 60fps one again
+         — same ink, same density, no dotting — while still costing half the draws.
+         ⚠ Rain only: snow and mist blit a fixed-size sprite, so their coverage never
+         moved when the draw rate did. */
+      var n = Math.round(s.n * megapx * mult / (kind === 'rain' ? blur : 1));
+      n = Math.max(6, Math.min(420, n));
+
       for (var i = 0; i < n; i++) {
         if (kind === 'rain') {
           out.push({ x: rand() * W, y: rand() * H, vy: pick(rand, s.vy), len: pick(rand, s.len) * blur });
