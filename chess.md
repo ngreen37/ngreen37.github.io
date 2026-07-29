@@ -153,9 +153,16 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
          appears only AFTER an interaction, so nobody ever sees two calls to action — but
          gold means "the primary thing" here, and there is only ever one of those.
          ══════════════════════════════════════════════════════════════════ {%- endcomment -%}
+    {%- comment -%} ⚠ THE <span> IS LOAD-BEARING. `.mcb-next` is an inline-flex row, and a
+         flex container ignores `display:block` on its children — so the label and the
+         sub-label laid out side by side and read as one sentence: "Solve another 1,000
+         puzzles to Chess City", which says the opposite of what it means. Wrapped, they
+         stack. {%- endcomment -%}
     <a class="mcb-next" id="mcb-next" href="{{ '/games/fork-in-the-road/' | relative_url }}" hidden>
-      <b>Solve another</b>
-      <small>1,000 puzzles to Chess City</small>
+      <span class="mcb-next-txt">
+        <b>Solve another</b>
+        <small>1,000 puzzles to Chess City</small>
+      </span>
       <i aria-hidden="true">&rarr;</i>
     </a>
   </div>
@@ -395,8 +402,9 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   animation: mcbNextIn .34s cubic-bezier(.2,.9,.3,1.2) both;
   transition: transform .14s ease, border-color .14s ease, background .14s ease; }
 .mcb-next[hidden] { display: none; }
-.mcb-next b { display: block; font-size: 0.95rem; font-weight: 800; line-height: 1.2; }
-.mcb-next small { display: block; color: var(--fd-ink-3); font-size: 0.76rem; }
+.mcb-next-txt { display: block; }
+.mcb-next b { display: block; font-size: 0.95rem; font-weight: 800; line-height: 1.25; }
+.mcb-next small { display: block; color: var(--fd-ink-3); font-size: 0.76rem; line-height: 1.3; }
 .mcb-next i { font-style: normal; color: var(--fd-wood); font-size: 1.1rem;
   transition: transform .14s ease; }
 .mcb-next:hover { text-decoration: none; transform: translateY(-2px);

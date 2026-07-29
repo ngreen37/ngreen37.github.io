@@ -48,6 +48,22 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**
   well past it) but it is an *asking* price on an unpronounceable consonant cluster with existing
   acronym competition — and a name nobody can spell after hearing the show's title is a weak asset at
   any price. **Live domain stays `mcpuppystudios.com`.** — his call, no build attached.
+- [ ] **⭐ The road to Chess City lives in ONE browser — and that is a 1,000-puzzle promise.**
+  *(Found 2026-07-29 answering his question "is there a method where users can get them all?")*
+  Progress is `localStorage['pjcc.fork.journey.v2']`, written on every correct solve. Signed IN it is
+  also mirrored to the profile and restored on load if the server is further along, so an account
+  survives a new phone. **Signed out it does not exist anywhere but that one browser** — clear the
+  site data, switch devices, or open it in a private window and 400 solved puzzles are gone, along
+  with the Citizen crest and any claim on a Founder's number. The fix is small (write the arrival and
+  the step count under the account the moment either happens, and make the room say "sign in to keep
+  your road"), but it changes what the page promises a stranger, so **the call is his.** Related: the
+  ONE genuine asterisk on "1,000 correct puzzles" — the deepest hint tier plays the winning move for
+  you and still advances the counter. It is flagged (the solve isn't "aced", the difficulty drops),
+  but the step moves. Leave it as a mercy or make reveals not count — also his.
+- [ ] **The rarity band NAMES are mine and the veto is open.** *Common · Uncommon · Rare · Very Rare ·
+  Legendary · Ultra-Rare* — he asked for six categories "up to 'ultra-rare' or 'ultra-valuable'", and
+  these are the six. If PJCC wants its own vocabulary for them (the altar speaks in ritual, not in
+  loot-box), they are one array in `pjcc-profile.js`.
 - [ ] **Robert, Kaede and Matsu are publicly present but officially hidden.** Robert is the Expert bot
   at the Park Tables, Kaede teaches the Reading Room, Kaede and Matsu both teach Shogi Island — all
   named on live pages, all still in `hidden_character_urls`. Their doors are now closed (no live page
@@ -1135,6 +1151,36 @@ second ten are **ingenuity** (the clever, cheap, memorable stuff).
   live login (phone + desktop) is tested right after** — never casually. Ties to [[pjcc-profile-system]], [[go-live-push]].
 
 ---
+
+## ☯ The fading-memory notification — *pondered, not built* (2026-07-29)
+
+Nate, in the karma batch: *"We can randomly notify them if you think that's fun. Might be too much.
+Just ponder that last part for now and do the rest please!"* Everything else in that message shipped;
+this is the ponder.
+
+**My read: the random one is a no, and there is a better version of the same instinct.**
+
+The instinct is right — a memory that fades silently is a mechanic nobody experiences. But a
+*notification* is the site tapping someone on the shoulder about a thing they cannot act on except
+by coming back, which is the exact shape of the re-engagement nag we have refused everywhere else
+([private-by-default], and the whole reason the profile ring is still parked). "Your sacrifice is
+fading" is a guilt timer with a ritual costume on. It would also be the first thing on this site that
+punishes not visiting, and the altar's own creed is *let go*.
+
+**What I'd build instead, if he wants it — the board mentions it, unprompted, on your next visit.**
+No push, no badge, no email; the room simply says it when you are already standing in it:
+
+> *"Two memories faded since you were last here. The board has let them go."*
+
+One line in the altar, only when something actually expired between visits (`lost` already counts
+them — the number is sitting there unused). It is honest, it is a consequence you can see, and it
+costs nothing to a person who never comes back. **Chess City arrivals already see the full ledger
+fading in real time** via the magnifying glass, which is the deluxe version of this and is live.
+
+The louder variant, if he ever wants a hook: **a memory about to fall off gets one last chance** —
+the visit where an entry drops below ~0.25, the altar offers to redeem it for a fraction. That turns
+a decay into a decision, which is more interesting than a notification. It also makes karma
+farmable, so it would need the same house-edge check the wheel got. Banked, not recommended yet.
 
 ## ◈ CREDITS THAT MEAN SOMETHING — 20 ideas (2026-07-14, Nate: "we need credits to mean something. Think hard on it")
 
