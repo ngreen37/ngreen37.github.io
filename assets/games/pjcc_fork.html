@@ -7,6 +7,12 @@
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <script src="/assets/js/pjcc-pieces.js"></script>
+<!-- THE ANALYSIS BOARD (2026-07-28). The puzzle room has its own little chess engine for
+     generating and refuting; these two are for the ANALYSIS overlay only, which needs the
+     perft-verified referee to let you branch off the solution legally. Both are UMD IIFEs —
+     they add `PJCCChess` and `PJCCAnalysis` and touch nothing this page already declares. -->
+<script src="/assets/js/pjcc-chess.js"></script>
+<script src="/assets/js/pjcc-analysis.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { user-select: none; -webkit-user-select: none; -moz-user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -31,6 +37,10 @@
   }
   .float-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
   #hint-btn { bottom: 84px; right: 10px; background: #ff8fd0; color: #3a0a2a; padding: 7px 14px; font-size: 12px; }
+  /* Takes the Hint button's seat — Hint is hidden the moment a puzzle resolves, which is
+     exactly when there is something worth taking apart. Never both on screen at once. */
+  #analysis-btn { bottom: 84px; right: 10px; background: #5be0c0; color: #06231f;
+    padding: 7px 14px; font-size: 12px; }
   /* was a 10px whisper in the corner; a report you can't find is a report you never get */
   #report-btn { bottom: 84px; left: 10px; background: rgba(20,12,45,0.85); color: #cfeee6;
     border: 1px solid #5be0c0; padding: 7px 13px; font-size: 11px; letter-spacing: 0.04em; }
@@ -84,6 +94,7 @@
   <button class="float-btn hidden" id="menu-btn">☰ menu</button>
   <button class="float-btn hidden" id="hint-btn">🐾 Hint</button>
   <button class="float-btn hidden" id="report-btn" title="Something wrong with this puzzle? Send it to McPuppy">⚑ Report puzzle</button>
+  <button class="float-btn hidden" id="analysis-btn" title="Open this puzzle on a board you can move — with the engine watching">⚗ Analysis</button>
 
   <!-- 2026-07-27 (Nate: "There's a lot of words there; let's cut a lot of those out.
        They'll figure it out."). The menu was a paragraph plus a three-line footnote.
@@ -888,9 +899,45 @@ function loadPuzzle(){
   G = { p, board: parseBoard(p), step: 0, selected: null, wrong: 0, clean: true, revealed: false, hintLevel: 0, phase: 'await', orient: p.side };
   document.getElementById('hint-btn').classList.remove('hidden');
   document.getElementById('report-btn').classList.remove('hidden');
+  document.getElementById('analysis-btn').classList.add('hidden');
   updateHintBtn();
   bannerT = -1;
 }
+
+/* ── THE PUZZLE, AS A FEN ────────────────────────────────────────────────────────
+   Built from a FRESH parseBoard(p), not from G.board — G.board is mutated as the
+   solution plays out, so by the time you can press Analysis it holds the position
+   AFTER the answer. What you want is the puzzle as it was set, with the solution as
+   a move list you can walk back through and branch off.
+   Castling and en passant are '-' on purpose: these positions are CONSTRUCTED, and
+   claiming rights nobody established would let the engine offer a castle that was
+   never legal here. */
+function puzzleFEN(p){
+  const b = parseBoard(p), rows = [];
+  for (let y = 0; y < 8; y++){
+    let row = '', empty = 0;
+    for (let x = 0; x < 8; x++){
+      const sq = b[y][x];
+      if (!sq) { empty++; continue; }
+      if (empty) { row += empty; empty = 0; }
+      row += sq.c === 'w' ? sq.t : sq.t.toLowerCase();
+    }
+    if (empty) row += empty;
+    rows.push(row);
+  }
+  return rows.join('/') + ' ' + p.side + ' - - 0 1';
+}
+document.getElementById('analysis-btn').addEventListener('click', () => {
+  if (!G || !G.p || !window.PJCCAnalysis) return;
+  const p = G.p;
+  PJCCAnalysis.open({
+    fen: puzzleFEN(p),
+    moves: (p.line || []).map(m => m[0]).join(' '),
+    flip: p.side === 'b',                       // look from the side that had to find it
+    subtitle: (MOTIFS[p.theme] && MOTIFS[p.theme].name ? MOTIFS[p.theme].name : p.theme) +
+              (p.rating ? ' · rated ~' + p.rating : '')
+  });
+});
 function nextPuzzle(){
   run.idx++;
   if (run.idx >= run.legLen) { showSummary(); return; }
@@ -920,6 +967,12 @@ function playerAltCorrect(fx, fy, tx, ty){
 function puzzleSolved(){
   G.phase = 'done';
   document.getElementById('hint-btn').classList.add('hidden');
+  // The analysis door opens only once the puzzle is over — an engine beside an unsolved
+  // puzzle is just the answer key. `available()` is false if the referee didn't load, so a
+  // missing script hides the button instead of offering one that does nothing.
+  if (window.PJCCAnalysis && PJCCAnalysis.available()) {
+    document.getElementById('analysis-btn').classList.remove('hidden');
+  }
   const aced = G.clean && !G.revealed;          // solved unaided
   run.stats.solved++;
   recordTactic(G.p.cat, aced);
@@ -1287,9 +1340,9 @@ function loop(now){
 
 // ---- Screens ----
 function hideOverlays(){ ['menu-screen','summary-screen','report-screen'].forEach(id=>document.getElementById(id).classList.add('hidden')); }
-function showMenu(){ G=null; run=null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('hint-btn').classList.add('hidden'); document.getElementById('report-btn').classList.add('hidden'); hideOverlays(); updateJourneyLine(); document.getElementById('menu-screen').classList.remove('hidden'); }
+function showMenu(){ G=null; run=null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('hint-btn').classList.add('hidden'); document.getElementById('report-btn').classList.add('hidden'); document.getElementById('analysis-btn').classList.add('hidden'); hideOverlays(); updateJourneyLine(); document.getElementById('menu-screen').classList.remove('hidden'); }
 function showSummary(){
-  G = null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('hint-btn').classList.add('hidden'); document.getElementById('report-btn').classList.add('hidden');
+  G = null; document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('hint-btn').classList.add('hidden'); document.getElementById('report-btn').classList.add('hidden'); document.getElementById('analysis-btn').classList.add('hidden');
   const s = run.stats;
   if (run.mode === 'journey'){
     const reg = REGIONS[regionFor(run.step)], done = run.step >= JOURNEY_LEN;

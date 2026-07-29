@@ -2,7 +2,7 @@
 layout: page
 title: "The Park Tables"
 permalink: /games/park-tables/
-description: "Correspondence chess in the Checker Town park — play another player, or challenge McPuppy himself. PJCC Ratings, real rules, preset phrases only."
+description: "Free chess in the Checker Town park — sit down with a regular right now, no account, or sign in to play a real person. PJCC Ratings, real rules, preset phrases only."
 ---
 
 {% comment %} ══════════════════════════════════════════════════════════════════════
@@ -26,9 +26,9 @@ description: "Correspondence chess in the Checker Town park — play another pla
      the entire child-safety story.
      ══════════════════════════════════════════════════════════════════════ {% endcomment %}
 
-<p class="pt-lead">Park benches, stone boards. Play another player — or leave a
-challenge for <b>McPuppy</b> and he'll play you back. It's your move whenever you visit;
-a move a day is plenty.</p>
+<p class="pt-lead">Park benches, stone boards. The regulars are always here — sit down and
+play. Real opponents, ratings and <b>McPuppy</b>'s own table are a free account away; it's
+your move whenever you visit, and a move a day is plenty.</p>
 
 <div id="pt-app"><p class="lb-empty">Walking to the park…</p></div>
 
@@ -42,6 +42,7 @@ a move a day is plenty.</p>
 <script src="{{ '/assets/js/pjcc-gauntlet-engine.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-replay.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-game-review.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/pjcc-analysis.js' | relative_url }}"></script>
 <script>
 (function () {
   'use strict';
@@ -257,9 +258,15 @@ a move a day is plenty.</p>
        something real (people, ratings, McPuppy's own table), which is a much better
        pitch than a toll gate. ═══════════════════════════════════════════════════ */
     var bots = botsPanel();
+    // ⚠ DERIVE the count, never type it. There were three regulars when this line was
+    //    written and four by the time it shipped (Robert joined as the Expert seat), and
+    //    a sentence that says "three" over four buttons is the site telling a small lie.
+    var COUNT = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six'];
+    var n = Object.keys(BOTS).length;
     app.innerHTML = (bots &&
       '<div class="pt-open-park"><h2 class="pt-h">Play right now</h2>' +
-      '<p class="pt-sub">Three park regulars, always seated. No account, nothing to sign.</p>' +
+      '<p class="pt-sub">' + (COUNT[n] || n) + ' park regulars, always seated. ' +
+      'No account, nothing to sign.</p>' +
       bots + '</div>') +
       '<div class="pt-gate">' +
       '<h2 class="pt-gate-h">' + (bots ? 'Play a person' : 'Sit down at the tables') + '</h2>' +
@@ -564,6 +571,11 @@ a move a day is plenty.</p>
         (st.done
           ? ((window.PJCCReview && PJCCReview.enabled() && (st.moves || '').trim())
               ? '<button class="pjcc-btn" id="pt-bot-review">🔍 Review this game</button> ' : '') +
+            // ⚠ FINISHED GAMES ONLY. An engine beside a live board is cheating with a nice
+            //    icon on it, so the analysis door is drawn inside the `st.done` branch and
+            //    nowhere else.
+            ((window.PJCCAnalysis && PJCCAnalysis.available())
+              ? '<button class="pjcc-btn-ghost" id="pt-bot-analyse">⚗ Analysis board</button> ' : '') +
             '<button class="pjcc-btn" id="pt-bot-again">Play again</button>'
           : '<button class="pjcc-btn-ghost pt-resign" id="pt-bot-resign">Resign</button>') +
       '</div>';
@@ -574,6 +586,11 @@ a move a day is plenty.</p>
     document.getElementById('pt-back').onclick = function(){ botCur = null; botSeq++; safeRoute(); };
     var ag = document.getElementById('pt-bot-again');
     if (ag) ag.onclick = function(){ try { localStorage.removeItem(BOT_KEY); } catch (e) {} botStart(st.bot); };
+    var an = document.getElementById('pt-bot-analyse');
+    if (an) an.onclick = function(){
+      PJCCAnalysis.open({ moves: st.moves || '',
+        subtitle: 'You vs ' + bot.name + ' · ' + (st.result || '') });
+    };
     var rv = document.getElementById('pt-bot-review');
     if (rv) rv.onclick = function(){
       var prof = PJCC.getProfile();
@@ -725,17 +742,22 @@ a move a day is plenty.</p>
 
         var finished = r[3].rows.filter(function (m) { return m.win_reason !== 'withdrawn'; });
         var finishedById = {}, canReview = window.PJCCReview && PJCCReview.enabled();
+        // ⚠ FINISHED only — see the note on the bot card. A correspondence game you are
+        //    still playing must never get an engine button anywhere near it.
+        var canAnalyse = window.PJCCAnalysis && PJCCAnalysis.available();
         if (finished.length) {
           html += '<h2 class="pt-h">Finished</h2>' + finished.map(function (m) {
             finishedById[m.id] = m;
             var white = m.white === me;
             var won = (m.result === '1-0' && white) || (m.result === '0-1' && !white);
-            var canRev = canReview && (m.moves || '').trim();
+            var hasMoves = (m.moves || '').trim();
             return '<div class="pt-row pt-row-done"><span class="pt-row-vs">vs <b>' +
               esc(white ? m.black_name : m.white_name) + '</b></span><span class="pt-row-state">' +
               (m.result === '1/2-1/2' ? 'draw' : won ? '✓ won' : 'lost') + ' · ' + esc(m.win_reason || '') +
               myDelta(m, white) + '</span>' +
-              (canRev ? '<button class="pt-review-btn" data-review="' + m.id + '">🔍 Review</button>' : '') + '</div>';
+              (canReview && hasMoves ? '<button class="pt-review-btn" data-review="' + m.id + '">🔍 Review</button>' : '') +
+              (canAnalyse && hasMoves ? '<button class="pt-review-btn" data-analyse="' + m.id + '">⚗ Analyse</button>' : '') +
+              '</div>';
           }).join('');
         }
         app.innerHTML = html;
@@ -759,6 +781,16 @@ a move a day is plenty.</p>
             e.stopPropagation();
             var m = finishedById[b.getAttribute('data-review')];
             if (m && window.PJCCReview) PJCCReview.open(m.moves, { whiteName: m.white_name, blackName: m.black_name, result: m.result });
+          };
+        });
+        Array.prototype.forEach.call(app.querySelectorAll('[data-analyse]'), function (b) {
+          b.onclick = function(e){
+            e.stopPropagation();
+            var m = finishedById[b.getAttribute('data-analyse')];
+            // the board opens the way YOU sat at it, so the position reads the way you remember it
+            // raw names — PJCCAnalysis escapes the subtitle itself; escaping twice shows &#39;
+            if (m && window.PJCCAnalysis) PJCCAnalysis.open({ moves: m.moves, flip: m.black === me,
+              subtitle: m.white_name + ' vs ' + m.black_name + ' · ' + (m.result || '') });
           };
         });
         timer = setTimeout(lobby, 20000);          // quiet lobby refresh
@@ -1105,6 +1137,10 @@ a move a day is plenty.</p>
 .pt-open-park .pt-h { margin: 0 0 4px; font-size: 1.15rem; }
 .pt-open-park .pt-actions { justify-content: center; }
 .pt-open-park .pt-card { border-color: rgba(245,197,24,0.38); }
+/* 120px basis, not the shared 140: four regulars × 140 + gaps overflows the 560 column and
+   drops the last one onto a lonely second row. At 120 they sit four-across on a desktop and
+   fall to a tidy 2×2 on a phone. Derived from the count in JS, so adding a fifth just wraps. */
+.pt-open-park .pt-bots .pt-card { flex: 1 1 120px; }
 .pt-sub { color: #9a7fd4; font-size: 0.85rem; margin: 0 0 12px; }
 .pt-open-park + .pt-gate { max-width: 560px; margin-top: 24px; padding-top: 22px;
   border-top: 1px solid var(--edge-soft); }

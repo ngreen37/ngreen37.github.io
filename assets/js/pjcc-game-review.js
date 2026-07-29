@@ -466,6 +466,11 @@
       '<div class="pgr-grid"><div class="pgr-left">' +
         '<div class="pgr-boardwrap"><div class="pgr-bar"><i id="pgr-evalfill"></i></div><div id="pgr-board"></div></div>' +
         '<div class="pgr-nav"><button id="pgr-prev">◂</button><span id="pgr-ply">Start</span><button id="pgr-next">▸</button></div>' +
+        // 2026-07-28 — the review tells you WHAT happened; this is the door to asking WHY.
+        // It hands the analysis board the game and the ply you're looking at, so you land on
+        // the exact position and can play it out from there.
+        (window.PJCCAnalysis && PJCCAnalysis.available()
+          ? '<div class="pgr-nav"><button id="pgr-analyse">⚗ Analysis board</button></div>' : '') +
         '<div class="pgr-best" id="pgr-best"></div>' +
       '</div><div><div class="pgr-moves" id="pgr-moves">' + movesH + '</div>' + turnH + '</div></div>' +
       '<p class="pgr-foot">Stockfish · shallow but honest · runs in your browser · always free</p>';
@@ -496,6 +501,16 @@
     }
     document.getElementById('pgr-prev').onclick = function () { show(k - 1); };
     document.getElementById('pgr-next').onclick = function () { show(k + 1); };
+    var an = document.getElementById('pgr-analyse');
+    if (an) an.onclick = function () {
+      // `k` is the number of plies played, which is exactly the ply index to stop at.
+      PJCCAnalysis.open({
+        moves: rep.moves.map(function (m) { return m.uci; }).join(' '),
+        ply: k,
+        subtitle: (meta.whiteName || 'White') + ' vs ' + (meta.blackName || 'Black') +
+                  (k ? ' · after ' + (Math.floor((k - 1) / 2) + 1) + (rep.plies[k - 1].mover === 'w' ? '. ' : '… ') + rep.plies[k - 1].san : ' · start')
+      });
+    };
     body.addEventListener('click', function (e) {
       var t = e.target.closest('[data-k]'); if (t) show(+t.getAttribute('data-k'));
     });

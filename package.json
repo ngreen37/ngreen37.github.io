@@ -5,7 +5,7 @@
   "scripts": {
     "test": "npm run test:css && npm run test:pwa && npm run test:links && npm run sweep",
     "prepare": "git config core.hooksPath .githooks",
-    "test:games": "node tests/chess.check.js && node tests/gauntlet.check.js && node tests/skyrun.check.js && node tests/ftd.check.js && node tests/sandmine.check.js && node tests/shogi.check.js && node tests/pwa.check.js && node tests/links.check.js",
+    "test:games": "node tests/chess.check.js && node tests/gauntlet.check.js && node tests/skyrun.check.js && node tests/ftd.check.js && node tests/sandmine.check.js && node tests/shogi.check.js && node tests/analysis.check.js && node tests/pwa.check.js && node tests/links.check.js",
     "test:links": "node tests/links.check.js",
     "test:pwa": "node tests/pwa.check.js",
     "test:css": "node tests/css.check.js",
@@ -22,7 +22,8 @@
     "test:skyrun": "node tests/skyrun.check.js",
     "test:ftd": "node tests/ftd.check.js",
     "test:sandmine": "node tests/sandmine.check.js",
-    "test:shogi": "node tests/shogi.check.js"
+    "test:shogi": "node tests/shogi.check.js",
+    "test:analysis": "node tests/analysis.check.js"
   },
   "repository": {
     "type": "git",
