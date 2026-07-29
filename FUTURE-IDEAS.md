@@ -35,15 +35,19 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**
   to stand up when he wants submissions to land somewhere other than an inbox.
 
 **Decisions waiting on him**
-- [ ] ⭐ **Let the bot tables through without an account.** *(Compass check, 2026-07-28 — the single
-  highest-leverage move on the board, and it isn't close.)* The front door says **"Free · no account ·
-  works offline"** and *"A person, a park regular, or McPuppy"*, and the one gold button lands on a
-  sign-in wall with one field and nothing else. **The bots need no account and no backend** — verified:
-  they are `localStorage` plus the Gauntlet engine, replayed through local chess logic, and not one
-  line of that path touches Supabase. They sit behind the wall only because `route()` checks `uid()`
-  before it ever reaches the lobby. The sign-in prompt doesn't disappear; it moves *below* a board a
-  stranger can already sit at, and becomes the door to **rated and live** play instead of the toll booth
-  on the whole park. Say go and it's a short build.
+- [x] ~~⭐ **Let the bot tables through without an account.**~~ **DONE 2026-07-28** — Nate said go.
+  The four regulars now play with no account at all, the sign-in sits *below* a board a stranger can
+  already sit at, and a dead backend says "the tables are offline — but the regulars are still here"
+  instead of sending everyone away. Verified live, signed out, in a clean browser jar. See the
+  `bot-gate` memory.
+- [ ] **The domain question (raised 2026-07-28).** `princessandthejourneytochesscity.com` is worth
+  the ~$12/yr as a **defensive redirect nobody ever types** — it is the show's actual title, it costs
+  less than a coffee, and the only bad outcome is someone else holding the name of his own series.
+  Point it at `mcpuppystudios.com` and never print it anywhere. **`pjcc.com` is a pass:** the $19,800
+  ask is plausible for a 4-letter .com (Escrow.com's Q2-2025 median was ~$7.2k, individual sales run
+  well past it) but it is an *asking* price on an unpronounceable consonant cluster with existing
+  acronym competition — and a name nobody can spell after hearing the show's title is a weak asset at
+  any price. **Live domain stays `mcpuppystudios.com`.** — his call, no build attached.
 - [ ] **Robert, Kaede and Matsu are publicly present but officially hidden.** Robert is the Expert bot
   at the Park Tables, Kaede teaches the Reading Room, Kaede and Matsu both teach Shogi Island — all
   named on live pages, all still in `hidden_character_urls`. Their doors are now closed (no live page
