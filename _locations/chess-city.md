@@ -35,7 +35,7 @@ The Rival's entire family lives in Chess City. This is the central wound of his 
 Chess City is the prize, the promise, and the obstacle. It represents a better life -- but one that has to be fought for, and one that comes with its own costs once you arrive.
 
 ## The Whisper
-Not everyone believes Chess City is paradise. There is a belief among some -- the wary, the burned, the pessimists -- that the city is no prize at all, but a place **inhabited by evil chess pieces**: pieces with mouths and eyes, watching from behind the gates, smiling the way a trap smiles. Most dismiss it as the talk of people who never made it across the sea. One person does not. *(See [Jerry Murphy](/characters/murphy/), and [the game that bears his name](/games/murphys-law/).)*
+Not everyone believes Chess City is paradise. There is a belief among some -- the wary, the burned, the pessimists -- that the city is no prize at all, but a place **inhabited by evil chess pieces**: pieces with mouths and eyes, watching from behind the gates, smiling the way a trap smiles. Most dismiss it as the talk of people who never made it across the sea. One person does not. *(See Jerry Murphy, and [the game that bears his name](/games/murphys-law/).)*
 
 ## Art
 *Map and art arrive with the Blender build.*

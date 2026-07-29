@@ -35,6 +35,24 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**
   to stand up when he wants submissions to land somewhere other than an inbox.
 
 **Decisions waiting on him**
+- [ ] ⭐ **Let the bot tables through without an account.** *(Compass check, 2026-07-28 — the single
+  highest-leverage move on the board, and it isn't close.)* The front door says **"Free · no account ·
+  works offline"** and *"A person, a park regular, or McPuppy"*, and the one gold button lands on a
+  sign-in wall with one field and nothing else. **The bots need no account and no backend** — verified:
+  they are `localStorage` plus the Gauntlet engine, replayed through local chess logic, and not one
+  line of that path touches Supabase. They sit behind the wall only because `route()` checks `uid()`
+  before it ever reaches the lobby. The sign-in prompt doesn't disappear; it moves *below* a board a
+  stranger can already sit at, and becomes the door to **rated and live** play instead of the toll booth
+  on the whole park. Say go and it's a short build.
+- [ ] **Robert, Kaede and Matsu are publicly present but officially hidden.** Robert is the Expert bot
+  at the Park Tables, Kaede teaches the Reading Room, Kaede and Matsu both teach Shogi Island — all
+  named on live pages, all still in `hidden_character_urls`. Their doors are now closed (no live page
+  links their dossier), so nothing is leaking; but "hidden" has quietly stopped describing them. Either
+  reveal the three (delete three lines + their `sitemap: false`) or leave it — **a reveal is his.**
+- [ ] **`_layouts/worldmap.html` is an orphan.** No page uses `layout: worldmap`; it is unreachable, and
+  it carries descriptions of hidden locations including *"Where the Rival came from."* Not deleted,
+  because it is the thing the Journey-map decision below is *about* — but it's dead weight until that
+  call is made, and it's the file that would leak first if someone wired a page to it.
 - [ ] **Pick the home page's NAME.** The front door shipped 2026-07-28 as **McPuppy Chess** at
   `/chess/`, but that's a working title — twenty candidates are in "🚪 The front door" below.
   Swapping is one Liquid line at the top of `chess.md` (`site_name`) plus the drawer sub and the
