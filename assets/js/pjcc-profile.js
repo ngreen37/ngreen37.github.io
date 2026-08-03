@@ -49,7 +49,12 @@
     // Quartermaster — the long shelf (2026-07-27): things worth saving for
     'sp-tiger': '🐯', 'sp-orca': '🐋', 'sp-raven': '🐦‍⬛', 'sp-lion': '🦁',
     'sp-phoenix': '🔥', 'sp-kraken': '🦑', 'sp-unicorn': '🦄', 'sp-ghost': '👻',
-    'sp-robot': '🤖', 'sp-crown': '👑'
+    'sp-robot': '🤖', 'sp-crown': '👑',
+    // Quartermaster — the 2026-08-03 restock (Nate: "make a bunch of new collectibles")
+    'sp-bear': '🐻', 'sp-otter': '🦦', 'sp-stag': '🦌', 'sp-octopus': '🐙',
+    'sp-shark': '🦈', 'sp-tortoise': '🐢', 'sp-bat': '🦇', 'sp-moon': '🌙',
+    // EARNED — no shop sells these and the altar never hands them out (see EARNED below)
+    'ea-compass': '🧭', 'ea-scope': '🔭', 'ea-key': '🗝️', 'ea-laurel': '🏅'
   };
   var HUMAN_LABELS = {
     'human-1': 'The Sleuth', 'human-2': 'The Shadow', 'human-3': 'The Agent', 'human-4': 'The Princess',
@@ -57,7 +62,13 @@
     // the long shelf (names are mine — veto open)
     'sp-tiger': 'The Tiger', 'sp-orca': 'The Orca', 'sp-raven': 'The Raven', 'sp-lion': 'The Lion',
     'sp-ghost': 'The Ghost', 'sp-robot': 'The Machine', 'sp-kraken': 'The Kraken',
-    'sp-unicorn': 'The Unicorn', 'sp-phoenix': 'The Phoenix', 'sp-crown': 'The Crown'
+    'sp-unicorn': 'The Unicorn', 'sp-phoenix': 'The Phoenix', 'sp-crown': 'The Crown',
+    // the 2026-08-03 restock — names are mine, veto open, same as the shelf above
+    'sp-bear': 'The Bear', 'sp-otter': 'The Otter', 'sp-stag': 'The Stag',
+    'sp-octopus': 'The Octopus', 'sp-shark': 'The Shark', 'sp-tortoise': 'The Tortoise',
+    'sp-bat': 'The Nightwing', 'sp-moon': 'The Moon',
+    'ea-compass': 'The Compass', 'ea-scope': 'The Long View', 'ea-key': 'The Key',
+    'ea-laurel': 'The Laurel'
   };
   var AVATAR_FREE = ['human-1', 'human-2', 'human-3', 'human-4', 'human-5', 'human-6', 'human-7', 'human-8'];
   /* PRICES (re-set 2026-07-27 — Nate: "just by gambling everything I had a few times, I
@@ -79,7 +90,20 @@
     { key: 'sp-raven', price: 150 }, { key: 'sp-lion', price: 170 },
     { key: 'sp-ghost', price: 190 }, { key: 'sp-robot', price: 210 },
     { key: 'sp-kraken', price: 240 }, { key: 'sp-unicorn', price: 280 },
-    { key: 'sp-phoenix', price: 320 }, { key: 'sp-crown', price: 400 }
+    { key: 'sp-phoenix', price: 320 }, { key: 'sp-crown', price: 400 },
+    /* THE RESTOCK, 2026-08-03 (Nate: "make a bunch of new collectibles (public-facing,
+       locked, and only-available-through-gambit"). These are the PUBLIC-FACING half —
+       ordinary stock, bought with credits, visible to a stranger who has never signed in.
+       Priced to fill the GAPS in the existing shelf rather than to extend it: the old list
+       had one Uncommon and a long thin tail, so a new player had almost nothing to aim at
+       between their first 25-credit face and a 140-credit dragon. Six of these eight land
+       in the bottom three bands on purpose. The ceiling stays the 400-credit Crown — the
+       top of the shelf is a place you arrive, and moving it would move it for everyone
+       who already got there. */
+    { key: 'sp-bear', price: 60 }, { key: 'sp-otter', price: 65 },
+    { key: 'sp-stag', price: 100 }, { key: 'sp-octopus', price: 135 },
+    { key: 'sp-shark', price: 165 }, { key: 'sp-tortoise', price: 200 },
+    { key: 'sp-bat', price: 250 }, { key: 'sp-moon', price: 300 }
   ];
 
   /* ── THE VAULT — collectables that are NOT for sale (2026-07-27) ──────────────
@@ -94,7 +118,15 @@
 
      `value` is credits-equivalent, used by the altar's courage meter if one is ever
      laid back down. Names are mine and Nate's veto is open. ─────────────────── */
-  var VAULT_AVATARS = { 'vt-comet': '☄️', 'vt-candle': '🕯️', 'vt-mask': '🎭' };
+  /* ⚠ THE VAULT DOUBLED 2026-08-03 — six more, and that is a real economy change even
+     though it is only data. The altar draws a boon from an unowned pool, so every piece
+     added here makes any ONE of them rarer. That dilution is deliberate and it is HALF of
+     "make the gambit a little more difficult to win": the credit wheel got harder by
+     numbers (see the-gambit/index.html), and the Vault got harder by arithmetic. The boon
+     RATE was left alone precisely because this list grew — doing both would have made the
+     Vault unfinishable rather than harder. */
+  var VAULT_AVATARS = { 'vt-comet': '☄️', 'vt-candle': '🕯️', 'vt-mask': '🎭',
+    'vt-hourglass': '⏳', 'vt-anchor': '⚓', 'vt-thread': '🧵' };
   var VAULT = [
     { kind: 'avatar', key: 'vt-comet',  value: 260, label: 'The Comet' },
     { kind: 'avatar', key: 'vt-candle', value: 200, label: 'The Altar Keeper' },
@@ -102,11 +134,72 @@
     { kind: 'title',  key: 'letgo',     value: 200, label: 'One Who Let Go' },
     { kind: 'title',  key: 'openhand',  value: 150, label: 'Open Hand' },
     { kind: 'theme',  key: 'ember',     value: 180, label: 'Altar Ember' },
-    { kind: 'theme',  key: 'hollow',    value: 140, label: 'Empty Hands' }
+    { kind: 'theme',  key: 'hollow',    value: 140, label: 'Empty Hands' },
+    // 2026-08-03 — names are mine, veto open. Each one is named for something the altar
+    // does, because that is the only place they come from.
+    { kind: 'avatar', key: 'vt-hourglass', value: 240, label: 'The Hourglass' },
+    { kind: 'avatar', key: 'vt-anchor',    value: 190, label: 'The Anchor' },
+    { kind: 'avatar', key: 'vt-thread',    value: 210, label: 'The Long Thread' },
+    { kind: 'title',  key: 'remembered',   value: 230, label: 'Remembered by the Board' },
+    { kind: 'theme',  key: 'nothing',      value: 170, label: 'Nothing Comes Back' },
+    { kind: 'theme',  key: 'sixdays',      value: 160, label: 'Six Days' }
   ];
   Object.keys(VAULT_AVATARS).forEach(function (k) { AVATARS[k] = VAULT_AVATARS[k]; });
   function vaultEntry(kind, key) {
     for (var i = 0; i < VAULT.length; i++) if (VAULT[i].kind === kind && VAULT[i].key === key) return VAULT[i];
+    return null;
+  }
+
+  /* ══ EARNED — the LOCKED class (2026-08-03) ══════════════════════════════════════
+     Nate asked for collectables in three flavours: "public-facing, locked, and
+     only-available-through-gambit". The shop is the first, the Vault is the third, and
+     this is the middle one — the pieces you cannot buy at any price and cannot win at the
+     altar. You do the thing, and then it is yours.
+
+     WHY "LOCKED" IS THE INTERESTING ONE. A shop item is a number you clear. A Vault item
+     is luck. These are the only collectables on the site that are a STATEMENT about what
+     you did, which is why the collection page shows their requirement in full rather than
+     hiding them behind a silhouette: an unreachable mystery is a chore, but a named
+     target is a reason to go play something.
+
+     ⚠ THEY CANNOT BE SOLD AND CANNOT BE LAID ON THE ALTAR, and that is not flavour — it
+     closes a printer. The requirement stays true forever, so a piece that could be burned
+     could also be RE-CLAIMED, and burn → re-claim → burn is an infinite credit faucet with
+     a trophy painted on it. The closure is structural rather than a rule anyone has to
+     remember: ownedCollectables() is the list the altar and sellValue() both read, and
+     nothing here is in it. Two doors, one lock.
+
+     `rule` vocabulary — deliberately the same three shapes the TITLES map already uses,
+     plus one new one:
+       ach:<key>    an achievement from ACHIEVEMENTS below
+       plays:<n>    total rounds played
+       found:<lsk>  a localStorage flag — the hidden-board eggs and the Chess City stamp.
+                    Local by design: they are found in a BROWSER, and gating a discovery
+                    behind an account would mean a stranger who found one gets nothing.
+                    They find it signed out, and claim it whenever they sign in.
+
+     ⚠ NO SERVER REFEREE, same as every other cosmetic here. Someone who wants a face badly
+     enough to edit their own localStorage was always going to be able to edit their own
+     credits; the honest position is that this is a display case, not a ranking. */
+  var EARNED = [
+    { kind: 'avatar', key: 'ea-laurel',  value: 280, label: 'The Laurel',
+      rule: 'ach:crowned',       how: 'Clear all ten floors of the Gauntlet' },
+    { kind: 'avatar', key: 'ea-scope',   value: 200, label: 'The Long View',
+      rule: 'ach:tactician',     how: 'Solve 25 puzzles in the Puzzle Room' },
+    { kind: 'avatar', key: 'ea-compass', value: 160, label: 'The Compass',
+      rule: 'ach:globetrotter',  how: 'Play every game at least once' },
+    { kind: 'theme',  key: 'ledger',     value: 120, label: 'Field Ledger',
+      rule: 'plays:50',          how: 'Play 50 rounds across the arcade' },
+    { kind: 'title',  key: 'finder',     value: 150, label: 'The Finder',
+      rule: 'found:frag_board_park',  how: 'Find the hidden board in the world' },
+    { kind: 'avatar', key: 'ea-key',     value: 230, label: 'The Key',
+      rule: 'found:frag_board_hall',  how: 'Find the hidden board in the arcade' },
+    { kind: 'title',  key: 'citizen',    value: 360, label: 'Citizen of Chess City',
+      rule: 'found:pjcc.fork.chesscity.v1', how: 'Walk all 1,000 puzzles to Chess City' }
+  ];
+  EARNED.forEach(function (e) { if (e.kind === 'avatar' && !AVATARS[e.key]) AVATARS[e.key] = '★'; });
+  function earnedEntry(kind, key) {
+    for (var i = 0; i < EARNED.length; i++) if (EARNED[i].kind === kind && EARNED[i].key === key) return EARNED[i];
     return null;
   }
 
@@ -680,12 +773,23 @@
     // it hung off an achievement for a game that isn't on the site.
     'curator':   { label: 'Curator',             rule: 'buy:20' },
     'legend':    { label: 'Legend of the Board', rule: 'buy:60' },
+    // 2026-08-03 restock — three more on the shelf
+    'archivist': { label: 'The Archivist',       rule: 'buy:100' },
+    'patient':   { label: 'The Patient One',     rule: 'buy:140' },
+    'sharp':     { label: 'Sharp Eye',           rule: 'buy:90' },
     // vault titles — never for sale; the altar is the only door (see VAULT above)
-    'letgo':     { label: 'One Who Let Go',      rule: 'vault' },
-    'openhand':  { label: 'Open Hand',           rule: 'vault' }
+    'letgo':      { label: 'One Who Let Go',          rule: 'vault' },
+    'openhand':   { label: 'Open Hand',               rule: 'vault' },
+    'remembered': { label: 'Remembered by the Board', rule: 'vault' },
+    /* earned titles — no shop, no altar; the requirement is in EARNED above. `rule:'earned'`
+       behaves exactly like `'vault'` in unlockedTitles() (you have it or you don't), and is
+       a separate word only so the Quartermaster can say WHERE it came from. */
+    'finder':    { label: 'The Finder',            rule: 'earned' },
+    'citizen':   { label: 'Citizen of Chess City', rule: 'earned' }
   };
   PJCC.TITLES = TITLES;
-  PJCC.TITLE_SHOP = [{ key: 'curator', price: 60 }, { key: 'legend', price: 180 }];
+  PJCC.TITLE_SHOP = [{ key: 'curator', price: 60 }, { key: 'legend', price: 180 },
+    { key: 'sharp', price: 90 }, { key: 'archivist', price: 100 }, { key: 'patient', price: 140 }];
   PJCC.unlockedTitles = function (prof, stats) {
     var c = statsCtx(prof, stats);
     var earned = {}; PJCC.earnedAchievements(prof, stats).forEach(function (a) { if (a.earned) earned[a.key] = true; });
@@ -697,6 +801,7 @@
       if (rule.indexOf('ach:') === 0) return !!earned[rule.slice(4)];
       if (rule.indexOf('buy:') === 0) return ownedTitles.indexOf(key) !== -1;
       if (rule === 'vault') return ownedTitles.indexOf(key) !== -1;   // won at the altar, never sold
+      if (rule === 'earned') return ownedTitles.indexOf(key) !== -1;  // claimed once the deed was done
       return false;
     });
   };
@@ -852,12 +957,20 @@
     'tide':    { label: 'Sea Crossing',     price: 120, accent: '#56d0ff', bg: 'linear-gradient(135deg,#07253a,#0d4260)' },
     'sandmine':{ label: 'Mine Lantern',     price: 150, accent: '#fcbc3c', bg: 'linear-gradient(135deg,#2b1d09,#4a3410)' },
     'city':    { label: 'Chess City Neon',  price: 220, accent: '#ff77a8', bg: 'linear-gradient(135deg,#1b0f33,#3d1450)' },
+    // 2026-08-03 restock. `maple` is the chess canon's own two woods (_pjcc-22-chess-canon)
+    // wearing them as a profile accent for the first time.
+    'maple':   { label: 'Maple & Walnut',   price: 95,  accent: '#e9d3a4', bg: 'linear-gradient(135deg,#2b1d0f,#4a3320)' },
+    'midnight':{ label: 'Midnight Board',   price: 260, accent: '#8fb8ff', bg: 'linear-gradient(135deg,#080b18,#131c33)' },
     // vault themes — no price, absent from THEME_SHOP; the altar hands these back
     'ember':   { label: 'Altar Ember',      accent: '#ffb066', bg: 'linear-gradient(135deg,#2e1608,#4a2410)', vault: true },
-    'hollow':  { label: 'Empty Hands',      accent: '#9a7fd4', bg: 'linear-gradient(135deg,#14102a,#241a44)', vault: true }
+    'hollow':  { label: 'Empty Hands',      accent: '#9a7fd4', bg: 'linear-gradient(135deg,#14102a,#241a44)', vault: true },
+    'nothing': { label: 'Nothing Comes Back', accent: '#ff8fa0', bg: 'linear-gradient(135deg,#24080f,#3d0f1a)', vault: true },
+    'sixdays': { label: 'Six Days',         accent: '#6bffb8', bg: 'linear-gradient(135deg,#07231a,#0d3d2d)', vault: true },
+    // earned theme — see EARNED. No price and not in THEME_SHOP, same as a vault one.
+    'ledger':  { label: 'Field Ledger',     accent: '#cdbcf2', bg: 'linear-gradient(135deg,#1a1730,#2a2547)', earned: true }
   };
   PJCC.THEMES = THEMES;
-  PJCC.THEME_SHOP = ['jade', 'crimson', 'sakura', 'mono', 'tide', 'sandmine', 'city'];
+  PJCC.THEME_SHOP = ['jade', 'crimson', 'sakura', 'maple', 'mono', 'tide', 'sandmine', 'city', 'midnight'];
   PJCC.themeFor = function (prof) { var k = prof && prof.companion && prof.companion.theme; return THEMES[k] || THEMES['default']; };
   PJCC.ownedThemes = function (prof) { return ['default'].concat((prof && prof.companion && prof.companion.owned_themes) || []); };
   var SKIN_KEY = 'pjcc.skin';
@@ -900,21 +1013,29 @@
   function prettyAvatar(k) {
     return HUMAN_LABELS[k] || k.replace(/^(pc|sp)-/, '').replace(/^\w/, function (c) { return c.toUpperCase(); });
   }
-  // Everything the operative owns that can be laid on the altar, with a value.
+  /* Everything the operative owns that CAN BE LAID ON THE ALTAR, with a value.
+     ⚠ EARNED PIECES ARE DELIBERATELY ABSENT FROM THIS LIST, and the omission is the lock.
+     This is the list the altar offers you and the list sellValue() searches, so a piece
+     that isn't here can be neither burned nor sold — which it must not be, because its
+     requirement stays true forever and burn → re-claim → burn would print credits. See the
+     EARNED block up top. `earnedOwned()` below is what surfaces them for wearing. */
   PJCC.ownedCollectables = function () {
     var comp = (profile && profile.companion) || {}, out = [];
     (comp.owned || []).forEach(function (k) {
+      if (earnedEntry('avatar', k)) return;
       var a = AVATAR_SHOP.filter(function (s) { return s.key === k; })[0];
       var v = vaultEntry('avatar', k);
       if (a) out.push({ kind: 'avatar', key: k, value: a.price, glyph: AVATARS[k] || '★', label: prettyAvatar(k) });
       else if (v) out.push({ kind: 'avatar', key: k, value: v.value, glyph: AVATARS[k] || '★', label: v.label, vault: true });
     });
     (comp.owned_titles || []).forEach(function (k) {
+      if (earnedEntry('title', k)) return;
       var t = PJCC.TITLE_SHOP.filter(function (s) { return s.key === k; })[0];
       var v = vaultEntry('title', k);
       out.push({ kind: 'title', key: k, value: t ? t.price : (v ? v.value : 20), glyph: '🏷', label: (TITLES[k] && TITLES[k].label) || k, vault: !!v });
     });
     (comp.owned_themes || []).forEach(function (k) {
+      if (earnedEntry('theme', k)) return;
       var v = vaultEntry('theme', k);
       out.push({ kind: 'theme', key: k, value: (THEMES[k] && THEMES[k].price) || (v ? v.value : 15), glyph: '🎨', label: (THEMES[k] && THEMES[k].label) || k, vault: !!v });
     });
@@ -944,6 +1065,104 @@
     });
   };
   PJCC.isVault = function (kind, key) { return !!vaultEntry(kind, key); };
+
+  /* ══ THE EARNED CLASS — met? held? and the claim ═══════════════════════════════════
+     `met()` is the only place a requirement is ever evaluated, so the collection page, the
+     claim and any future surface can never disagree about whether you've done the thing. */
+  PJCC.EARNED = EARNED;
+  PJCC.isEarned = function (kind, key) { return !!earnedEntry(kind, key); };
+  function lsFlag(k) {
+    try { var v = localStorage.getItem(k); return !!v && v !== '0' && v !== 'false'; } catch (e) { return false; }
+  }
+  PJCC.earnedMet = function (e, prof, stats) {
+    var rule = e.rule || '';
+    if (rule.indexOf('found:') === 0) return lsFlag(rule.slice(6));
+    var c = statsCtx(prof || profile, stats);
+    if (rule.indexOf('plays:') === 0) return c.totalPlays >= parseInt(rule.slice(6), 10);
+    if (rule.indexOf('ach:') === 0) {
+      var want = rule.slice(4), got = false;
+      PJCC.earnedAchievements(prof || profile, stats).forEach(function (a) { if (a.key === want && a.earned) got = true; });
+      return got;
+    }
+    return false;
+  };
+  PJCC.holdsEarned = function (e, prof) {
+    var comp = ((prof || profile) && (prof || profile).companion) || {};
+    var list = e.kind === 'avatar' ? (comp.owned || [])
+             : e.kind === 'title'  ? (comp.owned_titles || []) : (comp.owned_themes || []);
+    return list.indexOf(e.key) !== -1;
+  };
+  // Everything earned that you actually hold — for the Quartermaster's equip shelves.
+  PJCC.earnedOwned = function (prof) {
+    return EARNED.filter(function (e) { return PJCC.holdsEarned(e, prof); }).map(function (e) {
+      return withBand({ kind: e.kind, key: e.key, value: e.value, earned: true, label: e.label, how: e.how,
+        glyph: e.kind === 'avatar' ? (AVATARS[e.key] || '★') : e.kind === 'title' ? '🏷' : '🎨' });
+    });
+  };
+  /* Claiming is EXPLICIT — a button, never a silent write on render. Two reasons and the
+     second is the load-bearing one: a page that grants things while you look at it can't
+     tell you that it did, so the moment you earned it passes unmarked; and a write that
+     fires on every render of a page anyone can open is a write nobody is auditing. */
+  PJCC.claimEarned = async function (kind, key, stats) {
+    var u = PJCC.currentUser(); if (!sb || !u) throw new Error('not signed in');
+    var e = earnedEntry(kind, key); if (!e) throw new Error('not an earned collectable');
+    if (PJCC.holdsEarned(e)) throw new Error('already claimed');
+    if (!PJCC.earnedMet(e, profile, stats)) throw new Error('not earned yet');
+    await PJCC.grantCollectable(kind, key);
+    return e;
+  };
+
+  /* ══ THE CATALOGUE — every collectable on the site, in one list ═══════════════════
+     Nate 2026-08-03: "Create a 'pokedex' of collectables. Collect them all."
+
+     ONE function, because a collection page that built its own list would drift from the
+     shop the first time either changed, and a display case that is missing a piece is
+     worse than no display case. Everything here is DERIVED — add an item to AVATAR_SHOP,
+     VAULT or EARNED and it appears in the collection with no second edit.
+
+     Each entry carries `source` ('shop' | 'vault' | 'earned'), `have`, and — for the
+     earned ones — `met`, so the page can render locked / claimable / held without
+     re-deriving any rule. `prof` and `stats` are passed in so it works SIGNED OUT: with
+     no profile, everything simply reads as not-yet-held, which is exactly the right
+     answer for a stranger and makes the page a catalogue rather than a locked door. */
+  PJCC.catalogue = function (prof, stats) {
+    prof = prof || profile;
+    var comp = (prof && prof.companion) || {};
+    var hasA = comp.owned || [], hasT = comp.owned_titles || [], hasH = comp.owned_themes || [];
+    var has = function (kind, key) {
+      return (kind === 'avatar' ? hasA : kind === 'title' ? hasT : hasH).indexOf(key) !== -1;
+    };
+    var out = [];
+    AVATAR_SHOP.forEach(function (a) {
+      out.push({ kind: 'avatar', key: a.key, label: prettyAvatar(a.key), glyph: AVATARS[a.key] || '★',
+        value: a.price, source: 'shop', have: has('avatar', a.key) });
+    });
+    PJCC.TITLE_SHOP.forEach(function (t) {
+      out.push({ kind: 'title', key: t.key, label: (TITLES[t.key] && TITLES[t.key].label) || t.key, glyph: '🏷',
+        value: t.price, source: 'shop', have: has('title', t.key) });
+    });
+    PJCC.THEME_SHOP.forEach(function (k) {
+      out.push({ kind: 'theme', key: k, label: THEMES[k].label, glyph: '🎨',
+        value: THEMES[k].price, source: 'shop', have: has('theme', k) });
+    });
+    VAULT.forEach(function (v) {
+      out.push({ kind: v.kind, key: v.key, label: v.label, vault: true, source: 'vault',
+        glyph: v.kind === 'avatar' ? (AVATARS[v.key] || '★') : v.kind === 'title' ? '🏷' : '🎨',
+        value: v.value, have: has(v.kind, v.key) });
+    });
+    EARNED.forEach(function (e) {
+      var held = has(e.kind, e.key);
+      out.push({ kind: e.kind, key: e.key, label: e.label, earned: true, source: 'earned', how: e.how,
+        glyph: e.kind === 'avatar' ? (AVATARS[e.key] || '★') : e.kind === 'title' ? '🏷' : '🎨',
+        value: e.value, have: held, met: held || PJCC.earnedMet(e, prof, stats) });
+    });
+    return out.map(withBand);
+  };
+  PJCC.catalogueCount = function (prof, stats) {
+    var all = PJCC.catalogue(prof, stats), held = 0;
+    all.forEach(function (c) { if (c.have) held++; });
+    return { held: held, total: all.length };
+  };
   // Award credits (positive add_credits) — the board's blessing.
   PJCC.grantCredits = async function (amount) {
     var u = PJCC.currentUser(); if (!sb || !u) throw new Error('not signed in');

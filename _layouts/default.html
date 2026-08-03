@@ -144,6 +144,9 @@
        bottom of the pages") — restore from git if it's ever missed. {% endcomment %}
   <script src="{{ '/assets/js/pjcc-eggs.js' | relative_url }}" defer></script>
   <script src="{{ '/assets/js/pjcc-nav.js' | relative_url }}" defer></script>
+  <!-- The boards hidden around the world. Loaded site-wide and exits instantly on every
+       page that hosts none, so adding a third is one line of DATA, not a page edit. -->
+  <script src="{{ '/assets/js/pjcc-hidden-board.js' | relative_url }}" defer></script>
   <!-- "It's your move at the park" — lights the Play Now nav when a table waits on you -->
   <script src="{{ '/assets/js/pjcc-mymove.js' | relative_url }}" defer></script>
 

@@ -205,6 +205,9 @@ permalink: /dossier/
       '<div class="dsr-acts">' +
         '<button class="pjcc-btn" id="dsr-share">📸 Share card</button>' +
         '<a class="pjcc-trophy" href="/shopkeeper/">🛒 Shopkeeper</a>' +
+        // 2026-08-03: the case goes next to the shop, because "what have I got" and "what
+        // is there to get" are the same trip.
+        '<a class="pjcc-trophy" href="/collection/">🗃 Collection</a>' +
         // 2026-07-28 (Nate): the altar belongs beside the credit count — this page and the
         // leaderboards are the two places a player actually sees the number.
         '<a class="pjcc-trophy" href="/the-gambit/">♟ The Gambit</a>' +

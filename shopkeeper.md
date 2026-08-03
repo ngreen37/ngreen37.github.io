@@ -7,6 +7,13 @@ permalink: /shopkeeper/
 
 <p class="qm-intro">The Shopkeeper keeps the gear. Spend the credits you earn in the games on field avatars — and switch back to any of your eight free operative faces whenever you like. Your <strong>companion pet</strong> is raised over in the <a href="/dossier/">Companion Den</a> on your Dossier.</p>
 
+{% comment %} The counter points at the case (2026-08-03). This shop only stocks what is FOR
+     SALE; the pieces you earn and the ones the altar keeps are not here, and without this
+     line a visitor's only picture of "what exists" is the shelf in front of them — which
+     is two thirds of the truth. {% endcomment %}
+<p class="qm-intro"><a href="/collection/">🗃 See the whole collection →</a> — everything on
+this shelf plus the pieces you earn and the ones only the altar gives back.</p>
+
 <div id="shopkeeper"><p class="lb-empty">Loading…</p></div>
 
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
@@ -126,6 +133,28 @@ permalink: /shopkeeper/
                         : '<button class="pjcc-btn ' + cls + '" data-k="' + c.key + '">Equip</button>';
         html += '<div class="qm-item qm-vault' + (on ? ' on' : '') + '"><div class="qm-emoji">' + c.glyph + '</div>' +
           '<div class="qm-title-label">' + c.label + '</div><div class="qm-price">Vault</div>' + action + '</div>';
+      });
+      html += '</div>';
+    }
+
+    /* EARNED (2026-08-03) — the third class. Same shape as the Vault block above and for
+       the same reason: no price, no Buy, Equip only. It is a SEPARATE list because
+       PJCC.ownedCollectables() deliberately excludes earned pieces (they must be
+       unsellable and un-stakeable — see the EARNED note in pjcc-profile.js), so the one
+       call the Vault block uses cannot see them. Wearing them was never in question; this
+       is the surface that lets you. */
+    var earnedOwned = (PJCC.earnedOwned ? PJCC.earnedOwned(prof) : []);
+    if (earnedOwned.length) {
+      html += '<h2 class="qm-h">Earned</h2><p class="pjcc-sub" style="margin:0 0 8px;">No shop sells these and the altar never hands them out. You did the thing. — <a href="/collection/">see the whole case</a></p><div class="qm-grid">';
+      earnedOwned.forEach(function (c) {
+        var on = c.kind === 'avatar' ? (equipped === c.key)
+               : c.kind === 'title'  ? (equippedTitle === c.key)
+               : (equippedTheme === c.key);
+        var cls = c.kind === 'avatar' ? 'qm-equip' : c.kind === 'title' ? 'qm-tequip' : 'qm-thequip';
+        var action = on ? '<button class="pjcc-btn-ghost" disabled>Equipped</button>'
+                        : '<button class="pjcc-btn ' + cls + '" data-k="' + c.key + '">Equip</button>';
+        html += '<div class="qm-item qm-vault' + (on ? ' on' : '') + '"><div class="qm-emoji">' + c.glyph + '</div>' +
+          '<div class="qm-title-label">' + c.label + '</div><div class="qm-price">Earned</div>' + action + '</div>';
       });
       html += '</div>';
     }

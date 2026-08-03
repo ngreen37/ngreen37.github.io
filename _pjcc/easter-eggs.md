@@ -22,6 +22,30 @@ Type any of these sequences anywhere on the site (outside an input field) to tri
 
 Buffer clears after 1.8 seconds of inactivity or on Escape.
 
+### The hidden boards *(2026-08-03)*
+**Where:** two of them, one on `/pjcc/` and one on `/games/`. Nate: *"random chess boards
+hidden everywhere — but only like two to start."*
+
+A **13px checkerboard** sits at the end of a line of text. Click it and it expands into a
+real board with a real position; solve it and it hands you a collectable and offers the
+Puzzle Room. It never navigates for you.
+
+| Board | Page | Position | The move | Marks |
+|---|---|---|---|---|
+| The park | `/pjcc/` | `6k1/5ppp/8/8/8/8/5PPP/3Q2K1 w` | **Qd8#** — a back-rank mate | `frag_board_park` |
+| The arcade | `/games/` | `6rk/6pp/8/6N1/8/8/8/7K w` | **Nf7#** — smothered | `frag_board_hall` |
+
+- **Both positions are proved.** Each is the *only* mate in one, verified against the site's
+  own perft-verified referee. `npm run test:hidden` re-proves it on every run — a puzzle that
+  lies about chess is worse than no puzzle, and an easter egg gets no exemption.
+- **The flag IS the reward.** Each `frag_board_*` is the requirement for an EARNED collectable
+  (The Finder · The Key), claimed at `/collection/`. Local, so a signed-out stranger keeps the
+  find and can claim it whenever they sign in.
+- **It moves.** Each page marks three hiding places with `data-hb`; the board takes one of
+  them, chosen by the town date — same spot for everyone all day, different tomorrow.
+- **Adding a third** is one entry in `BOARDS` (`assets/js/pjcc-hidden-board.js`), one in
+  `EARNED` (`pjcc-profile.js`), and three `data-hb` marks on the new host page.
+
 ### Konami Code
 **Sequence:** ↑ ↑ ↓ ↓ ← → ← → B A
 

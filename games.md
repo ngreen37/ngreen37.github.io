@@ -384,8 +384,8 @@ permalink: /games/
   <div class="ghub-head">
     {%- comment -%} "Choose Your Hall" removed 2026-07-16 (Nate). The eyebrow is the
          page's h1 now so the hall keeps a real heading. {%- endcomment -%}
-    <h1 class="ghub-eyebrow">◆ The PJCC Arcade</h1>
-    <p class="ghub-sub">Claim a codename · climb the global boards</p>
+    <h1 class="ghub-eyebrow" data-hb>◆ The PJCC Arcade</h1>
+    <p class="ghub-sub" data-hb>Claim a codename · climb the global boards</p>
     <!-- the gold rule. Two real elements, not a pseudo: the outer one is the track and clips,
          the inner one is the shimmer and slides. See the note by @ghub-shimmer. -->
     <div class="ghub-rule" aria-hidden="true"><i></i></div>
@@ -406,7 +406,7 @@ permalink: /games/
        climb + its half-played board, the bot-table game, the blindfold unlock, the
        splash win-glint. Egg fragments and everything on the server (profile, rated
        games, leaderboards) are deliberately untouched. {%- endcomment -%}
-  <div class="ghub-reset-row">
+  <div class="ghub-reset-row" data-hb>
     <button class="ghub-reset" id="ghub-reset" type="button">↺ reset local game progress</button>
   </div>
 </div>

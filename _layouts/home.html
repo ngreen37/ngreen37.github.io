@@ -297,7 +297,7 @@ layout: default
        the cut studio tagline below; the ✦ star in town-sky stays the night door). The visible
        egg is aria-hidden; an .sr-only "i" beside it keeps "making" whole for screen readers.
        Flicker CSS = `.hero-lede .tg-x*` in the style block below, reusing @keyframes tgx-radio. {%- endcomment -%}
-  <p class="hero-lede">An animated series in the mak<a class="tg-x" href="{{ '/classified/' | relative_url }}" tabindex="-1" aria-hidden="true"><i class="tg-x-glyph">i</i></a><i class="sr-only">i</i>ng — and a free chess arcade set in its world.</p>
+  <p class="hero-lede" data-hb>An animated series in the mak<a class="tg-x" href="{{ '/classified/' | relative_url }}" tabindex="-1" aria-hidden="true"><i class="tg-x-glyph">i</i></a><i class="sr-only">i</i>ng — and a free chess arcade set in its world.</p>
 
   {%- comment -%} THE STUDIO TAGLINE CYCLE was CUT here 2026-07-24 (Nate, "commit it to the
        world"). It read Chess · Blog · Podcast · Academy · Games · Animation · "A Million
@@ -431,10 +431,10 @@ layout: default
   <h2 id="h-studio" class="sr-only">From the studio</h2>
   <span class="awake-lamp">{% include desk-lamp.html id="home-lamp" %}</span>
   <div class="awake-copy">
-    <span class="awake-label">Building in the open</span>
+    <span class="awake-label" data-hb>Building in the open</span>
     {% if site.posts.first %}
     <a class="awake-post" href="{{ site.posts.first.url | relative_url }}">{{ site.posts.first.title }}</a>
-    <span class="awake-date">{{ site.posts.first.date | date: "%-d %B %Y" }}</span>
+    <span class="awake-date" data-hb>{{ site.posts.first.date | date: "%-d %B %Y" }}</span>
     {% endif %}
     <a class="awake-more" href="{{ '/blog/' | relative_url }}">Read the blog &rarr;</a>
   </div>
