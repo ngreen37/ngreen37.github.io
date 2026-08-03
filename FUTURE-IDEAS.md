@@ -22,6 +22,22 @@ combination** over new surface area.
 name he has to pick). Kept here so an ended session never loses them. None are on fire; they just have
 to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**.*
 
+**Names and vetoes from the 2026-08-03 batch — all shipped, all one-line reversible**
+- [ ] **The app is still *named* PJCC.** The home-screen label, `manifest.json` `name`/`short_name`
+  and the install bar all say PJCC while the app now opens on **McPuppy Chess**. Renaming is safe
+  (`id` stays `/pjcc/`, so it updates in place rather than becoming a second icon) — but it's your
+  wording, and it's the name you haven't finished picking from the twenty.
+- [ ] **25 new collectable names are mine, veto open.** Eight shop faces (The Bear · Otter · Stag ·
+  Octopus · Shark · Tortoise · Nightwing · Moon), three titles, two themes, six Vault pieces named
+  for what the altar does (The Hourglass · Anchor · Long Thread · Remembered by the Board · Nothing
+  Comes Back · Six Days), and seven EARNED (The Laurel · Long View · Compass · Field Ledger · The
+  Finder · The Key · Citizen of Chess City). All one array in `pjcc-profile.js`.
+- [ ] **The collection page is called "The Collection"** and its line is *"Collect them all."* You
+  said don't call it a pokedex, so it isn't — but the name itself is plain on purpose and is yours
+  to make stranger if you want (The Cabinet · The Case · The Field Manifest were the runners-up).
+- [ ] **The two hidden boards are on `/pjcc/` and `/games/`.** Three hiding places each, and the
+  board moves between them daily. Say the word for a third board anywhere — it's one line of data.
+
 **Accounts & sign-ups — nothing on my side blocks these**
 - [ ] **Google Search Console** — verify `mcpuppystudios.com`, submit `/sitemap.xml`. The JSON-LD,
   sitemap and robots have been wired and waiting since the SEO pass; until this is done, nothing is
