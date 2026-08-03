@@ -29,6 +29,15 @@ if (m) {
   ok(m.name && m.name.length, 'manifest has name');
   ok(m.short_name && m.short_name.length <= 12, 'manifest has short_name (<=12 chars)');
   ok(!!m.start_url, 'manifest has start_url');
+  /* WHERE THE APP OPENS (2026-08-03). Two halves that have to agree, and neither is
+   * visible in the other's file — which is exactly how the app spent a week opening on
+   * a page that stopped being the front door in July.
+   *   1. the manifest starts FRESH installs at the front door;
+   *   2. the shared head redirects OLD launchers off the previous start_url, because
+   *      start_url is baked into a launcher at install time and can never be corrected
+   *      from the manifest side.
+   * If the front door moves again, both of these fail — which is the point. */
+  ok(/^\/chess\/(\?|$)/.test(m.start_url), 'manifest start_url is the front door (/chess/) — ' + m.start_url);
   ok(m.display === 'standalone' || m.display === 'fullscreen' || m.display === 'minimal-ui', 'manifest display is app-like');
   ok(/^#[0-9a-f]{6}$/i.test(m.theme_color || ''), 'manifest theme_color is a hex color');
   ok(/^#[0-9a-f]{6}$/i.test(m.background_color || ''), 'manifest background_color is a hex color');
@@ -57,6 +66,11 @@ if (exists('sw.js')) {
   ok(/offline\.html/.test(sw), 'sw.js wires an offline fallback');
   ok(/addEventListener\(['"]fetch['"]/.test(sw), 'sw.js has a fetch handler');
   ok(/addEventListener\(['"]activate['"]/.test(sw), 'sw.js purges old caches on activate');
+  // every URL a launcher can still open has to be in the shell, or the app is a blank
+  // screen on a plane — including /pjcc/, which now only exists to carry the redirect.
+  ["'/'", "'/chess/'", "'/pjcc/'"].forEach((u) => {
+    ok(sw.includes(u + ','), 'sw.js precaches ' + u + ' (a launcher can still open it)');
+  });
 }
 ok(exists('offline.html'), 'offline.html exists');
 ok(exists('assets/js/pwa-register.js'), 'pwa-register.js exists');
@@ -88,6 +102,15 @@ if (exists('_includes/head.html')) {
   const head = read('_includes/head.html');
   ok(/\{%\s*include\s+pwa-head\.html\s*%\}/.test(head), 'the shared head includes pwa-head.html');
   ok(/\{%\s*include\s+town-weather\.html\s*%\}/.test(head), 'the shared head includes town-weather.html');
+  // the other half of the start_url pair — see the manifest check above
+  ok(/source=pwa/.test(head) && /location\.replace/.test(head),
+     'the shared head redirects an app LAUNCH off the old start_url');
+  ok(/'\/chess\/\?source=pwa'/.test(head), 'the app-launch redirect points at the front door');
+  // and it must fire before anything paints: above the stylesheet link
+  const iRedirect = head.indexOf('source=pwa');
+  const iSheet = head.indexOf('rel="stylesheet"');
+  ok(iRedirect > -1 && iSheet > -1 && iRedirect < iSheet,
+     'the app-launch redirect sits above the stylesheet (fires before first paint)');
 }
 ['default', 'studio-home', 'game', 'easter-eggs'].forEach((layout) => {
   const rel = '_layouts/' + layout + '.html';

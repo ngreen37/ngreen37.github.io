@@ -18,6 +18,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+{%- comment -%} ══ THE APP OPENS ON THE FRONT DOOR ══════════════════════════════════════
+     Nate, 2026-08-03: "Reset the app so that it takes you to the newest homepage and not
+     PJCC."
+
+     WHY THE MANIFEST ALONE CANNOT DO THIS. `start_url` is baked into a launcher AT INSTALL
+     TIME. An icon added to a home screen in June still opens `/pjcc/?source=pwa` — the
+     front door of the day — no matter what manifest.json says today, and there is no API
+     that reaches back into an installed launcher to correct it. Editing the manifest fixes
+     the NEXT install and nothing else. So the fix has to live on the page the old launcher
+     lands on, and it has to be a redirect.
+
+     ⚠ IT KEYS ON `?source=pwa`, WHICH IS THE WHOLE SAFETY. That marker only exists on URLs
+     the manifest itself hands out — a launch. Every other route to /pjcc/ (the drawer, the
+     front door's world card, a shared link, Google) arrives without it and is untouched, so
+     the world tab is still a real page you can visit inside the app. Only `/pjcc/` is
+     rewritten; the manifest's four shortcuts carry the same marker and must keep working.
+
+     Above the stylesheet, first script in the head, so the swap happens before a pixel of
+     the old page paints. `replace`, not `assign`, so Back doesn't bounce off it. {%- endcomment -%}
+<script>try{if(location.search.indexOf('source=pwa')>-1&&location.pathname.replace(/\/+$/,'')==={{ '/pjcc' | relative_url | jsonify }})location.replace({{ '/chess/?source=pwa' | relative_url | jsonify }});}catch(e){}</script>
+
 {%- comment -%} "Reduce flourish" — an opt-in still-site preference. Applied to <html>
      BEFORE any paint, so there's no flash of motion. {%- endcomment -%}
 <script>try{if(localStorage.getItem('pjcc.flourish')==='0')document.documentElement.classList.add('reduce-flourish');}catch(e){}</script>

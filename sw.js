@@ -13,7 +13,7 @@
  */
 'use strict';
 
-const VERSION    = 'pjcc-pwa-v9';   // v9: /chess/ is the new front door — the intro hands off there, /pjcc/ became the world tab (2026-07-28); v8: the Gauntlet door became a real stylesheet the game links (2026-07-27); v7: "/" is the "McPuppy Studios Presents" intro (2026-07-23)
+const VERSION    = 'pjcc-pwa-v10';  // v10: the app LAUNCH now lands on /chess/ — old launchers redirect off /pjcc/?source=pwa, start_url moved (2026-08-03); v9: /chess/ is the new front door — the intro hands off there, /pjcc/ became the world tab (2026-07-28); v8: the Gauntlet door became a real stylesheet the game links (2026-07-27); v7: "/" is the "McPuppy Studios Presents" intro (2026-07-23)
 const SHELL      = 'pjcc-shell-' + VERSION;
 const RUNTIME    = 'pjcc-runtime-' + VERSION;
 const OFFLINE_URL = '/offline.html';
@@ -22,10 +22,14 @@ const OFFLINE_URL = '/offline.html';
  * single missing file won't fail the whole install (unlike cache.addAll). Small, so
  * install stays fast. NOTE: the site now compiles to ONE stylesheet (style.css). */
 /* ALL THREE OF '/', '/chess/' AND '/pjcc/' STAY IN THIS LIST. '/' is the intro card,
- * '/chess/' is the front door it hands off to (new 2026-07-28), and '/pjcc/' is the world
+ * '/chess/' is the front door AND the start_url (2026-08-03), and '/pjcc/' is the world
  * tab — all three are real pages returning 200. Keeping the old ones matters because
  * start_url is baked into a launcher AT INSTALL TIME: a phone that installed the app when
  * /pjcc/ was the start_url still opens /pjcc/?source=pwa regardless of manifest.json today.
+ * As of 2026-08-03 that launch is redirected to /chess/ by a pre-paint script in
+ * _includes/head.html — but the redirect lives INSIDE the /pjcc/ document, so /pjcc/ has to
+ * be cached and served for the redirect to be able to fire at all. On a plane, dropping it
+ * from this list would strand the old launcher on the offline page.
  * This precache runs under Promise.allSettled, so a 404 here fails SILENTLY and serves a
  * stale shell rather than reporting anything — so none of these URLs may 404. */
 const PRECACHE = [

@@ -57,8 +57,22 @@ description: McPuppy Studios presents Princess and the Journey to Chess City —
     ══════════════════════════════════════════════════════════════════════════════
   {%- endcomment -%}
   <script>
-    /* repeat visits this session skip straight to the world — no flash of the card */
-    try { if (sessionStorage.getItem('mcp.intro.seen') === '1') location.replace({{ '/chess/' | relative_url | jsonify }}); } catch (e) {}
+    /* Two ways past the card, both before first paint so neither ever flashes it:
+
+       1. REPEAT VISITS THIS SESSION — so the header logo ("/") doesn't replay the intro
+          every time somebody taps it.
+       2. THE INSTALLED APP (2026-08-03, Nate: "Reset the app so that it takes you to the
+          newest homepage"). `/?source=pwa` was the baked start_url for every launcher
+          installed between 21 July and today, and an APP should open on the app. A native
+          launch already shows the icon splash; following it with four seconds of a studio
+          title card, on every single launch, is a title card you can't skip fast enough.
+          The intro still plays in full on the WEB, which is where it was always for.
+          (The manifest now starts fresh installs straight at /chess/ — see manifest.json.) */
+    try {
+      var app = location.search.indexOf('source=pwa') > -1;
+      if (app || sessionStorage.getItem('mcp.intro.seen') === '1')
+        location.replace({{ '/chess/' | relative_url | jsonify }} + (app ? '?source=pwa' : ''));
+    } catch (e) {}
   </script>
 
   <style>

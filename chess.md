@@ -421,9 +421,42 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mc-board { display: flex; flex-direction: column; align-items: center; justify-content: center;
   min-height: 190px; padding: var(--space-4, 16px); }
 
+/* ── PHONE / THE INSTALLED APP: THE TITLE COMES FIRST ─────────────────────────────
+   Nate, 2026-08-03: "on the app version of the home page, the puzzle is at the very
+   top. Let's move that below the McPuppy Chess title."
+
+   The board used to be `order:-1` — dead first, above everything. That was the right
+   instinct (open on chess, not on a paragraph) taken one step too far: opening the app
+   gave you a chessboard with no name on it, so the one screen that has to say WHOSE
+   site this is said it second. The title now lands first and the board sits directly
+   under it, and it costs the CTA nothing — the gold button was already below the board,
+   and only the eyebrow and the h1 moved above it. Measured at 390×844: the button went
+   from y=567 to y=557 and the hero from 690px to 680px. The title got the top of the
+   screen and the button got 10px CLOSER to it.
+
+   HOW: `.mc-hero-copy` dissolves with `display:contents`, so its six children stop
+   being one grid item and become grid items in their own right — which is the only way
+   the board can slot BETWEEN two of them. `order` then lays them out. (The copy div
+   carries no styling of its own, so there is nothing to lose by dissolving it.)
+
+   ⚠ `gap` GOES TO ZERO with it, and that is not optional. The 16px gap used to apply
+   ONCE, between the copy block and the board; the moment the copy's children are items
+   themselves it would apply between every one of them, on top of the margins they
+   already carry, and the hero would grow ~80px of air on the smallest screen there is.
+   Spacing stays where it was: on the elements. */
 @media (max-width: 760px) {
-  .mc-hero { grid-template-columns: 1fr; gap: var(--space-4, 16px); }
-  .mc-board { order: -1; min-height: 0; padding: 0 0 var(--space-2, 8px); }
+  .mc-hero { grid-template-columns: 1fr; gap: 0; }
+  .mc-hero-copy { display: contents; }
+  .mc-eyebrow { order: 1; }
+  .mc-title   { order: 2; }
+  .mc-board   { order: 3; }
+  .mc-lede    { order: 4; }
+  .mc-cta     { order: 5; }
+  .mc-cta2    { order: 6; }
+  .mc-facts   { order: 7; }
+  /* the board's own breathing room, now that no gap supplies it: a hair under the
+     title (which already carries 12px) and a clear step down to the lede. */
+  .mc-board { min-height: 0; padding: 2px 0 var(--space-3, 12px); }
   .mc-cta { width: 100%; justify-content: center; }
     /* no underline down here: at full width it stops reading as a link and starts
      reading as a horizontal rule under the button. */
