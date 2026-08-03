@@ -161,13 +161,24 @@
 
     // Complete identity row
     bar.className = 'pjcc-bar pjcc-bar-in';
+    /* ── THE CLEARANCE PIP (2026-08-03, priority #3) ────────────────────────────────
+       "so your codename wears a clearance pip that climbs, and the quiz game, the tables
+       and the Profile finally speak one language." This is the identity row every game
+       loads, so it is the single most-seen codename on the site and the first place the
+       pip belongs. One glyph in front of the name, with the rung in the title attribute
+       — a pip nobody can decode is decoration, and a legend would cost a whole line.
+       `PJCC.clearance` is guarded because the games embed whatever profile module their
+       cached shell has, and an old one has no such function. */
     var rankName = PJCC.rankFor(prof.credits).name;
     var titleLabel = PJCC.titleLabel ? PJCC.titleLabel(prof) : '';
+    var cl = PJCC.clearance ? PJCC.clearance(prof) : null;
+    var pip = cl ? '<span class="pjcc-pip pip-' + cl.level + '" title="' + esc(cl.name) +
+        (cl.rating ? ' · PJCC rating ' + cl.rating : '') + '">' + cl.pip + '</span> ' : '';
     bar.innerHTML =
       '<div class="pjcc-avatar">' + PJCC.avatarEmoji(prof) + '</div>' +
       '<div class="pjcc-id">' +
-        '<span class="pjcc-codename">' + esc(prof.codename) + (titleLabel ? ' <span class="pjcc-title">' + esc(titleLabel) + '</span>' : '') + '</span>' +
-        '<span class="pjcc-sub">' + esc(rankName) + ' · <span class="pjcc-credits">' + prof.credits + ' credits</span></span>' +
+        '<span class="pjcc-codename">' + pip + esc(prof.codename) + (titleLabel ? ' <span class="pjcc-title">' + esc(titleLabel) + '</span>' : '') + '</span>' +
+        '<span class="pjcc-sub">' + esc(cl ? cl.name : rankName) + ' · <span class="pjcc-credits">' + prof.credits + ' credits</span></span>' +
       '</div>' +
       '<span class="pjcc-spacer"></span>' +
       '<a class="pjcc-trophy" href="/dossier/">🗂 Profile</a>' +

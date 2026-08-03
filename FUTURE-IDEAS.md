@@ -999,16 +999,8 @@ Town, Bob-Proctor mindset) and **Michael** (Chess City, truly righteous); **The 
 
 # 🧵 Twenty for cohesiveness & ingenuity *(2026-07-12 — Nate asked)*
 
-Written straight after a batch that touched the splash, the sky, the games hall, the dossier,
-the Academy and the studio page — so these are things actually noticed while in there, not a
-brainstorm from outside. The first ten are **cohesion** (make it feel like one place). The
+ The first ten are **cohesion** (make it feel like one place). The
 second ten are **ingenuity** (the clever, cheap, memorable stuff).
-
-> **Cohesion 1–4 SHIPPED 2026-07-12** — the header (and footer) keep town time; the splash
-> stands under the town sky; the surface kit (`--r-sm/md/lg`, `--surface`, `--edge`, `--lift`)
-> is declared in `_pjcc-01-core.scss` and adopted site-wide; and the news desk now reports the
-> weather in its own voice (formal by day, deadpan on the Night Desk) *and* reports cloud,
-> which it never did. Numbering below is left alone so the rest still line up.
 
 ### Cohesion — make it read as one world
 
@@ -1023,25 +1015,13 @@ second ten are **ingenuity** (the clever, cheap, memorable stuff).
    A one-line version of it in the games hall would tell a player where they are *in the
    world*, not just in a menu. *(Decide what the map is FOR first — see the section at the
    bottom of this file; reusing a checklist twice just doubles a checklist.)*
-8. **Kill the second Gauntlet door.** The home hero and the games hall carry two hand-maintained
-   copies of the same door, and two copies of the LADDER names/accents/glyphs in JS, with a
-   comment on each begging you to keep them in sync. One include + one data file. They will
-   drift; they already have.
 9. **The teachers don't mention what they teach.** Auston runs the only open Academy hall — his
    character page doesn't say so. One line on each teacher's page ("Auston teaches the
    squares") ties the cast to the arcade for the price of a sentence each.
-10. **One "not yet" voice.** Unbuilt things currently say: *Coming Soon · In Development ·
-    Building · Not ready yet — months away · Don't hold your breath! · Sealed / Retired*. Pick
-    **two** — one for *being built*, one for *retired* — and use them everywhere. This is the
-    no-excuses rule applied to labels.
 
 ### Ingenuity — the cheap, strange, memorable stuff
 
-11. **The sky remembers.** Store the phase you last arrived in. Come back at a different hour
-    and the ticker says, once, quietly: *"Last seen: dusk."* Free continuity, no mechanics.
-12. **One secret that only exists in the rain.** The town has real, town-wide weather now.
-    Make exactly one easter egg depend on it — a reflection in the Chess City windows, a
-    figure on the Sea. People will *talk* about that one.
+
 13. **The shooting star is a wish.** One crosses the night sky now. Make it clickable for the
     ~1 second it's visible. Catching one gives something tiny and lovely — a fragment, a line
     from Princess, one credit. Almost nobody will catch one. That's the point.

@@ -56,6 +56,27 @@
 }
 .pjcc-id { display: flex; flex-direction: column; gap: 1px; }
 .pjcc-codename { color: #F5C518; font-weight: 800; font-size: 1.02rem; letter-spacing: 0.4px; }
+
+/* ── THE CLEARANCE PIP (2026-08-03) ──────────────────────────────────────────────
+   One glyph in front of the codename, everywhere a codename appears — the identity bar,
+   the leaderboards, the park tables, the dossier. It is the whole of priority #3's
+   "contained first slice": one language for how strong you are, instead of a credit
+   rank in one place and an unmentioned Elo in another.
+
+   ⚠ IT IS NOT GOLD. Gold on this site means the primary action, and a badge that wears
+   the CTA's colour competes with every button next to it. The ladder runs cool → warm
+   instead, which also does the work a legend would: you can see at a glance that ✶ is
+   further along than ◇ without being told, because the colour heats up as the glyph
+   gets denser. Seven rungs, seven steps, and the last one is deliberately the only
+   thing on the ladder that glows. */
+.pjcc-pip { font-size: 0.92em; vertical-align: baseline; cursor: help; }
+.pip-1 { color: #7d8a99; }   /* Recruit */
+.pip-2 { color: #7fd4a8; }   /* Operative */
+.pip-3 { color: #56d0ff; }   /* Field Agent */
+.pip-4 { color: #b98fff; }   /* Cipher */
+.pip-5 { color: #ff8fd0; }   /* Delta */
+.pip-6 { color: #ffb066; }   /* Omega */
+.pip-7 { color: #ffe08a; text-shadow: 0 0 8px rgba(255,224,138,0.55); }   /* Above Omega */
 .pjcc-title { font-size: 0.62rem; vertical-align: middle; background: rgba(245,197,24,0.16); color: #F5C518; border: 1px solid #F5C518; border-radius: 999px; padding: 1px 7px; margin-left: 4px; font-weight: 700; letter-spacing: 0.03em; }
 .pjcc-sub { color: #b9a8e6; font-size: 0.76rem; }
 .pjcc-credits { color: #6bffb8; font-weight: 700; }

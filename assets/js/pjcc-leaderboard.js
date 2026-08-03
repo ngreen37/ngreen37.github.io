@@ -74,7 +74,8 @@
       if (active === '__overall__') {
         var rows = await PJCC.cumulativeLeaderboard(PAGE, offset);
         return rows.map(function (r) {
-          return { codename: r.codename, companion: r.companion, value: r.credits, rankName: PJCC.rankFor(r.credits).name };
+          return { codename: r.codename, companion: r.companion, value: r.credits,
+                   credits: r.credits, rating: r.pjcc_rating, rankName: PJCC.rankFor(r.credits).name };
         });
       }
       if (active === '__rating__') {
@@ -87,6 +88,7 @@
         if (pr.error || !pr.data) return [];    // pre-upgrade server → empty board, not a crash
         return pr.data.map(function (p) {
           return { codename: p.codename, companion: p.companion, value: p.pjcc_rating,
+                   rating: p.pjcc_rating,
                    rankName: p.rated_games + ' rated game' + (p.rated_games === 1 ? '' : 's') };
         });
       }
@@ -148,10 +150,18 @@
       var body = rows.map(function (r, i) {
         var mine = me && r.codename === me.codename ? ' lb-me' : '';
         var titleLabel = PJCC.titleLabel ? PJCC.titleLabel({ companion: r.companion }) : '';
+        /* THE CLEARANCE PIP, on every board (2026-08-03, priority #3). A leaderboard is
+           where a stranger meets other operatives, so it is the one place the ladder is
+           worth wearing beside a name. Boards that carry neither a rating nor a credit
+           count show NOTHING — a Recruit pip on every row is not a badge, it is noise. */
+        var cl = (PJCC.clearance && (r.rating != null || r.credits != null))
+          ? PJCC.clearance({ pjcc_rating: r.rating || 0, credits: r.credits || 0 }) : null;
+        var pip = (cl && cl.level > 1)
+          ? '<span class="pjcc-pip pip-' + cl.level + '" title="' + esc(cl.name) + '">' + cl.pip + '</span> ' : '';
         return '<tr class="' + mine + '">' +
           '<td class="lb-rank ' + rankClass(i) + '">' + (i + 1) + '</td>' +
           '<td class="lb-av">' + av(r.companion) + '</td>' +
-          '<td class="lb-name">' + esc(r.codename) + (titleLabel ? ' <span class="pjcc-title">' + esc(titleLabel) + '</span>' : '') + (r.rankName ? ' <span class="pjcc-sub">· ' + esc(r.rankName) + '</span>' : '') + '</td>' +
+          '<td class="lb-name">' + pip + esc(r.codename) + (titleLabel ? ' <span class="pjcc-title">' + esc(titleLabel) + '</span>' : '') + (r.rankName ? ' <span class="pjcc-sub">· ' + esc(r.rankName) + '</span>' : '') + '</td>' +
           '<td class="lb-score">' + r.value + '</td>' +
         '</tr>';
       }).join('');

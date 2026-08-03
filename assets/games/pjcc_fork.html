@@ -47,7 +47,23 @@
   #report-btn:hover { color: #0a1a1c; background: #5be0c0; border-color: #5be0c0; }
   .rep-fen { font-family: ui-monospace, 'Share Tech Mono', monospace; font-size: 10.5px; color: #5be0c0;
     background: rgba(0,0,0,0.35); border: 1px solid #2a6a5e; border-radius: 8px; padding: 8px 10px;
-    margin: 0 0 12px; max-width: 340px; word-break: break-all; line-height: 1.5; }
+    margin: 0 0 10px; max-width: 340px; word-break: break-all; line-height: 1.5; }
+  /* ── the machine's verdict, shown to the PLAYER before they send (2026-08-03) ──────
+     The engine's opinion is going into the report either way, so the player sees it too.
+     Two reasons and the second one is the point: hiding it would make the report a
+     black box, and telling somebody "the search agrees with you" is the most
+     encouraging thing this room can say to a person who thinks it got it wrong. */
+  .rep-verdict { font-size: 11.5px; line-height: 1.5; border-radius: 8px; padding: 7px 10px;
+    margin: 0 0 10px; max-width: 340px; border: 1px solid; }
+  .rep-verdict.hidden { display: none; }
+  .rep-verdict.agrees { color: #ffe08a; border-color: #7a6320; background: rgba(255,224,138,0.09); }
+  .rep-verdict.mates  { color: #ff9ec8; border-color: #7a3060; background: rgba(255,158,200,0.10); }
+  .rep-verdict.refuted{ color: #9fb8b2; border-color: #2a4a45; background: rgba(0,0,0,0.28); }
+  .rep-note { width: 100%; max-width: 340px; margin: 0 0 10px; resize: vertical;
+    font-family: inherit; font-size: 12px; line-height: 1.5; color: #cfeee6;
+    background: rgba(0,0,0,0.35); border: 1px solid #2a6a5e; border-radius: 8px; padding: 7px 9px; }
+  .rep-note::placeholder { color: #6a8a84; }
+  .rep-note:focus { outline: none; border-color: #5be0c0; }
   #menu-btn { top: 10px; right: 10px; background: #163a36; color: #cfeee6; padding: 5px 12px; font-size: 11px; border: 1px solid #2a6a5e; }
   .float-btn.hidden { display: none; }
 
@@ -121,11 +137,19 @@
     <div class="big-title" style="font-size:20px;">SOMETHING WRONG?</div>
     <div class="blurb" style="margin-bottom:10px;">If the "winning move" isn't winning — or another move looks just as good — send it over. It goes straight to McPuppy with the position attached.</div>
     <div class="rep-fen" id="rep-fen"></div>
+    <!-- what the machine thinks of the move you just tried — only shown when there IS one -->
+    <div class="rep-verdict hidden" id="rep-verdict"></div>
+    <textarea class="rep-note" id="rep-note" rows="2" maxlength="500" placeholder="What looked wrong? (optional)"></textarea>
     <div class="row">
-      <button class="btn btn-gold" id="rep-mail">EMAIL IT</button>
-      <button class="btn btn-ghost" id="rep-copy">COPY IT</button>
+      <button class="btn btn-gold" id="rep-send">SEND IT</button>
     </div>
     <div class="foot" id="rep-done" style="min-height:1.4em;"></div>
+    <!-- the old pair, kept and demoted. They are the escape hatch for the day the table
+         is unreachable, and the panel says so rather than pretending they are equals. -->
+    <div class="row" style="margin-top:2px;">
+      <button class="btn btn-ghost" id="rep-mail">email it instead</button>
+      <button class="btn btn-ghost" id="rep-copy">copy it</button>
+    </div>
     <div class="foot"><span class="tap" id="rep-close">back to the puzzle</span></div>
   </div>
 
@@ -766,17 +790,25 @@ function refuteMove(p, b, fx, fy, tx, ty){
   if (!best) return null;                    // no reply worth naming — stay quiet
   const theirs = shortSan(nb, best.fx, best.fy, best.tx, best.ty);
   const reply = { fx: best.fx, fy: best.fy, tx: best.tx, ty: best.ty };
-  if (mate) return { text: 'After ' + yours + ', ' + theirs + '# — that\'s mate.', reply, hard: true };
+  /* `verdict` + `cp` are carried out of here for the REPORT (2026-08-03) — the same
+     numbers the card is built from, so a report can never disagree with what the player
+     was just shown. See showRefutation(). */
+  if (mate) return { text: 'After ' + yours + ', ' + theirs + '# — that\'s mate.', reply, hard: true,
+                     verdict: 'refuted', cp: null };
   const loss = before - bestV;
   const lost = costLabel(loss);
-  if (lost) return { text: 'After ' + yours + ', ' + theirs + ' — you\'re down ' + lost + '.', reply, hard: true };
-  if (loss >= 90) return { text: 'After ' + yours + ', ' + theirs + ' — you come out ' + Math.round(loss/100) + ' points down.', reply, hard: true };
+  if (lost) return { text: 'After ' + yours + ', ' + theirs + ' — you\'re down ' + lost + '.', reply, hard: true,
+                     verdict: 'refuted', cp: Math.round(loss) };
+  if (loss >= 90) return { text: 'After ' + yours + ', ' + theirs + ' — you come out ' + Math.round(loss/100) + ' points down.', reply, hard: true,
+                           verdict: 'refuted', cp: Math.round(loss) };
   // The machine likes your move too. It is NOT allowed to say "that wins nothing" here
   // — the accuracy gate caught exactly this (a pin the puzzle wanted cashed one way,
   // held a second way) and a card that lies is worse than no card. Say so, and hand
   // the player the report button, because if they're right that is worth knowing.
-  if (-loss >= 280) return { text: yours + ' looks strong too — but it is not this puzzle\'s answer. Tap ⚑ if you think it should be.', reply, hard: false };
-  return { text: yours + ' is safe — but it wins nothing. ' + theirs + ', and the moment is gone.', reply, hard: false };
+  if (-loss >= 280) return { text: yours + ' looks strong too — but it is not this puzzle\'s answer. Tap ⚑ if you think it should be.', reply, hard: false,
+                             verdict: 'agrees', cp: Math.round(-loss) };
+  return { text: yours + ' is safe — but it wins nothing. ' + theirs + ', and the moment is gone.', reply, hard: false,
+           verdict: 'refuted', cp: Math.round(loss) };
 }
 
 // ---- Audio ----
@@ -862,14 +894,39 @@ const BOSS = {
 function gateAt(step){ return GATES.includes(step) ? BOSS[step] : null; }
 function loadProg(){ try { return Object.assign({ step:0, diff:2, best:0 }, JSON.parse(localStorage.getItem(PROG_KEY)) || {}); } catch(e){ return { step:0, diff:2, best:0 }; } }
 function saveProg(p){ try { localStorage.setItem(PROG_KEY, JSON.stringify(p)); } catch(e){} }
+/* ══ THE SOLVER'S RATING (2026-08-03, priority #2) ═══════════════════════════════════
+   "Give the SOLVER one — the same Elo the Park Tables run — and serve puzzles at it."
+
+   The Elo itself lives in pjcc-profile.js (PJCC.settlePuzzle); these two functions are
+   the bridge between a rating and the generator's 1–10 `diff` dial. They are exact
+   inverses of puzzleRating() above with its two variable terms averaged out: motif base
+   runs 340–700 and clutter 0–270, so a typical puzzle at difficulty d rates about
+   590 + 72d. Which means 700 ≈ difficulty 1.5 and 1300 ≈ difficulty 10 — the whole
+   generator range maps onto the whole rating range, with nothing stranded at either end.
+
+   ⚠ EXISTING PLAYERS ARE MIGRATED UP, NEVER DOWN. Somebody 340 puzzles into the journey
+   at difficulty 7 must not be handed a rating of 700 and served back-rank mates; that
+   would read as the site forgetting them. On the very first settle, a stored `diff`
+   above the default seeds the rating from it (see startRun). Nothing anyone has earned
+   gets smaller. */
+function ratingToDiff(r){ return Math.max(1, Math.min(10, (r - 590) / 72)); }
+function diffToRating(d){ return Math.round(590 + 72 * Math.max(1, Math.min(10, d))); }
+function myPuzzleRating(){
+  try { return (window.PJCC && PJCC.puzzleRating) ? PJCC.puzzleRating() : null; } catch(e){ return null; }
+}
 function updateJourneyLine(){
   const pr = loadProg(), el = document.getElementById('journey-line');
   if (!el) return;
-  el.innerHTML = pr.step >= JOURNEY_LEN
+  /* The rating is shown BESIDE the step count, not instead of it. "rated 1240 puzzles"
+     is the better brag, but the road to Chess City is the promise this room made and a
+     number that replaced it would read as the promise being withdrawn. */
+  const pz = myPuzzleRating();
+  const rated = pz ? ' &middot; your puzzle rating <b>' + pz.rating + '</b>' : '';
+  el.innerHTML = (pr.step >= JOURNEY_LEN
     ? '🏰 <b>You reached Chess City.</b> 1,000 puzzles solved.'
     : 'Level ' + levelFor(pr.step) + ' of ' + LEVELS +
       ' &middot; ' + intoLevel(pr.step) + '/' + LEVEL_LEN + ' this level' +
-      ' &middot; ' + pr.step + ' of ' + JOURNEY_LEN + ' to Chess City';
+      ' &middot; ' + pr.step + ' of ' + JOURNEY_LEN + ' to Chess City') + rated;
 }
 
 // ---- Flow ----
@@ -877,8 +934,22 @@ function startRun(){
   // 2026-07-28: the Daily Ladder is gone (Nate: "remove the daily puzzle for now, and keep
   // the journey"). One road, one button. Restore it from git if it ever comes back.
   const pr = loadProg();
-  run = { mode: 'journey', idx: 0, legLen: LEG, step: pr.step, diff: pr.diff, best: pr.best,
-          legStartStep: pr.step, queue: null, stats: { solved:0, clean:0, streak:0, best:0, hints:0 } };
+  /* ── SEED THE RATING FROM THE ROAD, ONCE (2026-08-03) ──────────────────────────
+     A returning player has a `diff` the old ratchet spent hundreds of puzzles earning.
+     Starting them at 700 would serve a 340-step veteran back-rank mates on their next
+     visit, which reads as the site forgetting them — a takeaway, and this codebase's
+     standing rule is that takeaways are the one thing you don't do. So on the first
+     ever settle (solved === 0), if the stored difficulty is above the beginner default,
+     the rating is lifted to match it. Idempotent: `solved` moves off 0 the moment a
+     puzzle is scored, so this can only fire once. */
+  const pzSeed = myPuzzleRating();
+  if (pzSeed && pzSeed.solved === 0 && pr.diff > 2){
+    try { PJCC.seedPuzzleRating(diffToRating(pr.diff)); } catch(e){}
+  }
+  const pzNow = myPuzzleRating();
+  run = { mode: 'journey', idx: 0, legLen: LEG, step: pr.step,
+          diff: pzNow ? ratingToDiff(pzNow.rating) : pr.diff, best: pr.best,
+          legStartStep: pr.step, queue: null, stats: { solved:0, clean:0, streak:0, best:0, hints:0, rating0: pzNow ? pzNow.rating : null } };
   hideOverlays();
   document.getElementById('menu-btn').classList.remove('hidden');
   loadPuzzle();
@@ -960,6 +1031,13 @@ function playerCorrect(){
 }
 // The player found a valid alternative — a different winning move than the stored line.
 function playerAltCorrect(fx, fy, tx, ty){
+  /* ⚠ THIS IS THE MOST VALUABLE REPORT THE SITE CAN PRODUCE, so it is recorded even
+     though the player is being told they were RIGHT. A second mate reaching this branch
+     means `secondSolution()` let a position through with two winning first moves —
+     i.e. a hole in the accuracy gate ([[puzzle-room-invariants]]), which is a bug in the
+     generator rather than a difference of opinion. Verdict `mates`, and the report panel
+     says so. (2026-08-03) */
+  lastClaim = { for: G.p, move: shortSan(G.board, fx, fy, tx, ty), verdict: 'mates', cp: null };
   clearRefutation();
   sfx('solve'); burst(tx, ty, true);
   doMove(alg(fx,fy) + alg(tx,ty), () => { G.step = G.p.line.length; puzzleSolved(); });
@@ -979,8 +1057,38 @@ function puzzleSolved(){
   if (aced) { run.stats.clean++; run.stats.streak++; if (run.stats.streak > run.stats.best) run.stats.best = run.stats.streak; }
   else run.stats.streak = 0;
   if (run.ladder){ if (G.revealed) run.slipped = true; else run.rungs = (run.rungs||0) + 1; }
+
+  /* ── THE RATING SETTLES, AND IT IS NOW THE DIFFICULTY DIAL (2026-08-03, priority #2) ──
+     The old ratchet was +0.34 / −0.7 on a 1–10 dial: honest, but it only ever knew
+     "harder" or "easier", never *how much* — beating a puzzle 400 points above you moved
+     you exactly as far as beating one at your level. An Elo knows the gap, which is the
+     whole reason to have one, and it makes the difficulty a number you can compare with
+     the Park Tables and with the Gauntlet roster.
+
+     THREE SCORES, and the middle one is the one that matters:
+       1     aced — solved with no wrong move and no reveal
+       0.6   solved after a wrong try. You still FOUND it; a wrong attempt is how
+             anybody solves a hard puzzle, and scoring it 0 would teach people to
+             guess nothing and reveal instead.
+       0.25  revealed. Not a loss — you finished it — but the deepest hint tier plays
+             the winning move FOR you (the one honest asterisk on "1,000 solved"), so
+             scoring a reveal as a win would let anyone hint their way to Omega.
+
+     The dial is re-read from the rating every puzzle, so a run that goes badly gets
+     easier immediately rather than at the next visit. */
+  const score = aced ? 1 : (G.revealed ? 0.25 : 0.6);
+  let pzMove = null;
+  try {
+    if (window.PJCC && PJCC.settlePuzzle && G.p.rating){
+      pzMove = PJCC.settlePuzzle(G.p.rating, score);
+      run.diff = ratingToDiff(pzMove.after);
+      run.stats.rating = pzMove.after;
+    }
+  } catch(e){}
+  lastRatingMove = pzMove;
+
   if (run.mode === 'journey'){
-    run.diff = Math.max(1, Math.min(10, run.diff + (aced ? 0.34 : -0.7)));   // adapts to you
+    if (!pzMove) run.diff = Math.max(1, Math.min(10, run.diff + (aced ? 0.34 : -0.7)));  // no profile module: the old ratchet still works
     run.step = Math.min(JOURNEY_LEN, run.step + 1);
     run.best = Math.max(run.best || 0, run.step);
     saveProg({ step: run.step, diff: run.diff, best: run.best });
@@ -1000,7 +1108,7 @@ function puzzleSolved(){
 // Teaching card shown after each solve — names the motif and explains the idea.
 // 2026-07-14: prefers the puzzle's OWN square-by-square explanation (attached at
 // generation) over the generic motif blurb, and shows the puzzle's rating.
-let explainCard = null, explainTimer = null;
+let explainCard = null, explainTimer = null, lastRatingMove = null;
 function showExplain(){
   const mt = MOTIFS[G.p.theme] || { icon:'★', name:G.p.theme, color:C.good, explain:'' };
   // A BOSS shows the CHARACTER's one canonical Gauntlet rating (no tilde — it's fixed,
@@ -1009,7 +1117,15 @@ function showExplain(){
   const nm = G.p.boss
     ? (mt.name + ' · ' + G.p.boss.name + (G.p.boss.rated ? ' · rated ' + G.p.boss.rated : ''))
     : (mt.name + (G.p.rating ? ' · rated ~' + G.p.rating : ''));
-  explainCard = { icon: mt.icon, color: mt.color || C.good, text: G.p.explain || mt.explain, t: 0, name: nm };
+  /* THE SWING, said out loud (2026-08-03). A rating that changes silently teaches
+     nobody anything — the number only becomes a dial you understand once you can see a
+     hard puzzle paying more than an easy one. Shown as a signed delta beside the new
+     rating; a settle of exactly 0 says nothing rather than "+0". */
+  const rl = (lastRatingMove && lastRatingMove.delta !== 0)
+    ? { text: (lastRatingMove.delta > 0 ? '+' : '') + lastRatingMove.delta + ' → ' + lastRatingMove.after,
+        up: lastRatingMove.delta > 0 }
+    : null;
+  explainCard = { icon: mt.icon, color: mt.color || C.good, text: G.p.explain || mt.explain, t: 0, name: nm, rating: rl };
   clearTimeout(explainTimer);   // no auto-advance — the player taps OK when ready, so there's time to read it
 }
 function advanceFromExplain(){ clearTimeout(explainTimer); explainCard = null; nextPuzzle(); }
@@ -1100,8 +1216,18 @@ function showRefutation(from, tried){
     if (!r) { floater('Not the winning move', W/2, BY + BOARD + 6, C.pink); return; }
     refuteCard  = { text: r.text, t: 0, life: 7, color: r.hard ? C.bad : C.muted };
     refuteArrow = { fx: r.reply.fx, fy: r.reply.fy, tx: r.reply.tx, ty: r.reply.ty, tried };
+    /* ── THE TRIAGE (2026-08-03, priority #1) ────────────────────────────────────
+       The refutation already computed everything a triage needs, so hold on to it: if
+       the player goes on to tap ⚑, the report carries the MACHINE'S OWN VERDICT on the
+       move they are complaining about. That is the difference between an inbox you
+       have to work through and one that sorts itself — `agrees` and `mates` are worth
+       opening, `refuted` almost never is. Kept per-puzzle (`for`) so a stale verdict
+       from the previous position can never be attached to this one. */
+    lastClaim = { for: p, move: shortSan(b, from.x, from.y, tried.x, tried.y),
+                  verdict: r.verdict, cp: r.cp };
   }, 90);
 }
+let lastClaim = null;   // see the triage note above
 function clearRefutation(){ refuteCard = null; refuteArrow = null; }
 function updateHintBtn(){
   const b = document.getElementById('hint-btn'); if (!b) return;
@@ -1287,6 +1413,16 @@ function drawExplain(){
   ctx.fillStyle = explainCard.color; roundRect(okX, okY, okW, okH, 12); ctx.fill();
   ctx.fillStyle = '#07221e'; ctx.font = 'bold 13px Trebuchet MS'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText('OK ▸', okX + okW/2, okY + okH/2);
+  /* The rating swing, bottom-left of the same card, opposite the OK. Green up, pink
+     down — the room's own two colours, so it needs no legend. It sits INSIDE the card
+     rather than floating: this is a fact about the puzzle you just did, not a
+     notification. (2026-08-03) */
+  if (explainCard.rating){
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.font = 'bold 12px Trebuchet MS';
+    ctx.fillStyle = explainCard.rating.up ? C.good : C.pink;
+    ctx.fillText(explainCard.rating.text, x + 14, okY + okH/2);
+  }
   ctx.globalAlpha = 1;
 }
 function wrapLines(text, maxW){
@@ -1378,8 +1514,20 @@ function showSummary(){
   const tt = loadTactics(); let th = '';
   CAT_ORDER.forEach(cat => { const e = tt[cat]; if (e && e.seen){ const pct = Math.round(100*e.clean/e.seen);
     th += '<div class="tact-row"><span>'+CAT_LABEL[cat]+'</span><span>'+e.clean+'/'+e.seen+' · '+pct+'%</span></div>'; } });
+  /* THE RUN'S RATING SWING (2026-08-03). Where the leg started and where it ended — the
+     one line that turns a set of ten puzzles into a measurement. Shown only when the
+     rating actually moved, so an unrated run (no profile module) says nothing rather
+     than printing a hollow "0". */
+  let rl = '';
+  const pzEnd = myPuzzleRating();
+  if (pzEnd && s.rating0 != null && pzEnd.rating !== s.rating0){
+    const d = pzEnd.rating - s.rating0;
+    rl = '<div class="tact-row"><span>Puzzle rating</span><span>' + s.rating0 + ' → <b>' +
+         pzEnd.rating + '</b> (' + (d > 0 ? '+' : '') + d + ')</span></div>';
+  }
   const tw = document.getElementById('sum-tactics');
-  if (tw) tw.innerHTML = (th ? '<div class="tact-title">Tactic accuracy · all-time</div>'+th : '')
+  if (tw) tw.innerHTML = (rl ? '<div class="tact-title">This leg</div>' + rl : '')
+    + (th ? '<div class="tact-title">Tactic accuracy · all-time</div>'+th : '')
     + (s.hints ? '<div class="tact-hint">Hints used this run: '+s.hints+'</div>' : '');
   sfx('win');
   hideOverlays(); document.getElementById('summary-screen').classList.remove('hidden');
@@ -1422,11 +1570,64 @@ function reportText(p){
     '\nrating: ~' + (p.rating || '?') + '\nmode: ' + (run ? run.mode : '?') +
     (run && run.mode === 'journey' ? ' · step ' + run.step : '');
 }
+/* ── ⚑ SEND IT — a table, not an inbox (2026-08-03, priority #1) ──────────────────
+   The old panel's two roads both ended in a human doing clerical work: a mailto that
+   needs a mail app, or a clipboard that needs the player to find somewhere to paste it.
+   Both are now the fallback. The primary road is one tap into `puzzle_reports`.
+
+   ⚠ IT SHIPS BEFORE THE TABLE EXISTS, and that is fine BY CONSTRUCTION.
+   PJCC.reportPuzzle() never throws — it resolves {ok:false} — and this handler answers a
+   failure by saying so plainly and pointing at the two buttons underneath, which have
+   always worked. A report button that silently swallows a report would be worse than the
+   mailto it replaced ([[down-never-stuck]]). Run docs/puzzle-reports-setup.md and the
+   same button starts landing rows with no client change.
+
+   ⚠ NO ACCOUNT NEEDED. The insert policy is `to anon` on purpose: the person most likely
+   to find a broken puzzle is a stranger doing their first ten. */
+const CLAIM_WORD = {
+  agrees:  ['agrees', 'The search likes <b>%s</b> too. If you are right, this is worth knowing — send it.'],
+  mates:   ['mates',  '<b>%s</b> is a second mate. The room is supposed to make that impossible, so this one really matters.'],
+  refuted: ['refuted','The search can punish <b>%s</b> — so the puzzle is probably right. Send it anyway if you disagree.']
+};
+function currentClaim(){
+  return (lastClaim && G && lastClaim.for === G.p) ? lastClaim : null;
+}
 document.getElementById('report-btn').addEventListener('click', ()=>{
   const p = G && G.p; if (!p) return;
   document.getElementById('rep-fen').textContent = puzzleFEN(p);
   document.getElementById('rep-done').textContent = '';
+  document.getElementById('rep-note').value = '';
+  const v = document.getElementById('rep-verdict'), c = currentClaim();
+  if (c && CLAIM_WORD[c.verdict]){
+    v.className = 'rep-verdict ' + c.verdict;
+    v.innerHTML = CLAIM_WORD[c.verdict][1].replace('%s', c.move);
+  } else { v.className = 'rep-verdict hidden'; v.innerHTML = ''; }
+  const s = document.getElementById('rep-send');
+  s.disabled = false; s.textContent = 'SEND IT';
   document.getElementById('report-screen').classList.remove('hidden');
+});
+document.getElementById('rep-send').addEventListener('click', async ()=>{
+  const p = G && G.p; if (!p) return;
+  const btn = document.getElementById('rep-send'), done = document.getElementById('rep-done');
+  const c = currentClaim();
+  btn.disabled = true; btn.textContent = 'sending…'; done.textContent = '';
+  let r = { ok: false, reason: 'offline' };
+  try {
+    if (window.PJCC && PJCC.reportPuzzle) r = await PJCC.reportPuzzle({
+      puzzle_id: p.id, fen: puzzleFEN(p), motif: p.theme, goal: p.goal,
+      line: (p.line || []).map(x => x[1]).join(' '), rating: p.rating,
+      mode: run ? run.mode : null, step: run ? run.step : null,
+      claim: c ? c.move : null, verdict: c ? c.verdict : 'none', verdict_cp: c ? c.cp : null,
+      note: document.getElementById('rep-note').value || ''
+    });
+  } catch (e) { r = { ok: false, reason: 'failed' }; }
+  if (r.ok){
+    btn.textContent = '✓ sent';
+    done.textContent = 'Got it — thank you. McPuppy reads these.';
+  } else {
+    btn.disabled = false; btn.textContent = 'SEND IT';
+    done.textContent = 'Could not send it from here — use email or copy below, nothing is lost.';
+  }
 });
 document.getElementById('rep-close').addEventListener('click', ()=>{
   document.getElementById('report-screen').classList.add('hidden');

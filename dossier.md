@@ -198,8 +198,20 @@ permalink: /dossier/
        identity forge card and carrying a SECOND avatar of the same person. They're now
        painted INTO the forge card through PJCCForge.setAccountBlock, which re-runs on
        every card render — so an edit in the forge can't wipe them. */
+    /* ── ONE LADDER, SAID ONCE (2026-08-03, priority #3) ─────────────────────────────
+       This line used to print the CREDIT rank ("Delta Clearance") while a real chess
+       rating sat unmentioned on the same profile — two ladders, one word, and the
+       stronger player wearing the lower rung. It prints CLEARANCE now: what your rating
+       earns you, floored by what your credits already earned you, so the number can only
+       ever have gone up for anyone reading this. The rating itself is named beside it,
+       because a rung with no number behind it is a mood, not a measurement. */
+    var cl = PJCC.clearance ? PJCC.clearance(prof) : null;
+    var clLine = cl
+      ? '<span class="pjcc-pip pip-' + cl.level + '" title="' + esc(cl.name) + '">' + cl.pip + '</span> ' + esc(cl.name) +
+        (cl.rating ? ' <span class="dsr-dim">· PJCC rating ' + cl.rating + '</span>' : '')
+      : esc(rank.name);
     var accountHtml =
-      '<div class="dsr-rank">Lv ' + lvl.level + ' · ' + esc(rank.name) + ' · <span class="pjcc-credits">' + credits + ' credits</span> ' + streakChip + '</div>' +
+      '<div class="dsr-rank">Lv ' + lvl.level + ' · ' + clLine + ' · <span class="pjcc-credits">' + credits + ' credits</span> ' + streakChip + '</div>' +
       '<div class="dsr-xp" title="' + (lvl.next ? ((lvl.span - lvl.into) + ' more rounds to Lv ' + (lvl.level + 1)) : 'Max level') + '"><div class="dsr-xp-fill" style="width:' + xpPct + '%"></div></div>' +
       '<div class="pjcc-sub">' + (lvl.next ? ((lvl.span - lvl.into) + ' more rounds to Lv ' + (lvl.level + 1)) : 'Max level — top dog of the board.') + '</div>' +
       '<div class="dsr-acts">' +
@@ -250,6 +262,23 @@ permalink: /dossier/
     if (gcur > 0) climbHref += '#climb';
     html += '<a class="dsr-climb" href="' + climbHref + '">' +
       '<span class="dsr-climb-glyph">♛</span><span>' + climbLine + '</span><span class="dsr-climb-go">▸</span></a>';
+
+    /* ── THE PUZZLE RATING (2026-08-03, priority #2) ────────────────────────────────
+       "'rated 1240 puzzles' is a far better brag than 'step 340'." So it sits right
+       under the climb, in the same shape, as a second road with its own number.
+       Read through PJCC.puzzleRating() rather than off the profile, because the rating
+       is LOCAL-FIRST — a signed-in player who has done all their solving on this device
+       and never had the migration run still has a real number, and that number is the
+       true one. Hidden entirely at zero solves: an untouched meter is a chore. */
+    try {
+      var pz = PJCC.puzzleRating ? PJCC.puzzleRating() : null;
+      if (pz && pz.solved > 0) {
+        html += '<a class="dsr-climb" href="/games/fork-in-the-road/">' +
+          '<span class="dsr-climb-glyph">♟</span><span>Puzzles · <b>rated ' + pz.rating + '</b>' +
+          ' — ' + pz.solved + ' solved' + (pz.peak > pz.rating ? ' · peak ' + pz.peak : '') + '</span>' +
+          '<span class="dsr-climb-go">▸</span></a>';
+      }
+    } catch (e) {}
 
     html += '<h2 class="dsr-h">Achievements</h2><div class="dsr-ach-grid">';
     PJCC.earnedAchievements(prof, stats).forEach(function (a) {
@@ -404,6 +433,7 @@ permalink: /dossier/
 /* .dsr-head / .dsr-avatar / .dsr-ident / .dsr-name / .dsr-title-flair are GONE with the
    second box (2026-07-27) — the account facts below are painted into the identity card. */
 .dsr-rank { color: #b9a8e6; font-size: 0.88rem; margin-bottom: 6px; }
+.dsr-dim { color: #8a7ab8; font-size: 0.92em; }
 .idn-account { margin: 8px 0 2px; }
 .idn-account .pjcc-sub { font-size: 0.76rem; }
 .dsr-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }

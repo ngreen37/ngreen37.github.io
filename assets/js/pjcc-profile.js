@@ -266,6 +266,46 @@
     { name: 'Above Omega',      min: 1200, frag: 'Fragment 6: You were never solving the puzzles. The puzzles were measuring you.' }
   ];
 
+  /* ══ CLEARANCE — ONE LADDER, ONE PIP, EVERYWHERE (2026-08-03) ═════════════════════
+     Priority #3: "Wire the PJCC Rating → the Clearance ladder (RECRUIT → DELTA → … →
+     OMEGA) so your codename wears a clearance pip that climbs, and the quiz game, the
+     tables and the Profile finally speak one language. The clearance pip alone is the
+     contained first slice."
+
+     THE PROBLEM IT FIXES. The site had TWO ladders wearing the same word. `RANKS` above
+     is a CREDIT ladder that hands out Subject Zero fragments and calls its rungs "Delta
+     Clearance" and "Omega Clearance"; the Park Tables run a real chess Elo (`pjcc_rating`)
+     that nothing outside the tables ever mentioned. So "clearance" meant *how much have
+     you played* in one place and nothing at all in the other, and a strong player who had
+     not ground credits wore RECRUIT forever.
+
+     ⚠ IT IS THE MAX OF BOTH, AND THAT IS THE WHOLE DESIGN. Clearance is what your CHESS
+     RATING earns you, **floored by what your credits already earned you**. Reading it as
+     rating-only would have demoted every existing player the day it shipped — someone at
+     Delta on 300 credits would have woken up a Recruit — and this economy's standing rule
+     is that loosening later is a gift and tightening later is a takeaway
+     ([[sell-back-economy]]). Nobody moves down. The rating simply becomes a second, faster
+     road up the same ladder, which is what makes it one language instead of two.
+
+     ⚠ THE FRAGMENTS DO NOT MOVE. `rankFor()` is untouched and still keyed to credits, so
+     every Subject Zero fragment anyone has unlocked stays unlocked and unlocks the same
+     way. Clearance is a DISPLAY rank; the rank ladder is a REWARD ladder. They share
+     names on purpose and share nothing else.
+
+     THE THRESHOLDS. 250 is where every operative starts at the Park Tables, so RECRUIT
+     has to hold the whole opening stretch or the pip would be a participation badge.
+     Above Omega is deliberately out past where any of these bots live — it should be
+     something you hear about before you see it. */
+  var CLEARANCE = [
+    { level: 1, name: 'Recruit',          pip: '·',  rating: 0 },
+    { level: 2, name: 'Operative',        pip: '◦',  rating: 400 },
+    { level: 3, name: 'Field Agent',      pip: '◇',  rating: 600 },
+    { level: 4, name: 'Cipher Clearance', pip: '◆',  rating: 800 },
+    { level: 5, name: 'Delta Clearance',  pip: '✦',  rating: 1000 },
+    { level: 6, name: 'Omega Clearance',  pip: '✶',  rating: 1300 },
+    { level: 7, name: 'Above Omega',      pip: '❈',  rating: 1600 }
+  ];
+
   var PJCC = {
     enabled: !!configured,
     ready: null,
@@ -301,6 +341,28 @@
     nextRank: function (credits) {
       for (var i = 0; i < RANKS.length; i++) { if ((credits || 0) < RANKS[i].min) return RANKS[i]; }
       return null;
+    },
+
+    /* ── the clearance pip (see the CLEARANCE note above) ────────────────────────────
+       Takes a profile, or nothing (a guest reads as Recruit, which is true). Returns the
+       rung plus `next` and `toNext`, so any surface can say how far the next pip is
+       without re-deriving the ladder. */
+    CLEARANCE: CLEARANCE,
+    clearance: function (prof) {
+      prof = (prof === undefined) ? profile : prof;
+      var rating = (prof && prof.pjcc_rating) || 0;
+      var byRating = CLEARANCE[0];
+      for (var i = 0; i < CLEARANCE.length; i++) if (rating >= CLEARANCE[i].rating) byRating = CLEARANCE[i];
+      /* THE FLOOR. RANKS is credit-keyed and index-aligned with CLEARANCE (seven rungs,
+         same names, same order) — so an existing player's credit rank is simply the
+         lowest clearance they may ever show. Nobody moves down. */
+      var credits = (prof && prof.credits) || 0, byCredits = 0;
+      for (var k = 0; k < RANKS.length; k++) if (credits >= RANKS[k].min) byCredits = k;
+      var idx = Math.max(byRating.level - 1, byCredits);
+      var c = CLEARANCE[idx], nxt = CLEARANCE[idx + 1] || null;
+      return { level: c.level, name: c.name, pip: c.pip, rating: rating,
+               fromCredits: byCredits > (byRating.level - 1),
+               next: nxt, toNext: nxt ? Math.max(0, nxt.rating - rating) : 0 };
     },
     ownedAvatars: function () {
       var owned = (profile && profile.companion && profile.companion.owned) || [];
@@ -347,11 +409,33 @@
     if (sb.auth.__user) { await loadProfile(); } else { profile = null; }
   }
 
+  /* ⚠ THE COLUMN LIST IS A COMPATIBILITY SURFACE, and adding to it can take the whole
+     site down for everyone. Postgrest fails the WHOLE select if any named column is
+     missing, so asking for a column before Nate has run its migration would mean no
+     profile at all — not a missing rating, a missing codename, on every page. The two
+     newest columns are therefore fetched in a SECOND, optional query whose failure is
+     swallowed: the site works identically before and after the migration, and simply
+     knows less. (`pjcc_rating` has shipped since the Park Tables v2 migration;
+     `puzzle_rating` needs docs/puzzle-rating-setup.md run. Both are treated as optional
+     because "which migrations has this database actually had" is not something the
+     client can know.) */
   async function loadProfile() {
     var u = sb.auth.__user;
     if (!u) { profile = null; return null; }
     var r = await sb.from('profiles').select('codename,companion,credits,rank').eq('id', u.id).maybeSingle();
     profile = (r && r.data) ? r.data : null;
+    if (profile) {
+      try {
+        var x = await sb.from('profiles').select('pjcc_rating,rated_games,puzzle_rating,puzzle_solved')
+          .eq('id', u.id).maybeSingle();
+        if (x && x.data) {
+          profile.pjcc_rating = x.data.pjcc_rating;
+          profile.rated_games = x.data.rated_games;
+          profile.puzzle_rating = x.data.puzzle_rating;
+          profile.puzzle_solved = x.data.puzzle_solved;
+        }
+      } catch (e) { /* migration not run yet — the ladders fall back to local + credits */ }
+    }
     return profile;
   }
 
@@ -655,8 +739,13 @@
   PJCC.cumulativeLeaderboard = async function (limit, offset) {
     if (!sb) return [];
     limit = limit || 25; offset = offset || 0;
+    /* `pjcc_rating` is here so the overall board can draw the clearance pip from the
+       real thing rather than from credits alone (2026-08-03). Safe to name: it shipped
+       with the Park Tables v2 migration and the ratings board already selects it. If it
+       ever isn't there, this returns [] rather than a broken board — which is the same
+       failure the rating board already handles. */
     var r = await sb.from('profiles')
-      .select('codename,credits,rank,companion')
+      .select('codename,credits,rank,companion,pjcc_rating')
       .order('credits', { ascending: false })
       .order('codename', { ascending: true })
       .range(offset, offset + limit - 1);
@@ -869,6 +958,145 @@
     // a streak only counts as "alive" if the last active day was today or yesterday
     var alive = (s.last === today || s.last === dayStamp(y));
     return { current: alive ? (s.current || 0) : 0, best: s.best || 0, last: s.last || '', playedToday: s.last === today };
+  };
+
+  /* ══ THE PUZZLE RATING — an Elo for the SOLVER (2026-08-03) ══════════════════════
+     Priority #2: "Puzzles wear honest ~ratings already. Give the SOLVER one — the same
+     Elo the Park Tables run — and serve puzzles at it. The Journey's 1–10 difficulty
+     becomes a real, comparable number, and 'rated 1240 puzzles' is a far better brag
+     than 'step 340'."
+
+     THE SAME ELO, NOT THE SAME NUMBER. It is the identical formula the Park Tables run
+     server-side (`settle_park_rating`) — expected score from the gap, K times the
+     surprise — but on the scale the PUZZLES already live on, which is roughly 400 to
+     1500. Sharing the Park Tables' 250 start would have been sharing a number, not a
+     system: a 250-rated solver would be served puzzles below anything the generator can
+     make. **START 700**, a little under a mid-difficulty puzzle, so the first handful
+     feel winnable and the number moves fast early.
+
+     LOCAL-FIRST, AND THAT IS DELIBERATE. Puzzles are the one part of this site a
+     stranger plays hardest and signs into least, and a rating that only exists for
+     account holders would mean the people doing the most work see the least progress
+     ([[account-is-free-not-optional-pitch]]). So it lives in localStorage, works signed
+     out, and MIRRORS to the profile when there is one — exactly the shape the daily
+     streak already uses. `takeHigher` on load means signing in on a new device lifts you
+     to your real rating instead of resetting you to 700.
+
+     ⚠ K FALLS AS YOU SETTLE. 40 for the first ten puzzles, then 24, then 16 past fifty.
+     Without it a hundred-puzzle veteran's rating still swings 40 points on one unlucky
+     mate-in-two, which makes the number noise rather than a measurement.
+     ⚠ A REVEALED SOLVE SCORES 0.25, NOT 0. It is not a loss — you did finish it — but the
+     deepest hint tier plays the winning move for you, so scoring it as a win would let
+     anyone hint their way to Omega. Solved-with-a-wrong-try is 0.6: you found it. */
+  var PZ_KEY = 'pjcc.puzzle.rating.v1';
+  var PZ_START = 700, PZ_FLOOR = 300, PZ_CEIL = 2600;
+  function loadPz() {
+    try {
+      var o = JSON.parse(localStorage.getItem(PZ_KEY)) || {};
+      return { rating: o.rating || PZ_START, solved: o.solved || 0, peak: o.peak || o.rating || PZ_START };
+    } catch (e) { return { rating: PZ_START, solved: 0, peak: PZ_START }; }
+  }
+  function savePz(o) { try { localStorage.setItem(PZ_KEY, JSON.stringify(o)); } catch (e) {} }
+  PJCC.PUZZLE_START = PZ_START;
+  PJCC.puzzleRating = function () {
+    var o = loadPz();
+    // the profile wins if it is HIGHER — see takeHigher above
+    var p = profile && profile.puzzle_rating;
+    if (typeof p === 'number' && p > o.rating) { o.rating = p; o.peak = Math.max(o.peak, p); savePz(o); }
+    var ps = profile && profile.puzzle_solved;
+    if (typeof ps === 'number' && ps > o.solved) { o.solved = ps; savePz(o); }
+    return o;
+  };
+  /* ONE-TIME SEED, for a player who arrives with a road behind them. It SETS the rating
+     rather than nudging it, and it does NOT count a solve — so `solved` stays 0 and the
+     caller's "have I seeded yet" test stays true exactly once. Refuses to lower anything:
+     a seed may only ever lift you ([[sell-back-economy]] — no takeaways). */
+  PJCC.seedPuzzleRating = function (rating) {
+    var o = PJCC.puzzleRating(), r = parseInt(rating, 10) || 0;
+    if (r <= o.rating) return o;
+    o.rating = Math.min(PZ_CEIL, r); o.peak = Math.max(o.peak, o.rating);
+    savePz(o);
+    return o;
+  };
+  /* One puzzle's worth of movement. `score` is 1 aced · 0.6 solved after a wrong try ·
+     0.25 revealed. Returns {before, after, delta, rating, solved} so the room can SHOW
+     the swing — a rating that changes silently teaches nobody anything. */
+  PJCC.settlePuzzle = function (puzzleRating, score) {
+    var o = PJCC.puzzleRating();
+    var pr = parseInt(puzzleRating, 10);
+    if (!pr || pr < 100) return { before: o.rating, after: o.rating, delta: 0, rating: o.rating, solved: o.solved };
+    var s = Math.max(0, Math.min(1, typeof score === 'number' ? score : 1));
+    var k = o.solved < 10 ? 40 : o.solved < 50 ? 24 : 16;
+    var expected = 1 / (1 + Math.pow(10, (pr - o.rating) / 400));
+    var before = o.rating;
+    var after = Math.max(PZ_FLOOR, Math.min(PZ_CEIL, Math.round(before + k * (s - expected))));
+    o.rating = after; o.solved += 1; o.peak = Math.max(o.peak, after);
+    savePz(o);
+    // mirror to the account when there is one; a failure here is silent and harmless
+    // (the local copy is the source of truth and will re-mirror on the next solve).
+    if (sb && PJCC.currentUser()) {
+      try {
+        sb.from('profiles').update({ puzzle_rating: after, puzzle_solved: o.solved })
+          .eq('id', PJCC.currentUser().id).then(function () {
+            if (profile) { profile.puzzle_rating = after; profile.puzzle_solved = o.solved; }
+          }, function () {});
+      } catch (e) {}
+    }
+    return { before: before, after: after, delta: after - before, rating: after, solved: o.solved, k: k };
+  };
+
+  /* ══ REPORT A PUZZLE — a table, not an inbox (2026-08-03) ═════════════════════════
+     Priority #1: "A Supabase `puzzle_reports` table, insert-only via RLS, written
+     straight from the game… One tap, nothing lost." Plus: "Let the machine triage them.
+     Attach the engine's own verdict to the report… so the only reports worth opening are
+     the ones where the PLAYER IS RIGHT."
+
+     ⚠ IT MUST FAIL SOFTLY AND SAY SO. The table does not exist until Nate runs
+     docs/puzzle-reports-setup.md, and this ships before he does. So this NEVER throws:
+     it resolves `{ok:false, reason}` and the room falls back to the Email/Copy pair that
+     has always worked. A report button that silently swallows a report is worse than the
+     mailto it replaced ([[down-never-stuck]]).
+
+     ⚠ AND IT WORKS SIGNED OUT. The insert policy is `to anon, authenticated` on purpose:
+     the person most likely to find a broken puzzle is a stranger doing their first ten,
+     and requiring an account to say "this is wrong" would filter out exactly the reports
+     worth having. `codename` is whatever they have, or null. */
+  PJCC.reportPuzzle = async function (payload) {
+    if (!sb) return { ok: false, reason: 'offline' };
+    try {
+      var u = PJCC.currentUser();
+      var row = {
+        puzzle_id: String(payload.puzzle_id || '').slice(0, 64),
+        fen:       String(payload.fen || '').slice(0, 120),
+        motif:     String(payload.motif || '').slice(0, 40),
+        goal:      String(payload.goal || '').slice(0, 40),
+        line:      String(payload.line || '').slice(0, 200),
+        rating:    parseInt(payload.rating, 10) || null,
+        mode:      String(payload.mode || '').slice(0, 24),
+        step:      parseInt(payload.step, 10) || null,
+        claim:     String(payload.claim || '').slice(0, 24),
+        note:      String(payload.note || '').slice(0, 500),
+        // THE TRIAGE — the machine's own opinion, written at report time
+        verdict:   String(payload.verdict || '').slice(0, 24),
+        verdict_cp: (payload.verdict_cp === null || payload.verdict_cp === undefined)
+                     ? null : parseInt(payload.verdict_cp, 10),
+        reporter:  u ? u.id : null,
+        codename:  (profile && profile.codename) || null
+      };
+      var r = await sb.from('puzzle_reports').insert(row);
+      if (r && r.error) return { ok: false, reason: r.error.message || 'rejected' };
+      return { ok: true };
+    } catch (e) { return { ok: false, reason: (e && e.message) || 'failed' }; }
+  };
+  /* The private read side. Returns [] for anybody who is not the Creator — the RLS policy
+     is what actually enforces that; this is only the query. */
+  PJCC.puzzleReports = async function (limit) {
+    if (!sb) return [];
+    try {
+      var r = await sb.from('puzzle_reports').select('*')
+        .order('created_at', { ascending: false }).limit(limit || 200);
+      return (r && r.data) ? r.data : [];
+    } catch (e) { return []; }
   };
 
   // --- "Beat the Creator" ghost scores -------------------------------------------
