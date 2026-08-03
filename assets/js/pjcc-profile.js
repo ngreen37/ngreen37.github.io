@@ -124,8 +124,16 @@
      price, so laying down the 400-credit Crown put 400 credits in the pot and paid out
      against that — Nate: "the collectables fetch WAY too big a reward". `stake` is the
      fix. It is what the BOARD counts a piece as worth, which is deliberately a fraction
-     of what a shop charges (an Ultra-Rare stakes 90 against a 400 sticker). The altar is
+     of what a shop charges (a Legendary stakes 90 against a 400 sticker). The altar is
      not a pawn shop; it weighs the courage of the gesture, not the receipt.
+
+     ⚠ LEGENDARY IS THE TOP BAND, ULTRA-RARE IS FIFTH — swapped 2026-08-03 (Nate: "Switch
+     around the designations 'legendary' and 'ultra-rare'"). What moved is the DESIGNATION:
+     the name, its glyph and its colour travelled together to the other row, while `min` and
+     `stake` stayed where they were, because those two are the LADDER and the ladder didn't
+     change. Doing it that way is why `.band-legendary` / `.band-ultra` in the-gambit needed
+     no edit at all — the CSS keys colour to the name, and each name took its colour with it.
+     Anything that hard-codes 'ultra' as the ceiling is now wrong; compare `tier` instead.
 
      THE VAULT GETS A FREE BAND. Its pieces carry credit values in the same range as the
      mid shop shelf, but no shop stocks them and only the altar has ever handed one out —
@@ -139,8 +147,8 @@
     { key: 'uncommon',  label: 'Uncommon',   min: 40,  glyph: '◇', stake: 18, color: '#7fd4a8' },
     { key: 'rare',      label: 'Rare',       min: 80,  glyph: '◆', stake: 30, color: '#56d0ff' },
     { key: 'veryrare',  label: 'Very Rare',  min: 150, glyph: '✦', stake: 45, color: '#b98fff' },
-    { key: 'legendary', label: 'Legendary',  min: 220, glyph: '✶', stake: 65, color: '#ffb066' },
-    { key: 'ultra',     label: 'Ultra-Rare', min: 320, glyph: '❈', stake: 90, color: '#ff8fd0' }
+    { key: 'ultra',     label: 'Ultra-Rare', min: 220, glyph: '❈', stake: 65, color: '#ff8fd0' },
+    { key: 'legendary', label: 'Legendary',  min: 320, glyph: '✶', stake: 90, color: '#ffb066' }
   ];
   /* ⚠ Attached to PJCC down in the object literal, NOT here — `var PJCC` is hoisted but
      still undefined at this point in the file, so `PJCC.BANDS = …` up here throws.
@@ -564,7 +572,7 @@
   };
 
   // ===========================================================================
-  // Progression: companion levels, achievements, world map, titles, referral
+  // Progression: companion levels, achievements, the journey, titles, referral
   // ===========================================================================
 
   // --- companion levels (XP = total rounds played, a monotonic stat) ---------
@@ -605,7 +613,7 @@
 
      Two things were wrong beyond the ask. SHOGI SCHOLAR asked for a score on Shogi
      Island — a game that's been slow-rolled off the site since 2026-07-04, so nobody
-     could earn it. And GLOBETROTTER was measured against the world map, which still
+     could earn it. And GLOBETROTTER was measured against the journey's stops, which still
      LISTED Shogi Island — so "play every game" was unwinnable for everyone. Both are
      now measured against games a visitor can actually reach today.
 
@@ -622,7 +630,7 @@
     { key: 'held-the-gate', icon: '🏰', label: 'Held the Gate',  desc: 'Score 2000+ in Siege on Chess City', test: function (c) { return c.best('tower-defense') >= 2000; } },
     { key: 'the-climb',     icon: '♛', label: 'The Climb',      desc: 'Beat 3 floors of the Gauntlet',    test: function (c) { return c.best('the-gauntlet') >= 3; } },
     { key: 'crowned',       icon: '👑', label: 'Crowned',        desc: 'Clear all ten Gauntlet floors',    test: function (c) { return c.best('the-gauntlet') >= 10; } },
-    { key: 'globetrotter',  icon: '🗺', label: 'Globetrotter',   desc: 'Play every game at least once',    test: function (c) { return WORLDMAP.every(function (s) { return !s.game || c.played(s.game); }); } },
+    { key: 'globetrotter',  icon: '🗺', label: 'Globetrotter',   desc: 'Play every game at least once',    test: function (c) { return JOURNEY.every(function (s) { return !s.game || c.played(s.game); }); } },
     { key: 'dedicated',     icon: '🔥', label: 'Dedicated',      desc: 'Play 50 rounds total',             test: function (c) { return c.totalPlays >= 50; } },
     { key: 'collector',     icon: '🛒', label: 'Collector',      desc: 'Own something from the Shopkeeper', test: function (c) { return !!(c.profile && c.profile.companion && (c.profile.companion.owned || []).length); } }
   ];
@@ -632,12 +640,18 @@
     return ACHIEVEMENTS.map(function (a) { return { key: a.key, icon: a.icon, label: a.label, desc: a.desc, earned: !!a.test(c) }; });
   };
 
-  // --- world map (game completion -> Princess's journey) ---------------------
+  // --- the journey (game completion -> Princess's walk to Chess City) --------
   // Stops must be places a visitor can actually GO today. Shogi Island (slow-rolled off
   // the site) and Pirc Crossing (still IN DEV) were stops nobody could light up, which
   // also made the Globetrotter achievement unwinnable. Sky Run and the Siege took their
   // places — both are shipped, both are on the games hall. (2026-07-27)
-  var WORLDMAP = [
+  //
+  // ⚠ RENAMED from WORLDMAP / worldProgress 2026-08-03, when the actual World Map page was
+  // deleted (Nate: "remove worldmap from website - dead page"). This was never that page —
+  // it is the seven-dot strip on the Dossier, which the UI has always called "The journey",
+  // and it is still live. The old name would now be the only "world map" left in the repo,
+  // which is exactly the sort of ghost that gets a working feature deleted by mistake.
+  var JOURNEY = [
     { name: 'Checker Town',     game: 'notation-run' },
     { name: 'The Sand Mines',   game: 'sand-mine-depths' },
     { name: 'Fork in the Road', game: 'fork-in-the-road' },
@@ -646,10 +660,10 @@
     { name: 'The City Walls',   game: 'tower-defense' },
     { name: 'Chess City',       game: null }
   ];
-  PJCC.WORLDMAP = WORLDMAP;
-  PJCC.worldProgress = function (stats) {
+  PJCC.JOURNEY = JOURNEY;
+  PJCC.journeyProgress = function (stats) {
     var c = statsCtx(profile, stats);
-    var stops = WORLDMAP.map(function (s) { return { name: s.name, game: s.game, reached: s.game ? c.played(s.game) : false }; });
+    var stops = JOURNEY.map(function (s) { return { name: s.name, game: s.game, reached: s.game ? c.played(s.game) : false }; });
     stops[stops.length - 1].reached = stops.filter(function (s) { return s.game; }).every(function (s) { return s.reached; });
     var furthest = -1; stops.forEach(function (s, i) { if (s.reached) furthest = i; });
     return { stops: stops, furthest: furthest };

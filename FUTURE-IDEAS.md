@@ -61,18 +61,16 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**
   you and still advances the counter. It is flagged (the solve isn't "aced", the difficulty drops),
   but the step moves. Leave it as a mercy or make reveals not count — also his.
 - [ ] **The rarity band NAMES are mine and the veto is open.** *Common · Uncommon · Rare · Very Rare ·
-  Legendary · Ultra-Rare* — he asked for six categories "up to 'ultra-rare' or 'ultra-valuable'", and
-  these are the six. If PJCC wants its own vocabulary for them (the altar speaks in ritual, not in
+  Ultra-Rare · Legendary* — he asked for six categories "up to 'ultra-rare' or 'ultra-valuable'", and
+  these are the six. **Legendary and Ultra-Rare traded places 2026-08-03 at his word**, so Legendary
+  is the ceiling now. If PJCC wants its own vocabulary for them (the altar speaks in ritual, not in
   loot-box), they are one array in `pjcc-profile.js`.
-- [ ] **Robert, Kaede and Matsu are publicly present but officially hidden.** Robert is the Expert bot
-  at the Park Tables, Kaede teaches the Reading Room, Kaede and Matsu both teach Shogi Island — all
-  named on live pages, all still in `hidden_character_urls`. Their doors are now closed (no live page
-  links their dossier), so nothing is leaking; but "hidden" has quietly stopped describing them. Either
-  reveal the three (delete three lines + their `sitemap: false`) or leave it — **a reveal is his.**
-- [ ] **`_layouts/worldmap.html` is an orphan.** No page uses `layout: worldmap`; it is unreachable, and
-  it carries descriptions of hidden locations including *"Where the Rival came from."* Not deleted,
-  because it is the thing the Journey-map decision below is *about* — but it's dead weight until that
-  call is made, and it's the file that would leak first if someone wired a page to it.
+- [x] ~~**Robert, Kaede and Matsu are publicly present but officially hidden.**~~ **ANSWERED
+  2026-08-03 — Nate: "Robert, Kaede, and Maetsu are fine to remain as-is, I'm still going to
+  slow-roll them, so don't give them character pages."** They stay named on the live pages that
+  already use them (Robert as the Park Tables Expert bot, Kaede in the Reading Room, Kaede and
+  Matsu on Shogi Island) and stay in `hidden_character_urls` with no dossier of their own. The
+  rule is the standing one: **unlink, keep the text.** Not an oversight — do not "fix" it again.
 - [ ] **Pick the home page's NAME.** The front door shipped 2026-07-28 as **McPuppy Chess** at
   `/chess/`, but that's a working title — twenty candidates are in "🚪 The front door" below.
   Swapping is one Liquid line at the top of `chess.md` (`site_name`) plus the drawer sub and the
@@ -367,7 +365,6 @@ It is the clearest sentence on the site.
 ## ♛ Gauntlet-as-flagship — the remaining framing moves
 *(the hero band, boss cards, commentators, resume-continuity, rank badge, and games-page hierarchy all shipped; these three are what's left)*
 - **Rename the experience** — "The Ascent / Coronation Run." Wire it explicitly to Princess's canon arc (she can learn anything → she rises to Queen): the climb this whole world is about. Framing + copy, zero code.
-- **The climb as a journey across the world map** — the roster already mirrors the regions (Checker Town → Sand Mines → Sea → Shogi Isle → the tower); present it as a map you traverse so the Gauntlet visibly ties every location and game together.
 - **Advertise that it has a real ending** — lean into the coronation payoff (beating the CEO = the Princess → Queen moment + the secret ▾ DESCEND). Tease it ("Ten stand between a recruit and the crown"); the natural home for a short Blender cutscene intro.
 - **A NEW CHAMPION EACH TIME (2026-07-15, Nate — "maybe a running-thing"):** the
   Checker Town Chess Open always has a *fresh* winner, so **Floor 1 is often a new
@@ -966,23 +963,21 @@ Town, Bob-Proctor mindset) and **Michael** (Chess City, truly righteous); **The 
 15. 🎬 **The funny "chase" walker** — *(Nate's idea)* a rare random variant where instead of Princess strolling alone, **you (the operator) chase her** across the bottom of the screen; later a fully-animated Princess. The walker is now her real render — animate it next.
 
 **Locations**
-16. ★ **Interactive World Map** — click the road Checker Town → the Sea → Shogi Island → Chess City; each node opens a location page (re-light the parked World Map).
-17. 🎬 **Parallax location art** — scenes with depth layers that drift on scroll/tilt; a cheap "3D" before the real 3D.
-18. ★ **Time-of-day states** — a location page shifts day/dusk/night like the Companion Den.
-19. 🎬 **Walkable panoramas** — 360°/scroll-pan location views; the web precursor to the Godot/VR walk.
-20. **Gate-locked locations** — Shogi Island's deeper pages open via the Av13 rite (you already built the gate).
-21. ★ **Location ⇄ game links** — each place names its game (Checker Town → Notation, Sand Mines → Sand Mine Depths, Shogi Island → Shogi/Reading Room): the funnel, made explicit.
-22. ⛁ **Living world-state** — locations reflect the news ticker / ARG (the "ferry delayed" beat literally shows on the Shogi Island page).
-23. **Location soundscapes** — ambient loops (Checker Town hum, the Sea, the dojo) — Av5.
-24. **The crash site** — a discoverable hidden location that pays off an ARG fragment (the origin).
-25. ★ **Fog-of-war map** — places light up as you visit their pages/play their games (ties the Dossier world-map).
-26. 🎬 **Blender flythroughs** — short rendered location intros as loading screens / season trailers.
-27. **Checker Town Field Guide** — a printable art-book leave-behind (Av4 physical).
-28. ⛁ **Journey tracker** — your operative's position on the road to Chess City, advancing with progress.
+16. 🎬 **Parallax location art** — scenes with depth layers that drift on scroll/tilt; a cheap "3D" before the real 3D.
+17. ★ **Time-of-day states** — a location page shifts day/dusk/night like the Companion Den.
+18. 🎬 **Walkable panoramas** — 360°/scroll-pan location views; the web precursor to the Godot/VR walk.
+19. **Gate-locked locations** — Shogi Island's deeper pages open via the Av13 rite (you already built the gate).
+20. ★ **Location ⇄ game links** — each place names its game (Checker Town → Notation, Sand Mines → Sand Mine Depths, Shogi Island → Shogi/Reading Room): the funnel, made explicit.
+21. ⛁ **Living world-state** — locations reflect the news ticker / ARG (the "ferry delayed" beat literally shows on the Shogi Island page).
+22. **Location soundscapes** — ambient loops (Checker Town hum, the Sea, the dojo) — Av5.
+23. **The crash site** — a discoverable hidden location that pays off an ARG fragment (the origin).
+24. 🎬 **Blender flythroughs** — short rendered location intros as loading screens / season trailers.
+25. **Checker Town Field Guide** — a printable art-book leave-behind (Av4 physical).
+26. ⛁ **Journey tracker** — your operative's position on the road to Chess City, advancing with progress.
     *(Built, and on the Profile today — but read "🗺 The Journey map — decide what it's FOR" at the bottom
     of this file before adding to it; the dots currently light for merely opening a game.)*
-29. **Seasonal location reskins** — advent, the anniversary of the crash, premiere week (Av9 live-ops).
-30. 🎬 **The Pieces gallery (moved here from Characters)** — the **six Blender board-pieces** (pawn/rook/bishop/knight/queen/king, each scaled to the Battle-Room concept, Princess = the knight). *Belongs in the **Evolution Log** as renders land* — show concept → gray-box → final per piece. Frame it as "the board itself is a place." (This is where the old `## Pieces` section now lives.)
+27. **Seasonal location reskins** — advent, the anniversary of the crash, premiere week (Av9 live-ops).
+28. 🎬 **The Pieces gallery (moved here from Characters)** — the **six Blender board-pieces** (pawn/rook/bishop/knight/queen/king, each scaled to the Battle-Room concept, Princess = the knight). *Belongs in the **Evolution Log** as renders land* — show concept → gray-box → final per piece. Frame it as "the board itself is a place." (This is where the old `## Pieces` section now lives.)
 
 ---
 
@@ -1133,8 +1128,10 @@ second ten are **ingenuity** (the clever, cheap, memorable stuff).
   survive the game. **Restore from git** if the knight ever comes back; the strongest survivor is
   *forcing-move knight puzzles*, which the Puzzle room could build provably today.
 - **Games-page search box** and **sort dropdown** — re-add if the library outgrows one screen.
-- **De-linked nav pages** (revisit with real content): World Map, Sound, Soundtrack, Press Kit, Lore Codex,
-  Evolution Log. **Podcast** removed (a "Coming Winter 2026" teaser sits on the homepage). **Chess Lessons** folded into About.
+- **De-linked nav pages** (revisit with real content): Sound, Soundtrack, Press Kit, Lore Codex,
+  Evolution Log. **World Map** left this list 2026-08-03 — it was DELETED (layout + the `.wm-*`
+  half of its stylesheet), not parked. Don't rebuild it from here. **Podcast** removed (a "Coming
+ Winter 2026" teaser sits on the homepage). **Chess Lessons** folded into About.
 - **Cursor sheen** — discarded (washed out text). *Re-use idea: a single spotlight on the featured box, or a cursor-swept hidden-text reveal.*
 - **Homepage Story Arc film-strip** — now decode-as-you-play (see Seeds).
 - **Site-wide Princess speech** — removed; movement-only (talk ideas live in Av6).

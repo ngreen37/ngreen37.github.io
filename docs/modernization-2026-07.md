@@ -73,7 +73,7 @@ The big swing. Substantial redesign of the first thing anyone sees.
 |---|------|--------|--------|
 | 8 | **A real moving hero** — replace the flat CSS skyline with a looping scene of Princess → Chess City (animated SVG / CSS now, a Blender loop later). The #1 lever against "flat." | L | ▢ |
 | 9 | **Cinematic splash** — the McPuppy/PJCC front door as a signature 3-second moment, not a menu. | L | ▢ |
-| 10 | **World-map navigation** — Checker Town → the Sea → Chess City as an explorable spine (we have `_layouts/worldmap.html` + locations). Turns "a menu" into "a place." | L | ▢ |
+| 10 | ~~**World-map navigation**~~ — **CUT 2026-08-03** (Nate: "remove worldmap from website - dead page"). `_layouts/worldmap.html` and `_sass/_pjcc-06-world.scss` are deleted; recover from git if it ever comes back. | L | ✕ |
 | 11 | **Retire / restyle the operative chrome** — reframe the ticker + HUD so it reads intentional and modern, not dated. (Copy changes here need Nate's sign-off.) | M | ▢ |
 
 ## Phase 3 — Product surfaces (games + academy as the product)
@@ -158,8 +158,8 @@ re-pointed read. **Legend:** ✅ shipped · ↻ re-pointed · ◐ open · ✂ fo
 18. Signature sound layer — ◐ open (the jukebox is the seed).
 
 **Front door & growth loop**
-19. World-map navigation — ↻ re-point: not primary chrome any more (nav is a rail) — becomes the
-    destination behind the **Locations** door on the landing.
+19. World-map navigation — ✕ **CUT 2026-08-03.** The page was deleted, not re-pointed; the
+    **Locations** door on the landing goes straight to the location pages.
 20. Cadence + newsletter — ◐ open; the seed is already on the landing (the "Building in the open" band).
 
 **The new cheapest wins** (the old "start here" three are done): (a) token adoption — mostly done;

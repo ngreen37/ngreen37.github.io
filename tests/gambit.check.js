@@ -103,7 +103,8 @@ check('band floors ascend', BANDS.every((b, i) => i === 0 || b.min > BANDS[i - 1
 check('band stakes ascend', BANDS.every((b, i) => i === 0 || b.stake > BANDS[i - 1].stake),
   BANDS.map(b => b.stake).join(' '));
 check('the cheapest face is Common', rarity(25).key === 'common');
-check('the 400cr Crown is Ultra-Rare', rarity(400).key === 'ultra');
+check('the 400cr Crown is LEGENDARY — the top band (swapped 2026-08-03)', rarity(400).key === 'legendary');
+check('and Ultra-Rare is now the band below it', rarity(260).key === 'ultra', rarity(260).label);
 check('a Vault piece gets a free band', rarity(200, true).tier === rarity(200).tier + 1,
   `200cr: ${rarity(200).label} → ${rarity(200, true).label}`);
 
@@ -115,9 +116,9 @@ check('a Common stakes 10', G.offerValue(0, 0, pawnish) === 10);
 check('an offering is credits + stake', G.offerValue(100, 40, crown) === 130);
 
 /* ── 4. courage comes from the band, not the sticker price ────────────────────────── */
-const cCommon = G.courage(100, 0, pawnish, 0), cUltra = G.courage(100, 0, crown, 0);
-check('an Ultra-Rare is braver than a Common', cUltra > cCommon, cCommon.toFixed(2) + ' → ' + cUltra.toFixed(2));
-check('laying down an Ultra-Rare is maximum courage', cUltra >= 0.99, cUltra.toFixed(2));
+const cCommon = G.courage(100, 0, pawnish, 0), cTop = G.courage(100, 0, crown, 0);
+check('a Legendary is braver than a Common', cTop > cCommon, cCommon.toFixed(2) + ' → ' + cTop.toFixed(2));
+check('laying down a Legendary is maximum courage', cTop >= 0.99, cTop.toFixed(2));
 check('giving away YOUR best still counts as bold', G.courage(100, 0, pawnish, 25) >= 0.95,
   G.courage(100, 0, pawnish, 25).toFixed(2));
 
@@ -142,16 +143,25 @@ check('coming out ahead is likelier the braver you are',
   shape(1, 0).up > shape(0.5, 0).up && shape(0.5, 0).up > shape(0, 0).up,
   [0, 0.5, 1].map(c => shape(c, 0).up.toFixed(0) + '%').join(' → '));
 /* THE HOUSE EDGE. If any of these three ever pass 1.0x the altar becomes the best-paying
-   game on the site and every other loop on it stops mattering. */
-check('a token offering loses money on average', shape(0, 0).ev < 0.60, shape(0, 0).ev.toFixed(2) + 'x');
-check('all-in loses money on average', shape(1, 0).ev < 0.70, shape(1, 0).ev.toFixed(2) + 'x');
-check('even MAXIMUM karma never breaks even', shape(1, 100).ev < 0.85, shape(1, 100).ev.toFixed(2) + 'x');
-/* Regression against the wheel this replaced (Nate: "the odds should be reduced across
-   the board. make it much harder"). The old one paid 0.66x → 0.89x and topped out at
-   2.2x from ANY level of courage. */
+   game on the site and every other loop on it stops mattering.
+   ⚠ RATCHETED 2026-08-03 to the numbers the tightening pass actually landed (Nate: "Make
+   the gambit a little more difficult to win"). These are one-sided on purpose — see the
+   header. Lowering them again is free; raising one is a decision somebody has to make in
+   this file, in the open, which is the whole point of writing the ceiling down. */
+check('a token offering loses money on average', shape(0, 0).ev < 0.48, shape(0, 0).ev.toFixed(2) + 'x');
+check('all-in loses money on average', shape(1, 0).ev < 0.58, shape(1, 0).ev.toFixed(2) + 'x');
+check('even MAXIMUM karma never breaks even', shape(1, 100).ev < 0.74, shape(1, 100).ev.toFixed(2) + 'x');
+/* Regression against BOTH wheels this replaced. The 2026-07-27 one paid 0.66x → 0.89x and
+   topped out at 2.2x from any courage; the 2026-07-29 one paid 0.51x → 0.63x with a 30%
+   chance of coming out ahead all-in. Each tightening keeps its predecessor's numbers here
+   so the direction of travel is checkable, not just asserted in a comment. */
 check('strictly harder than the wheel it replaced',
-  shape(0, 0).ev < 0.66 && shape(1, 0).ev < 0.89 && top(1) < 2.2,
-  `${shape(0, 0).ev.toFixed(2)}x/${shape(1, 0).ev.toFixed(2)}x vs the old 0.66x/0.89x`);
+  shape(0, 0).ev < 0.51 && shape(1, 0).ev < 0.63 && shape(1, 0).up < 30 && top(1) <= 1.4,
+  `${shape(0, 0).ev.toFixed(2)}x/${shape(1, 0).ev.toFixed(2)}x @ ${shape(1, 0).up.toFixed(0)}% vs 0.51x/0.63x @ 30%`);
+/* Nate set the shape of the room; this pass only moved the odds. If a future tuning changes
+   either of these it is undoing a call he made by name, not tuning a dial. */
+check("Nate's 1.4x all-in cap survived the tightening", Math.abs(top(1) - 1.4) < 0.005);
+check('the six outcomes survived it too', G.TIERS.length === 6);
 check('"gone" is the single likeliest outcome at every courage',
   [0, 0.5, 1].every(c => { const w = G.weights(c, 0); return w[0] === Math.max.apply(null, w); }));
 

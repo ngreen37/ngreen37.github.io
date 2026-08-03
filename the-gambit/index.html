@@ -254,7 +254,7 @@ permalink: /the-gambit/
      game on the site, which is the one thing it must never be.
 
      It stakes its RARITY BAND now (PJCC.rarity → `stake`): 10 credits for a Common, 90
-     for an Ultra-Rare. That is what the BOARD counts the gesture as worth, and it is
+     for a Legendary. That is what the BOARD counts the gesture as worth, and it is
      deliberately a fraction of the receipt — the altar is not a pawn shop. The
      Quartermaster is where a piece converts to credits, at 25%, and that door is right
      underneath this one.
@@ -264,7 +264,7 @@ permalink: /the-gambit/
   function offerValue() { return offerCredits + collStake(selColl); }
   /* Courage from the BAND, not the price. `value / 50` meant every item over 50 credits
      bought maximum courage — a 55-credit face and the Crown were the same gesture. Six
-     bands, six steps: Common 0.30 → Ultra-Rare 1.00. Giving away YOUR best still counts
+     bands, six steps: Common 0.30 → Legendary 1.00. Giving away YOUR best still counts
      as near-maximum whatever band it happens to sit in, because bravery is measured
      against what you have, not against the catalogue. */
   function courage() {
@@ -289,7 +289,8 @@ permalink: /the-gambit/
      guarantee. The house edge is deliberate: laying it all down should COST you on
      average, or the altar becomes the best-paying game on the site.
 
-       expected return ≈ 0.66x at no courage → ≈ 0.89x all-in
+       expected return ≈ 0.66x at no courage → ≈ 0.89x all-in  ← superseded twice; the live
+       numbers are on the ⚠⚠⚠ block just above the TIERS table
        (so credits still come from PLAYING; the altar is a ritual, not an income) */
   // `pct` is the same number as `mult`, said the way the room says it now: what comes
   // back is a PERCENTAGE of what you laid down, never a fraction or a ×multiplier
@@ -300,6 +301,7 @@ permalink: /the-gambit/
          Every weight moved. `gone` is the most likely outcome at every level of courage
          now, and coming out ahead runs 15% at a token offering to 30% all-in (it was
          24% → 38%). Expected return fell from 0.66x → 0.89x to 0.51x → 0.63x.
+         (Tightened once more on 2026-08-03 — see the block above the table.)
 
      (2) THE MULTIPLIER IS PROGRESSIVE, AND ALL-IN CAPS AT 1.4x. Nate: "do we have skewed
          incorrectly when going all-in — for example your odds are the best AND you
@@ -326,17 +328,33 @@ permalink: /the-gambit/
          printed "up to N back", and that number now moves the way it should. */
   function squeeze(c) { return 1 - 0.667 * Math.max(0, Math.min(1, c)); }
   function multAt(t, c) { return t.gain > 0 ? 1 + t.gain * squeeze(c) : t.mult; }
+  /* ⚠⚠⚠ TIGHTENED AGAIN 2026-08-03 — Nate: "Make the gambit a little more difficult to win."
+     A LITTLE. Every weight moved by a few points and nothing structural changed: the six
+     outcomes, the progressive squeeze and Nate's 1.4x all-in cap are all exactly as he set
+     them, because those were his calls and this ask was about the ODDS, not the shape.
+
+         coming out ahead   15% → 30%   became   12% → 26%   (38% at maximum karma)
+         expected return    0.51x → 0.63x        0.46x → 0.57x   (0.72x at maximum karma)
+
+     THE BOON RATE WAS DELIBERATELY LEFT ALONE, and that is a decision worth defending
+     because it looks like an omission. A "win" here has two currencies — credits and the
+     chance the board hands back a collectable — and the same batch that tightened this
+     wheel roughly TRIPLED the catalogue. Trimming the boon rate on top of that would have
+     compounded: a rarer roll drawing from a much bigger pool is not "a little" harder, it
+     is a Vault nobody finishes. The dilution IS the difficulty — any one specific piece got
+     meaningfully harder to draw without a single number changing here. Credits got harder
+     on purpose; the collection got harder by arithmetic. */
   var TIERS = [
-    { key: 'gone',    mult: 0,   gain: 0,    w: function (c) { return 0.42 - 0.10 * c; } },
-    { key: 'half',    mult: 0.5, gain: 0,    w: function (c) { return 0.24 - 0.03 * c; } },
-    { key: 'even',    mult: 1,   gain: 0,    w: function (c) { return 0.19 - 0.02 * c; } },
-    { key: 'trickle', mult: 1,   gain: 0.25, w: function (c) { return 0.11 + 0.05 * c; } },
-    { key: 'good',    mult: 1,   gain: 0.60, w: function (c) { return 0.035 + 0.05 * c; } },
-    { key: 'great',   mult: 1,   gain: 1.20, w: function (c) { return 0.005 + 0.05 * c; } }
+    { key: 'gone',    mult: 0,   gain: 0,    w: function (c) { return 0.46 - 0.09 * c; } },
+    { key: 'half',    mult: 0.5, gain: 0,    w: function (c) { return 0.25 - 0.03 * c; } },
+    { key: 'even',    mult: 1,   gain: 0,    w: function (c) { return 0.17 - 0.02 * c; } },
+    { key: 'trickle', mult: 1,   gain: 0.25, w: function (c) { return 0.09 + 0.045 * c; } },
+    { key: 'good',    mult: 1,   gain: 0.60, w: function (c) { return 0.026 + 0.05 * c; } },
+    { key: 'great',   mult: 1,   gain: 1.20, w: function (c) { return 0.004 + 0.045 * c; } }
   ];
   /* Karma shifts weight OFF "gone" and onto the good end. It never guarantees anything and
      it never lifts expected return past 1x — checked: at max karma all-in the wheel returns
-     0.78x, so even a saint loses money here on average. That is deliberate. Credits are
+     0.72x, so even a saint loses money here on average. That is deliberate. Credits are
      earned by PLAYING; the altar is a ritual. */
   function weights(c, karma) {
     var lift = Math.min(0.12, (karma || 0) * 0.0012);
@@ -376,15 +394,22 @@ permalink: /the-gambit/
      ever wanted back. The bottom rung says "Long odds" and means it. */
   /* ⚠ RE-SCALED 2026-07-29 with the wheel. The ladder is ORDINAL — it describes where you
      sit on the range this room actually offers, and that range moved: coming out ahead now
-     runs 15% at a token offering to 30% all-in, and 42% with maximum karma behind you (it
-     was 24 → 38 → 54). Leave the old thresholds against the new wheel and every offering
+     runs 12% at a token offering to 26% all-in, and 38% with maximum karma behind you (it
+     was 24 → 38 → 54, then 15 → 30 → 42). Leave the old thresholds against the new wheel and every offering
      reads "Long odds" forever, which is honest about nothing and useless as a dial.
      The bottom rung still says "Long odds" and still means it. */
+  /* ⚠ RE-SCALED AGAIN 2026-08-03 with the wheel above. Same reason as last time, and it is
+     the reason this ladder will need moving EVERY time the wheel is tuned: the rungs are
+     ordinal, so they describe where you sit on the range the room actually offers. That
+     range is now 12% → 26%, and 38% with maximum karma behind you. Left at the old
+     thresholds, a bold all-in offering would have read "Fair odds" — technically true of
+     nothing and useless as a dial. Verified against the real wheel: all five rungs are
+     still reachable (gambit.check.js §7 fails if they collapse to fewer than three). */
   function oddsWord(up) {
-    return up < 19 ? 'Long odds'
-         : up < 24 ? 'Fair odds'
-         : up < 29 ? 'Good odds'
-         : up < 36 ? 'Great odds'
+    return up < 16 ? 'Long odds'
+         : up < 21 ? 'Fair odds'
+         : up < 25 ? 'Good odds'
+         : up < 31 ? 'Great odds'
          : 'Excellent odds';
   }
 
@@ -585,8 +610,8 @@ permalink: /the-gambit/
 
            IT WAS 80% AT FULL COURAGE. Combined with a wheel that paid out 38% of the
            time, that handed a free collectable on roughly one bold offering in three,
-           which is how the store got cleared. 45% now, against a wheel that gains 30% of
-           the time — so about one in seven.
+           which is how the store got cleared. 45% now, against a wheel that gains 26% of
+           the time — so about one bold offering in eight.
 
            ⚠ AND THE POOL IS CAPPED BY WHAT YOU GAVE: at most ONE BAND above your own
            offering. Lay down a Common and a Rare is the ceiling. Without this the

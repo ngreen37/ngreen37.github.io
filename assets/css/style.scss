@@ -26,6 +26,11 @@
 @import 'pjcc-03-pages';
 @import 'pjcc-04-flair';
 @import 'pjcc-05-classified';
+/* 06-world: the WORLD-MAP HALF of this partial was deleted 2026-08-03 with
+   `_layouts/worldmap.html` (Nate: "remove worldmap from website - dead page"). The partial
+   stays — it also holds the constellation page and the blog index, both live. Name kept
+   because this list's order is load-bearing. The DOSSIER's journey strip is a different
+   thing again and is untouched (`.dsr-map`, _pjcc-14-profile.scss). */
 @import 'pjcc-06-world';
 @import 'pjcc-07-characters';
 @import 'pjcc-08-features';

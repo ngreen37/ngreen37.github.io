@@ -688,11 +688,9 @@ textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
   font-size: 9px; color: #F5C518; letter-spacing: 0.1em; vertical-align: middle;
 }
 
-/* 30 — World State banner */
-.world-state-banner { background: rgba(10, 7, 20, 0.75); border-left: 3px solid #9b87c0; border-radius: 0 6px 6px 0; padding: 14px 20px; margin-bottom: 24px; font-family: 'Share Tech Mono', monospace; }
-.world-state-eyebrow { font-size: 8px; letter-spacing: 0.22em; color: rgba(155, 135, 192, 0.5); text-transform: uppercase; margin-bottom: 6px; }
-.world-state-text { font-size: 13px; color: #9b87c0; line-height: 1.6; }
-.world-state-date { font-size: 9px; color: rgba(107, 90, 142, 0.5); margin-top: 5px; letter-spacing: 0.1em; }
+/* 30 — World State banner: DELETED 2026-08-03. It only ever sat above the world map
+   (flair-log R6 #30, "a dynamic summary above world map"), so it died with that page.
+   Restore from git if a world-state line ever wants a new home. */
 
 /* 33 — Chess Lessons: Opening of Week */
 .cl-opening { margin: 28px 0; background: rgba(13, 8, 30, 0.7); border: 1px solid rgba(245, 197, 24, 0.18); border-radius: 6px; padding: 18px 22px; font-family: 'Share Tech Mono', monospace; }

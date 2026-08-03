@@ -232,7 +232,7 @@ permalink: /dossier/
       ? '<b>Crowned</b> — all ten floors cleared 👑'
       : 'The Gauntlet · <b>Floor ' + (gcur + 1) + ' of 10</b> — ' + esc(GNAMES[gcur]) + ' next';
 
-    var wp = PJCC.worldProgress(stats);
+    var wp = PJCC.journeyProgress(stats);
     var html = '<h2 class="dsr-h">The journey</h2><div class="dsr-map">';
     wp.stops.forEach(function (s, i) {
       html += '<div class="dsr-stop ' + (s.reached ? 'reached' : '') + '">' +
