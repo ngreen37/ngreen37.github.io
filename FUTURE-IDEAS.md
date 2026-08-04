@@ -22,24 +22,18 @@ combination** over new surface area.
 name he has to pick). Kept here so an ended session never loses them. None are on fire; they just have
 to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**.*
 
-**🌐 THE DOMAIN CUTOVER — chesswild.com, bought 2026-08-03. Runbook:
-`docs/domain-cutover-chesswild.md`.** The site's structure is already reset for it; the domain
-itself is NOT flipped. These are the steps only you can do, in order:
-- [ ] **1. Point chesswild.com's DNS at GitHub Pages** (Squarespace → DNS): four `A` records on `@`
-  → `185.199.108/109/110/111.153`, plus `www` `CNAME` → `ngreen37.github.io`. Delete any parking
-  records Squarespace added on purchase or they'll fight it.
-- [ ] **2. Tell me when `nslookup -type=a chesswild.com` returns those four IPs** — then I flip
-  `CNAME`, `_config.yml`, `robots.txt` and the Gambit canonical in one commit. ⚠ Doing that before
-  DNS resolves takes the live site down, because GitHub serves **one** custom domain and the moment
-  `CNAME` changes it stops answering for mcpuppystudios.com.
-- [ ] **3. GitHub → Settings → Pages** → custom domain `chesswild.com`, wait for the certificate,
-  then tick **Enforce HTTPS**.
-- [ ] **4. Forward mcpuppystudios.com → https://chesswild.com** (301, with path forwarding).
-  Cloudflare is the free fallback if Squarespace's forwarding won't do HTTPS or won't keep the path.
-- [ ] **5. Three services that break SILENTLY** — Supabase auth URLs (Site URL + `https://chesswild.com/**`,
-  double star), the `pjcc-translate` Worker's hardcoded CORS `ALLOW` array (or Japanese quietly
-  degrades to the rate-limited free chain), and a new Google Search Console property.
-- [ ] **6. Delete and reinstall the app on your phone** — a new origin is a new app, and no manifest
+**🌐 THE DOMAIN CUTOVER — ✅ DONE 2026-08-03/04. `chesswild.com` IS THE LIVE DOMAIN.**
+Runbook kept at `docs/domain-cutover-chesswild.md`. DNS verified, `CNAME`/`_config.yml`/
+`robots.txt`/Gambit canonical flipped, certificate provisioned, `www` → apex, and
+mcpuppystudios.com 301s **with the path preserved** (`/pjcc/` → `chesswild.com/pjcc/`).
+Two items remain:
+- [ ] **Tick Enforce HTTPS** — GitHub → repo **Settings → Pages**. The certificate is valid, but
+  `http://chesswild.com` still answers 200 instead of redirecting until this is on.
+- [ ] **Google Search Console** — [search.google.com/search-console](https://search.google.com/search-console)
+  → property dropdown → **Add property** → **Domain** → `chesswild.com` → add the TXT record in
+  Squarespace DNS → Verify → **Sitemaps** → submit `sitemap.xml`. Keep the old property; it is what
+  reports the 301s being followed.
+- [ ] **Delete and reinstall the app on your phone** — a new origin is a new app, and no manifest
   edit can reach an installed launcher. **Sign in on chesswild.com first**, so your account carries
   your progress across rather than the browser jar you're leaving behind.
 
