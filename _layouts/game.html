@@ -68,6 +68,30 @@
     }
     @media (prefers-reduced-motion: reduce) { .game-frame-wrap::after { animation: none; } }
 
+    /* ── THE PLAIN WINDOW — opt in with `is-plain` (2026-08-04) ────────────────────────
+       Nate: "Let's make Puzzles not have a home game-like window — make it look closer to
+       the main home page or a park table game. Lose the game-feel for Puzzles."
+
+       The cabinet above is right for the arcade and wrong for a room that stopped being a
+       game in July. Rather than soften the bezel for everything, rooms opt out: this strips
+       the purple shell, the gold bezel and the pulsing power light, and leaves the iframe
+       sitting on the page as a plain surface.
+
+       It is a MODIFIER, not a replacement — the Gauntlet, Sand Mine and the rest keep their
+       cabinet, because they really are games and the cabinet is the point there. First and
+       only caller today: /games/fork-in-the-road/. */
+    .game-frame-wrap.is-plain {
+      padding: 0; background: none; box-shadow: none; border-radius: 14px;
+    }
+    /* the inner bezel AND the power light, both off — the light is also an always-on
+       animation, so this is a small perf win on the page as well as a visual one */
+    .game-frame-wrap.is-plain::before,
+    .game-frame-wrap.is-plain::after { content: none; }
+    .game-frame-wrap.is-plain iframe {
+      border: 1px solid rgba(30,35,44,0.14); border-radius: 14px; background: #fbfaf7;
+      box-shadow: 0 18px 44px -24px rgba(0,0,0,0.6);
+    }
+
     .game-info {
       max-width: 860px;
       margin: 0 auto;

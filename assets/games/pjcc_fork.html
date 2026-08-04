@@ -22,19 +22,20 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { user-select: none; -webkit-user-select: none; -moz-user-select: none; -webkit-tap-highlight-color: transparent; }
   input, textarea, select, [contenteditable="true"] { user-select: text; -webkit-user-select: text; }
+  /* ⚑ THE ROOM, NOT THE CABINET (2026-08-04) — warm paper, page type, no neon. The palette
+     is the front door's: --surface #fbfaf7, ink #1e232c / #4b5361 / #5a626f, and the one
+     green #2e7d47. Kept as literals because this document loads no stylesheet. */
   html, body {
-    background: #0a1a1c; height: 100%; overflow: hidden;
-    font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+    background: #fbfaf7; height: 100%; overflow: hidden;
+    font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; color: #1e232c;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
   /* Maximize the playfield on desktop; still scales down for mobile. */
   #stage { position: relative; width: 100%; max-width: 600px; }
-  #canvas {
-    display: block; width: 100%;
-    border: 3px solid #5be0c0; border-radius: 12px; background: #0e2422;
-    box-shadow: 0 0 40px rgba(91,224,192,0.22);
-  }
+  /* No border, no glow. The canvas paints its own paper and its own timber-framed board —
+     a second frame around the whole surface was the arcade cabinet in miniature. */
+  #canvas { display: block; width: 100%; border-radius: 10px; background: #fbfaf7; }
   .float-btn {
     position: absolute; z-index: 6; font-family: 'Trebuchet MS', sans-serif; font-weight: bold;
     border: none; border-radius: 999px; cursor: pointer; transition: transform 0.08s;
@@ -44,14 +45,14 @@
   #hint-btn { bottom: 84px; right: 10px; background: #ff8fd0; color: #3a0a2a; padding: 7px 14px; font-size: 12px; }
   /* Takes the Hint button's seat — Hint is hidden the moment a puzzle resolves, which is
      exactly when there is something worth taking apart. Never both on screen at once. */
-  #analysis-btn { bottom: 84px; right: 10px; background: #5be0c0; color: #06231f;
+  #analysis-btn { bottom: 84px; right: 10px; background: #2e7d47; color: #ffffff;
     padding: 7px 14px; font-size: 12px; }
   /* was a 10px whisper in the corner; a report you can't find is a report you never get */
-  #report-btn { bottom: 84px; left: 10px; background: rgba(20,12,45,0.85); color: #cfeee6;
-    border: 1px solid #5be0c0; padding: 7px 13px; font-size: 11px; letter-spacing: 0.04em; }
-  #report-btn:hover { color: #0a1a1c; background: #5be0c0; border-color: #5be0c0; }
-  .rep-fen { font-family: ui-monospace, 'Share Tech Mono', monospace; font-size: 10.5px; color: #5be0c0;
-    background: rgba(0,0,0,0.35); border: 1px solid #2a6a5e; border-radius: 8px; padding: 8px 10px;
+  #report-btn { bottom: 84px; left: 10px; background: #ffffff; color: #4b5361;
+    border: 1px solid #d9d4c8; padding: 7px 13px; font-size: 11px; letter-spacing: 0.04em; }
+  #report-btn:hover { color: #1e232c; background: #f0ede5; border-color: #8a5a2b; }
+  .rep-fen { font-family: ui-monospace, 'Share Tech Mono', monospace; font-size: 10.5px; color: #4b5361;
+    background: #f4f2ec; border: 1px solid #e5e1d8; border-radius: 8px; padding: 8px 10px;
     margin: 0 0 10px; max-width: 340px; word-break: break-all; line-height: 1.5; }
   /* ── the machine's verdict, shown to the PLAYER before they send (2026-08-03) ──────
      The engine's opinion is going into the report either way, so the player sees it too.
@@ -61,21 +62,21 @@
   .rep-verdict { font-size: 11.5px; line-height: 1.5; border-radius: 8px; padding: 7px 10px;
     margin: 0 0 10px; max-width: 340px; border: 1px solid; }
   .rep-verdict.hidden { display: none; }
-  .rep-verdict.agrees { color: #ffe08a; border-color: #7a6320; background: rgba(255,224,138,0.09); }
-  .rep-verdict.mates  { color: #ff9ec8; border-color: #7a3060; background: rgba(255,158,200,0.10); }
-  .rep-verdict.refuted{ color: #9fb8b2; border-color: #2a4a45; background: rgba(0,0,0,0.28); }
+  .rep-verdict.agrees { color: #7a5a10; border-color: #d8c489; background: #fdf6e3; }
+  .rep-verdict.mates  { color: #8d2f60; border-color: #e3b4cd; background: #fdf0f6; }
+  .rep-verdict.refuted{ color: #4b5361; border-color: #e5e1d8; background: #f4f2ec; }
   .rep-note { width: 100%; max-width: 340px; margin: 0 0 10px; resize: vertical;
-    font-family: inherit; font-size: 12px; line-height: 1.5; color: #cfeee6;
-    background: rgba(0,0,0,0.35); border: 1px solid #2a6a5e; border-radius: 8px; padding: 7px 9px; }
-  .rep-note::placeholder { color: #6a8a84; }
-  .rep-note:focus { outline: none; border-color: #5be0c0; }
-  #menu-btn { top: 10px; right: 10px; background: #163a36; color: #cfeee6; padding: 5px 12px; font-size: 11px; border: 1px solid #2a6a5e; }
+    font-family: inherit; font-size: 12px; line-height: 1.5; color: #1e232c;
+    background: #ffffff; border: 1px solid #e5e1d8; border-radius: 8px; padding: 7px 9px; }
+  .rep-note::placeholder { color: #8b93a1; }
+  .rep-note:focus { outline: none; border-color: #2e7d47; }
+  #menu-btn { top: 10px; right: 10px; background: #ffffff; color: #4b5361; padding: 5px 12px; font-size: 11px; border: 1px solid #d9d4c8; }
   .float-btn.hidden { display: none; }
 
   .overlay {
     position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column;
     align-items: center; padding: 22px; text-align: center;
-    border-radius: 12px; background: radial-gradient(circle at 50% 26%, #14463f 0%, #0a1a1c 82%);
+    border-radius: 10px; background: #fbfaf7;
     /* ⚠ `safe center`, not `center` — and it has to scroll (2026-07-28, caught in a phone
        render: the journey line wrapped to two lines at 390px and "Chess City" ended up
        underneath the button, unreachable). A flex container centring content TALLER than
@@ -85,26 +86,32 @@
     justify-content: safe center; overflow-y: auto;
   }
   .overlay.hidden { display: none; }
-  .big-title { font-size: 30px; font-weight: 900; color: #F5C518; letter-spacing: 1px;
-    text-shadow: 0 3px 0 #1a5a4c, 0 0 22px rgba(91,224,192,0.45); margin-bottom: 2px; }
-  .eyebrow { font-size: 11px; letter-spacing: 4px; color: #5be0c0; text-transform: uppercase; margin-bottom: 14px; }
-  .blurb { font-size: 12.5px; color: #cfeee6; line-height: 1.7; max-width: 380px; margin-bottom: 16px; }
+  /* Page typography, not arcade typography: the title is sentence case at a page weight,
+     the eyebrow is the front door's mono label, and nothing glows. */
+  .big-title { font-size: 30px; font-weight: 900; color: #1e232c; letter-spacing: -0.02em;
+    margin-bottom: 4px; }
+  .eyebrow { font-size: 11px; letter-spacing: 2.4px; color: #8a5a2b; text-transform: uppercase;
+    font-family: 'Share Tech Mono', ui-monospace, monospace; margin-bottom: 10px; }
+  .blurb { font-size: 13.5px; color: #4b5361; line-height: 1.65; max-width: 400px; margin-bottom: 16px; }
   .row { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
-  .btn { font-family: 'Trebuchet MS', sans-serif; font-weight: bold; cursor: pointer; border: none;
-    border-radius: 999px; padding: 12px 26px; font-size: 14px; letter-spacing: 1px;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.35); transition: transform 0.08s, box-shadow 0.08s; }
-  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
-  .btn-gold { background: #F5C518; color: #1a0f3d; }
-  .btn-gold:hover { background: #ffd740; }
-  .btn-ghost { background: #163a36; color: #cfeee6; box-shadow: 0 4px 0 #0a1f1c; }
-  .foot { margin-top: 16px; font-size: 10.5px; color: #6faea0; line-height: 1.8; }
-  .foot b { color: #cfeee6; } .tap { cursor: pointer; text-decoration: underline; }
+  /* ONE primary action, and it is the front door's green. The old buttons sat on a 4px hard
+     shadow that read as a plastic arcade key — they are page buttons now. */
+  .btn { font-family: 'Trebuchet MS', sans-serif; font-weight: 800; cursor: pointer; border: none;
+    border-radius: 999px; padding: 13px 28px; font-size: 14.5px; letter-spacing: 0.01em;
+    transition: transform 0.12s, background 0.12s, box-shadow 0.12s; }
+  .btn:active { transform: translateY(1px); }
+  .btn-gold { background: #2e7d47; color: #ffffff; box-shadow: 0 8px 20px rgba(46,125,71,0.22); }
+  .btn-gold:hover { background: #24663a; box-shadow: 0 11px 24px rgba(46,125,71,0.28); }
+  .btn-ghost { background: #f0ede5; color: #4b5361; border: 1px solid #e5e1d8; }
+  .btn-ghost:hover { background: #e8e4da; }
+  .foot { margin-top: 16px; font-size: 11px; color: #5a626f; line-height: 1.8; }
+  .foot b { color: #1e232c; } .tap { cursor: pointer; text-decoration: underline; }
   .sum-grid { display: grid; grid-template-columns: auto auto; gap: 7px 22px; margin: 10px 0; }
-  .sum-grid .l { text-align: right; color: #b39ae0; font-size: 13px; }
-  .sum-grid .v { text-align: left; color: #fff; font-size: 15px; font-weight: bold; }
-  .v.good { color: #6bffb8; }
-  .tact-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #5be0c0; margin: 12px 0 4px; }
-  .tact-row { display: flex; justify-content: space-between; gap: 18px; font-size: 12px; color: #cfeee6; padding: 1px 8px; max-width: 230px; margin: 0 auto; }
+  .sum-grid .l { text-align: right; color: #5a626f; font-size: 13px; }
+  .sum-grid .v { text-align: left; color: #1e232c; font-size: 15px; font-weight: bold; }
+  .v.good { color: #2e7d47; }
+  .tact-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #8a5a2b; margin: 12px 0 4px; }
+  .tact-row { display: flex; justify-content: space-between; gap: 18px; font-size: 12px; color: #4b5361; padding: 1px 8px; max-width: 230px; margin: 0 auto; }
   .tact-row span:last-child { color: #fff; font-weight: bold; }
   .tact-hint { font-size: 10.5px; color: #8fc7bd; margin-top: 8px; }
 </style>
@@ -121,13 +128,19 @@
        They'll figure it out."). The menu was a paragraph plus a three-line footnote.
        It's the motif list and two buttons now. -->
   <div class="overlay" id="menu-screen">
+    <!-- 2026-08-04: the WORDS here are unchanged. Only the case and the colour moved —
+         "FORK IN THE ROAD" in arcade caps was the loudest remaining game-tell on a page
+         that has called itself Puzzles since July.
+         ⚠ HTML COMMENT, NOT A LIQUID ONE: this file has no front matter, so Jekyll copies
+         it VERBATIM as a static asset and never runs Liquid over it. A {% comment %} here
+         would ship to the browser as visible text. -->
     <div class="eyebrow">PJCC Puzzles</div>
-    <div class="big-title">FORK IN THE ROAD</div>
+    <div class="big-title">Fork in the Road</div>
     <div class="blurb">
       One winning move, every time.<br>
-      <b style="color:#F5C518">Forks · pins · skewers · discoveries · mates · winning material</b>
+      <b style="color:#8a5a2b">Forks · pins · skewers · discoveries · mates · winning material</b>
     </div>
-    <div class="blurb" id="journey-line" style="margin-bottom:10px;color:#5be0c0;min-height:14px;"></div>
+    <div class="blurb" id="journey-line" style="margin-bottom:10px;color:#2e7d47;font-weight:700;min-height:14px;"></div>
     <div class="row">
       <button class="btn btn-gold" id="journey-btn">Continue the journey</button>
     </div>
@@ -139,14 +152,14 @@
   <!-- the report panel (2026-07-27) -->
   <div class="overlay hidden" id="report-screen">
     <div class="eyebrow">Report this puzzle</div>
-    <div class="big-title" style="font-size:20px;">SOMETHING WRONG?</div>
+    <div class="big-title" style="font-size:20px;">Something wrong?</div>
     <div class="blurb" style="margin-bottom:10px;">If the "winning move" isn't winning — or another move looks just as good — send it over. It goes straight to McPuppy with the position attached.</div>
     <div class="rep-fen" id="rep-fen"></div>
     <!-- what the machine thinks of the move you just tried — only shown when there IS one -->
     <div class="rep-verdict hidden" id="rep-verdict"></div>
     <textarea class="rep-note" id="rep-note" rows="2" maxlength="500" placeholder="What looked wrong? (optional)"></textarea>
     <div class="row">
-      <button class="btn btn-gold" id="rep-send">SEND IT</button>
+      <button class="btn btn-gold" id="rep-send">Send it</button>
     </div>
     <div class="foot" id="rep-done" style="min-height:1.4em;"></div>
     <!-- the old pair, kept and demoted. They are the escape hatch for the day the table
@@ -169,8 +182,8 @@
     </div>
     <div id="sum-tactics"></div>
     <div class="row">
-      <button class="btn btn-gold" id="sum-again">PLAY AGAIN</button>
-      <button class="btn btn-ghost" id="sum-menu">MENU</button>
+      <button class="btn btn-gold" id="sum-again">Play again</button>
+      <button class="btn btn-ghost" id="sum-menu">Menu</button>
     </div>
   </div>
 </div>
@@ -183,10 +196,24 @@ const W = 480, H = 500;
 const TILE = 42, BOARD = TILE * 8, BX = (W - BOARD) / 2, BY = 80;
 
 // Wayfarer theme — mossy-stone board, teal road, gold waypoints.
-const C = { light: '#3f6f66', dark: '#274a44', gold: '#F5C518', good: '#6bffb8',
-  bad: '#ff5b8a', pink: '#ff8fd0', ink: '#f0e6ff', muted: '#8fc7bd', dot: 'rgba(107,255,184,0.6)' };
-// Shared carved pieces, tinted for stone: pale sandstone vs dark slate.
-const FORK_PAL = { wFill: '#ece1c6', wEdge: '#5a4a28', bFill: '#1e2e33', bEdge: '#cfeee6' };
+/* ── THE PUZZLE ROOM IS A ROOM, NOT A CABINET (2026-08-04) ─────────────────────────
+   Nate: "Let's make Puzzles not have a home game-like window — make it look closer to the
+   main home page or a park table game. Lose the game-feel for Puzzles, but maintain the
+   structure of the 1,000, etc."
+
+   This room stopped being a game in July (the page has said "Puzzles" since 2026-07-27);
+   it just kept wearing arcade clothes — teal stone board, neon glow, drifting glyphs.
+   The board is now PARK TABLE STANDARD, read value-for-value off
+   _sass/_pjcc-22-chess-canon.scss, because that is the one board this site has:
+     --chess-lt #e9d3a4 · --chess-dk #9c5f33 · --chess-frame #4a3320
+     --piece-w-fill #ffffff / line #2f2440 · --piece-b-fill #4a3585 / line #f2e9ff
+   ⚠ These are a COPY, not an import — a canvas cannot read a CSS custom property, and this
+   file loads no stylesheet. If the canon ever moves, it moves here too. That is the whole
+   cost of the board being drawn rather than laid out, and it is worth knowing about. */
+const C = { light: '#e9d3a4', dark: '#9c5f33', frame: '#4a3320', gold: '#F5C518', good: '#6bffb8',
+  bad: '#ff5b8a', pink: '#ff8fd0', ink: '#1e232c', muted: '#6d7583', dot: 'rgba(107,255,184,0.85)' };
+// The canon livery: filled pieces, fat outline in the opposite line colour.
+const FORK_PAL = { wFill: '#ffffff', wEdge: '#2f2440', bFill: '#4a3585', bEdge: '#f2e9ff' };
 const GLYPH = { K:'♚', Q:'♛', R:'♜', B:'♝', N:'♞', P:'♟' };
 
 function F(a){ return a.charCodeAt(0) - 97; }
@@ -1281,8 +1308,16 @@ function render(){
   if (explainCard) drawExplain();
   if (vignette > 0){ ctx.fillStyle = 'rgba(255,40,90,'+(vignette/14*0.22)+')'; ctx.fillRect(0,0,W,H); vignette -= 0.6; }
 }
-let bgG = Array.from({length:8},()=>({x:Math.random()*W,y:Math.random()*H,s:18+Math.random()*30,g:'♟♞♝♜♛♚'[(Math.random()*6)|0],spd:0.1+Math.random()*0.2,a:0.04+Math.random()*0.05}));
-function drawBg(){ const grd=ctx.createLinearGradient(0,0,0,H); grd.addColorStop(0,'#143a36'); grd.addColorStop(1,'#0a1a1c'); ctx.fillStyle=grd; ctx.fillRect(0,0,W,H); bgG.forEach(b=>{ b.y-=b.spd; if(b.y<-40){b.y=H+40;b.x=Math.random()*W;} ctx.fillStyle='rgba(91,224,192,'+b.a+')'; ctx.font=b.s+'px serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(b.g,b.x,b.y); }); }
+/* ⚠ THE DRIFTING GLYPHS ARE DELETED (2026-08-04). Eight chess symbols floated up the teal
+   background forever — the single loudest "this is an arcade game" signal in the room, and
+   eight text redraws every frame for something nobody was ever meant to look at. It is now
+   flat warm paper, the same #fbfaf7 the front door uses.
+
+   THIS IS ALSO THE PERF FIX. The room's rAF loop ran continuously to move them; with the
+   drift gone the background costs one fillRect. Same lesson as [[css-perf-lessons]] #7 —
+   the first question for any ambient layer is "can it stop moving?", and the honest answer
+   here was that it never needed to start. */
+function drawBg(){ ctx.fillStyle = '#fbfaf7'; ctx.fillRect(0,0,W,H); }
 
 function drawHeader(){
   const p = G.p;
@@ -1326,17 +1361,23 @@ function drawHeader(){
 }
 
 function drawBoard(){
-  ctx.fillStyle = '#0e2a26'; roundRect(BX-6, BY-6, BOARD+12, BOARD+12, 9); ctx.fill();
-  ctx.strokeStyle = C.gold; ctx.lineWidth = 3; roundRect(BX-6, BY-6, BOARD+12, BOARD+12, 9); ctx.stroke();
+  // the timber frame every board on this site wears, and the recessed shadow under it
+  ctx.fillStyle = C.frame; roundRect(BX-6, BY-6, BOARD+12, BOARD+12, 7); ctx.fill();
   for (let r=0;r<8;r++) for (let c=0;c<8;c++){ ctx.fillStyle = (r+c)%2===0?C.light:C.dark; ctx.fillRect(BX+c*TILE, BY+r*TILE, TILE, TILE); }
-  const gl=ctx.createLinearGradient(0,BY,0,BY+BOARD); gl.addColorStop(0,'rgba(255,255,255,0.07)'); gl.addColorStop(0.5,'rgba(255,255,255,0)'); ctx.fillStyle=gl; ctx.fillRect(BX,BY,BOARD,BOARD);
+  // the canon's 152deg key light over the wood — warm at the top-left, shadowed away from it
+  const gl=ctx.createLinearGradient(BX,BY,BX+BOARD,BY+BOARD);
+  gl.addColorStop(0,'rgba(255,252,240,0.14)'); gl.addColorStop(0.62,'rgba(0,0,0,0.06)');
+  ctx.fillStyle=gl; ctx.fillRect(BX,BY,BOARD,BOARD);
 
-  if (G.selected){ const s=cell(G.selected.x,G.selected.y); ctx.fillStyle='rgba(245,197,24,0.32)'; ctx.fillRect(s.x-TILE/2,s.y-TILE/2,TILE,TILE); }
-  if (G.hintFlash > 0){ const u = uci(G.p.line[G.step][0]); const s = cell(u.fx, u.fy); ctx.strokeStyle='rgba(245,197,24,'+(G.hintFlash/30)+')'; ctx.lineWidth=4; ctx.strokeRect(s.x-TILE/2+2,s.y-TILE/2+2,TILE-4,TILE-4); G.hintFlash--; }
+  // selection is MINT, the Park Tables "go" colour — gold on maple is nearly invisible
+  if (G.selected){ const s=cell(G.selected.x,G.selected.y); ctx.fillStyle='rgba(107,255,184,0.34)'; ctx.fillRect(s.x-TILE/2,s.y-TILE/2,TILE,TILE); }
+  // the hint stays ORANGE so it can never be confused with a legal-move dot
+  if (G.hintFlash > 0){ const u = uci(G.p.line[G.step][0]); const s = cell(u.fx, u.fy); ctx.strokeStyle='rgba(255,140,60,'+(G.hintFlash/30)+')'; ctx.lineWidth=4; ctx.strokeRect(s.x-TILE/2+2,s.y-TILE/2+2,TILE-4,TILE-4); G.hintFlash--; }
   // move dots
   if (G.moves){ G.moves.forEach(m=>{ const s=cell(m.x,m.y); const cap = G.board[m.y][m.x]; if (cap){ ctx.strokeStyle=C.dot; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(s.x,s.y,TILE*0.42,0,Math.PI*2); ctx.stroke(); } else { ctx.fillStyle=C.dot; ctx.beginPath(); ctx.arc(s.x,s.y,6,0,Math.PI*2); ctx.fill(); } }); }
   // labels
-  ctx.fillStyle='rgba(255,255,255,0.32)'; ctx.font='9px Trebuchet MS';
+  // coordinates are dark on wood now, not white on stone
+  ctx.fillStyle='rgba(58,38,18,0.55)'; ctx.font='9px Trebuchet MS';
   for (let i=0;i<8;i++){ const file = G.orient==='w'?String.fromCharCode(97+i):String.fromCharCode(97+(7-i)); const rank = G.orient==='w'?8-i:i+1; ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText(file, BX+i*TILE+3, BY+BOARD-2); ctx.textBaseline='top'; ctx.fillText(rank, BX+2, BY+i*TILE+2); }
 }
 
@@ -1608,7 +1649,7 @@ document.getElementById('report-btn').addEventListener('click', ()=>{
     v.innerHTML = CLAIM_WORD[c.verdict][1].replace('%s', c.move);
   } else { v.className = 'rep-verdict hidden'; v.innerHTML = ''; }
   const s = document.getElementById('rep-send');
-  s.disabled = false; s.textContent = 'SEND IT';
+  s.disabled = false; s.textContent = 'Send it';
   document.getElementById('report-screen').classList.remove('hidden');
 });
 document.getElementById('rep-send').addEventListener('click', async ()=>{
@@ -1630,7 +1671,7 @@ document.getElementById('rep-send').addEventListener('click', async ()=>{
     btn.textContent = '✓ sent';
     done.textContent = 'Got it — thank you. McPuppy reads these.';
   } else {
-    btn.disabled = false; btn.textContent = 'SEND IT';
+    btn.disabled = false; btn.textContent = 'Send it';
     done.textContent = 'Could not send it from here — use email or copy below, nothing is lost.';
   }
 });

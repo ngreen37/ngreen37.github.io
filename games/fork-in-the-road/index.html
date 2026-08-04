@@ -5,7 +5,13 @@ description: "The PJCC puzzle room. Chess tactics puzzles — forks, pins, skewe
 permalink: /games/fork-in-the-road/
 ---
 
-<div class="game-frame-wrap fork-frame">
+{%- comment -%} `is-plain` (2026-08-04, Nate: "lose the game-feel for Puzzles") strips the
+     arcade cabinet — the purple shell, the gold bezel and the pulsing power light — and
+     leaves the room sitting on the page as a plain surface. The modifier lives beside the
+     cabinet it overrides, in _layouts/game.html. Every actual game keeps its cabinet.
+     The room INSIDE the frame was repainted to match in the same pass: warm paper, the
+     park-table board, and one green button. {%- endcomment -%}
+<div class="game-frame-wrap is-plain fork-frame">
   <iframe
     src="{{ '/assets/games/pjcc_fork.html' | relative_url }}"
     title="PJCC Puzzles — Fork in the Road"
