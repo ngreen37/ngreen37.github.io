@@ -37,7 +37,7 @@
 
      Above the stylesheet, first script in the head, so the swap happens before a pixel of
      the old page paints. `replace`, not `assign`, so Back doesn't bounce off it. {%- endcomment -%}
-<script>try{if(location.search.indexOf('source=pwa')>-1&&location.pathname.replace(/\/+$/,'')==={{ '/pjcc' | relative_url | jsonify }})location.replace({{ '/chess/?source=pwa' | relative_url | jsonify }});}catch(e){}</script>
+<script>try{if(location.search.indexOf('source=pwa')>-1&&location.pathname.replace(/\/+$/,'')==={{ '/pjcc' | relative_url | jsonify }})location.replace({{ '/?source=pwa' | relative_url | jsonify }});}catch(e){}</script>
 
 {%- comment -%} "Reduce flourish" — an opt-in still-site preference. Applied to <html>
      BEFORE any paint, so there's no flash of motion. {%- endcomment -%}

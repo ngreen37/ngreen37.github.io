@@ -63,27 +63,28 @@
            closes it on outside-click / link-tap. `.nav-backdrop` is a DOM SIBLING so
            `#site-nav.is-open ~ .nav-backdrop` can dim the page with no extra JS. EIGHT links
            as of 2026-07-28 (the gears switched — the site's front door is a chess site now,
-           the world is a tab): Home→/chess/ · Play Now→Park Tables · The Gauntlet · Games→the
+           the world is a tab): Home→/ · Play Now→Park Tables · The Gauntlet · Games→the
            arcade hub · Puzzles→Fork in the Road · Academy · PJCC→the world · Projects→the
            studio. The gold `--home` highlight marks whichever link IS home; order is MARKUP
            order (no nth-child depends on it). ⌘K still reaches everything else. Drawer look
            lives in _sass/_pjcc-13-nav.scss. -->
       <nav class="site-nav drawer" id="site-nav" aria-label="Site navigation">
         <div class="drawer-head">
-          <span class="drawer-brand">&#9819; McPuppy Chess</span>
+          <span class="drawer-brand">&#9819; ChessWild</span>
           <span class="drawer-sub">by McPuppy Studios</span>
         </div>
 
         {%- comment -%} 2026-07-28 (Nate: "move the entire home page to the PJCC tab, and give
              me just a basic home page… call the tab PJCC and put it below Academy"). HOME is
-             the new gold anchor at the top — /chess/, the McPuppy Chess front door — and PJCC
+             the new gold anchor at the top — `/`, the ChessWild front door (it moved there
+             from /chess/ on 2026-08-03 with the domain) — and PJCC
              drops to seventh, under Academy, as the door to the WORLD rather than the site's
              home. The `--pjcc` gold highlight moved with the anchor role, not with the name.
              The header logo is a watermark, not a link, so this row is the only home link on
              the site: don't remove it. {%- endcomment -%}
-        <a class="page-link drawer-link drawer-link--home" href="{{ '/chess/' | relative_url }}">
+        <a class="page-link drawer-link drawer-link--home" href="{{ '/' | relative_url }}">
           <span class="dl-ico" aria-hidden="true">&#9812;</span>
-          <span class="dl-txt"><b>Home</b><small>McPuppy Chess</small></span>
+          <span class="dl-txt"><b>Home</b><small>ChessWild</small></span>
         </a>
         {%- comment -%} 2026-07-25 (Nate: "switch the position of Play Now and Games. I want
              Play Now to be prominent."): Play Now rises to just under the home anchor; Games

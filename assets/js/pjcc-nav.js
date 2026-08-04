@@ -15,7 +15,7 @@
 
     // Destinations (b = brand tag for the little pill).
     var DEST = [
-      { t: 'Home',             s: 'McPuppy Chess — play, solve, learn',   u: '/chess/',                  ic: '♔', b: 'pjcc',    k: 'home mcpuppy chess front door start play free' },
+      { t: 'Home',             s: 'ChessWild — play, solve, learn',       u: '/',                        ic: '♔', b: 'pjcc',    k: 'home chesswild chess wild front door start play free mcpuppy' },
       { t: 'PJCC',             s: 'The world — cast, places, fan art',    u: '/pjcc/',                   ic: '◆', b: 'pjcc',    k: 'pjcc world princess journey chess city landing series show' },
       { t: 'Play Now',         s: 'Sit at the Park Tables',               u: '/games/park-tables/',      ic: '▶', b: 'pjcc',    k: 'play now park tables live game match rated correspondence' },
       { t: 'The Gauntlet',     s: 'Climb the tower of ten',               u: '/games/the-gauntlet/',     ic: '♛', b: 'pjcc',    k: 'gauntlet tower climb ladder ten floors bosses' },

@@ -210,8 +210,10 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
         <p class="project-desc">An animated series about a dog who can learn anything.</p>
         <div class="project-links">
           {% comment %} was href="/", which bounced anyone who clicked it straight back out
-               through a redirect (the typing intro then; a plain hop to /chess/ since
-               2026-08-03). Goes to the world itself. {% endcomment %}
+               through a redirect (the typing intro then; a hop to /chess/ after that). Since
+               2026-08-03 "/" is the ChessWild front door and no longer redirects at all — but
+               it is still the wrong target here, because a card about the SERIES should open
+               the world, not the chess site's home. Goes to the world itself. {% endcomment %}
           <a href="/pjcc/" class="project-link">Enter PJCC &rarr;</a>
         </div>
       </div>

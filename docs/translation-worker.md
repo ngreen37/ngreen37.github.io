@@ -23,8 +23,9 @@ Once deployed, you make it the site's **primary** engine by pasting one URL into
 export default {
   async fetch(request, env) {
     const ALLOW = [
+      'https://chesswild.com',
+      'https://www.chesswild.com',
       'https://mcpuppystudios.com',
-      'https://www.mcpuppystudios.com',
       'https://ngreen37.github.io'
     ];
     const origin = request.headers.get('Origin') || '';
@@ -110,8 +111,9 @@ just runs on `m2m100` until `DEEPL_KEY` exists, then auto-upgrades.
 export default {
   async fetch(request, env) {
     const ALLOW = [
+      'https://chesswild.com',
+      'https://www.chesswild.com',
       'https://mcpuppystudios.com',
-      'https://www.mcpuppystudios.com',
       'https://ngreen37.github.io'
     ];
     const origin = request.headers.get('Origin') || '';

@@ -54,7 +54,7 @@ const puppeteer = require('puppeteer-core');
 const { findChrome } = require('./harness');
 
 const ORIGIN = process.env.ORIGIN || 'https://mcpuppystudios.com';
-const PAGES = process.env.PAGES ? process.env.PAGES.split(',') : ['/chess/', '/pjcc/', '/games/', '/projects/'];
+const PAGES = process.env.PAGES ? process.env.PAGES.split(',') : ['/', '/pjcc/', '/games/', '/projects/'];
 const W = +(process.env.W || 1536), H = +(process.env.H || 864), DPR = +(process.env.DPR || 1.5);
 
 const CENSUS = () => {

@@ -13,7 +13,7 @@
  */
 'use strict';
 
-const VERSION    = 'pjcc-pwa-v11';  // v11: the intro is DELETED — "/" is a redirect to /chess/ now, and every game shell carries the town sky (2026-08-03); v10: the app LAUNCH now lands on /chess/ — old launchers redirect off /pjcc/?source=pwa, start_url moved (2026-08-03); v9: /chess/ is the new front door — the intro hands off there, /pjcc/ became the world tab (2026-07-28); v8: the Gauntlet door became a real stylesheet the game links (2026-07-27); v7: "/" is the "McPuppy Studios Presents" intro (2026-07-23)
+const VERSION    = 'pjcc-pwa-v12';  // v12: chesswild.com — the front door MOVED to "/" and /chess/ became the redirect stub; the app is named ChessWild (2026-08-03); v11: the intro is DELETED — "/" is a redirect to /chess/ now, and every game shell carries the town sky (2026-08-03); v10: the app LAUNCH now lands on /chess/ — old launchers redirect off /pjcc/?source=pwa, start_url moved (2026-08-03); v9: /chess/ is the new front door — the intro hands off there, /pjcc/ became the world tab (2026-07-28); v8: the Gauntlet door became a real stylesheet the game links (2026-07-27); v7: "/" is the "McPuppy Studios Presents" intro (2026-07-23)
 const SHELL      = 'pjcc-shell-' + VERSION;
 const RUNTIME    = 'pjcc-runtime-' + VERSION;
 const OFFLINE_URL = '/offline.html';
@@ -21,18 +21,22 @@ const OFFLINE_URL = '/offline.html';
 /* THE SHELL — precached at install so the app opens even fully offline. Tolerant: a
  * single missing file won't fail the whole install (unlike cache.addAll). Small, so
  * install stays fast. NOTE: the site now compiles to ONE stylesheet (style.css). */
-/* ALL THREE OF '/', '/chess/' AND '/pjcc/' STAY IN THIS LIST. '/chess/' is the front door
- * AND the start_url (2026-08-03), '/pjcc/' is the world tab, and '/' — which was the
- * "McPuppy Studios Presents" intro card until the intro was deleted on 2026-08-03 — is now
- * a redirect to /chess/. All three are real pages returning 200. '/' stays here precisely
- * BECAUSE it is a redirect: it is the address people type, and offline it has to be able to
- * answer with the hop rather than with the offline page. Keeping the old ones matters because
- * start_url is baked into a launcher AT INSTALL TIME: a phone that installed the app when
- * /pjcc/ was the start_url still opens /pjcc/?source=pwa regardless of manifest.json today.
- * As of 2026-08-03 that launch is redirected to /chess/ by a pre-paint script in
- * _includes/head.html — but the redirect lives INSIDE the /pjcc/ document, so /pjcc/ has to
- * be cached and served for the redirect to be able to fire at all. On a plane, dropping it
- * from this list would strand the old launcher on the offline page.
+/* ALL THREE OF '/', '/chess/' AND '/pjcc/' STAY IN THIS LIST, and the reason is now the
+ * whole history of this site's front door in one line each:
+ *   '/'       — THE FRONT DOOR and the start_url, as of 2026-08-03 and chesswild.com.
+ *   '/chess/' — the front door from 2026-07-28 to 2026-08-03, now a REDIRECT to '/'. It is
+ *               the start_url baked into every launcher installed in that window.
+ *   '/pjcc/'  — the world tab; the start_url baked into every launcher installed before that.
+ * All three are real pages returning 200.
+ *
+ * THE RULE THAT KEEPS ALL THREE HERE: start_url is baked into a launcher AT INSTALL TIME, so
+ * a phone that installed the app in June still opens /pjcc/?source=pwa no matter what
+ * manifest.json says today, and no API reaches back to correct it. The only fix is a
+ * pre-paint redirect living INSIDE the document that launcher lands on — /pjcc/'s lives in
+ * _includes/head.html, /chess/'s lives in its own <head>. A redirect that ships inside a
+ * document is worthless if the document can't be served, so every page holding one has to
+ * stay cached. On a plane, dropping any of these strands that generation of launcher on the
+ * offline page.
  * This precache runs under Promise.allSettled, so a 404 here fails SILENTLY and serves a
  * stale shell rather than reporting anything — so none of these URLs may 404. */
 const PRECACHE = [

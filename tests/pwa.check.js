@@ -37,7 +37,7 @@ if (m) {
    *      start_url is baked into a launcher at install time and can never be corrected
    *      from the manifest side.
    * If the front door moves again, both of these fail — which is the point. */
-  ok(/^\/chess\/(\?|$)/.test(m.start_url), 'manifest start_url is the front door (/chess/) — ' + m.start_url);
+  ok(/^\/(\?|$)/.test(m.start_url), 'manifest start_url is the front door (/) — ' + m.start_url);
   ok(m.display === 'standalone' || m.display === 'fullscreen' || m.display === 'minimal-ui', 'manifest display is app-like');
   ok(/^#[0-9a-f]{6}$/i.test(m.theme_color || ''), 'manifest theme_color is a hex color');
   ok(/^#[0-9a-f]{6}$/i.test(m.background_color || ''), 'manifest background_color is a hex color');
@@ -105,12 +105,28 @@ if (exists('_includes/head.html')) {
   // the other half of the start_url pair — see the manifest check above
   ok(/source=pwa/.test(head) && /location\.replace/.test(head),
      'the shared head redirects an app LAUNCH off the old start_url');
-  ok(/'\/chess\/\?source=pwa'/.test(head), 'the app-launch redirect points at the front door');
+  ok(/'\/\?source=pwa'/.test(head), 'the app-launch redirect points at the front door');
   // and it must fire before anything paints: above the stylesheet link
   const iRedirect = head.indexOf('source=pwa');
   const iSheet = head.indexOf('rel="stylesheet"');
   ok(iRedirect > -1 && iSheet > -1 && iRedirect < iSheet,
      'the app-launch redirect sits above the stylesheet (fires before first paint)');
+}
+
+/* THE THIRD GENERATION OF LAUNCHER (added 2026-08-03 with chesswild.com). There are now
+ * three baked start_urls in the wild — /pjcc/ (before 2026-07-28), /chess/ (that week), and
+ * / (now) — and each of the first two needs a redirect living INSIDE the document it opens.
+ * /pjcc/'s is in the shared head, checked above. /chess/ is `layout: null`, so it does NOT
+ * get the shared head and the check above cannot see it: its redirect has to be in its own
+ * <head>, and if it ever goes missing the only symptom is an app that opens on a dead page.
+ * It also has to carry ?source=pwa across the hop, or the launch arrives as a plain visit. */
+ok(exists('chess.md'), 'chess.md exists (the /chess/ stub a 2026-07-28 launcher still opens)');
+if (exists('chess.md')) {
+  const stub = read('chess.md');
+  ok(/layout:\s*null/.test(stub), '/chess/ is pinned layout: null (it renders standalone)');
+  ok(/location\.replace/.test(stub), '/chess/ carries its own pre-paint redirect');
+  ok(/source=pwa/.test(stub), '/chess/ carries the app marker across the hop');
+  ok(/http-equiv="refresh"/.test(stub), '/chess/ redirects without JS too');
 }
 ['default', 'studio-home', 'game', 'easter-eggs'].forEach((layout) => {
   const rel = '_layouts/' + layout + '.html';

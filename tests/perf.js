@@ -54,7 +54,7 @@ const SETTLE_MS = 3500;
  * EXCEPT the one every visitor lands on. A perf harness that skips the front door is
  * measuring the wrong site. If the front door ever moves again, move this line with it. */
 const PAGES = [
-  { name: 'Front door',   url: '/chess/' },
+  { name: 'Front door',   url: '/' },
   { name: 'PJCC home',    url: '/pjcc/' },
   { name: 'Games hall',   url: '/games/' },
   { name: 'McPuppy home', url: '/projects/' },

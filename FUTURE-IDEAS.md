@@ -22,11 +22,31 @@ combination** over new surface area.
 name he has to pick). Kept here so an ended session never loses them. None are on fire; they just have
 to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**.*
 
+**🌐 THE DOMAIN CUTOVER — chesswild.com, bought 2026-08-03. Runbook:
+`docs/domain-cutover-chesswild.md`.** The site's structure is already reset for it; the domain
+itself is NOT flipped. These are the steps only you can do, in order:
+- [ ] **1. Point chesswild.com's DNS at GitHub Pages** (Squarespace → DNS): four `A` records on `@`
+  → `185.199.108/109/110/111.153`, plus `www` `CNAME` → `ngreen37.github.io`. Delete any parking
+  records Squarespace added on purchase or they'll fight it.
+- [ ] **2. Tell me when `nslookup -type=a chesswild.com` returns those four IPs** — then I flip
+  `CNAME`, `_config.yml`, `robots.txt` and the Gambit canonical in one commit. ⚠ Doing that before
+  DNS resolves takes the live site down, because GitHub serves **one** custom domain and the moment
+  `CNAME` changes it stops answering for mcpuppystudios.com.
+- [ ] **3. GitHub → Settings → Pages** → custom domain `chesswild.com`, wait for the certificate,
+  then tick **Enforce HTTPS**.
+- [ ] **4. Forward mcpuppystudios.com → https://chesswild.com** (301, with path forwarding).
+  Cloudflare is the free fallback if Squarespace's forwarding won't do HTTPS or won't keep the path.
+- [ ] **5. Three services that break SILENTLY** — Supabase auth URLs (Site URL + `https://chesswild.com/**`,
+  double star), the `pjcc-translate` Worker's hardcoded CORS `ALLOW` array (or Japanese quietly
+  degrades to the rate-limited free chain), and a new Google Search Console property.
+- [ ] **6. Delete and reinstall the app on your phone** — a new origin is a new app, and no manifest
+  edit can reach an installed launcher. **Sign in on chesswild.com first**, so your account carries
+  your progress across rather than the browser jar you're leaving behind.
+
 **Names and vetoes from the 2026-08-03 batch — all shipped, all one-line reversible**
-- [ ] **The app is still *named* PJCC.** The home-screen label, `manifest.json` `name`/`short_name`
-  and the install bar all say PJCC while the app now opens on **McPuppy Chess**. Renaming is safe
-  (`id` stays `/pjcc/`, so it updates in place rather than becoming a second icon) — but it's your
-  wording, and it's the name you haven't finished picking from the twenty.
+- [x] ~~**The app is still *named* PJCC.**~~ **DONE 2026-08-03** — the domain picked the name. The
+  manifest now reads `name: "ChessWild — free chess for everyone"` / `short_name: "ChessWild"`.
+  `id` stayed `/pjcc/`, so it updates in place rather than becoming a second icon.
 - [ ] **25 new collectable names are mine, veto open.** Eight shop faces (The Bear · Otter · Stag ·
   Octopus · Shark · Tortoise · Nightwing · Moon), three titles, two themes, six Vault pieces named
   for what the altar does (The Hourglass · Anchor · Long Thread · Remembered by the Board · Nothing
@@ -96,7 +116,11 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**
   ask is plausible for a 4-letter .com (Escrow.com's Q2-2025 median was ~$7.2k, individual sales run
   well past it) but it is an *asking* price on an unpronounceable consonant cluster with existing
   acronym competition — and a name nobody can spell after hearing the show's title is a weak asset at
-  any price. **Live domain stays `mcpuppystudios.com`.** — his call, no build attached.
+  any price. ~~**Live domain stays `mcpuppystudios.com`.**~~ **SUPERSEDED 2026-08-03: he bought
+  `chesswild.com` and it becomes the live domain** — the reasoning above still stands (a name a
+  stranger can spell after hearing it is the whole asset), it just found a better answer than either
+  candidate. The defensive `princessandthejourneytochesscity.com` registration is still open and
+  still worth ~$12/yr. See the cutover steps at the top of this file.
 - [ ] **⭐ The road to Chess City lives in ONE browser — and that is a 1,000-puzzle promise.**
   *(Found 2026-07-29 answering his question "is there a method where users can get them all?")*
   Progress is `localStorage['pjcc.fork.journey.v2']`, written on every correct solve. Signed IN it is
@@ -120,10 +144,10 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**
   already use them (Robert as the Park Tables Expert bot, Kaede in the Reading Room, Kaede and
   Matsu on Shogi Island) and stay in `hidden_character_urls` with no dossier of their own. The
   rule is the standing one: **unlink, keep the text.** Not an oversight — do not "fix" it again.
-- [ ] **Pick the home page's NAME.** The front door shipped 2026-07-28 as **McPuppy Chess** at
-  `/chess/`, but that's a working title — twenty candidates are in "🚪 The front door" below.
-  Swapping is one Liquid line at the top of `chess.md` (`site_name`) plus the drawer sub and the
-  ⌘K entry. Say the word and it's a two-minute change.
+- [x] ~~**Pick the home page's NAME.**~~ **ANSWERED 2026-08-03 by the chequebook** — he bought
+  **chesswild.com** and the site is **ChessWild**. The twenty candidates below are closed. The front
+  door also moved `/chess/` → **`/`** the same day: a domain that says chess retires the hop that
+  existed only to explain a studio-sounding address.
 - [ ] **Shape the new home page.** First pass is live and deliberately plain — hero + one gold
   button + four doors + three true things + one door to the world. He said "we'll shape it."
 - [ ] **The Spotify-style profile ring** — hover the top-right profile pill, a progress ring slides out
