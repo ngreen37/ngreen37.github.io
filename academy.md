@@ -1,6 +1,6 @@
 ---
 layout: page
-title: PJCC Chess Academy
+title: Chess Academy
 permalink: /academy/
 own_title: true
 body_class: theme-academy

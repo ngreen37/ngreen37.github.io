@@ -340,18 +340,32 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
      The three facts that closed the page are gone from here too — they are `sky_note` in the
      front matter now, printed below the card, out on the blue.
 
-     ⚠ THE DASHES ARE OFF THIS COMMENT TAG ON PURPOSE — `{% comment %}`, not `{%- comment -%}`,
-     and putting them back re-breaks the page. This band follows `</a>` (the world card), and
-     an `<a>` is SPAN-level, so kramdown still has an open paragraph when it gets here. The
-     blank line above is the only thing that closes that paragraph and lets `<section>` start a
-     raw HTML block — and `{%-` EATS THAT BLANK LINE, joining the two into `</a><section …>`.
+     ⚠ THIS COMMENT'S OPENING TAG CARRIES NO HYPHENS, ON PURPOSE. Putting the whitespace-control
+     hyphens back re-breaks the page. This band follows `</a>` (the world card), and an `<a>` is
+     SPAN-level, so kramdown still has an open paragraph when it gets here. The blank line above
+     is the only thing that closes that paragraph and lets `<section>` start a raw HTML block —
+     and a hyphenated delimiter EATS THAT BLANK LINE, joining the two into `</a><section …>`.
      Kramdown then reads the section as span content and HTML-escapes it, so the tags ship as
      VISIBLE TEXT: `<section class="mc-studio"><div class="mc-lamp">` printed on the front door,
      `</div>` and `</section>` after it, no `.mc-studio` element ever created, and the lamp's
      absolutely positioned parts escaping to scatter across the page (that was the 8px of
      horizontal overflow). The four other comment-then-markup pairs on this page keep their
-     dashes safely, because each one follows a BLOCK-level close (`</div>`, `</ul>`) which ends
-     the paragraph on its own. `npm run test:style` fails the build on this now. {% endcomment %}
+     hyphens safely, because each one follows a BLOCK-level close (`</div>`, `</ul>`) which ends
+     the paragraph on its own. `npm run test:style` fails the build on this now.
+
+     ⚠⚠ AND THAT PARAGRAPH DELIBERATELY DOES NOT SPELL THE DELIMITER — same house rule as the
+     style-tag warning further up this file, and for a harder reason. LIQUID TOKENIZES THE INSIDE
+     OF A COMMENT. It does not treat this text as inert prose; it scans it for tag delimiters, so
+     an opening delimiter written here as an EXAMPLE is parsed as a real tag, and one without a
+     closing delimiter after it takes the whole build down:
+         Liquid syntax error (line 319): Tag '…' was not properly terminated
+     That is not theoretical — it is what the first version of this very comment did. Three
+     GitHub Pages builds failed in a row (765ff1e, d0d811c, and Nate's "new post" on top of
+     them), the deploy step was SKIPPED each time, and the live site silently kept serving the
+     older broken copy while `npm test` stayed green, because nothing local parses Liquid.
+     `_includes/char-card-piece.html` shows the safe form: a COMPLETE, properly closed tag inside
+     a comment parses and is discarded. It is the half-written one that kills it. Describe the
+     delimiter in words here; never type one. {% endcomment %}
 
 <section class="mc-studio">
   {%- comment -%} ⚠ THE LAMP TOOK TWO TRIES, AND THE SECOND ONE WAS WORSE THAN THE FIRST.

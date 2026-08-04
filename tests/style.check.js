@@ -266,8 +266,58 @@ console.log('\n── HOUSE RULES ───────────────�
   }
   check('no Liquid comment welds a span close onto a block open in a .md page', bad.length === 0,
     bad.length ? '\n      ' + bad.slice(0, 8).join('\n      ')
-                 + '\n      ← drop the dashes ({% comment %}) so the blank line survives'
+                 + '\n      ← drop the hyphens on the comment tag so the blank line survives'
                : 'every block-level tag in a markdown page still opens its own block');
+}
+
+/* ── 7. EVERY LIQUID TAG IS CLOSED — THE ONE THING THAT CAN STOP THE SITE DEAD ─────
+   The other six rules are about a page rendering WRONG. This one is about the site not
+   rendering at all, and it is the only check here that guards the build itself.
+
+   ⚠ NOTHING ON THIS MACHINE PARSES LIQUID. There is no local Jekyll, so `npm test` can pass
+   in full while the GitHub Pages build fails on the very next push — and it does so QUIETLY:
+   the build job fails, the deploy job is SKIPPED, no deployment is created, and the live site
+   just goes on serving the last good copy. It reads exactly like the flaky-deploy problem
+   ([[pages-deploy-flaky]]) and it is not that at all. Three builds died this way on 2026-08-04
+   (765ff1e, d0d811c, and Nate's post pushed on top of them) before anyone looked at a build log.
+
+   THE CAUSE, AND WHY A COMMENT IS THE DANGEROUS PLACE: Liquid TOKENIZES THE INSIDE OF A COMMENT
+   BLOCK. Prose in a comment is not inert — an opening tag delimiter typed there as an EXAMPLE is
+   parsed as a real tag, and if no closing delimiter follows, Liquid swallows everything up to
+   the next one and raises "was not properly terminated". A complete, properly closed tag inside
+   a comment is fine and is discarded (see _includes/char-card-piece.html, which has always done
+   this). It is the half-written delimiter that kills the build.
+
+   The check is deliberately whole-file rather than comment-only, because an unclosed tag is
+   fatal anywhere. Only files Jekyll actually RENDERS are scanned: _includes/ and _layouts/ are
+   always processed, and elsewhere a file needs YAML front matter — without it Jekyll copies the
+   bytes through untouched and its braces mean nothing (which is exactly why assets/games/*.html
+   are excluded). */
+{
+  const rendered = FILES.filter((f) => {
+    if (!/\.(md|html)$/.test(f)) return false;
+    const r = rel(f).replace(/\\/g, '/');
+    if (/^assets\//.test(r)) return false;
+    if (/^_(includes|layouts)\//.test(r)) return true;
+    return /^---\r?\n/.test(fs.readFileSync(f, 'utf8'));
+  });
+  const bad = [];
+  for (const f of rendered) {
+    const src = fs.readFileSync(f, 'utf8');
+    for (let i = src.indexOf('{%'); i !== -1; i = src.indexOf('{%', i + 2)) {
+      const close = src.indexOf('%}', i + 2);
+      const next  = src.indexOf('{%', i + 2);
+      if (close === -1 || (next !== -1 && next < close)) {
+        const line = src.slice(0, i).split('\n').length;
+        bad.push(rel(f) + ':' + line + ' — ' + JSON.stringify(src.substr(i, 34)));
+        break;                       // one report per file is enough to act on
+      }
+    }
+  }
+  check('every Liquid tag in a rendered file is terminated', bad.length === 0,
+    bad.length ? '\n      ' + bad.join('\n      ')
+                 + '\n      ← this FAILS THE PAGES BUILD; describe a delimiter in words, never type one'
+               : rendered.length + ' rendered files parse');
 }
 
 console.log(`\n  ${pass} passed, ${fail} failed\n`);
