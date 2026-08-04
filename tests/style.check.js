@@ -178,5 +178,44 @@ console.log('\n── HOUSE RULES ───────────────�
                : withScript.length + ' script-bearing includes, all block-level where used');
 }
 
+/* ── 5. AN INCLUDE A .md PAGE USES MAY NOT CARRY AN INLINE MULTI-LINE <script> ──────
+   Rule 4 above was the RIGHT lesson and only HALF the trap, and the missing half shipped to
+   the live front door on 2026-08-04. Moving the desk lamp out of a <span> and into a <div>
+   fixed the escaping — and opened the other door: kramdown passes raw HTML through, but a raw
+   HTML block ENDS AT THE FIRST BLANK LINE. One blank line sat in the middle of that function.
+   Everything below it was re-parsed as markdown, and being indented four spaces it became an
+   indented CODE BLOCK — forty lines of raw JavaScript printed on the page, in a black box,
+   under the world card, with `</div>` and `</section>` following as visible text. Rule 4
+   passed the whole time, because the container really was block-level.
+
+   So the honest rule is not "wrap it correctly" — it is that an inline script has no business
+   in an include a markdown page uses AT ALL. A one-line `<script src=…>` is fine and is the
+   fix; what is banned is a script with a BODY, which is the only kind kramdown can eat.
+   Checked against the includes each .md page actually uses, so a partial that only ever
+   serves an HTML layout (town-weather.html, in <head>) is left alone — those are safe. */
+{
+  const slurp = (p) => fs.readFileSync(p, 'utf8');
+  // a <script> whose body has real content spanning more than one line
+  const INLINE = /<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi;
+  const bodied = (src) => {
+    let m; INLINE.lastIndex = 0;
+    while ((m = INLINE.exec(src))) if (m[1].trim() && /\n/.test(m[1].trim())) return true;
+    return false;
+  };
+  const risky = fs.readdirSync(path.join(ROOT, '_includes'))
+    .filter((f) => /\.html$/.test(f) && bodied(slurp(path.join(ROOT, '_includes', f))));
+  const bad = [];
+  for (const f of FILES.filter((x) => /\.md$/.test(x))) {
+    const src = slurp(f);
+    for (const inc of risky) {
+      const re = new RegExp(`\\{%-?\\s*include\\s+${inc.replace('.', '\\.')}`, 'i');
+      if (re.test(src)) bad.push(rel(f) + ' includes ' + inc);
+    }
+  }
+  check('no .md page includes a partial with an inline multi-line <script>', bad.length === 0,
+    bad.length ? bad.join(' | ') + '  ← move the code to assets/js/ and load it with src+defer'
+               : 'kramdown cannot reach any script a markdown page pulls in');
+}
+
 console.log(`\n  ${pass} passed, ${fail} failed\n`);
 process.exit(fail ? 1 : 0);

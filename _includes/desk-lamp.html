@@ -39,39 +39,12 @@
   </span>
   <span class="sl-tip"></span>
 </a>
-<script>
-(function () {
-  // Scoped by class, not by id, so a page can carry the lamp under any id — and so this
-  // keeps working if a page ever shows more than one.
-  var lamps = document.querySelectorAll('.studio-light');
-  if (!lamps.length) return;
-  var lit = false;
-  Array.prototype.forEach.call(lamps, function (el) {
-    var tip = el.querySelector('.sl-tip');
-    if (!tip) return;
-    var built = Date.parse(el.getAttribute('data-built') || '') || 0;
-    var on = !!(built && (Date.now() - built) < 12 * 3600 * 1000);
-    if (on) lit = true;
-    el.classList.toggle('on', on);
-    var status = on
-      ? 'Creator is currently working or was during last 12 hours.'
-      : 'No movement in last 12 hours — Creator has stepped away. All is well; the line stays open.';
-    tip.innerHTML = status + '<br><b>&#9993; The Direct Line &rarr;</b>';
-    el.setAttribute('aria-label', status + ' Open the Direct Line.');
-
-    // On phones there is no hover, so the status was unreachable without tapping straight
-    // through to the Direct Line (Nate 2026-07-17). Deliver it on TAP instead: the first
-    // tap opens the tip, a second follows the link.
-    if (window.matchMedia && matchMedia('(hover: none)').matches) {
-      el.addEventListener('click', function (e) {
-        if (!el.classList.contains('tip-open')) { e.preventDefault(); el.classList.add('tip-open'); }
-      });
-      document.addEventListener('click', function (e) {
-        if (!el.contains(e.target) && el.classList.contains('tip-open')) { el.classList.remove('tip-open'); el.blur(); }
-      });
-    }
-  });
-  // the page knows the lamp is burning — the splash warms its footer signature under it
-  document.body.classList.toggle('lamp-lit', lit);
-})();
-</script>
+{%- comment -%} ⚠ THE CHECK IS A FILE, NOT AN INLINE SCRIPT, AND IT MAY NEVER COME BACK IN
+     HERE (2026-08-04). This include is used from a `.md` page (index.md, the front door), and
+     kramdown eats an inline script there in one of two ways depending only on what wraps it:
+     escaped to a syntax error inside a span, or truncated at the first BLANK LINE inside a
+     div — which printed forty lines of this function on the live front door as a code block.
+     Both failures and the whole reasoning are written up at the top of the .js file.
+     `defer` so it runs after the markup it looks for; it is idempotent and scoped by class,
+     so a page carrying two lamps is fine. {%- endcomment -%}
+<script src="{{ '/assets/js/pjcc-desk-lamp.js' | relative_url }}" defer></script>

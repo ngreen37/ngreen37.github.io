@@ -340,25 +340,29 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
      The three facts that closed the page are gone from here too — they are `sky_note` in the
      front matter now, printed below the card, out on the blue. {%- endcomment -%}
 <section class="mc-studio">
-  {%- comment -%} ⚠ A `<div>`, AND IT MUST NOT GO BACK TO BEING A `<span>` (fixed 2026-08-04,
-       found by a skeptic pass on the live phone build — "PAGEERROR Unexpected token ';'").
+  {%- comment -%} ⚠ THE LAMP TOOK TWO TRIES, AND THE SECOND ONE WAS WORSE THAN THE FIRST.
+       Read this before touching the include — the trap has two doors and this page walked
+       through both of them on the same day (2026-08-04).
 
-       THE LAMP HAS BEEN DEAD ON THIS PAGE SINCE THE FRONT DOOR WAS BUILT. This include
-       carries a `<script>`, and it was wrapped in a `<span>`. Kramdown treats a span-level
-       element's contents as SPAN-LEVEL MARKDOWN, so it HTML-escaped the code inside:
+       TRY ONE — a `<span>`. The lamp had been DEAD on this page since the front door was
+       built. Kramdown treats a span-level element's contents as SPAN-LEVEL MARKDOWN, so it
+       HTML-escaped the include's inline script: `&&` shipped as `&amp;&amp;`, a syntax error,
+       so the whole IIFE never ran. Nothing errored visibly — the lamp is drawn in CSS, so it
+       looked perfect and simply never did anything.
 
-           var on = !!(built &amp;&amp; (Date.now() - built) &lt; 12 * 3600 * 1000);
+       TRY TWO — a `<div>`, on the reasoning that block-level HTML is passed through untouched.
+       Half true, and the missing half went LIVE: a raw HTML block ends at the FIRST BLANK
+       LINE, and there was one in the middle of that function. Everything below it was
+       re-parsed as markdown — indented four spaces, so it became an indented CODE BLOCK.
+       Forty lines of raw JavaScript printed on the front door in a black box under the world
+       card, with `</div>` and `</section>` following as visible text. The span guard passed
+       the entire time, because the container really was block-level.
 
-       …which is a syntax error, so the whole IIFE never ran. The lamp never lit, the hover
-       tooltip stayed empty, and `document.body.classList.toggle('lamp-lit')` never fired.
-       Nothing errored visibly — the lamp is drawn in CSS, so it looked fine and simply never
-       did anything. `/pjcc/` was always fine because `_layouts/home.html` is HTML, not
-       markdown; the SAME include, two containers, one of them silently broken.
-
-       A block-level element is passed through untouched, which is the whole fix. `.mc-lamp`
-       already carries `display: block`, so nothing about the layout changes.
-       ⭐ THE GENERAL RULE: never put an include that contains a script inside a span-level
-       tag in a `.md` file. `npm run test:style` now fails the build on it. {%- endcomment -%}
+       THE FIX IS THAT THERE IS NO INLINE SCRIPT ANY MORE. It is `/assets/js/pjcc-desk-lamp.js`,
+       loaded with `src`+`defer`, and kramdown has nothing to reach. `.mc-lamp` stays a `<div>`
+       and stays `display: block` — the container was never the real question.
+       ⭐ THE GENERAL RULE: an include a `.md` page uses may not carry an inline multi-line
+       `<script>`. `npm run test:style` fails the build on it (rules 4 and 5). {%- endcomment -%}
   <div class="mc-lamp">{% include desk-lamp.html id="mc-lamp" %}</div>
   <div class="mc-studio-copy">
     <span class="mc-studio-label">Building in the open</span>
