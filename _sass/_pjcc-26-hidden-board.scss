@@ -86,6 +86,15 @@
 
 .hb-eyebrow { font-size: 0.62rem; letter-spacing: 0.3em; text-transform: uppercase; color: #9a7fd4; }
 .hb-title { font-weight: 900; font-size: 1.1rem; color: #fff; margin: 4px 0 14px; }
+/* "Left out in the rain." — the one line that tells the finder WHY they have never seen
+   one of these before, and why their friend won't see it tomorrow (the marks only exist
+   on a rainy or snowy day — see the gate at the top of pjcc-hidden-board.js). It sits
+   between the title and the board, styled as an aside rather than as instruction: this is
+   the world explaining itself, not the UI explaining itself. */
+.hb-left {
+  margin: -9px 0 13px; font-family: 'Share Tech Mono', monospace;
+  font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: #8fb7e8;
+}
 
 .hb-board {
   position: relative; width: min(300px, 100%); aspect-ratio: 1; margin: 0 auto;

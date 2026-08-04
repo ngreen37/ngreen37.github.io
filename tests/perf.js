@@ -43,10 +43,11 @@ const COST_MS = 2500;        // unthrottled main-thread window
 const REPS = 4;              // per condition; median
 const SETTLE_MS = 3500;
 
-/* ⚠ Every URL here must be a page that STAYS PUT. `/` is the 2-second typing intro and
- * `location.replace('/pjcc/')`s out from under the harness — the injected toolkit dies with
- * the old document and the run crashes on `__perf is undefined`. (It listed `/` twice, as
- * "PJCC home" and "Splash", from before the 2026-07-23 front-door flip.) Fixed 2026-07-28. */
+/* ⚠ Every URL here must be a page that STAYS PUT. `/` `location.replace()`s out from under
+ * the harness — the injected toolkit dies with the old document and the run crashes on
+ * `__perf is undefined`. (It listed `/` twice, as "PJCC home" and "Splash", from before the
+ * 2026-07-23 front-door flip.) Fixed 2026-07-28; still true 2026-08-03, when `/` stopped
+ * being the 2-second typing intro and became a bare redirect — same replace(), same crash. */
 /* ⚠ THE FRONT DOOR GOES FIRST, and it was MISSING until 2026-07-28's health check.
  * When `/` stopped being the destination and /chess/ became it, this list kept the four
  * pages it already had — so for a week the harness was measuring every page on the site

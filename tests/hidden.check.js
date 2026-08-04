@@ -42,10 +42,10 @@ const check = (n, c, d) => {
    Chrome is missing. `window` is the only global the module touches at definition time. */
 function loadBoards() {
   const win = {};
-  new Function('window', 'document', 'localStorage', 'location', HIDDEN)(win, {
+  new Function('window', 'document', 'localStorage', 'location', 'URLSearchParams', HIDDEN)(win, {
     readyState: 'complete', addEventListener() {}, createElement: () => ({ style: {}, classList: { add() {} }, setAttribute() {}, addEventListener() {}, appendChild() {} }),
     querySelectorAll: () => [], body: { appendChild() {} }, getElementById: () => null
-  }, { getItem: () => null, setItem() {} }, { pathname: '/nowhere/' });
+  }, { getItem: () => null, setItem() {} }, { pathname: '/nowhere/', search: '' }, URLSearchParams);
   return win.PJCCHiddenBoard;
 }
 
@@ -126,26 +126,85 @@ HB.BOARDS.forEach(b => {
     /querySelectorAll\('\[data-hb\]'\)/.test(CODE) && !/page-card/.test(CODE));
 }
 
+/* ── 2c. THE SECRET THAT ONLY EXISTS IN THE RAIN AND SNOW (2026-08-03) ─────────────
+   Nate, ingenuity #12: "One secret that only exists in the rain and snow… Make exactly
+   one easter egg depend on it — the hidden chessboards." Three things have to hold or
+   the egg is either always there (no secret) or never there (no egg). */
+{
+  const CODE = HIDDEN.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  check('boot() refuses to plant unless the town is wet', /if\s*\(!wet\(\)\)\s*return/.test(CODE));
+
+  /* ⚠ THE FORECAST, NOT THE CANVAS. Falling weather never starts under reduced motion, so
+     a gate that asked whether it is raining ON SCREEN would lock every reduced-motion
+     visitor out of the egg entirely. PJCC_TIME.weather() is arithmetic on the date and is
+     the same answer on every machine, quiet or not. */
+  check('the gate reads the forecast, never the rendered weather',
+    /window\.PJCC_TIME/.test(CODE) && /\.weather\(\)/.test(CODE) &&
+    !/PJCCWeather|tw-canvas|town-weather-fall/.test(CODE),
+    'reduced-motion visitors can still find it');
+
+  // the gate itself, driven directly — the module reads window.PJCC_TIME at call time
+  const win = {};
+  new Function('window', 'document', 'localStorage', 'location', 'URLSearchParams', HIDDEN)(win, {
+    readyState: 'complete', addEventListener() {}, createElement: () => ({ style: {}, classList: { add() {} }, setAttribute() {}, addEventListener() {}, appendChild() {} }),
+    querySelectorAll: () => [], body: { appendChild() {} }, getElementById: () => null
+  }, { getItem: () => null, setItem() {} }, { pathname: '/nowhere/', search: '' }, URLSearchParams);
+  const gate = win.PJCCHiddenBoard;
+  const say = (kind) => { win.PJCC_TIME = { weather: () => ({ kind }) }; return gate.wetKind(); };
+  check('rain opens it', say('rain') === 'rain');
+  check('snow opens it', say('snow') === 'snow');
+  check('a clear day does not', say('clear') === null);
+  check('nor does mist — falling water only', say('mist') === null,
+    'mist is weather you cannot leave a board out in');
+  win.PJCC_TIME = null;
+  check('no clock at all fails CLOSED', gate.wetKind() === null,
+    'a missing clock hides the egg rather than showing it on the wrong day');
+
+  /* …and "fails closed" is only safe because the clock is genuinely always there. It is
+     INLINED into every page before first paint, three includes deep. If any link in that
+     chain breaks, the egg would go quiet on a rainy day and nothing else would complain. */
+  const LAYOUT = fs.readFileSync(path.join(ROOT, '_layouts/default.html'), 'utf8');
+  const HEAD = fs.readFileSync(path.join(ROOT, '_includes/head.html'), 'utf8');
+  const TW = fs.readFileSync(path.join(ROOT, '_includes/town-weather.html'), 'utf8');
+  const HOME = fs.readFileSync(path.join(ROOT, '_layouts/home.html'), 'utf8');
+  check('every page loads the egg (default.html)', /pjcc-hidden-board\.js/.test(LAYOUT));
+  check('/pjcc/ inherits that layout', /^---[\s\S]*?layout:\s*default/m.test(HOME));
+  check('…and the clock reaches it: default → head → town-weather → pjcc-time',
+    /include head\.html/.test(LAYOUT) && /include town-weather\.html/.test(HEAD) &&
+    /include pjcc-time\.js/.test(TW));
+
+  check('the modal tells the finder it was left out in the weather',
+    /Left out in the (rain|snow)/.test(HIDDEN),
+    'without it, a friend who looks tomorrow decides the site is broken');
+}
+
 /* ── 3. DRIVE IT: plant, click, miss, solve ───────────────────────────────────────── */
 (async () => {
   const exe = findChrome();
   if (!exe) { console.log('\n  (no Chrome found — skipping the browser half)'); done(); return; }
   const browser = await puppeteer.launch({ executablePath: exe, args: ['--no-sandbox'] });
 
+  /* A page shaped like the real one: the script keys off location.pathname, so the URL has
+     to BE the host page. Intercepted so nothing leaves the machine.
+     ⚠ THE FORECAST IS PART OF THE FIXTURE NOW. The egg refuses to plant on a clear day,
+     so a page that doesn't say what the weather is would fail every check below for the
+     right reason and teach us nothing. `wx` is stated explicitly per case, which also
+     means these runs are the same in July as they are in December. */
+  const serve = (page, wx) => page.setRequestInterception(true).then(() => page.on('request', r => r.respond({
+    status: 200, contentType: 'text/html',
+    body: `<!doctype html><html><head><meta charset="utf-8">
+           <script>window.PJCC_TIME={weather:function(){return {kind:${JSON.stringify(wx)}};}};<\/script>
+           </head><body>
+           <div><h2 data-hb>A heading</h2><p data-hb>Some words on the page.</p>
+           <h3 data-hb>Another heading</h3><p>Unmarked — must never be chosen.</p></div>
+           <script>${HIDDEN.split('</script>').join('<\\/script>')}<\/script></body></html>`
+  })));
+
   for (const b of HB.BOARDS) {
     const page = await browser.newPage();
     const errs = [];
     page.on('pageerror', e => errs.push(e.message));
-    /* A page shaped like the real one: the script keys off location.pathname, so the URL
-       has to BE the host page. Intercepted so nothing leaves the machine. */
-    await page.setRequestInterception(true);
-    page.on('request', r => r.respond({
-      status: 200, contentType: 'text/html',
-      body: `<!doctype html><html><head><meta charset="utf-8"></head><body>
-             <div><h2 data-hb>A heading</h2><p data-hb>Some words on the page.</p>
-             <h3 data-hb>Another heading</h3><p>Unmarked — must never be chosen.</p></div>
-             <script>${HIDDEN.split('</script>').join('<\\/script>')}<\/script></body></html>`
-    }));
+    await serve(page, 'rain');
     await page.goto('https://mcpuppystudios.com' + b.page, { waitUntil: 'domcontentloaded' });
     await new Promise(r => setTimeout(r, 200));
 
@@ -213,17 +272,42 @@ HB.BOARDS.forEach(b => {
   /* ── 4. it must do NOTHING on a page that hosts no board ───────────────────────── */
   {
     const page = await browser.newPage();
-    await page.setRequestInterception(true);
-    page.on('request', r => r.respond({
-      status: 200, contentType: 'text/html',
-      body: `<!doctype html><html><head><meta charset="utf-8"></head><body><div>
-             <h2 data-hb>Not a host page</h2><p data-hb>Plenty of spots — but no board lives here.</p></div>
-             <script>${HIDDEN.split('</script>').join('<\\/script>')}<\/script></body></html>`
-    }));
+    await serve(page, 'rain');
     await page.goto('https://mcpuppystudios.com/academy/', { waitUntil: 'domcontentloaded' });
     await new Promise(r => setTimeout(r, 150));
     const n = await page.evaluate(() => document.querySelectorAll('.hb-mark').length);
     check('a page with no board planted gets no mark', n === 0, n + ' marks');
+    await page.close();
+  }
+
+  /* ── 5. AND NOTHING AT ALL ON A DRY DAY ────────────────────────────────────────────
+     The other half of ingenuity #12, and the half a suite would forget: proving the egg
+     APPEARS is easy, proving it stays hidden is what makes it a secret. Same host page,
+     same hiding places, same script — only the forecast differs. */
+  {
+    for (const wx of ['clear', 'mist']) {
+      const page = await browser.newPage();
+      await serve(page, wx);
+      await page.goto('https://mcpuppystudios.com' + HB.BOARDS[0].page, { waitUntil: 'domcontentloaded' });
+      await new Promise(r => setTimeout(r, 150));
+      const n = await page.evaluate(() => document.querySelectorAll('.hb-mark').length);
+      check(`on a ${wx} day the board is not there at all`, n === 0, n + ' marks');
+      await page.close();
+    }
+    // …and snow finds it, so the egg survives December
+    const page = await browser.newPage();
+    await serve(page, 'snow');
+    await page.goto('https://mcpuppystudios.com' + HB.BOARDS[0].page, { waitUntil: 'domcontentloaded' });
+    await new Promise(r => setTimeout(r, 150));
+    const snowy = await page.evaluate(() => {
+      const m = document.querySelector('.hb-mark');
+      if (m) m.click();
+      const left = document.querySelector('.hb-left');
+      return { marks: document.querySelectorAll('.hb-mark').length, left: left && left.textContent };
+    });
+    check('snow finds it too', snowy.marks === 1, snowy.marks + ' marks');
+    check('…and the card says which weather left it there', /snow/i.test(snowy.left || ''),
+      snowy.left || 'NO LINE — the finder is never told why it is here today and gone tomorrow');
     await page.close();
   }
 

@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Chess City</title>
+<!-- THE TOWN SKY (2026-08-03, cohesion #6): the clock first, then the wash it drives.
+     ORDER IS LOAD-BEARING - pjcc-game-sky.js finds no clock if these swap, and does
+     nothing at all without saying so. tests/townsky.check.js checks both, in order. -->
+<script src="/assets/js/pjcc-time.js"></script>
+<script src="/assets/js/pjcc-game-sky.js"></script>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; background: #07060f; color: #e8e0ff;

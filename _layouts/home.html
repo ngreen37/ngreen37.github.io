@@ -1018,37 +1018,12 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
 {% comment %} (the basement / #20 street band removed 2026-07-10 — the page now ends
      at the cast; restore from git if ever missed.) {% endcomment %}
 
-{% comment %} ── REPLAY THE INTRO — a faint utility link (2026-07-23, Nate: "give me a replay
-     intro button, real faint, so I can see the welcome"). It returns to `/` — the "McPuppy
-     Studios Presents" typing intro (index.md) — after clearing `mcp.intro.seen`, the
-     once-per-session flag that otherwise makes `/` skip straight to /pjcc/. So the card
-     actually PLAYS, then hands back to /pjcc/ on its own ~2s later. Kept deliberately dim;
-     it brightens on hover/focus so it's findable without competing with the page. Only on
-     /pjcc/ — this layout (home.html) is used by nothing else. ── {% endcomment %}
-<div class="home-replay-wrap">
-  <a class="home-replay" href="{{ '/' | relative_url }}"
-     onclick="try{sessionStorage.removeItem('mcp.intro.seen')}catch(e){}"
-     aria-label="Replay the McPuppy Studios intro">&#8635;&nbsp;Replay intro</a>
-</div>
-<style>
-  .home-replay-wrap { text-align: center; margin: 26px 0 4px; }
-  .home-replay {
-    display: inline-flex; align-items: center;
-    font-family: 'Share Tech Mono', ui-monospace, monospace;
-    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
-    /* 0.20 → 0.55, four-lens sweep 2026-07-28. "Real faint, as asked" was measured at
-       1.67:1 against the night sky — below the 3:1 floor for a GRAPHIC, let alone the 4.5
-       a 10px control needs, and in the phone render you genuinely cannot find it. 0.55 is
-       the lowest alpha that clears AA here (measured 4.7:1); it is still the quietest
-       thing on the page. Faint was the intent and faint it stays — invisible wasn't. */
-    color: rgba(233, 226, 250, 0.55);
-    text-shadow: 0 1px 4px rgba(8, 4, 24, 0.6);   /* stays legible on any sky phase */
-    text-decoration: none;
-    transition: color 0.25s ease;
-  }
-  /* hover has to move further now that rest is brighter, or the state stops reading */
-  .home-replay:hover, .home-replay:focus-visible { color: rgba(233, 226, 250, 0.92); text-decoration: none; }
-</style>
+{% comment %} (REPLAY INTRO — REMOVED 2026-08-03, with the intro itself. Nate: "Remove the
+     intro completely." This was a faint link back to `/` that first cleared the once-per-
+     session `mcp.intro.seen` flag so the "McPuppy Studios Presents" card would actually
+     play again. `/` is a redirect to the front door now, so the link would have been a
+     button that reloads the page you are one click from anyway. Its CSS (.home-replay,
+     .home-replay-wrap) went with it. {% endcomment %}
 
 </div><!-- /.home-flow -->
 
@@ -1365,6 +1340,41 @@ function ctParts() {
              : (cover >= 2)      ? 'cloud'
              : 'fair';
     item(pick(desk[band]), null, true);
+  })();
+
+  // ---- THE SKY REMEMBERS (2026-08-03, ingenuity #11) ---------------------------
+  // Nate: "Store the phase you last arrived in. Come back at a different hour and the
+  // ticker says, once, quietly: 'Last seen: dusk.' Free continuity, no mechanics."
+  //
+  // The whole feature is four lines of localStorage, and the ORDER of those lines is the
+  // feature: read the old phase, decide, THEN write the new one. Writing first would mean
+  // the memory is always of the visit you are currently making, which is not a memory.
+  //
+  // "ONCE" IS NOT A COUNTER. The write is what spends it — refresh at the same hour and
+  // the stored phase now equals the current one, so the line simply doesn't apply. There
+  // is no "told" flag to get out of step with the thing it is tracking.
+  //
+  // It is stored and read HERE, on the one page that can say it, rather than site-wide.
+  // A phase recorded by every page would be consumed by whichever page you happened to
+  // open first — /games/ would quietly eat the memory and the ticker would never have
+  // anything to report. The wire remembers what the wire saw.
+  //
+  // Nobody speaks it. It is not the day desk and not the night desk (both of whose voices
+  // are fixed — see the FORECAST above); it is the dossier's own "last seen", which is
+  // vocabulary the site has used for its operative files since the beginning.
+  (function () {
+    var W = window.PJCC_TIME;
+    if (!W) return;
+    // Not on a night he has left the desk: the away gag is six lines of DESK UNATTENDED
+    // and nothing else, and returning BEFORE the write means the memory survives to the
+    // next visit rather than being spent on a night it could not be shown.
+    if (DESK.away) return;
+    var now = W.phase(), was = null;
+    try { was = localStorage.getItem('pjcc.sky.last'); } catch (e) {}
+    try { localStorage.setItem('pjcc.sky.last', now); } catch (e) {}
+    if (!was || was === now) return;                    // first visit ever, or same hour of the world
+    if (['dawn', 'day', 'dusk', 'night'].indexOf(was) < 0) return;   // ignore anything we didn't write
+    item('LAST SEEN: ' + was.toUpperCase(), 'ticker-item--memory', true);
   })();
 
   // ---- BREAKING (studio-wide): one line in _data/breaking.yml runs the plate ----

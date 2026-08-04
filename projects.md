@@ -209,8 +209,9 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
              and "a dog who can learn anything" is the actual hook of the whole universe. {% endcomment %}
         <p class="project-desc">An animated series about a dog who can learn anything.</p>
         <div class="project-links">
-          {% comment %} was href="/" — which is the typing intro now, and bounced anyone who
-               clicked it straight back out through a redirect. Goes to the world itself. {% endcomment %}
+          {% comment %} was href="/", which bounced anyone who clicked it straight back out
+               through a redirect (the typing intro then; a plain hop to /chess/ since
+               2026-08-03). Goes to the world itself. {% endcomment %}
           <a href="/pjcc/" class="project-link">Enter PJCC &rarr;</a>
         </div>
       </div>

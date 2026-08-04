@@ -125,48 +125,13 @@ body.theme-chess .mc-table::before {
   }
 }
 
-/* ── ARRIVING FROM THE INTRO ──────────────────────────────────────────────────
-   Nate, 2026-07-28: "let's fade in to the home page (after we fade out of the
-   McPuppy Presents intro)."
+/* ── (ARRIVING FROM THE INTRO — DELETED 2026-08-03) ───────────────────────────
+   Nate: "Remove the intro completely." This was the second half of one continuous
+   dissolve across two documents: `/` faded its "McPuppy Studios Presents" card down
+   to black, dropped a one-shot sessionStorage baton, and _includes/head.html spent
+   it before first paint to flag <html class="intro-arriving"> — which this rule
+   faded back off. With no card there is no fade to finish, and a full-screen black
+   ::after that no longer has a reason to exist is exactly the kind of thing you want
+   off the front door. The head reader went with it. Restore all three from git
+   together or none of them; see index.md for the inventory. */
 
-   `/` fades its card down to black over 1.5s and then location.replace()s here. A
-   View Transition can't help — that API is same-document, and this is a whole new
-   navigation — so the two halves are stitched with a one-shot sessionStorage baton:
-   the intro sets it as it starts fading out, _includes/head.html spends it before
-   first paint and flags <html class="intro-arriving">, and this fades the black back
-   off. Door to door the visitor sees one continuous fade through black.
-
-   ⚠ IT IS PURE CSS ON PURPOSE — one `forwards` animation, no script to remove it.
-   A JS-removed overlay is a full-screen black sheet one thrown exception away from
-   being permanent, and it would fail on the slowest connections first, which is
-   exactly backwards. The animation ends at visibility:hidden, so it composites for
-   0.6s and then stops existing as far as the compositor is concerned; nothing here
-   is infinite and `npm run motion` prices it at zero ([[css-perf-lessons]]).
-
-   Scoped to ::after on <html> so it needs no markup in any layout, and applies to
-   whatever the intro points at — retarget the intro and the fade follows it.
-
-   ⚠ 2026-07-29: 0.6s → 1.0s, `ease` → `ease-out`, because the intro's own fades were
-   slowed to 1.4s/1.5s (Nate: "slow the fade in, fade out… make it more noticeable").
-   This is the SECOND HALF of one continuous dissolve across two documents; leave it at
-   0.6 and the visitor watches a leisurely 1.5s down and then gets snapped up on the
-   other side, which reads as the page loading late rather than as an arrival. */
-html.intro-arriving::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  pointer-events: none;
-  background: #000;
-  animation: intro-arrive 1s ease-out forwards;
-}
-@keyframes intro-arrive {
-  from { opacity: 1; }
-  to   { opacity: 0; visibility: hidden; }
-}
-/* Both quiet switches skip it entirely rather than shortening it — a visitor who asked
-   for no motion did not ask for a briefer flash of black. */
-html.reduce-flourish.intro-arriving::after { display: none; }
-@media (prefers-reduced-motion: reduce) {
-  html.intro-arriving::after { display: none; }
-}

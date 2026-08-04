@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>PJCC: The Pirc Protocol v2.1</title>
+<!-- THE TOWN SKY (2026-08-03, cohesion #6): the clock first, then the wash it drives.
+     ORDER IS LOAD-BEARING - pjcc-game-sky.js finds no clock if these swap, and does
+     nothing at all without saying so. tests/townsky.check.js checks both, in order. -->
+<script src="/assets/js/pjcc-time.js"></script>
+<script src="/assets/js/pjcc-game-sky.js"></script>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <script src="/assets/js/pjcc-pieces.js"></script>
@@ -120,7 +125,7 @@
   .v.up { color: #6bffb8; }
   .v.again { color: #ff8fd0; }
 
-  .foot { margin-top: 14px; font-size: 10.5px; color: #9a7a4a; line-height: 1.7; }
+  .foot { margin-top: 14px; font-size: 10.5px; color: #b08f5e; line-height: 1.7; }
   .foot b { color: #ead9b8; }
   .foot a { color: #6bffb8; }
   .tap { cursor: pointer; text-decoration: underline; }

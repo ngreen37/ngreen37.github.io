@@ -36,6 +36,53 @@
 (function () {
   'use strict';
 
+  /* ⚠⚠ THE BOARDS ONLY EXIST IN THE RAIN AND THE SNOW (2026-08-03) ─────────────────
+     Nate, ingenuity #12: "One secret that only exists in the rain and snow. The town has
+     real, town-wide weather now. Make exactly one easter egg depend on it — the hidden
+     chessboards."
+
+     EXACTLY ONE, and this is it. The town has had a real forecast since 2026-07-12 and
+     nothing in the world has ever depended on it — the weather was scenery. Now three days
+     in ten it is a key: PJCC_TIME.weather() rolls rain on 0-2 of 10 (and rain becomes snow
+     from December), so the marks are out roughly 30% of days, the same 30% for everybody,
+     all day. Clear day, no boards anywhere on the site.
+
+     ⚠ IT READS THE FORECAST, NOT THE CANVAS. Falling weather never starts under reduced
+     motion ([[weather-canvas]]) — if the gate asked "is it raining on screen" the egg would
+     be unreachable for every visitor who has asked the site to hold still, which is the
+     opposite of a secret and a straightforward exclusion. The forecast is just arithmetic
+     on the date; it is the same on every machine.
+
+     ⚠ IT FAILS CLOSED, and that is only safe because of the test. No clock → no board. The
+     clock is inlined into every single page by _includes/head.html, so on the real site it
+     is always there — but "always there" is exactly the assumption that
+     [[feature-shipped-but-never-loaded]] is about, so tests/hidden.check.js asserts both
+     host pages still get PJCC_TIME and drives the egg on a clear day, a rainy one and a
+     snowy one.
+
+     PREVIEW: `?wx=rain` / `?wx=snow` on the host page, the same switch the sky uses —
+     otherwise this is unreviewable on 7 days in 10 and completely unreviewable in summer. */
+  function wetKind() {
+    var kind = null;
+    try {
+      var q = new URLSearchParams(location.search).get('wx');
+      if (q) kind = q.split(',')[0];
+    } catch (e) {}
+    if (!kind) {
+      /* `window.PJCC_TIME`, spelled out, not the bare identifier. In a browser they are
+         the same thing; in the test harness — which runs this module inside `new Function`
+         with `window` as a parameter — a bare `PJCC_TIME` is a ReferenceError that this
+         very try/catch would swallow, and the gate would report "no clock" on a day it
+         had one. Caught by tests/hidden.check.js, which drives the gate directly. */
+      try {
+        var T = window.PJCC_TIME;
+        if (T && T.weather) kind = (T.weather() || {}).kind || null;
+      } catch (e) {}
+    }
+    return (kind === 'rain' || kind === 'snow') ? kind : null;
+  }
+  function wet() { return !!wetKind(); }
+
   var BOARDS = [
     {
       id: 'park', page: '/pjcc/', flag: 'frag_board_park',
@@ -150,10 +197,18 @@
       }
     }
 
+    /* THE ONE LINE THAT EXPLAINS THE SECRET. Somebody who finds a board today and comes
+       back tomorrow to show a friend will find nothing, and without this they will decide
+       the site is broken rather than that the weather is the key. It says the weather out
+       loud, once, at the only moment the player is guaranteed to be reading. */
+    var wk = wetKind();
+    var LEFT = { rain: 'Left out in the rain.', snow: 'Left out in the snow.' };
+
     wrap.innerHTML =
       '<div class="hb-card" role="dialog" aria-modal="true" aria-labelledby="hb-title">' +
         '<div class="hb-eyebrow">you found a board</div>' +
         '<div class="hb-title" id="hb-title">Somebody left this here.</div>' +
+        (wk ? '<div class="hb-left">' + LEFT[wk] + '</div>' : '') +
         '<div class="hb-board"><div class="hb-grid">' + grid + '</div>' +
           '<div class="hb-men">' + pieces + '</div></div>' +
         '<p class="hb-say" id="hb-say">' + b.say + '</p>' +
@@ -247,11 +302,13 @@
   function boot() {
     var b = boardFor(location.pathname);
     if (!b) return;
+    if (!wet()) return;          // ⚠ the secret that only exists in the rain — see wet()
     plant(b);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 
   // for tests + the console: the data, and a way to place one on demand
-  window.PJCCHiddenBoard = { BOARDS: BOARDS, open: open, boardFor: boardFor, squares: squares };
+  window.PJCCHiddenBoard = { BOARDS: BOARDS, open: open, boardFor: boardFor, squares: squares,
+                             wet: wet, wetKind: wetKind };
 })();

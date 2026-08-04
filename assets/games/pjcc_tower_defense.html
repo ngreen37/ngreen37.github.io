@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>PJCC: Siege on Chess City v2.4</title>
+<!-- THE TOWN SKY (2026-08-03, cohesion #6): the clock first, then the wash it drives.
+     ORDER IS LOAD-BEARING - pjcc-game-sky.js finds no clock if these swap, and does
+     nothing at all without saying so. tests/townsky.check.js checks both, in order. -->
+<script src="/assets/js/pjcc-time.js"></script>
+<script src="/assets/js/pjcc-game-sky.js"></script>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -16,7 +21,7 @@
 
   .hud { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
   .stat { background: #1d1140; border: 1px solid #4a3a86; border-radius: 8px; padding: 5px 11px; font-size: 14px; font-weight: bold; }
-  .stat .lbl { color: #9a7fd4; font-weight: normal; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-right: 5px; }
+  .stat .lbl { color: #b09ae0; font-weight: normal; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-right: 5px; }
   .stat.gold b { color: var(--gold); } .stat.lives b { color: var(--pink); } .stat.wave b { color: var(--good); }
   .stat.score b { color: #9ad0ff; }
   .hud .spacer { flex: 1; }
@@ -82,7 +87,7 @@
   .screen .sub { color: #c9a7ff; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
   .screen p { color: #c9a7ff; max-width: 460px; line-height: 1.55; margin: 6px 0; font-size: 14px; }
   .coins { background:#1d1140; border:1px solid var(--gold); border-radius:999px; padding:6px 16px; font-weight:800; color:var(--gold); margin:8px 0 4px; }
-  .coins span { color:#9a7fd4; font-weight:normal; font-size:12px; }
+  .coins span { color:#b09ae0; font-weight:normal; font-size:12px; }
   .menu-btns { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-top:14px; }
   .big-btn { background: var(--gold); color:#1a0f3d; border:none; border-radius:12px; padding:14px 30px; font-size:17px; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 4px 0 #8a6f00; }
   .big-btn:active { transform: translateY(3px); box-shadow:0 1px 0 #8a6f00; }

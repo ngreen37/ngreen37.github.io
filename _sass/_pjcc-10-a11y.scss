@@ -45,7 +45,8 @@ input:focus-visible,
    (.nav-toggle, .cmdk-trigger, .lang-toggle) are listed in the sweep's report as a
    deliberate follow-up, because widening the header is a design change, not a fix. */
 @media (pointer: coarse) {
-  .awake-more, .awake-post, .home-shuffle, .home-section-link, .home-replay {
+  /* (.home-replay dropped 2026-08-03 — the Replay-intro link left with the intro.) */
+  .awake-more, .awake-post, .home-shuffle, .home-section-link {
     display: inline-flex; align-items: center; min-height: 44px;
   }
   /* the drawer's small print measured 26x21 and 46x21 — the padding buys the height

@@ -398,6 +398,15 @@
 .world-ticker-wrap.is-away .ticker-badge-live { background: #241c3c; color: rgba(255, 255, 255, 0.55); }
 .world-ticker-wrap.is-away .ticker-badge-live i { animation: none; opacity: 0.22; }
 
+/* THE SKY REMEMBERS (2026-08-03) — "LAST SEEN: DUSK", once, on the visit where the hour
+   of the world has changed since you were last here. Nate asked for it QUIETLY, so it is
+   the only line on the wire that isn't news: lavender rather than paper-white, wider
+   tracking, and no ◆ promo mark. Not dimmed below the run of the crawl: measured at
+   7.10:1 over the site's darkest panel (#2D1B69) and 9.93:1 over the void, against the
+   gold wire's 8.75 / 12.23 — quieter, and nowhere near the 4.19 the away gag had to be
+   lifted off (above). Quiet is a different voice, not a fainter one. */
+.ticker-item--memory { color: #c9a7ff; letter-spacing: 0.2em; }
+
 /* The old .ct-weather layer (home-page-only mist / unused rain) was retired
    2026-07-12: the town weather now renders on EVERY page via .town-weather-overlay
    (see pjcc-weather.js + the town-weather block further down). */

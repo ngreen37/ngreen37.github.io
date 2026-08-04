@@ -38,6 +38,26 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**
 - [ ] **The two hidden boards are on `/pjcc/` and `/games/`.** Three hiding places each, and the
   board moves between them daily. Say the word for a third board anywhere — it's one line of data.
 
+**From the 2026-08-03 sky batch — all shipped, all one-line reversible**
+- [ ] **The intro is deleted.** `/` no longer types *"McPuppy Studios Presents"* — it is a bare
+  redirect to `/chess/` (JS before paint, meta-refresh for no-JS, a real link as the last resort).
+  Everything that served it went too: the once-per-session flag, the cross-document fade, and the
+  *Replay intro* link on `/pjcc/`. **It was one file — `git show HEAD~1 -- index.md` brings the whole
+  card back** if you ever want it in front of a Blender clip instead.
+- [ ] **One new ticker line is mine, and the wire is your voice.** *LAST SEEN: DUSK* — shown once,
+  on the visit where the hour of the world has changed since you were last here. It is deliberately
+  not a headline (its own dimmer style, no ◆), because it is the dossier's "last seen", not the desk
+  speaking. Change the wording or cut it: one string in `_layouts/home.html`.
+- [ ] **The hidden-board card now says *"Left out in the rain."*** (or snow). It exists to teach the
+  rule — the boards only appear on wet days, so without it a friend who looks tomorrow decides the
+  site is broken. Yours to reword.
+- [ ] **Five muted text colours in four games got a touch brighter** (sandmine + pirc `.foot`, the
+  Reading Room's romaji and deck headers, tower defense's stat labels). Not taste — the town-sky
+  wash pushed all five under the AA line, and lifting them was the alternative to not shipping it.
+- [ ] **`/style/` now carries a voice chart** naming which font speaks for which brand, including
+  the two serifs. It records what is true today rather than proposing a change; if you'd rather the
+  Reading Room and Shogi Island used the studio's serif stack instead of their own, say so.
+
 **Accounts & sign-ups — nothing on my side blocks these**
 - [ ] **Google Search Console** — verify `mcpuppystudios.com`, submit `/sitemap.xml`. The JSON-LD,
   sitemap and robots have been wired and waiting since the SEO pass; until this is done, nothing is
@@ -202,10 +222,13 @@ The lobby becomes the actual park: bots as **seated regulars** at named tables w
 ("Argus is thinking…"), the scene reading the **town sky** — busy by day, one lamplit table after dark.
 You walk up to a table instead of clicking a row. Mostly CSS + flavor over state that already exists.
 
-### 6. Every game should wear the town's sky *(cohesion #6)*
-The games are their own HTML shells with their own backgrounds. If `PJCC_TIME` set their phase too, playing
-Sand Mine at night would *feel* like night. Same clock, same town, no new art — and the strongest
-one-world signal left that costs almost nothing.
+### ~~6. Every game should wear the town's sky~~ — **SHIPPED 2026-08-03**
+All sixteen game shells now load the town clock and paint the same phase + weather wash the rest
+of the site carries, so a game opened at dusk is lit like dusk and a rainy day looks rainy through
+the window. Same clock, same town, no new art — and no falling weather inside a game, because a
+particle loop next to a game loop is the one trade the perf law refuses.
+**⚠ Read the strength note before turning it up:** ×3 is where it reads best and ×1.5 already
+pushes nine real text pairs under AA. Lift the type first, measure, *then* turn it up.
 
 ### 7. Kill the second Gauntlet door *(cohesion #8)*
 The home hero and the games hall carry **two hand-maintained copies** of the same door, and two copies of the
@@ -1004,12 +1027,17 @@ second ten are **ingenuity** (the clever, cheap, memorable stuff).
 
 ### Cohesion — make it read as one world
 
-5. **Write the voice chart down.** Poppins, Inter, Share Tech Mono, Press Start 2P and (as of
-   today) a system serif for McPuppy. That's not too many — but nothing records *which font
-   speaks for which brand*, so it will drift. One panel on `/style/` fixes that forever.
-6. **Every game should wear the town's sky.** The games are their own HTML shells. If
-   `PJCC_TIME` set their background phase too, playing Sand Mine at night would *feel* like
-   night. Same clock, same town, no new art.
+5. ~~**Write the voice chart down.**~~ **SHIPPED 2026-08-03** — `/style/` has a *Type — the voice
+   chart* panel: six faces, each with the brand that owns it (Poppins + Inter = both · Share Tech
+   Mono = PJCC · Press Start 2P = the arcade · the studio serif = McPuppy · the place serif = the
+   Reading Room and Shogi Island), and — the half that actually stops drift — **where each one is
+   never used.** The rule written under it: *a face is a voice, not a decoration.*
+6. ~~**Every game should wear the town's sky.**~~ **SHIPPED 2026-08-03** — all sixteen shells load
+   the same clock (`/assets/js/pjcc-time.js`, generated from the one include) and a static phase +
+   weather wash. ⚠ **It is deliberately faint, and that is measured, not taste:** ×3 is where it
+   reads best, but ×1.5 already pushes nine real text pairs under AA and ×2 sixteen. Five muted
+   colours had to be lifted to make even ×1 clean. Louder later = lift the type first, measure,
+   then turn it up.
 7. **The journey map is the site's real spine — use it more than once.** The dossier has the
    map of stops (Checker Town → the Sea → Chess City). That's the actual shape of the world.
    A one-line version of it in the games hall would tell a player where they are *in the
@@ -1021,6 +1049,33 @@ second ten are **ingenuity** (the clever, cheap, memorable stuff).
 
 ### Ingenuity — the cheap, strange, memorable stuff
 
+> **★ SAVED — the two weather secrets he wants kept** *(2026-08-03: "Save these two: a reflection
+> in the Chess City windows, a figure on the Sea. People will **talk** about that one.")*
+> Both are the same move as the hidden boards — something that only exists in certain weather —
+> and both are *sightings* rather than mechanics, which is why they are worth more than a reward.
+> · **A reflection in the Chess City windows.** On a wet day the towers on the skyline hold a
+>   reflection that is not the street in front of them. Nothing to click, nothing to earn. You
+>   either notice the glass is showing the wrong thing or you don't.
+> · **A figure on the Sea.** In mist — the one condition where you *cannot* see the far shore —
+>   something is standing out on the water. Gone when the mist lifts. Never explained, never in
+>   the ticker, never on a page that lists it.
+> The whole value is that neither is announced, so whoever finds one has to convince somebody else
+> it was there. Both wait on the art they'd be drawn into; the weather hook they need already
+> exists (`PJCC_TIME.weather()`), and the hidden boards are the working proof of the pattern.
+
+
+11. ~~**The sky remembers.**~~ **SHIPPED 2026-08-03** — the wire carries one quiet line, once, on
+    the visit where the hour of the world has changed since you were last here: *LAST SEEN: DUSK.*
+    Four lines of `localStorage`, and the order of them is the feature — read the old phase, decide,
+    then write the new one. The write is what spends it, so there is no counter to get out of step.
+    Suppressed on a night the desk is unattended, and suppressed **before** the write, so a memory
+    is never spent on a night it could not be shown.
+12. ~~**One secret that only exists in the rain and snow.**~~ **SHIPPED 2026-08-03** — exactly one,
+    as asked: **the hidden chessboards**. Three days in ten the town rolls rain (snow from December),
+    and only on those days do the marks exist anywhere on the site. Clear day, no boards. It reads
+    the FORECAST, not the rendered weather, so a reduced-motion visitor — who never sees a drop fall
+    — can still find one. The card says *"Left out in the rain."* so the finder learns the rule.
+    Preview any day with `?wx=rain` / `?wx=snow`.
 
 13. **The shooting star is a wish.** One crosses the night sky now. Make it clickable for the
     ~1 second it's visible. Catching one gives something tiny and lovely — a fragment, a line

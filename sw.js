@@ -13,7 +13,7 @@
  */
 'use strict';
 
-const VERSION    = 'pjcc-pwa-v10';  // v10: the app LAUNCH now lands on /chess/ — old launchers redirect off /pjcc/?source=pwa, start_url moved (2026-08-03); v9: /chess/ is the new front door — the intro hands off there, /pjcc/ became the world tab (2026-07-28); v8: the Gauntlet door became a real stylesheet the game links (2026-07-27); v7: "/" is the "McPuppy Studios Presents" intro (2026-07-23)
+const VERSION    = 'pjcc-pwa-v11';  // v11: the intro is DELETED — "/" is a redirect to /chess/ now, and every game shell carries the town sky (2026-08-03); v10: the app LAUNCH now lands on /chess/ — old launchers redirect off /pjcc/?source=pwa, start_url moved (2026-08-03); v9: /chess/ is the new front door — the intro hands off there, /pjcc/ became the world tab (2026-07-28); v8: the Gauntlet door became a real stylesheet the game links (2026-07-27); v7: "/" is the "McPuppy Studios Presents" intro (2026-07-23)
 const SHELL      = 'pjcc-shell-' + VERSION;
 const RUNTIME    = 'pjcc-runtime-' + VERSION;
 const OFFLINE_URL = '/offline.html';
@@ -21,9 +21,12 @@ const OFFLINE_URL = '/offline.html';
 /* THE SHELL — precached at install so the app opens even fully offline. Tolerant: a
  * single missing file won't fail the whole install (unlike cache.addAll). Small, so
  * install stays fast. NOTE: the site now compiles to ONE stylesheet (style.css). */
-/* ALL THREE OF '/', '/chess/' AND '/pjcc/' STAY IN THIS LIST. '/' is the intro card,
- * '/chess/' is the front door AND the start_url (2026-08-03), and '/pjcc/' is the world
- * tab — all three are real pages returning 200. Keeping the old ones matters because
+/* ALL THREE OF '/', '/chess/' AND '/pjcc/' STAY IN THIS LIST. '/chess/' is the front door
+ * AND the start_url (2026-08-03), '/pjcc/' is the world tab, and '/' — which was the
+ * "McPuppy Studios Presents" intro card until the intro was deleted on 2026-08-03 — is now
+ * a redirect to /chess/. All three are real pages returning 200. '/' stays here precisely
+ * BECAUSE it is a redirect: it is the address people type, and offline it has to be able to
+ * answer with the hop rather than with the offline page. Keeping the old ones matters because
  * start_url is baked into a launcher AT INSTALL TIME: a phone that installed the app when
  * /pjcc/ was the start_url still opens /pjcc/?source=pwa regardless of manifest.json today.
  * As of 2026-08-03 that launch is redirected to /chess/ by a pre-paint script in
@@ -59,6 +62,11 @@ const GAMES = [
   '/assets/games/pjcc_murphys_law.html', '/assets/games/pjcc_reading_room.html',
   '/assets/games/pjcc_princess_dungeon.html',
   '/assets/js/pjcc-chess.js', '/assets/js/pjcc-chess-ai.js', '/assets/js/pjcc-gauntlet-engine.js',
+  // the town's sky, inside the games (2026-08-03). Every shell above loads this pair, and
+  // the clock is date-and-hour arithmetic with no network in it — so an installed app on a
+  // plane still knows it is dusk. Missing them wouldn't break a game, it would just quietly
+  // return the arcade to a permanent midnight, which is the bug this shipped to fix.
+  '/assets/js/pjcc-time.js', '/assets/js/pjcc-game-sky.js',
   // the Gauntlet's challenger door is real CSS now, not a copy inlined in the game shell
   // (2026-07-27) — without this the tower's doors go plain on a plane.
   '/assets/css/gauntlet-door.css',

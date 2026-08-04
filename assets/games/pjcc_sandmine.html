@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>PJCC: Sand Mine Depths v3.0</title>
+<!-- THE TOWN SKY (2026-08-03, cohesion #6): the clock first, then the wash it drives.
+     ORDER IS LOAD-BEARING - pjcc-game-sky.js finds no clock if these swap, and does
+     nothing at all without saying so. tests/townsky.check.js checks both, in order. -->
+<script src="/assets/js/pjcc-time.js"></script>
+<script src="/assets/js/pjcc-game-sky.js"></script>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <script src="/assets/js/pjcc-pieces.js"></script>
@@ -41,7 +46,7 @@
   .btn-gold { background: #F5C518; color: #2a1a0c; } .btn-gold:hover { background: #ffd740; }
   .btn-ghost { background: #2D1B69; color: #c9a7ff; box-shadow: 0 4px 0 #170a36; }
   .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-  .foot { margin-top: 16px; font-size: 10.5px; color: #9a7a4a; line-height: 1.8; }
+  .foot { margin-top: 16px; font-size: 10.5px; color: #b08f5e; line-height: 1.8; }
   .foot b { color: #e9d6b8; } .tap { cursor: pointer; text-decoration: underline; }
   #shovel-btn { bottom: 14px; left: 14px; background: #2D1B69; color: #c9a7ff; padding: 8px 14px; font-size: 14px; border: 1px solid #6a4fb0; }
   #shovel-btn.armed { background: #5be0c0; color: #0e2422; border-color: #5be0c0; box-shadow: 0 0 14px rgba(91,224,192,0.7); }

@@ -5,6 +5,11 @@
 <meta name="robots" content="noindex">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>PJCC: The Reading Room 読書室</title>
+<!-- THE TOWN SKY (2026-08-03, cohesion #6): the clock first, then the wash it drives.
+     ORDER IS LOAD-BEARING - pjcc-game-sky.js finds no clock if these swap, and does
+     nothing at all without saying so. tests/townsky.check.js checks both, in order. -->
+<script src="/assets/js/pjcc-time.js"></script>
+<script src="/assets/js/pjcc-game-sky.js"></script>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <style>
@@ -29,7 +34,7 @@
     display:flex; align-items:center; justify-content:center; font-size:26px; border:2px solid #ffd089; box-shadow:0 3px 10px rgba(0,0,0,0.4); }
   .kaede-say { flex:1; min-width:0; background:rgba(255,255,255,0.96); color:#2a1a55; border-radius:12px; border:2px solid #f5c518;
     padding:7px 11px; font-size:12.5px; line-height:1.35; position:relative; }
-  .kaede-say .romaji { color:#9a6a2a; font-style:italic; }
+  .kaede-say .romaji { color:#b8873f; font-style:italic; }
   .kaede-say .en { color:#5a4a7a; }
   .kaede-say::after { content:""; position:absolute; left:-8px; top:14px; border:6px solid transparent; border-right-color:#f5c518; }
 
@@ -390,7 +395,7 @@
         lastGroup = d.group;
         var gh = document.createElement('div');
         gh.textContent = GROUP[d.group] || '';
-        gh.style.cssText = 'font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#8a6fd0;font-weight:800;margin:' + (list.children.length ? '14px' : '2px') + ' 4px 6px;';
+        gh.style.cssText = 'font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#a087e0;font-weight:800;margin:' + (list.children.length ? '14px' : '2px') + ' 4px 6px;';
         list.appendChild(gh);
       }
       var due = deckDue(d), m = Math.round(deckMastery(d));
