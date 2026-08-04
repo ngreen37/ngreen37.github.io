@@ -33,6 +33,11 @@ window.PJCC_GAMES = [
   { slug:'battle-room',       name:'The Battle Room',    cryptic:'Chess as an action sequence',      icon:'⚔', accent:'#56d0ff', cat:'terminated', playable:false },
   { slug:'follow-the-dog',    name:'Follow the Dog',     cryptic:'Trust the run. Follow her',        icon:'✦', accent:'#8fb8ff', cat:'dev' },
   { slug:'chess-city',        name:'Chess City',         cryptic:'Platform the cursed board — the pieces have teeth',    icon:'♜', accent:'#ff5b6e', cat:'dev', score:['chess-city','score'], neu:'2026-06-25' },
+  // MARCHLAND (2026-08-03) — deliberately cryptic and deliberately UNLINKED. `playable:false`
+  // makes pjcc-hall.js render a <div> instead of an <a>, so the card shows in the Building
+  // hall with no route in; the page itself is key-gated (see games/marchland/index.html).
+  // Flip `playable` to true and delete the gate script when it's ready to open.
+  { slug:'marchland',         name:'MARCHLAND',          cryptic:'Nine holdings and a border that moves',  icon:'⚄', accent:'#c9a7ff', cat:'dev', playable:false },
   // The Gambit — LEFT the games section entirely (Nate 2026-07-14). It lives at
   // /the-gambit/ as its own ritual room, doored from the foot of the PJCC home.
   // ── The Vault (unlockable) ──

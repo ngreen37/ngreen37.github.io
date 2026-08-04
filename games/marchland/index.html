@@ -1,0 +1,77 @@
+---
+layout: game
+title: "MARCHLAND v0.1"
+description: "A prototype in development. Not yet open."
+permalink: /games/marchland/
+sitemap: false
+---
+
+{% comment %} ══════════════════════════════════════════════════════════════════════════
+     MARCHLAND — the Risk/chess hybrid, built 2026-08-03 to Nate's spec: "you roll dice
+     and attack other towns, like in Risk… 2 minutes to either defend or attack… dice roll
+     decides how many pieces each person gets."
+
+     ⚠ THIS PAGE IS KEY-GATED, WHICH IS NOT THE SAME AS SECRET. It is a soft gate: it keeps
+     the prototype from being stumbled into from a search result or a shared link, and
+     nothing more. Anyone reading this file can read the key. That is fine for an
+     unfinished game and would NOT be fine for anything that mattered — do not reuse this
+     pattern for real access control.
+
+     THE KEY: /games/marchland/?key=chesswild — once used it is remembered in localStorage
+     ('pjcc.marchland.key'), so the URL only has to be typed once per browser. ?key=off
+     forgets it again.
+
+     The hall entry in pjcc-games-data.js carries `playable:false`, which makes the card a
+     <div> rather than an <a> — so the game appears in the Building hall under its cryptic
+     name and emits no link at all. The two halves are independent: this gate does not know
+     about the hall, and the hall does not know about this gate.
+     ══════════════════════════════════════════════════════════════════════════ {% endcomment %}
+
+<div id="ml-gate" hidden>
+  <div class="game-frame-wrap ml-frame">
+    <iframe
+      src="{{ '/assets/games/pjcc_marchland.html' | relative_url }}"
+      title="MARCHLAND"
+      allowfullscreen
+      scrolling="no"
+    ></iframe>
+  </div>
+
+  <div class="game-info">
+    <p><strong>Map.</strong> Tap one of your holdings, then a bordering enemy one. You need a garrison of 2 or more to attack. "Hold the line" ends your round without attacking.</p>
+    <p><strong>Battle.</strong> Tap a piece, then a dot. One shared two-minute clock. Checkmate wins outright; on time, the most material standing wins and a tie goes to the defender.</p>
+    <p><strong>The dice.</strong> Attacker rolls up to three, defender up to two. The totals are not compared — they are spent, at real chess values: queen 9, rook 5, bishop or knight 3, pawn 1. Kings are free.</p>
+  </div>
+</div>
+
+<div id="ml-locked">
+  <p class="ml-shut">This one isn't open yet.</p>
+</div>
+
+<style>
+  .ml-frame { max-width: 480px; }
+  .ml-frame iframe { height: 720px; }
+  @media (max-width: 600px) { .ml-frame iframe { height: 660px; } }
+  .ml-shut { text-align: center; color: var(--ink-3, #8479a3); font-family: 'Share Tech Mono', ui-monospace, monospace;
+    letter-spacing: .12em; text-transform: uppercase; font-size: 13px; padding: 64px 16px; }
+</style>
+
+<script>
+/* The soft gate. Reads ?key=, remembers a good one, and reveals the frame. Deliberately
+   tiny and deliberately not clever — see the comment at the top of this file. */
+(function () {
+  var KEY = 'chesswild', STORE = 'pjcc.marchland.key';
+  var q = '';
+  try { q = new URLSearchParams(location.search).get('key') || ''; } catch (e) {}
+  var ok = false;
+  try {
+    if (q === 'off') { localStorage.removeItem(STORE); }
+    else if (q === KEY) { localStorage.setItem(STORE, '1'); ok = true; }
+    else { ok = localStorage.getItem(STORE) === '1'; }
+  } catch (e) { ok = (q === KEY); }   // private mode: the URL still works, just not the memory
+  if (!ok) return;
+  var g = document.getElementById('ml-gate'), l = document.getElementById('ml-locked');
+  if (g) g.hidden = false;
+  if (l) l.remove();
+})();
+</script>

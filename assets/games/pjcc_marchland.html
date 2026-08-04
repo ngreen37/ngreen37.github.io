@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>MARCHLAND v0.1</title>
+<!-- THE TOWN SKY. ORDER IS LOAD-BEARING — pjcc-game-sky.js finds no clock if these swap,
+     and does nothing at all without saying so. tests/townsky.check.js checks both, in order. -->
+<script src="/assets/js/pjcc-time.js"></script>
+<script src="/assets/js/pjcc-game-sky.js"></script>
+<!-- THE REFEREE. Every battle below is real chess: legality, check, mate and stalemate all
+     come from the site's perft-verified referee, not from anything this file invents. The
+     dice decide WHO SHOWS UP; from the first move onward the rules are the rules.
+     [[accuracy-above-all]] — a game that lies about chess is worse than no game. -->
+<script src="/assets/js/pjcc-chess.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    background: #0d0a17; height: 100%; overflow: hidden;
+    font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; color: #e8e2f5;
+    touch-action: manipulation;
+  }
+  body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+
+  /* ── THE CANON BOARD TOKENS ────────────────────────────────────────────────────
+     Lifted verbatim from _sass/_pjcc-22-chess-canon.scss. This file is a standalone
+     document — it does not load the site stylesheet — so the tokens are restated
+     rather than inherited. PARK TABLE STANDARD is the default for every board on
+     this site; if the canon ever changes, this block changes with it. */
+  :root {
+    --chess-lt: #e9d3a4;
+    --chess-dk: #9c5f33;
+    --chess-frame: #4a3320;
+    --chess-grain: repeating-linear-gradient(94deg,
+        rgba(74, 42, 18, 0.10) 0 1.5px, rgba(0, 0, 0, 0) 1.5px 6px,
+        rgba(74, 42, 18, 0.05) 6px 8px,  rgba(0, 0, 0, 0) 8px 13px);
+    --piece-w-fill: #ffffff;
+    --piece-w-line: #2f2440;
+    --piece-b-fill: #4a3585;
+    --piece-b-line: #f2e9ff;
+    --mine: #6bffb8;
+    --theirs: #ff6e8a;
+    --ink: #e8e2f5;
+    --ink-2: #b3a9cc;
+    --ink-3: #8479a3;
+    --panel: #171227;
+    --panel-hi: #211a38;
+    --rule: #2e2545;
+  }
+
+  #wrap { width: 100%; max-width: 460px; height: 100%; max-height: 760px;
+    display: flex; flex-direction: column; position: relative; }
+  .screen { display: none; flex: 1; flex-direction: column; padding: 14px; overflow-y: auto; }
+  .screen.on { display: flex; }
+
+  h1 { font-size: 30px; letter-spacing: 6px; font-weight: 900; text-align: center; }
+  h2 { font-size: 15px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-3);
+       font-weight: 700; text-align: center; margin-bottom: 8px; }
+  .sub { text-align: center; color: var(--ink-2); font-size: 13px; line-height: 1.6; }
+
+  .btn { display: block; width: 100%; padding: 13px; margin-top: 10px; border: none; cursor: pointer;
+    border-radius: 999px; font: 800 15px 'Trebuchet MS', sans-serif; letter-spacing: .5px;
+    background: linear-gradient(180deg, #e9bd3c, #cf9d18); color: #1a0f3d; }
+  .btn:active { transform: translateY(1px); }
+  .btn.ghost { background: transparent; color: var(--ink-2); border: 1px solid var(--rule); }
+  .btn[disabled] { opacity: .38; cursor: default; }
+
+  /* ── HOME ── */
+  #screen-home { justify-content: center; gap: 4px; }
+  .crest { font-size: 52px; text-align: center; line-height: 1; margin-bottom: 6px; }
+
+  /* ── THE MAP ── */
+  .mapbox { position: relative; width: 100%; aspect-ratio: 1/1.12; margin: 6px 0 4px;
+    background: radial-gradient(circle at 50% 40%, #1c1533, #100c1e 72%);
+    border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; }
+  .mapbox svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .node { position: absolute; transform: translate(-50%, -50%); width: 58px; text-align: center;
+    cursor: pointer; }
+  .node .disc { width: 38px; height: 38px; margin: 0 auto; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font: 900 15px 'Trebuchet MS', sans-serif; border: 2px solid;
+    transition: transform .12s ease, box-shadow .12s ease; }
+  .node.mine .disc   { background: #123a2c; border-color: var(--mine);   color: var(--mine); }
+  .node.theirs .disc { background: #3a1420; border-color: var(--theirs); color: var(--theirs); }
+  .node .nm { display: block; font-size: 9px; color: var(--ink-3); margin-top: 3px; line-height: 1.15;
+    letter-spacing: .3px; }
+  .node.sel .disc { transform: scale(1.16); box-shadow: 0 0 0 3px rgba(107,255,184,.35); }
+  .node.tgt .disc { box-shadow: 0 0 0 3px rgba(255,110,138,.5); animation: pulse 1s infinite; }
+  .node.dim { opacity: .34; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 7px rgba(255,110,138,0); } }
+  /* the viewBox (100x112) is stretched to fill the box, so a stroke-width of 1 lands at
+     roughly 4 real pixels — these are deliberately sub-1 values, not typos. */
+  .link { stroke: #33294f; stroke-width: 0.55; }
+  .link.hot { stroke: var(--theirs); stroke-width: 0.9; }
+
+  .status { text-align: center; font-size: 13px; color: var(--ink-2); min-height: 34px;
+    line-height: 1.45; padding: 0 4px; }
+  .tally { display: flex; justify-content: center; gap: 16px; font-size: 12px; margin: 2px 0 4px;
+    color: var(--ink-3); }
+  .tally b.m { color: var(--mine); } .tally b.t { color: var(--theirs); }
+
+  /* ── DICE / MUSTER ── */
+  .side { background: var(--panel); border: 1px solid var(--rule); border-radius: 12px;
+    padding: 11px 12px; margin-bottom: 9px; }
+  .side h3 { font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; margin-bottom: 7px; }
+  .side.att h3 { color: var(--mine); } .side.def h3 { color: var(--theirs); }
+  .dice { display: flex; gap: 7px; margin-bottom: 7px; }
+  .die { width: 34px; height: 34px; border-radius: 8px; background: #f3eddf; color: #2a1a10;
+    font: 900 18px 'Trebuchet MS', sans-serif; display: flex; align-items: center;
+    justify-content: center; box-shadow: 0 3px 0 #b9ac93; }
+  .die.roll { animation: tumble .5s ease; }
+  @keyframes tumble { 0%{transform:rotate(0) scale(.7)} 60%{transform:rotate(340deg) scale(1.12)} 100%{transform:none} }
+  .budget { font-size: 12px; color: var(--ink-2); margin-bottom: 6px; }
+  .budget b { color: var(--ink); }
+  /* ⚠ THE LINEUP PIECES SIT ON WOOD, and that is not decoration. The canon "black" fill
+     (--piece-b-fill, PJCC purple) is chosen to read against MAPLE AND WALNUT — on a
+     #171227 panel it all but disappears, which is exactly what the first render showed.
+     Giving every glyph its own little square restores the contrast the canon assumes AND
+     says the true thing: these are pieces on a board, not icons in a list. */
+  .army { display: flex; flex-wrap: wrap; gap: 3px; line-height: 1; }
+  .army span { display: inline-flex; align-items: center; justify-content: center;
+    width: 27px; height: 27px; border-radius: 4px; font-size: 20px;
+    background-color: var(--chess-lt); background-image: var(--chess-grain);
+    box-shadow: inset 0 0 0 1px rgba(74,51,32,.5); paint-order: stroke fill; }
+  .army span:nth-child(even) { background-color: var(--chess-dk); }
+  .army .w { color: var(--piece-w-fill); -webkit-text-stroke: .06em var(--piece-w-line);
+    text-shadow: .03em .05em 0 rgba(0,0,0,.4); }
+  .army .b { color: var(--piece-b-fill); -webkit-text-stroke: .06em var(--piece-b-line);
+    text-shadow: .03em .05em 0 rgba(0,0,0,.4); }
+
+  /* ── THE BOARD (park-table standard) ── */
+  .clockbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+  .clock { font: 900 25px 'Share Tech Mono', ui-monospace, monospace; letter-spacing: 1px; }
+  .clock.warn { color: #ffc24a; } .clock.crit { color: #ff6e6e; animation: tick .6s infinite; }
+  @keyframes tick { 50% { opacity: .45; } }
+  .mat { font-size: 11px; color: var(--ink-3); text-align: right; line-height: 1.35; }
+  .mat b { font-size: 14px; }
+
+  .board { position: relative; width: 100%; aspect-ratio: 1; container-type: inline-size;
+    border: 3px solid var(--chess-frame); border-radius: 6px; overflow: hidden;
+    box-shadow: 0 18px 36px -14px rgba(0,0,0,.72), inset 0 3px 9px rgba(255,255,255,.06),
+                inset 0 -12px 22px rgba(0,0,0,.32); }
+  /* TWO LAYERS, and that is deliberate: squares and pieces as siblings in ONE grid puts
+     holes under every explicitly-placed piece (grid places explicit items first, then the
+     auto-placed squares skip those cells). Same trap the front door hit. */
+  .sqs, .men { position: absolute; inset: 0; display: grid;
+    grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); }
+  .men { pointer-events: none; }
+  .sq { position: relative; background-color: var(--chess-lt);
+    background-image: linear-gradient(152deg, rgba(255,252,240,.14), rgba(0,0,0,.04) 62%), var(--chess-grain); }
+  .sq.d { background-color: var(--chess-dk);
+    background-image: linear-gradient(152deg, rgba(255,240,214,.10), rgba(0,0,0,.10) 62%), var(--chess-grain); }
+  .sq.hint::after { content: ''; position: absolute; inset: 0; margin: auto;
+    width: 32%; height: 32%; border-radius: 50%;
+    background: rgba(38,25,10,.3); box-shadow: 0 0 0 2px rgba(107,255,184,.9); }
+  .sq.cap::after { content: ''; position: absolute; inset: 6%; border-radius: 50%;
+    box-shadow: inset 0 0 0 3px rgba(255,110,138,.85); }
+  .sq.from { box-shadow: inset 0 0 0 3px rgba(107,255,184,.55); }
+  .sq.last { box-shadow: inset 0 0 0 3px rgba(255,214,102,.4); }
+  .sq.chk  { box-shadow: inset 0 0 0 3px rgba(255,110,110,.9); }
+  /* pieces sized off the BOARD (cqw), never the viewport — a piece is a fraction of its
+     square and nothing else. Numbers match PJCCPieces.draw() exactly. */
+  .pc { display: flex; align-items: center; justify-content: center; position: relative;
+    font: 900 10.5cqw/1 "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols2", serif;
+    paint-order: stroke fill; pointer-events: auto; cursor: default; z-index: 2; }
+  .pc::before { content: ''; position: absolute; left: 23.2%; top: 73.6%;
+    width: 53.6%; height: 17.9%; border-radius: 50%; background: rgba(0,0,0,.32); }
+  .pc.w { color: var(--piece-w-fill); -webkit-text-stroke: .085em var(--piece-w-line);
+    text-shadow: .035em .06em 0 rgba(0,0,0,.4); }
+  .pc.b { color: var(--piece-b-fill); -webkit-text-stroke: .085em var(--piece-b-line);
+    text-shadow: .035em .06em 0 rgba(0,0,0,.4); }
+  .pc.can { cursor: pointer; }
+  .pc.lift { transform: translateY(-4px) scale(1.07); filter: drop-shadow(0 0 9px #6bffb8); }
+  .say { text-align: center; font-size: 12.5px; color: var(--ink-2); margin-top: 8px;
+    min-height: 32px; line-height: 1.45; }
+  .say b { color: #ffd66a; }
+
+  /* ── RESULT ── */
+  #screen-result { justify-content: center; }
+  .verdict { font-size: 27px; font-weight: 900; text-align: center; letter-spacing: 1px; }
+  .verdict.win { color: var(--mine); } .verdict.lose { color: var(--theirs); }
+
+  .foot { font-size: 10px; color: var(--ink-3); text-align: center; margin-top: 8px;
+    letter-spacing: .4px; }
+</style>
+</head>
+<body>
+<div id="wrap">
+
+  <!-- ══ HOME ═══════════════════════════════════════════════════════════════════ -->
+  <section class="screen on" id="screen-home">
+    <div class="crest">⚄</div>
+    <h1>MARCHLAND</h1>
+    <p class="sub" style="margin-top:10px">
+      Nine holdings. Take them all.<br>
+      <span style="color:var(--ink-3)">The dice decide who shows up.<br>The board decides who wins.</span>
+    </p>
+    <button class="btn" id="go">Begin the campaign</button>
+    <button class="btn ghost" id="how">How it works</button>
+    <p class="foot">v0.1 &middot; prototype</p>
+  </section>
+
+  <!-- ══ HOW ════════════════════════════════════════════════════════════════════ -->
+  <section class="screen" id="screen-how">
+    <h2>How it works</h2>
+    <p class="sub" style="text-align:left;line-height:1.75">
+      <b>1. Pick a fight.</b> Tap one of your holdings, then a neighbouring enemy one. You need a
+      garrison of 2 or more to attack.<br><br>
+      <b>2. Both sides roll.</b> Attacker rolls up to three dice, defender up to two — Risk rules.
+      The totals aren't compared. They're <i>spent</i>.<br><br>
+      <b>3. The dice buy an army.</b> Every point buys chess material at its real value: queen 9,
+      rook 5, bishop or knight 3, pawn 1. Kings are free — they always turn up.<br><br>
+      <b>4. Two minutes.</b> One shared clock. Checkmate wins outright. If the clock runs out, the
+      most material standing wins, and a tie goes to the defender — ground is easier held than taken.<br><br>
+      <b>5. The winner takes the holding.</b> Lose them all and the campaign is over.
+    </p>
+    <button class="btn ghost" id="back">Back</button>
+  </section>
+
+  <!-- ══ MAP ════════════════════════════════════════════════════════════════════ -->
+  <section class="screen" id="screen-map">
+    <h2 id="map-title">The March</h2>
+    <div class="tally">
+      <span>Yours <b class="m" id="t-mine">0</b></span>
+      <span>Theirs <b class="t" id="t-theirs">0</b></span>
+      <span>Round <b id="t-round">1</b></span>
+    </div>
+    <div class="mapbox" id="mapbox">
+      <svg id="links" viewBox="0 0 100 112" preserveAspectRatio="none"></svg>
+    </div>
+    <p class="status" id="map-say">Choose a holding to attack from.</p>
+    <button class="btn ghost" id="endturn">Hold the line &middot; end round</button>
+  </section>
+
+  <!-- ══ ROLL ═══════════════════════════════════════════════════════════════════ -->
+  <section class="screen" id="screen-roll">
+    <h2 id="roll-title">The roll</h2>
+    <div class="side att" id="side-att">
+      <h3 id="att-label">Attacker</h3>
+      <div class="dice" id="att-dice"></div>
+      <p class="budget" id="att-budget"></p>
+      <div class="army" id="att-army"></div>
+    </div>
+    <div class="side def" id="side-def">
+      <h3 id="def-label">Defender</h3>
+      <div class="dice" id="def-dice"></div>
+      <p class="budget" id="def-budget"></p>
+      <div class="army" id="def-army"></div>
+    </div>
+    <button class="btn" id="tobattle">To the board &rarr;</button>
+  </section>
+
+  <!-- ══ BATTLE ═════════════════════════════════════════════════════════════════ -->
+  <section class="screen" id="screen-battle">
+    <div class="clockbar">
+      <span class="clock" id="clock">2:00</span>
+      <span class="mat" id="mat"></span>
+    </div>
+    <div class="board" id="board">
+      <div class="sqs" id="sqs"></div>
+      <div class="men" id="men"></div>
+    </div>
+    <p class="say" id="say">&nbsp;</p>
+    <button class="btn ghost" id="resign">Withdraw</button>
+  </section>
+
+  <!-- ══ RESULT ═════════════════════════════════════════════════════════════════ -->
+  <section class="screen" id="screen-result">
+    <p class="verdict" id="verdict"></p>
+    <p class="sub" id="result-say" style="margin-top:12px"></p>
+    <button class="btn" id="cont">Continue</button>
+  </section>
+
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════════════════
+   MARCHLAND — Risk's map, chess's battles.
+
+   THE ONE IDEA: in Risk the dice ARE the battle, which is why a Risk fight is over in a
+   second and you never feel it. Here the dice are only the MUSTER — they decide what
+   army each side can field — and then you have to actually win with it. A lucky roll
+   hands you a queen; it does not hand you the game.
+
+   WHAT IS REAL AND WHAT IS INVENTED:
+     REAL   — every move, capture, check, mate and stalemate (window.PJCCChess, the
+              site's perft-verified referee). Nothing here re-implements a chess rule.
+     INVENTED — the map, the dice→budget economy, the muster, and the timeout rule.
+   Castling is switched OFF for every battle: the armies are randomly mustered, so a king
+   and rook can land on their home squares without any of the history castling assumes.
+   ══════════════════════════════════════════════════════════════════════════════════ */
+(function () {
+'use strict';
+
+var C = window.PJCCChess;
+var $ = function (id) { return document.getElementById(id); };
+
+/* ── THE MAP ────────────────────────────────────────────────────────────────────
+   Nine holdings. Names are PLACEHOLDERS — border-country words, deliberately not
+   claiming PJCC canon, because locations are Nate's to name. Positions are percent
+   coordinates in the 100x112 box the SVG shares. */
+var LAND = [
+  { id:0, nm:'Kingsbarrow',   x:28, y:12 },
+  { id:1, nm:'The Pale',      x:71, y:15 },
+  { id:2, nm:"Rook's Ford",   x:13, y:39 },
+  { id:3, nm:"Queen's Reach", x:47, y:41 },
+  { id:4, nm:'Bishopsgate',   x:85, y:42 },
+  { id:5, nm:'Knightsmoor',   x:29, y:64 },
+  { id:6, nm:'Castle Downs',  x:69, y:67 },
+  { id:7, nm:'The Weald',     x:15, y:89 },
+  { id:8, nm:'Long Meadow',   x:56, y:92 }
+];
+var EDGES = [[0,1],[0,2],[0,3],[1,3],[1,4],[2,3],[2,5],[3,4],[3,5],[3,6],[4,6],[5,6],[5,7],[5,8],[6,8],[7,8]];
+function adj(a, b) {
+  for (var i = 0; i < EDGES.length; i++) {
+    if ((EDGES[i][0] === a && EDGES[i][1] === b) || (EDGES[i][1] === a && EDGES[i][0] === b)) return true;
+  }
+  return false;
+}
+
+var G = null;          // campaign state
+var B = null;          // battle state
+
+function newCampaign() {
+  G = { own: [], gar: [], round: 1, sel: -1, busy: false };
+  //           0  1  2  3  4  5  6  7  8
+  var owner = ['t','t','m','t','t','m','t','m','m'];
+  var gars  = [ 2 , 3 , 3 , 4 , 3 , 3 , 2 , 2 , 2 ];
+  G.own = owner.slice(); G.gar = gars.slice();
+}
+
+/* ── DICE ──────────────────────────────────────────────────────────────────────── */
+function d6() { return 1 + Math.floor(Math.random() * 6); }
+function roll(n) { var a = []; for (var i = 0; i < n; i++) a.push(d6()); return a; }
+function sum(a) { return a.reduce(function (x, y) { return x + y; }, 0); }
+
+/* ── THE MUSTER ────────────────────────────────────────────────────────────────
+   A point budget spent on real chess material at real chess value. The king is free
+   and always present — you cannot roll badly enough to lose your king before a shot
+   is fired. Caps stop a big roll turning into four queens, which stops being chess. */
+var VAL = { q:9, r:5, b:3, n:3, p:1 };
+var CAP = { q:1, r:2, b:2, n:2, p:8 };
+function muster(budget) {
+  var out = [], left = budget, order = ['q', 'r', 'b', 'n'];
+  function have(k) { var c = 0; for (var i = 0; i < out.length; i++) if (out[i] === k) c++; return c; }
+  while (left > 0) {
+    var afford = order.filter(function (k) { return VAL[k] <= left && have(k) < CAP[k]; });
+    if (!afford.length) break;
+    // mostly reach for the biggest thing affordable, but not always — two identical
+    // budgets should not always produce the identical army.
+    var pick = (Math.random() < 0.6) ? afford[0] : afford[Math.floor(Math.random() * afford.length)];
+    out.push(pick); left -= VAL[pick];
+  }
+  while (left > 0 && have('p') < CAP.p) { out.push('p'); left -= 1; }
+  return out;
+}
+
+/* Placement: king on his own square, everything else from the centre outward, pawns on
+   the second rank. Squares are board indices (0 = a8, 63 = h1). */
+var W_BACK = [59, 61, 58, 62, 57, 63, 56], W_PAWN = [52, 51, 53, 50, 54, 49, 55, 48];
+var B_BACK = [3, 5, 2, 6, 1, 7, 0],        B_PAWN = [12, 11, 13, 10, 14, 9, 15, 8];
+function buildBoard(wArmy, bArmy) {
+  var b = new Array(64).fill('');
+  b[60] = 'K'; b[4] = 'k';
+  var wb = 0, wp = 0, bb = 0, bp = 0, i;
+  for (i = 0; i < wArmy.length; i++) {
+    var k = wArmy[i];
+    if (k === 'p') { if (wp < W_PAWN.length) b[W_PAWN[wp++]] = 'P'; }
+    else if (wb < W_BACK.length) b[W_BACK[wb++]] = k.toUpperCase();
+  }
+  for (i = 0; i < bArmy.length; i++) {
+    var j = bArmy[i];
+    if (j === 'p') { if (bp < B_PAWN.length) b[B_PAWN[bp++]] = 'p'; }
+    else if (bb < B_BACK.length) b[B_BACK[bb++]] = j;
+  }
+  return b;
+}
+
+/* ── THE ENGINE ────────────────────────────────────────────────────────────────
+   Alpha-beta negamax over the real referee. Small armies, so depth 3 is comfortable;
+   iterative deepening with a time budget means a crowded position degrades to a
+   shallower answer rather than freezing the page. */
+var EV = { p:100, n:320, b:330, r:500, q:900, k:0 };
+function evalPos(S, me) {
+  var s = 0;
+  for (var i = 0; i < 64; i++) {
+    var p = S.b[i]; if (!p) continue;
+    var v = EV[p.toLowerCase()] || 0;
+    var mine = (p >= 'A' && p <= 'Z') ? 'w' : 'b';
+    // a nudge toward the middle, so pieces don't sulk on the rim
+    var r = (i / 8) | 0, f = i % 8;
+    var centre = 6 - (Math.abs(3.5 - r) + Math.abs(3.5 - f));
+    v += centre * 2;
+    s += (mine === me) ? v : -v;
+  }
+  return s;
+}
+function ordered(S) {
+  var ms = C.legalMoves(S);
+  ms.sort(function (a, b) {
+    var ca = S.b[a.to] ? (EV[S.b[a.to].toLowerCase()] || 0) : 0;
+    var cb = S.b[b.to] ? (EV[S.b[b.to].toLowerCase()] || 0) : 0;
+    return cb - ca;
+  });
+  return ms;
+}
+/* ⚠ NEGAMAX RETURNS THE SCORE FROM THE SIDE-TO-MOVE'S POINT OF VIEW, always. That is the
+   whole contract, and the one thing easy to get wrong: the eval must therefore be called
+   as evalPos(S, S.turn) at every leaf, never anchored to whoever started the search. Get
+   it backwards and the engine confidently plays the WORST move it can find. */
+function negamax(S, depth, alpha, beta, deadline) {
+  if (Date.now() > deadline) return null;
+  var ms = ordered(S);
+  // no legal moves: mated (terrible for the side to move) or stalemate (level).
+  // `- depth` prefers a mate delivered sooner over the same mate delivered later.
+  if (!ms.length) return C.inCheck(S, S.turn) ? (-99999 - depth) : 0;
+  if (depth === 0) return evalPos(S, S.turn);
+  var best = -1e9;
+  for (var i = 0; i < ms.length; i++) {
+    var v = negamax(C.makeMove(S, ms[i]), depth - 1, -beta, -alpha, deadline);
+    if (v === null) return null;
+    v = -v;
+    if (v > best) best = v;
+    if (best > alpha) alpha = best;
+    if (alpha >= beta) break;
+  }
+  return best;
+}
+function bestMove(S, budgetMs) {
+  var deadline = Date.now() + (budgetMs || 700);
+  var ms = ordered(S);
+  if (!ms.length) return null;
+  var chosen = ms[0];
+  // iterative deepening: a crowded position degrades to a shallower answer rather than
+  // freezing the page. Only a COMPLETED depth is allowed to replace the choice.
+  for (var d = 1; d <= 3; d++) {
+    var localBest = null, localVal = -1e9, aborted = false;
+    for (var i = 0; i < ms.length; i++) {
+      var v = negamax(C.makeMove(S, ms[i]), d - 1, -1e9, 1e9, deadline);
+      if (v === null) { aborted = true; break; }
+      v = -v;
+      if (v > localVal) { localVal = v; localBest = ms[i]; }
+    }
+    if (aborted) break;
+    if (localBest) chosen = localBest;
+  }
+  return chosen;
+}
+
+/* ── MATERIAL (the timeout rule) ──────────────────────────────────────────────── */
+function material(b, side) {
+  var s = 0;
+  for (var i = 0; i < 64; i++) {
+    var p = b[i]; if (!p) continue;
+    var c = (p >= 'A' && p <= 'Z') ? 'w' : 'b';
+    if (c === side) s += (VAL[p.toLowerCase()] || 0);
+  }
+  return s;
+}
+
+/* ── SCREENS ───────────────────────────────────────────────────────────────────── */
+function show(id) {
+  ['screen-home','screen-how','screen-map','screen-roll','screen-battle','screen-result']
+    .forEach(function (s) { $(s).classList.toggle('on', s === id); });
+}
+
+/* ── MAP RENDER ────────────────────────────────────────────────────────────────── */
+function drawMap() {
+  var box = $('mapbox'), svg = $('links');
+  Array.prototype.slice.call(box.querySelectorAll('.node')).forEach(function (n) { n.remove(); });
+  var lines = '';
+  EDGES.forEach(function (e) {
+    var a = LAND[e[0]], b = LAND[e[1]];
+    var hot = (G.sel >= 0 && ((e[0] === G.sel && G.own[e[1]] === 't') || (e[1] === G.sel && G.own[e[0]] === 't')));
+    lines += '<line class="link' + (hot ? ' hot' : '') + '" x1="' + a.x + '" y1="' + (a.y * 1.12) +
+             '" x2="' + b.x + '" y2="' + (b.y * 1.12) + '"/>';
+  });
+  svg.innerHTML = lines;
+
+  LAND.forEach(function (L) {
+    var mine = G.own[L.id] === 'm';
+    var isSel = G.sel === L.id;
+    var isTgt = G.sel >= 0 && !mine && adj(G.sel, L.id) && G.gar[G.sel] >= 2;
+    var dim = G.sel >= 0 && !isSel && !isTgt;
+    var el = document.createElement('div');
+    el.className = 'node ' + (mine ? 'mine' : 'theirs') + (isSel ? ' sel' : '') + (isTgt ? ' tgt' : '') + (dim ? ' dim' : '');
+    el.style.left = L.x + '%'; el.style.top = (L.y * 1.12 / 1.12) + '%';
+    el.innerHTML = '<div class="disc">' + G.gar[L.id] + '</div><span class="nm">' + L.nm + '</span>';
+    el.addEventListener('click', function () { tapLand(L.id); });
+    box.appendChild(el);
+  });
+
+  var m = 0, t = 0;
+  for (var i = 0; i < 9; i++) { if (G.own[i] === 'm') m++; else t++; }
+  $('t-mine').textContent = m; $('t-theirs').textContent = t; $('t-round').textContent = G.round;
+}
+
+function tapLand(id) {
+  if (G.busy) return;
+  if (G.own[id] === 'm') {
+    if (G.gar[id] < 2) { $('map-say').textContent = LAND[id].nm + ' has only one garrison — it cannot attack.'; drawMap(); return; }
+    G.sel = (G.sel === id) ? -1 : id;
+    $('map-say').textContent = G.sel < 0 ? 'Choose a holding to attack from.'
+      : 'From ' + LAND[id].nm + ' — now choose a neighbour to take.';
+    drawMap(); return;
+  }
+  if (G.sel < 0) { $('map-say').textContent = 'Start from one of your own holdings.'; return; }
+  if (!adj(G.sel, id)) { $('map-say').textContent = LAND[id].nm + ' does not border ' + LAND[G.sel].nm + '.'; return; }
+  beginBattle(G.sel, id, true);
+}
+
+/* ── ROLL SCREEN ───────────────────────────────────────────────────────────────── */
+var PEND = null;
+function beginBattle(from, to, playerAttacks) {
+  G.busy = true;
+  var aGar = G.gar[from], dGar = G.gar[to];
+  var aDice = roll(Math.max(1, Math.min(3, aGar - 1)));
+  var dDice = roll(Math.max(1, Math.min(2, dGar)));
+  // the defender's edge is flat and stated: ground is easier held than taken.
+  var aBud = sum(aDice) + Math.floor(aGar / 2);
+  var dBud = sum(dDice) + Math.floor(dGar / 2) + 4;
+  var aArmy = muster(aBud), dArmy = muster(dBud);
+
+  PEND = { from:from, to:to, playerAttacks:playerAttacks, aGar:aGar, dGar:dGar,
+           aArmy:aArmy, dArmy:dArmy };
+
+  $('roll-title').textContent = playerAttacks
+    ? 'You march on ' + LAND[to].nm
+    : LAND[from].nm + ' marches on ' + LAND[to].nm;
+  $('att-label').textContent = (playerAttacks ? 'You attack' : 'They attack') + ' — ' + LAND[from].nm;
+  $('def-label').textContent = (playerAttacks ? 'They defend' : 'You defend') + ' — ' + LAND[to].nm;
+
+  var attGlyph = playerAttacks ? 'w' : 'b', defGlyph = playerAttacks ? 'b' : 'w';
+  paintDice($('att-dice'), aDice); paintDice($('def-dice'), dDice);
+  $('att-budget').innerHTML = 'Rolled <b>' + sum(aDice) + '</b> + ' + Math.floor(aGar / 2) +
+    ' garrison = <b>' + aBud + '</b> points';
+  $('def-budget').innerHTML = 'Rolled <b>' + sum(dDice) + '</b> + ' + Math.floor(dGar / 2) +
+    ' garrison + 4 home ground = <b>' + dBud + '</b> points';
+  paintArmy($('att-army'), aArmy, attGlyph);
+  paintArmy($('def-army'), dArmy, defGlyph);
+  show('screen-roll');
+}
+var GLY = { k:'♚', q:'♛', r:'♜', b:'♝', n:'♞', p:'♟' };
+function paintDice(host, arr) {
+  host.innerHTML = arr.map(function (d) { return '<span class="die roll">' + d + '</span>'; }).join('');
+}
+function paintArmy(host, arr, side) {
+  var full = ['k'].concat(arr);
+  host.innerHTML = full.map(function (k) {
+    return '<span class="' + side + '">' + GLY[k] + '</span>';
+  }).join('');
+}
+
+/* ── BATTLE ────────────────────────────────────────────────────────────────────── */
+function startBattle() {
+  var p = PEND;
+  // the player is ALWAYS White at the bottom — orientation should never flip under you.
+  var wArmy = p.playerAttacks ? p.aArmy : p.dArmy;
+  var bArmy = p.playerAttacks ? p.dArmy : p.aArmy;
+  var board = buildBoard(wArmy, bArmy);
+  B = {
+    S: { b:board, turn: p.playerAttacks ? 'w' : 'b',
+         cast:{K:false,Q:false,k:false,q:false}, ep:-1, half:0, full:1 },
+    sel: -1, moves: [], last: null, left: 120, over: false, timer: null
+  };
+  show('screen-battle');
+  paint();
+  $('say').innerHTML = p.playerAttacks
+    ? 'You attack. <b>You move first.</b>'
+    : 'You defend. <b>They move first.</b>';
+  B.timer = setInterval(tickClock, 1000);
+  updateClock();
+  if (B.S.turn === 'b') setTimeout(aiMove, 700);
+}
+function tickClock() {
+  if (B.over) return;
+  B.left--; updateClock();
+  if (B.left <= 0) finish('time');
+}
+function updateClock() {
+  var m = Math.floor(B.left / 60), s = B.left % 60;
+  var el = $('clock');
+  el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+  el.className = 'clock' + (B.left <= 15 ? ' crit' : B.left <= 40 ? ' warn' : '');
+  var mw = material(B.S.b, 'w'), mb = material(B.S.b, 'b');
+  $('mat').innerHTML = 'you <b style="color:var(--mine)">' + mw + '</b> &middot; them <b style="color:var(--theirs)">' + mb + '</b>';
+}
+
+function paint() {
+  var sqs = $('sqs'), men = $('men'), i;
+  if (!sqs.childNodes.length) {
+    var h = '';
+    for (i = 0; i < 64; i++) {
+      var r = (i / 8) | 0, f = i % 8;
+      h += '<i class="sq' + (((r + f) % 2) ? ' d' : '') + '" data-i="' + i + '"></i>';
+    }
+    sqs.innerHTML = h;
+    sqs.addEventListener('click', onSquare);
+  }
+  var cells = sqs.childNodes;
+  var kingSq = -1;
+  if (C.inCheck(B.S, B.S.turn)) kingSq = C.kingSq(B.S.b, B.S.turn);
+  for (i = 0; i < 64; i++) {
+    var c = cells[i], cls = 'sq' + ((((i / 8 | 0) + i % 8) % 2) ? ' d' : '');
+    if (B.last && (i === B.last.from || i === B.last.to)) cls += ' last';
+    if (i === B.sel) cls += ' from';
+    if (i === kingSq) cls += ' chk';
+    var mv = B.moves.filter(function (m) { return m.to === i; })[0];
+    if (mv) cls += B.S.b[i] ? ' cap' : ' hint';
+    c.className = cls;
+  }
+  var mh = '';
+  for (i = 0; i < 64; i++) {
+    var p = B.S.b[i]; if (!p) continue;
+    var w = (p >= 'A' && p <= 'Z');
+    var can = (!B.over && B.S.turn === 'w' && w);
+    mh += '<b class="pc ' + (w ? 'w' : 'b') + (can ? ' can' : '') + (i === B.sel ? ' lift' : '') +
+          '" style="grid-area:' + ((i / 8 | 0) + 1) + '/' + (i % 8 + 1) + '" data-i="' + i + '">' +
+          GLY[p.toLowerCase()] + '</b>';
+  }
+  men.innerHTML = mh;
+  Array.prototype.forEach.call(men.childNodes, function (el) {
+    el.addEventListener('click', function (e) { e.stopPropagation(); onSquare({ target: el }); });
+  });
+}
+
+function onSquare(e) {
+  if (B.over || B.S.turn !== 'w') return;
+  var t = e.target.closest ? e.target.closest('[data-i]') : null;
+  if (!t) return;
+  var i = +t.getAttribute('data-i');
+  var mv = B.moves.filter(function (m) { return m.to === i; })[0];
+  if (mv) { applyMove(mv); return; }
+  var p = B.S.b[i];
+  if (p && p >= 'A' && p <= 'Z') {
+    if (B.sel === i) { B.sel = -1; B.moves = []; }
+    else { B.sel = i; B.moves = C.legalMoves(B.S).filter(function (m) { return m.from === i; }); }
+  } else { B.sel = -1; B.moves = []; }
+  paint();
+}
+
+function applyMove(m) {
+  // a pawn reaching the last rank always promotes to a queen here — a prototype should
+  // not stop a two-minute battle to ask.
+  var p = B.S.b[m.from];
+  if (p && p.toLowerCase() === 'p') {
+    var rank = (m.to / 8) | 0;
+    if (rank === 0 || rank === 7) m = { from:m.from, to:m.to, promo:(p === 'P' ? 'Q' : 'q') };
+  }
+  B.S = C.makeMove(B.S, m);
+  B.last = m; B.sel = -1; B.moves = [];
+  paint(); updateClock();
+  var res = C.gameResult(B.S);
+  if (res === 'checkmate') { finish(B.S.turn === 'w' ? 'lost-mate' : 'won-mate'); return; }
+  if (res) { finish('draw'); return; }
+  if (B.S.turn === 'b' && !B.over) setTimeout(aiMove, 260);
+}
+
+function aiMove() {
+  if (B.over || B.S.turn !== 'b') return;
+  var m = bestMove(B.S, 650);
+  if (!m) { finish('draw'); return; }
+  var p = B.S.b[m.from];
+  if (p && p.toLowerCase() === 'p' && ((m.to / 8 | 0) === 7 || (m.to / 8 | 0) === 0)) {
+    m = { from:m.from, to:m.to, promo:'q' };
+  }
+  B.S = C.makeMove(B.S, m);
+  B.last = m; paint(); updateClock();
+  var res = C.gameResult(B.S);
+  if (res === 'checkmate') { finish('lost-mate'); return; }
+  if (res) { finish('draw'); return; }
+  $('say').innerHTML = C.inCheck(B.S, 'w') ? '<b>Check.</b>' : '&nbsp;';
+}
+
+/* ── RESOLUTION ────────────────────────────────────────────────────────────────── */
+function finish(how) {
+  if (B.over) return;
+  B.over = true;
+  clearInterval(B.timer);
+  var p = PEND;
+  var playerWon, line;
+
+  if (how === 'won-mate')      { playerWon = true;  line = 'Checkmate. The field is yours.'; }
+  else if (how === 'lost-mate'){ playerWon = false; line = 'Checkmate. Your king is taken.'; }
+  else if (how === 'resign')   { playerWon = false; line = 'You withdrew from the field.'; }
+  else if (how === 'draw')     {
+    // a draw is not a stalemate of the campaign — the defender keeps the ground.
+    playerWon = !p.playerAttacks;
+    line = 'A drawn battle. The defender holds.';
+  } else {
+    var mw = material(B.S.b, 'w'), mb = material(B.S.b, 'b');
+    if (mw === mb) { playerWon = !p.playerAttacks; line = 'Time. Material dead level — the defender holds.'; }
+    else { playerWon = mw > mb; line = 'Time. ' + (mw > mb ? 'You hold' : 'They hold') + ' the field, ' +
+           Math.max(mw, mb) + ' to ' + Math.min(mw, mb) + '.'; }
+  }
+
+  var attackerWon = p.playerAttacks ? playerWon : !playerWon;
+  resolveLand(p, attackerWon);
+
+  // one word for what happened to the GROUND, from your side of the table
+  $('verdict').textContent = attackerWon
+    ? (p.playerAttacks ? 'TAKEN' : 'LOST')
+    : (p.playerAttacks ? 'REPULSED' : 'HELD');
+  $('verdict').className = 'verdict ' + (playerWon ? 'win' : 'lose');
+  $('result-say').textContent = line;
+  show('screen-result');
+}
+
+function resolveLand(p, attackerWon) {
+  if (attackerWon) {
+    var moved = Math.max(1, p.aGar - 1);
+    G.own[p.to] = G.own[p.from];
+    G.gar[p.to] = moved;
+    G.gar[p.from] = p.aGar - moved;
+    if (G.gar[p.from] < 1) G.gar[p.from] = 1;
+  } else {
+    G.gar[p.from] = 1;
+  }
+}
+
+/* ── THE RIVAL'S TURN ──────────────────────────────────────────────────────────── */
+function rivalTurn() {
+  // one attack per round, from its strongest border stack against your weakest neighbour.
+  var best = null;
+  for (var i = 0; i < 9; i++) {
+    if (G.own[i] !== 't' || G.gar[i] < 2) continue;
+    for (var j = 0; j < 9; j++) {
+      if (G.own[j] !== 'm' || !adj(i, j)) continue;
+      var score = G.gar[i] - G.gar[j];
+      if (!best || score > best.score) best = { from:i, to:j, score:score };
+    }
+  }
+  if (!best) { endRound(); return; }
+  beginBattle(best.from, best.to, false);
+}
+
+function endRound() {
+  // reinforcements, Risk-style: one banner per three holdings, minimum one.
+  var m = 0, t = 0, i;
+  for (i = 0; i < 9; i++) { if (G.own[i] === 'm') m++; else t++; }
+  if (!m) { campaignOver(false); return; }
+  if (!t) { campaignOver(true); return; }
+  var mine = [], theirs = [];
+  for (i = 0; i < 9; i++) (G.own[i] === 'm' ? mine : theirs).push(i);
+  var mAdd = Math.max(1, Math.floor(m / 3)), tAdd = Math.max(1, Math.floor(t / 3));
+  for (i = 0; i < mAdd; i++) G.gar[mine[Math.floor(Math.random() * mine.length)]]++;
+  for (i = 0; i < tAdd; i++) G.gar[theirs[Math.floor(Math.random() * theirs.length)]]++;
+  G.round++; G.sel = -1; G.busy = false;
+  $('map-say').textContent = 'Reinforcements arrive. Choose a holding to attack from.';
+  drawMap(); show('screen-map');
+}
+
+function campaignOver(won) {
+  $('verdict').textContent = won ? 'THE MARCH IS YOURS' : 'THE MARCH IS LOST';
+  $('verdict').className = 'verdict ' + (won ? 'win' : 'lose');
+  $('result-say').textContent = won
+    ? 'Nine holdings, all of them flying your colours. Round ' + G.round + '.'
+    : 'They hold every road out. Round ' + G.round + '.';
+  PEND = null;
+  show('screen-result');
+}
+
+/* ── WIRING ────────────────────────────────────────────────────────────────────── */
+$('go').addEventListener('click', function () {
+  newCampaign(); drawMap(); show('screen-map');
+});
+$('how').addEventListener('click', function () { show('screen-how'); });
+$('back').addEventListener('click', function () { show('screen-home'); });
+$('endturn').addEventListener('click', function () {
+  if (G.busy) return;
+  G.busy = true; G.sel = -1; drawMap();
+  setTimeout(rivalTurn, 340);
+});
+$('tobattle').addEventListener('click', startBattle);
+$('resign').addEventListener('click', function () { finish('resign'); });
+$('cont').addEventListener('click', function () {
+  if (!PEND) { show('screen-home'); return; }
+  var wasPlayerAttack = PEND.playerAttacks;
+  PEND = null;
+  // your attack ends your turn — then they answer. Their attack ends the round.
+  if (wasPlayerAttack) { G.busy = true; drawMap(); setTimeout(rivalTurn, 260); }
+  else endRound();
+});
+
+newCampaign();
+})();
+</script>
+</body>
+</html>
