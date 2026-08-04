@@ -26,9 +26,8 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**
 Runbook kept at `docs/domain-cutover-chesswild.md`. DNS verified, `CNAME`/`_config.yml`/
 `robots.txt`/Gambit canonical flipped, certificate provisioned, `www` → apex, and
 mcpuppystudios.com 301s **with the path preserved** (`/pjcc/` → `chesswild.com/pjcc/`).
-Two items remain:
-- [ ] **Tick Enforce HTTPS** — GitHub → repo **Settings → Pages**. The certificate is valid, but
-  `http://chesswild.com` still answers 200 instead of redirecting until this is on.
+- [x] ~~**Tick Enforce HTTPS**~~ **DONE — verified 2026-08-04:** both `http://chesswild.com` and
+  `http://www.chesswild.com` now 301 to `https://chesswild.com`.
 - [ ] **Google Search Console** — [search.google.com/search-console](https://search.google.com/search-console)
   → property dropdown → **Add property** → **Domain** → `chesswild.com` → add the TXT record in
   Squarespace DNS → Verify → **Sitemaps** → submit `sitemap.xml`. Keep the old property; it is what
@@ -36,6 +35,12 @@ Two items remain:
 - [ ] **Delete and reinstall the app on your phone** — a new origin is a new app, and no manifest
   edit can reach an installed launcher. **Sign in on chesswild.com first**, so your account carries
   your progress across rather than the browser jar you're leaving behind.
+- [ ] **Redeploy the Cloudflare Worker** — ⚠ **re-probed 2026-08-04 and it is STILL not live.** All
+  four origins get back `Access-Control-Allow-Origin: https://mcpuppystudios.com` (the `ALLOW[0]`
+  fallback), which proves `chesswild.com` is not in the array. **Japanese stays blocked until this
+  lands.** Cloudflare → Workers & Pages → `pjcc-translate` → **Edit code** → paste the whole worker
+  from `docs/translation-worker.md` → **Deploy** (the edit does nothing until Deploy is clicked).
+  Tell me when it's done and I'll re-probe.
 
 **⭐ THE PUZZLE CREDIT RULE — TWO DIALS THAT ARE YOURS TO CALL (kept here at your request,
 2026-08-04: "keep the RETRY_GAP and the earned definition in the priority items")**
