@@ -982,14 +982,47 @@ function startRun(){
   const pzNow = myPuzzleRating();
   run = { mode: 'journey', idx: 0, legLen: LEG, step: pr.step,
           diff: pzNow ? ratingToDiff(pzNow.rating) : pr.diff, best: pr.best,
-          legStartStep: pr.step, queue: null, stats: { solved:0, clean:0, streak:0, best:0, hints:0, rating0: pzNow ? pzNow.rating : null } };
+          legStartStep: pr.step, queue: null, retry: [], served: 0, stats: { solved:0, clean:0, streak:0, best:0, hints:0, rating0: pzNow ? pzNow.rating : null } };
   hideOverlays();
   document.getElementById('menu-btn').classList.remove('hidden');
   loadPuzzle();
 }
+/* ── THE RETRY QUEUE — "come back to it and do it right" (2026-08-04) ─────────────────
+   A puzzle you finished without earning it is pushed back here and re-served LATER, not
+   immediately. Immediately would be a do-over with the answer still on screen, which tests
+   nothing; a few puzzles' gap makes it a real second question.
+
+   GAP = 3, chosen so the answer is out of working memory but the position is still
+   familiar. The item stores the PUZZLE OBJECT, not a seed — these are procedurally
+   generated, so the only way to show you the same position twice is to keep it.
+
+   Fail it again and it goes back in the queue again, which is the whole point: the road to
+   Chess City is 1,000 puzzles you actually solved.
+
+   ⚠ THE QUEUE IS PER-SESSION, deliberately. It is not written to localStorage, so leaving
+   mid-run drops any pending retries — and that costs nothing, because the step never
+   advanced for them either. Nothing is banked that shouldn't be; you just meet fresh
+   puzzles next time. Persisting it would mean storing whole positions in a jar that
+   [[collection-and-hidden-boards]]-style progress already shares. */
+const RETRY_GAP = 3;
+function queueRetry(p){
+  if (!run || run.mode !== 'journey' || !p || p.boss) return;   // boss gates are never re-queued
+  run.retry.push({ p: p, due: run.served + RETRY_GAP });
+}
+function takeRetry(){
+  if (!run || !run.retry || !run.retry.length) return null;
+  for (let i = 0; i < run.retry.length; i++){
+    if (run.retry[i].due <= run.served) return run.retry.splice(i, 1)[0].p;
+  }
+  return null;
+}
 function loadPuzzle(){
   let p;
-  {
+  const back = takeRetry();
+  if (back){
+    // a second look at one you didn't earn. Same position, and it says so.
+    p = back; p.isRetry = true;
+  } else {
     const boss = gateAt(run.step + 1);          // solving this puzzle steps onto a region gate
     if (boss){
       const eff = Math.max(4, Math.min(10, Math.round(run.diff) + 3));
@@ -999,6 +1032,7 @@ function loadPuzzle(){
       p = genPuzzle(eff, Math.random);
     }
   }
+  run.served++;
   clearRefutation();
   G = { p, board: parseBoard(p), step: 0, selected: null, wrong: 0, clean: true, revealed: false, hintLevel: 0, phase: 'await', orient: p.side };
   document.getElementById('hint-btn').classList.remove('hidden');
@@ -1084,11 +1118,31 @@ function puzzleSolved(){
   if (window.PJCCAnalysis && PJCCAnalysis.available()) {
     document.getElementById('analysis-btn').classList.remove('hidden');
   }
-  const aced = G.clean && !G.revealed;          // solved unaided
+  /* ── CREDIT IS EARNED, NOT ATTENDED (2026-08-04) ─────────────────────────────────
+     Nate: "I feel like you shouldn't get credit for the puzzle if you ask for a hint or
+     get it wrong the first time. You still have to solve it but it shouldn't count for
+     success. You should have to come back to it and do it right in order to get credit."
+
+     This closes the one honest asterisk that had been sitting on "1,000 solved" since the
+     road was built: the counter used to move on ANY finish, so a player could hint their
+     way to Chess City and the number would say the same thing as a player who never took
+     one. It no longer does. `earned` is the strict test and it is the ONLY thing that
+     advances the road:
+
+       G.clean          no wrong move
+       !G.revealed      the deepest tier never played the move for you
+       hintLevel === 0  ⚑ NEW — you never asked at all. A hint used to still count as
+                        aced, which is exactly the loophole he is closing.
+
+     What does NOT change: you still have to finish the puzzle to move on, the teaching
+     card still shows, and the tactic is still recorded as seen. You are not punished —
+     the puzzle simply comes back (see queueRetry) and the credit waits for the clean solve. */
+  const earned = G.clean && !G.revealed && G.hintLevel === 0;
+  const aced = earned;                          // kept as the name the rest of this file uses
   run.stats.solved++;
-  recordTactic(G.p.cat, aced);
-  if (aced) { run.stats.clean++; run.stats.streak++; if (run.stats.streak > run.stats.best) run.stats.best = run.stats.streak; }
-  else run.stats.streak = 0;
+  recordTactic(G.p.cat, earned);
+  if (earned) { run.stats.clean++; run.stats.streak++; if (run.stats.streak > run.stats.best) run.stats.best = run.stats.streak; }
+  else { run.stats.streak = 0; queueRetry(G.p); }
   if (run.ladder){ if (G.revealed) run.slipped = true; else run.rungs = (run.rungs||0) + 1; }
 
   /* ── THE RATING SETTLES, AND IT IS NOW THE DIFFICULTY DIAL (2026-08-03, priority #2) ──
@@ -1109,7 +1163,10 @@ function puzzleSolved(){
 
      The dial is re-read from the rating every puzzle, so a run that goes badly gets
      easier immediately rather than at the next visit. */
-  const score = aced ? 1 : (G.revealed ? 0.25 : 0.6);
+  /* ⚑ A HINTED SOLVE NOW SCORES 0.6, not 1 — the rating and the road agree about what
+     counts as doing it yourself. Asking for help is not a loss (you still found it), but
+     it is not a win either. */
+  const score = earned ? 1 : (G.revealed ? 0.25 : 0.6);
   let pzMove = null;
   try {
     if (window.PJCC && PJCC.settlePuzzle && G.p.rating){
@@ -1121,9 +1178,14 @@ function puzzleSolved(){
   lastRatingMove = pzMove;
 
   if (run.mode === 'journey'){
-    if (!pzMove) run.diff = Math.max(1, Math.min(10, run.diff + (aced ? 0.34 : -0.7)));  // no profile module: the old ratchet still works
-    run.step = Math.min(JOURNEY_LEN, run.step + 1);
-    run.best = Math.max(run.best || 0, run.step);
+    if (!pzMove) run.diff = Math.max(1, Math.min(10, run.diff + (earned ? 0.34 : -0.7)));  // no profile module: the old ratchet still works
+    /* ⚠ THE ROAD ONLY MOVES ON AN EARNED SOLVE. The difficulty and the rating still settle
+       either way — they are measurements, and a hinted solve is real information about
+       where you are. The STEP is a claim, and only a clean solve gets to make it. */
+    if (earned){
+      run.step = Math.min(JOURNEY_LEN, run.step + 1);
+      run.best = Math.max(run.best || 0, run.step);
+    }
     saveProg({ step: run.step, diff: run.diff, best: run.best });
   }
   if (G.p.boss){
@@ -1132,7 +1194,10 @@ function puzzleSolved(){
     for (let i=0;i<4;i++) setTimeout(()=>burst((Math.random()*8)|0, (Math.random()*8)|0, true), 110*i);
     sfx('win');
   } else {
-    bannerText = aced ? 'SOLVED!' : 'GOT THERE'; bannerColor = aced ? C.good : C.pink; bannerT = 0;
+    // three outcomes now, and the middle one has to be honest without being a scolding:
+    // you solved it, it doesn't count, and you will see it again.
+    bannerText = earned ? 'SOLVED!' : 'NO CREDIT — IT COMES BACK';
+    bannerColor = earned ? C.good : C.frame; bannerT = 0;
     sfx('advance');
   }
   showExplain();
@@ -1328,6 +1393,16 @@ function drawHeader(){
   ctx.fillStyle = '#8a5a2b'; roundRect(12, 12, 150, 26, 13); ctx.fill();
   ctx.fillStyle = '#fff6e8'; ctx.font = 'bold 13px Trebuchet MS'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
   ctx.fillText('⚔ ' + p.theme.toUpperCase(), 22, 26);
+  /* ⚑ THE SECOND-LOOK CHIP (2026-08-04). A puzzle you didn't earn comes back three later,
+     and the room has to SAY so — an unannounced repeat reads as the generator glitching,
+     not as a second chance. Green, because this is the one you can still win. */
+  if (p.isRetry){
+    ctx.font = 'bold 11px Trebuchet MS';
+    const rw = ctx.measureText('SECOND LOOK').width + 26;
+    ctx.fillStyle = '#2e7d47'; roundRect(170, 12, rw, 26, 13); ctx.fill();
+    ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText('↻ SECOND LOOK', 182, 26);
+  }
   // YOU-ARE badge — make the player's color unmistakable, with the goal alongside
   const youW = (p.side === 'w');
   const youTxt = (youW ? '♔ YOU PLAY WHITE' : '♚ YOU PLAY BLACK') + '  ·  ' + p.goal;
