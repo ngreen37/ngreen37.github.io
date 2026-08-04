@@ -71,8 +71,15 @@
    instead of broken. */
 body.theme-chess {
   /* the sheet — warm white, not clinical #fff; a pure white page under a dark header
-     reads as a hole punched in the site. */
-  --surface:   #fbfaf7;
+     reads as a hole punched in the site.
+     ⚑ 15% TRANSPARENT SINCE 2026-08-04 (Nate: "make the white box 15% more transparent").
+     The "WHY THE CARD GOES OPAQUE" paragraph in the header above is superseded by this line
+     and kept for the diagnosis in it, which is still true and is exactly what the alpha had
+     to be checked against: the sky behind this card is not a colour, it is four colours over
+     a day, and letting any of it through moves every contrast ratio on the page. See the ink
+     note directly below — the transparency cost --fd-ink-3 its AA margin, and 0.85 is the
+     furthest this can go before it starts costing readability instead of just weight. */
+  --surface:   rgba(251, 250, 247, 0.85);
   --surface-2: #f4f2ec;
   --edge:      #e5e1d8;
   --lift:      0 18px 50px rgba(0, 0, 0, 0.45);
@@ -84,11 +91,30 @@ body.theme-chess {
      the studio date all sit on --fd-panel / --fd-panel-hi, which are DARKER sheets. On
      those it measured 3.97-4.45:1 on the live page: a real miss on the four door
      descriptions, the three facts and the date. Darkened until it clears 4.5 on the
-     DARKEST surface it can land on, not the lightest. Measured now: 5.9 on the sheet,
-     5.3 on panel-hi. Check a token against its worst background, never its best. */
+     DARKEST surface it can land on, not the lightest. Measured then: 5.9 on the sheet,
+     5.3 on panel-hi. Check a token against its worst background, never its best.
+
+     ⚠ AND THE SAME TOKEN FAILED AGAIN THE MOMENT THE SHEET WENT TRANSLUCENT (2026-08-04).
+     #5a626f was measured against an OPAQUE #fbfaf7. At 0.85 alpha the sheet is no longer a
+     colour — it is the sky, dimmed — so the paper composites DARKER and the dark ink on it
+     LOSES contrast. Measured across the four sky phases at alpha 0.85:
+
+         night #06041a → sheet rgb(214,213,214)   4.21  ✗
+         dusk  #4a2350 → sheet rgb(224,218,222)   4.47  ✗
+         dawn  #7c3d3a → sheet rgb(232,222,219)   4.66  ✓
+         day   #24558f → sheet rgb(219,225,231)   4.67  ✓
+
+     Two of the four failed, and they are the two a visitor sees every evening. Darkened to
+     #525a66: 4.76 on the WORST of them (night) and 6.68 on the opaque sheet. The intermediate
+     #555d69 clears at 4.55 and was rejected — 0.05 over the AA line is not a margin.
+     --fd-ink-2 (5.30 at night) and --fd-ink (10.77) both had the headroom already.
+
+     THE LESSON IS THE OLD ONE, ONE TURN FURTHER: a token's worst background is not a colour
+     you look up once. Change a surface's ALPHA and every ratio on the page moves, including
+     the ones a previous pass already proved. */
   --fd-ink:   #1e232c;
   --fd-ink-2: #4b5361;
-  --fd-ink-3: #5a626f;
+  --fd-ink-3: #525a66;
 
   /* structure */
   --fd-rule:  #e5e1d8;
@@ -117,9 +143,12 @@ body.theme-chess {
   /* The default link colour is #a78bfa — purple on any anchor that doesn't set its own.
      ⚠ SCOPED TO UNCLASSED LINKS, and that `:not([class])` is load-bearing. Written first
      as a bare `body.theme-chess a`, it out-specified every one of the page's own link
-     rules — (0,1,1) beats the flat (0,1,0) of `.mc-cta`, `.mc-cta2`, `.mc-studio-post`
-     and `.mc-studio-more` — so the gold button's near-black label turned pale grey on
-     gold and four other links lost their colour. Caught in the render, not in the CSS.
+     rules — (0,1,1) beats the flat (0,1,0) of the classes the front door used at the time
+     (`.mc-cta`, `.mc-cta2`, `.mc-studio-post`, `.mc-studio-more`; all four have since been
+     retired with the pill and the blog band) — so the gold button's near-black label turned
+     pale grey on gold and four other links lost their colour. Caught in the render, not in
+     the CSS. The trap is not about those four class names; it is that a theme-scoped bare
+     `a` out-specifies every unscoped page rule on the site.
      This way it only reaches links that have opted out of styling entirely. */
   .page-body a:not([class]) { color: var(--fd-ink-2); }
   .page-body a:not([class]):hover { color: var(--fd-ink); }
@@ -196,10 +225,25 @@ body.theme-chess .mc-table {
   border-bottom: 1px solid var(--fd-rule);
   border-radius: var(--r-lg, 16px) var(--r-lg, 16px) 0 0;
   /* on paper the "pool of warm light" is the other way up: the band is a shade WARMER
-     than the sheet below it, not a glow laid on top of a dark one. */
+     than the sheet below it, not a glow laid on top of a dark one.
+
+     ⚠ THE BAND IS A TINT NOW, NOT A SECOND SHEET (2026-08-04, and it is the whole reason
+     the transparency looks like transparency). It used to paint
+     `linear-gradient(180deg, var(--fd-panel-hi), var(--surface))` — two opaque-ish paints.
+     The moment --surface went to 0.85 that broke visibly, and the arithmetic is why: THE
+     BAND SITS ON TOP OF THE CARD, so its alpha STACKS with the card's. Two layers at 0.85
+     compose to 0.978 — the tabletop was effectively opaque while everything below it let the
+     sky through, and the card came out in two different papers with a hard seam across it at
+     the band's foot. No alpha on the band can fix that: any paint you add makes it MORE
+     opaque than its surroundings, never equally so.
+
+     So the band stops being paper and becomes a WARM WASH over the paper that is already
+     there. rgba(207,198,175,0.25) over #fbfaf7 composites to #f0ede5 — the exact colour the
+     old top stop named — so the tabletop looks identical on an opaque sheet, and the sky now
+     reaches it at the same 0.85 as the rest of the card. Same picture, one sheet. */
   background:
     radial-gradient(58% 90% at 78% 46%, rgba(185, 139, 87, 0.09), transparent 68%),
-    linear-gradient(180deg, var(--fd-panel-hi), var(--surface));
+    linear-gradient(180deg, rgba(207, 198, 175, 0.25), rgba(207, 198, 175, 0));
   overflow: hidden;
 }
 /* the hairline of walnut along the very top, like the lit edge of a tabletop */

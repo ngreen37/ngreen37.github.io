@@ -11,7 +11,18 @@ layout: default
      the card, `own_title` is for a page that draws its own heading furniture (the Academy's
      belt ribbon), and this is for a page whose card should open on CONTENT. Styling lives
      with the caller — this layout only decides where the element goes. {%- endcomment -%}
-{%- if page.title_outside -%}<h1 class="page-title-out">{{ page.title }}</h1>{%- endif -%}
+{%- comment -%} `tagline_outside` rides ALONGSIDE the title on the sky (2026-08-04, Nate:
+     "put the tagline play.solve.learn near ChessWild.com"). It is a sibling, not part of the
+     <h1> — a wordmark and its tagline read as one lockup but they are not one heading, and
+     folding three words into the site's only h1 would change what every screen reader and
+     every crawler thinks this page is called. The flex row is the caller's job to style;
+     this layout only decides that the two elements stand together, above the card. {%- endcomment -%}
+{%- if page.title_outside -%}
+<div class="page-head-out">
+  <h1 class="page-title-out">{{ page.title }}</h1>
+  {%- if page.tagline_outside -%}<p class="page-tagline-out">{{ page.tagline_outside }}</p>{%- endif -%}
+</div>
+{%- endif -%}
 <div class="page-card">
   {%- comment -%} `own_title: true` lets a page place the sky banner ITSELF (the Academy
        puts its belt ribbon above it, 2026-07-14 Nate). The page must then render
@@ -21,3 +32,10 @@ layout: default
     {{ content }}
   </div>
 </div>
+{%- comment -%} `sky_note` is one quiet line printed BELOW the card, standing on the town sky
+     (2026-08-04, Nate on the front door's three facts: "put free · no account · works offline
+     below the white box and into the blue"). It has to be emitted by the layout, not by the
+     page: anything inside {{ content }} is inside `.page-card`, and no amount of negative
+     margin puts a child outside its own parent's background. Styling lives with the caller.
+     {%- endcomment -%}
+{%- if page.sky_note -%}<p class="page-note-out">{{ page.sky_note }}</p>{%- endif -%}

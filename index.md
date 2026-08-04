@@ -12,6 +12,15 @@ title: ChessWild.com
 # chesswild.com title outside of the white box. it is taking up too much space"). See
 # .page-title-out in _layouts/page.html + the styling at the foot of this file.
 title_outside: true
+# The three words stand BESIDE the title, out on the sky (2026-08-04, Nate: "put the tagline
+# play.solve.learn near ChessWild.com"). They used to be the first line inside the card; the
+# name and its tagline are one lockup, and splitting them across the card's edge meant the
+# sheet opened on a fragment of a thought. Proper caps are his call too, same batch.
+tagline_outside: Play. Solve. Learn.
+# ...and the three facts close the page from OUTSIDE it (same batch: "put free · no account ·
+# works offline below the white box and into the blue"). Printed by _layouts/page.html after
+# the card — see the note there for why it can't be done from inside the page.
+sky_note: Free · No Account · Works Offline
 body_class: theme-chess
 tab_title: ChessWild.com — free chess for everyone
 description: Free chess for everyone — play a real game, solve a puzzle, or learn from scratch. Set in the world of Princess and the Journey to Chess City, by McPuppy Studios.
@@ -93,7 +102,6 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
      whole board and all four doors silently vanished from a repro. ═══════ {%- endcomment -%}
 <section class="mc-table">
 <section class="mc-hero">
-  <div class="mc-hero-copy">
     {%- comment -%} THE EYEBROW IS GONE (2026-08-04, Nate: "We've got 'By McPuppy Studios' on
          the top left and 'From McPuppy Studios' in the center. Delete the latter."). The
          drawer already says it, permanently, on every page — saying it twice on the one
@@ -120,26 +128,36 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
     {%- comment -%} THREE WORDS (2026-08-04, Nate: "let's go with 'Play, Solve, Learn'. I like
          that. Make it just those three words. Put it somewhere basic.").
 
-         It replaced "Play a game, solve a puzzle, or learn the pieces." — which said the same
-         thing in nine words and a comma splice. Three words name the three doors below it, so
-         the sentence and the grid now agree instead of paraphrasing each other. {%- endcomment -%}
-    <p class="mc-lede">Play. Solve. Learn.</p>
+         ⚠ THEY LEFT THIS BLOCK LATER THE SAME DAY ("put the tagline play.solve.learn near
+         ChessWild.com"). They are `tagline_outside` in the front matter now and stand beside
+         the title on the sky — the name and its tagline are one lockup, and the card's edge
+         was running through the middle of it. {%- endcomment -%}
 
-    {%- comment -%} THE ONE BUTTON. Park Tables because it's the only door where a stranger is
-         *playing* in two taps — a park regular seats you instantly, no account, real rules,
-         a real clock.
+    {%- comment -%} ══ THE PILL BECAME A BOX (2026-08-04) ══════════════════════════════════
+         Nate: "where the green pill Play Chess — make it instead a box like the others, but
+         keep it above the others and make it more prominent" + "put Play Now more prominent".
 
-         ⚠ THE ACADEMY TEXT LINK THAT SAT HERE IS GONE (2026-08-04, Nate: "There's a big yellow
-         button and a text link to academy and an out-of-place tagline… the home page is very
-         confusing"). He is right, and it was the second call to action the page's one law
-         forbids — it just wasn't gold, so it got away with it. Academy is already one of the
-         four doors directly below. {%- endcomment -%}
-    <a class="mc-cta" href="{{ '/games/park-tables/' | relative_url }}">
-      <span class="mc-cta-ico" aria-hidden="true">&#9822;</span>
-      <span class="mc-cta-txt">Play Chess</span>
-      <span class="mc-cta-arw" aria-hidden="true">&rarr;</span>
+         So the page's one call to action is still exactly one thing; it changed SHAPE. A pill
+         is a control — it says "submit". A box is a DOOR, and the four things under it are
+         doors, so a pill floating above four doors was the primary action wearing the wrong
+         costume. Now the set is five doors and the first one is bigger, greener and named the
+         same thing the drawer names it: **Play Now**.
+
+         ⚠ THE PAGE'S ONE LAW SURVIVES THE RESHAPE. There is still exactly ONE filled green
+         thing on this page and everything else is quieter than it. `.mc-lead` is the only
+         card with a green wash, a green rule and a green arrow; the other four are paper. If
+         a second box ever goes green, the page has regressed to the problem the front door
+         was built to fix.
+
+         Park Tables is still where it points, for the reason it always did: it is the only
+         door where a stranger is *playing* in two taps — a park regular seats you instantly,
+         no account, real rules, a real clock. {%- endcomment -%}
+    <a class="mc-door mc-lead" href="{{ '/games/park-tables/' | relative_url }}">
+      <span class="mc-door-ico" aria-hidden="true">&#9822;</span>
+      <b>Play Now</b>
+      <small>A person, a park regular, or McPuppy.</small>
+      <span class="mc-lead-arw" aria-hidden="true">&rarr;</span>
     </a>
-  </div>
 
   {%- comment -%} ══ THE BOARD IS THE BUTTON (2026-07-28) ══════════════════════════════════
        Nate: "I love the Board is the Button idea — let's do it, with the risk in mind."
@@ -224,15 +242,51 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 </section>
 </section>
 
-<h2 class="mc-h2">Four ways in</h2>
+{%- comment -%} "Four ways in" → "More ways in" (2026-08-04). Play Now was promoted OUT of this
+     grid and into the hero as `.mc-lead`, so the four boxes below are no longer the whole set —
+     they are the rest of it, and a heading that counts them would be counting wrong. Games Hall
+     takes the empty slot (Nate: "make a Games Hall box and put it in the play now box"), which
+     keeps the grid at four and gives the page its one link to every game on the site.
+     {%- endcomment -%}
+<h2 class="mc-h2">More ways in</h2>
 <div class="mc-doors">
-  <a class="mc-door" href="{{ '/games/park-tables/' | relative_url }}">
+  <a class="mc-door" href="{{ '/games/' | relative_url }}">
     <span class="mc-door-ico" aria-hidden="true">&#9654;</span>
-    <b>Play Now</b>
-    <small>A person, a park regular, or McPuppy.</small>
+    <b>Games Hall</b>
+    <small>Every game on the site, in one room.</small>
   </a>
-  <a class="mc-door" href="{{ '/games/the-gauntlet/' | relative_url }}">
-    <span class="mc-door-ico" aria-hidden="true">&#9819;</span>
+  {%- comment -%} ══ THE REAL DOOR, ON THE FRONT DOOR (2026-08-04) ═══════════════════════════
+       Nate: "add the appropriate gauntlet door to the gauntlet box."
+
+       APPROPRIATE IS THE OPERATIVE WORD, and it is why this is markup plus twenty lines of
+       script rather than a picture. The Gauntlet door is not one drawing — it is ten, one per
+       floor, plus six grandeur tiers, and the hall and the game both hydrate it from the climb
+       in localStorage so the leaf hanging in the arch belongs to the room you are about to
+       walk into. A brand-new visitor gets floor one: the tattered cloth. Someone eight floors
+       up gets the Vice President's door and a richer arch. Same partial, same rules, no fork —
+       see [[gauntlet-door-one-file]]: `_pjcc-21-gauntlet-door.scss` is the single source, and
+       the one thing that must never happen is a fourth copy of these rules.
+
+       ⚠ IT IS A <span>, NOT AN <a>. Every other copy of this door on the site IS the link;
+       here the CARD is the link, and an anchor inside an anchor is invalid HTML that browsers
+       silently unnest — which would have broken the card, not just the door. Nothing in the
+       partial requires an anchor, so the arch is spans and the card carries the href.
+
+       ⚠ IT BRINGS GOLD AND PURPLE BACK ONTO A PAGE THAT BANNED BOTH ([[front-door-palette]]).
+       That is deliberate and it is his call: the brass arch IS the Gauntlet's livery, and a
+       de-brassed one would be a fifth door look on a site whose whole rule is that there is
+       one. It is contained — a lit doorway sitting on paper, inside one card, at 46×60 instead
+       of the canonical 78×100 so the row of four stays a row of four. {%- endcomment -%}
+  <a class="mc-door mc-door--gauntlet" id="gauntlet-door"
+     href="{{ '/games/the-gauntlet/' | relative_url }}"
+     aria-label="The Gauntlet — real chess against a ladder of ten PJCC rivals">
+    <span class="gdoor" aria-hidden="true">
+      <span class="gdoor-arch">
+        <i class="gdoor-door"><b class="gdoor-glyph" id="gdoor-glyph">&#9819;</b><u class="gdoor-knob"></u></i>
+        <i class="gdoor-seam"></i>
+      </span>
+      <span class="gdoor-pips" id="gdoor-pips"></span>
+    </span>
     <b>The Gauntlet</b>
     <small>Ten floors. Ten rivals.</small>
   </a>
@@ -268,26 +322,29 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   <span class="mc-world-arw" aria-hidden="true">&rarr;</span>
 </a>
 
+{%- comment -%} ══ THE BLOG CAME OFF, THE LAMP STAYED (2026-08-04) ═══════════════════════════
+     Nate: "move the blog off the home page — keep the working lamp."
+
+     The band used to carry the newest post's title, its date and a "Read the blog →" link.
+     That was three more things to read and one more destination on a page whose whole job is
+     to get a stranger onto a board — and the blog is not what they came for. It has not gone
+     anywhere: it is in the site drawer on every page of the site, which is where a site's blog
+     belongs.
+
+     THE LAMP IS NOT THE BLOG, and that is why it survives the cut. It is a live signal, not a
+     link to reading material: `site.time` IS the last commit, so the lamp is LIT when the site
+     shipped within twelve hours and dark when it did not, and either way it opens the Direct
+     Line. "Building in the open" is a claim; the lamp is the proof of it, and it is the only
+     one of the four things that stood here that a visitor can check for themselves.
+
+     The three facts that closed the page are gone from here too — they are `sky_note` in the
+     front matter now, printed below the card, out on the blue. {%- endcomment -%}
 <section class="mc-studio">
   <span class="mc-lamp">{% include desk-lamp.html id="mc-lamp" %}</span>
   <div class="mc-studio-copy">
     <span class="mc-studio-label">Building in the open</span>
-    {% if site.posts.first %}
-    <a class="mc-studio-post" href="{{ site.posts.first.url | relative_url }}">{{ site.posts.first.title }}</a>
-    <span class="mc-studio-date">{{ site.posts.first.date | date: "%-d %B %Y" }}</span>
-    {% endif %}
-    <a class="mc-studio-more" href="{{ '/blog/' | relative_url }}">Read the blog &rarr;</a>
   </div>
 </section>
-
-{%- comment -%} THE THREE FACTS, REHOMED (2026-08-04, Nate: "an out-of-place tagline (free · no
-     account · works offline): let's put it somewhere else").
-
-     They were wedged directly under the one button, where they read as small print apologising
-     for it. They are not small print — they are the three things this site can say that most
-     free chess sites cannot — but they answer a question a visitor only forms AFTER they have
-     looked around. So they close the page instead of interrupting it. {%- endcomment -%}
-<p class="mc-facts">Free &middot; no account &middot; works offline</p>
 
 <style>
 /* ── ChessWild — the front door ───────────────────────────────────────────────────
@@ -295,11 +352,18 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    type scale and radii. Page-local because it is one page's furniture; if a second
    page ever needs a piece of it, that piece graduates to _sass/. */
 
-/* HERO — copy left, board right; one column under 760px with the board FIRST, so a
-   phone still opens on something that looks like chess rather than on a paragraph. */
+/* HERO — the Play Now door left, the board right; one column under 760px with the board
+   FIRST, so a phone still opens on something that looks like chess. */
 /* inside .mc-table now, which owns the outer spacing (_pjcc-25-front-door.scss) */
 .mc-hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: var(--space-6, 32px);
   align-items: center; margin: 0; }
+/* THE LOCKUP, OUTSIDE THE SHEET (2026-08-04) ─────────────────────────────────────
+   Title and tagline stand together on the town sky, above the card. `baseline` alignment,
+   not `center`: two lines of different size read as one line only when they sit on the same
+   floor. It WRAPS on a narrow screen (the tagline drops under the name) rather than shrinking
+   either one — three words on their own line is still the lockup; a squeezed title is not. */
+.page-head-out { display: flex; align-items: baseline; flex-wrap: wrap;
+  column-gap: 14px; row-gap: 2px; margin: 0 0 14px 4px; }
 /* THE TITLE, OUTSIDE THE SHEET (2026-08-04) ──────────────────────────────────────
    It stands on the town sky between the header and the card, so the white box opens on
    the board and the button instead of on the site's own name.
@@ -316,44 +380,31 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    exactly the class of bug the "check a token against its WORST background" note is about.
    The shadow is doing the work here, not decoration. */
 .page-title-out { color: #ffffff; font-size: clamp(26px, 3.4vw, 34px); font-weight: 900;
-  letter-spacing: -0.01em; line-height: 1.1; margin: 0 0 14px 4px;
+  letter-spacing: -0.01em; line-height: 1.1; margin: 0;
   text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55), 0 1px 2px rgba(0, 0, 0, 0.4); }
-@media (max-width: 700px) { .page-title-out { margin: 0 0 10px 2px; } }
-/* THREE WORDS, and they get to breathe — this is the only sentence on the first screen
-   now, so it is sized as a statement rather than as a subtitle. */
-.mc-lede { color: var(--fd-ink-2); font-size: clamp(17px, 2.2vw, 21px); line-height: 1.5;
-  font-weight: 600; letter-spacing: 0.01em; margin: 0 0 var(--space-5, 24px); }
+@media (max-width: 700px) { .page-head-out { margin: 0 0 10px 2px; } }
 
-/* THE ONE BUTTON — GREEN NOW (2026-08-04). Nothing else on the page is filled or this
-   size; that is still the whole design. Only the colour changed, and the reason is in
-   _pjcc-25-front-door.scss: gold was the loudest possible paint on a page whose whole job
-   is to look welcoming. Green is what every mass-market chess site already uses, and it is
-   what THIS site already uses for "go" — the Park Tables' legal-move dot is mint.
+/* THREE WORDS, beside the name (2026-08-04) — a tagline, so it is smaller and lighter than
+   the wordmark and it never competes with it. Same white-plus-shadow pair as the title, and
+   for the same reason: this text crosses dawn, noon, dusk and midnight, and any ink from the
+   light front-door palette would vanish against half of them. It is a touch translucent so
+   the hierarchy holds without introducing a second colour to the sky. */
+.page-tagline-out { color: rgba(255, 255, 255, 0.9); font-size: clamp(14px, 1.5vw, 17px);
+  font-weight: 600; letter-spacing: 0.04em; line-height: 1.2; margin: 0;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0, 0, 0, 0.5); }
 
-   The 2026-07-29 lesson survives the repaint and is the reason there is no `filter` here:
-   THE HOVER GOES DEEPER, NEVER BRIGHTER. The old gold got lighter under the cursor, so the
-   loudest thing on the page turned up when you reached for it.
+/* THE THREE FACTS, BELOW THE CARD AND INTO THE BLUE (2026-08-04) ─────────────────
+   Printed by the layout after `.page-card` (see _layouts/page.html). Same white-on-sky
+   treatment as the lockup above, so the page is bracketed by two lines that live on the
+   town rather than on the paper — the name at the top, the promise at the foot.
 
-   Contrast: white on --fd-go is 5.1:1 — AA for normal text, and this label is large and
-   900-weight on top of that. */
-.mc-cta { display: inline-flex; align-items: center; gap: 12px; text-decoration: none;
-  background: var(--fd-go); color: #ffffff;
-  font-weight: 800; font-size: clamp(17px, 2.1vw, 20px); letter-spacing: 0.01em;
-  padding: 15px 28px; border-radius: 999px; border: 2px solid var(--fd-go);
-  box-shadow: 0 8px 22px rgba(46,125,71,0.22);
-  transition: transform .14s ease, box-shadow .14s ease,
-              background .14s ease, border-color .14s ease; }
-.mc-cta:hover { transform: translateY(-2px);
-  background: var(--fd-go-2); border-color: var(--fd-go-2);
-  box-shadow: 0 12px 26px rgba(46,125,71,0.28); text-decoration: none; color: #ffffff; }
-.mc-cta:active { transform: translateY(0); }
-.mc-cta-ico { font-size: 1.15em; line-height: 1; }
-.mc-cta-arw { font-size: 1.05em; transition: transform .14s ease; }
-.mc-cta:hover .mc-cta-arw { transform: translateX(3px); }
+   ⚠ THE SHADOW IS HEAVIER HERE THAN ON THE TITLE. This is 0.84rem text, which is small
+   enough that a bright noon sky can eat white type; the title is 34px and 900-weight and
+   carries itself. Small text on a variable background needs the extra spread, not less. */
+.page-note-out { margin: 16px 0 0; color: rgba(255, 255, 255, 0.92); font-size: 0.84rem;
+  font-weight: 600; letter-spacing: 0.06em; text-align: center;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.6); }
 
-/* the three facts, now closing the page — centred, quiet, and the last thing read */
-.mc-facts { margin: var(--space-5, 24px) 0 0; color: var(--fd-ink-3); font-size: 0.84rem;
-  letter-spacing: 0.02em; text-align: center; }
 
 /* ── THE LIVE BOARD — PARK-TABLE-STANDARD ──────────────────────────────────────────
    ⚠ FIXED 2026-07-28. This board shipped with its OWN woods hard-coded — `#efe3c8`
@@ -496,36 +547,27 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    The board used to be `order:-1` — dead first, above everything. That was the right
    instinct (open on chess, not on a paragraph) taken one step too far: opening the app
    gave you a chessboard with no name on it, so the one screen that has to say WHOSE
-   site this is said it second. The title now lands first and the board sits directly
-   under it, and it costs the CTA nothing — the gold button was already below the board,
-   and only the eyebrow and the h1 moved above it. Measured at 390×844: the button went
-   from y=567 to y=557 and the hero from 690px to 680px. The title got the top of the
-   screen and the button got 10px CLOSER to it.
+   site this is said it second. The title lands first now — it is outside the card
+   entirely (`title_outside`), with the tagline beside it — and the board sits directly
+   under it, with the Play Now door under the board.
 
-   HOW: `.mc-hero-copy` dissolves with `display:contents`, so its six children stop
-   being one grid item and become grid items in their own right — which is the only way
-   the board can slot BETWEEN two of them. `order` then lays them out. (The copy div
-   carries no styling of its own, so there is nothing to lose by dissolving it.)
+   ⚠ THE WRAPPER DIV IS GONE, AND SO IS `display: contents`. The hero used to hold a
+   `.mc-hero-copy` block with a title, a lede and a button in it, and dissolving that
+   block was the only way the board could slot BETWEEN two of its children. Two of the
+   three have since left the card, so the hero is two items in source order and the
+   whole trick — plus the `gap: 0` it forced, plus the note about the 80px of air it
+   would otherwise have added — is unnecessary. `order` on the board is the entire
+   mobile layout now. If a second thing ever returns to the left column, read this
+   paragraph before reaching for `display: contents` again.
 
-   ⚠ `gap` GOES TO ZERO with it, and that is not optional. The 16px gap used to apply
-   ONCE, between the copy block and the board; the moment the copy's children are items
-   themselves it would apply between every one of them, on top of the margins they
-   already carry, and the hero would grow ~80px of air on the smallest screen there is.
-   Spacing stays where it was: on the elements. */
+   `gap` still goes to zero: the elements carry their own spacing, and a 32px grid gap
+   between a board and the door under it is a hole on a 390px screen. */
 @media (max-width: 760px) {
   .mc-hero { grid-template-columns: 1fr; gap: 0; }
-  .mc-hero-copy { display: contents; }
-  /* TWO children now, not three — the title left the hero entirely on 2026-08-04
-     (title_outside), so the board is the first thing in the card on a phone. If this list
-     ever falls out of step with the markup the hero silently reorders itself, which is why
-     it is worth keeping tight. */
-  .mc-board { order: 1; }
-  .mc-lede  { order: 2; }
-  .mc-cta   { order: 3; }
+  .mc-board { order: -1; }
   /* the board's own breathing room, now that no gap supplies it — and no title above it
      inside the card, so it carries its own top step instead of borrowing the title's. */
-  .mc-board { min-height: 0; padding: 0 0 var(--space-3, 12px); }
-  .mc-cta { width: 100%; justify-content: center; }
+  .mc-board { min-height: 0; padding: 0 0 var(--space-4, 16px); }
 }
 
 /* SECTION HEADS — quiet; the button is the loud thing */
@@ -557,10 +599,130 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mc-door:hover { transform: translateY(-3px); border-color: var(--fd-grain);
   background: var(--fd-panel-hi); text-decoration: none; }
 .mc-door:hover::before { opacity: 1; }
-.mc-door-ico { display: block; font-size: 26px; line-height: 1; color: var(--fd-wood);
-  margin-bottom: 10px; }
-.mc-door b { display: block; color: var(--fd-ink); font-size: 1.05rem; margin-bottom: 5px; }
-.mc-door small { display: block; color: var(--fd-ink-3); font-size: 0.84rem; line-height: 1.55; }
+/* THE ART BLOCK IS A FIXED HEIGHT ON ALL FOUR (2026-08-04) — because one of them is no
+   longer a 26px glyph. The Gauntlet's arch is 60px tall with a row of pips under it, and grid
+   stretches the cards to match, so without a shared height the other three titles sat 45px
+   HIGHER than the Gauntlet's and the row read as four unrelated boxes. Measured: titles at
+   y=726 / y=771 before, level after. The glyphs are centred in the band rather than pinned to
+   its top, so the extra room reads as breathing space instead of as a gap. */
+.mc-door-ico { display: flex; align-items: center; min-height: 71px;
+  font-size: 30px; line-height: 1; color: var(--fd-wood); margin-bottom: 10px; }
+/* ⚠ `> b`, NOT ` b` — AND THAT ANGLE BRACKET IS THE WHOLE FIX FOR THE GAUNTLET GLYPH.
+   `.gdoor-glyph` is a <b> too, and it lives inside this card. `.mc-door b` is (0,1,1) and
+   `.gdoor-glyph` is (0,1,0), so the door's piece lost its accent colour to --fd-ink and its
+   size to 1.05rem — a near-black smudge in a brass arch, on the one card that exists to show
+   the door. Nothing errored; it just quietly painted the wrong colour. Direct-child selectors
+   here mean any art a card ever carries keeps its own styling. */
+.mc-door > b { display: block; color: var(--fd-ink); font-size: 1.05rem; margin-bottom: 5px; }
+.mc-door > small { display: block; color: var(--fd-ink-3); font-size: 0.84rem; line-height: 1.55; }
+
+/* ══ THE LEAD DOOR — the one primary thing (2026-08-04) ═══════════════════════════
+   It is `.mc-door` first and `.mc-lead` second, so it IS one of the boxes and inherits every
+   one of their rules; this class only says how it is MORE. Four ways, and no more than four —
+   add a fifth and the two stop reading as the same object:
+
+     1. it is GREEN.    The only filled colour on the page (the old pill's --fd-go, kept).
+     2. it is BIGGER.   More padding, a larger title, a larger icon.
+     3. it has an ARROW. None of the paper doors do.
+     4. it sits ABOVE.  In the hero, on the tabletop, beside the board.
+
+   ⚠ IT MUST STAY BELOW THE `.mc-door` RULES IN THIS FILE. `.mc-lead:hover` and
+   `.mc-door:hover` are both (0,2,0), so the winner is whichever is written last — put this
+   block above them and the green card turns paper-coloured the moment you touch it. Written
+   here, next to what it extends, for that reason and not only for readability.
+
+   ⚠ `.mc-door.mc-lead`, not `.mc-lead`, on the one rule that sets `color`. The theme file
+   carries `body.theme-chess .mc-door { color: var(--fd-ink) }` at (0,2,0) — a bare `.mc-lead`
+   is (0,1,0) and loses, and every child without its own colour would inherit near-black onto
+   green. Matching specificity lets document order decide, and this <style> is in the body.
+
+   The 2026-07-29 lesson outlives the pill and is why there is no `filter` here: THE HOVER
+   GOES DEEPER, NEVER BRIGHTER. The old gold button got lighter under the cursor, so the
+   loudest thing on the page turned up when you reached for it.
+
+   Contrast on the green, all measured: white is 5.07:1 on --fd-go (AA), and the title is
+   large and bold on top of that. THE SUB-LABEL IS WHITE AT 0.94 AND THAT IS A FLOOR, NOT A
+   TASTE — 0.88 is the obvious "soften it a little" value and it measures 4.32:1, a real AA
+   failure on the one card the whole page points at. 0.90 is 4.45 and still short. 0.94 is
+   4.68. Do not turn it down. */
+.mc-door.mc-lead { background: var(--fd-go); border-color: var(--fd-go); color: #ffffff;
+  padding: 24px 22px 26px; box-shadow: 0 10px 26px rgba(46, 125, 71, 0.22); }
+/* the paper doors wear a wood hairline along the top; on the green one it would read as mud */
+.mc-lead::before { background: rgba(255, 255, 255, 0.55); opacity: 0.8; }
+.mc-lead .mc-door-ico { color: #ffffff; font-size: 32px; margin-bottom: 12px; }
+.mc-lead > b { color: #ffffff; font-size: 1.5rem; letter-spacing: -0.01em; margin-bottom: 6px; }
+.mc-lead > small { color: rgba(255, 255, 255, 0.94); font-size: 0.9rem; }
+/* the lead card has no neighbours to line up with, so it keeps a tight art block */
+.mc-lead .mc-door-ico { min-height: 0; }
+/* the arrow clears the title's line, not the card's corner — `right`/`top` are absolute
+   against the card, which is `position:relative` already (`.mc-door`) */
+.mc-lead-arw { position: absolute; right: 20px; top: 24px; font-size: 1.3rem; line-height: 1;
+  color: #ffffff; transition: transform .14s ease; }
+.mc-lead:hover { background: var(--fd-go-2); border-color: var(--fd-go-2);
+  box-shadow: 0 14px 30px rgba(46, 125, 71, 0.28); }
+.mc-lead:hover::before { opacity: 1; }
+.mc-lead:hover .mc-lead-arw { transform: translateX(4px); }
+/* the title runs under the arrow at narrow column widths without this */
+.mc-lead > b, .mc-lead > small { padding-right: 26px; }
+
+/* ══ THE GAUNTLET DOOR, IN THE BOX (2026-08-04) ═══════════════════════════════════
+   The LOOK is _sass/_pjcc-21-gauntlet-door.scss and nothing here touches it — that partial
+   is the single source for every copy of this door on the site ([[gauntlet-door-one-file]]),
+   and a fourth hand-maintained twin is the exact failure this page must not repeat. What is
+   below is only SIZE, PLACEMENT and the two things that change because the door is standing
+   on white paper for the first time.
+
+   SIZE: 46×60, down from the canonical 78×100. The four boxes are one row and grid stretches
+   them to the tallest, so a full-height door would have added ~70px to all four. At 46×60 the
+   row grows by about the difference between a 26px glyph and a small lit doorway, which is
+   what this is.
+
+   ⚠ THE PIPS ARE INVISIBLE ON PAPER WITHOUT THE OVERRIDE. `.gdoor-pips i` is
+   rgba(255,255,255,0.14) — a white dot at 14% on a dark hall panel. On a #f7f5f0 card that is
+   white on white: ten climbed floors would show as nothing at all. Re-inked to a dark
+   translucent so "done" (mint) and "current" (the accent) still read against their neighbours.
+
+   ⚠ THE WHISPER IS NOT IN THE MARKUP HERE. `.gdoor-whisper` is absolutely positioned at
+   `top: calc(100% + 5px)`, which on the hall's standalone door is empty air and inside this
+   card is directly on top of the words "The Gauntlet". The card says what it is in plain text
+   already, so the hover caption has nothing to add — it is omitted rather than hidden. */
+.mc-door--gauntlet .gdoor { align-items: flex-start; gap: 7px; margin-bottom: 10px; }
+.mc-door--gauntlet .gdoor-arch { width: 46px; height: 60px; border-radius: 23px 23px 3px 3px; }
+.mc-door--gauntlet .gdoor-door { border-radius: 19px 19px 0 0; }
+/* ⚠ THE GLYPH NEEDS (0,3,0) TO LAND, and a bare `.mc-door--gauntlet .gdoor-glyph` does not
+   have it. `.gdoor[data-grand="0"] .gdoor-glyph` in the partial is (0,3,0) — an attribute
+   selector counts in the class column — so the two-class version lost and floor one's crown
+   rendered at its full 26px inside a 46px arch: 57% of the door, a blob rather than a piece.
+   Matching the specificity lets document order decide, and this <style> is in the body.
+   Both values are the partial's own, scaled by 46/78 — the ratio the arch itself was scaled
+   by — so the piece keeps the same share of its door as on every other copy on the site. */
+.mc-door--gauntlet .gdoor .gdoor-glyph { font-size: 19px; }
+.mc-door--gauntlet .gdoor[data-grand="0"] .gdoor-glyph { font-size: 15px; }
+.mc-door--gauntlet .gdoor-pips { gap: 2px; }
+.mc-door--gauntlet .gdoor-pips i { width: 4px; height: 4px; background: rgba(30, 35, 44, 0.18); }
+/* HOVERING THE CARD OPENS THE DOOR. The partial keys every opening off `.gdoor:hover`, and
+   the .gdoor here is a span filling a fraction of the card — so without this the door only
+   answered when the cursor was literally on the 46px arch, and the rest of the card felt
+   dead. `.is-open` is the partial's own no-pointer opening (the game uses it on a timer), so
+   this borrows the same states rather than inventing a third. */
+.mc-door--gauntlet:hover .gdoor-arch { box-shadow: 0 0 34px -5px var(--acc); }
+.mc-door--gauntlet:hover .gdoor-door { transform: translateX(-60%); }
+/* floor one is `data-grand="0"` — the tattered cloth, which swings from 84% instead of 0 and
+   travels a little less. It is the door EVERY first-time visitor sees, so it is the one that
+   has to be right; the rest of this list is for people who have already climbed. */
+.mc-door--gauntlet:hover .gdoor[data-grand="0"] .gdoor-door { transform: translateX(-58%); }
+.mc-door--gauntlet:hover .gdoor[data-floor="2"] .gdoor-door { transform: perspective(320px) rotateY(-16deg); }
+.mc-door--gauntlet:hover .gdoor[data-floor="3"] .gdoor-door { transform: perspective(320px) rotateY(-26deg) rotateZ(-1.5deg) translateY(-2px); }
+.mc-door--gauntlet:hover .gdoor[data-floor="4"] .gdoor-door { transform: translateX(-58%) scaleX(0.92); }
+.mc-door--gauntlet:hover .gdoor[data-floor="5"] .gdoor-door { transform: translateY(-64%); }
+.mc-door--gauntlet:hover .gdoor[data-floor="6"] .gdoor-door,
+.mc-door--gauntlet:hover .gdoor[data-floor="8"] .gdoor-door { transform: perspective(640px) rotateY(-75deg); }
+.mc-door--gauntlet:hover .gdoor[data-floor="7"] .gdoor-knob,
+.mc-door--gauntlet:hover .gdoor[data-floor="7"] .gdoor-door::after { opacity: 0; }
+.mc-door--gauntlet:hover .gdoor[data-floor="9"] .gdoor-door { transform: perspective(320px) rotateY(-20deg); }
+@media (prefers-reduced-motion: reduce) {
+  .mc-door--gauntlet:hover .gdoor-door { transition: none; }
+}
 
 /* THE TRUE THINGS — a list, not cards; facts don't need boxes */
 .mc-true { list-style: none; padding: 0; margin: 0 0 var(--space-7, 44px);
@@ -592,8 +754,10 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mc-world-arw { color: var(--fd-wood); font-size: 1.2rem; flex: 0 0 auto; }
 @media (max-width: 560px) { .mc-world-glyph { font-size: 26px; } }
 
-/* THE STUDIO BAND — the same lamp + newest post the old home carried; it is the proof
-   that someone is still building this, and it costs one include. */
+/* THE STUDIO BAND — THE LAMP, AND ONLY THE LAMP (2026-08-04, Nate: "move the blog off the
+   home page — keep the working lamp"). The post title, its date and the "Read the blog →"
+   link came out with the blog; the lamp is a live status light, not a link to reading, so it
+   stays. The band's own rules are unchanged — it just has one thing in it now. */
 .mc-studio { display: flex; align-items: center; gap: 18px; padding: 16px 4px 0;
   border-top: 1px solid var(--fd-rule); }
 /* ⚠ desk-lamp.html sizes the lamp but deliberately NEVER PLACES it — "wrap this include in
@@ -620,23 +784,13 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mc-studio-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .mc-studio-label { font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 2px;
   text-transform: uppercase; color: var(--fd-wood); opacity: 0.85; }
-.mc-studio-post { color: var(--fd-ink); font-weight: 700; text-decoration: none; font-size: 0.98rem; }
-.mc-studio-post:hover { color: var(--fd-wood); }
-.mc-studio-date { color: var(--fd-ink-3); font-size: 0.78rem; }
-.mc-studio-more { color: var(--fd-ink-2); font-size: 0.84rem; text-decoration: none; margin-top: 4px; }
-.mc-studio-more:hover { color: var(--fd-wood); }
+/* (.mc-studio-post / -date / -more are gone with the blog lines they styled — 2026-08-04.
+   The `@media (pointer: coarse)` rule that lifted those two links to 44px went with them;
+   the only interactive thing left in the band is the lamp, which is 82×92. Restore all of
+   it from git together with the markup if the blog ever comes back to this page.) */
 
-/* phones: every door and link clears 44px — raised from 40 by the 2026-07-28 four-lens
-   sweep, which measured both of these at exactly 40 and flagged them. 44 is the target;
-   40 was close enough to look right and not be right. */
-/* phones: every link in the studio band clears 44px. `.mc-studio-post` was measured at 28px
-   and had never been in this rule — it only became obvious once the band was the last
-   interactive thing on a page that had lost two other links above it. */
-@media (pointer: coarse) {
-  .mc-studio-post, .mc-studio-more { min-height: 44px; display: flex; align-items: center; }
-}
 @media (prefers-reduced-motion: reduce) {
-  .mc-cta, .mc-door, .mc-world { transition: none; }
+  .mc-door, .mc-world { transition: none; }
 }
 </style>
 
@@ -713,5 +867,60 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
       say.appendChild(n);
     }
   } catch (e) {}
+})();
+</script>
+
+<script>
+/* ══ THE GAUNTLET DOOR, HYDRATED ═════════════════════════════════════════════════════
+   2026-08-04, Nate: "add the APPROPRIATE gauntlet door to the gauntlet box."
+
+   The door in the card is already painted — arch, leaf, seam, all static markup, exactly
+   like the board above it. This only tells it WHICH floor it is standing at, from the climb
+   saved on this device, so the leaf hanging in the arch belongs to the room you are about
+   to walk into. Nothing here is required for the card to work or for the link to open; if
+   this script never runs, a first-time visitor's door is what everyone sees.
+
+   ⚠ THE THREE TABLES BELOW ARE A COPY, and there is no way around it. They mirror the
+   LADDER in assets/games/pjcc_gauntlet.html, and games.md carries the same three arrays for
+   the same reason — the game is a standalone HTML file that shares no module with the site.
+   Keep all three in sync. (The door's LOOK is not duplicated: that is one partial,
+   _sass/_pjcc-21-gauntlet-door.scss, and this page loads it like every other page does.)
+
+   ⚠ NO WHISPER HERE. The hall's copy appends a "Floor N of 10" caption under the door and
+   also onto the aria-label; the caption would land on top of the card's own words, so the
+   fact goes to the aria-label only. A screen reader still hears which floor is next. */
+(function () {
+  var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The Executive Assistant'];
+  var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#3fae7a','#ff6b6b','#c79bff','#ff9ec9','#f5c518'];
+  var GLYPHS  = ['♞','♟','♝','♞','♜','♝','♜','♝','♛','♛'];
+  var door = document.getElementById('gauntlet-door');
+  if (!door) return;
+  var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
+  var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;
+  for (var i = 0; i < NAMES.length; i++) { if (beaten[i]) cleared++; }
+  for (var j = 0; j < NAMES.length; j++) { if (!beaten[j]) { cur = j; break; } }
+
+  /* the arch grows richer with the climb; the leaf belongs to the next floor */
+  var gd = door.querySelector('.gdoor');
+  if (!gd) return;
+  gd.setAttribute('data-grand', cleared === 0 ? 0 : cleared <= 2 ? 1 : cleared <= 4 ? 2 : cleared <= 6 ? 3 : cleared <= 9 ? 4 : 5);
+  if (cur < NAMES.length) gd.setAttribute('data-floor', cur + 1);
+
+  var pipHost = document.getElementById('gdoor-pips');
+  if (pipHost) { var h = '';
+    for (var k = 0; k < NAMES.length; k++) { h += '<i class="' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></i>'; }
+    pipHost.innerHTML = h; }
+
+  var floorLine = cur >= NAMES.length ? 'Crowned — 10 of 10' : 'Floor ' + (cur + 1) + ' of 10';
+  door.setAttribute('aria-label', door.getAttribute('aria-label') + '. ' + floorLine + '.');
+
+  var glyph = document.getElementById('gdoor-glyph');
+  if (cur >= NAMES.length) {
+    door.setAttribute('href', door.getAttribute('href') + '#tower');
+  } else if (cleared > 0) {
+    gd.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
+    if (glyph) glyph.textContent = GLYPHS[cur] || '♛';
+    door.setAttribute('href', door.getAttribute('href') + '#climb');
+  }
 })();
 </script>
