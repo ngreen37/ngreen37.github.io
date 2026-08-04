@@ -1,6 +1,30 @@
 # Site settings
-title: PJCC
-description: Princess and the Journey to Chess City (PJCC) — an animated series in the making, plus a free arcade of chess games, built in the open by McPuppy Studios.
+#
+# ── THESE TWO LINES ARE WHAT A STRANGER SEES IN A SEARCH RESULT (2026-08-04) ──────────
+# `title` is the tab suffix on every page that doesn't set its own `tab_title` — about 145
+# of the 147 URLs in sitemap.xml. It read "PJCC" until today, so someone who found /games/
+# or /academy/ through Google got a tab, a bookmark and a result naming a thing they had
+# never heard of. The site is ChessWild.com. (Nate's call, same day he named the front door:
+# "the address IS the brand, the way chess.com's is.")
+#
+# `description` is the meta description on every page that doesn't set its own — 139 of 147,
+# because only 8 pages carry one. It is the SENTENCE GOOGLE PRINTS UNDER THE LINK, and it
+# used to open with the animated series and reach "free arcade of chess games" at word 14.
+# It now leads with what the site is and answers "is it free / do I need an account" in the
+# result itself, before anyone clicks. 123 characters, so nothing gets truncated.
+#
+# ⚠ NEITHER LINE REACHES AS FAR AS IT LOOKS. `site.title` is referenced in exactly two
+# places, both in _includes/head.html (the <title> suffix, and an og:title fallback for a
+# page with no title at all). The PWA does NOT read it — manifest.json spells "ChessWild"
+# itself. `og:site_name` does not read it either; that is hardcoded "McPuppy Studios", which
+# is correct and deliberate: the studio is the publisher, the site is ChessWild. The JSON-LD
+# WebSite name is its own hardcoded string in head.html and had to be changed BY HAND to
+# match this — if you ever rename the site again, that block is the third place to edit.
+# The 8 pages with their own `description:` (index, pjcc, projects, collection, style,
+# chess, puzzle-reports, shogi-gate) are unaffected — /pjcc/ in particular keeps its own,
+# so the world page still introduces itself as the world.
+title: ChessWild.com
+description: Free chess for everyone — play a real game, solve a puzzle, or learn from scratch. No account needed. From McPuppy Studios.
 image: /assets/images/pjcc-share-card.jpg   # default social/share card (1200×630)
 baseurl: ""        # leave empty for root
 url: "https://chesswild.com"

@@ -623,8 +623,26 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    "it fits at 1280" is not something to design around.) */
 .mc-doors { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-3, 12px); margin: 0 0 var(--space-7, 44px); }
+/* ⚠ 2x2 GOES ALL THE WAY DOWN — there is no 1-up breakpoint, and that is the point
+   (2026-08-04). The four doors used to stack single-file below 520px, which cost 781px of a
+   390px phone: a column of four full-width cards that a thumb scrolls past one at a time.
+   The set stopped reading as a set exactly where the screen was smallest.
+
+   That contradicted the rule written directly above — four doors want to READ AS A SET, and
+   2x2 is the honest fallback. 2x2 was already the layout from 520 to 1080px; the phone was
+   the one width where the page gave up on it.
+
+   MEASURED on the live page at 390x844: the door grid goes 781px → 467px and the whole page
+   2481px → 2167px, which is 2.94 screens → 2.57. It matters because of WHAT sits below the
+   doors: the three facts (`sky_note` — free, no account, works offline) close the page out on
+   the sky, and they are the first thing a parent actually wants to know. They landed at screen
+   2.72 and they land at 2.34 now. Nothing moved relative to anything else and nothing was
+   reworded — the page in front of them just got shorter.
+
+   Rendered before shipping: the longest sub-label ("One move wins. Miss it and it shows you
+   why.") wraps to three lines at this width, and the Gauntlet's arch still lines up with the
+   other three titles because `.mc-door-ico` pins the art block to 71px on all four. */
 @media (max-width: 1080px) { .mc-doors { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 520px)  { .mc-doors { grid-template-columns: 1fr; } }
 /* Flat panels with a wood hairline along the top, not bordered boxes. Four bordered
    cards in a row read as "card soup"; the hairline gives them a shelf to sit on and lets
    the hover do the work. Icons are maple - see the note on .mc-h2 about gold. */

@@ -82,11 +82,20 @@
       "sameAs": ["{{ site.patreon_url }}"]
     },
     {
+      {%- comment -%} ⚠ THIS NAME IS HAND-MAINTAINED — IT DOES NOT READ `site.title`, AND IT
+           IS THE THIRD PLACE THE SITE IS NAMED (2026-08-04). It told Google the WebSite was
+           called "Princess and the Journey to Chess City" while the tab said PJCC and the
+           manifest said ChessWild — three names, none of them agreeing, and this is the one
+           that feeds the site name shown in a search result. It follows the brand stack now:
+           the WebSite is ChessWild.com, the Organization below it is McPuppy Studios (the
+           publisher), and PJCC is kept as an alternateName because it is a real name for
+           this thing and people do search it. Rename the site and you must edit HERE, plus
+           `title:` in _config.yml, plus manifest.json. {%- endcomment -%}
       "@type": "WebSite",
       "@id": "{{ site.url }}/#website",
       "url": "{{ site.url }}/",
-      "name": "Princess and the Journey to Chess City",
-      "alternateName": ["PJCC", "McPuppy Studios"],
+      "name": "ChessWild.com",
+      "alternateName": ["ChessWild", "Princess and the Journey to Chess City", "PJCC"],
       "publisher": { "@id": "{{ site.url }}/#org" }
     }
   ]
