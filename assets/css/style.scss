@@ -29,8 +29,10 @@
 /* 06-world: the WORLD-MAP HALF of this partial was deleted 2026-08-03 with
    `_layouts/worldmap.html` (Nate: "remove worldmap from website - dead page"). The partial
    stays — it also holds the constellation page and the blog index, both live. Name kept
-   because this list's order is load-bearing. The DOSSIER's journey strip is a different
-   thing again and is untouched (`.dsr-map`, _pjcc-14-profile.scss). */
+   because this list's order is load-bearing. (The DOSSIER's journey strip was a different
+   thing again — its own `.dsr-map`, and it never lived in _sass at all, but in dossier.md.
+   Nate scrapped it 2026-08-04; parked in FUTURE-IDEAS. This note pointed at the wrong file
+   even while the strip existed, which is the failure mode it was written to prevent.) */
 @import 'pjcc-06-world';
 @import 'pjcc-07-characters';
 @import 'pjcc-08-features';

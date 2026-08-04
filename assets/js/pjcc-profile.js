@@ -847,11 +847,16 @@
   // also made the Globetrotter achievement unwinnable. Sky Run and the Siege took their
   // places — both are shipped, both are on the games hall. (2026-07-27)
   //
-  // ⚠ RENAMED from WORLDMAP / worldProgress 2026-08-03, when the actual World Map page was
-  // deleted (Nate: "remove worldmap from website - dead page"). This was never that page —
-  // it is the seven-dot strip on the Dossier, which the UI has always called "The journey",
-  // and it is still live. The old name would now be the only "world map" left in the repo,
-  // which is exactly the sort of ghost that gets a working feature deleted by mistake.
+  // ⚠ THE SEVEN-DOT STRIP THIS FED IS GONE (2026-08-04, Nate: "Scrap the Journey map and
+  // the little character by it"). THE ARRAY IS NOT DEAD — do not delete it on that basis:
+  // it is what the GLOBETROTTER achievement tests ("play every game at least once", a few
+  // hundred lines up), which is a live, winnable badge with nothing to do with the diagram.
+  // `PJCC.JOURNEY` and `PJCC.journeyProgress` went with the map; the dossier was their only
+  // caller. Restore both from git before this commit if the map ever comes back.
+  //
+  // (Renamed from WORLDMAP / worldProgress 2026-08-03 when the real World Map page was
+  // deleted — this was never that page, and the old name was the sort of ghost that gets a
+  // working feature deleted by mistake.)
   var JOURNEY = [
     { name: 'Checker Town',     game: 'notation-run' },
     { name: 'The Sand Mines',   game: 'sand-mine-depths' },
@@ -861,14 +866,6 @@
     { name: 'The City Walls',   game: 'tower-defense' },
     { name: 'Chess City',       game: null }
   ];
-  PJCC.JOURNEY = JOURNEY;
-  PJCC.journeyProgress = function (stats) {
-    var c = statsCtx(profile, stats);
-    var stops = JOURNEY.map(function (s) { return { name: s.name, game: s.game, reached: s.game ? c.played(s.game) : false }; });
-    stops[stops.length - 1].reached = stops.filter(function (s) { return s.game; }).every(function (s) { return s.reached; });
-    var furthest = -1; stops.forEach(function (s, i) { if (s.reached) furthest = i; });
-    return { stops: stops, furthest: furthest };
-  };
 
   // --- titles (flair shown by your codename) ---------------------------------
   var TITLES = {

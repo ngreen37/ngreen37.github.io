@@ -324,6 +324,33 @@ Gauntlet's climb · cut it) — the section at the bottom of this file lays out 
 
 ---
 
+## 🗺 The Journey map — SCRAPPED 2026-08-04, parked here
+
+**Nate: "Scrap the Journey map and the little character by it — and throw it in future ideas."**
+Removed from `/dossier/` (commit after 6f7cd7a). Restore from git the commit before it: the
+markup was ~6 lines in `dossier.md`, its CSS was 12 rules in the same file, and
+`PJCC.JOURNEY` / `PJCC.journeyProgress` were ~8 lines in `pjcc-profile.js`.
+
+**What it was.** A seven-stop strip across the Dossier — Checker Town → The Sand Mines → Fork in
+the Road → Clearance HQ → The Updraft → The City Walls → **Chess City** — where each stop lit
+gold once you'd played the game that lives there, the connectors lit only when *both* ends were
+reached, and **your drawn avatar and your companion stood on the furthest stop you'd made.**
+
+**Why it's worth reviving rather than forgetting.** It is the only surface that ever drew the
+world as a *route* instead of a menu, and the little character standing on it is the single
+cheapest version of "your guy is somewhere in this story". That idea scales straight into the
+Godot build; it just didn't earn its space on a stats page.
+
+**What it needs to come back well:** stops that mean something narratively rather than one per
+arcade game (the current list is "the games we shipped", which is why it read as a checklist),
+and somewhere with room to breathe — its own page, or the PJCC world tab, not wedged between a
+codename and an achievements grid.
+
+**⚠ The `JOURNEY` array still exists in `pjcc-profile.js` and must NOT be deleted as dead code** —
+it backs the live **Globetrotter** achievement ("play every game at least once").
+
+---
+
 ## 🚪 The front door — SHIPPED 2026-07-28, and the twenty names
 
 **✅ Built.** `/chess/` is the front door (**McPuppy Chess**, working title), `/pjcc/` is the world

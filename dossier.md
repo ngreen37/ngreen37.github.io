@@ -253,14 +253,11 @@ permalink: /dossier/
       ? '<b>Crowned</b> — all ten floors cleared 👑'
       : 'The Gauntlet · <b>Floor ' + (gcur + 1) + ' of 10</b> — ' + esc(GNAMES[gcur]) + ' next';
 
-    var wp = PJCC.journeyProgress(stats);
-    var html = '<h2 class="dsr-h">The journey</h2><div class="dsr-map">';
-    wp.stops.forEach(function (s, i) {
-      html += '<div class="dsr-stop ' + (s.reached ? 'reached' : '') + '">' +
-        '<div class="dsr-here">' + (i === wp.furthest ? (PJCC.avatarMarkup ? PJCC.avatarMarkup(prof) : PJCC.avatarEmoji(prof)) + (window.PJCCPet ? '<span class="dsr-here-pet" title="Your companion walks with you">' + PJCCPet.petEmoji() + '</span>' : '') : '') + '</div>' +
-        '<div class="dsr-dot"></div><div class="dsr-stop-name">' + esc(s.name) + '</div></div>';
-    });
-    html += '</div>';
+    // THE MAP IS GONE (2026-08-04, Nate: "Scrap the Journey map and the little character
+    // by it"). The heading stays and now belongs to the two rows below it — the Gauntlet
+    // climb and the puzzle rating — which are the same question answered with numbers
+    // instead of a diagram, and were always the part with a brag in them.
+    var html = '<h2 class="dsr-h">The journey</h2>';
     // Keep the URL a plain literal — the link gate (tests/links.check.js) reads hrefs out of
     // the source, and a path spliced together inside the attribute reads to it as a broken
     // link. Build the fragment separately and append it.
@@ -446,7 +443,8 @@ permalink: /dossier/
 .dsr-streak { display: inline-block; font-size: 0.76rem; font-weight: 700; color: #ffb066; background: rgba(255,140,60,0.14); border: 1px solid rgba(255,140,60,0.45); border-radius: 999px; padding: 1px 8px; margin-left: 4px; }
 .dsr-xp { background: #221347; border: 1px solid #6b5fa0; border-radius: 999px; height: 8px; overflow: hidden; margin-bottom: 4px; }
 .dsr-xp-fill { background: linear-gradient(90deg,#6bffb8,#F5C518); height: 100%; }
-/* the climb, folded in under the journey map — it used to be its own module up top */
+/* the climb + the puzzle rating: the two rows that now ARE "The journey" section, since the
+   seven-stop map above them was scrapped 2026-08-04 */
 .dsr-climb { display: flex; align-items: center; gap: 10px; margin-top: 6px; max-width: 560px;
   background: linear-gradient(135deg, rgba(42,28,14,0.9), rgba(58,42,16,0.92)); border: 1px solid #F5C518;
   border-radius: var(--r-sm); padding: 10px 14px; color: #e7d6b0; text-decoration: none; font-size: 0.88rem;
@@ -455,19 +453,15 @@ permalink: /dossier/
 .dsr-climb b { color: #F5C518; }
 .dsr-climb-glyph { color: #F5C518; font-size: 1.2rem; line-height: 1; flex-shrink: 0; }
 .dsr-climb-go { margin-left: auto; color: #F5C518; font-weight: 900; flex-shrink: 0; }
-.dsr-map { display: flex; gap: 0; overflow-x: auto; padding: 18px 4px 6px; max-width: 100%; }
-.dsr-stop { position: relative; flex: 1 0 86px; text-align: center; }
-.dsr-stop::before { content: ''; position: absolute; top: 26px; left: -50%; width: 100%; height: 2px; background: #3a2a72; z-index: 0; }
-.dsr-stop:first-child::before { display: none; }
-/* A connector lights gold only when BOTH stops it joins are reached. Otherwise a
-   gold bar dangles left off a dim, unreached stop (Nate 2026-07-12). */
-.dsr-stop.reached + .dsr-stop.reached::before { background: #F5C518; }
-.dsr-here { height: 20px; font-size: 18px; white-space: nowrap; }
-.dsr-here-pet { font-size: 13px; margin-left: -1px; vertical-align: 2px; }   /* the companion, trotting alongside (#12) */
-.dsr-dot { width: 14px; height: 14px; border-radius: 50%; background: #3a2a72; border: 2px solid #6b5fa0; margin: 0 auto 6px; position: relative; z-index: 1; }
-.dsr-stop.reached .dsr-dot { background: #F5C518; border-color: #F5C518; box-shadow: 0 0 10px rgba(245,197,24,0.6); }
-.dsr-stop-name { color: #9a7fd4; font-size: 0.7rem; line-height: 1.2; }
-.dsr-stop.reached .dsr-stop-name { color: #f0e6ff; }
+/* (THE JOURNEY MAP WAS HERE — SCRAPPED 2026-08-04, Nate: "Scrap the Journey map and the
+   little character by it." It was a seven-stop strip — Checker Town → Chess City — with
+   your avatar and your companion standing on the furthest stop you'd reached. Its whole
+   ruleset lived here: .dsr-map/.dsr-stop/.dsr-here/.dsr-here-pet/.dsr-dot/.dsr-stop-name
+   plus the connector rule that lit a link gold only when BOTH stops it joined were reached.
+   Deleted rather than commented out — the dead-code sweep counts either as debt. Restore
+   from git before this commit; the idea is parked in FUTURE-IDEAS.
+   The `JOURNEY` array itself STAYS in pjcc-profile.js: it still backs the Globetrotter
+   achievement ("play every game at least once"), which has nothing to do with the map. */
 .dsr-ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; max-width: 720px; }
 .dsr-ach { background: #160c33; border: 1px solid #6b5fa0; border-radius: var(--r-sm); padding: 12px; text-align: center; }
 .dsr-ach.got { border-color: #F5C518; box-shadow: 0 0 10px rgba(245,197,24,0.2); }
