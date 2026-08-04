@@ -3,7 +3,7 @@ title: PJCC
 description: Princess and the Journey to Chess City (PJCC) — an animated series in the making, plus a free arcade of chess games, built in the open by McPuppy Studios.
 image: /assets/images/pjcc-share-card.jpg   # default social/share card (1200×630)
 baseurl: ""        # leave empty for root
-url: "https://mcpuppystudios.com"
+url: "https://chesswild.com"
 permalink: /:year/:month/:day/:title/
 
 # SEO plumbing: sitemap.xml for Google Search Console (+ make seo-tag explicit —
