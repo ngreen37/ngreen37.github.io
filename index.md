@@ -600,8 +600,11 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 /* phones: every door and link clears 44px — raised from 40 by the 2026-07-28 four-lens
    sweep, which measured both of these at exactly 40 and flagged them. 44 is the target;
    40 was close enough to look right and not be right. */
+/* phones: every link in the studio band clears 44px. `.mc-studio-post` was measured at 28px
+   and had never been in this rule — it only became obvious once the band was the last
+   interactive thing on a page that had lost two other links above it. */
 @media (pointer: coarse) {
-  .mc-studio-more { min-height: 44px; display: flex; align-items: center; }
+  .mc-studio-post, .mc-studio-more { min-height: 44px; display: flex; align-items: center; }
 }
 @media (prefers-reduced-motion: reduce) {
   .mc-cta, .mc-door, .mc-world { transition: none; }

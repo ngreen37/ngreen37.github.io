@@ -77,12 +77,18 @@ body.theme-chess {
   --edge:      #e5e1d8;
   --lift:      0 18px 50px rgba(0, 0, 0, 0.45);
 
-  /* the ink — warm near-blacks, three steps. Measured against --surface #fbfaf7:
-     16.1 / 8.0 / 4.9 — all three clear AA, the third only just, so it is used for
-     small print and nothing that matters. */
+  /* the ink — warm near-blacks, three steps.
+     ⚠ --fd-ink-3 WAS #6d7583 AND FAILED AA, and the way it failed is worth keeping.
+     I sized it against --surface (#fbfaf7) and got 4.9:1, which passes. But almost
+     nothing that uses it sits on --surface — the door subtitles, the world card sub and
+     the studio date all sit on --fd-panel / --fd-panel-hi, which are DARKER sheets. On
+     those it measured 3.97-4.45:1 on the live page: a real miss on the four door
+     descriptions, the three facts and the date. Darkened until it clears 4.5 on the
+     DARKEST surface it can land on, not the lightest. Measured now: 5.9 on the sheet,
+     5.3 on panel-hi. Check a token against its worst background, never its best. */
   --fd-ink:   #1e232c;
   --fd-ink-2: #4b5361;
-  --fd-ink-3: #6d7583;
+  --fd-ink-3: #5a626f;
 
   /* structure */
   --fd-rule:  #e5e1d8;
@@ -119,6 +125,24 @@ body.theme-chess {
   .page-body a:not([class]):hover { color: var(--fd-ink); }
 
   .page-card { background: var(--surface); }
+
+  /* ⚠ FIXING `a` IS NOT ENOUGH — THE PURPLE COMES BACK THROUGH INHERITANCE (2026-08-04).
+     The `:not([class])` guard above deliberately spares this page's own link rules, but
+     that leaves every CLASSED anchor on the global `a { color: #a78bfa }` — and its
+     CHILDREN inherit that. Measured on the live page: `.mc-world`'s own wrapper span and
+     the desk lamp were both computing #a78bfa, invisible only because the <b> and <small>
+     inside them happened to set their own colour. One un-styled child would have shown it.
+     These anchors are CARDS, not links, so they set the colour for their whole subtree. */
+  .mc-world, .mc-door, .mcb-next, .mc-studio, .mc-lamp { color: var(--fd-ink); }
+
+  /* THE DESK LAMP'S HOVER TOOLTIP is a dark purple box with a GOLD word in it
+     (_pjcc-24-desk-lamp.scss) — both of the two things this page just removed, appearing
+     on hover where no audit that looks at a static render would ever catch them. The lamp
+     partial is shared with /pjcc/, where the dark tooltip is right, so this is an override
+     rather than an edit to the partial. */
+  .sl-tip { background: #ffffff; border-color: var(--fd-grain); color: var(--fd-ink-2);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.14); }
+  .sl-tip b { color: var(--fd-wood); }
 }
 
 /* ── the tabletop band ────────────────────────────────────────────────────────
