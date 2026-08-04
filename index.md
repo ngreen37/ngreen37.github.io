@@ -556,8 +556,11 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mcb-say { margin: 14px 0 0; text-align: center; color: var(--fd-ink-2); font-size: 0.9rem;
   min-height: 2.6em; }
 /* the prompt's emphasis is MAPLE, not gold - gold on this page means "the button", and a
-   bolded phrase in the same color as the CTA quietly competes with it. */
-.mcb-say b { color: var(--fd-wood); }
+   bolded phrase in the same color as the CTA quietly competes with it.
+   ⚠ --fd-wood-INK, not --fd-wood: this is TEXT sitting on the translucent sheet, and the
+   decorative walnut measures 2.88:1 there against a night sky (4.01 even at the old 0.85
+   alpha — it was failing AA before the transparency pass, not because of it). */
+.mcb-say b { color: var(--fd-wood-ink); }
 .mcb-say.good b, .mcb-say.good { color: #6bffb8; }
 .mcb-ready { display: block; margin-top: 4px; color: var(--fd-ink-3); font-size: 0.72rem;
   font-family: 'Share Tech Mono', monospace; }
@@ -626,7 +629,10 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    gold heading, a gold button, gold door icons and a gold arrow, and "the one gold thing"
    was a rule the page broke four times over. The rule under it is the theme's hairline,
    not the site's purple h2 border (switched off in _pjcc-25-front-door.scss). */
-.mc-h2 { color: var(--fd-wood); font-size: 0.92rem; letter-spacing: 0.16em; text-transform: uppercase;
+/* ⚠ --fd-wood-INK, not --fd-wood — this heading is TEXT on the translucent sheet. The
+   decorative walnut measured 4.01:1 here even at the old 0.85 alpha, a real AA miss that
+   predates the transparency pass and was found by re-measuring for it. */
+.mc-h2 { color: var(--fd-wood-ink); font-size: 0.92rem; letter-spacing: 0.16em; text-transform: uppercase;
   font-family: 'Share Tech Mono', monospace; font-weight: 400;
   margin: 0 0 var(--space-4, 16px); padding-bottom: 10px;
   border-bottom: 1px solid var(--fd-rule); }

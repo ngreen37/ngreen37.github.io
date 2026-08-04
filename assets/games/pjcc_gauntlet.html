@@ -29,7 +29,11 @@
   html, body { user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color:transparent; }
   html, body { background:#0c0820; height:100%; overflow:hidden; font-family:'Trebuchet MS','Segoe UI',sans-serif; touch-action:manipulation; }
   body { display:flex; align-items:center; justify-content:center; min-height:100vh; }
-  #stage { position:relative; width:100%; max-width:520px; }
+  /* ⚑ 520 -> 720 (2026-08-04) — the board takes the room it is given. The wrapper page
+     (/games/the-gauntlet/) decides how much that is, sizing its iframe off the VIEWPORT
+     HEIGHT so the whole board always fits without scrolling; this is only the ceiling.
+     ⚠ Raising this alone would just have made a blurry board bigger — see fitCanvas(). */
+  #stage { position:relative; width:100%; max-width:720px; }
   #board-wrap { position:relative; width:100%; }
   #cv { display:block; width:100%; border:3px solid #F5C518; border-radius:12px; background:#160c33; box-shadow:0 0 40px rgba(245,197,24,0.18); }
   .float-btn { position:absolute; z-index:6; font-weight:bold; border:none; border-radius:999px; cursor:pointer;
@@ -293,6 +297,46 @@ function fmtClock(ms){ var s = Math.max(0, Math.ceil(ms / 1000)); var m = (s / 6
   return m + ':' + (s < 10 ? '0' : '') + s; }
 var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 var W = 440, H = 500, TILE = 50, BOARD = TILE*8, BX = (W-BOARD)/2, BY = 78;
+
+/* ══ THE BOARD GOT BIGGER, SO IT HAD TO GET SHARPER FIRST (2026-08-04) ═══════════════════
+   Nate asked for a bigger board here the same day as the Park Tables one. The width caps
+   were the easy half; this is the half that makes it worth doing.
+
+   THE CANVAS HAS ALWAYS BEEN UPSCALED, AND NOBODY HAD NOTICED. Its backing store was a flat
+   440x500 with no devicePixelRatio handling at all, while the CSS stretched it to fill the
+   stage — so it was already being blown up 1.18x on desktop before this change, and on a
+   dpr-3 phone every pixel was being painted across THREE. Raising the cap to 720 would have
+   taken that to 1.64x on top of the dpr, and a "bigger board" that is blurrier than the old
+   one is not a bigger board.
+
+   ⚠ W AND H STAY 440x500 — THEY ARE THE DRAWING UNITS, NOT THE PIXELS. Every coordinate in
+   this file (TILE, BX, BY, every drawHud/drawCrowd offset) is expressed in them, and the
+   pointerdown handler maps clicks with `W / rect.width`, which is a RATIO and stays correct
+   at any size. So the fix touches nothing but the backing store and one transform: the
+   context is scaled by k, and all existing drawing code keeps working untouched.
+
+   ⚠ SETTING cv.width RESETS THE CONTEXT — including the transform — so setTransform must
+   follow it every time, not once at startup. Nothing else in this file ever touches the
+   transform (no save/restore, no second setTransform, and the one clearRect is in W/H units),
+   which is why a single call here is enough and stays enough.
+
+   ⚠ THE dpr IS CAPPED AT 2. A dpr-3 phone at a 400px stage would ask for a 2640x3000 backing
+   store — 32 MB of texture, re-rasterized inside a requestAnimationFrame loop, on the device
+   least able to afford it. 2 is already past the point of visible return here. Same instinct
+   as the weather ghost's resolution cap: judge it on the densest screen it will land on. */
+function fitCanvas(){
+  var css = cv.getBoundingClientRect().width;
+  if (!css) return;                                  // not laid out yet (hidden tab, early call)
+  var k = Math.min(2, window.devicePixelRatio || 1) * (css / W);
+  var bw = Math.round(W * k), bh = Math.round(H * k);
+  if (cv.width === bw && cv.height === bh) return;   // nothing changed — don't clear for free
+  cv.width = bw; cv.height = bh;
+  ctx.setTransform(k, 0, 0, k, 0, 0);
+}
+fitCanvas();
+/* the rAF loop repaints every frame, so a resize needs no redraw of its own — just the
+   new backing store and transform in place before the next render() runs. */
+window.addEventListener('resize', fitCanvas);
 // THE CHESS CANON (2026-07-18 Nate: "same board everywhere") — the Gauntlet used to
 // draw a purple board with ivory/ebony pieces. It now wears the site's ONE board:
 // walnut + cream woods and the white/purple piece livery, mirroring the :root tokens

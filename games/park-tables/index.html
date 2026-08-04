@@ -1312,7 +1312,32 @@ body.pt-room .pt-table-head { border-bottom: 1px solid var(--edge-soft); padding
 /* ⭐ THE SIZE IS ONE VARIABLE, and it has to be, because two different layouts need the same
    number: the flex row uses it as a width, the grid uses it as a TRACK. Writing it twice is
    how they drift apart the first time the cap changes. */
-body.pt-room { --pt-board: min(560px, max(420px, calc(100vh - 300px))); }
+/* ⚑ THE ROOM TAKES THE SCREEN — 2026-08-04 (Nate: "in the park tables, make the chessboard
+   much bigger to take up more of the space").
+
+   TWO CHANGES, AND THE FIRST ONE IS THE ACTUAL FIX. Raising the cap alone would have done
+   almost nothing, because the board had no room to grow INTO: `.wrapper` caps every page on
+   the site at 1100px, which left the arena 954px wide with the board at its 560 ceiling and
+   **197px of dead space on each side, measured at both 1440x900 and 1920x1080**. The room is
+   already a DEPARTURE — its own URL, its own tab title, no page title, trimmed card padding —
+   so it gets its own width too. Every other page keeps 1100px, where a long line of prose
+   still has to be readable; this page has no prose.
+
+   ⚠ A CHESSBOARD IS SQUARE, SO WIDTH IS NEVER WHAT RUNS OUT — HEIGHT IS, and that is why the
+   two laptop sizes below do not move. Measured, seated at a bot table, before and after:
+
+       1920x1080    560 -> 780     the whole point of the change
+       1440x900     560 -> 600
+       1366x768     468 -> 468     height-bound: 269px of furniture sits above the board
+       1280x720     420 -> 420     height-bound, on the 420 floor
+        390x844     316 -> 316     already the full width of the card
+
+   ⚠ THE RESERVE STAYS AT 300px AND THE FLOOR STAYS AT 420px. Both were tempting to touch and
+   both would have made the board SMALLER on the short laptops — exactly the trap the note
+   below this one was written about. Every size above is greater than or equal to what it was;
+   none regressed, and h-overflow is 0 at all five. Raise the cap, never the reserve. */
+body.pt-room .wrapper { max-width: 1560px; }
+body.pt-room { --pt-board: min(860px, max(420px, calc(100vh - 300px))); }
 body.pt-room .pt-arena { justify-content: center; }
 body.pt-room .pt-boardwrap { flex: 0 1 auto; width: min(100%, var(--pt-board)); max-width: none; }
 body.pt-room .pt-board { max-width: none; }

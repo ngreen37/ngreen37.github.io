@@ -15,9 +15,35 @@ permalink: /games/the-gauntlet/
 </div>
 
 <style>
-.td-frame { max-width: 560px; }
-.td-frame iframe { height: 660px; }
-@media (max-width: 600px) { .td-frame iframe { height: 630px; } }
+/* ⚑ THE TOWER TAKES THE SCREEN TOO — 2026-08-04 (Nate, in the same breath as the Park
+   Tables board: "if you can do that with the gauntlet too that would be great").
+
+   ⭐ ONE VARIABLE, BECAUSE THE TWO NUMBERS ARE NOT INDEPENDENT — and getting that wrong
+   CLIPS THE BOARD rather than scrolling it. Inside the iframe the game is `overflow:hidden`
+   and its canvas is `width:100%` with an intrinsic 440x500 aspect, so the RENDERED HEIGHT IS
+   DECIDED BY THE WIDTH: give the frame more width than its height can carry and the bottom
+   rank simply is not there. So the stage width is the one value, and the iframe height is
+   computed from it — 500/440 = 1.1364 for the canvas, plus 72px for the move browser that
+   sits under it.
+
+   ⚠ SIZED OFF THE VIEWPORT HEIGHT, like the Park Tables room and for the same reason: the
+   board is square, so height is what runs out first. `(100vh - 260px)` is the window minus
+   this page's furniture (site header, page padding, the bezel, the how-to-play line below);
+   × 0.88 converts that available HEIGHT into the stage WIDTH that produces it.
+
+   Ceiling 720px — the game's own `#stage` cap, which it must not exceed or the frame grows
+   while the board inside stops. Floor 300px so a short window still shows a usable board.
+   The 14px is `.game-frame-wrap`'s bezel padding, one on each side of the iframe. */
+.td-frame {
+  --g-stage: clamp(300px, calc((100vh - 260px) * 0.88), 720px);
+  max-width: calc(var(--g-stage) + 28px);
+}
+.td-frame iframe { height: calc(var(--g-stage) * 1.1364 + 72px); }
+/* On a phone the width, not the height, is the binding constraint — the stage is already the
+   full card — so the height follows the width it actually got instead of the viewport's. */
+@media (max-width: 600px) {
+  .td-frame { --g-stage: min(720px, calc(100vw - 84px)); }
+}
 </style>
 
 <div class="game-info">

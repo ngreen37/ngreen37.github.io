@@ -247,9 +247,27 @@
   opacity: 1;
   overflow-y: auto;
   padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
-  background: linear-gradient(180deg, #140a2e 0%, #0d0720 100%);
+  /* ⚑ DE-PURPLED AND DE-GOLDED — 2026-08-04 (Nate: "let's drop the purple/gold aesthetic on
+     the left hand navigation"). The same call he made for the front door, now applied to the
+     one piece of chrome that appears on EVERY page.
+
+     ⭐ THAT IS THE ARGUMENT FOR NEUTRAL RATHER THAN FOR SOME OTHER COLOR. This drawer opens
+     over three different looks — the light ChessWild front door, the purple PJCC world, and
+     the black-and-white McPuppy pages — and a deep-purple panel with gold type belonged to
+     exactly one of them. `body.theme-studio` already carried a hand-written neutral override
+     to survive on the B&W side, which was the tell: the drawer had to be repainted per brand
+     because its default had a brand. A neutral charcoal needs no override and never fights the
+     page behind it. (The theme-studio block further down is now nearly a no-op and is kept only
+     for its warmer border.)
+
+     ⚠ ONE ACCENT, ONE JOB — and the job MOVED. Gold used to mark two unrelated things: which
+     link is home, and "a game is waiting on your move". Those are a STATE and an INVITATION,
+     and they should never have shared a color. Now the current page is marked by being
+     BRIGHTER (a whiter panel, white label — no hue at all), and green is left to mean the one
+     thing it means everywhere else on this site: there is something here to play. */
+  background: linear-gradient(180deg, #191b20 0%, #101216 100%);
   border-top: 0;
-  border-right: 1px solid #4a3a86;
+  border-right: 1px solid #2f333a;
   box-shadow: 8px 0 40px rgba(0, 0, 0, 0.55);
   transform: translateX(-102%);
   transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
@@ -259,48 +277,53 @@
 /* the obsolete desktop condense-hide + mobile max-height animation must not clip it */
 .site-header.is-condensed .site-nav.drawer { max-height: none; opacity: 1; overflow-y: auto; pointer-events: auto; }
 
-.drawer-head { padding: 4px 8px 12px; margin-bottom: 8px; border-bottom: 1px solid rgba(110, 95, 160, 0.28); }
-.drawer-brand { display: block; font-family: 'Poppins', sans-serif; font-weight: 800; letter-spacing: 0.14em; color: #F5C518; font-size: 1.05rem; }
-.drawer-sub { display: block; margin-top: 2px; font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: #9a8fd4; }
+.drawer-head { padding: 4px 8px 12px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.10); }
+.drawer-brand { display: block; font-family: 'Poppins', sans-serif; font-weight: 800; letter-spacing: 0.14em; color: #f2f4f7; font-size: 1.05rem; }
+.drawer-sub { display: block; margin-top: 2px; font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: #98a0ad; }
 
 /* the six links — full-width rows (override .site-nav .page-link pills) */
 .site-header .site-nav.drawer .page-link.drawer-link {
   display: flex; align-items: center; gap: 12px;
   width: 100%;
   padding: 11px 12px;
-  background: rgba(80, 30, 180, 0.14);
-  border: 1px solid rgba(150, 65, 255, 0.28);
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: var(--r-md);
-  color: #e9e2ff;
+  color: #e7eaee;
   transform: none;
   transition: background 0.16s, border-color 0.16s, transform 0.12s;
 }
 .site-header .site-nav.drawer .page-link.drawer-link:hover,
 .site-header .site-nav.drawer .page-link.drawer-link:focus-visible {
-  background: rgba(110, 45, 230, 0.5);
-  border-color: rgba(200, 130, 255, 0.9);
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.22);
   color: #fff;
   transform: translateX(3px);
 }
 .dl-ico { flex: 0 0 auto; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
-  font-size: 1.15rem; line-height: 1; border-radius: 9px; background: rgba(245, 197, 24, 0.12); color: #F5C518; }
+  font-size: 1.15rem; line-height: 1; border-radius: 9px; background: rgba(255, 255, 255, 0.07); color: #c3cad3; }
 .dl-txt { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; text-align: left; }
 .dl-txt b { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.98rem; }
-.dl-txt small { font-size: 0.72rem; color: #a896d4; }
+.dl-txt small { font-size: 0.72rem; color: #98a0ad; }
 
-/* PJCC stands out (Nate: "you can make PJCC stand out if you like") */
+/* THE CURRENT PAGE IS MARKED BY BRIGHTNESS, NOT BY HUE (2026-08-04). It used to be a gold and
+   purple gradient with a gold label — the loudest thing in the drawer, in two brand colors, to
+   say something as quiet as "you are here". A whiter panel and a white label say it without
+   introducing a color, which leaves green free to mean the one thing it means everywhere else
+   on the site. (Nate's original ask, "you can make PJCC stand out if you like", is still met —
+   it stands out; it just doesn't shout.) */
 .site-header .site-nav.drawer .page-link.drawer-link--home {
-  background: linear-gradient(135deg, rgba(245, 197, 24, 0.18), rgba(150, 65, 255, 0.2));
-  border-color: rgba(245, 197, 24, 0.6);
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.28);
 }
-.drawer-link--home .dl-txt b { color: #F5C518; }
+.drawer-link--home .dl-txt b { color: #ffffff; }
 
-.drawer-div { height: 1px; margin: 10px 4px; background: rgba(110, 95, 160, 0.28); }
+.drawer-div { height: 1px; margin: 10px 4px; background: rgba(255, 255, 255, 0.10); }
 /* centered 2026-07-28 — with Leaderboards gone this is a deliberate pair, not a leftovers
    row, and a left-hugged pair under a full-width link list reads as an accident */
 .drawer-mini { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; padding: 2px 8px 6px; }
-.drawer-mini a { font-size: 0.78rem; color: #9a8fd4; text-decoration: none; }
-.drawer-mini a:hover { color: #F5C518; }
+.drawer-mini a { font-size: 0.78rem; color: #98a0ad; text-decoration: none; }
+.drawer-mini a:hover { color: #e7eaee; }
 
 /* the dim backdrop — a sibling, shown purely by the open state (no JS) */
 .nav-backdrop {
@@ -457,19 +480,26 @@ html.reduce-flourish body.nav-collapsed .drawer-link:focus-visible .dl-txt { tra
 
 /* ── "It's your move at the park" nudge (2026-07-25, Nate) ────────────────────
    pjcc-mymove.js adds .has-move to the hamburger and .dl-move to the Play Now
-   drawer link whenever a Park Tables game is waiting on YOUR move. A calm gold
-   dot (no pulse) on the always-visible hamburger is the main "come back" cue;
-   inside the drawer the Play Now link goes gold with an "It's your move" subtitle. */
+   drawer link whenever a Park Tables game is waiting on YOUR move. A calm dot
+   (no pulse) on the always-visible hamburger is the main "come back" cue;
+   inside the drawer the Play Now link lights up with an "It's your move" subtitle.
+
+   ⚑ GREEN, NOT GOLD, SINCE 2026-08-04 — and this is the one place in the drawer that KEPT a
+   color when the purple and gold came out. It earned it: everything else in here is state
+   ("you are here", "this is a link"), and this is the only element that is an INVITATION.
+   Green already means "there is something to play" on the front door's one button and at the
+   Park Tables' own go color, so the signal now matches the thing it is pointing at — the
+   table you have a game waiting on. Measured 8.77:1 on the drawer panel. */
 .nav-toggle.has-move { position: relative; }
 .nav-toggle.has-move::after {
   content: ""; position: absolute; top: -1px; right: -1px;
   width: 8px; height: 8px; border-radius: 50%;
-  background: #F5C518; box-shadow: 0 0 6px rgba(245, 197, 24, 0.75);
+  background: #5fd08a; box-shadow: 0 0 6px rgba(95, 208, 138, 0.75);
 }
-.drawer-link.dl-move .dl-ico { color: #F5C518; }
-.drawer-link.dl-move .dl-txt small { color: #F5C518; }
+.drawer-link.dl-move .dl-ico { color: #5fd08a; }
+.drawer-link.dl-move .dl-txt small { color: #5fd08a; }
 .drawer-link.dl-move .dl-txt b::after {
   content: ""; display: inline-block; width: 7px; height: 7px; margin-left: 7px;
-  border-radius: 50%; background: #F5C518; box-shadow: 0 0 6px rgba(245, 197, 24, 0.7);
+  border-radius: 50%; background: #5fd08a; box-shadow: 0 0 6px rgba(95, 208, 138, 0.7);
   vertical-align: middle;
 }

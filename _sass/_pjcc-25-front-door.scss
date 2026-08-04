@@ -79,7 +79,36 @@ body.theme-chess {
      a day, and letting any of it through moves every contrast ratio on the page. See the ink
      note directly below — the transparency cost --fd-ink-3 its AA margin, and 0.85 is the
      furthest this can go before it starts costing readability instead of just weight. */
-  --surface:   rgba(251, 250, 247, 0.85);
+  /* ⚑ 0.85 → 0.72 ON 2026-08-04 (Nate: "make the white box on the home page a little more
+     transparent — I want to see the rain a little easier — maybe match it up to the
+     transparency on the PJCC home boxes").
+
+     ⚠ IT IS NOT 0.66, AND THE PJCC BOXES ARE NOT A TARGET THIS CARD CAN COPY. Their 0.66 is
+     a DARK panel carrying LIGHT text: drop its alpha and the panel stays dark, so the text
+     keeps its contrast. This is a LIGHT panel carrying DARK text, so it behaves in the exact
+     opposite direction — every step of alpha composites the paper DARKER against the night
+     sky and the dark ink on it LOSES contrast. Same number, opposite effect.
+
+     0.72 IS WHERE THE RAIN STOPS GETTING BETTER, and that is why it is the value. Measured on
+     the live page with `?wx=rain,heavy` and the sky pinned to night, as the mean and peak
+     frame-to-frame pixel change in a text-free strip of the sheet — rain MOVES, so what it
+     changes between two frames IS how visible it is:
+
+         alpha   peak change on the sheet
+         0.85       8   ← invisible; a thin light line at 8/255 is nothing
+         0.80      13
+         0.76      15
+         0.72      20   ← the knee
+         0.66      21   ← +1 for a whole extra step of contrast cost
+
+     Rain is drawn LIGHTER than the sky, so a white sheet suppresses it no matter what: only
+     (1 − alpha) of each streak survives. That is also why the card was never fully opaque to
+     it — a ghost copy of the storm is already painted OVER the whole page at 17%
+     (`.tw-ghost`, see pjcc-weather-canvas.js), and this alpha only governs the half BEHIND.
+
+     ⚠ THE INK MOVED WITH IT — see the note below. Three tokens had to darken, and one of them
+     was ALREADY FAILING before this change. */
+  --surface:   rgba(251, 250, 247, 0.72);
   --surface-2: #f4f2ec;
   --edge:      #e5e1d8;
   --lift:      0 18px 50px rgba(0, 0, 0, 0.45);
@@ -111,10 +140,29 @@ body.theme-chess {
 
      THE LESSON IS THE OLD ONE, ONE TURN FURTHER: a token's worst background is not a color
      you look up once. Change a surface's ALPHA and every ratio on the page moves, including
-     the ones a previous pass already proved. */
+     the ones a previous pass already proved.
+
+     ⚠⚠ AND A THIRD TIME AT 0.72 (2026-08-04) — the lesson above, collected again. Re-measured
+     every token that sits on the SHEET (the ones on the opaque panels never move, and did not):
+
+         .mc-h2 / "Mate in one."   #8a5a2b   4.01 ✗  ← ALREADY FAILING AT 0.85, nobody caught it
+         .mcb-say / fact titles    #4b5361   3.81 ✗
+         .mc-true li fact bodies   #525a66   3.42 ✗
+
+     ⭐ THE WALNUT SPLIT IN TWO RATHER THAN JUST GOING DARK. `--fd-wood` was doing two jobs —
+     DECORATION (the four door icons, the world glyph and arrow, hairlines, all of which sit on
+     OPAQUE panels and were never at risk) and TEXT (the section heads, "Mate in one.", which sit
+     on the sheet and were failing). Darkening the one token would have muddied every icon on the
+     page to fix two strings. So the icons keep the warm walnut and the text gets a darker twin.
+     If you add a wood-colored thing, ask which half it is: can you READ it? then --fd-wood-ink.
+
+     Ink 2 and 3 were darkened PAST their AA floors on purpose. Each one's own minimum lands
+     them at #3f4651 and #404650 — 0.0001 apart in luminance, which would have collapsed a
+     three-step ink scale into a two-step one. Ink-2 went further so the STEP survives: the
+     gaps are 0.0239 and 0.0200, both wider than the 0.0152 the old pair had. */
   --fd-ink:   #1e232c;
-  --fd-ink-2: #4b5361;
-  --fd-ink-3: #525a66;
+  --fd-ink-2: #333944;
+  --fd-ink-3: #404650;
 
   /* structure */
   --fd-rule:  #e5e1d8;
@@ -127,7 +175,14 @@ body.theme-chess {
   --fd-go-2:  #24663a;   /* the button, pressed/hovered: DEEPER, never brighter. The
                             gold button's original sin was getting lighter on hover —
                             the loudest thing on the page turning up under the cursor. */
-  --fd-wood:  #8a5a2b;   /* walnut brown — labels, icons, rules. 5.6:1 on the sheet. */
+  /* ⚠ THE WALNUT IS TWO TOKENS, AND WHICH ONE YOU WANT DEPENDS ON WHETHER IT IS READ. */
+  --fd-wood:     #8a5a2b;  /* DECORATION ONLY — icons, glyphs, rules, hairlines. These sit on
+                              the OPAQUE panels or are not text, so the sheet's alpha never
+                              touches them and the page keeps its warmth. */
+  --fd-wood-ink: #5f3e1e;  /* THE SAME WALNUT, DARK ENOUGH TO BE TEXT ON THE SHEET. 4.70:1
+                              against the night sky at alpha 0.72; the decorative value above
+                              measures 2.88 there, and measured 4.01 even at the old 0.85 —
+                              it was failing AA on the section heads before this pass. */
   --fd-grain: #b98b57;   /* the lighter wood note, borders and hairlines only */
 }
 
