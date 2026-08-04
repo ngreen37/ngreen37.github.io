@@ -7,10 +7,10 @@
 # render every build. (2026-07-24, and it still applies now that this file is the home page.)
 layout: page
 permalink: /
-title: ChessWild
+title: ChessWild.com
 own_title: true
 body_class: theme-chess
-tab_title: ChessWild — free chess for everyone
+tab_title: ChessWild.com — free chess for everyone
 description: Free chess for everyone — play a real game, solve a puzzle, or learn from scratch. Set in the world of Princess and the Journey to Chess City, by McPuppy Studios.
 ---
 
@@ -31,8 +31,11 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
      2026-08-03, it is in the sw.js precache (where a 404 fails SILENTLY), and it has been
      the shared address of this page for a week.
 
-     THE NAME IS "ChessWild" — one word, his pick, matching the domain letter for letter.
-     It is still one Liquid variable below, so the next rename is still one line.
+     THE NAME IS "ChessWild.com" (2026-08-04, Nate: "let's brand this ChessWild.com and not
+     just ChessWild"). The address IS the brand, the way chess.com's is — a name a stranger
+     can type straight from having heard it. Still one Liquid variable below.
+     ⚠ The PWA `short_name` does NOT follow: it is capped at 12 characters and this is 13,
+     so the home-screen label stays "ChessWild". That cap is enforced by tests/pwa.check.js.
 
      THE BRAND STACK, his call the same day: **McPuppy Studios makes ChessWild, which is
      set in PJCC.** Studio → site → world. That is why the eyebrow above the title still
@@ -67,7 +70,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
      are CLOSED — the domain picked the name on 2026-08-03.
      ══════════════════════════════════════════════════════════════════════════ {% endcomment %}
 
-{%- assign site_name = "ChessWild" -%}
+{%- assign site_name = "ChessWild.com" -%}
 
 {%- comment -%} ══ THE TABLETOP (2026-07-28) ═══════════════════════════════════════════
      Nate: "give the new home page a clean color scheme — its own fresh layout."

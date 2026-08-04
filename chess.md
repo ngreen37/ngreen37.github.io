@@ -7,8 +7,8 @@
 layout: null
 permalink: /chess/
 sitemap: false
-tab_title: ChessWild
-description: ChessWild — free chess for everyone. Play a real game, solve a puzzle, or learn from scratch.
+tab_title: ChessWild.com
+description: ChessWild.com — free chess for everyone. Play a real game, solve a puzzle, or learn from scratch.
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -59,13 +59,13 @@ description: ChessWild — free chess for everyone. Play a real game, solve a pu
   {%- endcomment -%}
   <script>try{var q=location.search.indexOf('source=pwa')>-1?'?source=pwa':'';location.replace({{ '/' | relative_url | jsonify }}+q);}catch(e){}</script>
   <meta http-equiv="refresh" content="0; url={{ '/' | relative_url }}">
-  <title>ChessWild</title>
-  <meta name="description" content="ChessWild — free chess for everyone. Play a real game, solve a puzzle, or learn from scratch.">
+  <title>ChessWild.com</title>
+  <meta name="description" content="ChessWild.com — free chess for everyone. Play a real game, solve a puzzle, or learn from scratch.">
   <link rel="canonical" href="{{ '/' | absolute_url }}">
   <meta name="theme-color" content="#0a0714">
   <meta name="robots" content="noindex, follow">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="ChessWild">
+  <meta property="og:title" content="ChessWild.com">
   <meta property="og:description" content="Free chess for everyone — play a real game, solve a puzzle, or learn from scratch.">
   <meta property="og:url" content="{{ '/' | absolute_url }}">
   <meta property="og:image" content="{{ '/assets/images/pjcc-share-card.jpg' | absolute_url }}">
@@ -82,6 +82,6 @@ description: ChessWild — free chess for everyone. Play a real game, solve a pu
   </style>
 </head>
 <body>
-  <a href="{{ '/' | relative_url }}">ChessWild &rarr;</a>
+  <a href="{{ '/' | relative_url }}">ChessWild.com &rarr;</a>
 </body>
 </html>
