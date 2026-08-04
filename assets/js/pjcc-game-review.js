@@ -125,7 +125,7 @@
      Two reasons, both learned from Nate's 1.e4 d6 game:
        · The book can never cover everything. The moment a game steps one ply off a
          known line, a perfectly respectable developing move was being measured against
-         the engine's single favourite and shipped back as an "Inaccuracy".
+         the engine's single favorite and shipped back as an "Inaccuracy".
        · At review depth the gap between two sound opening moves is mostly noise —
          20-30 centipawns, which is nothing, and which the same search would revise if
          you let it think longer.
@@ -180,7 +180,7 @@
       var plies = [], accSum = { w: 0, b: 0 }, accN = { w: 0, b: 0 }, evalW = [];
       for (var i = 0; i < fens.length; i++) {
         var stm = fens[i].split(' ')[1];               // side to move at position i
-        evalW.push(stm === 'w' ? evals[i] : -evals[i]); // graph in White's favour
+        evalW.push(stm === 'w' ? evals[i] : -evals[i]); // graph in White's favor
       }
       // Opening theory (Nate: the first moves "are usually book moves", not blunders).
       // A move that follows a known line is tagged Book and left out of the accuracy
@@ -322,7 +322,7 @@
   // THE DRAWN BOARD (2026-07-24 Nate: "the level-9 Gauntlet board and pieces — make that the
   // board used for … the review"). Same canon woods, but the pieces are the shared DRAWN set
   // (PJCCPieces.draw — the exact renderer the Gauntlet uses), which stays crisp at review size
-  // where the tiny SVG glyphs muddied and read colour-inverted. Squares/highlight/arrow are
+  // where the tiny SVG glyphs muddied and read color-inverted. Squares/highlight/arrow are
   // canvas too, so it's one texture. Woods + livery still come straight from the canon tokens.
   // Falls back to the SVG board wherever PJCCPieces isn't loaded, so a review never renders empty.
   var REVIEW_PX = 240;
@@ -445,7 +445,7 @@
 
     var turnH = '';
     if (rep.turning.length) {
-      turnH = '<div class="pgr-turn"><h4>Turning points</h4>' + rep.turning.map(function (p) {
+      turnH = '<div class="pgr-turn"><h4>Turning Points</h4>' + rep.turning.map(function (p) {
         var num = Math.floor(p.n / 2) + 1;
         return '<div>Move ' + num + (p.mover === 'w' ? ' (White) ' : ' (Black) ') +
           '<a data-k="' + (p.n + 1) + '">' + esc(p.san) + '</a> — ' + LABEL[p.cls].toLowerCase() +

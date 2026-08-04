@@ -12,8 +12,8 @@
  *
  * 44px is the floor both Apple and Google publish, and it is not a rounding error: the
  * pad of an adult finger is about 10mm, which is ~44 CSS px. Under that, taps land on
- * the neighbour — and these four sit in a row along the top of the screen, so the
- * neighbour is always something else you did not want.
+ * the neighbor — and these four sit in a row along the top of the screen, so the
+ * neighbor is always something else you did not want.
  *
  * ⚠ THE LANGUAGE BUTTON WAS ALSO VISIBLY BROKEN, and the audit is what made me look.
  * At 32px wide "日本語" had nowhere to go, so it WRAPPED — three characters stacked
@@ -41,7 +41,7 @@
  * ========================================================================== */
 
 @media (hover: none) {
-  /* the hit expander: centred on the control, invisible, never larger than it needs */
+  /* the hit expander: centered on the control, invisible, never larger than it needs */
   .cmdk-trigger,
   .lang-toggle,
   .nav-toggle,

@@ -73,7 +73,7 @@ permalink: /games/
 .ghub-rule { margin:10px auto 0; }
 /* 2026-07-18 (Nate): "move the leaderboard and the altar around, and the park table" —
    the four featured entrances (🏆 Leaderboards · the Gauntlet · Park Tables · the Gambit
-   altar) now share ONE centred, evenly-spaced, bottom-aligned row (.ghub-doorway) instead
+   altar) now share ONE centered, evenly-spaced, bottom-aligned row (.ghub-doorway) instead
    of a lopsided top-left cluster. (.ghub-corner + .ghub-subrow were removed here.) */
 .ghub { position:relative; }
 .ghub-doorway .ghub-trophy { align-self:flex-end; }   /* baseline-align with the door/table */
@@ -95,7 +95,7 @@ permalink: /games/
    a wide hero with room to spare, and the vertical door is the better shape there.
    The two copies are deliberately different now; don't "sync" this back. ---- */
 /* 2026-07-25 (Nate): spread the two featured entrances apart — Gauntlet door LEFT, trophy
-   RIGHT — rather than clustering them centre. A centred max-width band + space-between sits
+   RIGHT — rather than clustering them center. A centered max-width band + space-between sits
    them over the inner columns (≈ the Pirc + Clearance boxes); nudge the width to taste. */
 .ghub-doorway { position:relative; z-index:2; display:flex; justify-content:space-between;
   align-items:flex-end; flex-wrap:wrap; gap:18px clamp(20px, 4vw, 48px);
@@ -294,7 +294,7 @@ permalink: /games/
 .ghub-all .gcard[data-slug="sky-run"]:hover .gcard-icon { animation-duration:0.9s; }
 
 /* ── 4 · SAND MINE DEPTHS — RETHEMED 2026-07-25 (Nate: give it a different box theme): a
-   seam of ORE cutting through the rock, a glint travelling down it, and the pick digging. ── */
+   seam of ORE cutting through the rock, a glint traveling down it, and the pick digging. ── */
 .ghub-all .gcard[data-slug="sand-mine-depths"] {
   background:linear-gradient(180deg,#43331a 0%,#281c0d 50%,#100b06 100%);
   border-color:#fcbc3c; }
@@ -357,11 +357,11 @@ permalink: /games/
   <div class="ghub-doorway">
     {%- comment -%} 2026-07-25 (Nate): the Gauntlet door anchors the LEFT (over the Pirc box),
          the trophy anchors the RIGHT (over Clearance) — the row spreads them apart now instead
-         of clustering them centre. PLATE PARITY kept: no plate, no "Begin the climb" caption. {%- endcomment -%}
+         of clustering them center. PLATE PARITY kept: no plate, no "Begin the climb" caption. {%- endcomment -%}
     <a class="gdoor" id="gauntlet-door" href="{{ '/games/the-gauntlet/' | relative_url }}"
        aria-label="The Gauntlet — real chess vs a ladder of ten PJCC rivals">
       <span class="gdoor-arch" aria-hidden="true">
-        <i class="gdoor-door"><b class="gdoor-glyph" id="gdoor-glyph">♛</b><u class="gdoor-knob"></u></i>
+        <i class="gdoor-door"><b class="gdoor-glyph" id="gdoor-glyph">♟</b><u class="gdoor-knob"></u></i>
         <i class="gdoor-seam"></i>
       </span>
       <span class="gdoor-pips" id="gdoor-pips" aria-hidden="true"></span>
@@ -437,7 +437,7 @@ permalink: /games/
   // mirrors the LADDER order / accents / glyphs in assets/games/pjcc_gauntlet.html — keep in sync
   var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The Executive Assistant'];
   var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#3fae7a','#ff6b6b','#c79bff','#ff9ec9','#f5c518']; // [5] Auditor: ledger-green, was mint #9ff0c4 (2026-07-22)
-  var GLYPHS  = ['♞','♟','♝','♞','♜','♝','♜','♝','♛','♛'];
+  var GLYPHS  = ['♟','♟','♝','♞','♜','♝','♜','♝','♛','♛'];
   var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
   var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;
   for (var i = 0; i < NAMES.length; i++) { if (beaten[i]) cleared++; }
@@ -461,10 +461,13 @@ permalink: /games/
   var glyph = document.getElementById('gdoor-glyph');
   if (cur >= NAMES.length) {
     door.setAttribute('href', door.getAttribute('href') + '#tower');
-  } else if (cleared > 0) {
-    door.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
-    if (glyph) glyph.textContent = GLYPHS[cur] || '♛';
-    door.setAttribute('href', door.getAttribute('href') + '#climb');
+  } else {
+    // the leaf is set on EVERY visit, not only mid-climb — see the note in pawn-fix
+    if (glyph) glyph.textContent = GLYPHS[cur] || '♟';
+    if (cleared > 0) {
+      door.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
+      door.setAttribute('href', door.getAttribute('href') + '#climb');
+    }
   }
 })();
 

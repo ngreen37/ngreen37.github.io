@@ -115,7 +115,7 @@ permalink: /dossier/
   function renderLogin() {
     setTop('<p class="cc-greet">Uplink open — build your look below, or <a href="#dsr-login">sign in</a> to sync your operative across every device.</p>');
     el.innerHTML =
-      '<div class="dsr-card"><h2 class="dsr-h">Operative sign-in</h2>' +
+      '<div class="dsr-card"><h2 class="dsr-h">Operative Sign-In</h2>' +
       '<p class="pjcc-sub">Enter your email and we will send a login link and a 6-digit code. Your codename, avatar and credits follow you.</p>' +
       '<div class="ml-form"><input id="dsr-email" type="email" class="pjcc-input" aria-label="Email address" placeholder="you@email.com"><button id="dsr-login" class="pjcc-btn">Send login link</button></div>' +
       '<p id="dsr-msg" class="pjcc-sub"></p></div>';
@@ -138,7 +138,7 @@ permalink: /dossier/
   function renderCode(email) {
     setTop('<p class="cc-greet">Link sent — tap it, or type the code below to sign in right here.</p>');
     el.innerHTML =
-      '<div class="dsr-card"><h2 class="dsr-h">Enter your code</h2>' +
+      '<div class="dsr-card"><h2 class="dsr-h">Enter Your Code</h2>' +
       '<p class="pjcc-sub">We sent <strong>' + esc(email) + '</strong> a login link and a code. Either one works.</p>' +
       '<div class="ml-form"><input id="dsr-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" class="pjcc-input" aria-label="Sign-in code" placeholder="code"><button id="dsr-verify" class="pjcc-btn">Sign in</button></div>' +
       '<p id="dsr-msg" class="pjcc-sub"></p></div>';
@@ -164,7 +164,7 @@ permalink: /dossier/
   function renderClaim() {
     setTop('<p class="cc-greet">Signed in — one last step: choose your codename below.</p>');
     el.innerHTML =
-      '<div class="dsr-card"><h2 class="dsr-h">Choose your codename</h2>' +
+      '<div class="dsr-card"><h2 class="dsr-h">Choose Your Codename</h2>' +
       '<div class="ml-form"><input id="dsr-name" type="text" maxlength="24" class="pjcc-input" placeholder="codename"><button id="dsr-claim" class="pjcc-btn">Claim</button></div>' +
       '<p id="dsr-claim-msg" class="pjcc-sub"></p></div>';
     document.getElementById('dsr-claim').onclick = function () {
@@ -257,7 +257,7 @@ permalink: /dossier/
     // by it"). The heading stays and now belongs to the two rows below it — the Gauntlet
     // climb and the puzzle rating — which are the same question answered with numbers
     // instead of a diagram, and were always the part with a brag in them.
-    var html = '<h2 class="dsr-h">The journey</h2>';
+    var html = '<h2 class="dsr-h">The Journey</h2>';
     // Keep the URL a plain literal — the link gate (tests/links.check.js) reads hrefs out of
     // the source, and a path spliced together inside the attribute reads to it as a broken
     // link. Build the fragment separately and append it.
@@ -336,7 +336,7 @@ permalink: /dossier/
     html += '</div></details>';
 
     var link = PJCC.inviteLink(prof);
-    html += '<h2 class="dsr-h">Invite an operative</h2>' +
+    html += '<h2 class="dsr-h">Invite an Operative</h2>' +
       '<p class="pjcc-sub">Share your link — when a friend signs up through it, you each earn 10 credits.</p>' +
       '<div class="dsr-invite"><input id="dsr-invite" class="pjcc-input" readonly value="' + esc(link) + '"><button id="dsr-copy" class="pjcc-btn">Copy</button></div>';
 

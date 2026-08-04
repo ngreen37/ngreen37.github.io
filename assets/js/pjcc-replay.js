@@ -19,7 +19,7 @@
  *
  * Browsing NEVER touches the game: the host rebuilds a throwaway position from the
  * move list. Hosts are expected to refuse input while `viewing()` is true — the bar
- * says so, and the games grey the board.
+ * says so, and the games gray the board.
  *
  * Requires pjcc-chess.js (the referee) for the rebuild. With no referee present the
  * bar simply doesn't mount, and the game behaves exactly as it did before.

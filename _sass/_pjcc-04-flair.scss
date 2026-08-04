@@ -155,7 +155,7 @@ body.theme-bw .page-body em {
      SYNTHETIC: Chrome shears the upright glyphs. A sheared glyph's top-right leans past the
      element's right edge, and `background-clip: text` can only paint gradient that exists
      inside the background box — so the overhanging corner got nothing. The padding widens
-     the box until the lean fits inside it. Symmetric, so the line stays optically centred.
+     the box until the lean fits inside it. Symmetric, so the line stays optically centered.
      Verified in Chrome by outlining the background box: the old edge cut through the l. */
   padding: 0.06em 0.3em;
 

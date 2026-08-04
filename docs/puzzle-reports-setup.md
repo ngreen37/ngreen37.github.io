@@ -69,7 +69,7 @@ create policy "the creator files reports away" on public.puzzle_reports
 -- Two columns on the profile. Unlike the Park Tables rating, this one settles on the
 -- CLIENT: a puzzle is generated in the browser and never touches the server, so there is
 -- no server-side fact to check it against and a `security definer` function would only
--- be theatre. The honest position, same as every cosmetic here — anybody who wants a
+-- be theater. The honest position, same as every cosmetic here — anybody who wants a
 -- number badly enough to forge it could always have edited their own credits.
 alter table public.profiles add column if not exists puzzle_rating integer not null default 700;
 alter table public.profiles add column if not exists puzzle_solved integer not null default 0;

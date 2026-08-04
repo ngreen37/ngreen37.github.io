@@ -235,7 +235,7 @@
 
   <!-- ══ ROLL ═══════════════════════════════════════════════════════════════════ -->
   <section class="screen" id="screen-roll">
-    <h2 id="roll-title">The roll</h2>
+    <h2 id="roll-title">The Roll</h2>
     <div class="side att" id="side-att">
       <h3 id="att-label">Attacker</h3>
       <div class="dice" id="att-dice"></div>
@@ -356,7 +356,7 @@ function muster(budget) {
   return out;
 }
 
-/* Placement: king on his own square, everything else from the centre outward, pawns on
+/* Placement: king on his own square, everything else from the center outward, pawns on
    the second rank. Squares are board indices (0 = a8, 63 = h1). */
 var W_BACK = [59, 61, 58, 62, 57, 63, 56], W_PAWN = [52, 51, 53, 50, 54, 49, 55, 48];
 var B_BACK = [3, 5, 2, 6, 1, 7, 0],        B_PAWN = [12, 11, 13, 10, 14, 9, 15, 8];
@@ -390,8 +390,8 @@ function evalPos(S, me) {
     var mine = (p >= 'A' && p <= 'Z') ? 'w' : 'b';
     // a nudge toward the middle, so pieces don't sulk on the rim
     var r = (i / 8) | 0, f = i % 8;
-    var centre = 6 - (Math.abs(3.5 - r) + Math.abs(3.5 - f));
-    v += centre * 2;
+    var center = 6 - (Math.abs(3.5 - r) + Math.abs(3.5 - f));
+    v += center * 2;
     s += (mine === me) ? v : -v;
   }
   return s;
@@ -502,7 +502,7 @@ function tapLand(id) {
     if (G.gar[id] < 2) { $('map-say').textContent = LAND[id].nm + ' has only one garrison — it cannot attack.'; drawMap(); return; }
     G.sel = (G.sel === id) ? -1 : id;
     $('map-say').textContent = G.sel < 0 ? 'Choose a holding to attack from.'
-      : 'From ' + LAND[id].nm + ' — now choose a neighbour to take.';
+      : 'From ' + LAND[id].nm + ' — now choose a neighbor to take.';
     drawMap(); return;
   }
   if (G.sel < 0) { $('map-say').textContent = 'Start from one of your own holdings.'; return; }
@@ -721,7 +721,7 @@ function resolveLand(p, attackerWon) {
 
 /* ── THE RIVAL'S TURN ──────────────────────────────────────────────────────────── */
 function rivalTurn() {
-  // one attack per round, from its strongest border stack against your weakest neighbour.
+  // one attack per round, from its strongest border stack against your weakest neighbor.
   var best = null;
   for (var i = 0; i < 9; i++) {
     if (G.own[i] !== 't' || G.gar[i] < 2) continue;
@@ -755,7 +755,7 @@ function campaignOver(won) {
   $('verdict').textContent = won ? 'THE MARCH IS YOURS' : 'THE MARCH IS LOST';
   $('verdict').className = 'verdict ' + (won ? 'win' : 'lose');
   $('result-say').textContent = won
-    ? 'Nine holdings, all of them flying your colours. Round ' + G.round + '.'
+    ? 'Nine holdings, all of them flying your colors. Round ' + G.round + '.'
     : 'They hold every road out. Round ' + G.round + '.';
   PEND = null;
   show('screen-result');

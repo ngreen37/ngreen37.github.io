@@ -20,7 +20,7 @@
     var g = SOLID[type] || '?';
     var fill = color === 'w' ? (opts.wFill || DEF.wFill) : (opts.bFill || DEF.bFill);
     var edge = color === 'w' ? (opts.wEdge || DEF.wEdge) : (opts.bEdge || DEF.bEdge);
-    var y = cy + size * 0.02;           // optical centring for these glyphs
+    var y = cy + size * 0.02;           // optical centering for these glyphs
 
     ctx.save();
     ctx.textAlign = 'center';

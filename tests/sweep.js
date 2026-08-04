@@ -107,7 +107,7 @@ const ALLOWED_DYNAMIC = [
   /* 'pip-' + clearance.level — the clearance pip (2026-08-03). Added on purpose, and it
      is a FIXED SET of exactly seven: PJCC.CLEARANCE has seven rungs and `level` is its
      1-based index, so pip-1..pip-7 is the whole universe and adding an eighth rung
-     without an eighth colour would show up as an unstyled pip rather than as silence.
+     without an eighth color would show up as an unstyled pip rather than as silence.
      The alternative — seven literal class names in a lookup table — would have been the
      rule-abiding choice, but the level number IS the ladder position and mapping it
      through a table only to get the number back is indirection for its own sake. */

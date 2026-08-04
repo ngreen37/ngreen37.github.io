@@ -375,10 +375,10 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
   /* header goes full-bleed on desktop so the hamburger pins to the far LEFT — directly
      above the rail — with the McPuppy logo centered across the header. */
   .site-header .wrapper { max-width: none; padding-left: 20px; padding-right: 24px; }
-  /* Cap the rail with its own trigger: the collapsed rail centres its icons on x≈33 (66px
-     rail), but the hamburger's default padding put its bars' centre at x≈53. Pull it 20px
+  /* Cap the rail with its own trigger: the collapsed rail centers its icons on x≈33 (66px
+     rail), but the hamburger's default padding put its bars' center at x≈53. Pull it 20px
      left so it sits DIRECTLY above the icon column it toggles. (Only the hamburger lives in
-     .header-top-left; the logo is the centre grid column, so this moves nothing else. When
+     .header-top-left; the logo is the center grid column, so this moves nothing else. When
      the rail is expanded its labelled icons sit a touch right of this — the collapsed column
      is the one the eye lines up against, and this alignment is measured to it.) */
   .header-top-left { transform: translateX(-20px); }
@@ -420,7 +420,7 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
   /* THE HOVER LABEL — on hover the words SLIDE OUT from the button to the right and land in
      their resting spot (2026-07-23, Nate: "the words should slide out from the button out to
      the right and land on the same spot"). The chip is ALWAYS in the DOM as an out-of-flow
-     absolute chip (so the icon stays centred), hidden and tucked ~26px LEFT — back over the
+     absolute chip (so the icon stays centered), hidden and tucked ~26px LEFT — back over the
      button — then it glides right to left:calc(100% + 8px) on hover. display:none can't be
      transitioned, so the reveal is opacity + transform (both compositor-cheap).
 
@@ -446,7 +446,7 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
   body.theme-bw.nav-collapsed .drawer-link .dl-txt,
   body.theme-studio.nav-collapsed .drawer-link .dl-txt { background: #17161c; border-color: #3a3730; }
   /* reduced motion / reduced flourish: drop the glide (the label just appears on hover).
-     The transition lives on the :hover state now, so that's where it's cancelled. */
+     The transition lives on the :hover state now, so that's where it's canceled. */
   @media (prefers-reduced-motion: reduce) {
     body.nav-collapsed .drawer-link:hover .dl-txt,
     body.nav-collapsed .drawer-link:focus-visible .dl-txt { transition: none; }

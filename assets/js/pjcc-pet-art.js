@@ -2,13 +2,13 @@
  * PJCC · THE COMPANION, DRAWN AS PARTS        (2026-07-28)
  * -----------------------------------------------------------------------------
  * Four species × three growth stages, built out of named shapes instead of an
- * emoji glyph — so `coat`, `eyes` and `nose` are three separate colours a player
+ * emoji glyph — so `coat`, `eyes` and `nose` are three separate colors a player
  * can actually choose, which is the whole point.
  *
- * WHY THIS FILE EXISTS. Nate asked for 8 eye colours and a few nose colours, for
+ * WHY THIS FILE EXISTS. Nate asked for 8 eye colors and a few nose colors, for
  * the pet and the person. That was impossible on 2026-07-28 and the reason was
  * simple: a companion WAS a single emoji. 🐕 is one picture. There is no eye layer
- * to hand a colour to, only pixels — which is why the coat tint had to be a
+ * to hand a color to, only pixels — which is why the coat tint had to be a
  * saturation-keyed SVG filter guessing at which pixels were "coat", and why eyes
  * and nose could never be separated at all.
  *
@@ -58,7 +58,7 @@
     ink:     { n: 'Ink',     c: '#3d3550', b: '#6b6180' }
   };
 
-  /* EIGHT eye colours, exactly as asked. Real eye colours first (a companion
+  /* EIGHT eye colors, exactly as asked. Real eye colors first (a companion
      should be able to look like an animal you'd meet), then the two that only
      exist in Checker Town. */
   var EYES = {
@@ -68,10 +68,10 @@
     green:  { n: 'Green',  c: '#4f9a56' },
     blue:   { n: 'Blue',   c: '#4a8fd0' },
     ice:    { n: 'Ice',    c: '#9fd6ee' },
-    grey:   { n: 'Grey',   c: '#7b8494' },
+    gray:   { n: 'Gray',   c: '#7b8494' },
     violet: { n: 'Violet', c: '#8a63d2' }
   };
-  var EYE_ORDER = ['brown', 'amber', 'hazel', 'green', 'blue', 'ice', 'grey', 'violet'];
+  var EYE_ORDER = ['brown', 'amber', 'hazel', 'green', 'blue', 'ice', 'gray', 'violet'];
 
   /* "just a few options" — the four a nose is ever actually made of. */
   var NOSES = {
@@ -92,7 +92,7 @@
   function n(v) { return Math.round(v * 100) / 100; }
 
   /* ── shared face parts ───────────────────────────────────────────────────
-     cx,cy = the head's centre · r = head radius · s = the stage numbers.
+     cx,cy = the head's center · r = head radius · s = the stage numbers.
      `spread` is how far apart the eyes sit as a fraction of the head radius. */
   function eyes(cx, cy, r, s, eyeCol, spread, lift) {
     var er = n(r * 0.235 * s.eye);
@@ -179,7 +179,7 @@
         '<path class="pa-coat" d="M' + n(cx - 3) + ' ' + n(cy - hr * 0.95) + ' q' + n(2) + ' ' + n(-hr * 0.7) + ' ' + n(8) + ' ' + n(-hr * 0.45) + ' q' + n(-4) + ' ' + n(hr * 0.3) + ' ' + n(-2) + ' ' + n(hr * 0.5) + 'Z" fill="' + C.c + '" stroke="' + LINE + '" stroke-width="2.2" stroke-linejoin="round"/>' +
         '<circle class="pa-coat" cx="' + cx + '" cy="' + cy + '" r="' + hr + '" fill="' + C.c + '" stroke="' + LINE + '" stroke-width="3"/>' +
         eyes(cx, cy, hr, s, E, 0.40, 0.08) +
-        // the BEAK is the bird's nose — same colour control, different shape
+        // the BEAK is the bird's nose — same color control, different shape
         '<path class="pa-nose" d="M' + n(cx - hr * 0.26) + ' ' + n(cy + hr * 0.34) + ' L' + n(cx + hr * 0.26) + ' ' + n(cy + hr * 0.34) + ' L' + cx + ' ' + n(cy + hr * 0.86) + 'Z" fill="' + N + '" stroke="' + LINE + '" stroke-width="2" stroke-linejoin="round"/>' +
         // feet
         '<g stroke="' + LINE + '" stroke-width="2.6" stroke-linecap="round"><path d="M44 ' + n(85) + ' v5"/><path d="M56 ' + n(85) + ' v5"/></g>';

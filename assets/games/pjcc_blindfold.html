@@ -488,7 +488,7 @@ function describeBoard(b){
   }
   function listJoin(a){ if(a.length===1) return a[0]; if(a.length===2) return a[0]+' and '+a[1]; return a.slice(0,-1).join(', ')+', and '+a[a.length-1]; }
   var them=side(false), you=side(true);
-  // emphasise their king/queen and your pieces
+  // emphasize their king/queen and your pieces
   var t='Opposing <b class="them">'+cap(them[0])+'</b>' + (them.length>1 ? ' — '+them.slice(1).join(', ') : '') + '. ';
   t += 'Your <b class="you">'+you[0]+'</b>' + (you.length>1 ? ', '+you.slice(1).join(', ') : '') + '.';
   return t;

@@ -33,7 +33,7 @@ body_class: theme-academy
   <a class="ac-cta" id="ac-cta" href="{{ '/academy/bootcamp/' | relative_url }}">Start Lesson 1 — Auston's Bootcamp ▸</a>
 </div>
 
-<h2 class="ac-h2">The path</h2>
+<h2 class="ac-h2">The Path</h2>
 <div class="ac-lessons">
 
   <a class="ac-lesson ac-lesson--open" href="{{ '/academy/bootcamp/' | relative_url }}">

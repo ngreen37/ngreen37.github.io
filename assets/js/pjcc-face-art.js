@@ -9,7 +9,7 @@
  *
  * THIS IS THE OTHER HALF OF THE 2026-07-28 JOB. The companion became parts that day
  * (pjcc-pet-art.js) and the person stayed one of 32 emoji — 🧑 🥷 👸 — which is one
- * picture with no eye to colour, at any level of cleverness. The backlog recorded the
+ * picture with no eye to color, at any level of cleverness. The backlog recorded the
  * trade and left it: drawing the person costs the 32 ready-made characters. The line
  * above is Nate taking that trade.
  *
@@ -28,7 +28,7 @@
  *     pupil    the middle
  *     glint    the highlight that stops it looking printed
  *
- * A one-colour eye is the two rings set to the same colour — NOT a separate code
+ * A one-color eye is the two rings set to the same color — NOT a separate code
  * path. That is why "two-tone" costs nothing to maintain: there is only ever one
  * eye, and sometimes its two rings agree.
  *
@@ -49,7 +49,7 @@
      ⚠ THE KEYS ARE THE OLD EMOJI SKIN-TONE MODIFIERS, ON PURPOSE. `tone` has been
      saved as '', '🏻'…'🏿' since the Forge shipped, and keeping the keys means every
      look already on a device keeps its skin without a migration step that could only
-     ever go wrong. The values are new — a modifier is not a colour. */
+     ever go wrong. The values are new — a modifier is not a color. */
   var SKIN = {
     '':   { n: 'Default', c: '#caa472', s: '#a8814f' },
     '🏻': { n: 'I',       c: '#f7d9bf', s: '#dcb595' },
@@ -60,7 +60,7 @@
   };
   var SKIN_ORDER = ['', '🏻', '🏼', '🏽', '🏾', '🏿'];
 
-  /* ── HAIR COLOUR — the real ones first, then the three Checker Town allows. ── */
+  /* ── HAIR COLOR — the real ones first, then the three Checker Town allows. ── */
   var HAIRCOL = {
     black:    { n: 'Black',    c: '#241f2e' },
     espresso: { n: 'Espresso', c: '#3d2a1e' },
@@ -78,7 +78,7 @@
   var HAIRCOL_ORDER = ['black', 'espresso', 'brown', 'auburn', 'ginger', 'sand',
                        'blonde', 'platinum', 'silver', 'jade', 'rose', 'azure'];
 
-  /* ── EYE COLOUR — the same eight the companion has, plus two. Sharing the list
+  /* ── EYE COLOR — the same eight the companion has, plus two. Sharing the list
      matters: "your eyes and your dog's eyes" should be able to be the same green. */
   var EYES = {
     brown:  { n: 'Brown',  c: '#7a4a24' },
@@ -89,10 +89,10 @@
     green:  { n: 'Green',  c: '#4f9a56' },
     blue:   { n: 'Blue',   c: '#4a8fd0' },
     ice:    { n: 'Ice',    c: '#9fd6ee' },
-    grey:   { n: 'Grey',   c: '#7b8494' },
+    gray:   { n: 'Gray',   c: '#7b8494' },
     violet: { n: 'Violet', c: '#8a63d2' }
   };
-  var EYE_ORDER = ['brown', 'hazel', 'amber', 'honey', 'olive', 'green', 'blue', 'ice', 'grey', 'violet'];
+  var EYE_ORDER = ['brown', 'hazel', 'amber', 'honey', 'olive', 'green', 'blue', 'ice', 'gray', 'violet'];
 
   function n(v) { return Math.round(v * 100) / 100; }
   function darken(hex, k) {
@@ -124,7 +124,7 @@
   }
   function shoulders() {
     // a plain collar in the site's panel purple — the person, not an outfit. The aura
-    // ring around the avatar is what carries their colour.
+    // ring around the avatar is what carries their color.
     return '<path d="M' + n(CX - 30) + ' 100 C' + n(CX - 28) + ' ' + n(80) + ' ' + n(CX - 13) + ' ' + n(75) + ' ' + CX + ' ' + n(75) +
       ' C' + n(CX + 13) + ' ' + n(75) + ' ' + n(CX + 28) + ' ' + n(80) + ' ' + n(CX + 30) + ' 100Z"' +
       ' fill="#3a2d6e" stroke="' + LINE + '" stroke-width="3" stroke-linejoin="round"/>';
@@ -133,7 +133,7 @@
   /* ── THE EYE ──────────────────────────────────────────────────────────────────
      Uniform: same size, same place, on every single face, which is what Nate meant by
      "keep the eye setup uniform so we can change eye color". A style that moved the
-     eyes would mean the colour picker showed you something different per hairstyle. */
+     eyes would mean the color picker showed you something different per hairstyle. */
   function eyePair(inner, outer) {
     var ey = n(CY + 1.5), ex = n(HW * 0.46), rx = 5.4, ry = 4.6;
     return [-1, 1].map(function (d) {
@@ -141,14 +141,31 @@
       return '<g class="fa-eye">' +
         '<ellipse class="fa-sclera" cx="' + x + '" cy="' + ey + '" rx="' + rx + '" ry="' + ry + '" fill="' + SCLERA + '" stroke="' + LINE + '" stroke-width="1.9"/>' +
         // outward-in: each ring covers the one before it, so "two-tone" is just two fills
-        /* 3.7 / 2.05 — measured off a render, not chosen. At the first pass (3.5 / 2.25)
-           the outer band was 1.25 units wide and a two-tone eye was only legible on the
-           104px preview; at avatar size in the nav it read as one muddy colour, which
-           would make the whole feature look broken to the person who just set it. The
-           band is 1.65 now and the ring survives being 22px across. */
+        /* ⚑ RE-PROPORTIONED 2026-08-04 from a photograph of Nate's own eyes: "the inner ring
+           is brown and the outer ring is more prominent and is blue."
+
+           The structure was already right — pupil, inner ring, outer ring — but the shares
+           were not. The inner circle was r=2.05 against an iris of 3.7, so it owned 55% of
+           the iris RADIUS and 30% of its AREA: a big brown disc with a blue rim around it,
+           which is the opposite of the photo. In a real two-tone eye the second color is a
+           halo hugging the pupil and the outer color is the eye.
+
+           r=1.75 now — 47% of the radius, 14% of the area — so the outer color runs from
+           86% of the iris instead of 79%, and the bright band it paints goes 1.65 → 1.95
+           units wide before the limbal ring trims it back to 1.61.
+
+           ⭐ THE LIMBAL RING IS THE OTHER HALF OF "more prominent", and it is the detail that
+           makes a drawn eye read as an eye: real irises are edged in a darker version of
+           their own color, and without it a flat disc of blue reads as a painted dot. It is
+           drawn INSIDE the outer edge (r 3.53, stroke 0.34, straddling 3.36-3.70) so the
+           iris footprint does not grow — the sclera is only 4.6 tall and an iris any bigger
+           starts covering its own outline. It costs one element and applies to one-color
+           eyes too, which is why every eye on the site is sharper for it. */
         '<circle class="fa-iris-outer" cx="' + x + '" cy="' + ey + '" r="3.7" fill="' + outer + '"/>' +
-        '<circle class="fa-iris-inner" cx="' + x + '" cy="' + ey + '" r="2.05" fill="' + inner + '"/>' +
-        '<circle class="fa-pupil" cx="' + x + '" cy="' + ey + '" r="1.15" fill="' + PUPIL + '"/>' +
+        '<circle class="fa-limbal" cx="' + x + '" cy="' + ey + '" r="3.53" fill="none" stroke="' +
+          darken(outer, 0.45) + '" stroke-width="0.34"/>' +
+        '<circle class="fa-iris-inner" cx="' + x + '" cy="' + ey + '" r="1.75" fill="' + inner + '"/>' +
+        '<circle class="fa-pupil" cx="' + x + '" cy="' + ey + '" r="1.05" fill="' + PUPIL + '"/>' +
         '<circle class="fa-glint" cx="' + n(x + 1.5) + '" cy="' + n(ey - 1.6) + '" r="0.95" fill="#ffffff" opacity="0.95"/>' +
         '</g>';
     }).join('');
@@ -179,7 +196,7 @@
      Each style is {back, front}: `back` paints behind the head (length, volume),
      `front` on top of it (the hairline, a fringe). Splitting them is what lets long
      hair fall behind the ears while the fringe still crosses the forehead.
-     The stroke is a darkened version of the fill rather than the flat outline colour,
+     The stroke is a darkened version of the fill rather than the flat outline color,
      so platinum hair doesn't get a black cartoon border. */
   var HAIR = {
     bald:  { n: 'Bald',      f: function () { return { back: '', front: '' }; } },
@@ -236,7 +253,7 @@
       front: '<path d="M' + n(CX - HW - 1.5) + ' ' + n(CY - 3) + ' C' + n(CX - HW - 1) + ' ' + n(CY - HH * 1.44) + ' ' + n(CX + HW + 1) + ' ' + n(CY - HH * 1.44) + ' ' + n(CX + HW + 1.5) + ' ' + n(CY - 3) +
         ' q-5 -9 -21 -9 q-16 0 -21 9Z" fill="' + c + '" stroke="' + k + '" stroke-width="2.4" stroke-linejoin="round"/>' }; } },
     /* LOCS — the strands start at the CROWN and hang past the jaw. The first version
-       started them at ±27 from centre, which is outside the head entirely, so they read
+       started them at ±27 from center, which is outside the head entirely, so they read
        as earmuffs floating beside a face. Now they fan from inside the hairline (±4 to
        ±19) and every one of them is longer than the chin, which is what makes it hair
        rather than an accessory. */
@@ -259,7 +276,7 @@
     var hc = (HAIRCOL[o.hairColor] || HAIRCOL.brown).c;
     var hk = darken(hc, 0.62);
     var inner = (EYES[o.eye] || EYES.brown).c;
-    // 'same' — and the DEFAULT — means a one-colour eye. Two-tone is opt-in, so a
+    // 'same' — and the DEFAULT — means a one-color eye. Two-tone is opt-in, so a
     // player who never opens that row gets an ordinary eye rather than a novelty one.
     var outer = (!o.eyeOuter || o.eyeOuter === 'same') ? inner : (EYES[o.eyeOuter] || EYES[o.eye] || EYES.brown).c;
     var h = hairStyle.f(hc, hk);

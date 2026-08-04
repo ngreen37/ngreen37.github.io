@@ -1,8 +1,8 @@
 ---
 layout: page
 permalink: /puzzle-reports/
-title: Puzzle reports
-tab_title: Puzzle reports
+title: Puzzle Reports
+tab_title: Puzzle Reports
 description: Private — reports filed from the Puzzle Room.
 noindex: true
 sitemap: false

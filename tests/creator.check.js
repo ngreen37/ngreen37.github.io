@@ -85,21 +85,21 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
 /* ── 3. THE PANEL CANNOT REFLOW ───────────────────────────────────────────────────
    The old grid held emoji, and 🧑 does not measure the same as 🧑🏽 — picking a skin tone
    re-wrapped the picker and shoved every section below it. Fixed cell dimensions are what
-   make that impossible, so they are checked as source, not just as behaviour. */
+   make that impossible, so they are checked as source, not just as behavior. */
 {
   check('the face picker cell is a fixed box', /\.forge-cell--face \.fc-face \{[^}]*width: 46px[^}]*height: 46px/.test(CSS));
   check('…and so is the face inside it', /\.forge-cell--face \.fc-face \.fa-svg \{[^}]*width: 46px/.test(CSS));
-  check('a colour click repaints, it does not rebuild',
+  check('a color click repaints, it does not rebuild',
     /function repaintOp\(\)/.test(CODE) && /if \(heavy\) renderForge\(true\); else repaintOp\(\)/.test(CODE));
 }
 
-/* ── 4. THE EYE IS UNIFORM AND TAKES TWO COLOURS ─────────────────────────────── */
+/* ── 4. THE EYE IS UNIFORM AND TAKES TWO COLORS ─────────────────────────────── */
 {
   check('there is exactly ONE eye routine', (FACE.match(/function eyePair\(/g) || []).length === 1,
-    'every face gets the same eyes, in the same place — which is what makes a colour picker honest');
+    'every face gets the same eyes, in the same place — which is what makes a color picker honest');
   check('the eye has four concentric parts',
     /fa-sclera/.test(FACE) && /fa-iris-outer/.test(FACE) && /fa-iris-inner/.test(FACE) && /fa-pupil/.test(FACE));
-  check('a one-colour eye is the two rings AGREEING, not a second code path',
+  check('a one-color eye is the two rings AGREEING, not a second code path',
     /eyeOuter === 'same'\) \? inner :/.test(FACE),
     'so "two-tone" costs nothing to maintain');
   check('two-tone is opt-in', /!o\.eyeOuter \|\| o\.eyeOuter === 'same'/.test(FACE),
@@ -141,7 +141,7 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
   }));
   check('the Base picker is drawn people, not glyphs', shape.cells > 0 && shape.drawn === shape.cells,
     shape.cells + ' cells, ' + shape.drawn + ' drawn');
-  check('hair colour / skin / eye / outer-ring rows are all present',
+  check('hair color / skin / eye / outer-ring rows are all present',
     shape.rows.every((n) => n > 0), shape.rows.join(' · '));
 
   // ── the regression gate for his actual complaint ──
@@ -177,17 +177,17 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
     look.hair === 'long' && look.hairColor === 'ginger' && look.eye === 'green' &&
     look.eyeOuter === 'brown' && look.aura === 'jade' && look.hat === 'crown',
     JSON.stringify(look));
-  check('the drawn eye is genuinely two colours', look.inner !== look.outer,
+  check('the drawn eye is genuinely two colors', look.inner !== look.outer,
     'inner ' + look.inner + ' · outer ' + look.outer + '  (Nate\'s own: green inside, brown outside)');
 
-  // one colour again — the same eye, its rings agreeing
+  // one color again — the same eye, its rings agreeing
   await page.evaluate(() => document.querySelector('[data-eye2="same"]').click());
   await new Promise((r) => setTimeout(r, 60));
   const one = await page.evaluate(() => ({
     inner: document.querySelector('#forge-prev .fa-iris-inner').getAttribute('fill'),
     outer: document.querySelector('#forge-prev .fa-iris-outer').getAttribute('fill')
   }));
-  check('“Matched” gives back a one-colour eye', one.inner === one.outer, one.inner);
+  check('“Matched” gives back a one-color eye', one.inner === one.outer, one.inner);
 
   // an old saved character opens as a person who resembles it
   const mig = await page.evaluate(() => {

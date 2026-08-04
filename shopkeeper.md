@@ -68,7 +68,7 @@ this shelf plus the pieces you earn and the ones only the altar gives back.</p>
     html += '</div>';
 
     // Shop avatars (bought with credits)
-    html += '<h2 class="qm-h">Field gear</h2><div class="qm-grid">';
+    html += '<h2 class="qm-h">Field Gear</h2><div class="qm-grid">';
     PJCC.AVATAR_SHOP.forEach(function (item) {
       var isOwned = owned.indexOf(item.key) !== -1;
       var on = item.key === equipped;
@@ -101,7 +101,7 @@ this shelf plus the pieces you earn and the ones only the altar gives back.</p>
     // Profile themes (Dossier accent)
     var ownedThemes = PJCC.ownedThemes(prof);
     var equippedTheme = (prof.companion && prof.companion.theme) || 'default';
-    html += '<h2 class="qm-h">Board skins &amp; themes</h2><p class="pjcc-sub" style="margin:0 0 8px;">Recolours your Dossier — and now skins the gold chrome inside the games too.</p><div class="qm-grid">';
+    html += '<h2 class="qm-h">Board Skins &amp; Themes</h2><p class="pjcc-sub" style="margin:0 0 8px;">Recolors your Dossier — and now skins the gold chrome inside the games too.</p><div class="qm-grid">';
     PJCC.THEME_SHOP.forEach(function (key) {
       var t = PJCC.THEMES[key];
       var owned = ownedThemes.indexOf(key) !== -1;

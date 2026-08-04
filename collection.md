@@ -170,9 +170,9 @@ the pieces you earn, and the ones only the altar gives back. <b>Collect them all
 <style>
 /* ── THE COLLECTION ──────────────────────────────────────────────────────────────
    Built on the shared surface tokens so it inherits the site's radii and card. The
-   band colours are the SAME six as PJCC.BANDS and the altar's `.band-*` rules — a
+   band colors are the SAME six as PJCC.BANDS and the altar's `.band-*` rules — a
    seventh copy of that ladder would be the thing that finally disagrees with itself,
-   so if a band ever changes colour it changes in all three or in none. */
+   so if a band ever changes color it changes in all three or in none. */
 .col-lede { color: #cdbcf2; font-size: 0.95rem; line-height: 1.6; margin: 0 0 18px; max-width: 62ch; }
 .col-lede b { color: #F5C518; }
 .col-empty { color: #9a7fd4; }
@@ -201,7 +201,7 @@ the pieces you earn, and the ones only the altar gives back. <b>Collect them all
   padding: 13px 9px 11px; border-radius: var(--r-md, 12px);
   background: rgba(26,16,64,0.5); border: 1px solid #33265e; text-align: center; min-width: 0; }
 /* NOT OWNED IS THE DEFAULT LOOK, and owned is the one that lights up — the opposite
-   (grey out what you're missing) makes a new visitor's case read as broken. */
+   (gray out what you're missing) makes a new visitor's case read as broken. */
 .col-item.have { background: rgba(45,27,105,0.55); border-color: #6b5fa0;
   box-shadow: inset 0 0 0 1px rgba(245,197,24,0.14); }
 .col-item.claimable { border-color: #6bffb8; box-shadow: 0 0 18px -8px #6bffb8; }
@@ -226,7 +226,7 @@ the pieces you earn, and the ones only the altar gives back. <b>Collect them all
 .col-claim:disabled { opacity: 0.55; cursor: default; }
 @media (pointer: coarse) { .col-claim { min-height: 44px; padding: 6px 16px; } }
 
-/* the six bands — the same colours as PJCC.BANDS and the altar */
+/* the six bands — the same colors as PJCC.BANDS and the altar */
 .band-common    { color: #9aa3b8; }
 .band-uncommon  { color: #7fd4a8; }
 .band-rare      { color: #56d0ff; }

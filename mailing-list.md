@@ -22,7 +22,7 @@ body_class: theme-studio
 <p class="ml-fineprint">Roughly twice a month. No spam, no selling your address, unsubscribe in one click.</p>
 
 <!-- what you get -->
-<h2 class="ml-h2">What lands in your inbox</h2>
+<h2 class="ml-h2">What Lands in Your Inbox</h2>
 <div class="ml-grid">
   <div class="ml-cell"><span class="ml-cell-ico">🎬</span><b>Episode &amp; pilot news</b><small>premiere dates and first looks, before anywhere else.</small></div>
   <div class="ml-cell"><span class="ml-cell-ico">🕹️</span><b>Game drops</b><small>every new game and major update the day it ships.</small></div>
@@ -116,7 +116,7 @@ body_class: theme-studio
 .ml-intro b { color: #f2f2f4; }
 
 .ml-form { display: flex; gap: 8px; flex-wrap: wrap; margin: 1.2rem 0 0.4rem; }
-/* recolour the shared gold/purple form controls to the graphite + ink-blue signature
+/* recolor the shared gold/purple form controls to the graphite + ink-blue signature
    (page-scoped so other pages' .pjcc-btn / .pjcc-input keep the arcade look) */
 .ml-form .pjcc-input, .ml-invite-input { background: #15151b; border: 1px solid rgba(255,255,255,0.18); color: #f2f2f4; }
 .ml-form .pjcc-input:focus, .ml-invite-input:focus { border-color: #5b8def; }

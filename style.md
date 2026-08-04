@@ -26,7 +26,7 @@ description: The colors, type, and motifs that make PJCC and McPuppy Studios loo
 </div>
 <p class="vl-note">Gold is the one true accent — used sparingly, it means "this matters." The purples carry the mood; the signal colors (green = go / verified, red = retired, blue = arcade, rose = flair) each mean one thing and are never decorative.</p>
 
-<h2 class="vl-h">Type — the voice chart</h2>
+<h2 class="vl-h">Type — The Voice Chart</h2>
 <p class="vl-sub">Six faces, and each one speaks for something. This is the part that drifts if nobody writes it down, so: who talks in what, and where each one is never used.</p>
 <div class="vl-type">
   <div class="vl-type-row">

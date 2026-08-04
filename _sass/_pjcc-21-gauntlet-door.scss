@@ -17,6 +17,59 @@
  * ========================================================================== */
 /* (the .gdoor-plate + .gdoor-sub rules are gone — 2026-07-16 evening plate parity:
    no door anywhere carries the THE GAUNTLET plate or a caption any more) */
+
+/* ═══════════════════════════════════════════════════════════════════════════════════
+   ⚑ WHAT "OPEN" MEANS — ONE DEFINITION, 2026-08-04
+   -----------------------------------------------------------------------------------
+   Nate: "Make this door — and all doors — open FULLY. This is important. And also,
+   remember to always make the door uniform inside the Gauntlet and any other page the
+   doors exist. Uniform is key."
+
+   Both halves of that are handled here, and the second half is the reason this mixin
+   exists at all. Every floor used to spell out its own three-selector open rule:
+
+       .gdoor[data-floor="5"]:hover .gdoor-door,
+       .gdoor[data-floor="5"]:focus-visible .gdoor-door,
+       .gdoor[data-floor="5"].is-open .gdoor-door { … }
+
+   Ten floors × three selectors, hand-maintained. The front door then needed a FOURTH
+   trigger — there the CARD is the link and the door is a span inside it, so `.gdoor:hover`
+   only fires when the cursor is on the 46px arch itself — and adding it meant copying every
+   one of those transforms into index.md. That copy was a twin from the moment it was
+   written, which is precisely the drift this partial was split out to end
+   ([[gauntlet-door-one-file]]).
+
+   So: `@include gd-open('[data-floor="5"]')` emits all of them from one place, INCLUDING
+   `.gdoor-host` — any container may declare itself the door's hover target by wearing that
+   class, and it inherits every floor treatment for free, forever.
+
+   ⚠ `.is-open` is not a hover at all: the Gauntlet game opens the door on a TIMER when the
+   challenger card appears. It rides in the same list so a floor cannot open one way in the
+   hall and another way in the game.
+
+   ⚠ FULLY MEANS FULLY. Slides go to -100% (into the pocket, gone), swings to -90deg
+   (edge-on, which is what a wide-open door looks like from the front), and the portcullis
+   lifts -100% (clear of the arch). The old values — -58%, -16deg, -64% — were each written
+   as a character note ("it is HEAVY: it opens slowly, and not very far") and together they
+   read as doors that stick. The CHARACTER stays in the DURATION and the easing: floor two
+   is still the slowest thing on the ladder, it just gets all the way there now.
+   ═══════════════════════════════════════════════════════════════════════════════════ */
+@mixin gd-open($sel: '') {
+  .gdoor#{$sel}:hover .gdoor-door,
+  .gdoor#{$sel}:focus-visible .gdoor-door,
+  .gdoor#{$sel}.is-open .gdoor-door,
+  .gdoor-host:hover .gdoor#{$sel} .gdoor-door,
+  .gdoor-host:focus-visible .gdoor#{$sel} .gdoor-door { @content; }
+}
+/* the same five triggers, for the parts of a door that are not the panel — the arch glow,
+   floor seven's padlock, floor six's lit interior */
+@mixin gd-open-on($sel, $part) {
+  .gdoor#{$sel}:hover #{$part},
+  .gdoor#{$sel}:focus-visible #{$part},
+  .gdoor#{$sel}.is-open #{$part},
+  .gdoor-host:hover .gdoor#{$sel} #{$part},
+  .gdoor-host:focus-visible .gdoor#{$sel} #{$part} { @content; }
+}
 .gdoor { display:flex; flex-direction:column; align-items:center; gap:5px; text-decoration:none;
   position:relative;   /* anchors the pips whisper (the home hero's absolute wins there) */
   --acc:#F5C518; }
@@ -59,13 +112,11 @@
   background:#F5C518; box-shadow:0 0 5px rgba(245,197,24,0.8); }
 .gdoor-seam { position:absolute; left:6px; right:6px; bottom:0; height:3px; background:var(--acc);
   box-shadow:0 -2px 14px 3px color-mix(in srgb, var(--acc) 55%, transparent); }
-.gdoor:hover .gdoor-arch, .gdoor:focus-visible .gdoor-arch { box-shadow:0 0 34px -5px var(--acc); }
+@include gd-open-on('', '.gdoor-arch') { box-shadow:0 0 34px -5px var(--acc); }
 /* opens like a shogi screen — the panel SLIDES LEFT instead of swinging (Nate 2026-07-15).
-   `.is-open` is the same opening with no pointer involved: the GAUNTLET GAME uses this
-   door now (2026-07-27, Nate: "I want the Gauntlet doors to match inside the game as they
-   do out in the games hall") and opens it on a timer when the challenger card appears. */
-.gdoor:hover .gdoor-door, .gdoor:focus-visible .gdoor-door,
-.gdoor.is-open .gdoor-door { transform:translateX(-60%); }
+   -60% → -100% on 2026-08-04: the panel now clears the arch completely and the doorway is
+   an actual doorway. `.gdoor-arch` is overflow:hidden, so it slides into nothing. */
+@include gd-open { transform:translateX(-100%); }
 html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 
 /* ══ THE FLOOR TREATMENTS — MOVED HERE FROM _pjcc-09-widgets.scss (2026-07-28) ══════
@@ -127,10 +178,10 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 }
 .gdoor[data-floor="2"] .gdoor-glyph { color: #e8dcc0; opacity: 0.8;   /* chalked on */
   filter: drop-shadow(0 0 6px rgba(252, 188, 60, 0.45)); }
-.gdoor[data-floor="2"]:hover .gdoor-door,
-.gdoor[data-floor="2"]:focus-visible .gdoor-door {
-  transform: perspective(320px) rotateY(-16deg);
-}
+/* -16deg → -90deg. It is still the slowest door on the ladder (.55s, and the easing starts
+   lazy) — heavy is now something you FEEL in the timing rather than something that stops the
+   door a sixth of the way open. */
+@include gd-open('[data-floor="2"]') { transform: perspective(320px) rotateY(-90deg); }
 
 /* ── FLOOR 3 · THE TIDECALLER — the tide-gate ─────────────────────────────
    Bleached driftwood gone gray-green, two bands of verdigris copper, and a
@@ -206,9 +257,10 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
   background: rgba(86, 208, 255, 0.45); border: 2px solid #cfe9e2;
   box-shadow: 0 0 7px rgba(86, 208, 255, 0.8);
 }
-.gdoor[data-floor="3"]:hover .gdoor-door,
-.gdoor[data-floor="3"]:focus-visible .gdoor-door {   /* it lifts on the water as it opens */
-  transform: perspective(320px) rotateY(-26deg) rotateZ(-1.5deg) translateY(-2px);
+/* it lifts on the water as it opens — and now it opens all the way (-26deg → -90deg). The
+   roll and the little rise survive, because they are what make it read as floating. */
+@include gd-open('[data-floor="3"]') {
+  transform: perspective(320px) rotateY(-90deg) rotateZ(-1.5deg) translateY(-2px);
 }
 @keyframes gdoorSwell {
   0%, 100% { transform: translate3d(-3px, 0, 0); }
@@ -252,10 +304,9 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
   right: 10px; width: 4px; height: 14px; border-radius: 2px;
   background: rgba(58, 36, 26, 0.7); box-shadow: none;
 }
-.gdoor[data-floor="4"]:hover .gdoor-door,
-.gdoor[data-floor="4"]:focus-visible .gdoor-door {   /* slide open to the LEFT, don't swing (Nate 2026-07-15) */
-  transform: translateX(-58%) scaleX(0.92);
-}
+/* slide open to the LEFT, don't swing (Nate 2026-07-15) — and all the way into the pocket
+   now. The slight scaleX stays: a shoji panel narrows a touch as it stacks. */
+@include gd-open('[data-floor="4"]') { transform: translateX(-100%) scaleX(0.92); }
 
 /* ── FLOOR 5 · THE CITY GATEKEEPER — the GATES of Chess City ──────────────────
    2026-07-16 (Nate: the straight vertical bars read as "an old-timey jail cell";
@@ -296,10 +347,9 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
   background: transparent; border: 2px solid #e0b968; box-shadow: 0 0 4px rgba(224,185,104,0.6);
 }
 .gdoor[data-floor="5"] .gdoor-glyph { color: #f0c674; }
-.gdoor[data-floor="5"]:hover .gdoor-door,
-.gdoor[data-floor="5"]:focus-visible .gdoor-door {   /* the portcullis rises */
-  transform: translateY(-64%);
-}
+/* the portcullis rises — clear of the arch now (-64% → -100%), so the gate is genuinely
+   raised rather than stuck two-thirds of the way up with its spikes still in view. */
+@include gd-open('[data-floor="5"]') { transform: translateY(-100%); }
 
 /* ── FLOOR 9 · THE HEIR APPARENT — the gilded antechamber door ────────────────
    The last room before the top: rose-and-gold, a tall arched inset panel, gold
@@ -331,10 +381,7 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 }
 .gdoor[data-floor="9"] .gdoor-glyph { color: #ffd9ea;
   filter: drop-shadow(0 0 9px rgba(255,158,201,0.6)); }
-.gdoor[data-floor="9"]:hover .gdoor-door,
-.gdoor[data-floor="9"]:focus-visible .gdoor-door {
-  transform: perspective(320px) rotateY(-20deg);
-}
+@include gd-open('[data-floor="9"]') { transform: perspective(320px) rotateY(-90deg); }
 @keyframes gdoorSheen {
   0%, 100% { background-position: 130% 0; }
   50%      { background-position: -30% 0; }
@@ -361,10 +408,36 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 .gdoor[data-grand="5"] .gdoor-arch::after { content:'👑'; opacity:1; font-size:14px; top:3px; }
 .gdoor[data-grand="4"] .gdoor-seam,
 .gdoor[data-grand="5"] .gdoor-seam { height:4px; box-shadow:0 -3px 20px 5px color-mix(in srgb, var(--acc) 62%, transparent); }
+/* ⚠ THE CROWNED DOOR COULD NOT BE OPENED — FIXED 2026-08-04, and it was pure specificity.
+   This resting `translateX(-10%)` (the summit door sits ajar) is (0,3,0), and the base open
+   rule `.gdoor:hover .gdoor-door` is ALSO (0,3,0) — a tie, decided by source order, and this
+   line is 300 lines later. So the one person who had beaten all ten floors got a door that
+   never moved. It is pinned to the shared open definition now, which both raises the
+   specificity and guarantees it opens the same distance as every other door. */
 .gdoor[data-grand="5"] .gdoor-door { transform:translateX(-10%); }
+@include gd-open('[data-grand="5"]') { transform:translateX(-100%); }
 .gdoor[data-grand="5"] .gdoor-seam { height:5px; box-shadow:0 -3px 28px 7px color-mix(in srgb, var(--acc) 74%, transparent); }
 
-/* FLOOR ZERO — a tattered cloth hung on a rod, worn holes leaking the backlight. */
+/* ── FLOOR ZERO — a tattered cloth hung on a rod, worn holes leaking the backlight ──
+   ⚑ RE-TORN 2026-08-04. Nate, with a screenshot: "it's too symmetrical and the left/right
+   sides are too straight. Let's take some more chunks out of the bottom middle so it isn't
+   as uniform (the triangle cut-outs)."
+
+   He is right, and the old shape's problem is worth naming because it is a trap any hand-cut
+   clip-path falls into: it was FIVE TEETH OF THE SAME SIZE, evenly spaced, each dipping to
+   ~95% and rising to ~77%. Regular spacing plus regular depth is not "tattered", it is
+   BUNTING — a decorative pennant edge. And both side edges ran dead straight from the rod to
+   the hem, which no hanging cloth does.
+
+   The new hem breaks all three regularities on purpose:
+     · DEPTH VARIES 3:1. The tips reach 86-96%, but the tears between them cut to 44-71%, and
+       the four deepest (44%, 50%, 52%, 55%) are all in the MIDDLE THIRD — the chunks he
+       asked for. The middle of a cloth is what gets walked through, so it is what wears out.
+     · WIDTH VARIES. Teeth run 5-9% of the width instead of a metronomic 13%.
+     · THE SIDES ARE RAGGED. Both edges now step in and out by up to 9% on the way down, so
+       neither reads as a cut line.
+   ⚠ It is all PERCENTAGES, so the same shape serves the canonical 78×100 door, the games
+   hall's 72×92, and the front door's 46×60 without a second version existing anywhere. */
 .gdoor[data-grand="0"] .gdoor-arch { border-color:rgba(245,197,24,0.38); box-shadow:0 0 18px -10px var(--acc); }
 .gdoor[data-grand="0"] .gdoor-door {
   left:7px; right:7px; top:12px;
@@ -374,7 +447,21 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
     linear-gradient(100deg, rgba(0,0,0,0) 30%, rgba(58,38,16,0.35) 36%, rgba(0,0,0,0) 43%),
     linear-gradient(84deg,  rgba(0,0,0,0) 62%, rgba(58,38,16,0.28) 68%, rgba(0,0,0,0) 75%),
     linear-gradient(180deg, #a8845c 0%, #7c5a38 55%, #5e4226 100%);
-  clip-path:polygon(0 0, 100% 0, 100% 72%, 89% 95%, 76% 76%, 63% 98%, 48% 79%, 34% 96%, 21% 78%, 10% 93%, 0 76%);
+  clip-path:polygon(
+    /* the rod — the only straight line on the cloth */
+    0 0, 100% 0,
+    /* the right edge, frayed on the way down */
+    100% 16%, 92% 30%, 100% 44%, 94% 59%, 100% 71%,
+    /* THE HEM, right to left. Read the WIDTHS as well as the depths — 4, 10, 6, 13, 8, 6,
+       12, 7, 10, 7, 9, 8 — because equal spacing is what made the old edge read as bunting.
+       Tips sit at 88-96%; the tears behind them cut to 55-76%, and the two deepest (57% and
+       55%) are both in the middle third, where a hanging cloth actually wears out because it
+       is what people walk through. Between x=53% and x=34% there is no tip at all: two
+       notches run together into one wide bite, which is the "chunk" rather than a tooth. */
+    96% 89%, 86% 73%, 80% 96%, 67% 57%, 59% 91%,
+    53% 62%, 41% 55%, 34% 94%, 24% 76%, 17% 88%, 8% 70%,
+    /* the left edge, a different rhythm from the right so the pair never rhymes */
+    0 84%, 9% 63%, 0 47%, 7% 31%, 0 17%);
   -webkit-mask-image:
     radial-gradient(circle 3px at 26% 38%, transparent 98%, #000 100%),
     radial-gradient(circle 2px at 64% 24%, transparent 98%, #000 100%),
@@ -395,9 +482,10 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 .gdoor[data-grand="0"] .gdoor-glyph { font-size:26px; opacity:0.55; filter:none; color:#3a2612; }
 .gdoor[data-grand="0"] .gdoor-seam { height:2px; box-shadow:0 -2px 10px 2px color-mix(in srgb, var(--acc) 38%, transparent); }
 .gdoor[data-grand="0"] .gdoor-door { transition:transform .5s cubic-bezier(.3,1.25,.4,1); }
-.gdoor[data-grand="0"]:hover .gdoor-door,
-.gdoor[data-grand="0"]:focus-visible .gdoor-door,
-.gdoor[data-grand="0"].is-open .gdoor-door { transform:translateX(-58%); }
+/* -58% → -100%: the cloth is swept fully aside. It swings from `transform-origin: 84% 50%`,
+   so it pivots off its right-hand edge like a curtain being pulled back, and the little
+   overshoot in the easing keeps the fabric feeling light. */
+@include gd-open('[data-grand="0"]') { transform:translateX(-100%); }
 
 /* ── FLOOR SIX — THE AUDITOR'S DOOR (2026-07-22, Nate: "make it look like more of an
    auditor's door … the green looks odd, and it doesn't really open"). A frosted-glass
@@ -425,13 +513,12 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 /* the interior lights as the door opens — a warm ledger-green spill on the right where the
    pane swings away, so the OPENING reads as a lit office rather than a dark gap (repaints
    once on hover, like the arch's glow bump — not per-frame). */
-.gdoor[data-floor="6"]:hover .gdoor-arch,
-.gdoor[data-floor="6"]:focus-visible .gdoor-arch {
+@include gd-open-on('[data-floor="6"]', '.gdoor-arch') {
   background:radial-gradient(ellipse at 66% 62%, rgba(63,174,122,0.42), #0c0722 74%); }
 /* the piece behind the glass — a soft silhouette, not a crisp glyph (one static raster;
    it rides the panel's composited slide, so no per-frame filter cost) */
 .gdoor[data-floor="6"] .gdoor-glyph {
-  top:38%; color:rgba(214,242,228,0.5); opacity:0.7;   /* × the colour's own alpha — a shape, not a piece */
+  top:38%; color:rgba(214,242,228,0.5); opacity:0.7;   /* × the color's own alpha — a shape, not a piece */
   filter:blur(1.4px) drop-shadow(0 0 6px rgba(63,174,122,0.45)); }
 /* the brass nameplate riveted across the door */
 .gdoor[data-floor="6"] .gdoor-door::after {
@@ -451,9 +538,7 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
    through the gap. rotateY overrides the base translateX slide (higher specificity), and it
    is compositor-only on the already-promoted panel. */
 .gdoor[data-floor="6"] .gdoor-door { transition:transform .42s var(--ease-out, cubic-bezier(0.20,0.80,0.25,1)); }
-.gdoor[data-floor="6"]:hover .gdoor-door,
-.gdoor[data-floor="6"]:focus-visible .gdoor-door,
-.gdoor[data-floor="6"].is-open .gdoor-door { transform:perspective(640px) rotateY(-76deg); }
+@include gd-open('[data-floor="6"]') { transform:perspective(640px) rotateY(-90deg); }
 
 /* ── FLOOR SEVEN — THE ENFORCER'S GATE (2026-07-27, Nate: "Enforcer Gate door — lock the
    rook glyph"). Floor seven is the jail gate in the ladder design, and the Enforcer is the
@@ -498,12 +583,8 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
   transition:opacity .2s ease, transform .3s ease;
 }
 /* it comes off as the gate goes — the lock is what was holding you out */
-.gdoor[data-floor="7"]:hover .gdoor-knob,
-.gdoor[data-floor="7"]:focus-visible .gdoor-knob,
-.gdoor[data-floor="7"].is-open .gdoor-knob { opacity:0; transform:translate(-50%,-40%); }
-.gdoor[data-floor="7"]:hover .gdoor-door::after,
-.gdoor[data-floor="7"]:focus-visible .gdoor-door::after,
-.gdoor[data-floor="7"].is-open .gdoor-door::after { opacity:0; transform:translate(-50%,10px); }
+@include gd-open-on('[data-floor="7"]', '.gdoor-knob') { opacity:0; transform:translate(-50%,-40%); }
+@include gd-open-on('[data-floor="7"]', '.gdoor-door::after') { opacity:0; transform:translate(-50%,10px); }
 
 /* ── FLOOR EIGHT — THE VICE PRESIDENT'S DOOR (2026-07-27, Nate: "looks nice, but it doesn't
    open. Make it look a little more like a Vice President door"). It didn't LOOK like it
@@ -540,9 +621,9 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
   box-shadow:0 0 6px rgba(240,208,137,0.5); }
 /* THE BISHOP WAS A BLOB (2026-07-28, Nate: "floor 8 door looks super weird"). Three
    things were stacking, and none of them was the door:
-     · The glyph sat at the accent colour — PURPLE on a purple door, inside a purple arch
+     · The glyph sat at the accent color — PURPLE on a purple door, inside a purple arch
        glow. No separation at all, so it read as one shape instead of a piece on a door.
-     · data-grand="4" hangs a 13px drop-shadow on the glyph IN ITS OWN COLOUR. On floor 9's
+     · data-grand="4" hangs a 13px drop-shadow on the glyph IN ITS OWN COLOR. On floor 9's
        crown, which is wide and open, that reads as a halo; on ♝, which is tall and solid,
        the glow fills the gaps and the piece swells into a lump.
      · At 40px in the game shell the bishop is 38% of the door's height, and its shadow
@@ -555,13 +636,10 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
   top:33%; color:#f0d9a8;
   transform:translate(-50%,-50%) scale(0.82);
   filter:drop-shadow(0 1px 1px rgba(0,0,0,0.55)) drop-shadow(0 0 7px rgba(199,155,255,0.4)); }
-.gdoor[data-floor="8"]:hover .gdoor-arch,
-.gdoor[data-floor="8"]:focus-visible .gdoor-arch {
+@include gd-open-on('[data-floor="8"]', '.gdoor-arch') {
   background:radial-gradient(ellipse at 66% 60%, rgba(199,155,255,0.40), #0c0722 74%); }
 .gdoor[data-floor="8"] .gdoor-door { transition:transform .42s var(--ease-out, cubic-bezier(0.20,0.80,0.25,1)); }
-.gdoor[data-floor="8"]:hover .gdoor-door,
-.gdoor[data-floor="8"]:focus-visible .gdoor-door,
-.gdoor[data-floor="8"].is-open .gdoor-door { transform:perspective(640px) rotateY(-74deg); }
+@include gd-open('[data-floor="8"]') { transform:perspective(640px) rotateY(-90deg); }
 
 /* ── THE SAME DOOR, INSIDE THE GAME (2026-07-27) ────────────────────────────────────
    The Gauntlet's challenger card stands this door over the rival's portrait and opens it

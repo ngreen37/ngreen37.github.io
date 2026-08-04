@@ -559,7 +559,7 @@ html.town-mist .town-weather-overlay::before { opacity: 1; background: radial-gr
 
    WHAT STAYED, and why each earns its keep:
      · `.town-weather-overlay` and its ::before/::after — the phase tint and the
-       weather colour wash. Static paint, no animation, no layer. This is also the
+       weather color wash. Static paint, no animation, no layer. This is also the
        graceful fallback: reduced-motion visitors and any browser that can't give us
        a 2d context still get a sky that knows it's raining.
      · `.tw-bolt` — lightning, an opacity flash on demand. Not a standing layer.
@@ -619,7 +619,7 @@ html.reduce-flourish .tw-canvas,
 html.reduce-flourish .tw-ghost { display: none; }
 @media (prefers-reduced-motion: reduce) { .tw-canvas, .tw-ghost { display: none; } }
 
-/* SNOW's colour wash — the cold, flat, slightly bright cast a snowy sky has. Warmer
+/* SNOW's color wash — the cold, flat, slightly bright cast a snowy sky has. Warmer
    than the rain wash on purpose: falling snow scatters light back at you, so a snowy
    evening is LIGHTER than a rainy one, which is the opposite of what you'd guess. */
 html.town-snow .town-weather-overlay::before {

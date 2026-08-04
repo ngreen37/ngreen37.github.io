@@ -328,7 +328,7 @@ layout: default
      Academy each have their own link). So the landing leads with three big doors into it —
      Characters · Locations · Fan Art — right under the hero. {% endcomment %}
 <section class="home-world" aria-labelledby="h-world" data-reveal>
-  <h2 id="h-world" class="sr-only">Explore the world</h2>
+  <h2 id="h-world" class="sr-only">Explore the World</h2>
   <style>
   /* TOKEN-ADOPTED 2026-07-23 (the adoption pass). The values that are RHYTHM, TYPE, RADIUS
      and MOTION now read the design tokens (_pjcc-01-core.scss): spacing → --space-*, corner
@@ -357,7 +357,7 @@ layout: default
     <a class="hw-door" href="{{ '/characters/' | relative_url }}">
       <span class="hw-ico" aria-hidden="true">&#9822;</span>
       <span class="hw-name">Characters</span>
-      <span class="hw-sub">Meet the cast</span>
+      <span class="hw-sub">Meet the Cast</span>
     </a>
     <a class="hw-door" href="{{ '/locations/' | relative_url }}">
       <span class="hw-ico" aria-hidden="true">&#9978;</span>
@@ -380,7 +380,7 @@ layout: default
 
      The Gauntlet wins that slot on the merits. It is real chess against a ladder you
      climb, it needs no account, it works offline, and it REMEMBERS you: the arch is
-     dressed from localStorage before you touch anything — your floor's boss colour and
+     dressed from localStorage before you touch anything — your floor's boss color and
      piece, the grandeur tier your climb has earned, ten pips showing exactly where you
      stopped. That is the most alive thing on the site, and on a front door it is worth
      more than a second box beside it.
@@ -403,7 +403,7 @@ layout: default
      half simply no-ops now that #gauntlet-door is gone (it guards on the missing element).
      Restore the two doors from git: git show <prev>^ -- _layouts/home.html {%- endcomment -%}
 <section class="home-play-nudge" aria-labelledby="h-play" data-reveal>
-  <h2 id="h-play" class="sr-only">Play chess</h2>
+  <h2 id="h-play" class="sr-only">Play Chess</h2>
   <a class="home-play-btn" href="{{ '/games/' | relative_url }}">
     <span class="hpb-ico" aria-hidden="true">&#9819;</span>
     <span class="hpb-txt"><b>Play the Games</b><small>The Gauntlet, Park Tables &amp; the arcade</small></span>
@@ -428,7 +428,7 @@ layout: default
      Direct Line link, the phone tap-to-reveal, and the hotter night burn. It is the same
      include the splash uses; only where it stands is different. {% endcomment %}
 <section class="home-awake" aria-labelledby="h-studio" data-reveal>
-  <h2 id="h-studio" class="sr-only">From the studio</h2>
+  <h2 id="h-studio" class="sr-only">From the Studio</h2>
   <span class="awake-lamp">{% include desk-lamp.html id="home-lamp" %}</span>
   <div class="awake-copy">
     <span class="awake-label" data-hb>Building in the open</span>
@@ -787,7 +787,7 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
    drop-shadow below, and that is the point: a filter runs on the RENDERED silhouette, so
    it traces the outside of the merged piece and never the seams between the shapes it is
    built from. Two hairline passes make the edge, the third is the shadow the piece casts
-   on the board. Solid colour inside, one line around the outside — nothing in between.
+   on the board. Solid color inside, one line around the outside — nothing in between.
 
    Opacity still sits at 0.88–0.95: enough atmosphere to belong to the painting, not so
    little that you can see through a king. */
@@ -795,7 +795,7 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
   bottom:var(--b); transform:translateX(-50%);
   filter:drop-shadow(0 0 0.7px var(--piece-w-line)) drop-shadow(0 0 0.7px var(--piece-w-line))
          drop-shadow(0 calc(var(--d) * 0.045) calc(var(--d) * 0.07) rgba(0,0,0,0.5)); }
-/* the fills live in the canon (_pjcc-22-chess-canon.scss) with every other piece colour
+/* the fills live in the canon (_pjcc-22-chess-canon.scss) with every other piece color
    on the site — all the hero owns is how big they are and what light they stand in. */
 .hp-cs .cpc { width:100%; height:100%; }
 /* BLACK on the banner, not canon purple (2026-07-22, Nate: "turn the purple pieces on the
@@ -805,16 +805,16 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
    purple was already reading as black anyway. #12101a keeps a trace of the world's violet
    in it so it sits in the picture instead of punching a hole in it; the pale --piece-b-line
    contour is what keeps it a piece and not a smudge after dark.
-   LIFTED #12101a → #343140 (2026-07-22, Nate: "make the black king a little more grey"), then
+   LIFTED #12101a → #343140 (2026-07-22, Nate: "make the black king a little more gray"), then
    PULLED BACK #343140 → #282531 (2026-07-22, Nate: "make the black king a little blacker, and
    give it some white tracing to give it depth"). So the body is near-black again — violet
-   trace kept, B the highest channel — and it stops leaning on a grey body to separate from
+   trace kept, B the highest channel — and it stops leaning on a gray body to separate from
    the sky: the WHITE keyline below does that now, reading as a lit edge that gives the flat
    silhouette some depth. Checked over night/dusk/day: the white trace pops it on the dark
    skies, the dark body carries it on the pale day one. */
 .hp-cs--b .cpc { fill:#282531; }
 /* the king's contour is a WHITE keyline (2026-07-22, Nate: "give it some white tracing to
-   give it depth"). This reverses the earlier dark-grey edge: once the body went blacker again
+   give it depth"). This reverses the earlier dark-gray edge: once the body went blacker again
    (#282531 above), a dark edge on a dark body closes up into a flat blob, so the trace goes
    the other way — a crisp white line around the whole silhouette. On the night/dusk skies it
    reads as a lit rim and lifts the piece off the background; on the pale day sky it fades, but
@@ -855,7 +855,7 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
   // mirrors the LADDER order / accents / glyphs in assets/games/pjcc_gauntlet.html
   var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The Executive Assistant'];
   var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#3fae7a','#ff6b6b','#c79bff','#ff9ec9','#f5c518']; // [5] Auditor: ledger-green, was mint #9ff0c4 (2026-07-22)
-  var GLYPHS  = ['♞','♟','♝','♞','♜','♝','♜','♝','♛','♛'];
+  var GLYPHS  = ['♟','♟','♝','♞','♜','♝','♜','♝','♛','♛'];
   var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
   var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;
   for (var i = 0; i < NAMES.length; i++) { if (beaten[i]) cleared++; }
@@ -882,17 +882,19 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
   var glyph = document.getElementById('gdoor-glyph');
   if (cur >= NAMES.length) {                      // crowned — the door stands open gold
     door.setAttribute('href', door.getAttribute('href') + '#tower');
-  } else if (cleared > 0) {                       // mid-climb — the current floor's door
-    door.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
-    if (glyph) glyph.textContent = GLYPHS[cur] || '♛';
-    door.setAttribute('href', door.getAttribute('href') + '#climb');
-  }                                               // fresh climbers keep the gold ♛ door
+  } else {
+    if (glyph) glyph.textContent = GLYPHS[cur] || '♟';   // ALWAYS — floor one is a pawn
+    if (cleared > 0) {                            // mid-climb — the current floor's door
+      door.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
+      door.setAttribute('href', door.getAttribute('href') + '#climb');
+    }
+  }
 })();
 </script>
 
 {% comment %} ── 4. CHARACTER TEASER — four random faces, reshuffled each visit ──── {% endcomment %}
 <section class="home-section home-section--cast" aria-labelledby="h-cast" data-reveal>
-  <h2 id="h-cast" class="sr-only">Meet the cast</h2>
+  <h2 id="h-cast" class="sr-only">Meet the Cast</h2>
   {% comment %} All main-cast chips are rendered (ancillary excluded); the JS below shows a
        random four as CARDS (the town-square experiment was reverted 2026-07-10).
        "Meet them all" + shuffle both live BELOW the grid. {% endcomment %}
@@ -975,7 +977,7 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
 /* NO DESK IN THIS BAND (2026-07-28, Nate pointed two arrows at it). The lamp partial draws
    a wooden desk under the base, and on the SPLASH that is right — the lamp is pinned into a
    corner of the viewport, so the plank reads as the near edge of a desk running off-screen.
-   Here it is centred in an open band of night sky, where the same plank is a brown bar
+   Here it is centered in an open band of night sky, where the same plank is a brown bar
    floating in mid-air, sticking out past the lamp on both sides with nothing beneath it.
    It also hung 10px below .awake-lamp's own box, so the band's edge sliced its front lip
    off — but reserving that space was rendered and did NOT fix the read, because clipping
@@ -983,7 +985,7 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
    the light pool under it is all the "surface" this placement needs.
    ⚠ .sl-desk is still live on the splash — this hides it, it doesn't delete it. */
 .awake-lamp .sl-desk { display:none; }
-/* the tip is anchored to the lamp's right edge by the partial; in a centred band that
+/* the tip is anchored to the lamp's right edge by the partial; in a centered band that
    would hang off toward the copy, so pull it back over the lamp */
 .awake-lamp .sl-tip { right:auto; left:-52px; }
 

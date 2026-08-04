@@ -248,7 +248,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
      takes the empty slot (Nate: "make a Games Hall box and put it in the play now box"), which
      keeps the grid at four and gives the page its one link to every game on the site.
      {%- endcomment -%}
-<h2 class="mc-h2">More ways in</h2>
+<h2 class="mc-h2">More Ways In</h2>
 <div class="mc-doors">
   <a class="mc-door" href="{{ '/games/' | relative_url }}">
     <span class="mc-door-ico" aria-hidden="true">&#9654;</span>
@@ -277,12 +277,12 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
        de-brassed one would be a fifth door look on a site whose whole rule is that there is
        one. It is contained — a lit doorway sitting on paper, inside one card, at 46×60 instead
        of the canonical 78×100 so the row of four stays a row of four. {%- endcomment -%}
-  <a class="mc-door mc-door--gauntlet" id="gauntlet-door"
+  <a class="mc-door mc-door--gauntlet gdoor-host" id="gauntlet-door"
      href="{{ '/games/the-gauntlet/' | relative_url }}"
      aria-label="The Gauntlet — real chess against a ladder of ten PJCC rivals">
     <span class="gdoor" aria-hidden="true">
       <span class="gdoor-arch">
-        <i class="gdoor-door"><b class="gdoor-glyph" id="gdoor-glyph">&#9819;</b><u class="gdoor-knob"></u></i>
+        <i class="gdoor-door"><b class="gdoor-glyph" id="gdoor-glyph">&#9823;</b><u class="gdoor-knob"></u></i>
         <i class="gdoor-seam"></i>
       </span>
       <span class="gdoor-pips" id="gdoor-pips"></span>
@@ -369,11 +369,11 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    the board and the button instead of on the site's own name.
 
    ⚠ IT IS SMALLER OUT HERE ON PURPOSE — 64px → 34px cap. Inside the sheet it was
-   competing with the board for the first screen; out here it has no neighbours, so it
+   competing with the board for the first screen; out here it has no neighbors, so it
    only has to LABEL the page, not fill a column. "Taking up too much space" was the
    complaint, and moving something without shrinking it would have moved the problem.
 
-   ⚠ THE SKY IS NOT A FIXED COLOUR. It runs dawn → day → dusk → night behind every page
+   ⚠ THE SKY IS NOT A FIXED COLOR. It runs dawn → day → dusk → night behind every page
    ([[town-sky-moon-and-header]]), so this text has to hold against a bright noon blue AND
    a near-black midnight. White + a real shadow is the only pair that does both; a token
    from the light front-door palette (--fd-ink is #1e232c) would vanish at night, which is
@@ -388,7 +388,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    the wordmark and it never competes with it. Same white-plus-shadow pair as the title, and
    for the same reason: this text crosses dawn, noon, dusk and midnight, and any ink from the
    light front-door palette would vanish against half of them. It is a touch translucent so
-   the hierarchy holds without introducing a second colour to the sky. */
+   the hierarchy holds without introducing a second color to the sky. */
 .page-tagline-out { color: rgba(255, 255, 255, 0.9); font-size: clamp(14px, 1.5vw, 17px);
   font-weight: 600; letter-spacing: 0.04em; line-height: 1.2; margin: 0;
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0, 0, 0, 0.5); }
@@ -416,7 +416,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 
    It reads from _pjcc-22-chess-canon.scss now, like Park Tables, the Academy drill board
    and the game-review board do — including the GRAIN, which is what stops the squares
-   reading as flat UI colour and starts them reading as wood, and the timber frame that
+   reading as flat UI color and starts them reading as wood, and the timber frame that
    every other board on the site wears. Restyling all five is one token edit again.
 
    Orientation is standard and was already right: a8 (top-left) light, h1 (bottom-right)
@@ -424,7 +424,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    different thing on purpose — its players sit east and west. This one you play from
    White's side, so it faces the way a board faces.
 
-   Both sides use FILLED glyphs (♚♛♜♟) and take their colour from the tokens — the outline
+   Both sides use FILLED glyphs (♚♛♜♟) and take their color from the tokens — the outline
    glyphs (♔♕♖♙) will not fill, which is the same trap Park Tables hit.
 
    ⚠ SECOND PASS 2026-07-28 (Nate, with a screenshot: "can we make the board and pieces
@@ -433,10 +433,10 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    key light, and bare glyphs with no carved outline. It is now the same board as Park
    Tables and the Academy drill, rule for rule: 3px --chess-frame border, 6px radius, the
    recessed shadow stack, the 152deg key light OVER the grain, and the piece livery
-   (filled glyph + text-stroke in the opposite line colour, paint-order:stroke fill so
+   (filled glyph + text-stroke in the opposite line color, paint-order:stroke fill so
    the outline sits UNDER the fill). PARK TABLE STANDARD IS THE DEFAULT FOR EVERY BOARD.
 
-   Selection colour is MINT (#6bffb8), not gold — Park Tables' own "go" colour, and it
+   Selection color is MINT (#6bffb8), not gold — Park Tables' own "go" color, and it
    also keeps the page's one-gold rule honest: the lift glow and the target dot used to be
    the same gold as the CTA, which is three gold things on a page allowed one. */
 .mcb {
@@ -505,7 +505,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mcb-say { margin: 14px 0 0; text-align: center; color: var(--fd-ink-2); font-size: 0.9rem;
   min-height: 2.6em; }
 /* the prompt's emphasis is MAPLE, not gold - gold on this page means "the button", and a
-   bolded phrase in the same colour as the CTA quietly competes with it. */
+   bolded phrase in the same color as the CTA quietly competes with it. */
 .mcb-say b { color: var(--fd-wood); }
 .mcb-say.good b, .mcb-say.good { color: #6bffb8; }
 .mcb-ready { display: block; margin-top: 4px; color: var(--fd-ink-3); font-size: 0.72rem;
@@ -603,15 +603,15 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    longer a 26px glyph. The Gauntlet's arch is 60px tall with a row of pips under it, and grid
    stretches the cards to match, so without a shared height the other three titles sat 45px
    HIGHER than the Gauntlet's and the row read as four unrelated boxes. Measured: titles at
-   y=726 / y=771 before, level after. The glyphs are centred in the band rather than pinned to
+   y=726 / y=771 before, level after. The glyphs are centered in the band rather than pinned to
    its top, so the extra room reads as breathing space instead of as a gap. */
 .mc-door-ico { display: flex; align-items: center; min-height: 71px;
   font-size: 30px; line-height: 1; color: var(--fd-wood); margin-bottom: 10px; }
 /* ⚠ `> b`, NOT ` b` — AND THAT ANGLE BRACKET IS THE WHOLE FIX FOR THE GAUNTLET GLYPH.
    `.gdoor-glyph` is a <b> too, and it lives inside this card. `.mc-door b` is (0,1,1) and
-   `.gdoor-glyph` is (0,1,0), so the door's piece lost its accent colour to --fd-ink and its
+   `.gdoor-glyph` is (0,1,0), so the door's piece lost its accent color to --fd-ink and its
    size to 1.05rem — a near-black smudge in a brass arch, on the one card that exists to show
-   the door. Nothing errored; it just quietly painted the wrong colour. Direct-child selectors
+   the door. Nothing errored; it just quietly painted the wrong color. Direct-child selectors
    here mean any art a card ever carries keeps its own styling. */
 .mc-door > b { display: block; color: var(--fd-ink); font-size: 1.05rem; margin-bottom: 5px; }
 .mc-door > small { display: block; color: var(--fd-ink-3); font-size: 0.84rem; line-height: 1.55; }
@@ -621,19 +621,19 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    one of their rules; this class only says how it is MORE. Four ways, and no more than four —
    add a fifth and the two stop reading as the same object:
 
-     1. it is GREEN.    The only filled colour on the page (the old pill's --fd-go, kept).
+     1. it is GREEN.    The only filled color on the page (the old pill's --fd-go, kept).
      2. it is BIGGER.   More padding, a larger title, a larger icon.
      3. it has an ARROW. None of the paper doors do.
      4. it sits ABOVE.  In the hero, on the tabletop, beside the board.
 
    ⚠ IT MUST STAY BELOW THE `.mc-door` RULES IN THIS FILE. `.mc-lead:hover` and
    `.mc-door:hover` are both (0,2,0), so the winner is whichever is written last — put this
-   block above them and the green card turns paper-coloured the moment you touch it. Written
+   block above them and the green card turns paper-colored the moment you touch it. Written
    here, next to what it extends, for that reason and not only for readability.
 
    ⚠ `.mc-door.mc-lead`, not `.mc-lead`, on the one rule that sets `color`. The theme file
    carries `body.theme-chess .mc-door { color: var(--fd-ink) }` at (0,2,0) — a bare `.mc-lead`
-   is (0,1,0) and loses, and every child without its own colour would inherit near-black onto
+   is (0,1,0) and loses, and every child without its own color would inherit near-black onto
    green. Matching specificity lets document order decide, and this <style> is in the body.
 
    The 2026-07-29 lesson outlives the pill and is why there is no `filter` here: THE HOVER
@@ -652,7 +652,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mc-lead .mc-door-ico { color: #ffffff; font-size: 32px; margin-bottom: 12px; }
 .mc-lead > b { color: #ffffff; font-size: 1.5rem; letter-spacing: -0.01em; margin-bottom: 6px; }
 .mc-lead > small { color: rgba(255, 255, 255, 0.94); font-size: 0.9rem; }
-/* the lead card has no neighbours to line up with, so it keeps a tight art block */
+/* the lead card has no neighbors to line up with, so it keeps a tight art block */
 .mc-lead .mc-door-ico { min-height: 0; }
 /* the arrow clears the title's line, not the card's corner — `right`/`top` are absolute
    against the card, which is `position:relative` already (`.mc-door`) */
@@ -680,7 +680,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    ⚠ THE PIPS ARE INVISIBLE ON PAPER WITHOUT THE OVERRIDE. `.gdoor-pips i` is
    rgba(255,255,255,0.14) — a white dot at 14% on a dark hall panel. On a #f7f5f0 card that is
    white on white: ten climbed floors would show as nothing at all. Re-inked to a dark
-   translucent so "done" (mint) and "current" (the accent) still read against their neighbours.
+   translucent so "done" (mint) and "current" (the accent) still read against their neighbors.
 
    ⚠ THE WHISPER IS NOT IN THE MARKUP HERE. `.gdoor-whisper` is absolutely positioned at
    `top: calc(100% + 5px)`, which on the hall's standalone door is empty air and inside this
@@ -700,29 +700,18 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mc-door--gauntlet .gdoor[data-grand="0"] .gdoor-glyph { font-size: 15px; }
 .mc-door--gauntlet .gdoor-pips { gap: 2px; }
 .mc-door--gauntlet .gdoor-pips i { width: 4px; height: 4px; background: rgba(30, 35, 44, 0.18); }
-/* HOVERING THE CARD OPENS THE DOOR. The partial keys every opening off `.gdoor:hover`, and
-   the .gdoor here is a span filling a fraction of the card — so without this the door only
-   answered when the cursor was literally on the 46px arch, and the rest of the card felt
-   dead. `.is-open` is the partial's own no-pointer opening (the game uses it on a timer), so
-   this borrows the same states rather than inventing a third. */
-.mc-door--gauntlet:hover .gdoor-arch { box-shadow: 0 0 34px -5px var(--acc); }
-.mc-door--gauntlet:hover .gdoor-door { transform: translateX(-60%); }
-/* floor one is `data-grand="0"` — the tattered cloth, which swings from 84% instead of 0 and
-   travels a little less. It is the door EVERY first-time visitor sees, so it is the one that
-   has to be right; the rest of this list is for people who have already climbed. */
-.mc-door--gauntlet:hover .gdoor[data-grand="0"] .gdoor-door { transform: translateX(-58%); }
-.mc-door--gauntlet:hover .gdoor[data-floor="2"] .gdoor-door { transform: perspective(320px) rotateY(-16deg); }
-.mc-door--gauntlet:hover .gdoor[data-floor="3"] .gdoor-door { transform: perspective(320px) rotateY(-26deg) rotateZ(-1.5deg) translateY(-2px); }
-.mc-door--gauntlet:hover .gdoor[data-floor="4"] .gdoor-door { transform: translateX(-58%) scaleX(0.92); }
-.mc-door--gauntlet:hover .gdoor[data-floor="5"] .gdoor-door { transform: translateY(-64%); }
-.mc-door--gauntlet:hover .gdoor[data-floor="6"] .gdoor-door,
-.mc-door--gauntlet:hover .gdoor[data-floor="8"] .gdoor-door { transform: perspective(640px) rotateY(-75deg); }
-.mc-door--gauntlet:hover .gdoor[data-floor="7"] .gdoor-knob,
-.mc-door--gauntlet:hover .gdoor[data-floor="7"] .gdoor-door::after { opacity: 0; }
-.mc-door--gauntlet:hover .gdoor[data-floor="9"] .gdoor-door { transform: perspective(320px) rotateY(-20deg); }
-@media (prefers-reduced-motion: reduce) {
-  .mc-door--gauntlet:hover .gdoor-door { transition: none; }
-}
+/* ⚑ HOVERING THE CARD OPENS THE DOOR — AND NOT ONE TRANSFORM LIVES HERE (2026-08-04).
+   Ten floor-specific open rules stood in this block for a few hours, hand-copied out of the
+   partial so the whole card would be the hover target instead of just the 46px arch. Nate,
+   the same day: "remember to always make the door uniform inside the Gauntlet and any other
+   page the doors exist. Uniform is key." He is right, and those ten lines were a twin the
+   moment they were written — the exact drift [[gauntlet-door-one-file]] exists to prevent.
+
+   The partial owns it now. `.gdoor-host` is a fifth trigger in its shared `gd-open` mixin, so
+   ANY container can declare itself the door's hover target and inherit every floor treatment,
+   every open distance and every future floor for free. The card wears the class; that is the
+   whole integration. If a door ever opens differently here than in the games hall or inside
+   the game, the bug is in the partial, and fixing it fixes all four at once. */
 
 /* THE TRUE THINGS — a list, not cards; facts don't need boxes */
 .mc-true { list-style: none; padding: 0; margin: 0 0 var(--space-7, 44px);
@@ -771,12 +760,12 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 /* THE DESK (2026-07-29, Nate: "for the Working Lamp, reduce the length of the wooden base
    by 25% and center it"). 118px → 88px, exactly a quarter off.
 
-   "Centred" needed a decision, because the lamp DRAWING is not centred in its own 82px
+   "Centered" needed a decision, because the lamp DRAWING is not centered in its own 82px
    box: the round foot spans x 31-68 (mid 49.5) while the shade and the cone of light
-   reach LEFT to about x −3. So the box's centre and the lamp's centre are 9px apart, and
+   reach LEFT to about x −3. So the box's center and the lamp's center are 9px apart, and
    the old −18/−18 was symmetric about the BOX — which is why the plank always looked
-   shifted left and ran off the card's edge. It is centred on the FOOT now (mid 50): the
-   plank is furniture, and furniture is centred under what stands on it, not under a beam
+   shifted left and ran off the card's edge. It is centered on the FOOT now (mid 50): the
+   plank is furniture, and furniture is centered under what stands on it, not under a beam
    of light. Rendered all three readings against the live band before choosing. */
 .mc-lamp .sl-desk { left: 6px; right: -12px; border-radius: 3px; }
 .mc-lamp .sl-desk::after { border-radius: 0 0 3px 3px; }
@@ -892,7 +881,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 (function () {
   var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The Executive Assistant'];
   var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#3fae7a','#ff6b6b','#c79bff','#ff9ec9','#f5c518'];
-  var GLYPHS  = ['♞','♟','♝','♞','♜','♝','♜','♝','♛','♛'];
+  var GLYPHS  = ['♟','♟','♝','♞','♜','♝','♜','♝','♛','♛'];
   var door = document.getElementById('gauntlet-door');
   if (!door) return;
   var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
@@ -917,10 +906,12 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   var glyph = document.getElementById('gdoor-glyph');
   if (cur >= NAMES.length) {
     door.setAttribute('href', door.getAttribute('href') + '#tower');
-  } else if (cleared > 0) {
-    gd.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
-    if (glyph) glyph.textContent = GLYPHS[cur] || '♛';
-    door.setAttribute('href', door.getAttribute('href') + '#climb');
+  } else {
+    if (glyph) glyph.textContent = GLYPHS[cur] || '♟';
+    if (cleared > 0) {
+      gd.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
+      door.setAttribute('href', door.getAttribute('href') + '#climb');
+    }
   }
 })();
 </script>

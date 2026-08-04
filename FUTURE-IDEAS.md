@@ -92,7 +92,7 @@ mine. Play a stretch of puzzles before deciding — this is a feel question, not
 - [ ] **The hidden-board card now says *"Left out in the rain."*** (or snow). It exists to teach the
   rule — the boards only appear on wet days, so without it a friend who looks tomorrow decides the
   site is broken. Yours to reword.
-- [ ] **Five muted text colours in four games got a touch brighter** (sandmine + pirc `.foot`, the
+- [ ] **Five muted text colors in four games got a touch brighter** (sandmine + pirc `.foot`, the
   Reading Room's romaji and deck headers, tower defense's stat labels). Not taste — the town-sky
   wash pushed all five under the AA line, and lifting them was the alternative to not shipping it.
 - [ ] **`/style/` now carries a voice chart** naming which font speaks for which brand, including
@@ -105,8 +105,8 @@ mine. Play a stretch of puzzles before deciding — this is a feel question, not
   them human". Say the word and any of them can return as a drawn face; each is one entry in `FACES`
   plus a hair shape.
 - [ ] **The 12 hair styles and their names are mine.** Crop · Swept · Buzz · Curls · Afro · Bob ·
-  Long · Ponytail · Braids · Top knot · Locs · Bald. So are the 12 hair colours (three of which —
-  jade, rose, azure — only exist in Checker Town) and the 10 eye colours.
+  Long · Ponytail · Braids · Top knot · Locs · Bald. So are the 12 hair colors (three of which —
+  jade, rose, azure — only exist in Checker Town) and the 10 eye colors.
 - [ ] **The tiny avatar in the nav is still an emoji on ONE surface: the share card.** It paints with
   `ctx.fillText` onto a canvas, which cannot take a drawing, so it shows 🧑 in your skin tone. Every
   other surface — nav, leaderboards, profile bar, dossier — shows the real face. Worth fixing when
@@ -194,7 +194,7 @@ mine. Play a stretch of puzzles before deciding — this is a feel question, not
   your last name, your town, or your job. Slot's ready — the flagship card already carries the Blender
   render, so a second `.pj-shot` figure drops straight in beside the studio lede.
   *Adjacent, and mine when you want it:* **re-render Princess on a transparent film** (Blender →
-  Output → Film → Transparent). The render on the page now is a viewport grab, grey background, grid
+  Output → Film → Transparent). The render on the page now is a viewport grab, gray background, grid
   and 3D cursor included — captioned honestly as one, which reads as a receipt. A transparent PNG of
   the same pose would let her float free of the box and sit in a page margin, which was your original
   idea for her.
@@ -209,13 +209,13 @@ mine. Play a stretch of puzzles before deciding — this is a feel question, not
   no offer.
 
 **Queued, mine not his — carried from 2026-07-28, NOT started**
-- [x] ~~**THE PERSON, DRAWN — the last piece of the eye-colour ask.**~~ **SHIPPED 2026-08-03.**
+- [x] ~~**THE PERSON, DRAWN — the last piece of the eye-color ask.**~~ **SHIPPED 2026-08-03.**
   Nate took the trade this item was waiting on: *"Take away characters like fox, visitor, robot, and
   fairy. Keep them human. Keep the eye setup uniform so we can change eye color… and if they want, a
-  2 color eye?"* The person is drawn from parts now (`assets/js/pjcc-face-art.js`), so eye colour
+  2 color eye?"* The person is drawn from parts now (`assets/js/pjcc-face-art.js`), so eye color
   exists on both halves of the pair at last — and **two-tone eyes** with it: pupil, an inner ring, an
   outer ring, exactly the eye he described as his own.
-  **The trade came out ahead.** It cost 32 fixed emoji and bought 12 hair styles × 12 hair colours ×
+  **The trade came out ahead.** It cost 32 fixed emoji and bought 12 hair styles × 12 hair colors ×
   6 skin tones × 10 eyes × 11 second rings — and a ninja can now have red hair and green eyes, which
   was impossible when the ninja *was* the picture. The profession moved to the two places that
   already carried it: Headwear and your Title. Nobody lost their character — all 32 old keys map to
@@ -1126,7 +1126,7 @@ second ten are **ingenuity** (the clever, cheap, memorable stuff).
    the same clock (`/assets/js/pjcc-time.js`, generated from the one include) and a static phase +
    weather wash. ⚠ **It is deliberately faint, and that is measured, not taste:** ×3 is where it
    reads best, but ×1.5 already pushes nine real text pairs under AA and ×2 sixteen. Five muted
-   colours had to be lifted to make even ×1 clean. Louder later = lift the type first, measure,
+   colors had to be lifted to make even ×1 clean. Louder later = lift the type first, measure,
    then turn it up.
 7. **The journey map is the site's real spine — use it more than once.** The dossier has the
    map of stops (Checker Town → the Sea → Chess City). That's the actual shape of the world.

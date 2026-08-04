@@ -183,7 +183,7 @@
 
        If the canvas can't start (no 2d context — very old browser, or canvas
        disabled), we fall through to nothing rather than to a broken layer: the
-       phase tint and the rain/snow colour wash still carry the weather, which is
+       phase tint and the rain/snow color wash still carry the weather, which is
        the same thing a reduced-motion visitor gets. Degrading to "calmer" is always
        the safe direction. */
     /* ── WHERE THE WEATHER FALLS (2026-07-28) ──────────────────────────────────
@@ -254,7 +254,7 @@
       idx = Math.max(0, Math.min(2, i));
       root.classList.remove('town-rain-light', 'town-rain-med', 'town-rain-heavy');
       root.classList.add('town-rain-' + LEVELS[idx]);
-      // The classes still drive the colour wash in CSS; the canvas takes the number
+      // The classes still drive the color wash in CSS; the canvas takes the number
       // and re-seeds its field, which is what actually changes how hard it's coming
       // down now that the drops are particles instead of a background image.
       if (window.PJCCWeather) PJCCWeather.setIntensity(idx);

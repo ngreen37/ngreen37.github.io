@@ -372,7 +372,7 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
     var COUNT = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six'];
     var n = Object.keys(BOTS).length;
     app.innerHTML = (bots &&
-      '<div class="pt-open-park"><h2 class="pt-h">Play right now</h2>' +
+      '<div class="pt-open-park"><h2 class="pt-h">Play Right Now</h2>' +
       '<p class="pt-sub">' + (COUNT[n] || n) + ' park regulars, always seated. ' +
       'No account, nothing to sign.</p>' +
       bots + '</div>') +
@@ -417,7 +417,7 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
   function gateCodename(){
     stopPolling();
     app.innerHTML = '<div class="pt-gate">' +
-      '<h2 class="pt-gate-h">Pick your codename</h2>' +
+      '<h2 class="pt-gate-h">Pick Your Codename</h2>' +
       '<p>It\'s how opponents see you at the tables.</p>' +
       '<div class="pt-gate-row"><input class="pt-in" id="pt-name" maxlength="24" placeholder="codename" aria-label="Codename">' +
       '<button class="pjcc-btn" id="pt-claim-name">Claim it ▸</button></div>' +
@@ -808,7 +808,7 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
           '<span class="pt-card-t">Open a table<br><i>Anyone can sit down.</i></span></button></div>';
 
         // the park regulars — three bots, always seated, instant game (Argus/Auston/Father)
-        if (botsReady()) html += '<h2 class="pt-h">Play a bot</h2>' + botsPanel();
+        if (botsReady()) html += '<h2 class="pt-h">Play a Bot</h2>' + botsPanel();
 
         // Drop any dead "vs myself" table — an old challenge with no possible opponent.
         // A self-match is EITHER both seats being you, OR a "Challenge McPuppy" table the
@@ -838,7 +838,7 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
             '<span class="pt-row-state ' + ((myTurn || claimable) ? 'go' : '') + '">' +
             (isOpen ? 'OPEN' : claimable ? '⏱ FLAG DOWN' : myTurn ? 'YOUR MOVE' : 'their move') + '</span></button>';
         }).join('');
-        html += '<h2 class="pt-h">Your tables</h2>' + (minesH || '<p class="lb-empty">None yet — open one above. You can keep several going at once.</p>');
+        html += '<h2 class="pt-h">Your Tables</h2>' + (minesH || '<p class="lb-empty">None yet — open one above. You can keep several going at once.</p>');
 
         var claimable = open.rows.filter(function (m) {
           if (m.white === me) return false;                 // you can't sit across from yourself
@@ -870,7 +870,11 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
               (m.result === '1/2-1/2' ? 'draw' : won ? '✓ won' : 'lost') + ' · ' + esc(m.win_reason || '') +
               myDelta(m, white) + '</span>' +
               (canReview && hasMoves ? '<button class="pt-review-btn" data-review="' + m.id + '">🔍 Review</button>' : '') +
-              (canAnalyse && hasMoves ? '<button class="pt-review-btn" data-analyse="' + m.id + '">⚗ Analyse</button>' : '') +
+              (canAnalyse && hasMoves ? /* "Analyse" → "Analyze" by hand, 2026-08-04: the automated spelling sweep deliberately
+                 skips `analyse` because `data-analyse` and `pt-bot-analyse` are IDENTIFIERS and a word
+                 boundary does not protect them (`-` is a non-word character). The attribute keeps its
+                 spelling; only the LABEL a visitor reads changes. See [[american-spelling]]. */
+              '<button class="pt-review-btn" data-analyse="' + m.id + '">⚗ Analyze</button>' : '') +
               '</div>';
           }).join('');
         }
@@ -1192,7 +1196,7 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
     // terminal position not yet recorded → either player records the honest result
     if (m.status === 'active' && g.result) {
       var res = g.result === 'checkmate' ? (S.turn === 'w' ? '0-1' : '1-0') : '1/2-1/2';
-      // the position is final in my favour regardless of which client records it
+      // the position is final in my favor regardless of which client records it
       if ((res === '1-0' && white) || (res === '0-1' && !white)) markWin();
       M.finish(m.id, res, g.result).then(function(){ openTable(m.id); }).catch(function(){});
     }

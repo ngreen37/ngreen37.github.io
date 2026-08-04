@@ -90,7 +90,7 @@
 
        'dot'      the original soft blob. Still the majority, and the ONLY thing the far
                   sheet ever uses: those flakes are 0.9-1.9px, where a six-pointed star
-                  is three grey pixels and a lie about how much detail is there.
+                  is three gray pixels and a lie about how much detail is there.
        'star'     six clean spokes with a lit core. The workhorse shape — reads as a
                   snowflake at a glance and as a bright speck if you're not looking.
        'dendrite' six spokes with side-branches and a hexagonal heart. The showpiece,

@@ -70,7 +70,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
      on a page that stopped being PJCC. They were shouting in a color the room no longer
      speaks.
 
-     Format, completely changed: they were two tall centred cards each running a
+     Format, completely changed: they were two tall centered cards each running a
      `134d 07:22:41` stopwatch, ticking every second. A two-year project measured to the
      SECOND is a gag, not information — and it cost two 1Hz timers on an otherwise static
      page.
@@ -114,7 +114,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
 /* ── the flagship's render ──────────────────────────────────────────────────────
    Side by side on desktop, stacked on a phone. The image is deliberately given a
    frame and a caption rather than being bled to the card edge: it is a Blender
-   VIEWPORT GRAB (grey background, grid, 3D cursor), and a viewport grab presented as
+   VIEWPORT GRAB (gray background, grid, 3D cursor), and a viewport grab presented as
    finished art looks like a mistake, while the same grab presented as a work in
    progress looks like proof. `aspect-ratio` + explicit width/height keep the card
    from jumping when it loads. */
@@ -178,7 +178,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
      2. "THERE IS NOT ONE IMAGE ON THIS PAGE." An animation studio's public face had
         zero art — not a render, not a frame. Chess glyphs are typography, not art. The
         flagship card now carries the actual Blender render of Princess. It is a
-        VIEWPORT GRAB, grey background and all, and it is captioned as one on purpose:
+        VIEWPORT GRAB, gray background and all, and it is captioned as one on purpose:
         an honest work-in-progress reads as a receipt, a fake-polished one reads as a
         stock image. (A transparent-film render would let this float free of its box —
         that's an action item in FUTURE-IDEAS.)
@@ -191,7 +191,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
       <figure class="pj-shot">
         <img src="{{ '/assets/images/Princess_Color_v01.jpg' | relative_url }}"
              alt="An early Blender render of Princess: a small black-and-tan dog, modeled in low
-                  polygons, standing in the grey Blender viewport."
+                  polygons, standing in the gray Blender viewport."
              width="699" height="486" loading="lazy" decoding="async">
         <figcaption>Princess &middot; first color pass, April 2026 &middot; straight out of Blender</figcaption>
       </figure>
@@ -246,7 +246,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
      ambition (idea #10; these two were the only lines on the page that sounded
      unfinished, sitting next to four cards already saying NEXT UP). {% endcomment %}
 <section class="pj-also" aria-labelledby="pj-also-h">
-  <h2 class="pj-also-h" id="pj-also-h">Also on the board</h2>
+  <h2 class="pj-also-h" id="pj-also-h">Also on the Board</h2>
   <ul class="pj-also-list">
     <li><b aria-hidden="true">♞</b><span><strong>Blender Animations</strong> — the first rendered scenes from the series.</span></li>
     <li><b aria-hidden="true">♝</b><span><strong>McPuppy</strong> — the studio podcast. Winter 2026.</span></li>
@@ -320,7 +320,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
 </div>
 
 <section class="pj-receipts" aria-label="What exists so far">
-  <h2 class="pj-receipts-h">What exists so far</h2>
+  <h2 class="pj-receipts-h">What Exists So Far</h2>
   <ul class="pj-receipts-list">
     <li><b>{{ site.posts | size }}</b><span>build&nbsp;log posts</span></li>
     <li id="pj-r-games" hidden><b>—</b><span>games you can play</span></li>
@@ -375,7 +375,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
      He's right, and the reason is worth keeping: a public ask is a promise about where
      the project IS. Asking for an animator today would have had him fielding replies for
      a job he isn't ready to hand out, and the only thing worse than no ask is one you
-     can't honour. It comes back when the series is kicking — the spec, all three openings
+     can't honor. It comes back when the series is kicking — the spec, all three openings
      and the subject-line trick are banked in FUTURE-IDEAS as a PRIORITY item, so it's a
      paste-back and not a rebuild.
 

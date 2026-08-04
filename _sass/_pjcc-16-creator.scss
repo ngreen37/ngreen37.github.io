@@ -115,6 +115,33 @@
    0.96, the headwear at 0.34, the emblem at 0.40), so the portrait, the hat and the badge
    all scale together from this single number and none of them can drift. */
 .forge-preview-wrap .idn-av { --idn-size: 62px; }
+
+/* ── THE MAGNIFIER (2026-08-04) ───────────────────────────────────────────────
+   62px → 176px, and the whole avatar is built off `--idn-size` (face 0.96, headwear 0.34,
+   emblem 0.40), so one number moves the portrait, the hat and the badge together and none
+   of them can drift out of proportion. 2.8× takes a single eye from 6.7px to 19px, which is
+   the difference between "there is an eye there" and being able to see a brown inner ring
+   inside a blue outer one — which is the whole reason he asked.
+
+   The stage grows with it rather than the avatar overflowing: the padding goes up too, so
+   the head still sits in a band instead of touching the tabs. */
+.forge-stage.zoom { padding: 12px 16px 18px; }
+.forge-stage.zoom .forge-preview-wrap .idn-av { --idn-size: 176px; }
+.forge-stage.zoom .fp-name { font-size: 1.2rem; margin-top: 9px; }
+
+.forge-head-btns { display: flex; align-items: center; gap: 8px; }
+.forge-zoom {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(0,0,0,0.35); color: #fff; border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 999px; padding: 0 12px; height: 30px; font: inherit; font-size: 0.74rem;
+  font-weight: 700; cursor: pointer; -webkit-appearance: none; appearance: none;
+  touch-action: manipulation; line-height: 1;
+}
+.forge-zoom:hover { background: rgba(0,0,0,0.6); }
+.forge-zoom.on { background: rgba(245,197,24,0.9); color: #1a0f3d; border-color: #F5C518; }
+.forge-zoom:focus-visible { outline: 2px solid #F5C518; outline-offset: 2px; }
+/* on the narrowest phones the word would push the ✕ off the row — the glyph carries it */
+@media (max-width: 380px) { .forge-zoom .fz-txt { display: none; } .forge-zoom { padding: 0 9px; } }
 .forge-stage .fp-name { color: #fff; font-size: 1.05rem; font-weight: 800; text-shadow: 0 1px 6px rgba(0,0,0,.4); margin-top: 5px; }
 .forge-stage .fp-role { color: #e6dbff; font-size: 0.76rem; font-weight: 600; margin-top: 1px; min-height: 1em; }
 
@@ -137,8 +164,16 @@
 
 /* part grids (base, hats, emblems, pets) */
 .forge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 8px; }
+/* ⚑ THESE ARE <button>s NOW (2026-08-04) — see the long note above `cell()` in
+   pjcc-creator.js for why. Two consequences land here:
+     · a button brings its own font, color, padding and appearance, all of which have to be
+       reset or the picker inherits the browser's control styling;
+     · `touch-action: manipulation` opts out of double-tap-to-zoom on this element, which is
+       the other thing that can make a first tap feel like it did not register. */
 .forge-cell {
   background: #160c33; border: 1px solid #4a3a7a; border-radius: var(--r-sm); padding: 8px 2px; text-align: center;
+  font: inherit; color: inherit; -webkit-appearance: none; appearance: none;
+  display: block; width: 100%; touch-action: manipulation;
   cursor: pointer; transition: border-color .12s, transform .08s, background .12s; position: relative;
 }
 /* 2026-07-15 (Nate: the customize options "take two clicks to toggle"). These cells are
@@ -173,11 +208,18 @@
 .forge-sw-row { display: flex; flex-wrap: wrap; gap: 9px; }
 .forge-sw {
   width: 34px; height: 34px; border-radius: 50%; cursor: pointer; border: 2px solid transparent;
+  padding: 0; font: inherit; -webkit-appearance: none; appearance: none; touch-action: manipulation;
   position: relative; transition: transform .08s; box-shadow: inset 0 0 0 2px rgba(0,0,0,.25);
 }
 @media (hover: hover) { .forge-sw:hover { transform: scale(1.1); } }
 .forge-sw.on { border-color: #fff; box-shadow: 0 0 0 2px #140c30, 0 0 10px var(--sw, #fff); }
 .forge-sw.none { background: #221347; display: flex; align-items: center; justify-content: center; color: #9a7fd4; font-size: 16px; }
+/* KEYBOARD, WHICH THESE NEVER HAD. As divs they were not focusable at all, so the whole
+   Forge was mouse-only; as buttons they are in the tab order and need a ring that is visible
+   against both the dark panel and every swatch color they can sit on. */
+.forge-sw:focus-visible, .forge-cell:focus-visible {
+  outline: 2px solid #F5C518; outline-offset: 2px;
+}
 
 /* text fields (name / role / bio) */
 .forge-fields { display: grid; gap: 10px; }

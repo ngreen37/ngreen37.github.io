@@ -42,7 +42,7 @@
     box-shadow: 0 3px 0 rgba(0,0,0,0.35);
   }
   .float-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
-  /* ORANGE, matching the ring this button flashes on the board — one signal, one colour */
+  /* ORANGE, matching the ring this button flashes on the board — one signal, one color */
   #hint-btn { bottom: 84px; right: 10px; background: #e0651a; color: #ffffff; padding: 7px 14px; font-size: 12px; }
   /* Takes the Hint button's seat — Hint is hidden the moment a puzzle resolves, which is
      exactly when there is something worth taking apart. Never both on screen at once. */
@@ -80,10 +80,10 @@
     border-radius: 10px; background: #fbfaf7;
     /* ⚠ `safe center`, not `center` — and it has to scroll (2026-07-28, caught in a phone
        render: the journey line wrapped to two lines at 390px and "Chess City" ended up
-       underneath the button, unreachable). A flex container centring content TALLER than
+       underneath the button, unreachable). A flex container centering content TALLER than
        itself overflows in BOTH directions, and the overflow past the start edge cannot be
-       scrolled to — it is simply gone. `safe center` centres while there is room and falls
-       back to flex-start when there isn't, which is exactly the behaviour you always meant. */
+       scrolled to — it is simply gone. `safe center` centers while there is room and falls
+       back to flex-start when there isn't, which is exactly the behavior you always meant. */
     justify-content: safe center; overflow-y: auto;
   }
   .overlay.hidden { display: none; }
@@ -129,7 +129,7 @@
        They'll figure it out."). The menu was a paragraph plus a three-line footnote.
        It's the motif list and two buttons now. -->
   <div class="overlay" id="menu-screen">
-    <!-- 2026-08-04: the WORDS here are unchanged. Only the case and the colour moved —
+    <!-- 2026-08-04: the WORDS here are unchanged. Only the case and the color moved —
          "FORK IN THE ROAD" in arcade caps was the loudest remaining game-tell on a page
          that has called itself Puzzles since July.
          ⚠ HTML COMMENT, NOT A LIQUID ONE: this file has no front matter, so Jekyll copies
@@ -213,7 +213,7 @@ const TILE = 42, BOARD = TILE * 8, BX = (W - BOARD) / 2, BY = 80;
    cost of the board being drawn rather than laid out, and it is worth knowing about. */
 const C = { light: '#e9d3a4', dark: '#9c5f33', frame: '#4a3320', gold: '#F5C518', good: '#6bffb8',
   bad: '#ff5b8a', pink: '#ff8fd0', ink: '#1e232c', muted: '#6d7583', dot: 'rgba(107,255,184,0.85)' };
-// The canon livery: filled pieces, fat outline in the opposite line colour.
+// The canon livery: filled pieces, fat outline in the opposite line color.
 const FORK_PAL = { wFill: '#ffffff', wEdge: '#2f2440', bFill: '#4a3585', bEdge: '#f2e9ff' };
 const GLYPH = { K:'♚', Q:'♛', R:'♜', B:'♝', N:'♞', P:'♟' };
 
@@ -1419,13 +1419,13 @@ function drawHeader(){
      ⚠ MOVED UP TO THE CHIP ROW, 2026-07-28 (Nate, with a screenshot: "the YOU PLAY
      WHITE/BLACK covers the level"). It sat at y=72, which is a 10px gap that three things
      were trying to share: the badge ends at 68 including its 2px stroke, and the board's
-     frame starts at BY-6 = 74. An 11px line centred on 72 spans roughly 66-78, so it was
+     frame starts at BY-6 = 74. An 11px line centered on 72 spans roughly 66-78, so it was
      overlapped from ABOVE by the badge and from BELOW by the board — there was never room
      there, and widening the badge (which the goal text does) only made it obvious.
 
      The chip row has real space: the theme chip is a fixed 150px on the left and the ☰
      menu button is an HTML overlay pinned to the right, so the middle of that row is
-     empty. Same vertical centre as the chip (y=26) so the row reads as one line. */
+     empty. Same vertical center as the chip (y=26) so the row reads as one line. */
   if (run && run.mode === 'journey'){
     if (p.boss){
       ctx.fillStyle = C.gold; ctx.font = 'bold 12px Trebuchet MS'; ctx.textAlign = 'center';
@@ -1449,7 +1449,7 @@ function drawBoard(){
   gl.addColorStop(0,'rgba(255,252,240,0.14)'); gl.addColorStop(0.62,'rgba(0,0,0,0.06)');
   ctx.fillStyle=gl; ctx.fillRect(BX,BY,BOARD,BOARD);
 
-  // selection is MINT, the Park Tables "go" colour — gold on maple is nearly invisible
+  // selection is MINT, the Park Tables "go" color — gold on maple is nearly invisible
   if (G.selected){ const s=cell(G.selected.x,G.selected.y); ctx.fillStyle='rgba(107,255,184,0.34)'; ctx.fillRect(s.x-TILE/2,s.y-TILE/2,TILE,TILE); }
   // the hint stays ORANGE so it can never be confused with a legal-move dot
   if (G.hintFlash > 0){ const u = uci(G.p.line[G.step][0]); const s = cell(u.fx, u.fy); ctx.strokeStyle='rgba(255,140,60,'+(G.hintFlash/30)+')'; ctx.lineWidth=4; ctx.strokeRect(s.x-TILE/2+2,s.y-TILE/2+2,TILE-4,TILE-4); G.hintFlash--; }
@@ -1540,7 +1540,7 @@ function drawExplain(){
   ctx.fillStyle = '#07221e'; ctx.font = 'bold 13px Trebuchet MS'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText('OK ▸', okX + okW/2, okY + okH/2);
   /* The rating swing, bottom-left of the same card, opposite the OK. Green up, pink
-     down — the room's own two colours, so it needs no legend. It sits INSIDE the card
+     down — the room's own two colors, so it needs no legend. It sits INSIDE the card
      rather than floating: this is a fact about the puzzle you just did, not a
      notification. (2026-08-03) */
   if (explainCard.rating){

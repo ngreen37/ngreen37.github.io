@@ -152,7 +152,7 @@ check('the Subject Zero ladder is untouched and still credit-keyed',
 check('the room settles the rating on every solve', /PJCC\.settlePuzzle\(G\.p\.rating, score\)/.test(FORK));
 /* ⚠ `aced` → `earned` (2026-08-04). The name changed when credit stopped being awarded for
    a hinted solve; these two regexes still named the old variable and went red on a rename
-   that changed no behaviour. Worth keeping as source assertions anyway — they are what
+   that changed no behavior. Worth keeping as source assertions anyway — they are what
    pins the SCORES to the numbers written in the comment beside them — but they are now
    pointed at the one name the file actually uses. */
 check('the three scores are the ones documented',

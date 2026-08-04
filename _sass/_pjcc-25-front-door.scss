@@ -9,10 +9,10 @@
  * dossier. It earns that everywhere it appears. But the front door is not the world;
  * it's the doormat, and it was wearing the world's evening clothes: a purple card
  * (`--surface`), a purple edge, purple headings, purple body text, purple link
- * colour, a purple rule under every h2 — with the town sky showing through all of it.
+ * color, a purple rule under every h2 — with the town sky showing through all of it.
  * Seven purples deep before a stranger read a word.
  *
- * THE RULE THIS ROOM RUNS ON:  ONE COLOUR, ONE JOB.
+ * THE RULE THIS ROOM RUNS ON:  ONE COLOR, ONE JOB.
  *
  *   GOLD   #F5C518   exactly one thing: the CTA. Unchanged and untouchable —
  *                    if a second gold thing ever appears, the page has regressed
@@ -43,17 +43,17 @@
    masses. If we need to start basic, let's start basic."
 
    So the room is now a sheet of white paper. Everything above this line still holds
-   — ONE COLOUR ONE JOB is the rule that survived the repaint — but two of the three
-   colours changed jobs:
+   — ONE COLOR ONE JOB is the rule that survived the repaint — but two of the three
+   colors changed jobs:
 
      GOLD is GONE.   It was the CTA and nothing else, and it was the loudest thing on
                      a page trying to look welcoming. The one button is GREEN now:
-                     the colour every mass-market chess site already uses, and the
-                     colour this site already uses for "go" at the Park Tables.
+                     the color every mass-market chess site already uses, and the
+                     color this site already uses for "go" at the Park Tables.
      PURPLE is GONE. All of it, including the world card at the foot, which used to
                      be the single deliberate purple signpost. Purple is the PJCC
                      page's livery now and appears on the front door nowhere.
-     WOOD stays,     but inverts: maple was a LIGHT text colour on a dark sheet and
+     WOOD stays,     but inverts: maple was a LIGHT text color on a dark sheet and
                      would be invisible on paper, so --fd-wood is a dark walnut brown
                      that reads on white. Same job (labels, icons, rules), same idea
                      (the page's warmth comes from the thing the site is about).
@@ -62,7 +62,7 @@
    that is the CHESS CANON (_pjcc-22-chess-canon.scss), shared by every board on the
    site, and forking it here would make the front door a fifth board look, which is
    the exact thing the canon exists to prevent. Wood and purple pieces on white paper
-   read fine. If Nate wants the canon itself recoloured, that is one token edit and
+   read fine. If Nate wants the canon itself recolored, that is one token edit and
    it changes every board at once — which is the right way to do it.
 
    ⚠ THE HEADER AND DRAWER STAY DARK (his call: "home page only, for now"). The light
@@ -75,7 +75,7 @@ body.theme-chess {
      ⚑ 15% TRANSPARENT SINCE 2026-08-04 (Nate: "make the white box 15% more transparent").
      The "WHY THE CARD GOES OPAQUE" paragraph in the header above is superseded by this line
      and kept for the diagnosis in it, which is still true and is exactly what the alpha had
-     to be checked against: the sky behind this card is not a colour, it is four colours over
+     to be checked against: the sky behind this card is not a color, it is four colors over
      a day, and letting any of it through moves every contrast ratio on the page. See the ink
      note directly below — the transparency cost --fd-ink-3 its AA margin, and 0.85 is the
      furthest this can go before it starts costing readability instead of just weight. */
@@ -96,7 +96,7 @@ body.theme-chess {
 
      ⚠ AND THE SAME TOKEN FAILED AGAIN THE MOMENT THE SHEET WENT TRANSLUCENT (2026-08-04).
      #5a626f was measured against an OPAQUE #fbfaf7. At 0.85 alpha the sheet is no longer a
-     colour — it is the sky, dimmed — so the paper composites DARKER and the dark ink on it
+     color — it is the sky, dimmed — so the paper composites DARKER and the dark ink on it
      LOSES contrast. Measured across the four sky phases at alpha 0.85:
 
          night #06041a → sheet rgb(214,213,214)   4.21  ✗
@@ -109,7 +109,7 @@ body.theme-chess {
      #555d69 clears at 4.55 and was rejected — 0.05 over the AA line is not a margin.
      --fd-ink-2 (5.30 at night) and --fd-ink (10.77) both had the headroom already.
 
-     THE LESSON IS THE OLD ONE, ONE TURN FURTHER: a token's worst background is not a colour
+     THE LESSON IS THE OLD ONE, ONE TURN FURTHER: a token's worst background is not a color
      you look up once. Change a surface's ALPHA and every ratio on the page moves, including
      the ones a previous pass already proved. */
   --fd-ink:   #1e232c;
@@ -121,7 +121,7 @@ body.theme-chess {
   --fd-panel: #f7f5f0;
   --fd-panel-hi: #f0ede5;
 
-  /* the one colour with a job */
+  /* the one color with a job */
   --fd-go:    #2e7d47;   /* the button. 5.1:1 with white — AA for normal text, and
                             the label is large and bold on top of that. */
   --fd-go-2:  #24663a;   /* the button, pressed/hovered: DEEPER, never brighter. The
@@ -140,13 +140,13 @@ body.theme-chess {
      heads carry their own maple rule; this one would sit under it in purple. */
   h2 { border-bottom: none; padding-bottom: 0; }
 
-  /* The default link colour is #a78bfa — purple on any anchor that doesn't set its own.
+  /* The default link color is #a78bfa — purple on any anchor that doesn't set its own.
      ⚠ SCOPED TO UNCLASSED LINKS, and that `:not([class])` is load-bearing. Written first
      as a bare `body.theme-chess a`, it out-specified every one of the page's own link
      rules — (0,1,1) beats the flat (0,1,0) of the classes the front door used at the time
      (`.mc-cta`, `.mc-cta2`, `.mc-studio-post`, `.mc-studio-more`; all four have since been
      retired with the pill and the blog band) — so the gold button's near-black label turned
-     pale grey on gold and four other links lost their colour. Caught in the render, not in
+     pale gray on gold and four other links lost their color. Caught in the render, not in
      the CSS. The trap is not about those four class names; it is that a theme-scoped bare
      `a` out-specifies every unscoped page rule on the site.
      This way it only reaches links that have opted out of styling entirely. */
@@ -160,8 +160,8 @@ body.theme-chess {
      that leaves every CLASSED anchor on the global `a { color: #a78bfa }` — and its
      CHILDREN inherit that. Measured on the live page: `.mc-world`'s own wrapper span and
      the desk lamp were both computing #a78bfa, invisible only because the <b> and <small>
-     inside them happened to set their own colour. One un-styled child would have shown it.
-     These anchors are CARDS, not links, so they set the colour for their whole subtree. */
+     inside them happened to set their own color. One un-styled child would have shown it.
+     These anchors are CARDS, not links, so they set the color for their whole subtree. */
   .mc-world, .mc-door, .mcb-next, .mc-studio, .mc-lamp { color: var(--fd-ink); }
 
   /* THE DESK LAMP'S HOVER TOOLTIP is a dark purple box with a GOLD word in it
@@ -211,7 +211,7 @@ body.theme-chess {
 /* ── the tabletop band ────────────────────────────────────────────────────────
    The one structural idea in the new layout: the hero sits on a surface, so the
    page opens on something that reads as a TABLE rather than as a section of a
-   document. Full-bleed to the card's edges (cancelling .page-card's padding, the
+   document. Full-bleed to the card's edges (canceling .page-card's padding, the
    same trick .page-title uses in _pjcc-20-town-sky.scss), with the wood warmth
    coming up from underneath the board.
 
@@ -238,7 +238,7 @@ body.theme-chess .mc-table {
      opaque than its surroundings, never equally so.
 
      So the band stops being paper and becomes a WARM WASH over the paper that is already
-     there. rgba(207,198,175,0.25) over #fbfaf7 composites to #f0ede5 — the exact colour the
+     there. rgba(207,198,175,0.25) over #fbfaf7 composites to #f0ede5 — the exact color the
      old top stop named — so the tabletop looks identical on an opaque sheet, and the sky now
      reaches it at the same 0.85 as the rest of the card. Same picture, one sheet. */
   background:

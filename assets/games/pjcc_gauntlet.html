@@ -250,7 +250,7 @@
       <div class="boss-portrait" id="boss-portrait">♛</div>
       <span class="gdoor gdoor--ingame" id="boss-gate" aria-hidden="true">
         <span class="gdoor-arch">
-          <i class="gdoor-door"><b class="gdoor-glyph" id="boss-gate-glyph">♛</b><u class="gdoor-knob"></u></i>
+          <i class="gdoor-door"><b class="gdoor-glyph" id="boss-gate-glyph">♟</b><u class="gdoor-knob"></u></i>
           <i class="gdoor-seam"></i>
         </span>
       </span>
@@ -376,7 +376,7 @@ function drawCrowd(idx, roar){
     var cx = -6 + p.x * (W + 12) + p.lean;
     var cy = H + 8 - bob;                 // mostly below the canvas: only the cap shows
     // NOT near-black: the page behind is already near-black, and the first pass painted
-    // heads at rgba(16,9,38) on #0c0820 — a crowd you could only find with a colour picker.
+    // heads at rgba(16,9,38) on #0c0820 — a crowd you could only find with a color picker.
     ctx.fillStyle = 'rgba(41,28,86,0.96)';
     ctx.beginPath(); ctx.arc(cx, cy, p.r, 0, 7); ctx.fill();
     // one thread of rim light off the board, so a head reads as a head and not as a smudge
@@ -391,7 +391,7 @@ function drawCrowd(idx, roar){
 // Hand-mapped to the real strength config (Stockfish skill 0→20 via skillForRung, plus
 // the persona's blunder rate and think time) — not measured, but honest about the curve.
 var LADDER = [
-  { name:'The Checker Town Open Champion', glyph:'♞', accent:'#8fe3ff', region:'Checker Town', elo:350,
+  { name:'The Checker Town Open Champion', glyph:'♟', accent:'#8fe3ff', region:'Checker Town', elo:350,
     blurb:'Floor 1 belongs to whoever holds the Checker Town Chess Open title. The current holder: a loyal guard-dog who learned the game slow — and never lets go.',
     win:'Argus admits defeat. The reigning champion of Checker Town yields the road.',
     persona:{ depth:1, blunder:0.36, mat:1, pst:0.4, aggr:4, timeMs:220 },

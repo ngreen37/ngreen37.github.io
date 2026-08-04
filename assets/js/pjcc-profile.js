@@ -173,7 +173,7 @@
   }
 
   /* ══ EARNED — the LOCKED class (2026-08-03) ══════════════════════════════════════
-     Nate asked for collectables in three flavours: "public-facing, locked, and
+     Nate asked for collectables in three flavors: "public-facing, locked, and
      only-available-through-gambit". The shop is the first, the Vault is the third, and
      this is the middle one — the pieces you cannot buy at any price and cannot win at the
      altar. You do the thing, and then it is yours.
@@ -184,7 +184,7 @@
      hiding them behind a silhouette: an unreachable mystery is a chore, but a named
      target is a reason to go play something.
 
-     ⚠ THEY CANNOT BE SOLD AND CANNOT BE LAID ON THE ALTAR, and that is not flavour — it
+     ⚠ THEY CANNOT BE SOLD AND CANNOT BE LAID ON THE ALTAR, and that is not flavor — it
      closes a printer. The requirement stays true forever, so a piece that could be burned
      could also be RE-CLAIMED, and burn → re-claim → burn is an infinite credit faucet with
      a trophy painted on it. The closure is structural rather than a rule anyone has to
@@ -249,10 +249,10 @@
 
      ⚠ LEGENDARY IS THE TOP BAND, ULTRA-RARE IS FIFTH — swapped 2026-08-03 (Nate: "Switch
      around the designations 'legendary' and 'ultra-rare'"). What moved is the DESIGNATION:
-     the name, its glyph and its colour travelled together to the other row, while `min` and
+     the name, its glyph and its color traveled together to the other row, while `min` and
      `stake` stayed where they were, because those two are the LADDER and the ladder didn't
      change. Doing it that way is why `.band-legendary` / `.band-ultra` in the-gambit needed
-     no edit at all — the CSS keys colour to the name, and each name took its colour with it.
+     no edit at all — the CSS keys color to the name, and each name took its color with it.
      Anything that hard-codes 'ultra' as the ceiling is now wrong; compare `tier` instead.
 
      THE VAULT GETS A FREE BAND. Its pieces carry credit values in the same range as the
@@ -374,7 +374,7 @@
       return AVATARS[key] || AVATARS['human-1'];
     },
     /* THE SAME PERSON, WHEREVER MARKUP IS ALLOWED (2026-08-03). The operative became a
-       DRAWN face that day (pjcc-face-art.js) so that eye colour could exist at all — and a
+       DRAWN face that day (pjcc-face-art.js) so that eye color could exist at all — and a
        drawing cannot go everywhere an emoji went. `dossier.md`'s share card paints the
        avatar with `ctx.fillText` onto a canvas, and a cached copy is kept in localStorage
        as a string; both need a character, not an element. So there are two accessors and

@@ -110,7 +110,7 @@
   function petEmojiFor(s, bi) { var p = PETS[s.pet]; return p.ems[(bi || bondInfo(s)).stage]; }
 
   /* THE COMPANION IS DRAWN, NOT TYPED (2026-07-28). pjcc-pet-art.js returns an SVG
-     built out of named parts, so coat / eyes / nose are three separate colours
+     built out of named parts, so coat / eyes / nose are three separate colors
      instead of one emoji the coat filter had to guess its way across.
      The emoji stays as `p.ems` for the one place a glyph is still the right tool —
      the nav pill and any 1em inline mention — and as the fallback if the art module
@@ -209,9 +209,9 @@
 
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
-  // coat tint chosen in the Identity Forge recolours the pet here too
+  // coat tint chosen in the Identity Forge recolors the pet here too
   /* `tintFilter()` was deleted here 2026-07-28. It resolved the coat to a
-     saturation-keyed SVG filter — a clever way to recolour an emoji without eating
+     saturation-keyed SVG filter — a clever way to recolor an emoji without eating
      its nose, and completely unnecessary now that the coat is a `fill` on a path.
      Everything it existed to work around is gone with it. Restore from git only if
      the drawn art is ever reverted. */
@@ -260,7 +260,7 @@
         o.type = cfg.type;
         var f = cfg.f * Math.pow(2, n[0] / 12), t = t0 + n[1];
         o.frequency.setValueAtTime(f, t);
-        // a small glide toward the species' second frequency keeps each animal's colour
+        // a small glide toward the species' second frequency keeps each animal's color
         o.frequency.exponentialRampToValueAtTime(Math.max(40, f * (cfg.f2 / cfg.f) * 0.35 + f * 0.65), t + n[2]);
         g.gain.setValueAtTime(0.0001, t);
         g.gain.exponentialRampToValueAtTime(n[3], t + 0.015);
@@ -452,7 +452,7 @@
       '</div></div>';
 
     // choose your friend — a free pick of four (#3)
-    html += '<div class="den-section"><h3>Choose your friend <span class="den-note">— it becomes your one companion; switch any time</span></h3><div class="den-grid">';
+    html += '<div class="den-section"><h3>Choose Your Friend <span class="den-note">— it becomes your one companion; switch any time</span></h3><div class="den-grid">';
     PET_ORDER.forEach(function (key) {
       var pp = PETS[key], on = s.pet === key;
       html += '<div class="den-cell den-cell--pet' + (on ? ' on' : '') + '" data-pick="' + key + '" title="' + esc(pp.persona) + '">' +

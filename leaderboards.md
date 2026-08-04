@@ -52,7 +52,7 @@ permalink: /leaderboards/
        ORDER SWAPPED 2026-07-28 evening (Nate: "switch the positions of the Booth Quotes and
        The Gambit"). The altar now sits directly under the standings and the booth signs off
        at the very bottom, which is the right way round: the door you might actually walk
-       through belongs next to the number that opens it, and colour commentary belongs after
+       through belongs next to the number that opens it, and color commentary belongs after
        the game, not between the score and the exit. {%- endcomment -%}
   <a class="lb-altar" href="{{ '/the-gambit/' | relative_url }}">
     <span class="lb-altar-glyph" aria-hidden="true">&#9823;</span>

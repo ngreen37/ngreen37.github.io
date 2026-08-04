@@ -208,7 +208,7 @@
       <a class="gdoor studio-scene studio-scene--gauntlet" id="studio-gdoor" href="{{ '/games/the-gauntlet/' | relative_url }}"
          aria-label="The Gauntlet — real chess vs a ladder of ten PJCC rivals">
         <span class="gdoor-arch" aria-hidden="true">
-          <i class="gdoor-door"><b class="gdoor-glyph" id="studio-gdoor-glyph">♛</b><u class="gdoor-knob"></u></i>
+          <i class="gdoor-door"><b class="gdoor-glyph" id="studio-gdoor-glyph">♟</b><u class="gdoor-knob"></u></i>
           <i class="gdoor-seam"></i>
         </span>
         <span class="gdoor-pips" id="studio-gdoor-pips" aria-hidden="true"></span>
@@ -223,7 +223,7 @@
       (function () {
         var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The Executive Assistant'];
         var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#3fae7a','#ff6b6b','#c79bff','#ff9ec9','#f5c518']; // [5] Auditor: ledger-green (2026-07-22)
-        var GLYPHS  = ['♞','♟','♝','♞','♜','♝','♜','♝','♛','♛'];
+        var GLYPHS  = ['♟','♟','♝','♞','♜','♝','♜','♝','♛','♛'];
         var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
         var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;
         for (var i = 0; i < NAMES.length; i++) { if (beaten[i]) cleared++; }
@@ -247,12 +247,14 @@
         if (cur >= NAMES.length) {                       // crowned
           if (sub) sub.innerHTML = '<b>Crowned</b>';
           door.setAttribute('href', door.getAttribute('href') + '#tower');
-        } else if (cleared > 0) {                        // mid-climb — the current floor's door
-          door.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
-          if (glyph) glyph.textContent = GLYPHS[cur] || '♛';
-          if (sub) sub.innerHTML = 'Floor <b>' + (cur + 1) + '</b> of 10';
-          door.setAttribute('href', door.getAttribute('href') + '#climb');
-        }                                                // fresh climbers keep the gold ♛ floor-zero cloth
+        } else {
+          if (glyph) glyph.textContent = GLYPHS[cur] || '♟';   // ALWAYS — floor one is a pawn
+          if (cleared > 0) {                             // mid-climb — the current floor's door
+            door.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
+            if (sub) sub.innerHTML = 'Floor <b>' + (cur + 1) + '</b> of 10';
+            door.setAttribute('href', door.getAttribute('href') + '#climb');
+          }
+        }
       })();
       </script>
 

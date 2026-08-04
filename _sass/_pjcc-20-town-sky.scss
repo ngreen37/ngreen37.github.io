@@ -201,8 +201,8 @@ html.sky-night .ts-orb {
    It was a full moon every night of the year, which is the one thing a moon never is.
    PJCC_TIME.moon() computes the REAL synodic phase for the town's date and the head
    include writes `--moon-shift` (−2…+2 disc-widths) plus a `moon-<name>` class on <html>.
-   The terminator is a second disc of the night sky's own colour, slid across the face:
-   centred = new moon, one diameter clear = full. It rides the moon's `overflow:hidden`,
+   The terminator is a second disc of the night sky's own color, slid across the face:
+   centered = new moon, one diameter clear = full. It rides the moon's `overflow:hidden`,
    so it can never spill onto the sky. Waxing lights the RIGHT limb, waning the LEFT —
    which is what you'd see stepping outside, and the whole point of doing it properly.
    Static paint, no animation: the phase changes once a day, not once a frame. */
@@ -221,7 +221,7 @@ html.moon-last-quarter  .ts-orb { box-shadow: 0 0 34px 10px rgba(220, 214, 255, 
 
 /* ── SOME NIGHTS YOU JUST CAN'T SEE IT (2026-07-27, Nate: "maybe sometimes it's too
    cloudy to see sun or moon"). Overcast is overcast: on a 3-cover day or in the rain the
-   orb is a rumour behind the cloud deck rather than a disc pasted on top of it. Opacity
+   orb is a rumor behind the cloud deck rather than a disc pasted on top of it. Opacity
    only — the orb keeps its arc, so the hour is still right, you just can't read it off
    the sky. This is the honest version of weather: the town's forecast now has a
    consequence you can see. */

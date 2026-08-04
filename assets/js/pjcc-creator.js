@@ -30,12 +30,12 @@
 
      WHAT REPLACED THEM, and it is a bigger cast rather than a smaller one. The other 23
      were emoji as well — 🥷 is a picture, not a character with parts — so "change your eye
-     colour" was impossible for exactly the reason the companion's was until it got drawn
+     color" was impossible for exactly the reason the companion's was until it got drawn
      ([[companion-is-emoji]]). The person is drawn now (assets/js/pjcc-face-art.js), so the
      profession that used to BE your character has moved to the two places that already
      carried it — Headwear and your Title — and who you are is hair + skin + eyes:
 
-         12 hair × 12 hair colours × 6 skin tones × 10 eyes × 11 second rings
+         12 hair × 12 hair colors × 6 skin tones × 10 eyes × 11 second rings
                                     ≈ 95,000 faces, against 32 fixed ones
 
      …and a ninja can have red hair and green eyes, which was never possible when the
@@ -73,7 +73,7 @@
   };
 
   /* ⚠ THE TONE KEYS ARE STILL THE EMOJI SKIN-TONE MODIFIERS. They mean nothing to a
-     drawn face — PJCCFaceArt.SKIN looks the colour up by them — but every look saved
+     drawn face — PJCCFaceArt.SKIN looks the color up by them — but every look saved
      since the Forge shipped carries one, and keeping the key is a migration that cannot
      fail. Ugly identifier, zero risk; see the note in pjcc-face-art.js. */
   function art() { return window.PJCCFaceArt || null; }
@@ -118,13 +118,13 @@
   /* ── THE COAT FILTER IS GONE (2026-07-28) ───────────────────────────────────
      What stood here was `TINTS`, `ensureCoatDefs()` and `coatFilter()`: a set of
      hue/saturation numbers, a generated block of SVG <defs>, and a saturation-keyed
-     mask that recoloured an emoji companion's fur while trying not to eat its nose.
+     mask that recolored an emoji companion's fur while trying not to eat its nose.
 
      It worked, it was tuned against a render, and it is now entirely unnecessary —
      the companion is DRAWN (assets/js/pjcc-pet-art.js), so the coat is a `fill` on
      the shapes that are the coat. There is nothing to mask, nothing to key off
      saturation, and nothing to re-tune when a new species is added. The eyes and the
-     nose became their own colours in the same move, which is the thing the filter
+     nose became their own colors in the same move, which is the thing the filter
      could never have done at any level of cleverness.
 
      Deleting ~70 lines of clever is the best outcome a clever fix can have.
@@ -344,7 +344,10 @@
   function refreshMounts() { mounts = mounts.filter(function (el) { return document.body.contains(el); }); mounts.forEach(function (el) { renderCard(el); }); }
 
   // ---- the Forge overlay ---------------------------------------------------
-  var ov = null, tab = 'operative';
+  /* `zoom` is module state, not a DOM class, on purpose: `repaintOp()` rewrites the stage on
+     every pick, so a flag living in the markup would be lost the first time you chose a
+     color — i.e. every time it mattered. */
+  var ov = null, tab = 'operative', zoom = false;
   function open(which) {
     tab = which === 'companion' ? 'companion' : 'operative';
     if (!ov) {
@@ -377,7 +380,7 @@
          at that instant. Land on a taller or shorter panel and you are somewhere else —
          "randomly", because it depends on when layout happened to run.
 
-     The fix is not to fix the restore, it is to stop rebuilding. A colour or a part is a
+     The fix is not to fix the restore, it is to stop rebuilding. A color or a part is a
      PROPERTY of a picker that is already on screen, so `repaintOp()` writes the fills and
      moves the `on` class and touches nothing else. No new nodes, no reflow, no scroll to
      restore — the panel literally cannot move.
@@ -399,15 +402,19 @@
   function markOn(attr, value) {
     if (!ov) return;
     Array.prototype.forEach.call(ov.querySelectorAll('[' + attr + ']'), function (c) {
-      c.classList.toggle('on', c.getAttribute(attr) === value);
+      var on = c.getAttribute(attr) === value;
+      c.classList.toggle('on', on);
+      // the cells are buttons now — the pressed state has to move with the ring, or a
+      // screen reader keeps announcing the old choice as the selected one
+      c.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
   }
   function repaintOp() {
     if (!ov || tab !== 'operative') return;
     var look = identity();
     renderAvatar(ov.querySelector('#forge-prev'), look);
-    /* Every hair cell wears YOUR skin, YOUR hair colour and YOUR eyes, so the picker is a
-       row of you rather than a row of strangers — and re-colouring it is a fill change on
+    /* Every hair cell wears YOUR skin, YOUR hair color and YOUR eyes, so the picker is a
+       row of you rather than a row of strangers — and re-coloring it is a fill change on
        a box whose size never varies, which is exactly what the old emoji grid could not do. */
     Array.prototype.forEach.call(ov.querySelectorAll('[data-hair]'), function (c) {
       var slot = c.querySelector('.fc-face');
@@ -436,17 +443,47 @@
     markOn('data-paura', pl.aura);
   }
 
+  /* ══ EVERY PICKER IS A REAL <button> (2026-08-04) ═══════════════════════════════════
+     Nate: "For Emblem and Headwear and Skin Tone and Eyes and Hair Color, etc in Customize,
+     you have to click twice to make your selection — this will frustrate users — it should
+     only require one click."
+
+     ⚠ BE HONEST ABOUT THIS ONE: the double-tap could not be reproduced in an emulator. Real
+     mouse clicks AND emulated touch, on a stub page and on the live site, all took on the
+     first hit. What that rules out is the HANDLER; what it cannot rule out is the platform,
+     and there is a well-known WebKit behavior that produces exactly this symptom: Safari
+     decides whether to synthesize a click on a non-interactive element from heuristics
+     (`cursor:pointer`, hover rules, ancestor listeners), and when it decides wrong, the first
+     tap is spent and the second one lands. Chrome's touch emulation is not WebKit and does
+     not model it. Nate is on iOS.
+
+     So the fix is to stop relying on the heuristic. These were `<div>`s with an `onclick`
+     property. They are `<button type="button">` now — a native control, which every engine
+     activates on the first tap with no guessing involved, and which cannot be affected by
+     whatever the surrounding page is doing with pointer events.
+
+     ⭐ IT WAS ALSO AN ACCESSIBILITY HOLE, and that is the part I should have caught without
+     being asked. A div with a click handler has no role, no tab stop and no keyboard
+     activation: the entire Identity Forge — every face, every color, every hat — was
+     unreachable without a mouse. Buttons fix the reported bug and that at the same time,
+     which is why this is the right fix rather than a workaround.
+
+     `touch-action: manipulation` (in the SCSS) removes the double-tap-zoom wait on top. */
   function cell(on, em, name, attr) {
-    return '<div class="forge-cell' + (on ? ' on' : '') + '" ' + attr + '>' +
-      '<span class="fc-em">' + (em || '🚫') + '</span><span class="fc-n">' + esc(name) + '</span></div>';
+    return '<button type="button" class="forge-cell' + (on ? ' on' : '') + '" ' +
+      (on ? 'aria-pressed="true" ' : 'aria-pressed="false" ') + attr + '>' +
+      '<span class="fc-em">' + (em || '🚫') + '</span><span class="fc-n">' + esc(name) + '</span></button>';
   }
   // a picker cell whose picture is a drawn face rather than a glyph
   function faceCell(on, svg, name, attr) {
-    return '<div class="forge-cell forge-cell--face' + (on ? ' on' : '') + '" ' + attr + '>' +
-      '<span class="fc-face">' + svg + '</span><span class="fc-n">' + esc(name) + '</span></div>';
+    return '<button type="button" class="forge-cell forge-cell--face' + (on ? ' on' : '') + '" ' +
+      (on ? 'aria-pressed="true" ' : 'aria-pressed="false" ') + attr + '>' +
+      '<span class="fc-face">' + svg + '</span><span class="fc-n">' + esc(name) + '</span></button>';
   }
   function swatch(on, color, attr, isNone) {
-    return '<div class="forge-sw' + (on ? ' on' : '') + (isNone ? ' none' : '') + '" style="background:' + (isNone ? '' : color) + ';--sw:' + color + '" ' + attr + '>' + (isNone ? '∅' : '') + '</div>';
+    return '<button type="button" class="forge-sw' + (on ? ' on' : '') + (isNone ? ' none' : '') +
+      '" style="background:' + (isNone ? '' : color) + ';--sw:' + color + '" ' +
+      (on ? 'aria-pressed="true" ' : 'aria-pressed="false" ') + attr + '>' + (isNone ? '∅' : '') + '</button>';
   }
 
   function renderForge(keepScroll) {
@@ -455,10 +492,32 @@
     var look = identity(), pl = petLook();
     var html = '<div class="forge">';
 
-    // stage / live preview
-    html += '<div class="forge-stage ' + (tab === 'companion' ? 'companion' : '') + '">' +
+    /* ══ THE STAGE, WITH A MAGNIFIER (2026-08-04) ═════════════════════════════════════
+       Nate: "we need a zoomed in preview of these changes — you can't really see the eyes,
+       for example."
+
+       He is exactly right, and the number says how right: the preview disc is 62px, the
+       drawn face is 100 SVG units across, and one eye is 10.8 of those units. That is
+       **6.7 pixels** for the whole eye — pupil, inner ring, outer ring and glint. No amount
+       of redrawing makes a two-tone iris legible in 6.7px; the picture was simply too small
+       to be a preview of the thing being edited.
+
+       ⚠ AND IT CANNOT JUST BE MADE BIG. The stage was deliberately halved earlier the same
+       day ("the preview of the character pops out which is great but we need to tone it down
+       a bit") because at 242px tall the panel opened on a portrait and you had to scroll to
+       reach a single control. Both notes are right and they are not in conflict — one is
+       about the RESTING size, the other about being able to inspect. So zoom is a TOGGLE:
+       62px at rest, 176px zoomed (2.8×, one eye becomes 19px), off by default, and it
+       survives a repaint because `zoom` is module state rather than DOM state. */
+    html += '<div class="forge-stage ' + (tab === 'companion' ? 'companion' : '') + (zoom ? ' zoom' : '') + '">' +
       '<div class="forge-head"><span class="forge-eyebrow">The Identity Forge</span>' +
-        '<button class="forge-close" id="forge-x" title="Done">✕</button></div>' +
+        '<span class="forge-head-btns">' +
+        '<button type="button" class="forge-zoom' + (zoom ? ' on' : '') + '" id="forge-zoom"' +
+          ' aria-pressed="' + (zoom ? 'true' : 'false') + '"' +
+          ' title="' + (zoom ? 'Shrink the preview' : 'Zoom in — see the eyes') + '">' +
+          (zoom ? '🔎' : '🔍') + '<span class="fz-txt">' + (zoom ? 'Shrink' : 'Zoom') + '</span></button>' +
+        '<button type="button" class="forge-close" id="forge-x" title="Done">✕</button>' +
+        '</span></div>' +
       '<div class="forge-preview-wrap">';
     if (tab === 'operative') {
       html += '<div class="idn-av spin" id="forge-prev"></div>';
@@ -527,7 +586,7 @@
   function operativePanel(look) {
     var A = art();
     var h = '';
-    // ── who you are: the hair, drawn in your own colours ──
+    // ── who you are: the hair, drawn in your own colors ──
     h += '<div class="forge-section"><h3>Base <small>— who you are</small></h3><div class="forge-grid forge-grid--face">';
     FACES.forEach(function (f) {
       h += faceCell(look.hair === f.key,
@@ -535,12 +594,12 @@
     });
     h += '</div></div>';
     if (A) {
-      h += '<div class="forge-section"><h3>Hair colour</h3><div class="forge-sw-row">';
+      h += '<div class="forge-section"><h3>Hair Color</h3><div class="forge-sw-row">';
       A.HAIRCOL_ORDER.forEach(function (k) { h += swatch(look.hairColor === k, A.HAIRCOL[k].c, 'data-hcol="' + k + '" title="' + A.HAIRCOL[k].n + '"'); });
       h += '</div></div>';
     }
     // skin tone
-    h += '<div class="forge-section"><h3>Skin tone</h3><div class="forge-sw-row">';
+    h += '<div class="forge-section"><h3>Skin Tone</h3><div class="forge-sw-row">';
     if (A) A.SKIN_ORDER.forEach(function (k) { h += swatch(look.tone === k, A.SKIN[k].c, 'data-tone="' + k + '" title="' + A.SKIN[k].n + '"'); });
     h += '</div></div>';
     /* ── THE EYES, WHICH ARE THE WHOLE REASON THE PERSON GOT DRAWN ────────────────
@@ -555,8 +614,8 @@
       h += '<div class="forge-section"><h3>Eyes <small>— the ring around the pupil</small></h3><div class="forge-sw-row">';
       A.EYE_ORDER.forEach(function (k) { h += swatch(look.eye === k, A.EYES[k].c, 'data-eye1="' + k + '" title="' + A.EYES[k].n + '"'); });
       h += '</div></div>';
-      h += '<div class="forge-section"><h3>Outer ring <small>— for a two-colour eye</small></h3><div class="forge-sw-row">';
-      h += swatch(!look.eyeOuter || look.eyeOuter === 'same', '#888', 'data-eye2="same" title="Matched — one colour"', true);
+      h += '<div class="forge-section"><h3>Outer Ring <small>— for a two-color eye</small></h3><div class="forge-sw-row">';
+      h += swatch(!look.eyeOuter || look.eyeOuter === 'same', '#888', 'data-eye2="same" title="Matched — one color"', true);
       A.EYE_ORDER.forEach(function (k) { h += swatch(look.eyeOuter === k, A.EYES[k].c, 'data-eye2="' + k + '" title="' + A.EYES[k].n + '"'); });
       h += '</div></div>';
     }
@@ -574,8 +633,8 @@
     h += '</div></div>';
     // text (2026-07-15 Nate: "take out the Call sign" — your codename IS your call sign,
     // set once when you claim it; the Forge no longer duplicates it. Title gets a dice.)
-    h += '<div class="forge-section"><h3>Title &amp; story <small>— change it any time</small></h3><div class="forge-fields">' +
-      field('op-role', 'Role / title', 'text', 40, look.role, 'e.g. Foreman of the Sand Mines') +
+    h += '<div class="forge-section"><h3>Title &amp; Story <small>— change it any time</small></h3><div class="forge-fields">' +
+      field('op-role', 'Role / Title', 'text', 40, look.role, 'e.g. Foreman of the Sand Mines') +
       '<button type="button" class="forge-title-rand" id="op-role-rand">🎲 Give me a title</button>' +
       field('op-bio',  'Bio', 'textarea', 120, look.bio, 'One line about your character…') +
       '</div></div>';
@@ -619,12 +678,12 @@
         ? 'Your companion doesn\'t have a name yet — that\'s yours to give, down below.'
         : 'Styling <b style="color:#f0e6ff">' + esc(petName()) + '</b>.') +
       '</p>';
-    /* ── THREE COLOURS, THREE PARTS (2026-07-28) ────────────────────────────────
+    /* ── THREE COLORS, THREE PARTS (2026-07-28) ────────────────────────────────
        This is what the whole "draw the companion as parts" job was for. Until today
        there was ONE control here — Coat — and it was a filter smeared across an emoji,
        which is why Nate could see it painting the eyes and the nose along with
        everything else. Now each row sets a `fill` on its own shapes, so a black nose
-       stays black while the coat goes jade, and "8 eye colours" is a real sentence
+       stays black while the coat goes jade, and "8 eye colors" is a real sentence
        instead of an impossible one. */
     var A = window.PJCCPetArt;
     if (A) {
@@ -646,12 +705,12 @@
     AURA_ORDER.forEach(function (k) { h += swatch(pl.aura === k, AURAS[k], 'data-paura="' + k + '"'); });
     h += '</div></div>';
     // name + bio
-    h += '<div class="forge-section"><h3>Name & story</h3><div class="forge-fields">' +
+    h += '<div class="forge-section"><h3>Name & Story</h3><div class="forge-fields">' +
       // EMPTY while they're unnamed, not pre-filled with the fallback. petName() returns
       // the stage word ('Pup') when there's no name, and putting that in as a VALUE would
       // say "your companion is called Pup" one line under "doesn't have a name yet" — and
       // would silently become their name the moment anything read the field back.
-      field('pet-name', 'Companion name', 'text', 16, petUnnamed() ? '' : petName(), 'Name your companion') +
+      field('pet-name', 'Companion Name', 'text', 16, petUnnamed() ? '' : petName(), 'Name your companion') +
       field('pet-bio',  'Companion bio', 'textarea', 120, pl.bio, 'A line about your companion…') +
       '</div></div>';
     return h;
@@ -668,6 +727,12 @@
   function wireForge() {
     var q = function (s) { return ov.querySelector(s); };
     var x = q('#forge-x'); if (x) x.onclick = close;
+    /* ⚠ A FULL renderForge(), NOT a repaint. The zoom changes the STAGE's own class and the
+       label on its own button, and `repaintOp()` deliberately touches neither — it only
+       repaints fills and moves the `on` ring. Re-rendering here is correct and costs
+       nothing: it is one deliberate press, not a pick. `true` keeps the scroll position, so
+       zooming while you are down at the Emblem row does not throw you back to the top. */
+    var zb = q('#forge-zoom'); if (zb) zb.onclick = function () { zoom = !zoom; renderForge(true); };
     var done = q('#forge-done'); if (done) done.onclick = function () { toast('Identity saved'); close(); };
     var rand = q('#forge-rand'); if (rand) rand.onclick = randomize;
     var toDen = function () { close(); if (window.PJCCPet && PJCCPet.openDen) PJCCPet.openDen(); };

@@ -8,7 +8,7 @@ body_class: theme-bw
 {% comment %} MERGED 2026-07-15 (Nate: "The About and Contact are redundant. Keep the About
      format but make it the McPuppy black/white background and call it Contact, combining the
      two. Then remove About."). This IS the old /about/ "Say Hello" page — same format, same
-     type-out effect, same Princess photo — recoloured from the aurora-purple look into
+     type-out effect, same Princess photo — recolored from the aurora-purple look into
      McPuppy's monochrome. The old bare /contact/ (email + GitHub) folded in here; /about/ is
      gone (redirects handled in _data/brands.yml + the command palette). {% endcomment %}
 
@@ -57,7 +57,7 @@ body_class: theme-bw
 </div>
 
 <style>
-/* ── Contact / "Say Hello" — McPuppy monochrome (recoloured from the old aurora look) ── */
+/* ── Contact / "Say Hello" — McPuppy monochrome (recolored from the old aurora look) ── */
 .hello-page { max-width: 720px; margin: 0 auto; padding: 8px 0 56px;
   --line:#cfcfd6; --ink:#eeeef2; --mut:rgba(238,238,242,0.62); --panel:rgba(255,255,255,0.05); }
 
