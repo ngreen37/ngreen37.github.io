@@ -322,7 +322,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   <span class="mc-world-arw" aria-hidden="true">&rarr;</span>
 </a>
 
-{%- comment -%} ══ THE BLOG CAME OFF, THE LAMP STAYED (2026-08-04) ═══════════════════════════
+{% comment %} ══ THE BLOG CAME OFF, THE LAMP STAYED (2026-08-04) ═══════════════════════════
      Nate: "move the blog off the home page — keep the working lamp."
 
      The band used to carry the newest post's title, its date and a "Read the blog →" link.
@@ -338,7 +338,21 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
      one of the four things that stood here that a visitor can check for themselves.
 
      The three facts that closed the page are gone from here too — they are `sky_note` in the
-     front matter now, printed below the card, out on the blue. {%- endcomment -%}
+     front matter now, printed below the card, out on the blue.
+
+     ⚠ THE DASHES ARE OFF THIS COMMENT TAG ON PURPOSE — `{% comment %}`, not `{%- comment -%}`,
+     and putting them back re-breaks the page. This band follows `</a>` (the world card), and
+     an `<a>` is SPAN-level, so kramdown still has an open paragraph when it gets here. The
+     blank line above is the only thing that closes that paragraph and lets `<section>` start a
+     raw HTML block — and `{%-` EATS THAT BLANK LINE, joining the two into `</a><section …>`.
+     Kramdown then reads the section as span content and HTML-escapes it, so the tags ship as
+     VISIBLE TEXT: `<section class="mc-studio"><div class="mc-lamp">` printed on the front door,
+     `</div>` and `</section>` after it, no `.mc-studio` element ever created, and the lamp's
+     absolutely positioned parts escaping to scatter across the page (that was the 8px of
+     horizontal overflow). The four other comment-then-markup pairs on this page keep their
+     dashes safely, because each one follows a BLOCK-level close (`</div>`, `</ul>`) which ends
+     the paragraph on its own. `npm run test:style` fails the build on this now. {% endcomment %}
+
 <section class="mc-studio">
   {%- comment -%} ⚠ THE LAMP TOOK TWO TRIES, AND THE SECOND ONE WAS WORSE THAN THE FIRST.
        Read this before touching the include — the trap has two doors and this page walked

@@ -217,5 +217,58 @@ console.log('\n── HOUSE RULES ───────────────�
                : 'kramdown cannot reach any script a markdown page pulls in');
 }
 
+/* ── 6. A LIQUID COMMENT MAY NOT CLOSE THE GAP BETWEEN A SPAN CLOSE AND A BLOCK OPEN ──
+   The third kramdown break on the front door in one day, and the one that hid behind the
+   other two. `{%- comment -%}` strips the whitespace around itself — INCLUDING the blank line
+   that separates two HTML blocks in a markdown page. That is harmless after a block-level
+   close like `</div>` or `</ul>`, which ends kramdown's paragraph by itself; it is fatal after
+   a SPAN-level close like `</a>`, where the paragraph is still open and the blank line was the
+   only thing that would have ended it. Joined into `</a><section class="mc-studio">`, kramdown
+   reads the section as span content and HTML-escapes it — so the markup ships as VISIBLE TEXT
+   on the page, the element is never created, and anything positioned inside it escapes.
+
+   The whole failure is written into the source: after Liquid strips its comments, a span close
+   sits flush against a block open on one line. So strip them the way Liquid does — honoring
+   the `-` on each side — and look for exactly that. Nothing here needs a build or a network. */
+{
+  const SPAN_CLOSE = 'a|span|b|i|em|strong|small|u|label|code';
+  const BLOCK_OPEN = 'section|div|ul|ol|dl|table|h[1-6]|aside|nav|figure|blockquote|pre|form|main|header|footer';
+  // Liquid's whitespace control: `{%-` eats preceding whitespace, `-%}` eats following.
+  const stripLiquidComments = (s) => s.replace(
+    /(\s*)\{%(-?)\s*comment\s*(-?)%\}[\s\S]*?\{%(-?)\s*endcomment\s*(-?)%\}(\s*)/g,
+    (_m, pre, openL, _openR, _closeL, closeR, post) =>
+      (openL === '-' ? '' : pre) + (closeR === '-' ? '' : post));
+  /* ⚠ COLUMN 0 IS THE WHOLE TEST, and leaving it out is a false positive factory. Kramdown's
+     paragraph logic only applies to markup at the TOP LEVEL of the document; markup nested
+     inside an already-open raw HTML block is passed through whatever it looks like. The first
+     draft of this check flagged direct-line.md for
+         <span class="dl-step-n">1</span><div><strong>…
+     which is two levels deep inside `<div class="dl-steps">`, renders perfectly, and has no
+     Liquid comment anywhere near it — verified against the live page before narrowing this.
+     An indented tag is somebody's child and is not this check's business. */
+  const spanEnd  = new RegExp(`</(?:${SPAN_CLOSE})>$`, 'i');
+  const blockTop = new RegExp(`^<(?:${BLOCK_OPEN})\\b`, 'i');
+  const welded   = new RegExp(`^</(?:${SPAN_CLOSE})>[ \\t]*<(?:${BLOCK_OPEN})\\b`, 'i');
+  const bad = [];
+  for (const f of FILES.filter((x) => /\.md$/.test(x))) {
+    const lines = stripLiquidComments(fs.readFileSync(f, 'utf8')).split('\n');
+    lines.forEach((line, i) => {
+      // (a) the comment ate the newline too — both tags landed on one line
+      if (welded.test(line)) { bad.push(rel(f) + ' — welded onto one line: ' + line.trim().slice(0, 54)); return; }
+      // (b) the comment ate only the blank line — a block tag with an open paragraph above it
+      if (!blockTop.test(line)) return;
+      const prev = lines[i - 1];
+      if (prev === undefined || prev.trim() === '') return;      // blank line survived — safe
+      if (spanEnd.test(prev.trim())) {
+        bad.push(rel(f) + ' — ' + prev.trim().slice(-18) + ' then ' + line.trim().slice(0, 34));
+      }
+    });
+  }
+  check('no Liquid comment welds a span close onto a block open in a .md page', bad.length === 0,
+    bad.length ? '\n      ' + bad.slice(0, 8).join('\n      ')
+                 + '\n      ← drop the dashes ({% comment %}) so the blank line survives'
+               : 'every block-level tag in a markdown page still opens its own block');
+}
+
 console.log(`\n  ${pass} passed, ${fail} failed\n`);
 process.exit(fail ? 1 : 0);
