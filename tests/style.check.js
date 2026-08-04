@@ -78,7 +78,7 @@ function walk(d, out) {
 const rel = (f) => path.relative(ROOT, f).split('\\').join('/');
 const FILES = walk(ROOT, []);
 
-console.log('\n── HOUSE STYLE ───────────────────────────────────────────\n');
+console.log('\n── HOUSE RULES ───────────────────────────────────────────\n');
 
 /* ── 1. AMERICAN SPELLING, COMMENTS INCLUDED ──────────────────────────────────── */
 {
@@ -144,6 +144,38 @@ console.log('\n── HOUSE STYLE ───────────────�
   check('the Forge labels are Title Case',
     /<h3>Skin Tone<\/h3>/.test(cr) && /<h3>Hair Color<\/h3>/.test(cr) && /<h3>Outer Ring /.test(cr),
     'Skin Tone · Hair Color · Outer Ring');
+}
+
+/* ── 4. A SCRIPT INCLUDE MAY NOT SIT INSIDE A SPAN-LEVEL TAG IN A .md PAGE ─────────
+   Not spelling, but the same class of problem, which is why it lives here: a house rule the
+   build will not enforce for you, that fails SILENTLY and stays broken for weeks.
+
+   Kramdown treats a span-level element's contents as span-level MARKDOWN and HTML-escapes
+   them. Wrap an include that carries a `<script>` in a `<span>` and its code ships as
+
+       var on = !!(built &amp;&amp; (Date.now() - built) &lt; 12 * 3600 * 1000);
+
+   — a syntax error, so the whole block never runs. The desk lamp shipped that way on the
+   front door from the day the page was built (found 2026-08-04 by a skeptic pass on the live
+   phone build). It looked perfect the entire time: the lamp is drawn in CSS, so the only
+   thing missing was everything it DID. `/pjcc/` was fine — same include, but an HTML layout.
+   Block-level containers are passed through untouched. */
+{
+  const SPANS = 'span|b|i|em|strong|small|a|u|label|code';
+  const slurp = (p) => fs.readFileSync(p, 'utf8');
+  const withScript = fs.readdirSync(path.join(ROOT, '_includes'))
+    .filter((f) => /\.html$/.test(f) && /<script/i.test(slurp(path.join(ROOT, '_includes', f))));
+  const bad = [];
+  for (const f of FILES.filter((x) => /\.md$/.test(x))) {
+    const src = slurp(f);
+    for (const inc of withScript) {
+      const re = new RegExp(`<(${SPANS})\\b[^>]*>\\s*\\{%-?\\s*include\\s+${inc.replace('.', '\\.')}`, 'gi');
+      if (re.test(src)) bad.push(rel(f) + ' wraps ' + inc + ' in a span-level tag');
+    }
+  }
+  check('no .md page span-wraps an include that carries a <script>', bad.length === 0,
+    bad.length ? bad.join(' | ') + '  ← use a block-level container'
+               : withScript.length + ' script-bearing includes, all block-level where used');
 }
 
 console.log(`\n  ${pass} passed, ${fail} failed\n`);

@@ -340,7 +340,26 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
      The three facts that closed the page are gone from here too — they are `sky_note` in the
      front matter now, printed below the card, out on the blue. {%- endcomment -%}
 <section class="mc-studio">
-  <span class="mc-lamp">{% include desk-lamp.html id="mc-lamp" %}</span>
+  {%- comment -%} ⚠ A `<div>`, AND IT MUST NOT GO BACK TO BEING A `<span>` (fixed 2026-08-04,
+       found by a skeptic pass on the live phone build — "PAGEERROR Unexpected token ';'").
+
+       THE LAMP HAS BEEN DEAD ON THIS PAGE SINCE THE FRONT DOOR WAS BUILT. This include
+       carries a `<script>`, and it was wrapped in a `<span>`. Kramdown treats a span-level
+       element's contents as SPAN-LEVEL MARKDOWN, so it HTML-escaped the code inside:
+
+           var on = !!(built &amp;&amp; (Date.now() - built) &lt; 12 * 3600 * 1000);
+
+       …which is a syntax error, so the whole IIFE never ran. The lamp never lit, the hover
+       tooltip stayed empty, and `document.body.classList.toggle('lamp-lit')` never fired.
+       Nothing errored visibly — the lamp is drawn in CSS, so it looked fine and simply never
+       did anything. `/pjcc/` was always fine because `_layouts/home.html` is HTML, not
+       markdown; the SAME include, two containers, one of them silently broken.
+
+       A block-level element is passed through untouched, which is the whole fix. `.mc-lamp`
+       already carries `display: block`, so nothing about the layout changes.
+       ⭐ THE GENERAL RULE: never put an include that contains a script inside a span-level
+       tag in a `.md` file. `npm run test:style` now fails the build on it. {%- endcomment -%}
+  <div class="mc-lamp">{% include desk-lamp.html id="mc-lamp" %}</div>
   <div class="mc-studio-copy">
     <span class="mc-studio-label">Building in the open</span>
   </div>
