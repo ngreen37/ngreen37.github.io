@@ -26,10 +26,11 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
      the entire child-safety story.
      ══════════════════════════════════════════════════════════════════════ {% endcomment %}
 
-<p class="pt-lead">Park benches, stone boards. The regulars are always here — sit down and
-play. Real opponents, ratings and <b>McPuppy</b>'s own table are a free account away; it's
-your move whenever you visit, and a move a day is plenty.</p>
-
+{% comment %} The lead paragraph was REMOVED 2026-08-04 (Nate: "Remove the description in
+     Park Tables"). Nothing replaced it: the seats and the regulars are the page, and they
+     say what this is faster than a sentence about benches did. The front-matter
+     `description:` stays — that one is the search-result snippet, never rendered here.
+{% endcomment %}
 <div id="pt-app"><p class="lb-empty">Walking to the park…</p></div>
 
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
@@ -75,6 +76,14 @@ your move whenever you visit, and a move a day is plenty.</p>
     if (window.console && console.warn) console.warn('[park tables] standing down: ' + why);
     if (!app) return;
     if (!botsReady()) { app.innerHTML = DOWN; return; }
+    /* ⚠ A BOOKMARKED REGULAR STILL OPENS WHEN THE PARK IS SHUT (2026-08-04). Caught by
+       driving the room in a browser with the backend unreachable: `?table=argus` fell all
+       the way through to this stand-down and showed the lobby, because only route() knew
+       about ?table= and route() is never reached on this path. That contradicts the rule
+       the bot gate is built on — the regulars need NOTHING from the backend — and it is
+       the case that matters most, since a saved link is exactly what you open on a bad
+       connection. The board comes up; the human tables are the only thing missing. */
+    if (!inRoom && wantedBot()) return botStart(wantedBot());
     app.innerHTML = '<p class="lb-empty">The tables are offline right now — but the regulars are still here.</p>' +
       botsPanel() + '<p class="lb-empty">More games in the <a href="/games/">Arcade</a>.</p>';
     wireBots();
@@ -111,6 +120,97 @@ your move whenever you visit, and a move a day is plenty.</p>
     }
   }
   var timer = null, creatorId = null, myRate = null, lobbyTries = 0;
+
+  /* ══ SITTING DOWN IS A DEPARTURE, NOT A PANEL SWAP (2026-08-04) ═══════════════════
+     Nate: "When you pick a game, say, against a bot, it shouldn't pop in the same window,
+     it should form a new page with a fresh, *user feels as if they INITIATED a game and
+     now it feels like I'm in it*."
+
+     He is describing a FEELING, and the feeling had a mechanical cause: choosing an
+     opponent swapped the innards of #pt-app while the page heading, the lobby scroll
+     position and the browser URL all sat perfectly still. Nothing about the moment said
+     "you are somewhere else now" — so it read as a widget updating, which is exactly what
+     it was.
+
+     A room is four things, and it needs all four or it is still a panel:
+       1. THE URL CHANGES.  ?table=argus / ?table=<match id>. Reload and you are still at
+          the board; the Back button is the way out because it IS a way out now. This is
+          what makes it a page rather than a state — you can send it to someone.
+       2. THE PAGE CHROME GOES.  `body.pt-room` drops the <h1> and the card padding, so
+          the board owns the viewport instead of hanging below a title.
+       3. IT STARTS AT THE TOP.  Sitting down 400px down the lobby is the single loudest
+          "nothing happened" signal there is.
+       4. THE TAB SAYS WHO YOU ARE PLAYING.  The one that costs nothing and is missed
+          every time.
+
+     ⚠ WHY NOT AN ACTUAL SECOND HTML FILE. The board, the engine bridge, the referee
+     replay, the review door and the live poll are one 1,300-line closure; a second page
+     means either duplicating it or extracting a module, and a duplicate of a chess client
+     is a duplicate that will disagree with itself within a month. This gives the visitor
+     every property of a separate page — own URL, own title, own back button, own screen —
+     with one implementation of the game. If a genuinely separate document is ever wanted,
+     the extraction is the work, not this.
+
+     ⚠ pushState ONLY, never replaceState, and only when we are not already in a room —
+     otherwise "resign → play again → back" would need three Back presses to escape one
+     table. ══════════════════════════════════════════════════════════════════════════ */
+  var inRoom = null, roomPushed = false;
+  var PAGE_TITLE = document.title;
+  function roomURL(kind, id){
+    return location.pathname + '?table=' + encodeURIComponent(kind === 'bot' ? id : id);
+  }
+  function enterRoom(kind, id, who){
+    /* ⚠ DO NOT PUSH IF THE URL ALREADY NAMES THIS TABLE. Arriving straight at ?table=argus
+       (a reload, a bookmark, a shared link) walks the same code path as clicking a seat, so
+       without this check the visitor lands one history entry deep in a room they never
+       navigated into — and Back takes them to the identical URL instead of out. */
+    var push = !inRoom && askedForTable() !== String(id);
+    inRoom = { kind: kind, id: id };
+    document.body.classList.add('pt-room');
+    document.title = who ? (who + ' · The Park Tables') : PAGE_TITLE;
+    try {
+      if (push) { history.pushState({ ptRoom: id }, '', roomURL(kind, id)); roomPushed = true; }
+      else history.replaceState({ ptRoom: id }, '', roomURL(kind, id));
+    } catch (e) {}
+    // ⚠ after paint, or the browser restores the lobby's scroll on top of us
+    try { window.scrollTo(0, 0); } catch (e) {}
+  }
+  /* Leaving is history.back() when we were the ones who pushed, so the Back button and
+     the "← The park" button are the SAME action and can never disagree about depth. */
+  function leaveRoom(){
+    if (roomPushed) { roomPushed = false; history.back(); return true; }
+    exitRoom();
+    return false;
+  }
+  function exitRoom(){
+    inRoom = null; roomPushed = false;
+    document.body.classList.remove('pt-room');
+    document.title = PAGE_TITLE;
+    try { history.replaceState({}, '', location.pathname); } catch (e) {}
+  }
+  window.addEventListener('popstate', function(){
+    if (!inRoom) return;
+    inRoom = null; roomPushed = false;
+    document.body.classList.remove('pt-room');
+    document.title = PAGE_TITLE;
+    cur = null; botCur = null; botSeq++;
+    stopPolling();
+    safeRoute();
+  });
+  // ?table=… on arrival: a reload, a bookmark, or a link somebody was sent.
+  function askedForTable(){
+    var m = /[?&]table=([^&]+)/.exec(location.search);
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+  /* ⚠ `BOTS &&` IS LOAD-BEARING, NOT DEFENSIVE NOISE. `var BOTS = {…}` is declared ~150
+     lines BELOW this, so it is hoisted-but-undefined for every caller that runs during
+     module setup — and the stand-down guard at the top of the file is exactly such a
+     caller. Without the guard, a page that fails its script check would throw a
+     TypeError inside its own error handler and show nothing at all. */
+  function wantedBot(){
+    var w = askedForTable();
+    return (w && BOTS && BOTS[w] && botsReady()) ? w : null;
+  }
 
   function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   function stopPolling(){ if (timer) { clearTimeout(timer); timer = null; } }
@@ -216,6 +316,12 @@ your move whenever you visit, and a move a day is plenty.</p>
     authKey = keyNow();
     if (parkTimer) { clearTimeout(parkTimer); parkTimer = null; }
     if (!PJCC.enabled) return down('backend not configured');   // genuinely not configured
+    /* ?table=… — a reload, a bookmark, or a link. A BOT table is answered before the
+       sign-in gate on purpose: the regulars need no account (the bot gate), so bouncing
+       someone off their own bookmarked board and onto an email form would undo the whole
+       point of that route order. */
+    var want = askedForTable();
+    if (!inRoom && wantedBot()) return botStart(wantedBot());
     if (!uid()) return gateSignIn();            // needs only the profile layer, which is up
     if (!PJCC.getProfile()) return gateCodename();
     if (!M.ready()) {
@@ -227,6 +333,8 @@ your move whenever you visit, and a move a day is plenty.</p>
       }
       return down('match layer never became ready');
     }
+    // a LIVE table link, once the match layer is actually up to fetch it
+    if (want && !inRoom && !BOTS[want]) return openTable(want);
     lobby();
   }
   /* every entry into route() goes through here — see the stand-down note at the top */
@@ -431,6 +539,7 @@ your move whenever you visit, and a move a day is plenty.</p>
 
   function botStart(id){
     stopPolling(); cur = null; botSel = -1; botThinking = false; botSeq++;
+    if (BOTS[id]) enterRoom('bot', id, BOTS[id].name);   // you're at the table now, not on the page
     var saved = botLoad();
     // resume an unfinished game against the same regular; otherwise a fresh board
     if (!(saved && saved.bot === id && !saved.done && M.replayGame(saved.moves || '').valid)) {
@@ -583,7 +692,12 @@ your move whenever you visit, and a move a day is plenty.</p>
     // ⚠ safeRoute(), not lobby(). A signed-out visitor can now be sitting at a bot board
     //    (the bot gate), and lobby() reads PJCC.getProfile().codename — it would throw.
     //    route() sends each visitor back to whichever park they came from.
-    document.getElementById('pt-back').onclick = function(){ botCur = null; botSeq++; safeRoute(); };
+    // ⚠ leaveRoom() FIRST: when we pushed a history entry it walks back through popstate,
+    //    which already resets botCur/botSeq and re-routes. Doing both would route twice.
+    document.getElementById('pt-back').onclick = function(){
+      if (leaveRoom()) return;
+      botCur = null; botSeq++; safeRoute();
+    };
     var ag = document.getElementById('pt-bot-again');
     if (ag) ag.onclick = function(){ try { localStorage.removeItem(BOT_KEY); } catch (e) {} botStart(st.bot); };
     var an = document.getElementById('pt-bot-analyse');
@@ -889,9 +1003,18 @@ your move whenever you visit, and a move a day is plenty.</p>
   function openTable(id){
     stopPolling(); sel = -1;
     M.get(id).then(function (m) {
-      if (!m) { toast('That table is gone.'); return lobby(); }
-      cur = m; lastClaimable = timeoutClaimable(m); renderTable(); schedulePoll();
-    });
+      // ⚠ a table that is gone must not leave you stranded in a room with no board
+      if (!m) { toast('That table is gone.'); exitRoom(); return safeRoute(); }
+      cur = m; lastClaimable = timeoutClaimable(m);
+      enterRoom('live', id, opponentName(m));
+      renderTable(); schedulePoll();
+    }, function(){ toast('Could not reach that table.'); exitRoom(); safeRoute(); });
+  }
+  // whoever is across the board, for the browser tab — never my own codename
+  function opponentName(m){
+    var me = uid();
+    var them = (m.white === me) ? m.black_name : m.white_name;
+    return them || 'The Park Tables';
   }
 
   function schedulePoll(){
@@ -922,7 +1045,7 @@ your move whenever you visit, and a move a day is plenty.</p>
     if (!g.valid) {
       app.innerHTML = '<div class="pt-gate"><p>This game record is damaged — the referee is voiding the table.</p>' +
         '<button class="pjcc-btn-ghost" id="pt-back">← Back to the park</button></div>';
-      document.getElementById('pt-back').onclick = function(){ cur = null; lobby(); };
+      document.getElementById('pt-back').onclick = function(){ if (leaveRoom()) return; cur = null; lobby(); };
       if (m.status !== 'done') M.finish(m.id, '1/2-1/2', 'voided').catch(function(){});
       return;
     }
@@ -1016,7 +1139,11 @@ your move whenever you visit, and a move a day is plenty.</p>
             ? '<div class="pt-tools"><button class="pjcc-btn" id="pt-review">🔍 Review this game</button></div>'
             : ''));
 
-    document.getElementById('pt-back').onclick = function(){ cur = null; viewPly = null; nav = null; lobby(); };
+    document.getElementById('pt-back').onclick = function(){
+      viewPly = null; nav = null;
+      if (leaveRoom()) return;
+      cur = null; lobby();
+    };
     // the move browser. renderTable() rebuilds this whole view, so the old bar goes with
     // it — destroy() first so its key handler doesn't pile up, and hand the new bar the
     // ply we were on via initialPly (never go(), which would re-enter this render).
@@ -1050,7 +1177,11 @@ your move whenever you visit, and a move a day is plenty.</p>
     var wd = document.getElementById('pt-withdraw');
     if (wd) wd.onclick = function(){
       if (!confirm('Take this table down?')) return;
-      M.finish(m.id, '1/2-1/2', 'withdrawn').then(function(){ cur = null; lobby(); }).catch(function(e){ toast(e.message); });
+      // the table no longer exists to be in — leave the room, don't just repaint inside it
+      M.finish(m.id, '1/2-1/2', 'withdrawn').then(function(){
+        if (leaveRoom()) return;
+        cur = null; lobby();
+      }).catch(function(e){ toast(e.message); });
     };
     paintPieces(app);
     if (myTurn && !g.result) {
@@ -1104,7 +1235,24 @@ your move whenever you visit, and a move a day is plenty.</p>
 </script>
 
 <style>
-.pt-lead { color: #c9a7ff; max-width: 640px; }
+/* ══ THE ROOM (2026-08-04) — see the enterRoom() note in the script ═══════════════════
+   `body.pt-room` is set the instant you sit down at any table, bot or human. It does one
+   job: get the PAGE out of the way so the BOARD is the screen. The heading goes, the card
+   padding shrinks, and the board is what you are looking at when the scroll snaps to top.
+
+   ⚠ Scoped to `body.pt-room` and NOT to a wrapper inside #pt-app, because the two things
+   that have to move — the <h1> the layout prints and the padding on .page-card — both live
+   OUTSIDE #pt-app. A rule written inside the app container cannot reach its own page
+   heading, which is the whole reason this reads as a panel today. */
+body.pt-room .page-title { display: none; }
+body.pt-room .page-card { padding-top: 10px; padding-bottom: 12px; }
+@media (max-width: 720px) {
+  body.pt-room .page-card { padding-left: 8px; padding-right: 8px; border-radius: 0; }
+}
+/* The table head becomes the room's own header bar: the way out on the left, what kind of
+   game this is on the right. It replaces the page title rather than sitting under it. */
+body.pt-room .pt-table-head { border-bottom: 1px solid var(--edge-soft); padding-bottom: 9px; margin-bottom: 10px; }
+
 .pt-gate { text-align: center; padding: 26px 0; max-width: 460px; margin: 0 auto; }
 .pt-gate-h { color: #F5C518; font-size: 1.15rem; margin: 0 0 8px; }
 .pt-gate-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 12px 0 4px; }

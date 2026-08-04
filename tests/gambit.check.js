@@ -102,16 +102,34 @@ check('band floors ascend', BANDS.every((b, i) => i === 0 || b.min > BANDS[i - 1
   BANDS.map(b => b.min).join(' '));
 check('band stakes ascend', BANDS.every((b, i) => i === 0 || b.stake > BANDS[i - 1].stake),
   BANDS.map(b => b.stake).join(' '));
-check('the cheapest face is Common', rarity(25).key === 'common');
-check('the 400cr Crown is LEGENDARY — the top band (swapped 2026-08-03)', rarity(400).key === 'legendary');
-check('and Ultra-Rare is now the band below it', rarity(260).key === 'ultra', rarity(260).label);
+/* ⚠ THE PRICES ARE READ OUT OF THE SHOP, NEVER TYPED HERE. This block used to say
+   `rarity(400).key === 'legendary'` with 400 written in by hand, and the 2026-08-04
+   re-tier (the Crown went to 1,400 and every band floor moved with it) turned that into a
+   test asserting a fact about a price nothing sells any more — it would have gone red for
+   the right reason and pointed at the wrong thing. Derive the ends of the shelf and the
+   check survives every future re-tier, which is the only kind of check worth having over
+   numbers somebody is expected to tune. */
+const shopSrc = /var AVATAR_SHOP = (\[[\s\S]*?\n  \]);/.exec(PROFILE);
+must(shopSrc, 'AVATAR_SHOP not found in pjcc-profile.js');
+const SHOP = eval(shopSrc[1]);
+const cheapest = Math.min(...SHOP.map(s => s.price));
+const dearest = Math.max(...SHOP.map(s => s.price));
+check('the cheapest face is Common', rarity(cheapest).key === 'common', cheapest + 'cr');
+check('the dearest face is LEGENDARY — the top band (swapped 2026-08-03)',
+  rarity(dearest).key === 'legendary', dearest + 'cr');
+check('and Ultra-Rare is the band directly below it',
+  BANDS[BANDS.length - 2].key === 'ultra', BANDS[BANDS.length - 2].label);
+check('every band floor is reachable by something on the shelf',
+  BANDS.every(b => SHOP.some(s => rarity(s.price).key === b.key) || b.key === 'common'),
+  BANDS.map(b => b.key + ':' + SHOP.filter(s => rarity(s.price).key === b.key).length).join(' '));
 check('a Vault piece gets a free band', rarity(200, true).tier === rarity(200).tier + 1,
   `200cr: ${rarity(200).label} → ${rarity(200, true).label}`);
 
 /* ── 3. a collectable stakes its BAND, not its price ──────────────────────────────── */
-const crown = { value: 400, band: rarity(400) };
-const pawnish = { value: 25, band: rarity(25) };
-check('the Crown stakes 90, not 400', G.offerValue(0, 0, crown) === 90, 'stake ' + G.offerValue(0, 0, crown));
+const crown = { value: dearest, band: rarity(dearest) };
+const pawnish = { value: cheapest, band: rarity(cheapest) };
+check('the dearest face stakes 90, not its price', G.offerValue(0, 0, crown) === 90,
+  dearest + 'cr → stake ' + G.offerValue(0, 0, crown));
 check('a Common stakes 10', G.offerValue(0, 0, pawnish) === 10);
 check('an offering is credits + stake', G.offerValue(100, 40, crown) === 130);
 
@@ -148,16 +166,29 @@ check('coming out ahead is likelier the braver you are',
    the gambit a little more difficult to win"). These are one-sided on purpose — see the
    header. Lowering them again is free; raising one is a decision somebody has to make in
    this file, in the open, which is the whole point of writing the ceiling down. */
-check('a token offering loses money on average', shape(0, 0).ev < 0.48, shape(0, 0).ev.toFixed(2) + 'x');
-check('all-in loses money on average', shape(1, 0).ev < 0.58, shape(1, 0).ev.toFixed(2) + 'x');
-check('even MAXIMUM karma never breaks even', shape(1, 100).ev < 0.74, shape(1, 100).ev.toFixed(2) + 'x');
-/* Regression against BOTH wheels this replaced. The 2026-07-27 one paid 0.66x → 0.89x and
-   topped out at 2.2x from any courage; the 2026-07-29 one paid 0.51x → 0.63x with a 30%
-   chance of coming out ahead all-in. Each tightening keeps its predecessor's numbers here
-   so the direction of travel is checkable, not just asserted in a comment. */
+/* ⚠ RATCHETED AGAIN 2026-08-04 (Nate: "Lower the rewards on the Gambit across the board").
+   One-sided, as ever: these may fall, never rise. */
+check('a token offering loses money on average', shape(0, 0).ev < 0.37, shape(0, 0).ev.toFixed(2) + 'x');
+check('all-in loses money on average', shape(1, 0).ev < 0.44, shape(1, 0).ev.toFixed(2) + 'x');
+check('even MAXIMUM karma never breaks even', shape(1, 100).ev < 0.56, shape(1, 100).ev.toFixed(2) + 'x');
+/* Regression against ALL THREE wheels this replaced. 2026-07-27 paid 0.66x → 0.89x and
+   topped out at 2.2x from any courage; 2026-07-29 paid 0.51x → 0.63x with a 30% chance of
+   coming out ahead all-in; 2026-08-03 paid 0.46x → 0.57x @ 26%. Each tightening keeps its
+   predecessor's numbers here so the direction of travel is checkable, not just asserted in
+   a comment. */
 check('strictly harder than the wheel it replaced',
-  shape(0, 0).ev < 0.51 && shape(1, 0).ev < 0.63 && shape(1, 0).up < 30 && top(1) <= 1.4,
-  `${shape(0, 0).ev.toFixed(2)}x/${shape(1, 0).ev.toFixed(2)}x @ ${shape(1, 0).up.toFixed(0)}% vs 0.51x/0.63x @ 30%`);
+  shape(0, 0).ev < 0.46 && shape(1, 0).ev < 0.57 && shape(1, 0).up < 26 && top(1) <= 1.4,
+  `${shape(0, 0).ev.toFixed(2)}x/${shape(1, 0).ev.toFixed(2)}x @ ${shape(1, 0).up.toFixed(0)}% vs 0.46x/0.57x @ 26%`);
+/* ⭐ THE ONE NATE ACTUALLY COMPLAINED ABOUT. Not "how much do I win" but "how OFTEN does
+   this room hand something back" — the old wheel broke even or better on 41% of all-in
+   offerings, which is why an altar with a 0.57x expected return still felt like a win
+   machine. A room whose premise is "you may get nothing" has to mean it. */
+const breakEvenOrBetter = c => {
+  const w = G.weights(c, 0), sum = w.reduce((a, b) => a + b, 0);
+  return G.TIERS.reduce((n, t, i) => n + (G.multAt(t, c) >= 1 ? w[i] / sum : 0), 0) * 100;
+};
+check('a bold offering comes back empty-handed more often than not',
+  breakEvenOrBetter(1) < 30, breakEvenOrBetter(1).toFixed(0) + '% break even or better (was 41%)');
 /* Nate set the shape of the room; this pass only moved the odds. If a future tuning changes
    either of these it is undoing a call he made by name, not tuning a dial. */
 check("Nate's 1.4x all-in cap survived the tightening", Math.abs(top(1) - 1.4) < 0.005);

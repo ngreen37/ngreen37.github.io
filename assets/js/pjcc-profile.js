@@ -76,21 +76,37 @@
      more expensive) and add some new items").
 
      The old shelf topped out at 50 and totalled 280 credits — a single lucky night at the
-     altar cleared it. It runs 25 → 400 now and totals well over 2,000, so the top of the
+     altar cleared it. It ran 25 → 400 and totalled well over 2,000, so the top of the
      shelf is something you save toward across many sessions. Ten new faces extend the
      climb past the dragon. (The altar's own economy was cut back in the same pass; between
-     the two, credits are earned by playing again.) */
+     the two, credits are earned by playing again.)
+     ⚠ THE NUMBERS IN THIS PARAGRAPH ARE SUPERSEDED — see the 2026-08-04 re-tier below. */
+  /* ⚑ RE-TIERED 2026-08-04 — Nate: "let's re-tier the cost of things and make things more
+     expensive. By a lot."
+
+     THE WHOLE SHELF WENT UP 3x (5,900 → 17,715 credits across 42 buyable items) and the
+     rise is PROGRESSIVE, not a flat multiplier: 2.4x at the cheap end, 2.75x at the median,
+     3.5x at the ceiling. That shape is the point. A flat 3x would have moved the first
+     purchase — the one that teaches a new player that credits buy things at all — from 13
+     plays out to 38, which taxes the beginner hardest to slow down the collector. Stretching
+     the TOP instead leaves the on-ramp short and makes the far end a genuine destination:
+     the Crown is a 1,400-credit object now, and nobody arrives at it by accident.
+
+     ⚠ THE BAND FLOORS MOVED WITH THE PRICES (see BANDS below). Rarity is derived from
+     price, so raising prices without raising floors would have promoted the entire
+     catalogue — every face Ultra-Rare, every stake 65+, and the six bands collapsed into
+     two. The spread was re-derived, not eyeballed: 2/9/16/12/16/7 → 3/10/14/11/16/8. */
   var AVATAR_SHOP = [
-    { key: 'pc-knight', price: 25 }, { key: 'pc-bishop', price: 25 }, { key: 'pc-rook', price: 40 },
-    { key: 'pc-queen', price: 70 }, { key: 'pc-king', price: 110 },
-    { key: 'sp-fox', price: 80 }, { key: 'sp-owl', price: 80 }, { key: 'sp-wolf', price: 95 },
-    { key: 'sp-eagle', price: 95 }, { key: 'sp-dragon', price: 140 },
+    { key: 'pc-knight', price: 60 }, { key: 'pc-bishop', price: 60 }, { key: 'pc-rook', price: 100 },
+    { key: 'pc-queen', price: 190 }, { key: 'pc-king', price: 320 },
+    { key: 'sp-fox', price: 210 }, { key: 'sp-owl', price: 210 }, { key: 'sp-wolf', price: 250 },
+    { key: 'sp-eagle', price: 250 }, { key: 'sp-dragon', price: 400 },
     // the long shelf — new 2026-07-27
-    { key: 'sp-tiger', price: 120 }, { key: 'sp-orca', price: 130 },
-    { key: 'sp-raven', price: 150 }, { key: 'sp-lion', price: 170 },
-    { key: 'sp-ghost', price: 190 }, { key: 'sp-robot', price: 210 },
-    { key: 'sp-kraken', price: 240 }, { key: 'sp-unicorn', price: 280 },
-    { key: 'sp-phoenix', price: 320 }, { key: 'sp-crown', price: 400 },
+    { key: 'sp-tiger', price: 330 }, { key: 'sp-orca', price: 360 },
+    { key: 'sp-raven', price: 440 }, { key: 'sp-lion', price: 510 },
+    { key: 'sp-ghost', price: 580 }, { key: 'sp-robot', price: 660 },
+    { key: 'sp-kraken', price: 770 }, { key: 'sp-unicorn', price: 920 },
+    { key: 'sp-phoenix', price: 1100 }, { key: 'sp-crown', price: 1400 },
     /* THE RESTOCK, 2026-08-03 (Nate: "make a bunch of new collectibles (public-facing,
        locked, and only-available-through-gambit"). These are the PUBLIC-FACING half —
        ordinary stock, bought with credits, visible to a stranger who has never signed in.
@@ -100,10 +116,10 @@
        in the bottom three bands on purpose. The ceiling stays the 400-credit Crown — the
        top of the shelf is a place you arrive, and moving it would move it for everyone
        who already got there. */
-    { key: 'sp-bear', price: 60 }, { key: 'sp-otter', price: 65 },
-    { key: 'sp-stag', price: 100 }, { key: 'sp-octopus', price: 135 },
-    { key: 'sp-shark', price: 165 }, { key: 'sp-tortoise', price: 200 },
-    { key: 'sp-bat', price: 250 }, { key: 'sp-moon', price: 300 }
+    { key: 'sp-bear', price: 150 }, { key: 'sp-otter', price: 165 },
+    { key: 'sp-stag', price: 265 }, { key: 'sp-octopus', price: 375 },
+    { key: 'sp-shark', price: 490 }, { key: 'sp-tortoise', price: 620 },
+    { key: 'sp-bat', price: 810 }, { key: 'sp-moon', price: 1000 }
   ];
 
   /* ── THE VAULT — collectables that are NOT for sale (2026-07-27) ──────────────
@@ -127,22 +143,28 @@
      Vault unfinishable rather than harder. */
   var VAULT_AVATARS = { 'vt-comet': '☄️', 'vt-candle': '🕯️', 'vt-mask': '🎭',
     'vt-hourglass': '⏳', 'vt-anchor': '⚓', 'vt-thread': '🧵' };
+  /* ⚑ VALUES RE-TIERED 2026-08-04 with the shop (x2.9). These are credits-EQUIVALENT, not
+     prices — nothing here is for sale — but they are the number the band lookup reads, so
+     leaving them behind while the shop tripled would have quietly DEMOTED the whole Vault
+     to Common/Uncommon and dropped what a Vault piece stakes at the altar. The Vault is
+     meant to sit mid-shelf against the catalogue it lives in; that is a RATIO, so it has to
+     move whenever the catalogue does. */
   var VAULT = [
-    { kind: 'avatar', key: 'vt-comet',  value: 260, label: 'The Comet' },
-    { kind: 'avatar', key: 'vt-candle', value: 200, label: 'The Altar Keeper' },
-    { kind: 'avatar', key: 'vt-mask',   value: 220, label: 'The Understudy' },
-    { kind: 'title',  key: 'letgo',     value: 200, label: 'One Who Let Go' },
-    { kind: 'title',  key: 'openhand',  value: 150, label: 'Open Hand' },
-    { kind: 'theme',  key: 'ember',     value: 180, label: 'Altar Ember' },
-    { kind: 'theme',  key: 'hollow',    value: 140, label: 'Empty Hands' },
+    { kind: 'avatar', key: 'vt-comet',  value: 760, label: 'The Comet' },
+    { kind: 'avatar', key: 'vt-candle', value: 580, label: 'The Altar Keeper' },
+    { kind: 'avatar', key: 'vt-mask',   value: 640, label: 'The Understudy' },
+    { kind: 'title',  key: 'letgo',     value: 580, label: 'One Who Let Go' },
+    { kind: 'title',  key: 'openhand',  value: 430, label: 'Open Hand' },
+    { kind: 'theme',  key: 'ember',     value: 520, label: 'Altar Ember' },
+    { kind: 'theme',  key: 'hollow',    value: 400, label: 'Empty Hands' },
     // 2026-08-03 — names are mine, veto open. Each one is named for something the altar
     // does, because that is the only place they come from.
-    { kind: 'avatar', key: 'vt-hourglass', value: 240, label: 'The Hourglass' },
-    { kind: 'avatar', key: 'vt-anchor',    value: 190, label: 'The Anchor' },
-    { kind: 'avatar', key: 'vt-thread',    value: 210, label: 'The Long Thread' },
-    { kind: 'title',  key: 'remembered',   value: 230, label: 'Remembered by the Board' },
-    { kind: 'theme',  key: 'nothing',      value: 170, label: 'Nothing Comes Back' },
-    { kind: 'theme',  key: 'sixdays',      value: 160, label: 'Six Days' }
+    { kind: 'avatar', key: 'vt-hourglass', value: 700, label: 'The Hourglass' },
+    { kind: 'avatar', key: 'vt-anchor',    value: 550, label: 'The Anchor' },
+    { kind: 'avatar', key: 'vt-thread',    value: 610, label: 'The Long Thread' },
+    { kind: 'title',  key: 'remembered',   value: 670, label: 'Remembered by the Board' },
+    { kind: 'theme',  key: 'nothing',      value: 490, label: 'Nothing Comes Back' },
+    { kind: 'theme',  key: 'sixdays',      value: 460, label: 'Six Days' }
   ];
   Object.keys(VAULT_AVATARS).forEach(function (k) { AVATARS[k] = VAULT_AVATARS[k]; });
   function vaultEntry(kind, key) {
@@ -181,20 +203,25 @@
      ⚠ NO SERVER REFEREE, same as every other cosmetic here. Someone who wants a face badly
      enough to edit their own localStorage was always going to be able to edit their own
      credits; the honest position is that this is a display case, not a ranking. */
+  /* ⚑ VALUES RE-TIERED 2026-08-04 with the shop (x2.9), same reasoning as the Vault above.
+     These can be neither bought nor sold nor staked, so the number does exactly one job:
+     it puts the piece in a band on the collection page. Left behind, "Citizen of Chess
+     City" — a thousand clean puzzles — would have ranked below a face you can buy in an
+     afternoon. */
   var EARNED = [
-    { kind: 'avatar', key: 'ea-laurel',  value: 280, label: 'The Laurel',
+    { kind: 'avatar', key: 'ea-laurel',  value: 820, label: 'The Laurel',
       rule: 'ach:crowned',       how: 'Clear all ten floors of the Gauntlet' },
-    { kind: 'avatar', key: 'ea-scope',   value: 200, label: 'The Long View',
+    { kind: 'avatar', key: 'ea-scope',   value: 580, label: 'The Long View',
       rule: 'ach:tactician',     how: 'Solve 25 puzzles in the Puzzle Room' },
-    { kind: 'avatar', key: 'ea-compass', value: 160, label: 'The Compass',
+    { kind: 'avatar', key: 'ea-compass', value: 460, label: 'The Compass',
       rule: 'ach:globetrotter',  how: 'Play every game at least once' },
-    { kind: 'theme',  key: 'ledger',     value: 120, label: 'Field Ledger',
+    { kind: 'theme',  key: 'ledger',     value: 350, label: 'Field Ledger',
       rule: 'plays:50',          how: 'Play 50 rounds across the arcade' },
-    { kind: 'title',  key: 'finder',     value: 150, label: 'The Finder',
+    { kind: 'title',  key: 'finder',     value: 430, label: 'The Finder',
       rule: 'found:frag_board_park',  how: 'Find the hidden board in the world' },
-    { kind: 'avatar', key: 'ea-key',     value: 230, label: 'The Key',
+    { kind: 'avatar', key: 'ea-key',     value: 670, label: 'The Key',
       rule: 'found:frag_board_hall',  how: 'Find the hidden board in the arcade' },
-    { kind: 'title',  key: 'citizen',    value: 360, label: 'Citizen of Chess City',
+    { kind: 'title',  key: 'citizen',    value: 1050, label: 'Citizen of Chess City',
       rule: 'found:pjcc.fork.chesscity.v1', how: 'Walk all 1,000 puzzles to Chess City' }
   ];
   EARNED.forEach(function (e) { if (e.kind === 'avatar' && !AVATARS[e.key]) AVATARS[e.key] = '★'; });
@@ -235,13 +262,29 @@
 
      ⚠ `min` is a floor, and the list must stay ASCENDING — the lookup takes the LAST
      band whose floor the value clears. Names are mine; Nate's veto is open. ═══════ */
+  /* ⚑ FLOORS RE-TIERED 2026-08-04 — they had to move, and this is the trap worth naming:
+     RARITY IS DERIVED FROM PRICE, SO A PRICE PASS IS A RARITY PASS WHETHER YOU MEANT IT OR
+     NOT. Tripling the shelf against floors of 0/40/80/150/220/320 would have made the
+     cheapest face on the site Uncommon and almost everything else Legendary — six bands
+     collapsed to two, and every collectable suddenly staking 65-90 at the altar, which is
+     a payout change nobody asked for hiding inside a price change.
+
+     The floors moved by the same ~2.8x the shelf did, and the resulting spread was
+     RE-DERIVED from the real catalogue rather than assumed: 2/9/16/12/16/7 → 3/10/14/11/16/8
+     across all 62 collectables. Same shape, same ladder, three times the money.
+
+     THE STAKES DELIBERATELY DID NOT MOVE. What a piece is worth to the ALTAR is what the
+     board counts the gesture as, and that was never pegged to the receipt — a Legendary
+     staked a fraction of its price before and stakes a smaller fraction now. Raising stakes
+     alongside prices would have quietly RAISED altar payouts in the same pass Nate asked
+     for them to come down. */
   var BANDS = [
     { key: 'common',    label: 'Common',     min: 0,   glyph: '◦', stake: 10, color: '#9aa3b8' },
-    { key: 'uncommon',  label: 'Uncommon',   min: 40,  glyph: '◇', stake: 18, color: '#7fd4a8' },
-    { key: 'rare',      label: 'Rare',       min: 80,  glyph: '◆', stake: 30, color: '#56d0ff' },
-    { key: 'veryrare',  label: 'Very Rare',  min: 150, glyph: '✦', stake: 45, color: '#b98fff' },
-    { key: 'ultra',     label: 'Ultra-Rare', min: 220, glyph: '❈', stake: 65, color: '#ff8fd0' },
-    { key: 'legendary', label: 'Legendary',  min: 320, glyph: '✶', stake: 90, color: '#ffb066' }
+    { key: 'uncommon',  label: 'Uncommon',   min: 110, glyph: '◇', stake: 18, color: '#7fd4a8' },
+    { key: 'rare',      label: 'Rare',       min: 230, glyph: '◆', stake: 30, color: '#56d0ff' },
+    { key: 'veryrare',  label: 'Very Rare',  min: 430, glyph: '✦', stake: 45, color: '#b98fff' },
+    { key: 'ultra',     label: 'Ultra-Rare', min: 640, glyph: '❈', stake: 65, color: '#ff8fd0' },
+    { key: 'legendary', label: 'Legendary',  min: 960, glyph: '✶', stake: 90, color: '#ffb066' }
   ];
   /* ⚠ Attached to PJCC down in the object literal, NOT here — `var PJCC` is hoisted but
      still undefined at this point in the file, so `PJCC.BANDS = …` up here throws.
@@ -893,8 +936,9 @@
     'citizen':   { label: 'Citizen of Chess City', rule: 'earned' }
   };
   PJCC.TITLES = TITLES;
-  PJCC.TITLE_SHOP = [{ key: 'curator', price: 60 }, { key: 'legend', price: 180 },
-    { key: 'sharp', price: 90 }, { key: 'archivist', price: 100 }, { key: 'patient', price: 140 }];
+  // ⚑ RE-TIERED 2026-08-04 with the avatar shelf — see the note on AVATAR_SHOP.
+  PJCC.TITLE_SHOP = [{ key: 'curator', price: 150 }, { key: 'legend', price: 540 },
+    { key: 'sharp', price: 230 }, { key: 'archivist', price: 260 }, { key: 'patient', price: 400 }];
   PJCC.unlockedTitles = function (prof, stats) {
     var c = statsCtx(prof, stats);
     var earned = {}; PJCC.earnedAchievements(prof, stats).forEach(function (a) { if (a.earned) earned[a.key] = true; });
@@ -1223,18 +1267,19 @@
   // --- profile themes (cosmetic accent for the Dossier) ----------------------
   var THEMES = {
     'default': { label: 'Operative Gold',   price: 0,  accent: '#F5C518', bg: 'linear-gradient(135deg,#1f1147,#34206f)' },
-    'jade':    { label: 'Jade Dispatch',    price: 45,  accent: '#6bffb8', bg: 'linear-gradient(135deg,#0f2a22,#143d31)' },
-    'crimson': { label: 'Red Clearance',    price: 45,  accent: '#ff6b6b', bg: 'linear-gradient(135deg,#2a0d12,#1a090c)' },
-    'sakura':  { label: 'Shogi Sakura',     price: 75,  accent: '#ff8fd0', bg: 'linear-gradient(135deg,#2a1030,#3d1640)' },
-    'mono':    { label: 'Classified Mono',  price: 75,  accent: '#cdbcf2', bg: 'linear-gradient(135deg,#16161c,#27272f)' },
+    // ⚑ PRICES RE-TIERED 2026-08-04 with the avatar shelf — see the note on AVATAR_SHOP.
+    'jade':    { label: 'Jade Dispatch',    price: 110, accent: '#6bffb8', bg: 'linear-gradient(135deg,#0f2a22,#143d31)' },
+    'crimson': { label: 'Red Clearance',    price: 110, accent: '#ff6b6b', bg: 'linear-gradient(135deg,#2a0d12,#1a090c)' },
+    'sakura':  { label: 'Shogi Sakura',     price: 190, accent: '#ff8fd0', bg: 'linear-gradient(135deg,#2a1030,#3d1640)' },
+    'mono':    { label: 'Classified Mono',  price: 190, accent: '#cdbcf2', bg: 'linear-gradient(135deg,#16161c,#27272f)' },
     // new stock 2026-07-27 — the deep end of the shelf
-    'tide':    { label: 'Sea Crossing',     price: 120, accent: '#56d0ff', bg: 'linear-gradient(135deg,#07253a,#0d4260)' },
-    'sandmine':{ label: 'Mine Lantern',     price: 150, accent: '#fcbc3c', bg: 'linear-gradient(135deg,#2b1d09,#4a3410)' },
-    'city':    { label: 'Chess City Neon',  price: 220, accent: '#ff77a8', bg: 'linear-gradient(135deg,#1b0f33,#3d1450)' },
+    'tide':    { label: 'Sea Crossing',     price: 330, accent: '#56d0ff', bg: 'linear-gradient(135deg,#07253a,#0d4260)' },
+    'sandmine':{ label: 'Mine Lantern',     price: 440, accent: '#fcbc3c', bg: 'linear-gradient(135deg,#2b1d09,#4a3410)' },
+    'city':    { label: 'Chess City Neon',  price: 680, accent: '#ff77a8', bg: 'linear-gradient(135deg,#1b0f33,#3d1450)' },
     // 2026-08-03 restock. `maple` is the chess canon's own two woods (_pjcc-22-chess-canon)
     // wearing them as a profile accent for the first time.
-    'maple':   { label: 'Maple & Walnut',   price: 95,  accent: '#e9d3a4', bg: 'linear-gradient(135deg,#2b1d0f,#4a3320)' },
-    'midnight':{ label: 'Midnight Board',   price: 260, accent: '#8fb8ff', bg: 'linear-gradient(135deg,#080b18,#131c33)' },
+    'maple':   { label: 'Maple & Walnut',   price: 250, accent: '#e9d3a4', bg: 'linear-gradient(135deg,#2b1d0f,#4a3320)' },
+    'midnight':{ label: 'Midnight Board',   price: 840, accent: '#8fb8ff', bg: 'linear-gradient(135deg,#080b18,#131c33)' },
     // vault themes — no price, absent from THEME_SHOP; the altar hands these back
     'ember':   { label: 'Altar Ember',      accent: '#ffb066', bg: 'linear-gradient(135deg,#2e1608,#4a2410)', vault: true },
     'hollow':  { label: 'Empty Hands',      accent: '#9a7fd4', bg: 'linear-gradient(135deg,#14102a,#241a44)', vault: true },

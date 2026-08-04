@@ -8,7 +8,10 @@
 layout: page
 permalink: /
 title: ChessWild.com
-own_title: true
+# The <h1> stands ABOVE the sheet now, on the town sky (2026-08-04, Nate: "let's move the
+# chesswild.com title outside of the white box. it is taking up too much space"). See
+# .page-title-out in _layouts/page.html + the styling at the foot of this file.
+title_outside: true
 body_class: theme-chess
 tab_title: ChessWild.com — free chess for everyone
 description: Free chess for everyone — play a real game, solve a puzzle, or learn from scratch. Set in the world of Princess and the Journey to Chess City, by McPuppy Studios.
@@ -96,7 +99,13 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
          drawer already says it, permanently, on every page — saying it twice on the one
          screen was the studio introducing itself to someone who came to play chess.
          The brand stack is unchanged; it just isn't announced twice. {%- endcomment -%}
-    <h1 class="mc-title">{{ site_name }}</h1>
+    {%- comment -%} THE TITLE LEFT THIS BLOCK (2026-08-04, Nate: "let's move the
+         chesswild.com title outside of the white box. it is taking up too much space").
+         It is printed by the layout now, above the card, on the sky — `title_outside: true`
+         in the front matter. It was 64px of the hero's left column, which meant the sheet
+         opened on the site announcing its own name to someone who had just typed it in;
+         what is left in the column is the sentence and the button, which is what a visitor
+         is actually there for. {%- endcomment -%}
     {%- comment -%} ══ BARE MINIMUMS (2026-07-28) ═══════════════════════════════════════
          Nate: "The descriptions on the home page are ALL too long… These are chess people.
          They are curious, intelligent, and they'll figure it out as they go. Redo the home
@@ -291,8 +300,25 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 /* inside .mc-table now, which owns the outer spacing (_pjcc-25-front-door.scss) */
 .mc-hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: var(--space-6, 32px);
   align-items: center; margin: 0; }
-.mc-title { font-size: clamp(38px, 6.4vw, 64px); line-height: 1.02; font-weight: 900;
-  color: var(--fd-ink); margin: 0 0 10px; letter-spacing: -0.02em; text-wrap: balance; }
+/* THE TITLE, OUTSIDE THE SHEET (2026-08-04) ──────────────────────────────────────
+   It stands on the town sky between the header and the card, so the white box opens on
+   the board and the button instead of on the site's own name.
+
+   ⚠ IT IS SMALLER OUT HERE ON PURPOSE — 64px → 34px cap. Inside the sheet it was
+   competing with the board for the first screen; out here it has no neighbours, so it
+   only has to LABEL the page, not fill a column. "Taking up too much space" was the
+   complaint, and moving something without shrinking it would have moved the problem.
+
+   ⚠ THE SKY IS NOT A FIXED COLOUR. It runs dawn → day → dusk → night behind every page
+   ([[town-sky-moon-and-header]]), so this text has to hold against a bright noon blue AND
+   a near-black midnight. White + a real shadow is the only pair that does both; a token
+   from the light front-door palette (--fd-ink is #1e232c) would vanish at night, which is
+   exactly the class of bug the "check a token against its WORST background" note is about.
+   The shadow is doing the work here, not decoration. */
+.page-title-out { color: #ffffff; font-size: clamp(26px, 3.4vw, 34px); font-weight: 900;
+  letter-spacing: -0.01em; line-height: 1.1; margin: 0 0 14px 4px;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55), 0 1px 2px rgba(0, 0, 0, 0.4); }
+@media (max-width: 700px) { .page-title-out { margin: 0 0 10px 2px; } }
 /* THREE WORDS, and they get to breathe — this is the only sentence on the first screen
    now, so it is sized as a statement rather than as a subtitle. */
 .mc-lede { color: var(--fd-ink-2); font-size: clamp(17px, 2.2vw, 21px); line-height: 1.5;
@@ -489,16 +515,16 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 @media (max-width: 760px) {
   .mc-hero { grid-template-columns: 1fr; gap: 0; }
   .mc-hero-copy { display: contents; }
-  /* three children now, not six — the eyebrow was deleted and the facts moved to the
-     foot of the page, so this list shrank with them. If it ever falls out of step with
-     the markup the hero silently reorders itself, which is why it is worth keeping tight. */
-  .mc-title { order: 1; }
-  .mc-board { order: 2; }
-  .mc-lede  { order: 3; }
-  .mc-cta   { order: 4; }
-  /* the board's own breathing room, now that no gap supplies it: a hair under the
-     title (which already carries 10px) and a clear step down to the lede. */
-  .mc-board { min-height: 0; padding: 2px 0 var(--space-3, 12px); }
+  /* TWO children now, not three — the title left the hero entirely on 2026-08-04
+     (title_outside), so the board is the first thing in the card on a phone. If this list
+     ever falls out of step with the markup the hero silently reorders itself, which is why
+     it is worth keeping tight. */
+  .mc-board { order: 1; }
+  .mc-lede  { order: 2; }
+  .mc-cta   { order: 3; }
+  /* the board's own breathing room, now that no gap supplies it — and no title above it
+     inside the card, so it carries its own top step instead of borrowing the title's. */
+  .mc-board { min-height: 0; padding: 0 0 var(--space-3, 12px); }
   .mc-cta { width: 100%; justify-content: center; }
 }
 

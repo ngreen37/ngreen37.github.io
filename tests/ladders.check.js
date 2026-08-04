@@ -150,11 +150,16 @@ check('the Subject Zero ladder is untouched and still credit-keyed',
 
 /* ── 3. THE FORK ROOM WIRES ALL OF IT ─────────────────────────────────────────────── */
 check('the room settles the rating on every solve', /PJCC\.settlePuzzle\(G\.p\.rating, score\)/.test(FORK));
+/* ⚠ `aced` → `earned` (2026-08-04). The name changed when credit stopped being awarded for
+   a hinted solve; these two regexes still named the old variable and went red on a rename
+   that changed no behaviour. Worth keeping as source assertions anyway — they are what
+   pins the SCORES to the numbers written in the comment beside them — but they are now
+   pointed at the one name the file actually uses. */
 check('the three scores are the ones documented',
-  /const score = aced \? 1 : \(G\.revealed \? 0\.25 : 0\.6\)/.test(FORK));
+  /const score = earned \? 1 : \(G\.revealed \? 0\.25 : 0\.6\)/.test(FORK));
 check('the difficulty dial is DRIVEN by the rating', /run\.diff = ratingToDiff\(pzMove\.after\)/.test(FORK));
 check('the old ±ratchet survives as the no-module fallback',
-  /if \(!pzMove\) run\.diff = Math\.max\(1, Math\.min\(10, run\.diff \+ \(aced \? 0\.34 : -0\.7\)\)\)/.test(FORK));
+  /if \(!pzMove\) run\.diff = Math\.max\(1, Math\.min\(10, run\.diff \+ \(earned \? 0\.34 : -0\.7\)\)\)/.test(FORK));
 check('the rating→difficulty map is the inverse of puzzleRating()',
   /return Math\.max\(1, Math\.min\(10, \(r - 590\) \/ 72\)\)/.test(FORK));
 

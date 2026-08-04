@@ -2,11 +2,21 @@
 layout: default
 ---
 
+{%- comment -%} `title_outside: true` prints the <h1> ABOVE the card, standing on the town
+     sky instead of inside the sheet (2026-08-04, Nate on the front door: "let's move the
+     chesswild.com title outside of the white box. it is taking up too much space").
+
+     A third option rather than a change to either existing one, because all three are
+     legitimately different pages: the default banner is the sky-scrim <h1> at the top of
+     the card, `own_title` is for a page that draws its own heading furniture (the Academy's
+     belt ribbon), and this is for a page whose card should open on CONTENT. Styling lives
+     with the caller — this layout only decides where the element goes. {%- endcomment -%}
+{%- if page.title_outside -%}<h1 class="page-title-out">{{ page.title }}</h1>{%- endif -%}
 <div class="page-card">
   {%- comment -%} `own_title: true` lets a page place the sky banner ITSELF (the Academy
        puts its belt ribbon above it, 2026-07-14 Nate). The page must then render
        <h1 class="page-title">…</h1> in its own body or it ships headless. {%- endcomment -%}
-  {%- unless page.own_title -%}<h1 class="page-title">{{ page.title }}</h1>{%- endunless -%}
+  {%- unless page.own_title or page.title_outside -%}<h1 class="page-title">{{ page.title }}</h1>{%- endunless -%}
   <div class="page-body">
     {{ content }}
   </div>

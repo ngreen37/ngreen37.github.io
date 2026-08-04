@@ -344,20 +344,62 @@ permalink: /the-gambit/
      is a Vault nobody finishes. The dilution IS the difficulty — any one specific piece got
      meaningfully harder to draw without a single number changing here. Credits got harder
      on purpose; the collection got harder by arithmetic. */
+  /* ⚑⚑ LOWERED ACROSS THE BOARD 2026-08-04 — Nate: "Lower the rewards on the Gambit across
+     the board: I can't seem to stop winning when I try to sacrifice everything or a lot."
+
+     WHAT HE WAS ACTUALLY FEELING, and it is worth naming because the fix follows from it.
+     His complaint is about FREQUENCY, not size. At all-in the old wheel handed back at
+     least what you gave **41% of the time** (26% gain + 15% dead even) — so two bold
+     offerings in five ended with a card that says THE BOARD ANSWERS or THE BOARD RETURNS IT
+     and nothing visibly lost. Expected return was still 0.57x, i.e. the room was quietly
+     taking his money the whole time; it just never SAID so often enough to feel like a
+     sacrifice. A room whose whole premise is "you may get nothing" cannot pay out on two
+     of every five bold gestures.
+
+         at least break even, all-in    41%  →  28%
+         gain (any amount), all-in      26%  →  16.5%
+         gain, token offering           12%  →  7.5%
+         expected return                0.46x → 0.57x   becomes   0.35x → 0.42x
+         max-karma all-in               0.72x           becomes   0.53x
+
+     THE MIDDLE RUNGS PAY LESS TOO, which is the "across the board" half: `trickle` 1.25x →
+     1.15x and `good` 1.6x → 1.4x. Those two are what a winning roll almost always is, so
+     trimming them moves the average far more than touching the jackpot would.
+
+     ⚠ TWO NUMBERS WERE LEFT ALONE ON PURPOSE, AND BOTH ARE NATE'S OWN CALLS: the 2.2x
+     ceiling on a token offering and the 1.4x all-in cap he named himself ("all-in should
+     cap at, what do you think like 1.4x?"). Those describe the SHAPE of the trade — courage
+     buys certainty, not a jackpot — and this ask was about how often the board pays, not
+     about the deal it offers. Changing them would be undoing a decision of his under cover
+     of a tuning pass. If he wants the ceiling down too, that is a sentence from him, not an
+     inference from this one.
+
+     ⚠ THE CONSTANTS MUST SUM TO 1 AND THE COEFFICIENTS MUST SUM TO 0. That is what makes
+     `weights()` a probability distribution at EVERY level of courage rather than only at
+     the two ends, and gambit.check.js fails if it ever stops being true. Retune by moving
+     weight BETWEEN rows, never by editing one row on its own.
+         constants:    0.545 + 0.250 + 0.130 + 0.055 + 0.017 + 0.003 = 1.000
+         coefficients: -0.055 - 0.020 - 0.015 + 0.040 + 0.030 + 0.020 = 0.000 */
   var TIERS = [
-    { key: 'gone',    mult: 0,   gain: 0,    w: function (c) { return 0.46 - 0.09 * c; } },
-    { key: 'half',    mult: 0.5, gain: 0,    w: function (c) { return 0.25 - 0.03 * c; } },
-    { key: 'even',    mult: 1,   gain: 0,    w: function (c) { return 0.17 - 0.02 * c; } },
-    { key: 'trickle', mult: 1,   gain: 0.25, w: function (c) { return 0.09 + 0.045 * c; } },
-    { key: 'good',    mult: 1,   gain: 0.60, w: function (c) { return 0.026 + 0.05 * c; } },
-    { key: 'great',   mult: 1,   gain: 1.20, w: function (c) { return 0.004 + 0.045 * c; } }
+    { key: 'gone',    mult: 0,   gain: 0,    w: function (c) { return 0.545 - 0.055 * c; } },
+    { key: 'half',    mult: 0.5, gain: 0,    w: function (c) { return 0.250 - 0.020 * c; } },
+    { key: 'even',    mult: 1,   gain: 0,    w: function (c) { return 0.130 - 0.015 * c; } },
+    { key: 'trickle', mult: 1,   gain: 0.15, w: function (c) { return 0.055 + 0.040 * c; } },
+    { key: 'good',    mult: 1,   gain: 0.40, w: function (c) { return 0.017 + 0.030 * c; } },
+    { key: 'great',   mult: 1,   gain: 1.20, w: function (c) { return 0.003 + 0.020 * c; } }
   ];
   /* Karma shifts weight OFF "gone" and onto the good end. It never guarantees anything and
      it never lifts expected return past 1x — checked: at max karma all-in the wheel returns
      0.72x, so even a saint loses money here on average. That is deliberate. Credits are
      earned by PLAYING; the altar is a ritual. */
+  /* ⚑ THE KARMA LIFT CAME DOWN WITH THE WHEEL 2026-08-04 (0.12 → 0.09). It had to: the lift
+     is an ABSOLUTE shift of probability mass, so leaving it at 0.12 against a wheel whose
+     gain rungs are now much thinner would have made karma a bigger share of the outcome
+     than the courage — a saint at all-in would have been coming out ahead more often than
+     the old wheel paid anyone. It still matters (0.42x → 0.53x at maximum karma, 16.5% →
+     25.5% ahead) and it still never reaches break-even, which is the line that must hold. */
   function weights(c, karma) {
-    var lift = Math.min(0.12, (karma || 0) * 0.0012);
+    var lift = Math.min(0.09, (karma || 0) * 0.0009);
     return TIERS.map(function (t) {
       var w = t.w(c);
       if (t.key === 'gone') w = Math.max(0.06, w - lift);
@@ -405,11 +447,16 @@ permalink: /the-gambit/
      thresholds, a bold all-in offering would have read "Fair odds" — technically true of
      nothing and useless as a dial. Verified against the real wheel: all five rungs are
      still reachable (gambit.check.js §7 fails if they collapse to fewer than three). */
+  /* ⚠ RE-SCALED A THIRD TIME 2026-08-04, and this is exactly the maintenance the two notes
+     above predicted. The range the room offers is now 7.5% → 16.5%, and 25.5% with maximum
+     karma behind you. Left at the old thresholds every offering on the site would have read
+     "Long odds" forever — a dial with one position, which tells the player nothing and
+     quietly makes the courage meter a decoration. */
   function oddsWord(up) {
-    return up < 16 ? 'Long odds'
-         : up < 21 ? 'Fair odds'
-         : up < 25 ? 'Good odds'
-         : up < 31 ? 'Great odds'
+    return up < 10 ? 'Long odds'
+         : up < 13 ? 'Fair odds'
+         : up < 16 ? 'Good odds'
+         : up < 22 ? 'Great odds'
          : 'Excellent odds';
   }
 
@@ -584,7 +631,10 @@ permalink: /the-gambit/
          headline. Either way the memory LEAVES the ledger — it came home, so it is no
          longer owed. */
       if (win && kar.ledger.length) {
-        if (Math.random() < Math.min(0.12, 0.02 + karma * 0.001)) {
+        // ⚑ 12% → 7% (2026-08-04, with the wheel). A homecoming is a THIRD way this room
+        // pays, on top of credits and the boon, and "lower the rewards across the board"
+        // has to mean all three or the two that stayed become the whole reward.
+        if (Math.random() < Math.min(0.07, 0.012 + karma * 0.0006)) {
           homed = weightedPick(kar.ledger);
           if (homed) {
             var hasIt = homed.kind && PJCC.ownedCollectables().some(function (o) {
@@ -620,8 +670,16 @@ permalink: /the-gambit/
            Nate flagged on the credit side.
            ⚠ CREDITS ALONE CAN NO LONGER PULL FROM THE VAULT. The Vault is what the board
            gives when you gave something back; a pile of credits is not a something. */
+        /* ⚑ CUT AGAIN 2026-08-04 with the wheel — 45% → 26% with a collectable on the altar,
+           12% → 6% for credits alone. THE BOON IS THE REAL REWARD IN THIS ROOM and it was
+           the actual answer to "I can't stop winning": a free collectable is worth several
+           hundred credits, so one arriving on roughly one bold offering in EIGHT (26% gain
+           × 45%) drowned out every credit number on the page. It lands on about one in
+           TWENTY-THREE now (16.5% × 26%). With three offerings a day that is a piece every
+           week or so instead of every third day — still a reason to come back, no longer a
+           supply line. */
         var boonChance = tier.mult <= 1 ? 0            // break even or worse: no gift
-          : (coll ? Math.min(0.45, 0.28 + 0.17 * c) : (c >= 0.85 ? 0.12 : 0));
+          : (coll ? Math.min(0.26, 0.16 + 0.10 * c) : (c >= 0.85 ? 0.06 : 0));
         if (Math.random() < boonChance) {
           var ceil = coll ? Math.min(6, (coll.band ? coll.band.tier : 1) + 1) : 3;
           var fits = function (x) { return (x.band ? x.band.tier : 1) <= ceil; };

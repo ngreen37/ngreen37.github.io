@@ -37,6 +37,28 @@ Two items remain:
   edit can reach an installed launcher. **Sign in on chesswild.com first**, so your account carries
   your progress across rather than the browser jar you're leaving behind.
 
+**⭐ THE PUZZLE CREDIT RULE — TWO DIALS THAT ARE YOURS TO CALL (kept here at your request,
+2026-08-04: "keep the RETRY_GAP and the earned definition in the priority items")**
+
+Both shipped and both live in `assets/games/pjcc_fork.html`. Neither is a bug; they are the
+two places where "credit is earned, not attended" got a number attached, and the numbers were
+mine. Play a stretch of puzzles before deciding — this is a feel question, not an argument.
+
+- [ ] **`earned` — what counts as a clean solve.** Today:
+  `earned = G.clean && !G.revealed && G.hintLevel === 0`. All three clauses must hold or the
+  step does not advance. **The third one is the strict one**: *any* hint, including the
+  gentlest nudge, costs you the credit — a light hint used to still count as a perfect solve.
+  ⚠ **This made the road materially harder.** "1,000 puzzles to Chess City" now means **1,000
+  CLEAN solves**. If that reads as punishing for a beginner leaning on hints, the softer
+  version is to drop the `hintLevel` clause and let a nudge still count — one line.
+- [ ] **`RETRY_GAP = 3` — how long before a missed puzzle comes back.** An unearned puzzle is
+  re-served three puzzles later, wearing a green **SECOND LOOK** chip. Three is a guess at
+  "long enough that you are recalling it rather than copying it off the screen." Too short and
+  it is a do-over with the answer still visible; too long and the lesson has gone cold.
+- Not in question, for the record: the difficulty dial and your puzzle Elo still settle on
+  **any** finish, because those are *measurements* and a hinted solve is real information
+  about your level. Only the **step** is a *claim*, and only a clean solve makes it.
+
 **Names and vetoes from the 2026-08-03 batch — all shipped, all one-line reversible**
 - [x] ~~**The app is still *named* PJCC.**~~ **DONE 2026-08-03** — the domain picked the name. The
   manifest now reads `name: "ChessWild — free chess for everyone"` / `short_name: "ChessWild"`.

@@ -1137,8 +1137,11 @@ function puzzleSolved(){
      What does NOT change: you still have to finish the puzzle to move on, the teaching
      card still shows, and the tactic is still recorded as seen. You are not punished —
      the puzzle simply comes back (see queueRetry) and the credit waits for the clean solve. */
+  /* ⚠ THE OLD NAME `aced` IS GONE, not aliased. The credit-rule pass left
+     `const aced = earned;` behind as a compatibility shim and nothing ever read it — one
+     boolean wearing two names in a scoring function is precisely how a later edit changes
+     one and misses the other. There is one name for one idea. */
   const earned = G.clean && !G.revealed && G.hintLevel === 0;
-  const aced = earned;                          // kept as the name the rest of this file uses
   run.stats.solved++;
   recordTactic(G.p.cat, earned);
   if (earned) { run.stats.clean++; run.stats.streak++; if (run.stats.streak > run.stats.best) run.stats.best = run.stats.streak; }
