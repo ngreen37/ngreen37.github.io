@@ -88,7 +88,11 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 <section class="mc-table">
 <section class="mc-hero">
   <div class="mc-hero-copy">
-    <p class="mc-eyebrow">From McPuppy Studios</p>
+    {%- comment -%} THE EYEBROW IS GONE (2026-08-04, Nate: "We've got 'By McPuppy Studios' on
+         the top left and 'From McPuppy Studios' in the center. Delete the latter."). The
+         drawer already says it, permanently, on every page — saying it twice on the one
+         screen was the studio introducing itself to someone who came to play chess.
+         The brand stack is unchanged; it just isn't announced twice. {%- endcomment -%}
     <h1 class="mc-title">{{ site_name }}</h1>
     {%- comment -%} ══ BARE MINIMUMS (2026-07-28) ═══════════════════════════════════════
          Nate: "The descriptions on the home page are ALL too long… These are chess people.
@@ -101,19 +105,28 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
          across the page went 186 → 71. Nothing was cut that was a FACT (the referee, the free
          review, the offline play all survive); what went was the sentence explaining the fact
          after it had already landed. {%- endcomment -%}
-    <p class="mc-lede">Play a game, solve a puzzle, or learn the pieces.</p>
+    {%- comment -%} THREE WORDS (2026-08-04, Nate: "let's go with 'Play, Solve, Learn'. I like
+         that. Make it just those three words. Put it somewhere basic.").
+
+         It replaced "Play a game, solve a puzzle, or learn the pieces." — which said the same
+         thing in nine words and a comma splice. Three words name the three doors below it, so
+         the sentence and the grid now agree instead of paraphrasing each other. {%- endcomment -%}
+    <p class="mc-lede">Play. Solve. Learn.</p>
 
     {%- comment -%} THE ONE BUTTON. Park Tables because it's the only door where a stranger is
          *playing* in two taps — a park regular seats you instantly, no account, real rules,
-         a real clock. {%- endcomment -%}
+         a real clock.
+
+         ⚠ THE ACADEMY TEXT LINK THAT SAT HERE IS GONE (2026-08-04, Nate: "There's a big yellow
+         button and a text link to academy and an out-of-place tagline… the home page is very
+         confusing"). He is right, and it was the second call to action the page's one law
+         forbids — it just wasn't gold, so it got away with it. Academy is already one of the
+         four doors directly below. {%- endcomment -%}
     <a class="mc-cta" href="{{ '/games/park-tables/' | relative_url }}">
       <span class="mc-cta-ico" aria-hidden="true">&#9822;</span>
       <span class="mc-cta-txt">Play Chess</span>
       <span class="mc-cta-arw" aria-hidden="true">&rarr;</span>
     </a>
-    <a class="mc-cta2" href="{{ '/academy/' | relative_url }}">New to chess? Start at lesson one</a>
-
-    <p class="mc-facts">Free &middot; no account &middot; works offline</p>
   </div>
 
   {%- comment -%} ══ THE BOARD IS THE BUTTON (2026-07-28) ══════════════════════════════════
@@ -255,6 +268,15 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   </div>
 </section>
 
+{%- comment -%} THE THREE FACTS, REHOMED (2026-08-04, Nate: "an out-of-place tagline (free · no
+     account · works offline): let's put it somewhere else").
+
+     They were wedged directly under the one button, where they read as small print apologising
+     for it. They are not small print — they are the three things this site can say that most
+     free chess sites cannot — but they answer a question a visitor only forms AFTER they have
+     looked around. So they close the page instead of interrupting it. {%- endcomment -%}
+<p class="mc-facts">Free &middot; no account &middot; works offline</p>
+
 <style>
 /* ── ChessWild — the front door ───────────────────────────────────────────────────
    Built on the shared tokens (--step-*, --space-*, --r-*) so it inherits the site's
@@ -266,56 +288,43 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 /* inside .mc-table now, which owns the outer spacing (_pjcc-25-front-door.scss) */
 .mc-hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: var(--space-6, 32px);
   align-items: center; margin: 0; }
-.mc-eyebrow { font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 2.4px;
-  text-transform: uppercase; color: var(--fd-wood); margin: 0 0 6px; opacity: 0.85; }
 .mc-title { font-size: clamp(38px, 6.4vw, 64px); line-height: 1.02; font-weight: 900;
-  color: var(--fd-ink); margin: 0 0 12px; letter-spacing: -0.02em; text-wrap: balance; }
-.mc-lede { color: var(--fd-ink-2); font-size: clamp(15px, 1.9vw, 18px); line-height: 1.6;
-  max-width: 42ch; margin: 0 0 var(--space-5, 24px); }
+  color: var(--fd-ink); margin: 0 0 10px; letter-spacing: -0.02em; text-wrap: balance; }
+/* THREE WORDS, and they get to breathe — this is the only sentence on the first screen
+   now, so it is sized as a statement rather than as a subtitle. */
+.mc-lede { color: var(--fd-ink-2); font-size: clamp(17px, 2.2vw, 21px); line-height: 1.5;
+  font-weight: 600; letter-spacing: 0.01em; margin: 0 0 var(--space-5, 24px); }
 
-/* THE ONE BUTTON. Nothing else on the page is gold, filled, or this size — that is the
-   whole design, and it is the thing the old home page did not have.
+/* THE ONE BUTTON — GREEN NOW (2026-08-04). Nothing else on the page is filled or this
+   size; that is still the whole design. Only the colour changed, and the reason is in
+   _pjcc-25-front-door.scss: gold was the loudest possible paint on a page whose whole job
+   is to look welcoming. Green is what every mass-market chess site already uses, and it is
+   what THIS site already uses for "go" — the Park Tables' legal-move dot is mint.
 
-   ⚠ RE-TONED 2026-07-29 (Nate: "the play chess button hovered-over in gold is way too
-   bright. Change that completely, both hover-over and non-hover-over"). Two separate
-   faults, and the hover was the louder one:
+   The 2026-07-29 lesson survives the repaint and is the reason there is no `filter` here:
+   THE HOVER GOES DEEPER, NEVER BRIGHTER. The old gold got lighter under the cursor, so the
+   loudest thing on the page turned up when you reached for it.
 
-   1. THE BODY was `#ffd54a → #F5C518` — the site's signal yellow, the same hue that marks
-      links and headings everywhere else, run at full strength across the largest filled
-      shape on the page, with a 0.28-alpha halo bleeding onto the surface behind it. It
-      read as a highlighter. Now an amber that is unmistakably the same gold family, one
-      step deeper, with the halo cut to 0.13 so the button has an EDGE instead of a glow.
-
-   2. THE HOVER WENT LIGHTER — `brightness(1.04)` plus a 0.40 halo. That is precisely the
-      complaint: the brightest thing on the page got brighter under the cursor. It goes
-      DEEPER now while the RIM lights up, so it reads as metal catching an edge-light
-      rather than a bulb being switched on. `filter` is gone entirely.
-
-   Picked from a render of five bodies × three hover treatments on the real surface, not
-   from hex arithmetic ([[pick-visual-values-from-a-render]]) — a gold's brightness is a
-   relationship with what sits behind it, and a swatch on white lies about that.
-   Contrast against the button's ink: 11.7:1 → 8.5:1 rest, 9.5:1 hover. Miles past AA. */
+   Contrast: white on --fd-go is 5.1:1 — AA for normal text, and this label is large and
+   900-weight on top of that. */
 .mc-cta { display: inline-flex; align-items: center; gap: 12px; text-decoration: none;
-  background: linear-gradient(180deg, #e9bd3c, #cf9d18); color: #1a0f3d;
-  font-weight: 900; font-size: clamp(17px, 2.1vw, 20px); letter-spacing: 0.01em;
-  padding: 15px 28px; border-radius: 999px; border: 2px solid #dcb050;
-  box-shadow: 0 10px 30px rgba(245,197,24,0.13);
+  background: var(--fd-go); color: #ffffff;
+  font-weight: 800; font-size: clamp(17px, 2.1vw, 20px); letter-spacing: 0.01em;
+  padding: 15px 28px; border-radius: 999px; border: 2px solid var(--fd-go);
+  box-shadow: 0 8px 22px rgba(46,125,71,0.22);
   transition: transform .14s ease, box-shadow .14s ease,
               background .14s ease, border-color .14s ease; }
 .mc-cta:hover { transform: translateY(-2px);
-  background: linear-gradient(180deg, #dfae2c, #b98c12); border-color: #e6c46a;
-  box-shadow: 0 14px 34px rgba(245,197,24,0.16); text-decoration: none; }
+  background: var(--fd-go-2); border-color: var(--fd-go-2);
+  box-shadow: 0 12px 26px rgba(46,125,71,0.28); text-decoration: none; color: #ffffff; }
 .mc-cta:active { transform: translateY(0); }
 .mc-cta-ico { font-size: 1.15em; line-height: 1; }
 .mc-cta-arw { font-size: 1.05em; transition: transform .14s ease; }
 .mc-cta:hover .mc-cta-arw { transform: translateX(3px); }
 
-.mc-cta2 { display: inline-block; margin-left: 18px; color: var(--fd-ink-2); font-size: 0.95rem;
-  text-decoration: none; border-bottom: 1px solid rgba(195,200,209,0.32); padding-bottom: 1px; }
-.mc-cta2:hover { color: var(--fd-ink); border-bottom-color: var(--fd-ink); text-decoration: none; }
-
-.mc-facts { margin: var(--space-4, 16px) 0 0; color: var(--fd-ink-3); font-size: 0.86rem;
-  letter-spacing: 0.01em; }
+/* the three facts, now closing the page — centred, quiet, and the last thing read */
+.mc-facts { margin: var(--space-5, 24px) 0 0; color: var(--fd-ink-3); font-size: 0.84rem;
+  letter-spacing: 0.02em; text-align: center; }
 
 /* ── THE LIVE BOARD — PARK-TABLE-STANDARD ──────────────────────────────────────────
    ⚠ FIXED 2026-07-28. This board shipped with its OWN woods hard-coded — `#efe3c8`
@@ -477,20 +486,17 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 @media (max-width: 760px) {
   .mc-hero { grid-template-columns: 1fr; gap: 0; }
   .mc-hero-copy { display: contents; }
-  .mc-eyebrow { order: 1; }
-  .mc-title   { order: 2; }
-  .mc-board   { order: 3; }
-  .mc-lede    { order: 4; }
-  .mc-cta     { order: 5; }
-  .mc-cta2    { order: 6; }
-  .mc-facts   { order: 7; }
+  /* three children now, not six — the eyebrow was deleted and the facts moved to the
+     foot of the page, so this list shrank with them. If it ever falls out of step with
+     the markup the hero silently reorders itself, which is why it is worth keeping tight. */
+  .mc-title { order: 1; }
+  .mc-board { order: 2; }
+  .mc-lede  { order: 3; }
+  .mc-cta   { order: 4; }
   /* the board's own breathing room, now that no gap supplies it: a hair under the
-     title (which already carries 12px) and a clear step down to the lede. */
+     title (which already carries 10px) and a clear step down to the lede. */
   .mc-board { min-height: 0; padding: 2px 0 var(--space-3, 12px); }
   .mc-cta { width: 100%; justify-content: center; }
-    /* no underline down here: at full width it stops reading as a link and starts
-     reading as a horizontal rule under the button. */
-  .mc-cta2 { display: block; margin: 14px 0 0; text-align: center; border-bottom: none; }
 }
 
 /* SECTION HEADS — quiet; the button is the loud thing */
@@ -534,24 +540,27 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   border-left: 2px solid var(--fd-rule); padding-left: 14px; }
 .mc-true b { display: block; color: var(--fd-ink-2); font-size: 0.95rem; margin-bottom: 3px; }
 
-/* THE WORLD DOOR */
-/* -- THE ONE PURPLE THING ---------------------------------------------------------
-   This is the whole colour idea of the page in one element. PJCC purple is the WORLD's
-   livery, so on the front door it appears exactly where it means something: the board's
-   "black" side (canon), and this - the single door that opens the world. Everything
-   between them is wood and ink. Purple stops being wallpaper and becomes a signpost. */
+/* THE WORLD DOOR — DE-PURPLED 2026-08-04 (Nate: "completely get rid of the purple and gold
+   aesthetic — leave that with PJCC page").
+
+   This used to be the page's one deliberate purple: the single card that opens the world,
+   so that purple meant something instead of being wallpaper. That idea was good and it is
+   GONE ANYWAY, because he asked for no purple on the front door and a single exception is
+   how a rule dies. The card is warm paper now and carries its weight by being the only
+   thing on the page with a wood-toned wash instead of a flat panel.
+   The purple all still lives one click away, on /pjcc/, where it belongs. */
 .mc-world { display: flex; align-items: center; gap: 16px; text-decoration: none;
   padding: 18px 20px; border-radius: var(--r-lg, 16px); margin: 0 0 var(--space-6, 32px);
-  background: linear-gradient(100deg, rgba(74,53,133,0.34), rgba(28,32,41,0.5));
-  border: 1px solid rgba(111,87,196,0.5);
+  background: linear-gradient(100deg, rgba(185,139,87,0.13), rgba(240,237,229,0.6));
+  border: 1px solid var(--fd-grain);
   transition: border-color .14s ease, transform .14s ease, background .14s ease; }
-.mc-world:hover { border-color: var(--fd-world); transform: translateY(-2px);
-  background: linear-gradient(100deg, rgba(74,53,133,0.5), rgba(28,32,41,0.5)); text-decoration: none; }
-.mc-world-glyph { font-size: 34px; line-height: 1; color: #b9a3e8; flex: 0 0 auto; }
+.mc-world:hover { border-color: var(--fd-wood); transform: translateY(-2px);
+  background: linear-gradient(100deg, rgba(185,139,87,0.2), rgba(240,237,229,0.75)); text-decoration: none; }
+.mc-world-glyph { font-size: 34px; line-height: 1; color: var(--fd-wood); flex: 0 0 auto; }
 .mc-world-txt { flex: 1; min-width: 0; }
 .mc-world-txt b { display: block; color: var(--fd-ink); font-size: 1rem; margin-bottom: 3px; }
 .mc-world-txt small { display: block; color: var(--fd-ink-3); font-size: 0.84rem; line-height: 1.55; }
-.mc-world-arw { color: #b9a3e8; font-size: 1.2rem; flex: 0 0 auto; }
+.mc-world-arw { color: var(--fd-wood); font-size: 1.2rem; flex: 0 0 auto; }
 @media (max-width: 560px) { .mc-world-glyph { font-size: 26px; } }
 
 /* THE STUDIO BAND — the same lamp + newest post the old home carried; it is the proof
@@ -592,8 +601,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    sweep, which measured both of these at exactly 40 and flagged them. 44 is the target;
    40 was close enough to look right and not be right. */
 @media (pointer: coarse) {
-  .mc-cta2, .mc-studio-more { min-height: 44px; display: flex; align-items: center; }
-  .mc-cta2 { justify-content: center; }
+  .mc-studio-more { min-height: 44px; display: flex; align-items: center; }
 }
 @media (prefers-reduced-motion: reduce) {
   .mc-cta, .mc-door, .mc-world { transition: none; }

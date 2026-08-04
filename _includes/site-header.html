@@ -84,7 +84,10 @@
              the site: don't remove it. {%- endcomment -%}
         <a class="page-link drawer-link drawer-link--home" href="{{ '/' | relative_url }}">
           <span class="dl-ico" aria-hidden="true">&#9812;</span>
-          <span class="dl-txt"><b>Home</b><small>ChessWild</small></span>
+          {%- comment -%} the sub said "ChessWild" directly under the drawer's own
+               "♛ ChessWild" brand — the same word twice, two lines apart. Nate picked
+               these three words (2026-08-04); they also match the front door's lede. {%- endcomment -%}
+          <span class="dl-txt"><b>Home</b><small>Play, Solve, Learn</small></span>
         </a>
         {%- comment -%} 2026-07-25 (Nate: "switch the position of Play Now and Games. I want
              Play Now to be prominent."): Play Now rises to just under the home anchor; Games

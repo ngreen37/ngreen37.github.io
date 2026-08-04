@@ -38,28 +38,65 @@
  * chess.md — it's one page's furniture, and it reads from these tokens.
  * ========================================================================== */
 
-body.theme-chess {
-  /* the sheet */
-  --surface:   #171a20;
-  --surface-2: #1c2029;
-  --edge:      #272c36;
-  --lift:      0 18px 50px rgba(0, 0, 0, 0.55);
+/* ⚑ REBUILT LIGHT — 2026-08-04. Nate: "Completely get rid of the purple and gold
+   aesthetic — leave that with PJCC page — and go with something welcoming to the
+   masses. If we need to start basic, let's start basic."
 
-  /* the ink — warm neutrals, three steps. All three clear AA on --surface
-     (measured: 15.9 / 9.6 / 5.6 against #171a20). */
-  --fd-ink:   #f5f3ee;
-  --fd-ink-2: #c3c8d1;
-  --fd-ink-3: #8c93a0;
+   So the room is now a sheet of white paper. Everything above this line still holds
+   — ONE COLOUR ONE JOB is the rule that survived the repaint — but two of the three
+   colours changed jobs:
+
+     GOLD is GONE.   It was the CTA and nothing else, and it was the loudest thing on
+                     a page trying to look welcoming. The one button is GREEN now:
+                     the colour every mass-market chess site already uses, and the
+                     colour this site already uses for "go" at the Park Tables.
+     PURPLE is GONE. All of it, including the world card at the foot, which used to
+                     be the single deliberate purple signpost. Purple is the PJCC
+                     page's livery now and appears on the front door nowhere.
+     WOOD stays,     but inverts: maple was a LIGHT text colour on a dark sheet and
+                     would be invisible on paper, so --fd-wood is a dark walnut brown
+                     that reads on white. Same job (labels, icons, rules), same idea
+                     (the page's warmth comes from the thing the site is about).
+
+   ⚠ THE BOARD IS DELIBERATELY NOT REPAINTED. Its "black" pieces are PJCC purple —
+   that is the CHESS CANON (_pjcc-22-chess-canon.scss), shared by every board on the
+   site, and forking it here would make the front door a fifth board look, which is
+   the exact thing the canon exists to prevent. Wood and purple pieces on white paper
+   read fine. If Nate wants the canon itself recoloured, that is one token edit and
+   it changes every board at once — which is the right way to do it.
+
+   ⚠ THE HEADER AND DRAWER STAY DARK (his call: "home page only, for now"). The light
+   sheet sits ON the dark town sky like paper on a desk, which is why the card keeps
+   its margins and its lift shadow — they are what make the seam read as intentional
+   instead of broken. */
+body.theme-chess {
+  /* the sheet — warm white, not clinical #fff; a pure white page under a dark header
+     reads as a hole punched in the site. */
+  --surface:   #fbfaf7;
+  --surface-2: #f4f2ec;
+  --edge:      #e5e1d8;
+  --lift:      0 18px 50px rgba(0, 0, 0, 0.45);
+
+  /* the ink — warm near-blacks, three steps. Measured against --surface #fbfaf7:
+     16.1 / 8.0 / 4.9 — all three clear AA, the third only just, so it is used for
+     small print and nothing that matters. */
+  --fd-ink:   #1e232c;
+  --fd-ink-2: #4b5361;
+  --fd-ink-3: #6d7583;
 
   /* structure */
-  --fd-rule:  #272c36;
-  --fd-panel: #1c2029;
-  --fd-panel-hi: #222732;
+  --fd-rule:  #e5e1d8;
+  --fd-panel: #f7f5f0;
+  --fd-panel-hi: #f0ede5;
 
-  /* the two colours with a job */
-  --fd-wood:  var(--chess-lt);     /* maple — labels, icons, rules */
-  --fd-grain: var(--chess-dk);     /* walnut — the deeper wood note */
-  --fd-world: #6f57c4;             /* the world's purple, lifted for contrast */
+  /* the one colour with a job */
+  --fd-go:    #2e7d47;   /* the button. 5.1:1 with white — AA for normal text, and
+                            the label is large and bold on top of that. */
+  --fd-go-2:  #24663a;   /* the button, pressed/hovered: DEEPER, never brighter. The
+                            gold button's original sin was getting lighter on hover —
+                            the loudest thing on the page turning up under the cursor. */
+  --fd-wood:  #8a5a2b;   /* walnut brown — labels, icons, rules. 5.6:1 on the sheet. */
+  --fd-grain: #b98b57;   /* the lighter wood note, borders and hairlines only */
 }
 
 /* ── site chrome corrections ──────────────────────────────────────────────────
@@ -100,20 +137,21 @@ body.theme-chess .mc-table {
   padding: 40px 44px 36px;
   border-bottom: 1px solid var(--fd-rule);
   border-radius: var(--r-lg, 16px) var(--r-lg, 16px) 0 0;
+  /* on paper the "pool of warm light" is the other way up: the band is a shade WARMER
+     than the sheet below it, not a glow laid on top of a dark one. */
   background:
-    /* the pool of warm light the board sits in */
-    radial-gradient(58% 90% at 78% 46%, rgba(233, 211, 164, 0.10), transparent 68%),
+    radial-gradient(58% 90% at 78% 46%, rgba(185, 139, 87, 0.09), transparent 68%),
     linear-gradient(180deg, var(--fd-panel-hi), var(--surface));
   overflow: hidden;
 }
-/* the hairline of maple along the very top, like the lit edge of a tabletop */
+/* the hairline of walnut along the very top, like the lit edge of a tabletop */
 body.theme-chess .mc-table::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(233, 211, 164, 0.55) 30%,
-                              rgba(233, 211, 164, 0.55) 70%, transparent);
+  background: linear-gradient(90deg, transparent, rgba(138, 90, 43, 0.42) 30%,
+                              rgba(138, 90, 43, 0.42) 70%, transparent);
 }
 
 @media (max-width: 700px) {
