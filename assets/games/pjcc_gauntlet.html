@@ -1081,6 +1081,19 @@ function render(){
     ctx.fillStyle='#2a1608'; ctx.fillText('LOOKING BACK', BX+BOARD/2, BY+BOARD-14.5);
   }
 }
+/* ── MATERIAL ADVANTAGE (2026-08-04, Nate: "the chess games should show with a little +x
+   by the user who is up material") ────────────────────────────────────────────────────
+   The SAME count Park Tables has shown since 2026-07-16 — pawn 1 · minor 3 · rook 5 ·
+   queen 9, king 0 — deliberately copied value for value rather than re-invented, because
+   two chess games on one site disagreeing about who is winning would be worse than
+   neither showing it. Even material shows nothing: a chip reading "+0" is noise. */
+var MATV = { p:1, n:3, b:3, r:5, q:9, k:0 };
+function matUp(S, forWhite){
+  var d = 0;
+  for (var i=0;i<64;i++){ var p=S.b[i]; if(!p) continue;
+    d += (p === p.toUpperCase() ? 1 : -1) * MATV[p.toLowerCase()]; }
+  return forWhite ? d : -d;
+}
 function drawHud(){
   ctx.textAlign='left'; ctx.textBaseline='middle';
   // opponent name / region now live in the HTML portrait at top-left
@@ -1091,10 +1104,30 @@ function drawHud(){
   ctx.fillStyle = youW ? '#efe7cf' : '#13242a'; roundRect(bx,by,tw,bh,11); ctx.fill();
   ctx.strokeStyle = youW ? '#caa84a' : '#5be0c0'; ctx.lineWidth=1.5; roundRect(bx,by,tw,bh,11); ctx.stroke();
   ctx.fillStyle = youW ? '#2a2208' : '#dffff6'; ctx.textAlign='center'; ctx.fillText(txt, bx+tw/2, by+bh/2);
+
+  /* THE +x CHIP, on the side of whoever is ahead. Only ever ONE of these is drawn — both
+     players cannot be up — so the two positions can never collide.
+       you ahead   → hard against the YOU-PLAY badge, right side, your half of the strip
+       rival ahead → far left, under their portrait, their half
+     `statusRight` moves out of the way when your chip is present, so the "Your move" line
+     can never be overprinted by it. */
+  var up = G.S ? matUp(G.S, G.pc==='w') : 0, statusRight = bx - 10;
+  if (up !== 0){
+    var mtxt = '+' + Math.abs(up), yours = up > 0;
+    ctx.font = 'bold 12px "Share Tech Mono", ui-monospace, monospace';
+    var mw = ctx.measureText(mtxt).width + 16, mh = 20, my = by + 1;
+    var mx = yours ? (bx - 8 - mw) : 14;
+    ctx.fillStyle = 'rgba(10,7,20,0.72)'; roundRect(mx,my,mw,mh,10); ctx.fill();
+    ctx.strokeStyle = yours ? '#6bffb8' : '#ff9d9d'; ctx.lineWidth = 1.5; roundRect(mx,my,mw,mh,10); ctx.stroke();
+    ctx.fillStyle = yours ? '#6bffb8' : '#ff9d9d'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(mtxt, mx + mw/2, my + mh/2);
+    if (yours) statusRight = mx - 10;
+  }
+
   // turn / thinking — to the LEFT of the badge, same row
   ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='bold 11px Trebuchet MS';
   var status = G.over ? '' : (G.thinking ? '… ' + G.rung.name.replace(/^The\s+/,'') + ' is thinking' : (G.S.turn===G.pc ? 'Your move' : ''));
-  ctx.fillStyle = '#cdbcf2'; ctx.fillText(status, bx-10, by+bh/2);
+  ctx.fillStyle = '#cdbcf2'; ctx.fillText(status, statusRight, by+bh/2);
 }
 // The clock lives in the same strip the gallery stands in, so it is painted SEPARATELY,
 // after the crowd — otherwise floor 8 and up quietly hid how much time you had left.
