@@ -32,10 +32,22 @@ permalink: /games/the-gauntlet/
    × 0.88 converts that available HEIGHT into the stage WIDTH that produces it.
 
    Ceiling 720px — the game's own `#stage` cap, which it must not exceed or the frame grows
-   while the board inside stops. Floor 300px so a short window still shows a usable board.
-   The 14px is `.game-frame-wrap`'s bezel padding, one on each side of the iframe. */
+   while the board inside stops. The 14px is `.game-frame-wrap`'s bezel padding, one per side.
+
+   ⚠⚠ THE FLOOR IS 520px, AND IT IS NOT A GUESS — IT IS THE OLD FIXED SIZE. The first version
+   of this used a 300px floor and SHRANK THE BOARD on the most common laptop there is: at
+   1366x768 the height formula asks for 447, and the board had been a flat 520 at every window
+   since the game shipped. Measured on the live page and caught there, not here.
+
+   THE MISTAKE UNDERNEATH IT: I copied the Park Tables reasoning without checking that the
+   premise carried. There the board must fit the viewport because you are PLAYING in a room
+   that should not scroll under you. Here the game sits in an ordinary scrolling page, with
+   `overflow:hidden` only INSIDE the iframe — so a frame taller than the window has always just
+   scrolled, and forcing it to fit bought nothing and cost real size. The viewport height is a
+   reason to grow when there is room, never a reason to shrink below what already worked.
+   Verified after: 1080p 720, 1440x900 563, 1366x768 520 (unchanged), phone 306 (unchanged). */
 .td-frame {
-  --g-stage: clamp(300px, calc((100vh - 260px) * 0.88), 720px);
+  --g-stage: clamp(520px, calc((100vh - 260px) * 0.88), 720px);
   max-width: calc(var(--g-stage) + 28px);
 }
 .td-frame iframe { height: calc(var(--g-stage) * 1.1364 + 72px); }
