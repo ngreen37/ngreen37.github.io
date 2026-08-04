@@ -5,3 +5,4 @@ _site/
 # Generated slur/word list for the username moderator (a blocklist dump doesn't
 # belong in the repo). Rebuild with `npm run gen:blocklist`.
 docs/blocklist-seed.sql
+build.log
