@@ -124,9 +124,13 @@ Two items remain:
   with the Citizen crest and any claim on a Founder's number. The fix is small (write the arrival and
   the step count under the account the moment either happens, and make the room say "sign in to keep
   your road"), but it changes what the page promises a stranger, so **the call is his.** Related: the
-  ONE genuine asterisk on "1,000 correct puzzles" — the deepest hint tier plays the winning move for
-  you and still advances the counter. It is flagged (the solve isn't "aced", the difficulty drops),
-  but the step moves. Leave it as a mercy or make reveals not count — also his.
+  ~~ONE genuine asterisk on "1,000 correct puzzles"~~ **ANSWERED AND CLOSED 2026-08-04**, and he
+  went further than the question asked: **no credit for a hint OR a wrong first move.** You still
+  have to finish the puzzle — it just doesn't count, and it **comes back three puzzles later** wearing
+  a "SECOND LOOK" chip until you solve it clean. The rating and the difficulty still settle on any
+  finish (they are *measurements*); only the STEP is withheld (it is a *claim*). ⚠ **"1,000 puzzles to
+  Chess City" now means 1,000 CLEAN solves** — a materially harder promise than it was, and the knob
+  to turn if the road ever feels punishing.
 - [ ] **The rarity band NAMES are mine and the veto is open.** *Common · Uncommon · Rare · Very Rare ·
   Ultra-Rare · Legendary* — he asked for six categories "up to 'ultra-rare' or 'ultra-valuable'", and
   these are the six. **Legendary and Ultra-Rare traded places 2026-08-03 at his word**, so Legendary
