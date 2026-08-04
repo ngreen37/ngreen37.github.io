@@ -42,6 +42,19 @@ mcpuppystudios.com 301s **with the path preserved** (`/pjcc/` → `chesswild.com
   from `docs/translation-worker.md` → **Deploy** (the edit does nothing until Deploy is clicked).
   Tell me when it's done and I'll re-probe.
 
+**📱 TWO THINGS ONLY YOU CAN CONFIRM — from the 2026-08-04 front-door / Forge batch**
+- [ ] **Does Customize take ONE tap now, on your iPhone?** ⚠ Be honest about the state of this:
+  **I could not reproduce the double-click.** Real mouse clicks and emulated touch both took on
+  the first hit — on a stub page and on the live site. That rules out the handler, not the
+  platform, and Chrome's touch emulation is not WebKit. Every picker is a real `<button>` now
+  instead of a `<div>` with a click handler, which removes the heuristic Safari was probably
+  getting wrong (and closes an accessibility hole — the whole Forge was mouse-only). **If it
+  still takes two taps, tell me and I will stop guessing and instrument the live page.**
+- [ ] **Sanity-check one reading of your front-door batch.** *"Make a Games Hall box and put it
+  in the play now box"* — I read that as: Play Now was promoted out of the four-door grid into
+  the big green box above, so **Games Hall took the slot Play Now vacated**. If you meant Games
+  Hall nested *inside* the Play Now card, say so — it is a small rework, not a rebuild.
+
 **⭐ THE PUZZLE CREDIT RULE — TWO DIALS THAT ARE YOURS TO CALL (kept here at your request,
 2026-08-04: "keep the RETRY_GAP and the earned definition in the priority items")**
 
