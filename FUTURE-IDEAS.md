@@ -58,6 +58,19 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**
   the two serifs. It records what is true today rather than proposing a change; if you'd rather the
   Reading Room and Shogi Island used the studio's serif stack instead of their own, say so.
 
+**From the Identity Forge rebuild (2026-08-03) — shipped, and yours to veto**
+- [ ] **Nine characters left and they are not coming back on their own.** Fox, Visitor, Robot and
+  Fairy — the four you named — plus Ghost, Genie, Elf, Vampire and Merfolk, which fall under "keep
+  them human". Say the word and any of them can return as a drawn face; each is one entry in `FACES`
+  plus a hair shape.
+- [ ] **The 12 hair styles and their names are mine.** Crop · Swept · Buzz · Curls · Afro · Bob ·
+  Long · Ponytail · Braids · Top knot · Locs · Bald. So are the 12 hair colours (three of which —
+  jade, rose, azure — only exist in Checker Town) and the 10 eye colours.
+- [ ] **The tiny avatar in the nav is still an emoji on ONE surface: the share card.** It paints with
+  `ctx.fillText` onto a canvas, which cannot take a drawing, so it shows 🧑 in your skin tone. Every
+  other surface — nav, leaderboards, profile bar, dossier — shows the real face. Worth fixing when
+  the share card is next opened; not worth a canvas rewrite today.
+
 **Accounts & sign-ups — nothing on my side blocks these**
 - [ ] **Google Search Console** — verify `mcpuppystudios.com`, submit `/sitemap.xml`. The JSON-LD,
   sitemap and robots have been wired and waiting since the SEO pass; until this is done, nothing is
@@ -147,19 +160,20 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**
   no offer.
 
 **Queued, mine not his — carried from 2026-07-28, NOT started**
-- [ ] **THE PERSON, DRAWN — the last piece of the eye-colour ask.** ✅ The PET half shipped
-  2026-07-28: the companion is drawn out of named parts (`assets/js/pjcc-pet-art.js`), so coat,
-  **8 eye colours** and **4 nose colours** are three independent choices, proved by a test that
-  swaps one and asserts the other two fills don't move. Four species × three growth stages, with
-  the stage expressed as PROPORTIONS (a puppy is not a small dog, it's a differently-shaped one),
-  so it's one drawing read three ways. The saturation-keyed coat filter was deleted entirely —
-  ~70 lines of clever that stopped being needed.
-  **What's left:** Nate asked for eye colour on *both* person and pet, and the PERSON is still one
-  of 32 emoji (🧑 🥷 👸 …), so it still has no eye to colour. Drawing them is now a much smaller
-  job than it was — `pjcc-pet-art.js` already has the eye/iris/pupil/glint part, the palettes and
-  the outline style — but it means trading 32 ready-made characters for one drawn face plus the
-  hats and emblems that already overlay it. **That trade is Nate's call, not mine**, which is why
-  it stopped here rather than shipping a person nobody asked to lose their ninja for.
+- [x] ~~**THE PERSON, DRAWN — the last piece of the eye-colour ask.**~~ **SHIPPED 2026-08-03.**
+  Nate took the trade this item was waiting on: *"Take away characters like fox, visitor, robot, and
+  fairy. Keep them human. Keep the eye setup uniform so we can change eye color… and if they want, a
+  2 color eye?"* The person is drawn from parts now (`assets/js/pjcc-face-art.js`), so eye colour
+  exists on both halves of the pair at last — and **two-tone eyes** with it: pupil, an inner ring, an
+  outer ring, exactly the eye he described as his own.
+  **The trade came out ahead.** It cost 32 fixed emoji and bought 12 hair styles × 12 hair colours ×
+  6 skin tones × 10 eyes × 11 second rings — and a ninja can now have red hair and green eyes, which
+  was impossible when the ninja *was* the picture. The profession moved to the two places that
+  already carried it: Headwear and your Title. Nobody lost their character — all 32 old keys map to
+  a person who resembles them, so a saved Fox reopens as somebody with curly hair.
+  Gate: `npm run test:creator` (22 checks), including a **pixel measurement** that the panel never
+  moves while you use it.
+
 
 **Test on a device I don't have**
 - [ ] **iOS in-app sign-in** — the PWA is built but private (`?pwa=on`). Magic links can't sign in an

@@ -20,48 +20,64 @@
 (function () {
   'use strict';
 
-  // ---- catalogs ---------------------------------------------------------
-  // Bases either carry a full `glyph`, or a `head`+`role` pair we join with a
-  // zero-width joiner (🧑 + ‍ + 🚀 = 🧑‍🚀). `tone` flags whether a Fitzpatrick
-  // skin-tone modifier combines cleanly (plain people: yes; VS16/role faces: no).
-  var BASES = [
-    { key:'recruit',  n:'Recruit',   glyph:'🧑', tone:true },
-    { key:'agent',    n:'Agent',     glyph:'🤵', tone:true },
-    { key:'sleuth',   n:'Sleuth',    glyph:'🕵️', tone:false },
-    { key:'ninja',    n:'Ninja',     glyph:'🥷', tone:true },
-    { key:'princess', n:'Princess',  glyph:'👸', tone:true },
-    { key:'heir',     n:'Heir',      glyph:'🤴', tone:true },
-    { key:'mage',     n:'Mage',      glyph:'🧙', tone:true },
-    { key:'elf',      n:'Elf',       glyph:'🧝', tone:true },
-    { key:'hero',     n:'Hero',      glyph:'🦸', tone:true },
-    { key:'rogue',    n:'Rogue',     glyph:'🦹', tone:true },
-    { key:'warden',   n:'Warden',    glyph:'👮', tone:true },
-    { key:'guard',    n:'Guard',     glyph:'💂', tone:true },
-    { key:'builder',  n:'Builder',   glyph:'👷', tone:true },
-    { key:'seer',     n:'Seer',      glyph:'🧕', tone:true },
-    { key:'sage',     n:'Sage',      glyph:'👳', tone:true },
-    { key:'vampire',  n:'Vampire',   glyph:'🧛', tone:true },
-    { key:'merfolk',  n:'Merfolk',   glyph:'🧜', tone:true },
-    { key:'fairy',    n:'Fairy',     glyph:'🧚', tone:true },
-    { key:'genie',    n:'Genie',     glyph:'🧞', tone:false },
-    { key:'pilot',    n:'Pilot',     head:'🧑', role:'✈️', tone:true },
-    { key:'astro',    n:'Astronaut', head:'🧑', role:'🚀', tone:true },
-    { key:'scientist',n:'Scientist', head:'🧑', role:'🔬', tone:true },
-    { key:'artist',   n:'Artist',    head:'🧑', role:'🎨', tone:true },
-    { key:'teacher',  n:'Teacher',   head:'🧑', role:'🏫', tone:true },
-    { key:'coder',    n:'Coder',     head:'🧑', role:'💻', tone:true },
-    { key:'cook',     n:'Cook',      head:'🧑', role:'🍳', tone:true },
-    { key:'farmer',   n:'Farmer',    head:'🧑', role:'🌾', tone:true },
-    { key:'singer',   n:'Singer',    head:'🧑', role:'🎤', tone:true },
-    { key:'robot',    n:'Robot',     glyph:'🤖', tone:false },
-    { key:'alien',    n:'Visitor',   glyph:'👽', tone:false },
-    { key:'fox',      n:'Fox',       glyph:'🦊', tone:false },
-    { key:'ghost',    n:'Ghost',     glyph:'👻', tone:false }
+  /* ══ THE CHARACTER IS HUMAN, AND DRAWN (2026-08-03) ═══════════════════════════
+     Nate: "Take away characters like fox, visitor, robot, and fairy. Keep them human.
+     Keep the eye setup uniform so we can change eye color."
+
+     WHAT LEFT. 32 emoji bases, of which nine were not people: Fox 🦊, Visitor 👽,
+     Robot 🤖, Fairy 🧚, Ghost 👻, Genie 🧞, Elf 🧝, Vampire 🧛 and Merfolk 🧜. He named
+     four and said "keep them human", which is the rule the other five fall under too.
+
+     WHAT REPLACED THEM, and it is a bigger cast rather than a smaller one. The other 23
+     were emoji as well — 🥷 is a picture, not a character with parts — so "change your eye
+     colour" was impossible for exactly the reason the companion's was until it got drawn
+     ([[companion-is-emoji]]). The person is drawn now (assets/js/pjcc-face-art.js), so the
+     profession that used to BE your character has moved to the two places that already
+     carried it — Headwear and your Title — and who you are is hair + skin + eyes:
+
+         12 hair × 12 hair colours × 6 skin tones × 10 eyes × 11 second rings
+                                    ≈ 95,000 faces, against 32 fixed ones
+
+     …and a ninja can have red hair and green eyes, which was never possible when the
+     ninja was the picture. The nine that left were the only thing lost.
+
+     ⚠ NOBODY LOSES THEIR CHARACTER. Every one of the 32 old keys maps to a hair style and
+     an expression in BASE_MIGRATE below, so a saved look opens as a person who resembles
+     it rather than resetting to the default. That includes the nine non-humans: the Fox
+     becomes a curly-haired person, the Ghost a bald one. */
+  var FACES = [
+    { key:'crop',   n:'Crop',     brow: 0, mouth: 0 },
+    { key:'swept',  n:'Swept',    brow: 0, mouth: 0 },
+    { key:'buzz',   n:'Buzz',     brow:-1, mouth: 0 },
+    { key:'curls',  n:'Curls',    brow: 1, mouth: 1 },
+    { key:'afro',   n:'Afro',     brow: 0, mouth: 1 },
+    { key:'bob',    n:'Bob',      brow: 0, mouth: 1 },
+    { key:'long',   n:'Long',     brow: 0, mouth: 0 },
+    { key:'tail',   n:'Ponytail', brow: 1, mouth: 1 },
+    { key:'braids', n:'Braids',   brow: 1, mouth: 1 },
+    { key:'bun',    n:'Top knot', brow:-1, mouth: 0 },
+    { key:'locs',   n:'Locs',     brow: 0, mouth: 1 },
+    { key:'bald',   n:'Bald',     brow:-1, mouth: 0 }
   ];
-  var BASE_MAP = {}; BASES.forEach(function (b) { BASE_MAP[b.key] = b; });
-  var TONES = [ { key:'', n:'Default', sw:'#caa472' }, { key:'🏻', n:'I', sw:'#f7d9bf' },
-    { key:'🏼', n:'II', sw:'#e9c19a' }, { key:'🏽', n:'III', sw:'#c79b6e' },
-    { key:'🏾', n:'IV', sw:'#a06a43' }, { key:'🏿', n:'V', sw:'#5c3a23' } ];
+  var FACE_MAP = {}; FACES.forEach(function (f) { FACE_MAP[f.key] = f; });
+
+  // every old emoji base → the person who most resembles it
+  var BASE_MIGRATE = {
+    recruit:'crop', agent:'swept', sleuth:'crop', ninja:'bun', princess:'long',
+    heir:'swept', mage:'long', elf:'long', hero:'swept', rogue:'crop',
+    warden:'crop', guard:'buzz', builder:'crop', seer:'bob', sage:'bun',
+    vampire:'swept', merfolk:'long', fairy:'bob', genie:'bun', pilot:'crop',
+    astro:'buzz', scientist:'bob', artist:'curls', teacher:'bob', coder:'crop',
+    cook:'bun', farmer:'crop', singer:'curls', robot:'buzz', alien:'bald',
+    fox:'curls', ghost:'bald'
+  };
+
+  /* ⚠ THE TONE KEYS ARE STILL THE EMOJI SKIN-TONE MODIFIERS. They mean nothing to a
+     drawn face — PJCCFaceArt.SKIN looks the colour up by them — but every look saved
+     since the Forge shipped carries one, and keeping the key is a migration that cannot
+     fail. Ugly identifier, zero risk; see the note in pjcc-face-art.js. */
+  function art() { return window.PJCCFaceArt || null; }
+  function TONE_ORDER() { var A = art(); return A ? A.SKIN_ORDER : ['']; }
 
   var HATS = {
     none:    { em:'',   n:'None' },
@@ -116,11 +132,21 @@
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]; }); }
 
-  function baseGlyph(key, tone) {
-    var b = BASE_MAP[key] || BASE_MAP.recruit;
-    var t = (b.tone && tone) ? tone : '';
-    if (b.role) return b.head + t + '‍' + b.role;
-    return b.glyph + t;
+  /* ⚠ `glyph` STILL EXISTS AND IS STILL AN EMOJI, on purpose. PJCC.avatarEmoji() feeds
+     three places that cannot take markup — most sharply `dossier.md`'s share card, which
+     paints it with `ctx.fillText` onto a canvas — plus a cached copy in localStorage. So
+     the look keeps one honest text stand-in: a person, wearing your skin tone. Everywhere
+     that CAN take markup gets the drawn face (PJCC.avatarMarkup). */
+  function baseGlyph(key, tone) { return '🧑' + (tone || ''); }
+
+  // the drawn face for a resolved look — the real picture of your character
+  function faceSvg(look, over) {
+    var A = art();
+    var o = { tone: look.tone, hair: look.hair, hairColor: look.hairColor,
+              eye: look.eye, eyeOuter: look.eyeOuter, brow: look.brow, mouth: look.mouth };
+    if (over) Object.keys(over).forEach(function (k) { o[k] = over[k]; });
+    if (!A) return '<span class="idn-glyph">' + baseGlyph(o.hair, o.tone) + '</span>';
+    return A.svg(o);
   }
   function auraColor(key) { return AURAS[key] || AURAS.gold; }
 
@@ -128,7 +154,8 @@
   var KEY = 'pjcc.identity.v1';
   function defaults() {
     return {
-      op:  { base:'recruit', tone:'', aura:'gold', hat:'none', emblem:'none', name:'', role:'', bio:'' },
+      op:  { hair:'crop', tone:'', hairColor:'brown', eye:'brown', eyeOuter:'same',
+             aura:'gold', hat:'none', emblem:'none', name:'', role:'', bio:'' },
       pet: { coat:'natural', eye:'brown', nose:'black', aura:'none', bio:'' }
     };
   }
@@ -138,7 +165,26 @@
     if (!s) return d;
     var op = Object.assign(d.op, s.op || {});
     var pet = Object.assign(d.pet, s.pet || {});
-    if (!BASE_MAP[op.base]) op.base = 'recruit';
+    /* MIGRATION off the 32 emoji bases (2026-08-03). `base` was the whole character;
+       `hair` is one part of a drawn one. Read it ONCE, map it, and drop it — leaving
+       `base` behind would mean a look that keeps flipping back on the next load.
+
+       ⚠ ASK THE SAVED OBJECT, NOT THE MERGED ONE. `op` has already been merged over the
+       defaults, so `op.hair` is ALWAYS truthy — it is 'crop' when nothing was saved. The
+       first version tested `!op.hair` and therefore never migrated anybody: a stored Fox
+       reopened as the default Crop instead of as the curly-haired person it maps to.
+       Caught by driving the Forge with an old look in storage. */
+    var saved = s.op || {};
+    if (saved.base && !saved.hair) op.hair = BASE_MIGRATE[saved.base] || 'crop';
+    if (op.base) delete op.base;
+    if (!FACE_MAP[op.hair]) op.hair = 'crop';
+    var A = art();
+    if (A) {
+      if (!A.SKIN[op.tone]) op.tone = '';
+      if (!A.HAIRCOL[op.hairColor]) op.hairColor = 'brown';
+      if (!A.EYES[op.eye]) op.eye = 'brown';
+      if (op.eyeOuter !== 'same' && !A.EYES[op.eyeOuter]) op.eyeOuter = 'same';
+    }
     if (!AURAS[op.aura]) op.aura = 'gold';
     if (!HATS[op.hat]) op.hat = 'none';
     if (!EMBLEMS[op.emblem]) op.emblem = 'none';
@@ -150,16 +196,24 @@
       pet.coat = pet.tint === 'none' ? 'natural' : pet.tint === 'spirit' ? 'snow' : pet.tint;
       delete pet.tint;
     }
-    var art = window.PJCCPetArt;
-    if (art) {
-      if (!art.COATS[pet.coat]) pet.coat = 'natural';
-      if (!art.EYES[pet.eye]) pet.eye = 'brown';
-      if (!art.NOSES[pet.nose]) pet.nose = 'black';
+    /* ⚠ `petArt` — NOT `art`. This local was called `art` until 2026-08-03, when the
+       person got a face-art module and `art()` became the helper that returns it. A `var`
+       shadows the whole function scope from its first line, so `art()` in the block ABOVE
+       threw "art is not a function" — but only once something had been saved, because the
+       `if (!s) return d` early exit skips this block on a first visit. First render fine,
+       every click after the first silently dead. Caught by driving the real Forge; two
+       different harness runs reported "nothing moved" before that, both because nothing
+       was happening at all. */
+    var petArtLib = window.PJCCPetArt;
+    if (petArtLib) {
+      if (!petArtLib.COATS[pet.coat]) pet.coat = 'natural';
+      if (!petArtLib.EYES[pet.eye]) pet.eye = 'brown';
+      if (!petArtLib.NOSES[pet.nose]) pet.nose = 'black';
     }
     return { op: op, pet: pet };
   }
   function saveLocal(state) {
-    state.op.glyph = baseGlyph(state.op.base, state.op.tone);   // cache resolved glyph for the nav
+    state.op.glyph = baseGlyph(state.op.hair, state.op.tone);   // the text stand-in — see baseGlyph
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
   }
 
@@ -174,10 +228,22 @@
   // The resolved operative look: defaults <- local <- account.
   function identity() {
     var s = loadLocal(), op = s.op, al = accountLook();
-    if (al) op = Object.assign({}, op, al);
-    if (!BASE_MAP[op.base]) op.base = 'recruit';
+    /* An ACCOUNT look can also be pre-migration — it was written by an older build on
+       another device and lands here whole. Migrate it on the way in, for the same reason
+       and with the same test as loadLocal: read what the ACCOUNT actually stored, before
+       it is merged over a local look that already has a valid `hair`. */
+    if (al) {
+      var alHair = (al.base && !al.hair) ? (BASE_MIGRATE[al.base] || 'crop') : al.hair;
+      op = Object.assign({}, op, al);
+      if (alHair) op.hair = alHair;
+      delete op.base;
+    }
+    if (!FACE_MAP[op.hair]) op.hair = 'crop';
     if (!AURAS[op.aura]) op.aura = 'gold';
-    op.glyph = baseGlyph(op.base, op.tone);
+    var f = FACE_MAP[op.hair];
+    if (op.brow == null) op.brow = f.brow;
+    if (op.mouth == null) op.mouth = f.mouth;
+    op.glyph = baseGlyph(op.hair, op.tone);
     op.displayName = (op.name && op.name.trim()) || accountCodename() || 'Newcomer';
     return op;
   }
@@ -228,7 +294,7 @@
     var hat = HATS[look.hat] && look.hat !== 'none' ? HATS[look.hat].em : '';
     var emb = EMBLEMS[look.emblem] && look.emblem !== 'none' ? EMBLEMS[look.emblem].em : '';
     el.innerHTML =
-      '<span class="idn-glyph">' + (look.glyph || baseGlyph(look.base, look.tone)) + '</span>' +
+      faceSvg(look) +
       (hat ? '<span class="idn-hat">' + hat + '</span>' : '') +
       (emb ? '<span class="idn-emblem">' + emb + '</span>' : '');
   }
@@ -292,13 +358,92 @@
 
   function toast(msg) { var t = document.createElement('div'); t.className = 'forge-toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(function () { t.remove(); }, 1800); }
 
-  // commit a patch to the operative or pet look, persist, re-render live
-  function patchOp(p)  { var s = loadLocal(); Object.assign(s.op, p);  saveLocal(s); scheduleSync(); renderForge(true); emit(); }
-  function patchPet(p) { var s = loadLocal(); Object.assign(s.pet, p); saveLocal(s); renderForge(true); emit(); }
+  /* ══ NOTHING MOVES WHEN YOU PICK SOMETHING (2026-08-03) ═══════════════════════
+     Nate: "when you change aura or skin tone the base box shifts and vice versa. It's
+     annoying can we get rid of it? Also when you click back in to Base; it goes elsewhere
+     randomly."
+
+     ONE CAUSE, BOTH BUGS. Every click ran `renderForge(true)`, which rebuilt the whole
+     overlay with `ov.innerHTML = html` and then tried to put the scroll position back.
+     Two things fell out of that:
+
+       · THE SHIFT. Changing the skin tone re-rendered every Base cell with a different
+         emoji — 🧑 became 🧑🏽 — and an emoji carrying a skin-tone modifier does not
+         measure the same as one without. So the grid re-wrapped, the section changed
+         height, and everything under it moved. Same for the aura, which re-rendered the
+         cells for nothing at all.
+       · THE JUMP. `scrollTop = sc` was written on a document that had just been replaced
+         and not yet laid out, so the browser clamped it to whatever scrollHeight it had
+         at that instant. Land on a taller or shorter panel and you are somewhere else —
+         "randomly", because it depends on when layout happened to run.
+
+     The fix is not to fix the restore, it is to stop rebuilding. A colour or a part is a
+     PROPERTY of a picker that is already on screen, so `repaintOp()` writes the fills and
+     moves the `on` class and touches nothing else. No new nodes, no reflow, no scroll to
+     restore — the panel literally cannot move.
+
+     `renderForge()` is still there and still correct; it now runs only when the whole
+     panel legitimately changes (opening the Forge, switching tabs). */
+  function patchOp(p, heavy) {
+    var s = loadLocal(); Object.assign(s.op, p); saveLocal(s); scheduleSync();
+    if (heavy) renderForge(true); else repaintOp();
+    emit();
+  }
+  function patchPet(p, heavy) {
+    var s = loadLocal(); Object.assign(s.pet, p); saveLocal(s);
+    if (heavy) renderForge(true); else repaintPet();
+    emit();
+  }
+
+  // move the `on` class within one picker without touching anything else
+  function markOn(attr, value) {
+    if (!ov) return;
+    Array.prototype.forEach.call(ov.querySelectorAll('[' + attr + ']'), function (c) {
+      c.classList.toggle('on', c.getAttribute(attr) === value);
+    });
+  }
+  function repaintOp() {
+    if (!ov || tab !== 'operative') return;
+    var look = identity();
+    renderAvatar(ov.querySelector('#forge-prev'), look);
+    /* Every hair cell wears YOUR skin, YOUR hair colour and YOUR eyes, so the picker is a
+       row of you rather than a row of strangers — and re-colouring it is a fill change on
+       a box whose size never varies, which is exactly what the old emoji grid could not do. */
+    Array.prototype.forEach.call(ov.querySelectorAll('[data-hair]'), function (c) {
+      var slot = c.querySelector('.fc-face');
+      if (slot) slot.innerHTML = faceSvg(look, { hair: c.getAttribute('data-hair'),
+                                                 brow: FACE_MAP[c.getAttribute('data-hair')].brow,
+                                                 mouth: FACE_MAP[c.getAttribute('data-hair')].mouth });
+    });
+    markOn('data-hair', look.hair);
+    markOn('data-tone', look.tone);
+    markOn('data-hcol', look.hairColor);
+    markOn('data-eye1', look.eye);
+    markOn('data-eye2', look.eyeOuter || 'same');
+    markOn('data-aura', look.aura);
+    markOn('data-hat', look.hat);
+    markOn('data-emblem', look.emblem);
+  }
+  function repaintPet() {
+    if (!ov || tab !== 'companion') return;
+    var pl = petLook();
+    var prev = ov.querySelector('#forge-prev');
+    if (prev) { prev.style.setProperty('--aura', auraColor(pl.aura === 'none' ? 'violet' : pl.aura)); prev.innerHTML = petArt(pl); }
+    var den = ov.querySelector('.forge-den-face'); if (den) den.innerHTML = petArt(pl);
+    markOn('data-coat', pl.coat);
+    markOn('data-eye', pl.eye);
+    markOn('data-nose', pl.nose);
+    markOn('data-paura', pl.aura);
+  }
 
   function cell(on, em, name, attr) {
     return '<div class="forge-cell' + (on ? ' on' : '') + '" ' + attr + '>' +
       '<span class="fc-em">' + (em || '🚫') + '</span><span class="fc-n">' + esc(name) + '</span></div>';
+  }
+  // a picker cell whose picture is a drawn face rather than a glyph
+  function faceCell(on, svg, name, attr) {
+    return '<div class="forge-cell forge-cell--face' + (on ? ' on' : '') + '" ' + attr + '>' +
+      '<span class="fc-face">' + svg + '</span><span class="fc-n">' + esc(name) + '</span></div>';
   }
   function swatch(on, color, attr, isNone) {
     return '<div class="forge-sw' + (on ? ' on' : '') + (isNone ? ' none' : '') + '" style="background:' + (isNone ? '' : color) + ';--sw:' + color + '" ' + attr + '>' + (isNone ? '∅' : '') + '</div>';
@@ -380,15 +525,41 @@
   ];
 
   function operativePanel(look) {
+    var A = art();
     var h = '';
-    // base
-    h += '<div class="forge-section"><h3>Base <small>— who you are</small></h3><div class="forge-grid">';
-    BASES.forEach(function (b) { h += cell(look.base === b.key, baseGlyph(b.key, look.tone), b.n, 'data-base="' + b.key + '"'); });
+    // ── who you are: the hair, drawn in your own colours ──
+    h += '<div class="forge-section"><h3>Base <small>— who you are</small></h3><div class="forge-grid forge-grid--face">';
+    FACES.forEach(function (f) {
+      h += faceCell(look.hair === f.key,
+        faceSvg(look, { hair: f.key, brow: f.brow, mouth: f.mouth }), f.n, 'data-hair="' + f.key + '"');
+    });
     h += '</div></div>';
+    if (A) {
+      h += '<div class="forge-section"><h3>Hair colour</h3><div class="forge-sw-row">';
+      A.HAIRCOL_ORDER.forEach(function (k) { h += swatch(look.hairColor === k, A.HAIRCOL[k].c, 'data-hcol="' + k + '" title="' + A.HAIRCOL[k].n + '"'); });
+      h += '</div></div>';
+    }
     // skin tone
-    h += '<div class="forge-section"><h3>Skin tone <small>— applies where it fits</small></h3><div class="forge-sw-row">';
-    TONES.forEach(function (t) { h += swatch(look.tone === t.key, t.sw, 'data-tone="' + t.key + '"'); });
+    h += '<div class="forge-section"><h3>Skin tone</h3><div class="forge-sw-row">';
+    if (A) A.SKIN_ORDER.forEach(function (k) { h += swatch(look.tone === k, A.SKIN[k].c, 'data-tone="' + k + '" title="' + A.SKIN[k].n + '"'); });
     h += '</div></div>';
+    /* ── THE EYES, WHICH ARE THE WHOLE REASON THE PERSON GOT DRAWN ────────────────
+       Nate: "if they want, a 2 color eye? For example, my eyes have the pupil in the
+       middle, then a ring of green, then a ring of brown."
+
+       So it is two rows, in that order — inner ring, then outer — and the outer one
+       defaults to "Matched". Two-tone has to be something you go and ASK for: it is a
+       rarer eye than a plain one in life, and making it the default would hand it to
+       people who never noticed the row. */
+    if (A) {
+      h += '<div class="forge-section"><h3>Eyes <small>— the ring around the pupil</small></h3><div class="forge-sw-row">';
+      A.EYE_ORDER.forEach(function (k) { h += swatch(look.eye === k, A.EYES[k].c, 'data-eye1="' + k + '" title="' + A.EYES[k].n + '"'); });
+      h += '</div></div>';
+      h += '<div class="forge-section"><h3>Outer ring <small>— for a two-colour eye</small></h3><div class="forge-sw-row">';
+      h += swatch(!look.eyeOuter || look.eyeOuter === 'same', '#888', 'data-eye2="same" title="Matched — one colour"', true);
+      A.EYE_ORDER.forEach(function (k) { h += swatch(look.eyeOuter === k, A.EYES[k].c, 'data-eye2="' + k + '" title="' + A.EYES[k].n + '"'); });
+      h += '</div></div>';
+    }
     // aura
     h += '<div class="forge-section"><h3>Aura <small>— your signature color</small></h3><div class="forge-sw-row">';
     AURA_ORDER.forEach(function (k) { h += swatch(look.aura === k, AURAS[k], 'data-aura="' + k + '"'); });
@@ -503,8 +674,21 @@
     var den = q('#forge-den'); if (den) den.onclick = toDen;
     var denBig = q('#forge-den-big'); if (denBig) denBig.onclick = toDen;   // the promoted panel
     Array.prototype.forEach.call(ov.querySelectorAll('[data-tab]'), function (b) { b.onclick = function () { tab = b.getAttribute('data-tab'); renderForge(); }; });
-    Array.prototype.forEach.call(ov.querySelectorAll('[data-base]'), function (c) { c.onclick = function () { patchOp({ base: c.getAttribute('data-base') }); }; });
+    /* Every one of these is a repaint, never a rebuild — see the block above patchOp().
+       Picking your hair also adopts that face's expression, which is what makes the 12
+       cells read as twelve people rather than one head in twelve wigs; set the brow and
+       mouth explicitly rather than clearing them, or identity() would keep re-deriving
+       them and a later hair change could silently overwrite a choice. */
+    Array.prototype.forEach.call(ov.querySelectorAll('[data-hair]'), function (c) {
+      c.onclick = function () {
+        var k = c.getAttribute('data-hair'), f = FACE_MAP[k];
+        patchOp({ hair: k, brow: f.brow, mouth: f.mouth });
+      };
+    });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-tone]'), function (c) { c.onclick = function () { patchOp({ tone: c.getAttribute('data-tone') }); }; });
+    Array.prototype.forEach.call(ov.querySelectorAll('[data-hcol]'), function (c) { c.onclick = function () { patchOp({ hairColor: c.getAttribute('data-hcol') }); }; });
+    Array.prototype.forEach.call(ov.querySelectorAll('[data-eye1]'), function (c) { c.onclick = function () { patchOp({ eye: c.getAttribute('data-eye1') }); }; });
+    Array.prototype.forEach.call(ov.querySelectorAll('[data-eye2]'), function (c) { c.onclick = function () { patchOp({ eyeOuter: c.getAttribute('data-eye2') }); }; });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-aura]'), function (c) { c.onclick = function () { patchOp({ aura: c.getAttribute('data-aura') }); }; });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-hat]'), function (c) { c.onclick = function () { patchOp({ hat: c.getAttribute('data-hat') }); }; });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-emblem]'), function (c) { c.onclick = function () { patchOp({ emblem: c.getAttribute('data-emblem') }); }; });
@@ -546,9 +730,20 @@
   function randomize() {
     var pick = function (arr) { return arr[Math.floor(Math.random() * arr.length)]; };
     if (tab === 'operative') {
-      var b = pick(BASES);
-      patchOp({ base: b.key, tone: b.tone ? pick(TONES).key : '', aura: pick(AURA_ORDER),
-                hat: pick(Object.keys(HATS)), emblem: pick(Object.keys(EMBLEMS)) });
+      var A = art(), f = pick(FACES);
+      var p = { hair: f.key, brow: f.brow, mouth: f.mouth, aura: pick(AURA_ORDER),
+                hat: pick(Object.keys(HATS)), emblem: pick(Object.keys(EMBLEMS)) };
+      if (A) {
+        p.tone = pick(A.SKIN_ORDER);
+        p.hairColor = pick(A.HAIRCOL_ORDER);
+        p.eye = pick(A.EYE_ORDER);
+        // two-tone about one roll in four — often enough to be discovered by surprise,
+        // rare enough that it still reads as unusual when it happens
+        p.eyeOuter = Math.random() < 0.25 ? pick(A.EYE_ORDER) : 'same';
+      }
+      // ⚠ HEAVY on purpose: Surprise me changes the hair, so every cell in the grid needs
+      // its `on` state and its picture redrawn — that IS the whole panel.
+      patchOp(p, true);
     } else {
       var A2 = window.PJCCPetArt;
       patchPet(A2
@@ -566,6 +761,8 @@
     identity: identity, petLook: petLook, renderAvatar: renderAvatar, renderCard: renderCard,
     setAccountBlock: setAccountBlock,
     open: open, close: close, onChange: function (fn) { listeners.push(fn); },
-    BASES: BASES, AURAS: AURAS
+    // FACES replaced BASES on 2026-08-03 (the 32 emoji became one drawn person).
+    // Nothing outside this file read BASES; `faceSvg` is exported for the tests.
+    FACES: FACES, BASE_MIGRATE: BASE_MIGRATE, faceSvg: faceSvg, AURAS: AURAS
   };
 })();

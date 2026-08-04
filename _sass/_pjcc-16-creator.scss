@@ -19,6 +19,21 @@
   border: 2px solid var(--aura); box-shadow: 0 0 16px -2px var(--aura);
 }
 .idn-av .idn-glyph { font-size: calc(var(--idn-size, 72px) * 0.56); line-height: 1; user-select: none; -webkit-user-select: none; }
+/* ── THE PERSON, DRAWN (2026-08-03) ───────────────────────────────────────────
+   The frame was built for a text glyph; a drawn face is a box, so it gets one. It
+   fills MORE of the disc than the emoji did (0.96 against 0.56) because it is a
+   portrait rather than a pictogram — the head should sit in the frame the way a
+   passport photo does, with the shoulders running off the bottom edge.
+
+   ⚠ THE CROP IS ON THE SVG, NOT ON THE FRAME. `overflow: hidden` on `.idn-av` would be
+   the obvious way to round the portrait off — and it would also clip the headwear, which
+   deliberately sits at `top: -16%`, outside the circle. So the face rounds ITSELF and the
+   frame stays visible, which is how the crown still sits on the head. */
+.idn-av .fa-svg {
+  width: calc(var(--idn-size, 72px) * 0.96); height: calc(var(--idn-size, 72px) * 0.96);
+  display: block; margin-bottom: calc(var(--idn-size, 72px) * -0.04); border-radius: 50%;
+}
+.idn-av .idn-hat, .idn-av .idn-emblem { z-index: 2; }
 .idn-av .idn-hat {
   position: absolute; top: -16%; left: 50%; transform: translateX(-50%) rotate(0deg);
   font-size: calc(var(--idn-size, 72px) * 0.34); pointer-events: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,.5));
@@ -29,7 +44,7 @@
   width: calc(var(--idn-size, 72px) * 0.40); height: calc(var(--idn-size, 72px) * 0.40);
   display: flex; align-items: center; justify-content: center; line-height: 1;
 }
-.idn-av.spin .idn-glyph { animation: idn-pop .5s ease; }
+.idn-av.spin .idn-glyph, .idn-av.spin .fa-svg { animation: idn-pop .5s ease; }
 @keyframes idn-pop { 0% { transform: scale(.6) rotate(-12deg); } 60% { transform: scale(1.18) rotate(6deg); } 100% { transform: scale(1); } }
 
 /* ---- the always-on identity card on the Dossier (works offline / signed-out) */
@@ -126,6 +141,24 @@
 .forge-cell .fc-em { font-size: 26px; line-height: 1; display: block; }
 .forge-cell .fc-n { font-size: 0.6rem; color: #9a7fd4; margin-top: 3px; font-weight: 700; line-height: 1.1; }
 
+/* ── THE FACE PICKER (2026-08-03) ─────────────────────────────────────────────
+   ⚠ EVERY DIMENSION HERE IS FIXED, AND THAT IS THE BUG FIX, not tidiness.
+   Nate: "when you change aura or skin tone the base box shifts and vice versa."
+   The old grid held emoji, and 🧑 does not measure the same as 🧑🏽 — so choosing a
+   skin tone re-flowed the whole picker and shoved everything below it. An SVG in a
+   fixed box cannot do that: the cell is the same size in every combination of every
+   option, so the panel is incapable of moving while you use it.
+   `minmax(64px, 1fr)` with a fixed row height also means the grid re-wraps ONLY when
+   the window resizes, which is the one time it should. */
+.forge-grid--face { grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }
+.forge-cell--face { padding: 5px 2px 6px; }
+.forge-cell--face .fc-face {
+  display: block; width: 46px; height: 46px; margin: 0 auto;
+  border-radius: 50%; overflow: hidden;
+  background: radial-gradient(circle at 38% 30%, #3a2a72, #160c33);
+}
+.forge-cell--face .fc-face .fa-svg { width: 46px; height: 46px; display: block; }
+
 /* color swatches (aura / tint) */
 .forge-sw-row { display: flex; flex-wrap: wrap; gap: 9px; }
 .forge-sw {
@@ -203,7 +236,7 @@
 @keyframes forge-toast { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .idn-av.spin .idn-glyph { animation: none; }
+  .idn-av.spin .idn-glyph, .idn-av.spin .fa-svg { animation: none; }
 }
 @media (max-width: 520px) {
   .forge-preview-wrap .idn-av { --idn-size: 88px; }

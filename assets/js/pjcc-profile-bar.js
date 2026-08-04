@@ -175,7 +175,7 @@
     var pip = cl ? '<span class="pjcc-pip pip-' + cl.level + '" title="' + esc(cl.name) +
         (cl.rating ? ' · PJCC rating ' + cl.rating : '') + '">' + cl.pip + '</span> ' : '';
     bar.innerHTML =
-      '<div class="pjcc-avatar">' + PJCC.avatarEmoji(prof) + '</div>' +
+      '<div class="pjcc-avatar">' + (PJCC.avatarMarkup ? PJCC.avatarMarkup(prof) : PJCC.avatarEmoji(prof)) + '</div>' +
       '<div class="pjcc-id">' +
         '<span class="pjcc-codename">' + pip + esc(prof.codename) + (titleLabel ? ' <span class="pjcc-title">' + esc(titleLabel) + '</span>' : '') + '</span>' +
         '<span class="pjcc-sub">' + esc(cl ? cl.name : rankName) + ' · <span class="pjcc-credits">' + prof.credits + ' credits</span></span>' +

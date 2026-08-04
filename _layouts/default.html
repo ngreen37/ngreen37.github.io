@@ -113,6 +113,12 @@
   <!-- Operative identity in the nav (site-wide) -->
   <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
+  {%- comment -%} The operative is DRAWN since 2026-08-03 (that is what made eye colour
+       possible at all), so the face art has to be on every page that shows an avatar —
+       the nav, every leaderboard, the profile bar. NOT deferred: PJCC.avatarMarkup()
+       falls back to the old emoji when PJCCFaceArt is missing, which means a late load
+       would paint the emoji first and never correct itself. {%- endcomment -%}
+  <script src="{{ '/assets/js/pjcc-face-art.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pjcc-lang.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/pjcc-flair.js' | relative_url }}" defer></script>
   <script src="{{ '/assets/js/pjcc-reveal.js' | relative_url }}" defer></script>

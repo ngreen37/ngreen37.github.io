@@ -48,6 +48,12 @@ permalink: /dossier/
      BEFORE the two modules that ask it for an animal, or both fall back to the old
      emoji with no error anywhere. {%- endcomment -%}
 <script src="{{ '/assets/js/pjcc-pet-art.js' | relative_url }}"></script>
+{%- comment -%} …and the PERSON is drawn too since 2026-08-03, for the same reason and by
+     the same rule: pjcc-face-art.js must load BEFORE pjcc-creator.js or the Forge falls
+     back to an emoji with no error anywhere. It is already loaded site-wide by
+     default.html; this line is here so the ORDER on this page is explicit rather than
+     inherited, which is the thing that quietly stops being true. {%- endcomment -%}
+<script src="{{ '/assets/js/pjcc-face-art.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-companion.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-creator.js' | relative_url }}"></script>
 <script>
@@ -251,7 +257,7 @@ permalink: /dossier/
     var html = '<h2 class="dsr-h">The journey</h2><div class="dsr-map">';
     wp.stops.forEach(function (s, i) {
       html += '<div class="dsr-stop ' + (s.reached ? 'reached' : '') + '">' +
-        '<div class="dsr-here">' + (i === wp.furthest ? PJCC.avatarEmoji(prof) + (window.PJCCPet ? '<span class="dsr-here-pet" title="Your companion walks with you">' + PJCCPet.petEmoji() + '</span>' : '') : '') + '</div>' +
+        '<div class="dsr-here">' + (i === wp.furthest ? (PJCC.avatarMarkup ? PJCC.avatarMarkup(prof) : PJCC.avatarEmoji(prof)) + (window.PJCCPet ? '<span class="dsr-here-pet" title="Your companion walks with you">' + PJCCPet.petEmoji() + '</span>' : '') : '') + '</div>' +
         '<div class="dsr-dot"></div><div class="dsr-stop-name">' + esc(s.name) + '</div></div>';
     });
     html += '</div>';

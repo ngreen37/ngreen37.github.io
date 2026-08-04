@@ -47,7 +47,8 @@
       });
     }
     function rankClass(i) { return i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : ''; }
-    function av(companion) { return PJCC.avatarEmoji({ companion: companion }); }
+    // the DRAWN face where markup is allowed (2026-08-03) — falls back to the emoji
+    function av(companion) { return PJCC.avatarMarkup ? PJCC.avatarMarkup({ companion: companion }) : PJCC.avatarEmoji({ companion: companion }); }
     function boardFor(key) { return BOARDS.filter(function (b) { return b.key === key; })[0]; }
 
     function buildTabs() {

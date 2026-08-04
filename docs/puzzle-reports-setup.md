@@ -82,6 +82,29 @@ select count(*) from public.puzzle_reports;                        -- 0, and no 
 select puzzle_rating, puzzle_solved from public.profiles limit 1;  -- 700, 0
 ```
 
+### ⚠ …and check the one that fails silently
+
+The read policy asks `match_config` who the Creator is. **If that table is empty, the
+comparison is `auth.uid() = NULL`, which is NULL rather than true — so `puzzle_reports`
+becomes unreadable by *everyone*, including you**, and `/puzzle-reports/` looks exactly
+like "no reports yet". It is step 2 of `docs/park-tables-setup.md` and it is easy to have
+skipped.
+
+```sql
+select * from public.match_config;          -- must return exactly one row, with YOUR uuid
+select auth.uid();                          -- run while signed in; must match creator_id
+```
+
+If it comes back empty:
+
+```sql
+insert into public.match_config (creator_id) values ('<your-auth-uid>');
+```
+
+`/puzzle-reports/` now diagnoses this itself — it names the cause and prints the exact
+`insert` with your own id already filled in. It no longer offers a list of three
+possibilities and leaves you to guess between them.
+
 ## Step 3 — read them
 
 `/puzzle-reports/` — a private page beside the leaderboards. It renders **nothing** for

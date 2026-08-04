@@ -332,7 +332,7 @@ window.murphysLaw = function () {
     if (!PJCC.enabled) { elr.hidden = true; return; }
     elr.hidden = false;
     var prof = PJCC.getProfile();
-    if (prof) { elr.innerHTML = PJCC.avatarEmoji(prof) + ' ' + esc(prof.codename); elr.classList.add('in'); }
+    if (prof) { elr.innerHTML = (PJCC.avatarMarkup ? PJCC.avatarMarkup(prof) : PJCC.avatarEmoji(prof)) + ' ' + esc(prof.codename); elr.classList.add('in'); }
     else { elr.textContent = '⬡ Sign in'; elr.classList.remove('in'); }
   }
   // Instant render from the cached codename/avatar — no wait on the (deferred) SDK (#15).

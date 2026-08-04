@@ -330,6 +330,25 @@
       var key = prof && prof.companion && prof.companion.avatar;
       return AVATARS[key] || AVATARS['human-1'];
     },
+    /* THE SAME PERSON, WHEREVER MARKUP IS ALLOWED (2026-08-03). The operative became a
+       DRAWN face that day (pjcc-face-art.js) so that eye colour could exist at all — and a
+       drawing cannot go everywhere an emoji went. `dossier.md`'s share card paints the
+       avatar with `ctx.fillText` onto a canvas, and a cached copy is kept in localStorage
+       as a string; both need a character, not an element. So there are two accessors and
+       the split is by what the SURFACE can hold, not by what the look is:
+
+           avatarEmoji(prof)   always a text glyph   → canvas, storage
+           avatarMarkup(prof)  the drawn face        → the nav, the boards, the dossier
+
+       Falls back to the emoji whenever pjcc-face-art.js is not on the page, so a surface
+       that forgets to load it degrades to what it showed yesterday. */
+    avatarMarkup: function (prof) {
+      var look = prof && prof.companion && prof.companion.look;
+      if (look && window.PJCCFaceArt && (look.hair || look.base)) {
+        try { return window.PJCCFaceArt.svg(look); } catch (e) {}
+      }
+      return PJCC.avatarEmoji(prof);
+    },
     petKey: function (prof) {
       return (prof && prof.companion && prof.companion.pet) || 'dog-1';
     },
@@ -1089,14 +1108,44 @@
     } catch (e) { return { ok: false, reason: (e && e.message) || 'failed' }; }
   };
   /* The private read side. Returns [] for anybody who is not the Creator — the RLS policy
-     is what actually enforces that; this is only the query. */
+     is what actually enforces that; this is only the query.
+
+     ⚠ IT REPORTS *WHY* IT IS EMPTY, and the first version did not. It swallowed every
+     error and returned `[]`, so the page could only offer a guess: "either no reports yet,
+     or you are not signed in as the Creator, or the migration has not been run." Three
+     causes, one blank screen, and nothing on the page or in the console to tell them
+     apart — which is how you end up asking a person to debug a database from a sentence.
+     Failing softly is right ([[down-never-stuck]]); failing ANONYMOUSLY is not, and they
+     are not the same thing. `reason` is what the page prints. */
   PJCC.puzzleReports = async function (limit) {
-    if (!sb) return [];
+    if (!sb) return { rows: [], reason: 'offline' };
     try {
       var r = await sb.from('puzzle_reports').select('*')
         .order('created_at', { ascending: false }).limit(limit || 200);
-      return (r && r.data) ? r.data : [];
-    } catch (e) { return []; }
+      if (r && r.error) {
+        var m = (r.error.message || ''), code = r.error.code || '';
+        // 42P01 = undefined_table. PostgREST also 404s an unknown table with PGRST205.
+        var missing = code === '42P01' || code === 'PGRST205' || /does not exist|schema cache/i.test(m);
+        return { rows: [], reason: missing ? 'no-table' : 'error', detail: m, code: code };
+      }
+      return { rows: (r && r.data) || [], reason: null };
+    } catch (e) { return { rows: [], reason: 'error', detail: (e && e.message) || 'failed' }; }
+  };
+  /* Who the database thinks the Creator is — `match_config` is readable by any signed-in
+     user (park-tables-setup.md), so the reports page can say "you are X, the Creator is Y"
+     instead of leaving a blank page to be interpreted. Returns:
+       a uuid   — the row exists
+       null     — the table exists and is EMPTY (step 2 of park-tables-setup.md never run:
+                  the read policy then compares auth.uid() against NULL and denies EVERYONE,
+                  including Nate, which looks exactly like "no reports yet")
+       false    — no match_config table at all */
+  PJCC.creatorId = async function () {
+    if (!sb) return false;
+    try {
+      var r = await sb.from('match_config').select('creator_id').limit(1);
+      if (r && r.error) return false;
+      return (r.data && r.data[0] && r.data[0].creator_id) || null;
+    } catch (e) { return false; }
   };
 
   // --- "Beat the Creator" ghost scores -------------------------------------------
