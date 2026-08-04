@@ -42,7 +42,8 @@
     box-shadow: 0 3px 0 rgba(0,0,0,0.35);
   }
   .float-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
-  #hint-btn { bottom: 84px; right: 10px; background: #ff8fd0; color: #3a0a2a; padding: 7px 14px; font-size: 12px; }
+  /* ORANGE, matching the ring this button flashes on the board — one signal, one colour */
+  #hint-btn { bottom: 84px; right: 10px; background: #e0651a; color: #ffffff; padding: 7px 14px; font-size: 12px; }
   /* Takes the Hint button's seat — Hint is hidden the moment a puzzle resolves, which is
      exactly when there is something worth taking apart. Never both on screen at once. */
   #analysis-btn { bottom: 84px; right: 10px; background: #2e7d47; color: #ffffff;
@@ -1322,9 +1323,10 @@ function drawBg(){ ctx.fillStyle = '#fbfaf7'; ctx.fillRect(0,0,W,H); }
 function drawHeader(){
   const p = G.p;
   // theme chip
-  ctx.fillStyle = C.pink; roundRect(12, 12, ctx.measureText(p.theme).width + 40, 26, 13);
-  ctx.fillStyle = '#ff8fd0'; roundRect(12, 12, 150, 26, 13); ctx.fill();
-  ctx.fillStyle = '#3a0a2a'; ctx.font = 'bold 13px Trebuchet MS'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  // the motif chip wears the room's wood, not arcade pink (2026-08-04)
+  ctx.fillStyle = C.frame; roundRect(12, 12, ctx.measureText(p.theme).width + 40, 26, 13);
+  ctx.fillStyle = '#8a5a2b'; roundRect(12, 12, 150, 26, 13); ctx.fill();
+  ctx.fillStyle = '#fff6e8'; ctx.font = 'bold 13px Trebuchet MS'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
   ctx.fillText('⚔ ' + p.theme.toUpperCase(), 22, 26);
   // YOU-ARE badge — make the player's color unmistakable, with the goal alongside
   const youW = (p.side === 'w');
