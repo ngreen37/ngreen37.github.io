@@ -31,7 +31,7 @@ const ok = (n, c, x) => { if (c) { pass++; console.log('  ✓ PASS  ' + n); }
   p.on('request', r => r.url().includes('pjcc-profile.js')
     ? r.respond({ status: 200, contentType: 'application/javascript', body: PROFILE })
     : r.continue());
-  await p.goto('https://mcpuppystudios.com/shopkeeper/', { waitUntil: 'networkidle2', timeout: 60000 });
+  await p.goto('https://chesswild.com/shopkeeper/', { waitUntil: 'networkidle2', timeout: 60000 });
   await new Promise(r => setTimeout(r, 1500));
 
   const r = await p.evaluate(() => {

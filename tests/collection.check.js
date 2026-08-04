@@ -40,7 +40,7 @@ function boot(store) {
     setItem: (k, v) => { store[k] = String(v); },
     removeItem: k => { delete store[k]; }
   };
-  const win = { localStorage, location: { search: '', origin: 'https://mcpuppystudios.com' } };
+  const win = { localStorage, location: { search: '', origin: 'https://chesswild.com' } };
   const doc = { createElement: () => ({ setAttribute() {}, appendChild() {}, style: {} }),
                 head: { appendChild() {} }, body: { appendChild() {} },
                 getElementById: () => null, querySelectorAll: () => [], addEventListener() {} };

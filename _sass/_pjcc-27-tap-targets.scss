@@ -1,0 +1,73 @@
+/* =============================================================================
+ * EVERY CONTROL CLEARS 44px ON A PHONE  (2026-08-04)
+ * -----------------------------------------------------------------------------
+ * Found by measuring, not by looking: a phone-width audit of the live front door
+ * reported four interactive controls under the 44x44 minimum, and every one of them is
+ * SITE CHROME — so the defect was on every page of the site, not on one page.
+ *
+ *     .cmdk-trigger    38 x 40    the search pill
+ *     .lang-toggle     32 x 58    日本語
+ *     .nav-toggle      46 x 40    the hamburger
+ *     .drawer-mini a   38 x 44    Blog / Contact in the drawer foot
+ *
+ * 44px is the floor both Apple and Google publish, and it is not a rounding error: the
+ * pad of an adult finger is about 10mm, which is ~44 CSS px. Under that, taps land on
+ * the neighbour — and these four sit in a row along the top of the screen, so the
+ * neighbour is always something else you did not want.
+ *
+ * ⚠ THE LANGUAGE BUTTON WAS ALSO VISIBLY BROKEN, and the audit is what made me look.
+ * At 32px wide "日本語" had nowhere to go, so it WRAPPED — three characters stacked
+ * vertically into a 58px-tall sliver, on the front door, above the fold, on the phone
+ * most visitors arrive with. `white-space: nowrap` is the actual fix there; the width
+ * follows from it. A number in an audit turned out to be a picture of something bent.
+ *
+ * ── HOW, AND WHY NOT JUST `min-height` ──────────────────────────────────────────────
+ * These controls are small ON PURPOSE — the header is a scrim and the chrome is meant to
+ * stay quiet. Growing the pills to 44px would make the top of every page chunkier to fix
+ * a problem the eye cannot see. So the VISIBLE box is left alone and the TOUCH box is
+ * expanded underneath it with an invisible ::after. The finger gets 44px; the design
+ * keeps its proportions.
+ *
+ * ⚠ LAST IN THE MANIFEST, DELIBERATELY. These controls are styled across three earlier
+ * partials (01-core, 13-nav, 19-nav-operative). Written anywhere but the end, a future
+ * edit to any of those would silently outrank the fix, and nothing would look wrong
+ * until someone measured again. Import order is load-bearing in this stylesheet — see
+ * the note at the top of assets/css/style.scss.
+ *
+ * ⚠ SCOPED TO TOUCH, not to width. `(hover: none)` is the honest question — "is a finger
+ * driving this?" — where a width query would also catch a small desktop window, where a
+ * mouse is already accurate and the expanded hit box would just steal clicks from
+ * whatever sits beside it.
+ * ========================================================================== */
+
+@media (hover: none) {
+  /* the hit expander: centred on the control, invisible, never larger than it needs */
+  .cmdk-trigger,
+  .lang-toggle,
+  .nav-toggle,
+  .drawer-mini a {
+    position: relative;
+  }
+  .cmdk-trigger::after,
+  .lang-toggle::after,
+  .nav-toggle::after,
+  .drawer-mini a::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    min-width: 44px;
+    min-height: 44px;
+    transform: translate(-50%, -50%);
+    /* ⚠ pointer-events must stay AUTO — this element IS the enlarged target. It carries
+       no paint, so it cannot change how anything looks; it only catches the tap. */
+    pointer-events: auto;
+  }
+
+  /* 日本語 must never wrap again — this is the visible half of the fix */
+  .lang-toggle {
+    white-space: nowrap;
+  }
+}

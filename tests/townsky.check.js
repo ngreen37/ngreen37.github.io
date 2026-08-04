@@ -172,7 +172,7 @@ check('every shell loads the clock and then the sky', wired === GAMES.length,
       }
       return r.respond({ status: 404, contentType: 'text/plain', body: 'not served' });
     });
-    await page.goto('https://mcpuppystudios.com/assets/games/' + shell + (query || ''),
+    await page.goto('https://chesswild.com/assets/games/' + shell + (query || ''),
       { waitUntil: 'domcontentloaded' });
     await new Promise((r) => setTimeout(r, 250));
     return { page, errs };
@@ -258,7 +258,7 @@ check('every shell loads the clock and then the sky', wired === GAMES.length,
     await page.setRequestInterception(true);
     page.on('request', r => r.respond({ status: 200, contentType: 'text/html',
       body: '<!doctype html><html><head><meta charset="utf-8"></head><body></body></html>' }));
-    await page.goto('https://mcpuppystudios.com/pjcc/', { waitUntil: 'domcontentloaded' });
+    await page.goto('https://chesswild.com/pjcc/', { waitUntil: 'domcontentloaded' });
 
     // one run of the shipped block, at a stated hour, on a stated desk
     const run = (phase, away) => page.evaluate((src, phase, away) => {

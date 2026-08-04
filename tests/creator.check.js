@@ -127,7 +127,7 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
      </style></head><body><div id="mount"></div>${scripts}
      <script>PJCCForge.renderCard(document.getElementById('mount'));<\/script></body></html>` }));
   // ⚠ a REAL origin — see the harness note at the top of this file
-  await page.goto('https://mcpuppystudios.com/dossier/', { waitUntil: 'domcontentloaded' });
+  await page.goto('https://chesswild.com/dossier/', { waitUntil: 'domcontentloaded' });
   await page.evaluate(() => localStorage.clear());
   await page.reload({ waitUntil: 'domcontentloaded' });
   await new Promise((r) => setTimeout(r, 250));

@@ -205,7 +205,7 @@ HB.BOARDS.forEach(b => {
     const errs = [];
     page.on('pageerror', e => errs.push(e.message));
     await serve(page, 'rain');
-    await page.goto('https://mcpuppystudios.com' + b.page, { waitUntil: 'domcontentloaded' });
+    await page.goto('https://chesswild.com' + b.page, { waitUntil: 'domcontentloaded' });
     await new Promise(r => setTimeout(r, 200));
 
     const planted = await page.evaluate(() => document.querySelectorAll('.hb-mark').length);
@@ -273,7 +273,7 @@ HB.BOARDS.forEach(b => {
   {
     const page = await browser.newPage();
     await serve(page, 'rain');
-    await page.goto('https://mcpuppystudios.com/academy/', { waitUntil: 'domcontentloaded' });
+    await page.goto('https://chesswild.com/academy/', { waitUntil: 'domcontentloaded' });
     await new Promise(r => setTimeout(r, 150));
     const n = await page.evaluate(() => document.querySelectorAll('.hb-mark').length);
     check('a page with no board planted gets no mark', n === 0, n + ' marks');
@@ -288,7 +288,7 @@ HB.BOARDS.forEach(b => {
     for (const wx of ['clear', 'mist']) {
       const page = await browser.newPage();
       await serve(page, wx);
-      await page.goto('https://mcpuppystudios.com' + HB.BOARDS[0].page, { waitUntil: 'domcontentloaded' });
+      await page.goto('https://chesswild.com' + HB.BOARDS[0].page, { waitUntil: 'domcontentloaded' });
       await new Promise(r => setTimeout(r, 150));
       const n = await page.evaluate(() => document.querySelectorAll('.hb-mark').length);
       check(`on a ${wx} day the board is not there at all`, n === 0, n + ' marks');
@@ -297,7 +297,7 @@ HB.BOARDS.forEach(b => {
     // …and snow finds it, so the egg survives December
     const page = await browser.newPage();
     await serve(page, 'snow');
-    await page.goto('https://mcpuppystudios.com' + HB.BOARDS[0].page, { waitUntil: 'domcontentloaded' });
+    await page.goto('https://chesswild.com' + HB.BOARDS[0].page, { waitUntil: 'domcontentloaded' });
     await new Promise(r => setTimeout(r, 150));
     const snowy = await page.evaluate(() => {
       const m = document.querySelector('.hb-mark');

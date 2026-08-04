@@ -14,7 +14,7 @@ const LOCAL = {
   'pjcc-weather.js': fs.readFileSync(path.join(REPO, 'assets/js/pjcc-weather.js'), 'utf8'),
   'pjcc-eggs.js': fs.readFileSync(path.join(REPO, 'assets/js/pjcc-eggs.js'), 'utf8')
 };
-const URL = 'https://mcpuppystudios.com/pjcc/?wx=rain';
+const URL = 'https://chesswild.com/pjcc/?wx=rain';
 
 let pass = 0, fail = 0;
 const ok = (n, c, x) => { if (c) { pass++; console.log('  \u2713 PASS  ' + n); }

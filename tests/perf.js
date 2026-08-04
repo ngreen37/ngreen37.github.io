@@ -36,7 +36,7 @@
 const puppeteer = require('puppeteer-core');
 const { findChrome } = require('./harness');
 
-const ORIGIN = process.env.PERF_ORIGIN || 'https://mcpuppystudios.com';
+const ORIGIN = process.env.PERF_ORIGIN || 'https://chesswild.com';
 const THROTTLE = 6;
 const SMOOTH_MS = 4000;      // throttled frame-drop window (once per page)
 const COST_MS = 2500;        // unthrottled main-thread window

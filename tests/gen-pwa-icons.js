@@ -97,8 +97,8 @@ async function run() {
 
     /* Best-effort install-dialog screenshots from the LIVE site (needs network). */
     const shots = [
-      ['screenshot-mobile.jpg', 'https://mcpuppystudios.com/games/', 390, 844],
-      ['screenshot-wide.jpg',   'https://mcpuppystudios.com/pjcc/',  1280, 800],
+      ['screenshot-mobile.jpg', 'https://chesswild.com/games/', 390, 844],
+      ['screenshot-wide.jpg',   'https://chesswild.com/pjcc/',  1280, 800],
     ];
     for (const [name, url, w, h] of shots) {
       try {
