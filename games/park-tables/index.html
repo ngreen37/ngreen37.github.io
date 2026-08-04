@@ -107,16 +107,35 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
     function v(k,d){ var x = s.getPropertyValue(k).trim(); return x || d; }
     return { wFill:v('--piece-w-fill','#fff'), wEdge:v('--piece-w-line','#2f2440'),
              bFill:v('--piece-b-fill','#4a3585'), bEdge:v('--piece-b-line','#f2e9ff') }; }
-  function pcNode(p){ return '<canvas class="pt-pc" width="128" height="128" data-p="' + p + '"></canvas>'; }
+  /* ⚠ THE BITMAP HAD TO GROW WITH THE BOARD (2026-08-04). Each piece is a canvas stretched
+     over its square by CSS, so the square's DEVICE pixels are what the bitmap has to cover.
+     It was 128, sized for the old 420px cap: a square was 52.5 CSS px, or 105 device px at
+     2× — comfortably under. The room's board now reaches 560px, which is 70 CSS px a square
+     and 140 device px at 2×, and 128 stretched over 140 is a visibly soft piece.
+
+     160 covers every real case: the widest desktop square (70 × 2 = 140) and the phone's
+     (a ~374px card ÷ 8 = 46.75, × 3 on his iPhone = 140). It costs ~1.2MB of texture across
+     32 pieces, all of it static — nothing here animates, so it does not touch the motion
+     budget in [[css-perf-lessons]].
+
+     ⭐ ONE CONSTANT, and the two draw calls derive from it. The old code had 128, 64, 104,
+     96 and 70 written as literals in three places; changing the size meant finding all five
+     and getting the ratios right by hand. They are ratios now (center 0.5, piece 0.8125,
+     fallback glyph 0.75 with its baseline at 0.547), so the next resize is one number. */
+  var PC_PX = 160;
+  function pcNode(p){ return '<canvas class="pt-pc" width="' + PC_PX + '" height="' + PC_PX + '" data-p="' + p + '"></canvas>'; }
   function paintPieces(root){
     var cs = (root || document).querySelectorAll('canvas.pt-pc[data-p]'), PAL = ptPAL();
+    var mid = PC_PX * 0.5;
     for (var i = 0; i < cs.length; i++){
       var cv = cs[i], p = cv.getAttribute('data-p'); if (!p) continue;
-      var ctx = cv.getContext('2d'); ctx.clearRect(0, 0, 128, 128);
+      var ctx = cv.getContext('2d'); ctx.clearRect(0, 0, PC_PX, PC_PX);
       var white = p === p.toUpperCase();
-      if (window.PJCCPieces){ PJCCPieces.draw(ctx, 64, 64, 104, p.toUpperCase(), white ? 'w' : 'b', PAL); }
-      else { ctx.fillStyle = white ? PAL.wFill : PAL.bFill; ctx.font = '900 96px "Segoe UI Symbol","Apple Symbols",serif';
-             ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(GLYPH[p.toLowerCase()], 64, 70); }
+      if (window.PJCCPieces){ PJCCPieces.draw(ctx, mid, mid, PC_PX * 0.8125, p.toUpperCase(), white ? 'w' : 'b', PAL); }
+      else { ctx.fillStyle = white ? PAL.wFill : PAL.bFill;
+             ctx.font = '900 ' + Math.round(PC_PX * 0.75) + 'px "Segoe UI Symbol","Apple Symbols",serif';
+             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+             ctx.fillText(GLYPH[p.toLowerCase()], mid, PC_PX * 0.547); }
     }
   }
   var timer = null, creatorId = null, myRate = null, lobbyTries = 0;
@@ -1257,6 +1276,80 @@ body.pt-room .page-card { padding-top: 10px; padding-bottom: 12px; }
    game this is on the right. It replaces the page title rather than sitting under it. */
 body.pt-room .pt-table-head { border-bottom: 1px solid var(--edge-soft); padding-bottom: 9px; margin-bottom: 10px; }
 
+/* ══ THE BOARD IS THE ROOM'S SUBJECT — CENTERED, AND AS BIG AS THE WINDOW ALLOWS ═══════
+   2026-08-04, Nate: "For Park Table game, it looks better in the new window — now make the
+   board centered and bigger."
+
+   ⚠ THE ARENA WAS ALREADY SYMMETRIC — measured, 45px of card on both sides, before and
+   after. What sat off-center was the BOARD, and the scoresheet is why: `.pt-arena` is a flex
+   row of board-then-moves, so a 420 board with a 210 column beside it puts the board's
+   middle ~115px left of the card's middle. Centering the ROW is what moves the board, and
+   it only reads as centered once the board is big enough to be the thing you look at —
+   which is why his two asks are one fix.
+
+   ⚠ IT IS SIZED OFF THE VIEWPORT HEIGHT, NOT THE WIDTH, and that is the whole trick. A
+   chessboard is square, so width is never what runs out — HEIGHT is. `min()` takes the
+   smallest of three: never wider than its column, never past 560px (beyond that the pieces
+   start looking like a demo rather than a game), and never taller than the window minus the
+   room's furniture.
+
+   ⚠ AND THERE IS A FLOOR OF 420px, WHICH IS NOT DECORATION — WITHOUT IT THIS SHRINKS THE
+   BOARD ON A LAPTOP. Measured at 1280×720: the furniture above the board (head, state line,
+   opening caption, opponent nameplate) is 269px on its own, so a bare `100vh - 300px` asks
+   for a 420px board — and at 1366×768 or any shorter window it asks for less than that. A
+   change meant to make the board bigger would have made it smaller on the most common laptop
+   there is. `max(420px, …)` pins today's size as the worst case: never smaller than it is
+   now, bigger whenever the window has the room. Verified at 1440×900 (560), 1280×720 (420,
+   unchanged) and 390×844 (card width, unchanged).
+
+   ⚠ SCOPED TO `body.pt-room`. The lobby's preview board and the review board keep the 420
+   cap: they sit in a page with other things to read, where a 560px board would be shouting.
+   Only the room, where the board IS the page, gets to take the space.
+
+   The scoresheet is unpinned from `align-self: stretch` here — against a board that can now
+   be 560 tall, a stretched 210px column of moves became a tall empty box. It sits at its
+   natural height beside the board instead. */
+/* ⭐ THE SIZE IS ONE VARIABLE, and it has to be, because two different layouts need the same
+   number: the flex row uses it as a width, the grid uses it as a TRACK. Writing it twice is
+   how they drift apart the first time the cap changes. */
+body.pt-room { --pt-board: min(560px, max(420px, calc(100vh - 300px))); }
+body.pt-room .pt-arena { justify-content: center; }
+body.pt-room .pt-boardwrap { flex: 0 1 auto; width: min(100%, var(--pt-board)); max-width: none; }
+body.pt-room .pt-board { max-width: none; }
+body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280px, calc(100vh - 300px))); }
+
+/* ⚠ CENTERING THE ROW IS NOT CENTERING THE BOARD, and the measurement said so: with the row
+   centered the board still sat 115px left of the card's middle, because the scoresheet is
+   part of the row and pulls it. "Make the board centered" means the BOARD, so where there is
+   room the arena becomes three columns — an empty one, the board, then the moves — and the
+   two outer columns are equal `1fr`, which puts the board dead center with the scoresheet
+   beside it. It is how every serious chess site lays this out.
+
+   ⚠ THE BOARD COLUMN IS `var(--pt-board)`, NOT `auto`, AND THAT IS NOT A STYLE CHOICE.
+   Written as `auto` this collapsed the board from 420px to **145px**, measured. A grid track
+   sized `auto` is sized by its content, and the content's own width was `min(100%, …)` —
+   a percentage that resolves against the track that is trying to measure it. Circular, so
+   the browser falls back to something tiny and the board becomes a postage stamp. Naming the
+   track explicitly breaks the loop.
+
+   ⚠ GATED AT 900px, and that gate is load-bearing too. `minmax(0, 1fr)` columns may shrink
+   to nothing, so on a narrower window the 210px scoresheet would overflow its own column.
+   Below 900 the flex row stays, centered as a group — still better than it was, and nothing
+   can spill. Below 560 it stacks under the board, exactly as before. */
+@media (min-width: 900px) {
+  body.pt-room .pt-arena {
+    display: grid; grid-template-columns: minmax(0, 1fr) var(--pt-board) minmax(0, 1fr);
+    align-items: start; column-gap: 0;
+  }
+  body.pt-room .pt-boardwrap { grid-column: 2; width: auto; }
+  body.pt-room .pt-moves { grid-column: 3; justify-self: start; width: 210px; margin-left: 20px; }
+}
+/* below the arena's wrap point the scoresheet is already full-width underneath, so the
+   board should simply take the card — the vh cap would only shrink it for no reason */
+@media (max-width: 560px) {
+  body.pt-room .pt-boardwrap { width: 100%; }
+}
+
 .pt-gate { text-align: center; padding: 26px 0; max-width: 460px; margin: 0 auto; }
 .pt-gate-h { color: #F5C518; font-size: 1.15rem; margin: 0 0 8px; }
 .pt-gate-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 12px 0 4px; }
@@ -1446,10 +1539,33 @@ body.pt-room .pt-table-head { border-bottom: 1px solid var(--edge-soft); padding
 }
 .pt-moves i { color: #7d6bb0; font-style: normal; text-align: right; }
 .pt-moves .pjcc-sub { grid-column: 1 / -1; text-align: center; }
-/* the material chip — who's up, and by how much, in piece value */
-.pt-mat { font-style: normal; font-family: 'Share Tech Mono', monospace; font-size: 0.78rem;
-  color: #6bffb8; background: rgba(30,60,44,0.55); border: 1px solid rgba(107,255,184,0.35);
-  border-radius: 999px; padding: 1px 7px; vertical-align: 1px; }
+/* ── THE MATERIAL CHIP — who's up, and by how much ────────────────────────────────
+   ⚑ REPAINTED 2026-08-04 (Nate: "make the +x material a different color than green, make it
+   more prominent and visible").
+
+   GREEN WAS THE WRONG COLOR FOR IT, and not only because it was quiet. Mint #6bffb8 is this
+   site's "go" — it is the legal-move dot on every board, the selected-square ring, and the
+   cleared pip on the Gauntlet door. Using it here made "you are up a rook" look like a
+   control you could press, and it competed with the actual affordances on the board two
+   inches away. It is AMBER now: the color the site already uses for a fact worth noticing
+   (the last-move squares, the clocks) rather than for an action.
+
+   PROMINENT MEANS THREE THINGS, all of them measured against a chip that was 0.78rem of
+   mint on a 55%-alpha panel:
+     · it is FILLED, not outlined — a solid amber pill instead of a tinted box, so it holds
+       its own against the wood behind it;
+     · it is bigger and heavier — 0.86rem at 800 weight, and the padding grew with it;
+     · it is the only warm thing on the nameplate row, so the eye lands on it first.
+   Contrast measured on the fill: #1c1206 on #ffb43a is 9.8:1 — well past AA, which matters
+   because this is small numeric text that changes mid-game and must never be squinted at.
+
+   A soft outer glow ties it to the gold last-move marks without adding a fourth color. */
+.pt-mat { font-style: normal; font-family: 'Share Tech Mono', monospace; font-size: 0.86rem;
+  font-weight: 800; letter-spacing: 0.02em;
+  color: #1c1206; background: linear-gradient(180deg, #ffc457, #f5a623);
+  border: 1px solid #ffd98a;
+  border-radius: 999px; padding: 2px 9px; vertical-align: 1px;
+  box-shadow: 0 0 10px rgba(245,166,35,0.45); }
 .pt-tools { margin-top: 8px; max-width: 420px; }
 .pt-emotes { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .pt-emote { background: rgba(45,27,105,0.5); border: 1px solid var(--edge-soft); color: #c9a7ff;
