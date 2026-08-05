@@ -187,11 +187,58 @@
   function warmup() { if (state === 'idle' && hasEngine()) boot(); }
   function newGame() { if (state === 'ready') { post('ucinewgame'); post('isready'); lastSkill = null; } }
 
+  /* ══ ONE CALIBRATION, FOR EVERY ROOM THAT SEATS AN OPPONENT (2026-08-05) ═════════════
+     Nate: *"And what ratings are the bots? Not saying it's inaccurate but I kinda got smoked
+     by the Medium bot."*
+
+     ⭐ HE HAD ALREADY CAUGHT THIS EXACT BUG ONCE, IN THE OTHER ROOM. 2026-07-15: "the Shogi
+     Sentinel seems stronger than 800" — it was skill 5, which plays about 1600. The Gauntlet
+     was fixed by driving skill from the ADVERTISED rating instead of from a hand-picked
+     number. The Park Tables bots were written the NEXT DAY with hand-picked numbers and never
+     went on that curve, so "Medium" (skill 6) was ~1575 — stronger than the Gauntlet's eighth
+     floor. He did not play badly. The label was wrong.
+
+     So the curve moves HERE, into the file both rooms already load, and neither room owns a
+     copy of it. Same lesson as the Gauntlet door: the fix for "these two things keep drifting"
+     is one definition, not more diligence.
+
+     ⚠ SKILL 0 IS ALREADY ~1350 — there is no dial below it. Anything advertised under 1400
+     gets its weakness from the BLUNDER rate (a share of moves played at random) and short
+     think time, which is why the two functions are a pair and neither is meaningful alone.
+
+     The blunder table IS the Gauntlet ladder's own hand-authored persona values, read off the
+     ten public floors; `blunderForElo` interpolates between them. tests/ladders.check.js
+     asserts it reproduces all ten, so this is genuinely the same curve rather than a second
+     opinion about the same question. */
+  function skillForElo(elo) {
+    elo = +elo || 0;
+    if (elo < 1400) return 0;
+    return Math.min(20, Math.round(3 + (elo - 1400) * 0.017));   // 1400→3 … 2400→20
+  }
+  var BLUNDER_LADDER = [                     // [advertised rating, share of random moves]
+    [350, 0.36], [500, 0.28], [650, 0.20], [800, 0.16], [950, 0.10],
+    [1100, 0.03], [1250, 0.02], [1400, 0.01], [1600, 0.00], [1800, 0.005]
+  ];
+  function blunderForElo(elo) {
+    elo = +elo || 0;
+    var L = BLUNDER_LADDER;
+    if (elo <= L[0][0]) return L[0][1];
+    for (var i = 1; i < L.length; i++) {
+      if (elo <= L[i][0]) {
+        var a = L[i - 1], b = L[i], t = (elo - a[0]) / (b[0] - a[0]);
+        return Math.round((a[1] + (b[1] - a[1]) * t) * 1000) / 1000;
+      }
+    }
+    return 0;                                 // above the public ladder: no charity
+  }
+
   root.PJCCGauntletEngine = {
     available: hasEngine,
     warmup: warmup,
     newGame: newGame,
     move: move,
+    skillForElo: skillForElo,
+    blunderForElo: blunderForElo,
     // exposed for tests / debugging
     _state: function () { return state; },
     _uciToMove: uciToMove

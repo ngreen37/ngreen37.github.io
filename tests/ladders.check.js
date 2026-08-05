@@ -172,6 +172,82 @@ check('the rating→difficulty map is the inverse of puzzleRating()',
     `700→d${at(700)} · 900→d${at(900)} · 1100→d${at(1100)} · 1300→d${at(1300)}`);
 }
 
+/* ── 3b. A BOT SAYS WHAT IT IS ──────────────────────────────────────────────────────
+   2026-08-05, Nate: "And what ratings are the bots? Not saying it's inaccurate but I kinda
+   got smoked by the Medium bot. Perhaps I just played poorly."
+
+   He didn't. The Park Tables regulars carried no rating at all — just Easy/Medium/Hard/Expert
+   over hand-picked Stockfish skill numbers — and skill 6 plays ~1575, stronger than the
+   Gauntlet's eighth floor. THE SAME BUG HE CAUGHT IN THE OTHER ROOM ON 2026-07-15 ("the Shogi
+   Sentinel seems stronger than 800"), which was fixed there by driving skill from the
+   ADVERTISED rating and never applied here.
+
+   This section is the reason it cannot happen a third time. It is the ONLY test on the site
+   that runs a shipped module for real rather than reading it, because the claim being made is
+   about what a FUNCTION returns, not about what a file says. */
+{
+  const ENG = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-gauntlet-engine.js'), 'utf8');
+  const sandbox = {};
+  new Function('self', ENG).call(sandbox, sandbox);
+  const E = sandbox.PJCCGauntletEngine;
+  check('the engine bridge publishes the calibration', !!(E && E.skillForElo && E.blunderForElo),
+    'one curve, in the file both rooms already load');
+
+  /* the ten public floors, read straight out of the Gauntlet — the blunder curve has to
+     reproduce the hand-authored personas or it is a second opinion, not the same curve */
+  const GAME = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_gauntlet.html'), 'utf8');
+  const rungs = [...GAME.matchAll(/elo:(\d+),[\s\S]{0,400}?persona:\{[^}]*blunder:([\d.]+)/g)]
+    .map(m => [+m[1], +m[2]]).slice(0, 10);
+  check('found the ten public floors to calibrate against', rungs.length === 10,
+    rungs.map(r => r[0]).join(' · '));
+  const off = rungs.filter(([elo, b]) => Math.abs(E.blunderForElo(elo) - b) > 0.0005);
+  check('blunderForElo reproduces every floor\'s own persona', off.length === 0,
+    off.length ? off.map(([e, b]) => e + ' wants ' + b + ', got ' + E.blunderForElo(e)).join(' | ')
+               : 'the curve IS the ladder, not a second opinion about it');
+
+  /* the Gauntlet keeps a local copy of skillForElo as its no-bridge fallback; if the two
+     ever disagree, the game plays one strength with the engine and another without it */
+  const local = /if \(elo < 1400\) return 0;\s*return Math\.min\(20, Math\.round\(3 \+ \(elo - 1400\) \* 0\.017\)\);/;
+  check('the Gauntlet\'s fallback copy still matches the shared curve', local.test(GAME),
+    'skill 0 under 1400 · 1400→3 · 2400→20');
+  check('…and it prefers the shared one when the bridge is up',
+    /ENGINE\.skillForElo\) return ENGINE\.skillForElo\(elo\)/.test(GAME));
+
+  /* the park's four seats */
+  const PT = fs.readFileSync(path.join(ROOT, 'games/park-tables/index.html'), 'utf8');
+  const bots = [...PT.matchAll(/\{ name: '(\w+)',\s*icon: '.',\s*diff: '(\w+)',\s*elo: (\d+)/g)]
+    .map(m => ({ name: m[1], diff: m[2], elo: +m[3] }));
+  check('all four park regulars declare a rating', bots.length === 4,
+    bots.map(b => b.name + ' ' + b.diff + ' ' + b.elo).join(' · '));
+  check('…and none of them hand-sets skill or blunder any more',
+    !/\{ name: '\w+',[^}]*\b(skill|blunder):/.test(PT),
+    'the rating is the only dial; skill and blunder are derived from it');
+  /* ⚠ derived INSIDE the call that uses the bridge. Read at parse time it would work today
+     and break silently the day a `defer` or a reorder lands on the head — every seat falling
+     back to one strength, with no error to say so. */
+  check('the dial is read at move time, not at parse time',
+    /function botDial\(b\)\{[\s\S]{0,220}E\.skillForElo\(b\.elo\)/.test(PT) &&
+    /PJCCGauntletEngine\.move\(S, botDial\(bot\)\)/.test(PT),
+    'botDial() runs inside the same call that uses the engine');
+  check('the ladder actually climbs',
+    bots.every((b, i) => i === 0 || b.elo > bots[i - 1].elo),
+    bots.map(b => b.elo).join(' → '));
+
+  /* THE REGRESSION ITSELF. A seat labelled Easy or Medium that lands at skill 1 or more is
+     1400+ by definition — i.e. stronger than the Gauntlet's Vice President, on a card that
+     says "Medium". That is exactly what he ran into. */
+  const tooStrong = bots.filter(b => /Easy|Medium/.test(b.diff) && E.skillForElo(b.elo) > 0);
+  check('no Easy or Medium seat is secretly 1400+', tooStrong.length === 0,
+    tooStrong.length ? tooStrong.map(b => b.name + ' ' + b.diff + ' → skill ' + E.skillForElo(b.elo)).join(', ')
+                     : bots.filter(b => /Easy|Medium/.test(b.diff)).map(b => b.name + ' ' + b.elo).join(' · '));
+  check('the Expert seat is still full strength',
+    bots.some(b => b.diff === 'Expert' && E.skillForElo(b.elo) === 20), 'Robert, 2400 — Nate\'s call');
+
+  /* and the number has to be ON SCREEN — an unadvertised rating is what drifted */
+  check('the bot card prints the rating', /b\.diff \+ ' · ' \+ b\.elo/.test(PT));
+  check('…and so does the nameplate at the table', /bot\.elo \+ ' · ' \+ esc\(bot\.diff\)/.test(PT));
+}
+
 /* ── 4. THE REPORT PIPE ───────────────────────────────────────────────────────────── */
 {
   const g = boot().P;

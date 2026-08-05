@@ -320,8 +320,13 @@ var C = window.PJCCChess, AI = window.PJCCChessAI, ENGINE = window.PJCCGauntletE
 // nothing below that can be reached by lowering skill further — every floor advertised
 // under 1400 pins to skill 0 and gets its weakness from the persona's blunder rate +
 // short think time instead. Above 1400 the skill ramps up to a full-strength Founder.
+// ⚑ THE FORMULA MOVED TO THE ENGINE BRIDGE (2026-08-05) so the Park Tables bots run on the
+// same curve — they were hand-set and "Medium" came out at ~1575. One definition, two rooms;
+// the local copy is the fallback for the case where the bridge did not load, and it must stay
+// byte-identical (tests/ladders.check.js compares them).
 function skillForRung(idx){
   var elo = (LADDER[idx] && LADDER[idx].elo) || 800;
+  if (ENGINE && ENGINE.skillForElo) return ENGINE.skillForElo(elo);
   if (elo < 1400) return 0;
   return Math.min(20, Math.round(3 + (elo - 1400) * 0.017));   // 1400→3 … 2400→20
 }

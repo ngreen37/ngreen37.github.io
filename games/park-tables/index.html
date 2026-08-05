@@ -516,15 +516,54 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
         an illegal engine move can never reach the board). No Supabase row, no
         rating, no clock — casual by definition. You play White. The game
         lives in localStorage so a refresh sits you right back down. ── */
+  /* ⚑⚑ THE REGULARS ARE ON THE LADDER'S CURVE NOW, AND THEY SAY THEIR RATING — 2026-08-05.
+     Nate: *"And what ratings are the bots? Not saying it's inaccurate but I kinda got smoked
+     by the Medium bot. Perhaps I just played poorly."*
+
+     ⭐ HE DID NOT PLAY POORLY, AND THE FIRST HALF OF HIS QUESTION WAS THE BUG: these bots had
+     NO rating. Only Easy/Medium/Hard/Expert, with hand-picked Stockfish skill numbers behind
+     them — and skill 6 plays about **1575**, which is stronger than the Gauntlet's eighth
+     floor (the Vice President, 1400) and level with its ninth. "Medium" was a strong club
+     player. Measured against the site's own advertised ladder, the four seats were 650 /
+     ~1575 / ~2165 / 2400: one beatable bot and three masters, which is not a ladder.
+
+     ⭐ AND IT IS THE SAME BUG HE ALREADY CAUGHT ONCE, IN THE OTHER ROOM. 2026-07-15, "the
+     Shogi Sentinel seems stronger than 800" — skill 5, ~1600. The Gauntlet was fixed by
+     driving skill from the ADVERTISED rating. These bots were written the next day and never
+     went on that curve. **A number a player can see is the thing that keeps a difficulty
+     honest** — the Gauntlet says "Rated 350" on every challenger card and could not drift far;
+     the park said "Medium" and drifted 900 points.
+
+     So a seat now declares ONE thing — the rating it is advertising — and skill + blunder are
+     derived from it by `PJCCGauntletEngine.skillForElo/blunderForElo`, the Gauntlet's own
+     curve, living in the file both rooms already load. The spacing is deliberately the public
+     ladder's: 650 is the Tidecaller, 1100 the Auditor, 1700 sits between the Heir Apparent
+     and the Executive Assistant.
+
+     ⚠ ROBERT IS UNCHANGED AT 2400 — full Stockfish, no blunders. That was Nate's explicit
+     call for the Expert seat (2026-07-19) and 2400 is what the curve gives skill 20 anyway,
+     so the top of the park still matches the top of the tower (the Founder).
+     ⚠ `movetime` stays hand-set: it is pacing, not strength — a bot that answers instantly
+     feels like a machine, and Robert taking 1.2s feels like Robert thinking.
+     The icons are a difficulty ramp (♝→♜→♚→♛), not canon pieces. */
+     ⚠⚠ THE DIAL IS DERIVED AT MOVE TIME, NOT AT PARSE TIME, and that is deliberate. Doing it
+     eagerly means reading `window.PJCCGauntletEngine` while this file is still parsing — and
+     the engine bridge is a plain <script src> four lines above, so it works *today* and would
+     fail SILENTLY the day someone adds `defer` or reorders the head: every seat would quietly
+     fall back to its default and the whole park would play at one strength with no error
+     anywhere ([[feature-shipped-but-never-loaded]]). `botDial` runs inside the same call that
+     uses the bridge, so the numbers cannot be older than the object producing them. */
   var BOTS = {
-    argus:  { name: 'Argus',  icon: '♝', diff: 'Easy',   skill: 0,  movetime: 140,  blunder: 0.22 },
-    auston: { name: 'Auston', icon: '♜', diff: 'Medium', skill: 6,  movetime: 350,  blunder: 0.04 },
-    father: { name: 'Father', icon: '♚', diff: 'Hard',   skill: 16, movetime: 900,  blunder: 0 },
-    // Robert — the Checker Town rival, added as the Expert seat (2026-07-19 Nate). Full
-    // Stockfish strength, no blunders. The icons are a difficulty ramp (♝→♜→♚→♛), not
-    // canon pieces, so the queen marks the top tier.
-    robert: { name: 'Robert', icon: '♛', diff: 'Expert', skill: 20, movetime: 1200, blunder: 0 }
+    argus:  { name: 'Argus',  icon: '♝', diff: 'Easy',   elo: 650,  movetime: 140 },
+    auston: { name: 'Auston', icon: '♜', diff: 'Medium', elo: 1100, movetime: 350 },
+    father: { name: 'Father', icon: '♚', diff: 'Hard',   elo: 1700, movetime: 900 },
+    // Robert — the Checker Town rival, the Expert seat (2026-07-19 Nate).
+    robert: { name: 'Robert', icon: '♛', diff: 'Expert', elo: 2400, movetime: 1200 }
   };
+  function botDial(b){
+    var E = window.PJCCGauntletEngine;
+    return { skill: E.skillForElo(b.elo), blunder: E.blunderForElo(b.elo), movetime: b.movetime };
+  }
   var BOT_KEY = 'pjcc.park.bot.v1';
   var botCur = null, botSel = -1, botThinking = false, botSeq = 0;
 
@@ -543,9 +582,12 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
     return '<div class="pt-actions pt-bots">' + Object.keys(BOTS).map(function (id) {
       var b = BOTS[id];
       var resume = saved && saved.bot === id && !saved.done && (saved.moves || '').trim();
+      // the rating rides beside the label (2026-08-05) — the Gauntlet has always said
+      // "Rated 350" on a challenger card, and it is the reason that ladder never drifted
       return '<button class="pt-card pt-bot" data-bot="' + id + '">' +
         '<span class="pt-card-icon">' + b.icon + '</span>' +
-        '<span class="pt-card-t">' + b.name + '<br><i>' + b.diff + (resume ? ' · resume' : '') + '</i></span></button>';
+        '<span class="pt-card-t">' + b.name + '<br><i>' + b.diff + ' · ' + b.elo +
+        (resume ? ' · resume' : '') + '</i></span></button>';
     }).join('') + '</div>';
   }
   function wireBots(){
@@ -687,7 +729,7 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
       // "notation should be to the right of the game") — .pt-arena stacks on phones
       '<div class="pt-arena"><div class="pt-boardwrap">' +
         '<div class="pt-plate">' + bot.icon + ' <b>' + esc(bot.name) + '</b>' +
-          ' <i class="pt-plate-rate">(' + esc(bot.diff) + ' bot)</i>' + matChip(S, false) + '</div>' +
+          ' <i class="pt-plate-rate">(' + bot.elo + ' · ' + esc(bot.diff) + ')</i>' + matChip(S, false) + '</div>' +
         '<div class="pt-board" role="grid" aria-label="Chess board">' + rows +
           (last && last.mover === 'b' ? arrowSVG(last, true) : '') + '</div>' +
         '<div class="pt-plate pt-plate--me">⬜ <b>' + esc((prof && prof.codename) || 'You') + '</b>' +
@@ -774,7 +816,7 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
   function botThink(st, S){
     var bot = BOTS[st.bot], tok = ++botSeq;
     botThinking = true; botRender();
-    PJCCGauntletEngine.move(S, { skill: bot.skill, movetime: bot.movetime, blunder: bot.blunder })
+    PJCCGauntletEngine.move(S, botDial(bot))
       .then(function (mv) {
         if (tok !== botSeq || botCur !== st) return;   // left the table — drop the reply
         botThinking = false;
@@ -870,8 +912,15 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
             '<i class="pt-row-chips">' + chips(m) + '</i></span>' +
             '<span class="pt-row-state go">SIT DOWN</span></button>';
         }).join('');
+        // ⚑ THE EMPTY LINE FOLLOWS THE HEADING (2026-08-05, Nate: "Under Waiting for the
+        // Creator, it should be, instead of 'someone will find it', 'he will find it'").
+        // One string served both headings, and only one of them has an "anyone" in it: under
+        // "Open tables" any operative can sit down, but the seats under "Waiting for the
+        // Creator" are McPuppy's alone — nobody else is coming. Same voice as the table
+        // state further down, which already says "he'll play back."
         html += '<h2 class="pt-h">' + (iAmCreator ? 'Waiting for the Creator' : 'Open tables') + '</h2>' +
-          (openH || '<p class="lb-empty">No open seats right now — leave a table open and someone will find it.</p>');
+          (openH || '<p class="lb-empty">No open seats right now — leave a table open and ' +
+            (iAmCreator ? 'he' : 'someone') + ' will find it.</p>');
 
         var finished = r[3].rows.filter(function (m) { return m.win_reason !== 'withdrawn'; });
         var finishedById = {}, canReview = window.PJCCReview && PJCCReview.enabled();
