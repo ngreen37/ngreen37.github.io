@@ -7,8 +7,9 @@ published: false
 The open backlog: **only what's *not* built yet.** Completed work has been cleared out of this file;
 everything here is a path not yet taken.
 
-**Start at ⭐ PRIORITY, right below.** It's the ten things worth doing next, copied up from the sections
-that follow — read it as the top of the file, and everything after it as the shelf they came off.
+**Start at ✅ ACTION ITEMS, right below** — the short list of things only Nate can do. **⭐ PRIORITY**
+follows it: the ten things worth doing next, copied up from the sections after it — read those as the
+shelf they came off.
 
 **Operating principle — *less is more.*** We deliberately built "too much" and are paring to the most
 important, inviting elements. New ideas earn their place against that bar; prefer **depth and
@@ -22,8 +23,23 @@ combination** over new surface area.
 name he has to pick). Kept here so an ended session never loses them. None are on fire; they just have
 to live somewhere. Cross one off by deleting the line. Last swept **2026-08-04**.*
 
-**🎨 ONE DECISION FROM THE 2026-08-04 SKEPTIC PASS — THE HANDOFF BREAKS AT THE GREEN BUTTON**
-- [ ] **Does the purple/gold go from the HEADER and the PARK TABLES room too, or stop at the
+## 📋 THE SIX — the whole list, in one screen
+
+*Scan this. Every one of them is written out in full underneath, in the same order.*
+
+| # | What | Where | Blocks |
+|---|---|---|---|
+| **1** | **Redeploy the Cloudflare Worker** — paste from `docs/translation-worker.md`, click **Deploy** | Cloudflare → Workers & Pages → `pjcc-translate` | ⚠ **Japanese is down site-wide until this lands** |
+| **2** | **Google Search Console** — add `chesswild.com` as a *Domain* property, submit `sitemap.xml` | search.google.com/search-console | Nothing — but the new titles + description only pay off once Google re-crawls |
+| **3** | **Delete and reinstall the app on your phone** — ⚠ **sign in on chesswild.com FIRST** | your iPhone | Your installed app still opens the old origin |
+| **4** | **Does Customize take ONE tap now on your iPhone?** | `/dossier/` → the Forge | I could not reproduce it; I need your answer before I instrument the live page |
+| **5** | **Confirm one reading:** "Games Hall box in the Play Now box" = Games Hall took the slot Play Now vacated | the front door | Nothing — it shipped my way; say so if I read it wrong |
+| **6** | **How far does the de-purpling go?** — drawer only, + header, or + the Park Tables room | look-and-feel call | Nothing is broken; the handoff just changes identity mid-tap |
+
+---
+
+**🎨 6 · ONE DECISION FROM THE 2026-08-04 SKEPTIC PASS — THE HANDOFF BREAKS AT THE GREEN BUTTON**
+- [ ] **6 · Does the purple/gold go from the HEADER and the PARK TABLES room too, or stop at the
   drawer?** You asked for the left nav and I did exactly that — but arriving cold on a phone
   now shows the seam. The front door is warm white paper with **one green button**; one tap
   later `/games/park-tables/` is a **full purple-and-gold room** and the button you press is
@@ -41,14 +57,14 @@ Runbook kept at `docs/domain-cutover-chesswild.md`. DNS verified, `CNAME`/`_conf
 mcpuppystudios.com 301s **with the path preserved** (`/pjcc/` → `chesswild.com/pjcc/`).
 - [x] ~~**Tick Enforce HTTPS**~~ **DONE — verified 2026-08-04:** both `http://chesswild.com` and
   `http://www.chesswild.com` now 301 to `https://chesswild.com`.
-- [ ] **Google Search Console** — [search.google.com/search-console](https://search.google.com/search-console)
+- [ ] **2 · Google Search Console** — [search.google.com/search-console](https://search.google.com/search-console)
   → property dropdown → **Add property** → **Domain** → `chesswild.com` → add the TXT record in
   Squarespace DNS → Verify → **Sitemaps** → submit `sitemap.xml`. Keep the old property; it is what
   reports the 301s being followed.
-- [ ] **Delete and reinstall the app on your phone** — a new origin is a new app, and no manifest
+- [ ] **3 · Delete and reinstall the app on your phone** — a new origin is a new app, and no manifest
   edit can reach an installed launcher. **Sign in on chesswild.com first**, so your account carries
   your progress across rather than the browser jar you're leaving behind.
-- [ ] **Redeploy the Cloudflare Worker** — ⚠ **re-probed 2026-08-04 and it is STILL not live.** All
+- [ ] **1 · Redeploy the Cloudflare Worker** — ⚠ **re-probed 2026-08-04 and it is STILL not live.** All
   four origins get back `Access-Control-Allow-Origin: https://mcpuppystudios.com` (the `ALLOW[0]`
   fallback), which proves `chesswild.com` is not in the array. **Japanese stays blocked until this
   lands.** Cloudflare → Workers & Pages → `pjcc-translate` → **Edit code** → paste the whole worker
@@ -56,14 +72,14 @@ mcpuppystudios.com 301s **with the path preserved** (`/pjcc/` → `chesswild.com
   Tell me when it's done and I'll re-probe.
 
 **📱 TWO THINGS ONLY YOU CAN CONFIRM — from the 2026-08-04 front-door / Forge batch**
-- [ ] **Does Customize take ONE tap now, on your iPhone?** ⚠ Be honest about the state of this:
+- [ ] **4 · Does Customize take ONE tap now, on your iPhone?** ⚠ Be honest about the state of this:
   **I could not reproduce the double-click.** Real mouse clicks and emulated touch both took on
   the first hit — on a stub page and on the live site. That rules out the handler, not the
   platform, and Chrome's touch emulation is not WebKit. Every picker is a real `<button>` now
   instead of a `<div>` with a click handler, which removes the heuristic Safari was probably
   getting wrong (and closes an accessibility hole — the whole Forge was mouse-only). **If it
   still takes two taps, tell me and I will stop guessing and instrument the live page.**
-- [ ] **Sanity-check one reading of your front-door batch.** *"Make a Games Hall box and put it
+- [ ] **5 · Sanity-check one reading of your front-door batch.** *"Make a Games Hall box and put it
   in the play now box"* — I read that as: Play Now was promoted out of the four-door grid into
   the big green box above, so **Games Hall took the slot Play Now vacated**. If you meant Games
   Hall nested *inside* the Play Now card, say so — it is a small rework, not a rebuild.
@@ -139,9 +155,11 @@ mine. Play a stretch of puzzles before deciding — this is a feel question, not
   the share card is next opened; not worth a canvas rewrite today.
 
 **Accounts & sign-ups — nothing on my side blocks these**
-- [ ] **Google Search Console** — verify `mcpuppystudios.com`, submit `/sitemap.xml`. The JSON-LD,
-  sitemap and robots have been wired and waiting since the SEO pass; until this is done, nothing is
-  telling Google the site exists.
+- [x] ~~**Google Search Console** — verify `mcpuppystudios.com`~~ — **SUPERSEDED 2026-08-04, see
+  item 2 at the top.** The domain flipped to `chesswild.com`, so verifying the old host is the wrong
+  property to add first. This line survived the cutover and would have sent you to it; the live
+  instruction is item 2. (Keep the old property once it exists — it is what reports the 301s being
+  followed — but add the new one.)
 - [ ] **Authorize the claude.ai Google Drive connector** in claude.ai → connector settings. The OAuth
   flow can't run from a coding session, so that capability stays dark until he clicks it.
 - [ ] **Reserve the social handles** — @McPuppyStudios on YouTube, TikTok, Instagram, X, Facebook,
