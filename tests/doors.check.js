@@ -214,5 +214,83 @@ const PARTIAL = read('_sass/_pjcc-21-gauntlet-door.scss');
     'showBossCard no longer writes the boss glyph onto the curtain');
 }
 
+/* ── 8. A CALLER MAY SET SIZE AND NOTHING ELSE ──────────────────────────────────────
+   2026-08-05, Nate: *"And for the Gauntlet Door Floor 1 (in all three spots — all three
+   spots should be automatically assumed)."*
+
+   The arch scaled and the LEAF INSIDE IT DID NOT: `left/right/top` were flat pixels, so the
+   gap between the arch's top and the cloth was 14px at EVERY size — 23% of the way down the
+   front door's 46px arch and 11% of the way down the Gauntlet's 100px one. Four callers had
+   each hand-corrected part of it (three copies of `border-radius`, four of `font-size`),
+   which is [[gauntlet-door-one-file]]'s drift arriving one property at a time rather than
+   all at once. The partial makes `.gdoor-arch` a container and states the whole leaf in
+   `cqw`, so size is genuinely all a caller needs.
+
+   THIS TEST IS THE RULE. A page may write `width` and `height` on `.gdoor-arch`, plus
+   layout OUTSIDE the arch (`gap` on `.gdoor`, the pips). Anything else — a radius, a
+   font-size, an inset — means somebody is correcting the door by hand again, and the
+   correction will be right at exactly one size. */
+{
+  const CALLERS = ['index.md', 'games.md', 'assets/games/pjcc_gauntlet.html',
+    '_layouts/home.html', '_layouts/studio-home.html'];
+  const ALLOWED = /^(width|height|gap|column-gap|row-gap|margin|margin-\w+|align-items|justify-content|position|inset|display|top|left|right|bottom|transform|animation|opacity|background|z-index)$/;
+  const bad = [];
+  for (const f of CALLERS) {
+    const src = read(f);
+    /* every rule whose selector touches the door's INNER parts, in that file's own CSS */
+    const re = /([^{}\n;]*\.gdoor-(?:arch|door|glyph|knob|seam)\b[^{}]*)\{([^}]*)\}/g;
+    let m;
+    while ((m = re.exec(src))) {
+      const sel = m[1].trim();
+      if (/^\s*\/\//.test(sel) || sel.includes('*')) continue;
+      const inner = /\.gdoor-(door|glyph|knob|seam)\b/.test(sel);
+      for (const decl of m[2].split(';')) {
+        const prop = (decl.split(':')[0] || '').trim().toLowerCase();
+        if (!prop || prop.startsWith('/*')) continue;
+        /* the arch may be SIZED; nothing inside it may be touched at all */
+        const ok = inner ? false : (prop === 'width' || prop === 'height' || ALLOWED.test(prop));
+        if (!ok) bad.push(f + '  ' + sel + ' { ' + prop + ' }');
+      }
+    }
+  }
+  check('no page hand-corrects the door — size only', bad.length === 0,
+    bad.length ? '\n      ' + bad.slice(0, 10).join('\n      ') +
+                 '\n      ← the leaf is cqw off the arch; set width/height and let it scale'
+               : CALLERS.length + ' callers, none of them redrawing the leaf');
+}
+
+/* ── 9. THE LEAF IS EXPRESSED AS A SHARE OF THE ARCH ────────────────────────────────
+   The other half of rule 8: the partial has to actually BE scalable, or rule 8 just bans
+   the workaround that was making it look right. Every inner geometry value is in `cqw`,
+   which only resolves because the arch declares itself a container. */
+{
+  check('the arch is a container', /\.gdoor-arch \{[^}]*container-type:\s*inline-size/.test(PARTIAL),
+    'without this every cqw below silently falls back to the small viewport');
+  const grab = (sel) => (new RegExp(sel.replace(/[.[\]"]/g, '\\$&') + '\\s*\\{([^}]*)\\}').exec(PARTIAL) || [])[1] || '';
+  const scales = [
+    ['.gdoor-door', ['left', 'right', 'top', 'border-radius']],
+    ['.gdoor-glyph', ['font-size']],
+    ['.gdoor-knob', ['right', 'width', 'height']],
+    ['.gdoor-seam', ['left', 'right', 'height']],
+    /* ⚠ RAW selectors — grab() escapes them itself. Pre-escaping here made the regex look
+       for a literal backslash and the rule "was not found", which reads exactly like a
+       missing rule rather than a bad test. */
+    ['.gdoor[data-grand="0"] .gdoor-door', ['left', 'right', 'top']],
+    ['.gdoor[data-grand="0"] .gdoor-arch::before', ['left', 'right', 'top', 'height']],
+  ];
+  const flat = [];
+  for (const [sel, props] of scales) {
+    const body = grab(sel);
+    if (!body) { flat.push(sel + ' (rule not found)'); continue; }
+    for (const p of props) {
+      const v = (new RegExp('(?:^|;)\\s*' + p + '\\s*:([^;]*)').exec(body) || [])[1];
+      if (v && /\d+(\.\d+)?px/.test(v)) flat.push(sel + ' { ' + p + ':' + v.trim() + ' }');
+    }
+  }
+  check('every inner measurement is a share of the arch, not a pixel', flat.length === 0,
+    flat.length ? '\n      ' + flat.join('\n      ') + '\n      ← use cqw so one door serves all five sizes'
+                : 'door, glyph, knob, seam and floor one\'s cloth + rod all in cqw');
+}
+
 console.log(`\n  ${pass} passed, ${fail} failed\n`);
 process.exit(fail ? 1 : 0);

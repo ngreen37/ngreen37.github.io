@@ -574,7 +574,14 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    is on the order of a dozen squares; the ANSWER is one of them and the board says nothing
    about which. That is the difference between teaching the rules and giving away the
    tactic, and it is the same line the puzzle room draws. */
-.mcb-sq.sel { background-image: linear-gradient(rgba(107,255,184,0.34), rgba(107,255,184,0.34)); }
+/* ⚠ A PSEUDO-ELEMENT, NOT `background-image`. First version of this rule set
+   `background-image` on the selected square — which does not ADD a wash, it REPLACES the
+   whole stack, and `.mcb-sq` already carries two layers there: the canon's 152deg key light
+   and `var(--chess-grain)`. So picking a piece up quietly stripped the wood off the square
+   underneath it. Exactly the [[chess-visual-canon]] warning — reading the token is not
+   enough, you have to diff against the board. A layer over the top, and the grain survives. */
+.mcb-sq.sel::before { content: ''; position: absolute; inset: 0;
+  background: rgba(107,255,184,0.34); pointer-events: none; }
 .mcb-sq.can::after { content: ''; position: absolute; left: 50%; top: 50%;
   width: 25.5%; height: 25.5%; border-radius: 50%; transform: translate(-50%,-50%);
   background: rgba(107,255,184,0.85); pointer-events: none; }
@@ -810,16 +817,13 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    card is directly on top of the words "The Gauntlet". The card says what it is in plain text
    already, so the hover caption has nothing to add — it is omitted rather than hidden. */
 .mc-door--gauntlet .gdoor { align-items: flex-start; gap: 7px; margin-bottom: 10px; }
-.mc-door--gauntlet .gdoor-arch { width: 46px; height: 60px; border-radius: 23px 23px 3px 3px; }
-.mc-door--gauntlet .gdoor-door { border-radius: 19px 19px 0 0; }
-/* ONE size, and floor one no longer needs its own (2026-08-04). It used to take TWO rules
-   here, and the second was a specificity fight: the partial's `.gdoor[data-grand="0"]
-   .gdoor-glyph` is (0,3,0) — an attribute selector counts in the class column — so a
-   two-class override lost and floor one's piece rendered at its full 26px inside a 46px arch.
-   The partial expresses floor one as a `scale()` of whatever size the caller sets now, so
-   this single line carries every floor and the fight is gone. 19px is the partial's own 32,
-   scaled by 46/78 — the ratio the arch itself was scaled by. */
-.mc-door--gauntlet .gdoor .gdoor-glyph { font-size: 19px; }
+/* ⚑ WIDTH AND HEIGHT, AND NOTHING ELSE (2026-08-05). Three more lines stood here — two
+   radii and a font-size — every one of them a hand-correction for a leaf that did not
+   scale with its arch. The partial expresses the whole leaf as a share of the arch's width
+   now (`container-type: inline-size` + cqw), so this caller states its SIZE and the door
+   takes care of being the same door. The old 19px was the partial's 32 × 46/78; the
+   container arithmetic produces 18.9 on its own. See _sass/_pjcc-21-gauntlet-door.scss. */
+.mc-door--gauntlet .gdoor-arch { width: 46px; height: 60px; }
 .mc-door--gauntlet .gdoor-pips { gap: 2px; }
 .mc-door--gauntlet .gdoor-pips i { width: 4px; height: 4px; background: rgba(30, 35, 44, 0.18); }
 /* ⚑ HOVERING THE CARD OPENS THE DOOR — AND NOT ONE TRANSFORM LIVES HERE (2026-08-04).

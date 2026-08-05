@@ -155,17 +155,16 @@ permalink: /games/
    override size and nothing else. Page-local <style> sits in <body> and the partial is
    in <head>, so at equal specificity these win on order.
 
-   Floor zero is safe from them: .gdoor[data-grand="0"] .gdoor-door is (0,3,0) and beats
-   the bare .gdoor-door below, so the tattered cloth keeps its own 3px radius. ── */
+   ⚑ 2026-08-05: and now it really IS size and nothing else. Four more lines stood here —
+   two radii and two font-sizes, one pair per breakpoint — each of them a hand-correction
+   for a leaf whose insets and glyph were flat pixels while the arch around them scaled.
+   The partial makes the arch a container and states the whole leaf in cqw, so a caller
+   that sets width + height gets the same door for free at any size. ── */
 .gdoor { gap:6px; }                                    /* 5px in the partial */
-.gdoor-arch { width:72px; height:92px; border-radius:36px 36px 4px 4px; }
-.gdoor-door { border-radius:31px 31px 0 0; }
-.gdoor-glyph { font-size:29px; }
+.gdoor-arch { width:72px; height:92px; }
 @media (max-width:480px){
   .gdoor { column-gap:12px; }
-  .gdoor-arch { width:58px; height:76px; border-radius:29px 29px 4px 4px; }
-  .gdoor-door { border-radius:24px 24px 0 0; }
-  .gdoor-glyph { font-size:24px; }
+  .gdoor-arch { width:58px; height:76px; }
 }
 
 /* the doorway row's own entrance animation (the .gdoor motion prefs live in the partial) */

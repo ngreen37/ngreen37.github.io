@@ -158,12 +158,12 @@
   .boss-stage .boss-portrait { position:absolute; left:50%; bottom:2px; transform:translateX(-50%);
     margin:0; width:88px; height:88px; font-size:46px; }
   .boss-stage .gdoor { position:absolute; inset:0; align-items:center; justify-content:center; gap:0; }
-  .boss-stage .gdoor-arch { width:100px; height:128px; border-radius:50px 50px 6px 6px; }
-  .boss-stage .gdoor-door { border-radius:45px 45px 0 0; }
-  /* (the glyph is hidden in-game — the portrait behind the door IS the piece; see the
-     .gdoor--ingame block in _sass/_pjcc-21-gauntlet-door.scss. The size stays so that
-     unhiding it for a debug session shows the right thing.) */
-  .boss-stage .gdoor-glyph { font-size:40px; }
+  /* ⚑ SIZE AND NOTHING ELSE (2026-08-05). The radius and the glyph size that stood here
+     were hand-corrections for a leaf that did not scale with its arch; the partial states
+     the whole leaf in cqw off the arch now, so this is the same door as the other four by
+     construction. (The glyph is hidden in-game regardless — the portrait behind the door
+     IS the piece; see the .gdoor--ingame block in _sass/_pjcc-21-gauntlet-door.scss.) */
+  .boss-stage .gdoor-arch { width:100px; height:128px; }
   .boss-name { font-size:24px; font-weight:900; color:#fff; letter-spacing:0.5px; text-shadow:0 2px 12px rgba(0,0,0,0.6); }
   .boss-sub { font-size:11px; letter-spacing:2px; text-transform:uppercase; margin:4px 0 10px; }
   .boss-pips { font-size:15px; letter-spacing:3px; margin-bottom:8px; }

@@ -92,13 +92,39 @@
   opacity:0; transition:opacity .3s ease, transform .3s ease; pointer-events:none; }
 .gdoor:hover .gdoor-whisper,
 .gdoor:focus-visible .gdoor-whisper { opacity:1; transform:translate(-50%, 0); }
+/* ══ ⭐ THE DOOR IS ONE SHAPE AT ANY SIZE (2026-08-05) ═══════════════════════════════
+   Nate: *"And for the Gauntlet Door Floor 1 (in all three spots - all three spots should
+   be automatically assumed)"* — and the second half of that sentence is the design.
+
+   THE DEFECT, MEASURED. The ARCH scaled (each caller sets width + height) and the LEAF
+   INSIDE IT DID NOT: `left/right/top` were a flat 5px, the seam 6px, the knob 9px, the
+   radii 34/39px. So the leaf's share of its own arch changed with every caller —
+   the gap from the arch top to the cloth was **14px at every size**, which is 23% of the
+   46px door on the front door and 11% of the 100px door in the Gauntlet. Same numbers,
+   four different pictures. Every caller had then hand-corrected some of it (three copies
+   of `border-radius`, four copies of `font-size`), which is the drift
+   [[gauntlet-door-one-file]] exists to stop, arriving one property at a time.
+
+   THE FIX: `.gdoor-arch` is a CONTAINER, and everything inside it is expressed in `cqw` —
+   a percentage of the arch's own width. Then a caller sets `width` and `height` on the
+   arch and **nothing else**, and every one of the five sizes is the same door.
+   The numbers are the old pixels ÷ 78 (the default arch width), so nothing moved at the
+   default size — and each caller's hand-set overrides now agree with what the formula
+   produces, which is how I know the conversion is right rather than merely consistent.
+
+   ⚠ The arch's OWN radius cannot use its own cqw (an element may not query itself), so it
+   is a two-axis percentage: 50%/39% of 78x100 is exactly the 39px it always was.
+   ⚠ Textures (plank seams, rivets, barnacles) are deliberately left in px — they are grain,
+   not geometry, and converting nine floors of gradient stops is risk without a picture. */
 .gdoor-arch { position:relative; display:block; width:78px; height:100px;
-  border:2px solid rgba(245,197,24,0.6); border-bottom-width:0; border-radius:39px 39px 4px 4px;
+  container-type:inline-size;
+  border:2px solid rgba(245,197,24,0.6); border-bottom-width:0;
+  border-radius:50% 50% 5% 5% / 39% 39% 4% 4%;
   overflow:hidden; box-shadow:0 0 26px -8px var(--acc);
   background:radial-gradient(ellipse at 50% 85%, color-mix(in srgb, var(--acc) 32%, #0c0722), #0c0722 78%);
   transition:box-shadow .2s ease; }
-.gdoor-door { position:absolute; left:5px; right:5px; top:5px; bottom:0;
-  border-radius:34px 34px 0 0; border:1px solid rgba(168,121,255,0.35);
+.gdoor-door { position:absolute; left:6.41cqw; right:6.41cqw; top:6.41cqw; bottom:0;
+  border-radius:43.6cqw 43.6cqw 0 0; border:1px solid rgba(168,121,255,0.35);
   background:linear-gradient(180deg, #251747 0%, #150c33 100%);
   transform-origin:0 50%; transition:transform .35s ease;
   /* pre-promote the panel (2026-07-16 splash audit): without this the slide's first
@@ -106,11 +132,13 @@
      gradient-heavy floor doors. One tiny always-on texture instead. */
   will-change:transform; }
 .gdoor-glyph { position:absolute; left:50%; top:40%; transform:translate(-50%,-50%);
-  font-style:normal; font-weight:400; font-size:32px; line-height:1; color:var(--acc);
+  font-style:normal; font-weight:400; font-size:41cqw; line-height:1; color:var(--acc);
   filter:drop-shadow(0 0 9px color-mix(in srgb, var(--acc) 65%, transparent)); }
-.gdoor-knob { position:absolute; right:9px; top:56%; width:5px; height:5px; border-radius:50%;
+.gdoor-knob { position:absolute; right:11.5cqw; top:56%; width:6.41cqw; height:6.41cqw;
+  border-radius:50%;
   background:#F5C518; box-shadow:0 0 5px rgba(245,197,24,0.8); }
-.gdoor-seam { position:absolute; left:6px; right:6px; bottom:0; height:3px; background:var(--acc);
+.gdoor-seam { position:absolute; left:7.7cqw; right:7.7cqw; bottom:0; height:3.85cqw;
+  background:var(--acc);
   box-shadow:0 -2px 14px 3px color-mix(in srgb, var(--acc) 55%, transparent); }
 @include gd-open-on('', '.gdoor-arch') { box-shadow:0 0 34px -5px var(--acc); }
 /* opens like a shogi screen — the panel SLIDES LEFT instead of swinging (Nate 2026-07-15).
@@ -457,15 +485,23 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
    hanging BEHIND the pole rather than glued to the front of it.
    ⚠ `.gdoor-arch::before` was free; `::after` is the grandeur crown and must stay free. */
 .gdoor[data-grand="0"] .gdoor-arch::before {
-  content:''; position:absolute; left:7px; right:7px; top:12px; height:3px;
-  z-index:2; border-radius:2px; pointer-events:none;
+  /* cqw, like the cloth it holds up (2026-08-05) — these ARE the cloth's own numbers, and
+     they only stay the cloth's own numbers if both are a share of the same arch. */
+  content:''; position:absolute; left:8.97cqw; right:8.97cqw; top:15.4cqw; height:3.85cqw;
+  z-index:2; border-radius:2.56cqw; pointer-events:none;
   background:linear-gradient(180deg, #8f6c42, #6b4f2e);
   box-shadow:0 1px 2px rgba(0,0,0,0.45);
 }
 .gdoor[data-grand="0"] .gdoor-door {
-  left:7px; right:7px; top:12px;
+  /* ⚠ THESE THREE WERE THE LAST FIXED PIXELS IN THE DOOR, and they were the visible half of
+     the problem. `top:12px` put the cloth 12px below the arch on EVERY caller — 20% of the
+     way down the front door's 60px arch and 9% of the way down the Gauntlet's 128px one. Two
+     different doors. Same share of the arch now, so the cloth hangs from the same place at
+     all five sizes, and the rod above (which is written from these numbers) stays registered
+     to it by construction rather than by luck. */
+  left:8.97cqw; right:8.97cqw; top:15.4cqw;
   border:0;                       /* the rod used to be a border-top here — see above */
-  border-radius:3px 3px 0 0;
+  border-radius:3.85cqw 3.85cqw 0 0;
   background:
     linear-gradient(100deg, rgba(0,0,0,0) 30%, rgba(58,38,16,0.35) 36%, rgba(0,0,0,0) 43%),
     linear-gradient(84deg,  rgba(0,0,0,0) 62%, rgba(58,38,16,0.28) 68%, rgba(0,0,0,0) 75%),
