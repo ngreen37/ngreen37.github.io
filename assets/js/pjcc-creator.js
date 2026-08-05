@@ -143,7 +143,7 @@
   function faceSvg(look, over) {
     var A = art();
     var o = { tone: look.tone, hair: look.hair, hairColor: look.hairColor,
-              eye: look.eye, eyeOuter: look.eyeOuter, brow: look.brow, mouth: look.mouth };
+              eye: look.eye, eyeR: look.eyeR, brow: look.brow, mouth: look.mouth };
     if (over) Object.keys(over).forEach(function (k) { o[k] = over[k]; });
     if (!A) return '<span class="idn-glyph">' + baseGlyph(o.hair, o.tone) + '</span>';
     return A.svg(o);
@@ -154,7 +154,7 @@
   var KEY = 'pjcc.identity.v1';
   function defaults() {
     return {
-      op:  { hair:'crop', tone:'', hairColor:'brown', eye:'brown', eyeOuter:'same',
+      op:  { hair:'crop', tone:'', hairColor:'brown', eye:'brown', eyeR:'same',
              aura:'gold', hat:'none', emblem:'none', name:'', role:'', bio:'' },
       pet: { coat:'natural', eye:'brown', nose:'black', aura:'none', bio:'' }
     };
@@ -183,7 +183,15 @@
       if (!A.SKIN[op.tone]) op.tone = '';
       if (!A.HAIRCOL[op.hairColor]) op.hairColor = 'brown';
       if (!A.EYES[op.eye]) op.eye = 'brown';
-      if (op.eyeOuter !== 'same' && !A.EYES[op.eyeOuter]) op.eyeOuter = 'same';
+      /* MIGRATION off the two-tone iris (2026-08-04, "forget the outer eye — scrap it").
+         `eyeOuter` was the OUTER RING of both irises; there is no honest mapping onto a
+         second EYE, so it is dropped rather than reinterpreted — inventing heterochromia for
+         someone who asked for a hazel rim would be worse than resetting them to a matched
+         pair. What they picked as `eye` is kept, which is the color they actually see. Deleted
+         from the saved object as well as the merged one, or it would come back on every load
+         (the same lesson `base` taught on 2026-08-03). */
+      if (op.eyeOuter !== undefined) delete op.eyeOuter;
+      if (op.eyeR !== 'same' && !A.EYES[op.eyeR]) op.eyeR = 'same';
     }
     if (!AURAS[op.aura]) op.aura = 'gold';
     if (!HATS[op.hat]) op.hat = 'none';
@@ -214,10 +222,16 @@
   }
   function saveLocal(state) {
     state.op.glyph = baseGlyph(state.op.hair, state.op.tone);   // the text stand-in — see baseGlyph
+    /* WHEN this device last authored the look. It rides along to the account through
+       PJCC.setLook, so the two copies can be compared instead of one always winning —
+       see adoptAccountLook() below, which is the whole fix for the one-behind bug. */
+    state.op.at = Date.now();
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
   }
+  // has this device ever saved a look, or are we reading pure defaults?
+  function hasLocal() { try { return !!localStorage.getItem(KEY); } catch (e) { return false; } }
 
-  // Account profile look (cross-device). Overlays local when present.
+  // The account's copy of the look (cross-device). A SEED, not an authority — see below.
   function accountLook() {
     try { var p = window.PJCC && PJCC.getProfile && PJCC.getProfile(); return (p && p.companion && p.companion.look) || null; } catch (e) { return null; }
   }
@@ -225,19 +239,37 @@
     try { var p = window.PJCC && PJCC.getProfile && PJCC.getProfile(); return (p && p.codename) || ''; } catch (e) { return ''; }
   }
 
-  // The resolved operative look: defaults <- local <- account.
+  /* ══ THE ACCOUNT IS A SEED, NOT AN AUTHORITY — 2026-08-04 ════════════════════════════
+     Nate: "The customize buttons still don't work properly for the humans. You click on one
+     button and it goes to the previous one you picked, then you have to click again to get it
+     right… For reference — the Companion customize buttons appear to work correctly."
+
+     ⭐ HIS REFERENCE IS THE DIAGNOSIS. The two tabs run the same click path — patchOp and
+     patchPet are twins — but they read back through different doors:
+
+         petLook()   -> loadLocal().pet                      (local, and nothing else)
+         identity()  -> Object.assign({}, local.op, account) (the ACCOUNT painted on top)
+
+     And the account copy is written on a **600ms debounce** by scheduleSync. So a click wrote
+     the new value to localStorage, immediately re-read it, and had the *previous* value —
+     still sitting in the profile because the sync had not gone out yet — painted straight
+     back over it. Click green: you get brown. Click blue: you get green. Exactly "one button
+     behind", and it went on forever because every click renewed the lag. The Companion tab
+     never had it because it never consults the account.
+
+     ⚠ IT ONLY HAPPENS SIGNED IN, WHICH IS WHY IT SHIPPED. `accountLook()` returns null with
+     no profile, so the overlay is a no-op — and tests/creator.check.js has never had a
+     profile. It does now ([[pjcc-profile-system]]: always test gated behavior signed OUT *and*
+     signed IN; the developer is always signed in, and here that was the half that was broken).
+
+     THE FIX IS THE DIRECTION OF THE MERGE, ONCE, AT THE RIGHT MOMENT. The account look is how
+     a look reaches a NEW DEVICE; it is not a second opinion about the click you just made. So
+     `identity()` reads local and only local — the Companion's rule — and the account copy is
+     ADOPTED INTO local by adoptAccountLook() when the profile arrives, if it is genuinely
+     newer. Both copies carry `at` (see saveLocal) so "newer" is a comparison rather than a
+     guess, and a device with no saved look at all takes whatever the account has. */
   function identity() {
-    var s = loadLocal(), op = s.op, al = accountLook();
-    /* An ACCOUNT look can also be pre-migration — it was written by an older build on
-       another device and lands here whole. Migrate it on the way in, for the same reason
-       and with the same test as loadLocal: read what the ACCOUNT actually stored, before
-       it is merged over a local look that already has a valid `hair`. */
-    if (al) {
-      var alHair = (al.base && !al.hair) ? (BASE_MIGRATE[al.base] || 'crop') : al.hair;
-      op = Object.assign({}, op, al);
-      if (alHair) op.hair = alHair;
-      delete op.base;
-    }
+    var op = loadLocal().op;
     if (!FACE_MAP[op.hair]) op.hair = 'crop';
     if (!AURAS[op.aura]) op.aura = 'gold';
     var f = FACE_MAP[op.hair];
@@ -248,6 +280,30 @@
     return op;
   }
   function petLook() { return loadLocal().pet; }
+
+  /* THE OTHER HALF OF THE FIX ABOVE — how a look still crosses devices.
+     Runs when the profile lands (and on every auth change), never during a click:
+       · nothing saved on this device  -> take the account's look, whatever its age. This is
+         the case the overlay used to serve, and the only one it served correctly.
+       · something saved here          -> take it only if the account's is genuinely NEWER.
+         A pre-`at` account record counts as age 0, so the device you are typing on wins,
+         which is the safe direction: the worst case is that a look from an older build has
+         to be re-picked once, instead of every click being overwritten forever.
+     It writes through the saved object so loadLocal()'s migrations run on it exactly as they
+     do on a local look — an account record can be pre-migration too, and this is now the one
+     place that has to know it. */
+  function adoptAccountLook() {
+    var al = accountLook();
+    if (!al) return false;
+    var s = null; try { s = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+    var mine = (s && s.op && s.op.at) || 0;
+    if (hasLocal() && !((al.at || 0) > mine)) return false;
+    var next = { op: Object.assign({}, al), pet: (s && s.pet) || defaults().pet };
+    try { localStorage.setItem(KEY, JSON.stringify(next)); } catch (e) {}
+    if (ov && !ov.classList.contains('hidden')) renderForge(true);
+    emit();
+    return true;
+  }
 
   // ---- companion bridge (shares name + active pet with the Den) -----------
   /* The Den (pjcc-companion.js) owns the companion's save file; the Forge only borrows
@@ -274,7 +330,12 @@
     syncT = setTimeout(function () {
       try {
         if (window.PJCC && PJCC.setLook && PJCC.currentUser && PJCC.currentUser()) {
-          var op = loadLocal().op; op.glyph = baseGlyph(op.base, op.tone);
+          /* ⚠ `op.hair`, not `op.base` — `base` has not existed since the person got drawn
+             (2026-08-03) and this line has been passing `undefined` ever since. It was
+             harmless only because baseGlyph ignores its first argument. It also has to send
+             `at`, which loadLocal returns as saved: that stamp is what lets the next device
+             tell this look from its own ([[person-drawn-and-forge-repaint]]). */
+          var op = loadLocal().op; op.glyph = baseGlyph(op.hair, op.tone);
           PJCC.setLook(op).catch(function () {});
         }
       } catch (e) {}
@@ -344,10 +405,11 @@
   function refreshMounts() { mounts = mounts.filter(function (el) { return document.body.contains(el); }); mounts.forEach(function (el) { renderCard(el); }); }
 
   // ---- the Forge overlay ---------------------------------------------------
-  /* `zoom` is module state, not a DOM class, on purpose: `repaintOp()` rewrites the stage on
-     every pick, so a flag living in the markup would be lost the first time you chose a
-     color — i.e. every time it mattered. */
-  var ov = null, tab = 'operative', zoom = false;
+  /* `zoom` and `eyeTarget` are module state, not DOM classes, on purpose: `repaintOp()`
+     rewrites the stage on every pick, so a flag living in the markup would be lost the first
+     time you chose a color — i.e. every time it mattered. Neither is part of the character:
+     one is how big you are looking, the other is which eye you are pointing at. */
+  var ov = null, tab = 'operative', zoom = false, eyeTarget = 'both';
   function open(which) {
     tab = which === 'companion' ? 'companion' : 'operative';
     if (!ov) {
@@ -425,8 +487,11 @@
     markOn('data-hair', look.hair);
     markOn('data-tone', look.tone);
     markOn('data-hcol', look.hairColor);
-    markOn('data-eye1', look.eye);
-    markOn('data-eye2', look.eyeOuter || 'same');
+    /* the color row marks whichever eye the segmented control is aimed at — with a matched
+       pair there is only one color to be `on`, so the target collapses to 'both' */
+    var two2 = look.eyeR && look.eyeR !== 'same';
+    markOn('data-eye1', (two2 && eyeTarget === 'right') ? look.eyeR : look.eye);
+    markOn('data-eyet', two2 ? eyeTarget : 'both');
     markOn('data-aura', look.aura);
     markOn('data-hat', look.hat);
     markOn('data-emblem', look.emblem);
@@ -484,6 +549,11 @@
     return '<button type="button" class="forge-sw' + (on ? ' on' : '') + (isNone ? ' none' : '') +
       '" style="background:' + (isNone ? '' : color) + ';--sw:' + color + '" ' +
       (on ? 'aria-pressed="true" ' : 'aria-pressed="false" ') + attr + '>' + (isNone ? '∅' : '') + '</button>';
+  }
+  // a word in a segmented control — says WHICH thing the row below is about to change
+  function segBtn(on, label, attr) {
+    return '<button type="button" class="forge-seg-b' + (on ? ' on' : '') + '" ' +
+      (on ? 'aria-pressed="true" ' : 'aria-pressed="false" ') + attr + '>' + esc(label) + '</button>';
   }
 
   function renderForge(keepScroll) {
@@ -603,20 +673,36 @@
     if (A) A.SKIN_ORDER.forEach(function (k) { h += swatch(look.tone === k, A.SKIN[k].c, 'data-tone="' + k + '" title="' + A.SKIN[k].n + '"'); });
     h += '</div></div>';
     /* ── THE EYES, WHICH ARE THE WHOLE REASON THE PERSON GOT DRAWN ────────────────
-       Nate: "if they want, a 2 color eye? For example, my eyes have the pupil in the
-       middle, then a ring of green, then a ring of brown."
+       ⚑ ONE ROW AND A TARGET, 2026-08-04. Nate: "Forget the outer eye — scrap it — change
+       it to Both eyes as default and then an option to modify left-eye and right-eye."
 
-       So it is two rows, in that order — inner ring, then outer — and the outer one
-       defaults to "Matched". Two-tone has to be something you go and ASK for: it is a
-       rarer eye than a plain one in life, and making it the default would hand it to
-       people who never noticed the row. */
+       It was TWO color rows, "Eyes" and "Outer Ring", and between them they described one
+       iris painted in two shades. That is a control you have to be taught: the two fills sit
+       1.95 units apart on a 3.7-unit iris, so unless you already knew what you were looking
+       for it read as one muddy color that would not change.
+
+       Now there is ONE row of colors and a target above it — Both Eyes · Left · Right. The
+       same two colors are still available; they land somewhere a person can point at.
+
+       ⚠ THE TARGET IS UI STATE, NOT SAVED DATA (`eyeTarget`, module-level, like `zoom`).
+       "I am currently editing the left one" is not part of your character, and putting it in
+       the save file would mean re-rendering the panel to change it — which is how the shift
+       and the jump got here in the first place.
+
+       ⚠ PICKING "BOTH" RE-MATCHES IMMEDIATELY rather than just aiming the next click. A mode
+       switch that changes nothing until you also pick a color is the one-button-behind
+       feeling all over again, in a different costume. */
     if (A) {
-      h += '<div class="forge-section"><h3>Eyes <small>— the ring around the pupil</small></h3><div class="forge-sw-row">';
-      A.EYE_ORDER.forEach(function (k) { h += swatch(look.eye === k, A.EYES[k].c, 'data-eye1="' + k + '" title="' + A.EYES[k].n + '"'); });
-      h += '</div></div>';
-      h += '<div class="forge-section"><h3>Outer Ring <small>— for a two-color eye</small></h3><div class="forge-sw-row">';
-      h += swatch(!look.eyeOuter || look.eyeOuter === 'same', '#888', 'data-eye2="same" title="Matched — one color"', true);
-      A.EYE_ORDER.forEach(function (k) { h += swatch(look.eyeOuter === k, A.EYES[k].c, 'data-eye2="' + k + '" title="' + A.EYES[k].n + '"'); });
+      var eyeR = look.eyeR && look.eyeR !== 'same' ? look.eyeR : null;
+      var target = eyeR ? eyeTarget : 'both';           // no second color = nothing to aim at
+      var current = target === 'right' ? (eyeR || look.eye) : look.eye;
+      h += '<div class="forge-section"><h3>Eyes</h3>' +
+        '<div class="forge-seg" role="group" aria-label="Which eye to change">' +
+        segBtn(target === 'both',  'Both Eyes', 'data-eyet="both"') +
+        segBtn(target === 'left',  'Left',      'data-eyet="left"') +
+        segBtn(target === 'right', 'Right',     'data-eyet="right"') +
+        '</div><div class="forge-sw-row">';
+      A.EYE_ORDER.forEach(function (k) { h += swatch(current === k, A.EYES[k].c, 'data-eye1="' + k + '" title="' + A.EYES[k].n + '"'); });
       h += '</div></div>';
     }
     // aura
@@ -752,8 +838,39 @@
     });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-tone]'), function (c) { c.onclick = function () { patchOp({ tone: c.getAttribute('data-tone') }); }; });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-hcol]'), function (c) { c.onclick = function () { patchOp({ hairColor: c.getAttribute('data-hcol') }); }; });
-    Array.prototype.forEach.call(ov.querySelectorAll('[data-eye1]'), function (c) { c.onclick = function () { patchOp({ eye: c.getAttribute('data-eye1') }); }; });
-    Array.prototype.forEach.call(ov.querySelectorAll('[data-eye2]'), function (c) { c.onclick = function () { patchOp({ eyeOuter: c.getAttribute('data-eye2') }); }; });
+    /* ── THE EYES: one color row, aimed by the segmented control above it ──────────
+       Both  — set the left AND drop the override, so the pair matches again.
+       Left  — set the left. If the right was following (`same`), PIN it to what it is
+               showing first, or "change the left one" would silently change both and the
+               control would look broken in the most confusing possible way.
+       Right — set the override only. */
+    Array.prototype.forEach.call(ov.querySelectorAll('[data-eye1]'), function (c) {
+      c.onclick = function () {
+        var k = c.getAttribute('data-eye1'), look = identity();
+        var two = look.eyeR && look.eyeR !== 'same';
+        var t = two ? eyeTarget : 'both';
+        if (t === 'right') patchOp({ eyeR: k }, true);
+        else if (t === 'left') patchOp({ eye: k, eyeR: two ? look.eyeR : look.eye }, true);
+        else patchOp({ eye: k, eyeR: 'same' }, true);
+      };
+    });
+    /* ⚠ HEAVY (a full re-render), and only here. The segmented control's own labels and the
+       `on` ring under the color row both change, and `repaintOp()` deliberately touches
+       neither — it moves rings and repaints fills, nothing structural. This is one deliberate
+       press, not a pick, and `true` keeps the scroll exactly where it is. */
+    Array.prototype.forEach.call(ov.querySelectorAll('[data-eyet]'), function (c) {
+      c.onclick = function () {
+        var t = c.getAttribute('data-eyet');
+        eyeTarget = t;
+        var look = identity();
+        // "Both" is an ACTION, not just an aim — it re-matches the pair right now.
+        if (t === 'both') patchOp({ eyeR: 'same' }, true);
+        // aiming at one eye when they currently match has to CREATE the second one, or
+        // there is nothing for the next color click to be different from
+        else if (!look.eyeR || look.eyeR === 'same') patchOp({ eyeR: look.eye }, true);
+        else renderForge(true);
+      };
+    });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-aura]'), function (c) { c.onclick = function () { patchOp({ aura: c.getAttribute('data-aura') }); }; });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-hat]'), function (c) { c.onclick = function () { patchOp({ hat: c.getAttribute('data-hat') }); }; });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-emblem]'), function (c) { c.onclick = function () { patchOp({ emblem: c.getAttribute('data-emblem') }); }; });
@@ -802,9 +919,12 @@
         p.tone = pick(A.SKIN_ORDER);
         p.hairColor = pick(A.HAIRCOL_ORDER);
         p.eye = pick(A.EYE_ORDER);
-        // two-tone about one roll in four — often enough to be discovered by surprise,
-        // rare enough that it still reads as unusual when it happens
-        p.eyeOuter = Math.random() < 0.25 ? pick(A.EYE_ORDER) : 'same';
+        /* mismatched eyes about one roll in six — often enough to be discovered by surprise,
+           rare enough that it still reads as unusual when it happens. Lower than the old
+           two-tone iris's 1-in-4 on purpose: this version of the feature is unmistakable at
+           a glance, so the same frequency would stop reading as a surprise and start reading
+           as the house style. */
+        p.eyeR = Math.random() < 0.17 ? pick(A.EYE_ORDER) : 'same';
       }
       // ⚠ HEAVY on purpose: Surprise me changes the hair, so every cell in the grid needs
       // its `on` state and its picture redrawn — that IS the whole panel.
@@ -819,13 +939,22 @@
 
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && ov && !ov.classList.contains('hidden')) close(); });
 
-  // re-render the Dossier card when the account loads / changes
-  try { if (window.PJCC && PJCC.onChange) PJCC.onChange(refreshMounts); } catch (e) {}
+  /* The account's look reaches this device HERE and nowhere else — once when the profile
+     resolves, and again on any auth change (signing in on a shared machine has to bring the
+     right face with it). Never inside a click: that was the bug. Both entry points are
+     guarded because the Forge renders on pages where pjcc-profile.js isn't loaded. */
+  try {
+    if (window.PJCC && PJCC.onChange) PJCC.onChange(function () { adoptAccountLook(); refreshMounts(); });
+    if (window.PJCC && PJCC.ready && PJCC.ready.then) PJCC.ready.then(function () { adoptAccountLook(); refreshMounts(); });
+  } catch (e) {}
 
   window.PJCCForge = {
     identity: identity, petLook: petLook, renderAvatar: renderAvatar, renderCard: renderCard,
     setAccountBlock: setAccountBlock,
     open: open, close: close, onChange: function (fn) { listeners.push(fn); },
+    // exported for the tests: the cross-device seed is a named, callable step now rather
+    // than a merge hidden inside identity()
+    adoptAccountLook: adoptAccountLook,
     // FACES replaced BASES on 2026-08-03 (the 32 emoji became one drawn person).
     // Nothing outside this file read BASES; `faceSvg` is exported for the tests.
     FACES: FACES, BASE_MIGRATE: BASE_MIGRATE, faceSvg: faceSvg, AURAS: AURAS

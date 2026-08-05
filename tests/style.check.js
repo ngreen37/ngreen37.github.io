@@ -140,10 +140,19 @@ console.log('\n── HOUSE RULES ───────────────�
   check('the Park Tables review button reads "Analyze"',
     /⚗ Analyze<\/button>/.test(pt) && !/⚗ Analyse<\/button>/.test(pt),
     'the data-analyse ATTRIBUTE deliberately keeps its spelling — it is a key');
-  const cr = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-creator.js'), 'utf8');
+  /* ⚠ COMMENTS STRIPPED FIRST, and this rule proved why the moment it was edited. "Outer
+     Ring" left on 2026-08-04 ("forget the outer eye — scrap it") and the block explaining
+     what left NAMES it — so a bare `!/Outer Ring/` failed on the explanation rather than on
+     the label, which forces the next person to delete the note to make the test pass. Same
+     trap and same fix as creator.check.js §1. The rule FOLLOWS the labels rather than being
+     retired with the one it happened to be watching: Both/Left/Right are exactly the kind of
+     new UI string that drifts to sentence case. */
+  const cr = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-creator.js'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
   check('the Forge labels are Title Case',
-    /<h3>Skin Tone<\/h3>/.test(cr) && /<h3>Hair Color<\/h3>/.test(cr) && /<h3>Outer Ring /.test(cr),
-    'Skin Tone · Hair Color · Outer Ring');
+    /<h3>Skin Tone<\/h3>/.test(cr) && /<h3>Hair Color<\/h3>/.test(cr) &&
+    /'Both Eyes'/.test(cr) && /'Left'/.test(cr) && /'Right'/.test(cr) && !/Outer Ring/.test(cr),
+    'Skin Tone · Hair Color · Both Eyes / Left / Right');
 }
 
 /* ── 4. A SCRIPT INCLUDE MAY NOT SIT INSIDE A SPAN-LEVEL TAG IN A .md PAGE ─────────

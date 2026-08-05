@@ -93,17 +93,31 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
     /function repaintOp\(\)/.test(CODE) && /if \(heavy\) renderForge\(true\); else repaintOp\(\)/.test(CODE));
 }
 
-/* ── 4. THE EYE IS UNIFORM AND TAKES TWO COLORS ─────────────────────────────── */
+/* ── 4. THE EYES ARE UNIFORM, AND THE TWO OF THEM ARE SEPARATE ────────────────────
+   2026-08-04: "Forget the outer eye — scrap it — change it to Both eyes as default and then
+   an option to modify left-eye and right-eye." The two-tone IRIS is gone; the two colors go
+   to the two EYES. */
 {
   check('there is exactly ONE eye routine', (FACE.match(/function eyePair\(/g) || []).length === 1,
     'every face gets the same eyes, in the same place — which is what makes a color picker honest');
-  check('the eye has four concentric parts',
-    /fa-sclera/.test(FACE) && /fa-iris-outer/.test(FACE) && /fa-iris-inner/.test(FACE) && /fa-pupil/.test(FACE));
-  check('a one-color eye is the two rings AGREEING, not a second code path',
-    /eyeOuter === 'same'\) \? inner :/.test(FACE),
-    'so "two-tone" costs nothing to maintain');
-  check('two-tone is opt-in', /!o\.eyeOuter \|\| o\.eyeOuter === 'same'/.test(FACE),
-    'the default is an ordinary eye');
+  check('the eye is sclera · iris · limbal ring · pupil · glint',
+    /fa-sclera/.test(FACE) && /fa-iris"/.test(FACE) && /fa-limbal/.test(FACE) && /fa-pupil/.test(FACE) && /fa-glint/.test(FACE));
+  check('the two-tone iris is gone', !/fa-iris-inner|fa-iris-outer/.test(FACE),
+    'one solid iris per eye — the second color moved to the other eye');
+  check('the two eyes take their own color', /function eyePair\(left, right\)/.test(FACE) &&
+    /d < 0 \? left : right/.test(FACE), 'd = -1 is the eye on the LEFT of the picture');
+  check('a matched pair is the two eyes AGREEING, not a second code path',
+    /o\.eyeR === 'same'\) \? left :/.test(FACE), 'so heterochromia costs nothing to maintain');
+  check('…and it is the default', /!o\.eyeR \|\| o\.eyeR === 'same'/.test(FACE),
+    'a player who never opens Left/Right gets an ordinary face');
+  /* The ONLY place `eyeOuter` may still appear is the migration that deletes it — leaving a
+     read anywhere else is how `base` used to keep coming back on the next load. */
+  const leftovers = (CODE.match(/^.*\beyeOuter\b.*$/gm) || [])
+    .filter((l) => !/delete op\.eyeOuter/.test(l));
+  check('nothing still READS the retired eyeOuter', leftovers.length === 0,
+    leftovers.map((l) => l.trim()).join(' | ') || 'only the line that drops it mentions it');
+  check('…and it is dropped from the SAVED object, not just the merged one',
+    /delete op\.eyeOuter/.test(CODE), 'or it returns on every load — the lesson `base` taught');
 }
 
 /* ── 5. DRIVE IT ──────────────────────────────────────────────────────────────── */
@@ -118,13 +132,35 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
 
   const scripts = ['pjcc-face-art.js', 'pjcc-pet-art.js', 'pjcc-creator.js']
     .map((f) => '<script>' + read('assets/js/' + f).split('</script>').join('<\\/script>') + '<\/script>').join('\n');
+
+  /* ⚠⚠ A SIGNED-IN PROFILE, AND ITS ABSENCE IS WHY THE WORST BUG IN THIS FILE'S HISTORY
+     SHIPPED. Until 2026-08-04 this harness had no `window.PJCC` at all, so `accountLook()`
+     returned null and the account-overlay path in identity() — the one that made every human
+     picker land one click behind — was never executed even once. Nate found it by using the
+     site. The stub below is deliberately faithful on the ONE property that caused it: the
+     account's copy of the look changes only when `setLook` is called, which the Forge does on
+     a 600ms debounce, so between a click and that timer the profile is genuinely stale.
+     ([[pjcc-profile-system]]: test gated behavior signed OUT *and* signed IN.) */
+  const STUB = `<script>
+    window.__syncs = 0;
+    window.PJCC = {
+      _p: { codename: 'Tester', companion: { look: { hair:'crop', tone:'', hairColor:'brown',
+            eye:'brown', eyeR:'same', aura:'gold', hat:'none', emblem:'none' } } },
+      currentUser: function () { return { id: 'u1' }; },
+      getProfile: function () { return this._p; },
+      setLook: function (l) { window.__syncs++; this._p.companion.look = JSON.parse(JSON.stringify(l)); return Promise.resolve(); },
+      onChange: function (fn) { (this._l = this._l || []).push(fn); },
+      ready: Promise.resolve()
+    };
+  <\/script>`;
+
   await page.setRequestInterception(true);
   page.on('request', (r) => r.respond({ status: 200, contentType: 'text/html', body:
     `<!doctype html><html><head><meta charset="utf-8"><style>
       body{margin:0;background:#140c30;font-family:system-ui,sans-serif;color:#f0e6ff}
       :root{--r-sm:8px;--r-md:12px;--r-lg:16px}
       ${CSS.replace(/\/\*[\s\S]*?\*\//g, '')}
-     </style></head><body><div id="mount"></div>${scripts}
+     </style></head><body><div id="mount"></div>${STUB}${scripts}
      <script>PJCCForge.renderCard(document.getElementById('mount'));<\/script></body></html>` }));
   // ⚠ a REAL origin — see the harness note at the top of this file
   await page.goto('https://chesswild.com/dossier/', { waitUntil: 'domcontentloaded' });
@@ -137,12 +173,60 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
   const shape = await page.evaluate(() => ({
     cells: document.querySelectorAll('[data-hair]').length,
     drawn: document.querySelectorAll('.fc-face .fa-svg').length,
-    rows: ['data-hcol', 'data-tone', 'data-eye1', 'data-eye2'].map((a) => document.querySelectorAll('[' + a + ']').length)
+    rows: ['data-hcol', 'data-tone', 'data-eye1', 'data-eyet'].map((a) => document.querySelectorAll('[' + a + ']').length),
+    gone: document.querySelectorAll('[data-eye2]').length,
+    seg: [...document.querySelectorAll('[data-eyet]')].map((e) => e.textContent).join('|'),
+    segOn: (document.querySelector('[data-eyet].on') || {}).textContent
   }));
   check('the Base picker is drawn people, not glyphs', shape.cells > 0 && shape.drawn === shape.cells,
     shape.cells + ' cells, ' + shape.drawn + ' drawn');
-  check('hair color / skin / eye / outer-ring rows are all present',
+  check('hair color / skin / eye rows + the eye target are all present',
     shape.rows.every((n) => n > 0), shape.rows.join(' · '));
+  check('the Outer Ring row is gone', shape.gone === 0, 'scrapped 2026-08-04');
+  check('the eye target reads Both Eyes · Left · Right', shape.seg === 'Both Eyes|Left|Right', shape.seg);
+  check('…and Both Eyes is the default', shape.segOn === 'Both Eyes', String(shape.segOn));
+
+  /* ══ THE REGRESSION GATE FOR "ONE BUTTON BEHIND" ══════════════════════════════════
+     Nate: "You click on one button and it goes to the previous one you picked, then you have
+     to click again to get it right." Click, then read the look back IMMEDIATELY — before the
+     600ms sync can hide the bug. Every click must be visible in the same tick it happened. */
+  {
+    const seq = [['[data-hcol="ginger"]', 'hairColor', 'ginger'],
+                 ['[data-hcol="black"]',  'hairColor', 'black'],
+                 ['[data-eye1="green"]',  'eye',       'green'],
+                 ['[data-eye1="blue"]',   'eye',       'blue'],
+                 ['[data-aura="jade"]',   'aura',      'jade']];
+    const lag = [];
+    for (const [sel, field, want] of seq) {
+      await page.evaluate((s) => { const el = document.querySelector(s); if (el) el.click(); }, sel);
+      const got = await page.evaluate((f) => PJCCForge.identity()[f], field);
+      if (got !== want) lag.push(sel + ' → ' + got + ' (wanted ' + want + ')');
+    }
+    check('SIGNED IN, every pick takes on the FIRST click', lag.length === 0,
+      lag.length ? lag.join(' | ') + '   ← the stale account look is being painted back over local'
+                 : seq.length + ' picks, no lag — the account is a seed, not an authority');
+  }
+
+  /* …and the seed still works: an account look that is genuinely NEWER is adopted, because
+     losing cross-device sync would be a worse bug than the one just fixed. */
+  {
+    const adopted = await page.evaluate(() => {
+      PJCC._p.companion.look = { hair: 'afro', tone: '', hairColor: 'silver', eye: 'ice',
+                                 eyeR: 'same', aura: 'rose', hat: 'none', emblem: 'none',
+                                 at: Date.now() + 60000 };
+      const took = PJCCForge.adoptAccountLook();
+      return { took: took, hair: PJCCForge.identity().hair, eye: PJCCForge.identity().eye };
+    });
+    check('a NEWER account look still reaches this device',
+      adopted.took && adopted.hair === 'afro' && adopted.eye === 'ice', JSON.stringify(adopted));
+    const ignored = await page.evaluate(() => {
+      document.querySelector('[data-eye1="amber"]').click();          // this device authors now
+      PJCC._p.companion.look = { hair: 'bald', eye: 'violet', at: 1 };  // an ancient copy
+      return { took: PJCCForge.adoptAccountLook(), eye: PJCCForge.identity().eye };
+    });
+    check('…but an OLDER one never overwrites what you just picked',
+      !ignored.took && ignored.eye === 'amber', JSON.stringify(ignored));
+  }
 
   // ── the regression gate for his actual complaint ──
   await page.evaluate(() => { document.querySelector('.forge-ov').scrollTop = 240; });
@@ -154,7 +238,7 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
   });
   const before = await probe();
   const CLICKS = ['[data-aura="jade"]', '[data-tone]:nth-of-type(5)', '[data-hcol="ginger"]',
-                  '[data-eye1="green"]', '[data-eye2="brown"]', '[data-hair="afro"]',
+                  '[data-eye1="green"]', '[data-hair="afro"]',
                   '[data-hair="long"]', '[data-tone]:nth-of-type(1)', '[data-hat="crown"]'];
   let drift = 0;
   for (const sel of CLICKS) {
@@ -167,27 +251,51 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
 
   /* …and it moved because something HAPPENED. Without this, a Forge that threw on every
      click would pass the line above with a perfect score. */
+  const irises = () => page.evaluate(() => {
+    const g = [...document.querySelectorAll('#forge-prev .fa-iris')].map((e) => e.getAttribute('fill'));
+    const L = PJCCForge.identity();
+    return { l: g[0], r: g[1], eye: L.eye, eyeR: L.eyeR,
+             swatch: (document.querySelector('[data-eye1].on') || {}).getAttribute
+                     ? document.querySelector('[data-eye1].on').getAttribute('data-eye1') : null };
+  });
   const look = await page.evaluate(() => {
     const L = PJCCForge.identity();
-    return { hair: L.hair, hairColor: L.hairColor, eye: L.eye, eyeOuter: L.eyeOuter, aura: L.aura, hat: L.hat,
-             inner: document.querySelector('#forge-prev .fa-iris-inner').getAttribute('fill'),
-             outer: document.querySelector('#forge-prev .fa-iris-outer').getAttribute('fill') };
+    return { hair: L.hair, hairColor: L.hairColor, eye: L.eye, aura: L.aura, hat: L.hat };
   });
   check('…and every one of those clicks actually took',
     look.hair === 'long' && look.hairColor === 'ginger' && look.eye === 'green' &&
-    look.eyeOuter === 'brown' && look.aura === 'jade' && look.hat === 'crown',
-    JSON.stringify(look));
-  check('the drawn eye is genuinely two colors', look.inner !== look.outer,
-    'inner ' + look.inner + ' · outer ' + look.outer + '  (Nate\'s own: green inside, brown outside)');
+    look.aura === 'jade' && look.hat === 'crown', JSON.stringify(look));
 
-  // one color again — the same eye, its rings agreeing
-  await page.evaluate(() => document.querySelector('[data-eye2="same"]').click());
+  /* ── BOTH / LEFT / RIGHT, driven end to end ─────────────────────────────────────
+     The order matters: aiming at one eye while the pair matches has to CREATE the second
+     color, or the next click has nothing to be different from. */
+  const both0 = await irises();
+  check('the pair starts matched', both0.l === both0.r, both0.l);
+
+  await page.evaluate(() => document.querySelector('[data-eyet="right"]').click());
   await new Promise((r) => setTimeout(r, 60));
-  const one = await page.evaluate(() => ({
-    inner: document.querySelector('#forge-prev .fa-iris-inner').getAttribute('fill'),
-    outer: document.querySelector('#forge-prev .fa-iris-outer').getAttribute('fill')
-  }));
-  check('“Matched” gives back a one-color eye', one.inner === one.outer, one.inner);
+  await page.evaluate(() => document.querySelector('[data-eye1="blue"]').click());
+  await new Promise((r) => setTimeout(r, 60));
+  const split = await irises();
+  check('"Right" changes only the right eye',
+    split.l !== split.r && split.eye === 'green' && split.eyeR === 'blue',
+    'L ' + split.l + ' · R ' + split.r);
+
+  await page.evaluate(() => document.querySelector('[data-eyet="left"]').click());
+  await new Promise((r) => setTimeout(r, 60));
+  await page.evaluate(() => document.querySelector('[data-eye1="amber"]').click());
+  await new Promise((r) => setTimeout(r, 60));
+  const left = await irises();
+  check('"Left" changes only the left eye — the right one is not dragged along',
+    left.eye === 'amber' && left.eyeR === 'blue' && left.l !== left.r,
+    'L ' + left.l + ' · R ' + left.r);
+  check('…and the swatch ring follows the eye you are aiming at', left.swatch === 'amber', String(left.swatch));
+
+  await page.evaluate(() => document.querySelector('[data-eyet="both"]').click());
+  await new Promise((r) => setTimeout(r, 60));
+  const one = await irises();
+  check('"Both Eyes" re-matches the pair immediately', one.l === one.r && one.eyeR === 'same',
+    one.l + '  (a mode switch that changed nothing until the next click would be the same bug wearing a hat)');
 
   // an old saved character opens as a person who resembles it
   const mig = await page.evaluate(() => {

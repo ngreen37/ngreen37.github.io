@@ -134,37 +134,36 @@
      Uniform: same size, same place, on every single face, which is what Nate meant by
      "keep the eye setup uniform so we can change eye color". A style that moved the
      eyes would mean the color picker showed you something different per hairstyle. */
-  function eyePair(inner, outer) {
+  /* ⚑ THE TWO-TONE IRIS IS GONE, AND THE TWO EYES ARE SEPARATE — 2026-08-04.
+     Nate: "Forget the outer eye — scrap it — change it to Both eyes as default and then an
+     option to modify left-eye and right-eye."
+
+     ⭐ IT IS THE SAME NUMBER OF COLORS POINTED AT SOMETHING A PERSON CAN SEE. The old pair
+     was inner ring + outer ring on ONE eye: two fills 1.95 units apart on an iris 3.7 units
+     across, which at the preview's resting size was a couple of pixels of difference and read
+     as one muddy color — the row was a control whose effect you had to be told about. The two
+     colors go to the two EYES now, which is a real thing (heterochromia), unmistakable at any
+     size, and still exactly two swatches to maintain.
+
+     ⚠ LEFT AND RIGHT ARE THE PICTURE'S, NOT THE CHARACTER'S. A portrait faces you, so the
+     character's own left eye is on your right — technically correct and completely wrong for
+     a customization panel, where the only honest promise is "the one you are pointing at
+     changes". `d = -1` is the eye drawn on the left of the picture and it is `left`.
+
+     ⭐ THE LIMBAL RING SURVIVED THE CUT and it is the detail doing the work: real irises are
+     edged in a darker version of their own color, and without it a flat disc reads as a
+     painted dot rather than an eye. Drawn INSIDE the outer edge (r 3.53, stroke 0.34) so the
+     iris footprint cannot grow — the sclera is only 4.6 tall and a bigger iris starts covering
+     its own outline. */
+  function eyePair(left, right) {
     var ey = n(CY + 1.5), ex = n(HW * 0.46), rx = 5.4, ry = 4.6;
     return [-1, 1].map(function (d) {
-      var x = n(CX + ex * d);
-      return '<g class="fa-eye">' +
+      var x = n(CX + ex * d), col = d < 0 ? left : right;
+      return '<g class="fa-eye fa-eye--' + (d < 0 ? 'l' : 'r') + '">' +
         '<ellipse class="fa-sclera" cx="' + x + '" cy="' + ey + '" rx="' + rx + '" ry="' + ry + '" fill="' + SCLERA + '" stroke="' + LINE + '" stroke-width="1.9"/>' +
-        // outward-in: each ring covers the one before it, so "two-tone" is just two fills
-        /* ⚑ RE-PROPORTIONED 2026-08-04 from a photograph of Nate's own eyes: "the inner ring
-           is brown and the outer ring is more prominent and is blue."
-
-           The structure was already right — pupil, inner ring, outer ring — but the shares
-           were not. The inner circle was r=2.05 against an iris of 3.7, so it owned 55% of
-           the iris RADIUS and 30% of its AREA: a big brown disc with a blue rim around it,
-           which is the opposite of the photo. In a real two-tone eye the second color is a
-           halo hugging the pupil and the outer color is the eye.
-
-           r=1.75 now — 47% of the radius, 14% of the area — so the outer color runs from
-           86% of the iris instead of 79%, and the bright band it paints goes 1.65 → 1.95
-           units wide before the limbal ring trims it back to 1.61.
-
-           ⭐ THE LIMBAL RING IS THE OTHER HALF OF "more prominent", and it is the detail that
-           makes a drawn eye read as an eye: real irises are edged in a darker version of
-           their own color, and without it a flat disc of blue reads as a painted dot. It is
-           drawn INSIDE the outer edge (r 3.53, stroke 0.34, straddling 3.36-3.70) so the
-           iris footprint does not grow — the sclera is only 4.6 tall and an iris any bigger
-           starts covering its own outline. It costs one element and applies to one-color
-           eyes too, which is why every eye on the site is sharper for it. */
-        '<circle class="fa-iris-outer" cx="' + x + '" cy="' + ey + '" r="3.7" fill="' + outer + '"/>' +
+        '<circle class="fa-iris" cx="' + x + '" cy="' + ey + '" r="3.7" fill="' + col + '"/>' +
         '<circle class="fa-limbal" cx="' + x + '" cy="' + ey + '" r="3.53" fill="none" stroke="' +
-          darken(outer, 0.45) + '" stroke-width="0.34"/>' +
-        '<circle class="fa-iris-inner" cx="' + x + '" cy="' + ey + '" r="1.75" fill="' + inner + '"/>' +
+          darken(col, 0.45) + '" stroke-width="0.34"/>' +
         '<circle class="fa-pupil" cx="' + x + '" cy="' + ey + '" r="1.05" fill="' + PUPIL + '"/>' +
         '<circle class="fa-glint" cx="' + n(x + 1.5) + '" cy="' + n(ey - 1.6) + '" r="0.95" fill="#ffffff" opacity="0.95"/>' +
         '</g>';
@@ -275,10 +274,12 @@
     var hairStyle = HAIR[o.hair] || HAIR.crop;
     var hc = (HAIRCOL[o.hairColor] || HAIRCOL.brown).c;
     var hk = darken(hc, 0.62);
-    var inner = (EYES[o.eye] || EYES.brown).c;
-    // 'same' — and the DEFAULT — means a one-color eye. Two-tone is opt-in, so a
-    // player who never opens that row gets an ordinary eye rather than a novelty one.
-    var outer = (!o.eyeOuter || o.eyeOuter === 'same') ? inner : (EYES[o.eyeOuter] || EYES[o.eye] || EYES.brown).c;
+    /* `eye` is BOTH eyes; `eyeR` overrides the right one. 'same' — and the default, and
+       anything unrecognised — means a matched pair, so a player who never opens the Left/Right
+       control gets an ordinary face rather than a novelty one. Two colors are opt-in for the
+       same reason the two-tone iris was: mismatched eyes are rare in life. */
+    var left = (EYES[o.eye] || EYES.brown).c;
+    var right = (!o.eyeR || o.eyeR === 'same') ? left : (EYES[o.eyeR] || EYES[o.eye] || EYES.brown).c;
     var h = hairStyle.f(hc, hk);
     var browCol = o.hair === 'bald' ? darken(S.s, 0.7) : hk;
 
@@ -290,7 +291,7 @@
       head(S) +
       h.front +
       brows(browCol, o.brow == null ? 0 : o.brow) +
-      eyePair(inner, outer) +
+      eyePair(left, right) +
       nose(S) +
       mouth(o.mouth == null ? 0 : o.mouth) +
       '</svg>';

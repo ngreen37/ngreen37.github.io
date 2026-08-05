@@ -111,22 +111,32 @@
 }
 .forge-close:hover { background: rgba(0,0,0,0.6); }
 .forge-preview-wrap { position: relative; z-index: 1; display: inline-block; margin: 4px auto 2px; }
-/* 104 -> 62. The whole avatar is built off this one custom property (the drawn face at
-   0.96, the headwear at 0.34, the emblem at 0.40), so the portrait, the hat and the badge
-   all scale together from this single number and none of them can drift. */
-.forge-preview-wrap .idn-av { --idn-size: 62px; }
+/* ⚑ 62 → 118 (2026-08-04, Nate: "Face should be enlarged for preview purposes").
+   THE THIRD TIME THIS NUMBER HAS MOVED, and the two earlier notes are both still right, so
+   here is the whole argument in one place rather than a fourth opinion:
+     104  the original — "the preview pops out, which is great, but tone it down a bit",
+          because at that size the panel opened on a portrait and you scrolled to reach a
+          control you came here to use.
+      62  too far the other way. One eye is 10.8 of the face's 100 SVG units, so 62px of
+          face is 6.7px of eye — and the eye is the thing being edited.
+     118  one eye lands at 12.7px, which is enough to read a color at a glance, and the
+          stage is still under a third of the panel so the first control is on screen.
+   The MAGNIFIER is what covers the rest of the range; it exists precisely so this number
+   does not have to serve both jobs. Everything is proportional to it — the drawn face at
+   0.96, the headwear at 0.34, the emblem at 0.40 — so one edit moves the portrait, the hat
+   and the badge together and none of them can drift. */
+.forge-preview-wrap .idn-av { --idn-size: 118px; }
 
 /* ── THE MAGNIFIER (2026-08-04) ───────────────────────────────────────────────
-   62px → 176px, and the whole avatar is built off `--idn-size` (face 0.96, headwear 0.34,
-   emblem 0.40), so one number moves the portrait, the hat and the badge together and none
-   of them can drift out of proportion. 2.8× takes a single eye from 6.7px to 19px, which is
-   the difference between "there is an eye there" and being able to see a brown inner ring
-   inside a blue outer one — which is the whole reason he asked.
+   118px → 220px. Inspection, not preview: one eye reaches 23.8px, where you can see which
+   of two greens you picked and whether the left and right actually differ. It stayed a
+   toggle rather than becoming the resting size for the reason in the block above — a
+   220px head is most of the first screen.
 
    The stage grows with it rather than the avatar overflowing: the padding goes up too, so
    the head still sits in a band instead of touching the tabs. */
 .forge-stage.zoom { padding: 12px 16px 18px; }
-.forge-stage.zoom .forge-preview-wrap .idn-av { --idn-size: 176px; }
+.forge-stage.zoom .forge-preview-wrap .idn-av { --idn-size: 220px; }
 .forge-stage.zoom .fp-name { font-size: 1.2rem; margin-top: 9px; }
 
 .forge-head-btns { display: flex; align-items: center; gap: 8px; }
@@ -205,6 +215,35 @@
 .forge-cell--face .fc-face .fa-svg { width: 46px; height: 46px; display: block; }
 
 /* color swatches (aura / tint) */
+/* ── THE SEGMENTED TARGET (2026-08-04) — "Both Eyes / Left / Right" ──────────────
+   Says WHICH thing the color row under it is about to change. Deliberately words rather
+   than swatches: it is not choosing a color, and a fourth circle in a row of circles would
+   read as one. Sits tight against the row below (margin-bottom 8) so the two read as one
+   control rather than as two sections that happen to be adjacent. */
+.forge-seg {
+  display: inline-flex; margin: 0 0 8px; padding: 2px; gap: 2px; border-radius: 999px;
+  background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.10);
+}
+.forge-seg-b {
+  border: 0; background: none; color: #cbbcf2; cursor: pointer; touch-action: manipulation;
+  font: 700 11px/1 inherit; letter-spacing: 0.02em; padding: 7px 13px; border-radius: 999px;
+  transition: background .12s, color .12s;
+}
+/* ⚠ MEASURED AT 29px TALL ON A 390px SCREEN in the first phone render — smaller than the
+   color swatches sitting right under it, which is the wrong way round for the control that
+   decides what those swatches do. 40px here, on touch only.
+   It does NOT go in `_pjcc-27-tap-targets.scss`: that partial expands a hit box with an
+   invisible ::after, and its own note warns that doing so to controls packed close together
+   just steals taps from the neighbor. These three have a row to themselves, so growing them
+   for real is both simpler and honest — nothing overlaps and the design does not have to be
+   guessed at from an invisible box. */
+@media (hover: none) {
+  .forge-seg-b { min-height: 40px; padding: 0 16px; }
+}
+@media (hover: hover) { .forge-seg-b:hover { color: #fff; background: rgba(255,255,255,0.08); } }
+.forge-seg-b.on { background: #F5C518; color: #1a0f3d; }
+.forge-seg-b:focus-visible { outline: 2px solid #F5C518; outline-offset: 2px; }
+
 .forge-sw-row { display: flex; flex-wrap: wrap; gap: 9px; }
 .forge-sw {
   width: 34px; height: 34px; border-radius: 50%; cursor: pointer; border: 2px solid transparent;
@@ -291,7 +330,14 @@
   .idn-av.spin .idn-glyph, .idn-av.spin .fa-svg { animation: none; }
 }
 @media (max-width: 520px) {
-  .forge-preview-wrap .idn-av { --idn-size: 54px; }
+  /* ⚑ 54 → 96 with the desktop bump (2026-08-04, "Face should be enlarged"). The phone
+     needs the same enlargement for the same reason — this is the screen he is actually on
+     ([[pwa-mobile-app]]) — but not the same NUMBER: a phone panel is the whole viewport, so
+     118px of head would push the first color row under the fold, which is the complaint the
+     62px pass was answering. 96px puts one eye at 10.4px, still legible, and the magnifier
+     is one tap away for anything closer. */
+  .forge-preview-wrap .idn-av { --idn-size: 96px; }
+  .forge-stage.zoom .forge-preview-wrap .idn-av { --idn-size: 190px; }
   .idn-card .idn-actions { flex-direction: row; width: 100%; }
 }
 
