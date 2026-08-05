@@ -284,8 +284,26 @@ body.theme-chess {
      lamp ever stands on paper again.) */
 }
 
-/* ══ THE SKY AND THE WEATHER STAND DOWN 30% — 2026-08-04 ══════════════════════════
-   Nate: "Try making the home page sky and rain/snow/elements 30% more transparent —
+/* ══ THE SKY AND THE WEATHER STAND DOWN AGAIN — 0.7 → 0.5, 2026-08-05 ═════════════
+   Nate: "Let's make the sky and weather 25% more transparent only on the Home screen.
+   It's still too prominent (another thing I've asked multiple times — let's over-do it if
+   we need to and scale it back if 25% isn't significant enough)."
+
+   ⭐ THE COMPOUNDING IS THE POINT, AND IT IS WHY THE LAST TWO PASSES FELT SMALL. 25% off is
+   25% of what is LEFT, not of what it started as: 1.0 → 0.7 → 0.525. Each pass is a smaller
+   real step than the one before it while the instruction sounds the same size, which is
+   exactly how a dial gets asked for three times. He said to over-do it, so this goes to
+   **0.5** — the storm is now half of what it was two days ago, and a round number is easier
+   to reason about than 0.525 the next time we move it.
+
+   ⚠ THE HONEST DESCRIPTION OF WHAT THIS DIAL DOES: it does NOT make the weather subtler, it
+   makes it FAINTER. Everything below is unchanged in shape and speed. If he asks again, the
+   next move is not another multiplier — 0.35 starts to erase the sky's day/dusk/night color
+   change, which is one of the few live things on the page. It would be fewer FLAKES (a count
+   in the engine) or a slower fall.
+
+   (The original note, kept because the reasoning still holds:)
+   "Try making the home page sky and rain/snow/elements 30% more transparent —
    it's still too distracting."
 
    FRONT DOOR ONLY. This is the one page that is a sheet of white paper with a storm
@@ -300,8 +318,8 @@ body.theme-chess {
    of these already carries an opacity that MEANS something: `.tw-ghost` is held at 0.17 by
    the weather engine, `.town-weather-overlay::before` fades its wash in and out on the
    forecast, `.ts-clouds` carries nine phase/cover values. An element cannot take a second
-   opacity, so the 0.7 rides the host and the two compose — 0.17 × 0.7 = 0.119 through the
-   glass, exactly 30% less of what was there. Same technique as THE SKY VEIL.
+   opacity, so the multiplier rides the host and the two compose — the ghost's 0.17 × 0.5 =
+   0.085 through the glass. Same technique as THE SKY VEIL.
 
    ⚠ AND IT IS A REAL TRADE, WORTH KNOWING WHEN HE ASKS AGAIN. The card's alpha was set to
    0.72 earlier the same day by MEASURING rain visibility through the sheet (see the
@@ -317,7 +335,7 @@ body.theme-chess {
 body.theme-chess .town-sky,
 body.theme-chess .town-weather-fall,
 body.theme-chess .town-weather-glass,
-body.theme-chess .town-weather-overlay { opacity: 0.7; }
+body.theme-chess .town-weather-overlay { opacity: 0.5; }
 
 /* ── the tabletop band ────────────────────────────────────────────────────────
    The one structural idea in the new layout: the hero sits on a surface, so the

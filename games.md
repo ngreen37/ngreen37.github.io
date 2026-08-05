@@ -164,7 +164,10 @@ permalink: /games/
 .gdoor-arch { width:72px; height:92px; }
 @media (max-width:480px){
   .gdoor { column-gap:12px; }
-  .gdoor-arch { width:58px; height:76px; }
+  /* ⚠ 58 → 59 (2026-08-05): 58/76 is 0.763, the second-worst proportion on the site after
+     the front door's. Same width the phone row always had, one pixel over, and the phone
+     door is now the same door as the desktop one to three decimal places. */
+  .gdoor-arch { width:59px; height:76px; }
 }
 
 /* the doorway row's own entrance animation (the .gdoor motion prefs live in the partial) */

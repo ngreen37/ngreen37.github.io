@@ -535,10 +535,12 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
     radial-gradient(circle 3px at 52% 49%, transparent 98%, #000 100%);
   -webkit-mask-composite: source-in;
   mask-composite: intersect;
-  /* TOP-RIGHT, and it is half of the brush — see the open rule at the foot of this block.
-     The cloth is gripped on the rod, so the pivot is ON the rod, not at the middle of the
-     panel where the old 84% 50% put it. */
-  transform-origin: 100% 0;
+  /* ⚑ TOP-LEFT — 2026-08-05, and it is half of the push. See the open rule at the foot of
+     this block. The cloth is HUNG ON THE ROD, so the one point that may never move is where
+     it is gathered to: the left end of the pole. `100% 0` (the 2026-08-04 value) pinned the
+     far corner and let the whole cloth travel, which is how the top edge ended up leaving
+     the rod. */
+  transform-origin: 0 0;
 }
 .gdoor[data-grand="0"] .gdoor-knob { display:none; }
 /* ⚑ SCALED, NOT RE-SIZED — 2026-08-04, the same uniformity pass. It was `font-size:26px`,
@@ -553,22 +555,37 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
   transform:translate(-50%,-50%) scale(0.8125); }
 .gdoor[data-grand="0"] .gdoor-seam { height:2px; box-shadow:0 -2px 10px 2px color-mix(in srgb, var(--acc) 38%, transparent); }
 .gdoor[data-grand="0"] .gdoor-door { transition:transform .5s cubic-bezier(.3,1.25,.4,1); }
-/* ⚑ THE BRUSH — 2026-08-04. "…and then the tattered cloth should brush to the side naturally."
-   ⭐ WHAT MAKES IT READ AS FABRIC IS THE SKEW, NOT THE DISTANCE. A plain `translateX` moves
-   the top edge and the hem by the same amount at the same instant, which is the definition of
-   a rigid panel — that is why the old version read as a shutter sliding rather than a curtain
-   being pushed. With the origin pinned to the rod, `skewX` makes the HEM LAG the top: the
-   cloth leans as it goes and straightens as it lands, which is what a hanging cloth does when
-   your arm goes through it. Picked from a five-candidate filmstrip rendered at 0 / 35 / 70 /
-   100% ([[pick-visual-values-from-a-render]]), because only the MIDDLE of the move tells you
-   whether it looks like cloth — the two ends of every candidate look identical.
-     · a `scaleX` "gather" variant compressed the tatters into narrow spikes, which is the same
-       daggers-not-fabric failure the hem's own shape had to be rescued from;
-     · a `rotate` variant tilted the whole cloth INCLUDING its top edge, so it read as the
-       curtain coming off the pole — exactly the thing this pass exists to stop.
-   -145%, not -100%: the skew throws the hem ~17px to the RIGHT as it goes, and at -100% that
-   trailing corner parked inside the arch. The distance is what the lean costs. */
-@include gd-open('[data-grand="0"]') { transform:translateX(-145%) skewX(11deg); }
+/* ⚑ THE PUSH — 2026-08-05. Nate: "that bar I asked to stay static up top — it IS static, but
+   the TOP OF THE TATTERED CLOTH should stay static as well. Think of a sheet being pushed
+   completely to the side."
+
+   ⭐ THE PREVIOUS ANSWER GOT THE FEEL RIGHT AND THE ANCHOR WRONG, AND THAT IS THE WHOLE
+   LESSON. 2026-08-04 fixed the ROD (it was a border, so it rode the cloth's transform) and
+   then gave the cloth `translateX(-145%) skewX(11deg)`. A translate moves EVERY point of an
+   element, the top edge included — so the rod stayed put and the cloth it was supposed to be
+   holding slid out from under it and off the left side. The pole was fixed; what hung from it
+   still flew away. **A thing that hangs from something cannot translate.**
+
+   So the motion is a GATHER, not a journey: `scaleX` about the LEFT END OF THE ROD. The
+   left corner is nailed to the pole and never moves an inch, the fabric bunches toward it,
+   and the doorway clears — which is what happens when you push a sheet on a rail to the side.
+   `skewX(12deg)` survives from the brush and does the same job it always did: with the origin
+   on the rod, it makes the HEM LAG the top, so the cloth leans into the push and settles
+   instead of snapping.
+
+   ⭐ AND THE "DAGGERS" OBJECTION FROM THE BRUSH PASS WAS ABOUT THE WRONG DISTANCE. A gather
+   was tried on 2026-08-04 and rejected because it "compressed the tatters into narrow spikes"
+   — true at a HALF gather, where the teeth are still large enough to read as teeth and are
+   simply wrong-shaped. At 0.22 they stop being teeth at all and read as the vertical FOLDS of
+   bunched cloth, which is correct. Picked from a six-candidate filmstrip at 0/33/66/100% and
+   then a five-value grid rendered at all three door sizes ([[pick-visual-values-from-a-render]]):
+     · 0.16 thinned to a fringe of strings at 46px;   · 0.28 left a fifth of the doorway blocked;
+     · a swing-only variant (skewX alone, top edge WHOLLY fixed) leaned the cloth ACROSS the
+       opening instead of out of it — the top was perfectly static and the door never opened,
+       which is the one thing this door is not allowed to do.
+   ⚠ NO TRANSLATE, EVER, ON THIS LEAF. That is the bug this rule exists to prevent, and
+   `tests/doors.check.js` 6 fails the build if one comes back. */
+@include gd-open('[data-grand="0"]') { transform:scaleX(0.22) skewX(12deg); }
 
 /* ── FLOOR SIX — THE AUDITOR'S DOOR (2026-07-22, Nate: "make it look like more of an
    auditor's door … the green looks odd, and it doesn't really open"). A frosted-glass
@@ -726,10 +743,10 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 
 /* ── THE SAME DOOR, INSIDE THE GAME (2026-07-27) ────────────────────────────────────
    The Gauntlet's challenger card stands this door over the rival's portrait and opens it
-   on a timer. Only THREE things differ from the hall, and all three live here so the game
-   and the site can never drift: the arch is see-through (the portrait IS what's behind it),
-   it doesn't respond to a pointer, and it carries no piece on the leaf. Everything else —
-   every floor treatment, the grandeur tiers, the seam, the open distance — is the same file.
+   on a timer. TWO things differ from the hall, and both live here so the game and the site
+   can never drift: it doesn't respond to a pointer, and it carries no piece on the leaf.
+   Everything else — the arch, every floor treatment, the grandeur tiers, the seam, the open
+   distance — is the same file, and now the same PICTURE.
 
    ⚑ NO PIECE ON THE LEAF — 2026-08-04. Nate: "The gauntlet in-game is different — remove
    the pawn."
@@ -740,9 +757,26 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
    pawn. A reveal that reveals what was already on the curtain is not a reveal, and it is the
    one place the door has something real to hide. The <b> stays in the markup (it is the
    shared shape and every other copy needs it); the game's own hydration no longer writes to
-   it. `visibility`, not `display`, so the leaf's layout is byte-identical to the hall's. */
+   it. `visibility`, not `display`, so the leaf's layout is byte-identical to the hall's.
+
+   ⚑⚑ AND THE PAWN WAS STILL THERE THE NEXT DAY — 2026-08-05, Nate: "I'm getting frustrated
+   that I'm asking that the 3 gauntlet doors be uniform and they still are not. The Gauntlet
+   in-game door has a pawn that needs to be removed."
+   ⭐ THE PIECE ON THE CURTAIN WAS HIDDEN; THE PIECE BEHIND IT WAS NOT. `background:transparent`
+   stood here so the portrait could show through the open doorway — and floor one's leaf is a
+   TATTERED CLOTH, the one leaf on the ladder you can see through. So the closed door was an
+   88px glowing pawn with a few rags hanging in front of it. Every other copy of this door
+   shows a lit, empty doorway when it is shut; this one showed the answer. It was the SAME BUG
+   as the glyph, one layer further back, and no amount of hiding things ON the leaf could
+   reach it, because the leaf was never what was showing.
+   **A door that is see-through is not a door.** The arch keeps its own background here now,
+   exactly like the other four copies, and the CHALLENGER — whose reveal this whole animation
+   is for — steps into the doorway once the cloth is aside (`.boss-stage.is-open` in
+   assets/games/pjcc_gauntlet.html, which owns WHERE the door stands and now also WHEN the
+   rival arrives). Closed, it is now pixel-for-pixel the games hall's door.
+   ⚠ That is also why the exception list here went from three items to two: the fewer
+   differences this block carries, the fewer places "uniform" can fail. */
 .gdoor--ingame { pointer-events:none; }
-.gdoor--ingame .gdoor-arch { background:transparent; }
 .gdoor--ingame .gdoor-glyph { visibility:hidden; }
 
 @media (prefers-reduced-motion: reduce) {

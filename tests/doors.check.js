@@ -75,6 +75,10 @@ const PARTIAL = read('_sass/_pjcc-21-gauntlet-door.scss');
   for (const b of blocks) {
     const t = (b.match(/transform\s*:\s*([^;}]+)/) || [, ''])[1];
     const label = (b.match(/gd-open\('([^']*)'\)/) || [, 'base'])[1] || 'base';
+    /* FLOOR ONE IS A CURTAIN AND OPENS LIKE ONE (2026-08-05) — it GATHERS to the left end
+       of its rod instead of traveling, so it has no distance to measure. "Fully open" for
+       a gather is how much of the doorway it clears, checked in its own block below. */
+    if (label === '[data-grand="0"]') continue;
     // slides and lifts must reach 100%; swings must reach 90deg
     const pcts = (t.match(/translate[XY]\(-?([\d.]+)%\)/g) || []).map((s) => parseFloat(s.replace(/[^\d.]/g, '')));
     const degs = (t.match(/rotateY\(-?([\d.]+)deg\)/g) || []).map((s) => parseFloat(s.replace(/[^\d.]/g, '')));
@@ -155,7 +159,11 @@ const PARTIAL = read('_sass/_pjcc-21-gauntlet-door.scss');
 {
   const FILES = ['_sass/_pjcc-21-gauntlet-door.scss', 'games.md', 'index.md',
                  'assets/games/pjcc_gauntlet.html'];
-  const CANON = 0.78, TOL = 0.02;
+  /* ⚠ TOL 0.02 → 0.01 (2026-08-05). Two copies were living inside the old tolerance —
+     the front door at 0.767 and the games hall's phone door at 0.763 — which is to say the
+     tolerance had become the place the drift hid. Every declared arch is within 0.004 now,
+     so halving it costs nothing today and catches the next slip while it is still one line. */
+  const CANON = 0.78, TOL = 0.01;
   const bad = [], seen = [];
   for (const f of FILES) {
     const src = read(f);
@@ -172,15 +180,28 @@ const PARTIAL = read('_sass/_pjcc-21-gauntlet-door.scss');
   }
   check('every declared arch holds the canonical proportion', bad.length === 0 && seen.length >= 4,
     bad.length ? bad.join(' | ') + '   ← height should be width ÷ 0.78'
-               : seen.length + ' arches, all 0.78 ± 0.02');
+               : seen.length + ' arches, all ' + CANON + ' ± ' + TOL);
 }
 
-/* ── 6. THE POLE STAYS STILL ────────────────────────────────────────────────────────
-   "The pole holding the tattered cloth up should stay still and then the tattered cloth
-   should brush to the side naturally." The rod was `border-top` ON the cloth, so it took
-   the cloth's transform and slid away with it every time the door opened. A border cannot
-   be left behind — the only fix is for the rod to be a different element. Both halves are
-   asserted, because putting the new rod in without taking the border out would draw two. */
+/* ── 6. THE POLE STAYS STILL — AND SO DOES THE TOP OF THE CLOTH ─────────────────────
+   Two of his notes, a day apart, and the second one exists because the first fix was only
+   half a fix:
+
+     2026-08-04  "The pole holding the tattered cloth up should stay still and then the
+                  tattered cloth should brush to the side naturally."
+     2026-08-05  "That bar I asked to stay static up top — it IS static, but the top of the
+                  tattered cloth should stay static as well. Think of a sheet being pushed
+                  completely to the side."
+
+   The rod was a `border-top` ON the cloth, so it rode the cloth's transform and slid away
+   with the fabric; that is asserted below from both sides, because adding the new rod
+   without removing the border would simply draw two of them.
+
+   ⭐ THEN THE CLOTH ITSELF GOT `translateX(-145%)`, WHICH MOVES EVERY POINT OF AN ELEMENT —
+   the top edge included. The pole stayed and the thing hanging from it flew off to the left.
+   So the rule this block really enforces is: **the floor-one leaf may not translate.** It
+   gathers (`scaleX`) about the LEFT END OF THE ROD, which is the one point that is nailed
+   down, and the gather must clear most of the doorway or the door reads as stuck. */
 {
   const cloth = /\.gdoor\[data-grand="0"\] \.gdoor-door \{([\s\S]*?)\n\}/.exec(PARTIAL);
   check('floor one\'s cloth rule was found', !!cloth);
@@ -193,17 +214,36 @@ const PARTIAL = read('_sass/_pjcc-21-gauntlet-door.scss');
     'nothing transforms .gdoor-arch::before, so the pole stays put');
 
   const open = /@include gd-open\('\[data-grand="0"\]'\)\s*\{([^}]*)\}/.exec(PARTIAL);
-  check('the cloth brushes rather than slides flat', !!open && /skewX\(/.test(open[1]),
-    open ? open[1].trim() : 'no floor-one open rule');
-  check('…and it pivots on the rod, not on the middle of the panel',
-    /\.gdoor\[data-grand="0"\] \.gdoor-door \{[\s\S]*?transform-origin:\s*100% 0;/.test(PARTIAL));
+  const t = open ? open[1] : '';
+  check('the cloth is anchored to the left end of the rod',
+    /\.gdoor\[data-grand="0"\] \.gdoor-door \{[\s\S]*?transform-origin:\s*0 0;/.test(PARTIAL),
+    'transform-origin: 0 0 — the corner that hangs on the pole');
+  check('THE TOP OF THE CLOTH STAYS PUT — no translate on the leaf', !!open && !/translate/.test(t),
+    t.trim() || 'no floor-one open rule',
+  );
+  const sc = /scaleX\(([\d.]+)\)/.exec(t);
+  check('…it GATHERS to the side like a sheet being pushed', !!sc, t.trim());
+  if (sc) {
+    check('…and the gather clears the doorway', +sc[1] <= 0.25,
+      'the bunched cloth leaves ' + Math.round((1 - +sc[1]) * 100) + '% of the opening clear (needs ≥ 75%)');
+  }
+  check('…leaning as it goes, so it reads as fabric and not a shutter', /skewX\(/.test(t), t.trim());
 }
 
 /* ── 7. IN THE GAME, THE DOOR HIDES SOMETHING ──────────────────────────────────────
    "The gauntlet in-game is different — remove the pawn." The challenger portrait behind the
    door IS rung.glyph, so painting the same piece on the curtain meant the reveal revealed
    what was already on show. Asserted from both sides: the partial hides it, and the game no
-   longer writes to it (a live assignment would be the tell that someone put it back). */
+   longer writes to it (a live assignment would be the tell that someone put it back).
+
+   ⚑ AND HE HAD TO SAY IT TWICE (2026-08-05: "the Gauntlet in-game door has a pawn that needs
+   to be removed"), because hiding the piece ON the leaf never touched the piece BEHIND it.
+   `.gdoor--ingame .gdoor-arch { background:transparent }` used to stand in the partial so the
+   portrait would show through the open doorway — which works for nine leaves and fails for
+   floor one's TATTERED CLOTH, the one leaf you can see through. A shut door was a glowing
+   88px pawn with rags in front of it. The arch is opaque in-game now, like every other copy,
+   and the portrait steps THROUGH the doorway once it is open. Both halves are gated: the
+   partial may not blank the arch, and the game must own the arrival. */
 {
   check('the in-game leaf carries no piece',
     /\.gdoor--ingame \.gdoor-glyph \{[^}]*visibility:\s*hidden/.test(PARTIAL),
@@ -212,6 +252,16 @@ const PARTIAL = read('_sass/_pjcc-21-gauntlet-door.scss');
   check('…and the game stopped setting it',
     !/^\s*if \(gg\) gg\.textContent/m.test(game),
     'showBossCard no longer writes the boss glyph onto the curtain');
+
+  check('the in-game arch is NOT see-through',
+    !/\.gdoor--ingame \.gdoor-arch \{[^}]*background:\s*transparent/.test(PARTIAL),
+    'floor one\'s cloth is see-through, so a see-through arch shows the challenger before the reveal');
+  check('…so the challenger arrives WITH the door instead of waiting behind it',
+    /\.boss-stage\.is-open \.boss-portrait \{[^}]*opacity:\s*1/.test(game) &&
+    /\.boss-stage \.boss-portrait \{[^}]*opacity:\s*0/.test(game),
+    'hidden while shut, revealed on .boss-stage.is-open');
+  check('…and showBossCard actually flips that class', /stage\.classList\.add\('is-open'\)/.test(game),
+    'the CSS above is dead without it — the portrait would never appear');
 }
 
 /* ── 8. A CALLER MAY SET SIZE AND NOTHING ELSE ──────────────────────────────────────

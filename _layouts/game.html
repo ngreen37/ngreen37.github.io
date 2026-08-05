@@ -25,6 +25,37 @@
       margin: 0;
     }
 
+    /* ══ A PHONE HELD SIDEWAYS (2026-08-05 phone pass) ═══════════════════════════════
+       Measured, not guessed: at 844x390 — an ordinary phone in landscape — the title,
+       the page description and the gold rule eat 190 of the 390 available pixels, and the
+       game cabinet starts BELOW THE FOLD on every one of the sixteen game pages. In
+       portrait the same furniture is 190 of 844 and reads as a proper page header, which is
+       why nothing looked wrong until the viewport was measured on its side.
+
+       ⚠ THE DESCRIPTION IS THE PART THAT HAS TO GO, and it costs nothing to lose HERE
+       because the game says the same thing better one inch further down: every shell opens
+       on its own home screen with its own title and blurb. On a screen this short the page
+       was printing the introduction twice before showing the thing being introduced. It is
+       untouched in portrait, on desktop, and in the DOM — search engines and screen readers
+       read source order, not a media query.
+
+       ⚠ SCOPED WITH `pointer: coarse` AS WELL AS THE HEIGHT. A short viewport is also a
+       laptop with the dev tools open, and there the header is fine — the question being
+       asked is "is this a phone on its side", and only the finger answers it.
+
+       ⚠ WHAT THIS DOES NOT FIX, and it is worth knowing: the iframe is still 520px tall
+       (per-game shells set their own), so on a 390px-tall screen the BOARD itself is still
+       taller than the window. Fixing that properly means sizing each game's stage off the
+       viewport height the way /games/the-gauntlet/ already does, and every shell has a
+       different canvas aspect — it is a per-game pass, not a shared rule.
+       Measured on the live pages at 844x390, cabinet top before → after:
+       the Gauntlet 195 → 118, Puzzles 195 → 118, Sand Mine 172 → 118. */
+    @media (max-height: 560px) and (orientation: landscape) and (pointer: coarse) {
+      .game-page-header { padding: 0.5rem 0 0.4rem; margin-bottom: 0.7rem; }
+      .game-page-header h1 { font-size: 1.1rem; }
+      .game-page-header p { display: none; }
+    }
+
     /* The "front window" — a glowing arcade-cabinet bezel around every game. */
     .game-frame-wrap {
       position: relative;

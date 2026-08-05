@@ -71,3 +71,66 @@
     white-space: nowrap;
   }
 }
+
+/* ══ ROUND TWO — THE THINGS YOU FILL IN AND PRESS (2026-08-05 phone pass) ═══════════
+   A second 390px sweep of fourteen live pages. The headline is that it found almost
+   nothing: zero horizontal overflow, zero console errors, zero missing alt — the chrome
+   above is holding.
+
+   ⭐ AND IT NEARLY REPORTED THE CHROME AS BROKEN ALL OVER AGAIN. `getBoundingClientRect`
+   measures the VISIBLE box, and the fix above deliberately leaves that alone and expands an
+   invisible `::after` underneath it — so the probe read the search pill at 38x40 and the
+   hamburger at 46x40 and called four site-wide defects that do not exist. Reading the
+   pseudo-element's own `min-width`/`min-height` puts all four back at 44x44.
+   [[audit-numbers-can-be-wrong]] — PROVE THE INSTRUMENT BEFORE YOU REPORT THE BUG, and for
+   a fix that lives in a pseudo-element that means the probe has to know about pseudo-elements.
+
+   ⚠ WHAT SURVIVED IS A DIFFERENT KIND OF CONTROL, AND IT WANTS THE OPPOSITE FIX. The four
+   above are CHROME: small on purpose, so they get an invisible hit box and keep their looks.
+   These four are things you aim at and dwell on — two text inputs you have to place a cursor
+   in and two buttons that are the whole point of the card they sit on. For those the visible
+   box IS the target; a 40px field with a 44px ghost around it still reads as small and still
+   feels fiddly to type in. So these genuinely grow.
+
+     .pjcc-input     199 x 40   the email field in every sign-in surface
+     .pt-in          226 x 41   the Park Tables gate's email field
+     .idn-edit-btn    67 x 34   "Tweak" / "✦ Customize" on /dossier/
+     .hello-copy      67 x 34   "Copy" on /contact/
+
+   ⚠ TWO OF THEM ARE STYLED IN A PAGE'S OWN <style>, WHICH SITS IN THE BODY AND THEREFORE
+   BEATS THIS FILE ON A TIE. `.hello-copy` even declares `min-height: 32px` itself. A media
+   query carries NO specificity ([[front-door-palette]]), so wrapping this in `(pointer:
+   coarse)` does not help — the tag qualifier is what wins, and it is why these two are
+   written `button.hello-copy` / `input.pt-in` rather than as bare classes.
+
+   ⚠ NOT ON THIS LIST, AND ON PURPOSE:
+     · `.ghub-reset` (211x26, /games/) — "↺ Reset Local Game Progress" wipes a climb. A
+       control that undoes work is allowed to be hard to hit; enlarging its target is the
+       one change here that would make the site worse.
+     · `.hb-mark` at 43x43 — one pixel under. A near-miss by 1 is a smell, not a finding.
+     · `.tg-x` at 3.6x19 on /pjcc/ — that is the hidden "i" in "making" that opens
+       /classified/. It is `aria-hidden`, `tabindex="-1"`, and being nearly invisible is the
+       entire point. A future sweep must not "fix" the easter egg. */
+@media (pointer: coarse) {
+  .pjcc-input,
+  input.pt-in {
+    min-height: 44px;
+  }
+  .idn-edit-btn,
+  button.hello-copy {
+    min-height: 44px;
+  }
+
+  /* ⚠ ONE EXCEPTION, AND THE RENDER IS WHAT FOUND IT. "Tweak" is not a button standing on
+     a card — it is a chip INSIDE the companion pill ("🐶 Pup [Tweak]"), and a 44px box in a
+     ~50px pill pushed its rounded ends out through the pill's own edge, top and bottom. So
+     this one keeps the chrome treatment from the top of this file: the visible chip is left
+     exactly as it was and the finger gets the invisible 44px underneath.
+     (0,2,0) so it outranks the rule immediately above it. */
+  .idn-pet-chip .idn-edit-btn { min-height: 0; position: relative; }
+  .idn-pet-chip .idn-edit-btn::after {
+    content: ''; position: absolute; top: 50%; left: 50%;
+    width: 100%; height: 100%; min-width: 44px; min-height: 44px;
+    transform: translate(-50%, -50%); pointer-events: auto;
+  }
+}

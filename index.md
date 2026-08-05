@@ -823,7 +823,11 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    now (`container-type: inline-size` + cqw), so this caller states its SIZE and the door
    takes care of being the same door. The old 19px was the partial's 32 × 46/78; the
    container arithmetic produces 18.9 on its own. See _sass/_pjcc-21-gauntlet-door.scss. */
-.mc-door--gauntlet .gdoor-arch { width: 46px; height: 60px; }
+/* ⚠ 60 → 59 (2026-08-05). height = width ÷ 0.78, and 46/60 was 0.767 — inside the test's
+   ±0.02 tolerance and still the worst-proportioned copy on the site. "Uniform is key" has
+   been asked for four times; a tolerance is a place for drift to hide, so every declared
+   arch is now within 0.004 of canon and tests/doors.check.js holds it to ±0.01. */
+.mc-door--gauntlet .gdoor-arch { width: 46px; height: 59px; }
 .mc-door--gauntlet .gdoor-pips { gap: 2px; }
 .mc-door--gauntlet .gdoor-pips i { width: 4px; height: 4px; background: rgba(30, 35, 44, 0.18); }
 /* ⚑ HOVERING THE CARD OPENS THE DOOR — AND NOT ONE TRANSFORM LIVES HERE (2026-08-04).
