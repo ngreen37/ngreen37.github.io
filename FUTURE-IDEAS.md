@@ -21,7 +21,7 @@ combination** over new surface area.
 
 *The standing list of things **only he can do** (an account he owns, a decision that's his to make, a
 name he has to pick). Kept here so an ended session never loses them. None are on fire; they just have
-to live somewhere. Cross one off by deleting the line. Last swept **2026-08-04**.*
+to live somewhere. Cross one off by deleting the line. Last swept **2026-08-05**.*
 
 ## 📋 THE SIX — the whole list, in one screen
 
@@ -79,6 +79,11 @@ mcpuppystudios.com 301s **with the path preserved** (`/pjcc/` → `chesswild.com
   instead of a `<div>` with a click handler, which removes the heuristic Safari was probably
   getting wrong (and closes an accessibility hole — the whole Forge was mouse-only). **If it
   still takes two taps, tell me and I will stop guessing and instrument the live page.**
+  ⚑ 2026-08-05 — **half of this is now definitely answered and it was not the platform.** The
+  *pickers* really did run one click behind, signed in only: `identity()` was painting the
+  600ms-debounced ACCOUNT copy back over the local one, so every choice showed the previous
+  choice. Fixed and gated. **What is still open is only the Customize BUTTON itself** — does
+  the panel open on the first tap on your iPhone?
 - [ ] **5 · Sanity-check one reading of your front-door batch.** *"Make a Games Hall box and put it
   in the play now box"* — I read that as: Play Now was promoted out of the four-door grid into
   the big green box above, so **Games Hall took the slot Play Now vacated**. If you meant Games
