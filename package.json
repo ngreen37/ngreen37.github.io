@@ -19,6 +19,7 @@
     "gen:splash": "node tests/gen-ios-splash.js",
     "gen:favicon": "node tests/gen-favicon.js",
     "gen:clock": "node tests/gen-clock.js",
+    "gen:puzzles": "node tests/gen-front-puzzles.js",
     "test:chess": "node tests/chess.check.js",
     "test:accuracy": "node tests/validate-chess.js",
     "test:gauntlet": "node tests/gauntlet.check.js",

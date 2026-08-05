@@ -108,9 +108,45 @@ body.theme-chess {
 
      ⚠ THE INK MOVED WITH IT — see the note below. Three tokens had to darken, and one of them
      was ALREADY FAILING before this change. */
-  --surface:   rgba(251, 250, 247, 0.72);
-  --surface-2: #f4f2ec;
-  --edge:      #e5e1d8;
+  /* ⚑⚑ THE SHEET IS PARCHMENT NOW — 2026-08-04, FIFTH pass. CURRENT.
+     Nate: "Make the white box bigger and give it a slightly different color."
+
+     ⭐ THE COLOR CHANGE COULD NOT BE MADE AT 0.72, AND THAT IS THE INTERESTING PART.
+     A translucent sheet is not the color you type — it is that color composited over the
+     sky — so tinting it AT ALL makes it darker, and at 0.72 there was no room left to get
+     darker. Measured, six candidate tints, all at the untouched 0.72, `--fd-ink-3` on the
+     night sky:
+
+         warm white 251,250,247  4.66  ✓  ← the one we already had, and the lightest
+         sage       243,249,243  4.56  ~
+         warm linen 252,246,230  4.52  ~  ← 0.02 over the line is not a margin
+         cool paper 240,246,253  4.48  ✗
+         oat        248,243,231  4.42  ✗
+         parchment  250,242,222  4.38  ✗
+
+     Every tint that reads as a DIFFERENT color fails AA at that alpha, and the two that
+     pass do so by less than the width of the measurement. The alpha and the hue are not
+     independent dials on a translucent panel: **you cannot tint a see-through sheet without
+     buying the darkness back somewhere**, and the only place to buy it is the alpha.
+
+     So the sheet is `rgba(251,243,224,0.78)` — a real warm parchment instead of a
+     near-neutral white, and the six points of alpha are what pay for it (ink-3 lands at
+     5.16, a margin rather than a rounding error). Picked from a labelled six-candidate
+     render against the real night sky, per [[pick-visual-values-from-a-render]], because at
+     0.72 the current sheet does not look white at all — it looks gray-lavender, which is the
+     sky coming through, and THAT is what he was reacting to.
+     ⚠ It costs a little of what the 0.72 pass bought: rain is slightly less visible through
+     the card than it was this morning. He asked for the weather to be quieter in the same
+     breath (see the 30% block further down), so the two changes agree — but they are two
+     dials pulling on one picture and moving either one moves the other's result.
+
+     THE FOUR OPAQUE PANELS MOVED WITH IT, and they had to. `--fd-panel` / `--fd-panel-hi`
+     are the door cards; leaving them at their cool off-white while the sheet went warm would
+     have put four visibly COLDER islands on warm paper, which reads as a bug rather than as a
+     palette. Warmed by the same amount; every ink token keeps 8:1 or better on both. */
+  --surface:   rgba(251, 243, 224, 0.78);
+  --surface-2: #f6f0e2;
+  --edge:      #e6dfcd;
   --lift:      0 18px 50px rgba(0, 0, 0, 0.45);
 
   /* the ink — warm near-blacks, three steps.
@@ -164,10 +200,12 @@ body.theme-chess {
   --fd-ink-2: #333944;
   --fd-ink-3: #404650;
 
-  /* structure */
-  --fd-rule:  #e5e1d8;
-  --fd-panel: #f7f5f0;
-  --fd-panel-hi: #f0ede5;
+  /* structure — warmed 2026-08-04 with the sheet, so the page stays ONE paper. Measured
+     after: the darkest of them (--fd-panel-hi) still gives --fd-ink-3 8.01:1 and the
+     decorative walnut 4.94:1, so nothing here was living near a line. */
+  --fd-rule:  #e6dfcd;
+  --fd-panel: #f9f4e9;
+  --fd-panel-hi: #f2ebdc;
 
   /* the one color with a job */
   --fd-go:    #2e7d47;   /* the button. 5.1:1 with white — AA for normal text, and
@@ -210,6 +248,22 @@ body.theme-chess {
 
   .page-card { background: var(--surface); }
 
+  /* ══ THE BOX GOT BIGGER — 2026-08-04 ("Make the white box bigger…") ══════════════
+     Two moves, because "bigger" has two halves and only doing one of them looks wrong:
+
+     1. WIDER. `.wrapper` caps every page at 1100px (_pjcc-01-core.scss), which put the card
+        at 1044px on a 1440 screen. Front door only: 1100 → 1260, so the sheet is 1204px and
+        the desk it sits on reads as a desk. It is still a MAX — every screen narrower than
+        that is unchanged, and the phone layout never sees this rule at all.
+        ⚠ Scoped to this page's wrapper and nothing else. The 1100 is a site-wide reading
+        measure and widening it everywhere would stretch every line of body copy on the site
+        past the point where the eye finds the next line.
+     2. DEEPER. Padding 36/44 → 44/56. A box that only grows sideways doesn't look bigger,
+        it looks stretched — the content has to get more room around it too, and the tabletop
+        band's negative bleed is matched below so it still reaches the card's edges. */
+  .page-content .wrapper { max-width: 1260px; }
+  .page-card { padding: 44px 56px; }
+
   /* ⚠ FIXING `a` IS NOT ENOUGH — THE PURPLE COMES BACK THROUGH INHERITANCE (2026-08-04).
      The `:not([class])` guard above deliberately spares this page's own link rules, but
      that leaves every CLASSED anchor on the global `a { color: #a78bfa }` — and its
@@ -230,6 +284,41 @@ body.theme-chess {
      lamp ever stands on paper again.) */
 }
 
+/* ══ THE SKY AND THE WEATHER STAND DOWN 30% — 2026-08-04 ══════════════════════════
+   Nate: "Try making the home page sky and rain/snow/elements 30% more transparent —
+   it's still too distracting."
+
+   FRONT DOOR ONLY. This is the one page that is a sheet of white paper with a storm
+   behind it and a ghost of that storm painted over it; /pjcc/ and the world pages ARE
+   the town, and dimming their weather would be taking the thing away rather than turning
+   it down. `theme-bw` / `theme-studio` already hide all three layers outright a few
+   hundred lines up in _pjcc-20-town-sky.scss — this is the same idea at a third of the
+   strength, and it uses the same list of layer names, which is the list that must be kept
+   complete or a layer comes back at full volume with nothing to say so.
+
+   ⚠ ONE MULTIPLIER, APPLIED TO EACH LAYER'S HOST — never to the thing inside it. Every one
+   of these already carries an opacity that MEANS something: `.tw-ghost` is held at 0.17 by
+   the weather engine, `.town-weather-overlay::before` fades its wash in and out on the
+   forecast, `.ts-clouds` carries nine phase/cover values. An element cannot take a second
+   opacity, so the 0.7 rides the host and the two compose — 0.17 × 0.7 = 0.119 through the
+   glass, exactly 30% less of what was there. Same technique as THE SKY VEIL.
+
+   ⚠ AND IT IS A REAL TRADE, WORTH KNOWING WHEN HE ASKS AGAIN. The card's alpha was set to
+   0.72 earlier the same day by MEASURING rain visibility through the sheet (see the
+   --surface note above; 0.72 is the knee of that curve). Dimming the storm 30% gives back
+   part of what that pass bought. He asked for the storm to be quieter after seeing both,
+   so the newer instruction wins — but the two dials pull against each other and the next
+   person to touch either should know that.
+
+   ⚠ THE SKY'S OWN GRADIENT IS ALSO ON THIS LIST, and "transparent" there means it composites
+   toward `body`'s flat #0f0c1a. Night barely moves (it is nearly that color already); DAY is
+   where you see it, and that is the right place to see it, because a bright noon blue behind
+   a white sheet is the loudest this page ever gets. */
+body.theme-chess .town-sky,
+body.theme-chess .town-weather-fall,
+body.theme-chess .town-weather-glass,
+body.theme-chess .town-weather-overlay { opacity: 0.7; }
+
 /* ── the tabletop band ────────────────────────────────────────────────────────
    The one structural idea in the new layout: the hero sits on a surface, so the
    page opens on something that reads as a TABLE rather than as a section of a
@@ -242,8 +331,12 @@ body.theme-chess {
    see ([[css-perf-lessons]] #7). It is not the page to add an ambient layer to. */
 body.theme-chess .mc-table {
   position: relative;
-  margin: -36px -44px var(--space-6, 32px);
-  padding: 40px 44px 36px;
+  /* ⚠ THE BLEED TRACKS .page-card's PADDING AND MUST BE EDITED WITH IT. It was -36/-44 to
+     cancel 36px/44px; the card went to 44px/56px on 2026-08-04 ("make the white box bigger")
+     and a band still pulling -44px would have left a 12px gutter of bare sheet down each side
+     of the tabletop, which reads as a misaligned panel rather than as a full-bleed surface. */
+  margin: -44px -56px var(--space-6, 32px);
+  padding: 48px 56px 36px;
   border-bottom: 1px solid var(--fd-rule);
   border-radius: var(--r-lg, 16px) var(--r-lg, 16px) 0 0;
   /* on paper the "pool of warm light" is the other way up: the band is a shade WARMER
@@ -279,8 +372,19 @@ body.theme-chess .mc-table::before {
 }
 
 @media (max-width: 700px) {
-  /* .page-card drops to 24px/20px down here (_pjcc-01-core.scss), so the bleed has
-     to match or the band pulls away from the card's edges on one axis. */
+  /* ⚠⚠ THIS FIRST RULE IS NOT COSMETIC — IT UNDOES A REAL BUG THE "BIGGER BOX" PASS CAUSED,
+     and the shape of it is worth keeping. _pjcc-01-core.scss drops `.page-card` to 24px/20px
+     inside a `@media (max-width:700px)`, but a media query CARRIES NO SPECIFICITY: the new
+     `body.theme-chess .page-card { padding:44px 56px }` above is (0,2,0) against core's flat
+     (0,1,0), so it won the phone too and every phone got 56px of side padding. Measured on a
+     390px screen: 56px, not 20px — a 112px bite out of a 350px column, which crushed the door
+     cards into one-word-per-line and was visible in the very first phone render.
+     THE LESSON: a desktop-shaped override that is MORE SPECIFIC than a mobile rule silently
+     becomes a mobile rule. Any new `.page-card` rule needs its phone half written in the
+     same breath. */
+  body.theme-chess .page-card { padding: 24px 20px; }
+  /* …and the bleed has to match that padding exactly or the band pulls away from the card's
+     edges on one axis. */
   body.theme-chess .mc-table {
     margin: -24px -20px var(--space-5, 24px);
     padding: 26px 20px 24px;

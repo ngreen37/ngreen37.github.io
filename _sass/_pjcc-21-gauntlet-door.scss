@@ -439,9 +439,32 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
    ⚠ It is all PERCENTAGES, so the same shape serves the canonical 78×100 door, the games
    hall's 72×92, and the front door's 46×60 without a second version existing anywhere. */
 .gdoor[data-grand="0"] .gdoor-arch { border-color:rgba(245,197,24,0.38); box-shadow:0 0 18px -10px var(--acc); }
+
+/* ⚑ THE ROD IS ITS OWN THING NOW — 2026-08-04 ══════════════════════════════════════════
+   Nate: "The pole holding the tattered cloth up should stay still and then the tattered
+   cloth should brush to the side naturally."
+
+   THE BUG WAS ONE LINE, AND IT WAS A LINE THAT LOOKED RIGHT: the rod was
+   `border-top:3px solid` ON THE CLOTH. A border is part of the element, so it inherited the
+   element's transform — every time the door opened, the pole slid off to the left with the
+   fabric, which is not something a pole does. Nobody notices at rest, and it is unmissable
+   the moment the thing moves.
+
+   So the rod moves to `.gdoor-arch::before` — a sibling of the cloth that nothing transforms.
+   Its `left/right/top` are the CLOTH'S OWN NUMBERS, not new ones, so the two stay registered
+   at every size the arch is used at (78, 72, 58, 46 and 100 across the site) with no second
+   set of values to keep in sync. z-index:2 puts it over the cloth, so the fabric reads as
+   hanging BEHIND the pole rather than glued to the front of it.
+   ⚠ `.gdoor-arch::before` was free; `::after` is the grandeur crown and must stay free. */
+.gdoor[data-grand="0"] .gdoor-arch::before {
+  content:''; position:absolute; left:7px; right:7px; top:12px; height:3px;
+  z-index:2; border-radius:2px; pointer-events:none;
+  background:linear-gradient(180deg, #8f6c42, #6b4f2e);
+  box-shadow:0 1px 2px rgba(0,0,0,0.45);
+}
 .gdoor[data-grand="0"] .gdoor-door {
   left:7px; right:7px; top:12px;
-  border:0; border-top:3px solid rgba(122,94,58,0.8);
+  border:0;                       /* the rod used to be a border-top here — see above */
   border-radius:3px 3px 0 0;
   background:
     linear-gradient(100deg, rgba(0,0,0,0) 30%, rgba(58,38,16,0.35) 36%, rgba(0,0,0,0) 43%),
@@ -476,16 +499,40 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
     radial-gradient(circle 3px at 52% 49%, transparent 98%, #000 100%);
   -webkit-mask-composite: source-in;
   mask-composite: intersect;
-  transform-origin: 84% 50%;
+  /* TOP-RIGHT, and it is half of the brush — see the open rule at the foot of this block.
+     The cloth is gripped on the rod, so the pivot is ON the rod, not at the middle of the
+     panel where the old 84% 50% put it. */
+  transform-origin: 100% 0;
 }
 .gdoor[data-grand="0"] .gdoor-knob { display:none; }
-.gdoor[data-grand="0"] .gdoor-glyph { font-size:26px; opacity:0.55; filter:none; color:#3a2612; }
+/* ⚑ SCALED, NOT RE-SIZED — 2026-08-04, the same uniformity pass. It was `font-size:26px`,
+   an ABSOLUTE size on a door that ships at five widths, so the piece was a different share of
+   its own door on every page: measured at floor one, 26/78 = 0.333 on the splash but 26/72 =
+   0.361 in the games hall, because the hall's own `.gdoor-glyph { font-size:29px }` is (0,1,0)
+   and this rule is (0,3,0) — the hall could resize every OTHER floor's piece and never this
+   one. A `scale()` multiplies whatever size the caller set, so the ratio is now the same
+   everywhere by construction and no caller has to know about floor one at all. Same trick as
+   floor eight's bishop, and the same reason. 0.8125 = the old 26 ÷ the base 32. */
+.gdoor[data-grand="0"] .gdoor-glyph { opacity:0.55; filter:none; color:#3a2612;
+  transform:translate(-50%,-50%) scale(0.8125); }
 .gdoor[data-grand="0"] .gdoor-seam { height:2px; box-shadow:0 -2px 10px 2px color-mix(in srgb, var(--acc) 38%, transparent); }
 .gdoor[data-grand="0"] .gdoor-door { transition:transform .5s cubic-bezier(.3,1.25,.4,1); }
-/* -58% → -100%: the cloth is swept fully aside. It swings from `transform-origin: 84% 50%`,
-   so it pivots off its right-hand edge like a curtain being pulled back, and the little
-   overshoot in the easing keeps the fabric feeling light. */
-@include gd-open('[data-grand="0"]') { transform:translateX(-100%); }
+/* ⚑ THE BRUSH — 2026-08-04. "…and then the tattered cloth should brush to the side naturally."
+   ⭐ WHAT MAKES IT READ AS FABRIC IS THE SKEW, NOT THE DISTANCE. A plain `translateX` moves
+   the top edge and the hem by the same amount at the same instant, which is the definition of
+   a rigid panel — that is why the old version read as a shutter sliding rather than a curtain
+   being pushed. With the origin pinned to the rod, `skewX` makes the HEM LAG the top: the
+   cloth leans as it goes and straightens as it lands, which is what a hanging cloth does when
+   your arm goes through it. Picked from a five-candidate filmstrip rendered at 0 / 35 / 70 /
+   100% ([[pick-visual-values-from-a-render]]), because only the MIDDLE of the move tells you
+   whether it looks like cloth — the two ends of every candidate look identical.
+     · a `scaleX` "gather" variant compressed the tatters into narrow spikes, which is the same
+       daggers-not-fabric failure the hem's own shape had to be rescued from;
+     · a `rotate` variant tilted the whole cloth INCLUDING its top edge, so it read as the
+       curtain coming off the pole — exactly the thing this pass exists to stop.
+   -145%, not -100%: the skew throws the hem ~17px to the RIGHT as it goes, and at -100% that
+   trailing corner parked inside the arch. The distance is what the lean costs. */
+@include gd-open('[data-grand="0"]') { transform:translateX(-145%) skewX(11deg); }
 
 /* ── FLOOR SIX — THE AUDITOR'S DOOR (2026-07-22, Nate: "make it look like more of an
    auditor's door … the green looks odd, and it doesn't really open"). A frosted-glass
@@ -643,11 +690,24 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 
 /* ── THE SAME DOOR, INSIDE THE GAME (2026-07-27) ────────────────────────────────────
    The Gauntlet's challenger card stands this door over the rival's portrait and opens it
-   on a timer. Only two things differ from the hall: the arch is see-through (the portrait
-   IS what's behind it) and it doesn't respond to a pointer. Everything else — every floor
-   treatment, the grandeur tiers, the seam — is the same file, so they cannot drift. ── */
+   on a timer. Only THREE things differ from the hall, and all three live here so the game
+   and the site can never drift: the arch is see-through (the portrait IS what's behind it),
+   it doesn't respond to a pointer, and it carries no piece on the leaf. Everything else —
+   every floor treatment, the grandeur tiers, the seam, the open distance — is the same file.
+
+   ⚑ NO PIECE ON THE LEAF — 2026-08-04. Nate: "The gauntlet in-game is different — remove
+   the pawn."
+   ⭐ HE WAS LOOKING AT THE SAME PIECE TWICE. Everywhere else on the site the glyph in the
+   arch is a PROMISE: it tells you which floor is behind a door you have not opened. In the
+   game the door opens on a timer over `#boss-portrait`, which is `rung.glyph` — the SAME
+   piece — so floor one painted a pawn on the cloth and then drew the cloth back to reveal a
+   pawn. A reveal that reveals what was already on the curtain is not a reveal, and it is the
+   one place the door has something real to hide. The <b> stays in the markup (it is the
+   shared shape and every other copy needs it); the game's own hydration no longer writes to
+   it. `visibility`, not `display`, so the leaf's layout is byte-identical to the hall's. */
 .gdoor--ingame { pointer-events:none; }
 .gdoor--ingame .gdoor-arch { background:transparent; }
+.gdoor--ingame .gdoor-glyph { visibility:hidden; }
 
 @media (prefers-reduced-motion: reduce) {
   .gdoor-pips i.cur { animation:none; }

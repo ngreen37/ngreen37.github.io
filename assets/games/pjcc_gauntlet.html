@@ -136,15 +136,33 @@
      every floor treatment (the Auditor's frosted glass, the Enforcer's barred gate, the
      V.P.'s office door, floor zero's tattered cloth, the grandeur tiers) arrives for free
      and can never drift again. All that's left here is WHERE it stands. */
-  .boss-stage { position:relative; width:104px; height:116px; margin:0 auto 12px; }
+  /* ⚑ 116 → 128 (2026-08-04, Nate: "The doors must be uniform"). THE IN-GAME DOOR WAS THE
+     ONE OUTLIER ON THE SITE, and it was a SHAPE difference rather than a size one, which is
+     why it survived three passes of "make the doors match". Measured, width ÷ height:
+
+         /pjcc/ splash   78×100   0.780   ← the canonical arch in the partial
+         /games/ hall    72× 92   0.783
+         /  front door   46× 60   0.767
+         in the game    100×116   0.862   ← squat. A different door.
+
+     The arch is a semicircle of r = width/2 sitting on a straight run, so the proportion is
+     the only thing that decides how tall that straight run reads. At 100 wide the canonical
+     height is 100 ÷ 0.78 = 128, which puts the run at 78px against the dome's 50 — the same
+     1.56 ratio the other three share, instead of 1.32. Nothing else needed to move: the door
+     radius (arch radius − 5) was already right, and the portrait still stands at the foot.
+     ⚠ ANY NEW COPY OF THIS DOOR: height = width ÷ 0.78. That one number is "uniform". */
+  .boss-stage { position:relative; width:104px; height:128px; margin:0 auto 12px; }
   /* 88, not 96: the portrait sits BEHIND a transparent arch now, and at 96 (+3px border)
      it was 2px wider than the arch — two bright slivers of the ring poked out past the
      bottom corners of a door that was supposed to be shut. */
   .boss-stage .boss-portrait { position:absolute; left:50%; bottom:2px; transform:translateX(-50%);
     margin:0; width:88px; height:88px; font-size:46px; }
   .boss-stage .gdoor { position:absolute; inset:0; align-items:center; justify-content:center; gap:0; }
-  .boss-stage .gdoor-arch { width:100px; height:116px; border-radius:50px 50px 6px 6px; }
+  .boss-stage .gdoor-arch { width:100px; height:128px; border-radius:50px 50px 6px 6px; }
   .boss-stage .gdoor-door { border-radius:45px 45px 0 0; }
+  /* (the glyph is hidden in-game — the portrait behind the door IS the piece; see the
+     .gdoor--ingame block in _sass/_pjcc-21-gauntlet-door.scss. The size stays so that
+     unhiding it for a debug session shows the right thing.) */
   .boss-stage .gdoor-glyph { font-size:40px; }
   .boss-name { font-size:24px; font-weight:900; color:#fff; letter-spacing:0.5px; text-shadow:0 2px 12px rgba(0,0,0,0.6); }
   .boss-sub { font-size:11px; letter-spacing:2px; text-transform:uppercase; margin:4px 0 10px; }
@@ -899,8 +917,10 @@ function showBossCard(idx){
     gate.style.setProperty('--acc', acc);
     gate.setAttribute('data-floor', idx + 1);
     gate.setAttribute('data-grand', idx === 0 ? 0 : idx <= 2 ? 1 : idx <= 4 ? 2 : idx <= 6 ? 3 : idx <= 8 ? 4 : 5);
-    var gg = document.getElementById('boss-gate-glyph');
-    if (gg) gg.textContent = rung.glyph;
+    // (the leaf's glyph is NOT set here any more — 2026-08-04, "the gauntlet in-game is
+    //  different, remove the pawn". The portrait this door opens onto is already rung.glyph,
+    //  so painting the same piece on the curtain meant the reveal revealed nothing. The
+    //  .gdoor--ingame block in _sass/_pjcc-21-gauntlet-door.scss hides it for every floor.)
     gate.classList.remove('is-open');
     void gate.offsetWidth;                          // restart the opening each reveal
     setTimeout(function(){ if (gate.isConnected) gate.classList.add('is-open'); }, 480);

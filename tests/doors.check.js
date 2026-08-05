@@ -144,5 +144,75 @@ const PARTIAL = read('_sass/_pjcc-21-gauntlet-door.scss');
   }
 }
 
+/* ── 5. EVERY COPY IS THE SAME DOOR — the PROPORTION, not the size ─────────────────
+   2026-08-04, Nate: "The doors must be uniform. There are three — home page, game page,
+   and gauntlet." Three passes of "make the doors match" had already gone by, and the
+   in-game door was STILL wrong, because everyone had been checking the size and the outlier
+   was the SHAPE: 100×116 is 0.862 where every other copy is 0.78, so the game's arch had a
+   shorter straight run under a same-sized dome and read as a squat, different door. Size is
+   allowed to vary — it has to, from a 46px card icon to a 100px challenger reveal — so the
+   thing to lock is the RATIO. width ÷ height = 0.78 ± 0.02, everywhere it is declared. */
+{
+  const FILES = ['_sass/_pjcc-21-gauntlet-door.scss', 'games.md', 'index.md',
+                 'assets/games/pjcc_gauntlet.html'];
+  const CANON = 0.78, TOL = 0.02;
+  const bad = [], seen = [];
+  for (const f of FILES) {
+    const src = read(f);
+    const re = /\.gdoor-arch\s*\{([^}]*)\}/g;
+    let m;
+    while ((m = re.exec(src))) {
+      const w = /width:\s*([\d.]+)px/.exec(m[1]);
+      const h = /height:\s*([\d.]+)px/.exec(m[1]);
+      if (!w || !h) continue;                       // a color/shadow-only rule; not a size
+      const r = +w[1] / +h[1];
+      seen.push(`${f} ${w[1]}×${h[1]} = ${r.toFixed(3)}`);
+      if (Math.abs(r - CANON) > TOL) bad.push(`${f}  ${w[1]}×${h[1]} → ${r.toFixed(3)}`);
+    }
+  }
+  check('every declared arch holds the canonical proportion', bad.length === 0 && seen.length >= 4,
+    bad.length ? bad.join(' | ') + '   ← height should be width ÷ 0.78'
+               : seen.length + ' arches, all 0.78 ± 0.02');
+}
+
+/* ── 6. THE POLE STAYS STILL ────────────────────────────────────────────────────────
+   "The pole holding the tattered cloth up should stay still and then the tattered cloth
+   should brush to the side naturally." The rod was `border-top` ON the cloth, so it took
+   the cloth's transform and slid away with it every time the door opened. A border cannot
+   be left behind — the only fix is for the rod to be a different element. Both halves are
+   asserted, because putting the new rod in without taking the border out would draw two. */
+{
+  const cloth = /\.gdoor\[data-grand="0"\] \.gdoor-door \{([\s\S]*?)\n\}/.exec(PARTIAL);
+  check('floor one\'s cloth rule was found', !!cloth);
+  if (cloth) {
+    check('the rod is NOT a border on the cloth', !/border-top:\s*[1-9]/.test(cloth[1]),
+      'a border rides its element\'s transform — the pole would slide off with the fabric');
+  }
+  check('…it is a static element on the arch instead',
+    /\.gdoor\[data-grand="0"\] \.gdoor-arch::before \{[^}]*content:/.test(PARTIAL),
+    'nothing transforms .gdoor-arch::before, so the pole stays put');
+
+  const open = /@include gd-open\('\[data-grand="0"\]'\)\s*\{([^}]*)\}/.exec(PARTIAL);
+  check('the cloth brushes rather than slides flat', !!open && /skewX\(/.test(open[1]),
+    open ? open[1].trim() : 'no floor-one open rule');
+  check('…and it pivots on the rod, not on the middle of the panel',
+    /\.gdoor\[data-grand="0"\] \.gdoor-door \{[\s\S]*?transform-origin:\s*100% 0;/.test(PARTIAL));
+}
+
+/* ── 7. IN THE GAME, THE DOOR HIDES SOMETHING ──────────────────────────────────────
+   "The gauntlet in-game is different — remove the pawn." The challenger portrait behind the
+   door IS rung.glyph, so painting the same piece on the curtain meant the reveal revealed
+   what was already on show. Asserted from both sides: the partial hides it, and the game no
+   longer writes to it (a live assignment would be the tell that someone put it back). */
+{
+  check('the in-game leaf carries no piece',
+    /\.gdoor--ingame \.gdoor-glyph \{[^}]*visibility:\s*hidden/.test(PARTIAL),
+    'the portrait behind the door is the same glyph — see .gdoor--ingame');
+  const game = read('assets/games/pjcc_gauntlet.html');
+  check('…and the game stopped setting it',
+    !/^\s*if \(gg\) gg\.textContent/m.test(game),
+    'showBossCard no longer writes the boss glyph onto the curtain');
+}
+
 console.log(`\n  ${pass} passed, ${fail} failed\n`);
 process.exit(fail ? 1 : 0);

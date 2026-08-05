@@ -20,7 +20,7 @@ tagline_outside: Play. Solve. Learn.
 # ...and the three facts close the page from OUTSIDE it (same batch: "put free · no account ·
 # works offline below the white box and into the blue"). Printed by _layouts/page.html after
 # the card — see the note there for why it can't be done from inside the page.
-sky_note: Free · No Account · Works Offline
+sky_note: Free · No Account Required · Works Offline
 body_class: theme-chess
 tab_title: ChessWild.com — free chess for everyone
 description: Free chess for everyone — play a real game, solve a puzzle, or learn from scratch. Set in the world of Princess and the Journey to Chess City, by McPuppy Studios.
@@ -164,18 +164,26 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 
        A stranger does not have to be convinced to touch a chess piece. So the front door
        does not ask them to believe a claim and then click — it puts a real position in
-       front of them and waits. One move wins. Play it and the site hands you into the
-       puzzle room mid-game; play something else and the refutation tells you the truth.
+       front of them and waits. One move wins.
 
-       THE POSITION: 6k1/5ppp/8/8/8/8/5PPP/R5K1 w — a back-rank mate. **Ra8# is the UNIQUE
-       mate in one**, proved against the site's own perft-verified referee (20 legal moves,
-       exactly one mate) before this shipped. If you ever change a piece here, re-run that
-       proof — a front door that lies about chess is worse than no front door.
+       ⚑ THE POSITION IS RANDOM NOW (2026-08-04, Nate: "the puzzle on the home page should be
+       completely random and there should not be a description. Whether they are wrong or
+       right is fine, mark it right or wrong and then offer more puzzles").
 
-       THE RISK, HANDLED: the 64 cells and the 8 pieces are STATIC MARKUP. There is no
-       blank box and no layout shift — the board is fully painted before a line of script
-       runs, and the only thing the script adds is the ability to touch it. Add ?ready=1 to
-       the URL and the page will tell you exactly how many milliseconds that gap was.
+       It used to be ONE hand-proved position (6k1/5ppp/8/8/8/8/5PPP/R5K1, Ra8#) hard-coded
+       into this markup, and the reason given was that loading a 40KB referee onto the front
+       door to re-derive a fact we already proved is the exact trade this page exists to
+       refuse. THAT REASONING SURVIVES RANDOMNESS INTACT — IT JUST MOVED. tests/gen-front-puzzles.js
+       builds random positions, hands every one to the real perft-verified referee, and keeps
+       a position only where the referee agrees there is EXACTLY ONE checkmate among all of
+       White's legal moves. The page carries the answers, not the engine, and grades a click
+       by comparing two integers. Re-generate with `npm run gen:puzzles`; never hand-edit the
+       pool. [[accuracy-above-all]]
+
+       THE RISK, STILL HANDLED: the 64 cells are STATIC MARKUP and the board is a fixed
+       square, so there is no layout shift — only the MEN are placed, by a script that sits
+       immediately below the board and therefore runs during parse, before first paint. Add
+       ?ready=1 to the URL and the page will tell you how many milliseconds that gap was.
        ═══════════════════════════════════════════════════════════════════ {%- endcomment -%}
   <div class="mc-board" id="mc-board">
     {%- comment -%} ⚠ TWO LAYERS, and that is the FIX for the holes Nate screenshotted
@@ -198,17 +206,10 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
           <i class="mcb-sq{% if par == 1 %} d{% endif %}" data-sq="{{ i }}"></i>
         {%- endfor -%}
       </div>
-      <div class="mcb-men">
-        <b class="mcb-p w" data-sq="56" data-pc="R" style="grid-area:8/1">&#9820;</b>
-        <b class="mcb-p w" data-sq="62"                style="grid-area:8/7">&#9818;</b>
-        <b class="mcb-p w" data-sq="53"                style="grid-area:7/6">&#9823;</b>
-        <b class="mcb-p w" data-sq="54"                style="grid-area:7/7">&#9823;</b>
-        <b class="mcb-p w" data-sq="55"                style="grid-area:7/8">&#9823;</b>
-        <b class="mcb-p b" data-sq="6"  data-pc="k"    style="grid-area:1/7">&#9818;</b>
-        <b class="mcb-p b" data-sq="13"                style="grid-area:2/6">&#9823;</b>
-        <b class="mcb-p b" data-sq="14"                style="grid-area:2/7">&#9823;</b>
-        <b class="mcb-p b" data-sq="15"                style="grid-area:2/8">&#9823;</b>
-      </div>
+      {%- comment -%} The men are painted by the script directly below this board, which
+           runs during parse — see the block comment above. The squares stay static so the
+           board is a finished square from the first frame either way. {%- endcomment -%}
+      <div class="mcb-men" id="mcb-men"></div>
     </div>
     <p class="mcb-say" id="mcb-say">White to play. <b>Mate in one.</b></p>
     {%- comment -%} ══ THE INVITATION, NOT THE ESCORT (2026-07-29) ═══════════════════════
@@ -218,26 +219,40 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
          Solving used to start a 1.25s timer and then move the page out from under you.
          Being teleported for getting something RIGHT is a punishment shaped like a
          reward: you just did the thing, and the site took the room away before you
-         could enjoy it. So the win now hands you a door instead of walking you through
-         it — and the offer names the scale, because "solve another" is a shrug and
-         "1,000 puzzles to Chess City" is a road.
+         could enjoy it. So the win hands you a door instead of walking you through it.
 
-         ⚠ IT IS NOT GOLD, and that is the page's one law (see the header comment). This
-         appears only AFTER an interaction, so nobody ever sees two calls to action — but
-         gold means "the primary thing" here, and there is only ever one of those.
+         ⚑ AND NOW THERE ARE TWO DOORS, BECAUSE THE PUZZLE IS RANDOM (2026-08-04, Nate:
+         "mark it right or wrong and then offer more puzzles"). The offer appears on a
+         MISS as well as on a mate — that is the change. It used to be the reward for
+         solving, which meant a visitor who guessed wrong was left holding a position they
+         had already failed with no way forward but the page itself.
+           · "Another puzzle" deals a new one IN PLACE — a real button, because it does
+             something on this page and does not navigate. Nothing is fetched: the whole
+             pool is already here.
+           · The room is still one tap away, and it still names the scale, because
+             "more puzzles" is a shrug and "1,000 puzzles to Chess City" is a road.
+
+         ⚠ NEITHER IS GOLD, and that is the page's one law (see the header comment). These
+         appear only AFTER an interaction, so nobody ever sees two calls to action at once —
+         but gold means "the primary thing" here, and there is only ever one of those.
          ══════════════════════════════════════════════════════════════════ {%- endcomment -%}
     {%- comment -%} ⚠ THE <span> IS LOAD-BEARING. `.mcb-next` is an inline-flex row, and a
          flex container ignores `display:block` on its children — so the label and the
-         sub-label laid out side by side and read as one sentence: "Solve another 1,000
-         puzzles to Chess City", which says the opposite of what it means. Wrapped, they
-         stack. {%- endcomment -%}
-    <a class="mcb-next" id="mcb-next" href="{{ '/games/fork-in-the-road/' | relative_url }}" hidden>
-      <span class="mcb-next-txt">
-        <b>Solve another</b>
-        <small>1,000 puzzles to Chess City</small>
-      </span>
-      <i aria-hidden="true">&rarr;</i>
-    </a>
+         sub-label laid out side by side and read as one sentence, which says the opposite
+         of what it means. Wrapped, they stack. {%- endcomment -%}
+    <div class="mcb-offer" id="mcb-offer" hidden>
+      <button class="mcb-next" id="mcb-again" type="button">
+        <span class="mcb-next-txt"><b>Another puzzle</b></span>
+        <i aria-hidden="true">&#8635;</i>
+      </button>
+      <a class="mcb-next mcb-next--room" href="{{ '/games/fork-in-the-road/' | relative_url }}">
+        <span class="mcb-next-txt">
+          <b>The puzzle room</b>
+          <small>1,000 puzzles to Chess City</small>
+        </span>
+        <i aria-hidden="true">&rarr;</i>
+      </a>
+    </div>
   </div>
 </section>
 </section>
@@ -483,7 +498,12 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
      the wrapper's 26px and the card's 20px of padding — at 390px that asked for a 312px
      board inside a 298px column, and .mc-table's overflow:hidden quietly SLICED THE
      H-FILE OFF. It reported no page overflow precisely because it was being clipped. */
-  position: relative; width: min(348px, 100%); aspect-ratio: 1; margin: 0 auto;
+  /* 348 → 400 (2026-08-04): the CARD got wider in the same pass ("make the white box
+     bigger"), which widened the hero's right column to about 490px and left a 348px board
+     floating in the middle of it with a gap down both sides. A board that does not grow
+     with its column is the change looking like a mistake. It is also the one thing on this
+     page a visitor is meant to READ, and it is a puzzle now rather than a fixed position. */
+  position: relative; width: min(400px, 100%); aspect-ratio: 1; margin: 0 auto;
   border: 3px solid var(--chess-frame); border-radius: 6px; overflow: hidden;
   /* the pieces size themselves off the BOARD, not off the viewport — see .mcb-p */
   container-type: inline-size;
@@ -493,8 +513,9 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    displace the other. */
 .mcb-grid, .mcb-men { position: absolute; inset: 0; display: grid;
   grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); }
-/* the men layer is INERT except for the rook: click a pawn while the rook is up and the
-   click falls through to the square underneath, so the board still answers you. */
+/* the men layer is INERT except for WHITE's pieces: click a black piece and the click falls
+   through to the square underneath it, so "capture that" needs no code of its own — and on a
+   random pool the answer is a capture often enough for that to matter. */
 .mcb-men { pointer-events: none; }
 .mcb-sq { position: relative; background-color: var(--chess-lt);
   background-image: linear-gradient(152deg, rgba(255,252,240,0.14), rgba(0,0,0,0.04) 62%), var(--chess-grain); }
@@ -528,18 +549,19 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   text-shadow: 0.035em 0.06em 0 rgba(0,0,0,0.40); }
 .mcb-p.b { color: var(--piece-b-fill); -webkit-text-stroke: 0.085em var(--piece-b-line);
   text-shadow: 0.035em 0.06em 0 rgba(0,0,0,0.40); }
-/* only the rook is ever touchable — the whole puzzle is one move */
-.mcb.live .mcb-p[data-pc="R"] { cursor: pointer; pointer-events: auto; }
-.mcb.live .mcb-p[data-pc="R"]:hover { filter: drop-shadow(0 0 8px #6bffb8); }
+/* EVERY WHITE PIECE IS TOUCHABLE NOW (2026-08-04) — it used to be the rook and only the
+   rook, because there was one position and one answer. A random position has no such piece. */
+.mcb.live .mcb-p[data-mine] { cursor: pointer; pointer-events: auto; }
+.mcb.live .mcb-p[data-mine]:hover { filter: drop-shadow(0 0 8px #6bffb8); }
 .mcb-p.lift { transform: translateY(-5px) scale(1.08); filter: drop-shadow(0 0 10px #6bffb8); }
 /* the shadow stays on the board when the piece comes off it */
 .mcb-p.lift::before { transform: translateY(5px); opacity: 0.55; }
-/* the one legal target, shown only after the rook is picked up — Park Tables' legal-move
-   dot exactly: a dark disc ringed in mint, so it reads the same on maple or walnut */
-.mcb-sq.hint::after { content: ''; position: absolute; inset: 0; margin: auto;
-  width: 34%; height: 34%; border-radius: 50%;
-  background: rgba(38,25,10,0.30); box-shadow: 0 0 0 2px rgba(107,255,184,0.9); }
+/* (THE HINT DOT IS GONE. It marked the one legal target the moment the rook came up, which
+   on a fixed position was a nudge and on a random one is THE ANSWER. Nothing replaces it:
+   "mark it right or wrong" is the whole interaction now.) */
+/* the two marks, and they are the only feedback the board gives */
 .mcb-sq.bad  { box-shadow: inset 0 0 0 3px rgba(255,110,110,0.8); }
+.mcb-sq.good { box-shadow: inset 0 0 0 3px rgba(107,255,184,0.85); }
 .mcb-p.mated { color: #ff6e6e; }
 .mcb-say { margin: 14px 0 0; text-align: center; color: var(--fd-ink-2); font-size: 0.9rem;
   min-height: 2.6em; }
@@ -549,20 +571,33 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    decorative walnut measures 2.88:1 there against a night sky (4.01 even at the old 0.85
    alpha — it was failing AA before the transparency pass, not because of it). */
 .mcb-say b { color: var(--fd-wood-ink); }
-.mcb-say.good b, .mcb-say.good { color: #6bffb8; }
+/* ⚠ THE VERDICT COLORS ARE NOT THE ONES THE DARK PAGE USED. #6bffb8 is a mint drawn for a
+   near-black card; on the warm-white sheet it measures under 2:1 and the word "Correct."
+   disappears. Both marks are re-inked for paper here — the SQUARE keeps the bright ring,
+   because a 3px ring on maple is not text and does not have to clear 4.5:1. */
+.mcb-say.good b, .mcb-say.good { color: #1f7a4d; }
+.mcb-say.miss b, .mcb-say.miss { color: #a3323b; }
 .mcb-ready { display: block; margin-top: 4px; color: var(--fd-ink-3); font-size: 0.72rem;
   font-family: 'Share Tech Mono', monospace; }
 
-/* THE OFFER after the mate (2026-07-29) — a door, not an escort. Wood and ink only: this
-   is the one moment a second call to action exists on the page, and it earns its place by
-   never being visible until you've already done something. It must not read as gold. */
-.mcb-next { display: inline-flex; align-items: center; gap: 12px; margin: 10px auto 0;
+/* THE OFFER after the move (2026-07-29, widened 2026-08-04) — a door, not an escort. Wood
+   and ink only: this is the one moment a second call to action exists on the page, and it
+   earns its place by never being visible until you've already done something. Not gold.
+   ⚠ IT NOW APPEARS ON A MISS TOO, which is the point of the rewrite: a wrong guess used to
+   leave a visitor holding a position they had already failed, with nowhere to go. */
+.mcb-offer { display: flex; flex-wrap: wrap; justify-content: center; align-items: stretch;
+  gap: 10px; margin-top: 10px; }
+.mcb-offer[hidden] { display: none; }
+.mcb-next { display: inline-flex; align-items: center; gap: 12px; margin: 0;
   padding: 10px 18px; border-radius: 999px; text-decoration: none; text-align: left;
   color: var(--fd-ink); background: var(--fd-panel-hi);
   border: 1px solid var(--fd-grain);
   animation: mcbNextIn .34s cubic-bezier(.2,.9,.3,1.2) both;
   transition: transform .14s ease, border-color .14s ease, background .14s ease; }
-.mcb-next[hidden] { display: none; }
+/* ⚠ "Another puzzle" IS A <button>, because it acts on this page instead of navigating —
+   and a button brings its own agenda: the UA font, a system border and a default padding
+   that a shared `.mcb-next` rule does not cancel. Reset the three, keep everything else. */
+.mcb-next { font: inherit; cursor: pointer; }
 .mcb-next-txt { display: block; }
 .mcb-next b { display: block; font-size: 0.95rem; font-weight: 800; line-height: 1.25; }
 .mcb-next small { display: block; color: var(--fd-ink-3); font-size: 0.76rem; line-height: 1.3; }
@@ -571,6 +606,10 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mcb-next:hover { text-decoration: none; transform: translateY(-2px);
   border-color: var(--fd-wood); background: var(--fd-panel); }
 .mcb-next:hover i { transform: translateX(3px); }
+/* the room is the quieter of the two: dealing another puzzle keeps you here, which is what
+   the page wants, so leaving is offered rather than urged */
+.mcb-next--room { background: transparent; border-color: var(--fd-rule); }
+.mcb-next--room:hover { background: var(--fd-panel-hi); }
 @keyframes mcbNextIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 @media (prefers-reduced-motion: reduce) { .mcb-p { transition: none; }
@@ -752,15 +791,14 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mc-door--gauntlet .gdoor { align-items: flex-start; gap: 7px; margin-bottom: 10px; }
 .mc-door--gauntlet .gdoor-arch { width: 46px; height: 60px; border-radius: 23px 23px 3px 3px; }
 .mc-door--gauntlet .gdoor-door { border-radius: 19px 19px 0 0; }
-/* ⚠ THE GLYPH NEEDS (0,3,0) TO LAND, and a bare `.mc-door--gauntlet .gdoor-glyph` does not
-   have it. `.gdoor[data-grand="0"] .gdoor-glyph` in the partial is (0,3,0) — an attribute
-   selector counts in the class column — so the two-class version lost and floor one's crown
-   rendered at its full 26px inside a 46px arch: 57% of the door, a blob rather than a piece.
-   Matching the specificity lets document order decide, and this <style> is in the body.
-   Both values are the partial's own, scaled by 46/78 — the ratio the arch itself was scaled
-   by — so the piece keeps the same share of its door as on every other copy on the site. */
+/* ONE size, and floor one no longer needs its own (2026-08-04). It used to take TWO rules
+   here, and the second was a specificity fight: the partial's `.gdoor[data-grand="0"]
+   .gdoor-glyph` is (0,3,0) — an attribute selector counts in the class column — so a
+   two-class override lost and floor one's piece rendered at its full 26px inside a 46px arch.
+   The partial expresses floor one as a `scale()` of whatever size the caller sets now, so
+   this single line carries every floor and the fight is gone. 19px is the partial's own 32,
+   scaled by 46/78 — the ratio the arch itself was scaled by. */
 .mc-door--gauntlet .gdoor .gdoor-glyph { font-size: 19px; }
-.mc-door--gauntlet .gdoor[data-grand="0"] .gdoor-glyph { font-size: 15px; }
 .mc-door--gauntlet .gdoor-pips { gap: 2px; }
 .mc-door--gauntlet .gdoor-pips i { width: 4px; height: 4px; background: rgba(30, 35, 44, 0.18); }
 /* ⚑ HOVERING THE CARD OPENS THE DOOR — AND NOT ONE TRANSFORM LIVES HERE (2026-08-04).
@@ -819,66 +857,183 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 </style>
 
 <script>
-/* ══ THE BOARD IS THE BUTTON — the interaction ═══════════════════════════════════════
-   Everything above is already painted. This only adds the ability to TOUCH it, and it
-   measures how long that took, because Nate asked to feel the gap in human terms:
-   open /?ready=1 and the board tells you the number under it.
+/* ══ THE BOARD IS THE BUTTON — a random puzzle, and the grading ══════════════════════
+   ⚑ REWRITTEN 2026-08-04. Nate: "The puzzle on the home page should be completely random
+   and there should not be a description. Whether they are wrong or right is fine, mark it
+   right or wrong and then offer more puzzles. Besides, 'the back rank was the whole board'
+   makes no sense."
 
-   The rules are hard-coded on purpose. This is ONE position with ONE answer (Ra8#,
-   proved unique against assets/js/pjcc-chess.js before shipping), so loading a 40KB
-   referee onto the front door to re-derive a fact we already proved would be the exact
-   trade this page exists to refuse. The puzzle room does it properly, with the engine —
-   and this hands you there. */
+   THE THREE THINGS THAT CHANGED, and the one that did not:
+
+   1. RANDOM. The pool below is generated by tests/gen-front-puzzles.js, which builds random
+      positions and keeps only the ones the site's own perft-verified referee certifies as a
+      UNIQUE mate in one. Every entry is 'board from-index to-index'. The page never reasons
+      about chess — it compares two integers — so the front door still carries no engine, and
+      the only promise it makes about the position is one the referee actually made.
+      ⚠ NEVER HAND-EDIT THE POOL. `npm run gen:puzzles` rewrites it between the sentinels.
+
+   2. NO DESCRIPTION. Every line of prose is gone. The win used to say "the back rank was the
+      whole board" — written for the ONE hard-coded position, nonsense for a random one, and
+      a stretch even there — and a miss used to explain what the king would do next. The board
+      says "White to play. Mate in one." before, and "Correct." or "Not quite." after. Those
+      two are the marks he asked for, and nothing narrates them.
+
+   3. ONE ATTEMPT, THEN THE OFFER. A miss used to bounce and let you keep guessing at the same
+      position forever. "Whether they are wrong or right is fine" — so a completed move is
+      graded either way, and both verdicts lead to the same place: another puzzle.
+
+   WHAT DID NOT CHANGE: nothing here is needed to SEE the board. The 64 squares are static
+   markup and the board is a fixed square, so the men arriving cannot shift the page — the
+   worst case is a checkerboard for one frame. Open /?ready=1 for the real number. */
 (function () {
   var t0 = (window.performance && performance.now) ? performance.now() : 0;
   var board = document.getElementById('mcb'), say = document.getElementById('mcb-say');
-  if (!board || !say) return;
+  var men = document.getElementById('mcb-men'), offer = document.getElementById('mcb-offer');
+  if (!board || !say || !men) return;
 
-  var ROOK = board.querySelector('.mcb-p[data-pc="R"]');
-  var KING = board.querySelector('.mcb-p[data-pc="k"]');
-  var A8   = board.querySelector('.mcb-sq[data-sq="0"]');   // top-left = a8
-  var NEXT = document.getElementById('mcb-next');           // the offer, revealed on the mate
-  var armed = false, done = false;
+  /* ══ POOL — GENERATED, DO NOT EDIT BY HAND · npm run gen:puzzles ══ */
+  var POOL = [
+    '2N4k/8/2K3R1/6p1/2B5/8/4p3/4R3 60 63', '4nk2/5p2/8/3K4/7B/5Q2/5R2/8 45 13',
+    '3QB3/7p/7k/8/1q6/7K/8/8 3 21', '8/2N5/8/1Q6/8/2K5/8/2k5 25 61',
+    '8/5Bb1/7k/6p1/K7/2B5/3R4/8 51 55', '4q3/5B2/2Bp3k/1K6/2B3Q1/8/r2q4/8 38 22',
+    '1k6/1p6/8/1N5K/4Q3/5n2/8/8 36 4', '6rq/3r4/8/8/8/6BR/Q4p2/1K3kN1 48 53',
+    '4B3/8/2Q2rR1/4p3/7k/6p1/4K3/8 18 63', '4k3/1R3r2/1N4K1/8/8/5PQ1/8/8 46 1',
+    '5R2/7k/3B4/2R3pK/8/8/8/8 26 10', 'bB1k2q1/2p4Q/6N1/8/4R2K/8/8/8 15 10',
+    'B7/1Q6/7P/5K1k/8/3P4/8/8 9 63', '2k5/5Q2/3P4/7K/8/8/8/8 13 10',
+    '4k3/4p3/4K3/7n/1R3B2/8/8/8 33 1', '8/8/8/2Q5/8/8/8/K4k1N 26 53',
+    '1k6/7B/1PB4p/3q4/Q7/8/2n1b2K/8 32 0', '1R6/5K2/8/k3r3/8/pr6/5Q2/8 53 8',
+    'R3K2k/8/8/6N1/8/2R5/1p6/8 4 13', '1k4N1/6Q1/8/N7/3K4/8/8/8 14 9',
+    '1B6/8/N5K1/6Q1/8/7k/8/8 30 46', '8/8/7b/3n4/4RR2/k7/2K5/3N4 36 32',
+    'q2R4/8/8/8/5n2/4R3/7K/5kB1 3 59', '7k/8/8/8/2R5/8/3K4/6R1 34 39',
+    '8/8/8/R7/5KR1/N7/7k/B7 24 31', '4kn2/6Q1/5K2/4p3/8/2p1B3/1N1B4/8 14 12',
+    '7k/5KN1/3R4/8/8/7B/8/8 19 23', 'nK6/5n1k/q6N/7N/8/p7/P7/Q7 56 14',
+    '8/8/1B6/8/2K3N1/k3N3/8/6Q1 62 56', '8/1K6/8/8/5RP1/P7/6Q1/2k5 37 61',
+    '8/8/k7/2Q4r/8/8/4qBK1/8 26 17', '3B4/1Q6/8/8/8/1B6/K7/2k5 3 30',
+    'k7/6NB/1K6/8/3R4/4B3/8/8 35 3', '1B1Q4/B5K1/7n/8/8/8/8/7k 3 27',
+    'K7/8/8/6b1/8/6n1/1P2RB1Q/5k2 52 60', '2Q5/k7/8/1p6/8/8/5K2/2B5 58 44',
+    '3k1q2/8/2P1Q3/1q6/8/8/7K/8 20 11', '8/k7/8/8/2K5/8/2R5/1Q6 50 48',
+    'k7/7Q/6KQ/8/8/8/8/8 23 5', '7K/7B/1N1P4/8/8/7Q/7p/7k 47 61',
+    '1k6/1p6/1K6/8/8/n4p2/8/R6Q 63 7', '5N1r/8/8/6pk/8/7N/K6R/8 47 53',
+    'k7/1p4K1/8/B7/8/4pN2/8/Q7 24 10', '2rk4/1p3Q2/2B4N/n7/8/8/2K5/8 13 11',
+    '8/7k/5QR1/4K3/8/8/2n5/5N2 21 14', '8/5K1k/1PN5/8/4N3/8/6R1/8 54 55',
+    '1K1Q3b/N7/k7/7p/8/r7/6B1/8 54 9', '5B2/1K6/8/8/8/1RN5/8/k7 41 57',
+    '8/8/3Q4/7N/8/K7/8/1k6 19 59', '6k1/1Q6/5K2/8/5N2/8/8/8 9 14',
+    '1k5B/8/1K6/4R3/8/8/6N1/8 28 4', '8/2q3Q1/8/6P1/N7/7B/8/1k4K1 14 49',
+    '5R1Q/3rk3/8/8/8/b2N3K/2p5/8 7 21', '5B2/4NK1k/8/8/8/8/1R6/4n3 49 55',
+    '7k/8/5pKp/8/2R5/8/8/B7 34 2', '3k2K1/6R1/Q1p4B/8/8/8/5p2/4q3 16 0',
+    '2k5/1p2b3/p3N3/4Q3/8/8/8/K7 28 10', '2B5/8/8/8/1N5k/8/7K/3Q4 59 38',
+    '8/n7/7P/8/p7/3Q2K1/P7/5q1k 43 61', '7k/1N5p/8/1r6/1Q6/7K/8/8 33 5',
+    '4k3/2K5/3B4/8/8/1P3R2/8/8 45 5', 'Q2K4/7q/8/2q5/5N2/8/7k/8 0 54',
+    '7Q/8/3B4/8/8/6K1/8/6k1 7 56', '8/4N3/k1KP4/8/1B6/7R/8/8 47 40'
+  ];
+  /* ══ END POOL ══ */
 
-  function tell(html, good) { say.innerHTML = html; say.classList.toggle('good', !!good); }
-  function disarm() {
-    armed = false; ROOK.classList.remove('lift'); A8.classList.remove('hint');
+  /* ONE GLYPH PER PIECE TYPE, BOTH COLORS. The chess canon draws white and black from the
+     same filled set and separates them by fill and stroke, which is the whole reason every
+     board on this site looks like one board ([[chess-visual-canon]]). Do not "correct" these
+     to the outline code points — .mcb-p.w would then be an outline glyph with an outline
+     stroke painted on it. */
+  var GLYPH = { K: 9818, Q: 9819, R: 9820, B: 9821, N: 9822, P: 9823 };
+
+  var cur = null, sel = -1, done = false;
+
+  function tell(html, good, bad) {
+    say.innerHTML = html;
+    say.classList.toggle('good', !!good);
+    say.classList.toggle('miss', !!bad);
   }
 
-  ROOK.addEventListener('click', function (e) {
-    e.stopPropagation();
-    if (done) return;
-    if (armed) { disarm(); tell('White to play. <b>Mate in one.</b>'); return; }
-    armed = true;
-    ROOK.classList.add('lift'); A8.classList.add('hint');
-    tell('The rook is up. <b>Where does it go?</b>');
-  });
+  /* DEAL — repaint the men from a random pool entry and reset every mark. Called once at
+     load and again for every "Another puzzle": the whole pool is already on the page, so
+     dealing is a string split and one innerHTML, with nothing fetched and nothing to wait for. */
+  function deal() {
+    cur = POOL.length ? POOL[(Math.random() * POOL.length) | 0].split(' ') : null;
+    sel = -1; done = false;
+    if (offer) offer.hidden = true;
+    var marked = board.querySelectorAll('.mcb-sq.bad, .mcb-sq.good');
+    for (var m = 0; m < marked.length; m++) marked[m].classList.remove('bad', 'good');
+    if (!cur) { men.innerHTML = ''; return; }
 
+    /* the board half of a FEN, walked left to right, top to bottom. Index r*8+f is the same
+       numbering the referee uses (0 = a8), which is what lets the answer travel as two ints. */
+    var rows = cur[0].split('/'), h = '';
+    for (var r = 0; r < 8; r++) {
+      var f = 0, row = rows[r] || '';
+      for (var c = 0; c < row.length; c++) {
+        var ch = row.charAt(c);
+        if (ch >= '1' && ch <= '8') { f += +ch; continue; }
+        var up = ch.toUpperCase(), white = (ch === up);
+        h += '<b class="mcb-p ' + (white ? 'w' : 'b') + '" data-sq="' + (r * 8 + f) + '"' +
+             ' data-pc="' + ch + '"' + (white ? ' data-mine="1"' : '') +
+             ' style="grid-area:' + (r + 1) + '/' + (f + 1) + '">&#' + GLYPH[up] + ';</b>';
+        f++;
+      }
+    }
+    men.innerHTML = h;
+    tell('White to play. <b>Mate in one.</b>');
+  }
+
+  function lift(sq) {
+    var held = men.querySelector('.mcb-p.lift');
+    if (held) held.classList.remove('lift');
+    sel = sq;
+    if (sq < 0) return;
+    var n = men.querySelector('.mcb-p[data-sq="' + sq + '"]');
+    if (n) n.classList.add('lift');
+  }
+
+  /* ONE LISTENER ON THE BOARD, and the men layer is inert except for White's pieces
+     (.mcb-men is pointer-events:none; `.mcb.live .mcb-p[data-mine]` opts back in). So a click
+     on a BLACK piece falls through to the square underneath it, which is what makes "capture
+     that piece" expressible with no extra code — and on a random pool the answer is a capture
+     often enough that this is not a nicety. */
   board.addEventListener('click', function (e) {
-    if (done) return;
-    var sq = e.target.closest ? e.target.closest('.mcb-sq') : null;
-    if (!sq || !armed) return;
-    var id = +sq.getAttribute('data-sq');
+    if (done || !cur || !e.target.closest) return;
 
-    if (id === 0) {
-      /* ── Ra8#. Slide the rook up the a-file, ring the king, and hand them over. ── */
-      done = true; disarm();
-      ROOK.style.gridArea = '1/1';
-      KING.classList.add('mated');
-      /* NO TIMER, NO location.href (2026-07-29) \u2014 see the #mcb-next markup comment.
-         The reward for solving is that the position STAYS on the screen, and the room
-         becomes a door you may choose to take. */
-      tell('<b>Ra8#</b> \u2014 that\u2019s mate. The back rank was the whole board.', true);
-      if (NEXT) { NEXT.hidden = false; }
+    var mine = e.target.closest('.mcb-p[data-mine]');
+    if (mine) {                                  /* pick a piece up, or put the same one down */
+      var at = +mine.getAttribute('data-sq');
+      lift(at === sel ? -1 : at);
       return;
     }
-    /* ── anything else: tell them the truth, then let them try again ── */
-    sq.classList.add('bad');
-    setTimeout(function () { sq.classList.remove('bad'); }, 520);
-    tell('Not there \u2014 the king steps away. <b>The mate is on the back rank.</b>');
+
+    var sq = e.target.closest('.mcb-sq');
+    if (!sq || sel < 0) return;
+    var id = +sq.getAttribute('data-sq');
+    if (id === sel) { lift(-1); return; }
+
+    /* ── THE VERDICT. Two integers, and no opinion about chess. ── */
+    done = true;
+    if (sel === +cur[1] && id === +cur[2]) {
+      var moving = men.querySelector('.mcb-p[data-sq="' + sel + '"]');
+      var taken  = men.querySelector('.mcb-p[data-sq="' + id + '"]');
+      if (taken && taken !== moving) taken.parentNode.removeChild(taken);
+      if (moving) {
+        moving.classList.remove('lift');
+        moving.setAttribute('data-sq', id);
+        moving.style.gridArea = (((id / 8) | 0) + 1) + '/' + ((id % 8) + 1);
+      }
+      var king = men.querySelector('.mcb-p.b[data-pc="k"]');
+      if (king) king.classList.add('mated');
+      sq.classList.add('good');
+      /* NO TIMER, NO location.href (2026-07-29) — the reward for being right is that the
+         position STAYS on the screen. The offer below is a door, never an escort. */
+      tell('<b>Correct.</b>', true);
+    } else {
+      /* ── wrong, and that is a fine place to end up. No refutation, no lesson, no reveal:
+         he asked for a MARK. The offer appears either way. ── */
+      lift(-1);
+      sq.classList.add('bad');
+      tell('<b>Not quite.</b>', false, true);
+    }
+    if (offer) offer.hidden = false;
   });
 
-  /* Nothing above this line was needed to SEE the board — only to touch it. */
+  var again = document.getElementById('mcb-again');
+  if (again) again.addEventListener('click', function () { deal(); });
+
+  deal();
+  /* Nothing above this line was needed to SEE the board — only to fill it and touch it. */
   board.classList.add('live');
   var ms = ((window.performance && performance.now) ? performance.now() : 0) - t0;
   var since = (window.performance && performance.now) ? Math.round(performance.now()) : 0;
@@ -886,8 +1041,8 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
     if (new URLSearchParams(location.search).has('ready')) {
       var n = document.createElement('span');
       n.className = 'mcb-ready';
-      n.textContent = 'board paintable from the first byte \u00b7 touchable ' + since +
-                      'ms after page start \u00b7 wiring itself took ' + ms.toFixed(1) + 'ms';
+      n.textContent = POOL.length + ' positions · board live ' + since +
+                      'ms after page start · dealing + wiring took ' + ms.toFixed(1) + 'ms';
       say.appendChild(n);
     }
   } catch (e) {}
