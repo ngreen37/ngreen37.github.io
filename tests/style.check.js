@@ -398,5 +398,64 @@ console.log('\n── HOUSE RULES ───────────────�
     a === b ? '64 distinct symbols, identical in both files' : 'generator=' + a + '  page=' + b);
 }
 
+/* ══ EVERY INLINE SCRIPT ACTUALLY PARSES ═══════════════════════════════════════════════
+   Added 2026-08-05, immediately after shipping a SYNTAX ERROR to the live Park Tables page.
+   A comment block was closed early, so the prose after it landed in the JS; `/games/park-
+   tables/` said "Walking to the park…" forever and never seated anybody.
+
+   ⭐⭐ AND ALL 150+ GATES STAYED GREEN, because not one of them PARSED the code. The suite
+   compiled the SCSS, walked the links, swept for dead classes, matched a dozen strings — and
+   the one thing nobody did was hand the JavaScript to a JavaScript parser. **A test that
+   reads a file is not a test that the file works.** This site keeps a lot of behavior in
+   inline page scripts (the front-door puzzle, the games hall, Park Tables, the home hero),
+   and every one of them is a room that can go dark on its own.
+
+   ⚠ LIQUID COMMENTS ARE STRIPPED FIRST, AND THAT IS NOT AN OPTIMISATION. A comment in
+   _layouts/home.html describes the `<script src=…>` pair that used to stand there — a regex
+   hunting for script tags believes it, and then runs the "body" on through the page's HTML
+   and reports a phantom error 300 lines away. Same trap as the style tag spelled inside a
+   Liquid comment on the front door: **never trust a tag name found in a comment.**
+
+   ⚠ `{{ … }}` becomes an identifier and `{% … %}` disappears, which is enough for every page
+   here today. A page that builds JS out of a Liquid LOOP would need more; if one ever does,
+   widen the strip rather than skip the file — the skip is what lets the next outage through.
+   ⚠ ld+json and x-template blocks are not JavaScript and are left alone. */
+{
+  const SKIP = /(node_modules|[\\/]\.git|[\\/]_site|assets[\\/]vendor|assets[\\/]backups)/;
+  const walk = (d, o = []) => {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      const f = path.join(d, e.name);
+      if (SKIP.test(f)) continue;
+      if (e.isDirectory()) walk(f, o); else if (/\.(md|html)$/.test(e.name)) o.push(f);
+    }
+    return o;
+  };
+  const deLiquid = (s) => s
+    .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, '')
+    .replace(/\{\{[\s\S]*?\}\}/g, 'L')
+    .replace(/\{%-?[\s\S]*?-?%\}/g, '');
+  const vm = require('vm');
+  let parsed = 0; const broken = [];
+  for (const f of walk(ROOT)) {
+    const src = fs.readFileSync(f, 'utf8')
+      .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, '')
+      .replace(/<!--[\s\S]*?-->/g, '');
+    const blocks = [...src.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/gi)]
+      .filter((m) => !/\bsrc\s*=/i.test(m[1]))
+      .filter((m) => !/\btype\s*=/i.test(m[1]) ||
+        /\btype\s*=\s*["']?(text\/javascript|application\/javascript|module)/i.test(m[1]));
+    for (const m of blocks) {
+      const code = deLiquid(m[2]);
+      if (!code.trim()) continue;
+      try { new vm.Script(code); parsed++; }
+      catch (e) {
+        broken.push(path.relative(ROOT, f).split('\\').join('/') + '  →  ' + e.message.split('\n')[0]);
+      }
+    }
+  }
+  check('every inline <script> on the site parses', broken.length === 0,
+    broken.length ? '\n      ' + broken.join('\n      ') : parsed + ' inline scripts, all valid JavaScript');
+}
+
 console.log(`\n  ${pass} passed, ${fail} failed\n`);
 process.exit(fail ? 1 : 0);

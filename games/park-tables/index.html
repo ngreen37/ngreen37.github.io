@@ -545,7 +545,8 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
      so the top of the park still matches the top of the tower (the Founder).
      ⚠ `movetime` stays hand-set: it is pacing, not strength — a bot that answers instantly
      feels like a machine, and Robert taking 1.2s feels like Robert thinking.
-     The icons are a difficulty ramp (♝→♜→♚→♛), not canon pieces. */
+     The icons are a difficulty ramp (♝→♜→♚→♛), not canon pieces.
+
      ⚠⚠ THE DIAL IS DERIVED AT MOVE TIME, NOT AT PARSE TIME, and that is deliberate. Doing it
      eagerly means reading `window.PJCCGauntletEngine` while this file is still parsing — and
      the engine bridge is a plain <script src> four lines above, so it works *today* and would
