@@ -407,7 +407,7 @@ permalink: /games/
        splash win-glint. Egg fragments and everything on the server (profile, rated
        games, leaderboards) are deliberately untouched. {%- endcomment -%}
   <div class="ghub-reset-row" data-hb>
-    <button class="ghub-reset" id="ghub-reset" type="button">↺ reset local game progress</button>
+    <button class="ghub-reset" id="ghub-reset" type="button">↺ Reset Local Game Progress</button>
   </div>
 </div>
 
@@ -491,7 +491,7 @@ permalink: /games/
                 'pjcc.blindfold.unlocked', 'pjcc.pt.winday');
       kill.forEach(function (k) { try { localStorage.removeItem(k); } catch (e) {} });
     } catch (e) {}
-    btn.textContent = '✓ progress reset';
+    btn.textContent = '✓ Progress reset';
     btn.disabled = true;
     setTimeout(function () { location.reload(); }, 900);
   };

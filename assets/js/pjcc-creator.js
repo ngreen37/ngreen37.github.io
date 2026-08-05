@@ -388,7 +388,7 @@
           (look.bio ? '<div class="idn-bio">“' + esc(look.bio) + '”</div>' : '') +
           '<div class="idn-account" data-account></div>' +
           '<div class="idn-pet-chip"><span class="ipc-em ipc-em--drawn">' + petArt(pl) + '</span> ' + esc(petName()) +
-            '<button class="idn-edit-btn ghost" data-open="companion" style="padding:2px 9px;font-size:.7rem;margin-left:4px">tweak</button></div>' +
+            '<button class="idn-edit-btn ghost" data-open="companion" style="padding:2px 9px;font-size:.7rem;margin-left:4px">Tweak</button></div>' +
         '</div>' +
         '<div class="idn-actions">' +
           '<button class="idn-edit-btn" data-open="operative">✦ Customize</button>' +

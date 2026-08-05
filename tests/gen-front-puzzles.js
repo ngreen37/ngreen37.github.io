@@ -32,6 +32,26 @@
  *     phone: the band is 8..38, and the mate may never be White's only legal move.
  *   · Both kings on the board, kings never adjacent, no pawn on rank 1 or 8.
  *
+ * ⚑ 2026-08-05, TWO CHANGES, BOTH FROM NATE:
+ *
+ * 1. "The puzzles should have way more pieces on the board - make them a natural chess
+ *    situation." The old shape put a black king, one heavy white piece and a handful of
+ *    stragglers on the board — six men was typical and four happened. Positions are GROWN
+ *    now: build the core, prove it, then add men one at a time and RE-PROVE after every
+ *    single one, keeping only the additions that leave the same unique mate in one
+ *    standing. The referee is asked again for every man on the board, so a crowd costs
+ *    build time and buys nothing but honesty. Target is 14, floor is 11.
+ *
+ * 2. "You can click any square even if illegal and it'll call it wrong." Fair, and it was
+ *    the one place the front door was pretending to be a chessboard without being one.
+ *    ⭐ THE FIX KEEPS THE ENGINE OFF THE PAGE. Every pool entry now carries White's
+ *    COMPLETE legal move list, straight from the referee, packed two characters per move.
+ *    The page looks moves up in a table; it still does not reason about chess, and the
+ *    legality it enforces is the referee's, not a second opinion written in the markup.
+ *    A position with no castling rights, no en-passant square and no pawn on the 7th has
+ *    no move that needs more than from+to to describe — which is exactly why those three
+ *    house rules were worth keeping.
+ *
  * OUTPUT: it rewrites the marked block in index.md between the two sentinels. That is
  * deliberate — the pool is inline so the board is painted from the first byte with no
  * second request, which is the property the front door was built around. Re-run it and
@@ -158,19 +178,75 @@ function judge(board) {
   }
 
   const mate = mates[0];
-  return { fen: C.toFEN(S).split(' ')[0], from: mate.from, to: mate.to, san: C.toSAN(S, mate), moves: moves.length };
+  return { fen: C.toFEN(S).split(' ')[0], from: mate.from, to: mate.to, san: C.toSAN(S, mate),
+    moves: moves.length, men: board.filter(Boolean).length };
+}
+
+/* ── GROW IT INTO A POSITION ────────────────────────────────────────────────────────
+   Add men one at a time, re-judging after each. An addition survives only if the referee
+   still says the position is a unique mate in one AND it is the SAME mate — a crowd that
+   quietly changed the answer would be a worse bug than a bare board.
+
+   Placement is where the "natural" comes from: pawns on their own half only (and never on
+   the 7th rank, where they would introduce a promotion the page cannot ask about), pieces
+   anywhere. Everything else — legality, safety, uniqueness — is the referee's problem, and
+   it is asked every time rather than reasoned about here. */
+const WHITE_MEN = ['P', 'P', 'P', 'P', 'N', 'B', 'R', 'Q'];
+const BLACK_MEN = ['p', 'p', 'p', 'p', 'n', 'b', 'r'];
+function grow(board, base, want) {
+  let b = board.slice(), v = base, tries = 0;
+  while (b.filter(Boolean).length < want && tries < 90) {
+    tries++;
+    const white = rnd() < 0.42;
+    const p = pick(white ? WHITE_MEN : BLACK_MEN);
+    let r;
+    if (p === 'p') r = 1 + int(4);            // black pawns: ranks 7..4, never the 7th rank for White
+    else if (p === 'P') r = 2 + int(4);       // white pawns: ranks 6..3
+    else r = int(8);
+    const s = r * 8 + int(8);
+    if (b[s]) continue;
+    const t = b.slice();
+    t[s] = p;
+    const nv = judge(t);
+    if (!nv || nv.from !== v.from || nv.to !== v.to) continue;
+    b = t; v = nv;
+  }
+  return { board: b, verdict: v };
+}
+
+/* ── WHITE'S WHOLE LEGAL MOVE LIST, PACKED ─────────────────────────────────────────
+   Two characters per move, one per square, over a 64-symbol alphabet — so a 30-move
+   position costs 60 bytes inline and the page decodes it with one loop and no parsing.
+   ⚠ The alphabet is positional: SQ64[i] IS square i. index.md carries the same constant
+   and reads it with indexOf; change it in one place and the front door silently grades
+   the wrong squares as legal. There is a check for that in tests/style.check.js. */
+const SQ64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+function packMoves(fen) {
+  const S = C.parseFEN(fen + ' w - - 0 1');
+  const ms = C.legalMoves(S);
+  let out = '';
+  for (const m of ms) {
+    if (m.promo || m.castle) throw new Error('a move needs more than from+to: ' + fen);
+    out += SQ64[m.from] + SQ64[m.to];
+  }
+  return out;
 }
 
 /* ── search ─────────────────────────────────────────────────────────────────────── */
+const MIN_MEN = +(process.env.MIN_MEN || 11);
+const WANT_MEN = +(process.env.WANT_MEN || 14);
 const found = [];
 const seen = new Set();
-let attempts = 0;
+let attempts = 0, grownOut = 0;
 while (found.length < WANT && attempts < 4000000) {
   attempts++;
   const b = candidate();
   if (!b) continue;
-  const v = judge(b);
-  if (!v) continue;
+  const bare = judge(b);
+  if (!bare) continue;
+  const g = grow(b, bare, WANT_MEN);
+  if (g.verdict.men < MIN_MEN) { grownOut++; continue; }   // a core that will not take a crowd
+  const v = g.verdict;
   if (seen.has(v.fen)) continue;
   seen.add(v.fen);
   found.push(v);
@@ -191,6 +267,15 @@ for (const p of found) {
   const mates = ms.filter((m) => C.isCheckmate(C.makeMove(S, m)));
   if (mates.length !== 1) throw new Error('pool entry is not a unique mate in one: ' + p.fen);
   if (mates[0].from !== p.from || mates[0].to !== p.to) throw new Error('pool entry has the wrong answer: ' + p.fen);
+  /* the packed move list is what the PAGE will believe about legality, so decode it back
+     and make the referee agree with it move for move — same set, same size, no extras */
+  p.pack = packMoves(p.fen);
+  const back = new Set();
+  for (let i = 0; i < p.pack.length; i += 2) back.add(SQ64.indexOf(p.pack[i]) + '>' + SQ64.indexOf(p.pack[i + 1]));
+  if (back.size !== ms.length) throw new Error('packed move list is the wrong size: ' + p.fen);
+  for (const m of ms) if (!back.has(m.from + '>' + m.to)) throw new Error('packed move list is missing ' + m.from + '>' + m.to + ': ' + p.fen);
+  if (!back.has(p.from + '>' + p.to)) throw new Error('packed move list does not contain the ANSWER: ' + p.fen);
+  if (p.men < MIN_MEN) throw new Error('pool entry is too bare (' + p.men + ' men): ' + p.fen);
   /* WHITE pawns only — a black pawn on the 7th rank is just a black pawn, and Black never
      gets a move here. Row 1 of a FEN is the 7th rank; rows 0 and 7 are the 8th and the 1st,
      where no pawn of either color may legally stand. */
@@ -199,10 +284,8 @@ for (const p of found) {
   if (/[pP]/.test(rows[0]) || /[pP]/.test(rows[7])) throw new Error('a pawn is on rank 1 or 8: ' + p.fen);
 }
 
-const lines = found.map((p) => `'${p.fen} ${p.from} ${p.to}'`);
-const rows = [];
-for (let i = 0; i < lines.length; i += 2) rows.push('    ' + lines.slice(i, i + 2).join(', ') + ',');
-const block = rows.join('\n').replace(/,$/, '');
+const lines = found.map((p) => `'${p.fen} ${p.from} ${p.to} ${p.pack}'`);
+const block = lines.map((l, i) => '    ' + l + (i === lines.length - 1 ? '' : ',')).join('\n');
 
 const BEGIN = '  /* ══ POOL — GENERATED, DO NOT EDIT BY HAND · npm run gen:puzzles ══ */';
 const END = '  /* ══ END POOL ══ */';
@@ -219,9 +302,12 @@ if (!re.test(idx)) {
 idx = idx.replace(re, BEGIN + '\n  var POOL = [\n' + block + '\n  ];\n' + END);
 fs.writeFileSync(idxPath, idx);
 
+const men = found.map((p) => p.men).sort((a, b) => a - b);
 console.log(`\n=== FRONT-DOOR PUZZLE POOL ===`);
 console.log(`  ${found.length} positions, each a UNIQUE mate in one by the site's referee`);
-console.log(`  ${attempts} candidates tried · seed ${SEED}`);
+console.log(`  ${attempts} candidates tried (${grownOut} dropped for not taking a crowd) · seed ${SEED}`);
+console.log(`  men on the board: ${men[0]}..${men[men.length - 1]}, median ${men[found.length >> 1]}`);
 console.log(`  median legal moves: ${found.map((p) => p.moves).sort((a, b) => a - b)[found.length >> 1]}`);
+console.log(`  packed move lists re-decoded and re-checked against the referee`);
 console.log(`  sample: ${found.slice(0, 4).map((p) => p.san).join(' · ')}`);
 console.log(`  written into index.md between the POOL sentinels\n`);

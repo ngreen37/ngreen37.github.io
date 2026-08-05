@@ -23,35 +23,78 @@
   html, body { user-select: none; -webkit-user-select: none; -moz-user-select: none; -webkit-tap-highlight-color: transparent; }
   input, textarea, select, [contenteditable="true"] { user-select: text; -webkit-user-select: text; }
   /* ⚑ THE ROOM, NOT THE CABINET (2026-08-04) — warm paper, page type, no neon. The palette
-     is the front door's: --surface #fbfaf7, ink #1e232c / #4b5361 / #5a626f, and the one
-     green #2e7d47. Kept as literals because this document loads no stylesheet. */
-  html, body {
-    background: #fbfaf7; height: 100%; overflow: hidden;
+     is the front door's: parchment sheet, ink #1e232c / #4b5361 / #5a626f, and the one
+     green #2e7d47. Kept as literals because this document loads no stylesheet.
+
+     ⚑ AND THE PAPER IS TRANSLUCENT NOW (2026-08-05, Nate: "make it transparent like the
+     home page"). The front door's sheet is rgba(251,243,224,0.78) and this is the same
+     one, so the town sky and its weather run behind the puzzle exactly as they run behind
+     the board on the front door. Three surfaces had to give up their opaque fill at once
+     or the change shows nowhere: this document's <body>, the <canvas> element, and
+     drawBg() — see the note there. The IFRAME that hosts this page has to stop painting
+     white too; that half lives in /games/fork-in-the-road/index.html. */
+  html { background: transparent; }
+  body {
+    background: rgba(251, 243, 224, 0.78); height: 100%; overflow: hidden;
     font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; color: #1e232c;
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    display: flex; align-items: center; justify-content: center; min-height: 100vh;
   }
-  body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-  /* Maximize the playfield on desktop; still scales down for mobile. */
-  #stage { position: relative; width: 100%; max-width: 600px; }
-  /* No border, no glow. The canvas paints its own paper and its own timber-framed board —
-     a second frame around the whole surface was the arcade cabinet in miniature. */
-  #canvas { display: block; width: 100%; border-radius: 10px; background: #fbfaf7; }
+  /* ⚠ SIZED OFF THE SHORTER SIDE, NOT OFF THE WIDTH. The canvas is 480x556, so a stage
+     wider than height x 0.863 makes a canvas taller than the frame — and `overflow:hidden`
+     on the body would silently crop the road ribbon off the bottom rather than telling
+     anyone. The host frame carries the same ratio so the two agree; this is the seatbelt. */
+  #stage { position: relative; width: min(100%, calc(100vh * 0.863)); container-type: inline-size; }
+  /* No border, no glow, and no fill: the canvas paints its own timber-framed board onto
+     the body's parchment. A second frame around the whole surface was the arcade cabinet
+     in miniature, and an opaque fill here would be the white box he asked us to lose. */
+  #canvas { display: block; width: 100%; border-radius: 10px; background: transparent; }
+
+  /* ══ THE TOOL ROW — BELOW THE BOARD, AND IT SCALES (2026-08-05) ═══════════════════
+     Nate: "Can you move the Report Puzzle button off the chessboard?"
+
+     ⚠ IT WAS WORSE THAN IT LOOKED ON DESKTOP, AND THE REASON IS THE WHOLE LESSON. The
+     three buttons were pinned in CSS PIXELS (`bottom: 84px`) to a canvas that is drawn in
+     its own 480-wide coordinate system and then SCALED to fit. Measured on the live site:
+     at 1400px the Report pill covered the board's bottom-left corner by 30x8 canvas px —
+     annoying. At 390px the canvas scales to 0.69 and the pill does NOT, so the same
+     button covered a third of the board's width across two whole ranks. A fixed-size
+     control over a scaled surface is not a placement bug at one size; it is a different
+     picture at every size.
+
+     So the row is a PERCENTAGE band in the gap the canvas now leaves under the board
+     (canvas y 456..490 of 556), and the type inside it is sized in `cqw` off the stage.
+     Both ends of that scale are clamped, because a pill that shrinks forever stops being
+     a tap target and one that grows forever eats the ribbon. */
+  #tool-row {
+    position: absolute; z-index: 6; left: 9.6%; right: 9.6%; top: 82.4%; height: 6.12%;
+    display: flex; align-items: stretch; justify-content: space-between; gap: 8px;
+    pointer-events: none;
+  }
   .float-btn {
     position: absolute; z-index: 6; font-family: 'Trebuchet MS', sans-serif; font-weight: bold;
     border: none; border-radius: 999px; cursor: pointer; transition: transform 0.08s;
     box-shadow: 0 3px 0 rgba(0,0,0,0.35);
   }
+  #tool-row .float-btn {
+    position: static; height: 100%; display: inline-flex; align-items: center;
+    justify-content: center; pointer-events: auto; white-space: nowrap;
+    font-size: clamp(10px, 2.35cqw, 13px); padding: 0 clamp(10px, 2.6cqw, 16px);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.28);
+  }
   .float-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
   /* ORANGE, matching the ring this button flashes on the board — one signal, one color */
-  #hint-btn { bottom: 84px; right: 10px; background: #e0651a; color: #ffffff; padding: 7px 14px; font-size: 12px; }
+  #hint-btn { background: #e0651a; color: #ffffff; }
   /* Takes the Hint button's seat — Hint is hidden the moment a puzzle resolves, which is
      exactly when there is something worth taking apart. Never both on screen at once. */
-  #analysis-btn { bottom: 84px; right: 10px; background: #2e7d47; color: #ffffff;
-    padding: 7px 14px; font-size: 12px; }
+  #analysis-btn { background: #2e7d47; color: #ffffff; }
   /* was a 10px whisper in the corner; a report you can't find is a report you never get */
-  #report-btn { bottom: 84px; left: 10px; background: #ffffff; color: #4b5361;
-    border: 1px solid #d9d4c8; padding: 7px 13px; font-size: 11px; letter-spacing: 0.04em; }
+  #report-btn { background: #ffffff; color: #4b5361;
+    border: 1px solid #d9d4c8; letter-spacing: 0.03em; }
   #report-btn:hover { color: #1e232c; background: #f0ede5; border-color: #8a5a2b; }
+  /* An empty row must not sit there as a floating gap — Hint and Analysis are both hidden
+     between puzzles, and Report only appears once there is a puzzle to report. */
+  #tool-row:not(:has(.float-btn:not(.hidden))) { display: none; }
   .rep-fen { font-family: ui-monospace, 'Share Tech Mono', monospace; font-size: 10.5px; color: #4b5361;
     background: #f4f2ec; border: 1px solid #e5e1d8; border-radius: 8px; padding: 8px 10px;
     margin: 0 0 10px; max-width: 340px; word-break: break-all; line-height: 1.5; }
@@ -71,13 +114,34 @@
     background: #ffffff; border: 1px solid #e5e1d8; border-radius: 8px; padding: 7px 9px; }
   .rep-note::placeholder { color: #8b93a1; }
   .rep-note:focus { outline: none; border-color: #2e7d47; }
-  #menu-btn { top: 10px; right: 10px; background: #ffffff; color: #4b5361; padding: 5px 12px; font-size: 11px; border: 1px solid #d9d4c8; }
-  .float-btn.hidden { display: none; }
+  /* Same percentage treatment as the tool row, for the same reason — it sits in the
+     header band above the board and used to creep down onto it as the canvas shrank. */
+  #menu-btn { top: 0.9%; right: 2%; height: 4.7%; display: inline-flex; align-items: center;
+    background: #ffffff; color: #4b5361; border: 1px solid #d9d4c8;
+    font-size: clamp(9px, 2.2cqw, 12px); padding: 0 clamp(8px, 2.4cqw, 14px); }
+  /* ⚠ EVERY RULE THAT SETS `display` NEEDS ITS OWN LINE HERE, and this cost two renders to
+     learn — the same mistake twice, on two different elements.
+       · `#tool-row .float-btn` sets display and scores (1,1,0). A bare `.float-btn.hidden`
+         scores (0,2,0) and LOSES — so `.hidden` quietly stopped hiding anything inside the
+         row, and Analysis (the button that only exists once a puzzle is OVER) sat next to
+         Hint during a live puzzle. The answer key beside the question.
+       · `#menu-btn` scores (1,0,0), and an ID beats ANY number of classes — so ☰ Menu was
+         on screen on the MENU screen, where the whole point is that it is not.
+     A rule that reads like an override is not one until you count. Same family as the front
+     door's media-query trap: `@media` adds no specificity either. */
+  .float-btn.hidden,
+  #tool-row .float-btn.hidden,
+  #menu-btn.hidden { display: none; }
 
   .overlay {
     position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column;
     align-items: center; padding: 22px; text-align: center;
-    border-radius: 10px; background: #fbfaf7;
+    border-radius: 10px;
+    /* NO FILL. The body is the parchment sheet now, and a screen that painted its own
+       would be a second, more opaque sheet laid over the first — visible as a hard edge
+       the moment the town sky moved behind it. The one screen that really does cover
+       something (see #report-screen) opts back in. */
+    background: transparent;
     /* ⚠ `safe center`, not `center` — and it has to scroll (2026-07-28, caught in a phone
        render: the journey line wrapped to two lines at 390px and "Chess City" ended up
        underneath the button, unreachable). A flex container centering content TALLER than
@@ -87,13 +151,18 @@
     justify-content: safe center; overflow-y: auto;
   }
   .overlay.hidden { display: none; }
+  /* ⚠ THE ONE SCREEN THAT NEEDS A SCRIM. Menu and Summary both set `G = null` first, so
+     render() draws nothing behind them. Report does NOT — the puzzle is still live under
+     it, which is the point (you are reporting THAT position). Without a fill the FEN and
+     the note field would be typed over a chessboard. */
+  #report-screen { background: rgba(250, 245, 232, 0.96); }
   /* Page typography, not arcade typography: the title is sentence case at a page weight,
      the eyebrow is the front door's mono label, and nothing glows. */
   .big-title { font-size: 30px; font-weight: 900; color: #1e232c; letter-spacing: -0.02em;
     margin-bottom: 4px; }
-  .eyebrow { font-size: 11px; letter-spacing: 2.4px; color: #8a5a2b; text-transform: uppercase;
+  .eyebrow { font-size: 11px; letter-spacing: 2.4px; color: #5f3e1e; text-transform: uppercase;
     font-family: 'Share Tech Mono', ui-monospace, monospace; margin-bottom: 10px; }
-  .blurb { font-size: 13.5px; color: #4b5361; line-height: 1.65; max-width: 400px; margin-bottom: 16px; }
+  .blurb { font-size: 13.5px; color: #333944; line-height: 1.65; max-width: 400px; margin-bottom: 16px; }
   .row { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
   /* ONE primary action, and it is the front door's green. The old buttons sat on a 4px hard
      shadow that read as a plastic arcade key — they are page buttons now. */
@@ -105,25 +174,30 @@
   .btn-gold:hover { background: #24663a; box-shadow: 0 11px 24px rgba(46,125,71,0.28); }
   .btn-ghost { background: #f0ede5; color: #4b5361; border: 1px solid #e5e1d8; }
   .btn-ghost:hover { background: #e8e4da; }
-  .foot { margin-top: 16px; font-size: 11px; color: #5a626f; line-height: 1.8; }
+  .foot { margin-top: 16px; font-size: 11px; color: #404650; line-height: 1.8; }
   .foot b { color: #1e232c; } .tap { cursor: pointer; text-decoration: underline; }
   .sum-grid { display: grid; grid-template-columns: auto auto; gap: 7px 22px; margin: 10px 0; }
-  .sum-grid .l { text-align: right; color: #5a626f; font-size: 13px; }
+  .sum-grid .l { text-align: right; color: #404650; font-size: 13px; }
   .sum-grid .v { text-align: left; color: #1e232c; font-size: 15px; font-weight: bold; }
   .v.good { color: #2e7d47; }
-  .tact-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #8a5a2b; margin: 12px 0 4px; }
-  .tact-row { display: flex; justify-content: space-between; gap: 18px; font-size: 12px; color: #4b5361; padding: 1px 8px; max-width: 230px; margin: 0 auto; }
-  .tact-row span:last-child { color: #fff; font-weight: bold; }
-  .tact-hint { font-size: 10.5px; color: #8fc7bd; margin-top: 8px; }
+  .tact-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #5f3e1e; margin: 12px 0 4px; }
+  .tact-row { display: flex; justify-content: space-between; gap: 18px; font-size: 12px; color: #333944; padding: 1px 8px; max-width: 230px; margin: 0 auto; }
+  .tact-row span:last-child { color: #1e232c; font-weight: bold; }
+  .tact-hint { font-size: 10.5px; color: #404650; margin-top: 8px; }
 </style>
 </head>
 <body>
 <div id="stage">
-  <canvas id="canvas" width="480" height="500"></canvas>
-  <button class="float-btn hidden" id="menu-btn">☰ menu</button>
-  <button class="float-btn hidden" id="hint-btn">🐾 Hint</button>
-  <button class="float-btn hidden" id="report-btn" title="Something wrong with this puzzle? Send it to McPuppy">⚑ Report puzzle</button>
-  <button class="float-btn hidden" id="analysis-btn" title="Open this puzzle on a board you can move — with the engine watching">⚗ Analysis</button>
+  <canvas id="canvas" width="480" height="556"></canvas>
+  <button class="float-btn hidden" id="menu-btn">☰ Menu</button>
+  <!-- ⚠ ORDER IS THE LAYOUT. `justify-content: space-between` puts the first child left
+       and the last right; Hint and Analysis are never visible at the same time, so
+       whichever one is up takes the right-hand seat. Reordering these moves the buttons. -->
+  <div id="tool-row">
+    <button class="float-btn hidden" id="report-btn" title="Something wrong with this puzzle? Send it to McPuppy">⚑ Report Puzzle</button>
+    <button class="float-btn hidden" id="hint-btn">🐾 Hint</button>
+    <button class="float-btn hidden" id="analysis-btn" title="Open this puzzle on a board you can move — with the engine watching">⚗ Analysis</button>
+  </div>
 
   <!-- 2026-07-27 (Nate: "There's a lot of words there; let's cut a lot of those out.
        They'll figure it out."). The menu was a paragraph plus a three-line footnote.
@@ -139,14 +213,19 @@
     <div class="big-title">Fork in the Road</div>
     <div class="blurb">
       One winning move, every time.<br>
-      <b style="color:#8a5a2b">Forks · pins · skewers · discoveries · mates · winning material</b>
+      <b style="color:#5f3e1e">Forks · Pins · Skewers · Discoveries · Mates · Winning Material</b>
     </div>
-    <div class="blurb" id="journey-line" style="margin-bottom:10px;color:#2e7d47;font-weight:700;min-height:14px;"></div>
+    <!-- ⚠ #175031, NOT the room's #2e7d47. The button green is a BACKGROUND (white on it
+         clears 5:1); this is TEXT on the translucent sheet, where #2e7d47 measures 2.81:1
+         against the worst backdrop the town sky produces. Same split as --fd-wood /
+         --fd-wood-ink on the front door: one hue, two jobs, two values.
+         (HTML comment, not Liquid — this file has no front matter.) -->
+    <div class="blurb" id="journey-line" style="margin-bottom:10px;color:#175031;font-weight:700;min-height:14px;"></div>
     <div class="row">
-      <button class="btn btn-gold" id="journey-btn">Continue the journey</button>
+      <button class="btn btn-gold" id="journey-btn">Continue the Journey</button>
     </div>
     <div class="foot">
-      <span class="tap" id="snd-toggle">🔊 sound: on</span> &nbsp;·&nbsp; <span class="tap" id="reset-prog">reset journey</span>
+      <span class="tap" id="snd-toggle">🔊 Sound: On</span> &nbsp;·&nbsp; <span class="tap" id="reset-prog">Reset Journey</span>
     </div>
   </div>
 
@@ -160,16 +239,16 @@
     <div class="rep-verdict hidden" id="rep-verdict"></div>
     <textarea class="rep-note" id="rep-note" rows="2" maxlength="500" placeholder="What looked wrong? (optional)"></textarea>
     <div class="row">
-      <button class="btn btn-gold" id="rep-send">Send it</button>
+      <button class="btn btn-gold" id="rep-send">Send It</button>
     </div>
     <div class="foot" id="rep-done" style="min-height:1.4em;"></div>
     <!-- the old pair, kept and demoted. They are the escape hatch for the day the table
          is unreachable, and the panel says so rather than pretending they are equals. -->
     <div class="row" style="margin-top:2px;">
-      <button class="btn btn-ghost" id="rep-mail">email it instead</button>
-      <button class="btn btn-ghost" id="rep-copy">copy it</button>
+      <button class="btn btn-ghost" id="rep-mail">Email It Instead</button>
+      <button class="btn btn-ghost" id="rep-copy">Copy It</button>
     </div>
-    <div class="foot"><span class="tap" id="rep-close">back to the puzzle</span></div>
+    <div class="foot"><span class="tap" id="rep-close">Back to the Puzzle</span></div>
   </div>
 
   <div class="overlay hidden" id="summary-screen">
@@ -183,7 +262,7 @@
     </div>
     <div id="sum-tactics"></div>
     <div class="row">
-      <button class="btn btn-gold" id="sum-again">Play again</button>
+      <button class="btn btn-gold" id="sum-again">Play Again</button>
       <button class="btn btn-ghost" id="sum-menu">Menu</button>
     </div>
   </div>
@@ -193,8 +272,25 @@
 "use strict";
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-const W = 480, H = 500;
-const TILE = 42, BOARD = TILE * 8, BX = (W - BOARD) / 2, BY = 80;
+/* ══ THE ROOM GOT BIGGER (2026-08-05, Nate: "Make the white puzzle box much bigger") ══
+   Every number below is canvas-space; the element is scaled to whatever the frame gives
+   it, so these are proportions, not pixels. What changed and why:
+
+     BOARD / H   0.67 -> 0.68   the board's share of the sheet
+     BOARD / W   0.70 -> 0.78   ⭐ THE REAL GAIN. The board was 336 wide inside a 480-wide
+                                canvas, and the 144px it wasn't using was margin nobody
+                                asked for. At the same frame width the board is now 12%
+                                bigger before the frame itself grows at all.
+     H           500 -> 556     the extra 56 is a real BAND under the board for the tool
+                                row, which used to have no home and sat on the board.
+
+   The header above the board is one row shorter than it was, because the motif pill is
+   gone (see drawHeader) — that is what paid for the board starting at y=68 instead of 80.
+
+   ⚠ THE HOST FRAME CARRIES 480/556 TOO. /games/fork-in-the-road/ sets the iframe's
+   aspect-ratio from these two numbers. Change one here and the frame letterboxes. */
+const W = 480, H = 556;
+const TILE = 47, BOARD = TILE * 8, BX = (W - BOARD) / 2, BY = 68;
 
 // Wayfarer theme — mossy-stone board, teal road, gold waypoints.
 /* ── THE PUZZLE ROOM IS A ROOM, NOT A CABINET (2026-08-04) ─────────────────────────
@@ -212,7 +308,7 @@ const TILE = 42, BOARD = TILE * 8, BX = (W - BOARD) / 2, BY = 80;
    file loads no stylesheet. If the canon ever moves, it moves here too. That is the whole
    cost of the board being drawn rather than laid out, and it is worth knowing about. */
 const C = { light: '#e9d3a4', dark: '#9c5f33', frame: '#4a3320', gold: '#F5C518', good: '#6bffb8',
-  bad: '#ff5b8a', pink: '#ff8fd0', ink: '#1e232c', muted: '#6d7583', dot: 'rgba(107,255,184,0.85)' };
+  bad: '#ff5b8a', pink: '#ff8fd0', ink: '#1e232c', muted: '#404650', dot: 'rgba(107,255,184,0.85)' };
 // The canon livery: filled pieces, fat outline in the opposite line color.
 const FORK_PAL = { wFill: '#ffffff', wEdge: '#2f2440', bFill: '#4a3585', bEdge: '#f2e9ff' };
 const GLYPH = { K:'♚', Q:'♛', R:'♜', B:'♝', N:'♞', P:'♟' };
@@ -262,40 +358,103 @@ function placeFar(used, avoid, rnd, banFile){
   }
   return null;
 }
-// ── BOARD CLUTTER ─────────────────────────────────────────────────────────────
-// 2026-07-27 (Nate: "there aren't enough pieces on the board for each given puzzle.
-// It's too easy."). Puzzles used to carry at most a few black pawns. They now carry
-// a real crowd — pawns at every level, and knights/bishops once the road sharpens —
-// so a position has to be READ instead of scanned.
-//
-// Every distractor is proved INERT before it lands: it may not influence any key
-// square of the tactic, may not touch a white piece, and may not be capturable
-// itself (free material would be a second, easier answer). Whatever slips through
-// is caught downstream by puzzleSane() + secondSolution().
-function clutterFor(diff, max){ return Math.max(1, Math.min(max, Math.round(diff * 0.7))); }
-function addDistractors(pieces, used, n, rnd, keepClearOf, rich){
+/* ══ BOARD CLUTTER — THE CROWD ════════════════════════════════════════════════════
+   2026-07-27 (Nate: "there aren't enough pieces on the board for each given puzzle.
+   It's too easy.") — and again, harder, 2026-08-05: "the puzzles should have way more
+   pieces on the board - make them a natural chess situation."
+
+   ⚑ WHAT THE FIRST PASS GOT WRONG, measured on the live site before this one: a
+   difficulty-1 Knight Fork shipped with FOUR MEN on it. The clutter formula was
+   `min(3, diff - 4)`, which is ZERO for the whole first half of the road, and two of the
+   six motifs never called it at all. The road's first 400 puzzles were four-piece
+   diagrams. That is not a difficulty setting; it is an empty board.
+
+   ⚑ AND THE SECOND THING, which is why "more pawns" alone would not have answered him:
+   EVERY distractor was BLACK. You cannot build a natural position out of one army. The
+   crowd is both colors now, at roughly 45% white, with pawns on their own half of the
+   board where pawns actually live.
+
+   THE PROOF DID NOT MOVE. A man only lands if it is inert, and inert is four tests:
+     · not on, and not adjacent to, any square the tactic uses
+     · it does not ATTACK any of those squares (so it can neither defend the target nor
+       cover the king's escape)
+     · it neither stands on nor attacks any square the solution's pieces TRAVEL through —
+       ⚠ this one is new and it is what lets a crowd coexist with a sliding piece. Without
+       it a pawn in the middle of the rook's file simply blocks the mate.
+     · it does not hang. Free material is a second, easier answer. A PAWN may be attacked
+       if it is defended, because a defended pawn is the texture of a real position and
+       the worst it can cost in an exchange is 100 — well under the +300 bar every
+       material puzzle has to clear.
+   Whatever still slips through is caught downstream by puzzleSane() + secondSolution()
+   + secondMate(). The crowd changes what the board LOOKS like, never what is true of it. */
+/* ⚑ THE PRESSURE VALVE. Some geometries simply cannot carry twelve extra men — the lanes
+   eat the board, every candidate square fails, and genPuzzle burns its eighteen attempts
+   before giving up and shipping the hard-coded fallback. `clutterEase` is what genPuzzle
+   turns down as the attempts run out: crowded first, thinner if the position resists, a
+   real puzzle either way. Reset to 1 the moment genPuzzle returns, so nothing outside
+   that loop can observe a half-eased generator. */
+let clutterEase = 1;
+function clutterFor(diff, max){
+  const want = Math.max(6, Math.min(max, 6 + Math.round(diff * 0.7)));
+  return Math.max(2, Math.round(want * clutterEase));
+}
+/* Every square the solution's men pass over, ends included — the lanes that must stay
+   open for the stored line to still be the stored line. */
+function lineLane(ax, ay, bx, by){
+  const out = [], dx = Math.sign(bx - ax), dy = Math.sign(by - ay);
+  let x = ax, y = ay;
+  out.push({ x, y });
+  while (x !== bx || y !== by){ x += dx; y += dy; out.push({ x, y }); }
+  return out;
+}
+function addDistractors(pieces, used, n, rnd, keepClearOf, rich, lanes){
   let added = 0, tries = 0;
-  const TYPES = rich ? ['p','p','p','n','b'] : ['p','p','p','n'];
-  while (added < n && tries < 140){
+  const laneKeys = new Set((lanes || []).map(k2));
+  const BLACK = rich ? ['p','p','p','p','n','b','r'] : ['p','p','p','p','n','b'];
+  const WHITE = rich ? ['P','P','P','P','N','B','R'] : ['P','P','P','P','N','B'];
+  while (added < n && tries < 460){
     tries++;
-    const t = TYPES[(rnd()*TYPES.length)|0];
-    const x = (rnd()*8)|0, y = 1 + ((rnd()*6)|0);
-    if (used.has(x+','+y)) continue;
-    // BLACK PAWNS STAY OFF THE PROMOTION RUN (found 2026-07-27 by the referee audit:
-    // "best-defense-only--220"). A black pawn on y=5 or y=6 is one or two moves from
-    // queening and the proof search runs 4 ply — so black's best defense quietly became
-    // "promote", and the tactic stopped being worth a piece. The in-game material search
-    // doesn't model promotion; the referee does. That's exactly where they disagreed.
-    if (t === 'p' && (y < 2 || y > 4)) continue;
+    const white = rnd() < 0.45;
+    const pool = white ? WHITE : BLACK;
+    const t = pool[(rnd()*pool.length)|0];
+    const x = (rnd()*8)|0;
+    /* PAWNS LIVE ON THEIR OWN HALF, AND OFF THE PROMOTION RUN. Rows are top-down, so
+       black pawns want rows 1-4 (ranks 7-4) and white pawns rows 3-6 (ranks 5-2).
+       ⚠ THE CEILING IS NOT COSMETIC (found 2026-07-27 by the referee audit,
+       "best-defense-only--220"): a black pawn on row 5 or 6 is one or two moves from
+       queening and the proof search runs 4 ply, so black's best defense quietly became
+       "promote" and the tactic stopped being worth a piece. The in-game material search
+       does not model promotion; the referee does. That is exactly where they disagreed.
+       The same trap is a white pawn on row 1 or 2, so white's floor is row 3. */
+    /* Pieces may stand on the back ranks; pawns may not, ever. Keeping everything off rows
+       0 and 7 was the old placer's shortcut and it left a tell you could read from across
+       the room: rank 1 was empty in EVERY generated position. A rook on its own back rank
+       is the most ordinary thing on a chessboard. */
+    const y = t === 'p' ? 1 + ((rnd()*4)|0)
+            : t === 'P' ? 3 + ((rnd()*4)|0)
+            : (rnd()*8)|0;
+    const key = x + ',' + y;
+    if (used.has(key) || laneKeys.has(key)) continue;
     if (keepClearOf.some(s => Math.max(Math.abs(s.x-x), Math.abs(s.y-y)) <= 1)) continue;
     const cand = pieces.concat([t + alg(x, y)]);
     const b = parseBoard({ pieces: cand });
-    // it must not see any key square, must not touch a white piece, and must not hang
+    const me = white ? 'w' : 'b', foe = white ? 'b' : 'w';
     const infl = genMoves(b, x, y);
     if (infl.some(m => keepClearOf.some(s => s.x === m.x && s.y === m.y))) continue;
-    if (infl.some(m => b[m.y][m.x] && b[m.y][m.x].c === 'w')) continue;
-    if (isAttacked(b, x, y, 'w')) continue;
-    used.add(x+','+y); pieces.push(t + alg(x, y)); added++;
+    if (infl.some(m => laneKeys.has(m.x + ',' + m.y))) continue;
+    // no hanging men — a defended PAWN is the one thing allowed to be under fire
+    if (isAttacked(b, x, y, foe) && !(t.toUpperCase() === 'P' && isAttacked(b, x, y, me))) continue;
+    /* …and it must not leave somebody ELSE hanging. The rule above asks whether THIS man
+       is safe; this one asks whether the men it now attacks are. A crowd is allowed to
+       touch itself — that is most of what makes it look like a real position — but only
+       where the exchange is small. Anything undefended, or defended but worth 300 more
+       than its attacker, is free material and therefore a second answer to the puzzle. */
+    if (infl.some(m => {
+      const q = b[m.y][m.x];
+      if (!q || q.c !== foe) return false;
+      return !isAttacked(b, m.x, m.y, foe) || PVAL[q.t] - PVAL[t.toUpperCase()] >= 300;
+    })) continue;
+    used.add(key); pieces.push(t + alg(x, y)); added++;
   }
 }
 
@@ -328,8 +487,10 @@ function genKnightFork(diff, rnd){
     if (!escapes.length) continue;                              // would be mate/stuck — retry
     const E = escapes[rnd()*escapes.length|0];
     const pieces = ['K'+alg(wk.x,wk.y), 'N'+alg(O.x,O.y), 'k'+alg(T1.x,T1.y), big.toLowerCase()+alg(T2.x,T2.y)];
-    // the top of the road carries more clutter now (2026-07-14 difficulty spread)
-    addDistractors(pieces, used, Math.max(0, Math.min(diff >= 8 ? 5 : 3, diff-4)), rnd, [S, T1, T2, O]);
+    /* A knight jumps, so this tactic has no lane to keep open — the only squares that
+       matter are the four key ones, the escape E (adjacent to T1, so already covered) and
+       the white king, which goes in the clear-of list so a black man cannot check it. */
+    addDistractors(pieces, used, clutterFor(diff, 12), rnd, [S, T1, T2, O, wk], diff >= 4);
     const line = [
       [alg(O.x,O.y)+alg(S.x,S.y), 'N'+alg(S.x,S.y)+'+'],
       [alg(T1.x,T1.y)+alg(E.x,E.y), 'K'+alg(E.x,E.y)],
@@ -356,7 +517,12 @@ function genBackRankMate(diff, rnd){
     const wk = placeFar(used, [ek], rnd, fx); if (!wk) continue;
     used.add(k2(wk));
     const pieces = ['K'+alg(wk.x,wk.y), heavy+alg(fx,ry), 'k'+alg(ek.x,ek.y), 'p'+alg(fp[0].x,fp[0].y), 'p'+alg(fp[1].x,fp[1].y)];
-    addDistractors(pieces, used, Math.max(0, Math.min(diff >= 8 ? 4 : 2, diff-5)), rnd, [ek, {x:fx,y:0}, {x:fx,y:ry}]);
+    /* THE LANE IS THE WHOLE MATE. The heavy piece drops the length of file fx to the back
+       rank; one man anywhere on that file and the mate is not a mate. The back rank ITSELF
+       is a lane too — the mating piece has to check along it, so a stray man beside the
+       king would give the king a shield or a capture. */
+    const lanes = lineLane(fx, ry, fx, 0).concat(lineLane(0, 0, 7, 0));
+    addDistractors(pieces, used, clutterFor(diff, 11), rnd, [ek, {x:fx,y:0}, {x:fx,y:ry}, wk], diff >= 4, lanes);
     const line = [[alg(fx,ry)+alg(fx,0), heavy+alg(fx,0)+'#']];
     return { theme:'Back Rank', cat:'mate', goal:'Mate in one.', side:'w',
       hint:'The back rank is fatally weak — bring a heavy piece down.', pieces, line,
@@ -388,6 +554,14 @@ function genSkewer(diff, rnd){
     if (wk.y === cy && wk.x > lo && wk.x < hi) continue;     // WK would block the rook's approach
     const E = escapes.find(e => !used.has(e.x+','+e.y) && !adjc(e.x,e.y,wk.x,wk.y)); if (!E) continue;
     const pieces = ['K'+alg(wk.x,wk.y), 'R'+alg(rfx,cy), 'k'+alg(kx,ky), 'q'+alg(kx,qy)];
+    /* ⚑ THE SKEWER GETS A CROWD TOO (2026-08-05). Its header used to say "No distractors —
+       the line must stay provably clean", and that was true of the OLD placer, which could
+       not be told about lanes. It can now: the rook travels along rank cy to the king's
+       file and then straight down it through the king's square to the queen. Keep those two
+       lanes empty and unattacked and the geometry is exactly as clean as it was on an empty
+       board — the difference is you now have to FIND it. */
+    const lanes = lineLane(rfx, cy, kx, cy).concat(lineLane(kx, cy, kx, qy));
+    addDistractors(pieces, used, clutterFor(diff, 11), rnd, [{x:kx,y:ky}, {x:kx,y:qy}, {x:rfx,y:cy}, {x:kx,y:cy}, E, wk], diff >= 4, lanes);
     const line = [
       [alg(rfx,cy)+alg(kx,cy), 'R'+alg(kx,cy)+'+'],
       [alg(kx,ky)+alg(E.x,E.y), 'K'+alg(E.x,E.y)],
@@ -449,7 +623,9 @@ function genDoubleAttack(diff, rnd){
     if (adjc(K.x, K.y, S.x, S.y)) continue;                           // no contact check
     if (adjc(K.x, K.y, wk.x, wk.y)) continue;
     const pieces = [A+alg(O.x,O.y), 'K'+alg(wk.x,wk.y), 'k'+alg(K.x,K.y), tt.toLowerCase()+alg(T.x,T.y)];
-    addDistractors(pieces, used, clutterFor(diff, 6), rnd, [S, K, T, O, wk], diff >= 5);
+    // three lanes: the attacker's approach O->S, then S->K (the check) and S->T (the hit)
+    addDistractors(pieces, used, clutterFor(diff, 12), rnd, [S, K, T, O, wk], diff >= 4,
+      lineLane(O.x,O.y,S.x,S.y).concat(lineLane(S.x,S.y,K.x,K.y), lineLane(S.x,S.y,T.x,T.y)));
     const b = parseBoard({ pieces });
     // every line the tactic depends on has to be genuinely clear
     const occ = new Set(); pieces.forEach(s => occ.add(F(s.slice(1)) + ',' + Rk(s.slice(1))));
@@ -506,7 +682,9 @@ function genDiscovered(diff, rnd){
     used.add(k2(wk));
     if (adjc(K.x, K.y, wk.x, wk.y)) continue;
     const pieces = [SL+alg(Sl.x,Sl.y), 'N'+alg(B.x,B.y), 'K'+alg(wk.x,wk.y), 'k'+alg(K.x,K.y), tt.toLowerCase()+alg(T.x,T.y)];
-    addDistractors(pieces, used, clutterFor(diff, 5), rnd, [Sl, B, K, T, wk], diff >= 5);
+    // the discovery's whole point is the line Sl->K, which only the knight may stand on
+    addDistractors(pieces, used, clutterFor(diff, 11), rnd, [Sl, B, K, T, wk], diff >= 4,
+      lineLane(Sl.x,Sl.y,K.x,K.y));
     const occ = new Set(); pieces.forEach(s => occ.add(F(s.slice(1)) + ',' + Rk(s.slice(1))));
     occ.delete(k2(B));
     if (!clearPath(occ, Sl.x, Sl.y, K.x, K.y)) continue;              // only the knight blocks it
@@ -560,7 +738,9 @@ function genPinWin(diff, rnd){
     if (adjc(K.x, K.y, wk.x, wk.y)) continue;
     const pieces = ['B'+alg(SL.x,SL.y), 'P'+alg(pawn.x,pawn.y), 'K'+alg(wk.x,wk.y),
                     'k'+alg(K.x,K.y), 'r'+alg(P.x,P.y), 'p'+alg(G.x,G.y)];
-    addDistractors(pieces, used, clutterFor(diff, 5), rnd, [P, K, SL, pawn, push, G, wk], diff >= 6);
+    // the pinning diagonal SL->P->K, plus the square the pawn walks onto
+    addDistractors(pieces, used, clutterFor(diff, 10), rnd, [P, K, SL, pawn, push, G, wk], diff >= 4,
+      lineLane(SL.x,SL.y,K.x,K.y).concat([push]));
     const occ = new Set(); pieces.forEach(s => occ.add(F(s.slice(1)) + ',' + Rk(s.slice(1))));
     if (occ.has(k2(push))) continue;                                  // the push square must be empty
     if (!clearPath(occ, SL.x, SL.y, P.x, P.y)) continue;
@@ -597,23 +777,48 @@ function genPinWin(diff, rnd){
 //  4. Material puzzles ("win the queen/rook"): an exact-depth search proves the
 //     mover nets >= a clean minor piece (+300) against EVERY defense — so a king
 //     recapturing the forking knight can never turn "win the rook" into a mere trade.
-function matSum(b){ let s=0; const V={P:100,N:320,B:330,R:500,Q:900,K:0};
-  for (let y=0;y<8;y++) for (let x=0;x<8;x++){ const p=b[y][x]; if (p) s += (p.c==='w'?1:-1)*V[p.t]; }
+const PVAL = { P:100, N:320, B:330, R:500, Q:900, K:0 };
+function matSum(b){ let s=0;
+  for (let y=0;y<8;y++) for (let x=0;x<8;x++){ const p=b[y][x]; if (p) s += (p.c==='w'?1:-1)*PVAL[p.t]; }
   return s; }
+/* ⚑ THE NODE BUDGET, AND WHY IT CANNOT LIE (2026-08-05) ─────────────────────────────
+   A crowded board has a long tail: most positions are proved in a few thousand nodes and
+   the occasional one wants millions. Measured after the crowd landed, before this: median
+   ~95ms to make a puzzle, worst case 4.2 SECONDS — a visible freeze between two clicks.
+
+   ⭐ IT FAILS CLOSED. Running out of budget THROWS, and the only caller, puzzleSane(), is
+   wrapped in a try/catch that returns false. So an abandoned search never becomes a
+   "yes" — the candidate is simply discarded and the generator tries another one. The room
+   can be slow to find a puzzle; it can never ship a puzzle it did not finish proving.
+   That is the whole reason this is a throw and not a returned sentinel value: a sentinel
+   is a number some caller can mistake for a verdict. ([[accuracy-above-all]]) */
+let searchNodes = 0, searchCap = Infinity;
 function proveGain(b, col, d, a, beta){ // negamax, material-only, exact depth (alpha-beta)
+  if (++searchNodes > searchCap) throw new Error('search budget');
   const mv = legalMovesFor(b, col);
   if (!mv.length) return inCheck(b, col) ? -100000 : 0;
   if (d === 0) return (col==='w'?1:-1) * matSum(b);
+  /* CAPTURES FIRST, BIGGEST FIRST. Alpha-beta only prunes when it meets a good move early,
+     and in a material-only search the good move is almost always a capture. Ordering the
+     list is one sort; not ordering it is a wider tree at every node. */
+  if (d > 1) mv.sort((p, q) => {
+    const vp = b[q.ty][q.tx] ? PVAL[b[q.ty][q.tx].t] : -1;
+    const vq = b[p.ty][p.tx] ? PVAL[b[p.ty][p.tx].t] : -1;
+    return vp - vq;
+  });
   let best = -Infinity;
-  for (const m of mv){
-    const nb = cloneBoard(b); nb[m.ty][m.tx] = nb[m.fy][m.fx]; nb[m.fy][m.fx] = null;
-    const v = -proveGain(nb, col==='w'?'b':'w', d-1, -beta, -a);
+  for (let i=0;i<mv.length;i++){
+    const m = mv[i], moved = b[m.fy][m.fx], cap = b[m.ty][m.tx];
+    b[m.ty][m.tx] = moved; b[m.fy][m.fx] = null;               // make — see legalMovesFor
+    const v = -proveGain(b, col==='w'?'b':'w', d-1, -beta, -a);
+    b[m.fy][m.fx] = moved; b[m.ty][m.tx] = cap;                // unmake
     if (v > best) best = v; if (best > a) a = best; if (a >= beta) break;
   }
   return best;
 }
 function puzzleSane(p){
   try {
+    searchNodes = 0; searchCap = 15000;      // see the note above proveGain — this fails closed
     const b0 = parseBoard(p);
     const foe = p.side === 'w' ? 'b' : 'w';
     if (inCheck(b0, p.side) || inCheck(b0, foe)) return false;
@@ -628,11 +833,28 @@ function puzzleSane(p){
     // \b matters: the goal "Win material." CONTAINS the substring "mate" (m-a-t-e-rial),
     // so the old /mate/i sent every new material puzzle down the checkmate branch and
     // failed it for not being mate. Cost: two whole motifs generated nothing (2026-07-27).
-    if (p.cat === 'mate' || /\bmate\b/i.test(p.goal)) return isCheckmate(b, mover);
+    if (p.cat === 'mate' || /\bmate\b/i.test(p.goal)){
+      if (!isCheckmate(b, mover)) return false;
+      /* ⚑ A MATE PUZZLE NOW HAS TO BE THE ONLY MATE (2026-08-05) — and this closes a hole
+         that was already open, quietly, before the crowd arrived. Material puzzles have
+         been screened by secondSolution() since July; MATE puzzles returned right here and
+         were never screened at all, so nothing ever checked that the mate in one was a
+         mate in one rather than one of two. On a five-man board a second mate is rare
+         enough that it never showed. On a fifteen-man board it is not rare, and blocking a
+         flight square is exactly the sort of thing an extra pawn does.
+         ⚠ Scoped to one-move lines. "Only one mate in three" is a different, much more
+         expensive claim and this room does not make it. */
+      return p.line.length !== 1 || !secondMate(p, b0);
+    }
+    /* ⚠ CHEAP TEST FIRST. secondSolution is ~35 one-ply searches; proveGain is one search
+       to depth 4, which on a fifteen-man board is orders of magnitude more work. Both have
+       to pass, so run the one that rejects for pennies before the one that rejects for
+       pounds. (Pure ordering — the verdict is identical either way.) */
     const start = (p.side === 'w' ? 1 : -1) * matSum(b0);
-    if (proveGain(b0, p.side, p.line.length + 1, -Infinity, Infinity) - start < 300) return false;
-    return !secondSolution(p, b0, start);
+    if (secondSolution(p, b0, start)) return false;
+    return proveGain(b0, p.side, p.line.length + 1, -Infinity, Infinity) - start >= 300;
   } catch(e){ return false; }
+  finally { searchCap = Infinity; }
 }
 
 // ── ONE ANSWER ONLY (2026-07-27) ───────────────────────────────────────────────
@@ -641,13 +863,35 @@ function puzzleSane(p){
 // player's perfectly good move wrong. So: if ANY other first move wins a clean piece
 // straight away (their best reply included), the position is thrown out.
 // Deliberately shallow — this hunts free lunches, not deep second combinations.
+/* The mate twin of secondSolution(): is there a SECOND first move that also mates?
+   Same make/unmake borrow of b0 — it is handed back untouched on every path. */
+function secondMate(p, b0){
+  const foe = p.side === 'w' ? 'b' : 'w';
+  const first = uci(p.line[0][0]);
+  const mv = legalMovesFor(b0, p.side);
+  for (let i=0;i<mv.length;i++){
+    const m = mv[i];
+    if (m.fx === first.fx && m.fy === first.fy && m.tx === first.tx && m.ty === first.ty) continue;
+    const moved = b0[m.fy][m.fx], cap = b0[m.ty][m.tx];
+    b0[m.ty][m.tx] = moved; b0[m.fy][m.fx] = null;
+    const mate = isCheckmate(b0, foe);
+    b0[m.fy][m.fx] = moved; b0[m.ty][m.tx] = cap;
+    if (mate) return true;
+  }
+  return false;
+}
 function secondSolution(p, b0, start){
   const foe = p.side === 'w' ? 'b' : 'w';
   const first = uci(p.line[0][0]);
-  for (const m of legalMovesFor(b0, p.side)){
+  const mv = legalMovesFor(b0, p.side);
+  for (let i=0;i<mv.length;i++){
+    const m = mv[i];
     if (m.fx === first.fx && m.fy === first.fy && m.tx === first.tx && m.ty === first.ty) continue;
-    const nb = cloneBoard(b0); nb[m.ty][m.tx] = nb[m.fy][m.fx]; nb[m.fy][m.fx] = null;
-    if (-proveGain(nb, foe, 1, -Infinity, Infinity) - start >= 300) return true;
+    const moved = b0[m.fy][m.fx], cap = b0[m.ty][m.tx];
+    b0[m.ty][m.tx] = moved; b0[m.fy][m.fx] = null;             // make — see legalMovesFor
+    const v = -proveGain(b0, foe, 1, -Infinity, Infinity);
+    b0[m.fy][m.fx] = moved; b0[m.ty][m.tx] = cap;              // unmake
+    if (v - start >= 300) return true;
   }
   return false;
 }
@@ -656,7 +900,11 @@ function secondSolution(p, b0, start){
 // pass): motif base + how deep in the road you are + real board clutter.
 function puzzleRating(p, diff){
   const base = { mate: 340, material: 480, skewer: 520, pin: 560, fork: 640, discovered: 700 }[p.cat] || 500;
-  const clutter = Math.max(0, p.pieces.length - 4) * 45;
+  /* ⚠ REBASED WHEN THE CROWD ARRIVED (2026-08-05). The old term was (pieces - 4) x 45,
+     written when four men was the FLOOR; every puzzle now starts around eleven, so the
+     same formula would have added ~300 points to the entire road overnight and dragged
+     the difficulty dial (and everyone's clearance) up with it. Same shape, new zero. */
+  const clutter = Math.max(0, p.pieces.length - 10) * 35;
   return Math.round((base + diff * 72 + clutter) / 10) * 10;
 }
 // The motif mix. Everything is available early except the two that need a real board
@@ -681,14 +929,24 @@ function pickMotif(diff, rnd){
 }
 function genPuzzle(diff, rnd){
   rnd = rnd || Math.random;
-  for (let a = 0; a < 18; a++){
-    let p = pickMotif(diff, rnd)(diff, rnd);
-    if (!p) p = genKnightFork(diff, rnd) || genBackRankMate(diff, rnd) || genDoubleAttack(diff, rnd);
-    if (p && puzzleSane(p)) { p.id = 'g' + (genPuzzle._n = (genPuzzle._n||0) + 1); p.rating = puzzleRating(p, diff); return p; }
-  }
-  // guaranteed fallbacks — still gated; the last resort is a known-sane composition
-  const fb = [genKnightFork(2, rnd), genBackRankMate(2, rnd), genSkewer(2, rnd), genDoubleAttack(2, rnd)].find(q => q && puzzleSane(q));
-  if (fb){ fb.id = 'g' + (genPuzzle._n = (genPuzzle._n||0) + 1); fb.rating = puzzleRating(fb, 2); return fb; }
+  try {
+    /* A WALL CLOCK ON TOP OF THE NODE BUDGET. The budget bounds one proof; this bounds the
+       whole hunt, because eighteen cheap failures still add up to a pause you can feel.
+       Past the deadline the crowd is the first thing to go, not the puzzle. */
+    const t0 = Date.now();
+    for (let a = 0; a < 18; a++){
+      // crowded for the first third, then ease off rather than run out of attempts
+      const late = Date.now() - t0;
+      clutterEase = (a < 6 && late < 260) ? 1 : (a < 12 && late < 620) ? 0.7 : 0.45;
+      let p = pickMotif(diff, rnd)(diff, rnd);
+      if (!p) p = genKnightFork(diff, rnd) || genBackRankMate(diff, rnd) || genDoubleAttack(diff, rnd);
+      if (p && puzzleSane(p)) { p.id = 'g' + (genPuzzle._n = (genPuzzle._n||0) + 1); p.rating = puzzleRating(p, diff); return p; }
+    }
+    // guaranteed fallbacks — still gated; the last resort is a known-sane composition
+    clutterEase = 0.35;
+    const fb = [genKnightFork(2, rnd), genBackRankMate(2, rnd), genSkewer(2, rnd), genDoubleAttack(2, rnd)].find(q => q && puzzleSane(q));
+    if (fb){ fb.id = 'g' + (genPuzzle._n = (genPuzzle._n||0) + 1); fb.rating = puzzleRating(fb, 2); return fb; }
+  } finally { clutterEase = 1; }
   return { id:'g0', theme:'Back Rank', cat:'mate', goal:'Mate in one.', side:'w', hint:'Down the file to the back rank.',
       rating:400, pieces:['Kg1','Rd2','kh8','pg7','ph7'], line:[['d2d8','Rd8#']] };
 }
@@ -734,14 +992,50 @@ function isAttacked(b, x, y, by){
   return false;
 }
 function inCheck(b, col){ const k=findKing(b,col); return k ? isAttacked(b,k.x,k.y, col==='w'?'b':'w') : false; }
+/* ⭐ MAKE / UNMAKE, NOT CLONE (2026-08-05) — and this is what paid for the crowded board.
+   This used to build a whole fresh 8x8 of fresh piece objects to answer one question:
+   "would that move leave my own king in check?" Sixty-four allocations per candidate move,
+   thirty-odd candidate moves per position, and proveGain() calls into here at every node of
+   a depth-4 search. Measured on the shipped generator before the change: 139ms to produce
+   one puzzle at difficulty 1, and a worst case of 2.4 SECONDS.
+
+   Mutating the two squares and putting them back is the same test with no garbage. Safe
+   because nothing else holds a reference to `b` while it is borrowed — the board is
+   restored before this function returns, on every path.
+
+   ⚠ The restore has to be exact and in the RIGHT ORDER when from and to are the same
+   square; they never are (genMoves never returns a null move), but write it as
+   set-back-source-then-restore-target anyway so the invariant does not depend on that. */
 function legalMovesFor(b, col){
   const out=[];
   for (let y=0;y<8;y++) for (let x=0;x<8;x++){ const p=b[y][x]; if (!p || p.c!==col) continue;
-    genMoves(b, x, y).forEach(m => { const nb=cloneBoard(b); nb[m.y][m.x]=nb[y][x]; nb[y][x]=null; if (!inCheck(nb, col)) out.push({fx:x,fy:y,tx:m.x,ty:m.y}); });
+    const ms = genMoves(b, x, y);
+    for (let i=0;i<ms.length;i++){
+      const m = ms[i], cap = b[m.y][m.x];
+      b[m.y][m.x] = p; b[y][x] = null;
+      const bad = inCheck(b, col);
+      b[y][x] = p; b[m.y][m.x] = cap;
+      if (!bad) out.push({fx:x,fy:y,tx:m.x,ty:m.y});
+    }
   }
   return out;
 }
-function isCheckmate(b, col){ return inCheck(b, col) && legalMovesFor(b, col).length === 0; }
+/* Stops at the FIRST legal move instead of collecting all of them — the mate test only
+   ever asks whether the list is empty, and on a crowded board that list is long. */
+function hasLegalMove(b, col){
+  for (let y=0;y<8;y++) for (let x=0;x<8;x++){ const p=b[y][x]; if (!p || p.c!==col) continue;
+    const ms = genMoves(b, x, y);
+    for (let i=0;i<ms.length;i++){
+      const m = ms[i], cap = b[m.y][m.x];
+      b[m.y][m.x] = p; b[y][x] = null;
+      const bad = inCheck(b, col);
+      b[y][x] = p; b[m.y][m.x] = cap;
+      if (!bad) return true;
+    }
+  }
+  return false;
+}
+function isCheckmate(b, col){ return inCheck(b, col) && !hasLegalMove(b, col); }
 /* Every move the piece on (x,y) may ACTUALLY make (2026-07-28).
    genMoves is PSEUDO-legal: it will happily walk a pinned piece off its pin, because the
    generator doesn't know where your king is. legalMovesFor already applies the self-check
@@ -883,18 +1177,32 @@ function markDone(step){
 const TACT_KEY  = 'pjcc.fork.tactics.v1';
 
 // Motif teaching data — drives the explanation card after each solve + the hint tiers.
+/* ⚑ THE MOTIF PALETTE IS PAPER-SAFE NOW (2026-08-05) ─────────────────────────────────
+   These six were arcade neon — mint, hot pink, amber, sky, violet, tangerine — drawn for
+   the black cabinet this room used to be. They tint the teaching card: its border, its
+   heading and its OK button. The card went to paper in the same pass (see drawExplain),
+   and every one of them measured under 2:1 on it.
+
+   Each keeps its identity and loses its glow. Measured against the card's #faf5e9:
+     fork        #6bffb8 -> #1f7a4d   4.56   forest
+     mate        #ff8fd0 -> #a03574   5.60   plum
+     skewer      #ffd166 -> #7d5f0d   5.22   ochre
+     material    #8fe3ff -> #0f6a86   5.32   teal
+     discovered  #c9a7ff -> #5b3fa8   6.60   indigo
+     pin         #ffb066 -> #a5561a   4.63   burnt orange
+   White on each of them clears 5:1 too, which is what the OK button needs. */
 const MOTIFS = {
-  'Knight Fork': { cat:'fork',   icon:'♞', color:'#6bffb8', name:'Knight Fork',
+  'Knight Fork': { cat:'fork',   icon:'♞', color:'#1f7a4d', name:'Knight Fork',
     explain:'One knight, two targets. The check forces the king to move — then the same knight grabs the piece it was also attacking.' },
-  'Back Rank':   { cat:'mate',   icon:'♜', color:'#ff8fd0', name:'Back-Rank Mate',
+  'Back Rank':   { cat:'mate',   icon:'♜', color:'#a03574', name:'Back-Rank Mate',
     explain:'The king is boxed in by its own pawns. A heavy piece crashes to the last rank — nowhere to run. Checkmate.' },
-  'Skewer':      { cat:'skewer', icon:'➳', color:'#ffd166', name:'Skewer',
+  'Skewer':      { cat:'skewer', icon:'➳', color:'#7d5f0d', name:'Skewer',
     explain:'A check straight through the king. It must step aside — exposing the valuable piece that was hiding right behind it.' },
-  'Winning Material': { cat:'material', icon:'♛', color:'#8fe3ff', name:'Winning Material',
+  'Winning Material': { cat:'material', icon:'♛', color:'#0f6a86', name:'Winning Material',
     explain:'One move, two jobs. It checks the king and attacks something loose at the same time — the check gets answered first, and the loose piece has nowhere to go.' },
-  'Discovered Check': { cat:'discovered', icon:'✦', color:'#c9a7ff', name:'Discovered Check',
+  'Discovered Check': { cat:'discovered', icon:'✦', color:'#5b3fa8', name:'Discovered Check',
     explain:'The check comes from the piece that DIDN\'T move. Step the blocker aside — with a capture — and the line behind it opens onto the king.' },
-  'The Pin':     { cat:'pin',    icon:'⛓', color:'#ffb066', name:'The Pin',
+  'The Pin':     { cat:'pin',    icon:'⛓', color:'#a5561a', name:'The Pin',
     explain:'A piece pinned to its own king cannot legally move. Attack it with something small and it just has to stand there and be taken.' }
 };
 const CAT_LABEL = { fork:'Forks', mate:'Mates', skewer:'Skewers', pin:'Pins', material:'Material', discovered:'Discoveries' };
@@ -954,7 +1262,7 @@ function updateJourneyLine(){
      is the better brag, but the road to Chess City is the promise this room made and a
      number that replaced it would read as the promise being withdrawn. */
   const pz = myPuzzleRating();
-  const rated = pz ? ' &middot; your puzzle rating <b>' + pz.rating + '</b>' : '';
+  const rated = pz ? ' &middot; Your puzzle rating <b>' + pz.rating + '</b>' : '';
   el.innerHTML = (pr.step >= JOURNEY_LEN
     ? '🏰 <b>You reached Chess City.</b> 1,000 puzzles solved.'
     : 'Level ' + levelFor(pr.step) + ' of ' + LEVELS +
@@ -1302,7 +1610,7 @@ canvas.addEventListener('pointerdown', e => {
     G.selected = null; G.moves = null; G.clean = false; G.wrong++;
     sfx('wrong'); shake = 10; vignette = 14;
     // the nudge moved ABOVE the board — the refutation card owns the strip below it
-    if (G.wrong >= 2) floater('Try the hint 🐾', W/2, BY - 8, C.pink);
+    if (G.wrong >= 2) floater('Try the hint 🐾', W/2, BY - 8, '#a3323b');
     showRefutation(from, tried);
   }
 });
@@ -1314,8 +1622,14 @@ function showRefutation(from, tried){
   setTimeout(() => {
     if (!G || G.p !== p || G.step !== step || G.phase !== 'await') return;   // already moved on
     const r = refuteMove(p, b, from.x, from.y, tried.x, tried.y);
-    if (!r) { floater('Not the winning move', W/2, BY + BOARD + 6, C.pink); return; }
-    refuteCard  = { text: r.text, t: 0, life: 7, color: r.hard ? C.bad : C.muted };
+    if (!r) { floater('Not the winning move', W/2, BY + BOARD - 16, '#a3323b'); return; }
+    /* ⚠ TWO COLORS, TWO SURFACES (2026-08-05). `ink` is read on the PAPER strip under the
+       board; `color` is read on the MAPLE board itself, by the dashed ring and the arrow.
+       They used to be one value, which meant every choice was a compromise between a light
+       background and a dark one — the same split the front door made between --fd-wood
+       (decoration) and --fd-wood-ink (text). Red bites, green shrugs, on both surfaces. */
+    refuteCard  = { text: r.text, t: 0, life: 7,
+      color: r.hard ? C.bad : '#2e7d47', ink: r.hard ? '#a3323b' : '#5f3e1e' };
     refuteArrow = { fx: r.reply.fx, fy: r.reply.fy, tx: r.reply.tx, ty: r.reply.ty, tried };
     /* ── THE TRIAGE (2026-08-03, priority #1) ────────────────────────────────────
        The refutation already computed everything a triage needs, so hold on to it: if
@@ -1346,11 +1660,13 @@ document.getElementById('hint-btn').addEventListener('click', () => {
   const mt = MOTIFS[G.p.theme] || {};
   if (G.hintLevel === 1){
     G.hintFlash = 40;
-    floater('✨ This piece holds the key', W/2, BY - 8, C.gold);
+    // ⚠ NOT C.gold. Gold is a BOARD color; this floats above the board on the parchment
+    // sheet, where #F5C518 measures 1.06:1 and is simply not there.
+    floater('✨ This piece holds the key', W/2, BY - 8, '#5f3e1e');
     sfx('advance');
   } else if (G.hintLevel === 2){
     floater((mt.icon || '💡') + ' ' + G.p.theme, W/2, BY - 8, mt.color || C.gold);
-    floater(G.p.hint, W/2, BY + BOARD + 6, C.muted);
+    floater(G.p.hint, W/2, BY + BOARD - 16, C.muted);
     sfx('advance');
   } else {
     revealSolution();
@@ -1385,54 +1701,68 @@ function render(){
    THIS IS ALSO THE PERF FIX. The room's rAF loop ran continuously to move them; with the
    drift gone the background costs one fillRect. Same lesson as [[css-perf-lessons]] #7 —
    the first question for any ambient layer is "can it stop moving?", and the honest answer
-   here was that it never needed to start. */
-function drawBg(){ ctx.fillStyle = '#fbfaf7'; ctx.fillRect(0,0,W,H); }
+   here was that it never needed to start.
+
+   ⚑ AND NOW IT PAINTS NOTHING AT ALL (2026-08-05). It used to fill the whole canvas with
+   opaque #fbfaf7, which is exactly the white box Nate asked us to lose — the translucent
+   <body> underneath was invisible behind it. render() already calls clearRect first, so
+   the honest version of this function is no function: the parchment IS the background.
+   Kept as a no-op call site rather than deleted, because "where did the background go"
+   is a question the next reader will have, and this is where they will look. */
+function drawBg(){ /* the body's parchment sheet shows through — see the CSS note */ }
 
 function drawHeader(){
   const p = G.p;
-  // theme chip
-  // the motif chip wears the room's wood, not arcade pink (2026-08-04)
-  ctx.fillStyle = C.frame; roundRect(12, 12, ctx.measureText(p.theme).width + 40, 26, 13);
-  ctx.fillStyle = '#8a5a2b'; roundRect(12, 12, 150, 26, 13); ctx.fill();
-  ctx.fillStyle = '#fff6e8'; ctx.font = 'bold 13px Trebuchet MS'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-  ctx.fillText('⚔ ' + p.theme.toUpperCase(), 22, 26);
+  /* ⚑ THE MOTIF PILL IS GONE (2026-08-05, Nate: "Take 'Knight Fork' or 'Skewer', etc from
+     the top left out - it's a brown pill shape. Take it out.")
+
+     It was a brown chip in the top-left corner reading ⚔ KNIGHT FORK. Two things wrong
+     with it and the second is the one that matters:
+       · It was the loudest thing on a page whose whole job is a quiet board.
+       · IT WAS THE ANSWER. "Knight Fork" over a position with one knight tells you which
+         piece moves before you have looked at anything. Naming the tactic is a HINT — it
+         is literally hint tier 2 (see the Hint handler), and tier 2 costs you the clean
+         solve. The room was giving away for free the thing it charges for.
+     Nothing else needed it: the motif is still named on the teaching card AFTER the
+     puzzle, still recorded per-tactic on the summary, and still carried into Analysis.
+     The row it used to occupy is why the board could move up to y=68. */
   /* ⚑ THE SECOND-LOOK CHIP (2026-08-04). A puzzle you didn't earn comes back three later,
      and the room has to SAY so — an unannounced repeat reads as the generator glitching,
-     not as a second chance. Green, because this is the one you can still win. */
+     not as a second chance. Green, because this is the one you can still win. It stays:
+     it is a fact about your history, not a clue about the position. Left-aligned into the
+     seat the motif pill vacated. */
   if (p.isRetry){
     ctx.font = 'bold 11px Trebuchet MS';
     const rw = ctx.measureText('SECOND LOOK').width + 26;
-    ctx.fillStyle = '#2e7d47'; roundRect(170, 12, rw, 26, 13); ctx.fill();
+    ctx.fillStyle = '#2e7d47'; roundRect(14, 5, rw, 24, 12); ctx.fill();
     ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillText('↻ SECOND LOOK', 182, 26);
+    ctx.fillText('↻ SECOND LOOK', 26, 17);
   }
   // YOU-ARE badge — make the player's color unmistakable, with the goal alongside
   const youW = (p.side === 'w');
   const youTxt = (youW ? '♔ YOU PLAY WHITE' : '♚ YOU PLAY BLACK') + '  ·  ' + p.goal;
   ctx.font = 'bold 13px Trebuchet MS'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-  const yw = ctx.measureText(youTxt).width + 30, yx = W/2 - yw/2, yy = 45, yh = 23;
+  const yw = ctx.measureText(youTxt).width + 30, yx = W/2 - yw/2, yy = 34, yh = 23;
   ctx.fillStyle = youW ? '#efe7cf' : '#13242a'; roundRect(yx, yy, yw, yh, 12); ctx.fill();
   ctx.strokeStyle = youW ? '#caa84a' : '#5be0c0'; ctx.lineWidth = 2; roundRect(yx, yy, yw, yh, 12); ctx.stroke();
   ctx.fillStyle = youW ? '#2a2208' : '#dffff6'; ctx.textAlign = 'center';
   ctx.fillText(youTxt, W/2, yy + yh/2);
   /* journey region + step — or the boss banner when a gate puzzle is up.
-     ⚠ MOVED UP TO THE CHIP ROW, 2026-07-28 (Nate, with a screenshot: "the YOU PLAY
-     WHITE/BLACK covers the level"). It sat at y=72, which is a 10px gap that three things
-     were trying to share: the badge ends at 68 including its 2px stroke, and the board's
-     frame starts at BY-6 = 74. An 11px line centered on 72 spans roughly 66-78, so it was
-     overlapped from ABOVE by the badge and from BELOW by the board — there was never room
-     there, and widening the badge (which the goal text does) only made it obvious.
+     ⚠ MOVED UP TO THE TOP ROW, 2026-07-28 (Nate, with a screenshot: "the YOU PLAY
+     WHITE/BLACK covers the level"). It sat directly under the badge, in a 10px gap that
+     three things were trying to share, and was overlapped from above by the badge and from
+     below by the board's frame. There was never room there.
 
-     The chip row has real space: the theme chip is a fixed 150px on the left and the ☰
-     menu button is an HTML overlay pinned to the right, so the middle of that row is
-     empty. Same vertical center as the chip (y=26) so the row reads as one line. */
+     The top row has real space: the ☰ menu button is an HTML overlay pinned to the right
+     and the SECOND LOOK chip only appears on a repeat, so the middle of that row is empty.
+     Same vertical center as that chip (y=17) so the row reads as one line. */
   if (run && run.mode === 'journey'){
     if (p.boss){
       ctx.fillStyle = C.gold; ctx.font = 'bold 12px Trebuchet MS'; ctx.textAlign = 'center';
-      ctx.fillText('👑 BOSS — ' + p.boss.name, W/2, 26);
+      ctx.fillText('👑 BOSS — ' + p.boss.name, W/2, 17);
     } else {
       ctx.fillStyle = C.muted; ctx.font = '11px Trebuchet MS'; ctx.textAlign = 'center';
-      ctx.fillText('Level ' + levelFor(run.step) + ' of ' + LEVELS + '   ·   ' + intoLevel(run.step) + ' / ' + LEVEL_LEN, W/2, 26);
+      ctx.fillText('Level ' + levelFor(run.step) + ' of ' + LEVELS + '   ·   ' + intoLevel(run.step) + ' / ' + LEVEL_LEN, W/2, 17);
     }
   }
   // (the live streak counter came off 2026-07-28 - Nate: "let's remove the game feel". A
@@ -1528,16 +1858,22 @@ function drawExplain(){
   const x = cx - cardW/2, y = BY + BOARD - cardH - 6;
   const a = Math.min(1, explainCard.t / 0.22);
   ctx.globalAlpha = a;
-  ctx.fillStyle = 'rgba(7,22,20,0.95)'; roundRect(x, y, cardW, cardH, 12); ctx.fill();
+  /* ⚑ THE TEACHING CARD IS PAPER (2026-08-05) — and this was a genuine break, not a taste
+     call. It was rgba(7,22,20,0.95): a near-BLACK card left over from the arcade cabinet.
+     The 2026-08-04 repaint turned C.ink from a light arcade color into #1e232c ink for the
+     new paper room, and this card still painted its body text in C.ink — so the one place
+     the room actually TEACHES you the tactic was dark ink on a black rectangle. Caught in a
+     render; it is not subtle once you look at it, and nothing was looking. */
+  ctx.fillStyle = '#faf5e9'; roundRect(x, y, cardW, cardH, 12); ctx.fill();
   ctx.strokeStyle = explainCard.color; ctx.lineWidth = 2; roundRect(x, y, cardW, cardH, 12); ctx.stroke();
   ctx.fillStyle = explainCard.color; ctx.font = 'bold 16px Trebuchet MS'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
   ctx.fillText(explainCard.icon + '  ' + explainCard.name, x + 14, y + 12);
-  ctx.fillStyle = C.ink; ctx.font = '12.5px Trebuchet MS';
+  ctx.fillStyle = '#333944'; ctx.font = '12.5px Trebuchet MS';
   wrapText(explainCard.text, x + 14, y + 38, cardW - 28, 16);
   // OK button — the player must tap (anywhere) to continue; gives time to read the lesson
   const okW = 70, okH = 24, okX = x + cardW - okW - 12, okY = y + cardH - okH - 9;
   ctx.fillStyle = explainCard.color; roundRect(okX, okY, okW, okH, 12); ctx.fill();
-  ctx.fillStyle = '#07221e'; ctx.font = 'bold 13px Trebuchet MS'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#ffffff'; ctx.font = 'bold 13px Trebuchet MS'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText('OK ▸', okX + okW/2, okY + okH/2);
   /* The rating swing, bottom-left of the same card, opposite the OK. Green up, pink
      down — the room's own two colors, so it needs no legend. It sits INSIDE the card
@@ -1546,7 +1882,8 @@ function drawExplain(){
   if (explainCard.rating){
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     ctx.font = 'bold 12px Trebuchet MS';
-    ctx.fillStyle = explainCard.rating.up ? C.good : C.pink;
+    // paper greens and reds, not the board's mint and pink — this line sits ON the card
+    ctx.fillStyle = explainCard.rating.up ? '#1f7a4d' : '#a3323b';
     ctx.fillText(explainCard.rating.text, x + 14, okY + okH/2);
   }
   ctx.globalAlpha = 1;
@@ -1572,16 +1909,22 @@ function refuteFade(){
 function drawRefute(){
   refuteCard.t += 1/60;
   if (refuteCard.t >= refuteCard.life) { clearRefutation(); return; }
-  const padX = 10, padY = 6, lh = 13, cw = W - 28, x = 14, y = BY + BOARD + 4;
+  /* ⚠ IT MOVED ONTO THE BOARD (2026-08-05). It used to sit in the gap under the board —
+     which is where the TOOL ROW lives now, so it would have been drawn straight through
+     Report and Hint. Same seat as the teaching card instead: a transient strip over the
+     bottom of the board, gone in seven seconds without being dismissed. */
+  const padX = 10, padY = 6, lh = 13, cw = BOARD - 12, x = BX + 6;
   ctx.save(); ctx.globalAlpha = refuteFade();
   ctx.font = '11.5px Trebuchet MS'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
   const lines = wrapLines(refuteCard.text, cw - padX*2 - 18).slice(0, 2);   // the strip holds two
   const ch = padY*2 + lines.length*lh;
-  ctx.fillStyle = 'rgba(7,22,20,0.94)'; roundRect(x, y, cw, ch, 9); ctx.fill();
-  ctx.strokeStyle = refuteCard.color; ctx.lineWidth = 1.5; roundRect(x, y, cw, ch, 9); ctx.stroke();
-  ctx.fillStyle = refuteCard.color; ctx.font = 'bold 12px Trebuchet MS';
+  const y = BY + BOARD - ch - 8;
+  // paper, like the teaching card — see the note in drawExplain for why this was black
+  ctx.fillStyle = '#faf5e9'; roundRect(x, y, cw, ch, 9); ctx.fill();
+  ctx.strokeStyle = refuteCard.ink; ctx.lineWidth = 1.5; roundRect(x, y, cw, ch, 9); ctx.stroke();
+  ctx.fillStyle = refuteCard.ink; ctx.font = 'bold 12px Trebuchet MS';
   ctx.fillText('✗', x + padX, y + padY);
-  ctx.fillStyle = C.ink; ctx.font = '11.5px Trebuchet MS';
+  ctx.fillStyle = '#333944'; ctx.font = '11.5px Trebuchet MS';
   lines.forEach((l, i) => ctx.fillText(l, x + padX + 18, y + padY + i*lh));
   ctx.restore();
 }
@@ -1625,7 +1968,7 @@ function showSummary(){
         'with the order you arrived in.<br><br>' +
         'Your arrival is on the record as of <b>' + new Date(d.at).toLocaleDateString() + '</b>. ' +
         'The crests are still being drawn — the order is already yours.';
-      document.getElementById('sum-again').textContent = 'Walk it again';
+      document.getElementById('sum-again').textContent = 'Walk It Again';
     } else {
       document.getElementById('sum-title').textContent = 'LEVEL ' + levelFor(run.step) + ' · ' + intoLevel(run.step) + ' / ' + LEVEL_LEN;
       document.getElementById('sum-msg').textContent = beat || ('Level ' + levelFor(run.step) + ' of ' + LEVELS + '. ' + (JOURNEY_LEN - run.step) + ' puzzles left on the road to Chess City.');
@@ -1729,14 +2072,14 @@ document.getElementById('report-btn').addEventListener('click', ()=>{
     v.innerHTML = CLAIM_WORD[c.verdict][1].replace('%s', c.move);
   } else { v.className = 'rep-verdict hidden'; v.innerHTML = ''; }
   const s = document.getElementById('rep-send');
-  s.disabled = false; s.textContent = 'Send it';
+  s.disabled = false; s.textContent = 'Send It';
   document.getElementById('report-screen').classList.remove('hidden');
 });
 document.getElementById('rep-send').addEventListener('click', async ()=>{
   const p = G && G.p; if (!p) return;
   const btn = document.getElementById('rep-send'), done = document.getElementById('rep-done');
   const c = currentClaim();
-  btn.disabled = true; btn.textContent = 'sending…'; done.textContent = '';
+  btn.disabled = true; btn.textContent = 'Sending…'; done.textContent = '';
   let r = { ok: false, reason: 'offline' };
   try {
     if (window.PJCC && PJCC.reportPuzzle) r = await PJCC.reportPuzzle({
@@ -1748,10 +2091,10 @@ document.getElementById('rep-send').addEventListener('click', async ()=>{
     });
   } catch (e) { r = { ok: false, reason: 'failed' }; }
   if (r.ok){
-    btn.textContent = '✓ sent';
+    btn.textContent = '✓ Sent';
     done.textContent = 'Got it — thank you. McPuppy reads these.';
   } else {
-    btn.disabled = false; btn.textContent = 'Send it';
+    btn.disabled = false; btn.textContent = 'Send It';
     done.textContent = 'Could not send it from here — use email or copy below, nothing is lost.';
   }
 });
@@ -1779,7 +2122,7 @@ document.getElementById('menu-btn').addEventListener('click', showMenu);
 document.getElementById('sum-again').addEventListener('click', ()=>{ go(); startRun(); });
 document.getElementById('sum-menu').addEventListener('click', showMenu);
 document.getElementById('reset-prog').addEventListener('click', ()=>{ saveProg({ step:0, diff:2, best:0 }); updateJourneyLine(); });
-document.getElementById('snd-toggle').addEventListener('click', ()=>{ sndOn=!sndOn; if(master) master.gain.value=sndOn?0.85:0; document.getElementById('snd-toggle').textContent = sndOn?'🔊 sound: on':'🔇 sound: off'; });
+document.getElementById('snd-toggle').addEventListener('click', ()=>{ sndOn=!sndOn; if(master) master.gain.value=sndOn?0.85:0; document.getElementById('snd-toggle').textContent = sndOn?'🔊 Sound: On':'🔇 Sound: Off'; });
 
 // Restore journey progress from the profile (if logged in and further than local).
 updateJourneyLine();

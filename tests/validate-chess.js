@@ -366,10 +366,21 @@ async function testFork(browser, port) {
       return best;
     }
     let deepChecked = 0;
+    out.men = [];              // how crowded each board actually is — see the gate below
+    out.twoMates = [];         // mate-in-one puzzles with more than one mate in one
     for (let i = 0; i < 600; i++) {
       const p = genPuzzle(1 + (i % 6), Math.random);
       out.n++; out.cats[p.cat || p.theme] = (out.cats[p.cat || p.theme] || 0) + 1;
+      out.men.push(p.pieces.length);
       const S0 = C.parseFEN(toFEN(p));
+      /* ⚑ ONE MATE, NOT ONE OF TWO (2026-08-05). The room's own gate got a secondMate()
+         check when the crowd arrived; this proves it from the OUTSIDE, with the referee,
+         which knows nothing about the game's board code. Scoped to one-move mate puzzles,
+         which is the only uniqueness claim the room makes. */
+      if ((p.cat === 'mate' || /\bmate\b/i.test(p.goal)) && p.line.length === 1) {
+        const mates = C.legalMoves(S0).filter(m => C.isCheckmate(C.makeMove(S0, m)));
+        if (mates.length !== 1) out.twoMates.push(mates.length + 'x ' + toFEN(p));
+      }
       // position sanity
       const kings = p.pieces.filter(s => s[0].toLowerCase() === 'k');
       if (kings.length !== 2) { out.bad.push(i + ':kings'); continue; }
@@ -409,6 +420,24 @@ async function testFork(browser, port) {
     `referee cross-audit: ${res.n} generated puzzles (${JSON.stringify(res.cats)}), ` +
     `${res.deepChecked} proved vs best defense` +
     (res.bad.length ? ' -> ' + res.bad.slice(0, 4).join(' | ') : ''));
+  ok(res.twoMates.length === 0,
+    `every mate-in-one puzzle has exactly ONE mate in one` +
+    (res.twoMates.length ? ` -> ${res.twoMates.length} with another: ` + res.twoMates.slice(0, 3).join(' | ') : ''));
+
+  /* ⚑ THE BOARD MUST STAY CROWDED (2026-08-05, Nate: "the puzzles should have way more
+     pieces on the board - make them a natural chess situation").
+     This is a REGRESSION gate on a number that has slipped once already: the clutter term
+     used to be `min(3, diff - 4)`, which is zero below difficulty 5, and the live site was
+     shipping four-piece diagrams for the first four hundred puzzles of the road. Nobody
+     noticed because nothing measured it. Now something does. Floors, not targets — the
+     generator's pressure valve is allowed to thin a stubborn position out, it is just not
+     allowed to thin ALL of them out. */
+  const men = res.men.slice().sort((a, b) => a - b);
+  const median = men[men.length >> 1];
+  const thin = men.filter(m => m < 8).length;
+  ok(median >= 11, `a generated position carries a crowd (median ${median} men, want >= 11; ` +
+    `range ${men[0]}-${men[men.length - 1]})`);
+  ok(thin <= res.n * 0.02, `almost none are near-empty (${thin}/${res.n} under 8 men, want <= 2%)`);
 
   /* --- "Why was that wrong?" — the refutation card must never lie ---------------
      For real generated puzzles we play EVERY wrong first move, ask the game for its

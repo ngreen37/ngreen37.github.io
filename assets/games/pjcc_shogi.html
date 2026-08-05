@@ -998,7 +998,7 @@ if (RUN_UI) (function(){
       var start=idx, decd=0; for(var z=0;z<sec.items.length;z++){ if(start+z<st.decoded) decd++; }
       var h=document.createElement('h3'); h.innerHTML='<span>'+sec.jp+' · '+sec.en+'</span><span class="cnt">'+decd+'/'+sec.items.length+'</span>';
       sectionEl.appendChild(h);
-      if(decd===0 && start>st.decoded){ var lm=document.createElement('div'); lm.className='lockmsg'; lm.textContent='— locked — keep solving to begin decoding —'; sectionEl.appendChild(lm); }
+      if(decd===0 && start>st.decoded){ var lm=document.createElement('div'); lm.className='lockmsg'; lm.textContent='— Locked — keep solving to begin decoding —'; sectionEl.appendChild(lm); }
       sec.items.forEach(function(it){
         var seg=document.createElement('div'); var dec = idx < st.decoded; seg.className='seg'+(dec?' dec':' locked');
         seg.innerHTML='<div class="jpx">'+it.jp+'</div><div class="enx">'+it.en+'</div>';
@@ -1229,7 +1229,7 @@ if (RUN_UI) (function(){
   }
   function afterPlayer(){
     if(dob.winner){ endDob(); return; }
-    dbusy=true; document.getElementById('dob-status').textContent='…thinking';
+    dbusy=true; document.getElementById('dob-status').textContent='…Thinking';
     setTimeout(function(){ var m=dAIMove(dob, 4); if(m){ dob=dApply(dob, m); } drawDob();
       if(dob.winner) endDob(); else { dbusy=false; document.getElementById('dob-status').textContent='Your move.'; } }, 260);
   }

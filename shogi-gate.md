@@ -26,7 +26,7 @@ description: "Access withheld. The ferry does not run for those who do not know 
 
     <div class="sgate-carve">
       <input id="sgate-input" type="text" maxlength="12" autocomplete="off" autocapitalize="off"
-             autocorrect="off" spellcheck="false" placeholder="carve the rite" aria-label="carve the rite">
+             autocorrect="off" spellcheck="false" placeholder="carve the rite" aria-label="Carve the rite">
     </div>
     <div class="sgate-hint">Two capitals open the file; the rest fall soft, the last softest of all.</div>
   </div>

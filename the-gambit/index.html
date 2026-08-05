@@ -531,7 +531,7 @@ permalink: /the-gambit/
     $('gm-fill').style.width = pct + '%';
     var ov = offerValue();
     var od = odds(c, karma);
-    if (ov <= 0) { $('gm-odds').textContent = 'no offering yet'; }
+    if (ov <= 0) { $('gm-odds').textContent = 'No offering yet'; }
     else {
       $('gm-odds').textContent = oddsWord(od.up) + ' · up to ' + Math.round(ov * od.top) + ' back';
     }

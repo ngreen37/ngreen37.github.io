@@ -87,8 +87,12 @@
        animation, so this is a small perf win on the page as well as a visual one */
     .game-frame-wrap.is-plain::before,
     .game-frame-wrap.is-plain::after { content: none; }
+    /* ⚠ NO BACKGROUND. A plain room supplies its own surface INSIDE the frame — the Puzzle
+       room's is the front door's translucent parchment (2026-08-05) — and an opaque fill
+       here would sit behind it and cancel the transparency with no other symptom. If you
+       add a second `is-plain` room, it owns its own paper. */
     .game-frame-wrap.is-plain iframe {
-      border: 1px solid rgba(30,35,44,0.14); border-radius: 14px; background: #fbfaf7;
+      border: 1px solid rgba(30,35,44,0.14); border-radius: 14px; background: transparent;
       box-shadow: 0 18px 44px -24px rgba(0,0,0,0.6);
     }
 

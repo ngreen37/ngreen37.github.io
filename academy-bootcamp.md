@@ -37,7 +37,7 @@ body_class: theme-academy
   <div class="bc-board" id="bc-board" data-render="glyph" aria-label="Drill board — tap a glowing square to move the piece"></div>
   <div class="bc-under">
     <span class="bc-moves" id="bc-moves"></span>
-    <button class="bc-reset" id="bc-reset" type="button">↻ reset the piece</button>
+    <button class="bc-reset" id="bc-reset" type="button">↻ Reset the Piece</button>
   </div>
 </div>
 

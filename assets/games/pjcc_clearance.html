@@ -596,7 +596,7 @@ document.querySelectorAll('#cat-sel .selb').forEach(b => b.addEventListener('cli
   catFilter = b.dataset.c; document.querySelectorAll('#cat-sel .selb').forEach(x => x.classList.toggle('sel', x === b));
 }));
 
-document.getElementById('best-line').textContent = 'highest clearance: ' + (loadBest() ? loadBest() + ' correct' : '—');
+document.getElementById('best-line').textContent = 'Highest clearance: ' + (loadBest() ? loadBest() + ' correct' : '—');
 </script>
 </body>
 </html>

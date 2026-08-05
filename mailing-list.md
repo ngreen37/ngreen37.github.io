@@ -89,7 +89,7 @@ body_class: theme-studio
   var flash = document.getElementById('ml-share-flash');
   if (share) share.addEventListener('click', function () {
     var url = inviteUrl();
-    function ok() { if (flash) { flash.textContent = '✓ copied — pass it on'; setTimeout(function () { flash.textContent = ''; }, 2000); } }
+    function ok() { if (flash) { flash.textContent = '✓ Copied — pass it on'; setTimeout(function () { flash.textContent = ''; }, 2000); } }
     if (navigator.clipboard) navigator.clipboard.writeText(url).then(ok).catch(ok); else ok();
     var i = document.getElementById('ml-invite-link'); if (i) { i.focus(); i.select(); }
   });

@@ -69,7 +69,7 @@
 <body>
 <div id="stage">
   <canvas id="canvas" width="480" height="500"></canvas>
-  <button class="float-btn hidden" id="menu-btn">☰ menu</button>
+  <button class="float-btn hidden" id="menu-btn">☰ Menu</button>
   <button class="float-btn hidden" id="shovel-btn">🪏</button>
 
   <div class="overlay" id="menu-screen">
@@ -90,7 +90,7 @@
       <button class="btn btn-ghost" id="camp-btn">⛺ SURFACE CAMP</button>
     </div>
     <div class="foot">
-      <b id="best-line">best: —</b> &nbsp;·&nbsp; <span class="tap" id="snd-toggle">🔊 sound: on</span>
+      <b id="best-line">Best: —</b> &nbsp;·&nbsp; <span class="tap" id="snd-toggle">🔊 Sound: On</span>
     </div>
   </div>
 
@@ -967,7 +967,7 @@ window.addEventListener('keydown', e => {
     toggleShovel();
   }
 });
-document.getElementById('snd-toggle').addEventListener('click', () => { sndOn = !sndOn; if (master) master.gain.value = sndOn?0.8:0; document.getElementById('snd-toggle').textContent = sndOn?'🔊 sound: on':'🔇 sound: off'; });
+document.getElementById('snd-toggle').addEventListener('click', () => { sndOn = !sndOn; if (master) master.gain.value = sndOn?0.8:0; document.getElementById('snd-toggle').textContent = sndOn?'🔊 Sound: On':'🔇 Sound: Off'; });
 
 document.getElementById('best-line').textContent = bestLine();
 requestAnimationFrame(loop);

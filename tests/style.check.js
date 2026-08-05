@@ -329,5 +329,74 @@ console.log('\n── HOUSE RULES ───────────────�
                : rendered.length + ' rendered files parse');
 }
 
+/* ── 8. NO BUTTON LABEL STARTS WITH A LOWERCASE WORD ──────────────────────────────
+   2026-08-05, Nate, for the THIRD time: "Do a capitalization check please - There's nothing
+   charming about lower-casing words that shouldn't be lower case… This is basic stuff.
+   Commit it to memory and practice proper capitalization."
+
+   Rule 2 above only ever judged HEADERS, and the drift had moved: the offenders were
+   BUTTONS. Nine game shells shipped "☰ menu", two shipped "⚑ resign", the Gauntlet had
+   "☰ tower", the Forge had "tweak", the Games Hall had "↺ reset local game progress".
+   Every one of them sentence-case-free, lowercase on purpose, and wrong.
+
+   ⚠ SCOPE. A button label, not a sentence and not an expression:
+     · the text must be LITERAL — a label built out of `+`, `?:` or Liquid is judged at
+       runtime and cannot be judged here without evaluating it;
+     · leading glyphs (☰ ⚑ ↺ and entity escapes) are stripped before the first WORD is read,
+       because the glyph is decoration and the word is the label. */
+{
+  const bad = [];
+  const LEAD = /^(&[a-z]+;|&#\d+;|[^\p{L}\p{N}])+/u;
+  for (const f of FILES) {
+    if (/tests[\\/]/.test(rel(f))) continue;
+    const src = fs.readFileSync(f, 'utf8');
+    const re = /<button\b[^>]*>\s*([^<>\n][^<\n]{0,70}?)\s*<\/button>/g;
+    let m;
+    while ((m = re.exec(src))) {
+      const raw = m[1];
+      if (/[{%+?]|\bvar\b|'|"/.test(raw)) continue;            // built at runtime — not ours to judge
+      const t = raw.replace(LEAD, '').trim();
+      if (!t || !/^[a-z]/.test(t)) continue;
+      bad.push(rel(f) + ':' + src.slice(0, m.index).split('\n').length + '  "' + raw.trim() + '"');
+    }
+  }
+  check('no button label starts with a lowercase word', bad.length === 0,
+    bad.length ? '\n      ' + bad.slice(0, 12).join('\n      ') : 'every literal button label is capitalized');
+}
+
+/* ── 9. THE PUZZLE ROOM'S OWN TWO STRINGS ─────────────────────────────────────────
+   Both named by Nate on 2026-08-05 and both the kind of string a later edit rewrites by
+   feel: the motif tagline ("Capitalize properly the tagline - Forks - Pins - Skewers")
+   and the journey line ("the 'your' in 'your puzzle rating' should be 'Your puzzle
+   rating'"). Pinned by name because neither is shaped like a header, so rule 2 cannot see
+   them and rule 8 cannot either — one is a <b> and the other is built in a template. */
+{
+  const fk = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_fork.html'), 'utf8');
+  check('the puzzle room tagline is Title Case',
+    /Forks · Pins · Skewers · Discoveries · Mates · Winning Material/.test(fk),
+    'Forks · Pins · Skewers · Discoveries · Mates · Winning Material');
+  check('the journey line says "Your puzzle rating"',
+    /Your puzzle rating/.test(fk) && !/your puzzle rating/.test(fk), 'capital Y, his wording');
+}
+
+/* ── 10. THE FRONT DOOR AND ITS GENERATOR AGREE ON THE SQUARE ALPHABET ─────────────
+   The front-door puzzle pool packs White's whole legal move list two characters per move
+   over a 64-symbol alphabet, and BOTH SIDES carry their own copy of that alphabet — the
+   generator (tests/gen-front-puzzles.js) to write it, index.md to read it. They cannot
+   share a constant: one is Node, the other is inline page script with no import.
+
+   ⚠ A DRIFT HERE IS SILENT AND TOTAL. Reorder one character and the page decodes every
+   move to the wrong square: legal moves become unplayable, illegal ones light up, and
+   nothing throws. This is the cheapest possible guard against the most expensive possible
+   typo. Same shape as townsky.check.js comparing two copies of a gradient. */
+{
+  const grab = (p) => (fs.readFileSync(path.join(ROOT, p), 'utf8')
+    .match(/SQ64\s*=\s*'([^']+)'/) || [])[1];
+  const a = grab('tests/gen-front-puzzles.js'), b = grab('index.md');
+  check('index.md and the puzzle generator carry the same SQ64 alphabet',
+    !!a && a === b && a.length === 64 && new Set(a).size === 64,
+    a === b ? '64 distinct symbols, identical in both files' : 'generator=' + a + '  page=' + b);
+}
+
 console.log(`\n  ${pass} passed, ${fail} failed\n`);
 process.exit(fail ? 1 : 0);

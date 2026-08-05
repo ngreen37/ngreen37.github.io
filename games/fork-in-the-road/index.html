@@ -21,9 +21,32 @@ permalink: /games/fork-in-the-road/
 </div>
 
 <style>
-.fork-frame { max-width: 680px; }
-.fork-frame iframe { height: 680px; }
-@media (max-width: 640px) { .fork-frame iframe { height: 560px; } }
+/* ══ THE ROOM IS AS BIG AS THE SCREEN ALLOWS, AND THE SHEET IS TRANSLUCENT ═══════════
+   2026-08-05, Nate: "Make the white puzzle box much bigger and make it transparent like
+   the home page."
+
+   BIGGER. The frame was a flat 680x680 holding a canvas that only ever drew 600 wide, so
+   the box was a fixed size with a smaller board floating inside it and dead paper all
+   round — worst on a phone, where the render showed roughly 300px of empty sheet above
+   and below a 240px board. It is height-driven now: the canvas is 480x556, so the widest
+   frame that fits WITHOUT scrolling the page is (available height) x 0.863, and the
+   iframe takes its height from `aspect-ratio` so the two can never disagree. On a 950px
+   window that is ~670px wide instead of 680 — but the BOARD inside it goes from 420 to
+   525 real pixels, because the canvas stopped wasting 144 of its 480 columns on margin.
+
+   ⚠ 190px IS THE PAGE ABOVE THE FRAME — site header, the game-page title block and the
+   profile bar. Measured, not guessed; if that furniture changes, this number is stale and
+   the symptom is a page that scrolls by exactly the difference.
+
+   TRANSPARENT. The iframe painted #fbfaf7 and so did the document inside it; both are off
+   now, and the parchment comes from the iframe document's own <body> at the front door's
+   rgba(251,243,224,0.78). The border and shadow stay here — they are the edge of the
+   sheet, and the sheet is what moved, not the frame. */
+.fork-frame { max-width: 100%; }
+.fork-frame iframe { height: auto; aspect-ratio: 480 / 556; background: transparent; }
+@media (min-width: 700px) {
+  .fork-frame { max-width: min(920px, calc((100vh - 190px) * 0.863)); }
+}
 </style>
 
 {%- comment -%} 2026-07-27 (Nate: "This is no longer a game, really, it's our Puzzle area…

@@ -163,7 +163,7 @@ the accuracy gate</b>, and everything else can wait.</p>
         if (!d) return;
         b.disabled = true; b.textContent = '…';
         d.from('puzzle_reports').update({ handled: true }).eq('id', id).then(function () { load(); },
-          function () { b.disabled = false; b.textContent = 'try again'; });
+          function () { b.disabled = false; b.textContent = 'Try again'; });
       };
     });
   }

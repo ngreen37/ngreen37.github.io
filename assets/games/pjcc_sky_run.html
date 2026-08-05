@@ -64,7 +64,7 @@
 <body>
 <div id="stage">
   <canvas id="canvas" width="440" height="640"></canvas>
-  <button class="float-btn hidden" id="menu-btn">☰ menu</button>
+  <button class="float-btn hidden" id="menu-btn">☰ Menu</button>
   <button class="float-btn hidden" id="focus-btn">◎ FOCUS<small>hold</small></button>
   <button class="float-btn hidden" id="summon-btn">♚ SUMMON<small>0 pawns</small></button>
 
@@ -861,7 +861,7 @@ document.getElementById('menu-btn').addEventListener('click', openMenu);
 document.getElementById('menu-btn2').addEventListener('click', openMenu);
 document.getElementById('summon-btn').addEventListener('click', summon);
 
-document.getElementById('best-line').textContent = 'best: ' + (loadBest() || '—');
+document.getElementById('best-line').textContent = 'Best: ' + (loadBest() || '—');
 requestAnimationFrame(loop);
 </script>
 </body>

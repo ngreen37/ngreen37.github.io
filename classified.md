@@ -49,9 +49,9 @@ fragment_key: frag_classified
 
     <blockquote class="secret-letter">
       <div class="secret-file-tab">REDACTED FILE</div>
-      <p>Person of Interest: Nate <span class="rx" role="img" aria-label="redacted">█████████</span>
+      <p>Person of Interest: Nate <span class="rx" role="img" aria-label="Redacted">█████████</span>
       — took in Princess and was main participant in
-      <span class="rx" role="img" aria-label="redacted">██████████</span>.</p>
+      <span class="rx" role="img" aria-label="Redacted">██████████</span>.</p>
       <footer>page 3 of 3 · the name is struck in every copy</footer>
     </blockquote>
   </section>
@@ -63,13 +63,13 @@ fragment_key: frag_classified
     <div class="secret-memo" id="secret-memo">
       <div class="secret-memo-date">March 1st, 2022</div>
       <p>If you somehow found this file, congratulations,
-      <span class="rx" role="img" aria-label="redacted">████████</span> but you're too late.
+      <span class="rx" role="img" aria-label="Redacted">████████</span> but you're too late.
       <strong>It's already done.</strong> Once Subject learned what Belief was, she just needed
-      to learn how, and, <span class="rx" role="img" aria-label="redacted">██████</span>
-      <span class="rx" role="img" aria-label="redacted">███████████</span> and that
-      <span class="rx" role="img" aria-label="redacted">████</span> Convict #48125 made a
-      decision for all of us, didn't he? <span class="rx" role="img" aria-label="redacted">█████████</span>
-      <span class="rx" role="img" aria-label="redacted">███████</span> The story of the dog who can
+      to learn how, and, <span class="rx" role="img" aria-label="Redacted">██████</span>
+      <span class="rx" role="img" aria-label="Redacted">███████████</span> and that
+      <span class="rx" role="img" aria-label="Redacted">████</span> Convict #48125 made a
+      decision for all of us, didn't he? <span class="rx" role="img" aria-label="Redacted">█████████</span>
+      <span class="rx" role="img" aria-label="Redacted">███████</span> The story of the dog who can
       learn anything is still unfolding, but hope in keeping our control is slipping amongst my men.</p>
       <p>They don't even know how lost it is. I do.</p>
       <div class="secret-memo-sign">— Lt. Jenkins · 53rd Battalion · ICC</div>
