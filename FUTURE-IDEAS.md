@@ -20,7 +20,20 @@ combination** over new surface area.
 
 *The standing list of things **only he can do** (an account he owns, a decision that's his to make, a
 name he has to pick). Kept here so an ended session never loses them. None are on fire; they just have
-to live somewhere. Cross one off by deleting the line. Last swept **2026-07-28**.*
+to live somewhere. Cross one off by deleting the line. Last swept **2026-08-04**.*
+
+**🎨 ONE DECISION FROM THE 2026-08-04 SKEPTIC PASS — THE HANDOFF BREAKS AT THE GREEN BUTTON**
+- [ ] **Does the purple/gold go from the HEADER and the PARK TABLES room too, or stop at the
+  drawer?** You asked for the left nav and I did exactly that — but arriving cold on a phone
+  now shows the seam. The front door is warm white paper with **one green button**; one tap
+  later `/games/park-tables/` is a **full purple-and-gold room** and the button you press is
+  **gold**. The site changes identity at the exact moment a stranger commits. The drawer is
+  neutral now, but it opens *under a purple-and-gold header*, so the menu stacks two design
+  languages. Three ways to go, all real: **(a)** carry the neutral up into the header and
+  re-skin Park Tables to the front-door palette — biggest job, one site; **(b)** header only —
+  cheap, fixes the drawer seam, leaves the button-color break; **(c)** leave it — the world
+  pages are *meant* to look like the world, and Park Tables is arguably part of the world.
+  ⚠ This is a look-and-feel call, so it is yours. Nothing is broken either way.
 
 **🌐 THE DOMAIN CUTOVER — ✅ DONE 2026-08-03/04. `chesswild.com` IS THE LIVE DOMAIN.**
 Runbook kept at `docs/domain-cutover-chesswild.md`. DNS verified, `CNAME`/`_config.yml`/
