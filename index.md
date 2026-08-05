@@ -367,35 +367,23 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
      a comment parses and is discarded. It is the half-written one that kills it. Describe the
      delimiter in words here; never type one. {% endcomment %}
 
-<section class="mc-studio">
-  {%- comment -%} ⚠ THE LAMP TOOK TWO TRIES, AND THE SECOND ONE WAS WORSE THAN THE FIRST.
-       Read this before touching the include — the trap has two doors and this page walked
-       through both of them on the same day (2026-08-04).
+{% comment %} ══ THE STUDIO BAND IS GONE FROM THIS PAGE — 2026-08-04 ═════════════════════════
+     Nate: "take the working lamp off the main page and leave it on the PJCC page."
 
-       TRY ONE — a `<span>`. The lamp had been DEAD on this page since the front door was
-       built. Kramdown treats a span-level element's contents as SPAN-LEVEL MARKDOWN, so it
-       HTML-escaped the include's inline script: `&&` shipped as `&amp;&amp;`, a syntax error,
-       so the whole IIFE never ran. Nothing errored visibly — the lamp is drawn in CSS, so it
-       looked perfect and simply never did anything.
+     THE WHOLE BAND WENT, NOT JUST THE LAMP, and that follows from the note that used to
+     stand here: "'Building in the open' is a claim; the lamp is the PROOF of it." The band
+     had already lost the blog line earlier the same day, so the lamp and that label were all
+     that was left — and a claim with its proof removed is just a claim, printed at the foot
+     of a page whose one job is to get a stranger onto a board. The lamp is not gone from the
+     site; it burns on /pjcc/, where the studio's own story is the point.
 
-       TRY TWO — a `<div>`, on the reasoning that block-level HTML is passed through untouched.
-       Half true, and the missing half went LIVE: a raw HTML block ends at the FIRST BLANK
-       LINE, and there was one in the middle of that function. Everything below it was
-       re-parsed as markdown — indented four spaces, so it became an indented CODE BLOCK.
-       Forty lines of raw JavaScript printed on the front door in a black box under the world
-       card, with `</div>` and `</section>` following as visible text. The span guard passed
-       the entire time, because the container really was block-level.
-
-       THE FIX IS THAT THERE IS NO INLINE SCRIPT ANY MORE. It is `/assets/js/pjcc-desk-lamp.js`,
-       loaded with `src`+`defer`, and kramdown has nothing to reach. `.mc-lamp` stays a `<div>`
-       and stays `display: block` — the container was never the real question.
-       ⭐ THE GENERAL RULE: an include a `.md` page uses may not carry an inline multi-line
-       `<script>`. `npm run test:style` fails the build on it (rules 4 and 5). {%- endcomment -%}
-  <div class="mc-lamp">{% include desk-lamp.html id="mc-lamp" %}</div>
-  <div class="mc-studio-copy">
-    <span class="mc-studio-label">Building in the open</span>
-  </div>
-</section>
+     Removed with it: `.mc-studio`, `.mc-lamp` and their placement block from this page's
+     stylesheet below, and `.mc-studio`/`.mc-lamp` from the inherit-guard and the tooltip
+     override in _sass/_pjcc-25-front-door.scss. The desk-lamp include now has exactly two
+     callers, both HTML layouts (home.html, studio-home.html) — so the kramdown trap that ate
+     it twice today cannot reach it at all any more. Restore from git if it ever comes back;
+     the full write-up of that trap lives in tests/style.check.js rules 4 and 5.
+     {% endcomment %}
 
 <style>
 /* ── ChessWild — the front door ───────────────────────────────────────────────────
@@ -818,40 +806,12 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mc-world-arw { color: var(--fd-wood); font-size: 1.2rem; flex: 0 0 auto; }
 @media (max-width: 560px) { .mc-world-glyph { font-size: 26px; } }
 
-/* THE STUDIO BAND — THE LAMP, AND ONLY THE LAMP (2026-08-04, Nate: "move the blog off the
-   home page — keep the working lamp"). The post title, its date and the "Read the blog →"
-   link came out with the blog; the lamp is a live status light, not a link to reading, so it
-   stays. The band's own rules are unchanged — it just has one thing in it now. */
-.mc-studio { display: flex; align-items: center; gap: 18px; padding: 16px 4px 0;
-  border-top: 1px solid var(--fd-rule); }
-/* ⚠ desk-lamp.html sizes the lamp but deliberately NEVER PLACES it — "wrap this include in
-   something positioned" (the include says so). Without these five lines the lamp's absolutely
-   positioned parts escape to the page and scatter (a blob in one corner, the desk slab drawn
-   across the width, and 8px of horizontal overflow). Same placement block as `.awake-lamp`
-   in _layouts/home.html; if a third page ever needs it, graduate it to _sass/ instead of
-   copying it a third time. */
-.mc-lamp { position: relative; display: block; width: 82px; height: 92px; flex: 0 0 auto; }
-.mc-lamp .studio-light { position: absolute; inset: 0; }
-/* THE DESK (2026-07-29, Nate: "for the Working Lamp, reduce the length of the wooden base
-   by 25% and center it"). 118px → 88px, exactly a quarter off.
-
-   "Centered" needed a decision, because the lamp DRAWING is not centered in its own 82px
-   box: the round foot spans x 31-68 (mid 49.5) while the shade and the cone of light
-   reach LEFT to about x −3. So the box's center and the lamp's center are 9px apart, and
-   the old −18/−18 was symmetric about the BOX — which is why the plank always looked
-   shifted left and ran off the card's edge. It is centered on the FOOT now (mid 50): the
-   plank is furniture, and furniture is centered under what stands on it, not under a beam
-   of light. Rendered all three readings against the live band before choosing. */
-.mc-lamp .sl-desk { left: 6px; right: -12px; border-radius: 3px; }
-.mc-lamp .sl-desk::after { border-radius: 0 0 3px 3px; }
-.mc-lamp .sl-tip { right: auto; left: -52px; }
-.mc-studio-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.mc-studio-label { font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 2px;
-  text-transform: uppercase; color: var(--fd-wood); opacity: 0.85; }
-/* (.mc-studio-post / -date / -more are gone with the blog lines they styled — 2026-08-04.
-   The `@media (pointer: coarse)` rule that lifted those two links to 44px went with them;
-   the only interactive thing left in the band is the lamp, which is 82×92. Restore all of
-   it from git together with the markup if the blog ever comes back to this page.) */
+/* (THE STUDIO BAND'S CSS WENT WITH ITS MARKUP — 2026-08-04, "take the working lamp off the
+   main page and leave it on the PJCC page." `.mc-studio`, `.mc-lamp`, their placement block,
+   `.mc-studio-copy` and `.mc-studio-label` all came out together, and so did the blog-line
+   rules the pass before them. The desk plank's tuned offsets did NOT die with them — they
+   were the one thing here worth keeping, and they moved to `.awake-lamp` in _layouts/home.html
+   so /pjcc/ gets the base he asked for. Restore the whole band from git if it returns.) */
 
 @media (prefers-reduced-motion: reduce) {
   .mc-door, .mc-world { transition: none; }

@@ -217,51 +217,18 @@ body.theme-chess {
      the desk lamp were both computing #a78bfa, invisible only because the <b> and <small>
      inside them happened to set their own color. One un-styled child would have shown it.
      These anchors are CARDS, not links, so they set the color for their whole subtree. */
-  .mc-world, .mc-door, .mcb-next, .mc-studio, .mc-lamp { color: var(--fd-ink); }
+  .mc-world, .mc-door, .mcb-next { color: var(--fd-ink); }
 
-  /* THE DESK LAMP'S HOVER TOOLTIP is a dark purple box with a GOLD word in it
-     (_pjcc-24-desk-lamp.scss) — both of the two things this page just removed, appearing
-     on hover where no audit that looks at a static render would ever catch them. The lamp
-     partial is shared with /pjcc/, where the dark tooltip is right, so this is an override
-     rather than an edit to the partial. */
-  .sl-tip { background: #ffffff; border-color: var(--fd-grain); color: var(--fd-ink-2);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.14); }
-  .sl-tip b { color: var(--fd-wood); }
-
-  /* ══ THE BEAM HAD TO INVERT ON PAPER (2026-08-04) ═══════════════════════════════════
-     Nate: "You can't see the light from the working lamp very well against the white
-     background." He is right, and the cause is physics rather than a wrong value:
-     THE PAGE IS ALREADY ALMOST WHITE, SO LIGHT CANNOT MAKE IT BRIGHTER. The shared lamp
-     paints its cone as a pale yellow wash at 66% opacity — which reads as a warm glow on
-     the dark PJCC pages it was drawn for, and as very nearly nothing on a #fbfaf7 sheet.
-     Turning the opacity up would not have fixed it; there is no headroom above white.
-
-     So on paper the beam DARKENS instead. `mix-blend-mode: multiply` with a saturated
-     amber is how lamplight actually falls on a white page: not a brighter patch, a warmer
-     one. Same for the head — a pale yellow bloom on cream is invisible too, so its halo
-     goes deeper amber out here.
-
-     ⚠ SCOPED TO `body.theme-chess` AND IT MUST STAY THAT WAY. Multiply on the splash or
-     anywhere in /pjcc/ would blend this cone into a dark backdrop and erase the beam
-     completely — the exact bug being fixed, pointing the other way. The shared partial
-     keeps the additive version because the shared partial's other homes are dark.
-
-     Picked from a labelled six-candidate render against the real band gradient, not
-     guessed: the softer ambers still washed out, and a drop-shadow variant exposed the
-     cone's own clip-path as a visible rectangle. */
-  .studio-light.on .sl-cone {
-    mix-blend-mode: multiply;
-    background: linear-gradient(205deg, rgba(247, 158, 20, 0.78), rgba(255, 190, 80, 0.03));
-    opacity: 0.9;
-    /* the shared candle-breath dips to 0.52, which would drop this beam back under the
-       paper; same rhythm, re-pitched to where it still reads */
-    animation-name: sl-warm-paper;
-  }
-  .studio-light.on .sl-head {
-    box-shadow: inset 0 -4px 6px rgba(255, 207, 74, 0.6), 0 0 18px 4px rgba(198, 122, 10, 0.5);
-  }
+  /* (THE PAPER-LAMP OVERRIDES CAME OUT 2026-08-04 — "take the working lamp off the main
+     page and leave it on the PJCC page." Roughly forty lines lived here to make the shared
+     lamp survive on white: a light tooltip, a `mix-blend-mode: multiply` beam and its own
+     `sl-warm-paper` keyframe, all of it written because LIGHT CANNOT BRIGHTEN AN ALREADY-WHITE
+     PAGE so the cone had to DARKEN instead. Every rule was scoped to `body.theme-chess`, and
+     index.md is the only page wearing it, so with the lamp gone from this page the whole set
+     was unreachable — it would have sat here looking load-bearing forever. The physics lesson
+     is worth more than the code and is kept in memory; `git show 60f7a5a` has the rules if a
+     lamp ever stands on paper again.) */
 }
-@keyframes sl-warm-paper { 0%, 100% { opacity: 0.82; } 50% { opacity: 0.97; } }
 
 /* ── the tabletop band ────────────────────────────────────────────────────────
    The one structural idea in the new layout: the hero sits on a surface, so the
