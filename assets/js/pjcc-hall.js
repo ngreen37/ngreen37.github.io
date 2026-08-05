@@ -29,14 +29,29 @@
       // shows everything in that category.
       return hall === 'all' ? (g.cat !== 'terminated' && g.playable !== false && !g.noHall) : g.cat === hall;
     });
-    // FINISHED THINGS FIRST (2026-07-28, skeptic pass). The combined grid used to follow
-    // the registry's order, which put a caution-taped half-built game SECOND — the second
-    // thing a brand-new visitor met in the arcade was a tile shouting BUILDING at them.
-    // The data order is the registry's business (categories, history, comments); the hall's
-    // business is that the first screen is all things that work. Stable: the relative order
-    // inside each group is untouched, so this is one line to revert.
+    /* ⚑ THE HALF-BUILT GAMES LEAVE THE GRID (2026-08-05, Nate: "put the Building games into
+       one 'on the workbench' row please").
+
+       ⭐ THE PROBLEM WAS THE PHONE, AND IT WAS ALWAYS A COUNTING PROBLEM. Five of the eleven
+       tiles were `cat:'dev'`, each wearing a caution-tape watermark that spans the whole card.
+       On a desktop grid they are five tiles among eleven; in ONE COLUMN they are five
+       consecutive full-width construction signs, and the arcade reads as a building site. The
+       2026-07-28 pass sorted them to the BOTTOM, which is the right instinct and only half the
+       fix — the bottom of a phone page is still five screens of hazard tape.
+
+       So they stop being tiles. The grid is now the things that are FINISHED, and everything
+       half-built is one quiet strip underneath with a name on it. Nothing is hidden and
+       nothing is dropped: all five are still linked, still playable, and the honest label is
+       now said ONCE, in a heading, instead of stamped five times.
+       ⚠ The words come from the registry (`PJCC_CATS.dev`) rather than being written here —
+       that object has said "On the Workbench / Half-built and humming" since the category
+       portals existed, and this is the first thing to use it since they were removed. */
+    var bench = [];
     if (hall === 'all') {
-      var rank = function (g) { return g.cat === 'dev' ? 2 : (g.locked && !unlocked()) ? 1 : 0; };
+      bench = list.filter(function (g) { return g.cat === 'dev'; });
+      list  = list.filter(function (g) { return g.cat !== 'dev'; });
+      // still last in the grid: the locked vault game, which is a thing that WORKS but is shut
+      var rank = function (g) { return (g.locked && !unlocked()) ? 1 : 0; };
       list = list.map(function (g, i) { return { g: g, i: i }; })
                  .sort(function (a, b) { return rank(a.g) - rank(b.g) || a.i - b.i; })
                  .map(function (x) { return x.g; });
@@ -48,9 +63,10 @@
       var chip = (b > 0 && g.score) ? '<span class="gcard-best">★ ' + b.toLocaleString() + ' ' + g.score[1] + '</span>' : '';
       var neu = isNew(g.neu) ? '<span class="gcard-new">NEW</span>' : '';
       var soon = g.soon ? '<span class="gcard-soon">SOON</span>' : '';
-      // in the combined grid, in-development games wear a plain honest tag (no taxonomy,
-      // just the truth per-tile) so nothing half-built reads as finished.
-      var indev = (hall === 'all' && g.cat === 'dev') ? '<span class="gcard-dev">BUILDING</span>' : '';
+      // ⚑ the per-tile BUILDING watermark is gone from the combined hall (2026-08-05) — the
+      // half-built games are a row of their own now and say it once. A SINGLE-CATEGORY hall
+      // (/games/in-dev/) still shows them as tiles, and there the tag would be redundant with
+      // the page's own name, so nothing anywhere stamps a card any more.
       var dbadge = dead ? '<span class="gcard-dead">DELAYED</span>' : '';
       // quiet, honest mark: this game's chess content is re-proved in CI
       // (tests/validate-chess.js — perft-verified referee + a Stockfish second opinion).
@@ -66,13 +82,37 @@
         : (locked ? '<p>Locked — flawless Fast run in Notation Blitz to unlock</p>' : '');
       var tag = (!dead && !locked && !g.soon && g.cat !== 'dev' && g.cryptic)
         ? '<p class="gcard-tag">' + esc(g.cryptic) + '</p>' : '';
-      var inner = neu + soon + indev + dbadge + '<span class="gcard-icon">' + icon + '</span>' +
+      var inner = neu + soon + dbadge + '<span class="gcard-icon">' + icon + '</span>' +
         '<span class="gcard-body"><h3>' + esc(g.name) + '</h3>' + descHtml + tag + chip + eng + '</span>';
       if (dead) return '<div class="gcard dead" style="--accent:' + g.accent + '">' + inner + '</div>';
-      // .is-dev lets the hall dim the half-built tiles as a set (games.md, 2026-07-27)
-      return '<a class="gcard' + (locked ? ' locked' : '') + (g.soon ? ' soon' : '') + (indev ? ' is-dev' : '') + '" href="' + url(g.slug) +
+      return '<a class="gcard' + (locked ? ' locked' : '') + (g.soon ? ' soon' : '') + '" href="' + url(g.slug) +
         '" style="--accent:' + g.accent + '" data-slug="' + g.slug + '" data-name="' + esc(g.name) + '">' + inner + '</a>';
     }).join('');
+
+    /* THE WORKBENCH ROW. One heading, one line of honest copy, and a chip per game — no
+       card, no watermark, no per-tile repetition. The node is created once and refilled,
+       because render() runs a second time when the profile's best scores arrive. */
+    var benchHost = host.querySelector('.hall-workbench');
+    if (bench.length) {
+      if (!benchHost) {
+        benchHost = document.createElement('section');
+        benchHost.className = 'hall-workbench';
+        host.appendChild(benchHost);
+      }
+      var cat = (window.PJCC_CATS && window.PJCC_CATS.dev) || {};
+      benchHost.innerHTML =
+        '<h2 class="wb-h"><span class="wb-glyph" aria-hidden="true">' + (cat.glyph || '🛠') + '</span> ' +
+          esc(cat.tag || 'On the Workbench') + '</h2>' +
+        '<p class="wb-sub">' + esc(cat.blurb || '') + '</p>' +
+        '<div class="wb-row">' + bench.map(function (g) {
+          return '<a class="wb-chip" href="' + url(g.slug) + '" style="--accent:' + g.accent + '"' +
+            ' data-slug="' + g.slug + '" data-name="' + esc(g.name) + '">' +
+            '<span class="wb-ico" aria-hidden="true">' + g.icon + '</span>' +
+            '<span class="wb-name">' + esc(g.name) + '</span></a>';
+        }).join('') + '</div>';
+    } else if (benchHost) {
+      benchHost.remove();
+    }
 
     Array.prototype.forEach.call(grid.querySelectorAll('a.gcard'), function (card) {
       card.addEventListener('click', function () {

@@ -53,7 +53,11 @@ window.PJCC_GAMES = [
 window.PJCC_CATS = {
   learn:      { name:'Learn',     glyph:'♟', tag:'Sharpen your game', accent:'#00e436', route:'learn',      blurb:'Tactics, openings, notation — the training halls.' },
   arcade:     { name:'Arcade',    glyph:'♞', tag:'Pure play',         accent:'#3cbcfc', route:'arcade',     blurb:'Action, chases, and run-and-gun. The loud room.' },
-  dev:        { name:'Building',   glyph:'🛠', tag:'On the workbench', accent:'#ffb020', route:'in-dev', blurb:'Half-built and humming — playable while they grow.' },
+  // ⚑ `tag` and `blurb` are LIVE COPY again (2026-08-05): the games hall prints them as the
+  // heading and lede of its workbench row, so this object stopped being leftovers from the
+  // deleted category portals. Title Case on the tag because it is a heading now
+  // (tests/style.check.js rule 2). The blurb is untouched — it was already the honest line.
+  dev:        { name:'Building',   glyph:'🛠', tag:'On the Workbench', accent:'#ffb020', route:'in-dev', blurb:'Half-built and humming — playable while they grow.' },
   isle:       { name:'Shogi Isle', glyph:'⛩', tag:'The island game', accent:'#e0483c', route:'isle', blurb:'The island game — foreign rules, learned across the sea.' },
   vault:      { name:'The Vault', glyph:'🔒', tag:'Unlock to enter', accent:'#9b96ad', route:'vault',  blurb:'Sealed. Earn the key and the door opens.' },
   terminated: { name:'Retired',   glyph:'☠', tag:'Off the roster',    accent:'#fc5454', route:'terminated', blurb:'Taken out of service. Kept for the record.' }

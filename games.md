@@ -195,47 +195,59 @@ permalink: /games/
 /* reserve the top-right corner so a title never runs UNDER the badge (the IN DEV /
    LOCKED chips are absolutely positioned there) */
 .ghub-all .gcard-body h3 { padding-right: 50px; }
-/* IN DEV — a caution-tape WATERMARK across the whole card (2026-07-24, Nate: "make the In Dev
-   symbol more prominent … maybe like a watermarked-caution-tape-like symbol that spans the whole
-   game box"). Was a small amber corner pill. pointer-events:none keeps the card clickable; the
-   stripe wash + the banner are translucent so the game's icon and name still read through.
-   overflow:hidden + border-radius:inherit clip the diagonal banner to the card's rounded corners.
-   The span's own "IN DEV" text is hidden (font-size:0) — the ::after carries the styled banner. */
-.hall--default .gcard-dev { position:absolute; inset:0; z-index:3; pointer-events:none;
-  overflow:hidden; border-radius:inherit; padding:0; font-size:0; letter-spacing:0; color:transparent;
-  /* the stripe wash is dimmed 15% with the card plate below (2026-07-27) — on a tile
-     this is what actually READS as the box's background, so both got the same cut. */
-  background:repeating-linear-gradient(-45deg, rgba(245,197,24,0.136) 0 15px, rgba(12,8,24,0.153) 15px 30px); }
-.hall--default .gcard-dev::after { content:"BUILDING";
-  position:absolute; left:50%; top:50%; width:200%; padding:5px 0; text-align:center;
-  transform:translate(-50%,-50%) rotate(-14deg);
-  font-family:'Poppins',sans-serif; font-weight:900; font-size:0.95rem; letter-spacing:0.34em;
-  color:#1a0f3d; background:rgba(255,185,25,0.62);
-  border-top:3px dashed rgba(26,15,61,0.72); border-bottom:3px dashed rgba(26,15,61,0.72);
-  box-shadow:0 4px 16px rgba(0,0,0,0.4); }
+/* ══ ON THE WORKBENCH — one row instead of five construction signs (2026-08-05) ══════════
+   Nate: "put the Building games into one 'on the workbench' row please."
 
-/* SETTLE THE IN-DEV TILES (2026-07-27, Nate: "dim the In-Dev game just a touch, like 5-10%…
-   then dim the background of the in-dev boxes an additional 15%… the overall page looks too
-   busy"). Two dims, stacked, on the half-built tiles only (pjcc-hall.js tags them .is-dev):
-     · the whole tile — caution tape and all — sits 8% quieter than a shipped game;
-     · its plate is a further 15% darker than the hall purple (#241451 → #1f1145).
-   Point at one and it comes back up to full, so nothing here is hard to read on purpose. */
-.ghub-all .gcard.is-dev { opacity:.92; background:#1f1145;
-  transition:opacity .14s ease, transform .12s, background .12s, box-shadow .12s; }
-.ghub-all .gcard.is-dev:hover { opacity:1; background:#342468; }   /* #3d2a7a, same 15% down */
+   WHAT STOOD HERE, and why it went: a caution-tape WATERMARK spanning every half-built card
+   (2026-07-24, his: "make the In Dev symbol more prominent … maybe like a watermarked-
+   caution-tape-like symbol that spans the whole game box"), plus a two-step dim on the tiles
+   as a set (2026-07-27, "the overall page looks too busy"). Both were right for tiles, and
+   the second one is the tell — the page was already too busy, and the answer at the time was
+   to turn the noise DOWN rather than to take it out of the grid.
+
+   ⭐ IT WAS ALWAYS A COUNTING PROBLEM, AND THE PHONE IS WHERE YOU SEE IT. Five of eleven
+   tiles wore the tape. In a desktop grid that is five among eleven; in ONE COLUMN it is five
+   consecutive full-width hazard banners, and the arcade reads as a building site. No amount
+   of dimming fixes a repetition — you fix a repetition by saying the thing ONCE.
+
+   So the half-built games are their own strip now: a heading, one honest line, and a chip
+   each. Everything is still linked and still playable. The tape is gone because the heading
+   already says it, and a chip cannot be mistaken for a finished game the way a full card can.
+   ⚠ The words are the REGISTRY'S (`PJCC_CATS.dev.tag` / `.blurb` in pjcc-games-data.js), not
+   this file's — the hall prints them, so there is one place to change them.
+   ⚠ Amber, dashed, and quiet: it keeps the caution-tape COLOR as a signal and drops the
+   caution-tape VOLUME. `--accent` is each game's own, so the chips still read as a set of
+   different things rather than a list. */
+.hall-workbench { margin: 2.2rem auto 0; max-width: 980px; padding: 1.1rem 1.2rem 1.3rem;
+  border: 1px dashed rgba(255,185,25,0.34); border-radius: 14px;
+  background: rgba(31,17,69,0.5); }
+.hall-workbench .wb-h { margin: 0 0 0.3rem; font-family:'Poppins',sans-serif; font-weight: 800;
+  font-size: 0.92rem; letter-spacing: 0.12em; text-transform: uppercase; color: #ffb020; }
+.hall-workbench .wb-glyph { font-size: 1rem; }
+.hall-workbench .wb-sub { margin: 0 0 0.9rem; font-size: 0.8rem; line-height: 1.5; color: #b6a6dd; }
+.hall-workbench .wb-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.wb-chip { display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+  padding: 9px 14px; min-height: 44px;      /* a finger, not a cursor — see _pjcc-27-tap-targets */
+  border: 1px solid rgba(255,185,25,0.28); border-radius: 999px;
+  background: #251753; color: #e8ddff; font-size: 0.82rem; font-weight: 600;
+  transition: background .14s ease, border-color .14s ease, transform .1s ease; }
+.wb-chip .wb-ico { font-size: 1rem; line-height: 1; color: var(--accent); }
+.wb-chip:hover, .wb-chip:focus-visible { background: #33206e; border-color: var(--accent);
+  transform: translateY(-1px); }
+@media (prefers-reduced-motion: reduce) { .wb-chip:hover, .wb-chip:focus-visible { transform: none; } }
 
 /* ═══ UNIQUE BOX DESIGNS — the five working games (2026-07-24, Nate: "give the working
    games unique, fun box designs … different text, different feels, for each. Play around.
    Have fun."). Each shipped tile becomes its own little world: a themed ground, a scrap of
    ambient motion, its cryptic line (rendered by pjcc-hall.js as .gcard-tag) and a one-word
-   eyebrow. The IN-DEV tiles keep the caution-tape watermark; these five are the playable
-   ones. ALL motion is transform/opacity only (the site perf rule) and folds flat under
+   eyebrow. Since 2026-08-05 these five ARE the grid — the half-built games moved to the
+   workbench row above. ALL motion is transform/opacity only (the site perf rule) and folds flat under
    reduced-motion at the very bottom of this block. Specificity `.ghub-all .gcard[data-slug]`
    (0,3,x) clears the shared `.hall--default .gcard` (0,2,0) themes in _pjcc-15-games.scss. ══ */
 .ghub-all .gcard[data-slug] { overflow:hidden; }
 /* the icon + copy ride ABOVE each card's ambient ::before decoration — but ONLY these two,
-   so the IN-DEV watermark (.gcard-dev, position:absolute z-index:3) and the corner badges
-   keep their own positioning and still paint over the tile. */
+   so the corner badges (NEW / SOON / ★ best) keep their own positioning and still paint
+   over the tile. */
 .ghub-all .gcard[data-slug] > .gcard-icon,
 .ghub-all .gcard[data-slug] > .gcard-body { position:relative; z-index:1; }
 .ghub-all .gcard-tag { margin:0.2rem 0 0; font-size:0.72rem; line-height:1.4; color:#cdbdf0; }
