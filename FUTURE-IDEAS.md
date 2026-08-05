@@ -573,6 +573,18 @@ their own sake.* New surface area should serve one of the five threads.
 # 🕹️ The Arcade — remaining polish per game
 *Depth & retention only — not new games. Each line is one buildable move.*
 
+**📱 A PHONE HELD SIDEWAYS — the board is still taller than the window** *(found in the
+2026-08-05 phone pass; the page header half is already fixed)*. At 844x390 the game cabinet
+used to start below the fold on all sixteen game pages; `_layouts/game.html` now compacts the
+header in landscape and buys ~77px back. **What is still true: the shared iframe is a flat
+`height: 520px`, and every shell sizes its canvas off the frame's WIDTH — so in landscape you
+can never see a whole board at once.** The fix is per-game, not shared: give each game the
+treatment `/games/the-gauntlet/` already has (`--g-stage` sized off `100vh`), because every
+shell has a different canvas aspect and one formula would over-shrink half of them and still
+overflow the rest. Do it for the three that matter most in landscape first — the Gauntlet,
+Park Tables and the Puzzle room — and measure, don't guess: the 520px floor exists because a
+first attempt at this SHRANK the board on a 1366x768 laptop.
+
 **The Gauntlet (headline):** **Take an action against each
 opponent** — a between-moves verb tied to each persona. The **nervous challenger** shakes the board and fidgets
 with the pieces; you can **ask him to stop — and he may or may not** (a saving-throw against his composure). Argus
