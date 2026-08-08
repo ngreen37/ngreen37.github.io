@@ -489,11 +489,28 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    700-weight tail flattened the contrast until "ChessWILD" read as one heavy word with odd
    gaps in it. Do not nudge these by eye — re-render. [[pick-visual-values-from-a-render]] */
 .wm-chess { letter-spacing: -0.025em; }
-/* ⚠ `text-transform`, not typed caps — the DOM text stays "ChessWild.com" so the accessible
-   name, a copy-paste and every crawler get the real brand string. */
-.wm-wild { font-weight: 600; font-size: 0.82em; letter-spacing: 0.15em;
-  text-transform: uppercase; padding-left: 0.07em; }
-.wm-tld { font-weight: 600; font-size: 0.48em; letter-spacing: 0.04em; opacity: 0.58; }
+/* ⚑ COLOR CARRIES IT NOW (2026-08-08, second pass — Nate: "give the 'Wild' some color, and put
+   the 'ild' back lower case. Give the .com the same white color as Chess").
+
+   The caps-and-tracking version is gone: with a color doing the work, spacing the word out too
+   was two ideas fighting for the same job. `Wild` is now normal case, full 800 like `Chess`,
+   and separated by hue alone — one word, two halves.
+
+   ⚠ IT IS 800, NOT THE 600 IT WAS. Rendered both: at 600 the colored word is demoted TWICE,
+   in weight and in tone, and stops reading as half the name — it looks like a subtitle that
+   wandered into the title. Color is the whole distinction now, so the weight has to match.
+
+   ⭐ WHY CORAL AND NOT THE OBVIOUS GOLD. Every legible option survived all four sky phases
+   (dawn/day/dusk/night are all dark enough that a light ink never struggles), so this was
+   never a contrast decision — it was a MEANING one, and the site has already spent its warm
+   signals. Gold #F5C518 is the Gauntlet's brass livery, and the front door contains it to
+   that one door on purpose; green is "something to play" and belongs to the single primary
+   button; purple is the world and the black pieces. Coral is the one warm ink on the page
+   that is not already saying something else — and it sits beside walnut and parchment
+   without arguing with either. [[front-door-palette]] [[site-type-system]] */
+.wm-wild { color: #ffa07a; letter-spacing: 0.01em; padding-left: 0.03em; }
+/* the address, small but the SAME white as the name — it is quiet by SIZE, not by fading */
+.wm-tld { font-weight: 600; font-size: 0.48em; letter-spacing: 0.04em; }
 
 /* THREE WORDS, beside the name (2026-08-04) — a tagline, so it is smaller and lighter than
    the wordmark and it never competes with it. Same white-plus-shadow pair as the title, and

@@ -11,26 +11,38 @@
   off plain chrome — the front door is plain chrome), Press Start 2P is the arcade and
   belongs to the games hall. A fifth face for one word on one page would either read as
   a stranger or steal a voice that is already spoken for. A wordmark is made distinctive
-  by TREATMENT far more than by family, so the whole idea here is weight and space:
+  by TREATMENT far more than by family, so the whole idea here is weight and color:
 
-      Chess   Poppins 800, tracking pulled IN   — solid, orderly, the game
-      WILD    Poppins 600, tracking pushed OUT  — open, airy, the promise
-      .com    small, 600, and quiet             — an address, not part of the name
+      Chess   Poppins 800, tracking pulled IN, white  — solid, orderly, the game
+      Wild    Poppins 800, CORAL                      — the same word, the other half
+      .com    small, 600, the SAME white as the name  — an address, not part of the name
 
-  The name says its own meaning in its spacing. It is monochrome white on the town sky,
-  so it costs nothing and cannot clash with any hour of the day.
+  ⚑ THE FIRST VERSION SPACED `WILD` OUT IN CAPS AND KEPT IT MONOCHROME; his second pass
+  asked for color, lower case and a white `.com`. The caps went with the tracking, and
+  they had to: with a color doing the separating, spacing the word out as well was two
+  ideas fighting over one job. One word, two halves, told by hue.
 
-  ⚠ THE UPPERCASE IS `text-transform`, NOT TYPED CAPS. The DOM text stays "ChessWild.com",
-  so the accessible name, a copy-paste and any crawler all get the real brand string —
-  which is named in three places that do not read each other ([[front-door-decision]]) and
-  must not gain a fourth spelling here.
+  ⭐ WHY CORAL AND NOT THE OBVIOUS GOLD. Every candidate stayed legible at every hour —
+  dawn, day, dusk and night are all dark enough behind this text that a light ink never
+  struggles — so this was never a contrast decision, it was a MEANING one, and this site
+  has already spent its warm signals. Gold is the Gauntlet's brass and the front door
+  contains it to that one door on purpose; green means "something to play" and belongs to
+  the single primary button; purple is the world and the black pieces. Coral is the one
+  warm ink here not already saying something else.
 
-  ⚠ PICKED FROM A RENDER, NOT FROM TASTE. Eight treatments, then six refinements of the
-  two finalists, screenshotted against the REAL town sky at both ends of the title's
-  clamp (34px desktop / 26px phone) and at day AND night. Two candidates were eliminated
-  by evidence rather than opinion: +0.18em tracking pushed the tagline onto a second line
-  at 34px, and a 700-weight tail lost the contrast that makes this read as a mark at all.
-  [[pick-visual-values-from-a-render]]
+  ⚠ THE CASE IS TYPED, AND THAT IS NOW THE POINT. It reads "ChessWild.com" in the source,
+  in a copy-paste, in the accessible name and to every crawler — the brand string is named
+  in three places that do not read each other ([[front-door-decision]]) and must not gain a
+  fourth spelling here. (The first version got this right via `text-transform`; normal case
+  gets it right for free.)
+
+  ⚠ PICKED FROM A RENDER, NOT FROM TASTE. Eight treatments, six refinements of the two
+  finalists, then eight colors across ALL FOUR sky phases and two weights — screenshotted
+  against the real town sky at both ends of the title's clamp (34px desktop / 26px phone).
+  Three candidates died on evidence rather than opinion: +0.18em tracking pushed the tagline
+  onto a second line at 34px, a 700-weight tail flattened the contrast that made it read as
+  a mark, and a 600-weight `Wild` was demoted twice — in weight AND tone — until it looked
+  like a subtitle that had wandered into the title. [[pick-visual-values-from-a-render]]
 
   Styling lives with the caller, beside `.page-title-out` in index.md's own block.
   ══════════════════════════════════════════════════════════════════════════════
