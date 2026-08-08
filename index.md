@@ -251,6 +251,24 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
         <span class="mcb-next-txt"><b>Another Puzzle</b></span>
         <i aria-hidden="true">&#8635;</i>
       </button>
+      {%- comment -%} ⚑ THE THIRD DOOR (2026-08-08, and it is deliberately the MIDDLE one).
+           The site took its first random sign-up on 2026-08-07 and the leaderboard says this
+           puzzle is what hooked them. So the moment a stranger has just finished a position
+           is the moment to ask the one question they cannot walk away from — and it is a
+           SMALLER commitment than the room, not a bigger one. Order is the whole point:
+             · Another Puzzle — stay here, costs one tap
+             · What's Your Rating? — two minutes, and it is about YOU
+             · The Puzzle Room — 1,000 puzzles, a road you have to mean it to walk
+           Ranked by what it asks of someone who arrived thirty seconds ago.
+           ⚠ STILL NOT GOLD. Three doors, all wood and ink; the page's one law is untouched.
+           {%- endcomment -%}
+      <a class="mcb-next" href="{{ '/rating/' | relative_url }}">
+        <span class="mcb-next-txt">
+          <b>What's Your Rating?</b>
+          <small>Six positions, one number</small>
+        </span>
+        <i aria-hidden="true">&rarr;</i>
+      </a>
       <a class="mcb-next mcb-next--room" href="{{ '/games/fork-in-the-road/' | relative_url }}">
         <span class="mcb-next-txt">
           <b>The Puzzle Room</b>

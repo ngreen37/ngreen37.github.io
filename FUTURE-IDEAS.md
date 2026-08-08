@@ -330,6 +330,16 @@ Puzzles wear honest ~ratings already. Give the **solver** one — the same Elo t
 puzzles at it. The Journey's 1–10 difficulty becomes a real, comparable number, and *"rated 1240 puzzles"* is
 a far better brag than *"step 340"*. Pairs with #3: one rating, one identity, everywhere.
 
+### 2b. Let a `/rating/` run SEED a brand-new account *(deliberately deferred 2026-08-08)*
+`/rating/` ships today and it does **not** write to the profile. That is a decision, not an omission, and the
+reason is the ladder: **clearance is the MAX of the rating and credit ladders**, so a solver Elo seeded from an
+anonymous six-question run — one anybody can retake until it goes well — is a clearance exploit wearing a
+friendly face. The miser rule applies: loosening later is a gift, tightening later is a takeaway.
+**What it needs before it can ship:** a *one seed per account, ever* rule enforced **server-side** (a column on
+the profile, not a localStorage flag), and probably a cap — seed at most to the estimate, never above the
+credit ladder's own reading. Then a stranger who takes the test and signs up starts the Puzzle Room at their
+real level instead of at 700, which is the single biggest thing that would make the run worth finishing.
+
 ### 3. Park Tables — one identity across the site *(build-out thread #2, greenlit)*
 Wire the **PJCC Rating → the Clearance ladder** (RECRUIT → DELTA → … → OMEGA) so your codename wears a
 **clearance pip** that climbs, and the quiz game, the tables and the Profile finally speak one language.

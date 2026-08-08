@@ -1,0 +1,737 @@
+---
+layout: page
+title: What's Your Rating?
+permalink: /rating/
+# `own_title` because this page draws its own heading INSIDE the tabletop. The default
+# `.page-title` is the purple-and-gold sky scrim, which is the right banner for a world
+# page and the wrong one on warm parchment — the front door refuses it too (`title_outside`
+# there). The page still ships an <h1>; it is just this page's own. [[front-door-palette]]
+own_title: true
+body_class: theme-chess rating-page
+tab_title: What's your rating? — six positions, one number
+description: Six chess positions, one number. A free two-minute estimate of your tactical rating, then a table at your level. No account, nothing to install.
+---
+
+{% comment %} ══════════════════════════════════════════════════════════════════════════
+     WHAT'S YOUR RATING? (2026-08-08)
+
+     Nate, the morning the site took its first random sign-up: "I can tell by the leader
+     board that it was the home-page puzzle that got 'em hooked. What other ideas do you
+     have that are like that? Something that you can see right away and 'the user just
+     WANTS to click it'?" — and then, of the ten: "I LOVE number one."
+
+     ⭐ WHY THIS ONE WORKS, SAID PLAINLY, BECAUSE EVERY DECISION BELOW FOLLOWS FROM IT:
+     the front-door puzzle converts because it is an UNFINISHED THING and the visitor is
+     the only one who can finish it. No reading, no account, one tap, an instant verdict.
+     This page is that mechanic escalated exactly once: six of them, climbing, ending in
+     a number about YOU. People will do almost anything for a number about themselves.
+
+     ── THE FOUR RULES THIS PAGE INHERITS FROM THE FRONT DOOR ────────────────────────
+     1. THE BOARD IS THE BUTTON. There is no start screen, no "ready?", no explanation of
+        what a puzzle is. Position one is on the screen when the page opens. Anything that
+        stands between a stranger and the first piece is a chance to leave.
+     2. NO ENGINE ON THE PAGE. Every position here was proved at BUILD time by the real
+        perft-verified referee (tests/gen-rating-puzzles.js, `npm run gen:rating`). This
+        page compares two integers and reads a packed move list. It does not reason about
+        chess and it never makes a claim the referee did not make. [[accuracy-above-all]]
+     3. A LEGAL MOVE, THEN A VERDICT. Picking a piece up lights its legal moves and a
+        square that is not one of them cannot be played at all. Being told you failed a
+        chess puzzle for doing something that is not a chess move is the worst version of
+        being wrong — the front door shipped that bug once and it is not shipping here.
+     4. A DOOR, NEVER AN ESCORT. Nothing auto-advances. Every screen waits for a tap.
+
+     ── THE NUMBER, AND WHY IT IS NOT A NEW OPINION ABOUT CHESS ──────────────────────
+     Every puzzle in the pool carries the rating the PUZZLE ROOM gave it — the same scale
+     the site's solver Elo and clearance already run on ([[clearance-and-puzzle-elo]]).
+     So the run is a six-question measurement on a ruler this site already owned, not a
+     second opinion invented for a landing page. The estimate is a standard adaptive Elo
+     settle with a decaying K: serve at the current estimate, settle, repeat.
+
+     ⚠ THE CEILING IS REAL AND THIS PAGE SAYS SO OUT LOUD. The room's rating formula tops
+     out near 1600, so six of these cannot measure a 2000 player. A clean sweep is told,
+     in plain words, that the test ran out of road — and pointed at Robert (2400), who
+     will not run out. Do NOT "fix" this by inventing ratings the room never claimed;
+     a number built on a false claim is a lie about a person. [[no-excuses-copy]]
+
+     ⚠⚠ THE RESULT IS NOT WRITTEN TO THE PROFILE, AND THAT IS DELIBERATE, NOT AN OMISSION.
+     Clearance is the MAX of the rating and credit ladders, so a solver Elo seeded from an
+     anonymous six-question run that anyone can retake until it goes well is a clearance
+     exploit wearing a friendly face. The standing rule on every economy number is err
+     miser — loosening later is a gift, tightening later is a takeaway
+     ([[sell-back-economy]]). Seeding a NEW account's solver Elo from a run is a real
+     follow-up and it is written down in FUTURE-IDEAS; it needs a one-run-per-account
+     rule, which is a server thing, not a page thing.
+     ══════════════════════════════════════════════════════════════════════════ {% endcomment %}
+
+{% comment %} ⭐ THE TABLETOP IS THE FRONT DOOR'S, NOT A COPY OF IT. `.mc-table` is the warm
+     wash + walnut hairline that makes the front door read as a TABLE with a board on it, and
+     it is already tuned — including the phone half of its own bleed. Re-mixing that tint here
+     would be the exact mistake the palette file warns about twice: you cannot tint a
+     TRANSLUCENT sheet without buying the darkness back in the alpha, and two layers at 0.85
+     compose to 0.978 — an opaque panel sitting on a card that lets the sky through.
+     One definition, two pages. [[front-door-palette]] {% endcomment %}
+<section class="mc-table rq-table">
+<div class="rq-wrap">
+  <h1 class="rq-title">What's Your Rating?</h1>
+
+  {% comment %} ══ THE RUN ══════════════════════════════════════════════════════════════
+       The lead is ONE sentence and it is a promise with a price on it: what you get, and
+       what it costs you. "Bare minimums" is the standing rule for this page's neighbor and
+       it applies here — these are chess people, they know what a puzzle is.
+       ══════════════════════════════════════════════════════════════════ {% endcomment %}
+  <section class="rq-run" id="rq-run">
+    <p class="rq-lead">Six positions, climbing. Two minutes, no account.</p>
+
+    {% comment %} The pips are the whole progress UI: filled as you go, and colored by the
+         verdict so the run reads back at a glance from the result screen. `aria-hidden`
+         because the live region below already announces position and verdict in words —
+         a screen reader hearing six dots described is noise, not progress. {% endcomment %}
+    <ol class="rq-pips" id="rq-pips" aria-hidden="true">
+      <li class="rq-pip"></li><li class="rq-pip"></li><li class="rq-pip"></li>
+      <li class="rq-pip"></li><li class="rq-pip"></li><li class="rq-pip"></li>
+    </ol>
+
+    {% comment %} ⚠ TWO LAYERS, and it is the same fix the front door needed (2026-07-28):
+         squares and pieces as SIBLINGS in one CSS grid puts nine holes of bare card under
+         the nine occupied squares, because grid places explicitly-positioned items FIRST
+         and the auto-placed squares then skip those cells. Squares in their own grid, men
+         in another laid over it. [[chess-visual-canon]] {% endcomment %}
+    <div class="rq-board" id="rq-board">
+      <div class="rq-grid">
+        {%- for i in (0..63) -%}
+          {%- assign r = i | divided_by: 8 -%}{%- assign c = i | modulo: 8 -%}
+          {%- assign par = r | plus: c | modulo: 2 -%}
+          <i class="rq-sq{% if par == 1 %} d{% endif %}" data-sq="{{ i }}"></i>
+        {%- endfor -%}
+      </div>
+      <div class="rq-men" id="rq-men"></div>
+    </div>
+
+    <p class="rq-say" id="rq-say" role="status">White to play.</p>
+
+    {% comment %} Nothing advances on a timer. The button is the only way forward, and it
+         is the SAME button for right and wrong — a run where the two verdicts lead to
+         different places is a run that is grading your feelings as well as your move.
+         {% endcomment %}
+    <div class="rq-after" id="rq-after" hidden>
+      <button class="rq-go" id="rq-next" type="button">Next Position</button>
+    </div>
+  </section>
+
+  {% comment %} ══ THE RESULT ═══════════════════════════════════════════════════════════
+       ONE green thing on this screen, and it is the seat. Everything else is paper. That
+       is the front door's law and it is worth keeping here for the same reason: the moment
+       a second button goes green, the page stops having an answer to "so what do I do now".
+       [[front-door-palette]] ═════════════════════════════════════════════ {% endcomment %}
+  <section class="rq-result" id="rq-result" hidden>
+    <p class="rq-res-label">Your estimated puzzle rating</p>
+    <p class="rq-res-num" id="rq-num">—</p>
+    <p class="rq-res-note" id="rq-note"></p>
+
+    <a class="rq-seat" id="rq-seat" href="{{ '/games/park-tables/' | relative_url }}">
+      <span class="rq-seat-txt"><b id="rq-seat-b">Sit Down and Play</b>
+        <small id="rq-seat-s">A table at your level</small></span>
+      <i aria-hidden="true">&rarr;</i>
+    </a>
+
+    <div class="rq-doors">
+      <a class="rq-door" href="{{ '/games/fork-in-the-road/' | relative_url }}">
+        <b>The Puzzle Room</b>
+        <small>1,000 puzzles to Chess City</small>
+      </a>
+      <button class="rq-door" id="rq-again" type="button">
+        <b>Take It Again</b>
+        <small>Six new positions</small>
+      </button>
+    </div>
+
+    {% comment %} The account line is a FACT, not a pitch, and it is last. What a free
+         account actually buys here is a rating that MOVES — this page's number is a
+         snapshot and says so. [[account-is-free-not-optional-pitch]] {% endcomment %}
+    <p class="rq-acct">This estimate lives in this browser only. Solve in the Puzzle Room
+      with a free account and the rating becomes yours — it moves with every puzzle.</p>
+  </section>
+
+  {% comment %} Shown only when the pool never arrived — a page may be DOWN, it may never
+       be STUCK on a cheerful lie about loading. [[down-never-stuck]] {% endcomment %}
+  <p class="rq-down" id="rq-down" hidden>The positions did not load. Reload the page.</p>
+</div>
+</section>
+
+<style>
+/* ══ /rating/ — page-local furniture ═══════════════════════════════════════════════
+   Page-local for the same reason the front door's board is: this is furniture for one
+   screen, and putting it in _sass/ would bill every page on the site for bytes only two
+   pages can use. The PALETTE is not local — `body_class: theme-chess` in the front matter
+   brings the warm-parchment front-door tokens (--fd-*) and the chess canon's board tokens
+   (--chess-*, --piece-*) with it, so this board and the front door's are the same board.
+   [[chess-visual-canon]] ════════════════════════════════════════════════════════════ */
+/* ── THE TABLETOP RUNS THE WHOLE CARD HERE ─────────────────────────────────────────
+   On the front door `.mc-table` is a BAND: it bleeds to the card's top and sides, then
+   stops, and four paper doors follow it. This page has nothing to follow it, so a band
+   would leave a bare strip of sheet under the table for no reason. It bleeds through the
+   bottom too and closes its own corners.
+
+   ⚠⚠ SPECIFICITY, AND I GOT IT WRONG ONCE — THE ARITHMETIC IS WRITTEN OUT HERE SO THE NEXT
+   PERSON DOES NOT. The rule being overridden is `body.theme-chess .mc-table`, which is
+   (0,2,1): TWO classes and ONE TYPE SELECTOR, because `body` is an element and elements
+   count. The first version of this block used `.mc-table.rq-table` — (0,2,0) — reasoning
+   that equal weight plus later source order would win. It is not equal weight. It lost
+   silently, every declaration below was discarded, and the page looked *nearly* right,
+   which is the worst way for a CSS override to fail. Measured, not eyeballed: computed
+   margin-bottom came back 24px instead of -24px.
+
+   So the selector carries `body.theme-chess` too. And the phone half is written in the SAME
+   BREATH, because a media query carries no specificity of its own — a desktop-shaped
+   override that out-specifies a mobile rule quietly becomes a mobile rule, which is how
+   56px of phone padding shipped on the front door once. [[front-door-palette]] */
+body.theme-chess .mc-table.rq-table { margin-bottom: -44px; padding-bottom: 40px;
+  border-bottom: 0; border-radius: var(--r-lg, 16px); }
+@media (max-width: 700px) {
+  body.theme-chess .mc-table.rq-table { margin-bottom: -24px; padding-bottom: 26px; }
+}
+
+/* ── THE SHEET HUGS THE COLUMN ON DESKTOP ──────────────────────────────────────────
+   Every other page fills the card's width with rows of cards or paragraphs. This one is a
+   single 520px task column, and at 1280px that left a 520px column adrift in a 1530px
+   sheet — a page that looks like it lost most of its content. The front door does not have
+   this problem because its hero is two columns wide; the honest fix here is not to pad the
+   column out with furniture nobody asked for, it is to make the paper the size of the
+   thing on it.
+   ⚠ (0,2,1) against core's flat `.page-card` (0,1,0), so it wins on weight rather than on
+   which stylesheet happens to load last. */
+body.rating-page .page-card { max-width: 620px; margin-left: auto; margin-right: auto; }
+
+.rq-wrap { max-width: 520px; margin: 0 auto; }
+/* the page's own heading — see `own_title` in the front matter. Walnut on parchment, the
+   weight the front door gives its title, and no scrim. */
+.rq-title { margin: 0 0 6px; text-align: center; color: var(--fd-ink);
+  font-size: clamp(1.7rem, 5.6vw, 2.3rem); line-height: 1.1; letter-spacing: -0.01em; }
+.rq-lead { margin: 0 0 14px; text-align: center; color: var(--fd-ink-2); font-size: 0.95rem; }
+
+/* ── the six pips ───────────────────────────────────────────────────────────────────
+   A dot per position: hollow ahead of you, filled behind. Green for solved and rust for
+   missed — the same two verdict inks the front door re-mixed for paper, because #6bffb8
+   is a mint drawn for a near-black card and measures under 2:1 on this sheet. */
+.rq-pips { display: flex; justify-content: center; gap: 10px; margin: 0 0 14px; padding: 0;
+  list-style: none; }
+.rq-pip { width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--fd-grain);
+  background: transparent; transition: background-color .2s ease, border-color .2s ease; }
+.rq-pip.now { border-color: var(--fd-wood-ink); box-shadow: 0 0 0 3px rgba(95,62,30,0.14); }
+.rq-pip.good { background: #1f7a4d; border-color: #1f7a4d; }
+.rq-pip.miss { background: #a3323b; border-color: #a3323b; }
+
+/* ── the board ─────────────────────────────────────────────────────────────────────
+   Read value-for-value off the front door's `.mcb` block so the two boards are one board:
+   fixed square, its own container so the pieces size off the BOARD and not the viewport,
+   and the canon's frame + grain. A square board is capped by HEIGHT, never width — 400px
+   is the front door's number and it fits a phone with the pips and the verdict line still
+   on screen. [[drawer-neutral-and-board-size]] */
+.rq-board { position: relative; width: min(400px, 100%); aspect-ratio: 1; margin: 0 auto;
+  border: 3px solid var(--chess-frame); border-radius: 6px; overflow: hidden;
+  container-type: inline-size;
+  box-shadow: 0 18px 36px -14px rgba(0,0,0,0.72), inset 0 3px 9px rgba(255,255,255,0.06),
+    inset 0 -12px 22px rgba(0,0,0,0.32); }
+.rq-grid, .rq-men { position: absolute; inset: 0; display: grid;
+  grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); }
+/* the men layer is INERT except for White's pieces, so a click on a BLACK piece falls
+   through to the square underneath it and "capture that" needs no code of its own */
+.rq-men { pointer-events: none; }
+.rq-sq { position: relative; background-color: var(--chess-lt);
+  background-image: linear-gradient(152deg, rgba(255,252,240,0.14), rgba(0,0,0,0.04) 62%), var(--chess-grain); }
+.rq-sq.d { background-color: var(--chess-dk);
+  background-image: linear-gradient(152deg, rgba(255,240,214,0.10), rgba(0,0,0,0.10) 62%), var(--chess-grain); }
+
+/* the pieces — every number lifted from PJCCPieces.draw() the same way the front door
+   lifted them, so this board and the Park Tables canvas land on the same piece */
+.rq-p { position: relative; display: flex; align-items: center; justify-content: center;
+  font: 900 10.5cqw/1 "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols2", serif;
+  z-index: 2; cursor: default; user-select: none; paint-order: stroke fill;
+  transition: transform .28s cubic-bezier(.2,.8,.3,1), filter .15s ease; }
+.rq-p::before { content: ''; position: absolute; left: 23.2%; top: 73.6%;
+  width: 53.6%; height: 17.9%; border-radius: 50%; background: rgba(0,0,0,0.32); }
+.rq-p.w { color: var(--piece-w-fill); -webkit-text-stroke: 0.085em var(--piece-w-line);
+  text-shadow: 0.035em 0.06em 0 rgba(0,0,0,0.40); }
+.rq-p.b { color: var(--piece-b-fill); -webkit-text-stroke: 0.085em var(--piece-b-line);
+  text-shadow: 0.035em 0.06em 0 rgba(0,0,0,0.40); }
+.rq-board.live .rq-p[data-mine] { cursor: pointer; pointer-events: auto; }
+.rq-board.live .rq-p[data-mine]:hover { filter: drop-shadow(0 0 8px #6bffb8); }
+.rq-p.lift { transform: translateY(-5px) scale(1.08); filter: drop-shadow(0 0 10px #6bffb8); }
+.rq-p.lift::before { transform: translateY(5px); opacity: 0.55; }
+.rq-p.mated { color: #ff6e6e; }
+
+/* the move dots — same board manners as the puzzle room and the front door. A dot is NOT
+   a hint: it shows every legal move of the piece you picked up, and says nothing about
+   which one is the answer. That is the line between teaching the rules and giving away
+   the tactic. ⚠ A PSEUDO-ELEMENT, NOT `background-image` — background-image REPLACES the
+   square's whole stack and would strip the wood grain off it. */
+.rq-sq.sel::before { content: ''; position: absolute; inset: 0;
+  background: rgba(107,255,184,0.34); pointer-events: none; }
+.rq-sq.can::after { content: ''; position: absolute; left: 50%; top: 50%;
+  width: 25.5%; height: 25.5%; border-radius: 50%; transform: translate(-50%,-50%);
+  background: rgba(107,255,184,0.85); pointer-events: none; }
+/* ⚠ cqw, NOT a percentage — border-width does not accept one, and the rule would be
+   dropped silently, leaving the capture ring as a filled dot covering the piece you are
+   about to take. The board is its own container, so 0.8cqw is the front door's number. */
+.rq-sq.can.cap::after { width: 84%; height: 84%; background: none;
+  border: 0.8cqw solid rgba(107,255,184,0.85); }
+.rq-sq.bad  { box-shadow: inset 0 0 0 3px rgba(255,110,110,0.8); }
+.rq-sq.good { box-shadow: inset 0 0 0 3px rgba(107,255,184,0.85); }
+
+/* ── the verdict line ─────────────────────────────────────────────────────────────
+   ⚠ THE VERDICT INKS ARE RE-MIXED FOR PAPER, not the dark page's. Both marks clear AA on
+   the warm sheet; the SQUARE keeps the bright ring, because a 3px ring on maple is not
+   text and does not have to. */
+.rq-say { margin: 14px 0 0; text-align: center; color: var(--fd-ink-2); font-size: 0.95rem;
+  min-height: 2.6em; }
+.rq-say b { color: var(--fd-wood-ink); }
+/* the counter rides INSIDE the prompt rather than above the board. It is the quietest
+   thing in the line on purpose — "3 of 6" is orientation, and the goal is the sentence a
+   visitor is actually here to read. */
+.rq-n { color: var(--fd-ink-3); font-family: 'Share Tech Mono', monospace; font-size: 0.82em; }
+.rq-say.good b, .rq-say.good { color: #1f7a4d; }
+.rq-say.miss b, .rq-say.miss { color: #a3323b; }
+
+.rq-after { display: flex; justify-content: center; margin-top: 6px; }
+.rq-after[hidden] { display: none; }
+/* the run's one control. Wood and ink — the green on this page belongs to the seat at the
+   end, and a button that appears six times must not outrank the one that appears once. */
+.rq-go { display: inline-flex; align-items: center; justify-content: center;
+  min-height: 46px; padding: 11px 26px; border: 2px solid var(--fd-grain); border-radius: 8px;
+  background: var(--fd-panel-hi); color: var(--fd-ink); font: 700 1rem/1 inherit;
+  cursor: pointer; transition: border-color .15s ease, background-color .15s ease; }
+.rq-go:hover { border-color: var(--fd-wood-ink); background: var(--fd-panel); }
+
+/* ── the result ──────────────────────────────────────────────────────────────────── */
+.rq-result[hidden] { display: none; }
+.rq-res-label { margin: 0; text-align: center; color: var(--fd-ink-3); font-size: 0.85rem;
+  letter-spacing: 0.04em; text-transform: uppercase; }
+.rq-res-num { margin: 4px 0 0; text-align: center; color: var(--fd-ink);
+  font: 900 3.6rem/1 'Share Tech Mono', monospace; }
+.rq-res-note { margin: 10px auto 22px; max-width: 40ch; text-align: center;
+  color: var(--fd-ink-2); font-size: 0.95rem; }
+
+/* THE ONE GREEN THING. Same green as the front door's lead door, same rule: if a second
+   thing on this screen ever goes green, the screen has stopped having a primary action. */
+.rq-seat { display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 16px 20px; border-radius: 10px; text-decoration: none;
+  border: 2px solid var(--fd-go); background: rgba(46,125,71,0.10); color: var(--fd-ink);
+  transition: background-color .15s ease, border-color .15s ease; }
+.rq-seat:hover { background: rgba(46,125,71,0.18); border-color: var(--fd-go-2); }
+.rq-seat-txt { display: block; }
+.rq-seat-txt b { display: block; font-size: 1.08rem; }
+.rq-seat-txt small { display: block; margin-top: 2px; color: var(--fd-ink-2); font-size: 0.86rem; }
+.rq-seat i { color: var(--fd-go); font-size: 1.5rem; font-style: normal; }
+
+.rq-doors { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.rq-door { display: block; width: 100%; padding: 13px 16px; border-radius: 10px;
+  border: 2px solid var(--fd-rule); background: var(--fd-panel); color: var(--fd-ink);
+  text-decoration: none; text-align: left; font: inherit; cursor: pointer;
+  transition: border-color .15s ease; }
+.rq-door:hover { border-color: var(--fd-grain); }
+.rq-door b { display: block; font-size: 0.98rem; }
+.rq-door small { display: block; margin-top: 2px; color: var(--fd-ink-3); font-size: 0.8rem; }
+
+.rq-acct { margin: 18px auto 0; max-width: 46ch; text-align: center; color: var(--fd-ink-3);
+  font-size: 0.84rem; }
+.rq-down[hidden] { display: none; }
+.rq-down { margin: 20px 0 0; text-align: center; color: #a3323b; }
+
+@media (max-width: 460px) {
+  .rq-doors { grid-template-columns: 1fr; }
+  .rq-res-num { font-size: 3rem; }
+}
+</style>
+
+<script>
+/* ══ /rating/ — six positions, one number ═══════════════════════════════════════════
+   Everything this page knows about chess it was TOLD at build time by the referee. It
+   places men from a FEN, looks moves up in a packed table, and compares two integers.
+   `npm run gen:rating` rewrites the POOL between the sentinels below.
+   ⚠ NEVER HAND-EDIT THE POOL. ══════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  /* ══ POOL — GENERATED, DO NOT EDIT BY HAND · npm run gen:rating ══ */
+  var POOL = [
+    'k7/pp3p2/pp2p3/5p1b/3R4/8/6K1/1N6|35|3|jbjTjLjDjrjzj7jijhjgjkjljmjn2u2v2123292+2/5o5q5z|480|Mate in one.',
+    'k7/pp5p/4K3/2R4P/4P3/6PB/4N1N1/8|26|2|ULUMUNUTUVUbUcUdaSaKaCaiaqaya6aZaYabacadaefXkcumvmvd0j0l0q060+2l2n2s28|480|Mate in one.',
+    'k7/ppK5/8/7P/P2R1P2/6PP/4P3/B7|35|3|KCKDKLKTfXgYjbjTjLjDjrjzj7jijhjkldumvn0s0k4x4q|480|Mate in one.',
+    'k7/pp4pp/2R5/6P1/4P3/K5P1/2P4P/8|18|2|SKSCSaSiSqSRSQSTSUSVSWSXeWkcogohopowoxumyqyi3v3n|480|Mate in one.',
+    '7k/6pp/5R2/8/2K3pp/7n/P1bPP3/8|21|5|VNVFVdVlVtV1V9VUVTVSVRVQVWVXiZiaibihijiqwowgzrzj0s0k|480|Mate in one.',
+    '7k/5Rpp/8/2ppP3/7p/4PP2/1K6/7b|13|5|NFNVNdNlNMNLNKNJNINOcUsktlxoxpxqxwxyx4x5x6|480|Mate in one.',
+    '7k/p5pp/pp1p4/3P3P/1K6/5R2/P7/8|45|5|fXhghihohphqtltdtVtNtFt1t9tstrtqtptotutvwowg|480|Mate in one.',
+    '7k/p3K1pp/1p6/1p2p2P/7P/3R4/1P6/8|43|3|MDMEMFMLMNMTMUfXrjrbrTrLrDrzr7rqrprorsrtrurvxpxh|480|Mate in one.',
+    'k7/pp5p/ppp2p2/2p5/7K/N3R3/8/8|44|4|nfnmnunvoZoioyo5skscsUsMsEs0s8srsqspstsusv|550|Mate in one.',
+    '7k/pp4pp/6p1/4R3/K5P1/8/4PPP1/8|28|4|cUcMcEckcscbcacZcYcdcecfgYgZghgogpme0s0k1t1l2u|550|Mate in one.',
+    '7k/4R1pp/3K4/p7/4PPP1/5P2/1B1P4/8|12|4|MEMUMcMLMKMJMIMNMOTKTLTSTUTaTbTckcldmexoxqxjxcxVxOx4x6zrzj|550|Mate in one.',
+    'k7/pp6/pp4K1/4p3/2R5/5nn1/P7/b7|34|2|WNWOWPWVWXiaiSiKiCiqiyi6ihigijikiliminwowg|550|Mate in one.',
+    'k7/pp6/p2K4/1p4pp/1P2R2p/8/2P5/8|36|4|TKTLTMTUTaTbTckckUkMkEksk0k8kjkiklkmknyqyi|550|Mate in one.',
+    '7k/5Rpp/3p4/7p/1P2K2p/8/P1N5/3N4|13|5|NFNVNdNlNtN1N9NMNLNKNJNINOhZkbkdkjklkrksktwowgyjyoysy4y87q7s7x71|550|Mate in one.',
+    'k7/pp6/8/2P1R1P1/2p4P/4P3/8/2K3nn|28|4|aScUcMcEckcbcdeWnfsk6x6y6z6567|550|Mate in one.',
+    'n7/2p5/1p3Q2/pp6/1P2k3/2P4r/8/5K2|21|20|VMVDVOVHVcVjVeVnVNVFVdVlVtV1VUVTVSVRVWVXhYqi909192989+|590|Win material.',
+    '3b4/Np6/3q1p1K/p2k4/6p1/7b/8/4R3|60|59|ICISIZXOXPXWXf808s8k8c8U8M8E87868584898+8/|630|Win the queen.',
+    '7k/1p4pp/p7/1p2R3/6p1/1K4P1/5P1n/3N4|28|4|cUcMcEckcsc0c8cbcacZcdcecfphpopqpwpxpy1t1l7q7s7x|660|Mate in one.',
+    '6N1/2r2p2/8/nPpp4/3P3Q/1k6/8/2K5|39|46|GMGVGXZRjanenVnMnDnun1n8nfnXnPnHnvn3n/nmnlnk6z6567|660|Win material.',
+    'k7/ppR5/p7/3p4/5P2/3K2P1/P4P1n/1n6|10|2|KCKSKaKiKqKyK6KJKLKMKNKOKPldrjrsryr0umwowg1t|660|Mate in one.',
+    '8/p4Q2/1b1n4/6P1/b3k3/P5K1/1n1B4/8|13|20|NENGNUNbNiNpNwNWNfNFNVNdNlNtN1N9NMNLNKNJNINONPeWumunuvu2u3zqzhzYzszlz6z8|660|Win material.',
+    '7k/5Rpp/p7/2P3K1/p1P5/P7/4n3/n1n5|13|5|NFNVNdNlNtN1N9NMNLNKNJNINOaSedefemen|660|Mate in one.',
+    '7k/p5pp/p7/3R3P/4K2p/1P6/2P5/1N4n1|27|3|bTbLbDbjbrbzb7babZbYbcbdbefXkckdkjklkrksphyqyi5o5q5z|660|Mate in one.',
+    '8/1R6/4b1K1/2k1p3/2q1p1p1/6P1/3P1P2/8|9|10|JBJRJZJhJpJxJ5JIJKJLJMJNJOJPWOWPWVWXWeWfzrzj1t1l|700|Win the queen.',
+    '4bNB1/6p1/2q4p/6p1/2N5/3k3N/5K2/8|34|28|FLFPFUFWGNGUGbGPiRiTiYicioisixizvevlv+1u18191+|750|Win the queen.',
+    '4b3/3p3p/1q2p3/4P1K1/P7/4N3/P2k4/8|44|34|eVeXelemengYsbsdsismsys2s7s9wo|750|Win the queen.',
+    '3b4/7p/1q1k3p/4N1p1/8/K4P2/5nP1/8|28|34|cLcNcScWcicmcrogowtl2u2m|750|Win the queen.',
+    '7N/7p/5p2/1q2pp2/k7/4K1P1/8/1N4n1|57|42|HNHWszs1um5o5q5z|750|Win the queen.',
+    '2n4B/2N5/Np3N1k/p2K4/8/4q3/2P5/8|21|38|HOKAKEKUKZQBQaQhVEVGVLVPVfVkVmbSbiyqyi|750|Win the queen.',
+    '2Bb4/8/1k3q1p/8/1p6/1P2N1K1/8/4N1N1|44|27|CJCQCLCUCdCmCvsbsdsismsys2s7s9umuvu2u38r8t8y82+t+v+0|750|Win the queen.',
+    '7k/3p2pp/2p5/PP3R2/1p2K2P/8/2P1b3/2b5|29|5|YQZRZSdVdNdFdldtd1d9dcdbdadedfkckjnfyqyi|770|Mate in one.',
+    '2b5/p7/5N2/3Q1P1P/k4pPN/8/P4K2/8|27|34|VEVGVLVPVkbSbJbAbUbNbGbibpbkbtb2b/bTbLbDbjbrbzb7babZbYbcfXmenWntn2wo1t101218191+|770|Win material.',
+    '8/3K4/6q1/p1Pp2k1/p1np4/8/N6R/1n6|55|54|LCLDLKLMaSwhwqw63v3n3f3X3P3H3/3231303z3y3x|810|Win the queen.',
+    '8/1p5N/3p4/1q3p1P/1k3PP1/5P2/2K5/6R1|62|57|PFPVPefXmemdyxyzy5y6y7+2+u+9+8+7+6+5+4+/|810|Win the queen.',
+    'n7/3b3p/p4q1p/Pp3k2/7p/R7/6K1/8|40|45|ogowo4opoqorosotouov2t2v2123292+2/|810|Win the queen.',
+    '8/3K4/5bp1/q1N1p3/7P/5PPP/8/2k5|26|41|LCLELSLTLUaJaQaUagakaparnftlum|820|Win the queen.',
+    '6N1/8/1pp4K/1pn2q2/1p6/8/P5N1/5k2|54|44|GMGVXOwowg2l2n2s28|820|Win the queen.',
+    '7n/8/2K5/4PnN1/1q1p2bp/8/8/N3k3|56|50|SKSLSbcUeNePeUeketev4p4y|820|Win the queen.',
+    '8/2pp1N2/b5k1/P7/P6K/5q2/1N1P4/8|13|28|NDNHNTNXNcNexixrx7zrzj|820|Win the queen.',
+    'k7/pp3pp1/4p1pp/P7/3R2K1/P7/2b1PP2/8|35|3|YQjbjTjLjDjrjzj7jijhjgjkjlmlmnmtmumvog0s0k1t1l|880|Mate in one.',
+    '8/2npbppb/1pp4p/5q2/2K2k2/8/8/2R5|58|61|ijipiq6y6q65646768696+6/|910|Win the queen.',
+    '7R/1p1K4/pp6/1Pp5/Bp3k1P/5q2/P7/8|7|5|HPHXHfHGHFHEHDHCHBHALCLDLELKLMLTLUZQgpgyg7nfwo|910|Win the queen.',
+    '2q3N1/p7/2k5/5p2/8/P6K/P2PPP2/b7|6|12|GMGVGXogvnvuv2v3zrzj0s0k1t1l|930|Win the queen.',
+    '1n6/7p/p4q2/P1N3k1/8/P6P/P7/2K3N1|26|36|aJaLaQaUagakaparogvn6y6z6567+t+0|930|Win the queen.',
+    'k7/pp6/p5pp/P1K3p1/4R2P/6P1/5P1P/N7|36|4|aTabahaiajkckUkMkEksk0k8kjkikhkgklkmnfneum1t1l3v4p4y|950|Mate in one.',
+    'k7/pp4pp/b7/P1P1R3/6PP/N1K3P1/5P2/8|28|4|aScUcMcEckcsc0c8cbcdcecfmenfoZoioyo5qhqjqpqxqyqz1t1l|950|Mate in one.',
+    '1n6/Np2b3/1p3pB1/p5pP/4K3/6k1/Q7/3r4|48|41|ICISIZWNWEWPWdfXkdkswpwiwbwUwNwGw5wowgwYw4wxwywzw0w1w2w3|980|Win material.',
+    '6Q1/1p6/1p3p2/pp4pp/8/PP4K1/P2b4/7k|6|27|GNGUGbGiGPGOGWGeGFGEGDGCGBGAGHogphutuvu1|980|Win material.',
+    'n3B3/6K1/1p4R1/P7/3k1pP1/3q3r/5PR1/4B3|22|19|ELESEZEgENOFOGONOVWeWVWUWTWSWRWXYQYRme1t2u2+238z8q8h|1020|Win the queen.',
+    '8/prp2p1K/8/1p1p1B2/pp2r3/3k4/5P2/1rn5|53|45|PGPHPOPXdUdLdCdWdkdmdv1t1l|1020|Win the rook.',
+    '2N4n/p1p1K3/4R3/pP5p/2P4p/5k2/5q2/1n6|20|21|CICRCTMDMEMFMLMVUcUkUsU0U8UTUSURUQUVUWUXZRia|1020|Win the queen.',
+    'Bn5n/3p1p2/1k5K/4p3/3r2pp/4B3/R1P4P/8|50|42|AJASAbAkAtA2A/XOXPXeXfsjslseszs6s1s+wowgwYwQwIw4wxyqyi3v|1020|Win the rook.',
+    '6b1/3K3n/N7/P1Pp1k1N/2pp4/P7/4q3/8|31|46|LCLDLKLSLTQBQKQhaSfOfVflfuog|1030|Win the queen.',
+    '7k/p4ppp/2p2p1p/5P2/3R4/PP5P/4b1P1/1K6|35|3|jbjTjLjDjrjzj7jijhjgjkjljmjnogphvn2u2m5w5x5y5456|1050|Mate in one.',
+    '1n6/4q2p/pp2k3/p6K/P1p2p2/2P5/6R1/N7|54|52|fXfm2u2m2e2W2O2G2+21202z2y2x2w234p4y|1090|Win the queen.',
+    '1r6/4Npp1/1q6/1k2b1P1/3p2pP/R7/2K1P3/8|40|41|MCMGMSMWMbMdeWnfogoYoQoIoAowo4opoqorosotouovypyryxyzy5y6y70s0k|1090|Win the queen.',
+    'k7/pp6/2p5/1P2R1PP/pp4PP/r3PB2/8/6K1|28|4|ZRZScUcMcEckcbcacdeWfXsktktbtSt0t7t2t/+1+2+3+9+/|1130|Mate in one.',
+    '7k/1r2p3/1p3r2/1pP1B3/1Pp3P1/P3P3/2K1P3/6R1|38|30|aSaRcTcKcBcVcjcqcxc4clcuc3meogskyqyxyzy5y6y7+2+u+9+8+7+6+5+4+/|1130|Win the rook.',
+    '5k2/7p/1p3ppr/2r2p1b/1B5p/3P3P/3K1PP1/8|43|35|hYhahohqrjzsz81t1l2u2m|1130|Win the rook.',
+    '7k/6pp/2K1p2p/7p/P1Pp4/3P1R2/n6r/3r3r|45|5|SJSKSLSRSTSZSagYiatltdtVtNtFt1t9tstutv|1130|Mate in one.',
+    'b1N5/2p2n2/p7/N1K4p/p4q1p/P4k2/1P6/4R3|60|61|CICMCRCTYJYSYiYpxpxh808s8k8c8U8M8E87868584898+8/|1200|Win the queen.',
+    'k7/pp5p/5ppp/2R3p1/4K1pn/r7/2BbP3/8|26|2|aSaKaCaiaqaZaYabacadaekbkjypygyry5y70s|1200|Mate in one.',
+    'N6R/1p1p3B/8/k1p1pN1K/1r2p3/8/P2B1nP1/8|48|40|AKARHGHFHEHDHCHBPGPWdMdOdTdXdjdndsdufWfXfefnwowgzqzhzszlzezXz6z82u2m|1200|Win the rook.',
+    '7b/2R3p1/8/1k1p1PPp/1q3p2/7K/1b2b3/3b3b|10|9|KCKSKaKiKqKyK6KJKIKLKMKNKOdVeWvnv3|1200|Win the queen.',
+    'nb6/p3N1q1/8/1P5P/P6P/2r1k2P/8/1R1K4|12|29|MCMGMSMWMbMdZRfXgY5x5p5h545678|1210|Win the queen.',
+    'n7/3p3K/p7/P4N1P/P1p1k3/P1P5/1r6/5q2|29|46|PGPHPOPWPXdMdOdTdXdjdndsdufX|1210|Win the queen.',
+    '2n1B3/nr6/p2q1N1p/7P/P7/6k1/K1P5/2N5|21|36|ELESEZENEWVGVLVPVbVkVmgYw4yqyi6p6r60|1210|Win the queen.',
+    '8/1K3ppp/6n1/b3p1p1/np6/3RN2k/2r5/n7|44|50|JAJBJIJQrjrbrTrLrDrzr7rqrprosbsdsismsys2s7s9|1240|Win material.',
+    '5b2/pp1K4/1p4p1/p5p1/2q1p1p1/7r/1k1NR3/8|51|34|LDLEzizkzpztz5z90s0k08010203|1240|Win material.',
+    '1R6/6p1/4p2r/4pp1n/2k2p1P/2q3P1/K5PP/8|1|2|BJBRBZBhBpBxB5BABCBDBEBFBGBHumulw53v|1270|Win the queen.',
+    '7k/4R1pp/1p5p/5P1P/1K1p4/3P1Pr1/4P1n1/5n2|12|4|MEMUMcMkMsMLMKMJMIMNMOdVhZhghihohptl0s0k|1270|Mate in one.',
+    '1b5q/p1pr4/1p6/1P2k3/p6N/8/4K3/7B|39|22|nWndntn20s0t010809/2/t/k/b/S/J/A|1290|Win the queen.',
+    '8/n1K1pp2/4pn2/p1n3P1/p3q3/r7/4kNR1/8|53|36|KBKDKReWeV1k1m1r1v171/2u2m2+23|1310|Win material.',
+    '8/p1K2k1r/5N2/pP3R1p/P6p/P2P4/2PP4/8|21|15|KBKCKDKJKLKSKTVEVGVLVPVbVfVkVmZRdldtd1d9dcdbdadedfrjyqyi|1310|Win material.',
+    '6b1/1pp5/5ppp/1P1k3p/p6n/7P/2K5/3N1r2|59|44|ZRyqyryxyzy5y67q7s7x71|1320|Win the rook.',
+    'r3b3/pppppp2/pp6/3K4/1p1N4/8/3k3r/8|35|45|bcbibkjSjUjZjdjpjtjyj0|1320|Win the rook.',
+    '4r3/pn2p2p/8/2k1pP1P/5p2/5N1K/3N4/q6n|51|41|dVfXtctetjtnt3t8t+vmvnv2v3zizkzpz5z9|1320|Win the queen.',
+    '1r3n2/1p2n3/7K/3Pp3/1q5p/1k2PP1P/7P/3R4|59|57|XOXeXfbTsktl7z7r7j76757478797+7/|1340|Win the queen.',
+    '8/p1pp1pp1/2ppp3/6q1/p5k1/P1K5/4R3/N7|52|54|qhqiqjqrqxqy0s0k0c0U080z0y0x0w0102034p4y|1340|Win the queen.',
+    '3R4/5p2/2p3p1/4K1Pp/1k6/1q1P1N2/4nn2/n2r4|3|1|DLDTDbDjDCDBDADEDFDGDHcTcVrjtjtntzt3t8t+|1340|Win the queen.',
+    '1r3k2/1p3N2/5R2/pBP3b1/P1P1b3/7r/5P2/K3n3|13|30|NDNHNTNXNcNeVdVlVtVUVTVSVRVQVWVXZQZSZLZEaS1t1l4w4x|1410|Win material.',
+    '8/7K/r1k1p3/p2r4/p3B2P/2P3P1/4PBPb/3r4|42|34|PGPHPOPWPXkbkdkWkrkyk5ktnfqium0s1s1j1a1R1I181+|1420|Win the rook.',
+    '7R/p1p5/bp3k2/5q1P/1K1R4/3P4/Pn1P4/2r5|7|5|HPHXHGHFHEHDHCHBHAfXhohpjbjTjLjDjijkjljmjnwowg|1420|Win the queen.',
+    '2q3k1/B7/1R6/P2N2pp/P5p1/3P4/nPr2b2/7K|27|12|IBRJRBRZRhRpRQRSRTRURVRWRXYQbKbMbVbhblbqbsrjxpxh/2/3|1430|Win the queen.',
+    '1r6/8/2RN1k1K/1q6/3P1B2/P2nP1P1/P1PN4/3b4|19|25|SKSCSaSiSqSRSQTCTETJTNTZTdTiTkXPjblcleogskumyqyiyrzizkzpztz5z9|1490|Win material.',
+    '1BN5/2p2K1p/B7/3p1P1N/2r2pNB/5P2/1P6/5k2|49|41|BIBKCICMCRCTNENFNGNMNONUNVQJQZQidVfOfVflfumVmXmcmsm1m3nenVnMnDnun1n8xpxh|1490|Win the rook.',
+    '3b4/4p3/2k3pp/p1N1Pp1n/2R1pP2/1b6/7K/4b3|26|41|aJaLaQaUagakaparcUiqiyi6ihigijik3v323+3/|1490|Win material.',
+    '4n3/1Bp5/1p4N1/4N2R/1r4p1/5P1P/K5PB/2k3B1|28|43|JAJCJQJSJbJkWFWHWMWlWncLcNcScicmcrfXfPfHfnfefdtltmvnvmwow42u3u3l+1+s+j+a+R|1500|Win the rook.'
+  ];
+  /* ══ END POOL ══ */
+
+  /* ONE GLYPH PER PIECE TYPE, BOTH COLORS — the canon draws white and black from the same
+     filled set and separates them by fill and stroke. Do not "correct" these to the
+     outline code points. [[chess-visual-canon]] */
+  var GLYPH = { K: 9818, Q: 9819, R: 9820, B: 9821, N: 9822, P: 9823 };
+
+  /* ⚠ POSITIONAL, AND IT MUST MATCH tests/gen-rating-puzzles.js CHARACTER FOR CHARACTER —
+     SQ64[i] IS square i. The failure would be silent: the board would light the wrong
+     squares and refuse legal moves. tests/rating.check.js compares the two strings. */
+  var SQ64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+  var board = document.getElementById('rq-board');
+  var men   = document.getElementById('rq-men');
+  var say   = document.getElementById('rq-say');
+  var pips  = document.getElementById('rq-pips');
+  var after = document.getElementById('rq-after');
+  var runEl = document.getElementById('rq-run');
+  var resEl = document.getElementById('rq-result');
+  if (!board || !men || !say || !pips || !after || !runEl || !resEl) return;
+
+  /* A PAGE MAY BE DOWN; IT MAY NEVER BE STUCK. An empty pool is a generator that never
+     ran, and the honest thing is to say so rather than show a board nobody can solve. */
+  if (!POOL.length) {
+    var down = document.getElementById('rq-down');
+    if (down) down.hidden = false;
+    runEl.hidden = true;
+    return;
+  }
+
+  /* ══ THE ESTIMATE ═══════════════════════════════════════════════════════════════════
+     A standard adaptive Elo settle, and every constant in it is doing a job:
+
+     START at 900 because that is the middle of the pool's honest range, not because it
+     flatters anyone. A visitor who misses all six lands near 490 and one who solves all
+     six lands near 1370 — both ends are reachable in six questions, which is the only
+     thing that makes the middle mean anything.
+
+     K DECAYS because the first answer carries the most information and the sixth carries
+     the least. A flat K would let one unlucky miss at the end undo the whole run.
+
+     ⚠ THE CEILING IS THE POOL'S, NOT A DESIGN CHOICE. puzzleRating() tops out near 1600
+     and the top band here is 1450, so a clean sweep means the test ran out of road, not
+     that the visitor is a 1370. `swept` is what the result screen says that with. */
+  var START = 900;
+  var K = [220, 180, 150, 125, 105, 90];
+  var N = K.length;
+
+  var est = START, step = 0, right = 0, seen = {}, cur = null, sel = -1, done = false, legal = null;
+
+  function expected(pr) { return 1 / (1 + Math.pow(10, (pr - est) / 400)); }
+
+  /* Serve the unseen puzzle whose rating is nearest the running estimate, picked at random
+     from the nearest few so two runs at the same level are not the same six positions. */
+  function nextPuzzle() {
+    var pool = [], i;
+    for (i = 0; i < POOL.length; i++) if (!seen[i]) pool.push(i);
+    if (!pool.length) { seen = {}; for (i = 0; i < POOL.length; i++) pool.push(i); }
+    pool.sort(function (a, b) {
+      return Math.abs(rateOf(a) - est) - Math.abs(rateOf(b) - est);
+    });
+    var band = pool.slice(0, Math.min(8, pool.length));
+    var chosen = band[(Math.random() * band.length) | 0];
+    seen[chosen] = 1;
+    return chosen;
+  }
+  function rateOf(i) { return +POOL[i].split('|')[4] || 0; }
+
+  function tell(html, good, bad) {
+    say.innerHTML = html;
+    say.classList.toggle('good', !!good);
+    say.classList.toggle('miss', !!bad);
+  }
+
+  function paintPips() {
+    var kids = pips.children;
+    for (var i = 0; i < kids.length; i++) kids[i].classList.toggle('now', i === step);
+  }
+
+  /* DEAL — repaint the men and reset every mark. The whole pool is already on the page, so
+     dealing is a string split and one innerHTML: nothing fetched, nothing to wait for. */
+  function deal() {
+    var idx = nextPuzzle();
+    cur = POOL[idx].split('|');
+    sel = -1; done = false;
+    after.hidden = true;
+    var marked = board.querySelectorAll('.rq-sq.bad, .rq-sq.good');
+    for (var m = 0; m < marked.length; m++) marked[m].classList.remove('bad', 'good');
+
+    /* unpack the referee's move list into from -> [to, to, …], two characters per move */
+    legal = {};
+    var pk = cur[3] || '';
+    for (var q = 0; q + 1 < pk.length; q += 2) {
+      var fr = SQ64.indexOf(pk.charAt(q)), to = SQ64.indexOf(pk.charAt(q + 1));
+      if (fr < 0 || to < 0) continue;
+      (legal[fr] || (legal[fr] = [])).push(to);
+    }
+
+    /* the board half of a FEN, left to right and top to bottom. Index r*8+f is the same
+       numbering the referee uses (0 = a8), which is what lets the answer travel as two ints. */
+    var rows = cur[0].split('/'), h = '';
+    for (var r = 0; r < 8; r++) {
+      var f = 0, row = rows[r] || '';
+      for (var c = 0; c < row.length; c++) {
+        var ch = row.charAt(c);
+        if (ch >= '1' && ch <= '8') { f += +ch; continue; }
+        var up = ch.toUpperCase(), white = (ch === up);
+        h += '<b class="rq-p ' + (white ? 'w' : 'b') + '" data-sq="' + (r * 8 + f) + '"' +
+             ' data-pc="' + ch + '"' + (white ? ' data-mine="1"' : '') +
+             ' style="grid-area:' + (r + 1) + '/' + (f + 1) + '">&#' + GLYPH[up] + ';</b>';
+        f++;
+      }
+    }
+    men.innerHTML = h;
+    paintPips();
+    tell('<span class="rq-n">' + (step + 1) + ' of ' + N + '</span> — White to play. <b>' +
+      esc(cur[5] || 'Find the best move.') + '</b>');
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  /* PICK UP / PUT DOWN. One function owns the whole selection state — the lifted piece, the
+     wash on its square and the dots on everywhere it may go — because three marks that can
+     be set independently are three marks that will eventually disagree. */
+  function lift(sq) {
+    var held = men.querySelector('.rq-p.lift');
+    if (held) held.classList.remove('lift');
+    var lit = board.querySelectorAll('.rq-sq.sel, .rq-sq.can');
+    for (var i = 0; i < lit.length; i++) lit[i].classList.remove('sel', 'can', 'cap');
+    sel = sq;
+    if (sq < 0) return;
+    var n = men.querySelector('.rq-p[data-sq="' + sq + '"]');
+    if (n) n.classList.add('lift');
+    var home = board.querySelector('.rq-sq[data-sq="' + sq + '"]');
+    if (home) home.classList.add('sel');
+    var to = (legal && legal[sq]) || [];
+    for (var t = 0; t < to.length; t++) {
+      var s = board.querySelector('.rq-sq[data-sq="' + to[t] + '"]');
+      if (!s) continue;
+      s.classList.add('can');
+      if (men.querySelector('.rq-p[data-sq="' + to[t] + '"]')) s.classList.add('cap');
+    }
+  }
+  function canGo(from, to) {
+    var list = legal && legal[from];
+    return !!list && list.indexOf(to) >= 0;
+  }
+
+  board.addEventListener('click', function (e) {
+    if (done || !cur || !e.target.closest) return;
+
+    var mine = e.target.closest('.rq-p[data-mine]');
+    if (mine) {
+      var at = +mine.getAttribute('data-sq');
+      lift(sel === at ? -1 : at);
+      return;
+    }
+    var sq = e.target.closest('.rq-sq');
+    if (!sq || sel < 0) return;
+    var id = +sq.getAttribute('data-sq');
+
+    /* AN ILLEGAL SQUARE IS NOT AN ANSWER, SO IT IS NOT MARKED. The piece goes back down and
+       the position is still there. Only a real move gets a verdict — see rule 3 up top. */
+    if (!canGo(sel, id)) { lift(-1); return; }
+
+    var from = sel;
+    done = true;
+    lift(-1);
+
+    var hit = (from === +cur[1] && id === +cur[2]);
+    var pr = +cur[4] || est;
+
+    /* settle BEFORE the display, and clamp to the pool's real reach — an estimate that
+       wanders outside the range the pool can measure is a number with nothing behind it */
+    est = est + K[step] * ((hit ? 1 : 0) - expected(pr));
+    est = Math.max(400, Math.min(1500, est));
+
+    if (hit) {
+      right++;
+      var moving = men.querySelector('.rq-p[data-sq="' + from + '"]');
+      var taken  = men.querySelector('.rq-p[data-sq="' + id + '"]');
+      if (taken && taken !== moving) taken.parentNode.removeChild(taken);
+      if (moving) {
+        moving.setAttribute('data-sq', id);
+        moving.style.gridArea = (((id / 8) | 0) + 1) + '/' + ((id % 8) + 1);
+      }
+      /* only a MATE puzzle may redden the king — on a material puzzle the king is fine and
+         a red king would be the page inventing a claim the referee never made */
+      if (/\bmate\b/i.test(cur[5] || '')) {
+        var king = men.querySelector('.rq-p.b[data-pc="k"]');
+        if (king) king.classList.add('mated');
+      }
+      sq.classList.add('good');
+      tell('<b>Yes!</b>', true);
+    } else {
+      sq.classList.add('bad');
+      tell('<b>Not quite.</b>', false, true);
+    }
+
+    pips.children[step].classList.add(hit ? 'good' : 'miss');
+    pips.children[step].classList.remove('now');
+    step++;
+    var btn = document.getElementById('rq-next');
+    if (btn) btn.textContent = step >= N ? 'See My Rating' : 'Next Position';
+    after.hidden = false;
+  });
+
+  /* ══ THE RESULT ═══════════════════════════════════════════════════════════════════
+     The seat is chosen by the estimate, from the four regulars' ADVERTISED ratings — the
+     same numbers the Park Tables cards print, so nobody is sent to a seat that says one
+     thing here and another there. [[bot-gate]] */
+  var SEATS = [
+    { id: 'argus',  name: 'Argus',  elo: 650,  under: 900 },
+    { id: 'auston', name: 'Auston', elo: 1100, under: 1300 },
+    { id: 'father', name: 'Father', elo: 1700, under: 1e9 }
+  ];
+
+  function finish() {
+    var shown = Math.round(est / 25) * 25;
+    var swept = (right === N);
+    document.getElementById('rq-num').textContent = swept ? shown + '+' : shown;
+
+    var seat = SEATS[0], i;
+    for (i = 0; i < SEATS.length; i++) { if (shown < SEATS[i].under) { seat = SEATS[i]; break; } }
+
+    /* ⚠ SAY THE LIMIT OUT LOUD. Six puzzles cannot measure a strong player, and a page that
+       quietly hands a 2000 an estimate of 1375 has told them something false about
+       themselves. A sweep gets the truth and a bigger mountain. [[no-excuses-copy]] */
+    var note;
+    if (swept) {
+      /* ⚠ THE CEILING IS NAMED, AND tests/rating.check.js CHECKS THE NUMBER AGAINST THE
+         POOL. Re-generate with a different reach and this sentence becomes a false claim
+         about how much to trust a number — which is the one lie this page must not tell. */
+      note = 'Six for six — this test ran out of road before you did. Its hardest positions rate about 1500, ' +
+             'so your real number is higher than this one. Robert plays at 2400.';
+      seat = { id: 'robert', name: 'Robert', elo: 2400 };
+    } else if (right === 0) {
+      note = 'Everyone starts here, and tactics are the fastest thing in chess to get better at. ' +
+             'The Puzzle Room starts where you are.';
+    } else {
+      note = 'That is the ChessWild puzzle scale — the same one the Puzzle Room and your ' +
+             'clearance run on. Six positions is an estimate, not a verdict.';
+    }
+    document.getElementById('rq-note').textContent = note;
+
+    /* ⚠ THE PARK URL COMES OFF THE MARKUP, NOT OUT OF A LIQUID TAG IN HERE. An output tag
+       inside an inline script makes the file on disk stop being JavaScript, which blinds
+       every harness that reads the raw source — style.check.js's parse gate included — and
+       hides a syntax error behind a fully green suite. The anchor already carries the right
+       href from Liquid; this only appends the seat. And note that a JS comment is NO refuge:
+       Liquid does not know what a comment is and will render a tag written inside one, which
+       is how this very line failed its own gate once.
+       [[town-sky-reaches-further]] [[markdown-eats-scripts]] */
+    var a = document.getElementById('rq-seat');
+    a.href = (a.getAttribute('href') || '/games/park-tables/').split('?')[0] + '?table=' + seat.id;
+    document.getElementById('rq-seat-b').textContent = 'Play ' + seat.name;
+    document.getElementById('rq-seat-s').textContent = seat.name + ' plays at ' + seat.elo +
+      ' — no account, sit down now.';
+
+    /* this browser remembers, and nothing else does — see the front-matter comment on why
+       the profile is deliberately not written */
+    try { localStorage.setItem('cw.rating.est', String(shown)); } catch (e) {}
+
+    runEl.hidden = true;
+    resEl.hidden = false;
+  }
+
+  var next = document.getElementById('rq-next');
+  if (next) next.addEventListener('click', function () {
+    if (step >= N) { finish(); return; }
+    deal();
+  });
+
+  var again = document.getElementById('rq-again');
+  if (again) again.addEventListener('click', function () {
+    est = START; step = 0; right = 0; seen = {};
+    var kids = pips.children;
+    for (var i = 0; i < kids.length; i++) kids[i].classList.remove('good', 'miss', 'now');
+    resEl.hidden = true;
+    runEl.hidden = false;
+    deal();
+  });
+
+  deal();
+  /* Nothing above this line was needed to SEE the board — only to fill it and touch it. */
+  board.classList.add('live');
+})();
+</script>
