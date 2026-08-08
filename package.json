@@ -21,6 +21,7 @@
     "gen:clock": "node tests/gen-clock.js",
     "gen:puzzles": "node tests/gen-front-puzzles.js",
     "gen:rating": "node tests/gen-rating-puzzles.js",
+    "sim:marchland": "node tests/sim-marchland.js",
     "test:rating": "node tests/rating.check.js",
     "test:chess": "node tests/chess.check.js",
     "test:accuracy": "node tests/validate-chess.js",

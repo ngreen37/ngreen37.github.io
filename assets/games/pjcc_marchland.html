@@ -131,7 +131,12 @@
 
   /* ── THE BOARD (park-table standard) ── */
   .clockbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
-  .clock { font: 900 25px 'Share Tech Mono', ui-monospace, monospace; letter-spacing: 1px; }
+  /* TWO clocks side by side — yours, then theirs. The one that is RUNNING is the bright
+     one; the idle side dims, so a glance tells you whose second it is without reading. */
+  .clock { font: 900 23px 'Share Tech Mono', ui-monospace, monospace; letter-spacing: 1px; }
+  .clock .idle { opacity: .38; }
+  .clock .run { opacity: 1; }
+  .clock .vs { font-size: 11px; opacity: .4; margin: 0 7px; letter-spacing: 1px; }
   .clock.warn { color: #ffc24a; } .clock.crit { color: #ff6e6e; animation: tick .6s infinite; }
   @keyframes tick { 50% { opacity: .45; } }
   .mat { font-size: 11px; color: var(--ink-3); text-align: right; line-height: 1.35; }
@@ -205,15 +210,21 @@
   <section class="screen" id="screen-how">
     <h2>How it works</h2>
     <p class="sub" style="text-align:left;line-height:1.75">
-      <b>1. Pick a fight.</b> Tap one of your holdings, then a neighbouring enemy one. You need a
+      <b>1. Pick a fight.</b> Tap one of your holdings, then a neighboring enemy one. You need a
       garrison of 2 or more to attack.<br><br>
-      <b>2. Both sides roll.</b> Attacker rolls up to three dice, defender up to two — Risk rules.
-      The totals aren't compared. They're <i>spent</i>.<br><br>
-      <b>3. The dice buy an army.</b> Every point buys chess material at its real value: queen 9,
-      rook 5, bishop or knight 3, pawn 1. Kings are free — they always turn up.<br><br>
-      <b>4. Two minutes.</b> One shared clock. Checkmate wins outright. If the clock runs out, the
-      most material standing wins, and a tie goes to the defender — ground is easier held than taken.<br><br>
-      <b>5. The winner takes the holding.</b> Lose them all and the campaign is over.
+      <b>2. Both sides roll two twenty-sided dice.</b> One decides your <i>material</i>, the
+      other your <i>position</i>. Nothing is compared — the dice are spent.<br><br>
+      <b>3. Material buys an army.</b> Every point buys chess material at its real value: queen 9,
+      rook 5, bishop or knight 3, pawn 1. Kings are free — they always turn up. The defender gets
+      four points of home ground on top.<br><br>
+      <b>4. Position places it.</b> A high roll advances the attacker's pawns; a high roll digs the
+      defender's into a chain their neighbors defend. Roll 18 or better on defense and your
+      king castles.<br><br>
+      <b>5. Twenty seconds against fifteen.</b> Two clocks, and only the side to move is burning
+      one. Checkmate takes the ground outright. If the <i>attacker's</i> clock runs out the attack
+      failed; if the <i>defender's</i> does, the ground changes hands. A draw goes to the defender —
+      ground is easier held than taken.<br><br>
+      <b>6. The winner takes the holding.</b> Lose them all and the campaign is over.
     </p>
     <button class="btn ghost" id="back">Back</button>
   </section>
@@ -254,7 +265,7 @@
   <!-- ══ BATTLE ═════════════════════════════════════════════════════════════════ -->
   <section class="screen" id="screen-battle">
     <div class="clockbar">
-      <span class="clock" id="clock">2:00</span>
+      <span class="clock" id="clock">20.0<span class="vs">vs</span>15.0</span>
       <span class="mat" id="mat"></span>
     </div>
     <div class="board" id="board">
@@ -356,10 +367,69 @@ function newCampaign() {
   G.own = owner.slice(); G.gar = gars.slice();
 }
 
-/* ── DICE ──────────────────────────────────────────────────────────────────────── */
-function d6() { return 1 + Math.floor(Math.random() * 6); }
-function roll(n) { var a = []; for (var i = 0; i < n; i++) a.push(d6()); return a; }
-function sum(a) { return a.reduce(function (x, y) { return x + y; }, 0); }
+/* ── DICE ──────────────────────────────────────────────────────────────────────────
+   ⚑ REWRITTEN 2026-08-08 TO HIS RULES. It shipped as 3d6 vs 2d6 with the totals SPENT
+   on material; he replaced that with a d20 pair:
+
+     "A 20-sided die is rolled by attacker and defender … Dice also dictates how advanced
+      the attacker's pawns are, or how protected the defender's pawns are. Castle: within
+      three points of maximum, defenders king is castled."
+     "Make it rolling two dice each - one for the amount of material provided, and one for
+      the strength-of-position."
+
+   ⭐ THE SECOND DIE IS THE INTERESTING ONE, AND IT IS WHY THIS IS NOT JUST A RENUMBERING.
+   The material die still only decides WHAT YOU GET. The position die decides WHERE IT
+   STANDS — and a rook on an open file two moves from the king is worth more than a queen
+   that has to walk. Two identical musters can now be a comfortable defense and a lost one.
+
+   ⚠ EVERY CONSTANT BELOW IS TUNED AGAINST A MEASURED ATTACK-FAILURE RATE, not chosen.
+   His target: "Attacks SHOULD fail about what… 40% to 60% of the time?" `npm run sim:marchland`
+   plays engine-vs-engine battles and prints the rate. Move one number here and re-run it. */
+function d20() { return 1 + Math.floor(Math.random() * 20); }
+
+/* ── THE MATERIAL DIE ──────────────────────────────────────────────────────────────
+   d20 → points, plus half the garrison, plus a flat edge for the defender because
+   ground is easier held than taken. 0.75 puts a d20 in the 1..15 band, which on real
+   chess values is "a pawn" at the bottom and "a queen and change" at the top. */
+/* ⚑ THE EDGE MOVED FROM THE DEFENDER TO THE ATTACKER (2026-08-08, after measuring), and
+   the reason is the win condition above: the attacker can only win by CHECKMATE, inside
+   twenty seconds, against a defender who wins simply by still being there. That is a very
+   hard thing to do, so the army that has to do it needs to be the bigger one. The defender
+   was carrying a 4-point home-ground bonus AND the clock AND the tie — three edges — which
+   measured out at a 4% attacker success rate. Ground is still easier held than taken; it is
+   the clock and the draw that say so now, not the muster as well. */
+/* ⚑ 12 IS MEASURED, NOT PICKED. `npm run sim:marchland` swept 4→16 over 60 engine-vs-engine
+   battles a band and the curve is clean and monotonic:
+       edge  4 → 75.0% of attacks fail      edge 12 → 48.3%   ← his band, dead center
+       edge  6 → 78.3%                      edge 14 → 48.3%
+       edge  8 → 61.7%                      edge 16 → 40.0%
+   12 and 14 measure the same; 12 is the smaller edge for the same result, which is the
+   standing way to break a tie on any economy number here. His target was "40% to 60%". */
+var MAT_SCALE = 0.75;
+var ATT_EDGE = 12;
+var DEF_EDGE = 0;
+function matBudget(die, gar, isDefender) {
+  return Math.round(die * MAT_SCALE) + Math.floor(gar / 2) + (isDefender ? DEF_EDGE : ATT_EDGE);
+}
+
+/* ── THE POSITION DIE ──────────────────────────────────────────────────────────────
+   Same d20, read two different ways depending on which chair you are in.
+
+   ATTACKER — "how advanced the attacker's pawns are". 0-3 pawns step up, and a roll in
+   the top band pushes one of them a second rank. Advanced pawns are space and tempo:
+   they cramp the defense and they are already most of the way to promoting inside a
+   twenty-second window.
+
+   DEFENDER — "how protected the defender's pawns are". 0-3 pawns step up ONTO SQUARES A
+   NEIGHBOR STILL DEFENDS, which is the difference between a flat row of loose pawns and
+   a chain. ⚠ A defender's pawn only moves if a pawn beside it stays home to defend it —
+   otherwise a high roll would loosen the position it is supposed to be strengthening.
+
+   CASTLING — his rule exactly: "within three points of maximum", so 18, 19 or 20, and
+   only for the DEFENDER. It needs a rook to castle with; with no rook the roll is spent
+   on the chain instead, which is stated on the roll screen rather than silently dropped. */
+function posSteps(die) { return Math.floor((die - 1) / 5); }   // 0,1,2,3
+function posCastles(die) { return die >= 18; }                  // within three of maximum
 
 /* ── THE MUSTER ────────────────────────────────────────────────────────────────
    A point budget spent on real chess material at real chess value. The king is free
@@ -401,6 +471,84 @@ function buildBoard(wArmy, bArmy) {
     else if (bb < B_BACK.length) b[B_BACK[bb++]] = j;
   }
   return b;
+}
+
+/* ── THE POSITION DIE, APPLIED TO A BUILT BOARD ────────────────────────────────────
+   Runs after buildBoard, so both sides are already standing on their home squares and
+   this only has to MOVE things. Board indices: 0 = a8, 63 = h1, so White marches by
+   subtracting 8 and Black by adding 8.
+
+   ⚠ EVERY MOVE HERE IS CHECKED FOR AN EMPTY DESTINATION FIRST. The muster can hand a
+   side eight pawns and a full back rank, and a position die that shoved a pawn onto an
+   occupied square would silently delete a piece somebody paid points for. */
+function pawnsOf(b, side) {
+  var out = [], ch = side === 'w' ? 'P' : 'p';
+  for (var i = 0; i < 64; i++) if (b[i] === ch) out.push(i);
+  return out;
+}
+function applyAttackerPos(b, side, die) {
+  var steps = posSteps(die), dir = side === 'w' ? -8 : 8;
+  if (!steps) return 0;
+  var ps = pawnsOf(b, side), moved = 0;
+  /* from the middle outward — a central pawn is the one worth space */
+  ps.sort(function (x, y) { return Math.abs(3.5 - (x % 8)) - Math.abs(3.5 - (y % 8)); });
+  for (var i = 0; i < ps.length && moved < steps; i++) {
+    var from = ps[i], to = from + dir;
+    if (to < 0 || to > 63 || b[to]) continue;
+    b[to] = b[from]; b[from] = '';
+    /* the top band buys a SECOND rank for the first pawn that gets one */
+    if (die >= 18 && moved === 0) {
+      var far = to + dir;
+      if (far >= 0 && far <= 63 && !b[far]) { b[far] = b[to]; b[to] = ''; }
+    }
+    moved++;
+  }
+  return moved;
+}
+function applyDefenderPos(b, side, die) {
+  var out = { chain: 0, castled: false };
+  var dir = side === 'w' ? -8 : 8;
+  var home = side === 'w' ? 6 : 1;                 // the pawns' own second rank, as a ROW
+  /* CASTLING FIRST — it needs the back rank the chain never touches, and if it happens
+     the king is behind a corner the chain is not defending. */
+  if (posCastles(die)) {
+    var kFrom = side === 'w' ? 60 : 4;
+    var rook = side === 'w' ? 'R' : 'r', king = side === 'w' ? 'K' : 'k';
+    var back = side === 'w' ? 56 : 0;
+    /* kingside if anything rook-shaped is on the back rank; the two squares it lands on
+       must be clear, which they are unless the muster filled the whole rank */
+    var gSq = back + 6, fSq = back + 5;
+    var haveRook = -1;
+    for (var s = back; s < back + 8; s++) if (b[s] === rook) { haveRook = s; break; }
+    if (haveRook >= 0 && !b[gSq] && !b[fSq] && b[kFrom] === king) {
+      b[kFrom] = ''; b[haveRook] = '';
+      b[gSq] = king; b[fSq] = rook;
+      out.castled = true;
+    }
+  }
+  var steps = posSteps(die);
+  if (!steps) return out;
+  var ps = pawnsOf(b, side), moved = 0;
+  ps.sort(function (x, y) { return Math.abs(3.5 - (x % 8)) - Math.abs(3.5 - (y % 8)); });
+  for (var i = 0; i < ps.length && moved < steps; i++) {
+    var from = ps[i], to = from + dir, f = from % 8;
+    if (to < 0 || to > 63 || b[to]) continue;
+    /* ⚠ THE WHOLE POINT: it only steps up if a NEIGHBOR STAYS HOME TO DEFEND IT. A row of
+       pawns that all march is looser than the row it started as, which would make a high
+       "protection" roll actively worse — the exact opposite of what the die means. */
+    var defended = false;
+    for (var d = -1; d <= 1; d += 2) {
+      var nf = f + d;
+      if (nf < 0 || nf > 7) continue;
+      var guard = home * 8 + nf;
+      if (b[guard] === (side === 'w' ? 'P' : 'p') && ps.indexOf(guard) >= i) defended = true;
+    }
+    if (!defended) continue;
+    b[to] = b[from]; b[from] = '';
+    moved++;
+  }
+  out.chain = moved;
+  return out;
 }
 
 /* ── THE ENGINE ────────────────────────────────────────────────────────────────
@@ -541,15 +689,14 @@ var PEND = null;
 function beginBattle(from, to, playerAttacks) {
   G.busy = true;
   var aGar = G.gar[from], dGar = G.gar[to];
-  var aDice = roll(Math.max(1, Math.min(3, aGar - 1)));
-  var dDice = roll(Math.max(1, Math.min(2, dGar)));
-  // the defender's edge is flat and stated: ground is easier held than taken.
-  var aBud = sum(aDice) + Math.floor(aGar / 2);
-  var dBud = sum(dDice) + Math.floor(dGar / 2) + 4;
+  /* TWO DICE EACH: one buys the army, one places it. */
+  var aMat = d20(), aPos = d20(), dMat = d20(), dPos = d20();
+  var aBud = matBudget(aMat, aGar, false);
+  var dBud = matBudget(dMat, dGar, true);
   var aArmy = muster(aBud), dArmy = muster(dBud);
 
   PEND = { from:from, to:to, playerAttacks:playerAttacks, aGar:aGar, dGar:dGar,
-           aArmy:aArmy, dArmy:dArmy };
+           aArmy:aArmy, dArmy:dArmy, aPos:aPos, dPos:dPos };
 
   $('roll-title').textContent = playerAttacks
     ? 'You march on ' + LAND[to].nm
@@ -558,18 +705,34 @@ function beginBattle(from, to, playerAttacks) {
   $('def-label').textContent = (playerAttacks ? 'They defend' : 'You defend') + ' — ' + LAND[to].nm;
 
   var attGlyph = playerAttacks ? 'w' : 'b', defGlyph = playerAttacks ? 'b' : 'w';
-  paintDice($('att-dice'), aDice); paintDice($('def-dice'), dDice);
-  $('att-budget').innerHTML = 'Rolled <b>' + sum(aDice) + '</b> + ' + Math.floor(aGar / 2) +
-    ' garrison = <b>' + aBud + '</b> points';
-  $('def-budget').innerHTML = 'Rolled <b>' + sum(dDice) + '</b> + ' + Math.floor(dGar / 2) +
-    ' garrison + 4 home ground = <b>' + dBud + '</b> points';
+  paintDice($('att-dice'), [aMat, aPos]); paintDice($('def-dice'), [dMat, dPos]);
+  /* both dice are read out in words. A die whose effect you cannot see is a die that
+     feels like the game cheating — the whole reason the muster was stated on screen. */
+  var aSteps = posSteps(aPos);
+  $('att-budget').innerHTML =
+    '<b>' + aMat + '</b> material + ' + Math.floor(aGar / 2) + ' garrison = <b>' + aBud + '</b> points<br>' +
+    '<b>' + aPos + '</b> position &middot; ' +
+    (aSteps ? aSteps + ' pawn' + (aSteps > 1 ? 's' : '') + ' advanced' + (aPos >= 18 ? ', one of them twice' : '')
+            : 'no pawns advanced');
+  var dSteps = posSteps(dPos);
+  var dHasRook = dArmy.indexOf('r') >= 0;
+  $('def-budget').innerHTML =
+    '<b>' + dMat + '</b> material + ' + Math.floor(dGar / 2) + ' garrison + ' + DEF_EDGE +
+    ' home ground = <b>' + dBud + '</b> points<br>' +
+    '<b>' + dPos + '</b> position &middot; ' +
+    (posCastles(dPos)
+      ? (dHasRook ? 'king castles' : 'castling rolled, but no rook to castle with')
+      : (dSteps ? dSteps + ' pawn' + (dSteps > 1 ? 's' : '') + ' in a defended chain' : 'pawns flat on their rank'));
   paintArmy($('att-army'), aArmy, attGlyph);
   paintArmy($('def-army'), dArmy, defGlyph);
   show('screen-roll');
 }
 var GLY = { k:'♚', q:'♛', r:'♜', b:'♝', n:'♞', p:'♟' };
 function paintDice(host, arr) {
-  host.innerHTML = arr.map(function (d) { return '<span class="die roll">' + d + '</span>'; }).join('');
+  var LAB = ['material', 'position'];
+  host.innerHTML = arr.map(function (d, i) {
+    return '<span class="die roll" title="' + LAB[i] + '">' + d + '</span>';
+  }).join('');
 }
 function paintArmy(host, arr, side) {
   var full = ['k'].concat(arr);
@@ -579,36 +742,91 @@ function paintArmy(host, arr, side) {
 }
 
 /* ── BATTLE ────────────────────────────────────────────────────────────────────── */
+/* ── THE CLOCKS ────────────────────────────────────────────────────────────────────
+   ⚑ TWO CLOCKS NOW, NOT ONE SHARED TWO-MINUTE ONE (2026-08-08, Nate: "make it 20 seconds
+   for the attacker and 15 seconds for the defender", after "defender must hang on for 15
+   seconds").
+
+   ⭐ THIS IS THE CHANGE THAT MAKES IT A DIFFERENT GAME. On one shared clock the pressure
+   was symmetric and the winner was whoever was ahead on material when it ran out. Two
+   clocks make the asymmetry the whole point: the attacker is buying time to force
+   something, the defender only has to still be standing. Nobody has to be told which
+   side of that they are on — they can feel it in their own clock.
+
+   THE RULE, STATED PLAINLY BECAUSE IT DECIDES EVERY UNTIDY BATTLE:
+     · the attacker mates      → the ground changes hands
+     · the ATTACKER's clock    → attack failed, the defender holds
+     · the DEFENDER's clock    → they hung on for the full fifteen, the defender holds
+     · stalemate / a draw      → the defender holds, as it always did
+   ⚠ SO THE ATTACKER WINS BY CHECKMATE OR NOT AT ALL. Every other ending is the defender
+   still being there when the clock stopped, which is the entire job the rules gave them.
+   The first draft scored the defender's flag as a LOSS and the simulation caught it: 118
+   of 150 attacks "won" that way against only 6 mates.
+
+   ⚠ TENTHS, AND A 100ms TICK. At twenty seconds a whole-second readout is a lie you can
+   see: it can sit on "7" for most of a second while you decide. Same reason the old
+   one-second tick was fine at two minutes and is not fine here. */
+var CLOCK_ATT = 20, CLOCK_DEF = 15;
+
 function startBattle() {
   var p = PEND;
   // the player is ALWAYS White at the bottom — orientation should never flip under you.
-  var wArmy = p.playerAttacks ? p.aArmy : p.dArmy;
-  var bArmy = p.playerAttacks ? p.dArmy : p.aArmy;
+  var attWhite = p.playerAttacks;
+  var wArmy = attWhite ? p.aArmy : p.dArmy;
+  var bArmy = attWhite ? p.dArmy : p.aArmy;
   var board = buildBoard(wArmy, bArmy);
+  /* the position dice land here, on the built board — attacker advances, defender digs in */
+  applyAttackerPos(board, attWhite ? 'w' : 'b', p.aPos);
+  var dInfo = applyDefenderPos(board, attWhite ? 'b' : 'w', p.dPos);
   B = {
-    S: { b:board, turn: p.playerAttacks ? 'w' : 'b',
+    S: { b:board, turn: attWhite ? 'w' : 'b',
          cast:{K:false,Q:false,k:false,q:false}, ep:-1, half:0, full:1 },
-    sel: -1, moves: [], last: null, left: 120, over: false, timer: null
+    sel: -1, moves: [], last: null, over: false, timer: null,
+    attWhite: attWhite,
+    clk: { w: attWhite ? CLOCK_ATT : CLOCK_DEF, b: attWhite ? CLOCK_DEF : CLOCK_ATT },
+    tLast: Date.now()
   };
   show('screen-battle');
   paint();
   $('say').innerHTML = p.playerAttacks
-    ? 'You attack. <b>You move first.</b>'
-    : 'You defend. <b>They move first.</b>';
-  B.timer = setInterval(tickClock, 1000);
+    ? 'You attack. <b>' + CLOCK_ATT + ' seconds to force it.</b>'
+    : 'You defend. <b>Hang on for ' + CLOCK_DEF + ' seconds.</b>' +
+      (dInfo.castled ? ' Your king is castled.' : '');
+  B.timer = setInterval(tickClock, 100);
   updateClock();
-  if (B.S.turn === 'b') setTimeout(aiMove, 700);
+  /* ⚠ THIS PAUSE COMES OUT OF THE MACHINE'S OWN CLOCK — the timer is already running. At
+     half a second it was handing away 3% of a 15-second defense before thinking once. */
+  if (B.S.turn === 'b') setTimeout(aiMove, 150);
 }
+
+/* ⚠ WALL CLOCK, NOT A TICK COUNTER. setInterval is not a timer, it is a request — a
+   background tab or one slow engine search and a counting tick silently gives somebody
+   extra seconds. Subtracting real elapsed time cannot drift. */
 function tickClock() {
   if (B.over) return;
-  B.left--; updateClock();
-  if (B.left <= 0) finish('time');
+  var now = Date.now(), dt = (now - B.tLast) / 1000;
+  B.tLast = now;
+  B.clk[B.S.turn] -= dt;
+  if (B.clk[B.S.turn] <= 0) {
+    B.clk[B.S.turn] = 0;
+    updateClock();
+    var attFlagged = (B.S.turn === 'w') === B.attWhite;
+    finish(attFlagged ? 'time-att' : 'time-def');
+    return;
+  }
+  updateClock();
 }
+function fmt(t) { return (Math.max(0, t)).toFixed(1); }
 function updateClock() {
-  var m = Math.floor(B.left / 60), s = B.left % 60;
   var el = $('clock');
-  el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
-  el.className = 'clock' + (B.left <= 15 ? ' crit' : B.left <= 40 ? ' warn' : '');
+  var mine = B.clk.w, theirs = B.clk.b;                 // the player is always White
+  var live = B.S.turn;
+  el.innerHTML =
+    '<span class="' + (live === 'w' ? 'run' : 'idle') + '">' + fmt(mine) + '</span>' +
+    '<span class="vs">vs</span>' +
+    '<span class="' + (live === 'b' ? 'run' : 'idle') + '">' + fmt(theirs) + '</span>';
+  var low = B.clk[live];
+  el.className = 'clock' + (low <= 4 ? ' crit' : low <= 8 ? ' warn' : '');
   var mw = material(B.S.b, 'w'), mb = material(B.S.b, 'b');
   $('mat').innerHTML = 'you <b style="color:var(--mine)">' + mw + '</b> &middot; them <b style="color:var(--theirs)">' + mb + '</b>';
 }
@@ -680,12 +898,18 @@ function applyMove(m) {
   var res = C.gameResult(B.S);
   if (res === 'checkmate') { finish(B.S.turn === 'w' ? 'lost-mate' : 'won-mate'); return; }
   if (res) { finish('draw'); return; }
-  if (B.S.turn === 'b' && !B.over) setTimeout(aiMove, 260);
+  if (B.S.turn === 'b' && !B.over) setTimeout(aiMove, 90);
 }
 
 function aiMove() {
   if (B.over || B.S.turn !== 'b') return;
-  var m = bestMove(B.S, 650);
+  /* ⚠⚠ THE ENGINE'S THINKING TIME COMES OUT OF THE ENGINE'S OWN CLOCK, and the clock is
+     now 15-20 SECONDS instead of a shared two minutes. At the old 650ms budget a ten-move
+     defense spent 6.5s of a 15s clock on search alone — the machine would have flagged
+     itself in most battles and the player would have "won" by watching. 180ms still reaches
+     depth 3 on these small armies; it is the difference between a fast opponent and a
+     self-defeating one. Re-check this with `npm run sim:marchland` if it ever moves. */
+  var m = bestMove(B.S, 180);
   if (!m) { finish('draw'); return; }
   var p = B.S.b[m.from];
   if (p && p.toLowerCase() === 'p' && ((m.to / 8 | 0) === 7 || (m.to / 8 | 0) === 0)) {
@@ -714,11 +938,31 @@ function finish(how) {
     // a draw is not a stalemate of the campaign — the defender keeps the ground.
     playerWon = !p.playerAttacks;
     line = 'A drawn battle. The defender holds.';
-  } else {
-    var mw = material(B.S.b, 'w'), mb = material(B.S.b, 'b');
-    if (mw === mb) { playerWon = !p.playerAttacks; line = 'Time. Material dead level — the defender holds.'; }
-    else { playerWon = mw > mb; line = 'Time. ' + (mw > mb ? 'You hold' : 'They hold') + ' the field, ' +
-           Math.max(mw, mb) + ' to ' + Math.min(mw, mb) + '.'; }
+  }
+  /* ⚑ TIME IS NO LONGER SCORED ON MATERIAL (2026-08-08). Whose clock ran out IS the
+     verdict: the defender only ever had to still be standing, and the attacker only ever
+     had to force something before the flag. Counting material at the flag was the right
+     rule for one shared clock and is the wrong one for two. */
+  else if (how === 'time-att') {
+    playerWon = !p.playerAttacks;
+    line = 'The attack ran out of time. The defender holds.';
+  }
+  /* ⚠⚠ BOTH FLAGS GO TO THE DEFENDER, AND THE FIRST DRAFT GOT THIS BACKWARDS.
+     I built the defender's flag as a LOSS — grind them down and take the ground — which
+     reads fine until you say his rule out loud again: "Defender must hang on for 15
+     seconds." Hanging on IS the win condition. A defender who spends their whole clock and
+     is still standing did the only thing the rules ever asked of them.
+     ⭐ THE SIMULATION IS WHAT CAUGHT IT, not a playthrough: 118 of 150 attacks were
+     "winning" on the defender's flag and only 6 by mate, so the attacker was being handed
+     the ground for doing nothing but outlasting a shorter clock. A design bug, dressed as
+     a tuning problem. THE ATTACKER WINS BY CHECKMATE OR NOT AT ALL. */
+  else if (how === 'time-def') {
+    playerWon = !p.playerAttacks;
+    line = 'The defense held for the full ' + CLOCK_DEF + ' seconds. The ground stays put.';
+  }
+  else {
+    playerWon = !p.playerAttacks;
+    line = 'The defender holds.';
   }
 
   var attackerWon = p.playerAttacks ? playerWon : !playerWon;

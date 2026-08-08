@@ -426,7 +426,30 @@ Gauntlet's climb · cut it) — the section at the bottom of this file lays out 
 
 ---
 
-## ⚄ MARCHLAND — his rule set, 2026-08-08 (SPECCED, NOT BUILT)
+## ⚄ MARCHLAND — his rule set, 2026-08-08 — ⚑ **BUILT**, and what is left
+
+**Shipped the same day he wrote it**, after he answered the open questions with *"make it 20 seconds
+for the attacker and 15 seconds for the defender. Make it rolling two dice each - one for the amount of
+material provided, and one for the strength-of-position. Attacks SHOULD fail about what… 40% to 60% of
+the time? We'll hash it out as we go - I'm not too worried about it."*
+
+Live now: two d20 a side (material · position) · attacker 20s vs defender 15s on **two** clocks ·
+the position die advances the attacker's pawns and digs the defender's into a defended chain ·
+castling for the defender on 18-20 · **the attacker wins by checkmate or not at all**.
+Tune it with `npm run sim:marchland`, which plays engine-vs-engine battles and sweeps the attacker's
+material edge against his 40-60% band.
+
+**Still open, and genuinely his calls rather than mine:**
+- **"Classic Risk" setup and start-of-turn.** Still the old fixed starting garrisons and 1-per-3
+  reinforcement. A real Risk draft (deal all nine, place armies in turns) is a different opening
+  experience and worth doing deliberately, not as a side effect.
+- **The failure rate is measured against an ENGINE defender, not a human one.** The sim is a
+  calibration instrument, not a prediction — a human who is better than the engine will succeed more
+  often than the number says. Worth re-checking against his own played record once there is one.
+- **The position die is coarse** — 0-3 steps in bands of five. If it feels binary in play, the obvious
+  next move is to let a high roll buy a piece its *best* square rather than only pushing pawns.
+
+### The original spec, kept for the record
 
 **His words, kept intact so the spec doesn't drift through paraphrase:**
 
@@ -435,27 +458,16 @@ Gauntlet's climb · cut it) — the section at the bottom of this file lays out 
 > Castle: within three points of maximum, defenders king is castled.
 > For initial setup and start-of-turn, it works the same as Classic Risk.
 
-**⚠ THIS REPLACES THE BATTLE, NOT DECORATES IT.** What is live today (built 2026-08-03 to his earlier
-spec) is a *different* game underneath: attacker rolls up to **three** dice and defender up to **two**,
-the totals are not compared but **spent** at chess values (Q9 R5 B/N3 P1) to buy an army, and the
-battle runs a shared **two-minute** clock with checkmate-or-most-material scoring. His new rules change
-all four of those pillars — one d20 each, a 15-second defense, dice shaping the *position* rather than
-buying the army, and a castling threshold. So this is a rewrite of `roll()` / `buildArmy()` / the battle
-clock, not a settings change. **The map is already renamed to his locations (shipped 2026-08-08).**
-
-**What I would need answered before building it — each of these changes the game, not the code:**
-1. **15 seconds is very short.** Is that the *whole* defense (attacker gets one ~15s assault and the
-   territory holds if no mate lands), or 15 seconds *per attack* in a longer sequence? The current game
-   gives two minutes, so this is a 8x speed-up and would make almost every attack fail.
-2. **"How advanced the attacker's pawns are"** — a d20 mapped to a pawn RANK (e.g. 1–20 → pawns start
-   on rank 2 through rank 6)? And does a high roll advance *all* pawns or a number of them?
-3. **"How protected the defender's pawns are"** — protected by what? More defenders behind them, a
-   pawn chain, or extra pieces? These are three quite different pictures.
-4. **Castling at 18–20** ("within three points of maximum") — is that the defender's own roll, and does
-   it pick a side, or always kingside?
-5. **"Classic Risk" setup** — the live game hands out fixed starting garrisons. Classic Risk deals all
-   territories randomly and players place armies in turns. Full draft, or just the reinforcement
-   formula (territories ÷ 3, minimum 3)?
+**How each question got answered in the build:**
+1. **15 seconds** is thinking time on the defender's own clock, not elapsed wall time — two clocks, and
+   only the side to move burns one. Surviving it is how the defender wins.
+2. **"How advanced the attacker's pawns are"** — 0-3 pawns step up, center first, and a roll of 18+
+   pushes one of them a second rank.
+3. **"How protected the defender's pawns are"** — 0-3 pawns step onto squares a neighbor still defends,
+   i.e. a real chain. A pawn only moves if one beside it stays home to guard it; otherwise a high
+   "protection" roll would loosen the position it is meant to strengthen.
+4. **Castling at 18-20**, defender only, kingside, and only with a rook to castle with. With no rook the
+   roll is spent on the chain and the roll screen says so rather than dropping it silently.
 
 **Where it lives:** `/games/marchland/?key=chesswild` · game at `assets/games/pjcc_marchland.html` ·
 hall card is `playable:false` in `pjcc-games-data.js`, so it appears in the Building hall with no route
