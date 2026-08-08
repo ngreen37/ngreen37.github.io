@@ -151,11 +151,17 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 
          Park Tables is still where it points, for the reason it always did: it is the only
          door where a stranger is *playing* in two taps — a park regular seats you instantly,
-         no account, real rules, a real clock. {%- endcomment -%}
+         no account, real rules, a real clock.
+
+         ⚑ "McPuppy" → "The Creator" in the subline (2026-08-08, his call). A stranger on the
+         front door has no idea who McPuppy is; the third opponent read as a fourth bot name.
+         "The Creator" says what it is — the person who built this will play you — and Park
+         Tables already uses exactly that phrase on the table itself ("The Creator plays
+         back."), so the door and the room now say the same word. {%- endcomment -%}
     <a class="mc-door mc-lead" href="{{ '/games/park-tables/' | relative_url }}">
       <span class="mc-door-ico" aria-hidden="true">&#9822;</span>
       <b>Play Now</b>
-      <small>A person, a park regular, or McPuppy.</small>
+      <small>A person, a park regular, or The Creator.</small>
       <span class="mc-lead-arw" aria-hidden="true">&rarr;</span>
     </a>
 
@@ -600,7 +606,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    alpha — it was failing AA before the transparency pass, not because of it). */
 .mcb-say b { color: var(--fd-wood-ink); }
 /* ⚠ THE VERDICT COLORS ARE NOT THE ONES THE DARK PAGE USED. #6bffb8 is a mint drawn for a
-   near-black card; on the warm-white sheet it measures under 2:1 and the word "Correct."
+   near-black card; on the warm-white sheet it measures under 2:1 and the word "Yes!"
    disappears. Both marks are re-inked for paper here — the SQUARE keeps the bright ring,
    because a 3px ring on maple is not text and does not have to clear 4.5:1. */
 .mcb-say.good b, .mcb-say.good { color: #1f7a4d; }
@@ -914,8 +920,12 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    2. NO DESCRIPTION. Every line of prose is gone. The win used to say "the back rank was the
       whole board" — written for the ONE hard-coded position, nonsense for a random one, and
       a stretch even there — and a miss used to explain what the king would do next. The board
-      says "White to play. Mate in one." before, and "Correct." or "Not quite." after. Those
+      says "White to play. Mate in one." before, and "Yes!" or "Not quite." after. Those
       two are the marks he asked for, and nothing narrates them.
+      ⚑ THE WIN IS "Yes!" (2026-08-08, his call). "Correct." is a grader's word — it scores
+      you. The visitor just found a mate on a strange board; the page should sound glad about
+      it, not tick a box. The miss stays flat on purpose: only one of the two verdicts is
+      allowed to have a voice, or the page is cheering at someone who got it wrong.
 
    3. ONE ATTEMPT, THEN THE OFFER. A miss used to bounce and let you keep guessing at the same
       position forever. "Whether they are wrong or right is fine" — so a completed move is
@@ -1140,7 +1150,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
       sq.classList.add('good');
       /* NO TIMER, NO location.href (2026-07-29) — the reward for being right is that the
          position STAYS on the screen. The offer below is a door, never an escort. */
-      tell('<b>Correct.</b>', true);
+      tell('<b>Yes!</b>', true);
     } else {
       /* ── wrong, and that is a fine place to end up. A LEGAL move that isn't the mate: no
          refutation, no lesson, no reveal — he asked for a MARK. The offer appears either
