@@ -23,10 +23,15 @@ layout: default
      feeds to <title>, og: and the JSON-LD — markup in there would ship tags into the browser
      tab and the search result. This touches only the visible <h1>; every SEO surface keeps
      the plain string. See _includes/wordmark.html for the design and why it adds no font.
-     {%- endcomment -%}
+
+     ⚑ THE FLAG COVERS THE TAGLINE TOO (2026-08-08, "make Solve a different color"). One flag
+     rather than two, because a wordmark and its tagline ARE one lockup — the note above this
+     block has said so since the day they were put side by side, and a page that opted into
+     half of a lockup would be opting into a fragment. `tagline_outside` stays in the front
+     matter and is still the plain string every non-lockup page gets. {%- endcomment -%}
 <div class="page-head-out">
   <h1 class="page-title-out">{% if page.wordmark %}{% include wordmark.html %}{% else %}{{ page.title }}{% endif %}</h1>
-  {%- if page.tagline_outside -%}<p class="page-tagline-out">{{ page.tagline_outside }}</p>{%- endif -%}
+  {%- if page.tagline_outside -%}<p class="page-tagline-out">{% if page.wordmark %}{% include tagline.html %}{% else %}{{ page.tagline_outside }}{% endif %}</p>{%- endif -%}
 </div>
 {%- endif -%}
 <div class="page-card">

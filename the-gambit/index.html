@@ -722,8 +722,24 @@ permalink: /the-gambit/
        gone — nothing comes back · half — the board keeps half · even — it hands back
        exactly what you gave · gain — 1.25x / 1.6x / 2.2x.
      `tier` is the rolled outcome; `win` here only means "at least break even". */
+  /* ⚑ THE LOSS CREED CLOSES ONE OF THREE WAYS, ROLLED PER RESULT (2026-08-08, his pick
+     from ten). It used to close "Come back braver." — which quietly meant STAKE MORE NEXT
+     TIME, and that is the one nudge an altar that takes your credits should not make. All
+     three of these land the loss without asking for a bigger one.
+
+     ⚠ ROLLED ONCE PER RESULT, NOT ONCE PER PLACE IT IS PRINTED. The same sacrifice shows
+     its creed twice — on the result panel and again on the full-screen reveal — and two
+     different closing lines for one outcome reads as a bug, not as variety. So `reveal()`
+     picks it and hands it to `showReveal()`. */
+  var LOSS_CLOSERS = [
+    'The path takes what it takes.',
+    'Walk out lighter than you came in.',
+    'Courage is the only thing you keep.'
+  ];
+
   function reveal(tier, ov, reward, boon, coll, repay, c, homed) {
     var win = tier.mult >= 1, gain = tier.mult > 1;
+    var closer = LOSS_CLOSERS[(Math.random() * LOSS_CLOSERS.length) | 0];
     armed = false; selColl = null; offerCredits = 0;
     var box = $('gm-result'); box.hidden = false; box.className = 'gm-result ' + (gain ? 'win' : win ? 'even' : 'loss');
     var rest = '<p class="gm-rest">The altar rests now. Leave it be — come back fresh.</p>';
@@ -755,16 +771,16 @@ permalink: /the-gambit/
       box.innerHTML = '<div class="gm-res-title">' + (half ? 'THE BOARD KEEPS 50%' : 'THE BOARD KEEPS IT') + '</div>' +
         '<p>Your offering' + (coll ? ' — including <b>' + coll.label + '</b> ' + coll.glyph + ' —' : '') +
         (half ? ' returns <b>' + tier.pct + '%</b>. <b>' + reward + '</b> comes back.' : ' is gone. Nothing comes back.') + '</p>' + remembers +
-        '<p class="gm-res-creed">The courage <em>was</em> the point. Real commitment isn\'t safe. Come back braver.</p>' + rest;
+        '<p class="gm-res-creed">The courage <em>was</em> the point. Real commitment isn\'t safe. ' + closer + '</p>' + rest;
     }
-    showReveal(tier, ov, reward, boon, coll, repay, c, homed);
+    showReveal(tier, ov, reward, boon, coll, repay, c, homed, closer);
   }
 
   // ---- THE REVEAL: the outcome takes the screen ------------------------------
   // Tiers, loudest first: a VAULT boon (a collectable no shop sells) > any boon >
   // a plain win > the board keeping it. Everything animated here is transform /
   // opacity only, per the site's motion rule.
-  function showReveal(tier, ov, reward, boon, coll, repay, c, homed) {
+  function showReveal(tier, ov, reward, boon, coll, repay, c, homed, closer) {
     var win = tier.mult >= 1, gain = tier.mult > 1, half = tier.mult > 0 && tier.mult < 1;
     var wrap = $('gm-reveal'), card = $('gm-reveal-card');
     var vault = !!(boon && boon.vault);
@@ -775,7 +791,8 @@ permalink: /the-gambit/
     $('gm-rv-figure').textContent = boon ? boon.glyph : (gain ? '✦' : win ? '◈' : '♟');
     $('gm-rv-creed').textContent = gain ? 'You let go, and the path provided.'
       : win ? 'Even. You risked it, and the board simply handed it straight back.'
-      : 'The courage was the point. Real commitment isn\'t safe. Come back braver.';
+      : 'The courage was the point. Real commitment isn\'t safe. ' +
+        (closer || 'The path takes what it takes.');
 
     var titleEl = $('gm-rv-title'), subEl = $('gm-rv-sub');
     if (reward > 0) {

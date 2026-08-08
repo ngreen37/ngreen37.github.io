@@ -512,6 +512,19 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 /* the address, small but the SAME white as the name — it is quiet by SIZE, not by fading */
 .wm-tld { font-weight: 600; font-size: 0.48em; letter-spacing: 0.04em; }
 
+/* ⚑ ONE WORD OF THE TAGLINE IS TINTED (2026-08-08, "make Solve a different color — that'll
+   give some more depth"). The depth comes from the accent being COOL against the wordmark's
+   warm one; rendered six ways, and every warm candidate read as "a slightly different
+   orange" — a mistake rather than a decision — while repeating the coral added no depth at
+   all, being the same color.
+
+   #6bffb8 is not a new ink: it is the mint every board on this site lights a LEGAL MOVE
+   with. So the word "Solve" wears the color of a solved thing.
+   ⚠ THAT MINT IS DRAWN FOR A NEAR-BLACK BACKGROUND and measures under 2:1 on the warm
+   parchment sheet — correct out here on the sky, a bug inside the card. Do not reuse it
+   in the sheet without re-inking it, the way the board's verdicts were. */
+.wm-solve { color: #6bffb8; }
+
 /* THREE WORDS, beside the name (2026-08-04) — a tagline, so it is smaller and lighter than
    the wordmark and it never competes with it. Same white-plus-shadow pair as the title, and
    for the same reason: this text crosses dawn, noon, dusk and midnight, and any ink from the

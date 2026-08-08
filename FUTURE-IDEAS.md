@@ -426,6 +426,43 @@ Gauntlet's climb · cut it) — the section at the bottom of this file lays out 
 
 ---
 
+## ⚄ MARCHLAND — his rule set, 2026-08-08 (SPECCED, NOT BUILT)
+
+**His words, kept intact so the spec doesn't drift through paraphrase:**
+
+> A 20-sided die is rolled by attacker and defender. Defender must hang on for 15 seconds.
+> Dice also dictates how advanced the attacker's pawns are, or how protected the defender's pawns are.
+> Castle: within three points of maximum, defenders king is castled.
+> For initial setup and start-of-turn, it works the same as Classic Risk.
+
+**⚠ THIS REPLACES THE BATTLE, NOT DECORATES IT.** What is live today (built 2026-08-03 to his earlier
+spec) is a *different* game underneath: attacker rolls up to **three** dice and defender up to **two**,
+the totals are not compared but **spent** at chess values (Q9 R5 B/N3 P1) to buy an army, and the
+battle runs a shared **two-minute** clock with checkmate-or-most-material scoring. His new rules change
+all four of those pillars — one d20 each, a 15-second defense, dice shaping the *position* rather than
+buying the army, and a castling threshold. So this is a rewrite of `roll()` / `buildArmy()` / the battle
+clock, not a settings change. **The map is already renamed to his locations (shipped 2026-08-08).**
+
+**What I would need answered before building it — each of these changes the game, not the code:**
+1. **15 seconds is very short.** Is that the *whole* defense (attacker gets one ~15s assault and the
+   territory holds if no mate lands), or 15 seconds *per attack* in a longer sequence? The current game
+   gives two minutes, so this is a 8x speed-up and would make almost every attack fail.
+2. **"How advanced the attacker's pawns are"** — a d20 mapped to a pawn RANK (e.g. 1–20 → pawns start
+   on rank 2 through rank 6)? And does a high roll advance *all* pawns or a number of them?
+3. **"How protected the defender's pawns are"** — protected by what? More defenders behind them, a
+   pawn chain, or extra pieces? These are three quite different pictures.
+4. **Castling at 18–20** ("within three points of maximum") — is that the defender's own roll, and does
+   it pick a side, or always kingside?
+5. **"Classic Risk" setup** — the live game hands out fixed starting garrisons. Classic Risk deals all
+   territories randomly and players place armies in turns. Full draft, or just the reinforcement
+   formula (territories ÷ 3, minimum 3)?
+
+**Where it lives:** `/games/marchland/?key=chesswild` · game at `assets/games/pjcc_marchland.html` ·
+hall card is `playable:false` in `pjcc-games-data.js`, so it appears in the Building hall with no route
+in. Flip that flag and delete the gate script when it opens.
+
+---
+
 ## 🗺 The Journey map — SCRAPPED 2026-08-04, parked here
 
 **Nate: "Scrap the Journey map and the little character by it — and throw it in future ideas."**

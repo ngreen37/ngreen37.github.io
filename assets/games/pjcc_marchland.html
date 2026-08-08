@@ -297,21 +297,47 @@ var C = window.PJCCChess;
 var $ = function (id) { return document.getElementById(id); };
 
 /* ── THE MAP ────────────────────────────────────────────────────────────────────
-   Nine holdings. Names are PLACEHOLDERS — border-country words, deliberately not
-   claiming PJCC canon, because locations are Nate's to name. Positions are percent
+   ⚑ THE HOLDINGS ARE THE TOWN'S OWN PLACES NOW (2026-08-08). They shipped as
+   border-country PLACEHOLDERS — Kingsbarrow, The Pale, Rook's Ford — chosen precisely
+   because locations are Nate's to name, and he has now named them: "Checker Town (tough
+   position on the board), Chess City (good position for people to start), Shogi Island
+   (connects to two locations like Japan in classical risk), Sea-Board (connects to two).
+   Then make like 5 more locations… go ahead and pick some."
+
+   The five I picked are all places this site already has, so the map reads as the world's
+   map rather than as a fantasy borrowed for one game: the Sand Mines (the game), the Fork
+   (the puzzle room), Gauntlet Keep (the ladder's tower), Long Park (where the tables are)
+   and Endgame Flats.
+
+   ⚠ NONE OF THEM ARE SLOW-ROLLED. /locations/the-sea/, /locations/mystery-city/ and
+   /locations/chess-city-elementary/ are hidden in _config.yml until he reveals them, so
+   they stay off this map — a key-gated prototype is not the place lore gets to leak.
+   "Sea-Board" is his own coinage and names no page. [[slow-roll-cast]]
+
+   ⚠ TWO HOLDINGS HAVE EXACTLY TWO BORDERS, BY REQUEST, AND ONE EDGE WAS CUT TO GET THERE.
+   Shogi Island was already a degree-2 corner (5 and 8) — it is the Japan of this map. To
+   give Sea-Board the same shape the old [3,4] edge is gone, leaving it on 1 and 6 only.
+   The map is still fully connected; nothing is stranded.
+
+   Names sit under a 58px node at 9px, so anything past ~13 characters wraps to a third
+   line and starts crowding its neighbors. Every name here is 8-13. Positions are percent
    coordinates in the 100x112 box the SVG shares. */
 var LAND = [
-  { id:0, nm:'Kingsbarrow',   x:28, y:12 },
-  { id:1, nm:'The Pale',      x:71, y:15 },
-  { id:2, nm:"Rook's Ford",   x:13, y:39 },
-  { id:3, nm:"Queen's Reach", x:47, y:41 },
-  { id:4, nm:'Bishopsgate',   x:85, y:42 },
-  { id:5, nm:'Knightsmoor',   x:29, y:64 },
-  { id:6, nm:'Castle Downs',  x:69, y:67 },
-  { id:7, nm:'The Weald',     x:15, y:89 },
-  { id:8, nm:'Long Meadow',   x:56, y:92 }
+  { id:0, nm:'Sand Mines',    x:28, y:12 },
+  { id:1, nm:'The Fork',      x:71, y:15 },
+  { id:2, nm:'Gauntlet Keep', x:13, y:39 },
+  /* the hub: five fronts, and the hardest thing on the board to hold — "tough position" */
+  { id:3, nm:'Checker Town',  x:47, y:41 },
+  /* two borders only, out on the eastern edge */
+  { id:4, nm:'Sea-Board',     x:85, y:42 },
+  /* the player's own hub and their best-connected holding — "good position to start" */
+  { id:5, nm:'Chess City',    x:29, y:64 },
+  { id:6, nm:'Long Park',     x:69, y:67 },
+  /* two borders only — the Japan of this map */
+  { id:7, nm:'Shogi Island',  x:15, y:89 },
+  { id:8, nm:'Endgame Flats', x:56, y:92 }
 ];
-var EDGES = [[0,1],[0,2],[0,3],[1,3],[1,4],[2,3],[2,5],[3,4],[3,5],[3,6],[4,6],[5,6],[5,7],[5,8],[6,8],[7,8]];
+var EDGES = [[0,1],[0,2],[0,3],[1,3],[1,4],[2,3],[2,5],[3,5],[3,6],[4,6],[5,6],[5,7],[5,8],[6,8],[7,8]];
 function adj(a, b) {
   for (var i = 0; i < EDGES.length; i++) {
     if ((EDGES[i][0] === a && EDGES[i][1] === b) || (EDGES[i][1] === a && EDGES[i][0] === b)) return true;
