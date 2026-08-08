@@ -29,7 +29,7 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-08-05**
 
 | # | What | Where | Blocks |
 |---|---|---|---|
-| **1** | **Redeploy the Cloudflare Worker** — paste from `docs/translation-worker.md`, click **Deploy** | Cloudflare → Workers & Pages → `pjcc-translate` | ⚠ **Japanese is down site-wide until this lands** |
+| **1** | **Redeploy the Cloudflare Worker** — paste from `docs/translation-worker.md`, click **Deploy** | Cloudflare → Workers & Pages → `pjcc-translate` | Nothing visible — ⚑ Japanese is NOT down; it runs on an unofficial fallback |
 | **2** | **Google Search Console** — add `chesswild.com` as a *Domain* property, submit `sitemap.xml` | search.google.com/search-console | Nothing — but the new titles + description only pay off once Google re-crawls |
 | **3** | **Delete and reinstall the app on your phone** — ⚠ **sign in on chesswild.com FIRST** | your iPhone | Your installed app still opens the old origin |
 | **4** | **Does Customize take ONE tap now on your iPhone?** | `/dossier/` → the Forge | I could not reproduce it; I need your answer before I instrument the live page |
@@ -66,10 +66,22 @@ mcpuppystudios.com 301s **with the path preserved** (`/pjcc/` → `chesswild.com
   your progress across rather than the browser jar you're leaving behind.
 - [ ] **1 · Redeploy the Cloudflare Worker** — ⚠ **re-probed 2026-08-04 and it is STILL not live.** All
   four origins get back `Access-Control-Allow-Origin: https://mcpuppystudios.com` (the `ALLOW[0]`
-  fallback), which proves `chesswild.com` is not in the array. **Japanese stays blocked until this
-  lands.** Cloudflare → Workers & Pages → `pjcc-translate` → **Edit code** → paste the whole worker
-  from `docs/translation-worker.md` → **Deploy** (the edit does nothing until Deploy is clicked).
-  Tell me when it's done and I'll re-probe.
+  fallback), which proves `chesswild.com` is not in the array. Cloudflare → Workers & Pages →
+  `pjcc-translate` → **Edit code** → paste the whole worker from `docs/translation-worker.md` →
+  **Deploy** (the edit does nothing until Deploy is clicked). Tell me when it's done and I'll re-probe.
+
+  ⚑ **DOWNGRADED FROM URGENT — 2026-08-05 preflight. "Japanese is down site-wide" was WRONG, and
+  I had been repeating it for two days.** I proved the Worker was refusing CORS and stopped there;
+  I never clicked the toggle. Driven for real on the live front door, the page ends up
+  `<html lang="ja">` with 221 Japanese glyphs — drawer, nav, cards, the green button, all
+  translated. **The client falls back to calling `translate.googleapis.com` directly when the
+  Worker fails, and that path returns 200.** So the visible feature works; what is actually broken
+  is that every string burns a failed request first (~40 CORS errors in the console) and the site
+  leans on an endpoint Google does not document and can rate-limit at any time.
+  ⭐ **THE LESSON, and it is the same one as the doors: a broken DEPENDENCY is not a broken
+  FEATURE.** Proving the layer you are looking at is failing says nothing about what the user sees
+  — only driving the actual control does. Two days of an action item marked "site-wide outage"
+  that a single click would have corrected.
 
 **📱 TWO THINGS ONLY YOU CAN CONFIRM — from the 2026-08-04 front-door / Forge batch**
 - [ ] **4 · Does Customize take ONE tap now, on your iPhone?** ⚠ Be honest about the state of this:
