@@ -1,0 +1,38 @@
+{%- comment -%}
+  ══════════════════════════════════════════════════════════════════════════════
+  THE CHESSWILD WORDMARK (2026-08-08, Nate: "the title header up top, ChessWild.com,
+  looks great. Keep the tagline the same color and style, but let's spice up the text
+  and style on ChessWild.com … pick a font and style that is unique, but also fits in
+  to what we are doing elsewhere … keep it light and not too flashy").
+  ──────────────────────────────────────────────────────────────────────────────
+  ⭐ NO NEW FONT, AND THAT IS THE ANSWER RATHER THAN A COMPROMISE. The site ships four
+  faces and each already means something: Poppins is the display voice, Inter is body,
+  Share Tech Mono is the TRANSMISSION voice (and [[operative-theme-restraint]] keeps that
+  off plain chrome — the front door is plain chrome), Press Start 2P is the arcade and
+  belongs to the games hall. A fifth face for one word on one page would either read as
+  a stranger or steal a voice that is already spoken for. A wordmark is made distinctive
+  by TREATMENT far more than by family, so the whole idea here is weight and space:
+
+      Chess   Poppins 800, tracking pulled IN   — solid, orderly, the game
+      WILD    Poppins 600, tracking pushed OUT  — open, airy, the promise
+      .com    small, 600, and quiet             — an address, not part of the name
+
+  The name says its own meaning in its spacing. It is monochrome white on the town sky,
+  so it costs nothing and cannot clash with any hour of the day.
+
+  ⚠ THE UPPERCASE IS `text-transform`, NOT TYPED CAPS. The DOM text stays "ChessWild.com",
+  so the accessible name, a copy-paste and any crawler all get the real brand string —
+  which is named in three places that do not read each other ([[front-door-decision]]) and
+  must not gain a fourth spelling here.
+
+  ⚠ PICKED FROM A RENDER, NOT FROM TASTE. Eight treatments, then six refinements of the
+  two finalists, screenshotted against the REAL town sky at both ends of the title's
+  clamp (34px desktop / 26px phone) and at day AND night. Two candidates were eliminated
+  by evidence rather than opinion: +0.18em tracking pushed the tagline onto a second line
+  at 34px, and a 700-weight tail lost the contrast that makes this read as a mark at all.
+  [[pick-visual-values-from-a-render]]
+
+  Styling lives with the caller, beside `.page-title-out` in index.md's own block.
+  ══════════════════════════════════════════════════════════════════════════════
+{%- endcomment -%}
+<span class="wm-chess">Chess</span><span class="wm-wild">Wild</span><span class="wm-tld">.com</span>

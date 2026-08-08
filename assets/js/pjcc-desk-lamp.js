@@ -40,7 +40,18 @@
     var status = on
       ? 'Creator is currently working or was during last 12 hours.'
       : 'No movement in last 12 hours — Creator has stepped away. All is well; the line stays open.';
-    tip.innerHTML = status + '<br><b>&#9993; The Direct Line &rarr;</b>';
+    /* ⚑ THE SECOND LINE POINTS AT THE LAMP; IT IS NOT A LINK (2026-08-08, Nate: "it contains
+       a link for the direct line but you can't click it before it goes away").
+       He is describing a real false affordance, not a timing annoyance. `.sl-tip` is
+       `pointer-events: none` — deliberately, because a tooltip that swallows the pointer
+       flickers as you move onto it — so this line NEVER received a click, at any speed. It
+       read "✉ The Direct Line →" in link gold with an arrow on it, which is three separate
+       promises that it could be clicked, and the one thing it could not do was be clicked.
+       The lamp itself is the <a> and always has been. So the line names the real target
+       instead of impersonating one: no arrow (an arrow says "activate me"), and a verb that
+       tells you where to put the pointer. Nothing about the hover behavior changed — the
+       thing that was broken was the sentence. */
+    tip.innerHTML = status + '<br><b>&#9993; Click the lamp for the Direct Line</b>';
     el.setAttribute('aria-label', status + ' Open the Direct Line.');
 
     // On phones there is no hover, so the status was unreachable without tapping straight

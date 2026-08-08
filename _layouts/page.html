@@ -18,8 +18,14 @@ layout: default
      every crawler thinks this page is called. The flex row is the caller's job to style;
      this layout only decides that the two elements stand together, above the card. {%- endcomment -%}
 {%- if page.title_outside -%}
+{%- comment -%} `wordmark: true` swaps the plain title text for the brand LOCKUP (2026-08-08).
+     It is a flag rather than raw HTML in `title:` because `page.title` is also what the head
+     feeds to <title>, og: and the JSON-LD — markup in there would ship tags into the browser
+     tab and the search result. This touches only the visible <h1>; every SEO surface keeps
+     the plain string. See _includes/wordmark.html for the design and why it adds no font.
+     {%- endcomment -%}
 <div class="page-head-out">
-  <h1 class="page-title-out">{{ page.title }}</h1>
+  <h1 class="page-title-out">{% if page.wordmark %}{% include wordmark.html %}{% else %}{{ page.title }}{% endif %}</h1>
   {%- if page.tagline_outside -%}<p class="page-tagline-out">{{ page.tagline_outside }}</p>{%- endif -%}
 </div>
 {%- endif -%}

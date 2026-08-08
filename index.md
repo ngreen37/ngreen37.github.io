@@ -12,6 +12,10 @@ title: ChessWild.com
 # chesswild.com title outside of the white box. it is taking up too much space"). See
 # .page-title-out in _layouts/page.html + the styling at the foot of this file.
 title_outside: true
+# The <h1> is the brand LOCKUP, not plain text (2026-08-08, "spice up the text and style on
+# ChessWild.com"). `title:` above is untouched and is still what the tab, og: and the JSON-LD
+# carry — see the note in _layouts/page.html and the design in _includes/wordmark.html.
+wordmark: true
 # The three words stand BESIDE the title, out on the sky (2026-08-04, Nate: "put the tagline
 # play.solve.learn near ChessWild.com"). They used to be the first line inside the card; the
 # name and its tagline are one lockup, and splitting them across the card's edge meant the
@@ -457,10 +461,39 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    from the light front-door palette (--fd-ink is #1e232c) would vanish at night, which is
    exactly the class of bug the "check a token against its WORST background" note is about.
    The shadow is doing the work here, not decoration. */
-.page-title-out { color: #ffffff; font-size: clamp(26px, 3.4vw, 34px); font-weight: 900;
-  letter-spacing: -0.01em; line-height: 1.1; margin: 0;
+.page-title-out { color: #ffffff; font-size: clamp(26px, 3.4vw, 34px); font-weight: 800;
+  font-family: 'Poppins', sans-serif; line-height: 1.1; margin: 0;
   text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55), 0 1px 2px rgba(0, 0, 0, 0.4); }
 @media (max-width: 700px) { .page-head-out { margin: 0 0 10px 2px; } }
+
+/* ══ THE WORDMARK (2026-08-08) ═════════════════════════════════════════════════════
+   Nate: "spice up the text and style on ChessWild.com — pick a font and style that is
+   unique, but also fits in to what we are doing elsewhere … keep it light and not too
+   flashy." The tagline beside it is deliberately untouched, per the same note.
+
+   ⭐ NO NEW FONT. The full reasoning is in _includes/wordmark.html; the short version is
+   that all four faces this site ships already MEAN something, and a wordmark is made
+   distinctive by treatment rather than by family. So the mark is built out of weight and
+   space alone: `Chess` set tight and heavy, `WILD` opened up and lighter, `.com` small
+   and quiet. The name says its own meaning in its tracking, and it stays monochrome
+   white — which is the only ink that survives dawn, noon, dusk and midnight on the town
+   sky. [[front-door-palette]]
+
+   ⚠ 900 → 800, AND NOTHING MOVED. Poppins ships 400/600/700/800 here, so `font-weight:900`
+   was already being clamped to 800 by the browser — the old value described a weight this
+   site does not have. Same picture, honest number.
+
+   ⚠ EVERY VALUE BELOW CAME OUT OF A RENDER. Eight treatments, then six refinements of the
+   two finalists, against the real sky at 34px AND 26px, day AND night. Two candidates died
+   on evidence: +0.18em tracking wrapped the tagline onto a second line at 34px, and a
+   700-weight tail flattened the contrast until "ChessWILD" read as one heavy word with odd
+   gaps in it. Do not nudge these by eye — re-render. [[pick-visual-values-from-a-render]] */
+.wm-chess { letter-spacing: -0.025em; }
+/* ⚠ `text-transform`, not typed caps — the DOM text stays "ChessWild.com" so the accessible
+   name, a copy-paste and every crawler get the real brand string. */
+.wm-wild { font-weight: 600; font-size: 0.82em; letter-spacing: 0.15em;
+  text-transform: uppercase; padding-left: 0.07em; }
+.wm-tld { font-weight: 600; font-size: 0.48em; letter-spacing: 0.04em; opacity: 0.58; }
 
 /* THREE WORDS, beside the name (2026-08-04) — a tagline, so it is smaller and lighter than
    the wordmark and it never competes with it. Same white-plus-shadow pair as the title, and
