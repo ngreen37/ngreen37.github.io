@@ -398,6 +398,72 @@ console.log('\n── HOUSE RULES ───────────────�
     a === b ? '64 distinct symbols, identical in both files' : 'generator=' + a + '  page=' + b);
 }
 
+/* ── 10b. NO SHIPPED PUZZLE HAS AN ARMY NOBODY COULD HAVE ──────────────────────────
+   2026-08-08, Nate with a screenshot of the front door: "There should never be two
+   bishops on the same color." The same position also carried THREE black queens.
+
+   ⚠ THE REFEREE WILL NEVER CATCH THIS, WHICH IS THE WHOLE POINT OF THE RULE. Two
+   light-squared bishops is perfectly LEGAL — you get there by promoting a pawn — so every
+   accuracy gate on this site looked at that board and correctly said nothing. It is a
+   PLAUSIBILITY defect, not a legality one: these positions are meant to look like games
+   somebody reached, and an army you cannot own without promoting is a tell that the board
+   came out of a generator. That is the same standard the crowded-board pass was for.
+
+   Both generators now refuse to build one. This reads the two SHIPPED pools — the front
+   door's inline in index.md, /rating/'s inline in rating/index.html — because a rule that
+   only lives in the tool that writes the file is a rule that stops applying the moment
+   somebody hand-edits the file, and both pools carry a DO-NOT-EDIT-BY-HAND banner precisely
+   because that is a thing people do. Static, no engine, runs on every push. */
+{
+  const CAP = { Q: 1, R: 2, B: 2, N: 2, P: 8 };
+  const faults = [];
+  let seen = 0;
+  const pools = [
+    ['index.md', /var POOL = \[([\s\S]*?)\];/, (e) => e.split(' ')[0]],
+    ['rating/index.html', /var POOL = \[([\s\S]*?)\];/, (e) => e.split('|')[0]],
+  ];
+  for (const [file, re, fenOf] of pools) {
+    const full = path.join(ROOT, file);
+    if (!fs.existsSync(full)) continue;
+    const m = fs.readFileSync(full, 'utf8').match(re);
+    if (!m) { faults.push(file + ': POOL block not found'); continue; }
+    for (const raw of m[1].split('\n')) {
+      const q = raw.match(/'([^']+)'/);
+      if (!q) continue;
+      const fen = fenOf(q[1]);
+      seen++;
+      /* walk the board half of the FEN into (piece, isLight) pairs. Row 0 is rank 8 and
+         file 0 is the a-file, so (row + file) EVEN is a light square — a8 is light. */
+      const men = [];
+      const rows = fen.split('/');
+      for (let r = 0; r < rows.length; r++) {
+        let f = 0;
+        for (const ch of rows[r]) {
+          if (ch >= '1' && ch <= '8') { f += +ch; continue; }
+          men.push({ p: ch, light: (r + f) % 2 === 0 });
+          f++;
+        }
+      }
+      for (const up of [true, false]) {
+        const mine = men.filter((x) => (x.p === x.p.toUpperCase()) === up);
+        const side = up ? 'white' : 'black';
+        for (const t in CAP) {
+          const n = mine.filter((x) => x.p.toUpperCase() === t).length;
+          if (n > CAP[t]) faults.push(`${file} ${fen}: ${side} has ${n}x${t}`);
+        }
+        const bs = mine.filter((x) => x.p.toUpperCase() === 'B');
+        if (bs.length === 2 && bs[0].light === bs[1].light) {
+          faults.push(`${file} ${fen}: ${side} has two ${bs[0].light ? 'light' : 'dark'}-squared bishops`);
+        }
+      }
+    }
+  }
+  check('no shipped puzzle has an army nobody could have',
+    seen > 0 && faults.length === 0,
+    faults.length ? faults.slice(0, 3).join(' | ')
+      : `${seen} positions — max one queen a side, bishops always on opposite colors`);
+}
+
 /* ══ EVERY INLINE SCRIPT ACTUALLY PARSES ═══════════════════════════════════════════════
    Added 2026-08-05, immediately after shipping a SYNTAX ERROR to the live Park Tables page.
    A comment block was closed early, so the prose after it landed in the JS; `/games/park-

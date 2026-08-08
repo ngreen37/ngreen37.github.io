@@ -407,6 +407,36 @@ function lineLane(ax, ay, bx, by){
   while (x !== bx || y !== by){ x += dx; y += dy; out.push({ x, y }); }
   return out;
 }
+/* ══ NO ARMY NOBODY COULD HAVE (2026-08-08) ═══════════════════════════════════════════
+   Nate, with a screenshot: "There should never be two bishops on the same color."
+
+   He is right, and the reason is worth writing down because it is the same reason the
+   boards got crowded in the first place — these are supposed to look like positions
+   somebody REACHED, and an army you cannot own without a promotion is a tell that the
+   board was generated. Two light-squared bishops is the loudest one; three queens (which
+   the same screenshot also had, un-flagged) is louder still.
+
+   The caps below are simply the army you start with. A real game CAN exceed them by
+   promoting, so this is not a legality rule and the referee will never complain — it is a
+   PLAUSIBILITY rule, and it belongs here rather than in the referee for exactly that reason.
+
+   ⚠ SCOPED PER SIDE. White having a queen and Black having a queen is one each, not two. */
+const ARMY_CAP = { Q: 1, R: 2, B: 2, N: 2, P: 8 };
+function armyFault(pieceList){
+  for (const up of [true, false]){
+    const mine = pieceList.filter(s => (s[0] === s[0].toUpperCase()) === up);
+    for (const t in ARMY_CAP){
+      if (mine.filter(s => s[0].toUpperCase() === t).length > ARMY_CAP[t]) return true;
+    }
+    /* the one he asked for: a pair of bishops must be one light, one dark. Rows here are
+       top-down (row 0 = rank 8) and files left-to-right, so (file + row) even IS a light
+       square — a8 is light and (0+0) is even. */
+    const bs = mine.filter(s => s[0].toUpperCase() === 'B').map(s => s.slice(1));
+    if (bs.length === 2 && (F(bs[0]) + Rk(bs[0])) % 2 === (F(bs[1]) + Rk(bs[1])) % 2) return true;
+  }
+  return false;
+}
+
 function addDistractors(pieces, used, n, rnd, keepClearOf, rich, lanes){
   let added = 0, tries = 0;
   const laneKeys = new Set((lanes || []).map(k2));
@@ -437,6 +467,8 @@ function addDistractors(pieces, used, n, rnd, keepClearOf, rich, lanes){
     if (used.has(key) || laneKeys.has(key)) continue;
     if (keepClearOf.some(s => Math.max(Math.abs(s.x-x), Math.abs(s.y-y)) <= 1)) continue;
     const cand = pieces.concat([t + alg(x, y)]);
+    /* cheapest rejection in the loop, so it runs before any board work */
+    if (armyFault(cand)) continue;
     const b = parseBoard({ pieces: cand });
     const me = white ? 'w' : 'b', foe = white ? 'b' : 'w';
     const infl = genMoves(b, x, y);
@@ -819,6 +851,12 @@ function proveGain(b, col, d, a, beta){ // negamax, material-only, exact depth (
 function puzzleSane(p){
   try {
     searchNodes = 0; searchCap = 15000;      // see the note above proveGain — this fails closed
+    /* ⚑ THE PLAUSIBILITY GATE SITS HERE TOO, not only in addDistractors (2026-08-08). The
+       placer is where an impossible army usually COMES from, but it is not the only way in
+       — a motif builds its own men before any distractor is placed, and a future motif
+       could pair two bishops without ever calling the placer. Every puzzle in the room
+       passes through this function, so this is the line that actually holds. */
+    if (armyFault(p.pieces)) return false;
     const b0 = parseBoard(p);
     const foe = p.side === 'w' ? 'b' : 'w';
     if (inCheck(b0, p.side) || inCheck(b0, foe)) return false;

@@ -368,10 +368,37 @@ async function testFork(browser, port) {
     let deepChecked = 0;
     out.men = [];              // how crowded each board actually is — see the gate below
     out.twoMates = [];         // mate-in-one puzzles with more than one mate in one
+    out.army = [];             // armies nobody could own without promoting — see the gate below
+    /* ⚑ 2026-08-08, Nate with a screenshot: "There should never be two bishops on the same
+       color." The front door's pool is checked statically in style.check.js, but THIS room
+       generates its thousand puzzles at runtime, so the only place to catch it is here,
+       against the live generator.
+       ⚠ The referee will never flag this and correctly so — two same-colored bishops is
+       LEGAL, you just have to promote to get there. It is a plausibility rule. */
+    const ARMY_CAP = { Q: 1, R: 2, B: 2, N: 2, P: 8 };
+    function armyFault(pieces) {
+      for (const up of [true, false]) {
+        const mine = pieces.filter(s => (s[0] === s[0].toUpperCase()) === up);
+        const side = up ? 'white' : 'black';
+        for (const t in ARMY_CAP) {
+          const n = mine.filter(s => s[0].toUpperCase() === t).length;
+          if (n > ARMY_CAP[t]) return side + ' has ' + n + 'x' + t;
+        }
+        const bs = mine.filter(s => s[0].toUpperCase() === 'B').map(s => s.slice(1));
+        // file a=0 … h=7, rank 1..8; (file + rank) ODD is a light square in algebraic terms
+        const lit = a => ((a.charCodeAt(0) - 97) + (+a[1])) % 2 === 1;
+        if (bs.length === 2 && lit(bs[0]) === lit(bs[1])) {
+          return side + ' has two ' + (lit(bs[0]) ? 'light' : 'dark') + '-squared bishops';
+        }
+      }
+      return null;
+    }
     for (let i = 0; i < 600; i++) {
       const p = genPuzzle(1 + (i % 6), Math.random);
       out.n++; out.cats[p.cat || p.theme] = (out.cats[p.cat || p.theme] || 0) + 1;
       out.men.push(p.pieces.length);
+      const af = armyFault(p.pieces);
+      if (af) out.army.push(af + ' — ' + p.pieces.join(' '));
       const S0 = C.parseFEN(toFEN(p));
       /* ⚑ ONE MATE, NOT ONE OF TWO (2026-08-05). The room's own gate got a secondMate()
          check when the crowd arrived; this proves it from the OUTSIDE, with the referee,
@@ -423,6 +450,15 @@ async function testFork(browser, port) {
   ok(res.twoMates.length === 0,
     `every mate-in-one puzzle has exactly ONE mate in one` +
     (res.twoMates.length ? ` -> ${res.twoMates.length} with another: ` + res.twoMates.slice(0, 3).join(' | ') : ''));
+
+  /* ⚑ AN ARMY SOMEBODY COULD ACTUALLY OWN (2026-08-08). The crowd pass made these boards
+     look played; this keeps them that way. A generated position with three light-squared
+     bishops on it is legal, unremarkable to every engine, and instantly wrong to anyone
+     who has held a chess set. */
+  ok(res.army.length === 0,
+    `no generated puzzle has an army nobody could have (${res.n} checked — one queen a side, ` +
+    `bishops on opposite colors)` +
+    (res.army.length ? ` -> ${res.army.length} bad: ` + res.army.slice(0, 3).join(' | ') : ''));
 
   /* ⚑ THE BOARD MUST STAY CROWDED (2026-08-05, Nate: "the puzzles should have way more
      pieces on the board - make them a natural chess situation").

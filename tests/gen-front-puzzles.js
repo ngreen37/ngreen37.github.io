@@ -81,6 +81,40 @@ const pick = (a) => a[(rnd() * a.length) | 0];
 const int = (n) => (rnd() * n) | 0;
 
 const rf = (i) => [(i / 8) | 0, i % 8];
+
+/* ══ NO ARMY NOBODY COULD HAVE (2026-08-08) ═══════════════════════════════════════════
+   Nate, with a screenshot of this pool: "There should never be two bishops on the same
+   color." Right, and it is the same standard the crowd was added for — these positions are
+   supposed to look REACHED, and an army you cannot own without promoting is a tell that the
+   board was generated. The screenshot also carried THREE black queens, which he did not
+   flag and which is louder still.
+
+   ⚠ THIS IS NOT A LEGALITY RULE AND THE REFEREE WILL NEVER COMPLAIN ABOUT IT. A real game
+   can exceed every cap below by promoting; the caps are just the army you START with. That
+   is precisely why the check lives here, in the thing that MAKES positions, and not in the
+   referee, which is only ever asked what is legal.
+
+   ⚠ SCOPED PER SIDE: a white queen and a black queen is one each, not two. */
+const ARMY_CAP = { Q: 1, R: 2, B: 2, N: 2, P: 8 };
+/* index 0 is a8, so (row + file) even is a LIGHT square — a8 is light and 0+0 is even */
+const isLight = (i) => (((i / 8) | 0) + (i % 8)) % 2 === 0;
+function armyFault(board) {
+  for (const up of [true, false]) {
+    const mine = [];
+    for (let i = 0; i < 64; i++) {
+      const p = board[i];
+      if (p && (p === p.toUpperCase()) === up) mine.push([p.toUpperCase(), i]);
+    }
+    for (const t in ARMY_CAP) {
+      if (mine.filter((m) => m[0] === t).length > ARMY_CAP[t]) return `${up ? 'white' : 'black'} has too many ${t}`;
+    }
+    const bs = mine.filter((m) => m[0] === 'B');
+    if (bs.length === 2 && isLight(bs[1][1]) === isLight(bs[0][1])) {
+      return `${up ? 'white' : 'black'} has two ${isLight(bs[0][1]) ? 'light' : 'dark'}-squared bishops`;
+    }
+  }
+  return null;
+}
 const adjacent = (a, b) => {
   const [ar, af] = rf(a), [br, bf] = rf(b);
   return Math.abs(ar - br) <= 1 && Math.abs(af - bf) <= 1;
@@ -147,6 +181,8 @@ function candidate() {
     }
     b[s] = p;
   }
+  /* thrown away before the referee is ever asked — the cheapest rejection available */
+  if (armyFault(b)) return null;
   return b;
 }
 
@@ -207,6 +243,10 @@ function grow(board, base, want) {
     if (b[s]) continue;
     const t = b.slice();
     t[s] = p;
+    /* ⚠ CHECKED ON EVERY ADDITION, not once at the end. The crowd is what introduces the
+       second bishop, and judging a position the referee will approve and the eye will
+       reject is work spent to produce a board we then have to throw away. */
+    if (armyFault(t)) continue;
     const nv = judge(t);
     if (!nv || nv.from !== v.from || nv.to !== v.to) continue;
     b = t; v = nv;
@@ -276,6 +316,9 @@ for (const p of found) {
   for (const m of ms) if (!back.has(m.from + '>' + m.to)) throw new Error('packed move list is missing ' + m.from + '>' + m.to + ': ' + p.fen);
   if (!back.has(p.from + '>' + p.to)) throw new Error('packed move list does not contain the ANSWER: ' + p.fen);
   if (p.men < MIN_MEN) throw new Error('pool entry is too bare (' + p.men + ' men): ' + p.fen);
+  /* re-asked from the SERIALISED form, like every other claim in this pass */
+  const fault = armyFault(C.parseFEN(p.fen + ' w - - 0 1').b);
+  if (fault) throw new Error('implausible army (' + fault + '): ' + p.fen);
   /* WHITE pawns only — a black pawn on the 7th rank is just a black pawn, and Black never
      gets a move here. Row 1 of a FEN is the 7th rank; rows 0 and 7 are the 8th and the 1st,
      where no pawn of either color may legally stand. */
