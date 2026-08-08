@@ -340,6 +340,33 @@ the profile, not a localStorage flag), and probably a cap — seed at most to th
 credit ladder's own reading. Then a stranger who takes the test and signs up starts the Puzzle Room at their
 real level instead of at 700, which is the single biggest thing that would make the run worth finishing.
 
+### 2c. A **two-move** puzzle on the FRONT DOOR *(asked 2026-08-08, priced, not built)*
+His question was "do any of them have more than one move?" — and for **Fork in the Road the answer is already
+yes**: measured over 900 freshly generated puzzles, **564 of them (62.7%) ask for two moves**. Four of the six
+motifs build a three-ply line (your move → their forced reply, played for you → your move): Knight Fork,
+Skewer, Winning Material and The Pin. Only Back Rank and Discovered Check finish in one. Nothing to build there.
+
+The **front door** is the one that is genuinely one move, and it is one move *by construction*. That page
+carries **no engine at all** — [[front-door-puzzle-random]] — it grades two integers and a packed legal-move
+list, which is exactly why 64 positions cost nothing to ship and can't be wrong. Two moves would need:
+
+- **the pool format to grow** — board · your move · their reply · your second move · a legal-move pack for
+  **each** of your two turns (the second pack is a different position, so it cannot be derived);
+- **the page to gain a phase** — animate their reply, then grade again;
+- **a much more expensive proof at build time.** "Only one mate in one" is a scan of one ply. "Only one mate in
+  **two**" has to hold against **every** black defense, and the room's own gate says so out loud in
+  `puzzleSane()`: *"Only one mate in three is a different, much more expensive claim and this room does not make
+  it."* The honest cheap version is to generate only positions where black's reply is **forced** (exactly one
+  legal move), which sidesteps the branching entirely — at the cost of a narrower, more obviously-constructed
+  pool.
+- plus the static gate in `style.check.js` that reads both shipped pools, which is keyed to the current format.
+
+**The recommendation is to leave the front door at one move**, and not on cost grounds — on purpose. That puzzle
+is the hook that converted the site's first stranger; it wins by being solvable in the ten seconds before
+someone decides to stay. A two-mover is a better puzzle and a worse *door*. If he wants depth on the front page
+the cheaper, truer version is a **second door** to Fork that says the room has two-movers in it — the depth
+already exists, it just isn't advertised.
+
 ### 3. Park Tables — one identity across the site *(build-out thread #2, greenlit)*
 Wire the **PJCC Rating → the Clearance ladder** (RECRUIT → DELTA → … → OMEGA) so your codename wears a
 **clearance pip** that climbs, and the quiz game, the tables and the Profile finally speak one language.

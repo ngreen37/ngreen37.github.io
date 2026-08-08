@@ -1202,6 +1202,33 @@ pre code {
   }
 }
 
+/* ═══ THE CHESSWILD WORDMARK — SHARED INK (2026-08-08) ════════════════════════
+   `_includes/wordmark.html` emits these three spans, and as of today TWO places render
+   it: the front door's <h1> and the left drawer's head. So the ink moved here, out of
+   index.md's own <style>, and is now declared exactly once for the whole site.
+
+   ⭐ THAT IS THE POINT, NOT TIDINESS. [[front-door-decision]] records that the brand is
+   already named in three files that do not read each other, and the drawer had quietly
+   become a fourth — it spelled "ChessWild.com" out as flat text. A second copy of the
+   coral would have been a fifth. One include, one ink: the mark can only change once.
+
+   ⚠ SIZE IS NOT HERE, ON PURPOSE. `.wm-tld` is `em`-relative and everything else
+   inherits, so the mark scales to whatever the host sets — 34px on the sky above the
+   front door, 1.05rem in the drawer — with no per-site-place override. A host sets a
+   font-size; it does not restate the design.
+
+   The full rationale (why coral, why no fifth font, why the case is typed rather than
+   transformed) lives in _includes/wordmark.html beside the markup it describes. */
+.wm-chess { letter-spacing: -0.025em; }
+.wm-wild  { color: #ffa07a; letter-spacing: 0.01em; padding-left: 0.03em; }
+/* the address — quiet by SIZE, not by fading: it keeps the name's own color */
+.wm-tld   { font-weight: 600; font-size: 0.48em; letter-spacing: 0.04em; }
+/* ⚠ THE TAGLINE'S MINT IS DRAWN FOR A DARK BACKGROUND and measures under 2:1 on the warm
+   parchment sheet — correct out on the night sky, a bug inside a card. It is the same mint
+   every board on this site lights a LEGAL MOVE with, so "Solve" wears the color of a solved
+   thing. Do not reuse it on a light surface without re-inking it. [[front-door-palette]] */
+.wm-solve { color: #6bffb8; }
+
 /* ═══ TOUCH ERGONOMICS (2026-07-13 phone/a11y sweep) ══════════════════════════
    Every control here measured UNDER 40px in a real 390px render — below the
    Apple(44)/Android(48) tap floors. `pointer: coarse` targets fingers only, so

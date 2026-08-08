@@ -278,8 +278,21 @@
 .site-header.is-condensed .site-nav.drawer { max-height: none; opacity: 1; overflow-y: auto; pointer-events: auto; }
 
 .drawer-head { padding: 4px 8px 12px; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.10); }
-.drawer-brand { display: block; font-family: 'Poppins', sans-serif; font-weight: 800; letter-spacing: 0.14em; color: #f2f4f7; font-size: 1.05rem; }
-.drawer-sub { display: block; margin-top: 2px; font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: #98a0ad; }
+/* ⚑ THE HEAD NOW RENDERS THE REAL WORDMARK (2026-08-08) — see _includes/site-header.html.
+   The ink for `.wm-*` is in _pjcc-01-core.scss and is shared with the front door; this rule
+   only sets the SIZE and the face, which is all a host of the mark should ever do.
+   ⚠ `letter-spacing: 0.14em` is GONE. It applied to flat text; the mark carries its own
+   tracking per span, so the old value could only have fought it. */
+.drawer-brand { display: block; font-family: 'Poppins', sans-serif; font-weight: 800; color: #f2f4f7; font-size: 1.05rem; }
+/* the queen stays WHITE (his call) — it is the drawer's ornament, not a letter of the name */
+.drawer-queen { color: #ffffff; }
+/* ⚑ A LINK SINCE 2026-08-08 ("make the 'By McPuppy Studios' a link to the McPuppy Home page,
+   and leave it that color") → /projects/, the studio's own home. The color is unchanged and
+   there is no underline: it is a credit line that happens to be clickable, and giving it link
+   chrome would put a ninth destination in a drawer that carefully has eight. It brightens on
+   hover, which is the whole of the affordance it needs. */
+.drawer-sub { display: block; margin-top: 2px; font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: #98a0ad; text-decoration: none; }
+a.drawer-sub:hover, a.drawer-sub:focus-visible { color: #e7eaee; }
 
 /* the six links — full-width rows (override .site-nav .page-link pills) */
 .site-header .site-nav.drawer .page-link.drawer-link {
@@ -300,8 +313,23 @@
   color: #fff;
   transform: translateX(3px);
 }
+/* ⚑ THE MONOCHROME ICONS ARE CORAL (2026-08-08, Nate: "give the white symbols some subtle,
+   on theme color"). #ffa07a is not a new ink — it is the exact coral of `Wild` in the mark
+   directly above them, so the drawer reads as one lockup rather than as a name with a gray
+   list under it. Measured 7.12:1 on the icon chip (7.92:1 at the panel's darker foot), so it
+   is well clear of AA even though these glyphs are aria-hidden decoration.
+
+   ⭐ ONE COLOR, NOT EIGHT. Per-room hues were rendered and rejected: a blue Play Now beside a
+   gold Gauntlet beside a lilac PJCC turned the neutral panel into confetti, and the drawer is
+   deliberately neutral so it never fights the three very different pages it opens over.
+   ⚠ AND GREEN WAS NEVER A CANDIDATE, however obvious it looks on "Play Now". Green means one
+   thing in this drawer — there is a game waiting on your move — and pjcc-mymove.js paints it
+   on that exact row. A permanently green Play Now icon would have quietly deleted the signal.
+   ⚠ The tint only lands because every one of those glyphs carries U+FE0E; without it a browser
+   may paint them from the color emoji font and this line does nothing. See the site-header note.
+   (The three EMOJI icons keep their own colors — they take no ink.) */
 .dl-ico { flex: 0 0 auto; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
-  font-size: 1.15rem; line-height: 1; border-radius: 9px; background: rgba(255, 255, 255, 0.07); color: #c3cad3; }
+  font-size: 1.15rem; line-height: 1; border-radius: 9px; background: rgba(255, 255, 255, 0.07); color: #ffa07a; }
 .dl-txt { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; text-align: left; }
 .dl-txt b { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.98rem; }
 .dl-txt small { font-size: 0.72rem; color: #98a0ad; }

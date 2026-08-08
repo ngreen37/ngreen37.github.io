@@ -67,11 +67,45 @@
            arcade hub · Puzzles→Fork in the Road · Academy · PJCC→the world · Projects→the
            studio. The gold `--home` highlight marks whichever link IS home; order is MARKUP
            order (no nth-child depends on it). ⌘K still reaches everything else. Drawer look
-           lives in _sass/_pjcc-13-nav.scss. -->
+           lives in _sass/_pjcc-13-nav.scss.
+
+           ⚠⚠ EVERY MONOCHROME ICON CARRIES `&#xFE0E;` AND MUST KEEP IT (2026-08-08, when he
+           asked for "subtle, on theme color" on the white symbols). U+FE0E is VARIATION
+           SELECTOR-15 — "render me as text, not as an emoji". Without it a bare ♔ ▶ ♛ ♞ ◆ is
+           a browser's choice, and a browser that reaches for the COLOR EMOJI font paints its
+           own colors: `color` then does absolutely nothing and the tint silently no-ops. That
+           is not theoretical — the first render of this change came back with a gold crown and
+           a pink knight in a drawer whose CSS said coral, and the two machines involved
+           disagreed with each other. The selector makes it the same picture everywhere.
+           ⚠ The three EMOJI icons (🎮 📖 🐾) are the opposite case: they are colored BY the
+           font, take no ink at all, and must NOT get a text selector — it would strip them to
+           flat outlines. Add an icon and you are choosing which of these two it is. -->
       <nav class="site-nav drawer" id="site-nav" aria-label="Site navigation">
+        {%- comment -%} THE DRAWER HEAD CARRIES THE REAL WORDMARK (2026-08-08, Nate: "right under
+             the hamburger, leave the Queen symbol white, but match the 'Wild' with the coral
+             theme from the Home page as done previously").
+
+             ⭐ IT INCLUDES THE MARK RATHER THAN RE-SPELLING IT. "ChessWild.com" was typed out
+             here as flat text, which made this the FOURTH place the brand string lives — and
+             [[front-door-decision]] already warns that it is named in three places that do not
+             read each other. Now the drawer and the front door render the same include, so the
+             name and its coral can only ever be changed once.
+
+             ⚠ THE QUEEN IS OUTSIDE THE MARK, and white, because he asked for it white — it is
+             the drawer's own ornament, not a letter of the name. It also keeps `&#xFE0E;` for
+             the reason spelled out at the icon rows below.
+
+             ⚑ The wordmark's own tracking now applies here, so this reads tighter than the
+             letter-spaced text it replaced. That is the mark as designed; the drawer used to
+             wear a lookalike. {%- endcomment -%}
         <div class="drawer-head">
-          <span class="drawer-brand">&#9819; ChessWild.com</span>
-          <span class="drawer-sub">by McPuppy Studios</span>
+          <span class="drawer-brand"><span class="drawer-queen" aria-hidden="true">&#9819;&#xFE0E;</span> {% include wordmark.html %}</span>
+          {%- comment -%} 2026-08-08 (Nate: "make the 'By McPuppy Studios' a link to the McPuppy
+               Home page, and leave it that color"). /projects/ IS the studio's home — it is the
+               "About The Studio" page and the root of the McPuppy side (see _data/brands.yml).
+               Color deliberately unchanged: it is a credit line that happens to be clickable,
+               not a nav item competing with the eight below it. {%- endcomment -%}
+          <a class="drawer-sub" href="{{ '/projects/' | relative_url }}">by McPuppy Studios</a>
         </div>
 
         {%- comment -%} 2026-07-28 (Nate: "move the entire home page to the PJCC tab, and give
@@ -83,7 +117,7 @@
              The header logo is a watermark, not a link, so this row is the only home link on
              the site: don't remove it. {%- endcomment -%}
         <a class="page-link drawer-link drawer-link--home" href="{{ '/' | relative_url }}">
-          <span class="dl-ico" aria-hidden="true">&#9812;</span>
+          <span class="dl-ico" aria-hidden="true">&#9812;&#xFE0E;</span>
           {%- comment -%} the sub said "ChessWild" directly under the drawer's own
                "♛ ChessWild" brand — the same word twice, two lines apart. Nate picked
                these three words (2026-08-04); they also match the front door's lede. {%- endcomment -%}
@@ -93,11 +127,11 @@
              Play Now to be prominent."): Play Now rises to just under the home anchor; Games
              drops below the Gauntlet. Order is markup order — no nth-child depends on it. {%- endcomment -%}
         <a class="page-link drawer-link" href="{{ '/games/park-tables/' | relative_url }}">
-          <span class="dl-ico" aria-hidden="true">&#9654;</span>
+          <span class="dl-ico" aria-hidden="true">&#9654;&#xFE0E;</span>
           <span class="dl-txt"><b>Play Now</b><small>Sit at the Park Tables</small></span>
         </a>
         <a class="page-link drawer-link" href="{{ '/games/the-gauntlet/' | relative_url }}">
-          <span class="dl-ico" aria-hidden="true">&#9819;</span>
+          <span class="dl-ico" aria-hidden="true">&#9819;&#xFE0E;</span>
           <span class="dl-txt"><b>The Gauntlet</b><small>Climb the tower of ten</small></span>
         </a>
         <a class="page-link drawer-link" href="{{ '/games/' | relative_url }}">
@@ -110,7 +144,7 @@
         <a class="page-link drawer-link" href="{{ '/games/fork-in-the-road/' | relative_url }}">
           {%- comment -%} ♞ knight = the forking piece (2026-07-24 Nate: a "puzzle piece" without
                copying Chess.com's jigsaw — a chess piece glyph, the option we sat with earlier). {%- endcomment -%}
-          <span class="dl-ico" aria-hidden="true">&#9822;</span>
+          <span class="dl-ico" aria-hidden="true">&#9822;&#xFE0E;</span>
           <span class="dl-txt"><b>Puzzles</b><small>Fork in the Road</small></span>
         </a>
         <a class="page-link drawer-link" href="{{ '/academy/' | relative_url }}">
@@ -118,7 +152,7 @@
           <span class="dl-txt"><b>Academy</b><small>Learn chess from scratch</small></span>
         </a>
         <a class="page-link drawer-link" href="{{ '/pjcc/' | relative_url }}">
-          <span class="dl-ico" aria-hidden="true">&#9670;</span>
+          <span class="dl-ico" aria-hidden="true">&#9670;&#xFE0E;</span>
           <span class="dl-txt"><b>PJCC</b><small>The world — cast, places, fan art</small></span>
         </a>
         <a class="page-link drawer-link" href="{{ '/projects/' | relative_url }}">

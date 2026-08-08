@@ -444,8 +444,25 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    not `center`: two lines of different size read as one line only when they sit on the same
    floor. It WRAPS on a narrow screen (the tagline drops under the name) rather than shrinking
    either one — three words on their own line is still the lockup; a squeezed title is not. */
+/* ⚑ THE TAGLINE MOVED TO THE FAR END (2026-08-08, Nate: "give a lot more space in between
+   ChessWild.com and Play. Solve. Learn. In fact, move the tagline to the right side of the
+   white box"). `space-between` rather than a hand-picked gap: the two ends of this row are
+   the two edges of the card below it, so the lockup now BRACKETS the sheet instead of
+   huddling at its left corner — and it stays bracketed at every width without a single
+   breakpoint, because the flex line is measured, not guessed. Measured at 1440: the tagline
+   ran 630px short of the card's right edge before this, which is the "a lot more space" he
+   was asking for, spent all at once.
+
+   ⚠ `column-gap` stays 14px and is now a FLOOR, not the spacing — it is what stops the two
+   from touching on a narrow row where there is no slack left to distribute. On a 390px phone
+   the tagline already sat 6px off the card's right edge, so this changes that view by almost
+   nothing, which is the intent: it is a desktop-shaped fix.
+   ⚠ 4px of inset on BOTH sides now. The left one was already there (an optical inset off the
+   card's corner); with something finally standing at the right end it needs its mirror, or
+   the tagline hangs 4px further out than the title hangs in. */
 .page-head-out { display: flex; align-items: baseline; flex-wrap: wrap;
-  column-gap: 14px; row-gap: 2px; margin: 0 0 14px 4px; }
+  justify-content: space-between;
+  column-gap: 14px; row-gap: 2px; margin: 0 4px 14px; }
 /* THE TITLE, OUTSIDE THE SHEET (2026-08-04) ──────────────────────────────────────
    It stands on the town sky between the header and the card, so the white box opens on
    the board and the button instead of on the site's own name.
@@ -464,66 +481,21 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .page-title-out { color: #ffffff; font-size: clamp(26px, 3.4vw, 34px); font-weight: 800;
   font-family: 'Poppins', sans-serif; line-height: 1.1; margin: 0;
   text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55), 0 1px 2px rgba(0, 0, 0, 0.4); }
-@media (max-width: 700px) { .page-head-out { margin: 0 0 10px 2px; } }
+@media (max-width: 700px) { .page-head-out { margin: 0 2px 10px; } }
 
-/* ══ THE WORDMARK (2026-08-08) ═════════════════════════════════════════════════════
-   Nate: "spice up the text and style on ChessWild.com — pick a font and style that is
-   unique, but also fits in to what we are doing elsewhere … keep it light and not too
-   flashy." The tagline beside it is deliberately untouched, per the same note.
+/* ══ THE WORDMARK + THE TAGLINE'S ACCENT — MOVED OUT OF THIS FILE (2026-08-08) ════
+   `.wm-chess` / `.wm-wild` / `.wm-tld` / `.wm-solve` used to be declared right here. They
+   now live in _sass/_pjcc-01-core.scss, because the left drawer renders the same
+   `_includes/wordmark.html` as of today and a mark that appears in two places cannot have
+   its ink in one page's private <style>.
 
-   ⭐ NO NEW FONT. The full reasoning is in _includes/wordmark.html; the short version is
-   that all four faces this site ships already MEAN something, and a wordmark is made
-   distinctive by treatment rather than by family. So the mark is built out of weight and
-   space alone: `Chess` set tight and heavy, `WILD` opened up and lighter, `.com` small
-   and quiet. The name says its own meaning in its tracking, and it stays monochrome
-   white — which is the only ink that survives dawn, noon, dusk and midnight on the town
-   sky. [[front-door-palette]]
+   Nothing about the design changed — coral `Wild`, white `.com`, mint `Solve`, and the
+   reasoning for every one of them (why no fifth font, why coral and not the obvious gold,
+   why the case is typed rather than transformed) sits with the markup in
+   _includes/wordmark.html and _includes/tagline.html.
 
-   ⚠ 900 → 800, AND NOTHING MOVED. Poppins ships 400/600/700/800 here, so `font-weight:900`
-   was already being clamped to 800 by the browser — the old value described a weight this
-   site does not have. Same picture, honest number.
-
-   ⚠ EVERY VALUE BELOW CAME OUT OF A RENDER. Eight treatments, then six refinements of the
-   two finalists, against the real sky at 34px AND 26px, day AND night. Two candidates died
-   on evidence: +0.18em tracking wrapped the tagline onto a second line at 34px, and a
-   700-weight tail flattened the contrast until "ChessWILD" read as one heavy word with odd
-   gaps in it. Do not nudge these by eye — re-render. [[pick-visual-values-from-a-render]] */
-.wm-chess { letter-spacing: -0.025em; }
-/* ⚑ COLOR CARRIES IT NOW (2026-08-08, second pass — Nate: "give the 'Wild' some color, and put
-   the 'ild' back lower case. Give the .com the same white color as Chess").
-
-   The caps-and-tracking version is gone: with a color doing the work, spacing the word out too
-   was two ideas fighting for the same job. `Wild` is now normal case, full 800 like `Chess`,
-   and separated by hue alone — one word, two halves.
-
-   ⚠ IT IS 800, NOT THE 600 IT WAS. Rendered both: at 600 the colored word is demoted TWICE,
-   in weight and in tone, and stops reading as half the name — it looks like a subtitle that
-   wandered into the title. Color is the whole distinction now, so the weight has to match.
-
-   ⭐ WHY CORAL AND NOT THE OBVIOUS GOLD. Every legible option survived all four sky phases
-   (dawn/day/dusk/night are all dark enough that a light ink never struggles), so this was
-   never a contrast decision — it was a MEANING one, and the site has already spent its warm
-   signals. Gold #F5C518 is the Gauntlet's brass livery, and the front door contains it to
-   that one door on purpose; green is "something to play" and belongs to the single primary
-   button; purple is the world and the black pieces. Coral is the one warm ink on the page
-   that is not already saying something else — and it sits beside walnut and parchment
-   without arguing with either. [[front-door-palette]] [[site-type-system]] */
-.wm-wild { color: #ffa07a; letter-spacing: 0.01em; padding-left: 0.03em; }
-/* the address, small but the SAME white as the name — it is quiet by SIZE, not by fading */
-.wm-tld { font-weight: 600; font-size: 0.48em; letter-spacing: 0.04em; }
-
-/* ⚑ ONE WORD OF THE TAGLINE IS TINTED (2026-08-08, "make Solve a different color — that'll
-   give some more depth"). The depth comes from the accent being COOL against the wordmark's
-   warm one; rendered six ways, and every warm candidate read as "a slightly different
-   orange" — a mistake rather than a decision — while repeating the coral added no depth at
-   all, being the same color.
-
-   #6bffb8 is not a new ink: it is the mint every board on this site lights a LEGAL MOVE
-   with. So the word "Solve" wears the color of a solved thing.
-   ⚠ THAT MINT IS DRAWN FOR A NEAR-BLACK BACKGROUND and measures under 2:1 on the warm
-   parchment sheet — correct out here on the sky, a bug inside the card. Do not reuse it
-   in the sheet without re-inking it, the way the board's verdicts were. */
-.wm-solve { color: #6bffb8; }
+   ⚠ What stays HERE is only what belongs to THIS page: how big the lockup is on the sky,
+   and how it is arranged. That split is the point — a host sets a size, not a design. */
 
 /* THREE WORDS, beside the name (2026-08-04) — a tagline, so it is smaller and lighter than
    the wordmark and it never competes with it. Same white-plus-shadow pair as the title, and
