@@ -220,67 +220,82 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
            runs during parse — see the block comment above. The squares stay static so the
            board is a finished square from the first frame either way. {%- endcomment -%}
       <div class="mcb-men" id="mcb-men"></div>
+      {%- comment -%} ══ THE RESULT LANDS ON THE BOARD (2026-08-08) ═══════════════════════
+           Nate: "can you move all three buttons to show up INSIDE the puzzle box instead of
+           below? Similar to how the Gambit altar results pops up. Wouldn't that be a nice
+           touch? I think so!" — he is right, and it fixes something real: the offer used to
+           push the page 60-odd pixels taller the instant you answered, so being graded MOVED
+           everything under the board. Nothing reflows now; the card lands over the position.
+
+           ⚠ THE SCRIM IS DELIBERATELY THIN. The Gambit's is nearly opaque because there is
+           nothing behind it worth seeing; here there is — the note on the winning branch has
+           said since 2026-07-29 that "the reward for being right is that the position STAYS
+           on the screen", and a curtain over the mate would take back exactly that. You can
+           read the board straight through this.
+
+           ⚑ THIS IS NOT A DIALOG and must not claim to be. It traps no focus and steals
+           none, the page behind it stays usable, and Escape does nothing — `role="dialog"`
+           without focus management is a promise to a screen reader that the markup does not
+           keep. The verdict is an `aria-live` region instead, which is the honest version:
+           it announces itself and the reading order is unchanged.
+
+           ── THE INVITATION, NOT THE ESCORT (2026-07-29, and it still governs) ──────────
+           Nate: "Don't automatically go to puzzles when you do the Home Page — but PROMPT
+           them to go to puzzles. That'll be REAL nice." Solving used to start a 1.25s timer
+           and then move the page out from under you. Being teleported for getting something
+           RIGHT is a punishment shaped like a reward: you just did the thing, and the site
+           took the room away before you could enjoy it. The win hands you a door instead of
+           walking you through it — and now that door arrives ON the board rather than under it.
+
+           ⚑ IT APPEARS ON A MISS AS WELL AS ON A MATE (2026-08-04, Nate: "mark it right or
+           wrong and then offer more puzzles"). Before that, a visitor who guessed wrong was
+           left holding a position they had already failed with no way forward but the page.
+
+           ⚠ THE SPAN AROUND EACH LABEL IS LOAD-BEARING. `.mcb-next` is an inline-flex row,
+           and a flex container ignores `display:block` on its children — unwrapped, the label
+           and the sub-label lay out side by side and read as one sentence, which says the
+           opposite of what it means. {%- endcomment -%}
+      <div class="mcb-offer" id="mcb-offer" hidden>
+        <div class="mcb-card">
+          <p class="mcb-verdict" id="mcb-verdict" aria-live="polite"></p>
+          {%- comment -%} ⚑ TRY AGAIN IS MISS-ONLY (2026-08-08, "can we add a retry button").
+               After a mate there is nothing to retry — the position is solved and standing
+               there, and offering to replay it would be offering to undo the good news. So
+               this one row is hidden on a win, which also keeps his "all three buttons"
+               literally true there. See `paint()` for why retry cannot corrupt the board:
+               it re-paints the position from the pool entry rather than trying to undo. {%- endcomment -%}
+          <button class="mcb-next mcb-next--retry" id="mcb-retry" type="button" hidden>
+            <span class="mcb-next-txt"><b>Try Again</b><small>The same position</small></span>
+            <i aria-hidden="true">&#8630;</i>
+          </button>
+          <button class="mcb-next mcb-next--again" id="mcb-again" type="button">
+            <span class="mcb-next-txt"><b>Another Puzzle</b><small>A fresh position</small></span>
+            <i aria-hidden="true">&#8635;</i>
+          </button>
+          {%- comment -%} ⚑ THE THIRD DOOR (2026-08-08, and it is deliberately the MIDDLE one).
+               The site took its first random sign-up on 2026-08-07 and the leaderboard says this
+               puzzle is what hooked them. So the moment a stranger has just finished a position
+               is the moment to ask the one question they cannot walk away from — and it is a
+               SMALLER commitment than the room, not a bigger one. Order is the whole point:
+                 · Try Again — costs one tap and nothing else
+                 · Another Puzzle — stay here, a new position
+                 · What's Your Rating? — two minutes, and it is about YOU
+                 · The Puzzle Room — 1,000 puzzles, a road you have to mean it to walk
+               Ranked by what it asks of someone who arrived thirty seconds ago.
+               ⚠ STILL NOT GOLD. All four are wood and ink; the page's one law is untouched.
+               {%- endcomment -%}
+          <a class="mcb-next" href="{{ '/rating/' | relative_url }}">
+            <span class="mcb-next-txt"><b>What's Your Rating?</b><small>Six positions, one number</small></span>
+            <i aria-hidden="true">&rarr;</i>
+          </a>
+          <a class="mcb-next mcb-next--room" href="{{ '/games/fork-in-the-road/' | relative_url }}">
+            <span class="mcb-next-txt"><b>The Puzzle Room</b><small>1,000 puzzles to Chess City</small></span>
+            <i aria-hidden="true">&rarr;</i>
+          </a>
+        </div>
+      </div>
     </div>
     <p class="mcb-say" id="mcb-say">White to play. <b>Mate in one.</b></p>
-    {%- comment -%} ══ THE INVITATION, NOT THE ESCORT (2026-07-29) ═══════════════════════
-         Nate: "Don't automatically go to puzzles when you do the Home Page — but PROMPT
-         them to go to puzzles. That'll be REAL nice."
-
-         Solving used to start a 1.25s timer and then move the page out from under you.
-         Being teleported for getting something RIGHT is a punishment shaped like a
-         reward: you just did the thing, and the site took the room away before you
-         could enjoy it. So the win hands you a door instead of walking you through it.
-
-         ⚑ AND NOW THERE ARE TWO DOORS, BECAUSE THE PUZZLE IS RANDOM (2026-08-04, Nate:
-         "mark it right or wrong and then offer more puzzles"). The offer appears on a
-         MISS as well as on a mate — that is the change. It used to be the reward for
-         solving, which meant a visitor who guessed wrong was left holding a position they
-         had already failed with no way forward but the page itself.
-           · "Another puzzle" deals a new one IN PLACE — a real button, because it does
-             something on this page and does not navigate. Nothing is fetched: the whole
-             pool is already here.
-           · The room is still one tap away, and it still names the scale, because
-             "more puzzles" is a shrug and "1,000 puzzles to Chess City" is a road.
-
-         ⚠ NEITHER IS GOLD, and that is the page's one law (see the header comment). These
-         appear only AFTER an interaction, so nobody ever sees two calls to action at once —
-         but gold means "the primary thing" here, and there is only ever one of those.
-         ══════════════════════════════════════════════════════════════════ {%- endcomment -%}
-    {%- comment -%} ⚠ THE <span> IS LOAD-BEARING. `.mcb-next` is an inline-flex row, and a
-         flex container ignores `display:block` on its children — so the label and the
-         sub-label laid out side by side and read as one sentence, which says the opposite
-         of what it means. Wrapped, they stack. {%- endcomment -%}
-    <div class="mcb-offer" id="mcb-offer" hidden>
-      <button class="mcb-next" id="mcb-again" type="button">
-        <span class="mcb-next-txt"><b>Another Puzzle</b></span>
-        <i aria-hidden="true">&#8635;</i>
-      </button>
-      {%- comment -%} ⚑ THE THIRD DOOR (2026-08-08, and it is deliberately the MIDDLE one).
-           The site took its first random sign-up on 2026-08-07 and the leaderboard says this
-           puzzle is what hooked them. So the moment a stranger has just finished a position
-           is the moment to ask the one question they cannot walk away from — and it is a
-           SMALLER commitment than the room, not a bigger one. Order is the whole point:
-             · Another Puzzle — stay here, costs one tap
-             · What's Your Rating? — two minutes, and it is about YOU
-             · The Puzzle Room — 1,000 puzzles, a road you have to mean it to walk
-           Ranked by what it asks of someone who arrived thirty seconds ago.
-           ⚠ STILL NOT GOLD. Three doors, all wood and ink; the page's one law is untouched.
-           {%- endcomment -%}
-      <a class="mcb-next" href="{{ '/rating/' | relative_url }}">
-        <span class="mcb-next-txt">
-          <b>What's Your Rating?</b>
-          <small>Six positions, one number</small>
-        </span>
-        <i aria-hidden="true">&rarr;</i>
-      </a>
-      <a class="mcb-next mcb-next--room" href="{{ '/games/fork-in-the-road/' | relative_url }}">
-        <span class="mcb-next-txt">
-          <b>The Puzzle Room</b>
-          <small>1,000 puzzles to Chess City</small>
-        </span>
-        <i aria-hidden="true">&rarr;</i>
-      </a>
-    </div>
   </div>
 </section>
 </section>
@@ -658,12 +673,10 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    decorative walnut measures 2.88:1 there against a night sky (4.01 even at the old 0.85
    alpha — it was failing AA before the transparency pass, not because of it). */
 .mcb-say b { color: var(--fd-wood-ink); }
-/* ⚠ THE VERDICT COLORS ARE NOT THE ONES THE DARK PAGE USED. #6bffb8 is a mint drawn for a
-   near-black card; on the warm-white sheet it measures under 2:1 and the word "Yes!"
-   disappears. Both marks are re-inked for paper here — the SQUARE keeps the bright ring,
-   because a 3px ring on maple is not text and does not have to clear 4.5:1. */
-.mcb-say.good b, .mcb-say.good { color: #1f7a4d; }
-.mcb-say.miss b, .mcb-say.miss { color: #a3323b; }
+/* ⚑ THE VERDICT LEFT THIS LINE (2026-08-08) — it is on the card that lands on the board now,
+   so `.mcb-say` only ever says the standing prompt and its `.good`/`.miss` rules went with
+   it (see `.mcb-verdict`). The SQUARE keeps its bright ring either way: a 3px ring on maple
+   is not text and does not have to clear 4.5:1. */
 .mcb-ready { display: block; margin-top: 4px; color: var(--fd-ink-3); font-size: 0.72rem;
   font-family: 'Share Tech Mono', monospace; }
 
@@ -672,14 +685,43 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    earns its place by never being visible until you've already done something. Not gold.
    ⚠ IT NOW APPEARS ON A MISS TOO, which is the point of the rewrite: a wrong guess used to
    leave a visitor holding a position they had already failed, with nowhere to go. */
-.mcb-offer { display: flex; flex-wrap: wrap; justify-content: center; align-items: stretch;
-  gap: 10px; margin-top: 10px; }
+/* ⚑ IT LANDS ON THE BOARD NOW (2026-08-08) — see the markup note. `position:absolute`
+   inside `.mcb`, which was already `position:relative` for the two stacked grids, so the
+   card costs the page no height at all: answering used to add ~60px under the board and
+   shove everything below it down at the exact moment a visitor was reading a verdict.
+   ⚠ The scrim is THIN on purpose — the position has to stay readable through it. */
+.mcb-offer { position: absolute; inset: 0; z-index: 3;
+  display: flex; align-items: center; justify-content: center; padding: 10px;
+  background: rgba(24, 16, 8, 0.42);
+  animation: mcbVeil .22s ease both; }
 .mcb-offer[hidden] { display: none; }
+@keyframes mcbVeil { from { opacity: 0; } to { opacity: 1; } }
+/* the card itself — the same parchment and grain as every other panel on this page, so it
+   reads as a receipt landing on the board rather than as a foreign window.
+   ⚠ `max-height` + `overflow-y` are not decoration: four rows plus a verdict is taller than
+   a 400px board's inner height on a small phone, and a card that overflowed would be CUT —
+   `.mcb` is `overflow:hidden` and would silently eat the last button. */
+.mcb-card { width: min(292px, 100%); max-height: 100%; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 7px;
+  padding: 13px; border-radius: var(--r-md, 12px);
+  background: var(--fd-panel); border: 1px solid var(--fd-grain);
+  box-shadow: 0 22px 50px -14px rgba(0, 0, 0, 0.6);
+  animation: mcbLand .34s cubic-bezier(.18,.9,.3,1.2) both; }
+@keyframes mcbLand { from { opacity: 0; transform: translateY(18px) scale(0.94); }
+  to { opacity: 1; transform: none; } }
+/* the verdict moved OFF `.mcb-say` and INTO the card (2026-08-08). `.mcb-say` keeps the
+   standing prompt, which is now true the whole time instead of being overwritten the moment
+   you answer — and the announcement is where the eye already is.
+   ⚠ SAME PAPER INKS AS BEFORE. #6bffb8 is drawn for a near-black card and measures under 2:1
+   on parchment; these two are the re-inked pair. [[front-door-palette]] */
+.mcb-verdict { margin: 0 0 1px; text-align: center; font-family: 'Poppins', sans-serif;
+  font-weight: 800; font-size: 1.15rem; line-height: 1.2; color: var(--fd-ink); }
+.mcb-verdict.good { color: #1f7a4d; }
+.mcb-verdict.miss { color: #a3323b; }
 .mcb-next { display: inline-flex; align-items: center; gap: 12px; margin: 0;
   padding: 10px 18px; border-radius: 999px; text-decoration: none; text-align: left;
   color: var(--fd-ink); background: var(--fd-panel-hi);
   border: 1px solid var(--fd-grain);
-  animation: mcbNextIn .34s cubic-bezier(.2,.9,.3,1.2) both;
   transition: transform .14s ease, border-color .14s ease, background .14s ease; }
 /* ⚠ "Another puzzle" IS A <button>, because it acts on this page instead of navigating —
    and a button brings its own agenda: the UA font, a system border and a default padding
@@ -697,10 +739,56 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    the page wants, so leaving is offered rather than urged */
 .mcb-next--room { background: transparent; border-color: var(--fd-rule); }
 .mcb-next--room:hover { background: var(--fd-panel-hi); }
-@keyframes mcbNextIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ── INSIDE THE CARD (2026-08-08) ──────────────────────────────────────────────────
+   The rows go full width. Their old per-button entrance (`@keyframes mcbNextIn`) is DELETED,
+   not overridden — the CARD lands now, four things each doing their own entrance on top of
+   that is one motion idea too many, and every `.mcb-next` on this page is inside the card, so
+   the keyframe had no remaining caller. An `animation: none` override would have left a dead
+   keyframe that still reads as live to anything grepping for it.
+   `[hidden]` needs saying out loud because `.mcb-next` sets `display:inline-flex`, and a
+   display value beats the `hidden` attribute's UA `display:none` every time — Try Again
+   would have shown on a win, and it would have looked deliberate. */
+.mcb-card .mcb-next { display: flex; width: 100%; padding: 8px 12px; border-radius: 10px; gap: 8px; }
+.mcb-card .mcb-next[hidden] { display: none; }
+.mcb-card .mcb-next b { font-size: 0.88rem; }
+.mcb-card .mcb-next small { font-size: 0.72rem; }
+.mcb-card .mcb-next i { margin-left: auto; }
+/* Try Again is the plainest of the four — it is the cheapest thing you can do here, and it
+   should not out-shout the two doors that go somewhere. */
+.mcb-next--retry { background: transparent; border-color: var(--fd-rule); }
+.mcb-next--retry:hover { background: var(--fd-panel-hi); }
+/* ⚠ A SHORT BOARD CANNOT HOLD THE FULL CARD. `.mcb` already declares
+   `container-type: inline-size`, so this measures the BOARD, not the viewport — which is the
+   right ruler: the card is clipped by the board's height and nothing else.
+
+   ⚠ THE FIRST VERSION ONLY DROPPED THE SUB-LABELS AND THAT WAS NOT ENOUGH — 254px of card in
+   a 292px board, a bare frame of wood around it, which is the Gambit's near-opaque curtain by
+   accident. Then I shrank the label font and the rows did not move at all: MEASURED, a row is
+   44px and the tallest thing in it is the ARROW GLYPH at 1.1rem, not the label. I had been
+   tuning a value that was not setting the height. [[audit-numbers-can-be-wrong]]
+
+   ⭐ AND 44px IS THE RIGHT ANSWER, NOT THE PROBLEM. That is the tap-target floor these rows
+   are supposed to stand at ([[tap-targets-and-audit-numbers]]) — shrinking them would have
+   traded a real accessibility number for a cosmetic one. Four of them simply cost 176px.
+   So the fix is FEWER ROWS, not shorter ones: the two "stay here" actions pair up on one
+   line, which is also what they mean. 230px → 182px, and a third of the board is visible
+   again above and below the card. */
+@container (max-width: 330px) {
+  .mcb-card { flex-flow: row wrap; padding: 9px; gap: 5px; width: min(282px, 100%); }
+  .mcb-verdict, .mcb-card .mcb-next { flex: 1 1 100%; font-size: 0.95rem; margin-bottom: 0; }
+  .mcb-card .mcb-next { padding: 6px 10px; }
+  .mcb-card .mcb-next small { display: none; }
+  .mcb-card .mcb-next b { font-size: 0.82rem; }
+  /* the pair — `flex:1 1 0` with `min-width:0` so a long label shrinks instead of forcing a
+     wrap. When Try Again is hidden (a win) "Another Puzzle" is alone and takes the line. */
+  .mcb-card .mcb-next--retry, .mcb-card .mcb-next--again { flex: 1 1 0; min-width: 0; }
+  /* no room for the glyph beside a half-width label, and it was only ever decoration */
+  .mcb-card .mcb-next--retry i, .mcb-card .mcb-next--again i { display: none; }
+}
 
 @media (prefers-reduced-motion: reduce) { .mcb-p { transition: none; }
-  .mcb-next { animation: none; } }
+  .mcb-offer, .mcb-card { animation: none; } }
 
 /* The board block — sized to sit beside the copy without stealing from it. No hover lift:
    this is a chessboard you play on, not a card you click, and a board that rises when the
@@ -991,6 +1079,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   var t0 = (window.performance && performance.now) ? performance.now() : 0;
   var board = document.getElementById('mcb'), say = document.getElementById('mcb-say');
   var men = document.getElementById('mcb-men'), offer = document.getElementById('mcb-offer');
+  var verdict = document.getElementById('mcb-verdict'), retryBtn = document.getElementById('mcb-retry');
   if (!board || !say || !men) return;
 
   /* ══ POOL — GENERATED, DO NOT EDIT BY HAND · npm run gen:puzzles ══ */
@@ -1077,19 +1166,29 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 
   var cur = null, sel = -1, done = false, legal = null;
 
+  /* ⚑ THE VERDICT LIVES ON THE CARD NOW (2026-08-08). `.mcb-say` keeps the standing prompt
+     and is never overwritten, so "White to play. Mate in one." stays true the whole time
+     instead of being replaced by the answer to it. */
   function tell(html, good, bad) {
-    say.innerHTML = html;
-    say.classList.toggle('good', !!good);
-    say.classList.toggle('miss', !!bad);
+    if (!verdict) return;
+    verdict.innerHTML = html;
+    verdict.classList.toggle('good', !!good);
+    verdict.classList.toggle('miss', !!bad);
   }
 
-  /* DEAL — repaint the men from a random pool entry and reset every mark. Called once at
-     load and again for every "Another puzzle": the whole pool is already on the page, so
-     dealing is a string split and one innerHTML, with nothing fetched and nothing to wait for. */
-  function deal() {
-    cur = POOL.length ? POOL[(Math.random() * POOL.length) | 0].split(' ') : null;
+  /* PAINT — put `cur` on the board and reset every mark. Split out of deal() 2026-08-08 so
+     "Try Again" can re-lay the SAME position.
+
+     ⭐ RETRY RE-PAINTS RATHER THAN UNDOES, and that is the whole reason it is safe. Undoing
+     would mean knowing which branch you came from: a miss leaves the men exactly where they
+     were, but a MATE has already moved a piece, removed a captured one and painted the king
+     red. A retry built on "put the wrong mark away" would work perfectly on the branch it was
+     written for and quietly corrupt the other one. Re-painting from the pool entry cannot
+     tell the two apart, because it does not look. */
+  function paint() {
     sel = -1; done = false;
     if (offer) offer.hidden = true;
+    if (retryBtn) retryBtn.hidden = true;
     var marked = board.querySelectorAll('.mcb-sq.bad, .mcb-sq.good');
     for (var m = 0; m < marked.length; m++) marked[m].classList.remove('bad', 'good');
     if (!cur) { men.innerHTML = ''; legal = null; return; }
@@ -1120,7 +1219,14 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
       }
     }
     men.innerHTML = h;
-    tell('White to play. <b>Mate in one.</b>');
+    tell('');
+  }
+
+  /* DEAL — a new position. The whole pool is already on the page, so dealing is a string
+     split and one innerHTML: nothing fetched, nothing to wait for. */
+  function deal() {
+    cur = POOL.length ? POOL[(Math.random() * POOL.length) | 0].split(' ') : null;
+    paint();
   }
 
   /* PICK UP / PUT DOWN. One function owns the whole selection state — the lifted piece, the
@@ -1158,6 +1264,11 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
      often enough that this is not a nicety. */
   board.addEventListener('click', function (e) {
     if (done || !cur || !e.target.closest) return;
+    /* ⚠ THE OFFER IS INSIDE THE BOARD NOW (2026-08-08), so its clicks bubble through here.
+       `done` is true for the whole time the card is up, which already stops them — this is
+       the belt to that pair of braces: if a future state ever shows the card with the board
+       still live, a tap on "Try Again" must not also be read as a move underneath it. */
+    if (e.target.closest('.mcb-offer')) return;
 
     var mine = e.target.closest('.mcb-p[data-mine]');
     if (mine) {                                  /* pick a piece up, or put the same one down */
@@ -1202,20 +1313,25 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
       if (king) king.classList.add('mated');
       sq.classList.add('good');
       /* NO TIMER, NO location.href (2026-07-29) — the reward for being right is that the
-         position STAYS on the screen. The offer below is a door, never an escort. */
-      tell('<b>Yes!</b>', true);
+         position STAYS on the screen. The card is a door, never an escort. */
+      tell('Yes!', true);
+      /* ⚠ no Try Again on a mate: there is nothing left to try. See the markup note. */
+      if (retryBtn) retryBtn.hidden = true;
     } else {
       /* ── wrong, and that is a fine place to end up. A LEGAL move that isn't the mate: no
          refutation, no lesson, no reveal — he asked for a MARK. The offer appears either
          way. (An ILLEGAL square never reaches here; see the note above.) ── */
       sq.classList.add('bad');
-      tell('<b>Not quite.</b>', false, true);
+      tell('Not quite.', false, true);
+      if (retryBtn) retryBtn.hidden = false;
     }
     if (offer) offer.hidden = false;
   });
 
   var again = document.getElementById('mcb-again');
   if (again) again.addEventListener('click', function () { deal(); });
+  /* Try Again keeps `cur` and re-lays it — same position, clean board. */
+  if (retryBtn) retryBtn.addEventListener('click', function () { paint(); });
 
   deal();
   /* Nothing above this line was needed to SEE the board — only to fill it and touch it. */

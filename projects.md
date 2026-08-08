@@ -389,7 +389,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
 
   <div class="mcp-thanks-block">
     <h3 class="mcp-thanks-sub">The Creator would like to thank</h3>
-    <p class="mcp-thanks-names">Mom &middot; Chels &middot; Laura &middot; Josh &middot; Kim &middot; Aunts Barb and Kathy &middot; Tucker &middot; Austin &middot; Kennie &middot; Jacob &middot; Garrett &middot; Dominic &middot; Sarah and Mark Facca &middot; Ryan Neuharth &middot; Chef &middot; Milady &middot; Jen</p>
+    <p class="mcp-thanks-names">Mom &middot; Chels &middot; Laura &middot; Josh &middot; Kim &middot; Aunts Barb and Kathy &middot; Tucker &middot; Austin &middot; Kennie &middot; Jacob &middot; Garrett &middot; Dominic &middot; Sarah and Mark Facca &middot; Ryan Neuharth &middot; Milady</p>
   </div>
 
   <div class="mcp-thanks-block">
