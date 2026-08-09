@@ -21,9 +21,9 @@ combination** over new surface area.
 
 *The standing list of things **only he can do** (an account he owns, a decision that's his to make, a
 name he has to pick). Kept here so an ended session never loses them. None are on fire; they just have
-to live somewhere. Cross one off by deleting the line. Last swept **2026-08-05**.*
+to live somewhere. Cross one off by deleting the line. Last swept **2026-08-09**.*
 
-## 📋 THE SIX — the whole list, in one screen
+## 📋 THE SEVEN — the whole list, in one screen
 
 *Scan this. Every one of them is written out in full underneath, in the same order.*
 
@@ -35,6 +35,7 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-08-05**
 | **4** | **Does Customize take ONE tap now on your iPhone?** | `/dossier/` → the Forge | I could not reproduce it; I need your answer before I instrument the live page |
 | **5** | **Confirm one reading:** "Games Hall box in the Play Now box" = Games Hall took the slot Play Now vacated | the front door | Nothing — it shipped my way; say so if I read it wrong |
 | **6** | **How far does the de-purpling go?** — drawer only, + header, or + the Park Tables room | look-and-feel call | Nothing is broken; the handoff just changes identity mid-tap |
+| **7** | **The header can't hold everything at once — which one gives?** | the top bar, narrow windows + phones | Nothing; it shipped my way. Contact steps out below 1100px and the McPuppy badge below 430px |
 
 ---
 
@@ -50,6 +51,23 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-08-05**
   cheap, fixes the drawer seam, leaves the button-color break; **(c)** leave it — the world
   pages are *meant* to look like the world, and Park Tables is arguably part of the world.
   ⚠ This is a look-and-feel call, so it is yours. Nothing is broken either way.
+
+**🔠 7 · THE HEADER RAN OUT OF ROOM — WHICH ONE GIVES? *(2026-08-09, the three front doors)***
+- [ ] **7 · Two things step out of the header on narrow screens. Tell me if you'd rather buy the
+  space somewhere else.** The top bar now carries ☰ · **CW · P&JCC · McPuppy** · ⌕ Search · 日本語 ·
+  Sign in · Contact. Three marks want about **110px** that the single McPuppy badge did not, and
+  the row genuinely does not have it: at 1024 the first version squeezed 日本語 into a
+  three-character **vertical stack**, which is the exact defect the whole tap-target pass existed
+  to fix. There is no type size that buys it back — at 10px the words are past reading and the row
+  barely gains, because the badge is the wide one.
+  So, shipped: **Contact steps out below 1100px** (it already did below 700) and the **McPuppy
+  badge steps out below 430px** — both still one tap away in the drawer and in ⌘K, and above those
+  widths everything is there. **The alternative is to take it out of the right instead: "Sign in"
+  is 83px of the controls' 192px**, and an icon-only version on narrow screens would pay for the
+  badge on every phone. Your call — it is chrome, and it is what a stranger sees first.
+  ⚠ Worth knowing either way: what the header did *before* was quietly crush the badge rather than
+  drop it — measured on the live site it was 78px wide at 430, **57 at 375 and two pixels at 320**.
+  Nothing ever looked broken because the broken thing had already disappeared.
 
 **🌐 THE DOMAIN CUTOVER — ✅ DONE 2026-08-03/04. `chesswild.com` IS THE LIVE DOMAIN.**
 Runbook kept at `docs/domain-cutover-chesswild.md`. DNS verified, `CNAME`/`_config.yml`/
