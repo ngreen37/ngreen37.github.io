@@ -62,7 +62,7 @@ fragment_key: frag_archive
       </div>
       <h2 class="classified-file-title">Her Real Name</h2>
       <div class="classified-file-body">
-        <p>The operative refers to her as Princess. This is not her real name. Her real name is listed in the interplanetary crew manifest as <span class="classified-redact c-reveal" data-real="PJCC-Ω-7">████████</span>, a designation assigned before the crash.</p>
+        <p>The operative refers to her as Princess. This is not her real name. Her real name is listed in the interplanetary crew manifest as <span class="classified-redact c-reveal" data-real="P&JCC-Ω-7">████████</span>, a designation assigned before the crash.</p>
         <p>She does not appear to know this. She has, however, been observed looking at the sky more often than the average resident of Checker Town.</p>
         <p class="classified-note">She responds to Princess. She responds better to <em>good girl</em>. We are not above using this.</p>
       </div>

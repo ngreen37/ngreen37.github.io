@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Fork in the Road v2.2</title>
+<title>P&JCC: Fork in the Road v2.2</title>
 <!-- THE TOWN SKY (2026-08-03, cohesion #6): the clock first, then the wash it drives.
      ORDER IS LOAD-BEARING - pjcc-game-sky.js finds no clock if these swap, and does
      nothing at all without saying so. tests/townsky.check.js checks both, in order. -->
@@ -209,7 +209,7 @@
          ⚠ HTML COMMENT, NOT A LIQUID ONE: this file has no front matter, so Jekyll copies
          it VERBATIM as a static asset and never runs Liquid over it. A {% comment %} here
          would ship to the browser as visible text. -->
-    <div class="eyebrow">PJCC Puzzles</div>
+    <div class="eyebrow">P&JCC Puzzles</div>
     <div class="big-title">Fork in the Road</div>
     <div class="blurb">
       One winning move, every time.<br>
@@ -2069,7 +2069,7 @@ function puzzleFEN(p){
   return out.join('/') + ' ' + (p.side || 'w') + ' - - 0 1';
 }
 function reportText(p){
-  return 'Hi McPuppy — I think this PJCC puzzle is wrong.\n\n' +
+  return 'Hi McPuppy — I think this P&JCC puzzle is wrong.\n\n' +
     'What looked wrong:\n(type here)\n\n— puzzle data (please leave this part in) —\n' +
     'id: ' + p.id + '\ntheme: ' + p.theme + '\ngoal: ' + p.goal +
     '\nFEN: ' + puzzleFEN(p) +
@@ -2142,7 +2142,7 @@ document.getElementById('rep-close').addEventListener('click', ()=>{
 document.getElementById('rep-mail').addEventListener('click', ()=>{
   const p = G && G.p; if (!p) return;
   const href = 'mailto:nathgreen37@gmail.com?subject=' +
-    encodeURIComponent('Puzzle report — PJCC Puzzles') + '&body=' + encodeURIComponent(reportText(p));
+    encodeURIComponent('Puzzle report — P&JCC Puzzles') + '&body=' + encodeURIComponent(reportText(p));
   try { (window.top || window).location.href = href; } catch(e){ window.location.href = href; }
   document.getElementById('rep-done').textContent = 'Opening your mail app…';
 });

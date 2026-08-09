@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: Sky Run v2.0</title>
+<title>P&JCC: Sky Run v2.0</title>
 <!-- THE TOWN SKY (2026-08-03, cohesion #6): the clock first, then the wash it drives.
      ORDER IS LOAD-BEARING - pjcc-game-sky.js finds no clock if these swap, and does
      nothing at all without saying so. tests/townsky.check.js checks both, in order. -->
@@ -839,7 +839,7 @@ function saveCard(){
   cx.strokeStyle='#8fb8ff'; cx.lineWidth=4; cx.strokeRect(8,8,cw-16,ch-16);
   cx.textAlign='center';
   const tag = G.daily?' · DAILY':(G.endless?' · ENDLESS':'');
-  cx.fillStyle='#8fb8ff'; cx.font='bold 16px Trebuchet MS'; cx.fillText('PJCC · SKY RUN'+tag, cw/2, 50);
+  cx.fillStyle='#8fb8ff'; cx.font='bold 16px Trebuchet MS'; cx.fillText('P&JCC · SKY RUN'+tag, cw/2, 50);
   cx.fillStyle='#ffe27a'; cx.font='900 70px Trebuchet MS'; cx.fillText(String(G.score), cw/2, 152);
   cx.fillStyle='#cfe0ff'; cx.font='600 18px Trebuchet MS'; cx.fillText('score', cw/2, 180);
   cx.fillStyle='#f0e6ff'; cx.font='bold 22px Trebuchet MS';

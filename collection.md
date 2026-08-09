@@ -2,8 +2,8 @@
 layout: page
 permalink: /collection/
 title: The Collection
-tab_title: The Collection — every collectable in PJCC
-description: Every collectable in the PJCC world in one case — the Quartermaster's shelf, the pieces you earn, and the ones only the Gambit altar gives back. Collect them all.
+tab_title: The Collection — every collectable in P&JCC
+description: Every collectable in the P&JCC world in one case — the Quartermaster's shelf, the pieces you earn, and the ones only the Gambit altar gives back. Collect them all.
 ---
 
 {% comment %} ══════════════════════════════════════════════════════════════════════════

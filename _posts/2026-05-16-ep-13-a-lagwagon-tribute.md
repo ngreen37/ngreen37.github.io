@@ -7,7 +7,7 @@ tags: [Lagwagon, Blender, Belief]
 ### Listening to: Lagwagon - May 16
 <iframe src="https://open.spotify.com/embed/track/1L3fMMyr9tqSy2f0EbX2lR" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
-Just another Saturday. Not quite.  I am back in action after about ten days of workworkwork, (the annual) playoff heartbreak for my Minnesota teams (they performed admirably, though), and spending time with the dog.   Chess is effectively over after a makeup class, my hard work has been paying off and I can pare down my night job, and, as such, the PJCC dream remains alive!  
+Just another Saturday. Not quite.  I am back in action after about ten days of workworkwork, (the annual) playoff heartbreak for my Minnesota teams (they performed admirably, though), and spending time with the dog.   Chess is effectively over after a makeup class, my hard work has been paying off and I can pare down my night job, and, as such, the P&JCC dream remains alive!  
 
 Lagwagon, Bad Astronaut, and Joey Cape's solo albums are just fantastic.  He is very talented with a great voice, and has been incredibly prolific over the years.  Today is a Saturday, May 16th, and I hope they are doing a big show somewhere today; I know they have done that in the past even when not necessarily touring.  If it's anywhere within three hours of me, I will have thrown my PC out of the window and you may not have any new blogs for awhile!
 

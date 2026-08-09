@@ -373,7 +373,7 @@ permalink: /games/
          the trophy anchors the RIGHT (over Clearance) — the row spreads them apart now instead
          of clustering them center. PLATE PARITY kept: no plate, no "Begin the climb" caption. {%- endcomment -%}
     <a class="gdoor" id="gauntlet-door" href="{{ '/games/the-gauntlet/' | relative_url }}"
-       aria-label="The Gauntlet — real chess vs a ladder of ten PJCC rivals">
+       aria-label="The Gauntlet — real chess vs a ladder of ten P&JCC rivals">
       <span class="gdoor-arch" aria-hidden="true">
         <i class="gdoor-door"><b class="gdoor-glyph" id="gdoor-glyph">♟</b><u class="gdoor-knob"></u></i>
         <i class="gdoor-seam"></i>
@@ -398,7 +398,7 @@ permalink: /games/
   <div class="ghub-head">
     {%- comment -%} "Choose Your Hall" removed 2026-07-16 (Nate). The eyebrow is the
          page's h1 now so the hall keeps a real heading. {%- endcomment -%}
-    <h1 class="ghub-eyebrow" data-hb>◆ The PJCC Arcade</h1>
+    <h1 class="ghub-eyebrow" data-hb>◆ The P&JCC Arcade</h1>
     <p class="ghub-sub" data-hb>Claim a codename · climb the global boards</p>
     <!-- the gold rule. Two real elements, not a pseudo: the outer one is the track and clips,
          the inner one is the shimmer and slides. See the note by @ghub-shimmer. -->

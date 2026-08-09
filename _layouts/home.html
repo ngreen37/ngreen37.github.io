@@ -20,7 +20,7 @@ layout: default
        the world's own page so the schema is true. {%- endcomment -%}
   "@id": "{{ site.url }}/pjcc/#show",
   "name": "Princess and the Journey to Chess City",
-  "alternateName": "PJCC",
+  "alternateName": ["P&JCC", "PJCC"],
   "url": "{{ site.url }}/pjcc/",
   "image": "{{ site.url }}/assets/images/pjcc-share-card.jpg",
   "description": "An animated series in the making: Princess, a dog from Checker Town, journeys toward Chess City. Built in the open by McPuppy Studios, with a free arcade of chess games set in the show's world.",
@@ -56,7 +56,7 @@ layout: default
       <span class="ticker-item">INTERPLANETARY CONSTRUCTION CO. DENIES ALL VESSEL WRECKAGE CLAIMS — INVESTIGATION CONTINUES</span>
       <span class="ticker-item ticker-item--promo">◆ NEW — THE PUZZLE ROOM: PLAY THE WRONG MOVE AND IT SHOWS YOU EXACTLY WHY IT LOSES</span>
       <span class="ticker-item">CHESS CITY LEAFS ADVANCE TO FINALS — ROSTER ANNOUNCEMENT EXPECTED SHORTLY</span>
-      <span class="ticker-item">PJCC RATING SYSTEM IN FORCE — EVERY OPERATIVE STARTS AT 250 — LADDER STANDINGS NOW POSTED AT THE PARK</span>
+      <span class="ticker-item">P&JCC RATING SYSTEM IN FORCE — EVERY OPERATIVE STARTS AT 250 — LADDER STANDINGS NOW POSTED AT THE PARK</span>
       <span class="ticker-item ticker-item--promo">◆ NEW — EVERY GAME YOU FINISH GETS A FREE REVIEW: YOUR ACCURACY, THE MOVE IT TURNED ON, AND THE ONE YOU MISSED</span>
       <span class="ticker-item">CHECKER PIECE PRICES REACH RECORD HIGH — ECONOMISTS CITE THE CRASH AS ORIGIN POINT</span>
       <span class="ticker-item">OBSERVATORY: THE MOON OVER CHECKER TOWN IS RUNNING THE SAME PHASE AS THE ONE OUTSIDE YOUR WINDOW — CONFIRMED NIGHTLY</span>
@@ -221,7 +221,7 @@ layout: default
        plays a game you look down on, the other plays a game that looks back at you.
 
        The chess pieces take their colors from the CHESS CANON tokens
-       (_sass/_pjcc-22-chess-canon.scss), never their own — so "white" and PJCC's purple
+       (_sass/_pjcc-22-chess-canon.scss), never their own — so "white" and P&JCC's purple
        "black" match every real board on the site. Restyling is a token edit, as always.
        Filled glyphs only (♟♜♞): the outline forms (♙♖♘) will not take a fill.
 
@@ -323,7 +323,7 @@ layout: default
        Restore the hero instance from git: git show <prev>^ -- _layouts/home.html {% endcomment %}
 </section>
 
-{% comment %} ── THE WORLD (2026-07-22) — the reason the PJCC drawer link exists. PJCC is
+{% comment %} ── THE WORLD (2026-07-22) — the reason the P&JCC drawer link exists. P&JCC is
      the fifth drawer link now, and its job is the WORLD, not the games (Play, Gauntlet and
      Academy each have their own link). So the landing leads with three big doors into it —
      Characters · Locations · Fan Art — right under the hero. {% endcomment %}
@@ -645,7 +645,7 @@ html.reduce-flourish .hero-title { animation:none; }
 .hero-title { position:relative; text-wrap:balance; max-width:16ch; margin-left:auto; margin-right:auto; }
 
 /* ── THE TITLE CARD + ITS FUN FLAIR ─────────────────────────────────────────────────
-   (2026-07-22, Nate: "make the PJCC title a fun text", then "give the hero title a fun
+   (2026-07-22, Nate: "make the P&JCC title a fun text", then "give the hero title a fun
    flair" → shimmer sweep + playful letters + twinkle sparkles.)
 
    The film-logo treatment — Poppins gold, thick dark outline, a short extrude so it sits ON
@@ -773,7 +773,7 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
 
 /* CHESS CITY — pieces standing. Colors come from the canon tokens, never from here, so
    these match the Park Tables board, the Academy board and every review board on the
-   site. PJCC's "black" is purple (--piece-b-fill) by canon, which also happens to be the
+   site. P&JCC's "black" is purple (--piece-b-fill) by canon, which also happens to be the
    only way a dark piece stays visible against a night sky. */
 /* the -0.13em nudge: a glyph's ink does not fill its em box (there is descender room
    under the baseline), so a piece positioned purely by `bottom` floats above the surface
@@ -800,7 +800,7 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
 .hp-cs .cpc { width:100%; height:100%; }
 /* BLACK on the banner, not canon purple (2026-07-22, Nate: "turn the purple pieces on the
    banner to black"). This is a DELIBERATE, hero-only fork of --piece-b-fill and the only
-   one on the site: every real board still wears PJCC purple for its dark side. It is a
+   one on the site: every real board still wears P&JCC purple for its dark side. It is a
    banner, not a board — the piece here is scenery standing against a sky, and at 50px the
    purple was already reading as black anyway. #12101a keeps a trace of the world's violet
    in it so it sits in the picture instead of punching a hole in it; the pale --piece-b-line
@@ -918,7 +918,7 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
 
 {% comment %} The Gambit moved to the Games page as a drawn altar-door (2026-07-15 Nate:
      "make the Gambit a link like the gauntlet, on the Games Page… make it some sort of
-     drawing, and not text… remove it from the PJCC page"). Its old quiet text link here
+     drawing, and not text… remove it from the P&JCC page"). Its old quiet text link here
      is gone; the entrance now lives beside the Gauntlet + Park Tables doors in games.md. {% endcomment %}
 
 {% comment %} The chess-glyph wire MOVED BACK INTO THE FOOTER 2026-07-15 (Nate: "move
@@ -978,7 +978,7 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
    looking broken instead of missing. */
 .awake-lamp { position:relative; display:block; width:82px; height:102px; flex:0 0 auto; }
 .awake-lamp .studio-light { position:absolute; inset:0 0 10px; }
-/* ⚑ THE DESK IS BACK — 2026-08-04 (Nate: "on the PJCC there is no wooden base — I want the
+/* ⚑ THE DESK IS BACK — 2026-08-04 (Nate: "on the P&JCC there is no wooden base — I want the
    wooden base to be there like it is on the main page"). This REVERSES his own 2026-07-28
    call to hide it, and it is his to reverse; what matters is that the plank comes back in the
    state he approved LATER, not the state he rejected.

@@ -40,22 +40,20 @@ function ok(cond, msg) {
   else { FAIL++; fails.push(msg); console.log('  ✗ ' + msg); }
 }
 
-/* ── lift TRAPS and FOES out of the shipped game ──────────────────────────────────
+/* ── READ THE TABLE ITSELF ─────────────────────────────────────────────────────────
    ⚠ READ, DO NOT RE-DECLARE. A test that carries its own copy of the data proves the copy
-   — the site has been bitten by exactly that (two SQ64 alphabets in two files). */
+   — the site has been bitten by exactly that (two SQ64 alphabets in two files).
+
+   ⭐ IT IS A PLAIN .json NOW, and that is the point of this whole arrangement: the same
+   file is read by the web game (fetch), by this gate (readFileSync), and one day by a
+   Godot project (`JSON.parse_string`). It used to live inline in the HTML and this file
+   pulled it out with `vm` — which worked, but meant the port was theoretical, because a
+   Godot project cannot read a JavaScript variable out of an HTML document. */
+const TABLE = path.join(ROOT, 'assets/games/duel-traps.json');
+const JSONDATA = JSON.parse(fs.readFileSync(TABLE, 'utf8'));
+const TRAPS = JSONDATA.traps;
+const FOES = JSONDATA.foes;
 const SRC = fs.readFileSync(path.join(ROOT, 'assets/games/pjcc_duel.html'), 'utf8');
-function lift(name) {
-  const i = SRC.indexOf('var ' + name + ' = [');
-  if (i < 0) throw new Error('cannot find `var ' + name + '` in pjcc_duel.html');
-  const end = SRC.indexOf('\n];', i);
-  if (end < 0) throw new Error('cannot find the end of `' + name + '`');
-  const sandbox = {};
-  vm.createContext(sandbox);
-  vm.runInContext(SRC.slice(i, end + 3) + ';', sandbox);
-  return sandbox[name];
-}
-const TRAPS = lift('TRAPS');
-const FOES = lift('FOES');
 
 /* forced mate for the side to move within `plies` (odd), against EVERY defense */
 function mateForced(S, plies) {
@@ -157,6 +155,16 @@ ok(/Monkey Island/i.test(SRC) && /Ron Gilbert/i.test(SRC),
    'the game file names The Secret of Monkey Island and Ron Gilbert');
 const PAGE = fs.readFileSync(path.join(ROOT, 'games/duel/index.html'), 'utf8');
 ok(/Monkey Island/i.test(PAGE), 'the page a visitor actually reads names it too');
+/* …and the table travels alone, so the credit has to travel with it */
+ok(/Monkey Island/i.test(JSONDATA._homage || ''), 'the trap table carries the credit in its own file');
+
+/* ── the split that makes the Godot port real ────────────────────────────────────
+   The table is FACTS; the game file is the MACHINE. If a move ever creeps back into the
+   HTML, the two copies drift and the ported version quietly plays a different game. */
+ok(!/\bsetup:\s*\[\[/.test(SRC), 'no trap data is left inline in the game file');
+ok(!/\bdocument\b|\bwindow\b|\bstyle\b/.test(JSON.stringify(JSONDATA)),
+   'the table mentions no browser — it is portable as it stands');
+ok(SRC.includes("fetch('duel-traps.json'"), 'the game reads the table from the shared file');
 
 /* ── the bench ── */
 ok(FOES.length >= 3, 'the bench has ' + FOES.length + ' opponents');

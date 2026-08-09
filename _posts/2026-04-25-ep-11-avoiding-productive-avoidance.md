@@ -12,7 +12,7 @@ Perhaps the Wild, who look good despite being down 2-1 in the series, can go all
 
 **Edit** Wild win in OT!!!! What a tip-in by Matt Boldy!  Wolves look good nearing the half; Naz Reid playing particularly well and ohhhh noooo Anthony Edwards is hobbling off the court.  Oh NO.  I hope he is okay.  
 
-**Edit** Ant is out for the game but the Wolves are playing really well with Ayo Dosunmu leading the way with a career-high 43(!). what an overall great day.  My teams won and PJCC took a huge leap forward. Princess has some color, the sea scene has some sea, and the website looks cleeean.  I'm going to try and plant some easter eggs in there, too.  
+**Edit** Ant is out for the game but the Wolves are playing really well with Ayo Dosunmu leading the way with a career-high 43(!). what an overall great day.  My teams won and P&JCC took a huge leap forward. Princess has some color, the sea scene has some sea, and the website looks cleeean.  I'm going to try and plant some easter eggs in there, too.  
 
 ### What I worked on:
   - Lots of Blender.  I created a dog structure!  Kennie says it kind of looks like Catdog, lol.  The idea is to just get something I can use for now, and I will detail it later

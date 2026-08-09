@@ -1,12 +1,12 @@
 ---
 layout: page
-title: PJCC for Educators
+title: P&JCC for Educators
 permalink: /educators/
 ---
 
 <div class="ed-hero selectable">
-  <div class="ed-kicker">PJCC Chess Academy · for classrooms &amp; curious minds of any age</div>
-  <p class="ed-sub">The <a href="{{ '/academy/' | relative_url }}">PJCC Chess Academy</a> teaches chess the way anyone actually learns — through a cartoon they care about. It's geared for kids and classrooms, but built to be genuinely enjoyable for <strong>all ages</strong>. Free to use today, and it drops straight into a classroom: offline, kid-safe, and standards-friendly.</p>
+  <div class="ed-kicker">P&JCC Chess Academy · for classrooms &amp; curious minds of any age</div>
+  <p class="ed-sub">The <a href="{{ '/academy/' | relative_url }}">P&JCC Chess Academy</a> teaches chess the way anyone actually learns — through a cartoon they care about. It's geared for kids and classrooms, but built to be genuinely enjoyable for <strong>all ages</strong>. Free to use today, and it drops straight into a classroom: offline, kid-safe, and standards-friendly.</p>
 </div>
 
 <!-- WHY IT WORKS -->
@@ -16,7 +16,7 @@ permalink: /educators/
   <div class="ed-cell"><span class="ed-ico">📶</span><b>Fully offline</b><small>Everything runs in the browser with no logins required. No accounts, no data collection, no network needed once loaded.</small></div>
   <div class="ed-cell"><span class="ed-ico">🛡️</span><b>Kid-safe by design</b><small>No chat, no ads, no purchases, no personal data. Progress is stored only on the device.</small></div>
   <div class="ed-cell"><span class="ed-ico">🪜</span><b>A path, in order</b><small>The Academy runs one honest lesson at a time, starting at how the pieces move — so there is always exactly one next step, for the room and for each kid.</small></div>
-  <div class="ed-cell"><span class="ed-ico">🖨️</span><b>Printable art cards</b><small>A PJCC fan-art card for every student, names pre-filled, one per page — printed straight from this page, below.</small></div>
+  <div class="ed-cell"><span class="ed-ico">🖨️</span><b>Printable art cards</b><small>A P&JCC fan-art card for every student, names pre-filled, one per page — printed straight from this page, below.</small></div>
   <div class="ed-cell"><span class="ed-ico">🕹️</span><b>Games to practice in</b><small>Coordinates, tactics, openings, a puzzle room and a ladder of rivals — the lessons lead into practice they actually want to do.</small></div>
 </div>
 
@@ -33,7 +33,7 @@ permalink: /educators/
 <!-- CLASSROOM ART KIOSK -->
 <h2 class="ed-h2">◈ Classroom Art Kiosk</h2>
 <div class="ed-free">
-  <p>Print a PJCC fan-art card for every student — names pre-filled, one card per page. They draw, you hang. Anything special? <a href="/fan-art/">Send it in</a> — every piece is screened, then hung by McPuppy.</p>
+  <p>Print a P&JCC fan-art card for every student — names pre-filled, one card per page. They draw, you hang. Anything special? <a href="/fan-art/">Send it in</a> — every piece is screened, then hung by McPuppy.</p>
   <textarea id="ek-names" class="ek-names" rows="6" aria-label="Student names" placeholder="One student name per line…" autocomplete="off"></textarea>
   <div class="ed-free-cta">
     <button class="ed-btn ed-btn-gold" id="ek-print" type="button">🖨 Print the card stack</button>
@@ -62,7 +62,7 @@ permalink: /educators/
       var d = document.createElement('div');
       d.className = 'ek-card';
       d.innerHTML = '<div class="ek-eyebrow">Fan Art</div>' +
-        '<div class="ek-brand"><span class="ek-star">★</span>PJCC<span class="ek-star">★</span></div>' +
+        '<div class="ek-brand"><span class="ek-star">★</span>P&JCC<span class="ek-star">★</span></div>' +
         '<div class="ek-frame"></div>' +
         '<div class="ek-artist">Artist: <b>' + esc(n) + '</b></div>';
       host.appendChild(d);

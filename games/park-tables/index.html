@@ -2,7 +2,7 @@
 layout: page
 title: "The Park Tables"
 permalink: /games/park-tables/
-description: "Free chess in the Checker Town park — sit down with a regular right now, no account, or sign in to play a real person. PJCC Ratings, real rules, preset phrases only."
+description: "Free chess in the Checker Town park — sit down with a regular right now, no account, or sign in to play a real person. P&JCC Ratings, real rules, preset phrases only."
 ---
 
 {% comment %} ══════════════════════════════════════════════════════════════════════
@@ -15,7 +15,7 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
      claim AND the rating math; the perft-verified PJCCChess engine in every client
      enforces legality by replaying the whole move list on load.
 
-     v2 (2026-07-14, the chess.com model): PJCC Rating (everyone starts 250, Elo K=32,
+     v2 (2026-07-14, the chess.com model): P&JCC Rating (everyone starts 250, Elo K=32,
      server-side), Casual = the no-rating option, per-move clocks (none/1h/1d/3d,
      flag falls by claim), up to 6 live tables each. SIGN-IN IS ON-PAGE now: the email
      code verifies right here, and the magic link's redirect IS this page — nobody
@@ -1000,7 +1000,7 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
       line:'No rating on the line — take your time and think it through.' },
     { id:'arena', glyph:'♛', name:'The Arena', accent:'#F5C518',
       rated:true, secs:86400, tag:'Rated · 1 day a move',
-      line:'Your PJCC Rating rides on every move. All business.' },
+      line:'Your P&JCC Rating rides on every move. All business.' },
     // NOT called "blitz" on purpose (2026-07-25): every table here is CORRESPONDENCE with a
     // PER-MOVE clock, so an hour a move is the fastest the park currently goes. Real blitz
     // (a 5/10/15-minute TOTAL game clock) is a different clock system — see FUTURE-IDEAS.
@@ -1541,7 +1541,7 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
 .pt-promo--w .pt-promo-b { color: var(--piece-w-fill, #ffffff); }
 .pt-promo--b .pt-promo-b { color: var(--piece-b-fill, #4a3585); -webkit-text-stroke-color: var(--piece-b-line, #f2e9ff); }
 .pt-promo-b:hover, .pt-promo-b:focus-visible { border-color: #F5C518; transform: translateY(-2px); outline: none; }
-/* ── THE BOARD (2026-07-16 Nate: "the PJCC version of chess.com — nice pieces, board,
+/* ── THE BOARD (2026-07-16 Nate: "the P&JCC version of chess.com — nice pieces, board,
    feel, and arrows", after the square-size bug): ──
    · grid-auto-rows:1fr is THE bug fix — without it the implicit rows were `auto`, so
      each rank's height flexed with its content and squares re-shaped as pieces moved.

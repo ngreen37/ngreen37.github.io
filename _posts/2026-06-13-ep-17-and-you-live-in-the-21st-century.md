@@ -12,7 +12,7 @@ I started a dumpster fire today.  A literal dumpster fire.  Didn't mean to: I pu
 I feel I should apologize to the earth for my contribution to its pollution.  Sorry, earth!  I will try and make it up with positive actions moving forward.  
 
 ### What I worked on:
-  - Setting up my space.  Cleaning, clearing out things that do not assist PJCC, and adding things that do.  Trash-bound items from the last week of the schools I cleaned led to a BOON.  Rolled-up paper for story boards, graphing paper, manila folders.
+  - Setting up my space.  Cleaning, clearing out things that do not assist P&JCC, and adding things that do.  Trash-bound items from the last week of the schools I cleaned led to a BOON.  Rolled-up paper for story boards, graphing paper, manila folders.
     - One thing I learned from working at the schools has been the positive effect of those posters they hang everywhere.  So, I made a couple for myself!.  
 
   - Quit my job, got a different one.  I am aligning my life better toward my goals, namely, PJCC.  I did not decide this lightly, but I did it confidently. With conviction.  The feeling isn't necessarily NEW, but I have a different perspective these days regarding mindset.  
@@ -20,4 +20,4 @@ I feel I should apologize to the earth for my contribution to its pollution.  So
 
 ### What's next:
   - I am headed to New Jersey in a few days to celebrate my cousin graduating medical school. We are so proud of him.  
-  - PJCC-wise, I feel I am near a breakthrough but I don't know what that is going to look like yet.  But the work continues. Mainly learning Blender.  
+  - P&JCC-wise, I feel I am near a breakthrough but I don't know what that is going to look like yet.  But the work continues. Mainly learning Blender.  

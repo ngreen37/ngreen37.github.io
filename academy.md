@@ -23,7 +23,7 @@ body_class: theme-academy
      Adding a lesson = one more `.ac-lesson` anchor here + its own page. No shared belt
      math to keep in sync any more. {% endcomment %}
 
-<h1 class="page-title">PJCC Chess Academy</h1>
+<h1 class="page-title">P&JCC Chess Academy</h1>
 
 <div class="ac-hero">
   <div class="ac-strip" aria-hidden="true">
@@ -111,7 +111,7 @@ body_class: theme-academy
    "a completely different feel than the purple/gold… not too on-the-nose school").
    Deep pine greens, warm paper text, one EMBER-COPPER accent, fresh-leaf green for
    progress. Applied via body_class: theme-academy on /academy/ + /academy/bootcamp/
-   only — the site header/footer stay standard PJCC chrome. ══ */
+   only — the site header/footer stay standard P&JCC chrome. ══ */
 body.theme-academy .page-card { background: linear-gradient(165deg, #101d16 0%, #16281d 52%, #0b1710 100%);
   border-color: #2c4636; box-shadow: 0 14px 44px rgba(0, 10, 4, 0.6); }
 body.theme-academy .page-body { color: #cfd8c8; }

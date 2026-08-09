@@ -76,7 +76,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 
      ⚡ IT IS ALSO THE PERFORMANCE FIX. Deliberately NO `body_class: full-sky` — the cloud
      banks, starfield, constellations and shooting stars stay on /pjcc/, where the hero is
-     the point. Measured 2026-07-28 on the live PJCC home: 29 animating elements / 14
+     the point. Measured 2026-07-28 on the live P&JCC home: 29 animating elements / 14
      distinct animations at idle, 5.4% of frames over 32ms at 6x throttle; ablating any ONE
      layer (rain included) recovered nothing outside the noise floor, but turning ALL of
      them off took stutter to 0.0% and the worst frame from 50ms to 17ms. It was never one
@@ -337,7 +337,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
        of the canonical 78×100 so the row of four stays a row of four. {%- endcomment -%}
   <a class="mc-door mc-door--gauntlet gdoor-host" id="gauntlet-door"
      href="{{ '/games/the-gauntlet/' | relative_url }}"
-     aria-label="The Gauntlet — real chess against a ladder of ten PJCC rivals">
+     aria-label="The Gauntlet — real chess against a ladder of ten P&JCC rivals">
     <span class="gdoor" aria-hidden="true">
       <span class="gdoor-arch">
         <i class="gdoor-door"><b class="gdoor-glyph" id="gdoor-glyph">&#9823;</b><u class="gdoor-knob"></u></i>
@@ -426,7 +426,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
      delimiter in words here; never type one. {% endcomment %}
 
 {% comment %} ══ THE STUDIO BAND IS GONE FROM THIS PAGE — 2026-08-04 ═════════════════════════
-     Nate: "take the working lamp off the main page and leave it on the PJCC page."
+     Nate: "take the working lamp off the main page and leave it on the P&JCC page."
 
      THE WHOLE BAND WENT, NOT JUST THE LAMP, and that follows from the note that used to
      stand here: "'Building in the open' is a claim; the lamp is the PROOF of it." The band
@@ -998,7 +998,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mc-true b { display: block; color: var(--fd-ink-2); font-size: 0.95rem; margin-bottom: 3px; }
 
 /* THE WORLD DOOR — DE-PURPLED 2026-08-04 (Nate: "completely get rid of the purple and gold
-   aesthetic — leave that with PJCC page").
+   aesthetic — leave that with P&JCC page").
 
    This used to be the page's one deliberate purple: the single card that opens the world,
    so that purple meant something instead of being wallpaper. That idea was good and it is
@@ -1021,7 +1021,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 @media (max-width: 560px) { .mc-world-glyph { font-size: 26px; } }
 
 /* (THE STUDIO BAND'S CSS WENT WITH ITS MARKUP — 2026-08-04, "take the working lamp off the
-   main page and leave it on the PJCC page." `.mc-studio`, `.mc-lamp`, their placement block,
+   main page and leave it on the P&JCC page." `.mc-studio`, `.mc-lamp`, their placement block,
    `.mc-studio-copy` and `.mc-studio-label` all came out together, and so did the blog-line
    rules the pass before them. The desk plank's tuned offsets did NOT die with them — they
    were the one thing here worth keeping, and they moved to `.awake-lamp` in _layouts/home.html

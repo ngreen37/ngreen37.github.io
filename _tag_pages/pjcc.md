@@ -1,6 +1,6 @@
 ---
 layout: tag
-tag: PJCC
-title: "Pjcc"
+tag: P&JCC
+title: "P&JCC"
 permalink: /tags/pjcc/
 ---

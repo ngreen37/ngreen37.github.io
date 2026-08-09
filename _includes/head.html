@@ -9,7 +9,7 @@
   four edits; that is what prompted this.)
 
   Optional include params — everything else is inferred from front matter:
-    raw_title=".."   a complete <title>, no " | PJCC" suffix (the splash uses this)
+    raw_title=".."   a complete <title>, no " | P&JCC" suffix (the splash uses this)
     description=".." override the meta/OG description
     noindex=true     keep it out of Google
     nofollow=true    …and don't follow its links (the classified page)
@@ -88,14 +88,17 @@
            manifest said ChessWild — three names, none of them agreeing, and this is the one
            that feeds the site name shown in a search result. It follows the brand stack now:
            the WebSite is ChessWild.com, the Organization below it is McPuppy Studios (the
-           publisher), and PJCC is kept as an alternateName because it is a real name for
+           publisher). P&JCC is an alternateName, and the older spelling PJCC is kept beside it
+           on purpose: this field exists to list what a thing is ALSO called, and people who
+           know the world by the old name still search for it. Renaming here would not
+           rename the searches. It is a real name for
            this thing and people do search it. Rename the site and you must edit HERE, plus
            `title:` in _config.yml, plus manifest.json. {%- endcomment -%}
       "@type": "WebSite",
       "@id": "{{ site.url }}/#website",
       "url": "{{ site.url }}/",
       "name": "ChessWild.com",
-      "alternateName": ["ChessWild", "Princess and the Journey to Chess City", "PJCC"],
+      "alternateName": ["ChessWild", "Princess and the Journey to Chess City", "P&JCC", "PJCC"],
       "publisher": { "@id": "{{ site.url }}/#org" }
     }
   ]

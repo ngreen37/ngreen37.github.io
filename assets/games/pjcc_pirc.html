@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>PJCC: The Pirc Protocol v2.1</title>
+<title>P&JCC: The Pirc Protocol v2.1</title>
 <!-- THE TOWN SKY (2026-08-03, cohesion #6): the clock first, then the wash it drives.
      ORDER IS LOAD-BEARING - pjcc-game-sky.js finds no clock if these swap, and does
      nothing at all without saying so. tests/townsky.check.js checks both, in order. -->
@@ -467,7 +467,7 @@ function metaFor(id){ return LINEMETA[id] || { eco:'', ref:'' }; }
 function pgnFor(id){
   const ln = LINES[id]; if (!ln) return '';
   const meta = metaFor(id);
-  let h = '[Event "PJCC — The Pirc Protocol"]\n[Site "mcpuppystudios.com"]\n[White "?"]\n[Black "?"]\n[Result "*"]\n';
+  let h = '[Event "P&JCC — The Pirc Protocol"]\n[Site "mcpuppystudios.com"]\n[White "?"]\n[Black "?"]\n[Result "*"]\n';
   if (meta.eco) h += '[ECO "' + meta.eco + '"]\n';
   h += '[Opening "' + ln.name + '"]\n\n';
   let mt = '', n = 1;

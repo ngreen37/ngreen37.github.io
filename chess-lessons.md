@@ -1,6 +1,6 @@
 ---
 layout: page
-title: PJCC Chess Academy
+title: P&JCC Chess Academy
 permalink: /chess-lessons/
 body_class: theme-bw
 ---
@@ -21,15 +21,15 @@ body_class: theme-bw
   <p>I offer chess lessons for <strong>beginners</strong> and <strong>intermediate</strong> players -- whether you're just learning how the pieces move or looking to sharpen your game and take it to the next level.</p>
   <p>Lessons are available both <strong>in person</strong> and <strong>online</strong>, and can be tailored to your schedule and goals.</p>
   <p>For availability, scheduling, and pricing, please <a href="/contact/">contact me</a> — I'd love to hear from you.</p>
-  <p style="margin-top:14px;padding:12px 14px;border:1px solid rgba(245,197,24,0.4);border-radius:8px;">🎓 Want a free, self-paced way to practice between lessons? Try the <a href="/academy/">PJCC Chess Academy</a> — start with Auston's Bootcamp and learn how every piece moves on a real board.</p>
+  <p style="margin-top:14px;padding:12px 14px;border:1px solid rgba(245,197,24,0.4);border-radius:8px;">🎓 Want a free, self-paced way to practice between lessons? Try the <a href="/academy/">P&JCC Chess Academy</a> — start with Auston's Bootcamp and learn how every piece moves on a real board.</p>
 </div>
 
 <!-- ══════════ Meet the Coaches (in-universe roster) ══════════ -->
-<section class="cc-roster" aria-label="Meet the PJCC Academy coaches">
+<section class="cc-roster" aria-label="Meet the P&JCC Academy coaches">
   <div class="cc-head">
     <span class="cc-eyebrow">◈ MEET THE COACHES</span>
-    <h2 class="cc-title">The PJCC Academy Faculty</h2>
-    <p class="cc-disclaimer">★ A make-believe roster. These are <a href="/characters/">characters from the PJCC universe</a> — and their student reviews are fiction too. For real lessons with a real human coach, use the <a href="/contact/">contact link above</a>.</p>
+    <h2 class="cc-title">The P&JCC Academy Faculty</h2>
+    <p class="cc-disclaimer">★ A make-believe roster. These are <a href="/characters/">characters from the P&JCC universe</a> — and their student reviews are fiction too. For real lessons with a real human coach, use the <a href="/contact/">contact link above</a>.</p>
   </div>
 
   <div class="cc-grid">

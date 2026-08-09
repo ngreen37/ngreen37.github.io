@@ -29,9 +29,9 @@ permalink: /fan-art/
 
 <div class="fan-card" id="fan-card">
   <div class="fc-eyebrow">Fan Art</div>
-  <div class="fc-brand"><span class="fc-star">★</span>PJCC<span class="fc-star">★</span></div>
+  <div class="fc-brand"><span class="fc-star">★</span>P&JCC<span class="fc-star">★</span></div>
   <div class="fc-frame" id="fa-frame">
-    <img id="fa-img" alt="PJCC fan art">
+    <img id="fa-img" alt="P&JCC fan art">
     <div class="fc-hint no-print" id="fa-hint"><span class="fc-hint-big">＋</span>Click here, or drag your picture in</div>
   </div>
   <div class="fc-flourish"><span class="fc-pc">♟ ♞ ♜ ♛ ♚ ♛ ♜ ♞ ♟</span></div>
@@ -64,7 +64,7 @@ permalink: /fan-art/
     {% for piece in art %}
     <figure class="fa-piece">
       <a href="{{ piece.img | relative_url }}" target="_blank" rel="noopener">
-        <img src="{{ piece.img | relative_url }}" alt="{{ piece.title | default: 'PJCC fan art' }}" loading="lazy">
+        <img src="{{ piece.img | relative_url }}" alt="{{ piece.title | default: 'P&JCC fan art' }}" loading="lazy">
       </a>
       <figcaption>
         <span class="fa-piece-title">{{ piece.title }}</span>

@@ -20,6 +20,6 @@ tags: [home, vinyl, lisa, reality, lifestyle]
     
 
 ### What's next:
-  - Saturday at 5pm, my weekend begins.  I'm going to simply rest.  My body needs it.  I have another loaded work week starting Monday pm but this week I will be ready, so I can turn the corner and get going on PJCC!
+  - Saturday at 5pm, my weekend begins.  I'm going to simply rest.  My body needs it.  I have another loaded work week starting Monday pm but this week I will be ready, so I can turn the corner and get going on P&JCC!
 
 

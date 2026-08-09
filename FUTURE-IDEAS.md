@@ -2,7 +2,7 @@
 published: false
 ---
 
-# PJCC — Future Ideas
+# P&JCC — Future Ideas
 
 The open backlog: **only what's *not* built yet.** Completed work has been cleared out of this file;
 everything here is a path not yet taken.
@@ -222,7 +222,7 @@ mine. Play a stretch of puzzles before deciding — this is a feel question, not
 - [ ] **The rarity band NAMES are mine and the veto is open.** *Common · Uncommon · Rare · Very Rare ·
   Ultra-Rare · Legendary* — he asked for six categories "up to 'ultra-rare' or 'ultra-valuable'", and
   these are the six. **Legendary and Ultra-Rare traded places 2026-08-03 at his word**, so Legendary
-  is the ceiling now. If PJCC wants its own vocabulary for them (the altar speaks in ritual, not in
+  is the ceiling now. If P&JCC wants its own vocabulary for them (the altar speaks in ritual, not in
   loot-box), they are one array in `pjcc-profile.js`.
 - [x] ~~**Robert, Kaede and Matsu are publicly present but officially hidden.**~~ **ANSWERED
   2026-08-03 — Nate: "Robert, Kaede, and Maetsu are fine to remain as-is, I'm still going to
@@ -368,7 +368,7 @@ the cheaper, truer version is a **second door** to Fork that says the room has t
 already exists, it just isn't advertised.
 
 ### 3. Park Tables — one identity across the site *(build-out thread #2, greenlit)*
-Wire the **PJCC Rating → the Clearance ladder** (RECRUIT → DELTA → … → OMEGA) so your codename wears a
+Wire the **P&JCC Rating → the Clearance ladder** (RECRUIT → DELTA → … → OMEGA) so your codename wears a
 **clearance pip** that climbs, and the quiz game, the tables and the Profile finally speak one language.
 Then earned, **cosmetic-only** board/piece skins (first win · beat a bot · reach a rating · review 10 games).
 *The clearance pip alone is the contained first slice.*
@@ -442,7 +442,7 @@ honor and still beats "Contact me for more."*
 **Waiting on Nate, not on me — the Spotify hover** *(2026-07-27: "take a look at the spotify
 profile in the top-right corner. When you hover, it slides out the onboarding progress circle")*.
 Nothing like it exists on the site yet, so this is a build, not a fix, and it's outward-facing —
-so it's his call, not mine. The PJCC version: `#nav-operative` (the top-right profile pill) wears
+so it's his call, not mine. The P&JCC version: `#nav-operative` (the top-right profile pill) wears
 a thin **progress ring**; hover and it slides out with what's left to do — *claim a codename ·
 play a rated game · solve ten puzzles · beat floor one*. It'd be the first thing on the site that
 tells a signed-in visitor what to do next, which is either exactly right or exactly the nagging
@@ -521,7 +521,7 @@ Godot build; it just didn't earn its space on a stats page.
 
 **What it needs to come back well:** stops that mean something narratively rather than one per
 arcade game (the current list is "the games we shipped", which is why it read as a checklist),
-and somewhere with room to breathe — its own page, or the PJCC world tab, not wedged between a
+and somewhere with room to breathe — its own page, or the P&JCC world tab, not wedged between a
 codename and an achievements grid.
 
 **⚠ The `JOURNEY` array still exists in `pjcc-profile.js` and must NOT be deleted as dead code** —
@@ -538,7 +538,7 @@ world. What follows is the brief it was built from, kept because the *reasoning*
 pass should argue with.
 
 ### The twenty names *(Nate 2026-07-28: "rename the home page something more generic like McPuppy
-Chess, like chess.com or lichess.org — throw out 20 ideas that have a PJCC spin")*
+Chess, like chess.com or lichess.org — throw out 20 ideas that have a P&JCC spin")*
 
 **Brand-forward** — inherits the logo, zero collisions, reads like Chess.com
 1. **McPuppy Chess** ★ *(his own instinct, and the one it shipped under)*
@@ -562,7 +562,7 @@ Chess, like chess.com or lichess.org — throw out 20 ideas that have a PJCC spi
 14. **King's Walk** — a real endgame technique *and* a road
 15. **The Long Game** — the studio's actual thesis
 
-**Board-forward** — the most "generic chess site", with a PJCC wink
+**Board-forward** — the most "generic chess site", with a P&JCC wink
 16. **Sixty-Four** ★ — the squares. Short, striking, no lore conflict, ages well
 17. **The Open Board** — free, welcoming, no account required — the site's three facts in a name
 18. **Board & Bark** — chess + dog; playful and unmistakably yours
@@ -577,7 +577,7 @@ feel like a place in the story.
 
 *(The brief below is the 2026-07-27 compass check that started it. Kept for the next pass.)*
 
-**The measurement.** The PJCC home is **970 words, 31 links, four sections — and zero primary
+**The measurement.** The P&JCC home is **970 words, 31 links, four sections — and zero primary
 buttons.** Not "the button is in the wrong place": there is no styled call-to-action element on the
 page at all. Every route out is a *door tile* or a text link, and they all look equally important,
 which is the same as none of them being important.
@@ -608,7 +608,7 @@ this and is the site's best page for exactly that reason: title → one warm sen
    have yet, which is precisely why it's a next-session decision and not a now decision.
 3. **The board IS the button.** The hero already renders a real park table. Make it live: a position, a
    single legal move to find, and playing it drops you into the game you just started. No copy required,
-   nothing to read, and it demonstrates the whole site in one gesture. Most PJCC-ish of the four; most
+   nothing to read, and it demonstrates the whole site in one gesture. Most P&JCC-ish of the four; most
    work.
 4. **Ask, don't assert.** Two buttons, one question: *"New here? — I want to PLAY / I want to WATCH."*
    Splits the audience honestly instead of guessing, and every later decision inherits the answer. Cheap,
@@ -653,7 +653,7 @@ It is the clearest sentence on the site.
 
 ## ★ North star (the direction)
 
-**PJCC's product right now is the show *getting made*.** The animation is years out; ship the *story*
+**P&JCC's product right now is the show *getting made*.** The animation is years out; ship the *story*
 in every cheaper form first, build an audience that owns itself, and make people love the world before
 a frame renders. Five braided threads:
 
@@ -723,7 +723,7 @@ wall (JP tie) · castle drills · 9×9 stepping-stone · the Lion's moods · Cod
 co-pilot couch co-op · loadout select · boss rush.
 > **★ The view-switch — a signature mechanic (Nate, 2026-06-23).** When a boss appears, the camera *cuts to a
 > different view* (side → behind / top-down / over-the-shoulder) for the fight, then cuts back. It's the same idea
-> as the Battle Room's screen-flip: **switching view is meant to become a signature across many PJCC games** once
+> as the Battle Room's screen-flip: **switching view is meant to become a signature across many P&JCC games** once
 > the animation pipeline lands. Web version: swap the render projection for the boss phase (a CSS/canvas transform
 > or a second draw routine) with a quick "VHS cut" transition; later it becomes a true camera cut in Godot.
 
@@ -743,7 +743,7 @@ co-pilot couch co-op · loadout select · boss rush.
 >    shmup and not a generic one.
 > 4. **Pay for it with pawns.** Instead of a cooldown, a roll can cost one banked ♟ — the resource you were
 >    saving for SUMMON is the one that saves you. A real decision every few seconds, and the counter already exists.
-> 5. **The voice.** Peppy is the joke everyone knows; the PJCC version is the companion yelling *"DO A BARREL
+> 5. **The voice.** Peppy is the joke everyone knows; the P&JCC version is the companion yelling *"DO A BARREL
 >    ROLL!"* at the **wrong** moments — during a quiet stretch, and never when you're actually about to die.
 >    One line per run, seeded off the town date so everyone hears the same nonsense that day ([[ticker-voice]] rules
 >    don't apply here — this is a character, not the news desk).
@@ -757,7 +757,7 @@ co-pilot couch co-op · loadout select · boss rush.
 > rotation, one HUD line). 3 is the ambitious one and wants the promotion code read first. 2 changes balance —
 > returned bullets are strong — so it needs real playtesting before it ships.
 
-**Follow the Dog** *(formerly Space Run — renamed 2026-06-23):* *(not yet wired to PJCC — do that first).* Then:
+**Follow the Dog** *(formerly Space Run — renamed 2026-06-23):* *(not yet wired to P&JCC — do that first).* Then:
 qualifier framing · collect-a-set upgrades · legality-dodging · rival racers · daily track · tactic-shortcut
 branches · cosmetic ships · speed-tier music · near-miss combo · lean into the **"follow the dog"** creed (the
 companion you chase becomes the guide).
@@ -853,12 +853,12 @@ rosters/dashboards, a server-verifiable cert registry, a rules-enforcing practic
 >
 > The lessons Nate already writes for the coaching job become a **content-generation engine** for the show.
 >
-> **Thematic hook.** Since New Thought / Neville Goddard already informs PJCC's spiritual direction, the Academy
+> **Thematic hook.** Since New Thought / Neville Goddard already informs P&JCC's spiritual direction, the Academy
 > is a natural vehicle: each chess principle (think ahead, control the center, sacrifice for position) doubles
 > as a **metaphor for a character arc** — strongest against **Murphy**, the pessimist foil who treats the board
 > (and life) as **fixed** rather than **shaped by belief.**
 
-**Av4 — Physical / tabletop:** print-and-play Siege PDF · POD pins/stickers demand page · the PJCC chess
+**Av4 — Physical / tabletop:** print-and-play Siege PDF · POD pins/stickers demand page · the P&JCC chess
 set (obsidian-vs-violet) · Sand Mine as a dice/card PnP · Operative Field Kit (cipher wheel + decoder,
 ARG tie) · Checker Town Field Guide (art book / festival leave-behind) · earn-a-rank → buy the pin ·
 "build your dossier" printable · Founders sticker pack · Catch the Lion mini travel set (Annie's game).
@@ -944,7 +944,7 @@ cosmetic store, "adopt a shot" micro-patronage, server-verified founders count, 
 partner outreach. Fresh: producer-credit ladder (your name *in the cartoon*) · pay-it-forward passes ·
 unlock-goals tied to deliverables (→ on-camera music session) · a living public credits crawl ·
 name-your-price arcade bundle · sponsor the Game of the Week · the Chess City Passport (annual, stamped) ·
-radical-transparency burn page · a "cover PJCC" creator kit · refundable merch pre-orders.
+radical-transparency burn page · a "cover P&JCC" creator kit · refundable merch pre-orders.
 
 > **Expanded — the funding architecture (the durable layer that pays for the animation).** *Principle: fund a
 > deliverable, never a vanity tier. Every dollar maps to a frame; every supporter owns a piece of the crawl.
@@ -979,10 +979,10 @@ radical-transparency burn page · a "cover PJCC" creator kit · refundable merch
 > - ⛁ **Deliverable-locked goals** — community goals that, when hit, fire a *real* event: a filmed studio session, a new
 >   game, a Blender trailer. Goals buy outcomes, not status.
 > - ⛁ **Server-verified founders count** — a true, tamper-proof "N founding operatives" badge (anti-vanity; replaces guesswork).
-> - ★ **"Cover PJCC" creator kit** — a ready press/creator kit so streamers & YouTubers can feature it in one click.
+> - ★ **"Cover P&JCC" creator kit** — a ready press/creator kit so streamers & YouTubers can feature it in one click.
 
 **Av11 — Game recaps / real-chess coverage** *(new):* ride the real chess calendar — recap the upcoming
-**World Championship** games in PJCC's voice (story + one key moment + one lesson) · replay the key
+**World Championship** games in P&JCC's voice (story + one key moment + one lesson) · replay the key
 position on the shared board (reuses `pjcc-chess.js`) · link each recap to its Academy lesson · commentary
 through a character (the Rival coaches, Argus explains) · recaps as a low-lift Dispatch beat during big
 events · preview + predictions mini-game. *Mostly writing; keep it a template, not a tournament platform.*
@@ -1024,11 +1024,11 @@ then **forget once they lose the path** for a while. The card is a physical anch
 - **Status:** the `/goods/` showcase is up (the ritual is free today — any pocket token, no purchase). The
   physical *make* is parked well past the launch flare.
 
-**Av15 — PJCC stationery** *(new · physical · parked until after the flare):* branded stationery with
+**Av15 — P&JCC stationery** *(new · physical · parked until after the flare):* branded stationery with
 **"follow the dog"** across the top. The "pocket/desk mindset" goods line alongside the goal cards.
 **Status:** showcased on the `/goods/` **Merch** page; the physical *make* is parked post-flare.
 
-**Av16 — PJCC VR** *(new · long-horizon · rides on the Godot/Blender 3D work):* the **Battle Room is *made* for
+**Av16 — P&JCC VR** *(new · long-horizon · rides on the Godot/Blender 3D work):* the **Battle Room is *made* for
 VR** — Ender's-Game zero-G chess where "the enemy's gate is down" becomes literal: you float in the arena and move
 pieces with your hands. Later: stand inside **Checker Town**, walk the road to **Chess City**, play a board across
 from the **Rival** in room-scale. **Why it's plausible, not a daydream:** the same Blender assets + Godot project
@@ -1036,7 +1036,7 @@ you're about to build export to **OpenXR** (Godot has first-class VR), so VR is 
 separate build. **Scope: far future** (post-flare, post-Godot-v1); a Quest build of one battle room is the
 someday-milestone. Parked here mainly so the 3D pipeline is built **VR-aware from day one.**
 
-**Av17 — The Gambit (the altar of sacrifice)** — *v1 is live at `/the-gambit/` — its own room off the PJCC home since 2026-07-14* (offer credits + an owned
+**Av17 — The Gambit (the altar of sacrifice)** — *v1 is live at `/the-gambit/` — its own room off the P&JCC home since 2026-07-14* (offer credits + an owned
 collectable; a **Courage meter** shows the real odds before you commit; guardrails: never real money, a daily cap,
 a cooldown, a two-tap "no takebacks").
 > **✅ Shipped 2026-07-27:** the **altar-only rewards** are real — a donated collectable can return a *different*
@@ -1077,7 +1077,7 @@ a cooldown, a two-tap "no takebacks").
 >   reward, so the mechanic and the story's emotional core rhyme. *(Academy tie-in: flash a real famous
 >   **chess gambit** at the moment you offer — a stealth lesson in sacrificing material for the attack.)*
 > - **Pay-it-forward altar (post-accounts).** A fraction of a big sacrifice can **seed a stranger's reward** —
->   your courage quietly lands in another player's lap. The most PJCC-moral version of the whole mechanic.
+>   your courage quietly lands in another player's lap. The most P&JCC-moral version of the whole mechanic.
 
 **Av18 — The Direct Line** *(new · Patreon perk · coming-soon page live at `/direct-line/`):* a paid/unlocked
 channel to **write to Nate directly with suggestions**, with a **guaranteed response** — not a form reply, a
@@ -1129,13 +1129,13 @@ Room hot-seat, a Notation race — for the family table. Zero servers, pure web;
 move-calls (the Blindfold audio mode already points here), captions on any voiced beat, reduced-motion honored
 everywhere. Kid-safe *and* everyone-safe — and it doubles as classroom-ready.
 
-**Av24 — The soundtrack lane** *(new · McPuppy's real craft):* the studio actually makes music — the first PJCC
+**Av24 — The soundtrack lane** *(new · McPuppy's real craft):* the studio actually makes music — the first P&JCC
 theme recorded on **guitar + drums** drops to the dispatch on camera; a jukebox of stems; later, game music that
 reacts to your run. The McPuppy (studio/music) half of the two-brand split, made loud. Ties to [[site-two-brand-split]].
 
 **Av25 — Printable classroom packs** *(new):* bundle the Academy's worksheets, belt ladder, and certificates into
 a free **teacher PDF kit** — the educators lane made downloadable and drop-in. Offline, standards-friendly, no login.
-Ties to the PJCC Chess Academy.
+Ties to the P&JCC Chess Academy.
 
 **Av26 — The daily ritual hub** *(new):* one page that chains the day's small rituals — decode the **Dispatch**, lay
 **one Gambit**, keep the **streak flame**, unseal a **fragment** — into a tight 3-minute loop. Turns scattered daily
@@ -1155,7 +1155,7 @@ site feel like one app.
 
 **Av30 — THE DOORS** *(new 2026-07-09 · Nate: "that could be a wide opportunity to make a world… the 'doors'" →
 "yes for sure do Number five"):* every entry point on the site becomes a **door in the world**, so navigation
-stops being a menu and becomes walking around Checker Town. The first door is live: the PJCC-home Gauntlet card
+stops being a menu and becomes walking around Checker Town. The first door is live: the P&JCC-home Gauntlet card
 re-skins in the current floor's accent + boss piece once a climb starts (shipped 9091eb8). Phases:
 1. **Door language** — a tiny shared CSS/JS vocabulary (`.door`, accent var, glyph slot, locked/ajar/open states)
    so any card can become a door in one class.
@@ -1169,7 +1169,7 @@ re-skins in the current floor's accent + boss piece once a climb starts (shipped
 
 ---
 
-# 🏠 The PJCC Home Page — ideas
+# 🏠 The P&JCC Home Page — ideas
 
 *The front page is the trailhead for all five threads (ship the show · own the audience · make them love
 her · the arcade funnel · the one mystery). **Less is more** — each idea must earn its spot; prefer depth
@@ -1245,7 +1245,7 @@ Town, Bob-Proctor mindset) and **Michael** (Chess City, truly righteous); **The 
 8. **Character spotlight** — a rotating "cast member of the week" on the hub + home page.
 9. **Rival compare** — an interactive Robert-vs-Michael split (mindset vs righteousness) that frames the show's core question.
 11. ⛁ **Headcanon → semi-canon** — curated fan submissions fold into character pages (Av7 UGC).
-12. ★ **"Which PJCC character are you?"** — a shareable quiz that funnels into the cast pages.
+12. ★ **"Which P&JCC character are you?"** — a shareable quiz that funnels into the cast pages.
 13. ★ **Crew roster / family tree** — one visual: the Dad + Auston + narrator; Kaede + Matsu; Robert + the Prodigal Brothers; the crew dogs (Princess, Argus, Crockett).
 14. **Evolution morph** — a slider on each page that fades concept-sketch → final art (pulls from the Evolution Log).
 15. 🎬 **The funny "chase" walker** — *(Nate's idea)* a rare random variant where instead of Princess strolling alone, **you (the operator) chase her** across the bottom of the screen; later a fully-animated Princess. The walker is now her real render — animate it next.
@@ -1278,7 +1278,7 @@ second ten are **ingenuity** (the clever, cheap, memorable stuff).
 
 5. ~~**Write the voice chart down.**~~ **SHIPPED 2026-08-03** — `/style/` has a *Type — the voice
    chart* panel: six faces, each with the brand that owns it (Poppins + Inter = both · Share Tech
-   Mono = PJCC · Press Start 2P = the arcade · the studio serif = McPuppy · the place serif = the
+   Mono = P&JCC · Press Start 2P = the arcade · the studio serif = McPuppy · the place serif = the
    Reading Room and Shogi Island), and — the half that actually stops drift — **where each one is
    never used.** The rule written under it: *a face is a voice, not a decoration.*
 6. ~~**Every game should wear the town's sky.**~~ **SHIPPED 2026-08-03** — all sixteen shells load
@@ -1333,7 +1333,7 @@ second ten are **ingenuity** (the clever, cheap, memorable stuff).
     Sand-Mine Foreman belongs in the Sand Mine. One line on each *location* page naming who
     holds it, and the tower stops being a menu and becomes a map.
 15. **"New since your last visit."** The Build Log exists, but someone who came last week has
-    no idea what changed. One quiet line under the nav on the PJCC home, read from
+    no idea what changed. One quiet line under the nav on the P&JCC home, read from
     `localStorage`. No email, no popup — private by default, in both senses.
 16. **June 13 already works. Give the town three more.** Princess's birthday puts *"for
     Princess"* in the splash footer with no announcement. Same one-line pattern for the first
@@ -1387,7 +1387,7 @@ second ten are **ingenuity** (the clever, cheap, memorable stuff).
   script in `_characters/princess.md`, as of the commit before this one.
 - **The Daily Dispatch** *(pulled 2026-07-06)* — the daily word-drop game at `/daily/` (Wordle-style seeded
   drop, shared daily board, dispatch streak, share card). Page deleted + every link stripped (nav dropdown,
-  mobile quick-nav → now Academy, PJCC-home card, dossier quick-launch, ⌘K palette, JP dict). The
+  mobile quick-nav → now Academy, P&JCC-home card, dossier quick-launch, ⌘K palette, JP dict). The
   `daily-dispatch` Supabase scores persist and the credit weight stays in `pjcc-profile.js`, so history still
   counts toward Overall. **Restore = resurrect `daily.md` + links from git.** Re-imagine later inside
   **Av26 (the daily ritual hub)** — one 3-minute daily loop instead of scattered dailies.
@@ -1436,7 +1436,7 @@ second ten are **ingenuity** (the clever, cheap, memorable stuff).
 - **Homepage Story Arc film-strip** — now decode-as-you-play (see Seeds).
 - **Site-wide Princess speech** — removed; movement-only (talk ideas live in Av6).
 - **The "Creator" bio** — replaced with the mysterious "Operator."
-- **The Build Playlist jukebox** — removed entirely; *re-use: original PJCC chiptune over Spotify embeds.*
+- **The Build Playlist jukebox** — removed entirely; *re-use: original P&JCC chiptune over Spotify embeds.*
 - **⚙ Perf — don't load `pjcc-profile.js` on content pages** *(deferred 2026-07-12; the SAFE half of #15 already
   shipped)*. The Supabase SDK (~100KB) is already **idle-deferred off the critical path site-wide**, and the nav
   pill renders instantly from cached `pjcc.codename`/`pjcc.avataremoji`. The *remaining* step is to skip loading
@@ -1604,7 +1604,7 @@ leverage, ties every existing system together), then #3, then #4; #5 is the big 
    and the scene reads the **town sky** — busy & bright by day, one lamplit table + Night-Desk quiet
    after dark. You *walk up* to a table instead of clicking a row. (Ambient/CSS + the local bot state
    already exists; status lines are flavor.)
-2. **One identity across the whole site.** Wire the Park Tables **PJCC Rating → the Clearance ladder**
+2. **One identity across the whole site.** Wire the Park Tables **P&JCC Rating → the Clearance ladder**
    (RECRUIT → DELTA → GAMMA → BETA → OMEGA); your codename wears a **clearance pip** that climbs as you
    do, so the quiz game, the tables, and the Profile speak one language. Plus **earned, cosmetic-only**
    board/piece skins (first win · beat a bot · reach a rating · review 10 games) — free unlocks, zero
@@ -1682,7 +1682,7 @@ day. The rest are unbuilt and unclaimed — no order implied.*
 - **Blender cutscene intros** — short rendered clips as intros / loading screens / season trailers. *(Saved favorite.)*
 - **Backend (Supabase)** — unlocks the cross-cutting features: guilds/houses, async duels, the Writers'
   Room gallery, shared tallies, the cosmetics store.
-- **📱 The PJCC app — the LAUNCH** *(the PWA is built; only the launch is future)*. It ships **private by
+- **📱 The P&JCC app — the LAUNCH** *(the PWA is built; only the launch is future)*. It ships **private by
   default**: `ENABLED = false` in [`assets/js/pwa-register.js`](assets/js/pwa-register.js) means the public
   gets **nothing** — no manifest, no service worker, no install prompt. Nate designs it privately with
   **`?pwa=on`** on any page (his browser only; **`?pwa=off`** tears it back down). Deferred **~a year** by
@@ -1741,7 +1741,7 @@ is the superfan ceiling but a cadence trap — start it only when #1 is humming.
 *(Nate represents Pontiac, MI; cast/story canon lives in the next section.)*
 1. **Podcast intro — ask Dan** (his manager). Also pin down what the podcast actually is.
 2. **Mega Man II–flavored Games Page** — *Mega Man II* is his all-time favorite. A themeable 8-bit skin
-   + one **original PJCC chiptune** (McPuppy) — a self-contained slice, and the first original music on the site.
+   + one **original P&JCC chiptune** (McPuppy) — a self-contained slice, and the first original music on the site.
 3. **The Tortoise mindset** — *not* "slow and steady," but the tortoise's inner state: calm, certain —
    *"I know what I'm doing while everyone else is all over the place."* A brand value (fits the Neville tone).
 4. **Workplace negativity, observed** — some coworkers were *infected* by others' negativity; some *flipped
@@ -1749,7 +1749,7 @@ is the superfan ceiling but a cadence trap — start it only when #1 is humming.
 5. **McPuppy "Album of the Month"** — one recommended album a month; a low-lift beat that takes pressure
    off blog posts (pairs with the Game-Recaps cadence). The chosen jukebox replacement.
 6. **Bottling tears to mourn** — real root: **lachrymatory / "tear bottles"** (Victorian grief keepsakes;
-   Psalm 56:8). PJCC motif: a character who bottles tears to mourn — the bottled tears could *matter* later.
+   Psalm 56:8). P&JCC motif: a character who bottles tears to mourn — the bottled tears could *matter* later.
 7. **"Beauty is only glamour until you physically age"** — surface beauty is a spell that time dissolves;
    substance over surface. A vain-villain beat or a wisdom line.
 8. **"Believe in belief"** — a compact creed for the Neville spine; candidate tagline / the Uncle's mantra.
@@ -1769,7 +1769,7 @@ is the superfan ceiling but a cadence trap — start it only when #1 is humming.
 
 **The cast**
 - **Princess** — the heart. *Can learn anything* (chess first); loyal, curious. **Arc (spoiler — build
-  toward, don't reveal):** grows into a formidable player and **promotes to Queen.** ~6 years old (PJCC the
+  toward, don't reveal):** grows into a formidable player and **promotes to Queen.** ~6 years old (P&JCC the
   project is ~6 months old).
 - **Nate** (the main character) — late teens, Checker Town, big dreams. Became a **second father**
   to his younger sister after their dad was often away.
@@ -1866,11 +1866,11 @@ Brothers** and the **Commentators** are placeholders (Boomer/Tempo/Sunny) — co
   a simple two-lens telescope shows everything **upside down** — Nate's first-ever view of Chess City is
   inverted. ("It's upside down." / "Then we'll flip it when we get there.")
 
-**Parked (2026-07-08):** PJCC-home idea #3 — **tap-a-headline dispatches:** tap any ticker item and a
+**Parked (2026-07-08):** P&JCC-home idea #3 — **tap-a-headline dispatches:** tap any ticker item and a
 two-line "full story" card unfolds beneath the ticker; the lore drips out through the news desk.
 (Nate: "for a later date." The ticker now exposes `PJCCTicker.add()` — the card layer slots in cleanly.)
 
-**Parked (2026-07-08):** PJCC-home idea #12 — **Postcard from the road:** a rotating polaroid of one
+**Parked (2026-07-08):** P&JCC-home idea #12 — **Postcard from the road:** a rotating polaroid of one
 location with a handwritten one-liner on the back, linking to its page. (Nate: "for a later date.")
 
 ---
@@ -1996,7 +1996,7 @@ in-dev one — so the map could never complete and the Globetrotter achievement 
 
 ---
 
-## 📚 Recommended to me (personal — separate from PJCC)
+## 📚 Recommended to me (personal — separate from P&JCC)
 
 *Things people recommend to Nate. Not site features, not canon — just a shelf so nothing gets lost.*
 

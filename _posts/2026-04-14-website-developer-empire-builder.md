@@ -11,7 +11,7 @@ Chess lessons are going great. I am learning a lot every session myself, as well
 ### What I worked on:
   - The website is effectively done
   - Using Python and VS Code, I have automated the blog setup, so the template pops up for me right in the VS Code Editor and I can just type away, find the spotify link and paste it in, and then push it.  
-  - Messing with Blender as a wind-down activity.  It is SO fun just to play around in, although my focus could be better.  But if my relaxing time is ALSO spent on PJCC then hoo boy, things are going to get done.  
+  - Messing with Blender as a wind-down activity.  It is SO fun just to play around in, although my focus could be better.  But if my relaxing time is ALSO spent on P&JCC then hoo boy, things are going to get done.  
 
 ### What's next:
   - With the website done, I am running low on Productive Avoidance ideas.  It is time to try and make a cartoon dog.  Wish me luck.  

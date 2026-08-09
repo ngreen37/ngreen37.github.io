@@ -2,7 +2,7 @@
 layout: page
 title: Visual Language
 permalink: /style/
-description: The colors, type, and motifs that make PJCC and McPuppy Studios look like one world — kept in the open.
+description: The colors, type, and motifs that make P&JCC and McPuppy Studios look like one world — kept in the open.
 ---
 
 <p class="vl-intro">The look of Checker Town, Chess City, and the studio behind them — the palette, the type, and the motifs — kept in one place so everything we build (the site today, the game tomorrow) reads as a single world. Built in the open, this included.</p>
@@ -41,7 +41,7 @@ description: The colors, type, and motifs that make PJCC and McPuppy Studios loo
   </div>
   <div class="vl-type-row">
     <div class="vl-type-sample" style="font-family:'Share Tech Mono',monospace;letter-spacing:0.14em;color:#6bffb8;text-transform:uppercase">◈ Operative Uplink · Clearance Delta</div>
-    <div class="vl-type-meta"><b>Share Tech Mono</b> <span class="vl-brand vl-brand--pjcc">PJCC</span> · the operative voice — clearances, codenames, clocks, kickers, the news wire · uppercase, wide-tracked<br>
+    <div class="vl-type-meta"><b>Share Tech Mono</b> <span class="vl-brand vl-brand--pjcc">P&JCC</span> · the operative voice — clearances, codenames, clocks, kickers, the news wire · uppercase, wide-tracked<br>
       <span class="vl-not">Never a paragraph, and never on a McPuppy Studios page — the studio is not an operative.</span></div>
   </div>
   <div class="vl-type-row">
@@ -56,7 +56,7 @@ description: The colors, type, and motifs that make PJCC and McPuppy Studios loo
   </div>
   <div class="vl-type-row">
     <div class="vl-type-sample" style="font-family:Georgia,'Times New Roman',serif;font-size:1.05rem;color:#cbd8cf">The Reading Room · 将棋の島</div>
-    <div class="vl-type-meta"><b>The place serif</b> <span class="vl-brand vl-brand--pjcc">PJCC</span> · the two rooms in the world that are about reading — the Reading Room and Shogi Island<br>
+    <div class="vl-type-meta"><b>The place serif</b> <span class="vl-brand vl-brand--pjcc">P&JCC</span> · the two rooms in the world that are about reading — the Reading Room and Shogi Island<br>
       <span class="vl-not">Georgia → Times New Roman. A second serif because it does a second job: this one is a <em>place</em> speaking, not the studio.</span></div>
   </div>
 </div>

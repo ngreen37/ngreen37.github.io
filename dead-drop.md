@@ -7,7 +7,7 @@ fragment_key: frag_classified
 ---
 
 <div class="dead-drop-wrap">
-  <div class="dead-drop-eyebrow">◈ PJCC — OPERATIVE FIELD DISPATCH</div>
+  <div class="dead-drop-eyebrow">◈ P&JCC — OPERATIVE FIELD DISPATCH</div>
   <div class="dead-drop-title" id="dd-title">—</div>
   <div class="dead-drop-date" id="dd-date">—</div>
   <div class="dead-drop-body" id="dd-body">Loading dispatch...</div>

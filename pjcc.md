@@ -2,19 +2,19 @@
 layout: home
 title: Princess and the Journey to Chess City
 permalink: /pjcc/
-tab_title: Princess and the Journey to Chess City — PJCC by McPuppy Studios
-description: Princess and the Journey to Chess City (PJCC) — an animated series in the making, plus an arcade of free chess games. Meet the cast, wander the world, and see the fan art.
+tab_title: Princess and the Journey to Chess City — P&JCC by McPuppy Studios
+description: Princess and the Journey to Chess City (P&JCC) — an animated series in the making, plus an arcade of free chess games. Meet the cast, wander the world, and see the fan art.
 body_class: full-sky
 ---
 
-{% comment %} THE PJCC WORLD LANDING (2026-07-22). `permalink` moved BACK from "/" to
+{% comment %} THE P&JCC WORLD LANDING (2026-07-22). `permalink` moved BACK from "/" to
      "/pjcc/": mcpuppystudios.com's front door is now the black/white McPuppy home
-     (index.md), and PJCC is the fifth drawer link — a one-page landing into the world.
+     (index.md), and P&JCC is the fifth drawer link — a one-page landing into the world.
      See docs/front-door-2026-07-21.md for the first flip; Nate directed this second one.
 
      This keeps the cinematic hero (title, tagline, town sky) built on 2026-07-21, and adds
      a band of BIG doors to the world — Characters · Locations · Fan Art — because that is
-     what the PJCC link is FOR now (Play/Gauntlet/Academy have their own drawer links).
+     what the P&JCC link is FOR now (Play/Gauntlet/Academy have their own drawer links).
      `/pjcc/` is a REAL page again, so the sw.js precache and any installed PWA still
      resolve; the manifest `id` stays `/pjcc/` and is never touched. {% endcomment %}
 

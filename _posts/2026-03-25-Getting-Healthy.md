@@ -7,7 +7,7 @@ tags: [ratatat, time-off, belief]
 ### Listening to: Ratatat - Cream on Chrome 
 <iframe src="https://open.spotify.com/embed/track/0yzfkTH0QKIAYVeTex1NKJ" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
--	It's warming up outside and the work has been steady.  All is well.  I've focused harder on getting the dog out before work and in-between shifts.  My cleaner living has really been paying off.  It helps to have a purpose.  My day job feeds me as much food as I need, which is a luxury, but Chato gives me flack for how much I eat. I make it clear that I am the last stop before it goes in the garbage...  I know the optics aren't great but *SHRUG*. I personally dislike seeing food go in the trash, but... I see where he is coming from and I can compromise.  I am noticing that my mindset has been from a place of Lack, and PJCC is showing me that I need to change that.  
+-	It's warming up outside and the work has been steady.  All is well.  I've focused harder on getting the dog out before work and in-between shifts.  My cleaner living has really been paying off.  It helps to have a purpose.  My day job feeds me as much food as I need, which is a luxury, but Chato gives me flack for how much I eat. I make it clear that I am the last stop before it goes in the garbage...  I know the optics aren't great but *SHRUG*. I personally dislike seeing food go in the trash, but... I see where he is coming from and I can compromise.  I am noticing that my mindset has been from a place of Lack, and P&JCC is showing me that I need to change that.  
 
 
 ### What I worked on since last post: 

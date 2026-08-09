@@ -6,7 +6,7 @@ permalink: /constellation/
 
 <div class="constellation-page">
   <div class="constellation-header">
-    <div class="constellation-eyebrow">PJCC — Cast Map</div>
+    <div class="constellation-eyebrow">P&JCC — Cast Map</div>
     <h1 class="constellation-title">Character Constellation</h1>
     <p class="constellation-sub">Hover any character to see their connections. Click to visit their page.</p>
   </div>

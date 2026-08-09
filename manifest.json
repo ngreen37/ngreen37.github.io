@@ -24,14 +24,14 @@
     {
       "name": "The Gauntlet",
       "short_name": "Gauntlet",
-      "description": "Climb the ladder of ten PJCC opponents.",
+      "description": "Climb the ladder of ten P&JCC opponents.",
       "url": "/games/the-gauntlet/?source=pwa",
       "icons": [{ "src": "/assets/images/pwa/icon-96.png", "sizes": "96x96", "type": "image/png" }]
     },
     {
       "name": "All Games",
       "short_name": "Games",
-      "description": "The PJCC arcade — choose your hall.",
+      "description": "The P&JCC arcade — choose your hall.",
       "url": "/games/?source=pwa",
       "icons": [{ "src": "/assets/images/pwa/icon-96.png", "sizes": "96x96", "type": "image/png" }]
     },
@@ -56,7 +56,7 @@
       "sizes": "390x844",
       "type": "image/jpeg",
       "form_factor": "narrow",
-      "label": "Choose your hall in the PJCC arcade"
+      "label": "Choose your hall in the P&JCC arcade"
     },
     {
       "src": "/assets/images/pwa/screenshot-wide.jpg",

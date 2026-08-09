@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  {% include head.html raw_title="McPuppy Studios — Princess and the Journey to Chess City" description="Home of Princess and the Journey to Chess City (PJCC) — an animated series in the making, plus an arcade of free chess games, all built in the open by McPuppy Studios." %}
+  {% include head.html raw_title="McPuppy Studios — Princess and the Journey to Chess City" description="Home of Princess and the Journey to Chess City (P&JCC) — an animated series in the making, plus an arcade of free chess games, all built in the open by McPuppy Studios." %}
   {%- comment -%} Hand the opening beat over to JS: the sigil blooms and fades, THEN the four
        quads take their seats (see the splash script at the foot of this file). This flag is
        what holds them back, and it's set here — before first paint — so there's no flash of
@@ -130,7 +130,7 @@
         </span>
       </div>
 
-      {% comment %} Quad layout: PJCC (top-left) · Academy (top-right, first-light
+      {% comment %} Quad layout: P&JCC (top-left) · Academy (top-right, first-light
            pine + ember copper) · Games (bottom-left) · Patreon (bottom-right). Each
            box has its own look. 2026-07-16 evening (Nate): the B&W McPuppy quad is
            retired — the Academy takes its seat, and the studio now rides the ♜ rook
@@ -143,7 +143,7 @@
       <div class="studio-quad-grid">
 
         <a href="{{ '/pjcc/' | relative_url }}" class="studio-quad studio-quad--pjcc">
-          <span class="studio-quad-title" data-jp="PJCC">PJCC</span>
+          <span class="studio-quad-title" data-jp="P&JCC">P&JCC</span>
           <span class="studio-quad-sub" data-jp="登場人物と世界へ">Meet the cast. Walk the world.</span>
         </a>
 
@@ -170,7 +170,7 @@
         {% endif %}
 
         {% comment %} #11 (2026-07-16 splash check) — ONE seasonal mote sheds off the
-             PJCC quad (leaf / frost / petal; a rising ember-mote in summer) and
+             P&JCC quad (leaf / frost / petal; a rising ember-mote in summer) and
              dissolves into the room — the season calendar carried into the page, not
              just the logo corner. Styled per html.season-* in _pjcc-02-studio.scss;
              absolutely positioned, so it takes no grid slot. {% endcomment %}
@@ -179,7 +179,7 @@
       </div>
 
       {% comment %} The Gauntlet — real chess vs the ladder (relocated here from /games/).
-           The headline game (the "main quest"); PJCC itself is the flagship. A MINI TOWER
+           The headline game (the "main quest"); P&JCC itself is the flagship. A MINI TOWER
            thumbnail + a BOSS-OF-THE-MOMENT line ("Floor N — <opponent> awaits") + the CTA are
            hydrated from the game's own localStorage, so a returning player is pulled straight
            back to their next opponent. Decorative bits are dropped on phones to keep the splash
@@ -197,7 +197,7 @@
         {% include park-table.html %}
       </a>
 
-      {% comment %} The Gauntlet — the SAME brass door as the PJCC hero, mirrored here
+      {% comment %} The Gauntlet — the SAME brass door as the P&JCC hero, mirrored here
            (2026-07-15 Nate). Shared .gdoor styles: _sass/_pjcc-21-gauntlet-door.scss.
            The script below hydrates lamps + boss + grandeur from the player's save.
            2026-07-16 (Nate): the THE GAUNTLET header plate + the caption are both gone
@@ -206,7 +206,7 @@
            ten dots from the top to the bottom across all") — markup order = flex-column
            order; the whisper stays absolute below the unit. {% endcomment %}
       <a class="gdoor studio-scene studio-scene--gauntlet" id="studio-gdoor" href="{{ '/games/the-gauntlet/' | relative_url }}"
-         aria-label="The Gauntlet — real chess vs a ladder of ten PJCC rivals">
+         aria-label="The Gauntlet — real chess vs a ladder of ten P&JCC rivals">
         <span class="gdoor-arch" aria-hidden="true">
           <i class="gdoor-door"><b class="gdoor-glyph" id="studio-gdoor-glyph">♟</b><u class="gdoor-knob"></u></i>
           <i class="gdoor-seam"></i>
@@ -298,7 +298,7 @@
   <style>
   /* ── The two headline calls (2026-07-15 Nate): a warm PARK TABLE and the brass
        GAUNTLET DOOR, standing side by side. They're little SCENES now, not plates — the
-       door mirrors the PJCC hero (.gdoor, shared partial); the park table is drawn below.
+       door mirrors the P&JCC hero (.gdoor, shared partial); the park table is drawn below.
        Aligned at the foot so both sit on the same ground line. ── */
   /* 2026-07-16 (Nate): wider breathing room between the two scenes — 38px → 64px,
      then "even further… like 128px", then that evening: "directly under the middle
@@ -476,7 +476,7 @@
     .studio-calls { gap:9px; margin-top:8px; }
     /* 2026-07-17 (Nate, mobile app): "the table and gauntlet link are too big." The
        park TABLE shrinks globally via the canon (_pjcc-22-chess-canon.scss — so it's
-       smaller on the games hall + PJCC hero too); here we match the GAUNTLET door to
+       smaller on the games hall + P&JCC hero too); here we match the GAUNTLET door to
        it. transform only; the reserved cell is unchanged (no reflow). */
     .studio-scene--gauntlet { transform: scale(0.68); transform-origin: center top; }
 

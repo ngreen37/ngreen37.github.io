@@ -383,7 +383,7 @@ permalink: /dossier/
       if (!blob) return;
       var file = new File([blob], 'pjcc-operative.png', { type: 'image/png' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ files: [file], title: 'My PJCC operative', text: 'Operative ' + prof.codename + ' — mcpuppystudios.com' }).catch(function () {});
+        navigator.share({ files: [file], title: 'My P&JCC operative', text: 'Operative ' + prof.codename + ' — mcpuppystudios.com' }).catch(function () {});
       } else {
         var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'pjcc-operative.png'; a.click();
       }

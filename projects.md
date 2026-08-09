@@ -12,7 +12,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
      "five landing pages" problem from docs/front-door-2026-07-21.md.
 
      `tab_title` is set deliberately. Without it the <title> would have become
-     "About the Studio | PJCC" and the studio's own NAME would have vanished from the
+     "About the Studio | P&JCC" and the studio's own NAME would have vanished from the
      browser tab and from search results for the one page that is about the studio. The
      visible heading can be plain because the page is already inside McPuppy chrome; the
      tab has no such context and has to carry the brand. `description` is new for the
@@ -22,7 +22,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
      Nate: "Perhaps McPuppy page should simply be 'About The Studio'… we can't have five
      landing pages." Step 0 of docs/front-door-2026-07-21.md.
 
-     What was here: a `.studio-master` command bar — five equal doors (PJCC · Blog ·
+     What was here: a `.studio-master` command bar — five equal doors (P&JCC · Blog ·
      Mailing List · Direct Line · For Educators) ruled across the very top of the page.
      It was the single thing making /projects/ read as a landing page rather than a page
      ABOUT something, and every one of its five destinations is already in the McPuppy
@@ -40,7 +40,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
      assets/js/pjcc-nav.js and tests/perf.js. The identity changes; the URL never does.
      Restore the bar: git show <this commit>^ -- projects.md {% endcomment %}
 
-<p class="projects-intro">McPuppy is an independent studio created in March 2026, with the main goal of showing the world the beauty and value of the PJCC universe.</p>
+<p class="projects-intro">McPuppy is an independent studio created in March 2026, with the main goal of showing the world the beauty and value of the P&JCC universe.</p>
 
 {% comment %} DEAD CSS REMOVED 2026-07-13 (dead-code audit). ~65 lines of page-local styles for
      TWO CARDS THAT NO LONGER EXIST on this page: the gold "featured / playable now" treatment
@@ -66,7 +66,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
 
      He's right on both counts, and the "out of place" is the interesting one: this page
      is `theme-studio` — McPuppy's warm monochrome, #131218 cards and a #caa24a gold. The
-     counters were two big PURPLE-and-TEAL boxes: the last survivors of the PJCC palette,
+     counters were two big PURPLE-and-TEAL boxes: the last survivors of the P&JCC palette,
      on a page that stopped being PJCC. They were shouting in a color the room no longer
      speaks.
 
@@ -214,7 +214,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
                2026-08-03 "/" is the ChessWild front door and no longer redirects at all — but
                it is still the wrong target here, because a card about the SERIES should open
                the world, not the chess site's home. Goes to the world itself. {% endcomment %}
-          <a href="/pjcc/" class="project-link">Enter PJCC &rarr;</a>
+          <a href="/pjcc/" class="project-link">Enter P&JCC &rarr;</a>
         </div>
       </div>
     </div>
@@ -227,9 +227,9 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
         <span class="project-status-dot"></span>
         Building
       </span>
-      <h2 class="project-title">PJCC Chess Academy</h2>
+      <h2 class="project-title">P&JCC Chess Academy</h2>
     </div>
-    <p class="project-desc">An All-Ages online Chess Academy, set in the PJCC universe. Free, and open now.</p>
+    <p class="project-desc">An All-Ages online Chess Academy, set in the P&JCC universe. Free, and open now.</p>
     <div class="project-links">
       <a href="/academy/" class="project-link">Visit the Academy &rarr;</a>
     </div>
@@ -400,7 +400,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
 
 <style>
 /* Special thanks — quiet, but it carries weight (Nate 2026-07-12) */
-/* 2026-07-21: recolored into the room it lives in. These four were the last of the PJCC
+/* 2026-07-21: recolored into the room it lives in. These four were the last of the P&JCC
    palette on this page — a lilac label (#cdbcf2), near-white lavender names (#e6dcff),
    a violet muses line (#b7a4e0) and an arcade-gold rule (#F5C518) — sitting inside
    theme-studio's warm monochrome. Exactly the complaint Nate made about the counters on

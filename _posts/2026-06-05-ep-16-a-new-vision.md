@@ -7,9 +7,9 @@ tags: [Vision, Workflow, Storyline]
 ### Listening to: Armchair Martian - Never Coming Home
 <iframe src="https://open.spotify.com/embed/track/3bALl1Qhd7NGpjeM86xNDU" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 
-My new glasses arrived!  Very exciting.  No excuses, but my vision has been compromised for a minute, so PJCC took a hit.  Movin' past it!  You learn some things when you can't see well out in public, though, lol.  
+My new glasses arrived!  Very exciting.  No excuses, but my vision has been compromised for a minute, so P&JCC took a hit.  Movin' past it!  You learn some things when you can't see well out in public, though, lol.  
 
-Speaking of vision, I don't think I have even shared it yet:  the idea is to create a world based on PJCC.  It started with my chess lessons, and I thought "oh, how do I promote this?" and, like a shock to my system, PJCC came into my head.  My dog is named Princess, and what do Princesses get promoted to?  Uh huh, uh huh, uh HUH.
+Speaking of vision, I don't think I have even shared it yet:  the idea is to create a world based on PJCC.  It started with my chess lessons, and I thought "oh, how do I promote this?" and, like a shock to my system, P&JCC came into my head.  My dog is named Princess, and what do Princesses get promoted to?  Uh huh, uh huh, uh HUH.
 - There are so many avenues to take, and I will likely choose two or three to focus on; one of them being a cartoon series
 
 ### What I worked on:

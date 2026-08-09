@@ -1,8 +1,8 @@
 ---
 layout: post
-title: Ep. 18 - PJCC Games are now live!
+title: Ep. 18 - P&JCC Games are now live!
 date: 2026-06-15
-tags: [PJCC, Games]
+tags: [P&JCC, Games]
 ---
 ### Listening to: Lilly Wood and The Prick, Robin Schulz - Prayer in C (Robin Schulz Radio Edit)
 <iframe src="https://open.spotify.com/embed/track/5fnA9mkIfScSqHIpeDyvck" width="500" height="120" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>

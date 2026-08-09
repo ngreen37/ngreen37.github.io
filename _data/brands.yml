@@ -1,7 +1,7 @@
 # Which pages belong to which brand.
 #
 # The site carries TWO brands and the nav must never show both at once:
-#   PJCC     — the world, the characters, the games   (the default)
+#   P&JCC     — the world, the characters, the games   (the default)
 #   McPuppy  — the studio: the business pages + the build log
 #
 # This file is the single source of truth for the McPuppy side. It used to be a

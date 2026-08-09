@@ -217,198 +217,25 @@
 </div>
 
 <script>
-/* ══ THE TRAPS ══ every line proved by tests/duel.check.js. Do not edit a move without
-   re-running `npm run test:duel` — the whole point of this file is that its chess is true. */
-var TRAPS = [
-  {
-    id: 'scholar', name: "Scholar's Mate", foe: 'w',
-    setup: [['e2e4','e4'],['e7e5','e5'],['f1c4','Bc4'],['f8c5','Bc5'],['d1h5','Qh5']],
-    insult: 'Two pieces is all this takes.',
-    replies: [
-      { uci:'g7g6', san:'g6', right:true, say:'Then you will want them both back.',
-        then:[['h5f3','Qf3'],['g8f6','Nf6']] },
-      { uci:'g8f6', san:'Nf6', say:'A knight settles it.',
-        then:[['h5f7','Qxf7#']] },
-      { uci:'b8c6', san:'Nc6', say:'I develop, you flail.',
-        then:[['h5f7','Qxf7#']] },
-      { uci:'d7d6', san:'d6', say:'My house is in order.',
-        then:[['h5f7','Qxf7#']] }
-    ]
-  },
-  {
-    id: 'fools', name: "Fool's Mate", foe: 'w',
-    setup: [['f2f3','f3'],['e7e5','e5'],['g2g4','g4']],
-    insult: 'Both my wing pawns are out. Impressive, no?',
-    replies: [
-      { uci:'d8h4', san:'Qh4#', right:true, say:'Impressively brief.', then:[] },
-      { uci:'d7d5', san:'d5', say:'I claim the middle.',
-        then:[['f1g2','Bg2']] },
-      { uci:'b8c6', san:'Nc6', say:'A knight, politely.',
-        then:[['f1g2','Bg2']] },
-      { uci:'f8c5', san:'Bc5', say:'My bishop takes the long view.',
-        then:[['f1g2','Bg2']] }
-    ]
-  },
-  {
-    id: 'legal', name: "Légal's Mate", foe: 'w',
-    setup: [['e2e4','e4'],['e7e5','e5'],['g1f3','Nf3'],['b8c6','Nc6'],['f1c4','Bc4'],['d7d6','d6'],
-            ['b1c3','Nc3'],['c8g4','Bg4'],['h2h3','h3'],['g4h5','Bh5'],['f3e5','Nxe5']],
-    insult: 'Take the queen. I insist.',
-    replies: [
-      { uci:'c6e5', san:'Nxe5', right:true, say:'I will take the horse and leave the crown.',
-        then:[['d1h5','Qxh5'],['e5c4','Nxc4']] },
-      { uci:'h5d1', san:'Bxd1', say:'A crown is a crown.',
-        then:[['c4f7','Bxf7+'],['e8e7','Ke7'],['c3d5','Nd5#']] },
-      { uci:'d6e5', san:'dxe5', say:'A pawn does the work.',
-        then:[['d1h5','Qxh5']] },
-      { uci:'g8f6', san:'Nf6', say:'I bring another piece.',
-        then:[['d1h5','Qxh5']] }
-    ]
-  },
-  {
-    id: 'damiano', name: 'Damiano Defense', foe: 'w',
-    setup: [['e2e4','e4'],['e7e5','e5'],['g1f3','Nf3'],['f7f6','f6'],['f3e5','Nxe5']],
-    insult: 'That pawn was holding the door shut.',
-    replies: [
-      { uci:'d8e7', san:'Qe7', right:true, say:'The door has a second hinge.',
-        then:[['e5f3','Nf3'],['e7e4','Qxe4+'],['d1e2','Qe2']] },
-      { uci:'f6e5', san:'fxe5', say:'And now the horse is mine.',
-        then:[['d1h5','Qh5+'],['e8e7','Ke7'],['h5e5','Qxe5+']] },
-      { uci:'b8c6', san:'Nc6', say:'I bring a friend for it.',
-        then:[['e5c6','Nxc6'],['d7c6','dxc6']] },
-      { uci:'d7d6', san:'d6', say:'Step down from there.',
-        then:[['e5f3','Nf3']] }
-    ]
-  },
-  {
-    id: 'shilling', name: 'Blackburne Shilling', foe: 'w',
-    setup: [['e2e4','e4'],['e7e5','e5'],['g1f3','Nf3'],['b8c6','Nc6'],['f1c4','Bc4'],['c6d4','Nd4'],['f3e5','Nxe5']],
-    insult: 'Your knight wandered off. I kept the pawn it left.',
-    replies: [
-      { uci:'d8g5', san:'Qg5', right:true, say:'It was not the pawn I was selling.',
-        then:[['e5f7','Nxf7'],['g5g2','Qxg2'],['h1f1','Rf1'],['g2e4','Qxe4+']] },
-      { uci:'g8f6', san:'Nf6', say:'I develop and forget it.',
-        then:[['e5f3','Nf3']] },
-      { uci:'d7d6', san:'d6', say:'Down from there.',
-        then:[['e5f3','Nf3']] },
-      { uci:'d8e7', san:'Qe7', say:'I pin it in place.',
-        then:[['e5f3','Nf3']] }
-    ]
-  },
-  {
-    id: 'froms', name: "From's Gambit", foe: 'w',
-    setup: [['f2f4','f4'],['e7e5','e5'],['f4e5','fxe5'],['d7d6','d6'],['e5d6','exd6'],['f8d6','Bxd6'],['b1c3','Nc3']],
-    insult: 'A knight out, and the wing still open behind me.',
-    replies: [
-      { uci:'d8h4', san:'Qh4+', right:true, say:'The wing is where I was going.',
-        then:[['g2g3','g3'],['d6g3','Bxg3+'],['h2g3','hxg3'],['h4g3','Qxg3#']] },
-      { uci:'g8f6', san:'Nf6', say:'A knight for a knight.',
-        then:[['g1f3','Nf3']] },
-      { uci:'b8c6', san:'Nc6', say:'Another one out.',
-        then:[['g1f3','Nf3']] },
-      { uci:'d8e7', san:'Qe7', say:'The queen looks down the file.',
-        then:[['g1f3','Nf3']] }
-    ]
-  },
-  {
-    id: 'noah', name: "Noah's Ark Trap", foe: 'w',
-    setup: [['e2e4','e4'],['e7e5','e5'],['g1f3','Nf3'],['b8c6','Nc6'],['f1b5','Bb5'],['a7a6','a6'],
-            ['b5a4','Ba4'],['d7d6','d6'],['d2d4','d4'],['b7b5','b5'],['a4b3','Bb3'],['c6d4','Nxd4'],
-            ['f3d4','Nxd4'],['e5d4','exd4'],['d1d4','Qxd4']],
-    insult: 'The middle is mine and your knights are gone.',
-    replies: [
-      { uci:'c7c5', san:'c5', right:true, say:'And your bishop is in a room with one door.',
-        then:[['d4d5','Qd5'],['c8e6','Be6'],['d5c6','Qc6+'],['e6d7','Bd7'],['c6d5','Qd5'],['c5c4','c4']] },
-      { uci:'g8f6', san:'Nf6', say:'A knight comes out.',
-        then:[['b1c3','Nc3']] },
-      { uci:'c8b7', san:'Bb7', say:'The bishop takes the long road.',
-        then:[['b1c3','Nc3']] },
-      { uci:'f8e7', san:'Be7', say:'I tidy the back rank.',
-        then:[['b1c3','Nc3']] }
-    ]
-  },
-  {
-    id: 'englund', name: 'Englund Gambit', foe: 'w',
-    setup: [['d2d4','d4'],['e7e5','e5'],['d4e5','dxe5'],['b8c6','Nc6'],['g1f3','Nf3'],['d8e7','Qe7'],['c1f4','Bf4']],
-    insult: 'The bishop guards the pawn. Your gambit bought nothing.',
-    replies: [
-      { uci:'e7b4', san:'Qb4+', right:true, say:'It bought a check, and a corner you left open.',
-        then:[['f4d2','Bd2'],['b4b2','Qxb2'],['d2c3','Bc3'],['f8b4','Bb4']] },
-      { uci:'c6e5', san:'Nxe5', say:'I take it back at once.',
-        then:[['f3e5','Nxe5'],['e7e5','Qxe5']] },
-      { uci:'d7d6', san:'d6', say:'I undermine it.',
-        then:[['e5d6','exd6']] },
-      { uci:'g8f6', san:'Nf6', say:'A knight to the middle.',
-        then:[['b1c3','Nc3']] }
-    ]
-  },
-  /* ══ THE SWORDMASTER'S THREE ══════════════════════════════════════════════════
-     ⭐ THIS IS THE WHOLE JOKE, AND IT IS ALSO THE LESSON. Her lines are ones you have
-     never been shown — different openings, different move orders — and the comeback you
-     learned from somebody else STILL FITS, word for word. `echo` names the trap each one
-     rhymes with, and the game says so out loud when you land it. In chess that rhyme has a
-     name: a transposition. Motifs travel between openings, which is the most useful thing
-     a beginner can be taught and the hardest thing to say convincingly. */
-  {
-    id: 'sm-f7', name: 'The Early Crown', foe: 'w', master: true, echo: 'scholar',
-    setup: [['e2e4','e4'],['e7e5','e5'],['d1h5','Qh5'],['b8c6','Nc6'],['f1c4','Bc4']],
-    insult: 'A different road. The same door.',
-    replies: [
-      { uci:'g7g6', san:'g6', right:true, say:'Then you will want them both back.',
-        then:[['h5f3','Qf3'],['g8f6','Nf6']] },
-      { uci:'g8f6', san:'Nf6', say:'A knight settles it.',
-        then:[['h5f7','Qxf7#']] },
-      { uci:'d7d6', san:'d6', say:'My house is in order.',
-        then:[['h5f7','Qxf7#']] },
-      { uci:'f8c5', san:'Bc5', say:'I mirror you.',
-        then:[['h5f7','Qxf7#']] }
-    ]
-  },
-  {
-    id: 'sm-crown', name: 'The Philidor Crown', foe: 'w', master: true, echo: 'legal',
-    setup: [['e2e4','e4'],['e7e5','e5'],['g1f3','Nf3'],['d7d6','d6'],['f1c4','Bc4'],['c8g4','Bg4'],
-            ['b1c3','Nc3'],['g7g6','g6'],['f3e5','Nxe5']],
-    insult: 'Take the queen. You have my blessing.',
-    replies: [
-      { uci:'d6e5', san:'dxe5', right:true, say:'I will take the horse and leave the crown.',
-        then:[['d1g4','Qxg4']] },
-      { uci:'g4d1', san:'Bxd1', say:'A crown is a crown.',
-        then:[['c4f7','Bxf7+'],['e8e7','Ke7'],['c3d5','Nd5#']] },
-      { uci:'g8f6', san:'Nf6', say:'I bring another piece.',
-        then:[['d1g4','Qxg4']] },
-      { uci:'f8g7', san:'Bg7', say:'The bishop takes its post.',
-        then:[['d1g4','Qxg4']] }
-    ]
-  },
-  {
-    id: 'sm-elephant', name: 'The Elephant Trap', foe: 'w', master: true, echo: 'shilling',
-    setup: [['d2d4','d4'],['d7d5','d5'],['c2c4','c4'],['e7e6','e6'],['b1c3','Nc3'],['g8f6','Nf6'],
-            ['c1g5','Bg5'],['b8d7','Nbd7'],['c4d5','cxd5'],['e6d5','exd5'],['c3d5','Nxd5']],
-    insult: 'Your pawn was pinned. I simply collected it.',
-    replies: [
-      { uci:'f6d5', san:'Nxd5', right:true, say:'It was not the pawn I was selling.',
-        then:[['g5d8','Bxd8'],['f8b4','Bb4+'],['d1d2','Qd2'],['b4d2','Bxd2+'],['e1d2','Kxd2']] },
-      { uci:'f8e7', san:'Be7', say:'I unpin it quietly.',
-        then:[['d5f6','Nxf6+']] },
-      { uci:'h7h6', san:'h6', say:'I ask the bishop to leave.',
-        then:[['d5f6','Nxf6+']] },
-      { uci:'c7c6', san:'c6', say:'I chase the knight.',
-        then:[['d5f6','Nxf6+']] }
-    ]
-  }
-];
+/* ══ THE TABLE LIVES IN ITS OWN FILE ══════════════════════════════════
+   `assets/games/duel-traps.json` — chess moves and one line of speech each, and nothing
+   in it that knows what a browser is.
 
-/* The bench. Ratings are the Park Tables regulars' own, taken from games/park-tables —
-   a character never wears two numbers on this site. `knows` is how many of the eight
-   comebacks they can find when YOU spring a trap: that is their whole difficulty dial. */
-var FOES = [
-  { id:'argus',  name:'Argus',  elo:650,  knows:2, line:'plays fast and reads slowly' },
-  { id:'auston', name:'Auston', elo:1100, knows:4, line:'has seen most of these before' },
-  { id:'father', name:'Father', elo:1700, knows:6, line:'is very hard to surprise' },
-  { id:'robert', name:'Robert', elo:2400, knows:8, line:'knows every answer you have' },
-  { id:'master', name:'The Swordmaster', elo:null, knows:8, master:true,
-    line:'uses openings you have never seen' }
-];
+   ⭐ THAT SPLIT IS THE WHOLE PORTABILITY STORY. Everything below this comment is the
+   MACHINE: a board made of divs, setTimeout for pacing, localStorage for the notebook.
+   None of it survives a move to Godot and none of it should — you would rebuild it as
+   nodes and a Tween. But the machine is the CHEAP half. The expensive half is the table:
+   eleven traps whose chess has been PROVED, and the writing, which is the actual product.
+   Both are engine-independent, and as a `.json` they are readable by GDScript's
+   `JSON.parse_string()` on day one. It used to sit inline in this file, which made the
+   port theoretical — a Godot project cannot read a JavaScript variable out of an HTML file.
+
+   ⚠ IT IS FETCHED, SO IT CAN FAIL, SO IT SAYS SO. A named dependency that goes missing
+   must leave the game DOWN and honest, never stuck on a screen waiting for something that
+   is not coming. [[down-never-stuck]]
+   ⚠ It is deliberately NOT precached by the service worker (nor is MARCHLAND): a
+   key-gated prototype does not belong in every visitor's offline bundle. */
+var TRAPS = [], FOES = [];
 
 (function () {
   'use strict';
@@ -416,9 +243,10 @@ var FOES = [
   var GLYPH = { K:9818, Q:9819, R:9820, B:9821, N:9822, P:9823 };
   var KEY = 'pjcc.duel.v1';
   var WIN = 3;                        /* first to three exchanges, like the original */
-  var byId = {}; TRAPS.forEach(function (t) { byId[t.id] = t; });
-  var REGULARS = TRAPS.filter(function (t) { return !t.master; });
-  var MASTERS  = TRAPS.filter(function (t) { return t.master; });
+  /* Derived from the table, so they are FILLED IN BY boot() rather than computed here —
+     at this point in the file the table is still two empty arrays waiting on a fetch.
+     Declared up here anyway so every function below closes over the same three names. */
+  var byId = {}, REGULARS = [], MASTERS = [];
 
   var $ = function (id) { return document.getElementById(id); };
   function show(id) {
@@ -720,13 +548,50 @@ var FOES = [
   $('b-home').addEventListener('click', function () { paintHome(); show('s-home'); });
   $('b-again').addEventListener('click', function () { startDuel(duel.foe); });
 
-  load();
+  /* ── BRING THE TABLE IN ────────────────────────────────────────────────────────
+     The board and the title screen are already drawn by the time this resolves — only
+     the OPPONENT LIST waits on it, so a slow fetch looks like a list arriving, not like
+     a game refusing to start.
+     ⚠ AND A FAILURE IS SAID OUT LOUD. `duel-traps.json` is a named dependency; if it is
+     missing the game is DOWN, and down is a thing you print, not a spinner you leave
+     running. [[down-never-stuck]] */
+  function boot(json) {
+    TRAPS = json.traps || [];
+    FOES = json.foes || [];
+    byId = {}; TRAPS.forEach(function (t) { byId[t.id] = t; });
+    REGULARS = TRAPS.filter(function (t) { return !t.master; });
+    MASTERS = TRAPS.filter(function (t) { return t.master; });
+    load();
+    paintHome();
+  }
+  function boom(why) {
+    $('foes').innerHTML = '';
+    $('prog').textContent = '';
+    var p = document.createElement('p');
+    p.className = 'sub';
+    p.style.color = 'var(--theirs)';
+    p.textContent = "The duel table didn't load, so there is nothing to duel with. " + why;
+    $('foes').appendChild(p);
+  }
   reset();
-  paintHome();
+  try {
+    fetch('duel-traps.json', { cache: 'no-cache' })
+      .then(function (r) {
+        if (!r.ok) throw new Error('duel-traps.json returned ' + r.status);
+        return r.json();
+      })
+      .then(boot)
+      .catch(function (e) { boom(String(e.message || e)); });
+  } catch (e) { boom(String(e.message || e)); }
 
   /* the harness drives this file headlessly; it needs a door in, not a whole browser */
+  /* ⚠ FUNCTIONS, NOT SNAPSHOTS. `TRAPS` is REASSIGNED when the fetch lands, so a plain
+     `traps: TRAPS` captured the empty array this file starts with and the harness cheerfully
+     reported "0 traps" while eleven were on screen. A test door that can go stale is worse
+     than no test door — it reports the past with a straight face. */
   window.__duel = {
-    traps: TRAPS, foes: FOES, book: function () { return book; },
+    traps: function () { return TRAPS; }, foes: function () { return FOES; },
+    book: function () { return book; },
     start: function (id) { startDuel(FOES.filter(function (f) { return f.id === id; })[0]); },
     state: function () { return duel; }
   };

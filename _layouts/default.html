@@ -1,6 +1,6 @@
 {%- comment -%}
   Context-aware brand: decide which nav set to show so the bar never carries both.
-  PJCC (the world / the games) is the default. McPuppy (the studio / the business pages,
+  P&JCC (the world / the games) is the default. McPuppy (the studio / the business pages,
   the build-log blog, and posts) flips it. A page can force either with `brand:` front matter.
   The McPuppy page list lives in _data/brands.yml — ONE place to edit, no Liquid string
   surgery in this layout every time a studio page comes or goes.
@@ -25,7 +25,7 @@
     try { if (localStorage.getItem('pjcc.nav.collapsed') === '1') document.body.classList.add('nav-collapsed'); } catch (e) {}
   </script>
 
-  {%- comment -%} The town sky — day/dusk/night/dawn behind EVERY page, not just the PJCC
+  {%- comment -%} The town sky — day/dusk/night/dawn behind EVERY page, not just the P&JCC
        hero. Fixed, full-viewport, z-index:-1, so it sits under the header, the cards and
        the footer and shows through everywhere they don't. See _sass/_pjcc-20-town-sky.scss.
        First child of <body> on purpose: it must not be inside anything that could make a
