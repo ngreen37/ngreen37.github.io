@@ -55,14 +55,25 @@
              header, not chosen: at 0.15 the badge reads as MISSING rather than dimmed, and at
              0.30 "considerably" is not what it looks like. {%- endcomment -%}
         <div class="site-marks">
+          {%- comment -%} 2026-08-09 (Nate): lower-case c. "cW" reads as a monogram rather than
+               as two initials, and it keeps the coral W as the one capital in the mark — the
+               same trick the full wordmark plays with `Wild`. {%- endcomment -%}
           <a class="site-mark site-mark--word site-mark--cw"
              href="{{ '/' | relative_url }}" title="ChessWild.com — Home"
              {% if page.url == '/' %}aria-current="page"{% endif %}>
-            <span class="mk-c">C</span><span class="mk-w">W</span>
+            <span class="mk-c">c</span><span class="mk-w">W</span>
           </a>
+          {%- comment -%} 2026-08-09 (Nate: "make the '&' in 'P&JCC' significantly smaller").
+               ⚠ THE SPAN CHANGES THE PICTURE, NOT THE STRING. textContent is still exactly
+               "P&JCC" — so a copy-paste, the accessible name and every crawler read the brand
+               the way [[site-two-brand-split]] requires, and this does not become a fifth
+               place the name is spelled. Still a plain `&`, never `&amp;`.
+               0.56em / weight 600 / raised 0.05em, picked from a rendered grid at three sizes:
+               at weight 800 the small `&` reads as a blob, on the baseline it hangs like a
+               subscript, and below 0.50em it thins out at the 11px phone size. {%- endcomment -%}
           <a class="site-mark site-mark--word site-mark--pjcc"
              href="{{ '/pjcc/' | relative_url }}" title="P&JCC — The World"
-             {% if page.url == '/pjcc/' %}aria-current="page"{% endif %}>P&JCC</a>
+             {% if page.url == '/pjcc/' %}aria-current="page"{% endif %}>P<span class="mk-amp">&</span>JCC</a>
           <a class="site-mark site-mark--mcp"
              href="{{ '/projects/' | relative_url }}" title="McPuppy Studios — Home"
              {% if page.url == '/projects/' %}aria-current="page"{% endif %}>

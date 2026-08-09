@@ -331,6 +331,17 @@ ul, ol {
 .mk-w { color: #ffa07a; }               /* the same coral as `Wild` in the wordmark */
 .site-mark--pjcc { color: #F5C518; }    /* the world's gold, worn since the first hero */
 
+/* The ampersand is a JOINT, not a letter (2026-08-09) — so it reads at about half the cap
+   height and steps back a weight. Sized in `em` so it tracks the mark down through every
+   breakpoint on its own. `top` needs the `position`, and both are cheap: it is one static
+   glyph, nothing here animates. */
+.mk-amp {
+  font-size: 0.56em;
+  font-weight: 600;
+  position: relative;
+  top: -0.05em;      /* off the baseline, onto the optical center */
+}
+
 .logo-stacked {
   height: 44px;   /* 80 → 52 (condensed 2026-07-17) → 44, pulled down to sit level with
                      the two word marks beside it. Picked from a rendered grid: at 38 the
