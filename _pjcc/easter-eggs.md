@@ -68,6 +68,24 @@ A veil fades over the page and every word on it transliterates into katakana —
 
 Lives in `_layouts/home.html` as `window.__puri` — call `__puri()` from the console to force it. Marks nothing; it's pure atmosphere. Started at 1%; raised to 15% on 2026-07-12 because Nate kept wanting to see it.
 
+### The Solar Eclipse *(2026-08-09)*
+**Trigger:** be on the site between **1pm and 3pm Eastern on a new-moon day** — once every
+29.5 days, twelve times a year. Preview it any time with `?eclipse=1` (or `?eclipse=0.4` for
+a partial); the preview also forces day + a clear sky, or it would be unreviewable after dark.
+
+The moon crosses the sun, the sky goes out, and around 2pm — for about twenty minutes — there
+are **stars in the middle of the afternoon** and the sun is a black disc with a corona. For
+those minutes the sun itself is **clickable**, and marks `frag_eclipse`.
+
+⭐ **It is not a random roll.** A solar eclipse can only happen at new moon, and the town clock
+has computed the genuine new moon since 2026-07-27 — so the rarest thing the sky does falls
+out of arithmetic the site was already doing, and it explains the one night a month the moon
+isn't there. The town's forecast is overruled to **clear** for that day, so the event can
+never be hidden behind an ordinary cloud deck. (`PJCC_TIME.eclipse()` /
+`PJCC_TIME.eclipseDay()`; the look is in `_sass/_pjcc-20-town-sky.scss`.)
+
+⚠ Games have their own sky shell (`pjcc-game-sky.js`) and do **not** show the eclipse yet.
+
 ---
 
 ## Hidden Pages
@@ -122,6 +140,7 @@ Each hidden page and key interaction stores a `frag_*` key in `localStorage`. Th
 | `frag_konami` | Konami code |
 | `frag_queen` | RETIRED 2026-07-16 (page + [QUEEN] link removed; old keys still count) |
 | `frag_promotion` | Type e8=Q on /academy/ |
+| `frag_eclipse` | Click the sun during totality (see The Solar Eclipse) |
 
 ---
 
@@ -250,8 +269,13 @@ A live widget shows what Nate is currently doing based on real-world time and da
 ### Time Since Last Post (Blog Page)
 Below the post list, a live counter shows how long ago the last blog post was published — "TODAY", "YESTERDAY", or "X DAYS AGO".
 
-### Nav Transition Overlay
-Every internal link click triggers a "MOVING TO: /path/ — ACCEPTED" overlay that flashes before the page loads. Gives the site a classified-terminal feel.
+### ~~Nav Transition Overlay~~ — REMOVED, and it had already been gone for months
+It used to flash "MOVING TO: /path/ — ACCEPTED" on every internal link click. Its JS went
+with the gold page-transition stamp in `0333e9c`; the markup and CSS sat in the layout doing
+nothing until 2026-08-09, when they were deleted too. **This entry stayed accurate-sounding
+for months and cost a real detour** — Nate reported a flicker between pages, and a log that
+described a between-pages overlay as live made it the obvious suspect. It wasn't. Keep this
+line: a shipped-features log is only useful if it also records what left.
 
 ### Random Classified Stamp
 On classified-layout pages, a random stamp (CLEARANCE: DELTA, EYES ONLY, CLASSIFIED, etc.) appears in a random corner 1.2 seconds after load, then fades after 2 seconds.

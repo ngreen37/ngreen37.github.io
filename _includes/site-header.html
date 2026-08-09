@@ -27,11 +27,50 @@
             <span class="nav-toggle-bar"></span>
           </button>
         </div>
-        <span class="site-logo">
-          <img src="{{ '/assets/images/mcpuppy-logo-stacked.svg' | relative_url }}"
-               alt="McPuppy Studios"
-               class="logo-stacked">
-        </span>
+        {%- comment -%} ── THE THREE FRONT DOORS (2026-08-09) ──────────────────────────────
+             Nate: "let's make that a link to the Projects page, let's add a P&JCC symbol to
+             the left of that and a ChessWild.com symbol to the left of that (like a CW? The
+             C is white and the W is coral) … then re-center them. When on the ChessWild.com
+             home page, that link Dims Considerably and the other two remain bright."
+
+             The site has exactly three homes and until now the header named none of them:
+             the McPuppy badge was a WATERMARK (2026-07-23, deliberately not a link) and the
+             only way to any front door was the drawer. Three marks, one per brand, dead
+             center — so wherever you are, the other two worlds are one click away.
+
+             ⭐ THE DIM IS `aria-current`, NOT A CLASS. "You are here" is a fact the browser
+             already has a word for, and using it means the styling and the screen-reader
+             announcement can never drift apart — one Liquid comparison feeds both.
+
+             ⚑ ONE INK EACH, AND THEY ARE ALREADY SPOKEN FOR. Coral is ChessWild's (it is the
+             `Wild` of the wordmark — see _includes/wordmark.html), gold is the P&JCC world's
+             (the hero title has worn it since the beginning), and the studio badge is
+             monochrome because McPuppy IS the black-and-white half of the site. Nobody had
+             to invent a color for this row.
+
+             ⚠ THE BADGE LOST ITS WATERMARK FADE ON PURPOSE. It sat at opacity .38 with a
+             grayscale wash because it was scenery. It is a peer now, so it carries full ink —
+             otherwise the "you are here" dim would have almost nothing left to take away.
+             ⚠ Sizes and the 0.22 dim were picked from a rendered candidate grid over the real
+             header, not chosen: at 0.15 the badge reads as MISSING rather than dimmed, and at
+             0.30 "considerably" is not what it looks like. {%- endcomment -%}
+        <div class="site-marks">
+          <a class="site-mark site-mark--word site-mark--cw"
+             href="{{ '/' | relative_url }}" title="ChessWild.com — Home"
+             {% if page.url == '/' %}aria-current="page"{% endif %}>
+            <span class="mk-c">C</span><span class="mk-w">W</span>
+          </a>
+          <a class="site-mark site-mark--word site-mark--pjcc"
+             href="{{ '/pjcc/' | relative_url }}" title="P&JCC — The World"
+             {% if page.url == '/pjcc/' %}aria-current="page"{% endif %}>P&JCC</a>
+          <a class="site-mark site-mark--mcp"
+             href="{{ '/projects/' | relative_url }}" title="McPuppy Studios — Home"
+             {% if page.url == '/projects/' %}aria-current="page"{% endif %}>
+            <img src="{{ '/assets/images/mcpuppy-logo-stacked.svg' | relative_url }}"
+                 alt="McPuppy Studios"
+                 class="logo-stacked">
+          </a>
+        </div>
         <div class="header-top-right">
           {%- comment -%} 2026-07-28 — the grandparent test. This button used to read
                "⌕ Jump to… ⌘K", and two of those three parts were doing damage:

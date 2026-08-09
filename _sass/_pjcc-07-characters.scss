@@ -191,32 +191,9 @@
   letter-spacing: 0.02em;
 }
 
-/* =============================================================
-   Nav Transition Overlay
-   ============================================================= */
-
-.nav-transition {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  z-index: 9998;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.12s;
-}
-
-.nav-transition.is-visible {
-  opacity: 1;
-}
-
-.nav-transition-text {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 2px;
-  color: #00ff41;
-  text-transform: uppercase;
-  text-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
-}
+/* (The Nav Transition Overlay's styles were deleted 2026-08-09 with its markup — see the
+   note in _layouts/default.html. Nothing had been able to add `.is-visible` to it since the
+   page-transition JS was removed in 0333e9c.) */
 
 /* =============================================================
    World Status Ticker

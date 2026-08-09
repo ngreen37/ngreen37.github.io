@@ -19,7 +19,8 @@
  *   PJCC_TIME.daySeed() -> uint32 seeded by the Eastern date (one town, one day)
  *   PJCC_TIME.weather() -> { kind: 'rain'|'mist'|'clear', roll, phase }
  *   PJCC_TIME.clouds()  -> 0 (clear) | 1 (a few) | 2 (broken) | 3 (overcast)
- *   PJCC_TIME.moon()    -> { frac, lit, waxing, name } — the REAL phase tonight
+ *   PJCC_TIME.moon()    -> { frac, lit, waxing, name, shift } — the REAL phase tonight
+ *   PJCC_TIME.eclipse() -> { on, cover, total, shift } — the town's solar eclipse
  * ========================================================================== */
 (function () {
   'use strict';
@@ -56,6 +57,12 @@
   // on its own, on 1 December, without anybody remembering to switch it on.
   // (`season()` is a function declaration below, so it's hoisted and safe here.)
   function weather() {
+    // ⚑ THE TOWN GETS ITS ECLIPSE. Once every 29.5 days the sun goes out over Checker Town
+    // (see eclipse() below) — and roughly two of those days in five would have been rain,
+    // mist or a full cloud deck, which would have hidden the rarest thing the sky does
+    // behind the most ordinary. So the eclipse day is CLEAR, on purpose, and it is the only
+    // day the forecast is ever overruled. It costs the rain roll about one day a month.
+    if (eclipseDay()) return { kind: 'clear', roll: 9, phase: phase() };
     var roll = daySeed() % 10;
     var kind = roll <= 2 ? 'rain' : (roll === 3 ? 'mist' : 'clear');
     if (kind === 'rain' && season() === 'winter') kind = 'snow';
@@ -66,6 +73,7 @@
   // it's both"). Shifted well clear of the rain roll's low bits so the two don't
   // move together. Rain and mist force real cover — it can't pour out of a bare sky.
   function clouds() {
+    if (eclipseDay()) return 0;                   // see weather() — the eclipse gets a clear sky
     var w = weather().kind;
     if (w === 'rain' || w === 'snow') return 3;   // snow needs a full deck too
     if (w === 'mist') return 2;
@@ -102,6 +110,46 @@
        lit   0 → 1, how much of the disc is lit
        waxing/waning decides which SIDE the shadow sits on. */
   var SYN = 29.530588853, NEW0 = 10395.26;   // 2000-01-06 18:14 UTC, in days since epoch
+
+  /* ── HOW MUCH TO SLIDE THE SHADOW (2026-08-09) ────────────────────────────────────
+     The terminator is drawn as a second disc of the night sky, the same size as the moon,
+     slid sideways across its face — so the lit part is the LUNE between the two arcs, and
+     its area (which is what `lit` measures) is not linear in the offset:
+
+         lit(u) = [ π − 2·acos(u) + 2u·√(1−u²) ] / π      u = 0 new · u = 1 full
+
+     ⚠⚠ THE OLD CODE USED u = 2·lit AND IT BROKE HALF OF EVERY MONTH. One diameter of
+     offset already clears the disc completely, so every night from lit 0.5 upward painted
+     an identical FULL moon: 2026-08-15 through 08-29 — fifteen nights running — were the
+     same picture, in the feature built precisely because "it was a full moon every night
+     of the year, which is the one thing a moon never is". Nobody reported it, because a
+     full moon looks fine. Inverting the real function is four lines of bisection. */
+  function lune(u) { return (Math.PI - 2 * Math.acos(u) + 2 * u * Math.sqrt(1 - u * u)) / Math.PI; }
+  function lunePos(lit) {
+    var lo = 0, hi = 1, mid;
+    for (var i = 0; i < 30; i++) { mid = (lo + hi) / 2; if (lune(mid) < lit) lo = mid; else hi = mid; }
+    return (lo + hi) / 2;
+  }
+  /* ⭐ THE THINNEST CRESCENT GETS A FLOOR (2026-08-09, Nate: "the sliver is too small …
+     it's hard to tell what it is when it's so thin"). He was right and the number is
+     brutal: on 2026-08-08 the true lune was 1.2px wide on a 46px moon — a hairline, which
+     is why the orb read as an empty RING rather than as a crescent. Real crescents that
+     thin exist; they are also invisible to the naked eye, so drawing one faithfully means
+     drawing nothing. The genuinely NEW moon is exempt and still vanishes — that is not a
+     thin moon, it is no moon, and the eclipse below is what it buys us.
+
+     ⚠ IT IS A SOFT FLOOR — √(u² + min²) — NOT `Math.max`. A hard clamp made the four
+     thinnest nights of every crescent render as one identical 7px sliver, which is the same
+     bug I had just finished fixing at fifteen nights: a floor that flattens is still a flat
+     spot. The soft version is monotonic everywhere, lifts 1px to 7px, and by the quarter
+     moon it is 7% off the truth and by the gibbous 1%.
+
+     0.155 of a diameter ≈ 7.2px on the 46px orb, and it was PICKED FROM A PICTURE: the real
+     .ts-orb rendered against the real night sky at eight floors × the four thinnest nights
+     of this crescent. 0.08 (3.8px) still reads as a rim highlight rather than a crescent;
+     0.22 (10.2px) makes the thinnest night look three days old. */
+  var MOON_MIN = 0.155;
+  function floorLune(u) { return Math.min(1, Math.sqrt(u * u + MOON_MIN * MOON_MIN)); }
   function moon(ds) {
     ds = ds || parts().ds;
     var days = Date.UTC(+ds.slice(0, 4), +ds.slice(5, 7) - 1, +ds.slice(8, 10)) / 86400000;
@@ -112,7 +160,58 @@
              : frac < 0.48 ? 'waxing-gibbous'  : frac < 0.52 ? 'full'
              : frac < 0.73 ? 'waning-gibbous'  : frac < 0.77 ? 'last-quarter'
              : 'waning-crescent';
-    return { age: age, frac: frac, lit: lit, waxing: frac < 0.5, name: name };
+    // waxing lights the RIGHT limb, so the shadow sits LEFT — a negative slide.
+    var u = name === 'new' ? 0 : floorLune(lunePos(lit));
+    return { age: age, frac: frac, lit: lit, waxing: frac < 0.5, name: name,
+             shift: (frac < 0.5 ? -1 : 1) * u };
+  }
+
+  /* ══ A SOLAR ECLIPSE, ONCE A MONTH ════════════════════════════════════════════════
+     2026-08-09 (Nate: "let's throw a solar eclipse in once a month … we can make it a
+     special event day. How about that for an easter egg, eh?").
+
+     ⭐ IT IS NOT A NEW ROLL, AND THAT IS THE WHOLE REASON IT BELONGS IN THIS FILE. A solar
+     eclipse can only happen at NEW MOON — the moon has to be between us and the sun — and
+     this clock has computed the genuine new moon since 2026-07-27. So the rarest thing the
+     town's sky does falls straight out of arithmetic that was already being done: no seed,
+     no calendar, no switch to remember to flip. It arrives roughly every 29.5 days, on its
+     own, forever, and it explains the one night a month the moon isn't there.
+
+     ⚑ ONE HONEST SIMPLIFICATION, stated rather than hidden: the real sky also needs the
+     orbits to line up in the OTHER axis, which is why Earth gets 2–5 a year instead of 12.
+     Checker Town's orbit is tidier. Everything else here is the real thing.
+
+     Exactly ONE day per lunation: the day whose moon is nearer new than the day before and
+     no further than the day after. (The `new` phase NAME spans 1–2 calendar days — 5 and 6
+     September 2026 are both "new" — so naming can't be the test, or some months would get
+     two eclipses and some one.)                                                          */
+  var ECL_OPEN = 13 * 60, ECL_SHUT = 15 * 60;   // Eastern 1pm → 3pm, deepest at 2
+  function newness(ds) { var f = moon(ds).frac; return f > 0.5 ? 1 - f : f; }
+  function eclipseDay(ds) {
+    ds = ds || parts().ds;
+    var d = Date.UTC(+ds.slice(0, 4), +ds.slice(5, 7) - 1, +ds.slice(8, 10));
+    function at(off) { return newness(new Date(d + off * 86400000).toISOString().slice(0, 10)); }
+    return at(0) < at(-1) && at(0) <= at(1);
+  }
+  /* cover: 0 → 1 → 0 across the window, eased so the deep phase LASTS. A straight ramp put
+     totality at six minutes — accurate, and once a month at six minutes nobody ever sees it.
+     1 − x² holds cover above 0.97 for about twenty minutes and still shows a bitten sun for
+     the whole two hours. `shift` is the same offset-disc arithmetic as the moon's phase,
+     which is the tidy part: the eclipse IS a terminator, drawn by the same one line of CSS.
+     Pass a cover 0–1 to force it — that is the ?eclipse= preview, and nothing else uses it. */
+  function eclipse(forceCover) {
+    if (forceCover != null) {
+      var c = Math.max(0, Math.min(1, forceCover));
+      return { on: true, cover: c, total: c >= 0.97, shift: lunePos(1 - c), forced: true };
+    }
+    var p = parts(), mins = p.h * 60 + p.m;
+    if (!eclipseDay(p.ds) || mins < ECL_OPEN || mins > ECL_SHUT) {
+      return { on: false, cover: 0, total: false, shift: 1, forced: false };
+    }
+    var t = (mins - ECL_OPEN) / (ECL_SHUT - ECL_OPEN), x = Math.abs(t - 0.5) * 2;
+    var cover = 1 - x * x;
+    return { on: true, cover: cover, total: cover >= 0.97,
+             shift: (t < 0.5 ? 1 : -1) * lunePos(1 - cover), forced: false };
   }
   // The PJCC calendar season, from the Eastern MONTH (2026-07-15 Nate: "have a set
   // PJCC calendar … summer now, and build Fall/Winter/Spring per the calendar"). Simple
@@ -124,5 +223,5 @@
   }
   window.PJCC_TIME = { parts: parts, hour: hour, dateStr: dateStr, phase: phase,
                        daySeed: daySeed, weather: weather, clouds: clouds, orb: orb, season: season,
-                       moon: moon };
+                       moon: moon, eclipse: eclipse, eclipseDay: eclipseDay };
 })();

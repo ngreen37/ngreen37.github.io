@@ -165,6 +165,13 @@
        "somewhere". {%- endcomment -%}
   <div class="ts-horizon"></div>
 
+  {%- comment -%} 6 · THE ECLIPSE VEIL (2026-08-09) — the daylight going out. Its opacity is
+       the sun's coverage, so it deepens and lifts with the eclipse instead of switching.
+       ⚠ z-index 0, which puts it UNDER the stars (1) and the orb (2) on purpose: the sky
+       has to darken while the corona stays the brightest thing on the screen, and stars
+       coming out in the middle of the afternoon is the whole payoff. {%- endcomment -%}
+  <div class="ts-eclipse"></div>
+
 </div>
 
 {%- comment -%}
@@ -188,6 +195,24 @@
   .studio-drifters gave it on the splash: above the sky, below the content, clickable.
   ══════════════════════════════════════════════════════════════════════════════
 {%- endcomment -%}
+{%- comment -%}
+  ══════════════════════════════════════════════════════════════════════════════
+  THE ECLIPSE DOOR (2026-08-09) — the ✦'s day-shift twin, once a month.
+  ──────────────────────────────────────────────────────────────────────────────
+  For the ~20 minutes of totality the black sun can be clicked. Same footing as the
+  secret ✦ and for the same reason: the sky is z-index:-1 and pointer-events:none, so
+  anything clickable has to live OUT here as a sibling.
+  ⚠ It tracks --orb-x/--orb-y, which are percentages of the SKY's box — and above 901px
+  the sky starts at the rail's edge (`left: var(--rail-w)`). So this wrapper carries the
+  same inset, or the door sits ~246px left of the sun it is supposed to be.
+  ⚑ A BUTTON, NOT A LINK, and it goes nowhere: it mints frag_eclipse and says so. The ✦
+  opens /classified/ because that wing already existed; inventing a destination for this
+  one would be a lore decision, and those are Nate's to make.
+  ══════════════════════════════════════════════════════════════════════════════
+{%- endcomment -%}
+<div class="ts-eclipse-wrap">
+  <button class="ts-eclipse-door" id="ts-eclipse-door" type="button" aria-label="???"></button>
+</div>
 <div class="ts-secret-wrap">
   {%- comment -%} the slow patrol: one crossing every 48s, all night. {%- endcomment -%}
   <a class="ts-secret" href="{{ '/classified/' | relative_url }}" aria-label="???">&#10022;</a>

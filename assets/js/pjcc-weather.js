@@ -109,11 +109,25 @@
   // left/top, the two properties that cost layout. There is now no animated layout in the
   // sky at all — just a style write on a timer. orb() itself is untouched, so where the
   // orb belongs at any given minute is exactly what it always was.
+  // The eclipse rides the same tick (2026-08-09). It has to: it is the one thing in this
+  // sky that changes over MINUTES rather than hours, so a page opened at 13:05 and left
+  // alone would otherwise sit at 1% coverage through the whole thing. `?eclipse=` pins it
+  // for preview, so a forced eclipse is left exactly where the head script put it.
+  var forcedEclipse = false;
+  try { forcedEclipse = new URLSearchParams(location.search).get('eclipse') !== null; } catch (e) {}
+
   if (T.orb) {
     var plot = function () {
       var o = T.orb();
       root.style.setProperty('--orb-x', o.x.toFixed(1) + '%');
       root.style.setProperty('--orb-y', o.y.toFixed(1) + '%');
+      if (!forcedEclipse && T.eclipse) {
+        var ec = T.eclipse();
+        root.classList.toggle('eclipse', ec.on);
+        root.classList.toggle('eclipse-total', ec.total);
+        root.style.setProperty('--ecl', ec.cover.toFixed(3));
+        root.style.setProperty('--ecl-shift', ec.shift.toFixed(3));
+      }
     };
     setInterval(plot, 30000);
     // A hidden tab's timer is throttled or frozen, so it comes back holding a stale

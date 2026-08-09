@@ -67,10 +67,12 @@
     </div>
   </footer>
 
-  <!-- Page nav transition -->
-  <div class="nav-transition" id="nav-transition">
-    <span class="nav-transition-text" id="nav-transition-text"></span>
-  </div>
+  <!-- (The "MOVING TO: /path/ — ACCEPTED" nav-transition overlay was deleted 2026-08-09.
+       Its JS went with the gold page-transition stamp back in 0333e9c; the markup and the
+       CSS stayed behind, so for months every page carried an overlay that nothing could
+       ever make visible. It surfaced while chasing a real between-pages flicker — the
+       easter-egg log still described it as a live feature, which made it the first suspect
+       and cost a detour. Restore from git if it is ever wanted back.) -->
 
   <!-- Chess notation easter egg toast -->
   <div class="chess-toast" id="chess-toast">

@@ -13,7 +13,10 @@
    the old "hide .site-nav on scroll" rules are gone — there is nothing in the header flow
    to condense but the logo + ⌘K pill. */
 @media (min-width: 701px) {
-  .site-header.is-condensed .logo-stacked { height: 46px; }
+  /* the whole three-mark row shrinks together on scroll, not just the badge — otherwise
+     the two word marks stay put and the set stops reading as one lockup (2026-08-09) */
+  .site-header.is-condensed .logo-stacked { height: 38px; }
+  .site-header.is-condensed .site-mark--word { font-size: 15px; }
   .site-header.is-condensed .header-top { padding-top: 6px; padding-bottom: 6px; }
   .site-header.is-condensed .cmdk-trigger { border-color: #F5C518; color: #F5C518; }
 }

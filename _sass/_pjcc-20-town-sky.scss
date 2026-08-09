@@ -206,11 +206,16 @@ html.sky-night .ts-orb {
    so it can never spill onto the sky. Waxing lights the RIGHT limb, waning the LEFT —
    which is what you'd see stepping outside, and the whole point of doing it properly.
    Static paint, no animation: the phase changes once a day, not once a frame. */
+/* ⚠ THE FALLBACK IS 1, NOT 2, AND THE UNITS CHANGED WITH IT (2026-08-09). --moon-shift is
+   now the terminator offset in DIAMETERS over 0…1 — one diameter already clears the disc
+   completely, so the old 0…2 range spent its whole top half re-drawing a full moon. The
+   clock computes it from the real lune area now (see `lunePos` in _includes/pjcc-time.js);
+   this file just slides the disc. */
 html.sky-night .ts-orb::after {
   content: ''; position: absolute; inset: 0; border-radius: 50%;
   background: radial-gradient(circle at 50% 45%, #0d0930, #120c3a 70%, #16104a 100%);
   box-shadow: inset 0 0 6px 2px rgba(8, 5, 26, 0.9);
-  transform: translateX(calc(var(--moon-shift, 2) * 100%));
+  transform: translateX(calc(var(--moon-shift, 1) * 100%));
 }
 /* the glow should answer the phase too — a thin crescent doesn't floodlight the sky */
 html.moon-new       .ts-orb { box-shadow: 0 0 18px 4px rgba(220, 214, 255, 0.05); }
@@ -229,6 +234,71 @@ html.cloud-3 .ts-orb  { opacity: 0.14; }
 html.town-rain .ts-orb { opacity: 0.08; }
 html.town-snow .ts-orb { opacity: 0.10; }   /* snow needs the same full deck as rain */
 html.town-mist .ts-orb { opacity: 0.30; }
+
+/* ══ THE SOLAR ECLIPSE (2026-08-09, Nate: "let's throw a solar eclipse in once a month …
+   we can make it a special event day") ═══════════════════════════════════════════════
+   Once every 29.5 days, Eastern 13:00–15:00: the moon crosses the sun, the sky goes out,
+   and for ~20 minutes around 14:00 there are stars in the middle of the afternoon. WHEN it
+   happens is not a roll — it is the genuine new moon this clock has computed since
+   2026-07-27, which is the only time a solar eclipse can happen at all (see the long note
+   in _includes/pjcc-time.js). The town's forecast is overruled to clear for the day, so the
+   rarest thing the sky does can never be hidden behind the most ordinary.
+
+   ⭐ THE BITE IS THE SAME ONE LINE AS THE MOON'S TERMINATOR — an equal-sized disc slid
+   across the face, offset in diameters. A lunar phase and a solar eclipse are the same
+   geometry seen from two places, so they should be, and are, the same code.
+
+   ⚠ SPECIFICITY, DELIBERATELY. `html.sky-day .ts-orb` is (0,2,1) and carries the sun's
+   halo. `html.eclipse.sky-day .ts-orb` is (0,3,1) and beats it wherever it sits in the
+   file — this must not depend on source order, which is exactly the kind of thing that
+   silently comes undone when a partial is reordered.
+   ⚠ Preview it on any of the other 29 days with `?eclipse=1` (or `?eclipse=0.4` for a
+   partial). Without that this is unreviewable until the next new moon. ══════════════ */
+.ts-eclipse {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: #05040f;
+  opacity: 0;
+  transition: opacity 8s linear;   /* the clock re-plots every 30s; this makes it a fade */
+}
+html.eclipse .ts-eclipse { opacity: calc(var(--ecl, 0) * 0.88); }
+
+/* the moon's disc crossing the sun. The orb clips it, same as the night terminator. */
+html.eclipse.sky-day .ts-orb { overflow: hidden; }
+html.eclipse.sky-day .ts-orb::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  background: #07060f;
+  transform: translateX(calc(var(--ecl-shift, 1) * 100%));
+}
+/* the halo shrinks as the light goes — a bitten sun does not floodlight the sky */
+html.eclipse.sky-day .ts-orb {
+  box-shadow: 0 0 calc(44px * (1 - var(--ecl, 0))) calc(14px * (1 - var(--ecl, 0))) rgba(255, 216, 74, 0.30);
+}
+/* TOTALITY: a black disc with the corona around it — the one picture everybody knows. */
+html.eclipse-total.sky-day .ts-orb {
+  box-shadow: 0 0 0 2px rgba(255, 247, 222, 0.92),
+              0 0 26px 8px rgba(255, 238, 196, 0.55),
+              0 0 90px 34px rgba(255, 222, 165, 0.20);
+}
+/* stars, at two in the afternoon */
+html.eclipse-total .ts-stars { display: block; opacity: calc((var(--ecl, 0) - 0.9) * 5); }
+
+/* THE DOOR — clickable only while it is genuinely dark. Sized to the sun, invisible, and
+   pointer-inert the rest of the month so it can never eat a click on the page beneath. */
+.ts-eclipse-wrap {
+  position: fixed; inset: 0; z-index: 5; pointer-events: none; overflow: hidden;
+}
+@media (min-width: 901px) {
+  .ts-eclipse-wrap { left: var(--rail-w, 246px); }   /* match the sky's own inset */
+}
+.ts-eclipse-door {
+  position: absolute;
+  left: var(--orb-x, 50%); top: var(--orb-y, 18%);
+  transform: translate(-50%, -50%);
+  width: 78px; height: 78px;
+  border: 0; border-radius: 50%; background: none; padding: 0;
+  opacity: 0; pointer-events: none; cursor: pointer;
+}
+html.eclipse-total.sky-day .ts-eclipse-door { pointer-events: auto; }
 html.sky-night .ts-horizon {
   background: linear-gradient(180deg, transparent, rgba(120, 100, 220, 0.10));
 }

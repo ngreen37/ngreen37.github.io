@@ -230,9 +230,42 @@ ul, ol {
   padding: 6px 16px 5px;
   border-bottom: 1px solid rgba(61, 43, 138, 0.2);
 }
-.header-top > .header-top-left  { justify-self: start; }
-.header-top > .site-logo        { justify-self: center; }
-.header-top > .header-top-right { justify-self: end; }
+/* ⚠ THE COLUMNS ARE PINNED, NOT AUTO-PLACED, and that is load-bearing (2026-08-09). Grid
+   auto-placement only counts IN-FLOW children, so the moment the middle item goes
+   `position: absolute` (see the 1400px rule below) the right-hand group slides up into
+   column 2 — where `justify-self: end` has a 422px column to end in and therefore does
+   nothing. It renders as the whole control cluster jumping to the middle of the header and
+   sitting under the marks. Naming each column costs three declarations and makes that
+   impossible. */
+.header-top > .header-top-left  { grid-column: 1; justify-self: start; }
+.header-top > .site-marks       { grid-column: 2; justify-self: center; }
+.header-top > .header-top-right { grid-column: 3; justify-self: end; }
+
+/* ⚠ CENTERED ON THE HEADER IS NOT CENTERED TO THE EYE. Above 901px the drawer is a DOCKED
+   RAIL sitting over the header's left ~246px (the hamburger lives inside it), so the header
+   band anyone can actually see starts at the rail's edge. Dead-centered on the element, the
+   marks land 113px left of the middle of that band — measured, at every desktop width.
+
+   ⭐ THE NUDGE IS A MARGIN, INSIDE THE GRID, AND THAT IS THE WHOLE POINT. Three absolute
+   -positioning attempts all lost to the grid, each in a way that only a screenshot caught:
+   taking the middle item out of flow re-auto-placed the CONTROL CLUSTER into column 2 (it
+   jumped to the middle of the header and sat under the marks), and once the columns were
+   pinned, `left: 50%` on an out-of-flow grid child resolved against a TRACK rather than the
+   header — parking the marks on top of Sign in and Contact at 1920. A margin can do neither:
+   the grid keeps accounting for the marks, so when the window is too narrow to give them
+   half a rail the tracks squeeze and the marks drift back left instead of onto a control.
+   Half the offset, at every width, and it cannot collide. Verified 360 → 2560.
+
+   ⚠ AND THE NUDGE ONLY RUNS FROM 1201px UP, because the margin is not free: it comes out of
+   the grid's two 1fr rails, and at 1024 that squeezed the right rail below the width of its
+   own controls — the Ctrl K chip broke onto two lines and 日本語 wrapped into a vertical
+   stack. I first blamed the marks for being 110px wider than the old badge and spent a
+   round shrinking them, which fixed nothing, because the marks were never the cost. The
+   nudge was. Below 1201 the marks sit where the badge always sat. */
+@media (min-width: 1201px) {
+  .header-top > .site-marks { margin-left: calc(var(--rail-w, 246px) / 2); }
+}
+
 
 /* "Hello" pill — matches the PJCC gold/purple header by default (was DOS-green,
    which clashed on every non-contact page). McPuppy pages flip it monochrome below. */
@@ -257,24 +290,92 @@ ul, ol {
   }
 }
 
-/* --- Site Logo (header) --- */
-/* The logo is a faded WATERMARK, not a link (2026-07-23, Nate: "I want it to be a
-   watermark, not a link to the PJCC site"). It no longer navigates — the single-click →
-   home handler was pulled from the Morse egg in pjcc-eggs.js; the hidden 3-tap Morse egg
-   stays. So: a steady faded mark, no hover lift, no pointer cursor. */
-.site-logo {
-  display: block;
-  line-height: 0;
-  text-decoration: none;
-  opacity: 0.38;
-  cursor: default;
+/* --- THE THREE MARKS (header center) — 2026-08-09 -----------------------------------
+   CW · P&JCC · McPuppy: one link to each of the site's three front doors, dead center.
+   (This replaced `.site-logo`, the faded McPuppy WATERMARK that lived here from
+   2026-07-23; the markup and the reasoning are in _includes/site-header.html.)
+
+   ⚠ THE CURRENT PAGE'S MARK IS DIMMED VIA `[aria-current="page"]`, which Liquid writes.
+   Don't swap it for a class: the attribute is what tells a screen reader the same thing
+   the dim tells everyone else, and one source can't drift from itself. */
+.site-marks {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
+.site-mark {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  text-decoration: none;
+  transition: opacity 0.2s;
+  /* ⚠ NO SHRINKING. A flex item shrinks by default, and the badge is the only one of the
+     three whose width comes from an <img> rather than from text — so on a 390px phone the
+     row squeezed it to width:0 and the McPuppy mark VANISHED. Every computed style was
+     correct, the element was in the DOM, display was `block`, and it was 0px wide. */
+  flex: 0 0 auto;
+
+  &:hover, &:focus-visible { text-decoration: none; opacity: 0.82; }
+}
+
+/* the two typographic marks. Poppins 800 is the display voice — a wordmark is made
+   distinctive by TREATMENT, not by a fifth font (see _includes/wordmark.html). */
+.site-mark--word {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+}
+.mk-c { color: #f2f4f7; }
+.mk-w { color: #ffa07a; }               /* the same coral as `Wild` in the wordmark */
+.site-mark--pjcc { color: #F5C518; }    /* the world's gold, worn since the first hero */
+
 .logo-stacked {
-  height: 52px;   /* was 80px — condensed 2026-07-17 (Nate: the nav area is too big) */
+  height: 44px;   /* 80 → 52 (condensed 2026-07-17) → 44, pulled down to sit level with
+                     the two word marks beside it. Picked from a rendered grid: at 38 the
+                     "McPuppy Studios" line under the paw is mush. */
   width: auto;
   display: block;
-  filter: invert(1) grayscale(0.35);
+  filter: invert(1);   /* full ink — the grayscale(.35) went with the watermark */
+}
+
+/* "You are here." Considerably dimmer, still legibly present. */
+.site-mark[aria-current="page"] { opacity: 0.22; }
+.site-mark[aria-current="page"]:hover { opacity: 0.34; }
+/* ⚠ THE BADGE NEEDS A HIGHER FLOOR THAN THE WORDS — one opacity does not dim three marks
+   equally. Two are solid Poppins 800; the third is fine white line-work on a near-black bar,
+   so at 0.22 it holds up beside them on a desktop and DISAPPEARS ENTIRELY at the 34px phone
+   size. "Dimmed" has to still be visible, or the row silently becomes two marks on the one
+   page where the third is the page you are on. */
+.site-mark--mcp[aria-current="page"] { opacity: 0.34; }
+.site-mark--mcp[aria-current="page"]:hover { opacity: 0.46; }
+
+/* The narrow-desktop step-down: 901–1200 is where the row is genuinely tight, so the marks
+   give a little there rather than crowding the controls.
+
+   ⚠ IT LIVES HERE, BELOW THE BASE RULES, BECAUSE A MEDIA QUERY CARRIES NO SPECIFICITY.
+   Written 40 lines up — beside the margin rule it reads with — `.site-mark--word` inside
+   `@media` lost to the identical plain `.site-mark--word` below it, and the whole block did
+   nothing at any width while looking completely correct. Third time that rule has bitten. */
+@media (min-width: 901px) and (max-width: 1200px) {
+  .site-marks { gap: 12px; }
+  .site-mark--word { font-size: 15px; }
+  .logo-stacked { height: 36px; }
+}
+
+/* ⚑ AND BELOW 1100 THE HEADER GIVES UP CONTACT — a judgment call, flagged for Nate.
+   Three marks need about 110px that one badge did not, and between 901 and 1100 the row
+   simply does not have it: every version I tried that kept all four controls put 日本語 back
+   into a three-character vertical stack, which is the one failure this header has already
+   been fixed for once. Shrinking the marks to fit left them 1px from the cliff — a layout
+   that only works until a font loads differently is not a layout.
+   So Contact steps out here, exactly as it already does below 700px (his call, 2026-07-17),
+   and for the same reason: it is one tap away in the drawer and in ⌘K, while a bent 日本語
+   is on every page at once. Measured after: the header is now SHORTER than live at every
+   width from 901 up, and nothing wraps that did not wrap before. */
+@media (max-width: 1100px) {
+  .about-contact-btn { display: none; }
 }
 
 /* --- Navigation — now an off-canvas left drawer (2026-07-22) ---
@@ -1097,10 +1198,13 @@ pre code {
     align-items: stretch;
   }
 
-  /* Shrink logo so the header-top row stays compact */
-  .logo-stacked {
-    height: 52px;
-  }
+  /* The three marks have to share the top row with ⌕ · 日本語 · Sign in, so on a phone the
+     set tightens rather than dropping a mark: all three front doors stay reachable from
+     every page, which is the entire point of the row. Sized against a 360px screen, the
+     narrowest one still in real use. (2026-08-09) */
+  .site-marks { gap: 7px; }
+  .site-mark--word { font-size: 13px; }
+  .logo-stacked { height: 28px; }
 
   /* Show the hamburger button */
   .nav-toggle {
@@ -1200,6 +1304,43 @@ pre code {
   .stat-number {
     font-size: 60px;
   }
+}
+
+/* ⚑ ON A PHONE THE STUDIO BADGE STEPS OUT — a judgment call, flagged for Nate (2026-08-09).
+   The phone top row is ☰ + the marks + ⌕ + 日本語 + Sign in. At 390px that leaves the marks
+   96 usable pixels and the three of them want 132. There is no type size that fixes it: at
+   10px the words are past reading, and the row still only gains a few pixels because the
+   badge is the wide one (its artwork is 3:2). So below 430 the badge steps out and CW +
+   P&JCC keep their size — the studio door is the one of the three the drawer already names
+   in words ("Projects — Inside McPuppy Studios"). Say the word and I will buy the space back
+   somewhere else instead: "Sign in" is 83px of the 192 the controls take.
+
+   ⚠⚠ WHAT I WILL NOT DO IS WHAT THE PAGE DOES TODAY. The live McPuppy badge is an <img> in a
+   shrinkable grid cell, so it never overflows — it just quietly gets crushed: measured on
+   the live site it is 78px at 430, 57 at 375 and TWO PIXELS at 320. That is why nothing ever
+   looked broken. A mark that shrinks to a smudge is worse than a mark that stepped out, and
+   the only reason I found it is that `flex: 0 0 auto` turned the same squeeze into an
+   overflow number I could see.
+
+   ⚠ AND IT LIVES OUT HERE, NOT INSIDE THE 700px BLOCK. Nested in there it closed that block
+   early, and every phone rule after it (the hamburger, the header padding, the collapsing
+   nav) silently became a narrow-phone rule. Nothing errored — the header padding measured
+   16px at 390 instead of 12, and that one number was the whole signal. */
+@media (max-width: 429px) {
+  .site-mark--mcp { display: none; }
+  .site-marks { gap: 5px; }
+  .site-mark--word { font-size: 12px; }
+}
+/* 360 and 375 are still real Android/iPhone widths and they miss by a couple of pixels,
+   so the type takes one more step rather than the row taking an overlap. */
+@media (max-width: 380px) {
+  .site-marks { gap: 4px; }
+  .site-mark--word { font-size: 11px; }
+}
+/* ⚠ At 320 the controls alone (⌕ + 日本語 + Sign in = 192) plus the hamburger leave 26px,
+   which is one mark, not two. This is the floor of the design, not a tuning knob. */
+@media (max-width: 349px) {
+  .site-mark--pjcc { display: none; }
 }
 
 /* ═══ THE CHESSWILD WORDMARK — SHARED INK (2026-08-08) ════════════════════════

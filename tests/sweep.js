@@ -112,6 +112,10 @@ const ALLOWED_DYNAMIC = [
      rule-abiding choice, but the level number IS the ladder position and mapping it
      through a table only to get the number back is indirection for its own sake. */
   'pip-',
+  /* 'eclipse' / 'eclipse-total' — town-weather.html sets them before paint and
+     pjcc-weather.js re-plots them every 30s (2026-08-09). Both are literal strings in the
+     source, but classList.toggle() on a variable is what the sweep sees. */
+  'eclipse',
 ];
 const allowedDyn = (cls) => ALLOWED_DYNAMIC.some((p) => cls.startsWith(p));
 

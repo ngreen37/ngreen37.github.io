@@ -174,13 +174,24 @@ function showTxToast(msg, duration) {
   }
 })();
 
-// Morse code logo easter egg — 3 rapid taps (#21)
+// Morse code easter egg — 3 rapid taps (#21)
+//
+// ⚠⚠ IT MOVED OFF THE HEADER BADGE ON 2026-08-09, AND IT HAD TO. The badge became a LINK
+// to /projects/ (one of the three front-door marks), and this handler called
+// e.preventDefault() on every click it saw — so the new link would have looked perfectly
+// fine in the markup and navigated NOWHERE, forever, with nothing in the console. A tap
+// cannot both follow a link and be the first of three; only one of them can own the click,
+// and the link is what he asked for.
+//
+// Its new home is the drawer's ♛ — an ornament with no job of its own, which is what an
+// egg wants: nothing else is listening, so nothing else can break. It also hides the egg
+// slightly better, since you have to open the drawer to find it.
 (function() {
-  var logo = document.querySelector('.site-logo');
-  if (!logo) return;
+  var host = document.querySelector('.drawer-queen');
+  if (!host) return;
+  host.style.cursor = 'default';
   var taps = 0; var timer = null;
-  logo.addEventListener('click', function(e) {
-    e.preventDefault();
+  host.addEventListener('click', function() {
     taps++;
     clearTimeout(timer);
     timer = setTimeout(function() {
@@ -189,10 +200,23 @@ function showTxToast(msg, duration) {
         if (flash) { flash.classList.remove('is-active'); void flash.offsetWidth; flash.classList.add('is-active'); setTimeout(function() { flash.classList.remove('is-active'); }, 900); }
         showTxToast('— — — / . — . — / — — . — / — . — — — MORSE SIGNAL CONFIRMED');
       }
-      // Single/double clicks no longer navigate — the header logo is a WATERMARK, not a
-      // link (2026-07-23, Nate). The 3-tap Morse egg above is all that remains.
       taps = 0;
     }, 400);
+  });
+})();
+
+// THE ECLIPSE DOOR (#29, 2026-08-09) — once every 29.5 days, for the ~20 minutes the sun is
+// genuinely out, the black disc in the sky can be clicked. The CSS is what arms it
+// (pointer-events only under html.eclipse-total.sky-day), so this handler cannot fire on an
+// ordinary afternoon even if something else went wrong: the button is inert 99.9% of the
+// month. ⚑ The line is a placeholder in the site's plainest voice — the town's copy is
+// Nate's, and a toast nobody has approved should read like a note, not like a character.
+(function () {
+  var door = document.getElementById('ts-eclipse-door');
+  if (!door) return;
+  door.addEventListener('click', function () {
+    try { localStorage.setItem('frag_eclipse', '1'); } catch (e) {}
+    showTxToast('TOTALITY — the whole town stopped to look up.');
   });
 })();
 
