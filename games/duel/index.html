@@ -1,0 +1,95 @@
+---
+layout: game
+title: "Duel Mode v0.1"
+description: "Chess arguments, settled with openings. Building — playable by invitation while it is tuned."
+permalink: /games/duel/
+sitemap: false
+---
+
+{% comment %} ══════════════════════════════════════════════════════════════════════════
+     DUEL MODE — built 2026-08-08 to Nate's ask: "Do your best prototype, like the Risk
+     game… Let's try Duel Mode… Make it Monkey Island style where the options are at the
+     bottom. We are paying homage, so make that known."
+
+     ⚠ THIS PAGE IS KEY-GATED, WHICH IS NOT THE SAME AS SECRET. It is a soft gate: it keeps
+     the prototype from being stumbled into from a search result or a shared link, and
+     nothing more. Anyone reading this file can read the key. That is fine for an
+     unfinished game and would NOT be fine for anything that mattered — do not reuse this
+     pattern for real access control.
+
+     THE KEY: /games/duel/?key=chesswild — once used it is remembered in localStorage
+     ('pjcc.duel.key'), so the URL only has to be typed once per browser. ?key=off forgets
+     it again. Same shape as MARCHLAND, deliberately: two prototypes behaving differently
+     at the door is one more thing to remember for no reason.
+
+     The hall entry in pjcc-games-data.js carries `playable:false`, which makes the card a
+     <div> rather than an <a> — so the game appears in the Building hall under its cryptic
+     name and emits no link at all.
+
+     ⚠⚠ THE HOMAGE BLOCK BELOW IS NOT DECORATION. tests/duel.check.js fails the build if
+     this page stops naming The Secret of Monkey Island. We borrowed the shape of somebody
+     else's idea; saying so is the price of borrowing it, and a credit that survives only
+     as long as nobody tidies the page is not a credit.
+     ══════════════════════════════════════════════════════════════════════════ {% endcomment %}
+
+<div id="dl-gate" hidden>
+  <div class="game-frame-wrap dl-frame">
+    <iframe
+      src="{{ '/assets/games/pjcc_duel.html' | relative_url }}"
+      title="Duel Mode"
+      allowfullscreen
+      scrolling="no"
+    ></iframe>
+  </div>
+
+  <div class="game-info">
+    <p><strong>The duel.</strong> Someone lays a real opening trap and says something about the position. You answer by picking a line at the bottom — each one is a real move. First to three exchanges takes the bench.</p>
+    <p><strong>You learn by losing.</strong> Walk into a trap and it goes in your notebook as one you can spring. Spring one and get answered, and you learn their comeback. The duels you lose teach you the most, which is the whole idea.</p>
+    <p><strong>The Swordmaster</strong> opens once you have collected every comeback. She plays openings you have never seen — and the answers you learned on the bench still fit. That rhyme has a name in chess: a transposition.</p>
+    <p><strong>Nothing here is invented.</strong> Every line is a real trap, re-proved against the site's referee on every push — legal from move one, and any mate you are threatened with proved forced against every defense.</p>
+
+    <p class="dl-homage">
+      <strong>A homage.</strong> Duel Mode is a love letter to <strong>insult swordfighting</strong> in
+      <strong>The Secret of Monkey Island</strong> (Ron Gilbert, Lucasfilm Games, 1990) — the duel where
+      you fight with words, you can only learn a comeback by having it used on you, and the Sword Master
+      says things nobody has ever said to you before. That structure is theirs and it is brilliant. The
+      board, the traps, the writing and the code here are ours; no art, code or dialogue was taken.
+      <br><em>And the insults are about the position, never about the person holding it.</em>
+    </p>
+  </div>
+</div>
+
+<div id="dl-locked">
+  <p class="dl-shut">This one isn't open yet.</p>
+</div>
+
+<style>
+  .dl-frame { max-width: 480px; }
+  .dl-frame iframe { height: 780px; }
+  @media (max-width: 600px) { .dl-frame iframe { height: 720px; } }
+  .dl-shut { text-align: center; color: var(--ink-3, #8479a3); font-family: 'Share Tech Mono', ui-monospace, monospace;
+    letter-spacing: .12em; text-transform: uppercase; font-size: 13px; padding: 64px 16px; }
+  .dl-homage { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--rule, #2e2545);
+    font-size: 13px; line-height: 1.7; color: var(--ink-2, #b3a9cc); }
+  .dl-homage em { color: var(--ink-3, #8479a3); font-size: 12.5px; }
+</style>
+
+<script>
+/* The soft gate. Reads ?key=, remembers a good one, and reveals the frame. Deliberately
+   tiny and deliberately not clever — see the comment at the top of this file. */
+(function () {
+  var KEY = 'chesswild', STORE = 'pjcc.duel.key';
+  var q = '';
+  try { q = new URLSearchParams(location.search).get('key') || ''; } catch (e) {}
+  var ok = false;
+  try {
+    if (q === 'off') { localStorage.removeItem(STORE); }
+    else if (q === KEY) { localStorage.setItem(STORE, '1'); ok = true; }
+    else { ok = localStorage.getItem(STORE) === '1'; }
+  } catch (e) { ok = (q === KEY); }   // private mode: the URL still works, just not the memory
+  if (!ok) return;
+  var g = document.getElementById('dl-gate'), l = document.getElementById('dl-locked');
+  if (g) g.hidden = false;
+  if (l) l.remove();
+})();
+</script>

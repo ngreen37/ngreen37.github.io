@@ -394,7 +394,7 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
 
   <div class="mcp-thanks-block">
     <h3 class="mcp-thanks-sub">For the endless inspiration, McPuppy Studios would like to thank</h3>
-    <p class="mcp-thanks-muses">Norm Macdonald &middot; The Meadowlands &middot; The Lawrence Arms &middot; Jim Croce &middot; Trey Parker and Matt Stone &middot; John Steakley &middot; Neville Goddard &middot; Jesse Green</p>
+    <p class="mcp-thanks-muses">Norm Macdonald &middot; The Meadowlands &middot; Joey Cape &middot; The Lawrence Arms &middot; Jim Croce &middot; Trey Parker and Matt Stone &middot; John Steakley &middot; Neville Goddard &middot; Jesse Green</p>
   </div>
 </section>
 

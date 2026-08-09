@@ -38,6 +38,8 @@ window.PJCC_GAMES = [
   // hall with no route in; the page itself is key-gated (see games/marchland/index.html).
   // Flip `playable` to true and delete the gate script when it's ready to open.
   { slug:'marchland',         name:'MARCHLAND',          cryptic:'Nine holdings and a border that moves',  icon:'⚄', accent:'#c9a7ff', cat:'dev', playable:false },
+  // Duel Mode — the same soft-gated shape; the page is at games/duel/index.html.
+  { slug:'duel',              name:'Duel Mode',          cryptic:'Say something about the position',       icon:'⚔', accent:'#9fe8ff', cat:'dev', playable:false },
   // The Gambit — LEFT the games section entirely (Nate 2026-07-14). It lives at
   // /the-gambit/ as its own ritual room, doored from the foot of the PJCC home.
   // ── The Vault (unlockable) ──

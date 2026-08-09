@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Duel Mode v0.1</title>
+<!-- ══════════════════════════════════════════════════════════════════════════════════════
+     DUEL MODE — trap-and-refutation duelling, built 2026-08-08 to Nate's ask.
+
+     ⭐ AN OPENLY DECLARED HOMAGE. This is insult swordfighting from THE SECRET OF MONKEY
+     ISLAND (Ron Gilbert, Lucasfilm Games, 1990) rebuilt in chess. The debt is named on the
+     page that frames this file and on the title screen below — a homage says whose idea it
+     was; only a rip-off keeps quiet. Nothing here is copied: no art, no code, no lines of
+     their dialogue. What is borrowed is the SHAPE, and the shape is the good part:
+
+        1. You fight with words, and the duel is a call-and-response.
+        2. YOU LEARN BY LOSING. The only way to get an insult is to have it used on you.
+           Defeat is not a punishment, it is how the content arrives.
+        3. Matching is by IDEA, not by power — you win by recognizing the shape of what
+           was said, which is exactly the skill a chess opening trap teaches.
+        4. The Swordmaster uses lines you have never seen, and the retort you learned from
+           somebody else still fits. In chess that is a TRANSPOSITION, and it is the single
+           most useful thing a beginner can learn: motifs travel between openings.
+
+     ⚠ THE "INSULTS" ARE ABOUT THE POSITION, NEVER ABOUT THE PLAYER. That is a hard rule,
+     not a preference — this site's whole footing is good morals and touching stories, and
+     the original is only funny because "you fight like a dairy farmer" is absurd rather
+     than cruel. Constraining every line to the BOARD keeps it kind and makes it teach in
+     the same breath: "your queen is out before the gates open" is a joke and a lesson.
+     Anything that would sting a person rather than a position does not belong here.
+
+     ⚠⚠ EVERY LINE IN `TRAPS` IS REFEREE-PROVED AT BUILD TIME — `npm run test:duel`. Legal
+     SAN from the first move, every reply legal in its own position, and any mate the
+     OPPONENT threatens you with proved forced against every defense. A duel that teaches a
+     line has to be right about the line. [[accuracy-above-all]]
+     ══════════════════════════════════════════════════════════════════════════════════════ -->
+<!-- THE TOWN SKY. ORDER IS LOAD-BEARING — pjcc-game-sky.js finds no clock if these swap. -->
+<script src="/assets/js/pjcc-time.js"></script>
+<script src="/assets/js/pjcc-game-sky.js"></script>
+<!-- THE REFEREE. Every move below is played through the site's perft-verified referee, so
+     the board can never show a position the rules would not allow. -->
+<script src="/assets/js/pjcc-chess.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    background: #0b0913; height: 100%; overflow: hidden;
+    font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; color: #e8e2f5;
+    touch-action: manipulation;
+  }
+  body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+
+  /* ── THE CANON BOARD TOKENS ────────────────────────────────────────────────────
+     Lifted verbatim from _sass/_pjcc-22-chess-canon.scss. This file is standalone — it
+     does not load the site stylesheet — so the tokens are restated rather than inherited.
+     PARK TABLE STANDARD is the default for every board on this site. */
+  :root {
+    --chess-lt: #e9d3a4;
+    --chess-dk: #9c5f33;
+    --chess-frame: #4a3320;
+    --piece-w-fill: #ffffff;
+    --piece-w-line: #2f2440;
+    --piece-b-fill: #4a3585;
+    --piece-b-line: #f2e9ff;
+    --mine: #6bffb8;
+    --theirs: #ff6e8a;
+    --ink: #e8e2f5;
+    --ink-2: #b3a9cc;
+    --ink-3: #8479a3;
+    --panel: #14101f;
+    --panel-hi: #1d1730;
+    --rule: #2e2545;
+    /* the dialogue palette — a nod to the 16-color look, in this site's inks */
+    --say: #f2ecff;
+    --pick: #9fe8ff;
+    --pick-hot: #ffffff;
+  }
+
+  #wrap { width: 100%; max-width: 460px; height: 100%; max-height: 780px;
+    display: flex; flex-direction: column; position: relative; }
+  .screen { display: none; flex: 1; flex-direction: column; padding: 14px; overflow-y: auto; }
+  .screen.on { display: flex; }
+
+  h1 { font-size: 26px; letter-spacing: 5px; font-weight: 900; text-align: center; }
+  h2 { font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-3);
+       font-weight: 700; text-align: center; margin-bottom: 8px; }
+  .sub { text-align: center; color: var(--ink-2); font-size: 13px; line-height: 1.6; }
+
+  .btn { display: block; width: 100%; margin: 8px 0 0; padding: 12px 14px; border-radius: 10px;
+    border: 1px solid var(--rule); background: var(--panel-hi); color: var(--ink);
+    font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; text-align: left; }
+  .btn:hover { border-color: var(--mine); }
+  .btn[disabled] { opacity: .45; cursor: default; }
+  .btn[disabled]:hover { border-color: var(--rule); }
+  .btn small { display: block; font-weight: 400; font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+  .btn-go { background: #1f7a4d; border-color: #2e9c63; text-align: center; }
+  .btn-go:hover { background: #24925c; }
+
+  /* ── THE HOMAGE, STATED ON THE TITLE SCREEN. Do not quietly delete this. ── */
+  .homage { margin-top: auto; padding-top: 14px; text-align: center; font-size: 11px;
+    line-height: 1.6; color: var(--ink-3); border-top: 1px solid var(--rule); }
+  .homage b { color: var(--ink-2); font-weight: 700; }
+
+  /* ── THE BOARD ────────────────────────────────────────────────────────────────
+     Two stacked grids, squares under men, exactly as the front door learned to do it:
+     one grid with explicitly-placed children steals cells from auto-placed siblings and
+     punches holes through the board. Flipped — the player always answers as BLACK, so
+     black sits at the bottom where their hands are. */
+  .boardwrap { position: relative; width: 100%; aspect-ratio: 1; border: 3px solid var(--chess-frame);
+    border-radius: 6px; overflow: hidden; flex: 0 0 auto; container-type: inline-size; }
+  .sqs, .men { position: absolute; inset: 0; display: grid;
+    grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); }
+  .men { pointer-events: none; }
+  .sq { background: var(--chess-lt); }
+  .sq.d { background: var(--chess-dk); }
+  .sq.from { box-shadow: inset 0 0 0 3px rgba(107,255,184,.55); }
+  .sq.to   { box-shadow: inset 0 0 0 3px rgba(107,255,184,.9); }
+  .sq.hit  { box-shadow: inset 0 0 0 3px rgba(255,110,138,.9); }
+  .pc { display: flex; align-items: center; justify-content: center;
+    font-size: 9.4cqw; line-height: 1; transition: none; }
+  .pc.w { color: var(--piece-w-fill); -webkit-text-stroke: .085em var(--piece-w-line); }
+  .pc.b { color: var(--piece-b-fill); -webkit-text-stroke: .085em var(--piece-b-line); }
+
+  /* ── THE DUEL BAR ── */
+  .bar { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12px; }
+  .bar .who { font-weight: 800; letter-spacing: .04em; }
+  .pips { display: flex; gap: 4px; }
+  .pip { width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--rule);
+    background: transparent; }
+  .pip.on { background: var(--mine); border-color: var(--mine); }
+  .pip.them.on { background: var(--theirs); border-color: var(--theirs); }
+  .bar .sp { margin-left: auto; color: var(--ink-3); }
+
+  /* ── THE DIALOGUE PANEL — the whole homage lives in this shape ────────────────
+     Spoken line on top, the choices listed underneath, at the BOTTOM of the screen, the
+     way Monkey Island put them. Mono face because the original was a fixed-width era and
+     it is the closest thing this site ships. */
+  .talk { margin-top: 10px; flex: 1; display: flex; flex-direction: column;
+    background: #07060d; border: 1px solid var(--rule); border-radius: 10px; padding: 10px 11px;
+    font-family: 'Share Tech Mono', ui-monospace, 'Courier New', monospace; }
+  .say { color: var(--say); font-size: 14px; line-height: 1.45; min-height: 2.9em; }
+  .say .nm { color: var(--theirs); }
+  .say .nm.me { color: var(--mine); }
+  .picks { margin-top: 8px; display: flex; flex-direction: column; gap: 2px; }
+  .pick { background: none; border: 0; padding: 5px 2px; margin: 0; text-align: left;
+    font: inherit; font-size: 13.5px; line-height: 1.3; color: var(--pick); cursor: pointer; }
+  .pick:hover, .pick:focus-visible { color: var(--pick-hot); outline: none; }
+  .pick[disabled] { opacity: .35; cursor: default; }
+  .pick .mv { color: var(--ink-3); }
+  .pick:hover .mv { color: var(--pick); }
+  .note { margin-top: 8px; font-size: 12px; line-height: 1.5; color: var(--ink-3);
+    font-family: 'Trebuchet MS', sans-serif; }
+  .note b { color: var(--mine); }
+  .note.bad b { color: var(--theirs); }
+
+  .foes { margin-top: 6px; }
+  .nb { font-size: 12.5px; line-height: 1.7; color: var(--ink-2); }
+  .nb .k { color: var(--mine); }
+  .nb .u { color: var(--ink-3); }
+  .prog { text-align: center; font-size: 12px; color: var(--ink-3); margin-top: 8px; }
+</style>
+</head>
+<body>
+<div id="wrap">
+
+  <!-- ══ TITLE ══════════════════════════════════════════════════════════════════ -->
+  <section class="screen on" id="s-home">
+    <h1>DUEL MODE</h1>
+    <p class="sub" style="margin:6px 0 14px">Chess arguments, settled with openings.<br>
+      Someone lays a trap and says something about it. You answer with a move.</p>
+    <h2>Pick an Opponent</h2>
+    <div class="foes" id="foes"></div>
+    <p class="prog" id="prog"></p>
+    <button class="btn" id="b-book" type="button">The Notebook<small>Every trap and comeback you have collected</small></button>
+    <p class="homage">
+      A homage to <b>insult swordfighting</b> in <b>The Secret of Monkey Island</b><br>
+      (Ron Gilbert &middot; Lucasfilm Games &middot; 1990).<br>
+      Their idea. Our board. No art, code or dialogue was taken.
+    </p>
+  </section>
+
+  <!-- ══ THE DUEL ═══════════════════════════════════════════════════════════════ -->
+  <section class="screen" id="s-duel">
+    <div class="bar">
+      <span class="who" id="d-you" style="color:var(--mine)">You</span>
+      <span class="pips" id="d-pyou"></span>
+      <span class="sp" id="d-name"></span>
+      <span class="pips" id="d-pthem"></span>
+      <span class="who them" id="d-them" style="color:var(--theirs)"></span>
+    </div>
+    <div class="boardwrap"><div class="sqs" id="sqs"></div><div class="men" id="men"></div></div>
+    <div class="talk">
+      <div class="say" id="say"></div>
+      <div class="picks" id="picks"></div>
+      <div class="note" id="note"></div>
+    </div>
+  </section>
+
+  <!-- ══ AFTER ══════════════════════════════════════════════════════════════════ -->
+  <section class="screen" id="s-end">
+    <h1 id="e-title" style="font-size:22px"></h1>
+    <p class="sub" id="e-sub" style="margin:10px 0 14px"></p>
+    <div class="nb" id="e-learn"></div>
+    <button class="btn btn-go" id="b-again" type="button">Again</button>
+    <button class="btn" id="b-home" type="button">Back to the bench</button>
+  </section>
+
+  <!-- ══ NOTEBOOK ═══════════════════════════════════════════════════════════════ -->
+  <section class="screen" id="s-book">
+    <h1 style="font-size:20px">THE NOTEBOOK</h1>
+    <p class="sub" style="margin:8px 0 12px">You collect a trap by walking into it, and a
+      comeback by having one used on you. Losing is how this fills up.</p>
+    <div class="nb" id="book"></div>
+    <button class="btn" id="b-back" type="button">Back</button>
+  </section>
+
+</div>
+
+<script>
+/* ══ THE TRAPS ══ every line proved by tests/duel.check.js. Do not edit a move without
+   re-running `npm run test:duel` — the whole point of this file is that its chess is true. */
+var TRAPS = [
+  {
+    id: 'scholar', name: "Scholar's Mate", foe: 'w',
+    setup: [['e2e4','e4'],['e7e5','e5'],['f1c4','Bc4'],['f8c5','Bc5'],['d1h5','Qh5']],
+    insult: 'Two pieces is all this takes.',
+    replies: [
+      { uci:'g7g6', san:'g6', right:true, say:'Then you will want them both back.',
+        then:[['h5f3','Qf3'],['g8f6','Nf6']] },
+      { uci:'g8f6', san:'Nf6', say:'A knight settles it.',
+        then:[['h5f7','Qxf7#']] },
+      { uci:'b8c6', san:'Nc6', say:'I develop, you flail.',
+        then:[['h5f7','Qxf7#']] },
+      { uci:'d7d6', san:'d6', say:'My house is in order.',
+        then:[['h5f7','Qxf7#']] }
+    ]
+  },
+  {
+    id: 'fools', name: "Fool's Mate", foe: 'w',
+    setup: [['f2f3','f3'],['e7e5','e5'],['g2g4','g4']],
+    insult: 'Both my wing pawns are out. Impressive, no?',
+    replies: [
+      { uci:'d8h4', san:'Qh4#', right:true, say:'Impressively brief.', then:[] },
+      { uci:'d7d5', san:'d5', say:'I claim the middle.',
+        then:[['f1g2','Bg2']] },
+      { uci:'b8c6', san:'Nc6', say:'A knight, politely.',
+        then:[['f1g2','Bg2']] },
+      { uci:'f8c5', san:'Bc5', say:'My bishop takes the long view.',
+        then:[['f1g2','Bg2']] }
+    ]
+  },
+  {
+    id: 'legal', name: "Légal's Mate", foe: 'w',
+    setup: [['e2e4','e4'],['e7e5','e5'],['g1f3','Nf3'],['b8c6','Nc6'],['f1c4','Bc4'],['d7d6','d6'],
+            ['b1c3','Nc3'],['c8g4','Bg4'],['h2h3','h3'],['g4h5','Bh5'],['f3e5','Nxe5']],
+    insult: 'Take the queen. I insist.',
+    replies: [
+      { uci:'c6e5', san:'Nxe5', right:true, say:'I will take the horse and leave the crown.',
+        then:[['d1h5','Qxh5'],['e5c4','Nxc4']] },
+      { uci:'h5d1', san:'Bxd1', say:'A crown is a crown.',
+        then:[['c4f7','Bxf7+'],['e8e7','Ke7'],['c3d5','Nd5#']] },
+      { uci:'d6e5', san:'dxe5', say:'A pawn does the work.',
+        then:[['d1h5','Qxh5']] },
+      { uci:'g8f6', san:'Nf6', say:'I bring another piece.',
+        then:[['d1h5','Qxh5']] }
+    ]
+  },
+  {
+    id: 'damiano', name: 'Damiano Defense', foe: 'w',
+    setup: [['e2e4','e4'],['e7e5','e5'],['g1f3','Nf3'],['f7f6','f6'],['f3e5','Nxe5']],
+    insult: 'That pawn was holding the door shut.',
+    replies: [
+      { uci:'d8e7', san:'Qe7', right:true, say:'The door has a second hinge.',
+        then:[['e5f3','Nf3'],['e7e4','Qxe4+'],['d1e2','Qe2']] },
+      { uci:'f6e5', san:'fxe5', say:'And now the horse is mine.',
+        then:[['d1h5','Qh5+'],['e8e7','Ke7'],['h5e5','Qxe5+']] },
+      { uci:'b8c6', san:'Nc6', say:'I bring a friend for it.',
+        then:[['e5c6','Nxc6'],['d7c6','dxc6']] },
+      { uci:'d7d6', san:'d6', say:'Step down from there.',
+        then:[['e5f3','Nf3']] }
+    ]
+  },
+  {
+    id: 'shilling', name: 'Blackburne Shilling', foe: 'w',
+    setup: [['e2e4','e4'],['e7e5','e5'],['g1f3','Nf3'],['b8c6','Nc6'],['f1c4','Bc4'],['c6d4','Nd4'],['f3e5','Nxe5']],
+    insult: 'Your knight wandered off. I kept the pawn it left.',
+    replies: [
+      { uci:'d8g5', san:'Qg5', right:true, say:'It was not the pawn I was selling.',
+        then:[['e5f7','Nxf7'],['g5g2','Qxg2'],['h1f1','Rf1'],['g2e4','Qxe4+']] },
+      { uci:'g8f6', san:'Nf6', say:'I develop and forget it.',
+        then:[['e5f3','Nf3']] },
+      { uci:'d7d6', san:'d6', say:'Down from there.',
+        then:[['e5f3','Nf3']] },
+      { uci:'d8e7', san:'Qe7', say:'I pin it in place.',
+        then:[['e5f3','Nf3']] }
+    ]
+  },
+  {
+    id: 'froms', name: "From's Gambit", foe: 'w',
+    setup: [['f2f4','f4'],['e7e5','e5'],['f4e5','fxe5'],['d7d6','d6'],['e5d6','exd6'],['f8d6','Bxd6'],['b1c3','Nc3']],
+    insult: 'A knight out, and the wing still open behind me.',
+    replies: [
+      { uci:'d8h4', san:'Qh4+', right:true, say:'The wing is where I was going.',
+        then:[['g2g3','g3'],['d6g3','Bxg3+'],['h2g3','hxg3'],['h4g3','Qxg3#']] },
+      { uci:'g8f6', san:'Nf6', say:'A knight for a knight.',
+        then:[['g1f3','Nf3']] },
+      { uci:'b8c6', san:'Nc6', say:'Another one out.',
+        then:[['g1f3','Nf3']] },
+      { uci:'d8e7', san:'Qe7', say:'The queen looks down the file.',
+        then:[['g1f3','Nf3']] }
+    ]
+  },
+  {
+    id: 'noah', name: "Noah's Ark Trap", foe: 'w',
+    setup: [['e2e4','e4'],['e7e5','e5'],['g1f3','Nf3'],['b8c6','Nc6'],['f1b5','Bb5'],['a7a6','a6'],
+            ['b5a4','Ba4'],['d7d6','d6'],['d2d4','d4'],['b7b5','b5'],['a4b3','Bb3'],['c6d4','Nxd4'],
+            ['f3d4','Nxd4'],['e5d4','exd4'],['d1d4','Qxd4']],
+    insult: 'The middle is mine and your knights are gone.',
+    replies: [
+      { uci:'c7c5', san:'c5', right:true, say:'And your bishop is in a room with one door.',
+        then:[['d4d5','Qd5'],['c8e6','Be6'],['d5c6','Qc6+'],['e6d7','Bd7'],['c6d5','Qd5'],['c5c4','c4']] },
+      { uci:'g8f6', san:'Nf6', say:'A knight comes out.',
+        then:[['b1c3','Nc3']] },
+      { uci:'c8b7', san:'Bb7', say:'The bishop takes the long road.',
+        then:[['b1c3','Nc3']] },
+      { uci:'f8e7', san:'Be7', say:'I tidy the back rank.',
+        then:[['b1c3','Nc3']] }
+    ]
+  },
+  {
+    id: 'englund', name: 'Englund Gambit', foe: 'w',
+    setup: [['d2d4','d4'],['e7e5','e5'],['d4e5','dxe5'],['b8c6','Nc6'],['g1f3','Nf3'],['d8e7','Qe7'],['c1f4','Bf4']],
+    insult: 'The bishop guards the pawn. Your gambit bought nothing.',
+    replies: [
+      { uci:'e7b4', san:'Qb4+', right:true, say:'It bought a check, and a corner you left open.',
+        then:[['f4d2','Bd2'],['b4b2','Qxb2'],['d2c3','Bc3'],['f8b4','Bb4']] },
+      { uci:'c6e5', san:'Nxe5', say:'I take it back at once.',
+        then:[['f3e5','Nxe5'],['e7e5','Qxe5']] },
+      { uci:'d7d6', san:'d6', say:'I undermine it.',
+        then:[['e5d6','exd6']] },
+      { uci:'g8f6', san:'Nf6', say:'A knight to the middle.',
+        then:[['b1c3','Nc3']] }
+    ]
+  },
+  /* ══ THE SWORDMASTER'S THREE ══════════════════════════════════════════════════
+     ⭐ THIS IS THE WHOLE JOKE, AND IT IS ALSO THE LESSON. Her lines are ones you have
+     never been shown — different openings, different move orders — and the comeback you
+     learned from somebody else STILL FITS, word for word. `echo` names the trap each one
+     rhymes with, and the game says so out loud when you land it. In chess that rhyme has a
+     name: a transposition. Motifs travel between openings, which is the most useful thing
+     a beginner can be taught and the hardest thing to say convincingly. */
+  {
+    id: 'sm-f7', name: 'The Early Crown', foe: 'w', master: true, echo: 'scholar',
+    setup: [['e2e4','e4'],['e7e5','e5'],['d1h5','Qh5'],['b8c6','Nc6'],['f1c4','Bc4']],
+    insult: 'A different road. The same door.',
+    replies: [
+      { uci:'g7g6', san:'g6', right:true, say:'Then you will want them both back.',
+        then:[['h5f3','Qf3'],['g8f6','Nf6']] },
+      { uci:'g8f6', san:'Nf6', say:'A knight settles it.',
+        then:[['h5f7','Qxf7#']] },
+      { uci:'d7d6', san:'d6', say:'My house is in order.',
+        then:[['h5f7','Qxf7#']] },
+      { uci:'f8c5', san:'Bc5', say:'I mirror you.',
+        then:[['h5f7','Qxf7#']] }
+    ]
+  },
+  {
+    id: 'sm-crown', name: 'The Philidor Crown', foe: 'w', master: true, echo: 'legal',
+    setup: [['e2e4','e4'],['e7e5','e5'],['g1f3','Nf3'],['d7d6','d6'],['f1c4','Bc4'],['c8g4','Bg4'],
+            ['b1c3','Nc3'],['g7g6','g6'],['f3e5','Nxe5']],
+    insult: 'Take the queen. You have my blessing.',
+    replies: [
+      { uci:'d6e5', san:'dxe5', right:true, say:'I will take the horse and leave the crown.',
+        then:[['d1g4','Qxg4']] },
+      { uci:'g4d1', san:'Bxd1', say:'A crown is a crown.',
+        then:[['c4f7','Bxf7+'],['e8e7','Ke7'],['c3d5','Nd5#']] },
+      { uci:'g8f6', san:'Nf6', say:'I bring another piece.',
+        then:[['d1g4','Qxg4']] },
+      { uci:'f8g7', san:'Bg7', say:'The bishop takes its post.',
+        then:[['d1g4','Qxg4']] }
+    ]
+  },
+  {
+    id: 'sm-elephant', name: 'The Elephant Trap', foe: 'w', master: true, echo: 'shilling',
+    setup: [['d2d4','d4'],['d7d5','d5'],['c2c4','c4'],['e7e6','e6'],['b1c3','Nc3'],['g8f6','Nf6'],
+            ['c1g5','Bg5'],['b8d7','Nbd7'],['c4d5','cxd5'],['e6d5','exd5'],['c3d5','Nxd5']],
+    insult: 'Your pawn was pinned. I simply collected it.',
+    replies: [
+      { uci:'f6d5', san:'Nxd5', right:true, say:'It was not the pawn I was selling.',
+        then:[['g5d8','Bxd8'],['f8b4','Bb4+'],['d1d2','Qd2'],['b4d2','Bxd2+'],['e1d2','Kxd2']] },
+      { uci:'f8e7', san:'Be7', say:'I unpin it quietly.',
+        then:[['d5f6','Nxf6+']] },
+      { uci:'h7h6', san:'h6', say:'I ask the bishop to leave.',
+        then:[['d5f6','Nxf6+']] },
+      { uci:'c7c6', san:'c6', say:'I chase the knight.',
+        then:[['d5f6','Nxf6+']] }
+    ]
+  }
+];
+
+/* The bench. Ratings are the Park Tables regulars' own, taken from games/park-tables —
+   a character never wears two numbers on this site. `knows` is how many of the eight
+   comebacks they can find when YOU spring a trap: that is their whole difficulty dial. */
+var FOES = [
+  { id:'argus',  name:'Argus',  elo:650,  knows:2, line:'plays fast and reads slowly' },
+  { id:'auston', name:'Auston', elo:1100, knows:4, line:'has seen most of these before' },
+  { id:'father', name:'Father', elo:1700, knows:6, line:'is very hard to surprise' },
+  { id:'robert', name:'Robert', elo:2400, knows:8, line:'knows every answer you have' },
+  { id:'master', name:'The Swordmaster', elo:null, knows:8, master:true,
+    line:'uses openings you have never seen' }
+];
+
+(function () {
+  'use strict';
+  var C = window.PJCCChess;
+  var GLYPH = { K:9818, Q:9819, R:9820, B:9821, N:9822, P:9823 };
+  var KEY = 'pjcc.duel.v1';
+  var WIN = 3;                        /* first to three exchanges, like the original */
+  var byId = {}; TRAPS.forEach(function (t) { byId[t.id] = t; });
+  var REGULARS = TRAPS.filter(function (t) { return !t.master; });
+  var MASTERS  = TRAPS.filter(function (t) { return t.master; });
+
+  var $ = function (id) { return document.getElementById(id); };
+  function show(id) {
+    var all = document.querySelectorAll('.screen');
+    for (var i = 0; i < all.length; i++) all[i].classList.toggle('on', all[i].id === id);
+  }
+
+  /* ── THE NOTEBOOK ────────────────────────────────────────────────────────────
+     `insults` = traps you may spring. `retorts` = comebacks you have been shown.
+     ⚠ A KNOWN COMEBACK IS NOT MARKED DURING A DUEL, on purpose. The original never told
+     you which line was right either — remembering IS the game. The notebook is a place to
+     go and look, which is a different thing from a hint. */
+  var book = { insults: ['fools'], retorts: [], beat: [] };
+  function load() {
+    try {
+      var o = JSON.parse(localStorage.getItem(KEY));
+      if (o && o.insults) book = { insults: o.insults || [], retorts: o.retorts || [], beat: o.beat || [] };
+      if (book.insults.indexOf('fools') < 0) book.insults.push('fools');
+    } catch (e) {}
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(book)); } catch (e) {} }
+  function learn(list, id) {
+    if (book[list].indexOf(id) < 0) { book[list].push(id); save(); return true; }
+    return false;
+  }
+  function masterOpen() { return book.retorts.length >= REGULARS.length; }
+
+  /* ── BOARD ───────────────────────────────────────────────────────────────────
+     Drawn FLIPPED: the player always answers as Black, so Black sits at the near edge.
+     Square i is the referee's own numbering (0 = a8), so a flipped cell is 63 - i. */
+  var sqs = $('sqs'), men = $('men');
+  (function buildSquares() {
+    var h = '';
+    for (var i = 0; i < 64; i++) {
+      var v = 63 - i, r = (v / 8) | 0, f = v % 8;
+      h += '<i class="sq' + (((r + f) % 2) ? ' d' : '') + '" data-sq="' + v + '"></i>';
+    }
+    sqs.innerHTML = h;
+  })();
+  function cell(sq) { return sqs.querySelector('.sq[data-sq="' + sq + '"]'); }
+  function clearMarks() {
+    var m = sqs.querySelectorAll('.from,.to,.hit');
+    for (var i = 0; i < m.length; i++) m[i].classList.remove('from', 'to', 'hit');
+  }
+  function paint(S) {
+    var h = '';
+    for (var i = 0; i < 64; i++) {
+      var p = S.b[i];
+      if (!p) continue;
+      var v = 63 - i, up = p.toUpperCase(), white = (p === up);
+      h += '<b class="pc ' + (white ? 'w' : 'b') + '" style="grid-area:' +
+           (((v / 8) | 0) + 1) + '/' + ((v % 8) + 1) + '">&#' + GLYPH[up] + ';</b>';
+    }
+    men.innerHTML = h;
+  }
+
+  var S = null;
+  function reset() { S = C.parseFEN(C.START_FEN); clearMarks(); paint(S); }
+  function step(uci, hostile) {
+    var from = C.sqFromName(uci.slice(0, 2)), to = C.sqFromName(uci.slice(2, 4));
+    var m = C.findMove(S, from, to, uci.length > 4 ? uci[4] : null);
+    if (!m) return false;                       /* proved at build time; never silent here */
+    S = C.makeMove(S, m);
+    clearMarks();
+    var a = cell(from), b = cell(to);
+    if (a) a.classList.add('from');
+    if (b) b.classList.add(hostile ? 'hit' : 'to');
+    paint(S);
+    return true;
+  }
+  /* How fast to lay a trap out. ⚠ NOT A CONSTANT: Noah's Ark is fifteen plies and a flat
+     230ms made it three and a half seconds of watching before anyone spoke — and the longest
+     trap is the one a newcomer meets last, so the wait grows exactly as patience runs out.
+     Budget the whole lay-out instead, with a floor so it never becomes a blur. */
+  function layMs(plies) { return Math.max(95, Math.round(1500 / Math.max(1, plies))); }
+
+  /* play a list of [uci, san] with a beat between them, then call done() */
+  function runLine(list, ms, hostile, done) {
+    var i = 0;
+    (function next() {
+      if (i >= list.length) { done && done(); return; }
+      step(list[i][0], hostile);
+      i++;
+      setTimeout(next, ms);
+    })();
+  }
+
+  /* ── DIALOGUE ── */
+  var say = $('say'), picks = $('picks'), note = $('note');
+  function speak(who, text, mine) {
+    say.innerHTML = '<span class="nm' + (mine ? ' me' : '') + '">' + who + ':</span> ' + text;
+  }
+  function offer(list, onPick) {
+    picks.innerHTML = '';
+    list.forEach(function (o, i) {
+      var b = document.createElement('button');
+      b.className = 'pick'; b.type = 'button';
+      b.innerHTML = o.label + (o.move ? ' <span class="mv">(' + o.move + ')</span>' : '');
+      b.addEventListener('click', function () {
+        if (b.disabled) return;
+        var all = picks.querySelectorAll('.pick');
+        for (var k = 0; k < all.length; k++) all[k].disabled = true;
+        onPick(o, i);
+      });
+      picks.appendChild(b);
+    });
+  }
+  function clearPicks() { picks.innerHTML = ''; }
+  function shuffle(a) {
+    a = a.slice();
+    for (var i = a.length - 1; i > 0; i--) { var j = (Math.random() * (i + 1)) | 0; var t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+
+  /* ── THE DUEL ────────────────────────────────────────────────────────────────
+     Exchanges alternate: they lead, you lead, they lead… First to three.
+       THEY LEAD  → the trap is laid on the board, they speak, you choose a move.
+       YOU LEAD   → you choose a trap you know; they either find the answer or they do not.
+     ⭐ THE LEARNING RULES ARE THE ORIGINAL'S, TRANSLATED:
+       · walk into a trap  → you may now SPRING it (an insult, learned by losing)
+       · answer correctly  → you own the comeback too (you just proved it)
+       · spring one and get answered → you learn THEIR comeback
+     So every exchange teaches something, and the ones you lose teach the most. */
+  var duel = null;
+  function startDuel(foe) {
+    duel = { foe: foe, me: 0, them: 0, turn: 'them', learned: [] };
+    show('s-duel');
+    $('d-name').textContent = 'vs';
+    $('d-them').textContent = foe.name;
+    pips(); reset(); note.textContent = '';
+    speak(foe.name, foe.master ? 'You have collected every answer on this bench. Let us see if any of them travel.'
+                               : 'Sit down. Bring something I have not seen.', false);
+    offer([{ label: '▸ Begin.' }], function () { nextExchange(); });
+  }
+  function pips() {
+    function row(el, n, cls) {
+      var h = '';
+      for (var i = 0; i < WIN; i++) h += '<i class="pip ' + cls + (i < n ? ' on' : '') + '"></i>';
+      el.innerHTML = h;
+    }
+    row($('d-pyou'), duel.me, '');
+    row($('d-pthem'), duel.them, 'them');
+  }
+  function pool() {
+    return duel.foe.master ? MASTERS.concat(REGULARS) : REGULARS;
+  }
+  function nextExchange() {
+    note.textContent = ''; clearPicks(); reset();
+    if (duel.me >= WIN || duel.them >= WIN) { finish(); return; }
+    if (duel.turn === 'them') theyLead(); else youLead();
+  }
+
+  function theyLead() {
+    var p = pool().filter(function (t) { return !duel.usedT || duel.usedT.indexOf(t.id) < 0; });
+    if (!p.length) p = pool();
+    var t = p[(Math.random() * p.length) | 0];
+    duel.usedT = (duel.usedT || []).concat([t.id]);
+    duel.trap = t;
+    speak(duel.foe.name, '…', false);
+    runLine(t.setup, layMs(t.setup.length), false, function () {
+      speak(duel.foe.name, '&ldquo;' + t.insult + '&rdquo;', false);
+      offer(shuffle(t.replies).map(function (r) {
+        return { label: '&ldquo;' + r.say + '&rdquo;', move: r.san, r: r };
+      }), function (o) { answered(t, o.r); });
+    });
+  }
+
+  function answered(t, r) {
+    speak('You', '&ldquo;' + r.say + '&rdquo;', true);
+    step(r.uci, false);
+    setTimeout(function () {
+      runLine(r.then || [], 320, !r.right, function () {
+        var gotInsult = learn('insults', t.id);
+        var msg;
+        if (r.right) {
+          duel.me++;
+          var gotRetort = learn('retorts', t.id);
+          msg = '<b>The exchange is yours.</b> ' + t.name + ' — answered.';
+          if (t.echo && byId[t.echo]) {
+            msg += '<br>You have never seen that opening. The comeback you learned from <b>' +
+                   byId[t.echo].name + '</b> fit it anyway — that is a transposition, and it is why motifs are worth more than move orders.';
+          }
+          if (gotRetort) { msg += '<br>Comeback collected.'; duel.learned.push('comeback to ' + t.name); }
+        } else {
+          duel.them++;
+          msg = '<b>That one cost you.</b> ' + t.name + '.';
+          if (gotInsult) { msg += '<br>Trap collected — you can spring it yourself now.'; duel.learned.push(t.name + ' (to spring)'); }
+        }
+        note.className = 'note' + (r.right ? '' : ' bad');
+        note.innerHTML = msg;
+        pips();
+        duel.turn = 'me';
+        offer([{ label: '▸ Continue.' }], function () { nextExchange(); });
+      });
+    }, 380);
+  }
+
+  function youLead() {
+    var mine = book.insults.map(function (id) { return byId[id]; }).filter(Boolean);
+    if (!mine.length) { duel.turn = 'them'; theyLead(); return; }
+    speak('You', 'Your turn to sit still.', true);
+    offer(shuffle(mine).slice(0, 4).map(function (t) {
+      return { label: '&ldquo;' + t.insult + '&rdquo;', move: t.name, t: t };
+    }), function (o) { sprung(o.t); });
+  }
+
+  function sprung(t) {
+    speak('You', '&ldquo;' + t.insult + '&rdquo;', true);
+    clearPicks();
+    runLine(t.setup, layMs(t.setup.length), false, function () {
+      /* Do they know the answer? Their `knows` is a count, and the SAME traps are always
+         the ones they know — a bench regular who forgot an answer between duels would be
+         a dice roll wearing a character's name. */
+      var rank = REGULARS.map(function (x) { return x.id; });
+      var idx = rank.indexOf(t.id);
+      var they = duel.foe.master || (idx >= 0 && idx < duel.foe.knows);
+      var right = t.replies.filter(function (r) { return r.right; })[0];
+      var wrong = t.replies.filter(function (r) { return !r.right; });
+      var r = they ? right : wrong[(Math.random() * wrong.length) | 0];
+      setTimeout(function () {
+        speak(duel.foe.name, '&ldquo;' + r.say + '&rdquo;', false);
+        step(r.uci, false);
+        setTimeout(function () {
+          runLine(r.then || [], 320, !they, function () {
+            var msg;
+            if (they) {
+              duel.them++;
+              msg = '<b>Answered.</b> ' + duel.foe.name + ' knew that one.';
+              if (learn('retorts', t.id)) { msg += '<br>Comeback collected — now you know it too.'; duel.learned.push('comeback to ' + t.name); }
+            } else {
+              duel.me++;
+              msg = '<b>The exchange is yours.</b> They had no answer to ' + t.name + '.';
+            }
+            note.className = 'note' + (they ? ' bad' : '');
+            note.innerHTML = msg;
+            pips();
+            duel.turn = 'them';
+            offer([{ label: '▸ Continue.' }], function () { nextExchange(); });
+          });
+        }, 380);
+      }, 420);
+    });
+  }
+
+  function finish() {
+    var won = duel.me >= WIN;
+    if (won && book.beat.indexOf(duel.foe.id) < 0) { book.beat.push(duel.foe.id); save(); }
+    show('s-end');
+    $('e-title').textContent = won ? 'You held the bench.' : 'They held the bench.';
+    $('e-sub').innerHTML = won
+      ? (duel.foe.master
+          ? 'The Swordmaster stands up and shakes your hand. Every answer you brought was learned somewhere else.'
+          : duel.foe.name + ' racks the pieces. ' + duel.me + '–' + duel.them + '.')
+      : duel.foe.name + ' takes it, ' + duel.them + '–' + duel.me +
+        '. Everything that just went wrong is now in your notebook.';
+    $('e-learn').innerHTML = duel.learned.length
+      ? '<b class="k">Collected:</b> ' + duel.learned.join(' &middot; ')
+      : '<span class="u">Nothing new this time.</span>';
+  }
+
+  /* ── HOME ── */
+  function paintHome() {
+    var h = '';
+    FOES.forEach(function (f) {
+      var locked = f.master && !masterOpen();
+      h += '<button class="btn" type="button" data-foe="' + f.id + '"' + (locked ? ' disabled' : '') + '>' +
+           f.name + (f.elo ? ' <span style="color:var(--ink-3);font-weight:400">' + f.elo + '</span>' : '') +
+           '<small>' + (locked
+             ? 'Collect all ' + REGULARS.length + ' comebacks first — you have ' + book.retorts.length + '.'
+             : f.line) + '</small></button>';
+    });
+    $('foes').innerHTML = h;
+    var n = function (k, one, many) { return k + ' ' + (k === 1 ? one : many); };
+    $('prog').textContent = n(book.insults.length, 'trap', 'traps') + ' · ' +
+      n(book.retorts.length, 'comeback', 'comebacks') + ' · ' +
+      book.beat.length + ' of ' + FOES.length + ' beaten';
+    var bs = $('foes').querySelectorAll('button');
+    for (var i = 0; i < bs.length; i++) {
+      bs[i].addEventListener('click', function () {
+        var f = FOES.filter(function (x) { return x.id === this.getAttribute('data-foe'); }.bind(this))[0];
+        if (f) startDuel(f);
+      });
+    }
+  }
+  function paintBook() {
+    var h = '';
+    TRAPS.forEach(function (t) {
+      if (t.master && !masterOpen()) return;
+      var i = book.insults.indexOf(t.id) >= 0, r = book.retorts.indexOf(t.id) >= 0;
+      if (!i && !r) { h += '<div class="u">— an opening you have not met yet</div>'; return; }
+      h += '<div><span class="k">' + t.name + '</span>' +
+           (i ? ' · yours to spring' : '') + (r ? ' · comeback known' : '') + '</div>';
+    });
+    $('book').innerHTML = h;
+  }
+
+  $('b-book').addEventListener('click', function () { paintBook(); show('s-book'); });
+  $('b-back').addEventListener('click', function () { paintHome(); show('s-home'); });
+  $('b-home').addEventListener('click', function () { paintHome(); show('s-home'); });
+  $('b-again').addEventListener('click', function () { startDuel(duel.foe); });
+
+  load();
+  reset();
+  paintHome();
+
+  /* the harness drives this file headlessly; it needs a door in, not a whole browser */
+  window.__duel = {
+    traps: TRAPS, foes: FOES, book: function () { return book; },
+    start: function (id) { startDuel(FOES.filter(function (f) { return f.id === id; })[0]); },
+    state: function () { return duel; }
+  };
+})();
+</script>
+</body>
+</html>
