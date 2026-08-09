@@ -33,6 +33,19 @@
      which also means snow is unreviewable until December. So: `?wx=snow`, `?wx=rain`,
      `?wx=mist`, `?wx=clear`, with an optional intensity — `?wx=snow,heavy`.
      Preview only; it never touches the seed, so it can't leak into anyone else's sky. */
+  /* ⚠⚠ ?eclipse= HAS TO BE READ *HERE*, NOT ONLY WHERE THE ECLIPSE IS PLOTTED (2026-08-09).
+     The head include forces `sky-day` + a clear sky for the preview, and then this file
+     helpfully re-asserted the REAL phase and the REAL forecast a moment later — so on the
+     live site `?eclipse=1` ended up with `sky-day` AND `sky-night town-rain` on <html> at
+     once, and `html.town-rain .ts-orb { opacity: .08 }` dropped the eclipsed sun to almost
+     nothing. The preview was there, correct, and invisible. Two scripts each doing the right
+     thing on their own is the whole shape of this bug: whoever writes a class LAST wins, and
+     the defensive re-assert below was written before anything could legitimately override
+     the phase. A forced eclipse is a deliberate override; leave it alone. */
+  var forcedEclipse = false;
+  try { forcedEclipse = new URLSearchParams(location.search).get('eclipse') !== null; } catch (e) {}
+  if (forcedEclipse) kind = 'clear';
+
   var forceLevel = null;
   try {
     var q = new URLSearchParams(location.search).get('wx');
@@ -61,9 +74,12 @@
   if (body && (body.classList.contains('theme-bw') || body.classList.contains('theme-studio'))) return;
 
   // sky-<phase> + town-<kind> are already on <html> (set before paint by the head
-  // include); re-assert defensively in case this ran standalone.
-  root.classList.add('sky-' + T.phase());
-  if (kind !== 'clear') root.classList.add('town-' + kind);
+  // include); re-assert defensively in case this ran standalone — but never over the top of
+  // a preview that deliberately set them (see the ?eclipse= note above).
+  if (!forcedEclipse) {
+    root.classList.add('sky-' + T.phase());
+    if (kind !== 'clear') root.classList.add('town-' + kind);
+  }
 
   // The orb's hour-arc position (--orb-x/--orb-y) is set before paint by the head
   // include; re-plot on a timer so a long-open tab watches the sun actually travel.
@@ -112,16 +128,17 @@
   // The eclipse rides the same tick (2026-08-09). It has to: it is the one thing in this
   // sky that changes over MINUTES rather than hours, so a page opened at 13:05 and left
   // alone would otherwise sit at 1% coverage through the whole thing. `?eclipse=` pins it
-  // for preview, so a forced eclipse is left exactly where the head script put it.
-  var forcedEclipse = false;
-  try { forcedEclipse = new URLSearchParams(location.search).get('eclipse') !== null; } catch (e) {}
-
-  if (T.orb) {
+  // for preview (forcedEclipse is read at the top of this file), so a forced eclipse is
+  // left exactly where the head script put it.
+  if (T.orb && !forcedEclipse) {
+    // ⚠ the whole tick is off during a forced preview, the orb included: the head parks the
+    // sun at noon, and T.orb() after dark returns the MOON's place on its arc — so thirty
+    // seconds in, the eclipsed sun would slide off to wherever the moon happens to be.
     var plot = function () {
       var o = T.orb();
       root.style.setProperty('--orb-x', o.x.toFixed(1) + '%');
       root.style.setProperty('--orb-y', o.y.toFixed(1) + '%');
-      if (!forcedEclipse && T.eclipse) {
+      if (T.eclipse) {
         var ec = T.eclipse();
         root.classList.toggle('eclipse', ec.on);
         root.classList.toggle('eclipse-total', ec.total);
