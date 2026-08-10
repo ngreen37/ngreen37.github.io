@@ -340,6 +340,39 @@ a.drawer-sub:hover, a.drawer-sub:focus-visible { color: #e7eaee; }
    (The three EMOJI icons keep their own colors — they take no ink.) */
 .dl-ico { flex: 0 0 auto; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
   font-size: 1.15rem; line-height: 1; border-radius: 9px; background: rgba(255, 255, 255, 0.07); color: #ffa07a; }
+
+/* ⚑ ONE COLOR PER ROOM — 2026-08-10, and this REVERSES the "one coral, not eight" call two
+   paragraphs above, on Nate's instruction: "keep Home orange/coral, change up the Gauntlet,
+   Play Now, Puzzles and P&JCC symbols, give the Projects/McPuppy symbol a different color
+   (the purple is a little difficult to see), and make the games-hall controller a touch
+   brighter." Every hue below was rendered on the live drawer and picked from the picture.
+
+   ⚠⚠ AND ONE OF THEM WAS NOT A TASTE NOTE. The McPuppy paw measured 2.24:1 against its own
+   chip — a real AA failure that had been shipping since the icons went in, and the only
+   reason it was never caught is that the audit harness checks TEXT contrast and this glyph
+   is aria-hidden decoration. "A little difficult to see" was him reading a broken pixel.
+
+   ⭐ THREE OF THE EIGHT TAKE NO INK. 🎮 📖 🐾 are color emoji: `color` cannot reach them (see
+   [[text-clip-glyph-technique]] — the same lesson as ♔ needing U+FE0E to accept a tint). The
+   controller is therefore brightened with a FILTER, and the paw is flattened to bone with
+   `brightness(0) invert(1)` and then tinted. Writing `color:` on those three would have
+   looked like a fix and done nothing at all.
+
+   ⭐ WHY THE PAW IS THE ONLY ACHROMATIC ONE. Bone-white is McPuppy's black-and-white studio
+   identity, and it is the one row in this list that opens a different BRAND rather than a
+   different room. The color is carrying that difference, not decorating it.
+
+   ⚠ GREEN IS STILL NOT IN THIS LIST, and it never can be: green in this drawer means "there
+   is a game waiting on your move", painted by pjcc-mymove.js on the Play Now row. That rule
+   is `.drawer-link.dl-move .dl-ico` at (0,3,0); every selector here is (0,1,0), so the signal
+   still wins on specificity rather than on source order. tests/style.check.js rule 15 fails
+   the build if either half of that stops being true. */
+.dl-ico--play     { color: #7fd4ff; }   /* Park Tables — outdoors, open air */
+.dl-ico--gauntlet { color: #ffc94d; }   /* the tower — the crown you climb toward */
+.dl-ico--puzzles  { color: #ff8fd0; }   /* Fork in the Road (its own green is spoken for) */
+.dl-ico--world    { color: #c9a7ff; }   /* P&JCC — the world's lilac */
+.dl-ico--arcade   { filter: brightness(1.45) saturate(1.15); }        /* 🎮 takes no ink */
+.dl-ico--studio   { filter: brightness(0) invert(1) sepia(1) saturate(0.55) hue-rotate(-8deg) brightness(1.06); }  /* 🐾 → bone */
 .dl-txt { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; text-align: left; }
 .dl-txt b { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.98rem; }
 .dl-txt small { font-size: 0.72rem; color: #98a0ad; }

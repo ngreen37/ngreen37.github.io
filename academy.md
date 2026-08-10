@@ -1,9 +1,10 @@
 ---
 layout: page
-title: Chess Academy
+title: ChessWild Chess Academy
 permalink: /academy/
 own_title: true
 body_class: theme-academy
+description: The ChessWild Chess Academy — free, self-paced chess from the very first piece, on a real board. Taught by Auston and Crockett from the P&JCC series.
 ---
 
 {% comment %} THE ACADEMY, REBUILT FROM SCRATCH (2026-07-15, Nate: "tear it down and build
@@ -23,7 +24,22 @@ body_class: theme-academy
      Adding a lesson = one more `.ac-lesson` anchor here + its own page. No shared belt
      math to keep in sync any more. {% endcomment %}
 
-<h1 class="page-title">P&JCC Chess Academy</h1>
+{% comment %} ── THE ACADEMY IS CHESSWILD'S, NOT P&JCC'S (2026-08-10) ──────────────────
+     Nate: "'P&JCC Chess Academy' → 'ChessWild Chess Academy.' Keep Auston and Crockett in
+     the lessons; add a quick reference in the descriptions that the P&JCC characters are
+     involved."
+
+     The distinction is the whole point of the two-brand split: P&JCC is the WORLD, and
+     ChessWild is the thing you can use. A school named after the cartoon reads as merch
+     for the cartoon; a school named after the site reads as a school — and the cartoon is
+     then a reason to stay rather than a thing you have to already care about.
+
+     ⚠ THE CAST DOES NOT LEAVE, IT MOVES INTO THE DESCRIPTIONS. Auston still teaches
+     Lesson 1 and Crockett still has Lesson 2; what changed is that the characters are now
+     the ANSWER to "who teaches this" instead of the price of admission. The page
+     `description` above, the /projects/ card and the /educators/ lede all say so. {% endcomment %}
+
+<h1 class="page-title">ChessWild Chess Academy</h1>
 
 <div class="ac-hero">
   <div class="ac-strip" aria-hidden="true">

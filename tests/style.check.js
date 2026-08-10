@@ -523,5 +523,72 @@ console.log('\n── HOUSE RULES ───────────────�
     broken.length ? '\n      ' + broken.join('\n      ') : parsed + ' inline scripts, all valid JavaScript');
 }
 
+
+/* ── 15. THE DRAWER'S PER-ROOM ICON COLORS MAY NOT EAT THE "YOUR MOVE" SIGNAL ───────
+   2026-08-10 gave every drawer icon its own hue (Nate: "change up the Gauntlet, Play Now,
+   Puzzles and P&JCC symbols"). That is a look change sitting directly on top of a
+   FUNCTIONAL one: green in this drawer means "there is a game waiting on your move", and
+   pjcc-mymove.js paints it on the Play Now row — the same row that just got a permanent
+   blue. Two ways that quietly dies, neither of which looks broken:
+
+     · a per-room rule is written as a compound selector and out-specifies .dl-move
+     · somebody picks green as one of the per-room hues, so the signal says nothing
+
+   And a third failure this catches, which is not about green at all: 🎮 📖 🐾 are COLOR
+   EMOJI and ignore `color` completely. A `color:` written on one of those rows is a fix
+   that renders as no change whatsoever — which is exactly how the McPuppy paw sat at
+   2.24:1 for weeks. Those rows must move with a filter or not at all. */
+{
+  const navScss = fs.readFileSync(path.join(ROOT, '_sass/_pjcc-13-nav.scss'), 'utf8');
+  const header = fs.readFileSync(path.join(ROOT, '_includes/site-header.html'), 'utf8');
+
+  check('the drawer still paints "your move" green on Play Now',
+    /\.drawer-link\.dl-move\s+\.dl-ico\s*\{[^}]*color\s*:/.test(navScss),
+    'pjcc-mymove.js has something to switch on');
+
+  /* every per-room rule, as written */
+  const rules = [...navScss.matchAll(/^(\.dl-ico--[a-z]+)\s*\{([^}]*)\}/gm)]
+    .map((m) => ({ sel: m[1], body: m[2] }));
+  check('every per-room icon rule is a single class, so .dl-move still outranks it',
+    rules.length > 0 && rules.every((r) => /^\.dl-ico--[a-z]+$/.test(r.sel)),
+    rules.length + ' rooms at (0,1,0) under a signal at (0,3,0)');
+
+  /* no per-room hue may be green — hue 80°–170° with real saturation */
+  const green = rules.filter((r) => {
+    const m = r.body.match(/color\s*:\s*#([0-9a-f]{6})/i);
+    if (!m) return false;
+    const [rr, gg, bb] = [0, 2, 4].map((i) => parseInt(m[1].substr(i, 2), 16) / 255);
+    const max = Math.max(rr, gg, bb), min = Math.min(rr, gg, bb), d = max - min;
+    if (d < 0.12) return false;                       // near-gray: no hue to speak of
+    let h = 0;
+    if (max === rr) h = 60 * (((gg - bb) / d) % 6);
+    else if (max === gg) h = 60 * ((bb - rr) / d + 2);
+    else h = 60 * ((rr - gg) / d + 4);
+    if (h < 0) h += 360;
+    return h >= 80 && h <= 170;
+  }).map((r) => r.sel);
+  check('no room took green — it means "your move" and nothing else',
+    green.length === 0, green.length ? green.join(', ') + ' is in the green band' : rules.length + ' hues, none in 80°–170°');
+
+  /* the emoji rows move with a filter, because color cannot reach them */
+  const EMOJI_ROWS = ['dl-ico--arcade', 'dl-ico--studio'];
+  const inked = EMOJI_ROWS.filter((c) => {
+    const r = rules.find((x) => x.sel === '.' + c);
+    return !r || /(^|[^-])color\s*:/.test(r.body) || !/filter\s*:/.test(r.body);
+  });
+  check('the emoji icons move with a filter, not with color',
+    inked.length === 0,
+    inked.length ? inked.join(', ') + ' — a color on a color emoji does nothing'
+                 : 'the controller and the paw are both filtered');
+
+  /* declared and used are the same set — a class on one side only is invisible either way */
+  const declared = rules.map((r) => r.sel.slice(1)).sort();
+  const used = [...new Set([...header.matchAll(/dl-ico--[a-z]+/g)].map((m) => m[0]))].sort();
+  check('every per-room class is both declared and used',
+    declared.join() === used.join(),
+    declared.length === used.length ? declared.length + ' rooms wired' :
+      'declared ' + declared.join(' ') + ' / used ' + used.join(' '));
+}
+
 console.log(`\n  ${pass} passed, ${fail} failed\n`);
 process.exit(fail ? 1 : 0);

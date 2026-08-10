@@ -208,24 +208,24 @@
              Play Now to be prominent."): Play Now rises to just under the home anchor; Games
              drops below the Gauntlet. Order is markup order — no nth-child depends on it. {%- endcomment -%}
         <a class="page-link drawer-link" href="{{ '/games/park-tables/' | relative_url }}">
-          <span class="dl-ico" aria-hidden="true">&#9654;&#xFE0E;</span>
+          <span class="dl-ico dl-ico--play" aria-hidden="true">&#9654;&#xFE0E;</span>
           <span class="dl-txt"><b>Play Now</b><small>Sit at the Park Tables</small></span>
         </a>
         <a class="page-link drawer-link" href="{{ '/games/the-gauntlet/' | relative_url }}">
-          <span class="dl-ico" aria-hidden="true">&#9819;&#xFE0E;</span>
+          <span class="dl-ico dl-ico--gauntlet" aria-hidden="true">&#9819;&#xFE0E;</span>
           <span class="dl-txt"><b>The Gauntlet</b><small>Climb the tower of ten</small></span>
         </a>
         <a class="page-link drawer-link" href="{{ '/games/' | relative_url }}">
           {%- comment -%} 2026-07-27 (Nate): the arcade's icon is a game controller now, not a
                pawn. Every other rail icon is a chess glyph, which is exactly why this one
                shouldn't be — the Arcade is the room that ISN'T only chess. {%- endcomment -%}
-          <span class="dl-ico" aria-hidden="true">&#127918;</span>
+          <span class="dl-ico dl-ico--arcade" aria-hidden="true">&#127918;</span>
           <span class="dl-txt"><b>Games</b><small>The Arcade — the whole grid</small></span>
         </a>
         <a class="page-link drawer-link" href="{{ '/games/fork-in-the-road/' | relative_url }}">
           {%- comment -%} ♞ knight = the forking piece (2026-07-24 Nate: a "puzzle piece" without
                copying Chess.com's jigsaw — a chess piece glyph, the option we sat with earlier). {%- endcomment -%}
-          <span class="dl-ico" aria-hidden="true">&#9822;&#xFE0E;</span>
+          <span class="dl-ico dl-ico--puzzles" aria-hidden="true">&#9822;&#xFE0E;</span>
           <span class="dl-txt"><b>Puzzles</b><small>Fork in the Road</small></span>
         </a>
         <a class="page-link drawer-link" href="{{ '/academy/' | relative_url }}">
@@ -233,12 +233,17 @@
           <span class="dl-txt"><b>Academy</b><small>Learn chess from scratch</small></span>
         </a>
         <a class="page-link drawer-link" href="{{ '/pjcc/' | relative_url }}">
-          <span class="dl-ico" aria-hidden="true">&#9670;&#xFE0E;</span>
+          <span class="dl-ico dl-ico--world" aria-hidden="true">&#9670;&#xFE0E;</span>
           <span class="dl-txt"><b>P&JCC</b><small>The world — cast, places, fan art</small></span>
         </a>
         <a class="page-link drawer-link" href="{{ '/projects/' | relative_url }}">
-          <span class="dl-ico" aria-hidden="true">&#128062;</span>
-          <span class="dl-txt"><b>Projects</b><small>Inside McPuppy Studios</small></span>
+          <span class="dl-ico dl-ico--studio" aria-hidden="true">&#128062;</span>
+          {%- comment -%} 2026-08-10 (Nate: "Projects page → McPuppy Studios … and edit the nav
+               description too"). The sub had to move with the name: "Inside McPuppy Studios"
+               under a link CALLED McPuppy Studios is the same words twice, two lines apart —
+               the exact defect that got the Home sub rewritten on 2026-08-04. It says what the
+               page is for instead. {%- endcomment -%}
+          <span class="dl-txt"><b>McPuppy Studios</b><small>The studio, and what it's building</small></span>
         </a>
 
         <div class="drawer-div" aria-hidden="true"></div>

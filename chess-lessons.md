@@ -21,7 +21,7 @@ body_class: theme-bw
   <p>I offer chess lessons for <strong>beginners</strong> and <strong>intermediate</strong> players -- whether you're just learning how the pieces move or looking to sharpen your game and take it to the next level.</p>
   <p>Lessons are available both <strong>in person</strong> and <strong>online</strong>, and can be tailored to your schedule and goals.</p>
   <p>For availability, scheduling, and pricing, please <a href="/contact/">contact me</a> — I'd love to hear from you.</p>
-  <p style="margin-top:14px;padding:12px 14px;border:1px solid rgba(245,197,24,0.4);border-radius:8px;">🎓 Want a free, self-paced way to practice between lessons? Try the <a href="/academy/">P&JCC Chess Academy</a> — start with Auston's Bootcamp and learn how every piece moves on a real board.</p>
+  <p style="margin-top:14px;padding:12px 14px;border:1px solid rgba(245,197,24,0.4);border-radius:8px;">🎓 Want a free, self-paced way to practice between lessons? Try the <a href="/academy/">ChessWild Chess Academy</a> — start with Auston's Bootcamp and learn how every piece moves on a real board.</p>
 </div>
 
 <!-- ══════════ Meet the Coaches (in-universe roster) ══════════ -->

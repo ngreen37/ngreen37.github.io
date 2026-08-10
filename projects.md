@@ -1,11 +1,29 @@
 ---
 layout: page
-title: Projects
+title: McPuppy Studios
 permalink: /projects/
 body_class: theme-studio
-tab_title: Projects — McPuppy Studios
-description: The projects inside McPuppy Studios — the animated series, the Academy, the games and the blog — and how far along each one is.
+tab_title: McPuppy Studios — The Studio Behind ChessWild
+description: McPuppy Studios — the independent studio behind ChessWild and the P&JCC universe. The animated series, the Academy, the games and the blog, and how far along each one is.
 ---
+
+{% comment %} ── THE PAGE IS CALLED McPUPPY STUDIOS NOW (2026-08-10) ────────────────
+     Nate: "Projects page → 'McPuppy Studios', on the page and in the left nav, and edit
+     the nav description too."
+
+     Why it was ever called Projects: this page started life as a list of things being
+     built, and the name described the LIST. It stopped being that in July, when the
+     master bar came off and it became a page about the studio — so "Projects" had been
+     naming the furniture rather than the room for about three weeks.
+
+     ⚠ THE ADDRESS DOES NOT CHANGE. /projects/ is referenced from _data/brands.yml,
+     _layouts/default.html (the 🐾 badge and the McPuppy hop), _layouts/home.html,
+     assets/js/pjcc-nav.js and tests/perf.js, and mcpuppystudios.com 301s into it with
+     the path preserved. The identity changes; the URL never does.
+
+     `tab_title` is still set by hand. Left alone the tab would read "McPuppy Studios |
+     P&JCC", which puts the studio UNDER its own property — the wrong way round for the
+     one page that is about the studio itself. {% endcomment %}
 
 {% comment %} 2026-07-22 (Nate: "About the Studio is fine"). The on-page title is now
      "About the Studio", which is what this page actually is — the last piece of the
@@ -227,9 +245,9 @@ description: The projects inside McPuppy Studios — the animated series, the Ac
         <span class="project-status-dot"></span>
         Building
       </span>
-      <h2 class="project-title">P&JCC Chess Academy</h2>
+      <h2 class="project-title">ChessWild Chess Academy</h2>
     </div>
-    <p class="project-desc">An All-Ages online Chess Academy, set in the P&JCC universe. Free, and open now.</p>
+    <p class="project-desc">An All-Ages online Chess Academy, taught by Auston and Crockett from the P&JCC universe. Free, and open now.</p>
     <div class="project-links">
       <a href="/academy/" class="project-link">Visit the Academy &rarr;</a>
     </div>
