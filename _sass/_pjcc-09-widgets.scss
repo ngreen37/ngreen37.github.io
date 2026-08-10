@@ -486,6 +486,30 @@
 }
 .footer-actions > :empty { display: none; }
 
+/* ── THE SOCIAL ROW (2026-08-10) ────────────────────────────────────────────────────
+   Six reserved handles, rendered by _includes/socials.html — and ONLY the ones marked
+   `live: true` in _config.yml, which today is none of them. So this rule usually styles
+   nothing, on purpose: linking six empty profiles reads as an abandoned project.
+
+   ⭐ WORD MARKS, NOT LOGOS. Every brand icon here is somebody else's trademark in an SVG
+   that would have to be inlined (the artifact CSP blocks external anything), and six
+   inlined logos is six things to keep current when a platform restyles itself. The names
+   are unambiguous, they cost nothing, and they match the restraint of the row above them.
+   Quiet by default; the site's ink on hover. */
+.footer-social {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px;
+  margin-top: 12px; padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.footer-social a {
+  font-size: 0.74rem; letter-spacing: 0.06em; color: #98a0ad; text-decoration: none;
+}
+.footer-social a:hover, .footer-social a:focus-visible { color: #ffa07a; }
+/* the row is a control strip on a phone, so it obeys the same 44px floor as its neighbors */
+@media (pointer: coarse) {
+  .footer-social a { padding: 11px 4px; }
+}
+
 /* ── Town-wide weather (#2) — the whole town shares one forecast (PJCC_TIME): on
    rain/mist days a soft atmospheric wash tints EVERY page (academy included).
    Static + opacity-only (no per-frame cost — the animated rain stays hero-only,

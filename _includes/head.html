@@ -79,7 +79,16 @@
       "name": "McPuppy Studios",
       "url": "{{ site.url }}/",
       "logo": "{{ site.url }}{{ site.image }}",
-      "sameAs": ["{{ site.patreon_url }}"]
+      {%- comment -%} ⭐ sameAs LISTS EVERY RESERVED HANDLE, LIVE OR NOT (2026-08-10). This is
+           an identity claim, not a promotion: it tells a search engine that these six
+           accounts and this site are the same organization, which is the entire reason for
+           reserving handles before you post. No visitor ever sees it, so an empty profile
+           costs nothing here — unlike the footer row, which only renders the accounts marked
+           `live: true` in _config.yml. Two different jobs, two different rules. {%- endcomment -%}
+      {%- comment -%} ⚠ `map` and `join` ONLY — Jekyll's Liquid has no `push`. A filter that
+           does not exist is not a rendering bug, it is a BUILD failure, and a failed build
+           looks exactly like a stuck deploy from the outside. {%- endcomment -%}
+      "sameAs": [{% assign urls = site.socials | map: "url" %}{% if site.patreon_url and site.patreon_url != '' %}"{{ site.patreon_url }}"{% if urls.size > 0 %}, {% endif %}{% endif %}{% for u in urls %}"{{ u }}"{% unless forloop.last %}, {% endunless %}{% endfor %}]
     },
     {
       {%- comment -%} ⚠ THIS NAME IS HAND-MAINTAINED — IT DOES NOT READ `site.title`, AND IT

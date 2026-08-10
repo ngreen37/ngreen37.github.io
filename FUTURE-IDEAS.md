@@ -82,7 +82,13 @@ against a fixed pool always does — the number stops meaning much above ~1700.*
 
 **REACH**
 - [ ] **Socials, all reserved:** Instagram `chessWild_official` · TikTok `chessWild.com` · YouTube `ChessWild_Official` · X `@real_ChessWild` · Reddit `u/chesswild_official` · Pinterest `chesswild_official`. *"What is the best way to add these to the site?"*
-- [ ] **princessandthejourneytochesscity.com → the PJCC website**, and **mcpuppystudios.com → the revamped Projects/Studio page** (today it 301s to the front door).
+- [x] **princessandthejourneytochesscity.com → the PJCC website**, and **mcpuppystudios.com → the revamped Projects/Studio page**.
+  **⚑ DIAGNOSED + WRITTEN UP 2026-08-10 — the repo side is done; the last step is yours (Squarespace).**
+  Probed both: each one 301s to `https://chesswild.com/` today. That redirect is **GitHub
+  Pages**, not a setting anybody chose — Pages sees a request for a domain that is not the one
+  in `CNAME`, and bounces it to the canonical host **on the same path**. It has no per-domain
+  routing at all, so no file in this repo can send one domain's root somewhere different.
+  The forward has to move to the registrar. See ⑧ in the action items below.
 
 **OTHER**
 - [x] Contact page: remove the **GitHub** link; `nathgreen37@gmail.com` → **`Chesswild840@gmail.com`**.
@@ -110,6 +116,8 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-08-09**
 | **5** | **Confirm one reading:** "Games Hall box in the Play Now box" = Games Hall took the slot Play Now vacated | the front door | Nothing — it shipped my way; say so if I read it wrong |
 | ~~6~~ | ~~**How far does the de-purpling go?**~~ **CLOSED 2026-08-10** — his call: *"we can de-purple further if we have to, but we are looking good on this front."* | — | — |
 | **7** | **The header can't hold everything at once — which one gives?** | the top bar, narrow windows + phones | Nothing; it shipped my way. Contact steps out below 1100px and the McPuppy badge below 430px |
+| **8** | **Point the two spare domains at the right pages** — Squarespace forwarding, 5 min | Squarespace → Domains | The two domains you bought; nothing else |
+| **9** | **Flip a social account to `live: true`** the day it has a post on it | `_config.yml` → `socials:` | Nothing — the row renders empty until you do |
 
 ---
 
@@ -142,6 +150,41 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-08-09**
   ⚠ Worth knowing either way: what the header did *before* was quietly crush the badge rather than
   drop it — measured on the live site it was 78px wide at 430, **57 at 375 and two pixels at 320**.
   Nothing ever looked broken because the broken thing had already disappeared.
+
+**🔀 8 · POINT THE TWO SPARE DOMAINS AT THE RIGHT PAGES *(2026-08-10, yours — Squarespace)***
+- [ ] **8 · Both domains currently land on the front door, and no file in this repo can change
+  that.** Probed today: `mcpuppystudios.com` and `princessandthejourneytochesscity.com` both
+  301 to `https://chesswild.com/`. That redirect is **GitHub Pages** doing what it always does
+  with a domain that isn't the one in `CNAME` — bounce it to the canonical host **on the same
+  path**. Pages has no per-domain routing, so the forward has to move to the registrar.
+
+  **Squarespace → Domains → (pick the domain) → Forwarding.** Set:
+
+  | Domain | Forward to | Path forwarding |
+  |---|---|---|
+  | `princessandthejourneytochesscity.com` | `https://chesswild.com/pjcc/` | **OFF** |
+  | `mcpuppystudios.com` | `https://chesswild.com/projects/` | **your call — read below** |
+
+  Permanent (301) for both.
+
+  ⚠ **THE ONE REAL TRADE-OFF, AND IT ONLY AFFECTS mcpuppystudios.com.** Squarespace forwarding
+  is a single rule: either it appends the path to your target or it sends *everything* to the
+  target. There is no "root goes here, deep links go there". The PJCC domain has never been
+  live, so nothing links to it and path forwarding OFF costs nothing. **mcpuppystudios.com was
+  the live domain until 2026-08-03**, so with path forwarding OFF, any old link like
+  `mcpuppystudios.com/games/` stops landing on the games hall and lands on the studio page
+  instead. Realistically that is your own bookmarks and not much else — but it is your call:
+  - **OFF** → the root does what you asked, old deep links get redirected to the studio page.
+  - **ON** → old deep links keep working, and the root keeps landing on the front door (i.e.
+    the thing you asked to change does not change).
+  - **Cloudflare** → both, properly. One Redirect Rule expressing "if path is `/` go to
+    `/projects/`, otherwise keep the path". Costs moving that domain's nameservers to
+    Cloudflare, which you already use for the translate Worker. Say the word and I will write
+    the exact rule out.
+
+  ⭐ **The repo side is already done:** `/projects/` is titled **McPuppy Studios** as of today,
+  so somebody arriving from mcpuppystudios.com now lands on a page that agrees with the address
+  they typed — which was not true this morning.
 
 **🌐 THE DOMAIN CUTOVER — ✅ DONE 2026-08-03/04. `chesswild.com` IS THE LIVE DOMAIN.**
 Runbook kept at `docs/domain-cutover-chesswild.md`. DNS verified, `CNAME`/`_config.yml`/

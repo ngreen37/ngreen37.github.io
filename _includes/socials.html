@@ -1,0 +1,23 @@
+{%- comment -%}
+  THE SOCIAL ROW — one copy, used by both site footers (default.html and game.html).
+
+  Reads `socials` in _config.yml and renders ONLY the accounts marked `live: true`. All six
+  handles are reserved; none of them are live yet, so today this include outputs nothing at
+  all — no heading, no empty row, no "coming soon". A footer that announces six links and
+  then has none is worse than a footer with no social row.
+
+  ⚠ THE WHOLE BLOCK IS INSIDE THE `if` FOR THAT REASON. An earlier shape put the <nav> and
+  its heading outside the loop, which meant switching every account off left a labelled
+  empty box on every page of the site — visible, pointless, and exactly the thing the
+  switch exists to prevent.
+
+  Turning one on is one word in _config.yml. Nothing here needs editing.
+{%- endcomment -%}
+{%- assign shown = site.socials | where: "live", true -%}
+{%- if shown.size > 0 -%}
+<nav class="footer-social" aria-label="ChessWild on social media">
+  {%- for s in shown -%}
+  <a href="{{ s.url }}" target="_blank" rel="noopener me">{{ s.name }}</a>
+  {%- endfor -%}
+</nav>
+{%- endif -%}

@@ -132,7 +132,44 @@ collections:
   evolutions:
     output: true
     permalink: /evolutions/:name/
-# Optional: social links / footer
-# (you can add later if you want)
-# github: yourusernames
-# twitter: yourhandle
+# ══ SOCIAL ACCOUNTS ═══════════════════════════════════════════════════════════════
+# All six are RESERVED (Nate, 2026-08-10). Reserved is not the same as ready, so each one
+# carries its own switch:
+#
+#   live: true   → renders as a link in the site footer
+#   live: false  → renders nowhere a visitor can see
+#
+# ⚠ WHY THE SWITCH EXISTS. A footer row of links to six empty profiles reads as an
+# abandoned project, which is the opposite of what linking them is for — and it is the
+# "unready things get a plain note, or they don't ship" rule. Flip one to true the day it
+# has something on it; nothing else has to change, and nothing has to be rebuilt.
+#
+# ⭐ THE JSON-LD IS DIFFERENT, DELIBERATELY. `sameAs` in _includes/head.html lists every
+# account, live or not: that is an identity claim to a search engine — "these handles are
+# this same organization" — which is the whole reason for reserving a handle early. It is
+# not a promotion, and no visitor ever reads it.
+socials:
+  - name: Instagram
+    handle: "chessWild_official"
+    url: "https://instagram.com/chessWild_official"
+    live: false
+  - name: TikTok
+    handle: "chessWild.com"
+    url: "https://tiktok.com/@chessWild.com"
+    live: false
+  - name: YouTube
+    handle: "ChessWild_Official"
+    url: "https://youtube.com/@ChessWild_Official"
+    live: false
+  - name: X
+    handle: "@real_ChessWild"
+    url: "https://x.com/real_ChessWild"
+    live: false
+  - name: Reddit
+    handle: "u/chesswild_official"
+    url: "https://reddit.com/user/chesswild_official"
+    live: false
+  - name: Pinterest
+    handle: "chesswild_official"
+    url: "https://pinterest.com/chesswild_official"
+    live: false
