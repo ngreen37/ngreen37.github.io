@@ -394,8 +394,27 @@ function placeFar(used, avoid, rnd, banFile){
    real puzzle either way. Reset to 1 the moment genPuzzle returns, so nothing outside
    that loop can observe a half-eased generator. */
 let clutterEase = 1;
+/* ⚑ THE CROWD KEPT GROWING PAST THE POINT THE DIAL DID (2026-08-10). Nate: "the puzzles
+   seem way too easy. They should be easy at first, but then get progressively harder."
+
+   ⚠⚠ MEASURED FIRST, AND THE MEASUREMENT IS THE WHOLE STORY. Driving the live generator
+   twenty times at each of difficulty 8, 10, 12, 14, 16 and 20 produced boards that were
+   IDENTICAL in every way that matters — median 16 men at every one of them, the same six
+   motifs — while the printed rating climbed 1430 → 2140. `clutterFor` was pinned to each
+   motif's own `max` from about difficulty 8 onward, so past that point the only thing a
+   higher difficulty bought was a bigger number on the same puzzle. A solver reaches ~1550
+   in about fifty puzzles (replayed against the real Elo settle), pegs the dial, and every
+   puzzle after that is the same puzzle. That is exactly what "way too easy" describes,
+   and raising the cap on its own would have been inflation, not difficulty.
+
+   So the crowd goes on growing: the ask now climbs to `max + 3` at the top of the range,
+   and the per-motif ceilings below rose with it. ⭐ Nothing about the PROOF changes — a
+   distractor still has to pass all four inertness tests and the whole board still has to
+   clear puzzleSane + secondSolution + secondMate, so a geometry that cannot carry the
+   extra men simply doesn't get them (that is what `clutterEase` has always been for). */
 function clutterFor(diff, max){
-  const want = Math.max(6, Math.min(max, 6 + Math.round(diff * 0.7)));
+  const room = max + Math.max(0, Math.min(3, Math.round((diff - 8) * 0.8)));
+  const want = Math.max(6, Math.min(room, 6 + Math.round(diff * 0.9)));
   return Math.max(2, Math.round(want * clutterEase));
 }
 /* Every square the solution's men pass over, ends included — the lanes that must stay
@@ -553,7 +572,7 @@ function genKnightFork(diff, rnd){
     const tn = big === 'Q' ? 'queen' : 'rook';
     return { theme:'Knight Fork', cat:'fork', goal:'Win the '+tn+'.', side:'w',
       hint:'A knight leap that checks the king and forks the '+tn+'.', pieces, line,
-      explain:'From '+alg(S.x,S.y)+' the knight gives check and attacks the '+tn+' on '+alg(T2.x,T2.y)+' at the same time. The king must answer the check — nothing can save the '+tn+'.' };
+      explain:'Check from '+alg(S.x,S.y)+' — and the '+tn+' on '+alg(T2.x,T2.y)+' is hit too. The check comes first; the '+tn+' falls.' };
   }
   return null;
 }
@@ -580,7 +599,7 @@ function genBackRankMate(diff, rnd){
     const line = [[alg(fx,ry)+alg(fx,0), heavy+alg(fx,0)+'#']];
     return { theme:'Back Rank', cat:'mate', goal:'Mate in one.', side:'w',
       hint:'The back rank is fatally weak — bring a heavy piece down.', pieces, line,
-      explain:'The king\'s own pawns seal its escape. '+(heavy==='Q'?'The queen':'The rook')+' drops to '+alg(fx,0)+' and the back rank has no answer — checkmate.' };
+      explain:'Its own pawns seal the escape. '+(heavy==='Q'?'Queen':'Rook')+' to '+alg(fx,0)+' — mate on the back rank.' };
   }
   return null;
 }
@@ -623,7 +642,7 @@ function genSkewer(diff, rnd){
     ];
     return { theme:'Skewer', cat:'skewer', goal:'Win the queen.', side:'w',
       hint:'Check along the line — the king steps aside and the queen falls.', pieces, line,
-      explain:'The rook checks straight down the file. The king has to step off the line — and the queen standing directly behind it on '+alg(kx,qy)+' falls.' };
+      explain:'Check down the file. The king steps aside, and the queen behind it on '+alg(kx,qy)+' falls.' };
   }
   return null;
 }
@@ -702,7 +721,7 @@ function genDoubleAttack(diff, rnd){
     ];
     return { theme:'Winning Material', cat:'material', goal:'Win material.', side:'w',
       hint:'One move that checks the king AND attacks something loose.', pieces, line,
-      explain:'On '+alg(S.x,S.y)+' the '+(useRook?'rook':'queen')+' checks the king and eyes the '+TVAL[tt]+' on '+alg(T.x,T.y)+' at once. The check has to be answered first — then the '+TVAL[tt]+' drops.' };
+      explain:'The '+(useRook?'rook':'queen')+' on '+alg(S.x,S.y)+' checks and eyes the '+TVAL[tt]+' on '+alg(T.x,T.y)+'. Answer the check, lose the '+TVAL[tt]+'.' };
   }
   return null;
 }
@@ -750,7 +769,7 @@ function genDiscovered(diff, rnd){
     const line = [[alg(B.x,B.y)+alg(T.x,T.y), 'Nx'+alg(T.x,T.y)+'+']];
     return { theme:'Discovered Check', cat:'discovered', goal:'Win material.', side:'w',
       hint:'Something of yours is standing in front of a line at the king.', pieces, line,
-      explain:'The knight steps aside and takes the '+TVAL[tt]+' on '+alg(T.x,T.y)+' — and the '+(useBishop?'bishop':'rook')+' behind it checks the king the moment the line opens. Black has to answer the check, so the '+TVAL[tt]+' is simply gone.' };
+      explain:'The knight takes on '+alg(T.x,T.y)+' and uncovers the '+(useBishop?'bishop':'rook')+'. The check must be answered — the '+TVAL[tt]+' is gone.' };
   }
   return null;
 }
@@ -818,7 +837,7 @@ function genPinWin(diff, rnd){
     ];
     return { theme:'The Pin', cat:'pin', goal:'Win the rook.', side:'w',
       hint:'That rook is pinned to its king — it cannot move. Attack it with something small.', pieces, line,
-      explain:'The rook on '+alg(P.x,P.y)+' is pinned to its king along the diagonal, so it cannot step away — and a rook can\'t move diagonally either. It\'s guarded, so taking it with the bishop is only a trade. The pawn walks up to '+alg(push.x,push.y)+', attacks it, and next move simply takes it.' };
+      explain:'The rook on '+alg(P.x,P.y)+' is pinned and cannot move. It is guarded, so the bishop only trades — the pawn steps to '+alg(push.x,push.y)+' and wins it.' };
   }
   return null;
 }
@@ -970,14 +989,25 @@ function puzzleRating(p, diff){
 // The motif mix. Everything is available early except the two that need a real board
 // read (the pin, the discovery), which join as the road sharpens. Weighted, not a
 // ladder of if-elses, so adding the next motif is one line (2026-07-27).
+/* ⚑ AND THE MIX KEEPS SHARPENING (2026-08-10) — the other half of "progressively harder",
+   and the half that is actually about CHESS rather than about clutter.
+
+   The motifs are not equally hard and the room already knows it: puzzleRating() bases them
+   at mate 340 · material 480 · skewer 520 · pin 560 · fork 640 · discovered 700. But the
+   mix stopped changing at difficulty 5, so the top of the road still served back-rank
+   mates at weight 0.5 — a 340-base puzzle to a player rated 1500. Now the easy motifs fade
+   out as the hard ones come up, so a harder puzzle is harder because of what it ASKS, not
+   only because of how crowded it is. ⚠ Nothing is ever weighted to zero at the top: a fork
+   is still a fork, and a road that never repeats a motif stops teaching it. */
 function motifMix(diff){
+  const hard = Math.max(0, Math.min(1, (diff - 5) / 4));   // 0 at ≤5, 1 at ≥9
   return [
-    [genBackRankMate, diff <= 3 ? 1.0 : 0.5],   // was the plurality of the whole road
-    [genDoubleAttack, 1.4],
-    [genKnightFork,   1.1],
+    [genBackRankMate, diff <= 3 ? 1.0 : 0.5 - hard * 0.35],   // was the plurality of the whole road
+    [genDoubleAttack, 1.4 - hard * 0.7],
+    [genKnightFork,   1.1 - hard * 0.4],
     [genSkewer,       diff >= 3 ? 0.9 : 0.25],
-    [genPinWin,       diff >= 4 ? 0.9 : 0],
-    [genDiscovered,   diff >= 5 ? 0.9 : 0]
+    [genPinWin,       diff >= 4 ? 0.9 + hard * 0.5 : 0],
+    [genDiscovered,   diff >= 5 ? 0.9 + hard * 0.8 : 0]
   ].filter(e => e[1] > 0);
 }
 function pickMotif(diff, rnd){
@@ -1310,24 +1340,43 @@ function saveProg(p){ try { localStorage.setItem(PROG_KEY, JSON.stringify(p)); }
    would read as the site forgetting them. On the very first settle, a stored `diff`
    above the default seeds the rating from it (see startRun). Nothing anyone has earned
    gets smaller. */
-function ratingToDiff(r){ return Math.max(1, Math.min(10, (r - 590) / 72)); }
-function diffToRating(d){ return Math.round(590 + 72 * Math.max(1, Math.min(10, d))); }
+/* ⚑ RE-FITTED TO THE ROAD THAT ACTUALLY EXISTS (2026-08-10). The old fit, 590 + 72d, was
+   derived on paper from puzzleRating()'s terms with the two variable ones averaged — and
+   it put difficulty 10 at a rating of 1310. Driving the real generator says a difficulty-10
+   puzzle now rates about 1640 (it was ~1490 even before this pass), so the dial ran out of
+   road at 1310 and everybody above that got the same puzzle forever. Measured, not derived:
+   ten samples at each difficulty 1..10 gave a median of 590 at d=1 rising to 1640 at d=10,
+   which is 117 a level off a 473 base.
+   ⚠ Re-measure this pair if the generator's clutter or motif mix changes again — they are a
+   FIT to that generator, not a definition, and a stale fit is how the ceiling got here. */
+function ratingToDiff(r){ return Math.max(1, Math.min(10, (r - 473) / 117)); }
+function diffToRating(d){ return Math.round(473 + 117 * Math.max(1, Math.min(10, d))); }
 function myPuzzleRating(){
   try { return (window.PJCC && PJCC.puzzleRating) ? PJCC.puzzleRating() : null; } catch(e){ return null; }
 }
 function updateJourneyLine(){
   const pr = loadProg(), el = document.getElementById('journey-line');
   if (!el) return;
-  /* The rating is shown BESIDE the step count, not instead of it. "rated 1240 puzzles"
-     is the better brag, but the road to Chess City is the promise this room made and a
-     number that replaced it would read as the promise being withdrawn. */
+  /* ⚑ THE RATING LEADS NOW, AND THE GOAL-LINE IS GONE (2026-08-10). Nate asked for a
+     visible puzzle rating that the difficulty adjusts to, and said of the thousand:
+     "if that means taking out the 1,000 puzzles to win, let's do that. We can reset
+     the goal-line for that."
+
+     What was here read: "Level 3 of 10 · 45/100 this level · 245 of 1000 to Chess City ·
+     Your puzzle rating 1120" — four numbers, and the one he actually asked to see was
+     last. Three of the four measured the same thing (puzzles solved) in three different
+     units, and the fourth was the only one that says anything about YOU.
+
+     ⭐ THE THOUSAND IS NOT DELETED, IT IS DEMOTED. The regions, the story beats and the
+     gate bosses all still key off `step`, and walking into Chess City is still a real
+     arrival — it just stops being the scoreboard. The rating is the progression now,
+     which is the honest one: it goes up because you got better, not because you showed up.
+     ⚠ "Your puzzle rating" is checked verbatim by tests/style.check.js — his wording. */
   const pz = myPuzzleRating();
-  const rated = pz ? ' &middot; Your puzzle rating <b>' + pz.rating + '</b>' : '';
-  el.innerHTML = (pr.step >= JOURNEY_LEN
-    ? '🏰 <b>You reached Chess City.</b> 1,000 puzzles solved.'
-    : 'Level ' + levelFor(pr.step) + ' of ' + LEVELS +
-      ' &middot; ' + intoLevel(pr.step) + '/' + LEVEL_LEN + ' this level' +
-      ' &middot; ' + pr.step + ' of ' + JOURNEY_LEN + ' to Chess City') + rated;
+  const rated = pz ? 'Your puzzle rating <b>' + pz.rating + '</b> &middot; ' : '';
+  el.innerHTML = rated + (pr.step >= JOURNEY_LEN
+    ? '🏰 <b>You walked the whole road.</b> ' + pr.step + ' puzzles solved.'
+    : REGIONS[regionFor(pr.step)] + ' &middot; ' + pr.step + ' solved');
 }
 
 // ---- Flow ----
@@ -1895,10 +1944,26 @@ function drawRibbon(){
     ctx.beginPath(); ctx.arc(x, y, i === n ? 7 : 4, 0, Math.PI*2); ctx.fill();
     if (i === n){ ctx.fillStyle = C.gold; ctx.font = '13px serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('♛', x, y); }
   }
-  // region labels at ends
+  /* ⚑ THE RIGHT-HAND LABEL USED TO SAY "Chess City" AND THAT IS WHY THIS LOOKED BROKEN
+     (2026-08-10). Nate: "the Checker Town to Chess City ribbon doesn't really work — it
+     goes to the fifth dot and then resets."
+
+     ⭐ IT WAS NEVER BROKEN. It draws `run.legLen` dots, and a leg is FIVE puzzles, so five
+     dots and a summary card is exactly what it was built to do. The defect was that its two
+     END LABELS named the ends of the THOUSAND-puzzle journey. The labels described the whole
+     road while the dots described one leg of it, so the thing appeared to arrive at the final
+     destination and then give up. Two units for one measurement — the same defect as the
+     Gambit's "¼ and ½ sitting next to 85%".
+
+     ⚠ AND THE OBVIOUS FIX IS THE WRONG ONE: drawing all 1,000 would move the token half a
+     percent per leg, which is no feedback at all. The dots stay a leg; the labels stop
+     claiming otherwise. Left is where you ARE, right is the NEXT place on the road — true as
+     a heading whether or not this particular five gets you there — and the long run now lives
+     in the journey line and in the rating, which is what a rating is for. */
   ctx.fillStyle = C.muted; ctx.font = '9px Trebuchet MS'; ctx.textBaseline = 'top';
-  ctx.textAlign = 'left'; ctx.fillText(run.mode === 'journey' ? REGIONS[regionFor(run.step)] : REGIONS[0], x0 - 6, y + 9);
-  ctx.textAlign = 'right'; ctx.fillText('Chess City', x1 + 6, y + 9);
+  const here = run.mode === 'journey' ? regionFor(run.step) : 0;
+  ctx.textAlign = 'left'; ctx.fillText(REGIONS[here], x0 - 6, y + 9);
+  ctx.textAlign = 'right'; ctx.fillText(REGIONS[Math.min(REGIONS.length - 1, here + 1)], x1 + 6, y + 9);
   // Princess token gliding along
   const ph = princessHop;
   const fr = x0 + (x1 - x0) * (ph.from / n), to = x0 + (x1 - x0) * (ph.to / n);
@@ -2047,8 +2112,22 @@ function showSummary(){
         'The crests are still being drawn — the order is already yours.';
       document.getElementById('sum-again').textContent = 'Walk It Again';
     } else {
-      document.getElementById('sum-title').textContent = 'LEVEL ' + levelFor(run.step) + ' · ' + intoLevel(run.step) + ' / ' + LEVEL_LEN;
-      document.getElementById('sum-msg').textContent = beat || ('Level ' + levelFor(run.step) + ' of ' + LEVELS + '. ' + (JOURNEY_LEN - run.step) + ' puzzles left on the road to Chess City.');
+      /* ⚑ THE LEG ENDS ON YOUR RATING, NOT ON A COUNTDOWN (2026-08-10, with the goal-line
+         retirement above). "755 puzzles left on the road to Chess City" is a number that
+         only ever goes down and never says anything about the person reading it — and
+         after five puzzles it has moved by five, which reads as standing still.
+         The rating moved by something you can feel, so that is what the card says.
+         ⚠ A story beat still wins when there is one: those mark the real places. */
+      const r0 = run.stats.rating0, r1 = run.stats.rating;
+      let swing = '';
+      if (typeof r0 === 'number' && typeof r1 === 'number' && r1 !== r0) {
+        swing = 'Your puzzle rating ' + r0 + ' → ' + r1 + ' (' + (r1 > r0 ? '+' : '') + (r1 - r0) + ').';
+      } else if (typeof r1 === 'number') {
+        swing = 'Your puzzle rating holds at ' + r1 + '.';
+      }
+      document.getElementById('sum-title').textContent = reg.toUpperCase();
+      document.getElementById('sum-msg').textContent = beat || swing ||
+        (run.step + ' puzzles solved on the road so far.');
       document.getElementById('sum-again').textContent = 'Continue';
     }
     if (window.PJCC) PJCC.saveScore('fork-in-the-road', run.step, { credits: 1, data: { step: run.step, level: levelFor(run.step), diff: Math.round(run.diff), best: run.best, finished: done || undefined, finishedAt: done ? loadDone().at : undefined, tactics: loadTactics() } });

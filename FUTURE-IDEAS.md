@@ -36,9 +36,9 @@ ones still open.*
 
 **PUZZLES — the big one**
 - [x] ⚠ **THE POSITIONS MUST BE REAL.** *"I see a bunch where four pawns are in a square pattern on the 7th and 6th rank which is impossible."* [[accuracy-above-all]] — this outranks everything else in the batch.
-- [ ] **A visible puzzle rating on the page**, and the difficulty adjusts to it.
-- [ ] **Progressively harder** — easy at first, then climbing. Right now *"the puzzles seem way too easy."*
-- [ ] The **Checker Town → Chess City** ribbon *"doesn't really work — it goes to the fifth dot and then resets."*
+- [x] **A visible puzzle rating on the page**, and the difficulty adjusts to it.
+- [x] **Progressively harder** — easy at first, then climbing. Right now *"the puzzles seem way too easy."*
+- [x] The **Checker Town → Chess City** ribbon *"doesn't really work — it goes to the fifth dot and then resets."*
 
   ⭐ **DIAGNOSED 2026-08-10 — it is not broken, it is MISLABELLED, which is worse.** The
   ribbon draws `n = run.legLen`, and a leg is **five puzzles** (`const LEG = 5`). So five dots
@@ -49,9 +49,26 @@ ones still open.*
   as the Gambit's "¼ and ½ next to 85%": two units for one measurement. ⚠ Do NOT fix it by
   drawing all 1,000 — five puzzles would move the token 0.5% and the feedback would die. Fix
   the labels, and let the RATING carry the long-run progression (the next two items).
-- [ ] **Retire the "1,000 puzzles to Chess City" goal if it's in the way** — his words: *"we can reset the goal-line for that."*
-- [ ] **Shorter explanations.**
+- [x] **Retire the "1,000 puzzles to Chess City" goal if it's in the way** — his words: *"we can reset the goal-line for that."*
+- [x] **Shorter explanations.**
 - [x] The green rating swing overlapping the black explanation text.
+
+**⛰ THE PUZZLE ROOM'S HONEST CEILING — measured 2026-08-10, and it is the next real build**
+
+*After the difficulty pass, a difficulty-10 puzzle rates about **1640** and carries **18 men**.
+That is the top of what this generator can make, because every puzzle it builds is **one move
+long**. Clutter and motif choice are the only two dials it has, and both are now at the end of
+their travel. A solver who aces everything still drifts past 2000 on the Elo, because Elo
+against a fixed pool always does — the number stops meaning much above ~1700.*
+
+- [ ] **Mate in two, and win-material in two.** The one lever that would genuinely extend the
+  room: a second move to find. Everything downstream already supports it — the referee proves
+  lines, `secondMate()` already searches for alternative mates, and the explain card already
+  wraps to any length. This is a generator job, not a plumbing job, and it is the difference
+  between a room that tops out at club level and one that doesn't.
+- [ ] **Then re-fit `ratingToDiff`.** It is a FIT to the current generator (473 + 117d),
+  measured by sampling, not a definition. Change what the generator makes and it goes stale —
+  which is exactly how the dial came to peg at 1310 while the puzzles rated 1490.
 
 **GAMES**
 - [x] **Pirc Protocol is unusable:** you can't scroll to the game, some openings are cut off, and the **Continue button can't be reached.**
