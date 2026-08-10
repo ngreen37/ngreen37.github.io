@@ -57,11 +57,29 @@
         <div class="site-marks">
           {%- comment -%} 2026-08-09 (Nate): lower-case c. "cW" reads as a monogram rather than
                as two initials, and it keeps the coral W as the one capital in the mark — the
-               same trick the full wordmark plays with `Wild`. {%- endcomment -%}
+               same trick the full wordmark plays with `Wild`.
+
+               ⚑ 2026-08-10 (Nate): "change the cw to cw.com. the .com is white."
+               ⭐ IT WEARS `.wm-tld`, THE FULL WORDMARK'S OWN `.com` — not a copy of it. That
+               class already means "the address: quiet by SIZE, not by fading, keeping the
+               name's ink", and the front door's <h1> and the drawer head both render it. A
+               third `.com` treatment would have been a fourth place the brand is described
+               ([[front-door-decision]] — it is already named in three files that do not read
+               each other). Picked from a render anyway, to check the borrowed number survives
+               the step down: 0.44em thins out at the 13px phone size and 0.60em starts
+               competing with the monogram; the wordmark's 0.48 and the 0.52 I would have
+               chosen are under a PIXEL apart at 17px, so sharing costs nothing real.
+
+               ⚠ THE ANCHOR NEEDS ITS OWN `color`. `.wm-tld` inherits ink on purpose, and an
+               <a> with no color set falls through to the global link rule — the `.com` would
+               have come out purple. Same inheritance trap [[front-door-palette]] records.
+               ⚠ Rendered at nine widths from 1440 to 320 before shipping: no wrap, no
+               overflow, and the existing marks step-down (badge drops below 500, P&JCC below
+               390) is unchanged — the extra glyphs cost the row nothing. {%- endcomment -%}
           <a class="site-mark site-mark--word site-mark--cw"
              href="{{ '/' | relative_url }}" title="ChessWild.com — Home"
              {% if page.url == '/' %}aria-current="page"{% endif %}>
-            <span class="mk-c">c</span><span class="mk-w">W</span>
+            <span class="mk-c">c</span><span class="mk-w">W</span><span class="wm-tld">.com</span>
           </a>
           {%- comment -%} 2026-08-09 (Nate: "make the '&' in 'P&JCC' significantly smaller").
                ⚠ THE SPAN CHANGES THE PICTURE, NOT THE STRING. textContent is still exactly
@@ -148,8 +166,21 @@
              ⚑ The wordmark's own tracking now applies here, so this reads tighter than the
              letter-spaced text it replaced. That is the mark as designed; the drawer used to
              wear a lookalike. {%- endcomment -%}
+        {%- comment -%} ⚑ 2026-08-10 (Nate: "please make the chesswild.com wordmark on the
+             left-hand nav a link to the home page"). It was a <span>: the one thing on the
+             site that LOOKS most like a home button and was the only brand mark that wasn't
+             one — the header's cW, the footer and "by McPuppy Studios" right below it all
+             already went somewhere. A logo you can't click is a dead end a visitor tries once.
+
+             ⚠ NOT `aria-current`, deliberately. The Home row four lines down carries the
+             "you are here" state, and two elements announcing themselves as the current page
+             is worse for a screen reader than one — this is the logo, that is the nav item.
+             ⚠ The color is pinned in _pjcc-13-nav.scss and must stay pinned: `.drawer-brand`
+             is a CLASSED anchor now, and the site's `a` rule spares classed anchors, so
+             without its own `color` it would fall through to the global link purple. Same
+             trap the header's `.com` hit an hour ago. {%- endcomment -%}
         <div class="drawer-head">
-          <span class="drawer-brand"><span class="drawer-queen" aria-hidden="true">&#9819;&#xFE0E;</span> {% include wordmark.html %}</span>
+          <a class="drawer-brand" href="{{ '/' | relative_url }}"><span class="drawer-queen" aria-hidden="true">&#9819;&#xFE0E;</span> {% include wordmark.html %}</a>
           {%- comment -%} 2026-08-08 (Nate: "make the 'By McPuppy Studios' a link to the McPuppy
                Home page, and leave it that color"). /projects/ IS the studio's home — it is the
                "About The Studio" page and the root of the McPuppy side (see _data/brands.yml).

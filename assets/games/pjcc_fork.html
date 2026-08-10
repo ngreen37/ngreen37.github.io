@@ -1892,7 +1892,24 @@ function drawBanner(){ if (bannerT < 0) return; bannerT += 1/60; const a = banne
 
 function drawExplain(){
   explainCard.t += 1/60;
-  const cardW = Math.min(420, W - 28), cardH = 98, cx = W/2;
+  /* ⚑ THE CARD GROWS WITH ITS LESSON (2026-08-10) — Nate sent a screenshot of the Knight
+     Fork card with "+12 → 808" printed straight THROUGH the last line of the explanation.
+
+     ⭐ A FIXED HEIGHT OVER WRAPPED TEXT IS A COLLISION WAITING FOR A LONG ENOUGH SENTENCE.
+     cardH was a flat 98. The text starts at y+38 and wraps at 16px a line, and the bottom row
+     — the OK button and the rating chip — is pinned to the card's BOTTOM edge. Two lines fit;
+     three do not, and the third line lands exactly where the chip is drawn. Nothing errored,
+     nothing measured wrong: the card simply had no idea how much it was being asked to hold.
+     The motifs that explain a fork in three lines are the ones that teach the most, so the
+     bug found the best explanations first.
+     ⚠ MEASURE, THEN SIZE, THEN DRAW — and the font has to be set BEFORE wrapLines(), because
+     it measures with ctx.measureText and would otherwise wrap against whatever font the last
+     draw call happened to leave behind. */
+  const cardW = Math.min(420, W - 28), cx = W/2;
+  ctx.font = '12.5px Trebuchet MS';
+  const lines = wrapLines(explainCard.text, cardW - 28);
+  //  38 top pad + text  +  6 gap  +  the 24px button row and its 9px margin
+  const cardH = Math.max(98, 38 + lines.length * 16 + 6 + 33);
   const x = cx - cardW/2, y = BY + BOARD - cardH - 6;
   const a = Math.min(1, explainCard.t / 0.22);
   ctx.globalAlpha = a;
@@ -1907,7 +1924,7 @@ function drawExplain(){
   ctx.fillStyle = explainCard.color; ctx.font = 'bold 16px Trebuchet MS'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
   ctx.fillText(explainCard.icon + '  ' + explainCard.name, x + 14, y + 12);
   ctx.fillStyle = '#333944'; ctx.font = '12.5px Trebuchet MS';
-  wrapText(explainCard.text, x + 14, y + 38, cardW - 28, 16);
+  lines.forEach((l, i) => ctx.fillText(l, x + 14, y + 38 + i * 16));   // measured above
   // OK button — the player must tap (anywhere) to continue; gives time to read the lesson
   const okW = 70, okH = 24, okX = x + cardW - okW - 12, okY = y + cardH - okH - 9;
   ctx.fillStyle = explainCard.color; roundRect(okX, okY, okW, okH, 12); ctx.fill();

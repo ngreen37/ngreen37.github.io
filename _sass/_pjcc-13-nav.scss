@@ -286,7 +286,14 @@
    only sets the SIZE and the face, which is all a host of the mark should ever do.
    ⚠ `letter-spacing: 0.14em` is GONE. It applied to flat text; the mark carries its own
    tracking per span, so the old value could only have fought it. */
+/* ⚑ IT IS AN ANCHOR SINCE 2026-08-10 — the wordmark opens the front door. `text-decoration`
+   and the hover are the only things that had to be added; the `color` was already here and is
+   now load-bearing (a classed <a> with no color falls through to the global link purple). The
+   hover lifts the whole mark's opacity rather than re-inking it: `Wild` is coral and `.com`
+   is white, so any single hover color would flatten a two-tone mark into one. */
 .drawer-brand { display: block; font-family: 'Poppins', sans-serif; font-weight: 800; color: #f2f4f7; font-size: 1.05rem; }
+a.drawer-brand { text-decoration: none; transition: opacity .2s; }
+a.drawer-brand:hover, a.drawer-brand:focus-visible { text-decoration: none; opacity: 0.82; }
 /* the queen stays WHITE (his call) — it is the drawer's ornament, not a letter of the name */
 .drawer-queen { color: #ffffff; }
 /* ⚑ A LINK SINCE 2026-08-08 ("make the 'By McPuppy Studios' a link to the McPuppy Home page,

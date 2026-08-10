@@ -129,4 +129,12 @@
 <link rel="alternate icon" href="{{ '/favicon.ico' | relative_url }}" sizes="48x48 32x32 16x16">
 {%- comment -%} ONE stylesheet: every partial in _sass/ compiles into this. {%- endcomment -%}
 <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+{%- comment -%} ⚑ THE P&JCC AMPERSAND, SITE-WIDE (2026-08-10, Nate: "make all instances on the
+     site of P&JCC match that logo up top in terms of the size of the '&' symbol").
+     It lives HERE, in the one shared head, rather than beside pjcc-nav.js in default.html —
+     that script is wired into two of the four head-carrying layouts, and "all instances"
+     cannot be satisfied by a file that two layouts never load. `defer` because this is
+     cosmetic: it must never sit in front of first paint. The reasoning, and the list of
+     surfaces a <span> genuinely cannot reach, are in the file. {%- endcomment -%}
+<script src="{{ '/assets/js/pjcc-amp.js' | relative_url }}" defer></script>
 {% include pwa-head.html %}

@@ -327,6 +327,14 @@ ul, ol {
   font-size: 17px;
   letter-spacing: -0.01em;
 }
+/* ⚠ THE ANCHOR CARRIES THE INK, not just its letters (2026-08-10). The mark gained a
+   `.wm-tld` `.com`, and that class inherits color by design — so with no color on the <a>
+   it fell through to the global link rule and the `.com` came out purple. The same
+   inheritance trap [[front-door-palette]] records: fixing `a` does not remove the purple.
+   (`.wm-tld`'s own `font-weight: 600` beats `.site-mark--word`'s 800 on source order — both
+   live in THIS file, `.wm-tld` ~1000 lines below, so the tie is stable as long as they stay
+   in the same partial.) */
+.site-mark--cw { color: #f2f4f7; }
 .mk-c { color: #f2f4f7; }
 .mk-w { color: #ffa07a; }               /* the same coral as `Wild` in the wordmark */
 .site-mark--pjcc { color: #F5C518; }    /* the world's gold, worn since the first hero */
@@ -334,12 +342,33 @@ ul, ol {
 /* The ampersand is a JOINT, not a letter (2026-08-09) — so it reads at about half the cap
    height and steps back a weight. Sized in `em` so it tracks the mark down through every
    breakpoint on its own. `top` needs the `position`, and both are cheap: it is one static
-   glyph, nothing here animates. */
+   glyph, nothing here animates.
+
+   ⚑ 2026-08-10 — THIS IS NOW THE WHOLE SITE'S AMPERSAND, not the header mark's.
+   Nate: "make all instances on the site of P&JCC match that logo up top in terms of the size
+   of the '&' symbol." `assets/js/pjcc-amp.js` wraps every rendered "P&JCC" in this class, so
+   the 206 places the name is typed all point at these four lines.
+
+   ⭐ THE WEIGHT STEP HAD TO LEAVE THE SHARED RULE, AND THAT IS THE ONE REAL LESSON HERE.
+   `font-weight: 600` is a step DOWN from the header mark's Poppins 800 — that is what makes
+   the joint recede. Dropped into body copy, which is Inter 400, the identical declaration is
+   a step UP: the same number turns a quiet ampersand into a BOLD one, and the rule that was
+   meant to make the glyph subordinate would have made it the loudest thing in the sentence.
+   **A relative treatment cannot be expressed as an absolute value.** So the shared rule keeps
+   only what is genuinely relative — a share of the size, a share of the raise — and the
+   weight step is scoped to the heavy type it was drawn for. He asked for the SIZE to match,
+   and the size is exactly what travels. */
 .mk-amp {
   font-size: 0.56em;
-  font-weight: 600;
   position: relative;
   top: -0.05em;      /* off the baseline, onto the optical center */
+}
+/* …and it steps back a weight only where the type around it is heavy enough to carry it:
+   the header marks, and any display heading. Below 700 there is nothing to step back from. */
+.site-mark--pjcc .mk-amp,
+h1 .mk-amp, h2 .mk-amp, h3 .mk-amp,
+.page-title .mk-amp, .big-title .mk-amp, .eyebrow .mk-amp {
+  font-weight: 600;
 }
 
 .logo-stacked {
