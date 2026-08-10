@@ -39,6 +39,16 @@ ones still open.*
 - [ ] **A visible puzzle rating on the page**, and the difficulty adjusts to it.
 - [ ] **Progressively harder** — easy at first, then climbing. Right now *"the puzzles seem way too easy."*
 - [ ] The **Checker Town → Chess City** ribbon *"doesn't really work — it goes to the fifth dot and then resets."*
+
+  ⭐ **DIAGNOSED 2026-08-10 — it is not broken, it is MISLABELLED, which is worse.** The
+  ribbon draws `n = run.legLen`, and a leg is **five puzzles** (`const LEG = 5`). So five dots
+  then a summary then five more is exactly what it was built to do. What makes it read as
+  broken is that its two END LABELS say "Checker Town" and "Chess City" — the ends of the
+  **1,000-puzzle** journey. The labels describe the whole road while the dots describe one
+  leg of it, so the thing appears to reach its destination and give up. Same class of defect
+  as the Gambit's "¼ and ½ next to 85%": two units for one measurement. ⚠ Do NOT fix it by
+  drawing all 1,000 — five puzzles would move the token 0.5% and the feedback would die. Fix
+  the labels, and let the RATING carry the long-run progression (the next two items).
 - [ ] **Retire the "1,000 puzzles to Chess City" goal if it's in the way** — his words: *"we can reset the goal-line for that."*
 - [ ] **Shorter explanations.**
 - [x] The green rating swing overlapping the black explanation text.
