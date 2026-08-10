@@ -58,10 +58,29 @@
     // behind the most ordinary. So the eclipse day is CLEAR, on purpose, and it is the only
     // day the forecast is ever overruled. It costs the rain roll about one day a month.
     if (eclipseDay()) return { kind: 'clear', roll: 9, phase: phase() };
-    var roll = daySeed() % 10;
-    var kind = roll <= 2 ? 'rain' : (roll === 3 ? 'mist' : 'clear');
+    /* ⚑ RAIN CAME DOWN A QUARTER — 2026-08-10. Nate: "It rains a LITTLE too much on the
+       site — can we make it 25% less likely to occur? And keep rain/snow the same
+       probability, for when winter rolls around."
+
+       It was a 10-sided roll: 0-2 rain (30% of days), 3 mist (10%), 4-9 clear. A quarter off
+       30% is 22.5%, which a d10 simply cannot express — the nearest move, dropping rain to
+       two faces, is a 33% cut, and rounding a number he gave me to something a third bigger
+       is how "we asked for 25%" turns into "why is it still raining." So the die got finer:
+       **d40, rain on 0-8 (9/40 = 22.5%), mist on 9-12 (4/40 = 10%, untouched), clear the
+       rest.** Same one roll, one seed, one day. Measured over 3,650 real dates: 21.9% / 10.4%.
+
+       ⭐ AND SNOW NEEDED NOTHING, WHICH IS THE WHOLE POINT OF HOW IT WAS BUILT. Snow is not a
+       second forecast — it is this rain, wearing winter (the line below). "Keep rain and snow
+       at the same probability" is not a thing to maintain here; it is a thing that cannot
+       come apart. That was the reason for the one-line design on 2026-07-28, and this is the
+       first time it has paid.
+
+       ⚠ `roll` is still reported 0-9 — it is in this module's documented return shape at the
+       top of the file, and a finer die is an implementation detail, not a new contract. */
+    var r40 = daySeed() % 40;
+    var kind = r40 <= 8 ? 'rain' : (r40 <= 12 ? 'mist' : 'clear');
     if (kind === 'rain' && season() === 'winter') kind = 'snow';
-    return { kind: kind, roll: roll, phase: phase() };
+    return { kind: kind, roll: (r40 / 4) | 0, phase: phase() };
   }
   // Cloud cover — its own roll, so "clear" days still get weather in the sky and a
   // starry night isn't always a bare one (Nate: "sometimes it's cloudy, sometimes

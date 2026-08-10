@@ -433,6 +433,28 @@ function armyFault(pieceList){
        square — a8 is light and (0+0) is even. */
     const bs = mine.filter(s => s[0].toUpperCase() === 'B').map(s => s.slice(1));
     if (bs.length === 2 && (F(bs[0]) + Rk(bs[0])) % 2 === (F(bs[1]) + Rk(bs[1])) % 2) return true;
+
+    /* ⚑ NO DOUBLED PAWNS — 2026-08-10, and it is the same complaint as the bishops.
+       Nate: "the puzzles should be actual positions. I see a bunch where four pawns are in
+       a square pattern on the 7th and 6th rank which is impossible."
+
+       ⭐ HE IS RIGHT ABOUT THE PICTURE AND THE WORD "IMPOSSIBLE" IS WHY IT SURVIVED THIS
+       LONG. A 2x2 block of one color's pawns is two DOUBLED files, and doubling is perfectly
+       legal — so every legality gate this room owns waved it through, and the referee never
+       had an opinion because there is nothing to have an opinion about. It is a PLAUSIBILITY
+       fault, exactly like two light-squared bishops, and it belongs in exactly this function
+       for exactly that reason.
+
+       ⭐ WHAT MAKES IT READ AS FAKE IS THAT IT IS UNPAID FOR. A pawn only gets doubled by
+       CAPTURING — so b6+b7 means a piece died on b6 and that side is short a pawn somewhere
+       else. The placer drops men on empty squares with no history, so the doubling arrives
+       with no story attached, and a chess player reads that instantly even when they cannot
+       name it. One pawn per file per side: cheap, total, and it costs the placer nothing it
+       misses (pawns already own only four rows each).
+       ⚠ Runs inside the placer loop as well as at the gate — armyFault is called from both,
+       which is the whole reason the bishop rule went here rather than into addDistractors. */
+    const files = mine.filter(s => s[0].toUpperCase() === 'P').map(s => F(s.slice(1)));
+    if (new Set(files).size !== files.length) return true;
   }
   return false;
 }

@@ -17,6 +17,53 @@ combination** over new surface area.
 
 ---
 
+# 🚀 THE LAUNCH BATCH — 2026-08-10, captured verbatim
+
+*He opened with **"prepare for a major session today, partner. We are 10-20 days away from
+launch."** Twenty-odd items in two messages. Written down before any of it was built, because
+an interrupted session loses everything that only lives in a chat window
+([[capture-request-batches]]). **Delete a line when it ships** — the ones still here are the
+ones still open.*
+
+**RENAMES + NAV**
+- [x] Projects page → **"McPuppy Studios"**, on the page and in the left nav, and edit the nav description too.
+- [x] **"P&JCC Chess Academy" → "ChessWild Chess Academy."** Keep Auston and Crockett in the lessons; add a quick reference in the descriptions that the P&JCC characters are involved.
+- [x] Nav symbol colors: **keep Home orange/coral**, change up the Gauntlet, Play Now, Puzzles and P&JCC symbols, give the Projects/McPuppy symbol a different color (*"the purple is a little difficult to see"*), and make the games-hall controller **a touch brighter**.
+
+**WEATHER + SKY**
+- [x] It rains **a little too much — 25% less likely to occur.** Keep rain/snow at the same probability *relative to each other*, for when winter rolls around.
+- [x] "Do you have an eclipse preview link?" → yes: **`?eclipse=1`** on any page.
+
+**PUZZLES — the big one**
+- [ ] ⚠ **THE POSITIONS MUST BE REAL.** *"I see a bunch where four pawns are in a square pattern on the 7th and 6th rank which is impossible."* [[accuracy-above-all]] — this outranks everything else in the batch.
+- [ ] **A visible puzzle rating on the page**, and the difficulty adjusts to it.
+- [ ] **Progressively harder** — easy at first, then climbing. Right now *"the puzzles seem way too easy."*
+- [ ] The **Checker Town → Chess City** ribbon *"doesn't really work — it goes to the fifth dot and then resets."*
+- [ ] **Retire the "1,000 puzzles to Chess City" goal if it's in the way** — his words: *"we can reset the goal-line for that."*
+- [ ] **Shorter explanations.**
+- [x] The green rating swing overlapping the black explanation text.
+
+**GAMES**
+- [ ] **Pirc Protocol is unusable:** you can't scroll to the game, some openings are cut off, and the **Continue button can't be reached.**
+- [x] Links for the Monkey Island game (**Duel**) and the Risk game (**MARCHLAND**).
+- [ ] Take **Follow the Dog** and **Chess City** off the workbench and give them links the same way.
+
+**FRONT DOOR**
+- [ ] Make the green **Play Now** button **smaller**; think of **more actionable items people will want to click right away.**
+- [ ] A **Patreon** link somewhere — *"not TOO prominent."*
+- [ ] A little **preview box of Notation Blitz** — moving if it is cheap, *"a static image would be fine."*
+
+**REACH**
+- [ ] **Socials, all reserved:** Instagram `chessWild_official` · TikTok `chessWild.com` · YouTube `ChessWild_Official` · X `@real_ChessWild` · Reddit `u/chesswild_official` · Pinterest `chesswild_official`. *"What is the best way to add these to the site?"*
+- [ ] **princessandthejourneytochesscity.com → the PJCC website**, and **mcpuppystudios.com → the revamped Projects/Studio page** (today it 301s to the front door).
+
+**OTHER**
+- [x] Contact page: remove the **GitHub** link; `nathgreen37@gmail.com` → **`Chesswild840@gmail.com`**.
+- [ ] The Gambit's **Karma pill** — *"the Karma pill is GREAT. I love it."* — needs a **hover explanation** of what it does.
+- [ ] **"What are the ten best ideas I can do specifically for ChessWild that the others don't have?"** (Lichess, chess.com, Levy Rozman's site.)
+
+---
+
 # ✅ ACTION ITEMS — Nate's, not mine
 
 *The standing list of things **only he can do** (an account he owns, a decision that's his to make, a

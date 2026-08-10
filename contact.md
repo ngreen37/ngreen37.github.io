@@ -28,10 +28,9 @@ body_class: theme-bw
            selectable text now, with a Copy button beside it — no handler required, and it
            works the same on every machine. {%- endcomment -%}
       <div class="hello-email" id="contact-email" style="opacity:0">
-        <span class="hello-addr" id="contact-addr">nathgreen37@gmail.com</span>
+        <span class="hello-addr" id="contact-addr">Chesswild840@gmail.com</span>
         <button type="button" class="hello-copy" id="contact-copy">Copy</button>
       </div>
-      <a href="https://github.com/ngreen37" class="hello-gh" id="contact-gh" style="opacity:0;pointer-events:none" target="_blank" rel="noopener">♟&nbsp; GitHub — ngreen37</a>
     </div>
   </section>
 
@@ -50,7 +49,7 @@ body_class: theme-bw
   <!-- ══════════ CHESS LESSONS (one line) ══════════ -->
   <p class="hello-lessons">
     I also teach chess — any age, in person or online.<br>
-    <span class="hello-addr" id="contact-addr-2">nathgreen37@gmail.com</span>
+    <span class="hello-addr" id="contact-addr-2">Chesswild840@gmail.com</span>
     <button type="button" class="hello-copy" id="contact-copy-2">Copy</button>
   </p>
 
@@ -97,15 +96,11 @@ body_class: theme-bw
   border-radius:999px; padding:7px 15px; cursor:pointer; min-height:32px;
   transition:background .2s, color .2s, border-color .2s; }
 .hello-copy:hover { background:#f4f4f6; color:#0b0b0d; border-color:#f4f4f6; }
-.hello-gh { font-family:'Poppins',sans-serif; font-weight:700; font-size:14px; letter-spacing:.4px; text-decoration:none;
-  color:#e8e8ee; background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.45); border-radius:999px;
-  padding:11px 30px; transition:transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .3s, background .2s, color .2s; }
-/* 2026-07-27 (Nate: "the hover-over is too bright"). This used to invert to a near-white
-   fill like the small Copy button does — but this pill is four times the area, so the
-   same treatment read as a flashbulb on a black page. It lifts and brightens now
-   instead of flipping: the affordance survives, the flash doesn't. */
-.hello-gh:hover { transform:translateY(-4px); color:#fff; background:rgba(255,255,255,0.16);
-  border-color:rgba(255,255,255,0.8); box-shadow:0 12px 34px rgba(0,0,0,0.55); text-decoration:none; }
+/* (The `.hello-gh` GitHub pill and its hover were DELETED 2026-08-10 — Nate: "take out the
+   Github link." A repo link on the front-of-house contact page pointed a visitor at the
+   plumbing; the page is for people who want to reach a person. The dead-code sweep is what
+   proves the rules went with the markup rather than lingering as a lookalike.
+   `git show e1b6b98^ -- contact.md` has them if a studio link ever wants the shape.) */
 
 /* one photo of Princess */
 .hello-princess { margin:46px auto 0; text-align:center; max-width:380px;
@@ -148,12 +143,12 @@ body_class: theme-bw
 </style>
 
 <script>
-/* Keep the text effect: "Opening the line…" types out, then the email + GitHub fade in. */
+/* Keep the text effect: "Opening the line…" types out, then the email fades in.
+   (The GitHub link left on 2026-08-10 — see the note at the markup.) */
 (function() {
   var line1  = document.getElementById('calc-line-1');
   var wrap   = document.getElementById('contact-calc-wrap');
   var email  = document.getElementById('contact-email');
-  var gh     = document.getElementById('contact-gh');
   var cursor = '<span class="contact-calc-cursor"></span>';
 
   function typeInto(el, text, delay, cb) {
@@ -198,7 +193,7 @@ body_class: theme-bw
   typeInto(line1, 'Opening the line…', 700, function() {
     setTimeout(function() {
       wrap.style.transition = 'opacity 0.4s'; wrap.style.opacity = '0';
-      setTimeout(function() { wrap.style.display = 'none'; fadeIn(email, function() { fadeIn(gh); }); }, 420);
+      setTimeout(function() { wrap.style.display = 'none'; fadeIn(email); }, 420);
     }, 600);
   });
 })();
