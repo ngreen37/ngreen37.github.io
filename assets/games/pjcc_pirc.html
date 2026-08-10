@@ -51,11 +51,43 @@
   }
   .float-btn.hidden { display: none; }
 
-  /* Overlays */
+  /* ── Overlays ────────────────────────────────────────────────────────────────────
+     ⚠⚠ EVERY SCREEN IN THIS GAME WAS CLIPPED, AT EVERY SIZE (fixed 2026-08-10).
+     Nate: "you can't scroll to the game, some openings are cut off, and the Continue
+     button can't be reached." Measured on the live page before touching anything:
+
+       phone 390  menu is 1476px of content in a 556px window   →  8 of 8 buttons gone
+       small 360  same content, same window                     →  8 of 8 buttons gone
+       desk 1280  1139px of content in a 676px window           →  6 of 8 buttons gone
+
+     TWO THINGS WERE WRONG AND EITHER ALONE WOULD HAVE DONE IT.
+       1. The overlay was `position:absolute; inset:0` — sized to the STAGE, which is the
+          canvas, ~314px tall on a phone. Anything past that spilled out of a box that
+          never had room for it.
+       2. `html, body { overflow:hidden }` then clipped the spill, and the iframe carries
+          `scrolling="no"`, so there was no scrollbar anywhere in the chain. The content
+          was not merely off screen — it was UNREACHABLE. That is why it reads as broken
+          rather than as cramped.
+
+     ⭐ `justify-content: safe center` IS THE WHOLE TRICK, and plain `center` is the trap:
+     when centered flex content overflows its container, the overflow goes off BOTH ends
+     and the top end cannot be scrolled to at all. `safe` falls back to flex-start the
+     moment it would overflow — so a screen that fits still sits dead center, exactly as
+     it does today on a wide window, and a screen that doesn't starts at the top and
+     scrolls. The plain `center` above it is the fallback for anything too old to know
+     `safe`; that degrades to today's behavior, never worse.
+
+     ⚠ THE MENU IS STILL A SCROLL ON A PHONE AND THAT IS A DESIGN QUESTION, NOT A BUG:
+     the eight deck cards are 771px on their own, and the action buttons sit underneath
+     all eight. Nothing is hidden any more, but if the buttons should be reachable without
+     scrolling, that is a re-layout of this screen and it is Nate's call. */
   .overlay {
-    position: absolute; inset: 0; z-index: 10;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 20px; text-align: center; border-radius: 12px;
+    position: fixed; inset: 0; z-index: 10;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center;
+    justify-content: safe center;
+    overflow-y: auto; overscroll-behavior: contain;
+    padding: 20px; text-align: center;
     background:
       repeating-linear-gradient(90deg, rgba(0,0,0,0.16) 0 2px, rgba(0,0,0,0) 2px 26px),
       radial-gradient(circle at 50% 26%, #3a2912 0%, #160d04 82%);

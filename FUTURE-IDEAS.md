@@ -44,7 +44,7 @@ ones still open.*
 - [x] The green rating swing overlapping the black explanation text.
 
 **GAMES**
-- [ ] **Pirc Protocol is unusable:** you can't scroll to the game, some openings are cut off, and the **Continue button can't be reached.**
+- [x] **Pirc Protocol is unusable:** you can't scroll to the game, some openings are cut off, and the **Continue button can't be reached.**
 - [x] Links for the Monkey Island game (**Duel**) and the Risk game (**MARCHLAND**).
 - [x] Take **Follow the Dog** and **Chess City** off the workbench and give them links the same way.
 

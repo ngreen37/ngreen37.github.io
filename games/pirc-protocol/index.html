@@ -17,8 +17,23 @@ permalink: /games/pirc-protocol/
 <style>
 /* Pirc plays on a near-square board — give it a roomier library frame */
 .pirc-frame { max-width: 680px; }
-.pirc-frame iframe { height: 680px; }
-@media (max-width: 640px) { .pirc-frame iframe { height: 560px; } }
+
+/* ⚑ TALLER, 2026-08-10. Pirc is not a game in a cabinet, it is a LIBRARY: its menu is
+   1476px of content on a phone (eight deck cards are 771px of that), and it was being
+   handed 560. The clipping bug is fixed inside the game — every screen scrolls now — but
+   a frame this short would still have meant scrolling before you could see a single
+   button. Taller frame, and the PAGE scrolls, which is what a page is supposed to do. */
+.pirc-frame iframe { height: 820px; }
+@media (max-width: 640px) { .pirc-frame iframe { height: 760px; } }
+
+/* ⭐ AND WIDER ON A PHONE, WHICH BUYS BACK HEIGHT. The arcade cabinet's 14px bezel plus
+   the page wrapper left the frame 306px wide inside a 390px phone — narrow enough that
+   each row of buttons wrapped onto two lines, which is where a third of the menu's height
+   was going. A slimmer bezel below 640px is 16px of width and roughly 150px of height. */
+@media (max-width: 640px) {
+  .pirc-frame.game-frame-wrap { padding: 6px; }
+  .pirc-frame.game-frame-wrap::before { inset: 3px; }
+}
 </style>
 
 <div class="game-info">
