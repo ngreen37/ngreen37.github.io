@@ -35,7 +35,7 @@ ones still open.*
 - [x] "Do you have an eclipse preview link?" → yes: **`?eclipse=1`** on any page.
 
 **PUZZLES — the big one**
-- [ ] ⚠ **THE POSITIONS MUST BE REAL.** *"I see a bunch where four pawns are in a square pattern on the 7th and 6th rank which is impossible."* [[accuracy-above-all]] — this outranks everything else in the batch.
+- [x] ⚠ **THE POSITIONS MUST BE REAL.** *"I see a bunch where four pawns are in a square pattern on the 7th and 6th rank which is impossible."* [[accuracy-above-all]] — this outranks everything else in the batch.
 - [ ] **A visible puzzle rating on the page**, and the difficulty adjusts to it.
 - [ ] **Progressively harder** — easy at first, then climbing. Right now *"the puzzles seem way too easy."*
 - [ ] The **Checker Town → Chess City** ribbon *"doesn't really work — it goes to the fifth dot and then resets."*
@@ -46,7 +46,7 @@ ones still open.*
 **GAMES**
 - [ ] **Pirc Protocol is unusable:** you can't scroll to the game, some openings are cut off, and the **Continue button can't be reached.**
 - [x] Links for the Monkey Island game (**Duel**) and the Risk game (**MARCHLAND**).
-- [ ] Take **Follow the Dog** and **Chess City** off the workbench and give them links the same way.
+- [x] Take **Follow the Dog** and **Chess City** off the workbench and give them links the same way.
 
 **FRONT DOOR**
 - [ ] Make the green **Play Now** button **smaller**; think of **more actionable items people will want to click right away.**
@@ -59,7 +59,7 @@ ones still open.*
 
 **OTHER**
 - [x] Contact page: remove the **GitHub** link; `nathgreen37@gmail.com` → **`Chesswild840@gmail.com`**.
-- [ ] The Gambit's **Karma pill** — *"the Karma pill is GREAT. I love it."* — needs a **hover explanation** of what it does.
+- [x] The Gambit's **Karma pill** — *"the Karma pill is GREAT. I love it."* — needs a **hover explanation** of what it does.
 - [ ] **"What are the ten best ideas I can do specifically for ChessWild that the others don't have?"** (Lichess, chess.com, Levy Rozman's site.)
 
 ---

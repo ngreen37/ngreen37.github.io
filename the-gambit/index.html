@@ -41,8 +41,23 @@ permalink: /the-gambit/
       <span class="gm-chip">◈ <b id="gm-bal">0</b> credits</span>
       <span class="gm-chip" id="gm-cap-chip">—</span>
       <!-- karma only appears once there is any; an empty meter is a chore, not a feature -->
-      <span class="gm-chip gm-karma" id="gm-karma-chip" hidden></span>
+      <!-- ⚑ 2026-08-10 (Nate: "the Karma pill is GREAT. I love it" — it needs a hover
+           explanation of what it does). It is a BUTTON now, not a span, for one reason:
+           HE IS ON iOS AND A PHONE CANNOT HOVER. A title= tooltip would have been a fix
+           that works everywhere except on the device he'd check it on. So: hover opens it
+           on a pointer, tap opens it on a touch screen, and the keyboard gets it on focus.
+           aria-expanded + aria-controls, because the button genuinely does show and hide
+           something and a screen reader should be told which. -->
+      <button type="button" class="gm-chip gm-karma" id="gm-karma-chip" hidden
+              aria-controls="gm-karma-note" aria-expanded="false"></button>
     </div>
+    <!-- The note lives outside the flex row so opening it can never reflow the chips. -->
+    <p class="gm-karma-note" id="gm-karma-note" hidden>
+      <b>Karma is the board's memory.</b> Lay something down, watch it not come back, and the
+      board remembers — and what it remembers bends the next spin your way. Memories fade:
+      about half gone in a week, and in the end the board lets go. It never promises anything,
+      and the altar never gives back more than it takes.
+    </p>
 
     <!-- offer credits -->
     <div class="gm-panel">
@@ -524,7 +539,14 @@ permalink: /the-gambit/
     if (karma > 0 || kar.ledger.length) {
       kchip.hidden = false;
       kchip.innerHTML = '☯ Karma <b>' + karma + '</b> · ' + karmaWord(karma);
-    } else { kchip.hidden = true; }
+    } else {
+      kchip.hidden = true;
+      /* the explanation goes with the thing it explains — the board can let go of the last
+         memory while the note is pinned open, and an orphaned note explaining an absent
+         pill is worse than no note */
+      $('gm-karma-note').hidden = true;
+      kchip.setAttribute('aria-expanded', 'false');
+    }
 
     // courage meter
     var c = courage(), pct = Math.round(c * 100);
@@ -900,6 +922,62 @@ permalink: /the-gambit/
   }
   function showGate(msg) { main.hidden = true; gate.hidden = false; if (msg) $('gm-gate-msg').textContent = msg; }
 
+  /* ══ THE KARMA PILL EXPLAINS ITSELF (2026-08-10) ═══════════════════════════════════
+     Nate: "the Karma pill is GREAT. I love it… it needs a hover explanation of what it
+     does." Hover is the ask; hover alone is not the answer, because HE READS THIS SITE ON
+     AN iPHONE and a touch screen has no hover state to enter. So all three ways in:
+
+       · a pointer that can hover  → it opens on hover and closes on leave
+       · a touch screen            → tap opens it and it STAYS open until tapped again
+       · a keyboard                → focus opens it, blur closes it
+
+     ⚠ THE HOVER HALF IS GATED BEHIND `(hover: hover)` ON PURPOSE. Some touch browsers
+     synthesize a hover on tap; ungated, the tap would fire the click handler AND the
+     mouseenter, and the pair would cancel out into "the button does nothing" — on the one
+     device he'd use to check it. Same reason the ⌘K keyboard hint hides at `(hover: none)`.
+     ⚠ And it is deliberately NOT a `title=` tooltip: those never appear on touch at all,
+     take a second to show on desktop, and cannot be styled or read at a sensible size. */
+  (function () {
+    var chip = $('gm-karma-chip'), note = $('gm-karma-note');
+    if (!chip || !note) return;
+
+    /* ⚠ TWO INDEPENDENT REASONS THE NOTE IS OPEN, TRACKED SEPARATELY. The first version
+       derived "is it pinned?" from whether the note happened to be visible at click time —
+       and it was broken on every single input method, because FOCUS AND MOUSEENTER BOTH
+       FIRE BEFORE CLICK. On a phone, tapping fired focus (which opened it) and then click
+       (which read "already open" and closed it), so the first tap did nothing at all and
+       only the second one worked. Driven, not reasoned about: puppeteer on an emulated
+       iPhone showed the first tap leaving it shut. Hover and pin are two facts now, and
+       the note is open when EITHER is true. */
+    var pinned = false;      // a click or tap holds it open until the next one
+    var peeking = false;     // a pointer resting on it, or a keyboard sitting on it
+    function sync() {
+      var on = pinned || peeking;
+      note.hidden = !on;
+      chip.setAttribute('aria-expanded', on ? 'true' : 'false');
+    }
+    chip.addEventListener('click', function () { pinned = !pinned; sync(); });
+
+    var canHover = false;
+    try { canHover = window.matchMedia('(hover: hover)').matches; } catch (e) {}
+    if (canHover) {
+      chip.addEventListener('mouseenter', function () { peeking = true; sync(); });
+      chip.addEventListener('mouseleave', function () { peeking = false; sync(); });
+    }
+    /* ⚠ FOCUS IS ONLY A PEEK WHEN IT CAME FROM A KEYBOARD — that is what `:focus-visible`
+       means, and it is the whole reason this listener is not a plain `focus`. Tapping the
+       pill also focuses it, and the plain version left `peeking` stuck true forever after
+       the first tap (blur never comes; the button keeps focus). The second tap then
+       un-pinned it and the stuck peek held it open anyway, so on a phone it opened and
+       never closed. Caught on an emulated iPhone, not by reading the code. */
+    chip.addEventListener('focus', function () {
+      var byKeyboard = false;
+      try { byKeyboard = chip.matches(':focus-visible'); } catch (e) {}
+      if (byKeyboard) { peeking = true; sync(); }
+    });
+    chip.addEventListener('blur', function () { peeking = false; sync(); });
+  })();
+
   boot();
 })();
 </script>
@@ -974,8 +1052,33 @@ permalink: /the-gambit/
 .band-legendary { color: #ffb066; }
 .band-ultra     { color: #ff8fd0; }
 
-.gm-karma { border-color: #6bffb8; }
+/* ── THE KARMA PILL AND ITS EXPLANATION (2026-08-10) ────────────────────────────
+   ⚠ The pill is a <button> now, so it inherits none of .gm-chip's assumptions about
+   being a <span>: font, color and the button's own border/background all have to be
+   said out loud or a browser paints it as a system button.
+   ⚠ `@media (hover: hover)` guards the hover reveal. Without the guard, a phone that
+   emulates hover on tap would open the note from the hover rule AND from the click
+   handler, and the second one would close what the first just opened. */
+.gm-karma { border-color: #6bffb8; font: inherit; font-size: 0.82rem; color: #cdbcf2;
+  cursor: help; line-height: inherit; }
 .gm-karma b { color: #6bffb8; }
+.gm-karma::after { content: ' ⓘ'; opacity: 0.55; font-size: 0.9em; }
+.gm-karma:hover, .gm-karma:focus-visible { border-color: #9dffd2; color: #eafff5; }
+.gm-karma[aria-expanded="true"] { background: #26185a; border-color: #9dffd2; }
+
+.gm-karma-note { max-width: 460px; margin: -8px auto 14px; padding: 10px 14px;
+  background: rgba(20, 12, 50, 0.72); border: 1px solid #3c8f70; border-radius: 12px;
+  font-size: 0.78rem; line-height: 1.6; color: #cdbcf2; text-align: left; }
+.gm-karma-note b { color: #6bffb8; }
+.gm-karma-note[hidden] { display: none; }
+/* ⚠ The pill measures ~28px tall, which is fine for a chip and NOT fine for the one chip
+   in the row you are meant to press. Growing it would make it the odd one out beside two
+   identical spans, so the HIT AREA grows and the picture does not — the same trick the
+   2026-07-13 touch sweep used. ::before is free; ::after is carrying the ⓘ. */
+@media (pointer: coarse) {
+  .gm-karma { position: relative; }
+  .gm-karma::before { content: ''; position: absolute; inset: -9px -8px; }
+}
 
 /* ── THE MAGNIFYING GLASS (Chess City arrivals only) ─────────────────────────────
    Deliberately plain — it is a readout, not a trophy. The trophy is that it exists. */
