@@ -22,8 +22,9 @@ sitemap: false
      pattern for real access control.
 
      THE KEY: /games/marchland/?key=chesswild — once used it is remembered in localStorage
-     ('pjcc.marchland.key'), so the URL only has to be typed once per browser. ?key=off
-     forgets it again.
+     ('pjcc.proto.key'), so the URL only has to be typed once per BROWSER, not once per
+     game: the same store opens MARCHLAND, Duel, Follow the Dog and Chess City. ?key=off
+     forgets it again, on all four.
 
      The hall entry in pjcc-games-data.js carries `playable:false`, which makes the card a
      <div> rather than an <a> — so the game appears in the Building hall under its cryptic
@@ -31,7 +32,7 @@ sitemap: false
      about the hall, and the hall does not know about this gate.
      ══════════════════════════════════════════════════════════════════════════ {% endcomment %}
 
-<div id="ml-gate" hidden>
+<div id="proto-gate" hidden>
   <div class="game-frame-wrap ml-frame">
     <iframe
       src="{{ '/assets/games/pjcc_marchland.html' | relative_url }}"
@@ -48,33 +49,36 @@ sitemap: false
   </div>
 </div>
 
-<div id="ml-locked">
-  <p class="ml-shut">This one isn't open yet.</p>
+<div id="proto-locked">
+  <p class="proto-shut">This one isn't open yet.</p>
 </div>
 
 <style>
   .ml-frame { max-width: 480px; }
   .ml-frame iframe { height: 720px; }
   @media (max-width: 600px) { .ml-frame iframe { height: 660px; } }
-  .ml-shut { text-align: center; color: var(--ink-3, #8479a3); font-family: 'Share Tech Mono', ui-monospace, monospace;
-    letter-spacing: .12em; text-transform: uppercase; font-size: 13px; padding: 64px 16px; }
 </style>
 
 <script>
-/* The soft gate. Reads ?key=, remembers a good one, and reveals the frame. Deliberately
-   tiny and deliberately not clever — see the comment at the top of this file. */
+/* ⚑ THE PROTOTYPE SOFT GATE — byte-identical on all four unfinished games (Duel,
+   MARCHLAND, Follow the Dog, Chess City). ONE key opens all four, so the URL is typed
+   once per browser instead of once per game; the legacy per-game stores are still read
+   so a browser that already knows Duel or MARCHLAND stays open. Deliberately tiny and
+   deliberately not clever — see the note at the top of this file.
+   ⚠ Inline on purpose: deferred, the page would flash "This one isn't open yet." first.
+   ⚠ tests/proto-gate.check.js fails the build if the four copies drift apart. */
 (function () {
-  var KEY = 'chesswild', STORE = 'pjcc.marchland.key';
+  var KEY = 'chesswild', STORE = 'pjcc.proto.key', OLD = ['pjcc.duel.key', 'pjcc.marchland.key'];
   var q = '';
   try { q = new URLSearchParams(location.search).get('key') || ''; } catch (e) {}
   var ok = false;
   try {
-    if (q === 'off') { localStorage.removeItem(STORE); }
+    if (q === 'off') { localStorage.removeItem(STORE); OLD.forEach(function (k) { localStorage.removeItem(k); }); }
     else if (q === KEY) { localStorage.setItem(STORE, '1'); ok = true; }
-    else { ok = localStorage.getItem(STORE) === '1'; }
+    else { ok = localStorage.getItem(STORE) === '1' || OLD.some(function (k) { return localStorage.getItem(k) === '1'; }); }
   } catch (e) { ok = (q === KEY); }   // private mode: the URL still works, just not the memory
   if (!ok) return;
-  var g = document.getElementById('ml-gate'), l = document.getElementById('ml-locked');
+  var g = document.getElementById('proto-gate'), l = document.getElementById('proto-locked');
   if (g) g.hidden = false;
   if (l) l.remove();
 })();

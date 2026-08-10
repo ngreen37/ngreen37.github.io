@@ -31,8 +31,15 @@ window.PJCC_GAMES = [
   // The Battle Room — TERMINATED 2026-07-14 (Nate: "make it unplayable. We'll keep
   // working on it."). Asset kept dark at assets/games/pjcc_battle_room.html; page deleted.
   { slug:'battle-room',       name:'The Battle Room',    cryptic:'Chess as an action sequence',      icon:'⚔', accent:'#56d0ff', cat:'terminated', playable:false },
-  { slug:'follow-the-dog',    name:'Follow the Dog',     cryptic:'Trust the run. Follow her',        icon:'✦', accent:'#8fb8ff', cat:'dev' },
-  { slug:'chess-city',        name:'Chess City',         cryptic:'Platform the cursed board — the pieces have teeth',    icon:'♜', accent:'#ff5b6e', cat:'dev', score:['chess-city','score'], neu:'2026-06-25' },
+  // ⚑ OFF THE WORKBENCH 2026-08-10 (Nate: "take Follow the Dog and Chess City off the
+  // workbench and give them links the same way") — "the same way" = the way Duel and
+  // MARCHLAND are handled, one item above this in the same batch: `playable:false` so the
+  // combined hall drops them entirely, plus a soft key gate on the page so the link still
+  // works for anyone he hands it to. Both pages still build and both games still run;
+  // what changed is that a stranger no longer meets them. Flip `playable` back to true
+  // and delete the gate script in the page when either one is ready to be met.
+  { slug:'follow-the-dog',    name:'Follow the Dog',     cryptic:'Trust the run. Follow her',        icon:'✦', accent:'#8fb8ff', cat:'dev', playable:false },
+  { slug:'chess-city',        name:'Chess City',         cryptic:'Platform the cursed board — the pieces have teeth',    icon:'♜', accent:'#ff5b6e', cat:'dev', score:['chess-city','score'], neu:'2026-06-25', playable:false },
   // MARCHLAND (2026-08-03) — deliberately cryptic and deliberately UNLINKED. `playable:false`
   // makes pjcc-hall.js render a <div> instead of an <a>, so the card shows in the Building
   // hall with no route in; the page itself is key-gated (see games/marchland/index.html).

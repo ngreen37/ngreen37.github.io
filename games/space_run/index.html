@@ -1,19 +1,71 @@
 ---
 layout: game
 title: "Follow the Dog"
-description: "A Star Fox-style chess runner. Follow the dog and skate across the pieces the CEO throws at you. (Formerly Space Run.)"
+description: "A Star Fox-style chess runner. Follow the dog and skate across the pieces the CEO throws at you. Building — playable by invitation while it is tuned."
 permalink: /games/follow-the-dog/
+sitemap: false
 ---
 
-<div class="game-frame-wrap">
-  <iframe
-    src="{{ '/assets/games/pjcc_space_run.html' | relative_url }}"
-    title="P&JCC Follow the Dog"
-    allowfullscreen
-    scrolling="no"
-  ></iframe>
+{% comment %} ══════════════════════════════════════════════════════════════════════════
+     OFF THE WORKBENCH 2026-08-10 — Nate: "take Follow the Dog and Chess City off the
+     workbench and give them links the same way." "The same way" = the way Duel and
+     MARCHLAND are handled: `playable:false` in pjcc-games-data.js so the combined hall
+     drops the card entirely, plus the soft key gate below so the link he hands out still
+     opens the game. The page and the game are untouched; what changed is that a stranger
+     no longer meets a half-built runner on the way to a finished one.
+
+     ⚠ A SOFT GATE IS NOT A SECRET. It keeps the prototype from being stumbled into from a
+     search result; anyone reading this file can read the key. Fine for an unfinished game,
+     NOT fine for anything that matters — do not reuse this pattern for real access control.
+
+     THE KEY: /games/follow-the-dog/?key=chesswild — once used it is remembered in
+     localStorage ('pjcc.proto.key'), so the URL only has to be typed once per BROWSER,
+     not once per game: the same store opens all four prototypes. ?key=off forgets it again.
+
+     Open it back up by deleting `playable:false` from the registry AND the script at the
+     foot of this file. Both, or the card links to a door that is still shut.
+     ══════════════════════════════════════════════════════════════════════════ {% endcomment %}
+
+<div id="proto-gate" hidden>
+  <div class="game-frame-wrap">
+    <iframe
+      src="{{ '/assets/games/pjcc_space_run.html' | relative_url }}"
+      title="P&JCC Follow the Dog"
+      allowfullscreen
+      scrolling="no"
+    ></iframe>
+  </div>
+
+  <div class="game-info">
+    <p><strong>How to play.</strong> ← → change lane, Space to jump between piece-tracks. Land to lock on; miss and you lose a heart.</p>
+  </div>
 </div>
 
-<div class="game-info">
-  <p><strong>How to play.</strong> ← → change lane, Space to jump between piece-tracks. Land to lock on; miss and you lose a heart.</p>
+<div id="proto-locked">
+  <p class="proto-shut">This one isn't open yet.</p>
 </div>
+
+<script>
+/* ⚑ THE PROTOTYPE SOFT GATE — byte-identical on all four unfinished games (Duel,
+   MARCHLAND, Follow the Dog, Chess City). ONE key opens all four, so the URL is typed
+   once per browser instead of once per game; the legacy per-game stores are still read
+   so a browser that already knows Duel or MARCHLAND stays open. Deliberately tiny and
+   deliberately not clever — see the note at the top of this file.
+   ⚠ Inline on purpose: deferred, the page would flash "This one isn't open yet." first.
+   ⚠ tests/proto-gate.check.js fails the build if the four copies drift apart. */
+(function () {
+  var KEY = 'chesswild', STORE = 'pjcc.proto.key', OLD = ['pjcc.duel.key', 'pjcc.marchland.key'];
+  var q = '';
+  try { q = new URLSearchParams(location.search).get('key') || ''; } catch (e) {}
+  var ok = false;
+  try {
+    if (q === 'off') { localStorage.removeItem(STORE); OLD.forEach(function (k) { localStorage.removeItem(k); }); }
+    else if (q === KEY) { localStorage.setItem(STORE, '1'); ok = true; }
+    else { ok = localStorage.getItem(STORE) === '1' || OLD.some(function (k) { return localStorage.getItem(k) === '1'; }); }
+  } catch (e) { ok = (q === KEY); }   // private mode: the URL still works, just not the memory
+  if (!ok) return;
+  var g = document.getElementById('proto-gate'), l = document.getElementById('proto-locked');
+  if (g) g.hidden = false;
+  if (l) l.remove();
+})();
+</script>

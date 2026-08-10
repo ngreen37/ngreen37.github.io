@@ -220,3 +220,11 @@
 .hall--dev .gcard-soon { background:#ffcf7a; color:#12100b; border-radius:2px; }
 .hall--dev .gcard-dead { background:#8a7a55; color:#12100b; border-radius:2px; }
 .hall--dev .gcard.soon, .hall--dev .gcard.locked, .hall--dev .gcard.dead { border-style:dotted; opacity:.85; }
+
+/* ── THE PROTOTYPE SOFT GATE'S SHUT DOOR ──────────────────────────────────────
+   Four unfinished games (Duel, MARCHLAND, Follow the Dog, Chess City) hide behind an
+   identical key gate and print an identical line when it is shut. It lived four times as
+   four page-local classes; it lives once here now, so the four doors cannot drift into
+   looking like four different kinds of closed. See tests/proto-gate.check.js. */
+.proto-shut { text-align:center; color:var(--ink-3, #8479a3); font-family:'Share Tech Mono', ui-monospace, monospace;
+  letter-spacing:.12em; text-transform:uppercase; font-size:13px; padding:64px 16px; }
