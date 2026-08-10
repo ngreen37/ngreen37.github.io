@@ -81,7 +81,7 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-08-09**
 | **3** | **Delete and reinstall the app on your phone** — ⚠ **sign in on chesswild.com FIRST** | your iPhone | Your installed app still opens the old origin |
 | **4** | **Does Customize take ONE tap now on your iPhone?** | `/dossier/` → the Forge | I could not reproduce it; I need your answer before I instrument the live page |
 | **5** | **Confirm one reading:** "Games Hall box in the Play Now box" = Games Hall took the slot Play Now vacated | the front door | Nothing — it shipped my way; say so if I read it wrong |
-| **6** | **How far does the de-purpling go?** — drawer only, + header, or + the Park Tables room | look-and-feel call | Nothing is broken; the handoff just changes identity mid-tap |
+| ~~6~~ | ~~**How far does the de-purpling go?**~~ **CLOSED 2026-08-10** — his call: *"we can de-purple further if we have to, but we are looking good on this front."* | — | — |
 | **7** | **The header can't hold everything at once — which one gives?** | the top bar, narrow windows + phones | Nothing; it shipped my way. Contact steps out below 1100px and the McPuppy badge below 430px |
 
 ---
