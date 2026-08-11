@@ -139,6 +139,9 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-08-09**
 | **7** | **The header can't hold everything at once — which one gives?** | the top bar, narrow windows + phones | Nothing; it shipped my way. Contact steps out below 1100px and the McPuppy badge below 430px |
 | **8** | **Point the two spare domains at the right pages** — Squarespace forwarding, 5 min | Squarespace → Domains | The two domains you bought; nothing else |
 | **9** | **Flip a social account to `live: true`** the day it has a post on it | `_config.yml` → `socials:` | Nothing — the row renders empty until you do |
+| **10** | **MARCHLAND castling — two readings of your rule I had to pick.** (a) At **16-17 the king still MOVES**, he just arrives alone; (b) **"similarly for the three pawns" = the shield rides the ROOK's band**, so 18-20 gets it and 16-17 doesn't. Both one-line flips | `assets/games/pjcc_marchland.html` → `POS_CASTLE` / `posCastleFull` | Nothing; it shipped my way and the sim says 48% |
+| **11** | **The Welcome Back block — keep, reword or pull.** You said you might | the front door | Nothing — one element + one script block, deleting both restores the page |
+| **12** | **"More Ways In" is FIVE doors now** — 3 + 2 with an empty cell. If it reads as a hole, the fix is a sixth door worth having, not a new column count | the front door | Nothing; it shipped my way |
 
 ---
 
