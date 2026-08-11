@@ -653,6 +653,9 @@ material edge against his 40-60% band.
    "protection" roll would loosen the position it is meant to strengthen.
 4. **Castling at 17-20**, defender only, kingside, and only with a rook to castle with. With no rook the
    roll is spent on the chain and the roll screen says so rather than dropping it silently.
+   ⚑ **AND IT IS THE POSITION DIE ONLY — confirmed by him 2026-08-11** (*"only the position dice
+   for the castling"*), which is how it was already wired. Both his rules are a gate now rather
+   than a comment: **`npm run test:marchland`**, 15 checks, and it fails on the old 18.
    ⚠ **CORRECTED 2026-08-11 — it shipped at 18-20 and that was off by one.** He restated the rule
    ("*within 3 points of maximum*") and re-reading it settles it: within three points of a maximum
    of **20** is **17**, not 18. The same band buys the attacker a pawn's second rank, so both moved

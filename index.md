@@ -867,6 +867,11 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 @media (max-width: 760px) {
   .mc-hero { grid-template-columns: 1fr; gap: 0; }
   .mc-board { order: -1; }
+  /* ⚑ THE 480px CAP IS A DESKTOP FIX AND IT STOPS HERE (2026-08-11). In one column there is
+     no second column for the card to stretch across, so the width that made it a banner up
+     there is just the page's width down here — and a 480px card left-aligned under a
+     full-bleed board would read as an offset accident on a tablet. Full width, as before. */
+  .mc-door.mc-lead { max-width: none; }
   /* the board's own breathing room, now that no gap supplies it — and no title above it
      inside the card, so it carries its own top step instead of borrowing the title's. */
   .mc-board { min-height: 0; padding: 0 0 var(--space-4, 16px); }
@@ -978,8 +983,33 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    one with an arrow, still above the rest — which is the line that must not be crossed. Picked
    from a render of the real page, not from arithmetic: at 1.15rem the title stops out-reading
    the four titles below it and the hero loses its anchor. */
+/* ⚑⚑ SMALLER AGAIN, 2026-08-11 ("make the green play now box a little smaller please") — and
+   the second ask is the interesting one, because the first pass took the two levers I was
+   LOOKING at (padding, type) and left the one that actually sets its size alone:
+
+     THE CARD IS NOT SIZED. IT IS STRETCHED. It is a grid item in `1.1fr 0.9fr`, so it took
+     the whole left column — 582px on his screen — to hold three short lines. Trimming padding
+     off a 582px banner cannot stop it being a banner. Measured, not guessed: 582 x 139 = 81k
+     px², against a paper door's 355 x 181 = 64k.
+
+   So it is 480px wide now and no longer stretches: 81k → 67k px², a 17% cut on top of August
+   10th's 16%. ⚠ 480 IS A FLOOR, NOT A TASTE. Shrink-to-content lands at 338px, which is
+   NARROWER than the 355px paper doors below it — the page's lead would become its smallest
+   card and "it is BIGGER" quietly stops being true. Anything under ~460 crosses that line by
+   area. Picked from a labelled candidate render at his own window size (1512 wide, rail
+   docked), where his 582 reproduced to the pixel ([[pick-visual-values-from-a-render]]).
+
+   ⚠⚠ IT IS `max-width`, AND `width: 480px` IS A TRAP I SHIPPED FOR TEN MINUTES. A grid item
+   in an `fr` column has `min-width: auto`, so a stated width becomes the column's MINIMUM and
+   the column grows to it. Measured at a 980px window: the card stayed 480 while the board's
+   column was squeezed — i.e. "make it smaller" made it eat the board at mid widths. A
+   `max-width` never demands anything, so the item is min(column, 480) and the fr split is
+   untouched. Caught by driving eight widths, not by reading the rule. `justify-self` is left
+   alone deliberately: a stretched item that cannot reach its stretch size falls back to
+   start alignment, which is where this card wants to be anyway. */
 .mc-door.mc-lead { background: var(--fd-go); border-color: var(--fd-go); color: #ffffff;
-  padding: 18px 18px 20px; box-shadow: 0 8px 22px rgba(46, 125, 71, 0.2); }
+  padding: 18px 18px 20px; box-shadow: 0 8px 22px rgba(46, 125, 71, 0.2);
+  max-width: 480px; }
 /* the paper doors wear a wood hairline along the top; on the green one it would read as mud */
 .mc-lead::before { background: rgba(255, 255, 255, 0.55); opacity: 0.8; }
 .mc-lead .mc-door-ico { color: #ffffff; font-size: 26px; margin-bottom: 8px; }

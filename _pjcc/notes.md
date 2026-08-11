@@ -159,6 +159,16 @@ with no notice**, which is the same event seen from a different street.)*
 - **Two henchmen come after us.**
 - **We tip them off their boat.**
 
+**Maxwell knows. That is the whole scene.** *(His, 2026-08-11.)*
+- **Early or mid-way, Maxwell works out that Nate is going to Chess City by boat and NOT
+  returning.**
+- **He accepts it, and he helps him obtain the boat — but he is emotional.**
+- **He sacrifices his own feelings in spite of that, because it is what his friend has deemed
+  best for himself.**
+- ⭐ So the plan is not a heist Maxwell is dragged into; it is a **goodbye he is helping build**.
+  Every beat of "how we get the boat" is Maxwell handing over the thing that takes his friend
+  away. The henchmen chase is the fun; this is what it is about.
+
 *(Mine, worth knowing before it gets written: **Maxwell is the best friend — the pull of staying
 put.** He is the one who makes fun of the ambition and is content in Checker Town. So "Nate gets a
 boat and takes Maxwell along" is the guy who never leaves being taken somewhere, on a plan he had no
