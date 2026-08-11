@@ -178,11 +178,31 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
          board had to slot BETWEEN two children of a copy block; here all four items travel
          together as one column, so a plain div is correct and `order: -1` on the board is still
          the entire mobile layout. Nothing about the phone changes. {%- endcomment -%}
+    {%- comment -%} ⚠ THE ASSIGN LIVES ABOVE THE CARD NOW (2026-08-11, second pass). It used to
+         sit beside the paragraph that used it; the count moved INTO the green door, so the
+         variable has to exist before the door is written. Liquid is top-to-bottom — an assign
+         below its first use renders an empty string and nothing warns you. {%- endcomment -%}
+    {%- comment -%} `where: "open", true` and not a nil test — Jekyll's `where` against nil is
+         the kind of thing that works until it doesn't, so the data file states `open` on every
+         row explicitly rather than leaving it to be inferred from an absent key. {%- endcomment -%}
+    {%- assign open_seats = site.data.regulars | where: "open", true -%}
     <div class="mc-lead-col">
+    {%- comment -%} ══ THE SUB-LABEL IS THE REGULARS LINE NOW (2026-08-11) ═══════════════════
+         Nate: "Put '6 regulars at the tables right now' in the green box replacing 'A person, a
+         park...'". So the count is not a line UNDER the button any more — it is what the button
+         says about itself, and the stack loses a paragraph.
+
+         ⭐ It is a better sub-label than the one it replaced. "A person, a park regular, or The
+         Creator" listed the KINDS of opponent; this states how many are there and implies the
+         rest. ⚠ THE COUNT IS DERIVED, NEVER TYPED — `_data/regulars.yml`, gated by
+         `npm run test:regulars`, which reads the real `BOTS` object out of the Park Tables page
+         and fails if they disagree ([[dead-game-links-trap]]).
+         ⚠ "Right now" is literally true and always will be: the regulars run in your browser,
+         so they need no server and cannot be away. {%- endcomment -%}
     <a class="mc-door mc-lead" href="{{ '/games/park-tables/' | relative_url }}">
       <span class="mc-door-ico" aria-hidden="true">&#9822;</span>
       <b>Play Now</b>
-      <small>A person, a park regular, or The Creator.</small>
+      <small>{{ open_seats | size }} regulars are at the tables right now.</small>
       <span class="mc-lead-arw" aria-hidden="true">&rarr;</span>
     </a>
 
@@ -199,30 +219,37 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
          page ([[down-never-stuck]]). {%- endcomment -%}
     <p class="mc-resume" id="mc-resume" data-href="{{ '/games/fork-in-the-road/' | relative_url }}" hidden></p>
 
-    {%- comment -%} ── THE REGULARS (his #3) ────────────────────────────────────────────────
-         ⚠ THE COUNT IS DERIVED, NEVER TYPED. It renders from `_data/regulars.yml`, and
-         `npm run test:regulars` reads the real `BOTS` object out of the Park Tables page and
-         fails if the two disagree on names, ratings or which seats are locked. Retyping a
-         roster count into a second file is exactly the trap [[dead-game-links-trap]] describes,
-         and this page is the third place that would have carried one.
-
-         "Right now" is literally true and always will be: the regulars are bots that run in
-         your browser, so they need no server and cannot be away. {%- endcomment -%}
-    {%- comment -%} `where: "open", true` and not a nil test — Jekyll's `where` against nil is
-         the kind of thing that works until it doesn't, so the data file states `open` on every
-         row explicitly rather than leaving it to be inferred from an absent key. {%- endcomment -%}
-    {%- assign open_seats = site.data.regulars | where: "open", true -%}
-    <p class="mc-open"><b>{{ open_seats | size }} regulars are at the tables right now.</b>
-      No account, real clock — they play in your browser, so they are never away.</p>
+    {%- comment -%} ── THE REGULARS PARAGRAPH IS GONE (2026-08-11) ──────────────────────────
+         It shipped this morning as a headline plus a sentence of support, and the sentence was
+         the first thing he cut: "Get rid of the description after '6 regulars at the table right
+         now'". The headline moved into the green door's sub-label (above) and the paragraph did
+         not come with it — the two facts it carried, no account and a real clock, are already
+         one tap away and were explaining a claim nobody had disputed. {%- endcomment -%}
 
     {%- comment -%} ── THE HONEST STRIP, MOVED UP (his #2) ──────────────────────────────────
          These three lines used to close the page out, under the doors. They are PROOFS, and a
          proof does its work next to the ask — so they now stand beside the green button
-         instead of 1,600px below it. Nothing was reworded. {%- endcomment -%}
+         instead of 1,600px below it.
+
+         ⚑ CUT AND SHRUNK, same day (Nate: "find a way to make the three points a bit smaller
+         and less words"). 34 words → 17, and the type came down a step. What survived is the
+         CLAIM plus the shortest thing that makes it checkable; what went was the sentence
+         explaining a claim that had already landed — the same rule as the 2026-07-28 "bare
+         minimums" pass, applied to the strip that pass never touched.
+
+           was: A perft-verified referee, with Stockfish as a second opinion.
+           now: Perft-verified, with Stockfish behind it.
+           was: Free, in your browser, forever.       now: Free, forever.
+           was: The arcade and the engine cache on first visit.
+           now: Cached on first visit.
+
+         ⚠ "Perft-verified" STAYS. It is the one word on the page a chess programmer will
+         recognize as a real claim rather than a boast, and shortening it to "verified" would
+         cost the whole proof to save two syllables ([[accuracy-above-all]]). {%- endcomment -%}
     <ul class="mc-true">
-      <li><b>The chess is real.</b> A perft-verified referee, with Stockfish as a second opinion.</li>
-      <li><b>Every game gets a review.</b> Free, in your browser, forever.</li>
-      <li><b>It works on a plane.</b> The arcade and the engine cache on first visit.</li>
+      <li><b>The chess is real.</b> Perft-verified, with Stockfish behind it.</li>
+      <li><b>Every game gets a review.</b> Free, forever.</li>
+      <li><b>It works on a plane.</b> Cached on first visit.</li>
     </ul>
     </div>
 
@@ -432,28 +459,32 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
     <b>Find Your Rating</b>
     <small>Six positions, then a seat that fits.</small>
   </a>
-  {%- comment -%} ⚑ THE PREVIEW BOX IS GONE (2026-08-10, Nate: "Remove the notation blitz box,
-       it's not working"). It was a 3x3 board with one lit square and "e4" beside it, standing
-       in for a screenshot he had asked for the day before.
+  {%- comment -%} ══ NOTATION BLITZ IS OFF THIS PAGE (2026-08-11) ═══════════════════════════
+       Nate, with the card crossed out in red: "Remove the notation blitz from the home page —
+       it's not working."
 
-       ⭐ WHY IT DIDN'T WORK, so the next preview doesn't repeat it: the whole thing rendered
-       39px square. At that size the board is not legible AS a board — three ranks of 13px
-       cells read as a texture, and the knight inside the lit square is 10px of glyph. It was
-       trying to explain a game in less room than the single glyph the five doors beside it
-       each get, and it lost twice over: too small to inform, and different enough to break
-       the set. ⚠ THE DESTINATION IS FINE — checked before touching this. /games/notation-run/
-       returns 200, boots to its title screen and throws nothing; "it's not working" was about
-       the picture on this page, not the game behind it.
+       ⚠⚠ HE ASKED THIS ONCE BEFORE, ON 2026-08-10, AND I ONLY DID HALF OF IT. That time he
+       said "remove the notation blitz box, it's not working" and I removed the PREVIEW BOX —
+       the 39px mini-board inside the card — and left the card itself standing, then wrote a
+       confident note explaining why the door had earned its place. The door was the thing.
+       [[when-he-repeats-himself]]: the first fix was aimed at the layer I happened to be
+       looking at, and the defect was one behind it. When he repeats himself, the answer is not
+       a better version of the same fix.
 
-       The door stays and takes the same treatment as its five neighbors. Its glyph is a
-       crosshatched square (U+25A6 + FE0E for text presentation, so it inherits the sheet's ink
-       instead of arriving as a color emoji) — a grid, which is what you are being asked to
-       read. NOT the knight: Puzzles already wears that one, two doors apart. {%- endcomment -%}
-  <a class="mc-door" href="{{ '/games/notation-run/' | relative_url }}">
-    <span class="mc-door-ico" aria-hidden="true">&#9638;&#xFE0E;</span>
-    <b>Notation Blitz</b>
-    <small>Name the square before the clock does.</small>
-  </a>
+       ⚠ THE GAME IS NOT BROKEN AND IS NOT DELETED. /games/notation-run/ returns 200 and boots
+       (re-checked today, same as on 08-10), it keeps its card in the games hall, and the drawer
+       and ⌘K still reach it. What was not working is this DOOR: on a page whose job is to make
+       a stranger do one thing, "name the square before the clock does" is a drill for somebody
+       who already plays, and it was sitting in the same row as the two doors that answer a
+       question in a minute.
+
+       ⚠ THE GRID IS FIVE NOW, AND THAT COSTS THE CLEAN ROWS. The note above says six went to
+       three columns because "four across plus two orphans is a row and a half". Five in three
+       columns is 3 + 2, so the second row has an empty cell — the same shape, smaller. Left as
+       is deliberately rather than re-columned: 2-across would put a lone card on a third row,
+       which is worse, and shuffling the grid to hide one gap is how a page ends up with a
+       layout nobody chose. If it reads as a hole, the fix is a SIXTH DOOR worth having, not a
+       new column count. {%- endcomment -%}
 </div>
 
 {%- comment -%} THE HONEST STRIP MOVED INTO THE HERO (2026-08-11, his #2) — it is now in
@@ -1164,9 +1195,10 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mc-lead-col { max-width: 480px; display: flex; flex-direction: column;
   gap: var(--space-4, 16px); }
 
-/* THE REGULARS LINE — the answer to "what happens if I press the green thing" */
-.mc-open { margin: 0; color: var(--fd-ink-3); font-size: 0.88rem; line-height: 1.6; }
-.mc-open b { color: var(--fd-ink-2); font-weight: 700; }
+/* ⚑ `.mc-open` IS DELETED (2026-08-11). The regulars line moved into the green door's own
+   sub-label, so the paragraph it styled no longer exists. Removed rather than left behind —
+   the dead-code sweep would have flagged it, and a rule with no markup is a trap for whoever
+   next greps for "how does the front door say that" ([[read-before-you-delete]]). */
 
 /* PICK UP WHERE YOU LEFT OFF — only ever visible to somebody who has been here before.
    ⚠ `[hidden]` needs the explicit `display:none` because the rule below sets `display`
@@ -1192,12 +1224,20 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    ⚑ IT LIVES IN THE HERO NOW (2026-08-11). `auto-fit` still does the right thing without a
    breakpoint: three across when it had the page's full width, one per row in a 480px column,
    which is what turns it from a footer strip into a column of proofs beside the button.
-   The bottom margin goes — the stack's `gap` owns the spacing here. */
+   The bottom margin goes — the stack's `gap` owns the spacing here.
+
+   ⚑ SMALLER, same day ("make the three points a bit smaller"). Three dials, all one step:
+   the claim 0.95 → 0.88rem, the support 0.88 → 0.82rem, and the row gap 16 → 10px. The words
+   were cut in the markup at the same time, and the two together are what buys the height —
+   type alone would have shaved a few pixels and left three long lines still looking like a
+   paragraph. ⚠ 0.82rem is the FLOOR here: `--fd-ink-3` on the parchment is chosen against the
+   sheet's alpha, and going smaller starts trading legibility for space on the one block whose
+   whole job is to be believed. Do not take another step without re-measuring contrast. */
 .mc-true { list-style: none; padding: 0; margin: 0;
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-4, 16px); }
-.mc-true li { color: var(--fd-ink-3); font-size: 0.88rem; line-height: 1.6;
-  border-left: 2px solid var(--fd-rule); padding-left: 14px; }
-.mc-true b { display: block; color: var(--fd-ink-2); font-size: 0.95rem; margin-bottom: 3px; }
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+.mc-true li { color: var(--fd-ink-3); font-size: 0.82rem; line-height: 1.55;
+  border-left: 2px solid var(--fd-rule); padding-left: 12px; }
+.mc-true b { display: block; color: var(--fd-ink-2); font-size: 0.88rem; margin-bottom: 2px; }
 
 /* THE WORLD DOOR — DE-PURPLED 2026-08-04 (Nate: "completely get rid of the purple and gold
    aesthetic — leave that with P&JCC page").
