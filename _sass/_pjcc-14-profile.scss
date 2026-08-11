@@ -122,32 +122,37 @@
 .pjcc-pick:hover { transform: scale(1.12); border-color: #F5C518; box-shadow: 0 0 12px rgba(245,197,24,0.5); }
 .pjcc-pick.sel { border-color: #F5C518; box-shadow: 0 0 12px rgba(245,197,24,0.6); }
 
-/* ---- Leaderboards page ---- */
+/* ---- Leaderboards page ----
+   ⚑ DE-PURPLED 2026-08-11 (Nate: "de-purple the Leaderboard, park tables, play now, etc box").
+   These rules are SHARED — the standings table also appears on /dossier/ and in the profile —
+   so they are neutral here rather than being overridden inside `theme-hall`. Charcoal is the
+   drawer's palette to the hex, and it reads correctly on the purple pages too because gray has
+   no hue to fight with. Gold keeps its ONE job: the rank and the active channel. */
 .lb-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 1.2rem 0; }
 .lb-tab {
-  background: #2D1B69; color: #cdbcf2; border: 1px solid #6b5fa0;
+  background: #22262e; color: #dfe4ea; border: 1px solid #3a3f47;
   border-radius: 999px; padding: 7px 15px; cursor: pointer; font-size: 0.84rem; font-weight: 700;
 }
 .lb-tab:hover { border-color: #F5C518; color: #fff; }
-.lb-tab.active { background: #F5C518; color: #1a0f3d; border-color: #F5C518; }
+.lb-tab.active { background: #F5C518; color: #16181d; border-color: #F5C518; }
 
 .lb-table { width: 100%; border-collapse: collapse; max-width: 720px; }
 .lb-table th {
-  text-align: left; color: #9a7fd4; font-size: 0.72rem; text-transform: uppercase;
-  letter-spacing: 0.08em; padding: 8px 10px; border-bottom: 1px solid #6b5fa0;
+  text-align: left; color: #8b93a1; font-size: 0.72rem; text-transform: uppercase;
+  letter-spacing: 0.08em; padding: 8px 10px; border-bottom: 1px solid #3a3f47;
 }
-.lb-table td { padding: 10px; border-bottom: 1px solid rgba(245,197,24,0.14); color: #e3d6ff; }
+.lb-table td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); color: #dfe4ea; }
 .lb-rank { color: #F5C518; font-weight: 800; width: 48px; }
 .lb-rank.gold { color: #ffd740; } .lb-rank.silver { color: #d8d8e8; } .lb-rank.bronze { color: #e0a877; }
 .lb-av { font-size: 20px; width: 30px; }
-.lb-name { font-weight: 700; color: #f0e6ff; }
+.lb-name { font-weight: 700; color: #eef1f5; }
 .lb-score { text-align: right; color: #6bffb8; font-weight: 800; }
-.lb-empty { color: #9a7fd4; padding: 1rem 0; }
+.lb-empty { color: #8b93a1; padding: 1rem 0; }
 .lb-me { background: rgba(245,197,24,0.08); }
-.lb-intro { color: #9a7fd4; max-width: 720px; }
+.lb-intro { color: #8b93a1; max-width: 720px; }
 .lb-intro strong { color: #F5C518; }
-.lb-ghost { background: rgba(157,127,212,0.14); border: 1px solid #6b5fa0; border-left: 3px solid #F5C518;
-  border-radius: 8px; padding: 8px 14px; margin-bottom: 12px; color: #c9a7ff; font-size: 0.9rem; }
+.lb-ghost { background: rgba(255,255,255,0.05); border: 1px solid #3a3f47; border-left: 3px solid #F5C518;
+  border-radius: 8px; padding: 8px 14px; margin-bottom: 12px; color: #cfd5dd; font-size: 0.9rem; }
 .lb-ghost b { color: #F5C518; }
 .lb-more { background: #2D1B69; color: #F5C518; border: 1px solid #6b5fa0; border-radius: 999px;
   padding: 8px 20px; cursor: pointer; font-weight: 700; margin-top: 14px; }

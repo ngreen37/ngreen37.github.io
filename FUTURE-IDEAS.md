@@ -113,6 +113,7 @@ points." Probed rather than remembered — `/classified/` returns **200**, and t
 **OTHER**
 - [x] Contact page: remove the **GitHub** link; `nathgreen37@gmail.com` → **`Chesswild840@gmail.com`**.
 - [x] The Gambit's **Karma pill** — *"the Karma pill is GREAT. I love it."* — needs a **hover explanation** of what it does.
+- [x] **Karma, second pass (2026-08-11):** note cut to one sentence, **"Noticed" removed** from the word ladder (it was the only rung that read as a promise), and the sacrifice line now says a memory can be **gone for good** rather than "some don't".
 - [ ] **"What are the ten best ideas I can do specifically for ChessWild that the others don't have?"** (Lichess, chess.com, Levy Rozman's site.)
 
 ---
@@ -134,25 +135,27 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-08-09**
 | **3** | **Delete and reinstall the app on your phone** — ⚠ **sign in on chesswild.com FIRST** | your iPhone | Your installed app still opens the old origin |
 | **4** | **Does Customize take ONE tap now on your iPhone?** | `/dossier/` → the Forge | I could not reproduce it; I need your answer before I instrument the live page |
 | **5** | **Confirm one reading:** "Games Hall box in the Play Now box" = Games Hall took the slot Play Now vacated | the front door | Nothing — it shipped my way; say so if I read it wrong |
-| ~~6~~ | ~~**How far does the de-purpling go?**~~ **CLOSED 2026-08-10** — his call: *"we can de-purple further if we have to, but we are looking good on this front."* | — | — |
+| ~~6~~ | ~~**How far does the de-purpling go?**~~ **CLOSED AGAIN 2026-08-11 — HE CALLED IT IN.** *"De-purple the Leaderboard, park tables, play now, etc box."* Shipped as `theme-hall`: the Leaderboards and Park Tables now wear the drawer's neutral charcoal. **Purple stays on the world pages.** | — | — |
 | **7** | **The header can't hold everything at once — which one gives?** | the top bar, narrow windows + phones | Nothing; it shipped my way. Contact steps out below 1100px and the McPuppy badge below 430px |
 | **8** | **Point the two spare domains at the right pages** — Squarespace forwarding, 5 min | Squarespace → Domains | The two domains you bought; nothing else |
 | **9** | **Flip a social account to `live: true`** the day it has a post on it | `_config.yml` → `socials:` | Nothing — the row renders empty until you do |
 
 ---
 
-**🎨 6 · ONE DECISION FROM THE 2026-08-04 SKEPTIC PASS — THE HANDOFF BREAKS AT THE GREEN BUTTON**
-- [ ] **6 · Does the purple/gold go from the HEADER and the PARK TABLES room too, or stop at the
-  drawer?** You asked for the left nav and I did exactly that — but arriving cold on a phone
-  now shows the seam. The front door is warm white paper with **one green button**; one tap
-  later `/games/park-tables/` is a **full purple-and-gold room** and the button you press is
-  **gold**. The site changes identity at the exact moment a stranger commits. The drawer is
-  neutral now, but it opens *under a purple-and-gold header*, so the menu stacks two design
-  languages. Three ways to go, all real: **(a)** carry the neutral up into the header and
-  re-skin Park Tables to the front-door palette — biggest job, one site; **(b)** header only —
-  cheap, fixes the drawer seam, leaves the button-color break; **(c)** leave it — the world
-  pages are *meant* to look like the world, and Park Tables is arguably part of the world.
-  ⚠ This is a look-and-feel call, so it is yours. Nothing is broken either way.
+**🎨 6 · ~~ONE DECISION FROM THE 2026-08-04 SKEPTIC PASS~~ — ANSWERED AND SHIPPED 2026-08-11**
+- [x] ~~**6 · Does the purple/gold go from the HEADER and the PARK TABLES room too?**~~ **He took
+  option (a), for the rooms.** *"De-purple the Leaderboard, park tables, play now, etc box — give
+  it an on-brand color theme."* Shipped as **`theme-hall`**, opted into per page with
+  `body_class`. The palette is **the drawer's, to the hex** — so the rooms and the menu that
+  opens them are one surface at last, and the seam he was arriving on is gone.
+  ⭐ **The real finding: none of those rooms was painting itself purple.** They inherit
+  `--surface` / `--edge` from the Surface Kit, so *every* `layout: page` page wore the world's
+  livery by default. That is why it read as everywhere at once, and why retinting one page would
+  have moved one box and left the seam.
+  **Still open, and now the only purple seam left: the HEADER.** It is chrome on every page,
+  including the light front door, and it is still purple/gold. Say the word and it takes the
+  same neutral. ⚠ Purple deliberately KEPT on `/pjcc/`, the cast and the dossier — it is the
+  world's livery and it earns it there.
 
 **🔠 7 · THE HEADER RAN OUT OF ROOM — WHICH ONE GIVES? *(2026-08-09, the three front doors)***
 - [ ] **7 · Two things step out of the header on narrow screens. Tell me if you'd rather buy the

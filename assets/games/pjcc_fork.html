@@ -1224,6 +1224,31 @@ function refuteMove(p, b, fx, fy, tx, ty){
   // the player the report button, because if they're right that is worth knowing.
   if (-loss >= 280) return { text: yours + ' looks strong too — but it is not this puzzle\'s answer. Tap ⚑ if you think it should be.', reply, hard: false,
                              verdict: 'agrees', cp: Math.round(-loss) };
+  /* ⚑⚑ A PROFITABLE WRONG ANSWER IS NOT "NOTHING" (2026-08-11, Nate: "for all puzzles where
+     the bishop takes the rook but the answer is wrong, it says 'you win nothing', because you
+     lose the bishop, but that IS still a profitable exchange even if it is the wrong answer,
+     and that should be noted in the description after the mistake").
+
+     ⭐ IT WAS A HOLE BETWEEN TWO BRANCHES, and the arithmetic says so exactly. BxR answered by
+     the recapture is rook (500) for bishop (330) = +170 to you. `loss` is NEGATIVE there, so
+     `costLabel(loss)` finds no band, `loss >= 90` is false, and `-loss >= 280` is false too —
+     170 falls in the gap between "a real second solution" and "a real loss", and dropped
+     through to the catch-all, which called a two-point profit nothing. Every exchange that
+     wins between a pawn and a piece landed there: the single most common shape a beginner
+     tries, told the one thing about it that is not true. [[accuracy-above-all]]
+
+     ⚠ IT IS `refuted`, NOT `agrees`, AND THE ⚑ IS NOT OFFERED. Winning material is not the
+     same as solving the puzzle, and the puzzle is still right — inviting a report here would
+     bury the reports that matter under every good-but-second-best trade. `cp` stays in the
+     same signed units as every other branch (negative = you came out ahead) so the report
+     payload cannot mean two things. */
+  if (-loss >= 90) {
+    const won = costLabel(-loss);
+    return { text: 'After ' + yours + ', ' + theirs + ' — you still come out ' +
+                   (won ? won : Math.round(-loss / 100) + ' points') +
+                   ' ahead. That is a real gain; it just is not the most this position gives you.',
+             reply, hard: false, verdict: 'refuted', cp: Math.round(loss) };
+  }
   return { text: yours + ' is safe — but it wins nothing. ' + theirs + ', and the moment is gone.', reply, hard: false,
            verdict: 'refuted', cp: Math.round(loss) };
 }
@@ -1488,6 +1513,17 @@ document.getElementById('analysis-btn').addEventListener('click', () => {
   PJCCAnalysis.open({
     fen: puzzleFEN(p),
     moves: (p.line || []).map(m => m[0]).join(' '),
+    /* ⚑ ply: 0 — START THE PUZZLE OVER (2026-08-11, Nate: "the analysis board should start
+       the puzzle over… right now it starts you at the end").
+       ⚠ THE DEFAULT IS WHAT WAS WRONG, AND IT IS EASY TO MISS. `open()` treats a missing
+       `ply` as "replay ALL of `moves`" (pjcc-analysis.js), which is right for the Game
+       Review — you jump in from a ply you were already looking at — and exactly backwards
+       here, where the whole point is to try the position yourself. The FEN was always the
+       puzzle as it was SET (see puzzleFEN above); the move list was then played over the
+       top of it, so you arrived after the answer had already been given.
+       The line is still passed, so the solution is right there in the move list to step
+       into — you just are not standing at the end of it before you have moved. */
+    ply: 0,
     flip: p.side === 'b',                       // look from the side that had to find it
     subtitle: (MOTIFS[p.theme] && MOTIFS[p.theme].name ? MOTIFS[p.theme].name : p.theme) +
               (p.rating ? ' · rated ~' + p.rating : '')

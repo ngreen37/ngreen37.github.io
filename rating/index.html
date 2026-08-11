@@ -655,13 +655,28 @@ body.rating-page .page-card { max-width: 620px; margin-left: auto; margin-right:
   });
 
   /* ══ THE RESULT ═══════════════════════════════════════════════════════════════════
-     The seat is chosen by the estimate, from the four regulars' ADVERTISED ratings — the
-     same numbers the Park Tables cards print, so nobody is sent to a seat that says one
-     thing here and another there. [[bot-gate]] */
+     The seat is chosen by the estimate, from the regulars' ADVERTISED ratings — the same
+     numbers the Park Tables cards print, so nobody is sent to a seat that says one thing
+     here and another there. [[bot-gate]]
+
+     ⚑⚑ REBUILT 2026-08-11 AND IT WAS BROKEN IN PUBLIC. This table still held the FOUR-seat
+     bench from before 2026-08-10: it offered `father`, which is not a bot id any more (the
+     seat is `dad`, "The Dad"), and it advertised Argus at 650 and Auston at 1100 when the
+     park seats them at 1000 and 1200. So the one thing this page exists to do — finish the
+     run and hand you a seat — sent a beginner to an id nobody answers to.
+     ⚠ tests/rating.check.js WAS WATCHING FOR EXACTLY THIS and had gone blind: its roster
+     regex was anchored on whichever seat came first, the bench got re-ordered, and it
+     started reporting three failures of its own instead of this one. Both fixed together.
+     ⭐ Seven seats now, matching the bench, and Princess/CEO are deliberately NOT here —
+     they are LOCKED at the park, and routing a stranger to a door they cannot open is a
+     worse first impression than routing them one seat low. */
   var SEATS = [
-    { id: 'argus',  name: 'Argus',  elo: 650,  under: 900 },
-    { id: 'auston', name: 'Auston', elo: 1100, under: 1300 },
-    { id: 'father', name: 'Father', elo: 1700, under: 1e9 }
+    { id: 'maxwell',  name: 'Maxwell',  elo: 400,  under: 575  },
+    { id: 'crockett', name: 'Crockett', elo: 750,  under: 875  },
+    { id: 'argus',    name: 'Argus',    elo: 1000, under: 1100 },
+    { id: 'auston',   name: 'Auston',   elo: 1200, under: 1300 },
+    { id: 'dad',      name: 'The Dad',  elo: 1400, under: 1600 },
+    { id: 'robert',   name: 'Robert',   elo: 1800, under: 1e9  }
   ];
 
   function finish() {
@@ -680,9 +695,13 @@ body.rating-page .page-card { max-width: 620px; margin-left: auto; margin-right:
       /* ⚠ THE CEILING IS NAMED, AND tests/rating.check.js CHECKS THE NUMBER AGAINST THE
          POOL. Re-generate with a different reach and this sentence becomes a false claim
          about how much to trust a number — which is the one lie this page must not tell. */
+      /* ⚠ 2400 → 1800 (2026-08-11). Robert came DOWN to 1800 when the bench grew to seven
+         and the CEO took 2400 — so this line was printing the CEO's rating under Robert's
+         name, and the seat handed over carried a number the park would contradict on the
+         very next screen. Both are the roster's, not mine. [[bot-gate]] */
       note = 'Six for six — this test ran out of road before you did. Its hardest positions rate about 1500, ' +
-             'so your real number is higher than this one. Robert plays at 2400.';
-      seat = { id: 'robert', name: 'Robert', elo: 2400 };
+             'so your real number is higher than this one. Robert plays at 1800.';
+      seat = { id: 'robert', name: 'Robert', elo: 1800 };
     } else if (right === 0) {
       note = 'Everyone starts here, and tactics are the fastest thing in chess to get better at. ' +
              'The Puzzle Room starts where you are.';

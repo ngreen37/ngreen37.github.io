@@ -213,11 +213,22 @@ ok(sweep - floor >= 700, `the run separates a beginner from a club player by ${s
 /* ══ 5 · the seats are DERIVED from Park Tables, never retyped ════════════════════════ */
 section('the seats it offers are the seats that exist');
 
-/* ⚠ ANCHORED ON `argus:`, NOT ON `var BOTS = {`. Park Tables EXPLAINS its own roster in a
-   comment 150 lines above the declaration — "`var BOTS = {…}` is declared ~150 lines BELOW"
-   — and a lazy regex grabs the prose, not the data. It is the same lesson as the derived
-   list itself: read the thing, not something that looks like it. [[dead-game-links-trap]] */
-const botsM = PARK.match(/var BOTS = \{\s*\r?\n(\s*argus:[\s\S]*?)\r?\n\s*\};/);
+/* ⚠ ANCHORED ON THE INDENTED DECLARATION, NOT ON `var BOTS = {` ALONE. Park Tables EXPLAINS
+   its own roster in a comment 150 lines above the declaration — "`var BOTS = {…}` is declared
+   ~150 lines BELOW" — and a lazy regex grabs the prose, not the data. It is the same lesson
+   as the derived list itself: read the thing, not something that looks like it.
+   [[dead-game-links-trap]]
+
+   ⚠⚠ AND THE FIRST FIX FOR THAT WAS ITSELF A TIME BOMB — it anchored on `argus:`, i.e. on
+   WHICH SEAT HAPPENED TO BE FIRST. The bench was re-ordered on 2026-08-10 (Maxwell took the
+   bottom seat), so from that day this pattern matched nothing, `BOTS` was `{}`, and the file
+   reported three FAILURES with the message "argus is not a Park Tables regular" — a check
+   accusing the site of a bug the check had. Worse, it was the loud kind of wrong: three red
+   lines that look like a known-failing test, which is how a REAL stale-seat bug in
+   /rating/ sat behind it unnoticed.
+   The anchor is now the two-space indent that only the real `var` statement has, and it
+   cares about no seat's name. [[audit-numbers-can-be-wrong]] */
+const botsM = PARK.match(/\n  var BOTS = \{\r?\n([\s\S]*?)\r?\n  \};/);
 ok(!!botsM, 'the Park Tables bot roster was found (anchored on the real declaration)');
 const BOTS = botsM ? vm.runInNewContext('({' + botsM[1] + '})') : {};
 const seatsM = SRC.match(/var SEATS = \[([\s\S]*?)\];/);
@@ -377,7 +388,13 @@ function serve(html) {
           ok(out.shown && out.runHidden, `${w}: the result screen replaces the board`);
           ok(/^\d+\+?$/.test(out.num), `${w}: the number is a number (${out.num})`);
           ok(/\?table=[a-z]+$/.test(out.seat || ''), `${w}: the seat links to a real table (${out.seat})`);
-          const expectSeat = mode === 'right' ? 'Robert' : 'Argus';
+          /* ⚑ DERIVED, NOT TYPED (2026-08-11). This said `'Argus'` for six-wrong, which was
+             true when Argus was the bottom seat and became a false failure the day Maxwell
+             took it — the same class of staleness as the roster anchor above, in the same
+             file, found in the same hour. The rule is what matters and the rule does not
+             change: a sweep is sent to the TOP seat the run offers, and a blank to the
+             BOTTOM one. Both ends are read from the page's own SEATS table. */
+          const expectSeat = mode === 'right' ? 'Robert' : SEATS[0].name;
           ok((out.seatLabel || '').indexOf(expectSeat) >= 0,
             `${w}: it offers ${expectSeat} (${out.seatLabel})`);
           if (mode === 'right') {

@@ -188,14 +188,21 @@ html.sky-night .ts-stars { display: block; }
    banner's little moon top-right AND this one after scrolling). The banner's orb is
    deleted below; the sky's moon is the only moon, it rides the hour arc, and because
    this layer is position:fixed it's on screen without scrolling anywhere. */
+/* ⚑ THE ORB IS THE GLOW ONLY (2026-08-11) — the moon's DISC moved to ::before so it can be
+   masked, and the halo became a `drop-shadow` on the parent so it follows the LIT SHAPE
+   instead of the box. Read the two long notes below before touching either. */
 html.sky-night .ts-orb {
   display: block;
   left: var(--orb-x, 30%); top: var(--orb-y, 22%);
   width: 46px; height: 46px;
-  overflow: hidden;                       /* clips the terminator disc below */
+  background: none;
+  box-shadow: none;
+  filter: drop-shadow(0 0 20px rgba(220, 214, 255, 0.45));
+}
+html.sky-night .ts-orb::before {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
   background: radial-gradient(circle at 38% 34%, #f4f0ff, #b9b2d6 66%, #8f88b4 100%);
-  box-shadow: 0 0 44px 14px rgba(220, 214, 255, 0.14),
-              inset -9px -7px 13px rgba(80, 70, 130, 0.55);
+  box-shadow: inset -9px -7px 13px rgba(80, 70, 130, 0.55);
 }
 /* ── THE MOON HAS PHASES (2026-07-27, Nate: "let's do crescent and waning moons!") ──
    It was a full moon every night of the year, which is the one thing a moon never is.
@@ -211,38 +218,85 @@ html.sky-night .ts-orb {
    completely, so the old 0…2 range spent its whole top half re-drawing a full moon. The
    clock computes it from the real lune area now (see `lunePos` in _includes/pjcc-time.js);
    this file just slides the disc. */
-html.sky-night .ts-orb::after {
-  content: ''; position: absolute; inset: 0; border-radius: 50%;
-  background: radial-gradient(circle at 50% 45%, #0d0930, #120c3a 70%, #16104a 100%);
-  box-shadow: inset 0 0 6px 2px rgba(8, 5, 26, 0.9);
-  transform: translateX(calc(var(--moon-shift, 1) * 100%));
-}
-/* the glow should answer the phase too — a thin crescent doesn't floodlight the sky
-   ⚑ THE RIM CAME DOWN BY HALF (2026-08-10, Nate: "the waning/waxing moon looks great but
-   the full outline is a bit too prominent — can you get that full circle rim outline like
-   50% dimmer?").
+/* ⚑⚑ THE TERMINATOR IS A HOLE NOW, NOT A DARK DISC (2026-08-11, Nate: "the gauntlet moon
+   still has that outline that we removed elsewhere … make sure the pages are uniform").
 
-   ⭐ WHICH LEVER, AND WHY THIS ONE. The thing drawing a complete circle around a crescent
-   is this outer glow: it is cast by the ORB, which is always a full disc, so it rings the
-   whole moon no matter how little of the moon is lit. The terminator on top hides the
-   unlit face but cannot hide the halo behind it — so the phase reads correctly and the
-   silhouette still says "full circle". Halving the alpha halves the ring and leaves the
-   crescent itself untouched, which is the half he said already looks great.
-   ⚠ There is a SECOND ring, and it is deliberately left alone: `::after`'s
-   `inset 0 0 6px 2px` darkens the terminator's edge. That one shapes the shadowed face
-   rather than outlining the disc, and dimming it would flatten the moon instead of
-   quieting its rim. If half is still too much, this is the pair of numbers to move again. */
-html.moon-new       .ts-orb { box-shadow: 0 0 18px 4px rgba(220, 214, 255, 0.025); }
-html.moon-waxing-crescent .ts-orb,
-html.moon-waning-crescent .ts-orb { box-shadow: 0 0 26px 7px rgba(220, 214, 255, 0.045); }
-html.moon-first-quarter .ts-orb,
-html.moon-last-quarter  .ts-orb { box-shadow: 0 0 34px 10px rgba(220, 214, 255, 0.055); }
-/* the gibbous and full nights were never listed here, so they fell through to the base
-   rule's 0.14 — the brightest ring on the brightest nights. Halved to match. */
-html.moon-waxing-gibbous .ts-orb,
-html.moon-waning-gibbous .ts-orb,
-html.moon-full          .ts-orb { box-shadow: 0 0 44px 14px rgba(220, 214, 255, 0.07),
-                                              inset -9px -7px 13px rgba(80, 70, 130, 0.55); }
+   ⭐ THE DEFECT WAS ONE LAYER BEHIND THE ONE I FIXED. On 2026-08-10 he asked for the full
+   circle rim to come down and I halved the OUTER GLOW — the note right below this one even
+   says so, and it explicitly left the second ring alone. The glow was not what he was
+   looking at. The thing drawing a complete circle was THIS ELEMENT: a second disc filled
+   with a hard-coded near-black (#0d0930→#16104a) and slid across the face. Where the moon
+   hangs over the OPEN SKY — the gutter on /games/the-gauntlet/ and /pjcc/ — that fill is
+   DARKER than the sky behind it, so the unlit face reads as a solid dark disc and the moon
+   is a full circle with a crescent painted inside it. Measured, not guessed: the same CSS
+   renders clean on the front door and the leaderboards only because a translucent sheet is
+   sitting over the moon there. Same rule, two pictures — which is exactly why it read to
+   him as a per-page bug.
+
+   ⭐ SO THE UNLIT FACE IS NOW THE SKY ITSELF. A mask cuts the shadowed part out of the disc
+   instead of painting over it, so there is nothing left that can be a different color from
+   the sky behind it — at any phase, on any page, over any backdrop. It cannot drift,
+   because there is no second color to keep in sync.
+
+   THE GEOMETRY IS THE OLD GEOMETRY. `circle 23px` is the orb's own radius, and `100%` in a
+   gradient position is 100% of the 46px box = one diameter, so `--moon-shift` still means
+   exactly what `lunePos` computes (offset in DIAMETERS, signed: waxing lights the RIGHT
+   limb). The 96%→100% band is a ~1px soft edge; a hard mask edge aliases into a staircase.
+   ⚠ The prefixed `-webkit-mask-image` stays — the sun's rays above already ship this exact
+   pair, so this is the file's established pattern, not a new dependency.
+   ⚠ A NEW MOON IS NOW GENUINELY INVISIBLE (shift 0 → the mask cuts the whole disc), which
+   is what a new moon is, and the eclipse note in _includes/pjcc-time.js already promises
+   "the one night a month the moon isn't there". Its halo is switched off below to match —
+   a glow around a hole is an outline, which is the thing we are removing. */
+html.sky-night .ts-orb::before {
+  -webkit-mask-image: radial-gradient(circle 23px at calc(50% + var(--moon-shift, 1) * 100%) 50%,
+                                      transparent 96%, #000 100%);
+          mask-image: radial-gradient(circle 23px at calc(50% + var(--moon-shift, 1) * 100%) 50%,
+                                      transparent 96%, #000 100%);
+}
+/* ⚠ AND THE NEW MOON IS TAKEN OFF THE SKY, not left to the mask — CAUGHT IN THE RENDER.
+   At shift 0 the mask circle is concentric with the disc, and the 96%→100% soft edge is
+   INSIDE the disc's own radius, so it left a 1px lit ring: a perfect hairline circle, the
+   exact defect this whole pass exists to remove, showing up one night a month. Widening the
+   mask to 24px would hide it and would also bend the terminator arc on all seven other
+   phases to fix a night with no moon on it. One rule is cheaper and truer. */
+html.sky-night.moon-new .ts-orb { display: none; }
+/* ⚑⚑ AND THE HALO IS THE OTHER HALF OF THE SAME BUG — THIS IS THE ONE HE KEPT SEEING.
+   ─────────────────────────────────────────────────────────────────────────────────────
+   Masking the terminator away was not enough on its own, and the render is what said so.
+   The halo was a `box-shadow`, and a box-shadow is painted OUTSIDE the border box — so it
+   lit a full 46px ring of sky and left the moon's unlit face as a dark disc-shaped HOLE in
+   its own glow. Crescent inside, bright ring around, dark disc between: a full circle,
+   drawn by a rule with no circle in it. That is why halving the alpha on 2026-08-10 made it
+   fainter and never made it go away, and it is why he reported it again.
+
+   ⭐ THE FIX IS drop-shadow, NOT box-shadow. `filter` on the PARENT is applied to what the
+   parent has already rendered — which is the MASKED crescent — so the glow follows the LIT
+   SHAPE. A thin crescent now casts a thin crescent of light and nothing else. There is no
+   full circle left anywhere in the moon, at any phase, over any backdrop.
+
+   ⭐ AND THE FIVE PER-PHASE RULES ARE GONE, DELETED RATHER THAN PORTED. They existed to
+   fake this: a full disc always glowed like a full moon, so the alpha had to be turned down
+   by hand for each phase. The shape does that now, correctly and continuously — a 6%-lit
+   crescent glows 6% as much without anyone choosing a number. Five rules and five numbers
+   replaced by one, and it can no longer be out of step with the phase.
+
+   ⚠ THEY WERE ALSO STEALING THE SUN'S HALO. `html.moon-full .ts-orb` is (0,2,1), the same
+   as `html.sky-day .ts-orb`, and it sat LATER in the file — and `moon-<name>` is on <html>
+   all day, not just at night. So every daylit hour the sun wore a faint lilac moon-halo
+   instead of its gold one. Nobody ever reported it, because a slightly duller sun looks
+   like a sun. Anything keyed to `moon-*` must be scoped to `html.sky-night`.
+
+   20px · 0.45 WAS PICKED FROM A PICTURE, not reasoned: a labelled 4×3 grid (blur 8/14/20/28
+   × alpha 0.30/0.45/0.60) rendered at crescent, first quarter and full on the real night
+   gradient. 8px hugs the limb and reads as an outline again — the exact failure being fixed.
+   28px·0.30 is a bloom with no moon in it. 20px·0.45 is the one that glows without ringing.
+   ⚠ PERF: one static `filter` on a 46px element that never animates. It is painted once and
+   never invalidates. The standing rule is no filter on a wrapper of an ANIMATING child, and
+   at night `.ts-orb` has no children but this one static disc. [[css-perf-lessons]]
+   ⚠ A NEW MOON now needs no rule of its own: shift 0 masks the whole disc away, and a
+   drop-shadow of nothing is nothing. The moon is simply absent, which is what a new moon is
+   and what the eclipse note in _includes/pjcc-time.js already promised. */
 
 /* ── SOME NIGHTS YOU JUST CAN'T SEE IT (2026-07-27, Nate: "maybe sometimes it's too
    cloudy to see sun or moon"). Overcast is overcast: on a 3-cover day or in the rain the
@@ -855,18 +909,32 @@ html.sky-night .page-title {
   background: linear-gradient(180deg, rgba(7, 5, 28, 0.78) 0%, rgba(21, 14, 61, 0.78) 60%, rgba(27, 17, 69, 0.78) 100%);
   border-bottom-color: rgba(120, 100, 220, 0.4);
 }
-/* the banner's stars */
-html.sky-night .page-title::after {
-  opacity: 1;
-  background:
-    radial-gradient(1.5px 1.5px at 12% 32%, #fdf9ff, transparent),
-    radial-gradient(1.5px 1.5px at 26% 66%, #fdf9ff, transparent),
-    radial-gradient(2px   2px   at 38% 24%, #fdf9ff, transparent),
-    radial-gradient(1.5px 1.5px at 52% 58%, #fdf9ff, transparent),
-    radial-gradient(1.5px 1.5px at 64% 30%, #fdf9ff, transparent),
-    radial-gradient(2px   2px   at 78% 68%, #fdf9ff, transparent),
-    radial-gradient(1.5px 1.5px at 88% 38%, #fdf9ff, transparent);
-}
+/* ⚑⚑ THE BANNER'S SEVEN PAINTED STARS ARE DELETED (2026-08-11, Nate: "the stars on the
+   leaderboard box stay static while scrolling yet the moon and some other stars move. They
+   should all move.")
+
+   ⭐ THEY COULD NEVER MOVE, BECAUSE THEY WERE NEVER IN THE SKY. They were seven
+   `radial-gradient` dots painted onto the banner's own background, so they were welded to
+   the box and scrolled away with it, while the real starfield behind the (translucent)
+   banner is `position: fixed` and slides across it. Two starfields, one of them fake, in
+   one 104px band — which is exactly why half of them moved and half of them didn't.
+
+   ⭐ AND THIS IS THE SECOND TIME THIS BANNER HAS DONE IT. Its own little sun/moon was
+   deleted on 2026-07-14 for the identical reason — he caught the pair at 11:45pm and the
+   note four rules up still says "ONE moon in the whole town". The stars were the same
+   mistake, sitting in the same rule, and they survived that pass because only the orb was
+   being looked at. The town has ONE sky; a page does not get a second one.
+
+   ⚠ NOT "made to move" — deleted. Parallaxing them would have been a third behavior for the
+   same object, and `background-attachment: fixed` (the one property that would genuinely
+   pin them to the viewport) repaints a full-width band on every scroll frame, which is the
+   thing this file's perf law exists to forbid. Deleting is cheaper AND truer: every star on
+   the box is now a real one, and they all move because they are all the same sky.
+
+   ⚠ THE DAY CLOUD ABOVE IS THE SAME SPECIES and is deliberately still here. It is a
+   duplicate of the real cloud deck by the same argument, but he reported the stars, the
+   night sky is where the box is see-through enough for the real thing to read, and pulling
+   the daytime treatment too is a look change he has not asked for. Flagged, not done. */
 
 /* ═════════════════════════════════════════════════════════════════════════════
    THE HEADER KEEPS TOWN TIME (2026-07-12 — cohesion pass #1)

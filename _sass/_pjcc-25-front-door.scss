@@ -337,6 +337,85 @@ body.theme-chess .town-weather-fall,
 body.theme-chess .town-weather-glass,
 body.theme-chess .town-weather-overlay { opacity: 0.5; }
 
+/* =============================================================================
+ * THEME-HALL — the arcade's rooms, de-purpled  (2026-08-11)
+ * -----------------------------------------------------------------------------
+ * Nate: "De-purple the Leaderboard, park tables, play now, etc box — give it an
+ * on-brand color theme."
+ *
+ * ⭐ THE BOX HE MEANS IS `.page-card`, AND THAT IS WHY IT READ AS EVERYWHERE AT ONCE.
+ * None of these rooms is painting itself purple. They inherit `--surface`
+ * (rgba(28,21,64,.66)) and `--edge` (#3d2b8a) from the Surface Kit, so the Leaderboards,
+ * the Park Tables and everything else on `layout: page` wear the PJCC world's livery by
+ * default. Retinting one page would have moved one box and left the seam; retinting the
+ * TOKENS is what makes a room.
+ *
+ * ⚠ AND IT IS A ROOM, NOT A SITE-WIDE EDIT. `--surface` still has to stay purple where
+ * purple MEANS something — /pjcc/, the cast, the dossier, the world. Checker Town at night
+ * is the show's livery and it earns it there. What it never earned was the standings table
+ * and the seat picker, which are utilities. So this is opt-in per page via `body_class`,
+ * exactly like theme-chess / theme-studio / theme-academy.
+ *
+ * THE PALETTE IS NOT NEW, AND THAT IS THE POINT — it is the DRAWER's, to the hex
+ * (_pjcc-13-nav.scss, 2026-08-04). The drawer is the one piece of chrome on every page and
+ * it was de-purpled to a neutral charcoal for the same reason this is: it opens over three
+ * different looks and belonged to none of them. Matching it exactly means these rooms and
+ * the menu that opens them are finally one surface instead of two.
+ *
+ *   CHARCOAL  the sheet and its edge. No hue, so nothing has to compete with it.
+ *   GREEN     the one accent, and it means what it means everywhere else on this site:
+ *             there is something here to PLAY. [[drawer-neutral-and-board-size]]
+ *   WOOD      section labels and rules, from the chess canon — the site's warmth comes
+ *             from the thing the site is about, same argument as the front door's.
+ *
+ * ⚠ GOLD IS NOT ON THAT LIST. The page title, the h2 rules and the leaderboard's channel
+ * chips were gold, and gold was already spoken for twice over (the CTA it used to be on the
+ * front door, and "your move" in the drawer). One accent, one job.
+ *
+ * ⚠ TRANSLUCENT, DELIBERATELY. 0.72 not 1.0, because "make the boxes more transparent so we
+ * can see the moon" (2026-07-23) is still the standing instruction and the sky is the best
+ * thing on these pages. Charcoal at 0.72 over a day sky reads neutral; over a night sky it
+ * reads like the drawer. Purple at 0.66 read purple over both, which was the problem.
+ * ========================================================================== */
+body.theme-hall {
+  --surface:   rgba(22, 24, 29, 0.72);
+  --surface-2: #16181d;
+  --edge:      #2f333a;
+  --edge-soft: #262a31;
+
+  /* the room's own ink, so the page's furniture has somewhere to read these from */
+  --hall-ink:    #eef1f5;   /* headings + primary text */
+  --hall-ink-2:  #b9c0cb;   /* body copy */
+  --hall-ink-3:  #8b93a1;   /* the quiet line — checked at 4.6:1 on the sheet */
+  --hall-go:     #6bffb8;   /* the ONE accent: something to play */
+  --hall-wood:   #d8b98a;   /* section labels + rules, from the chess canon */
+}
+
+/* ⚠ THE THREE GLOBAL PURPLES LAND HERE TOO, and they are the same three the front door had
+   to correct — see the "site chrome corrections" note above. Fixed in the theme rather than
+   in each page's <style>, because they belong to the room, not to its furniture. */
+body.theme-hall .page-title {
+  color: var(--hall-ink);
+  border-bottom-color: rgba(255, 255, 255, 0.10);
+}
+body.theme-hall .page-body h2 {
+  color: var(--hall-ink);
+  border-bottom-color: rgba(255, 255, 255, 0.10);
+}
+body.theme-hall .page-body h3 { color: var(--hall-ink); }
+/* the same `:not([class])` guard the front door uses, and for the same reason: a bare
+   `body.theme-hall a` is (0,1,1) and would out-specify every unscoped page rule on the site. */
+body.theme-hall .page-body a:not([class]) { color: var(--hall-go); }
+body.theme-hall .page-body a:not([class]):hover { color: #a9ffd4; }
+
+/* the sky banner behind the <h1> — the per-phase gradients in _pjcc-20-town-sky.scss are
+   (0,2,1) and sit earlier in the cascade, so these (0,2,1) rules win on source order.
+   The hour still shows; it just shows in the room's own neutral instead of in purple. */
+html.sky-dawn  body.theme-hall .page-title { background: linear-gradient(180deg, rgba(28,26,32,0.74) 0%, rgba(48,34,32,0.74) 100%); border-bottom-color: rgba(255,150,90,0.34); }
+html.sky-day   body.theme-hall .page-title { background: linear-gradient(180deg, rgba(24,29,36,0.74) 0%, rgba(30,38,48,0.74) 100%); border-bottom-color: rgba(160,205,245,0.32); }
+html.sky-dusk  body.theme-hall .page-title { background: linear-gradient(180deg, rgba(28,24,32,0.74) 0%, rgba(46,32,30,0.74) 100%); border-bottom-color: rgba(224,102,46,0.36); }
+html.sky-night body.theme-hall .page-title { background: linear-gradient(180deg, rgba(16,18,22,0.80) 0%, rgba(22,25,31,0.80) 100%); border-bottom-color: rgba(255,255,255,0.12); }
+
 /* ── the tabletop band ────────────────────────────────────────────────────────
    The one structural idea in the new layout: the hero sits on a surface, so the
    page opens on something that reads as a TABLE rather than as a section of a

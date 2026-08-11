@@ -3,6 +3,9 @@ layout: page
 title: "The Park Tables"
 permalink: /games/park-tables/
 description: "Free chess in the Checker Town park — sit down with a regular right now, no account, or sign in to play a real person. P&JCC Ratings, real rules, preset phrases only."
+# ⚑ DE-PURPLED 2026-08-11 (Nate). `theme-hall` is the arcade's neutral charcoal room —
+# the drawer's palette to the hex. Tokens + the argument: _sass/_pjcc-25-front-door.scss.
+body_class: theme-hall
 ---
 
 {% comment %} ══════════════════════════════════════════════════════════════════════
@@ -1555,22 +1558,22 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
 .pt-gate-h { color: #F5C518; font-size: 1.15rem; margin: 0 0 8px; }
 .pt-gate-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 12px 0 4px; }
 .pt-in { background: var(--surface-2); border: 1px solid var(--edge-soft); border-radius: var(--r-sm);
-  color: #ddd6f3; padding: 10px 12px; font-family: inherit; font-size: 0.95rem; min-width: 210px; }
+  color: #dfe4ea; padding: 10px 12px; font-family: inherit; font-size: 0.95rem; min-width: 210px; }
 .pt-in:focus { outline: 2px solid #F5C518; outline-offset: 1px; }
 .pt-err { color: #ff8a8a; font-size: 0.85rem; min-height: 1.2em; margin: 8px 0 0; }
 .pt-again { margin-top: 10px; font-size: 0.8rem; }
 
-.pt-me { display: flex; align-items: center; gap: 10px; margin: 14px 0 2px; color: #ddd6f3; font-size: 1rem; }
+.pt-me { display: flex; align-items: center; gap: 10px; margin: 14px 0 2px; color: #dfe4ea; font-size: 1rem; }
 .pt-rating-chip { font-family: 'Share Tech Mono', monospace; font-size: 0.72rem; letter-spacing: 0.08em;
   color: #F5C518; border: 1px solid rgba(245,197,24,0.45); border-radius: 999px; padding: 3px 10px; }
 
 .pt-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0 4px; }
 .pt-card { display: flex; align-items: center; gap: 12px; flex: 1 1 240px; text-align: left;
   background: var(--surface-2); border: 1px solid var(--edge-soft); border-radius: var(--r-sm);
-  padding: 14px 16px; color: #ddd6f3; font-family: inherit; font-size: 0.95rem; cursor: pointer; }
+  padding: 14px 16px; color: #dfe4ea; font-family: inherit; font-size: 0.95rem; cursor: pointer; }
 .pt-card:hover { border-color: #F5C518; }
 .pt-card-icon { font-size: 26px; color: #F5C518; }
-.pt-card-t i { font-style: normal; color: #9a7fd4; font-size: 0.78rem; }
+.pt-card-t i { font-style: normal; color: #8b93a1; font-size: 0.78rem; }
 /* the park regulars sit in one tighter row — eight of them since 2026-08-10 */
 .pt-bots { margin-top: 4px; }
 .pt-bots .pt-card { flex: 1 1 140px; padding: 11px 14px; }
@@ -1584,8 +1587,8 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
   opacity: 0.62; cursor: default; border-style: dashed; border-color: var(--edge-soft);
 }
 .pt-bots .pt-card.pt-bot--locked:hover { border-color: var(--edge-soft); }
-.pt-bots .pt-card.pt-bot--locked .pt-card-icon { color: #9a7fd4; filter: grayscale(0.35); }
-.pt-bots .pt-card.pt-bot--locked .pt-card-t i { color: #8d7fb8; }
+.pt-bots .pt-card.pt-bot--locked .pt-card-icon { color: #8b93a1; filter: grayscale(0.35); }
+.pt-bots .pt-card.pt-bot--locked .pt-card-t i { color: #79818e; }
 
 /* THE BOT GATE (2026-07-28) — the free path is FIRST and reads as the main one, and the
    sign-in below it is a second offer rather than a wall. Gold edges on the regulars'
@@ -1598,22 +1601,22 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
    drops the last one onto a lonely second row. At 120 they sit four-across on a desktop and
    fall to a tidy 2×2 on a phone. Derived from the count in JS, so adding a fifth just wraps. */
 .pt-open-park .pt-bots .pt-card { flex: 1 1 120px; }
-.pt-sub { color: #9a7fd4; font-size: 0.85rem; margin: 0 0 12px; }
+.pt-sub { color: #8b93a1; font-size: 0.85rem; margin: 0 0 12px; }
 /* The house rule on cheating (2026-08-10). Quiet on purpose — it is a standing rule, not a
    warning, and a warning is what a box with a border would make it look like. One hairline
    above it so it reads as the room's footnote rather than as another instruction in the flow. */
 .pt-house { margin: 22px auto 0; max-width: 46em; padding-top: 12px;
-  border-top: 1px solid rgba(107,95,160,0.35);
-  color: #9a8fc0; font-size: 0.8rem; line-height: 1.65; text-align: left; }
-.pt-house b { color: #cdbcf2; font-weight: 700; }
+  border-top: 1px solid rgba(255,255,255,0.10);
+  color: #8b93a1; font-size: 0.8rem; line-height: 1.65; text-align: left; }
+.pt-house b { color: #dfe4ea; font-weight: 700; }
 .pt-open-park + .pt-gate { max-width: 560px; margin-top: 24px; padding-top: 22px;
   border-top: 1px solid var(--edge-soft); }
 
 .pt-sheet { max-width: 460px; padding: 16px 0; }
 .pt-sheet-l { font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; letter-spacing: 0.14em;
-  text-transform: uppercase; color: #9a7fd4; margin: 14px 0 6px; }
+  text-transform: uppercase; color: #8b93a1; margin: 14px 0 6px; }
 .pt-pills { display: flex; flex-wrap: wrap; gap: 6px; }
-.pt-pill { background: rgba(45,27,105,0.5); border: 1px solid var(--edge-soft); color: #c9a7ff;
+.pt-pill { background: rgba(255,255,255,0.05); border: 1px solid var(--edge-soft); color: #cfd5dd;
   border-radius: 999px; padding: 8px 13px; font-family: inherit; font-size: 0.8rem; cursor: pointer; }
 .pt-pill.on { border-color: #F5C518; color: #F5C518; background: rgba(245,197,24,0.08); }
 
@@ -1623,36 +1626,36 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
 .pt-seat { display: flex; align-items: flex-start; gap: 13px; width: 100%; text-align: left;
   background: var(--surface-2); border: 1px solid var(--edge-soft);
   border-left: 3px solid var(--seat, #F5C518); border-radius: var(--r-sm);
-  padding: 13px 15px; color: #ddd6f3; font-family: inherit; cursor: pointer;
+  padding: 13px 15px; color: #dfe4ea; font-family: inherit; cursor: pointer;
   transition: border-color .16s ease, transform .16s ease; }
 .pt-seat:hover { border-color: var(--seat, #F5C518); transform: translateX(3px); }
 .pt-seat-ico { font-size: 25px; line-height: 1; color: var(--seat, #F5C518); flex: none; }
 .pt-seat-t { display: flex; flex-direction: column; gap: 3px; }
-.pt-seat-t b { color: #f3ecff; font-size: 1rem; }
+.pt-seat-t b { color: #f2f5f8; font-size: 1rem; }
 .pt-seat-t em { font-style: normal; font-family: 'Share Tech Mono', monospace;
-  font-size: 0.68rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--seat, #9a7fd4); }
-.pt-seat-t small { color: #b6a3dd; font-size: 0.82rem; line-height: 1.4; }
+  font-size: 0.68rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--seat, #8b93a1); }
+.pt-seat-t small { color: #b9c0cb; font-size: 0.82rem; line-height: 1.4; }
 @media (prefers-reduced-motion: reduce) { .pt-seat { transition: none; } .pt-seat:hover { transform: none; } }
 
 .pt-h { color: #F5C518; font-size: 1rem; margin: 20px 0 8px; }
 .pt-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%;
   background: var(--surface-2); border: 1px solid var(--edge-soft); border-radius: var(--r-sm);
-  padding: 12px 14px; margin: 6px 0; color: #ddd6f3; font-family: inherit; font-size: 0.92rem;
+  padding: 12px 14px; margin: 6px 0; color: #dfe4ea; font-family: inherit; font-size: 0.92rem;
   cursor: pointer; text-align: left; }
 .pt-row:hover { border-color: #F5C518; }
 .pt-row-done { cursor: default; opacity: 0.75; }
 .pt-row-done:hover { border-color: var(--edge-soft); }
 .pt-row-chips { display: block; font-style: normal; font-family: 'Share Tech Mono', monospace;
-  font-size: 0.68rem; letter-spacing: 0.08em; color: #7d6bb0; margin-top: 3px; }
+  font-size: 0.68rem; letter-spacing: 0.08em; color: #79818e; margin-top: 3px; }
 .pt-row-state { font-family: 'Share Tech Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em;
-  color: #9a7fd4; white-space: nowrap; }
+  color: #8b93a1; white-space: nowrap; }
 .pt-row-state.go { color: #6bffb8; font-weight: 700; }
 /* a queued (open) table shows its board, set and waiting — no sides chosen yet */
 .pt-row--queued { align-items: center; gap: 12px; }
 .pt-row--queued .pt-row-vs { flex: 1; min-width: 0; }
 .pt-qboard { flex-shrink: 0; display: block; border-radius: 4px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.4); }
-.pt-review-btn { flex-shrink: 0; background: #241847; border: 1px solid #4a3a86; color: #cdbcf2;
+.pt-review-btn { flex-shrink: 0; background: #20242b; border: 1px solid #3a3f47; color: #dfe4ea;
   border-radius: 8px; padding: 5px 10px; font-size: 0.72rem; font-weight: 700; cursor: pointer; margin-left: 6px; }
 .pt-review-btn:hover { border-color: #F5C518; color: #F5C518; }
 .pt-up { color: #6bffb8; } .pt-dn { color: #ff8a8a; }
@@ -1660,25 +1663,25 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
 .pt-table-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 10px 0 4px; }
 /* the nameplates — opponent above the board, you below it (2026-07-16 Nate);
    rating rides in quiet mono parens, the +x chip to the right of the name */
-.pt-plate { max-width: 420px; margin: 6px 0; color: #ddd6f3; }
+.pt-plate { max-width: 420px; margin: 6px 0; color: #dfe4ea; }
 .pt-plate b { color: #fff; }
 .pt-plate--me { margin-bottom: 10px; }
 .pt-plate-rate { font-style: normal; font-family: 'Share Tech Mono', monospace;
-  font-size: 0.72rem; letter-spacing: 0.06em; color: #9a7fd4; }
-.pt-state { color: #9a7fd4; font-size: 0.9rem; margin: 4px 0 10px; }
+  font-size: 0.72rem; letter-spacing: 0.06em; color: #8b93a1; }
+.pt-state { color: #8b93a1; font-size: 0.9rem; margin: 4px 0 10px; }
 .pt-state.go { color: #6bffb8; }
 /* the live opening name (📖 Ruy Lopez…) — quiet, sits under the turn line */
-.pt-open { color: #c3b4ff; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.02em; margin: -4px 0 10px; }
+.pt-open { color: #b9c0cb; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.02em; margin: -4px 0 10px; }
 /* promotion picker — pawn reaches the last rank, you choose the piece (canon colors) */
 .pt-promo-ov { position: fixed; inset: 0; z-index: 9998; background: rgba(8,5,22,0.72);
   -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
   display: flex; align-items: center; justify-content: center; padding: 16px; }
-.pt-promo { background: #1a1140; border: 1px solid #4a3a86; border-radius: 14px; padding: 16px 18px;
+.pt-promo { background: #181b21; border: 1px solid #3a3f47; border-radius: 14px; padding: 16px 18px;
   box-shadow: 0 24px 60px -18px rgba(0,0,0,0.7); text-align: center; }
 .pt-promo-h { margin: 0 0 12px; color: #F5C518; font-weight: 700; font-size: 0.95rem; }
 .pt-promo-row { display: flex; gap: 8px; }
 .pt-promo-b { width: 58px; height: 58px; font-size: 36px; line-height: 1; cursor: pointer;
-  background: var(--chess-lt, #e9d3a4); border: 2px solid #4a3a86; border-radius: 10px;
+  background: var(--chess-lt, #e9d3a4); border: 2px solid #3a3f47; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
   paint-order: stroke fill; -webkit-text-stroke: 1.4px var(--piece-w-line, #2f2440);
   transition: border-color .15s, transform .1s; }
@@ -1746,17 +1749,17 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
    line — number · White's move · Black's move — scrolling inside its own box once
    the game runs long. Three grid children per pair (see moveRows).
    In the arena it stands to the RIGHT of the board and rises to match its height. */
-.pt-moves { margin: 40px 0 0; color: #b9a3e8; font-size: 0.85rem; line-height: 1.8;
+.pt-moves { margin: 40px 0 0; color: #b9c0cb; font-size: 0.85rem; line-height: 1.8;
   display: grid; grid-template-columns: auto 1fr 1fr; column-gap: 14px; align-items: baseline;
   flex: 0 1 210px; align-self: stretch; align-content: start;
   max-height: 420px; overflow-y: auto; padding: 4px 10px;
-  border: 1px solid rgba(122,94,190,0.25); border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.10); border-radius: 8px;
   user-select: text; -webkit-user-select: text; }
 /* phone: notation drops back under the board, full width */
 @media (max-width: 560px){
   .pt-moves { margin: 12px 0 0; flex-basis: 100%; align-self: auto; max-height: 200px; }
 }
-.pt-moves i { color: #7d6bb0; font-style: normal; text-align: right; }
+.pt-moves i { color: #79818e; font-style: normal; text-align: right; }
 .pt-moves .pjcc-sub { grid-column: 1 / -1; text-align: center; }
 /* ── THE MATERIAL CHIP — who's up, and by how much ────────────────────────────────
    ⚑ REPAINTED 2026-08-04 (Nate: "make the +x material a different color than green, make it
@@ -1787,7 +1790,7 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
   box-shadow: 0 0 10px rgba(245,166,35,0.45); }
 .pt-tools { margin-top: 8px; max-width: 420px; }
 .pt-emotes { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-.pt-emote { background: rgba(45,27,105,0.5); border: 1px solid var(--edge-soft); color: #c9a7ff;
+.pt-emote { background: rgba(255,255,255,0.05); border: 1px solid var(--edge-soft); color: #cfd5dd;
   border-radius: 999px; padding: 7px 12px; font-family: inherit; font-size: 0.78rem; cursor: pointer; }
 .pt-emote:hover { border-color: #F5C518; color: #F5C518; }
 .pt-resign { font-size: 0.8rem; }

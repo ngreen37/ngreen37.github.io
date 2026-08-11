@@ -2,6 +2,9 @@
 layout: page
 title: Leaderboards
 permalink: /leaderboards/
+# ⚑ DE-PURPLED 2026-08-11 (Nate). `theme-hall` is the arcade's neutral charcoal room —
+# the drawer's palette to the hex. Tokens + the argument: _sass/_pjcc-25-front-door.scss.
+body_class: theme-hall
 ---
 
 
@@ -86,10 +89,16 @@ permalink: /leaderboards/
 </script>
 
 <style>
-/* ===== broadcast chrome ===== */
+/* ===== broadcast chrome =====
+   ⚑ DE-PURPLED 2026-08-11 (Nate). The page wears `theme-hall` now (front matter above), so
+   the CARD is neutral charcoal — but this block painted its own purples on top of it and had
+   to move with the room, or the standings would have sat in a purple TV inside a gray box.
+   Purple → the drawer's charcoal, to the hex. The broadcast RED and GOLD stay: they are what
+   makes this read as a live sports feed rather than as a table, and neither of them was the
+   thing he asked to remove. */
 .lbtv { --tv-red:#ff4d5e; --tv-gold:#F5C518; }
 .lbtv-topbar { display:flex; align-items:center; gap:14px; flex-wrap:wrap;
-  background:linear-gradient(90deg,#1a1040,#2d1b69 55%,#1a1040); border:1px solid #4a3a86; border-left:4px solid var(--tv-red);
+  background:linear-gradient(90deg,#16181d,#22262e 55%,#16181d); border:1px solid #3a3f47; border-left:4px solid var(--tv-red);
   border-radius:var(--r-sm); padding:10px 16px; margin:2px 0 12px;
   font-family:'Courier New',monospace; letter-spacing:0.14em; }
 .lbtv-live { display:inline-flex; align-items:center; gap:7px; color:#fff; font-weight:900; font-size:0.78rem;
@@ -99,8 +108,8 @@ permalink: /leaderboards/
 .lbtv-live i { width:8px; height:8px; border-radius:50%; background:#fff; animation:lbtvBlink 1.1s ease-in-out infinite; }
 @keyframes lbtvBlink { 0%,100%{ opacity:1; } 50%{ opacity:0.25; } }
 .lbtv-net { color:var(--tv-gold); font-weight:900; font-size:0.78rem; }
-.lbtv-show { margin-left:auto; color:#9a8fd4; font-size:0.7rem; }
-.lbtv-sub { color:#b9a8e6; font-size:0.88rem; }
+.lbtv-show { margin-left:auto; color:#8b93a1; font-size:0.7rem; }
+.lbtv-sub { color:#b9c0cb; font-size:0.88rem; }
 
 /* (the Hall of Fame plate + its styles were removed 2026-07-12 with the feature) */
 
@@ -123,37 +132,37 @@ permalink: /leaderboards/
 /* channel-chip tabs */
 .lbtv .lb-tabs { gap:6px; }
 .lbtv .lb-tab { font-family:'Courier New',monospace; font-size:0.72rem; font-weight:900; letter-spacing:0.08em;
-  text-transform:uppercase; background:#160c33; border:1px solid #3a2a6a; border-radius:6px; color:#9a8fd4; }
-.lbtv .lb-tab:hover { border-color:var(--tv-gold); color:#f0e6ff; }
-.lbtv .lb-tab.active { background:var(--tv-gold); border-color:var(--tv-gold); color:#1a0f3d; box-shadow:0 0 14px -4px var(--tv-gold); }
+  text-transform:uppercase; background:#16181d; border:1px solid #3a3f47; border-radius:6px; color:#8b93a1; }
+.lbtv .lb-tab:hover { border-color:var(--tv-gold); color:#eef1f5; }
+.lbtv .lb-tab.active { background:var(--tv-gold); border-color:var(--tv-gold); color:#12141a; box-shadow:0 0 14px -4px var(--tv-gold); }
 
 /* the screen: standings inside a CRT-ish monitor */
 /* the CRT screen + booth are TRANSLUCENT (2026-07-23, Nate: "see the moon through the boxes")
    so the town sky shows through the leaderboard box like the games hall. They sit inside the
    (now also translucent) .page-card, so a lighter alpha keeps the two layers from stacking back
    to opaque; the inner glow is eased for the same reason. */
-.lbtv-screen { position:relative; background:rgba(13,8,36,0.58); border:1px solid #3a2a6a; border-radius:var(--r-md); padding:8px 12px;
+.lbtv-screen { position:relative; background:rgba(18,20,26,0.58); border:1px solid #3a3f47; border-radius:var(--r-md); padding:8px 12px;
   box-shadow:inset 0 0 44px rgba(0,0,0,0.4), 0 0 26px -16px var(--tv-gold); overflow:hidden; }
 .lbtv-screen::after { content:''; position:absolute; inset:0; pointer-events:none; border-radius:var(--r-md);
   background:repeating-linear-gradient(0deg, rgba(255,255,255,0.022) 0 1px, transparent 1px 3px); }
 
 /* the booth — one line at a time, cross-fading (was a marquee of all lines at once) */
-.lbtv-ticker { margin-top:10px; border:1px solid #3a2a6a; border-radius:8px;
-  background:rgba(13,8,36,0.58); font-family:'Courier New',monospace; font-size:0.72rem; padding:7px 12px;
+.lbtv-ticker { margin-top:10px; border:1px solid #3a3f47; border-radius:8px;
+  background:rgba(18,20,26,0.58); font-family:'Courier New',monospace; font-size:0.72rem; padding:7px 12px;
   display:flex; align-items:center; justify-content:center; gap:10px; min-height:30px; text-align:center; }
-.lbtv-booth { color:#6f5fb0; flex-shrink:0; letter-spacing:0.08em; font-weight:900; }
+.lbtv-booth { color:#79818e; flex-shrink:0; letter-spacing:0.08em; font-weight:900; }
 .lbtv-quote { color:#8fb8ff; transition:opacity 0.42s ease; }
 @media (prefers-reduced-motion: reduce){ .lbtv-live i { animation:none; } }
 
 /* the altar line — the credits on this page are only worth something somewhere */
 .lb-altar { display:flex; align-items:center; gap:12px; margin-top:12px; padding:11px 14px;
-  border:1px solid #3a2a6a; border-radius:var(--r-md); background:rgba(13,8,36,0.58);
+  border:1px solid #3a3f47; border-radius:var(--r-md); background:rgba(18,20,26,0.58);
   text-decoration:none; transition:border-color .14s ease, transform .14s ease; }
 .lb-altar:hover { border-color:var(--tv-gold); transform:translateY(-2px); text-decoration:none; }
 .lb-altar-glyph { font-size:22px; line-height:1; color:var(--tv-gold); flex:0 0 auto; }
 .lb-altar-txt { flex:1; min-width:0; }
-.lb-altar-txt b { display:block; color:#f0e6ff; font-size:0.95rem; }
-.lb-altar-txt small { display:block; color:#8f83c0; font-size:0.78rem; line-height:1.5; }
+.lb-altar-txt b { display:block; color:#eef1f5; font-size:0.95rem; }
+.lb-altar-txt small { display:block; color:#8b93a1; font-size:0.78rem; line-height:1.5; }
 .lb-altar-arw { color:var(--tv-gold); flex:0 0 auto; }
 </style>
 

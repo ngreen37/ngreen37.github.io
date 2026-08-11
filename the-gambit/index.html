@@ -54,9 +54,7 @@ permalink: /the-gambit/
     <!-- The note lives outside the flex row so opening it can never reflow the chips. -->
     <p class="gm-karma-note" id="gm-karma-note" hidden>
       <b>Karma is the board's memory.</b> Lay something down, watch it not come back, and the
-      board remembers — and what it remembers bends the next spin your way. Memories fade:
-      about half gone in a week, and in the end the board lets go. It never promises anything,
-      and the altar never gives back more than it takes.
+      board remembers — and what it remembers may swing the next spin your way.
     </p>
 
     <!-- offer credits -->
@@ -226,8 +224,13 @@ permalink: /the-gambit/
     for (var i = 0; i < k.ledger.length; i++) s += (k.ledger[i].weight || 3) * k.ledger[i].w;
     return Math.max(0, Math.min(100, Math.round(s)));
   }
+  /* ⚑ "NOTICED" IS GONE (2026-08-11, Nate). It was the bottom rung, and it was the only
+     word on the ladder that read as a PROMISE — the board has noticed you, so something is
+     coming. Nothing is coming; a memory can fade out unclaimed and never return. The ladder
+     starts at "Remembered" now, which is the true and smaller claim: it happened, and the
+     board knows it happened. */
   function karmaWord(n) {
-    return n <= 0 ? '—' : n < 20 ? 'Noticed' : n < 40 ? 'Remembered'
+    return n <= 0 ? '—' : n < 40 ? 'Remembered'
          : n < 65 ? 'Carried' : n < 90 ? 'Owed' : 'In the board\'s debt';
   }
   function fadeWord(w) { return w > 0.75 ? 'clear' : w > 0.45 ? 'fading' : w > 0.28 ? 'faint' : 'almost gone'; }
@@ -789,7 +792,7 @@ permalink: /the-gambit/
          true thing, which is also the more interesting one: it is remembered, it will
          fade, and it may or may not find its way back. */
       var remembers = (!half && c >= 0.85)
-        ? '<p class="gm-boon">✦ <b>The board remembers this one.</b> It joins your karma — and memories here fade. Some find their way home. Some don\'t.</p>' : '';
+        ? '<p class="gm-boon">✦ <b>The board remembers this one.</b> It joins your karma — and memories here fade. Some find their way home. Some are gone for good.</p>' : '';
       box.innerHTML = '<div class="gm-res-title">' + (half ? 'THE BOARD KEEPS 50%' : 'THE BOARD KEEPS IT') + '</div>' +
         '<p>Your offering' + (coll ? ' — including <b>' + coll.label + '</b> ' + coll.glyph + ' —' : '') +
         (half ? ' returns <b>' + tier.pct + '%</b>. <b>' + reward + '</b> comes back.' : ' is gone. Nothing comes back.') + '</p>' + remembers +

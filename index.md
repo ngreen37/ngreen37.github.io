@@ -422,7 +422,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 {%- comment -%} The quiet one. See `.mc-support` in the stylesheet at the foot of this file for
      why it is a sentence and not a button, and why it is last. {%- endcomment -%}
 {% if site.patreon_url and site.patreon_url != '' %}
-<p class="mc-support">Everything here is free and stays free.
+<p class="mc-support">Everything here is free.
   <a href="{{ site.patreon_url }}" target="_blank" rel="noopener">Back it on Patreon</a> if you want to help it grow.</p>
 {% endif %}
 
