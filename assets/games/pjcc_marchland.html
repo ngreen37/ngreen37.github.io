@@ -218,7 +218,7 @@
       rook 5, bishop or knight 3, pawn 1. Kings are free — they always turn up. The defender gets
       four points of home ground on top.<br><br>
       <b>4. Position places it.</b> A high roll advances the attacker's pawns; a high roll digs the
-      defender's into a chain their neighbors defend. Roll 18 or better on defense and your
+      defender's into a chain their neighbors defend. Roll 17 or better on defense and your
       king castles.<br><br>
       <b>5. Twenty seconds against fifteen.</b> Two clocks, and only the side to move is burning
       one. Checkmate takes the ground outright. If the <i>attacker's</i> clock runs out the attack
@@ -425,11 +425,23 @@ function matBudget(die, gar, isDefender) {
    a chain. ⚠ A defender's pawn only moves if a pawn beside it stays home to defend it —
    otherwise a high roll would loosen the position it is supposed to be strengthening.
 
-   CASTLING — his rule exactly: "within three points of maximum", so 18, 19 or 20, and
+   CASTLING — his rule exactly: "within three points of maximum", so 17, 18, 19 or 20, and
    only for the DEFENDER. It needs a rook to castle with; with no rook the roll is spent
-   on the chain instead, which is stated on the roll screen rather than silently dropped. */
+   on the chain instead, which is stated on the roll screen rather than silently dropped.
+   ⚠ This shipped at >= 18 on 2026-08-08 and that was off by one: within three points of a
+   maximum of 20 is 17, not 18. Corrected 2026-08-11 when he restated the rule. It moves the
+   defender's castling rate from 15% to 20%, which is why the sim gets re-run after.
+
+   ⚑ ONE NUMBER, NOT TWO. The top band is the same band in both chairs — it is what buys the
+   attacker a pawn's SECOND rank and the defender a CASTLE — so it is `POS_TOP` in one place
+   and every reader of it goes through `posTop()`. It was typed as a bare 18 in three spots
+   before, which is exactly how his 17 would have half-landed. Moving both also keeps the
+   correction BALANCED: lifting only the castling roll would hand the defender a gift and
+   walk the attacker's success rate out of the 40-60% band on its own. */
+var POS_TOP = 17;                                              // 20 - 3, inclusive: his rule
 function posSteps(die) { return Math.floor((die - 1) / 5); }   // 0,1,2,3
-function posCastles(die) { return die >= 18; }                  // within three of maximum
+function posTop(die) { return die >= POS_TOP; }                // the top band, either chair
+function posCastles(die) { return posTop(die); }               // the defender's half of it
 
 /* ── THE MUSTER ────────────────────────────────────────────────────────────────
    A point budget spent on real chess material at real chess value. The king is free
@@ -497,7 +509,7 @@ function applyAttackerPos(b, side, die) {
     if (to < 0 || to > 63 || b[to]) continue;
     b[to] = b[from]; b[from] = '';
     /* the top band buys a SECOND rank for the first pawn that gets one */
-    if (die >= 18 && moved === 0) {
+    if (posTop(die) && moved === 0) {
       var far = to + dir;
       if (far >= 0 && far <= 63 && !b[far]) { b[far] = b[to]; b[to] = ''; }
     }
@@ -712,7 +724,7 @@ function beginBattle(from, to, playerAttacks) {
   $('att-budget').innerHTML =
     '<b>' + aMat + '</b> material + ' + Math.floor(aGar / 2) + ' garrison = <b>' + aBud + '</b> points<br>' +
     '<b>' + aPos + '</b> position &middot; ' +
-    (aSteps ? aSteps + ' pawn' + (aSteps > 1 ? 's' : '') + ' advanced' + (aPos >= 18 ? ', one of them twice' : '')
+    (aSteps ? aSteps + ' pawn' + (aSteps > 1 ? 's' : '') + ' advanced' + (posTop(aPos) ? ', one of them twice' : '')
             : 'no pawns advanced');
   var dSteps = posSteps(dPos);
   var dHasRook = dArmy.indexOf('r') >= 0;

@@ -41,6 +41,35 @@
 - Role: check on Princess when narrator gets sent away
 - Teams up with Garrett to find the dogs
 
+**The CEO**
+- Runs the company that runs Chess City. On the site today he is the **locked 2400 bot** and a
+  **secret Gauntlet floor** — no dossier, no character page.
+- **The old city was destroyed to make room for the grand tournament.** That is how everyone
+  ended up in Checker Town.
+- **He shows empathy by evacuating everyone** before it comes down. That is the first thing you
+  learn about him, and it is genuinely to his credit.
+- Down the road we learn the CEO **tries to have a good heart but is in an impossible
+  situation.** He is **the son of an awful man — the previous CEO.**
+- *(Mine, not canon until Nate says so: the Gauntlet already has three secret floors above
+  Floor 10 — **CEO · Chairman · Founder.** If the father is the Chairman or the Founder, the
+  ladder is already the family tree, and climbing past the CEO means meeting the man who made
+  him. One line of lore, no build.)*
+
+**Robert**
+- ⚠ **THE ONE RULE ON HIM: it is NEVER stated explicitly, on the site or in the show.** He
+  **represents Jesus Christ** — and that stays in this file. Nothing in visitor-facing copy,
+  no dossier line, no ticker line, no dialogue that spells it out. It reads as a person.
+- **Maybe the only pure soul in the whole thing.** That is the point of him: in a world where
+  the good guys aren't all good and the bad guys aren't all bad, one character is simply good.
+- Already publicly present as the **Park Tables Expert bot**, and staying that way — named on
+  the pages that use him, no character page (the standing slow-roll rule: unlink, keep the text).
+
+**The moral rule (canon, and it governs the whole cast)**
+- **In P&JCC world, the good guys aren't ALL good and the bad guys aren't ALL bad.**
+- The CEO is the working example: the man who took your city is also the man who got everyone
+  out alive, and he is trapped in a job his father built.
+- Robert is the deliberate exception that proves it.
+
 **The Scam Artist Uncle (Family)** — LORE ONLY for now (Nate 2026-07-16: "Don't put him
 on the site yet"). No page, no characters.csv row until Nate calls the reveal.
 - Marked: **Family**. His arc plays a powerful role in the story as **the cautionary tale**.
@@ -102,6 +131,40 @@ on the site yet"). No page, no characters.csv row until Nate calls the reveal.
 - Wabi-Sabi
 - Kintsugi — you will break, you will fail; they are not something to hide, they get filled in with gold
   - Parallel: Native Americans would intentionally stitch one small imperfection into their work
+
+---
+
+## Why Checker Town exists — the old city (canon)
+
+**The old city got destroyed, and that's how we ended up in Checker Town.** They needed the space for
+the **grand tournament**.
+
+The **CEO shows empathy by evacuating everyone** — nobody is left in it when it comes down. It plays
+as mercy at the time, and it is one; what it is *not* is a choice he was free to make differently.
+See his entry under Characters: he is the son of the previous CEO, and he is in an impossible
+situation.
+
+*Told "elsewhere" — the audience learns why Checker Town is full of displaced people some distance
+away from meeting the people who displaced them.*
+
+*(Already consistent with what's on the site: **Garrett's entire family was relocated to Chess City
+with no notice**, which is the same event seen from a different street.)*
+
+---
+
+## Story Idea — the boat
+
+- **Nate gets a boat.** Takes **Maxwell** along.
+- **We have a plan on how to get the boat.** (The plan is the episode — how, not whether.)
+- **Two henchmen come after us.**
+- **We tip them off their boat.**
+
+*(Mine, worth knowing before it gets written: **Maxwell is the best friend — the pull of staying
+put.** He is the one who makes fun of the ambition and is content in Checker Town. So "Nate gets a
+boat and takes Maxwell along" is the guy who never leaves being taken somewhere, on a plan he had no
+part in. Whether he ends up loving it or asking to go home is the whole beat. ⚠ Also: the cast row
+is still filed as **"The Best Friend / Name Undetermined"** in `characters.csv` while the games and
+the rating bench already call him **Maxwell** — logged in `CONTENT-CLEANUP.md`, still open.)*
 
 ---
 

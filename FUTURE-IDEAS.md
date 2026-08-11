@@ -620,7 +620,7 @@ the time? We'll hash it out as we go - I'm not too worried about it."*
 
 Live now: two d20 a side (material · position) · attacker 20s vs defender 15s on **two** clocks ·
 the position die advances the attacker's pawns and digs the defender's into a defended chain ·
-castling for the defender on 18-20 · **the attacker wins by checkmate or not at all**.
+castling for the defender on **17-20** · **the attacker wins by checkmate or not at all**.
 Tune it with `npm run sim:marchland`, which plays engine-vs-engine battles and sweeps the attacker's
 material edge against his 40-60% band.
 
@@ -651,8 +651,13 @@ material edge against his 40-60% band.
 3. **"How protected the defender's pawns are"** — 0-3 pawns step onto squares a neighbor still defends,
    i.e. a real chain. A pawn only moves if one beside it stays home to guard it; otherwise a high
    "protection" roll would loosen the position it is meant to strengthen.
-4. **Castling at 18-20**, defender only, kingside, and only with a rook to castle with. With no rook the
+4. **Castling at 17-20**, defender only, kingside, and only with a rook to castle with. With no rook the
    roll is spent on the chain and the roll screen says so rather than dropping it silently.
+   ⚠ **CORRECTED 2026-08-11 — it shipped at 18-20 and that was off by one.** He restated the rule
+   ("*within 3 points of maximum*") and re-reading it settles it: within three points of a maximum
+   of **20** is **17**, not 18. The same band buys the attacker a pawn's second rank, so both moved
+   together — lifting only the defender's would have handed the defense a free 5% and walked the
+   attack out of his 40-60% band. It is **one constant** now (`POS_TOP`), not three typed 18s.
 
 **Where it lives:** `/games/marchland/?key=chesswild` · game at `assets/games/pjcc_marchland.html` ·
 hall card is `playable:false` in `pjcc-games-data.js`, so it appears in the Building hall with no route
