@@ -213,6 +213,18 @@ body.theme-chess {
   --fd-go-2:  #24663a;   /* the button, pressed/hovered: DEEPER, never brighter. The
                             gold button's original sin was getting lighter on hover —
                             the loudest thing on the page turning up under the cursor. */
+  /* ⚠⚠ THE GREEN IS THREE TOKENS NOW, FOR EXACTLY THE REASON THE WALNUT IS TWO (2026-08-11).
+     `--fd-go` says "5.1:1 with white" and that is WHITE TEXT ON THE GREEN — it describes the
+     button, not the color. Used as TEXT ON THE SHEET it measures 2.62:1 against the darkest
+     hour, and `--fd-go-2` measures 3.57 — both real AA failures. I shipped `.mc-resume a` in
+     `--fd-go` that morning on the strength of the "5.1:1" in the comment above, which is the
+     token's worst-background trap written down two lines below where I read it.
+     Measured, not inferred: the sheet is painted rgb(193,185,176) at night, 204,193,184 at
+     dawn, 201,199,191 by day, 204,191,180 at dusk — sampled off a real screenshot, per phase. */
+  --fd-go-ink: #17492a;  /* THE SAME GREEN, DARK ENOUGH TO BE TEXT ON THE SHEET. 5.36:1 against
+                            the darkest hour, so it clears AA as normal text at any size and in
+                            any weather. Use this for green WORDS; use --fd-go for green FILLS.
+                            If you are about to write `color: var(--fd-go)`, you want this. */
   /* ⚠ THE WALNUT IS TWO TOKENS, AND WHICH ONE YOU WANT DEPENDS ON WHETHER IT IS READ. */
   --fd-wood:     #8a5a2b;  /* DECORATION ONLY — icons, glyphs, rules, hairlines. These sit on
                               the OPAQUE panels or are not text, so the sheet's alpha never

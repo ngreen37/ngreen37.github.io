@@ -585,8 +585,15 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 /* HERO — the Play Now door left, the board right; one column under 760px with the board
    FIRST, so a phone still opens on something that looks like chess. */
 /* inside .mc-table now, which owns the outer spacing (_pjcc-25-front-door.scss) */
+/* ⚑ `align-items: start`, NOT `center` (2026-08-11): "move the whole box a little higher on
+   the page." The column was being centered against the board's 483px, which parked a 368px
+   stack ~57px down from the top of the row for no reason anybody chose — the centering was a
+   default from when the left side held one short card. Aligning to the top puts the green door
+   level with the board instead of floating in the middle of it.
+   ⚠ The BOARD is unaffected: it is the taller item, so it sets the row height and fills it
+   under either value. Only the short side moves. */
 .mc-hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: var(--space-6, 32px);
-  align-items: center; margin: 0; }
+  align-items: start; margin: 0; }
 /* THE LOCKUP, OUTSIDE THE SHEET (2026-08-04) ─────────────────────────────────────
    Title and tagline stand together on the town sky, above the card. `baseline` alignment,
    not `center`: two lines of different size read as one line only when they sit on the same
@@ -1096,6 +1103,20 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    area. Picked from a labelled candidate render at his own window size (1512 wide, rail
    docked), where his 582 reproduced to the pixel ([[pick-visual-values-from-a-render]]).
 
+   ⚑⚑ 420 AND SHORTER, 2026-08-11 THIRD PASS. He drew a red line on a screenshot: "trim the
+   length of the green box even further still, to roughly where the red line I drew is. Take
+   down the height of the box a bit as well." Measured off his image — his sheet renders 1200
+   wide, so it is 1:1 — the box ran 161→641 and his line stands at 580. That is **419px**, so
+   420. Height comes down with the padding (18/18/20 → 13/16/15) and the icon (26 → 21).
+
+   ⚠ THIS CROSSES THE FLOOR I NAMED THIS MORNING, KNOWINGLY. I wrote that ~460 was the limit
+   because below it the lead is smaller BY AREA than a 355×181 paper door: at 420×123 it is
+   52k against their 64k. He asked anyway, so it ships — but the reason the card still reads
+   as the lead is now down to three of its four ways rather than four: it is the only GREEN
+   thing, the only one with an ARROW, and it sits ABOVE. "Bigger" is now only true of its
+   WIDTH (420 vs 355). If the hierarchy ever looks wrong, that is the line that broke, and
+   the cheapest repair is height, not width — he picked the width himself.
+
    ⚠⚠ IT IS `max-width`, AND `width: 480px` IS A TRAP I SHIPPED FOR TEN MINUTES. A grid item
    in an `fr` column has `min-width: auto`, so a stated width becomes the column's MINIMUM and
    the column grows to it. Measured at a 980px window: the card stayed 480 while the board's
@@ -1105,18 +1126,21 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    alone deliberately: a stretched item that cannot reach its stretch size falls back to
    start alignment, which is where this card wants to be anyway. */
 .mc-door.mc-lead { background: var(--fd-go); border-color: var(--fd-go); color: #ffffff;
-  padding: 18px 18px 20px; box-shadow: 0 8px 22px rgba(46, 125, 71, 0.2);
-  max-width: 480px; }
+  padding: 13px 16px 15px; box-shadow: 0 8px 22px rgba(46, 125, 71, 0.2);
+  max-width: 420px; }
 /* the paper doors wear a wood hairline along the top; on the green one it would read as mud */
 .mc-lead::before { background: rgba(255, 255, 255, 0.55); opacity: 0.8; }
-.mc-lead .mc-door-ico { color: #ffffff; font-size: 26px; margin-bottom: 8px; }
+.mc-lead .mc-door-ico { color: #ffffff; font-size: 21px; margin-bottom: 5px; }
 .mc-lead > b { color: #ffffff; font-size: 1.3rem; letter-spacing: -0.01em; margin-bottom: 5px; }
 .mc-lead > small { color: rgba(255, 255, 255, 0.94); font-size: 0.9rem; }
 /* the lead card has no neighbors to line up with, so it keeps a tight art block */
 .mc-lead .mc-door-ico { min-height: 0; }
 /* the arrow clears the title's line, not the card's corner — `right`/`top` are absolute
    against the card, which is `position:relative` already (`.mc-door`) */
-.mc-lead-arw { position: absolute; right: 20px; top: 24px; font-size: 1.3rem; line-height: 1;
+/* ⚑ FOLLOWS THE PADDING DOWN (2026-08-11). These are absolute against the card, so they do
+   NOT move when the padding shrinks — the arrow would have kept sitting at the old 20/24 and
+   drifted out of line with the icon it is supposed to balance. Re-set to the new inset. */
+.mc-lead-arw { position: absolute; right: 16px; top: 17px; font-size: 1.2rem; line-height: 1;
   color: #ffffff; transition: transform .14s ease; }
 .mc-lead:hover { background: var(--fd-go-2); border-color: var(--fd-go-2);
   box-shadow: 0 14px 30px rgba(46, 125, 71, 0.28); }
@@ -1202,7 +1226,10 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    makes the `fr` column grow to meet it and the board's column pays for it. The cap lives on
    the WRAPPER now, so the door's own 480 is redundant but kept — it is the rule that has the
    note explaining the number, and a door that leaves this column still knows its size. */
-.mc-lead-col { max-width: 480px; display: flex; flex-direction: column;
+/* ⚑ 420 TO MATCH THE DOOR (2026-08-11). The cap is on the WRAPPER as well as the card so the
+   whole stack keeps ONE right edge — a 420px button with text running to 480 beneath it reads
+   as two objects that happen to share a corner, which is the thing the wrapper exists to stop. */
+.mc-lead-col { max-width: 420px; display: flex; flex-direction: column;
   gap: var(--space-4, 16px); }
 
 /* ⚑ `.mc-open` IS DELETED (2026-08-11). The regulars line moved into the green door's own
@@ -1216,19 +1243,63 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    ⚠ IT IS A BLOCK, NOT A FLEX ROW, and that was a real render bug caught in the preview:
    as a flex container the bold lead-in, the sentence and the link each became a separate
    flex ITEM, so "Keep going" wrapped onto a line of its own with an 8px gap punched into
-   the middle of the sentence. This is prose with a link at the end of it — the only layout
-   it wants is the one text already has. */
-.mc-resume { margin: 0; display: block;
+   the middle of the sentence.
+
+   ⚑ IT GREW TEETH, 2026-08-11: "Make Welcome Back an exclamation, and increase the size of
+   the text, and use a slightly different color. Put the score and the number of puzzles
+   solved in bigger and bolder text, and give it a different color."
+
+   THREE VOICES, and each one is a different JOB rather than decoration:
+     · the GREETING  — walnut, 1.02rem. Warm, and the only warm-colored text in the stack.
+     · the NUMBERS   — deep green, 1.16rem, weight 800. His rating and his count are the two
+                       facts on this page that belong to HIM; nothing else here is his.
+     · the LINK      — green, bolder and a step up, because it is the one thing to DO.
+   The prose around them stays quiet ink so the numbers have something to be louder than.
+
+   ⚠ COLORS PICKED FROM THE PALETTE, NOT INVENTED, and neither is a new hue — the front door
+   bans purple and gold, and this block adds no color the page did not already carry.
+
+   ⚠⚠ AND THE FIRST TWO GREENS I REACHED FOR BOTH FAILED AA. Measured off real screenshots of
+   the painted sheet, per sky phase, against the darkest hour: `--fd-go` = **2.62:1**,
+   `--fd-go-2` = **3.57:1**. `--fd-go`'s own comment says "5.1:1 with white", which is white
+   text ON the green button — a token carries its background as an assumption, and moving it
+   off that background is a new decision, not a reuse. Hence `--fd-go-ink` (#17492a, 5.36:1),
+   added to the palette beside `--fd-wood-ink`, which exists for the identical reason.
+   ⭐ GREEN FILLS use `--fd-go`. GREEN WORDS use `--fd-go-ink`. */
+/* ⚑ the 10px bottom margin is "give some more empty space" under Keep Going. It lives on the
+   RESUME block rather than on the list below it, because a signed-out visitor never renders
+   this element — put the gap on `.mc-true` and a stranger gets a hole where his rating isn't. */
+.mc-resume { margin: 0 0 10px; display: block;
   font-size: 0.88rem; line-height: 1.6; color: var(--fd-ink-3); }
 .mc-resume[hidden] { display: none; }
-.mc-resume b { color: var(--fd-ink-2); font-weight: 700; }
+/* the greeting — its own line, because a bigger, warmer word set inline against body copy
+   fights the baseline instead of leading it */
+.mc-resume b { display: block; color: var(--fd-wood-ink); font-weight: 800;
+  font-size: 1.02rem; letter-spacing: -0.01em; margin-bottom: 1px; }
+/* his rating and his count */
+.mc-resume .rs-num { color: var(--fd-go-ink); font-weight: 800; font-size: 1.16rem;
+  letter-spacing: -0.01em; }
 /* the one link in the stack that is not a door — underlined, because it is prose.
    ⚠ `nowrap` because the preview put the ARROW ALONE on its own line: "Keep going" fit and
    the → did not, which reads as a typo rather than a link. The whole call to action moves
-   to the next line together or not at all. */
-.mc-resume a { color: var(--fd-go); font-weight: 700; text-decoration: underline;
-  text-underline-offset: 2px; white-space: nowrap; }
-.mc-resume a:hover { color: var(--fd-go-2); }
+   to the next line together or not at all.
+   ⚠ `inline-block` + a top margin, so "give some more empty space" under it is space the
+   LINK owns. Putting it on the stack's flex gap instead would have pushed the three proofs
+   away from the regulars line too, on the visit where nobody is signed in and this element
+   is not even rendered.
+
+   ⚠⚠ THE ANCHOR CARRIES A CLASS, AND IT IS LOAD-BEARING. `_pjcc-25-front-door.scss` has
+   `body.theme-chess .page-body a:not([class]) { color: var(--fd-ink-2) }` at (0,3,2) — it
+   out-specified this rule at (0,1,1), so the link I shipped this morning "in green" rendered
+   in dark ink and I described it as green in two messages without looking. The file's own
+   comment warns about this exact rule; `:not([class])` is what makes it survivable, and a
+   class is how you opt out. Measured, not read: `getComputedStyle` said rgb(51,57,68).
+   ⭐ The general one: A COLOR YOU DECLARED IS NOT A COLOR THAT PAINTED. */
+.mc-resume a.rs-go { display: inline-block; margin-top: 3px;
+  color: var(--fd-go-ink); font-weight: 800; font-size: 0.96rem; text-decoration: underline;
+  text-underline-offset: 3px; white-space: nowrap; }
+/* deeper, never brighter — and it is the same hover the page's other links already use */
+.mc-resume a.rs-go:hover { color: var(--fd-ink); }
 
 /* THE TRUE THINGS — a list, not cards; facts don't need boxes.
    ⚑ IT LIVES IN THE HERO NOW (2026-08-11). `auto-fit` still does the right thing without a
@@ -1691,13 +1762,20 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
     var pz = read('pjcc.puzzle.rating.v1');
     var jr = read('pjcc.fork.journey.v2');
 
+    /* ⚠ THE NUMBERS ARE WRAPPED, NOT JUST PRINTED. `.rs-num` is what makes his rating and his
+       count the loud things in this block — the CSS cannot find them without the span, and a
+       bold applied to the whole sentence would just be a bold sentence. */
+    var num = function (n) { return '<span class="rs-num">' + n + '</span>'; };
     var html = '';
     if (pz && typeof pz.rating === 'number' && pz.rating > 0) {
       var solved = (typeof pz.solved === 'number' && pz.solved > 0) ? pz.solved : 0;
-      html = '<b>Welcome back.</b> Your puzzle rating is ' + Math.round(pz.rating) +
-             (solved ? ' after ' + solved + ' solved' : '') + '.';
+      /* ⚑ "solved" → "SOLVED CORRECTLY" (his words, 2026-08-11). It is not a flourish: the
+         Puzzle Room only counts a CLEAN solve — no hint, no wrong first move — so "26 solved"
+         was quietly under-describing what he had done. The stricter word is the true one. */
+      html = '<b>Welcome back!</b> Your puzzle rating is ' + num(Math.round(pz.rating)) +
+             (solved ? ' after ' + num(solved) + ' solved correctly' : '') + '.';
     } else if (jr && typeof jr.step === 'number' && jr.step > 0) {
-      html = '<b>Welcome back.</b> You are ' + jr.step + ' puzzle' + (jr.step === 1 ? '' : 's') +
+      html = '<b>Welcome back!</b> You are ' + num(jr.step) + ' puzzle' + (jr.step === 1 ? '' : 's') +
              ' along the road to Chess City.';
     }
     if (!html) return;                       /* a stranger sees nothing, and nothing moves */
@@ -1707,7 +1785,10 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
        raw file is what `style.check.js` parses to prove every inline script on the site is
        valid JavaScript. Liquid belongs in the markup, where it has somewhere to stand. */
     var href = el.getAttribute('data-href') || '/games/fork-in-the-road/';
-    el.innerHTML = html + ' <a href="' + href + '">Keep going &rarr;</a>';
+    /* ⚠ class="rs-go" IS NOT DECORATION. The theme's `a:not([class])` rule out-specifies this
+       page's own link color, so an anchor with no class paints dark ink no matter what the
+       page asks for. The class is what opts this link out of that rule. */
+    el.innerHTML = html + ' <a class="rs-go" href="' + href + '">Keep going &rarr;</a>';
     el.hidden = false;
   } catch (e) { /* storage denied — the page is unchanged, which is the correct outcome */ }
 })();

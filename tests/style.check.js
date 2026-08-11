@@ -590,5 +590,52 @@ console.log('\n── HOUSE RULES ───────────────�
       'declared ' + declared.join(' ') + ' / used ' + used.join(' '));
 }
 
+/* ══ GREEN FILLS vs GREEN WORDS ═══════════════════════════════════════════════════════
+   2026-08-11. `--fd-go` is the front door's BUTTON — its comment says "5.1:1 with white",
+   which describes white text ON the green, not the green as text. Used as `color:` on the
+   parchment it measures **2.62:1** against the darkest sky phase, and `--fd-go-2` measures
+   3.57 — both real AA failures. I shipped one anyway, reading the 5.1 as if it were the
+   token's contrast rather than the pair's.
+
+   `--fd-go-ink` (#17492a, 5.36:1 measured off the painted sheet) exists for green WORDS,
+   exactly as `--fd-wood-ink` exists beside the decorative `--fd-wood`. This gate stops the
+   readable half from being skipped again.
+
+   ⚠ It matches `color:` only. `background`, `border-color`, `box-shadow` and `fill` are
+   what --fd-go is FOR, and none of them are text. */
+{
+  /* local reader — this file has no shared one, and `FILES` above is the whole-site walk */
+  const slurp = (f) => {
+    try { return fs.readFileSync(path.join(ROOT, f), 'utf8'); } catch (e) { return ''; }
+  };
+  const GREEN_FILES = ['index.md', '_sass/_pjcc-25-front-door.scss'];
+  const offenders = [];
+  for (const f of GREEN_FILES) {
+    const raw = slurp(f);
+    if (!raw) continue;
+    /* ⚠ STRIP COMMENTS FIRST — and this is not hypothetical tidiness. The first run of this
+       gate failed on the sentence "If you are about to write `color: var(--fd-go)`, you want
+       this", which is the WARNING telling you not to. A gate that reads its own documentation
+       as a violation teaches people to delete the documentation. Blanked, not removed, so the
+       line numbers and the reported line text stay honest. */
+    const src = raw.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '));
+    const re = /(^|[^-\w])color\s*:\s*var\(\s*--fd-go(-2)?\s*\)/g;
+    let m;
+    while ((m = re.exec(src)) !== null) {
+      /* the token's own declaration line is not a use of it */
+      const line = raw.slice(raw.lastIndexOf('\n', m.index) + 1, raw.indexOf('\n', m.index));
+      if (/^\s*--fd-go/.test(line)) continue;
+      offenders.push(f + ': ' + line.trim().slice(0, 72));
+    }
+  }
+  check('green WORDS use --fd-go-ink, never the button green',
+    offenders.length === 0,
+    offenders.length ? offenders.join(' | ')
+                     : '--fd-go stays a fill; #17492a is the one that clears AA as text');
+  check('…and --fd-go-ink is actually defined',
+    /--fd-go-ink:\s*#17492a/.test(slurp('_sass/_pjcc-25-front-door.scss')),
+    'the readable green');
+}
+
 console.log(`\n  ${pass} passed, ${fail} failed\n`);
 process.exit(fail ? 1 : 0);
