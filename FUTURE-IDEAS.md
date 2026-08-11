@@ -80,6 +80,26 @@ against a fixed pool always does — the number stops meaning much above ~1700.*
 - [x] A **Patreon** link somewhere — *"not TOO prominent."*
 - [x] A little **preview box of Notation Blitz** — moving if it is cheap, *"a static image would be fine."*
 
+**🗝 THE ALPINE FILE — ANSWERED 2026-08-10: yes, reachable, by exactly ONE door**
+
+*He asked: "Is the secret alpine file accessible anymore? I think we took out all the entry
+points." Probed rather than remembered — `/classified/` returns **200**, and the site emits the
+`.tg-x` door on **one live page**.*
+
+- **The live door:** the flickering **i in "an animated series in the mak_i_ng"**, the lede under
+  the hero on **/pjcc/**. It drops out completely (`visibility: hidden`) on a 7.5s cycle.
+- ⚠ **A SECOND COPY EXISTS AND IS DEAD.** `_layouts/studio-home.html` carries the same door in
+  "A Mill_i_on Stories to Tell" — but **no page uses that layout any more** (checked: zero
+  files declare `layout: studio-home`). It has been unreachable markup for some time.
+- ⚠ **AND THE ONE LIVE DOOR STOPS FLICKERING AT NIGHT.** `html.sky-night .tg-x-glyph` sets
+  `animation: none`, so between dusk and dawn the only cue for the only entrance is switched
+  off. That is almost certainly deliberate (the night sky has its own moving parts) but it means
+  a night visitor has no way to find it at all.
+- [ ] **His call, three ways:** (a) leave it — one door, daytime only, very hidden; (b) let it
+  flicker at night too, so the door exists whenever the page does; (c) restore a second entrance
+  somewhere that is actually rendered. ⚠ Related: the **i in "Princess"** now twitches too, but
+  it DIMS rather than vanishing — deliberately a different event, so the door stays distinct.
+
 **REACH**
 - [x] **Socials, all reserved:** Instagram `chessWild_official` · TikTok `chessWild.com` · YouTube `ChessWild_Official` · X `@real_ChessWild` · Reddit `u/chesswild_official` · Pinterest `chesswild_official`. *"What is the best way to add these to the site?"*
 - [x] **princessandthejourneytochesscity.com → the PJCC website**, and **mcpuppystudios.com → the revamped Projects/Studio page**.
