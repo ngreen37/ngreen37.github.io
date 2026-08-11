@@ -160,16 +160,27 @@ check('the three scores are the ones documented',
 check('the difficulty dial is DRIVEN by the rating', /run\.diff = ratingToDiff\(pzMove\.after\)/.test(FORK));
 check('the old ±ratchet survives as the no-module fallback',
   /if \(!pzMove\) run\.diff = Math\.max\(1, Math\.min\(10, run\.diff \+ \(earned \? 0\.34 : -0\.7\)\)\)/.test(FORK));
+/* ⚑ RE-FITTED 2026-08-10. The old pair (590 + 72d) was DERIVED on paper; this one was
+   MEASURED, by sampling the real generator ten deep at each difficulty. That distinction
+   is the bug: the derived map put difficulty 10 at a rating of 1310 while the generator's
+   difficulty-10 puzzles rated 1490+, so the dial ran out of road and everybody above 1310
+   was served the same puzzle forever — which is what "the puzzles seem way too easy" was.
+   ⚠ It is a FIT to that generator, not a definition. Move the clutter or the motif mix and
+   this goes stale; re-measure, then change both numbers here and in the room. */
 check('the rating→difficulty map is the inverse of puzzleRating()',
-  /return Math\.max\(1, Math\.min\(10, \(r - 590\) \/ 72\)\)/.test(FORK));
+  /return Math\.max\(1, Math\.min\(10, \(r - 473\) \/ 117\)\)/.test(FORK));
 
 /* the map has to actually LAND on the generator's range, or the whole ladder is stranded
    at one end. Recomputed here from the shipped formula rather than trusted. */
 {
-  const ratingToDiff = r => Math.max(1, Math.min(10, (r - 590) / 72));
+  const ratingToDiff = r => Math.max(1, Math.min(10, (r - 473) / 117));
   const at = r => +ratingToDiff(r).toFixed(1);
-  check('700 serves an easy puzzle and 1300 serves the hardest', at(700) < 2.5 && at(1300) >= 9.5,
-    `700→d${at(700)} · 900→d${at(900)} · 1100→d${at(1100)} · 1300→d${at(1300)}`);
+  /* the top of the range moved with the fit: the hardest puzzles the generator makes now
+     rate ~1640, so 1640 is where the dial should peg — not 1300, which is where it used to
+     peg while the content kept going. The easy end is unchanged and has to stay that way,
+     because "easy at first" is half of what he asked for. */
+  check('700 serves an easy puzzle and 1640 serves the hardest', at(700) < 2.5 && at(1640) >= 9.5,
+    `700→d${at(700)} · 1000→d${at(1000)} · 1300→d${at(1300)} · 1640→d${at(1640)}`);
 }
 
 /* ── 3b. A BOT SAYS WHAT IT IS ──────────────────────────────────────────────────────
@@ -215,9 +226,13 @@ check('the rating→difficulty map is the inverse of puzzleRating()',
 
   /* the park's four seats */
   const PT = fs.readFileSync(path.join(ROOT, 'games/park-tables/index.html'), 'utf8');
-  const bots = [...PT.matchAll(/\{ name: '(\w+)',\s*icon: '.',\s*diff: '(\w+)',\s*elo: (\d+)/g)]
+  /* ⚠ [^'] NOT \w — the bench has "The Dad" and "The CEO" on it since 2026-08-10, and a
+     \w+ name pattern SKIPS a seat with a space in it rather than failing on it. A roster
+     check that quietly counts six of seven is worse than no roster check at all: it was
+     reporting five names here while seven were shipping. */
+  const bots = [...PT.matchAll(/\{ name: '([^']+)',\s*icon: '.',\s*diff: '([^']+)',\s*elo: (\d+)/g)]
     .map(m => ({ name: m[1], diff: m[2], elo: +m[3] }));
-  check('all four park regulars declare a rating', bots.length === 4,
+  check('every park regular declares a rating', bots.length === 7,
     bots.map(b => b.name + ' ' + b.diff + ' ' + b.elo).join(' · '));
   check('…and none of them hand-sets skill or blunder any more',
     !/\{ name: '\w+',[^}]*\b(skill|blunder):/.test(PT),
@@ -240,8 +255,21 @@ check('the rating→difficulty map is the inverse of puzzleRating()',
   check('no Easy or Medium seat is secretly 1400+', tooStrong.length === 0,
     tooStrong.length ? tooStrong.map(b => b.name + ' ' + b.diff + ' → skill ' + E.skillForElo(b.elo)).join(', ')
                      : bots.filter(b => /Easy|Medium/.test(b.diff)).map(b => b.name + ' ' + b.elo).join(' · '));
-  check('the Expert seat is still full strength',
-    bots.some(b => b.diff === 'Expert' && E.skillForElo(b.elo) === 20), 'Robert, 2400 — Nate\'s call');
+  /* ⚑ THE TOP SEAT MOVED 2026-08-10. Robert came down to 1800 to make room for Princess
+     (2100) and the CEO (2400) above him, so "full strength" is the CHAMPION seat now. The
+     assertion follows the LADDER rather than the name, which is the whole point of it. */
+  check('the top seat is still full strength',
+    bots.some(b => b.diff === 'Champion' && E.skillForElo(b.elo) === 20), 'The CEO, 2400 — Nate\'s call');
+  /* ⚠ A LOCKED SEAT MUST BE REACHABLE. A `locked` naming a bot that is not on the bench is
+     a door with no key — the card renders, says "Beat <nobody>", and never opens. */
+  const locks = [...PT.matchAll(/locked: '(\w+)'/g)].map(m => m[1]);
+  const ids = [...PT.matchAll(/^ {4}(\w+):\s*\{ name:/gm)].map(m => m[1]);
+  check('every locked seat names a bot you can actually beat',
+    locks.length > 0 && locks.every(l => ids.indexOf(l) >= 0),
+    locks.length ? locks.join(' · ') + '   (bench: ' + ids.join(' ') + ')' : 'no locked seats found');
+  check('…and a win is what records the unlock',
+    /if \(st\.result === '1-0'\) \{[\s\S]{0,220}markBeaten\(st\.bot\)/.test(PT),
+    'botFinish writes the win that opens the next door');
 
   /* and the number has to be ON SCREEN — an unadvertised rating is what drifted */
   check('the bot card prints the rating', /b\.diff \+ ' · ' \+ b\.elo/.test(PT));

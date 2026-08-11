@@ -277,7 +277,26 @@ layout: default
        are decorative twinkles. aria-label carries the clean title so a screen reader hears it
        once, not the spans / sparkles. Styles: .ht-w / .ht-spark / @keyframes htTwinkle below. {% endcomment %}
   <h1 class="hero-title" aria-label="Princess and the Journey to Chess City">
-    <span class="ht-w" data-w="Princess">Princess</span>
+    {%- comment -%} ⚑ THE FAULTY BULB (2026-08-10, Nate: "make the 'i' in 'princess' twitch
+         ever-so-slightly — like a light up sign that has a faulty bulb").
+
+         ⚠⚠ IT DIMS; IT DOES NOT DROP OUT, AND THAT DISTINCTION IS LOad-BEARING. The other
+         flickering `i` on this page — in "an animated series in the mak*i*ng" below — is the
+         ONLY door to /classified/, and it works by going `visibility: hidden` so the letter
+         vanishes completely. If this one vanished too, the site would have two identical
+         disappearing i's and the secret would read as a site-wide tic rather than a signal.
+         A bulb that browns out and comes back is a different event from a bulb that is gone,
+         and a reader who notices both can still tell which one is a door.
+
+         ⭐ `opacity` is safe HERE and would not be on the splash: this title is solid gold
+         with a text-shadow extrude, not a `background-clip: text` fill — inside one of those,
+         `opacity` on a child does nothing at all and `visibility` is the only lever that
+         reaches the glyph. [[text-clip-glyph-technique]]
+
+         ⚠ `<i>` for the letter, with font-style: inherit — the tag is the shortest thing that
+         can carry the class, and without the reset it would render italic inside a display
+         title. Same trick, same reason, as .tg-x-glyph. {%- endcomment -%}
+    <span class="ht-w" data-w="Princess">Pr<i class="ht-bulb">i</i>ncess</span>
     <span class="ht-w" data-w="and">and</span>
     <span class="ht-w" data-w="the">the</span>
     <span class="ht-w" data-w="Journey">Journey</span>
@@ -476,6 +495,28 @@ layout: default
    focus and reduced-motion steady it too. The <a> stays visible so it keeps its hit box; only
    the inner <i> glyph flickers. An .sr-only "i" sits beside it (see the markup) so screen
    readers still hear "making". */
+/* ══ THE FAULTY BULB — the i in Princess (2026-08-10) ═════════════════════════════
+   Two quick brown-outs, then eleven seconds of nothing. The gap is the whole effect: a
+   sign with a bad bulb is fine most of the time, which is exactly why you look up when it
+   isn't. `steps(1, end)` so it SNAPS between levels — a bulb does not crossfade.
+   Nothing here dips below 0.42; "ever-so-slightly" is his word and a letter that goes to
+   0 is the other i's job (see the markup note above).
+   ⚠ Opacity only, one 8px glyph, so it composites and never repaints. And it stops dead
+   under both quiet switches, like every other ambient thing on this site. */
+.ht-bulb { font-style: inherit; display: inline-block;
+  animation: ht-bulb 11s steps(1, end) infinite; }
+@keyframes ht-bulb {
+  0%, 62%   { opacity: 1; }
+  62.6%     { opacity: 0.42; }
+  63.2%     { opacity: 1; }
+  64.4%     { opacity: 0.55; }
+  65.2%     { opacity: 1; }
+  71%       { opacity: 0.48; }
+  71.8%, 100% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .ht-bulb { animation: none; opacity: 1; } }
+html.reduce-flourish .ht-bulb { animation: none; opacity: 1; }
+
 .hero-lede .tg-x, .hero-lede .tg-x-glyph { text-decoration:none; color:inherit; -webkit-text-fill-color:inherit; font-style:inherit; }
 .hero-lede .tg-x-glyph { animation:tgx-radio 7.5s steps(1, end) infinite; }
 html.sky-night .hero-lede .tg-x-glyph { animation:none; visibility:visible; }

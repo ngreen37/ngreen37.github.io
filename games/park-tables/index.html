@@ -554,13 +554,69 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
      fall back to its default and the whole park would play at one strength with no error
      anywhere ([[feature-shipped-but-never-loaded]]). `botDial` runs inside the same call that
      uses the bridge, so the numbers cannot be older than the object producing them. */
+  /* ══ THE BENCH — RE-LADDERED 2026-08-10, to Nate's numbers ═══════════════════════════
+     "Maxwell (new) 400, Crockett (new) 750, Argus 1000, The Dad (rename) 1400, Robert 1800.
+      Then Princess 2100 (new and locked — unlock by beating Robert), and CEO 2400 (unlock
+      by beating Princess)."
+
+     What that fixes, and it is the same defect the Gauntlet had on 2026-07-15: FOUR seats
+     spanning 650→2400 left a 700-point hole in the middle and nothing at all below 650. A
+     beginner's only option outrated them by 300. Seven seats at 400 · 750 · 1000 · 1400 ·
+     1800 · 2100 · 2400 step by 250–400, so there is always a next one rather than a cliff.
+
+     ⚠ AUSTON IS NOT ON THIS BENCH ANY MORE AND THAT WAS NOT MY CALL TO MAKE QUIETLY — he is
+     simply not in the list Nate gave, which named seven seats and filled all of them. He is
+     untouched everywhere else: he still teaches Academy Lesson 1, and putting him back is one
+     line here. Flagged in the session summary rather than buried.
+
+     ⚠ `elo` IS THE ONLY DIAL, and `botDial()` derives skill + blunder rate from it at MOVE
+     time. Never hand-set a skill beside a rating — that is exactly how "Medium" came to be
+     secretly 1575 ([[bot-gate]]). The label and the number always agree because the number
+     is what plays.
+
+     ⚠ `locked` bots are STILL RENDERED, grayed out, with what they cost. A locked seat you can
+     see is a reason to keep playing; a locked seat you cannot see is just a shorter list. */
   var BOTS = {
-    argus:  { name: 'Argus',  icon: '♝', diff: 'Easy',   elo: 650,  movetime: 140 },
-    auston: { name: 'Auston', icon: '♜', diff: 'Medium', elo: 1100, movetime: 350 },
-    father: { name: 'Father', icon: '♚', diff: 'Hard',   elo: 1700, movetime: 900 },
-    // Robert — the Checker Town rival, the Expert seat (2026-07-19 Nate).
-    robert: { name: 'Robert', icon: '♛', diff: 'Expert', elo: 2400, movetime: 1200 }
+    maxwell:  { name: 'Maxwell',  icon: '♟', diff: 'Beginner', elo: 400,  movetime: 120 },
+    crockett: { name: 'Crockett', icon: '♞', diff: 'Easy',     elo: 750,  movetime: 160 },
+    argus:    { name: 'Argus',    icon: '♝', diff: 'Casual',   elo: 1000, movetime: 260 },
+    // "Father" → "The Dad" (2026-08-10 Nate). Same character, same seat, warmer name.
+    dad:      { name: 'The Dad',  icon: '♚', diff: 'Club',     elo: 1400, movetime: 620 },
+    // Robert — the Checker Town rival (2026-07-19 Nate), down from 2400 to make room above.
+    robert:   { name: 'Robert',   icon: '♜', diff: 'Expert',   elo: 1800, movetime: 950 },
+    princess: { name: 'Princess', icon: '♛', diff: 'Master',   elo: 2100, movetime: 1150,
+                locked: 'robert' },
+    ceo:      { name: 'The CEO',  icon: '♔', diff: 'Champion', elo: 2400, movetime: 1300,
+                locked: 'princess' }
   };
+
+  /* ── WHO YOU HAVE BEATEN (2026-08-10) ────────────────────────────────────────────────
+     One list, in this browser, appended to the first time you win a bot game. It is the key
+     to the two locked seats and nothing else.
+
+     ⭐ IT IS A SET OF WINS, NOT A LEVEL NUMBER. A level would have to be migrated every time
+     the bench is re-ordered — and the bench was just re-ordered. A win against Robert stays
+     a win against Robert whatever rating he carries next month.
+     ⚠ Local only, deliberately: this gates a bit of fun, not anything anyone can spend
+     ([[game-monetization-ethics]]). Clearing your browser costs you two rematches. */
+  var BEAT_KEY = 'pjcc.pt.beaten.v1';
+  function beatenList(){
+    try { var a = JSON.parse(localStorage.getItem(BEAT_KEY)); return Array.isArray(a) ? a : []; }
+    catch (e) { return []; }
+  }
+  function markBeaten(id){
+    if (!id) return;
+    var a = beatenList();
+    if (a.indexOf(id) >= 0) return;
+    a.push(id);
+    try { localStorage.setItem(BEAT_KEY, JSON.stringify(a)); } catch (e) {}
+  }
+  function botLocked(id){
+    var b = BOTS[id];
+    if (!b || !b.locked) return null;                     // open seat
+    if (beatenList().indexOf(b.locked) >= 0) return null;  // earned
+    return (BOTS[b.locked] || {}).name || b.locked;        // who you still owe
+  }
   function botDial(b){
     var E = window.PJCCGauntletEngine;
     return { skill: E.skillForElo(b.elo), blunder: E.blunderForElo(b.elo), movetime: b.movetime };
@@ -609,11 +665,21 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
     return '<div class="pt-actions pt-bots">' + Object.keys(BOTS).map(function (id) {
       var b = BOTS[id];
       var resume = saved && saved.bot === id && !saved.done && (saved.moves || '').trim();
+      var owe = botLocked(id);
       // the rating rides beside the label (2026-08-05) — the Gauntlet has always said
       // "Rated 350" on a challenger card, and it is the reason that ladder never drifted
+      // ⚠ A LOCKED SEAT IS DISABLED, NOT HIDDEN, and it says what it costs in plain words.
+      //   `disabled` rather than a click-and-refuse: the button should feel shut, and a
+      //   disabled control is the one thing a screen reader and a thumb agree about.
+      if (owe) {
+        return '<button class="pt-card pt-bot pt-bot--locked" data-bot="' + id + '" disabled' +
+          ' aria-label="' + esc(b.name) + ', rated ' + b.elo + ' — locked until you beat ' + esc(owe) + '">' +
+          '<span class="pt-card-icon">🔒</span>' +
+          '<span class="pt-card-t">' + esc(b.name) + '<br><i>Beat ' + esc(owe) + ' to unlock</i></span></button>';
+      }
       return '<button class="pt-card pt-bot" data-bot="' + id + '">' +
         '<span class="pt-card-icon">' + b.icon + '</span>' +
-        '<span class="pt-card-t">' + b.name + '<br><i>' + b.diff + ' · ' + b.elo +
+        '<span class="pt-card-t">' + esc(b.name) + '<br><i>' + b.diff + ' · ' + b.elo +
         (resume ? ' · resume' : '') + '</i></span></button>';
     }).join('') + '</div>';
   }
@@ -654,7 +720,10 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
     st.result = g.result === 'checkmate' ? (g.S.turn === 'w' ? '0-1' : '1-0') : '1/2-1/2';
     st.reason = g.result;
     botSave(st);
-    if (st.result === '1-0') markWin();            // you play White at every bot table
+    if (st.result === '1-0') {
+      markWin();                                   // you play White at every bot table
+      markBeaten(st.bot);                          // …and that is what opens the locked seats
+    }
   }
 
   // The opening's name, shown live as a game follows known theory (Nate 2026-07-17:
@@ -1472,10 +1541,21 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
 .pt-card:hover { border-color: #F5C518; }
 .pt-card-icon { font-size: 26px; color: #F5C518; }
 .pt-card-t i { font-style: normal; color: #9a7fd4; font-size: 0.78rem; }
-/* the three park regulars sit in one tighter row (Argus / Auston / Father) */
+/* the park regulars sit in one tighter row — seven of them since 2026-08-10 */
 .pt-bots { margin-top: 4px; }
 .pt-bots .pt-card { flex: 1 1 140px; padding: 11px 14px; }
 .pt-bots .pt-card-icon { font-size: 22px; }
+/* ⚠ A LOCKED SEAT IS SHOWN, NOT HIDDEN (2026-08-10). Princess opens by beating Robert and
+   the CEO by beating Princess, and a lock you can see is the reason to go back down the
+   bench — a lock you cannot see is just a shorter list. Quiet, not disabled-gray-mush: the
+   name stays legible (that is the thing you are playing FOR) and only the meta drops back.
+   `cursor: default` because `not-allowed` reads as an error, and this is not one. */
+.pt-bots .pt-card.pt-bot--locked {
+  opacity: 0.62; cursor: default; border-style: dashed; border-color: var(--edge-soft);
+}
+.pt-bots .pt-card.pt-bot--locked:hover { border-color: var(--edge-soft); }
+.pt-bots .pt-card.pt-bot--locked .pt-card-icon { color: #9a7fd4; filter: grayscale(0.35); }
+.pt-bots .pt-card.pt-bot--locked .pt-card-t i { color: #8d7fb8; }
 
 /* THE BOT GATE (2026-07-28) — the free path is FIRST and reads as the main one, and the
    sign-in below it is a second offer rather than a wall. Gold edges on the regulars'

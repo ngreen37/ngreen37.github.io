@@ -1075,30 +1075,30 @@
   ],
   "foes": [
     {
-      "id": "argus",
-      "name": "Argus",
-      "elo": 650,
-      "knows": 2,
-      "line": "plays fast and reads slowly"
-    },
-    {
-      "id": "auston",
-      "name": "Auston",
-      "elo": 1100,
-      "knows": 4,
+      "id": "crockett",
+      "name": "Crockett",
+      "elo": 750,
+      "knows": 3,
       "line": "has seen most of these before"
     },
     {
-      "id": "father",
-      "name": "Father",
-      "elo": 1700,
+      "id": "argus",
+      "name": "Argus",
+      "elo": 1000,
+      "knows": 4,
+      "line": "plays fast and reads slowly"
+    },
+    {
+      "id": "dad",
+      "name": "The Dad",
+      "elo": 1400,
       "knows": 6,
       "line": "is very hard to surprise"
     },
     {
       "id": "robert",
       "name": "Robert",
-      "elo": 2400,
+      "elo": 1800,
       "knows": 8,
       "line": "knows every answer you have"
     },

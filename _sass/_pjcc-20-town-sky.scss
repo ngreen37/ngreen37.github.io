@@ -217,12 +217,32 @@ html.sky-night .ts-orb::after {
   box-shadow: inset 0 0 6px 2px rgba(8, 5, 26, 0.9);
   transform: translateX(calc(var(--moon-shift, 1) * 100%));
 }
-/* the glow should answer the phase too — a thin crescent doesn't floodlight the sky */
-html.moon-new       .ts-orb { box-shadow: 0 0 18px 4px rgba(220, 214, 255, 0.05); }
+/* the glow should answer the phase too — a thin crescent doesn't floodlight the sky
+   ⚑ THE RIM CAME DOWN BY HALF (2026-08-10, Nate: "the waning/waxing moon looks great but
+   the full outline is a bit too prominent — can you get that full circle rim outline like
+   50% dimmer?").
+
+   ⭐ WHICH LEVER, AND WHY THIS ONE. The thing drawing a complete circle around a crescent
+   is this outer glow: it is cast by the ORB, which is always a full disc, so it rings the
+   whole moon no matter how little of the moon is lit. The terminator on top hides the
+   unlit face but cannot hide the halo behind it — so the phase reads correctly and the
+   silhouette still says "full circle". Halving the alpha halves the ring and leaves the
+   crescent itself untouched, which is the half he said already looks great.
+   ⚠ There is a SECOND ring, and it is deliberately left alone: `::after`'s
+   `inset 0 0 6px 2px` darkens the terminator's edge. That one shapes the shadowed face
+   rather than outlining the disc, and dimming it would flatten the moon instead of
+   quieting its rim. If half is still too much, this is the pair of numbers to move again. */
+html.moon-new       .ts-orb { box-shadow: 0 0 18px 4px rgba(220, 214, 255, 0.025); }
 html.moon-waxing-crescent .ts-orb,
-html.moon-waning-crescent .ts-orb { box-shadow: 0 0 26px 7px rgba(220, 214, 255, 0.09); }
+html.moon-waning-crescent .ts-orb { box-shadow: 0 0 26px 7px rgba(220, 214, 255, 0.045); }
 html.moon-first-quarter .ts-orb,
-html.moon-last-quarter  .ts-orb { box-shadow: 0 0 34px 10px rgba(220, 214, 255, 0.11); }
+html.moon-last-quarter  .ts-orb { box-shadow: 0 0 34px 10px rgba(220, 214, 255, 0.055); }
+/* the gibbous and full nights were never listed here, so they fell through to the base
+   rule's 0.14 — the brightest ring on the brightest nights. Halved to match. */
+html.moon-waxing-gibbous .ts-orb,
+html.moon-waning-gibbous .ts-orb,
+html.moon-full          .ts-orb { box-shadow: 0 0 44px 14px rgba(220, 214, 255, 0.07),
+                                              inset -9px -7px 13px rgba(80, 70, 130, 0.55); }
 
 /* ── SOME NIGHTS YOU JUST CAN'T SEE IT (2026-07-27, Nate: "maybe sometimes it's too
    cloudy to see sun or moon"). Overcast is overcast: on a 3-cover day or in the rain the
@@ -234,6 +254,19 @@ html.cloud-3 .ts-orb  { opacity: 0.14; }
 html.town-rain .ts-orb { opacity: 0.08; }
 html.town-snow .ts-orb { opacity: 0.10; }   /* snow needs the same full deck as rain */
 html.town-mist .ts-orb { opacity: 0.30; }
+
+/* ⚑ AND THE STARS OBEY THE SAME WEATHER (2026-08-10, Nate: "when stars are visible —
+   should be most nights but not every night"). They did not: the moon could be a rumor
+   behind a full cloud deck while every star burned through it, which is the one thing a
+   cloudy night never looks like. Same lever, same reason, slightly harsher — a deck that
+   leaves the moon at 14% leaves a 2px star at nothing, because a star has no size to see
+   it by. ⚠ Opacity only, so the constellations stay exactly where they are and the sky
+   never reflows; a clear night is untouched, which is most of them (measured 67.7% clear
+   over 3,650 real dates — see the rain roll in _includes/pjcc-time.js). */
+html.cloud-3   .ts-stars, html.cloud-3   .ts-constellations { opacity: 0.10; }
+html.town-rain .ts-stars, html.town-rain .ts-constellations { opacity: 0; }
+html.town-snow .ts-stars, html.town-snow .ts-constellations { opacity: 0; }
+html.town-mist .ts-stars, html.town-mist .ts-constellations { opacity: 0.22; }
 
 /* ══ THE SOLAR ECLIPSE (2026-08-09, Nate: "let's throw a solar eclipse in once a month …
    we can make it a special event day") ═══════════════════════════════════════════════

@@ -1402,8 +1402,17 @@ pre code {
    transformed) lives in _includes/wordmark.html beside the markup it describes. */
 .wm-chess { letter-spacing: -0.025em; }
 .wm-wild  { color: #ffa07a; letter-spacing: 0.01em; padding-left: 0.03em; }
-/* the address — quiet by SIZE, not by fading: it keeps the name's own color */
-.wm-tld   { font-weight: 600; font-size: 0.48em; letter-spacing: 0.04em; }
+/* the address — quiet by SIZE, not by fading: it keeps the name's own color
+   ⚑ AND IT SITS ON THE BASELINE NOW (2026-08-10, Nate: "lower the .com on the top logo so
+   it looks a little cleaner"). At 0.48em inside a line box sized for the full mark, the
+   small text was centering itself against the CAP height of the big letters — so `.com`
+   floated at the shoulder of the W instead of sitting under it, which is what read as
+   untidy. `vertical-align: baseline` is not enough on its own here because the parent's
+   line-height does the floating; the explicit nudge is what lands it on the baseline of
+   the word it belongs to. One value, and it is em-relative like everything else in this
+   mark, so it holds at 34px on the sky and at 13px in the header. */
+.wm-tld   { font-weight: 600; font-size: 0.48em; letter-spacing: 0.04em;
+  vertical-align: baseline; position: relative; top: 0.12em; }
 /* ⚠ THE TAGLINE'S MINT IS DRAWN FOR A DARK BACKGROUND and measures under 2:1 on the warm
    parchment sheet — correct out on the night sky, a bug inside a card. It is the same mint
    every board on this site lights a LEGAL MOVE with, so "Solve" wears the color of a solved
