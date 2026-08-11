@@ -37,43 +37,90 @@ function slice(from, to) {
   if (b < 0) throw new Error('marchland.check: could not find "' + to + '" after it');
   return src.slice(a, b);
 }
-const code = slice('var POS_TOP', 'function posSteps') +
+/* ⚠ START AT POS_CASTLE, WHICH IS DECLARED FIRST. This slice began at `var POS_TOP` and the
+   2026-08-11 refinement added a constant ABOVE it — so the vm got `posCastles` without the
+   constant it reads and threw `POS_CASTLE is not defined` on the first call. That is the
+   slice guard doing its job: a moved boundary fails loudly here instead of testing nothing. */
+const code = slice('var POS_CASTLE', 'function posSteps') +
              slice('function posSteps', '/* ── THE MUSTER') +
              slice('function pawnsOf', '/* ── THE ENGINE');
 const G = { Math, Array };
 vm.createContext(G);
 vm.runInContext(code, G);
 
-/* ── 1. THE BOUNDARY — "within three points of maximum" ─────────────────────────────── */
-check('the top band is a named constant, not a typed number', G.POS_TOP === 17,
-      'POS_TOP = ' + G.POS_TOP + ' (20 - 3, inclusive)');
-check('16 does NOT castle — it is four off the maximum', G.posCastles(16) === false);
-check('17 DOES castle — three off the maximum is inside his rule', G.posCastles(17) === true);
-check('18, 19 and 20 castle', [18, 19, 20].every(d => G.posCastles(d) === true));
-check('a low roll never castles', [1, 5, 10, 15].every(d => G.posCastles(d) === false));
-check('exactly four faces of the twenty castle', [...Array(20)].filter((_, i) => G.posCastles(i + 1)).length === 4,
-      '20% of rolls, not 15%');
-check('the attacker\'s second rank rides the SAME band', [16, 17, 20].map(d => G.posTop(d)).join() === 'false,true,true',
-      'one constant for the top band, so his 17 cannot half-land');
+/* ── 1. THE TWO BANDS — "within two of max" vs "within four or three of max" ─────────── */
+check('the two bands are named constants, not typed numbers',
+      G.POS_CASTLE === 16 && G.POS_TOP === 18,
+      'POS_CASTLE = ' + G.POS_CASTLE + ' (within four) · POS_TOP = ' + G.POS_TOP + ' (within two)');
+check('15 does NOT castle — five off the maximum is outside every band', G.posCastles(15) === false);
+check('16 castles — within FOUR of the maximum', G.posCastles(16) === true);
+check('17 castles — within three', G.posCastles(17) === true);
+check('…but 16 and 17 do NOT bring the rook',
+      G.posCastleFull(16) === false && G.posCastleFull(17) === false, 'his "they don\'t get the rook"');
+check('18, 19 and 20 bring the rook', [18, 19, 20].every(d => G.posCastleFull(d) === true));
+check('a low roll never castles', [1, 5, 10, 14].every(d => G.posCastles(d) === false));
+check('exactly five faces of the twenty castle at all',
+      [...Array(20)].filter((_, i) => G.posCastles(i + 1)).length === 5, '25% of rolls');
+check('…and exactly three of those get the full castle',
+      [...Array(20)].filter((_, i) => G.posCastleFull(i + 1)).length === 3, '15% of rolls');
+check('the attacker\'s second rank rides the TOP band, not the wider one',
+      [17, 18, 20].map(d => G.posTop(d)).join() === 'false,true,true',
+      '"within two of maximum" is the top reward in both chairs');
 
-/* ── 2. IT ACTUALLY MOVES A KING (a boolean is not a castle) ────────────────────────── */
-function freshDefender(withRook) {
+/* ── 2. IT ACTUALLY MOVES A KING, A ROOK AND THREE PAWNS ────────────────────────────── */
+function freshDefender(withRook, pawnFiles) {
   const b = new Array(64).fill('');
   b[4] = 'k';
   if (withRook) b[7] = 'r';
-  for (let i = 8; i < 16; i++) b[i] = 'p';
+  (pawnFiles || [0, 1, 2, 3, 4, 5, 6, 7]).forEach(f => { b[8 + f] = 'p'; });
   return b;
 }
-const b17 = freshDefender(true);
-const out17 = G.applyDefenderPos(b17, 'b', 17);
-check('a 17 really castles on the board', out17.castled === true && b17[6] === 'k' && b17[5] === 'r',
-      'king to g8, rook to f8, e8 empty');
+const F = { f7: 13, g7: 14, h7: 15, g8: 6, f8: 5, e8: 4 };
+
+const b18 = freshDefender(true);
+const o18 = G.applyDefenderPos(b18, 'b', 18);
+check('an 18 castles the king', o18.castled === true && b18[F.g8] === 'k' && !b18[F.e8]);
+check('…and the rook hooks around to f8', o18.rook === true && b18[F.f8] === 'r');
+check('…and three pawns stand in front of him', o18.shield === 3 &&
+      b18[F.f7] === 'p' && b18[F.g7] === 'p' && b18[F.h7] === 'p');
+check('…and the chain never marches a shield pawn away',
+      b18[F.f7] === 'p' && b18[F.g7] === 'p' && b18[F.h7] === 'p',
+      'the shield is frozen before the chain runs');
+
 const b16 = freshDefender(true);
-check('a 16 leaves the king on his square', G.applyDefenderPos(b16, 'b', 16).castled === false && b16[4] === 'k');
+const o16 = G.applyDefenderPos(b16, 'b', 16);
+check('a 16 tucks the king in ALONE', o16.castled === true && b16[F.g8] === 'k');
+check('…with NO rook — it is still on h8', o16.rook === false && b16[7] === 'r' && !b16[F.f8]);
+check('…and NO shield claimed', o16.shield === 0);
+
+const b15 = freshDefender(true);
+check('a 15 leaves the king on e8', G.applyDefenderPos(b15, 'b', 15).castled === false && b15[F.e8] === 'k');
+
+/* the shield is BUILT, not just kept: three center pawns walk across to the king */
+const bPull = freshDefender(true, [2, 3, 4]);          // c7 d7 e7 only
+const oPull = G.applyDefenderPos(bPull, 'b', 20);
+check('a short muster PULLS pawns across to make the shield',
+      oPull.shield === 3 && bPull[F.f7] === 'p' && bPull[F.g7] === 'p' && bPull[F.h7] === 'p',
+      'three center pawns became the shield');
+check('…and it moved them rather than inventing them',
+      bPull.filter(x => x === 'p').length === 3, 'still exactly three pawns on the board');
+
+/* not enough pawns: report the truth, do not fake a shield */
+const bThin = freshDefender(true, [0]);                 // one pawn, on a7
+const oThin = G.applyDefenderPos(bThin, 'b', 20);
+check('one pawn buys a shield of one, not of three', oThin.shield === 1,
+      'shield of ' + oThin.shield + ' — a roll cannot conjure material the muster did not buy');
+
 const noRook = freshDefender(false);
 const nr = G.applyDefenderPos(noRook, 'b', 20);
-check('with no rook the roll is spent on the chain, not swallowed', nr.castled === false && nr.chain > 0,
-      'chain of ' + nr.chain);
+check('with no rook the king still castles and still gets his shield',
+      nr.castled === true && nr.rook === false && nr.shield === 3);
+
+/* the g-square can be occupied by the muster — then there is no castle at all */
+const blocked = freshDefender(true);
+blocked[F.g8] = 'n';
+check('a knight on g8 blocks the castle rather than overwriting itself',
+      G.applyDefenderPos(blocked, 'b', 20).castled === false && blocked[F.g8] === 'n');
 
 /* ── 3. THE WIRING — his 2026-08-11 answer: the POSITION die, and only that ─────────── */
 const call = /applyDefenderPos\(\s*board\s*,\s*[^,]+,\s*([A-Za-z0-9_.]+)\s*\)/.exec(src);
@@ -84,11 +131,17 @@ check('the MATERIAL die has no path to it', !/applyDefenderPos\([^)]*dMat/.test(
 check('castling is the DEFENDER\'s alone — the attacker\'s half cannot reach it',
       !/posCastles/.test(slice('function applyAttackerPos', 'function applyDefenderPos')));
 
-/* ── 4. THE ROLL SCREEN SAYS THE SAME NUMBER AS THE CODE ────────────────────────────── */
-check('the how-it-works screen states 17, not a stale 18', /Roll 17 or better on defense/.test(src),
-      'the page and the rule agree');
-check('no bare 18 survives as a top-band threshold', !/die\s*>=\s*18|Pos\s*>=\s*18/.test(src),
-      'every reader goes through posTop()');
+/* ── 4. THE ROLL SCREEN SAYS THE SAME NUMBERS AS THE CODE ───────────────────────────── */
+check('the how-it-works screen states BOTH bands',
+      /<b>16 or better<\/b> tucks your\s+king into the corner/.test(src) &&
+      /<b>18 or better<\/b> brings his rook around/.test(src),
+      'the page and the rule agree, on both halves of it');
+check('the roll screen distinguishes a full castle from a king alone',
+      /rook hooks around/.test(src) && /no rook, no shield/.test(src),
+      'a 16 and an 18 no longer read identically');
+check('no bare threshold survives outside the two constants',
+      !/die\s*>=\s*1[5-9]|Pos\s*>=\s*1[5-9]/.test(src),
+      'every reader goes through posTop() / posCastles() / posCastleFull()');
 
 /* ── report ─────────────────────────────────────────────────────────────────────────── */
 console.log('\n=== MARCHLAND — HIS DICE RULES ===\n');

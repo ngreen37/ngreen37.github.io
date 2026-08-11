@@ -981,10 +981,20 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    real content width and orphaned Academy on a row of its own; four doors want to read as
    a set, and 2x2 is the honest fallback. (Content width varies with the docked rail, so
    "it fits at 1280" is not something to design around.) */
-/* ⚑ THREE ACROSS SINCE 2026-08-10, because there are SIX doors now (Find Your Rating and
-   Notation Blitz joined). Four columns would have left two orphans on a second row and the
-   set would stop reading as a set — the same defect the 2x2 phone rule below exists to fix,
-   one breakpoint up. Three is two clean rows of three. */
+/* ⚑ THREE ACROSS SINCE 2026-08-10. It went to three when the grid reached six doors (Find
+   Your Rating and Notation Blitz joined); four columns would have left two orphans on a
+   second row and the set would stop reading as a set — the same defect the 2x2 phone rule
+   below exists to fix, one breakpoint up.
+
+   ⚠ THERE ARE FIVE DOORS NOW (2026-08-11 — Notation Blitz came off this page), so this is
+   3 + 2 with one empty cell rather than the two clean rows of three it was written for.
+   Three is still the right count: 2-across would put a lone card on a third row, which is
+   the orphan problem again and worse. Kept as an explicit `repeat(3, ...)` rather than
+   `auto-fit` so the row does not silently re-column itself the next time a door comes or
+   goes — the column count is a decision, not a side effect.
+   ⭐ This paragraph said "SIX doors now" for the length of one deploy after there were five.
+   A comment that states a count is a comment that goes stale; it was caught by a live check
+   grepping for the removed door's NAME, which is the only reason anybody noticed. */
 .mc-doors { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-3, 12px); margin: 0 0 var(--space-7, 44px); }
 /* ⚠ 2x2 GOES ALL THE WAY DOWN — there is no 1-up breakpoint, and that is the point

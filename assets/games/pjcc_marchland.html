@@ -218,8 +218,9 @@
       rook 5, bishop or knight 3, pawn 1. Kings are free — they always turn up. The defender gets
       four points of home ground on top.<br><br>
       <b>4. Position places it.</b> A high roll advances the attacker's pawns; a high roll digs the
-      defender's into a chain their neighbors defend. Roll 17 or better on defense and your
-      king castles.<br><br>
+      defender's into a chain their neighbors defend. On defense, <b>16 or better</b> tucks your
+      king into the corner &mdash; and <b>18 or better</b> brings his rook around and three pawns
+      with him.<br><br>
       <b>5. Twenty seconds against fifteen.</b> Two clocks, and only the side to move is burning
       one. Checkmate takes the ground outright. If the <i>attacker's</i> clock runs out the attack
       failed; if the <i>defender's</i> does, the ground changes hands. A draw goes to the defender —
@@ -425,23 +426,41 @@ function matBudget(die, gar, isDefender) {
    a chain. ⚠ A defender's pawn only moves if a pawn beside it stays home to defend it —
    otherwise a high roll would loosen the position it is supposed to be strengthening.
 
-   CASTLING — his rule exactly: "within three points of maximum", so 17, 18, 19 or 20, and
-   only for the DEFENDER. It needs a rook to castle with; with no rook the roll is spent
-   on the chain instead, which is stated on the roll screen rather than silently dropped.
-   ⚠ This shipped at >= 18 on 2026-08-08 and that was off by one: within three points of a
-   maximum of 20 is 17, not 18. Corrected 2026-08-11 when he restated the rule. It moves the
-   defender's castling rate from 15% to 20%, which is why the sim gets re-run after.
+   CASTLING — ⚑ GRADED, NOT ON/OFF, as of 2026-08-11. His words:
 
-   ⚑ ONE NUMBER, NOT TWO. The top band is the same band in both chairs — it is what buys the
-   attacker a pawn's SECOND rank and the defender a CASTLE — so it is `POS_TOP` in one place
-   and every reader of it goes through `posTop()`. It was typed as a bare 18 in three spots
-   before, which is exactly how his 17 would have half-landed. Moving both also keeps the
-   correction BALANCED: lifting only the castling roll would hand the defender a gift and
-   walk the attacker's success rate out of the 40-60% band on its own. */
-var POS_TOP = 17;                                              // 20 - 3, inclusive: his rule
+     "within TWO of max, the defender gets the rook that hooks around. within four or three
+      of max, they don't get the rook. Similarly for the three pawns that typically protect
+      the castled king."
+
+   So one roll now buys one of three outcomes instead of yes/no:
+
+     1-15   nothing. The roll is spent on the pawn chain.
+     16-17  THE KING ALONE tucks into the corner. No rook, no shield. (within four/three)
+     18-20  THE FULL CASTLE — the rook hooks around to f, and three pawns stand in front
+            of him. (within two)
+
+   ⭐ WHY THIS IS A BETTER RULE THAN THE ONE IT REPLACES, and worth keeping: a castle is not
+   one thing, it is a king in a corner PLUS a rook that got activated PLUS an intact shield.
+   Splitting it means a good roll and a great roll no longer buy the identical fortress — and
+   a king on g8 with nothing around him is a real, readable middle outcome rather than a
+   consolation prize.
+
+   ⚠ HISTORY, because this number has moved twice and the next reader deserves the trail:
+   it shipped 18-20 on 08-08 under a comment claiming it was "within three of maximum"; that
+   was corrected to 17-20 on 08-11 when he restated the rule; then he refined the rule itself
+   the same day into the two bands above. His note on it: "I know I moved the dice metric a
+   tick, but it's a work in progress." Do not treat these numbers as settled.
+
+   ⚠ THE ATTACKER'S SECOND RANK RIDES `POS_TOP`, which is now 18. That is deliberate: "within
+   two of maximum" is the top-reward band in BOTH chairs, so the two sides stay mirrored and
+   there is still exactly one constant for it. Only the DEFENDER has the wider 16-17 band,
+   because only the defender's reward is the one he split. */
+var POS_CASTLE = 16;                                           // within FOUR of max: the king moves
+var POS_TOP = 18;                                              // within TWO of max: the full reward
 function posSteps(die) { return Math.floor((die - 1) / 5); }   // 0,1,2,3
 function posTop(die) { return die >= POS_TOP; }                // the top band, either chair
-function posCastles(die) { return posTop(die); }               // the defender's half of it
+function posCastles(die) { return die >= POS_CASTLE; }         // the king tucks in at all
+function posCastleFull(die) { return die >= POS_TOP; }         // …with his rook and his shield
 
 /* ── THE MUSTER ────────────────────────────────────────────────────────────────
    A point budget spent on real chess material at real chess value. The king is free
@@ -518,24 +537,59 @@ function applyAttackerPos(b, side, die) {
   return moved;
 }
 function applyDefenderPos(b, side, die) {
-  var out = { chain: 0, castled: false };
+  var out = { chain: 0, castled: false, rook: false, shield: 0 };
   var dir = side === 'w' ? -8 : 8;
   var home = side === 'w' ? 6 : 1;                 // the pawns' own second rank, as a ROW
+  var pawnCh = side === 'w' ? 'P' : 'p';
+  /* Squares the pawn chain must not touch. A castled king's shield is pawns that have NOT
+     moved — if the chain then marched one of them up the board the roll would have handed
+     him a shield and taken it away in the same breath. */
+  var frozen = {};
   /* CASTLING FIRST — it needs the back rank the chain never touches, and if it happens
      the king is behind a corner the chain is not defending. */
   if (posCastles(die)) {
     var kFrom = side === 'w' ? 60 : 4;
     var rook = side === 'w' ? 'R' : 'r', king = side === 'w' ? 'K' : 'k';
     var back = side === 'w' ? 56 : 0;
-    /* kingside if anything rook-shaped is on the back rank; the two squares it lands on
-       must be clear, which they are unless the muster filled the whole rank */
     var gSq = back + 6, fSq = back + 5;
-    var haveRook = -1;
-    for (var s = back; s < back + 8; s++) if (b[s] === rook) { haveRook = s; break; }
-    if (haveRook >= 0 && !b[gSq] && !b[fSq] && b[kFrom] === king) {
-      b[kFrom] = ''; b[haveRook] = '';
-      b[gSq] = king; b[fSq] = rook;
+    /* ── BAND ONE (16+): THE KING MOVES, AND THAT IS ALL THAT IS GUARANTEED ──
+       ⚠ The g-square can be occupied — the muster fills the back rank from the center out,
+       so a knight or a bishop may already be standing there. No square, no castle. */
+    if (b[kFrom] === king && !b[gSq]) {
+      b[kFrom] = ''; b[gSq] = king;
       out.castled = true;
+
+      /* ── BAND TWO (18+): THE ROOK HOOKS AROUND ──
+         Kingside if anything rook-shaped is on the back rank. Still conditional on there
+         BEING a rook — a roll cannot conjure material the muster did not buy. */
+      if (posCastleFull(die) && !b[fSq]) {
+        var haveRook = -1;
+        for (var s = back; s < back + 8; s++) if (b[s] === rook) { haveRook = s; break; }
+        if (haveRook >= 0) { b[haveRook] = ''; b[fSq] = rook; out.rook = true; }
+      }
+
+      /* ── BAND TWO (18+): THE THREE PAWNS THAT TYPICALLY PROTECT A CASTLED KING ──
+         f, g and h on the pawns' own rank. A pawn already standing there is kept and frozen;
+         an empty one is filled by pulling the pawn FURTHEST from the king across, because
+         the far side of the board is where a pawn is worth least to a king in this corner.
+         ⚠ It never robs one shield square to fill another (`f2 >= 5` breaks), and it never
+         invents a pawn — a defender who mustered two pawns gets a shield of two and the roll
+         screen says so. */
+      if (posCastleFull(die)) {
+        for (var k = 5; k <= 7; k++) {
+          var sq = home * 8 + k;
+          if (b[sq] === pawnCh) { frozen[sq] = true; out.shield++; continue; }
+          if (b[sq]) continue;                       /* something else is standing on it */
+          var take = -1;
+          for (var f2 = 0; f2 < 5; f2++) {
+            var cand = home * 8 + f2;
+            if (b[cand] === pawnCh && !frozen[cand]) { take = cand; break; }
+          }
+          if (take < 0) continue;                    /* not enough pawns — do not fake it */
+          b[sq] = pawnCh; b[take] = '';
+          frozen[sq] = true; out.shield++;
+        }
+      }
     }
   }
   var steps = posSteps(die);
@@ -544,6 +598,7 @@ function applyDefenderPos(b, side, die) {
   ps.sort(function (x, y) { return Math.abs(3.5 - (x % 8)) - Math.abs(3.5 - (y % 8)); });
   for (var i = 0; i < ps.length && moved < steps; i++) {
     var from = ps[i], to = from + dir, f = from % 8;
+    if (frozen[from]) continue;                      /* a shield pawn stays where it stands */
     if (to < 0 || to > 63 || b[to]) continue;
     /* ⚠ THE WHOLE POINT: it only steps up if a NEIGHBOR STAYS HOME TO DEFEND IT. A row of
        pawns that all march is looser than the row it started as, which would make a high
@@ -553,7 +608,11 @@ function applyDefenderPos(b, side, die) {
       var nf = f + d;
       if (nf < 0 || nf > 7) continue;
       var guard = home * 8 + nf;
-      if (b[guard] === (side === 'w' ? 'P' : 'p') && ps.indexOf(guard) >= i) defended = true;
+      /* ⚠ A FROZEN SHIELD PAWN IS THE BEST GUARD ON THE BOARD — it is guaranteed never to
+         move. Without this clause the `indexOf(guard) >= i` test would reject it whenever it
+         happened to sort earlier, and a castled king's own shield would stop counting as
+         cover for the pawn beside it. */
+      if (b[guard] === pawnCh && (frozen[guard] || ps.indexOf(guard) >= i)) defended = true;
     }
     if (!defended) continue;
     b[to] = b[from]; b[from] = '';
@@ -733,7 +792,10 @@ function beginBattle(from, to, playerAttacks) {
     ' home ground = <b>' + dBud + '</b> points<br>' +
     '<b>' + dPos + '</b> position &middot; ' +
     (posCastles(dPos)
-      ? (dHasRook ? 'king castles' : 'castling rolled, but no rook to castle with')
+      ? (posCastleFull(dPos)
+          ? (dHasRook ? 'king castles, rook hooks around, pawns in front'
+                      : 'king castles with a pawn shield &mdash; no rook to bring')
+          : 'king tucks into the corner &mdash; no rook, no shield')
       : (dSteps ? dSteps + ' pawn' + (dSteps > 1 ? 's' : '') + ' in a defended chain' : 'pawns flat on their rank'));
   paintArmy($('att-army'), aArmy, attGlyph);
   paintArmy($('def-army'), dArmy, defGlyph);

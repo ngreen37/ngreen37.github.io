@@ -628,7 +628,8 @@ the time? We'll hash it out as we go - I'm not too worried about it."*
 
 Live now: two d20 a side (material · position) · attacker 20s vs defender 15s on **two** clocks ·
 the position die advances the attacker's pawns and digs the defender's into a defended chain ·
-castling for the defender on **17-20** · **the attacker wins by checkmate or not at all**.
+**castling is GRADED** — 16-17 tucks the king into the corner alone, 18-20 brings his rook around
+and three pawns with him · **the attacker wins by checkmate or not at all**.
 Tune it with `npm run sim:marchland`, which plays engine-vs-engine battles and sweeps the attacker's
 material edge against his 40-60% band.
 
@@ -659,12 +660,23 @@ material edge against his 40-60% band.
 3. **"How protected the defender's pawns are"** — 0-3 pawns step onto squares a neighbor still defends,
    i.e. a real chain. A pawn only moves if one beside it stays home to guard it; otherwise a high
    "protection" roll would loosen the position it is meant to strengthen.
-4. **Castling at 17-20**, defender only, kingside, and only with a rook to castle with. With no rook the
-   roll is spent on the chain and the roll screen says so rather than dropping it silently.
-   ⚑ **AND IT IS THE POSITION DIE ONLY — confirmed by him 2026-08-11** (*"only the position dice
-   for the castling"*), which is how it was already wired. Both his rules are a gate now rather
-   than a comment: **`npm run test:marchland`**, 15 checks, and it fails on the old 18.
-   ⚠ **CORRECTED 2026-08-11 — it shipped at 18-20 and that was off by one.** He restated the rule
+4. **Castling — ⚑ GRADED as of 2026-08-11, and this is the current rule.** His words: *"within TWO
+   of max, the defender gets the rook that hooks around. within four or three of max, they don't
+   get the rook. Similarly for the three pawns that typically protect the castled king."* So:
+   **16-17 → the king tucks into the corner ALONE** · **18-20 → plus the rook hooks around to f,
+   plus three pawns stand in front of him.** Defender only, kingside, and the rook clause still
+   needs a rook — a roll cannot conjure material the muster did not buy. A short muster gets a
+   shield of however many pawns it has, and the roll screen says which of the three outcomes
+   happened rather than printing "king castles" for all of them.
+   ⭐ **The shield pawns are FROZEN before the chain runs** — otherwise the same roll would hand
+   the king a shield and then march it up the board.
+   ⚑ **POSITION DIE ONLY — confirmed by him 2026-08-11** (*"only the position dice for the
+   castling"*), which is how it was already wired. His rules are a gate rather than a comment:
+   **`npm run test:marchland`**, 29 checks. **Re-measured after the change: 48.0% of attacks fail
+   at 150 battles (±8), inside his 40-60% band.** ⚠ At 60 battles the same build measured 38.3%
+   and 45.0% on two runs — *the band check is noisy at N=60; raise N before believing a failure.*
+   ⚠ His own note: *"I know I moved the dice metric a tick, but it's a work in progress."*
+   ⚠ **SUPERSEDED HISTORY — it shipped at 18-20 and that was off by one.** He restated the rule
    ("*within 3 points of maximum*") and re-reading it settles it: within three points of a maximum
    of **20** is **17**, not 18. The same band buys the attacker a pawn's second rank, so both moved
    together — lifting only the defender's would have handed the defense a free 5% and walked the
