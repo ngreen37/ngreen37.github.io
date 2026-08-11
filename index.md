@@ -358,6 +358,47 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
     <b>Academy</b>
     <small>Start at how the pieces move.</small>
   </a>
+  {%- comment -%} ══ TWO MORE THINGS TO DO, AND THEY ARE THE TWO FASTEST (2026-08-10) ═══════
+       Nate: "think of more actionable items people will want to click right away."
+
+       Both of these were already built and neither was on this page. They earn the slots for
+       the same reason Play Now leads: they are things a stranger can FINISH, with no account,
+       in about a minute. Everything else on this page is a room you enter; these two are
+       questions you get an answer to.
+
+       ⚠ THE GRID IS SIX NOW AND THAT IS WHY IT WENT TO THREE COLUMNS. Four across plus two
+       orphans is a row and a half — the set stops reading as a set, which is exactly the
+       defect the 2x2 phone rule was written to fix. Three across is two clean rows, and the
+       phone stays 2x2x2. {%- endcomment -%}
+  <a class="mc-door" href="{{ '/rating/' | relative_url }}">
+    <span class="mc-door-ico" aria-hidden="true">&#9878;&#xFE0E;</span>
+    <b>Find Your Rating</b>
+    <small>Six positions, then a seat that fits.</small>
+  </a>
+  {%- comment -%} ⚑ AND THE PREVIEW HE ASKED FOR, INSIDE THE DOOR RATHER THAN BESIDE IT
+       ("a little preview box of Notation Blitz — a static image would be fine").
+
+       ⭐ IT IS MARKUP, NOT AN IMAGE, and that is cheaper in every direction that matters: no
+       asset to generate, nothing to re-cut when the board tokens move, no extra request, no
+       layout shift, and it reads correctly at any size because it is four divs. A screenshot
+       of a game is a picture of the game as it looked the day somebody took it.
+
+       What it shows is the game's actual question in one frame: a lit square and the name of
+       it. That IS Notation Blitz — you are told a square and you find it, or shown one and you
+       name it. `aria-hidden` because it is a picture of the game, not a control; the card's
+       own label is what a screen reader reads. {%- endcomment -%}
+  <a class="mc-door mc-door--blitz" href="{{ '/games/notation-run/' | relative_url }}">
+    <span class="nb-peek" aria-hidden="true">
+      <span class="nb-grid">
+        <i></i><i class="dk"></i><i></i>
+        <i class="dk"></i><i class="lit">&#9822;&#xFE0E;</i><i class="dk"></i>
+        <i></i><i class="dk"></i><i></i>
+      </span>
+      <span class="nb-call">e4</span>
+    </span>
+    <b>Notation Blitz</b>
+    <small>Name the square before the clock does.</small>
+  </a>
 </div>
 
 {%- comment -%} THE HONEST STRIP — three things that are TRUE and that no other free chess site
@@ -379,6 +420,13 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   </span>
   <span class="mc-world-arw" aria-hidden="true">&rarr;</span>
 </a>
+
+{%- comment -%} The quiet one. See `.mc-support` in the stylesheet at the foot of this file for
+     why it is a sentence and not a button, and why it is last. {%- endcomment -%}
+{% if site.patreon_url and site.patreon_url != '' %}
+<p class="mc-support">Everything here is free and stays free.
+  <a href="{{ site.patreon_url }}" target="_blank" rel="noopener">Back it on Patreon</a> if you want to help it grow.</p>
+{% endif %}
 
 {% comment %} ══ THE BLOG CAME OFF, THE LAMP STAYED (2026-08-04) ═══════════════════════════
      Nate: "move the blog off the home page — keep the working lamp."
@@ -843,7 +891,11 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    real content width and orphaned Academy on a row of its own; four doors want to read as
    a set, and 2x2 is the honest fallback. (Content width varies with the docked rail, so
    "it fits at 1280" is not something to design around.) */
-.mc-doors { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+/* ⚑ THREE ACROSS SINCE 2026-08-10, because there are SIX doors now (Find Your Rating and
+   Notation Blitz joined). Four columns would have left two orphans on a second row and the
+   set would stop reading as a set — the same defect the 2x2 phone rule below exists to fix,
+   one breakpoint up. Three is two clean rows of three. */
+.mc-doors { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-3, 12px); margin: 0 0 var(--space-7, 44px); }
 /* ⚠ 2x2 GOES ALL THE WAY DOWN — there is no 1-up breakpoint, and that is the point
    (2026-08-04). The four doors used to stack single-file below 520px, which cost 781px of a
@@ -922,12 +974,18 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    TASTE — 0.88 is the obvious "soften it a little" value and it measures 4.32:1, a real AA
    failure on the one card the whole page points at. 0.90 is 4.45 and still short. 0.94 is
    4.68. Do not turn it down. */
+/* ⚑ SMALLER, 2026-08-10 (Nate: "make the green Play Now button smaller"). Padding 24/22/26
+   → 18/18/20, the title 1.5rem → 1.3rem, the icon 32 → 26. All four of the ways it is MORE
+   than a paper door survive — it is still the only green thing, still bigger, still the only
+   one with an arrow, still above the rest — which is the line that must not be crossed. Picked
+   from a render of the real page, not from arithmetic: at 1.15rem the title stops out-reading
+   the four titles below it and the hero loses its anchor. */
 .mc-door.mc-lead { background: var(--fd-go); border-color: var(--fd-go); color: #ffffff;
-  padding: 24px 22px 26px; box-shadow: 0 10px 26px rgba(46, 125, 71, 0.22); }
+  padding: 18px 18px 20px; box-shadow: 0 8px 22px rgba(46, 125, 71, 0.2); }
 /* the paper doors wear a wood hairline along the top; on the green one it would read as mud */
 .mc-lead::before { background: rgba(255, 255, 255, 0.55); opacity: 0.8; }
-.mc-lead .mc-door-ico { color: #ffffff; font-size: 32px; margin-bottom: 12px; }
-.mc-lead > b { color: #ffffff; font-size: 1.5rem; letter-spacing: -0.01em; margin-bottom: 6px; }
+.mc-lead .mc-door-ico { color: #ffffff; font-size: 26px; margin-bottom: 8px; }
+.mc-lead > b { color: #ffffff; font-size: 1.3rem; letter-spacing: -0.01em; margin-bottom: 5px; }
 .mc-lead > small { color: rgba(255, 255, 255, 0.94); font-size: 0.9rem; }
 /* the lead card has no neighbors to line up with, so it keeps a tight art block */
 .mc-lead .mc-door-ico { min-height: 0; }
@@ -941,6 +999,48 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mc-lead:hover .mc-lead-arw { transform: translateX(4px); }
 /* the title runs under the arrow at narrow column widths without this */
 .mc-lead > b, .mc-lead > small { padding-right: 26px; }
+
+/* ══ THE NOTATION BLITZ PEEK (2026-08-10) ═══════════════════════════════════════════
+   Four divs standing in for a screenshot, for the reasons in the markup above. It takes the
+   `.mc-door-ico` slot, so the card lines up with its five neighbors without a single override
+   to the grid. ⚠ The knight carries U+FE0E — without it a browser may paint it from the color
+   emoji font and `color` would silently do nothing to it ([[text-clip-glyph-technique]]). */
+/* ⚠ min-height 71px AND margin-bottom 10px, the SAME two numbers as `.mc-door-ico` above.
+   The peek takes that slot, and without them the Blitz card's title sat visibly higher than
+   the five beside it — the row lines up on the art block, not on the top of the card. That is
+   the identical reason `.mc-door-ico` was pinned to 71px in the first place. */
+.nb-peek { display: flex; align-items: center; gap: 9px; min-height: 71px; margin-bottom: 10px; }
+.nb-grid { display: grid; grid-template-columns: repeat(3, 13px); grid-auto-rows: 13px;
+  border-radius: 3px; overflow: hidden; box-shadow: 0 1px 3px rgba(30, 35, 44, 0.18); }
+/* ⚠ THE PARK TABLE STANDARD, not two colors picked to look nice here. `--chess-lt` and
+   `--chess-dk` are the site's one board palette (_pjcc-22-chess-canon.scss) and every new
+   board is supposed to read from them — a third set of squares invented on the front door is
+   exactly how a site ends up with three chessboards. [[chess-visual-canon]] */
+.nb-grid i { background: var(--chess-lt, #e9d3a4); }
+.nb-grid i.dk { background: var(--chess-dk, #9c5f33); }
+.nb-grid i.lit { background: var(--fd-go, #2e7d47); color: #fff; font-size: 10px;
+  display: flex; align-items: center; justify-content: center; font-style: normal; }
+/* Share Tech Mono because this IS a transmission-flavored readout — a coordinate, said back
+   to you ([[site-type-system]]: that face MEANS something and is off plain chrome). The
+   tracking is 0.02em, not the 0.08em I first wrote: on a two-character string that reads as
+   "e 4", two things, which is the opposite of what a square name is. */
+.nb-call { font-family: 'Share Tech Mono', ui-monospace, monospace; font-size: 0.95rem;
+  letter-spacing: 0.02em; color: var(--fd-ink-2, #5b6472); }
+.mc-door--blitz:hover .nb-call { color: var(--fd-go, #2e7d47); }
+
+/* ══ THE PATREON LINE (2026-08-10) ═══════════════════════════════════════════════════
+   Nate: "a Patreon link somewhere — not TOO prominent."
+
+   So: no button, no card, no color of its own. One sentence at the very foot, under the door
+   to the world, in the same ink as the small print around it. ⚠ It is deliberately the LAST
+   thing on the page and deliberately not in the doors grid — every other link here sends you
+   further into the site, and this one sends you off it. Something that leaves has to earn its
+   place by being findable, not by being loud. It only renders when `patreon_url` is set. */
+.mc-support { text-align: center; margin: 0 0 var(--space-6, 32px);
+  font-size: 0.84rem; color: var(--fd-ink-3, #7b8492); }
+.mc-support a { color: var(--fd-ink-2, #5b6472); text-decoration: underline;
+  text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.mc-support a:hover, .mc-support a:focus-visible { color: var(--fd-go, #2e7d47); }
 
 /* ══ THE GAUNTLET DOOR, IN THE BOX (2026-08-04) ═══════════════════════════════════
    The LOOK is _sass/_pjcc-21-gauntlet-door.scss and nothing here touches it — that partial

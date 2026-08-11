@@ -76,12 +76,12 @@ against a fixed pool always does — the number stops meaning much above ~1700.*
 - [x] Take **Follow the Dog** and **Chess City** off the workbench and give them links the same way.
 
 **FRONT DOOR**
-- [ ] Make the green **Play Now** button **smaller**; think of **more actionable items people will want to click right away.**
-- [ ] A **Patreon** link somewhere — *"not TOO prominent."*
-- [ ] A little **preview box of Notation Blitz** — moving if it is cheap, *"a static image would be fine."*
+- [x] Make the green **Play Now** button **smaller**; think of **more actionable items people will want to click right away.**
+- [x] A **Patreon** link somewhere — *"not TOO prominent."*
+- [x] A little **preview box of Notation Blitz** — moving if it is cheap, *"a static image would be fine."*
 
 **REACH**
-- [ ] **Socials, all reserved:** Instagram `chessWild_official` · TikTok `chessWild.com` · YouTube `ChessWild_Official` · X `@real_ChessWild` · Reddit `u/chesswild_official` · Pinterest `chesswild_official`. *"What is the best way to add these to the site?"*
+- [x] **Socials, all reserved:** Instagram `chessWild_official` · TikTok `chessWild.com` · YouTube `ChessWild_Official` · X `@real_ChessWild` · Reddit `u/chesswild_official` · Pinterest `chesswild_official`. *"What is the best way to add these to the site?"*
 - [x] **princessandthejourneytochesscity.com → the PJCC website**, and **mcpuppystudios.com → the revamped Projects/Studio page**.
   **⚑ DIAGNOSED + WRITTEN UP 2026-08-10 — the repo side is done; the last step is yours (Squarespace).**
   Probed both: each one 301s to `https://chesswild.com/` today. That redirect is **GitHub
