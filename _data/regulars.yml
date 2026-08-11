@@ -1,0 +1,55 @@
+# ══════════════════════════════════════════════════════════════════════════════════════
+# THE PARK TABLES REGULARS — the bench, as DATA
+#
+# ⚠ THIS FILE IS NOT THE SOURCE OF TRUTH. `BOTS` in games/park-tables/index.html is. This
+# exists so a Jekyll page can SAY something about the bench without a third hand-typed copy
+# of it appearing on the site — the front door prints the number of open seats from here.
+#
+# ⚠ IT IS GATED. `npm run test:regulars` reads the real BOTS object out of the Park Tables
+# page and fails if these rows disagree with it on name, rating, or which seats are locked.
+# So this cannot silently drift; it can only be wrong loudly. Change the bench, run the gate,
+# and it will tell you exactly which row to fix.
+#
+# `open: false` = the seat is rendered but locked behind beating somebody first. A locked
+# seat you can see is a reason to keep playing.
+# ══════════════════════════════════════════════════════════════════════════════════════
+
+- key: maxwell
+  name: Maxwell
+  elo: 400
+  open: true
+
+- key: crockett
+  name: Crockett
+  elo: 750
+  open: true
+
+- key: argus
+  name: Argus
+  elo: 1000
+  open: true
+
+- key: auston
+  name: Auston
+  elo: 1200
+  open: true
+
+- key: dad
+  name: The Dad
+  elo: 1400
+  open: true
+
+- key: robert
+  name: Robert
+  elo: 1800
+  open: true
+
+- key: princess
+  name: Princess
+  elo: 2100
+  open: false
+
+- key: ceo
+  name: The CEO
+  elo: 2400
+  open: false

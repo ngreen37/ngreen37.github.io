@@ -559,9 +559,17 @@ Unbuilt things currently say: *Coming Soon · In Development · Building · Not 
 hold your breath! · Sealed / Retired.* Pick **two** — one for *being built*, one for *retired* — and use them
 everywhere. The [[no-excuses-copy]] rule applied to labels.
 
-### 9. Say that the arcade works offline *(ingenuity #20)*
-The service worker warms 18 games and Stockfish; the whole thing runs on a plane. That is genuinely rare and
-the site has never once said so. **One line in the games hall.** Not a prompt — a fact.
+### 9. Say that the arcade works offline — **HALF DONE, and this entry was WRONG** *(ingenuity #20)*
+The service worker warms 18 games and Stockfish; the whole thing runs on a plane.
+⚠ **"The site has never once said so" stopped being true on 2026-08-04 and this line kept saying it** —
+I repeated it back to Nate as a fresh idea on 2026-08-11 and he caught it (*"don't we already say it works
+offline?"*). **The front door says it twice:** `sky_note: Free · No Account Required · Works Offline`
+under the card, and *"It works on a plane. The arcade and the engine cache on first visit."* in the
+honest strip — which now sits beside the Play Now button. **A backlog item that outlives its own fix
+becomes a lie the next reader repeats.**
+**What is genuinely still open: the GAMES HALL never says it.** Grepped 2026-08-11 — no mention of
+offline, caching or a plane anywhere on `/games/`. That is the one room where it matters most, because
+it is the room somebody scrolls before a flight. **One line in the games hall.** Not a prompt — a fact.
 
 ### 10. Reserve the social handles *(the Socials Play — Nate's 20 minutes, not a build)*
 @McPuppyStudios on YouTube, TikTok, Instagram, X, Facebook, Reddit — bio + link, then **silence** until there

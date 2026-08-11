@@ -162,12 +162,69 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
          "The Creator" says what it is — the person who built this will play you — and Park
          Tables already uses exactly that phrase on the table itself ("The Creator plays
          back."), so the door and the room now say the same word. {%- endcomment -%}
+    {%- comment -%} ══ THE LEFT COLUMN BECAME A STACK (2026-08-11) ═════════════════════════
+         Nate: "give me some ideas on how to fill that empty space" → he took two of them, plus
+         a third he may pull ("number 4 sounds good too… although I may pull that one").
+
+         The green door had been capped at 480px the same day, which left the column holding one
+         card and a lot of parchment. What went in is deliberately NOT more doors — the page
+         already has six — but the three things a stranger needs after seeing a green button:
+         WHAT HAPPENS IF I PRESS IT (the regulars), WHERE WAS I (only if they have been here),
+         and WHY TRUST THIS (the true things, moved up from the foot).
+
+         ⚠ THE WRAPPER IS BACK, AND THE NOTE AT THE BOTTOM OF THIS FILE SAID TO READ IT FIRST.
+         It said: "if a second thing ever returns to the left column, read this paragraph before
+         reaching for `display: contents` again." Read. `display: contents` was needed when the
+         board had to slot BETWEEN two children of a copy block; here all four items travel
+         together as one column, so a plain div is correct and `order: -1` on the board is still
+         the entire mobile layout. Nothing about the phone changes. {%- endcomment -%}
+    <div class="mc-lead-col">
     <a class="mc-door mc-lead" href="{{ '/games/park-tables/' | relative_url }}">
       <span class="mc-door-ico" aria-hidden="true">&#9822;</span>
       <b>Play Now</b>
       <small>A person, a park regular, or The Creator.</small>
       <span class="mc-lead-arw" aria-hidden="true">&rarr;</span>
     </a>
+
+    {%- comment -%} ── PICK UP WHERE YOU LEFT OFF (his #4) ──────────────────────────────────
+         Empty and hidden for a stranger; one sentence for somebody who has been here. It reads
+         localStorage DIRECTLY rather than through PJCC — this page loads no profile script, and
+         adding one to the front door to print a number would be a poor trade. Signed in, the
+         profile mirrors the same values into the same keys, so the line is right either way.
+
+         ⚠ It is deliberately BELOW the green door. Above it, the button would move under a
+         returning visitor on every visit as the script fills this in — the one element on the
+         page that must never shift. Below, the only thing it pushes is the small print.
+         ⚠ Wrapped in its own try/catch: a browser with storage denied gets no line, not a dead
+         page ([[down-never-stuck]]). {%- endcomment -%}
+    <p class="mc-resume" id="mc-resume" data-href="{{ '/games/fork-in-the-road/' | relative_url }}" hidden></p>
+
+    {%- comment -%} ── THE REGULARS (his #3) ────────────────────────────────────────────────
+         ⚠ THE COUNT IS DERIVED, NEVER TYPED. It renders from `_data/regulars.yml`, and
+         `npm run test:regulars` reads the real `BOTS` object out of the Park Tables page and
+         fails if the two disagree on names, ratings or which seats are locked. Retyping a
+         roster count into a second file is exactly the trap [[dead-game-links-trap]] describes,
+         and this page is the third place that would have carried one.
+
+         "Right now" is literally true and always will be: the regulars are bots that run in
+         your browser, so they need no server and cannot be away. {%- endcomment -%}
+    {%- comment -%} `where: "open", true` and not a nil test — Jekyll's `where` against nil is
+         the kind of thing that works until it doesn't, so the data file states `open` on every
+         row explicitly rather than leaving it to be inferred from an absent key. {%- endcomment -%}
+    {%- assign open_seats = site.data.regulars | where: "open", true -%}
+    <p class="mc-open"><b>{{ open_seats | size }} regulars are at the tables right now.</b>
+      No account, real clock — they play in your browser, so they are never away.</p>
+
+    {%- comment -%} ── THE HONEST STRIP, MOVED UP (his #2) ──────────────────────────────────
+         These three lines used to close the page out, under the doors. They are PROOFS, and a
+         proof does its work next to the ask — so they now stand beside the green button
+         instead of 1,600px below it. Nothing was reworded. {%- endcomment -%}
+    <ul class="mc-true">
+      <li><b>The chess is real.</b> A perft-verified referee, with Stockfish as a second opinion.</li>
+      <li><b>Every game gets a review.</b> Free, in your browser, forever.</li>
+      <li><b>It works on a plane.</b> The arcade and the engine cache on first visit.</li>
+    </ul>
+    </div>
 
   {%- comment -%} ══ THE BOARD IS THE BUTTON (2026-07-28) ══════════════════════════════════
        Nate: "I love the Board is the Button idea — let's do it, with the risk in mind."
@@ -399,14 +456,13 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
   </a>
 </div>
 
-{%- comment -%} THE HONEST STRIP — three things that are TRUE and that no other free chess site
-     says out loud. Not features; proofs. (FUTURE-IDEAS #9 asked for the offline line for
-     months — this is it.) Anything added here has to survive `npm test`. {%- endcomment -%}
-<ul class="mc-true">
-  <li><b>The chess is real.</b> A perft-verified referee, with Stockfish as a second opinion.</li>
-  <li><b>Every game gets a review.</b> Free, in your browser, forever.</li>
-  <li><b>It works on a plane.</b> The arcade and the engine cache on first visit.</li>
-</ul>
+{%- comment -%} THE HONEST STRIP MOVED INTO THE HERO (2026-08-11, his #2) — it is now in
+     `.mc-lead-col`, beside the green button, which is where a proof belongs. It is NOT
+     duplicated; this is where it used to be, and the note is left standing so nobody
+     re-adds a second copy at the foot. Same three lines, not reworded.
+     (FUTURE-IDEAS #9 asked for the offline line for months — "It works on a plane" is it,
+     and it has been shipping since 2026-08-04. The GAMES HALL still does not say it.)
+     {%- endcomment -%}
 
 {%- comment -%} ONE door to the world — the show is the point of all of this, but it is not
      what a stranger came here to DO. One card, warm, at the foot. {%- endcomment -%}
@@ -871,7 +927,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
      no second column for the card to stretch across, so the width that made it a banner up
      there is just the page's width down here — and a 480px card left-aligned under a
      full-bleed board would read as an offset accident on a tablet. Full width, as before. */
-  .mc-door.mc-lead { max-width: none; }
+  .mc-door.mc-lead, .mc-lead-col { max-width: none; }
   /* the board's own breathing room, now that no gap supplies it — and no title above it
      inside the card, so it carries its own top step instead of borrowing the title's. */
   .mc-board { min-height: 0; padding: 0 0 var(--space-4, 16px); }
@@ -1096,8 +1152,48 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    whole integration. If a door ever opens differently here than in the games hall or inside
    the game, the bug is in the partial, and fixing it fixes all four at once. */
 
-/* THE TRUE THINGS — a list, not cards; facts don't need boxes */
-.mc-true { list-style: none; padding: 0; margin: 0 0 var(--space-7, 44px);
+/* ══ THE LEFT COLUMN, AS A STACK (2026-08-11) ═════════════════════════════════════
+   Four items now: the green door, the resume line, the regulars, the true things. The
+   column is capped at the same 480px as the door so the stack reads as ONE object with a
+   left edge, rather than a button with loose text trailing off to the right of it.
+
+   ⚠ `max-width` again, and for the same reason as the door: a stated `width` on a grid item
+   makes the `fr` column grow to meet it and the board's column pays for it. The cap lives on
+   the WRAPPER now, so the door's own 480 is redundant but kept — it is the rule that has the
+   note explaining the number, and a door that leaves this column still knows its size. */
+.mc-lead-col { max-width: 480px; display: flex; flex-direction: column;
+  gap: var(--space-4, 16px); }
+
+/* THE REGULARS LINE — the answer to "what happens if I press the green thing" */
+.mc-open { margin: 0; color: var(--fd-ink-3); font-size: 0.88rem; line-height: 1.6; }
+.mc-open b { color: var(--fd-ink-2); font-weight: 700; }
+
+/* PICK UP WHERE YOU LEFT OFF — only ever visible to somebody who has been here before.
+   ⚠ `[hidden]` needs the explicit `display:none` because the rule below sets `display`
+   on the same element; a bare `hidden` attribute loses to any display declaration.
+   ⚠ IT IS A BLOCK, NOT A FLEX ROW, and that was a real render bug caught in the preview:
+   as a flex container the bold lead-in, the sentence and the link each became a separate
+   flex ITEM, so "Keep going" wrapped onto a line of its own with an 8px gap punched into
+   the middle of the sentence. This is prose with a link at the end of it — the only layout
+   it wants is the one text already has. */
+.mc-resume { margin: 0; display: block;
+  font-size: 0.88rem; line-height: 1.6; color: var(--fd-ink-3); }
+.mc-resume[hidden] { display: none; }
+.mc-resume b { color: var(--fd-ink-2); font-weight: 700; }
+/* the one link in the stack that is not a door — underlined, because it is prose.
+   ⚠ `nowrap` because the preview put the ARROW ALONE on its own line: "Keep going" fit and
+   the → did not, which reads as a typo rather than a link. The whole call to action moves
+   to the next line together or not at all. */
+.mc-resume a { color: var(--fd-go); font-weight: 700; text-decoration: underline;
+  text-underline-offset: 2px; white-space: nowrap; }
+.mc-resume a:hover { color: var(--fd-go-2); }
+
+/* THE TRUE THINGS — a list, not cards; facts don't need boxes.
+   ⚑ IT LIVES IN THE HERO NOW (2026-08-11). `auto-fit` still does the right thing without a
+   breakpoint: three across when it had the page's full width, one per row in a 480px column,
+   which is what turns it from a footer strip into a column of proofs beside the button.
+   The bottom margin goes — the stack's `gap` owns the spacing here. */
+.mc-true { list-style: none; padding: 0; margin: 0;
   display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-4, 16px); }
 .mc-true li { color: var(--fd-ink-3); font-size: 0.88rem; line-height: 1.6;
   border-left: 2px solid var(--fd-rule); padding-left: 14px; }
@@ -1510,5 +1606,59 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
       door.setAttribute('href', door.getAttribute('href') + '#climb');
     }
   }
+})();
+</script>
+
+<script>
+/* ══ PICK UP WHERE YOU LEFT OFF ══════════════════════════════════════════════════════
+   2026-08-11, his #4: "number 4 may be another great thing that keeps people coming back!"
+   (He also said he may pull or modify it — so it is ONE element, ONE script block, and
+   deleting both leaves the page exactly as it was.)
+
+   WHAT IT SAYS, in priority order, and it says only ONE of them:
+     1. a puzzle rating, if this browser has one — the most specific thing we know;
+     2. otherwise how far along the road to Chess City they are;
+     3. otherwise nothing at all, and the element stays hidden.
+
+   ⚠ IT READS localStorage DIRECTLY, not through PJCC. The front door loads no profile
+   script, and pulling one in just to print a number would cost every first-time visitor a
+   request to tell them something only a returning one can see. Signed in, `pjcc-profile.js`
+   mirrors the server's values into these same two keys on the rooms that do load it, so a
+   player with an account still sees their real number here the moment they have opened a
+   room once. That is the honest limit of it: this line reports what THIS BROWSER knows.
+
+   ⚠ THE WHOLE THING IS IN A try/catch. Safari in private mode throws on localStorage access
+   rather than returning null, and a front door that dies on its own welcome-back line would
+   take the puzzle and the gauntlet door down with it ([[down-never-stuck]]).
+
+   ⚠ NOTHING IS WRITTEN. This only reads. A visitor's progress is not the front door's to
+   touch, and a bug here can therefore cost a rating but never corrupt one. */
+(function () {
+  var el = document.getElementById('mc-resume');
+  if (!el) return;
+  try {
+    var read = function (k) { try { return JSON.parse(localStorage.getItem(k)) || null; } catch (e) { return null; } };
+    var pz = read('pjcc.puzzle.rating.v1');
+    var jr = read('pjcc.fork.journey.v2');
+
+    var html = '';
+    if (pz && typeof pz.rating === 'number' && pz.rating > 0) {
+      var solved = (typeof pz.solved === 'number' && pz.solved > 0) ? pz.solved : 0;
+      html = '<b>Welcome back.</b> Your puzzle rating is ' + Math.round(pz.rating) +
+             (solved ? ' after ' + solved + ' solved' : '') + '.';
+    } else if (jr && typeof jr.step === 'number' && jr.step > 0) {
+      html = '<b>Welcome back.</b> You are ' + jr.step + ' puzzle' + (jr.step === 1 ? '' : 's') +
+             ' along the road to Chess City.';
+    }
+    if (!html) return;                       /* a stranger sees nothing, and nothing moves */
+
+    /* ⚠ THE URL COMES FROM A data- ATTRIBUTE, NOT FROM LIQUID IN THIS SCRIPT. A `{{ ... }}`
+       tag written inside a single-quoted JS string leaves the RAW file unparseable, and the
+       raw file is what `style.check.js` parses to prove every inline script on the site is
+       valid JavaScript. Liquid belongs in the markup, where it has somewhere to stand. */
+    var href = el.getAttribute('data-href') || '/games/fork-in-the-road/';
+    el.innerHTML = html + ' <a href="' + href + '">Keep going &rarr;</a>';
+    el.hidden = false;
+  } catch (e) { /* storage denied — the page is unchanged, which is the correct outcome */ }
 })();
 </script>

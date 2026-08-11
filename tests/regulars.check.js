@@ -1,0 +1,115 @@
+#!/usr/bin/env node
+/* ══════════════════════════════════════════════════════════════════════════════════════
+   THE REGULARS — _data/regulars.yml vs the REAL bench
+
+   The front door says how many regulars are at the tables. That number is DERIVED from
+   `_data/regulars.yml`, and this gate is the only reason the data file is allowed to exist:
+   it reads the actual `BOTS` object out of games/park-tables/index.html and fails if the two
+   disagree. Without it the site would carry a THIRD hand-typed copy of the bench (the game,
+   /rating/, and now the front door) — which is precisely the trap [[dead-game-links-trap]]
+   describes, and the one that has already produced a wrong count on this site once.
+
+   ⚠ The source of truth is BOTS. If this fails, fix the YAML, not the game.
+
+   No YAML dependency: the data file is a flat list of scalar keys and a six-line parser is
+   cheaper and more predictable than adding js-yaml for one file. If regulars.yml ever grows
+   nested structure, this parser must grow with it — it throws rather than guessing.
+   ══════════════════════════════════════════════════════════════════════════════════════ */
+const fs = require('fs');
+const path = require('path');
+
+const ROOT = path.join(__dirname, '..');
+const TABLES = path.join(ROOT, 'games/park-tables/index.html');
+const DATA = path.join(ROOT, '_data/regulars.yml');
+const FRONT = path.join(ROOT, 'index.md');
+
+const results = [];
+function check(label, pass, detail) { results.push({ label, pass: !!pass, detail: detail || '' }); }
+
+/* ── the bench, out of the game ─────────────────────────────────────────────────────── */
+const tablesSrc = fs.readFileSync(TABLES, 'utf8');
+const start = tablesSrc.indexOf('var BOTS = {');
+if (start < 0) throw new Error('regulars.check: `var BOTS = {` not found — the roster moved');
+const end = tablesSrc.indexOf('\n  };', start);
+if (end < 0) throw new Error('regulars.check: could not find the end of the BOTS object');
+const botsBlock = tablesSrc.slice(start, end);
+
+const bots = [];
+const entry = /(\w+):\s*\{([^}]*)\}/g;
+let m;
+while ((m = entry.exec(botsBlock)) !== null) {
+  const body = m[2];
+  const name = /name:\s*'([^']*)'/.exec(body);
+  const elo = /elo:\s*(\d+)/.exec(body);
+  bots.push({
+    key: m[1],
+    name: name ? name[1] : null,
+    elo: elo ? +elo[1] : null,
+    open: !/locked:/.test(body)
+  });
+}
+
+/* ── the data file ──────────────────────────────────────────────────────────────────── */
+const yml = fs.readFileSync(DATA, 'utf8');
+const rows = [];
+for (const raw of yml.split(/\r?\n/)) {
+  const line = raw.replace(/#.*$/, '').trimEnd();
+  if (!line.trim()) continue;
+  const item = /^-\s+(\w+):\s*(.+)$/.exec(line);
+  const pair = /^\s+(\w+):\s*(.+)$/.exec(line);
+  if (item) { rows.push({}); addPair(rows[rows.length - 1], item[1], item[2]); }
+  else if (pair) {
+    if (!rows.length) throw new Error('regulars.check: a key before any list item — the parser cannot read this file');
+    addPair(rows[rows.length - 1], pair[1], pair[2]);
+  } else if (line.trim() !== '---') {
+    throw new Error('regulars.check: line the tiny parser cannot read: ' + JSON.stringify(line));
+  }
+}
+function addPair(o, k, v) {
+  v = v.trim();
+  if (v === 'true') o[k] = true;
+  else if (v === 'false') o[k] = false;
+  else if (/^-?\d+$/.test(v)) o[k] = +v;
+  else o[k] = v.replace(/^['"]|['"]$/g, '');
+}
+
+/* ── the comparison ─────────────────────────────────────────────────────────────────── */
+check('the bench was found in the game', bots.length > 0, bots.length + ' seats in BOTS');
+check('the data file has a row for every seat', rows.length === bots.length,
+      'game ' + bots.length + ' · data ' + rows.length);
+check('the seats are in the same order', rows.map(r => r.key).join() === bots.map(b => b.key).join(),
+      rows.map(r => r.key).join(' · '));
+
+for (let i = 0; i < Math.max(bots.length, rows.length); i++) {
+  const b = bots[i], r = rows[i];
+  if (!b || !r) { check('seat ' + (i + 1) + ' exists on both sides', false, 'missing'); continue; }
+  check('· ' + b.key + ' — name', r.name === b.name, r.name + ' vs ' + b.name);
+  check('· ' + b.key + ' — rating', r.elo === b.elo, r.elo + ' vs ' + b.elo);
+  check('· ' + b.key + ' — ' + (b.open ? 'open' : 'locked'), r.open === b.open,
+        'data says ' + (r.open ? 'open' : 'locked') + ', the game says ' + (b.open ? 'open' : 'locked'));
+}
+
+const openGame = bots.filter(b => b.open).length;
+const openData = rows.filter(r => r.open).length;
+check('the OPEN count agrees — this is the number the front door prints',
+      openGame === openData && openGame > 0, openGame + ' seats playable with no account');
+
+/* ── and the front door must DERIVE it, not type it ─────────────────────────────────── */
+const front = fs.readFileSync(FRONT, 'utf8');
+check('the front door filters the data file for open seats',
+      /site\.data\.regulars\s*\|\s*where:\s*"open",\s*true/.test(front));
+check('…and prints its SIZE rather than a typed number',
+      /open_seats\s*\|\s*size\s*\}\}\s*regulars are at the tables/.test(front));
+check('no hand-typed seat count survives on the front door',
+      !/\b(six|seven|eight|6|7|8)\s+regulars are at the tables/i.test(front),
+      'a number here would go stale the day a seat is added');
+
+/* ── report ─────────────────────────────────────────────────────────────────────────── */
+console.log('\n=== THE REGULARS — the front door vs the real bench ===\n');
+let failed = 0;
+for (const r of results) {
+  if (!r.pass) failed++;
+  console.log('  ' + (r.pass ? '✓' : '✗') + ' ' + r.label + (r.detail ? '   ' + r.detail : ''));
+}
+console.log('\nRESULT: ' + (failed ? 'FAIL (' + failed + ')' : 'PASS (' + results.length + ' checks)') + '\n');
+process.exit(failed ? 1 : 0);
