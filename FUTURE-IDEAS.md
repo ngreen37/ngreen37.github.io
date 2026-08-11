@@ -1447,9 +1447,11 @@ second ten are **ingenuity** (the clever, cheap, memorable stuff).
    A one-line version of it in the games hall would tell a player where they are *in the
    world*, not just in a menu. *(Decide what the map is FOR first — see the section at the
    bottom of this file; reusing a checklist twice just doubles a checklist.)*
-9. **The teachers don't mention what they teach.** Auston runs the only open Academy hall — his
+9. **The teachers don't mention what they teach.** Auston runs the only open Academy hall — her
    character page doesn't say so. One line on each teacher's page ("Auston teaches the
    squares") ties the cast to the arcade for the price of a sentence each.
+   *(⚠ canon check, 2026-08-10: Auston is the SISTER — "she swears she is just a rook", "ten
+   years braver than her big brother". This note and a Park Tables comment both had "his".)*
 
 ### Ingenuity — the cheap, strange, memorable stuff
 

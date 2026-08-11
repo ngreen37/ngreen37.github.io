@@ -388,7 +388,13 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
     // ⚠ DERIVE the count, never type it. There were three regulars when this line was
     //    written and four by the time it shipped (Robert joined as the Expert seat), and
     //    a sentence that says "three" over four buttons is the site telling a small lie.
-    var COUNT = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six'];
+    /* ⚠ AND A DERIVED COUNT STILL NEEDS A TABLE LONG ENOUGH TO SPELL IT. This stopped at
+       "Six", so the moment the bench went to seven seats the fallback kicked in and the
+       page read "7 park regulars" — a digit, mid-sentence, live. Deriving the number was
+       the right fix for the old lie; it just moved the failure into the lookup. Padded well
+       past the bench so the next seat cannot re-open it. */
+    var COUNT = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight',
+                 'Nine', 'Ten', 'Eleven', 'Twelve'];
     var n = Object.keys(BOTS).length;
     app.innerHTML = (bots &&
       '<div class="pt-open-park"><h2 class="pt-h">Play Right Now</h2>' +
@@ -564,10 +570,20 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
      beginner's only option outrated them by 300. Seven seats at 400 · 750 · 1000 · 1400 ·
      1800 · 2100 · 2400 step by 250–400, so there is always a next one rather than a cliff.
 
-     ⚠ AUSTON IS NOT ON THIS BENCH ANY MORE AND THAT WAS NOT MY CALL TO MAKE QUIETLY — he is
-     simply not in the list Nate gave, which named seven seats and filled all of them. He is
-     untouched everywhere else: he still teaches Academy Lesson 1, and putting him back is one
-     line here. Flagged in the session summary rather than buried.
+     ⚑ AUSTON IS BACK, AT 1200 (2026-08-10, Nate: "Add back in Auston, good catch — make
+     that character rated 1200"). She came off the bench the day before only because she was
+     not in the list of seven; it was flagged rather than buried, and this is the answer.
+     1200 is the right seat for her too — it fills the last wide step, between Argus at 1000
+     and The Dad at 1400. Eight seats now: 400 · 750 · 1000 · 1200 · 1400 · 1800 · 2100 · 2400.
+
+     ⚠ HER GLYPH IS ♘ AND THERE WAS EXACTLY ONE CHOICE. Eight seats, six piece types, so the
+     bench has to double somewhere — and the obvious doubling does not work, because these
+     render in an emoji-presentation font where WHITE AND BLACK ARE THE SAME PICTURE. Held
+     side by side at card size, ♖/♜, ♗/♝, ♕/♛ and ♙/♟ are indistinguishable; only ♔ (the
+     CEO's, a crown with a cross) and ♘ (an OUTLINE horse against Crockett's solid one) read
+     as different pieces at all. So Auston's canon rook was unavailable in practice — a
+     second rook would have looked like Robert's. Same family as [[text-clip-glyph-technique]]:
+     ask what actually REACHES the glyph before assuming a variant is a variant.
 
      ⚠ `elo` IS THE ONLY DIAL, and `botDial()` derives skill + blunder rate from it at MOVE
      time. Never hand-set a skill beside a rating — that is exactly how "Medium" came to be
@@ -580,6 +596,8 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
     maxwell:  { name: 'Maxwell',  icon: '♟', diff: 'Beginner', elo: 400,  movetime: 120 },
     crockett: { name: 'Crockett', icon: '♞', diff: 'Easy',     elo: 750,  movetime: 160 },
     argus:    { name: 'Argus',    icon: '♝', diff: 'Casual',   elo: 1000, movetime: 260 },
+    // Auston — back on the bench 2026-08-10 at Nate's rating, filling the 1000→1400 step.
+    auston:   { name: 'Auston',   icon: '♘', diff: 'Steady',   elo: 1200, movetime: 420 },
     // "Father" → "The Dad" (2026-08-10 Nate). Same character, same seat, warmer name.
     dad:      { name: 'The Dad',  icon: '♚', diff: 'Club',     elo: 1400, movetime: 620 },
     // Robert — the Checker Town rival (2026-07-19 Nate), down from 2400 to make room above.
@@ -637,17 +655,29 @@ description: "Free chess in the Checker Town park — sit down with a regular ri
      he actually means: nobody is being policed, a hard game is a hard game, and the number is
      not what the room is for. Every clause below is his; only the address changed.
 
+     ⚑ RE-WORDED THE NEXT DAY, ALSO HIS (2026-08-10): *"I like the cheating line, but 'a
+     harder opponent is still a harder opponent' doesn't read quite right — change it to
+     something like… 'we don't condone cheating in any form, but we welcome any and all
+     challenges'."* His clause is now the opening sentence, near-verbatim.
+
+     ⭐ AND HIS VERSION IS BETTER FOR A REASON WORTH KEEPING. Mine argued FOR the cheating —
+     it told the person who had just been beaten by an engine that this was good for them,
+     which is the one thing they are in no mood to hear. His draws the line first and opens
+     the door second: the house has a position, and it still isn't policing you. A rule can
+     disapprove of something and welcome the person doing it; those are not the same sentence.
+
      ⚠ WHAT IT MUST NOT DO IS PRETEND. It does not say "we detect engines" (we do not), and it
-     does not apologize for that ([[no-excuses-copy]]). It states the rule plainly and moves on.
+     does not apologize for that ([[no-excuses-copy]]). "Nobody is getting thrown out" is the
+     honest half of that — no claim to catch anyone, no threat we could not carry out.
      ⚠ SHOWN IN BOTH LOBBY STATES on purpose. The signed-out gate and the signed-in lobby are
      different renders, and a house rule that only strangers see is not a house rule.
      ⚠ THE WORDING IS HIS TO EDIT — one string, one place. */
   function houseRule(){
     return '<p class="pt-house">' +
-      '<b>Nobody here is checking.</b> Play with an engine if you want to — a harder ' +
-      'opponent is still a harder opponent, and you get better by meeting one. If the rating ' +
-      'is the point, other sites do that better. This one is for dropping the ego, having ' +
-      'fun, and improving in whatever form you find it.</p>';
+      '<b>We don\'t condone cheating in any form — but we welcome any and all challenges.</b> ' +
+      'Nobody here is checking, and nobody is getting thrown out. If the rating is the point, ' +
+      'other sites do that better. This one is for dropping the ego, having fun, and improving ' +
+      'in whatever form you find it.</p>';
   }
 
   function botLoad(){ try { return JSON.parse(localStorage.getItem(BOT_KEY)) || null; } catch (e) { return null; } }
@@ -1541,7 +1571,7 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
 .pt-card:hover { border-color: #F5C518; }
 .pt-card-icon { font-size: 26px; color: #F5C518; }
 .pt-card-t i { font-style: normal; color: #9a7fd4; font-size: 0.78rem; }
-/* the park regulars sit in one tighter row — seven of them since 2026-08-10 */
+/* the park regulars sit in one tighter row — eight of them since 2026-08-10 */
 .pt-bots { margin-top: 4px; }
 .pt-bots .pt-card { flex: 1 1 140px; padding: 11px 14px; }
 .pt-bots .pt-card-icon { font-size: 22px; }

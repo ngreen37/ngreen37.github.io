@@ -108,14 +108,22 @@ check('the Subject Zero ladder is untouched and still credit-keyed',
     `+${hard.delta} (1200) vs +${easy.delta} (400)`);
   check('and an easy one still pays something', easy.delta > 0, '+' + easy.delta);
 
-  // ⚠ THE HINT LOCK
-  const aced = boot().P.settlePuzzle(700, 1);
-  const tried = boot().P.settlePuzzle(700, 0.6);
-  const shown = boot().P.settlePuzzle(700, 0.25);
-  check('aced > solved-after-a-wrong-try > revealed', aced.delta > tried.delta && tried.delta > shown.delta,
-    `${aced.delta} > ${tried.delta} > ${shown.delta}`);
-  check('REVEALING A SOLUTION LOSES RATING — you cannot hint your way up', shown.delta < 0, shown.delta);
-  check('  …but solving it after one wrong move does not punish you', tried.delta >= 0, tried.delta);
+  /* ⚑ A MISS COSTS WHAT A SOLVE PAYS (2026-08-10, Nate: "Misses should DECREASE your score
+     equally"). This is THE assertion for that request, and it is stated at the player's own
+     level because that is where "equally" has a definition: expected = 0.5, so ±k/2.
+     ⚠ It must NOT hold at every rating — a win over a harder puzzle is supposed to pay more
+     than missing one costs, which is the entire reason there is an expected score. Both
+     halves are pinned, or a later "simplification" to a flat ±k would pass the first. */
+  const win = boot().P.settlePuzzle(700, 1);
+  const miss = boot().P.settlePuzzle(700, 0);
+  check('a miss at your own level costs exactly what a solve pays', win.delta === -miss.delta,
+    `+${win.delta} vs ${miss.delta}`);
+  check('  …and a miss is a LOSS, not a smaller win', miss.delta < 0, miss.delta);
+  const hardWin = boot().P.settlePuzzle(1200, 1);
+  const hardMiss = boot().P.settlePuzzle(1200, 0);
+  check('  …but missing a harder puzzle costs less than beating it pays',
+    hardWin.delta > Math.abs(hardMiss.delta), `+${hardWin.delta} vs ${hardMiss.delta}`);
+  check('REVEALING A SOLUTION LOSES RATING — you cannot hint your way up', miss.delta < 0, miss.delta);
 
   // K falls as you settle, or a veteran's rating is noise
   {
@@ -155,8 +163,12 @@ check('the room settles the rating on every solve', /PJCC\.settlePuzzle\(G\.p\.r
    that changed no behavior. Worth keeping as source assertions anyway — they are what
    pins the SCORES to the numbers written in the comment beside them — but they are now
    pointed at the one name the file actually uses. */
-check('the three scores are the ones documented',
-  /const score = earned \? 1 : \(G\.revealed \? 0\.25 : 0\.6\)/.test(FORK));
+check('the room scores a puzzle 1 or 0 — nothing in between',
+  /const score = earned \? 1 : 0;/.test(FORK));
+// and the number the player watches while solving is the one the run already carries,
+// not a fresh localStorage read on every frame
+check('the play screen shows the rating without re-reading storage',
+  /run\.stats\.rating \|\| run\.stats\.rating0/.test(FORK) && /ctx\.fillText\('Rating ' \+ myRating/.test(FORK));
 check('the difficulty dial is DRIVEN by the rating', /run\.diff = ratingToDiff\(pzMove\.after\)/.test(FORK));
 check('the old ±ratchet survives as the no-module fallback',
   /if \(!pzMove\) run\.diff = Math\.max\(1, Math\.min\(10, run\.diff \+ \(earned \? 0\.34 : -0\.7\)\)\)/.test(FORK));
@@ -232,10 +244,22 @@ check('the rating→difficulty map is the inverse of puzzleRating()',
      reporting five names here while seven were shipping. */
   const bots = [...PT.matchAll(/\{ name: '([^']+)',\s*icon: '.',\s*diff: '([^']+)',\s*elo: (\d+)/g)]
     .map(m => ({ name: m[1], diff: m[2], elo: +m[3] }));
-  check('every park regular declares a rating', bots.length === 7,
+  /* ⚑ THE COUNT IS CROSS-CHECKED, NOT HARD-CODED (2026-08-10). It used to assert `=== 7`,
+     which had to be edited by hand the moment Auston came back — and a number a human edits
+     to make a test pass is not a test. Both sides are now READ from the file by two
+     unrelated patterns: the seat KEYS in the BOTS object, and the seats the roster regex
+     above actually parsed. They can only agree if the regex saw every seat, which is the
+     exact failure this check exists to catch. */
+  const seatKeys = (PT.match(/var BOTS = \{[\s\S]*?\n  \};/) || [''])[0]
+    .split('\n').filter(l => /^    \w+:\s*\{/.test(l)).length;
+  check('the roster regex sees every seat in the BOTS object',
+    seatKeys >= 4 && bots.length === seatKeys, bots.length + ' parsed of ' + seatKeys + ' declared');
+  check('every park regular declares a rating', bots.length >= 8,
     bots.map(b => b.name + ' ' + b.diff + ' ' + b.elo).join(' · '));
+  // ⚠ [^'] here too, for the same reason as the roster pattern above — `\w+` would skip
+  //   "The Dad" and "The CEO", so a hand-set skill on either would sail through.
   check('…and none of them hand-sets skill or blunder any more',
-    !/\{ name: '\w+',[^}]*\b(skill|blunder):/.test(PT),
+    !/\{ name: '[^']+',[^}]*\b(skill|blunder):/.test(PT),
     'the rating is the only dial; skill and blunder are derived from it');
   /* ⚠ derived INSIDE the call that uses the bridge. Read at parse time it would work today
      and break silently the day a `defer` or a reorder lands on the head — every seat falling

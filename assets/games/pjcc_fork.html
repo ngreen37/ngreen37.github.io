@@ -1572,21 +1572,30 @@ function puzzleSolved(){
      whole reason to have one, and it makes the difficulty a number you can compare with
      the Park Tables and with the Gauntlet roster.
 
-     THREE SCORES, and the middle one is the one that matters:
-       1     aced — solved with no wrong move and no reveal
-       0.6   solved after a wrong try. You still FOUND it; a wrong attempt is how
-             anybody solves a hard puzzle, and scoring it 0 would teach people to
-             guess nothing and reveal instead.
-       0.25  revealed. Not a loss — you finished it — but the deepest hint tier plays
-             the winning move FOR you (the one honest asterisk on "1,000 solved"), so
-             scoring a reveal as a win would let anyone hint their way to Omega.
-
      The dial is re-read from the rating every puzzle, so a run that goes badly gets
-     easier immediately rather than at the next visit. */
-  /* ⚑ A HINTED SOLVE NOW SCORES 0.6, not 1 — the rating and the road agree about what
-     counts as doing it yourself. Asking for help is not a loss (you still found it), but
-     it is not a win either. */
-  const score = earned ? 1 : (G.revealed ? 0.25 : 0.6);
+     easier immediately rather than at the next visit.
+
+     ⚑⚑ TWO SCORES NOW — 1 OR 0 (2026-08-10, Nate: "Misses should DECREASE your score
+     equally"). It used to be three: 1 aced · 0.6 solved after a wrong try · 0.25 revealed.
+
+     ⭐ AND THE THREE-TIER VERSION WAS SAYING TWO DIFFERENT THINGS AT ONCE. Against a puzzle
+     at or above your own rating the expected score is ≥0.5, so a 0.6 came out POSITIVE —
+     the banner read `NO CREDIT — IT COMES BACK` while the number underneath it went UP, and
+     it went up on exactly the hard puzzles a person is most likely to miss. A screen that
+     scolds you and pays you in the same breath teaches nothing.
+
+     An Elo is a two-outcome instrument: you found it or you did not. At your own level a
+     solve is +k/2 and a miss is −k/2 — equal, which is the word he used — and against a
+     harder puzzle the win still pays more than the loss costs, because that is what the
+     expected score is FOR. `earned` was already the room's single "did you do this
+     yourself" test (it gates the road, the streak and the banner); the rating just stopped
+     disagreeing with it.
+
+     ⚠ REVEALING IS NO LONGER CHEAPER THAN GUESSING — they are both a miss. The old worry
+     that a 0 would "teach people to guess nothing and reveal instead" was an artifact of
+     the tiers: it is gone when the tiers are. The road is unchanged, the puzzle still comes
+     back, and the floor is PZ_FLOOR — nobody falls out of the room. */
+  const score = earned ? 1 : 0;
   let pzMove = null;
   try {
     if (window.PJCC && PJCC.settlePuzzle && G.p.rating){
@@ -1873,6 +1882,32 @@ function drawHeader(){
       ctx.fillStyle = C.muted; ctx.font = '11px Trebuchet MS'; ctx.textAlign = 'center';
       ctx.fillText('Level ' + levelFor(run.step) + ' of ' + LEVELS + '   ·   ' + intoLevel(run.step) + ' / ' + LEVEL_LEN, W/2, 17);
     }
+  }
+  /* ⚑ THE RATING, WHILE YOU ARE STILL SOLVING (2026-08-10, Nate: "put puzzle rating on the
+     fork in the road screen while users are working on the puzzle"). It used to appear only
+     on the menu, on the teaching card and on the summary — three places you see between
+     puzzles and none you see during one. The swing on the card only teaches you something
+     if you knew the number it was swinging from.
+
+     ⚠ IT IS READ, NEVER FETCHED. `PJCC.puzzleRating()` parses localStorage; this runs 60
+     times a second. `run.stats` already carries the number — `rating0` at the start of the
+     run and `rating` after every settle — so the header spends nothing.
+     ⚠ THE SEAT WAS PICKED FROM A RENDER, not from arithmetic. Right-aligned at x=380 on the
+     top row: the level line ends at 302 and the ☰ Menu button's left edge is at canvas x
+     412 on a desktop but **396 on a phone** — its font and padding are `cqw`-clamped, so it
+     is relatively WIDER on a small screen. 380 keeps a 20px gutter on the left and 16px on
+     the right at 390px wide, which is the tightest case. Anything past 396 lands under the
+     button on exactly the device Nate uses.
+     ⚠ It is NOT drawn when the profile module is missing — a rating of "700" that is really
+     "no rating" is worse than no line at all ([[no-excuses-copy]]).
+     ⚠ The puzzle's OWN rating is still hidden until the teaching card, on purpose: naming
+     the difficulty in front of an unsolved position is a hint, the same reason the motif
+     pill came out. This number is the player's and there is no other rating on screen. */
+  var myRating = run && run.stats && (run.stats.rating || run.stats.rating0);
+  if (myRating){
+    ctx.fillStyle = C.muted; ctx.font = '11px Trebuchet MS';
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillText('Rating ' + myRating, 380, 17);
   }
   // (the live streak counter came off 2026-07-28 - Nate: "let's remove the game feel". A
   //  streak meter burning over the board is arcade furniture; this room is for solving, not

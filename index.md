@@ -375,27 +375,25 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
     <b>Find Your Rating</b>
     <small>Six positions, then a seat that fits.</small>
   </a>
-  {%- comment -%} ⚑ AND THE PREVIEW HE ASKED FOR, INSIDE THE DOOR RATHER THAN BESIDE IT
-       ("a little preview box of Notation Blitz — a static image would be fine").
+  {%- comment -%} ⚑ THE PREVIEW BOX IS GONE (2026-08-10, Nate: "Remove the notation blitz box,
+       it's not working"). It was a 3x3 board with one lit square and "e4" beside it, standing
+       in for a screenshot he had asked for the day before.
 
-       ⭐ IT IS MARKUP, NOT AN IMAGE, and that is cheaper in every direction that matters: no
-       asset to generate, nothing to re-cut when the board tokens move, no extra request, no
-       layout shift, and it reads correctly at any size because it is four divs. A screenshot
-       of a game is a picture of the game as it looked the day somebody took it.
+       ⭐ WHY IT DIDN'T WORK, so the next preview doesn't repeat it: the whole thing rendered
+       39px square. At that size the board is not legible AS a board — three ranks of 13px
+       cells read as a texture, and the knight inside the lit square is 10px of glyph. It was
+       trying to explain a game in less room than the single glyph the five doors beside it
+       each get, and it lost twice over: too small to inform, and different enough to break
+       the set. ⚠ THE DESTINATION IS FINE — checked before touching this. /games/notation-run/
+       returns 200, boots to its title screen and throws nothing; "it's not working" was about
+       the picture on this page, not the game behind it.
 
-       What it shows is the game's actual question in one frame: a lit square and the name of
-       it. That IS Notation Blitz — you are told a square and you find it, or shown one and you
-       name it. `aria-hidden` because it is a picture of the game, not a control; the card's
-       own label is what a screen reader reads. {%- endcomment -%}
-  <a class="mc-door mc-door--blitz" href="{{ '/games/notation-run/' | relative_url }}">
-    <span class="nb-peek" aria-hidden="true">
-      <span class="nb-grid">
-        <i></i><i class="dk"></i><i></i>
-        <i class="dk"></i><i class="lit">&#9822;&#xFE0E;</i><i class="dk"></i>
-        <i></i><i class="dk"></i><i></i>
-      </span>
-      <span class="nb-call">e4</span>
-    </span>
+       The door stays and takes the same treatment as its five neighbors. Its glyph is a
+       crosshatched square (U+25A6 + FE0E for text presentation, so it inherits the sheet's ink
+       instead of arriving as a color emoji) — a grid, which is what you are being asked to
+       read. NOT the knight: Puzzles already wears that one, two doors apart. {%- endcomment -%}
+  <a class="mc-door" href="{{ '/games/notation-run/' | relative_url }}">
+    <span class="mc-door-ico" aria-hidden="true">&#9638;&#xFE0E;</span>
     <b>Notation Blitz</b>
     <small>Name the square before the clock does.</small>
   </a>
@@ -1000,33 +998,11 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 /* the title runs under the arrow at narrow column widths without this */
 .mc-lead > b, .mc-lead > small { padding-right: 26px; }
 
-/* ══ THE NOTATION BLITZ PEEK (2026-08-10) ═══════════════════════════════════════════
-   Four divs standing in for a screenshot, for the reasons in the markup above. It takes the
-   `.mc-door-ico` slot, so the card lines up with its five neighbors without a single override
-   to the grid. ⚠ The knight carries U+FE0E — without it a browser may paint it from the color
-   emoji font and `color` would silently do nothing to it ([[text-clip-glyph-technique]]). */
-/* ⚠ min-height 71px AND margin-bottom 10px, the SAME two numbers as `.mc-door-ico` above.
-   The peek takes that slot, and without them the Blitz card's title sat visibly higher than
-   the five beside it — the row lines up on the art block, not on the top of the card. That is
-   the identical reason `.mc-door-ico` was pinned to 71px in the first place. */
-.nb-peek { display: flex; align-items: center; gap: 9px; min-height: 71px; margin-bottom: 10px; }
-.nb-grid { display: grid; grid-template-columns: repeat(3, 13px); grid-auto-rows: 13px;
-  border-radius: 3px; overflow: hidden; box-shadow: 0 1px 3px rgba(30, 35, 44, 0.18); }
-/* ⚠ THE PARK TABLE STANDARD, not two colors picked to look nice here. `--chess-lt` and
-   `--chess-dk` are the site's one board palette (_pjcc-22-chess-canon.scss) and every new
-   board is supposed to read from them — a third set of squares invented on the front door is
-   exactly how a site ends up with three chessboards. [[chess-visual-canon]] */
-.nb-grid i { background: var(--chess-lt, #e9d3a4); }
-.nb-grid i.dk { background: var(--chess-dk, #9c5f33); }
-.nb-grid i.lit { background: var(--fd-go, #2e7d47); color: #fff; font-size: 10px;
-  display: flex; align-items: center; justify-content: center; font-style: normal; }
-/* Share Tech Mono because this IS a transmission-flavored readout — a coordinate, said back
-   to you ([[site-type-system]]: that face MEANS something and is off plain chrome). The
-   tracking is 0.02em, not the 0.08em I first wrote: on a two-character string that reads as
-   "e 4", two things, which is the opposite of what a square name is. */
-.nb-call { font-family: 'Share Tech Mono', ui-monospace, monospace; font-size: 0.95rem;
-  letter-spacing: 0.02em; color: var(--fd-ink-2, #5b6472); }
-.mc-door--blitz:hover .nb-call { color: var(--fd-go, #2e7d47); }
+/* ⚑ THE NOTATION BLITZ PEEK'S CSS CAME OUT WITH IT (2026-08-10). `.nb-peek`, `.nb-grid`,
+   `.nb-call` and `.mc-door--blitz` were declared here and are not referenced anywhere on the
+   site any more — grepped by SELECTOR, not by filename, before deleting ([[read-before-you-
+   delete]]). The door now uses the shared `.mc-door-ico` slot above, which is where its 71px
+   art block and 10px gap come from, so nothing here was load-bearing for the row's alignment. */
 
 /* ══ THE PATREON LINE (2026-08-10) ═══════════════════════════════════════════════════
    Nate: "a Patreon link somewhere — not TOO prominent."

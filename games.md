@@ -217,22 +217,39 @@ permalink: /games/
    this file's — the hall prints them, so there is one place to change them.
    ⚠ Amber, dashed, and quiet: it keeps the caution-tape COLOR as a signal and drops the
    caution-tape VOLUME. `--accent` is each game's own, so the chips still read as a set of
-   different things rather than a list. */
+   different things rather than a list.
+
+   ⚑ BLUEPRINT, NOT PURPLE (2026-08-10, Nate: "De-purple the On The Workbench — give it a
+   fun new, on-theme color"). The strip used to be filled with the hall's own purple, which
+   made it read as one more purple box on a purple page — a heading was the only thing
+   telling you these five were different. It is a drafting table now: navy-ink ground, a
+   dashed pale-blue edge, and the amber heading left exactly where it was, because amber IS
+   this site's "in development" signal and the ask was to change the GROUND, not the sign.
+   ⭐ Blue is also the ground that shows the chips best. Each chip's icon wears its game's
+   own `--accent` (orange pawn, pink pawn, blue face) and those all sank into the amber
+   candidate — a warm ground eats warm accents. Picked from a render of four, not a guess.
+   ⚠ AND THE PURPLE WAS COMING FROM SOMEWHERE ELSE TOO. The global `h2` rule paints a 2px
+   `#3d2b8a` underline; `.wb-h` is an `<h2>`, so a purple rule sat under the heading and no
+   declaration in this block mentioned it. De-purpling a box means looking at what the box
+   INHERITS, not only at what it sets. It comes off here — an eyebrow-sized heading inside
+   a bordered panel does not need a second horizontal line under it.
+   Measured on the composited ground: heading 9.3:1, sub-line 8.9:1, chip label 11.8:1. */
 .hall-workbench { margin: 2.2rem auto 0; max-width: 980px; padding: 1.1rem 1.2rem 1.3rem;
-  border: 1px dashed rgba(255,185,25,0.34); border-radius: 14px;
-  background: rgba(31,17,69,0.5); }
+  border: 1px dashed rgba(120,196,255,0.30); border-radius: 14px;
+  background: rgba(12,34,50,0.60); }
 .hall-workbench .wb-h { margin: 0 0 0.3rem; font-family:'Poppins',sans-serif; font-weight: 800;
-  font-size: 0.92rem; letter-spacing: 0.12em; text-transform: uppercase; color: #ffb020; }
+  font-size: 0.92rem; letter-spacing: 0.12em; text-transform: uppercase; color: #ffb020;
+  border-bottom: none; padding-bottom: 0; }
 .hall-workbench .wb-glyph { font-size: 1rem; }
-.hall-workbench .wb-sub { margin: 0 0 0.9rem; font-size: 0.8rem; line-height: 1.5; color: #b6a6dd; }
+.hall-workbench .wb-sub { margin: 0 0 0.9rem; font-size: 0.8rem; line-height: 1.5; color: #9dc0d9; }
 .hall-workbench .wb-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .wb-chip { display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
   padding: 9px 14px; min-height: 44px;      /* a finger, not a cursor — see _pjcc-27-tap-targets */
-  border: 1px solid rgba(255,185,25,0.28); border-radius: 999px;
-  background: #251753; color: #e8ddff; font-size: 0.82rem; font-weight: 600;
+  border: 1px solid rgba(120,196,255,0.30); border-radius: 999px;
+  background: #143046; color: #e2f1fd; font-size: 0.82rem; font-weight: 600;
   transition: background .14s ease, border-color .14s ease, transform .1s ease; }
 .wb-chip .wb-ico { font-size: 1rem; line-height: 1; color: var(--accent); }
-.wb-chip:hover, .wb-chip:focus-visible { background: #33206e; border-color: var(--accent);
+.wb-chip:hover, .wb-chip:focus-visible { background: #1d4462; border-color: var(--accent);
   transform: translateY(-1px); }
 @media (prefers-reduced-motion: reduce) { .wb-chip:hover, .wb-chip:focus-visible { transform: none; } }
 

@@ -1045,9 +1045,12 @@
      ⚠ K FALLS AS YOU SETTLE. 40 for the first ten puzzles, then 24, then 16 past fifty.
      Without it a hundred-puzzle veteran's rating still swings 40 points on one unlucky
      mate-in-two, which makes the number noise rather than a measurement.
-     ⚠ A REVEALED SOLVE SCORES 0.25, NOT 0. It is not a loss — you did finish it — but the
-     deepest hint tier plays the winning move for you, so scoring it as a win would let
-     anyone hint their way to Omega. Solved-with-a-wrong-try is 0.6: you found it. */
+     ⚠ THE CALLER SCORES 1 OR 0 (changed 2026-08-10). There used to be a middle tier —
+     0.6 for a solve after a wrong try, 0.25 for a reveal — and against a puzzle at or above
+     your own rating a 0.6 settled POSITIVE, so the room said "no credit" and paid you
+     anyway. Two outcomes is what makes the settle symmetric: at your own level a solve is
+     +k/2 and a miss is −k/2. This function still accepts any score in [0,1]; the room's
+     definition of a win lives in the room. */
   var PZ_KEY = 'pjcc.puzzle.rating.v1';
   var PZ_START = 700, PZ_FLOOR = 300, PZ_CEIL = 2600;
   function loadPz() {
