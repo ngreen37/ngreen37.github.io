@@ -161,7 +161,7 @@ day: old 1 (Worker), 2 (Search Console), 3 (app reinstall), 4 (Customize), 5 (Ga
 | **6** | **`earned` — does a hinted solve still count toward the 1,000?** A feel question; play a stretch first | `assets/games/pjcc_fork.html` | Nothing — it has a working default |
 | **7** | **`RETRY_GAP = 3` — how long before a missed puzzle comes back** | `assets/games/pjcc_fork.html` | Nothing — it has a working default |
 | **8** | **Authorize the claude.ai Google Drive connector** — only if he ever wants me reading from Drive | claude.ai → connector settings | Nothing |
-| **9** | **`www.mcpuppystudios.com` returns a GitHub 404** — same fix he already did for the PJCC domain | Squarespace → Domains → Forwarding | ⚠ **Yes — a dead page today** |
+| ~~9~~ | ~~**`www.mcpuppystudios.com` returns a GitHub 404**~~ **✅ DONE 2026-08-12 — verified end to end.** He deleted the leftover GitHub CNAME and set the rule; the name now 301s to `chesswild.com` and MAINTAINS paths (`/games/` → `/games/`, 200) | — | — |
 
 **⭐ 2-5 are things only he can hand over. 6 and 7 are dials with sane defaults, kept in front of
 him at his own request (2026-08-04). 8 is optional.** Nothing on this table is blocking anything.
@@ -262,7 +262,28 @@ things that answer themselves is how a short list stops being read.*
   purpose.
 ---
 
-- [ ] **9 · `www.mcpuppystudios.com` is a dead page — the same defect, one domain over.**
+- [x] **9 · `www.mcpuppystudios.com` is a dead page — the same defect, one domain over.**
+  ✅ **FIXED AND VERIFIED 2026-08-12.** Authoritative DNS now answers
+  `www.mcpuppystudios.com CNAME ext-sq.squarespace.com` — the GitHub CNAME is gone. Rule confirmed
+  working by connecting **straight to the Squarespace forwarding IPs with a hand-set `Host` header**,
+  which skips the resolver entirely:
+
+  ```
+  www.mcpuppystudios.com/          → 301 https://chesswild.com            → 200
+  www.mcpuppystudios.com/games/    → 301 https://chesswild.com/games/     → 200
+  www.mcpuppystudios.com/projects/ → 301 https://chesswild.com/projects/  → 200
+  ```
+
+  ⭐ **THAT PROBE IS THE KEEPER.** For four hours after the edit the ordinary HTTP request still
+  came back `404 · Server: GitHub.com`, because the local resolver was holding the old CNAME to its
+  TTL — so the normal test reports FAILURE on a change that is already correct. Setting `Host`
+  against the destination IP separates *"the rule is wrong"* from *"my resolver has not caught up"*,
+  and those look identical from the outside. Same family as the `Server:` header trick:
+  **ask the destination directly instead of asking the path to it.**
+  ⚠ Reported to him as "up to ~4 hours" (the TTL), not the "day or two" folklore — a NEW record has
+  no stale answer to expire, and only the deleted one had a cache to drain.
+
+  *(original write-up below)*
   Found by probing on 2026-08-10 while re-verifying item 1, not by remembering it. Measured:
 
   | name | answered by | result |
