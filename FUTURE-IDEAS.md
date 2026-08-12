@@ -130,7 +130,7 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-08-09**
 
 | # | What | Where | Blocks |
 |---|---|---|---|
-| **2** | **Google Search Console** — add `chesswild.com` as a *Domain* property, submit `sitemap.xml` | search.google.com/search-console | Nothing — but the new titles + description only pay off once Google re-crawls |
+| **2** | **Google Search Console** — ⚠ **the property is ALREADY added + verified** (proved via DNS 08-11). All that may be left is **Sitemaps → submit the full URL** | search.google.com/search-console | Nothing — but the new titles + description only pay off once Google re-crawls |
 | **3** | **Delete and reinstall the app on your phone** — ⚠ **sign in on chesswild.com FIRST** | your iPhone | Your installed app still opens the old origin |
 | **4** | **Does Customize take ONE tap now on your iPhone?** | `/dossier/` → the Forge | I could not reproduce it; I need your answer before I instrument the live page |
 | **5** | **Confirm one reading:** "Games Hall box in the Play Now box" = Games Hall took the slot Play Now vacated | the front door | Nothing — it shipped my way; say so if I read it wrong |
@@ -217,10 +217,31 @@ Runbook kept at `docs/domain-cutover-chesswild.md`. DNS verified, `CNAME`/`_conf
 mcpuppystudios.com 301s **with the path preserved** (`/pjcc/` → `chesswild.com/pjcc/`).
 - [x] ~~**Tick Enforce HTTPS**~~ **DONE — verified 2026-08-04:** both `http://chesswild.com` and
   `http://www.chesswild.com` now 301 to `https://chesswild.com`.
-- [ ] **2 · Google Search Console** — [search.google.com/search-console](https://search.google.com/search-console)
-  → property dropdown → **Add property** → **Domain** → `chesswild.com` → add the TXT record in
-  Squarespace DNS → Verify → **Sitemaps** → submit `sitemap.xml`. Keep the old property; it is what
-  reports the 301s being followed.
+- [ ] **2 · Google Search Console** — ⚠⚠ **MOSTLY ALREADY DONE, AND I LISTED IT ANYWAY. He hit
+  "Add property" on 2026-08-11 and found `chesswild.com` was already there.** Proved from public
+  DNS in five seconds, which is what I should have done before writing the item:
+
+      chesswild.com       TXT  google-site-verification=32JwXD5kCMP6gs-6I25s8HejHw-xMzfNSKWwc8Xchvc
+      mcpuppystudios.com  TXT  google-site-verification=DvuGLhgOrP75ZRzmnQi7IOVWIMN3vlOkWgdPxoE9Xzs
+
+  **Two different tokens.** That record only exists if someone added the property in Search Console
+  and pasted Google's string into Squarespace DNS — his account, his DNS, so it was him, almost
+  certainly during the 2026-08-03 cutover. **Add property ✅ · TXT ✅ · verified ✅.**
+
+  ⭐ **THE CHECK IS EXTERNAL AND COSTS NOTHING** — `dns.google/resolve?name=<domain>&type=TXT`. A
+  **Domain** property can ONLY be verified by DNS, so the absence of that record proves the task is
+  open and its presence proves it is done. **Run it before ever listing a domain-verification task
+  again.** This is the third time Search Console has gone on his list after being finished
+  ([[seo-setup]] already says STOP RE-FLAGGING IT, and [[backlog-outlives-its-fix]] is the pattern:
+  the backlog outlived the fix and I pitched him work he had already done).
+
+  **What genuinely remains — neither is visible from outside:** open the property → **Sitemaps**;
+  if `https://chesswild.com/sitemap.xml` reads **Success** with ~152 URLs it is finished, otherwise
+  submit it (⚠ full URL — a Domain property rejects the bare `sitemap.xml`). Then optionally
+  **URL Inspection** → Request indexing for `/` and `/pjcc/`.
+  ⚠ Keep the old property; it is what reports the 301s being followed.
+  ⚠ Unknowable from DNS: whether it is a **Domain** or a **URL-prefix** property — both verify by
+  TXT. Domain also covers www and subdomains. Either is fine; not worth redoing.
 - [ ] **3 · Delete and reinstall the app on your phone** — a new origin is a new app, and no manifest
   edit can reach an installed launcher. **Sign in on chesswild.com first**, so your account carries
   your progress across rather than the browser jar you're leaving behind.
