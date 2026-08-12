@@ -1,5 +1,24 @@
 # PJCC Translation Worker (optional, bulletproof EN→JA)
 
+> ## ⚠ REDEPLOYING? PASTE THE **DeepL** BLOCK, NOT THE FIRST ONE.
+>
+> There are two complete Workers in this file. The one immediately below is the **Workers AI
+> starter**; the live Worker has been the **DeepL** version since 2026-06-30 — jump to
+> [DeepL engine](#deepl-engine-sharper-japanese--deployed-2026-06-30) and paste that.
+>
+> Probed 2026-08-11: `…workers.dev/?q=Hello%20world` answers `{"translation":"ハロー・ワールド",
+> "engine":"deepl"}`. Pasting the starter block would fix CORS and silently drop the site's
+> Japanese from DeepL to `m2m100` — a regression bought with a fix, and nothing would report it,
+> because both engines return a valid translation.
+>
+> **Both blocks carry the same corrected `ALLOW` list**, which is the thing that actually needs
+> deploying: the running Worker still answers `Access-Control-Allow-Origin:
+> https://mcpuppystudios.com` for a `chesswild.com` request, so `chesswild.com` is not in the
+> array it was deployed with.
+>
+> **Your `DEEPL_KEY` survives a code paste.** Secrets live in the Worker's settings, not in its
+> source — you are not re-entering the key, and you do not need to touch the AI binding either.
+
 The site's 日本語 toggle works today with a free, keyless Google endpoint (`gtx`) +
 MyMemory fallback. That's fine for low traffic, but it's *unofficial*. This Worker is
 the rock-solid upgrade: translation runs **server-side in your own Cloudflare account**,
