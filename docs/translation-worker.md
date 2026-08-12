@@ -2,9 +2,9 @@
 
 > ## ⚠ REDEPLOYING? PASTE THE **DeepL** BLOCK, NOT THE FIRST ONE.
 >
-> There are two complete Workers in this file. The one immediately below is the **Workers AI
-> starter**; the live Worker has been the **DeepL** version since 2026-06-30 — jump to
-> [DeepL engine](#deepl-engine-sharper-japanese--deployed-2026-06-30) and paste that.
+> There are two complete Workers in this file. The one immediately below is the older **Workers
+> AI starter** (June 24). The one you want is the **DeepL** version further down — scroll to the
+> heading **"⭐ THE ONE TO PASTE"**.
 >
 > Probed 2026-08-11: `…workers.dev/?q=Hello%20world` answers `{"translation":"ハロー・ワールド",
 > "engine":"deepl"}`. Pasting the starter block would fix CORS and silently drop the site's
@@ -34,6 +34,13 @@ Once deployed, you make it the site's **primary** engine by pasting one URL into
 ---
 
 ## Deploy in the Cloudflare dashboard (no CLI, ~10 min)
+
+> ### ⚠ FIRST-TIME SETUP ONLY — DO NOT PASTE THIS BLOCK TO REDEPLOY.
+> This is the original Workers AI starter (June 24) and it has **no DeepL branch at all**.
+> Deploying it over the live Worker silently drops the site's Japanese to `m2m100` and leaves the
+> `DEEPL_KEY` secret sitting there unused. If you are here to redeploy, scroll to
+> **"⭐ THE ONE TO PASTE"**. Keep reading here only for steps 1, 3 and 4 — creating the Worker,
+> binding Workers AI, and finding your URL.
 
 1. **Cloudflare dashboard → Workers & Pages → Create → Worker.** Name it `pjcc-translate`. Deploy the starter, then click **Edit code**.
 2. Replace the starter code with this and **Deploy**:
@@ -105,12 +112,23 @@ binding = "AI"
 
 ---
 
-## DeepL engine (sharper Japanese) — DEPLOYED 2026-06-30
+## ⭐ THE ONE TO PASTE — DeepL engine (sharper Japanese)
+
+> **⚠ "2026-06-30" IS A STATUS LABEL, NOT A VERSION STAMP — and it caused a wrong deploy on
+> 2026-08-11.** The heading used to read "DEPLOYED 2026-06-30", which reads like old code you
+> would be reverting to. It is the opposite: **June 30 is the day this version went live**, and
+> it is the *newer* of the two blocks in this file. The starter above it dates from **June 24**.
+>
+> Nothing in this file's Worker code is newer than August 3rd, when `chesswild.com` was added to
+> both `ALLOW` lists — the fix that still needs deploying. Pasting this block is not going back
+> in time; it is putting the engine that ran from June 30 until now back in front, with the
+> allowlist corrected.
 
 DeepL gives noticeably better Japanese than `m2m100`. Free tier = 500,000 chars/month
 (signup needs a card for verification but is **never charged** on the Free plan).
 
-**This is the version currently deployed.** It tries DeepL first and falls back to
+**This is the version that was running in production until it was overwritten.** It tries DeepL
+first and falls back to
 Workers AI (`m2m100`) on any DeepL hiccup — over quota, key missing, or outage — so the
 Worker always returns *something*. (And the site still has gtx → MyMemory → English under
 that.) Because of the fallback, pasting this code is safe even before the key is added: it
@@ -190,6 +208,27 @@ function json(obj, status, headers) {
 ```
 
 ---
+
+## Troubleshooting
+
+**`{"error":"AiError: 3040: Capacity temporarily exceeded, please try again."}`**
+Cloudflare's own free-tier Workers AI capacity limit — transient, and nothing you did. But
+**seeing it at all means DeepL did not answer**, because DeepL runs first and Workers AI is only
+the catcher. Two causes, in order of likelihood:
+
+1. **The wrong block is deployed.** Ctrl+F the Cloudflare editor for `DEEPL_KEY`. Not found → you
+   have the June 24 starter, which has no DeepL branch. Paste "⭐ THE ONE TO PASTE" and Deploy.
+   *(This is exactly what happened on 2026-08-11.)*
+2. **The key is gone or spent.** Worker → **Settings → Variables and Secrets**; `DEEPL_KEY` should
+   be listed with its value hidden. If it is missing, re-add it (secrets survive a code paste but
+   not deleting and recreating the Worker). If it is there, check your DeepL usage — the Free plan
+   caps at 500,000 characters a month.
+
+⭐ **This error is a feature of the layering, not a failure of it.** With the right block deployed
+the site has four rungs — DeepL → Workers AI → gtx → MyMemory → English — so a visitor never sees
+any of this. Driven on the live front door while the Worker was returning 502 on all 41 calls: the
+page still came back `lang="ja"` with 271 Japanese glyphs, carried by gtx. **A Worker error is not
+an outage; it is one rung of the ladder giving way.**
 
 ## Notes
 - **Cost:** Workers AI has a free daily allowance; the site caches every translation in
