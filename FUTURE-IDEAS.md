@@ -124,20 +124,18 @@ points." Probed rather than remembered — `/classified/` returns **200**, and t
 name he has to pick). Kept here so an ended session never loses them. None are on fire; they just have
 to live somewhere. Cross one off by deleting the line. Last swept **2026-08-09**.*
 
-## 📋 THE SEVEN — the whole list, in one screen
+## 📋 WHAT'S STILL OPEN — the whole list, in one screen
 
 *Scan this. Every one of them is written out in full underneath, in the same order.*
+*Swept hard 2026-08-11: **1, 3, 4, 5, 7 and 11 all closed in one session** — most of them by him
+doing the thing, two of them because his own later actions had already answered the question.*
 
 | # | What | Where | Blocks |
 |---|---|---|---|
-| **2** | **Google Search Console** — ⚠ **the property is ALREADY added + verified** (proved via DNS 08-11). All that may be left is **Sitemaps → submit the full URL** | search.google.com/search-console | Nothing — but the new titles + description only pay off once Google re-crawls |
-| **5** | **Confirm one reading:** "Games Hall box in the Play Now box" = Games Hall took the slot Play Now vacated | the front door | Nothing — it shipped my way; say so if I read it wrong |
-| ~~6~~ | ~~**How far does the de-purpling go?**~~ **CLOSED AGAIN 2026-08-11 — HE CALLED IT IN.** *"De-purple the Leaderboard, park tables, play now, etc box."* Shipped as `theme-hall`: the Leaderboards and Park Tables now wear the drawer's neutral charcoal. **Purple stays on the world pages.** | — | — |
-| **7** | **The header can't hold everything at once — which one gives?** | the top bar, narrow windows + phones | Nothing; it shipped my way. Contact steps out below 1100px and the McPuppy badge below 430px |
-| **8** | **Point the two spare domains at the right pages** — Squarespace forwarding, 5 min | Squarespace → Domains | The two domains you bought; nothing else |
+| **2** | **Google Search Console** — ⚠ **property added + verified** (proved via DNS 08-11), **sitemap submitted**. Only the optional URL-Inspection nudges remain | search.google.com/search-console | Nothing — it is on Google's clock now |
+| **8** | **Point the spare domains at the right pages** — ⚠ **RE-SCOPED 08-11: only the PJCC domain is worth doing.** mcpuppystudios.com should be left exactly as it is | Squarespace → Domains → Forwarding | Nothing |
 | **9** | **Flip a social account to `live: true`** the day it has a post on it | `_config.yml` → `socials:` | Nothing — the row renders empty until you do |
 | **10** | **MARCHLAND castling — two readings of your rule I had to pick.** (a) At **16-17 the king still MOVES**, he just arrives alone; (b) **"similarly for the three pawns" = the shield rides the ROOK's band**, so 18-20 gets it and 16-17 doesn't. Both one-line flips | `assets/games/pjcc_marchland.html` → `POS_CASTLE` / `posCastleFull` | Nothing; it shipped my way and the sim says 48% |
-| **11** | **The Welcome Back block — keep, reword or pull.** You said you might | the front door | Nothing — one element + one script block, deleting both restores the page |
 | **12** | **"More Ways In" is FIVE doors now** — 3 + 2 with an empty cell. If it reads as a hole, the fix is a sixth door worth having, not a new column count | the front door | Nothing; it shipped my way |
 
 ---
@@ -157,9 +155,13 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-08-09**
   same neutral. ⚠ Purple deliberately KEPT on `/pjcc/`, the cast and the dossier — it is the
   world's livery and it earns it there.
 
-**🔠 7 · THE HEADER RAN OUT OF ROOM — WHICH ONE GIVES? *(2026-08-09, the three front doors)***
-- [ ] **7 · Two things step out of the header on narrow screens. Tell me if you'd rather buy the
-  space somewhere else.** The top bar now carries ☰ · **CW · P&JCC · McPuppy** · ⌕ Search · 日本語 ·
+**🔠 7 · ~~THE HEADER RAN OUT OF ROOM — WHICH ONE GIVES?~~ ✅ ANSWERED 2026-08-11: KEEP AS SHIPPED.**
+- [x] ~~**7 · Two things step out of the header on narrow screens.**~~ **He chose the shipped
+  behavior: Contact steps out below 1100px, the McPuppy badge below 430px, both still one tap away
+  in the drawer and ⌘K.** The icon-only "Sign in" alternative is declined — it would have bought
+  the badge back on every phone, but at the cost of turning the site's least obvious control into
+  a bare glyph for exactly the visitor who most needs the word. **Do not re-open this**; the
+  reasoning below is kept because it explains what the header can and cannot hold. The top bar now carries ☰ · **CW · P&JCC · McPuppy** · ⌕ Search · 日本語 ·
   Sign in · Contact. Three marks want about **110px** that the single McPuppy badge did not, and
   the row genuinely does not have it: at 1024 the first version squeezed 日本語 into a
   three-character **vertical stack**, which is the exact defect the whole tap-target pass existed
@@ -336,10 +338,37 @@ mcpuppystudios.com 301s **with the path preserved** (`/pjcc/` → `chesswild.com
   ⭐ **No migration was needed and that was by design, not luck:** `if (!HATS[op.hat]) op.hat =
   'none'` in the loader already heals any saved look whose hat key is gone, and the renderer is
   independently guarded. Deleting an entry from that object is always a one-line change.
-- [ ] **5 · Sanity-check one reading of your front-door batch.** *"Make a Games Hall box and put it
-  in the play now box"* — I read that as: Play Now was promoted out of the four-door grid into
-  the big green box above, so **Games Hall took the slot Play Now vacated**. If you meant Games
-  Hall nested *inside* the Play Now card, say so — it is a small rework, not a rebuild.
+- [x] ~~**5 · Sanity-check one reading of your front-door batch.**~~ **CLOSED 2026-08-11 AS SHIPPED
+  — and the way it closed is the point.** Asked on 2026-08-11 which he meant, his answer was:
+  *"Those are your words — I'm also trying to figure out what you meant."* They are his words
+  (index.md has carried the quote since 2026-08-04), but that is irrelevant: **the instruction was
+  eight words long and a week old, and neither of us could recover the intent.**
+
+  ⚠⚠ **A "CONFIRM MY READING" ITEM HAS A SHELF LIFE, AND I BANKED ONE PAST IT.** In the session
+  the ambiguity was live and cheap to settle; a week later he is reading his own sentence cold,
+  with none of the context that made it mean anything, and the question costs him more than the
+  decision is worth. ⭐ **If an ambiguity cannot be resolved inside the session, pick the better
+  option, ship it, and SAY which way I read it — do not save a question that will expire.** The
+  backlog is for work, not for interrogations. Related: [[capture-request-batches]] is about
+  persisting his REQUESTS; this is the opposite failure, persisting MY uncertainty.
+
+  **Why the shipped version is right on its own merits, independent of what he meant:** the page
+  has exactly one primary action, and nesting a second destination inside the green box would put
+  two doors in the one card the page exists to point at — the precise defect the front door was
+  rebuilt to fix. Games Hall taking the vacated grid slot keeps the set at a clean row and gives
+  the page its one link to every game on the site. No rework.
+
+- [x] ~~**11 · The Welcome Back block — keep, reword or pull.**~~ **CLOSED 2026-08-11: KEPT. He
+  answered it by using it, and the list was still asking.** It went on the list that morning
+  because he said he might pull it. Hours later, in the same day's batch, he asked to *"make
+  'Welcome Back' block letters"* — you do not restyle something you are about to delete. The
+  greeting is caps via `text-transform` now and the block stays.
+  ⚠⚠ **THIS IS [[backlog-outlives-its-fix]] IN ITS PUREST FORM, AND IT WAS ABOUT TO COST HIM A
+  DECISION HE HAD ALREADY MADE.** The item was written the same day it went stale. ⭐ **Before
+  putting a keep-or-pull question in front of him, check whether he has TOUCHED the thing since —
+  behavior answers a question faster than a question does.** Same family as the Search Console
+  re-flag two items up: an action item is a claim about reality, and reality includes what he did
+  yesterday.
 
 **⭐ THE PUZZLE CREDIT RULE — TWO DIALS THAT ARE YOURS TO CALL (kept here at your request,
 2026-08-04: "keep the RETRY_GAP and the earned definition in the priority items")**
