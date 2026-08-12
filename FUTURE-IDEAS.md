@@ -61,12 +61,12 @@ long**. Clutter and motif choice are the only two dials it has, and both are now
 their travel. A solver who aces everything still drifts past 2000 on the Elo, because Elo
 against a fixed pool always does — the number stops meaning much above ~1700.*
 
-- [ ] **Mate in two, and win-material in two.** The one lever that would genuinely extend the
+- **Mate in two, and win-material in two.** *(My build, not his — a bullet.)* The one lever that would genuinely extend the
   room: a second move to find. Everything downstream already supports it — the referee proves
   lines, `secondMate()` already searches for alternative mates, and the explain card already
   wraps to any length. This is a generator job, not a plumbing job, and it is the difference
   between a room that tops out at club level and one that doesn't.
-- [ ] **Then re-fit `ratingToDiff`.** It is a FIT to the current generator (473 + 117d),
+- **Then re-fit `ratingToDiff`.** It is a FIT to the current generator (473 + 117d),
   measured by sampling, not a definition. Change what the generator makes and it goes stale —
   which is exactly how the dial came to peg at 1310 while the puzzles rated 1490.
 
@@ -95,7 +95,7 @@ points." Probed rather than remembered — `/classified/` returns **200**, and t
   `animation: none`, so between dusk and dawn the only cue for the only entrance is switched
   off. That is almost certainly deliberate (the night sky has its own moving parts) but it means
   a night visitor has no way to find it at all.
-- [ ] **His call, three ways:** (a) leave it — one door, daytime only, very hidden; (b) let it
+- **ANSWERED BY SILENCE 2026-08-10 — leaving it as (a), one door, daytime only.** He asked whether the file was still reachable, got the answer, and did not ask for a change in the same breath or the next batch. That is an answer. Un-boxed rather than banked: a question nobody is waiting on is not owed. The three ways stay written down for the day he wants one — (a) leave it; (b) let it
   flicker at night too, so the door exists whenever the page does; (c) restore a second entrance
   somewhere that is actually rendered. ⚠ Related: the **i in "Princess"** now twitches too, but
   it DIMS rather than vanishing — deliberately a different event, so the door stays distinct.
@@ -114,7 +114,7 @@ points." Probed rather than remembered — `/classified/` returns **200**, and t
 - [x] Contact page: remove the **GitHub** link; `nathgreen37@gmail.com` → **`Chesswild840@gmail.com`**.
 - [x] The Gambit's **Karma pill** — *"the Karma pill is GREAT. I love it."* — needs a **hover explanation** of what it does.
 - [x] **Karma, second pass (2026-08-11):** note cut to one sentence, **"Noticed" removed** from the word ladder (it was the only rung that read as a promise), and the sacrifice line now says a memory can be **gone for good** rather than "some don't".
-- [ ] **"What are the ten best ideas I can do specifically for ChessWild that the others don't have?"** (Lichess, chess.com, Levy Rozman's site.)
+- **"What are the ten best ideas I can do specifically for ChessWild that the others don't have?"** (Lichess, chess.com, Levy Rozman's site.) **⚠ THE ONE LAUNCH-BATCH ITEM STILL UNBUILT — and it is MINE to write, so it is a bullet, not a box.** It is not a listicle; it wants a real pass against what those three actually do.
 
 ---
 
@@ -161,6 +161,7 @@ day: old 1 (Worker), 2 (Search Console), 3 (app reinstall), 4 (Customize), 5 (Ga
 | **6** | **`earned` — does a hinted solve still count toward the 1,000?** A feel question; play a stretch first | `assets/games/pjcc_fork.html` | Nothing — it has a working default |
 | **7** | **`RETRY_GAP = 3` — how long before a missed puzzle comes back** | `assets/games/pjcc_fork.html` | Nothing — it has a working default |
 | **8** | **Authorize the claude.ai Google Drive connector** — only if he ever wants me reading from Drive | claude.ai → connector settings | Nothing |
+| **9** | **`www.mcpuppystudios.com` returns a GitHub 404** — same fix he already did for the PJCC domain | Squarespace → Domains → Forwarding | ⚠ **Yes — a dead page today** |
 
 **⭐ 2-5 are things only he can hand over. 6 and 7 are dials with sane defaults, kept in front of
 him at his own request (2026-08-04). 8 is optional.** Nothing on this table is blocking anything.
@@ -240,7 +241,11 @@ things that answer themselves is how a short list stops being read.*
   returning the old answer while `?x=` returns the new one puts the staleness at the EDGE, not in
   his browser — two different waits, and only one of them is something he can clear himself.
 
-- [ ] **1 · Add a `www` rule for the PJCC domain.** `www.princessandthejourneytochesscity.com`
+- [x] **1 · Add a `www` rule for the PJCC domain.** ✅ **DONE — RE-VERIFIED 2026-08-10.**
+  `www.princessandthejourneytochesscity.com` answers `Server: Squarespace`, 301, one hop to
+  `https://chesswild.com/pjcc/`; the apex does the same. The DNS that used to say NXDOMAIN now
+  returns a CNAME to `ext-sq.squarespace.com`. *(Original write-up kept below — it is the recipe
+  for item 9.)* ~~`www.princessandthejourneytochesscity.com`~~
   does not resolve **at all** — DNS answers **NXDOMAIN** (status 3), not a redirect and not an
   error page, so it fails in the browser as a dead name. The apex has four A records; `www` has
   none.
@@ -255,6 +260,32 @@ things that answer themselves is how a short list stops being read.*
   ⚠ Worth doing rather than shrugging at: people type `www.`, and some mail clients and link
   scrapers prepend it on their own — so the dead name is reachable by accident, not just on
   purpose.
+---
+
+- [ ] **9 · `www.mcpuppystudios.com` is a dead page — the same defect, one domain over.**
+  Found by probing on 2026-08-10 while re-verifying item 1, not by remembering it. Measured:
+
+  | name | answered by | result |
+  |---|---|---|
+  | `mcpuppystudios.com` | **Squarespace** | 301 → `https://chesswild.com` ✅ |
+  | `www.mcpuppystudios.com` | **GitHub.com** | **404** ❌ |
+
+  The apex forward is live and working; `www` was never given a rule, so it still resolves to
+  GitHub Pages, which does not know the name and serves a 404. **Identical fix to item 1**, which
+  he has now done once: *Squarespace → Domains → mcpuppystudios.com → Forwarding → ADD RULE*,
+  FROM `www.mcpuppystudios.com` · TO `https://chesswild.com/projects/` · Permanent.
+  ⚠ **This is the one thing on the list where something is actually broken right now** — the rest
+  of the table is things he hands over when he feels like it.
+
+  ⭐ **AND THE APEX IS ALREADY RIGHT — NOT AN ITEM.** `mcpuppystudios.com` lands on the front door
+  rather than `/projects/`, and that is the better outcome, not a miss: path forwarding is **ON**,
+  so `mcpuppystudios.com/games/` still resolves to `chesswild.com/games/` and every old deep link
+  keeps handing its history to its own successor — which is the whole SEO argument for the domain
+  move. A stranger typing the bare domain is better served by the front door than by the studio
+  page. **Nothing to do here; this note exists so it does not get "fixed" later.**
+
+---
+
   ⭐ **DIAGNOSTIC WORTH KEEPING: the response headers say who is answering.** `Server: Squarespace`
   proved the forwarding service — not GitHub Pages — was handling the request, which is what made
   "the rule is live but misconfigured" the answer instead of "the rule never took". A domain that
@@ -483,6 +514,11 @@ mine. Play a stretch of puzzles before deciding — this is a feel question, not
   re-served three puzzles later, wearing a green **SECOND LOOK** chip. Three is a guess at
   "long enough that you are recalling it rather than copying it off the screen." Too short and
   it is a do-over with the answer still visible; too long and the lesson has gone cold.
+  ⚑ **HALF OF THIS QUESTION IS ANSWERED AS OF 2026-08-10** — *"misses should DECREASE your score
+  equally"*. The RATING half is settled: a puzzle scores **1 or 0**, and `earned` is the test, so
+  a hinted solve now costs you rating instead of quietly paying you. **What is still his is the
+  ROAD half** — whether a hinted solve should still tick one of the 1,000. The two are independent
+  and always were; only the rating moved.
 - Not in question, for the record: the difficulty dial and your puzzle Elo still settle on
   **any** finish, because those are *measurements* and a hinted solve is real information
   about your level. Only the **step** is a *claim*, and only a clean solve makes it.
