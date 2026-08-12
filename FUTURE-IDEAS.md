@@ -131,8 +131,6 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-08-09**
 | # | What | Where | Blocks |
 |---|---|---|---|
 | **2** | **Google Search Console** — ⚠ **the property is ALREADY added + verified** (proved via DNS 08-11). All that may be left is **Sitemaps → submit the full URL** | search.google.com/search-console | Nothing — but the new titles + description only pay off once Google re-crawls |
-| **3** | **Delete and reinstall the app on your phone** — ⚠ **sign in on chesswild.com FIRST** | your iPhone | Your installed app still opens the old origin |
-| **4** | **Does Customize take ONE tap now on your iPhone?** | `/dossier/` → the Forge | I could not reproduce it; I need your answer before I instrument the live page |
 | **5** | **Confirm one reading:** "Games Hall box in the Play Now box" = Games Hall took the slot Play Now vacated | the front door | Nothing — it shipped my way; say so if I read it wrong |
 | ~~6~~ | ~~**How far does the de-purpling go?**~~ **CLOSED AGAIN 2026-08-11 — HE CALLED IT IN.** *"De-purple the Leaderboard, park tables, play now, etc box."* Shipped as `theme-hall`: the Leaderboards and Park Tables now wear the drawer's neutral charcoal. **Purple stays on the world pages.** | — | — |
 | **7** | **The header can't hold everything at once — which one gives?** | the top bar, narrow windows + phones | Nothing; it shipped my way. Contact steps out below 1100px and the McPuppy badge below 430px |
@@ -211,6 +209,31 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-08-09**
   so somebody arriving from mcpuppystudios.com now lands on a page that agrees with the address
   they typed — which was not true this morning.
 
+  ⚑⚑ **RE-PROBED 2026-08-11, AND IT SPLITS THE ITEM IN TWO. Only half of this is worth doing.**
+  Both domains currently 301 **with the path preserved**, confirmed on the root and on a deep link:
+
+      mcpuppystudios.com/            301 → https://chesswild.com/
+      mcpuppystudios.com/pjcc/       301 → https://chesswild.com/pjcc/
+      princessandthejourney….com/    301 → https://chesswild.com/
+      princessandthejourney….com/pjcc/ 301 → https://chesswild.com/pjcc/
+
+  · **princessandthejourneytochesscity.com → `https://chesswild.com/pjcc/`, path OFF. Do it.**
+    It has never been live, nothing links to it, so there is no path mapping to lose and the
+    root currently lands on a chess front door under a name that promises the world.
+
+  · **mcpuppystudios.com → RECOMMEND LEAVING IT EXACTLY AS IT IS.** ⭐ **What it does today is
+    better than anything Squarespace forwarding can do, and the reason is SEO rather than
+    taste.** A per-path 301 is precisely what Google wants from a domain move: every old URL
+    hands its history to its own successor. Squarespace path-OFF collapses all of that onto one
+    page and throws the mapping away — and the old GSC property, which is kept *specifically to
+    report the 301s being followed*, is where that would show up. Path-ON is worse still:
+    appending to a `/projects/` target turns `mcpuppystudios.com/pjcc/` into
+    `chesswild.com/projects/pjcc/`, a 404. **The only thing the status quo "costs" is that the
+    bare domain lands on the front door rather than the studio page — and for a stranger typing
+    an old address, the front door is the better landing anyway.**
+    Worth doing only if he wants the bare domain on `/projects/` MORE than he wants old links to
+    keep working. If he does, the Cloudflare Redirect Rule below is the way to get both.
+
 **🌐 THE DOMAIN CUTOVER — ✅ DONE 2026-08-03/04. `chesswild.com` IS THE LIVE DOMAIN.**
 Runbook kept at `docs/domain-cutover-chesswild.md`. DNS verified, `CNAME`/`_config.yml`/
 `robots.txt`/Gambit canonical flipped, certificate provisioned, `www` → apex, and
@@ -253,9 +276,15 @@ mcpuppystudios.com 301s **with the path preserved** (`/pjcc/` → `chesswild.com
   ⚠ Keep the old property; it is what reports the 301s being followed.
   ⚠ Unknowable from DNS: whether it is a **Domain** or a **URL-prefix** property — both verify by
   TXT. Domain also covers www and subdomains. Either is fine; not worth redoing.
-- [ ] **3 · Delete and reinstall the app on your phone** — a new origin is a new app, and no manifest
-  edit can reach an installed launcher. **Sign in on chesswild.com first**, so your account carries
-  your progress across rather than the browser jar you're leaving behind.
+- [x] ~~**3 · Delete and reinstall the app on your phone**~~ **✅ DONE 2026-08-11 — "it works."**
+  ⭐⭐ **AND IT CLOSED THE PWA'S OLDEST OPEN LOOP.** Since 2026-07-12 it has been UNCONFIRMED that
+  **6-digit code sign-in works inside the installed iOS app** — the fix shipped that day and he
+  never got back to re-test it, so the one auth path an iOS home-screen app can actually use was
+  unproven for a month. It works. [[pwa-mobile-app]]
+  ⚠ The two steps the one-line version left out and which turned out to matter: the app is still
+  `ENABLED = false`, so **`chesswild.com/?pwa=on` in Safari BEFORE Add to Home Screen** (the flag
+  is per-origin and does not travel from the old domain), and **sign in with the CODE, not the
+  emailed link** (an iOS home-screen app keeps its own storage jar).
 - [x] ~~**1 · Redeploy the Cloudflare Worker**~~ **✅ DONE 2026-08-11 — he deployed it, and both
   halves are verified.** The allowlist answers `Access-Control-Allow-Origin: https://chesswild.com`
   on the GET *and* the OPTIONS preflight, and the engine answers `{"engine":"deepl"}` on three real
@@ -290,18 +319,23 @@ mcpuppystudios.com 301s **with the path preserved** (`/pjcc/` → `chesswild.com
   that a single click would have corrected.
 
 **📱 TWO THINGS ONLY YOU CAN CONFIRM — from the 2026-08-04 front-door / Forge batch**
-- [ ] **4 · Does Customize take ONE tap now, on your iPhone?** ⚠ Be honest about the state of this:
-  **I could not reproduce the double-click.** Real mouse clicks and emulated touch both took on
-  the first hit — on a stub page and on the live site. That rules out the handler, not the
-  platform, and Chrome's touch emulation is not WebKit. Every picker is a real `<button>` now
-  instead of a `<div>` with a click handler, which removes the heuristic Safari was probably
-  getting wrong (and closes an accessibility hole — the whole Forge was mouse-only). **If it
-  still takes two taps, tell me and I will stop guessing and instrument the live page.**
-  ⚑ 2026-08-05 — **half of this is now definitely answered and it was not the platform.** The
-  *pickers* really did run one click behind, signed in only: `identity()` was painting the
-  600ms-debounced ACCOUNT copy back over the local one, so every choice showed the previous
-  choice. Fixed and gated. **What is still open is only the Customize BUTTON itself** — does
-  the panel open on the first tap on your iPhone?
+- [x] ~~**4 · Does Customize take ONE tap now, on your iPhone?**~~ **✅ YES — confirmed on his real
+  iPhone 2026-08-11: "the one-tap on customization works great."** Both halves of that bug are
+  now closed on the device, not in an emulator: the *pickers* running one click behind (the
+  600ms-debounced account copy painting back over the local one, fixed + gated 2026-08-05) and
+  the Customize *button* itself.
+  ⭐ **The fix that held was a MARKUP fix, not a handler fix.** I could never reproduce the double
+  tap — Chrome's touch emulation is not WebKit — so the change was to make every picker a real
+  `<button>` instead of a `<div>` with a click handler, which removed the heuristic Safari was
+  probably getting wrong and closed an accessibility hole in the same move. *When a platform bug
+  will not reproduce, fixing the SEMANTICS is a better bet than guessing at the event.*
+
+  ⚑ **SAME BREATH, SHIPPED: the paw is out of headwear** (*"remove paws from headwear"*). 🐾 is
+  the McPuppy STUDIO's mark — the `/projects/` nav icon and the site favicon — so wearing it made
+  a studio badge into a costume; every other entry in `HATS` is a thing a person puts on a head.
+  ⭐ **No migration was needed and that was by design, not luck:** `if (!HATS[op.hat]) op.hat =
+  'none'` in the loader already heals any saved look whose hat key is gone, and the renderer is
+  independently guarded. Deleting an entry from that object is always a one-line change.
 - [ ] **5 · Sanity-check one reading of your front-door batch.** *"Make a Games Hall box and put it
   in the play now box"* — I read that as: Play Now was promoted out of the four-door grid into
   the big green box above, so **Games Hall took the slot Play Now vacated**. If you meant Games

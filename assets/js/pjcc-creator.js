@@ -90,8 +90,19 @@
     sunhat:  { em:'👒', n:'Sun hat' },
     bow:     { em:'🎀', n:'Bow' },
     flower:  { em:'🌸', n:'Blossom' },
-    star:    { em:'🌟', n:'Halo' },
-    paw:     { em:'🐾', n:'Paw' }
+    star:    { em:'🌟', n:'Halo' }
+    /* ⚑ PAW REMOVED 2026-08-11 (Nate: "remove paws from headwear"). 🐾 is the McPuppy
+       STUDIO's mark — it is the /projects/ nav icon and the site's favicon — so wearing it
+       on your head made a studio badge into a costume. Every other entry here is a thing a
+       person actually puts on a head; this one was a logo.
+
+       ⚠ NO MIGRATION NEEDED, AND THE REASON IS TWO LINES DOWN THE FILE, NOT LUCK.
+       `if (!HATS[op.hat]) op.hat = 'none'` in the loader already heals any saved look whose
+       hat key no longer exists, so anyone wearing it lands on None on their next load — the
+       same guard that made dropping the old emoji bases safe. The renderer is independently
+       guarded too (`HATS[look.hat] && …`), so even an unhealed value paints nothing rather
+       than throwing. Delete an entry from this object and both halves are already handled;
+       ADD one and neither is needed. */
   };
   var EMBLEMS = {
     none:    { em:'',   n:'None' },
