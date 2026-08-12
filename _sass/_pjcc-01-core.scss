@@ -1438,6 +1438,31 @@ pre code {
    every board on this site lights a LEGAL MOVE with, so "Solve" wears the color of a solved
    thing. Do not reuse it on a light surface without re-inking it. [[front-door-palette]] */
 .wm-solve { color: #6bffb8; }
+/* ── THE TAGLINE'S THREE WORDS ARE LINKS (2026-08-11) ────────────────────────────
+   Play → Park Tables, Solve → Fork in the Road, Learn → the Academy. See
+   _includes/tagline.html for why the anchor and the mint sit on different elements.
+
+   ⚠ `color: inherit` IS THE WHOLE RULE'S REASON FOR EXISTING. The bare `a` at the top of
+   this file is #a78bfa — purple on any anchor that does not answer for itself — so without
+   this the lockup's "Play." and "Learn." would come out purple on the town sky. Inherit,
+   not a hard-coded white: the host decides the ink (`.page-tagline-out` on the front door),
+   which is the same split `.wm-tld` keeps.
+
+   ⚠ THE UNDERLINE IS PERMANENT AND QUIET. `text-decoration` is not used because the site's
+   `a:hover` turns it on globally and there would be no way to keep the two states apart;
+   a `border-bottom` is a dial with a value rather than a switch. 0.3 alpha reads as "this
+   is a link" without breaking the lockup into three underlined chunks.
+   ⚠ `:focus-visible`, never bare `:focus` — a mouse click focuses the anchor, and a bare
+   rule would leave the ring painted on after a tap ([[hover-is-three-inputs]]). */
+.wm-go {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  padding-bottom: 0.06em;
+  transition: border-color .14s ease;
+}
+.wm-go:hover { color: inherit; text-decoration: none; border-bottom-color: rgba(255, 255, 255, 0.85); }
+.wm-go:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.85); outline-offset: 3px; border-radius: 2px; }
 
 /* ═══ TOUCH ERGONOMICS (2026-07-13 phone/a11y sweep) ══════════════════════════
    Every control here measured UNDER 40px in a real 390px render — below the

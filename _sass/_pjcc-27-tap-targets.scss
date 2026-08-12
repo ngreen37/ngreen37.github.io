@@ -40,18 +40,31 @@
  * whatever sits beside it.
  * ========================================================================== */
 
+/* ⚑ ROUND THREE, ONE CONTROL (2026-08-11). The lockup's tagline became three links —
+   Play → Park Tables, Solve → the puzzle room, Learn → the Academy — and they are chrome
+   of exactly the kind this block was written for: measured at 55 x 22 CSS px on the live
+   page, small ON PURPOSE, because a tagline that grows to finger size stops being a
+   tagline. So they take the invisible expander and keep their proportions.
+
+   ⚠ THREE TARGETS IN A ROW IS THE REASON THIS MATTERS, not the height on its own. They sit
+   about 8px apart with the site's most-used destinations behind them, so a tap that lands
+   short does not miss — it opens the wrong room. Each expander is only as wide as its own
+   word (55px, already over the 44 floor), so growing them vertically cannot make two
+   neighbors overlap. */
 @media (hover: none) {
   /* the hit expander: centered on the control, invisible, never larger than it needs */
   .cmdk-trigger,
   .lang-toggle,
   .nav-toggle,
-  .drawer-mini a {
+  .drawer-mini a,
+  .wm-go {
     position: relative;
   }
   .cmdk-trigger::after,
   .lang-toggle::after,
   .nav-toggle::after,
-  .drawer-mini a::after {
+  .drawer-mini a::after,
+  .wm-go::after {
     content: '';
     position: absolute;
     top: 50%;

@@ -22,6 +22,27 @@
 
   ⚠ ONE WORD ONLY. "Play." and "Learn." stay white — three tinted words is a stripe, not a
   lockup, and the whole point is that one thing is picked out.
+  ──────────────────────────────────────────────────────────────────────────────
+  ⚑ THEY ARE DOORS NOW (2026-08-11, Nate: "the top right corner Playsolvelearn, make them
+  links! Play goes to park tables, Solve to puzzles, and learn to academy").
+
+  ⭐ THE THREE WORDS ALREADY NAMED THE THREE ROOMS — this only lets you walk through them.
+  Play → the Park Tables, Solve → Fork in the Road, Learn → the Academy: the same three
+  destinations the drawer's top rows carry, and the same three the sub-label under the
+  drawer's Home row has read since 2026-08-04. Nothing new is claimed; the promise became
+  clickable.
+
+  ⚠ THE ANCHOR CARRIES `.wm-go` AND THE MINT STAYS ON A SPAN INSIDE IT. The site's bare
+  `a` rule paints every link purple (_pjcc-01-core.scss), so an unclassed anchor would have
+  taken the whole lockup purple — the exact inheritance trap the header's `.com` fell into.
+  But putting the ink ON the anchor collides with `.wm-solve`: both would be single-class
+  rules, and the winner would come down to which sits lower in that one file. Two elements,
+  two jobs, no tie to break.
+
+  ⚠ THE UNDERLINE IS ALWAYS DRAWN, NOT ONLY ON HOVER. Nate is on iOS, and a phone has no
+  hover state — a hover-only affordance is invisible on the device he uses
+  ([[hover-is-three-inputs]]). It is a hairline at 30% white so the lockup still reads as a
+  lockup; hover and keyboard focus bring it up to full.
   ══════════════════════════════════════════════════════════════════════════════
 {%- endcomment -%}
-Play. <span class="wm-solve">Solve.</span> Learn.
+<a class="wm-go" href="{{ '/games/park-tables/' | relative_url }}" title="Play — sit at the Park Tables">Play.</a> <a class="wm-go" href="{{ '/games/fork-in-the-road/' | relative_url }}" title="Solve — the puzzle room"><span class="wm-solve">Solve.</span></a> <a class="wm-go" href="{{ '/academy/' | relative_url }}" title="Learn — the Academy">Learn.</a>

@@ -144,10 +144,59 @@ body.theme-chess {
      are the door cards; leaving them at their cool off-white while the sheet went warm would
      have put four visibly COLDER islands on warm paper, which reads as a bug rather than as a
      palette. Warmed by the same amount; every ink token keeps 8:1 or better on both. */
-  --surface:   rgba(251, 243, 224, 0.78);
+  /* ⚑⚑ 0.78 → 0.88, AND THE SHEET IS LIT NOW — 2026-08-11, SIXTH pass. CURRENT.
+     Nate: "give the gray background box a spiff-up — it doesn't quite work with my vision.
+     Looking for a real professional-looking site."
+
+     ⭐ HE IS DESCRIBING THE COMPOSITE, NOT THE COLOR, AND THE COLOR WAS NEVER GRAY. The
+     value above is warm parchment; what reaches the eye is that parchment over the town
+     sky, and at 0.78 the sky supplies a fifth of every pixel. Sampled off a real render
+     of the live page at each phase, before this change:
+
+         night  #06041a  →  sheet painted rgb(193,185,176)
+         dusk   #4a2350  →  sheet painted rgb(204,191,180)
+         dawn   #7c3d3a  →  sheet painted rgb(204,193,184)
+         day    #24558f  →  sheet painted rgb(201,199,191)
+
+     Every one of those is a gray-taupe. The word "gray" was not an opinion about the hue —
+     it was an accurate reading of what the page paints. And the tell was already ON the
+     page: the five door cards are OPAQUE (`--fd-panel`, #f9f4e9), so a visitor sees clean
+     cream paper sitting on dirty gray paper, one inch apart. That contrast is the defect.
+
+     ⚠ THE FIX IS ALPHA, BECAUSE ON A TRANSLUCENT SHEET IT IS THE ONLY DIAL. The 2026-08-04
+     note above proves the other direction: at a fixed alpha, every tint that reads as a
+     different color fails AA. The same arithmetic run the other way says a lighter RESULT
+     can only be bought with opacity. At 0.88 the night sheet paints rgb(219,211,199) — the
+     same warm parchment the value has always named, with the sky reading as a tint over it
+     instead of as a quarter of it.
+
+     ⚑ AND IT IS LIT FROM THE TOP (`.page-card`'s gradient, further down this file). Alpha
+     alone gets the sheet clean; what makes it read as a SHEET rather than as a flat fill is
+     one soft highlight falling over the first 420px, which is the same light the tabletop
+     band's walnut hairline has implied since 2026-07-28. Four candidates were rendered over
+     the live page and read back side by side — current, plain 0.88, 0.88-plus-light, and a
+     fully opaque cream — per [[pick-visual-values-from-a-render]]. The opaque one is the
+     cleanest paper and the worst page: it is a slab, and the weather stops existing behind
+     it.
+
+     ⚠ WHAT IT COSTS, STATED PLAINLY: rain and the moon are less visible through the card
+     than they were, and "make the boxes more transparent so we can see the moon"
+     (2026-07-23) is the instruction being traded against. The two pull on one picture. This
+     is the newer call and it is scoped to `theme-chess` — the world pages, where the sky IS
+     the point, keep their own surface untouched.
+     ⚠ AA MOVED THE SAFE WAY AND WAS STILL MEASURED. A lighter sheet raises every ratio on
+     it; nothing on this surface is light-on-light. Re-checked anyway, worst phase: ink-3
+     5.16 → 6.44, `--fd-wood-ink` 4.70 → 5.83, `--fd-go-ink` 5.36 → 6.68. */
+  --surface:   rgba(251, 243, 224, 0.88);
   --surface-2: #f6f0e2;
-  --edge:      #e6dfcd;
-  --lift:      0 18px 50px rgba(0, 0, 0, 0.45);
+  /* the edge steps down with the sheet. At 0.78 the card was dim enough that #e6dfcd read
+     as a border; against the brighter paper it disappeared, and a lit sheet with no edge
+     floats instead of sitting. Warm, one step darker, still a hairline. */
+  --edge:      #d9cfb4;
+  /* deeper and softer — the card is the only object on this page, and the shadow is what
+     says so. It is a bigger blur, NOT a darker one: the alpha moves 0.45 → 0.50 while the
+     spread goes 50 → 60px, so the sky under the card stays readable. */
+  --lift:      0 24px 60px rgba(0, 0, 0, 0.50);
 
   /* the ink — warm near-blacks, three steps.
      ⚠ --fd-ink-3 WAS #6d7583 AND FAILED AA, and the way it failed is worth keeping.
@@ -258,7 +307,26 @@ body.theme-chess {
   .page-body a:not([class]) { color: var(--fd-ink-2); }
   .page-body a:not([class]):hover { color: var(--fd-ink); }
 
-  .page-card { background: var(--surface); }
+  /* ⚑ THE LIT SHEET (2026-08-11 — the second half of the "spiff-up"; the reasoning and the
+     rejected candidates are with `--surface` at the top of this file).
+
+     One soft highlight over the first 420px of the card, so the paper has a light source
+     instead of being a flat fill. 420 rather than a percentage on purpose: the front door's
+     card is ~1280px tall and /rating/'s is about half that, and a percentage would put the
+     falloff in a different PLACE on each page — the light has to land where the top of the
+     sheet is, not where a fraction of it is.
+
+     ⚠ `background-color` AND `background-image`, NOT the `background` shorthand. The
+     shorthand resets every background property it does not name, so writing one here would
+     silently wipe the gradient the next time somebody adds a color — and writing them as
+     two longhands means either can be changed without knowing about the other.
+     ⚠ The tabletop band paints its own warm wash ON TOP of this and is unaffected: it is a
+     child element, so it composites over the highlight rather than replacing it. That is
+     what keeps the band a shade warmer than the sheet, which is the whole tabletop idea. */
+  .page-card {
+    background-color: var(--surface);
+    background-image: linear-gradient(180deg, rgba(255, 252, 244, 0.6), rgba(255, 252, 244, 0) 420px);
+  }
 
   /* ══ THE BOX GOT BIGGER — 2026-08-04 ("Make the white box bigger…") ══════════════
      Two moves, because "bigger" has two halves and only doing one of them looks wrong:

@@ -1266,16 +1266,32 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    off that background is a new decision, not a reuse. Hence `--fd-go-ink` (#17492a, 5.36:1),
    added to the palette beside `--fd-wood-ink`, which exists for the identical reason.
    ⭐ GREEN FILLS use `--fd-go`. GREEN WORDS use `--fd-go-ink`. */
-/* ⚑ the 10px bottom margin is "give some more empty space" under Keep Going. It lives on the
+/* ⚑ the bottom margin is "give some more empty space" under Keep Going. It lives on the
    RESUME block rather than on the list below it, because a signed-out visitor never renders
-   this element — put the gap on `.mc-true` and a stranger gets a hole where his rating isn't. */
-.mc-resume { margin: 0 0 10px; display: block;
+   this element — put the gap on `.mc-true` and a stranger gets a hole where his rating isn't.
+   ⚑ 10 → 22px, 2026-08-11 ("give a little more space under Keep Going and the three
+   points"). The link sits on the sheet with nothing around it, so 10px read as the list
+   crowding it rather than as a gap; 22 is one clear line of air and still less than the
+   stack's own 16px gap plus a paragraph would be. */
+.mc-resume { margin: 0 0 22px; display: block;
   font-size: 0.88rem; line-height: 1.6; color: var(--fd-ink-3); }
 .mc-resume[hidden] { display: none; }
 /* the greeting — its own line, because a bigger, warmer word set inline against body copy
-   fights the baseline instead of leading it */
+   fights the baseline instead of leading it.
+
+   ⚑ BLOCK LETTERS, 2026-08-11 (Nate: "Make 'Welcome Back' block letters"). It is
+   `text-transform`, so the STRING is untouched — the markup and the script still say
+   "Welcome back!", which is what a screen reader announces and what a copy-paste carries.
+   Capitals are a treatment here, not a rewording.
+
+   ⚠ CAPS NEED TRACKING AND A SMALLER SIZE, OR THEY SHOUT. Upper case has no descenders and
+   no x-height variation, so the same 1.02rem reads noticeably bigger and tighter than the
+   sentence case did — set letter-spacing OPEN (0.07em) and the size back a step (0.96rem)
+   and the line lands at almost exactly the width it had, which is what keeps it a heading
+   for the two lines under it instead of a second headline competing with the green door. */
 .mc-resume b { display: block; color: var(--fd-wood-ink); font-weight: 800;
-  font-size: 1.02rem; letter-spacing: -0.01em; margin-bottom: 1px; }
+  font-size: 0.96rem; text-transform: uppercase; letter-spacing: 0.07em;
+  margin-bottom: 3px; }
 /* his rating and his count */
 .mc-resume .rs-num { color: var(--fd-go-ink); font-weight: 800; font-size: 1.16rem;
   letter-spacing: -0.01em; }
@@ -1295,7 +1311,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    comment warns about this exact rule; `:not([class])` is what makes it survivable, and a
    class is how you opt out. Measured, not read: `getComputedStyle` said rgb(51,57,68).
    ⭐ The general one: A COLOR YOU DECLARED IS NOT A COLOR THAT PAINTED. */
-.mc-resume a.rs-go { display: inline-block; margin-top: 3px;
+.mc-resume a.rs-go { display: inline-block; margin-top: 6px;
   color: var(--fd-go-ink); font-weight: 800; font-size: 0.96rem; text-decoration: underline;
   text-underline-offset: 3px; white-space: nowrap; }
 /* deeper, never brighter — and it is the same hover the page's other links already use */
@@ -1314,10 +1330,52 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    paragraph. ⚠ 0.82rem is the FLOOR here: `--fd-ink-3` on the parchment is chosen against the
    sheet's alpha, and going smaller starts trading legibility for space on the one block whose
    whole job is to be believed. Do not take another step without re-measuring contrast. */
-.mc-true { list-style: none; padding: 0; margin: 0;
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+/* ⚑ CENTERED, AND THE LEFT RULE IS GONE (2026-08-11, Nate: "move the three points more
+   toward center"). Six placements were rendered over the real sheet and read back as a
+   labelled grid, per [[pick-visual-values-from-a-render]]:
+
+     flush left, hairline rule   the shipping version — the rule is `--fd-rule` on a sheet
+                                 the sky darkens, so it was all but invisible and the block
+                                 just hung off the column's left edge
+     block centered, rule kept   the rule ends up floating mid-column, pointing at nothing
+     indented 44px, rule kept    same defect, moved
+     centered text, no rule      clean, and the obvious reading of what he asked for
+     centered + a wood divider   ← this one. Centered, and the three facts finally read as
+                                 a SET rather than as three sentences that happen to be
+                                 stacked.
+
+   ⭐ THE DIVIDER IS WHAT THE LEFT RULE WAS TRYING TO BE. Losing the rule loses the only
+   thing separating one proof from the next, and centered text has no shared left edge to
+   do that job instead — so the separator moves to where centered items can actually use
+   one. It is `--fd-grain` at 55%, the same walnut hairline the page's other rules use, and
+   38px wide: long enough to read as a mark, short enough that three of them do not become
+   a ladder.
+   ⚠ IT MEASURES 2.11:1 ON THE SHEET AT THE DARKEST HOUR, AND THAT IS FINE HERE — it is
+   decoration, not text and not the boundary of a control, so the 3:1 non-text floor does
+   not reach it. Written down so the next contrast sweep does not report it as a defect.
+   If it ever has to carry meaning, it needs `--fd-wood` (4.94) instead, not more opacity.
+
+   ⚠ IT IS A `::before` ON EVERY ITEM BUT THE FIRST, not a `border-top`. A border would
+   stretch the full column width — the very "three horizontal rules" look the short mark
+   exists to avoid — and could not be centered under a `1fr` grid column.
+   ⚠ `gap` 10 → 14px: centered blocks need more air between them than left-aligned ones,
+   because the shared edge that used to group them is gone, and the divider needs somewhere
+   to sit. The row still costs the column less height than the old 16px gap did.
+
+   ⚑ THE BOTTOM MARGIN IS THE SECOND HALF OF "a little more space… and the three points".
+   On this desktop row it changes nothing — the 483px board is the tall item and sets the
+   height — but on a phone the column IS the tall item, and this is the gap between the last
+   proof and the foot of the tabletop. */
+.mc-true { list-style: none; padding: 0; margin: 0 0 6px;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px;
+  text-align: center; }
 .mc-true li { color: var(--fd-ink-3); font-size: 0.82rem; line-height: 1.55;
-  border-left: 2px solid var(--fd-rule); padding-left: 12px; }
+  position: relative; padding-top: 14px; }
+.mc-true li::before { content: ''; position: absolute; top: 0; left: 50%;
+  transform: translateX(-50%); width: 38px; height: 2px; border-radius: 2px;
+  background: var(--fd-grain); opacity: 0.55; }
+.mc-true li:first-child { padding-top: 0; }
+.mc-true li:first-child::before { display: none; }
 .mc-true b { display: block; color: var(--fd-ink-2); font-size: 0.88rem; margin-bottom: 2px; }
 
 /* THE WORLD DOOR — DE-PURPLED 2026-08-04 (Nate: "completely get rid of the purple and gold
