@@ -183,6 +183,7 @@ body_class: theme-hall
 .lb-legend-rungs { display:flex; flex-wrap:wrap; gap:6px 14px; margin:0 0 6px; padding:0; list-style:none; }
 .lb-legend-rungs li { display:flex; align-items:baseline; gap:6px; font-size:0.76rem; color:#b9c0cb; white-space:nowrap; }
 .lb-legend-note { margin:0; font-size:0.74rem; line-height:1.5; color:#8b93a1; }
+</style>
 
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>

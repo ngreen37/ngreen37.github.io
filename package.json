@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Princess and the Journey to Chess City (PJCC) / McPuppy Studios. NOTE: the SITE is built by GitHub Pages (Jekyll) on push — there is no Node build step. Node here is purely for the local dev TOOLING below (tests, the dead-code sweep, the SCSS compile check, asset generators).",
   "scripts": {
-    "test": "npm run test:css && npm run test:style && npm run test:doors && npm run test:proto && npm run test:regulars && npm run test:pwa && npm run test:links && npm run sweep",
+    "test": "npm run test:css && npm run test:tags && npm run test:style && npm run test:doors && npm run test:proto && npm run test:regulars && npm run test:pwa && npm run test:links && npm run sweep",
     "test:style": "node tests/style.check.js",
     "test:doors": "node tests/doors.check.js",
     "prepare": "git config core.hooksPath .githooks",
@@ -11,6 +11,7 @@
     "test:links": "node tests/links.check.js",
     "test:pwa": "node tests/pwa.check.js",
     "test:css": "node tests/css.check.js",
+    "test:tags": "node tests/tags.check.js",
     "sweep": "node tests/sweep.js",
     "perf": "node tests/perf.js",
     "motion": "node tests/motion.js",
