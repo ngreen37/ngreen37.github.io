@@ -122,7 +122,25 @@ points." Probed rather than remembered — `/classified/` returns **200**, and t
 
 *The standing list of things **only he can do** (an account he owns, a decision that's his to make, a
 name he has to pick). Kept here so an ended session never loses them. None are on fire; they just have
-to live somewhere. Cross one off by deleting the line. Last swept **2026-08-09**.*
+to live somewhere. Cross one off by deleting the line. Last swept **2026-08-11**.*
+
+> ## ⚠⚠ A BOX MEANS "HE STILL HAS TO DO THIS." NOTHING ELSE GETS A BOX.
+>
+> **2026-08-11: this section held THIRTY unchecked boxes, and roughly one was a task.** He opened
+> the session with *"I have so many avenues going at once and am feeling a little overwhelmed on
+> these action items"* — and he was reading an accurate count of a dishonest list. Eleven of the
+> thirty sat under headings that say, in those words, *"all shipped, all one-line reversible"* and
+> *"shipped, and yours to veto."* **Those are receipts, not chores.** They are plain bullets now.
+> Four more were provably stale: two named a domain and a page that had already changed under
+> them, one was confirmed working on his phone that morning, and one assigned him a measurement I
+> could take myself in ninety seconds — so I took it.
+>
+> ⭐ **THE RULE, AND IT IS THE ONE THIS SECTION KEEPS BREAKING: an unchecked box is a PROMISE THAT
+> SOMETHING IS OWED.** Spend them only on work that is genuinely his and genuinely pending. A
+> veto window, a design dial with a sane default, a note about what shipped, an idea for later —
+> none of those are owed, and dressing them as boxes charges him attention for work that does not
+> exist. **Before adding a box, ask: if he never ticks this, what breaks?** If the answer is
+> "nothing", it is a bullet. Related: [[backlog-outlives-its-fix]] · [[capture-request-batches]].
 
 ## 📋 WHAT'S STILL OPEN — the whole list, in one screen
 
@@ -185,11 +203,31 @@ things that answer themselves is how a short list stops being read.*
   Nothing ever looked broken because the broken thing had already disappeared.
 
 **🔀 8 · POINT THE TWO SPARE DOMAINS AT THE RIGHT PAGES *(2026-08-10, yours — Squarespace)***
-- [ ] **8 · Both domains currently land on the front door, and no file in this repo can change
-  that.** Probed today: `mcpuppystudios.com` and `princessandthejourneytochesscity.com` both
+- [ ] **8 · ONE CHECKBOX LEFT: turn PATH FORWARDING OFF on the PJCC domain.** He set the
+  forwarding on 2026-08-11 and the target saved correctly — but Squarespace is still appending the
+  visitor's path to it, which the probe caught as a doubled slash:
+
+      princessandthejourney….com/zzz-test/  →  https://chesswild.com/pjcc//zzz-test/
+
+  **Squarespace → Domains → princessandthejourneytochesscity.com → Forwarding → path forwarding
+  OFF.** Target stays `https://chesswild.com/pjcc/`. Nothing links to this domain, so collapsing
+  every path onto `/pjcc/` costs nothing and is the intent.
+  ⚠ Also unconfigured: `www.princessandthejourneytochesscity.com` does not answer at all (no
+  response, not even a redirect). Add the same forward for `www` if Squarespace offers the row.
+  ⭐ **DIAGNOSTIC WORTH KEEPING: the response headers say who is answering.** `Server: Squarespace`
+  proved the forwarding service — not GitHub Pages — was handling the request, which is what made
+  "the rule is live but misconfigured" the answer instead of "the rule never took". A domain that
+  still resolved to GitHub's IPs (185.199.108-111.153) would have meant the opposite.
+
+  **The original framing, now only half true:** *Both domains land on the front door, and no file
+  in this repo can change that.* Probed 2026-08-10: `mcpuppystudios.com` and
+  `princessandthejourneytochesscity.com` both
   301 to `https://chesswild.com/`. That redirect is **GitHub Pages** doing what it always does
   with a domain that isn't the one in `CNAME` — bounce it to the canonical host **on the same
   path**. Pages has no per-domain routing, so the forward has to move to the registrar.
+  ⚠ **That diagnosis was right for mcpuppystudios.com and WRONG for the PJCC domain**, which was
+  already on Squarespace forwarding with path forwarding ON. Two domains, two different mechanisms,
+  one assumption applied to both.
 
   **Squarespace → Domains → (pick the domain) → Forwarding.** Set:
 
@@ -250,7 +288,15 @@ Runbook kept at `docs/domain-cutover-chesswild.md`. DNS verified, `CNAME`/`_conf
 mcpuppystudios.com 301s **with the path preserved** (`/pjcc/` → `chesswild.com/pjcc/`).
 - [x] ~~**Tick Enforce HTTPS**~~ **DONE — verified 2026-08-04:** both `http://chesswild.com` and
   `http://www.chesswild.com` now 301 to `https://chesswild.com`.
-- [ ] **2 · Google Search Console** — ⚠⚠ **MOSTLY ALREADY DONE, AND I LISTED IT ANYWAY. He hit
+- [x] ~~**2 · Google Search Console**~~ **✅ DONE 2026-08-11 — end to end.** Property added +
+  verified (proved via DNS), sitemap submitted, and URL Inspection run on `/` and `/pjcc/` with
+  three green checks each, which also proves Googlebot can reach the host. **The "Couldn't fetch"
+  on the sitemap was queue latency, not a rejection** — blank Last read is the tell. Everything
+  from here is on Google's clock, and the sitemap regenerates on every push, so it is never
+  resubmitted. ⚑ One real defect found while closing it and fixed the same hour: `offline.html`
+  was IN the sitemap while carrying `noindex` — a contradiction Google reports weeks later as
+  "Submitted URL marked 'noindex'". Now `sitemap: false`.
+  **The original write-up, kept for the lesson:** ⚠⚠ **MOSTLY ALREADY DONE, AND I LISTED IT ANYWAY. He hit
   "Add property" on 2026-08-11 and found `chesswild.com` was already there.** Proved from public
   DNS in five seconds, which is what I should have done before writing the item:
 
@@ -404,46 +450,46 @@ mine. Play a stretch of puzzles before deciding — this is a feel question, not
 - [x] ~~**The app is still *named* PJCC.**~~ **DONE 2026-08-03** — the domain picked the name. The
   manifest now reads `name: "ChessWild — free chess for everyone"` / `short_name: "ChessWild"`.
   `id` stayed `/pjcc/`, so it updates in place rather than becoming a second icon.
-- [ ] **25 new collectable names are mine, veto open.** Eight shop faces (The Bear · Otter · Stag ·
+- **25 new collectable names are mine, veto open.** Eight shop faces (The Bear · Otter · Stag ·
   Octopus · Shark · Tortoise · Nightwing · Moon), three titles, two themes, six Vault pieces named
   for what the altar does (The Hourglass · Anchor · Long Thread · Remembered by the Board · Nothing
   Comes Back · Six Days), and seven EARNED (The Laurel · Long View · Compass · Field Ledger · The
   Finder · The Key · Citizen of Chess City). All one array in `pjcc-profile.js`.
-- [ ] **The collection page is called "The Collection"** and its line is *"Collect them all."* You
+- **The collection page is called "The Collection"** and its line is *"Collect them all."* You
   said don't call it a pokedex, so it isn't — but the name itself is plain on purpose and is yours
   to make stranger if you want (The Cabinet · The Case · The Field Manifest were the runners-up).
-- [ ] **The two hidden boards are on `/pjcc/` and `/games/`.** Three hiding places each, and the
+- **The two hidden boards are on `/pjcc/` and `/games/`.** Three hiding places each, and the
   board moves between them daily. Say the word for a third board anywhere — it's one line of data.
 
 **From the 2026-08-03 sky batch — all shipped, all one-line reversible**
-- [ ] **The intro is deleted.** `/` no longer types *"McPuppy Studios Presents"* — it is a bare
+- **The intro is deleted.** `/` no longer types *"McPuppy Studios Presents"* — it is a bare
   redirect to `/chess/` (JS before paint, meta-refresh for no-JS, a real link as the last resort).
   Everything that served it went too: the once-per-session flag, the cross-document fade, and the
   *Replay intro* link on `/pjcc/`. **It was one file — `git show HEAD~1 -- index.md` brings the whole
   card back** if you ever want it in front of a Blender clip instead.
-- [ ] **One new ticker line is mine, and the wire is your voice.** *LAST SEEN: DUSK* — shown once,
+- **One new ticker line is mine, and the wire is your voice.** *LAST SEEN: DUSK* — shown once,
   on the visit where the hour of the world has changed since you were last here. It is deliberately
   not a headline (its own dimmer style, no ◆), because it is the dossier's "last seen", not the desk
   speaking. Change the wording or cut it: one string in `_layouts/home.html`.
-- [ ] **The hidden-board card now says *"Left out in the rain."*** (or snow). It exists to teach the
+- **The hidden-board card now says *"Left out in the rain."*** (or snow). It exists to teach the
   rule — the boards only appear on wet days, so without it a friend who looks tomorrow decides the
   site is broken. Yours to reword.
-- [ ] **Five muted text colors in four games got a touch brighter** (sandmine + pirc `.foot`, the
+- **Five muted text colors in four games got a touch brighter** (sandmine + pirc `.foot`, the
   Reading Room's romaji and deck headers, tower defense's stat labels). Not taste — the town-sky
   wash pushed all five under the AA line, and lifting them was the alternative to not shipping it.
-- [ ] **`/style/` now carries a voice chart** naming which font speaks for which brand, including
+- **`/style/` now carries a voice chart** naming which font speaks for which brand, including
   the two serifs. It records what is true today rather than proposing a change; if you'd rather the
   Reading Room and Shogi Island used the studio's serif stack instead of their own, say so.
 
 **From the Identity Forge rebuild (2026-08-03) — shipped, and yours to veto**
-- [ ] **Nine characters left and they are not coming back on their own.** Fox, Visitor, Robot and
+- **Nine characters left and they are not coming back on their own.** Fox, Visitor, Robot and
   Fairy — the four you named — plus Ghost, Genie, Elf, Vampire and Merfolk, which fall under "keep
   them human". Say the word and any of them can return as a drawn face; each is one entry in `FACES`
   plus a hair shape.
-- [ ] **The 12 hair styles and their names are mine.** Crop · Swept · Buzz · Curls · Afro · Bob ·
+- **The 12 hair styles and their names are mine.** Crop · Swept · Buzz · Curls · Afro · Bob ·
   Long · Ponytail · Braids · Top knot · Locs · Bald. So are the 12 hair colors (three of which —
   jade, rose, azure — only exist in Checker Town) and the 10 eye colors.
-- [ ] **The tiny avatar in the nav is still an emoji on ONE surface: the share card.** It paints with
+- **The tiny avatar in the nav is still an emoji on ONE surface: the share card.** It paints with
   `ctx.fillText` onto a canvas, which cannot take a drawing, so it shows 🧑 in your skin tone. Every
   other surface — nav, leaderboards, profile bar, dossier — shows the real face. Worth fixing when
   the share card is next opened; not worth a canvas rewrite today.
@@ -468,7 +514,12 @@ mine. Play a stretch of puzzles before deciding — this is a feel question, not
   already sit at, and a dead backend says "the tables are offline — but the regulars are still here"
   instead of sending everyone away. Verified live, signed out, in a clean browser jar. See the
   `bot-gate` memory.
-- [ ] **The domain question (raised 2026-07-28).** `princessandthejourneytochesscity.com` is worth
+- [x] ~~**The domain question (raised 2026-07-28).**~~ **CLOSED 2026-08-11 — overtaken twice over.**
+  He owns the domain, and today he pointed it at `/pjcc/`. The recommendation below is now wrong in
+  its particulars (it says to point it at `mcpuppystudios.com`, which is itself no longer the site),
+  and the `pjcc.com` half was answered by buying `chesswild.com` on 2026-08-03. Kept for the
+  reasoning on what a defensive domain is worth; ignore the instructions.
+- ~~**(original text)**~~ `princessandthejourneytochesscity.com` is worth
   the ~$12/yr as a **defensive redirect nobody ever types** — it is the show's actual title, it costs
   less than a coffee, and the only bad outcome is someone else holding the name of his own series.
   Point it at `mcpuppystudios.com` and never print it anywhere. **`pjcc.com` is a pass:** the $19,800
@@ -480,7 +531,7 @@ mine. Play a stretch of puzzles before deciding — this is a feel question, not
   stranger can spell after hearing it is the whole asset), it just found a better answer than either
   candidate. The defensive `princessandthejourneytochesscity.com` registration is still open and
   still worth ~$12/yr. See the cutover steps at the top of this file.
-- [ ] **⭐ The road to Chess City lives in ONE browser — and that is a 1,000-puzzle promise.**
+- **⭐ The road to Chess City lives in ONE browser — and that is a 1,000-puzzle promise.**
   *(Found 2026-07-29 answering his question "is there a method where users can get them all?")*
   Progress is `localStorage['pjcc.fork.journey.v2']`, written on every correct solve. Signed IN it is
   also mirrored to the profile and restored on load if the server is further along, so an account
@@ -496,7 +547,7 @@ mine. Play a stretch of puzzles before deciding — this is a feel question, not
   finish (they are *measurements*); only the STEP is withheld (it is a *claim*). ⚠ **"1,000 puzzles to
   Chess City" now means 1,000 CLEAN solves** — a materially harder promise than it was, and the knob
   to turn if the road ever feels punishing.
-- [ ] **The rarity band NAMES are mine and the veto is open.** *Common · Uncommon · Rare · Very Rare ·
+- **The rarity band NAMES are mine and the veto is open.** *Common · Uncommon · Rare · Very Rare ·
   Ultra-Rare · Legendary* — he asked for six categories "up to 'ultra-rare' or 'ultra-valuable'", and
   these are the six. **Legendary and Ultra-Rare traded places 2026-08-03 at his word**, so Legendary
   is the ceiling now. If P&JCC wants its own vocabulary for them (the altar speaks in ritual, not in
@@ -511,15 +562,19 @@ mine. Play a stretch of puzzles before deciding — this is a feel question, not
   **chesswild.com** and the site is **ChessWild**. The twenty candidates below are closed. The front
   door also moved `/chess/` → **`/`** the same day: a domain that says chess retires the hop that
   existed only to explain a studio-sounding address.
-- [ ] **Shape the new home page.** First pass is live and deliberately plain — hero + one gold
-  button + four doors + three true things + one door to the world. He said "we'll shape it."
-- [ ] **The Spotify-style profile ring** — hover the top-right profile pill, a progress ring slides out
+- [x] ~~**Shape the new home page.**~~ **CLOSED 2026-08-11 — it describes a page that no longer
+  exists.** "Hero + one gold **button** + four doors": the button has been GREEN since 2026-08-04
+  (the front door banned gold and purple), the grid is five doors, the three true things moved up
+  beside the button, and the lockup, tagline and facts all stand outside the card now. ⭐ **The
+  shaping is not a task he owes — it is what he has been doing all along, in batches, by asking.**
+  An open box for it just made a finished habit look like an unstarted chore.
+- **The Spotify-style profile ring** — hover the top-right profile pill, a progress ring slides out
   with what's left to do. Spec'd under *Waiting on Nate* above. Outward-facing, so it's his call.
-- [ ] **The Journey map** — make the dots cost something · fold it into the Gauntlet's climb · cut it.
+- **The Journey map** — make the dots cost something · fold it into the Gauntlet's climb · cut it.
   All three laid out at the bottom of this file.
 - [ ] **The hidden track** — the CD-style ghost track on the McPuppy side is built-ready; it needs **one
   audio file**, and which song it is, is his.
-- [ ] **The Enforcer door (floor 7)** — "lock the rook glyph" was built as *the rook locked behind a
+- **The Enforcer door (floor 7)** — "lock the rook glyph" was built as *the rook locked behind a
   barred gate with a padlock*. If he meant *pin the glyph to ♜ so it stops changing*, that's a one-liner.
 - [ ] **Put yourself on the Projects page — an image of you and Princess.** *(Projects idea #3 of ten;
   Nate 2026-07-28: "I'll still want to be mysterious but perhaps I can add an image of us together.")*
@@ -536,7 +591,7 @@ mine. Play a stretch of puzzles before deciding — this is a feel question, not
   and 3D cursor included — captioned honestly as one, which reads as a receipt. A transparent PNG of
   the same pose would let her float free of the box and sit in a page margin, which was your original
   idea for her.
-- [ ] **Build a personal chess curriculum.** *(Projects idea #7 of ten, deferred by Nate on 2026-07-28:
+- **Build a personal chess curriculum.** *(Projects idea #7 of ten, deferred by Nate on 2026-07-28:
   "not yet because I'm not quite ready.")* The skeptic's sharpest money note: **"I also teach chess —
   any age, in person or online" is buried at the bottom of `/contact/` with no rate, no location and
   no way to book. It is the only line on the entire site that could earn something today, and it's a
@@ -563,12 +618,30 @@ mine. Play a stretch of puzzles before deciding — this is a feel question, not
 
 
 **Test on a device I don't have**
-- [ ] **iOS in-app sign-in** — the PWA is built but private (`?pwa=on`). Magic links can't sign in an
-  installed app; the email-CODE path (`PJCC.verifyCode`) was written for it and has never been retested
-  on his phone. Blocks the PWA launch flip.
+- [x] ~~**iOS in-app sign-in**~~ **✅ CONFIRMED WORKING 2026-08-11 on his real iPhone.** The
+  email-CODE path (`PJCC.verifyCode`) had been written on 2026-07-12 and never retested for a
+  month, which left the only auth path an installed iOS app can use unproven. He reinstalled the
+  app on the new domain and signed in with a code: it works. **This no longer blocks the PWA
+  launch flip** — flipping `ENABLED = true` in `assets/js/pwa-register.js` is now a one-line
+  decision rather than a decision resting on an unknown.
 
 **Measure it on your own machine — 60 seconds, and it settles a question I can only guess at**
-- [ ] **Feel the 200ms yourself: open `mcpuppystudios.com/chess/?ready=1`.** The front door's board
+- [x] ~~**Feel the 200ms yourself.**~~ **CLOSED 2026-08-11 — MEASURED INSTEAD OF ASSIGNED.** The
+  URL in the original text (`mcpuppystudios.com/chess/?ready=1`) was two moves stale: old domain
+  AND old path, so following it today costs two redirects. Driven on the live front door instead,
+  three runs each:
+
+      warm, unthrottled            88ms · 89ms      (first, cold: 294ms)
+      4x slower CPU              ~1,350ms
+      6x slower CPU              ~2,800ms
+
+  **The 200ms prediction holds on a real machine** — that half is answered and it is closed.
+  ⚠ **Be honest about what the throttled rows are and are not.** Chrome's CPU throttle slows the
+  ENTIRE page, not just this script, so 2.8s is "the whole front door on a 6x-slower processor",
+  not "the board script is slow". And a throttled headless Chrome is **not his iPhone** — that is
+  the same instrument-not-the-visitor trap [[audit-numbers-can-be-wrong]] is about. Worth a real
+  look if the board ever feels dead on a phone; not worth a number in a backlog until then.
+- ~~**(original text)**~~ The front door's board
   is playable — tap the rook, tap a8 — and that interactivity is wired up by a script, so there is a
   gap between *the board appears* and *the board answers*. I said it should land under 200ms and that
   you'd never notice it; that was a prediction, not a measurement, and it was made on a headless
