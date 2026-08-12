@@ -130,7 +130,6 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-08-09**
 
 | # | What | Where | Blocks |
 |---|---|---|---|
-| **1** | **Redeploy the Cloudflare Worker** — paste the **DeepL** block (the SECOND one) from `docs/translation-worker.md`, click **Deploy** | Cloudflare → Workers & Pages → `pjcc-translate` | Nothing visible — ⚑ Japanese is NOT down; it runs on an unofficial fallback |
 | **2** | **Google Search Console** — add `chesswild.com` as a *Domain* property, submit `sitemap.xml` | search.google.com/search-console | Nothing — but the new titles + description only pay off once Google re-crawls |
 | **3** | **Delete and reinstall the app on your phone** — ⚠ **sign in on chesswild.com FIRST** | your iPhone | Your installed app still opens the old origin |
 | **4** | **Does Customize take ONE tap now on your iPhone?** | `/dossier/` → the Forge | I could not reproduce it; I need your answer before I instrument the live page |
@@ -225,26 +224,25 @@ mcpuppystudios.com 301s **with the path preserved** (`/pjcc/` → `chesswild.com
 - [ ] **3 · Delete and reinstall the app on your phone** — a new origin is a new app, and no manifest
   edit can reach an installed launcher. **Sign in on chesswild.com first**, so your account carries
   your progress across rather than the browser jar you're leaving behind.
-- [ ] **1 · Redeploy the Cloudflare Worker** — ⚠ **re-probed 2026-08-11 and it is STILL not live.**
-  A `chesswild.com` request gets back `Access-Control-Allow-Origin: https://mcpuppystudios.com`
-  (the `ALLOW[0]` fallback), which proves `chesswild.com` is not in the deployed array — and the
-  OPTIONS preflight answers the same, so the browser blocks the response before the reply is even
-  read. Cloudflare → Workers & Pages → `pjcc-translate` → **Edit code** → select all → paste →
-  **Deploy** (the edit does nothing until Deploy is clicked). Tell me when it's done and I'll re-probe.
+- [x] ~~**1 · Redeploy the Cloudflare Worker**~~ **✅ DONE 2026-08-11 — he deployed it, and both
+  halves are verified.** The allowlist answers `Access-Control-Allow-Origin: https://chesswild.com`
+  on the GET *and* the OPTIONS preflight, and the engine answers `{"engine":"deepl"}` on three real
+  sentences. The site is off the undocumented Google endpoint and back on its own Worker.
 
-  ⚠⚠ **PASTE THE *DeepL* BLOCK — the SECOND complete Worker in `docs/translation-worker.md`, under
-  "DeepL engine (sharper Japanese)". NOT the first one.** Caught 2026-08-11 by probing the live
-  Worker instead of reading the note: it answers `{"engine":"deepl"}`, so the running code is the
-  DeepL version, and the instruction as written ("paste the whole worker from
-  docs/translation-worker.md") points at the Workers AI starter that opens the file. That paste
-  would have fixed CORS and quietly downgraded the site's Japanese from DeepL to `m2m100` — and
-  nothing would have flagged it, because both engines return a perfectly valid translation. The
-  doc now opens with a banner saying which block to take. Both blocks carry the same corrected
-  `ALLOW` list, so the CORS half is fixed either way; only the engine differs.
-  ⭐ Same shape as the "Japanese is down" error one line below: **the action item described the
-  layer I had looked at, not the thing that was running.** Probe the live service before writing
-  a step that overwrites it. **Your `DEEPL_KEY` is a Worker SECRET and survives the paste** — it
-  lives in settings, not in the source, so there is nothing to re-enter.
+  ⚠⚠ **IT TOOK TWO TRIES, AND BOTH FAILURES WERE MINE — WRITTEN DOWN BECAUSE THEY GENERALIZE.**
+  (1) The action item said "paste the whole worker from `docs/translation-worker.md`", and that
+  file held **two** complete Workers; the one at the top was the older Workers AI starter. Pasting
+  it fixed CORS and silently dropped the Japanese to `m2m100` — invisible, because both engines
+  return a perfectly valid translation. Only a Cloudflare capacity error (`AiError: 3040`) exposed
+  the swap. ⭐ **Before writing a step that OVERWRITES a running service, probe what is running.**
+  (2) The fix I pointed him at was headed "DeepL engine — DEPLOYED 2026-06-30", and he read the
+  date as a version stamp: *"we're going back to the 6/30 data?"* Fair — it was a status label on
+  the **newer** block, sitting under code from June 24. ⭐ **A date in a heading is read as the
+  age of the thing, not its status.**
+  **The doc is now ONE code block.** The starter was always redundant (the DeepL version contains
+  the same Workers AI call as its fallback), and deleting it deleted the need for all three
+  warning banners the two mistakes had added. ⭐ *A runbook that offers a choice it does not want
+  you to make is a runbook with a bug in it.*
 
   ⚑ **DOWNGRADED FROM URGENT — 2026-08-05 preflight. "Japanese is down site-wide" was WRONG, and
   I had been repeating it for two days.** I proved the Worker was refusing CORS and stopped there;
