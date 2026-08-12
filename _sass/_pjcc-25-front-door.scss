@@ -187,7 +187,73 @@ body.theme-chess {
      ⚠ AA MOVED THE SAFE WAY AND WAS STILL MEASURED. A lighter sheet raises every ratio on
      it; nothing on this surface is light-on-light. Re-checked anyway, worst phase: ink-3
      5.16 → 6.44, `--fd-wood-ink` 4.70 → 5.83, `--fd-go-ink` 5.36 → 6.68. */
-  --surface:   rgba(251, 243, 224, 0.88);
+  /* ⚑⚑⚑ 0.88 → 0.92, AND THE SHEET IS BACKLIT NOW — 2026-08-12, SEVENTH pass.
+     Nate: "the gray box background is wearing on me… We're going for professional, sleek,
+     modern, unique."
+
+     ⚠⚠ THIS IS THE SECOND TIME HE HAS CALLED THIS BOX GRAY, AND THE LINE DIRECTLY ABOVE IS
+     WHY IT CAME BACK: "THE FIX IS ALPHA, BECAUSE ON A TRANSLUCENT SHEET IT IS THE ONLY
+     DIAL." That sentence is false, and believing it is what made the last pass a dial-turn
+     instead of a fix. A composite has TWO ends. Six passes have all moved the paper; nobody
+     had ever touched WHAT THE PAPER IS LYING ON. The sky behind this card is rgb(11,8,26) —
+     near-black with a purple cast — and every point of alpha we do not spend lets that cold
+     ink up through the parchment and desaturates it. Raising alpha fights that leak; it
+     never removes it, which is why each pass buys less than the one before and the
+     instruction keeps sounding the same size ([[when-he-repeats-himself]]).
+
+     ⭐ SO THE NEW DIAL IS A WARM UNDERLAY, AND IT IS A BETTER DIAL BECAUSE IT HAS A SHAPE.
+     Alpha is one number applied flatly to the whole sheet — it can only make the card more
+     or less of a slab. A radial laid UNDER the parchment lights the middle, where the
+     reading is, and falls off at the edges, where the weather is worth seeing. The card
+     stops being a flat fill of one value and becomes a surface with a light on it, which is
+     the actual difference between "a gray box" and the professional look he is asking for.
+     It is the tabletop idea the band has implied since 2026-07-28, finally paid for.
+
+     MEASURED — and the arithmetic I wrote here first was WRONG BY TEN POINTS OF LUMINANCE,
+     which is exactly why the house rule is to sample a render instead of computing one. A
+     radial's contribution at a given pixel is its falloff curve, not its peak alpha, so
+     predicting the sheet from the color stops overstates every value below the hot spot.
+     Sampled off real renders of the live page, bare sheet in a text-free lane, per phase,
+     against the same door panel each time (L is 0.2126R + 0.7152G + 0.0722B):
+
+                    before                     after                  door   gap
+         night      rgb(217,209,197) L=210     rgb(227,220,203) L=220  243    33 → 23
+         dusk       rgb(224,213,199) L=214     rgb(233,223,206) L=224  242    28 → 18
+         dawn       rgb(225,216,202) L=217     rgb(234,224,209) L=225  244    27 → 19
+         day        rgb(223,218,206) L=218     rgb(232,227,212) L=227  244    26 → 17
+
+     That gap is the defect the 0.88 note above diagnosed correctly and then only half-fixed:
+     "a visitor sees clean cream paper sitting on dirty gray paper, one inch apart." It is
+     narrower at every hour and the paper is warmer (chroma 20 → 24 at night), but it is NOT
+     closed — the door cards are opaque and no translucent sheet can reach them.
+     ⚠ THE HONEST LIMIT, SO THE NEXT PASS DOES NOT REDISCOVER IT: the remaining 23 points can
+     only come from bringing the PANELS DOWN (`--fd-panel`, free — it costs no weather) or
+     from more alpha (costs weather). It cannot come from this radial. If he says gray a
+     third time, that is the fork, and neither branch is another notch of this dial.
+
+     ⚠ AA RE-MEASURED ON THE NEW COMPOSITE, worst phase, before → after — every ratio moved
+     UP, as a lighter sheet must, and nothing here is light-on-light:
+         --fd-ink-3    6.28 → 6.95      --fd-ink-2      7.67 → 8.49
+         --fd-wood-ink 6.32 → 7.00      --fd-go-ink     6.86 → 7.60
+
+     ⚠ FOUR CANDIDATES WERE RENDERED OVER THE LIVE PAGE AND READ BACK AS A LABELED GRID
+     (control · alpha 0.93 · backlight alone · backlight deeper), per
+     [[pick-visual-values-from-a-render]]. Two things the numbers alone got wrong: the
+     backlight ALONE barely moves the left column (a radial is weakest exactly where his eye
+     goes), and the sheet's tone was never the whole complaint — the hero also reads gray
+     because it is a large EMPTY field. The structure work in index.md's own stylesheet is
+     the other half of this fix and neither half is sufficient alone.
+
+     ⚠ WHAT IT COSTS, STATED PLAINLY, BECAUSE IT IS THE SAME TRADE AS EVERY PASS BEFORE IT:
+     light through the card is now 0.08 x 0.72 ≈ 6% at the center against 12% before, so the
+     rain and the moon are about half as visible BEHIND THE MIDDLE of the sheet. The edges
+     keep 8%. "More transparent so we can see the moon" (2026-07-23) is what this spends —
+     but he has since asked for the sky and weather to be QUIETER three times running, down
+     to opacity 0.5, so this moves with his standing direction rather than against it.
+     ⚠ THE RADIAL IS SIZED IN PIXELS, NOT PERCENTAGES, for the same reason the top light is:
+     `theme-chess` also dresses /rating/, whose card is about half this one's height, and a
+     percentage would put the falloff in a different PLACE on each page. */
+  --surface:   rgba(251, 243, 224, 0.92);
   --surface-2: #f6f0e2;
   /* the edge steps down with the sheet. At 0.78 the card was dim enough that #e6dfcd read
      as a border; against the brighter paper it disappeared, and a lit sheet with no edge
@@ -323,9 +389,35 @@ body.theme-chess {
      ⚠ The tabletop band paints its own warm wash ON TOP of this and is unaffected: it is a
      child element, so it composites over the highlight rather than replacing it. That is
      what keeps the band a shade warmer than the sheet, which is the whole tabletop idea. */
+  /* ⚑ THE BACKLIGHT WENT UNDER THE PAPER — 2026-08-12 (the reasoning, the measurements and
+     the four rendered candidates are with `--surface` at the top of this file).
+
+     ⚠⚠ THE PARCHMENT HAD TO STOP BEING `background-color` TO MAKE THIS POSSIBLE, AND THAT
+     IS THE WHOLE TRICK. Background layers paint first-declared on top, but the
+     background-COLOR always paints beneath every one of them — so while the sheet was a
+     color there was physically nowhere to put a layer UNDER it. Restating the parchment as
+     a solid two-stop gradient moves it into the image list, where a warm layer can finally
+     sit below it. That is the mechanical reason six passes only ever had one dial.
+
+     The stack, top to bottom, and each one has a job:
+       1. the top light   — the 420px highlight from 2026-08-11; the sheet has a light source
+       2. the parchment   — `--surface`, unchanged in hue, one notch up in alpha
+       3. the backlight   — warm lamplight UNDER the paper, so the fraction of the sky that
+                            still comes through arrives warm instead of cold purple-black
+
+     ⚠ `background-color: transparent` IS LOAD-BEARING, NOT TIDYING. Core sets `.page-card`
+     with the `background` shorthand; if this rule left the color alone, `--surface` would
+     still be painted underneath the whole stack and the backlight would be sealed under an
+     opaque-enough parchment where it does nothing at all.
+     ⚠ AND THE SHORTHAND IS STILL BANNED HERE, now more than before — four layers deep, a
+     `background:` written by the next person silently erases three of them. */
   .page-card {
-    background-color: var(--surface);
-    background-image: linear-gradient(180deg, rgba(255, 252, 244, 0.6), rgba(255, 252, 244, 0) 420px);
+    background-color: transparent;
+    background-image:
+      linear-gradient(180deg, rgba(255, 252, 244, 0.6), rgba(255, 252, 244, 0) 420px),
+      linear-gradient(var(--surface), var(--surface)),
+      radial-gradient(1100px 520px at 50% 140px,
+                      rgba(255, 205, 138, 0.28), rgba(255, 205, 138, 0) 72%);
   }
 
   /* ══ THE BOX GOT BIGGER — 2026-08-04 ("Make the white box bigger…") ══════════════

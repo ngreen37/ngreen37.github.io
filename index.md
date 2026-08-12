@@ -1273,7 +1273,38 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    points"). The link sits on the sheet with nothing around it, so 10px read as the list
    crowding it rather than as a gap; 22 is one clear line of air and still less than the
    stack's own 16px gap plus a paragraph would be. */
-.mc-resume { margin: 0 0 22px; display: block;
+/* ⚑⚑ IT IS A PANEL NOW — 2026-08-12. Nate: "the Puzzle rating section above the three
+   points looks like it's missing something (like a box outline or something)."
+
+   He is describing a real thing and it is not only this block. Every other object in this
+   column has an edge — the green door has a fill, the doors below have panels, the board
+   has a timber frame — and his rating was three lines of loose text floating on bare
+   parchment between two of them. It read as unfinished because on this page it WAS the one
+   piece of furniture with no furniture.
+
+   ⭐ THE GREEN LEFT EDGE IS THE ONE JUDGMENT CALL HERE, AND IT IS DELIBERATE. Green on this
+   page means "this belongs to playing" — and this block is the only thing on the front door
+   that belongs to HIM. The rule ties his numbers back to the Play Now door directly above
+   without adding a color the block was not already carrying: the rating, the count and
+   "Keep going" have all been `--fd-go-ink` since 2026-08-11.
+   ⚠ THE PAGE'S ONE LAW SURVIVES IT, and I checked rather than assumed. The law is that
+   exactly one thing is a FILLED green box. This is a 3px edge on a cream panel; `.mc-lead`
+   is still the only green fill, the only green arrow and the only thing shouting. If this
+   ever starts reading as a second call to action, the edge is what to take off first.
+
+   ⚠ THE PANEL IS TRANSLUCENT (0.72), NOT `--fd-panel`. The opaque door cards are the
+   BRIGHTEST paper on the page and the sheet's whole "gray" problem is measured against
+   them — dropping another opaque panel into the hero would have widened the very gap the
+   backlight in _pjcc-25-front-door.scss was just spent closing. At 0.72 it reads as a
+   raised area of the same sheet, which is what it is.
+   ⚠ THE BOTTOM MARGIN CAME OFF (22 → 2px) AND ITS JOB DID NOT GO AWAY. "Give a little more
+   space under Keep Going" is the box's own bottom padding now; leaving both would have
+   double-counted the gap and pushed the proofs away from a block a stranger never sees. */
+.mc-resume { margin: 0 0 2px; display: block;
+  padding: 13px 16px 14px; border-radius: 14px;
+  background: rgba(255, 253, 247, 0.72);
+  border: 1px solid rgba(185, 139, 87, 0.32);
+  border-left: 3px solid var(--fd-go);
   font-size: 0.88rem; line-height: 1.6; color: var(--fd-ink-3); }
 .mc-resume[hidden] { display: none; }
 /* the greeting — its own line, because a bigger, warmer word set inline against body copy
@@ -1318,10 +1349,11 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mc-resume a.rs-go:hover { color: var(--fd-ink); }
 
 /* THE TRUE THINGS — a list, not cards; facts don't need boxes.
-   ⚑ IT LIVES IN THE HERO NOW (2026-08-11). `auto-fit` still does the right thing without a
-   breakpoint: three across when it had the page's full width, one per row in a 480px column,
-   which is what turns it from a footer strip into a column of proofs beside the button.
-   The bottom margin goes — the stack's `gap` owns the spacing here.
+   ⚑ IT LIVES IN THE HERO NOW (2026-08-11) — which is what turns it from a footer strip into
+   a column of proofs beside the button. The bottom margin goes; the stack's `gap` owns the
+   spacing here. (The `auto-fit` this paragraph used to praise is gone as of 2026-08-12 — it
+   was silently two columns on a tablet, which the centered text tolerated and a row rule
+   does not. See the note further down.)
 
    ⚑ SMALLER, same day ("make the three points a bit smaller"). Three dials, all one step:
    the claim 0.95 → 0.88rem, the support 0.88 → 0.82rem, and the row gap 16 → 10px. The words
@@ -1330,52 +1362,64 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    paragraph. ⚠ 0.82rem is the FLOOR here: `--fd-ink-3` on the parchment is chosen against the
    sheet's alpha, and going smaller starts trading legibility for space on the one block whose
    whole job is to be believed. Do not take another step without re-measuring contrast. */
-/* ⚑ CENTERED, AND THE LEFT RULE IS GONE (2026-08-11, Nate: "move the three points more
-   toward center"). Six placements were rendered over the real sheet and read back as a
-   labelled grid, per [[pick-visual-values-from-a-render]]:
+/* (SUPERSEDED 2026-08-12 — HE REVERSED IT HIMSELF; see the note directly below. Kept short
+   because one line of it is still load-bearing and the rest is now history.
 
-     flush left, hairline rule   the shipping version — the rule is `--fd-rule` on a sheet
-                                 the sky darkens, so it was all but invisible and the block
-                                 just hung off the column's left edge
-     block centered, rule kept   the rule ends up floating mid-column, pointing at nothing
-     indented 44px, rule kept    same defect, moved
-     centered text, no rule      clean, and the obvious reading of what he asked for
-     centered + a wood divider   ← this one. Centered, and the three facts finally read as
-                                 a SET rather than as three sentences that happen to be
-                                 stacked.
+   On 2026-08-11 this block was CENTERED with a short 38px walnut divider, chosen off six
+   placements rendered over the real sheet ("move the three points more toward center").
+   ⭐ THE ONE FINDING THAT OUTLIVED THE DECISION: the flush-left version it replaced was
+   drawn with `--fd-rule`, which is invisible on a sheet the sky darkens — so "flush left
+   looks wrong" was never about the alignment, it was about a rule nobody could see. That is
+   why the rule below is walnut `--fd-grain`, not `--fd-rule`. Re-reading that finding is
+   what kept this pass from re-shipping the exact block he disliked in the first place.
+   The rejected placements, for the record: block-centered-with-rule and indented-44px both
+   left the rule floating mid-column pointing at nothing.) */
+/* ⚑⚑ THE CENTERING IS REVERSED — 2026-08-12. Nate: "my decision to move the three points
+   center of the green box doesn't really work. My mistake."
 
-   ⭐ THE DIVIDER IS WHAT THE LEFT RULE WAS TRYING TO BE. Losing the rule loses the only
-   thing separating one proof from the next, and centered text has no shared left edge to
-   do that job instead — so the separator moves to where centered items can actually use
-   one. It is `--fd-grain` at 55%, the same walnut hairline the page's other rules use, and
-   38px wide: long enough to read as a mark, short enough that three of them do not become
-   a ladder.
-   ⚠ IT MEASURES 2.11:1 ON THE SHEET AT THE DARKEST HOUR, AND THAT IS FINE HERE — it is
-   decoration, not text and not the boundary of a control, so the 3:1 non-text floor does
-   not reach it. Written down so the next contrast sweep does not report it as a defect.
-   If it ever has to carry meaning, it needs `--fd-wood` (4.94) instead, not more opacity.
+   ⭐ WHAT WAS ACTUALLY WRONG, SINCE "centered" WAS NOT THE WHOLE OF IT: this column holds
+   four things and the other three are left-aligned objects with a hard left edge — the green
+   door, the rating panel, and (down the page) the door grid. Centering one of the four broke
+   the column's only structural line, so the proofs stopped reading as part of the stack and
+   started reading as three sentences adrift in the middle of a large pale field. The
+   centered version is defensible on its own and indefensible in company, which is exactly
+   what a screenshot shows and a candidate rendered in isolation does not.
 
-   ⚠ IT IS A `::before` ON EVERY ITEM BUT THE FIRST, not a `border-top`. A border would
-   stretch the full column width — the very "three horizontal rules" look the short mark
-   exists to avoid — and could not be centered under a `1fr` grid column.
-   ⚠ `gap` 10 → 14px: centered blocks need more air between them than left-aligned ones,
-   because the shared edge that used to group them is gone, and the divider needs somewhere
-   to sit. The row still costs the column less height than the old 16px gap did.
+   ⚠ THE SHORT DIVIDER GOES WITH IT, AND ITS JOB IS RE-HOUSED RATHER THAN DROPPED. The
+   2026-08-11 note below was right that centered items have no shared edge to group them and
+   therefore need a mark. Left-aligned items DO have that edge, so the separator can go back
+   to being a plain rule between rows, and the grouping work moves to a small walnut lozenge
+   at the head of each proof — which also gives the eye the same three-beat rhythm the
+   centered dividers were bought for.
 
-   ⚑ THE BOTTOM MARGIN IS THE SECOND HALF OF "a little more space… and the three points".
-   On this desktop row it changes nothing — the 483px board is the tall item and sets the
-   height — but on a phone the column IS the tall item, and this is the gap between the last
-   proof and the foot of the tabletop. */
-.mc-true { list-style: none; padding: 0; margin: 0 0 6px;
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px;
-  text-align: center; }
+   ⚠ IT IS ONE COLUMN AT EVERY WIDTH NOW. It used to be `auto-fit, minmax(260px, 1fr)`,
+   which is one column in the 420px desktop stack but TWO on a tablet, where `.mc-lead-col`
+   drops its cap and the column runs the full page. Centered text survived that reflow;
+   a row border and a left-hand mark would not — the rule would run across a two-column
+   split and the marks would form two ragged ladders. A list of three proofs beside a button
+   was never a grid; it just had not been asked to prove it at 720px.
+
+   (Superseded, kept because the reasoning still teaches: the flush-left HAIRLINE RULE this
+   replaces was invisible — `--fd-rule` on a sheet the sky darkens — which is what sent the
+   2026-08-11 pass to center in the first place. The rule below is `--fd-grain` walnut at
+   0.22, not `--fd-rule`, so it is a mark you can actually see. The fix for an invisible
+   rule was a visible rule; moving the block was treating the symptom.)
+   ⚠ 2.4:1 ON THE SHEET AND THAT IS FINE — decoration, not text and not the boundary of a
+   control, so the 3:1 non-text floor does not reach it. Written down so the next contrast
+   sweep does not report it as a defect, same as the old divider's note did. */
+.mc-true { list-style: none; padding: 0; margin: 0;
+  display: grid; grid-template-columns: 1fr; gap: 0;
+  text-align: left; }
 .mc-true li { color: var(--fd-ink-3); font-size: 0.82rem; line-height: 1.55;
-  position: relative; padding-top: 14px; }
-.mc-true li::before { content: ''; position: absolute; top: 0; left: 50%;
-  transform: translateX(-50%); width: 38px; height: 2px; border-radius: 2px;
-  background: var(--fd-grain); opacity: 0.55; }
-.mc-true li:first-child { padding-top: 0; }
-.mc-true li:first-child::before { display: none; }
+  position: relative; padding: 11px 0 11px 20px; }
+.mc-true li + li { border-top: 1px solid rgba(185, 139, 87, 0.22); }
+/* the lozenge — a square stood on its corner, drawn in CSS rather than typed as a glyph.
+   ⚠ DELIBERATELY NOT A CHARACTER. A diamond typed as ◆ needs a variation selector to stay
+   text and not become an emoji on iOS, and it would take its size from the font stack
+   instead of from this rule ([[text-clip-glyph-technique]]). A box cannot be mis-rendered. */
+.mc-true li::before { content: ''; position: absolute; top: 18px; left: 2px;
+  width: 7px; height: 7px; border-radius: 2px; transform: rotate(45deg);
+  background: var(--fd-grain); }
 .mc-true b { display: block; color: var(--fd-ink-2); font-size: 0.88rem; margin-bottom: 2px; }
 
 /* THE WORLD DOOR — DE-PURPLED 2026-08-04 (Nate: "completely get rid of the purple and gold
