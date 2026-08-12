@@ -135,8 +135,16 @@ doing the thing, two of them because his own later actions had already answered 
 | **2** | **Google Search Console** — ⚠ **property added + verified** (proved via DNS 08-11), **sitemap submitted**. Only the optional URL-Inspection nudges remain | search.google.com/search-console | Nothing — it is on Google's clock now |
 | **8** | **Point the spare domains at the right pages** — ⚠ **RE-SCOPED 08-11: only the PJCC domain is worth doing.** mcpuppystudios.com should be left exactly as it is | Squarespace → Domains → Forwarding | Nothing |
 | **9** | **Flip a social account to `live: true`** the day it has a post on it | `_config.yml` → `socials:` | Nothing — the row renders empty until you do |
-| **10** | **MARCHLAND castling — two readings of your rule I had to pick.** (a) At **16-17 the king still MOVES**, he just arrives alone; (b) **"similarly for the three pawns" = the shield rides the ROOK's band**, so 18-20 gets it and 16-17 doesn't. Both one-line flips | `assets/games/pjcc_marchland.html` → `POS_CASTLE` / `posCastleFull` | Nothing; it shipped my way and the sim says 48% |
-| **12** | **"More Ways In" is FIVE doors now** — 3 + 2 with an empty cell. If it reads as a hole, the fix is a sixth door worth having, not a new column count | the front door | Nothing; it shipped my way |
+
+*⚑ **WHAT DOES NOT BELONG ON THIS TABLE — 2026-08-11, his correction.** Three rows were added
+here and taken straight back off: the MARCHLAND castling readings, the Welcome Back block, and
+the five-door grid. His words: **"those are things I'll encounter without needing notes."**
+He is right, and the rule is worth keeping: **this list is for things only HE can DO** — an
+account he owns, a domain he controls, a decision that cannot be reached from inside the work.
+**A judgment call he will meet the moment he next opens the page is not an action item**; the
+reasoning for all three is written where it happens, in `index.md` and `pjcc_marchland.html`,
+which is exactly where he will be standing when the question arrives. Padding this table with
+things that answer themselves is how a short list stops being read.*
 
 ---
 
