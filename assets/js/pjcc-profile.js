@@ -420,6 +420,19 @@
        how many, and what moves it. Rendered in four places, so the sentence is built once
        here and the count is read off the ladder rather than typed. */
     CLEARANCE: CLEARANCE,
+    /* THE LOWEST RUNG THAT WEARS A PIP ON A BOARD (2026-08-12). A leaderboard suppresses
+       the Recruit pip on purpose — everyone starts there, so a dot on every row is not a
+       badge, it is noise (the same argument as the THRESHOLDS note above: "the pip would be
+       a participation badge"). Your OWN dossier and profile bar still show it, because one
+       pip beside one codename is information, not clutter.
+
+       ⚠ THIS NUMBER EXISTS BECAUSE THE RULE WAS SPELLED TWICE AND DRIFTED THE SAME DAY.
+       The board had `cl.level > 1` inline, then the new legend was generated from the full
+       ladder — so the legend documented a seven-rung ladder while the board could only ever
+       show six of them, and Nate spotted the missing dot immediately ("It should show on
+       number 2 and 3, right?"). A legend that explains a symbol you can never meet there is
+       worse than no legend. Both surfaces read this now, so they cannot disagree again. */
+    BOARD_PIP_MIN_LEVEL: 2,
     clearance: function (prof) {
       prof = (prof === undefined) ? profile : prof;
       var rating = (prof && prof.pjcc_rating) || 0;

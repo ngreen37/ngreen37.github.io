@@ -154,10 +154,15 @@
         /* THE CLEARANCE PIP, on every board (2026-08-03, priority #3). A leaderboard is
            where a stranger meets other operatives, so it is the one place the ladder is
            worth wearing beside a name. Boards that carry neither a rating nor a credit
-           count show NOTHING — a Recruit pip on every row is not a badge, it is noise. */
+           count show NOTHING — a Recruit pip on every row is not a badge, it is noise.
+           ⚠ THE THRESHOLD IS NOT SPELLED HERE ANY MORE. It was `cl.level > 1` inline, and
+           the moment a legend was generated from the full ladder the two disagreed: the
+           legend explained a Recruit dot the board never draws. One name, read by both —
+           see PJCC.BOARD_PIP_MIN_LEVEL in pjcc-profile.js. */
         var cl = (PJCC.clearance && (r.rating != null || r.credits != null))
           ? PJCC.clearance({ pjcc_rating: r.rating || 0, credits: r.credits || 0 }) : null;
-        var pip = (cl && cl.level > 1)
+        var minPip = PJCC.BOARD_PIP_MIN_LEVEL || 2;
+        var pip = (cl && cl.level >= minPip)
           ? '<span class="pjcc-pip pip-' + cl.level + '" title="' + esc(cl.hint || cl.name) + '">' + cl.pip + '</span> ' : '';
         return '<tr class="' + mine + '">' +
           '<td class="lb-rank ' + rankClass(i) + '">' + (i + 1) + '</td>' +

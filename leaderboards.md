@@ -199,15 +199,30 @@ body_class: theme-hall
   function build() {
     var el = document.getElementById('lb-legend');
     if (!el || !window.PJCC || !PJCC.CLEARANCE) return false;
+    /* ONLY THE RUNGS THIS BOARD CAN ACTUALLY DRAW (2026-08-12, Nate: "you can't see the
+       Recruit dot though… It should show on number 2 and 3, right?"). It never showed there:
+       the board suppresses the starting rung on purpose, so a legend built from the whole
+       ladder was documenting a symbol you cannot meet here — which is worse than saying
+       nothing. The cut reads the board's own threshold rather than a 2 typed here, so the
+       legend cannot drift from the rows again. The absence is NAMED instead of hidden: an
+       unexplained gap at the bottom of a ladder just moves the question. */
+    var minPip = PJCC.BOARD_PIP_MIN_LEVEL || 2;
+    var shown = PJCC.CLEARANCE.filter(function (c) { return c.level >= minPip; });
+    var below = PJCC.CLEARANCE.filter(function (c) { return c.level < minPip; });
     el.innerHTML =
       '<p class="lb-legend-h">READING THE PIPS</p>' +
       '<ul class="lb-legend-rungs">' +
-      PJCC.CLEARANCE.map(function (c) {
+      shown.map(function (c) {
         return '<li><span class="pip-' + c.level + '">' + c.pip + '</span>' + c.name + '</li>';
       }).join('') +
       '</ul>' +
       '<p class="lb-legend-note">The pip beside a codename is that operative&rsquo;s clearance. ' +
-      'It climbs with your rating &mdash; or with the credits you have earned, whichever is further along.</p>';
+      'It climbs with your rating &mdash; or with the credits you have earned, whichever is further along.' +
+      (below.length
+        ? ' ' + below.map(function (c) { return c.name; }).join(' and ') +
+          ', where everyone starts, wears no pip here.'
+        : '') +
+      '</p>';
     el.removeAttribute('hidden');
     return true;
   }
