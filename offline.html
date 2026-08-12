@@ -1,3 +1,28 @@
+---
+# ⚠ FRONT MATTER EXISTS FOR ONE LINE, AND `layout: null` IS THE OTHER HALF OF IT.
+#
+# `sitemap: false` — this page carried `<meta name="robots" content="noindex">` while sitting
+# IN sitemap.xml, which is a direct contradiction and the exact thing Search Console reports as
+# "Submitted URL marked 'noindex'" — weeks later, in red, long after anyone remembers why.
+# Caught 2026-08-11 by walking all 152 sitemap URLs and reading each one's robots meta; it was
+# the only one of the 152 that disagreed with itself. `jekyll-sitemap` lists STATIC FILES too,
+# which is how a raw .html at the root got in without anyone adding it (the same way every
+# /assets/games/*.html did, excluded via _config.yml defaults in the 2026-07-11 sweep — this
+# file arrived with the PWA the following day and missed it).
+#
+# ⚠ ADDING FRONT MATTER MAKES JEKYLL RENDER THIS FILE, so two things had to be checked first:
+#   · It contains ZERO Liquid delimiters, so rendering cannot change a byte of it. Verified
+#     before adding this, because a stray brace pair in the inline CSS would break the build.
+#   · `layout: null` keeps it STANDALONE. This page must work with no network at all — it is
+#     what sw.js serves when a navigation fails — so it cannot inherit a layout that pulls in
+#     the site head, the stylesheet or any script.
+#
+# ⚠ THE PATH MUST STAY `/offline.html` — sw.js precaches it by that exact URL (OFFLINE_URL).
+# No `permalink` here on purpose: a rendered page keeps its source path, and naming it again
+# would be a second place the address lives.
+sitemap: false
+layout: null
+---
 <!doctype html>
 <html lang="en">
 <head>
