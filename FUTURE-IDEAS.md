@@ -163,18 +163,18 @@ closed, so the list read as holes. **The old numbers are dead; do not reuse them
 day: old 1 (Worker), 2 (Search Console), 3 (app reinstall), 4 (Customize), 5 (Games Hall reading),
 7 (header), 11 (Welcome Back), and the domain half of 8.
 
-| # | What | Where | Owed? |
+| # | What | Where | What breaks if you skip it |
 |---|---|---|---|
 | ~~1~~ | ~~**Add a `www` forwarding rule for the PJCC domain**~~ **✅ DONE 2026-08-11 — verified.** `www` DNS went NXDOMAIN → live, and both names 301 to `https://chesswild.com/pjcc/` in one hop | — | — |
-| **2** | **Reserve the social handles** — @McPuppyStudios on YouTube, TikTok, Instagram, X. **⚑ 2026-08-12: this stopped being a pure land-grab.** He committed to building in the open — *"streaming, podcasting, blogging"* — so these are the accounts that work would post from | those four sites | Still nothing blocked, but it is now upstream of a plan he has stated |
-| **3** | **Fan-art Supabase setup** — opens public submissions; the wall itself already reads `_data/fanart.yml` | Supabase dashboard | Only when he wants submissions open |
-| **4** | **Send me an audio file for the hidden track** — built and waiting on one file; his call which | anywhere | The feature is otherwise finished |
+| **2** | **Reserve the social handles** — @McPuppyStudios on YouTube, TikTok, Instagram, X. **⚑ 2026-08-12: this stopped being a pure land-grab.** He committed to building in the open — *"streaming, podcasting, blogging"* — so these are the accounts that work would post from | those four sites | Nothing today — but it is now upstream of a plan he has stated, and a handle can be taken |
+| **3** | **Fan-art Supabase setup** — opens public submissions; the wall itself already reads `_data/fanart.yml` | Supabase dashboard | Nothing — it only matters the day he wants submissions open |
+| **4** | **Send me an audio file for the hidden track** — built and waiting on one file; his call which | anywhere | Nothing — the feature is finished and simply stays silent |
 | **5** | **A photo of you and Princess for the Projects page** | anywhere | Nothing |
 | **6** | **`earned` — does a hinted solve still count toward the 1,000?** A feel question; play a stretch first | `assets/games/pjcc_fork.html` | Nothing — it has a working default |
 | **7** | **`RETRY_GAP = 3` — how long before a missed puzzle comes back** | `assets/games/pjcc_fork.html` | Nothing — it has a working default |
 | **8** | **Authorize the claude.ai Google Drive connector** — only if he ever wants me reading from Drive | claude.ai → connector settings | Nothing |
 | ~~9~~ | ~~**`www.mcpuppystudios.com` returns a GitHub 404**~~ **✅ DONE 2026-08-12 — verified end to end.** He deleted the leftover GitHub CNAME and set the rule; the name now 301s to `chesswild.com` and MAINTAINS paths (`/games/` → `/games/`, 200) | — | — |
-| **10** | **Switch the Godot project's renderer to Compatibility.** `project.godot` says `Forward Plus`; a GitHub Pages web export needs **Compatibility** (no COOP/COEP headers on Pages). Project Settings → Rendering → Renderer, then reopen | `Desktop\Godot\princess-dungeon\` | **Yes — this one is a real landmine.** It breaks at export time, months from now, and does not announce its cause. One line now, a lost afternoon later |
+| **10** | **Switch the Godot project's renderer to Compatibility.** `project.godot` says `Forward Plus`; a GitHub Pages web export needs **Compatibility** (no COOP/COEP headers on Pages). Project Settings → Rendering → Renderer, then reopen | `Desktop\Godot\princess-dungeon\` | **The Godot web export — months from now, and without saying why.** The only row here that breaks anything. One line now, a lost afternoon later |
 
 **⭐ 2-5 are things only he can hand over. 6 and 7 are dials with sane defaults, kept in front of
 him at his own request (2026-08-04). 8 is optional. 10 is the only one on this table where
