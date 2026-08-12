@@ -70,7 +70,25 @@
    gets denser. Seven rungs, seven steps, and the last one is deliberately the only
    thing on the ladder that glows. */
 .pjcc-pip { font-size: 0.92em; vertical-align: baseline; cursor: help; }
-.pip-1 { color: #7d8a99; }   /* Recruit */
+/* RECRUIT IS DRAWN HEAVIER, NOT BIGGER (2026-08-12, Nate: "you can't see the Recruit dot
+   though — can you make it a bit bigger?"). He was right, and it was the worst of the seven
+   on both axes at once: `·` (U+00B7) is the smallest glyph on the ladder AND #7d8a99 was the
+   dimmest color, so rung 1 — the rung EVERY new player starts on — showed nothing at all.
+   Two Recruits sat on the live leaderboard with an empty space where their pip belonged.
+
+   ⚠ SCALING IT UP CANNOT WORK HERE, and the reason is worth keeping: a middle dot sits at
+   mid-x-height, so font-size moves its CENTER up with it, and the fix is normally a matching
+   `vertical-align`. But the legend renders each rung as a `display:flex` li — and
+   vertical-align DOES NOT APPLY TO FLEX ITEMS. Five different vertical-align values rendered
+   pixel-identical there before I believed it. Scaling also inflated the line box and made
+   every leaderboard row taller.
+
+   So the weight comes from a stroke and the glyph never moves: aligned in both contexts, no
+   row-height change, one declaration for all four places a pip renders. Chosen off a labelled
+   render at 0.7/1.0/1.3/1.6px, not guessed. If -webkit-text-stroke is ever unsupported the
+   lighter color still lands on its own, which is why it is a real declaration and not a
+   stroke-only trick. */
+.pip-1 { color: #9aa8b8; -webkit-text-stroke: 1.3px #9aa8b8; }   /* Recruit */
 .pip-2 { color: #7fd4a8; }   /* Operative */
 .pip-3 { color: #56d0ff; }   /* Field Agent */
 .pip-4 { color: #b98fff; }   /* Cipher */
