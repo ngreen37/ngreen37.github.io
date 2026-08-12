@@ -108,6 +108,10 @@ defaults:
     values:
       sitemap: false
   # internal working files — not part of the site (they stay in the repo/GitHub)
+  # ⚠ THESE TWO ENTRIES DID NOT DO WHAT THEY SAY. Kept because `sitemap: false` here is
+  # what held the docs out of sitemap.xml, and because they still apply to any file in
+  # those folders that DOES carry front matter. But `published: false` never reached the
+  # ones that don't — see the `exclude:` block below, which is the mechanism that works.
   - scope:
       path: "docs"
     values:
@@ -118,6 +122,54 @@ defaults:
     values:
       published: false
       sitemap: false
+
+# ══ WHAT NEVER LEAVES THE REPO (2026-08-12) ═══════════════════════════════════════
+# Nate: "If this is going to explode like I believe it will, we should probably protect
+# the guts of it." The guts were more exposed than either of us thought, and NOT because
+# the repo is public — because the build was SHIPPING them.
+#
+# ⚠⚠ `published: false` DOES NOT APPLY TO A FILE WITH NO FRONT MATTER. That is the whole
+# bug, and the intent above was already correct: somebody wrote "internal working files —
+# not part of the site" and meant it. But a file kramdown sees no front matter on is a
+# STATIC FILE, and `defaults` never reach static files — Jekyll copies them verbatim. So
+# all 19 docs/ files answered 200 on the live domain, including supabase-setup.sql and
+# username-moderation-setup.sql, plus all 40 tests/ files, package.json and README.md.
+# A guard that reads correctly and does nothing, which is this repo's recurring shape.
+# (They were never in sitemap.xml, so Google was not handed them — the `sitemap: false`
+# half of that rule DID work. Reachable, not advertised.)
+#
+# ⚠ SETTING `exclude` REPLACES JEKYLL'S DEFAULT LIST rather than adding to it, so the
+# defaults are re-listed here. Drop them and Gemfile/vendor start publishing instead —
+# a fix that quietly opens a second door, which is exactly how the last one worked.
+# node_modules/ is not tracked by git so it was never in the build, but it stays listed:
+# the reason it is safe today is a .gitignore line, not this file.
+#
+# ⭐ NOT A SECURITY BOUNDARY, and should not be mistaken for one. Everything under
+# assets/js is still served to every visitor — that is what makes the site run, and no
+# config hides it. This closes the gap between what the site MEANS to publish and what it
+# actually publishes. The DB schema being private is tidiness; what protects the data is
+# Supabase RLS. The only key in the repo is the anon key, which is public by design.
+exclude:
+  # Jekyll's defaults, restored because naming this key discards them
+  - .sass-cache/
+  - .jekyll-cache/
+  - gemfiles/
+  - Gemfile
+  - Gemfile.lock
+  - node_modules/
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  # the working material — ⚠ assets/vendor/ is NOT this and must keep shipping
+  - docs/
+  - tests/
+  - .githooks/
+  - package.json
+  - package-lock.json
+  - README.md
+  - FUTURE-IDEAS.md
+  - CLAUDE.md
 
 collections:
   characters:
