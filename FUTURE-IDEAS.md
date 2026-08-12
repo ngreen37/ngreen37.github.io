@@ -153,7 +153,7 @@ day: old 1 (Worker), 2 (Search Console), 3 (app reinstall), 4 (Customize), 5 (Ga
 
 | # | What | Where | Owed? |
 |---|---|---|---|
-| **1** | **Add a `www` forwarding rule for the PJCC domain** — the apex forwards, `www.` does not resolve at all | Squarespace → Domains → Forwarding → **Add Rule** | 2 min — a dead name today |
+| ~~1~~ | ~~**Add a `www` forwarding rule for the PJCC domain**~~ **✅ DONE 2026-08-11 — verified.** `www` DNS went NXDOMAIN → live, and both names 301 to `https://chesswild.com/pjcc/` in one hop | — | — |
 | **2** | **Reserve the social handles** — @McPuppyStudios on YouTube, TikTok, Instagram, X | those four sites | Nothing blocked; land-grab before someone else |
 | **3** | **Fan-art Supabase setup** — opens public submissions; the wall itself already reads `_data/fanart.yml` | Supabase dashboard | Only when he wants submissions open |
 | **4** | **Send me an audio file for the hidden track** — built and waiting on one file; his call which | anywhere | The feature is otherwise finished |
@@ -162,8 +162,14 @@ day: old 1 (Worker), 2 (Search Console), 3 (app reinstall), 4 (Customize), 5 (Ga
 | **7** | **`RETRY_GAP = 3` — how long before a missed puzzle comes back** | `assets/games/pjcc_fork.html` | Nothing — it has a working default |
 | **8** | **Authorize the claude.ai Google Drive connector** — only if he ever wants me reading from Drive | claude.ai → connector settings | Nothing |
 
-**⭐ 1-5 are things only he can hand over. 6 and 7 are dials with sane defaults, kept in front of
+**⭐ 2-5 are things only he can hand over. 6 and 7 are dials with sane defaults, kept in front of
 him at his own request (2026-08-04). 8 is optional.** Nothing on this table is blocking anything.
+
+⚠ **THE NUMBERS ARE STABLE NOW — DO NOT RE-SEQUENCE ON EVERY CLOSE.** They were renumbered once,
+on 2026-08-11, because the old 1-12 had become mostly holes. A closed item gets struck through and
+keeps its number; the survivors do not shuffle up. **He asked for numbers so he could hold them in
+his head** — renumbering the moment one closes takes that back, and a list whose numbers move is
+worse than a list with a gap in it. Re-sequence only when the gaps outnumber the items again.
 
 *⚑ **WHAT DOES NOT BELONG ON THIS TABLE — 2026-08-11, his correction.** Three rows were added
 here and taken straight back off: the MARCHLAND castling readings, the Welcome Back block, and
