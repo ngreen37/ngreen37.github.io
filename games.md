@@ -416,7 +416,18 @@ permalink: /games/
     {%- comment -%} "Choose Your Hall" removed 2026-07-16 (Nate). The eyebrow is the
          page's h1 now so the hall keeps a real heading. {%- endcomment -%}
     <h1 class="ghub-eyebrow" data-hb>◆ The P&JCC Arcade</h1>
-    <p class="ghub-sub" data-hb>Claim a codename · climb the global boards</p>
+    {%- comment -%} "· works offline" added 2026-08-12 (Nate: "say 'works offline' in the games
+         hall, per your advice"). The front door has carried this fact since 2026-08-04 and the
+         ticker says it about the arcade specifically, but the HALL — the page a visitor is
+         actually standing on when they pick a game — never did.
+
+         ⚠ IT IS A STRONGER CLAIM HERE THAN ON THE FRONT DOOR, and it is verified, not assumed:
+         sw.js does not merely cache a game on first visit, it WARMS the whole game roster in the
+         background after activation (see the list under PRECACHE). So the games work with the
+         Wi-Fi off even if you never opened them. Said once, plainly, in the sub — not repeated
+         on every card, which is how five true "BUILDING" labels once turned this hall into a
+         construction site. {%- endcomment -%}
+    <p class="ghub-sub" data-hb>Claim a codename · climb the global boards · works offline</p>
     <!-- the gold rule. Two real elements, not a pseudo: the outer one is the track and clips,
          the inner one is the shimmer and slides. See the note by @ghub-shimmer. -->
     <div class="ghub-rule" aria-hidden="true"><i></i></div>
