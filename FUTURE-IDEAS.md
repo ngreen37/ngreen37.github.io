@@ -145,14 +145,25 @@ to live somewhere. Cross one off by deleting the line. Last swept **2026-08-11**
 ## 📋 WHAT'S STILL OPEN — the whole list, in one screen
 
 *Scan this. Every one of them is written out in full underneath, in the same order.*
-*Swept hard 2026-08-11: **1, 3, 4, 5, 7 and 11 all closed in one session** — most of them by him
-doing the thing, two of them because his own later actions had already answered the question.*
 
-| # | What | Where | Blocks |
+**⚑ RE-NUMBERED 1-8 ON 2026-08-11, at his request** — the old numbers ran 1-12 with most of them
+closed, so the list read as holes. **The old numbers are dead; do not reuse them.** Closed that
+day: old 1 (Worker), 2 (Search Console), 3 (app reinstall), 4 (Customize), 5 (Games Hall reading),
+7 (header), 11 (Welcome Back), and the domain half of 8.
+
+| # | What | Where | Owed? |
 |---|---|---|---|
-| **2** | **Google Search Console** — ⚠ **property added + verified** (proved via DNS 08-11), **sitemap submitted**. Only the optional URL-Inspection nudges remain | search.google.com/search-console | Nothing — it is on Google's clock now |
-| **8** | **Point the spare domains at the right pages** — ⚠ **RE-SCOPED 08-11: only the PJCC domain is worth doing.** mcpuppystudios.com should be left exactly as it is | Squarespace → Domains → Forwarding | Nothing |
-| **9** | **Flip a social account to `live: true`** the day it has a post on it | `_config.yml` → `socials:` | Nothing — the row renders empty until you do |
+| **1** | **Add a `www` forwarding rule for the PJCC domain** — the apex forwards, `www.` does not resolve at all | Squarespace → Domains → Forwarding → **Add Rule** | 2 min — a dead name today |
+| **2** | **Reserve the social handles** — @McPuppyStudios on YouTube, TikTok, Instagram, X | those four sites | Nothing blocked; land-grab before someone else |
+| **3** | **Fan-art Supabase setup** — opens public submissions; the wall itself already reads `_data/fanart.yml` | Supabase dashboard | Only when he wants submissions open |
+| **4** | **Send me an audio file for the hidden track** — built and waiting on one file; his call which | anywhere | The feature is otherwise finished |
+| **5** | **A photo of you and Princess for the Projects page** | anywhere | Nothing |
+| **6** | **`earned` — does a hinted solve still count toward the 1,000?** A feel question; play a stretch first | `assets/games/pjcc_fork.html` | Nothing — it has a working default |
+| **7** | **`RETRY_GAP = 3` — how long before a missed puzzle comes back** | `assets/games/pjcc_fork.html` | Nothing — it has a working default |
+| **8** | **Authorize the claude.ai Google Drive connector** — only if he ever wants me reading from Drive | claude.ai → connector settings | Nothing |
+
+**⭐ 1-5 are things only he can hand over. 6 and 7 are dials with sane defaults, kept in front of
+him at his own request (2026-08-04). 8 is optional.** Nothing on this table is blocking anything.
 
 *⚑ **WHAT DOES NOT BELONG ON THIS TABLE — 2026-08-11, his correction.** Three rows were added
 here and taken straight back off: the MARCHLAND castling readings, the Welcome Back block, and
@@ -203,17 +214,41 @@ things that answer themselves is how a short list stops being read.*
   Nothing ever looked broken because the broken thing had already disappeared.
 
 **🔀 8 · POINT THE TWO SPARE DOMAINS AT THE RIGHT PAGES *(2026-08-10, yours — Squarespace)***
-- [ ] **8 · ONE CHECKBOX LEFT: turn PATH FORWARDING OFF on the PJCC domain.** He set the
-  forwarding on 2026-08-11 and the target saved correctly — but Squarespace is still appending the
-  visitor's path to it, which the probe caught as a doubled slash:
+- [x] ~~**The PJCC domain forward**~~ **✅ DONE 2026-08-11.** Rule reads: FROM
+  `princessandthejourneytochesscity.com` · TO `https://chesswild.com/pjcc/` · Permanent · path
+  forwarding **Do not forward**. Verified at the origin — `/?x=<random>` answers
+  `301 → https://chesswild.com/pjcc/`.
 
-      princessandthejourney….com/zzz-test/  →  https://chesswild.com/pjcc//zzz-test/
+  ⚠⚠ **IT LOOKED BROKEN FOR AN HOUR AFTER IT WAS RIGHT, AND THE REASON IS WORTH KEEPING.** The
+  bare URL kept answering with the OLD target while a query-stringed one answered correctly:
 
-  **Squarespace → Domains → princessandthejourneytochesscity.com → Forwarding → path forwarding
-  OFF.** Target stays `https://chesswild.com/pjcc/`. Nothing links to this domain, so collapsing
-  every path onto `/pjcc/` costs nothing and is the intent.
-  ⚠ Also unconfigured: `www.princessandthejourneytochesscity.com` does not answer at all (no
-  response, not even a redirect). Add the same forward for `www` if Squarespace offers the row.
+      https://…com/           →  https://chesswild.com/        ← stale
+      https://…com/?x=22834   →  https://chesswild.com/pjcc/   ← correct
+
+  **A 301 is a PERMANENT redirect and everything caches it accordingly** — Squarespace's own edge
+  for the exact URL, and every browser that has seen it, hard and for a long time. ⭐ **So a 301
+  you have just changed is the least trustworthy thing to test with, and the cheapest bypass is a
+  query string** (`?x=1`) — a different URL is a cache miss, so it reaches the origin. A private
+  window does the same for the browser half.
+  ⭐ **AND IT PROVES WHICH LAYER IS STALE.** curl holds no cache of its own, so a plain request
+  returning the old answer while `?x=` returns the new one puts the staleness at the EDGE, not in
+  his browser — two different waits, and only one of them is something he can clear himself.
+
+- [ ] **1 · Add a `www` rule for the PJCC domain.** `www.princessandthejourneytochesscity.com`
+  does not resolve **at all** — DNS answers **NXDOMAIN** (status 3), not a redirect and not an
+  error page, so it fails in the browser as a dead name. The apex has four A records; `www` has
+  none.
+  ⭐ **WHY IT VANISHED, AND IT IS ON THE SCREEN HE WAS LOOKING AT:** the Domain Forwarding panel
+  warns *"Doing this will delete any existing Squarespace default records."* Setting the apex rule
+  removed Squarespace's defaults — and the default `www` CNAME went with them. **Adding a
+  forwarding rule is a destructive DNS edit, not an additive one.**
+  **Fix — Squarespace → Domains → princessandthejourneytochesscity.com → Forwarding → ADD RULE**
+  (the panel says it forwards "your domain **or a subdomain**"): FROM
+  `www.princessandthejourneytochesscity.com` · TO `https://chesswild.com/pjcc/` · Permanent ·
+  path forwarding **Do not forward**.
+  ⚠ Worth doing rather than shrugging at: people type `www.`, and some mail clients and link
+  scrapers prepend it on their own — so the dead name is reachable by accident, not just on
+  purpose.
   ⭐ **DIAGNOSTIC WORTH KEEPING: the response headers say who is answering.** `Server: Squarespace`
   proved the forwarding service — not GitHub Pages — was handling the request, which is what made
   "the rule is live but misconfigured" the answer instead of "the rule never took". A domain that
