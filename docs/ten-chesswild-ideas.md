@@ -9,11 +9,23 @@ those three actually ship, and which of our instincts that kills.*
 
 ## How This Was Checked
 
-Not from memory. Each of the three was read as it stands today — Lichess's own changelog and
-about page, chess.com's current tier limits and bot roster, and chessly.com's front page. Then
-the site was grepped before anything was proposed, because a backlog item that outlives its own
-fix becomes a confident wrong sentence, and this file is exactly the kind of file that gets
-quoted a year from now.
+**The research comes first and the list comes last, on purpose.** Ten ideas that sound good are
+easy to write; what makes these ten worth anything is knowing what the other three actually do.
+That research also *killed* several ideas that seemed obviously right — most importantly
+"our opponents are characters, theirs are engines," which died the moment I found chess.com's
+bot roster.
+
+Each of the three was read as it stands today, not recalled: Lichess's own changelog and about
+page, chess.com's current tier limits and bots, and chessly.com's front page. **And every idea
+below was checked against this site's own files before it was written down**, so nothing here
+proposes building something that already exists.
+
+> **⏳ FOR WHOEVER READS THIS LATER, INCLUDING ME: this was true on 2026-08-12, and nothing else
+> is promised.** Competitors ship, prices change, and the ten ideas get built one at a time.
+> **A document like this one is dangerous when it goes stale, because it reads as researched
+> even after it stops being right** — that is exactly how `FUTURE-IDEAS` once kept insisting the
+> site had never said it works offline, a week after it started saying so twice. **Re-check
+> before quoting any number or claim on this page, and strike the ideas as they ship.**
 
 ---
 
