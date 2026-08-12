@@ -158,7 +158,7 @@
         var cl = (PJCC.clearance && (r.rating != null || r.credits != null))
           ? PJCC.clearance({ pjcc_rating: r.rating || 0, credits: r.credits || 0 }) : null;
         var pip = (cl && cl.level > 1)
-          ? '<span class="pjcc-pip pip-' + cl.level + '" title="' + esc(cl.name) + '">' + cl.pip + '</span> ' : '';
+          ? '<span class="pjcc-pip pip-' + cl.level + '" title="' + esc(cl.hint || cl.name) + '">' + cl.pip + '</span> ' : '';
         return '<tr class="' + mine + '">' +
           '<td class="lb-rank ' + rankClass(i) + '">' + (i + 1) + '</td>' +
           '<td class="lb-av">' + av(r.companion) + '</td>' +

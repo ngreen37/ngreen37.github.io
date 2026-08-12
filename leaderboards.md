@@ -47,6 +47,14 @@ body_class: theme-hall
   <div class="lbtv-screen">
     <div id="lb-body"><p class="lb-empty">Tuning in…</p></div>
   </div>
+  {%- comment -%} THE PIP LEGEND (2026-08-12, Nate: "what is this green dot? There is a
+       question mark that appears when you hover over it, but the question mark doesn't
+       tell me anything"). The pip's tooltip says more now, but a tooltip is the wrong
+       instrument here twice over: it does not render AT ALL on iOS, and this is the one
+       page where you meet pips you did not earn, so the answer has to be readable without
+       pointing at anything. Built from PJCC.CLEARANCE rather than typed out, so the ladder
+       and its legend can never disagree. {%- endcomment -%}
+  <div class="lb-legend" id="lb-legend" hidden></div>
   {%- comment -%} 2026-07-28 (Nate): "Add an Altar link to the Leaderboard page and the Profile
        page (the two main places where users can view their credits)." This page is where a
        player sees the number; the altar is the only place it means anything. One quiet line —
@@ -164,8 +172,45 @@ body_class: theme-hall
 .lb-altar-txt b { display:block; color:#eef1f5; font-size:0.95rem; }
 .lb-altar-txt small { display:block; color:#8b93a1; font-size:0.78rem; line-height:1.5; }
 .lb-altar-arw { color:var(--tv-gold); flex:0 0 auto; }
-</style>
+
+/* the pip legend — quiet, under the board it explains. The rungs carry their own colors
+   from .pip-1…7 (_sass/_pjcc-14-profile.scss), so this block sets no color per rung: the
+   ladder is defined in exactly one place and this only lays it out. */
+.lb-legend { margin-top:10px; border:1px solid #3a3f47; border-radius:var(--r-md);
+  background:rgba(18,20,26,0.58); padding:9px 13px; }
+.lb-legend-h { font-family:'Courier New',monospace; font-size:0.7rem; font-weight:900;
+  letter-spacing:0.12em; color:#8b93a1; margin:0 0 7px; }
+.lb-legend-rungs { display:flex; flex-wrap:wrap; gap:6px 14px; margin:0 0 6px; padding:0; list-style:none; }
+.lb-legend-rungs li { display:flex; align-items:baseline; gap:6px; font-size:0.76rem; color:#b9c0cb; white-space:nowrap; }
+.lb-legend-note { margin:0; font-size:0.74rem; line-height:1.5; color:#8b93a1; }
 
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-leaderboard.js' | relative_url }}" defer></script>
+
+<script>
+// Fills the pip legend from the one ladder (PJCC.CLEARANCE). Sits AFTER pjcc-profile.js
+// on purpose — that tag is not deferred, so the ladder is there by the time this runs —
+// but it still waits the same way the sign-in hint above does, because a page that is
+// wrong about its own load order fails silently and this box would just never appear.
+// The div stays `hidden` until it has content: an empty bordered box is worse than none.
+(function () {
+  function build() {
+    var el = document.getElementById('lb-legend');
+    if (!el || !window.PJCC || !PJCC.CLEARANCE) return false;
+    el.innerHTML =
+      '<p class="lb-legend-h">READING THE PIPS</p>' +
+      '<ul class="lb-legend-rungs">' +
+      PJCC.CLEARANCE.map(function (c) {
+        return '<li><span class="pip-' + c.level + '">' + c.pip + '</span>' + c.name + '</li>';
+      }).join('') +
+      '</ul>' +
+      '<p class="lb-legend-note">The pip beside a codename is that operative&rsquo;s clearance. ' +
+      'It climbs with your rating &mdash; or with the credits you have earned, whichever is further along.</p>';
+    el.removeAttribute('hidden');
+    return true;
+  }
+  function arm() { if (!build()) setTimeout(arm, 300); }
+  arm();
+})();
+</script>

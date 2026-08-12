@@ -166,14 +166,16 @@
        and the Profile finally speak one language." This is the identity row every game
        loads, so it is the single most-seen codename on the site and the first place the
        pip belongs. One glyph in front of the name, with the rung in the title attribute
-       — a pip nobody can decode is decoration, and a legend would cost a whole line.
+       — a pip nobody can decode is decoration, and a legend would cost a whole line here
+       (the leaderboards page carries the full one, since that is where a stranger meets
+       pips they did not earn).
        `PJCC.clearance` is guarded because the games embed whatever profile module their
        cached shell has, and an old one has no such function. */
     var rankName = PJCC.rankFor(prof.credits).name;
     var titleLabel = PJCC.titleLabel ? PJCC.titleLabel(prof) : '';
     var cl = PJCC.clearance ? PJCC.clearance(prof) : null;
-    var pip = cl ? '<span class="pjcc-pip pip-' + cl.level + '" title="' + esc(cl.name) +
-        (cl.rating ? ' · PJCC rating ' + cl.rating : '') + '">' + cl.pip + '</span> ' : '';
+    var pip = cl ? '<span class="pjcc-pip pip-' + cl.level + '" title="' + esc(cl.hint || cl.name) +
+        (cl.rating ? ' (now ' + cl.rating + ')' : '') + '">' + cl.pip + '</span> ' : '';
     bar.innerHTML =
       '<div class="pjcc-avatar">' + (PJCC.avatarMarkup ? PJCC.avatarMarkup(prof) : PJCC.avatarEmoji(prof)) + '</div>' +
       '<div class="pjcc-id">' +

@@ -213,7 +213,7 @@ permalink: /dossier/
        because a rung with no number behind it is a mood, not a measurement. */
     var cl = PJCC.clearance ? PJCC.clearance(prof) : null;
     var clLine = cl
-      ? '<span class="pjcc-pip pip-' + cl.level + '" title="' + esc(cl.name) + '">' + cl.pip + '</span> ' + esc(cl.name) +
+      ? '<span class="pjcc-pip pip-' + cl.level + '" title="' + esc(cl.hint || cl.name) + '">' + cl.pip + '</span> ' + esc(cl.name) +
         (cl.rating ? ' <span class="dsr-dim">· PJCC rating ' + cl.rating + '</span>' : '')
       : esc(rank.name);
     var accountHtml =

@@ -408,7 +408,17 @@
     /* ── the clearance pip (see the CLEARANCE note above) ────────────────────────────
        Takes a profile, or nothing (a guest reads as Recruit, which is true). Returns the
        rung plus `next` and `toNext`, so any surface can say how far the next pip is
-       without re-deriving the ladder. */
+       without re-deriving the ladder.
+
+       `hint` IS THE TOOLTIP, AND IT LIVES HERE (2026-08-12, Nate: "the question mark
+       doesn't tell me anything"). Every pip used to hover as just the rung name —
+       "Operative" — on a leaderboard row whose column header already said OPERATIVE and
+       whose sub-label already said · Operative. Three of the same word in one row meaning
+       three different things (the site's word for a player, this rung, and the CREDIT
+       ladder's rung), and the help cursor promised to sort them out and then repeated one
+       of them. The tooltip now carries what the row cannot already say: WHICH rung out of
+       how many, and what moves it. Rendered in four places, so the sentence is built once
+       here and the count is read off the ladder rather than typed. */
     CLEARANCE: CLEARANCE,
     clearance: function (prof) {
       prof = (prof === undefined) ? profile : prof;
@@ -424,6 +434,8 @@
       var c = CLEARANCE[idx], nxt = CLEARANCE[idx + 1] || null;
       return { level: c.level, name: c.name, pip: c.pip, rating: rating,
                fromCredits: byCredits > (byRating.level - 1),
+               hint: 'Clearance ' + c.level + ' of ' + CLEARANCE.length + ' · ' + c.name +
+                     ' — climbs with your rating',
                next: nxt, toNext: nxt ? Math.max(0, nxt.rating - rating) : 0 };
     },
     ownedAvatars: function () {
