@@ -271,9 +271,41 @@ things that answer themselves is how a short list stops being read.*
   | `www.mcpuppystudios.com` | **GitHub.com** | **404** ❌ |
 
   The apex forward is live and working; `www` was never given a rule, so it still resolves to
-  GitHub Pages, which does not know the name and serves a 404. **Identical fix to item 1**, which
-  he has now done once: *Squarespace → Domains → mcpuppystudios.com → Forwarding → ADD RULE*,
-  FROM `www.mcpuppystudios.com` · TO `https://chesswild.com/projects/` · Permanent.
+  GitHub Pages, which does not know the name and serves a 404.
+
+  ⚑ **AND IT IS NOT THE SAME FIX AS ITEM 1 AFTER ALL — 2026-08-12, he hit the wall and sent the
+  screenshot.** Squarespace refuses the rule: *"This rule is conflicting with an existing DNS
+  record."* His read was right — **this domain was the main site for a while**, so it still
+  carries the GitHub Pages setup underneath. Probed:
+
+  ```
+  www.mcpuppystudios.com   CNAME  ngreen37.github.io.     ← the conflict, TTL 14400
+  mcpuppystudios.com       A      198.49.23.144/145 …     ← Squarespace forwarding, CORRECT
+  mcpuppystudios.com       TXT    google-site-verification=DvuGLhgOrP75… ← DO NOT DELETE
+  ```
+
+  When he set the apex forward, Squarespace deleted its own default records — but a `www` CNAME
+  pointing at GitHub is not one of Squarespace's defaults, so it survived. It aims at a server
+  that rejects the name, which is the 404. **Nothing depends on it; delete only that one row.**
+
+  **Fix — DNS SETTINGS first, then Forwarding:**
+  1. *Domains → mcpuppystudios.com → DNS Settings* → delete the row **Host `www` · CNAME ·
+     `ngreen37.github.io`**. ⚠ Leave the four apex A records (that IS the working forward) and
+     leave the `google-site-verification` TXT (the old Search Console property, kept on purpose
+     to watch these very redirects being followed).
+  2. *Forwarding → Add Rule*: FROM `www` · TO **`https://chesswild.com`** · Permanent (301) ·
+     path forwarding **ON**.
+
+  ⚠⚠ **THE TARGET IS THE ROOT, NOT `/projects/` — I had this wrong above and his screenshot was
+  right.** Path forwarding is ON for this domain (proved: `mcpuppystudios.com/games/` already
+  reaches `chesswild.com/games/`). With a `/projects/` target, path forwarding turns every old
+  deep link into `chesswild.com/projects/games/` — a 404. **Root target + path ON is the only
+  combination that keeps the old URLs alive**, which is the whole SEO argument for the move.
+  ⚠ This is the OPPOSITE setting from item 1, and deliberately: that rule targets a SUBPATH
+  (`/pjcc/`), so it needs path forwarding OFF for exactly the same reason.
+  ⚠ The dead CNAME's TTL is **14400 (4 hours)** — resolvers that already cached it will keep
+  serving the GitHub answer for up to that long after the delete. Not a failure; just wait, and
+  check with `?x=1` to defeat the 301 cache.
   ⚠ **This is the one thing on the list where something is actually broken right now** — the rest
   of the table is things he hands over when he feels like it.
 
