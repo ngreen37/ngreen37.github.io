@@ -235,10 +235,21 @@ mcpuppystudios.com 301s **with the path preserved** (`/pjcc/` → `chesswild.com
   ([[seo-setup]] already says STOP RE-FLAGGING IT, and [[backlog-outlives-its-fix]] is the pattern:
   the backlog outlived the fix and I pitched him work he had already done).
 
-  **What genuinely remains — neither is visible from outside:** open the property → **Sitemaps**;
-  if `https://chesswild.com/sitemap.xml` reads **Success** with ~152 URLs it is finished, otherwise
-  submit it (⚠ full URL — a Domain property rejects the bare `sitemap.xml`). Then optionally
-  **URL Inspection** → Request indexing for `/` and `/pjcc/`.
+  **SITEMAP SUBMITTED 2026-08-11** — `https://chesswild.com/sitemap.xml`, and it immediately read
+  **"Couldn't fetch"**. ⭐ **That is Search Console saying "not fetched YET", not "rejected" — and
+  the tell is that LAST READ IS BLANK.** A real failure stamps a date there. Type "Unknown" and 0
+  discovered pages say the same thing: never actually read. It clears in hours to a couple of days.
+  ⚠ **Do not resubmit** — it does not speed anything up and restarts the clock.
+  Verified from outside the same day, so if it is still red in a few days the problem is at
+  Google's end, not ours: **200 · `application/xml` · no redirects · 137ms · 14.9KB · identical
+  under a Googlebot user-agent · `robots.txt` Allow + names the sitemap · parses clean in a REAL
+  XML parser (root `urlset`, 152 URLs, 106 with `lastmod`) · every `<loc>` on exactly one host ·
+  `/` and `/pjcc/` both present.** Nothing on our side to fix.
+
+  **Still worth doing, optional:** **URL Inspection** → Request indexing for `https://chesswild.com/`
+  and `https://chesswild.com/pjcc/`. ⚠ He reasonably asked whether to also submit
+  `…/sitemap.xml/pjcc/` — no such URL; **one sitemap covers all 152 pages and is submitted once,
+  ever.** The `/pjcc/` step is a different tool (URL Inspection takes PAGE urls, not sitemap urls).
   ⚠ Keep the old property; it is what reports the 301s being followed.
   ⚠ Unknowable from DNS: whether it is a **Domain** or a **URL-prefix** property — both verify by
   TXT. Domain also covers www and subdomains. Either is fine; not worth redoing.
