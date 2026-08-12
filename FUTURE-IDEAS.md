@@ -114,7 +114,19 @@ points." Probed rather than remembered — `/classified/` returns **200**, and t
 - [x] Contact page: remove the **GitHub** link; `nathgreen37@gmail.com` → **`Chesswild840@gmail.com`**.
 - [x] The Gambit's **Karma pill** — *"the Karma pill is GREAT. I love it."* — needs a **hover explanation** of what it does.
 - [x] **Karma, second pass (2026-08-11):** note cut to one sentence, **"Noticed" removed** from the word ladder (it was the only rung that read as a promise), and the sacrifice line now says a memory can be **gone for good** rather than "some don't".
-- **"What are the ten best ideas I can do specifically for ChessWild that the others don't have?"** (Lichess, chess.com, Levy Rozman's site.) **⚠ THE ONE LAUNCH-BATCH ITEM STILL UNBUILT — and it is MINE to write, so it is a bullet, not a box.** It is not a listicle; it wants a real pass against what those three actually do.
+- ~~**"What are the ten best ideas I can do specifically for ChessWild that the others don't have?"**~~
+  **✅ WRITTEN 2026-08-12 → `docs/ten-chesswild-ideas.md`. THE LAUNCH BATCH IS NOW CLOSED.**
+  Checked against all three as they stand today, not from memory. **⭐ The finding that reshaped
+  it: chess.com already owns character bots at planetary scale** (Martin, Mittens, the cats —
+  personality-typed, with in-game dialogue), so *"play a character instead of an engine"* is
+  **their** ground, not ours. What they cannot do is continuity — **Mittens has no episode two.**
+  And Lichess declines a world, a cast and an economy *on stated principle*, which makes that a
+  permanent vacancy rather than a gap they might close. ⚠ The uncomfortable one, from Chessly:
+  **Levy built the audience first and the site second; we are doing it in the other order.**
+  The doc ranks all ten by cost and by which leg they move — and says plainly that **seven of the
+  ten are more website**, which is the thing to watch. Top pick is **the cast MOVES** (Blender
+  reactions on the boards): a weekend, uses assets that already exist, and it is the only idea
+  where show work pays rent on the site the same week.
 
 ---
 
