@@ -280,6 +280,18 @@ day it happens rather than the day it ships.
 *Risk:* it is a commitment, and a devlog that stops is a worse signal than one that never
 started. Weekly is a promise; "when there is something to show" is not.
 
+> **⭐ CONFIRMED BY HIM THE SAME DAY, AND IT UPGRADES THIS ITEM FROM A SUGGESTION TO THE PLAN.**
+> Nate, 2026-08-12: *"my charm and passion and authenticity are going to be a big reason why we
+> get there… I may hire animators down the line, but only after I've developed it myself, in the
+> open, streaming, podcasting, blogging, etc."*
+>
+> Two things follow. **Building in the open is a precondition here, not a marketing tactic** —
+> the learning done in public is the origin story and the audience-building mechanism at the same
+> time, which is the honest reply to the Chessly problem above (Levy had the personality asset
+> too; this one is simply unspent). And **"hire animators" is explicitly gated behind doing it
+> himself first**, so no plan on this list should route around the learning with an asset pack or
+> a commission.
+
 ---
 
 ## The Honest Ranking
