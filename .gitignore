@@ -6,3 +6,7 @@ _site/
 # belong in the repo). Rebuild with `npm run gen:blocklist`.
 docs/blocklist-seed.sql
 build.log
+
+# The private half of the split (2026-08-12). Its own git repo, its own private
+# remote — the canon, the roadmaps and the backlog. Never tracked here.
+private/

@@ -168,8 +168,17 @@ exclude:
   - package.json
   - package-lock.json
   - README.md
-  - FUTURE-IDEAS.md
   - CLAUDE.md
+  # ⚠ THE PRIVATE HALF (2026-08-12). Its own git repo with its own private remote; the
+  # canon, the roadmaps and the backlog live there. It is gitignored, so it can never
+  # reach a GitHub Pages build — but a Jekyll run on Nate's own machine builds the WORKING
+  # DIRECTORY, not the repo, and would happily publish it. Belt and braces, and the belt
+  # is the one that matters: git tracks nothing under it.
+  - private/
+  # FUTURE-IDEAS.md moved into private/ the same day. The line stays because the file may
+  # come back, and because a page that only 404s thanks to `published: false` is exactly
+  # the mistake this whole block exists to fix.
+  - FUTURE-IDEAS.md
 
 collections:
   characters:

@@ -2,7 +2,7 @@
 
 ## Required reading before responding
 Read these files in full and confirm before generating:
-1. `_pjcc/notes.md` — story bible. Chess gameplay is battle-room style; players inhabit pieces. Princess plays as a pawn, not a queen. This is permanent and non-negotiable.
+1. `private/_pjcc/notes.md` — story bible. **Moved out of this repo 2026-08-12** into the private half (`private/` is gitignored here and has its own private remote), because the canon includes things that are deliberately never stated anywhere on the site. Same filename, same relative layout, one folder up. Chess gameplay is battle-room style; players inhabit pieces. Princess plays as a pawn, not a queen. This is permanent and non-negotiable.
 2. `_pjcc/flair-log.md` — shipped and rejected items. Do not repeat patterns from either column.
 3. `tools/flair_checker.js` — validation rules every flair piece must pass.
 4. `_assets/css/style_css` — Royal Chess tokens (#2D1B69 purple, #F5C518 gold), existing components, animation conventions.
