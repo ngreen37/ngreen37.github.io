@@ -84,12 +84,29 @@
        come apart. That was the reason for the one-line design on 2026-07-28, and this is the
        first time it has paid.
 
+       ⚑ AND HALVED AGAIN — 2026-08-13. Nate: "It still rains too frequently on the site —
+       can we cut the percentage in half?" 22.5% → **11.25%**, which is why the die doubled
+       again rather than losing a face: on the d40, half of nine faces is four and a half.
+       **d80, rain on 0-8 (9/80 = 11.25%), mist on 9-16 (8/80 = 10%, untouched for the second
+       time), clear the rest.** Exactly half, not "about half" — the same discipline as the
+       25% pass above, and for the same reason: a rounded cut is how a number he gave me
+       turns back into a complaint.
+
+       ⭐ MIST HAD TO BE RE-EXPRESSED TO STAY STILL. It was 4/40; on a d80 that is 8/80, so
+       its four faces became eight and its share did not move. A finer die is only free for
+       the outcome you are changing — every OTHER band has to be rewritten just to hold its
+       ground, and forgetting one is how an untouched thing quietly doubles.
+
+       ⭐ SNOW STILL NEEDED NOTHING, for the second time. It is this rain wearing winter (the
+       line below), not a second forecast, so it followed rain down on its own.
+
        ⚠ `roll` is still reported 0-9 — it is in this module's documented return shape at the
-       top of the file, and a finer die is an implementation detail, not a new contract. */
-    var r40 = daySeed() % 40;
-    var kind = r40 <= 8 ? 'rain' : (r40 <= 12 ? 'mist' : 'clear');
+       top of the file, and a finer die is an implementation detail, not a new contract.
+       The divisor tracks the die: d40 → /4, d80 → /8. */
+    var r80 = daySeed() % 80;
+    var kind = r80 <= 8 ? 'rain' : (r80 <= 16 ? 'mist' : 'clear');
     if (kind === 'rain' && season() === 'winter') kind = 'snow';
-    return { kind: kind, roll: (r40 / 4) | 0, phase: phase() };
+    return { kind: kind, roll: (r80 / 8) | 0, phase: phase() };
   }
   // Cloud cover — its own roll, so "clear" days still get weather in the sky and a
   // starry night isn't always a bare one (Nate: "sometimes it's cloudy, sometimes

@@ -122,12 +122,18 @@
      ⚑ THE PALETTE LIVES IN pjcc-profile.js NOW (2026-08-13) — the Park Tables VS streaks
      draw the same twelve colors on a page this file is not loaded on, and two copies of a
      palette is one palette and one lie. This file is loaded only on /dossier/, AFTER
-     pjcc-profile.js, so `PJCC.AURAS` is defined by the time this line runs. The fallback
-     is a single readable color rather than a duplicate map: if the profile module is
-     genuinely missing, the Forge has much bigger problems than a swatch row, and a
-     half-copy here would be the thing that hid them. */
-  var AURAS = (window.PJCC && PJCC.AURAS) || { gold: '#F5C518' };
-  var AURA_ORDER = (window.PJCC && PJCC.AURA_ORDER) || ['gold'];
+     pjcc-profile.js (dossier.md:46 then :58, neither deferred), so the dependency is
+     satisfied by document order — the same rule that already governs face-art-before-creator.
+
+     ⚠⚠ AND THE FALLBACK IS EMPTY ON PURPOSE. It was `{ gold: '#F5C518' }` for one day, which
+     looked like a harmless last resort and was in fact DESTRUCTIVE: `sanitize()` below reads
+     this map to decide whether a saved aura is a real one, so a one-key palette makes every
+     OTHER color invalid and rewrites it to gold — in the SAVED object, on load, silently.
+     A missing dependency has to look missing. An empty palette draws no swatches, which is
+     visibly wrong; a palette of one draws a picker that works and lies. */
+  var AURAS = (window.PJCC && PJCC.AURAS) || {};
+  var AURA_ORDER = (window.PJCC && PJCC.AURA_ORDER) || [];
+  var HAVE_AURAS = AURA_ORDER.length > 0;
 
   /* ── THE COAT FILTER IS GONE (2026-07-28) ───────────────────────────────────
      What stood here was `TINTS`, `ensureCoatDefs()` and `coatFilter()`: a set of
@@ -162,7 +168,8 @@
     if (!A) return '<span class="idn-glyph">' + baseGlyph(o.hair, o.tone) + '</span>';
     return A.svg(o);
   }
-  function auraColor(key) { return AURAS[key] || AURAS.gold; }
+  // '#F5C518' is a literal only for the can't-resolve case — the real gold is in the map
+  function auraColor(key) { return AURAS[key] || AURAS.gold || '#F5C518'; }
 
   // ---- storage ------------------------------------------------------------
   var KEY = 'pjcc.identity.v1';
@@ -207,7 +214,12 @@
       if (op.eyeOuter !== undefined) delete op.eyeOuter;
       if (op.eyeR !== 'same' && !A.EYES[op.eyeR]) op.eyeR = 'same';
     }
-    if (!AURAS[op.aura]) op.aura = 'gold';
+    /* ⚠ ONLY SANITIZE AGAINST A PALETTE WE ACTUALLY HAVE. Every other line here validates
+       against a map defined in this file, which is always present; the auras come from
+       pjcc-profile.js. If that has not loaded, `AURAS` is empty and EVERY saved aura looks
+       invalid — and this line would quietly overwrite a real choice with gold. Leave a
+       value we cannot judge alone: unverified is not the same as wrong. */
+    if (HAVE_AURAS && !AURAS[op.aura]) op.aura = 'gold';
     if (!HATS[op.hat]) op.hat = 'none';
     if (!EMBLEMS[op.emblem]) op.emblem = 'none';
     /* MIGRATION off the filter era (2026-07-28). `tint` was the coat when the pet was
@@ -285,7 +297,7 @@
   function identity() {
     var op = loadLocal().op;
     if (!FACE_MAP[op.hair]) op.hair = 'crop';
-    if (!AURAS[op.aura]) op.aura = 'gold';
+    if (HAVE_AURAS && !AURAS[op.aura]) op.aura = 'gold';   // see sanitize() — unverified ≠ wrong
     var f = FACE_MAP[op.hair];
     if (op.brow == null) op.brow = f.brow;
     if (op.mouth == null) op.mouth = f.mouth;

@@ -271,5 +271,9 @@
 }
 .gift-bal { margin: 0; font-size: 0.86rem; line-height: 1.6; color: #b9c0cb; }
 .gift-bal b { color: #f0e6ff; }
-.gift-ok { color: #6bffb8; }
-.gift-no { color: #ff9b9b; }
+/* ⚠ THESE TWO MUST OUT-SPECIFY `.gift-bal b` ABOVE. Both are worn BY a <b> inside .gift-bal,
+   so a bare `.gift-ok` (0-1-0) loses to `.gift-bal b` (0-1-1) and the outcome of every send
+   rendered in the same plain white — shipped that way, with a green test suite, because
+   nothing about it is visible until someone looks at a render. */
+.gift-bal b.gift-ok { color: #6bffb8; }
+.gift-bal b.gift-no { color: #ff9b9b; }

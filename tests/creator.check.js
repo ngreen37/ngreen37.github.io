@@ -37,6 +37,23 @@ const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const CREATOR = read('assets/js/pjcc-creator.js');
 const FACE = read('assets/js/pjcc-face-art.js');
 const CSS = read('_sass/_pjcc-16-creator.scss');
+const PROFILE = read('assets/js/pjcc-profile.js');
+
+/* ⚠⚠ THE STUB HAS TO CARRY WHAT THE REAL MODULE CARRIES. The aura palette moved into
+   pjcc-profile.js on 2026-08-13 and the Forge stopped keeping a copy — correct, and it
+   silently made this harness a liar, because the hand-written `window.PJCC` below had no
+   `AURAS`. Every aura pick then came back gold and three checks went red describing a bug
+   the live page does not have (dossier.md loads the profile at :46, the Forge at :58).
+   ⭐ Lifted out of the real source rather than retyped: a second copy of the palette in a
+   TEST is the same lie as a second copy in a room, and this one would go stale silently
+   while claiming to be the thing that catches staleness. */
+const AURA_SRC = (PROFILE.match(/^ {2}var AURAS = \{[\s\S]*?^ {2}\};/m) || [])[0];
+const ORDER_SRC = (PROFILE.match(/^ {2}var AURA_ORDER = \[.*?\];/m) || [])[0];
+if (!AURA_SRC || !ORDER_SRC) {
+  console.log('\n  ✗ could not lift AURAS/AURA_ORDER out of pjcc-profile.js — the stub would ' +
+              'be silently incomplete, which is how this file lied once already\n');
+  process.exit(1);
+}
 
 let pass = 0, fail = 0;
 const check = (n, c, d) => {
@@ -80,6 +97,21 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
   check('the four he named all land somewhere human',
     ['fox', 'alien', 'robot', 'fairy'].every((k) => !!table[k]),
     ['fox', 'alien', 'robot', 'fairy'].map((k) => k + '→' + table[k]).join(' · '));
+
+  /* ⚠⚠ THE AURA PALETTE IS BORROWED, AND `sanitize()` VALIDATES SAVED LOOKS AGAINST IT.
+     Every other map it checks is declared in the Forge itself and is always there; this one
+     comes from pjcc-profile.js by document order. So a stand-in palette is not a harmless
+     last resort — it makes every color outside it look invalid and REWRITES a real choice
+     into the saved object. `{ gold: '#F5C518' }` stood here for one day and did exactly
+     that. Absent has to read as absent. */
+  check('the borrowed aura palette has NO stand-in',
+    /var AURAS = \(window\.PJCC && PJCC\.AURAS\) \|\| \{\};/.test(CODE) &&
+    /var AURA_ORDER = \(window\.PJCC && PJCC\.AURA_ORDER\) \|\| \[\];/.test(CODE),
+    'a palette of one draws a picker that works and lies');
+  const judged = (CODE.match(/^.*!AURAS\[op\.aura\].*$/gm) || []);
+  check('…and no saved aura is overwritten while the palette is unavailable',
+    judged.length > 0 && judged.every((l) => /HAVE_AURAS &&/.test(l)),
+    judged.length + ' place(s) judge a saved aura; unverified is not the same as wrong');
 }
 
 /* ── 3. THE PANEL CANNOT REFLOW ───────────────────────────────────────────────────
@@ -143,7 +175,11 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
      ([[pjcc-profile-system]]: test gated behavior signed OUT *and* signed IN.) */
   const STUB = `<script>
     window.__syncs = 0;
+    ${AURA_SRC}
+    ${ORDER_SRC}
     window.PJCC = {
+      AURAS: AURAS,
+      AURA_ORDER: AURA_ORDER,
       _p: { codename: 'Tester', companion: { look: { hair:'crop', tone:'', hairColor:'brown',
             eye:'brown', eyeR:'same', aura:'gold', hat:'none', emblem:'none' } } },
       currentUser: function () { return { id: 'u1' }; },

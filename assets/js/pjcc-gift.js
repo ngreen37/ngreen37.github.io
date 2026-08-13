@@ -21,11 +21,18 @@
  * of chat on this site — child-safety by construction rather than by moderation — and it
  * is the reason a "with a message" option must never be added here casually.
  *
- * ⚠ THE SERVER IS THE RULE, ALWAYS. The five amounts, the balance check, the daily cap
- * and the you-cannot-gift-yourself rule are all enforced in SQL (docs/credit-gifts-setup.md).
- * Everything in this file is presentation: it draws five buttons, grays out what you
- * cannot afford, and repeats whatever the server says. Disabling a button here is a
- * courtesy, never a control.
+ * ⚠ THE SERVER IS THE RULE, ALWAYS. The five amounts, the balance check, the two daily caps
+ * (a loose one on giving, a tight one on receiving) and the you-cannot-gift-yourself rule
+ * are all enforced in SQL — docs/credit-gifts-setup.md, which is the ONLY place either cap
+ * is written down. Everything in this file is presentation: it draws five buttons, grays
+ * out what you cannot afford, and repeats whatever the server says. Disabling a button
+ * here is a courtesy, never a control.
+ *
+ * ⚠ AND ONLY YOUR OWN LIMITS ARE EVER SHOWN. The unaffordable amounts are disabled up
+ * front because your balance is yours to know. The recipient's remaining room for the day
+ * is NOT pre-checked and NOT drawn, even though it would be a nicer sheet: a client that
+ * could ask "how much can this person still hold?" is a client that can measure a stranger's
+ * day one question at a time. You find out by sending, and the server shortens the gift.
  *
  * ⚠ INVISIBLE UNTIL THE MIGRATION IS RUN. `PJCC.giftsEnabled()` probes once per session;
  * callers are expected to await it before drawing anything. A dead button is worse than
@@ -52,8 +59,22 @@
     no_such_operative: 'That operative is no longer here.',
     self:              'You can’t send credits to yourself.',
     not_enough:        'You don’t have that many credits.',
-    daily_cap:         'You’ve given all you can today. Back tomorrow.'
+    daily_cap:         'You’ve given all you can today. Back tomorrow.',
+    recipient_full:    'They can’t hold any more credits today.'
   };
+
+  /* When a gift runs into one of the two daily rails the server SHORTENS it rather than
+     refusing it, and the giver has to be told which half of that happened — otherwise the
+     only visible fact is that a 50 button moved 20 credits, which reads as a bug.
+     ⚠ `limit` names the rail, never a number: 'them' would otherwise be a way to measure
+        how much somebody else has been given today, one gift at a time. */
+  var SHORT = {
+    them: 'That’s all they can hold today',
+    you:  'That’s the rest of your day'
+  };
+
+  /* Refusals no amount can get past — the buttons stay down afterward. */
+  var DEAD = ['offline', 'daily_cap', 'recipient_full'];
 
   var openSheet = null;
 
@@ -117,17 +138,25 @@
             : { ok: false, reason: 'offline' }
         ).then(function (r) {
           if (r && r.ok) {
+            var kept = (typeof r.kept === 'number') ? r.kept : 0;
+            var why  = kept > 0 ? SHORT[r.limit] : null;
             bal.innerHTML = '<b class="gift-ok">Sent ' + r.amount + ' to ' + esc(name) + '.</b>' +
+                            (why ? ' ' + why + ' — the other <b>' + nfmt(kept) + '</b> stayed with you.' : '') +
                             ' You have <b>' + nfmt(r.balance) + '</b> left.';
-            setTimeout(close, 1600);
+            // a shortened gift is two sentences and a number the player did not expect —
+            // give it time to be read instead of closing on the usual beat
+            setTimeout(close, kept > 0 ? 3400 : 1600);
             return;
           }
           var why = (r && SAID[r.reason]) || SAID.offline;
           bal.innerHTML = '<b class="gift-no">' + esc(why) + '</b>';
-          // re-open only what is still affordable, so a failed send is not a dead sheet
+          // re-open only what is still affordable, so a failed send is not a dead sheet.
+          // ⚠ Except where retrying CANNOT work: a spent daily rail — yours or theirs —
+          // refuses all five amounts identically, and re-enabling them invites a player to
+          // tap their way through the ladder to find that out.
           var now = 0;
           try { var p2 = PJCC.getProfile(); now = (p2 && p2.credits) || 0; } catch (e) {}
-          if (r && r.reason !== 'daily_cap' && r.reason !== 'offline') {
+          if (r && DEAD.indexOf(r.reason) < 0) {
             Array.prototype.forEach.call(ov.querySelectorAll('[data-amt]'), function (x) {
               x.disabled = +x.getAttribute('data-amt') > now;
             });

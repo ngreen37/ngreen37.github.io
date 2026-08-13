@@ -1262,8 +1262,19 @@
 
      ⚠ THE SERVER IS THE RULE. `GIFT_TIERS` below draws five buttons; the SQL refuses
      anything that is not one of the five, checks the balance inside the same atomic write
-     that spends it, and counts a daily cap off its own ledger. Everything here is a
+     that spends it, and counts TWO daily caps off its own ledger. Everything here is a
      convenience for the UI — see docs/credit-gifts-setup.md.
+
+     ⭐⭐ THE CAPS ARE ASYMMETRIC ON PURPOSE — giving is loose, receiving is tight. Nate,
+     2026-08-13: *"you can give out as much as you want, but you can only receive 50 per
+     day."* Capping the giver slows one throwaway account down; capping the RECEIVER is
+     what actually ceilings a funnel of them, and it is the half no honest player notices.
+     ⚠ NEITHER NUMBER APPEARS IN THIS FILE and neither is checked here — the SQL is the only
+     place they are written down, so changing one is an edit there and nothing to redeploy.
+
+     ⭐ A GIFT THAT HITS A RAIL COMES BACK SHORTENED, NOT REFUSED: `{ok:true, amount, kept,
+     limit}` where `amount` is what moved and `kept` never left the giver. `amount` can be
+     smaller than what was asked for, so nothing downstream may assume the two are equal.
 
      ⚠ IT SHIPS BEFORE ITS MIGRATION, like the puzzle reports did, and degrades the same
      way: every call RESOLVES `{ok:false, reason}` and never throws. */
@@ -1300,7 +1311,10 @@
     return giftProbe;
   };
 
-  /* Hand somebody credits. Resolves {ok:true, amount, to, balance} or {ok:false, reason}.
+  /* Hand somebody credits. Resolves {ok:true, amount, requested, kept, limit, to, balance}
+     or {ok:false, reason}.
+     ⚠ `amount` IS NOT `amount asked for` — a gift that runs into either daily rail is
+     shortened by the server, and `kept` is the part that never left. Read `amount`.
      ⚠ The local profile's credit count is corrected from the SERVER's returned balance
      rather than by subtracting here — the two would agree today and drift the first time a
      gift races anything else that spends. Never compute a balance you were just told. */
