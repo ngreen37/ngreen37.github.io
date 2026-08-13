@@ -500,10 +500,17 @@ html.sky-night .ts-shoot--3 { top: 22%; left: 92%; animation: ts-shoot-fall 67s 
    dot with a 90px gradient tail, and it is off-stage 96% of its own cycle. Six more of those
    is still 0.00 to two decimals. The shower is free; the aurora below is not.
 
-   ⚠ THEY EXIST IN THE MARKUP EVERY NIGHT AND COST NOTHING ON 97% OF THEM. `.ts-shoot` is
-   `display:none` by default and only the `html.sky-night` rules turn it on; the shower's are
-   gated behind `html.meteor-night` as well, so on an ordinary night these six are inert
-   elements with no animation attached. That is what lets the whole feature ship with no JS. */
+   ⚠⚠ THE OPT-OUT RULE BELOW IS LOAD-BEARING AND THE FIRST DRAFT DID NOT HAVE IT. I assumed
+   these six would stay hidden on an ordinary night because `.ts-shoot` is `display:none` by
+   default — but `html.sky-night .ts-shoot { display: block }` a few rules down matches ALL
+   nine, shower or not, and a class the base rule has never heard of does not opt anything
+   out. A render on an ordinary night counted nine visible streaks, not three.
+   Nothing was VISIBLE — the base rule also sets `opacity: 0` and only an animation lifts it,
+   so with no shower keyframe attached they sat there transparent — which is exactly why this
+   would have shipped: invisible, permanent, six extra composited elements every night
+   forever, and a comment above them claiming the opposite. `display: none` first, then the
+   shower turns its own six back on at (0,3,1) over the base rule's (0,2,1). */
+html.sky-night .ts-shoot--sh { display: none; }
 html.sky-night.meteor-night .ts-shoot--sh { display: block; }
 html.sky-night.meteor-night .ts-shoot--s1 { top: 6%;  left: 62%; animation: ts-shoot-fall 11s linear infinite; }
 html.sky-night.meteor-night .ts-shoot--s2 { top: 18%; left: 84%; animation: ts-shoot-fall 13s linear infinite 2s; }
