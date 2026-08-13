@@ -20,6 +20,70 @@ let pass = 0, fail = 0;
 const ok = (n, c, x) => { if (c) { pass++; console.log('  \u2713 PASS  ' + n); }
                           else { fail++; console.log('  \u2717 FAIL  ' + n + (x ? '   ' + JSON.stringify(x) : '')); } };
 
+/* \u2550\u2550 THE FORECAST'S OWN NUMBERS, AND THE OPT-OUT \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+   Source-read, before the browser half. Three things here are the kind that drift without
+   ever throwing: how often it rains, how hard heavy rain falls, and whether a page that
+   asked for no weather actually gets none.
+
+   \u26a0 THE RAIN RATE IS A FACE COUNT, NOT A MEASUREMENT. Running the clock over N dates
+   samples a hash and lands a few tenths off every time, which is fine for a sanity check
+   and useless as an assertion \u2014 so the DIE is what gets pinned. Halving it twice has now
+   meant a finer die twice (d10 \u2192 d40 \u2192 d80), and each time every OTHER band had to be
+   re-expressed just to stand still. That is the failure this guards: mist has been
+   rewritten twice to keep the same 10%, and the pass that forgets it doubles mist silently
+   while the release notes say "we changed the rain". */
+{
+  const CLOCK = fs.readFileSync(path.join(REPO, '_includes/pjcc-time.js'), 'utf8');
+  const die = CLOCK.match(/var r(\d+) = daySeed\(\) % (\d+);/);
+  const bands = CLOCK.match(/var kind = r\d+ <= (\d+) \? 'rain' : \(r\d+ <= (\d+) \? 'mist' : 'clear'\);/);
+  ok('the forecast rolls one die, read from the clock', !!die && !!bands, { die: die && die[2] });
+
+  const faces = die ? +die[2] : 0;
+  const wetFaces = bands ? +bands[1] + 1 : 0;              // rain on 0..N inclusive
+  const mistFaces = bands ? +bands[2] - +bands[1] : 0;
+  const pct = (f) => +((f / faces) * 100).toFixed(4);
+
+  ok('rain is 11.25% of days \u2014 half of the 22.5% it was', pct(wetFaces) === 11.25,
+     { faces, wetFaces, pct: pct(wetFaces) + '%' });
+  ok('   and mist is still exactly 10%, re-expressed to hold still', pct(mistFaces) === 10,
+     { mistFaces, pct: pct(mistFaces) + '%' });
+  /* snow is not a second forecast \u2014 it is rain wearing winter, which is why halving rain
+     halved snow with no second edit. If this line ever grows its own roll, that breaks. */
+  ok('   and snow is still that same rain, not a second roll',
+     /if \(kind === 'rain' && season\(\) === 'winter'\) kind = 'snow';/.test(CLOCK));
+  /* `roll` is documented 0-9 at the top of the module; the divisor has to track the die or
+     a finer die quietly starts reporting 0-19. */
+  ok('   and the reported roll still fits its documented 0-9 shape',
+     new RegExp('roll: \\(r' + faces + ' / ' + (faces / 10) + '\\) \\| 0').test(CLOCK),
+     { faces, divisor: faces / 10 });
+
+  const CANVAS = fs.readFileSync(path.join(REPO, 'assets/js/pjcc-weather-canvas.js'), 'utf8');
+  const mult = CANVAS.match(/var MULT = \{ rain: \[([\d.]+), ([\d.]+), ([\d.]+)\]/);
+  ok('heavy rain is 1.17 \u2014 10% off the 1.3 it was', !!mult && +mult[3] === 1.17, mult && mult[3]);
+  ok('   and light/medium were left where they were', !!mult && +mult[1] === 0.55 && +mult[2] === 1,
+     mult && [mult[1], mult[2]]);
+
+  /* \u26a0 `no_sky` MUST REMOVE THE ENGINE, NOT HIDE THE CANVAS. display:none does not stop a
+     rAF loop \u2014 that is why the reduced-motion guard lives inside the engine \u2014 so a page
+     that merely hid the weather would still pay for every frame of it. Both halves are
+     checked because they own different pixels: the layout owns the sky backdrop, and
+     pjcc-weather.js BUILDS the overlay wash, the fall layer and the glass. */
+  const LAYOUT = fs.readFileSync(path.join(REPO, '_layouts/default.html'), 'utf8');
+  const TW = fs.readFileSync(path.join(REPO, '_includes/town-weather.html'), 'utf8');
+  ok('no_sky drops the sky ELEMENT', /\{% unless page\.no_sky %\}\{% include town-sky\.html %\}\{% endunless %\}/.test(LAYOUT));
+  ok('   and never loads the weather ENGINE (hiding it would not stop rAF)',
+     /\{%-? ?unless page\.no_sky ?-?%\}[\s\S]*pjcc-weather\.js[\s\S]*\{%-? ?endunless ?-?%\}/.test(TW));
+  ok('   while the town clock stays on every page \u2014 other modules read it',
+     /<script>\{% include pjcc-time\.js %\}<\/script>/.test(TW) &&
+     TW.indexOf('pjcc-time.js') < TW.indexOf('unless page.no_sky'));
+  /* the two Alpine files are the reason the flag exists; if a rename loses the flag the
+     weather comes back and nothing else complains */
+  ['_characters/alpine.md', 'classified.md'].forEach((f) => {
+    ok('   ' + f + ' opts out', /^no_sky: true$/m.test(fs.readFileSync(path.join(REPO, f), 'utf8')));
+  });
+  console.log('');
+}
+
 async function open(browser, startQuiet, opts) {
   opts = opts || {};
   const ctx = await browser.createBrowserContext();

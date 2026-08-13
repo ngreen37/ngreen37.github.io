@@ -317,7 +317,19 @@
        blobs at the same count, so heavy snow gives back a little more to pay for its new
        arms: 1.3 → 1.18, with medium easing to 0.95. Net it lands about where it looked
        before the flakes grew shapes, which is the point. */
-    var MULT = { rain: [0.55, 1, 1.3], snow: [0.55, 0.95, 1.18], mist: [0.55, 1, 1.3] };
+    /* ⚑ HEAVY RAIN CAME DOWN ANOTHER 10% — 2026-08-13, Nate: "can you tone down the heavy
+       rain by 10%". 1.3 → 1.17, rain only. Light and medium are untouched: he named the
+       heavy step, and moving the other two would flatten the wander through the day that
+       makes the intensity legible at all.
+
+       ⚠ IT NOW SITS BELOW HEAVY SNOW (1.17 vs 1.18), AND THAT INVERTS SOMETHING DELIBERATE.
+       Snow was given the larger number on 2026-07-28 to pay for its shaped crystals reading
+       heavier than blobs at equal count — the intent being that heavy snow land NEAR heavy
+       rain, under it. At 1.17/1.18 they are level in count while snow still reads heavier
+       per flake, so heavy snow is now the loudest weather the site has. That is a real
+       consequence of a rain-only cut, it is flagged rather than silently "fixed", and snow
+       comes down to about 1.06 the moment he says so. */
+    var MULT = { rain: [0.55, 1, 1.17], snow: [0.55, 0.95, 1.18], mist: [0.55, 1, 1.3] };
     var mult = (MULT[kind] || MULT.rain)[intensity];
 
     if (kind === 'mist') {

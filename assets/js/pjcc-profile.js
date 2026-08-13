@@ -325,7 +325,7 @@
     { name: 'Cipher Clearance', min: 600,   frag: 'Fragment 3: "Princess" is a designation, not a name. There were others before her.' },
     { name: 'Theta Clearance',  min: 1400,  frag: 'Fragment 4: Two names were signed onto the same intake roll the day the Expanse Branch opened. Only one of them was a person.' },
     { name: 'Delta Clearance',  min: 3000,  frag: 'Fragment 5: The Rival\'s family was relocated to Chess City the same week Subject Zero went quiet.' },
-    { name: 'Sigma Clearance',  min: 6000,  frag: 'Fragment 6: The partnership ran eleven years and produced no incident reports. That is not a clean record. That is a missing one.' },
+    { name: 'Sigma Clearance',  min: 6000,  frag: 'Fragment 6: The partnership ran four and a half years and produced no incident reports. That is not a clean record. That is a missing one.' },
     { name: 'Omega Clearance',  min: 10500, frag: 'Fragment 7: The ferry to Shogi Island only runs for those who already know the way back.' },
     { name: 'Alpine Clearance', min: 16000, frag: 'Fragment 8: You were never solving the puzzles. The puzzles were measuring you.' }
   ];

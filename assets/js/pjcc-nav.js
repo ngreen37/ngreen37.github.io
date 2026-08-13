@@ -28,7 +28,7 @@
       { t: 'Merch',            s: 'Next up — the designs come first',     u: '/goods/',              ic: '🃏', b: 'mcpuppy', k: 'goods goal cards stationery merch follow the dog mindset physical' },
       { t: 'The Direct Line',  s: 'Write to me directly',                 u: '/direct-line/',        ic: '✉️', b: 'mcpuppy', k: 'direct line suggestions patreon contact write feedback guaranteed response' },
       { t: 'McPuppy Studios',  s: 'The studio, and what it\'s building', u: '/projects/',           ic: '🐾', b: 'mcpuppy', k: 'projects mcpuppy studio progress about who nate hub roadmap thanks counters' },
-      { t: 'Blog',             s: 'The build log — every episode so far',   u: '/blog/',               ic: '✍', b: 'mcpuppy', k: 'blog build log episodes posts writing' },
+      { t: 'Blog',             s: 'The build log — every post so far',      u: '/blog/',               ic: '✍', b: 'mcpuppy', k: 'blog build log episodes posts writing' },
       { t: 'Mailing List',     s: 'Get updates by email',                 u: '/mailing-list/',       ic: '✉', b: 'mcpuppy', k: 'mailing list email subscribe newsletter' },
       { t: 'For Educators',    s: 'Use PJCC in the classroom',            u: '/educators/',          ic: '🍎', b: 'mcpuppy', k: 'educators teachers classroom school lessons' },
     ];

@@ -4,6 +4,8 @@ layout: easter-eggs
 title: THE ALPINE FILE
 permalink: /classified/
 fragment_key: frag_classified
+# the other Alpine file — no weather, no sky (see _layouts/default.html)
+no_sky: true
 ---
 
 <!-- if you're reading this, you're already home -->
@@ -34,7 +36,7 @@ fragment_key: frag_classified
     <blockquote class="secret-letter">
       <div class="secret-file-tab">REDACTED FILE</div>
       <p>One human on Earth, leading up to population of Checker Town, knew of Subject's
-      abilities — the one that TAUGHT her this technique. Bill Alpine, 68 yrs.
+      abilities — the one that TAUGHT her this technique. Bill Alpine, 46 yrs.
       Worked for ICC's Expanse Branch.</p>
       <footer>page 1 of 3 · edge-charred</footer>
     </blockquote>

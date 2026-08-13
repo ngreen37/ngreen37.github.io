@@ -30,8 +30,23 @@
        the footer and shows through everywhere they don't. See _sass/_pjcc-20-town-sky.scss.
        First child of <body> on purpose: it must not be inside anything that could make a
        stacking context, or the negative z-index would trap it in front of the content
-       instead of behind it. {%- endcomment -%}
-  {% include town-sky.html %}
+       instead of behind it.
+
+       ⚑ `no_sky: true` IN A PAGE'S FRONT MATTER TAKES THE TOWN OFF THAT PAGE (2026-08-13,
+       Nate — the Alpine files). It removes the sky ELEMENT here and the weather SCRIPTS in
+       _includes/town-weather.html, which between them own every sky and weather pixel: the
+       gradient, the orb, the stars, the clouds, and — because pjcc-weather.js builds the
+       overlay wash, the fall layer and the glass itself — all the falling weather too.
+
+       ⚠ IT HAS TO REMOVE THE ENGINE, NOT HIDE THE CANVAS. `display:none` does not stop a
+       rAF loop; the reduced-motion guard lives inside the engine for exactly that reason.
+       A page that hid the weather would still be paying for it every frame.
+
+       The clock (PJCC_TIME) and its <html> classes are deliberately LEFT ON — other modules
+       read them, and with no sky element and no overlay to select, `sky-night`/`town-rain`
+       match nothing. What shows through instead is `background-color:#0f0c1a` on <body>,
+       which is byte-identical to .town-sky's own no-clock fallback. {%- endcomment -%}
+  {% unless page.no_sky %}{% include town-sky.html %}{% endunless %}
 
   {% include site-header.html %}
 

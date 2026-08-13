@@ -253,7 +253,43 @@ body.theme-chess {
      ⚠ THE RADIAL IS SIZED IN PIXELS, NOT PERCENTAGES, for the same reason the top light is:
      `theme-chess` also dresses /rating/, whose card is about half this one's height, and a
      percentage would put the falloff in a different PLACE on each page. */
-  --surface:   rgba(251, 243, 224, 0.92);
+  /* ⚑ 0.92 → 0.83, 2026-08-13. Nate: "make the cw.com background box 10% more transparent."
+     Both readings of "10% more transparent" land in the same place, which is why this took
+     one number and not a question: 10% off the opacity is 0.828, and ten points onto the
+     transparency (0.08 → 0.18) is 0.82.
+
+     ⚠ MEASURED, NOT ASSUMED — AND THE ARITHMETIC WAS WRONG BEFORE THE RENDER CORRECTED IT.
+     A translucent sheet is its color composited over what is behind it, so dropping alpha
+     pulls the sky up through the paper and DARKENS it, moving every ink TOWARD its AA floor
+     rather than away. Computing that on paper skips the two gradient layers stacked with the
+     sheet, so it was sampled instead: the real four-layer `.page-card` stack, over the real
+     sky gradients, pixel-read at the top, middle and foot of the card.
+
+     Worst case is the FOOT of the card on the NIGHT sky — the darkest sky, past the reach of
+     the top light. Measured there:
+
+         sheet      #e9e1d3 → #d4cdc5      (0.92 → 0.83)
+         --fd-ink     12.14 → 10.01
+         --fd-ink-2    8.94 →  7.37
+         --fd-ink-3    7.32 →  6.04        ← the floor, and 4.5 is the line
+
+     Dusk and day both land lighter than this. Every ink keeps a real margin; this pass spent
+     about a fifth of the headroom and there is room for one more like it, not three.
+
+     ⚠⚠ THIS WALKS BACK TOWARD A NUMBER HE ONCE REJECTED, AND THAT IS WORTH KNOWING BEFORE
+     THE NEXT PASS. The alpha went 0.72 → 0.78 → 0.92 precisely because at 0.72 the sheet
+     "does not look white at all — it looks gray-lavender, which is the sky coming through,
+     and THAT is what he was reacting to" (see the note above). 0.83 is comfortably above
+     0.72 and a side-by-side render at night reads as warm paper rather than gray — but the
+     FOOT of the card, past the reach of the top light, is where it cools first and is where
+     to look if the complaint ever comes back. If it does, the dial is here and 0.87 splits
+     the difference. Do not chase it with a tint: tinting a translucent sheet only buys
+     darkness, which is the whole argument in the 0.78 note above.
+
+     ⚠ THE FOUR DOOR CARDS DID NOT MOVE and must not: --fd-panel / --fd-panel-hi are OPAQUE,
+     which is what keeps the ink-3 subtitles (measured 8.01:1 there) off this dial entirely.
+     The alpha below only governs the sheet those cards sit ON. */
+  --surface:   rgba(251, 243, 224, 0.83);
   --surface-2: #f6f0e2;
   /* the edge steps down with the sheet. At 0.78 the card was dim enough that #e6dfcd read
      as a border; against the brighter paper it disappeared, and a lit sheet with no edge
