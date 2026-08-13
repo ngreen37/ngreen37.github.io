@@ -104,7 +104,25 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
      swallows everything down to the real closing tag. It cost a confusing render on
      projects.md once, where the same warning is written, and it cost one here too: the
      whole board and all four doors silently vanished from a repro. ═══════ {%- endcomment -%}
-<section class="mc-table">
+{%- comment -%} ══ HEADING COVERAGE (2026-08-13, the accessibility lens of a four-lens sweep)
+     The probe found the whole front door carrying exactly TWO headings — `<h1>ChessWild.com`
+     out on the sky, and `<h2>More Ways In` over the door grid. Heading ORDER was perfect,
+     which is why three previous a11y passes called this page clean: order is what a checker
+     measures, and COVERAGE is what a person uses.
+
+     A screen-reader user skims by heading. On this page that skim returned the site's own
+     name and one section — the board, the button, the regulars count and the three proofs
+     were all inside an unnamed region, so the single most important thing here announced
+     itself as nothing at all.
+
+     ⭐ THE FIX IS THE ONE `/pjcc/` ALREADY USES (2026-07-24, same finding one page over): a
+     visually-hidden `<h2>` per section, wired with `aria-labelledby` so the region's
+     accessible name and its heading are ONE string and cannot drift apart. `.sr-only` is in
+     `_pjcc-10-a11y.scss` and predates this — do not re-invent it.
+     ⚠ ZERO VISUAL CHANGE, and that is the point: this buys nothing for a sighted visitor and
+     it is not supposed to. Verified in a render, not assumed. {%- endcomment -%}
+<section class="mc-table" aria-labelledby="h-play">
+<h2 id="h-play" class="sr-only">Play Chess Now</h2>
 <section class="mc-hero">
     {%- comment -%} THE EYEBROW IS GONE (2026-08-04, Nate: "We've got 'By McPuppy Studios' on
          the top left and 'From McPuppy Studios' in the center. Delete the latter."). The
@@ -496,7 +514,17 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
      {%- endcomment -%}
 
 {%- comment -%} ONE door to the world — the show is the point of all of this, but it is not
-     what a stranger came here to DO. One card, warm, at the foot. {%- endcomment -%}
+     what a stranger came here to DO. One card, warm, at the foot.
+     ⚑ It carries a visually-hidden heading as of 2026-08-13 (see the coverage note at the top
+     of this file). This card is the only route from the chess site to the SHOW, so of all the
+     unnamed regions on this page it was the worst one to leave off a heading skim.
+     ⚠ THE HEADING STANDS ALONE — no `aria-labelledby`/`aria-describedby` pointing at it from
+     the card. `.mc-world` is a single ANCHOR, not a region, and its own first line already
+     reads "There is a whole world behind this board"; wiring the heading to it as a
+     description makes a screen reader announce the same sentence twice. A heading before a
+     link is all a skim needs. (The `aria-labelledby` pattern above is right for `.mc-table`
+     because that IS a region with many children.) {%- endcomment -%}
+<h2 id="h-world" class="sr-only">The World Behind the Board</h2>
 <a class="mc-world" href="{{ '/pjcc/' | relative_url }}">
   <span class="mc-world-glyph" aria-hidden="true">&#9819;</span>
   <span class="mc-world-txt">
