@@ -1252,6 +1252,38 @@ body.theme-studio .site-header::before { display: none; }
 /* on <body>, not on .town-sky — the secret ✦ is a sibling of the sky and needs it too */
 body.full-sky { --sky-veil: calc(1 - var(--par-s, 0)); }
 
+/* ⚑ THE PARKED SHEETS — 2026-08-13 ─────────────────────────────────────────────────────
+   `html.sky-parked` is set by the scroll lerp in _includes/town-sky.html once the veil has
+   faded the clouds out completely. At that point the two sliding sheets are invisible and
+   still costing everything they cost: 6.3 MB of graphics memory each (measured — the entire
+   rest of the sky's animated furniture is 0.0 MB), plus a per-frame slide of two layers each
+   wider than the window.
+
+   THREE DECLARATIONS, AND EACH ONE TURNS OFF A DIFFERENT COST. Opacity alone did none of
+   them, which is the whole reason this rule exists:
+     · `visibility: hidden`      stops it being drawn
+     · `will-change: auto`       releases the dedicated layer. This is the one that actually
+                                 frees the memory — `will-change: transform` on the sheet is
+                                 an instruction to keep a layer ready AT ALL TIMES, which is
+                                 correct while it moves and pure waste once it does not.
+     · `animation-play-state`    stops the per-frame work
+
+   ⭐ PAUSED, NOT RESTARTED, AND THAT IS DELIBERATE. `animation-play-state: paused` freezes
+   the drift where it stands, so scrolling back up resumes it from the same place. Using
+   `display: none` or removing the animation would restart it from 0% and the clouds would
+   visibly JUMP back to their starting position every time you returned to the top.
+
+   ⚠ FULL-SKY PAGES ONLY, because only they have a veil to hide behind. The splash
+   (`.studio-body`) shows clouds with no veil, so its sheets must keep running — parking a
+   sheet that is still visible would freeze the sky in place. Every other page already sets
+   `.ts-clouds { display: none }`, which costs nothing to begin with. */
+html.sky-parked body.full-sky .ts-cloud-bank,
+html.sky-parked body.full-sky .ts-cloud-shape {
+  visibility: hidden;
+  will-change: auto;
+  animation-play-state: paused;
+}
+
 body.full-sky .ts-cloud-bank,
 body.full-sky .ts-cloud-shape { opacity: var(--sky-veil, 1); }
 body.full-sky .ts-stars       { opacity: var(--sky-veil, 1); }

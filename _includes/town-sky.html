@@ -379,10 +379,35 @@
   // both quiet switches freeze it, same as every other bit of sky motion
   if (matchMedia('(prefers-reduced-motion: reduce)').matches ||
       root.classList.contains('reduce-flourish')) return;
+  /* ⚑ PARK THE CLOUD SHEETS ONCE THEY ARE OFF SCREEN (2026-08-13) ─────────────────────
+     The two sliding cloud sheets are the most expensive objects on any page that shows
+     them — 6.3 MB of graphics memory EACH, measured, against 0.0 MB for the eleven
+     twinkling stars, the six fireflies and the three shooting stars put together. The
+     whole rest of the sky is free; these two are not.
+
+     ⭐ AND THEY KEPT SLIDING AFTER THE VEIL HAD ALREADY HIDDEN THEM. The veil above fades
+     `.ts-cloud-shape` — the clouds you can see — but the SHEET carrying them is not in that
+     list, so past the hero the browser was still sliding two window-and-a-half-wide layers
+     around, and still holding both textures, to move pictures nobody could look at.
+     Verified on the live page before the fix: both sheets reported `running` at every
+     scroll position.
+
+     ⚠ FADING SOMETHING TO INVISIBLE DOES NOT STOP IT. Same family as the weather engine's
+     rule that `display:none` does not stop a rAF loop: opacity is a paint instruction, not
+     an off switch. `will-change: transform` on the sheet makes it worse on purpose — it
+     tells the browser to KEEP a dedicated layer ready at all times, which is exactly right
+     while the thing is moving and exactly wrong once it is not.
+
+     One class, at the top of the existing lerp — no new scroll listener, no new frame loop,
+     and it rides a value this handler already computes. `0.985` rather than `1` because the
+     easing approaches its target asymptotically and would otherwise never quite arrive. */
+  var parked = false;
   var ts = 0, cs = 0, raf = null;
   function frame() {
     cs += (ts - cs) * 0.15;
     root.style.setProperty('--par-s', cs.toFixed(3));
+    var wantParked = cs >= 0.985;
+    if (wantParked !== parked) { parked = wantParked; root.classList.toggle('sky-parked', parked); }
     raf = (Math.abs(ts - cs) > 0.002) ? requestAnimationFrame(frame) : null;
   }
   function kick() { if (!raf) raf = requestAnimationFrame(frame); }
