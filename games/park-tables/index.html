@@ -47,6 +47,13 @@ body_class: theme-hall
 <script src="{{ '/assets/js/pjcc-replay.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-game-review.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-analysis.js' | relative_url }}"></script>
+{% comment %} AUSTON REMEMBERS (2026-08-13) — she is the one regular who notices what has
+     changed since you last sat down. OPTIONAL BY DESIGN: every call into it below is
+     guarded, so if this file fails to arrive she simply stops talking and the bench plays
+     exactly as it did before. An optional dependency that fails silently is normally the
+     bug ([[feature-shipped-but-never-loaded]]); here it is the intended degradation, and
+     the difference is that nothing else on the page reads from it. {% endcomment %}
+<script src="{{ '/assets/js/pjcc-auston.js' | relative_url }}"></script>
 <script>
 (function () {
   'use strict';
@@ -610,6 +617,13 @@ body_class: theme-hall
     ceo:      { name: 'The CEO',  icon: '♔', diff: 'Champion', elo: 2400, movetime: 1300,
                 locked: 'princess' }
   };
+  /* ⚠ PUBLISHED, NOT DUPLICATED (2026-08-13). Auston's memory names the other regulars
+     ("you beat Robert since we last played"), and the one thing it must never do is keep
+     its own copy of the bench — a second roster is a roster that goes stale the next time
+     a seat is re-rated or renamed, and this bench has already been re-ordered twice. She
+     reads THIS object or she falls back to the raw id. Same rule as every derived list on
+     the site: derive it, never retype it. */
+  window.PJCCParkBots = BOTS;
 
   /* ── WHO YOU HAVE BEATEN (2026-08-10) ────────────────────────────────────────────────
      One list, in this browser, appended to the first time you win a bot game. It is the key
@@ -724,8 +738,18 @@ body_class: theme-hall
     });
   }
 
+  /* ── WHAT SHE SAID WHEN YOU SAT DOWN ─────────────────────────────────────────────
+     ⚠ COMPUTED HERE, IN botStart, AND NOWHERE ELSE. `PJCCAuston.greet()` also COMMITS
+     her ledger — after it runs, "what she knew last time" is now — so calling it from
+     `botRender()` (which runs on every single move) would reset her memory to the
+     current state on move one and leave her with nothing to notice ever again. The
+     greeting is a property of SITTING DOWN, so it is computed exactly where sitting
+     down happens, and the render path only ever reads this variable. */
+  var botSay = null, botBye = null;
+
   function botStart(id){
     stopPolling(); cur = null; botSel = -1; botThinking = false; botSeq++;
+    botSay = null; botBye = null;
     if (BOTS[id]) enterRoom('bot', id, BOTS[id].name);   // you're at the table now, not on the page
     var saved = botLoad();
     // resume an unfinished game against the same regular; otherwise a fresh board
@@ -735,6 +759,15 @@ body_class: theme-hall
       try { PJCCGauntletEngine.newGame(); } catch (e) {}
     }
     botCur = saved;
+    /* She greets you on a FRESH board only. Resuming a game you were already in the
+       middle of is not sitting down — you never got up — and a bot that says "it has
+       been eleven days" over a half-played position is a bot that is visibly not
+       looking at the board. Same reason a finished game gets the farewell instead. */
+    try {
+      if (window.PJCCAuston && PJCCAuston.speaks(id) && !saved.done && !(saved.moves || '').trim()) {
+        botSay = PJCCAuston.greet(id);
+      }
+    } catch (e) { botSay = null; }
     // resumed mid-reply (refreshed while the bot was thinking): it's Black's move
     // with no engine in flight — kick the think again instead of stalling.
     var g0 = M.replayGame(saved.moves || '');
@@ -748,6 +781,22 @@ body_class: theme-hall
      Same-browser day string on both ends, so the stamp expires itself at midnight. */
   function markWin(){ try { localStorage.setItem('pjcc.pt.winday', new Date().toDateString()); } catch (e) {} }
 
+  /* ⚠ `logged` GUARDS AGAINST A DOUBLE ENTRY, and the double entry is real rather than
+     theoretical: botFinish is called from botCommitMove, from botThink AND from botRender
+     (`if (!st.done && g.result)`), and resignation sets `done` without coming through here
+     at all. A game logged twice would double every count Auston derives — her head-to-head,
+     her streak, "games since we last played" — so the flag lives on the SAVED state, not in
+     a variable, and therefore survives the reload that a refresh mid-game causes. */
+  function logFinished(st, plies){
+    if (!st || st.logged) return;
+    st.logged = 1; botSave(st);
+    try {
+      if (window.PJCCAuston) {
+        PJCCAuston.logGame({ bot: st.bot, result: st.result, plies: plies, reason: st.reason });
+      }
+    } catch (e) {}
+  }
+
   function botFinish(st, g){
     st.done = 1;
     st.result = g.result === 'checkmate' ? (g.S.turn === 'w' ? '0-1' : '1-0') : '1/2-1/2';
@@ -757,6 +806,10 @@ body_class: theme-hall
       markWin();                                   // you play White at every bot table
       markBeaten(st.bot);                          // …and that is what opens the locked seats
     }
+    // ⚠ AFTER markBeaten(), never before: her "you beat Robert since we last played"
+    //   observation compares the beaten list against her own copy of it, so the win has to
+    //   be recorded before the log entry that will make her look.
+    logFinished(st, ((st.moves || '').trim() ? st.moves.trim().split(/\s+/).length : 0));
   }
 
   // The opening's name, shown live as a game follows known theory (Nate 2026-07-17:
@@ -825,6 +878,27 @@ body_class: theme-hall
     else if (botThinking) state = esc(bot.name) + ' is thinking…';
     else state = 'Your move.';
 
+    /* ── HER LINE ────────────────────────────────────────────────────────────────
+       The farewell is computed on the FIRST render after the game ends (botBye holds
+       it afterward) because `farewell()` reads the log, and the log entry for this
+       game is written by logFinished() a few lines above — computing it any earlier
+       would have her react to the previous game. Cached in botBye rather than
+       recomputed, so re-renders do not re-roll which line she picked mid-sentence.
+
+       The GREETING clears itself the moment you move. It is a hello, and a hello that
+       stays on screen for forty moves stops being one. */
+    if (st.done && !botBye) {
+      try {
+        if (window.PJCCAuston && PJCCAuston.speaks(st.bot)) botBye = PJCCAuston.farewell(st.bot);
+      } catch (e) { botBye = null; }
+    }
+    var says = st.done ? botBye : ((st.moves || '').trim() ? null : botSay);
+    var bubble = says
+      ? '<div class="pt-say' + (st.done ? ' pt-say--end' : '') + '">' +
+          '<span class="pt-say-who" aria-hidden="true">' + bot.icon + '</span>' +
+          '<p class="pt-say-t"><b>' + esc(bot.name) + '</b> ' + esc(says.text) + '</p></div>'
+      : '';
+
     // legal-move dots for the selected piece — capture squares get the dot too
     var hints = {};
     if (botSel !== -1 && myTurn) {
@@ -853,6 +927,7 @@ body_class: theme-hall
       '<div class="pt-table-head"><button class="pjcc-btn-ghost" id="pt-back">← The park</button>' +
       '<i class="pt-row-chips">Casual · ' + esc(bot.diff) + ' bot · no clock</i></div>' +
       '<p class="pt-state' + (myTurn ? ' go' : '') + '">' + state + '</p>' +
+      bubble +
       openingCap(st.moves) +
       // board (with its nameplates) LEFT, the scoresheet RIGHT (2026-07-17 Nate:
       // "notation should be to the right of the game") — .pt-arena stacks on phones
@@ -903,7 +978,12 @@ body_class: theme-hall
     var rs = document.getElementById('pt-bot-resign');
     if (rs) rs.onclick = function(){
       if (!confirm('Resign this game?')) return;
-      st.done = 1; st.result = '0-1'; st.reason = 'resignation'; botSave(st); botRender();
+      st.done = 1; st.result = '0-1'; st.reason = 'resignation'; botSave(st);
+      // ⚠ RESIGNING NEVER TOUCHES botFinish, so it needs its own log call or the one
+      //   result Auston has the most to say about ("last time you resigned") is the one
+      //   game she would never hear about.
+      logFinished(st, ((st.moves || '').trim() ? st.moves.trim().split(/\s+/).length : 0));
+      botSay = null; botRender();
     };
     paintPieces(app);
     if (myTurn) {
@@ -1672,6 +1752,36 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
 .pt-state.go { color: #6bffb8; }
 /* the live opening name (📖 Ruy Lopez…) — quiet, sits under the turn line */
 .pt-open { color: #b9c0cb; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.02em; margin: -4px 0 10px; }
+
+/* ── AUSTON SAYS SOMETHING (2026-08-13) ────────────────────────────────────────────
+   One line, above the board, when you sit down and when the game ends.
+
+   ⚠ IT IS NOT A CHAT BUBBLE AND MUST NOT LOOK LIKE ONE. Typed chat does not exist on
+   this site by construction — four preset phrases and nothing else, which is the whole
+   child-safety story. A tail-and-speech-balloon here would advertise a text box that is
+   never coming. So it reads as a NOTE at the table: a warm rule down the left edge, her
+   glyph, her name in bold, her line after it. Nothing about it invites a reply.
+
+   The amber is the room's own "status, not affordance" color — the same reason the
+   material chip is amber rather than mint. She is telling you something; she is not a
+   control, and a warm panel two inches from the board must never read as pressable. */
+.pt-say {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin: 0 0 12px; padding: 11px 14px;
+  border-left: 3px solid #ffb43a;
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+  background: linear-gradient(90deg, rgba(255,180,58,0.13), rgba(255,180,58,0.03) 70%, transparent);
+  animation: pt-say-in 0.45s ease both;
+}
+.pt-say-who { font-size: 1.15rem; line-height: 1.3; color: #ffb43a; flex: none; }
+.pt-say-t   { margin: 0; font-size: 0.92rem; line-height: 1.65; color: #e8e2d6; }
+.pt-say-t b { color: #ffc97a; font-weight: 800; margin-right: 2px; }
+/* the closing line sits under a finished game, so it leans quieter than the greeting */
+.pt-say--end { border-left-color: #8b93a1; background: linear-gradient(90deg, rgba(255,255,255,0.06), transparent 70%); }
+.pt-say--end .pt-say-who { color: #b9c0cb; }
+.pt-say--end .pt-say-t b { color: #dfe4ec; }
+@keyframes pt-say-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .pt-say { animation: none; } }
 /* promotion picker — pawn reaches the last rank, you choose the piece (canon colors) */
 .pt-promo-ov { position: fixed; inset: 0; z-index: 9998; background: rgba(8,5,22,0.72);
   -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);

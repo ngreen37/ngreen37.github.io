@@ -7,7 +7,7 @@
     "test:style": "node tests/style.check.js",
     "test:doors": "node tests/doors.check.js",
     "prepare": "git config core.hooksPath .githooks",
-    "test:games": "node tests/chess.check.js && node tests/gauntlet.check.js && node tests/skyrun.check.js && node tests/ftd.check.js && node tests/sandmine.check.js && node tests/shogi.check.js && node tests/analysis.check.js && node tests/weather.check.js && node tests/economy.check.js && node tests/gambit.check.js && node tests/collection.check.js && node tests/ladders.check.js && node tests/hidden.check.js && node tests/creator.check.js && node tests/townsky.check.js && node tests/rating.check.js && node tests/duel.check.js && node tests/marchland.check.js && node tests/regulars.check.js && node tests/proto-gate.check.js && node tests/pwa.check.js && node tests/links.check.js",
+    "test:games": "node tests/chess.check.js && node tests/gauntlet.check.js && node tests/skyrun.check.js && node tests/ftd.check.js && node tests/sandmine.check.js && node tests/shogi.check.js && node tests/analysis.check.js && node tests/weather.check.js && node tests/economy.check.js && node tests/gambit.check.js && node tests/collection.check.js && node tests/ladders.check.js && node tests/auston.check.js && node tests/hidden.check.js && node tests/creator.check.js && node tests/townsky.check.js && node tests/rating.check.js && node tests/duel.check.js && node tests/marchland.check.js && node tests/regulars.check.js && node tests/proto-gate.check.js && node tests/pwa.check.js && node tests/links.check.js",
     "test:links": "node tests/links.check.js",
     "test:pwa": "node tests/pwa.check.js",
     "test:css": "node tests/css.check.js",
@@ -43,7 +43,8 @@
     "test:hidden": "node tests/hidden.check.js",
     "test:creator": "node tests/creator.check.js",
     "test:townsky": "node tests/townsky.check.js",
-    "test:ladders": "node tests/ladders.check.js"
+    "test:ladders": "node tests/ladders.check.js",
+    "test:auston": "node tests/auston.check.js"
   },
   "repository": {
     "type": "git",
