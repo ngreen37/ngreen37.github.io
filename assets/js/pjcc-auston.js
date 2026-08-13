@@ -500,6 +500,20 @@
     logGame: logGame,
     speaks: function (botId) { return botId === WHO; },
 
+    /* ── HAS SHE MET YOU? ──────────────────────────────────────────────────────────
+       The lobby asks this to decide whether her card wears its quiet mark. It is the
+       ONE thing about her a page may ask before you sit down, and it answers a plain
+       yes/no — nothing about what she remembers, which is hers to say out loud.
+
+       ⚠⚠ READ-ONLY, AND THAT IS THE WHOLE POINT. `greet()` COMMITS the ledger, so it
+       can never be called from a render path; this exists precisely so a render has
+       something safe to ask. Reads the stored ledger directly and writes nothing.
+       ⭐ It is per-DEVICE, like everything else she knows. A new browser gets a plain
+       card again — which is correct: on that device she genuinely has not met you. */
+    knowsYou: function () {
+      try { return !!readJSON(LEDGER_KEY, null); } catch (e) { return false; }
+    },
+
     /* for the test harness and for anyone debugging her in a console —
        everything she currently believes, in one object */
     debug: function () {

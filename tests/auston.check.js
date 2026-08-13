@@ -234,7 +234,42 @@ console.log('\n── AUSTON ─────────────────
   check('the page actually loads the file',
     /pjcc-auston\.js/.test(ROOM), 'an optional dependency fails SILENTLY — check the tag, not the logic');
   check('her line is rendered above the board, and is not a chat box',
-    /class="pt-say/.test(ROOM) && /pt-say-t/.test(ROOM));
+    /class="pt-note/.test(ROOM) && /pt-note-t/.test(ROOM));
+  /* ⚠⚠ SHE MUST NOT SHARE A CLASS WITH THE EMOTE STRIP. `.pt-say` belongs to the line a
+     live opponent's emote prints; naming her note the same thing made the older rule
+     override her margin while every emote inherited her warm panel — one collision, two
+     wrong pictures, nothing thrown. Her block must not reach for the emote's name. */
+  // her note's markup may not mention the emote's class, and vice versa
+  const herMarkup = (ROOM.match(/'<div class="pt-note[\s\S]{0,320}?<\/div>'/) || [''])[0];
+  const emoteMarkup = (ROOM.match(/say = '<div class="pt-say[^;]*;/) || [''])[0];
+  check('…under a class the emote strip does not already own',
+    herMarkup.length > 0 && !/pt-say/.test(herMarkup) &&
+    emoteMarkup.length > 0 && !/pt-note/.test(emoteMarkup),
+    'two features, two names');
+  check('…and the emote line still has the rule it was already wearing',
+    /^\.pt-say \{[^}]*\}/m.test(ROOM), 'renaming hers must not strip the one it collided with');
+
+  /* ── HER CARD'S QUIET MARK ──────────────────────────────────────────────────────
+     ⚠⚠ THE MARK MUST BE EARNED. If it rendered off the bot id alone it would be a badge
+     every stranger sees, which is the opposite of what he asked for — the whole value is
+     that it appears only to somebody she has already met. So it has to be driven by the
+     LEDGER, and the guard is that `knowsYou` is in the same expression as the class. */
+  check('her card can wear a mark the other seven cannot',
+    /pt-bot--knows/.test(ROOM) && /\.pt-bot--knows \{/.test(ROOM));
+  const markLine = (ROOM.match(/^.*knows = !!.*$/m) || [''])[0];   // the assignment, not `var knows = false`
+  check('…and it is earned — driven by her LEDGER, not by her name being Auston',
+    /PJCCAuston\.knowsYou\(\)/.test(markLine) && /PJCCAuston\.speaks\(id\)/.test(markLine),
+    'a mark every stranger can see is a badge, not a discovery');
+  check('…read-only, because this runs on every render',
+    !/greet\(/.test(markLine), 'greet() COMMITS the ledger — it must never touch a render path');
+  check('…and wrapped, so an unloaded file cannot take the bench down',
+    /try \{ knows = /.test(ROOM));
+  check('knowsYou() answers yes/no and nothing about what she remembers',
+    /knowsYou: function \(\) \{\s*try \{ return !!readJSON\(LEDGER_KEY, null\); \}/.test(SRC),
+    'what she knows is hers to say out loud');
+  /* it quotes the note's amber rather than inventing a color — one warm edge, two places */
+  check('…in the same amber as the note she speaks',
+    /\.pt-bot--knows \{[\s\S]{0,160}#ffb43a/.test(ROOM) && /\.pt-note \{[\s\S]{0,200}#ffb43a/.test(ROOM));
 }
 
 console.log(`\n  ${pass} passed, ${fail} failed\n`);

@@ -811,7 +811,19 @@ body_class: theme-hall
           '<span class="pt-card-icon">🔒</span>' +
           '<span class="pt-card-t">' + esc(b.name) + '<br><i>Beat ' + esc(owe) + ' to unlock</i></span></button>';
       }
-      return '<button class="pt-card pt-bot" data-bot="' + id + '">' +
+      /* ⭐ THE LAMP IS ON AT HER TABLE. Auston is the one regular who remembers you, and
+         her card says so WITHOUT saying so — a warm edge that appears only once she
+         actually has a ledger on this device. A stranger sees eight identical cards, so
+         nothing is advertised and nothing is spoiled; the mark is only ever visible to
+         somebody who has already sat down with her, which is exactly who has earned it.
+         ⚠ It is TRUE, not decorative: the class is driven by her ledger, so it cannot
+         appear for a player she has never met, and it goes away if they clear the site.
+         ⚠ knowsYou() is READ-ONLY — greet() commits, and this runs in a render path.
+         ⚠ Wrapped like every other call into her: an optional file must not take the
+         bench down if it fails to load. */
+      var knows = false;
+      try { knows = !!(window.PJCCAuston && PJCCAuston.speaks(id) && PJCCAuston.knowsYou()); } catch (e) {}
+      return '<button class="pt-card pt-bot' + (knows ? ' pt-bot--knows' : '') + '" data-bot="' + id + '">' +
         '<span class="pt-card-icon">' + b.icon + '</span>' +
         '<span class="pt-card-t">' + esc(b.name) + '<br><i>' + b.diff + ' · ' + b.elo +
         (resume ? ' · resume' : '') + '</i></span></button>';
@@ -981,9 +993,9 @@ body_class: theme-hall
     }
     var says = st.done ? botBye : ((st.moves || '').trim() ? null : botSay);
     var bubble = says
-      ? '<div class="pt-say' + (st.done ? ' pt-say--end' : '') + '">' +
-          '<span class="pt-say-who" aria-hidden="true">' + bot.icon + '</span>' +
-          '<p class="pt-say-t"><b>' + esc(bot.name) + '</b> ' + esc(says.text) + '</p></div>'
+      ? '<div class="pt-note' + (st.done ? ' pt-note--end' : '') + '">' +
+          '<span class="pt-note-who" aria-hidden="true">' + bot.icon + '</span>' +
+          '<p class="pt-note-t"><b>' + esc(bot.name) + '</b> ' + esc(says.text) + '</p></div>'
       : '';
 
     // legal-move dots for the selected piece — capture squares get the dot too
@@ -1779,6 +1791,38 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
 .pt-bots .pt-card.pt-bot--locked .pt-card-icon { color: #8b93a1; filter: grayscale(0.35); }
 .pt-bots .pt-card.pt-bot--locked .pt-card-t i { color: #79818e; }
 
+/* ── SHE REMEMBERS YOU (2026-08-13) ────────────────────────────────────────────────
+   Nate: *"Give her a subtle feature somewhere that the others don't have… even as subtle
+   as a different border color."*
+
+   ⭐ IT IS NOT ON HER CARD, IT IS ON HER LEDGER. The class is only added when
+   `PJCCAuston.knowsYou()` is true, so a first-time visitor sees eight identical seats and
+   the bench gives nothing away — and the day her card is suddenly warm is the day the
+   player has already met her and can go "…why does hers look different?" That is the
+   discovery he wanted, and it costs a stranger nothing.
+
+   THE AMBER IS A QUOTE, NOT A NEW COLOR. #ffb43a is exactly the rule down the left of the
+   note she speaks at the table (`.pt-note`), so the mark and the voice are the same warm
+   edge in two places — the card is the lamp, the note is what is said under it.
+
+   ⚠⚠ THE NUMBERS ARE MEASURED, AND THE GRADIENT STOP IS THE INTERESTING ONE. The tint
+   LIGHTENS a card carrying light-on-dark text, and the quietest string on it ("Keen · 1200",
+   #8b93a1 at 0.78rem) starts 23% across. Reaching plain surface at 40% instead of 55% lets
+   the tint be STRONGER at the left edge for the same contrast under the text:
+       0.10 → surface at 55%   meta 5.01     0.16 → surface at 40%   meta 4.92
+       0.13 → surface at 40%   meta 5.01  ← shipped, the warmest at full margin
+   0.13 at 55% would have measured 4.80 and 0.20 fails outright at 4.40. Picked off a
+   labelled render of the three; 0.16 starts reading as a SELECTED row rather than a glow.
+
+   ⚠ Deliberately unlabeled — no aria, no title, no tooltip. It is a flourish with no
+   function, and announcing it to a screen reader would make it MORE discoverable than it
+   is to a sighted player, which is backwards for something whose whole point is being
+   found. Nothing is conveyed here that her first line at the table will not say out loud. */
+.pt-bots .pt-card.pt-bot--knows {
+  border-left: 2px solid #ffb43a;
+  background: linear-gradient(90deg, rgba(255,180,58,0.13), var(--surface-2) 40%);
+}
+
 /* THE BOT GATE (2026-07-28) — the free path is FIRST and reads as the main one, and the
    sign-in below it is a second offer rather than a wall. Gold edges on the regulars'
    cards because this is where the gold button was pointing all along. */
@@ -1942,23 +1986,29 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
    The amber is the room's own "status, not affordance" color — the same reason the
    material chip is amber rather than mint. She is telling you something; she is not a
    control, and a warm panel two inches from the board must never read as pressable. */
-.pt-say {
+   ⚠⚠ IT IS `.pt-note`, NOT `.pt-say` — AND THAT COST A LIVE BUG. `.pt-say` was already
+   taken, 550 lines further down, by the emote a live opponent sends ("💬 Name: Good luck").
+   Same class, two unrelated features, and this block sits EARLIER in the file — so the old
+   one-line rule silently overrode this margin and color, while every emote inherited the
+   whole warm note treatment it was never designed for. Both were wrong at once and neither
+   errored. Grep the SELECTOR before naming a new one. */
+.pt-note {
   display: flex; align-items: flex-start; gap: 10px;
   margin: 0 0 12px; padding: 11px 14px;
   border-left: 3px solid #ffb43a;
   border-radius: 0 var(--r-md) var(--r-md) 0;
   background: linear-gradient(90deg, rgba(255,180,58,0.13), rgba(255,180,58,0.03) 70%, transparent);
-  animation: pt-say-in 0.45s ease both;
+  animation: pt-note-in 0.45s ease both;
 }
-.pt-say-who { font-size: 1.15rem; line-height: 1.3; color: #ffb43a; flex: none; }
-.pt-say-t   { margin: 0; font-size: 0.92rem; line-height: 1.65; color: #e8e2d6; }
-.pt-say-t b { color: #ffc97a; font-weight: 800; margin-right: 2px; }
+.pt-note-who { font-size: 1.15rem; line-height: 1.3; color: #ffb43a; flex: none; }
+.pt-note-t   { margin: 0; font-size: 0.92rem; line-height: 1.65; color: #e8e2d6; }
+.pt-note-t b { color: #ffc97a; font-weight: 800; margin-right: 2px; }
 /* the closing line sits under a finished game, so it leans quieter than the greeting */
-.pt-say--end { border-left-color: #8b93a1; background: linear-gradient(90deg, rgba(255,255,255,0.06), transparent 70%); }
-.pt-say--end .pt-say-who { color: #b9c0cb; }
-.pt-say--end .pt-say-t b { color: #dfe4ec; }
-@keyframes pt-say-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .pt-say { animation: none; } }
+.pt-note--end { border-left-color: #8b93a1; background: linear-gradient(90deg, rgba(255,255,255,0.06), transparent 70%); }
+.pt-note--end .pt-note-who { color: #b9c0cb; }
+.pt-note--end .pt-note-t b { color: #dfe4ec; }
+@keyframes pt-note-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .pt-note { animation: none; } }
 /* promotion picker — pawn reaches the last rank, you choose the piece (canon colors) */
 .pt-promo-ov { position: fixed; inset: 0; z-index: 9998; background: rgba(8,5,22,0.72);
   -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
