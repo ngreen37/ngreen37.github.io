@@ -384,6 +384,24 @@
    lifted off (above). Quiet is a different voice, not a fainter one. */
 .ticker-item--memory { color: #c9a7ff; letter-spacing: 0.2em; }
 
+/* THE DESK COVERS YOU (2026-08-13) — the wire reporting the visitor's own results.
+   Its own color for one reason: findability. Nate asked for a higher chance of meeting
+   a line about yourself, and a line you can pick out of a moving crawl at a glance is
+   met more often than one that reads as more town news. Cyan because every other voice
+   on this wire is already spoken for — gold is the town, pink the studio, mint the
+   boards, lavender the sky's memory, white a takeover — and because it is the site's
+   own first-floor accent rather than a new hue.
+   Contrast: 9.91:1 over the darkest panel (#2D1B69), comfortably past AA, and quieter
+   than the breaking white it must not compete with. Which desk is talking is carried by
+   the WORDS, not by a second color: the night voice is a different register, not a
+   dimmer one (the same argument as the memory line above). */
+.ticker-item--yours {
+  color: #8fe3ff;
+  font-weight: 700;
+
+  &::after { color: rgba(143, 227, 255, 0.32); }
+}
+
 /* The old .ct-weather layer (home-page-only mist / unused rain) was retired
    2026-07-12: the town weather now renders on EVERY page via .town-weather-overlay
    (see pjcc-weather.js + the town-weather block further down). */

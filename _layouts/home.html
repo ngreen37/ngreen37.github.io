@@ -1093,6 +1093,14 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
      second time built a second object over the first and orphaned anything registered
      against it. Record Watch now waits for DOMContentLoaded instead — see the comment on
      that block. {% endcomment %}
+
+{% comment %} The games registry, purely as DATA: THE DESK COVERS YOU reads a personal
+     best off it and needs the game's display name, its score key and its unit word to
+     come from the one source of truth rather than a second list typed here. `defer` runs
+     it before DOMContentLoaded — which is when that block reads it — and keeps 8KB off
+     the front door's critical path. It assigns window.PJCC_GAMES / PJCC_CATS and touches
+     nothing. {% endcomment %}
+<script src="{{ '/assets/js/pjcc-games-data.js' | relative_url }}" defer></script>
 <script>
 // (The Story Arc film-strip's JS — drag scroll, lore typewriter, locked-panel
 //  flicker, ✦ float — was removed 2026-07-11; the strip itself left 2026-06-22.
@@ -1494,18 +1502,291 @@ function ctParts() {
   });
 
   // ---- async headlines: insert into BOTH halves so the -50% loop stays seamless ----
+  // `slot` is a position WITHIN ONE COPY. The reel is two identical copies and the crawl
+  // walks it -50%, so a late line has to land at the same relative place in both or the
+  // loop shows a seam. Inserting at `slot` in copy 1 moves copy 2's matching slot to
+  // slot + half + 1 — half counted BEFORE the insert, plus the one just added.
+  function insertPair(text, cls, slot) {
+    var n = track.children.length;
+    if (!n) { item(text, cls); setDuration(); return; }
+    var half = n / 2;
+    slot = Math.max(0, Math.min(half, slot | 0));
+    var a = document.createElement('span');
+    a.className = 'ticker-item' + (cls ? ' ' + cls : '');
+    a.textContent = text;
+    var b = a.cloneNode(true);
+    track.insertBefore(a, track.children[slot] || null);
+    track.insertBefore(b, track.children[slot + half + 1] || null);
+    setDuration();
+  }
+
+  // WHERE A LATE LINE CAN LAND WITHOUT SHOVING THE WIRE (2026-08-13). A line inserted at
+  // or behind the visible window pushes whatever you are mid-sentence on sideways. The
+  // first item entirely past the right edge is the earliest slot that costs nothing to
+  // fill — and it is seconds away instead of most of a lap away, which is the whole point
+  // of THE DESK COVERS YOU below: a headline about you that arrives after you have left
+  // is the same as no headline. Returns a slot within one copy, so both halves match.
+  function slotAhead() {
+    var kids = track.children, n = kids.length;
+    if (n < 2) return 0;
+    // ⚠ UNDER REDUCED MOTION THERE IS NO "AHEAD". The site-wide reduce rule collapses every
+    // animation to 0.001ms and one iteration, so the crawl finishes before it starts and
+    // the wire is a FIXED window on the head of the reel — a slot past the right edge is a
+    // slot that visitor will never reach. Slot 0 is the only one they can read. It shoves
+    // the wire sideways, which is exactly the cost this function exists to avoid; here it
+    // buys the whole feature instead of costing anything, since nothing is moving and this
+    // runs at DOMContentLoaded, before there is anything to be mid-sentence on.
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return 0;
+    var half = n / 2, edge = wrap.getBoundingClientRect().right;
+    for (var i = 0; i < n; i++) if (kids[i].getBoundingClientRect().left > edge) return i % half;
+    return 0;
+  }
+
   window.PJCCTicker = {
-    add: function (text, cls) {
-      var half = track.children.length / 2;
-      var a = document.createElement('span');
-      a.className = 'ticker-item' + (cls ? ' ' + cls : '');
-      a.textContent = text;
-      var b = a.cloneNode(true);
-      track.insertBefore(a, track.children[half] || null);   // end of the first copy
-      track.appendChild(b);                                  // end of the second copy
-      setDuration();
+    desk: DESK,                            // which desk has the wire, and how rogue it is
+    seed: daySeed,                         // one town, one day — never Math.random()
+    add: function (text, cls) { insertPair(text, cls, track.children.length / 2); },
+    place: function (text, cls, slot) { insertPair(text, cls, slot); },
+    slotAhead: slotAhead,
+    span: function () { return track.children.length / 2; }
+  };
+})();
+
+/* ═══ THE DESK COVERS YOU (2026-08-13) ══════════════════════════════════════════════
+   The town wire reports the visitor's OWN results, in the desk's own voice — the same
+   crawl that carries the ferry delay carries the floor you cleared this week. It is the
+   cheapest version of the thing nothing else on the site does: everywhere else a result
+   goes to a graph, and no graph has ever mentioned you by name to a town.
+
+   ⚠⚠ THE ONE RULE — WHAT THE DESK SAYS ABOUT YOU IS TRUE.
+   The Night Desk gets things slightly wrong; that is the joke, and it stays the joke for
+   its own idle thoughts (the NIGHT array up in the ticker block). It does NOT extend to
+   the visitor. Nate: "when the ticker refers to a user's accomplishment or anything about
+   the user, it should be accurate. Random thought ticker notes for the night desk can be
+   slightly wrong." So after midnight only the VOICE changes — bored, first person,
+   unimpressed. Every number stays the number: nothing here is rounded up, softened,
+   guessed at, or inferred from a fact sitting next to it. Two places that rule already
+   shaped the code below:
+     · the Gauntlet reports `cur` (the first floor NOT beaten) rather than "the last one
+       you cleared", because those two only agree while the save is tidy;
+     · the puzzle rating is withheld until a puzzle has actually been solved, since
+       everyone starts at PJCC.PUZZLE_START and reporting the start as a result would be
+       the first lie on the wire.
+
+   WHERE THE FACTS COME FROM. The first pass reads records that already exist locally —
+   the Gauntlet's own save, PJCC.streakInfo, PJCC.puzzleRating, PJCC.localBest — so a
+   signed-out visitor gets covered too, with no account and no network. The second pass
+   waits for PJCC.ready and adds what only an account knows. Both are read-only.
+
+   HOW OFTEN YOU MEET ONE (Nate asked for a higher chance of seeing yourself). Three
+   things do that work, and none of them add a line: the first headline lands in the slot
+   just ahead of the crawl (PJCCTicker.slotAhead) so it is seconds away instead of most of
+   a lap; up to LIMIT of them are spread evenly around the reel; and the day-seeded start
+   means a returning player meets a different one of their facts tomorrow. LIMIT stays
+   small on purpose — a wire that is all about you is a dashboard, not a town.
+
+   PREVIEW: `?cover=all` runs every fact you actually have instead of LIMIT of them, and
+   `?desk=2` (the Night Desk preview) flips these into the overnight voice.
+
+   ✏️ THE WORDING LIVES IN `LINES` — one DAY line and one NIGHT line per kind of fact.
+   The {braces} are filled from the record and are always true; the prose around them is
+   yours to rewrite, and a line whose placeholder has no value is dropped rather than
+   printed half-empty. {who} is "OPERATIVE VESPER" or "A LOCAL OPERATIVE"; {who2} is the
+   short form, "VESPER" or "SOMEBODY".
+   ══════════════════════════════════════════════════════════════════════════════════ */
+(function () {
+  var LIMIT = 3;
+
+  // ── ✏️ THE WORDING ────────────────────────────────────────────────────────────────
+  var LINES = {
+    gauntlet: {
+      day:   'THE GAUNTLET: {who} HAS CLEARED {n} OF {of} FLOORS — {floor} STILL HOLDS THE STAIR',
+      night: '{who2} IS {n} FLOORS UP THE GAUNTLET. {floor} IS NEXT. I HAVE SEEN THE LIST. IT DOES NOT GET SHORTER'
+    },
+    gauntlet_top: {
+      day:   'THE GAUNTLET: {who} HAS CLEARED ALL {of} POSTED FLOORS — NO RUNG ABOVE IS ON THE PUBLIC LADDER',
+      night: '{who2} FINISHED THE GAUNTLET. ALL {of} FLOORS. NOBODY CAME DOWN TO THE DESK ABOUT IT. I AM THE DESK'
+    },
+    streak: {
+      day:   'RECORD: {who} HAS REPORTED IN {n} DAYS RUNNING',
+      night: '{who2} HAS PLAYED {n} DAYS IN A ROW. I HAVE BEEN HERE LONGER THAN THAT AND NOBODY WRITES IT DOWN'
+    },
+    puzzles: {
+      day:   'THE PUZZLE ROOM: {who} RATED {r} — {n} POSITIONS SOLVED',
+      night: 'THE PUZZLE ROOM HAS {who2} AT {r}, OFF {n} SOLVED. I CHECKED THE NUMBER TWICE. IT IS THE SAME NUMBER'
+    },
+    best: {
+      day:   '{game}: {who} HOLDS A PERSONAL BEST OF {score}',
+      night: '{game}. {score}. THAT IS A REAL NUMBER {who2} REALLY GOT. I DID NOT ROUND IT'
+    },
+    park: {
+      day:   'THE PARK TABLES: {who} RATED {r} OVER {n} RATED GAMES',
+      night: 'THE PARK TABLES SAY {who2} IS {r} AFTER {n} GAMES. THE TABLES ARE EMPTY AT THIS HOUR. THE NUMBER IS NOT'
+    },
+    credits: {
+      day:   'PERSONNEL: {who} CARRIES {n} CREDITS — {rank}',
+      night: '{who2} HAS {n} CREDITS. THE VENDING MACHINE HERE TAKES QUARTERS. THERE IS NO CONNECTION. I CHECKED'
+    },
+    clearance: {
+      day:   'CLEARANCE: {who} IS CLEARED TO {name} — {l} OF {of}',
+      night: '{who2} IS CLEARED TO {name}. NOBODY HAS TOLD ME WHAT THAT LETS THEM READ. I AM CLEARED FOR THE CRAWL'
     }
   };
+  // ── end of the wording ───────────────────────────────────────────────────────────
+
+  function up(s) { return String(s == null ? '' : s).toUpperCase(); }
+
+  // A line with an unfilled placeholder is DROPPED, not printed with braces showing:
+  // the desk would rather say nothing about you than say "{n}" about you.
+  function fill(tpl, f) {
+    var missing = false;
+    var out = tpl.replace(/\{(\w+)\}/g, function (m, k) {
+      if (f[k] === undefined || f[k] === null || f[k] === '') { missing = true; return m; }
+      return String(f[k]);
+    });
+    return missing ? null : out;
+  }
+
+  // ---- what the town can prove about you WITHOUT an account --------------------
+  function localFacts() {
+    var out = [], P = window.PJCC;
+    // THE GAUNTLET — window.__gauntletProg is built further up this same layout.
+    // `names.length` rather than a typed "TEN": a count typed by hand is a count that
+    // goes stale the day a floor is added.
+    var gp = window.__gauntletProg;
+    if (gp && gp.names && gp.cleared > 0) {
+      if (gp.cur < gp.names.length) out.push({ kind: 'gauntlet', n: gp.cleared, of: gp.names.length, floor: up(gp.names[gp.cur]) });
+      else out.push({ kind: 'gauntlet_top', n: gp.cleared, of: gp.names.length });
+    }
+    if (!P) return out;
+    // THE DAILY STREAK — streakInfo() only calls a streak alive if the last active day was
+    // today or yesterday, so a lapsed one reports nothing instead of an old number.
+    try { var st = P.streakInfo(); if (st && st.current >= 2) out.push({ kind: 'streak', n: st.current }); } catch (e) {}
+    // THE PUZZLE ROOM — the solver's own Elo, once there is one (see the rule above).
+    try { var pz = P.puzzleRating(); if (pz && pz.solved > 0) out.push({ kind: 'puzzles', r: pz.rating, n: pz.solved }); } catch (e) {}
+    // PERSONAL BESTS — read off the games registry, so the display name, the score key and
+    // the unit word all come from the one source of truth, and so a game the visitor
+    // cannot reach (locked, terminated, still behind a key) can never be headlined.
+    //
+    // ⚠ SIGNED IN, THE LOCAL BEST IS NOT NECESSARILY THE BEST. saveScore() mirrors every
+    // run into localStorage, so this device's copy matches the account for anything played
+    // ON this device — but a run set on the phone leaves the laptop holding a real, lower
+    // number, and "PERSONAL BEST OF 500" to somebody who has 900 is exactly the kind of
+    // wrong the rule at the top of this block forbids. So bests are handed to the ACCOUNT
+    // pass whenever there is an account to ask; only a signed-out visitor is reported from
+    // local alone, and for them the local record IS the whole record.
+    if (!codename()) bests(out, function (key) { var v = 0; try { v = P.localBest(key); } catch (e) {} return v; });
+    return out;
+  }
+
+  // The registry walk itself, shared by both passes. `lookup` decides where the number
+  // comes from; the filtering, the naming and the unit word are settled once, here.
+  function bests(out, lookup) {
+    (window.PJCC_GAMES || []).forEach(function (g) {
+      if (!g.score || g.playable === false || g.locked || g.cat === 'terminated') return;
+      if (g.slug === 'fork-in-the-road') return;    // the puzzles fact covers that room, in its own currency
+      var v = lookup(g.score[0]);
+      if (!(v > 0)) return;
+      // the registry's unit word is the noun the board counts in — but most of them count
+      // in 'score', and "A PERSONAL BEST OF 812 SCORE" is not a sentence. A plain number
+      // is, and it is the same number.
+      var unit = String(g.score[1] || '').toLowerCase();
+      out.push({ kind: 'best', game: up(g.name), score: (unit && unit !== 'score') ? (v + ' ' + up(unit)) : String(v) });
+    });
+  }
+
+  // ---- what only the account knows ---------------------------------------------
+  // Async, because the true personal best needs game_stats. It resolves to a pool; a
+  // failed stats query just means the bests fall back to this device's copy.
+  function accountFacts() {
+    var out = [], P = window.PJCC, p = P && P.getProfile && P.getProfile();
+    if (!p) return Promise.resolve(out);
+    // pjcc_rating / rated_games ride the OPTIONAL second profile query, so they are absent
+    // on a database that has not had the Park Tables migration — hence the type test.
+    if (typeof p.pjcc_rating === 'number' && (p.rated_games || 0) > 0)
+      out.push({ kind: 'park', r: p.pjcc_rating, n: p.rated_games });
+    if ((p.credits || 0) > 0)
+      out.push({ kind: 'credits', n: p.credits, rank: up(P.rankFor(p.credits).name) });
+    var cl = P.clearance(p);
+    if (cl && cl.level >= 2)                        // everyone is a Recruit; that is not news
+      out.push({ kind: 'clearance', name: up(cl.name), l: cl.level, of: P.CLEARANCE.length });
+    var stats = (P.myStats ? P.myStats() : Promise.resolve([])).catch(function () { return []; });
+    return stats.then(function (rows) {
+      var map = {}; (rows || []).forEach(function (s) { map[s.game] = s.best_score || 0; });
+      bests(out, function (key) {
+        var loc = 0; try { loc = P.localBest(key); } catch (e) {}
+        return Math.max(loc, map[key] || 0);        // whichever is genuinely the best
+      });
+      return out;
+    });
+  }
+
+  function codename() {
+    var live = window.PJCC && PJCC.getProfile && PJCC.getProfile();
+    if (live && live.codename) return live.codename;
+    // the cached copy the nav pill already renders from — a returning operative gets
+    // their name on the wire without waiting on the SDK
+    try { return localStorage.getItem('pjcc.codename'); } catch (e) { return null; }
+  }
+
+  var shown = {}, placed = 0, all = false;
+  try { all = (new URLSearchParams(location.search).get('cover') || '') === 'all'; } catch (e) {}
+
+  function run(pool) {
+    var T = window.PJCCTicker;
+    if (!T || !T.desk || !pool.length) return;
+    if (T.desk.away) return;                        // nobody is at the desk to file it
+    var cap = all ? 99 : LIMIT;
+    if (placed >= cap) return;
+
+    var night = !!T.desk.on, name = codename(), texts = [];
+    var start = T.seed() % pool.length;
+    for (var i = 0; i < pool.length && (placed + texts.length) < cap; i++) {
+      var f = pool[(start + i) % pool.length];
+      if (shown[f.kind]) continue;                  // one headline per KIND, so three lines are three subjects
+      var tpl = LINES[f.kind] && LINES[f.kind][night ? 'night' : 'day'];
+      if (!tpl) continue;
+      f.who  = name ? ('OPERATIVE ' + up(name)) : 'A LOCAL OPERATIVE';
+      f.who2 = name ? up(name) : 'SOMEBODY';
+      var text = fill(tpl, f);
+      if (!text) continue;
+      shown[f.kind] = 1;
+      texts.push(text);
+    }
+    if (!texts.length) return;
+
+    // WHERE THEY LAND. The first sits in the slot just ahead of the crawl; the rest are
+    // spread around the reel so they don't read as one dashboard panel bolted to the wire.
+    // Inserted from the LAST slot backward, because an earlier insert shifts every slot
+    // above it and would walk the later ones out from under us.
+    var span = T.span(), base = T.slotAhead();
+    var step = Math.max(1, Math.floor(span / (texts.length + 1)));
+    var slots = texts.map(function (_, k) { return (base + k * step) % span; });
+    var order = texts.map(function (_, k) { return k; })
+                     .sort(function (a, b) { return slots[b] - slots[a]; });
+    order.forEach(function (k) { T.place(texts[k], 'ticker-item--yours', slots[k]); });
+    placed += texts.length;
+  }
+
+  // ⚠ THE LOCAL PASS GOES FIRST, AND THE NESTING IS WHAT GUARANTEES IT. Both passes fill
+  // the same three slots, so whichever resolves first wins them — and the account pass
+  // resolving first would push a signed-in player's actual PLAY (the floor, the streak,
+  // the best) off the wire in favor of a credit balance that has not moved all week.
+  // In production PJCC.ready waits on an idle callback and a ~100KB SDK, so this looks
+  // decided; it is not, and a warm cache is enough to flip it.
+  //
+  // Everything here needs the DOM anyway: window.PJCC and the games registry both land
+  // before DOMContentLoaded, and slotAhead() has to measure a laid-out reel.
+  var start = function () {
+    try { run(localFacts()); } catch (e) {}
+    // The account pass rides PJCC.ready — a beat later, and slotAhead() is read again
+    // then, so its line still lands just ahead of the crawl rather than a lap away.
+    if (window.PJCC && PJCC.ready) {
+      PJCC.ready.then(accountFacts).then(function (pool) { run(pool); }).catch(function () {});
+    }
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
 })();
 
 // RECORD WATCH — one live headline a day from the boards (no sign-in needed).
