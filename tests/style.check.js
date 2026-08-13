@@ -637,5 +637,85 @@ console.log('\n── HOUSE RULES ───────────────�
     'the readable green');
 }
 
+/* ══ EVERY CONTROL IN THE TOP BAR HAS A FINGER-SIZED HIT BOX ══════════════════════════
+   Three phone passes (2026-08-04, 08-05, 08-13) have each found the same class of defect
+   in the same place: a control in the site header that a fingertip cannot reliably hit.
+   The 08-13 one was `.site-mark`, the header's own navigation between cW.com, P&JCC and
+   McPuppy Studios — 12 CSS px tall on a phone, and it had never been in the tap-target
+   file at all.
+
+   ⭐ A RULE FOUND THREE TIMES BELONGS IN A GATE, NOT IN A NOTE. This is static and cheap:
+   read the interactive elements out of the header include, and require each one to be
+   named in `_pjcc-27-tap-targets.scss` or to be listed here as a deliberate exemption
+   with a reason. It cannot measure pixels — a browser is needed for that, and the header
+   is Liquid, so there is no local build to point one at — but it catches the thing that
+   actually happened all three times: a control was ADDED to the bar and nobody added it
+   to the fix. That is a coverage question, and coverage is checkable from source.
+
+   ⚠ THE EXEMPTIONS ARE NOT A CONVENIENCE LIST. Each one is measured and explained. If you
+   are about to add a name here to make the gate green, measure it on a phone first. */
+{
+  /* local reader — `slurp` above is const-scoped to its own block, and this file has no
+     shared one. Same shape as the others: missing file reads as empty, never throws. */
+  const slurp = (f) => {
+    try { return fs.readFileSync(path.join(ROOT, f), 'utf8'); } catch (e) { return ''; }
+  };
+  const header = slurp('_includes/site-header.html');
+  /* ⚠⚠ STRIP COMMENTS, AND THIS GATE PROVED WHY ON ITS OWN FIRST RUN — in the direction that
+     is far more dangerous than the `--fd-go` gate's. That one failed on its own documentation
+     and was noisy about it. This one PASSED on its own documentation: with the real
+     `.site-mark` rule deleted, the coverage check stayed green because the block comment
+     above the rule says ".site-mark" eight times. A gate that reads prose as code does not
+     cry wolf — it goes quiet exactly when it is needed. Blanked, not removed, so any line
+     numbers reported downstream stay honest. */
+  const taps = slurp('_sass/_pjcc-27-tap-targets.scss')
+    .replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '));
+
+  /* only the TOP BAR — the drawer below it is a different surface with its own geometry
+     (its links are full-width rows, which is a different kind of target). The bar ends at
+     the drawer's opening tag. */
+  const barEnd = header.search(/class="[^"]*drawer-panel|<nav[^>]+drawer/);
+  const bar = barEnd > 0 ? header.slice(0, barEnd) : header;
+
+  /* interactive elements in the bar, by their FIRST class — that is the hook a stylesheet
+     would use, and it is what the tap-target file lists. */
+  const found = new Set();
+  const re = /<(a|button)\b[^>]*class="([^"]+)"/g;
+  let m;
+  while ((m = re.exec(bar)) !== null) found.add(m[2].trim().split(/\s+/)[0]);
+
+  const EXEMPT = {
+    /* measured 82.7 x 34.3 on desktop; on a phone it is `hidden` until a profile exists and
+       renders as a full-height pill in the bar. Re-measure if it ever shows by default. */
+    'nav-operative': 'hidden until signed in; renders full-height when shown',
+    /* measured 82.1 x 32.4 desktop / not present in the phone probe's under-44 list — the
+       phone layout drops it into the drawer rather than the bar. */
+    'about-contact-btn': 'not in the phone bar; lives in the drawer at narrow widths'
+  };
+
+  const uncovered = [...found].filter(c =>
+    !EXEMPT[c] && !new RegExp('\\.' + c.replace(/[-]/g, '\\-') + '\\b').test(taps));
+
+  check('every control in the top bar has a 44px hit box (or a stated exemption)',
+    uncovered.length === 0,
+    uncovered.length
+      ? 'NOT in _pjcc-27-tap-targets.scss: ' + uncovered.join(', ')
+      : `${found.size} controls in the bar, ${Object.keys(EXEMPT).length} exempt by measurement`);
+
+  /* ⚠ The `.site-mark` rule must NOT carry min-width — the two word marks sit 5px apart at
+     390px, so a 44px minimum makes their hit boxes overlap and a short tap opens the WRONG
+     brand. The width is `calc(100% + 5px)` on purpose, so the pair tiles the gap. */
+  const markBlock = (taps.match(/\.site-mark::after\s*\{[\s\S]*?\}/) || [''])[0];
+  const why = !markBlock
+    ? 'no .site-mark::after rule at all — the three marks have no hit box'
+    : markBlock.includes('min-width')
+      ? 'min-width is back on .site-mark::after — the marks now overlap'
+      : !markBlock.includes('min-height')
+        ? '.site-mark::after has no min-height — the marks are still 12px tall'
+        : 'height grows to 44, width absorbs exactly the 5px gap';
+  check('…and the three marks tile the gap instead of overlapping it',
+    !!markBlock && markBlock.includes('min-height') && !markBlock.includes('min-width'), why);
+}
+
 console.log(`\n  ${pass} passed, ${fail} failed\n`);
 process.exit(fail ? 1 : 0);

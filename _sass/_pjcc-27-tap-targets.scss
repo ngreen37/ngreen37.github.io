@@ -51,15 +51,49 @@
    short does not miss — it opens the wrong room. Each expander is only as wide as its own
    word (55px, already over the 44 floor), so growing them vertically cannot make two
    neighbors overlap. */
+/* ⚑ ROUND FOUR — THE THREE FRONT DOORS (2026-08-13, found by a four-lens sweep).
+   `.site-mark` is the header's own navigation between cW.com, P&JCC and McPuppy Studios
+   ([[header-three-marks]]) — and it had never been in this file at all. Measured live with
+   the finger emulated:
+
+       390px    cW.com  35.6 x 12      P&JCC  37.5 x 12      McPuppy  display:none
+       320px    cW.com  32.6 x 11      (the other two are hidden at this width)
+       844x390  50.4x17 · 53.1x17 · 66x44
+
+   ⭐ TWELVE PIXELS TALL. Width was never the story here — 35 against a ~44px fingertip is a
+   near miss, but a 12px-tall strip is not a target at all, and these are the links that move
+   a visitor between the three things this whole site is. Height is also the dimension that is
+   FREE to fix: the header is 59.3px, the marks sit at y=24 with their centers at y=30, so a
+   44px box spans y=8-52 and stays inside the bar with room at both ends.
+
+   ⚠⚠ AND WIDTH IS THE DIMENSION THAT IS NOT FREE — THIS IS THE `.wm-go` PROBLEM, WORSE. The
+   two word marks sit 5px apart at 390px. A `min-width: 44px` would grow each one 4.2px per
+   side into a 5px gap, so the two hit boxes would OVERLAP by about 3px — and an overlap here
+   does not cause a miss, it opens the WRONG BRAND, which is worse than the small target we
+   started with. So the ghost takes `calc(100% + 5px)` instead: each box absorbs exactly half
+   the gap, the pair TILES the space between them, and the boundary lands at the midpoint of
+   the gap, which is where a boundary belongs. No dead zone, no overlap, no layout moved.
+   ⭐ THE RESIDUAL, STATED RATHER THAN HIDDEN: at 390px the marks end up 40.6 and 42.5 wide,
+   still under 44. Closing that last inch means widening the header cluster, and buying tap
+   area with layout is the one thing this file has never done — the 2026-08-05 note is
+   explicit that a fix must not purchase overflow. At 320px only one mark renders, so it has
+   no neighbor and the same rule lands it comfortably; in landscape all three are already
+   wider than 44 and only the height rule does any work.
+   ⚠ `min-width` is deliberately ABSENT from this block. If someone adds it back, the marks
+   overlap again and nothing will look wrong. */
 @media (hover: none) {
   /* the hit expander: centered on the control, invisible, never larger than it needs */
   .cmdk-trigger,
   .lang-toggle,
   .nav-toggle,
   .drawer-mini a,
+  .site-mark,
   .wm-go {
     position: relative;
   }
+  /* ⚠ `.site-mark` is NOT in this selector list — it needs a different width rule and gets
+     its own block below. Adding it here would hand it the `min-width: 44px` that causes the
+     overlap described above. */
   .cmdk-trigger::after,
   .lang-toggle::after,
   .nav-toggle::after,
@@ -82,6 +116,20 @@
   /* 日本語 must never wrap again — this is the visible half of the fix */
   .lang-toggle {
     white-space: nowrap;
+  }
+
+  /* the three marks: full height, and only as much width as the gap will lend. See the
+     block comment above this media query for why there is no `min-width` here. */
+  .site-mark::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: calc(100% + 5px);      /* exactly the gap at 390px — the pair tiles, never overlaps */
+    height: 100%;
+    min-height: 44px;
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
   }
 }
 
