@@ -9,6 +9,29 @@ layout: default
      in the character files, so nothing is lost and any of it can be restored by
      putting the block back. Restore from git. {% endcomment %}
 
+{% comment %} 2026-08-13 (Nate) — A CHARACTER FILE CAN BE CLASSIFIED. Set three keys in a
+     character's front matter and this layout gates the body behind a clearance rung:
+
+         classified: true
+         clearance_required: Alpine Clearance     # a rung NAME from PJCC.CLEARANCE
+         classified_brief: "the one or two lines everybody may read"
+
+     THE RUNG IS NAMED, NEVER NUMBERED. `PJCC.levelOf()` resolves the name to a level at
+     runtime, so inserting a rung into the middle of the ladder cannot silently re-point a
+     gate — which is not hypothetical, it is what happened the day this shipped (Theta and
+     Sigma both landed mid-ladder and pushed every level above them up by two).
+
+     ⚠ IT IS A LOCK, NOT A SECRET. This site is static: the gated prose is in the HTML and
+     a determined visitor can read it in View Source. That is the same honest posture the
+     /classified/ page already takes — its ██ bars are REAL bars with nothing behind them —
+     and it is the right one here, because the alternative (a server, or ciphertext in the
+     page) buys secrecy this story does not need. The gate is a ceremony you earn, not a
+     vault. Anything that genuinely must not leak belongs in private/, not in a layout.
+
+     ⚠ AND IT FAILS CLOSED. An unknown rung name, a missing profile module, a thrown error
+     — every one of them leaves the file SEALED and says so plainly, because the failure
+     mode in the other direction is a classified page hanging open for everyone. {% endcomment %}
+
 <div class="character-top-nav">
   <a href="{{ '/characters/' | relative_url }}" class="back-btn">&larr; Back to Characters</a>
   {% comment %} Only show the Evolution Log link when a matching evolution exists
@@ -17,7 +40,7 @@ layout: default
   {% if evo_match %}<a href="{{ evo_match.url | relative_url }}" class="evo-link-btn">Evolution Log &rarr;</a>{% endif %}
 </div>
 
-<article class="character-card">
+<article class="character-card{% if page.classified %} character-card--classified{% endif %}">
 
   <header class="character-header">
     <div class="character-header-text">
@@ -26,16 +49,39 @@ layout: default
         <p class="character-fullname">{{ page.full_name }}</p>
       {% endif %}
     </div>
-    {% if page.role %}
+    {%- comment -%} A classified file suppresses the role badge, because the CLASSIFIED
+         stamp two lines below is already saying it and the badge would print the same word
+         twice in one header. `role:` stays in the front matter — the cast grid reads it
+         straight from there for the card face, which is the surface that still needs a
+         one-word answer to "who is this". {%- endcomment -%}
+    {% if page.role and page.classified != true %}
       <span class="character-role-badge">{{ page.role }}</span>
     {% endif %}
   </header>
+
+  {% if page.classified %}
+    <div class="cls-banner">
+      <span class="cls-stamp">CLASSIFIED</span>
+      <span class="cls-need">{{ page.clearance_required }} required</span>
+    </div>
+  {% endif %}
 
   <div class="character-body">
 
     <div class="character-portrait">
       {% if page.image %}
         <img src="{{ page.image | relative_url }}" alt="Portrait of {{ page.title }}">
+      {% elsif page.classified %}
+        {%- comment -%} A sealed file has no photograph in it — the bar IS the portrait,
+             the same true-black bar the /classified/ page uses. Decorative, so it carries
+             its meaning in the label underneath rather than in a title attribute nobody on
+             a phone can reach. {%- endcomment -%}
+        <div class="portrait-placeholder portrait-placeholder--redacted">
+          <div class="portrait-placeholder-inner">
+            <span class="portrait-icon" aria-hidden="true">&#9608;&#9608;&#9608;&#9608;</span>
+            <span class="portrait-label">Photograph: Withheld</span>
+          </div>
+        </div>
       {% else %}
         <div class="portrait-placeholder">
           <div class="portrait-placeholder-inner">
@@ -47,12 +93,131 @@ layout: default
     </div>
 
     <div class="character-details">
-      {{ content }}
+      {% if page.classified %}
+
+        {% if page.classified_brief %}
+          <p class="cls-brief">{{ page.classified_brief }}</p>
+        {% endif %}
+
+        <div class="cls-gate" id="cls-gate" data-need="{{ page.clearance_required }}">
+          {%- comment -%} The lock renders SERVER-SIDE as sealed and JS opens it, never the
+               other way round. With scripting off, or with the profile module missing, the
+               visitor gets the sealed state — which is the truth — instead of the file.
+          {%- endcomment -%}
+          <div class="cls-lock" id="cls-lock">
+            {%- comment -%} ⊙ — the same seal /classified/ pings with, so the two pages
+                 read as the same filing system. {%- endcomment -%}
+            <div class="cls-lock-glyph" aria-hidden="true">&#8857;</div>
+            <p class="cls-lock-head">FILE SEALED</p>
+            <p class="cls-lock-line" id="cls-lock-line">Checking your clearance&hellip;</p>
+            <div class="cls-lock-acts" id="cls-lock-acts"></div>
+          </div>
+          <div class="cls-file" id="cls-file" hidden>
+            <p class="cls-file-open" id="cls-file-open"></p>
+            {{ content }}
+          </div>
+        </div>
+
+      {% else %}
+        {{ content }}
+      {% endif %}
     </div>
 
   </div>
 
 </article>
+
+{% if page.classified %}
+<script>
+/* ── THE CLEARANCE GATE ────────────────────────────────────────────────────────────────
+   Paints on three triggers, because a profile arrives on this page in three different
+   ways and missing any one of them shows a signed-in operative their own locked door:
+
+     1. NOW            — a cached profile may already be in memory at parse time.
+     2. PJCC.ready     — the Supabase SDK is deferred to idle (up to 2s), so the LIVE
+                         profile lands well after first paint.
+     3. PJCC.onChange  — sign-in and sign-out both fire it, and this page must not need a
+                         reload to notice either.
+
+   That triple is the same rule gated pages on this site already follow, and it is why the
+   first paint says "Checking…" rather than "denied": announcing a denial before the
+   profile has loaded would call every returning operative a Recruit for two seconds. */
+(function () {
+  var gate = document.getElementById('cls-gate');
+  if (!gate) return;
+  var lock = document.getElementById('cls-lock');
+  var file = document.getElementById('cls-file');
+  var line = document.getElementById('cls-lock-line');
+  var acts = document.getElementById('cls-lock-acts');
+  var open = document.getElementById('cls-file-open');
+  var need = (gate.getAttribute('data-need') || '').trim();
+  var dossier = {{ '/dossier/' | relative_url | jsonify }};
+  var opened = false;
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  // SEALED IS THE DEFAULT AND THE FALLBACK. Every path that is not an explicit grant
+  // lands here, including every thrown error.
+  function seal(msg, actionHtml) {
+    if (opened) return;              // never re-lock a file already read
+    line.innerHTML = msg;
+    acts.innerHTML = actionHtml || '';
+    gate.classList.remove('is-open');
+  }
+
+  function unseal(cl) {
+    if (opened) return;
+    opened = true;
+    open.innerHTML = '<span class="pjcc-pip pip-' + cl.level + '">' + cl.pip + '</span> ' +
+      esc(cl.name) + ' &mdash; access granted.';
+    lock.hidden = true;
+    file.hidden = false;
+    gate.classList.add('is-open');
+  }
+
+  function paint() {
+    try {
+      // ⚠ DEPENDENCY CHECK BEFORE LOGIC. pjcc-profile.js is site-wide, but an optional
+      //    dependency that fails to load fails SILENTLY — so this asks rather than assumes.
+      if (!window.PJCC || !PJCC.clearance || !PJCC.levelOf) {
+        seal('Clearance check unavailable.'); return;
+      }
+      var want = PJCC.levelOf(need);
+      // A rung name this ladder does not have is a typo in front matter, and a typo must
+      // not be the thing that opens a classified file.
+      if (want == null) { seal('Clearance check unavailable.'); return; }
+
+      var cl = PJCC.clearance();
+      if (cl && cl.level >= want) { unseal(cl); return; }
+
+      var signedIn = !!(PJCC.currentUser && PJCC.currentUser());
+      var yours = cl
+        ? '<span class="pjcc-pip pip-' + cl.level + '">' + cl.pip + '</span> ' + esc(cl.name) +
+          ' <span class="cls-dim">(' + cl.level + ' of ' + PJCC.CLEARANCE.length + ')</span>'
+        : '';
+      seal(
+        '<b>' + esc(need) + '</b> required.' + (yours ? '<br>Your clearance: ' + yours : ''),
+        signedIn
+          ? '<p class="cls-hint">Clearance climbs with your PJCC rating and your credits. ' +
+            '<a href="' + esc(dossier) + '">Your dossier</a></p>'
+          : '<p class="cls-hint"><a href="' + esc(dossier) + '">Sign in</a> to check your clearance. ' +
+            'An account is free.</p>'
+      );
+    } catch (e) {
+      seal('Clearance check unavailable.');
+    }
+  }
+
+  paint();
+  if (window.PJCC && PJCC.ready && PJCC.ready.then) PJCC.ready.then(paint, paint);
+  if (window.PJCC && PJCC.onChange) PJCC.onChange(paint);
+})();
+</script>
+{% endif %}
 
 <script>
   // Lore Codex: mark this character's file as recovered once you've read it.

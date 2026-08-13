@@ -67,8 +67,26 @@
    the CTA's color competes with every button next to it. The ladder runs cool → warm
    instead, which also does the work a legend would: you can see at a glance that ✶ is
    further along than ◇ without being told, because the color heats up as the glyph
-   gets denser. Seven rungs, seven steps, and the last one is deliberately the only
-   thing on the ladder that glows. */
+   gets denser. Nine rungs, nine steps, and the last one is deliberately the only
+   thing on the ladder that glows.
+
+   ⚑ GREW FROM SEVEN TO NINE, 2026-08-13 (Theta and Sigma added mid-ladder; the summit
+   renamed to ALPINE CLEARANCE, which now gates /characters/alpine/). Two things about
+   this block are load-bearing and easy to undo by accident:
+
+   1. EVERY RUNG KEPT ITS OWN COLOR — the two new ones were fitted into the gaps
+      (#d98fef between purple and pink, #ff9b9b between pink and orange), so nobody's pip
+      changed hue. The CLASS NUMBERS shifted because the LEVELS shifted (Delta was pip-5
+      and is now pip-6), which is correct and is why these are commented by rung name.
+   2. THE GLYPHS RUN MONOTONE BY DENSITY: · ◦ ◇ ◆ ✧ ✦ ✶ ✷ ❈. Fitting two more in meant
+      Omega moving ✶ → ✷ (six-pointed to eight-pointed) so the new rung below it could
+      take ✶ without the ladder reading backwards for one step. A cosmetic move, and the
+      only one — no rung changed name or threshold to make room.
+
+   ⚠ A MISSING .pip-N IS INVISIBLE, NOT BROKEN. The class is built as 'pip-' + level, so a
+   tenth rung with no color here renders an unstyled glyph in body text and looks like a
+   rendering bug rather than a missing rule. tests/sweep.js allows the whole `pip-` prefix
+   for that reason and cannot catch it either. Add the color in the same commit. */
 .pjcc-pip { font-size: 0.92em; vertical-align: baseline; cursor: help; }
 /* RECRUIT IS DRAWN HEAVIER, NOT BIGGER (2026-08-12, Nate: "you can't see the Recruit dot
    though — can you make it a bit bigger?"). He was right, and it was the worst of the seven
@@ -92,9 +110,11 @@
 .pip-2 { color: #7fd4a8; }   /* Operative */
 .pip-3 { color: #56d0ff; }   /* Field Agent */
 .pip-4 { color: #b98fff; }   /* Cipher */
-.pip-5 { color: #ff8fd0; }   /* Delta */
-.pip-6 { color: #ffb066; }   /* Omega */
-.pip-7 { color: #ffe08a; text-shadow: 0 0 8px rgba(255,224,138,0.55); }   /* Above Omega */
+.pip-5 { color: #d98fef; }   /* Theta */
+.pip-6 { color: #ff8fd0; }   /* Delta */
+.pip-7 { color: #ff9b9b; }   /* Sigma */
+.pip-8 { color: #ffb066; }   /* Omega */
+.pip-9 { color: #ffe08a; text-shadow: 0 0 8px rgba(255,224,138,0.55); }   /* Alpine */
 .pjcc-title { font-size: 0.62rem; vertical-align: middle; background: rgba(245,197,24,0.16); color: #F5C518; border: 1px solid #F5C518; border-radius: 999px; padding: 1px 7px; margin-left: 4px; font-weight: 700; letter-spacing: 0.03em; }
 .pjcc-sub { color: #b9a8e6; font-size: 0.76rem; }
 .pjcc-credits { color: #6bffb8; font-weight: 700; }

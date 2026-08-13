@@ -298,15 +298,36 @@
     return { tier: i + 1, key: b.key, label: b.label, glyph: b.glyph, stake: b.stake, color: b.color };
   }
 
-  // Rank ladder by total credits. Each rank unredacts a Subject Zero fragment.
+  /* Rank ladder by total credits. Each rank unredacts a Subject Zero fragment.
+     ⚠ INDEX-ALIGNED WITH `CLEARANCE` BELOW — same length, same order, same names. That
+     alignment is not decoration, it is what `clearance()` reads to floor a player's rung
+     at whatever their credits already earned them. Add a rung to one of these arrays and
+     you MUST add it to the other, or every player above the insertion point silently
+     wears the wrong name.
+
+     ⚑ THE THRESHOLDS WENT UP ~13x, 2026-08-13 (Nate's call, picked off a costed ladder).
+     Old top was 1,200 credits, which the shop's own numbers had long since made trivial —
+     the shelf totals 17,715 across 42 items, so the ladder's summit cost less than four
+     mid-shelf purchases. The top rung now costs about the whole shop on credits alone,
+     which is the point: it gates a page ([[gauntlet-secret-floors]]-style), so the credit
+     road to it should be the legend and the RATING road the one people actually walk.
+
+     ⚠ THIS IS THE ONE TIGHTENING THIS ECONOMY HAS DONE, and it is worth naming rather
+     than burying. The standing rule is that loosening later is a gift and tightening is a
+     takeaway (see the sell-back economy note), and raising these mins does move a
+     credit-floored player down a rung. It was asked for deliberately, with the demotion
+     stated up front, because a top rung nobody can fail to reach is not a clearance. If
+     it ever needs softening, soften it — that direction is free. */
   var RANKS = [
-    { name: 'Recruit',          min: 0,    frag: 'SUBJECT ZERO — file sealed. You have just enough clearance to know it exists.' },
-    { name: 'Operative',        min: 25,   frag: 'Fragment 1: The first dog through the portal was not the first attempt.' },
-    { name: 'Field Agent',      min: 75,   frag: 'Fragment 2: The Checker Town mine shafts were dug looking for something — not for ore.' },
-    { name: 'Cipher Clearance', min: 150,  frag: 'Fragment 3: "Princess" is a designation, not a name. There were others before her.' },
-    { name: 'Delta Clearance',  min: 300,  frag: 'Fragment 4: The Rival\'s family was relocated to Chess City the same week Subject Zero went quiet.' },
-    { name: 'Omega Clearance',  min: 600,  frag: 'Fragment 5: The ferry to Shogi Island only runs for those who already know the way back.' },
-    { name: 'Above Omega',      min: 1200, frag: 'Fragment 6: You were never solving the puzzles. The puzzles were measuring you.' }
+    { name: 'Recruit',          min: 0,     frag: 'SUBJECT ZERO — file sealed. You have just enough clearance to know it exists.' },
+    { name: 'Operative',        min: 75,    frag: 'Fragment 1: The first dog through the portal was not the first attempt.' },
+    { name: 'Field Agent',      min: 250,   frag: 'Fragment 2: The Checker Town mine shafts were dug looking for something — not for ore.' },
+    { name: 'Cipher Clearance', min: 600,   frag: 'Fragment 3: "Princess" is a designation, not a name. There were others before her.' },
+    { name: 'Theta Clearance',  min: 1400,  frag: 'Fragment 4: Two names were signed onto the same intake roll the day the Expanse Branch opened. Only one of them was a person.' },
+    { name: 'Delta Clearance',  min: 3000,  frag: 'Fragment 5: The Rival\'s family was relocated to Chess City the same week Subject Zero went quiet.' },
+    { name: 'Sigma Clearance',  min: 6000,  frag: 'Fragment 6: The partnership ran eleven years and produced no incident reports. That is not a clean record. That is a missing one.' },
+    { name: 'Omega Clearance',  min: 10500, frag: 'Fragment 7: The ferry to Shogi Island only runs for those who already know the way back.' },
+    { name: 'Alpine Clearance', min: 16000, frag: 'Fragment 8: You were never solving the puzzles. The puzzles were measuring you.' }
   ];
 
   /* ══ CLEARANCE — ONE LADDER, ONE PIP, EVERYWHERE (2026-08-03) ═════════════════════
@@ -337,16 +358,37 @@
 
      THE THRESHOLDS. 250 is where every operative starts at the Park Tables, so RECRUIT
      has to hold the whole opening stretch or the pip would be a participation badge.
-     Above Omega is deliberately out past where any of these bots live — it should be
-     something you hear about before you see it. */
+     The top rung is deliberately out past where any of these bots live — it should be
+     something you hear about before you see it.
+
+     ⚑ NINE RUNGS SINCE 2026-08-13, AND THE TOP ONE IS A DOOR. Two were added in the
+     middle (THETA under Delta, SIGMA over it) and the summit was renamed from "Above
+     Omega" to ALPINE CLEARANCE, which is the rung `/characters/alpine/` checks before it
+     opens his file. That is the first time a clearance level gates a PAGE rather than
+     just decorating a name, and it is the reason the ladder needed more room: a
+     seven-rung climb whose last step was also the only locked door made the whole middle
+     of the ladder feel like waiting.
+
+     ⚠ THE RATING THRESHOLDS OF THE SEVEN ORIGINAL RUNGS DID NOT MOVE — 0/400/600/800 and
+     1000/1300/1600 are exactly where they were, and the two new rungs were fitted into
+     the gaps (900, 1150). So no existing player's rating-derived rung changed NAME or
+     changed HANDS; they only gained two stops between the ones they knew. The credit
+     mins are the half that moved, and that is documented on RANKS above.
+
+     ⚠ ADDING A RUNG IS A FOUR-FILE CHANGE. This array, `RANKS` above (index-aligned),
+     `.pip-N` in _sass/_pjcc-14-profile.scss (an unstyled pip is invisible, not obviously
+     broken), and tests/ladders.check.js. The legend on /leaderboards/ and the `hint`
+     below both DERIVE their counts from here, so those two look after themselves. */
   var CLEARANCE = [
     { level: 1, name: 'Recruit',          pip: '·',  rating: 0 },
     { level: 2, name: 'Operative',        pip: '◦',  rating: 400 },
     { level: 3, name: 'Field Agent',      pip: '◇',  rating: 600 },
     { level: 4, name: 'Cipher Clearance', pip: '◆',  rating: 800 },
-    { level: 5, name: 'Delta Clearance',  pip: '✦',  rating: 1000 },
-    { level: 6, name: 'Omega Clearance',  pip: '✶',  rating: 1300 },
-    { level: 7, name: 'Above Omega',      pip: '❈',  rating: 1600 }
+    { level: 5, name: 'Theta Clearance',  pip: '✧',  rating: 900 },
+    { level: 6, name: 'Delta Clearance',  pip: '✦',  rating: 1000 },
+    { level: 7, name: 'Sigma Clearance',  pip: '✶',  rating: 1150 },
+    { level: 8, name: 'Omega Clearance',  pip: '✷',  rating: 1300 },
+    { level: 9, name: 'Alpine Clearance', pip: '❈',  rating: 1600 }
   ];
 
   var PJCC = {
@@ -438,7 +480,7 @@
       var rating = (prof && prof.pjcc_rating) || 0;
       var byRating = CLEARANCE[0];
       for (var i = 0; i < CLEARANCE.length; i++) if (rating >= CLEARANCE[i].rating) byRating = CLEARANCE[i];
-      /* THE FLOOR. RANKS is credit-keyed and index-aligned with CLEARANCE (seven rungs,
+      /* THE FLOOR. RANKS is credit-keyed and index-aligned with CLEARANCE (same length,
          same names, same order) — so an existing player's credit rank is simply the
          lowest clearance they may ever show. Nobody moves down. */
       var credits = (prof && prof.credits) || 0, byCredits = 0;
@@ -450,6 +492,29 @@
                hint: 'Clearance ' + c.level + ' of ' + CLEARANCE.length + ' · ' + c.name +
                      ' — climbs with your rating',
                next: nxt, toNext: nxt ? Math.max(0, nxt.rating - rating) : 0 };
+    },
+
+    /* ── NAME A RUNG, GET ITS NUMBER (2026-08-13) ────────────────────────────────────
+       A clearance-gated page declares the rung it wants in its FRONT MATTER, by name
+       ("Alpine Clearance"), and the gate resolves it here. Naming it rather than writing
+       the level number means the gate cannot be broken by inserting a rung — which is
+       exactly what just happened to this ladder twice in one change (Theta and Sigma both
+       landed mid-ladder and pushed every level above them up by two). A page that had
+       hardcoded `9` would have kept working by luck; a page that had hardcoded `7` would
+       have quietly opened Bill Alpine's file to Sigma operatives.
+
+       Returns null for an unknown name, and the caller treats null as LOCKED — a typo in
+       front matter must fail closed, because the failure it would otherwise cause is a
+       classified page hanging open. Comparison is case-insensitive and tolerates the bare
+       word ("alpine"), since front matter is hand-typed. */
+    levelOf: function (name) {
+      var want = String(name == null ? '' : name).trim().toLowerCase();
+      if (!want) return null;
+      for (var i = 0; i < CLEARANCE.length; i++) {
+        var n = CLEARANCE[i].name.toLowerCase();
+        if (n === want || n.replace(/ clearance$/, '') === want) return CLEARANCE[i].level;
+      }
+      return null;
     },
     ownedAvatars: function () {
       var owned = (profile && profile.companion && profile.companion.owned) || [];

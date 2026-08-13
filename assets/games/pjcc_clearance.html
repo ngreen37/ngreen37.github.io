@@ -228,7 +228,7 @@
     <div class="eyebrow">◈ Chess City Invitational</div>
     <div class="big-title">CLEARANCE: DELTA</div>
     <div class="blurb">
-      Chess and the <b style="color:#ff9fb0">P&JCC files</b> — climb from RECRUIT to <b>ABOVE OMEGA</b>.
+      Chess and the <b style="color:#ff9fb0">P&JCC files</b> — climb from RECRUIT to <b>ALPINE</b>.
       Three wrong and your access is revoked.
     </div>
     <div class="sel-grp" id="mode-sel">
@@ -319,8 +319,14 @@ const RANKS = [
   { at: 6,  name: 'GAMMA',       pip: 'Γ', file: 'FILE 002 — DESIGNATION: Princess is logged as a Knight. An odd classification for a Checker Town cattle-dog.' },
   { at: 10, name: 'BETA',        pip: 'β', file: 'FILE 003 — THE RIVAL: His family is already inside Chess City. He is not trying to get there. He is trying to go back.' },
   { at: 15, name: 'OMEGA',       pip: 'Ω', file: 'FILE 004 — THE MINES: The Father has seen something in the Sand Mines. The equipment predates the crash by three years.' },
-  { at: 21, name: 'ABOVE OMEGA', pip: '★', file: 'FILE 005 — SUBJECT ZERO: Same vessel as Princess. Origin coordinates match no known system. The investigation continues anyway.' },
+  { at: 21, name: 'ALPINE',      pip: '★', file: 'FILE 005 — SUBJECT ZERO: Same vessel as Princess. Origin coordinates match no known system. The investigation continues anyway.' },
 ];
+/* ⚠ THIS IS THIS ROOM'S OWN LADDER, NOT THE SITE'S. It is keyed to correct answers in one
+   run, and its rung names (DELTA/GAMMA/BETA/OMEGA) are a different set from the site
+   clearance in pjcc-profile.js — deliberately, because a quiz score is not a clearance.
+   The TOP name is the exception and has to track: "ABOVE OMEGA" was retired site-wide on
+   2026-08-13 when the summit became ALPINE CLEARANCE, and leaving the retired word alive
+   in here would have put one phrase on the site meaning two different heights. */
 
 // ---- Diagram questions (a mini board is drawn from the FEN; find the move / name the threat) ----
 Q.push(

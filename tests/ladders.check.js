@@ -53,19 +53,59 @@ console.log('\n── THE LADDERS ───────────────�
 const { P } = boot();
 
 /* ── 1. THE CLEARANCE LADDER ──────────────────────────────────────────────────────── */
-check('seven rungs, RECRUIT → ABOVE OMEGA', P.CLEARANCE.length === 7,
+/* ⚑ NINE RUNGS SINCE 2026-08-13 (Theta and Sigma inserted mid-ladder; "Above Omega"
+   renamed ALPINE CLEARANCE, which now gates /characters/alpine/). The counts below are
+   DERIVED from the shipped ladder rather than typed, because a hand-edited number is not a
+   test — the assertions that matter are that the two arrays stay aligned, that every rung
+   is distinguishable, and that the top of the ladder is the rung the gate names. */
+const TOP = P.CLEARANCE[P.CLEARANCE.length - 1];
+check('the two ladders are the same height', P.CLEARANCE.length === P.RANKS.length,
+  P.CLEARANCE.length + ' clearance rungs · ' + P.RANKS.length + ' credit rungs');
+check('…and index-aligned, name for name — the floor depends on it',
+  P.CLEARANCE.every((c, i) => c.name === P.RANKS[i].name),
   P.CLEARANCE.map(c => c.name).join(' · '));
+check('the top rung is ALPINE CLEARANCE — the one the gate names', TOP.name === 'Alpine Clearance',
+  TOP.name + ' @ rating ' + TOP.rating + ' / ' + P.RANKS[P.RANKS.length - 1].min + ' credits');
+/* "Above Omega" was retired site-wide, so it must not survive as a rung name anywhere on
+   either ladder — the failure it would cause is one phrase meaning two different heights. */
+check('…and "Above Omega" is gone from both ladders',
+  !P.CLEARANCE.some(c => /above omega/i.test(c.name)) && !P.RANKS.some(r => /above omega/i.test(r.name)));
 check('the rating thresholds ascend',
   P.CLEARANCE.every((c, i) => i === 0 || c.rating > P.CLEARANCE[i - 1].rating),
   P.CLEARANCE.map(c => c.rating).join(' '));
+check('the credit thresholds ascend too',
+  P.RANKS.every((r, i) => i === 0 || r.min > P.RANKS[i - 1].min),
+  P.RANKS.map(r => r.min).join(' '));
 check('every rung has its own pip glyph',
-  new Set(P.CLEARANCE.map(c => c.pip)).size === 7, P.CLEARANCE.map(c => c.pip).join(' '));
+  new Set(P.CLEARANCE.map(c => c.pip)).size === P.CLEARANCE.length,
+  P.CLEARANCE.map(c => c.pip).join(' '));
+/* ⚠ A PIP WITH NO COLOR IS INVISIBLE, NOT OBVIOUSLY BROKEN. The class is built as
+   'pip-' + level, sweep.js allows the whole prefix, and nothing else on the site would
+   notice a rung shipping without its rule — so the stylesheet is read here. */
+{
+  const SCSS = fs.readFileSync(path.join(ROOT, '_sass/_pjcc-14-profile.scss'), 'utf8');
+  const missing = P.CLEARANCE.filter(c => !new RegExp('\\.pip-' + c.level + '\\s*\\{').test(SCSS));
+  check('every rung has a .pip-N color in the stylesheet', missing.length === 0,
+    missing.length ? 'no rule for ' + missing.map(c => 'pip-' + c.level).join(', ')
+                   : 'pip-1 … pip-' + P.CLEARANCE.length);
+}
 check('a guest reads as Recruit, not as an error', P.clearance(null).level === 1, P.clearance(null).name);
 check('the Park Tables starting rating is still Recruit',
   P.clearance({ pjcc_rating: 250, credits: 0 }).level === 1,
   '250 → ' + P.clearance({ pjcc_rating: 250, credits: 0 }).name);
-check('a strong rating climbs it', P.clearance({ pjcc_rating: 1350, credits: 0 }).level === 6,
+check('a strong rating climbs it', P.clearance({ pjcc_rating: 1350, credits: 0 }).name === 'Omega Clearance',
   '1350 → ' + P.clearance({ pjcc_rating: 1350, credits: 0 }).name);
+/* ⚠ THE SEVEN ORIGINAL RUNGS DID NOT MOVE. Inserting Theta and Sigma was supposed to add
+   stops, not re-price the ones anybody had already climbed to — so each original name is
+   checked at its own original rating, by NAME, since the level numbers legitimately shifted. */
+{
+  const was = [[0, 'Recruit'], [400, 'Operative'], [600, 'Field Agent'], [800, 'Cipher Clearance'],
+               [1000, 'Delta Clearance'], [1300, 'Omega Clearance'], [1600, 'Alpine Clearance']];
+  const moved = was.filter(([r, n]) => P.clearance({ pjcc_rating: r, credits: 0 }).name !== n);
+  check('every pre-existing rung still sits at the rating it always did', moved.length === 0,
+    moved.length ? moved.map(([r, n]) => r + ' should be ' + n).join(', ')
+                 : was.map(([r, n]) => r + '→' + n.replace(' Clearance', '')).join(' · '));
+}
 
 /* ⚠ THE ONE THAT MATTERS. Rating-only would demote everybody who earned their rung on
    credits. Checked against the REAL credit ladder, rung by rung, at zero rating. */
@@ -78,10 +118,14 @@ check('a strong rating climbs it', P.clearance({ pjcc_rating: 1350, credits: 0 }
   check('NOBODY IS DEMOTED — the credit rank is a floor, every rung', demoted.length === 0,
     demoted.join(', ') || 'all seven hold at zero rating');
 }
-check('and the rating can only ever lift you above that floor',
-  P.clearance({ pjcc_rating: 1600, credits: 0 }).level === 7 &&
-  P.clearance({ pjcc_rating: 0, credits: 1200 }).level === 7 &&
-  P.clearance({ pjcc_rating: 1600, credits: 1200 }).level === 7);
+{
+  const topRating = TOP.rating, topCredits = P.RANKS[P.RANKS.length - 1].min, top = P.CLEARANCE.length;
+  check('and the rating can only ever lift you above that floor',
+    P.clearance({ pjcc_rating: topRating, credits: 0 }).level === top &&
+    P.clearance({ pjcc_rating: 0, credits: topCredits }).level === top &&
+    P.clearance({ pjcc_rating: topRating, credits: topCredits }).level === top,
+    'either road reaches ' + TOP.name + ', and both together reach no further');
+}
 check('it says WHICH ladder gave you the rung', P.clearance({ pjcc_rating: 0, credits: 600 }).fromCredits === true
   && P.clearance({ pjcc_rating: 1350, credits: 0 }).fromCredits === false);
 check('`next` and `toNext` are usable, and null at the top',
@@ -91,8 +135,48 @@ check('`next` and `toNext` are usable, and null at the top',
 /* ⚠ THE FRAGMENTS DID NOT MOVE. rankFor() is the Subject Zero ladder and is credit-keyed;
    clearance is a display rank. If these two are ever merged, unlocked lore gets revoked. */
 check('the Subject Zero ladder is untouched and still credit-keyed',
-  P.rankFor(0).name === 'Recruit' && P.rankFor(1200).name === 'Above Omega' &&
+  P.rankFor(0).name === 'Recruit' &&
+  P.rankFor(P.RANKS[P.RANKS.length - 1].min).name === TOP.name &&
   !!P.rankFor(600).frag, P.rankFor(600).name);
+/* ⚠ A RUNG WITHOUT A FRAGMENT IS A DEAD REWARD. Climbing to it unlocks nothing and says
+   nothing, which is worse than the rung not existing — so the two rungs added in the
+   middle had to bring their own lore, and any future one does too. */
+check('every rung above Recruit hands out a Subject Zero fragment',
+  P.RANKS.every(r => typeof r.frag === 'string' && r.frag.length > 20),
+  P.RANKS.length + ' rungs, ' + P.RANKS.filter(r => r.frag).length + ' fragments');
+check('…and no two rungs hand out the same one',
+  new Set(P.RANKS.map(r => r.frag)).size === P.RANKS.length);
+
+/* ── 1b. THE GATE ON /characters/alpine/ ────────────────────────────────────────────
+   The first time a clearance rung locks a PAGE rather than decorating a name. Two ways
+   this breaks silently, and both are cheap to pin:
+     · the page names a rung the ladder does not have  → levelOf() returns null → SEALED
+     · someone inserts a rung and the gate was numbered → it re-points without a word     */
+{
+  const ALPINE = fs.readFileSync(path.join(ROOT, '_characters/alpine.md'), 'utf8');
+  const LAYOUT = fs.readFileSync(path.join(ROOT, '_layouts/character.html'), 'utf8');
+  const want = (ALPINE.match(/^clearance_required:\s*(.+)$/m) || [])[1];
+  check('Bill Alpine\'s file declares the rung it wants, by name', !!want, want);
+  check('…and that name resolves to the TOP of the ladder',
+    P.levelOf(want) === P.CLEARANCE.length, want + ' → level ' + P.levelOf(want));
+  check('…and the file is marked classified with a brief anyone may read',
+    /^classified:\s*true/m.test(ALPINE) && /^classified_brief:\s*\S/m.test(ALPINE));
+  check('the gate reads the rung NAME from front matter, never a hardcoded level',
+    /data-need="\{\{ page\.clearance_required \}\}"/.test(LAYOUT) &&
+    !/level\s*>=\s*\d/.test(LAYOUT), 'PJCC.levelOf(need) is the only resolution path');
+  /* an unknown name must FAIL CLOSED — the alternative is a classified page hanging open */
+  check('an unknown rung name resolves to nothing (so the gate stays sealed)',
+    P.levelOf('Bogus Clearance') === null && P.levelOf('') === null && P.levelOf(null) === null);
+  check('…while a bare rung word still resolves, since front matter is hand-typed',
+    P.levelOf('alpine') === P.CLEARANCE.length && P.levelOf('omega') === P.CLEARANCE.length - 1);
+  /* ⚠ THE THREE PAINTS. A profile reaches this page three ways and missing any one shows a
+     signed-in operative their own locked door. onChange is the one that gets forgotten. */
+  check('the gate paints now, on readiness, AND on sign-in/out',
+    /PJCC\.ready\.then\(paint, paint\)/.test(LAYOUT) && /PJCC\.onChange\(paint\)/.test(LAYOUT) &&
+    /\n  paint\(\);/.test(LAYOUT));
+  check('…and it renders SEALED server-side, so scripting-off shows the lock not the file',
+    /<div class="cls-file" id="cls-file" hidden>/.test(LAYOUT));
+}
 
 /* ── 2. THE PUZZLE ELO ────────────────────────────────────────────────────────────── */
 {

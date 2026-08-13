@@ -105,9 +105,9 @@ const ALLOWED_DYNAMIC = [
   'moon-',             // town-weather.html: 'moon-' + PJCC_TIME.moon().name (8 real phases)
   'ep-card--accent-',  // blog.md (Liquid):  ep-card--accent-{{ accent }}
   /* 'pip-' + clearance.level — the clearance pip (2026-08-03). Added on purpose, and it
-     is a FIXED SET of exactly seven: PJCC.CLEARANCE has seven rungs and `level` is its
-     1-based index, so pip-1..pip-7 is the whole universe and adding an eighth rung
-     without an eighth color would show up as an unstyled pip rather than as silence.
+     is a FIXED SET the length of PJCC.CLEARANCE — nine rungs as of 2026-08-13, `level`
+     being its 1-based index, so pip-1..pip-9 is the whole universe and adding a tenth
+     rung without a tenth color would show up as an unstyled pip rather than as silence.
      The alternative — seven literal class names in a lookup table — would have been the
      rule-abiding choice, but the level number IS the ladder position and mapping it
      through a table only to get the number back is indirection for its own sake. */

@@ -480,3 +480,177 @@ body.theme-classified {
 @media (pointer: coarse) {
   .char-flip-link { display: inline-block; padding: 10px 6px; margin: -10px -6px; }
 }
+
+/* =============================================================
+   A CLASSIFIED CHARACTER FILE  (2026-08-13)
+   -------------------------------------------------------------
+   Set by `classified: true` in a character's front matter; the markup lives in
+   _layouts/character.html. First one is Bill Alpine, gated on ALPINE CLEARANCE.
+
+   WHY IT IS AMBER ON A PURPLE CARD. Purple on this site means the world — the cast, the
+   story, the places. It stays. The amber is borrowed deliberately from /classified/ (the
+   same --amber/--gold pair that page defines) so a sealed file reads as something from
+   OUTSIDE the world that got filed into it: recovered evidence sitting in a cast page's
+   frame. Two registers, on purpose, in that order. Gold-as-CTA is not in play here —
+   nothing in this block is a primary action, and the one real link is styled as a link.
+   ============================================================= */
+.character-card--classified {
+  border-color: rgba(255, 140, 0, 0.42);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 60px -30px rgba(255, 170, 40, 0.55);
+}
+
+/* The bar IS the portrait — a true black bar, nothing hiding behind it, the same honest
+   redaction /classified/ uses. Solid border, not the dashed "still being drawn" one: this
+   photograph is not coming later, it is being withheld, and those are different promises. */
+.portrait-placeholder--redacted {
+  /* The same warm paper .cls-brief is printed on, so the sleeve and the page read as one
+     filing system — and, more practically, so the true-black bar has something to be black
+     AGAINST. On the near-black box this started as, #050200 on #0d0600, the bar was
+     invisible: technically a redaction, visually an empty box. */
+  background: linear-gradient(180deg, rgba(60, 44, 20, 0.55), rgba(38, 26, 10, 0.55));
+  border: 2px solid rgba(255, 140, 0, 0.3);
+
+  /* ⚠ `flex: 1`, NOT `align-self: stretch`. The parent is a flex ROW, so align-self works
+     the VERTICAL axis — it stretched this to full height and top-anchored the bar in a
+     3:4 box, leaving a tall empty pane under it. The main axis is the one that needed
+     filling. */
+  .portrait-placeholder-inner { color: #b07a3a; gap: 16px; flex: 1; padding: 0 18px; }
+  .portrait-label { color: #d89a52; }
+
+  /* THE BAR IS DRAWN, NOT TYPED. Rendered as ████ glyphs it came out a ~40px smudge in the
+     middle of a 220px column — it read as a rendering fault rather than as a redaction.
+     It is a real box now, full width of the column, and the glyphs stay in the markup at
+     font-size 0 purely as the no-CSS fallback: if this rule never lands they render as
+     four blocks, which is still the right picture. */
+  .portrait-icon {
+    display: block;
+    width: 100%;
+    height: 30px;
+    font-size: 0;
+    background: #050200;
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px rgba(255, 140, 0, 0.16);
+  }
+}
+
+.cls-banner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin: -18px 0 30px;
+}
+
+.cls-stamp {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 5px;
+  color: #ffd24a;
+  border: 2px solid rgba(255, 210, 74, 0.6);
+  border-radius: 4px;
+  padding: 6px 14px;
+  transform: rotate(-2deg);
+}
+
+.cls-need {
+  font-family: 'Share Tech Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #ffb066;
+}
+
+/* The one or two lines everybody may read. Sits above the seal, so a visitor who never
+   gets in still leaves knowing who this is — a locked door with no plate on it is just a
+   wall. */
+.cls-brief {
+  font-family: 'Share Tech Mono', ui-monospace, monospace;
+  font-size: 15px;
+  line-height: 1.9;
+  color: #ffe9bf;
+  background: linear-gradient(180deg, rgba(60, 44, 20, 0.5), rgba(38, 26, 10, 0.5));
+  border: 1px solid rgba(255, 180, 80, 0.22);
+  border-radius: var(--r-md);
+  padding: 18px 20px;
+  margin: 0 0 26px;
+}
+
+/* ── the seal ── */
+.cls-lock {
+  text-align: center;
+  padding: 38px 24px;
+  border: 1px dashed rgba(255, 140, 0, 0.4);
+  border-radius: var(--r-md);
+  background: radial-gradient(120% 130% at 50% 0%, rgba(255, 160, 30, 0.1), rgba(10, 5, 0, 0.18) 70%);
+}
+
+.cls-lock-glyph {
+  font-size: 34px;
+  line-height: 1;
+  color: #ff8c00;
+  margin-bottom: 14px;
+  animation: cls-breathe 3.2s ease-in-out infinite;
+}
+@keyframes cls-breathe {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; text-shadow: 0 0 18px rgba(255, 140, 0, 0.7); }
+}
+
+.cls-lock-head {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 5px;
+  color: #ffd24a;
+  margin: 0 0 10px;
+}
+
+.cls-lock-line {
+  font-family: 'Share Tech Mono', ui-monospace, monospace;
+  font-size: 14px;
+  line-height: 1.9;
+  color: #ffe9bf;
+  margin: 0;
+}
+
+.cls-dim { color: #d8a86a; }
+
+.cls-hint {
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: #e6c9a0;
+  margin: 14px 0 0;
+
+  a {
+    color: #ffd24a;
+    text-decoration: underline;
+    /* 44px tap target without moving the sentence it sits in */
+    display: inline-block;
+    padding: 12px 4px;
+    margin: -12px -4px;
+  }
+  a:hover { color: #fff0c2; }
+}
+
+/* ── the file, once it opens ── */
+.cls-file-open {
+  font-family: 'Share Tech Mono', ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #ffb066;
+  border-bottom: 1px solid rgba(255, 140, 0, 0.25);
+  padding-bottom: 12px;
+  margin: 0 0 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cls-lock-glyph { animation: none; opacity: 1; }
+}
+
+@media (max-width: 600px) {
+  .cls-brief { padding: 15px 16px; font-size: 14px; }
+  .cls-lock  { padding: 28px 16px; }
+  .cls-stamp { letter-spacing: 3px; }
+}
