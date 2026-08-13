@@ -46,6 +46,22 @@
   try { forcedEclipse = new URLSearchParams(location.search).get('eclipse') !== null; } catch (e) {}
   if (forcedEclipse) kind = 'clear';
 
+  /* ⚑ ?meteors= AND ?aurora= ARE THE SAME SHAPE OF PREVIEW AND NEED THE SAME GUARD
+     (2026-08-13). The note above is about the eclipse, but the bug it describes belongs to
+     the SPLIT, not to the eclipse: the head include forces a phase and a clear sky, and this
+     file then re-asserts the real ones a moment later, so whoever writes last wins. A
+     meteor-shower preview that quietly got `town-rain` and a full cloud deck reasserted over
+     it would be exactly the 2026-08-09 bug wearing a different hat — present, correct, and
+     invisible. Forcing the sky is a deliberate override; leave it alone.
+     ⚠ These force NIGHT where the eclipse forces DAY, and that asymmetry is not an
+     inconsistency — each one forces the half of the day it can be seen in. */
+  var forcedSkyEvent = false;
+  try {
+    var _q = new URLSearchParams(location.search);
+    forcedSkyEvent = _q.get('meteors') !== null || _q.get('aurora') !== null;
+  } catch (e) {}
+  if (forcedSkyEvent) kind = 'clear';
+
   var forceLevel = null;
   try {
     var q = new URLSearchParams(location.search).get('wx');
@@ -76,7 +92,7 @@
   // sky-<phase> + town-<kind> are already on <html> (set before paint by the head
   // include); re-assert defensively in case this ran standalone — but never over the top of
   // a preview that deliberately set them (see the ?eclipse= note above).
-  if (!forcedEclipse) {
+  if (!forcedEclipse && !forcedSkyEvent) {
     root.classList.add('sky-' + T.phase());
     if (kind !== 'clear') root.classList.add('town-' + kind);
   }

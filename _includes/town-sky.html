@@ -164,10 +164,42 @@
        <b> itself would be overridden mid-flight; the veil rides the group instead and
        the two compose. It also carries the z-index:3 the streaks used to hold, so the
        stars → orb → shooting stars → clouds order is unchanged. {%- endcomment -%}
+  {%- comment -%} ⚑ THE SHOWER'S EXTRA STREAKS (2026-08-13). Three nights in a hundred the
+       sky gets six more, on their own short coprime cycles — the ordinary three keep their
+       29s/43s/67s patrol underneath, so a shower night is the normal sky turned up rather
+       than a different sky switched on. They are inert markup on every other night: with no
+       `html.meteor-night` the shower rules never match and `.ts-shoot` stays `display:none`,
+       which costs nothing to ship and means the shower needs no JS at all.
+       ⚠ SIX, NOT SIXTY. A real shower is ~1 a minute to the naked eye, not a firehose; and
+       every streak is a composited element, so the count is the only dial here that has a
+       price. Measured cost of the whole shower: see the note in the SCSS. {%- endcomment -%}
   <div class="ts-shoots">
     <b class="ts-shoot ts-shoot--1"></b>
     <b class="ts-shoot ts-shoot--2"></b>
     <b class="ts-shoot ts-shoot--3"></b>
+    <b class="ts-shoot ts-shoot--s1 ts-shoot--sh"></b>
+    <b class="ts-shoot ts-shoot--s2 ts-shoot--sh"></b>
+    <b class="ts-shoot ts-shoot--s3 ts-shoot--sh"></b>
+    <b class="ts-shoot ts-shoot--s4 ts-shoot--sh"></b>
+    <b class="ts-shoot ts-shoot--s5 ts-shoot--sh"></b>
+    <b class="ts-shoot ts-shoot--s6 ts-shoot--sh"></b>
+  </div>
+
+  {%- comment -%} ⚑ THE AURORA (2026-08-13, "1% northern lights"). One night in a hundred.
+
+       ⚠ THIS IS THE EXPENSIVE ONE AND IT IS BUILT AROUND THAT. The /pjcc/ audit the same
+       day priced the sky in SCREENS of moving texture: two cloud banks alone are 3.32 of
+       the page's 4.11, while eleven twinkling stars and three shooting stars together are
+       effectively 0.00. Painted AREA is the cost, not the element count — so an aurora
+       drawn the obvious way (a full-bleed blurred gradient) would be the most expensive
+       thing in the sky by a wide margin.
+       So: three tall bands in the upper sky only, no `filter`, no `mask`. The shimmer is
+       transform + opacity, which the compositor owns; the soft edges are gradient stops,
+       which are painted once into the layer and then never repainted. {%- endcomment -%}
+  <div class="ts-aurora" aria-hidden="true">
+    <i class="ts-aur ts-aur--1"></i>
+    <i class="ts-aur ts-aur--2"></i>
+    <i class="ts-aur ts-aur--3"></i>
   </div>
 
   {%- comment -%} 3b · THE SEASON (2026-07-15 Nate: "a set P&JCC calendar … subtle things

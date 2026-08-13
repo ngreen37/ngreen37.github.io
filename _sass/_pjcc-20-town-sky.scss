@@ -389,6 +389,63 @@ html.eclipse-total.sky-day .ts-eclipse-door { pointer-events: auto; }
 html.sky-night .ts-horizon {
   background: linear-gradient(180deg, transparent, rgba(120, 100, 220, 0.10));
 }
+/* ══ THE AURORA — one night in a hundred (2026-08-13) ═══════════════════════════════════
+   Nate: "1% northern lights?" The roll is per NIGHT (`auroraDay` in pjcc-time.js) and
+   `html.aurora-night` lands before first paint.
+
+   ⚠⚠ THIS IS THE EXPENSIVE HALF OF THE PAIR AND EVERY DECISION BELOW IS ABOUT THAT. The
+   /pjcc/ audit run the same day priced the sky in SCREENS of moving texture: two cloud banks
+   are 3.32 of that page's 4.11 screens, while eleven twinkling stars and three shooting stars
+   together round to 0.00. Painted AREA is what costs, not the number of elements — and an
+   aurora is the one sky object whose natural drawing is a large soft field, which is a cloud
+   bank by another name.
+
+   THREE THINGS KEEP IT AFFORDABLE, and none of them are "make it fainter":
+     1. IT LIVES IN THE TOP THIRD. `height: 34%`, not `inset: 0`. The aurora belongs in the
+        upper sky anyway, and this is most of the saving — three bands over a third of the
+        viewport is ~1.0 screens against the ~3.0 a full-bleed version would have cost.
+     2. NO `filter: blur()`. A blur forces a rasterization pass every frame the layer moves,
+        which is exactly the cost the whole sky is written to avoid ("All opacity, no filters,
+        no masks, nothing that costs layout or a rasterization pass" — the veil note above).
+        The softness is gradient STOPS: painted once into the layer, then only composited.
+     3. TRANSFORM AND OPACITY ONLY. `translate3d` + `scaleX` for the drift, opacity for the
+        breathing. Both compositor-owned, so the main thread does nothing per frame.
+
+   ⭐ AND THE REAL REASON THIS IS AFFORDABLE AT ALL: it is on 1% of nights. The cloud banks
+   cost 3.32 screens every single day forever; this costs ~1.0 screens about three or four
+   nights a year and exactly nothing on the rest, because with no `html.aurora-night` there
+   is no animation attached and the container is `display: none`. A rare event is a completely
+   different bargain from an ambient layer, and it is the bargain that makes it worth having.
+
+   The color is the real thing: oxygen green (#5ffbc0) low, with a thin nitrogen magenta
+   (#c86bff) at the top edge of the tallest band — the ordering real aurora shows. It sits at
+   z-index 1, BEHIND the moon, because the one thing allowed in front of the moon is a
+   shooting star (Nate's rule, at the top of this file) and the aurora is not that. */
+.ts-aurora { position: absolute; inset: 0 0 auto 0; height: 34%; z-index: 1;
+  display: none; overflow: hidden; pointer-events: none; }
+html.sky-night.aurora-night .ts-aurora { display: block; }
+.ts-aur { position: absolute; top: 0; bottom: 0; display: block;
+  transform-origin: 50% 0;
+  /* the curtain: bright at the foot, gone at the top, soft at both vertical edges */
+  background:
+    linear-gradient(180deg, rgba(200, 107, 255, 0.00) 0%, rgba(200, 107, 255, 0.16) 14%,
+                            rgba(95, 251, 192, 0.30) 46%, rgba(95, 251, 192, 0.10) 78%,
+                            rgba(95, 251, 192, 0.00) 100%); }
+/* three curtains, three widths, three unhurried and coprime cycles so they never re-align */
+html.sky-night.aurora-night .ts-aur--1 { left: 4%;  width: 34%; animation: ts-aur-sway 37s ease-in-out infinite; }
+html.sky-night.aurora-night .ts-aur--2 { left: 33%; width: 28%; animation: ts-aur-sway 53s ease-in-out infinite -13s; }
+html.sky-night.aurora-night .ts-aur--3 { left: 58%; width: 38%; animation: ts-aur-sway 71s ease-in-out infinite -29s; }
+@keyframes ts-aur-sway {
+  0%, 100% { transform: translate3d(-3%, 0, 0) scaleX(1);    opacity: 0.42; }
+  30%      { transform: translate3d(2%, 0, 0)  scaleX(1.14); opacity: 0.72; }
+  62%      { transform: translate3d(4%, 0, 0)  scaleX(0.92); opacity: 0.34; }
+}
+/* ⚠ The aurora obeys the SKY VEIL like every other discrete layer — a full-sky page fades it
+   out as the hero scrolls away, or it would sit behind body copy as a green splotch, which
+   is the exact bug the veil was written for. It rides the container, because the bands' own
+   opacity is driven by their keyframes and would override an element opacity mid-sway. */
+body.full-sky .ts-aurora { opacity: var(--sky-veil, 1); }
+
 .ts-star--tw { animation: ts-twinkle 3.4s ease-in-out infinite; }
 .ts-star--tw:nth-of-type(2n)  { animation-delay: -1.7s; }
 .ts-star--tw:nth-of-type(3n)  { animation-delay: -0.9s; }
@@ -420,6 +477,41 @@ html.sky-night .ts-shoot::after {
 html.sky-night .ts-shoot--1 { top: 12%; left: 78%; animation: ts-shoot-fall 29s linear infinite; }
 html.sky-night .ts-shoot--2 { top: 4%;  left: 46%; animation: ts-shoot-fall 43s linear infinite 11s; }
 html.sky-night .ts-shoot--3 { top: 22%; left: 92%; animation: ts-shoot-fall 67s linear infinite 26s; }
+/* ══ THE METEOR SHOWER — three nights in a hundred (2026-08-13) ══════════════════════
+   Nate: "ooh let's throw in a meteor show though - 3% chance". The roll is per NIGHT and
+   lives in pjcc-time.js (`showerDay`); `html.meteor-night` is set before first paint.
+
+   Six extra streaks on short coprime cycles (11s · 13s · 17s · 19s · 23s · 31s) laid over the
+   ordinary three, which keep their slow patrol underneath. All prime, none equal to the
+   original 29/43/67, for the reason those three were chosen: no common multiple inside a
+   sitting means the sky never falls into a rhythm you can predict. Six streaks averaging an
+   18.8s cycle is one crossing roughly every three seconds — a generous but not silly reading
+   of a real shower, where the naked eye gets one a minute and the memory of it gets more.
+
+   ⚠ THE CYCLE LENGTH IS ALSO THE STREAK'S SPEED, WHICH IS NOT OBVIOUS AND SET THE FLOOR HERE.
+   `ts-shoot-fall` shows the streak across 0.4%→3.4% of whatever cycle it is given, so a short
+   cycle does not just mean "more often", it means each meteor is on screen for less time. The
+   first draft used 7s and 9s, which is a 240ms blink — technically a meteor, visually a
+   dropped frame. At 11–31s each streak lasts 0.4–1.0s, which is what a real one looks like.
+
+   ⭐ WHY THIS IS THE CHEAP HALF OF TODAY'S TWO FEATURES. The /pjcc/ motion audit priced every
+   animation on the page in screens of moving texture: the two cloud banks are 3.32 screens of
+   the page's 4.11, while the three existing shooting stars measure 0.00 — a streak is a 2px
+   dot with a 90px gradient tail, and it is off-stage 96% of its own cycle. Six more of those
+   is still 0.00 to two decimals. The shower is free; the aurora below is not.
+
+   ⚠ THEY EXIST IN THE MARKUP EVERY NIGHT AND COST NOTHING ON 97% OF THEM. `.ts-shoot` is
+   `display:none` by default and only the `html.sky-night` rules turn it on; the shower's are
+   gated behind `html.meteor-night` as well, so on an ordinary night these six are inert
+   elements with no animation attached. That is what lets the whole feature ship with no JS. */
+html.sky-night.meteor-night .ts-shoot--sh { display: block; }
+html.sky-night.meteor-night .ts-shoot--s1 { top: 6%;  left: 62%; animation: ts-shoot-fall 11s linear infinite; }
+html.sky-night.meteor-night .ts-shoot--s2 { top: 18%; left: 84%; animation: ts-shoot-fall 13s linear infinite 2s; }
+html.sky-night.meteor-night .ts-shoot--s3 { top: 2%;  left: 34%; animation: ts-shoot-fall 17s linear infinite 5s; }
+html.sky-night.meteor-night .ts-shoot--s4 { top: 27%; left: 70%; animation: ts-shoot-fall 19s linear infinite 1s; }
+html.sky-night.meteor-night .ts-shoot--s5 { top: 11%; left: 96%; animation: ts-shoot-fall 23s linear infinite 8s; }
+html.sky-night.meteor-night .ts-shoot--s6 { top: 21%; left: 52%; animation: ts-shoot-fall 31s linear infinite 3s; }
+
 /* 0 → 4% of the cycle is the streak; the other 96% it's parked, invisible, off-stage. */
 @keyframes ts-shoot-fall {
   0%             { transform: translate3d(0, 0, 0);            opacity: 0; }
@@ -791,10 +883,20 @@ html.reduce-flourish .ts-orb::before { animation: none !important; }
    scale has to be restored by hand wherever the drift is switched off. */
 html.reduce-flourish .ts-cloud-bank { transform: scale(2); }
 html.reduce-flourish .ts-shoot { display: none !important; }
+/* ⚑ THE AURORA STOPS MOVING BUT DOES NOT LEAVE (2026-08-13), and that is the difference
+   between it and the meteors above. A shooting star IS its motion — a parked streak is a
+   white dash sitting in the sky meaning nothing, so it goes. An aurora is a standing
+   curtain of light that happens to breathe; freeze it and you still have the aurora, which
+   is exactly the rule stated at the top of this block: "The sky itself is PAINT, not motion."
+   ⚠ The sway keyframe starts at translate3d(-3%) scaleX(1), so unlike the cloud banks there
+   is nothing to restore by hand — the 0% frame is the resting pose on purpose. A visitor on
+   reduced motion still gets their one-in-a-hundred night. */
+html.reduce-flourish .ts-aur { animation: none !important; opacity: 0.5; }
 @media (prefers-reduced-motion: reduce) {
   .ts-cloud-bank, .ts-cloud-shape, .ts-star--tw, .ts-orb::before { animation: none !important; }
   .ts-cloud-bank { transform: scale(2); }   /* see the note above — half-size layer */
   .ts-shoot { display: none !important; }
+  .ts-aur { animation: none !important; opacity: 0.5; }
 }
 
 /* ── DEPTH ON SCROLL (2026-07-19, the modernization mission) ───────────────────
@@ -990,11 +1092,17 @@ body.theme-studio .site-footer { background: #0a090e; }
    a B&W page would just look like a bug. */
 body.theme-bw .town-sky,
 body.theme-studio .town-sky { background: #0a0a0c; }
+/* ⚠ KEEP THIS LIST COMPLETE — the note on the 0.5 front-door dial says the same thing about
+   its own layer list, and for the same reason: a layer left off comes back at full volume
+   with nothing to say so. `.ts-aurora` joined on 2026-08-13; a green curtain over a
+   deliberately black-and-white sky would be the loudest possible version of that bug. */
 body.theme-bw .ts-orb,
 body.theme-bw .ts-shoot,
+body.theme-bw .ts-aurora,
 body.theme-bw .ts-clouds,
 body.theme-studio .ts-orb,
 body.theme-studio .ts-shoot,
+body.theme-studio .ts-aurora,
 body.theme-studio .ts-clouds { display: none; }
 /* 2026-07-15 (Nate: Direct Line — and any McPuppy page — should keep the studio's
    black-and-white sky "instead of the seasons"): kill the seasonal tint, the drifting
