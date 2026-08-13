@@ -118,13 +118,16 @@
     shield:  { em:'🛡️', n:'Shield' },
     heart:   { em:'❤️', n:'Heart' }
   };
-  // Aura = the glow ring + the operative's personal accent color.
-  var AURAS = {
-    gold:    '#F5C518', jade:   '#6bffb8', crimson: '#ff6b6b', sakura: '#ff8fd0',
-    azure:   '#6bbfff', violet: '#b07bff', amber:   '#ff9f43', mono:   '#cdbcf2',
-    emerald: '#2ecc71', ice:    '#a8e6ff', rose:    '#ff6b9d', lime:   '#c9ff6b'
-  };
-  var AURA_ORDER = ['gold','jade','crimson','sakura','azure','violet','amber','mono','emerald','ice','rose','lime'];
+  /* Aura = the glow ring + the operative's personal accent color.
+     ⚑ THE PALETTE LIVES IN pjcc-profile.js NOW (2026-08-13) — the Park Tables VS streaks
+     draw the same twelve colors on a page this file is not loaded on, and two copies of a
+     palette is one palette and one lie. This file is loaded only on /dossier/, AFTER
+     pjcc-profile.js, so `PJCC.AURAS` is defined by the time this line runs. The fallback
+     is a single readable color rather than a duplicate map: if the profile module is
+     genuinely missing, the Forge has much bigger problems than a swatch row, and a
+     half-copy here would be the thing that hid them. */
+  var AURAS = (window.PJCC && PJCC.AURAS) || { gold: '#F5C518' };
+  var AURA_ORDER = (window.PJCC && PJCC.AURA_ORDER) || ['gold'];
 
   /* ── THE COAT FILTER IS GONE (2026-07-28) ───────────────────────────────────
      What stood here was `TINTS`, `ensureCoatDefs()` and `coatFilter()`: a set of

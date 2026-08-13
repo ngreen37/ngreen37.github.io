@@ -218,3 +218,58 @@
 @media (pointer: coarse) {
   .pjcc-input, .pjcc-btn { padding-top: 11px; padding-bottom: 11px; }
 }
+
+/* ══ SEND SOMEBODY CREDITS (2026-08-13) ═════════════════════════════════════════════
+   Nate: "a mechanism where a user can click on another user's name, and they can give
+   them 1, 5, 10, 25, or 50 credits… That's the only thing they can interact with a
+   specific user on for now."
+
+   ⚠ THE NAME IS THE BUTTON. Nothing new appears in a leaderboard row — the codename
+   itself becomes the control, so a board that was already dense does not grow a column
+   of icons. It carries a dotted underline rather than a link color, because it is an
+   ACTION on a person and not a link to a page, and those should not look alike.
+   ⚠ It only renders when the visitor can actually gift (signed in, migration run) and
+   never on their own row, so the affordance and the ability cannot disagree. */
+.lb-gift {
+  font: inherit; color: inherit; background: none; border: 0; padding: 0;
+  cursor: pointer; border-bottom: 1px dotted rgba(255,255,255,0.34);
+  &:hover, &:focus-visible { color: #6bffb8; border-bottom-color: #6bffb8; }
+}
+/* ⚠ 44px WITHOUT MOVING THE ROW. Padding alone would grow every leaderboard line; the
+   negative margin gives the thumb its box back while the text stays where it was. */
+@media (pointer: coarse) {
+  .lb-gift { display: inline-block; padding: 12px 4px; margin: -12px -4px; }
+}
+
+.gift-ov {
+  position: fixed; inset: 0; z-index: 9998; display: flex;
+  align-items: center; justify-content: center; padding: 20px;
+  background: rgba(8, 5, 22, 0.72);
+}
+.gift-sheet {
+  position: relative; width: min(400px, 100%);
+  background: #1c1540; border: 1px solid #3d2b8a; border-radius: var(--r-lg);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.55); padding: 26px 24px 22px; text-align: center;
+}
+.gift-x {
+  position: absolute; top: 6px; right: 8px; width: 44px; height: 44px;
+  background: none; border: 0; color: #9b87c0; font-size: 22px; line-height: 1; cursor: pointer;
+  &:hover { color: #fff; }
+}
+.gift-h   { font-size: 0.78rem; letter-spacing: 2px; text-transform: uppercase; color: #9b87c0; margin: 0; }
+.gift-who { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.35rem;
+            color: #F5C518; margin: 4px 0 18px; word-break: break-word; }
+.gift-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+/* the five amounts. Mint = the go color, and this is the one action in the sheet. */
+.gift-amt {
+  min-width: 56px; min-height: 44px; padding: 0 12px;
+  font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1rem;
+  color: #06120c; background: #6bffb8; border: 0; border-radius: 999px; cursor: pointer;
+  transition: transform .12s ease, filter .12s ease;
+  &:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.08); }
+  &:disabled { background: #2c2550; color: #6b6390; cursor: not-allowed; }
+}
+.gift-bal { margin: 0; font-size: 0.86rem; line-height: 1.6; color: #b9c0cb; }
+.gift-bal b { color: #f0e6ff; }
+.gift-ok { color: #6bffb8; }
+.gift-no { color: #ff9b9b; }

@@ -187,6 +187,12 @@ body_class: theme-hall
 
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
+{%- comment -%} Tap an operative's name to send them credits (2026-08-13). Loaded BEFORE
+     the board: both are `defer`, which runs in document order, so `window.PJCCGift` exists
+     by the time the board asks whether the affordance can be drawn. Reversed, the board
+     would see no gift module, quietly decide the answer is "no", and render plain names
+     forever with nothing in the console to say why. {%- endcomment -%}
+<script src="{{ '/assets/js/pjcc-gift.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/pjcc-leaderboard.js' | relative_url }}" defer></script>
 
 <script>

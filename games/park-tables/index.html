@@ -47,6 +47,10 @@ body_class: theme-hall
 <script src="{{ '/assets/js/pjcc-replay.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-game-review.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-analysis.js' | relative_url }}"></script>
+{% comment %} Tap a live opponent's name to send them credits (2026-08-13). Same module the
+     leaderboards use; loaded first so it exists before this page's script asks. Bots are
+     never gift-able — there is nobody on the other end. {% endcomment %}
+<script src="{{ '/assets/js/pjcc-gift.js' | relative_url }}"></script>
 {% comment %} AUSTON REMEMBERS (2026-08-13) — she is the one regular who notices what has
      changed since you last sat down. OPTIONAL BY DESIGN: every call into it below is
      guarded, so if this file fails to arrive she simply stops talking and the bench plays
@@ -602,19 +606,29 @@ body_class: theme-hall
 
      ⚠ `locked` bots are STILL RENDERED, grayed out, with what they cost. A locked seat you can
      see is a reason to keep playing; a locked seat you cannot see is just a shorter list. */
+  /* ⚑ EVERY REGULAR CARRIES AN AURA (2026-08-13) — the personal color a signed-in
+     operative picks in the Identity Forge. The bots need one for the same reason you do:
+     the VS streaks that frame the board are an IDENTITY, and a match between you and a
+     colorless opponent is only half a match.
+
+     Keys come from `PJCC.AURAS` (pjcc-profile.js) — never a hex literal here, or the
+     bench drifts off the palette the Forge offers. My picks, and open to veto the same way
+     the icons were: Maxwell the one who stays = emerald · Crockett the Academy teacher =
+     amber (pine/copper) · Argus = ice · Auston brave = crimson · The Dad quiet = mono ·
+     Robert the rival = violet · Princess = sakura · the CEO at the top = gold. */
   var BOTS = {
-    maxwell:  { name: 'Maxwell',  icon: '♟', diff: 'Beginner', elo: 400,  movetime: 120 },
-    crockett: { name: 'Crockett', icon: '♞', diff: 'Easy',     elo: 750,  movetime: 160 },
-    argus:    { name: 'Argus',    icon: '♝', diff: 'Casual',   elo: 1000, movetime: 260 },
+    maxwell:  { name: 'Maxwell',  icon: '♟', diff: 'Beginner', elo: 400,  movetime: 120,  aura: 'emerald' },
+    crockett: { name: 'Crockett', icon: '♞', diff: 'Easy',     elo: 750,  movetime: 160,  aura: 'amber' },
+    argus:    { name: 'Argus',    icon: '♝', diff: 'Casual',   elo: 1000, movetime: 260,  aura: 'ice' },
     // Auston — back on the bench 2026-08-10 at Nate's rating, filling the 1000→1400 step.
-    auston:   { name: 'Auston',   icon: '♘', diff: 'Steady',   elo: 1200, movetime: 420 },
+    auston:   { name: 'Auston',   icon: '♘', diff: 'Steady',   elo: 1200, movetime: 420,  aura: 'crimson' },
     // "Father" → "The Dad" (2026-08-10 Nate). Same character, same seat, warmer name.
-    dad:      { name: 'The Dad',  icon: '♚', diff: 'Club',     elo: 1400, movetime: 620 },
+    dad:      { name: 'The Dad',  icon: '♚', diff: 'Club',     elo: 1400, movetime: 620,  aura: 'mono' },
     // Robert — the Checker Town rival (2026-07-19 Nate), down from 2400 to make room above.
-    robert:   { name: 'Robert',   icon: '♜', diff: 'Expert',   elo: 1800, movetime: 950 },
-    princess: { name: 'Princess', icon: '♛', diff: 'Master',   elo: 2100, movetime: 1150,
+    robert:   { name: 'Robert',   icon: '♜', diff: 'Expert',   elo: 1800, movetime: 950,  aura: 'violet' },
+    princess: { name: 'Princess', icon: '♛', diff: 'Master',   elo: 2100, movetime: 1150, aura: 'sakura',
                 locked: 'robert' },
-    ceo:      { name: 'The CEO',  icon: '♔', diff: 'Champion', elo: 2400, movetime: 1300,
+    ceo:      { name: 'The CEO',  icon: '♔', diff: 'Champion', elo: 2400, movetime: 1300, aura: 'gold',
                 locked: 'princess' }
   };
   /* ⚠ PUBLISHED, NOT DUPLICATED (2026-08-13). Auston's memory names the other regulars
@@ -652,6 +666,79 @@ body_class: theme-hall
     if (beatenList().indexOf(b.locked) >= 0) return null;  // earned
     return (BOTS[b.locked] || {}).name || b.locked;        // who you still owe
   }
+  /* ══ THE VS STREAKS (2026-08-13) ══════════════════════════════════════════════════
+     Nate: *"put up a red and blue streak to make the game an event, like how pokemon
+     does… One user's Aura color up top on a horizontal streak that moves from left to
+     right, and the other user's aura color on bottom that moves from right to left."*
+
+     TWO BARS, and the pair is what does the work: the opponent's color runs one way over
+     the board and yours runs the other way under it, so the board sits between two people
+     heading at each other. One bar would just be a decoration.
+
+     ⚠ COLORS COME FROM THE ONE PALETTE. `PJCC.auraColor()` takes a profile, a look or a
+     bare key — so a bot's `aura:'violet'`, a signed-in operative's `companion.look.aura`
+     and a fetched opponent row all arrive here the same way, and none of them can name a
+     color the Forge does not offer.
+     ⚠ Guarded: with the profile module missing this returns the neutral rather than
+     throwing, and the streak still draws. A missing identity is gray, not an error. */
+  function auraHex(x){
+    try { return (window.PJCC && PJCC.auraColor) ? PJCC.auraColor(x) : '#cdbcf2'; }
+    catch (e) { return '#cdbcf2'; }
+  }
+  /* `dir` is 1 for the top bar (left → right) and -1 for the bottom (right → left).
+     The direction is a CSS custom property rather than two rules, so the pair can never
+     end up running the same way — which is the one thing that would kill the effect. */
+  function auraBar(color, dir, id){
+    return '<div class="pt-aura" aria-hidden="true"' + (id ? ' id="' + id + '"' : '') +
+           ' style="--aura:' + color + ';--dir:' + dir + '"><i></i></div>';
+  }
+
+  /* ── AN OPPONENT'S COLOR, ON A LIVE TABLE ────────────────────────────────────────
+     A match row carries the opponent's NAME but not their look, so their aura takes one
+     small query. Two things about how it lands:
+
+     ⚠ IT PAINTS THE EXISTING BAR INSTEAD OF RE-RENDERING. `renderTable()` rebuilds the
+     whole view — the move browser, the emote row, the board — so calling it from a
+     network callback would tear down and rebuild the table underneath someone who might
+     be mid-tap, and could re-enter the render while a poll is already in it. Setting one
+     custom property on one node has none of that surface.
+     ⚠ ASKED ONCE PER NAME, EVER. The board polls every ~4s; without the cache marking the
+     request in flight BEFORE it resolves, a slow reply would mean a fresh query every poll
+     for as long as the table is open.
+     ⚠ A failure is remembered as the neutral, not left undefined — otherwise "we asked and
+     they have no aura" and "we never asked" look identical and it retries forever. */
+  /* ── CAN THIS VISITOR SEND CREDITS ───────────────────────────────────────────────
+     Resolved once and cached, for the same reason the leaderboard does it: `renderTable`
+     is synchronous and runs on every ~4s poll, so asking a promise from inside it would
+     either rewrite the nameplate under a thumb or fire a probe every four seconds.
+     ⚠ Starts false. Every render before the answer lands draws a plain name, which is the
+     correct thing to show someone who may not be able to gift at all. */
+  var giftsOn = false;
+  try {
+    if (window.PJCCGift) PJCCGift.available().then(function (on) { giftsOn = !!on; }, function () {});
+  } catch (e) {}
+
+  var auraByName = {};
+  function paintOppAura(name){
+    if (!name) return;
+    if (auraByName[name] !== undefined) return applyOppAura(auraByName[name]);
+    auraByName[name] = null;                       // in flight
+    var d = null;
+    try { d = (window.PJCC && PJCC.db) ? PJCC.db() : null; } catch (e) {}
+    if (!d) { auraByName[name] = '#cdbcf2'; return; }
+    d.from('profiles').select('companion').eq('codename', name).maybeSingle()
+      .then(function (r) {
+        auraByName[name] = (r && r.data) ? auraHex(r.data) : '#cdbcf2';
+        applyOppAura(auraByName[name]);
+      })
+      .catch(function () { auraByName[name] = '#cdbcf2'; });
+  }
+  function applyOppAura(hex){
+    if (!hex) return;
+    var el = document.getElementById('pt-aura-opp');
+    if (el) el.style.setProperty('--aura', hex);
+  }
+
   function botDial(b){
     var E = window.PJCCGauntletEngine;
     return { skill: E.skillForElo(b.elo), blunder: E.blunderForElo(b.elo), movetime: b.movetime };
@@ -931,13 +1018,17 @@ body_class: theme-hall
       openingCap(st.moves) +
       // board (with its nameplates) LEFT, the scoresheet RIGHT (2026-07-17 Nate:
       // "notation should be to the right of the game") — .pt-arena stacks on phones
+      // the streaks BRACKET the whole arena — plate, board, plate — so the pair reads as
+      // "these two are playing each other" rather than as two unrelated rules
       '<div class="pt-arena"><div class="pt-boardwrap">' +
+        auraBar(auraHex(bot.aura), 1) +
         '<div class="pt-plate">' + bot.icon + ' <b>' + esc(bot.name) + '</b>' +
           ' <i class="pt-plate-rate">(' + bot.elo + ' · ' + esc(bot.diff) + ')</i>' + matChip(S, false) + '</div>' +
         '<div class="pt-board" role="grid" aria-label="Chess board">' + rows +
           (last && last.mover === 'b' ? arrowSVG(last, true) : '') + '</div>' +
         '<div class="pt-plate pt-plate--me">⬜ <b>' + esc((prof && prof.codename) || 'You') + '</b>' +
           (myRate ? ' <i class="pt-plate-rate">(' + myRate.rating + ')</i>' : '') + matChip(S, true) + '</div>' +
+        auraBar(auraHex(prof), -1) +
       '</div>' +
       '<div class="pt-moves">' + (mvs || '<span class="pjcc-sub">No moves yet.</span>') + '</div></div>' +
       '<div id="pt-replay"></div>' +
@@ -1401,12 +1492,24 @@ body_class: theme-hall
       (canClaim ? '<button class="pjcc-btn" id="pt-flag">⏱ Their time is up — claim the win</button>' : '') +
       // board (with nameplates + the chat line) LEFT, scoresheet RIGHT (2026-07-17 Nate)
       '<div class="pt-arena"><div class="pt-boardwrap">' +
-        '<div class="pt-plate">' + (white ? '⬛' : '⬜') + ' <b>' + esc(oppName) + '</b>' +
+        // the streaks bracket the arena, same as at a bot table. The opponent's starts
+        // neutral and is painted the moment their look arrives (paintOppAura, below).
+        auraBar(auraByName[oppName] || '#cdbcf2', 1, 'pt-aura-opp') +
+        /* ⚠ ONLY WHEN THERE IS SOMEBODY THERE. `oppName` doubles as a status string on an
+           unfilled table ("waiting for a challenger…", "McPuppy (not seated yet)"), and a
+           gift button on a sentence would send credits to a codename that does not exist.
+           A seat is real only once the match is past `open`. */
+        '<div class="pt-plate">' + (white ? '⬛' : '⬜') + ' <b>' +
+          ((giftsOn && m.status !== 'open' && oppName && oppName.indexOf('…') < 0 && oppName.indexOf('(') < 0)
+            ? '<button class="lb-gift" data-gift="' + esc(oppName) + '" aria-label="Send credits to ' +
+              esc(oppName) + '">' + esc(oppName) + '</button>'
+            : esc(oppName)) + '</b>' +
           (oppR ? ' <i class="pt-plate-rate">' + esc(oppR) + '</i>' : '') + matChip(S, !white) + '</div>' +
         '<div class="pt-board" role="grid" aria-label="Chess board">' + rows +
           (last && ((last.mover === 'w') !== white) ? arrowSVG(last, white) : '') + '</div>' +
         '<div class="pt-plate pt-plate--me">' + (white ? '⬜' : '⬛') + ' <b>' + esc(myName) + '</b>' +
           (myR != null ? ' <i class="pt-plate-rate">(' + myR + ')</i>' : '') + matChip(S, white) + '</div>' +
+        auraBar(auraHex(PJCC.getProfile()), -1) +
         say +
       '</div>' +
       '<div class="pt-moves">' + (mvs || '<span class="pjcc-sub">No moves yet.</span>') + '</div></div>' +
@@ -1420,6 +1523,12 @@ body_class: theme-hall
         : (window.PJCCReview && PJCCReview.enabled() && (m.moves || '').trim()
             ? '<div class="pt-tools"><button class="pjcc-btn" id="pt-review">🔍 Review this game</button></div>'
             : ''));
+
+    // their color, once we know it — cached by name, so the ~4s poll asks nobody twice
+    paintOppAura(oppName);
+    Array.prototype.forEach.call(app.querySelectorAll('[data-gift]'), function (b) {
+      b.onclick = function (e) { e.preventDefault(); PJCCGift.open(b.getAttribute('data-gift')); };
+    });
 
     document.getElementById('pt-back').onclick = function(){
       viewPly = null; nav = null;
@@ -1752,6 +1861,74 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
 .pt-state.go { color: #6bffb8; }
 /* the live opening name (📖 Ruy Lopez…) — quiet, sits under the turn line */
 .pt-open { color: #b9c0cb; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.02em; margin: -4px 0 10px; }
+
+/* ── THE VS STREAKS (2026-08-13) ───────────────────────────────────────────────────
+   Nate: "put up a red and blue streak to make the game an event, like how pokemon does…
+   One user's Aura color up top on a horizontal streak that moves from left to right, and
+   the other user's aura color on bottom that moves from right to left."
+
+   THE TRACK IS STATIC, THE STREAK MOVES. `.pt-aura` is a dim rail always in the player's
+   color, so the identity reads even at the instant the highlight is off-screen; `i` is the
+   bright pass sweeping along it. Without the rail the bar would blink out of existence
+   between passes, which looks like a bug rather than a heartbeat.
+
+   ⚠ TRANSFORM AND OPACITY ONLY — the site's standing animation rule. The sweep is a
+   translateX on a single element per bar (two per board), so the GPU cost is two thin
+   strips and nothing recalculates layout. `left`/`background-position` would both have
+   repainted the rail on every frame for the same picture.
+   ⚠ `--dir` FLIPS THE PAIR. One keyframe set, scaled by -1 for the bottom bar, so the two
+   can never be authored into running the same way — which is the single thing that would
+   kill the effect he is describing.
+   ⚠ 9s, NOT 2s. This frames a game of chess that may last twenty minutes; a fast sweep
+   two inches from the board is a metronome beside the thing you are trying to think at.
+   The same argument that took the lightning from 9-26s out to 24-64s.
+
+   ⚠⚠ THE HEIGHT IS A BUDGET, NOT A TASTE. `--pt-board` is
+   `min(860px, max(420px, 100vh - 300px))` — the board is capped by HEIGHT, and that 300 is
+   an allowance for the furniture above and below it. Two bars plus their margins spend
+   from the same allowance, so every pixel here comes off the board on a laptop.
+
+   8px was PICKED FROM A LABELLED RENDER of 5 / 7 / 9 / 12: 5 reads as a hairline and
+   nothing about it says "event", 12 reads as a progress bar and starts competing with the
+   board. 8 with a 3px margin costs 22px for the pair — and the board formula is deliberately
+   LEFT ALONE rather than widened to 322, because he asked for a bigger board once already
+   and shrinking it to make room for decoration would be taking that back. 22px of extra
+   page scroll on a mid-height window is the cheaper side of that trade.
+   ⭐ AND ON A SHORT VIEWPORT THE BARS GIVE WAY, not the board — see the max-height query
+   below. Where there is no room to spend, the decoration is what yields. */
+.pt-aura {
+  position: relative; height: 8px; margin: 0 0 3px;
+  border-radius: 999px; overflow: hidden;
+  background: color-mix(in srgb, var(--aura, #cdbcf2) 30%, transparent);
+}
+.pt-aura + .pt-plate { margin-top: 0; }
+.pt-plate--me + .pt-aura { margin: 3px 0 0; }
+@media (max-height: 780px) {
+  .pt-aura { height: 4px; margin: 0 0 2px; }
+  .pt-plate--me + .pt-aura { margin: 2px 0 0; }
+}
+.pt-aura i {
+  position: absolute; inset: 0 auto 0 0; width: 45%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--aura, #cdbcf2) 45%,
+                              color-mix(in srgb, var(--aura, #cdbcf2) 75%, #fff) 55%, transparent);
+  box-shadow: 0 0 20px 1px color-mix(in srgb, var(--aura, #cdbcf2) 55%, transparent);
+  will-change: transform;
+  animation: pt-aura-run 9s linear infinite;
+  animation-direction: var(--dir-name, normal);
+}
+/* the bottom bar runs the other way: same keyframes, reversed */
+.pt-aura[style*="--dir:-1"] i { animation-direction: reverse; }
+@keyframes pt-aura-run {
+  from { transform: translateX(-110%); }
+  to   { transform: translateX(340%); }
+}
+/* ⚠ The rail stays. Reduced motion means "stop moving", not "lose the player's color" —
+   the identity is the point of the bar and the sweep is only how it says so. */
+@media (prefers-reduced-motion: reduce) {
+  .pt-aura i { animation: none; transform: translateX(0); width: 100%;
+               background: linear-gradient(90deg, var(--aura, #cdbcf2), transparent); box-shadow: none; }
+}
 
 /* ── AUSTON SAYS SOMETHING (2026-08-13) ────────────────────────────────────────────
    One line, above the board, when you sit down and when the game ends.

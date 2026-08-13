@@ -391,9 +391,44 @@
     { level: 9, name: 'Alpine Clearance', pip: '❈',  rating: 1600 }
   ];
 
+  /* ══ AURA — AN OPERATIVE'S PERSONAL COLOR ═══════════════════════════════════════
+     Chosen in the Identity Forge, stored at `companion.look.aura`, and drawn as the glow
+     ring on the face art.
+
+     ⚑ MOVED HERE FROM pjcc-creator.js ON 2026-08-13, and the move is the point. The Forge
+     was the only file that knew these twelve hex values, which was fine for exactly as
+     long as the Forge was the only thing that drew them. The Park Tables VS streaks need
+     the same colors on a page the Forge is not loaded on — and the alternative, a second
+     copy of the palette in the room, is a palette that drifts the first time a color is
+     tuned ([[dead-game-links-trap]]). One map, read by both.
+
+     ⚠ pjcc-creator.js now READS `PJCC.AURAS` and keeps no copy. It loads only on
+     /dossier/, after this file, so the dependency is satisfied by document order — the
+     same rule that already governs face-art-before-creator on that page. */
+  var AURAS = {
+    gold:    '#F5C518', jade:   '#6bffb8', crimson: '#ff6b6b', sakura: '#ff8fd0',
+    azure:   '#6bbfff', violet: '#b07bff', amber:   '#ff9f43', mono:   '#cdbcf2',
+    emerald: '#2ecc71', ice:    '#a8e6ff', rose:    '#ff6b9d', lime:   '#c9ff6b'
+  };
+  var AURA_ORDER = ['gold','jade','crimson','sakura','azure','violet','amber','mono','emerald','ice','rose','lime'];
+
   var PJCC = {
     enabled: !!configured,
     ready: null,
+    AURAS: AURAS,
+    AURA_ORDER: AURA_ORDER,
+    /* Takes whatever you happen to be holding — a profile row, a `look`, or a bare key —
+       and returns a hex color. Never returns null: an operative with no aura yet still has
+       to be drawable, and `mono` is the neutral the site uses for "no color chosen".
+       ⚠ `mono`, not gold. Gold is the CTA color, and defaulting an unset identity to it
+       would put the site's one action color on every stranger. */
+    auraColor: function (x) {
+      if (!x) return AURAS.mono;
+      if (typeof x === 'string') return AURAS[x] || AURAS.mono;
+      var look = x.companion ? (x.companion.look || null) : x;   // profile → look
+      var key = look && look.aura;
+      return AURAS[key] || AURAS.mono;
+    },
     AVATARS: AVATARS,
     AVATAR_ORDER: AVATAR_FREE,
     AVATAR_FREE: AVATAR_FREE,
@@ -1214,6 +1249,90 @@
      the person most likely to find a broken puzzle is a stranger doing their first ten,
      and requiring an account to say "this is wrong" would filter out exactly the reports
      worth having. `codename` is whatever they have, or null. */
+  /* ══ CREDIT GIFTS ═══════════════════════════════════════════════════════════════════
+     2026-08-13, Nate: *"how about a mechanism where a user can click on another user's
+     name, and they can give them 1, 5, 10, 25, or 50 credits? That's the only thing they
+     can interact with a specific user on for now."*
+
+     ⭐ A NUMBER IS THE SAFEST THING TWO STRANGERS CAN SEND EACH OTHER. Typed chat does not
+     exist on this site by construction — four preset phrases and nothing else — and this
+     keeps that property exactly: a gift carries an amount and a sender, and there is no
+     field anywhere in it that a person could put a sentence in. The feature is child-safe
+     for the same structural reason the emotes are, not by moderation.
+
+     ⚠ THE SERVER IS THE RULE. `GIFT_TIERS` below draws five buttons; the SQL refuses
+     anything that is not one of the five, checks the balance inside the same atomic write
+     that spends it, and counts a daily cap off its own ledger. Everything here is a
+     convenience for the UI — see docs/credit-gifts-setup.md.
+
+     ⚠ IT SHIPS BEFORE ITS MIGRATION, like the puzzle reports did, and degrades the same
+     way: every call RESOLVES `{ok:false, reason}` and never throws. */
+  var GIFT_TIERS = [1, 5, 10, 25, 50];
+  PJCC.GIFT_TIERS = GIFT_TIERS;
+
+  /* Does the function exist yet? Probed ONCE per session by calling it with an amount the
+     ladder does not allow: if the function is there it answers `bad_amount` without
+     touching a single credit, and if it is not there the call errors. That is the whole
+     detection — no config flag to flip, no page to redeploy when Nate runs the SQL.
+     ⚠ CACHED IN sessionStorage, not memory: every leaderboard render asks, and a probe per
+     render would be a round trip per page view for an answer that cannot change mid-visit.
+     ⚠ A signed-out visitor never probes. They cannot gift, so the answer is irrelevant and
+     the request would be pure waste on the most common kind of visit. */
+  var giftProbe = null;
+  PJCC.giftsEnabled = function () {
+    if (giftProbe) return giftProbe;
+    giftProbe = (async function () {
+      if (!sb || !PJCC.currentUser()) return false;
+      try {
+        var cached = sessionStorage.getItem('pjcc.gifts.on');
+        if (cached === '1') return true;
+        if (cached === '0') return false;
+      } catch (e) {}
+      var on = false;
+      try {
+        var r = await sb.rpc('gift_credits', { p_to_codename: '', p_amount: 0 });
+        // the function answering AT ALL is the signal — what it says is irrelevant here
+        on = !r.error;
+      } catch (e) { on = false; }
+      try { sessionStorage.setItem('pjcc.gifts.on', on ? '1' : '0'); } catch (e) {}
+      return on;
+    })();
+    return giftProbe;
+  };
+
+  /* Hand somebody credits. Resolves {ok:true, amount, to, balance} or {ok:false, reason}.
+     ⚠ The local profile's credit count is corrected from the SERVER's returned balance
+     rather than by subtracting here — the two would agree today and drift the first time a
+     gift races anything else that spends. Never compute a balance you were just told. */
+  PJCC.giftCredits = async function (codename, amount) {
+    if (!sb) return { ok: false, reason: 'offline' };
+    if (!PJCC.currentUser()) return { ok: false, reason: 'signed_out' };
+    if (GIFT_TIERS.indexOf(amount) < 0) return { ok: false, reason: 'bad_amount' };
+    try {
+      var r = await sb.rpc('gift_credits', { p_to_codename: String(codename || ''), p_amount: amount });
+      if (r.error) return { ok: false, reason: 'offline' };
+      var out = r.data || { ok: false, reason: 'offline' };
+      if (out.ok && profile && typeof out.balance === 'number') {
+        profile.credits = out.balance;
+        emit();
+      }
+      return out;
+    } catch (e) { return { ok: false, reason: 'offline' }; }
+  };
+
+  /* Gifts you have received, newest first — for a "somebody paid for your good day" line.
+     Resolves [] on any failure, so a caller can render it without a guard. */
+  PJCC.giftsReceived = async function (limit) {
+    if (!sb || !PJCC.currentUser()) return [];
+    try {
+      var r = await sb.from('credit_gifts')
+        .select('amount,created_at,from_id')
+        .order('created_at', { ascending: false })
+        .limit(limit || 10);
+      return (r && r.data) ? r.data : [];
+    } catch (e) { return []; }
+  };
+
   PJCC.reportPuzzle = async function (payload) {
     if (!sb) return { ok: false, reason: 'offline' };
     try {
