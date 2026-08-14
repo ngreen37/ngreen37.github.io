@@ -353,6 +353,34 @@ body_class: theme-hall
     authKey = keyNow();
     if (parkTimer) { clearTimeout(parkTimer); parkTimer = null; }
     if (!PJCC.enabled) return down('backend not configured');   // genuinely not configured
+    /* ⚠⚠ ALREADY SEATED = NOTHING TO ROUTE (2026-08-14). Nate: "Sometimes when I try
+       playing Auston, and I am RESUMING the game, the screen glitches and goes back to
+       the park tables. It takes around the time it takes to refresh the screen."
+
+       TWO THINGS CALL route() AND THEY RACE. Traced on the live room, signed out, at
+       ?table=auston with a half-played save:
+
+         t=884  route ← safeRoute ← pjcc-profile.js onChange   → botStart → board up
+         t=909  route ← safeRoute ← PJCC.ready.then            → repainted over the top
+
+       The onChange listener below is careful — it stands down while `cur || botCur`. The
+       `PJCC.ready.then(safeRoute)` beside it is not guarded at all, and route() ran all
+       the way to the bottom because BOTH bot branches are written `!inRoom` and the
+       lobby at the end is written as the fallthrough. So being seated made the function
+       skip every branch that could have kept him seated.
+
+       WHY RESUMING, AND WHY ONLY SOMETIMES. It is a race, and the winner decides. When
+       `ready` resolves first (a cold visit, no session) route() seats you and the later
+       onChange stands down on `botCur` — no bounce, which is why every test and every
+       signed-out pass was green. When a STORED SESSION restores, onChange fires first,
+       seats you, and then `ready` resolves into an unguarded second route. A resume is
+       by definition the second visit, so it is exactly where a session exists to restore.
+
+       THE INVARIANT, rather than a third guard on a third caller: route() decides which
+       ROOM you belong in, and once you are in one there is no such decision left to make.
+       Anything that genuinely wants you back out calls exitRoom()/leaveRoom() first, and
+       all four of those callers already did. */
+    if (inRoom) return;
     /* ?table=… — a reload, a bookmark, or a link. A BOT table is answered before the
        sign-in gate on purpose: the regulars need no account (the bot gate), so bouncing
        someone off their own bookmarked board and onto an email form would undo the whole
@@ -965,7 +993,10 @@ body_class: theme-hall
   function botRender(){
     var st = botCur; if (!st) return;
     var bot = BOTS[st.bot], g = M.replayGame(st.moves || '');
-    if (!g.valid) { botCur = null; try { localStorage.removeItem(BOT_KEY); } catch (e) {} return safeRoute(); }
+    /* ⚠ exitRoom() BEFORE safeRoute() — a corrupt save is the one case that has to put
+       you back on your feet, and route() now stands down while you are seated. Without
+       this the unreadable board would simply stay on screen. */
+    if (!g.valid) { botCur = null; try { localStorage.removeItem(BOT_KEY); } catch (e) {} exitRoom(); return safeRoute(); }
     var S = g.S;
     if (!st.done && g.result) botFinish(st, g);
     var myTurn = !st.done && !botThinking && S.turn === 'w';
@@ -1077,8 +1108,14 @@ body_class: theme-hall
     };
     var rv = document.getElementById('pt-bot-review');
     if (rv) rv.onclick = function(){
+      /* ⭐ RATINGS TOO (2026-08-14, Nate: "can we put a rating on the game review for each
+         person? For Gauntlet and park tables"). The regular's advertised elo is the one on
+         its own seat plate; yours is `pjcc_rating`, and a signed-out visitor at a bot board
+         has none — the review omits what it is not given rather than printing a zero. */
       var prof = PJCC.getProfile();
-      PJCCReview.open(st.moves, { whiteName: (prof && prof.codename) || 'You', blackName: bot.name, result: st.result });
+      PJCCReview.open(st.moves, { whiteName: (prof && prof.codename) || 'You', blackName: bot.name,
+                                  whiteRating: prof && prof.pjcc_rating, blackRating: bot.elo,
+                                  result: st.result });
     };
     var rs = document.getElementById('pt-bot-resign');
     if (rs) rs.onclick = function(){

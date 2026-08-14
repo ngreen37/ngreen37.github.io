@@ -55,17 +55,42 @@ permalink: /games/the-gauntlet/
   --g-stage: clamp(520px, calc((100vh - 260px) * 0.88), 720px);
   max-width: calc(var(--g-stage) + 28px);
 }
-/* ⚑ +22px FOR THE VS RAILS (2026-08-13). Two 8px bars with a 4px and a 5px margin sit
-   above and below the board inside the iframe, and `body` in there is `overflow:hidden` —
-   so height the frame does not give it is height the move browser simply loses off the
-   bottom. The STAGE WIDTH is deliberately untouched: the board keeps every pixel it had
-   and the frame grows instead, because shrinking the board to make room for decoration
-   would take back the size he asked for on 2026-08-04. */
-.td-frame iframe { height: calc(var(--g-stage) * 1.1364 + 94px); }
+/* ⚑ THE FURNITURE BUDGET — every non-board pixel #stage puts in the flow, added up.
+   The STAGE WIDTH is deliberately untouched: the board keeps every pixel it had and the
+   frame grows instead, because shrinking the board to make room for decoration would take
+   back the size he asked for on 2026-08-04.
+
+   MEASURED by tests/gauntlet.check.js, driving a real match at each stage width:
+
+     stage 380 / 420 / 520   121px      \  4px rails — the frame is under the game's own
+     stage 306               161px      /  `max-height:780px` bar rule at these sizes
+     stage 720               129px         8px rails, the full-size bars
+
+     -> 148px here, 176px on a phone. Both are the measurement plus ~16px of headroom,
+        because the parts are type and the type is not identical on every device.
+
+   ⚠⚠ THE BOOTH WAS NEVER IN THIS SUM, AND THAT IS THE BUG NATE REPORTED as "the aura bar
+   flashes for just a second for the opponent up top and then goes away." It is a flow child
+   of #stage that appears ~900ms into every match, and 72 (and then 94) never had room for
+   it — so the stage ran past the frame, and `body{overflow:hidden}` in there ate the
+   difference. THE RAILS DID NOT CAUSE THIS. They are just the first furniture thin enough,
+   and close enough to the edge, to vanish entirely when it happened; before them the same
+   overflow was quietly trimming a few pixels off a board that had them to spare.
+   ⚠ So this number is now a SUM WITH A NAME PER LINE, not a constant that gets nudged. If
+   anything new goes into #stage's flow, it goes in the list above or it clips something.
+   tests/gauntlet.check.js measures the real stage against this budget in the worst state
+   the room can reach (booth up, move browser showing its note). */
+.td-frame iframe { height: calc(var(--g-stage) * 1.1364 + var(--g-furniture, 148px)); }
 /* On a phone the width, not the height, is the binding constraint — the stage is already the
-   full card — so the height follows the width it actually got instead of the viewport's. */
+   full card — so the height follows the width it actually got instead of the viewport's.
+   ⚠ AND THE BUDGET IS BIGGER DOWN HERE, which is a measurement rather than caution: the
+   move browser is a flex row of six controls with `flex-wrap`, and below ~330px of stage it
+   WRAPS TO TWO ROWS. That is the whole 121 -> 161 step in the table above. Carrying the
+   phone's number on every screen would leave 40px of dead frame on a desktop to hold a row
+   that only exists on a phone; carrying the desktop's number clipped the phone. So each
+   breakpoint states its own, which is what these two numbers have always actually been. */
 @media (max-width: 600px) {
-  .td-frame { --g-stage: min(720px, calc(100vw - 84px)); }
+  .td-frame { --g-stage: min(720px, calc(100vw - 84px)); --g-furniture: 176px; }
 }
 </style>
 

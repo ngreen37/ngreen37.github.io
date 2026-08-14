@@ -20,7 +20,8 @@
  *    enabled()                 -> boolean  (ENABLED || private preview)
  *    available()               -> boolean  (Stockfish can run in this browser)
  *    open(movesStr, meta)      -> opens the review overlay for a UCI move list
- *        meta: { whiteName, blackName, result }  (all optional, for the header)
+ *        meta: { whiteName, blackName, whiteRating, blackRating, result }
+ *              (all optional, for the header)
  */
 (function (root) {
   'use strict';
@@ -121,6 +122,40 @@
     var a = 103.1668 * Math.exp(-0.04354 * loss) - 3.1669;
     return Math.max(0, Math.min(100, a));
   }
+  /* ══ WHAT THIS SCALE ACTUALLY MEASURES — CALIBRATED 2026-08-14 ═══════════════════════
+     Nate: "can we check the rating on the Checker Town champion? They eventually blundered
+     their queen but played 76% — seems high. Maybe just luck or do we need to dial it in?"
+
+     Not luck. Measured by playing players of KNOWN strength and running analyzeGame() over
+     the result — a random legal mover as the floor, then the real ladder bots:
+
+         a RANDOM legal mover        33 - 35 %
+         floor 1  (advertised 350)   78 - 84 %
+         floor 10 (advertised 1800)  73 - 93 %
+
+     ⚠⚠ TWO THINGS TO TAKE FROM THAT, AND THE SECOND ONE IS THE IMPORTANT ONE.
+
+     1. 76% for floor 1 is CORRECT, and it is a fact about the BOT, not about this file.
+        pjcc-gauntlet-engine's own note says skill 0 is already ~1350 and there is no dial
+        below it, so everything advertised under 1400 gets its weakness from `blunder` — a
+        share of moves played at random. Floor 1's share is 0.36. So the Checker Town
+        champion is a ~1350 player who throws away roughly one move in three, and between
+        the throwaways it really does play well. Hanging a queen and still scoring 76 is
+        the honest description of that opponent. It is also why he noticed.
+
+     2. THE SCALE DOES NOT RANK THE LADDER. Floor 1 scores the SAME as floor 10, sometimes
+        higher. Two reasons compound: a stronger bot steers into sharper positions where
+        every eval swings more (floor 10 collects the inaccuracies and mistakes), and once
+        a game is decided every remaining move scores ~100 because there is no win% left to
+        lose — and floor 1's games get decided early and then coast. So accuracy % answers
+        "how close to the engine was each move", which is NOT the same question as "how
+        well did this person play", and a reader will assume it is.
+
+     ⚑ LEFT AS IT IS ON PURPOSE. Fixing (2) means changing the number on every review the
+     site has ever shown — a weighted mean that punishes blunders, or ignoring plies after
+     the game is decided — and that is a call about what the whole feature claims, not a
+     bug fix. The rating now printed beside each score (see renderReport) is the cheap half
+     of the remedy: it gives the percentage the scale it was missing. ═══════════════════ */
   /* 2026-07-27 — the opening is graded on a wider band than the middlegame.
      Two reasons, both learned from Nate's 1.e4 d6 game:
        · The book can never cover everything. The moment a game steps one ply off a
@@ -255,6 +290,10 @@
       '.pgr-acc{display:flex;gap:10px;justify-content:center;margin-bottom:10px}' +
       '.pgr-accbox{flex:1;max-width:180px;background:#1c1140;border:1px solid #2a1f52;border-radius:10px;padding:8px 10px;text-align:center}' +
       '.pgr-accbox b{display:block;font-size:1.3rem;color:#fff}.pgr-accbox small{color:#9a8fd4;font-size:.7rem;letter-spacing:.06em}' +
+      /* the rating reads as a fact about the player, so it is quieter than the accuracy
+         and separated from the name by a rule rather than another middle dot */
+      '.pgr-rated{display:block;margin-top:5px;padding-top:5px;border-top:1px solid #2a1f52;' +
+        'font-style:normal;font-size:.68rem;letter-spacing:.06em;color:#7f74b4}' +
       '.pgr-chip{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:middle;border:1px solid #6a5a9a}' +
       '.pgr-chip-w{background:#f0eee8}.pgr-chip-b{background:#4a3585}' +
       '.pgr-graph{width:100%;height:46px;display:block;margin:4px 0 12px;background:#0f0a26;border:1px solid #2a1f52;border-radius:8px}' +
@@ -424,6 +463,26 @@
     // unnamed "White accuracy / Black accuracy" reads as reversed when YOU played Black. So
     // tie each score to the actual player + a color chip — no ambiguity about whose it is.
     var wName = esc(meta.whiteName || 'White'), bName = esc(meta.blackName || 'Black');
+    /* ⭐ THE RATING SITS NEXT TO THE ACCURACY (2026-08-14). Nate: "Can we put a rating on
+       the game review for each person? For Gauntlet and park tables. And can we check the
+       rating on the Checker Town champion? They eventually blundered their queen but
+       played 76% — seems high."
+
+       Those are one question. An accuracy score alone has no scale a reader can hold: 76%
+       means nothing until you know it came from a bot advertised at 350. Printing the two
+       side by side is what makes the number readable — and, as it turns out, what makes
+       the ladder's own oddity visible (see the calibration note over accFromLoss).
+
+       ⚠ OMITTED, NOT ZEROED, when a room does not know a rating. The live Park Tables
+       history stores names but no rating per game, and inventing one — "unrated", "—",
+       a guess from the profile's CURRENT rating months later — would be worse than the
+       blank, because a number beside a name reads as a fact about that game. */
+    var rate = function (v) {
+      var n = Number(v);
+      return (v == null || v === '' || !isFinite(n) || n <= 0) ? '' :
+        '<i class="pgr-rated">Rated ' + Math.round(n) + '</i>';
+    };
+    var wRate = rate(meta.whiteRating), bRate = rate(meta.blackRating);
     // eval graph (White POV), a compact sparkline
     var W = 460, H = 46, N = rep.evalW.length;
     var pts = rep.evalW.map(function (e, i) {
@@ -459,8 +518,8 @@
       : '';
     body.innerHTML =
       '<div class="pgr-acc">' +
-        '<div class="pgr-accbox"><b>' + accW + '%</b><small><span class="pgr-chip pgr-chip-w"></span>' + wName + ' · White</small></div>' +
-        '<div class="pgr-accbox"><b>' + accB + '%</b><small><span class="pgr-chip pgr-chip-b"></span>' + bName + ' · Black</small></div></div>' +
+        '<div class="pgr-accbox"><b>' + accW + '%</b><small><span class="pgr-chip pgr-chip-w"></span>' + wName + ' · White</small>' + wRate + '</div>' +
+        '<div class="pgr-accbox"><b>' + accB + '%</b><small><span class="pgr-chip pgr-chip-b"></span>' + bName + ' · Black</small>' + bRate + '</div></div>' +
       openH +
       graph +
       '<div class="pgr-grid"><div class="pgr-left">' +

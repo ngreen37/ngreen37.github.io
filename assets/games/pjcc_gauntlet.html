@@ -36,7 +36,28 @@
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body { user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color:transparent; }
   html, body { background:#0c0820; height:100%; overflow:hidden; font-family:'Trebuchet MS','Segoe UI',sans-serif; touch-action:manipulation; }
-  body { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+  /* ⚠⚠ `safe center`, NOT `center` (2026-08-14). Nate: "the aura bar flashes for just a
+     second for the opponent up top and then goes away."
+
+     MEASURED, at every stage width: the rail is up for ~900ms and then the commentary
+     booth's first line lands, the booth is a FLOW CHILD of #stage, the stage grows ~55px
+     past the frame — and because this line centered an overflowing item inside an
+     `overflow:hidden` body, the excess split evenly off BOTH ends. The top rail had 15px
+     of clearance and the bottom rail had the whole move browser under it, which is the
+     entire reason he saw one bar leave and not the other.
+
+       t≈  0ms  stage h=541  opp rail  15..19  visible
+       t≈900ms  stage h=596  opp rail -12..-8  clipped off the top
+
+     `safe` means: when the content does not fit, fall back to START alignment instead of
+     centering. Overflow then leaves by the bottom only, so the top of the stage — where a
+     rail, a portrait and the ☰ Tower button live — can never be the thing that goes. It is
+     a guarantee about every future piece of furniture, not a fix for this one.
+     ⚠ THE BOOTH IS STILL BUDGETED BELOW AND IN THE WRAPPER. `safe` keeps a clipped layout
+     legible; it does not make one correct, and a board that jumps 27px whenever Randy
+     speaks is not correct. Browsers without `safe` (pre-16.4 iOS) simply get today's
+     behavior, which the booth reservation has already made a non-event. */
+  body { display:flex; align-items:safe center; justify-content:center; min-height:100vh; }
   /* ⚑ 520 -> 720 (2026-08-04) — the board takes the room it is given. The wrapper page
      (/games/the-gauntlet/) decides how much that is, sizing its iframe off the VIEWPORT
      HEIGHT so the whole board always fits without scrolling; this is only the ceiling.
@@ -60,7 +81,25 @@
   #replay-bar { display:none; }
   #replay-bar.on { display:flex; }
 
-  .overlay { position:absolute; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  /* ⚠⚠ `justify-content:safe center` (2026-08-14). Nate: "the tower isn't completely
+     visible. The scrolling stops halfway to Floor ten."
+
+     IT WAS NOT THE SCROLLING. Measured on the real tower at a 420x620 frame:
+
+       clientHeight 476   scrollHeight 733   =>  257px of content past the box
+       scrollTop can reach 0 … 257           =>  every scrollable pixel WAS reachable
+       at scrollTop 0, the highest floor on screen is 8. The Vice President
+
+     A centered flex column that overflows pushes its first children out through the START
+     edge, and `scrollTop` cannot go below zero — so floors 9 and 10 were not scrolled past,
+     they were outside the scrollable region altogether. The scrollbar was telling the truth
+     and there was nothing wrong with it, which is why "it stops halfway" is exactly right.
+
+     `safe` falls back to start alignment the moment the content does not fit, so the
+     overflow leaves by the BOTTOM, where scrollTop can follow it. Short overlays (the menu,
+     the boss card, game over) still center exactly as before — `safe` only ever changes the
+     case that was already broken. ⚑ Same one-word fix as `body` above, same reason. */
+  .overlay { position:absolute; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:safe center;
     padding:22px; text-align:center; border-radius:12px; background:radial-gradient(circle at 50% 22%, #241452 0%, #0c0820 82%); overflow-y:auto; }
   .overlay.hidden { display:none; }
   .eyebrow { font-size:11px; letter-spacing:4px; color:#9a7fd4; text-transform:uppercase; margin-bottom:10px; }
@@ -193,15 +232,29 @@
 
   /* ---- #5 COMMENTARY BOOTH (text play-by-play; no audio) ----
      Lives in its own strip BELOW the board, so it never runs across the bottom rank of squares. */
-  .booth { position:relative; display:flex; justify-content:center; align-items:center; min-height:44px; padding:6px 6px 0; pointer-events:none; }
-  .booth.hidden { display:none; }
+  /* ⚑ THE BOOTH KEEPS ITS SLOT (2026-08-14) — see the `safe center` note on body.
+     44 -> 56 and `display:none` -> `visibility:hidden`, both for the same reason: this
+     band is the only thing in #stage whose height changes DURING a match, and every
+     change shoved the board and clipped the top rail. Measured across every commentary
+     line the game can say, at every stage width the wrapper produces, the tallest the
+     card ever gets is 54px (a two-line call at 420-520). 56 is that, rounded up, and the
+     slot is now the same 56 whether the card is one line, two lines, or absent.
+
+     ⚠ RESERVING IT COSTS ESSENTIALLY NOTHING, and that is a measurement too: hideBooth()
+     only runs on the menu / tower / boss screens, so once Randy's first line lands the
+     band is already there for the REST OF THE MATCH. It was never transient — it just
+     arrived late, which is exactly what made it look like the rail was leaving. */
+  .booth { position:relative; display:flex; justify-content:center; align-items:center; min-height:56px; padding:6px 6px 0; pointer-events:none; }
+  .booth.hidden { visibility:hidden; }
   .booth-card { max-width:100%; display:flex; align-items:flex-start; gap:8px; background:rgba(10,7,26,0.92);
     border:1px solid #4a3a86; border-left-width:3px; border-radius:10px; padding:7px 11px; box-shadow:0 6px 18px rgba(0,0,0,0.5);
     opacity:0; transform:translateY(6px); transition:opacity .2s, transform .2s; }
   .booth-card.show { opacity:1; transform:translateY(0); }
   .booth-who { font-size:9px; font-weight:900; letter-spacing:1px; text-transform:uppercase; white-space:nowrap; padding-top:1px; }
   .booth-line { font-size:12px; font-weight:600; color:#f0e6ff; line-height:1.35; }
-  @media (max-width:380px){ .booth-line { font-size:11px; } .booth { min-height:40px; } }
+  /* ⚠ the SLOT stays 56 here on purpose — only the type gets smaller. A phone-only
+     min-height was a second number that could disagree with the frame's budget. */
+  @media (max-width:380px){ .booth-line { font-size:11px; } }
 
   /* ---- boss card: a little intro/bio line for each opponent ---- */
   .boss-bio { font-size:12px; color:#cdbcf2; line-height:1.5; max-width:330px; margin:0 auto 11px; }
@@ -897,10 +950,21 @@ function endGame(result){
     var revMoves = G.uci.join(' '), youWhite = (G.pc === 'w');
     var prof = (window.PJCC && PJCC.getProfile) ? PJCC.getProfile() : null;
     var youName = (prof && prof.codename) || 'You', oppName = G.rung.name;
+    /* ⭐ THE RATING GOES WITH THE NAME (2026-08-14, Nate: "can we put a rating on the game
+       review for each person?"). The floor's advertised elo is the honest number for the
+       champion; yours is the Park Tables Elo, the only real rating a visitor has. Signed
+       out there is none and the review prints nothing — see `rate()` in the review file.
+       ⚠ CAPTURED HERE, NOT IN THE CALLBACK, for the reason the line above already gives:
+       G is reused by the next match, so `G.rung.elo` read on click would report whichever
+       floor you went on to fight rather than the one this review is of. */
+    var oppElo = G.rung.elo, youElo = prof && prof.pjcc_rating;
     var revResult = draw ? '1/2-1/2' : ((playerWon ? youWhite : !youWhite) ? '1-0' : '0-1');
     addBtn(row, '🔍 REVIEW GAME', 'btn-ghost', function(){
       PJCCReview.open(revMoves, { whiteName: youWhite ? youName : oppName,
-                                  blackName: youWhite ? oppName : youName, result: revResult });
+                                  blackName: youWhite ? oppName : youName,
+                                  whiteRating: youWhite ? youElo : oppElo,
+                                  blackRating: youWhite ? oppElo : youElo,
+                                  result: revResult });
     });
   }
   addBtn(row, 'THE LADDER', 'btn-ghost', showLadder);

@@ -104,6 +104,43 @@ check('no hand-typed seat count survives on the front door',
       !/\b(six|seven|eight|6|7|8)\s+regulars are at the tables/i.test(front),
       'a number here would go stale the day a seat is added');
 
+/* ══ ROUTE() STANDS DOWN WHILE YOU ARE SEATED (2026-08-14) ═══════════════════════════════
+   Nate: "Sometimes when I try playing Auston, and I am RESUMING the game, the screen
+   glitches and goes back to the park tables. It takes around the time it takes to refresh
+   the screen while sitting on the park tables screen."
+
+   Traced on the live room at ?table=auston with a half-played save. TWO callers race:
+
+     t=884  route ← safeRoute ← pjcc-profile.js onChange   → botStart → the board is up
+     t=909  route ← safeRoute ← PJCC.ready.then            → repainted the lobby over it
+
+   The onChange listener guards itself on `cur || botCur`. `PJCC.ready.then(safeRoute)` has
+   no guard at all, and route() fell through to lobby() because BOTH bot branches are
+   written `!inRoom` — so being seated made it skip every branch that could keep him seated.
+
+   ⚠ ASSERTED AS SOURCE, NOT BEHAVIOR, ON PURPOSE. The failure is a RACE — which caller
+   wins depends on whether a stored session is restoring — so a browser test would be
+   green most runs and tell nobody anything. The invariant is not timing-dependent:
+   route() decides which room you belong in, and once you are in one there is no decision
+   left to make. Anything that genuinely wants you out calls exitRoom()/leaveRoom() first. */
+{
+  const routeBody = tablesSrc.slice(tablesSrc.indexOf('function route(){'),
+                                    tablesSrc.indexOf('function safeRoute('));
+  check('route() stands down when you are already seated',
+        /if\s*\(\s*inRoom\s*\)\s*return\s*;/.test(routeBody),
+        routeBody ? '' : '(route() not found — did it get renamed?)');
+  /* and the guard must come BEFORE the fallthrough it protects, or it protects nothing */
+  const guardAt = routeBody.search(/if\s*\(\s*inRoom\s*\)\s*return\s*;/);
+  const lobbyAt = routeBody.lastIndexOf('lobby()');
+  check('…and it stands down before route() can reach lobby()',
+        guardAt > -1 && lobbyAt > -1 && guardAt < lobbyAt,
+        'guard@' + guardAt + ' lobby@' + lobbyAt);
+  /* the one caller that USED to rely on the fallthrough to put a player back on their feet */
+  check('a corrupt bot save still leaves the room instead of stranding you on it',
+        /!g\.valid[^\n]*exitRoom\(\)[^\n]*safeRoute\(\)/.test(tablesSrc),
+        'botRender() must exitRoom() before it re-routes');
+}
+
 /* ── report ─────────────────────────────────────────────────────────────────────────── */
 console.log('\n=== THE REGULARS — the front door vs the real bench ===\n');
 let failed = 0;
