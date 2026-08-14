@@ -54,18 +54,40 @@ const PKEY = 'pjcc.gauntlet.v2';
     await page.click('#play-btn'); await sleep(200);
     ok(await visible('ladder-screen'), 'crowned player opens the tower (rematch anyone)');
 
-    // --- Random colors: the announced color is the color actually played ---
-    let mism = 0, sawW = 0, sawB = 0;
+    /* --- Random colors: the announced color is the color actually played ---
+       ⚠ FIGHT NO LONGER STARTS THE MATCH DIRECTLY (2026-08-13). It plays the VS cut-scene
+       and calls startRung() when that resolves, so `G` is null for ~2.6s after the click
+       and reading it at 140ms measures nothing. `skipCut()` dismisses the card the way a
+       player does — a pointerdown on it — which keeps this loop fast AND exercises the skip
+       path on every one of the fourteen iterations. */
+    const skipCut = () => page.evaluate(() => {
+      const c = document.querySelector('.vs-cut');
+      if (c) c.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      return !!c;
+    });
+    let mism = 0, sawW = 0, sawB = 0, sawCut = 0;
     for (let k = 0; k < 14; k++) {
       await seed(MID);
       await page.click('#play-btn'); await sleep(120);          // boss card draws the color
       const announced = /White/.test(await text('boss-note')) ? 'w' : 'b';
       announced === 'w' ? sawW++ : sawB++;
       await page.evaluate(() => { const b = document.querySelector('#boss-row .btn-gold'); b && b.click(); });
+      await sleep(80);
+      if (await skipCut()) sawCut++;
       await sleep(140);
       const pc = await page.evaluate(() => (window.__t.G() || {}).pc);
       if (pc !== announced) mism++;
     }
+    ok(sawCut === 14, 'FIGHT played the VS cut-scene every time (' + sawCut + '/14)');
+    ok(await page.evaluate(() => !document.querySelector('.vs-cut')),
+       'a skipped cut-scene removes itself from the DOM (no parked overlay left behind)');
+    /* ⚠⚠ AND THE SKIP MUST NOT DEAL A SECOND BOARD. Every path out of the cut-scene calls
+       the same `done()` guard, and the failure this locks in is real: a tap that resolves
+       AND a failsafe timer that resolves would run startRung() twice, which in here is a
+       fresh position laid over a game already in progress. One board, one move log. */
+    ok(await page.evaluate(() => ((window.__t.G() || {}).log || []).length === 0 ||
+                                 ((window.__t.G() || {}).uci || []).length <= 1),
+       'the skipped match started exactly once (no double startRung)');
     ok(mism === 0, 'boss-card color note matched the played color every start (mismatches: ' + mism + ')');
     ok(sawW > 0 && sawB > 0, 'colors actually randomise across starts  [W:' + sawW + ' B:' + sawB + ']');
   }, { rewriteAssets: true });   // the Gauntlet loads the REAL chess engine via /assets/*

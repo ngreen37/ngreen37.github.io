@@ -38,6 +38,10 @@ body_class: theme-hall
 
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
+{% comment %} The VS rails (2026-08-13). ⚠ AFTER pjcc-profile.js — PJCCVs.color() reads
+     PJCC.auraColor() and keeps no palette of its own, so document order is the whole
+     dependency. Same rule as face-art-before-creator on /dossier/. {% endcomment %}
+<script src="{{ '/assets/js/pjcc-vs.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-chess.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-pieces.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-openings.js' | relative_url }}"></script>
@@ -680,18 +684,20 @@ body_class: theme-hall
      and a fetched opponent row all arrive here the same way, and none of them can name a
      color the Forge does not offer.
      ⚠ Guarded: with the profile module missing this returns the neutral rather than
-     throwing, and the streak still draws. A missing identity is gray, not an error. */
-  function auraHex(x){
-    try { return (window.PJCC && PJCC.auraColor) ? PJCC.auraColor(x) : '#cdbcf2'; }
-    catch (e) { return '#cdbcf2'; }
-  }
+     throwing, and the streak still draws. A missing identity is gray, not an error.
+
+     ⚑ THE BAR MOVED OUT, 2026-08-13 (Nate: "Let's keep it this way for all chess games").
+     Its markup, its stylesheet and this color lookup now live in assets/js/pjcc-vs.js and
+     _sass/_pjcc-28-vs.scss, because the Gauntlet, the Duel, MARCHLAND and the Pirc
+     Protocol wear the same pair now. These two are thin forwarders so the eight call sites
+     below read exactly as they did — and, more to the point, so this room can never end up
+     with its own private copy of a bar four other rooms also draw. `PJCCVs.color()` carries
+     the identical guard: no profile module = the neutral, never a throw and never gold. */
+  function auraHex(x){ return PJCCVs.color(x); }
   /* `dir` is 1 for the top bar (left → right) and -1 for the bottom (right → left).
      The direction is a CSS custom property rather than two rules, so the pair can never
      end up running the same way — which is the one thing that would kill the effect. */
-  function auraBar(color, dir, id){
-    return '<div class="pt-aura" aria-hidden="true"' + (id ? ' id="' + id + '"' : '') +
-           ' style="--aura:' + color + ';--dir:' + dir + '"><i></i></div>';
-  }
+  function auraBar(color, dir, id){ return PJCCVs.bar(color, dir, id); }
 
   /* ── AN OPPONENT'S COLOR, ON A LIVE TABLE ────────────────────────────────────────
      A match row carries the opponent's NAME but not their look, so their aura takes one
@@ -733,11 +739,7 @@ body_class: theme-hall
       })
       .catch(function () { auraByName[name] = '#cdbcf2'; });
   }
-  function applyOppAura(hex){
-    if (!hex) return;
-    var el = document.getElementById('pt-aura-opp');
-    if (el) el.style.setProperty('--aura', hex);
-  }
+  function applyOppAura(hex){ if (hex) PJCCVs.paint('pt-aura-opp', hex); }
 
   function botDial(b){
     var E = window.PJCCGauntletEngine;
@@ -1906,72 +1908,23 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
 /* the live opening name (📖 Ruy Lopez…) — quiet, sits under the turn line */
 .pt-open { color: #b9c0cb; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.02em; margin: -4px 0 10px; }
 
-/* ── THE VS STREAKS (2026-08-13) ───────────────────────────────────────────────────
-   Nate: "put up a red and blue streak to make the game an event, like how pokemon does…
-   One user's Aura color up top on a horizontal streak that moves from left to right, and
-   the other user's aura color on bottom that moves from right to left."
-
-   THE TRACK IS STATIC, THE STREAK MOVES. `.pt-aura` is a dim rail always in the player's
-   color, so the identity reads even at the instant the highlight is off-screen; `i` is the
-   bright pass sweeping along it. Without the rail the bar would blink out of existence
-   between passes, which looks like a bug rather than a heartbeat.
-
-   ⚠ TRANSFORM AND OPACITY ONLY — the site's standing animation rule. The sweep is a
-   translateX on a single element per bar (two per board), so the GPU cost is two thin
-   strips and nothing recalculates layout. `left`/`background-position` would both have
-   repainted the rail on every frame for the same picture.
-   ⚠ `--dir` FLIPS THE PAIR. One keyframe set, scaled by -1 for the bottom bar, so the two
-   can never be authored into running the same way — which is the single thing that would
-   kill the effect he is describing.
-   ⚠ 9s, NOT 2s. This frames a game of chess that may last twenty minutes; a fast sweep
-   two inches from the board is a metronome beside the thing you are trying to think at.
-   The same argument that took the lightning from 9-26s out to 24-64s.
+/* ── THE VS STREAKS — the bar itself now lives in _sass/_pjcc-28-vs.scss ───────────────
+   Moved out 2026-08-13, the same day it shipped, when Nate asked for it in every chess
+   game. Four rooms drawing a hand-copied bar is precisely how the Gauntlet door ended up
+   with four versions of itself. What stays HERE is only what is true of THIS ROOM:
 
    ⚠⚠ THE HEIGHT IS A BUDGET, NOT A TASTE. `--pt-board` is
    `min(860px, max(420px, 100vh - 300px))` — the board is capped by HEIGHT, and that 300 is
    an allowance for the furniture above and below it. Two bars plus their margins spend
-   from the same allowance, so every pixel here comes off the board on a laptop.
-
-   8px was PICKED FROM A LABELLED RENDER of 5 / 7 / 9 / 12: 5 reads as a hairline and
-   nothing about it says "event", 12 reads as a progress bar and starts competing with the
-   board. 8 with a 3px margin costs 22px for the pair — and the board formula is deliberately
-   LEFT ALONE rather than widened to 322, because he asked for a bigger board once already
-   and shrinking it to make room for decoration would be taking that back. 22px of extra
-   page scroll on a mid-height window is the cheaper side of that trade.
-   ⭐ AND ON A SHORT VIEWPORT THE BARS GIVE WAY, not the board — see the max-height query
-   below. Where there is no room to spend, the decoration is what yields. */
-.pt-aura {
-  position: relative; height: 8px; margin: 0 0 3px;
-  border-radius: 999px; overflow: hidden;
-  background: color-mix(in srgb, var(--aura, #cdbcf2) 30%, transparent);
-}
-.pt-aura + .pt-plate { margin-top: 0; }
-.pt-plate--me + .pt-aura { margin: 3px 0 0; }
+   from the same allowance, so every pixel of bar comes off the board on a laptop. The board
+   formula is deliberately LEFT ALONE rather than widened to 322, because he asked for a
+   bigger board once already and shrinking it to make room for decoration would be taking
+   that back. ⭐ ON A SHORT VIEWPORT THE BARS GIVE WAY, not the board — the shared partial's
+   own max-height query halves them, and these margins follow it down. */
+.vs-aura + .pt-plate { margin-top: 0; }
+.pt-plate--me + .vs-aura { margin: 3px 0 0; }
 @media (max-height: 780px) {
-  .pt-aura { height: 4px; margin: 0 0 2px; }
-  .pt-plate--me + .pt-aura { margin: 2px 0 0; }
-}
-.pt-aura i {
-  position: absolute; inset: 0 auto 0 0; width: 45%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, transparent, var(--aura, #cdbcf2) 45%,
-                              color-mix(in srgb, var(--aura, #cdbcf2) 75%, #fff) 55%, transparent);
-  box-shadow: 0 0 20px 1px color-mix(in srgb, var(--aura, #cdbcf2) 55%, transparent);
-  will-change: transform;
-  animation: pt-aura-run 9s linear infinite;
-  animation-direction: var(--dir-name, normal);
-}
-/* the bottom bar runs the other way: same keyframes, reversed */
-.pt-aura[style*="--dir:-1"] i { animation-direction: reverse; }
-@keyframes pt-aura-run {
-  from { transform: translateX(-110%); }
-  to   { transform: translateX(340%); }
-}
-/* ⚠ The rail stays. Reduced motion means "stop moving", not "lose the player's color" —
-   the identity is the point of the bar and the sweep is only how it says so. */
-@media (prefers-reduced-motion: reduce) {
-  .pt-aura i { animation: none; transform: translateX(0); width: 100%;
-               background: linear-gradient(90deg, var(--aura, #cdbcf2), transparent); box-shadow: none; }
+  .pt-plate--me + .vs-aura { margin: 2px 0 0; }
 }
 
 /* ── AUSTON SAYS SOMETHING (2026-08-13) ────────────────────────────────────────────

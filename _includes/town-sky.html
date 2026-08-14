@@ -152,6 +152,16 @@
 
   {%- comment -%} 2 · the orb: one element, four looks. The day sun grows rays; the night
        moon gets a crater shadow. Sits ABOVE the stars, always. {%- endcomment -%}
+  {%- comment -%} ⚑ THE CORONA (2026-08-13, Nate: "the partial and full eclipse look great
+       but can we make it more showy? More prominent?"). It sits immediately BEFORE the orb
+       so it paints behind it at the same z-index — the black disc has to be the front-most
+       thing in the picture or there is no eclipse, only a bright smudge.
+       Two pseudo-elements do the work: ::before is the streamers (a ragged conic gradient
+       masked to a ring, turning once every three minutes), ::after is the DIAMOND RING —
+       the bead of raw photosphere at second and third contact, which is the one frame of an
+       eclipse everybody has seen. Both are `display:none` for the other 29 days of the
+       lunation, so this costs the sky nothing at all until the day it happens. {%- endcomment -%}
+  <i class="ts-ecl-corona" aria-hidden="true"></i>
   <i class="ts-orb"></i>
 
   {%- comment -%} 3 · shooting stars. Night only, and the one thing allowed in FRONT of the
@@ -183,6 +193,9 @@
     <b class="ts-shoot ts-shoot--s4 ts-shoot--sh"></b>
     <b class="ts-shoot ts-shoot--s5 ts-shoot--sh"></b>
     <b class="ts-shoot ts-shoot--s6 ts-shoot--sh"></b>
+    <b class="ts-shoot ts-shoot--s7 ts-shoot--sh"></b>
+    {%- comment -%} the bolide: one big slow orange one, roughly once a minute {%- endcomment -%}
+    <b class="ts-shoot ts-shoot--fb ts-shoot--sh"></b>
   </div>
 
   {%- comment -%} ⚑ THE AURORA (2026-08-13, "1% northern lights"). One night in a hundred.
@@ -193,13 +206,41 @@
        effectively 0.00. Painted AREA is the cost, not the element count — so an aurora
        drawn the obvious way (a full-bleed blurred gradient) would be the most expensive
        thing in the sky by a wide margin.
-       So: three tall bands in the upper sky only, no `filter`, no `mask`. The shimmer is
+       So: an arc and its rays in the upper sky only, no `filter`, no `mask`. The shimmer is
        transform + opacity, which the compositor owns; the soft edges are gradient stops,
-       which are painted once into the layer and then never repainted. {%- endcomment -%}
+       which are painted once into the layer and then never repainted.
+
+       ⚑ REBUILT 2026-08-13 (Nate: "they are a bit too vertical and you can't really tell
+       what's going on"). The first version was three tall rectangles with razor-straight
+       left and right edges, which is what he was looking at: not an aurora, three
+       translucent columns. What makes a real one READ is a curved ARC low in the display
+       with RAYS standing up out of it, and every edge soft — so that is what this is now.
+       The arc is one element; the rays are seven, each fanned a few degrees off vertical
+       about its own foot and each brightening in turn left-to-right, which is the traveling
+       wave your eye actually recognizes. Geometry is per-element custom properties so the
+       rules stay one block: --x/--w left+width, --h/--foot the height and where it stands,
+       --lean the fan, --t/--d the cycle. {%- endcomment -%}
   <div class="ts-aurora" aria-hidden="true">
-    <i class="ts-aur ts-aur--1"></i>
-    <i class="ts-aur ts-aur--2"></i>
-    <i class="ts-aur ts-aur--3"></i>
+    {%- comment -%} the base glow — a wide flat lens under the feet, soft on every side.
+         It is what makes the row of rays read as ONE curtain standing on something. {%- endcomment -%}
+    <i class="ts-aur-arc"></i>
+    {%- comment -%} thirteen rays. The ARC is in this table, not in a shape: `--foot` rises
+         toward the middle and `--h` grows with it, so the feet trace a shallow curve and the
+         crown of the curtain is tallest at its center — which is what a real arc does. The
+         `--d` delays step steadily left to right so the brightening TRAVELS along it. {%- endcomment -%}
+    <i class="ts-aur" style="--x:-4%; --w:15%; --h:25%; --foot:47%; --lean:-14deg; --a:0.5; --t:23s; --d:-2s"></i>
+    <i class="ts-aur" style="--x:5%; --w:11%; --h:33%; --foot:55%; --lean:-11deg; --a:0.9; --t:31s; --d:-5s"></i>
+    <i class="ts-aur" style="--x:12%; --w:16%; --h:30%; --foot:49%; --lean:-9deg; --a:0.32; --t:19s; --d:-8s"></i>
+    <i class="ts-aur" style="--x:21%; --w:10%; --h:36%; --foot:57%; --lean:-7deg; --a:1; --t:29s; --d:-11s"></i>
+    <i class="ts-aur" style="--x:27%; --w:14%; --h:32%; --foot:52%; --lean:-5deg; --a:0.4; --t:37s; --d:-14s"></i>
+    <i class="ts-aur" style="--x:35%; --w:9%; --h:40%; --foot:59%; --lean:-3deg; --a:0.95; --t:17s; --d:-17s"></i>
+    <i class="ts-aur" style="--x:41%; --w:15%; --h:31%; --foot:54%; --lean:-1deg; --a:0.28; --t:26s; --d:-20s"></i>
+    <i class="ts-aur" style="--x:50%; --w:11%; --h:39%; --foot:60%; --lean:1deg; --a:0.85; --t:34s; --d:-23s"></i>
+    <i class="ts-aur" style="--x:56%; --w:16%; --h:33%; --foot:53%; --lean:3deg; --a:0.34; --t:21s; --d:-26s"></i>
+    <i class="ts-aur" style="--x:65%; --w:10%; --h:37%; --foot:58%; --lean:6deg; --a:1; --t:28s; --d:-29s"></i>
+    <i class="ts-aur" style="--x:71%; --w:14%; --h:29%; --foot:50%; --lean:9deg; --a:0.36; --t:39s; --d:-32s"></i>
+    <i class="ts-aur" style="--x:80%; --w:10%; --h:33%; --foot:56%; --lean:12deg; --a:0.85; --t:24s; --d:-35s"></i>
+    <i class="ts-aur" style="--x:87%; --w:15%; --h:26%; --foot:48%; --lean:15deg; --a:0.45; --t:33s; --d:-38s"></i>
   </div>
 
   {%- comment -%} 3b · THE SEASON (2026-07-15 Nate: "a set P&JCC calendar … subtle things

@@ -176,6 +176,27 @@ for (const f of FOES) {
      (m ? '' : ' (no Park Tables entry found)'));
 }
 
+/* ── ⚑ THE VS RAIL'S COLORS (2026-08-13) ──────────────────────────────────────────────
+   The duel's top rail is painted from `foe.aura` in duel-traps.json. Four of these five
+   are Park Tables regulars who ALREADY have an aura in `BOTS`, so this file is now the
+   FIFTH place on the site that names one of those colors — and the regulars gate exists
+   because a hand-typed copy of the bench has produced a wrong answer here before.
+   So: every aura must be a real key in `PJCC.AURAS`, and where a foe is also a bot, the
+   two keys must agree. The Swordmaster is duel-only and has no bot to agree with. */
+const AURA_SRC = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-profile.js'), 'utf8');
+const AURA_KEYS = (AURA_SRC.match(/var AURA_ORDER = \[([^\]]*)\]/) || [, ''])[1]
+  .split(',').map((s) => s.trim().replace(/^'|'$/g, '')).filter(Boolean);
+ok(AURA_KEYS.length === 12, 'read ' + AURA_KEYS.length + ' aura keys out of pjcc-profile.js');
+for (const f of FOES) {
+  ok(f.aura && AURA_KEYS.indexOf(f.aura) >= 0,
+     f.name + "'s aura `" + f.aura + '` is a real key in PJCC.AURAS');
+  const m = PARK.match(new RegExp(f.id + ":\\s*\\{[^}]*aura:\\s*'([a-z]+)'"));
+  if (m) ok(m[1] === f.aura, f.name + ' wears ' + f.aura + ' here and at the Park Tables');
+}
+/* and the room actually reads it, rather than a hex somebody pasted in */
+ok(/PJCCVs\.paint\('du-aura-opp', PJCCVs\.color\(foe\.aura\)\)/.test(SRC),
+   'the duel paints its rival rail from foe.aura, not from a literal');
+
 console.log('\n' + (FAIL === 0
   ? 'RESULT: PASS (' + PASS + ' checks)\n'
   : 'RESULT: FAIL (' + FAIL + '/' + (PASS + FAIL) + ')\n  ' + fails.join('\n  ') + '\n'));

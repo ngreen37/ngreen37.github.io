@@ -1,0 +1,16 @@
+---
+# Jekyll compiles this to /assets/css/vs-aura.css.
+#
+# THE VS LAYER, for the standalone game shells (2026-08-13, Nate: "Let's keep it this way
+# for all chess games, and then let's add the cut-scene to JUST the gauntlet for now").
+#
+# assets/games/*.html are plain HTML pages outside the Jekyll layouts — they don't load the
+# site stylesheet — so without this they would each need their own hand-copied aura bar.
+# Same file, same reason, same twelve lines of nothing as gauntlet-door.scss beside it: it
+# pulls the SAME partial the site's style.scss pulls, so there is one VS layer and one place
+# to change it.
+#
+# Deliberately does NOT import _pjcc-01-core: the game shells define their own base. The
+# partial's only dependency is `color-mix`, which is plain CSS.
+---
+@import "pjcc-28-vs";

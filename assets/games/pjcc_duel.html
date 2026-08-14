@@ -40,6 +40,14 @@
 <!-- THE REFEREE. Every move below is played through the site's perft-verified referee, so
      the board can never show a position the rules would not allow. -->
 <script src="/assets/js/pjcc-chess.js"></script>
+<!-- THE VS RAILS (2026-08-13, Nate: "Let's keep it this way for all chess games"). ⚠ ORDER:
+     config → profile → vs. PJCCVs.color() reads PJCC.auraColor() and keeps no palette of
+     its own, and pjcc-profile.js no-ops harmlessly when the site is not configured — so a
+     signed-out duel gets the neutral rail rather than an error. -->
+<script src="/assets/js/pjcc-config.js"></script>
+<script src="/assets/js/pjcc-profile.js"></script>
+<script src="/assets/js/pjcc-vs.js"></script>
+<link rel="stylesheet" href="/assets/css/vs-aura.css">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -188,7 +196,10 @@
       <span class="pips" id="d-pthem"></span>
       <span class="who them" id="d-them" style="color:var(--theirs)"></span>
     </div>
+    <!-- the VS rails: your opponent's color over the board, yours under it (2026-08-13) -->
+    <div class="vs-aura" id="du-aura-opp" aria-hidden="true" style="--dir:1"><i></i></div>
     <div class="boardwrap"><div class="sqs" id="sqs"></div><div class="men" id="men"></div></div>
+    <div class="vs-aura" id="du-aura-me" aria-hidden="true" style="--dir:-1"><i></i></div>
     <div class="talk">
       <div class="say" id="say"></div>
       <div class="picks" id="picks"></div>
@@ -374,6 +385,12 @@ var TRAPS = [], FOES = [];
   function startDuel(foe) {
     duel = { foe: foe, me: 0, them: 0, turn: 'them', learned: [] };
     show('s-duel');
+    /* THE VS RAILS. ⚠ `foe.aura` is a KEY out of duel-traps.json, not a hex — the four
+       foes who are also Park Tables regulars carry the SAME key their bot does, and
+       tests/duel.check.js fails the build if that ever stops being true. A fifth copy of
+       the bench's colors is exactly the trap the regulars gate was written for. */
+    PJCCVs.paint('du-aura-opp', PJCCVs.color(foe.aura));
+    PJCCVs.paint('du-aura-me', PJCCVs.color((window.PJCC && PJCC.getProfile) ? PJCC.getProfile() : null));
     $('d-name').textContent = 'vs';
     $('d-them').textContent = foe.name;
     pips(); reset(); note.textContent = '';

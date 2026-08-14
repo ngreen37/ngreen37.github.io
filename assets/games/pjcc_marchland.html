@@ -13,6 +13,12 @@
      dice decide WHO SHOWS UP; from the first move onward the rules are the rules.
      [[accuracy-above-all]] — a game that lies about chess is worse than no game. -->
 <script src="/assets/js/pjcc-chess.js"></script>
+<!-- THE VS RAILS (2026-08-13). ⚠ ORDER: config → profile → vs; PJCCVs.color() reads
+     PJCC.auraColor() and keeps no palette of its own. -->
+<script src="/assets/js/pjcc-config.js"></script>
+<script src="/assets/js/pjcc-profile.js"></script>
+<script src="/assets/js/pjcc-vs.js"></script>
+<link rel="stylesheet" href="/assets/css/vs-aura.css">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -269,10 +275,17 @@
       <span class="clock" id="clock">20.0<span class="vs">vs</span>15.0</span>
       <span class="mat" id="mat"></span>
     </div>
+    <!-- THE VS RAILS (2026-08-13). ⚠ THE RIVAL HERE HAS NO NAME AND NO AURA — MARCHLAND is
+         a war against an army, not a person — so the top rail takes the room's OWN `--theirs`,
+         the color the map, the tallies and the verdict already use for the other side. The
+         bottom rail is your aura, same as every other room. Borrowing an operative color for
+         a nameless rival would have invented an identity the game does not have. -->
+    <div class="vs-aura" id="mc-aura-opp" aria-hidden="true" style="--aura:#ff6e8a;--dir:1"><i></i></div>
     <div class="board" id="board">
       <div class="sqs" id="sqs"></div>
       <div class="men" id="men"></div>
     </div>
+    <div class="vs-aura" id="mc-aura-me" aria-hidden="true" style="--dir:-1"><i></i></div>
     <p class="say" id="say">&nbsp;</p>
     <button class="btn ghost" id="resign">Withdraw</button>
   </section>
@@ -861,6 +874,7 @@ function startBattle() {
     tLast: Date.now()
   };
   show('screen-battle');
+  PJCCVs.paint('mc-aura-me', PJCCVs.color((window.PJCC && PJCC.getProfile) ? PJCC.getProfile() : null));
   paint();
   $('say').innerHTML = p.playerAttacks
     ? 'You attack. <b>' + CLOCK_ATT + ' seconds to force it.</b>'

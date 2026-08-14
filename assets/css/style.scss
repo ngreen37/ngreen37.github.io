@@ -54,6 +54,11 @@
 @import 'pjcc-24-desk-lamp';
 @import 'pjcc-25-front-door';
 @import 'pjcc-26-hidden-board';
-/* ⚠ 27 MUST STAY LAST. It raises phone tap targets on controls styled in 01/13/19, and it
-   only wins because it is written after them. See the header of the partial. */
+/* ⚠ 27 MUST STAY LAST OF THE CHROME PARTIALS. It raises phone tap targets on controls
+   styled in 01/13/19, and it only wins because it is written after them. See the header
+   of the partial. */
 @import 'pjcc-27-tap-targets';
+/* 28 sits after 27 and that is not a violation of the rule above: 27's job is to beat
+   01/13/19, and this partial declares no control sizing at all — two decorative rails and
+   an overlay that lives for 2.6 seconds. It is last because it is newest. */
+@import 'pjcc-28-vs';

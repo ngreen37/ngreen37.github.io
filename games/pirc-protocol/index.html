@@ -23,8 +23,10 @@ permalink: /games/pirc-protocol/
    handed 560. The clipping bug is fixed inside the game — every screen scrolls now — but
    a frame this short would still have meant scrolling before you could see a single
    button. Taller frame, and the PAGE scrolls, which is what a page is supposed to do. */
-.pirc-frame iframe { height: 820px; }
-@media (max-width: 640px) { .pirc-frame iframe { height: 760px; } }
+/* +24px on 2026-08-13 for the VS rails: two 8px bars and their margins sit above and
+   below the board inside the frame, and `body` in there is `overflow:hidden`. */
+.pirc-frame iframe { height: 844px; }
+@media (max-width: 640px) { .pirc-frame iframe { height: 784px; } }
 
 /* ⭐ AND WIDER ON A PHONE, WHICH BUYS BACK HEIGHT. The arcade cabinet's 14px bezel plus
    the page wrapper left the frame 306px wide inside a 390px phone — narrow enough that

@@ -11,6 +11,11 @@
 <script src="/assets/js/pjcc-game-sky.js"></script>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
+<!-- THE VS LAYER (2026-08-13): the aura rails above and below the board, and this room's
+     own two-and-a-half-second cut-scene. ⚠ AFTER pjcc-profile.js — PJCCVs.color() reads
+     PJCC.auraColor() and keeps no palette of its own, so document order IS the dependency
+     (the same rule the town sky's clock-before-sky pair is checked for). -->
+<script src="/assets/js/pjcc-vs.js"></script>
 <script src="/assets/js/pjcc-pieces.js"></script>
 <script src="/assets/js/pjcc-chess.js"></script>
 <script src="/assets/js/pjcc-chess-ai.js"></script>
@@ -24,6 +29,9 @@
 <!-- the ONE Gauntlet door (2026-07-27) — the same _sass partial the games hall compiles,
      served standalone so this shell can wear it. See assets/css/gauntlet-door.scss. -->
 <link rel="stylesheet" href="/assets/css/gauntlet-door.css">
+<!-- the VS rails + the cut-scene, from the same _sass partial the site compiles — see
+     assets/css/vs-aura.scss, which exists for exactly the reason the door sheet above does. -->
+<link rel="stylesheet" href="/assets/css/vs-aura.css">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body { user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color:transparent; }
@@ -35,6 +43,12 @@
      ⚠ Raising this alone would just have made a blurry board bigger — see fitCanvas(). */
   #stage { position:relative; width:100%; max-width:720px; }
   #board-wrap { position:relative; width:100%; }
+  /* the VS rails: everything about the bar itself is in /assets/css/vs-aura.css. This room
+     only says where it sits and when it is not there. ⚠ Every element in this shell brings
+     its own `.hidden` rule (there is no global one) — see .overlay.hidden, .opp.hidden. */
+  .vs-aura { margin:0 0 4px; }
+  #g-aura-me { margin:5px 0 0; }
+  .vs-aura.hidden { display:none; }
   #cv { display:block; width:100%; border:3px solid #F5C518; border-radius:12px; background:#160c33; box-shadow:0 0 40px rgba(245,197,24,0.18); }
   .float-btn { position:absolute; z-index:6; font-weight:bold; border:none; border-radius:999px; cursor:pointer;
     font-family:inherit; box-shadow:0 3px 0 rgba(0,0,0,0.35); transition:transform .08s; }
@@ -222,6 +236,15 @@
 </head>
 <body>
 <div id="stage">
+  <!-- THE VS RAILS (2026-08-13, Nate: "Let's keep it this way for all chess games").
+       The challenger's color runs left-to-right above the board, yours runs right-to-left
+       below it, so the board sits between two people heading at each other.
+       ⚠ THE CHALLENGER'S RAIL USES `rung.accent`, NOT AN AURA KEY. Every floor already
+       owns a color — the door, the portrait ring and the pips are all painted with it —
+       so borrowing the operative palette here would have given the CEO a second identity.
+       The bar takes a raw hex, which is what makes that free.
+       ⚠ Hidden until a match: on the tower screen there is nobody to be a color OF. -->
+  <div class="vs-aura hidden" id="g-aura-opp" aria-hidden="true" style="--aura:#cdbcf2;--dir:1"><i></i></div>
   <div id="board-wrap">
     <canvas id="cv" width="440" height="500"></canvas>
     <button class="float-btn hidden" id="menu-btn">☰ Tower</button>
@@ -233,6 +256,8 @@
       <div class="opp-bubble" id="opp-bubble"></div>
     </div>
   </div>
+
+  <div class="vs-aura hidden" id="g-aura-me" aria-hidden="true" style="--aura:#cdbcf2;--dir:-1"><i></i></div>
 
   <!-- the move browser sits OUTSIDE #board-wrap on purpose: ☰ tower and ⚑ resign are
        absolutely positioned against that wrapper, and a taller wrapper drops them on top
@@ -976,9 +1001,41 @@ function showBossCard(idx){
     (clockMsFor(idx) > 0 ? ' · ⏱ ' + fmtClock(clockMsFor(idx)) + ' on your clock — your rival takes none' : '');
   note.style.color = youW ? '#efe7cf' : '#8fe3ff';
   var row = document.getElementById('boss-row'); row.innerHTML = '';
-  addBtn(row, beaten ? 'REMATCH ▸' : 'FIGHT ▸', 'btn-gold', function(){ startRung(idx, pc); });
+  addBtn(row, beaten ? 'REMATCH ▸' : 'FIGHT ▸', 'btn-gold', function(){ beginRung(idx, pc); });
   addBtn(row, '◂ Tower', 'btn-ghost', showLadder);
   document.getElementById('boss-screen').classList.remove('hidden');
+}
+
+/* ══ #4c — THE CUT-SCENE, BETWEEN THE CARD AND THE BOARD (2026-08-13) ═══════════════════
+   Nate: "let's add the cut-scene to JUST the gauntlet for now. It should be like a 2 or 3
+   second animation japanese style that says This user vs... This opponent, you know?"
+
+   ⭐ IT GOES BETWEEN, NOT OVER. `startRung` is what deals the pieces, boots Stockfish and
+   starts your clock; playing the card first and calling it in the resolve means the board
+   does not exist yet while the announcement is on screen. A cut-scene laid OVER a live
+   board would be running a clock nobody can see — and on floors 5+ this game has a clock.
+
+   ⚠ THE COLORS ARE THE TWO IDENTITIES THIS ROOM ALREADY HAS. The challenger's is
+   `rung.accent`, the same hex as their door, their portrait ring and their rail. Yours is
+   your aura through PJCCVs.color(), which returns the neutral rather than throwing when
+   you are signed out — a stranger gets the whole cut-scene in gray, not an error.
+
+   ⚠ `hideOverlays()` FIRST, or the boss card sits under a translucent-edged card for the
+   whole 2.6 seconds and the wipe-out reveals it again, which reads as the animation having
+   failed. All of this is safe to double-fire: PJCCVs.cut resolves exactly once. */
+function beginRung(idx, pc){
+  var rung = LADDER[idx];
+  hideOverlays();
+  var prof = (window.PJCC && PJCC.getProfile) ? PJCC.getProfile() : null;
+  var me   = (prof && prof.codename) ? prof.codename : 'You';
+  PJCCVs.cut(document.getElementById('stage'), {
+    opp: { name: rung.name, color: rung.accent, glyph: rung.glyph,
+           sub: (idx < VISIBLE ? 'Floor ' + (idx + 1) : 'Secret Floor ' + (idx - VISIBLE + 1)) +
+                ' · Rated ' + rung.elo },
+    you: { name: me, color: PJCCVs.color(prof),
+           glyph: (window.PJCC && PJCC.avatarEmoji) ? PJCC.avatarEmoji(prof) : '♟',
+           sub: pc === 'w' ? 'Playing White' : 'Playing Black' }
+  }).then(function(){ startRung(idx, pc); });
 }
 
 // #5 — the commentary booth (Randy = play-by-play, Chipper = color, Pittsy = the story). Text only.
@@ -1076,7 +1133,25 @@ function reactOpp(kind){
   var lines=G.rung.react[kind]; if(!lines || !lines.length) return;
   showBubble(lines[(Math.random()*lines.length)|0], MOODS[kind]);
 }
+/* ── THE VS RAILS (2026-08-13) ───────────────────────────────────────────────────────
+   Called from the two places a board can appear — a fresh match and a restored save —
+   because a rail that only knows about `startRung` is a rail that is missing every time
+   somebody refreshes mid-game, which is the one case the mid-game save exists for. */
+function showAuras(rung){
+  var top=document.getElementById('g-aura-opp'), bot=document.getElementById('g-aura-me');
+  if(!top||!bot) return;
+  var prof=(window.PJCC && PJCC.getProfile) ? PJCC.getProfile() : null;
+  PJCCVs.paint(top, rung.accent);          // the floor's own color, not an aura key
+  PJCCVs.paint(bot, PJCCVs.color(prof));   // yours, or the neutral when signed out
+  top.classList.remove('hidden'); bot.classList.remove('hidden');
+}
+function hideAuras(){
+  ['g-aura-opp','g-aura-me'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.classList.add('hidden');
+  });
+}
 function setupPortrait(rung, idx){
+  showAuras(rung);
   var opp=document.getElementById('opp'); if(!opp) return;
   document.getElementById('opp-glyph').textContent=rung.glyph;
   document.getElementById('opp-name').textContent=rung.name;
@@ -1087,6 +1162,7 @@ function setupPortrait(rung, idx){
   opp.classList.remove('hidden');
 }
 function hidePortrait(){ var opp=document.getElementById('opp'); if(opp) opp.classList.add('hidden');
+  hideAuras();
   clearTimeout(bubbleTimer); clearTimeout(moodTimer); }
 // Judge the player's last move by net material over the full round (their move + the
 // reply) — this nets out ordinary trades and only fires on a real swing.

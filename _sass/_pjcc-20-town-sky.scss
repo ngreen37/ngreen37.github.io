@@ -356,18 +356,96 @@ html.eclipse.sky-day .ts-orb::after {
   background: #07060f;
   transform: translateX(calc(var(--ecl-shift, 1) * 100%));
 }
-/* the halo shrinks as the light goes — a bitten sun does not floodlight the sky */
+/* ⚑ THE SUN GROWS INTO IT (2026-08-13, Nate: "can we make it more showy? More prominent?").
+   62px → 90px across the two hours, on the same `--ecl` everything else here rides, so it
+   is one continuous move rather than a switch. ⚠ THE `translate(-50%,-50%)` HAS TO BE
+   REPEATED: it is the orb's own centering, and a `transform` here replaces it wholesale
+   rather than adding to it — drop it and the sun jumps half its own width up and left.
+   And the spokes go as the light does: a bitten sun has no rays to turn. */
 html.eclipse.sky-day .ts-orb {
+  transform: translate(-50%, -50%) scale(calc(1 + var(--ecl, 0) * 0.45));
+  /* the halo shrinks as the light goes — a bitten sun does not floodlight the sky */
   box-shadow: 0 0 calc(44px * (1 - var(--ecl, 0))) calc(14px * (1 - var(--ecl, 0))) rgba(255, 216, 74, 0.30);
 }
-/* TOTALITY: a black disc with the corona around it — the one picture everybody knows. */
+html.eclipse.sky-day .ts-orb::before { opacity: calc(1 - var(--ecl, 0)); }
+/* TOTALITY: a black disc with the corona around it — the one picture everybody knows.
+   ⭐ THE PINK RING IS THE CHROMOSPHERE and it goes UNDER the white one, because that is
+   where it is: a thin layer of hydrogen between the photosphere and the corona, visible
+   for the few minutes it is not outshone. Two rings, 1.5px apart, and the eye reads
+   "photograph" instead of "glowing circle". */
 html.eclipse-total.sky-day .ts-orb {
-  box-shadow: 0 0 0 2px rgba(255, 247, 222, 0.92),
-              0 0 26px 8px rgba(255, 238, 196, 0.55),
-              0 0 90px 34px rgba(255, 222, 165, 0.20);
+  box-shadow: 0 0 0 1px rgba(255, 142, 160, 0.50),
+              0 0 0 2.5px rgba(255, 247, 222, 0.90),
+              0 0 32px 10px rgba(255, 238, 196, 0.52),
+              0 0 110px 42px rgba(255, 222, 165, 0.22);
 }
 /* stars, at two in the afternoon */
 html.eclipse-total .ts-stars { display: block; opacity: calc((var(--ecl, 0) - 0.9) * 5); }
+
+/* ══ THE CORONA AND THE DIAMOND RING (2026-08-13) ═══════════════════════════════════════
+   Nate: "the partial and full eclipse look great but can we make it more showy? More
+   prominent?" Four things were added and all four are the real event, not decoration:
+   the sun GROWS into totality (above), the corona sprouts STREAMERS, the DIAMOND RING
+   flashes at second and third contact, and the horizon lights up all the way round.
+
+   ⭐ THE STREAMERS ARE WHY A CORONA LOOKS LIKE A CORONA. A box-shadow glow is a perfectly
+   round halo, and the real thing never is — it is ragged, pulled out along the sun's
+   magnetic field into spikes of wildly different lengths. `repeating-conic-gradient` with
+   UNEVEN wedge widths gives exactly that for one painted layer, masked to a ring so the
+   middle stays empty for the black disc, and turned once every 180s so it lives without
+   ever being caught moving.
+
+   ⭐⭐ THE DIAMOND RING IS DERIVED, NOT TIMED — the same rule that made this whole feature.
+   `--ecl-shift` already carries WHICH SIDE the moon has not covered yet (it runs positive
+   → negative as the disc crosses right to left), so `50% − shift × 17%` puts the bead on
+   the left limb before totality and on the right limb after it, on its own, for free.
+   Its opacity is two clamped ramps MULTIPLIED — up from cover 0.90, down again by 0.995 —
+   which is a spike with no keyframe, no timer and no JavaScript. It cannot fire at the
+   wrong moment because it does not know what a moment is. */
+.ts-ecl-corona {
+  position: absolute; z-index: 2; display: none;
+  left: var(--orb-x, 50%); top: var(--orb-y, 18%);
+  width: 290px; height: 290px;
+  margin: -145px 0 0 -145px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+html.eclipse.sky-day .ts-ecl-corona { display: block; opacity: calc(var(--ecl, 0) * var(--ecl, 0)); }
+html.eclipse.sky-day .ts-ecl-corona::before {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg,
+    rgba(255, 246, 220, 0.00) 0deg,   rgba(255, 246, 220, 0.30) 9deg,
+    rgba(255, 246, 220, 0.00) 24deg,  rgba(255, 246, 220, 0.13) 38deg,
+    rgba(255, 246, 220, 0.00) 55deg,  rgba(255, 246, 220, 0.36) 71deg,
+    rgba(255, 246, 220, 0.00) 97deg);
+  /* ⚠ `closest-side`, NOT THE DEFAULT. A radial mask on a square box sizes to farthest-CORNER
+     — 170px on a 240px box — so the outer `transparent` stop landed 30px past the element's
+     own edge and never arrived. The streamers were cut off mid-brightness at the box bounds
+     and drew a hard-edged disc around the sun, which is the one shape a corona never has.
+     Same trap as any mask that assumes % means "of the width". */
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 26%, #000 36%, rgba(0,0,0,0.30) 66%, transparent 99%);
+          mask-image: radial-gradient(circle closest-side, transparent 26%, #000 36%, rgba(0,0,0,0.30) 66%, transparent 99%);
+  animation: ts-sun-rays 180s linear infinite;
+}
+html.eclipse.sky-day .ts-ecl-corona::after {
+  content: ''; position: absolute;
+  left: calc(50% - var(--ecl-shift, 0) * 17%); top: 50%;
+  width: 13px; height: 13px; margin: -6.5px 0 0 -6.5px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fffdf4 0%, #fff0c0 42%, rgba(255, 226, 150, 0) 78%);
+  box-shadow: 0 0 22px 7px rgba(255, 246, 214, 0.85);
+  opacity: calc(clamp(0, (var(--ecl, 0) - 0.90) * 14, 1) * clamp(0, (0.995 - var(--ecl, 0)) * 60, 1));
+}
+/* ⭐ AND THE HORIZON GOES ORANGE ALL THE WAY ROUND. In a real totality you are standing in
+   the moon's shadow with sunlit sky in every direction, so the whole rim of the world looks
+   like sunset at once. It is the detail people describe first, it is one existing element,
+   and it costs a gradient. (0,3,1) beats the plain day horizon at (0,2,1).  */
+html.eclipse.sky-day .ts-horizon {
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(255, 156, 92, calc(var(--ecl, 0) * 0.22)) 62%,
+    rgba(255, 116, 74, calc(var(--ecl, 0) * 0.42)) 100%);
+}
 
 /* THE DOOR — clickable only while it is genuinely dark. Sized to the sun, invisible, and
    pointer-inert the rest of the month so it can never eat a click on the page beneath. */
@@ -417,32 +495,134 @@ html.sky-night .ts-horizon {
    is no animation attached and the container is `display: none`. A rare event is a completely
    different bargain from an ambient layer, and it is the bargain that makes it worth having.
 
-   The color is the real thing: oxygen green (#5ffbc0) low, with a thin nitrogen magenta
-   (#c86bff) at the top edge of the tallest band — the ordering real aurora shows. It sits at
-   z-index 1, BEHIND the moon, because the one thing allowed in front of the moon is a
-   shooting star (Nate's rule, at the top of this file) and the aurora is not that. */
-.ts-aurora { position: absolute; inset: 0 0 auto 0; height: 34%; z-index: 1;
+   The color is the real thing, and the ORDER of it is the real thing too: oxygen green
+   (#6efac8) through the body of the curtain, a nitrogen violet-pink hem along the FOOT
+   (low altitude, which is where that color actually lives), and a thin cold blue at the
+   fading top. It sits at z-index 1, BEHIND the moon, because the one thing allowed in front
+   of the moon is a shooting star (Nate's rule, at the top of this file) and the aurora is
+   not that.
+
+   ══ REBUILT 2026-08-13 — Nate: "they are a bit too vertical and you can't really tell
+   what's going on." Both halves of that sentence were one defect. ═══════════════════════
+   V1 was three tall bands, `top:0; bottom:0`, painted with a 180deg linear-gradient. A
+   linear-gradient has a direction and nothing else, so it could soften the TOP and BOTTOM
+   of a band and had no way to soften the SIDES — every band met the sky at a razor-straight
+   vertical edge, at full height, cut off flat by the top of the viewport. Three translucent
+   columns. He was describing the rendering exactly.
+
+   ⭐ THE FIX IS A DIFFERENT GRADIENT FUNCTION, NOT A DIFFERENT OPACITY. `radial-gradient`
+   with an ELLIPSE falls off in both axes at once, so a ray can be bright at its foot and
+   fade to nothing upward AND sideways from one declaration. Nothing here costs more than
+   V1 did — a gradient is painted into the layer once either way — and the hard edge that
+   was the whole problem cannot be expressed in this shape.
+
+   ⭐ AND WHAT MAKES IT READ AS AN AURORA IS THE ARC. A real display is a curved band low in
+   the sky with rays standing up out of it; the curve is the thing the eye names. `.ts-aur-arc`
+   is the top edge of a very wide, very flat ellipse — a ring stop at 68% of its radius, with
+   the ellipse centerd BELOW the box, so only the crown of it is inside and it bows upward in
+   the middle and drops away at both ends. One element, no filter, no mask.
+
+   The seven rays stand ON that arc: their feet ride the same curve (`--foot` drops at the
+   edges), they fan a few degrees off vertical about their own feet (`--lean`, negative on
+   the left, positive on the right), and their brightening is STAGGERED left to right by the
+   `--d` delays — which is the traveling wave that reads as "this is alive" rather than
+   "three rectangles are pulsing". Every number is a per-element custom property so all of
+   this is one rule.
+
+   ⚠ HEIGHT AND COST. The container is 52% of the viewport (34% before) because a curtain
+   needs room to stand up in, but the rays are SHORT — 25-40% of it each, none full height —
+   so thirteen of them plus the glow measure 0.42 screens at 1400x800 against V1's three
+   full-height bands at 0.30. Forty percent more, on one night in a hundred, against the two
+   cloud banks' 3.30 every single day. Measured, not estimated. */
+.ts-aurora { position: absolute; inset: 0 0 auto 0; height: 52%; z-index: 1;
   display: none; overflow: hidden; pointer-events: none; }
 html.sky-night.aurora-night .ts-aurora { display: block; }
-.ts-aur { position: absolute; top: 0; bottom: 0; display: block;
-  transform-origin: 50% 0;
-  /* the curtain: bright at the foot, gone at the top, soft at both vertical edges */
-  background:
-    linear-gradient(180deg, rgba(200, 107, 255, 0.00) 0%, rgba(200, 107, 255, 0.16) 14%,
-                            rgba(95, 251, 192, 0.30) 46%, rgba(95, 251, 192, 0.10) 78%,
-                            rgba(95, 251, 192, 0.00) 100%); }
-/* three curtains, three widths, three unhurried and coprime cycles so they never re-align */
-html.sky-night.aurora-night .ts-aur--1 { left: 4%;  width: 34%; animation: ts-aur-sway 37s ease-in-out infinite; }
-html.sky-night.aurora-night .ts-aur--2 { left: 33%; width: 28%; animation: ts-aur-sway 53s ease-in-out infinite -13s; }
-html.sky-night.aurora-night .ts-aur--3 { left: 58%; width: 38%; animation: ts-aur-sway 71s ease-in-out infinite -29s; }
+
+/* THE DIFFUSE GLOW — a wide flat LENS, not a ring.
+   ⚠ THE FIRST REBUILD DREW A RING (a radial stop at 68% of a tall ellipse) AND IT LOOKED
+   LIKE A PLANET. A ring's band is (outer stop − inner stop) × the radius, so on an ellipse
+   tall enough to be a shallow curve the band came out ~95px thick and filled everything
+   under the crest — a lit dome with a horizon, which is a different astronomical object.
+   A lens has no inside to fill: one soft ellipse, brightest at its middle, gone by its own
+   edge in every direction. The CURVE now comes from the rays' feet (see the `--foot` column
+   in the markup), which is where a real arc's curve comes from too.
+
+   ⚠⚠ IT SITS INSIDE THE CURTAIN, NOT UNDER IT. Placed below the feet it read as GROUND —
+   a softly lit dome with a rim, i.e. a planet, the same wrong object the ring version drew.
+   Riding the curtain's own band it does the job it is actually for: filling the gaps
+   between rays so the sheet is continuous where no ray happens to stand. */
+.ts-aur-arc {
+  position: absolute; left: -12%; right: -12%; bottom: 56%; height: 24%;
+  background: radial-gradient(ellipse 48% 50% at 50% 78%,
+    rgba(150, 255, 215, 0.15) 0%,
+    rgba(110, 245, 200, 0.08) 44%,
+    rgba(120, 210, 255, 0.03) 72%,
+    rgba(120, 210, 255, 0.00) 92%);
+  animation: ts-aur-arc 47s ease-in-out infinite;
+}
+/* ══ THE RAYS — and the two goes it took to get the SHAPE right ═══════════════════════
+   A curtain ray has PARALLEL SOFT SIDES, a defined foot and a diffuse top. That is three
+   different behaviors on two axes, and it is exactly what a single `radial-gradient`
+   cannot express: a radial stop is one distance function, so softening the sides and
+   softening the top are the same stop, and the result is a LENS — pointed at both ends.
+   Rendered wide it was a row of mushrooms; rendered narrow it was a row of green flames
+   standing on a bar. Same declaration, two different wrong pictures.
+
+   ⭐ SO THE TWO AXES ARE DRAWN BY TWO DIFFERENT THINGS. The color and the vertical fall
+   are a `linear-gradient(180deg)`, which knows about up and down and nothing else. The soft
+   SIDES are a one-axis `mask-image` — parallel, independent of height, and identical at
+   every altitude. `mask-image` is already in this sky (the sun's spokes are masked to a
+   ring, and the moon's terminator IS a mask) and it costs a raster ONCE, at paint: these
+   elements animate transform and opacity only, so the mask is never recomputed.
+
+   ⭐ AND THE RAYS OVERLAP ON PURPOSE. Thirteen tidy non-touching spikes is a crown, not a
+   curtain — the eye counts them. At 9–16% wide with 6–8% spacing each ray's soft flank runs
+   under its neighbor's, so the sheet is continuous and the rays are TEXTURE INSIDE it,
+   which is what you are actually looking at in a photograph. `--a` varies the per-ray
+   ceiling so some are solid and some are ghosts; nothing about the row is regular. */
+.ts-aur {
+  position: absolute; display: block;
+  left: var(--x); width: var(--w);
+  bottom: var(--foot); height: var(--h);
+  transform-origin: 50% 100%;
+  /* ⚠ THE LAST TWO STOPS ARE THE FIX FOR THE HORIZON. With the brightest color ON the
+     100% stop, every ray ended in a hard cut, and thirteen overlapping hard cuts along a
+     curve add up to ONE continuous rim — a lit limb, which the eye reads as a planet no
+     matter what is above it. Feathering the final 6% turns the rim into the bottom of a
+     glow. A real curtain does have a defined lower border; it does not have an edge. */
+  background: linear-gradient(180deg,
+    rgba(140, 215, 255, 0.00) 0%,
+    rgba(140, 215, 255, 0.10) 32%,
+    rgba(96, 242, 192, 0.30) 58%,
+    rgba(124, 252, 206, 0.58) 86%,
+    rgba(186, 136, 255, 0.30) 94%,
+    rgba(186, 136, 255, 0.00) 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 70%, transparent 100%);
+          mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 70%, transparent 100%);
+  animation: ts-aur-sway var(--t, 29s) ease-in-out infinite var(--d, 0s);
+}
+/* ⚠ THE LEAN IS INSIDE THE KEYFRAME, not a separate declaration — a second `transform` on
+   the element would simply be overwritten by the animated one, which is the classic way a
+   per-element rotation silently disappears the moment something animates the same property. */
+/* ⚑ THE SKEW IS THE FOLD. A curtain does not only brighten and stretch, it FOLDS — the
+   sheet leans one way at the top and the other way at the foot as the wave passes. `skewX`
+   is part of the same transform, so it is still one compositor property and costs nothing,
+   and it is the difference between "the panels are pulsing" and "the sheet is moving". */
 @keyframes ts-aur-sway {
-  0%, 100% { transform: translate3d(-3%, 0, 0) scaleX(1);    opacity: 0.42; }
-  30%      { transform: translate3d(2%, 0, 0)  scaleX(1.14); opacity: 0.72; }
-  62%      { transform: translate3d(4%, 0, 0)  scaleX(0.92); opacity: 0.34; }
+  0%, 100% { transform: rotate(var(--lean, 0deg)) translate3d(-2%, 0, 0) skewX(-3deg) scale(1, 0.92);
+             opacity: calc(var(--a, 1) * 0.44); }
+  28%      { transform: rotate(var(--lean, 0deg)) translate3d(1.5%, 0, 0) skewX(2deg) scale(1.1, 1.12);
+             opacity: calc(var(--a, 1) * 1); }
+  61%      { transform: rotate(var(--lean, 0deg)) translate3d(3%, 0, 0) skewX(5deg) scale(0.92, 0.84);
+             opacity: calc(var(--a, 1) * 0.30); }
+}
+@keyframes ts-aur-arc {
+  0%, 100% { transform: translate3d(-1.5%, 0, 0) scaleY(1);    opacity: 0.72; }
+  44%      { transform: translate3d(1.5%, 0, 0)  scaleY(1.08); opacity: 1; }
 }
 /* ⚠ The aurora obeys the SKY VEIL like every other discrete layer — a full-sky page fades it
    out as the hero scrolls away, or it would sit behind body copy as a green splotch, which
-   is the exact bug the veil was written for. It rides the container, because the bands' own
+   is the exact bug the veil was written for. It rides the container, because the rays' own
    opacity is driven by their keyframes and would override an element opacity mid-sway. */
 body.full-sky .ts-aurora { opacity: var(--sky-veil, 1); }
 
@@ -456,27 +636,44 @@ body.full-sky .ts-aurora { opacity: var(--sky-veil, 1); }
    Three of them, on long coprime cycles (29s · 43s · 67s), each visible for barely a
    second of its cycle: the sky is still almost all of the time, and the streaks never
    land in a rhythm you can predict. Transform + opacity only. ─────────────────── */
+/* ⚠⚠ THE TAIL POINTED THE WRONG WAY FOR THIRTEEN MONTHS, AND IT SHIPPED BECAUSE THE ERROR
+   IS ALMOST INVISIBLE ONE STREAK AT A TIME (found 2026-08-13, in a still).
+   The flight is `translate3d(-46vw, 20vw)` — down and to the LEFT, 23.5° below horizontal.
+   The tail was `right: 1px` + `transform-origin: right center` + `rotate(-24deg)`, which
+   swings a leftward 90px bar to... 24° below horizontal, going LEFT. The same direction as
+   the flight. So the bright head sat at the BACK of the streak and the fade reached out
+   IN FRONT of it: a meteor being pulled along by its own tail. It reads as "something is
+   slightly off" and never as "that is backwards", which is why nobody names it.
+   ⭐ THE TAIL IS THE NEGATIVE OF THE TRAVEL VECTOR, ALWAYS. Now the direction and the
+   angle are the same data — `--dx`/`--dy` drive the keyframe and `--ang` is atan2(−dy, −dx)
+   — so a streak can't be authored pointing anywhere but backwards along its own path.
+
+   ⚑ AND THEY ARE BIGGER (2026-08-13, Nate: "I checked and I didn't see much"). A 2px head
+   with a 1px, 90px hairline is a scratch on the glass at arm's length; the frequency was
+   never the problem (measured: a streak in flight 43% of frames). 3px head, a 2px tail of
+   110–300px, and a real glow on the head. */
 html.sky-night .ts-shoot {
   display: block;
-  width: 2px; height: 2px;
+  width: 3px; height: 3px;
   border-radius: 50%;
   background: #fff;
   opacity: 0;
-  /* the tail — drawn behind the head, pointing back up the flight path */
-  box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.95), 0 0 22px 4px rgba(180, 205, 255, 0.35);
 }
 html.sky-night .ts-shoot::after {
   content: '';
   position: absolute;
-  right: 1px; top: 0;
-  width: 90px; height: 1px;
-  transform-origin: right center;
-  transform: rotate(-24deg);
-  background: linear-gradient(270deg, rgba(255, 255, 255, 0.85), rgba(190, 205, 255, 0.25) 45%, transparent 100%);
+  left: 1px; top: 0;
+  width: var(--len, 130px); height: 2px;
+  border-radius: 2px;
+  transform-origin: left center;
+  transform: rotate(var(--ang, -23.5deg));
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.95), rgba(190, 205, 255, 0.40) 42%, transparent 100%);
 }
-html.sky-night .ts-shoot--1 { top: 12%; left: 78%; animation: ts-shoot-fall 29s linear infinite; }
-html.sky-night .ts-shoot--2 { top: 4%;  left: 46%; animation: ts-shoot-fall 43s linear infinite 11s; }
-html.sky-night .ts-shoot--3 { top: 22%; left: 92%; animation: ts-shoot-fall 67s linear infinite 26s; }
+/* the ordinary three keep their slow patrol and their original flight (-46vw, 20vw) */
+html.sky-night .ts-shoot--1 { top: 12%; left: 78%; --len: 140px; animation: ts-shoot-fall 29s linear infinite; }
+html.sky-night .ts-shoot--2 { top: 4%;  left: 46%; --len: 150px; animation: ts-shoot-fall 43s linear infinite 11s; }
+html.sky-night .ts-shoot--3 { top: 22%; left: 92%; --len: 130px; animation: ts-shoot-fall 67s linear infinite 26s; }
 /* ══ THE METEOR SHOWER — three nights in a hundred (2026-08-13) ══════════════════════
    Nate: "ooh let's throw in a meteor show though - 3% chance". The roll is per NIGHT and
    lives in pjcc-time.js (`showerDay`); `html.meteor-night` is set before first paint.
@@ -510,22 +707,52 @@ html.sky-night .ts-shoot--3 { top: 22%; left: 92%; animation: ts-shoot-fall 67s 
    would have shipped: invisible, permanent, six extra composited elements every night
    forever, and a comment above them claiming the opposite. `display: none` first, then the
    shower turns its own six back on at (0,3,1) over the base rule's (0,2,1). */
+/* ⭐ THE SHOWER HAS A RADIANT NOW (2026-08-13). Every streak's flight points away from one
+   spot off the top-right of the sky, which is the single thing that separates a SHOWER from
+   "several shooting stars": in a real one every track runs back to the same point in the
+   constellation the shower is named for. Near the radiant they are short and steep, far
+   from it long and shallow, which falls straight out of the geometry and needs no rule.
+   The ordinary three keep their own unrelated flight underneath — a real shower has
+   sporadics crossing it too, so that is right rather than an oversight.
+   ⚠ EVERY --ang IS atan2(−dy, −dx) OF THE --dx/--dy ON THE SAME LINE. See the note above
+   the tail: those are one fact written twice, and they must not drift apart.
+   ⚠ CYCLE LENGTH IS ALSO SPEED (the streak is 3.6% of whatever cycle it is given), so the
+   long flights carry the long cycles: -14vw travels in 0.5s at 13s, -50vw takes 1.6s at
+   41s. Pair them the other way and half the shower crawls while the other half blinks. */
 html.sky-night .ts-shoot--sh { display: none; }
 html.sky-night.meteor-night .ts-shoot--sh { display: block; }
-html.sky-night.meteor-night .ts-shoot--s1 { top: 6%;  left: 62%; animation: ts-shoot-fall 11s linear infinite; }
-html.sky-night.meteor-night .ts-shoot--s2 { top: 18%; left: 84%; animation: ts-shoot-fall 13s linear infinite 2s; }
-html.sky-night.meteor-night .ts-shoot--s3 { top: 2%;  left: 34%; animation: ts-shoot-fall 17s linear infinite 5s; }
-html.sky-night.meteor-night .ts-shoot--s4 { top: 27%; left: 70%; animation: ts-shoot-fall 19s linear infinite 1s; }
-html.sky-night.meteor-night .ts-shoot--s5 { top: 11%; left: 96%; animation: ts-shoot-fall 23s linear infinite 8s; }
-html.sky-night.meteor-night .ts-shoot--s6 { top: 21%; left: 52%; animation: ts-shoot-fall 31s linear infinite 3s; }
+html.sky-night.meteor-night .ts-shoot--s1 { top: 2%;  left: 84%; --dx: -14vw; --dy: 17vw; --ang: -50.5deg; --len: 110px; animation: ts-shoot-fall 13s linear infinite 2s; }
+html.sky-night.meteor-night .ts-shoot--s2 { top: 4%;  left: 72%; --dx: -30vw; --dy: 12vw; --ang: -21.8deg; --len: 150px; animation: ts-shoot-fall 17s linear infinite 7s; }
+html.sky-night.meteor-night .ts-shoot--s3 { top: 22%; left: 66%; --dx: -35vw; --dy: 26vw; --ang: -36.6deg; --len: 150px; animation: ts-shoot-fall 19s linear infinite 4s; }
+html.sky-night.meteor-night .ts-shoot--s4 { top: 10%; left: 60%; --dx: -38vw; --dy: 13vw; --ang: -18.9deg; --len: 170px; animation: ts-shoot-fall 23s linear infinite 11s; }
+html.sky-night.meteor-night .ts-shoot--s5 { top: 6%;  left: 52%; --dx: -43vw; --dy: 9vw;  --ang: -11.8deg; --len: 175px; animation: ts-shoot-fall 31s linear infinite 6s; }
+html.sky-night.meteor-night .ts-shoot--s6 { top: 16%; left: 46%; --dx: -44vw; --dy: 14vw; --ang: -17.6deg; --len: 180px; animation: ts-shoot-fall 37s linear infinite 15s; }
+html.sky-night.meteor-night .ts-shoot--s7 { top: 12%; left: 30%; --dx: -49vw; --dy: 9vw;  --ang: -10.4deg; --len: 190px; animation: ts-shoot-fall 41s linear infinite 9s; }
+/* ⚑ THE FIREBALL — one in the shower is a bolide: slower, longer, and warm rather than
+   white, because a big one burns orange before it goes. 53s, so it lands roughly once a
+   minute and is never the streak you were expecting. It is still one 3px dot and one
+   gradient bar; "showy" here cost nothing, which is the whole argument for spending it. */
+html.sky-night.meteor-night .ts-shoot--fb {
+  top: 8%; left: 78%; --dx: -42vw; --dy: 36vw; --ang: -40.6deg; --len: 300px;
+  width: 5px; height: 5px;
+  box-shadow: 0 0 16px 4px rgba(255, 244, 214, 0.95), 0 0 40px 10px rgba(255, 186, 96, 0.45);
+  animation: ts-shoot-fall 53s linear infinite 21s;
+}
+html.sky-night.meteor-night .ts-shoot--fb::after {
+  height: 3px;
+  background: linear-gradient(90deg, rgba(255, 250, 232, 0.98), rgba(255, 196, 118, 0.55) 34%,
+                                     rgba(255, 150, 96, 0.20) 68%, transparent 100%);
+}
 
-/* 0 → 4% of the cycle is the streak; the other 96% it's parked, invisible, off-stage. */
+/* 0 → 4% of the cycle is the streak; the other 96% it's parked, invisible, off-stage.
+   ⚑ THE FLIGHT IS `--dx`/`--dy` NOW, defaulting to the original (-46vw, 20vw) so the
+   ordinary three need no vars at all and are pixel-identical to what they always were. */
 @keyframes ts-shoot-fall {
-  0%             { transform: translate3d(0, 0, 0);            opacity: 0; }
+  0%             { transform: translate3d(0, 0, 0);                                  opacity: 0; }
   0.4%           { opacity: 1; }
   3.4%           { opacity: 1; }
-  4%             { transform: translate3d(-46vw, 20vw, 0);     opacity: 0; }
-  100%           { transform: translate3d(-46vw, 20vw, 0);     opacity: 0; }
+  4%             { transform: translate3d(var(--dx, -46vw), var(--dy, 20vw), 0);      opacity: 0; }
+  100%           { transform: translate3d(var(--dx, -46vw), var(--dy, 20vw), 0);      opacity: 0; }
 }
 
 /* ── THE CLOUD DECK — a daily roll, decorrelated from the rain ─────────────────
@@ -898,12 +1125,21 @@ html.reduce-flourish .ts-shoot { display: none !important; }
    ⚠ The sway keyframe starts at translate3d(-3%) scaleX(1), so unlike the cloud banks there
    is nothing to restore by hand — the 0% frame is the resting pose on purpose. A visitor on
    reduced motion still gets their one-in-a-hundred night. */
-html.reduce-flourish .ts-aur { animation: none !important; opacity: 0.5; }
+/* ⚠ THE 0% FRAME NOW CARRIES A `rotate(var(--lean))` AND A `skewX`, so parking the animation
+   would drop BOTH and stand every ray bolt upright — the exact "too vertical" picture this
+   was rebuilt to get rid of. The resting pose is restored by hand, the way the cloud banks
+   above have to be. `--lean` still resolves per element, so the fan survives. */
+html.reduce-flourish .ts-aur,
+html.reduce-flourish .ts-aur-arc { animation: none !important; opacity: 0.55; }
+html.reduce-flourish .ts-aur { transform: rotate(var(--lean, 0deg)) skewX(-2deg); }
+html.reduce-flourish .ts-ecl-corona::before { animation: none !important; }
 @media (prefers-reduced-motion: reduce) {
   .ts-cloud-bank, .ts-cloud-shape, .ts-star--tw, .ts-orb::before { animation: none !important; }
   .ts-cloud-bank { transform: scale(2); }   /* see the note above — half-size layer */
   .ts-shoot { display: none !important; }
-  .ts-aur { animation: none !important; opacity: 0.5; }
+  .ts-aur, .ts-aur-arc { animation: none !important; opacity: 0.55; }
+  .ts-aur { transform: rotate(var(--lean, 0deg)) skewX(-2deg); }
+  .ts-ecl-corona::before { animation: none !important; }
 }
 
 /* ── DEPTH ON SCROLL (2026-07-19, the modernization mission) ───────────────────
@@ -1106,10 +1342,12 @@ body.theme-studio .town-sky { background: #0a0a0c; }
 body.theme-bw .ts-orb,
 body.theme-bw .ts-shoot,
 body.theme-bw .ts-aurora,
+body.theme-bw .ts-ecl-corona,
 body.theme-bw .ts-clouds,
 body.theme-studio .ts-orb,
 body.theme-studio .ts-shoot,
 body.theme-studio .ts-aurora,
+body.theme-studio .ts-ecl-corona,
 body.theme-studio .ts-clouds { display: none; }
 /* 2026-07-15 (Nate: Direct Line — and any McPuppy page — should keep the studio's
    black-and-white sky "instead of the seasons"): kill the seasonal tint, the drifting

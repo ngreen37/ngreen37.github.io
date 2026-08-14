@@ -1079,28 +1079,32 @@
       "name": "Crockett",
       "elo": 750,
       "knows": 3,
-      "line": "has seen most of these before"
+      "line": "has seen most of these before",
+      "aura": "amber"
     },
     {
       "id": "argus",
       "name": "Argus",
       "elo": 1000,
       "knows": 4,
-      "line": "plays fast and reads slowly"
+      "line": "plays fast and reads slowly",
+      "aura": "ice"
     },
     {
       "id": "dad",
       "name": "The Dad",
       "elo": 1400,
       "knows": 6,
-      "line": "is very hard to surprise"
+      "line": "is very hard to surprise",
+      "aura": "mono"
     },
     {
       "id": "robert",
       "name": "Robert",
       "elo": 1800,
       "knows": 8,
-      "line": "knows every answer you have"
+      "line": "knows every answer you have",
+      "aura": "violet"
     },
     {
       "id": "master",
@@ -1108,7 +1112,8 @@
       "elo": null,
       "knows": 8,
       "master": true,
-      "line": "uses openings you have never seen"
+      "line": "uses openings you have never seen",
+      "aura": "gold"
     }
   ]
 }

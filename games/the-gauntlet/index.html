@@ -55,7 +55,13 @@ permalink: /games/the-gauntlet/
   --g-stage: clamp(520px, calc((100vh - 260px) * 0.88), 720px);
   max-width: calc(var(--g-stage) + 28px);
 }
-.td-frame iframe { height: calc(var(--g-stage) * 1.1364 + 72px); }
+/* ⚑ +22px FOR THE VS RAILS (2026-08-13). Two 8px bars with a 4px and a 5px margin sit
+   above and below the board inside the iframe, and `body` in there is `overflow:hidden` —
+   so height the frame does not give it is height the move browser simply loses off the
+   bottom. The STAGE WIDTH is deliberately untouched: the board keeps every pixel it had
+   and the frame grows instead, because shrinking the board to make room for decoration
+   would take back the size he asked for on 2026-08-04. */
+.td-frame iframe { height: calc(var(--g-stage) * 1.1364 + 94px); }
 /* On a phone the width, not the height, is the binding constraint — the stage is already the
    full card — so the height follows the width it actually got instead of the viewport's. */
 @media (max-width: 600px) {

@@ -11,6 +11,10 @@
 <script src="/assets/js/pjcc-game-sky.js"></script>
 <script src="/assets/js/pjcc-config.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
+<!-- the VS rails (2026-08-13). ⚠ AFTER pjcc-profile.js — PJCCVs.color() reads
+     PJCC.auraColor() and keeps no palette of its own. -->
+<script src="/assets/js/pjcc-vs.js"></script>
+<link rel="stylesheet" href="/assets/css/vs-aura.css">
 <script src="/assets/js/pjcc-pieces.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -191,7 +195,13 @@
 </head>
 <body>
 <div id="stage">
+  <!-- THE VS RAILS (2026-08-13). Princess sits across this table and only ever plays book,
+       so the top rail is her sakura for the whole session; the bottom one is yours.
+       ⚠ Sakura by KEY, not by hex — `PJCC.AURAS` owns the twelve values and a literal here
+       is a copy that drifts the first time one is tuned. -->
+  <div class="vs-aura hidden" id="pr-aura-opp" aria-hidden="true" style="--dir:1"><i></i></div>
   <canvas id="canvas" width="480" height="500"></canvas>
+  <div class="vs-aura hidden" id="pr-aura-me" aria-hidden="true" style="--dir:-1"><i></i></div>
 
   <button class="float-btn hidden" id="menu-btn">☰ Menu</button>
   <button class="float-btn hidden" id="hint-btn">🐾 Show me</button>
@@ -587,6 +597,7 @@ function pick(a) { return a[(Math.random() * a.length) | 0]; }
 // ---- Session flow ----
 function startSession(deckId, mode, style) {
   style = style || 'line';
+  showAuras();
   const ids = deckLineIds(deckId);
 
   if (style === 'spot') {
@@ -1136,11 +1147,26 @@ function loop(now) {
 }
 
 // ---- Screens ----
+/* the VS rails: on at the table, off in the library. Princess is the constant opponent
+   here, so her color never changes mid-session — this only has to run when one starts. */
+function showAuras() {
+  PJCCVs.paint('pr-aura-opp', PJCCVs.color('sakura'));
+  PJCCVs.paint('pr-aura-me', PJCCVs.color((window.PJCC && PJCC.getProfile) ? PJCC.getProfile() : null));
+  ['pr-aura-opp', 'pr-aura-me'].forEach(id => document.getElementById(id).classList.remove('hidden'));
+}
+function hideAuras() {
+  ['pr-aura-opp', 'pr-aura-me'].forEach(id => document.getElementById(id).classList.add('hidden'));
+}
+/* ⚠ NOT WIRED INTO hideOverlays(). `showMenu()` calls it and THEN opens the menu, so
+   putting showAuras() in there would turn the rails back on one line after showMenu turned
+   them off — the classic "both functions are right and the pair is wrong". The rails are
+   owned by the session: on where one starts, off where one ends. */
 function hideOverlays() {
   ['menu-screen', 'caught-screen', 'summary-screen', 'name-screen', 'tree-screen'].forEach(id => document.getElementById(id).classList.add('hidden'));
 }
 function showMenu() {
   G = null; session = null;
+  hideAuras();
   document.getElementById('menu-btn').classList.add('hidden');
   document.getElementById('hint-btn').classList.add('hidden');
   buildDeckList();
