@@ -63,8 +63,10 @@
    *  about it. She picks one at random, avoiding the one she used last time, so two or
    *  three variants per kind is what keeps her from sounding like a vending machine.
    *
-   *  Tokens get replaced with real numbers — leave the braces on:
-   *      {now} {was} {n} {who} {days} {games}
+   *  Tokens get replaced with real values — leave the braces on:
+   *      {now} {was} {n} {who} {days} {games} {you}
+   *  {you} is the player's codename, and it is the only one that can be missing: signed
+   *  out there is no name, so any line using it is simply never offered.
    *
    *  To silence an observation entirely: give it an empty array. To add a variant:
    *  add a string. There is no other wiring to touch.
@@ -169,6 +171,31 @@
       "Same as ever. You are White."
     ],
 
+    /* ── SHE IS SOMEWHERE ELSE TODAY ──────────────────────────────────────────────
+       ⚠ These two are NOT spoken at the board — they are what her empty seat says in
+       the lobby, so they are the only lines here written in the third person. Keep
+       them SHORT: this one is read by somebody who wanted to play and cannot. */
+    away: [
+      "Not at the tables today.",
+      "Away today. Back tomorrow.",
+      "Up at the Academy today."
+    ],
+    // the first thing she says the day after she was gone
+    was_away: [
+      "I was up at the Academy yesterday. Bootcamp does not run itself. Sit down.",
+      "You came by and I was not here. I know. I am here now."
+    ],
+
+    /* ── SHE IS THE ONLY ONE WHO USES YOUR NAME ───────────────────────────────────
+       {you} is your codename. ⚠ Only ever offered when you are signed in AND have one —
+       there is no fallback nickname, because a bot inventing a name for you is the exact
+       opposite of the effect. Signed out, she simply never reaches for it. */
+    by_name: [
+      "{you}. Sit down.",
+      "There you are, {you}.",
+      "{you}. I was hoping you would come by."
+    ],
+
     /* ── the game ending ──────────────────────────────────────────────────────── */
 
     end_first_win: [
@@ -211,6 +238,18 @@
   var LOG_KEY    = 'pjcc.pt.log.v1';   // every finished bot game, newest first
   var LOG_CAP    = 40;
   var SAID_CAP   = 5;                  // how many recent lines she avoids repeating
+
+  /* ── HOW OFTEN SHE IS ELSEWHERE ─────────────────────────────────────────────────
+     1 day in 11. Rolled off the TOWN DATE, never per page load, so the whole town
+     agrees about today and a refresh cannot reroll her — the same rule the meteor
+     shower and the aurora follow ([[rare-sky-events]]).
+     ⭐ WHY THIS NUMBER: rare enough that most players never see it and the ones who do
+     remember it, common enough that it is not a myth. At 1-in-11 a twice-a-week player
+     meets her empty seat about five times a year. ⚠ Err RARE — a seat you wanted and
+     could not have is a real cost, and the whole point is that it reads as a life
+     rather than as an outage. */
+  var AWAY_IN = 11;
+  var MILESTONE = 10;                  // games against her before her glyph changes
 
   function readJSON(key, fallback) {
     try {
@@ -262,7 +301,8 @@
       rating:  prof && typeof prof.pjcc_rating === 'number' ? prof.pjcc_rating : null,
       puzzle:  typeof puzzle === 'number' ? puzzle : null,
       owned:   owned,
-      beaten:  Array.isArray(beaten) ? beaten : []
+      beaten:  Array.isArray(beaten) ? beaten : [],
+      you:     myName()          // null when signed out — she then never reaches for it
     };
   }
 
@@ -376,6 +416,16 @@
       add('shopping', 400, { n: now.owned - (then.owned || 0) });
     }
 
+    /* — you came by on a day she was elsewhere. Weighted just under a first meeting,
+         because acknowledging a missed visit is the single most human thing she has to
+         lead with, and it is only ever true once. — */
+    if (missedDay() && missedDay() !== townDay()) add('was_away', 950);
+
+    /* — your codename, which nobody else on the bench will ever use. Sits above
+         `back_soon` and below every piece of real news, so it surfaces on a quiet day
+         rather than displacing something she actually noticed. — */
+    if (now.you) add('by_name', 300, { you: now.you });
+
     add('nothing', 1);
     return out;
   }
@@ -384,6 +434,61 @@
     var B = window.PJCCParkBots;                 // the room publishes its own roster
     if (B && B[id] && B[id].name) return B[id].name;
     return id ? (id.charAt(0).toUpperCase() + id.slice(1)) : 'somebody';
+  }
+
+  /* ── YOUR NAME ───────────────────────────────────────────────────────────────────
+     Null unless you are signed in and actually have a codename. ⚠ There is no fallback
+     — "Operative" or "friend" would be a bot inventing a name for you, which is worse
+     than never using one. When this is null the `by_name` observation simply is not
+     offered, exactly like the credit lines when she cannot see your balance. */
+  function myName() {
+    try {
+      var p = window.PJCC && PJCC.getProfile ? PJCC.getProfile() : null;
+      var n = p && p.codename ? String(p.codename).trim() : '';
+      return n || null;
+    } catch (e) { return null; }
+  }
+
+  /* ── IS SHE HERE TODAY? ──────────────────────────────────────────────────────────
+     ⚠⚠ THREE GUARDS, AND EACH ONE IS A BUG THAT WOULD OTHERWISE SHIP:
+
+       1. NO CLOCK, NO ABSENCE. If `PJCC_TIME` has not loaded she is PRESENT. A missing
+          optional dependency must never be able to close a seat — failing closed here
+          would mean a script that did not load takes a bot off the bench and nothing
+          says why ([[feature-shipped-but-never-loaded]]).
+       2. AN UNFINISHED GAME OUTRANKS HER DAY OFF. If you have a board saved against
+          her, she is here — being locked out of your own half-played game by a dice
+          roll is the single worst thing this feature could do.
+       3. IT IS A PURE FUNCTION OF THE DATE. No storage, no counter, nothing to desync;
+          a refresh, a second tab and tomorrow morning all agree by construction.
+
+     ⭐ The salt matters. `daySeed(ds)` unsalted is the same number the weather uses, so
+     without '#auston' her day off would correlate with the rain forever and nobody
+     would ever be able to say why. */
+  /* ── SHE FINDS OUT YOU CAME BY ───────────────────────────────────────────────────
+     The ledger cannot record a missed visit, because the ledger is written by greet()
+     and greet() is exactly what you could not do that day. So the lobby leaves a note
+     when it draws her empty seat, and she picks it up the next time you sit down.
+     ⚠ ONE KEY HOLDING ONE DATE STRING — not a counter. Coming back five times on the
+     same afternoon is one missed visit, and a counter would have her thanking you for
+     five. ⚠ Written only when the value actually changes, because this runs from a
+     render path. */
+  var MISS_KEY = 'pjcc.auston.missed.v1';
+  function townDay() {
+    try {
+      var T = window.PJCC_TIME;
+      return (T && T.parts) ? T.parts().ds : null;
+    } catch (e) { return null; }
+  }
+  function missedDay() { var v = readJSON(MISS_KEY, null); return typeof v === 'string' ? v : null; }
+
+  function awayToday(hasSavedGame) {
+    if (hasSavedGame) return false;
+    try {
+      var T = window.PJCC_TIME;
+      if (!T || !T.daySeed || !T.parts) return false;
+      return T.daySeed(T.parts().ds + '#auston') % AWAY_IN === 0;
+    } catch (e) { return false; }
   }
 
   /* ── PICKING ONE ─────────────────────────────────────────────────────────────────
@@ -467,6 +572,8 @@
                    said: [chosen ? chosen.kind : 'nothing'].concat(said).slice(0, SAID_CAP),
                    lastText: line, greets: ((then && then.greets) || 0) + 1 };
       writeJSON(LEDGER_KEY, next);
+      // the missed visit has now been acknowledged — spend it, or she says it forever
+      if (missedDay()) { try { localStorage.removeItem(MISS_KEY); } catch (e) {} }
 
       return line ? { text: line, kind: chosen.kind } : null;
     },
@@ -513,6 +620,35 @@
     knowsYou: function () {
       try { return !!readJSON(LEDGER_KEY, null); } catch (e) { return false; }
     },
+
+    /* ── IS SHE AT THE TABLES TODAY? ───────────────────────────────────────────────
+       `hasSavedGame` is passed IN by the room rather than looked up here, because the
+       room owns the save format and she should not learn to read it. Pass true and she
+       is always present — see guard 2 in awayToday(). */
+    awayToday: function (hasSavedGame) { return awayToday(!!hasSavedGame); },
+
+    /* What her empty seat says. Returns a string or null; null means say nothing,
+       which is the honest answer if the lines table has been emptied. */
+    awayLine: function () { return render('away', {}, null); },
+
+    /* The lobby calls this when it DRAWS her empty seat, so she can mention it next
+       time. ⚠ Idempotent and same-day-collapsing: one note per town day, and a write
+       only when the stored value actually changes. Safe to call from a render. */
+    noteAway: function () {
+      var d = townDay();
+      if (!d || missedDay() === d) return;
+      writeJSON(MISS_KEY, d);
+    },
+
+    /* ── THE GLYPH TURNS OVER ──────────────────────────────────────────────────────
+       True once you have played her MILESTONE times. The room uses it to swap her
+       lobby icon from the outline knight to the solid one — ♘ → ♞ is the only piece
+       pair on this site that genuinely renders as two different pictures at card size
+       ([[text-clip-glyph-technique]]: ♖/♜, ♗/♝, ♕/♛ and ♙/♟ are indistinguishable).
+       ⚠ Counted off the GAME LOG, never a stored tally — a counter and a log can
+       disagree and only one of them is evidence. */
+    milestone: function () { return vsHer().games >= MILESTONE; },
+    MILESTONE: MILESTONE,
 
     /* for the test harness and for anyone debugging her in a console —
        everything she currently believes, in one object */

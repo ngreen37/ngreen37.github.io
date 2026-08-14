@@ -851,10 +851,33 @@ body_class: theme-hall
          ⚠ knowsYou() is READ-ONLY — greet() commits, and this runs in a render path.
          ⚠ Wrapped like every other call into her: an optional file must not take the
          bench down if it fails to load. */
-      var knows = false;
-      try { knows = !!(window.PJCCAuston && PJCCAuston.speaks(id) && PJCCAuston.knowsYou()); } catch (e) {}
+      var knows = false, gone = false, glyph = b.icon, awayWords = '';
+      try {
+        if (window.PJCCAuston && PJCCAuston.speaks(id)) {
+          knows = !!PJCCAuston.knowsYou();
+          // ⚠ `resume` IS THE OVERRIDE. A half-played board outranks her day off — being
+          //   shut out of your own saved game by a dice roll is the worst thing here.
+          gone  = !resume && !!PJCCAuston.awayToday(!!resume);
+          if (gone) { awayWords = PJCCAuston.awayLine() || ''; PJCCAuston.noteAway(); }
+          if (PJCCAuston.milestone()) glyph = '&#9822;&#xFE0E;';   // ♞ — see milestone()
+        }
+      } catch (e) {}
+
+      /* ── HER SEAT IS EMPTY TODAY ──────────────────────────────────────────────────
+         Nate: *"she's the only seat that's ever NOT there."* Shown, never hidden — the
+         same rule the locked seats follow. A missing card would read as a bug; an empty
+         chair that says where she is reads as a person with a life.
+         ⚠ NOT the locked treatment. A lock is something you have not earned yet and it
+         is dashed and gray to say so; this is somebody who is simply elsewhere, so it
+         keeps her name at full strength and only drops the meta line. */
+      if (gone) {
+        return '<button class="pt-card pt-bot pt-bot--away" data-bot="' + id + '" disabled' +
+          ' aria-label="' + esc(b.name) + ' is not at the tables today">' +
+          '<span class="pt-card-icon">' + glyph + '</span>' +
+          '<span class="pt-card-t">' + esc(b.name) + '<br><i>' + esc(awayWords) + '</i></span></button>';
+      }
       return '<button class="pt-card pt-bot' + (knows ? ' pt-bot--knows' : '') + '" data-bot="' + id + '">' +
-        '<span class="pt-card-icon">' + b.icon + '</span>' +
+        '<span class="pt-card-icon">' + glyph + '</span>' +
         '<span class="pt-card-t">' + esc(b.name) + '<br><i>' + b.diff + ' · ' + b.elo +
         (resume ? ' · resume' : '') + '</i></span></button>';
     }).join('') + '</div>';
@@ -879,8 +902,19 @@ body_class: theme-hall
   function botStart(id){
     stopPolling(); cur = null; botSel = -1; botThinking = false; botSeq++;
     botSay = null; botBye = null;
-    if (BOTS[id]) enterRoom('bot', id, BOTS[id].name);   // you're at the table now, not on the page
     var saved = botLoad();
+    /* ⚠⚠ THE DOOR, NOT JUST THE CARD. Her lobby seat is `disabled` on a day she is
+       elsewhere, but `?table=auston` is a real bookmarkable URL and a shared link — so
+       arriving straight at her table has to hit the same rule, or the one person who
+       kept the link is the one person the feature does not apply to. Bounced back to the
+       lobby, where the empty seat explains itself. */
+    try {
+      var mine = saved && saved.bot === id && !saved.done && (saved.moves || '').trim();
+      if (window.PJCCAuston && PJCCAuston.speaks(id) && PJCCAuston.awayToday(!!mine)) {
+        exitRoom(); safeRoute(); return;
+      }
+    } catch (e) {}
+    if (BOTS[id]) enterRoom('bot', id, BOTS[id].name);   // you're at the table now, not on the page
     // resume an unfinished game against the same regular; otherwise a fresh board
     if (!(saved && saved.bot === id && !saved.done && M.replayGame(saved.moves || '').valid)) {
       saved = { bot: id, moves: '', done: 0 };
@@ -1829,6 +1863,28 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
 .pt-bots .pt-card.pt-bot--locked:hover { border-color: var(--edge-soft); }
 .pt-bots .pt-card.pt-bot--locked .pt-card-icon { color: #8b93a1; filter: grayscale(0.35); }
 .pt-bots .pt-card.pt-bot--locked .pt-card-t i { color: #79818e; }
+
+/* ── SHE IS SOMEWHERE ELSE TODAY (2026-08-14) ──────────────────────────────────────
+   Nate: *"she's the only seat that's ever NOT there… absence is the strongest possible
+   proof that a character is a character rather than a difficulty setting."*
+
+   ⚠ THIS IS NOT THE LOCKED TREATMENT AND MUST NOT LOOK LIKE IT. A locked seat is
+   something you have not earned — dashed border, grayed name, and the name stays legible
+   because it is the thing you are playing FOR. This is a person who is simply elsewhere:
+   nothing has been withheld and nothing is owed, so her NAME stays at full strength and
+   only the meta line goes quiet. The chair is empty, not barred.
+   ⭐ And no dashes: a dashed edge on this card would say "provisional", and there is
+   nothing provisional about somebody having a Tuesday. */
+.pt-bots .pt-card.pt-bot--away {
+  opacity: 0.78; cursor: default;
+  background: var(--surface-2);
+  border-color: var(--edge-soft);
+}
+.pt-bots .pt-card.pt-bot--away:hover { border-color: var(--edge-soft); }
+/* the glyph dims to the meta gray — the seat reads as unoccupied at a glance */
+.pt-bots .pt-card.pt-bot--away .pt-card-icon { color: #6f7783; }
+.pt-bots .pt-card.pt-bot--away .pt-card-t { color: #dfe4ea; }
+.pt-bots .pt-card.pt-bot--away .pt-card-t i { color: #9aa3b0; font-style: italic; }
 
 /* ── SHE REMEMBERS YOU (2026-08-13) ────────────────────────────────────────────────
    Nate: *"Give her a subtle feature somewhere that the others don't have… even as subtle

@@ -188,7 +188,18 @@ console.log('\n── AUSTON ─────────────────
   /* ⚠ A TOKEN THAT IS NEVER FILLED SHIPS AS LITERAL "{n}" TO A PLAYER. The renderer
      leaves unknown tokens alone on purpose (better a brace than the word "undefined"),
      which means nothing at runtime would ever complain — so the table is checked here. */
-  const known = ['now', 'was', 'n', 'who', 'days', 'games'];
+  /* ⭐ DERIVED FROM THE OBSERVER, NOT RETYPED. This was a hand-kept allowlist until
+     adding {you} made it wrong — a list copied from a source it does not read is a list
+     that goes stale silently ([[dead-game-links-trap]]). Every token the observer can
+     supply is a key in an `add(kind, weight, {…})` data object, so read them from there. */
+  /* ⚠ kind and weight can both be TERNARIES (`add(open ? 'a' : 'b', open ? 880 : 700, …)`),
+     so this may not assume `add('name', 123,` — it reads to the data object on the line. */
+  const known = [...new Set(
+    // ⚠ many add() calls trail an `if` on the same line, so this cannot anchor at ^;
+    //   it drops the declaration line instead, whose params would add kind/weight/data.
+    [...SRC.split('\n').filter((l) => !/function add\(/.test(l)).join('\n')
+        .matchAll(/\badd\([^\n]*?\{([^}]*)\}/g)]
+      .flatMap((m) => [...m[1].matchAll(/(\w+)\s*:/g)].map((k) => k[1])))];
   const stray = [];
   Object.keys(A.LINES).forEach(kind => A.LINES[kind].forEach(t => {
     (t.match(/\{(\w+)\}/g) || []).forEach(tok => {
@@ -256,20 +267,66 @@ console.log('\n── AUSTON ─────────────────
      LEDGER, and the guard is that `knowsYou` is in the same expression as the class. */
   check('her card can wear a mark the other seven cannot',
     /pt-bot--knows/.test(ROOM) && /\.pt-bot--knows \{/.test(ROOM));
-  const markLine = (ROOM.match(/^.*knows = !!.*$/m) || [''])[0];   // the assignment, not `var knows = false`
+  /* the whole block that decides how her card is drawn — guarded by speaks(), fed by the
+     ledger, and never calling greet(), which commits */
+  const markBlock = (ROOM.match(/var knows = false[\s\S]*?\} catch \(e\) \{\}/) || [''])[0];
   check('…and it is earned — driven by her LEDGER, not by her name being Auston',
-    /PJCCAuston\.knowsYou\(\)/.test(markLine) && /PJCCAuston\.speaks\(id\)/.test(markLine),
+    /PJCCAuston\.knowsYou\(\)/.test(markBlock) && /PJCCAuston\.speaks\(id\)/.test(markBlock),
     'a mark every stranger can see is a badge, not a discovery');
   check('…read-only, because this runs on every render',
-    !/greet\(/.test(markLine), 'greet() COMMITS the ledger — it must never touch a render path');
+    markBlock.length > 0 && !/\bgreet\(/.test(markBlock),
+    'greet() COMMITS the ledger — it must never touch a render path');
   check('…and wrapped, so an unloaded file cannot take the bench down',
-    /try \{ knows = /.test(ROOM));
+    /^\s*try \{$/m.test(markBlock.split('\n')[1] || '') || /try \{/.test(markBlock));
   check('knowsYou() answers yes/no and nothing about what she remembers',
     /knowsYou: function \(\) \{\s*try \{ return !!readJSON\(LEDGER_KEY, null\); \}/.test(SRC),
     'what she knows is hers to say out loud');
   /* it quotes the note's amber rather than inventing a color — one warm edge, two places */
   check('…in the same amber as the note she speaks',
     /\.pt-bot--knows \{[\s\S]{0,160}#ffb43a/.test(ROOM) && /\.pt-note \{[\s\S]{0,200}#ffb43a/.test(ROOM));
+
+  /* ── SHE IS SOMETIMES ELSEWHERE ──────────────────────────────────────────────────
+     ⚠⚠ THIS IS THE ONE FEATURE HERE THAT CAN TAKE SOMETHING AWAY FROM A PLAYER, so its
+     guards are the ones worth pinning. Each check below is a bug that would otherwise
+     be invisible until somebody lost access to a game they were in the middle of. */
+  check('her seat can be empty for a day', /pt-bot--away/.test(ROOM) && /awayToday/.test(SRC));
+  check('…rolled off the TOWN DATE, never per page load',
+    /daySeed\(T\.parts\(\)\.ds \+ '#auston'\)/.test(SRC),
+    'a refresh must not reroll her, and the whole town agrees about today');
+  check('…with a SALTED seed, so it is not just the rainy days',
+    /'#auston'/.test(SRC), 'the unsalted seed is the weather’s');
+  check('…and an unfinished game outranks it',
+    /function awayToday\(hasSavedGame\) \{\s*if \(hasSavedGame\) return false;/.test(SRC),
+    'nobody is shut out of a board they already started');
+  check('…and a missing clock leaves her PRESENT',
+    /if \(!T \|\| !T\.daySeed \|\| !T\.parts\) return false;/.test(SRC),
+    'an optional dependency that failed to load must never close a seat');
+  check('the ROOM honors it at the card AND at the door',
+    /pt-bot--away/.test(ROOM) && /PJCCAuston\.awayToday\(!!mine\)/.test(ROOM),
+    '?table=auston is a real bookmark — the card alone would miss exactly the person who kept it');
+  check('…and the away card is not dressed as a LOCKED one',
+    !/pt-bot--away[\s\S]{0,240}border-style: dashed/.test(ROOM),
+    'a lock is something unearned; this is somebody having a Tuesday');
+  check('she notices you came by while she was out',
+    /add\('was_away', 950\)/.test(SRC) && /noteAway/.test(ROOM));
+  check('…one note per town day, not one per render',
+    /if \(!d \|\| missedDay\(\) === d\) return;/.test(SRC), 'five visits in an afternoon is one missed visit');
+  check('…and the note is SPENT when she says it',
+    /localStorage\.removeItem\(MISS_KEY\)/.test(SRC), 'or she thanks you for it forever');
+
+  /* ── YOUR NAME, AND THE GLYPH ────────────────────────────────────────────────── */
+  check('she is the only seat that uses your codename',
+    /by_name/.test(SRC) && /\{you\}/.test(SRC));
+  check('…and never invents one when you are signed out',
+    /return n \|\| null;/.test(SRC) && /if \(now\.you\) add\('by_name'/.test(SRC),
+    'no fallback nickname — that is the opposite of the effect');
+  check('her glyph turns over on a milestone',
+    /milestone: function \(\) \{ return vsHer\(\)\.games >= MILESTONE; \}/.test(SRC),
+    'counted off the log, never a stored tally');
+  /* ⭐ ♘→♞ is the ONE pair that renders as two different pictures — ♖/♜, ♗/♝, ♕/♛, ♙/♟
+     are indistinguishable at card size, measured when the eighth seat went in. */
+  check('…to the solid knight, the one variant that actually reads',
+    /&#9822;&#xFE0E;/.test(ROOM), '♞ with a text-presentation selector so color reaches it');
 }
 
 console.log(`\n  ${pass} passed, ${fail} failed\n`);
