@@ -1852,8 +1852,12 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
     door.setAttribute('href', door.getAttribute('href') + '#tower');
   } else {
     if (glyph) glyph.textContent = GLYPHS[cur] || '♟';
+    // ⚑ the color is set on EVERY visit too (2026-08-13) — it was gated on `cleared > 0`,
+    // so a first-time visitor saw floor one's door in the gold FALLBACK instead of its own
+    // ice blue. Same bug the glyph was pulled out of on 08-04, one line below it. Only the
+    // resume link is genuinely mid-climb. See games.md for the full note.
+    gd.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
     if (cleared > 0) {
-      gd.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
       door.setAttribute('href', door.getAttribute('href') + '#climb');
     }
   }

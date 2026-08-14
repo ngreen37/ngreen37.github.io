@@ -741,43 +741,43 @@ html.sky-night .gdoor-arch { box-shadow:0 0 32px -6px var(--acc); }
 .gdoor[data-floor="8"] .gdoor-door { transition:transform .42s var(--ease-out, cubic-bezier(0.20,0.80,0.25,1)); }
 @include gd-open('[data-floor="8"]') { transform:perspective(640px) rotateY(-90deg); }
 
-/* ── THE SAME DOOR, INSIDE THE GAME (2026-07-27) ────────────────────────────────────
-   The Gauntlet's challenger card stands this door over the rival's portrait and opens it
-   on a timer. TWO things differ from the hall, and both live here so the game and the site
-   can never drift: it doesn't respond to a pointer, and it carries no piece on the leaf.
-   Everything else — the arch, every floor treatment, the grandeur tiers, the seam, the open
-   distance — is the same file, and now the same PICTURE.
+/* ══ THE SAME DOOR, INSIDE THE GAME (2026-07-27) ════════════════════════════════════
+   ⚑⚑⚑ ONE DIFFERENCE. IT DOES NOT RESPOND TO A POINTER. THAT IS THE WHOLE LIST.
+   The size is set by the caller (`.boss-stage .gdoor-arch`), as everywhere. Everything
+   else — the arch, every floor treatment, the grandeur tiers, the seam, the leaf, its
+   piece, the open distance — is this file, unmodified, so the game and the site cannot
+   drift. **Do not add a second entry here without reading the four paragraphs below.**
 
-   ⚑ NO PIECE ON THE LEAF — 2026-08-04. Nate: "The gauntlet in-game is different — remove
-   the pawn."
-   ⭐ HE WAS LOOKING AT THE SAME PIECE TWICE. Everywhere else on the site the glyph in the
-   arch is a PROMISE: it tells you which floor is behind a door you have not opened. In the
-   game the door opens on a timer over `#boss-portrait`, which is `rung.glyph` — the SAME
-   piece — so floor one painted a pawn on the cloth and then drew the cloth back to reveal a
-   pawn. A reveal that reveals what was already on the curtain is not a reveal, and it is the
-   one place the door has something real to hide. The <b> stays in the markup (it is the
-   shared shape and every other copy needs it); the game's own hydration no longer writes to
-   it. `visibility`, not `display`, so the leaf's layout is byte-identical to the hall's.
+   ══ THE FIVE-PASS HISTORY, KEPT BECAUSE EACH PASS FIXED A REAL THING AND MISSED THE ONE
+      BEHIND IT — which is the actual lesson, not any individual fix ═══════════════════
 
-   ⚑⚑ AND THE PAWN WAS STILL THERE THE NEXT DAY — 2026-08-05, Nate: "I'm getting frustrated
-   that I'm asking that the 3 gauntlet doors be uniform and they still are not. The Gauntlet
-   in-game door has a pawn that needs to be removed."
-   ⭐ THE PIECE ON THE CURTAIN WAS HIDDEN; THE PIECE BEHIND IT WAS NOT. `background:transparent`
-   stood here so the portrait could show through the open doorway — and floor one's leaf is a
-   TATTERED CLOTH, the one leaf on the ladder you can see through. So the closed door was an
-   88px glowing pawn with a few rags hanging in front of it. Every other copy of this door
-   shows a lit, empty doorway when it is shut; this one showed the answer. It was the SAME BUG
-   as the glyph, one layer further back, and no amount of hiding things ON the leaf could
-   reach it, because the leaf was never what was showing.
-   **A door that is see-through is not a door.** The arch keeps its own background here now,
-   exactly like the other four copies, and the CHALLENGER — whose reveal this whole animation
-   is for — steps into the doorway once the cloth is aside (`.boss-stage.is-open` in
-   assets/games/pjcc_gauntlet.html, which owns WHERE the door stands and now also WHEN the
-   rival arrives). Closed, it is now pixel-for-pixel the games hall's door.
-   ⚠ That is also why the exception list here went from three items to two: the fewer
-   differences this block carries, the fewer places "uniform" can fail. */
+   2026-08-04, Nate: *"The gauntlet in-game is different — remove the pawn."* The glyph was
+   hidden here. **The pawn he could see was BEHIND the leaf**, not on it: a 96px portrait
+   medallion showing through an arch this block was forcing transparent, and floor one's
+   leaf is a TATTERED CLOTH — the one leaf you can see through.
+
+   2026-08-05, Nate: *"I'm getting frustrated that I'm asking that the 3 gauntlet doors be
+   uniform and they still are not. The Gauntlet in-game door has a pawn that needs to be
+   removed."* The arch was made opaque (**a door that is see-through is not a door**) and
+   the portrait was taught to step INTO the doorway once the cloth went aside. Correct
+   about the arch. Wrong about the portrait: the pawn was not moved, it was rescheduled.
+
+   2026-08-13, Nate: *"Door 1 shows a pawn when the door opens. Take that pawn out. All
+   doors should 1) only be a door, and 2) match the doors from the games hall and
+   elsewhere."*
+   ⭐⭐ **THE PORTRAIT WAS DELETED, AND THAT MADE HIS TWO RULES THE SAME FIX.** Rendered side
+   by side, the hall's open door is a lit doorway with the cloth gathered aside and the
+   game's was a glowing medallion filling the arch — not one object at two sizes, two
+   different pictures. And the ONLY reason this block ever hid the leaf's piece was to stop
+   it duplicating that portrait. Take the portrait away and the glyph has nothing to
+   duplicate, so the leaf carries its floor's piece exactly like the hall, the front door
+   and the splash. "Only a door" and "matches the hall" were never two jobs.
+   ⚠ `showBossCard` had to start WRITING that glyph in the same commit — see the note there.
+   Invisible for nine days, the markup's static `♟` was never overwritten, so unhiding it
+   alone would have put a pawn on all thirteen floors: his exact complaint, one layer over.
+   ⭐ **THE EXCEPTION LIST WENT 3 → 2 → 1. That is the mechanism.** Every pass that made this
+   block shorter held; the pass that kept a difference and animated it did not. */
 .gdoor--ingame { pointer-events:none; }
-.gdoor--ingame .gdoor-glyph { visibility:hidden; }
 
 @media (prefers-reduced-motion: reduce) {
   .gdoor-pips i.cur { animation:none; }

@@ -249,8 +249,10 @@
           door.setAttribute('href', door.getAttribute('href') + '#tower');
         } else {
           if (glyph) glyph.textContent = GLYPHS[cur] || '♟';   // ALWAYS — floor one is a pawn
-          if (cleared > 0) {                             // mid-climb — the current floor's door
-            door.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
+          // ⚑ ALWAYS, TOO (2026-08-13) — gated on `cleared > 0`, floor one's door wore the
+          // gold FALLBACK for every first-time visitor. Same bug as the glyph, one line down.
+          door.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
+          if (cleared > 0) {                             // mid-climb — resume where you stopped
             if (sub) sub.innerHTML = 'Floor <b>' + (cur + 1) + '</b> of 10';
             door.setAttribute('href', door.getAttribute('href') + '#climb');
           }

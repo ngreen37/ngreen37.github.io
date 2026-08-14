@@ -506,8 +506,15 @@ permalink: /games/
   } else {
     // the leaf is set on EVERY visit, not only mid-climb — see the note in pawn-fix
     if (glyph) glyph.textContent = GLYPHS[cur] || '♟';
+    /* ⚑ …AND SO IS THE COLOR — 2026-08-13. It was inside the `cleared > 0` branch below,
+       which is the SAME BUG the glyph was pulled out of on 2026-08-04, one line further
+       down and left behind by that fix. A first-time visitor got the `|| '#F5C518'`
+       FALLBACK, so floor one's door was GOLD on every page of the site while the same
+       floor's door inside the game was its real ice blue. Caught by rendering the two side
+       by side and printing --acc, not by reading either file. ⭐ A color is a fact about
+       which floor you are looking at; only the RESUME link below is a fact about a climb. */
+    door.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
     if (cleared > 0) {
-      door.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
       door.setAttribute('href', door.getAttribute('href') + '#climb');
     }
   }

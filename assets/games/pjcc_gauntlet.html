@@ -136,14 +136,8 @@
   .tw-chip { flex-shrink:0; font-size:10px; font-weight:800; letter-spacing:0.5px; padding:3px 8px; border-radius:999px; }
   .tw-here { display:inline-block; margin-top:3px; font-size:9px; font-weight:900; letter-spacing:1.5px; color:#1a0f3d; background:#F5C518; padding:1px 7px; border-radius:999px; }
 
-  /* ---- #4 BOSS-CARD REVEAL ---- */
-  .boss-portrait { width:96px; height:96px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-    font-size:52px; background:radial-gradient(circle at 42% 34%, #241452, #0c0820); border:3px solid #6b5fa0;
-    box-shadow:0 0 34px -6px currentColor; margin-bottom:12px; }
-
-  /* ---- #4b THE CHALLENGER'S DOOR — the cool site door, brought into the game (2026-07-22
-     Nate: "incorporate the cool door into the Gauntlet game"). It stands OVER the portrait
-     and opens to reveal the challenger when the card appears, themed to the floor's accent.
+  /* ---- #4 THE CHALLENGER'S DOOR — the cool site door, brought into the game (2026-07-22
+     Nate: "incorporate the cool door into the Gauntlet game"), themed to the floor's accent.
      2026-07-27 (Nate: "I want the Gauntlet doors to match inside the game as they do out in
      the games hall"): the hand-copied .bgate rules that stood here are GONE. This page now
      links /assets/css/gauntlet-door.css — the same _sass partial the site compiles — so
@@ -162,43 +156,31 @@
      The arch is a semicircle of r = width/2 sitting on a straight run, so the proportion is
      the only thing that decides how tall that straight run reads. At 100 wide the canonical
      height is 100 ÷ 0.78 = 128, which puts the run at 78px against the dome's 50 — the same
-     1.56 ratio the other three share, instead of 1.32. Nothing else needed to move: the door
-     radius (arch radius − 5) was already right, and the portrait still stands at the foot.
-     ⚠ ANY NEW COPY OF THIS DOOR: height = width ÷ 0.78. That one number is "uniform". */
-  .boss-stage { position:relative; width:104px; height:128px; margin:0 auto 12px; }
-  /* 88, not 96: at 96 (+3px border) the portrait was 2px wider than the arch it stands in,
-     and two bright slivers of the ring poked out past the bottom corners of a door that was
-     supposed to be shut. */
-  .boss-stage .boss-portrait { position:absolute; left:50%; bottom:2px; transform:translateX(-50%);
-    margin:0; width:88px; height:88px; font-size:46px; }
-  /* ⚑ THE CHALLENGER ARRIVES WHEN THE DOOR IS OPEN — 2026-08-05 (Nate: "The Gauntlet in-game
-     door has a pawn that needs to be removed").
-     ⭐ THE DOOR WAS SEE-THROUGH, SO THE REVEAL HAD NOTHING LEFT TO REVEAL. The arch used to
-     be forced transparent in-game so the portrait behind it would show once the leaf slid
-     away — which works for nine of the ten leaves, and fails completely for floor one, whose
-     leaf is a TATTERED CLOTH. A shut door was an 88px glowing pawn with rags in front of it,
-     and it looked nothing like the same door in the games hall or on the front page.
-     The arch keeps its own lit interior now (see the .gdoor--ingame block in the partial),
-     and the portrait is what MOVES: hidden while the door is shut, stepping up into the
-     doorway as the cloth goes aside. z-index 2 puts it over the arch — it is not behind the
-     door any more, it is coming through it. The delay is the leaf's own .5s travel, so the
-     rival lands just as the doorway finishes clearing.
-     ⚠ Set on .boss-stage, not on the door: the portrait is the door's ELDER sibling, and no
-     CSS combinator reaches backwards. showBossCard toggles the stage. */
-  .boss-stage .boss-portrait { z-index:2; opacity:0; transform:translateX(-50%) scale(0.82);
-    transition:opacity .34s ease, transform .42s cubic-bezier(.2,1.3,.4,1); }
-  .boss-stage.is-open .boss-portrait { opacity:1; transform:translateX(-50%) scale(1);
-    transition-delay:.34s; }
-  @media (prefers-reduced-motion: reduce) {
-    .boss-stage .boss-portrait { transition:opacity .2s ease; transform:translateX(-50%); }
-    .boss-stage.is-open .boss-portrait { transform:translateX(-50%); }
-  }
+     1.56 ratio the other three share, instead of 1.32.
+     ⚠ ANY NEW COPY OF THIS DOOR: height = width ÷ 0.78. That one number is "uniform".
+
+     ⚑⚑ THE PORTRAIT IS GONE — 2026-08-13, and this is the FIFTH pass on one rule, so the
+     reasoning matters more than the diff. Nate: "Door 1 shows a pawn when the door opens.
+     Take that pawn out. All doors should 1) only be a door, and 2) match the doors from the
+     games hall and elsewhere."
+
+     ⭐ THE PAWN HE SAW WAS THE FIX FOR THE LAST TIME HE ASKED. 2026-08-04 hid the piece ON
+     the leaf; 2026-08-05 found the piece BEHIND the leaf and, instead of deleting it, made
+     it step THROUGH the open doorway — an 88px glowing medallion filling the arch. Rendered
+     beside the hall's door the two are not the same object at all: the hall shows a lit
+     doorway with the cloth gathered aside, the game showed a portrait in a frame.
+
+     ⭐⭐ AND HIS TWO RULES ARE ONE FIX. Deleting the portrait removes the only reason the
+     in-game leaf's glyph was ever hidden — so the door goes back to carrying its own piece,
+     exactly like the hall and the front door, and "only a door" and "matches the hall"
+     arrive together. The in-game exception list is ONE item now (`pointer-events:none`).
+     Fewer differences is the mechanism; diligence was never going to be. */
+  .boss-stage { position:relative; width:100px; height:128px; margin:0 auto 12px; }
   .boss-stage .gdoor { position:absolute; inset:0; align-items:center; justify-content:center; gap:0; }
   /* ⚑ SIZE AND NOTHING ELSE (2026-08-05). The radius and the glyph size that stood here
      were hand-corrections for a leaf that did not scale with its arch; the partial states
      the whole leaf in cqw off the arch now, so this is the same door as the other four by
-     construction. (The glyph is hidden in-game regardless — the portrait behind the door
-     IS the piece; see the .gdoor--ingame block in _sass/_pjcc-21-gauntlet-door.scss.) */
+     construction. */
   .boss-stage .gdoor-arch { width:100px; height:128px; }
   .boss-name { font-size:24px; font-weight:900; color:#fff; letter-spacing:0.5px; text-shadow:0 2px 12px rgba(0,0,0,0.6); }
   .boss-sub { font-size:11px; letter-spacing:2px; text-transform:uppercase; margin:4px 0 10px; }
@@ -316,7 +298,6 @@
   <div class="overlay hidden" id="boss-screen">
     <div class="eyebrow" id="boss-eye">Next challenger</div>
     <div class="boss-stage">
-      <div class="boss-portrait" id="boss-portrait">♛</div>
       <span class="gdoor gdoor--ingame" id="boss-gate" aria-hidden="true">
         <span class="gdoor-arch">
           <i class="gdoor-door"><b class="gdoor-glyph" id="boss-gate-glyph">♟</b><u class="gdoor-knob"></u></i>
@@ -956,10 +937,8 @@ function showBossCard(idx){
   hidePortrait(); hideBooth(); hideOverlays();
   document.getElementById('menu-btn').classList.add('hidden'); document.getElementById('resign-btn').classList.add('hidden');
   var rung = LADDER[idx], pc = randColor(), prog = loadProg(), beaten = !!prog.beaten[idx], acc = rung.accent;
-  var portrait = document.getElementById('boss-portrait');
-  portrait.textContent = rung.glyph; portrait.style.color = acc; portrait.style.borderColor = acc;
   // #4b — the challenger's door: closed on show, themed to the floor's accent, then slid
-  // open a beat later to reveal the portrait beneath (floor 6 = the frosted Auditor door).
+  // open a beat later onto a lit doorway (floor 6 = the frosted Auditor door).
   var gate = document.getElementById('boss-gate');
   if (gate){
     // Same door as the games hall, driven the same way: --acc themes it, data-floor picks
@@ -969,20 +948,20 @@ function showBossCard(idx){
     gate.style.setProperty('--acc', acc);
     gate.setAttribute('data-floor', idx + 1);
     gate.setAttribute('data-grand', idx === 0 ? 0 : idx <= 2 ? 1 : idx <= 4 ? 2 : idx <= 6 ? 3 : idx <= 8 ? 4 : 5);
-    // (the leaf's glyph is NOT set here any more — 2026-08-04, "the gauntlet in-game is
-    //  different, remove the pawn". The portrait this door opens onto is already rung.glyph,
-    //  so painting the same piece on the curtain meant the reveal revealed nothing. The
-    //  .gdoor--ingame block in _sass/_pjcc-21-gauntlet-door.scss hides it for every floor.)
+    /* ⚑ THE LEAF CARRIES ITS FLOOR'S PIECE AGAIN — 2026-08-13, and this line is load-bearing
+       twice over. The portrait behind the door is gone, so there is nothing left for the
+       hidden glyph to avoid duplicating; and the hall sets `GLYPHS[cur]` on EVERY visit, so
+       the only way this door matches it is to be written the same way.
+       ⚠⚠ UNHIDING IT WITHOUT THIS LINE WOULD HAVE PUT A PAWN ON ALL THIRTEEN FLOORS — the
+       markup's static `♟` was never overwritten while the glyph was invisible, so every
+       floor's leaf still says pawn in the source. Rendered and confirmed before the fix:
+       thirteen doors, thirteen pawns. That is his complaint again, moved one layer. */
+    var gg = document.getElementById('boss-gate-glyph');
+    if (gg) gg.textContent = rung.glyph;
     gate.classList.remove('is-open');
-    // the challenger waits behind a SHUT door — .boss-stage.is-open brings them through it
-    // (2026-08-05; see the .boss-stage rules above for why the class rides the stage)
-    var stage = gate.parentNode;
-    if (stage) stage.classList.remove('is-open');
     void gate.offsetWidth;                          // restart the opening each reveal
     setTimeout(function(){
-      if (!gate.isConnected) return;
-      gate.classList.add('is-open');
-      if (stage) stage.classList.add('is-open');
+      if (gate.isConnected) gate.classList.add('is-open');
     }, 480);
   }
   document.getElementById('boss-eye').textContent = (beaten?'Rematch':'Challenger') + ' · ' +

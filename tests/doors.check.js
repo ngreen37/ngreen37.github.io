@@ -112,6 +112,38 @@ const PARTIAL = read('_sass/_pjcc-21-gauntlet-door.scss');
   const notAlways = COPIES.filter((f) => /\} else if \(cleared > 0\) \{[\s\S]{0,200}?glyph\.textContent/.test(read(f)));
   check('the glyph is applied on EVERY visit, not only mid-climb', notAlways.length === 0,
     notAlways.join(', ') || 'a stale default can no longer show through');
+
+  /* ⚑ AND SO IS THE COLOR — 2026-08-13. The 08-04 fix moved `glyph.textContent` out of the
+     `cleared > 0` branch and left `--acc` inside it, one line below. So floor one's door
+     was the gold FALLBACK on all four pages for anyone who had not yet beaten a floor,
+     while the same floor's door in the game was its real ice blue. ⭐ THE TEST ABOVE PASSED
+     THE WHOLE TIME: it asked about the glyph, and the defect had moved next door. When a
+     fix pulls one statement out of a conditional, check what it left in there. */
+  const gatedAcc = COPIES.filter((f) => /if \(cleared > 0\) \{[^}]*setProperty\('--acc'/.test(read(f)));
+  check('…and so is the door\'s COLOR, not only mid-climb', gatedAcc.length === 0,
+    gatedAcc.join(', ') || 'all four copies theme floor one on the first visit');
+
+  /* the four hand-typed ladders must actually agree with the game's LADDER, or "uniform"
+     is being asserted about two different sets of doors */
+  /* ⚠ CAPTURE GROUPS, NOT slice() ARITHMETIC. The first draft of this counted the prefix by
+     hand and was one character out on both — it reported all eight comparisons as failures
+     with the two lists visibly identical on screen. Prove the instrument before believing a
+     defect it reports; a "failure" whose two sides look the same is the instrument. */
+  const gameSrc = read('assets/games/pjcc_gauntlet.html');
+  const grab = (re) => { const out = []; let m; while ((m = re.exec(gameSrc))) out.push(m[1]); return out; };
+  const gameAcc = grab(/accent:'(#[0-9a-fA-F]{6})'/g).map((s) => s.toLowerCase()).slice(0, 10);
+  const gameGly = grab(/glyph:'([^'])'/g).slice(0, 10);
+  for (const f of COPIES) {
+    const src = read(f);
+    const acc = ((/var ACCENTS = \[([^\]]*)\]/.exec(src) || [, ''])[1])
+      .split(',').map((s) => s.trim().replace(/^'|'$/g, '').toLowerCase()).filter(Boolean);
+    const gly = ((/var GLYPHS\s*=\s*\[([^\]]*)\]/.exec(src) || [, ''])[1])
+      .split(',').map((s) => s.trim().replace(/^'|'$/g, '')).filter(Boolean);
+    check(f + ' carries the game\'s ten accents', acc.join() === gameAcc.join(),
+      acc.join() === gameAcc.join() ? '10 match' : 'page ' + acc.join() + '  vs  game ' + gameAcc.join());
+    check(f + ' carries the game\'s ten pieces', gly.join() === gameGly.join(),
+      gly.join() === gameGly.join() ? '10 match' : 'page ' + gly.join() + '  vs  game ' + gameGly.join());
+  }
 }
 
 /* ── 4. THE FLOOR-ONE CLOTH IS NOT BUNTING ─────────────────────────────────────────
@@ -230,38 +262,50 @@ const PARTIAL = read('_sass/_pjcc-21-gauntlet-door.scss');
   check('…leaning as it goes, so it reads as fabric and not a shutter', /skewX\(/.test(t), t.trim());
 }
 
-/* ── 7. IN THE GAME, THE DOOR HIDES SOMETHING ──────────────────────────────────────
-   "The gauntlet in-game is different — remove the pawn." The challenger portrait behind the
-   door IS rung.glyph, so painting the same piece on the curtain meant the reveal revealed
-   what was already on show. Asserted from both sides: the partial hides it, and the game no
-   longer writes to it (a live assignment would be the tell that someone put it back).
+/* ── 7. IN THE GAME, THE DOOR IS ONLY A DOOR ───────────────────────────────────────
+   2026-08-13, Nate: "Door 1 shows a pawn when the door opens. Take that pawn out. All doors
+   should 1) only be a door, and 2) match the doors from the games hall and elsewhere."
 
-   ⚑ AND HE HAD TO SAY IT TWICE (2026-08-05: "the Gauntlet in-game door has a pawn that needs
-   to be removed"), because hiding the piece ON the leaf never touched the piece BEHIND it.
-   `.gdoor--ingame .gdoor-arch { background:transparent }` used to stand in the partial so the
-   portrait would show through the open doorway — which works for nine leaves and fails for
-   floor one's TATTERED CLOTH, the one leaf you can see through. A shut door was a glowing
-   88px pawn with rags in front of it. The arch is opaque in-game now, like every other copy,
-   and the portrait steps THROUGH the doorway once it is open. Both halves are gated: the
-   partial may not blank the arch, and the game must own the arrival. */
+   ⭐ THIS IS THE FIFTH PASS ON ONE RULE AND EVERY EARLIER ONE PASSED ITS OWN TEST. 08-04 hid
+   the piece ON the leaf and asserted it was hidden — true, and the pawn he could see was the
+   portrait BEHIND it. 08-05 stopped the portrait showing through a shut door and asserted the
+   arch was opaque — true, and the portrait then stepped through the OPEN one, which is the
+   pawn he is describing here. Each test locked in the previous fix and had nothing to say
+   about the thing that was actually in the picture.
+
+   ⚑ SO THIS BLOCK ASSERTS THE ABSENCE OF THE WHOLE MECHANISM, not the state of a property:
+   no portrait element, no portrait rules, no stage class, and an in-game exception list of
+   exactly ONE entry. A door that is only a door cannot have a piece revealed behind it,
+   whatever any individual declaration says. */
 {
-  check('the in-game leaf carries no piece',
-    /\.gdoor--ingame \.gdoor-glyph \{[^}]*visibility:\s*hidden/.test(PARTIAL),
-    'the portrait behind the door is the same glyph — see .gdoor--ingame');
   const game = read('assets/games/pjcc_gauntlet.html');
-  check('…and the game stopped setting it',
-    !/^\s*if \(gg\) gg\.textContent/m.test(game),
-    'showBossCard no longer writes the boss glyph onto the curtain');
+
+  check('there is no challenger portrait left in the game',
+    !/boss-portrait/.test(game),
+    'the element, its CSS and its hydration are all gone — "all doors should only be a door"');
+  check('…and nothing flips an is-open class on the stage',
+    !/stage\.classList\.(add|remove)\('is-open'\)/.test(game),
+    'the door owns .is-open; the stage only says where it stands');
+
+  check('the in-game leaf carries its floor\'s piece, exactly like the hall',
+    !/\.gdoor--ingame \.gdoor-glyph/.test(PARTIAL),
+    'nothing left to duplicate, so nothing left to hide');
+  check('…and the game WRITES it, so it is not thirteen pawns',
+    /gg\.textContent = rung\.glyph/.test(game),
+    'the markup default is a static ♟ — unhiding without writing puts a pawn on every floor');
 
   check('the in-game arch is NOT see-through',
     !/\.gdoor--ingame \.gdoor-arch \{[^}]*background:\s*transparent/.test(PARTIAL),
-    'floor one\'s cloth is see-through, so a see-through arch shows the challenger before the reveal');
-  check('…so the challenger arrives WITH the door instead of waiting behind it',
-    /\.boss-stage\.is-open \.boss-portrait \{[^}]*opacity:\s*1/.test(game) &&
-    /\.boss-stage \.boss-portrait \{[^}]*opacity:\s*0/.test(game),
-    'hidden while shut, revealed on .boss-stage.is-open');
-  check('…and showBossCard actually flips that class', /stage\.classList\.add\('is-open'\)/.test(game),
-    'the CSS above is dead without it — the portrait would never appear');
+    'floor one\'s cloth is see-through, so a see-through arch shows the doorway before the reveal');
+
+  /* ⭐ THE REAL GATE. Uniformity is not a property, it is a COUNT of differences, and every
+     pass that shortened this list held while the one that kept a difference and animated it
+     did not. `pointer-events` is the only legal entry; a second one needs him to ask. */
+  const ingame = (PARTIAL.match(/^\.gdoor--ingame[^{]*\{[^}]*\}/gm) || []);
+  check('the in-game exception list is exactly ONE rule', ingame.length === 1,
+    ingame.length + ' rule(s): ' + ingame.join(' ').replace(/\s+/g, ' '));
+  check('…and that one rule is pointer-events', /pointer-events\s*:\s*none/.test(ingame[0] || ''),
+    'the game opens the door on a timer; nothing else may differ');
 }
 
 /* ── 8. A CALLER MAY SET SIZE AND NOTHING ELSE ──────────────────────────────────────
