@@ -1435,20 +1435,53 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    ⚠ 2.4:1 ON THE SHEET AND THAT IS FINE — decoration, not text and not the boundary of a
    control, so the 3:1 non-text floor does not reach it. Written down so the next contrast
    sweep does not report it as a defect, same as the old divider's note did. */
+/* ⚑⚑ ONE LINE PER PROOF — 2026-08-18. Nate, for the SECOND time: "can we make the three
+   points smaller somehow? It currently takes up too much space."
+
+   ⭐ HE ASKED THIS ON 2026-08-11 TOO, AND THE ANSWER THAT TIME MISSED THE POINT. That pass
+   cut 34 words to 17 and took the type down a step, which is what "smaller" sounds like it
+   means — and the block still came back. It had to: neither of those touches the thing that
+   was actually spending the space. THE SHAPE WAS. Each proof was a two-line stack inside
+   22px of vertical padding, so a row cost ~66px no matter how few words were in it and no
+   matter how small they were set. Three rows, 200px, beside a 400px board.
+
+   So the claim and its proof go on ONE LINE — `b` is inline instead of block — and the
+   padding comes down with them. Measured on the real 420px column: 200px → 115px, a 43%
+   cut, with the type size, the ink, the rules and the lozenges all exactly as they were.
+   The whole left stack drops 472px → 387px and is finally SHORTER than the board it stands
+   beside, which is the thing his screenshot was really showing.
+
+   ⚠⚠ A ONE-LINE ROW ONLY WORKS IF THE LINE FITS, AND MY FIRST MEASUREMENT SAID IT BARELY
+   DID — 13px of slack, which is a coin flip, not a margin. That number was wrong, and it
+   was wrong because the sheet I rendered it on was 388px wide while the real column is 420
+   and `.mc-true` carries no horizontal padding. Same mistake as always: the harness was not
+   the page ([[measure-the-real-page]]). Re-measured in the real container, the longest
+   proof draws 353px in a 400px box — 47px, 12% — and it holds in Arial and every other
+   fallback in the stack, all of which are NARROWER than Inter. That is a decision.
+   ⚠ It wraps below roughly a 370px column, in a thin band of tablet widths just above the
+   760px breakpoint. A wrapped row is 20px taller and reads fine; it is not worth a rule.
+
+   ⚑ The lozenge moves 18px → 15px, and the 15 is DERIVED rather than picked: the old top
+   put its center 0.4px above the first line's center, and 15 is the number that keeps that
+   same relationship on the shorter row. Three candidates were rendered at 5x anyway, and
+   the derived one is the one that looked centered. [[pick-visual-values-from-a-render]] */
 .mc-true { list-style: none; padding: 0; margin: 0;
   display: grid; grid-template-columns: 1fr; gap: 0;
   text-align: left; }
-.mc-true li { color: var(--fd-ink-3); font-size: 0.82rem; line-height: 1.55;
-  position: relative; padding: 11px 0 11px 20px; }
+.mc-true li { color: var(--fd-ink-3); font-size: 0.82rem; line-height: 1.5;
+  position: relative; padding: 9px 0 9px 20px; }
 .mc-true li + li { border-top: 1px solid rgba(185, 139, 87, 0.22); }
 /* the lozenge — a square stood on its corner, drawn in CSS rather than typed as a glyph.
    ⚠ DELIBERATELY NOT A CHARACTER. A diamond typed as ◆ needs a variation selector to stay
    text and not become an emoji on iOS, and it would take its size from the font stack
    instead of from this rule ([[text-clip-glyph-technique]]). A box cannot be mis-rendered. */
-.mc-true li::before { content: ''; position: absolute; top: 18px; left: 2px;
+.mc-true li::before { content: ''; position: absolute; top: 15px; left: 2px;
   width: 7px; height: 7px; border-radius: 2px; transform: rotate(45deg);
   background: var(--fd-grain); }
-.mc-true b { display: block; color: var(--fd-ink-2); font-size: 0.88rem; margin-bottom: 2px; }
+/* ⚠ INLINE, AND THE SIZE COMES DOWN WITH IT (0.88 → 0.82). A bold run set larger than the
+   text it now shares a line with reads as a mistake rather than as emphasis — the claim is
+   already carrying weight AND the darker ink, which is enough to lead the line on its own. */
+.mc-true b { display: inline; color: var(--fd-ink-2); font-size: 0.82rem; margin: 0; }
 
 /* THE WORLD DOOR — DE-PURPLED 2026-08-04 (Nate: "completely get rid of the purple and gold
    aesthetic — leave that with P&JCC page").
