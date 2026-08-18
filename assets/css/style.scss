@@ -62,3 +62,7 @@
    01/13/19, and this partial declares no control sizing at all — two decorative rails and
    an overlay that lives for 2.6 seconds. It is last because it is newest. */
 @import 'pjcc-28-vs';
+/* 29 — the bottom signup bar. AFTER 27 for the same reason 28 is: it sets its own tap
+   target explicitly (44px on the dismiss) rather than inheriting one, so nothing in 27
+   needs to reach it. It is a fixed overlay owned entirely by one file. */
+@import 'pjcc-29-first100k';

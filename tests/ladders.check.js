@@ -348,10 +348,23 @@ check('the rating→difficulty map is the inverse of puzzleRating()',
   /* ⚠ derived INSIDE the call that uses the bridge. Read at parse time it would work today
      and break silently the day a `defer` or a reorder lands on the head — every seat falling
      back to one strength, with no error to say so. */
+  /* ⚑ RE-AIMED 2026-08-17, when Auston became the adaptive seat. `botDial` now converts
+     `botElo(b)` rather than `b.elo` — because for one seat on this bench the rating is a
+     live value rather than a declared one. The property under test is unchanged and is
+     still the one that matters: the number is resolved INSIDE the call that uses the
+     engine bridge, so it cannot be older than the object producing it. */
   check('the dial is read at move time, not at parse time',
-    /function botDial\(b\)\{[\s\S]{0,220}E\.skillForElo\(b\.elo\)/.test(PT) &&
+    /function botDial\(b\)\{[\s\S]{0,220}E\.skillForElo\(elo\)/.test(PT) &&
+    /function botElo\(b\)\{[\s\S]{0,200}return b\.elo;/.test(PT) &&
     /PJCCGauntletEngine\.move\(S, botDial\(bot\)\)/.test(PT),
     'botDial() runs inside the same call that uses the engine');
+  /* ⚠ AND STRENGTH STILL HAS EXACTLY ONE DOOR. An adaptive seat that reached the engine
+     by any other route would be a second source of truth about difficulty — which is the
+     original "Medium was secretly 1575" bug wearing a new hat. */
+  check('…and every seat, adaptive or not, still goes through botDial',
+    (PT.match(/PJCCGauntletEngine\.move\(/g) || []).length ===
+    (PT.match(/PJCCGauntletEngine\.move\(S, botDial\(bot\)\)/g) || []).length,
+    'no seat reaches the engine except through the one dial');
   check('the ladder actually climbs',
     bots.every((b, i) => i === 0 || b.elo > bots[i - 1].elo),
     bots.map(b => b.elo).join(' → '));
@@ -379,9 +392,16 @@ check('the rating→difficulty map is the inverse of puzzleRating()',
     /if \(st\.result === '1-0'\) \{[\s\S]{0,220}markBeaten\(st\.bot\)/.test(PT),
     'botFinish writes the win that opens the next door');
 
-  /* and the number has to be ON SCREEN — an unadvertised rating is what drifted */
+  /* and the number has to be ON SCREEN — an unadvertised rating is what drifted.
+     ⚑ 2026-08-17: an adaptive seat prints a number that MOVES instead of one that is
+     declared, so the nameplate now reads `botElo(bot)`. That satisfies the same law
+     rather than bending it — what is on the plate is still exactly what is playing, and
+     for the adaptive seat it is MORE honest than a fixed label could be. */
   check('the bot card prints the rating', /b\.diff \+ ' · ' \+ b\.elo/.test(PT));
-  check('…and so does the nameplate at the table', /bot\.elo \+ ' · ' \+ esc\(bot\.diff\)/.test(PT));
+  check('…and so does the nameplate at the table', /botElo\(bot\) \+ ' · ' \+ esc\(bot\.diff\)/.test(PT));
+  check('…and the adaptive seat says what it does instead of faking a fixed one',
+    /finds your level/.test(PT) && /adaptive: true/.test(PT),
+    'a seat may decline to advertise a number; it may never advertise a wrong one');
 }
 
 /* ── 4. THE REPORT PIPE ───────────────────────────────────────────────────────────── */

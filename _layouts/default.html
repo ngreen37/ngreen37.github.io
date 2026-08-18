@@ -142,6 +142,14 @@
   <script src="{{ '/assets/js/pjcc-reveal.js' | relative_url }}" defer></script>
   <!-- Av13 — the Shogi Island Gate: perform the rite (one A, eight C's, two larger) anywhere to open it -->
   <script src="{{ '/assets/js/pjcc-portal.js' | relative_url }}" defer></script>
+  {%- comment -%} THE FIRST 100,000 (2026-08-17) — the bottom signup bar. `defer` on
+       purpose and it waits another 1.4s beyond that: it is the LAST thing that should
+       arrive on any page, because the front door's whole job in the first two seconds is
+       an unfinished chess puzzle and this must not slide up under a reaching thumb.
+       ⚠ It renders NOTHING unless it has a true member count, so a Supabase outage costs
+       a bar rather than showing a made-up number. Its off switch is line one of the file.
+       {%- endcomment -%}
+  <script src="{{ '/assets/js/pjcc-first100k.js' | relative_url }}" defer></script>
 
   <!-- ⌘K command palette: search & jump to anywhere on the site -->
   <div class="cmdk-overlay" id="cmdk-overlay" hidden>

@@ -134,7 +134,17 @@ description: Six chess positions, one number. A free two-minute estimate of your
       <i aria-hidden="true">&rarr;</i>
     </a>
 
+    {% comment %} ⚑ THE THIRD DOOR IS THE FULL-GAME RUN (2026-08-17). It belongs HERE and
+         not on the front door for a specific reason: this page's ceiling is real — the
+         puzzle scale tops out near 1600, and a visitor who swept six positions has just
+         been told the test ran out of road. The full game is the honest answer to that
+         sentence, so it is offered to the person who just hit the ceiling rather than to
+         everyone who arrives. {% endcomment %}
     <div class="rq-doors">
+      <a class="rq-door" href="{{ '/rating/game/' | relative_url }}">
+        <b>Play a Full Game</b>
+        <small>An opponent that finds your level</small>
+      </a>
       <a class="rq-door" href="{{ '/games/fork-in-the-road/' | relative_url }}">
         <b>The Puzzle Room</b>
         <small>1,000 puzzles to Chess City</small>

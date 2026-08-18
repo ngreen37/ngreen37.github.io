@@ -62,6 +62,12 @@ body_class: theme-hall
      bug ([[feature-shipped-but-never-loaded]]); here it is the intended degradation, and
      the difference is that nothing else on the page reads from it. {% endcomment %}
 <script src="{{ '/assets/js/pjcc-auston.js' | relative_url }}"></script>
+{% comment %} SHE PLAYS AT YOUR LEVEL (2026-08-17) — the dial that turns the engine's own
+     per-move evaluation into a playing strength. Same intended degradation as the file
+     above: if it does not arrive, `botDial` falls through to her seeded rating and she is
+     a fixed 1200 opponent again, which is exactly what she was the day before this
+     shipped. Nothing on the page reads it except her seat. {% endcomment %}
+<script src="{{ '/assets/js/pjcc-adapt.js' | relative_url }}"></script>
 <script>
 (function () {
   'use strict';
@@ -652,8 +658,25 @@ body_class: theme-hall
     maxwell:  { name: 'Maxwell',  icon: '♟', diff: 'Beginner', elo: 400,  movetime: 120,  aura: 'emerald' },
     crockett: { name: 'Crockett', icon: '♞', diff: 'Easy',     elo: 750,  movetime: 160,  aura: 'amber' },
     argus:    { name: 'Argus',    icon: '♝', diff: 'Casual',   elo: 1000, movetime: 260,  aura: 'ice' },
-    // Auston — back on the bench 2026-08-10 at Nate's rating, filling the 1000→1400 step.
-    auston:   { name: 'Auston',   icon: '♘', diff: 'Steady',   elo: 1200, movetime: 420,  aura: 'crimson' },
+    /* Auston — back on the bench 2026-08-10 at Nate's rating, filling the 1000→1400 step.
+       ⚑ AND SINCE 2026-08-17 SHE IS THE ADAPTIVE SEAT (Nate: *"We could also add an
+       adaptive bot to the park tables"* — and she is the one it should be, because
+       noticing you is already her whole characterization).
+
+       ⚠⚠ `elo: 1200` IS NOW A SEED, NOT AN ADVERTISEMENT, and that distinction is the one
+       thing on this bench that must not blur. The house law here is that *a number a
+       player can see is what keeps a difficulty honest* — "Medium" drifted 900 points
+       precisely because nobody could see it. Her seat therefore does NOT print 1200: it
+       prints what she is playing at RIGHT NOW, live on the nameplate, and her lobby card
+       says "Adapts" instead of a rating. The law is intact — the number you see is still
+       the number that plays. It just moves. [[bot-gate]]
+
+       ⭐ AND THE 1000→1400 HOLE IS NOT BACK. A fixed 1200 filled exactly one step; a seat
+       that travels the whole road fills every step there will ever be, including the ones
+       above the CEO's neighbors and below Maxwell's. The bench lost a rung and gained a
+       ramp. */
+    auston:   { name: 'Auston',   icon: '♘', diff: 'Adapts',   elo: 1200, movetime: 420,  aura: 'crimson',
+                adaptive: true },
     // "Father" → "The Dad" (2026-08-10 Nate). Same character, same seat, warmer name.
     dad:      { name: 'The Dad',  icon: '♚', diff: 'Club',     elo: 1400, movetime: 620,  aura: 'mono' },
     // Robert — the Checker Town rival (2026-07-19 Nate), down from 2400 to make room above.
@@ -769,12 +792,53 @@ body_class: theme-hall
   }
   function applyOppAura(hex){ if (hex) PJCCVs.paint('pt-aura-opp', hex); }
 
+  /* ── HOW STRONG IS THE OPPONENT, RIGHT NOW ───────────────────────────────────────
+     ⚠⚠ STILL THE ONLY PLACE STRENGTH IS DECIDED, and that has to stay true. An adaptive
+     seat is a second source of truth about difficulty unless it enters through the SAME
+     door every other seat uses — so `botElo()` answers "what rating is this bot playing
+     at" for the whole room, and this function converts a rating to engine settings
+     exactly as it always did. Nothing downstream learns that adaptation exists.
+     ⚠ The fallback is her seed. A missing `pjcc-adapt.js` makes her a fixed 1200 again —
+     never a silent 400 and never a silent 2400. */
+  function botElo(b){
+    if (!b) return 900;
+    if (!b.adaptive) return b.elo;
+    return (botAdapt && botAdapt.level()) || b.elo;
+  }
   function botDial(b){
-    var E = window.PJCCGauntletEngine;
-    return { skill: E.skillForElo(b.elo), blunder: E.blunderForElo(b.elo), movetime: b.movetime };
+    var E = window.PJCCGauntletEngine, elo = botElo(b);
+    return { skill: E.skillForElo(elo), blunder: E.blunderForElo(elo), movetime: b.movetime };
+  }
+
+  /* ── SHE REMEMBERS HOW STRONG YOU WERE ───────────────────────────────────────────
+     The level she settled at last game is where she starts the next one, so a rematch
+     opens at the strength the last game ENDED at rather than walking up from 1200 again.
+     ⭐ This is the same promise as the rest of her memory and it is kept the same way:
+     per-device localStorage, no account required, and a new browser genuinely starts over
+     because on that device she genuinely has not played you. [[auston-remembers]]
+     ⚠ Written at game END only. Writing it per move would mean an abandoned game — the
+     tab closed in a losing position — permanently re-seeds her low. */
+  var ADAPT_SEED_KEY = 'pjcc.adapt.v1';
+  function adaptSeed(id){
+    try {
+      var all = JSON.parse(localStorage.getItem(ADAPT_SEED_KEY)) || {};
+      var v = all[id];
+      return (typeof v === 'number' && isFinite(v)) ? v : null;
+    } catch (e) { return null; }
+  }
+  function saveAdaptSeed(id, elo){
+    if (!id || typeof elo !== 'number' || !isFinite(elo)) return;
+    try {
+      var all = JSON.parse(localStorage.getItem(ADAPT_SEED_KEY)) || {};
+      all[id] = Math.round(elo);
+      localStorage.setItem(ADAPT_SEED_KEY, JSON.stringify(all));
+    } catch (e) {}
   }
   var BOT_KEY = 'pjcc.park.bot.v1';
   var botCur = null, botSel = -1, botThinking = false, botSeq = 0;
+  /* The live dial for an adaptive seat, rebuilt on every sit-down and on every resume.
+     Null for the seven fixed regulars, and null if pjcc-adapt.js did not load. */
+  var botAdapt = null;
 
   /* ══ THE HOUSE RULE ═══════════════════════════════════════════════════════════════════
      2026-08-10, Nate, in his words: *"I do want to make one thing crystal clear — cheaters
@@ -876,9 +940,22 @@ body_class: theme-hall
           '<span class="pt-card-icon">' + glyph + '</span>' +
           '<span class="pt-card-t">' + esc(b.name) + '<br><i>' + esc(awayWords) + '</i></span></button>';
       }
+      /* ── WHAT AN ADAPTIVE SEAT PUTS WHERE ITS RATING WOULD GO ─────────────────────
+         Every other card says "Club · 1400", and the reason that convention exists is
+         that a visible number keeps a difficulty honest. Hers cannot carry a fixed one,
+         so it carries the truth instead: what she does, and — once she has actually
+         played you — where she ended up last time, which is a real number about a real
+         game rather than an advertised one.
+         ⚠ "finds your level" UNTIL she has met you. Printing a remembered strength to
+         somebody she has never played would describe a game that never happened. */
+      var meta = b.diff + ' · ' + b.elo;
+      if (b.adaptive) {
+        var lastAt = adaptSeed(id);
+        meta = b.diff + ' · ' + (lastAt ? 'last at ' + lastAt : 'finds your level');
+      }
       return '<button class="pt-card pt-bot' + (knows ? ' pt-bot--knows' : '') + '" data-bot="' + id + '">' +
         '<span class="pt-card-icon">' + glyph + '</span>' +
-        '<span class="pt-card-t">' + esc(b.name) + '<br><i>' + b.diff + ' · ' + b.elo +
+        '<span class="pt-card-t">' + esc(b.name) + '<br><i>' + esc(meta) +
         (resume ? ' · resume' : '') + '</i></span></button>';
     }).join('') + '</div>';
   }
@@ -898,10 +975,64 @@ body_class: theme-hall
      greeting is a property of SITTING DOWN, so it is computed exactly where sitting
      down happens, and the render path only ever reads this variable. */
   var botSay = null, botBye = null;
+  /* The mid-game line currently on screen, and the ply it was said at. Cached exactly
+     like the other two: computed once where the event happens, only READ by the render. */
+  var botMid = null, botMidAt = 0;
+
+  /* ══ SHE IS A PERSON AT THE TABLE, AND NOW YOU CAN SEE HER ═════════════════════════
+     2026-08-17, Nate: *"can we give Auston a little figurine in-game and have a text
+     bubble when she speaks?"*
+
+     ⚑ THIS REVERSES A DELIBERATE 2026-08-13 DECISION, SO HERE IS WHY IT IS SAFE NOW.
+     The original note was explicitly NOT a speech balloon, and the reason was sound: a
+     tail-and-bubble on a site with no typed chat advertises a text box that is never
+     coming, and four preset phrases is the whole child-safety story. That argument was
+     about a bubble floating beside a NAMEPLATE.
+
+     A bubble growing out of a DRAWN CHARACTER is a different object. It reads as a comic
+     panel — this person is speaking — rather than as a chat affordance, because the thing
+     it is attached to is obviously not you and obviously cannot be typed into. The tail
+     points AT her, which is the detail doing the work: chat bubbles point at whoever
+     wrote them, and there is only one of these on screen, wearing her face.
+     ⚠ THE ORIGINAL CONSTRAINT STILL BINDS. There is still no input, still no reply
+     control, still nothing that invites one. If a "say something back" affordance is ever
+     added here, this treatment has to be re-argued from scratch.
+
+     ⚠ FALLS BACK TO THE GLYPH, NOT TO A HOLE. Without pjcc-face-art.js she keeps her ♘
+     and the bubble keeps its shape — the old rendering, not a broken new one. */
+  function sayBubble(id, text, ended){
+    var bot = BOTS[id] || {}, face = null;
+    try { if (window.PJCCAuston && PJCCAuston.speaks(id)) face = PJCCAuston.face(); }
+    catch (e) { face = null; }
+    return '<div class="pt-note' + (ended ? ' pt-note--end' : '') + '">' +
+      '<span class="pt-note-who' + (face ? ' pt-note-who--drawn' : '') + '" aria-hidden="true">' +
+        (face || bot.icon) + '</span>' +
+      '<div class="pt-note-bub"><p class="pt-note-t"><b>' + esc(bot.name) + '</b> ' + esc(text) + '</p></div>' +
+    '</div>';
+  }
+
+  /* ── SPIN UP HER DIAL ────────────────────────────────────────────────────────────
+     Called from botStart for a fresh board AND for a resumed one, because a refresh
+     mid-game must sit back down against the same strength it left. `st.lvl` is written on
+     every bot move for exactly that reason: the tracker's history does not survive a
+     reload, but the level does, and the level is the part the player can feel.
+
+     ⚠ ORDER MATTERS — `st.lvl` (this game, in progress) beats the stored seed (last
+     game), which beats the bench's number (never played her). A resumed game that fell
+     back to the seed would jump strength on refresh with nothing on screen to explain it. */
+  function makeAdapt(id, st){
+    botAdapt = null;
+    var b = BOTS[id];
+    if (!b || !b.adaptive || !window.PJCCAdapt) return;
+    var seed = (st && typeof st.lvl === 'number') ? st.lvl : adaptSeed(id);
+    try { botAdapt = PJCCAdapt.create({ seed: seed == null ? b.elo : seed }); } catch (e) { botAdapt = null; }
+  }
 
   function botStart(id){
     stopPolling(); cur = null; botSel = -1; botThinking = false; botSeq++;
-    botSay = null; botBye = null;
+    botSay = null; botBye = null; botAdapt = null; botMid = null; botMidAt = 0;
+    // her three mid-game lines refill when you sit down, not when the page loads
+    try { if (window.PJCCAuston) PJCCAuston.newGame(); } catch (e) {}
     var saved = botLoad();
     /* ⚠⚠ THE DOOR, NOT JUST THE CARD. Her lobby seat is `disabled` on a day she is
        elsewhere, but `?table=auston` is a real bookmarkable URL and a shared link — so
@@ -922,6 +1053,7 @@ body_class: theme-hall
       try { PJCCGauntletEngine.newGame(); } catch (e) {}
     }
     botCur = saved;
+    makeAdapt(id, saved);
     /* She greets you on a FRESH board only. Resuming a game you were already in the
        middle of is not sitting down — you never got up — and a bot that says "it has
        been eleven days" over a half-played position is a bot that is visibly not
@@ -964,6 +1096,10 @@ body_class: theme-hall
     st.done = 1;
     st.result = g.result === 'checkmate' ? (g.S.turn === 'w' ? '0-1' : '1-0') : '1/2-1/2';
     st.reason = g.result;
+    /* Where she settled is where she starts next time. `settled()` rather than `level()`
+       — the last few moves of a decided game describe the mop-up, not the contest, and
+       seeding tomorrow from a mop-up would drift her a little further off you every game. */
+    if (botAdapt) { try { saveAdaptSeed(st.bot, botAdapt.settled()); } catch (e) {} }
     botSave(st);
     if (st.result === '1-0') {
       markWin();                                   // you play White at every bot table
@@ -1058,12 +1194,12 @@ body_class: theme-hall
         if (window.PJCCAuston && PJCCAuston.speaks(st.bot)) botBye = PJCCAuston.farewell(st.bot);
       } catch (e) { botBye = null; }
     }
-    var says = st.done ? botBye : ((st.moves || '').trim() ? null : botSay);
-    var bubble = says
-      ? '<div class="pt-note' + (st.done ? ' pt-note--end' : '') + '">' +
-          '<span class="pt-note-who" aria-hidden="true">' + bot.icon + '</span>' +
-          '<p class="pt-note-t"><b>' + esc(bot.name) + '</b> ' + esc(says.text) + '</p></div>'
-      : '';
+    /* ⚑ THREE MOMENTS NOW, NOT TWO (2026-08-17). The greeting still dies on your first
+       move and the farewell still owns the finished board; between them sits `botMid`,
+       which `botThink` fills at most three times a game. Read here, never computed here —
+       `midGame()` counts what it has already said, and botRender runs on every tap. */
+    var says = st.done ? botBye : ((st.moves || '').trim() ? botMid : botSay);
+    var bubble = says ? sayBubble(st.bot, says.text, st.done) : '';
 
     // legal-move dots for the selected piece — capture squares get the dot too
     var hints = {};
@@ -1101,8 +1237,13 @@ body_class: theme-hall
       // "these two are playing each other" rather than as two unrelated rules
       '<div class="pt-arena"><div class="pt-boardwrap">' +
         auraBar(auraHex(bot.aura), 1) +
+        /* ⭐ HER PLATE COUNTS. A fixed seat prints the rating it advertises; an adaptive
+           one prints the rating it is playing at this second, and watching that number
+           climb beside her name as you play well is the feature being visible instead of
+           merely being on. The `pt-plate-rate--live` class is what animates the change. */
         '<div class="pt-plate">' + bot.icon + ' <b>' + esc(bot.name) + '</b>' +
-          ' <i class="pt-plate-rate">(' + bot.elo + ' · ' + esc(bot.diff) + ')</i>' + matChip(S, false) + '</div>' +
+          ' <i class="pt-plate-rate' + (bot.adaptive ? ' pt-plate-rate--live' : '') + '">(' +
+            botElo(bot) + ' · ' + esc(bot.diff) + ')</i>' + matChip(S, false) + '</div>' +
         '<div class="pt-board" role="grid" aria-label="Chess board">' + rows +
           (last && last.mover === 'b' ? arrowSVG(last, true) : '') + '</div>' +
         '<div class="pt-plate pt-plate--me">⬜ <b>' + esc((prof && prof.codename) || 'You') + '</b>' +
@@ -1147,8 +1288,13 @@ body_class: theme-hall
          its own seat plate; yours is `pjcc_rating`, and a signed-out visitor at a bot board
          has none — the review omits what it is not given rather than printing a zero. */
       var prof = PJCC.getProfile();
+      /* ⚠ AN ADAPTIVE SEAT REPORTS WHERE IT SETTLED, NOT ITS SEED. Handing the review
+         `bot.elo` for her would label the game with a number she may not have played at
+         for a single move of it. `settled()` is the median of the second half — the
+         strength the game was actually contested at. */
+      var oppElo = (bot.adaptive && botAdapt) ? botAdapt.settled() : bot.elo;
       PJCCReview.open(st.moves, { whiteName: (prof && prof.codename) || 'You', blackName: bot.name,
-                                  whiteRating: prof && prof.pjcc_rating, blackRating: bot.elo,
+                                  whiteRating: prof && prof.pjcc_rating, blackRating: oppElo,
                                   result: st.result });
     };
     var rs = document.getElementById('pt-bot-resign');
@@ -1205,14 +1351,60 @@ body_class: theme-hall
       .then(function (mv) {
         if (tok !== botSeq || botCur !== st) return;   // left the table — drop the reply
         botThinking = false;
+        /* ── THE DIAL TURNS ──────────────────────────────────────────────────────
+           The engine just told us what it thinks of the position YOU handed it, and it
+           cost nothing to ask. Fed here, after the stale-reply guard above, so a search
+           belonging to a table you already got up from can never move the strength at
+           the table you are sitting at now.
+           ⚠ `evalCp` is absent on a fallback move — the dial then simply does not move
+           this turn, which is the honest response to not having measured anything. */
+        if (botAdapt && mv) {
+          try {
+            botAdapt.note(mv.evalCp);
+            st.lvl = botAdapt.level();
+          } catch (e) {}
+        }
         if (!mv) { botFinish(st, M.replayGame(st.moves)); return botRender(); }
         var uci = C.nameFromSq(mv.from) + C.nameFromSq(mv.to) + (mv.promo || '');
         st.moves = (st.moves + ' ' + uci).trim();
         botSave(st);
         var g = M.replayGame(st.moves);
         if (g.result) botFinish(st, g);
+        /* ── DOES SHE HAVE ANYTHING TO SAY ───────────────────────────────────────
+           ⚠⚠ HERE, NOT IN botRender, AND THE REASON IS THE SAME ONE THAT KEEPS greet()
+           OUT OF THE RENDER PATH. `midGame()` counts what it has already said and how
+           long ago; botRender fires on every single tap of a square, so asking from
+           there would burn all three of her lines on a player picking a piece up and
+           putting it down. A move completing is an EVENT, and this is where it happens.
+           ⚠ Never over a finished board — that is the farewell's moment, and two of her
+           talking at once is neither. */
+        if (!g.result && window.PJCCAuston && PJCCAuston.speaks(st.bot)) {
+          try {
+            var plies = (st.moves || '').trim() ? st.moves.trim().split(/\s+/).length : 0;
+            var said = PJCCAuston.midGame(st.bot, {
+              ply:    plies,
+              /* the PLAYER's win% — the engine scored the position from its own side, so
+                 this is the one place the flip happens. Absent when the search produced
+                 no score, and she is given nothing rather than a zero. */
+              win:    (mv.evalCp === undefined || !window.PJCCAdapt) ? null : PJCCAdapt.winPct(-mv.evalCp),
+              level:  botAdapt ? botAdapt.level() : null,
+              seed:   botAdapt ? botAdapt.start() : null,
+              pieces: countMen(g.S)
+            });
+            if (said) { botMid = said; botMidAt = plies; }
+            /* a line has a life. Left up, the last thing she said sits over the board for
+               the rest of the game and stops being something she SAID. */
+            else if (botMid && plies - botMidAt >= 8) botMid = null;
+          } catch (e) {}
+        }
         botRender();
       });
+  }
+
+  /* Men left on the board — the endgame trigger, and cheap enough to run per move. */
+  function countMen(S){
+    var n = 0; try { for (var i = 0; i < 64; i++) if (S.b[i]) n++; } catch (e) { return null; }
+    return n;
   }
 
   /* ── LOBBY ─────────────────────────────────────────────────────────────── */
@@ -2031,30 +2223,88 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
 
    The amber is the room's own "status, not affordance" color — the same reason the
    material chip is amber rather than mint. She is telling you something; she is not a
-   control, and a warm panel two inches from the board must never read as pressable. */
-   ⚠⚠ IT IS `.pt-note`, NOT `.pt-say` — AND THAT COST A LIVE BUG. `.pt-say` was already
+   control, and a warm panel two inches from the board must never read as pressable.
+
+   ⚠⚠⚠ AND THIS COMMENT THEN COST A SECOND LIVE BUG, FOUND 2026-08-17. This block used to
+   be closed TWICE — once at the end of the paragraph above, and again four lines below —
+   so everything between the two closers, plus the selector after them, was parsed as ONE
+   invalid selector. An invalid selector discards its whole rule, so .pt-note itself never
+   applied: no flex row, no left rule, no amber wash, no entry animation. Only its
+   CHILDREN were ever styled, which is exactly why nobody caught it — she still appeared,
+   in the right place, in the right colors, simply without her panel.
+
+   ⭐ NOTHING ERRORED, NOTHING LOGGED, AND EVERY TEST STAYED GREEN. A CSS parser recovers
+   by DELETING, silently, by design. Measured in a real browser before the fix: zero rules
+   parsed, .pt-note computing display:block instead of flex.
+
+   ⚠ NEVER WRITE A COMMENT-CLOSE INSIDE A COMMENT — not even in quotes, not even to
+   describe this bug. The first draft of THIS paragraph did exactly that and reproduced
+   the defect it was documenting. tests/css.check.js now parses every inline style block
+   on the site and would have caught all three of the site's instances on the day they
+   were written. [[markdown-eats-scripts]] [[measure-the-real-page]]
+
+   ⚠⚠ IT IS `.pt-note`, NOT `.pt-say` — AND THAT COST A LIVE BUG TOO. `.pt-say` was already
    taken, 550 lines further down, by the emote a live opponent sends ("💬 Name: Good luck").
    Same class, two unrelated features, and this block sits EARLIER in the file — so the old
    one-line rule silently overrode this margin and color, while every emote inherited the
    whole warm note treatment it was never designed for. Both were wrong at once and neither
    errored. Grep the SELECTOR before naming a new one. */
+/* ⚑ AND IT IS A BUBBLE NOW, AFTER ALL — 2026-08-17, and the argument above is not wrong,
+   it has just stopped applying. Everything it says about a balloon beside a NAMEPLATE
+   still holds; what changed is that there is a drawn person on the left of it. A tail
+   growing out of a face reads as a comic panel, not as a text box, because the thing it
+   points at is visibly not you and visibly cannot be typed into. See sayBubble() for the
+   full argument and for the constraint that still binds: no input, no reply control,
+   nothing that invites one. */
 .pt-note {
-  display: flex; align-items: flex-start; gap: 10px;
-  margin: 0 0 12px; padding: 11px 14px;
-  border-left: 3px solid #ffb43a;
-  border-radius: 0 var(--r-md) var(--r-md) 0;
-  background: linear-gradient(90deg, rgba(255,180,58,0.13), rgba(255,180,58,0.03) 70%, transparent);
+  display: flex; align-items: flex-start; gap: 12px;
+  margin: 0 0 12px;
   animation: pt-note-in 0.45s ease both;
 }
-.pt-note-who { font-size: 1.15rem; line-height: 1.3; color: #ffb43a; flex: none; }
+/* the figurine. `flex:none` and a fixed box so a slow SVG parse cannot reflow the board. */
+.pt-note-who { font-size: 1.15rem; line-height: 1.3; color: #ffb43a; flex: none;
+  width: 30px; display: flex; align-items: center; justify-content: center; }
+.pt-note-who--drawn { width: 54px; height: 54px; border-radius: 50%; overflow: hidden;
+  background: radial-gradient(circle at 50% 30%, rgba(255,180,58,0.22), rgba(255,180,58,0.05) 70%);
+  border: 1.5px solid rgba(255,180,58,0.5); box-shadow: 0 3px 10px -3px rgba(0,0,0,0.6); }
+/* ⚠ THE SVG IS SIZED HERE, NOT IN THE ART MODULE. pjcc-face-art.js draws one 100×100
+   viewBox for every consumer — the nav, the leaderboards, the Forge — and a width baked
+   into it would resize all of them. */
+.pt-note-who--drawn .fa-svg { width: 100%; height: 100%; display: block; }
+
+/* the balloon */
+.pt-note-bub { position: relative; flex: 1; min-width: 0;
+  padding: 11px 15px; border-radius: var(--r-md);
+  border: 1px solid rgba(255,180,58,0.42);
+  background: linear-gradient(160deg, rgba(255,180,58,0.15), rgba(255,180,58,0.04)); }
+/* the tail — two triangles, the back one a shade larger, so the 1px border appears to
+   run around the point instead of stopping at it */
+.pt-note-bub::before, .pt-note-bub::after {
+  content: ''; position: absolute; left: -9px; top: 17px;
+  border: 9px solid transparent; border-right-color: rgba(255,180,58,0.42); border-left: 0;
+}
+.pt-note-bub::after { left: -7px; border: 8px solid transparent; border-left: 0;
+  border-right-color: #2a2317; }
 .pt-note-t   { margin: 0; font-size: 0.92rem; line-height: 1.65; color: #e8e2d6; }
 .pt-note-t b { color: #ffc97a; font-weight: 800; margin-right: 2px; }
 /* the closing line sits under a finished game, so it leans quieter than the greeting */
-.pt-note--end { border-left-color: #8b93a1; background: linear-gradient(90deg, rgba(255,255,255,0.06), transparent 70%); }
+.pt-note--end .pt-note-bub { border-color: rgba(255,255,255,0.16);
+  background: linear-gradient(160deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02)); }
+.pt-note--end .pt-note-bub::before { border-right-color: rgba(255,255,255,0.16); }
+.pt-note--end .pt-note-bub::after  { border-right-color: #23252b; }
 .pt-note--end .pt-note-who { color: #b9c0cb; }
+.pt-note--end .pt-note-who--drawn { border-color: rgba(255,255,255,0.22);
+  background: radial-gradient(circle at 50% 30%, rgba(255,255,255,0.12), rgba(255,255,255,0.03) 70%); }
 .pt-note--end .pt-note-t b { color: #dfe4ec; }
 @keyframes pt-note-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .pt-note { animation: none; } }
+
+/* ── HER RATING, LIVE ──────────────────────────────────────────────────────────────
+   An adaptive seat's nameplate carries a number that MOVES, so it is set in the mono
+   face the rest of the room uses for live status and given the room's amber. ⚠ No
+   transition and no flash: this number changes every single move, and a nameplate that
+   pulsed 40 times a game would pull the eye off the board it is attached to. */
+.pt-plate-rate--live { color: #ffb43a; font-family: 'Share Tech Mono', monospace; }
 /* promotion picker — pawn reaches the last rank, you choose the piece (canon colors) */
 .pt-promo-ov { position: fixed; inset: 0; z-index: 9998; background: rgba(8,5,22,0.72);
   -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);

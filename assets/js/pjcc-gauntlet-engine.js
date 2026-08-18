@@ -24,6 +24,21 @@
  *    move(S, opts)          -> Promise<move|null>
  *        opts: { skill:0..20, movetime:ms, blunder:0..1, persona:{...} }
  *        skill/movetime/blunder default sensibly from persona if omitted.
+ *
+ *  ══ THE MOVE CARRIES THE ENGINE'S OPINION (2026-08-17) ═══════════════════════════
+ *  A resolved move may also carry `evalCp` — the search's own score for the position
+ *  it just thought about, in centipawns, from the SIDE TO MOVE's point of view (mate
+ *  folded to ±1500). It is FREE: the engine prints it on every `info` line of a search
+ *  it was going to run anyway, and this bridge was throwing those lines away.
+ *
+ *  That is what makes an adaptive opponent possible without a second engine — the bot's
+ *  own read on the position is a per-move measure of how the game is going, at no cost
+ *  in time or memory. `pjcc-adapt.js` consumes it.
+ *
+ *  ⚠ IT IS OPTIONAL AND MUST STAY OPTIONAL. A fallback move has no score, a search that
+ *  was stopped early may have no score, and an older vendored engine might not print one.
+ *  `evalCp` is then simply ABSENT — never 0, because "the position is equal" and "we did
+ *  not measure" are different facts and a consumer must be able to tell them apart.
  */
 (function (root) {
   'use strict';
@@ -33,6 +48,10 @@
   var WORKER_URL = BASE + 'stockfish.js#' + BASE + 'stockfish.wasm';
   var BOOT_TIMEOUT = 9000;   // ms to reach "readyok" before we give up on the engine
   var WATCHDOG_EXTRA = 3500; // ms of slack over the move-time budget before we bail a search
+  /* Mate is folded to this magnitude, and every cp score is clamped to it — the SAME
+     cap the Game Review applies, so the two files cannot disagree about how big a
+     winning position is allowed to look. [[review-accuracy-calibration]] */
+  var SCORE_CAP = 1500;
 
   function C()  { return root.PJCCChess; }     // referee (required)
   function AI() { return root.PJCCChessAI; }    // negamax fallback (optional)
@@ -99,6 +118,19 @@
         return;
       }
     }
+    /* The search's own evaluation, kept as it streams. ⚠ THE LAST ONE WINS, and it is
+       the deepest — Stockfish prints an `info` line per iteration, so the final score
+       before `bestmove` is the one that produced the move. Same parse the analysis
+       board uses; kept here rather than shared because this bridge must not grow a
+       dependency on an overlay module that most rooms never load. */
+    if (pending && line.indexOf('info') === 0 && line.indexOf(' score ') > -1) {
+      var sc = line.match(/score (cp|mate) (-?\d+)/);
+      if (sc) {
+        pending.score = sc[1] === 'mate'
+          ? (parseInt(sc[2], 10) > 0 ? SCORE_CAP : -SCORE_CAP)   // mate folded, sign kept
+          : Math.max(-SCORE_CAP, Math.min(SCORE_CAP, parseInt(sc[2], 10)));
+      }
+    }
     if (pending && line.indexOf('bestmove') === 0) {
       finishSearch((line.split(/\s+/)[1]) || null);
     }
@@ -135,6 +167,11 @@
     if (p.timer) clearTimeout(p.timer);
     if (p.grace) clearTimeout(p.grace);
     var mv = uci ? uciToMove(p.S, uci) : null;   // engine move, referee-checked
+    /* ⚠ THE SCORE RIDES ONLY ON A REAL ENGINE MOVE. If the referee rejected the engine's
+       move, or there was no move at all, we fall back — and the score we collected
+       describes a search whose conclusion we just threw away. Attaching it to a
+       negamax fallback would label a guess with the engine's authority. */
+    if (mv && p.score !== null && p.score !== undefined) mv.evalCp = p.score;
     if (!mv) mv = fallbackMove(p.S, p.opts);      // illegal/none/timeout -> safe fallback
     p.resolve(mv);
   }
@@ -149,7 +186,8 @@
       var fen;
       try { fen = C().toFEN(S); } catch (e) { resolve(fallbackMove(S, opts)); return; }
 
-      pending = { token: ++searchSeq, S: S, opts: opts, resolve: resolve, done: false, timer: null, grace: null };
+      pending = { token: ++searchSeq, S: S, opts: opts, resolve: resolve, done: false,
+                  timer: null, grace: null, score: null };
       // Watchdog: if the engine ever overruns its budget, stop it and fall back — no hangs.
       pending.timer = setTimeout(function () {
         post('stop');

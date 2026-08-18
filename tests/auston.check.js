@@ -232,8 +232,14 @@ console.log('\n── AUSTON ─────────────────
     start ? 'found in botStart (' + start.length + ' chars)' : 'botStart not found');
   check('…and only on a board with no moves on it',
     /!saved\.done && !\(saved\.moves \|\| ''\)\.trim\(\)/.test(ROOM), 'a resumed game is not a hello');
+  /* ⚠ WINDOWED ON THE FUNCTION, NOT ON A CHARACTER COUNT. The original form allowed 700
+     characters between `botFinish` and its `logFinished` call, and a comment added inside
+     that function in 2026-08-17 pushed it past the limit — a passing test turning red
+     because prose grew. Anchored to the closing brace instead, so it measures the thing
+     it is actually about: the call is inside this function. */
+  const botFinishFn = (ROOM.match(/function botFinish\(st, g\)\{[\s\S]*?\n  \}/) || [''])[0];
   check('every finished game is logged, resignations included',
-    /function botFinish[\s\S]{0,700}logFinished\(st,/.test(ROOM) &&
+    /logFinished\(st,/.test(botFinishFn) &&
     /reason = 'resignation'[\s\S]{0,300}logFinished\(st,/.test(ROOM));
   check('…exactly once, guarded on the SAVED state so a refresh cannot re-log it',
     /if \(!st \|\| st\.logged\) return;\s*\n\s*st\.logged = 1; botSave\(st\);/.test(ROOM));
@@ -281,9 +287,15 @@ console.log('\n── AUSTON ─────────────────
   check('knowsYou() answers yes/no and nothing about what she remembers',
     /knowsYou: function \(\) \{\s*try \{ return !!readJSON\(LEDGER_KEY, null\); \}/.test(SRC),
     'what she knows is hers to say out loud');
-  /* it quotes the note's amber rather than inventing a color — one warm edge, two places */
+  /* it quotes the note's amber rather than inventing a color — one warm edge, two places.
+     ⚑ RE-AIMED 2026-08-17: the note became a figurine plus a balloon, so the amber moved
+     off `.pt-note` itself and onto the two parts that are actually warm. The assertion is
+     unchanged in spirit — her lamp and her voice share one color — and now names the
+     selectors that carry it rather than a byte offset into the file. */
   check('…in the same amber as the note she speaks',
-    /\.pt-bot--knows \{[\s\S]{0,160}#ffb43a/.test(ROOM) && /\.pt-note \{[\s\S]{0,200}#ffb43a/.test(ROOM));
+    /\.pt-bot--knows \{[\s\S]{0,160}#ffb43a/.test(ROOM) &&
+    /\.pt-note-who \{[\s\S]{0,200}#ffb43a/.test(ROOM) &&
+    /\.pt-note-bub \{[\s\S]{0,260}255,180,58/.test(ROOM));
 
   /* ── SHE IS SOMETIMES ELSEWHERE ──────────────────────────────────────────────────
      ⚠⚠ THIS IS THE ONE FEATURE HERE THAT CAN TAKE SOMETHING AWAY FROM A PLAYER, so its
@@ -327,6 +339,150 @@ console.log('\n── AUSTON ─────────────────
      are indistinguishable at card size, measured when the eighth seat went in. */
   check('…to the solid knight, the one variant that actually reads',
     /&#9822;&#xFE0E;/.test(ROOM), '♞ with a text-presentation selector so color reaches it');
+}
+
+/* ══ SHE SPEAKS DURING THE GAME (2026-08-17) ═══════════════════════════════════════
+   Nate: *"it would be nice if she said maybe 2 or 3 things mid-game as well."*
+
+   The expensive mistakes here are different from the greeting's, and there are two:
+
+     1. ⚠⚠ SHE MUST NOT BECOME A COACH. Not one mid-game line may carry information about
+        the POSITION. An opponent who reacts to the move you just played is an engine hint
+        with a friendly face, and it silently turns every game at her table into assisted
+        play that nobody asked for or consented to. Every trigger must be a STREAK.
+     2. ⚠⚠ THE RENDER PATH MUST NOT BE ABLE TO BURN HER LINES. botRender() runs on every
+        tap of a square. If midGame() were called from there, picking a piece up and
+        putting it down four times would spend all three of her lines on nothing. This is
+        the same defect greet() is already guarded against, in a new place.
+   ═══════════════════════════════════════════════════════════════════════════════════ */
+{
+  const { A } = world(null);
+
+  check('mid-game lines are hers alone',
+    ['maxwell', 'robert', 'ceo'].every(id => A.midGame(id, { ply: 30, win: 80 }) === null));
+
+  /* ── the cap and the gap ─────────────────────────────────────────────────────── */
+  {
+    const { A } = world(null);
+    A.newGame();
+    const said = [];
+    // a long game she has every reason to comment on: winning, climbing, an endgame
+    for (let ply = 1; ply <= 120; ply++) {
+      const got = A.midGame('auston', { ply, win: 78, level: 1500, seed: 1200, pieces: 10 });
+      if (got) said.push({ ply, kind: got.kind });
+    }
+    check('she says at most three things in a game', said.length <= A.MID_CAP,
+      said.length + ' of a possible ' + A.MID_CAP + ' — ' + said.map(s => s.kind).join(' · '));
+    check('…and she does say SOMETHING when there is plenty to notice', said.length >= 2,
+      said.map(s => '@' + s.ply).join(' '));
+    const gaps = said.slice(1).map((s, i) => s.ply - said[i].ply);
+    check('…never twice inside MID_GAP plies', gaps.every(g => g >= A.MID_GAP),
+      gaps.length ? 'gaps: ' + gaps.join(', ') : 'only one line');
+    check('…and never the same observation twice',
+      new Set(said.map(s => s.kind)).size === said.length, said.map(s => s.kind).join(' · '));
+  }
+
+  /* ── ⚠ A NEW GAME REFILLS THEM; A RE-RENDER DOES NOT ─────────────────────────── */
+  {
+    const { A } = world(null);
+    A.newGame();
+    let first = 0;
+    for (let ply = 1; ply <= 120; ply++) if (A.midGame('auston', { ply, win: 78, level: 1500, seed: 1200, pieces: 10 })) first++;
+    A.newGame();
+    let second = 0;
+    for (let ply = 1; ply <= 120; ply++) if (A.midGame('auston', { ply, win: 78, level: 1500, seed: 1200, pieces: 10 })) second++;
+    check('sitting down again refills her mid-game lines', first > 0 && second === first,
+      first + ' then ' + second);
+  }
+
+  /* ── ⚠ SHE SAYS NOTHING SHE CANNOT SUPPORT ───────────────────────────────────── */
+  {
+    const { A } = world(null);
+    A.newGame();
+    let any = null;
+    for (let ply = 1; ply <= 200; ply++) {
+      const got = A.midGame('auston', { ply });        // no win%, no level, no piece count
+      if (got) { any = got; break; }
+    }
+    check('with nothing measured she says nothing at all', any === null,
+      'no win%, no level, no material — 200 plies of silence');
+  }
+
+  /* ── ⚠ A DEAD-LEVEL GAME IS NOT A LANDSLIDE ──────────────────────────────────── */
+  {
+    const { A } = world(null);
+    A.newGame();
+    const kinds = [];
+    for (let ply = 1; ply <= 120; ply++) {
+      const got = A.midGame('auston', { ply, win: 50, level: 1200, seed: 1200, pieces: 28 });
+      if (got) kinds.push(got.kind);
+    }
+    check('a level game never produces an "ahead" or "behind" line',
+      !kinds.some(k => k === 'mid_ahead' || k === 'mid_behind'),
+      kinds.length ? kinds.join(' · ') : 'she stayed quiet');
+  }
+
+  /* ── ⚠⚠ THE ASSISTANCE RULE, ENFORCED ON THE WORDS THEMSELVES ────────────────── */
+  {
+    const { A } = world(null);
+    const mids = Object.keys(A.LINES).filter(k => k.indexOf('mid_') === 0);
+    check('there IS a mid-game set', mids.length >= 3, mids.join(' · '));
+    const all = mids.reduce((acc, k) => acc.concat(A.LINES[k]), []).join(' ').toLowerCase();
+    /* Words that would mean she is describing the position rather than the game.
+       ⚠ If a new line legitimately needs one of these, the RULE is what has to be
+       re-argued — not this list quietly extended. */
+    const tells = ['blunder', 'hang', 'hung', 'mistake', 'careful', 'watch out',
+                   'your queen', 'your rook', 'check', 'fork', 'threat', 'attack'];
+    const leaked = tells.filter(w => all.indexOf(w) > -1);
+    check('⚠ not one mid-game line describes the POSITION', leaked.length === 0,
+      leaked.length ? 'LEAKED: ' + leaked.join(', ') : tells.length + ' coaching tells, none present');
+  }
+
+  /* ── the room wires it in the one safe place ─────────────────────────────────── */
+  check('⚠⚠ midGame is called from botThink, NOT from the render path',
+    /PJCCAuston\.midGame\(/.test(ROOM) && !/botRender[\s\S]{0,400}PJCCAuston\.midGame\(/.test(ROOM),
+    'botRender runs on every tap — asking there would spend her lines on a piece being picked up');
+  check('…and never over a finished board', /if \(!g\.result && window\.PJCCAuston/.test(ROOM),
+    'that is the farewell’s moment; two of her talking at once is neither');
+  check('the room refills her lines when you sit down',
+    /PJCCAuston\.newGame\(\)/.test(ROOM));
+}
+
+/* ══ THE FIGURINE ══════════════════════════════════════════════════════════════════ */
+{
+  const { A, win } = world(null);
+  check('without the art module she has no face, rather than a broken one',
+    A.face() === null, 'the room then draws her ♘, which is what it drew before');
+  win.PJCCFaceArt = { svg: o => '<svg data-hair="' + o.hair + '"></svg>' };
+  const f = A.face();
+  check('with it, she is drawn by the SAME code that draws the player',
+    typeof f === 'string' && f.indexOf('<svg') === 0, f);
+  /* ⭐ Her character file commits to exactly one detail about her appearance — Nate
+     "braiding hair" — so it is the one this look is not free to change. */
+  check('…wearing the one thing canon actually said about her', /braids/.test(f), A.LOOK.hair);
+  check('the room falls back to the glyph, not to a hole',
+    /\(face \|\| bot\.icon\)/.test(ROOM));
+}
+
+/* ══ SHE PLAYS AT YOUR LEVEL ═══════════════════════════════════════════════════════ */
+{
+  check('her seat is the adaptive one', /adaptive: true/.test(ROOM));
+  check('⚠ strength still has exactly one door', /function botDial\(b\)\{[\s\S]{0,220}botElo\(b\)/.test(ROOM),
+    'an adaptive seat that bypassed botDial would be a second source of truth about difficulty');
+  check('⚠ her card does NOT advertise a fixed rating',
+    /finds your level/.test(ROOM) && /b\.adaptive/.test(ROOM),
+    'the house law is that a visible number keeps a difficulty honest — hers moves, so it cannot be fixed');
+  check('…and her nameplate prints what she is playing at RIGHT NOW',
+    /botElo\(bot\) \+ ' · '/.test(ROOM));
+  check('a missing pjcc-adapt.js makes her a fixed 1200 again',
+    /if \(!b\.adaptive\) return b\.elo;/.test(ROOM) && /\|\| b\.elo;/.test(ROOM),
+    'never a silent 400 and never a silent 2400');
+  check('the review is told where she SETTLED, not what she was seeded at',
+    /botAdapt\.settled\(\)/.test(ROOM));
+  check('…and a rematch starts from there too', /saveAdaptSeed\(st\.bot, botAdapt\.settled\(\)\)/.test(ROOM));
+  check('⚠ the seed is written at game END only',
+    !/botSave\(st\)[\s\S]{0,80}saveAdaptSeed/.test(ROOM),
+    'per-move would let an abandoned losing game re-seed her low forever');
 }
 
 console.log(`\n  ${pass} passed, ${fail} failed\n`);

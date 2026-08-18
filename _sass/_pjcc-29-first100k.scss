@@ -1,0 +1,119 @@
+/* ═══════════════════════════════════════════════════════════════════════════════════
+   THE FIRST 100,000 — the signup bar along the bottom               (2026-08-17)
+
+   Nate asked for a counter *"on the bottom of the screen"*, site-wide. That is the most
+   valuable strip of a page and also the easiest one to ruin, so three rules run through
+   everything below:
+
+   1. ⚠ IT MUST NEVER COVER THE LAST LINE OF A PAGE. It is `position: fixed`, so it sits
+      over content by construction — and the bottom of a page is where the footer, the
+      "next" link and half the site's calls to action live. `html.has-f100k body` buys the
+      height back as padding, so the page can still be scrolled clear of it. A fixed bar
+      without that padding is a bar that eats a footer on every page of the site.
+   2. IT IS PAPER, NOT A BUTTON. One green thing per screen is the front door's law, and
+      on most pages that green thing already exists and is more important than this. So
+      the bar is a dark slab with a quiet gold rule and exactly one small solid control.
+   3. ⚠ IT IS DISMISSIBLE AND THE DISMISS IS A REAL TARGET. 44px, like every other tap
+      target on the site — an "✕" that is hard to hit turns a growth device into a trap.
+      [[tap-targets-and-audit-numbers]]
+
+   ⭐ THE NUMBER IS THE HERO. `.f100k-n` is the only thing here in the display face and the
+   only thing in full gold, because the entire pitch is "you would be #8" — a small
+   number is the good news, and it should be the thing the eye lands on.
+   ═══════════════════════════════════════════════════════════════════════════════════ */
+
+.f100k {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 900;                      /* under the nav drawer + any overlay, over the page */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  /* the safe-area inset matters on iOS, where the home indicator sits exactly here and
+     would otherwise share a strip with the dismiss button */
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, rgba(17, 14, 30, 0.93), rgba(11, 9, 20, 0.98));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border-top: 1px solid rgba(245, 197, 24, 0.34);
+  box-shadow: 0 -12px 34px -20px rgba(0, 0, 0, 0.9);
+  color: #e8e6f2;
+  /* ⚠ TRANSFORM + OPACITY ONLY — the site's motion budget is measured on exactly these
+     two, and a fixed full-width bar animating anything else would be a repaint of the
+     whole viewport edge every frame. [[css-perf-lessons]] */
+  transform: translateY(102%);
+  opacity: 0;
+  transition: transform .34s cubic-bezier(.22, .9, .3, 1), opacity .34s ease;
+  will-change: transform;
+}
+.f100k.is-in { transform: none; opacity: 1; }
+
+.f100k-mark { color: #F5C518; font-size: 0.95rem; flex: none; opacity: 0.85; }
+
+.f100k-t {
+  margin: 0; flex: 1; min-width: 0;
+  font-size: 0.88rem; line-height: 1.45; color: #c8c3dc;
+}
+.f100k-t b { color: #efeaff; font-weight: 700; }
+
+/* the payload */
+.f100k-n {
+  font-family: 'Space Grotesk', 'Share Tech Mono', monospace;
+  color: #F5C518 !important;
+  font-weight: 800;
+  font-size: 1.02rem;
+  letter-spacing: 0.01em;
+}
+
+.f100k-go {
+  flex: none;
+  background: #F5C518; color: #1a1526;
+  font-weight: 800; font-size: 0.82rem;
+  text-decoration: none;
+  padding: 9px 15px;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition: transform .14s ease, box-shadow .14s ease;
+}
+.f100k-go:hover, .f100k-go:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px -6px rgba(245, 197, 24, 0.7);
+  color: #1a1526;
+}
+
+.f100k-x {
+  flex: none;
+  width: 44px; height: 44px;          /* the site's tap-target floor, not a decorative ✕ */
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none; cursor: pointer;
+  color: #6f6889; font-size: 0.95rem; line-height: 1;
+  border-radius: 50%;
+}
+.f100k-x:hover, .f100k-x:focus-visible { color: #cfc8e6; background: rgba(255, 255, 255, 0.07); }
+
+/* ⚠ THE PAGE GETS ITS BOTTOM BACK. Without this the bar sits on top of whatever the last
+   element is — on this site that is a footer with real links in it. */
+html.has-f100k body { padding-bottom: 74px; }
+
+/* ── PHONES ───────────────────────────────────────────────────────────────────────
+   The label wraps to two lines rather than the row growing a third column. The button
+   keeps its full size — it is the only thing here anyone is meant to press, and the
+   narrow screens are exactly where a shrunken control fails. */
+@media (max-width: 560px) {
+  .f100k { gap: 9px; padding-left: 11px; padding-right: 6px; }
+  .f100k-mark { display: none; }
+  .f100k-t { font-size: 0.8rem; line-height: 1.4; }
+  .f100k-go { padding: 9px 13px; font-size: 0.78rem; }
+  html.has-f100k body { padding-bottom: 86px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .f100k { transition: none; transform: none; opacity: 1; }
+  .f100k-go { transition: none; }
+  .f100k-go:hover, .f100k-go:focus-visible { transform: none; }
+}
+
+/* ⚠ PRINT AND THE HIDDEN-BOARD SCREENSHOTS. A fixed overlay lands on every printed page
+   and in every captured frame; neither wants a signup prompt in it. */
+@media print { .f100k { display: none; } }

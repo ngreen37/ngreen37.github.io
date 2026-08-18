@@ -196,6 +196,53 @@
       "{you}. I was hoping you would come by."
     ],
 
+    /* ── DURING THE GAME (2026-08-17) ─────────────────────────────────────────────
+       Nate: *"She only says something in the beginning but it would be nice if she said
+       maybe 2 or 3 things mid-game as well."*
+
+       ⚠⚠ NOT ONE OF THESE MAY TELL YOU ANYTHING ABOUT THE POSITION. That is the rule the
+       whole set is built around, and it is not squeamishness — an opponent who says
+       "careful, your queen" the moment you hang it is an engine hint wearing a friendly
+       face, and it silently turns every game at her table into assisted play. Nobody
+       asked for a coach and nobody consented to one.
+
+       So she reacts to the SHAPE of the game, never to a move: how long it has been
+       level, whether she has had to play up, that pieces are coming off. Every one of
+       these is true of a stretch of moves rather than of the last one, which is also what
+       a pattern-spotter would actually notice — and it means none of them can be mined
+       for what the engine thinks of your position.
+
+       ⚠ SHE GETS THREE, AT MOST, AND NEVER TWICE IN TEN PLIES. The talkative-bot failure
+       is not annoyance, it is unreadability — see the header. Three well-spaced lines in a
+       forty-move game is a person at the table; one every other move is a chat log. */
+
+    // the dial has had to come UP a long way — she is playing above her seat, and says so
+    mid_climbing: [
+      "I am playing above my seat to keep up with you. Just so you know that I know.",
+      "You are better than my table usually needs. I have stopped holding anything back."
+    ],
+    // a long stretch where neither side has been meaningfully better
+    mid_level: [
+      "Neither of us is winning this. That is the best kind.",
+      "Dead level for a long stretch now. This is the part I actually like."
+    ],
+    // you have been the better side for a sustained run of moves
+    mid_ahead: [
+      "You have had the better of this for a while. I noticed. Keep going.",
+      "You are playing well today. I am not going to pretend otherwise."
+    ],
+    // you have been worse for a sustained run — ⚠ ENCOURAGEMENT, NEVER PITY, and never
+    // an offer to go easy: the dial quietly does that, and announcing it would sting
+    mid_behind: [
+      "Still your move, and still a game. Courage is one more move than the fear wants.",
+      "Hard one so far. Stay in the chair — that is the entire trick, it always was."
+    ],
+    // the pieces have come off and it is an endgame now
+    mid_endgame: [
+      "Endgame. This is where my brother stops paying attention.",
+      "Not many of us left out there. Count before you move."
+    ],
+
     /* ── the game ending ──────────────────────────────────────────────────────── */
 
     end_first_win: [
@@ -232,7 +279,32 @@
     ]
   };
 
+  /* ══════════════════════════════════════════════════════════════════════════════════
+   *  ⚠ NATE — HER FACE IS YOURS TOO. (2026-08-17: *"can we give Auston a little figurine
+   *  in-game and have a text bubble when she speaks?"*)
+   *
+   *  She is drawn by the SAME code that draws an operative's own face
+   *  (`pjcc-face-art.js`), which is the entire reason this is five lines instead of an
+   *  art commission — and it means she and the player are drawn in one visual language
+   *  rather than a character sitting next to an avatar from a different world.
+   *
+   *  ⭐ BRAIDS ARE THE ONE CHOICE CANON ACTUALLY MADE. Her character file says Nate
+   *  raised her — *"braiding hair, packing lunches"* — so it is the single detail about
+   *  her appearance the story has ever committed to, and it is the one that carries the
+   *  relationship. Everything else here is a plain default I picked and you should
+   *  overrule the moment you have a picture in your head.
+   *
+   *  Keys come from PJCCFaceArt: SKIN_ORDER · HAIR_ORDER · HAIRCOL_ORDER · EYE_ORDER.
+   *  `brow` and `mouth` are small integers (-2..2) — 1 is a slight, level, ready look.
+   * ══════════════════════════════════════════════════════════════════════════════════ */
+  var LOOK = { tone: '🏼', hair: 'braids', hairColor: 'espresso', eye: 'hazel', brow: 0, mouth: 1 };
+
   /* ══ END OF THE WORDS. Everything below is machinery. ═══════════════════════════ */
+
+  /* This game's mid-game counters. ⚠ NOT PERSISTED, and that is the point — it is the
+     only state in this file that is allowed to be forgotten by a refresh. Her ledger is
+     memory; this is just what she has already said this game. */
+  var mid = null;
 
   var LEDGER_KEY = 'pjcc.auston.v1';   // what she knew when you last sat down
   var LOG_KEY    = 'pjcc.pt.log.v1';   // every finished bot game, newest first
@@ -603,6 +675,87 @@
       var line = render(kind, data, null);
       return line ? { text: line, kind: kind } : null;
     },
+
+    /* ══ SHE SAYS SOMETHING DURING THE GAME (2026-08-17) ═══════════════════════════
+       Called from the render path after every bot reply, with whatever the room happens
+       to have measured. Returns {text, kind} the few times she has something worth
+       saying, and null — which is nearly always — the rest of the time.
+
+       ⚠ SAFE TO CALL ON EVERY MOVE, unlike greet(). It commits nothing to the ledger; the
+       only state it touches is this game's own counters, which live in `mid` and die with
+       the game. That is deliberate: the greeting is a property of sitting down and had to
+       be computed exactly once, but a mid-game line is a property of the position you are
+       looking at, so the render path is the correct place to ask.
+
+       `ctx` is all numbers and all optional:
+         ply     how many half-moves have been played
+         win     the PLAYER's win% for this position (50 = level) — absent if unmeasured
+         level   the strength she is playing at right now
+         seed    the strength she started this game at
+         pieces  men left on the board
+       ⚠ A missing field is never guessed. An observation whose inputs did not arrive is
+         simply not offered, exactly like the credit lines when she cannot see a balance. */
+    MID_CAP: 3,        // most lines she may say in one game
+    MID_GAP: 10,       // plies that must pass between any two of them
+
+    newGame: function () { mid = { said: {}, n: 0, at: -99, level: 0, ahead: 0, behind: 0 }; },
+
+    midGame: function (botId, ctx) {
+      if (botId !== WHO || !ctx) return null;
+      if (!mid) API.newGame();
+      var ply = ctx.ply | 0;
+      if (mid.n >= API.MID_CAP) return null;
+      if (ply - mid.at < API.MID_GAP) return null;
+
+      /* ── THE RUNNING COUNTS ──────────────────────────────────────────────────────
+         Every trigger below is a STREAK, never a single move. A run of plies is a fact
+         about the game; one ply is a fact about one move, and reacting to one move is
+         the assistance problem the lines table warns about. */
+      if (typeof ctx.win === 'number') {
+        if (ctx.win > 60)      { mid.ahead++; mid.behind = 0; mid.level = 0; }
+        else if (ctx.win < 40) { mid.behind++; mid.ahead = 0; mid.level = 0; }
+        else                   { mid.level++;  mid.ahead = 0; mid.behind = 0; }
+      }
+
+      var out = [];
+      function add(kind, weight) { if (!mid.said[kind]) out.push({ kind: kind, weight: weight }); }
+
+      // she has had to play up by a clear margin — the one line that explains her plate
+      if (typeof ctx.level === 'number' && typeof ctx.seed === 'number' &&
+          ctx.level - ctx.seed >= 150) add('mid_climbing', 900);
+      // pieces are off. 12 men is the usual "this is an endgame now" line in the books
+      if (typeof ctx.pieces === 'number' && ctx.pieces <= 12 && ply >= 24) add('mid_endgame', 700);
+      if (mid.ahead  >= 6) add('mid_ahead',  600);
+      if (mid.behind >= 6) add('mid_behind', 620);
+      if (mid.level  >= 10) add('mid_level', 500);
+      if (!out.length) return null;
+
+      out.sort(function (a, b) { return b.weight - a.weight; });
+      var chosen = out[0];
+      var line = render(chosen.kind, {}, null);
+      if (!line) return null;                       // the pool was emptied — she stays quiet
+      mid.said[chosen.kind] = 1; mid.n++; mid.at = ply;
+      return { text: line, kind: chosen.kind };
+    },
+
+    /* ── HER FIGURINE ──────────────────────────────────────────────────────────────
+       Returns an <svg> string, or null if the art module did not load — in which case
+       the room falls back to her ♘ glyph, which is what it drew before this existed.
+       ⚠ A FALLBACK MUST LOOK LIKE THE OLD THING, NOT LIKE A BROKEN NEW THING: no empty
+       frame, no alt box, no gap where a face should be.
+       [[feature-shipped-but-never-loaded]] [[companion-is-emoji]] */
+    face: function () {
+      try {
+        /* ⚠ `window.`-QUALIFIED THROUGHOUT, not just on the first reach. In a browser a
+           global and a window property are the same thing, so the bare form works and the
+           rest of this file uses it — but it is the reason a harness that injects a fake
+           `window` sees this return null forever. Qualified here so the figurine is
+           testable without a DOM. */
+        if (!window.PJCCFaceArt || !window.PJCCFaceArt.svg) return null;
+        return window.PJCCFaceArt.svg(LOOK) || null;
+      } catch (e) { return null; }
+    },
+    LOOK: LOOK,
 
     logGame: logGame,
     speaks: function (botId) { return botId === WHO; },
