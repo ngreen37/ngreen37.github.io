@@ -178,10 +178,17 @@
 </head>
 <body>
   <script>
-    /* Restore the docked-rail collapsed state BEFORE paint so the desktop rail never flashes
-       open (full logic + persistence in pjcc-eggs.js; only meaningful at >=901px). Added to
-       game pages 2026-07-24 when they adopted the shared header. */
-    try { if (localStorage.getItem('pjcc.nav.collapsed') === '1') document.body.classList.add('nav-collapsed'); } catch (e) {}
+    /* Restore the docked-rail state BEFORE paint so the desktop rail never flashes at the
+       wrong width (full logic + persistence in pjcc-eggs.js; only meaningful at >=901px).
+       Added to game pages 2026-07-24 when they adopted the shared header.
+       ⚑ 2026-08-18: default flipped to COLLAPSED (Nate). This must stay byte-for-byte the
+       same decision as _layouts/default.html — the long note lives there. Two layouts, one
+       rule: a stored '0' docks it wide, anything else (including nothing) collapses it. */
+    (function () {
+      var c = null;
+      try { c = localStorage.getItem('pjcc.nav.collapsed'); } catch (e) {}
+      if (c !== '0') document.body.classList.add('nav-collapsed');
+    })();
   </script>
 
   {% comment %} The town sky reaches the game halls too (2026-07-14 Nate: the sun/moon

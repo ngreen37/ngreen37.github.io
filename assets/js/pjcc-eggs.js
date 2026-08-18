@@ -288,11 +288,16 @@ function showTxToast(msg, duration) {
     var toggle = document.getElementById('nav-toggle');
     var nav    = document.getElementById('site-nav');
     if (!toggle || !nav) return;
-    // The nav is responsive (2026-07-23). DESKTOP (>=901px): the rail is DOCKED OPEN by
-    // default and the hamburger COLLAPSES it to an icons-only rail — remembered in
+    // The nav is responsive (2026-07-23). DESKTOP (>=901px): the rail is DOCKED as an
+    // icons-only column and the hamburger EXPANDS it to full labels — remembered in
     // localStorage, restored before paint by the inline script in default.html. MOBILE:
     // the hamburger OPENS/CLOSES the slide-in overlay, as before. Keep the breakpoint in
     // sync with _sass/_pjcc-13-nav.scss (@media min-width:901px).
+    // ⚑ 2026-08-18 (Nate: "collapse the menu by default on PC"): COLLAPSED is the default
+    // now, so the hamburger's first click on a fresh browser OPENS the rail rather than
+    // shutting it. Nothing in this function changed — it reads the class the pre-paint
+    // script set and toggles from there, which is exactly why the default lives in one
+    // place and not in two. The a11y state below follows for free.
     var COLLAPSE_KEY = 'pjcc.nav.collapsed';
     function isDesktop() { return !!(window.matchMedia && matchMedia('(min-width: 901px)').matches); }
 

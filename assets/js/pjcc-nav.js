@@ -31,6 +31,11 @@
       { t: 'Blog',             s: 'The build log — every post so far',      u: '/blog/',               ic: '✍', b: 'mcpuppy', k: 'blog build log episodes posts writing' },
       { t: 'Mailing List',     s: 'Get updates by email',                 u: '/mailing-list/',       ic: '✉', b: 'mcpuppy', k: 'mailing list email subscribe newsletter' },
       { t: 'For Educators',    s: 'Use PJCC in the classroom',            u: '/educators/',          ic: '🍎', b: 'mcpuppy', k: 'educators teachers classroom school lessons' },
+      // 2026-08-18 — /follow/ (was /live/, built 08-17 and linked from nowhere). The keyword
+      // string carries the OLD name and every platform on the page: a person hunting for the
+      // stream types "twitch" or "live", not "follow", and somebody after the accounts types
+      // "instagram" — none of which appear in the title or subtitle this list matches on.
+      { t: 'Follow',           s: 'Twitch, and everywhere else this lives', u: '/follow/',           ic: '◉', b: 'mcpuppy', k: 'follow live stream streaming twitch broadcast socials social instagram tiktok youtube reddit pinterest x accounts subscribe watch' },
     ];
 
     var active = 0;

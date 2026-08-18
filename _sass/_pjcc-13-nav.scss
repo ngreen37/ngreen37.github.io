@@ -422,12 +422,24 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
 /* ══════════════════════════════════════════════════════════════════════════════
    COLLAPSIBLE DOCKED RAIL — desktop only (2026-07-23, Nate: "keep the framework, but the
    menu items should display by default; the hamburger minimizes them"). At ≥901px the
-   drawer stops being a slide-in overlay and DOCKS OPEN on the left; the page + footer
-   reflow to its right. The hamburger toggles `body.nav-collapsed`, shrinking it to an
-   icons-only rail (hover an icon → its label flies out). The choice is remembered in
-   localStorage (`pjcc.nav.collapsed`) and restored before paint by an inline script in
-   default.html, so it doesn't flash. Below 901px nothing here applies — the drawer stays
-   the slide-in overlay defined above. See the toggle logic in pjcc-eggs.js.
+   drawer stops being a slide-in overlay and DOCKS on the left; the page + footer reflow to
+   its right. The hamburger toggles `body.nav-collapsed`, shrinking it to an icons-only rail
+   (hover an icon → its label flies out). The choice is remembered in localStorage
+   (`pjcc.nav.collapsed`) and restored before paint by an inline script in default.html, so
+   it doesn't flash. Below 901px nothing here applies — the drawer stays the slide-in overlay
+   defined above. See the toggle logic in pjcc-eggs.js.
+
+   ⚑ WHICH STATE IS THE DEFAULT FLIPPED ON 2026-08-18 (Nate: "collapse the menu by default on
+   PC"). His 07-23 words are kept above because they are why the framework is shaped this way
+   — but "display by default" is no longer true, and a rail that starts wide is now the
+   OPT-IN. Not one line of this block changed: both states were always fully described here,
+   and the default was never a CSS fact. It lives in the pre-paint script in _layouts/
+   default.html + _layouts/game.html, which is the only place to change it.
+   ⚠ TWO ROWS GO QUIET AT REST BECAUSE OF THIS. `.drawer-mini` (Blog · Contact) is
+   `display: none` while collapsed, so on a fresh desktop those two are reachable by ⌘K, the
+   footer and — for Contact — the header button, but not from the rail until it is opened.
+   That is the accepted cost of the default, not an oversight; if it ever needs fixing the
+   answer is where those two links live, not a third rail state.
    ══════════════════════════════════════════════════════════════════════════════ */
 @media (min-width: 901px) {
   /* ONE source of truth for the docked-rail width (2026-07-23). The rail itself, the

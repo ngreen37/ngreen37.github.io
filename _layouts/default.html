@@ -19,10 +19,25 @@
 </head>
 <body{% if page.body_class %} class="{{ page.body_class }}"{% endif %}>
   <script>
-    /* Restore the docked-rail collapsed state BEFORE paint so it never flashes open on
+    /* Restore the docked-rail state BEFORE paint so it never flashes at the wrong width on
        desktop (the full logic + persistence lives in pjcc-eggs.js). Runs inside <body>, so
-       document.body already exists. Only meaningful at >=901px, where the CSS acts on it. */
-    try { if (localStorage.getItem('pjcc.nav.collapsed') === '1') document.body.classList.add('nav-collapsed'); } catch (e) {}
+       document.body already exists. Only meaningful at >=901px, where the CSS acts on it.
+
+       ⚑ 2026-08-18 (Nate: "collapse the menu by default on PC"). THE DEFAULT FLIPPED, and it
+       is a reversal of the 2026-07-23 call ("the menu items should display by default") — so
+       read this before "fixing" it back. The rail now starts COLLAPSED and only a stored '0'
+       — a visitor who has actually clicked the hamburger open — docks it wide. That is why
+       the test is `!== '0'` and not `=== '1'`: absent means default, and the default is now
+       collapsed.
+       ⚠ THE CLASS IS APPLIED EVEN IF localStorage THROWS (blocked cookies / private mode).
+       The old shape read the key inside the try, so a throw silently produced the OTHER
+       state. With the default outside the catch, a browser that can't remember anything
+       still gets the intended picture. */
+    (function () {
+      var c = null;
+      try { c = localStorage.getItem('pjcc.nav.collapsed'); } catch (e) {}
+      if (c !== '0') document.body.classList.add('nav-collapsed');
+    })();
   </script>
 
   {%- comment -%} The town sky — day/dusk/night/dawn behind EVERY page, not just the P&JCC

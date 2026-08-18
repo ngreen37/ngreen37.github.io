@@ -503,6 +503,34 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
        which is worse, and shuffling the grid to hide one gap is how a page ends up with a
        layout nobody chose. If it reads as a hole, the fix is a SIXTH DOOR worth having, not a
        new column count. {%- endcomment -%}
+  {%- comment -%} ══ THE SIXTH DOOR — AND THE HOLE CLOSES (2026-08-18) ═══════════════════════
+       Nate: "Let's make Socials/Twitch the sixth box."
+
+       ⭐ THE NOTE DIRECTLY ABOVE CALLED THIS, and that is the whole reason nothing else here
+       had to move. When Notation Blitz came off the page on 08-11 the grid fell to five and
+       the second row kept an empty cell; the fix was written down that day — "a SIXTH DOOR
+       worth having, not a new column count" — so this is one card added and zero CSS touched.
+       Three across is two clean rows again and the phone stays 2x2x2.
+
+       ⚠ IT IS THE ONE DOOR ON THIS ROW THAT ISN'T SOMETHING TO PLAY, WHICH IS WHY IT IS LAST.
+       Every other card is a room a stranger can walk into and finish something in; this one is
+       where they go if they liked it. Last is the correct slot for that, not an accident of
+       markup order — and the grid's order IS markup order, no nth-child depends on it.
+
+       ⚠ NO NEW INK, ESPECIALLY NOT TWITCH PURPLE. This page bans gold and purple
+       ([[front-door-palette]]) and the one exception on the row — the Gauntlet's brass arch —
+       is a livery that already existed. A Twitch-colored card would be the loudest thing on
+       the front door and it would be loud for the least important box. Plain `.mc-door`.
+       ⚠ ◉ CARRIES `&#xFE0E;` (VARIATION SELECTOR-15) for the same reason every monochrome nav
+       icon does: without it a browser may reach for its color emoji font, `color` silently
+       no-ops, and the glyph lands as something the palette never chose. It reads as the
+       on-air/record dot, which is the half of this page a stranger will care about first.
+       {%- endcomment -%}
+  <a class="mc-door" href="{{ '/follow/' | relative_url }}">
+    <span class="mc-door-ico" aria-hidden="true">&#9673;&#xFE0E;</span>
+    <b>Follow</b>
+    <small>Twitch, and everywhere else this lives.</small>
+  </a>
 </div>
 
 {%- comment -%} THE HONEST STRIP MOVED INTO THE HERO (2026-08-11, his #2) — it is now in
