@@ -289,7 +289,24 @@ body.theme-chess {
      ⚠ THE FOUR DOOR CARDS DID NOT MOVE and must not: --fd-panel / --fd-panel-hi are OPAQUE,
      which is what keeps the ink-3 subtitles (measured 8.01:1 there) off this dial entirely.
      The alpha below only governs the sheet those cards sit ON. */
-  --surface:   rgba(251, 243, 224, 0.83);
+  /* ⚑⚑⚑ NINTH PASS — 0.83 → 0.75 (2026-08-18, Nate: "the CW home page gray box 10% more
+     transparent"). Both readings of "10% more transparent" land in the same place again
+     (0.83 × 0.9 = 0.747; opacity 0.17 → 0.25 = 0.75), which is why this took a number and
+     not a question.
+
+     ⚠⚠⚠ AND IT LANDS ON THE VALUE HE REJECTED TWICE. The alpha originally climbed
+     0.72 → 0.78 → 0.92 precisely BECAUSE 0.72 read gray-lavender — the night sky coming
+     through the paper. 0.75 is three hundredths above that. He is also, in the same
+     sentence, now CALLING IT "the gray box" — so the most coherent reading of the ask is
+     that he wants the box to RECEDE rather than to be re-tinted, and more transparency is
+     exactly that. Done as asked, and flagged to him with the measurement.
+     ⚠ IF "GRAY" COMES BACK: the dial is this line, 0.79 splits the difference, and the foot
+     of the card past the top light is where it cools first. NEVER chase it with a tint —
+     tinting a translucent sheet only buys darkness (the whole argument of the 0.78 note).
+     ⚠ MEASURED BY SAMPLING A RENDER, NOT BY ARITHMETIC — `.page-card` is a FOUR-layer stack
+     (top light · this sheet · a warm backlight radial · the sky), so composing it by hand
+     silently skips two of them. Worst case is the card's FOOT on the NIGHT sky. */
+  --surface:   rgba(251, 243, 224, 0.75);
   --surface-2: #f6f0e2;
   /* the edge steps down with the sheet. At 0.78 the card was dim enough that #e6dfcd read
      as a border; against the brighter paper it disappeared, and a lit sheet with no edge

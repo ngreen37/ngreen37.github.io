@@ -164,6 +164,31 @@
   <i class="ts-ecl-corona" aria-hidden="true"></i>
   <i class="ts-orb"></i>
 
+  {%- comment -%} ⚑⚑ THE TERMINATOR, AS A REAL ELLIPSE (2026-08-18, Nate: "the moon looks a
+       bit odd in its waning gibbous"). It used to be a same-size disc of sky slid across
+       the face — and two circles of EQUAL radius can only ever cut a crescent, so every
+       gibbous night for a year drew the wrong figure while the lit AREA underneath was
+       exactly right. 61% lit was rendering as a crescent.
+
+       The real terminator is a circle seen edge-on, i.e. an ELLIPSE, and an SVG path is
+       the only shape language here that can say that. `clipPathUnits="objectBoundingBox"`
+       puts it in 0-1 space, so it fits the orb at ANY diameter — which is why making the
+       moon larger is now one number in the stylesheet and nothing else.
+
+       ⚠ ONE INSTANCE, ONE ID. This include is the town sky and the town sky is site-wide;
+       a second copy would duplicate the id and the first one silently wins everywhere.
+       ⚠ `aria-hidden` + zero box: it is a definition, never a picture.
+       ⚠ THE DEFAULT `d` IS A FULL DISC. If the clock never runs, the moon is full rather
+       than gone — a fallback must look like the old thing, never like a hole.
+       [[feature-shipped-but-never-loaded]] {%- endcomment -%}
+  <svg class="ts-defs" width="0" height="0" aria-hidden="true" focusable="false">
+    <defs>
+      <clipPath id="ts-moon" clipPathUnits="objectBoundingBox">
+        <path id="ts-moon-path" d="M0.5 0A0.5 0.5 0 0 1 0.5 1A0.5 0.5 0 0 1 0.5 0Z"/>
+      </clipPath>
+    </defs>
+  </svg>
+
   {%- comment -%} 3 · shooting stars. Night only, and the one thing allowed in FRONT of the
        moon. Three of them on long, deliberately coprime cycles (29s · 43s · 67s) with a
        streak that lasts barely a second — so they never fall in a pattern you can read,

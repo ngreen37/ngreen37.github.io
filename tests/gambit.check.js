@@ -232,13 +232,73 @@ const DAY = 86400000;
   check('and it stays gone on the next read', g.loadKarma().ledger.length === 0);
 }
 
-/* ── 9. the ledger is capped, and the oldest goes first ───────────────────────────── */
+/* ── 9. the ledger is capped, and the LEAST VALUABLE goes first ───────────────────── */
 {
+  /* ⚑ DERIVED FROM LEDGER_MAX, NOT HARD-CODED (2026-08-18). This used to push 12 against a
+     cap of 8 and assert "the four it dropped" — so raising the cap to 24, which the
+     remember-every-loss change required, turned a correct test red for the wrong reason.
+     Overshoot the real cap by a fixed amount instead and the assertion survives the dial. */
   const g = boot({});
-  for (let i = 0; i < 12; i++) g.remember({ weight: 5, cred: 10, label: 'sac ' + i, glyph: '◈' });
+  const OVER = 4, N = g.LEDGER_MAX + OVER;
+  for (let i = 0; i < N; i++) g.remember({ weight: 5, cred: 10, label: 'sac ' + i, glyph: '◈' });
   const k = g.loadKarma();
   check('the ledger is capped at ' + g.LEDGER_MAX, k.ledger.length === g.LEDGER_MAX, k.ledger.length + ' held');
-  check('the four it dropped are counted as lost', k.lost === 4, k.lost + ' lost');
+  check('the overflow is counted as lost, not dropped silently', k.lost === OVER, k.lost + ' lost');
+}
+
+/* ── 9b. ⚠⚠ THE CAP DROPS THE SMALLEST MEMORY, NEVER THE OLDEST ──────────────────────
+   New 2026-08-18, and it guards the regression that "remember every loss" would otherwise
+   have introduced. The ledger is truncated from the bottom, so if it were still sorted by
+   RECENCY a run of tiny fresh losses would evict a big older one — the player who gave the
+   most would be the one the board forgot first, and their karma would quietly drop for
+   playing more. Sorted by contribution (weight × decay) instead. */
+{
+  const g = boot({});
+  g.remember({ weight: 30, cred: 400, label: 'the big one', glyph: '◈' });
+  for (let i = 0; i < g.LEDGER_MAX + 4; i++) {
+    g.remember({ weight: 3, cred: 20, label: 'small ' + i, glyph: '◈' });
+  }
+  const k = g.loadKarma();
+  check('⚠ a pile of small fresh losses cannot evict the big old one',
+    k.ledger.some(e => e.label === 'the big one'),
+    'held ' + k.ledger.length + ', top weight ' + Math.max(...k.ledger.map(e => e.weight)));
+  check('…and it is ranked first, because it is worth the most',
+    k.ledger[0] && k.ledger[0].label === 'the big one',
+    k.ledger[0] ? k.ledger[0].label : 'empty');
+}
+
+/* ── 9c. ⚑ EVERY LOSS IS REMEMBERED — 2026-08-18 ─────────────────────────────────────
+   Nate: *"Can it remember all lost sacrifices? Only the ones where nothing comes back."*
+   The old code carried a SECOND gate on top of the loss branch — `c >= 0.85` — so an
+   offering under 85% commitment that came back with nothing was recorded by nothing and
+   announced by nothing. His rule is now the only rule, and it is asserted three times
+   because the record and the two things that TELL you about it have to agree: a memory the
+   player is never shown is indistinguishable from a memory that was never kept. */
+{
+  /* ⚠ ASSERT ON THE CODE, NOT ON A SPAN OF THE FILE. The first version of this check
+     scanned everything between the branch opener and `remember({` for the old gate — and
+     matched the COMMENT that explains why the gate was removed. A test that reads prose is
+     a test that fails when you document the thing it is testing. [[silent-css-deletions]] */
+  check('the record is written for EVERY kept offering, not only bold ones',
+    !/\}\s*else if \(c >= 0\.85\) \{/.test(GAMBIT) && /remember\(\{/.test(GAMBIT),
+    'the `else if (c >= 0.85)` gate is gone from the loss branch');
+  check('…the result card says so on every loss too',
+    /var remembers = !half/.test(GAMBIT), 'gated on "nothing came back" alone');
+  check('…and so does the reveal',
+    !/c >= 0\.85 \? ' <span class="gm-rv-repay"><b>The board remembers this one/.test(GAMBIT));
+  /* ⚠ AND A 50% RETURN IS STILL NOT A LOSS. This is the half of his sentence that is easy
+     to drop — "only the ones where nothing comes back" excludes a partial return, and the
+     `reward > 0` branch is what keeps that true. */
+  check('⚠ a partial return is NOT remembered', /if \(reward > 0\) \{/.test(GAMBIT),
+    'the loss branch is the else of "something came back"');
+}
+
+/* ── 9d. the count came out of the note (his ask) ────────────────────────────────── */
+{
+  check('the altar no longer counts sacrifices at the player',
+    !/The board remembers ' \+ kar\.ledger\.length/.test(GAMBIT) &&
+    /The board remembers what it keeps/.test(GAMBIT),
+    'Nate: "I don\'t like the One aspect of it"');
 }
 
 /* ── 10. v1 debt is migrated, not deleted ─────────────────────────────────────────── */

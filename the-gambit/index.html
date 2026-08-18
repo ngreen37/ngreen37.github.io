@@ -167,6 +167,18 @@ permalink: /the-gambit/
        · memories CAN and DO fall off      — so "never wasted" was retired as a phrase
        · KARMA is what the live ledger sums to, 0-100, and it bends the wheel
 
+     ⚑⚑ AND SINCE 2026-08-18 IT REMEMBERS EVERY LOSS, NOT ONLY THE BOLD ONES. Nate: *"Can
+     it remember all lost sacrifices? Only the ones where nothing comes back."* There used
+     to be a second gate — `c >= 0.85` — so an offering under 85% commitment that came back
+     with nothing was recorded by nothing and announced by nothing. A player had no way to
+     tell "not remembered" from "remembered quietly", which made the room's central promise
+     unverifiable. His rule is now the ONLY rule: the board kept it, so the board remembers
+     it. A 50% return is not a loss and is still not remembered.
+     ⚠ IT DOES MOVE THE ECONOMY, and the direction is deliberate: karma weight scales with
+     what you actually gave (clamped 3-30), so small losses add small karma. The player this
+     changes most is the one making modest offerings, who used to earn NOTHING from the
+     memory system at all. A bold player already reached the karma ceiling.
+
      ⚠ DECAY IS BY WALL-CLOCK DAYS, NEVER BY NUMBER OF OFFERINGS. Tie it to plays and the
      player who visits most is punished most, which is exactly backwards.
      ⚠ THE FALL-OFF IS COUNTED AND KEPT (`lost`). A memory that vanishes silently is
@@ -176,7 +188,14 @@ permalink: /the-gambit/
      nicer system is a takeaway, and this economy's standing rule is that takeaways are
      the one thing you don't do. */
   var KARMA_KEY = 'pjcc.gambit.karma.v1';
-  var HALF_LIFE = 6, FADED = 0.18, LEDGER_MAX = 8;
+  /* ⚑ LEDGER_MAX 8 → 24 (2026-08-18, with "remember every loss"). 8 was sized for BOLD
+     losses only, which arrive rarely; now every kept offering lands here, and at the altar's
+     own 3-a-day cap a fortnight of bad luck is comfortably more than eight. Leaving it at 8
+     would have meant the board silently "forgetting" a memory a day while telling the player
+     it remembers everything — the exact promise this change exists to make true.
+     ⚠ 24 is not a limit anybody should reach: FADED + HALF_LIFE already retire a memory in
+     about 15 days, so the cap is a backstop against a pathological run, not the real pruner. */
+  var HALF_LIFE = 6, FADED = 0.18, LEDGER_MAX = 24;
 
   function karmaRaw() { var o; try { o = JSON.parse(localStorage.getItem(KARMA_KEY)) || {}; } catch (e) { o = {}; } return o; }
   function saveKarma(o) { try { localStorage.setItem(KARMA_KEY, JSON.stringify(o)); } catch (e) {} }
@@ -198,7 +217,17 @@ permalink: /the-gambit/
       e.w = Math.pow(0.5, Math.max(0, (now - (e.at || now)) / 86400000) / HALF_LIFE);
       if (e.w >= FADED) live.push(e); else lost++;
     }
-    live.sort(function (a, b) { return b.w - a.w; });
+    /* ⚠⚠ SORTED BY WHAT A MEMORY IS WORTH, NOT BY HOW FRESH IT IS — and this only became a
+       bug the moment every loss started being remembered. The old sort was `b.w - a.w`,
+       pure recency, and the list is TRUNCATED at LEDGER_MAX from the bottom. So a handful
+       of fresh 20-credit losses would have evicted a week-old 400-credit one: the player
+       who gave the most would have been the player the board forgot first, which is exactly
+       backwards and would have quietly cut their karma at the same time.
+       Contribution is `weight × w` — what the memory is actually adding right now, which is
+       the same quantity karmaScore() sums. Rank by the thing you are about to spend. */
+    live.sort(function (a, b) {
+      return ((b.weight || 3) * b.w) - ((a.weight || 3) * a.w);
+    });
     if (live.length > LEDGER_MAX) { lost += live.length - LEDGER_MAX; live = live.slice(0, LEDGER_MAX); }
     var k = { v: 1, ledger: live, lost: (o.lost || 0) + lost, total: o.total || live.length };
     if (lost || migrated) saveKarma(k);
@@ -568,8 +597,14 @@ permalink: /the-gambit/
     else $('gm-note').innerHTML = 'Long odds — and the <b>biggest multiple</b> the board pays. Small stake, long shot.';
     // with a collectable on the altar the PRIZE changes, not just the odds — say so (2026-07-27)
     if (selColl) $('gm-note').innerHTML = '◈ <b>Can come back as a different collectable</b> — at most one band above what you gave, sometimes from the <b>vault</b>. ' + $('gm-note').innerHTML;
-    if (kar.ledger.length) $('gm-note').innerHTML = '✦ <b>The board remembers ' + kar.ledger.length +
-      (kar.ledger.length === 1 ? ' sacrifice' : ' sacrifices') + '.</b> They fade. ' + $('gm-note').innerHTML;
+    /* ⚑ THE COUNT CAME OUT OF THIS LINE — 2026-08-18, Nate: *"I don't like the 'One'
+       aspect of it."* He is right, and the reason is worth keeping: "The board remembers 1
+       sacrifice" makes the board sound like it is holding a receipt, and ONE of anything
+       reads as a tally rather than as a memory. The number was never the point — what it is
+       remembering is. The exact count still lives two places where it belongs: the karma
+       chip carries the score, and the glass below lists the memories themselves. */
+    if (kar.ledger.length) $('gm-note').innerHTML =
+      '✦ <b>The board remembers what it keeps.</b> Memories fade. ' + $('gm-note').innerHTML;
 
     renderGlass(kar, karma, c, od);
 
@@ -717,11 +752,26 @@ permalink: /the-gambit/
             await PJCC.grantCollectable(boon.kind, boon.key);
           }
         }
-      } else if (c >= 0.85) {
-        /* A bold offering that came back with NOTHING becomes a MEMORY — a real record of
-           the thing you laid down, not a number. `weight` is what it is worth to karma
-           while it lasts, clamped so neither a 20-credit gesture nor a 900-credit one can
-           distort the scale. It fades from the day it happened. */
+      } else {
+        /* ⚑ EVERY LOSS IS REMEMBERED NOW — 2026-08-18, Nate: *"What I want to modify is the
+           'board remembers 1 sacrifice'. Can it remember all lost sacrifices? Only the ones
+           where nothing comes back."*
+
+           ⭐ THE CONDITION IS EXACTLY THE BRANCH THIS ALREADY IS. This is the `else` of
+           `if (reward > 0)`, so reaching it means the board kept the whole thing — which is
+           precisely "the ones where nothing comes back", word for word. The old
+           `c >= 0.85` gate on top of it was a SECOND rule (only BOLD offerings counted),
+           and it is what made a 40-credit loss vanish as though it had not happened. It is
+           gone. Nothing else about the condition needed writing.
+
+           ⚠ A 50% RETURN IS STILL NOT A LOSS and is still not remembered — it lands in the
+           `reward > 0` branch above. That is his rule, kept literally.
+
+           `weight` is what the memory is worth to karma while it lasts, clamped 3-30 so
+           neither a 20-credit gesture nor a 900-credit one can distort the scale — and
+           because it scales with what you actually gave, remembering the small ones adds
+           karma in PROPORTION to them rather than flattering anyone. It fades from the day
+           it happened. */
         remember({
           weight: Math.max(3, Math.min(30, Math.round(ov * 0.12))),
           cred: credOffer,
@@ -791,7 +841,12 @@ permalink: /the-gambit/
          the old line was a promise the room no longer keeps. What replaced it says the
          true thing, which is also the more interesting one: it is remembered, it will
          fade, and it may or may not find its way back. */
-      var remembers = (!half && c >= 0.85)
+      /* ⚑ THE GATE IS `!half` ALONE NOW (2026-08-18) — every offering the board KEEPS is
+         remembered, not only the bold ones. The message and the ledger entry are written
+         from the same condition on purpose: before this, a 40-credit total loss was quietly
+         recorded by nothing and announced by nothing, and a player could never tell the
+         difference between "not remembered" and "remembered silently". */
+      var remembers = !half
         ? '<p class="gm-boon">✦ <b>The board remembers this one.</b> It joins your karma — and memories here fade. Some find their way home. Some are gone for good.</p>' : '';
       box.innerHTML = '<div class="gm-res-title">' + (half ? 'THE BOARD KEEPS 50%' : 'THE BOARD KEEPS IT') + '</div>' +
         '<p>Your offering' + (coll ? ' — including <b>' + coll.label + '</b> ' + coll.glyph + ' —' : '') +
@@ -832,7 +887,8 @@ permalink: /the-gambit/
     } else {
       titleEl.innerHTML = '<span class="gm-rv-gone">NOTHING COMES BACK</span>';
       subEl.innerHTML = 'Your offering' + (coll ? ' — including <b>' + coll.label + '</b> ' + coll.glyph + ' —' : '') + ' is gone.' +
-        (c >= 0.85 ? ' <span class="gm-rv-repay"><b>The board remembers this one.</b> Memories fade — not every one comes home.</span>' : '');
+        // reward is 0 in this branch, so the board kept it — which is the whole condition now
+        ' <span class="gm-rv-repay"><b>The board remembers this one.</b> Memories fade — not every one comes home.</span>';
     }
 
     var boonEl = $('gm-rv-boon');

@@ -308,6 +308,88 @@ check('every shell loads the clock and then the sky', wired === GAMES.length,
     await page.close();
   }
 
+  /* ══ ⚠⚠ THE MOON IS THE SHAPE IT CLAIMS TO BE (2026-08-18) ═════════════════════════
+     Nate: *"The moon looks a bit odd in its waning gibbous."*
+
+     For a year the terminator was a same-size disc of sky slid across the face, and the
+     difference of two EQUAL circles is always a crescent — so every gibbous night drew the
+     wrong figure while the lit AREA was perfect. Nothing caught it, and the reason is worth
+     writing down: **every phase it got wrong still looked like a moon.** A wrong picture
+     that is still a plausible picture is invisible to a reviewer and to any test that only
+     checks numbers.
+
+     So this asserts the SHAPE, by measuring the area the drawn path actually encloses:
+
+         half disc            = 0.500 of the disc
+         half terminator ellipse (semi-axes a, r) = `a` of the disc
+         crescent lit = 0.5 − a        gibbous lit = 0.5 + a
+
+     ⭐ THE LOAD-BEARING ASSERTION IS THE LAST ONE: a moon that is more than half lit must
+     DRAW more than half lit. That is exactly the sentence the old implementation could not
+     satisfy at any value of its dial. */
+  {
+    const T = (() => { const w = {}; new Function('window', 'self', CLOCK_ASSET)(w, w); return w.PJCC_TIME; })();
+
+    // lit fraction enclosed by the emitted path, read back off the path itself
+    function drawnLit(p) {
+      const m = p.match(/^M0\.5 0A0\.5 0\.5 0 0 (\d) 0\.5 1A([\d.]+) 0\.5 0 0 (\d) 0\.5 0Z$/);
+      if (!m) return null;
+      const a = parseFloat(m[2]), limb = +m[1], term = +m[3];
+      // the terminator bows into the DARK (a gibbous) when its sweep matches the limb's
+      return { lit: (limb === term ? 0.5 + a : 0.5 - a), a, gibbous: limb === term };
+    }
+
+    check('every phase emits a clip path', (() => {
+      for (let i = 0; i < 30; i++) {
+        const ds = new Date(Date.UTC(2026, 7, 1 + i)).toISOString().slice(0, 10);
+        const mn = T.moon(ds);
+        if (mn.name !== 'new' && !drawnLit(mn.path)) return false;
+      }
+      return true;
+    })(), 'a parseable two-arc path on every night that has a moon');
+
+    /* the gibbous half of the month, measured */
+    const bad = [];
+    for (let i = 0; i < 30; i++) {
+      const ds = new Date(Date.UTC(2026, 7, 1 + i)).toISOString().slice(0, 10);
+      const mn = T.moon(ds);
+      if (mn.name === 'new') continue;
+      const d = drawnLit(mn.path);
+      if (mn.lit > 0.5 && !d.gibbous) bad.push(ds + ' lit ' + mn.lit.toFixed(2) + ' drawn as a crescent');
+      if (mn.lit < 0.5 && d.gibbous) bad.push(ds + ' lit ' + mn.lit.toFixed(2) + ' drawn as a gibbous');
+    }
+    check('⚠⚠ a moon more than half lit is DRAWN more than half lit', bad.length === 0,
+      bad.length ? bad.join(' · ') : 'all 29 nights draw the right figure — this is the 2026-08-18 bug');
+
+    /* area fidelity on the gibbous side, where there is no floor to excuse a difference */
+    let worst = 0, worstDs = '';
+    for (let i = 0; i < 30; i++) {
+      const ds = new Date(Date.UTC(2026, 7, 1 + i)).toISOString().slice(0, 10);
+      const mn = T.moon(ds);
+      if (mn.name === 'new' || mn.lit <= 0.5) continue;
+      const err = Math.abs(drawnLit(mn.path).lit - mn.lit);
+      if (err > worst) { worst = err; worstDs = ds; }
+    }
+    check('…and the gibbous area matches the real phase exactly', worst < 0.002,
+      'worst ' + (worst * 100).toFixed(3) + '% on ' + worstDs);
+
+    /* ⭐ the thin-crescent floor is DELIBERATE and must not be "fixed" back out — Nate
+       picked 0.155 of a diameter from a render on 2026-08-09. It only ever LIFTS. */
+    const thin = T.moon('2026-08-08');
+    check('the thinnest crescent is still floored so it reads as a crescent',
+      drawnLit(thin.path).lit > thin.lit && drawnLit(thin.path).lit >= 0.15,
+      'lit ' + thin.lit.toFixed(3) + ' drawn ' + drawnLit(thin.path).lit.toFixed(3));
+
+    check('waxing lights the RIGHT limb and waning the LEFT', (() => {
+      const wax = T.moon('2026-08-15'), wane = T.moon('2026-08-27');
+      return wax.waxing && !wane.waxing &&
+             wax.path.startsWith('M0.5 0A0.5 0.5 0 0 1') && wane.path.startsWith('M0.5 0A0.5 0.5 0 0 0');
+    })(), 'the northern hemisphere, which is what the chart shows');
+
+    check('a new moon draws nothing at all', T.moon('2026-08-07').path === '',
+      'it is not a thin moon, it is no moon');
+  }
+
   await browser.close();
   done();
 })().catch((e) => { console.error('\nABORT: ' + e.message); process.exit(2); });

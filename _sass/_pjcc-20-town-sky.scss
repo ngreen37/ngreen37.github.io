@@ -191,18 +191,24 @@ html.sky-night .ts-stars { display: block; }
 /* ⚑ THE ORB IS THE GLOW ONLY (2026-08-11) — the moon's DISC moved to ::before so it can be
    masked, and the halo became a `drop-shadow` on the parent so it follows the LIT SHAPE
    instead of the box. Read the two long notes below before touching either. */
+/* ⚑ 10% LARGER — 46px → 51px (2026-08-18, Nate: "can you make the moon like 10% larger?").
+   ⭐ IT IS ONE NUMBER NOW, AND THAT IS THE POINT OF THE CLIP-PATH REWRITE BELOW. The old
+   terminator was a `circle 23px` mask — the orb's radius, hard-coded in a second place —
+   so resizing the moon meant editing two numbers that had to agree or the phase silently
+   drifted. The clip path is in objectBoundingBox units and fits whatever size this rule
+   says. The two shadows are scaled with it; they are the only other px here. */
 html.sky-night .ts-orb {
   display: block;
   left: var(--orb-x, 30%); top: var(--orb-y, 22%);
-  width: 46px; height: 46px;
+  width: 51px; height: 51px;
   background: none;
   box-shadow: none;
-  filter: drop-shadow(0 0 20px rgba(220, 214, 255, 0.45));
+  filter: drop-shadow(0 0 22px rgba(220, 214, 255, 0.45));
 }
 html.sky-night .ts-orb::before {
   content: ''; position: absolute; inset: 0; border-radius: 50%;
   background: radial-gradient(circle at 38% 34%, #f4f0ff, #b9b2d6 66%, #8f88b4 100%);
-  box-shadow: inset -9px -7px 13px rgba(80, 70, 130, 0.55);
+  box-shadow: inset -10px -8px 14px rgba(80, 70, 130, 0.55);
 }
 /* ── THE MOON HAS PHASES (2026-07-27, Nate: "let's do crescent and waning moons!") ──
    It was a full moon every night of the year, which is the one thing a moon never is.
@@ -248,11 +254,33 @@ html.sky-night .ts-orb::before {
    is what a new moon is, and the eclipse note in _includes/pjcc-time.js already promises
    "the one night a month the moon isn't there". Its halo is switched off below to match —
    a glow around a hole is an outline, which is the thing we are removing. */
+/* ⚑⚑ AND THE MASK IS A CLIP PATH NOW — 2026-08-18, and it is the third time this one
+   element has been rebuilt. Nate: *"The moon looks a bit odd in its waning gibbous — can we
+   stick to these phases?"* with the seven-phase chart attached.
+
+   ⭐⭐ THE SHAPE WAS UNREACHABLE BY THE OLD TECHNIQUE, NOT MERELY MIS-TUNED. A radial
+   gradient can only cut a CIRCLE, and the difference of two circles of EQUAL radius is a
+   lune — which is crescent-shaped at every offset there is. A gibbous moon's terminator
+   bows the other way, into the dark. There was no value of `--moon-shift` that could have
+   drawn one. So the arithmetic was right (the lit AREA matched the real sky to the
+   decimal) and fourteen nights a month drew the wrong figure: measured on a filmstrip of
+   the full lunation, **2026-08-28 at 61% lit rendered as a crescent.**
+
+   ⭐ WHY IT SURVIVED A YEAR. Every phase it got WRONG still looked like a moon, and the
+   two it got right — full and the crescents — are the two anybody pictures when they think
+   "moon phase". A wrong picture that is still a plausible picture is the hardest kind to
+   see, which is exactly why he saw it and no test did. [[pick-visual-values-from-a-render]]
+
+   The path itself is built by `PJCC_TIME.moonPath()` and written into `#ts-moon-path` by
+   the head script — see the long note there for the geometry and the sweep flags.
+   ⚠ IT KEEPS THE 2026-08-11 GUARANTEE THAT MADE THE MASK NECESSARY: the unlit face is
+   still a genuine HOLE, not a painted disc, so there is no second color to drift against
+   whatever sky is behind it, on any page, at any phase.
+   ⚠ The soft 1px mask edge is gone with the gradient; SVG clipping antialiases its own
+   path, so the terminator is still smooth without a band to tune. */
 html.sky-night .ts-orb::before {
-  -webkit-mask-image: radial-gradient(circle 23px at calc(50% + var(--moon-shift, 1) * 100%) 50%,
-                                      transparent 96%, #000 100%);
-          mask-image: radial-gradient(circle 23px at calc(50% + var(--moon-shift, 1) * 100%) 50%,
-                                      transparent 96%, #000 100%);
+  -webkit-clip-path: url(#ts-moon);
+          clip-path: url(#ts-moon);
 }
 /* ⚠ AND THE NEW MOON IS TAKEN OFF THE SKY, not left to the mask — CAUGHT IN THE RENDER.
    At shift 0 the mask circle is concentric with the disc, and the 96%→100% soft edge is

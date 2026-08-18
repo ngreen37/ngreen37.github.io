@@ -191,6 +191,67 @@
      0.22 (10.2px) makes the thinnest night look three days old. */
   var MOON_MIN = 0.155;
   function floorLune(u) { return Math.min(1, Math.sqrt(u * u + MOON_MIN * MOON_MIN)); }
+
+  /* ══ ⚠⚠ THE GIBBOUS WAS A CRESCENT, FOURTEEN NIGHTS A MONTH ════════════════════════
+     2026-08-18, Nate: *"The moon looks a bit odd in its waning gibbous — can we stick to
+     these phases?"* with a chart of the seven. He was right, and the defect was bigger
+     than the one phase he named.
+
+     ⭐ TWO EQUAL CIRCLES CANNOT MAKE A GIBBOUS. The old terminator was a same-size disc of
+     sky slid across the face, so the lit region was always the LUNE between two arcs of
+     EQUAL radius — and such a lune is crescent-shaped at every offset there is, with its
+     inner edge curving the same way as its outer edge. A gibbous moon is the opposite
+     picture: its terminator bows the other way, into the dark. No value of `--moon-shift`
+     could have drawn one.
+
+     So the AREA was right — that is what `lunePos` bisects for, and it matched the real sky
+     to the decimal — while the SHAPE was wrong on every night the moon was more than half
+     lit. Measured on a filmstrip of the full lunation: **2026-08-28, 61% lit, rendered as a
+     crescent.** ⭐ WHY IT SURVIVED A YEAR: every phase it got wrong still looked like a
+     moon, and the two it got right (full, and the crescents) are the two anybody pictures
+     when they think "moon phase". A wrong picture that is still a plausible picture is the
+     hardest kind to see — which is why he saw it and no test did.
+
+     ⭐ HIS CHART IS THE SPEC. The seven phases on it are exactly the seven `name` returns.
+
+     ── THE REAL GEOMETRY ────────────────────────────────────────────────────────────
+     The terminator is a circle seen edge-on, so it is an ELLIPSE: full height, and a
+     horizontal semi-axis that closes to nothing at the quarters and opens back to the full
+     radius at new and full.
+
+         a = |1 − 2k| / 2        k = lit fraction, in bounding-box units (disc = 1 wide)
+
+     Emitted as an SVG path in `objectBoundingBox` space, so it is SIZE INDEPENDENT — the
+     orb can be any diameter and the phase stays exact. That is also what turned "10%
+     larger" into a one-number change instead of a re-derivation.
+
+     ⚠ THE SWEEP FLAGS ARE THE WHOLE THING AND ARE EASY TO GET BACKWARDS. The limb runs down
+     the LIT side; the terminator returns the other way, bowing toward the LIT side for a
+     crescent and toward the DARK side for a gibbous. Verified by rendering all 29 nights of
+     a lunation, not by reasoning. [[pick-visual-values-from-a-render]]
+
+     ⭐ THE THIN-CRESCENT FLOOR SURVIVES, now applied to the thing it was always about: the
+     WIDTH OF THE LIT SLIVER. Same soft √(w² + min²), same 0.155 of a diameter Nate picked
+     from a render on 2026-08-09 ("the sliver is too small… it's hard to tell what it is").
+     ⚠ NOT applied to the gibbous side — a 98%-lit moon really does have a 1px bite out of
+     it, and lifting that would be inventing a phase rather than rescuing an invisible one. */
+  function moonGeom(lit) {
+    var k = Math.max(0, Math.min(1, lit));
+    if (k >= 0.5) return { a: (2 * k - 1) / 2, gibbous: true };
+    // the lit sliver is `k` diameters wide at true scale; floor it so it stays readable
+    var w = Math.min(0.5, Math.sqrt(k * k + MOON_MIN * MOON_MIN));
+    return { a: 0.5 - w, gibbous: false };
+  }
+
+  /* The clip path for one phase, in objectBoundingBox units (the disc is the unit square).
+     `waxing` lights the RIGHT limb, which is what the northern hemisphere sees. */
+  function moonPath(lit, waxing) {
+    var g = moonGeom(lit), a = g.a;
+    var limb = waxing ? 1 : 0;                       // down the lit limb
+    var term = waxing ? (g.gibbous ? 1 : 0) : (g.gibbous ? 0 : 1);
+    return 'M0.5 0A0.5 0.5 0 0 ' + limb + ' 0.5 1' +
+           'A' + a.toFixed(4) + ' 0.5 0 0 ' + term + ' 0.5 0Z';
+  }
   function moon(ds) {
     ds = ds || parts().ds;
     var days = Date.UTC(+ds.slice(0, 4), +ds.slice(5, 7) - 1, +ds.slice(8, 10)) / 86400000;
@@ -202,9 +263,14 @@
              : frac < 0.73 ? 'waning-gibbous'  : frac < 0.77 ? 'last-quarter'
              : 'waning-crescent';
     // waxing lights the RIGHT limb, so the shadow sits LEFT — a negative slide.
+    // ⚠ `shift` is KEPT but no longer draws the moon; the clip path does. It stays because
+    //   the head include and the eclipse note have both quoted it since 2026-08-09, and a
+    //   silently-removed field is a harder bug than an unused one.
     var u = name === 'new' ? 0 : floorLune(lunePos(lit));
-    return { age: age, frac: frac, lit: lit, waxing: frac < 0.5, name: name,
-             shift: (frac < 0.5 ? -1 : 1) * u };
+    var waxing = frac < 0.5;
+    return { age: age, frac: frac, lit: lit, waxing: waxing, name: name,
+             shift: (waxing ? -1 : 1) * u,
+             path: name === 'new' ? '' : moonPath(lit, waxing) };
   }
 
   /* ══ A SOLAR ECLIPSE, ONCE A MONTH ════════════════════════════════════════════════
@@ -298,6 +364,6 @@
 
   window.PJCC_TIME = { parts: parts, hour: hour, dateStr: dateStr, phase: phase,
                        daySeed: daySeed, weather: weather, clouds: clouds, orb: orb, season: season,
-                       moon: moon, eclipse: eclipse, eclipseDay: eclipseDay,
+                       moon: moon, moonPath: moonPath, eclipse: eclipse, eclipseDay: eclipseDay,
                        showerDay: showerDay, auroraDay: auroraDay };
 })();

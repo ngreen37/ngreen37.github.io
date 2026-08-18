@@ -37,7 +37,7 @@ no_sky: true
       <div class="secret-file-tab">REDACTED FILE</div>
       <p>One human on Earth, leading up to population of Checker Town, knew of Subject's
       abilities — the one that TAUGHT her this technique. Bill Alpine, 46 yrs.
-      Worked for ICC's Expanse Branch.</p>
+      Worked for ICB's Expanse Branch.</p>
       <footer>page 1 of 3 · edge-charred</footer>
     </blockquote>
 
@@ -74,9 +74,9 @@ no_sky: true
       <span class="rx" role="img" aria-label="Redacted">███████</span> The story of the dog who can
       learn anything is still unfolding, but hope in keeping our control is slipping amongst my men.</p>
       <p>They don't even know how lost it is. I do.</p>
-      <div class="secret-memo-sign">— Lt. Jenkins · 53rd Battalion · ICC</div>
+      <div class="secret-memo-sign">— Lt. Jenkins · 53rd Battalion · ICB</div>
       <footer class="secret-memo-cite">— Recovered File #001 from the Chess City Release Act of 2078 —
-      Petition to Pull Records from the high-profile court case ALPINE&nbsp;vs.&nbsp;(ICC)&nbsp;Interplanetary&nbsp;Conduct&nbsp;Council</footer>
+      Petition to Pull Records from the high-profile court case ALPINE&nbsp;vs.&nbsp;(ICB)&nbsp;Interplanetary&nbsp;Conduct&nbsp;Bureau</footer>
     </div>
   </section>
 
