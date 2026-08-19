@@ -87,7 +87,7 @@
         '</div>' +
         '<div class="vs-cut-band vs-cut-band--bot" style="--c:' + esc(you.color || FALLBACK) + '">' +
           '<span class="vs-cut-label">' +
-            '<span class="vs-cut-name">' + esc(you.name || 'Operative') +
+            '<span class="vs-cut-name">' + esc(you.name || 'Player') +
               (you.sub ? '<span class="vs-cut-sub">' + esc(you.sub) + '</span>' : '') +
             '</span>' +
             (you.glyph ? '<span class="vs-cut-glyph">' + esc(you.glyph) + '</span>' : '') +

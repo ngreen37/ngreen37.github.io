@@ -32,7 +32,7 @@ body_class: theme-studio
 </div>
 
 <!-- referral / share -->
-<h2 class="ml-h2">Bring an Operative</h2>
+<h2 class="ml-h2">Bring a Player</h2>
 <p class="ml-refnote">The list grows by word of mouth, not ad spend. Share <b>your</b> invite link — when accounts open, referrals will earn credit toward founder cosmetics. For now it's the cleanest way to bring someone in.</p>
 <div class="ml-invite">
   <input id="ml-invite-link" class="pjcc-input ml-invite-input" readonly aria-label="Your invite link">
@@ -100,7 +100,7 @@ body_class: theme-studio
     var banner = document.getElementById('ml-refbanner');
     if (ref && banner) {
       banner.hidden = false;
-      banner.innerHTML = '◈ An operative invited you in — drop your email below and you\'re one of us.';
+      banner.innerHTML = '◈ A player invited you in — drop your email below and you\'re one of us.';
     }
   } catch (e) {}
 })();

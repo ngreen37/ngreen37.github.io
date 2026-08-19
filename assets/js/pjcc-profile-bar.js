@@ -108,12 +108,12 @@
       if (!offerOpen) {
         bar.className = 'pjcc-bar pjcc-bar-quiet';
         bar.innerHTML =
-          '<button id="pjcc-offer" class="pjcc-btn-ghost">Save your operative across every game &amp; device &rarr;</button>';
+          '<button id="pjcc-offer" class="pjcc-btn-ghost">Save your profile across every game &amp; device &rarr;</button>';
         bind('pjcc-offer', function () { offerOpen = true; render(); });
         return;
       }
       bar.innerHTML =
-        '<span class="pjcc-label"><strong>Free account.</strong> Save your operative across every game &amp; device:</span>' +
+        '<span class="pjcc-label"><strong>Free account.</strong> Save your profile across every game &amp; device:</span>' +
         '<input id="pjcc-email" type="email" class="pjcc-input" placeholder="you@email.com">' +
         '<button id="pjcc-login" class="pjcc-btn">Send login link</button>';
       var mail = document.getElementById('pjcc-email');
@@ -139,7 +139,7 @@
 
     if (!prof) {
       bar.innerHTML =
-        '<span class="pjcc-label">Choose your operative <strong>codename</strong>:</span>' +
+        '<span class="pjcc-label">Choose your <strong>codename</strong>:</span>' +
         '<input id="pjcc-codename" type="text" maxlength="24" class="pjcc-input" placeholder="codename">' +
         '<button id="pjcc-claim" class="pjcc-btn">Claim</button>' +
         '<span id="pjcc-claim-msg" class="pjcc-label"></span>';

@@ -5,7 +5,7 @@ permalink: /shopkeeper/
 ---
 
 
-<p class="qm-intro">The Shopkeeper keeps the gear. Spend the credits you earn in the games on field avatars — and switch back to any of your eight free operative faces whenever you like. Your <strong>companion pet</strong> is raised over in the <a href="/dossier/">Companion Den</a> on your Dossier.</p>
+<p class="qm-intro">The Shopkeeper keeps the gear. Spend the credits you earn in the games on field avatars — and switch back to any of your eight free player faces whenever you like. Your <strong>companion pet</strong> is raised over in the <a href="/dossier/">Companion Den</a> on your Dossier.</p>
 
 {% comment %} The counter points at the case (2026-08-03). This shop only stocks what is FOR
      SALE; the pieces you earn and the ones the altar keeps are not here, and without this

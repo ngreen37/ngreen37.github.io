@@ -51,12 +51,12 @@ layout: default
       <span class="ticker-item ticker-item--promo">◆ THE ACADEMY: LEARN CHESS FREE — LESSON ONE IS OPEN, TAUGHT BY AUSTON ON A REAL BOARD</span>
       <span class="ticker-item">CHESS CITY TOURNAMENT ENROLLMENT NOW OPEN — LIMITED SPOTS REMAINING — APPLICATIONS CLOSE END OF SEASON</span>
       <span class="ticker-item ticker-item--promo">◆ THE GAUNTLET: TEN FLOORS OF REAL CHESS — THE BOARD ITSELF GROWS GRANDER THE HIGHER YOU CLIMB</span>
-      <span class="ticker-item ticker-item--promo">◆ THE PARK TABLES: PLAY ANOTHER OPERATIVE, SIT WITH A PARK REGULAR, OR CHALLENGE McPUPPY HIMSELF</span>
+      <span class="ticker-item ticker-item--promo">◆ THE PARK TABLES: PLAY ANOTHER PLAYER, SIT WITH A PARK REGULAR, OR CHALLENGE McPUPPY HIMSELF</span>
       <span class="ticker-item">SHOGI ISLAND FERRY DELAYED FOR THIRD CONSECUTIVE WEEK — NO DEPARTURE DATE ANNOUNCED — 将棋の島 : フェリー3週連続遅延中 / 出発日未定</span>
       <span class="ticker-item">INTERPLANETARY CONSTRUCTION CO. DENIES ALL VESSEL WRECKAGE CLAIMS — INVESTIGATION CONTINUES</span>
       <span class="ticker-item ticker-item--promo">◆ NEW — THE PUZZLE ROOM: PLAY THE WRONG MOVE AND IT SHOWS YOU EXACTLY WHY IT LOSES</span>
       <span class="ticker-item">CHESS CITY LEAFS ADVANCE TO FINALS — ROSTER ANNOUNCEMENT EXPECTED SHORTLY</span>
-      <span class="ticker-item">P&JCC RATING SYSTEM IN FORCE — EVERY OPERATIVE STARTS AT 250 — LADDER STANDINGS NOW POSTED AT THE PARK</span>
+      <span class="ticker-item">P&JCC RATING SYSTEM IN FORCE — EVERY PLAYER STARTS AT 250 — LADDER STANDINGS NOW POSTED AT THE PARK</span>
       <span class="ticker-item ticker-item--promo">◆ NEW — EVERY GAME YOU FINISH GETS A FREE REVIEW: YOUR ACCURACY, THE MOVE IT TURNED ON, AND THE ONE YOU MISSED</span>
       <span class="ticker-item">CHECKER PIECE PRICES REACH RECORD HIGH — ECONOMISTS CITE THE CRASH AS ORIGIN POINT</span>
       <span class="ticker-item">OBSERVATORY: THE MOON OVER CHECKER TOWN IS RUNNING THE SAME PHASE AS THE ONE OUTSIDE YOUR WINDOW — CONFIRMED NIGHTLY</span>
@@ -64,7 +64,7 @@ layout: default
       <span class="ticker-item ticker-item--promo">◆ THE ARCADE: CLAIM A CODENAME &amp; CLIMB THE GLOBAL BOARDS — FREE, AND IT KEEPS PLAYING WITH THE WI-FI OFF</span>
       <span class="ticker-item">METEOROLOGISTS CONFIRM A CLOUD RESEMBLING A ROOK IS DUE SUNDAY — A SECOND CLOUD, RESEMBLING A DOG, ALSO DUE — NO FURTHER QUESTIONS</span>
       <span class="ticker-item">CHECKER TOWN YOUTH CHESS LEAGUE REGISTRATION NOW OPEN — FORMS AVAILABLE AT THE CIVIC HALL</span>
-      <span class="ticker-item ticker-item--promo">◆ THE IDENTITY FORGE: BUILD YOUR OWN OPERATIVE &amp; COMPANION — FREE, AND RENAMEABLE ANY TIME YOU LIKE</span>
+      <span class="ticker-item ticker-item--promo">◆ THE IDENTITY FORGE: BUILD YOUR OWN CHARACTER &amp; COMPANION — FREE, AND RENAMEABLE ANY TIME YOU LIKE</span>
       <span class="ticker-item ticker-item--promo">◆ BUILDING — A GODOT ROGUELITE FROM THE BLENDER ASSETS. MADE IN THE OPEN.</span>
       {%- comment -%} DAY 47 was frozen in the markup since June; in a town that keeps real
            Eastern time, one hand-typed counter that never moves is the only clock on the
@@ -74,7 +74,7 @@ layout: default
       <span class="ticker-item">OFFICIAL: CHESS CITY HAS NOT RESPONDED TO CHECKER TOWN PASSAGE PERMIT REQUEST — DAY <span id="tk-permit-day">47</span></span>
       <span class="ticker-item">PRINCESS WINS CHECKER TOWN INFORMAL CHESS TOURNAMENT — REMATCH PENDING</span>
       <span class="ticker-item">SHADOW ACTIVITY NEAR THE CRASH SITE — CONSTRUCTION EQUIPMENT UNACCOUNTED FOR</span>
-      <span class="ticker-item">MCPUPPY STUDIOS DISPATCH UPDATED {{ site.time | date: "%Y.%m.%d" }} — OPERATIVE NGREEN37 ON DUTY</span>
+      <span class="ticker-item">MCPUPPY STUDIOS DISPATCH UPDATED {{ site.time | date: "%Y.%m.%d" }} — NGREEN37 ON DUTY</span>
     </div>
   </div>
 </div>
@@ -1462,7 +1462,7 @@ function ctParts() {
     if (gp.cleared <= seen) return;
     try { localStorage.setItem('pjcc.home.breakseen', String(gp.cleared)); } catch (e) {}
     var fallen = gp.names[gp.cleared - 1] || 'THE TOWER';
-    item('◈ BREAKING — OPERATIVE CLEARS FLOOR ' + gp.cleared + ' — ' + String(fallen).toUpperCase() + ' FALLS', 'ticker-item--breaking', true);
+    item('◈ BREAKING — PLAYER CLEARS FLOOR ' + gp.cleared + ' — ' + String(fallen).toUpperCase() + ' FALLS', 'ticker-item--breaking', true);
     takeover('BREAKING');
   })();
 
@@ -1593,7 +1593,7 @@ function ctParts() {
    ✏️ THE WORDING LIVES IN `LINES` — one DAY line and one NIGHT line per kind of fact.
    The {braces} are filled from the record and are always true; the prose around them is
    yours to rewrite, and a line whose placeholder has no value is dropped rather than
-   printed half-empty. {who} is "OPERATIVE VESPER" or "A LOCAL OPERATIVE"; {who2} is the
+   printed half-empty. {who} is "PLAYER VESPER" or "A LOCAL PLAYER"; {who2} is the
    short form, "VESPER" or "SOMEBODY".
    ══════════════════════════════════════════════════════════════════════════════════ */
 (function () {
@@ -1748,7 +1748,7 @@ function ctParts() {
       if (shown[f.kind]) continue;                  // one headline per KIND, so three lines are three subjects
       var tpl = LINES[f.kind] && LINES[f.kind][night ? 'night' : 'day'];
       if (!tpl) continue;
-      f.who  = name ? ('OPERATIVE ' + up(name)) : 'A LOCAL OPERATIVE';
+      f.who  = name ? ('PLAYER ' + up(name)) : 'A LOCAL PLAYER';
       f.who2 = name ? up(name) : 'SOMEBODY';
       var text = fill(tpl, f);
       if (!text) continue;

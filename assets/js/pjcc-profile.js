@@ -493,7 +493,11 @@
        whose sub-label already said · Operative. Three of the same word in one row meaning
        three different things (the site's word for a player, this rung, and the CREDIT
        ladder's rung), and the help cursor promised to sort them out and then repeated one
-       of them. The tooltip now carries what the row cannot already say: WHICH rung out of
+       of them.
+       ⚑ TWO OF THOSE THREE ARE GONE SINCE 2026-08-19: the site's word for a person is now
+       PLAYER everywhere (Nate: "we aren't using Operative anymore"), so this rung and the
+       credit rank are the only things still called Operative — which is what they always
+       were. The tooltip stays as it is; it now disambiguates two meanings, not three. The tooltip now carries what the row cannot already say: WHICH rung out of
        how many, and what moves it. Rendered in four places, so the sentence is built once
        here and the count is read off the ladder rather than typed. */
     CLEARANCE: CLEARANCE,
@@ -1345,6 +1349,96 @@
         .limit(limit || 10);
       return (r && r.data) ? r.data : [];
     } catch (e) { return []; }
+  };
+
+  /* ══ FOLLOW — A PRIVATE BOOKMARK, NOT A RELATIONSHIP ══════════════════════════════
+     2026-08-19. Nate asked to "add them as a friend"; this is the one-way version, and the
+     shape is deliberate — docs/follows-setup.md carries the argument in full:
+
+       · your follow list is readable by YOU and nobody else (the RLS policy is
+         `auth.uid() = follower_id`, full stop)
+       · there is no follower count anywhere, and no SQL function that could return one
+       · following somebody notifies them of nothing
+
+     ⭐ THAT IS WHY IT ADDS NO MODERATION SURFACE. Nothing to accept, nothing to be
+     rejected from, no popularity number to chase, and — as everywhere else on this site —
+     no field a person can type a sentence into.
+
+     ⚠ IT SHIPS BEFORE ITS MIGRATION, like the gifts and the puzzle reports, and degrades
+     the same way: every call RESOLVES `{ok:false, reason}` and never throws. */
+
+  /* Does the function exist yet? Probed ONCE per session by calling it with an empty
+     codename and `false` — an UNFOLLOW of nobody, which cannot write a row whether the
+     function exists or not. Exactly the trick `giftsEnabled` uses with an off-ladder
+     amount, for exactly the same reason: the probe must not be able to change anything.
+     ⚠ A signed-out visitor never probes; they cannot follow, so the request is pure waste. */
+  var followProbe = null;
+  PJCC.followsEnabled = function () {
+    if (followProbe) return followProbe;
+    followProbe = (async function () {
+      if (!sb || !PJCC.currentUser()) return false;
+      try {
+        var cached = sessionStorage.getItem('pjcc.follows.on');
+        if (cached === '1') return true;
+        if (cached === '0') return false;
+      } catch (e) {}
+      var on = false;
+      try {
+        var r = await sb.rpc('set_follow', { p_codename: '', p_on: false });
+        on = !r.error;                 // answering AT ALL is the signal
+      } catch (e) { on = false; }
+      try { sessionStorage.setItem('pjcc.follows.on', on ? '1' : '0'); } catch (e) {}
+      return on;
+    })();
+    return followProbe;
+  };
+
+  /* THE WHOLE LIST, ONCE, AND THEN KEPT. Every card that opens wants to know one thing —
+     "am I following this person" — and the honest way to answer it is not a query per card.
+     One `list_following()` per session fills this cache; `setFollow` keeps it true
+     afterward, so the button is never asking the server what it just told the server.
+     ⚠ NULL means "not loaded yet", which is NOT the same as "following nobody" — the
+     difference is why `isFollowing` can answer synchronously without ever guessing. */
+  var followCache = null;
+
+  PJCC.following = async function (force) {
+    if (followCache && !force) return followCache;
+    if (!sb || !PJCC.currentUser()) return (followCache = []);
+    try {
+      var r = await sb.rpc('list_following');
+      followCache = (r && !r.error && Array.isArray(r.data)) ? r.data : [];
+    } catch (e) { followCache = []; }
+    return followCache;
+  };
+
+  // Synchronous, and deliberately so — a card renders in one pass. Returns false until
+  // `following()` has resolved at least once, which is the state that draws "Follow".
+  PJCC.isFollowing = function (codename) {
+    if (!followCache) return false;
+    for (var i = 0; i < followCache.length; i++) {
+      if (followCache[i] && followCache[i].codename === codename) return true;
+    }
+    return false;
+  };
+
+  /* Follow or unfollow. Resolves {ok:true, following} or {ok:false, reason}.
+     ⚠ THE CACHE IS UPDATED FROM THE SERVER'S ANSWER, never from the argument — same rule
+     as the gift balance. If the server refused (a full list, a name that has since gone),
+     the button must not move. */
+  PJCC.setFollow = async function (codename, on) {
+    if (!sb) return { ok: false, reason: 'offline' };
+    if (!PJCC.currentUser()) return { ok: false, reason: 'signed_out' };
+    try {
+      var r = await sb.rpc('set_follow', { p_codename: String(codename || ''), p_on: !!on });
+      if (r.error) return { ok: false, reason: 'offline' };
+      var out = r.data || { ok: false, reason: 'offline' };
+      if (out.ok && followCache) {
+        followCache = followCache.filter(function (f) { return f && f.codename !== codename; });
+        // re-read on the next `following()` so the panel gets the real row (companion, since)
+        if (out.following) followCache = null;
+      }
+      return out;
+    } catch (e) { return { ok: false, reason: 'offline' }; }
   };
 
   PJCC.reportPuzzle = async function (payload) {

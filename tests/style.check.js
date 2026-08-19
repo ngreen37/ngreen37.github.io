@@ -717,5 +717,81 @@ console.log('\n── HOUSE RULES ───────────────�
     !!markBlock && markBlock.includes('min-height') && !markBlock.includes('min-width'), why);
 }
 
+/* ══ THE WORD FOR A PERSON IS "PLAYER" ═══════════════════════════════════════════════
+   2026-08-19, Nate: *"we aren't using Operative anymore — we need to think of a different,
+   uniform name to call the users."* UNIFORM is the whole ask, and the reason this is a
+   guard rather than a memory note is that "operative" had already been half-removed once
+   (2026-07-28 took it out of plain chrome) and grew back into the leaderboard, the
+   dossier, the invite copy and the news wire in the three weeks after.
+
+   ⚠⚠ THIS IS NOT A BAN ON THE WORD, AND MUST NEVER BECOME ONE. Three uses are correct,
+   and they are the reason a blind find-and-replace would have broken the site:
+
+     1. THE RANK. `Operative` is rung 2 of BOTH ladders (RANKS + CLEARANCE). It names a
+        rung some players have reached — which is exactly what it should mean now that it
+        no longer ALSO means "everybody". Renaming the general noun FIXED the collision
+        this repo has a long comment about (pjcc-profile.js, the pip tooltip); banning the
+        rung would re-open that from the other side.
+     2. THE LORE. /dead-drop/, /dispatch/, /archive/ — a real field agent is speaking in
+        those, and they are opt-in artifacts. [[operative-theme-restraint]] drew that line
+        on 2026-07-28 and it still holds. So does "Operative Gold", which is a COLOR.
+     3. THE ENGLISH IDIOM. index.md and park-tables both say "X is the operative word."
+        A regex that flagged those would be switched off inside a month.
+
+   So this checks the SURFACES a player actually reads, and only the noun-shaped uses. */
+{
+  const PLAYER_SURFACES = [
+    'leaderboards.md', 'dossier.md', 'mailing-list.md', 'shopkeeper.md',
+    'the-gambit/index.html', 'games/shogi-island/index.html',
+    'assets/js/pjcc-gift.js', 'assets/js/pjcc-leaderboard.js',
+    'assets/js/pjcc-profile-bar.js', 'assets/js/pjcc-vs.js', '_layouts/home.html',
+  ];
+  /* ⚠ COMMENTS ARE STRIPPED FIRST. Half this repo's lines are prose explaining decisions,
+     and several of those decisions are ABOUT the word "operative" — including the note
+     directly above. A guard that reads its own explanation and fails is a guard that gets
+     switched off rather than fixed. (Learned the expensive way in gifts.check.js, where
+     the mirror image of this passed on a deleted <script> tag.) */
+  const stripComments = (src) => src
+    .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    // ⚠ TRAILING `//` TOO, not just whole-line. A comment sitting after code on the same
+    //   line leaked the first offender this guard ever reported (dossier.md, a note about
+    //   the header swap). The `[^:]` is what keeps it from eating `https://…`.
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+  /* The NOUN, not the adjective. Three shapes — and the third exists only because a
+     mutation test drove `<th>Operative</th>` straight past the first two. A bare label has
+     no article in front of it and no noun behind it, and it happened to be the single
+     most-read instance of the word on the entire site. Break the thing a guard guards, or
+     the guard is just a sentence you wrote about yourself. */
+  const PERSON_NOUN = new RegExp([
+    // "an operative" · "every operative" · "your operative"
+    /\b(?:an?|every|the|your|another|other|each)\s+operatives?\b/.source,
+    // "operative dossier" · "operative profile" · "OPERATIVE STANDINGS"
+    /\boperatives?\s+(?:dossier|profile|faces|network|card|standings|sign-in)\b/.source,
+    // a bare label: <th>Operative</th> · <p class="gift-h">Operative</p> · 'Operative'
+    /(?:>\s*|['"])operatives?(?:\s*<|['"])/.source,
+  ].join('|'), 'i');
+  const offenders = [];
+  for (const f of PLAYER_SURFACES) {
+    let src;
+    try { src = fs.readFileSync(path.join(ROOT, f), 'utf8'); }
+    catch (e) { offenders.push(f + ' → MISSING'); continue; }
+    const hit = stripComments(src).match(PERSON_NOUN);
+    if (hit) offenders.push(f + ' → "' + hit[0].trim() + '"');
+  }
+  check('a person is called a Player on every surface that names one',
+    offenders.length === 0,
+    offenders.length ? offenders.join('  |  ') : PLAYER_SURFACES.length + ' surfaces clean');
+
+  // …and the rank it used to collide with is still there, still called Operative.
+  const profSrc = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-profile.js'), 'utf8');
+  check('…while the RUNG keeps the name, which is the collision this fixed',
+    /\{ name: 'Operative',\s+min: 75,/.test(profSrc) &&
+    /\{ level: 2, name: 'Operative',/.test(profSrc),
+    'rung 2 of both ladders — a rank some players hold, not a word for everybody');
+}
+
+
 console.log(`\n  ${pass} passed, ${fail} failed\n`);
 process.exit(fail ? 1 : 0);

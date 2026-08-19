@@ -219,17 +219,19 @@
   .pjcc-input, .pjcc-btn { padding-top: 11px; padding-bottom: 11px; }
 }
 
-/* ══ SEND SOMEBODY CREDITS (2026-08-13) ═════════════════════════════════════════════
+/* ══ THE OPERATIVE CARD (2026-08-13, widened 2026-08-19) ════════════════════════════
    Nate: "a mechanism where a user can click on another user's name, and they can give
    them 1, 5, 10, 25, or 50 credits… That's the only thing they can interact with a
-   specific user on for now."
+   specific user on for now." → "when you click on a user… it shows their avatar and
+   companion, their trophies, and secrets unlocked, and you can gift them credits."
 
    ⚠ THE NAME IS THE BUTTON. Nothing new appears in a leaderboard row — the codename
    itself becomes the control, so a board that was already dense does not grow a column
    of icons. It carries a dotted underline rather than a link color, because it is an
    ACTION on a person and not a link to a page, and those should not look alike.
-   ⚠ It only renders when the visitor can actually gift (signed in, migration run) and
-   never on their own row, so the affordance and the ability cannot disagree. */
+   ⚠ EVERY ROW NOW, including your own. It used to render only for a visitor who could
+   actually gift, which meant a board of dead names until the gift SQL was run — the card
+   itself reads only already-public data, so the ability it needs is "being here". */
 .lb-gift {
   font: inherit; color: inherit; background: none; border: 0; padding: 0;
   cursor: pointer; border-bottom: 1px dotted rgba(255,255,255,0.34);
@@ -277,3 +279,146 @@
    nothing about it is visible until someone looks at a render. */
 .gift-bal b.gift-ok { color: #6bffb8; }
 .gift-bal b.gift-no { color: #ff9b9b; }
+
+/* ══ THE CARD ITSELF (2026-08-19) ═══════════════════════════════════════════════════
+   The gift sheet grew into a dossier: avatar, companion, trophies, and the send row as
+   the last section rather than the whole point. It reuses `.gift-ov` / `.gift-sheet` so
+   the two can never drift into two different modals — `.op-card` only widens it, turns
+   the text left-aligned (a card is read, a sheet was aimed at), and lets it scroll.
+
+   ⚠⚠ `safe center`, AND THIS IS THE THIRD TIME THIS TRAP HAS BEEN PAID FOR (the VS rail,
+   Floor Ten). A centered flex child that grows TALLER than its container has its overflow
+   pushed off the TOP, where no scrollbar can reach it — you lose the operative's name and
+   face, and the only clue is that the card looks like it starts at the credits. `safe`
+   falls back to flex-start the moment it would overflow. Declared after the plain `center`
+   so a browser that doesn't know the keyword keeps the old value instead of the line. */
+.gift-ov { align-items: safe center; }
+.op-card {
+  width: min(460px, 100%); text-align: left;
+  max-height: min(86vh, 780px); overflow-y: auto;
+  padding: 22px 22px 20px;
+}
+/* the name + face, side by side. `.gift-h` / `.gift-who` are spans in here (they are <p>
+   in the gift sheet), so their margins have to be re-stated as blocks. */
+.op-top { display: flex; align-items: center; gap: 14px; padding-right: 40px; }
+.op-face {
+  flex: 0 0 auto; width: 62px; height: 62px; display: flex;
+  align-items: center; justify-content: center; font-size: 40px; line-height: 1;
+  background: #150f33; border: 1px solid #3d2b8a; border-radius: 50%; overflow: hidden;
+  .fa-svg { width: 100%; height: 100%; display: block; }
+}
+.op-id { display: block; min-width: 0; }
+.op-id .gift-h   { display: block; }
+.op-id .gift-who { display: block; margin: 2px 0 0; font-size: 1.28rem; }
+.op-cl { display: block; margin-top: 3px; font-size: 0.82rem; color: #b9c0cb;
+         i { color: #9b87c0; font-style: normal; } }
+
+/* three figures, evenly split. Credits and rounds always; the rating only once it has
+   been earned (see the note in pjcc-gift.js — an unplayed 250 is a default, not a fact). */
+.op-figs { display: flex; gap: 8px; margin: 16px 0 0; }
+.op-fig {
+  flex: 1 1 0; min-width: 0; text-align: center; padding: 9px 4px;
+  background: #150f33; border: 1px solid #2c2158; border-radius: var(--r-sm);
+  b { display: block; font-family: 'Poppins', sans-serif; font-weight: 800;
+      font-size: 1.05rem; color: #f0e6ff; }
+  small { display: block; margin-top: 1px; font-size: 0.66rem; letter-spacing: 1.2px;
+          text-transform: uppercase; color: #9b87c0; }
+}
+.op-since { margin: 10px 0 0; font-size: 0.78rem; color: #9b87c0; }
+.op-none  { margin: 8px 0 0; font-size: 0.86rem; color: #9b87c0; }
+
+.op-sec { margin-top: 18px; padding-top: 15px; border-top: 1px solid #2c2158; }
+.op-h {
+  margin: 0 0 10px; font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase; color: #9b87c0;
+  i { font-style: normal; letter-spacing: 0; text-transform: none; color: #b9c0cb; }
+}
+
+/* the companion. `.pa-svg` is already `width:100%;height:100%` site-wide (_pjcc-17), so
+   the wrapper is what sets the size. */
+.op-pet { display: flex; align-items: center; gap: 12px; }
+.op-pet-art { flex: 0 0 auto; width: 54px; height: 54px; }
+.op-pet-txt {
+  b { display: block; font-family: 'Poppins', sans-serif; font-weight: 700;
+      font-size: 0.98rem; color: #f0e6ff; }
+  small { display: block; font-size: 0.76rem; color: #9b87c0; }
+}
+
+/* trophies — earned only, as chips that wrap. A grid would leave a ragged last row on a
+   phone for no gain; these are labels of wildly different widths. */
+.op-tros { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.op-tro {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px; border-radius: 999px;
+  background: #241a52; border: 1px solid #3d2b8a;
+  font-size: 0.78rem; color: #f0e6ff;
+}
+.op-tro-ic { font-size: 0.95rem; line-height: 1; }
+
+/* the send row, as the card's last section. `.gift-row` / `.gift-amt` / `.gift-bal` are
+   unchanged from the standalone sheet — only their surroundings moved. */
+.op-give .gift-row { justify-content: flex-start; margin-bottom: 10px; }
+
+/* ══ FOLLOW — a private bookmark (2026-08-19) ═══════════════════════════════════════
+   Nate asked to "add them as a friend"; this is the one-way version. Design argument in
+   docs/follows-setup.md — no counts anywhere, nobody is notified, the list is yours alone.
+
+   ⚠ IT IS NOT GREEN AND IT IS NOT GOLD. Green means "your move / send this" on this site
+   (the gift row is green, three feet below), and gold is the primary action. Follow is
+   free, reversible and private — the quietest of the three things a card can do — so it
+   wears the outline treatment and only the earned state fills in. A star that lit up as
+   brightly as the send buttons would be the loudest thing on a page about somebody else. */
+.op-follow { padding-bottom: 2px; }
+.op-fol {
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 44px; padding: 0 18px;              /* 44 = the standing tap floor */
+  font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.92rem;
+  color: #cdbcf2; background: none;
+  border: 1px solid #4b3f7a; border-radius: 999px; cursor: pointer;
+  transition: border-color .14s ease, color .14s ease, background .14s ease;
+  &:hover:not(:disabled), &:focus-visible { border-color: #F5C518; color: #F5C518; }
+  &:disabled { opacity: 0.55; cursor: default; }
+}
+/* THE ON STATE — the OWNED chip, and this was picked off a render rather than reasoned.
+   Three candidates went up side by side against the real controls they sit near:
+
+     A  solid gold #F5C518   — indistinguishable in weight from `.pjcc-btn`, the PRIMARY
+                               ACTION button. A finished state that looks exactly like
+                               "press me to do the main thing" is a lie about itself.
+     B  gold chip            — the treatment `.pjcc-title` already uses for "Legend of the
+                               Board": translucent gold on a gold outline. On this site
+                               that combination ALREADY MEANS "you have this."   ← chosen
+     C  mint #6bffb8         — collides with `.gift-amt` three inches below, where green
+                               means "this spends your credits."
+
+   I had argued myself into A on the grounds that "gold means you have it". The render
+   showed that solid gold means PRIMARY ACTION here and the chip is what means owned.
+   Reasoning picked the color; only looking at it caught which gold. */
+.op-fol[aria-pressed='true'] {
+  color: #F5C518; background: rgba(245, 197, 24, 0.16); border-color: #F5C518;
+  &:hover:not(:disabled) { background: rgba(245, 197, 24, 0.26); color: #F5C518; }
+}
+.op-fol-ic { font-size: 1.05rem; line-height: 1; }
+/* ⚠ THIS LINE IS THE FEATURE'S ONLY EXPLANATION AND IT HAS TO STAY. "They aren't told"
+   is the whole difference between a bookmark and a friend request, and it is the answer
+   to the question a cautious kid (or their parent) asks first. */
+.op-fol-note { margin: 8px 0 0; font-size: 0.76rem; color: #9b87c0; }
+
+/* the "Players You Follow" panel on the dossier — faces and names, nothing else. Every
+   row opens the shared card, so this owns no bio of its own and can never drift from it. */
+.dsr-follows { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.dsr-fol {
+  display: inline-flex; align-items: center; gap: 9px;
+  min-height: 44px; padding: 5px 14px 5px 6px;
+  background: #241a52; border: 1px solid #3d2b8a; border-radius: 999px;
+  color: #f0e6ff; font-size: 0.86rem; cursor: pointer;
+  transition: border-color .14s ease, color .14s ease;
+  &:hover, &:focus-visible { border-color: #F5C518; color: #F5C518; }
+}
+.dsr-fol-av {
+  width: 32px; height: 32px; flex: 0 0 auto; overflow: hidden; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 19px; line-height: 1; background: #150f33;
+  .fa-svg { width: 100%; height: 100%; display: block; }
+}
+.dsr-fol-nm { font-family: 'Poppins', sans-serif; font-weight: 700; }

@@ -40,9 +40,6 @@
     var PAGE = 25;
     var active = '__overall__';
     var accum = [], offset = 0, done = false, loading = false, token = 0;
-    // whether this visitor can send credits at all — one probe per session, resolved
-    // before the first render (see the bottom of init)
-    var giftsOn = false;
 
     function esc(s) {
       return String(s).replace(/[&<>"]/g, function (c) {
@@ -149,7 +146,7 @@
         : '';
       if (!rows.length) return ghostBanner + '<p class="lb-empty">No scores logged yet — be the first.</p>';
       var me = PJCC.getProfile();
-      var head = '<table class="lb-table"><thead><tr><th>#</th><th></th><th>Operative</th><th class="lb-score">' +
+      var head = '<table class="lb-table"><thead><tr><th>#</th><th></th><th>Player</th><th class="lb-score">' +
                  board.unit.toUpperCase() + '</th></tr></thead><tbody>';
       var body = rows.map(function (r, i) {
         var mine = me && r.codename === me.codename ? ' lb-me' : '';
@@ -167,21 +164,23 @@
         var minPip = PJCC.BOARD_PIP_MIN_LEVEL || 2;
         var pip = (cl && cl.level >= minPip)
           ? '<span class="pjcc-pip pip-' + cl.level + '" title="' + esc(cl.hint || cl.name) + '">' + cl.pip + '</span> ' : '';
-        /* ── TAP A NAME TO SEND THEM CREDITS (2026-08-13) ────────────────────────────
+        /* ── TAP A NAME TO OPEN THE OPERATIVE (2026-08-13, widened 2026-08-19) ───────
            ⚠ A BUTTON, NOT A CLICKABLE <td>. Anything a person picks has to be a real
            control or it is unreachable by keyboard and invisible to a screen reader —
            and this site's audience is half phone, where a hover affordance says nothing
            at all. The name itself becomes the button so nothing new appears in the row.
-           ⚠ NOT ON YOUR OWN ROW. The server refuses `self` anyway, but offering an action
-           that can only fail is a worse sin than not offering it.
-           ⚠ `giftsOn` is resolved ONCE before the board renders (see load()), so this
-           stays synchronous — a per-row promise would rewrite the table under the
-           reader's thumb as each one landed. */
+
+           ⚠⚠ EVERY ROW, ALWAYS — INCLUDING YOUR OWN. This used to be gated on `giftsOn &&
+           !mine`, which meant looking at another operative was locked behind the credit-gift
+           MIGRATION: until Nate ran that SQL, a board of names was a board of dead text.
+           The card reads only `profiles` + `game_stats`, both of which are `select using
+           (true)` and both of which this very table is already drawing — so there is nothing
+           to gate. Whether the SEND section appears inside the card is the card's decision
+           now (pjcc-gift.js), which is where the two daily rails and the self-check live.
+           That also means the board asks NOTHING before its first render. */
         var name = esc(r.codename);
-        var nameCell = (giftsOn && !mine)
-          ? '<button class="lb-gift" data-gift="' + name + '" ' +
-            'aria-label="Send credits to ' + name + '">' + name + '</button>'
-          : name;
+        var nameCell = '<button class="lb-gift" data-gift="' + name + '" ' +
+          'aria-label="Open the file on ' + name + '">' + name + '</button>';
         return '<tr class="' + mine + '">' +
           '<td class="lb-rank ' + rankClass(i) + '">' + (i + 1) + '</td>' +
           '<td class="lb-av">' + av(r.companion) + '</td>' +
@@ -201,8 +200,7 @@
       bodyEl.innerHTML = tableFor(board, accum) + (accum.length ? footer : '');
       var btn = document.getElementById('lb-more');
       if (btn) btn.onclick = function () { load(); };
-      // one delegated handler on the board, not one per row — the table is re-rendered on
-      // every "Load more" and per-row handlers would be re-bound every time
+      // the table is re-rendered on every "Load more", so these are bound after each render
       Array.prototype.forEach.call(bodyEl.querySelectorAll('[data-gift]'), function (b) {
         b.onclick = function () {
           if (window.PJCCGift) PJCCGift.open(b.getAttribute('data-gift'));
@@ -211,15 +209,12 @@
     }
 
     buildTabs();
-    /* ⚠ RESOLVE "CAN THIS VISITOR GIFT" BEFORE THE FIRST RENDER, not during it. The answer
-       is one probe per session and it decides whether a name is a button — asking per row
-       would rewrite the table under the reader as each promise landed, and asking per
-       render would re-probe on every "Load more". Falls to `false` on any failure, which
-       is the state where nothing is drawn. */
-    PJCC.ready
-      .then(function () { return (window.PJCCGift ? PJCCGift.available() : false); })
-      .then(function (on) { giftsOn = !!on; }, function () { giftsOn = false; })
-      .then(load, load);
+    /* ⚠ NOTHING IS ASKED BEFORE THE FIRST RENDER ANY MORE. This used to await
+       `PJCCGift.available()` because the answer decided whether a name was a button at all;
+       every name is a button now, so the board goes straight to its rows and the gift probe
+       happens once, later, inside the first card somebody opens. One less round trip
+       standing between a visitor and the standings. */
+    PJCC.ready.then(load, load);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

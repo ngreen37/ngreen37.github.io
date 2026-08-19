@@ -13,10 +13,10 @@ body_class: theme-hall
   <div class="lbtv-topbar">
     <span class="lbtv-live"><i></i>LIVE</span>
     <span class="lbtv-net">CHESS CITY NETWORK</span>
-    <span class="lbtv-show">OPERATIVE STANDINGS</span>
+    <span class="lbtv-show">PLAYER STANDINGS</span>
   </div>
 
-  <p class="lb-intro lbtv-sub">Standings across the McPuppy Studios games. <strong>Overall</strong> ranks every operative by total credits earned everywhere; each channel shows the best runs in that game. <span id="lb-signin-hint">Sign in on any game page to claim your spot.</span></p>
+  <p class="lb-intro lbtv-sub">Standings across the McPuppy Studios games. <strong>Overall</strong> ranks every player by total credits earned everywhere; each channel shows the best runs in that game. <span id="lb-signin-hint">Sign in on any game page to claim your spot.</span></p>
   <script>
   // The sign-in nudge only shows while signed out; signed in, it greets you instead.
   (function () {
@@ -187,11 +187,17 @@ body_class: theme-hall
 
 <script src="{{ '/assets/js/pjcc-config.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-profile.js' | relative_url }}"></script>
-{%- comment -%} Tap an operative's name to send them credits (2026-08-13). Loaded BEFORE
-     the board: both are `defer`, which runs in document order, so `window.PJCCGift` exists
-     by the time the board asks whether the affordance can be drawn. Reversed, the board
-     would see no gift module, quietly decide the answer is "no", and render plain names
-     forever with nothing in the console to say why. {%- endcomment -%}
+{%- comment -%} Tap an operative's name to open their card — avatar, companion, trophies,
+     and the credit gift (2026-08-13, widened 2026-08-19). Loaded BEFORE the board: both are
+     `defer`, which runs in document order, so `window.PJCCGift` exists by the time the
+     board binds a click to every row. Reversed, the names would all be buttons that do
+     nothing, with nothing in the console to say why.
+
+     ⚠ pjcc-pet-art.js IS THE COMPANION AND IT IS NOT SITE-WIDE. The card asks it to draw
+     the operative's pet; without it that whole section is absent — deliberately visible as
+     missing rather than substituted, so a card that has lost its companion looks lost
+     rather than looking like an operative who has no pet. {%- endcomment -%}
+<script src="{{ '/assets/js/pjcc-pet-art.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/pjcc-gift.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/pjcc-leaderboard.js' | relative_url }}" defer></script>
 
@@ -222,7 +228,7 @@ body_class: theme-hall
         return '<li><span class="pip-' + c.level + '">' + c.pip + '</span>' + c.name + '</li>';
       }).join('') +
       '</ul>' +
-      '<p class="lb-legend-note">The pip beside a codename is that operative&rsquo;s clearance. ' +
+      '<p class="lb-legend-note">The pip beside a codename is that player&rsquo;s clearance. ' +
       'It climbs with your rating &mdash; or with the credits you have earned, whichever is further along.' +
       (below.length
         ? ' ' + below.map(function (c) { return c.name; }).join(' and ') +

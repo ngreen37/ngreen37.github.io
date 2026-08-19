@@ -37,7 +37,7 @@ permalink: /dossier/
 
 <!-- ── Identity forge — build your look (instant; signed-out & offline) ── -->
 <div id="forge-mount"></div>
-<p class="pjcc-sub" style="margin-top:6px" id="forge-sync-note">Build your operative <em>and</em> your companion. Change anything, any time. <span id="forge-sync-state">Saved on this device; <a href="#dossier-body">sign in</a> to keep it.</span></p>
+<p class="pjcc-sub" style="margin-top:6px" id="forge-sync-note">Build your character <em>and</em> your companion. Change anything, any time. <span id="forge-sync-state">Saved on this device; <a href="#dossier-body">sign in</a> to keep it.</span></p>
 
 <!-- ── Operative record — loads with your account, inline into the one dossier ── -->
 <div id="dossier-body"><p class="lb-empty">Loading your record…</p></div>
@@ -56,6 +56,12 @@ permalink: /dossier/
 <script src="{{ '/assets/js/pjcc-face-art.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-companion.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-creator.js' | relative_url }}"></script>
+{%- comment -%} The player card (2026-08-19) — this page opens it from "Players You Follow",
+     the same module and the same card the leaderboards and the Park Tables open. It has to
+     be here or every row in that panel is a button that does nothing. pjcc-pet-art.js is
+     already above, which is the dependency the card's Companion section needs.
+     {%- endcomment -%}
+<script src="{{ '/assets/js/pjcc-gift.js' | relative_url }}"></script>
 <script>
 /* The Identity Forge card — renders instantly for everyone (guest, offline, or
    signed-in); re-renders when the account loads so it can prefer your synced look. */
@@ -104,7 +110,7 @@ permalink: /dossier/
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
   function render() {
-    if (!PJCC.enabled) { setTop('<p class="cc-greet">The operative network is offline — your local bests still count toward the missions above.</p>'); el.innerHTML = ''; return; }
+    if (!PJCC.enabled) { setTop('<p class="cc-greet">The player network is offline — your local bests still count toward the missions above.</p>'); el.innerHTML = ''; return; }
     var user = PJCC.currentUser();
     var prof = PJCC.getProfile();
     if (!user) return renderLogin();
@@ -113,9 +119,9 @@ permalink: /dossier/
   }
 
   function renderLogin() {
-    setTop('<p class="cc-greet">Uplink open — build your look below, or <a href="#dsr-login">sign in</a> to sync your operative across every device.</p>');
+    setTop('<p class="cc-greet">Uplink open — build your look below, or <a href="#dsr-login">sign in</a> to sync your profile across every device.</p>');
     el.innerHTML =
-      '<div class="dsr-card"><h2 class="dsr-h">Operative Sign-In</h2>' +
+      '<div class="dsr-card"><h2 class="dsr-h">Sign In</h2>' +
       '<p class="pjcc-sub">Enter your email and we will send a login link and a 6-digit code. Your codename, avatar and credits follow you.</p>' +
       '<div class="ml-form"><input id="dsr-email" type="email" class="pjcc-input" aria-label="Email address" placeholder="you@email.com"><button id="dsr-login" class="pjcc-btn">Send login link</button></div>' +
       '<p id="dsr-msg" class="pjcc-sub"></p></div>';
@@ -335,8 +341,38 @@ permalink: /dossier/
     }
     html += '</div></details>';
 
+    /* ── PLAYERS YOU FOLLOW (2026-08-19) ────────────────────────────────────────────
+       The payoff for the Follow button on a player card: the place you go to find those
+       people again. Each row re-opens their card, so this panel owns no rendering of its
+       own beyond a face and a name.
+
+       ⚠ THE WHOLE SECTION IS ABSENT UNTIL THE MIGRATION IS RUN — `followsEnabled()` is the
+       same once-per-session probe the gift uses, and an empty panel headed "Players You
+       Follow" on a site where following is impossible is worse than no panel.
+       ⚠ AND ABSENT WHEN THE LIST IS EMPTY, which is the ordinary state for almost everyone
+       for a long time. A heading over "nobody yet" is the arcade's own Hall of Fame
+       mistake — a trophy case advertising an empty room. It appears when it has something
+       in it and not before. */
+    var followsOn = false, follows = [];
+    try {
+      followsOn = await PJCC.followsEnabled();
+      if (followsOn) follows = await PJCC.following();
+    } catch (e) {}
+    if (followsOn && follows.length) {
+      html += '<h2 class="dsr-h">Players You Follow</h2>' +
+        '<p class="pjcc-sub">Your list, private to you. Tap anyone to open their card.</p>' +
+        '<div class="dsr-follows">' +
+        follows.map(function (f) {
+          var face = PJCC.avatarMarkup ? PJCC.avatarMarkup(f) : '';
+          return '<button class="dsr-fol" data-card="' + esc(f.codename) + '">' +
+                 '<span class="dsr-fol-av" aria-hidden="true">' + face + '</span>' +
+                 '<span class="dsr-fol-nm">' + esc(f.codename) + '</span></button>';
+        }).join('') +
+        '</div>';
+    }
+
     var link = PJCC.inviteLink(prof);
-    html += '<h2 class="dsr-h">Invite an Operative</h2>' +
+    html += '<h2 class="dsr-h">Invite a Player</h2>' +
       '<p class="pjcc-sub">Share your link — when a friend signs up through it, you each earn 10 credits.</p>' +
       '<div class="dsr-invite"><input id="dsr-invite" class="pjcc-input" readonly value="' + esc(link) + '"><button id="dsr-copy" class="pjcc-btn">Copy</button></div>';
 
@@ -348,6 +384,13 @@ permalink: /dossier/
     // repaint the card so the account strip lands inside it (and re-lands after any edit)
     var forgeMount = document.getElementById('forge-mount');
     if (forgeMount && window.PJCCForge) PJCCForge.renderCard(forgeMount);
+
+    // each followed player re-opens the shared card — this panel renders no bio of its own
+    Array.prototype.forEach.call(el.querySelectorAll('[data-card]'), function (b) {
+      b.onclick = function () {
+        if (window.PJCCGift) PJCCGift.open(b.getAttribute('data-card'));
+      };
+    });
 
     var copyBtn = document.getElementById('dsr-copy');
     if (copyBtn) copyBtn.onclick = function () {
@@ -381,11 +424,11 @@ permalink: /dossier/
     g.fillText('mcpuppystudios.com · Princess and the Journey to Chess City', 30, 312);
     c.toBlob(function (blob) {
       if (!blob) return;
-      var file = new File([blob], 'pjcc-operative.png', { type: 'image/png' });
+      var file = new File([blob], 'pjcc-player.png', { type: 'image/png' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ files: [file], title: 'My P&JCC operative', text: 'Operative ' + prof.codename + ' — mcpuppystudios.com' }).catch(function () {});
+        navigator.share({ files: [file], title: 'My P&JCC player', text: 'Player ' + prof.codename + ' — mcpuppystudios.com' }).catch(function () {});
       } else {
-        var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'pjcc-operative.png'; a.click();
+        var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'pjcc-player.png'; a.click();
       }
     }, 'image/png');
   }

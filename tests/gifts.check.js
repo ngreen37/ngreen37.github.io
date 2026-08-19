@@ -28,6 +28,22 @@ const BOARD = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-leaderboard.js'), 
 const DOC = fs.readFileSync(path.join(ROOT, 'docs/credit-gifts-setup.md'), 'utf8');
 const PAGE = fs.readFileSync(path.join(ROOT, 'leaderboards.md'), 'utf8');
 const SCSS = fs.readFileSync(path.join(ROOT, '_sass/_pjcc-14-profile.scss'), 'utf8');
+const PT   = fs.readFileSync(path.join(ROOT, 'games/park-tables/index.html'), 'utf8');
+const SETUP = fs.readFileSync(path.join(ROOT, 'docs/supabase-setup.sql'), 'utf8');
+
+/* ⚠⚠ A NEGATIVE ASSERTION MUST NOT READ THE COMMENTS. Two checks in section 8 failed the
+   moment they were written, and both for the same reason: this codebase explains itself at
+   length, so "the board no longer calls PJCCGift.available()" tripped on the comment SAYING
+   it no longer calls it, and "no frag_ appears in the card" tripped on the paragraph
+   explaining why secrets cannot be shown. Left alone, the only way to keep such a check
+   green is to stop writing the sentence that documents the decision — which is precisely
+   backwards. `code()` strips the prose so a "this is absent" check is about the program.
+   ⚠ NOT for every check: the give-cap guard in section 6 scans the comments ON PURPOSE (a
+   stale cap in a header block is a confident lie), so it keeps reading the raw file. */
+const code = (src) => src
+  .replace(/\{%-?\s*comment\s*-?%\}[\s\S]*?\{%-?\s*endcomment\s*-?%\}/g, ' ')  // Liquid
+  .replace(/\/\*[\s\S]*?\*\//g, ' ')                                          // block
+  .replace(/^\s*\/\/.*$/gm, ' ');                                             // whole-line
 
 let pass = 0, fail = 0;
 const check = (n, c, d) => {
@@ -64,12 +80,26 @@ check('…and the answer is cached per session, not asked per row or per render'
 check('a signed-out visitor never probes at all',
   /if \(!sb \|\| !PJCC\.currentUser\(\)\) return false;/.test(PROFILE),
   'the most common visit makes no request');
-check('the BOARD resolves it once before the first render',
-  /PJCCGift\.available\(\)/.test(BOARD) && /giftsOn = !!on/.test(BOARD));
+/* ⚠⚠ THE PROBE MOVED, 2026-08-19, AND THAT IS THE POINT. It used to live in the BOARD and
+   decide whether a codename was clickable at all — which meant LOOKING at another operative
+   was gated behind the credit-gift migration. The card reads only already-public tables, so
+   the probe now sits inside the card and decides one thing: whether the SEND section draws.
+   These three checks follow it rather than being deleted; the invariant they defend (nothing
+   gift-shaped renders on a maybe) is unchanged. */
+check('the CARD resolves it once per open, and never rejects',
+  /PJCCGift\.available\(\)/.test(GIFT) && /giftsOn = both\[1\]/.test(GIFT));
 check('…and a failure leaves it OFF, which is the state that draws nothing',
-  /function \(\) \{ giftsOn = false; \}/.test(BOARD));
-check('no gift button is drawn on your own row',
-  /giftsOn && !mine/.test(BOARD), 'offering an action that can only fail is worse than not offering it');
+  /function \(\) \{ return false; \}\)/.test(GIFT));
+check('no gift row is drawn on your own card',
+  /giftsOn && !mine \? giftBlock/.test(GIFT) && /if \(giftsOn && !mine\)/.test(GIFT),
+  'offering an action that can only fail is worse than not offering it');
+check('…and the board itself asks NOTHING before its first render',
+  /PJCC\.ready\.then\(load, load\);/.test(BOARD) &&
+  !/var giftsOn/.test(code(BOARD)) && !/PJCCGift\.available/.test(code(BOARD)),
+  'the standings are not behind a payments probe');
+check('…nor does the park tables page',
+  !/var giftsOn/.test(code(PT)) && !/PJCCGift\.available/.test(code(PT)),
+  'the nameplate is a door, not a till');
 
 /* ── 3. NOTHING THROWS, AND EVERY REFUSAL HAS WORDS ──────────────────────────────── */
 const said = (GIFT.match(/var SAID = \{([\s\S]*?)\};/) || [])[1] || '';
@@ -175,8 +205,16 @@ check('gifts go BY CODENAME — no page exposes a user id',
 /* ── 7. IT IS A REAL CONTROL, AND REACHABLE ──────────────────────────────────────── */
 check('the name becomes a <button>, not a clickable cell',
   /<button class="lb-gift"/.test(BOARD), 'keyboard + screen reader + no hover needed');
-check('…with an accessible name that says what it does',
-  /aria-label="Send credits to /.test(BOARD));
+/* ⚠ THE LABEL HAS TO MATCH WHAT THE PRESS ACTUALLY DOES. The board's button used to send
+   credits and said so; it opens a card now, and a screen reader promised "Send credits to
+   NAME" would be announcing a payment for what is a profile view. The SEND labels moved
+   into the card with the buttons. */
+check('…with an accessible name that says what it does — the board opens a file',
+  /aria-label="Open the file on /.test(BOARD) && !/aria-label="Send credits to /.test(BOARD));
+check('…and the park tables nameplate says the same thing',
+  /aria-label="Open the file on /.test(PT) && !/aria-label="Send credits to /.test(PT));
+check('…while the amounts inside the card are the ones that say "send"',
+  /aria-label="Send ' \+ n \+ ' credits"/.test(GIFT));
 check('…and a 44px hit box on touch that does not grow the row',
   /\.lb-gift \{ display: inline-block; padding: 12px 4px; margin: -12px -4px; \}/.test(SCSS));
 /* ⚠⚠ CAUGHT BY A RENDER, NEVER BY A NUMBER. `.gift-ok` / `.gift-no` are worn by a <b> that
@@ -202,6 +240,116 @@ check('the page loads the gift module BEFORE the board that asks about it',
 check('the balance is taken from the SERVER reply, never recomputed locally',
   /profile\.credits = out\.balance;/.test(PROFILE),
   'never compute a number you were just told');
+
+/* ── 8. THE OPERATIVE CARD (2026-08-19) ──────────────────────────────────────────────
+   Nate: "when you click on a user… it shows their avatar and companion, their trophies,
+   and secrets unlocked, and you can gift them credits from there."
+
+   WHAT THIS SECTION DEFENDS:
+     1. THE CARD NEEDS NO MIGRATION. It reads two tables that are already `select using
+        (true)` and that the leaderboards already draw. The moment it needs an RPC or a new
+        table, it inherits the gift's invisible-until-migrated problem for no reason.
+     2. NO USER ID EVER REACHES THE MARKUP. The uuid has to be READ to ask game_stats a
+        question; it must die in that function.
+     3. THE TROPHY RULES ARE NOT COPIED. One list, in pjcc-profile.js, read by your dossier
+        and by somebody else's card alike.
+     4. NOTHING IS CLAIMED THAT IS NOT KNOWN. Secrets and pet colors are localStorage-only
+        and there is no honest way to show a stranger's — so they are absent, not faked. */
+
+check('the card reads the two PUBLIC tables and nothing else',
+  /from\('profiles'\)/.test(GIFT) && /from\('game_stats'\)/.test(GIFT) && !/\.rpc\(/.test(code(GIFT)),
+  'no new function, no new table, no migration');
+/* ⚠ if either policy ever stops being public the card goes blank for everyone but you, and
+   the failure is silent — an empty card, not an error. Pin both here. */
+check('…and both of those really are readable by anyone',
+  /create policy "profiles read"\s+on profiles for select using \(true\);/.test(SETUP) &&
+  /create policy "stats read"\s+on game_stats for select using \(true\);/.test(SETUP),
+  'the card is drawn from what the boards already show');
+check('the uuid is used for the query and never rendered',
+  /\.eq\('user_id', uid\)/.test(GIFT) &&
+  !/(innerHTML|'\s*\+\s*(prof|res)\.id|data-[\w-]*id="'\s*\+\s*\w*\.id)/.test(
+    (GIFT.match(/var uid = prof\.id;[\s\S]*?^  \}/m) || [''])[0]),
+  'every identifier on the page is a codename');
+check('a pre-Park-Tables server still gets a card',
+  /select\(WIDE\)[\s\S]{0,220}select\(CORE\)/.test(GIFT),
+  'the wide column list falls back rather than blanking the card');
+
+check('trophies come from the ONE achievement list, not a copy',
+  /PJCC\.earnedAchievements\(prof, stats\)/.test(GIFT) &&
+  /PJCC\.ACHIEVEMENTS = ACHIEVEMENTS/.test(PROFILE),
+  'add one to ACHIEVEMENTS and every card lights it up');
+check('…and only the EARNED ones are shown to a stranger',
+  /\.filter\(function \(a\) \{ return a\.earned; \}\)/.test(GIFT),
+  'the full list with misses grayed out is a to-do list, and it is not yours');
+check('the rating is hidden until it has been played for',
+  /prof\.rated_games > 0 && prof\.pjcc_rating != null/.test(GIFT),
+  'everyone starts at 250 — an unplayed 250 reads as a measurement');
+
+/* ⚠⚠ THE HONEST-GAP CHECKS. Both of these are things Nate ASKED FOR that the server does
+   not know, and the failure mode is not a crash — it is a card that quietly asserts
+   something false about a person ("found no secrets", "owns a brown-eyed dog"). If either
+   ever becomes real, it becomes a stored field first and these checks come out. */
+check('secrets are not drawn, because nothing uploads them',
+  !/frag_/.test(code(GIFT)) && !/localStorage/.test(code(GIFT)) &&
+  /SECRETS ARE NOT ON THIS CARD/.test(GIFT),
+  'the card touches no local storage, so it can only claim what the server knows');
+check('…and the pet is drawn from the species alone, with the gap written down',
+  /THE PET.S COLORS ARE LOCAL TOO/.test(GIFT) &&
+  /coat: 'natural', eye: 'brown', nose: 'black'/.test(GIFT),
+  'species and stage are true; the colors are the factory ones');
+check('the companion stage is DERIVED from server-side rounds, not read',
+  /PJCC\.companionLevel\(rounds\)/.test(GIFT) && /lv\.level >= 6 \? 2 : lv\.level >= 3 \? 1 : 0/.test(GIFT),
+  'the Den bond level is in THEIR localStorage and is unknowable here');
+check('…and its label is read off PJCC.LEVELS rather than typed here',
+  /esc\(lv\.stage\)/.test(GIFT) && !/Pathfinder|Vanguard|Legend of the Board/.test(code(GIFT)),
+  'a second copy of the stage names is a second thing to keep in sync');
+
+check('the card opens on the tap, before it knows anything',
+  /Opening the file…/.test(GIFT), 'a tap that does nothing for a beat is a tap made twice');
+check('…and a card closed mid-fetch cannot paint over its replacement',
+  /var my = \+\+openToken;/.test(GIFT) && /if \(my !== openToken\) return;/.test(GIFT),
+  'the stale-render bug the per-open teardown exists to prevent');
+check('a missing operative is a sentence, not an empty card',
+  /SAID\[res\.reason\] \|\| SAID\.offline/.test(GIFT));
+
+/* ⚠⚠ THE CARD MUST OPEN SHOWING THE PERSON. Both of these guard ONE bug, found only by
+   looking at a render at 1280×420: the sheet's old `first.focus()` on the cheapest amount
+   scrolled the card's own overflow box down to reveal it, so a short window opened straight
+   onto the row of money with the name, face and clearance scrolled off above.
+   ⚠ THE GEOMETRY CHECK SAID IT WAS FINE. The card's bounding rect was flawless — top 29,
+   nothing clipped — because the damage was to `scrollTop` INSIDE the card, which no rect
+   can see. Measuring the box is not measuring what is on screen.
+   ⚠ AND IT ARMED A SPEND WITH A SPACEBAR, which is its own reason never to put it back. */
+check('the card never puts focus on a money button',
+  !/\[data-amt\][^;]*\.focus\(\)/.test(code(GIFT)) && /#gift-x'\)\.focus\(\)/.test(GIFT),
+  'focus stays on close — the first thing a keyboard lands on must not spend');
+check('…and it opens scrolled to the top, at the operative',
+  /card\.scrollTop = 0;/.test(GIFT),
+  'a card that opens at the send row shows money and no person');
+
+/* pjcc-pet-art.js is NOT site-wide (it lives in the default layout's neighbors, not in
+   it), so every page that opens a card has to bring it. Without it the companion section
+   is absent — which is the right failure, but only if it is never silently expected. */
+/* ⚠⚠ AND THE SAME TRAP RUNS THE OTHER WAY. These two were written as a plain search of
+   the page source for "pjcc-pet-art.js" — and passed with the <script> tag DELETED, because
+   the Liquid comment ABOVE the tag names the file while explaining why it is there. A gate
+   that is satisfied by its own documentation is not a gate. Both read `code()` now, and the
+   first looks for a real tag rather than a mention. (Caught by deleting the tag and watching
+   66/0 stay green — the only way this class of bug is ever found.) */
+const PAGE_C = code(PAGE), PT_C = code(PT);
+const petTag = /<script src="\{\{ '\/assets\/js\/pjcc-pet-art\.js'/;
+check('both card hosts load the pet art the companion needs',
+  petTag.test(PAGE_C) && petTag.test(PT_C));
+check('…before the card module that calls it',
+  PAGE_C.indexOf('pjcc-pet-art.js') < PAGE_C.indexOf('pjcc-gift.js') &&
+  PT_C.indexOf('pjcc-pet-art.js') < PT_C.indexOf('pjcc-gift.js'));
+check('the card is a real dialog too, and the sheet styles are shared',
+  /class="gift-sheet op-card"/.test(GIFT) && /\.op-card \{/.test(SCSS),
+  'one modal, widened — not a second one to keep in step');
+/* ⚠⚠ PAID FOR THREE TIMES NOW (the VS rail, Floor Ten, and this). A centered flex child
+   taller than its container overflows off the TOP, where no scrollbar reaches. */
+check('a card taller than the window loses its bottom, never its face',
+  /\.gift-ov \{ align-items: safe center; \}/.test(SCSS) && /overflow-y: auto;/.test(SCSS));
 
 console.log(`\n  ${pass} passed, ${fail} failed\n`);
 process.exit(fail ? 1 : 0);
