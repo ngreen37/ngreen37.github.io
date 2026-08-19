@@ -164,6 +164,48 @@
   <i class="ts-ecl-corona" aria-hidden="true"></i>
   <i class="ts-orb"></i>
 
+  {%- comment -%} ⚑⚑ THE MOON'S OWN NEIGHBORHOOD (2026-08-19). Nate: *"Can the moon have some
+       faint stars in the near area? Only a moon doesn't fully make it clear what it is upon
+       first glance — or if it's cloudy that day, some faint clouds around the moon, and
+       faintly covering it, to give it a more real effect?"*
+
+       ⚠⚠ A SIBLING OF THE ORB, NOT A CHILD OF IT, AND THAT IS A PERFORMANCE DECISION.
+       `.ts-orb` carries `filter: drop-shadow(0 0 22px …)` at night. A filter forces its whole
+       SUBTREE to re-rasterize whenever anything inside it changes, so a twinkling star parked
+       under the moon would repaint a 51px blurred disc every frame — a cost with no pixels to
+       show for it. Out here the field tracks the moon by reading the same `--orb-x/--orb-y`
+       the orb reads, so it travels the arc with it and pays nothing.
+
+       ⚠ z-index 3: ABOVE the orb (2) so the veil can lie across the moon's face, BELOW
+       `.ts-clouds` (4) so a genuinely overcast night still covers everything.
+
+       ⚠ THE STARS REUSE `.ts-star` ON PURPOSE. They are stars; a second star class would be a
+       second thing to keep in step with the twinkle, the reduced-motion guard and the
+       cloud-cover fades. Only their POSITION is new, and it is in px rather than % so they
+       hold the same distance from the moon at every viewport. {%- endcomment -%}
+  <div class="ts-moonfield" aria-hidden="true">
+    {%- comment -%} ⚠ THE RADII ARE UNEVEN ON PURPOSE, AND THE FIRST SET WAS NOT. Seven stars
+         at r≈56–64 and roughly equal angles drew a tidy RING, which reads as a halo somebody
+         placed rather than as sky — the render is the only place that was visible. These run
+         r≈45 to r≈105 with the gaps deliberately unequal and two of them close together,
+         because a real patch of sky is clumpy. {%- endcomment -%}
+    <b class="ts-star ts-star--tw" style="--mx:-38px;--my:-24px"></b>
+    <b class="ts-star"            style="--mx:12px;--my:-71px;--ss:3px"></b>
+    <b class="ts-star"            style="--mx:66px;--my:-38px"></b>
+    <b class="ts-star ts-star--tw" style="--mx:94px;--my:22px;--ss:3px"></b>
+    <b class="ts-star"            style="--mx:18px;--my:63px"></b>
+    <b class="ts-star"            style="--mx:-52px;--my:72px"></b>
+    <b class="ts-star ts-star--tw" style="--mx:-72px;--my:34px"></b>
+    <b class="ts-star"            style="--mx:-101px;--my:-13px;--ss:3px"></b>
+    <b class="ts-star"            style="--mx:47px;--my:97px"></b>
+    {%- comment -%} The veil — drawn only on a `moon-veiled` night (see the roll in
+         pjcc-time.js and the class in town-weather.html). Two soft bands, STATIC: a drifting
+         cloud over a moon that is already crossing the sky is two motions competing, and a
+         still wisp is both calmer and free. {%- endcomment -%}
+    <i class="ts-moon-veil ts-moon-veil--a"></i>
+    <i class="ts-moon-veil ts-moon-veil--b"></i>
+  </div>
+
   {%- comment -%} ⚑⚑ THE TERMINATOR, AS A REAL ELLIPSE (2026-08-18, Nate: "the moon looks a
        bit odd in its waning gibbous"). It used to be a same-size disc of sky slid across
        the face — and two circles of EQUAL radius can only ever cut a crescent, so every

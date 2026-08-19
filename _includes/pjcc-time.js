@@ -357,8 +357,43 @@
      day on. Cost to the forecast, measured over 3,650 real dates: rain 21.9% → 21.0%. */
   function rareSky(ds) { return showerDay(ds) || auroraDay(ds); }
 
+  /* ⚑ A THIN VEIL ACROSS THE MOON — 2026-08-19. Nate: *"if it's cloudy that day, some faint
+     clouds around the moon, and faintly covering it, to give it a more real effect? But only
+     if it adds MINIMAL performance hit … some days, at a low probability, and NEVER on
+     meteor shower or northern lights days or eclipse days."*
+
+     ⚠⚠ THE THREE EXCLUSIONS ARE HIS AND THEY ARE THE WHOLE POINT OF PUTTING THIS HERE rather
+     than in the CSS. The eclipse, the shower and the aurora each already CLEAR the sky — they
+     are the rarest things this town does, and hiding one of them behind a haze would spend a
+     1-in-100 night on an effect that happens every week or two. `rareSky()` covers the two
+     rare nights and `eclipseDay()` the third; all three are the same functions the forecast
+     already asks, so there is no second definition of "is tonight special" to drift.
+
+     ⚠ 120/1000, AND THE NUMBER IS MINE, NOT HIS — flagged. He said "a low probability" and
+     gave no figure, so: roughly one night in eight. It sits deliberately ABOVE the shower
+     (3%) and the aurora (1%), because thin cloud over a moon is the most ordinary thing in
+     this list and should not feel rarer than a meteor storm; and deliberately well below a
+     half, because an effect you meet most nights stops being a night with weather in it and
+     becomes the moon's normal appearance.
+
+     ⚠ SALTED SEED, like the two rare nights and for the same reason: the 32-bit day seed is
+     already carved up between the forecast (`% 40`), the cover (`>>> 11`) and three cloud
+     shapes (`>>> 3`, `>>> 7`, `>>> 11`). Hashing a salted date string is independent by
+     construction rather than by hoping the leftover bits are free.
+
+     ⚠ NO CLOUD-COVER TEST IN HERE, DELIBERATELY — same rule as the phase test above. This
+     answers "is tonight a veiled night", not "is the sky otherwise clear". The head script in
+     town-weather.html is what declines to stamp the class when `clouds()` already returned an
+     overcast deck, because that is where cover is known. */
+  function moonVeil(ds) {
+    ds = ds || parts().ds;
+    if (eclipseDay(ds) || rareSky(ds)) return false;
+    return daySeed(ds + '#moonveil') % 1000 < 120;
+  }
+
+
   window.PJCC_TIME = { parts: parts, hour: hour, dateStr: dateStr, phase: phase,
                        daySeed: daySeed, weather: weather, clouds: clouds, orb: orb, season: season,
                        moon: moon, moonPath: moonPath, eclipse: eclipse, eclipseDay: eclipseDay,
-                       showerDay: showerDay, auroraDay: auroraDay };
+                       showerDay: showerDay, auroraDay: auroraDay, moonVeil: moonVeil };
 })();

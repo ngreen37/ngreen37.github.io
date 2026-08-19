@@ -1661,3 +1661,96 @@ html.reduce-flourish .ts-streak { display: none !important; }
   .ts-secret { right: 4.5%; opacity: 0.10; transform: none; animation: none !important; }
 }
 html.reduce-flourish .ts-secret { right: 4.5%; opacity: 0.10; transform: none; animation: none !important; }
+
+/* ══ THE MOON'S NEIGHBORHOOD (2026-08-19) ═══════════════════════════════════════════════
+   Nate: "Can the moon have some faint stars in the near area? Only a moon doesn't fully make
+   it clear what it is upon first glance — or if it's cloudy that day, some faint clouds
+   around the moon, and faintly covering it, to give it a more real effect? But only if it
+   adds MINIMAL performance hit."
+
+   ⭐ IT COSTS ESSENTIALLY NOTHING, AND THE REASON IS PAINTED AREA, NOT ELEMENT COUNT. The
+   2026-08-13 census of this sky found two `.ts-cloud-bank` sheets at 6.3 MB EACH and
+   twenty-five other animated things at 0.0 MB combined — because a compositor layer costs
+   width × height, and the sheets are wider than the window. Everything below fits inside a
+   ~130px box. Seven 2-3px stars and two small bands are, to the nearest tenth of a
+   megabyte, free. [[ambient-layer-cost]]
+
+   ⚠ THE FIELD TRACKS THE MOON BY READING THE SAME TWO VARIABLES THE ORB READS. It is not a
+   child of `.ts-orb` — see the note in town-sky.html: the orb's night `drop-shadow` would
+   re-rasterize on every frame of the twinkle underneath it. */
+.ts-moonfield {
+  position: absolute; z-index: 3; display: none;
+  left: var(--orb-x, 30%); top: var(--orb-y, 22%);
+  width: 0; height: 0;                       /* a coordinate origin, not a box */
+}
+html.sky-night .ts-moonfield { display: block; }
+/* ⚠ NEW MOON TAKES THE FIELD WITH IT. `html.sky-night.moon-new .ts-orb { display: none }` —
+   stars ringing an empty patch of sky would be the one night a month the effect points at
+   nothing, and a veil over a moon that is not there is worse. */
+html.sky-night.moon-new .ts-moonfield { display: none; }
+
+/* the stars, positioned off the moon's CENTER in px so the ring holds its shape at every
+   viewport. `.ts-star` already supplies the size, the glow and the twinkle. */
+.ts-moonfield .ts-star {
+  left: var(--mx); top: var(--my);
+  /* ⚠ CENTERED ON THE OFFSET, not hung from its top-left — otherwise every star sits a
+     couple of px down-right of where the number says, which is invisible per star and
+     lopsided across a ring of seven. */
+  transform: translate(-50%, -50%);
+}
+
+/* ── THE VEIL ────────────────────────────────────────────────────────────────────────
+   Two soft bands lying across the face, on a `moon-veiled` night only.
+
+   ⚠ A GRADIENT, NOT A `filter: blur()`. Blur is a per-paint pass over the box; a radial
+   gradient with soft stops is the same picture rasterized once and then composited. This
+   sky already learned that lesson on the aurora, where the softness had to come from a
+   mask rather than from a filter.
+   ⚠ AND STATIC — no drift. The moon is already moving along its arc; a cloud sliding across
+   a moving moon is two motions arguing. Still, it also means these never take a layer. */
+.ts-moon-veil {
+  position: absolute; display: none;
+  transform: translate(-50%, -50%) rotate(var(--vr, -12deg));
+  border-radius: 50%;
+  /* ⚠⚠ A MID-TONE, NOT WHITE — and the first version got this wrong in a way only a render
+     showed. At `rgba(226,222,245,.30)` the veil glowed prettily in the sky beside the moon
+     and was INVISIBLE across the disc, because near-white at 30% over a near-white moon
+     changes nothing. He asked for cloud "faintly covering it", and what covering looks like
+     is the moon getting DIMMER.
+     ⭐ #9e98c4 is the tone that does both jobs at once, which is also what real haze does:
+     over the lit disc (~240) it pulls down to ~205, and over the night sky (~13) it lifts to
+     ~74. One layer, dimming what is bright and lightening what is dark. */
+  background: radial-gradient(ellipse at 50% 50%,
+              rgba(158, 152, 196, 0.42) 0%,
+              rgba(158, 152, 196, 0.24) 44%,
+              rgba(158, 152, 196, 0) 73%);
+}
+/* the stars behind it go soft too — the same cloud is between you and them */
+html.sky-night.moon-veiled .ts-moonfield .ts-star { opacity: 0.55; }
+html.sky-night.moon-veiled .ts-moon-veil { display: block; }
+html.sky-night.moon-new    .ts-moon-veil { display: none; }
+/* ⚠⚠ THE BANDS ARE OFFSET SO THEIR FALLOFF CROSSES THE DISC — centered on it, they did not
+   read as cloud at all. Measured: a band centered on the moon dimmed it evenly from 220 to
+   202, which the pixels agreed was "covered" and the eye read as "the moon is slightly
+   dimmer today". What says CLOUD is an EDGE traveling over the face, so each band now sits
+   off to one side with only its soft shoulder over the disc. Same total ink, a picture
+   instead of a filter. [[pick-visual-values-from-a-render]] */
+/* ⚠ AND THEY ARE NOT MIRRORED. The first offset pair sat at equal-and-opposite distances
+   with similar lengths, which drew two matched arcs either side of a disc — a ring system,
+   not weather. B is shorter, lower and turned further, so the pair reads as two layers of
+   cloud at different heights rather than as one object with a belt. */
+.ts-moon-veil--a { left: -30px; top: -19px; width: 152px; height: 46px; --vr: -15deg; }
+.ts-moon-veil--b { left: 20px;  top: 31px;  width: 88px;  height: 24px; --vr: 15deg; opacity: 0.7; }
+
+/* ⚠ AND THE WHOLE FIELD FADES WITH THE SKY'S OWN COVER, exactly as `.ts-stars` does. Without
+   these the moon would keep a crisp private constellation on a night the rest of the stars
+   had already gone out — the field would announce itself as a separate feature.
+   ⚠ THE SELECTORS ARE WRITTEN AT THE SAME WEIGHT AS THE `sky-night` RULE ABOVE (two classes
+   on `html`), because `html.cloud-3 .ts-moonfield` alone is (0,2,1) and loses to
+   `html.sky-night .ts-moonfield`'s… it does not, but `display` and `opacity` are different
+   properties and mixing weights here is how the next edit breaks it quietly. */
+html.sky-night.cloud-3 .ts-moonfield { opacity: 0.10; }
+html.sky-night.cloud-2 .ts-moonfield { opacity: 0.45; }
+html.sky-night.town-rain .ts-moonfield,
+html.sky-night.town-snow .ts-moonfield { opacity: 0; }
+html.sky-night.town-mist .ts-moonfield { opacity: 0.22; }

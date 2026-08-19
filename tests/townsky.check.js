@@ -390,6 +390,88 @@ check('every shell loads the clock and then the sky', wired === GAMES.length,
       'it is not a thin moon, it is no moon');
   }
 
+  /* ══ THE MOON'S NEIGHBORHOOD (2026-08-19) ══════════════════════════════════════════
+     Nate: "Can the moon have some faint stars in the near area? … or if it's cloudy that
+     day, some faint clouds around the moon … some days, at a low probability, and never on
+     meteor shower or northern lights days or eclipse days. But only if it adds MINIMAL
+     performance hit."
+
+     Three things to defend, and the first is his hard rule: */
+  {
+    const SKY  = fs.readFileSync(path.join(ROOT, '_includes/town-sky.html'), 'utf8');
+    const HEAD = fs.readFileSync(path.join(ROOT, '_includes/town-weather.html'), 'utf8');
+    const CSS  = fs.readFileSync(path.join(ROOT, '_sass/_pjcc-20-town-sky.scss'), 'utf8');
+    /* the clock, evaluated the same way the moon block above does it — the roll has to be
+       RUN over real dates, not pattern-matched, because "never on those three nights" is a
+       property of three salted hashes and cannot be read off the source. */
+    const T = (() => { const w = {}; new Function('window', 'self', CLOCK_ASSET)(w, w); return w.PJCC_TIME; })();
+
+    /* ⚠⚠ NEVER ON THE THREE RARE NIGHTS. Each of those already CLEARS the sky, so a veil on
+       one of them would spend a 1-in-100 night hiding the rarest thing the town does. Walked
+       over ten years of real dates rather than asserted from the source, because the roll is
+       three salted hashes and an `||` — exactly the shape that reads correct and is not. */
+    let veiled = 0, clash = 0, days = 0;
+    const d = new Date(2026, 0, 1);
+    for (let i = 0; i < 3650; i++) {
+      const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') +
+                 '-' + String(d.getDate()).padStart(2, '0');
+      days++;
+      if (T.moonVeil(ds)) {
+        veiled++;
+        if (T.showerDay(ds) || T.auroraDay(ds) || T.eclipseDay(ds)) clash++;
+      }
+      d.setDate(d.getDate() + 1);
+    }
+    check('a veiled night never lands on a shower, an aurora or an eclipse', clash === 0,
+      clash ? clash + ' collisions in ' + days + ' nights' : '0 collisions over ' + days + ' nights');
+    /* ⚠ AND IT IS UNCOMMON BUT NOT RARE — above the shower (3%) and the aurora (1%), because
+       thin cloud is the most ordinary thing on that list; well under half, because an effect
+       you meet most nights is not weather, it is what the moon looks like. */
+    const pct = 100 * veiled / days;
+    check('…and it is a low probability, in the band between rare and routine',
+      pct > 5 && pct < 20, pct.toFixed(2) + '% of nights');
+    /* ⭐ PER NIGHT, NOT PER LOAD — the standing rule for everything ambient here. */
+    check('…rolled off the town DATE, so one town has one sky all night',
+      T.moonVeil('2026-08-19') === T.moonVeil('2026-08-19') &&
+      /daySeed\(ds \+ '#moonveil'\)/.test(CLOCK_ASSET),
+      'and salted, not carved out of the shared day seed');
+
+    /* ⚠⚠ THE PERFORMANCE DECISION, PINNED. `.ts-orb` wears `filter: drop-shadow(...)` at
+       night, and a filter re-rasterizes its whole SUBTREE whenever anything inside changes.
+       Move the field inside the orb and the twinkle repaints a blurred 51px disc every
+       frame — no visible change, real cost. Measured at 0.000 MB of compositor texture as a
+       sibling; this check is what keeps it one. */
+    check('the moon field is a SIBLING of the orb, never a child of it',
+      /<i class="ts-orb"><\/i>\s*(\{%-?\s*comment[\s\S]*?endcomment\s*-?%\}\s*)?<div class="ts-moonfield"/.test(SKY),
+      'the orb drop-shadow would re-raster the whole subtree on every twinkle');
+    /* ⚠ AND THE VEIL DOES NOT MOVE. The moon is already crossing the sky; a drifting cloud
+       over a moving moon is two motions arguing, and a static band never takes a layer. */
+    check('…and nothing in the veil animates',
+      !/\.ts-moon-veil[^{]*\{[^}]*animation/.test(CSS), 'static bands cost no layer at all');
+    check('the veil is a gradient, not a blur filter',
+      /\.ts-moon-veil \{[\s\S]*?radial-gradient/.test(CSS) &&
+      !/\.ts-moon-veil \{[\s\S]*?filter:\s*blur/.test(CSS),
+      'a blur is a paint pass per frame; a gradient rasters once');
+
+    /* ⚠ DRAWN ONLY WHEN THERE IS A MOON TO DRAW IT ON. `moon-new` already takes the orb off
+       the sky, and stars ringing an empty patch — or a veil over nothing — is the one night
+       a month the whole effect points at a blank. */
+    check('a new moon takes the field with it',
+      /html\.sky-night\.moon-new \.ts-moonfield \{ display: none; \}/.test(CSS));
+    check('the veil needs BOTH night and a veiled night to render',
+      /html\.sky-night\.moon-veiled \.ts-moon-veil \{ display: block; \}/.test(CSS) &&
+      /\.ts-moon-veil \{[\s\S]{0,200}?display: none;/.test(CSS),
+      'default is off, so a missed class draws nothing rather than something');
+    /* ⚠ AND NOT OVER AN ALREADY-OVERCAST SKY. The roll deliberately does not ask about cloud
+       cover (same reason it does not ask about phase); the head script declines to stamp the
+       class, because that is where cover is known. */
+    check('the class is withheld when the sky is already covered',
+      /if\(mv&&!ec\.forced&&c<=1\)R\.classList\.add\('moon-veiled'\)/.test(HEAD),
+      'cloud-2 and cloud-3 already have a deck; rain and snow report 3');
+    check('…and there is a preview switch, like the other rare skies',
+      /qp\.get\('moonveil'\)!==null/.test(HEAD), '?moonveil=1');
+  }
+
   await browser.close();
   done();
 })().catch((e) => { console.error('\nABORT: ' + e.message); process.exit(2); });
