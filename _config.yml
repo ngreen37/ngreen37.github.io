@@ -213,24 +213,24 @@ socials:
   - name: Instagram
     handle: "chessWild_official"
     url: "https://instagram.com/chessWild_official"
-    live: false
+    live: true
   - name: TikTok
     handle: "chessWild.com"
     url: "https://tiktok.com/@chessWild.com"
-    live: false
+    live: true
   - name: YouTube
     handle: "ChessWild_Official"
     url: "https://youtube.com/@ChessWild_Official"
-    live: false
+    live: true
   - name: X
     handle: "@real_ChessWild"
     url: "https://x.com/real_ChessWild"
-    live: false
+    live: true
   - name: Reddit
     handle: "u/chesswild_official"
     url: "https://reddit.com/user/chesswild_official"
-    live: false
+    live: true
   - name: Pinterest
     handle: "chesswild_official"
     url: "https://pinterest.com/chesswild_official"
-    live: false
+    live: true

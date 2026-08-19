@@ -1,10 +1,25 @@
 {%- comment -%}
   THE SOCIAL ROW — one copy, used by both site footers (default.html and game.html).
 
-  Reads `socials` in _config.yml and renders ONLY the accounts marked `live: true`. All six
-  handles are reserved; none of them are live yet, so today this include outputs nothing at
-  all — no heading, no empty row, no "coming soon". A footer that announces six links and
-  then has none is worse than a footer with no social row.
+  Reads `socials` in _config.yml and renders ONLY the accounts marked `live: true`.
+
+  ⚑ ALL SIX ARE ON AS OF 2026-08-19, and this include finally outputs something. Nate:
+  *"those six handles, I've already reserved them they just don't have any content — I
+  posted one tweet — those handles are already reserved and the links go correctly to my
+  channel."* It had been sitting at zero because the row was waiting on exactly that, and
+  the switch was doing its job the whole time: a footer that announces six links and then
+  has none is worse than a footer with no social row.
+
+  ⚠ EMPTY IS NOT THE SAME AS ABSENT, and that is his call, made twice. On 2026-08-18, of
+  the same six on /follow/: *"I don't care if the socials aren't populated yet, we still
+  have no users."* An account with nothing in it is a real place to follow; a handle nobody
+  owns is a 404 out of the site. Only the second one was ever the problem.
+
+  ⚠ VERIFIED WHERE IT COULD BE. YouTube and X return 404 for a handle nobody owns and 200
+  for his, so those two are measured. Instagram, TikTok, Reddit and Pinterest answer a bare
+  request identically for a real handle and a fake one — 200 shells, 403s, no og: tags — so
+  there is no probe from here that means anything, and those four rest on his word. Do not
+  write a check that "verifies" them; it would pass on a deleted account.
 
   ⚠ THE WHOLE BLOCK IS INSIDE THE `if` FOR THAT REASON. An earlier shape put the <nav> and
   its heading outside the loop, which meant switching every account off left a labelled
