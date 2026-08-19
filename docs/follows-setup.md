@@ -153,12 +153,34 @@ grant execute on function list_following() to authenticated;
 
 ## Check it worked
 
-Still in the SQL Editor, run:
+**This is a smoke test, not part of the setup.** Nothing above depends on it and nothing
+below needs it — the migration is already done. Run it in a **New query**; pasting it under
+the block above just re-runs the whole migration (harmless, it is idempotent) and buries the
+answer.
 
 ```sql
-select set_follow('', false);   -- expect: {"ok": false, "reason": "no_such_player"}
-select list_following();        -- expect: []
+select set_follow('', false) as probe, list_following() as following;
 ```
+
+One statement on purpose: the SQL Editor shows the result of the **last** statement it ran, so
+two `select`s on two lines would quietly hide the first answer. This returns both in one row.
+
+**Expect:**
+
+| probe | following |
+|---|---|
+| `{"ok": false, "reason": "signed_out"}` | `[]` |
+
+⚠ **`signed_out` IS THE CORRECT ANSWER HERE, and an earlier version of this file wrongly
+predicted `no_such_player`.** Both functions read `auth.uid()`, and **in the SQL Editor there
+is no logged-in user** — the editor is not a browser session, so `auth.uid()` is null and
+`set_follow` returns on its very first guard. `no_such_player` is what the *browser* gets from
+the same call once somebody is signed in, which is why the client probe treats **any** reply as
+success: `on = !r.error` — answering at all is the signal, whatever the reason says.
+
+⭐ So this test proves exactly what it needs to: **both functions exist, execute, and refuse
+cleanly instead of raising.** If either name were missing you would get
+`function set_follow(unknown, boolean) does not exist` instead of a row.
 
 Then reload any page with a leaderboard **in a fresh tab** (the probe is cached per
 session, same as gifts), open a player's card, and a **Follow** button is on it.
