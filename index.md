@@ -224,6 +224,88 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
       <span class="mc-lead-arw" aria-hidden="true">&rarr;</span>
     </a>
 
+    {%- comment -%} ══ THE BENCH, DRAWN (2026-08-18) ═════════════════════════════════════════
+         Nate asked how to make this page more inviting and use the space better. This is the
+         answer to both, and it is deliberately NOT new content.
+
+         ⭐ IT IS THE PICTURE OF A NUMBER THE PAGE ALREADY PRINTS. The green door one line up
+         says "N regulars are at the tables right now" and then shows you nobody. Eight seats,
+         with names and ratings, turn a claim into a bench you can look at — and the 2026-08-11
+         note above this column set the rule this has to satisfy: what goes here answers WHAT
+         HAPPENS IF I PRESS IT, and is not another door. This is that question, answered with
+         the actual roster instead of a count.
+
+         ⭐ AND IT IS THE THING CHESS.COM CANNOT COPY. Character bots are their ground
+         ([[chesswild-competitive-position]]); a bench of people with names, ratings and a
+         locked rung above them is a CAST, and the gap has always been continuity.
+
+         ⚠ IT SITS DIRECTLY UNDER THE GREEN DOOR ON PURPOSE. The 08-11 sequence for this column
+         is: what happens if I press it → where was I → why trust this. The count lives inside
+         the button, so its picture belongs against the button, before the resume line. It also
+         means the block a stranger sees FIRST is the one that fills the hole a stranger has:
+         `.mc-resume` is hidden until you have been here, so a first-time visitor's column was
+         a card shorter than the one Nate was looking at when he asked.
+
+         ⚠ LOCKED SEATS ARE SHOWN, NOT HIDDEN, and that is _data/regulars.yml's own rule in as
+         many words: "a locked seat you can see is a reason to keep playing." They are not
+         links — a locked table would bounce you — so they render as <span>, which also keeps
+         the tap-target count honest.
+
+         ⚠ EVERY OPEN SEAT LINKS TO ITS OWN TABLE, not to the hall. Sitting down is a DEPARTURE
+         with its own URL (`?table=`), so choosing a face here lands you at that board rather
+         than at a picker you have to use twice. The destination family is the green button's,
+         so this adds specificity, not a competing call to action.
+
+         ⚠ THE GLYPHS COME FROM THE DATA FILE AND CARRY `&#xFE0E;`. Without the text-presentation
+         selector a browser may paint them from its color emoji font, at which case `color` does
+         nothing at all and the row lands in whatever hues that font chose — the exact failure
+         the drawer icons hit ([[text-clip-glyph-technique]]). `npm run test:regulars` fails the
+         build if the selector goes missing, if two seats end up wearing the same glyph, or if
+         any of this stops matching the real `BOTS` object in the Park Tables page.
+         {%- endcomment -%}
+    <div class="mc-bench">
+      <p class="mc-bench-h">Who's at the tables</p>
+      <ul class="mc-bench-row">
+        {%- for r in site.data.regulars -%}
+        {%- if r.open -%}
+        <li class="mc-bench-seat">
+          <a href="{{ '/games/park-tables/' | relative_url }}?table={{ r.key }}"
+             title="Sit down with {{ r.name }} — rated {{ r.elo }}">
+            <span class="mc-bench-ico" aria-hidden="true">{{ r.icon }}&#xFE0E;</span>
+            <span class="mc-bench-n">{{ r.name }}</span>
+            <span class="mc-bench-e">{{ r.elo }}</span>
+          </a>
+        </li>
+        {%- else -%}
+        <li class="mc-bench-seat is-locked">
+          <span class="mc-bench-lk" title="{{ r.name }} — rated {{ r.elo }}. Locked until you beat the seat below.">
+            {%- comment -%} ⚠ THE PIECE IS REPLACED BY THE PADLOCK, and that is the PARK TABLES
+                 convention rather than a new one: a locked bot's card there swaps its icon for
+                 🔒 too (`pt-bot--locked`). Same bench, same language — and it is the only
+                 signal here strong enough to be read at a glance. The first version leaned on
+                 a dashed border plus dimmed ink and the locked seats were nearly
+                 indistinguishable in a render.
+                 ⚠⚠ NO `&#xFE0E;` ON THIS ONE. 🔒 is a true color emoji: it is painted by the
+                 emoji font, takes no `color` at all, and a text-presentation selector would
+                 strip it to a flat outline — the exact opposite rule from the piece glyphs one
+                 branch up, which need the selector or their tint silently no-ops.
+                 [[text-clip-glyph-technique]] {%- endcomment -%}
+            <span class="mc-bench-ico mc-bench-ico--lock" aria-hidden="true">🔒</span>
+            <span class="mc-bench-n">{{ r.name }}</span>
+            <span class="mc-bench-e">{{ r.elo }}</span>
+            {%- comment -%} ⚠ THE LOCK IS SAID, NOT ONLY DRAWN. Visually it is a dashed border
+                 and a paler fill; neither of those reaches a screen reader, and the `title=`
+                 that explains it is hover-only — which skips a phone entirely
+                 ([[hover-is-three-inputs]]). This is the only copy of the word that everybody
+                 gets. {%- endcomment -%}
+            <span class="sr-only">Locked</span>
+          </span>
+        </li>
+        {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    </div>
+
     {%- comment -%} ── PICK UP WHERE YOU LEFT OFF (his #4) ──────────────────────────────────
          Empty and hidden for a stranger; one sentence for somebody who has been here. It reads
          localStorage DIRECTLY rather than through PJCC — this page loads no profile script, and
@@ -397,7 +479,28 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
         </div>
       </div>
     </div>
-    <p class="mcb-say" id="mcb-say">White to play. <b>Mate in one.</b></p>
+    {%- comment -%} ══ THE ONLY BEAT THE BOARD DOESN'T COVER (2026-08-18) ═══════════════════
+         The CSS note over `.mc-board` says "the rook is the affordance" — no hover lift,
+         because a board that rises under the mouse reads as a link. That is right, and it
+         leaves exactly one gap: the FIRST click. Once a piece is picked up the board explains
+         itself completely (the square lights, every legal destination gets a dot, a capture
+         gets a ring) — but until then a stranger is looking at a still picture captioned with
+         a chess problem, and nothing on screen says it is theirs to touch.
+
+         ⚠ IT MUST NOT GIVE THE PUZZLE AWAY, so it names the SIDE and not the piece: "Pick up a
+         white piece to start" is true of all of them. Pulsing the piece that has to move would
+         have been the obvious flourish and it would have solved the puzzle for them.
+
+         ⚠ IT IS SHOWN LATE, ONCE, AND NEVER AGAIN AFTER A FIRST MOVE. It waits ~5s so it never
+         races somebody who was already reaching for the board, and `mcb.moved` in localStorage
+         retires it permanently the moment anyone picks up a piece — a returning player has
+         proved they know, and a hint that keeps explaining is nagging. Storage denied → the
+         hint simply behaves like a first visit every time, which is the harmless direction
+         ([[down-never-stuck]]).
+         ⚠ NOT `aria-live`. A screen-reader user does not need a visual affordance announced
+         mid-read, and the pieces are already real buttons in the accessibility tree.
+         {%- endcomment -%}
+    <p class="mcb-say" id="mcb-say">White to play. <b>Mate in one.</b><span class="mcb-hint" id="mcb-hint" hidden>Pick up a white piece to start.</span></p>
   </div>
 </section>
 </section>
@@ -869,6 +972,26 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    decorative walnut measures 2.88:1 there against a night sky (4.01 even at the old 0.85
    alpha — it was failing AA before the transparency pass, not because of it). */
 .mcb-say b { color: var(--fd-wood-ink); }
+/* ── THE FIRST-CLICK HINT (2026-08-18) ────────────────────────────────────────────────
+   ⚠⚠ THE FIRST VERSION OF THIS SHIPPED A CLAIM THAT MEASURED FALSE. It said the hint cost
+   no layout because `.mcb-say` already reserved 2.6em — a second line nothing was using.
+   Rendered: the caption went 37px → 50px when the hint appeared, the hero grew 13px, and on
+   a phone (where the board is `order: -1`, ABOVE the copy) THE GREEN BUTTON MOVED DOWN five
+   seconds into the visit. That button is the one element on this page the 2026-08-11 note
+   says must never shift. 2.6em was sized for the old verdict line, not for this.
+
+   ⭐ SO THE SPACE IS RESERVED AT PAINT, AND ONLY FOR THE PEOPLE WHO WILL SEE THE HINT.
+   `armHint()` adds `.has-hint` immediately if this browser has never moved a piece — before
+   the five-second timer, so the taller caption is there from the first frame and nothing
+   moves when the words arrive. It is NOT removed when they click: shrinking the caption
+   mid-visit would move the board at the exact moment they touched it, which is the same bug
+   wearing different clothes. Anyone who has played keeps the compact 2.6em caption and pays
+   nothing at all. [[measure-the-real-page]]
+   ⚠ Quieter than the prompt above it, deliberately: the puzzle is the message, this is the
+   instruction. `--fd-ink-3` is the page's third ink and already carries the small print. */
+.mcb-say.has-hint { min-height: 3.5em; }
+.mcb-hint { display: block; margin-top: 2px; font-size: 0.78rem; color: var(--fd-ink-3); }
+.mcb-hint[hidden] { display: none; }
 /* ⚑ THE VERDICT LEFT THIS LINE (2026-08-08) — it is on the card that lands on the board now,
    so `.mcb-say` only ever says the standing prompt and its `.good`/`.miss` rules went with
    it (see `.mcb-verdict`). The SQUARE keeps its bright ring either way: a 3px ring on maple
@@ -1292,6 +1415,79 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    sub-label, so the paragraph it styled no longer exists. Removed rather than left behind —
    the dead-code sweep would have flagged it, and a rule with no markup is a trap for whoever
    next greps for "how does the front door say that" ([[read-before-you-delete]]). */
+
+/* ── THE BENCH (2026-08-18) ────────────────────────────────────────────────────────────
+   Eight seats, four across, two rows — the shape is picked by the COLUMN, not by taste:
+   `.mc-lead-col` is capped at 420px to match the green door's right edge, and eight names
+   in one row leaves ~50px a name, which "Crockett" does not fit in at any size worth
+   reading. Four across gives each seat ~100px and lands the block at almost exactly the
+   height of the parchment that was empty under the proofs.
+
+   ⚠ IT INHERITS THE PAGE'S INK AND ADDS NO NEW COLOR. The front door bans gold and purple
+   ([[front-door-palette]]); the glyphs take `--fd-wood-ink` — the same brown the puzzle
+   caption's bold already wears — so the row reads as part of the sheet rather than as a
+   pasted-in widget. The one green on this page stays on the button above it.
+
+   ⚠ LOCKED SEATS DIM BUT DO NOT DISAPPEAR, and they are not buttons. `cursor: default` and
+   no hover lift, so nothing about them says "press me" — the tooltip says why they're shut.
+
+   ⚠ 44px TAP TARGETS. Each open seat is a full grid cell (~100 × 62), which clears the floor
+   on the smallest phone this page targets ([[tap-targets-and-audit-numbers]]). Verified in a
+   render at 390px, not assumed from the CSS. */
+.mc-bench { margin: 0; }
+.mc-bench-h { margin: 0 0 8px; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--fd-ink-3); font-weight: 700; }
+.mc-bench-row { list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.mc-bench-seat { min-width: 0; }
+/* ⚠ `a.mc-bench-seat > a` would be wrong — the <a> is the CHILD of the <li>. The site's bare
+   `a:hover` sets `text-decoration: underline`, and `.mc-bench-seat a:hover` at (0,2,0) beats
+   it because a pseudo-class scores in the CLASS column. Same rule as `.soc-card:hover` on
+   /follow/ — measured there, not guessed ([[text-clip-glyph-technique]]). */
+.mc-bench-seat > a,
+.mc-bench-seat > .mc-bench-lk {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  padding: 7px 4px 8px; min-height: 62px; text-align: center; text-decoration: none;
+  border: 1px solid rgba(185, 139, 87, 0.28); border-radius: var(--r-sm, 10px);
+  background: rgba(255, 255, 255, 0.34);
+  transition: transform var(--dur-fast, 0.15s) var(--ease-out, ease),
+              border-color var(--dur-fast, 0.15s) var(--ease-out, ease); }
+.mc-bench-seat > a:hover,
+.mc-bench-seat > a:focus-visible { text-decoration: none; transform: translateY(-2px);
+  border-color: var(--fd-grain, rgba(185, 139, 87, 0.6)); background: rgba(255, 255, 255, 0.62); }
+.mc-bench-ico { font-size: 1.15rem; line-height: 1; color: var(--fd-wood-ink); }
+.mc-bench-n { font-size: 0.72rem; font-weight: 700; color: var(--fd-ink-2);
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mc-bench-e { font-size: 0.66rem; color: var(--fd-ink-3); font-variant-numeric: tabular-nums; }
+/* ⚠⚠ A LOCKED SEAT IS MARKED BY A PADLOCK AND A DASHED EDGE — NEVER BY `opacity`, AND NEVER
+   BY FADING ITS WORDS. Two versions of this failed before the shipped one, both measured:
+
+     1. `opacity: 0.5` on the cell. That composites the NAME AND THE RATING — real text
+        carrying real information — halfway into the parchment. The page's third ink already
+        sits at 4.95:1 against a 4.5 floor ([[front-door-palette]]), so halving it lands
+        around 2:1. A real AA failure, of exactly the kind the paw was.
+     2. No opacity, but the name and glyph dimmed to `--fd-ink-3` and the border dashed.
+        Contrast passed — and in a render the locked seats were nearly indistinguishable from
+        the open ones. Legible and unreadable are different problems.
+
+   The padlock (in the markup) carries the state, so the TEXT here stays at full strength and
+   only the container changes. Sampled off the rendered sheet at 2x after that change: every
+   label in this block, open and locked, measures between 5.91:1 and 8.57:1. ⭐ Sampled, not
+   computed —
+   the sheet is translucent over a live sky, so a token's on-paper value is a guess. */
+.mc-bench-seat.is-locked > .mc-bench-lk { cursor: default;
+  border-style: dashed; border-color: rgba(185, 139, 87, 0.42);
+  background: rgba(255, 255, 255, 0.14); }
+/* 🔒 takes no ink — it is painted by the emoji font, so `color` here would do nothing at all.
+   Size is the only lever it answers to. */
+.mc-bench-ico--lock { font-size: 0.95rem; }
+@media (prefers-reduced-motion: reduce) {
+  .mc-bench-seat > a { transition: none; }
+  .mc-bench-seat > a:hover, .mc-bench-seat > a:focus-visible { transform: none; }
+}
+html.reduce-flourish .mc-bench-seat > a { transition: none; }
+html.reduce-flourish .mc-bench-seat > a:hover,
+html.reduce-flourish .mc-bench-seat > a:focus-visible { transform: none; }
 
 /* PICK UP WHERE YOU LEFT OFF — only ever visible to somebody who has been here before.
    ⚠ `[hidden]` needs the explicit `display:none` because the rule below sets `display`
@@ -1787,6 +1983,8 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
     var mine = e.target.closest('.mcb-p[data-mine]');
     if (mine) {                                  /* pick a piece up, or put the same one down */
       var at = +mine.getAttribute('data-sq');
+      /* they know how — retire the hint for good (2026-08-18) */
+      hintDone();
       lift(at === sel ? -1 : at);
       return;
     }
@@ -1841,6 +2039,31 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
     }
     if (offer) offer.hidden = false;
   });
+
+  /* ── THE FIRST-CLICK HINT (2026-08-18) — see the note over `.mcb-say` in the markup.
+     Self-contained and failure-proof: no element, no hint; no storage, no crash. */
+  var hint = document.getElementById('mcb-hint'), hintTimer = null;
+  function hintDone() {
+    if (hintTimer) { clearTimeout(hintTimer); hintTimer = null; }
+    if (hint) hint.hidden = true;
+    /* ⚠ `.has-hint` deliberately STAYS. Taking the reserved line back the instant they pick
+       up a piece would move the board under the hand that just touched it. It costs 13px for
+       the rest of one page view, once, ever. */
+    try { localStorage.setItem('mcb.moved', '1'); } catch (e) {}
+  }
+  (function armHint() {
+    if (!hint) return;
+    var known = false;
+    try { known = localStorage.getItem('mcb.moved') === '1'; } catch (e) {}
+    if (known) return;
+    /* ⚠⚠ RESERVE THE ROOM NOW, NOT IN FIVE SECONDS. Measured: without this the caption grows
+       13px when the hint appears, and on a phone that pushes the green button down mid-visit.
+       The class goes on at paint and stays on for the rest of the page view. */
+    if (say) say.classList.add('has-hint');
+    /* ⚠ `done` is the board's own "a verdict is up" flag — if they solved it inside five
+       seconds the hint must not arrive on top of the offer card. */
+    hintTimer = setTimeout(function () { if (!done) hint.hidden = false; }, 5000);
+  })();
 
   var again = document.getElementById('mcb-again');
   if (again) again.addEventListener('click', function () { deal(); });

@@ -12,44 +12,62 @@
 #
 # `open: false` = the seat is rendered but locked behind beating somebody first. A locked
 # seat you can see is a reason to keep playing.
+#
+# ⚑ `icon:` ADDED 2026-08-18, when the front door started drawing the bench instead of just
+# counting it. It is copied from BOTS like every other field here and the gate covers it, so
+# it cannot drift silently — but it is still a copy, and the rule above applies: fix the YAML,
+# never the game.
+# ⚠ THE GLYPHS ARE NOT INTERCHANGEABLE WITH THEIR OPPOSITE-COLOR TWINS. Rendered at card size,
+# ♖/♜, ♗/♝, ♕/♛ and ♙/♟ are the SAME PICTURE — only ♔ (crown with a cross) and ♘ (an outline
+# horse) read as different from ♚ and ♞. That is why The CEO wears ♔ next to The Dad's ♚ and
+# Auston wears ♘ next to Crockett's ♞, and why swapping one for "the white version" of a
+# glyph already in use would quietly give two regulars the same face.
 # ══════════════════════════════════════════════════════════════════════════════════════
 
 - key: maxwell
   name: Maxwell
+  icon: "♟"
   elo: 400
   open: true
 
 - key: crockett
   name: Crockett
+  icon: "♞"
   elo: 750
   open: true
 
 - key: argus
   name: Argus
+  icon: "♝"
   elo: 1000
   open: true
 
 - key: auston
   name: Auston
+  icon: "♘"
   elo: 1200
   open: true
 
 - key: dad
   name: The Dad
+  icon: "♚"
   elo: 1400
   open: true
 
 - key: robert
   name: Robert
+  icon: "♜"
   elo: 1800
   open: true
 
 - key: princess
   name: Princess
+  icon: "♛"
   elo: 2100
   open: false
 
 - key: ceo
   name: The CEO
+  icon: "♔"
   elo: 2400
   open: false

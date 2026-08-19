@@ -41,10 +41,15 @@ while ((m = entry.exec(botsBlock)) !== null) {
   const body = m[2];
   const name = /name:\s*'([^']*)'/.exec(body);
   const elo = /elo:\s*(\d+)/.exec(body);
+  /* icon added 2026-08-18 — the front door DRAWS the bench now, so the glyph is a third
+     thing that can disagree with the game, and an unchecked copy is the whole reason this
+     gate exists. */
+  const icon = /icon:\s*'([^']*)'/.exec(body);
   bots.push({
     key: m[1],
     name: name ? name[1] : null,
     elo: elo ? +elo[1] : null,
+    icon: icon ? icon[1] : null,
     open: !/locked:/.test(body)
   });
 }
@@ -85,6 +90,7 @@ for (let i = 0; i < Math.max(bots.length, rows.length); i++) {
   if (!b || !r) { check('seat ' + (i + 1) + ' exists on both sides', false, 'missing'); continue; }
   check('· ' + b.key + ' — name', r.name === b.name, r.name + ' vs ' + b.name);
   check('· ' + b.key + ' — rating', r.elo === b.elo, r.elo + ' vs ' + b.elo);
+  check('· ' + b.key + ' — icon', r.icon === b.icon, r.icon + ' vs ' + b.icon);
   check('· ' + b.key + ' — ' + (b.open ? 'open' : 'locked'), r.open === b.open,
         'data says ' + (r.open ? 'open' : 'locked') + ', the game says ' + (b.open ? 'open' : 'locked'));
 }
@@ -103,6 +109,23 @@ check('…and prints its SIZE rather than a typed number',
 check('no hand-typed seat count survives on the front door',
       !/\b(six|seven|eight|6|7|8)\s+regulars are at the tables/i.test(front),
       'a number here would go stale the day a seat is added');
+
+/* ══ THE BENCH IS DRAWN, NOT DESCRIBED (2026-08-18) ════════════════════════════════════
+   The front door shows the seats now, so three more things can go wrong quietly. */
+const icons = rows.map(r => r.icon).filter(Boolean);
+const dupes = icons.filter((g, i) => icons.indexOf(g) !== i);
+check('no two regulars wear the same glyph',
+      dupes.length === 0 && icons.length === rows.length,
+      dupes.length ? dupes.join(' ') + ' is used twice — at card size ♖/♜, ♗/♝, ♕/♛ and ♙/♟ are the SAME PICTURE'
+                   : icons.length + ' distinct faces');
+check('the front door draws the bench from the data file',
+      /for\s+r\s+in\s+site\.data\.regulars/.test(front),
+      'a hand-written row of seats would be the fourth copy of the bench');
+/* ⚠ U+FE0E or the tint silently no-ops on a browser that reaches for its color emoji font —
+   the same failure [[text-clip-glyph-technique]] records for the drawer icons. */
+check('…and gives every seat glyph a text-presentation selector',
+      /\{\{\s*r\.icon\s*\}\}&#xFE0E;/.test(front),
+      'without U+FE0E a browser may paint these from the emoji font and ignore `color` entirely');
 
 /* ══ ROUTE() STANDS DOWN WHILE YOU ARE SEATED (2026-08-14) ═══════════════════════════════
    Nate: "Sometimes when I try playing Auston, and I am RESUMING the game, the screen
