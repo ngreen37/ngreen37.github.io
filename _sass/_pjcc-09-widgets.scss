@@ -509,6 +509,24 @@
 @media (pointer: coarse) {
   .footer-social a { padding: 11px 4px; }
 }
+/* ⚑ THREE ACROSS ON A PHONE (2026-08-19) — AND THIS RULE HAD NEVER RENDERED BEFORE TODAY.
+   Every account was `live: false` until the handles were confirmed reserved, so the include
+   emitted nothing and the wrap behavior below was theory. The first real render at 390px put
+   five names on one line and stranded "Pinterest" alone on a second — the same orphan shape
+   the front-door bench threw the same day, and for the same reason: a count that no longer
+   divides by the columns it flows into.
+   ⚠ ONE LINE IS NOT AVAILABLE. Measured at 390: the six names are 310px of text before any
+   gap, against 334px of usable width — even at a 6px gap they run 340. The only way to fit
+   them is type below 11.84px, which is already the smallest on the page. So the honest fix is
+   an even split, not a squeeze.
+   ⭐ `repeat(3, auto)` rather than `1fr`: the names are wildly different lengths ("X" is 17px,
+   "Instagram" 71px) and equal columns would leave X floating in a third of the row. */
+@media (max-width: 560px) {
+  .footer-social {
+    display: grid; grid-template-columns: repeat(3, auto);
+    justify-content: center; gap: 2px 14px;
+  }
+}
 
 /* ── Town-wide weather (#2) — the whole town shares one forecast (PJCC_TIME): on
    rain/mist days a soft atmospheric wash tints EVERY page (academy included).
