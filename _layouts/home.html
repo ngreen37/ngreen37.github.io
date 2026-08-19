@@ -348,7 +348,7 @@ layout: default
 {% comment %} ── THE WORLD (2026-07-22) — the reason the P&JCC drawer link exists. P&JCC is
      the fifth drawer link now, and its job is the WORLD, not the games (Play, Gauntlet and
      Academy each have their own link). So the landing leads with three big doors into it —
-     Characters · Locations · Fan Art — right under the hero. {% endcomment %}
+     Characters · Locations — right under the hero. (Fan Art was the third until 2026-08-19.) {% endcomment %}
 <section class="home-world" aria-labelledby="h-world" data-reveal>
   <h2 id="h-world" class="sr-only">Explore the World</h2>
   <style>
@@ -360,7 +360,19 @@ layout: default
      not. The rhythm nudges are ≤2px (14→16, 22→24, 30→32) and snap the card onto the site's
      one scale; the type steps make the name/sub fluid instead of frozen. */
   .home-world { max-width:820px; margin:var(--space-6) auto var(--space-2); padding:0 var(--space-4); }
-  .home-world-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-4); }
+  /* ⚑⚑ TWO DOORS, CENTERED, AT THE WIDTH THREE WOULD HAVE BEEN (2026-08-19). Fan Art came
+     out, and two cards left in a three-column grid is a hole on the right rather than a
+     centered pair — the same shape the front-door bench threw the same day.
+     ⭐ THE WIDTH IS DERIVED, NOT TYPED. `calc((100% - 2 * gap) / 3)` is literally "one third
+     of the old three-up row", so the cards stay the 252px they are today and go on matching
+     it if the 820px band ever changes. Rendered against the live page before choosing:
+     `repeat(2, 1fr)` blows each card out to 386px and the icon/name/sub stack floats in a
+     box half again too wide for it. Nate asked to RE-CENTER, and this changes nothing else.
+     ⚠ The 560px rule below still wins on document order and drops it to one column on a
+     phone; `justify-content` is harmless there because a single 1fr track leaves no free
+     space to distribute. Verified at 390. */
+  .home-world-grid { display:grid; grid-template-columns:repeat(2, calc((100% - 2 * var(--space-4)) / 3));
+    justify-content:center; gap:var(--space-4); }
   .hw-door { display:flex; flex-direction:column; align-items:center; gap:var(--space-2); text-align:center;
     text-decoration:none; padding:var(--space-5) var(--space-4); border-radius:var(--r-lg);
     background:linear-gradient(180deg, rgba(40,24,80,.6), rgba(18,10,40,.7));
@@ -386,11 +398,11 @@ layout: default
       <span class="hw-name">Locations</span>
       <span class="hw-sub">Wander the world</span>
     </a>
-    <a class="hw-door" href="{{ '/fan-art/' | relative_url }}">
-      <span class="hw-ico" aria-hidden="true">&#127912;</span>
-      <span class="hw-name">Fan Art</span>
-      <span class="hw-sub">Browse the wall</span>
-    </a>
+    {% comment %} ⚑⚑ THE FAN ART DOOR CAME OUT 2026-08-19. Nate: *"Let’s take out the fan art
+         page for now — we’ll unveil that when PJCC is actually a thing. Right now it’s more of
+         a concept."* Two doors now, and the grid below was re-columned WITH this cut rather
+         than left at three — two cards in a three-column grid is a hole, not a centered pair.
+         Restoring it is this block plus one number in the grid rule. {% endcomment %}
   </div>
 </section>
 

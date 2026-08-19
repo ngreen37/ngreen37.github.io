@@ -3,7 +3,7 @@ layout: home
 title: Princess and the Journey to Chess City
 permalink: /pjcc/
 tab_title: Princess and the Journey to Chess City — P&JCC by McPuppy Studios
-description: Princess and the Journey to Chess City (P&JCC) — an animated series in the making, plus an arcade of free chess games. Meet the cast, wander the world, and see the fan art.
+description: Princess and the Journey to Chess City (P&JCC) — an animated series in the making, plus an arcade of free chess games. Meet the cast and wander the world.
 body_class: full-sky
 ---
 
@@ -13,7 +13,7 @@ body_class: full-sky
      See docs/front-door-2026-07-21.md for the first flip; Nate directed this second one.
 
      This keeps the cinematic hero (title, tagline, town sky) built on 2026-07-21, and adds
-     a band of BIG doors to the world — Characters · Locations · Fan Art — because that is
+     a band of BIG doors to the world — Characters · Locations (Fan Art was pulled 2026-08-19) — because that is
      what the P&JCC link is FOR now (Play/Gauntlet/Academy have their own drawer links).
      `/pjcc/` is a REAL page again, so the sw.js precache and any installed PWA still
      resolve; the manifest `id` stays `/pjcc/` and is never touched. {% endcomment %}

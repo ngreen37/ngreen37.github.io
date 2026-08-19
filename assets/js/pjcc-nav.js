@@ -16,14 +16,17 @@
     // Destinations (b = brand tag for the little pill).
     var DEST = [
       { t: 'Home',             s: 'ChessWild.com — play, solve, learn',   u: '/',                        ic: '♔', b: 'pjcc',    k: 'home chesswild chess wild front door start play free mcpuppy' },
-      { t: 'PJCC',             s: 'The world — cast, places, fan art',    u: '/pjcc/',                   ic: '◆', b: 'pjcc',    k: 'pjcc world princess journey chess city landing series show' },
+      { t: 'PJCC',             s: 'The world — cast and places',          u: '/pjcc/',                   ic: '◆', b: 'pjcc',    k: 'pjcc world princess journey chess city landing series show' },
       { t: 'Play Now',         s: 'Sit at the Park Tables',               u: '/games/park-tables/',      ic: '▶', b: 'pjcc',    k: 'play now park tables live game match rated correspondence' },
       { t: 'The Gauntlet',     s: 'Climb the tower of ten',               u: '/games/the-gauntlet/',     ic: '♛', b: 'pjcc',    k: 'gauntlet tower climb ladder ten floors bosses' },
       { t: 'Puzzles',          s: 'Fork in the Road',                     u: '/games/fork-in-the-road/', ic: '♞', b: 'pjcc',    k: 'puzzles fork in the road tactics only move solve' },
       { t: 'All Games',        s: 'The Arcade — the whole grid',          u: '/games/',                  ic: '♟', b: 'pjcc',    k: 'arcade play games blitz all hall grid' },
       { t: 'Academy',          s: 'Learn chess from the ground up',            u: '/academy/',            ic: '📖', b: 'pjcc', k: 'academy learn chess lessons pieces bootcamp curriculum' },
       { t: 'Leaderboards',     s: 'Top scores across the games',          u: '/leaderboards/',       ic: '🏆', b: 'pjcc', k: 'leaderboards standings scores rank high' },
-      { t: 'Fan Art',          s: 'The fan wall + a printable PJCC card',  u: '/fan-art/',            ic: '🎨', b: 'pjcc', k: 'fan art wall gallery printable card make picture upload print pdf submit' },
+      // ⚑⚑ SLOW-ROLLED 2026-08-19 (Nate: "we’ll unveil that when PJCC is actually a
+      //    thing"). COMMENTED OUT, NOT DELETED — restoring it is uncommenting one line,
+      //    which is the same shape the Reading Room and Shogi Island use.
+      // { t: 'Fan Art',          s: 'The fan wall + a printable PJCC card',  u: '/fan-art/',            ic: '🎨', b: 'pjcc', k: 'fan art wall gallery printable card make picture upload print pdf submit' },
       { t: 'The Gambit',       s: 'Lay down your best — the board decides', u: '/the-gambit/',       ic: '🎲', b: 'pjcc', k: 'gambit sacrifice offering altar wager risk reward credits collectables let go' },
       { t: 'Merch',            s: 'Next up — the designs come first',     u: '/goods/',              ic: '🃏', b: 'mcpuppy', k: 'goods goal cards stationery merch follow the dog mindset physical' },
       { t: 'The Direct Line',  s: 'Write to me directly',                 u: '/direct-line/',        ic: '✉️', b: 'mcpuppy', k: 'direct line suggestions patreon contact write feedback guaranteed response' },

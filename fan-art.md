@@ -2,6 +2,14 @@
 layout: page
 title: Fan Art
 permalink: /fan-art/
+# ⚑⚑ SLOW-ROLLED 2026-08-19. Nate: *"Let’s take out the fan art page for now — we’ll
+#    unveil that when PJCC is actually a thing. Right now it’s more of a concept."*
+#    UNLINK, KEEP THE TEXT — the same posture as the hidden cast. Every door to this page
+#    is gone; the page still BUILDS and answers by direct URL, and these two flags are what
+#    keep it out of the sitemap and out of search while it waits. To unveil: delete these
+#    two lines, restore the doors listed in the commit, and it is back.
+noindex: true
+sitemap: false
 ---
 
 <div class="fa-tools no-print">
