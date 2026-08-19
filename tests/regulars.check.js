@@ -186,6 +186,22 @@ check('no two regulars wear the same glyph',
       dupes.length === 0 && icons.length === rows.length,
       dupes.length ? dupes.join(' ') + ' is used twice — at card size ♖/♜, ♗/♝, ♕/♛ and ♙/♟ are the SAME PICTURE'
                    : icons.length + ' distinct faces');
+/* ══ THE QUEEN DOES NOT COME BACK TO PRINCESS'S SEAT (2026-08-19) ═══════════════════
+   Nate, 08-19: *"Make it a pawn - she'll graduate later."* He had the queen arc pulled off
+   the public site on 07-16 and this bench went on wearing the ending for four more weeks,
+   so the decision gets a TEST and not just a comment — the same treatment the hinted-solve
+   rule got the same day. ⚠ CHECKED ON BOTH COPIES: a gate that reads one of them can be
+   satisfied by editing the other, which is the exact failure this whole file exists for.
+   ⚠ IT FAILS CLOSED. If her seat is gone entirely the check fails rather than passing on
+   an empty find() — a missing seat is a thing to look at, not a thing to skip. */
+const QUEENS = ['♛', '♕'];
+for (const [where, seat] of [['the game', bots.find(b => b.key === 'princess')],
+                             ['the data file', rows.find(r => r.key === 'princess')]]) {
+  check('Princess does not wear a queen in ' + where,
+        !!seat && !QUEENS.includes(seat.icon),
+        seat ? 'she wears ' + seat.icon
+             : 'no princess seat found at all');
+}
 /* (The old "draws the bench from site.data.regulars" check was removed 2026-08-18 — the loop
    is over `open_seats` now, and the check directly above says so more precisely. Two gates
    asserting the same fact with one of them out of date is worse than one.) */

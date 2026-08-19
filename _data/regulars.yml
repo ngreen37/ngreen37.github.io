@@ -17,16 +17,30 @@
 # counting it. It is copied from BOTS like every other field here and the gate covers it, so
 # it cannot drift silently — but it is still a copy, and the rule above applies: fix the YAML,
 # never the game.
-# ⚠ THE GLYPHS ARE NOT INTERCHANGEABLE WITH THEIR OPPOSITE-COLOR TWINS. Rendered at card size,
-# ♖/♜, ♗/♝, ♕/♛ and ♙/♟ are the SAME PICTURE — only ♔ (crown with a cross) and ♘ (an outline
-# horse) read as different from ♚ and ♞. That is why The CEO wears ♔ next to The Dad's ♚ and
-# Auston wears ♘ next to Crockett's ♞, and why swapping one for "the white version" of a
-# glyph already in use would quietly give two regulars the same face.
+# ⚠ THE OPPOSITE-COLOR TWINS ARE NOT THE SAME PICTURE, AND THE NOTE THAT SAT HERE SAYING SO
+# WAS WRONG (corrected 2026-08-19, off a render). It claimed ♖/♜, ♗/♝, ♕/♛ and ♙/♟ read
+# identically at card size and that only ♔ and ♘ were safe next to ♚ and ♞ — which left eight
+# usable faces for nine seats. All twelve were drawn at the bench's real 1.15rem in the front
+# door's own color and font: WHITE COMES OUT AS AN OUTLINE, BLACK AS A SOLID, and every pair
+# reads apart, the rook pair most plainly of all. The same render picked Nate's ♙ over in BOTS;
+# the reasoning is written out there and it is the one to read before changing a face here.
+# ⭐ STILL PICK TWINS THAT SIT FAR APART ON THE LADDER. The old claim may hold on a platform
+# that reaches for a color-emoji font, so the pairs are kept defensive: ♙ (Nate, 1200) against
+# ♟ (Princess, 2100), ♖ (Maxwell, 400) against ♜ (Robert, 1800).
+#
+# ⚑ PRINCESS WEARS A PAWN, NOT A QUEEN (2026-08-19, Nate: "Make it a pawn - she'll graduate
+# later."). Her seat had worn ♛ since the ladder was built — four weeks after he had the queen
+# arc pulled off the public site on 07-16 (the trait line, the Ascension section and the
+# /characters/the-queen/ page all came out that day). `_includes/char-card-piece.html` draws
+# every cast card as ♟ for exactly this reason, "in this world you get promoted on screen, not
+# in a config file" — and this bench was the last place still saying the ending out loud.
+# Maxwell moved to ♖ so the pawn was free; his old ♟ is the glyph she wears now.
+# ⚠ `npm run test:regulars` FAILS if a queen glyph ever comes back to her seat.
 # ══════════════════════════════════════════════════════════════════════════════════════
 
 - key: maxwell
   name: Maxwell
-  icon: "♟"
+  icon: "♖"
   elo: 400
   open: true
 
@@ -62,7 +76,7 @@
 
 - key: princess
   name: Princess
-  icon: "♛"
+  icon: "♟"
   elo: 2100
   open: false
 

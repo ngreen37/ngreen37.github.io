@@ -667,7 +667,7 @@ body_class: theme-hall
      amber (pine/copper) · Argus = ice · Auston brave = crimson · The Dad quiet = mono ·
      Robert the rival = violet · Princess = sakura · the CEO at the top = gold. */
   var BOTS = {
-    maxwell:  { name: 'Maxwell',  icon: '♟', diff: 'Beginner', elo: 400,  movetime: 120,  aura: 'emerald' },
+    maxwell:  { name: 'Maxwell',  icon: '♖', diff: 'Beginner', elo: 400,  movetime: 120,  aura: 'emerald' },
     crockett: { name: 'Crockett', icon: '♞', diff: 'Easy',     elo: 750,  movetime: 160,  aura: 'amber' },
     argus:    { name: 'Argus',    icon: '♝', diff: 'Casual',   elo: 1000, movetime: 260,  aura: 'ice' },
     /* ⚑⚑ NATE TOOK THE 1200 RUNG, 2026-08-19 (Nate: *"Make Nate the 1200 player to fill
@@ -682,7 +682,8 @@ body_class: theme-hall
        OUTLINES and the black as SOLIDS, and every pair reads apart — with or without a
        U+FE0E selector, which changed nothing on desktop Chrome. The old claim may still
        hold on a platform that reaches for a color-emoji font, so the pick is defensive:
-       ♙'s twin is Maxwell's ♟ at 400, the far END of the bench, while his neighbors here
+       ♙'s twin is Princess's ♟ at 2100 — it was Maxwell's at 400 until 08-19, when she
+       took the pawn and he took ♖ (her entry, below) — while his neighbors here
        are ♝ (1000) and ♚ (1400) — two silhouettes a pawn cannot be confused with.
 
        ⭐ AND IT IS THE RIGHT PIECE FOR HIM. `pt-me` already draws YOUR nameplate with ♟, so
@@ -697,7 +698,24 @@ body_class: theme-hall
     dad:      { name: 'The Dad',  icon: '♚', diff: 'Club',     elo: 1400, movetime: 620,  aura: 'mono' },
     // Robert — the Checker Town rival (2026-07-19 Nate), down from 2400 to make room above.
     robert:   { name: 'Robert',   icon: '♜', diff: 'Expert',   elo: 1800, movetime: 950,  aura: 'violet' },
-    princess: { name: 'Princess', icon: '♛', diff: 'Master',   elo: 2100, movetime: 1150, aura: 'sakura',
+    /* ⚑⚑ SHE WEARS A PAWN, AND THAT IS THE WHOLE POINT (2026-08-19, Nate: *"Make it a pawn -
+       she'll graduate later."*). This seat had worn ♛ since the ladder was built, which put
+       the ending of her arc on a live page four weeks AFTER he took that arc off the site on
+       07-16 — the "Believes ... [QUEEN]" trait line, the whole Ascension section and the
+       /characters/the-queen/ page all came out that day, with the note *"the queen arc will be
+       revealed a different way."* A locked seat is still a page.
+
+       ⭐ ♟ IS NOT A PLACEHOLDER, IT IS THE RULE THE REST OF THE SITE ALREADY FOLLOWS.
+       `_includes/char-card-piece.html` draws EVERY cast card as ♟ and says why in its own
+       words: *"in this world you get promoted on screen, not in a config file."* Each
+       character's eventual piece sits untouched in their front matter and is revealed by
+       adding one URL to `promoted_character_urls`. Her bench face now matches that.
+
+       ⚠ MAXWELL PAID FOR IT. There are only two pawn glyphs and both were taken (his ♟ at
+       400, Nate's ♙ at 1200), so he moved to ♖ — free, and far from Robert's ♜ at 1800.
+       Nothing else about him changed. ⚠ THIS IS GATED: `npm run test:regulars` fails if a
+       queen glyph returns to this seat, so a later tidy cannot quietly re-spoil it. */
+    princess: { name: 'Princess', icon: '♟', diff: 'Master',   elo: 2100, movetime: 1150, aura: 'sakura',
                 locked: 'robert' },
     ceo:      { name: 'The CEO',  icon: '♔', diff: 'Champion', elo: 2400, movetime: 1300, aura: 'gold',
                 locked: 'princess' },
