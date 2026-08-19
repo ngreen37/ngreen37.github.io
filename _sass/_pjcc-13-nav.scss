@@ -299,8 +299,8 @@ a.drawer-brand:hover, a.drawer-brand:focus-visible { text-decoration: none; opac
 /* ⚑ A LINK SINCE 2026-08-08 ("make the 'By McPuppy Studios' a link to the McPuppy Home page,
    and leave it that color") → /projects/, the studio's own home. The color is unchanged and
    there is no underline: it is a credit line that happens to be clickable, and giving it link
-   chrome would put a ninth destination in a drawer that carefully has eight. It brightens on
-   hover, which is the whole of the affordance it needs. */
+   chrome would put an extra destination in a drawer whose row count is deliberate (nine since
+   2026-08-18). It brightens on hover, which is the whole of the affordance it needs. */
 .drawer-sub { display: block; margin-top: 2px; font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: #98a0ad; text-decoration: none; }
 a.drawer-sub:hover, a.drawer-sub:focus-visible { color: #e7eaee; }
 
@@ -373,6 +373,19 @@ a.drawer-sub:hover, a.drawer-sub:focus-visible { color: #e7eaee; }
 .dl-ico--world    { color: #c9a7ff; }   /* P&JCC — the world's lilac */
 .dl-ico--arcade   { filter: brightness(1.45) saturate(1.15); }        /* 🎮 takes no ink */
 .dl-ico--studio   { filter: brightness(0) invert(1) sepia(1) saturate(0.55) hue-rotate(-8deg) brightness(1.06); }  /* 🐾 → bone */
+/* ⚑ THE NINTH ROW (2026-08-18, Nate: "can we add a Follow button on the left-hand side bar?").
+   ⭐ BONE, TO PAIR WITH THE PAW DIRECTLY ABOVE IT — and that is the rule two paragraphs up
+   being applied, not bent: achromatic in this list means "this row opens the McPuppy BRAND,
+   not another room", and /follow/ is `brand: mcpuppy` down to its tab title. Two bone rows,
+   adjacent, read as the studio pair. Picked off a render of all three candidates in the real
+   drawer ([[pick-visual-values-from-a-render]]): coral is Home's ink and repeating it at the
+   foot implies a tie that isn't there, and violet lands a hair off P&JCC's lilac two rows up.
+   ⚠ A `color`, not a `filter`, because ◉ (U+25C9 + FE0E) is a TEXT glyph — the opposite case
+   from the two rows above it, which are color emoji that take no ink at all.
+   ⚠ NOT RED, however much a record dot wants to be. A permanently red broadcast dot in the
+   nav is a "LIVE" badge by another route, and /follow/ refuses to paint one for all the hours
+   he is not streaming. Hue 40° — outside the 80°–170° green band that means "your move". */
+.dl-ico--follow   { color: #e8e2d6; }
 .dl-txt { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; text-align: left; }
 .dl-txt b { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.98rem; }
 .dl-txt small { font-size: 0.72rem; color: #98a0ad; }
@@ -509,17 +522,35 @@ body.theme-studio .site-header .site-nav.drawer .page-link.drawer-link:hover { b
      so it can go `overflow: visible` and let the label escape in front of the content.
      `position: relative` on the link makes the label anchor to the hovered ICON explicitly,
      instead of relying on the :hover transform below to happen to establish the containing
-     block. (The short-window case where those seven icons WOULD want the scroll is guarded
-     right below — visible only holds while the whole column fits.) */
+     block. (The short-window case where those icons WOULD want the scroll is guarded right
+     below — visible only holds while the whole column fits.) */
   body.nav-collapsed .site-header .site-nav.drawer { overflow: visible; }
-  /* Guard the short-window edge: `overflow: visible` above means a rail taller than the
-     window can't scroll, so below ~520px of viewport height the seven icons would spill
-     past the fold, unreachable. On a window that short, restore the scrollable column so
-     every icon stays reachable; the hover label re-clips there (overflow-x: hidden), an
-     accepted trade on a window too short to show the rail in full anyway. 520px is the
-     measured content height of the collapsed rail (78px header clearance + 7 × 63px + pad) —
-     keep this cut in step with it if the icon count or sizing changes. */
-  @media (max-height: 520px) {
+  /* ── THE SHORT-WINDOW GUARD, AND ITS NUMBER WAS WRONG FOR MONTHS ──────────────────────
+     `overflow: visible` above means a rail taller than the window CANNOT SCROLL, so any icon
+     past the fold is simply unreachable — no scrollbar, no hint, nothing. Below this cut the
+     scrollable column is restored so every icon stays reachable; the hover label re-clips
+     there (`overflow-x: hidden` follows `overflow-y: auto`, you cannot have one axis visible
+     and the other not), which is the accepted trade on a window too short to show the rail
+     in full anyway.
+
+     ⚠⚠ THE OLD CUT WAS 520px AND THE RAIL HAS NEVER FIT IN 520px. The comment derived it as
+     "78px header clearance + 7 × 63px + pad" — but there were EIGHT rows, not seven, and the
+     row height is 72px (`--dl-h`), not 63. **Measured in a real render: the eight-row rail
+     ended at 776px and the nine-row rail ends at 854.** So every window between 520 and ~784
+     tall has been silently dropping the bottom rows of the collapsed rail, with the guard
+     that exists to prevent exactly that sitting 250px too low. Nothing caught it because the
+     formula was written once and then trusted. [[audit-numbers-can-be-wrong]]
+
+     ⚠ AND YESTERDAY'S DEFAULT MADE IT A DEFAULT-PATH BUG. While the rail docked OPEN by
+     default this was a latent edge (the expanded rail has `overflow-y: auto` and scrolls
+     fine); collapsed-by-default put every desktop visitor on the state that can't.
+
+     ⭐ 862 IS MEASURED, NOT DERIVED — re-measure rather than recompute if the roster or the
+     row height changes: render `body.nav-collapsed` at a viewport tall enough not to clamp
+     it, read the last `.drawer-link`'s `getBoundingClientRect().bottom`, add the 8px foot.
+     Today: 78px header clearance + 66px drawer head + 9 rows × 72px + gaps = 854, so a
+     viewport under 862 cannot show the whole column. */
+  @media (max-height: 861px) {
     body.nav-collapsed .site-header .site-nav.drawer { overflow: hidden auto; }
   }
   body.nav-collapsed .site-header .site-nav.drawer .page-link.drawer-link { position: relative; justify-content: center; padding: 11px 0; }

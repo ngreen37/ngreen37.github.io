@@ -129,13 +129,17 @@
            lives in an off-canvas left drawer, site-wide. #nav-toggle (the hamburger, now
            shown on every width) opens #site-nav — pjcc-eggs.js toggles `.is-open` and
            closes it on outside-click / link-tap. `.nav-backdrop` is a DOM SIBLING so
-           `#site-nav.is-open ~ .nav-backdrop` can dim the page with no extra JS. EIGHT links
-           as of 2026-07-28 (the gears switched — the site's front door is a chess site now,
-           the world is a tab): Home→/ · Play Now→Park Tables · The Gauntlet · Games→the
-           arcade hub · Puzzles→Fork in the Road · Academy · P&JCC→the world · Projects→the
-           studio. The gold `--home` highlight marks whichever link IS home; order is MARKUP
-           order (no nth-child depends on it). ⌘K still reaches everything else. Drawer look
-           lives in _sass/_pjcc-13-nav.scss.
+           `#site-nav.is-open ~ .nav-backdrop` can dim the page with no extra JS. NINE links
+           as of 2026-08-18 (eight since 2026-07-28, when the gears switched — the site's
+           front door is a chess site now, the world is a tab): Home→/ · Play Now→Park Tables ·
+           The Gauntlet · Games→the arcade hub · Puzzles→Fork in the Road · Academy ·
+           P&JCC→the world · McPuppy Studios→the studio · Follow→Twitch + the socials. The
+           gold `--home` highlight marks whichever link IS home; order is MARKUP order (no
+           nth-child depends on it). ⌘K still reaches everything else. Drawer look lives in
+           _sass/_pjcc-13-nav.scss.
+           ⚠ THE COUNT IN THIS SENTENCE IS LOAD-BEARING AND HAS BEEN WRONG BEFORE — the
+           collapsed rail's short-window guard is sized to it. Change the list, re-measure
+           the guard.
 
            ⚠⚠ EVERY MONOCHROME ICON CARRIES `&#xFE0E;` AND MUST KEEP IT (2026-08-08, when he
            asked for "subtle, on theme color" on the white symbols). U+FE0E is VARIATION
@@ -244,6 +248,29 @@
                the exact defect that got the Home sub rewritten on 2026-08-04. It says what the
                page is for instead. {%- endcomment -%}
           <span class="dl-txt"><b>McPuppy Studios</b><small>The studio, and what it's building</small></span>
+        </a>
+        {%- comment -%} ── THE NINTH ROW (2026-08-18) ────────────────────────────────────────
+             Nate: "can we add a Follow button on the left-hand side bar?"
+
+             ⚠ IT IS LAST, AND FOR THE SAME REASON IT IS LAST ON THE FRONT DOOR. Every row
+             above opens a room you do something in; this one is where you go if you liked
+             it. Order here is MARKUP order — no nth-child depends on it.
+             ⚠ ◉ IS U+25C9 PLUS `&#xFE0E;`, like every other monochrome glyph in this list —
+             without the selector a browser may paint it from the color emoji font and the
+             bone tint in _pjcc-13-nav.scss silently does nothing. The two rows directly above
+             (🎮 🐾) are the opposite kind and must never get one.
+             ⚠⚠ A NINTH ROW IS 78px MORE COLLAPSED RAIL. The short-window guard in
+             _pjcc-13-nav.scss is a MEASURED number (861px) and it moves when this list does —
+             re-measure it, do not recompute it, if a tenth row ever lands here. {%- endcomment -%}
+        <a class="page-link drawer-link" href="{{ '/follow/' | relative_url }}">
+          <span class="dl-ico dl-ico--follow" aria-hidden="true">&#9673;&#xFE0E;</span>
+          {%- comment -%} 22 characters, which is exactly "Sit at the Park Tables" — measured to
+               fit the 246px rail on ONE line. "Twitch, and everywhere else" (the front door's
+               wording) wrapped, leaving "else" alone on a second row. The rail's subtitles are
+               already a tighter register than the doors' ("Fork in the Road" here vs "One move
+               wins. Miss it and it shows you why." there), so this is the house style, not a
+               different promise. {%- endcomment -%}
+          <span class="dl-txt"><b>Follow</b><small>Twitch and the socials</small></span>
         </a>
 
         <div class="drawer-div" aria-hidden="true"></div>
