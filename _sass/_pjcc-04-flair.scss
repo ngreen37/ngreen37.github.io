@@ -7,15 +7,7 @@
    CSS trap: it animated `opacity`, so it silently OVERRODE the static `opacity` on
    .studio-welcome-bg — two rounds of editing that static value changed nothing on screen. */
 
-@keyframes quad-appear {
-  from { opacity: 0; transform: translateY(16px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0)    scale(1);    }
-}
 
-@keyframes studio-fade-in {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0);    }
-}
 
 
 
@@ -88,101 +80,11 @@ body.theme-bw .page-body em {
   -webkit-user-select: none;
 }
 
-.tagline-word {
-  position: absolute;
-  left: 0;
-  right: 0;
-  font-family: 'Poppins', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 5px;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.32);
-  opacity: 0;
-  line-height: 110px;
-  white-space: nowrap;
-
-  /* 28s total: words 1-6 = 2.8s each (10%), main (word 7) = 11.2s (40%) */
-  &:nth-child(1) { animation: tagline-w1 28s linear infinite; }
-  &:nth-child(2) { animation: tagline-w2 28s linear infinite; }
-  &:nth-child(3) { animation: tagline-w3 28s linear infinite; }
-  &:nth-child(4) { animation: tagline-w4 28s linear infinite; }
-  &:nth-child(5) { animation: tagline-w5 28s linear infinite; }
-  &:nth-child(6) { animation: tagline-w6 28s linear infinite; }
-  &:nth-child(7) { animation: tagline-w7 28s linear infinite; }
-}
 
 /* Main tagline — two-line text reveal */
-.tagline-main {
-  line-height: 1.25;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  top: 0;
-  height: 110px;
-  gap: 7px;
-  white-space: normal;
-  text-transform: none;
-  font-style: normal;
-  color: rgba(255, 255, 255, 0.68);
-}
 
-.tagline-main-studio {
-  font-family: 'Poppins', sans-serif;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 6px;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.38);
-}
 
-.tagline-main-tagline {
-  font-family: 'Poppins', sans-serif;
-  font-size: 22px;
-  font-weight: 800;
-  font-style: italic;
-  letter-spacing: -0.3px;
-  background: linear-gradient(90deg, #F5C518, #c4b5fd, #ffffff, #F5C518);
-  background-size: 220% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: tagline-shimmer 4s linear infinite;
 
-  /* The top of the final "l" in "Tell" used to look shaved off. It wasn't being CLIPPED —
-     it was never PAINTED. There is no italic Poppins in assets/fonts, so this italic is
-     SYNTHETIC: Chrome shears the upright glyphs. A sheared glyph's top-right leans past the
-     element's right edge, and `background-clip: text` can only paint gradient that exists
-     inside the background box — so the overhanging corner got nothing. The padding widens
-     the box until the lean fits inside it. Symmetric, so the line stays optically centered.
-     Verified in Chrome by outlining the background box: the old edge cut through the l. */
-  padding: 0.06em 0.3em;
-
-  /* ── THE LIT-SIGN GLOW (2026-07-23, Nate: "give it more of a light-up display look, so it
-     seems more natural that the 'i' will flicker") ────────────────────────────────────────
-     A warm halo behind the letters so the line reads as an ILLUMINATED sign — a warm-white
-     core (frosted-bulb) inside a gold-into-amber bloom. The point is the flicker: on a FLAT
-     line a dropped 'i' reads as a rendering glitch; on a lit sign the same dropout reads as
-     one dark bulb in a warm row — a sign with a bad bulb, which is exactly the tell we want.
-     When the 'i' goes visibility:hidden its glyph isn't painted, so its share of this filter
-     vanishes with it and that spot goes dark on its own — no extra rule needed.
-
-     It MUST be `filter: drop-shadow`, never `text-shadow`: this text is painted through
-     `background-clip: text` (transparent fill), and a text-shadow paints OVER that clipped
-     fill and hides the gradient. drop-shadow casts the glow from the letters' alpha, behind
-     them. Blur is in `em` so it scales DOWN with the font on phones (cheaper there), and it's
-     a STATIC filter — the only motion on this line is the pre-existing shimmer. */
-  filter:
-    drop-shadow(0 0 0.08em rgba(255, 240, 190, 0.75))
-    drop-shadow(0 0 0.28em rgba(245, 197, 24, 0.45))
-    drop-shadow(0 0 0.60em rgba(245, 150, 20, 0.24));
-}
-
-@keyframes tagline-shimmer {
-  from { background-position: 0% center; }
-  to   { background-position: 220% center; }
-}
 
 /* ── the letter that flickers — the tell that opens the classified page ──────
    The letter is the SECOND "i" in "Million" (moved off the "o" in "Stories" 2026-07-13, at
@@ -207,24 +109,10 @@ body.theme-bw .page-body em {
    The glyph therefore lives in an inner <i> that blinks, while the <a> around it
    stays visible and keeps its hit box — so the door is clickable even mid-dropout
    (checked with elementFromPoint). Never let the flicker land on the <a> itself. */
-.tagline-main-tagline .tg-x,
-.tagline-main-tagline .tg-x-glyph {
-  text-decoration: none;
-  color: inherit;
-  -webkit-text-fill-color: inherit;
-  font-style: inherit;
-}
-.tagline-main-tagline .tg-x-glyph {
-  animation: tgx-radio 7.5s steps(1, end) infinite;
-}
 /* 2026-07-16 (Nate): "at night, the 'i' secret doesn't flicker" — after dark the ✦ star
    takes the /classified/ shift (studio-home.html hides it by day), so the 'i' settles
    into the word and gives nothing away. Day: flickering 'i', no star. Night: flying
    star, steady 'i'. Subtle on purpose. */
-html.sky-night .tagline-main-tagline .tg-x-glyph {
-  animation: none;
-  visibility: visible;
-}
 /* Bursts of interference, not a metronome: long clean stretches, then a stutter of
    dropouts, then clean again. `visibility` only flips ON a keyframe (any interval
    with a `visible` endpoint reads visible the whole way), so each dropout needs a
@@ -248,64 +136,7 @@ html.sky-night .tagline-main-tagline .tg-x-glyph {
   88.82%, 100%   { visibility: visible; }
 }
 /* hovering steadies the signal — you found it, it stops hiding */
-.tagline-main-tagline .tg-x:hover .tg-x-glyph,
-.tagline-main-tagline .tg-x:focus .tg-x-glyph {
-  animation: none;
-  visibility: visible;
-}
-@media (prefers-reduced-motion: reduce) {
-  .tagline-main-tagline .tg-x-glyph { animation: none; visibility: visible; }
-}
-html.reduce-flourish .tagline-main-tagline .tg-x-glyph { animation: none; visibility: visible; }
 
-@keyframes tagline-w1 {
-  0%      { opacity: 0; }
-  1.3%    { opacity: 1; }
-  8.7%    { opacity: 1; }
-  10%     { opacity: 0; }
-  100%    { opacity: 0; }
-}
-@keyframes tagline-w2 {
-  0%, 10%     { opacity: 0; }
-  11.3%       { opacity: 1; }
-  18.7%       { opacity: 1; }
-  20%         { opacity: 0; }
-  100%        { opacity: 0; }
-}
-@keyframes tagline-w3 {
-  0%, 20%     { opacity: 0; }
-  21.3%       { opacity: 1; }
-  28.7%       { opacity: 1; }
-  30%         { opacity: 0; }
-  100%        { opacity: 0; }
-}
-@keyframes tagline-w4 {
-  0%, 30%     { opacity: 0; }
-  31.3%       { opacity: 1; }
-  38.7%       { opacity: 1; }
-  40%         { opacity: 0; }
-  100%        { opacity: 0; }
-}
-@keyframes tagline-w5 {
-  0%, 40%     { opacity: 0; }
-  41.3%       { opacity: 1; }
-  48.7%       { opacity: 1; }
-  50%         { opacity: 0; }
-  100%        { opacity: 0; }
-}
-@keyframes tagline-w6 {
-  0%, 50%     { opacity: 0; }
-  51.3%       { opacity: 1; }
-  58.7%       { opacity: 1; }
-  60%         { opacity: 0; }
-  100%        { opacity: 0; }
-}
-@keyframes tagline-w7 {
-  0%, 60%     { opacity: 0; }
-  61.5%       { opacity: 1; }
-  99%         { opacity: 1; }
-  100%        { opacity: 0; }
-}
 
 /* =============================================================
    Flair 2 — Footer chess-piece scrolling ribbon
@@ -432,88 +263,12 @@ body.theme-bw .ribbon-track {
   overflow: hidden;
 }
 
-.studio-drifters .drift-piece {
-  position: absolute;
-  user-select: none;
-  animation: piece-drift 39s linear infinite;
-  text-decoration: none;
-  pointer-events: auto;
-  cursor: pointer;
-  transition: color 0.3s;
 
-  /* Order matches the markup in studio-home.html (2026-07-14, second rewire —
-     the あ / 将 drifters are GONE; Nate works those games privately by URL):
-     1 ♛ Princess · 2 ♞ Games · 3 ♜ Academy · 4 ¶ Blog · (5 ♟ Fan Art: GONE 2026-08-19) ·
-     6 ✦ /classified/ (#drift-secret, own id rule — nth position irrelevant). */
-  /* NEGATIVE delays (2026-07-15): a POSITIVE delay leaves a drifter frozen at its
-     start position until the delay elapses — the Rook sat dead still for 26s on
-     load, which is exactly why Nate saw it "not move / not link." Negative delays
-     start each one PART-WAY through the 39s rise, so every drifter is already in
-     motion (and at a different height) the instant the page paints. Phases are
-     spread across the visible band (6%–88% ≈ 2.3s–34.3s) so none loads mid-fade. */
-  /* All five dimmed another 15% (2026-07-15 Nate), then another 10% the same day
-     ("dim the other glyphs by 10%") — the ×0.9 values below. The secret ✦ star
-     (#drift-secret) is left alone: it's the only door to /classified/ and already
-     sits at the edge of visibility by design. */
-  &:nth-child(1) {          /* ♛ → Princess */
-    left: 7%;
-    bottom: 12%;
-    font-size: 64px;
-    color: rgba(245, 197, 24, 0.085);
-    animation-delay: -4s;
-  }
-  &:nth-child(2) {          /* ♞ → the games hall */
-    left: 71%;
-    bottom: 22%;
-    font-size: 52px;
-    color: rgba(160, 100, 255, 0.065);
-    animation-delay: -12s;
-  }
-  &:nth-child(3) {          /* ♜ → the Academy */
-    left: 38%;
-    bottom: 7%;
-    font-size: 58px;
-    color: rgba(245, 197, 24, 0.085);
-    animation-delay: -19s;
-  }
-  &:nth-child(4) {          /* ¶ → the blog */
-    left: 83%;
-    bottom: 16%;
-    font-size: 53px;
-    color: rgba(200, 200, 200, 0.073);
-    animation-delay: -26s;
-  }
-  /* ⚑ nth-child(5) — the ♟ Fan Art drifter — was DELETED 2026-08-19 with its markup.
-     Left behind it would have been a rule no element on the site can match, which is
-     exactly what the dead-code sweep exists to catch. [[read-before-you-delete]] */
-
-  /* 2026-07-15 (Nate: don't DEAD-STOP the glyphs on hover — "slow them down by 75%
-     instead"). The freeze read as a glitch; now hovering drops the drift to quarter
-     speed (playbackRate 0.25, set in the splash script — smooth, no jump), so the glyph
-     eases nearly to a crawl and lights gold, and the link is easy to land. The bigger
-     fix that made the Rook hoverable at all lives in .studio-content (pointer-events),
-     since these sit BEHIND the page content. Focus-visible still lights up for keyboards. */
-  &:hover,
-  &:focus-visible {
-    color: rgba(245, 197, 24, 0.55);
-  }
-}
-
-@keyframes piece-drift {
-  0%   { transform: translateY(0) rotate(0deg); opacity: 0; }
-  6%   { opacity: 1; }
-  88%  { opacity: 1; }
-  100% { transform: translateY(-110vh) rotate(14deg); opacity: 0; }
-}
 
 /* =============================================================
    Flair 5 — Studio corner logo gentle bob
    ============================================================= */
 
-@keyframes logo-bob {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-5px); }
-}
 
 /* =============================================================
    Flair 6 — Gold-to-purple custom scrollbar

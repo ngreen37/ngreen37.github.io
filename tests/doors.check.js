@@ -97,7 +97,10 @@ const PARTIAL = read('_sass/_pjcc-21-gauntlet-door.scss');
    markup copies, shown to every first-time visitor because the hydration only replaced it
    `if (cleared > 0)`. Both halves are checked: the ladder, and the default. */
 {
-  const COPIES = ['games.md', 'index.md', '_layouts/home.html', '_layouts/studio-home.html'];
+  /* ⚑ studio-home.html LEFT THIS LIST 2026-08-19 — the layout was deleted. It had been
+     ORPHANED since the front door moved to `/` on 08-03: no page declared it, so this gate
+     had been proving a fact about a file no visitor could reach. THREE copies now. */
+  const COPIES = ['games.md', 'index.md', '_layouts/home.html'];
   const badLadder = COPIES.filter((f) => !/var GLYPHS\s*=\s*\['♟'/.test(read(f)));
   check('floor one is a pawn in every ladder copy', badLadder.length === 0, badLadder.join(', ') || COPIES.length + ' copies agree');
 
@@ -326,7 +329,7 @@ const PARTIAL = read('_sass/_pjcc-21-gauntlet-door.scss');
    correction will be right at exactly one size. */
 {
   const CALLERS = ['index.md', 'games.md', 'assets/games/pjcc_gauntlet.html',
-    '_layouts/home.html', '_layouts/studio-home.html'];
+    '_layouts/home.html'];   /* studio-home deleted 2026-08-19 (orphaned since 08-03) */
   const ALLOWED = /^(width|height|gap|column-gap|row-gap|margin|margin-\w+|align-items|justify-content|position|inset|display|top|left|right|bottom|transform|animation|opacity|background|z-index)$/;
   const bad = [];
   for (const f of CALLERS) {

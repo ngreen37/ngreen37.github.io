@@ -128,7 +128,10 @@ if (exists('chess.md')) {
   ok(/source=pwa/.test(stub), '/chess/ carries the app marker across the hop');
   ok(/http-equiv="refresh"/.test(stub), '/chess/ redirects without JS too');
 }
-['default', 'studio-home', 'game', 'easter-eggs'].forEach((layout) => {
+/* ⚑ 'studio-home' came off this list 2026-08-19 with the layout itself. ⚠ THE CHECK WOULD
+   HAVE FAILED LOUDLY — `exists(rel) &&` makes a missing layout a red gate, which is exactly
+   right and is how a deletion gets noticed rather than discovered later. */
+['default', 'game', 'easter-eggs'].forEach((layout) => {
   const rel = '_layouts/' + layout + '.html';
   const has = exists(rel) && /\{%\s*include\s+head\.html/.test(read(rel));
   ok(has, layout + '.html uses the shared head');
