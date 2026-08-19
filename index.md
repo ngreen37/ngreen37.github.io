@@ -636,7 +636,17 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
        no-ops, and the glyph lands as something the palette never chose. It reads as the
        on-air/record dot, which is the half of this page a stranger will care about first.
        {%- endcomment -%}
-  <a class="mc-door" href="{{ '/follow/' | relative_url }}">
+  {%- comment -%} ⚑⚑ THIS BOX LIGHTS UP WHEN HE IS ACTUALLY STREAMING (2026-08-19).
+       Nate: *"I want, when I’m streaming or podcasting live, to have that sixth box
+       Follow … light up to show that I’m live."* `data-live-door="box"` is the only hook
+       `assets/js/pjcc-live.js` looks for — an href match would break on a project-pages
+       build, where `relative_url` prefixes the path.
+       ⚠ NO EMBED HERE, HIS CALL AND MINE ON THE SAME DAY: a Twitch iframe on this page
+       would load for every visitor during the ~99% of hours the channel is dark, on the
+       most measured surface on the site. The player lives one tap away at /follow/.
+       ⚠ AND IT COSTS ZERO PIXELS WHEN IT FIRES. The chip is absolutely positioned, so a
+       live stream cannot move this column against the board beside it. {%- endcomment -%}
+  <a class="mc-door" data-live-door="box" href="{{ '/follow/' | relative_url }}">
     <span class="mc-door-ico" aria-hidden="true">&#9673;&#xFE0E;</span>
     <b>Follow</b>
     <small>Twitch, and everywhere else this lives.</small>

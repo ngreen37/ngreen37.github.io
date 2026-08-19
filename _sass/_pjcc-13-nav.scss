@@ -617,3 +617,44 @@ html.reduce-flourish body.nav-collapsed .drawer-link:focus-visible .dl-txt { tra
   border-radius: 50%; background: #5fd08a; box-shadow: 0 0 6px rgba(95, 208, 138, 0.7);
   vertical-align: middle;
 }
+
+/* ══ ON AIR — THE FOLLOW DOOR LIGHTS UP ════════════════════════════════════════════
+   2026-08-19, Nate: *"I want, when I'm streaming or podcasting live, to have that sixth
+   box Follow … light up to show that I'm live."* Painted by `assets/js/pjcc-live.js`
+   from a real answer about this minute, or not painted at all.
+
+   ⚑ RED IS FINALLY EARNED HERE. The rail's Follow row was given a bone ◉ on 2026-08-18
+   for a stated reason — *"a permanent record dot in the nav is a LIVE badge by another
+   route, and that page refuses to paint one."* This is the state that reason was holding
+   the color for. It appears only while the channel is genuinely live, which is exactly
+   what the dot would have been lying about the rest of the time.
+
+   ⚠ TWO SURFACES, ONE CLASS, DIFFERENT TREATMENTS. `[data-live-door="box"]` is the front
+   door's sixth panel and gets the chip; `="row"` is this rail, where 246px and a measured
+   one-line subtitle mean the tint and the words do the whole job. */
+.live-chip {
+  /* ⚠ OUT OF FLOW, ON PURPOSE. `.mc-door` is already `position: relative`, and the front
+     door's left column is measured against the board beside it — a badge that took part in
+     flow would move that column the moment he went live. Zero pixels of reflow. */
+  position: absolute; top: 10px; right: 10px;
+  padding: 2px 7px; border-radius: 999px;
+  font-family: var(--font-ui, system-ui), sans-serif;
+  font-size: 0.58rem; font-weight: 800; letter-spacing: 0.12em; line-height: 1.5;
+  color: #fff; background: #d33b4d; border: 1px solid rgba(255, 255, 255, 0.34);
+  box-shadow: 0 1px 6px rgba(211, 59, 77, 0.45);
+}
+/* The panel itself warms toward the badge rather than turning red — the door is still a
+   door, and a whole box in alarm red next to five parchment ones would read as an error. */
+.mc-door.is-live { border-color: rgba(211, 59, 77, 0.55); }
+.mc-door.is-live::before { background: #d33b4d; opacity: 1; }
+
+/* ── the rail row ──────────────────────────────────────────────────────────────────
+   ⚠ SPECIFICITY IS MEASURED, NOT ASSUMED. `.dl-ico--follow` sets the bone tint at (0,1,0);
+   `.drawer-link.is-live .dl-ico` is (0,3,0) and wins outright, which is the same shape the
+   comment above `.dl-ico--move` already uses for the one other signalling row here. */
+.drawer-link.is-live .dl-ico--follow { color: #ff6274; }
+.site-header .site-nav.drawer .page-link.drawer-link.is-live {
+  border-color: rgba(211, 59, 77, 0.42);
+  background: rgba(211, 59, 77, 0.10);
+}
+.drawer-link.is-live .dl-txt small { color: #ffb3bc; }

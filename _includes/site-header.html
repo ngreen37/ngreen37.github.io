@@ -262,7 +262,11 @@
              ⚠⚠ A NINTH ROW IS 78px MORE COLLAPSED RAIL. The short-window guard in
              _pjcc-13-nav.scss is a MEASURED number (861px) and it moves when this list does —
              re-measure it, do not recompute it, if a tenth row ever lands here. {%- endcomment -%}
-        <a class="page-link drawer-link" href="{{ '/follow/' | relative_url }}">
+        {%- comment -%} ⚑ `data-live-door="row"` — this row lights with the front door’s sixth
+             box when the channel is live (2026-08-19). NO chip in here: the rail is 246px and
+             this subtitle was measured to fit on ONE line, so the row says it by tinting the
+             ◉ and swapping the subtitle instead. See assets/js/pjcc-live.js. {%- endcomment -%}
+        <a class="page-link drawer-link" data-live-door="row" href="{{ '/follow/' | relative_url }}">
           <span class="dl-ico dl-ico--follow" aria-hidden="true">&#9673;&#xFE0E;</span>
           {%- comment -%} 22 characters, which is exactly "Sit at the Park Tables" — measured to
                fit the 246px rail on ONE line. "Twitch, and everywhere else" (the front door's

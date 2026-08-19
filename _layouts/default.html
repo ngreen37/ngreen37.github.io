@@ -191,6 +191,11 @@
        bottom of the pages") — restore from git if it's ever missed. {% endcomment %}
   <script src="{{ '/assets/js/pjcc-eggs.js' | relative_url }}" defer></script>
   <script src="{{ '/assets/js/pjcc-nav.js' | relative_url }}" defer></script>
+  {%- comment -%} ⚑ 2026-08-19 — lights the Follow door while the Twitch channel is live.
+       Inert until `LIVE_URL` in the file names a deployed Worker; see docs/twitch-live-worker.md.
+       Loaded here rather than inline on the front door because BOTH surfaces it paints are
+       site-wide (the rail row is in every page's header). {%- endcomment -%}
+  <script src="{{ '/assets/js/pjcc-live.js' | relative_url }}" defer></script>
   <!-- The boards hidden around the world. Loaded site-wide and exits instantly on every
        page that hosts none, so adding a third is one line of DATA, not a page edit. -->
   <script src="{{ '/assets/js/pjcc-hidden-board.js' | relative_url }}" defer></script>
