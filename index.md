@@ -264,8 +264,12 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
          page counted six and drew eight. _data/regulars.yml's rule ("a locked seat you can see
          is a reason to keep playing") is a PARK TABLES rule and still holds THERE, where you
          have a ladder and a reason to look up it. On the front door a stranger has neither.
-         ⭐ SO THE BENCH IS `open_seats`, THE SAME LIST THE SUB-LABEL USED TO COUNT. Six seats,
-         three across, and the grid IS the claim — nothing left to disagree with.
+         ⭐ SO THE BENCH IS `open_seats`, THE SAME LIST THE SUB-LABEL USED TO COUNT, and
+         the grid IS the claim — nothing left to disagree with.
+         ⚑ SEVEN SEATS SINCE 2026-08-19, AND THE SEVENTH IS NOT A RUNG. Nate at 1200 made
+         the ladder six; Auston came off it. Six fill the three-column grid exactly and she
+         spans the bottom — see `.mc-bench-seat--adapt` below for the measurement, and for
+         why that rule has to sit AFTER `.mc-bench-seat > a`.
 
          ⚠ EVERY SEAT LINKS TO ITS OWN TABLE, not to the hall. Sitting down is a DEPARTURE
          with its own URL (`?table=`), so choosing a face here lands you at that board rather
@@ -292,12 +296,12 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
              a number no game will ever play at. The `title` has to branch too, or the hover
              text says "rated 1200" over a cell that says Adapts. {%- endcomment -%}
         {%- for r in open_seats -%}
-        <li class="mc-bench-seat">
+        <li class="mc-bench-seat{% if r.adaptive %} mc-bench-seat--adapt{% endif %}">
           <a href="{{ '/games/park-tables/' | relative_url }}?table={{ r.key }}"
-             title="{% if r.adaptive %}Sit down with {{ r.name }} — she finds your level{% else %}Sit down with {{ r.name }} — rated {{ r.elo }}{% endif %}">
+             title="{% if r.adaptive %}Sit down with {{ r.name }}{% else %}Sit down with {{ r.name }} — rated {{ r.elo }}{% endif %}">
             <span class="mc-bench-ico" aria-hidden="true">{{ r.icon }}&#xFE0E;</span>
             <span class="mc-bench-n">{{ r.name }}</span>
-            <span class="mc-bench-e">{% if r.adaptive %}Adapts{% else %}{{ r.elo }}{% endif %}</span>
+            <span class="mc-bench-e">{% if r.adaptive %}Adapts to your level{% else %}{{ r.elo }}{% endif %}</span>
           </a>
         </li>
         {%- endfor -%}
@@ -1441,7 +1445,11 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    off, and six across three columns is two clean rows where six across four would have been
    4 + 2 — the same "row and a half" shape the doors grid below this page was re-columned to
    avoid. The cells also gain ~39px of width each, which is the difference between "Crockett"
-   fitting and "Crockett" ellipsizing. */
+   fitting and "Crockett" ellipsizing.
+   ⚠ THE SIX IS THE LADDER, NOT THE ROSTER (2026-08-19). Auston left the rungs and the
+   bench went to seven; three columns still divide the SIX rated seats exactly because the
+   seventh spans all three. If a rung is ever added or removed, count the RATED seats against
+   this number — `npm run test:regulars` fails on an orphan cell. */
 .mc-bench-row { list-style: none; margin: 0; padding: 0;
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .mc-bench-seat { min-width: 0; }
@@ -1463,6 +1471,25 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mc-bench-n { font-size: 0.72rem; font-weight: 700; color: var(--fd-ink-2);
   max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mc-bench-e { font-size: 0.66rem; color: var(--fd-ink-3); font-variant-numeric: tabular-nums; }
+/* ⚡⚡ THE ADAPTIVE SEAT SPANS THE ROW — AND IT IS A BUG FIX, NOT A FLOURISH (2026-08-19).
+   Three across was chosen for SIX seats: two clean rows, "the grid IS the claim". Seating Nate
+   at 1200 made seven, and seven in three columns is 3 + 3 + 1 — the exact "row and a half"
+   shape the note above this block says the column count exists to avoid. Rendered at his own
+   window (1512 wide, sheet 1204): Auston sat alone in the bottom-left corner reading as a
+   leftover, on the one seat whose whole premise is that she is SEPARATE.
+   ⭐ So the thing that broke the grid is the thing that fixes it. She is off the ladder in the
+   game, under her own heading; here she is off the rows, across the bottom. Measured: the
+   bench goes 160.3 → 206.3px and the left column ends 3.5px SHORT of the board with the
+   proofs un-rotated (JS off) — the tighter of that block's two heights, which is the one
+   [[front-door-hero-stack]] says to price. The orphan version was 243.4px and overshot by 33.6.
+   ⚠ `.mc-bench-seat--adapt > a` scores (0,2,1), the SAME as `.mc-bench-seat > a` above it, so
+   it wins on document order alone. Move it above that rule and the row silently reverts to a
+   62px column card — which is how the first candidate render measured "unchanged".
+   ⚠ THE EXPLANATION IS VISIBLE TEXT, NOT THE `title`. He reads this site on iOS, where a
+   hover string is a fact nobody is ever told ([[hover-is-three-inputs]]). */
+.mc-bench-seat--adapt { grid-column: 1 / -1; }
+.mc-bench-seat--adapt > a { flex-direction: row; gap: 8px; min-height: 40px; padding: 6px 10px; }
+.mc-bench-seat--adapt .mc-bench-ico { font-size: 1.05rem; }
 /* (The locked-seat rules were deleted 2026-08-18 with the markup that used them — no
    `.is-locked`, no `.mc-bench-lk`, no `.mc-bench-ico--lock`. Left behind they would have been
    three rules no selector on the site can reach, and the dead-code sweep would have found them

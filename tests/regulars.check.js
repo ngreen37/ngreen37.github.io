@@ -134,11 +134,44 @@ check('the bench iterates the OPEN seats, not the whole roster',
   check('the bench has exactly one adaptive seat', adaptiveSeats.length === 1,
         adaptiveSeats.map(b => b.name).join(', ') || 'none');
   check('…and the front door branches on it instead of printing its rating',
-        /\{%\s*if r\.adaptive\s*%\}Adapts\{%\s*else\s*%\}\{\{\s*r\.elo\s*\}\}\{%\s*endif\s*%\}/.test(front),
+        /\{%\s*if r\.adaptive\s*%\}Adapts to your level\{%\s*else\s*%\}\{\{\s*r\.elo\s*\}\}\{%\s*endif\s*%\}/.test(front),
         'the seed is not a rating and must never be drawn as one');
   check('…and its hover text does not say "rated" either',
         !/title="Sit down with \{\{ r\.name \}\} — rated/.test(front),
         'a tooltip saying "rated 1200" over a cell saying Adapts is the same lie, quieter');
+}
+
+/* ══ THE GRID MAY NOT ORPHAN A CELL (2026-08-19) ═══════════════════════════
+   Seating Nate at 1200 took the bench from six to seven, and seven in a three-column grid is
+   3 + 3 + 1: Auston alone in the bottom-left, reading as a leftover rather than as the one
+   seat that is deliberately separate. Nothing failed — every existing check stayed green,
+   because they all test the DATA and this is a fact about the LAYOUT.
+   ⚠ SO THE ARITHMETIC IS THE GATE. The RATED seats must fill the columns exactly; the
+   adaptive one is allowed to be the remainder ONLY because it spans the whole row. Add a rung
+   and this fails the same day, instead of on the day somebody looks at the front door. */
+{
+  const colsM = front.match(/\.mc-bench-row\s*\{[^}]*repeat\((\d+),/);
+  const cols  = colsM ? +colsM[1] : 0;
+  const rated = rows.filter(r => r.open === true && !r.adaptive).length;
+  check('the bench grid still declares its column count', cols > 0, cols + ' across');
+  check('…and the RATED open seats fill those columns exactly',
+        cols > 0 && rated % cols === 0,
+        rated + ' rated seats across ' + cols + ' columns' +
+        (cols && rated % cols ? ' — the last row would hold ' + (rated % cols) : ''));
+  check('…and the adaptive seat spans the row instead of orphaning one',
+        /\.mc-bench-seat--adapt\s*\{[^}]*grid-column:\s*1\s*\/\s*-1/.test(front),
+        'without the span it drops into a column and the row reads as a leftover');
+  check('…and the front door tags that seat so the rule can reach it',
+        /class="mc-bench-seat\{%\s*if r\.adaptive\s*%\}\s*mc-bench-seat--adapt/.test(front),
+        'the CSS above matches nothing without the class on the <li>');
+  /* ⚠⚠ DOCUMENT ORDER IS LOAD-BEARING HERE. `.mc-bench-seat--adapt > a` and `.mc-bench-seat > a`
+     both score (0,2,1), so the later one wins — move this rule up and the wide row silently
+     goes back to being a 62px column card. That is not hypothetical: the first candidate
+     render measured "unchanged" for exactly this reason. */
+  const gen = front.indexOf('.mc-bench-seat > a {');
+  const ada = front.indexOf('.mc-bench-seat--adapt > a {');
+  check('…and its rule sits AFTER the general seat rule, which is what makes it win',
+        gen > -1 && ada > gen, 'general@' + gen + ' adaptive@' + ada);
 }
 
 check('no hand-typed seat count survives on the front door',
