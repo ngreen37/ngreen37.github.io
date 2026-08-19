@@ -62,7 +62,18 @@ tab_title: "Follow — McPuppy Studios"
      anywhere in the console the visitor would think to open. [[front-door-decision]]
      ══════════════════════════════════════════════════════════════════════════ {% endcomment %}
 
-{%- assign channel = "" -%}
+{%- comment -%} ⚑⚑ CLAIMED 2026-08-19 — Nate: "chesswild_official is my handle for twitch."
+     This one word is the switch: the "not yet" panel below is gone and the player is up.
+     It matches the family in `_config.yml` (Reddit and Pinterest are `chesswild_official`
+     too), so nobody has to remember a different spelling for the one platform that is
+     not in that file. {%- endcomment -%}
+{%- assign channel = "chesswild_official" -%}
+{%- comment -%} ⚠ DELIBERATELY STILL BLANK, EVEN THOUGH `_config.yml` SPELLS THE NAME.
+     `ChessWild_Official` is the handle he intends to RESERVE; it is not confirmed to
+     exist, and the Archive block below turns into a link out of the site the moment
+     this is filled. A 404 that says "past streams live here, permanently" is a worse
+     sentence than no sentence. Fill it the day the channel is real AND VODs are
+     auto-publishing to it — both, not either. [[accuracy-above-all]] {%- endcomment -%}
 {%- assign youtube = "" -%}
 
 <div class="live-hero">
@@ -125,8 +136,13 @@ tab_title: "Follow — McPuppy Studios"
 {% if youtube != "" %}
 <h2 class="live-h2">The Archive</h2>
 {% comment %} ⚠⚠ WHY THE ARCHIVE IS NOT ON TWITCH, and this is a fact worth knowing before
-     the first stream rather than after the twentieth: TWITCH VODS EXPIRE. Seven days on a
-     plain account, sixty for Affiliates and Partners, and then they are gone. The whole
+     the first stream rather than after the twentieth: TWITCH VODS EXPIRE, and the tier that
+     applies to a brand-new channel is the SHORTEST one. ⚡ Checked against Twitch by Nate,
+     2026-08-19: **7 days for a plain broadcaster · 14 for Affiliates · 60 for Partners,
+     Prime and Turbo.** The sentence this page printed said "a couple of months", which was
+     the 60-day tier — the one he is furthest from. Highlights are kept indefinitely and do
+     not count against any of it, and a VOD can be downloaded before it expires.
+     The whole
      argument for streaming here is that the first twenty streams nobody watches are still
      building a LIBRARY — two years of archived honest work that somebody can find the day
      the trailer lands. On Twitch alone that library quietly deletes itself.
@@ -134,7 +150,7 @@ tab_title: "Follow — McPuppy Studios"
      The fix costs one setting: Twitch → Settings → Stream → "Auto-publish VODs" plus the
      YouTube connection, and every broadcast lands on YouTube permanently. That is why this
      block points at YouTube and not at twitch.tv/videos. {% endcomment %}
-<p class="live-archive">Past streams live on <a href="https://youtube.com/@{{ youtube }}" rel="noopener" target="_blank">YouTube</a>, permanently — Twitch only keeps them for a couple of months.</p>
+<p class="live-archive">Past streams live on <a href="https://youtube.com/@{{ youtube }}" rel="noopener" target="_blank">YouTube</a>, permanently — Twitch deletes its own copy in a week.</p>
 {% endif %}
 
 {% comment %} ══ EVERYWHERE ELSE — THE SOCIAL ROW, IN FULL (2026-08-18) ═══════════════════
@@ -154,11 +170,15 @@ tab_title: "Follow — McPuppy Studios"
      an empty account is still the right answer to the question it asks. The two rules are
      not in conflict; they are answering different questions.
 
-     ⚠ NO TWITCH ROW HERE, AND IT MUST STAY THAT WAY WHILE THE CHANNEL IS UNCLAIMED. The
-     player twenty lines up says "the channel isn't open yet" — a Twitch link in this grid
-     would contradict it ON THE SAME SCREEN. Twitch's handle stays the `channel` assign at
-     the top, which is also the switch that decides which of those two states renders.
-     [[accuracy-above-all]]
+     ⚠ STILL NO TWITCH ROW HERE — BUT THE REASON CHANGED ON 2026-08-19 AND THE ANSWER DID NOT.
+     It used to be a contradiction: the player said "the channel isn’t open yet" and a Twitch
+     card in this grid would have said otherwise on the same screen. The channel is claimed now
+     (`chesswild_official`), so that argument is spent. It stays out anyway, for a plainer
+     reason: the player is twenty lines up and it already carries an "Open on Twitch ↗" button.
+     A card here would be a SECOND link to the same place on one page, in a grid whose whole
+     job is the places that do NOT have a player on this page. Twitch’s handle also stays the
+     `channel` assign rather than joining `site.socials`, because that assign is still the
+     switch that decides which of the two states above renders. [[declutter-north-star]]
 
      ⚠ THE MONOGRAM IS THE PLATFORM'S FIRST LETTER, sliced from the name in Liquid rather than
      typed — one less thing to keep in sync. Today's six are I·T·Y·X·R·P, all distinct. If a
