@@ -253,6 +253,22 @@ check('the room scores a puzzle 1 or 0 — nothing in between',
 // not a fresh localStorage read on every frame
 check('the play screen shows the rating without re-reading storage',
   /run\.stats\.rating \|\| run\.stats\.rating0/.test(FORK) && /ctx\.fillText\('Rating ' \+ myRating/.test(FORK));
+/* ══ A HINTED SOLVE DOES NOT COUNT — HIS RULING, TWICE ═══════════════════════
+   2026-08-04: *"you shouldn't get credit for the puzzle if you ask for a hint or get it wrong
+   the first time … you should have to come back to it and do it right."*
+   2026-08-19, asked again as an open dial and answered the same way: *"no, a hinted solve does
+   not count."*
+
+   ⚠ THREE CONDITIONS, AND `hintLevel === 0` IS THE ONE THAT KEEPS GETTING LOST. It was added
+   last, closing a loophole where a hint still counted as aced, and dropping it is a two-line
+   edit that would look like a simplification. The road to Chess City is 1,000 puzzles somebody
+   actually solved, or the number means nothing. [[puzzle-room-invariants]] */
+check('credit is earned, not attended — clean AND unrevealed AND unhinted',
+      /const earned = G\.clean && !G\.revealed && G\.hintLevel === 0;/.test(FORK),
+      'a hinted solve counting is the exact loophole he closed');
+check('…and an unearned puzzle says so and comes back',
+      /'NO CREDIT — IT COMES BACK'/.test(FORK) && /queueRetry\(/.test(FORK),
+      'no credit has to be VISIBLE, or it reads as the counter being broken');
 check('the difficulty dial is DRIVEN by the rating', /run\.diff = ratingToDiff\(pzMove\.after\)/.test(FORK));
 check('the old ±ratchet survives as the no-module fallback',
   /if \(!pzMove\) run\.diff = Math\.max\(1, Math\.min\(10, run\.diff \+ \(earned \? 0\.34 : -0\.7\)\)\)/.test(FORK));
