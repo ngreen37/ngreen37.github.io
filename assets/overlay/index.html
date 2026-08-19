@@ -63,6 +63,12 @@
 
   .ov { display: inline-block; padding: 14px 18px; }
 
+  /* ⚠ ADD `?preview=1` TO LOOK AT THIS IN A NORMAL BROWSER. The overlay is white ink with
+     no background, which is correct in OBS and INVISIBLE on a white browser page — opening
+     the bare URL to check it looks exactly like a page that failed to load. The plate is
+     opt-in so it can never reach a broadcast: OBS is given the URL without the parameter. */
+  body.is-preview { background: linear-gradient(120deg, #1d2a1f, #3a2f22 60%, #101418); }
+
   /* The wordmark, exactly as `_includes/wordmark.html` builds it. Poppins 800 is not in the
      self-hosted set, so 700 carries it — the treatment is the weight-and-color split, not
      the exact numeral. ⚠ THE CASE IS TYPED. "ChessWild.com" is the brand string in three
@@ -119,6 +125,8 @@
   /* ── THE DIALS ────────────────────────────────────────────────────────────────────── */
   var GOAL  = 1000;      // Nate, 2026-08-19: "up to 1,000 for now - real goal is a million"
   var EVERY = 45000;     // ms between re-counts. A stream is long; the number should climb on it.
+
+  if (/[?&]preview=1/.test(location.search)) document.body.classList.add('is-preview');
 
   var cfg  = window.PJCC_CONFIG || {};
   var line = document.getElementById('line'), rail = document.getElementById('rail');
