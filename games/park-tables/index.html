@@ -51,9 +51,12 @@ body_class: theme-hall
 <script src="{{ '/assets/js/pjcc-replay.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-game-review.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-analysis.js' | relative_url }}"></script>
-{% comment %} Tap a live opponent's name to send them credits (2026-08-13). Same module the
-     leaderboards use; loaded first so it exists before this page's script asks. Bots are
-     never gift-able — there is nobody on the other end. {% endcomment %}
+{% comment %} Tap a live opponent's name to open their card — avatar, companion, trophies,
+     and the credit gift (2026-08-13, widened 2026-08-19). Same module the leaderboards use;
+     loaded first so it exists before this page's script binds to it. Bots and empty seats
+     are never a door — there is nobody on the other end (see the nameplate guard below).
+     pjcc-pet-art.js draws the companion on the card and is not site-wide. {% endcomment %}
+<script src="{{ '/assets/js/pjcc-pet-art.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/pjcc-gift.js' | relative_url }}"></script>
 {% comment %} AUSTON REMEMBERS (2026-08-13) — she is the one regular who notices what has
      changed since you last sat down. OPTIONAL BY DESIGN: every call into it below is
@@ -107,9 +110,9 @@ body_class: theme-hall
        the bot gate is built on — the regulars need NOTHING from the backend — and it is
        the case that matters most, since a saved link is exactly what you open on a bad
        connection. The board comes up; the human tables are the only thing missing. */
-    if (!inRoom && wantedBot()) return botStart(wantedBot());
+    if (!inRoom && wantedBot()) return botSitDown(wantedBot());
     app.innerHTML = '<p class="lb-empty">The tables are offline right now — but the regulars are still here.</p>' +
-      botsPanel() + '<p class="lb-empty">More games in the <a href="/games/">Arcade</a>.</p>';
+      botsPanel() + austonPanel() + '<p class="lb-empty">More games in the <a href="/games/">Arcade</a>.</p>';
     wireBots();
   }
   if (!app) return;
@@ -236,7 +239,7 @@ body_class: theme-hall
     inRoom = null; roomPushed = false;
     document.body.classList.remove('pt-room');
     document.title = PAGE_TITLE;
-    cur = null; botCur = null; botSeq++;
+    cur = null; botCur = null; botSeq++; botLab = null;
     stopPolling();
     safeRoute();
   });
@@ -387,12 +390,16 @@ body_class: theme-hall
        Anything that genuinely wants you back out calls exitRoom()/leaveRoom() first, and
        all four of those callers already did. */
     if (inRoom) return;
+    /* Off the board entirely, so the analysis wash comes off with it. AFTER the stand-down
+       above, never before — route() runs while somebody is seated, and stripping the class
+       there would leave a player standing in the sandbox in the game's own colors. */
+    botLab = null; app.classList.remove('pt-in-lab');
     /* ?table=… — a reload, a bookmark, or a link. A BOT table is answered before the
        sign-in gate on purpose: the regulars need no account (the bot gate), so bouncing
        someone off their own bookmarked board and onto an email form would undo the whole
        point of that route order. */
     var want = askedForTable();
-    if (!inRoom && wantedBot()) return botStart(wantedBot());
+    if (!inRoom && wantedBot()) return botSitDown(wantedBot());
     if (!uid()) return gateSignIn();            // needs only the profile layer, which is up
     if (!PJCC.getProfile()) return gateCodename();
     if (!M.ready()) {
@@ -436,7 +443,12 @@ body_class: theme-hall
        Now: play first, sign in only when you want a PERSON. The account still buys
        something real (people, ratings, McPuppy's own table), which is a much better
        pitch than a toll gate. ═══════════════════════════════════════════════════ */
-    var bots = botsPanel();
+    /* ⚠⚠ BOTH PANELS, BECAUSE THE SENTENCE BELOW COUNTS THE ROSTER. `n` is
+       `Object.keys(BOTS).length` — nine seats — and drawing only the eight rungs here would
+       print "Nine park regulars" over a bench of eight. That exact miscount has already
+       shipped on this site once (six words over eight cards on the front door); splitting a
+       panel is precisely how it happens. Whatever is counted must be what is drawn. */
+    var bots = botsPanel() + austonPanel();
     // ⚠ DERIVE the count, never type it. There were three regulars when this line was
     //    written and four by the time it shipped (Robert joined as the Expert seat), and
     //    a sentence that says "three" over four buttons is the site telling a small lie.
@@ -658,25 +670,29 @@ body_class: theme-hall
     maxwell:  { name: 'Maxwell',  icon: '♟', diff: 'Beginner', elo: 400,  movetime: 120,  aura: 'emerald' },
     crockett: { name: 'Crockett', icon: '♞', diff: 'Easy',     elo: 750,  movetime: 160,  aura: 'amber' },
     argus:    { name: 'Argus',    icon: '♝', diff: 'Casual',   elo: 1000, movetime: 260,  aura: 'ice' },
-    /* Auston — back on the bench 2026-08-10 at Nate's rating, filling the 1000→1400 step.
-       ⚑ AND SINCE 2026-08-17 SHE IS THE ADAPTIVE SEAT (Nate: *"We could also add an
-       adaptive bot to the park tables"* — and she is the one it should be, because
-       noticing you is already her whole characterization).
+    /* ⚑⚑ NATE TOOK THE 1200 RUNG, 2026-08-19 (Nate: *"Make Nate the 1200 player to fill
+       that spot — Nate replaces Auston's spot, and Auston has her own special spot."*).
+       Auston vacated it because a seat that travels the whole road was never really a rung;
+       see her entry at the bottom of this object.
 
-       ⚠⚠ `elo: 1200` IS NOW A SEED, NOT AN ADVERTISEMENT, and that distinction is the one
-       thing on this bench that must not blur. The house law here is that *a number a
-       player can see is what keeps a difficulty honest* — "Medium" drifted 900 points
-       precisely because nobody could see it. Her seat therefore does NOT print 1200: it
-       prints what she is playing at RIGHT NOW, live on the nameplate, and her lobby card
-       says "Adapts" instead of a rating. The law is intact — the number you see is still
-       the number that plays. It just moves. [[bot-gate]]
+       ⚠ HIS GLYPH IS ♙, AND IT WAS PICKED OFF A RENDER RATHER THAN OFF THE OLD COMMENT.
+       The note that used to sit here said ♖/♜, ♗/♝, ♕/♛ and ♙/♟ are the SAME PICTURE at
+       card size, which would have left no ninth glyph at all. All twelve were rendered
+       side by side at 22px in this page's own font stack: the white pieces come out as
+       OUTLINES and the black as SOLIDS, and every pair reads apart — with or without a
+       U+FE0E selector, which changed nothing on desktop Chrome. The old claim may still
+       hold on a platform that reaches for a color-emoji font, so the pick is defensive:
+       ♙'s twin is Maxwell's ♟ at 400, the far END of the bench, while his neighbors here
+       are ♝ (1000) and ♚ (1400) — two silhouettes a pawn cannot be confused with.
 
-       ⭐ AND THE 1000→1400 HOLE IS NOT BACK. A fixed 1200 filled exactly one step; a seat
-       that travels the whole road fills every step there will ever be, including the ones
-       above the CEO's neighbors and below Maxwell's. The bench lost a rung and gained a
-       ramp. */
-    auston:   { name: 'Auston',   icon: '♘', diff: 'Adapts',   elo: 1200, movetime: 420,  aura: 'crimson',
-                adaptive: true },
+       ⭐ AND IT IS THE RIGHT PIECE FOR HIM. `pt-me` already draws YOUR nameplate with ♟, so
+       the creator sitting down as the same piece one shade lighter says what he keeps
+       asking the site to say: he is a person at the tables, not the trophy at the end.
+
+       ⚠ A SECOND NATE-SHAPED THING IS ALREADY IN THIS LOBBY — "Challenge McPuppy · The
+       Creator plays back", which is a REAL async table against the actual person. Flagged
+       to him: a bot called Nate stands next to a door that offers the real one. */
+    nate:     { name: 'Nate',     icon: '♙', diff: 'Club',     elo: 1200, movetime: 480,  aura: 'jade' },
     // "Father" → "The Dad" (2026-08-10 Nate). Same character, same seat, warmer name.
     dad:      { name: 'The Dad',  icon: '♚', diff: 'Club',     elo: 1400, movetime: 620,  aura: 'mono' },
     // Robert — the Checker Town rival (2026-07-19 Nate), down from 2400 to make room above.
@@ -684,7 +700,26 @@ body_class: theme-hall
     princess: { name: 'Princess', icon: '♛', diff: 'Master',   elo: 2100, movetime: 1150, aura: 'sakura',
                 locked: 'robert' },
     ceo:      { name: 'The CEO',  icon: '♔', diff: 'Champion', elo: 2400, movetime: 1300, aura: 'gold',
-                locked: 'princess' }
+                locked: 'princess' },
+    /* ⚑⚑ AUSTON IS NOT A RUNG — SHE IS THE OTHER KIND OF SEAT (2026-08-19). She sat at
+       1200 from 2026-08-10 and became the adaptive seat on 08-17, and for two days she was
+       both: a number on the ladder AND a dial that ignored it. Nate ended that — *"they are
+       not necessarily 1200 but completely adaptive."* She is LAST in this object and drawn
+       in her own block below the ladder, so the row of rungs reads 400→750→1000→1200→
+       1400→1800→2100→2400 with nothing irregular wedged into it.
+
+       ⚠⚠ `elo: 1200` SURVIVES AS THE DIAL'S SEED AND NOTHING ELSE. It is where the dial
+       STARTS before it has read a single move, and it is never printed: her card says what
+       she does, and her nameplate says what she is playing at right now. The house law is
+       intact — the number you see is still the number that plays; it just moves.
+       ⚠ DO NOT "TIDY" IT TO MATCH SOMETHING. It is the one field on this bench whose value
+       is invisible, so a well-meaning edit here changes how every first game with her opens
+       and nothing on screen would say so. [[bot-gate]] [[adaptive-opponent]]
+
+       ⭐ AND THE 1000→1400 HOLE IS NOT BACK EITHER WAY. Nate fills the rung; Auston fills
+       every step there will ever be, including the ones above the CEO and below Maxwell. */
+    auston:   { name: 'Auston',   icon: '♘', diff: 'Adapts',   elo: 1200, movetime: 420,  aura: 'crimson',
+                adaptive: true }
   };
   /* ⚠ PUBLISHED, NOT DUPLICATED (2026-08-13). Auston's memory names the other regulars
      ("you beat Robert since we last played"), and the one thing it must never do is keep
@@ -715,11 +750,114 @@ body_class: theme-hall
     a.push(id);
     try { localStorage.setItem(BEAT_KEY, JSON.stringify(a)); } catch (e) {}
   }
+  /* ══ THE STARS ════════════════════════════════════════════════════════════════════
+     2026-08-18, Nate: *"the user should get a white or black star for beating the bots.
+     Partial star (left half of star) if analysis board is used, partial star (bottom-right
+     quarter of star) if mulligan button is used."*
+
+     ⭐ THE STAR'S COLOR IS THE SIDE YOU WON WITH, which is the whole reason the side
+     picker below exists. Beat Robert with White and you have his white star; his black one
+     is still empty, and the only way to fill it is to sit down again and take Black. Sixteen
+     stars on an eight-seat bench, and the second eight are the harder eight — that is a
+     reason to play the color you avoid, which is the single most useful thing a chess
+     player can be nudged into.
+
+     ⭐ THE SHAPE IS THE RECEIPT. A full star means you did it with nothing but the board.
+     The left half means the analysis board was open; the bottom-right quarter means you
+     took a move back. It records what happened rather than judging it — the house rule two
+     hundred lines up is explicit that nobody here is being policed, and a star that says
+     "you had help" is a fact about the game, not a verdict on the player.
+
+     ⚠ THE TAKEBACK OUTRANKS THE ANALYSIS BOARD when both were used, and that ordering is
+     deliberate rather than alphabetical: looking at a position changes nothing that
+     happened, and un-playing a move changes the game itself. His call, 2026-08-18.
+
+     ⚠ BEST EVER WINS, NEVER LAST. A quarter-star rematch must not eat the full star you
+     already own — the record is of the best game you have played against that seat with
+     that color, so the ladder can only ever go up. */
+  var STAR_KEY = 'pjcc.pt.stars.v1';
+  var STAR_RANK = { quarter: 1, half: 2, full: 3 };
+  function starsAll(){
+    try { var o = JSON.parse(localStorage.getItem(STAR_KEY)); return (o && typeof o === 'object') ? o : {}; }
+    catch (e) { return {}; }
+  }
+  /* `color` is 'w' or 'b' — the side YOU held. Returns 'full' | 'half' | 'quarter' | null.
+
+     ⚠⚠ THE GRANDFATHER CLAUSE IS NOT A COURTESY, IT IS A REGRESSION FIX. The locked seats
+     below now want a FULL star, and every win banked before today predates both the analysis
+     board and the takeback — there was no other kind of win to have. Without this, shipping
+     stars would silently re-lock Princess and the CEO for every player who had already
+     earned them, which is the worst thing an update can do to somebody's save. Those wins
+     were all played as White (every bot board was White-only until today), so the clause
+     grants the white star and nothing else. */
+  function starFor(id, color){
+    var rec = starsAll()[id];
+    if (rec && rec[color]) return rec[color];
+    if (color === 'w' && beatenList().indexOf(id) >= 0) return 'full';
+    return null;
+  }
+  function awardStar(id, color, tier){
+    if (!id || !tier || (color !== 'w' && color !== 'b')) return;
+    var all = starsAll(), rec = all[id] || (all[id] = {});
+    if (rec[color] && STAR_RANK[rec[color]] >= STAR_RANK[tier]) return;   // best ever wins
+    rec[color] = tier;
+    try { localStorage.setItem(STAR_KEY, JSON.stringify(all)); } catch (e) {}
+  }
+  /* What this game is worth, read off the two flags the board has been carrying. */
+  function tierEarned(st){ return st.usedMul ? 'quarter' : st.usedAn ? 'half' : 'full'; }
+  function hasFullStar(id){ return starFor(id, 'w') === 'full' || starFor(id, 'b') === 'full'; }
+  /* Has this player earned ANY star yet? Until they have, the bench draws no star chrome at
+     all — eight cards wearing two empty outlines each is clutter for somebody who has not
+     won a game yet, and the first win reveals the whole collection at once. */
+  function anyStar(){
+    var all = starsAll();
+    for (var k in all) if (all[k] && (all[k].w || all[k].b)) return true;
+    return beatenList().length > 0;
+  }
+
+  /* ── THE DRAWING ────────────────────────────────────────────────────────────────────
+     A faint outline star is always there (the empty slot), and a filled one sits on top of
+     it inside a box the CSS clips to the earned fraction. Two elements, three shapes, no
+     per-instance ids — which matters because a lobby draws sixteen of these and SVG
+     `clipPath` ids would have to be unique across all of them. `clip-path: inset()` on the
+     plain wrapper does the same job in one CSS line and cannot collide.
+     ⚠ The glyph is decorative; the WORD is in the aria-label, because "bottom-right
+     quarter of a star" is not something a screen reader can be asked to infer from a path. */
+  var STAR_PATH = 'M12.00 1.40 L14.62 8.40 L22.08 8.72 L16.23 13.38 L18.23 20.58 ' +
+                  'L12.00 16.45 L5.77 20.58 L7.77 13.38 L1.92 8.72 L9.38 8.40Z';
+  var STAR_WORDS = { full: 'a full star', half: 'a half star — analysis board',
+                     quarter: 'a quarter star — takeback' };
+  function starNode(color, tier, label){
+    var svg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + STAR_PATH + '"/></svg>';
+    var side = color === 'b' ? 'Black' : 'White';
+    var words = tier ? STAR_WORDS[tier] : 'not yet won';
+    return '<span class="pt-star pt-star--' + (color === 'b' ? 'b' : 'w') +
+      ' pt-star--' + (tier || 'none') + '" role="img" aria-label="' +
+      esc((label ? label + ', ' : '') + 'as ' + side + ': ' + words) + '">' +
+      svg + '<i class="pt-star-f">' + svg + '</i></span>';
+  }
+  /* The pair that rides on a bench card: White's slot then Black's, always both, so an
+     empty half is visibly a thing you could still go and get. */
+  function starPair(id, label){
+    return '<span class="pt-stars">' + starNode('w', starFor(id, 'w'), label) +
+           starNode('b', starFor(id, 'b'), label) + '</span>';
+  }
+
   function botLocked(id){
     var b = BOTS[id];
     if (!b || !b.locked) return null;                     // open seat
-    if (beatenList().indexOf(b.locked) >= 0) return null;  // earned
-    return (BOTS[b.locked] || {}).name || b.locked;        // who you still owe
+    /* ⚑ A FULL STAR, NOT MERELY A WIN (2026-08-18, his call). Beating Robert with the
+       analysis board open no longer opens Princess's seat. The gate names its price in the
+       card below, and it names the HARDER price only once you have actually beaten the
+       gatekeeper some other way — telling a player who has never met Robert that they need
+       to beat him "clean" is a rule about a game they have not played yet. */
+    if (hasFullStar(b.locked)) return null;                      // earned, outright
+    return (BOTS[b.locked] || {}).name || b.locked;              // who you still owe
+  }
+  /* Have they beaten this gatekeeper, but only with help? Drives the sharper wording. */
+  function owedCleanly(id){
+    var b = BOTS[id];
+    return !!(b && b.locked && !hasFullStar(b.locked) && beatenList().indexOf(b.locked) >= 0);
   }
   /* ══ THE VS STREAKS (2026-08-13) ══════════════════════════════════════════════════
      Nate: *"put up a red and blue streak to make the game an event, like how pokemon
@@ -764,16 +902,13 @@ body_class: theme-hall
      for as long as the table is open.
      ⚠ A failure is remembered as the neutral, not left undefined — otherwise "we asked and
      they have no aura" and "we never asked" look identical and it retries forever. */
-  /* ── CAN THIS VISITOR SEND CREDITS ───────────────────────────────────────────────
-     Resolved once and cached, for the same reason the leaderboard does it: `renderTable`
-     is synchronous and runs on every ~4s poll, so asking a promise from inside it would
-     either rewrite the nameplate under a thumb or fire a probe every four seconds.
-     ⚠ Starts false. Every render before the answer lands draws a plain name, which is the
-     correct thing to show someone who may not be able to gift at all. */
-  var giftsOn = false;
-  try {
-    if (window.PJCCGift) PJCCGift.available().then(function (on) { giftsOn = !!on; }, function () {});
-  } catch (e) {}
+  /* ── THE OPPONENT'S NAMEPLATE IS A DOOR (2026-08-19) ─────────────────────────────
+     There used to be a `giftsOn` probe here, resolved once and cached, because the
+     nameplate was a gift button and a gift button may not exist before the migration is
+     run. It opens the OPERATIVE CARD now — avatar, companion, trophies, and the gift row
+     only if that is switched on — and the card reads nothing that isn't already public,
+     so there is nothing left for this page to ask first. The probe moved inside the card,
+     which is the only thing that still cares about the answer. */
 
   var auraByName = {};
   function paintOppAura(name){
@@ -839,6 +974,68 @@ body_class: theme-hall
   /* The live dial for an adaptive seat, rebuilt on every sit-down and on every resume.
      Null for the seven fixed regulars, and null if pjcc-adapt.js did not load. */
   var botAdapt = null;
+  /* ══ THE SAVED BOARD GREW THREE FIELDS (2026-08-18) ═══════════════════════════════════
+     `pc` — which side you are playing, 'w' or 'b'.
+     `usedAn`  — the analysis board was actually MOVED on during this game.
+     `usedMul` — the one takeback has been spent.
+
+     ⚠⚠ ALL THREE LIVE ON THE SAVED STATE, NOT IN A VARIABLE, for the same reason `logged`
+     does: a refresh mid-game reloads this object and nothing else, so a flag held in a
+     closure would hand back a full star to anybody who reloaded the page after using the
+     analysis board. The save IS the memory of what happened at this board.
+     ⚠ A SAVE WRITTEN BEFORE TODAY HAS NO `pc`, and every bot board was White-only until
+     today — so `sidePlayed()` reads a missing field as 'w' and a half-played game survives
+     the update instead of turning its board around under somebody mid-move. */
+  function sidePlayed(st){ return (st && st.pc === 'b') ? 'b' : 'w'; }
+  /* Did you win this one? The result is in PGN terms ('1-0' is White's win whoever that
+     was), so every caller that used to compare against '1-0' has to come through here now. */
+  function botWon(st){ return st && st.result === (sidePlayed(st) === 'w' ? '1-0' : '0-1'); }
+
+  /* ══ WHERE YOU LANDED — the adaptive seat's parting number (2026-08-19) ══════════════
+     Nate: *"they are not necessarily 1200 but completely adaptive, and the game will spit
+     out your estimated rating."*
+
+     ⚠⚠ THIS IS THE SAME MEASUREMENT `/rating/game/` ALREADY MAKES, DELIBERATELY. That page
+     is one game against this exact dial and then a number; a game against Auston is the
+     same experiment with a character sitting behind it. Two different numbers out of two
+     identical procedures would be the site disagreeing with itself in front of a player,
+     so this reads `settled()` and prints the same band with the same caveats. If the
+     estimate ever needs to get better, it gets better in ONE place and both doors move.
+
+     ⚠ MIN_PLIES, AND IT IS NOT DECORATION. Below twelve moves each the dial has not
+     finished traveling toward you, so its median is the SEED wearing a result's clothing —
+     handing somebody their own starting value back as a measurement is the worst thing
+     either of these doors could do. Short games get the sentence and no number.
+
+     ⚠ THE BAND IS THE HONEST PART. ±140 at the minimum length, tightening toward ±90 across
+     a long game. A bare number would claim a precision one game cannot buy — and this dial
+     in particular MOVED while it measured, which is exactly what disqualifies it from being
+     quoted to the point. [[accuracy-above-all]] */
+  var EST_MIN_PLIES = 24;
+  function estimateLine(st, lab){
+    if (lab || !st || !st.done) return '';
+    var b = BOTS[st.bot];
+    if (!b || !b.adaptive || !botAdapt) return '';
+    var plies = (st.moves || '').trim() ? (st.moves || '').trim().split(/\s+/).length : 0;
+    if (plies < EST_MIN_PLIES) {
+      return '<p class="pt-est pt-est--short">That was too short to read you. ' +
+             'Play her a longer game and she’ll tell you where you landed.</p>';
+    }
+    var n = botAdapt.settled();
+    var band = Math.round(140 - Math.min(50, Math.max(0, (plies - EST_MIN_PLIES) * 0.9)));
+    return '<p class="pt-est"><span class="pt-est-lab">She had to play at</span>' +
+      '<b class="pt-est-n">' + n + '</b>' +
+      '<span class="pt-est-band">to meet you — somewhere around ' + (n - band) + '–' + (n + band) + '</span>' +
+      '<span class="pt-est-note">One game is one game. Play a few and the number settles.</span></p>';
+  }
+  /* Which side to take next time. 'w' | 'b' | 'r' (random, resolved at sit-down). */
+  var SIDE_KEY = 'pjcc.pt.side.v1';
+  function sidePref(){
+    try { var v = localStorage.getItem(SIDE_KEY); return (v === 'b' || v === 'r') ? v : 'w'; }
+    catch (e) { return 'w'; }
+  }
+  function saveSidePref(v){ try { localStorage.setItem(SIDE_KEY, v); } catch (e) {} }
+  function resolveSide(v){ return v === 'b' ? 'b' : v === 'w' ? 'w' : (Math.random() < 0.5 ? 'w' : 'b'); }
 
   /* ══ THE HOUSE RULE ═══════════════════════════════════════════════════════════════════
      2026-08-10, Nate, in his words: *"I do want to make one thing crystal clear — cheaters
@@ -887,10 +1084,48 @@ body_class: theme-hall
      offline stand-down — because "who's here to play" has the same answer in all
      three, and it is never "nobody". Returns '' if the engine didn't load, so
      every caller can concatenate it without a guard. */
+  /* ⚑⚑ TWO PANELS, ONE CARD RENDERER (2026-08-19). Nate moved Auston off the ladder into
+     "her own special spot", which is a LAYOUT change and must not become a second card.
+     `botCard()` is the only thing that draws a seat; `botsPanel()` walks the rungs and
+     `austonPanel()` draws the one seat that is not a rung. If these ever grow two renderers,
+     the away-day treatment, the star pair, the lamp and the locked price all have to be kept
+     in step by hand — and she is the seat with the most of those. */
   function botsPanel(){
     if (!botsReady()) return '';
     var saved = botLoad();
-    return '<div class="pt-actions pt-bots">' + Object.keys(BOTS).map(function (id) {
+    var showStars = anyStar();
+    return '<div class="pt-actions pt-bots">' +
+      Object.keys(BOTS).filter(function (id) { return !BOTS[id].adaptive; })
+        .map(function (id) { return botCard(id, saved, showStars); }).join('') + '</div>';
+  }
+
+  /* ── THE SEAT THAT IS NOT A RUNG ──────────────────────────────────────────────────
+     Nate, 2026-08-19: *"Auston has her own special spot."* Her own heading and her own
+     row, under the ladder — because everything about her card is already the exception
+     (no rating, an away day, a lamp that lights only for people she has met), and wedged
+     between 1000 and 1400 all of that read as a rung behaving oddly rather than as a
+     different kind of seat.
+     ⚠ Returns '' if no adaptive seat exists, so callers still need no guard. */
+  function austonPanel(){
+    if (!botsReady()) return '';
+    var saved = botLoad();
+    var showStars = anyStar();
+    var ids = Object.keys(BOTS).filter(function (id) { return BOTS[id].adaptive; });
+    if (!ids.length) return '';
+    /* ⚠ THE HEADING NAMES HER RATHER THAN LISTING WHAT SHE LACKS. It read "No Rating, No
+       Ladder" for about ten minutes, which is a true sentence and the wrong one: a section
+       header built out of two absences describes a hole where a rung used to be, and this
+       is a seat, not a gap. The honest "no rating" survives in the line below it, where it
+       is an explanation instead of a headline. [[positivity-check]] */
+    return '<h2 class="pt-h pt-h--adapt">Auston’s Table</h2>' +
+      '<p class="pt-adapt-note">No rating and no rung — she finds your level and plays there. ' +
+      'Finish a game and she’ll tell you where you landed.</p>' +
+      '<div class="pt-actions pt-bots pt-bots--adapt">' +
+      ids.map(function (id) { return botCard(id, saved, showStars); }).join('') + '</div>';
+  }
+
+  function botCard(id, saved, showStars){
+    {
       var b = BOTS[id];
       var resume = saved && saved.bot === id && !saved.done && (saved.moves || '').trim();
       var owe = botLocked(id);
@@ -900,10 +1135,19 @@ body_class: theme-hall
       //   `disabled` rather than a click-and-refuse: the button should feel shut, and a
       //   disabled control is the one thing a screen reader and a thumb agree about.
       if (owe) {
+        /* ⚑ THE PRICE SHARPENS ONLY ONCE IT HAS TO (2026-08-18). The gate wants a FULL
+           star now, so somebody who beat Robert with the analysis board open is standing
+           at a seat that did not open, and "Beat Robert to unlock" would read as a bug they
+           had already satisfied. That player — and only that player — is told the actual
+           condition. Everybody else still reads the simple sentence, because "clean" is a
+           distinction about a game they have not played yet. */
+        var clean = owedCleanly(id);
+        var price = clean ? 'Beat ' + esc(owe) + ' with no help' : 'Beat ' + esc(owe) + ' to unlock';
         return '<button class="pt-card pt-bot pt-bot--locked" data-bot="' + id + '" disabled' +
-          ' aria-label="' + esc(b.name) + ', rated ' + b.elo + ' — locked until you beat ' + esc(owe) + '">' +
+          ' aria-label="' + esc(b.name) + ', rated ' + b.elo + ' — locked until you beat ' + esc(owe) +
+          (clean ? ' with no analysis board and no takeback' : '') + '">' +
           '<span class="pt-card-icon">🔒</span>' +
-          '<span class="pt-card-t">' + esc(b.name) + '<br><i>Beat ' + esc(owe) + ' to unlock</i></span></button>';
+          '<span class="pt-card-t">' + esc(b.name) + '<br><i>' + price + '</i></span></button>';
       }
       /* ⭐ THE LAMP IS ON AT HER TABLE. Auston is the one regular who remembers you, and
          her card says so WITHOUT saying so — a warm edge that appears only once she
@@ -953,18 +1197,99 @@ body_class: theme-hall
         var lastAt = adaptSeed(id);
         meta = b.diff + ' · ' + (lastAt ? 'last at ' + lastAt : 'finds your level');
       }
+      /* ⭐ THE TWO STARS ARRIVE ONLY ONCE ONE HAS BEEN WON. Sixteen empty outlines across
+         a bench nobody has beaten yet is decoration on a promise; the first win turns the
+         whole collection on at once, and from then on every card shows what is still
+         missing. `anyStar()` is the switch, and it counts the pre-star wins too so a
+         returning player never sees the bench go blank. */
+      var stars = showStars ? starPair(id, b.name) : '';
       return '<button class="pt-card pt-bot' + (knows ? ' pt-bot--knows' : '') + '" data-bot="' + id + '">' +
         '<span class="pt-card-icon">' + glyph + '</span>' +
-        '<span class="pt-card-t">' + esc(b.name) + '<br><i>' + esc(meta) +
+        '<span class="pt-card-t">' + esc(b.name) + stars + '<br><i>' + esc(meta) +
         (resume ? ' · resume' : '') + '</i></span></button>';
-    }).join('') + '</div>';
+    }
   }
   function wireBots(){
     if (!botsReady()) return;
     try { PJCCGauntletEngine.warmup(); } catch (e) {}
     Array.prototype.forEach.call(app.querySelectorAll('[data-bot]'), function (b) {
-      b.onclick = function(){ botStart(b.getAttribute('data-bot')); };
+      b.onclick = function(){ botSitDown(b.getAttribute('data-bot')); };
     });
+  }
+
+  /* ══ PULLING UP THE CHAIR ══════════════════════════════════════════════════════════
+     2026-08-18, Nate: *"When playing a bot, you should get to decide if you play
+     black-or-white. Currently you default to white I think. Random should be an option
+     as well."* He is right — every bot board on this page has been White-only since the
+     bench opened, which is also why the grandfather clause in starFor() only has to grant
+     white stars.
+
+     ⚠⚠ THE DOOR IS HERE NOW, NOT IN botStart. Three things reach a bot table — a bench
+     card, `?table=argus` in the address bar, and "Play again" on a finished board — and
+     only the first two are somebody sitting down. A rematch already knows which chair you
+     are in, so it goes straight past this and keeps its single tap.
+
+     ⚠ A HALF-PLAYED BOARD SKIPS THE QUESTION ENTIRELY. You are already sitting on a side;
+     asking which one you would like is asking about a decision the save has already made.
+
+     ⚠ HER DAY OFF IS CHECKED HERE, which is the same door the old guard defended — the
+     shared `?table=auston` link has to hit the rule the disabled bench card does, or the
+     one person who kept the link is the one person the feature never applies to. */
+  function botSitDown(id){
+    if (!BOTS[id]) return;
+    var saved = botLoad();
+    var mine = saved && saved.bot === id && !saved.done && (saved.moves || '').trim() &&
+               M.replayGame(saved.moves || '').valid;
+    try {
+      if (window.PJCCAuston && PJCCAuston.speaks(id) && PJCCAuston.awayToday(!!mine)) {
+        exitRoom(); safeRoute(); return;
+      }
+    } catch (e) {}
+    if (mine) return botStart(id, sidePlayed(saved));
+    sideSheet(id);
+  }
+
+  /* The question itself. It enters the room before it draws, because `route()` stands down
+     on `inRoom` and this screen would otherwise be repainted out from under the player by
+     the late `PJCC.ready.then(safeRoute)` — the exact race that ate his resumed games on
+     2026-08-14. Sitting down IS arriving at the table; the side is chosen in the chair. */
+  var SIDES = [
+    { v:'w', glyph:'⬜', name:'White',  line:'You open. First move, first idea.' },
+    { v:'b', glyph:'⬛', name:'Black',  line:'They open. You answer — the harder half.' },
+    { v:'r', glyph:'🎲', name:'Random', line:'Let the board decide, the way a park game does.' }
+  ];
+  function sideSheet(id){
+    stopPolling(); cur = null; botCur = null;
+    var b = BOTS[id];
+    enterRoom('bot', id, b.name);
+    var pref = sidePref();
+    /* ⭐ THE STARS ARE THE ARGUMENT FOR TAKING BLACK. Printed beside the two side buttons
+       once the collection is on, so "pick a color" stops being an arbitrary form field and
+       becomes the one screen that tells you which half of this seat you still owe. */
+    var showStars = anyStar();
+    var rows = SIDES.map(function (s) {
+      var got = (s.v === 'w' || s.v === 'b') && showStars ? starNode(s.v, starFor(id, s.v), b.name) : '';
+      return '<button class="pt-seat pt-side' + (pref === s.v ? ' on' : '') + '" data-side="' + s.v + '">' +
+        '<span class="pt-seat-ico">' + s.glyph + '</span>' +
+        '<span class="pt-seat-t"><b>' + s.name + got + '</b>' +
+        '<small>' + s.line + '</small></span></button>';
+    }).join('');
+    app.innerHTML = '<div class="pt-sheet">' +
+      '<h2 class="pt-gate-h">' + b.icon + ' ' + esc(b.name) + '</h2>' +
+      '<p class="pt-sheet-l">Which side?</p>' +
+      '<div class="pt-seats">' + rows + '</div>' +
+      '<div class="pt-gate-row"><button class="pjcc-btn-ghost" id="pt-side-back">← The park</button></div></div>';
+    Array.prototype.forEach.call(app.querySelectorAll('[data-side]'), function (btn) {
+      btn.onclick = function () {
+        var v = btn.getAttribute('data-side');
+        saveSidePref(v);
+        botStart(id, v);
+      };
+    });
+    document.getElementById('pt-side-back').onclick = function () {
+      if (leaveRoom()) return;
+      botCur = null; botSeq++; safeRoute();
+    };
   }
 
   /* ── WHAT SHE SAID WHEN YOU SAT DOWN ─────────────────────────────────────────────
@@ -1028,27 +1353,25 @@ body_class: theme-hall
     try { botAdapt = PJCCAdapt.create({ seed: seed == null ? b.elo : seed }); } catch (e) { botAdapt = null; }
   }
 
-  function botStart(id){
+  /* `side` is 'w' | 'b' | 'r', and it only decides anything on a FRESH board — a resume
+     keeps the side already saved, because the pieces are already where they are. Callers:
+     sideSheet (the player picked), botSitDown (a resume, passing the saved side back in),
+     and the two rematch buttons on a finished board. */
+  function botStart(id, side){
     stopPolling(); cur = null; botSel = -1; botThinking = false; botSeq++;
     botSay = null; botBye = null; botAdapt = null; botMid = null; botMidAt = 0;
+    botLab = null;
     // her three mid-game lines refill when you sit down, not when the page loads
     try { if (window.PJCCAuston) PJCCAuston.newGame(); } catch (e) {}
     var saved = botLoad();
-    /* ⚠⚠ THE DOOR, NOT JUST THE CARD. Her lobby seat is `disabled` on a day she is
-       elsewhere, but `?table=auston` is a real bookmarkable URL and a shared link — so
-       arriving straight at her table has to hit the same rule, or the one person who
-       kept the link is the one person the feature does not apply to. Bounced back to the
-       lobby, where the empty seat explains itself. */
-    try {
-      var mine = saved && saved.bot === id && !saved.done && (saved.moves || '').trim();
-      if (window.PJCCAuston && PJCCAuston.speaks(id) && PJCCAuston.awayToday(!!mine)) {
-        exitRoom(); safeRoute(); return;
-      }
-    } catch (e) {}
     if (BOTS[id]) enterRoom('bot', id, BOTS[id].name);   // you're at the table now, not on the page
     // resume an unfinished game against the same regular; otherwise a fresh board
     if (!(saved && saved.bot === id && !saved.done && M.replayGame(saved.moves || '').valid)) {
-      saved = { bot: id, moves: '', done: 0 };
+      /* ⚠ THE SIDE IS RESOLVED ONCE, HERE, AND WRITTEN DOWN. 'r' is a question, not an
+         answer — storing it would re-roll the board's orientation on every render and
+         every reload, which is the same class of bug as a seeded sky that forgets its
+         seed. What the save carries is 'w' or 'b' and nothing else. */
+      saved = { bot: id, moves: '', done: 0, pc: resolveSide(side) };
       botSave(saved);
       try { PJCCGauntletEngine.newGame(); } catch (e) {}
     }
@@ -1063,10 +1386,11 @@ body_class: theme-hall
         botSay = PJCCAuston.greet(id);
       }
     } catch (e) { botSay = null; }
-    // resumed mid-reply (refreshed while the bot was thinking): it's Black's move
-    // with no engine in flight — kick the think again instead of stalling.
+    /* Not your move and no engine in flight — kick the think. TWO cases now, and they
+       arrive here identically: a refresh while the regular was thinking, and the opening
+       move of a game you are playing as Black. */
     var g0 = M.replayGame(saved.moves || '');
-    if (!saved.done && g0.valid && !g0.result && g0.S.turn === 'b') botThink(saved, g0.S);
+    if (!saved.done && g0.valid && !g0.result && g0.S.turn !== sidePlayed(saved)) botThink(saved, g0.S);
     else botRender();
   }
 
@@ -1101,9 +1425,16 @@ body_class: theme-hall
        seeding tomorrow from a mop-up would drift her a little further off you every game. */
     if (botAdapt) { try { saveAdaptSeed(st.bot, botAdapt.settled()); } catch (e) {} }
     botSave(st);
-    if (st.result === '1-0') {
-      markWin();                                   // you play White at every bot table
-      markBeaten(st.bot);                          // …and that is what opens the locked seats
+    if (botWon(st)) {
+      markWin();
+      /* ⚠ THE BEATEN LIST STILL TAKES EVERY WIN, INCLUDING A HELPED ONE, and that is not
+         an oversight in the new gate. Two different questions read it: the locked seats
+         ask "did you beat him outright" (which is `hasFullStar`, not this), and Auston asks
+         "have you beaten him since we last played" — and she is talking about a game that
+         genuinely happened. Narrowing this list to clean wins would have made her stop
+         noticing real results in order to enforce a rule that is not hers to enforce. */
+      markBeaten(st.bot);
+      awardStar(st.bot, sidePlayed(st), tierEarned(st));
     }
     // ⚠ AFTER markBeaten(), never before: her "you beat Robert since we last played"
     //   observation compares the beaten list against her own copy of it, so the win has to
@@ -1160,20 +1491,193 @@ body_class: theme-hall
     var first = ov.querySelector('.pt-promo-b'); if (first) first.focus();
   }
 
+  /* ══ THE ANALYSIS BOARD, DURING THE GAME ══════════════════════════════════════════
+     2026-08-18, Nate: *"the analysis board DOES exist, but only at end-of-game. I want it
+     available in game as well (this analysis board does not tell you if a move is good or
+     bad, it simply lets you experiment with the position. Do it like chess.com where the
+     background changes slightly so you know you are in analysis mode, then add a button
+     for back-to-game)."*
+
+     ⚠⚠ THIS IS NOT `PJCCAnalysis`, AND THE DIFFERENCE IS THE ENTIRE POINT. That module
+     is a Stockfish overlay with an eval bar and a best line, and the file's own header
+     carries the rule in capitals: never open it over a game in progress, because an engine
+     beside a live board is cheating dressed as a feature. That rule is untouched — the
+     ⚗ button on a FINISHED board still opens it, and nothing here boots a worker, reads
+     a score, or draws an arrow it did not compute from the rules.
+
+     What this is instead is the position, unlocked: both colors movable, take a move back,
+     put it all back. It answers "what happens if I go there" and refuses to answer "is that
+     good", which is exactly the line he drew. A player can already work that out on a real
+     board by picking a piece up and putting it back; all this does is spare them holding
+     the position in their head.
+
+     ⭐ ONE BOARD, TWO MODES — not a second board. `botLab` is a move list and nothing
+     else, and every pixel of the sandbox comes out of botRender drawing the game's own board
+     from it. That is why the orientation, the wood, the scoresheet, the nameplates and the
+     material chips are right in here without a line of code saying so, and why they cannot
+     drift apart later ([[one-fix-every-instance]]).
+
+     `base`  the game's real move list, frozen the moment you stepped in — the floor that
+             Take back cannot go below, and what Reset returns you to.
+     `moves` base plus whatever you have been trying. */
+  var botLab = null;
+
+  /* ⚠⚠ THE FLAG IS SET ON THE FIRST MOVE, NOT ON THE DOOR, and that is a decision
+     rather than leniency. An analysis board with nothing played on it shows the identical
+     position to the one already on screen — there is no information in it the player did
+     not already have. The help begins when a piece moves. Opening the sandbox, looking, and
+     backing out therefore costs nothing, which also means a mis-tap cannot silently halve a
+     player's star with no way to undo it. */
+  function labPush(st, uci){
+    if (!botLab) return;
+    botLab.moves = (botLab.moves + ' ' + uci).trim();
+    if (!st.usedAn) { st.usedAn = 1; botSave(st); }
+  }
+
+  /* ══ THE TAKEBACK ═════════════════════════════════════════════════════════════════
+     His "mulligan button", named for what it is at a park table: you say "let me take that
+     back", and the person across from you lets you. Once.
+
+     ONE PER GAME, his call. It lifts your last move AND the reply it drew — two plies, so
+     you land back on your own move looking at the position you had before the blunder.
+     Lifting anything less would hand the board back with the regular's answer already on
+     it, which is not a takeback; it is a free extra move for them.
+
+     ⚠ MID-GAME ONLY, and the case this costs is the obvious one: being mated is exactly
+     when you want it. Un-finishing a game means un-telling Auston about it, and her ledger
+     is append-only by design — a result she has already reacted to cannot be withdrawn
+     without her memory going quietly wrong. So the button lives beside Resign and leaves
+     with the rest of the live controls. Chess.com draws the same line.
+     ⚠ THE ADAPTIVE DIAL KEEPS THE SAMPLE. `PJCCAdapt` has no un-note(), and one extra
+     evaluation inside a running median is noise — a rollback for it would be more
+     machinery than the error it corrects. */
+  function plyCount(mv){ return (mv || '').trim() ? (mv || '').trim().split(/\s+/).length : 0; }
+  function canMulligan(st, g){
+    if (!st || st.done || botThinking || botLab || st.usedMul) return false;
+    if (!g || !g.valid || g.result) return false;
+    if (g.S.turn !== sidePlayed(st)) return false;           // wait your turn
+    return plyCount(st.moves) >= 2;                          // …and there has to be a pair to lift
+  }
+  function botMulligan(){
+    var st = botCur; if (!st) return;
+    var g = M.replayGame(st.moves || '');
+    if (!canMulligan(st, g)) return;
+    if (!confirm('Take that move back? You get one a game, and it turns this game’s star into a quarter.')) return;
+    var list = st.moves.trim().split(/\s+/);
+    list.length = list.length - 2;
+    st.moves = list.join(' ');
+    st.usedMul = 1;
+    botSave(st);
+    /* Her mid-game line was said about a position that now never happened, and leaving it
+       over the board would have her commenting on a move nobody played. */
+    botSel = -1; botMid = null; botMidAt = 0;
+    botRender();
+  }
+
+  /* ══ WHAT THIS GAME IS WORTH, SAID WHILE IT IS STILL WINNABLE ═════════════════════
+     The star is only awarded at the end, but the player has to be able to see the price
+     BEFORE they pay it — otherwise the first time they learn a takeback costs something is
+     the moment it has already cost it. So the line appears the instant either flag is set
+     and stays for the rest of the game.
+     ⚠ ONE SENTENCE, SAID ONCE, and it neither apologizes nor lectures
+     ([[no-excuses-copy]]). It reports a fact about a star. */
+  function earnedLine(st){
+    /* ⚠ SHOWN INSIDE THE SANDBOX TOO, and that is the whole point of it being live: the
+       moment the flag flips is the moment the player is standing in the room that flipped
+       it, and a price they only read after walking back out is a price they already paid.
+       The wash says where you are; this says what being here costs. */
+    var tier = tierEarned(st);
+    /* ⚑ A WON GAME ALWAYS SAYS SO, CLEAN OR NOT (2026-08-18). The first cut of this only
+       spoke when an aid had been used, which meant the ONE moment the whole feature exists
+       for — you beat a regular with nothing but the board — was the one moment it said
+       nothing at all. A reward that is only ever mentioned when it has been reduced is a
+       penalty with a star drawn on it. Caught by looking at the finished board. */
+    if (st.done) {
+      if (!botWon(st)) return '';                    // nothing was earned; do not rub it in
+      var how = tier === 'quarter' ? 'a quarter, for the takeback.'
+              : tier === 'half'    ? 'a half, for the analysis board.'
+              : 'a full one, taken with nothing but the board.';
+      return '<p class="pt-earned pt-earned--won">' + starNode(sidePlayed(st), tier) +
+        ' ' + (sidePlayed(st) === 'w' ? 'White' : 'Black') + ' star earned: ' + how + '</p>';
+    }
+    // mid-game the line is a PRICE, so it only appears once there is one to state
+    if (!st.usedAn && !st.usedMul) return '';
+    return '<p class="pt-earned pt-earned--live">' + starNode(sidePlayed(st), tier) +
+      ' A win from here is worth ' +
+      (tier === 'quarter' ? 'a quarter star — you took a move back.'
+                          : 'a half star — the analysis board is in play.') + '</p>';
+  }
+
+  /* ══ THE BUTTON ROW ══════════════════════════════════════════════════════════════
+     Three rows in one function, because they are three states of the same row, and keeping
+     them in three places is how a control ends up existing in two of them and not the
+     third. Top to bottom: the sandbox, the live game, the finished game. */
+  function botTools(st, g, lab){
+    if (lab) {
+      var depth = plyCount(botLab.moves) - plyCount(botLab.base);
+      return '<button class="pjcc-btn" id="pt-lab-exit">← Back to the game</button> ' +
+        /* ⚠ "UNDO", NOT "TAKE BACK", AND THE DISTINCTION IS WORTH A WORD. The live board's
+           takeback is one a game and costs you three quarters of a star; this one is free,
+           unlimited and undoes a move that never happened. Two controls a tap apart wearing
+           the same verb is how somebody spends the expensive one meaning the cheap one. */
+        '<button class="pjcc-btn-ghost" id="pt-lab-undo"' + (depth ? '' : ' disabled') +
+          '>↶ Undo</button> ' +
+        '<button class="pjcc-btn-ghost" id="pt-lab-reset"' + (depth ? '' : ' disabled') +
+          '>⟲ Reset the position</button>';
+    }
+    if (!st.done) {
+      /* ⚠ THE ANALYSIS DOOR IS OPEN MID-GAME NOW — but it is THIS door, the engine-free
+         one. The ⚗ button below, on the finished board, is still the Stockfish overlay
+         and is still drawn nowhere else. Two rooms, deliberately wearing one label, because
+         to the player they are the same idea and only one of them can ever be on screen. */
+      var mull = st.usedMul
+        ? '<button class="pjcc-btn-ghost" disabled>↶ Taken back</button> '
+        : (canMulligan(st, g)
+            ? '<button class="pjcc-btn-ghost" id="pt-bot-mull">↶ Take it back</button> '
+            : '<button class="pjcc-btn-ghost" disabled>↶ Take it back</button> ');
+      return '<button class="pjcc-btn-ghost" id="pt-bot-lab"' + (botThinking ? ' disabled' : '') +
+               '>⚗ Analysis board</button> ' + mull +
+        '<button class="pjcc-btn-ghost pt-resign" id="pt-bot-resign">Resign</button>';
+    }
+    return ((window.PJCCReview && PJCCReview.enabled() && (st.moves || '').trim())
+             ? '<button class="pjcc-btn" id="pt-bot-review">🔍 Review this game</button> ' : '') +
+      // ⚠ THE STOCKFISH BOARD, FINISHED GAMES ONLY — unchanged, and the rule it obeys is
+      //   in pjcc-analysis.js's own header. The mid-game door above is a different object.
+      ((window.PJCCAnalysis && PJCCAnalysis.available())
+        ? '<button class="pjcc-btn-ghost" id="pt-bot-analyse">⚗ Analysis board</button> ' : '') +
+      '<button class="pjcc-btn" id="pt-bot-again">Play again</button> ' +
+      '<button class="pjcc-btn-ghost" id="pt-bot-swap">' +
+        (sidePlayed(st) === 'w' ? '⬛ Play Black' : '⬜ Play White') + '</button>';
+  }
+
   function botRender(){
     var st = botCur; if (!st) return;
-    var bot = BOTS[st.bot], g = M.replayGame(st.moves || '');
+    var lab = botLab;                                   // non-null = you are in the sandbox
+    var white = sidePlayed(st) === 'w';                 // which way the board faces
+    var bot = BOTS[st.bot], g = M.replayGame(lab ? lab.moves : (st.moves || ''));
     /* ⚠ exitRoom() BEFORE safeRoute() — a corrupt save is the one case that has to put
        you back on your feet, and route() now stands down while you are seated. Without
-       this the unreadable board would simply stay on screen. */
-    if (!g.valid) { botCur = null; try { localStorage.removeItem(BOT_KEY); } catch (e) {} exitRoom(); return safeRoute(); }
+       this the unreadable board would simply stay on screen.
+       ⚠ THE SANDBOX CANNOT CONDEMN THE SAVE. Its move list is the real game plus moves
+       this file just proved legal, so an invalid replay there is a bug in the sandbox, not
+       a corrupt board — drop the experiment and put the player back on their own game
+       rather than deleting a game they were winning. */
+    if (!g.valid) {
+      if (lab) { botLab = null; return botRender(); }
+      botCur = null; try { localStorage.removeItem(BOT_KEY); } catch (e) {} exitRoom(); return safeRoute();
+    }
     var S = g.S;
-    if (!st.done && g.result) botFinish(st, g);
-    var myTurn = !st.done && !botThinking && S.turn === 'w';
+    if (!lab && !st.done && g.result) botFinish(st, g);
+    /* In the sandbox every piece on the board is yours to push, either color, until the
+       line you are trying reaches an ending. In the game it is the side you sat down on. */
+    var myTurn = lab ? !g.result : (!st.done && !botThinking && S.turn === sidePlayed(st));
 
     var state;
-    if (st.done) {
-      var iWon = st.result === '1-0';
+    if (lab) {
+      state = 'Analysis — move either side. Nothing here counts.';
+    }
+    else if (st.done) {
+      var iWon = botWon(st);
       state = 'Finished: ' + st.result + ' · ' + esc(st.reason || '') +
         (st.result === '1/2-1/2' ? '' : iWon ? ' — you win.' : ' — ' + esc(bot.name) + ' wins.');
     }
@@ -1198,7 +1702,10 @@ body_class: theme-hall
        move and the farewell still owns the finished board; between them sits `botMid`,
        which `botThink` fills at most three times a game. Read here, never computed here —
        `midGame()` counts what it has already said, and botRender runs on every tap. */
-    var says = st.done ? botBye : ((st.moves || '').trim() ? botMid : botSay);
+    /* ⚠ SHE DOES NOT TALK OVER THE SANDBOX. Her three moments are about the game being
+       played; a line reacting to a position you invented is her being visibly wrong about
+       what is happening. The bubble comes back, unchanged, the moment you go back. */
+    var says = lab ? null : (st.done ? botBye : ((st.moves || '').trim() ? botMid : botSay));
     var bubble = says ? sayBubble(st.bot, says.text, st.done) : '';
 
     // legal-move dots for the selected piece — capture squares get the dot too
@@ -1207,16 +1714,22 @@ body_class: theme-hall
       var lm = C.legalMoves(S);
       for (var h = 0; h < lm.length; h++) if (lm[h].from === botSel) hints[lm[h].to] = 1;
     }
-    var last = lastMove(st.moves);
+    var last = lastMove(lab ? lab.moves : st.moves);
+    /* THE BOARD TURNS AROUND WHEN YOU DO (2026-08-18). Same two-coordinate walk the live
+       tables have always used: `vr`/`vf` step down the SCREEN, `r`/`f` are the true square
+       the piece is on, and playing Black reverses the mapping between them. Everything
+       downstream — the coordinate letters, the last-move arrow, the material chips — reads
+       the true square, so there is exactly one place the flip happens and it is here. */
     var rows = '';
-    for (var r = 0; r < 8; r++) {
-      for (var f = 0; f < 8; f++) {
-        var i = r * 8 + f, p = S.b[i];
+    for (var vr = 0; vr < 8; vr++) {
+      for (var vf = 0; vf < 8; vf++) {
+        var r = white ? vr : 7 - vr, f = white ? vf : 7 - vf, i = r * 8 + f;
+        var p = S.b[i];
         rows += '<button class="pt-sq ' + (((r + f) % 2 === 0) ? 'lt' : 'dk') + (i === botSel ? ' sel' : '') +
           (i in hints ? ' hint' : '') + lastCls(last, i) +
           '" data-bsq="' + i + '"' + (myTurn ? '' : ' tabindex="-1"') + '>' +
           (p ? pcNode(p) : '') +
-          coCells(r === 7, f === 0, f, r) + '</button>';
+          coCells(vr === 7, vf === 0, f, r) + '</button>';
       }
     }
     var mvs = moveRows(g.sans);
@@ -1227,10 +1740,19 @@ body_class: theme-hall
     var prof = PJCC.getProfile();
     app.innerHTML =
       '<div class="pt-table-head"><button class="pjcc-btn-ghost" id="pt-back">← The park</button>' +
-      '<i class="pt-row-chips">Casual · ' + esc(bot.diff) + ' bot · no clock</i></div>' +
-      '<p class="pt-state' + (myTurn ? ' go' : '') + '">' + state + '</p>' +
+      '<i class="pt-row-chips">Casual · ' + esc(bot.diff) + ' bot · no clock · you are ' +
+        (white ? 'White' : 'Black') + '</i></div>' +
+      /* THE ROOM CHANGES COLOR, which is the whole of how you know where you are (his
+         brief: *"like chess.com where the background changes slightly so you know you are
+         in analysis mode"*). One class on one wrapper, cooling the wood and laying a wash
+         over the arena — slight, because a board you cannot read is not a study aid. */
+      (lab ? '<p class="pt-lab-bar">⚗ Analysis — you are off the game. ' +
+             'Push the pieces around; the real board is waiting where you left it.</p>' : '') +
+      '<p class="pt-state' + (myTurn && !lab ? ' go' : '') + (lab ? ' pt-state--lab' : '') + '">' + state + '</p>' +
+      estimateLine(st, lab) +
       bubble +
-      openingCap(st.moves) +
+      earnedLine(st) +
+      openingCap(lab ? lab.moves : st.moves) +
       // board (with its nameplates) LEFT, the scoresheet RIGHT (2026-07-17 Nate:
       // "notation should be to the right of the game") — .pt-arena stacks on phones
       // the streaks BRACKET the whole arena — plate, board, plate — so the pair reads as
@@ -1243,27 +1765,25 @@ body_class: theme-hall
            merely being on. The `pt-plate-rate--live` class is what animates the change. */
         '<div class="pt-plate">' + bot.icon + ' <b>' + esc(bot.name) + '</b>' +
           ' <i class="pt-plate-rate' + (bot.adaptive ? ' pt-plate-rate--live' : '') + '">(' +
-            botElo(bot) + ' · ' + esc(bot.diff) + ')</i>' + matChip(S, false) + '</div>' +
+            botElo(bot) + ' · ' + esc(bot.diff) + ')</i>' + matChip(S, !white) + '</div>' +
+        /* The arrow marks the move you did NOT make — you know what you just did. In the
+           sandbox it marks whatever was played last, either color, because in there
+           nothing is "yours" and the last move is the one you are looking at. */
         '<div class="pt-board" role="grid" aria-label="Chess board">' + rows +
-          (last && last.mover === 'b' ? arrowSVG(last, true) : '') + '</div>' +
-        '<div class="pt-plate pt-plate--me">⬜ <b>' + esc((prof && prof.codename) || 'You') + '</b>' +
-          (myRate ? ' <i class="pt-plate-rate">(' + myRate.rating + ')</i>' : '') + matChip(S, true) + '</div>' +
+          (last && (lab || last.mover !== sidePlayed(st)) ? arrowSVG(last, white) : '') + '</div>' +
+        '<div class="pt-plate pt-plate--me">' + (white ? '⬜' : '⬛') +
+          ' <b>' + esc((prof && prof.codename) || 'You') + '</b>' +
+          (myRate ? ' <i class="pt-plate-rate">(' + myRate.rating + ')</i>' : '') + matChip(S, white) + '</div>' +
         auraBar(auraHex(prof), -1) +
       '</div>' +
       '<div class="pt-moves">' + (mvs || '<span class="pjcc-sub">No moves yet.</span>') + '</div></div>' +
       '<div id="pt-replay"></div>' +
-      '<div class="pt-tools">' +
-        (st.done
-          ? ((window.PJCCReview && PJCCReview.enabled() && (st.moves || '').trim())
-              ? '<button class="pjcc-btn" id="pt-bot-review">🔍 Review this game</button> ' : '') +
-            // ⚠ FINISHED GAMES ONLY. An engine beside a live board is cheating with a nice
-            //    icon on it, so the analysis door is drawn inside the `st.done` branch and
-            //    nowhere else.
-            ((window.PJCCAnalysis && PJCCAnalysis.available())
-              ? '<button class="pjcc-btn-ghost" id="pt-bot-analyse">⚗ Analysis board</button> ' : '') +
-            '<button class="pjcc-btn" id="pt-bot-again">Play again</button>'
-          : '<button class="pjcc-btn-ghost pt-resign" id="pt-bot-resign">Resign</button>') +
+      '<div class="pt-tools">' + botTools(st, g, lab) +
       '</div>';
+    /* THE WASH LIVES ON THE HOST, NOT IN THE MARKUP. `app.innerHTML` is rewritten on every
+       render but the element's own class survives it, so one toggle here re-skins the wood,
+       the frame and the surround together and no branch downstream has to remember to. */
+    app.classList.toggle('pt-in-lab', !!lab);
 
     // ⚠ safeRoute(), not lobby(). A signed-out visitor can now be sitting at a bot board
     //    (the bot gate), and lobby() reads PJCC.getProfile().codename — it would throw.
@@ -1274,13 +1794,50 @@ body_class: theme-hall
       if (leaveRoom()) return;
       botCur = null; botSeq++; safeRoute();
     };
+    /* A rematch keeps the chair you are in; "Other side" is the one that turns the board
+       around. Two buttons instead of a second trip through the side sheet — the rematch is
+       the most-tapped control on this page and it stays a single tap. */
     var ag = document.getElementById('pt-bot-again');
-    if (ag) ag.onclick = function(){ try { localStorage.removeItem(BOT_KEY); } catch (e) {} botStart(st.bot); };
+    if (ag) ag.onclick = function(){ try { localStorage.removeItem(BOT_KEY); } catch (e) {} botStart(st.bot, sidePlayed(st)); };
+    var sw = document.getElementById('pt-bot-swap');
+    if (sw) sw.onclick = function(){
+      var other = sidePlayed(st) === 'w' ? 'b' : 'w';
+      saveSidePref(other);
+      try { localStorage.removeItem(BOT_KEY); } catch (e) {}
+      botStart(st.bot, other);
+    };
     var an = document.getElementById('pt-bot-analyse');
     if (an) an.onclick = function(){
-      PJCCAnalysis.open({ moves: st.moves || '',
-        subtitle: 'You vs ' + bot.name + ' · ' + (st.result || '') });
+      var meName = (prof && prof.codename) || 'You';
+      PJCCAnalysis.open({ moves: st.moves || '', flip: !white,
+        subtitle: (white ? meName + ' vs ' + bot.name : bot.name + ' vs ' + meName) +
+                  ' · ' + (st.result || '') });
     };
+    /* ── IN, AND BACK OUT ──────────────────────────────────────────────────────────
+       The sandbox is the SAME board in a different mode, not an overlay over it: the
+       position, the scoresheet, the nameplates and the orientation are the ones already
+       on screen, and the only things that change are the wash, who may move, and this
+       row of buttons. That is what makes "back to the game" a real place to come back to.
+       ⚠ The flag is NOT set here — see labPush(). */
+    var lb = document.getElementById('pt-bot-lab');
+    if (lb) lb.onclick = function(){
+      botLab = { base: st.moves || '', moves: st.moves || '' };
+      botSel = -1; botRender();
+    };
+    var lx = document.getElementById('pt-lab-exit');
+    if (lx) lx.onclick = function(){ botLab = null; botSel = -1; botRender(); };
+    var lr = document.getElementById('pt-lab-reset');
+    if (lr) lr.onclick = function(){ if (botLab) botLab.moves = botLab.base; botSel = -1; botRender(); };
+    var lu = document.getElementById('pt-lab-undo');
+    if (lu) lu.onclick = function(){
+      if (!botLab) return;
+      var list = botLab.moves.trim() ? botLab.moves.trim().split(/\s+/) : [];
+      var floor = botLab.base.trim() ? botLab.base.trim().split(/\s+/).length : 0;
+      if (list.length > floor) { list.length = list.length - 1; botLab.moves = list.join(' '); }
+      botSel = -1; botRender();
+    };
+    var mu = document.getElementById('pt-bot-mull');
+    if (mu) mu.onclick = function(){ botMulligan(); };
     var rv = document.getElementById('pt-bot-review');
     if (rv) rv.onclick = function(){
       /* ⭐ RATINGS TOO (2026-08-14, Nate: "can we put a rating on the game review for each
@@ -1293,14 +1850,22 @@ body_class: theme-hall
          for a single move of it. `settled()` is the median of the second half — the
          strength the game was actually contested at. */
       var oppElo = (bot.adaptive && botAdapt) ? botAdapt.settled() : bot.elo;
-      PJCCReview.open(st.moves, { whiteName: (prof && prof.codename) || 'You', blackName: bot.name,
-                                  whiteRating: prof && prof.pjcc_rating, blackRating: oppElo,
+      // ⚠ THE NAMES FOLLOW THE PIECES, not the players. The review labels its two columns
+      //   White and Black, so sitting on the black side swaps every one of these four.
+      var meName = (prof && prof.codename) || 'You', myElo = prof && prof.pjcc_rating;
+      PJCCReview.open(st.moves, { whiteName: white ? meName : bot.name,
+                                  blackName: white ? bot.name : meName,
+                                  whiteRating: white ? myElo : oppElo,
+                                  blackRating: white ? oppElo : myElo,
                                   result: st.result });
     };
     var rs = document.getElementById('pt-bot-resign');
     if (rs) rs.onclick = function(){
       if (!confirm('Resign this game?')) return;
-      st.done = 1; st.result = '0-1'; st.reason = 'resignation'; botSave(st);
+      // ⚠ THE RESULT IS IN PGN TERMS, so resigning as Black is 1-0, not 0-1. Hard-coded
+      //   '0-1' was correct for exactly as long as every bot board was played from White.
+      st.done = 1; st.result = (sidePlayed(st) === 'w' ? '0-1' : '1-0');
+      st.reason = 'resignation'; botSave(st);
       // ⚠ RESIGNING NEVER TOUCHES botFinish, so it needs its own log call or the one
       //   result Auston has the most to say about ("last time you resigned") is the one
       //   game she would never hear about.
@@ -1316,27 +1881,40 @@ body_class: theme-hall
   }
 
   function botTap(i){
-    var st = botCur; if (!st || st.done || botThinking) return;
-    var g = M.replayGame(st.moves || ''), S = g.S;
-    if (S.turn !== 'w') return;
-    var mine = S.b[i] && S.b[i] === S.b[i].toUpperCase();
+    var st = botCur; if (!st) return;
+    var lab = botLab;
+    if (!lab && (st.done || botThinking)) return;
+    var g = M.replayGame(lab ? lab.moves : (st.moves || '')), S = g.S;
+    if (lab && g.result) return;                       // the line you were trying is over
+    /* ⚠ WHOSE PIECES ARE PICKABLE. In the game, only the side you sat down on, and only
+       on your turn. In the sandbox, whichever side is to move — that is the whole feature,
+       and it is why `mine` cannot stay the old "is this glyph upper case" test. */
+    if (!lab && S.turn !== sidePlayed(st)) return;
+    var mine = !!S.b[i] && C.colorOf(S.b[i]) === S.turn;
     if (botSel === -1 || mine) { botSel = mine ? i : -1; return botRender(); }
     var from = botSel;
     var mv = C.findMove(S, from, i, null);
     if (!mv) { botSel = -1; return botRender(); }
     botSel = -1;
-    if (mv.promo) {                                     // last-rank pawn → ask which piece (you're White)
-      return promptPromotion(true, function(choice){
+    if (mv.promo) {                                     // last-rank pawn → ask which piece
+      // ⚠ THE DIALOG WEARS THE MOVING SIDE'S LIVERY, which is no longer always White:
+      //   the side to move is the one promoting, in the game and in the sandbox alike.
+      return promptPromotion(S.turn === 'w', function(choice){
         if (!choice) return botRender();               // dismissed — the move is abandoned
         var pm = C.findMove(S, from, i, choice);
-        botCommitMove(st, from, i, pm || mv);
+        botCommitMove(st, from, i, pm || mv, lab);
       });
     }
-    botCommitMove(st, from, i, mv);
+    botCommitMove(st, from, i, mv, lab);
   }
 
-  function botCommitMove(st, from, to, mv){
+  function botCommitMove(st, from, to, mv, lab){
     var uci = C.nameFromSq(from) + C.nameFromSq(to) + (mv.promo ? mv.promo.toLowerCase() : '');
+    /* ⚠⚠ A SANDBOX MOVE NEVER TOUCHES `st.moves`, AND NOTHING DOWNSTREAM OF IT RUNS.
+       No save of the game, no result, no botFinish, and above all no botThink — the
+       regular is not sitting there answering moves in a position that is not the game.
+       The one thing it does write is the flag, because that is a fact about this game. */
+    if (lab) { labPush(st, uci); return botRender(); }
     st.moves = ((st.moves || '') + ' ' + uci).trim();
     botSave(st);
     var g2 = M.replayGame(st.moves);
@@ -1446,7 +2024,7 @@ body_class: theme-hall
           '<span class="pt-card-t">Open a table<br><i>Anyone can sit down.</i></span></button></div>';
 
         // the park regulars — three bots, always seated, instant game (Argus/Auston/Father)
-        if (botsReady()) html += '<h2 class="pt-h">Play a Bot</h2>' + botsPanel();
+        if (botsReady()) html += '<h2 class="pt-h">Play a Bot</h2>' + botsPanel() + austonPanel();
 
         // Drop any dead "vs myself" table — an old challenge with no possible opponent.
         // A self-match is EITHER both seats being you, OR a "Challenge McPuppy" table the
@@ -1774,11 +2352,11 @@ body_class: theme-hall
         auraBar(auraByName[oppName] || '#cdbcf2', 1, 'pt-aura-opp') +
         /* ⚠ ONLY WHEN THERE IS SOMEBODY THERE. `oppName` doubles as a status string on an
            unfilled table ("waiting for a challenger…", "McPuppy (not seated yet)"), and a
-           gift button on a sentence would send credits to a codename that does not exist.
+           card opened on a sentence would go looking for a codename that does not exist.
            A seat is real only once the match is past `open`. */
         '<div class="pt-plate">' + (white ? '⬛' : '⬜') + ' <b>' +
-          ((giftsOn && m.status !== 'open' && oppName && oppName.indexOf('…') < 0 && oppName.indexOf('(') < 0)
-            ? '<button class="lb-gift" data-gift="' + esc(oppName) + '" aria-label="Send credits to ' +
+          ((m.status !== 'open' && oppName && oppName.indexOf('…') < 0 && oppName.indexOf('(') < 0)
+            ? '<button class="lb-gift" data-gift="' + esc(oppName) + '" aria-label="Open the file on ' +
               esc(oppName) + '">' + esc(oppName) + '</button>'
             : esc(oppName)) + '</b>' +
           (oppR ? ' <i class="pt-plate-rate">' + esc(oppR) + '</i>' : '') + matChip(S, !white) + '</div>' +
@@ -2158,6 +2736,50 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
 @media (prefers-reduced-motion: reduce) { .pt-seat { transition: none; } .pt-seat:hover { transform: none; } }
 
 .pt-h { color: #F5C518; font-size: 1rem; margin: 20px 0 8px; }
+/* ══ THE SEAT THAT IS NOT A RUNG (2026-08-19) ═══════════════════════════════════════════
+   Auston's own block, under the ladder. It has to read as a DIFFERENT KIND of seat and not
+   as a louder one: she is the easiest chair on the bench to sit in, not a boss at the end.
+   ⚠ So the heading is the sub-label color, NOT the gold every other .pt-h wears. Gold here
+   would make the last thing on the page the most important-looking, which is the opposite
+   of true — and it would compete with the eight rungs above it that are the actual ladder. */
+.pt-h--adapt { color: #b9c0cb; font-size: 0.78rem; letter-spacing: 2px; text-transform: uppercase;
+               margin: 26px 0 4px; }
+.pt-adapt-note { color: #8b93a1; font-size: 0.85rem; margin: 0 0 12px; max-width: 40em; }
+/* ⚠ ONE CARD MUST NOT GROW TO THE WIDTH OF FOUR. `.pt-card` is `flex: 1 1 140px`, which is
+   right for a row of eight and absurd for a row of one — the first render stretched Auston's
+   seat clear across the column and it read as a banner rather than as a chair. `flex-grow: 0`
+   with the same basis lands her card exactly the size of the rungs above it, which is the
+   point: a different KIND of seat, not a bigger one. Caught in a screenshot; no assertion
+   about the panel would have noticed. */
+.pt-bots--adapt { justify-content: center; }
+/* ⚠⚠ `.pt-open-park .pt-bots .pt-card` IS (0,3,0) AND THIS HAS TO OUT-SPECIFY IT. The first
+   attempt was `.pt-bots--adapt .pt-card` — (0,2,0) — which loses to the signed-out lobby's
+   `flex: 1 1 120px` and left Auston's single card stretched across the whole 560px column,
+   reading as a banner rather than as a chair. Both selectors are written out so the rule
+   wins in BOTH lobbies rather than only in the signed-in one.
+   ⭐ AND THE FIX WAS ONLY EVER GOING TO BE VISIBLE IN A RENDER: the declaration was there,
+   spelled correctly, applying to the right element, and doing nothing.
+   [[text-clip-glyph-technique]] */
+.pt-bots--adapt .pt-card,
+.pt-open-park .pt-bots--adapt .pt-card { flex: 0 1 200px; }
+
+/* ══ WHERE YOU LANDED — the adaptive seat's parting number ══════════════════════════════
+   Sits directly under the result line on a finished game. Deliberately quiet chrome around
+   one loud number: the band and the caveat are as much of the message as the figure is, and
+   a big number with small print beside it is how every dishonest rating estimate on the
+   internet is laid out. The number is emphasized; the sentence around it is not shrunk. */
+.pt-est { margin: 8px 0 14px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 9px;
+          padding: 11px 14px; border-radius: var(--r-sm);
+          background: rgba(107,255,184,0.07); border: 1px solid rgba(107,255,184,0.28); }
+.pt-est-lab  { color: #b9c0cb; font-size: 0.85rem; }
+.pt-est-n    { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.5rem;
+               color: #6bffb8; line-height: 1; font-variant-numeric: tabular-nums; }
+.pt-est-band { color: #b9c0cb; font-size: 0.85rem; }
+/* ⚠ THE CAVEAT IS NOT FINE PRINT. It takes the whole width so it reads as a sentence rather
+   than as a disclaimer tucked behind the number it qualifies. */
+.pt-est-note { flex-basis: 100%; color: #8b93a1; font-size: 0.78rem; margin-top: 2px; }
+.pt-est--short { display: block; color: #b9c0cb; font-size: 0.85rem;
+                 background: none; border: 0; padding: 0; }
 .pt-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%;
   background: var(--surface-2); border: 1px solid var(--edge-soft); border-radius: var(--r-sm);
   padding: 12px 14px; margin: 6px 0; color: #dfe4ea; font-family: inherit; font-size: 0.92rem;
@@ -2427,5 +3049,107 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
   border-radius: 999px; padding: 7px 12px; font-family: inherit; font-size: 0.78rem; cursor: pointer; }
 .pt-emote:hover { border-color: #F5C518; color: #F5C518; }
 .pt-resign { font-size: 0.8rem; }
+/* ── THE STARS (2026-08-18) ────────────────────────────────────────
+   A faint outline star is always drawn; a filled one sits exactly on top of it inside a box
+   the tier clips. Three shapes out of one path and two elements.
+
+   ⭐ NO SVG IDS. `clipPath`/`mask` would each need an id unique across the page, and the
+   bench draws sixteen of these at once plus two more on the side sheet — eighteen chances
+   to collide, in a room that also hosts the review's and the analysis board's own SVG. A
+   `clip-path: inset()` on the plain wrapper is one line, cannot collide, and clips the
+   filled copy at the same box the outline occupies.
+   ⚠ THE OUTLINE IS NEVER CLIPPED. It is the empty slot — the shape of what is missing is
+   the only reason a half star reads as half rather than as a smaller star. */
+.pt-star { position: relative; display: inline-block; width: 1em; height: 1em;
+  vertical-align: -0.12em; flex: none; }
+.pt-star svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.pt-star > svg path { fill: none; stroke: rgba(245,197,24,0.26); stroke-width: 1.4;
+  stroke-linejoin: round; }
+.pt-star-f { position: absolute; inset: 0; display: block; }
+.pt-star--half    .pt-star-f { clip-path: inset(0 50% 0 0); }
+.pt-star--quarter .pt-star-f { clip-path: inset(50% 0 0 50%); }
+.pt-star--none    .pt-star-f { display: none; }
+/* ⭐⭐ THE STAR WEARS THE LIVERY OF THE PIECES THAT WON IT, and that is not decoration —
+   it is the only thing that makes "white star / black star" legible at card size.
+
+   ⚠ THE FIRST VERSION PAINTED THE BLACK STAR BLACK, and a render said no: on a charcoal
+   card, a near-black shape reads as a HOLE, and at 1em it was barely distinguishable from
+   the empty slot beside it. The fix was not to invent a color but to look at what the site
+   already calls black — every board here draws the black army in the canon's PURPLE
+   (`--piece-b-fill`), and the player has just spent a whole game pushing those pieces
+   around. Wearing their color makes the star instantly a filled object, instantly the other
+   side, and instantly the same world as the board it came from. [[chess-visual-canon]]
+   ⚠ Tokens, never hexes: retint the canon and these follow, the way every other board on
+   the site does. The fallbacks are the canon's own values, for a page that loads without
+   the stylesheet. */
+.pt-star--w .pt-star-f path { fill: var(--piece-w-fill, #ffffff); stroke: #F5C518;
+  stroke-width: 1.3; stroke-linejoin: round; }
+.pt-star--b .pt-star-f path { fill: var(--piece-b-fill, #4a3585);
+  stroke: var(--piece-b-line, #f2e9ff); stroke-width: 1.3; stroke-linejoin: round; }
+/* the pair on a bench card, riding after the name */
+.pt-stars { display: inline-flex; gap: 3px; margin-left: 7px; font-size: 0.92em;
+  vertical-align: baseline; }
+/* on the side sheet the star sits after the word White / Black */
+.pt-side .pt-star { margin-left: 7px; font-size: 0.95em; }
+
+/* ── WHICH SIDE (2026-08-18) ────────────────────────────────────────
+   Re-uses .pt-seat, the same row the three tables use — the question is the same shape
+   ("pick one of these and sit down"), so it should not look like a different kind of screen.
+   `.on` marks what you chose last time; it is a memory, not a default that decides for you. */
+.pt-side.on { border-color: #F5C518; background: rgba(245,197,24,0.06); }
+.pt-side .pt-seat-t b { display: flex; align-items: center; }
+
+/* ── THE ANALYSIS BOARD, MID-GAME (2026-08-18) ────────────────────────────────────────
+   His brief: *"like chess.com where the background changes slightly so you know you are in
+   analysis mode"*. SLIGHTLY is the operative word and the reason none of this is loud --
+   the wood cools toward slate and the surround takes a thin blue wash, so the room is
+   plainly a different room while the position stays exactly as readable as it was.
+   ⚠ RETINT THE TOKENS, NOT THE SQUARES. `--chess-lt/dk/frame` are the canon variables
+   every board on the site draws from, so overriding the three of them here re-skins the
+   squares, their grain, the coordinate letters (which are painted in the OPPOSITE wood) and
+   the frame in one place. Restyling `.pt-sq` directly would have left the coordinates
+   reading in walnut on slate. [[chess-visual-canon]] */
+.pt-in-lab .pt-board { --chess-lt: #d3dae6; --chess-dk: #7d8ba6; --chess-frame: #38445c; }
+/* ⚠⚠ THE WASH MUST NOT COST THE BOARD A PIXEL, and the first version did. Padding and a
+   border on this wrapper are INSIDE its width (border-box), so entering analysis shrank the
+   board 700→682 on a desktop and 390→364 on a phone — measured, not guessed. A board that
+   changes size when you toggle a mode re-lays every piece under the thumb that just tapped,
+   which reads as a glitch rather than a mode. `box-shadow` paints the same halo and takes
+   NO layout space, so the position is pixel-identical either side of the button.
+   [[measure-the-real-page]] */
+.pt-in-lab .pt-boardwrap { background: rgba(125,155,205,0.09); border-radius: 12px;
+  box-shadow: 0 0 0 11px rgba(125,155,205,0.09), 0 0 0 12px rgba(140,175,225,0.22); }
+.pt-lab-bar { display: flex; gap: 8px; align-items: baseline; margin: 8px 0 2px;
+  padding: 9px 13px; border-radius: 10px; font-size: 0.86rem; line-height: 1.55;
+  color: #cfe0f5; background: rgba(125,155,205,0.13);
+  border: 1px solid rgba(140,175,225,0.30); }
+.pt-state--lab { color: #9fc0e6; }
+
+/* ── WHAT THE GAME IS WORTH ────────────────────────────────────────
+   Shown the moment either aid is used and for the rest of the game, so the price is
+   readable BEFORE it is paid. Quiet: it is a receipt, not a warning. */
+.pt-earned { display: flex; align-items: center; gap: 7px; margin: 6px 0 8px;
+  font-size: 0.84rem; color: #b9c0cb; }
+.pt-earned .pt-star { font-size: 1.15rem; }
+.pt-earned--live { color: #9aa3b0; }
+/* the moment it is actually won reads warmer than the running price does */
+.pt-earned--won { color: #e4d7ad; font-size: 0.92rem; }
+.pt-earned--won .pt-star { font-size: 1.45rem; }
+
+/* ⚠ A DISABLED CONTROL HAS TO LOOK SHUT. `.pjcc-btn-ghost` carries no disabled treatment
+   anywhere on the site, so all three of the ones in this row — Undo and Reset with nothing
+   to undo, and the takeback before there is a pair to lift — rendered indistinguishable
+   from live buttons. Caught by looking at the render, not by a selector. Scoped to this row
+   rather than to `.pjcc-btn-ghost` site-wide, which is a change with a much longer blast
+   radius than this feature earns.
+   A used-up control STAYS PUT rather than vanishing: a button that disappears takes the
+   explanation of why with it, and the row would reflow under a thumb mid-game. */
+.pt-tools button:disabled { opacity: 0.42; cursor: not-allowed; }
+.pt-tools button:disabled:hover { border-color: var(--edge-soft); }
+/* four controls can ride this row now (review - analysis - rematch - other side), so it
+   wraps with air instead of stacking flush */
+.pt-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.pt-tools .pt-emotes { flex-basis: 100%; margin-bottom: 2px; }
+
 @media (pointer: coarse) { .pt-emote { padding: 11px 14px; } .pt-pill { padding: 11px 15px; } }
 </style>

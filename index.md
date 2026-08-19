@@ -282,13 +282,22 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
     <div class="mc-bench">
       <p class="mc-bench-h">Who's at the tables</p>
       <ul class="mc-bench-row">
+        {%- comment -%} ⚑⚑ ONE SEAT PRINTS A WORD WHERE THE OTHERS PRINT A NUMBER (2026-08-19).
+             Nate moved Auston off the ladder — "they are not necessarily 1200 but completely
+             adaptive" — and `adaptive: true` in `_data/regulars.yml` is what says so here.
+             ⚠ HER 1200 IS STILL IN THE DATA FILE and must never be printed: it is the dial's
+             invisible SEED, kept only so the gate can compare this file field-for-field
+             against the real BOTS object. Rendering `{{ r.elo }}` for her would put a rating
+             on the one seat whose whole point is that it does not have one — and it would be
+             a number no game will ever play at. The `title` has to branch too, or the hover
+             text says "rated 1200" over a cell that says Adapts. {%- endcomment -%}
         {%- for r in open_seats -%}
         <li class="mc-bench-seat">
           <a href="{{ '/games/park-tables/' | relative_url }}?table={{ r.key }}"
-             title="Sit down with {{ r.name }} — rated {{ r.elo }}">
+             title="{% if r.adaptive %}Sit down with {{ r.name }} — she finds your level{% else %}Sit down with {{ r.name }} — rated {{ r.elo }}{% endif %}">
             <span class="mc-bench-ico" aria-hidden="true">{{ r.icon }}&#xFE0E;</span>
             <span class="mc-bench-n">{{ r.name }}</span>
-            <span class="mc-bench-e">{{ r.elo }}</span>
+            <span class="mc-bench-e">{% if r.adaptive %}Adapts{% else %}{{ r.elo }}{% endif %}</span>
           </a>
         </li>
         {%- endfor -%}

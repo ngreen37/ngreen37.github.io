@@ -223,10 +223,29 @@ console.log('\n── AUSTON ─────────────────
      it belongs in botStart (sitting down) and must NEVER be called from botRender (every
      move). If it moves, she resets her memory to "now" on move one and notices nothing
      ever again — with no error, no crash, and a bot that just seems boring. */
-  const render = (ROOM.match(/function botRender\(\)\{[\s\S]*?\n  \}/) || [''])[0];
+  /* ⚠⚠ SLICED BETWEEN NAMED FUNCTIONS, NOT BY A LAZY BRACE MATCH. Both windows here
+     used to be `function foo(){[\\s\\S]*?\\n  }` — a non-greedy run to the first two-space
+     closing brace. Two things were wrong with that and one of them bit on 2026-08-18:
+       ⚠ it pins the SIGNATURE, so adding a parameter (`botStart(id, side)`, the side
+         picker) made the window empty and the check reported "botStart not found" while the
+         invariant it names was untouched;
+       ⚠ worse, an EMPTY window silently PASSES the negative check above it. "greet() is
+         not called from the render path" is trivially true of a zero-length string, so the
+         one assertion here that would destroy the feature silently could itself fail
+         silently. A gate whose failure mode is a false green is worse than no gate.
+     Sliced by the next function's name instead, and both windows are asserted non-empty. */
+  const slice = (from, to) => {
+    const a = ROOM.indexOf('function ' + from + '(');
+    const b = ROOM.indexOf('function ' + to + '(');
+    return (a > -1 && b > a) ? ROOM.slice(a, b) : '';
+  };
+  const render = slice('botRender', 'botTap');
+  const start = slice('botStart', 'markWin');
+  check('the harness can actually see both functions it is about to judge',
+    render.length > 400 && start.length > 400,
+    'botRender ' + render.length + ' chars · botStart ' + start.length + ' chars');
   check('greet() is NOT called from the render path', render.indexOf('PJCCAuston.greet') === -1,
     'it would reset her memory on every move');
-  const start = (ROOM.match(/function botStart\(id\)\{[\s\S]*?\n  \}/) || [''])[0];
   check('…it is called from botStart, where sitting down happens',
     /PJCCAuston\.speaks\(id\)/.test(start) && /botSay = PJCCAuston\.greet\(id\)/.test(start),
     start ? 'found in botStart (' + start.length + ' chars)' : 'botStart not found');

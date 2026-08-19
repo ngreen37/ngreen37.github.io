@@ -50,6 +50,11 @@ while ((m = entry.exec(botsBlock)) !== null) {
     name: name ? name[1] : null,
     elo: elo ? +elo[1] : null,
     icon: icon ? icon[1] : null,
+    /* ⚑ 2026-08-19 — the adaptive seat. It is a FOURTH thing that can disagree between the
+       game and the data file, and the disagreement is silent AND wrong in the worst
+       direction: if the YAML forgets the flag, the front door prints Auston's seed as a
+       rating. That number is invisible everywhere else on purpose. */
+    adaptive: /adaptive:\s*true/.test(body),
     open: !/locked:/.test(body)
   });
 }
@@ -93,6 +98,8 @@ for (let i = 0; i < Math.max(bots.length, rows.length); i++) {
   check('· ' + b.key + ' — icon', r.icon === b.icon, r.icon + ' vs ' + b.icon);
   check('· ' + b.key + ' — ' + (b.open ? 'open' : 'locked'), r.open === b.open,
         'data says ' + (r.open ? 'open' : 'locked') + ', the game says ' + (b.open ? 'open' : 'locked'));
+  check('· ' + b.key + ' — ' + (b.adaptive ? 'adaptive' : 'a fixed rung'), !!r.adaptive === b.adaptive,
+        'data says ' + (r.adaptive ? 'adaptive' : 'fixed') + ', the game says ' + (b.adaptive ? 'adaptive' : 'fixed'));
 }
 
 const openGame = bots.filter(b => b.open).length;
@@ -115,6 +122,25 @@ check('the front door filters the data file for open seats',
 check('the bench iterates the OPEN seats, not the whole roster',
       /\{%-?\s*for r in open_seats\s*-?%\}/.test(front),
       'looping site.data.regulars here would draw the locked rungs and disagree with the count');
+/* ══ THE ADAPTIVE SEAT PRINTS A WORD, NOT ITS SEED (2026-08-19) ═══════════════════════
+   Nate: "they are not necessarily 1200 but completely adaptive." Auston's `elo` survives in
+   BOTS and therefore in this data file, because it is the dial's STARTING POINT and the gate
+   above compares every field — but it is not a rating and no surface may render it as one.
+   ⚠ THE FAILURE IS SILENT AND FLATTERINGLY WRONG: drop the `{% if r.adaptive %}` and the
+   front door quietly advertises a strength she will never play at, on the one seat whose
+   entire premise is that it has no fixed strength. */
+{
+  const adaptiveSeats = bots.filter(b => b.adaptive);
+  check('the bench has exactly one adaptive seat', adaptiveSeats.length === 1,
+        adaptiveSeats.map(b => b.name).join(', ') || 'none');
+  check('…and the front door branches on it instead of printing its rating',
+        /\{%\s*if r\.adaptive\s*%\}Adapts\{%\s*else\s*%\}\{\{\s*r\.elo\s*\}\}\{%\s*endif\s*%\}/.test(front),
+        'the seed is not a rating and must never be drawn as one');
+  check('…and its hover text does not say "rated" either',
+        !/title="Sit down with \{\{ r\.name \}\} — rated/.test(front),
+        'a tooltip saying "rated 1200" over a cell saying Adapts is the same lie, quieter');
+}
+
 check('no hand-typed seat count survives on the front door',
       !/\b(six|seven|eight|6|7|8)\s+regulars are at the tables/i.test(front),
       'a number here would go stale the day a seat is added');
@@ -167,10 +193,26 @@ check('…and gives every seat glyph a text-presentation selector',
   check('…and it stands down before route() can reach lobby()',
         guardAt > -1 && lobbyAt > -1 && guardAt < lobbyAt,
         'guard@' + guardAt + ' lobby@' + lobbyAt);
-  /* the one caller that USED to rely on the fallthrough to put a player back on their feet */
+  /* The one caller that USED to rely on the fallthrough to put a player back on their feet.
+
+     ⚠ ASSERT THE ORDER, NOT THE LINE. This check was written as a single `[^\\n]*` regex
+     against the whole file, which meant it was really testing that the three calls happened
+     to sit on one line — and it failed the day the block grew a second branch (the analysis
+     sandbox, 2026-08-18) while the invariant it names was perfectly intact. A gate that
+     breaks on reformatting trains people to edit the gate. Rebuilt to read the actual block
+     out of botRender and compare positions, which is both what the sentence claims and
+     strictly narrower than the old pattern: `!g.valid` anywhere in the file used to satisfy
+     it, and now only botRender's own guard does. */
+  const rBody = tablesSrc.slice(tablesSrc.indexOf('function botRender(){'),
+                                tablesSrc.indexOf('function botTap('));
+  const badSave = rBody.indexOf('if (!g.valid)');
+  const guardBlock = badSave < 0 ? '' : rBody.slice(badSave, badSave + 600);
+  const exitAt = guardBlock.indexOf('exitRoom()');
+  const routeAt = guardBlock.indexOf('safeRoute()');
   check('a corrupt bot save still leaves the room instead of stranding you on it',
-        /!g\.valid[^\n]*exitRoom\(\)[^\n]*safeRoute\(\)/.test(tablesSrc),
-        'botRender() must exitRoom() before it re-routes');
+        badSave > -1 && exitAt > -1 && routeAt > -1 && exitAt < routeAt,
+        badSave < 0 ? 'botRender() has no `if (!g.valid)` guard at all'
+                    : 'exitRoom()@' + exitAt + ' must come before safeRoute()@' + routeAt);
 }
 
 /* ── report ─────────────────────────────────────────────────────────────────────────── */

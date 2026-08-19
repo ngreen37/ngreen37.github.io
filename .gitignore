@@ -10,3 +10,11 @@ build.log
 # The private half of the split (2026-08-12). Its own git repo, its own private
 # remote — the canon, the roadmaps and the backlog. Never tracked here.
 private/
+
+# Harness output. `tests/parktables.check.js --shots` writes screenshots here so a
+# visual change can be LOOKED at rather than asserted about; they are evidence for one
+# session, not artifacts of the site. The temp render + compiled stylesheet the same
+# harness writes are deleted on exit, and listed here for the run that crashes first.
+tests/__shots/
+games/park-tables/__pt_test.html
+assets/css/__pt_test.css

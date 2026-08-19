@@ -41,9 +41,28 @@
  * exactly what makes it a good OPPONENT and exactly what disqualifies it as a
  * MEASUREMENT. A number measured on a ruler that moved is not a measurement.
  *
- * The rating run (`/rating/game/`) therefore does NOT read `level()`. It uses this
- * only to keep the game competitive — a sampler, not a ruler — and takes its number
- * from a fixed-depth pass over the finished game, where nothing moved.
+ * ⚠⚠ THE PARAGRAPH THAT USED TO BE HERE WAS NOT TRUE, AND THAT IS WORTH KEEPING VISIBLE.
+ * It said the rating run "does NOT read `level()`" and "takes its number from a fixed-depth
+ * pass over the finished game, where nothing moved." There is no such pass anywhere in this
+ * repo. `/rating/game/` reads `settled()` — the median of the second half of this very dial —
+ * and always has. A comment describing a safeguard that was never built is worse than no
+ * comment: it is the file telling the next reader that a problem is handled.
+ * [[audit-numbers-can-be-wrong]]
+ *
+ * ══ SO WHAT ACTUALLY KEEPS IT HONEST ═════════════════════════════════════════
+ * Not a second measurement — three admissions, and every surface that prints this number
+ * must carry all three or it should not print it:
+ *
+ *   1. A MINIMUM LENGTH. Below 24 plies the dial is still traveling toward you, so its
+ *      median is the SEED wearing a result's clothing. Short games get words, no number.
+ *   2. A BAND, NOT A POINT. ±140 tightening toward ±90. The entanglement above is real —
+ *      the ruler moved while it measured — and the band is the width of that doubt.
+ *   3. THE SENTENCE "one game is one game."
+ *
+ * Both doors that print it (`/rating/game/` and Auston's table at the Park Tables) use the
+ * same `settled()`, the same minimum, and the same band, on purpose: two different numbers
+ * out of two identical procedures would be the site disagreeing with itself in front of a
+ * player. If this estimate ever gets better, it gets better in one place.
  * [[accuracy-above-all]]
  *
  * Browser: window.PJCCAdapt. Node: require (for tests/adapt.check.js + sim-adapt.js).

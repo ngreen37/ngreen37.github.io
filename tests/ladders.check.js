@@ -326,8 +326,12 @@ check('the rating→difficulty map is the inverse of puzzleRating()',
      \w+ name pattern SKIPS a seat with a space in it rather than failing on it. A roster
      check that quietly counts six of seven is worse than no roster check at all: it was
      reporting five names here while seven were shipping. */
-  const bots = [...PT.matchAll(/\{ name: '([^']+)',\s*icon: '.',\s*diff: '([^']+)',\s*elo: (\d+)/g)]
-    .map(m => ({ name: m[1], diff: m[2], elo: +m[3] }));
+  /* ⚑ THE TAIL IS CAPTURED TOO, since 2026-08-19. `adaptive: true` can sit on a following
+     line, so the trailing group runs to the end of the entry rather than to the end of the
+     line — without it every seat parses as a rung and the ladder check below silently
+     stops distinguishing them, which is the shape of bug this whole file is about. */
+  const bots = [...PT.matchAll(/\{ name: '([^']+)',\s*icon: '.',\s*diff: '([^']+)',\s*elo: (\d+)([^}]*)/g)]
+    .map(m => ({ name: m[1], diff: m[2], elo: +m[3], adaptive: /adaptive:\s*true/.test(m[4] || '') }));
   /* ⚑ THE COUNT IS CROSS-CHECKED, NOT HARD-CODED (2026-08-10). It used to assert `=== 7`,
      which had to be edited by hand the moment Auston came back — and a number a human edits
      to make a test pass is not a test. Both sides are now READ from the file by two
@@ -365,9 +369,24 @@ check('the rating→difficulty map is the inverse of puzzleRating()',
     (PT.match(/PJCCGauntletEngine\.move\(/g) || []).length ===
     (PT.match(/PJCCGauntletEngine\.move\(S, botDial\(bot\)\)/g) || []).length,
     'no seat reaches the engine except through the one dial');
+  /* ⚑⚑ THE LADDER IS THE RUNGS, AND SINCE 2026-08-19 THAT IS NOT THE WHOLE BENCH. Nate
+     moved Auston off the ladder — "they are not necessarily 1200 but completely adaptive" —
+     so BOTS now ends with a seat whose `elo` is an invisible SEED, and walking the raw
+     object read 400 → … → 2400 → 1200 and called the ladder broken. It was not; the test
+     was measuring the wrong list.
+     ⚠ THE FIX IS NOT TO SKIP THE LAST ENTRY. It filters on `adaptive`, so the check still
+     covers every rung and still fails the day somebody drops a real rung out of order —
+     which is the regression it exists for. */
+  const benchRungs = bots.filter(b => !b.adaptive);
   check('the ladder actually climbs',
-    bots.every((b, i) => i === 0 || b.elo > bots[i - 1].elo),
-    bots.map(b => b.elo).join(' → '));
+    benchRungs.every((b, i) => i === 0 || b.elo > benchRungs[i - 1].elo),
+    benchRungs.map(b => b.elo).join(' → ') +
+      (benchRungs.length === bots.length ? '' : '   (+' + (bots.length - benchRungs.length) + ' adaptive, off-ladder)'));
+  /* ⚠ AND THE OFF-LADDER SEAT IS STILL A SEAT. Excluding it from the climb must not exclude
+     it from the bench — a bot with no rung and no dial would simply never play. */
+  check('…and every off-ladder seat still carries a seed for its dial',
+    bots.filter(b => b.adaptive).every(b => b.elo > 0),
+    bots.filter(b => b.adaptive).map(b => b.name + ' seeds at ' + b.elo).join(' · ') || 'none');
 
   /* THE REGRESSION ITSELF. A seat labelled Easy or Medium that lands at skill 1 or more is
      1400+ by definition — i.e. stronger than the Gauntlet's Vice President, on a card that
@@ -388,9 +407,33 @@ check('the rating→difficulty map is the inverse of puzzleRating()',
   check('every locked seat names a bot you can actually beat',
     locks.length > 0 && locks.every(l => ids.indexOf(l) >= 0),
     locks.length ? locks.join(' · ') + '   (bench: ' + ids.join(' ') + ')' : 'no locked seats found');
-  check('…and a win is what records the unlock',
-    /if \(st\.result === '1-0'\) \{[\s\S]{0,220}markBeaten\(st\.bot\)/.test(PT),
+  /* ⚑ REWRITTEN 2026-08-18, BECAUSE THE OLD ONE ENCODED AN ASSUMPTION THAT STOPPED BEING
+     TRUE. It read `if (st.result === '1-0')` out of botFinish, which was a correct test of
+     "did you win" for exactly as long as every bot board was played from the white side.
+     Now that the side is yours to pick, '1-0' means WHITE won and nothing about who you are
+     — so the literal it was pinning is the bug, not the invariant.
+
+     Two checks in its place, and between them they are stricter than the one they replace:
+       ⚠ the win is decided by `botWon(st)` and NOT by a bare result string, which is the
+         regression itself rather than a proxy for it;
+       ⚠ the unlock is gated on a FULL star. Nate, 2026-08-18: beating Robert with the
+         analysis board open does not open Princess's seat. */
+  const finishBody = PT.slice(PT.indexOf('function botFinish('), PT.indexOf('function openingCap('));
+  check('…and a win is what records the unlock — decided by the SIDE YOU PLAYED',
+    /if \(botWon\(st\)\) \{[\s\S]{0,900}markBeaten\(st\.bot\)/.test(finishBody),
     'botFinish writes the win that opens the next door');
+  check('…never by a bare result string, which only reads right from the white side',
+    !/if \s*\(\s*st\.result\s*===\s*'1-0'\s*\)/.test(finishBody),
+    "a '1-0' literal here would hand Black's wins to the opponent");
+  check('…and the same win banks the star for the color it was won with',
+    /awardStar\(st\.bot, sidePlayed\(st\), tierEarned\(st\)\)/.test(finishBody));
+  /* ⚠⚠ AND THE DOOR ITSELF WANTS THE WHOLE STAR. `botLocked` reading the raw beaten
+     list again would silently re-open the seats to helped wins, which is a rule change
+     nothing on screen would announce. */
+  const lockedBody = PT.slice(PT.indexOf('function botLocked('), PT.indexOf('function owedCleanly('));
+  check('a locked seat opens on a FULL star, not on any win at all',
+    /hasFullStar\(b\.locked\)/.test(lockedBody) && !/beatenList\(\)/.test(lockedBody),
+    lockedBody.replace(/\s+/g, ' ').slice(0, 90));
 
   /* and the number has to be ON SCREEN — an unadvertised rating is what drifted.
      ⚑ 2026-08-17: an adaptive seat prints a number that MOVES instead of one that is
