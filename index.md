@@ -220,7 +220,17 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
     <a class="mc-door mc-lead" href="{{ '/games/park-tables/' | relative_url }}">
       <span class="mc-door-ico" aria-hidden="true">&#9822;</span>
       <b>Play Now</b>
-      <small>{{ open_seats | size }} regulars are at the tables right now.</small>
+      {%- comment -%} ⚑ THE SUB-LABEL CAME OFF 2026-08-18 (Nate: "the Play Now doesn't NEED the
+           '6 regulars at the table' description"), and it had become actively wrong the same
+           day. It said SIX; the bench below it drew EIGHT, because it rendered the locked seats
+           too. A sentence counting one number directly above a grid showing another is the kind
+           of thing a visitor notices without being able to say why. Both halves are fixed here:
+           the words go, and the bench below is now exactly the seats the words used to count.
+
+           ⭐ IT IS THE SAME EDIT HE MADE ON 08-11, ONE LAYER DOWN. That day the regulars
+           PARAGRAPH was cut and its headline moved into this sub-label. Now the sub-label is cut
+           and its content is the bench — the claim keeps getting shown instead of said. The
+           `open_seats` assign above stays: it is what the bench iterates. {%- endcomment -%}
       <span class="mc-lead-arw" aria-hidden="true">&rarr;</span>
     </a>
 
@@ -246,12 +256,18 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
          `.mc-resume` is hidden until you have been here, so a first-time visitor's column was
          a card shorter than the one Nate was looking at when he asked.
 
-         ⚠ LOCKED SEATS ARE SHOWN, NOT HIDDEN, and that is _data/regulars.yml's own rule in as
-         many words: "a locked seat you can see is a reason to keep playing." They are not
-         links — a locked table would bounce you — so they render as <span>, which also keeps
-         the tap-target count honest.
+         ⚠⚠ THE LOCKED SEATS CAME OFF ON 2026-08-18, THE DAY AFTER THEY WENT ON. Nate: "few
+         people will be able to unlock such strong bots." He is right, and the numbers say how
+         right: Princess is behind beating Robert at 1800, and The CEO is behind beating
+         Princess at 2100. Two of eight cells were people almost nobody who lands here will
+         ever reach — and they were sitting under a green button that said "6 regulars", so the
+         page counted six and drew eight. _data/regulars.yml's rule ("a locked seat you can see
+         is a reason to keep playing") is a PARK TABLES rule and still holds THERE, where you
+         have a ladder and a reason to look up it. On the front door a stranger has neither.
+         ⭐ SO THE BENCH IS `open_seats`, THE SAME LIST THE SUB-LABEL USED TO COUNT. Six seats,
+         three across, and the grid IS the claim — nothing left to disagree with.
 
-         ⚠ EVERY OPEN SEAT LINKS TO ITS OWN TABLE, not to the hall. Sitting down is a DEPARTURE
+         ⚠ EVERY SEAT LINKS TO ITS OWN TABLE, not to the hall. Sitting down is a DEPARTURE
          with its own URL (`?table=`), so choosing a face here lands you at that board rather
          than at a picker you have to use twice. The destination family is the green button's,
          so this adds specificity, not a competing call to action.
@@ -266,8 +282,7 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
     <div class="mc-bench">
       <p class="mc-bench-h">Who's at the tables</p>
       <ul class="mc-bench-row">
-        {%- for r in site.data.regulars -%}
-        {%- if r.open -%}
+        {%- for r in open_seats -%}
         <li class="mc-bench-seat">
           <a href="{{ '/games/park-tables/' | relative_url }}?table={{ r.key }}"
              title="Sit down with {{ r.name }} — rated {{ r.elo }}">
@@ -276,35 +291,14 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
             <span class="mc-bench-e">{{ r.elo }}</span>
           </a>
         </li>
-        {%- else -%}
-        <li class="mc-bench-seat is-locked">
-          <span class="mc-bench-lk" title="{{ r.name }} — rated {{ r.elo }}. Locked until you beat the seat below.">
-            {%- comment -%} ⚠ THE PIECE IS REPLACED BY THE PADLOCK, and that is the PARK TABLES
-                 convention rather than a new one: a locked bot's card there swaps its icon for
-                 🔒 too (`pt-bot--locked`). Same bench, same language — and it is the only
-                 signal here strong enough to be read at a glance. The first version leaned on
-                 a dashed border plus dimmed ink and the locked seats were nearly
-                 indistinguishable in a render.
-                 ⚠⚠ NO `&#xFE0E;` ON THIS ONE. 🔒 is a true color emoji: it is painted by the
-                 emoji font, takes no `color` at all, and a text-presentation selector would
-                 strip it to a flat outline — the exact opposite rule from the piece glyphs one
-                 branch up, which need the selector or their tint silently no-ops.
-                 [[text-clip-glyph-technique]] {%- endcomment -%}
-            <span class="mc-bench-ico mc-bench-ico--lock" aria-hidden="true">🔒</span>
-            <span class="mc-bench-n">{{ r.name }}</span>
-            <span class="mc-bench-e">{{ r.elo }}</span>
-            {%- comment -%} ⚠ THE LOCK IS SAID, NOT ONLY DRAWN. Visually it is a dashed border
-                 and a paler fill; neither of those reaches a screen reader, and the `title=`
-                 that explains it is hover-only — which skips a phone entirely
-                 ([[hover-is-three-inputs]]). This is the only copy of the word that everybody
-                 gets. {%- endcomment -%}
-            <span class="sr-only">Locked</span>
-          </span>
-        </li>
-        {%- endif -%}
         {%- endfor -%}
       </ul>
     </div>
+{%- comment -%} ── the locked branch that used to live here was removed 2026-08-18; see the note
+     above. It rendered a padlock cell for Princess and The CEO. Restore from git if the front
+     door ever wants an aspiration rung again — but read the note first, because the reason it
+     came off was not clutter, it was that the grid disagreed with the count beside it.
+{%- endcomment -%}
 
     {%- comment -%} ── PICK UP WHERE YOU LEFT OFF (his #4) ──────────────────────────────────
          Empty and hidden for a stranger; one sentence for somebody who has been here. It reads
@@ -1428,24 +1422,25 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
    caption's bold already wears — so the row reads as part of the sheet rather than as a
    pasted-in widget. The one green on this page stays on the button above it.
 
-   ⚠ LOCKED SEATS DIM BUT DO NOT DISAPPEAR, and they are not buttons. `cursor: default` and
-   no hover lift, so nothing about them says "press me" — the tooltip says why they're shut.
-
-   ⚠ 44px TAP TARGETS. Each open seat is a full grid cell (~100 × 62), which clears the floor
-   on the smallest phone this page targets ([[tap-targets-and-audit-numbers]]). Verified in a
-   render at 390px, not assumed from the CSS. */
+   ⚠ 44px TAP TARGETS. Each seat is a full grid cell, which clears the floor on the smallest
+   phone this page targets ([[tap-targets-and-audit-numbers]]). Verified in a render at 390px,
+   not assumed from the CSS. */
 .mc-bench { margin: 0; }
 .mc-bench-h { margin: 0 0 8px; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--fd-ink-3); font-weight: 700; }
+/* ⚑ THREE ACROSS, NOT FOUR (2026-08-18). Four was sized for eight seats; the locked pair came
+   off, and six across three columns is two clean rows where six across four would have been
+   4 + 2 — the same "row and a half" shape the doors grid below this page was re-columned to
+   avoid. The cells also gain ~39px of width each, which is the difference between "Crockett"
+   fitting and "Crockett" ellipsizing. */
 .mc-bench-row { list-style: none; margin: 0; padding: 0;
-  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .mc-bench-seat { min-width: 0; }
-/* ⚠ `a.mc-bench-seat > a` would be wrong — the <a> is the CHILD of the <li>. The site's bare
-   `a:hover` sets `text-decoration: underline`, and `.mc-bench-seat a:hover` at (0,2,0) beats
-   it because a pseudo-class scores in the CLASS column. Same rule as `.soc-card:hover` on
-   /follow/ — measured there, not guessed ([[text-clip-glyph-technique]]). */
-.mc-bench-seat > a,
-.mc-bench-seat > .mc-bench-lk {
+/* ⚠ `.mc-bench-seat > a`, because the <a> is the CHILD of the <li>. The site's bare `a:hover`
+   sets `text-decoration: underline`, and `.mc-bench-seat > a:hover` beats it — a pseudo-class
+   scores in the CLASS column, so this is (0,2,1) against (0,1,1). Same rule as `.soc-card:hover`
+   on /follow/ — measured there, not guessed ([[text-clip-glyph-technique]]). */
+.mc-bench-seat > a {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
   padding: 7px 4px 8px; min-height: 62px; text-align: center; text-decoration: none;
   border: 1px solid rgba(185, 139, 87, 0.28); border-radius: var(--r-sm, 10px);
@@ -1459,28 +1454,13 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mc-bench-n { font-size: 0.72rem; font-weight: 700; color: var(--fd-ink-2);
   max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mc-bench-e { font-size: 0.66rem; color: var(--fd-ink-3); font-variant-numeric: tabular-nums; }
-/* ⚠⚠ A LOCKED SEAT IS MARKED BY A PADLOCK AND A DASHED EDGE — NEVER BY `opacity`, AND NEVER
-   BY FADING ITS WORDS. Two versions of this failed before the shipped one, both measured:
-
-     1. `opacity: 0.5` on the cell. That composites the NAME AND THE RATING — real text
-        carrying real information — halfway into the parchment. The page's third ink already
-        sits at 4.95:1 against a 4.5 floor ([[front-door-palette]]), so halving it lands
-        around 2:1. A real AA failure, of exactly the kind the paw was.
-     2. No opacity, but the name and glyph dimmed to `--fd-ink-3` and the border dashed.
-        Contrast passed — and in a render the locked seats were nearly indistinguishable from
-        the open ones. Legible and unreadable are different problems.
-
-   The padlock (in the markup) carries the state, so the TEXT here stays at full strength and
-   only the container changes. Sampled off the rendered sheet at 2x after that change: every
-   label in this block, open and locked, measures between 5.91:1 and 8.57:1. ⭐ Sampled, not
-   computed —
-   the sheet is translucent over a live sky, so a token's on-paper value is a guess. */
-.mc-bench-seat.is-locked > .mc-bench-lk { cursor: default;
-  border-style: dashed; border-color: rgba(185, 139, 87, 0.42);
-  background: rgba(255, 255, 255, 0.14); }
-/* 🔒 takes no ink — it is painted by the emoji font, so `color` here would do nothing at all.
-   Size is the only lever it answers to. */
-.mc-bench-ico--lock { font-size: 0.95rem; }
+/* (The locked-seat rules were deleted 2026-08-18 with the markup that used them — no
+   `.is-locked`, no `.mc-bench-lk`, no `.mc-bench-ico--lock`. Left behind they would have been
+   three rules no selector on the site can reach, and the dead-code sweep would have found them
+   the next time it ran ([[read-before-you-delete]]). Two things worth carrying forward if an
+   aspiration rung ever returns here: a locked cell must NOT be dimmed with `opacity` — it
+   composites real text toward the paper and lands near 2:1 — and dimming its ink instead
+   passes contrast but reads as identical to an open seat. The padlock did the work.) */
 @media (prefers-reduced-motion: reduce) {
   .mc-bench-seat > a { transition: none; }
   .mc-bench-seat > a:hover, .mc-bench-seat > a:focus-visible { transform: none; }
@@ -1706,6 +1686,36 @@ html.reduce-flourish .mc-bench-seat > a:focus-visible { transform: none; }
    text it now shares a line with reads as a mistake rather than as emphasis — the claim is
    already carrying weight AND the darker ink, which is enough to lead the line on its own. */
 .mc-true b { display: inline; color: var(--fd-ink-2); font-size: 0.82rem; margin: 0; }
+
+/* ── ONE AT A TIME (2026-08-18) ────────────────────────────────────────────────────────
+   Nate: "The three points could be put more subtle: perhaps they could flash at you one at a
+   time, similar to what we were doing with the old splash page."
+
+   ⭐ `.is-rotating` IS ADDED BY SCRIPT, NEVER WRITTEN IN THE MARKUP, and that is the whole
+   safety of it. With no JS — or with reduced motion, or `reduce-flourish` — the class never
+   lands and this stays exactly the three-line list it has been since 08-11. The rotator is an
+   enhancement on top of a complete thing, not a thing that needs JS to be complete.
+
+   ⭐ THE THREE STACK IN ONE GRID CELL (`grid-area: 1/1`), so the row sizes itself to the
+   TALLEST of them at whatever width the column happens to be. The obvious alternative —
+   measuring the tallest <li> in JS and pinning a height — needs a resize listener and gets it
+   wrong for one frame on every rotation. Grid does it for free, at every width, forever.
+
+   ⚠ ALL THREE STAY IN THE DOCUMENT AND IN THE ACCESSIBILITY TREE. `opacity: 0` hides a thing
+   from the eye and from nobody else, so a screen reader still reads all three claims in order,
+   immediately, with no live region and no announcement of the rotation. That is the right
+   outcome: the rotation is a visual treatment, and the information was never the part that
+   needed to move.
+
+   ⚠ IT PAUSES ON HOVER AND ON FOCUS (WCAG 2.2.2 — auto-updating content that runs longer than
+   five seconds has to be pausable). The honest gap: a sighted keyboard-only reader who has not
+   set reduced-motion gets no pause, because there is nothing focusable inside a list of three
+   sentences and adding a tab stop to the front door to fix it costs more than it buys. Written
+   down rather than papered over. */
+.mc-true.is-rotating { display: grid; grid-template-columns: 1fr; }
+.mc-true.is-rotating li { grid-area: 1 / 1; opacity: 0; border-top: 0;
+  transition: opacity 0.55s var(--ease-out, ease); }
+.mc-true.is-rotating li.is-on { opacity: 1; }
 
 /* THE WORLD DOOR — DE-PURPLED 2026-08-04 (Nate: "completely get rid of the purple and gold
    aesthetic — leave that with P&JCC page").
@@ -2063,6 +2073,40 @@ html.reduce-flourish .mc-bench-seat > a:focus-visible { transform: none; }
     /* ⚠ `done` is the board's own "a verdict is up" flag — if they solved it inside five
        seconds the hint must not arrive on top of the offer card. */
     hintTimer = setTimeout(function () { if (!done) hint.hidden = false; }, 5000);
+  })();
+
+  /* ── THE THREE PROOFS, ONE AT A TIME (2026-08-18) — see `.mc-true.is-rotating` in the
+     stylesheet above for why this is script-only and what it deliberately does not do.
+     Self-contained: no list, no rotation; reduced motion, no rotation; and either way the
+     three lines are already on the page before this runs. */
+  (function rotateProofs() {
+    var list = document.querySelector('.mc-true');
+    if (!list) return;
+    var items = list.querySelectorAll('li');
+    if (items.length < 2) return;
+    /* ⚠ BOTH BRAKES, not just the media query. `reduce-flourish` is the site's own setting for
+       people who want the page calm without telling their OS about it. */
+    try { if (matchMedia('(prefers-reduced-motion: reduce)').matches) return; } catch (e) {}
+    if (document.documentElement.classList.contains('reduce-flourish')) return;
+
+    list.classList.add('is-rotating');
+    items[0].classList.add('is-on');
+    var at = 0, held = false;
+    /* 4.6s: long enough to finish reading seventeen words without hurrying, short enough that
+       all three have had a turn inside fifteen seconds. Picked by reading them aloud, which is
+       the only test that matters for a line of text that leaves on its own. */
+    setInterval(function () {
+      if (held) return;
+      items[at].classList.remove('is-on');
+      at = (at + 1) % items.length;
+      items[at].classList.add('is-on');
+    }, 4600);
+    function hold() { held = true; }
+    function release() { held = false; }
+    list.addEventListener('mouseenter', hold);
+    list.addEventListener('mouseleave', release);
+    list.addEventListener('focusin', hold);
+    list.addEventListener('focusout', release);
   })();
 
   var again = document.getElementById('mcb-again');

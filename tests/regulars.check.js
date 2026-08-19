@@ -104,8 +104,17 @@ check('the OPEN count agrees — this is the number the front door prints',
 const front = fs.readFileSync(FRONT, 'utf8');
 check('the front door filters the data file for open seats',
       /site\.data\.regulars\s*\|\s*where:\s*"open",\s*true/.test(front));
-check('…and prints its SIZE rather than a typed number',
-      /open_seats\s*\|\s*size\s*\}\}\s*regulars are at the tables/.test(front));
+/* ⚑ 2026-08-18 — THE COUNT IS NO LONGER A SENTENCE, SO THIS GATE CHANGED SHAPE.
+   It used to require the green door to PRINT `{{ open_seats | size }} regulars are at the
+   tables`. Nate cut that sub-label ("the Play Now doesn't NEED the '6 regulars' description")
+   and the bench under it draws one cell per open seat instead — so the claim is still derived
+   from the same list, it is just SHOWN rather than said. What has to be true now is that the
+   bench iterates `open_seats` and not the whole roster: looping `site.data.regulars` would put
+   the two locked rungs back on the front door, which is exactly the state that had the page
+   counting six and drawing eight. */
+check('the bench iterates the OPEN seats, not the whole roster',
+      /\{%-?\s*for r in open_seats\s*-?%\}/.test(front),
+      'looping site.data.regulars here would draw the locked rungs and disagree with the count');
 check('no hand-typed seat count survives on the front door',
       !/\b(six|seven|eight|6|7|8)\s+regulars are at the tables/i.test(front),
       'a number here would go stale the day a seat is added');
@@ -118,9 +127,9 @@ check('no two regulars wear the same glyph',
       dupes.length === 0 && icons.length === rows.length,
       dupes.length ? dupes.join(' ') + ' is used twice — at card size ♖/♜, ♗/♝, ♕/♛ and ♙/♟ are the SAME PICTURE'
                    : icons.length + ' distinct faces');
-check('the front door draws the bench from the data file',
-      /for\s+r\s+in\s+site\.data\.regulars/.test(front),
-      'a hand-written row of seats would be the fourth copy of the bench');
+/* (The old "draws the bench from site.data.regulars" check was removed 2026-08-18 — the loop
+   is over `open_seats` now, and the check directly above says so more precisely. Two gates
+   asserting the same fact with one of them out of date is worse than one.) */
 /* ⚠ U+FE0E or the tint silently no-ops on a browser that reaches for its color emoji font —
    the same failure [[text-clip-glyph-technique]] records for the drawer icons. */
 check('…and gives every seat glyph a text-presentation selector',
