@@ -38,7 +38,16 @@
      removable in one edit by somebody who is annoyed at it, without reading the rest.
      [[private-by-default]] */
   var ON     = true;
-  var TARGET = 100000;         // the frame. Nate's number, and "say… 100,000" is his phrasing
+  /* ⛑ THE FRAME CAME DOWN FROM 100,000 TO 1,000 (2026-08-19, Nate: *"up to 1,000 for now -
+     real goal is a million and that's what our work is building toward"*). His original was
+     *"say… 100,000"* and the word "say" was doing real work in it — it was a frame, not a
+     forecast. ⭐ AT THREE MEMBERS, 100,000 IS A WALL AND 1,000 IS A DOOR. The count-up
+     reasoning above is exactly why the ceiling can move without anything becoming untrue:
+     the sentence is "you would be #4" either way, and only the horizon behind it changed.
+     ⚠ THE SAME NUMBER IS ON THE STREAM. `assets/overlay/index.html` is an OBS browser
+     source reading the same `count(profiles)`, and its own GOAL must move WITH this one or
+     the site and the broadcast quote two different targets on the same evening. */
+  var TARGET = 1000;
   var KEY    = 'pjcc.first100k.dismissed.v1';
   var DELAY  = 1400;           // ms before it slides in — see WHY IT WAITS below
 
@@ -97,7 +106,10 @@
        interruption, and a screen reader should meet it in document order rather than
        have it read over whatever the visitor was actually doing. */
     bar.setAttribute('role', 'complementary');
-    bar.setAttribute('aria-label', 'Join the first 100,000');
+    /* ⚠ DERIVED, NOT TYPED. This said "Join the first 100,000" as a literal and went
+       stale the moment TARGET moved — a screen reader would have announced a number the
+       sighted copy no longer said. */
+    bar.setAttribute('aria-label', 'Join the first ' + nfmt(TARGET));
     bar.innerHTML =
       '<span class="f100k-mark" aria-hidden="true">◈</span>' +
       '<p class="f100k-t"><b>The first ' + nfmt(TARGET) + '.</b> ' +

@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<title>ChessWild — stream overlay</title>
+<!--
+  ══════════════════════════════════════════════════════════════════════════════════════
+  THE STREAM OVERLAY — an OBS Browser Source, not a page (2026-08-19)
+
+  Nate: *"can we put the cw website and the user counter (up to 1,000 for now - real goal
+  is a million and that's what our work is building toward)."*
+
+  ⚠ THIS IS NOT PART OF THE SITE AND MUST NOT BECOME PART OF IT. It is a picture that OBS
+  renders and composites over a game capture. Nothing links here, it carries `noindex`, and
+  it lives under `assets/` so the `sitemap: false` default in _config.yml keeps it out of
+  sitemap.xml — [[seo-setup]] records that jekyll-sitemap LISTS STATIC FILES, so "nobody
+  linked it" is not on its own enough to keep a static file unlisted.
+
+  ⚠ IT IS A STATIC FILE ON PURPOSE. No front matter, so Jekyll copies it byte for byte: no
+  layout, no town sky, no nav rail, no kramdown. [[markdown-eats-scripts]] is the reason
+  this is not an `.md` page — four separate ways kramdown rewrites raw HTML, all of which
+  shipped live once with the tests green.
+
+  ══ THE NUMBER IS REAL OR IT IS NOT THERE ═════════════════════════════════════════════
+  Same law as `pjcc-first100k.js`, and it matters more here: on a stream a number gets SAID
+  OUT LOUD. It is `count(profiles)` over the public REST endpoint — the same anon key the
+  whole site ships, the same table the site bar counts. On ANY failure the count and the
+  rail are removed and the wordmark stays. ⚠ NEVER 0, and never a remembered last-good
+  value: a stale number that keeps being displayed is the one failure a viewer cannot see.
+
+  ⭐ WHY THERE IS A DOT AND NOT JUST A FILL. At three members the true fill is 0.3% of the
+  rail — one pixel, which reads as "broken", and widening it to look like something would
+  be a lie told in CSS. The dot sits at the TRUE position, so the rail stays honest at three
+  members and still has something on it to watch move. [[accuracy-above-all]]
+
+  ══ HOW HE USES IT ════════════════════════════════════════════════════════════════════
+  OBS → Sources → + → Browser
+      URL     https://chesswild.com/assets/overlay/
+      Width   480      Height  140
+      ☑ Shutdown source when not visible
+  Transparent background is automatic — the page paints no `background`, and OBS composites
+  whatever is behind it. Right-click the source → Refresh to force a re-read.
+
+  ⚑ THE DIALS ARE THE FIRST TWO LINES OF SCRIPT. GOAL (1,000 for now, a million later) and
+  EVERY (how often it re-counts). That is the whole configuration surface.
+  ══════════════════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  /* Self-hosted, the same files the site serves — no call to a font CDN that could be slow
+     or blocked inside OBS's Chromium. */
+  @font-face { font-family: 'Poppins'; font-weight: 600; font-style: normal; font-display: swap;
+               src: url('/assets/fonts/Poppins-600-latin.woff2') format('woff2'); }
+  @font-face { font-family: 'Poppins'; font-weight: 700; font-style: normal; font-display: swap;
+               src: url('/assets/fonts/Poppins-700-latin.woff2') format('woff2'); }
+  @font-face { font-family: 'Inter'; font-weight: 500; font-style: normal; font-display: swap;
+               src: url('/assets/fonts/Inter-500-latin.woff2') format('woff2'); }
+
+  /* ⚠ NO `background` ANYWHERE UP THE TREE. A single `background:#000` here is the whole
+     difference between an overlay and a black box sitting on his gameplay. */
+  html, body { margin: 0; padding: 0; background: transparent; }
+  body { font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+
+  .ov { display: inline-block; padding: 14px 18px; }
+
+  /* The wordmark, exactly as `_includes/wordmark.html` builds it. Poppins 800 is not in the
+     self-hosted set, so 700 carries it — the treatment is the weight-and-color split, not
+     the exact numeral. ⚠ THE CASE IS TYPED. "ChessWild.com" is the brand string in three
+     files that do not read each other; this must not become a fourth spelling. */
+  .ov-mark { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 26px;
+             letter-spacing: -0.01em; line-height: 1; margin: 0 0 10px;
+             text-shadow: 0 2px 8px rgba(0,0,0,0.55), 0 0 2px rgba(0,0,0,0.8); }
+  .wm-chess { color: #fff; }
+  .wm-wild  { color: #ffa07a; letter-spacing: 0.01em; padding-left: 0.03em; }
+  .wm-tld   { color: #fff; font-size: 0.62em; font-weight: 600; }
+
+  /* The claim. `is-out` is the failure state and it REMOVES the line rather than dimming
+     it — a dimmed number is still a number a viewer will read. */
+  .ov-line { display: flex; align-items: baseline; gap: 8px; font-size: 14px; font-weight: 500;
+             color: rgba(255,255,255,0.92); line-height: 1;
+             text-shadow: 0 1px 6px rgba(0,0,0,0.65), 0 0 2px rgba(0,0,0,0.9); }
+  .ov-line.is-out { display: none; }
+  .ov-goal { color: rgba(255,255,255,0.62); }
+  .ov-n    { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 19px; color: #ffa07a; }
+
+  .ov-rail { position: relative; width: 260px; height: 4px; margin: 11px 0 0;
+             border-radius: 99px; background: rgba(255,255,255,0.18);
+             box-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+  .ov-rail.is-out { display: none; }
+  .ov-fill { position: absolute; inset: 0 auto 0 0; border-radius: 99px; background: #ffa07a; }
+  /* the dot marks the TRUE position; the negative margin centers it on that point rather
+     than starting it there, so it never reads as more progress than there is */
+  .ov-dot  { position: absolute; top: 50%; width: 9px; height: 9px; margin-top: -4.5px;
+             margin-left: -4.5px; border-radius: 50%; background: #ffa07a;
+             box-shadow: 0 0 0 2px rgba(0,0,0,0.35), 0 0 10px rgba(255,160,122,0.7); }
+
+  /* Only ever runs when the number actually CHANGED — see bump() */
+  @keyframes ov-bump { 0% { transform: none; } 40% { transform: scale(1.18); } 100% { transform: none; } }
+  .ov-n.is-bump { animation: ov-bump 620ms cubic-bezier(.2,.9,.25,1); display: inline-block; }
+</style>
+</head>
+<body>
+  <div class="ov">
+    <p class="ov-mark"><span class="wm-chess">Chess</span><span class="wm-wild">Wild</span><span class="wm-tld">.com</span></p>
+    <div class="ov-line is-out" id="line">
+      <span class="ov-goal">The first <b id="goal"></b>.</span>
+      <span>You would be <span class="ov-n" id="n"></span></span>
+    </div>
+    <div class="ov-rail is-out" id="rail">
+      <span class="ov-fill" id="fill"></span><span class="ov-dot" id="dot"></span>
+    </div>
+  </div>
+
+<script src="/assets/js/pjcc-config.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ── THE DIALS ────────────────────────────────────────────────────────────────────── */
+  var GOAL  = 1000;      // Nate, 2026-08-19: "up to 1,000 for now - real goal is a million"
+  var EVERY = 45000;     // ms between re-counts. A stream is long; the number should climb on it.
+
+  var cfg  = window.PJCC_CONFIG || {};
+  var line = document.getElementById('line'), rail = document.getElementById('rail');
+  var nEl  = document.getElementById('n'),    fill = document.getElementById('fill');
+  var dot  = document.getElementById('dot'),  goalEl = document.getElementById('goal');
+  var last = null;
+
+  function nfmt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  goalEl.textContent = nfmt(GOAL);
+
+  /* ⚠ HIDE, NEVER GUESS. Called on every failure path there is. */
+  function hide() { line.classList.add('is-out'); rail.classList.add('is-out'); last = null; }
+
+  function bump() {
+    nEl.classList.remove('is-bump');
+    void nEl.offsetWidth;              // reflow, or re-adding the class is a no-op
+    nEl.classList.add('is-bump');
+  }
+
+  function show(count) {
+    var seat = count + 1;              // "you would be #N" — the same arithmetic as the site bar
+    if (last !== null && seat !== last) bump();
+    last = seat;
+    nEl.textContent = '#' + nfmt(seat);
+    var pct = Math.max(0, Math.min(100, (count / GOAL) * 100));
+    fill.style.width = pct + '%';
+    dot.style.left   = pct + '%';
+    line.classList.remove('is-out');
+    rail.classList.remove('is-out');
+  }
+
+  function read() {
+    if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY ||
+        cfg.SUPABASE_URL.indexOf('YOUR_') !== -1) return hide();
+
+    /* A HEAD-shaped count: `Range: 0-0` + `Prefer: count=exact` asks Postgres for the
+       number and one row's worth of nothing. The total arrives in `content-range` as
+       "0-0/N". Probed against the live database on 2026-08-19 with a nonsense-table
+       control that returned 404, because a check that cannot fail proves nothing. */
+    var ctl  = new AbortController();
+    var bail = setTimeout(function () { try { ctl.abort(); } catch (e) {} }, 6000);
+
+    fetch(cfg.SUPABASE_URL + '/rest/v1/profiles?select=id', {
+      signal: ctl.signal,
+      headers: {
+        'apikey': cfg.SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY,
+        'Prefer': 'count=exact',
+        'Range': '0-0'
+      }
+    }).then(function (r) {
+      clearTimeout(bail);
+      if (!r.ok && r.status !== 206) return hide();
+      var cr = r.headers.get('content-range') || '';
+      var m  = /\/(\d+)\s*$/.exec(cr);
+      if (!m) return hide();
+      var c = parseInt(m[1], 10);
+      if (!isFinite(c) || c < 0) return hide();
+      show(c);
+    }, function () { clearTimeout(bail); hide(); });
+  }
+
+  read();
+  setInterval(read, EVERY);
+}());
+</script>
+</body>
+</html>
