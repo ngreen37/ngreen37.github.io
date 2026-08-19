@@ -97,13 +97,23 @@
         d.appendChild(chip);
       }
 
-      /* The rail row says it in words too. `.dl-txt small` is the subtitle; on the front
-         door the equivalent is `small`, and both are replaced rather than appended so the
-         row keeps its measured single-line height. */
+      /* Both surfaces say it in words as well as in color. Replaced, never appended.
+
+         ⚠⚠ THE GAME NAME GOES ON THE BOX ONLY, AND THE FIRST RENDER IS WHY. The rail's
+         subtitle was chosen at 22 characters ("Twitch and the socials") because it was
+         MEASURED to fit the 246px rail on one line, and "Live now — Cult of the Lamb"
+         wrapped to two on the very first screenshot. A wrapped row is ~20px of extra
+         collapsed rail, and that rail's short-window guard is a measured 861px that moves
+         the moment any row grows — the same class of defect as seven seats in a
+         three-column grid, found the same way, by looking. "Live right now" is 14
+         characters, shorter than the string it replaces, so the row cannot grow.
+         [[nav-rail-collapsed-default]] · [[measure-the-real-page]] */
+      var railRow = d.getAttribute('data-live-door') === 'row';
       var sub = d.querySelector('.dl-txt small') || d.querySelector('small');
       if (sub) {
         if (!sub.getAttribute('data-was')) sub.setAttribute('data-was', sub.textContent);
-        sub.textContent = info && info.game ? ('Live now — ' + info.game) : 'Live right now';
+        sub.textContent = (!railRow && info && info.game) ? ('Live now — ' + info.game)
+                                                          : 'Live right now';
       }
 
       /* Screen readers get the fact, not the styling. */

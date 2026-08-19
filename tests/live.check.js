@@ -102,7 +102,24 @@ check('…and only the box gets one, never the 246px rail row',
 check('the chip carries the WORD "LIVE", not just a red dot',
       /textContent\s*=\s*'LIVE'/.test(jsCode));
 check('…and the rail says it in its subtitle too',
-      /Live right now|Live now/.test(jsCode));
+      /Live right now/.test(jsCode));
+/* ⚠⚠ AND THE RAIL'S SUBTITLE MAY NOT GROW. It was chosen at 22 characters because that
+   fits the 246px rail on ONE line; the game name wrapped it to two on the first render, and
+   a taller row moves the collapsed rail's MEASURED 861px short-window guard. The replacement
+   is 14 characters, so the row can only ever get shorter. [[nav-rail-collapsed-default]] */
+{
+  const m = jsCode.match(/'(Live right now)'/);
+  /* ⚠ THIS WAS A PROXIMITY REGEX AND IT DID NOT WORK. The first version asked whether
+     `railRow` appeared within 200 characters of `info.game`; the mutation that puts the game
+     name back on the rail moved them 250 apart and the check went green on broken code. A
+     WINDOW IS A GUESS ABOUT FORMATTING, not an assertion about behavior. This names the
+     guard itself. [[green-must-name-what-ran]] */
+  const railGuarded = /\(\s*!railRow\s*&&\s*info\s*&&\s*info\.game\s*\)\s*\?/.test(jsCode);
+  check('…in a string no longer than the one it replaces',
+        !!m && m[1].length <= 22, m ? m[1].length + ' chars vs 22 ("Twitch and the socials")' : 'not found');
+  check('…and the game name is kept off the rail entirely',
+        railGuarded, 'only the front-door box has room for it');
+}
 
 /* ⚠ SPECIFICITY IS MEASURED HERE, NOT ASSUMED — the same trap the drawer's own comments
    record: `.dl-ico--follow` sets the bone tint and a (0,1,0) override would tie and lose
