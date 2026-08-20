@@ -135,6 +135,43 @@ bar moves when you talk, you're set and need no source at all.
 
 ---
 
+## PART C2 — The Stream Information box (title, category, tags, labels)
+
+This is the panel OBS opens before you go live. Everything in it is changeable mid-stream from
+Twitch’s own Stream Manager, so none of it is a commitment.
+
+### Title
+The headline of the stream. It shows above the video on `twitch.tv/chesswild_official`, in every
+browse and search listing, and beside your thumbnail anywhere somebody might find you. The **Go
+Live Notification** underneath is separate — that is the push your followers get.
+⭐ Put yourself in it, not only the product. People follow a person ([[the-edge-is-him]]).
+
+### Category — the important one
+**The single biggest discovery field on Twitch.** People browse BY CATEGORY, so it is how anyone
+who does not already know you finds you at all.
+- Playing Cult of the Lamb → **Cult of the Lamb**
+- The site, or chess → **Chess**
+- Just talking → **Just Chatting**
+
+It has to match what is actually on screen (a Twitch rule). Changing it mid-stream when you
+switch activities is normal and expected.
+
+### Tags — yes, use them
+Free, and pure discovery. Up to 10. Language is automatic, so no tag needed for it.
+Starting set: `ChessWild` · `Chess` · `IndieGames` · `CultOfTheLamb` · `SoloDev` · `FirstStream`
+
+### The three at the bottom
+
+| Field | What to do | Why |
+|---|---|---|
+| **Content Classification** | **leave empty** for Cult of the Lamb | Twitch auto-applies labels for ESRB **Mature** games. Cult of the Lamb is **T for Teen** (Blood, Crude Humor, Fantasy Violence), so nothing is required. Add **Significant Profanity or Vulgarity** if you swear freely — that label is about YOU, not the game. ⭐ Getting it wrong is gentle: a warning, and Twitch applies the right label itself. It is not a suspension. |
+| **Rerun** | **leave unchecked** | Only for broadcasting a previously-recorded video instead of being live. |
+| **Branded Content** | **leave unchecked** | Only for a paid commercial relationship with a THIRD PARTY — sponsorship, paid placement, endorsement. ⚠ **Promoting your own site is NOT branded content.** Talking about ChessWild on your own channel is just talking about your work. |
+
+Then **Done**.
+
+---
+
 ## PART D — After a stream
 
 1. Your local recording is already saved. **That's the master.**
