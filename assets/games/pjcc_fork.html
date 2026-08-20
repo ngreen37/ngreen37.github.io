@@ -109,8 +109,12 @@
   .rep-verdict.agrees { color: #7a5a10; border-color: #d8c489; background: #fdf6e3; }
   .rep-verdict.mates  { color: #8d2f60; border-color: #e3b4cd; background: #fdf0f6; }
   .rep-verdict.refuted{ color: #4b5361; border-color: #e5e1d8; background: #f4f2ec; }
+  /* ⚠ 16px, NOT 12 — 2026-08-19. iOS Safari zooms the whole page when you focus a text
+     field under 16px, and the page then pans sideways and stays zoomed after the keyboard
+     goes away. This shell loads none of the site's CSS, so it carries the rule itself.
+     The note reads small because the box is small; that is `max-width`, not font-size. */
   .rep-note { width: 100%; max-width: 340px; margin: 0 0 10px; resize: vertical;
-    font-family: inherit; font-size: 12px; line-height: 1.5; color: #1e232c;
+    font-family: inherit; font-size: 16px; line-height: 1.5; color: #1e232c;
     background: #ffffff; border: 1px solid #e5e1d8; border-radius: 8px; padding: 7px 9px; }
   .rep-note::placeholder { color: #8b93a1; }
   .rep-note:focus { outline: none; border-color: #2e7d47; }

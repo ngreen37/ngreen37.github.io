@@ -114,6 +114,26 @@ html {
   scroll-behavior: smooth;
   /* App-like feel: kill the blue tap/highlight flash everywhere */
   -webkit-tap-highlight-color: transparent;
+
+  /* ⚠⚠ THE DOCUMENT MAY NEVER PAN SIDEWAYS — 2026-08-19, Nate: "it shouldn't slide
+     left to right (the whole window)". /goods/ was doing exactly that on every phone
+     (+131px at 320), and the cause was one grid track opening past its container; that
+     is fixed at the source in goods.md. This is the floor under it, so the NEXT one is a
+     clipped edge on one component instead of the whole site sliding under his thumb.
+
+     ⭐ `clip`, NOT `hidden`, and the difference is the whole reason this is safe to put on
+     the root. `overflow-x: hidden` makes the element a SCROLL CONTAINER — it forces the
+     other axis to `auto`, gives `position: sticky` a new scrollport to stick to, and can be
+     scrolled programmatically, so the pan comes back the moment anything calls scrollLeft.
+     `clip` creates no scrollport at all: nothing to scroll, nothing for sticky to re-anchor
+     to, and the fixed town-sky layers are untouched (clip does not become a containing
+     block for fixed — that is transform/filter/contain, not this).
+
+     ⚠ IT IS A GUARD, NOT A FIX, AND IT IS NOT A SUBSTITUTE FOR MEASURING. Safari only
+     learned `clip` in 16, so an older iPhone still slides if something overflows; and on
+     every browser this HIDES a layout bug rather than reporting it. `tests/style.check.js`
+     keeps the real check honest. Overflow is still to be found and fixed where it starts. */
+  overflow-x: clip;
 }
 
 body {

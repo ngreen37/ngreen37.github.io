@@ -173,6 +173,41 @@
        /classified/. It is `aria-hidden`, `tabindex="-1"`, and being nearly invisible is the
        entire point. A future sweep must not "fix" the easter egg. */
 @media (pointer: coarse) {
+  /* ⚠⚠ 16px IS NOT A TASTE, IT IS THE LINE iOS SAFARI ZOOMS AT — 2026-08-19. Focus a
+     text field whose computed font-size is under 16px and Safari ZOOMS THE WHOLE PAGE to
+     make it readable; the page is then wider than the window, so it pans left-and-right
+     under your thumb and STAYS that way after the keyboard closes. That is the second
+     half of Nate's "it shouldn't slide left to right (the whole window)", and unlike the
+     /goods/ track it is not visible in a desktop browser at all — the behavior is
+     Safari-on-iOS only, which is exactly the device he reads the site on.
+
+     Six of the seven text-entry fields on the site were under the line: .pjcc-input 0.9rem
+     (14.4px, and it is the sign-in field on nine surfaces), input.pt-in 0.95rem, .fa-input
+     0.9rem, .ml-invite-input 0.82rem, textarea.ek-names 0.92rem, and the Forge pair at
+     0.86rem. The seventh, .sgate-carve input, was already 1.2rem. A <select> and a range
+     slider cannot be typed into and never trigger it, so neither is listed.
+     ⭐ THE FORGE PAIR AND THE SHOGI GATE ARE THE REASON tests/mobile.check.js MEASURES
+     rather than greps: neither field carries a class, so both are styled by a descendant
+     rule, and a checker that reads selectors saw them both as "unstyled" — flagging the
+     gate, which was fine, and reporting the Forge at Chrome's default rather than its own
+     size. Two of its three findings were false. It renders them now.
+
+     ⚠ THE TAG QUALIFIERS ARE LOAD-BEARING, for the same reason spelled out above this
+     block: four of these five are styled in a page's own <style>, which sits in the body
+     and beats this file on a tie. `input.fa-input` is (0,1,1) and wins; `.fa-input` alone
+     would lose and this rule would look right while doing nothing. [[green-must-name-what-ran]]
+     ⚠ `.describe-in` in pjcc_blindfold.html and the fields in the other standalone game
+     shells do NOT load this stylesheet — they carry their own 16px and must keep it. */
+  .pjcc-input,
+  input.pt-in,
+  input.fa-input,
+  input.ml-invite-input,
+  textarea.ek-names,
+  .forge-field input,
+  .forge-field textarea {
+    font-size: 16px;
+  }
+
   .pjcc-input,
   input.pt-in {
     min-height: 44px;
