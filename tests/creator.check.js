@@ -194,7 +194,6 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
       AURAS: AURAS,
       AURA_ORDER: AURA_ORDER,
       AURA_MEANING: AURA_MEANING,
-      auraWord: function (k) { return (AURA_MEANING[k] && AURA_MEANING[k].word) || ''; },
       auraFrom: function (k) { return (AURA_MEANING[k] && AURA_MEANING[k].from) || null; },
       ${UNLOCK_SRC}
       _p: { codename: 'Tester', companion: { look: { hair:'crop', tone:'', hairColor:'brown',
@@ -295,8 +294,39 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
       (await canWear('gold', null, 'azure')) === false, 'nothing to grandfather');
     check('…and Auston\'s crimson is never one of them — she is the adaptive seat',
       !cold.locked.includes('crimson'), 'from: null, so it is free for anyone');
-    check('a locked swatch says the frequency AND the price, in words',
-      /certainty/.test(cold.label) && /Robert/.test(cold.label), cold.label);
+    /* ⛑ THE LABEL NAMES THE COLOR AND THE PRICE — 2026-08-20. This read `/certainty/`
+       until Nate pulled the frequencies off the site (*"I don't want the actual text
+       descriptions"*), so it now asserts the thing that replaced them. The PRICE half is
+       unchanged and is the half that matters: a locked swatch that will not say what it
+       costs is a button that appears broken. */
+    check('a locked swatch says the color AND the price, in words',
+      /Violet/.test(cold.label) && /Robert/.test(cold.label), cold.label);
+
+    /* ⚠⚠ AND THE FREQUENCIES ARE ACTUALLY GONE FROM THE SCREEN. Deleting `word` from
+       AURA_MEANING is not the same as no longer printing it — the Forge had TWO render
+       sites (the swatch labels and the caption under the row) and a check that only read
+       one of them would stay green while the other still spoke. So this sweeps every aura
+       label AND the caption for all nine words at once.
+       ⭐ MUTATION-TESTED: putting `word` back on ONE color and printing it in EITHER site
+       turns this red. Scoped to the aura UI on purpose — "home" and "nerve" are ordinary
+       English and a whole-page sweep for them would fire on unrelated copy. */
+    const WORDS = ['home', 'gladness', 'the kept word', 'a dream carried for someone else',
+                   'love and wisdom', 'certainty', 'the beginner’s heart',
+                   'the beginner\'s heart', 'appetite', 'nerve'];
+    const auraText = await page.evaluate(() =>
+      [...document.querySelectorAll('[data-aura], [data-paura]')]
+        .map((e) => (e.getAttribute('aria-label') || '') + ' ' + (e.getAttribute('title') || ''))
+        .concat([(document.getElementById('op-aura-word') || {}).textContent || '']).join(' | ').toLowerCase());
+    const leaked = WORDS.filter((w) => auraText.includes(w.toLowerCase()));
+    check('no frequency word is printed anywhere in the aura UI', leaked.length === 0,
+      leaked.length ? 'LEAKED: ' + leaked.join(', ') : WORDS.length + ' words, none of them on screen');
+
+    /* ⚠ AND THE DATA ITSELF NO LONGER CARRIES THEM, lifted from the real file. Without this
+       the words could sit unread in pjcc-profile.js forever, one render line away from
+       coming back — which is exactly the state he asked me not to leave them in. */
+    check('AURA_MEANING keeps `from` and no longer keeps `word`',
+      !/\bword\s*:/.test(MEAN_SRC) && /\bfrom\s*:/.test(MEAN_SRC),
+      /\bword\s*:/.test(MEAN_SRC) ? 'a `word:` key is still in the shipping table' : 'from-only');
 
     /* ⚠⚠ THE REFUSAL IS THE ASSERTION. A dimmed swatch that still applies when tapped is a
        lock that does not lock — and the Forge writes through to the profile, so it would be
@@ -327,8 +357,22 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
     await new Promise((r) => setTimeout(r, 150));
     check('…and now it can actually be worn',
       (await page.evaluate(() => PJCCForge.identity().aura)) === 'violet', 'violet');
-    check('…and the caption names who it was won from',
-      /won from Robert/.test((await row()).caption), (await row()).caption);
+    /* ⛑ THE CAPTION CLEARS ON A GOOD PICK — 2026-08-20. This used to read `/won from
+       Robert/`, because selecting a color printed its frequency and who you took it from.
+       The frequencies are off the site now, so the caption has exactly one job left:
+       nudgeLocked() writes the PRICE there when you tap a color you have not won.
+       ⚠⚠ WHICH MAKES CLEARING IT THE ASSERTION. If repaintOp() stopped blanking it, the
+       price of a color you were REFUSED would sit under a color you are now WEARING — a
+       stale line that reads as "this one is locked too". Proved by dirtying it first: tap a
+       still-locked swatch, confirm words appear, then tap the won one and watch them go. */
+    await page.evaluate(() => document.querySelector('[data-aura="turquoise"]').click());
+    await new Promise((r) => setTimeout(r, 150));
+    check('tapping a locked color still writes the price into the caption',
+      /locked/.test((await row()).caption), (await row()).caption);
+    await page.evaluate(() => document.querySelector('[data-aura="violet"]').click());
+    await new Promise((r) => setTimeout(r, 150));
+    check('…and picking one you HAVE won clears it again',
+      (await row()).caption.trim() === '', JSON.stringify((await row()).caption));
 
     await page.evaluate(() => localStorage.removeItem('pjcc.pt.stars.v1'));
   }

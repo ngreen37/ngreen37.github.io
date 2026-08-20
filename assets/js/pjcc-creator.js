@@ -170,6 +170,11 @@
   }
   // '#F5C518' is a literal only for the can't-resolve case — the real gold is in the map
   function auraColor(key) { return AURAS[key] || AURAS.azure || '#6bbfff'; }
+  /* What a swatch is CALLED — the palette key, title-cased. Every one of the thirteen keys
+     is already an ordinary color word (`turquoise`, `sakura`, `mono`), so there is nothing
+     to translate and nothing to keep in step. See the aura row for why this is a function
+     and not a table. */
+  function auraName(key) { return String(key || '').charAt(0).toUpperCase() + String(key || '').slice(1); }
   /* the regulars, by the id the aura table names them with. ⚠ A COPY, and a small one —
      the Forge does not load the Park Tables. `npm run test:regulars` fails if a name here
      stops matching the real BOTS object. */
@@ -541,14 +546,19 @@
     markOn('data-eye1', (two2 && eyeTarget === 'right') ? look.eyeR : look.eye);
     markOn('data-eyet', two2 ? eyeTarget : 'both');
     markOn('data-aura', look.aura);
-    /* the caption follows the SELECTED color, so the word is never orphaned from its swatch */
+    /* ⛑ THE CAPTION IS EMPTY UNTIL A LOCKED SWATCH IS TAPPED — 2026-08-20, Nate: *"I don't
+       want the actual text descriptions."* This used to print the selected color's
+       frequency ("love and wisdom — won from The Dad"); that reading is off the site and
+       lives in private/_pjcc/notes.md now.
+       ⚠ THE ELEMENT STAYS, and it is not dead. nudgeLocked() writes the PRICE here when you
+       tap a color you have not won — a locked swatch that simply refuses, with nothing
+       anywhere saying why, reads as a broken button. So selecting CLEARS it, rather than
+       the caption being deleted outright. */
     (function () {
       var cap = document.getElementById('op-aura-word');
       if (!cap) return;
-      var w = P.auraWord ? P.auraWord(look.aura) : '';
-      var from = P.auraFrom ? P.auraFrom(look.aura) : null;
       cap.classList.remove('is-locked');
-      cap.textContent = w ? (w + (from ? ' — won from ' + (BOT_NAMES[from] || from) : '')) : '';
+      cap.textContent = '';
     })();
     markOn('data-hat', look.hat);
     markOn('data-emblem', look.emblem);
@@ -770,17 +780,25 @@
        ([[collection-and-hidden-boards]]): a locked thing you can SEE is a reason to keep
        playing, and a list that is quietly shorter is just a shorter list.
 
-       ⚠ THE WORD IS THE POINT AND IT GOES IN THE LABEL, not only in a tooltip. `title=`
-       does not exist on a phone ([[hover-is-three-inputs]]) and he reads this site on one,
-       so the frequency and the price are both in `aria-label`, and the caption under the row
-       says the selected color's word out loud. */
+       ⚠ THE PRICE GOES IN THE LABEL, not only in a tooltip. `title=` does not exist on a
+       phone ([[hover-is-three-inputs]]) and he reads this site on one, so what a locked
+       color costs is in `aria-label` too.
+
+       ⛑ THE LABEL IS THE COLOR'S NAME NOW, NOT ITS FREQUENCY — 2026-08-20, Nate: *"those
+       aura color descriptions ... I don't want the actual text descriptions."* It read
+       "certainty — locked, beat Robert with no help" for one day; it reads "Violet —
+       locked, beat Robert with no help" now. Only the reading changed: the lock, the price
+       and who you take it from are all still here.
+       ⭐ THE NAME IS DERIVED FROM THE KEY, NOT A SECOND MAP. `turquoise` → `Turquoise`. A
+       lookup table of thirteen display names would be a thing that drifts the first time a
+       color is added — and one WAS added the same day this shipped. A pure function of the
+       key cannot fall out of sync with the palette it names. */
     h += '<div class="forge-section"><h3>Aura <small>— your signature color</small></h3><div class="forge-sw-row">';
     AURA_ORDER.forEach(function (k) {
-      var word = P.auraWord ? P.auraWord(k) : '';
       var from = P.auraFrom ? P.auraFrom(k) : null;
       var open = P.auraUnlocked ? P.auraUnlocked(k, accountProfile()) : true;
       var who  = from ? (BOT_NAMES[from] || from) : '';
-      var lab  = (word ? word : k) + (open ? '' : ' — locked, beat ' + who + ' with no help');
+      var lab  = auraName(k) + (open ? '' : ' — locked, beat ' + who + ' with no help');
       h += swatch(look.aura === k, AURAS[k],
         'data-aura="' + k + '"' + (open ? '' : ' data-locked="1"') +
         ' aria-label="' + esc(lab) + '" title="' + esc(lab) + '"');
@@ -864,8 +882,16 @@
     }
     // aura
     h += '<div class="forge-section"><h3>Aura</h3><div class="forge-sw-row">';
-    h += swatch(pl.aura === 'none', '#888', 'data-paura="none"', true);
-    AURA_ORDER.forEach(function (k) { h += swatch(pl.aura === k, AURAS[k], 'data-paura="' + k + '"'); });
+    /* ⚠ THE COMPANION'S AURAS ARE NOT GATED and never have been — the earn table is about
+       YOUR color, not your dog's, so there is no lock and no price to print here.
+       ⛑ NAMED, 2026-08-20. Every other swatch row in the Forge (coat, eyes, nose) carries a
+       label and this one carried none — thirteen unlabeled color buttons, which is nothing
+       at all to a screen reader. The same `auraName()` the operative row now uses. */
+    h += swatch(pl.aura === 'none', '#888', 'data-paura="none" aria-label="No aura" title="No aura"', true);
+    AURA_ORDER.forEach(function (k) {
+      h += swatch(pl.aura === k, AURAS[k],
+        'data-paura="' + k + '" aria-label="' + esc(auraName(k)) + '" title="' + esc(auraName(k)) + '"');
+    });
     h += '</div></div>';
     // name + bio
     h += '<div class="forge-section"><h3>Name & Story</h3><div class="forge-fields">' +

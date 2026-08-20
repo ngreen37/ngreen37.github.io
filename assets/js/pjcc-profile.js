@@ -421,7 +421,7 @@
   };
   var AURA_ORDER = ['gold','jade','crimson','sakura','azure','violet','amber','mono','emerald','ice','rose','lime','turquoise'];
 
-  /* ══ WHAT A COLOR MEANS, AND WHO YOU WIN IT FROM ══════════════════════════════
+  /* ══ WHO YOU WIN A COLOR FROM ═════════════════════════════════════════════════
      2026-08-20, Nate: *"I love the 'earn aura' thing. Everyone except Auston since she is
      adaptive."*
 
@@ -430,11 +430,18 @@
      into a receipt: "I play in Robert's violet" means you outplayed him with nothing but
      the board.
 
-     ⭐ A NAMED FREQUENCY IS ONE THAT BELONGS TO SOMEBODY. The nine bench colors carry a
-     word; the other four (mono, azure, rose, lime) deliberately do not. They are free, they
-     are unclaimed, and they are yours to mean whatever you like — which is also why they
-     are the four a brand-new player picks from. The words are HIS ([[text-changes-need-approval]]);
-     the readings for the other eight live in private/FUTURE-IDEAS.md.
+     ⛑ THE WORDS CAME OFF, THE EARNING DID NOT — 2026-08-20, Nate: *"those aura color
+     descriptions (energetic, love and wisdom, etc) ... I don't want the actual text
+     descriptions."* Each of these nine used to carry a `word` — a frequency, printed under
+     the swatch row in the Forge and again in every swatch's label. That reading is now
+     recorded in `private/_pjcc/notes.md` and appears NOWHERE in the build.
+
+     ⚠ THE TWO FIELDS WERE NEVER THE SAME FEATURE, which is why one could go without the
+     other. `from` is the MECHANIC — it is what auraUnlocked() reads, and it is the whole of
+     what makes a color a prize. `word` was only ever a description of it. Deleting `word`
+     changes what the Forge SAYS; it does not change one thing about what it gives you.
+     ⚠ DO NOT "RESTORE" THE WORDS FROM THE CANON FILE. They are written down so they are not
+     lost, not so they can come back — they are off the site on purpose.
 
      ⚠⚠ AUSTON'S CRIMSON IS NAMED BUT NEVER EARNABLE, and that is his instruction, not an
      oversight: she is the ADAPTIVE seat, so "beat Auston cleanly" is not a fixed feat the
@@ -447,15 +454,15 @@
      is a gift, tightening is a takeaway ([[sell-back-economy]]), and eight colors vanishing
      out of somebody's Forge would be the worst kind. */
   var AURA_MEANING = {
-    emerald:   { word: 'home',                        from: 'maxwell'  },
-    amber:     { word: 'gladness',                    from: 'crockett' },
-    ice:       { word: 'the kept word',               from: 'argus'    },
-    jade:      { word: 'a dream carried for someone else', from: 'nate' },
-    turquoise: { word: 'love and wisdom',             from: 'dad'      },
-    violet:    { word: 'certainty',                   from: 'robert'   },
-    sakura:    { word: 'the beginner\'s heart',       from: 'princess' },
-    gold:      { word: 'appetite',                    from: 'ceo'      },
-    crimson:   { word: 'nerve',                       from: null       }
+    emerald:   { from: 'maxwell'  },
+    amber:     { from: 'crockett' },
+    ice:       { from: 'argus'    },
+    jade:      { from: 'nate'     },
+    turquoise: { from: 'dad'      },
+    violet:    { from: 'robert'   },
+    sakura:    { from: 'princess' },
+    gold:      { from: 'ceo'      },
+    crimson:   { from: null       }
   };
 
   /* The Park Tables keep the stars; this only READS them. Same key, same shape:
@@ -503,8 +510,9 @@
     AURAS: AURAS,
     AURA_ORDER: AURA_ORDER,
     AURA_MEANING: AURA_MEANING,
-    /* the word under a swatch, or '' for the four that belong to nobody */
-    auraWord: function (key) { return (AURA_MEANING[key] && AURA_MEANING[key].word) || ''; },
+    /* ⛑ `auraWord()` WAS DELETED HERE, 2026-08-20 — see the note over AURA_MEANING. It
+       returned the frequency printed under the swatch row, and both of its callers (the
+       Forge's caption and its swatch labels) came out with it. Nothing else ever read it. */
     /* which regular you take it from, or null if it was never theirs to give */
     auraFrom: function (key) { return (AURA_MEANING[key] && AURA_MEANING[key].from) || null; },
     ptStars: ptStars,
