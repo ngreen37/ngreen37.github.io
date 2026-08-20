@@ -664,8 +664,17 @@ body_class: theme-hall
      Keys come from `PJCC.AURAS` (pjcc-profile.js) — never a hex literal here, or the
      bench drifts off the palette the Forge offers. My picks, and open to veto the same way
      the icons were: Maxwell the one who stays = emerald · Crockett the Academy teacher =
-     amber (pine/copper) · Argus = ice · Auston brave = crimson · The Dad quiet = mono ·
-     Robert the rival = violet · Princess = sakura · the CEO at the top = gold. */
+     amber (pine/copper) · Argus = ice · Auston brave = crimson · The Dad steady = azure ·
+     Robert the rival = violet · Princess = sakura · the CEO at the top = gold · Nate = jade.
+
+     ⛑⛑ SINCE 2026-08-19 THE AURA IS ALSO THE CARD, so these keys are load-bearing twice
+     over and no two of them may ever repeat. `npm run test:regulars` fails on a duplicate,
+     on a key the Forge does not offer, and on `mono` — which is the palette's "no color
+     chosen" and is why The Dad moved off it.
+     ⚠ AND THE DUEL HOLDS THE SAME FIVE. `assets/games/duel-traps.json` gives its foes an
+     aura too, and four of them are these bots; `npm run test:duel` compares the two rosters
+     field for field. Changing a color here without changing it there is caught — that gate
+     is what found The Dad still wearing mono in the duel, minutes after he lost it here. */
   var BOTS = {
     maxwell:  { name: 'Maxwell',  icon: '♖', diff: 'Beginner', elo: 400,  movetime: 120,  aura: 'emerald' },
     crockett: { name: 'Crockett', icon: '♞', diff: 'Easy',     elo: 750,  movetime: 160,  aura: 'amber' },
@@ -695,7 +704,11 @@ body_class: theme-hall
        to him: a bot called Nate stands next to a door that offers the real one. */
     nate:     { name: 'Nate',     icon: '♙', diff: 'Club',     elo: 1200, movetime: 480,  aura: 'jade' },
     // "Father" → "The Dad" (2026-08-10 Nate). Same character, same seat, warmer name.
-    dad:      { name: 'The Dad',  icon: '♚', diff: 'Club',     elo: 1400, movetime: 620,  aura: 'mono' },
+    /* ⛑ `mono` → `azure`, 2026-08-19. Every seat's aura is its CARD's color now, and `mono`
+       is not a color — it is the palette's literal "no color chosen", the gray the site
+       paints a stranger with no identity yet. On a bench where the other eight wear a hue
+       that is theirs, his read as the one seat that had not finished loading. */
+    dad:      { name: 'The Dad',  icon: '♚', diff: 'Club',     elo: 1400, movetime: 620,  aura: 'azure' },
     // Robert — the Checker Town rival (2026-07-19 Nate), down from 2400 to make room above.
     robert:   { name: 'Robert',   icon: '♜', diff: 'Expert',   elo: 1800, movetime: 950,  aura: 'violet' },
     /* ⚑⚑ SHE WEARS A PAWN, AND THAT IS THE WHOLE POINT (2026-08-19, Nate: *"Make it a pawn -
@@ -1142,6 +1155,21 @@ body_class: theme-hall
       ids.map(function (id) { return botCard(id, saved, showStars); }).join('') + '</div>';
   }
 
+  /* ⭐ THE SEAT'S COLOR IS THE SAME ONE IT FIGHTS IN. `--bot` is the bot's aura hex, the
+     exact value PJCCVs paints the VS rail with when you sit down — so the card you tapped
+     and the streak over the board are one identity, not two decorations that happen to be
+     near each other. One lookup, no second palette; the twelve hexes live in
+     `PJCC.AURAS` and nothing here may name a color the Forge does not offer.
+     ⚠ GUARDED, AND THE GUARD IS THE POINT. This runs in a render path on a page that can
+     load without pjcc-vs.js (it is one <script> among eight). A throw here would take the
+     whole bench down — eight seats gone because a decoration could not find its hex. No
+     module, no `--bot`, and every card falls back to the plain surface it wore before
+     2026-08-19, which is a bench that looks slightly duller and works perfectly.
+     [[down-never-stuck]] */
+  function tint(b){
+    try { var hex = PJCCVs.color(b.aura); return hex ? ' style="--bot:' + esc(hex) + '"' : ''; }
+    catch (e) { return ''; }
+  }
   function botCard(id, saved, showStars){
     {
       var b = BOTS[id];
@@ -1197,7 +1225,7 @@ body_class: theme-hall
          is dashed and gray to say so; this is somebody who is simply elsewhere, so it
          keeps her name at full strength and only drops the meta line. */
       if (gone) {
-        return '<button class="pt-card pt-bot pt-bot--away" data-bot="' + id + '" disabled' +
+        return '<button class="pt-card pt-bot pt-bot--away" data-bot="' + id + '" disabled' + tint(b) +
           ' aria-label="' + esc(b.name) + ' is not at the tables today">' +
           '<span class="pt-card-icon">' + glyph + '</span>' +
           '<span class="pt-card-t">' + esc(b.name) + '<br><i>' + esc(awayWords) + '</i></span></button>';
@@ -1221,7 +1249,7 @@ body_class: theme-hall
          missing. `anyStar()` is the switch, and it counts the pre-star wins too so a
          returning player never sees the bench go blank. */
       var stars = showStars ? starPair(id, b.name) : '';
-      return '<button class="pt-card pt-bot' + (knows ? ' pt-bot--knows' : '') + '" data-bot="' + id + '">' +
+      return '<button class="pt-card pt-bot' + (knows ? ' pt-bot--knows' : '') + '" data-bot="' + id + '"' + tint(b) + '>' +
         '<span class="pt-card-icon">' + glyph + '</span>' +
         '<span class="pt-card-t">' + esc(b.name) + stars + '<br><i>' + esc(meta) +
         (resume ? ' · resume' : '') + '</i></span></button>';
@@ -2640,15 +2668,53 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
 .pt-bots { margin-top: 4px; }
 .pt-bots .pt-card { flex: 1 1 140px; padding: 11px 14px; }
 .pt-bots .pt-card-icon { font-size: 22px; }
+
+/* ══ EVERY SEAT WEARS ITS OWN COLOR (2026-08-19) ═══════════════════════════════════
+   Nate: *"Give each bot box a unique color, and that is their aura color for the intro."*
+
+   ⭐ IT IS NOT A NEW PALETTE. `--bot` is written onto the card in `tint()` and holds the
+   bot's AURA — the same hex `PJCCVs` paints the VS streak with the moment you sit down. The
+   card and the streak over the board are one identity. Nine seats, nine auras, and the gate
+   in tests/regulars.check.js fails if two of them are ever the same.
+
+   ⚠⚠ 26% IS A CEILING, NOT A TASTE, AND IT IS THE QUIET LINE THAT SETS IT. Measured by
+   sampling the rendered pixels of all nine cards (a mid-gray meta on a card that a bright
+   aura has LIGHTENED loses contrast fast):
+       tint   name (#eef1f5)   meta (#8b93a1)   meta (#b9c0cb)
+       22%        8.53             3.12             —
+       26%        7.53              —              4.66   ← shipped, the last one that clears
+       34%        6.64              —              3.58   ✗
+       42%        4.55              —              2.81   ✗
+   So the meta line MOVED UP a step with the tint, to --hall-ink-2. The old #8b93a1 was
+   tuned against the flat charcoal card and fails on a tinted one at any strength worth
+   having. [[audit-harness]] — real contrast is sampled, not reasoned about.
+   ⚠ The gradient falls back to plain surface by 68%, so the numbers above are the WORST
+   case: the text sits where the tint has already thinned.
+
+   ⚠ A LOCKED SEAT STAYS GRAY, deliberately. The color is who they are, and a seat you have
+   not opened yet should not be handing that out — the card going from charcoal to their own
+   hue is the small thing that happens when you earn it. An AWAY seat keeps its color: the
+   chair is empty, but it is still hers. */
+.pt-bots .pt-card.pt-bot[style*="--bot"] {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--bot) 26%, var(--surface-2)), var(--surface-2) 68%);
+  border-color: color-mix(in srgb, var(--bot) 52%, var(--edge-soft));
+}
+.pt-bots .pt-card.pt-bot[style*="--bot"] .pt-card-icon { color: var(--bot); }
+.pt-bots .pt-card.pt-bot[style*="--bot"] .pt-card-t i  { color: var(--hall-ink-2, #b9c0cb); }
+/* the hover still promises the same thing it always did */
+.pt-bots .pt-card.pt-bot[style*="--bot"]:hover { border-color: #F5C518; }
 /* ⚠ A LOCKED SEAT IS SHOWN, NOT HIDDEN (2026-08-10). Princess opens by beating Robert and
    the CEO by beating Princess, and a lock you can see is the reason to go back down the
    bench — a lock you cannot see is just a shorter list. Quiet, not disabled-gray-mush: the
    name stays legible (that is the thing you are playing FOR) and only the meta drops back.
    `cursor: default` because `not-allowed` reads as an error, and this is not one. */
-.pt-bots .pt-card.pt-bot--locked {
+.pt-bots .pt-card.pt-bot--locked,
+.pt-bots .pt-card.pt-bot.pt-bot--locked[style*="--bot"] {
   opacity: 0.62; cursor: default; border-style: dashed; border-color: var(--edge-soft);
+  background: var(--surface-2);
 }
-.pt-bots .pt-card.pt-bot--locked:hover { border-color: var(--edge-soft); }
+.pt-bots .pt-card.pt-bot--locked:hover,
+.pt-bots .pt-card.pt-bot.pt-bot--locked[style*="--bot"]:hover { border-color: var(--edge-soft); }
 .pt-bots .pt-card.pt-bot--locked .pt-card-icon { color: #8b93a1; filter: grayscale(0.35); }
 .pt-bots .pt-card.pt-bot--locked .pt-card-t i { color: #79818e; }
 
@@ -3081,34 +3147,75 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
 .pt-star { position: relative; display: inline-block; width: 1em; height: 1em;
   vertical-align: -0.12em; flex: none; }
 .pt-star svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.pt-star > svg path { fill: none; stroke: rgba(245,197,24,0.26); stroke-width: 1.4;
+.pt-star > svg path { fill: none; stroke: rgba(20,16,10,0.34); stroke-width: 1.4;
   stroke-linejoin: round; }
 .pt-star-f { position: absolute; inset: 0; display: block; }
 .pt-star--half    .pt-star-f { clip-path: inset(0 50% 0 0); }
 .pt-star--quarter .pt-star-f { clip-path: inset(50% 0 0 50%); }
 .pt-star--none    .pt-star-f { display: none; }
-/* ⭐⭐ THE STAR WEARS THE LIVERY OF THE PIECES THAT WON IT, and that is not decoration —
-   it is the only thing that makes "white star / black star" legible at card size.
+/* ⛑⛑ THEY ARE ACTUALLY WHITE AND BLACK NOW — 2026-08-19. Nate: *"the stars for beating
+   the bots should be white and black. We'll have to pick a new background color to make
+   sure they show, so go for it."*
 
-   ⚠ THE FIRST VERSION PAINTED THE BLACK STAR BLACK, and a render said no: on a charcoal
-   card, a near-black shape reads as a HOLE, and at 1em it was barely distinguishable from
-   the empty slot beside it. The fix was not to invent a color but to look at what the site
-   already calls black — every board here draws the black army in the canon's PURPLE
-   (`--piece-b-fill`), and the player has just spent a whole game pushing those pieces
-   around. Wearing their color makes the star instantly a filled object, instantly the other
-   side, and instantly the same world as the board it came from. [[chess-visual-canon]]
-   ⚠ Tokens, never hexes: retint the canon and these follow, the way every other board on
-   the site does. The fallbacks are the canon's own values, for a page that loads without
-   the stylesheet. */
-.pt-star--w .pt-star-f path { fill: var(--piece-w-fill, #ffffff); stroke: #F5C518;
-  stroke-width: 1.3; stroke-linejoin: round; }
-.pt-star--b .pt-star-f path { fill: var(--piece-b-fill, #4a3585);
-  stroke: var(--piece-b-line, #f2e9ff); stroke-width: 1.3; stroke-linejoin: round; }
-/* the pair on a bench card, riding after the name */
-.pt-stars { display: inline-flex; gap: 3px; margin-left: 7px; font-size: 0.92em;
-  vertical-align: baseline; }
-/* on the side sheet the star sits after the word White / Black */
-.pt-side .pt-star { margin-left: 7px; font-size: 0.95em; }
+   THE 08-18 VERSION PAINTED THE BLACK STAR PURPLE and wrote a long note explaining why: on
+   a charcoal card a near-black shape reads as a HOLE. That was right about the problem and
+   wrong about which thing had to move. The star did not need a different color; the surface
+   under it did.
+
+   ⭐⭐ SO EACH STAR SITS ON THE SQUARE THAT MAKES IT READ — THE WHITE ONE ON WALNUT, THE
+   BLACK ONE ON MAPLE. Two squares of the room's own board, side by side, and the pair is
+   suddenly a tiny chessboard with your two results standing on it. It is not decoration:
+   white-on-dark and black-on-light are the ONLY two grounds where a white fill and a black
+   fill are each unambiguous, which is the same reason a chess set has never needed a third
+   color. [[chess-visual-canon]]
+
+   ⚠⚠ ONE CREAM PLAQUE FOR BOTH WAS BUILT FIRST, AND THE RENDER KILLED IT. On a single
+   light tile the black star was perfect and the WON WHITE STAR WAS INDISTINGUISHABLE FROM
+   THE EMPTY SLOT BESIDE IT — both read as an outlined shape on cream, because a white fill
+   on a light ground IS an outline. The difference between "beaten with White" and "never
+   beaten" had quietly become a 0.1px stroke weight. Nothing in the CSS looked wrong; you
+   had to look at the picture. [[pick-visual-values-from-a-render]]
+
+   ⚠ SO THE EMPTY SLOT SWAPS SIDES TOO. Its outline is LIGHT on the walnut square and DARK
+   on the maple one — an empty slot has to read as empty on whichever wood it is standing on,
+   and one color could not do both.
+
+   ⚠⚠ THE FIRST FOUR NUMBERS WRITTEN HERE WERE GUESSES AND TWO OF THEM WERE WRONG. This
+   comment shipped for about a minute claiming the empty outlines measured 4.71 and 7.31;
+   composited against their own squares they were 2.89 and 2.60, both UNDER the 3.0 a graphic
+   needs. The alphas below are the ones a solve returned, not the ones that looked plausible.
+   [[audit-numbers-can-be-wrong]] — a number derived in a comment is not a measurement.
+   Composited and measured, on the shipped squares:
+       walnut #9c5f33   white fill      5.12      empty outline @0.78   3.63
+       maple  #e9d3a4   black fill     12.55      empty outline @0.55   3.73
+   and the two woods against each other, 3.49, so the pair reads as two squares.
+
+   ⚠ THE SQUARES ARE THE CANON'S TOKENS, not hexes. Retint the board and these follow, the
+   way every other board on the site does; the fallbacks are the canon's own values, for a
+   shell that renders without the stylesheet. */
+.pt-star--w .pt-star-f path { fill: #ffffff; stroke: #221c14;
+  stroke-width: 1.5; stroke-linejoin: round; }
+.pt-star--b .pt-star-f path { fill: #15131b; stroke: #fbf7ef;
+  stroke-width: 1.5; stroke-linejoin: round; }
+/* the empty slot, on each wood */
+.pt-star--w > svg path { stroke: rgba(255, 248, 235, 0.78); }
+.pt-star--b > svg path { stroke: rgba(20, 16, 10, 0.55); }
+/* the two squares themselves */
+/* 1px, not 1.5 — the badge has to keep the FOOTPRINT the old pair had. Two 1em squares at
+   1.5px padding with no gap came out ~6px wider than the 0.92em pair it replaced, and these
+   cards are tuned to a 140px flex basis: six pixels is enough to tip the meta line onto a
+   third row on the narrow panel. Measured against the old geometry, not eyeballed. */
+.pt-star { padding: 1px; }
+.pt-star--w { background: var(--chess-dk, #9c5f33); }
+.pt-star--b { background: var(--chess-lt, #e9d3a4); }
+/* the pair on a bench card, riding after the name — gapless, so it is one little board */
+.pt-stars { display: inline-flex; gap: 0; margin-left: 7px; font-size: 0.92em;
+  vertical-align: -0.16em; border-radius: 4px; overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45); }
+/* on the side sheet the star sits alone after the word White / Black, so it is one square
+   rather than a board — same grounds, same reason, just not a pair. */
+.pt-side .pt-star { margin-left: 7px; font-size: 1em; border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45); }
 
 /* ── WHICH SIDE (2026-08-18) ────────────────────────────────────────
    Re-uses .pt-seat, the same row the three tables use — the question is the same shape

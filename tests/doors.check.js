@@ -196,6 +196,20 @@ const PARTIAL = read('_sass/_pjcc-21-gauntlet-door.scss');
   check('every page that had a copy now loads the shared one', missing.length === 0,
     missing.join(', ') || HOSTS.length + ' pages include it');
 
+  /* ⛑ EVERY FLOOR'S COLOR IS ITS OWN — 2026-08-19, Nate: *"Give each bot box a unique
+     color, and that is their aura color for the intro."* He said it about the Park Tables
+     bench (gated in regulars.check.js), but the rule is the same rule here and this tower
+     was already keeping it: `rung.accent` paints the floor's DOOR, its portrait ring, its
+     pips and the VS cut-scene's band, so two floors sharing a hex would be two challengers
+     wearing one identity through all four. Thirteen floors, thirteen colors — including the
+     three secret ones, which is where a duplicate would be least likely to be noticed. */
+  const all13 = [...read('assets/games/pjcc_gauntlet.html')
+    .matchAll(/accent:'(#[0-9a-fA-F]{6})'/g)].map((x) => x[1].toLowerCase());
+  const clash = all13.filter((a, i) => all13.indexOf(a) !== i);
+  check('no two Gauntlet floors wear the same accent', all13.length >= 13 && clash.length === 0,
+    clash.length ? 'repeated: ' + [...new Set(clash)].join(', ')
+                 : all13.length + ' floors, ' + new Set(all13).size + ' distinct colors');
+
   /* ⚠⚠ AND NOT DEFERRED. /pjcc/'s world ticker reads window.__gauntletProg synchronously
      from an inline block further down the same layout; a deferred script runs after every
      one of those, so the BREAKING line would simply stop appearing and nothing would look

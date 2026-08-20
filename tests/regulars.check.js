@@ -45,11 +45,13 @@ while ((m = entry.exec(botsBlock)) !== null) {
      thing that can disagree with the game, and an unchecked copy is the whole reason this
      gate exists. */
   const icon = /icon:\s*'([^']*)'/.exec(body);
+  const aura = /aura:\s*'([^']*)'/.exec(body);
   bots.push({
     key: m[1],
     name: name ? name[1] : null,
     elo: elo ? +elo[1] : null,
     icon: icon ? icon[1] : null,
+    aura: aura ? aura[1] : null,
     /* ⚑ 2026-08-19 — the adaptive seat. It is a FOURTH thing that can disagree between the
        game and the data file, and the disagreement is silent AND wrong in the worst
        direction: if the YAML forgets the flag, the front door prints Auston's seed as a
@@ -180,6 +182,70 @@ check('no hand-typed seat count survives on the front door',
 
 /* ══ THE BENCH IS DRAWN, NOT DESCRIBED (2026-08-18) ════════════════════════════════════
    The front door shows the seats now, so three more things can go wrong quietly. */
+/* ⛑ AND NO TWO WEAR THE SAME COLOR EITHER — 2026-08-19, Nate: *"Give each bot box a
+   unique color, and that is their aura color for the intro."* The bench card is tinted with
+   the seat's aura and the VS streak over the board is painted from the same key, so a
+   REPEATED aura is two regulars who look like the same person in both places at once. There
+   are twelve auras in `PJCC.AURAS` and nine seats, so uniqueness costs nothing to keep —
+   which is exactly why it would go unnoticed the day somebody adds a tenth seat and reaches
+   for a color that is already spoken for.
+
+   ⚠ THIS ASKS `bots`, NOT `rows`. The aura lives in the GAME's BOTS object and nowhere
+   else — `_data/regulars.yml` deliberately does not carry it, because the front door prints
+   names and ratings and has no use for a color. The first version of this block read `rows`,
+   found `aura: null` nine times, and reported "1 distinct colors ✓" — three of its four
+   checks passed on data that was not there. [[green-must-name-what-ran]]
+   ⚠ So every check below is guarded on the colors having been FOUND. A uniqueness test over
+   nine nulls is unanimous and worthless. */
+{
+  const auras = bots.map(b => b.aura);
+  const missing = bots.filter(b => !b.aura).map(b => b.key);
+  const found = missing.length === 0;
+  check('every regular has an aura', found,
+        missing.length ? 'no aura on: ' + missing.join(', ') : auras.length + ' seats, all colored');
+
+  const repeated = auras.filter((a, i) => a && auras.indexOf(a) !== i);
+  check('no two regulars wear the same aura', found && repeated.length === 0,
+        !found ? 'not asked — an aura is missing above'
+               : repeated.length ? 'repeated: ' + [...new Set(repeated)].join(', ')
+                                 : [...new Set(auras)].length + ' distinct colors');
+
+  /* ⚠ `mono` IS BANNED, and it is not one of the twelve being difficult. It is the
+     palette's literal "no color chosen" — the gray a stranger with no identity gets — so a
+     seat wearing it reads as the one card that failed to load. The Dad wore it until today. */
+  const neutral = bots.filter(b => b.aura === 'mono').map(b => b.key);
+  check("…and nobody wears `mono`, the palette's \"no color chosen\"",
+        found && neutral.length === 0,
+        !found ? 'not asked' : neutral.join(', ') || 'every seat has a real hue');
+
+  /* ⚠ AND THEY HAVE TO BE COLORS THE FORGE ACTUALLY OFFERS. A hand-typed hex or a
+     misspelled key resolves to the neutral through `auraColor()`'s fallback — silently, and
+     looking exactly like a seat that was never given a color at all. */
+  const palette = /var AURAS = \{([\s\S]*?)\};/.exec(
+    fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-profile.js'), 'utf8'))[1];
+  const known = [...palette.matchAll(/(\w+):\s*'#[0-9a-fA-F]{6}'/g)].map(m2 => m2[1]);
+  const strangers = bots.filter(b => b.aura && !known.includes(b.aura)).map(b => b.key + ':' + b.aura);
+  check('…and every one is a real key in PJCC.AURAS', found && strangers.length === 0,
+        !found ? 'not asked' : strangers.join(', ') ||
+          known.length + ' in the palette, ' + bots.length + ' seats drawing on it');
+
+  /* ⭐ AND THE CARD READS THE SAME LOOKUP THE STREAK DOES. The point of the colors is that
+     the seat you tapped and the bar over the board are ONE identity; two call sites reaching
+     for the same palette by different routes is how that quietly stops being true. */
+  check('the bench card takes its color from PJCCVs, like the VS streak does',
+        /function tint\(b\)\s*\{[\s\S]*?PJCCVs\.color\(b\.aura\)/.test(tablesSrc),
+        'tint() -> PJCCVs.color(b.aura) -> the same hex applyOppAura paints the rail with');
+  /* ⚠⚠ IT HAS TO BE THE BACKGROUND, NOT JUST 'somewhere near --bot'. Written first as
+     "a color-mix(var(--bot)) within 400 characters of the tinted-card selector", this
+     PASSED a mutation that replaced the card background with the plain surface — because the
+     BORDER rule three lines down also mixes --bot and satisfied the window. The card was
+     nine identical charcoal boxes with colored edges and the gate said the colors shipped. */
+  const cardBg = /\[style\*="--bot"\]\s*\{[^}]*background:[^;]*var\(--bot\)/.test(tablesSrc);
+  check('…and the card BACKGROUND is the thing --bot paints', /--bot:/.test(tablesSrc) && cardBg,
+        cardBg ? 'the tint is the card itself, not only its edge'
+               : 'the tinted-card rule no longer mixes --bot into its background');
+}
+
 const icons = rows.map(r => r.icon).filter(Boolean);
 const dupes = icons.filter((g, i) => icons.indexOf(g) !== i);
 check('no two regulars wear the same glyph',

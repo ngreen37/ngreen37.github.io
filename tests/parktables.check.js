@@ -179,6 +179,31 @@ const BOT = 'maxwell';
   ok('the ladder and the off-ladder seat are drawn separately',
      panels.rungs === rosterSize - 1 && panels.adapt === 1,
      panels.rungs + ' rungs · ' + panels.adapt + ' adaptive');
+  /* ⛑ EVERY OPEN SEAT WEARS ITS OWN COLOR — 2026-08-19, Nate: *"Give each bot box a unique
+     color, and that is their aura color for the intro."*
+     ⚠⚠ THE SOURCE GATE IN regulars.check.js CANNOT SEE THIS. That one proves the roster
+     holds nine distinct aura KEYS and that a rule reads `--bot`; it cannot prove `tint()`
+     ever ran. If PJCCVs failed to load, `tint()` returns '' by design and the bench comes up
+     nine identical charcoal cards — the graceful fallback working perfectly, and the feature
+     silently absent. So this asks the rendered page. [[feature-shipped-but-never-loaded]]
+     ⚠ A LOCKED SEAT IS EXCLUDED ON PURPOSE: it keeps the neutral card until you open it. */
+  const tints = await p.evaluate(() => [...document.querySelectorAll('[data-bot]')].map(el => ({
+    bot: el.dataset.bot,
+    locked: el.classList.contains('pt-bot--locked'),
+    hex: getComputedStyle(el).getPropertyValue('--bot').trim().toLowerCase(),
+  })));
+  const openSeats = tints.filter(t => !t.locked);
+  const uncolored = openSeats.filter(t => !/^#[0-9a-f]{6}$/.test(t.hex)).map(t => t.bot);
+  ok('every open seat is actually painted with its aura', openSeats.length > 0 && uncolored.length === 0,
+     uncolored.length ? 'no --bot on: ' + uncolored.join(', ') : openSeats.length + ' seats colored');
+  const hexes = openSeats.map(t => t.hex);
+  ok('…and no two of them came out the same color',
+     hexes.length > 0 && new Set(hexes).size === hexes.length,
+     [...new Set(hexes)].length + ' distinct of ' + hexes.length);
+  ok('…while a locked seat keeps the neutral card until you open it',
+     tints.filter(t => t.locked).every(t => !t.hex),
+     tints.filter(t => t.locked).map(t => t.bot).join(', ') || 'none locked in this state');
+
   /* ⭐ AN UNBEATEN BENCH WEARS NO STARS. Sixteen empty outlines on a bench nobody has
      beaten is decoration on a promise; the first win turns the collection on. */
   ok('…and a player with no wins sees no star chrome at all',
