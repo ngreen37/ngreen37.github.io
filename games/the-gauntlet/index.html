@@ -62,12 +62,19 @@ permalink: /games/the-gauntlet/
 
    MEASURED by tests/gauntlet.check.js, driving a real match at each stage width:
 
-     stage 380 / 420 / 520   121px      \  4px rails — the frame is under the game's own
-     stage 306               161px      /  `max-height:780px` bar rule at these sizes
-     stage 720               129px         8px rails, the full-size bars
+     stage 380 / 420 / 520   173px      \  4px rails — the frame is under the game's own
+     stage 306               213px      /  `max-height:780px` bar rule at these sizes
+     stage 720               181px         8px rails, the full-size bars
 
-     -> 148px here, 176px on a phone. Both are the measurement plus ~16px of headroom,
+     -> 200px here, 228px on a phone. Both are the measurement plus ~16px of headroom,
         because the parts are type and the type is not identical on every device.
+
+     ⛑ BOTH ROSE 52px ON 2026-08-19, AND THE LINE ITEM IS ⚑ RESIGN. Nate: "the resign
+     button is in the way of the bottom right two pieces." It was absolutely positioned over
+     the board at bottom:10/right:10, which is exactly why it cost this budget nothing — and
+     why it sat on h1 and g1 on a phone. The gutter under the last rank is 22 drawing units,
+     15px at a 306 stage, and a tap target is 44. It is a flow row under the move browser
+     now, so it appears here, where every non-board pixel is supposed to.
 
    ⚠⚠ THE BOOTH WAS NEVER IN THIS SUM, AND THAT IS THE BUG NATE REPORTED as "the aura bar
    flashes for just a second for the opponent up top and then goes away." It is a flow child
@@ -80,7 +87,7 @@ permalink: /games/the-gauntlet/
    anything new goes into #stage's flow, it goes in the list above or it clips something.
    tests/gauntlet.check.js measures the real stage against this budget in the worst state
    the room can reach (booth up, move browser showing its note). */
-.td-frame iframe { height: calc(var(--g-stage) * 1.1364 + var(--g-furniture, 148px)); }
+.td-frame iframe { height: calc(var(--g-stage) * 1.1364 + var(--g-furniture, 200px)); }
 /* On a phone the width, not the height, is the binding constraint — the stage is already the
    full card — so the height follows the width it actually got instead of the viewport's.
    ⚠ AND THE BUDGET IS BIGGER DOWN HERE, which is a measurement rather than caution: the
@@ -90,7 +97,7 @@ permalink: /games/the-gauntlet/
    that only exists on a phone; carrying the desktop's number clipped the phone. So each
    breakpoint states its own, which is what these two numbers have always actually been. */
 @media (max-width: 600px) {
-  .td-frame { --g-stage: min(720px, calc(100vw - 84px)); --g-furniture: 176px; }
+  .td-frame { --g-stage: min(720px, calc(100vw - 84px)); --g-furniture: 228px; }
 }
 </style>
 

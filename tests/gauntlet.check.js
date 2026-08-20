@@ -11,7 +11,9 @@ const { withGame, report } = require('./harness');
 
 const GAME = path.join(__dirname, '..', 'assets', 'games', 'pjcc_gauntlet.html');
 const MARKER = 'loop();'; // the final bottom kick, after every def
-const HOOK = `window.__t = { G:function(){return G;}, LADDER:LADDER };`;
+const HOOK = `window.__t = { G:function(){return G;}, LADDER:LADDER, VISIBLE:VISIBLE,
+  prog:loadProg, fromAccount:restoreFromAccount,
+  geo:function(){ return { W:W, H:H, TILE:TILE, BOARD:BOARD, BX:BX, BY:BY }; } };`;
 
 const PKEY = 'pjcc.gauntlet.v2';
 
@@ -19,8 +21,17 @@ const PKEY = 'pjcc.gauntlet.v2';
   const { results, errors } = await withGame(GAME, MARKER, HOOK, async (page, ok, sleep) => {
     const visible = id => page.evaluate(i => { const e = document.getElementById(i); return !!e && !e.classList.contains('hidden'); }, id);
     const text = id => page.evaluate(i => (document.getElementById(i) || {}).textContent || '', id);
+    /* ⚠⚠ THE HALF-PLAYED BOARD HAS TO GO TOO, or this does not seed anything. A mid-game
+       save beats every other entrance in the room's open-state block — deliberately, it is
+       the "leave and come back" feature — so a run that let a real match take a move would
+       reload straight back INTO that match, and the next `#play-btn` click would fail on an
+       element that is not there. Setting the climb without clearing the board is a setup
+       that quietly does not apply. */
     const seed = async prog => {
-      await page.evaluate((k, p) => { if (p) localStorage.setItem(k, p); else localStorage.removeItem(k); }, PKEY, prog ? JSON.stringify(prog) : null);
+      await page.evaluate((k, p) => {
+        if (p) localStorage.setItem(k, p); else localStorage.removeItem(k);
+        localStorage.removeItem('pjcc.gauntlet.game.v1');
+      }, PKEY, prog ? JSON.stringify(prog) : null);
       await page.reload({ waitUntil: 'load' });
       await sleep(300);
     };
@@ -54,15 +65,127 @@ const PKEY = 'pjcc.gauntlet.v2';
     await page.click('#play-btn'); await sleep(200);
     ok(await visible('ladder-screen'), 'crowned player opens the tower (rematch anyone)');
 
+    /* --- A NEW DEVICE PICKS THE CLIMB BACK UP (2026-08-19) ----------------------------
+       Nate: "logging in to a different device, the gauntlet doors on the main page and
+       games hall default to the first door. They should default to the latest door the user
+       has unlocked." The doors are where he saw it; the hole was in here — the profile
+       restore recovered `unlocked` and nothing else, while every screen and every door on
+       the site reads `beaten`.
+
+       ⚠ THIS DRIVES THE DEDUCTION, NOT THE NETWORK. `restoreFromAccount(rows)` takes the
+       plain array `PJCC.myStats()` resolves to, so the seam is the only thing stubbed here
+       — there is no Supabase session in a headless file:// page to have instead. What is
+       actually being asked is the part that was wrong: a bare COUNT has to come back as a
+       ladder, it has to raise the screens that were already drawn, and it must never lower
+       anything. [[green-must-name-what-ran]] */
+    await seed(null);                                        // a brand-new device: nothing local
+    ok((await text('play-btn')).indexOf('TOWER') >= 0, 'new device starts at "ENTER THE TOWER"');
+    const restored = await page.evaluate(() => window.__t.fromAccount(
+      [{ game: 'skyrun', best_score: 900 }, { game: 'the-gauntlet', best_score: 6, data: { cleared: 6 } }]));
+    await sleep(150);
+    ok(restored === true, 'the account row is recognized and applied');
+    const back = await page.evaluate(() => window.__t.prog());
+    ok(Object.keys(back.beaten).length === 6 && back.beaten[0] && back.beaten[5] && !back.beaten[6],
+       'six cleared floors come back as floors 1-6 beaten, and no seventh  [' +
+       Object.keys(back.beaten).join(',') + ']');
+    ok(back.unlocked === 6, 'and the unlocked rung follows it  [' + back.unlocked + ']');
+    ok((await text('play-btn')).indexOf('FLOOR 7') >= 0,
+       'the menu already on screen re-reads as "CONTINUE — FLOOR 7"  [' + (await text('play-btn')) + ']');
+
+    /* ⚠⚠ AND IT ONLY EVER RAISES. A player who is further along on THIS device — they
+       won a floor while the write was still in flight — must not be walked backwards by a
+       server count that is a moment behind. This is the assertion that would catch a fix
+       written as "trust the server". */
+    await seed({ unlocked: 8, beaten: { 0: true, 1: true, 2: true, 3: true, 4: true, 5: true, 6: true, 7: true } });
+    await page.evaluate(() => window.__t.fromAccount([{ game: 'the-gauntlet', best_score: 3, data: { cleared: 3 } }]));
+    await sleep(120);
+    const kept = await page.evaluate(() => window.__t.prog());
+    ok(Object.keys(kept.beaten).length === 8 && kept.unlocked === 8,
+       'a LOWER server count never walks a local climb backwards  [' +
+       Object.keys(kept.beaten).length + ' beaten, unlocked ' + kept.unlocked + ']');
+
+    /* ⚠ THE SECRET FLOORS ARE NOT DEDUCIBLE and must not be handed out. The count includes
+       them, but beating the CEO says nothing about the Chairman — so the deduction stops at
+       the ten public floors, which are certainly done if the count got past them. */
+    await seed(null);
+    await page.evaluate(() => window.__t.fromAccount([{ game: 'the-gauntlet', best_score: 12, data: { cleared: 12 } }]));
+    await sleep(120);
+    const capped = await page.evaluate(() => ({ p: window.__t.prog(), v: window.__t.VISIBLE }));
+    ok(Object.keys(capped.p.beaten).length === capped.v,
+       'a count past the public ten stops at ten — no secret floor is handed out  [' +
+       Object.keys(capped.p.beaten).length + ' of ' + capped.v + ']');
+
+    /* --- ...and the #climb deep link re-routes when the account answers late ----------
+       The room decides its entrance SYNCHRONOUSLY, so on a new device `#climb` has already
+       sent a "cleared 0" player to the tower by the time the account replies. Landing on
+       the tower is exactly what he described from the outside. */
+    /* ⚠ A HASH CHANGE IS A SAME-DOCUMENT NAVIGATION — `goto('…#climb')` does NOT re-run the
+       room's open-state block, and the first version of this check read the screen left over
+       from the step above and called it the entrance. `reload()` is what actually enters. */
+    await page.evaluate(() => { localStorage.removeItem('pjcc.gauntlet.v2'); localStorage.removeItem('pjcc.gauntlet.game.v1'); });
+    await page.goto(page.url().split('#')[0] + '#climb', { waitUntil: 'load' });
+    await page.reload({ waitUntil: 'load' });
+    await sleep(350);
+    ok(await visible('ladder-screen'), '#climb on a blank device lands on the tower (nothing to resume yet)');
+    await page.evaluate(() => window.__t.fromAccount([{ game: 'the-gauntlet', best_score: 6, data: { cleared: 6 } }]));
+    await sleep(250);
+    ok(await visible('boss-screen'), 'and the account arriving re-routes it to the boss card');
+    ok((await text('boss-eye')).indexOf('Floor 7') >= 0,
+       'at the floor the ACCOUNT reached, not floor one  [' + (await text('boss-eye')) + ']');
+
+    /* ⚠⚠ BUT IT NEVER YANKS A SCREEN HE IS USING. Same late answer, except he has already
+       tapped into the tower. Re-routing him to a boss card mid-scroll would be a worse bug
+       than the one being fixed. */
+    await page.evaluate(() => { localStorage.removeItem('pjcc.gauntlet.v2'); localStorage.removeItem('pjcc.gauntlet.game.v1'); });
+    await page.goto(page.url().split('#')[0], { waitUntil: 'load' });
+    await page.reload({ waitUntil: 'load' });
+    await sleep(300);
+    await page.evaluate(() => window.showLadder());
+    await sleep(150);
+    await page.evaluate(() => window.__t.fromAccount([{ game: 'the-gauntlet', best_score: 6, data: { cleared: 6 } }]));
+    await sleep(250);
+    ok(await visible('ladder-screen'),
+       'a player who has already opened the tower is left on it, not re-routed under him');
+
+    /* --- The cut-scene has NO skip (2026-08-19) ---------------------------------------
+       Nate: "take out the skip intro on the intro — it's so short anyway." The hint and the
+       tap/keydown handlers are both gone, so this asserts the ABSENCE two ways: no
+       `.vs-cut-skip` element, and a real pointerdown + Escape leave the card standing. The
+       second half is the one that matters — deleting only the hint would still pass a
+       markup check while a stray thumb ate the announcement. */
+    await seed(MID);
+    await page.click('#play-btn'); await sleep(150);
+    await page.evaluate(() => { const b = document.querySelector('#boss-row .btn-gold'); b && b.click(); });
+    await sleep(200);
+    ok(await page.evaluate(() => !!document.querySelector('.vs-cut')), 'FIGHT plays the VS cut-scene');
+    ok(await page.evaluate(() => !document.querySelector('.vs-cut-skip')),
+       'the cut-scene carries no "TAP TO SKIP" hint');
+    await page.evaluate(() => {
+      document.querySelector('.vs-cut').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+    await sleep(120);
+    ok(await page.evaluate(() => !!document.querySelector('.vs-cut')),
+       'a tap and Escape do NOT dismiss it — the intro plays to the end');
+    /* ...and it still leaves on its own. The failsafe timer is 3400ms and is now the only
+       way out, so this waits past it rather than nudging anything. */
+    await sleep(3600);
+    ok(await page.evaluate(() => !document.querySelector('.vs-cut')),
+       'it removes itself when it finishes (no parked overlay left behind)');
+    ok(await page.evaluate(() => !!window.__t.G()), 'and the match started behind it');
+
     /* --- Random colors: the announced color is the color actually played ---
        ⚠ FIGHT NO LONGER STARTS THE MATCH DIRECTLY (2026-08-13). It plays the VS cut-scene
        and calls startRung() when that resolves, so `G` is null for ~2.6s after the click
-       and reading it at 140ms measures nothing. `skipCut()` dismisses the card the way a
-       player does — a pointerdown on it — which keeps this loop fast AND exercises the skip
-       path on every one of the fourteen iterations. */
-    const skipCut = () => page.evaluate(() => {
+       and reading it at 140ms measures nothing.
+       ⚠ AND THERE IS NO LONGER A TAP THAT SHORTENS IT (2026-08-19). `endCut()` dispatches
+       the wrapper's own `animationend` — the SAME event the finished card fires, on the
+       same element, through the same `done()` guard — which fast-forwards to the natural
+       ending rather than exercising a skip that no longer exists. Fourteen real 2.6s
+       playthroughs would put ~40s on this run for no extra coverage. */
+    const endCut = () => page.evaluate(() => {
       const c = document.querySelector('.vs-cut');
-      if (c) c.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      if (c) c.dispatchEvent(new AnimationEvent('animationend', { bubbles: true }));
       return !!c;
     });
     let mism = 0, sawW = 0, sawB = 0, sawCut = 0;
@@ -73,21 +196,21 @@ const PKEY = 'pjcc.gauntlet.v2';
       announced === 'w' ? sawW++ : sawB++;
       await page.evaluate(() => { const b = document.querySelector('#boss-row .btn-gold'); b && b.click(); });
       await sleep(80);
-      if (await skipCut()) sawCut++;
+      if (await endCut()) sawCut++;
       await sleep(140);
       const pc = await page.evaluate(() => (window.__t.G() || {}).pc);
       if (pc !== announced) mism++;
     }
     ok(sawCut === 14, 'FIGHT played the VS cut-scene every time (' + sawCut + '/14)');
     ok(await page.evaluate(() => !document.querySelector('.vs-cut')),
-       'a skipped cut-scene removes itself from the DOM (no parked overlay left behind)');
-    /* ⚠⚠ AND THE SKIP MUST NOT DEAL A SECOND BOARD. Every path out of the cut-scene calls
-       the same `done()` guard, and the failure this locks in is real: a tap that resolves
-       AND a failsafe timer that resolves would run startRung() twice, which in here is a
-       fresh position laid over a game already in progress. One board, one move log. */
+       'a finished cut-scene removes itself from the DOM (no parked overlay left behind)');
+    /* ⚠⚠ AND IT MUST NOT DEAL A SECOND BOARD. Every path out of the cut-scene calls the
+       same `done()` guard, and the failure this locks in is real: the animation end that
+       resolves AND a failsafe timer that resolves would run startRung() twice, which in
+       here is a fresh position laid over a game already in progress. One board, one log. */
     ok(await page.evaluate(() => ((window.__t.G() || {}).log || []).length === 0 ||
                                  ((window.__t.G() || {}).uci || []).length <= 1),
-       'the skipped match started exactly once (no double startRung)');
+       'the match started exactly once (no double startRung)');
     ok(mism === 0, 'boss-card color note matched the played color every start (mismatches: ' + mism + ')');
     ok(sawW > 0 && sawB > 0, 'colors actually randomise across starts  [W:' + sawW + ' B:' + sawB + ']');
 
@@ -131,10 +254,15 @@ const PKEY = 'pjcc.gauntlet.v2';
     /* two budgets, because the wrapper states two — see its @media (max-width:600px).
        The phone branch kicks in at viewport <=600, and stage = 100vw-84, so a stage of
        516 or less is a phone frame. */
-    const FRAME_DESKTOP = 148, FRAME_PHONE = 176;
+    /* ⛑ BOTH NUMBERS ROSE 52px ON 2026-08-19 — 148 -> 200 and 176 -> 228 — because
+       ⚑ Resign stopped floating over the board and became a flow row (44px tap target +
+       8px of margin). That is the documented cost of the fix, not a nudge: the board keeps
+       every pixel it had and the frame grew, which is the same trade the booth got. */
+    const FRAME_DESKTOP = 200, FRAME_PHONE = 228;
     const budgetFor = (stageW) => (stageW <= 516 ? FRAME_PHONE : FRAME_DESKTOP);
     const STAGE_WIDTHS = [306, 380, 420, 520, 720];
     let worstSlack = 1e9, worstAt = '', boothMissed = [], seen = [], railLost = [];
+    let resignMissing = [], resignOnBoard = [], resignTap = [];
 
     /* Two DIFFERENT promises are being kept here, and they need separate questions.
 
@@ -189,9 +317,33 @@ const PKEY = 'pjcc.gauntlet.v2';
       await sleep(120);
       await page.evaluate(() => {
         const c = document.querySelector('.vs-cut');
-        if (c) c.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+        if (c) c.dispatchEvent(new AnimationEvent('animationend', { bubbles: true }));
       });
       await sleep(1400);                       // the booth's first line lands ~900ms in
+
+      /* ⚑ AND THE RESIGN BUTTON IS NOT ON THE BOARD — 2026-08-19, Nate: "the resign
+         button is in the way of the bottom right two pieces." It used to be a float-btn
+         at bottom:10/right:10 over #board-wrap, which cleared the last rank on a desktop
+         board and cut 28px into it on a phone. It is furniture in the flow now.
+         ⚠⚠ THE QUESTION IS GEOMETRY, NOT PARENTAGE. Asking "is it outside #board-wrap"
+         would have passed on the old code the day someone re-parented it and kept the
+         absolute offsets. This computes where the board is actually PAINTED — the canvas
+         box scaled by the drawing units the room uses — and asks whether the button's own
+         rect touches it, at every stage width the wrapper produces. */
+      const clash = await page.evaluate(() => {
+        const cv = document.getElementById('cv'), btn = document.getElementById('resign-btn');
+        if (!cv || !btn || btn.classList.contains('hidden')) return { shown: false };
+        const g = window.__t.geo(), c = cv.getBoundingClientRect(), b = btn.getBoundingClientRect();
+        const k = c.width / g.W;                       // one drawing unit, in css px
+        const board = { left: c.left + g.BX * k, top: c.top + g.BY * k,
+                        right: c.left + (g.BX + g.BOARD) * k, bottom: c.top + (g.BY + g.BOARD) * k };
+        return { shown: true, tap: Math.round(b.height),
+                 hits: b.left < board.right && b.right > board.left &&
+                       b.top < board.bottom && b.bottom > board.top,
+                 gap: Math.round(b.top - board.bottom) };
+      });
+      if (!clash.shown) resignMissing.push(w);
+      else { if (clash.hits) resignOnBoard.push(w + '@' + clash.gap); resignTap.push(clash.tap); }
 
       const own = await measure(false);        // (1) the room's own worst state
       if (!own.boothOpen) boothMissed.push(w);
@@ -212,6 +364,15 @@ const PKEY = 'pjcc.gauntlet.v2';
     ok(railLost.length === 0,
        'and even overflowing, the opponent rail never leaves by the top  [' +
        (railLost.length ? 'LOST at ' + railLost.join(', ') : 'held at all ' + STAGE_WIDTHS.length + ' widths') + ']');
+    ok(resignMissing.length === 0,
+       'the Resign button is on screen during a live match at every width  [' +
+       (resignMissing.length ? 'MISSING at ' + resignMissing.join(', ') : 'all ' + STAGE_WIDTHS.length) + ']');
+    ok(resignOnBoard.length === 0,
+       'and it never touches the painted board — no piece hides under it  [' +
+       (resignOnBoard.length ? 'ON THE BOARD at ' + resignOnBoard.join(', ')
+                             : 'clear at all ' + STAGE_WIDTHS.length + ' widths') + ']');
+    ok(resignTap.length > 0 && Math.min.apply(null, resignTap) >= 44,
+       'and it is still a 44px tap target after the move  [heights ' + resignTap.join(',') + ']');
 
     /* and the budget in the WRAPPER has to be the number this was measured against —
        a test that hard-codes 136 while the page says something else proves nothing */

@@ -75,8 +75,39 @@
     font-family:inherit; box-shadow:0 3px 0 rgba(0,0,0,0.35); transition:transform .08s; }
   .float-btn:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,0.35); }
   #menu-btn { top:10px; right:10px; background:#2a1a5e; color:#cdbcf2; padding:5px 12px; font-size:11px; border:1px solid #6b5fa0; }
-  #resign-btn { bottom:10px; right:10px; background:#3a1530; color:#ff9ec9; padding:7px 14px; font-size:12px; border:1px solid #7a3060; }
   .float-btn.hidden { display:none; }
+
+  /* ⛑ RESIGN CAME OFF THE BOARD — 2026-08-19. Nate: "the resign button is in the way of
+     the bottom right two pieces." It was a `.float-btn` at `bottom:10px; right:10px`
+     against #board-wrap, and on a phone that lands ON the board, not below it.
+
+     ⭐ THE NUMBERS SAY WHY IT ONLY EVER SHOWED ON A PHONE, and they are why nudging the
+     offsets was never going to be the fix. The canvas is 440x500 DRAWING UNITS with the
+     board at BY 78 + 400 tall, so the gutter under the last rank is 22 units — 4.4% of the
+     canvas, whatever size it is rendered at. Measured, driving a real match:
+
+       stage 720 (desktop)   gutter 36px   button 34px at bottom:10  ->  clears by 8px
+       stage 306 (phone)     gutter 15px   button 32px at bottom:10  ->  INTO the board 28px
+
+     28px of a 35px square, and 74px in from the right edge, is most of h1 and g1 — exactly
+     the two pieces he named. A percentage offset cannot rescue it either: the button has to
+     be at least 44px tall to be a tap target ([[tap-targets-and-audit-numbers]]) and the
+     gutter is 15. There is no version of "over the board, bottom right" that fits a phone.
+
+     ⭐ SO IT IS A REAL BUTTON IN THE FLOW NOW, under the move browser — which is also what
+     the Park Tables have always done with theirs. It cannot cover a piece at any size,
+     it gets a 44px target, and the corner it used to sit in is empty at every width.
+     ⚠ IT IS FURNITURE NOW, so it is in the budget: see --g-furniture in
+     /games/the-gauntlet/index.html, measured by tests/gauntlet.check.js.
+     ⚠ The row is `display:flex` with one child that hides itself, so on the tower screen
+     it contributes ZERO height — the 8px of air is the button's margin, not the row's. */
+  #ctl-row { display:flex; justify-content:center; }
+  #resign-btn { margin:8px 0 0; font-family:inherit; font-weight:bold; font-size:13px; line-height:1;
+    background:#3a1530; color:#ff9ec9; border:1px solid #7a3060; border-radius:999px;
+    padding:12px 22px; min-height:44px; cursor:pointer;
+    box-shadow:0 3px 0 rgba(0,0,0,0.35); transition:transform .08s; }
+  #resign-btn:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,0.35); }
+  #resign-btn.hidden { display:none; }
   /* the move browser (pjcc-replay.js) — only on while a game is actually running */
   #replay-bar { display:none; }
   #replay-bar.on { display:flex; }
@@ -283,7 +314,6 @@
   <div id="board-wrap">
     <canvas id="cv" width="440" height="500"></canvas>
     <button class="float-btn hidden" id="menu-btn">☰ Tower</button>
-    <button class="float-btn hidden" id="resign-btn">⚑ Resign</button>
 
     <div class="opp hidden" id="opp" aria-hidden="true">
       <div class="opp-face" id="opp-face"><span class="opp-glyph" id="opp-glyph">♟</span><span class="opp-mood" id="opp-mood">🙂</span></div>
@@ -294,10 +324,12 @@
 
   <div class="vs-aura hidden" id="g-aura-me" aria-hidden="true" style="--aura:#cdbcf2;--dir:-1"><i></i></div>
 
-  <!-- the move browser sits OUTSIDE #board-wrap on purpose: ☰ tower and ⚑ resign are
-       absolutely positioned against that wrapper, and a taller wrapper drops them on top
-       of the bar (2026-07-27). -->
+  <!-- the move browser sits OUTSIDE #board-wrap on purpose: ☰ Tower is absolutely
+       positioned against that wrapper, and a taller wrapper drops it on top of the bar
+       (2026-07-27). ⚑ Resign used to be the other one; it is in the flow below now
+       (2026-08-19) — see the note by #ctl-row in the stylesheet above. -->
   <div id="replay-bar" aria-label="Move history"></div>
+  <div id="ctl-row"><button class="hidden" id="resign-btn">⚑ Resign</button></div>
 
   <div class="booth hidden" id="booth" aria-hidden="true">
     <div class="booth-card" id="booth-card"><span class="booth-who" id="booth-who">RANDY</span><span class="booth-line" id="booth-line"></span></div>
@@ -1443,27 +1475,92 @@ document.getElementById('ladder-reset').onclick = function(){
 document.getElementById('menu-btn').onclick = showLadder;
 document.getElementById('resign-btn').onclick = function(){ if (G && !G.over) endGame('resign'); };
 
-// restore highest unlocked rung from the profile, if further than local
+/* ══ THE CLIMB COMES BACK FROM THE ACCOUNT ══════════════════════════════════
+   2026-08-19, Nate: "logging in to a different device, the gauntlet doors on the main page
+   and games hall default to the first door. They should default to the latest door the user
+   has unlocked."
+
+   ⚠⚠ THE DOORS WERE WHERE HE SAW IT; THE HOLE WAS IN HERE. This block already existed and
+   already read the account — but it restored ONLY `prog.unlocked`, and nothing in this room
+   reads `unlocked` except the tower's lock icons. `nextFloor()` walks `prog.beaten`, and so
+   does refreshMenu(), so does resume(), and so does every gauntlet door on the site. On a
+   new device `beaten` was empty, which means a player on floor seven got "ENTER THE TOWER",
+   a tower with nothing crossed off, and floor one behind every door on the site. Restoring
+   half the state looked like restoring it. [[one-fix-every-instance]]
+
+   ⭐ A COUNT IS ENOUGH TO REBUILD THE LADDER, BECAUSE THE LADDER IS LINEAR. The server
+   stores a number, not a list — but this room will not open floor i until i <= unlocked,
+   and unlocked only ever advances by WINNING floor i. So "cleared = 5" can only have been
+   reached by beating floors 1-5, and marking them is a deduction, not a guess.
+   ⚠ CAPPED AT `VISIBLE` ON PURPOSE. The count includes secret-floor wins, and those are
+   not ordered — beating the CEO does not tell you the Chairman fell. Above ten, all ten
+   public floors are certainly done (there is no other way down there), so the cap is exactly
+   as far as the deduction actually reaches. The secret floors stay unbeaten here until they
+   are won on this device, which is the conservative direction: it can under-report a bonus
+   floor, never hand out one nobody cleared.
+   ⚠ IT ONLY EVER RAISES. Win a floor on this device while the write is still in flight and
+   the server's count is briefly behind; taking the max is the only direction that cannot
+   walk a climb backwards. */
+/* ⭐ THE STATS ROW IN, THE CLIMB OUT — and nothing about Supabase in between. Everything
+   above happens inside this function, which takes the plain array `myStats()` returns, so
+   the deduction can be driven with a row rather than with a session. The network half is
+   the four lines below it. */
+function restoreFromAccount(st){
+  var row = (st||[]).find(function(s){ return s.game==='the-gauntlet'; });
+  if (!row) return false;
+  var srv = Math.max(parseInt(row.best_score,10)||0, (row.data && parseInt(row.data.cleared,10))||0);
+  if (!srv) return false;
+  var prog = loadProg(), changed = false, i;
+  if (srv > prog.unlocked){ prog.unlocked = Math.min(LADDER.length, srv); changed = true; }
+  for (i = 0; i < Math.min(srv, VISIBLE); i++){ if (!prog.beaten[i]){ prog.beaten[i] = true; changed = true; } }
+  if (!changed) return false;
+  saveProg(prog);
+  reroute();
+  return true;
+}
 if (window.PJCC && PJCC.ready) PJCC.ready.then(function(){
-  try { PJCC.myStats && PJCC.myStats().then(function(st){
-    var row = (st||[]).find(function(s){ return s.game==='the-gauntlet'; });
-    if (row && row.data && typeof row.data.cleared === 'number'){
-      var prog = loadProg(); if (row.data.cleared > prog.unlocked){ prog.unlocked = Math.min(LADDER.length, row.data.cleared); saveProg(prog); }
-    }
-  }); } catch(e){}
+  try { PJCC.myStats && PJCC.myStats().then(restoreFromAccount); } catch(e){}
 });
 
-// open state: the homepage/splash "Continue the climb" deep-link (#climb / #continue) drops you
-// straight at your CURRENT opponent's boss card; #tower forces the full tower; else the title screen.
+/* open state: the homepage/splash "Continue the climb" deep-link (#climb / #continue) drops
+   you straight at your CURRENT opponent's boss card; #tower forces the full tower; else the
+   title screen.
+
+   ⚠⚠ IT RUNS TWICE, AND THE SECOND TIME IS THE POINT. This is synchronous — it has to be,
+   nobody should watch a spinner to find out which screen they are on — so it decides the
+   entrance from LOCAL progress, before the account has answered. On a new device that means
+   `#climb` lands on the tower (resume() sends a cleared==0 player there) and the menu reads
+   "ENTER THE TOWER". `reroute()` is the same decision made again once the climb is back.
+   [[pjcc-profile-system]]: a gated screen re-routes on READINESS, not only on sign-in.
+
+   ⚠ IT WILL NOT YANK ANYTHING OUT FROM UNDER YOU. It re-runs only while the room is still
+   sitting on the screen it chose ITSELF and no match has started — `entered` records which
+   that was. Tap into the tower, or start a game, in the second it takes the account to reply
+   and nothing moves. A restored half-played board (`restoreMatch`) sets no entrance at all,
+   so it is never re-routed either. */
+var entered = null;
+function reroute(){
+  if (G || !entered) return;                                  // playing, or a restored board
+  var still = document.getElementById(entered);
+  if (!still || still.classList.contains('hidden')) return;   // he has moved on; leave him there
+  openState();
+}
+function openState(){
+  var h = (location.hash||'').toLowerCase();
+  if (h === '#tower'){ entered = 'ladder-screen'; showLadder(); }
+  else if (h === '#climb' || h === '#continue'){
+    resume();
+    // resume() picks the boss card or the whole tower depending on how far along you are
+    entered = document.getElementById('boss-screen').classList.contains('hidden') ? 'ladder-screen' : 'boss-screen';
+  }
+  else { entered = 'menu-screen'; showMenu(); }
+}
 (function(){
   // a half-played board beats every other entrance (2026-07-16 Nate: the mid-game
   // save) — leave and come back, or refresh, and you're back at the same position
   var sv = null; try { sv = JSON.parse(localStorage.getItem(SKEY)); } catch(e){}
   if (sv && restoreMatch(sv)) return;
-  var h = (location.hash||'').toLowerCase();
-  if (h === '#tower') showLadder();
-  else if (h === '#climb' || h === '#continue') resume();
-  else showMenu();
+  openState();
 })();
 loop();
 </script>
