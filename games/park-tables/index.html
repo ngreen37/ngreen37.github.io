@@ -837,6 +837,32 @@ body_class: theme-hall
     rec[color] = tier;
     try { localStorage.setItem(STAR_KEY, JSON.stringify(all)); } catch (e) {}
   }
+  /* ══ THE STARS GO TO THE ACCOUNT TOO (2026-08-20) ════════════════════════════
+     Until today the whole bot ladder was local: `pjcc.pt.beaten.v1` and `pjcc.pt.stars.v1`
+     and nothing else. That was survivable while a star was a keepsake.
+
+     ⚠⚠ IT STOPPED BEING SURVIVABLE THE DAY A STAR STARTED UNLOCKING AN AURA. Sign in on a
+     new phone and a color you beat Robert cleanly to win would simply not be there — which
+     is the exact bug Nate reported about the Gauntlet doors on 2026-08-19, one feature
+     over. Shipping an EARNED thing that only one browser knows about is repeating it.
+     [[when-he-repeats-himself]]
+
+     ⭐ THE WHOLE MAP GOES IN `data`, not a count. `game_stats.data` is jsonb and the stars
+     are already a small object keyed by seat, so the row can rebuild the ladder exactly
+     rather than approximately — unlike the Gauntlet, which stores a number and has to
+     deduce the floors back out of it. `best_score` carries the clean-win count so the row
+     still sorts sensibly next to every other game's.
+     ⚠ No `credits:` — this is a mirror of something already earned, not a second payout.
+     ⚠ Fire-and-forget and guarded: a failed write costs the mirror, never the local star. */
+  function bankStars(){
+    try {
+      if (!(window.PJCC && PJCC.saveScore)) return;
+      var all = starsAll(), clean = 0;
+      for (var k in all) { if (all[k] && (all[k].w === 'full' || all[k].b === 'full')) clean++; }
+      PJCC.saveScore('park-bot', clean, { data: { stars: all, beaten: beatenList() } });
+    } catch (e) {}
+  }
+
   /* What this game is worth, read off the two flags the board has been carrying. */
   function tierEarned(st){ return st.usedMul ? 'quarter' : st.usedAn ? 'half' : 'full'; }
   function hasFullStar(id){ return starFor(id, 'w') === 'full' || starFor(id, 'b') === 'full'; }
@@ -1484,6 +1510,7 @@ body_class: theme-hall
          noticing real results in order to enforce a rule that is not hers to enforce. */
       markBeaten(st.bot);
       awardStar(st.bot, sidePlayed(st), tierEarned(st));
+      bankStars();
     }
     // ⚠ AFTER markBeaten(), never before: her "you beat Robert since we last played"
     //   observation compares the beaten list against her own copy of it, so the win has to

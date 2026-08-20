@@ -421,11 +421,112 @@
   };
   var AURA_ORDER = ['gold','jade','crimson','sakura','azure','violet','amber','mono','emerald','ice','rose','lime','turquoise'];
 
+  /* ══ WHAT A COLOR MEANS, AND WHO YOU WIN IT FROM ══════════════════════════════
+     2026-08-20, Nate: *"I love the 'earn aura' thing. Everyone except Auston since she is
+     adaptive."*
+
+     An aura used to be a preference. Beat one of the park regulars CLEANLY — a full star,
+     no analysis board and no takeback — and their color becomes yours to wear, so it turns
+     into a receipt: "I play in Robert's violet" means you outplayed him with nothing but
+     the board.
+
+     ⭐ A NAMED FREQUENCY IS ONE THAT BELONGS TO SOMEBODY. The nine bench colors carry a
+     word; the other four (mono, azure, rose, lime) deliberately do not. They are free, they
+     are unclaimed, and they are yours to mean whatever you like — which is also why they
+     are the four a brand-new player picks from. The words are HIS ([[text-changes-need-approval]]);
+     the readings for the other eight live in private/FUTURE-IDEAS.md.
+
+     ⚠⚠ AUSTON'S CRIMSON IS NAMED BUT NEVER EARNABLE, and that is his instruction, not an
+     oversight: she is the ADAPTIVE seat, so "beat Auston cleanly" is not a fixed feat the
+     way beating a 1400 is — she would have met you at your own level, which makes the win
+     mean something different every time. `from: null` is what says so, and it leaves her
+     color free for anyone.
+
+     ⚠⚠ NOTHING WAS TAKEN AWAY. An aura already on a profile stays selectable forever — see
+     the grandfather clause in auraUnlocked(). The miser rule cuts one way: loosening later
+     is a gift, tightening is a takeaway ([[sell-back-economy]]), and eight colors vanishing
+     out of somebody's Forge would be the worst kind. */
+  var AURA_MEANING = {
+    emerald:   { word: 'home',                        from: 'maxwell'  },
+    amber:     { word: 'gladness',                    from: 'crockett' },
+    ice:       { word: 'the kept word',               from: 'argus'    },
+    jade:      { word: 'a dream carried for someone else', from: 'nate' },
+    turquoise: { word: 'love and wisdom',             from: 'dad'      },
+    violet:    { word: 'certainty',                   from: 'robert'   },
+    sakura:    { word: 'the beginner\'s heart',       from: 'princess' },
+    gold:      { word: 'appetite',                    from: 'ceo'      },
+    crimson:   { word: 'nerve',                       from: null       }
+  };
+
+  /* The Park Tables keep the stars; this only READS them. Same key, same shape:
+     { botId: { w: 'full'|'half'|'quarter', b: … } } */
+  var PT_STARS_KEY = 'pjcc.pt.stars.v1';
+  function ptStars() {
+    try { var o = JSON.parse(localStorage.getItem(PT_STARS_KEY)); return (o && typeof o === 'object') ? o : {}; }
+    catch (e) { return {}; }
+  }
+  /* ⚠ EITHER COLOR COUNTS. The star pair records which SIDE you won with; the aura asks a
+     different question — did you beat them outright — and you only have to do that once. */
+  function beatClean(botId) {
+    var r = ptStars()[botId];
+    return !!(r && (r.w === 'full' || r.b === 'full'));
+  }
+  /* ⭐ AND THE ACCOUNT CAN RAISE THEM, ON ANY PAGE. This lives here rather than in the Park
+     Tables because the FORGE is where an earned aura is spent, and the Forge is on
+     /dossier/ — a player who signs in on a new phone and goes straight to their identity
+     must find their colors already unlocked, without having to visit the park first.
+     pjcc-profile.js is the one file both pages load.
+     ⚠ MERGE, NEVER REPLACE. Local can be the fresher copy (a win banked seconds ago while
+     the write was still in flight), so each seat keeps its BEST star per color — the same
+     rule awardStar() applies in the room. A restore that overwrote would be a downgrade
+     wearing the word "restore". */
+  var STAR_RANK = { quarter: 1, half: 2, full: 3 };
+  function ptStarsMerge(remote) {
+    if (!remote || typeof remote !== 'object') return false;
+    var local = ptStars(), changed = false;
+    for (var id in remote) {
+      var r = remote[id]; if (!r || typeof r !== 'object') continue;
+      var mine = local[id] || (local[id] = {});
+      ['w', 'b'].forEach(function (c) {
+        if (!r[c] || !STAR_RANK[r[c]]) return;
+        if (!mine[c] || STAR_RANK[r[c]] > STAR_RANK[mine[c]]) { mine[c] = r[c]; changed = true; }
+      });
+    }
+    if (changed) { try { localStorage.setItem(PT_STARS_KEY, JSON.stringify(local)); } catch (e) {} }
+    return changed;
+  }
+
+
   var PJCC = {
     enabled: !!configured,
     ready: null,
     AURAS: AURAS,
     AURA_ORDER: AURA_ORDER,
+    AURA_MEANING: AURA_MEANING,
+    /* the word under a swatch, or '' for the four that belong to nobody */
+    auraWord: function (key) { return (AURA_MEANING[key] && AURA_MEANING[key].word) || ''; },
+    /* which regular you take it from, or null if it was never theirs to give */
+    auraFrom: function (key) { return (AURA_MEANING[key] && AURA_MEANING[key].from) || null; },
+    ptStars: ptStars,
+    beatClean: beatClean,
+    /* ⚠⚠ THE GRANDFATHER CLAUSE IS THE WHOLE REASON THIS TAKES A PROFILE. Eight colors
+       became earnable on 2026-08-20, and some of them were already on somebody's operative.
+       An aura you are WEARING is unlocked whatever the stars say — a feature that reaches
+       into a saved identity and confiscates part of it is not a feature.
+       ⚠ It also fails OPEN when it cannot tell: no meaning entry means a free color. */
+    auraUnlocked: function (key, prof) {
+      var from = (AURA_MEANING[key] && AURA_MEANING[key].from) || null;
+      if (!from) return true;                                  // free, or Auston's
+      if (beatClean(from)) return true;                        // won it
+      var look = prof && prof.companion ? (prof.companion.look || null) : null;
+      if (look && look.aura === key) return true;              // already wearing it
+      /* ⚠ AND THE LOCAL LOOK COUNTS TOO, not only the account's. The Forge saves to
+         `pjcc.identity.v1` and works signed out — a guest who picked violet in June is
+         wearing violet, and an account row is not the only place that can be true. */
+      try { if (JSON.parse(localStorage.getItem('pjcc.identity.v1') || '{}').op.aura === key) return true; }
+      catch (e) {}
+      return false;
+    },
     /* Takes whatever you happen to be holding — a profile row, a `look`, or a bare key —
        and returns a hex color. Never returns null: an operative with no aura yet still has
        to be drawable, and `mono` is the neutral the site uses for "no color chosen".
@@ -679,6 +780,25 @@
     var start = function () { initPJCC().then(resolve, function () { resolve(false); }); };
     if (window.requestIdleCallback) requestIdleCallback(start, { timeout: 2000 });
     else setTimeout(start, 150);
+  });
+
+  /* ⛑ THE PARK-TABLE STARS COME BACK FROM THE ACCOUNT — 2026-08-20, ON EVERY PAGE.
+     An aura you won by beating Robert cleanly is spent in the FORGE, on /dossier/, and a
+     player who signs in on a new phone and goes straight to their identity must find it
+     already unlocked. So the pull lives here, in the file every page loads, rather than in
+     the room that happens to write them.
+     ⚠ SIGNED OUT THIS COSTS NOTHING: myStats() returns [] with no request at all.
+     ⚠ It only ever RAISES a star (ptStarsMerge keeps the best of each), so a stale row can
+     never walk a local win backwards, and a failure is silent — the local stars are the
+     working copy and the next clean win re-banks the lot. [[down-never-stuck]] */
+  PJCC.ready.then(function () {
+    try {
+      if (!PJCC.myStats) return;
+      PJCC.myStats().then(function (rows) {
+        var row = (rows || []).find(function (r) { return r.game === 'park-bot'; });
+        if (row && row.data && row.data.stars) ptStarsMerge(row.data.stars);
+      })['catch'](function () {});
+    } catch (e) {}
   });
 
   // --- auth ------------------------------------------------------------------

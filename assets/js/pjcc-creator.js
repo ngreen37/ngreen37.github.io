@@ -169,14 +169,36 @@
     return A.svg(o);
   }
   // '#F5C518' is a literal only for the can't-resolve case — the real gold is in the map
-  function auraColor(key) { return AURAS[key] || AURAS.gold || '#F5C518'; }
+  function auraColor(key) { return AURAS[key] || AURAS.azure || '#6bbfff'; }
+  /* the regulars, by the id the aura table names them with. ⚠ A COPY, and a small one —
+     the Forge does not load the Park Tables. `npm run test:regulars` fails if a name here
+     stops matching the real BOTS object. */
+  var BOT_NAMES = { maxwell: 'Maxwell', crockett: 'Crockett', argus: 'Argus', nate: 'Nate',
+                    dad: 'The Dad', robert: 'Robert', princess: 'Princess', ceo: 'The CEO' };
+  var P = window.PJCC || {};
+  function accountProfile() { try { return P.getProfile ? P.getProfile() : null; } catch (e) { return null; } }
+  /* Tapped a locked color: say what it costs, where the thumb already is. No alert, no
+     toast queue — the caption under the row is already the place words about auras go. */
+  function nudgeLocked(el) {
+    var cap = document.getElementById('op-aura-word');
+    if (!cap) return;
+    cap.textContent = el.getAttribute('aria-label') || '';
+    cap.classList.remove('is-locked'); void cap.offsetWidth; cap.classList.add('is-locked');
+  }
 
   // ---- storage ------------------------------------------------------------
   var KEY = 'pjcc.identity.v1';
   function defaults() {
     return {
+      /* ⛑ THE STARTING AURA IS `azure`, NOT `gold` — 2026-08-20. Gold became EARNABLE that
+         day (it is the CEO's, and you take it off him at 2400), so handing it to every new
+         operative would have given away the hardest prize on the bench for free — and worse,
+         the grandfather clause would then have locked it in for them forever.
+         ⚠ `azure` rather than `mono`: mono is the palette's "no color chosen" gray, and a
+         brand-new identity should look like a choice, not like a field nobody filled in.
+         Anyone who already SAVED gold keeps it — see PJCC.auraUnlocked(). */
       op:  { hair:'crop', tone:'', hairColor:'brown', eye:'brown', eyeR:'same',
-             aura:'gold', hat:'none', emblem:'none', name:'', role:'', bio:'' },
+             aura:'azure', hat:'none', emblem:'none', name:'', role:'', bio:'' },
       pet: { coat:'natural', eye:'brown', nose:'black', aura:'none', bio:'' }
     };
   }
@@ -219,7 +241,7 @@
        pjcc-profile.js. If that has not loaded, `AURAS` is empty and EVERY saved aura looks
        invalid — and this line would quietly overwrite a real choice with gold. Leave a
        value we cannot judge alone: unverified is not the same as wrong. */
-    if (HAVE_AURAS && !AURAS[op.aura]) op.aura = 'gold';
+    if (HAVE_AURAS && !AURAS[op.aura]) op.aura = 'azure';   // a FREE color — see defaults()
     if (!HATS[op.hat]) op.hat = 'none';
     if (!EMBLEMS[op.emblem]) op.emblem = 'none';
     /* MIGRATION off the filter era (2026-07-28). `tint` was the coat when the pet was
@@ -297,7 +319,7 @@
   function identity() {
     var op = loadLocal().op;
     if (!FACE_MAP[op.hair]) op.hair = 'crop';
-    if (HAVE_AURAS && !AURAS[op.aura]) op.aura = 'gold';   // see sanitize() — unverified ≠ wrong
+    if (HAVE_AURAS && !AURAS[op.aura]) op.aura = 'azure';  // see sanitize() — unverified ≠ wrong
     var f = FACE_MAP[op.hair];
     if (op.brow == null) op.brow = f.brow;
     if (op.mouth == null) op.mouth = f.mouth;
@@ -519,6 +541,15 @@
     markOn('data-eye1', (two2 && eyeTarget === 'right') ? look.eyeR : look.eye);
     markOn('data-eyet', two2 ? eyeTarget : 'both');
     markOn('data-aura', look.aura);
+    /* the caption follows the SELECTED color, so the word is never orphaned from its swatch */
+    (function () {
+      var cap = document.getElementById('op-aura-word');
+      if (!cap) return;
+      var w = P.auraWord ? P.auraWord(look.aura) : '';
+      var from = P.auraFrom ? P.auraFrom(look.aura) : null;
+      cap.classList.remove('is-locked');
+      cap.textContent = w ? (w + (from ? ' — won from ' + (BOT_NAMES[from] || from) : '')) : '';
+    })();
     markOn('data-hat', look.hat);
     markOn('data-emblem', look.emblem);
   }
@@ -731,10 +762,30 @@
       A.EYE_ORDER.forEach(function (k) { h += swatch(current === k, A.EYES[k].c, 'data-eye1="' + k + '" title="' + A.EYES[k].n + '"'); });
       h += '</div></div>';
     }
-    // aura
+    /* ══ THE AURA ROW — SOME OF THESE ARE WON, NOT PICKED (2026-08-20) ═══════════════
+       Nate: *"I love the 'earn aura' thing. Everyone except Auston since she is adaptive."*
+
+       ⭐ A LOCKED SWATCH IS SHOWN, NEVER HIDDEN, and it says what it costs. That is the same
+       rule the Park Tables' locked seats and the hidden boards already follow
+       ([[collection-and-hidden-boards]]): a locked thing you can SEE is a reason to keep
+       playing, and a list that is quietly shorter is just a shorter list.
+
+       ⚠ THE WORD IS THE POINT AND IT GOES IN THE LABEL, not only in a tooltip. `title=`
+       does not exist on a phone ([[hover-is-three-inputs]]) and he reads this site on one,
+       so the frequency and the price are both in `aria-label`, and the caption under the row
+       says the selected color's word out loud. */
     h += '<div class="forge-section"><h3>Aura <small>— your signature color</small></h3><div class="forge-sw-row">';
-    AURA_ORDER.forEach(function (k) { h += swatch(look.aura === k, AURAS[k], 'data-aura="' + k + '"'); });
-    h += '</div></div>';
+    AURA_ORDER.forEach(function (k) {
+      var word = P.auraWord ? P.auraWord(k) : '';
+      var from = P.auraFrom ? P.auraFrom(k) : null;
+      var open = P.auraUnlocked ? P.auraUnlocked(k, accountProfile()) : true;
+      var who  = from ? (BOT_NAMES[from] || from) : '';
+      var lab  = (word ? word : k) + (open ? '' : ' — locked, beat ' + who + ' with no help');
+      h += swatch(look.aura === k, AURAS[k],
+        'data-aura="' + k + '"' + (open ? '' : ' data-locked="1"') +
+        ' aria-label="' + esc(lab) + '" title="' + esc(lab) + '"');
+    });
+    h += '</div><p class="forge-aura-word" id="op-aura-word"></p></div>';
     // headwear
     h += '<div class="forge-section"><h3>Headwear</h3><div class="forge-grid">';
     Object.keys(HATS).forEach(function (k) { h += cell(look.hat === k, HATS[k].em, HATS[k].n, 'data-hat="' + k + '"'); });
@@ -897,7 +948,15 @@
         else renderForge(true);
       };
     });
-    Array.prototype.forEach.call(ov.querySelectorAll('[data-aura]'), function (c) { c.onclick = function () { patchOp({ aura: c.getAttribute('data-aura') }); }; });
+    /* ⚠⚠ THE REFUSAL IS HERE, NOT ONLY IN THE STYLING. A dimmed swatch that still applies
+       when tapped is a lock that does not lock — and the Forge writes straight through to
+       the profile, so it would be a real grant rather than a cosmetic slip. */
+    Array.prototype.forEach.call(ov.querySelectorAll('[data-aura]'), function (c) {
+      c.onclick = function () {
+        if (c.getAttribute('data-locked')) { nudgeLocked(c); return; }
+        patchOp({ aura: c.getAttribute('data-aura') });
+      };
+    });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-hat]'), function (c) { c.onclick = function () { patchOp({ hat: c.getAttribute('data-hat') }); }; });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-emblem]'), function (c) { c.onclick = function () { patchOp({ emblem: c.getAttribute('data-emblem') }); }; });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-coat]'), function (c) { c.onclick = function () { patchPet({ coat: c.getAttribute('data-coat') }); }; });

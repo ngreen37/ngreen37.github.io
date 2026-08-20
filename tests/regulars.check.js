@@ -229,6 +229,41 @@ check('no hand-typed seat count survives on the front door',
         !found ? 'not asked' : strangers.join(', ') ||
           known.length + ' in the palette, ' + bots.length + ' seats drawing on it');
 
+  /* ⛑ AND THE COLOR IS SOMETHING YOU WIN OFF THEM — 2026-08-20. Nate: *"I love the 'earn
+     aura' thing. Everyone except Auston since she is adaptive."* `AURA_MEANING` in
+     pjcc-profile.js names, per color, which regular you take it from; a `from` that points
+     at nobody is a color that can never be unlocked, and a bench seat with no `from` is a
+     color that was supposed to be a prize and is quietly free. Both are silent. */
+  {
+    const prof = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-profile.js'), 'utf8');
+    const meanSrc = (/var AURA_MEANING = \{([\s\S]*?)\};/.exec(prof) || [, ''])[1];
+    const mean = {};
+    [...meanSrc.matchAll(/(\w+):\s*\{[^}]*?from:\s*(?:'(\w+)'|null)/g)].forEach((m2) => { mean[m2[1]] = m2[2] || null; });
+    const named = Object.keys(mean);
+    check('the earn table was found and names every bench color', named.length === bots.length,
+      named.length + ' named · ' + bots.length + ' seats');
+
+    const seatKeys = bots.map((b) => b.key);
+    const ghosts = named.filter((k) => mean[k] && !seatKeys.includes(mean[k])).map((k) => k + '←' + mean[k]);
+    check('…and every `from` points at a real seat in BOTS', ghosts.length === 0,
+      ghosts.join(', ') || 'a color nobody holds could never be unlocked');
+
+    /* ⚠⚠ AUSTON IS THE ONE EXCEPTION AND IT IS HIS INSTRUCTION, not an omission. She is the
+       ADAPTIVE seat — she meets you at your own level — so "beat Auston cleanly" is not a
+       fixed feat the way beating a 1400 is, and her crimson stays free for anyone. */
+    const adaptive = bots.filter((b) => b.adaptive).map((b) => b.key);
+    const auraOf = {}; bots.forEach((b) => { auraOf[b.key] = b.aura; });
+    const unearnable = named.filter((k) => !mean[k]);
+    check('…and the ONLY color without a price is the adaptive seat\'s',
+      adaptive.length === 1 && unearnable.length === 1 && unearnable[0] === auraOf[adaptive[0]],
+      'free: ' + unearnable.join(', ') + '  ·  adaptive: ' + adaptive.join(', '));
+
+    const wrong = bots.filter((b) => !b.adaptive && mean[b.aura] !== b.key)
+      .map((b) => b.key + ' wears ' + b.aura + ' but it is won from ' + mean[b.aura]);
+    check('…and you win each color from the seat that actually wears it', wrong.length === 0,
+      wrong.join(' · ') || (bots.length - 1) + ' seats, each holding their own');
+  }
+
   /* ⭐ AND THE CARD READS THE SAME LOOKUP THE STREAK DOES. The point of the colors is that
      the seat you tapped and the bar over the board are ONE identity; two call sites reaching
      for the same palette by different routes is how that quietly stops being true. */

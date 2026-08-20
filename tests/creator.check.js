@@ -49,6 +49,17 @@ const PROFILE = read('assets/js/pjcc-profile.js');
    while claiming to be the thing that catches staleness. */
 const AURA_SRC = (PROFILE.match(/^ {2}var AURAS = \{[\s\S]*?^ {2}\};/m) || [])[0];
 const ORDER_SRC = (PROFILE.match(/^ {2}var AURA_ORDER = \[.*?\];/m) || [])[0];
+/* ⛑ AND THE EARN TABLE + THE UNLOCK RULE, 2026-08-20 — lifted from the real file for the
+   same reason the palette is: a stub that carries its OWN copy of "which colors are earned"
+   is a test that passes against itself. `auraUnlocked` is pasted in verbatim, so if the rule
+   in pjcc-profile.js changes, the checks below are asking about the new rule. */
+const MEAN_SRC = (PROFILE.match(/^ {2}var AURA_MEANING = \{[\s\S]*?^ {2}\};/m) || [])[0];
+const STARS_SRC = (PROFILE.match(/^ {2}var PT_STARS_KEY[\s\S]*?^ {2}\}\n(?=  \/\* ⭐ AND THE ACCOUNT)/m) || [])[0];
+const UNLOCK_SRC = (PROFILE.match(/^ {4}auraUnlocked: function \(key, prof\) \{[\s\S]*?^ {4}\},/m) || [])[0];
+if (!MEAN_SRC || !STARS_SRC || !UNLOCK_SRC) {
+  console.log('  ✗ could not lift AURA_MEANING / the star reader / auraUnlocked out of pjcc-profile.js');
+  process.exit(1);
+}
 if (!AURA_SRC || !ORDER_SRC) {
   console.log('\n  ✗ could not lift AURAS/AURA_ORDER out of pjcc-profile.js — the stub would ' +
               'be silently incomplete, which is how this file lied once already\n');
@@ -177,9 +188,15 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
     window.__syncs = 0;
     ${AURA_SRC}
     ${ORDER_SRC}
+    ${MEAN_SRC}
+    ${STARS_SRC}
     window.PJCC = {
       AURAS: AURAS,
       AURA_ORDER: AURA_ORDER,
+      AURA_MEANING: AURA_MEANING,
+      auraWord: function (k) { return (AURA_MEANING[k] && AURA_MEANING[k].word) || ''; },
+      auraFrom: function (k) { return (AURA_MEANING[k] && AURA_MEANING[k].from) || null; },
+      ${UNLOCK_SRC}
       _p: { codename: 'Tester', companion: { look: { hair:'crop', tone:'', hairColor:'brown',
             eye:'brown', eyeR:'same', aura:'gold', hat:'none', emblem:'none' } } },
       currentUser: function () { return { id: 'u1' }; },
@@ -222,6 +239,100 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
   check('the eye target reads Both Eyes · Left · Right', shape.seg === 'Both Eyes|Left|Right', shape.seg);
   check('…and Both Eyes is the default', shape.segOn === 'Both Eyes', String(shape.segOn));
 
+  /* ══ AN AURA YOU HAVE NOT WON ══════════════════════════════════════════
+     2026-08-20, Nate: *"I love the 'earn aura' thing. Everyone except Auston since she is
+     adaptive."* Eight of the thirteen belong to a park regular and cost a FULL star.
+
+     ⚠⚠ THE STUB'S PROFILE WEARS `gold`, WHICH IS ONE OF THE EIGHT, and that is not a
+     mistake in the fixture — it is the grandfather clause under test. An operative already
+     wearing an earned color keeps it whatever the stars say, so gold reads as OPEN here
+     while the other seven read as locked. A run where all eight locked would mean the
+     clause had stopped protecting saved identities. */
+  {
+    const row = () => page.evaluate(() => {
+      const sw = [...document.querySelectorAll('[data-aura]')];
+      return { total: sw.length,
+        locked: sw.filter((e) => e.getAttribute('data-locked')).map((e) => e.getAttribute('data-aura')).sort(),
+        label: (document.querySelector('[data-aura="violet"]') || {}).getAttribute
+               ? document.querySelector('[data-aura="violet"]').getAttribute('aria-label') : '',
+        caption: (document.getElementById('op-aura-word') || {}).textContent };
+    });
+    const reopen = async () => {
+      await page.evaluate(() => { PJCCForge.close && PJCCForge.close(); PJCCForge.open('operative'); });
+      await new Promise((r) => setTimeout(r, 200));
+    };
+
+    await page.evaluate(() => localStorage.removeItem('pjcc.pt.stars.v1'));
+    await reopen();
+    const cold = await row();
+    check('the whole palette is SHOWN, locked ones included', cold.total === 13, cold.total + ' swatches');
+    check('…with seven locked and gold grandfathered in — the fixture is wearing it',
+      cold.locked.length === 7 && !cold.locked.includes('gold') && cold.locked.includes('violet'),
+      cold.locked.join(', '));
+
+    /* ⚠⚠ THE GRANDFATHER CLAUSE HAS TWO PATHS AND THE LINE ABOVE ONLY EXERCISES ONE.
+       `auraUnlocked` forgives an aura found on the ACCOUNT or in the local `pjcc.identity.v1`,
+       and in a driven Forge the local copy is always written — so deleting the account path
+       entirely changed nothing and the whole suite stayed green. Mutation-tested, caught,
+       and split: each path is now asked on its own, with the other one absent.
+       [[green-must-name-what-ran]] */
+    const canWear = (key, prof, localAura) => page.evaluate((k, pr, la) => {
+      const save = localStorage.getItem('pjcc.identity.v1');
+      if (la) localStorage.setItem('pjcc.identity.v1', JSON.stringify({ op: { aura: la } }));
+      else localStorage.removeItem('pjcc.identity.v1');
+      const out = PJCC.auraUnlocked(k, pr);
+      if (save === null) localStorage.removeItem('pjcc.identity.v1');
+      else localStorage.setItem('pjcc.identity.v1', save);
+      return out;
+    }, key, prof, localAura);
+
+    const WEARING_GOLD = { companion: { look: { aura: 'gold' } } };
+    check('an ACCOUNT already wearing an earned color keeps it, with nothing saved locally',
+      await canWear('gold', WEARING_GOLD, null), 'the account path, on its own');
+    check('a LOCAL look already wearing one keeps it, with no account at all',
+      await canWear('gold', null, 'gold'), 'a guest who picked it before today');
+    check('…and somebody wearing neither is genuinely locked out of it',
+      (await canWear('gold', null, 'azure')) === false, 'nothing to grandfather');
+    check('…and Auston\'s crimson is never one of them — she is the adaptive seat',
+      !cold.locked.includes('crimson'), 'from: null, so it is free for anyone');
+    check('a locked swatch says the frequency AND the price, in words',
+      /certainty/.test(cold.label) && /Robert/.test(cold.label), cold.label);
+
+    /* ⚠⚠ THE REFUSAL IS THE ASSERTION. A dimmed swatch that still applies when tapped is a
+       lock that does not lock — and the Forge writes through to the profile, so it would be
+       a real grant. Read the SAVED aura back, not the class on the button. */
+    const before = await page.evaluate(() => PJCCForge.identity().aura);
+    await page.evaluate(() => document.querySelector('[data-aura="violet"]').click());
+    await new Promise((r) => setTimeout(r, 150));
+    const after = await page.evaluate(() => PJCCForge.identity().aura);
+    check('tapping a locked color does not take it', after === before, before + ' -> ' + after);
+    check('…and it says what the color costs instead of failing silently',
+      /locked/.test((await row()).caption), (await row()).caption);
+
+    /* A HALF star is not a clean win. That distinction is the entire price. */
+    await page.evaluate(() => localStorage.setItem('pjcc.pt.stars.v1',
+      JSON.stringify({ robert: { b: 'half' } })));
+    await reopen();
+    check('a HALF star does not open the color — the analysis board was open',
+      (await row()).locked.includes('violet'), 'still locked');
+
+    await page.evaluate(() => localStorage.setItem('pjcc.pt.stars.v1',
+      JSON.stringify({ robert: { b: 'full' } })));
+    await reopen();
+    const won = await row();
+    check('a FULL star opens exactly that color', !won.locked.includes('violet'), won.locked.join(', '));
+    check('…and only that one — nobody else\'s came with it',
+      won.locked.length === 6 && won.locked.includes('turquoise'), won.locked.join(', '));
+    await page.evaluate(() => document.querySelector('[data-aura="violet"]').click());
+    await new Promise((r) => setTimeout(r, 150));
+    check('…and now it can actually be worn',
+      (await page.evaluate(() => PJCCForge.identity().aura)) === 'violet', 'violet');
+    check('…and the caption names who it was won from',
+      /won from Robert/.test((await row()).caption), (await row()).caption);
+
+    await page.evaluate(() => localStorage.removeItem('pjcc.pt.stars.v1'));
+  }
+
   /* ══ THE REGRESSION GATE FOR "ONE BUTTON BEHIND" ══════════════════════════════════
      Nate: "You click on one button and it goes to the previous one you picked, then you have
      to click again to get it right." Click, then read the look back IMMEDIATELY — before the
@@ -231,7 +342,11 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
                  ['[data-hcol="black"]',  'hairColor', 'black'],
                  ['[data-eye1="green"]',  'eye',       'green'],
                  ['[data-eye1="blue"]',   'eye',       'blue'],
-                 ['[data-aura="jade"]',   'aura',      'jade']];
+                 /* ⛑ , NOT  — 2026-08-20. Jade became EARNABLE (it is Nate's, and
+                    it costs a clean win) and a locked swatch is REFUSED by design, so this
+                    check would have started failing on the lock rather than on the latency
+                    bug it exists to catch. Rose belongs to nobody and always will. */
+                 ['[data-aura="rose"]',   'aura',      'rose']];
     const lag = [];
     for (const [sel, field, want] of seq) {
       await page.evaluate((s) => { const el = document.querySelector(s); if (el) el.click(); }, sel);
@@ -273,7 +388,7 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
     return { scroll: ov.scrollTop, top: Math.round(base.getBoundingClientRect().top), h: Math.round(ov.scrollHeight) };
   });
   const before = await probe();
-  const CLICKS = ['[data-aura="jade"]', '[data-tone]:nth-of-type(5)', '[data-hcol="ginger"]',
+  const CLICKS = ['[data-aura="rose"]', '[data-tone]:nth-of-type(5)', '[data-hcol="ginger"]',
                   '[data-eye1="green"]', '[data-hair="afro"]',
                   '[data-hair="long"]', '[data-tone]:nth-of-type(1)', '[data-hat="crown"]'];
   let drift = 0;
@@ -300,7 +415,7 @@ const CODE = CREATOR.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '
   });
   check('…and every one of those clicks actually took',
     look.hair === 'long' && look.hairColor === 'ginger' && look.eye === 'green' &&
-    look.aura === 'jade' && look.hat === 'crown', JSON.stringify(look));
+    look.aura === 'rose' && look.hat === 'crown', JSON.stringify(look));
 
   /* ── BOTH / LEFT / RIGHT, driven end to end ─────────────────────────────────────
      The order matters: aiming at one eye while the pair matches has to CREATE the second

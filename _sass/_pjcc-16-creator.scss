@@ -260,6 +260,40 @@
   outline: 2px solid #F5C518; outline-offset: 2px;
 }
 
+/* ══ A COLOR YOU HAVE NOT WON YET (2026-08-20) ════════════════════════════════
+   Nate: *"I love the 'earn aura' thing."* Eight of the thirteen belong to a park regular
+   and you take them by beating that regular CLEANLY.
+
+   ⭐ IT IS SHOWN, NOT HIDDEN, and the color stays visible through the lock — that is the
+   whole mechanism. A grayed-out swatch would be a color you cannot want; a dimmed one you
+   can still see is the reason to go back to the bench. Same rule as the locked seats in the
+   Park Tables and the hidden boards in the collection.
+   ⚠ THE PADLOCK IS A PSEUDO-ELEMENT, so it costs no markup and cannot end up in the
+   accessible name twice — the price is already spelled out in `aria-label`, in words, which
+   is the only version a screen reader or a phone can use. */
+.forge-sw[data-locked] {
+  opacity: 0.42;
+  cursor: default;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.5);
+}
+.forge-sw[data-locked]::after {
+  content: '\1F512';                 /* padlock */
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.7));
+}
+@media (hover: hover) { .forge-sw[data-locked]:hover { transform: none; } }
+
+/* the word under the row — what the SELECTED color means, or what a locked one costs.
+   ⚠ One line, reserved: `min-height` so the section does not jump when it fills in. */
+.forge-aura-word {
+  margin: 9px 0 0; min-height: 1.25em;
+  font-size: 0.78rem; letter-spacing: 0.02em; color: #b9a8e6;
+}
+.forge-aura-word.is-locked { color: #ffb43a; animation: forge-word-in 0.22s ease-out; }
+@keyframes forge-word-in { from { opacity: 0; transform: translateY(-2px); } to { opacity: 1; transform: none; } }
+
 /* text fields (name / role / bio) */
 .forge-fields { display: grid; gap: 10px; }
 .forge-field label { display: block; font-size: 0.74rem; color: #b9a8e6; font-weight: 700; margin-bottom: 3px; letter-spacing: .02em; }
