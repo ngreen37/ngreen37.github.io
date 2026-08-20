@@ -1,196 +1,159 @@
-# OBS + the ChessWild overlay — setup, start to finish
+# OBS — what's left
 
-*Written 2026-08-19, for doing later. Nothing here is urgent. You can stop after Part 1 and
-come back; OBS remembers everything.*
+*Rewritten 2026-08-19 once the wizard was finished. Everything already done has been cut; what
+follows is only what remains.*
 
-**What OBS is:** a free program that builds a picture on your PC and sends it to Twitch.
-Twitch never looks at your screens — it just receives whatever picture OBS made.
+## ✅ Already done — no action needed
 
----
-
-## PART 1 — You are here: the Auto-Configuration Wizard
-
-The box on your screen right now says **Video Settings**. Two dropdowns:
-
-| Setting | What to pick | Why |
-|---|---|---|
-| **Base (Canvas) Resolution** | leave it — **Use Current (1920x1080)** | This is the size of the workspace OBS composes on. It should match your monitor or captured windows get scaled oddly. |
-| **FPS** | leave it — **Either 60 or 30, prefer 60** | Frames per second. The wizard will settle on whatever your PC handles. |
-
-Click **Next**. The next screen runs a **bandwidth test** — it streams to Twitch for a few
-seconds and measures your actual upload speed. Let it finish, then click **Apply Settings**.
-
-**That's the wizard done.** Everything below is either a one-time checkbox or a thing you add
-once and never touch again.
+- OBS installed, Twitch account connected (`chesswild_official`)
+- Auto-Configuration Wizard run and applied
+- Encoder set to **Hardware (QSV)** — the right call on this machine
+- Enhanced Broadcasting / Multitrack left **off** — also right
 
 ---
 
-## PART 2 — Two settings the wizard doesn't ask about
+## PART A — Two settings the wizard didn't ask about
 
-### 2a. Record a local copy every time (do this one)
+### A1 · Record a local copy every time ← **do this one**
 
-**Settings** (bottom-right, under Start Streaming) **→ General →** scroll to Output/Recording
-→ tick **☑ Automatically record when streaming**.
+**Settings → General →** tick **☑ Automatically record when streaming**
 
-Now every stream also writes a file to your PC. That file is better quality than Twitch's
-copy, never expires, and can never be muted. It is the archive; Twitch and YouTube are just
-distribution.
+Every stream now also writes a file to your PC. Twitch's copy dies in 7 days and can be muted;
+this one can't. **That file is the archive. Twitch and YouTube are just distribution.**
 
-**Settings → Output → Recording** → set **Recording Path** to a folder you'll remember, and
-**Recording Format** to `mkv` (it survives a crash; `mp4` can corrupt if OBS closes badly.
-You can convert mkv→mp4 later from **File → Remux Recordings**, which takes seconds and
-re-encodes nothing).
+**Settings → Output → Recording:**
+- **Recording Path** → a folder you'll remember
+- **Recording Format** → `mkv` (survives a crash; `mp4` can corrupt if OBS closes badly).
+  Convert later with **File → Remux Recordings** — takes seconds, re-encodes nothing.
 
-⚠ **Roughly 2–3 GB per hour.** Your C: drive has ~124 GB free, so about 40–60 hours before
-it's full. Worth glancing at every month or two.
+⚠ ~2–3 GB per hour. C: has ~124 GB free — roughly **40–60 hours** before it's full.
 
-### 2b. Resolution — and a correction to what I told you earlier
+### A2 · Resolution, depending on what you're streaming
 
-I said *"720p60 around 4,500 kbps reaches more people than 1080p."* **That is standard advice
-for fast-moving gameplay, and it is wrong for what you're actually streaming.**
+The wizard chose **1280x720 @ 60fps**. That's right for a game and wrong for your website.
 
-A chess board and a website are *static and full of small text*. Scaling that down to 720p
-makes piece labels and site text mushy — and the thing that makes 1080p expensive is
-**motion**, which your content barely has. A near-still picture encodes very cheaply.
+| Streaming… | Output (Scaled) Resolution | FPS | Why |
+|---|---|---|---|
+| **Cult of the Lamb / any game** | **1280x720** *(leave it)* | 60 | Motion matters more than text, and 6000 kbps at 720p is generous — it'll look clean. |
+| **chesswild.com / a chess board** | **1920x1080** | **30** | Static and full of small text. Scaling down makes it mushy; a still picture doesn't need 60fps. |
 
-**So: leave the output at 1920x1080.**
-
-- **Settings → Video → Output (Scaled) Resolution** → keep **1920x1080**
-- **Settings → Output → Video Bitrate** → whatever the wizard chose is fine. If you want a
-  number: **4500–6000 kbps**.
-- **FPS 30 is plenty** for a chess board and halves the work your PC does. Use 60 only if
-  you're showing something that moves.
-
-**"Upload headroom"** just means: your internet's *upload* speed has to be comfortably bigger
-than the bitrate. 4500 kbps = 4.5 Mbps, so you want ~5.5 Mbps upload or better. **The wizard's
-bandwidth test already measured this for you** — that's what it was doing.
+Both live in **Settings → Video**. Change them between streams; it takes ten seconds.
 
 ---
 
-## PART 3 — Sources (this is the part I explained badly)
+## PART B — Streaming the Switch
 
-### What a "source" is
+### ⚠⚠ Why the second monitor doesn't help — measured on your PC
 
-OBS builds your picture like a **collage**. Each thing in the collage — a window, a webcam, a
-webpage, a microphone — is one **source**. You add them one at a time and drag them where you
-want. OBS stacks them like sheets of paper: the top of the list is the front of the picture.
+Windows currently sees **two displays**, both 1920x1080:
 
-Right now your collage is empty. That's why the preview is a black rectangle.
+```
+\\.\DISPLAY1   1920 x 1080   primary
+\\.\DISPLAY2   1920 x 1080
+```
 
-### Where the button is
+**So your second monitor IS connected to your PC, and Windows is drawing a desktop on it right
+now.** Your Switch is plugged into a *different input on that same monitor*. When you press the
+monitor's input button, **the monitor** decides which one to show — the PC keeps drawing on its
+own input the entire time and never sees the Switch's.
 
-⚠ **I told you "bottom-right panel" and that was wrong** — that's the Controls panel with the
-Start Streaming button.
+**You can watch this happen:** add a Display Capture of monitor 2 in OBS, then switch the
+monitor over to the Switch. **OBS will still show your empty Windows desktop.** That isn't a bug
+or a wrong setting — the two signals never meet inside the monitor. A monitor takes pictures
+*in*; it doesn't send them anywhere.
 
-**The Sources panel is on the LEFT side, directly below "Scenes."** It currently says
-*"You don't have any sources. Click the + button below."* The **`+`** is at the bottom-left
-corner of that panel.
-
-### Add these three, one at a time
-
-Each one: click **`+`** → pick the type → it asks for a name (any name, or just click OK) →
-then a properties box opens → set what's listed below → **OK**.
-
-**1 · Your website**
-> `+` → **Window Capture** → OK → in **Window**, pick your browser
-> *(open your browser to chesswild.com first, or it won't be in the list)*
-
-**2 · The counter overlay**
-> `+` → **Browser** → OK → set:
-> - **URL:** `https://chesswild.com/assets/overlay/`
-> - **Width:** `480`   **Height:** `140`
-> - leave everything else alone → **OK**
-
-It'll appear as a small floating box with your wordmark and **"The first 1,000. You would be
-#4"**. Drag it wherever you want; the background is transparent, so only the text shows.
-
-**3 · Your microphone**
-> `+` → **Audio Input Capture** → OK → in **Device**, pick your mic
->
-> *Check first:* the **Audio Mixer** panel at the bottom-center already shows **Mic/Aux**. If
-> the green bar moves when you talk, your mic is already working and **you can skip this
-> source entirely.** Only add it if Mic/Aux is silent or is picking the wrong device.
-
----
-
-## PART 3b — Streaming the Switch (Cult of the Lamb)
-
-⚠⚠ **THIS NEEDS HARDWARE YOU DO NOT HAVE YET. There is no OBS setting that fixes it.**
-
-Your Switch is plugged into your second monitor by HDMI. That monitor is *displaying* it, but
-your PC has no idea the Switch exists — a monitor is an output, not an input. OBS can only
-capture things the PC itself is drawing. There is no source type, driver or setting that
-reaches an HDMI cable going into a different device.
-
-**What actually connects them is a capture card:**
+### What actually connects them
 
 ```
   Switch dock  --HDMI-->  capture card  --USB-->  PC  -->  OBS
                                |
-                               \--HDMI passthrough--> your monitor  (this part matters)
+                               \--HDMI passthrough--> your monitor   (get this)
 ```
 
-### ⭐ Buy one WITH HDMI passthrough. This is the part people get wrong.
+**Buy one with HDMI passthrough.** Without it, the Switch's only picture goes to the PC and you
+play off OBS's preview — 100–300ms behind your thumbs. Fine for menus; **Cult of the Lamb's
+combat is dodge-timing and it would feel broken.** Passthrough sends a zero-lag copy to your
+monitor: you play on that, the PC quietly gets its own feed.
 
-Without passthrough, the Switch’s only picture goes to the PC, so you play by watching **OBS’s
-preview** — which lags 100–300ms behind your thumbs. For a menu-driven game that is survivable.
-**For Cult of the Lamb it is not** — the combat is dodge-timing, and a third of a second of
-delay makes it feel broken. Passthrough sends a zero-lag copy straight to your monitor; you
-play on that and the PC quietly gets its own feed.
-
-| Option | Roughly | Notes |
+| | Roughly | |
 |---|---|---|
-| Generic USB 3.0 stick (MS2130-type) | **$20–35** | Fine picture. ⚠ Most have **no passthrough** — check before buying. |
-| **AVerMedia StreamLine MINI+ (GC311G2)** | **~$50** | 1080p60 capture, 4K60 passthrough, plug-and-play in OBS. **The sweet spot.** |
-| Elgato HD60 S, refurbished | ~$75–90 | Elgato’s own refurb program, full warranty. |
-| Elgato HD60 X | ~$145 | The reliable default if money is not the question. |
+| **AVerMedia StreamLine MINI+ (GC311G2)** | **~$50** | **The pick.** 1080p60 in, 4K60 passthrough, plug-and-play |
+| Generic USB 3.0 stick (MS2130-type) | $20–35 | ⚠ most have **no passthrough** — check the listing |
+| Elgato HD60 S refurbished | ~$75–90 | Elgato's own refurb program, full warranty |
+| Elgato HD60 X | ~$145 | the no-thinking default |
 
-⚠ Prices are off review round-ups, not retailer pages — check before ordering. Get **USB 3.0**
+⚠ Prices come from review round-ups, not retailer pages — check before ordering. Get **USB 3.0**
 (blue connector); USB 2.0 sticks drop to 1080p30.
 
-⭐ **HDCP is not a problem.** The Switch leaves copy protection OFF for games (it only switches
-on for Netflix-type apps), so gameplay captures normally. Switch 2 behaves the same way and
-the major cards advertise support for it.
+⭐ **HDCP is not a problem.** The Switch leaves copy protection off for games — it only switches
+on for Netflix-type apps. Switch 2 behaves the same and the major cards advertise support.
 
-### Once the card arrives
+⭐ **On your PC a capture card is the EASY path, not the expensive one.** You have an i5-8400T
+with Intel UHD 630 — integrated graphics. With a card your PC never renders the game; it just
+receives a finished picture and encodes it, which is far lighter than running a game *and*
+encoding at once. *(I earlier suggested buying the game again on Steam as the cheap route. On
+this hardware that's the harder one — ignore it.)*
 
-Plug it in, then in the **Sources** panel (bottom-LEFT):
+### Steps once the card arrives
 
-> `+` → **Video Capture Device** → OK → in **Device**, pick the capture card → **OK**
+1. **Switch dock HDMI OUT → capture card HDMI IN**
+2. **Capture card HDMI OUT → your second monitor** *(the passthrough — this is where you play)*
+3. **Capture card USB → your PC**, ideally a blue USB 3.0 port
+4. Turn the Switch on, set the monitor to that input. You should see the game, lag-free.
+5. In OBS, **Sources** panel (bottom-LEFT) → **`+`** → **Video Capture Device** → OK
+6. **Device** → pick the capture card → **OK**
+7. The game appears in OBS. Drag the corners to fill the canvas.
 
-The game appears in the preview. Resize it to fill the canvas. Game audio comes in over the
-same USB cable, so you do not need a second audio source for it — only your mic.
-
-### The zero-hardware alternative, if you want to stream this week
-
-**Cult of the Lamb is also on PC (Steam).** If you own it there — or would rather spend ~$25
-on the game than $50 on a card — you need no hardware at all:
-
-> `+` → **Game Capture** → Mode: **Capture specific window** → pick Cult of the Lamb
-
-That works tonight. It is a real choice, not a consolation: buying the game again is cheaper
-than the card, and you would still want the card eventually for anything Switch-only.
-
-### Then
-
-Look at the preview window. If you can see your site with the counter on top of it, you're
-done. **Start Streaming** is the top button in the Controls panel, bottom-right.
+Game audio arrives over the same USB cable — no separate audio source needed for it.
 
 ---
 
-## PART 4 — After a stream
+## PART C — Your sources
 
-1. Your local recording is already saved in the folder from step 2a. **That's the master.**
-2. Twitch's copy stays up for 7 days. You don't need to download it — you have a better one.
-3. To put a stream on YouTube: upload the local file. That's the whole process.
+**Where the button is:** the **Sources** panel, **bottom-LEFT**, under "Scenes." The `+` is in
+its bottom-left corner.
+
+**What a source is:** OBS builds your picture like a collage. Each thing in it — a window, a
+webpage, a mic, a capture card — is one source. Top of the list = front of the picture.
+
+**The overlay** — works right now, no hardware:
+
+> `+` → **Browser** → OK →
+> **URL:** `https://chesswild.com/assets/overlay/`
+> **Width:** `480`  **Height:** `140` → OK
+
+Your wordmark plus **"The first 1,000. You would be #4"**, transparent background. Drag it into
+a corner. It re-counts every 45 seconds, so it climbs live if somebody signs up mid-stream.
+
+**Your website** — for a chess stream:
+
+> `+` → **Window Capture** → OK → **Window** → your browser
+> *(open it to chesswild.com first or it won't be in the list)*
+
+**Your mic:** check the **Audio Mixer** panel first — it already shows **Mic/Aux**. If the green
+bar moves when you talk, you're set and need no source at all.
 
 ---
 
-## Later, not now
+## PART D — After a stream
 
-- **Music** — don't play Spotify or the radio. It gets your VOD muted in six-minute blocks,
-  which takes your commentary with it. Free and safe: **StreamBeats**, Outertone, NCS.
-- **Streaming your Switch** — needs a **capture card** (~$20–40). A Switch plugged into a
-  monitor is invisible to your PC; a monitor is an output, not an input.
-- **A second copy of the C: drive.** One external USB drive, ~$60 for 2 TB. It's the only
-  thing in this whole document with any urgency, because everything you own is on one disk.
+1. Your local recording is already saved. **That's the master.**
+2. Twitch's copy lasts 7 days. No need to download it — yours is better.
+3. To put it on YouTube: upload the local file. That's the whole process.
+
+---
+
+## Still to buy
+
+| | Roughly | Why |
+|---|---|---|
+| **External hard drive, 2 TB** | ~$60 | Everything you own is on one disk with no copy. The only urgent item here. |
+| **Capture card with passthrough** | ~$50 | The only thing between you and streaming the Switch. |
+
+## Later
+
+- **Music** — not Spotify or the radio. It mutes your VOD in six-minute blocks and takes your
+  commentary with it. Free and cleared for Twitch *and* YouTube: **StreamBeats**, Outertone, NCS.
+- **Recording Quality** currently reads *"Same as stream."* A higher-quality separate recording
+  is possible but it's a second encode, and this PC has enough to do. Leave it — a permanent,
+  unmuted copy at stream quality already beats anything Twitch keeps.
