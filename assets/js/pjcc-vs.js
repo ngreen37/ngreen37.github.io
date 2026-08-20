@@ -54,17 +54,25 @@
   /* ── THE CUT-SCENE ──────────────────────────────────────────────────────────────────
      Builds the card, plays it, removes itself, and resolves. The caller starts the match
      in the callback, so the board is never behind the overlay waiting to be uncovered —
-     it does not exist yet, which is also why a skipped cut-scene costs nothing.
+     it does not exist yet.
 
-     ⚠⚠ IT RESOLVES EXACTLY ONCE. A skip tap, the keydown, the animation end and the
-     failsafe timer can all arrive, and two of them arriving means startRung() runs twice —
-     which in the Gauntlet is a second board over the first one. `done` is the guard and
-     every path goes through it.
-     ⚠ THE FAILSAFE TIMER IS NOT BELT-AND-BRACES. `animationend` does not fire if the
-     element is display:none'd, if the tab is backgrounded at the wrong moment, or if a
-     browser refuses the animation outright — and every one of those leaves the player
-     staring at a title card with no way into the match. The timer is what makes the
-     cut-scene unable to trap anybody. */
+     ⚑ THERE IS NO SKIP ANY MORE (2026-08-19, Nate: "take out the skip intro on the intro —
+     it's so short anyway. And it's very cool, by the way"). It ran 2.6s and carried a
+     "TAP TO SKIP" hint in the corner plus a tap/keydown handler. Both are gone, and the
+     handlers went WITH the hint on purpose: a silent skip that a stray thumb can trigger
+     is worse than none — on a phone the overlay covers the whole board, so the odds of
+     brushing it during the one moment the card is on screen are not small, and the player
+     would lose the announcement without ever knowing there was something to lose.
+
+     ⚠⚠ IT STILL RESOLVES EXACTLY ONCE. The animation end and the failsafe timer can both
+     arrive, and two of them arriving means startRung() runs twice — which in the Gauntlet
+     is a second board over the first one. `done` is the guard and every path goes through it.
+     ⚠⚠ THE FAILSAFE TIMER IS NOW THE ONLY WAY OUT, which makes it more load-bearing than
+     it was, not less. `animationend` does not fire if the element is display:none'd, if the
+     tab is backgrounded at the wrong moment, or if a browser refuses the animation outright.
+     With the skip gone there is no tap to rescue a player from any of those, so this timer
+     is the single thing standing between a stalled animation and a card nobody can leave.
+     Do not remove it, and do not raise it past the animation's own length. */
   function cut(host, opts) {
     opts = opts || {};
     return new Promise(function (resolve) {
@@ -94,8 +102,7 @@
           '</span>' +
         '</div>' +
         '<div class="vs-cut-flash"></div>' +
-        '<div class="vs-cut-vs">VS</div>' +
-        '<div class="vs-cut-skip">TAP TO SKIP</div>';
+        '<div class="vs-cut-vs">VS</div>';
 
       host.appendChild(el);
 
@@ -104,14 +111,10 @@
         if (fired) return;
         fired = true;
         clearTimeout(timer);
-        document.removeEventListener('keydown', onKey, true);
         if (el.parentNode) el.parentNode.removeChild(el);
         resolve();
       }
-      function onKey() { done(); }
 
-      el.addEventListener('pointerdown', done);
-      document.addEventListener('keydown', onKey, true);
       /* ⚠ THE WRAPPER'S OWN fade-out is the last thing to finish, and `animationend`
          bubbles from the children too — so this has to check whose animation ended or it
          tears the card down 0.3s in, when the first band lands. */
