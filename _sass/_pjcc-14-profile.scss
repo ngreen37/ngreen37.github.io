@@ -185,6 +185,63 @@
 .lb-av { font-size: 20px; width: 30px; }
 .lb-name { font-weight: 700; color: #eef1f5; }
 .lb-score { text-align: right; color: #6bffb8; font-weight: 800; }
+/* ══ THE CREDITS COLUMN RAN OFF THE PHONE ═══════════════════════════════════════════
+   2026-08-20, Nate: "the Leaderboard isn't fully visible on mobile. You can't see how
+   many credits users have. If you rotate to sideways-view, it gets better but still not
+   fully visible."
+
+   MEASURED, on the live page at three widths, before changing anything: the table's own
+   MIN-CONTENT width is 308px and the card it sits in is 266px at 390 and 236px at 360.
+   So the score column ran 42px past the card at 390 and **72px past it at 360**, and the
+   card clipped it — "CREDIT" and half a number, exactly as described. Rotating to
+   landscape gives the card 672px and the overhang measures 0, which is why it "gets
+   better": the number is complete and sitting flush on the card's edge with nothing to
+   spare. That is the whole of "still not fully visible."
+
+   ⚠⚠ THE PAGE NEVER SLID SIDEWAYS, WHICH IS WHY NOTHING CAUGHT THIS. `document.
+   scrollWidth` stayed exactly 360 and 390 — the overflow is CLIPPED by the card, not
+   passed up to the document, so every mobile-overflow gate on this site was right to
+   stay green. A table can lose a column without the window moving a pixel.
+   ⭐ The general shape: **a table cannot shrink below the sum of its columns' min-content
+   widths.** `width: 100%` does not help and does not warn; it just overflows. So the fix
+   has to attack the four min-contents themselves, not the table's width.
+
+   Four of them, and each one was measured:
+     · CELL PADDING  10px each side × 4 columns = 80px of the 308, more than a quarter of
+       the table, spent on air.
+     · THE SCORE HEADER  "CREDITS" at 0.72rem uppercase with 0.08em tracking is WIDER than
+       any number under it. The column was sized by its label, not its data.
+     · THE AVATAR  a 30px box holding a 20px emoji, plus 20px of padding, for decoration.
+     · THE CODENAME  one unbreakable word. `overflow-wrap: anywhere` is the only property
+       that lowers an element's MIN-content width; `break-word` does not, which is the
+       trap here. It only breaks when there is genuinely no room, so ordinary names never
+       see it — but a 22-character codename can no longer push the credits off the screen.
+   ⭐ Nothing is hidden and nothing has to be swiped for: he asked to SEE the credits, and
+   a horizontal scroller would have answered "you can see them, after you find them." */
+@media (max-width: 640px) {
+  .lb-table th { padding: 7px 5px; font-size: 0.66rem; letter-spacing: 0.03em; }
+  .lb-table td { padding: 8px 5px; }
+  .lb-rank { width: auto; padding-left: 2px; }
+  .lb-av   { width: 22px; font-size: 15px; padding-left: 2px; padding-right: 2px; }
+  .lb-name { overflow-wrap: anywhere; }
+  .lb-name .lb-gift { overflow-wrap: anywhere; }
+  /* the score keeps its weight — it is the thing he came to read — but stops being sized
+     by its own header. `white-space: nowrap` so a five-figure credit count never wraps
+     into two lines once the column is finally narrow enough to fit. */
+  .lb-score { white-space: nowrap; padding-right: 2px; }
+  .lb-table th.lb-score { letter-spacing: 0; font-size: 0.6rem; }
+}
+/* ⭐ AND ONE STEP SMALLER ON THE NARROWEST PHONES, so an ordinary codename stops breaking
+   mid-word. MEASURED rather than reasoned: at 360px the name column ends up with exactly
+   123px of text room, and "RookYourQueen" is 133px at the inherited 17px and 118px at 15px.
+   381px and up already has the room, so it keeps the full size — shrinking every phone to
+   fix the narrowest one is the wrong trade.
+   ⚠ A LONG ENOUGH NAME STILL WRAPS AND THAT IS CORRECT: 22 characters needs 172px even at
+   13px, which no 360px phone has. `overflow-wrap: anywhere` above is the floor, not the
+   plan — it exists so the credits can never be pushed off the screen again. */
+@media (max-width: 380px) {
+  .lb-name, .lb-name .lb-gift { font-size: 0.94rem; }
+}
 .lb-empty { color: #8b93a1; padding: 1rem 0; }
 .lb-me { background: rgba(245,197,24,0.08); }
 .lb-intro { color: #8b93a1; max-width: 720px; }

@@ -568,6 +568,77 @@ const WIDTHS = [320, 360, 390, 430];
     }
   }
 
+  /* ══ PART 1f — A TABLE CAN LOSE A COLUMN WITHOUT THE WINDOW MOVING ═════════════
+     2026-08-20, Nate: *"the Leaderboard isn't fully visible on mobile. You can't see how
+     many credits users have."*
+
+     ⚠⚠ EVERY OTHER CHECK IN THIS FILE WAS RIGHT TO STAY GREEN. `document.scrollWidth`
+     measured exactly 360 and 390 the whole time — the leaderboard card CLIPS its overflow
+     instead of passing it up, so the page never panned by a pixel while the credits column
+     sat 72px outside the card. This is the same lesson as the header collision in PART 1d,
+     one layer down: **an escape probe cannot see a clip.** A table cannot shrink below the
+     sum of its columns' min-content widths; `width: 100%` neither helps nor warns.
+
+     Measured against the DEPLOYED stylesheet before the fix: Overall clipped by 72px at 360
+     and 42px at 390, and *Fork in the Road* by 67px and 37px — two boards, not one. So this
+     walks EVERY tab rather than the one that was reported.
+
+     ⚠ IT DRIVES THE LIVE PAGE WITH THE LOCAL STYLESHEET GRAFTED IN AT ITS OWN PLACE IN THE
+     CASCADE. The rows are built by pjcc-leaderboard.js from real data, and the page carries
+     its own <style> that beats anything appended to <head> — a local repro of the markup
+     would be a copy of the renderer that drifts from it, and would prove nothing about the
+     names actually on the board. Intercepting the stylesheet REQUEST keeps the cascade
+     honest. ══════════════════════════════════════════════════════════════════ */
+  {
+    const LB = 'https://chesswild.com/leaderboards/';
+    const LB_WIDTHS = [[320, 720], [360, 780], [390, 844], [430, 900], [844, 390]];
+    const bad = [];
+    let boards = 0, reached = false;
+    for (const [w, h] of LB_WIDTHS) {
+      const pg = await browser.newPage();
+      await pg.setViewport({ width: w, height: h, hasTouch: true, isMobile: true });
+      await pg.setRequestInterception(true);
+      pg.on('request', (r) => r.url().includes('/assets/css/style.css')
+        ? r.respond({ status: 200, contentType: 'text/css; charset=utf-8', body: siteCss })
+        : r.continue());
+      try {
+        await pg.goto(LB, { waitUntil: 'networkidle2', timeout: 45000 });
+        await new Promise((r) => setTimeout(r, 3000));
+        const tabs = await pg.evaluate(() =>
+          [...document.querySelectorAll('.lb-tab')].map((t) => t.textContent.trim()));
+        if (tabs.length) reached = true;
+        for (let i = 0; i < tabs.length; i++) {
+          await pg.evaluate((n) => document.querySelectorAll('.lb-tab')[n].click(), i);
+          await new Promise((r) => setTimeout(r, 1400));
+          const res = await pg.evaluate(() => {
+            const out = [];
+            document.querySelectorAll('.lb-table').forEach((t) => {
+              const host = t.parentElement, hr = host.getBoundingClientRect();
+              let over = 0;
+              /* every CELL, not the table's own box: a table that overflows its container
+                 reports its own width happily and it is the right-hand column that is gone. */
+              t.querySelectorAll('td, th').forEach((c) => {
+                over = Math.max(over, c.getBoundingClientRect().right - hr.right);
+              });
+              if (over > 0.5) out.push(Math.round(over));
+            });
+            return out;
+          });
+          boards++;
+          if (res.length) bad.push(w + 'px "' + tabs[i] + '" +' + res.join('/') + 'px past the card');
+        }
+      } catch (e) { bad.push(w + 'px: ' + e.message); }
+      await pg.close();
+    }
+    /* ⚠ A BOARD THAT NEVER LOADED IS NOT A BOARD THAT FITS. Without this the whole check
+       passes on an empty page — the classic gate that goes green because it found nothing. */
+    check('the leaderboard actually rendered its boards', reached && boards >= 5,
+      boards + ' board renders across ' + LB_WIDTHS.length + ' widths');
+    check('⚠⚠ no leaderboard column runs past its card on a phone', bad.length === 0,
+      bad.length ? bad.slice(0, 4).join(' · ') : LB_WIDTHS.map((x) => x[0]).join(', ')
+        + 'px × every board, credits fully on screen');
+  }
+
   /* ══ PART 2 — nothing iOS would zoom for ═════════════════════════════════════════
      ⚠⚠ THE <style> GOES IN THE BODY, WHERE JEKYLL PUTS IT. A page's own block beats the
      stylesheet on a tie, and that tie is the whole reason the coarse-pointer rule is

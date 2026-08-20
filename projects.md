@@ -407,12 +407,12 @@ description: McPuppy Studios — the independent studio behind ChessWild and the
 
   <div class="mcp-thanks-block">
     <h3 class="mcp-thanks-sub">The Creator would like to thank</h3>
-    <p class="mcp-thanks-names">Mom &middot; Chels &middot; Laura &middot; Josh &middot; Kim &middot; Aunts Barb and Kathy &middot; Tucker &middot; Austin &middot; Kennie &middot; Jacob &middot; Garrett &middot; Dominic &middot; Sarah and Mark Facca &middot; Ryan Neuharth &middot; Milady</p>
+    <p class="mcp-thanks-names">Mom &middot; Chels &middot; Laura &middot; Josh &middot; Kim &middot; Tucker &middot; Austin &middot; Kennie &middot; Jacob &middot; Garrett &middot; Dominic &middot; Sarah and Mark Facca &middot; Ryan Neuharth &middot; Milady</p>
   </div>
 
   <div class="mcp-thanks-block">
     <h3 class="mcp-thanks-sub">For the endless inspiration, McPuppy Studios would like to thank</h3>
-    <p class="mcp-thanks-muses">Norm Macdonald &middot; The Meadowlands &middot; Joey Cape &middot; The Lawrence Arms &middot; Jim Croce &middot; Trey Parker and Matt Stone &middot; John Steakley &middot; Neville Goddard &middot; Jesse Green</p>
+    <p class="mcp-thanks-muses">Norm Macdonald &middot; The Meadowlands &middot; Joey Cape &middot; The Lawrence Arms &middot; Jim Croce &middot; Tim Dillon &middot; Trey Parker and Matt Stone &middot; John Steakley &middot; Neville Goddard &middot; Jesse Green</p>
   </div>
 </section>
 
