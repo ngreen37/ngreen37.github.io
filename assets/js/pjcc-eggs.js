@@ -298,7 +298,10 @@ function showTxToast(msg, duration) {
     // shutting it. Nothing in this function changed — it reads the class the pre-paint
     // script set and toggles from there, which is exactly why the default lives in one
     // place and not in two. The a11y state below follows for free.
-    var COLLAPSE_KEY = 'pjcc.nav.collapsed';
+    // ⛑ `.v2` since 2026-08-20 — renaming the key is what reset every stored
+    // preference back to the collapsed default, once. MUST match the pre-paint script in
+    // BOTH _layouts/default.html and _layouts/game.html; the long note is in default.html.
+    var COLLAPSE_KEY = 'pjcc.nav.collapsed.v2';
     function isDesktop() { return !!(window.matchMedia && matchMedia('(min-width: 901px)').matches); }
 
     // reflect the docked-rail state on the hamburger for a11y (expanded = rail is open)

@@ -183,10 +183,13 @@
        Added to game pages 2026-07-24 when they adopted the shared header.
        ⚑ 2026-08-18: default flipped to COLLAPSED (Nate). This must stay byte-for-byte the
        same decision as _layouts/default.html — the long note lives there. Two layouts, one
-       rule: a stored '0' docks it wide, anything else (including nothing) collapses it. */
+       rule: a stored '0' docks it wide, anything else (including nothing) collapses it.
+       ⛑ 2026-08-20: the key is `pjcc.nav.collapsed.v2` — the rename IS a deliberate one-time
+       reset of everybody's stored preference, and the reasoning is in default.html. If these
+       two ever disagree about the key name, half the site remembers and half forgets. */
     (function () {
       var c = null;
-      try { c = localStorage.getItem('pjcc.nav.collapsed'); } catch (e) {}
+      try { c = localStorage.getItem('pjcc.nav.collapsed.v2'); } catch (e) {}
       if (c !== '0') document.body.classList.add('nav-collapsed');
     })();
   </script>

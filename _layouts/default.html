@@ -32,10 +32,25 @@
        ⚠ THE CLASS IS APPLIED EVEN IF localStorage THROWS (blocked cookies / private mode).
        The old shape read the key inside the try, so a throw silently produced the OTHER
        state. With the default outside the catch, a browser that can't remember anything
-       still gets the intended picture. */
+       still gets the intended picture.
+
+       ⛑ 2026-08-20 — THE KEY NAME IS `.v2`, AND THE RENAME *IS* THE ONE-TIME RESET. Nate:
+       “did we lose the default to collapse on the PC site? Or is it just a cookies thing.” It
+       was the cookies thing — proved by driving the live site from a fresh profile (collapsed,
+       key null) and then with a stored '0' (wide). His browser was remembering a hamburger
+       click, which is the feature working.
+       ⭐⭐ THE ONLY HONEST LEVER IS A NEW KEY NAME, NEVER A CHANGE TO THE `!== '0'` TEST. The
+       test is correct and must stay: absent means default. Renaming the key makes every
+       stored preference unreadable exactly once, so everybody lands on the default and then
+       starts remembering again. Changing the test would mean nobody could ever keep the rail
+       open, which is a different (and worse) product.
+       ⚠ THE COST OF THIS IS PAID BY WHOEVER HAD DELIBERATELY OPENED IT. Done now because
+       he said so and because that population is currently him — it is the cheapest this will
+       ever be. Bumping it again after launch is a real, if small, tax on real people.
+       */
     (function () {
       var c = null;
-      try { c = localStorage.getItem('pjcc.nav.collapsed'); } catch (e) {}
+      try { c = localStorage.getItem('pjcc.nav.collapsed.v2'); } catch (e) {}
       if (c !== '0') document.body.classList.add('nav-collapsed');
     })();
   </script>
