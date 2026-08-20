@@ -380,25 +380,48 @@ check('the rating→difficulty map is the inverse of puzzleRating()',
      out of time". The property under test is untouched: resolved INSIDE the call that uses
      the bridge, so it cannot be older than the object producing it. */
   check('the dial is read at move time, not at parse time',
-    /function botDial\(b, st\)\{[\s\S]{0,600}E\.skillForElo\(elo\)/.test(PT) &&
+    /function botDial\(b, st, S\)\{[\s\S]{0,220}E\.skillForElo\(elo\)/.test(PT) &&
     /function botElo\(b\)\{[\s\S]{0,200}return b\.elo;/.test(PT) &&
-    /PJCCGauntletEngine\.move\(S, botDial\(bot, st\)\)/.test(PT),
+    /PJCCGauntletEngine\.move\(S, botDial\(bot, st, S\)\)/.test(PT),
     'botDial() runs inside the same call that uses the engine');
   /* ⚠ AND STRENGTH STILL HAS EXACTLY ONE DOOR. An adaptive seat that reached the engine
      by any other route would be a second source of truth about difficulty — which is the
      original "Medium was secretly 1575" bug wearing a new hat. */
+  /* ⚠⚠ COUNTED OVER THE CODE, NOT THE FILE. This is a "how many times does X appear"
+     check, and the moment a COMMENT explained what `PJCCGauntletEngine.move()` does — which
+     one now does, over botThinkFor — the file had two occurrences and the code had one, and
+     the check went red describing a bug that did not exist. A test that forces the next
+     person to delete the explanation in order to go green is a bad test.
+     ⭐ Same strip, same reason, as creator.check.js §1. [[green-must-name-what-ran]] */
+  const PT_CODE = PT.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
   check('…and every seat, adaptive or not, still goes through botDial',
-    (PT.match(/PJCCGauntletEngine\.move\(/g) || []).length ===
-    (PT.match(/PJCCGauntletEngine\.move\(S, botDial\(bot, st\)\)/g) || []).length,
+    (PT_CODE.match(/PJCCGauntletEngine\.move\(/g) || []).length ===
+    (PT_CODE.match(/PJCCGauntletEngine\.move\(S, botDial\(bot, st, S\)\)/g) || []).length,
     'no seat reaches the engine except through the one dial');
-  /* ⚠⚠ AND THE CLOCK ONLY EVER *NARROWS* THE PACE, NEVER WIDENS IT. `Math.min(mt, …)` is
-     what keeps "no clock" byte-identical to the room people already know, and it is what
-     stops a long rapid game from turning every regular into a slower, stronger opponent
-     than its rating advertises. A floor is there too: a search given no time is not a
-     faster opponent, it is a random one. */
-  check('…and a clock can only speed a regular up, never slow it down',
-    /Math\.max\(150, Math\.min\(mt,/.test(PT),
-    'min() against the hand-set pace, floored at 150ms');
+  /* ⚠⚠ AN UNTIMED BOARD MUST GET THE HAND-SET PACE, UNTOUCHED. That is the compatibility
+     promise: "No clock" is how this room has always played, and a regular whose clock you
+     switched off is the same thing one seat at a time. The early return is what guarantees
+     it, so the early return is what gets asserted — arithmetic that happens to come out
+     equal would be a different, breakable claim. */
+  check('an untimed regular gets its hand-set pace and nothing else',
+    /function botThinkFor\(b, st, S\)\{[\s\S]{0,200}if \(!tcOf\(st\) \|\| botClockOff\(st\)\) return base;/.test(PT),
+    'no clock (or clock off) returns b.movetime before any budgeting');
+  /* ⚠⚠ AND A THINK IS BOUNDED AT BOTH ENDS. Nate asked for the regular to spend LONGER on
+     a critical position, which means the old "never slower than its pace" rule is gone on
+     purpose — so what has to hold now is that a long think can still never eat the clock
+     it is being spent from, and that a short one never reaches zero. */
+  check('…and a deep think is still capped by the clock it comes out of',
+    /Math\.min\(base \* 2\.5, left \/ 8\)/.test(PT) &&
+    /Math\.max\(150, Math\.floor\(Math\.min\(want, left - 800\)\)\)/.test(PT),
+    'deep ≤ an eighth of the bank, everything ≤ left-800ms, floored at 150ms');
+  /* ⭐ HIS TWO CASES ARE BOTH ACTUALLY WIRED. "Losing badly" is exact (the engine's own
+     score); "only one good move" is approached through in-check and a hard eval swing,
+     because proving it outright needs MultiPV on a bridge five rooms share. A check here
+     because a constant nobody reads is the classic way a tuning knob ships dead. */
+  check('…and the regular actually looks at the position before spending',
+    /C\.inCheck\(S, S\.turn\)/.test(PT) && /cp <= CP_LOSING/.test(PT) &&
+    /\(cp - was\) <= CP_SWING/.test(PT),
+    'in check · losing badly · the eval just swung against it');
   /* ⚑⚑ THE LADDER IS THE RUNGS, AND SINCE 2026-08-19 THAT IS NOT THE WHOLE BENCH. Nate
      moved Auston off the ladder — "they are not necessarily 1200 but completely adaptive" —
      so BOTS now ends with a seat whose `elo` is an invisible SEED, and walking the raw

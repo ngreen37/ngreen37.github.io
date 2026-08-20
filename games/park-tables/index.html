@@ -1001,32 +1001,79 @@ body_class: theme-hall
     if (!b.adaptive) return b.elo;
     return (botAdapt && botAdapt.level()) || b.elo;
   }
-  /* ⛑ THE REGULAR BUDGETS ITS OWN CLOCK (2026-08-20) ─────────────────────────────────
-     `movetime` is hand-set pacing, and under NO clock that is still exactly what it is —
-     `botDial(b)` with no board returns the same object it always did, to the byte.
+  /* ══ THE REGULAR MANAGES ITS CLOCK (2026-08-20) ═══════════════════════════════════
+     Nate: *"in timed games the bot has to manage his time — when there is only one good
+     move available, or they are losing badly, they take a bit more time."*
 
-     ⚠⚠ BUT A FIXED PACE UNDER A CLOCK IS THE BOT IGNORING ITS OWN CLOCK. The CEO thinks
-     1300ms a move; at Bullet 1+0 that is a flag somewhere around move 46, so "I beat the
-     CEO" would most often mean "the CEO ran out of time", which is not a thing anybody
-     played for — and it would hand out the full star that unlocks the seat above him.
-     Real engines spend a slice of what is left, so this one does too.
+     `movetime` is hand-set PACING, and under no clock that is still exactly all it is —
+     `botDial(b)` with no board returns the same object it always did, to the byte, and so
+     does a board whose regular you have switched the clock off for.
 
-     ⭐ IT CHANGES NOTHING UNTIL THE CLOCK IS ACTUALLY LOW. The budget is a thirtieth of the
-     bank, so at Blitz (300s) and Rapid (600s) it starts at 10s and 20s — far above every
-     seat's pace — and even Bullet opens at 2s. The regulars play exactly as they always
-     have right up until they are genuinely short, and then they speed up, the way you do.
+     ⚠⚠ A FIXED PACE UNDER A CLOCK IS THE BOT IGNORING ITS OWN CLOCK. The CEO thinks 1300ms
+     a move; at Bullet 1+0 that is a flag somewhere around move 46, so "I beat the CEO"
+     would most often mean "the CEO ran out of time" — and would hand out the full star that
+     unlocks the seat above him.
+
+     ── THE ORDINARY SLICE ──────────────────────────────────────────────────────────────
+     A thirtieth of what is left. ⭐ THAT NUMBER CHANGES NOTHING UNTIL THE CLOCK IS LOW: at
+     Blitz (300s) it opens at 10s and at Rapid (600s) at 20s, both far above every seat's
+     pace, and even Bullet opens at 2s. The regulars play exactly as they always have right
+     up until they are genuinely short, and then they hurry, the way you do. Thirty is
+     roughly "a game has forty more moves in it, keep a reserve".
+
+     ── AND WHEN THE POSITION DESERVES LONGER ───────────────────────────────────────────
+     ⭐⭐ HIS TWO CASES, AND WHAT EACH ONE IS MEASURED WITH — one is exact, two are honest
+     proxies, and the difference is worth stating rather than blurring:
+
+       • *"losing badly"* — **EXACT.** `st.cp` is the engine's OWN score from its own side at
+         the end of its last search. Below −200 (two pawns down) it is losing and looks
+         harder for a save. Nothing is inferred; this is the number Stockfish printed.
+       • *"only one good move available"* — **NOT directly measurable here.** Proving it
+         needs a MultiPV search comparing best against second-best, which would mean
+         changing the shared engine bridge five rooms load, and slowing every search to
+         answer a question about a few of them. So it is approached from two sides that ARE
+         exact and that between them cover the positions he means:
+           – **IN CHECK.** The commonest position in chess where there is genuinely one
+             answer, and it costs one referee call to know.
+           – **THE EVAL JUST SWUNG HARD AGAINST IT** (≥150cp worse than its previous
+             search). You have played something strong; that is precisely when the set of
+             non-losing replies collapses.
+       • **A NEARLY-FORCED POSITION** (2–4 legal moves) gets it too. ⚠ Exactly one legal
+         move never reaches here at all — `PJCCGauntletEngine.move()` short-circuits a
+         forced move and returns instantly, which is correct: there is nothing to think
+         about when there is nothing to choose.
+
+     ⚠⚠ A LONGER THINK IS STILL BOUNDED BY THE CLOCK, and that is what stops "think harder"
+     from becoming "think itself to death". The deep budget is capped at an EIGHTH of the
+     bank, and everything is capped again at `left − 800ms` so a regular can never spend its
+     last second deciding. Under real time pressure the deep think shrinks with everything
+     else — which is also true of a person.
      ⚠ FLOORED AT 150ms rather than allowed to reach zero: a search given no time is not a
      faster opponent, it is a random one. If the floor still cannot save it, the flag falls
      and the win is real. */
-  function botDial(b, st){
+  var CP_LOSING = -200;      // two pawns down, from the regular's own side
+  var CP_SWING  = -150;      // the position turned this much against it since its last move
+  function botThinkFor(b, st, S){
+    var base = b.movetime;
+    if (!tcOf(st) || botClockOff(st)) return base;      // untimed: pure pacing, as ever
+    var left = clockLeft(st, botSide(st));
+    var deep = false;
+    try {
+      var n = C.legalMoves(S).length;
+      var cp = (typeof st.cp === 'number') ? st.cp : null;
+      var was = (typeof st.cpPrev === 'number') ? st.cpPrev : null;
+      deep = C.inCheck(S, S.turn) ||
+             (n >= 2 && n <= 4) ||
+             (cp !== null && cp <= CP_LOSING) ||
+             (cp !== null && was !== null && (cp - was) <= CP_SWING);
+    } catch (e) { deep = false; }
+    var want = deep ? Math.min(base * 2.5, left / 8) : Math.min(base, left / 30);
+    return Math.max(150, Math.floor(Math.min(want, left - 800)));
+  }
+  function botDial(b, st, S){
     var E = window.PJCCGauntletEngine, elo = botElo(b);
-    var mt = b.movetime;
-    var tc = tcOf(st);
-    if (tc && st) {
-      var mine = sidePlayed(st) === 'w' ? 'b' : 'w';       // the regular has the other chair
-      mt = Math.max(150, Math.min(mt, Math.floor(clockLeft(st, mine) / 30)));
-    }
-    return { skill: E.skillForElo(elo), blunder: E.blunderForElo(elo), movetime: mt };
+    return { skill: E.skillForElo(elo), blunder: E.blunderForElo(elo),
+             movetime: botThinkFor(b, st, S) };
   }
 
   /* ── SHE REMEMBERS HOW STRONG YOU WERE ───────────────────────────────────────────
@@ -1179,6 +1226,22 @@ body_class: theme-hall
      the refill is not something you can lean on by walking to the lobby and back. */
   var clockTimer = null, clockRunAt = 0;
   function tcOf(st){ return (st && st.tc) ? tcById(st.tc) : null; }
+  /* ── THE REGULAR'S CLOCK CAN BE SWITCHED OFF, FROM THE BOARD ──────────────────────
+     2026-08-20, Nate: *"You can also turn Bot clock off if you choose (an option available
+     IN-GAME)."* You keep your clock; the regular plays untimed.
+
+     ⚠ IN-GAME AND NOT ON THE BENCH, which is his word and also the right place: this is not
+     a property of the match you are choosing, it is a thing you decide about the opponent
+     once you are already sitting there and the clock is real. It rides on the SAVED board,
+     so a refresh keeps it and every game starts with the regular timed.
+     ⭐ IT IS NOT A DIFFICULTY SETTING. An untimed regular is very slightly STRONGER (it
+     never has to hurry), so this is a kindness you extend to it, not one you take. That is
+     also why there is no matching "turn MY clock off" — that is what "No clock" is for. */
+  function botClockOff(st){ return !!(st && st.botOff); }
+  /* Which chair each of you is in. Everything below reads sides, never "me" and "them". */
+  function botSide(st){ return sidePlayed(st) === 'w' ? 'b' : 'w'; }
+  /* Is this color running a clock at all? */
+  function clockOnFor(st, color){ return !!tcOf(st) && !(botClockOff(st) && color === botSide(st)); }
   /* Whose clock is running: the side to move. Derived from the PLY COUNT rather than by
      replaying the game, because this is asked five times a second and a replay is not. */
   function clockSide(st){ return plyCount(st && st.moves) % 2 === 0 ? 'w' : 'b'; }
@@ -1217,7 +1280,11 @@ body_class: theme-hall
      minute is not a game in progress. */
   function clockSync(){
     var st = botCur, tc = tcOf(st);
+    /* ⚠⚠ A SIDE WHOSE CLOCK IS OFF STOPS THE STOPWATCH ENTIRELY — there is one running
+       clock, and it belongs to whoever is to move. With the regular's clock switched off,
+       its whole turn is untimed, so nothing runs and nothing can flag while it thinks. */
     var run = !!tc && !!st && !st.done && !botLab && plyCount(st.moves) > 0 &&
+              clockOnFor(st, clockSide(st)) &&
               (typeof document.visibilityState !== 'string' || document.visibilityState !== 'hidden');
     if (run && !clockRunAt) clockRunAt = Date.now();
     if (!run && clockRunAt) clockBank(st, false);
@@ -1229,7 +1296,16 @@ body_class: theme-hall
     var st = botCur;
     if (!st || !tcOf(st)) return clockSync();
     var color = clockSide(st);
-    if (clockLeft(st, color) <= 0) return clockFlag(st, color);
+    /* ⚠ `clockOnFor` HERE IS A SECOND LOCK ON A DOOR THAT IS ALREADY SHUT, and it is kept
+       deliberately — but be honest about what it is. clockSync() will not start the
+       interval at all while a switched-off side is to move, and this only ever examines the
+       side to move, so today there is NO input that reaches this line with the guard
+       mattering. Mutation-tested: deleting it changes nothing, which is the definition of
+       unreachable. It stays because "a side with no clock cannot flag" is a rule worth
+       stating where flagging happens, and the day the timer runs for some other reason this
+       is the line that stops a dash from ending somebody's game. Do not write a test that
+       claims to exercise it. */
+    if (clockOnFor(st, color) && clockLeft(st, color) <= 0) return clockFlag(st, color);
     paintClocks(st);
   }
   /* ⚠⚠ THE FLAG IS A RESULT LIKE ANY OTHER, WHICH IS WHY IT GOES THROUGH botFinishAs AND
@@ -1257,17 +1333,24 @@ body_class: theme-hall
   function paintClocks(st){
     var tc = tcOf(st); if (!tc) return;
     Array.prototype.forEach.call(document.querySelectorAll('[data-clock]'), function (el) {
-      var color = el.getAttribute('data-clock'), left = clockLeft(st, color);
-      el.textContent = fmtClock(left);
-      el.classList.toggle('low', left <= 20000);
-      el.classList.toggle('run', !!clockRunAt && clockSide(st) === color && !st.done);
+      var color = el.getAttribute('data-clock'), off = !clockOnFor(st, color);
+      var left = clockLeft(st, color);
+      /* ⭐ AN OFF CLOCK READS “–”, NOT A FROZEN NUMBER. A clock stuck at 4:31 for ten moves
+         looks like a bug; a dash looks like a decision, which is what it is. */
+      el.textContent = off ? '–' : fmtClock(left);
+      el.classList.toggle('off', off);
+      el.classList.toggle('low', !off && left <= 20000);
+      el.classList.toggle('run', !off && !!clockRunAt && clockSide(st) === color && !st.done);
     });
   }
   /* The pill on a nameplate. '' when there is no clock, so the plate is untouched in the
      mode this room has always had. */
   function clockNode(st, color){
     var tc = tcOf(st); if (!tc) return '';
-    return '<i class="pt-clock" data-clock="' + color + '">' + fmtClock(clockLeft(st, color)) + '</i>';
+    var off = !clockOnFor(st, color);
+    return '<i class="pt-clock' + (off ? ' off' : '') + '" data-clock="' + color + '"' +
+      (off ? ' title="This regular is playing untimed"' : '') + '>' +
+      (off ? '–' : fmtClock(clockLeft(st, color))) + '</i>';
   }
   /* ⚠ A HIDDEN TAB IS A PAUSED CLOCK. Without this, backgrounding the page in bullet loses
      the game while nobody is looking at it — and browsers throttle timers in a hidden tab,
@@ -1973,8 +2056,24 @@ body_class: theme-hall
         : (canMulligan(st, g)
             ? '<button class="pjcc-btn-ghost" id="pt-bot-mull">↶ Take it back</button> '
             : '<button class="pjcc-btn-ghost" disabled>↶ Take it back</button> ');
+      /* ⛑ THE REGULAR'S CLOCK, SWITCHED FROM THE BOARD (2026-08-20) — his ask, and it is
+         only ever drawn when there IS a clock, so a "No clock" game keeps the three
+         controls this row has always had.
+         ⚠ IT NAMES ITS STATE, NOT ITS ACTION. "Bot clock off" as a label is ambiguous —
+         is that what it IS or what it DOES — so it reads "Bot clock: On" with
+         `aria-pressed`, which is the one shape a screen reader and a thumb both read the
+         same way. [[hover-is-three-inputs]]
+         ⚠ Resign stays LAST. A destructive control does not get a new neighbor between it
+         and the thing above it. */
+      var off = botClockOff(st);
+      var clk = tcOf(st)
+        ? '<button class="pjcc-btn-ghost pt-clockbtn' + (off ? '' : ' on') + '" id="pt-bot-clock"' +
+            ' aria-pressed="' + (off ? 'false' : 'true') + '"' +
+            ' aria-label="' + esc(BOTS[st.bot].name) + '’s clock is ' + (off ? 'off' : 'on') +
+            '">⏱ Bot clock: ' + (off ? 'Off' : 'On') + '</button> '
+        : '';
       return '<button class="pjcc-btn-ghost" id="pt-bot-lab"' + (botThinking ? ' disabled' : '') +
-               '>⚗ Analysis board</button> ' + mull +
+               '>⚗ Analysis board</button> ' + mull + clk +
         '<button class="pjcc-btn-ghost pt-resign" id="pt-bot-resign">Resign</button>';
     }
     return ((window.PJCCReview && PJCCReview.enabled() && (st.moves || '').trim())
@@ -2213,6 +2312,17 @@ body_class: theme-hall
                                   blackRating: white ? oppElo : myElo,
                                   result: st.result });
     };
+    /* ⚠⚠ BANK BEFORE THE STATE CHANGES, NOT AFTER. Switching the regular's clock off while
+       IT is the side thinking retires the very stopwatch that is running; without the bank
+       first, the seconds it had already spent are simply forgotten. clockSync() then
+       decides afresh whether anything should be ticking at all. */
+    var bc = document.getElementById('pt-bot-clock');
+    if (bc) bc.onclick = function(){
+      clockBank(st, false);
+      st.botOff = botClockOff(st) ? 0 : 1;
+      botSave(st);
+      botRender();
+    };
     var rs = document.getElementById('pt-bot-resign');
     if (rs) rs.onclick = function(){
       if (!confirm('Resign this game?')) return;
@@ -2285,7 +2395,7 @@ body_class: theme-hall
   function botThink(st, S){
     var bot = BOTS[st.bot], tok = ++botSeq;
     botThinking = true; botRender();
-    PJCCGauntletEngine.move(S, botDial(bot, st))
+    PJCCGauntletEngine.move(S, botDial(bot, st, S))
       .then(function (mv) {
         if (tok !== botSeq || botCur !== st) return;   // left the table — drop the reply
         botThinking = false;
@@ -2301,6 +2411,17 @@ body_class: theme-hall
             botAdapt.note(mv.evalCp);
             st.lvl = botAdapt.level();
           } catch (e) {}
+        }
+        /* ⭐ THE REGULAR REMEMBERS WHAT IT THOUGHT LAST TIME, AND THAT IS WHAT LETS IT
+           MANAGE ITS CLOCK. `mv.evalCp` is the engine's own score from its own side, and
+           it is FREE — the search already produced it. Kept on the SAVED board so a
+           refresh mid-game does not reset the regular's read of the position.
+           ⚠ ABSENT ON A FALLBACK MOVE, and it must stay absent rather than becoming a
+           zero: `undefined` means "not measured", while 0 means "dead level", and the
+           two would send botThinkFor() in opposite directions. See botThinkFor(). */
+        if (mv && typeof mv.evalCp === 'number') {
+          st.cpPrev = (typeof st.cp === 'number') ? st.cp : null;
+          st.cp = mv.evalCp;
         }
         if (!mv) { botFinish(st, M.replayGame(st.moves)); return botRender(); }
         // the regular's own think comes off the regular's own clock — same punch, same order
@@ -3581,6 +3702,10 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
    weight, which nothing can turn off. #ff8f7a on this charcoal is 6.4:1. */
 .pt-clock.low { color: #ff8f7a; border-color: rgba(255,143,122,0.5);
   background: rgba(255,143,122,0.10); }
+/* switched off — a dash, quiet, and plainly not a number that stopped working */
+.pt-clock.off { color: #79818e; border-style: dashed; background: none; }
+/* the in-game toggle. `.on` is the state, not a hover — same read as the bench strip. */
+.pt-clockbtn.on { border-color: rgba(245,197,24,0.55); color: #F5C518; }
 
 /* ── THE ANALYSIS BOARD, MID-GAME (2026-08-18) ────────────────────────────────────────
    His brief: *"like chess.com where the background changes slightly so you know you are in

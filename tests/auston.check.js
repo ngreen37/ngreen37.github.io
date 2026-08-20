@@ -497,7 +497,7 @@ console.log('\n── AUSTON ─────────────────
 /* ══ SHE PLAYS AT YOUR LEVEL ═══════════════════════════════════════════════════════ */
 {
   check('her seat is the adaptive one', /adaptive: true/.test(ROOM));
-  check('⚠ strength still has exactly one door', /function botDial\(b, st\)\{[\s\S]{0,600}botElo\(b\)/.test(ROOM),
+  check('⚠ strength still has exactly one door', /function botDial\(b, st, S\)\{[\s\S]{0,220}botElo\(b\)/.test(ROOM),
     'an adaptive seat that bypassed botDial would be a second source of truth about difficulty');
   check('⚠ her card does NOT advertise a fixed rating',
     /finds your level/.test(ROOM) && /b\.adaptive/.test(ROOM),

@@ -518,7 +518,7 @@ const BOT = 'maxwell';
     const s = JSON.parse(localStorage.getItem('pjcc.park.bot.v1')) || {};
     const pill = [...document.querySelectorAll('[data-clock]')].map(e => ({
       c: e.getAttribute('data-clock'), t: e.textContent, run: e.classList.contains('run'),
-      low: e.classList.contains('low') }));
+      low: e.classList.contains('low'), off: e.classList.contains('off') }));
     return { tc: s.tc, mw: s.mw, mb: s.mb, pc: s.pc, done: s.done,
              result: s.result, reason: s.reason, moves: (s.moves || '').trim(), pill };
   });
@@ -654,6 +654,108 @@ const BOT = 'maxwell';
   ok('…and the board says so in words',
      /timeout/.test(await text('.pt-state')), await text('.pt-state'));
   await shot('09-flagged');
+
+  /* ══ 10. THE REGULAR'S CLOCK, SWITCHED OFF FROM THE BOARD ════════════════════════
+     2026-08-20, Nate: *"You can also turn Bot clock off if you choose (an option available
+     IN-GAME)."* You keep your clock; the regular plays untimed. */
+  await p.evaluate(() => { localStorage.removeItem('pjcc.park.bot.v1');
+                           localStorage.setItem('pjcc.pt.tc.v1', ''); });
+  await backToPark();
+  await p.evaluate(id => document.querySelector('[data-bot="' + id + '"]').click(), BOT);
+  await sleep(400);
+  /* ⚠ NO CLOCK, NO BUTTON. The row this lives in has had three controls since it was
+     built, and a fourth that appears in a game with nothing to switch would be a control
+     about a feature that is not on. */
+  ok('a clockless game does not grow a bot-clock button',
+     await p.evaluate(() => !document.getElementById('pt-bot-clock')));
+
+  await p.evaluate(() => { localStorage.removeItem('pjcc.park.bot.v1');
+                           localStorage.setItem('pjcc.pt.tc.v1', 'b5'); });
+  await backToPark();
+  await p.evaluate(id => document.querySelector('[data-bot="' + id + '"]').click(), BOT);
+  await sleep(400);
+  ok('…but a timed one does, and it starts On',
+     await p.evaluate(() => {
+       const b = document.getElementById('pt-bot-clock');
+       return !!b && b.getAttribute('aria-pressed') === 'true' && /On/.test(b.textContent);
+     }));
+  await playOne(300);
+  await clickId('pt-bot-clock');
+  await sleep(250);
+  ck = await clockState();
+  /* ⭐ THE DASH IS THE POINT. A clock stuck at 4:58 for ten moves looks like a bug; a dash
+     looks like a decision, which is what it is. Read off the RENDERED pill, by color, so
+     this cannot pass by switching off the wrong one. */
+  const botColor = ck.pc === 'w' ? 'b' : 'w';
+  ok('switching it off puts a dash on the REGULAR\'s plate',
+     ck.pill.some(x => x.c === botColor && x.t === '–' && x.off),
+     ck.pill.map(x => x.c + ':' + x.t).join(' '));
+  ok('…and leaves YOUR clock exactly where it was',
+     ck.pill.some(x => x.c === ck.pc && /^\d/.test(x.t) && !x.off),
+     ck.pill.map(x => x.c + ':' + x.t).join(' '));
+  ok('…and the button says so', await p.evaluate(() => {
+       const b = document.getElementById('pt-bot-clock');
+       return !!b && b.getAttribute('aria-pressed') === 'false' && /Off/.test(b.textContent);
+     }));
+
+  /* ⚠⚠ AND THE BANK MUST NOT DRAIN WHILE IT IS OFF — which is a SEPARATE guard from the one
+     that stops it flagging, and this check exists because the first version of this section
+     did not know that. There are two: `clockSync()` refuses to start the stopwatch on a
+     switched-off side, and `clockTick()` refuses to flag one. Deleting the first left every
+     check green — the tick guard covered for it — while the regular's bank quietly drained
+     behind a dash. Switch it back ON mid-game and you would find time missing that nothing
+     on screen ever spent. So: note the bank, play two real moves with it off, switch back
+     on, and demand the number is exactly where it was. [[green-must-name-what-ran]] */
+  const bankOff = await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('pjcc.park.bot.v1'));
+    return s[s.pc === 'w' ? 'mb' : 'mw'];
+  });
+  await playOne(700);
+  await playOne(700);
+  await clickId('pt-bot-clock');                       // …and back on
+  await sleep(250);
+  const bankBack = await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('pjcc.park.bot.v1'));
+    return s[s.pc === 'w' ? 'mb' : 'mw'];
+  });
+  ok('⚠⚠ …and its bank does not drain behind the dash while it is off',
+     bankBack === bankOff, bankOff + 'ms → ' + bankBack + 'ms across two moves');
+  await clickId('pt-bot-clock');                       // leave it off for the checks below
+  await sleep(250);
+
+  /* ⚠⚠ AND IT SURVIVES A RELOAD, because it rides on the saved board rather than in a
+     closure — the same rule the analysis and takeback flags follow. A setting that
+     evaporated on refresh would be worse than no setting. */
+  const offBefore = (await clockState()).mw;
+  await p.goto(URL + '?table=' + BOT, { waitUntil: 'networkidle2' });
+  await sleep(700);
+  ok('⚠ the choice survives a reload', await p.evaluate(() => {
+       const b = document.getElementById('pt-bot-clock');
+       return !!b && b.getAttribute('aria-pressed') === 'false';
+     }), 'it lives on the saved board, not in a variable');
+
+  /* ⚠⚠ THE BEHAVIOR, END TO END: A SWITCHED-OFF CLOCK NEVER ENDS THE GAME. Wound to exactly
+     zero — the state where every downstream check would flag — and then left alone while
+     the regular thinks.
+     ⚠ BE HONEST ABOUT WHAT THIS PROVES. It proves the OUTCOME, not any one line. There are
+     two guards in the room (clockSync will not start the stopwatch on a switched-off side;
+     clockTick will not flag one), and mutation-testing showed the SECOND is unreachable
+     while the first exists — deleting it leaves this green, because the tick is not running
+     at all. So the drain check above is what actually pins the live guard, and this one is
+     the promise a player would feel. Both are worth having; only one is a line test. */
+  await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('pjcc.park.bot.v1'));
+    s[s.pc === 'w' ? 'mb' : 'mw'] = 0;            // the REGULAR's bank, genuinely empty
+    localStorage.setItem('pjcc.park.bot.v1', JSON.stringify(s));
+  });
+  await p.goto(URL + '?table=' + BOT, { waitUntil: 'networkidle2' });
+  await sleep(1800);
+  ck = await clockState();
+  ok('⚠⚠ a switched-off clock cannot fall, however long the regular takes',
+     !ck.done, 'done=' + ck.done + ' result=' + (ck.result || 'none'));
+  ok('…and YOUR clock is still the one running', ck.mw !== undefined && ck.mw > 0,
+     'you have ' + ck.mw + 'ms');
+  await shot('10-bot-clock-off');
 
   await p.evaluate(() => { localStorage.removeItem('pjcc.park.bot.v1');
                            localStorage.setItem('pjcc.pt.tc.v1', ''); });
