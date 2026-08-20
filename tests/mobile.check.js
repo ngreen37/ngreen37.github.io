@@ -168,6 +168,114 @@ const WIDTHS = [320, 360, 390, 430];
       slid.length ? slid.join(' · ') : WIDTHS.join(', ') + ' all clean');
   }
 
+  /* ══ PART 1b — THE CAST RAIL SLIDES, AND THE PAGE DOES NOT ═══════════════════════════
+     2026-08-20, Nate: *"The characters. Let's do two rows and make them slide-able. On the
+     phone, it's too much vertical scrolling through the characters."*
+
+     ⚠⚠ THIS IS DELIBERATE HORIZONTAL SCROLLING ON A PAGE WHOSE WHOLE MOBILE STORY IS THAT
+     IT MUST NOT SCROLL HORIZONTALLY, so it needs both halves asserted at once: the RAIL has
+     to actually overflow (or the feature is not there) and the PAGE still must not. One
+     without the other is the bug wearing the feature's clothes.
+
+     ⚠ IT CANNOT USE PART 1's SKELETON. That probe deliberately carries no stylesheet, and
+     this behavior IS the stylesheet — a rail measured without `_pjcc-07-characters.scss` is
+     a plain grid, and every assertion below would be about a page that does not exist. So
+     this one attaches the real compiled CSS and the real page shell (`main.page-content >
+     .wrapper > .page-card`). ⭐ THE SHELL IS LOAD-BEARING: `body` is `display:flex`, so a
+     bare `.wrapper` is a flex item that shrinks to its contents — measured 346px instead of
+     1044px, which made a first pass at this report numbers that were pure harness.
+
+     ⚠⚠ AND `documentElement.scrollWidth` IS USELESS HERE. `html { overflow-x: clip }` is a
+     GUARD this site added on 08-19 and its own comment says it hides the bug rather than
+     reporting it. So the page half is measured the way Part 1 measures it: the widest
+     element whose right edge escapes the viewport and that no scroll container contains. */
+  {
+    const src = read('characters.md');
+    /* The real card markup, lifted from the page rather than retyped — and repeated to the
+       real visible count, derived from the collection minus the slow-roll hidden list, so
+       this cannot go stale the day a character is revealed. [[slow-roll-cast]] */
+    const cardHtml = (liquid(src).match(/<div class="char-flip-card">[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/) || [])[0];
+    /* ⚠⚠ `\r?\n`, AND THE FIRST VERSION DID NOT HAVE IT. Every file in this repo is CRLF
+       (`_config.yml` is 236 CRLF pairs and zero bare LFs), so `^hidden_character_urls:\n`
+       matched nothing, the hidden list came back EMPTY, and the probe cheerfully reported
+       "12 cards visible of 14" for a cast that is actually 8. It still went green — a rail
+       with too many cards is still a rail — which is exactly the kind of pass that teaches
+       you nothing. [[audit-numbers-can-be-wrong]] */
+    const hidden = (read('_config.yml').match(/^hidden_character_urls:\r?\n((?:[ \t]+-[ \t].*\r?\n)+)/m) || [, ''])[1];
+    const all = fs.readdirSync(path.join(ROOT, '_characters')).filter((n) => n.endsWith('.md'));
+    const ancillary = all.filter((n) =>
+      /^tier:\s*ancillary/m.test(read(path.join('_characters', n))));
+    const hiddenCount = all.filter((n) => hidden.indexOf('/characters/' + n.replace(/\.md$/, '') + '/') > -1);
+    const visible = all.length - new Set([...ancillary, ...hiddenCount]).size;
+    /* ⭐ THE PARSE ITSELF IS ASSERTED, not just its result. `hiddenCount.length > 0` is what
+       turns a silently-failed regex into a red line instead of an inflated count — the
+       slow-roll list has held names since 07-16 and an empty one means the reader broke,
+       never that the cast was revealed. [[slow-roll-cast]] */
+    check('the cast rail probe found real card markup and a real count',
+      !!cardHtml && visible >= 4 && hiddenCount.length > 0,
+      visible + ' of ' + all.length + ' cards visible (' + hiddenCount.length + ' slow-rolled, ' +
+      ancillary.length + ' ancillary)');
+
+    if (cardHtml && visible >= 4) {
+      const tmp = path.join(os.tmpdir(), 'pjcc_rail_' + Date.now() + '.html');
+      fs.writeFileSync(tmp,
+        '<!doctype html><html><head><meta charset="utf-8">' +
+        '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+        '<style>' + siteCss + '</style></head><body>' +
+        '<main class="page-content"><div class="wrapper"><div class="page-card">' +
+        '<div class="char-flip-page"><div class="char-flip-grid char-rail" id="char-flip-grid">' +
+        cardHtml.repeat(visible) +
+        '</div></div></div></div></main></body></html>');
+
+      const bad = [];
+      for (const w of WIDTHS) {
+        await page.setViewport({ width: w, height: 900, deviceScaleFactor: 1 });
+        await page.goto('file:///' + tmp.split(path.sep).join('/'), { waitUntil: 'load' });
+        await new Promise((r) => setTimeout(r, 200));
+        const m = await page.evaluate(() => {
+          const rail = document.getElementById('char-flip-grid');
+          const cs = getComputedStyle(rail);
+          const cards = [...rail.querySelectorAll('.char-flip-card')];
+          const rows = new Set(cards.map((c) => Math.round(c.getBoundingClientRect().top))).size;
+          const vw = document.documentElement.clientWidth;
+          let escape = 0, sel = '';
+          document.querySelectorAll('*').forEach((el) => {
+            const r = el.getBoundingClientRect();
+            if (!r.width || r.right <= vw) return;
+            if (getComputedStyle(el).position === 'fixed') return;
+            for (let n = el.parentElement; n; n = n.parentElement) {
+              const o = getComputedStyle(n).overflowX;
+              if (o === 'hidden' || o === 'clip' || o === 'auto' || o === 'scroll') return;
+            }
+            if (r.right - vw > escape) {
+              escape = Math.round(r.right - vw);
+              sel = el.tagName.toLowerCase() + (el.className ? '.' + String(el.className).split(' ')[0] : '');
+            }
+          });
+          const rw = Math.round(rail.getBoundingClientRect().width);
+          return { rows: rows, chain: cs.overscrollBehaviorX, ox: cs.overflowX,
+                   scrolls: rail.scrollWidth - rail.clientWidth,
+                   peek: rail.scrollWidth > rail.clientWidth
+                     ? Math.round(rw - Math.floor(rw / (cards[0].getBoundingClientRect().width + 12)) *
+                         (cards[0].getBoundingClientRect().width + 12)) : 0,
+                   escape: escape, sel: sel };
+        });
+        if (m.rows !== 2) bad.push(w + 'px: ' + m.rows + ' rows, want 2');
+        if (m.scrolls <= 0) bad.push(w + 'px: the rail does not scroll at all');
+        if (m.chain !== 'contain') bad.push(w + 'px: overscroll-behavior-x=' + m.chain);
+        if (m.escape > 0) bad.push(w + 'px: the PAGE pans +' + m.escape + ' (' + m.sel + ')');
+        /* ⭐ THE PEEK IS THE ONLY THING THAT ADVERTISES THE GESTURE on a device with no
+           hover and no scrollbar. A first cut sized the columns at `46%` and rendered a
+           12px hairline; the number is asserted because "it slides" and "anyone can tell
+           it slides" are different claims. */
+        if (m.peek < 24) bad.push(w + 'px: the next card peeks only ' + m.peek + 'px');
+      }
+      fs.unlinkSync(tmp);
+      check('⚠⚠ the cast rail scrolls sideways and the PAGE still cannot', bad.length === 0,
+        bad.length ? bad.join(' · ') : WIDTHS.join(', ') + ': 2 rows, scoped scroll, a real peek');
+    }
+  }
+
   /* ══ PART 2 — nothing iOS would zoom for ═════════════════════════════════════════
      ⚠⚠ THE <style> GOES IN THE BODY, WHERE JEKYLL PUTS IT. A page's own block beats the
      stylesheet on a tie, and that tie is the whole reason the coarse-pointer rule is

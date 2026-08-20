@@ -136,6 +136,83 @@
   .char-flip-piece { font-size: 36px; }
 }
 
+/* ══ THE CAST SLIDES SIDEWAYS ON A PHONE (2026-08-20) ═══════════════════════════════════
+   Nate: *"That mobile slide-things-to-the-right idea. We are ready for it! The characters.
+   Let's do two rows and make them slide-able. On the phone, it's too much vertical
+   scrolling through the characters."*
+
+   Eight visible cards were four rows of a 2-up grid — roughly 800px of vertical scroll to
+   see a cast you should be able to browse with a thumb. Two rows of four columns is two
+   flicks instead.
+
+   ⚠⚠ THIS MUST NOT BECOME THE BUG HE REPORTED ON 08-19. *"It shouldn't slide left to right
+   (the whole window)"* — and the fix that day was to make the DOCUMENT unable to pan. This
+   is the deliberate opposite: horizontal scrolling SCOPED to one element. Two things keep
+   the two apart, and both are load-bearing:
+     • `overscroll-behavior-x: contain` — a flick that runs off the end of the rail stops
+       there instead of chaining out and panning the page.
+     • the rail is `min-width: 0` inside its grid parent, so the TRACK cannot be widened by
+       its own contents. A `1fr`/auto track opening to min-content is one of the exact two
+       causes of the whole-window slide. [[mobile-window-slide]]
+   The gate is a measurement, not a promise: `npm run test:mobile` renders this rail with
+   the real stylesheet at 320/360/390/430 and asserts both halves at once — the RAIL really
+   overflows, and no element ESCAPES the viewport.
+   ⚠⚠ It does NOT read `documentElement.scrollWidth`, and neither should you: `html` carries
+   `overflow-x: clip` (the 08-19 guard), whose own comment says it hides the bug rather than
+   reporting it. scrollWidth is 0-over on this page whatever happens. The honest measure is
+   the widest element whose right edge passes the viewport with no scroll container between.
+
+   ⭐ THE PEEK IS THE WHOLE ADVERTISEMENT — a phone has no hover and no scrollbar, and a
+   rail whose contents end flush at the edge reads as a list that stops.
+   ⚠⚠ AND IT HAS TO BE SIZED BY SUBTRACTION, NOT BY GUESSING A PERCENTAGE. The first cut
+   was `46%`, which reads like "two and a bit columns" and renders as **2.02** — the gap
+   eats the bit, and the peek came out a 12px hairline nobody would read as a card. Rendered
+   and measured, not reasoned about ([[pick-visual-values-from-a-render]]). `calc(50% - 26px)`
+   states the intent directly: two columns, minus room for the next one to show. Two cards
+   plus the gap come to `100% - 40px`, so **40px of the third column is always on screen**.
+   ⚠ COLUMN-MAJOR, so the pairs read top-then-bottom-then-across, the way a shelf does.
+   `grid-auto-flow: column` + two rows is the whole of it; DOM order is unchanged, so the
+   arrow-key navigator and every screen reader still walk the cast in cast order. */
+@media (max-width: 700px) {
+  .char-rail {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: calc(50% - 26px);
+    grid-template-rows: repeat(2, auto);
+    gap: 12px;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    /* room for the focus ring and the card's own glow, which would otherwise be clipped
+       by the scroll box on the first and last column */
+    padding: 4px 2px 10px;
+    scrollbar-width: thin;
+  }
+  .char-rail > .char-flip-card { scroll-snap-align: start; }
+  /* ⚠ `proximity`, NOT `mandatory`. With two rows and a half-card peek, mandatory fights a
+     slow drag — it yanks the rail to a column the thumb was deliberately stopping between.
+     Proximity snaps when you are close and leaves a deliberate stop alone. */
+}
+
+/* ⚠⚠ A CARD YOU CANNOT TURN OVER IS HALF A CARD, AND ON A PHONE THAT WAS ALREADY TRUE.
+   The flip is `:hover`, which on iOS depends on Safari deciding to synthesize a hover on a
+   non-interactive element — the same heuristic that produced the Forge's phantom
+   double-tap. It "works" until it does not, and inside a scroll rail it is worse: a drag
+   across a card can land as a hover and turn it over mid-swipe.
+   ⭐ SO ON A TOUCH DEVICE THE FLIP IS AN EXPLICIT TAP, not a borrowed hover. `.is-focused`
+   is already set by the click handler this page has had since the arrow-key navigator, so
+   this is one rule rather than a new mechanism — and the hover rule is switched OFF where
+   it cannot be trusted, which is the half that stops the mid-swipe turn.
+   ⚠ Scoped by `(hover: none)` rather than by width: it is about the INPUT, not the screen.
+   [[hover-is-three-inputs]] */
+@media (hover: none) {
+  .char-flip-card:hover .char-flip-inner { transform: none; }
+  .char-flip-card.is-focused .char-flip-inner { transform: rotateY(180deg); }
+}
+
 /* =============================================================
    Pieces Grid (Characters Page)
    ============================================================= */

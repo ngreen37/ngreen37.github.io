@@ -5,7 +5,14 @@ permalink: /characters/
 ---
 
 <div class="char-flip-page">
-  <div class="char-flip-grid" id="char-flip-grid">
+  {%- comment -%} ⛑ TWO ROWS THAT SLIDE, ON A PHONE ONLY (2026-08-20, Nate: *"The
+       characters. Let's do two rows and make them slide-able. On the phone, it's too much
+       vertical scrolling through the characters."*). `char-rail` is inert above 700px —
+       the desktop grid is untouched. The whole behavior is CSS scroll-snap; there is no
+       gesture handler, which is deliberate (a hand-rolled swipe is the classic way to eat a
+       page's vertical scroll on a phone). See _pjcc-07-characters.scss. {%- endcomment -%}
+  <div class="char-flip-grid char-rail" id="char-flip-grid"
+       role="group" aria-label="The cast — scroll sideways for more">
     {% assign sorted_chars = site.characters | sort: "order" %}
     {% for char in sorted_chars %}
     {% unless char.tier == "ancillary" or site.hidden_character_urls contains char.url %}
@@ -66,11 +73,22 @@ permalink: /characters/
   var cards = Array.from(document.querySelectorAll('.char-flip-card'));
   if (!cards.length) return;
   var focused = -1;
+  /* ⚠ `inline: 'nearest'` MATTERS NOW THAT THE CAST IS A SIDEWAYS RAIL ON A PHONE
+     (2026-08-20). Without it this scrolls only on the block axis, so arrowing to a card
+     that is off to the RIGHT moves nothing and the focus ring lands somewhere nobody can
+     see. ⚠ And `smooth` is a motion preference, not a default — under
+     prefers-reduced-motion the jump is instant. [[css-perf-lessons]] */
+  var CALM = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function clearFocus() {
+    if (focused >= 0) cards[focused].classList.remove('is-focused');
+    focused = -1;
+  }
   function setFocus(idx) {
     if (focused >= 0) cards[focused].classList.remove('is-focused');
     focused = (idx + cards.length) % cards.length;
     cards[focused].classList.add('is-focused');
-    cards[focused].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    cards[focused].scrollIntoView({ behavior: CALM ? 'auto' : 'smooth',
+                                    block: 'nearest', inline: 'nearest' });
   }
   document.addEventListener('keydown', function(e) {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
@@ -83,8 +101,15 @@ permalink: /characters/
       if (link) window.location.href = link.getAttribute('href');
     }
   });
+  /* ⚠⚠ TAPPING THE SAME CARD TURNS IT BACK OVER. On a touch device `.is-focused` is what
+     flips the card (the hover rule is switched off there — see _pjcc-07-characters.scss),
+     and `setFocus` on the card you are already on re-adds the class it just removed, so
+     the card would flip once and then be stuck showing its back with no way home. On a
+     desktop this just clears the ring, which is what a second click should do anyway. */
   cards.forEach(function(c, i) {
-    c.addEventListener('click', function() { setFocus(i); });
+    c.addEventListener('click', function() {
+      if (i === focused) clearFocus(); else setFocus(i);
+    });
   });
 })();
 </script>
