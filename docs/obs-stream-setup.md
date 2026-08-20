@@ -96,6 +96,10 @@ this hardware that's the harder one — ignore it.)*
 
 ### Steps once the card arrives
 
+⚠ **YOU NEED A SECOND HDMI CABLE.** Right now you have one: Switch → monitor. The chain below
+uses two. Your existing cable covers leg 1; check whether the card ships with one for leg 2, and
+add a cheap cable (~$8) if not.
+
 1. **Switch dock HDMI OUT → capture card HDMI IN**
 2. **Capture card HDMI OUT → your second monitor** *(the passthrough — this is where you play)*
 3. **Capture card USB → your PC**, ideally a blue USB 3.0 port
@@ -186,6 +190,7 @@ Then **Done**.
 |---|---|---|
 | **External hard drive, 2 TB** | ~$60 | Everything you own is on one disk with no copy. The only urgent item here. |
 | **Capture card with passthrough** | ~$50 | The only thing between you and streaming the Switch. |
+| **HDMI cable** | ~$8 | Only if the card does not include one — the passthrough leg needs a second cable. |
 
 ## Later
 
