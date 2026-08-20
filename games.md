@@ -473,53 +473,15 @@ permalink: /games/
   new MutationObserver(place).observe(grid, { childList: true });
 })();
 </script>
-<script>
-// THE DOOR resume state — same climb data the game + homepage read.
-(function () {
-  // mirrors the LADDER order / accents / glyphs in assets/games/pjcc_gauntlet.html — keep in sync
-  var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The Executive Assistant'];
-  var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#3fae7a','#ff6b6b','#c79bff','#ff9ec9','#f5c518']; // [5] Auditor: ledger-green, was mint #9ff0c4 (2026-07-22)
-  var GLYPHS  = ['♟','♟','♝','♞','♜','♝','♜','♝','♛','♛'];
-  var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
-  var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;
-  for (var i = 0; i < NAMES.length; i++) { if (beaten[i]) cleared++; }
-  for (var j = 0; j < NAMES.length; j++) { if (!beaten[j]) { cur = j; break; } }
-  var door = document.getElementById('gauntlet-door');
-  if (!door) return;
-  // grandeur tier — the door grows richer with every floor cleared (in sync with the home hero)
-  door.setAttribute('data-grand', cleared === 0 ? 0 : cleared <= 2 ? 1 : cleared <= 4 ? 2 : cleared <= 6 ? 3 : cleared <= 9 ? 4 : 5);
-  // the leaf in the arch belongs to the place you're about to enter (see _pjcc-09-widgets)
-  if (cur < NAMES.length) door.setAttribute('data-floor', cur + 1);
-  var pipHost = document.getElementById('gdoor-pips');
-  if (pipHost) { var h = '';
-    for (var k = 0; k < NAMES.length; k++) { h += '<i class="' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></i>'; }
-    pipHost.innerHTML = h; }
-  // (the gdoor-sub caption is gone — 2026-07-16 plate parity; the pips carry progress)
-  // #14 — the pips whisper: hover the door and the dots say what they mean
-  var floorLine = cur >= NAMES.length ? 'Crowned — 10 of 10' : 'Floor ' + (cur + 1) + ' of 10';
-  var wh = document.getElementById('gdoor-whisper');
-  if (wh) wh.textContent = floorLine;
-  door.setAttribute('aria-label', door.getAttribute('aria-label') + ' ' + floorLine + '.');
-  var glyph = document.getElementById('gdoor-glyph');
-  if (cur >= NAMES.length) {
-    door.setAttribute('href', door.getAttribute('href') + '#tower');
-  } else {
-    // the leaf is set on EVERY visit, not only mid-climb — see the note in pawn-fix
-    if (glyph) glyph.textContent = GLYPHS[cur] || '♟';
-    /* ⚑ …AND SO IS THE COLOR — 2026-08-13. It was inside the `cleared > 0` branch below,
-       which is the SAME BUG the glyph was pulled out of on 2026-08-04, one line further
-       down and left behind by that fix. A first-time visitor got the `|| '#F5C518'`
-       FALLBACK, so floor one's door was GOLD on every page of the site while the same
-       floor's door inside the game was its real ice blue. Caught by rendering the two side
-       by side and printing --acc, not by reading either file. ⭐ A color is a fact about
-       which floor you are looking at; only the RESUME link below is a fact about a climb. */
-    door.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
-    if (cleared > 0) {
-      door.setAttribute('href', door.getAttribute('href') + '#climb');
-    }
-  }
-})();
+{%- comment -%} THE DOOR's resume state — the same climb the game reads.
+     ⚑ MOVED OUT 2026-08-19 to /assets/js/pjcc-gauntlet-door.js, together with the copy of
+     the ladder names / accents / glyphs that used to live here and a second copy of the
+     same three arrays on the front door. One file paints every gauntlet door on the site
+     now, the way one partial has styled every one of them since 2026-07-27.
+     [[gauntlet-door-one-file]] {%- endcomment -%}
+<script src="{{ '/assets/js/pjcc-gauntlet-door.js' | relative_url }}"></script>
 
+<script>
 // The hall's master reset (2026-07-16 Nate: "A reset button for all games, really" —
 // with an are-you-sure). LOCAL progress only: personal bests (pjcc.best.*), the
 // Gauntlet climb + its half-played board, the bot-table game, the blindfold unlock,

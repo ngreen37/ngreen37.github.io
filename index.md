@@ -2177,66 +2177,21 @@ html.reduce-flourish .mc-bench-seat > a:focus-visible { transform: none; }
 })();
 </script>
 
-<script>
-/* ══ THE GAUNTLET DOOR, HYDRATED ═════════════════════════════════════════════════════
-   2026-08-04, Nate: "add the APPROPRIATE gauntlet door to the gauntlet box."
+{%- comment -%} ══ THE GAUNTLET DOOR, HYDRATED ═════════════════════════════════════
+     2026-08-04, Nate: "add the APPROPRIATE gauntlet door to the gauntlet box."
 
-   The door in the card is already painted — arch, leaf, seam, all static markup, exactly
-   like the board above it. This only tells it WHICH floor it is standing at, from the climb
-   saved on this device, so the leaf hanging in the arch belongs to the room you are about
-   to walk into. Nothing here is required for the card to work or for the link to open; if
-   this script never runs, a first-time visitor's door is what everyone sees.
+     The door in the card is already painted — arch, leaf, seam, all static markup, exactly
+     like the board above it. The script only tells it WHICH floor it is standing at, so the
+     leaf hanging in the arch belongs to the room you are about to walk into.
 
-   ⚠ THE THREE TABLES BELOW ARE A COPY, and there is no way around it. They mirror the
-   LADDER in assets/games/pjcc_gauntlet.html, and games.md carries the same three arrays for
-   the same reason — the game is a standalone HTML file that shares no module with the site.
-   Keep all three in sync. (The door's LOOK is not duplicated: that is one partial,
-   _sass/_pjcc-21-gauntlet-door.scss, and this page loads it like every other page does.)
-
-   ⚠ NO WHISPER HERE. The hall's copy appends a "Floor N of 10" caption under the door and
-   also onto the aria-label; the caption would land on top of the card's own words, so the
-   fact goes to the aria-label only. A screen reader still hears which floor is next. */
-(function () {
-  var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The Executive Assistant'];
-  var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#3fae7a','#ff6b6b','#c79bff','#ff9ec9','#f5c518'];
-  var GLYPHS  = ['♟','♟','♝','♞','♜','♝','♜','♝','♛','♛'];
-  var door = document.getElementById('gauntlet-door');
-  if (!door) return;
-  var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
-  var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;
-  for (var i = 0; i < NAMES.length; i++) { if (beaten[i]) cleared++; }
-  for (var j = 0; j < NAMES.length; j++) { if (!beaten[j]) { cur = j; break; } }
-
-  /* the arch grows richer with the climb; the leaf belongs to the next floor */
-  var gd = door.querySelector('.gdoor');
-  if (!gd) return;
-  gd.setAttribute('data-grand', cleared === 0 ? 0 : cleared <= 2 ? 1 : cleared <= 4 ? 2 : cleared <= 6 ? 3 : cleared <= 9 ? 4 : 5);
-  if (cur < NAMES.length) gd.setAttribute('data-floor', cur + 1);
-
-  var pipHost = document.getElementById('gdoor-pips');
-  if (pipHost) { var h = '';
-    for (var k = 0; k < NAMES.length; k++) { h += '<i class="' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></i>'; }
-    pipHost.innerHTML = h; }
-
-  var floorLine = cur >= NAMES.length ? 'Crowned — 10 of 10' : 'Floor ' + (cur + 1) + ' of 10';
-  door.setAttribute('aria-label', door.getAttribute('aria-label') + '. ' + floorLine + '.');
-
-  var glyph = document.getElementById('gdoor-glyph');
-  if (cur >= NAMES.length) {
-    door.setAttribute('href', door.getAttribute('href') + '#tower');
-  } else {
-    if (glyph) glyph.textContent = GLYPHS[cur] || '♟';
-    // ⚑ the color is set on EVERY visit too (2026-08-13) — it was gated on `cleared > 0`,
-    // so a first-time visitor saw floor one's door in the gold FALLBACK instead of its own
-    // ice blue. Same bug the glyph was pulled out of on 08-04, one line below it. Only the
-    // resume link is genuinely mid-climb. See games.md for the full note.
-    gd.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
-    if (cleared > 0) {
-      door.setAttribute('href', door.getAttribute('href') + '#climb');
-    }
-  }
-})();
-</script>
+     ⚑ THE SCRIPT MOVED OUT ON 2026-08-19, to /assets/js/pjcc-gauntlet-door.js, and it took
+     the ladder names, the ten accents and the ten glyphs with it. This page and games.md
+     each carried their own copy of all four, both labelled "keep in sync" — and the fix
+     Nate asked for that day (the door should open at the floor the ACCOUNT reached, not the
+     one this browser remembers) would have had to be written twice and drift twice.
+     The LOOK was already one file (_sass/_pjcc-21-gauntlet-door.scss); the STATE is now too.
+     [[gauntlet-door-one-file]] · [[one-fix-every-instance]] {%- endcomment -%}
+<script src="{{ '/assets/js/pjcc-gauntlet-door.js' | relative_url }}"></script>
 
 <script>
 /* ══ PICK UP WHERE YOU LEFT OFF ══════════════════════════════════════════════════════

@@ -99,8 +99,16 @@ const PARTIAL = read('_sass/_pjcc-21-gauntlet-door.scss');
 {
   /* ⚑ studio-home.html LEFT THIS LIST 2026-08-19 — the layout was deleted. It had been
      ORPHANED since the front door moved to `/` on 08-03: no page declared it, so this gate
-     had been proving a fact about a file no visitor could reach. THREE copies now. */
-  const COPIES = ['games.md', 'index.md', '_layouts/home.html'];
+     had been proving a fact about a file no visitor could reach.
+     ⚑⚑ AND LATER THE SAME DAY THE LIST BECAME ONE ENTRY, because the three survivors became
+     one file. index.md, games.md and _layouts/home.html each carried their own NAMES /
+     ACCENTS / GLYPHS and their own hydration, all three labelled "keep in sync"; they now
+     load /assets/js/pjcc-gauntlet-door.js. Every question below is still asked — of the one
+     file that can now answer for every door on the site.
+     ⚠ IT IS STILL A LIST, AND IT HAS TO STAY ONE ENTRY LONG. All three previous copies began
+     as "just this page needs it", which is what [[gauntlet-door-one-file]] has now been about
+     five separate times. Section 3b is the half that notices a fourth. */
+  const COPIES = ['assets/js/pjcc-gauntlet-door.js'];
   const badLadder = COPIES.filter((f) => !/var GLYPHS\s*=\s*\['♟'/.test(read(f)));
   check('floor one is a pawn in every ladder copy', badLadder.length === 0, badLadder.join(', ') || COPIES.length + ' copies agree');
 
@@ -147,6 +155,54 @@ const PARTIAL = read('_sass/_pjcc-21-gauntlet-door.scss');
     check(f + ' carries the game\'s ten pieces', gly.join() === gameGly.join(),
       gly.join() === gameGly.join() ? '10 match' : 'page ' + gly.join() + '  vs  game ' + gameGly.join());
   }
+}
+
+/* ── 3b. AND NO PAGE MAY GROW ITS OWN LADDER AGAIN ─────────────────────────────────
+   The list above shrank to one file on 2026-08-19, and that is only worth something if it
+   STAYS one. So: exactly one file in the site may declare the ten accents, and it is the
+   shared script. (The game's own LADDER is a different shape — `accent:'#…'` inside an
+   object literal — and is the source all of this copies FROM, so it falls outside the
+   pattern rather than being excused by an exception.) */
+{
+  const SKIP2 = /(node_modules|[\\/]\.git|[\\/]_site|assets[\\/]vendor|assets[\\/]backups|[\\/]tests[\\/])/;
+  const walk2 = (d, o) => {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      const f = path.join(d, e.name);
+      if (SKIP2.test(f)) continue;
+      if (e.isDirectory()) walk2(f, o); else if (/\.(md|html|js)$/.test(e.name)) o.push(f);
+    }
+    return o;
+  };
+  const owners = [];
+  for (const f of walk2(ROOT, [])) {
+    const r = path.relative(ROOT, f).split('\\').join('/');
+    if (/var ACCENTS\s*=\s*\[/.test(read(r))) owners.push(r);
+  }
+  check('exactly one file declares the door ladder',
+    owners.length === 1 && owners[0] === 'assets/js/pjcc-gauntlet-door.js',
+    owners.join(', ') || 'NOBODY declares it — the shared script is gone or renamed');
+
+  /* ⚠ AND EVERY PAGE THAT HAD A COPY HAS TO LOAD IT. A shared file nothing includes is a
+     door that never gets dressed, and it fails looking exactly like a first visit.
+     [[feature-shipped-but-never-loaded]]
+     ⚠⚠ IT MUST MATCH A <script src>, NOT THE FILENAME. All three of these pages carry a
+     COMMENT naming this file — that is where the deleted copy used to be — so a bare
+     `/pjcc-gauntlet-door\.js/` passes on the prose after the tag is gone. Mutation-tested:
+     deleting the tag from _layouts/home.html left this GREEN until the pattern grew a
+     `<script src` in front of it. [[green-must-name-what-ran]] */
+  const HOSTS = ['index.md', 'games.md', '_layouts/home.html'];
+  const TAG = /<script[^>]+src=[^>]*pjcc-gauntlet-door\.js/;
+  const missing = HOSTS.filter((f) => !TAG.test(read(f)));
+  check('every page that had a copy now loads the shared one', missing.length === 0,
+    missing.join(', ') || HOSTS.length + ' pages include it');
+
+  /* ⚠⚠ AND NOT DEFERRED. /pjcc/'s world ticker reads window.__gauntletProg synchronously
+     from an inline block further down the same layout; a deferred script runs after every
+     one of those, so the BREAKING line would simply stop appearing and nothing would look
+     broken. The tag's POSITION is load-bearing and so is the absence of that one word. */
+  const deferred = HOSTS.filter((f) => /<script[^>]+pjcc-gauntlet-door\.js[^>]*\sdefer/.test(read(f)));
+  check('…and none of them defers it', deferred.length === 0,
+    deferred.join(', ') || 'the ticker can still read __gauntletProg in document order');
 }
 
 /* ── 4. THE FLOOR-ONE CLOTH IS NOT BUNTING ─────────────────────────────────────────

@@ -13,7 +13,7 @@
  */
 'use strict';
 
-const VERSION    = 'pjcc-pwa-v13';  // v13: the desk lamp's twelve-hour check became a real file (/assets/js/pjcc-desk-lamp.js) after kramdown printed it on the front door as a code block (2026-08-04); v12: chesswild.com — the front door MOVED to "/" and /chess/ became the redirect stub; the app is named ChessWild (2026-08-03); v11: the intro is DELETED — "/" is a redirect to /chess/ now, and every game shell carries the town sky (2026-08-03); v10: the app LAUNCH now lands on /chess/ — old launchers redirect off /pjcc/?source=pwa, start_url moved (2026-08-03); v9: /chess/ is the new front door — the intro hands off there, /pjcc/ became the world tab (2026-07-28); v8: the Gauntlet door became a real stylesheet the game links (2026-07-27); v7: "/" is the "McPuppy Studios Presents" intro (2026-07-23)
+const VERSION    = 'pjcc-pwa-v14';  // v14: the gauntlet door's hydration became one shared file (/assets/js/pjcc-gauntlet-door.js) and the doors now open at the floor the ACCOUNT reached, not the one this browser remembers (2026-08-19); v13: the desk lamp's twelve-hour check became a real file (/assets/js/pjcc-desk-lamp.js) after kramdown printed it on the front door as a code block (2026-08-04); v12: chesswild.com — the front door MOVED to "/" and /chess/ became the redirect stub; the app is named ChessWild (2026-08-03); v11: the intro is DELETED — "/" is a redirect to /chess/ now, and every game shell carries the town sky (2026-08-03); v10: the app LAUNCH now lands on /chess/ — old launchers redirect off /pjcc/?source=pwa, start_url moved (2026-08-03); v9: /chess/ is the new front door — the intro hands off there, /pjcc/ became the world tab (2026-07-28); v8: the Gauntlet door became a real stylesheet the game links (2026-07-27); v7: "/" is the "McPuppy Studios Presents" intro (2026-07-23)
 const SHELL      = 'pjcc-shell-' + VERSION;
 const RUNTIME    = 'pjcc-runtime-' + VERSION;
 const OFFLINE_URL = '/offline.html';
@@ -49,6 +49,11 @@ const PRECACHE = [
   // "/pjcc/"), and without it the lamp is drawn but never lights, which is the exact
   // silent-looks-fine failure it was just rescued from.
   '/assets/js/pjcc-desk-lamp.js',
+  // the gauntlet door's state, shared by all three precached front pages ("/", "/pjcc/",
+  // "/games/") since 2026-08-19. On /pjcc/ it is not decoration: the world ticker's
+  // BREAKING line reads the window.__gauntletProg it publishes, so a 404 here costs that
+  // page a feature and says nothing about it.
+  '/assets/js/pjcc-gauntlet-door.js',
   '/assets/images/pwa/icon-192.png', '/assets/images/pwa/icon-512.png',
   '/assets/images/pwa/apple-touch-icon.png', '/assets/images/favicon.svg',
 ];

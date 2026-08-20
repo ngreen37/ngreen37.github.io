@@ -432,9 +432,11 @@ layout: default
 {%- comment -%} THE GAMES CTA, DEMOTED to a quiet line (2026-07-24, Nate "commit it to the
      world"). This was the big Gauntlet door + Park Tables pair — the loudest thing on a page
      whose job is the WORLD, and redundant with the four games links already in the drawer (Play
-     Now, Gauntlet, Puzzles, Games). Now one subtle nudge. The Gauntlet's inline progress script
-     below still runs — it also sets window.__gauntletProg for the ticker — and its door-dressing
-     half simply no-ops now that #gauntlet-door is gone (it guards on the missing element).
+     Now, Gauntlet, Puzzles, Games). Now one subtle nudge. The Gauntlet progress script
+     below still runs — it sets window.__gauntletProg for the ticker — and its door-dressing
+     half no-ops now that #gauntlet-door is gone (it guards on the missing element).
+     ⛑ 2026-08-19 that script is /assets/js/pjcc-gauntlet-door.js, shared with the front door
+     and the games hall; this page's own copy of it is deleted.
      Restore the two doors from git: git show <prev>^ -- _layouts/home.html {%- endcomment -%}
 <section class="home-play-nudge" aria-labelledby="h-play" data-reveal>
   <h2 id="h-play" class="sr-only">Play Chess</h2>
@@ -904,51 +906,20 @@ html.reduce-flourish .ht-spark { animation:none; opacity:.9; }
 {% comment %} (THE SIGIL BLOOM's JS removed 2026-07-23, Nate — the whole beat, markup + CSS
      + this script, is gone. Restore from git: git show <prev>^ -- _layouts/home.html) {% endcomment %}
 
-<script>
-// Gauntlet progress (read-only): powers the ticker's BREAKING line and dresses
-// THE DOOR in the hero — floor lamps, the current boss's color and piece.
-(function () {
-  // mirrors the LADDER order / accents / glyphs in assets/games/pjcc_gauntlet.html
-  var NAMES = ['The Checker Town Open Champion','The Sand-Mine Foreman','The Tidecaller','The Shogi Sentinel','The City Gatekeeper','The Auditor','The Enforcer','The Vice President','The Heir Apparent','The Executive Assistant'];
-  var ACCENTS = ['#8fe3ff','#fcbc3c','#56d0ff','#fcbcb0','#ffb066','#3fae7a','#ff6b6b','#c79bff','#ff9ec9','#f5c518']; // [5] Auditor: ledger-green, was mint #9ff0c4 (2026-07-22)
-  var GLYPHS  = ['♟','♟','♝','♞','♜','♝','♜','♝','♛','♛'];
-  var prog = {}; try { prog = JSON.parse(localStorage.getItem('pjcc.gauntlet.v2')) || {}; } catch (e) {}
-  var beaten = prog.beaten || {}, cleared = 0, cur = NAMES.length;
-  for (var i = 0; i < NAMES.length; i++) { if (beaten[i]) cleared++; }
-  for (var j = 0; j < NAMES.length; j++) { if (!beaten[j]) { cur = j; break; } }
-  window.__gauntletProg = { cleared: cleared, cur: cur, names: NAMES };
+{% comment %} Gauntlet progress (read-only): the ticker's BREAKING line and the desk's
+     local facts both read `window.__gauntletProg`, which this publishes.
 
-  var door = document.getElementById('gauntlet-door');
-  if (!door) return;
-  // grandeur tier — the door grows richer with every floor cleared
-  door.setAttribute('data-grand', cleared === 0 ? 0 : cleared <= 2 ? 1 : cleared <= 4 ? 2 : cleared <= 6 ? 3 : cleared <= 9 ? 4 : 5);
-  // ...and the LEAF hanging in the arch belongs to the place you're about to
-  // enter (1-based floor). Cloth, mine timber, tide-gate — see _pjcc-09-widgets.
-  if (cur < NAMES.length) door.setAttribute('data-floor', cur + 1);
-  var pipHost = document.getElementById('gdoor-pips');
-  if (pipHost) { var h = '';
-    for (var k = 0; k < NAMES.length; k++) { h += '<i class="' + (beaten[k] ? 'done' : (k === cur ? 'cur' : '')) + '"></i>'; }
-    pipHost.innerHTML = h; }
-  // (the gdoor-sub caption is gone — 2026-07-16 plate parity; the pips carry progress)
-  // #14 — the pips whisper: hover the door and the dots say what they mean
-  var floorLine = cur >= NAMES.length ? 'Crowned — 10 of 10' : 'Floor ' + (cur + 1) + ' of 10';
-  var wh = document.getElementById('gdoor-whisper');
-  if (wh) wh.textContent = floorLine;
-  door.setAttribute('aria-label', door.getAttribute('aria-label') + ' ' + floorLine + '.');
-  var glyph = document.getElementById('gdoor-glyph');
-  if (cur >= NAMES.length) {                      // crowned — the door stands open gold
-    door.setAttribute('href', door.getAttribute('href') + '#tower');
-  } else {
-    if (glyph) glyph.textContent = GLYPHS[cur] || '♟';   // ALWAYS — floor one is a pawn
-    // ⚑ ALWAYS, TOO (2026-08-13) — gated on `cleared > 0`, floor one's door wore the gold
-    // FALLBACK for every first-time visitor. Same bug as the glyph above, one line down.
-    door.style.setProperty('--acc', ACCENTS[cur] || '#F5C518');
-    if (cleared > 0) {                            // mid-climb — resume where you stopped
-      door.setAttribute('href', door.getAttribute('href') + '#climb');
-    }
-  }
-})();
-</script>
+     ⛑ THE THIRD COPY OF THE LADDER LEFT ON 2026-08-19. This block carried its own NAMES /
+     ACCENTS / GLYPHS arrays and its own hydration, as did index.md and games.md — and two
+     thirds of it had been DEAD since 2026-07-24, when this page's Gauntlet door was demoted
+     to a text link: with no #gauntlet-door to find, everything after the guard no-opped and
+     only the __gauntletProg line still did anything. It all lives in one file now.
+
+     ⚠ NOT DEFERRED, AND THAT IS THE WHOLE REASON THE TAG SITS HERE rather than with the
+     other scripts. The ticker below reads __gauntletProg synchronously; a deferred script
+     runs after every inline block on the page, so the line would just stop appearing and
+     nothing would look broken. {% endcomment %}
+<script src="{{ '/assets/js/pjcc-gauntlet-door.js' | relative_url }}"></script>
 
 {% comment %} ── 4. CHARACTER TEASER — four random faces, reshuffled each visit ──── {% endcomment %}
 <section class="home-section home-section--cast" aria-labelledby="h-cast" data-reveal>
