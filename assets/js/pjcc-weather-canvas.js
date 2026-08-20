@@ -290,7 +290,27 @@
        snow is quiet and occasionally jewelled, heavy snow is visibly crystalline, and both
        are unmistakably the same snow. */
     snowMix: [[0.16, 0.03], [0.24, 0.05], [0.34, 0.12]],
-    mist: { n: 11, r: [180, 420], vx: [4, 13], alpha: [0.05, 0.13] }
+    /* ⚑ MIST WAS THERE AND NOBODY COULD SEE IT — 2026-08-20 (Nate: "the mist doesn't
+       appear? I don't really see it"). Measured before touching anything, on the live
+       page with these files grafted on: the mist canvas painted 79% of its pixels and
+       the PEAK alpha anywhere on it was 35/255 — 14%, and that is the peak, where blobs
+       overlap. A single bank landed at 0.55 (the sprite) × 0.05-0.13 (the field) = three
+       to seven percent, over a sky that is itself a gradient. It was not missing. It was
+       under the noise floor of the thing it was drawn on.
+
+       ⚠ AND IT IS THE ONE WEATHER WITH NOWHERE ELSE TO SHOW. Rain and snow read as
+       MOTION — a streak crossing a card edge is legible at almost any alpha, and there
+       is a whole intensity wander plus lightning selling the storm. A fog bank at 12fps
+       barely moves, sits BEHIND the page at z-index -1, and has only its own contrast to
+       argue with. So the alpha roughly doubles (0.05-0.13 → 0.11-0.26), the banks go
+       11 → 15, and they get bigger. Cheap: mist blits ONE pre-rendered sprite, so four
+       more banks is four more drawImage calls a twelfth of a second — the cost of this
+       layer is painted AREA and it was already covering the screen.
+
+       ⭐ AND IT NOW SITS LOWER. Real fog is a ground thing; a bank at eye level over the
+       Chess City rooftops is the picture, and the roofline is what gives it something to
+       be in front of. 0.45-1.20 of the height → 0.58-1.24. */
+    mist: { n: 15, r: [200, 480], vx: [4, 13], alpha: [0.11, 0.26] }
   };
 
   var lerp = function (a, b, t) { return a + (b - a) * t; };
@@ -329,14 +349,26 @@
        per flake, so heavy snow is now the loudest weather the site has. That is a real
        consequence of a rain-only cut, it is flagged rather than silently "fixed", and snow
        comes down to about 1.06 the moment he says so. */
-    var MULT = { rain: [0.55, 1, 1.17], snow: [0.55, 0.95, 1.18], mist: [0.55, 1, 1.3] };
+    /* ⚑ 2026-08-20, Nate: "the heavy snow should be 10% heavier, and the normal rain
+       should be 20% lighter." Two named steps, two exact numbers, nothing else touched:
+       heavy SNOW 1.18 → 1.30, medium RAIN 1.00 → 0.80. "Normal rain" is the middle rung —
+       the one the day sits on most of the time — not rain as a whole; light and heavy
+       rain keep their own numbers, and moving all three would have flattened the wander
+       through the day that makes the intensity legible at all.
+
+       ⚠ HEAVY SNOW IS NOW CLEARLY THE LOUDEST WEATHER ON THE SITE (1.30 vs rain's 1.17),
+       which is the same inversion flagged on 2026-08-13, one step wider. It was flagged
+       then rather than "fixed", and it is flagged now rather than fixed, because he has
+       moved snow UP twice with rain sitting where it sits: that is a preference, not a
+       drift. Snow drops to ~1.06 the day he says otherwise. */
+    var MULT = { rain: [0.55, 0.8, 1.17], snow: [0.55, 0.95, 1.3], mist: [0.55, 1, 1.3] };
     var mult = (MULT[kind] || MULT.rain)[intensity];
 
     if (kind === 'mist') {
       var s = SPEC.mist;
       for (var i = 0; i < s.n; i++) {
         fog.push({
-          x: rand() * W, y: H * (0.45 + rand() * 0.75),
+          x: rand() * W, y: H * (0.58 + rand() * 0.66),
           r: pick(rand, s.r), vx: pick(rand, s.vx) * (rand() < 0.5 ? -1 : 1),
           a: pick(rand, s.alpha)
         });

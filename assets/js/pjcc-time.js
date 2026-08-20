@@ -18,7 +18,8 @@
  *   PJCC_TIME.phase()   -> 'dawn' | 'day' | 'dusk' | 'night'
  *   PJCC_TIME.daySeed() -> uint32 seeded by the Eastern date (one town, one day)
  *   PJCC_TIME.weather() -> { kind: 'rain'|'mist'|'clear', roll, phase }
- *   PJCC_TIME.clouds()  -> 0 (clear) | 1 (a few) | 2 (broken) | 3 (overcast)
+ *   PJCC_TIME.level()   -> 0 (light) | 1 (medium) | 2 (heavy) — the day's opening intensity
+ *   PJCC_TIME.clouds([kind],[level]) -> 0 (clear) | 1 (a few) | 2 (broken) | 3 (overcast)
  *   PJCC_TIME.moon()    -> { frac, lit, waxing, name, shift } — the REAL phase tonight
  *   PJCC_TIME.eclipse() -> { on, cover, total, shift } — the town's solar eclipse
  * ========================================================================== */
@@ -108,17 +109,54 @@
     if (kind === 'rain' && season() === 'winter') kind = 'snow';
     return { kind: kind, roll: (r80 / 8) | 0, phase: phase() };
   }
-  // Cloud cover — its own roll, so "clear" days still get weather in the sky and a
-  // starry night isn't always a bare one (Nate: "sometimes it's cloudy, sometimes
-  // it's both"). Shifted well clear of the rain roll's low bits so the two don't
-  // move together. Rain and mist force real cover — it can't pour out of a bare sky.
-  function clouds() {
-    if (eclipseDay()) return 0;                   // see weather() — the eclipse gets a clear sky
-    if (rareSky()) return 0;                      // …and so do the shower and the aurora
-    var w = weather().kind;
-    if (w === 'rain' || w === 'snow') return 3;   // snow needs a full deck too
-    if (w === 'mist') return 2;
-    return [0, 0, 1, 1, 1, 2, 2, 0, 1, 3][(daySeed() >>> 11) % 10];
+  /* HOW HARD IT IS COMING DOWN, as one number the whole town agrees on: 0 light,
+     1 medium, 2 heavy. It seeds the intensity the storm OPENS on and it decides how
+     thick the cloud deck starts (see clouds()), so it has to have exactly one
+     definition — pjcc-weather.js used to own a private copy of this expression, and
+     the head include had no way to ask what it would say.
+
+     ⚠ `>>> 3`, NOT `>> 3`, AND THAT IS A FIX (2026-08-20). daySeed() returns a full
+     uint32, so on every day whose seed has the top bit set, the signed shift in the old
+     copy handed `% 3` a NEGATIVE number — and `-2 % 3` is `-2`, which the caller's
+     `Math.max(0, …)` then clamped to 0. Half the days in the calendar opened on LIGHT
+     no matter what they rolled. Nothing ever threw and the storm still wandered, so it
+     read as "the rain seems tame lately" and nothing more. */
+  function level() { return (daySeed() >>> 3) % 3; }
+  /* Cloud cover — its own roll, so "clear" days still get weather in the sky and a
+     starry night isn't always a bare one (Nate: "sometimes it's cloudy, sometimes it's
+     both"). Shifted well clear of the rain roll's low bits so the two don't move
+     together. Rain and mist force real cover — it can't pour out of a bare sky.
+
+     ⚑ THE DECK NOW TRACKS HOW HARD IT IS COMING DOWN — 2026-08-20 (Nate: "the heavy rain
+     and heavy snow should be cloudy because it looks weird with clear skies — same with
+     the rain/snow but that could be less cloudy"). Wet days used to return a flat 3 at
+     every intensity, so a light shower wore the same overcast as a downpour and the
+     three levels the rest of the weather works so hard to distinguish meant nothing in
+     the sky. Heavy gets the full deck; light and medium get broken cloud.
+
+     ⚑ AND A CLEAR DAY IS NO LONGER ALLOWED TO BE OVERCAST (same day, Nate: "clear should
+     be exactly that. Clear. There are clouds on it currently"). The roll KEEPS its
+     variety — that variety is his own 2026-07-13 ask and deleting it would be trading one
+     complaint for another — but the lone `3` in the table is gone and there are two more
+     bare faces. Half of clear days are now genuinely bare and none of them are a full
+     deck, which is what made "clear" read as a lie.
+     ⭐ If he wants clear to mean literally zero cloud, it is this one line.
+
+     Both arguments are optional and both are for PREVIEW: `?wx=` has to be able to ask
+     "what would the sky be for THIS weather at THIS intensity", because the head include
+     stamps the cover class before a pixel renders and it has no other way to know that a
+     preview is about to override the forecast. Called with nothing, it is the town's
+     real day, exactly as before. */
+  function clouds(kind, lv) {
+    if (kind === undefined) {
+      if (eclipseDay()) return 0;                 // see weather() — the eclipse gets a clear sky
+      if (rareSky()) return 0;                    // …and so do the shower and the aurora
+      kind = weather().kind;
+    }
+    if (lv === undefined) lv = level();
+    if (kind === 'rain' || kind === 'snow') return lv === 2 ? 3 : 2;   // snow needs a deck too
+    if (kind === 'mist') return 2;
+    return [0, 0, 1, 1, 0, 2, 1, 0, 1, 0][(daySeed() >>> 11) % 10];
   }
   // Where the ONE orb hangs (2026-07-14 Nate: "the sun and moon should follow an arc
   // ... on all pages"). The sun's window is 5:00→20:00, the moon's 20:00→5:00; t runs
@@ -398,7 +436,7 @@
 
 
   window.PJCC_TIME = { parts: parts, hour: hour, dateStr: dateStr, phase: phase,
-                       daySeed: daySeed, weather: weather, clouds: clouds, orb: orb, season: season,
+                       daySeed: daySeed, weather: weather, clouds: clouds, level: level, orb: orb, season: season,
                        moon: moon, moonPath: moonPath, eclipse: eclipse, eclipseDay: eclipseDay,
                        showerDay: showerDay, auroraDay: auroraDay, moonVeil: moonVeil };
 })();

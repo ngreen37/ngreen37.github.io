@@ -354,6 +354,27 @@
        "somewhere". {%- endcomment -%}
   <div class="ts-horizon"></div>
 
+  {%- comment -%} 5b · CHESS CITY ON THE HORIZON (2026-08-20, Nate: "the bottom of the
+       screen should have a basic chess city feel to it with skyscrapers reaching toward like
+       the middle of the screen … I'd like them to have a chess-piece feel to them").
+
+       Forty-five towers in two ranks: a ROOK with a crenellated parapet, a PAWN with a collar
+       and a round head, a BISHOP with an ogive mitre and the slit cut into it, the KING with a
+       dome and a cross, a QUEEN in a crown of points, and plain SLABS between them. No knight
+       — a knight-shaped skyscraper is a blob at silhouette scale.
+
+       ⚠ GENERATED, NOT HAND-EDITED: `npm run gen:city` (tests/gen-city.js) writes
+       town-city.svg from the building tables. Edit the tables, re-run, commit both. Hand-edit
+       the path data and the next run silently throws your change away — same rule as the
+       front-door puzzle pool.
+
+       ⭐ IT IS STATIC PAINT. Two filled paths, no animation, no filter, no compositor layer;
+       the only thing that ever changes is the window opacity, and only when the hour does.
+       See the CHESS CITY block in _sass/_pjcc-20-town-sky.scss for why the box is sized in
+       BOTH vh and vw — `slice` crops whatever will not fit, and on a wide monitor a box that
+       is only tall in vh crops the king's cross clean off. {%- endcomment -%}
+  <div class="ts-city">{% include town-city.svg %}</div>
+
   {%- comment -%} 6 · THE ECLIPSE VEIL (2026-08-09) — the daylight going out. Its opacity is
        the sun's coverage, so it deepens and lifts with the eclipse instead of switching.
        ⚠ z-index 0, which puts it UNDER the stars (1) and the orb (2) on purpose: the sky

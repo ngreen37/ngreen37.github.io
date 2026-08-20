@@ -295,12 +295,31 @@
      (Promoted from the old hero-only engine so every screen shares the same storm.) */
   function storm(o) {
     var LEVELS = ['light', 'med', 'heavy'];
-    // seed the opening intensity off the day (decorrelated from the rain roll)
-    var idx = (forceLevel !== null) ? forceLevel : (T.daySeed() >> 3) % 3;
+    /* Seed the opening intensity off the day (decorrelated from the rain roll).
+       ⚠ THIS USED TO BE A PRIVATE COPY OF THE EXPRESSION — `(T.daySeed() >> 3) % 3` — and
+       it now asks the clock, because the head include has to be able to stamp the matching
+       cloud cover before first paint and there can only be one answer to "how hard is it
+       coming down today". The move also fixed it: daySeed() is a full uint32, so a SIGNED
+       `>> 3` went negative on half the calendar, `% 3` handed back a negative, and the
+       clamp below quietly turned every one of those days into LIGHT. See PJCC_TIME.level(). */
+    var idx = (forceLevel !== null) ? forceLevel : T.level();
     function setLevel(i) {
       idx = Math.max(0, Math.min(2, i));
       root.classList.remove('town-rain-light', 'town-rain-med', 'town-rain-heavy');
       root.classList.add('town-rain-' + LEVELS[idx]);
+      /* ⚑ AND THE CLOUD DECK THICKENS WITH IT (2026-08-20, Nate: "the heavy rain and heavy
+         snow should be cloudy… same with the rain/snow but that could be less cloudy").
+         The cover was a flat overcast at every intensity, so the three levels the rest of
+         the weather works to tell apart meant nothing in the sky. Now heavy wears the full
+         deck and light/medium wear broken cloud — and because the storm WANDERS through
+         the day, the deck rides the wander with it: `.ts-clouds` already carries a 1.4s
+         opacity transition, so it thickens and thins instead of switching. That transition
+         was written for something else and is what makes this free.
+         ⚠ The cover for the FIRST paint is stamped in the head include off PJCC_TIME.clouds()
+         — this only takes over once the storm starts moving. Both call the same function. */
+      var cover = T.clouds(kind, idx);
+      root.classList.remove('cloud-0', 'cloud-1', 'cloud-2', 'cloud-3');
+      root.classList.add('cloud-' + cover);
       // The classes still drive the color wash in CSS; the canvas takes the number
       // and re-seeds its field, which is what actually changes how hard it's coming
       // down now that the drops are particles instead of a background image.
