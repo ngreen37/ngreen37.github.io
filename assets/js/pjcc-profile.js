@@ -421,7 +421,7 @@
   };
   var AURA_ORDER = ['gold','jade','crimson','sakura','azure','violet','amber','mono','emerald','ice','rose','lime','turquoise'];
 
-  /* ══ WHO YOU WIN A COLOR FROM ═════════════════════════════════════════════════
+  /* ══ WHAT A COLOR MEANS, AND WHO YOU WIN IT FROM ══════════════════════════════
      2026-08-20, Nate: *"I love the 'earn aura' thing. Everyone except Auston since she is
      adaptive."*
 
@@ -430,18 +430,23 @@
      into a receipt: "I play in Robert's violet" means you outplayed him with nothing but
      the board.
 
-     ⛑ THE WORDS CAME OFF, THE EARNING DID NOT — 2026-08-20, Nate: *"those aura color
-     descriptions (energetic, love and wisdom, etc) ... I don't want the actual text
-     descriptions."* Each of these nine used to carry a `word` — a frequency, printed under
-     the swatch row in the Forge and again in every swatch's label. That reading is now
-     recorded in `private/_pjcc/notes.md` and appears NOWHERE in the build.
+     ⭐ A NAMED FREQUENCY IS ONE THAT BELONGS TO SOMEBODY. The nine bench colors carry a
+     word; the other four (mono, azure, rose, lime) deliberately do not. They are free, they
+     are unclaimed, and they are yours to mean whatever you like — which is also why they
+     are the four a brand-new player picks from. The words are HIS.
 
-     ⚠ THE TWO FIELDS WERE NEVER THE SAME FEATURE, which is why one could go without the
-     other. `from` is the MECHANIC — it is what auraUnlocked() reads, and it is the whole of
-     what makes a color a prize. `word` was only ever a description of it. Deleting `word`
-     changes what the Forge SAYS; it does not change one thing about what it gives you.
-     ⚠ DO NOT "RESTORE" THE WORDS FROM THE CANON FILE. They are written down so they are not
-     lost, not so they can come back — they are off the site on purpose.
+     ⛑⛑ THEY CAME OFF ON 2026-08-20 AND WENT BACK ON THE SAME DAY, at his word both times:
+     *"I don't want the actual text descriptions"*, then *"I take it back — I like those
+     descriptions you had, can you bring them back?"* Recorded because the round trip is the
+     useful part, not because anybody was wrong: **a reading he is weighing is cheaper to
+     put back than to argue about.** They also still live in `private/_pjcc/notes.md`, which
+     is why restoring them cost nothing — the canon file was written the moment they were
+     deleted. [[text-changes-need-approval]]
+
+     ⚠ WHAT THE ROUND TRIP PROVED, AND IT IS WORTH KEEPING: `word` and `from` are NOT the
+     same feature. `from` is the MECHANIC — it is what auraUnlocked() reads and the whole of
+     what makes a color a prize. `word` is a description OF it. One can come and go without
+     the other moving, which is exactly what happened twice in a day.
 
      ⚠⚠ AUSTON'S CRIMSON IS NAMED BUT NEVER EARNABLE, and that is his instruction, not an
      oversight: she is the ADAPTIVE seat, so "beat Auston cleanly" is not a fixed feat the
@@ -454,15 +459,15 @@
      is a gift, tightening is a takeaway ([[sell-back-economy]]), and eight colors vanishing
      out of somebody's Forge would be the worst kind. */
   var AURA_MEANING = {
-    emerald:   { from: 'maxwell'  },
-    amber:     { from: 'crockett' },
-    ice:       { from: 'argus'    },
-    jade:      { from: 'nate'     },
-    turquoise: { from: 'dad'      },
-    violet:    { from: 'robert'   },
-    sakura:    { from: 'princess' },
-    gold:      { from: 'ceo'      },
-    crimson:   { from: null       }
+    emerald:   { word: 'home',                        from: 'maxwell'  },
+    amber:     { word: 'gladness',                    from: 'crockett' },
+    ice:       { word: 'the kept word',               from: 'argus'    },
+    jade:      { word: 'a dream carried for someone else', from: 'nate' },
+    turquoise: { word: 'love and wisdom',             from: 'dad'      },
+    violet:    { word: 'certainty',                   from: 'robert'   },
+    sakura:    { word: 'the beginner\'s heart',       from: 'princess' },
+    gold:      { word: 'appetite',                    from: 'ceo'      },
+    crimson:   { word: 'nerve',                       from: null       }
   };
 
   /* The Park Tables keep the stars; this only READS them. Same key, same shape:
@@ -510,9 +515,8 @@
     AURAS: AURAS,
     AURA_ORDER: AURA_ORDER,
     AURA_MEANING: AURA_MEANING,
-    /* ⛑ `auraWord()` WAS DELETED HERE, 2026-08-20 — see the note over AURA_MEANING. It
-       returned the frequency printed under the swatch row, and both of its callers (the
-       Forge's caption and its swatch labels) came out with it. Nothing else ever read it. */
+    /* the word under a swatch, or '' for the four that belong to nobody */
+    auraWord: function (key) { return (AURA_MEANING[key] && AURA_MEANING[key].word) || ''; },
     /* which regular you take it from, or null if it was never theirs to give */
     auraFrom: function (key) { return (AURA_MEANING[key] && AURA_MEANING[key].from) || null; },
     ptStars: ptStars,

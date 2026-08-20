@@ -546,19 +546,21 @@
     markOn('data-eye1', (two2 && eyeTarget === 'right') ? look.eyeR : look.eye);
     markOn('data-eyet', two2 ? eyeTarget : 'both');
     markOn('data-aura', look.aura);
-    /* ⛑ THE CAPTION IS EMPTY UNTIL A LOCKED SWATCH IS TAPPED — 2026-08-20, Nate: *"I don't
-       want the actual text descriptions."* This used to print the selected color's
-       frequency ("love and wisdom — won from The Dad"); that reading is off the site and
-       lives in private/_pjcc/notes.md now.
-       ⚠ THE ELEMENT STAYS, and it is not dead. nudgeLocked() writes the PRICE here when you
-       tap a color you have not won — a locked swatch that simply refuses, with nothing
-       anywhere saying why, reads as a broken button. So selecting CLEARS it, rather than
-       the caption being deleted outright. */
+    /* The caption follows the SELECTED color, so the word is never orphaned from its swatch.
+       ⛑⛑ RESTORED 2026-08-20 after being removed the same day — *"I take it back, I like
+       those descriptions."* Left as it was rather than rebuilt; the only reason the round
+       trip was cheap is that the words had been written to canon on the way out.
+       ⚠ THIS LINE HAS TWO JOBS AND ONLY ONE OF THEM IS THE WORD. nudgeLocked() writes the
+       PRICE here when you tap a color you have not won, so selecting a color must always
+       OVERWRITE — a stale "locked, beat Robert" sitting under a color you are wearing is
+       the failure this element had while the word was gone. */
     (function () {
       var cap = document.getElementById('op-aura-word');
       if (!cap) return;
+      var w = P.auraWord ? P.auraWord(look.aura) : '';
+      var from = P.auraFrom ? P.auraFrom(look.aura) : null;
       cap.classList.remove('is-locked');
-      cap.textContent = '';
+      cap.textContent = w ? (w + (from ? ' — won from ' + (BOT_NAMES[from] || from) : '')) : '';
     })();
     markOn('data-hat', look.hat);
     markOn('data-emblem', look.emblem);
@@ -780,25 +782,28 @@
        ([[collection-and-hidden-boards]]): a locked thing you can SEE is a reason to keep
        playing, and a list that is quietly shorter is just a shorter list.
 
-       ⚠ THE PRICE GOES IN THE LABEL, not only in a tooltip. `title=` does not exist on a
-       phone ([[hover-is-three-inputs]]) and he reads this site on one, so what a locked
-       color costs is in `aria-label` too.
+       ⚠ THE WORD IS THE POINT AND IT GOES IN THE LABEL, not only in a tooltip. `title=`
+       does not exist on a phone ([[hover-is-three-inputs]]) and he reads this site on one,
+       so the frequency and the price are both in `aria-label`, and the caption under the row
+       says the selected color's word out loud.
 
-       ⛑ THE LABEL IS THE COLOR'S NAME NOW, NOT ITS FREQUENCY — 2026-08-20, Nate: *"those
-       aura color descriptions ... I don't want the actual text descriptions."* It read
-       "certainty — locked, beat Robert with no help" for one day; it reads "Violet —
-       locked, beat Robert with no help" now. Only the reading changed: the lock, the price
-       and who you take it from are all still here.
-       ⭐ THE NAME IS DERIVED FROM THE KEY, NOT A SECOND MAP. `turquoise` → `Turquoise`. A
-       lookup table of thirteen display names would be a thing that drifts the first time a
-       color is added — and one WAS added the same day this shipped. A pure function of the
-       key cannot fall out of sync with the palette it names. */
+       ⛑⛑ THE FREQUENCY CAME BACK 2026-08-20 (*"I take it back"*), so this reads "certainty
+       — locked, beat Robert with no help" again rather than "Violet — …".
+       ⭐ BUT THE COLOR'S NAME IS STILL DERIVED AND STILL USED — `auraName()` labels the four
+       free colors, which have no word at all, and the COMPANION row, which has no words by
+       design. It was written during the removal and is worth keeping: thirteen hand-typed
+       display names would drift the first time a color is added, and one WAS added the same
+       day. A pure function of the key cannot fall out of sync with the palette it names. */
     h += '<div class="forge-section"><h3>Aura <small>— your signature color</small></h3><div class="forge-sw-row">';
     AURA_ORDER.forEach(function (k) {
+      var word = P.auraWord ? P.auraWord(k) : '';
       var from = P.auraFrom ? P.auraFrom(k) : null;
       var open = P.auraUnlocked ? P.auraUnlocked(k, accountProfile()) : true;
       var who  = from ? (BOT_NAMES[from] || from) : '';
-      var lab  = auraName(k) + (open ? '' : ' — locked, beat ' + who + ' with no help');
+      /* ⚠ THE FALLBACK IS THE NAME, NOT THE RAW KEY. `mono`/`azure`/`rose`/`lime` belong to
+         nobody and carry no word, and a swatch labelled with a bare lowercase key reads as
+         a variable that leaked. */
+      var lab  = (word || auraName(k)) + (open ? '' : ' — locked, beat ' + who + ' with no help');
       h += swatch(look.aura === k, AURAS[k],
         'data-aura="' + k + '"' + (open ? '' : ' data-locked="1"') +
         ' aria-label="' + esc(lab) + '" title="' + esc(lab) + '"');
