@@ -1181,8 +1181,13 @@ body_class: theme-hall
      (docs/park-tables-setup.md), a flag only falls when your opponent CLAIMS it, and the
      board polls every ~4s. A five-minute game over a four-second poll is not a game. That
      build (SQL time banks + auto-flag + Realtime instead of polling) is written out in
-     private/FUTURE-IDEAS.md under "REAL BLITZ" and is unchanged by any of this. It is also
-     why the human bench is called "The Quick Bench" and not "Blitz".
+     private/FUTURE-IDEAS.md under "REAL BLITZ" and is unchanged by any of this.
+     ⚑ AND ON 2026-08-20 THE LIVE SIDE STOPPED PRETENDING. The human bench used to be called
+     "The Quick Bench" at an hour a move, which was the fastest this half could go and still
+     not quick; Nate could not place the phrase and asked for it gone, so the seat and the
+     1-hour rung both came off (assets/js/pjcc-match.js). The live tables now offer a day, three
+     days, or no clock — which is what correspondence is — and BULLET/BLITZ/RAPID are words
+     this page only uses where they are true.
 
      ⭐ THE NAMES CARRY THE REAL NUMBERS, because a "Blitz" that is not blitz is the same
      lie. One canonical setting per tier rather than a menu — this is a park bench, not a
@@ -1548,10 +1553,16 @@ body_class: theme-hall
          missing. `anyStar()` is the switch, and it counts the pre-star wins too so a
          returning player never sees the bench go blank. */
       var stars = showStars ? starPair(id, b.name) : '';
+      /* ⭐ RESUME IS ITS OWN LINE, NOT A THIRD CLAUSE ON THE RATING (2026-08-20, Nate:
+         “the resume knocks that box out of alignment”). Glued on, it made the meta
+         string too long for a 143px card and it broke mid-rating — “Beginner ·” on one
+         line and “400 · resume” on the next — which is the one place a wrap is unreadable,
+         because it splits a number from its label. On its own line it is also the truer
+         shape: the rating is what the seat IS, resume is what is waiting for you there. */
       return '<button class="pt-card pt-bot' + (knows ? ' pt-bot--knows' : '') + '" data-bot="' + id + '"' + tint(b) + '>' +
         '<span class="pt-card-icon">' + glyph + '</span>' +
-        '<span class="pt-card-t">' + esc(b.name) + stars + '<br><i>' + esc(meta) +
-        (resume ? ' · resume' : '') + '</i></span></button>';
+        '<span class="pt-card-t">' + esc(b.name) + stars + '<br><i>' + esc(meta) + '</i>' +
+        (resume ? '<b class="pt-bot-go">resume</b>' : '') + '</span></button>';
     }
   }
   function wireBots(){
@@ -2639,12 +2650,12 @@ body_class: theme-hall
     { id:'arena', glyph:'♛', name:'The Arena', accent:'#F5C518',
       rated:true, secs:86400, tag:'Rated · 1 day a move',
       line:'Your P&JCC Rating rides on every move. All business.' },
-    // NOT called "blitz" on purpose (2026-07-25): every table here is CORRESPONDENCE with a
-    // PER-MOVE clock, so an hour a move is the fastest the park currently goes. Real blitz
-    // (a 5/10/15-minute TOTAL game clock) is a different clock system — see FUTURE-IDEAS.
-    { id:'bench', glyph:'♞', name:'The Quick Bench', accent:'#f2a154',
-      rated:true, secs:3600, tag:'Rated · 1 hour a move',
-      line:'The fastest bench in the park — an hour a move, no dawdling.' }
+    /* ⚑ THE QUICK BENCH IS GONE (2026-08-20, Nate: “get rid of that”). It was a third
+       seat whose whole personality was a speed it did not have — an hour a move on a board
+       that polls every four seconds — and it advertised a phrase he could not place because
+       nothing else on the site says it. What is left is the pair that were always the real
+       choice: no rating on the line, or every move counting. The third seat comes back the
+       day the live tables can actually hold a game clock. [[park-tables-bot-clock]] */
   ];
   function createSeat(vsCreator, seat){
     app.innerHTML = '<p class="lb-empty">Setting up the board…</p>';
@@ -3105,6 +3116,101 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
 .pt-bots { margin-top: 4px; }
 .pt-bots .pt-card { flex: 1 1 140px; padding: 11px 14px; }
 .pt-bots .pt-card-icon { font-size: 22px; }
+
+/* ══ A SEAT IS ONE CENTERED COLUMN (2026-08-20) ══════════════════════════════
+   Nate: “The resume knocks that box out of alignment — can we center all the text in these
+   boxes? They look slightly off.”
+
+   ⚠⚠ THE BOX WAS NEVER OUT OF ALIGNMENT — THE CONTENT INSIDE IT WAS, and that is why it
+   read as “slightly off” rather than as broken. The cards are flex items on one line, so they
+   already stretch to a common height; what differed was WHERE THE TEXT SAT INSIDE EACH
+   ONE. `.pt-card` centers its children vertically, so a card whose meta line wrapped to two
+   lines pushed its name and its stars UP relative to every neighbor whose meta fit on one.
+   Measured at his width: names on the wrapped cards sat 14px above the others. Centering
+   the text was the ask; TOP-aligning it is what actually lines the row up, and the two only
+   look like one change because a centered column does both at once.
+
+   ⭐ THE ICON MOVES ON TOP. Left of the text it was a tall glyph pinned to the edge of a
+   narrow card, and once the text is centered it read as the one thing that had been left
+   behind. On top it is the seat's mark over the seat's name.
+   ⚠ SCOPED TO `.pt-bots`. The two DOORS above the bench (Challenge McPuppy · Open a table)
+   are the same `.pt-card` and stay icon-left rows: they are wide, they carry a sentence,
+   and a centered column would turn a door into a tile. */
+.pt-bots .pt-card {
+  flex-direction: column; align-items: center; justify-content: flex-start;
+  gap: 3px; text-align: center;
+}
+.pt-bots .pt-card-t { display: block; width: 100%; min-width: 0; }
+/* ⚠ THE STARS TAKE THEIR OWN LINE ON PURPOSE. Inline they wrapped or did not depending on
+   how long the NAME was, so “The Dad” and “Nate” put their pair in different places. A block
+   with no left margin puts every pair on the same row of every card. */
+/* ⚠ `width: fit-content` IS LOAD-BEARING: `.pt-stars` IS THE CHIP (it carries the
+   #7d786e stone the pair sits on), so a plain block-level flex stretched that chip clear
+   across the card and the two stars floated in the middle of a bar. Caught in a render,
+   not in a rule. */
+.pt-bots .pt-stars { display: flex; width: fit-content; margin: 1px auto 0; }
+/* the game that is waiting for you — the same green the live tables use for YOUR MOVE */
+.pt-bot-go { display: block; margin-top: 3px; font-family: 'Share Tech Mono', monospace;
+  font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase;
+  font-weight: 400; color: #6bffb8; }
+.pt-bots .pt-card.pt-bot--locked .pt-bot-go { color: #79818e; }
+
+/* ══ THE BENCH SLIDES SIDEWAYS ON A PHONE (2026-08-20) ════════════════════════
+   Nate: “The characters are still showing vertical” — the same ask the cast rail answered
+   the day before, pointed at the seat list he was actually looking at.
+
+   Eight seats stacked one per row is roughly 620px of vertical scroll on a 390px phone
+   before you reach Auston. Two rows of four columns is two flicks.
+
+   ⚠⚠ SCOPED HORIZONTAL SCROLLING IS THE DELIBERATE OPPOSITE OF A PANNING DOCUMENT, and
+   the two are held apart by exactly two declarations, both load-bearing:
+     · `overscroll-behavior-x: contain` — a flick that runs off the end stops there instead
+       of chaining out and dragging the page.
+     · `min-width: 0` — so the TRACK can never be widened by its own contents. A grid or
+       flex item's `auto` minimum opening to min-content is one of the two causes of the
+       whole-window slide. [[mobile-window-slide]]
+   `npm run test:mobile` renders this rail and asserts both halves at once.
+
+   ⭐ THE PEEK IS SIZED BY SUBTRACTION, NOT BY GUESSING A PERCENTAGE. Two columns plus
+   their two gaps must leave 40px of the third on screen, so the column is
+   `calc(50% - 30px)` at a 10px gap — state the intent, do not reverse-engineer it from a
+   percentage that renders as 2.02 columns. On a device with no hover and no scrollbar the
+   peek is the ONLY thing that says the row moves.
+   ⚠ COLUMN-MAJOR, so the ladder still reads in order: two rungs down, then across.
+   ⚠ HIS OTHER IDEA — open seats on row 1, locked on row 2 — was BUILT AND MEASURED FIRST.
+   With six open and two locked it makes a six-column rail whose bottom shelf is empty for
+   two-thirds of the scroll, which reads as a broken row rather than as a shelf of things
+   still shut. Column-major is four columns and no holes. [[pick-visual-values-from-a-render]]
+   ⚠ Auston is NOT in the rail. Her block is one card in its own section; a scroll
+   container around a single item is a rail that cannot move. */
+@media (max-width: 700px) {
+  .pt-bots:not(.pt-bots--adapt) {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: calc(50% - 22px);
+    grid-template-rows: repeat(2, auto);
+    gap: 10px;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    /* room for the focus ring and the card's own glow, which the scroll box would
+       otherwise clip on the first and last column */
+    padding: 3px 2px 10px;
+    scrollbar-width: thin;
+  }
+  .pt-bots:not(.pt-bots--adapt) > .pt-card { min-width: 0; scroll-snap-align: start; padding: 11px 8px; }
+  /* ⭐ THE COLUMN AND THE PADDING WERE SIZED AGAINST THE LONGEST RATING, NOT PICKED.
+     `calc(50% - 30px)` (a 40px peek, the cast rail's number) renders a 114px column, which
+     leaves 86px of text and breaks “Beginner · 400” across two lines — splitting a
+     label from its number, the one wrap worth avoiding, and the exact thing this batch was
+     fixing on the desktop bench. 22px + an 8px side padding gives 124px / 108px of text and
+     still leaves a 34px peek. Rendered, not reasoned about. */
+  /* ⚠ `proximity`, NOT `mandatory` — with a half-column peek, mandatory yanks the rail away
+     from a column the thumb was deliberately stopping between. */
+}
 
 /* ══ EVERY SEAT WEARS ITS OWN COLOR (2026-08-19) ═══════════════════════════════════
    Nate: *"Give each bot box a unique color, and that is their aura color for the intro."*

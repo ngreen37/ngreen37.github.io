@@ -32,10 +32,21 @@
   ];
 
   /* Per-move time controls (v2 "basic ones"). secs=null is the casual pace — no clock.
-     Values must match the allow-list in create_match (park-tables-setup.md). */
+     Values must be a SUBSET of the allow-list in create_match (park-tables-setup.md).
+
+     ⚑ THE 1-HOUR RUNG CAME OFF 2026-08-20 (Nate: “I forget where we came up with 1 hour a
+     move, and I don't see it anywhere, but get rid of that”). It was the fastest thing the
+     LIVE tables could offer and it was never fast — these are per-move correspondence clocks,
+     so an hour a move is a leisurely game wearing a hurried label, and the board polls every
+     ~4s anyway. What is left says what this room actually is: a day or three days a move, or
+     no clock at all. Real Bullet/Blitz/Rapid live on the BOT boards, where the clock is local
+     arithmetic; bringing them here needs SQL time banks + auto-flag + Realtime replacing the
+     poll, written up in FUTURE-IDEAS under “⏱ REAL BLITZ”. [[park-tables-bot-clock]]
+     ⚠ THE SERVER STILL ACCEPTS 3600 and nothing was migrated — this is the OFFER, not the
+     allow-list, so any table already sitting on an hour keeps working and keeps its label
+     from the fallback in controlLabel below. */
   var CONTROLS = [
     { secs: null,   label: 'No clock' },
-    { secs: 3600,   label: '1 hour / move' },
     { secs: 86400,  label: '1 day / move' },
     { secs: 259200, label: '3 days / move' }
   ];

@@ -357,11 +357,19 @@ window.murphysLaw = function () {
   var elr = document.getElementById('nav-operative');
   if (!elr || !window.PJCC) return;
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  /* ⚠⚠ THE CODENAME IS WRAPPED SO A PHONE CAN DROP IT (2026-08-20). It used to be a bare
+     text node beside the avatar, which CSS cannot reach — and a signed-in pill is 48px wider
+     than the ⬡ Sign in the header was measured against, which is what made every phone
+     narrower than ~412px pan left-to-right. On a phone the avatar alone says "you are signed
+     in"; the name is one tap away on the dossier. See _pjcc-01-core.scss.
+     ⭐ The wrapper is INSIDE the pill, so the accessible name, the title and pjcc-lang.js's
+     do-not-translate rule all still see exactly what they saw before. */
+  function name(s) { return '<span class="nav-op-name">' + esc(s) + '</span>'; }
   function upd() {
     if (!PJCC.enabled) { elr.hidden = true; return; }
     elr.hidden = false;
     var prof = PJCC.getProfile();
-    if (prof) { elr.innerHTML = (PJCC.avatarMarkup ? PJCC.avatarMarkup(prof) : PJCC.avatarEmoji(prof)) + ' ' + esc(prof.codename); elr.classList.add('in'); }
+    if (prof) { elr.innerHTML = (PJCC.avatarMarkup ? PJCC.avatarMarkup(prof) : PJCC.avatarEmoji(prof)) + ' ' + name(prof.codename); elr.classList.add('in'); }
     else { elr.textContent = '⬡ Sign in'; elr.classList.remove('in'); }
   }
   // Instant render from the cached codename/avatar — no wait on the (deferred) SDK (#15).
@@ -370,7 +378,7 @@ window.murphysLaw = function () {
     var c, e;
     try { c = localStorage.getItem('pjcc.codename'); e = localStorage.getItem('pjcc.avataremoji'); } catch (x) {}
     elr.hidden = false;
-    if (c) { elr.innerHTML = (e || '⬡') + ' ' + esc(c); elr.classList.add('in'); }
+    if (c) { elr.innerHTML = (e || '⬡') + ' ' + name(c); elr.classList.add('in'); }
     else { elr.textContent = '⬡ Sign in'; }
   })();
   PJCC.onChange(upd);

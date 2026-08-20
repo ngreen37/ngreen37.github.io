@@ -348,6 +348,226 @@ const WIDTHS = [320, 360, 390, 430];
       slid.length ? slid.join(' · ') : ALL.length + ' pages swept with the real stylesheet');
   }
 
+  /* ══ PART 1d — THE SITE HEADER, WITH SOMEBODY SIGNED IN ═══════════════════════════
+     2026-08-20, Nate, for the THIRD time: *"the window still can slide right and left."*
+
+     ⚠⚠ THE PAGE SWEEPS ABOVE BUILD EVERY PAGE WITH NO HEADER AT ALL. Part 1 and Part 1c
+     both open at `<main class="page-content">`, so the one element that is on EVERY page of
+     the site — the header row — has never been measured by anything here. It was overflowing
+     on every phone, and the reason nobody saw it is the second half:
+
+     ⚠⚠ EVERY PROBE IN THIS REPO IS A SIGNED-OUT VISITOR. The profile pill reads "⬡ Sign in"
+     to a blank browser profile and measures 83px; to somebody signed in it carries a codename
+     and measures 131 — 48px the three-column header never had. Measured live before the fix:
+     +39 at 320, +38 at 360, +24 at 375, +15 at 390, +12 at 393, and a 21-character codename
+     slid the window at 500. The narrow-phone ladder in _pjcc-01-core.scss even states the
+     assumption out loud ("⌕ + 日本語 + Sign in = 192"). [[local-dev-and-verification]]
+
+     So this renders the REAL `_includes/site-header.html` with the pill filled in — short
+     name AND a maximum-length one, because a codename is 24 characters of user input and the
+     structural guarantee (`minmax(0, 1fr)` + an ellipsizing pill) is what has to hold, not a
+     breakpoint tuned to the length of "Mr. McPuppy".
+     ⚠ THE ASSET URLS ARE REWRITTEN BEFORE THE GENERIC LIQUID STRIP. `{{ '/assets/…' |
+     relative_url }}` turned into src="x" is a BROKEN IMAGE showing its alt text, and the
+     stacked McPuppy wordmark's alt string is far wider than the 28px logo it replaces — the
+     probe would then measure a box that does not exist. Same for the @font-face URLs: a
+     fallback face renders ~15% wide and invents overflow. */
+  {
+    const FONTS = siteCss.replace(/\/assets\/fonts\//g, 'file:///' + ROOT.replace(/\\/g, '/') + '/assets/fonts/');
+    const hdr = liquid(read('_includes/site-header.html')
+      .replace(/\{\{\s*'(\/assets\/[^']+)'\s*\|\s*relative_url\s*\}\}/g,
+               'file:///' + ROOT.replace(/\\/g, '/') + '$1'));
+    /* ⭐ PROVE THE INSTRUMENT: if the Liquid strip ever eats the control group this check
+       goes quietly green on an empty header. */
+    check('the header probe is holding a real header',
+      /header-top-right/.test(hdr) && /nav-operative/.test(hdr) && /site-mark/.test(hdr),
+      hdr.length + ' chars,control group + pill + marks present');
+
+    const NAMES = [['Mr. McPuppy', 'his own'], ['CommanderLongcodename24', 'a 23-char codename']];
+    const bad = [];
+    for (const [nm, why] of NAMES) {
+      const tmp = path.join(os.tmpdir(), 'pjcc_hdr_' + Date.now() + '.html');
+      fs.writeFileSync(tmp,
+        '<!doctype html><html><head><meta charset="utf-8">' +
+        '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+        '<style>' + FONTS + '</style>' +
+        '<style>html{overflow-x:visible !important}</style></head><body class="theme-hall">' +
+        hdr +
+        '<main class="page-content"><div class="wrapper"><div class="page-card">' +
+        '<p>a page under the header</p></div></div></main>' +
+        '<script>(function(){var e=document.getElementById("nav-operative");' +
+        'if(!e)return;e.hidden=false;e.classList.add("in");' +
+        'e.innerHTML="\\uD83D\\uDC36 <span class=\\"nav-op-name\\">' + nm + '</span>";})();</script>' +
+        '</body></html>');
+      for (const w of WIDTHS) {
+        await page.setViewport({ width: w, height: 800, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+        await page.goto('file:///' + tmp.split(path.sep).join('/'), { waitUntil: 'load' });
+        await new Promise((r) => setTimeout(r, 150));
+        const m = await page.evaluate(() => {
+          const de = document.documentElement, vw = de.clientWidth;
+          let escape = 0, sel = '';
+          document.querySelectorAll('*').forEach((el) => {
+            const r = el.getBoundingClientRect();
+            if (!r.width || r.right <= vw + 0.5) return;
+            if (getComputedStyle(el).position === 'fixed') return;
+            for (let n = el.parentElement; n; n = n.parentElement) {
+              const o = getComputedStyle(n).overflowX;
+              if (o === 'hidden' || o === 'clip' || o === 'auto' || o === 'scroll') return;
+            }
+            if (r.right - vw > escape) {
+              escape = Math.round(r.right - vw);
+              sel = el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') +
+                (typeof el.className === 'string' && el.className ? '.' + el.className.trim().split(/\s+/)[0] : '');
+            }
+          });
+          const pill = document.getElementById('nav-operative');
+          const ham = document.querySelector('.nav-toggle');
+          /* the three header groups, as boxes, so INTERSECTION can be asserted */
+          const groups = ['.header-top-left', '.site-marks', '.header-top-right']
+            .map((q) => { const e = document.querySelector(q); if (!e) return null;
+              const r = e.getBoundingClientRect();
+              return { q, l: Math.round(r.left), r: Math.round(r.right) }; })
+            .filter(Boolean).sort((a, c) => a.l - c.l);
+          let overlap = '';
+          for (let i = 1; i < groups.length; i++)
+            if (groups[i].l < groups[i - 1].r - 0.5)
+              overlap = groups[i - 1].q + ' (' + groups[i - 1].l + '-' + groups[i - 1].r + ') over ' +
+                        groups[i].q + ' (' + groups[i].l + '-' + groups[i].r + ')';
+          return { escape, sel, overlap,
+            pillW: pill ? Math.round(pill.getBoundingClientRect().width) : 0,
+            hamW: ham ? Math.round(ham.getBoundingClientRect().width) : 0,
+            /* clipped = the ellipsis is doing the work, i.e. the phone rule is not */
+            clipped: pill ? pill.scrollWidth > pill.clientWidth + 1 : false };
+        });
+        if (m.escape > 0) bad.push(w + 'px/' + why + ': the PAGE pans +' + m.escape + ' (' + m.sel + ')');
+        /* ⚠ THE HAMBURGER IS THE OTHER HALF AND IT IS EASY TO BREAK WITH THE SAME FIX. Letting
+           the outer tracks shrink would squeeze the ONLY way into the menu on a phone down to
+           nothing, and a page that no longer pans because its navigation collapsed is not a
+           fix. Track 1 keeps its `auto` minimum for exactly this reason; asserted, not assumed. */
+        if (m.hamW < 20) bad.push(w + 'px/' + why + ': the hamburger squeezed to ' + m.hamW + 'px');
+        if (m.pillW < 24) bad.push(w + 'px/' + why + ': the profile pill squeezed to ' + m.pillW + 'px');
+        /* ⭐⭐ TWO RULES HOLD THIS UP AND EACH NEEDS ITS OWN ASSERTION. The STRUCTURAL one
+           (`minmax(0, 1fr)` + an ellipsizing pill) is what the escape check above proves —
+           without it the row overflows. The COSMETIC one (below 480px the pill drops the
+           codename and shows the avatar alone) is invisible to that check, because a
+           truncated pill does not pan the page — it just reads “Mr. McPup…”.
+           Delete the phone rule and the escape assertion stays green on a header that looks
+           broken, which is exactly the pass that teaches you nothing. So the ellipsis itself
+           is the failure: on a phone the pill must never be clipping its own text. */
+        if (m.clipped) bad.push(w + 'px/' + why + ': the pill is truncating its own text');
+        /* ⭐⭐ THE FAILURE THAT DOES NOT PAN THE PAGE, AND THE REASON THIS LINE EXISTS.
+           `1fr auto 1fr` splits free space EQUALLY, not by need — so the control group
+           overflows its own too-small track INWARD (it is `justify-self: end`) and lands on
+           top of the marks, while `documentElement.scrollWidth` never moves. The first draft
+           of this whole check went GREEN under a mutation that restored the buggy tracks,
+           for exactly that reason. An escape probe cannot see a collision; only a collision
+           probe can. [[green-must-name-what-ran]] */
+        if (m.overlap) bad.push(w + 'px/' + why + ': header groups collide — ' + m.overlap);
+      }
+      fs.unlinkSync(tmp);
+    }
+    check('⚠⚠ the SIGNED-IN header fits every phone, at any codename length', bad.length === 0,
+      bad.length ? bad.slice(0, 4).join(' · ') : WIDTHS.join(', ') + 'px × 2 codenames, nothing escapes');
+  }
+
+  /* ══ PART 1e — THE TWO NEW SWIPE RAILS ════════════════════════════════════════════
+     2026-08-20, Nate: *"The characters are still showing vertical"* (the Park Tables bench)
+     and *"I want the achievements to be on one row, slide-able, on the mobile site too."*
+
+     Same contract as the cast rail above, and it is asserted the same way, because the
+     failure mode is identical and it is not "the rail does not scroll" — it is a rail that
+     scrolls AND takes the document with it. Each one has to satisfy all four at once:
+       · it really overflows its own box (otherwise there is nothing to slide)
+       · `overscroll-behavior-x: contain`, so a flick off the end does not chain out
+       · nothing ESCAPES the viewport with no scroll container between it and <html>
+       · a peek wide enough to read as a card, since a phone has no hover and no scrollbar
+     ⚠ The markup is lifted out of the SHIPPING source, not retyped here, so a rail that is
+     renamed or restructured makes this check fail rather than quietly test a fossil. */
+  {
+    const bench = read('games/park-tables/index.html');
+    const botCard = (bench.match(/'<button class="pt-card pt-bot'[\s\S]{0,400}?<\/span><\/button>'/) || [''])[0];
+    const dsr = read('dossier.md');
+    const achOwn = (dsr.match(/\.dsr-ach-grid[\s\S]*?\n\}/) || [''])[0];
+    const RAILS = [
+      { name: 'the Park Tables bench', sel: '.pt-bots',
+        own: (bench.match(/<style>([\s\S]*)<\/style>/) || [, ''])[1],
+        rows: 2, n: 8,
+        html: (n) => '<div class="pt-actions pt-bots">' + Array.from({ length: n }, (_, i) =>
+          '<button class="pt-card pt-bot" data-bot="b' + i + '" style="--bot:#7ad0a8">' +
+          '<span class="pt-card-icon">♜</span><span class="pt-card-t">Maxwell' +
+          '<span class="pt-stars"><span class="pt-star pt-star--w pt-star--none"></span>' +
+          '<span class="pt-star pt-star--b pt-star--none"></span></span>' +
+          '<br><i>Beginner · 400</i></span></button>').join('') + '</div>' },
+      { name: 'the dossier trophy shelf', sel: '.dsr-ach-grid',
+        own: achOwn ? (dsr.match(/<style>([\s\S]*?)<\/style>/g) || []).map((b) => b.replace(/<\/?style>/g, '')).join('\n') : '',
+        rows: 1, n: 12,
+        html: (n) => '<div class="dsr-ach-grid">' + Array.from({ length: n }, (_, i) =>
+          '<div class="dsr-ach ' + (i < 4 ? 'got' : 'locked') + '"><div class="dsr-ach-icon">⚔</div>' +
+          '<div class="dsr-ach-label">Tactician</div>' +
+          '<div class="dsr-ach-desc">Solve 25 puzzles</div></div>').join('') + '</div>' },
+    ];
+    check('the rail probes are holding real card markup',
+      !!botCard && !!achOwn,
+      (botCard ? 'bench card ' + botCard.length + 'c' : 'NO BENCH CARD') + ' · ' +
+      (achOwn ? 'dossier grid rule found' : 'NO DOSSIER RULE'));
+
+    for (const rail of RAILS) {
+      const tmp = path.join(os.tmpdir(), 'pjcc_rail2_' + Date.now() + '.html');
+      fs.writeFileSync(tmp,
+        '<!doctype html><html><head><meta charset="utf-8">' +
+        '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+        '<style>' + siteCss + '</style></head><body class="theme-hall">' +
+        '<main class="page-content"><div class="wrapper"><div class="page-card">' +
+        rail.html(rail.n) + '</div></div></main>' +
+        '<style>' + rail.own + '</style></body></html>');
+      const bad = [];
+      for (const w of WIDTHS) {
+        await page.setViewport({ width: w, height: 900, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+        await page.goto('file:///' + tmp.split(path.sep).join('/'), { waitUntil: 'load' });
+        await new Promise((r) => setTimeout(r, 180));
+        const m = await page.evaluate((sel) => {
+          const el = document.querySelector(sel);
+          if (!el) return { missing: true };
+          const cs = getComputedStyle(el);
+          const kids = [...el.children];
+          const rows = new Set(kids.map((c) => Math.round(c.getBoundingClientRect().top))).size;
+          const vw = document.documentElement.clientWidth;
+          let escape = 0, s = '';
+          document.querySelectorAll('*').forEach((n2) => {
+            const r = n2.getBoundingClientRect();
+            if (!r.width || r.right <= vw + 0.5) return;
+            if (getComputedStyle(n2).position === 'fixed') return;
+            for (let n = n2.parentElement; n; n = n.parentElement) {
+              const o = getComputedStyle(n).overflowX;
+              if (o === 'hidden' || o === 'clip' || o === 'auto' || o === 'scroll') return;
+            }
+            if (r.right - vw > escape) {
+              escape = Math.round(r.right - vw);
+              s = n2.tagName.toLowerCase() + (typeof n2.className === 'string' && n2.className
+                ? '.' + n2.className.trim().split(/\s+/)[0] : '');
+            }
+          });
+          const cw = Math.round(el.clientWidth), kw = kids[0].getBoundingClientRect().width;
+          const gap = parseFloat(cs.columnGap) || 0;
+          const fit = Math.floor((cw + gap) / (kw + gap));
+          return { rows, chain: cs.overscrollBehaviorX,
+                   scrolls: Math.round(el.scrollWidth - el.clientWidth),
+                   peek: Math.round(cw - fit * (kw + gap)), escape, sel: s };
+        }, rail.sel);
+        if (m.missing) { bad.push(w + 'px: no ' + rail.sel + ' in the probe'); continue; }
+        if (m.rows !== rail.rows) bad.push(w + 'px: ' + m.rows + ' rows, want ' + rail.rows);
+        if (m.scrolls <= 0) bad.push(w + 'px: the rail does not scroll at all');
+        if (m.chain !== 'contain') bad.push(w + 'px: overscroll-behavior-x=' + m.chain);
+        if (m.escape > 0) bad.push(w + 'px: the PAGE pans +' + m.escape + ' (' + m.sel + ')');
+        if (m.peek < 24) bad.push(w + 'px: the next card peeks only ' + m.peek + 'px');
+      }
+      fs.unlinkSync(tmp);
+      check('⚠⚠ ' + rail.name + ' scrolls sideways and the PAGE still cannot', bad.length === 0,
+        bad.length ? bad.slice(0, 4).join(' · ') : WIDTHS.join(', ') + ': ' + rail.rows +
+        ' row(s), scoped scroll, a real peek');
+    }
+  }
+
   /* ══ PART 2 — nothing iOS would zoom for ═════════════════════════════════════════
      ⚠⚠ THE <style> GOES IN THE BODY, WHERE JEKYLL PUTS IT. A page's own block beats the
      stylesheet on a tie, and that tie is the whole reason the coarse-pointer rule is

@@ -21,8 +21,11 @@ points; the expected result costs almost nothing. The math runs **server-side on
 no-rating option. Ratings have no credit value, so there is still no economy to attack —
 the worst a farmer can inflate is a number next to his own codename.
 
-**Time controls (v2):** per-move clocks — none (casual pace), 1 hour, 1 day, or 3 days per
-move. A flag only falls when the OPPONENT claims it (`claim_timeout`), like correspondence
+**Time controls (v2):** per-move clocks — none (casual pace), 1 day, or 3 days per
+move. (The SQL allow-list below still accepts **3600** and is unchanged; the 1-hour rung was
+taken out of the UI on 2026-08-20 — an hour a move is not fast on a board that polls every
+four seconds, and offering it as the quick option was the only place the site said so. Any
+table already on 3600 keeps working.) A flag only falls when the OPPONENT claims it (`claim_timeout`), like correspondence
 sites: if nobody claims, the game simply waits. The clock starts when the seat fills.
 
 ## Step 1 — run this in Supabase → SQL Editor

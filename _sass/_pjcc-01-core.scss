@@ -261,6 +261,33 @@ ul, ol {
 .header-top > .site-marks       { grid-column: 2; justify-self: center; }
 .header-top > .header-top-right { grid-column: 3; justify-self: end; }
 
+/* ⚠⚠ THE RIGHT-HAND TRACK MUST BE ALLOWED TO SHRINK, AND FOR A YEAR IT WAS NOT
+   (2026-08-20). `1fr` is `minmax(auto, 1fr)`, and that `auto` minimum opens to the group's
+   MIN-CONTENT — so the header row had a hard floor of hamburger + marks + controls, and
+   any phone narrower than that floor got a DOCUMENT that pans left-to-right. That is the
+   exact mechanism [[mobile-window-slide]] already records for /goods/, sitting in the one
+   element on every page of the site.
+
+   ⚠⚠ IT WAS INVISIBLE TO EVERY PROBE BECAUSE EVERY PROBE IS SIGNED OUT. Signed out the
+   pill reads “⬡ Sign in” and measures 83px; signed in it carries a codename and measures
+   131 — 48px the design never had. Measured on the live page with the pill filled in: the
+   row overflowed +39 at 320, +38 at 360, +24 at 375, +15 at 390 and +12 at 393, clean from
+   412 up. The narrow-phone ladder below even states the assumption out loud (“⌕ + 日本語 +
+   Sign in = 192”) — it was tuned against the signed-out string.
+   [[local-dev-and-verification]] — every tool here starts from a blank browser profile.
+
+   ⭐ TRACK 1 KEEPS ITS `auto` MINIMUM ON PURPOSE. The hamburger is the only way into the
+   menu on a phone; a track that may shrink to zero would push it out from under
+   `justify-self: start` and straight into the marks. Only the CONTROL side gives. */
+.header-top { grid-template-columns: 1fr auto minmax(0, 1fr); }
+.header-top-right { min-width: 0; }
+/* ⭐ AND THE PILL IS WHAT GIVES — it is the only item in the row whose width is written
+   by a user (a codename runs to 24 characters). ⌕ and 日本語 are fixed glyphs and are
+   pinned, so a squeeze can never turn them into a smudge. */
+.header-top-right > .cmdk-trigger,
+.header-top-right > .lang-toggle { flex-shrink: 0; }
+.header-top-right > .nav-operative { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
 /* ⚠ CENTERED ON THE HEADER IS NOT CENTERED TO THE EYE. Above 901px the drawer is a DOCKED
    RAIL sitting over the header's left ~246px (the hamburger lives inside it), so the header
    band anyone can actually see starts at the rail's edge. Dead-centered on the element, the
@@ -1404,6 +1431,45 @@ pre code {
   .site-mark--mcp { display: none; }
   .site-marks { gap: 5px; }
   .site-mark--word { font-size: 12px; }
+}
+/* ⚠⚠ A PHONE SHOWS THE AVATAR, NOT THE NAME (2026-08-20, Nate: “the window still can slide
+   right and left” — his second report, so the defect was a layer behind the fix). The rung
+   above this one is the reason the number is 479 and not a taste: with the pill carrying a
+   real codename the control group measures 241px, and the row only has that much to give
+   from about 460px up. Below that the pill would ellipsize into “Mr. McPupp⬡”, which is a
+   worse answer than not printing the name at all.
+   ⭐ IT IS A COSMETIC RULE SITTING ON TOP OF A STRUCTURAL ONE, and both are wanted. The
+   `minmax(0, 1fr)` track up top means NO codename of any length can pan the document ever
+   again; this one is what keeps the phone header looking deliberate rather than truncated.
+   ⭐ The pill still says you are signed in — it keeps its gold ring and your avatar, and
+   the name is one tap away on the dossier it links to. */
+@media (max-width: 479px) {
+  .nav-operative.in .nav-op-name { display: none; }
+  .nav-operative.in { gap: 0; padding: 5px 10px; }
+}
+
+/* ⚠⚠ ON A PHONE THE MARKS CANNOT BE CENTERED ON THE HEADER, AND `1fr auto 1fr` DOES NOT
+   FAIL BY OVERFLOWING — IT FAILS BY OVERLAPPING (2026-08-20). Two equal rails split the free
+   space EQUALLY, not by need: at 390 the row has 334px, the marks take 78, and the
+   remaining 256 is halved into 128/128 — while the hamburger only wants 46 and the control
+   group wants 150. The controls then overflow their own 128px track INWARD, under
+   `justify-self: end`, and land on top of the marks. Measured: at 320 the group ran
+   126—280 while the marks sat at 144—176, straight through each other.
+   ⭐⭐ AND THE PAGE DOES NOT PAN WHEN THAT HAPPENS, so the overflow probe stays green on a
+   header that is visibly broken. That is why tests/mobile.check.js asserts the three groups
+   do not INTERSECT as well as that nothing escapes — the first draft of that check passed
+   under a mutation that put the old tracks back, which is how this was found at all.
+
+   ⭐ SO THE MIDDLE TRACK TAKES THE SLACK INSTEAD. `auto minmax(0, 1fr) minmax(0, auto)`
+   gives the hamburger and the controls exactly what they need and hands everything left over
+   to the marks, which stay centered IN THAT GAP — centered between the two side groups
+   rather than on the header. At 390 that is a 138px gap for a 78px pair; at the 320 floor it
+   is 44px for a 33px single mark. Nothing overlaps at any phone width.
+   ⚠ SCOPED TO PHONES ON PURPOSE. Above 700px the row has room to be truly centered and the
+   desktop rule above stands — including the 1201px rail nudge, which took three failed
+   attempts and whose comment says why. This does not touch it. */
+@media (max-width: 700px) {
+  .header-top { grid-template-columns: auto minmax(0, 1fr) minmax(0, auto); }
 }
 /* 360 and 375 are still real Android/iPhone widths and they miss by a couple of pixels,
    so the type takes one more step rather than the row taking an overlap. */

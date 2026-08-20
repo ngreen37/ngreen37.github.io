@@ -512,6 +512,44 @@ permalink: /dossier/
 .dsr-ach-icon { font-size: 26px; }
 .dsr-ach-label { color: #f0e6ff; font-weight: 700; font-size: 0.84rem; margin: 4px 0 2px; }
 .dsr-ach-desc { color: #9a7fd4; font-size: 0.72rem; line-height: 1.3; }
+/* ══ THE TROPHY SHELF SLIDES SIDEWAYS ON A PHONE (2026-08-20) ════════════════
+   Nate: “I want the achievements to be on one row, slide-able, on the mobile site too” —
+   and separately, “maybe the locked ones are on the second row and all the others are on the
+   first”. Both are honored here, one as a row and one as an ORDER.
+
+   Twelve trophies at `minmax(140px, 1fr)` is a 2-up grid — six rows, about 570px of vertical
+   scroll through a shelf you should be able to thumb along. One rail is one gesture.
+
+   ⭐ EARNED FIRST, VIA `order` — NOT VIA THE DOM. Flex `order` reorders the picture and
+   leaves the source list alone, so a screen reader and the page's own canonical order are
+   untouched; the cards are <div>s, so there is no tab order to desynchronize either. The
+   first flick is what you have WON, which is the half worth putting first, and the locked
+   ones keep following it as a shelf of what is still out there.
+   ⚠ Which is also why one row beats two here: with 12 trophies and a moving earned/locked
+   split, a two-row rail leaves a different-shaped hole for every player.
+
+   ⚠⚠ `min-width: 0` + `overscroll-behavior-x: contain` ARE THE TWO DECLARATIONS THAT KEEP
+   THIS FROM BECOMING THE BUG HE REPORTED TWICE. The first stops the track being widened by
+   its own contents; the second stops a flick off the end chaining out into a panning
+   document. Gated in `npm run test:mobile`. [[mobile-window-slide]] */
+@media (max-width: 700px) {
+  .dsr-ach-grid {
+    display: flex;
+    gap: 10px;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    padding: 3px 2px 10px;
+    scrollbar-width: thin;
+  }
+  /* two columns and a 34px peek of the third — sized by subtraction, not guessed */
+  .dsr-ach { flex: 0 0 calc(50% - 22px); min-width: 0; scroll-snap-align: start; }
+  .dsr-ach.got    { order: 0; }
+  .dsr-ach.locked { order: 1; }
+}
 /* (the standalone streak FLAME card and the SEASON strip were cut 2026-07-12 — the streak
     is a chip in the header now, and the season's only payoff was the Hall of Fame.) */
 .dsr-ghost { display:inline-block; font-size:0.74rem; color:#9a7fd4; } .dsr-ghost.beat { color:#6bffb8; }
