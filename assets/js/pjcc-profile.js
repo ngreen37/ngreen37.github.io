@@ -396,7 +396,7 @@
      ring on the face art.
 
      ⚑ MOVED HERE FROM pjcc-creator.js ON 2026-08-13, and the move is the point. The Forge
-     was the only file that knew these twelve hex values, which was fine for exactly as
+     was the only file that knew these hex values, which was fine for exactly as
      long as the Forge was the only thing that drew them. The Park Tables VS streaks need
      the same colors on a page the Forge is not loaded on — and the alternative, a second
      copy of the palette in the room, is a palette that drifts the first time a color is
@@ -405,12 +405,21 @@
      ⚠ pjcc-creator.js now READS `PJCC.AURAS` and keeps no copy. It loads only on
      /dossier/, after this file, so the dependency is satisfied by document order — the
      same rule that already governs face-art-before-creator on that page. */
+  /* ⛑ A THIRTEENTH COLOR, 2026-08-20 — Nate: *"make the Dad character's aura turquoise to
+     match the frequency of love and wisdom"*. Turquoise is the one hue this palette did not
+     have: `ice` is a pale sky, `azure` a mid sky and `jade` a mint green, and turquoise sits
+     in the gap between the last two — green-blue rather than blue or green. Nothing here
+     could stand in for it, so the palette grew rather than the meaning bending to fit.
+     ⚠ ADDING ONE IS ADDITIVE EVERYWHERE. The Forge draws its swatches from AURA_ORDER, so
+     players get the new choice for free; nothing reads a hard count except one test, which
+     names the number on purpose so a DELETION is caught too. */
   var AURAS = {
     gold:    '#F5C518', jade:   '#6bffb8', crimson: '#ff6b6b', sakura: '#ff8fd0',
     azure:   '#6bbfff', violet: '#b07bff', amber:   '#ff9f43', mono:   '#cdbcf2',
-    emerald: '#2ecc71', ice:    '#a8e6ff', rose:    '#ff6b9d', lime:   '#c9ff6b'
+    emerald: '#2ecc71', ice:    '#a8e6ff', rose:    '#ff6b9d', lime:   '#c9ff6b',
+    turquoise: '#40e0d0'
   };
-  var AURA_ORDER = ['gold','jade','crimson','sakura','azure','violet','amber','mono','emerald','ice','rose','lime'];
+  var AURA_ORDER = ['gold','jade','crimson','sakura','azure','violet','amber','mono','emerald','ice','rose','lime','turquoise'];
 
   var PJCC = {
     enabled: !!configured,

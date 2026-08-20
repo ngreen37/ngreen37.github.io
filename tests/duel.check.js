@@ -186,7 +186,10 @@ for (const f of FOES) {
 const AURA_SRC = fs.readFileSync(path.join(ROOT, 'assets/js/pjcc-profile.js'), 'utf8');
 const AURA_KEYS = (AURA_SRC.match(/var AURA_ORDER = \[([^\]]*)\]/) || [, ''])[1]
   .split(',').map((s) => s.trim().replace(/^'|'$/g, '')).filter(Boolean);
-ok(AURA_KEYS.length === 12, 'read ' + AURA_KEYS.length + ' aura keys out of pjcc-profile.js');
+/* ⛑ 12 → 13 on 2026-08-20, when `turquoise` was added for The Dad. The number is stated
+   rather than loose so a DELETED aura is caught as loudly as an added one — a key that
+   vanishes takes every profile wearing it to the neutral, silently. */
+ok(AURA_KEYS.length === 13, 'read ' + AURA_KEYS.length + ' aura keys out of pjcc-profile.js');
 for (const f of FOES) {
   ok(f.aura && AURA_KEYS.indexOf(f.aura) >= 0,
      f.name + "'s aura `" + f.aura + '` is a real key in PJCC.AURAS');
