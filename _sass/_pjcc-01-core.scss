@@ -727,6 +727,13 @@ code {
   padding: 3px 6px;
   border-radius: 6px;
   font-size: 0.88em;
+  /* ⛑ INLINE CODE IS USUALLY A URL OR A KEY (2026-08-20), which is one unbreakable "word"
+     — `https://mcpuppystudios.com/**` measured 237px and pushed /supabase-check/ past a
+     320px phone. This is site-wide on purpose: every page that ever prints a path in prose
+     has the same hazard, and fixing them one at a time is how the next one ships.
+     ⚠ `anywhere`, not `break-word`: only `anywhere` also shrinks the element's min-content
+     width, which is what actually stops the PARENT from being widened. [[mobile-window-slide]] */
+  overflow-wrap: anywhere;
 }
 
 pre code {

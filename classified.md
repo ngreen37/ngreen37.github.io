@@ -119,6 +119,17 @@ no_sky: true
   color:#0a0500; background:var(--gold); border-color:var(--gold); box-shadow:0 0 26px rgba(255,210,74,0.55);
   animation: secret-slam 1s cubic-bezier(.2,1.4,.4,1) .5s both; }
 @keyframes secret-slam { 0%{ opacity:0; transform:translate(-50%,-50%) rotate(-11deg) scale(2.4);} 100%{ opacity:1; transform:translate(-50%,-50%) rotate(-11deg) scale(1);} }
+/* ⛑ THE SLAM IS SMALLER ON A PHONE, AND IT IS NOT A TASTE CALL (2026-08-20). A TRANSFORM
+   CREATES SCROLLABLE OVERFLOW: at scale(2.4) this stamp measures 496px against a 224px
+   content box, so for the first second of this page the whole window could be panned
+   sideways — exactly the thing Nate reported twice. `html{overflow-x:clip}` is a guard
+   that HIDES this (and its own comment says so); the fix belongs where it starts.
+   ⚠ The stamp shrinks too, so the smaller slam still has somewhere to come FROM: at
+   11px/3px the base is ~156px, and 1.35× of that fits the narrowest phone. */
+@media (max-width: 560px) {
+  .secret-stamp { font-size:11px; letter-spacing:3px; padding:6px 12px; }
+  @keyframes secret-slam { 0%{ opacity:0; transform:translate(-50%,-50%) rotate(-11deg) scale(1.35);} 100%{ opacity:1; transform:translate(-50%,-50%) rotate(-11deg) scale(1);} }
+}
 .secret-title { font-family:'Poppins',sans-serif; font-weight:800; font-size:clamp(34px,7.6vw,64px); letter-spacing:7px;
   color:var(--gold); margin:14px 0 8px; text-shadow:0 0 30px rgba(255,210,74,0.45); }
 /* a11y 2026-07-22: 66% -> 76% amber (4.21:1 -> 4.6:1). A near-miss, but this line names

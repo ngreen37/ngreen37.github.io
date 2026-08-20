@@ -324,6 +324,19 @@
   margin-bottom: 48px;
 }
 
+/* ⛑ TRACKING IS TRAILING SPACE, AND IT COUNTS (2026-08-20). `letter-spacing` adds its
+   gap AFTER the last character of every line, including the last one — so a wrapped,
+   heavily-tracked label measures wider than its box even though every line looks like it
+   fits. That is 7px on /dispatch/ at 320px, and 7px is enough to make the whole window
+   pan. No element reports it, because the overflow is inside a text run: the sweep in
+   tests/mobile.check.js names it "a transform or a ::before" and this was neither.
+   ⚠ The cure is less tracking on a narrow screen, not a negative margin — a negative
+   margin fixes the measurement and leaves the last line optically off-center. */
+@media (max-width: 430px) {
+  .dispatch-eyebrow { letter-spacing: 0.12em; }
+  .dispatch-sub { letter-spacing: 0.08em; }
+}
+
 .dispatch-eyebrow {
   font-family: 'Share Tech Mono', monospace;
   font-size: 10px;
@@ -335,7 +348,13 @@
 
 .dispatch-title {
   font-family: 'Poppins', sans-serif;
-  font-size: clamp(28px, 5vw, 48px);
+  /* ⛑ FLOOR LOWERED 48→28→20px, 2026-08-20. "TRANSMISSIONS" is ONE unbreakable word:
+     at 28px in a FALLBACK font it measures 221px against a 166px box on a 320px phone, and
+     pushed the document 7px sideways. ⚠⚠ IT ONLY SHOWS WITHOUT THE WEBFONT — Poppins is
+     narrow enough to fit, so a probe that loads it passes while a real phone on a slow
+     connection slides during first paint. Measure the fallback; it is a state real people
+     see. Breaking the word mid-title would be the other fix and it looks like a defect. */
+  font-size: clamp(20px, 5vw, 48px);
   font-weight: 800;
   color: #ff8c00;
   letter-spacing: -1px;
@@ -425,6 +444,19 @@
   transition: background 0.15s;
 
   &:hover { background: rgba(255,255,255,0.06); }
+
+  /* ⛑ THE ROW WRAPS ON A PHONE (2026-08-20). Four items, a 12px gap and no wrapping came
+     to 300px inside a 240px box at 390px — 14px of which reached the document and slid the
+     whole window. Chasing it through the children was the wrong layer (shrinking the date
+     to 0 width left its 36px of content still overflowing); the row is what has to give.
+     ⚠ `min-width: 0` ON THE CHILDREN IS THE OTHER HALF — a flex item refuses to shrink
+     below its content unless told, which is one of the two named causes of this bug.
+     [[mobile-window-slide]] */
+  @media (max-width: 430px) {
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    > * { min-width: 0; }
+  }
 }
 
 .game-result {
@@ -472,6 +504,11 @@
   /* a11y 2026-07-22: 28% -> 60% (2.48:1 -> 4.5:1). */
   color: rgba(255,255,255,0.6);
   flex-shrink: 0;
+  /* ⚠ `flex-shrink: 0` STAYS, and shrinking it was my first and wrong fix: it took the
+     date to 0 width while its 36px of content still overflowed, because content does not
+     shrink with the box. The row wraps instead (see .game-feed-row). A date that wraps
+     mid-string is unreadable, so it keeps its width and takes a new line if it needs one. */
+  white-space: nowrap;
 }
 
 .game-feed-footer {

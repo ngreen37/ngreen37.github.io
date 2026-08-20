@@ -175,8 +175,11 @@ sitemap: false
    the site. Poster TEXT now wears a dark ANTIQUE gold (5.2:1); the star glyph and the inner
    border keep the bright gold — ink and ornament are different jobs. */
 .fc-eyebrow { text-align:center; font-size:11px; letter-spacing:5px; text-transform:uppercase; color:#77570a; font-weight:800; }
-.fc-brand { text-align:center; font-size:60px; font-weight:900; letter-spacing:4px; color:#002e6d; line-height:1; margin:3px 0 1px; }
-.fc-star { color:#e3b008; font-size:0.55em; vertical-align:0.28em; margin:0 9px; }
+/* ⛑ clamp()ED 2026-08-20. A flat 60px wordmark with two 9px-margined stars measured
+   wider than a 320px phone and pushed the whole page sideways. The poster still wants to
+   read BIG, so the size follows the viewport instead of being cut to the smallest case. */
+.fc-brand { text-align:center; font-size:clamp(30px,11vw,60px); font-weight:900; letter-spacing:4px; color:#002e6d; line-height:1; margin:3px 0 1px; }
+.fc-star { color:#e3b008; font-size:0.55em; vertical-align:0.28em; margin:0 clamp(3px,2vw,9px); }
 .fc-brand-sub { text-align:center; font-size:14px; font-weight:700; color:#0a3f8a; margin-bottom:14px; }
 .fc-frame { position:relative; width:100%; aspect-ratio:1/1; max-height:4.6in; margin:0 auto;
   background:radial-gradient(circle at 50% 40%, var(--fa-paper-lit) 0%, var(--fa-paper-dim) 78%); border:2px dashed transparent; border-radius:var(--r-md);

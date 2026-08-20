@@ -238,6 +238,11 @@ body.theme-classified {
   border-radius: 2px;
   cursor: default;
   letter-spacing: 0;
+  /* ⛑ A REDACTION BAR HAS NO SPACES IN IT (2026-08-20), so a long one is a single
+     unbreakable word that pushed /archive/ 8px past a 320px phone. Breaking it changes
+     nothing about the effect — unreadable is the point, and it is still unreadable on
+     two lines. */
+  overflow-wrap: anywhere;
   transition: background 0.35s, color 0.35s;
 
   &:hover {

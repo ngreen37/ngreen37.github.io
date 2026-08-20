@@ -276,6 +276,78 @@ const WIDTHS = [320, 360, 390, 430];
     }
   }
 
+  /* ══ PART 1c — EVERY PAGE, WITH THE REAL STYLESHEET ══════════════════════════════════
+     2026-08-20, Nate, for the second time: *"On mobile, you can slide the WHOLE window left
+     to right, and I'd like it to be fixed, since there is no benefit to sliding the whole
+     window from left to right."*
+
+     ⚠⚠ HE REPEATED HIMSELF, SO THE DEFECT WAS A LAYER BEHIND THE FIX. Part 1 above is a
+     good check that covered exactly ONE page — `PAGES = ['goods.md']`, and its own comment
+     said "a page not in PAGES is not covered by this". It was right, and it was read as
+     coverage. Sweeping the other 33 found **five** pages that genuinely slid.
+     [[when-he-repeats-himself]]
+
+     ⚠⚠ AND IT HAD TO USE THE REAL STYLESHEET. Part 1's SKELETON deliberately carries no
+     CSS, which is the right probe for markup-shaped overflow and **structurally blind to
+     every one of the five**: a `scale(2.4)` keyframe, a 60px wordmark, a `flex-shrink: 0`
+     in a row, an unbreakable ████ run and an inline URL. All five are stylesheet bugs, so a
+     stylesheet-free probe cannot see them however many pages it is pointed at.
+
+     ⚠⚠ THE GUARD IS STRIPPED ON PURPOSE. `html { overflow-x: clip }` is the 08-19 guard and
+     its own comment says it HIDES the bug rather than reporting it — and Safari only learned
+     `clip` in 16, so it was never the whole answer on his phone anyway. The probe forces
+     `overflow-x: visible` so overflow SPEAKS. Fix it where it starts; keep the guard for the
+     one that gets past this. */
+  {
+    const ALL = fs.readdirSync(ROOT).filter((f) => f.endsWith('.md') &&
+      !/^(README|CONTENT-CLEANUP)/.test(f));
+    const slid = [];
+    for (const f of ALL) {
+      const tmp = path.join(os.tmpdir(), 'pjcc_sweep_' + Date.now() + '_' + f + '.html');
+      fs.writeFileSync(tmp,
+        '<!doctype html><html><head><meta charset="utf-8">' +
+        '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+        '<style>' + siteCss + '</style>' +
+        '<style>html{overflow-x:visible !important}</style></head><body class="theme-hall">' +
+        '<main class="page-content"><div class="wrapper"><div class="page-card">' +
+        liquid(read(f)) + '</div></div></main></body></html>');
+      for (const w of [320, 390]) {
+        await page.setViewport({ width: w, height: 800, deviceScaleFactor: 1 });
+        await page.goto('file:///' + tmp.split(path.sep).join('/'), { waitUntil: 'load' });
+        await new Promise((r) => setTimeout(r, 120));
+        const m = await page.evaluate(() => {
+          const de = document.documentElement, vw = de.clientWidth;
+          const over = Math.max(de.scrollWidth, document.body.scrollWidth) - vw;
+          if (over <= 0) return { over: 0 };
+          /* ⚠ NAME THE ELEMENT, or the next person re-runs this whole investigation. And
+             fall back to a note about transforms/pseudo-elements — the classified stamp
+             overflowed through a `scale()` keyframe and the first probe found no element
+             at all, which is a real answer and has to read like one. */
+          let worst = null;
+          document.querySelectorAll('*').forEach((el) => {
+            const r = el.getBoundingClientRect();
+            if (!r.width || r.right <= vw + 0.5) return;
+            if (getComputedStyle(el).position === 'fixed') return;
+            for (let n = el.parentElement; n; n = n.parentElement) {
+              const o = getComputedStyle(n).overflowX;
+              if (o === 'hidden' || o === 'clip' || o === 'auto' || o === 'scroll') return;
+            }
+            if (!worst || r.right > worst.right) worst = { right: r.right,
+              sel: el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') +
+                (typeof el.className === 'string' && el.className
+                  ? '.' + el.className.trim().split(/\s+/).slice(0, 2).join('.') : '') };
+          });
+          return { over: Math.round(over),
+                   worst: worst ? worst.sel : '(a transform or a ::before — check both)' };
+        });
+        if (m.over > 0) { slid.push(f + ' @' + w + 'px +' + m.over + ' [' + m.worst + ']'); break; }
+      }
+      fs.unlinkSync(tmp);
+    }
+    check('⚠⚠ NOT ONE page pans sideways at 320 or 390px', slid.length === 0,
+      slid.length ? slid.join(' · ') : ALL.length + ' pages swept with the real stylesheet');
+  }
+
   /* ══ PART 2 — nothing iOS would zoom for ═════════════════════════════════════════
      ⚠⚠ THE <style> GOES IN THE BODY, WHERE JEKYLL PUTS IT. A page's own block beats the
      stylesheet on a tie, and that tie is the whole reason the coarse-pointer rule is
