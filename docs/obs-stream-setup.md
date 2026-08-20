@@ -111,6 +111,66 @@ It'll appear as a small floating box with your wordmark and **"The first 1,000. 
 > the green bar moves when you talk, your mic is already working and **you can skip this
 > source entirely.** Only add it if Mic/Aux is silent or is picking the wrong device.
 
+---
+
+## PART 3b — Streaming the Switch (Cult of the Lamb)
+
+⚠⚠ **THIS NEEDS HARDWARE YOU DO NOT HAVE YET. There is no OBS setting that fixes it.**
+
+Your Switch is plugged into your second monitor by HDMI. That monitor is *displaying* it, but
+your PC has no idea the Switch exists — a monitor is an output, not an input. OBS can only
+capture things the PC itself is drawing. There is no source type, driver or setting that
+reaches an HDMI cable going into a different device.
+
+**What actually connects them is a capture card:**
+
+```
+  Switch dock  --HDMI-->  capture card  --USB-->  PC  -->  OBS
+                               |
+                               \--HDMI passthrough--> your monitor  (this part matters)
+```
+
+### ⭐ Buy one WITH HDMI passthrough. This is the part people get wrong.
+
+Without passthrough, the Switch’s only picture goes to the PC, so you play by watching **OBS’s
+preview** — which lags 100–300ms behind your thumbs. For a menu-driven game that is survivable.
+**For Cult of the Lamb it is not** — the combat is dodge-timing, and a third of a second of
+delay makes it feel broken. Passthrough sends a zero-lag copy straight to your monitor; you
+play on that and the PC quietly gets its own feed.
+
+| Option | Roughly | Notes |
+|---|---|---|
+| Generic USB 3.0 stick (MS2130-type) | **$20–35** | Fine picture. ⚠ Most have **no passthrough** — check before buying. |
+| **AVerMedia StreamLine MINI+ (GC311G2)** | **~$50** | 1080p60 capture, 4K60 passthrough, plug-and-play in OBS. **The sweet spot.** |
+| Elgato HD60 S, refurbished | ~$75–90 | Elgato’s own refurb program, full warranty. |
+| Elgato HD60 X | ~$145 | The reliable default if money is not the question. |
+
+⚠ Prices are off review round-ups, not retailer pages — check before ordering. Get **USB 3.0**
+(blue connector); USB 2.0 sticks drop to 1080p30.
+
+⭐ **HDCP is not a problem.** The Switch leaves copy protection OFF for games (it only switches
+on for Netflix-type apps), so gameplay captures normally. Switch 2 behaves the same way and
+the major cards advertise support for it.
+
+### Once the card arrives
+
+Plug it in, then in the **Sources** panel (bottom-LEFT):
+
+> `+` → **Video Capture Device** → OK → in **Device**, pick the capture card → **OK**
+
+The game appears in the preview. Resize it to fill the canvas. Game audio comes in over the
+same USB cable, so you do not need a second audio source for it — only your mic.
+
+### The zero-hardware alternative, if you want to stream this week
+
+**Cult of the Lamb is also on PC (Steam).** If you own it there — or would rather spend ~$25
+on the game than $50 on a card — you need no hardware at all:
+
+> `+` → **Game Capture** → Mode: **Capture specific window** → pick Cult of the Lamb
+
+That works tonight. It is a real choice, not a consolation: buying the game again is cheaper
+than the card, and you would still want the card eventually for anything Switch-only.
+
 ### Then
 
 Look at the preview window. If you can see your site with the counter on top of it, you're
