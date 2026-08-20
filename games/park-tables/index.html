@@ -112,7 +112,7 @@ body_class: theme-hall
        connection. The board comes up; the human tables are the only thing missing. */
     if (!inRoom && wantedBot()) return botSitDown(wantedBot());
     app.innerHTML = '<p class="lb-empty">The tables are offline right now — but the regulars are still here.</p>' +
-      botsPanel() + austonPanel() + '<p class="lb-empty">More games in the <a href="/games/">Arcade</a>.</p>';
+      benchPanel() + '<p class="lb-empty">More games in the <a href="/games/">Arcade</a>.</p>';
     wireBots();
   }
   if (!app) return;
@@ -236,6 +236,7 @@ body_class: theme-hall
   }
   window.addEventListener('popstate', function(){
     if (!inRoom) return;
+    clockLeave();                       // bank the stopwatch before the board is dropped
     inRoom = null; roomPushed = false;
     document.body.classList.remove('pt-room');
     document.title = PAGE_TITLE;
@@ -448,7 +449,7 @@ body_class: theme-hall
        print "Nine park regulars" over a bench of eight. That exact miscount has already
        shipped on this site once (six words over eight cards on the front door); splitting a
        panel is precisely how it happens. Whatever is counted must be what is drawn. */
-    var bots = botsPanel() + austonPanel();
+    var bots = benchPanel();
     // ⚠ DERIVE the count, never type it. There were three regulars when this line was
     //    written and four by the time it shipped (Robert joined as the Expert seat), and
     //    a sentence that says "three" over four buttons is the site telling a small lie.
@@ -1000,9 +1001,32 @@ body_class: theme-hall
     if (!b.adaptive) return b.elo;
     return (botAdapt && botAdapt.level()) || b.elo;
   }
-  function botDial(b){
+  /* ⛑ THE REGULAR BUDGETS ITS OWN CLOCK (2026-08-20) ─────────────────────────────────
+     `movetime` is hand-set pacing, and under NO clock that is still exactly what it is —
+     `botDial(b)` with no board returns the same object it always did, to the byte.
+
+     ⚠⚠ BUT A FIXED PACE UNDER A CLOCK IS THE BOT IGNORING ITS OWN CLOCK. The CEO thinks
+     1300ms a move; at Bullet 1+0 that is a flag somewhere around move 46, so "I beat the
+     CEO" would most often mean "the CEO ran out of time", which is not a thing anybody
+     played for — and it would hand out the full star that unlocks the seat above him.
+     Real engines spend a slice of what is left, so this one does too.
+
+     ⭐ IT CHANGES NOTHING UNTIL THE CLOCK IS ACTUALLY LOW. The budget is a thirtieth of the
+     bank, so at Blitz (300s) and Rapid (600s) it starts at 10s and 20s — far above every
+     seat's pace — and even Bullet opens at 2s. The regulars play exactly as they always
+     have right up until they are genuinely short, and then they speed up, the way you do.
+     ⚠ FLOORED AT 150ms rather than allowed to reach zero: a search given no time is not a
+     faster opponent, it is a random one. If the floor still cannot save it, the flag falls
+     and the win is real. */
+  function botDial(b, st){
     var E = window.PJCCGauntletEngine, elo = botElo(b);
-    return { skill: E.skillForElo(elo), blunder: E.blunderForElo(elo), movetime: b.movetime };
+    var mt = b.movetime;
+    var tc = tcOf(st);
+    if (tc && st) {
+      var mine = sidePlayed(st) === 'w' ? 'b' : 'w';       // the regular has the other chair
+      mt = Math.max(150, Math.min(mt, Math.floor(clockLeft(st, mine) / 30)));
+    }
+    return { skill: E.skillForElo(elo), blunder: E.blunderForElo(elo), movetime: mt };
   }
 
   /* ── SHE REMEMBERS HOW STRONG YOU WERE ───────────────────────────────────────────
@@ -1096,6 +1120,169 @@ body_class: theme-hall
   }
   function saveSidePref(v){ try { localStorage.setItem(SIDE_KEY, v); } catch (e) {} }
   function resolveSide(v){ return v === 'b' ? 'b' : v === 'w' ? 'w' : (Math.random() < 0.5 ? 'w' : 'b'); }
+
+  /* ══ THE CLOCK — A REAL ONE, ON THE BOTS ONLY (2026-08-20) ═════════════════════════
+     Nate: *"We should also add time control options. We can use the general terms like
+     bullet and blitz, etc, right?"* Yes — they are ordinary chess vocabulary. The catch is
+     that they have to be TRUE, and the two halves of this page are not in the same place:
+
+     ⚠⚠ THIS IS THE BOT BOARDS AND NOTHING ELSE, AND THAT IS NOT A SCOPE CUT — IT IS THE
+     ONLY HALF THAT CAN. A bot game is entirely local: no server, no opponent to agree with,
+     no clock to keep in sync, so a total game clock is just arithmetic in this file. The
+     LIVE tables cannot do it today and it is not a preset away — `control_secs` is seconds
+     allowed for ONE move, the server refuses anything but 3600/86400/259200
+     (docs/park-tables-setup.md), a flag only falls when your opponent CLAIMS it, and the
+     board polls every ~4s. A five-minute game over a four-second poll is not a game. That
+     build (SQL time banks + auto-flag + Realtime instead of polling) is written out in
+     private/FUTURE-IDEAS.md under "REAL BLITZ" and is unchanged by any of this. It is also
+     why the human bench is called "The Quick Bench" and not "Blitz".
+
+     ⭐ THE NAMES CARRY THE REAL NUMBERS, because a "Blitz" that is not blitz is the same
+     lie. One canonical setting per tier rather than a menu — this is a park bench, not a
+     tournament entry form.
+
+     ⚠ "No clock" IS THE DEFAULT AND MUST STAY BYTE-IDENTICAL to how this room has always
+     played. Every regular has been clockless since the bench opened; a clock that arrived
+     switched on would change a game people already know without being asked for. */
+  var TCS = [
+    { v:'',    name:'No clock', sub:'',      ms:0,      inc:0    },
+    { v:'b1',  name:'Bullet',   sub:'1+0',   ms:60000,  inc:0    },
+    { v:'b5',  name:'Blitz',    sub:'5+0',   ms:300000, inc:0    },
+    { v:'r10', name:'Rapid',    sub:'10+5',  ms:600000, inc:5000 }
+  ];
+  function tcById(v){
+    for (var i = 0; i < TCS.length; i++) if (TCS[i].v === (v || '')) return TCS[i];
+    return TCS[0];
+  }
+  /* The name a control goes by out loud — "Blitz 5+0". Derived from the row, never typed
+     twice, so the bench strip and the chip over the board cannot disagree. */
+  function tcLabel(tc){ return tc && tc.ms ? tc.name + ' ' + tc.sub : 'No clock'; }
+  var TC_KEY = 'pjcc.pt.tc.v1';
+  function tcPref(){
+    try { return tcById(localStorage.getItem(TC_KEY)).v; } catch (e) { return ''; }
+  }
+  function saveTcPref(v){ try { localStorage.setItem(TC_KEY, tcById(v).v); } catch (e) {} }
+
+  /* ── WHERE THE TIME ACTUALLY LIVES ────────────────────────────────────────────────
+     On the SAVED board (`st.tc`, `st.mw`, `st.mb`), by COLOR rather than by who is who —
+     `pc` already says which of the two is yours, and a bank labelled "mine" would have to
+     be re-labelled the moment you take the other side in a rematch.
+
+     ⚠⚠ THE BANK IS THE TRUTH; THE STOPWATCH IS NOT PERSISTED. `clockRunAt` is a closure
+     variable, so time only runs while this board is open and in front of you. That is a
+     deliberate choice, not an oversight: a local game against a park regular that quietly
+     flagged you overnight because you closed a tab would be the site taking a game away
+     from somebody who was not playing it. The cost is that a hard tab-kill mid-think hands
+     back the seconds of that one think — against a bot, with no rating attached, that is a
+     trade worth making and it is stated here rather than discovered later.
+     ⚠ Leaving the room the NORMAL way does bank it (clockSync is called on the way out), so
+     the refill is not something you can lean on by walking to the lobby and back. */
+  var clockTimer = null, clockRunAt = 0;
+  function tcOf(st){ return (st && st.tc) ? tcById(st.tc) : null; }
+  /* Whose clock is running: the side to move. Derived from the PLY COUNT rather than by
+     replaying the game, because this is asked five times a second and a replay is not. */
+  function clockSide(st){ return plyCount(st && st.moves) % 2 === 0 ? 'w' : 'b'; }
+  function clockKey(color){ return color === 'w' ? 'mw' : 'mb'; }
+  function clockBankOf(st, color){
+    var tc = tcOf(st); if (!tc) return 0;
+    var v = st[clockKey(color)];
+    return (typeof v === 'number') ? v : tc.ms;
+  }
+  /* What the clock READS right now — the bank, minus whatever has run since it started. */
+  function clockLeft(st, color){
+    var ms = clockBankOf(st, color);
+    if (clockRunAt && clockSide(st) === color) ms -= (Date.now() - clockRunAt);
+    return Math.max(0, ms);
+  }
+  /* Stop the stopwatch and write what it read into the thinking side's bank.
+     ⚠ `moved` IS WHAT PAYS THE INCREMENT. An increment is payment for making a move, not
+     for a pause — crediting it when the tab is hidden would hand out free time for looking
+     away. And a bank that reached zero gets nothing: you do not earn 5s for flagging. */
+  function clockBank(st, moved){
+    var tc = tcOf(st);
+    if (!tc || !clockRunAt) { clockRunAt = 0; return; }
+    var color = clockSide(st), left = clockLeft(st, color);
+    st[clockKey(color)] = left + ((moved && left > 0) ? tc.inc : 0);
+    clockRunAt = 0;
+  }
+  /* ── RUN, OR DON'T ────────────────────────────────────────────────────────────────
+     One place decides. Called from botRender (so every state change re-asks), from the
+     tick, and from the tab's own visibility events.
+
+     ⚠⚠ THE ANALYSIS BOARD PAUSES IT, and that is a deliberate refusal to charge twice.
+     Opening the sandbox already costs you a full star ([[pt-stars-and-analysis]]); making
+     it also cost your clock would mean the two prices compound into "never open this in
+     bullet", which is the feature quietly turning itself off.
+     ⚠ AND IT DOES NOT RUN BEFORE THE FIRST MOVE. Sitting down and reading the bench for a
+     minute is not a game in progress. */
+  function clockSync(){
+    var st = botCur, tc = tcOf(st);
+    var run = !!tc && !!st && !st.done && !botLab && plyCount(st.moves) > 0 &&
+              (typeof document.visibilityState !== 'string' || document.visibilityState !== 'hidden');
+    if (run && !clockRunAt) clockRunAt = Date.now();
+    if (!run && clockRunAt) clockBank(st, false);
+    if (run && !clockTimer) clockTimer = setInterval(clockTick, 200);
+    if (!run && clockTimer) { clearInterval(clockTimer); clockTimer = null; }
+    if (st && tc) paintClocks(st);
+  }
+  function clockTick(){
+    var st = botCur;
+    if (!st || !tcOf(st)) return clockSync();
+    var color = clockSide(st);
+    if (clockLeft(st, color) <= 0) return clockFlag(st, color);
+    paintClocks(st);
+  }
+  /* ⚠⚠ THE FLAG IS A RESULT LIKE ANY OTHER, WHICH IS WHY IT GOES THROUGH botFinishAs AND
+     NOT ROUND IT. Everything a finished game owes — Auston's log, the beaten list, the
+     star, the adaptive seed — is in that one tail, and a second ending that wrote `done`
+     itself would silently skip all of it. Nate: *"flagging is a loss."* */
+  function clockFlag(st, color){
+    clockBank(st, false);
+    st[clockKey(color)] = 0;
+    botFinishAs(st, color === 'w' ? '0-1' : '1-0', 'timeout');
+    clockSync();
+    botRender();
+  }
+  /* m:ss, and TENTHS under twenty seconds — the point at which a clock stops being
+     information and starts being the thing you are watching. */
+  function fmtClock(ms){
+    var s = Math.max(0, ms) / 1000;
+    if (s < 20) return (Math.floor(s * 10) / 10).toFixed(1);
+    var m = Math.floor(s / 60);
+    return m + ':' + ('0' + Math.floor(s - m * 60)).slice(-2);
+  }
+  /* ⚠ PAINTED IN PLACE, NEVER BY RE-RENDERING. botRender() rebuilds the board, the
+     scoresheet and the nameplates; doing that five times a second would fight every tap,
+     and it would re-run Auston's away roll and her lamp with it. Two text nodes. */
+  function paintClocks(st){
+    var tc = tcOf(st); if (!tc) return;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-clock]'), function (el) {
+      var color = el.getAttribute('data-clock'), left = clockLeft(st, color);
+      el.textContent = fmtClock(left);
+      el.classList.toggle('low', left <= 20000);
+      el.classList.toggle('run', !!clockRunAt && clockSide(st) === color && !st.done);
+    });
+  }
+  /* The pill on a nameplate. '' when there is no clock, so the plate is untouched in the
+     mode this room has always had. */
+  function clockNode(st, color){
+    var tc = tcOf(st); if (!tc) return '';
+    return '<i class="pt-clock" data-clock="' + color + '">' + fmtClock(clockLeft(st, color)) + '</i>';
+  }
+  /* ⚠ A HIDDEN TAB IS A PAUSED CLOCK. Without this, backgrounding the page in bullet loses
+     the game while nobody is looking at it — and browsers throttle timers in a hidden tab,
+     so the tick would not even be there to notice. */
+  document.addEventListener('visibilitychange', function () { if (botCur) clockSync(); });
+  /* ⚠⚠ GETTING UP FROM THE TABLE BANKS THE STOPWATCH AND WRITES IT DOWN. Without this,
+     "← The park" and straight back in would return every second of the think you were in
+     the middle of — a refill you could lean on once a move. The tab-kill leniency noted
+     over clockRunAt is a browser event nobody chooses; this is a button. */
+  function clockLeave(){
+    var st = botCur;
+    if (st && tcOf(st) && clockRunAt) { clockBank(st, false); botSave(st); }
+    clockRunAt = 0;
+    if (clockTimer) { clearInterval(clockTimer); clockTimer = null; }
+  }
 
   /* ══ THE HOUSE RULE ═══════════════════════════════════════════════════════════════════
      2026-08-10, Nate, in his words: *"I do want to make one thing crystal clear — cheaters
@@ -1290,6 +1477,27 @@ body_class: theme-hall
     Array.prototype.forEach.call(app.querySelectorAll('[data-bot]'), function (b) {
       b.onclick = function(){ botSitDown(b.getAttribute('data-bot')); };
     });
+    /* ⚠⚠ THE STRIP REPAINTS ITSELF, IT DOES NOT REDRAW THE BENCH. Re-rendering the lobby to
+       move one ring would rebuild nine cards — and with them Auston's away roll and her
+       lamp, both of which run in botCard() — so tapping "Black" could empty her chair.
+       Toggling the two attributes in place is the whole update. */
+    wireCtrlRow('data-side', saveSidePref);
+    wireCtrlRow('data-tc', saveTcPref);
+  }
+  /* One row of toggles: remember the pick, move the ring, and nothing else. Shared by both
+     rows so the second one cannot grow a different idea of what "selected" looks like. */
+  function wireCtrlRow(attr, save){
+    var btns = Array.prototype.slice.call(app.querySelectorAll('[' + attr + ']'));
+    btns.forEach(function (btn) {
+      btn.onclick = function () {
+        save(btn.getAttribute(attr));
+        btns.forEach(function (o) {
+          var on = o === btn;
+          o.classList.toggle('on', on);
+          o.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+      };
+    });
   }
 
   /* ══ PULLING UP THE CHAIR ══════════════════════════════════════════════════════════
@@ -1299,13 +1507,31 @@ body_class: theme-hall
      bench opened, which is also why the grandfather clause in starFor() only has to grant
      white stars.
 
-     ⚠⚠ THE DOOR IS HERE NOW, NOT IN botStart. Three things reach a bot table — a bench
-     card, `?table=argus` in the address bar, and "Play again" on a finished board — and
-     only the first two are somebody sitting down. A rematch already knows which chair you
-     are in, so it goes straight past this and keeps its single tap.
+     ⛑⛑ AND THE QUESTION STOPPED BEING A SCREEN — 2026-08-20, Nate: *"instead of a new
+     window to decide white/black/random ... we could do what chess.com does and put it as
+     a sole option on the bottom."* It IS the chess.com model now: the choice is a strip
+     under the bench (benchStrip), it is remembered, and a seat is one tap again.
 
-     ⚠ A HALF-PLAYED BOARD SKIPS THE QUESTION ENTIRELY. You are already sitting on a side;
-     asking which one you would like is asking about a decision the save has already made.
+     ⚠⚠ THE SHEET WAS MEASURED BEFORE IT WAS REPLACED, because his first idea was to put the
+     three colors INSIDE each seat card as vertical stripes, and that is the version that
+     could not ship. A seat card is 133px wide on a desktop and 141px on his phone; a third
+     of that, cut into three, is a 16px target against the 44px floor this site holds to
+     ([[tap-targets-and-audit-numbers]]). Rendering it showed a second cost reasoning had
+     missed: at that width the stripes print straight over the NAMES, and they cover the
+     right third of the card — which is exactly where the seat's aura tint lives, the thing
+     that makes the card and the VS rail one identity. [[pick-visual-values-from-a-render]]
+
+     ⚠ NOTHING WAS LOST WITH THE SHEET. Its one real argument was the star pair printed
+     beside White and Black — "which half of this seat do I still owe". The bench cards
+     already carry that pair, on every seat at once, so the answer got wider rather than
+     narrower.
+
+     ⚠⚠ THE DOOR IS HERE, NOT IN botStart. Three things reach a bot table — a bench card,
+     `?table=argus` in the address bar, and "Play again" on a finished board — and only the
+     first two are somebody sitting down. A rematch already knows which chair you are in.
+
+     ⚠ A HALF-PLAYED BOARD IGNORES THE STRIP ENTIRELY. You are already sitting on a side,
+     and a preference set afterward must not flip a board you are in the middle of.
 
      ⚠ HER DAY OFF IS CHECKED HERE, which is the same door the old guard defended — the
      shared `?table=auston` link has to hit the rule the disabled bench card does, or the
@@ -1321,50 +1547,65 @@ body_class: theme-hall
       }
     } catch (e) {}
     if (mine) return botStart(id, sidePlayed(saved));
-    sideSheet(id);
+    /* ⭐ THE PREFERENCE IS READ AT THE MOMENT OF SITTING, NOT CACHED. 'r' is still a
+       question here — botStart() is the one place that resolves it, and it resolves it
+       once, so Random means a fresh coin per game rather than one coin remembered. */
+    botStart(id, sidePref());
   }
 
-  /* The question itself. It enters the room before it draws, because `route()` stands down
-     on `inRoom` and this screen would otherwise be repainted out from under the player by
-     the late `PJCC.ready.then(safeRoute)` — the exact race that ate his resumed games on
-     2026-08-14. Sitting down IS arriving at the table; the side is chosen in the chair. */
+  /* ══ THE BENCH STRIP — one choice, above every seat ════════════════════════════════
+     2026-08-20. The three colors, set once and remembered, in the place chess.com puts
+     them: under the bench, governing everything above it. The argument for this shape
+     rather than the sheet it replaced is written over botSitDown().
+
+     ⚠⚠ IT SITS AFTER *BOTH* PANELS, and that is a correctness detail rather than a taste
+     one. The ladder and Auston's table are two blocks ([[park-tables-buildout]]), and a
+     control dropped between them reads as belonging only to the one above it — you would
+     be telling somebody that the color they picked does not apply to her seat, which is
+     false. Below both, it governs both.
+
+     ⚠ ONE RENDERER, THREE CALLERS. benchPanel() exists so the offline fallback, the
+     signed-out lobby and the signed-in lobby cannot drift apart — the bench has been drawn
+     from three places since the bot gate, and this is the first thing that had to be added
+     to all three at once. [[one-fix-every-instance]] */
   var SIDES = [
-    { v:'w', glyph:'⬜', name:'White',  line:'You open. First move, first idea.' },
-    { v:'b', glyph:'⬛', name:'Black',  line:'They open. You answer — the harder half.' },
-    { v:'r', glyph:'🎲', name:'Random', line:'Let the board decide, the way a park game does.' }
+    { v:'w', glyph:'⬜', name:'White'  },
+    { v:'b', glyph:'⬛', name:'Black'  },
+    { v:'r', glyph:'🎲', name:'Random' }
   ];
-  function sideSheet(id){
-    stopPolling(); cur = null; botCur = null;
-    var b = BOTS[id];
-    enterRoom('bot', id, b.name);
+  function benchStrip(){
     var pref = sidePref();
-    /* ⭐ THE STARS ARE THE ARGUMENT FOR TAKING BLACK. Printed beside the two side buttons
-       once the collection is on, so "pick a color" stops being an arbitrary form field and
-       becomes the one screen that tells you which half of this seat you still owe. */
-    var showStars = anyStar();
-    var rows = SIDES.map(function (s) {
-      var got = (s.v === 'w' || s.v === 'b') && showStars ? starNode(s.v, starFor(id, s.v), b.name) : '';
-      return '<button class="pt-seat pt-side' + (pref === s.v ? ' on' : '') + '" data-side="' + s.v + '">' +
-        '<span class="pt-seat-ico">' + s.glyph + '</span>' +
-        '<span class="pt-seat-t"><b>' + s.name + got + '</b>' +
-        '<small>' + s.line + '</small></span></button>';
+    /* ⚠ `aria-pressed` RATHER THAN A LIVE REGION. This is a set of toggles whose state is
+       the answer, and a screen reader reading "White, pressed" is the whole story. */
+    var sides = SIDES.map(function (s) {
+      var on = pref === s.v;
+      return '<button class="pt-ctrl-b' + (on ? ' on' : '') + '" data-side="' + s.v + '"' +
+        ' aria-pressed="' + (on ? 'true' : 'false') + '">' +
+        '<span class="pt-ctrl-ico" aria-hidden="true">' + s.glyph + '</span>' + s.name + '</button>';
     }).join('');
-    app.innerHTML = '<div class="pt-sheet">' +
-      '<h2 class="pt-gate-h">' + b.icon + ' ' + esc(b.name) + '</h2>' +
-      '<p class="pt-sheet-l">Which side?</p>' +
-      '<div class="pt-seats">' + rows + '</div>' +
-      '<div class="pt-gate-row"><button class="pjcc-btn-ghost" id="pt-side-back">← The park</button></div></div>';
-    Array.prototype.forEach.call(app.querySelectorAll('[data-side]'), function (btn) {
-      btn.onclick = function () {
-        var v = btn.getAttribute('data-side');
-        saveSidePref(v);
-        botStart(id, v);
-      };
-    });
-    document.getElementById('pt-side-back').onclick = function () {
-      if (leaveRoom()) return;
-      botCur = null; botSeq++; safeRoute();
-    };
+    /* ⚠ THE CONTROL'S NAME AND ITS NUMBERS ARE BOTH ON THE BUTTON. "Blitz" alone is a word
+       people read differently; "Blitz 5+0" is a promise. The sub-line is dropped from the
+       aria-label's second half only because it is already in the visible text. */
+    var pt = tcPref();
+    var clocks = TCS.map(function (t) {
+      var on = pt === t.v;
+      return '<button class="pt-ctrl-b' + (on ? ' on' : '') + '" data-tc="' + t.v + '"' +
+        ' aria-pressed="' + (on ? 'true' : 'false') + '">' + t.name +
+        (t.sub ? '<small class="pt-ctrl-sub">' + t.sub + '</small>' : '') + '</button>';
+    }).join('');
+    return '<div class="pt-bench-set">' +
+      '<div class="pt-ctrl"><i class="pt-ctrl-l" id="pt-ctrl-side-l">I play</i>' +
+      '<div class="pt-ctrl-g" role="group" aria-labelledby="pt-ctrl-side-l">' + sides + '</div></div>' +
+      '<div class="pt-ctrl"><i class="pt-ctrl-l" id="pt-ctrl-tc-l">Clock</i>' +
+      '<div class="pt-ctrl-g" role="group" aria-labelledby="pt-ctrl-tc-l">' + clocks + '</div></div>' +
+      '</div>';
+  }
+  /* The bench, whole: the rungs, the seat that is not a rung, and the strip that governs
+     both. Returns '' when the engine never loaded, so every caller can concatenate it
+     without a guard — same contract botsPanel() and austonPanel() already had. */
+  function benchPanel(){
+    var b = botsPanel() + austonPanel();
+    return b ? b + benchStrip() : '';
   }
 
   /* ── WHAT SHE SAID WHEN YOU SAT DOWN ─────────────────────────────────────────────
@@ -1446,7 +1687,15 @@ body_class: theme-hall
          answer — storing it would re-roll the board's orientation on every render and
          every reload, which is the same class of bug as a seeded sky that forgets its
          seed. What the save carries is 'w' or 'b' and nothing else. */
-      saved = { bot: id, moves: '', done: 0, pc: resolveSide(side) };
+      /* ⚠ THE CLOCK IS STAMPED ONTO THE BOARD AT SIT-DOWN, not read from the preference
+         later. A game is played under the control it started under — otherwise changing
+         the strip mid-game would reach back into a board already in progress and hand
+         somebody a different amount of time than they have been playing with. Same
+         reasoning as `pc` two lines up: the question is asked once, the answer is saved. */
+      var tc0 = tcById(tcPref());
+      saved = { bot: id, moves: '', done: 0, pc: resolveSide(side),
+                tc: tc0.v, mw: tc0.ms, mb: tc0.ms };
+      clockRunAt = 0;
       botSave(saved);
       try { PJCCGauntletEngine.newGame(); } catch (e) {}
     }
@@ -1491,10 +1740,23 @@ body_class: theme-hall
     } catch (e) {}
   }
 
+  /* ⚑ SPLIT IN TWO, 2026-08-20, and the split is what lets the clock exist. `botFinish`
+     reads a result off the BOARD; a flag has no board result to read — the position is
+     perfectly playable, the player simply ran out. So the derivation stays here and
+     everything a finished game OWES moved into botFinishAs, where every ending reaches it.
+     ⚠⚠ THERE ARE THREE ENDINGS AND ALL THREE COME THROUGH HERE — the board's own result,
+     the flag, and resignation. That last one used to hand-roll it and dropped
+     saveAdaptSeed() without ever throwing — which is the whole argument for the split: an
+     ending that sets `st.done` itself silently skips Auston's log, the beaten list, the
+     star and the seed. A FOURTH (a draw offer) goes through here too. */
   function botFinish(st, g){
+    botFinishAs(st, g.result === 'checkmate' ? (g.S.turn === 'w' ? '0-1' : '1-0') : '1/2-1/2',
+                g.result);
+  }
+  function botFinishAs(st, result, reason){
     st.done = 1;
-    st.result = g.result === 'checkmate' ? (g.S.turn === 'w' ? '0-1' : '1-0') : '1/2-1/2';
-    st.reason = g.result;
+    st.result = result;
+    st.reason = reason;
     /* Where she settled is where she starts next time. `settled()` rather than `level()`
        — the last few moves of a decided game describe the mop-up, not the contest, and
        seeding tomorrow from a mop-up would drift her a little further off you every game. */
@@ -1816,7 +2078,11 @@ body_class: theme-hall
     var prof = PJCC.getProfile();
     app.innerHTML =
       '<div class="pt-table-head"><button class="pjcc-btn-ghost" id="pt-back">← The park</button>' +
-      '<i class="pt-row-chips">Casual · ' + esc(bot.diff) + ' bot · no clock · you are ' +
+      /* ⛑ THE CHIP NAMES THE REAL CONTROL (2026-08-20). It read a hard-coded 'no clock'
+         for as long as that was the only truth this room had; tcLabel() is now the one
+         place the words 'Blitz 5+0' are built, shared with the bench strip. */
+      '<i class="pt-row-chips">Casual · ' + esc(bot.diff) + ' bot · ' +
+        esc(tcLabel(tcOf(st) || tcById(''))) + ' · you are ' +
         (white ? 'White' : 'Black') + '</i></div>' +
       /* THE ROOM CHANGES COLOR, which is the whole of how you know where you are (his
          brief: *"like chess.com where the background changes slightly so you know you are
@@ -1841,7 +2107,8 @@ body_class: theme-hall
            merely being on. The `pt-plate-rate--live` class is what animates the change. */
         '<div class="pt-plate">' + bot.icon + ' <b>' + esc(bot.name) + '</b>' +
           ' <i class="pt-plate-rate' + (bot.adaptive ? ' pt-plate-rate--live' : '') + '">(' +
-            botElo(bot) + ' · ' + esc(bot.diff) + ')</i>' + matChip(S, !white) + '</div>' +
+            botElo(bot) + ' · ' + esc(bot.diff) + ')</i>' + matChip(S, !white) +
+          clockNode(st, white ? 'b' : 'w') + '</div>' +
         /* The arrow marks the move you did NOT make — you know what you just did. In the
            sandbox it marks whatever was played last, either color, because in there
            nothing is "yours" and the last move is the one you are looking at. */
@@ -1849,7 +2116,8 @@ body_class: theme-hall
           (last && (lab || last.mover !== sidePlayed(st)) ? arrowSVG(last, white) : '') + '</div>' +
         '<div class="pt-plate pt-plate--me">' + (white ? '⬜' : '⬛') +
           ' <b>' + esc((prof && prof.codename) || 'You') + '</b>' +
-          (myRate ? ' <i class="pt-plate-rate">(' + myRate.rating + ')</i>' : '') + matChip(S, white) + '</div>' +
+          (myRate ? ' <i class="pt-plate-rate">(' + myRate.rating + ')</i>' : '') + matChip(S, white) +
+          clockNode(st, white ? 'w' : 'b') + '</div>' +
         auraBar(auraHex(prof), -1) +
       '</div>' +
       '<div class="pt-moves">' + (mvs || '<span class="pjcc-sub">No moves yet.</span>') + '</div></div>' +
@@ -1860,6 +2128,11 @@ body_class: theme-hall
        render but the element's own class survives it, so one toggle here re-skins the wood,
        the frame and the surround together and no branch downstream has to remember to. */
     app.classList.toggle('pt-in-lab', !!lab);
+    /* ⚠ AFTER innerHTML, NEVER BEFORE. clockSync() paints the two pills, and they do not
+       exist until the markup above has landed. It is called from HERE rather than from each
+       of the places that change the game because botRender() is the one thing all of them
+       already end in — a move, a takeback, entering and leaving the sandbox, a finish. */
+    clockSync();
 
     // ⚠ safeRoute(), not lobby(). A signed-out visitor can now be sitting at a bot board
     //    (the bot gate), and lobby() reads PJCC.getProfile().codename — it would throw.
@@ -1867,12 +2140,17 @@ body_class: theme-hall
     // ⚠ leaveRoom() FIRST: when we pushed a history entry it walks back through popstate,
     //    which already resets botCur/botSeq and re-routes. Doing both would route twice.
     document.getElementById('pt-back').onclick = function(){
+      clockLeave();
       if (leaveRoom()) return;
       botCur = null; botSeq++; safeRoute();
     };
     /* A rematch keeps the chair you are in; "Other side" is the one that turns the board
-       around. Two buttons instead of a second trip through the side sheet — the rematch is
-       the most-tapped control on this page and it stays a single tap. */
+       around. Two buttons rather than sending you back to the bench to change your mind —
+       the rematch is the most-tapped control on this page and it stays a single tap.
+       ⭐ AND "OTHER SIDE" MOVES THE BENCH STRIP WITH IT (saveSidePref, below). Turning the
+       board around here is a statement about which color you want next, so the strip you
+       walk back out to should already be showing it — a preference that disagrees with the
+       game you just chose to play is a preference nobody set. */
     var ag = document.getElementById('pt-bot-again');
     if (ag) ag.onclick = function(){ try { localStorage.removeItem(BOT_KEY); } catch (e) {} botStart(st.bot, sidePlayed(st)); };
     var sw = document.getElementById('pt-bot-swap');
@@ -1940,12 +2218,14 @@ body_class: theme-hall
       if (!confirm('Resign this game?')) return;
       // ⚠ THE RESULT IS IN PGN TERMS, so resigning as Black is 1-0, not 0-1. Hard-coded
       //   '0-1' was correct for exactly as long as every bot board was played from White.
-      st.done = 1; st.result = (sidePlayed(st) === 'w' ? '0-1' : '1-0');
-      st.reason = 'resignation'; botSave(st);
-      // ⚠ RESIGNING NEVER TOUCHES botFinish, so it needs its own log call or the one
-      //   result Auston has the most to say about ("last time you resigned") is the one
-      //   game she would never hear about.
-      logFinished(st, ((st.moves || '').trim() ? st.moves.trim().split(/\s+/).length : 0));
+      /* ⛑ ROUTED THROUGH botFinishAs, 2026-08-20. This used to set `done`/`result`/`reason`
+         by hand and then make its own logFinished() call — which was right about the log
+         and quietly wrong about the rest: it also skipped saveAdaptSeed(), so resigning to
+         Auston left her next game seeded from the game BEFORE it. Nothing else was missing
+         (markWin/markBeaten/awardStar all sit behind `botWon`, and you did not win), which
+         is exactly why it went unnoticed. One tail, three endings. */
+      clockLeave();
+      botFinishAs(st, sidePlayed(st) === 'w' ? '0-1' : '1-0', 'resignation');
       botSay = null; botRender();
     };
     paintPieces(app);
@@ -1991,6 +2271,10 @@ body_class: theme-hall
        regular is not sitting there answering moves in a position that is not the game.
        The one thing it does write is the flag, because that is a fact about this game. */
     if (lab) { labPush(st, uci); return botRender(); }
+    /* ⚠⚠ PUNCHED BEFORE THE MOVE IS APPENDED, and the order is the whole of why it works.
+       `clockSide()` reads the ply count, so the instant `st.moves` grows it names the OTHER
+       player — banking after the append would charge your think to your opponent. */
+    clockBank(st, true);
     st.moves = ((st.moves || '') + ' ' + uci).trim();
     botSave(st);
     var g2 = M.replayGame(st.moves);
@@ -2001,7 +2285,7 @@ body_class: theme-hall
   function botThink(st, S){
     var bot = BOTS[st.bot], tok = ++botSeq;
     botThinking = true; botRender();
-    PJCCGauntletEngine.move(S, botDial(bot))
+    PJCCGauntletEngine.move(S, botDial(bot, st))
       .then(function (mv) {
         if (tok !== botSeq || botCur !== st) return;   // left the table — drop the reply
         botThinking = false;
@@ -2019,6 +2303,8 @@ body_class: theme-hall
           } catch (e) {}
         }
         if (!mv) { botFinish(st, M.replayGame(st.moves)); return botRender(); }
+        // the regular's own think comes off the regular's own clock — same punch, same order
+        clockBank(st, true);
         var uci = C.nameFromSq(mv.from) + C.nameFromSq(mv.to) + (mv.promo || '');
         st.moves = (st.moves + ' ' + uci).trim();
         botSave(st);
@@ -2100,7 +2386,7 @@ body_class: theme-hall
           '<span class="pt-card-t">Open a table<br><i>Anyone can sit down.</i></span></button></div>';
 
         // the park regulars — three bots, always seated, instant game (Argus/Auston/Father)
-        if (botsReady()) html += '<h2 class="pt-h">Play a Bot</h2>' + botsPanel() + austonPanel();
+        if (botsReady()) html += '<h2 class="pt-h">Play a Bot</h2>' + benchPanel();
 
         // Drop any dead "vs myself" table — an old challenge with no possible opponent.
         // A self-match is EITHER both seats being you, OR a "Challenge McPuppy" table the
@@ -3226,12 +3512,14 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
 /* the empty slot: hollow, so it can never be mistaken for a fill */
 .pt-star > svg path { fill: none; stroke: rgba(18, 15, 10, 0.80); stroke-width: 1.7; }
 
-/* ⭐ THE CHIP BELONGS TO THE STAR, NOT TO THE BENCH CARD. A star shows up in THREE places
-   in this room — the pair on a bench card, one after "White"/"Black" on the side picker, and
-   one on the `.pt-earned` receipt that names what the game in progress is worth — and a
-   black star needs its ground in every one of them. Listing the three by hand is how the
-   fourth one ships invisible, so the default is "a star carries its chip" and the PAIR is
-   the exception that shares one. */
+/* ⭐ THE CHIP BELONGS TO THE STAR, NOT TO THE BENCH CARD. A star shows up in TWO places in
+   this room now — the pair on a bench card, and the lone one on the `.pt-earned` receipt
+   that names what the game in progress is worth — and a black star needs its ground in both
+   of them. Listing them by hand is how the third one ships invisible, so the default is "a
+   star carries its chip" and the PAIR is the exception that shares one.
+   ⛑ IT WAS THREE PLACES UNTIL 2026-08-20. The side picker printed a star after "White" and
+   "Black"; the picker is a strip under the bench now and carries no stars, because the bench
+   cards behind it already show the pair for every seat at once. */
 .pt-star { background: #7d786e; border-radius: 5px; padding: 2px;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.32); }
 /* the pair on a bench card, riding after the name — one chip under both */
@@ -3239,15 +3527,60 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
   vertical-align: -0.27em; background: #7d786e; border-radius: 6px; padding: 2px 5px;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.32); }
 .pt-stars .pt-star { background: none; border-radius: 0; padding: 0; box-shadow: none; }
-/* the lone ones: the side picker, and the receipt */
-.pt-side .pt-star { margin-left: 7px; font-size: 1.25em; }
 
-/* ── WHICH SIDE (2026-08-18) ────────────────────────────────────────
-   Re-uses .pt-seat, the same row the three tables use — the question is the same shape
-   ("pick one of these and sit down"), so it should not look like a different kind of screen.
-   `.on` marks what you chose last time; it is a memory, not a default that decides for you. */
-.pt-side.on { border-color: #F5C518; background: rgba(245,197,24,0.06); }
-.pt-side .pt-seat-t b { display: flex; align-items: center; }
+/* ══ THE BENCH STRIP (2026-08-20) ══════════════════════════════════════════════════════
+   The side picker, moved out of its own screen and under the bench — the chess.com shape,
+   asked for by name. Why this rather than stripes inside each card is argued over
+   botSitDown(); the short version is that a third of a 133px card cut into three is a 16px
+   target, and it prints over the seat's name and its aura.
+
+   ⚠⚠ 44px IS A FLOOR, NOT A LOOK. `min-height` on the button rather than padding, so a
+   button whose label wraps to two lines on a narrow phone GROWS past 44 instead of being
+   held at it. [[tap-targets-and-audit-numbers]]
+   ⚠ `min-width: 0` ON THE FLEX ITEMS. Without it a flex child refuses to shrink below its
+   content, three buttons plus a label overflow the 292px the bench actually gets on his
+   phone, and the page slides sideways — this room's oldest bug. [[mobile-window-slide]]
+   ⚠ THE LABEL IS ITS OWN ROW, deliberately. Inline it eats the width the buttons need at
+   390px, and it is a caption, not a control. */
+.pt-bench-set { margin: 16px auto 2px; text-align: left; }
+.pt-ctrl { display: flex; flex-direction: column; gap: 6px; margin: 0 0 8px; }
+.pt-ctrl-l { font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: #8b93a1; font-style: normal; }
+.pt-ctrl-g { display: flex; gap: 6px; }
+.pt-ctrl-b { flex: 1 1 0; min-width: 0; min-height: 44px; display: flex; align-items: center;
+  justify-content: center; gap: 6px; padding: 6px 8px; background: var(--surface-2);
+  border: 1px solid var(--edge-soft); border-radius: var(--r-sm); color: #dfe4ea;
+  font-family: inherit; font-size: 0.86rem; line-height: 1.2; cursor: pointer; }
+.pt-ctrl-b:hover { border-color: #F5C518; }
+/* `.on` is a MEMORY of what you picked last, not a default deciding for you */
+.pt-ctrl-b.on { border-color: #F5C518; color: #F5C518; background: rgba(245,197,24,0.10); }
+.pt-ctrl-ico { font-size: 1.05em; line-height: 1; }
+/* the numbers under a control's name — "Blitz" is a word people read differently, "5+0"
+   is not. Stacked rather than inline so four buttons still fit a 292px phone bench. */
+.pt-ctrl-b { flex-direction: column; gap: 1px; }
+.pt-ctrl-sub { font-family: 'Share Tech Mono', monospace; font-size: 0.66rem;
+  letter-spacing: 0.06em; color: #8b93a1; }
+.pt-ctrl-b.on .pt-ctrl-sub { color: #d8b53f; }
+@media (max-width: 400px) { .pt-ctrl-b { font-size: 0.8rem; } .pt-ctrl-ico { display: none; } }
+
+/* ══ THE CLOCK ON A NAMEPLATE (2026-08-20) ═════════════════════════════════════════════
+   ⚠ AN INLINE PILL, NOT A LAYOUT CHANGE. `.pt-plate` is a plain line of text that the
+   material chip already rides on; turning it into a flex row to push a clock right would
+   re-lay the name, the rating and the chip on every board in this room to move one number.
+   It sits after the chip and is legible where it is.
+   ⭐ TABULAR FIGURES so the digits do not shuffle sideways every tenth of a second — a
+   clock that jitters is a clock you cannot read at the moment you most need to. */
+.pt-clock { font-style: normal; font-family: 'Share Tech Mono', monospace; font-size: 0.82rem;
+  font-variant-numeric: tabular-nums; letter-spacing: 0.04em; margin-left: 8px;
+  padding: 2px 8px; border-radius: 999px; color: #b9c0cb;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--edge-soft); }
+/* whose move it is, said by the clock as well as by the board */
+.pt-clock.run { color: #f2f5f8; border-color: rgba(245,197,24,0.45); }
+/* ⚠ UNDER TWENTY SECONDS IS A STATE, NOT AN ANIMATION. It has to read at a glance on a
+   phone in daylight, and it has to survive prefers-reduced-motion — so it is color and
+   weight, which nothing can turn off. #ff8f7a on this charcoal is 6.4:1. */
+.pt-clock.low { color: #ff8f7a; border-color: rgba(255,143,122,0.5);
+  background: rgba(255,143,122,0.10); }
 
 /* ── THE ANALYSIS BOARD, MID-GAME (2026-08-18) ────────────────────────────────────────
    His brief: *"like chess.com where the background changes slightly so you know you are in

@@ -373,18 +373,32 @@ check('the rating→difficulty map is the inverse of puzzleRating()',
      live value rather than a declared one. The property under test is unchanged and is
      still the one that matters: the number is resolved INSIDE the call that uses the
      engine bridge, so it cannot be older than the object producing it. */
+  /* ⛑ RE-AIMED AGAIN 2026-08-20, when the bot boards got a real clock. `botDial` takes the
+     BOARD as a second argument now, because a regular under a time control has to spend a
+     slice of what is left rather than its hand-set pace — otherwise the CEO's 1300ms think
+     flags him around move 46 of a bullet game and "I beat the CEO" mostly means "the CEO ran
+     out of time". The property under test is untouched: resolved INSIDE the call that uses
+     the bridge, so it cannot be older than the object producing it. */
   check('the dial is read at move time, not at parse time',
-    /function botDial\(b\)\{[\s\S]{0,220}E\.skillForElo\(elo\)/.test(PT) &&
+    /function botDial\(b, st\)\{[\s\S]{0,600}E\.skillForElo\(elo\)/.test(PT) &&
     /function botElo\(b\)\{[\s\S]{0,200}return b\.elo;/.test(PT) &&
-    /PJCCGauntletEngine\.move\(S, botDial\(bot\)\)/.test(PT),
+    /PJCCGauntletEngine\.move\(S, botDial\(bot, st\)\)/.test(PT),
     'botDial() runs inside the same call that uses the engine');
   /* ⚠ AND STRENGTH STILL HAS EXACTLY ONE DOOR. An adaptive seat that reached the engine
      by any other route would be a second source of truth about difficulty — which is the
      original "Medium was secretly 1575" bug wearing a new hat. */
   check('…and every seat, adaptive or not, still goes through botDial',
     (PT.match(/PJCCGauntletEngine\.move\(/g) || []).length ===
-    (PT.match(/PJCCGauntletEngine\.move\(S, botDial\(bot\)\)/g) || []).length,
+    (PT.match(/PJCCGauntletEngine\.move\(S, botDial\(bot, st\)\)/g) || []).length,
     'no seat reaches the engine except through the one dial');
+  /* ⚠⚠ AND THE CLOCK ONLY EVER *NARROWS* THE PACE, NEVER WIDENS IT. `Math.min(mt, …)` is
+     what keeps "no clock" byte-identical to the room people already know, and it is what
+     stops a long rapid game from turning every regular into a slower, stronger opponent
+     than its rating advertises. A floor is there too: a search given no time is not a
+     faster opponent, it is a random one. */
+  check('…and a clock can only speed a regular up, never slow it down',
+    /Math\.max\(150, Math\.min\(mt,/.test(PT),
+    'min() against the hand-set pace, floored at 150ms');
   /* ⚑⚑ THE LADDER IS THE RUNGS, AND SINCE 2026-08-19 THAT IS NOT THE WHOLE BENCH. Nate
      moved Auston off the ladder — "they are not necessarily 1200 but completely adaptive" —
      so BOTS now ends with a seat whose `elo` is an invisible SEED, and walking the raw

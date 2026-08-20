@@ -256,10 +256,21 @@ console.log('\n── AUSTON ─────────────────
      that function in 2026-08-17 pushed it past the limit — a passing test turning red
      because prose grew. Anchored to the closing brace instead, so it measures the thing
      it is actually about: the call is inside this function. */
-  const botFinishFn = (ROOM.match(/function botFinish\(st, g\)\{[\s\S]*?\n  \}/) || [''])[0];
-  check('every finished game is logged, resignations included',
+  /* ⛑ RE-AIMED 2026-08-20, and the new form is strictly stronger. The old one looked for a
+     `logFinished` call inside botFinish AND a second one near the resignation handler —
+     which is to say it enumerated the endings by hand, and would have gone quietly green
+     the day a THIRD ending was added. A clock was added that same day, and a flag is
+     exactly such an ending.
+     ⚠⚠ SO ASK THE STRUCTURAL QUESTION INSTEAD: there is ONE place a bot game is declared
+     over (`st.done = 1`), it lives in botFinishAs, and that function logs. Any future
+     ending has to come through it or it is not an ending at all. */
+  const botFinishFn = (ROOM.match(/function botFinishAs\(st, result, reason\)\{[\s\S]*?\n  \}/) || [''])[0];
+  check('every finished game is logged, resignations and flags included',
     /logFinished\(st,/.test(botFinishFn) &&
-    /reason = 'resignation'[\s\S]{0,300}logFinished\(st,/.test(ROOM));
+    (ROOM.match(/st\.done = 1;/g) || []).length === 1 &&
+    (ROOM.match(/(?<!function )botFinishAs\(st,/g) || []).length >= 3,
+    'one ending, ' + (ROOM.match(/(?<!function )botFinishAs\(st,/g) || []).length +
+      ' ways to reach it — a board result, a flag, a resignation');
   check('…exactly once, guarded on the SAVED state so a refresh cannot re-log it',
     /if \(!st \|\| st\.logged\) return;\s*\n\s*st\.logged = 1; botSave\(st\);/.test(ROOM));
   check('the room publishes its bench instead of her keeping a second copy',
@@ -486,7 +497,7 @@ console.log('\n── AUSTON ─────────────────
 /* ══ SHE PLAYS AT YOUR LEVEL ═══════════════════════════════════════════════════════ */
 {
   check('her seat is the adaptive one', /adaptive: true/.test(ROOM));
-  check('⚠ strength still has exactly one door', /function botDial\(b\)\{[\s\S]{0,220}botElo\(b\)/.test(ROOM),
+  check('⚠ strength still has exactly one door', /function botDial\(b, st\)\{[\s\S]{0,600}botElo\(b\)/.test(ROOM),
     'an adaptive seat that bypassed botDial would be a second source of truth about difficulty');
   check('⚠ her card does NOT advertise a fixed rating',
     /finds your level/.test(ROOM) && /b\.adaptive/.test(ROOM),

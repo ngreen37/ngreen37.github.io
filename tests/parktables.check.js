@@ -210,17 +210,43 @@ const BOT = 'maxwell';
      await p.evaluate(() => document.querySelectorAll('.pt-bots .pt-star').length === 0));
   await shot('01-lobby');
 
-  /* ── 2. WHICH SIDE? ────────────────────────────────────────────────────────────── */
-  await p.evaluate(id => document.querySelector('[data-bot="' + id + '"]').click(), BOT);
-  await sleep(250);
-  ok('sitting down asks which side, instead of dealing you White',
-     await p.evaluate(() => document.querySelectorAll('[data-side]').length === 3));
+  /* ── 2. WHICH SIDE? ─────────────────────────────────────────────────────────────
+     ⛑ IT IS A STRIP UNDER THE BENCH NOW, NOT A SCREEN — 2026-08-20, Nate: *"instead of a
+     new window to decide white/black/random ... do what chess.com does and put it as a
+     sole option on the bottom."* So the order of these two checks is REVERSED from the
+     sheet's: the choice is standing on the lobby before anything is tapped, and the seat
+     is one tap. Both halves are asserted, because the whole point of the change is that
+     the second tap disappeared. */
+  ok('the three colors stand on the bench itself, before any seat is tapped',
+     await p.evaluate(() => document.querySelectorAll('.pt-bench-set [data-side]').length === 3));
   ok('…and Random is one of the three',
-     await p.evaluate(() => !!document.querySelector('[data-side="r"]')));
+     await p.evaluate(() => !!document.querySelector('.pt-bench-set [data-side="r"]')));
+  /* ⚠⚠ THE STRIP MUST SIT AFTER *BOTH* PANELS. Between them it would read as governing only
+     the ladder, telling the player their color does not apply to Auston — which is false.
+     Asserted by document position rather than by eye: a CSS change cannot quietly move it. */
+  ok('…and it stands below the ladder AND Auston\'s table, so it governs both',
+     await p.evaluate(() => {
+       const strip = document.querySelector('.pt-bench-set');
+       const seats = [...document.querySelectorAll('[data-bot]')];
+       return seats.length > 0 && seats.every(s =>
+         strip.compareDocumentPosition(s) & Node.DOCUMENT_POSITION_PRECEDING);
+     }));
+  /* ⚠ 44px IS THE FLOOR THE REST OF THE SITE HOLDS TO, and it is the measurement that
+     killed the version of this that lived inside the seat cards (16px stripes). Measured
+     on the rendered control, not asserted from the CSS. */
+  const ctlBox = await p.evaluate(() => [...document.querySelectorAll('.pt-bench-set [data-side]')]
+    .map(e => Math.round(e.getBoundingClientRect().height)));
+  ok('…and every one of them clears the 44px tap floor',
+     ctlBox.length === 3 && ctlBox.every(h => h >= 44), ctlBox.join(' / ') + ' px tall');
   await shot('02-which-side');
 
-  /* ── 3. PLAYING BLACK — the board turns, and the regular opens ──────────────────── */
-  await p.evaluate(() => document.querySelector('[data-side="b"]').click());
+  /* ── 3. PLAYING BLACK — the board turns, and the regular opens ────────────────────
+     ⛑ TWO TAPS TOTAL, and they are in this order now: set the color, then take the seat. */
+  await p.evaluate(() => document.querySelector('.pt-bench-set [data-side="b"]').click());
+  await sleep(120);
+  ok('picking a color does not leave the bench — the seats are all still there',
+     await p.evaluate(() => document.querySelectorAll('[data-bot]').length > 1));
+  await p.evaluate(id => document.querySelector('[data-bot="' + id + '"]').click(), BOT);
   await sleep(1200);
   const sv = await saved();
   ok('the side is written down as a resolved color, never as "random"',
@@ -478,6 +504,159 @@ const BOT = 'maxwell';
        return !!el && el.className.indexOf('pt-star--w') >= 0 && el.className.indexOf('pt-star--full') >= 0;
      }));
   await shot('07-bench-with-stars');
+
+  /* ══ 9. THE CLOCK ═══════════════════════════════════════════════════════════════════
+     2026-08-20, Nate: *"We should also add time control options. We can use the general
+     terms like bullet and blitz, etc, right?"* — on the BOT boards, which is the half of
+     this page that can have a real total-game clock (the live tables need SQL time banks
+     and Realtime first; see the note over the clock block in the room).
+
+     Everything here is driven through the real room. A clock is exactly the kind of feature
+     that passes a source check while being wrong on screen — the arithmetic can be perfect
+     and still be charged to the wrong player. [[green-must-name-what-ran]] */
+  const clockState = () => p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('pjcc.park.bot.v1')) || {};
+    const pill = [...document.querySelectorAll('[data-clock]')].map(e => ({
+      c: e.getAttribute('data-clock'), t: e.textContent, run: e.classList.contains('run'),
+      low: e.classList.contains('low') }));
+    return { tc: s.tc, mw: s.mw, mb: s.mb, pc: s.pc, done: s.done,
+             result: s.result, reason: s.reason, moves: (s.moves || '').trim(), pill };
+  });
+  const pickCtl = (attr, v) => p.evaluate((a, val) => {
+    const el = document.querySelector('[' + a + '="' + val + '"]');
+    if (!el) throw new Error('no control ' + a + '=' + val); el.click();
+  }, attr, v);
+
+  await p.evaluate(() => { localStorage.removeItem('pjcc.park.bot.v1');
+                           localStorage.removeItem('pjcc.pt.stars.v1');
+                           localStorage.removeItem('pjcc.pt.beaten.v1'); });
+  await backToPark();
+
+  ok('the bench offers a clock as well as a color',
+     await p.evaluate(() => document.querySelectorAll('.pt-bench-set [data-tc]').length === 4));
+  /* ⚠⚠ "No clock" IS THE DEFAULT AND THAT IS THE COMPATIBILITY PROMISE. Every regular has
+     been clockless since the bench opened; a clock that arrived switched on would change a
+     game people already know without being asked for. */
+  ok('…and No clock is the one already selected',
+     await p.evaluate(() => document.querySelector('.pt-bench-set [data-tc=""]').classList.contains('on')));
+  ok('…so a clockless board still carries no clock at all, exactly as before',
+     await p.evaluate(() => document.querySelectorAll('[data-clock]').length === 0));
+
+  /* ── the control is stamped onto the board at sit-down ─────────────────────────── */
+  await pickCtl('data-tc', 'b5');
+  await pickCtl('data-side', 'w');
+  await p.evaluate(id => document.querySelector('[data-bot="' + id + '"]').click(), BOT);
+  await sleep(400);
+  let ck = await clockState();
+  ok('picking Blitz and sitting down stamps the control on the saved board',
+     ck.tc === 'b5' && ck.mw === 300000 && ck.mb === 300000,
+     'tc=' + ck.tc + ' mw=' + ck.mw + ' mb=' + ck.mb);
+  ok('…and both nameplates wear a clock reading five minutes',
+     ck.pill.length === 2 && ck.pill.every(x => x.t === '5:00'),
+     ck.pill.map(x => x.c + ':' + x.t).join(' '));
+  ok('…and the board says which control it is being played under',
+     /Blitz 5\+0/.test(await text('.pt-row-chips')), await text('.pt-row-chips'));
+
+  /* ⚠ IT MUST NOT RUN BEFORE THE FIRST MOVE. Sitting down and reading the bench for a
+     minute is not a game in progress, and a clock that started on arrival would flag
+     somebody who never played. Asserted by WAITING and re-reading, not by reading a flag. */
+  await sleep(900);
+  ck = await clockState();
+  ok('⚠ the clock does not run before the first move is played',
+     ck.pill.every(x => x.t === '5:00') && !ck.pill.some(x => x.run),
+     ck.pill.map(x => x.c + ':' + x.t).join(' '));
+
+  /* A helper, because this is done twice and the second time is the one that counts. */
+  const playOne = async (pause) => {
+    const mv = await p.evaluate(() => {
+      const st = JSON.parse(localStorage.getItem('pjcc.park.bot.v1'));
+      const g = PJCCMatch.replayGame(st.moves || ''), L = PJCCChess.legalMoves(g.S);
+      return { from: L[0].from, to: L[0].to };
+    });
+    await tapSq(mv.from); await sleep(pause); await tapSq(mv.to);
+    await sleep(1400);                                  // let the regular answer
+  };
+
+  /* ⭐ THE OPENING MOVE IS FREE, AND THAT IS THE DESIGN, NOT A LEAK. The clock starts when
+     the game does — on the first move — because the alternative is that sitting down and
+     reading the bench for two minutes flags you before you have played a move. It is also
+     what chess.com's bots do. Pinned down here so it cannot be quietly "fixed" into a room
+     that punishes arriving. */
+  await playOne(1400);
+  ck = await clockState();
+  ok('⭐ the move that STARTS the game is free — the clock starts with it, not before it',
+     ck.mw === 300000, 'you still have ' + ck.mw + 'ms after a 1.4s first move');
+  ok('…and from that move on the regular is on its own clock',
+     ck.mb < 300000, BOT + ' spent ' + (300000 - ck.mb) + 'ms');
+
+  /* ⚠⚠ AND NOW THE PUNCH ORDER, WHICH IS THE BUG THIS SECTION EXISTS FOR. `clockSide()`
+     reads the ply count, so the instant a move is appended it names the OTHER player —
+     banking after the append instead of before would charge your think to your opponent,
+     and every total on screen would still look perfectly plausible. Maxwell answers in
+     ~120ms, so a 1.4s think of ours is unmistakably ours. */
+  const wBefore = ck.mw, bBefore = ck.mb;
+  await playOne(1400);
+  ck = await clockState();
+  const spentW = wBefore - ck.mw, spentB = bBefore - ck.mb;
+  ok('⚠⚠ the time you spent thinking came off YOUR clock, not the regular\'s',
+     spentW >= 1000 && spentB < 1000,
+     'you spent ' + spentW + 'ms · ' + BOT + ' spent ' + spentB + 'ms');
+
+  /* ⚠⚠ THE ANALYSIS BOARD PAUSES IT — a deliberate refusal to charge twice. Opening the
+     sandbox already costs you most of a star; if it also burned your clock the two prices
+     would compound into "never open this in bullet", which is the feature turning itself
+     off. Measured across a real wait, in the real sandbox. */
+  await clickId('pt-bot-lab');
+  await sleep(200);
+  const parked = (await clockState()).pill.map(x => x.t).join('|');
+  await sleep(1200);
+  ok('⚠⚠ the analysis board pauses the clock instead of charging you twice',
+     (await clockState()).pill.map(x => x.t).join('|') === parked,
+     parked + ' → ' + (await clockState()).pill.map(x => x.t).join('|'));
+  await clickId('pt-lab-exit');
+  await sleep(200);
+
+  /* ⚠ AND GETTING UP BANKS IT. Without this, "← The park" and straight back in returns
+     every second of the think you were in the middle of — a refill you could lean on once
+     a move. Read from the SAVE, which is the thing that has to carry it. */
+  const beforeLeave = (await clockState()).mw;
+  await sleep(900);
+  await clickId('pt-back');
+  await sleep(400);
+  const banked = (await clockState()).mw;
+  ok('⚠ walking back to the park banks the running clock, it is not a free refill',
+     banked < beforeLeave, beforeLeave + 'ms → ' + banked + 'ms on the saved board');
+
+  /* ── the flag ────────────────────────────────────────────────────────────────────
+     Wound down by writing a nearly-empty bank onto the saved board and re-entering the
+     room, rather than by waiting five real minutes. The board resumes from its save, so
+     this is the same code path a genuine low clock reaches. */
+  await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('pjcc.park.bot.v1'));
+    s.mw = 250;                                   // you are White, and you have a quarter second
+    localStorage.setItem('pjcc.park.bot.v1', JSON.stringify(s));
+    localStorage.removeItem('pjcc.pt.stars.v1');
+  });
+  await p.goto(URL + '?table=' + BOT, { waitUntil: 'networkidle2' });
+  await sleep(1500);
+  ck = await clockState();
+  ok('running out of time ends the game', !!ck.done, 'done=' + ck.done);
+  ok('…as a LOSS, in PGN terms, for the side that flagged',
+     ck.result === '0-1' && ck.reason === 'timeout',
+     ck.result + ' · ' + ck.reason);
+  /* ⚠⚠ HIS RULE: *"flagging is a loss, no star."* It falls out of routing the flag through
+     the same tail every other ending uses — a star is only ever awarded behind `botWon` —
+     but it is the half of the sentence a player would feel, so it is asserted rather than
+     reasoned about. */
+  ok('⚠⚠ …and it earns no star, the same as any other loss',
+     await p.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('pjcc.pt.stars.v1')) || {}).length === 0),
+     JSON.stringify(await stars()));
+  ok('…and the board says so in words',
+     /timeout/.test(await text('.pt-state')), await text('.pt-state'));
+  await shot('09-flagged');
+
+  await p.evaluate(() => { localStorage.removeItem('pjcc.park.bot.v1');
+                           localStorage.setItem('pjcc.pt.tc.v1', ''); });
 
   ok('no runtime errors anywhere in the run', errs.length === 0, errs.slice(0, 3).join(' | '));
 
