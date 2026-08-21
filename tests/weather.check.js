@@ -388,11 +388,36 @@ const click = async p => { await p.evaluate(() => document.getElementById('flour
     { loadPaths: [path.join(REPO, '_sass')], silenceDeprecations: ['import'] }).css;
   const FRONT = 'https://chesswild.com/';
   const rawHtml = await (await fetch(FRONT)).text();
-  const rebuild = () => rawHtml
-    .replace(/<script>\/\* =+\r?\n \* PJCC town clock[\s\S]*?<\/script>/, '<script>' + CLOCK_SRC + '</script>')
-    .replace(/<script>try\{var T=window\.PJCC_TIME;[\s\S]*?<\/script>/, HEAD_JS)
-    .replace('</head>', '<style>' + CSS_OUT + '</style></head>')
-    .replace('<div class="ts-horizon"></div>', '<div class="ts-horizon"></div><div class="ts-city">' + CITY_SVG + '</div>');
+  /* ⚠⚠ THE SKY MARKUP HAS TO BE SWAPPED TOO, AND FORGETTING IT COST A FALSE FAILURE ON THE
+     FIRST RUN OF THE AURORA CHECK BELOW. Grafting only the stylesheet measures LOCAL CSS
+     against DEPLOYED markup: the ray heights had just been trimmed in town-sky.html, the
+     browser was still being served yesterday's, and the gate reported 103.8% on a file that
+     says 97%. A harness that mixes two versions of the same feature is testing neither one.
+     The include is Liquid on disk, so its comments come out and its one `{% include %}` is
+     expanded here — the same reason assets/js/pjcc-time.js has to be a generated copy. */
+  const skyLocal = (() => {
+    let m = fs.readFileSync(path.join(REPO, '_includes/town-sky.html'), 'utf8');
+    m = m.replace(/{%-?\s*comment\s*-?%}[\s\S]*?{%-?\s*endcomment\s*-?%}/g, '');
+    m = m.replace(/{%\s*include town-city\.svg\s*%}/, CITY_SVG);
+    const a = m.indexOf('<div class="town-sky"');
+    const e = m.lastIndexOf('<div class="ts-eclipse"></div>');
+    return (a > -1 && e > a) ? m.slice(a, m.indexOf('</div>', e + 30) + 6) : null;
+  })();
+  const rebuild = () => {
+    let h = rawHtml
+      .replace(/<script>\/\* =+\r?\n \* PJCC town clock[\s\S]*?<\/script>/, '<script>' + CLOCK_SRC + '</script>')
+      .replace(/<script>try\{var T=window\.PJCC_TIME;[\s\S]*?<\/script>/, HEAD_JS)
+      .replace('</head>', '<style>' + CSS_OUT + '</style></head>');
+    if (skyLocal) {
+      const a = h.indexOf('<div class="town-sky"');
+      const e = h.indexOf('<div class="ts-eclipse"></div>');
+      if (a > -1 && e > a) h = h.slice(0, a) + skyLocal + h.slice(h.indexOf('</div>', e + 30) + 6);
+    }
+    if (!/class="ts-city"/.test(h))
+      h = h.replace('<div class="ts-horizon"></div>',
+        '<div class="ts-horizon"></div><div class="ts-city">' + CITY_SVG + '</div>');
+    return h;
+  };
 
   async function sky(wx, vp) {
     const c = await b.createBrowserContext();
@@ -473,6 +498,113 @@ const click = async p => { await p.evaluate(() => document.getElementById('flour
   sk = await sky('clear', { width: 390, height: 844 });
   ok('   — and on a phone, where it crops the SIDES instead', sk.nearTop >= sk.cityTop - 1,
      { nearTop: Math.round(sk.nearTop), cityTop: Math.round(sk.cityTop) });
+
+  /* ══ THE RARE SKY — 2026-08-20 ═════════════════════════════════════════════
+     Nate asked for three things to "really pop": the total eclipse, the partial, and the
+     aurora — plus slower, more varied meteors. Every one of those is a look, and a look
+     cannot be asserted. What CAN be asserted is the four things that would quietly undo
+     them, and each of these was a real failure during the build, not a hypothetical. */
+  console.log('\n  the rare sky:');
+
+  async function skyPage(query) {
+    const c = await b.createBrowserContext();
+    const pg = await c.newPage();
+    await pg.setViewport({ width: 1280, height: 860 });
+    await pg.setRequestInterception(true);
+    pg.on('request', (r) => (r.resourceType() === 'document' && r.url().split('?')[0] === FRONT)
+      ? r.respond({ status: 200, contentType: 'text/html; charset=utf-8', body: rebuild() })
+      : r.url().includes('/assets/css/style.css')
+        ? r.respond({ status: 200, contentType: 'text/css; charset=utf-8', body: CSS_OUT })
+        : r.continue());
+    await pg.goto(FRONT + query, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await new Promise((r) => setTimeout(r, 1200));
+    return { c, pg };
+  }
+
+  /* ① THE ECLIPSE HAS TO BE ON SCREEN. The window is 13:00-15:00, which is exactly where
+     the sun is highest on its arc — orb() puts it at 12.7% of the viewport. A 500px corona
+     centered 110px from the top has half of itself above the window, and that is how the
+     rarest thing this sky does was staged for a year. `--ecl-y` drops it 20%; if that
+     variable is ever dropped or renamed the layout silently reverts and nothing throws. */
+  {
+    const { c, pg } = await skyPage('?eclipse=1');
+    const m = await pg.evaluate(() => {
+      const q = (s) => document.querySelector(s);
+      const r = (s) => { const e = q(s); return e ? e.getBoundingClientRect() : null; };
+      const orb = r('.ts-orb'), cor = r('.ts-ecl-corona'), door = r('.ts-eclipse-door');
+      return {
+        orbMid: orb && Math.round(orb.top + orb.height / 2),
+        corMid: cor && Math.round(cor.top + cor.height / 2),
+        doorMid: door && Math.round(door.top + door.height / 2),
+        corTop: cor && Math.round(cor.top), corBottom: cor && Math.round(cor.bottom),
+        vh: innerHeight
+      };
+    });
+    await c.close();
+    ok('the eclipse corona is fully on screen at totality',
+       m.corTop >= 0 && m.corBottom <= m.vh, m);
+    /* ⚠ ONE VARIABLE, FOUR CONSUMERS — and the one that goes wrong silently is the DOOR,
+       an invisible button that stops sitting under the thing it opens. Compare the CENTERS:
+       they are three different box sizes, so only the centers can agree. */
+    ok('   the orb, the corona and the secret door agree on where the sun is',
+       Math.abs(m.orbMid - m.corMid) <= 2 && Math.abs(m.orbMid - m.doorMid) <= 2, m);
+  }
+
+  /* ② THE AURORA CANNOT REACH ITS OWN CEILING. The container is `overflow: hidden`, the
+     sway scales the rays to 1.12, and the ribbing is a SEPARATE background layer that the
+     color gradient's top-fade does not reach. Get any of those wrong and thirteen rays are
+     cut off flat across the top of the screen — which is exactly what happened the moment
+     the crown was brightened. This measures the COMPUTED geometry, so it fails on a raised
+     `--h` in the markup as well as on a lost mask. */
+  {
+    const { c, pg } = await skyPage('?aurora=1');
+    const m = await pg.evaluate(() => {
+      const host = document.querySelector('.ts-aurora');
+      if (!host) return { none: true };
+      const hh = host.getBoundingClientRect().height;
+      const rays = [...document.querySelectorAll('.ts-aur')].map((el) => {
+        const cs = getComputedStyle(el);
+        const foot = parseFloat(cs.bottom), h = parseFloat(cs.height);
+        return { reach: +(100 * (foot + h * 1.12) / hh).toFixed(1) };
+      });
+      const one = document.querySelector('.ts-aur');
+      return { n: rays.length, worst: Math.max(...rays.map((r) => r.reach)),
+               maskLayers: (getComputedStyle(one).maskImage.match(/gradient\(/g) || []).length,
+               hostH: Math.round(hh) };
+    });
+    await c.close();
+    ok('the aurora is drawing rays', !m.none && m.n >= 10, m.n + ' rays');
+    ok('   and not one of them can reach the container ceiling', m.worst < 100, m.worst + '% of the box');
+    /* the two-layer mask is what fades the RIBS; a browser that dropped it as invalid would
+       leave the stripes running through the top edge, and the geometry check above cannot
+       see that because the ray's BOX is still inside the box. */
+    ok('   and the rib mask survived as two layers', m.maskLayers >= 2, m.maskLayers + ' gradients');
+  }
+
+  /* ③ THE METEORS KEEP THEIR THREE SHUTTERS. Speed was welded to frequency — a streak
+     crosses inside the first 4% of its cycle, so the only way to slow one down was to make
+     it rarer. Three keyframes with different visible windows is the third dial. Collapse
+     them back to one and the shower silently goes uniform again at the old speed, with
+     every other check still green. */
+  {
+    const windows = ['ts-shoot-fall', 'ts-shoot-fall-m', 'ts-shoot-fall-s']
+      .map((n) => new RegExp('@keyframes ' + n + ' \\{').test(SKY_SCSS));
+    ok('all three meteor shutters exist', windows.every(Boolean), windows);
+    const { c, pg } = await skyPage('?meteors=1');
+    const used = await pg.evaluate(() => {
+      const R = document.documentElement;
+      ['day', 'dusk', 'dawn'].forEach((q) => R.classList.remove('sky-' + q));
+      R.classList.add('sky-night');
+      const names = new Set();
+      document.querySelectorAll('.ts-shoot').forEach((el) => {
+        const n = getComputedStyle(el).animationName;
+        if (n && n !== 'none') names.add(n);
+      });
+      return [...names];
+    });
+    await c.close();
+    ok('   and the streaks actually use more than one of them', used.length >= 3, used);
+  }
 
   console.log(`\nRESULT: ${fail ? 'FAIL' : 'PASS'} — ${pass} passed, ${fail} failed`);
   await b.close();

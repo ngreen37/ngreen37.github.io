@@ -413,13 +413,44 @@ html.town-mist .ts-stars, html.town-mist .ts-constellations { opacity: 0.22; }
    silently comes undone when a partial is reordered.
    ⚠ Preview it on any of the other 29 days with `?eclipse=1` (or `?eclipse=0.4` for a
    partial). Without that this is unreviewable until the next new moon. ══════════════ */
+/* ⚑ THE VEIL IS A VIGNETTE NOW, CENTERED ON THE SUN — 2026-08-20 (Nate: "solar eclipse
+   looks great can we improve on it? Make it look a little more like this first picture").
+   It was a flat black sheet at 88%, which darkens the sky around the corona by exactly as
+   much as the sky at the far corner — so the corona had to win on its own brightness alone
+   and the picture stayed flat. In a real totality you are standing in the moon's shadow:
+   the sky nearest the sun is the brightest thing in it and the darkness deepens with every
+   degree away from it. `--orb-x`/`--orb-y` already carry where the sun is on its arc, so
+   the gradient can simply be centered there and it tracks the sun for free.
+   ⭐ Same trick as the diamond ring below: the shape falls out of data the sky already had,
+   so there is nothing to keep in sync and nothing to time. */
+/* ⚑⚑ THE ECLIPSE SITS LOWER THAN THE SUN DOES — 2026-08-20, and it is the one staging
+   cheat in this whole sky. The eclipse window is 13:00-15:00, which is exactly where the
+   sun is nearest the top of its arc: `orb()` puts it at 12.7% of the viewport at 14:00. A
+   corona five hundred pixels across, centered 110px from the top of an 860px screen, has
+   HALF OF ITSELF ABOVE THE WINDOW — and what is left is sitting behind the news ticker.
+   The rarest thing this sky does was staged where it could not be seen.
+
+   Moving the window is not available: `sky-day` ends at 17:00, so a later eclipse would
+   stop matching `html.eclipse.sky-day` and every rule here would switch off at once. So
+   the ECLIPSE drops 20% down the screen instead, which nobody can catch — during totality
+   the sky is dark and there is no other reference for where the sun ought to be.
+
+   ⚠ ONE VARIABLE, READ BY ALL FOUR CONSUMERS: the orb, the corona, the vignette's center
+   and the secret door's hit box. Four literals here would drift the moment one of them is
+   nudged, and the one that drifts silently is the DOOR — an invisible button that no longer
+   sits under the thing it opens. */
+html.eclipse { --ecl-y: calc(var(--orb-y, 18%) + 20%); }
 .ts-eclipse {
   position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background: #05040f;
+  background:
+    radial-gradient(circle 62vmax at var(--orb-x, 50%) var(--ecl-y, var(--orb-y, 18%)),
+      rgba(24, 14, 30, 0.30) 0%,
+      rgba(12, 8, 22, 0.72) 26%,
+      #05040f 62%);
   opacity: 0;
   transition: opacity 8s linear;   /* the clock re-plots every 30s; this makes it a fade */
 }
-html.eclipse .ts-eclipse { opacity: calc(var(--ecl, 0) * 0.88); }
+html.eclipse .ts-eclipse { opacity: calc(var(--ecl, 0) * 0.92); }
 
 /* the moon's disc crossing the sun. The orb clips it, same as the night terminator. */
 html.eclipse.sky-day .ts-orb { overflow: hidden; }
@@ -434,10 +465,59 @@ html.eclipse.sky-day .ts-orb::after {
    REPEATED: it is the orb's own centering, and a `transform` here replaces it wholesale
    rather than adding to it — drop it and the sun jumps half its own width up and left.
    And the spokes go as the light does: a bitten sun has no rays to turn. */
+/* ⚑⚑ THE PARTIAL BURNS ORANGE, AND IT IS BANDED — 2026-08-20. Nate: "the partial eclipse
+   — same thing — can we make it look more like the third attached picture."
+
+   His reference is the shot everybody has seen: a deep, saturated ORANGE disc with a clean
+   black bite out of it and dark horizontal bars slicing across the face. Two real things
+   are in that photograph and neither of them was here:
+
+   ⭐ THE COLOR IS NOT THE SUN'S, IT IS THE AIR'S. A partial eclipse photographed like that
+   is being shot through a lot of atmosphere or through a filter, and the short wavelengths
+   are gone — the same reason a low sun is orange. So the disc reddens AS THE BITE DEEPENS,
+   driven by the same `--ecl` everything else here rides. It is one gradient with `color-mix`
+   on each stop, so there is no second sun and nothing to switch between: at cover 0 it is
+   byte-identical to the ordinary day sun, and at totality it has gone the whole way.
+
+   ⭐ THE BARS ARE LAYERS OF AIR. Those dark horizontal streaks are real — temperature
+   layers refracting the limb into slabs, which is why they are always horizontal and never
+   follow the disc. A `repeating-linear-gradient` at 0deg is exactly that, and it is the
+   detail that makes the picture read as a PHOTOGRAPH rather than a drawn circle.
+   ⚠ They fade out as totality arrives (`1 - ecl`): there is no bright limb left to slice.
+
+   ⚠ THE BANDS GO IN THE SAME `background` LIST AS THE DISC, not on a pseudo-element. Both
+   of the orb's pseudos are already spoken for during an eclipse — ::before is the rays and
+   ::after is the moon — and a background list is one paint either way. Same lesson as the
+   moon's seas: put it in the list and the clip crops it for free. */
 html.eclipse.sky-day .ts-orb {
-  transform: translate(-50%, -50%) scale(calc(1 + var(--ecl, 0) * 0.45));
-  /* the halo shrinks as the light goes — a bitten sun does not floodlight the sky */
-  box-shadow: 0 0 calc(44px * (1 - var(--ecl, 0))) calc(14px * (1 - var(--ecl, 0))) rgba(255, 216, 74, 0.30);
+  top: var(--ecl-y, var(--orb-y, 18%));
+  /* 0.45 → 0.75: the disc has to hold its own against a corona that is now five hundred
+     pixels wide, or the whole picture is halo with a speck in the middle of it. */
+  transform: translate(-50%, -50%) scale(calc(1 + var(--ecl, 0) * 0.75));
+  background:
+    repeating-linear-gradient(0deg,
+      rgba(24, 10, 4, 0) 0px,
+      rgba(24, 10, 4, 0) 13px,
+      rgba(28, 9, 3, calc(var(--ecl, 0) * (1 - var(--ecl, 0)) * 2.1)) 15px,
+      rgba(28, 9, 3, calc(var(--ecl, 0) * (1 - var(--ecl, 0)) * 2.1)) 19px,
+      rgba(24, 10, 4, 0) 21px,
+      rgba(24, 10, 4, 0) 37px),
+    repeating-linear-gradient(0deg,
+      rgba(20, 7, 2, 0) 0px,
+      rgba(20, 7, 2, 0) 21px,
+      rgba(20, 7, 2, calc(var(--ecl, 0) * (1 - var(--ecl, 0)) * 1.2)) 23px,
+      rgba(20, 7, 2, calc(var(--ecl, 0) * (1 - var(--ecl, 0)) * 1.2)) 25px,
+      rgba(20, 7, 2, 0) 27px,
+      rgba(20, 7, 2, 0) 58px),
+    radial-gradient(circle at 40% 38%,
+      color-mix(in srgb, #fffefb, #ffd9a0 calc(var(--ecl, 0) * 100%)) 0%,
+      color-mix(in srgb, #fff3b8, #ffb257 calc(var(--ecl, 0) * 100%)) 34%,
+      color-mix(in srgb, #ffd84a, #ff7a1c calc(var(--ecl, 0) * 100%)) 70%,
+      color-mix(in srgb, #f5b800, #e8480a calc(var(--ecl, 0) * 100%)) 100%);
+  /* the halo shrinks as the light goes — a bitten sun does not floodlight the sky — but it
+     warms on the way down, because what is left of it is coming through the same air */
+  box-shadow: 0 0 calc(52px * (1 - var(--ecl, 0))) calc(16px * (1 - var(--ecl, 0)))
+              color-mix(in srgb, rgba(255, 216, 74, 0.34), rgba(255, 122, 28, 0.42) calc(var(--ecl, 0) * 100%));
 }
 html.eclipse.sky-day .ts-orb::before { opacity: calc(1 - var(--ecl, 0)); }
 /* TOTALITY: a black disc with the corona around it — the one picture everybody knows.
@@ -445,11 +525,17 @@ html.eclipse.sky-day .ts-orb::before { opacity: calc(1 - var(--ecl, 0)); }
    where it is: a thin layer of hydrogen between the photosphere and the corona, visible
    for the few minutes it is not outshone. Two rings, 1.5px apart, and the eye reads
    "photograph" instead of "glowing circle". */
+/* ⚑ THE RING GOT ITS WEIGHT (2026-08-20). 1px of chromosphere and 2.5px of white is a
+   hairline at 90px across — correct in scale and invisible in a screenshot, which is the
+   version Nate was looking at. Doubled, with the white pushed to full and two glow steps
+   instead of one, so the limb reads as blazing rather than outlined. The pink stays UNDER
+   the white because that is where the chromosphere is. */
 html.eclipse-total.sky-day .ts-orb {
-  box-shadow: 0 0 0 1px rgba(255, 142, 160, 0.50),
-              0 0 0 2.5px rgba(255, 247, 222, 0.90),
-              0 0 32px 10px rgba(255, 238, 196, 0.52),
-              0 0 110px 42px rgba(255, 222, 165, 0.22);
+  box-shadow: 0 0 0 2.5px rgba(255, 138, 152, 0.72),
+              0 0 0 5px rgba(255, 252, 240, 1),
+              0 0 18px 5px rgba(255, 250, 232, 0.85),
+              0 0 54px 16px rgba(255, 234, 186, 0.60),
+              0 0 150px 60px rgba(255, 206, 140, 0.30);
 }
 /* stars, at two in the afternoon */
 html.eclipse-total .ts-stars { display: block; opacity: calc((var(--ecl, 0) - 0.9) * 5); }
@@ -474,34 +560,64 @@ html.eclipse-total .ts-stars { display: block; opacity: calc((var(--ecl, 0) - 0.
    Its opacity is two clamped ramps MULTIPLIED — up from cover 0.90, down again by 0.995 —
    which is a spike with no keyframe, no timer and no JavaScript. It cannot fire at the
    wrong moment because it does not know what a moment is. */
+/* ⚑ TWICE THE REACH AND A WARM BLOOM UNDER IT — 2026-08-20. The corona was 290px, which
+   is about three sun-widths, and it stopped dead there. Every photograph of a totality —
+   Nate's reference included — is mostly BLOOM: a huge soft amber halo two or three times
+   wider than the streamers, which is what makes the black disc read as a hole punched in
+   something blazing rather than a dot with a ring on it.
+   ⚠ THE BLOOM IS THE ELEMENT'S OWN BACKGROUND, not a fourth layer. ::before is the
+   streamers and ::after is the diamond; putting the halo on the box itself keeps this at
+   ONE element for three effects, and it is a static gradient — only ::before animates. */
 .ts-ecl-corona {
   position: absolute; z-index: 2; display: none;
-  left: var(--orb-x, 50%); top: var(--orb-y, 18%);
-  width: 290px; height: 290px;
-  margin: -145px 0 0 -145px;
+  left: var(--orb-x, 50%); top: var(--ecl-y, var(--orb-y, 18%));
+  width: 500px; height: 500px;
+  margin: -250px 0 0 -250px;
   border-radius: 50%;
   pointer-events: none;
+  background: radial-gradient(circle closest-side,
+    rgba(255, 244, 214, 0.00) 7%,
+    rgba(255, 232, 178, 0.46) 10.5%,
+    rgba(255, 198, 118, 0.30) 17%,
+    rgba(255, 168, 88, 0.17) 30%,
+    rgba(255, 138, 70, 0.08) 50%,
+    rgba(255, 124, 72, 0.03) 70%,
+    rgba(255, 124, 72, 0.00) 88%);
 }
 html.eclipse.sky-day .ts-ecl-corona { display: block; opacity: calc(var(--ecl, 0) * var(--ecl, 0)); }
 html.eclipse.sky-day .ts-ecl-corona::before {
   content: ''; position: absolute; inset: 0; border-radius: 50%;
+  /* ⚑ MORE STREAMERS, LONGER AND UNEVEN (2026-08-20). Four angles repeating every 97°
+     read as a pinwheel once the halo behind them got big enough to see them against; a
+     real corona has streamers at every scale, a few long ones and a lot of short ones,
+     and no two the same brightness. Seven stops over 131° — a prime-ish span so the
+     repeat does not line up with itself anywhere you can catch it. */
   background: repeating-conic-gradient(from 0deg,
-    rgba(255, 246, 220, 0.00) 0deg,   rgba(255, 246, 220, 0.30) 9deg,
-    rgba(255, 246, 220, 0.00) 24deg,  rgba(255, 246, 220, 0.13) 38deg,
-    rgba(255, 246, 220, 0.00) 55deg,  rgba(255, 246, 220, 0.36) 71deg,
-    rgba(255, 246, 220, 0.00) 97deg);
+    rgba(255, 246, 214, 0.00) 0deg,   rgba(255, 246, 214, 0.42) 7deg,
+    rgba(255, 246, 214, 0.00) 19deg,  rgba(255, 240, 206, 0.16) 29deg,
+    rgba(255, 246, 214, 0.00) 41deg,  rgba(255, 246, 214, 0.50) 54deg,
+    rgba(255, 244, 214, 0.00) 68deg,  rgba(255, 232, 190, 0.22) 79deg,
+    rgba(255, 246, 214, 0.00) 91deg,  rgba(255, 246, 214, 0.34) 104deg,
+    rgba(255, 240, 206, 0.00) 117deg, rgba(255, 240, 206, 0.12) 124deg,
+    rgba(255, 246, 220, 0.00) 131deg);
   /* ⚠ `closest-side`, NOT THE DEFAULT. A radial mask on a square box sizes to farthest-CORNER
      — 170px on a 240px box — so the outer `transparent` stop landed 30px past the element's
      own edge and never arrived. The streamers were cut off mid-brightness at the box bounds
      and drew a hard-edged disc around the sun, which is the one shape a corona never has.
      Same trap as any mask that assumes % means "of the width". */
-  -webkit-mask-image: radial-gradient(circle closest-side, transparent 26%, #000 36%, rgba(0,0,0,0.30) 66%, transparent 99%);
-          mask-image: radial-gradient(circle closest-side, transparent 26%, #000 36%, rgba(0,0,0,0.30) 66%, transparent 99%);
+  /* ⚠⚠ EVERY PERCENT IN THIS MASK IS RELATIVE TO THE BOX, SO DOUBLING THE BOX MOVED ALL
+     OF THEM. At 290px the sun's disc was 31% of the half-width and the mask cleared it at
+     26%; at 560px the same disc is 16%, so the old 26% would have started the streamers a
+     full sun-width OUT from the limb, floating free of the thing they come off. Re-derived,
+     not nudged: clear to 15%, full by 22%, and reaching to 96% instead of stopping at 66%,
+     which is what actually makes them long. */
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 15%, #000 22%, rgba(0,0,0,0.34) 58%, transparent 96%);
+          mask-image: radial-gradient(circle closest-side, transparent 15%, #000 22%, rgba(0,0,0,0.34) 58%, transparent 96%);
   animation: ts-sun-rays 180s linear infinite;
 }
 html.eclipse.sky-day .ts-ecl-corona::after {
   content: ''; position: absolute;
-  left: calc(50% - var(--ecl-shift, 0) * 17%); top: 50%;
+  left: calc(50% - var(--ecl-shift, 0) * 8.5%); top: 50%;   /* 17% before the box doubled */
   width: 13px; height: 13px; margin: -6.5px 0 0 -6.5px;
   border-radius: 50%;
   background: radial-gradient(circle, #fffdf4 0%, #fff0c0 42%, rgba(255, 226, 150, 0) 78%);
@@ -529,7 +645,7 @@ html.eclipse.sky-day .ts-horizon {
 }
 .ts-eclipse-door {
   position: absolute;
-  left: var(--orb-x, 50%); top: var(--orb-y, 18%);
+  left: var(--orb-x, 50%); top: var(--ecl-y, var(--orb-y, 18%));
   transform: translate(-50%, -50%);
   width: 78px; height: 78px;
   border: 0; border-radius: 50%; background: none; padding: 0;
@@ -606,7 +722,7 @@ html.sky-night .ts-horizon {
    so thirteen of them plus the glow measure 0.42 screens at 1400x800 against V1's three
    full-height bands at 0.30. Forty percent more, on one night in a hundred, against the two
    cloud banks' 3.30 every single day. Measured, not estimated. */
-.ts-aurora { position: absolute; inset: 0 0 auto 0; height: 52%; z-index: 1;
+.ts-aurora { position: absolute; inset: 0 0 auto 0; height: 62%; z-index: 1;
   display: none; overflow: hidden; pointer-events: none; }
 html.sky-night.aurora-night .ts-aurora { display: block; }
 
@@ -625,11 +741,14 @@ html.sky-night.aurora-night .ts-aurora { display: block; }
    between rays so the sheet is continuous where no ray happens to stand. */
 .ts-aur-arc {
   position: absolute; left: -12%; right: -12%; bottom: 56%; height: 24%;
+  /* ⚠ THE FILL BETWEEN THE RAYS HAS TO BE THE SAME GREEN AS THE RAYS. Leaving this mint
+     while the rays went yellow-green would have split the curtain into two colors — the
+     gaps reading colder than the folds, which is exactly the tell that a sky is drawn. */
   background: radial-gradient(ellipse 48% 50% at 50% 78%,
-    rgba(150, 255, 215, 0.15) 0%,
-    rgba(110, 245, 200, 0.08) 44%,
-    rgba(120, 210, 255, 0.03) 72%,
-    rgba(120, 210, 255, 0.00) 92%);
+    rgba(188, 255, 150, 0.26) 0%,
+    rgba(150, 250, 140, 0.14) 44%,
+    rgba(140, 215, 255, 0.05) 72%,
+    rgba(140, 215, 255, 0.00) 92%);
   animation: ts-aur-arc 47s ease-in-out infinite;
 }
 /* ══ THE RAYS — and the two goes it took to get the SHAPE right ═══════════════════════
@@ -662,15 +781,77 @@ html.sky-night.aurora-night .ts-aurora { display: block; }
      curve add up to ONE continuous rim — a lit limb, which the eye reads as a planet no
      matter what is above it. Feathering the final 6% turns the rim into the bottom of a
      glow. A real curtain does have a defined lower border; it does not have an edge. */
-  background: linear-gradient(180deg,
-    rgba(140, 215, 255, 0.00) 0%,
-    rgba(140, 215, 255, 0.10) 32%,
-    rgba(96, 242, 192, 0.30) 58%,
-    rgba(124, 252, 206, 0.58) 86%,
-    rgba(186, 136, 255, 0.30) 94%,
-    rgba(186, 136, 255, 0.00) 100%);
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 70%, transparent 100%);
-          mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 70%, transparent 100%);
+  /* ⚑⚑ REPAINTED 2026-08-20 — Nate: "please see fifth picture — I want it to look a
+     little more like that. The sixth picture is what it looks like currently (good, but
+     could REALLY pop)." Three things separate his reference from what was here, and the
+     first one is not brightness:
+
+     ⭐ THE GREEN WAS THE WRONG GREEN. `#7CFCCE` is a MINT — a green with blue in it — and
+     against a violet night sky a blue-green sits only a few degrees of hue away from the
+     background, so no amount of opacity would make it separate. A real curtain's oxygen
+     line is 557.7nm, which is a YELLOW-green. Pushing the body toward #A8FF7E moves it
+     right across the wheel from the sky behind it, and THAT is what makes it pop — the
+     alpha lift below would have done very little on its own.
+
+     ⭐ THE STRIATIONS ARE THE SUBJECT, NOT A TEXTURE. Every photograph of an aurora is
+     ribbed — fine vertical lines packed inside each fold, because the light follows the
+     field lines and they are parallel. Thirteen smooth panels can only ever read as
+     panels. A `repeating-linear-gradient(90deg)` inside each ray is the ribbing, it goes
+     in the SAME background list so it is one paint, and it costs nothing per frame.
+     ⚠ The stripes are in ELEMENT percentages, so a wide ray gets wide ribs and a narrow
+     one gets narrow ribs — which is the parallax you want, and free.
+
+     ⭐ AND THE MAGENTA BELONGS AT BOTH ENDS. There was violet along the foot only, which
+     is right for nitrogen at low altitude — but his reference has the pink up in the TIPS,
+     and that is real too: high-altitude oxygen glows red above the green, and it is the
+     first thing to show when a display gets strong. So the crown carries it now as well.
+
+     ⚠ THE FADE STOPS STAY. The last 6% is feathered for the reason written above —
+     thirteen hard bottom edges along a curve add up to one lit rim, which reads as a
+     planet no matter what is above it. */
+  background:
+    repeating-linear-gradient(90deg,
+      rgba(255, 255, 255, 0.00) 0%,
+      rgba(255, 255, 255, 0.00) 4%,
+      rgba(226, 255, 208, 0.16) 5.5%,
+      rgba(226, 255, 208, 0.16) 6.5%,
+      rgba(255, 255, 255, 0.00) 8%,
+      rgba(255, 255, 255, 0.00) 13%),
+    /* ⚠⚠ THE FIRST 8% IS DEAD ON PURPOSE, AND THAT IS A CLIPPING FIX, NOT A TASTE ONE.
+       The container is `overflow: hidden` and the tallest rays reach 94% of it — then the
+       sway's `scale(1, 1.12)` pushes them THROUGH the ceiling. That was invisible while the
+       tops were near-transparent; the moment the magenta crown went in they were cut off
+       flat across the top of the screen, thirteen hard edges in a row. The crown moved DOWN
+       into the ray so a clipped tip is already gone before the ceiling reaches it.
+       ⚠ Any future brightening of the top stops has to keep this margin, or the flat cut
+       comes straight back. */
+    linear-gradient(180deg,
+      rgba(198, 128, 255, 0.00) 0%,
+      rgba(198, 128, 255, 0.00) 8%,
+      rgba(206, 132, 255, 0.30) 19%,
+      rgba(150, 190, 255, 0.18) 31%,
+      rgba(138, 255, 158, 0.36) 50%,
+      rgba(168, 255, 126, 0.64) 71%,
+      rgba(190, 255, 132, 0.90) 89%,
+      rgba(206, 132, 255, 0.46) 95.5%,
+      rgba(206, 132, 255, 0.00) 100%);
+  /* ⚠⚠ TWO MASK LAYERS, INTERSECTED — AND THE SECOND ONE IS NOT OPTIONAL. The side-fade
+     alone was enough while the ray was ONE gradient, because that gradient carried its own
+     transparent top. The ribbing is a SEPARATE background layer with its own alpha, so the
+     vertical fade in the color layer does not reach it: the color tips faded out and the
+     stripes kept going, straight through the container's ceiling, as thirteen bright
+     hairlines ruled across the top of the screen. **A fade written into one background
+     layer says nothing about the layer above it.** The top-fade therefore has to live on
+     the MASK, which applies to the element and everything painted in it.
+     ⚠ If `mask-composite` is unsupported the browser falls back to the first layer alone,
+     which is precisely the behavior that shipped before the ribbing existed — the ribs
+     reach a little higher and nothing breaks. */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 70%, transparent 100%),
+                      linear-gradient(180deg, transparent 0%, transparent 5%, #000 22%, #000 100%);
+          mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 70%, transparent 100%),
+                      linear-gradient(180deg, transparent 0%, transparent 5%, #000 22%, #000 100%);
+  -webkit-mask-composite: source-in;
+          mask-composite: intersect;
   animation: ts-aur-sway var(--t, 29s) ease-in-out infinite var(--d, 0s);
 }
 /* ⚠ THE LEAN IS INSIDE THE KEYFRAME, not a separate declaration — a second `transform` on
@@ -743,7 +924,7 @@ html.sky-night .ts-shoot::after {
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.95), rgba(190, 205, 255, 0.40) 42%, transparent 100%);
 }
 /* the ordinary three keep their slow patrol and their original flight (-46vw, 20vw) */
-html.sky-night .ts-shoot--1 { top: 12%; left: 78%; --len: 140px; animation: ts-shoot-fall 29s linear infinite; }
+html.sky-night .ts-shoot--1 { top: 12%; left: 78%; --len: 140px; animation: ts-shoot-fall-m 29s linear infinite; }
 html.sky-night .ts-shoot--2 { top: 4%;  left: 46%; --len: 150px; animation: ts-shoot-fall 43s linear infinite 11s; }
 html.sky-night .ts-shoot--3 { top: 22%; left: 92%; --len: 130px; animation: ts-shoot-fall 67s linear infinite 26s; }
 /* ══ THE METEOR SHOWER — three nights in a hundred (2026-08-13) ══════════════════════
@@ -793,13 +974,13 @@ html.sky-night .ts-shoot--3 { top: 22%; left: 92%; --len: 130px; animation: ts-s
    41s. Pair them the other way and half the shower crawls while the other half blinks. */
 html.sky-night .ts-shoot--sh { display: none; }
 html.sky-night.meteor-night .ts-shoot--sh { display: block; }
-html.sky-night.meteor-night .ts-shoot--s1 { top: 2%;  left: 84%; --dx: -14vw; --dy: 17vw; --ang: -50.5deg; --len: 110px; animation: ts-shoot-fall 13s linear infinite 2s; }
+html.sky-night.meteor-night .ts-shoot--s1 { top: 2%;  left: 84%; --dx: -14vw; --dy: 17vw; --ang: -50.5deg; --len: 110px; animation: ts-shoot-fall-s 13s linear infinite 2s; }
 html.sky-night.meteor-night .ts-shoot--s2 { top: 4%;  left: 72%; --dx: -30vw; --dy: 12vw; --ang: -21.8deg; --len: 150px; animation: ts-shoot-fall 17s linear infinite 7s; }
-html.sky-night.meteor-night .ts-shoot--s3 { top: 22%; left: 66%; --dx: -35vw; --dy: 26vw; --ang: -36.6deg; --len: 150px; animation: ts-shoot-fall 19s linear infinite 4s; }
-html.sky-night.meteor-night .ts-shoot--s4 { top: 10%; left: 60%; --dx: -38vw; --dy: 13vw; --ang: -18.9deg; --len: 170px; animation: ts-shoot-fall 23s linear infinite 11s; }
-html.sky-night.meteor-night .ts-shoot--s5 { top: 6%;  left: 52%; --dx: -43vw; --dy: 9vw;  --ang: -11.8deg; --len: 175px; animation: ts-shoot-fall 31s linear infinite 6s; }
-html.sky-night.meteor-night .ts-shoot--s6 { top: 16%; left: 46%; --dx: -44vw; --dy: 14vw; --ang: -17.6deg; --len: 180px; animation: ts-shoot-fall 37s linear infinite 15s; }
-html.sky-night.meteor-night .ts-shoot--s7 { top: 12%; left: 30%; --dx: -49vw; --dy: 9vw;  --ang: -10.4deg; --len: 190px; animation: ts-shoot-fall 41s linear infinite 9s; }
+html.sky-night.meteor-night .ts-shoot--s3 { top: 22%; left: 66%; --dx: -35vw; --dy: 26vw; --ang: -36.6deg; --len: 150px; animation: ts-shoot-fall-m 19s linear infinite 4s; }
+html.sky-night.meteor-night .ts-shoot--s4 { top: 10%; left: 60%; --dx: -38vw; --dy: 13vw; --ang: -18.9deg; --len: 170px; animation: ts-shoot-fall-s 23s linear infinite 11s; }
+html.sky-night.meteor-night .ts-shoot--s5 { top: 6%;  left: 52%; --dx: -43vw; --dy: 9vw;  --ang: -11.8deg; --len: 175px; animation: ts-shoot-fall-m 31s linear infinite 6s; }
+html.sky-night.meteor-night .ts-shoot--s6 { top: 16%; left: 46%; --dx: -44vw; --dy: 14vw; --ang: -17.6deg; --len: 180px; animation: ts-shoot-fall-s 37s linear infinite 15s; }
+html.sky-night.meteor-night .ts-shoot--s7 { top: 12%; left: 30%; --dx: -49vw; --dy: 9vw;  --ang: -10.4deg; --len: 190px; animation: ts-shoot-fall-m 41s linear infinite 9s; }
 /* ⚑ THE FIREBALL — one in the shower is a bolide: slower, longer, and warm rather than
    white, because a big one burns orange before it goes. 53s, so it lands roughly once a
    minute and is never the streak you were expecting. It is still one 3px dot and one
@@ -808,7 +989,7 @@ html.sky-night.meteor-night .ts-shoot--fb {
   top: 8%; left: 78%; --dx: -42vw; --dy: 36vw; --ang: -40.6deg; --len: 300px;
   width: 5px; height: 5px;
   box-shadow: 0 0 16px 4px rgba(255, 244, 214, 0.95), 0 0 40px 10px rgba(255, 186, 96, 0.45);
-  animation: ts-shoot-fall 53s linear infinite 21s;
+  animation: ts-shoot-fall-s 53s linear infinite 21s;
 }
 html.sky-night.meteor-night .ts-shoot--fb::after {
   height: 3px;
@@ -824,6 +1005,43 @@ html.sky-night.meteor-night .ts-shoot--fb::after {
   0.4%           { opacity: 1; }
   3.4%           { opacity: 1; }
   4%             { transform: translate3d(var(--dx, -46vw), var(--dy, 20vw), 0);      opacity: 0; }
+  100%           { transform: translate3d(var(--dx, -46vw), var(--dy, 20vw), 0);      opacity: 0; }
+}
+/* ══ TWO SLOWER SHUTTERS — 2026-08-20 ═══════════════════════════════════════════════════
+   Nate: "the meteors look good — can we have them fly at more variable speeds? Maybe slow
+   them down a bit, in general?"
+
+   ⚠⚠ SPEED AND FREQUENCY WERE THE SAME NUMBER, WHICH IS WHY THIS NEEDED NEW KEYFRAMES AND
+   NOT NEW VALUES. A streak crosses its whole flight inside the first 4% of its cycle, so
+   `speed = distance ÷ (0.04 × cycle)`. There were only two dials and each one moved both
+   things at once: lengthen the cycle to slow a streak down and it also becomes rarer;
+   shorten the flight and it slows down by getting *smaller*. The shower is deliberately
+   tuned to one crossing every ~3 seconds, so paying for speed with frequency was the one
+   trade not available.
+
+   ⭐ THE THIRD DIAL IS THE SHUTTER — what fraction of the cycle the streak is visible for.
+   Same distance, same cycle, twice the window, half the speed. CSS keyframe percentages
+   cannot take a custom property, so it is three keyframes rather than one variable; they
+   are otherwise identical, and the opacity ramps are scaled with the window so every streak
+   still fades in and out over the same PROPORTION of its own flight.
+
+   MEASURED, in viewport-widths per second, before → after:
+     before  26 · 30 · 31 · 35 · 44 · 47 · 57      (2.2× spread, mean 39)
+     after   13 · 21 · 22 · 22 · 26 · 42 · 47      (3.6× spread, mean 26)
+   So a third slower on average and noticeably less uniform — and the shower still throws
+   the same number of streaks per minute, which is the whole point of doing it this way. */
+@keyframes ts-shoot-fall-m {
+  0%             { transform: translate3d(0, 0, 0);                                  opacity: 0; }
+  0.55%          { opacity: 1; }
+  4.7%           { opacity: 1; }
+  5.5%           { transform: translate3d(var(--dx, -46vw), var(--dy, 20vw), 0);      opacity: 0; }
+  100%           { transform: translate3d(var(--dx, -46vw), var(--dy, 20vw), 0);      opacity: 0; }
+}
+@keyframes ts-shoot-fall-s {
+  0%             { transform: translate3d(0, 0, 0);                                  opacity: 0; }
+  0.8%           { opacity: 1; }
+  6.8%           { opacity: 1; }
+  8%             { transform: translate3d(var(--dx, -46vw), var(--dy, 20vw), 0);      opacity: 0; }
   100%           { transform: translate3d(var(--dx, -46vw), var(--dy, 20vw), 0);      opacity: 0; }
 }
 
