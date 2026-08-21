@@ -1425,13 +1425,48 @@ body_class: theme-hall
      `austonPanel()` draws the one seat that is not a rung. If these ever grow two renderers,
      the away-day treatment, the star pair, the lamp and the locked price all have to be kept
      in step by hand — and she is the seat with the most of those. */
+  /* ⛑⛑ TWO SHELVES THAT SLIDE ON THEIR OWN, EASY ONES ON TOP (2026-08-20). Nate, of the
+     bench rail that shipped this morning: *"can the rows slide separately? and can we
+     re-order the characters so the top row is the easier bots and the second row is the
+     harder ones, from left to right?"*
+
+     The 08-20 rail was ONE grid, two rows, COLUMN-major — so the rungs read DOWN then
+     across (400/750 · 1000/1200 · …) and both rows moved under one thumb. He is asking for
+     the opposite of both: read ACROSS, and give each shelf its own scroll.
+
+     ⭐ THE SPLIT IS DERIVED, NOT TYPED. Sorted by rating and cut in half, so "easier on
+     top" is true by construction — a seat re-rated tomorrow lands on the right shelf with
+     nothing here to update. Same rule as every other derived list on this page.
+     ⚠ SORTED BY `elo` RATHER THAN TRUSTING FILE ORDER. `Object.keys(BOTS)` happens to be in
+     ladder order today and several things rely on that, but "easier" is a statement about
+     the NUMBER, and this is the one place that should say so out loud.
+     ⚠ Auston is not here — she is not a rung, and `austonPanel()` still draws her alone.
+
+     ⚠⚠ THE ROWS ARE `display: contents` ON A DESKTOP, which is what keeps this from being
+     a layout change up there: the eight cards stay direct flex children of `.pt-bots` and
+     the row wraps exactly as it did. Only under 700px do the wrappers become boxes.
+     See the rail block near the foot of this page's own stylesheet.
+
+     ⚠⚠ DO NOT WRITE A LITERAL STYLE TAG IN A COMMENT ON THIS PAGE. This paragraph ended
+     with the words "in this page's" and an actual opening style tag for about ten minutes.
+     `tests/mobile.check.js` lifts this page's CSS with a greedy match from the first style
+     tag to the last closing one — so it matched HERE, in the middle of a function, and
+     handed the probe 106KB of JavaScript as a stylesheet. ZERO rules parsed, and the rail
+     measured as an unstyled div. The gate asserts the extract really is CSS now, but the
+     cheapest fix is not to plant the token. [[green-must-name-what-ran]] */
   function botsPanel(){
     if (!botsReady()) return '';
     var saved = botLoad();
     var showStars = anyStar();
+    var rungs = Object.keys(BOTS).filter(function (id) { return !BOTS[id].adaptive; })
+      .sort(function (a, b) { return BOTS[a].elo - BOTS[b].elo; });
+    var half = Math.ceil(rungs.length / 2);
+    var shelf = function (ids) {
+      return '<div class="pt-bots-row">' +
+        ids.map(function (id) { return botCard(id, saved, showStars); }).join('') + '</div>';
+    };
     return '<div class="pt-actions pt-bots">' +
-      Object.keys(BOTS).filter(function (id) { return !BOTS[id].adaptive; })
-        .map(function (id) { return botCard(id, saved, showStars); }).join('') + '</div>';
+      shelf(rungs.slice(0, half)) + shelf(rungs.slice(half)) + '</div>';
   }
 
   /* ── THE SEAT THAT IS NOT A RUNG ──────────────────────────────────────────────────
@@ -3114,6 +3149,14 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
 .pt-card-t i { font-style: normal; color: #8b93a1; font-size: 0.78rem; }
 /* the park regulars sit in one tighter row — eight of them since 2026-08-10 */
 .pt-bots { margin-top: 4px; }
+/* ⚠⚠ THE TWO SHELVES ARE NOT DRAWN ABOVE 700px, AND THAT IS THE WHOLE DESKTOP STORY
+   (2026-08-20). `botsPanel()` wraps the rungs in two `.pt-bots-row` boxes so a phone can
+   give each one its own thumb; `display: contents` makes those boxes vanish from the box
+   tree up here, so the eight cards remain direct flex children of `.pt-bots` and the bench
+   wraps exactly as it always has. A `min-width: 0` on a box nobody draws would be noise —
+   every rail declaration lives in the @media block near the bottom of this file, and there
+   is exactly one place that describes the desktop bench. */
+.pt-bots-row { display: contents; }
 .pt-bots .pt-card { flex: 1 1 140px; padding: 11px 14px; }
 .pt-bots .pt-card-icon { font-size: 22px; }
 
@@ -3176,19 +3219,37 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
    `calc(50% - 30px)` at a 10px gap — state the intent, do not reverse-engineer it from a
    percentage that renders as 2.02 columns. On a device with no hover and no scrollbar the
    peek is the ONLY thing that says the row moves.
-   ⚠ COLUMN-MAJOR, so the ladder still reads in order: two rungs down, then across.
-   ⚠ HIS OTHER IDEA — open seats on row 1, locked on row 2 — was BUILT AND MEASURED FIRST.
-   With six open and two locked it makes a six-column rail whose bottom shelf is empty for
-   two-thirds of the scroll, which reads as a broken row rather than as a shelf of things
-   still shut. Column-major is four columns and no holes. [[pick-visual-values-from-a-render]]
-   ⚠ Auston is NOT in the rail. Her block is one card in its own section; a scroll
+   ⛑⛑ 2026-08-20, LATER THE SAME DAY — TWO SHELVES, EACH WITH ITS OWN THUMB. Nate:
+   *"can the rows slide separately? and can we re-order the characters so the top row is
+   the easier bots and the second row is the harder ones, from left to right?"*
+
+   That reverses BOTH halves of the note below, which is kept because the reasoning it
+   records is still true of the shape it describes — it just is not the shape any more:
+     · one grid, two rows → TWO rails, one row each. Two scroll containers, two thumbs.
+     · COLUMN-major (down, then across) → ROW-major. Rungs read left to right, easy shelf
+       on top, and the split is derived from the ratings in `botsPanel()`.
+   ⚠⚠ HIS EARLIER IDEA (open seats on row 1, locked on row 2) IS STILL NOT WHAT THIS IS,
+   and the measurement under it still stands — the shelves are split by RATING, which is
+   4 and 4 and cannot leave a hole, not by whether a seat is shut.
+
+   ⚠⚠ `display: contents` IS WHAT KEEPS THE DESKTOP UNTOUCHED. The two `.pt-bots-row`
+   wrappers exist in the markup at every width; above 700px they are boxes that are not
+   drawn, so their eight cards are still direct flex children of `.pt-bots` and the bench
+   wraps exactly as it did. Nothing about the desktop bench is restated here — which is the
+   point, because a second set of desktop rules is a second thing to keep in step.
+
+   ⚠ THE COLUMN MATH IS UNCHANGED (`calc(50% - 22px)`, 10px gap, 8px card padding) — it was
+   measured against the longest rating string and that string has not moved. One row instead
+   of two changes what is ABOVE and BELOW a card, never how wide it is.
+   ⚠ Auston is NOT in either rail. Her block is one card in its own section; a scroll
    container around a single item is a rail that cannot move. */
 @media (max-width: 700px) {
-  .pt-bots:not(.pt-bots--adapt) {
+  /* the rails are the ROWS now, so the panel itself goes back to being an ordinary block */
+  .pt-bots:not(.pt-bots--adapt) { display: block; }
+  .pt-bots:not(.pt-bots--adapt) > .pt-bots-row {
     display: grid;
     grid-auto-flow: column;
     grid-auto-columns: calc(50% - 22px);
-    grid-template-rows: repeat(2, auto);
     gap: 10px;
     min-width: 0;
     overflow-x: auto;
@@ -3201,7 +3262,11 @@ body.pt-room .pt-moves { align-self: flex-start; max-height: min(460px, max(280p
     padding: 3px 2px 10px;
     scrollbar-width: thin;
   }
-  .pt-bots:not(.pt-bots--adapt) > .pt-card { min-width: 0; scroll-snap-align: start; padding: 11px 8px; }
+  /* ⚠ THE SHELVES SIT CLOSER THAN TWO GRID ROWS DID. Each rail already carries 3px of top
+     and 10px of bottom padding for the focus ring, so a 10px gap between them would read as
+     a gap of 23. -2px lands the shelves 11px apart, which is the 10px the grid had. */
+  .pt-bots:not(.pt-bots--adapt) > .pt-bots-row + .pt-bots-row { margin-top: -2px; }
+  .pt-bots:not(.pt-bots--adapt) .pt-card { min-width: 0; scroll-snap-align: start; padding: 11px 8px; }
   /* ⭐ THE COLUMN AND THE PADDING WERE SIZED AGAINST THE LONGEST RATING, NOT PICKED.
      `calc(50% - 30px)` (a 40px peek, the cast rail's number) renders a 114px column, which
      leaves 86px of text and breaks “Beginner · 400” across two lines — splitting a

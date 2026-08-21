@@ -145,7 +145,20 @@
      preview is about to override the forecast. Called with nothing, it is the town's
      real day, exactly as before. */
   function clouds(kind, lv) {
-    if (kind === undefined) {
+    /* ⚠⚠ WHETHER THE CALLER NAMED THE WEATHER IS ITSELF AN ANSWER (2026-08-20). A `?wx=`
+       preview and the town's own day both land here, and for `clear` they want OPPOSITE
+       things — which is why `tests/weather.check.js` was red on `main`, and red on SIX DAYS
+       IN TEN, because the table below is rolled off `daySeed()`. It passed on the day it was
+       written and became a time bomb; nobody had changed a line.
+         · the TOWN's clear day keeps its variety — the table, his 2026-07-13 ask.
+         · a PREVIEW that says `clear` gets a clear sky. His words on this exact flag:
+           *"clear should be exactly that. Clear. There are clouds on it currently."* A
+           preview URL that shows you something other than the thing you named is not a
+           preview; it is a second forecast.
+       ⭐ THIS IS THE "IF HE WANTS CLEAR TO MEAN LITERALLY ZERO CLOUD, IT IS THIS ONE LINE"
+       the note above promised — scoped to the preview, so the town is untouched. */
+    var asked = kind !== undefined;
+    if (!asked) {
       if (eclipseDay()) return 0;                 // see weather() — the eclipse gets a clear sky
       if (rareSky()) return 0;                    // …and so do the shower and the aurora
       kind = weather().kind;
@@ -153,6 +166,7 @@
     if (lv === undefined) lv = level();
     if (kind === 'rain' || kind === 'snow') return lv === 2 ? 3 : 2;   // snow needs a deck too
     if (kind === 'mist') return 2;
+    if (asked) return 0;                          // you asked for clear; you get clear
     return [0, 0, 1, 1, 0, 2, 1, 0, 1, 0][(daySeed() >>> 11) % 10];
   }
   // Where the ONE orb hangs (2026-07-14 Nate: "the sun and moon should follow an arc

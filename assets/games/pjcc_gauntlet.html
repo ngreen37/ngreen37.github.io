@@ -131,7 +131,18 @@
      the boss card, game over) still center exactly as before — `safe` only ever changes the
      case that was already broken. ⚑ Same one-word fix as `body` above, same reason. */
   .overlay { position:absolute; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:safe center;
-    padding:22px; text-align:center; border-radius:12px; background:radial-gradient(circle at 50% 22%, #241452 0%, #0c0820 82%); overflow-y:auto; }
+    padding:22px; text-align:center; border-radius:12px; background:radial-gradient(circle at 50% 22%, #241452 0%, #0c0820 82%);
+    overflow-y:auto; overflow-x:hidden; }
+  /* ⚠⚠ `overflow-x:hidden` IS NOT NOISE — WITHOUT IT THIS BOX PANS SIDEWAYS (2026-08-20).
+     Nate: *"The gauntlet game window still slides left to right unnecessarily."* An
+     `overflow-y:auto` element does NOT keep `overflow-x:visible` — the used value becomes
+     `auto`, so every overlay in this game has silently been a HORIZONTAL scroll container
+     too. `html,body` in here are `overflow:hidden`, so the DOCUMENT can never pan and every
+     document-level probe on this site reads +0: the pan he could feel was one box further
+     in. The Tower slid 137px at a 320px phone. [[mobile-window-slide]]
+     ⚠ It is the FLOOR, not the fix — the thing that was too wide is fixed at `.tz-hint`
+     below. `hidden`, not `clip`, because Safari only learned `clip` in 16 and this is the
+     browser he is on. */
   .overlay.hidden { display:none; }
   .eyebrow { font-size:11px; letter-spacing:4px; color:#9a7fd4; text-transform:uppercase; margin-bottom:10px; }
   .big-title { font-size:32px; font-weight:900; color:#F5C518; letter-spacing:1px; text-shadow:0 3px 0 #6a4400, 0 0 22px rgba(245,197,24,0.45); margin-bottom:4px; }
@@ -185,6 +196,13 @@
   .tw-zone:first-child { margin-top:2px; }
   .tw-zone .tz-line { flex:1; height:1px; background:linear-gradient(90deg, currentColor, transparent); opacity:0.5; }
   .tw-zone .tz-name { font-size:10px; letter-spacing:2px; text-transform:uppercase; font-weight:800; white-space:nowrap; }
+  /* ⭐ THE ONE ROW IN THIS BAND THAT IS A SENTENCE, NOT A LABEL (2026-08-20). Region names
+     ("CHECKER TOWN") are two short words and `nowrap` is right for them. The secret-floors
+     whisper is 44 characters — 345px at this size and tracking — and `nowrap` made it 345px
+     inside a 188px stage on a 320px phone, which is what was sliding the game window.
+     ⚠ `min-width:0` as well as the wrap: a flex item's AUTO minimum is its min-content, so
+     the row could still be widened by the longest word without it. */
+  .tw-zone .tz-hint { white-space:normal; min-width:0; text-align:left; line-height:1.5; }
   .tw-floor { position:relative; z-index:1; display:flex; align-items:center; gap:11px; text-align:left; cursor:pointer;
     background:#1a1040; border:1px solid #4a3a86; border-radius:11px; padding:8px 12px; margin:5px 0;
     transition:transform .09s, border-color .15s, box-shadow .15s; }
@@ -1410,7 +1428,7 @@ function showLadder(){
   if (!secretOpen(prog)){
     var hint = document.createElement('div'); hint.className = 'tw-zone';
     hint.style.color = '#6b5fa0';
-    hint.innerHTML = '<span class="tz-name">the elevator panel has three unmarked buttons</span><span class="tz-line"></span>';
+    hint.innerHTML = '<span class="tz-name tz-hint">the elevator panel has three unmarked buttons</span><span class="tz-line"></span>';
     host.appendChild(hint);
   }
   for (var i = top; i >= 0; i--){                       // top floor down to the street

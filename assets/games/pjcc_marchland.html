@@ -57,10 +57,22 @@
 
   #wrap { width: 100%; max-width: 460px; height: 100%; max-height: 760px;
     display: flex; flex-direction: column; position: relative; }
-  .screen { display: none; flex: 1; flex-direction: column; padding: 14px; overflow-y: auto; }
+  /* ⚠ `overflow-x: hidden` (2026-08-20). `overflow-y: auto` does NOT leave the other axis
+     `visible` — the used value becomes `auto` — so every screen in here was a SIDEWAYS
+     scroll container as well, and the home screen slid 9px at a 320px phone. The floor;
+     the fix is the fluid title below. [[mobile-window-slide]] */
+  .screen { display: none; flex: 1; flex-direction: column; padding: 14px; overflow-y: auto; overflow-x: hidden; }
   .screen.on { display: flex; }
 
-  h1 { font-size: 30px; letter-spacing: 6px; font-weight: 900; text-align: center; }
+  /* ⚠ MEASURED, NOT SOFTENED: "MARCHLAND" is ONE unbreakable word, and at 30px with 6px of
+     tracking it is 213px wide inside the 204px a 320px phone gives it — 9px of text painting
+     past a box that never changed size, which is why an element-by-element probe found
+     nothing to blame. Both numbers scale with the stage (inside an iframe `vw` is the
+     iframe), and both keep their old value from ~455px up, so nothing moves on a desktop.
+     ⭐ The size AND the tracking have to scale — tracking is 54 of those 213px.
+     Same family as /dispatch/'s "TRANSMISSIONS". [[mobile-window-slide]] */
+  h1 { font-size: clamp(21px, 6.6vw, 30px); letter-spacing: clamp(2px, 1.32vw, 6px);
+       font-weight: 900; text-align: center; }
   h2 { font-size: 15px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-3);
        font-weight: 700; text-align: center; margin-bottom: 8px; }
   .sub { text-align: center; color: var(--ink-2); font-size: 13px; line-height: 1.6; }

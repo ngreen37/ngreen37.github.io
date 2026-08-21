@@ -90,7 +90,12 @@
     display: flex; flex-direction: column; align-items: center;
     justify-content: center;
     justify-content: safe center;
-    overflow-y: auto; overscroll-behavior: contain;
+    /* ⚠ `overflow-x: hidden` IS LOAD-BEARING (2026-08-20). `overflow-y: auto` does NOT leave
+       the other axis `visible` — the used value becomes `auto`, so this overlay was a
+       SIDEWAYS scroll container as well, and the deck list slid it 16px at a 320px phone.
+       Same class of bug as the Gauntlet's Tower, found by the same sweep, and the same
+       floor: the real fix is `.deck-info { min-width: 0 }` below. [[mobile-window-slide]] */
+    overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
     padding: 20px; text-align: center;
     background:
       repeating-linear-gradient(90deg, rgba(0,0,0,0.16) 0 2px, rgba(0,0,0,0) 2px 26px),
@@ -119,7 +124,12 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 24px; box-shadow: inset 0 -3px 6px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.4);
   }
-  .deck-info { flex: 1; text-align: left; }
+  /* ⚠ `min-width: 0` — a flex item's AUTO minimum is its MIN-CONTENT, so this column could
+     not shrink below its longest opening name and pushed the "2 due" pill 36px past the
+     card on a 320px phone. The badge and the pill are both `flex-shrink: 0` (rightly — a
+     44px target and a pill that must not ellipsize), so this is the only column that can
+     give. [[mobile-window-slide]] */
+  .deck-info { flex: 1; min-width: 0; text-align: left; }
   .deck-name { font-size: 15px; font-weight: bold; color: #fff; }
   .deck-sub { font-size: 10.5px; color: #c9a36a; margin-top: 1px; }
   .deck-stars { font-size: 12px; letter-spacing: 1px; margin-top: 2px; }

@@ -1248,6 +1248,39 @@ description: Free chess for everyone — play a real game, solve a puzzle, or le
 .mc-door > b { display: block; color: var(--fd-ink); font-size: 1.05rem; margin-bottom: 5px; }
 .mc-door > small { display: block; color: var(--fd-ink-3); font-size: 0.84rem; line-height: 1.55; }
 
+/* ══ THE SIX DOORS LINE UP — TWO THINGS WERE OUT, NOT ONE (2026-08-20) ═══════════════
+   Nate, with a screenshot of this grid: *"It looks fine [on the PC], but on mobile the
+   centering is off on the icons and text — can we clean it up both on the mobile site and
+   the PC site?"*
+
+   ⚠⚠ MEASURED BEFORE ANYTHING MOVED, and the answer was two independent offsets:
+
+     1. THE GAUNTLET'S ART BLOCK WAS 66px, NOT 71 — so its title sat 5px above every
+        neighbor's, on EVERY width including the desktop. The note above this rule claims
+        "`.mc-door-ico` pins the art block to 71px on all four", which is true and is
+        exactly the trap: the Gauntlet's art block is NOT `.mc-door-ico`, it is `.gdoor`,
+        and no rule ever gave it the band. ⭐ A COMMENT CAN DESCRIBE A SAFEGUARD THAT WAS
+        NEVER BUILT FOR THE ONE CASE IT MATTERS FOR. [[audit-numbers-can-be-wrong]]
+
+     2. A TITLE THAT WRAPS PUSHES ITS OWN SUBTITLE OUT OF THE ROW. At 390px "Find Your
+        Rating" takes two lines and "Follow" takes one, so the two subtitles beside each
+        other started 28px apart — measured 164 vs 136 from the top of the card. This is
+        the phone-only half of what he saw, and it is why the desktop "looks fine": at
+        1080px and up every title is one line and the raggedness has nothing to show.
+
+   ⭐ THE FIX IS TWO BANDS, NOT A NEW ALIGNMENT. Nothing here re-centers anything — the
+   front door's doors are left-aligned editorial cards and he said the desktop reads right.
+   Give the art the same height on all six and the title the same height wherever it can
+   wrap, and the icons, the titles and the subtitles each land on one line across a row.
+   ⚠ TITLES ARE PINNED ONLY UNDER 1080px — the same breakpoint that takes the grid to two
+   columns, because that is exactly where a title starts wrapping. Reserving a second line
+   on the desktop would buy nothing and cost 21px of air under all six. */
+.mc-door--gauntlet .gdoor { min-height: 71px; justify-content: center; }
+@media (max-width: 1080px) {
+  /* two lines of the title's own type, stated in its own em so it tracks the font-size */
+  .mc-door > b { line-height: 1.3; min-height: 2.6em; }
+}
+
 /* ══ THE LEAD DOOR — the one primary thing (2026-08-04) ═══════════════════════════
    It is `.mc-door` first and `.mc-lead` second, so it IS one of the boxes and inherits every
    one of their rules; this class only says how it is MORE. Four ways, and no more than four —

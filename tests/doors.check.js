@@ -459,5 +459,32 @@ const PARTIAL = read('_sass/_pjcc-21-gauntlet-door.scss');
                 : 'door, glyph, knob, seam and floor one\'s cloth + rod all in cqw');
 }
 
+/* ══ THE DOOR STANDS IN THE SAME BAND AS THE FIVE GLYPHS (2026-08-20) ═════════════════
+   Nate, with a screenshot of the front door's "More Ways In" grid: *"on mobile the
+   centering is off on the icons and text."*
+
+   ⚠⚠ IT WAS OFF ON THE DESKTOP TOO, BY 5px, SINCE THE DAY THE DOOR WENT IN THAT BOX.
+   `.mc-door-ico` pins the art block to 71px, and the note above that rule says it does so
+   "on all four" — which is true of the four cards whose art IS `.mc-door-ico`, and says
+   nothing about the one card whose art is `.gdoor`. That card's block measured 66px, so its
+   title and subtitle sat 5px above every neighbor's. ⭐ A COMMENT CAN DESCRIBE A SAFEGUARD
+   THAT WAS NEVER BUILT FOR THE ONE CASE IT MATTERS FOR. [[audit-numbers-can-be-wrong]]
+
+   ⚠ THIS IS A SOURCE CHECK, NOT A RENDER — it gates the invariant that the two numbers
+   AGREE, which is the thing a later edit breaks by touching one of them. It cannot see
+   whether the band is the right height, only that the door and the glyphs share it. The
+   rendered proof is in the batch notes (all six cards: art 71px at top 21, title at 102,
+   subtitle at 151 on a phone / 136 on a desktop). */
+{
+  const home = read('index.md');
+  const band = (/\.mc-door-ico\s*\{[^}]*min-height:\s*(\d+)px/.exec(home) || [])[1];
+  const gate = (/\.mc-door--gauntlet\s+\.gdoor\s*\{[^}]*min-height:\s*(\d+)px/.exec(home) || [])[1];
+  check('the front door gives its Gauntlet card the same art band as the five glyphs',
+    !!band && band === gate,
+    band && gate ? '.mc-door-ico ' + band + 'px = .mc-door--gauntlet .gdoor ' + gate + 'px'
+      : '.mc-door-ico ' + (band || 'NOT FOUND') + ' vs .gdoor ' + (gate || 'NOT FOUND') +
+        '  ← the door sits in a shorter block and lifts its own title off the row');
+}
+
 console.log(`\n  ${pass} passed, ${fail} failed\n`);
 process.exit(fail ? 1 : 0);

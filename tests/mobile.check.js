@@ -488,16 +488,37 @@ const WIDTHS = [320, 360, 390, 430];
     const botCard = (bench.match(/'<button class="pt-card pt-bot'[\s\S]{0,400}?<\/span><\/button>'/) || [''])[0];
     const dsr = read('dossier.md');
     const achOwn = (dsr.match(/\.dsr-ach-grid[\s\S]*?\n\}/) || [''])[0];
+    /* ⛑⛑ THE BENCH IS TWO RAILS NOW, ONE ROW EACH (2026-08-20). Nate: *"can the rows slide
+       separately? and can we re-order the characters so the top row is the easier bots and
+       the second row is the harder ones, from left to right?"* So the thing to assert moved
+       from `.pt-bots` (one grid, two rows) to `.pt-bots-row` (two grids, one row each) —
+       and `rows: 1` here is not a relaxation, it is the ask: a second row inside one of
+       these means the shelves have merged back into a grid. */
+    const benchCard = (i) =>
+      '<button class="pt-card pt-bot" data-bot="b' + i + '" style="--bot:#7ad0a8">' +
+      '<span class="pt-card-icon">♜</span><span class="pt-card-t">Maxwell' +
+      '<span class="pt-stars"><span class="pt-star pt-star--w pt-star--none"></span>' +
+      '<span class="pt-star pt-star--b pt-star--none"></span></span>' +
+      '<br><i>Beginner · 400</i></span></button>';
     const RAILS = [
-      { name: 'the Park Tables bench', sel: '.pt-bots',
+      { name: 'the Park Tables bench — easier shelf', sel: '.pt-bots-row',
         own: (bench.match(/<style>([\s\S]*)<\/style>/) || [, ''])[1],
-        rows: 2, n: 8,
-        html: (n) => '<div class="pt-actions pt-bots">' + Array.from({ length: n }, (_, i) =>
-          '<button class="pt-card pt-bot" data-bot="b' + i + '" style="--bot:#7ad0a8">' +
-          '<span class="pt-card-icon">♜</span><span class="pt-card-t">Maxwell' +
-          '<span class="pt-stars"><span class="pt-star pt-star--w pt-star--none"></span>' +
-          '<span class="pt-star pt-star--b pt-star--none"></span></span>' +
-          '<br><i>Beginner · 400</i></span></button>').join('') + '</div>' },
+        rows: 1, n: 4,
+        html: (n) => '<div class="pt-actions pt-bots"><div class="pt-bots-row">' +
+          Array.from({ length: n }, (_, i) => benchCard(i)).join('') + '</div>' +
+          '<div class="pt-bots-row">' +
+          Array.from({ length: n }, (_, i) => benchCard(i + n)).join('') + '</div></div>' },
+      /* ⭐ THE SECOND SHELF IS ITS OWN ENTRY, NOT AN ASSUMPTION. "Slide separately" is only
+         true if there are two scroll containers, so both are measured through selectors
+         that cannot resolve to the same element — a single grid wearing the class twice
+         would fail the sibling selector outright. */
+      { name: 'the Park Tables bench — harder shelf', sel: '.pt-bots-row + .pt-bots-row',
+        own: (bench.match(/<style>([\s\S]*)<\/style>/) || [, ''])[1],
+        rows: 1, n: 4,
+        html: (n) => '<div class="pt-actions pt-bots"><div class="pt-bots-row">' +
+          Array.from({ length: n }, (_, i) => benchCard(i)).join('') + '</div>' +
+          '<div class="pt-bots-row">' +
+          Array.from({ length: n }, (_, i) => benchCard(i + n)).join('') + '</div></div>' },
       { name: 'the dossier trophy shelf', sel: '.dsr-ach-grid',
         own: achOwn ? (dsr.match(/<style>([\s\S]*?)<\/style>/g) || []).map((b) => b.replace(/<\/?style>/g, '')).join('\n') : '',
         rows: 1, n: 12,
@@ -510,6 +531,43 @@ const WIDTHS = [320, 360, 390, 430];
       !!botCard && !!achOwn,
       (botCard ? 'bench card ' + botCard.length + 'c' : 'NO BENCH CARD') + ' · ' +
       (achOwn ? 'dossier grid rule found' : 'NO DOSSIER RULE'));
+
+    /* ⚠⚠ PROVE THE EXTRACT IS CSS — THIS EXACT PROBE SILENTLY MEASURED JAVASCRIPT FOR ONE
+       EDIT (2026-08-20). The bench's stylesheet is lifted with a GREEDY match from the
+       first style tag to the last closing one. A comment written into `botsPanel()` on the
+       park-tables page happened to contain a literal opening style tag, so the match began
+       IN THE MIDDLE OF A FUNCTION and handed the browser 106KB of JavaScript. Chrome parsed
+       ZERO rules, the rail rendered as an unstyled div, and nothing here said so — the
+       "holding real card markup" check above is about the MARKUP and was perfectly happy.
+       ⭐ A probe that assembles its own page has to assert that every part of that page
+       arrived, not just the interesting one. [[green-must-name-what-ran]] */
+    {
+      const own = (bench.match(/<style>([\s\S]*)<\/style>/) || [, ''])[1];
+      const tmp = path.join(os.tmpdir(), 'pjcc_cssprobe_' + Date.now() + '.html');
+      fs.writeFileSync(tmp, '<!doctype html><meta charset="utf-8"><style>' + own + '</style>');
+      await page.goto('file:///' + tmp.split(path.sep).join('/'), { waitUntil: 'load' });
+      const m = await page.evaluate(() => {
+        try {
+          const flat = [];
+          (function walk(list) {
+            for (const r of list) { flat.push(r); if (r.cssRules) walk([...r.cssRules]); }
+          })([...document.styleSheets[0].cssRules]);
+          return { n: flat.length,
+            rail: flat.filter((r) => /\.pt-bots-row/.test(r.selectorText || '')).length };
+        } catch (e) { return { n: -1, rail: 0 }; }
+      });
+      fs.unlinkSync(tmp);
+      /* ⚠ BOTH HALVES, AND THE SECOND IS THE SHARP ONE. The count is a tripwire — the
+         failure mode was literally ZERO rules — but a count cannot tell you the RIGHT
+         stylesheet arrived. The rail rules are what the two shelf checks below depend on,
+         so their presence is the thing worth asserting by name.
+         ⭐ 226 is MEASURED (206 top-level + 20 nested), not estimated: the first draft of
+         this line guessed a floor of 400 and went red against correct CSS. A number in a
+         test is a measurement or it is a bug. [[audit-numbers-can-be-wrong]] */
+      check("⚠⚠ the bench's own stylesheet extract really parses as CSS", m.n > 100 && m.rail >= 3,
+        m.n + ' rules parsed from ' + own.length + ' chars, ' + m.rail + ' of them the rail' +
+        (m.n > 100 && m.rail >= 3 ? '' : '  ← the greedy style-tag match grabbed the wrong thing'));
+    }
 
     for (const rail of RAILS) {
       const tmp = path.join(os.tmpdir(), 'pjcc_rail2_' + Date.now() + '.html');
@@ -566,6 +624,121 @@ const WIDTHS = [320, 360, 390, 430];
         bad.length ? bad.slice(0, 4).join(' · ') : WIDTHS.join(', ') + ': ' + rail.rows +
         ' row(s), scoped scroll, a real peek');
     }
+  }
+
+  /* ══ PART 1g — THE GAME WINDOW ITSELF ══════════════════════════════════════════
+     2026-08-20, Nate, after the page-level slide was fixed: *"The gauntlet game window
+     though, still slides left to right unnecessarily. Can we lock that in similarly to the
+     full windows of all pages?"*
+
+     ⚠⚠ EVERY OTHER CHECK IN THIS FILE WAS RIGHT TO STAY GREEN, AND SO WAS A LIVE SWEEP.
+     A game lives in an iframe whose document sets `html, body { overflow: hidden }`, so the
+     game's DOCUMENT can never pan and `scrollWidth - clientWidth` is 0 no matter what goes
+     wrong. Measured on the live page at 320/360/390/430, signed out AND with the profile
+     bar and the header pill filled in: +0 everywhere. The pan he could feel was one box
+     further in.
+
+     ⭐⭐ THE RULE THAT EXPLAINS IT: `overflow-y: auto` DOES NOT LEAVE THE OTHER AXIS ALONE.
+     A box with `overflow-y: auto` and no `overflow-x` computes overflow-x to `auto` as well
+     — so every full-bleed overlay in every game (the menu, the tower, game over) has always
+     been a HORIZONTAL scroll container too. One thing wider than the box and the window
+     slides. The Gauntlet's Tower slid 137px at a 320px phone: the secret-floors whisper
+     ("the elevator panel has three unmarked buttons") is 44 characters of `white-space:
+     nowrap`, 345px wide, inside a 188px stage.
+
+     ⭐ SWEPT, NOT SPOT-FIXED — 18 shells, and the Gauntlet was not alone: PIRC's deck list
+     slid 16px and MARCHLAND's home 9px, both only on a 320px phone. [[one-fix-every-instance]]
+     ⚠ IT ASKS THE RIGHT QUESTION: not "does the document overflow" but "is there a box that
+     IS a scroll container and DOES have somewhere to scroll to". Those are different
+     questions and only the second one can see this.
+     ⚠ The shells are served over http rather than file:// — several boot a Worker, and a
+     worker from a file:// origin never starts. */
+  {
+    const http = require('http');
+    const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
+      '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.wasm': 'application/wasm',
+      '.png': 'image/png', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.jpg': 'image/jpeg' };
+    const server = http.createServer((req, res) => {
+      const p = path.join(ROOT, decodeURIComponent(req.url.split('?')[0]));
+      fs.readFile(p, (e, b) => {
+        if (e) { res.writeHead(404); return res.end('nope'); }
+        res.writeHead(200, { 'Content-Type': MIME[path.extname(p).toLowerCase()] || 'application/octet-stream' });
+        res.end(b);
+      });
+    });
+    await new Promise((r) => server.listen(0, r));
+    const port = server.address().port;
+
+    const SHELLS = fs.readdirSync(path.join(ROOT, 'assets/games'))
+      .filter((f) => f.endsWith('.html')).sort();
+    /* ⭐ PROVE THE INSTRUMENT: an empty list is a green run that tested nothing. */
+    check('the game-shell sweep found the shells', SHELLS.length >= 15, SHELLS.length + ' shells');
+
+    /* the iframe's INNER width at a 320px and a 390px phone. `.wrapper` is 28px a side and
+       `.game-frame-wrap` 14px, and the gauntlet's own rule makes the stage 100vw-84 — all
+       three measured on the live page, where the frame came back 232px at 320 and 302 at 390. */
+    const STAGES = [232, 302];
+    const PANNERS = function () {
+      const out = [];
+      document.querySelectorAll('*').forEach(function (el) {
+        const cs = getComputedStyle(el);
+        if (cs.display === 'none' || cs.visibility === 'hidden') return;
+        const ox = cs.overflowX;
+        if (ox !== 'auto' && ox !== 'scroll') return;
+        const slide = Math.round(el.scrollWidth - el.clientWidth);
+        if (slide <= 1) return;
+        /* name what is actually past the edge — a failure has to point at the element or
+           the next person re-runs the whole investigation. A text node overflowing its own
+           box (an unbreakable word, a trailing letter-spacing) reports NO element, and that
+           reads as its own answer rather than as "clean". */
+        const br = el.getBoundingClientRect();
+        const edge = br.left + el.clientLeft + el.clientWidth - parseFloat(cs.paddingRight || 0);
+        let worst = null;
+        el.querySelectorAll('*').forEach(function (k) {
+          const r = k.getBoundingClientRect();
+          if (!r.width || r.right <= edge + 0.5) return;
+          if (!worst || r.right > worst.right) worst = { right: r.right,
+            sel: k.tagName.toLowerCase() + (k.id ? '#' + k.id : '') +
+              (typeof k.className === 'string' && k.className ? '.' + k.className.trim().split(/\s+/)[0] : '') };
+        });
+        out.push({ slide, box: Math.round(el.clientWidth),
+          sel: el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') +
+            (typeof el.className === 'string' && el.className ? '.' + el.className.trim().split(/\s+/)[0] : ''),
+          worst: worst ? worst.sel : '(a text run or a ::before — check both)' });
+      });
+      return out;
+    };
+
+    const slid = [];
+    for (const shell of SHELLS) {
+      for (const w of STAGES) {
+        await page.setViewport({ width: w, height: Math.round(w * 1.1364 + 228),
+          deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+        await page.goto('http://127.0.0.1:' + port + '/assets/games/' + shell, { waitUntil: 'load' });
+        await new Promise((r) => setTimeout(r, 500));
+        let found = await page.evaluate(PANNERS);
+        /* ⚠ THE TOWER IS A SECOND SCREEN AND IT IS THE ONE THAT WAS BROKEN. A shell's home
+           screen is not its only overlay, and the bug he reported was one click in. Only
+           the Gauntlet is driven — the others have no equivalent list — so this is coverage
+           of one extra screen, not of every screen, and saying so is the point. */
+        if (/gauntlet/.test(shell) && !found.length) {
+          try {
+            await page.click('#play-btn');
+            await new Promise((r) => setTimeout(r, 450));
+            found = await page.evaluate(PANNERS);
+          } catch (e) { /* no button on this shell — the home-screen result stands */ }
+        }
+        if (found.length) {
+          slid.push(shell + ' @' + w + 'px: ' + found[0].sel + ' pans ' +
+            found[0].slide + 'px [' + found[0].worst + ']');
+          break;
+        }
+      }
+    }
+    server.close();
+    check('⚠⚠ NOT ONE game window can be panned sideways inside its frame', slid.length === 0,
+      slid.length ? slid.slice(0, 4).join(' · ')
+        : SHELLS.length + ' shells × ' + STAGES.join('/') + 'px stages, + the Gauntlet\'s Tower');
   }
 
   /* ══ PART 1f — A TABLE CAN LOSE A COLUMN WITHOUT THE WINDOW MOVING ═════════════
