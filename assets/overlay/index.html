@@ -100,6 +100,18 @@
              margin-left: -4.5px; border-radius: 50%; background: #ffa07a;
              box-shadow: 0 0 0 2px rgba(0,0,0,0.35), 0 0 10px rgba(255,160,122,0.7); }
 
+  /* ⚑ THE RARE SKY, 2026-08-20 — Wave 1 of the special events. Same law as the number
+     above it: **real or not there.** No rare sky today means the element is REMOVED, not
+     dimmed and not showing a stale one, because a line on a stream gets read out loud.
+     ⚠ It sits UNDER the wordmark and above the counter so it never displaces the thing
+     the overlay is actually for. */
+  .ov-sky { display: flex; align-items: center; gap: 7px; margin: -4px 0 8px;
+            font-size: 11px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase;
+            color: #ffd9a0;
+            text-shadow: 0 1px 6px rgba(0,0,0,0.7), 0 0 2px rgba(0,0,0,0.9); }
+  .ov-sky.is-out { display: none; }
+  .ov-sky::before { content: '◈'; color: #ffa07a; letter-spacing: 0; }
+
   /* Only ever runs when the number actually CHANGED — see bump() */
   @keyframes ov-bump { 0% { transform: none; } 40% { transform: scale(1.18); } 100% { transform: none; } }
   .ov-n.is-bump { animation: ov-bump 620ms cubic-bezier(.2,.9,.25,1); display: inline-block; }
@@ -108,6 +120,7 @@
 <body>
   <div class="ov">
     <p class="ov-mark"><span class="wm-chess">Chess</span><span class="wm-wild">Wild</span><span class="wm-tld">.com</span></p>
+    <div class="ov-sky is-out" id="sky"></div>
     <div class="ov-line is-out" id="line">
       <span class="ov-goal">The first <b id="goal"></b>.</span>
       <span>You would be <span class="ov-n" id="n"></span></span>
@@ -118,6 +131,7 @@
   </div>
 
 <script src="/assets/js/pjcc-config.js"></script>
+<script src="/assets/js/pjcc-time.js"></script>
 <script>
 (function () {
   'use strict';
@@ -136,6 +150,47 @@
 
   function nfmt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
   goalEl.textContent = nfmt(GOAL);
+
+  /* ══ WHAT THE SKY IS DOING, IF IT IS DOING ANYTHING ════════════════════════════
+     Nate's idea #10: *"the overlay knows."* If he is live on an eclipse night the broadcast
+     should say so, from the same clock the site reads — so the stream and the site can never
+     disagree about what night it is. That is the whole reason it asks PJCC_TIME rather than
+     carrying its own date logic, exactly as the counter asks the real table rather than
+     remembering a number.
+
+     ⚠ IT GOES THROUGH `skyBeat`, not straight to `skyKind`. Every rare-sky feature is
+     eligible through one table so a night can light some of them and not others — the
+     overlay's beat happens to be a 100, but wiring past the table is how the Wave 2 features
+     would end up all firing at once. See SKY_BEATS in _includes/pjcc-time.js.
+
+     ⚠ NO CLOCK, NO LINE. Same failure rule as the count below: if pjcc-time.js did not
+     load, the element is removed rather than guessed at. */
+  (function () {
+    var sky = document.getElementById('sky');
+    if (!sky) return;
+    var T = window.PJCC_TIME;
+    if (!T || !T.skyKind || !T.skyBeat) return;          // no clock — the line stays removed
+    function paint() {
+      var kind = T.skyKind();
+      if (!kind || !T.skyBeat('overlay')) { sky.classList.add('is-out'); return; }
+      var txt;
+      if (kind === 'eclipse') {
+        var ec = T.eclipse();
+        txt = !ec.on ? 'Solar eclipse today'
+            : ec.total ? 'Total eclipse — now'
+            : 'Solar eclipse over Checker Town';
+      } else {
+        txt = kind === 'meteor' ? 'Meteor shower tonight' : 'Northern lights tonight';
+      }
+      sky.textContent = txt;
+      sky.classList.remove('is-out');
+    }
+    paint();
+    /* the eclipse is the one sky event that changes over MINUTES rather than hours, so a
+       stream left running through totality has to be re-read — the same reason the site
+       re-plots the orb every 30s. Everything else is a day-unit roll and this costs nothing. */
+    setInterval(paint, 30000);
+  })();
 
   /* ⚠ HIDE, NEVER GUESS. Called on every failure path there is. */
   function hide() { line.classList.add('is-out'); rail.classList.add('is-out'); last = null; }

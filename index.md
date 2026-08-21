@@ -1988,10 +1988,64 @@ html.reduce-flourish .mc-bench-seat > a:focus-visible { transform: none; }
     tell('');
   }
 
+  /* ══ THE PUZZLE WEARS THE NIGHT — 2026-08-20 ════════════════════════════════
+     Wave 1 of the rare-sky events. On an eclipse day the front door deals a mate that lands
+     on a DARK square; on a meteor night, one delivered by a piece arriving from across the
+     board. The position is still a real, proved mate in one — the only thing that changed
+     is WHICH of the sixty-four the deal prefers.
+
+     ⭐⭐ THE THEME IS DERIVED, NOT STORED, AND THAT IS THE WHOLE REASON THIS IS CHEAP. Every
+     property here falls out of `fen from to`, which the pool already carries and this page
+     already parses to draw the board. Tagging the pool instead would have meant a generator
+     change and a REGENERATION — sixty-four new random positions churned through
+     `npm run gen:puzzles` — to add information that was already sitting in the string.
+     ⚠ Which also means the proof is untouched: this cannot introduce a position the referee
+     did not verify, because it does not introduce positions at all. [[accuracy-above-all]]
+
+     ⭐ IT DEGRADES TO THE ORDINARY DEAL, ALWAYS. No clock, no rare sky, or no position in
+     the pool that fits tonight's theme — any of those and you get the plain random deal you
+     would have got anyway. There is no state in which the front door has no puzzle. */
+  var SQ_DARK = function (sq) { return ((sq % 8) + ((sq / 8) | 0)) % 2 === 1; };
+  /* which piece stands on `sq`, straight out of the FEN's 64 characters */
+  function pieceAt(fen, sq) {
+    var b = [], i, ch;
+    for (i = 0; i < fen.length; i++) {
+      ch = fen.charAt(i);
+      if (ch === '/') continue;
+      if (ch >= '1' && ch <= '9') { for (var k = 0; k < +ch; k++) b.push('.'); }
+      else b.push(ch);
+    }
+    return b[sq] || '.';
+  }
+  /* THE TWO THEMES, and each is one line about the mating move:
+       eclipse — the mate lands on a DARK square. The shadow takes the board.
+       meteor  — the mate arrives from a distance: a knight's leap, or four squares or
+                 more in a straight line. A strike out of nowhere, which is the picture. */
+  function fitsTheme(row, kind) {
+    var p = row.split(' '), fen = p[0], from = +p[1], to = +p[2];
+    if (kind === 'eclipse') return SQ_DARK(to);
+    if (kind === 'meteor') {
+      var pc = pieceAt(fen, from).toUpperCase();
+      if (pc === 'N') return true;
+      var dx = Math.abs((to % 8) - (from % 8)), dy = Math.abs(((to / 8) | 0) - ((from / 8) | 0));
+      return Math.max(dx, dy) >= 4;
+    }
+    return false;
+  }
+
   /* DEAL — a new position. The whole pool is already on the page, so dealing is a string
      split and one innerHTML: nothing fetched, nothing to wait for. */
   function deal() {
-    cur = POOL.length ? POOL[(Math.random() * POOL.length) | 0].split(' ') : null;
+    var pool = POOL;
+    try {
+      var T = window.PJCC_TIME;
+      if (T && T.skyKind && T.skyBeat && T.skyBeat('puzzle')) {
+        var kind = T.skyKind();
+        var themed = POOL.filter(function (row) { return fitsTheme(row, kind); });
+        if (themed.length) pool = themed;      // ⚠ only when the theme HAS positions
+      }
+    } catch (e) {}
+    cur = pool.length ? pool[(Math.random() * pool.length) | 0].split(' ') : null;
     paint();
   }
 

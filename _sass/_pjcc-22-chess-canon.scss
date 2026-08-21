@@ -38,6 +38,56 @@
   --piece-b-line: #f2e9ff;
 }
 
+/* ══ THE BOARDS GO DARK UNDER TOTALITY — 2026-08-20 ═══════════════════════════
+   Wave 1 of the rare-sky events Nate picked. The game you are in changes under the eclipse.
+
+   ⭐⭐ THIS IS A TOKEN OVERRIDE, NOT A THEME, AND THAT IS THE WHOLE IMPLEMENTATION. The
+   canon above is six custom properties that EVERY board on the site reads — Park Tables,
+   the Academy drill board, the review board, the queued-table minis, the front door's
+   puzzle and the drawn park table. Retinting the TOKENS means the whole town's chess goes
+   under the shadow together, in one rule, and comes back on its own when `--ecl` passes.
+   Forking a palette per board would have been six edits that drift. Same lesson as the
+   theme-hall de-purple: retint the token, not the page.
+
+   ⚠ IT IS GATED ON `eclipse-total`, NOT `eclipse`. The eclipse class is on for the whole
+   two-hour window, most of which is an ordinary bright afternoon with a bite out of the
+   sun — dimming the boards for two hours would read as a bug, not an event. `eclipse-total`
+   is only up while cover ≥ 0.97, which is about twenty minutes.
+
+   ⚠⚠ THE PIECES HAD TO MOVE TOO, AND THE DARK ONES ARE THE RISK. "Black" wears PJCC
+   purple (#4a3585), which sits close in luminance to any dimmed dark square — dim the
+   board and leave the pieces and the purple side quietly stops being findable on half the
+   squares. The dark squares go COOL and DEEP while the purple LIFTS, so the two separate
+   further than they do in daylight rather than less. Measured on a real render, not
+   reasoned: see the contrast note in the gate.
+
+   ⭐ The 1.2s transition is what makes it an event rather than a switch — totality arrives
+   over minutes, and the board should arrive with it. Color only; nothing animates layout,
+   nothing gains a layer, and `npm run motion` sees nothing here at all. */
+/* ⭐⭐ THESE FOUR WERE SWEPT AND MEASURED, NOT PICKED. The first guess (#8b8298 / #3c2f42 /
+   #7d63d6) looked right and dropped PURPLE-ON-LIGHT from 6.69 to **1.24** — worse than
+   anything in daylight — because the light square came down and the purple lifted until
+   they met in the middle. Contrast is a PAIRWISE property: you cannot move two colors
+   toward each other and check only the pair you were thinking about.
+   Swept 48 combinations against all four fill-vs-square pairs. Shipped:
+     white on dark 11.64 · purple on dark 2.08 · purple on light 2.49 · white on light 2.25
+   The worst pair is **2.08 against daylight's own worst of 1.47**, and square-vs-square is
+   5.17 against daylight's 3.49 — the board is MORE readable under the eclipse, not less,
+   which is what a stark low-light scene actually looks like. */
+html.eclipse-total {
+  --chess-lt: #a99fb4;          /* the sun-bleached maple, under a shadow */
+  --chess-dk: #382c42;          /* the oiled walnut, gone cold and plum */
+  --chess-frame: #241c2b;
+  --piece-w-fill: #f4f0fb;      /* white stays white — it is the only light left */
+  --piece-w-line: #241c2b;
+  --piece-b-fill: #6a4cb8;      /* the purple lifts, but only as far as the sweep allows */
+  --piece-b-line: #f7f1ff;
+}
+html.eclipse-total .pt-sq, html.eclipse-total .bc-sq,
+html.eclipse-total .pkt-board, html.eclipse-total .mcb-sq {
+  transition: background-color 1.2s ease, background 1.2s ease;
+}
+
 /* ── THE DRAWN PIECES (2026-07-22) ──────────────────────────────────────────────
    `_includes/chess-piece.html` — Staunton profiles as SVG, for places where the
    Unicode glyphs read as type instead of as objects (Nate: "actual pieces, that a

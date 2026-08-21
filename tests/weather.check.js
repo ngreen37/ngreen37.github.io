@@ -150,6 +150,13 @@ function loadClock(dateStr) {
     function FakeDate() { return new RealDate(fixed); }
     FakeDate.prototype = RealDate.prototype;
     FakeDate.now = () => fixed.getTime();
+    /* ⚠ THE STATICS HAVE TO COME ACROSS TOO. The first version of this stub carried only
+       `now`, which was enough while the only caller was level() — and then skyKind() reached
+       eclipseDay(), which calls Date.UTC, and the whole run died with "Date.UTC is not a
+       function". A stub is a promise about an interface, not about the one method you
+       happened to need first. */
+    FakeDate.UTC = RealDate.UTC;
+    FakeDate.parse = RealDate.parse;
     sandbox.Date = FakeDate;
   } else sandbox.Date = RealDate;
   const fn = new Function('window', 'Date', 'Intl', 'Math', CLOCK_SRC + '\nreturn window.PJCC_TIME;');
@@ -604,6 +611,125 @@ const click = async p => { await p.evaluate(() => document.getElementById('flour
     });
     await c.close();
     ok('   and the streaks actually use more than one of them', used.length >= 3, used);
+  }
+
+  /* ══ THE RARE-SKY EVENTS, WAVE 1 — 2026-08-20 ══════════════════════════════
+     Nate picked all ten special-event ideas and asked for Wave 1: the dark board, the
+     themed puzzle, the overlay, and the "you were there" ledger — plus the ELIGIBILITY
+     TABLE the other two waves drop into. */
+  console.log('\n  the rare-sky events:');
+  {
+    const CANON = fs.readFileSync(path.join(REPO, '_sass/_pjcc-22-chess-canon.scss'), 'utf8');
+    const IDX = fs.readFileSync(path.join(REPO, 'index.md'), 'utf8');
+    const OV = fs.readFileSync(path.join(REPO, 'assets/overlay/index.html'), 'utf8');
+    const DOSS = fs.readFileSync(path.join(REPO, 'dossier.md'), 'utf8');
+
+    /* ① THE ELIGIBILITY TABLE. Loaded and WALKED over a real year rather than read — the
+       point of the table is behavior over dates, which a regex cannot see. */
+    const T = loadClock();
+    ok('the clock answers what kind of rare sky it is', typeof T.skyKind === 'function');
+    ok('   and whether a given beat fires', typeof T.skyBeat === 'function');
+    ok('   an UNKNOWN beat is off, never on', T.skyBeat('nonsense', '2026-01-01') === false);
+
+    let evDays = 0; const fired = { board: 0, auston: 0, regulars: 0, badge: 0 };
+    const kinds = {};
+    for (let i = 0; i < 365; i++) {
+      const ds = new Date(Date.UTC(2026, 0, 1 + i)).toISOString().slice(0, 10);
+      const k = T.skyKind(ds);   /* ⚠ NOT loadClock(ds) — see the stub note above:
+                                    FakeDate ignores its arguments, so eclipseDay()'s
+                                    day-offset arithmetic collapsed to today and the
+                                    eclipse simply never appeared in the walk. */
+      if (!k) continue;
+      evDays++; kinds[k] = (kinds[k] || 0) + 1;
+      for (const b in fired) if (T.skyBeat(b, ds)) fired[b]++;
+    }
+    ok('there are rare-sky days to react to', evDays >= 15,
+       evDays + ' in 2026 ' + JSON.stringify(kinds));
+    ok('   and all three kinds occur', Object.keys(kinds).length === 3, kinds);
+    /* ⚠⚠ THE TWO HALVES OF THE TABLE, AND BOTH NEED THEIR OWN CHECK. A beat that IS the
+       event must fire EVERY time — dropping the dark board at random just looks broken. A
+       beat that is a REACTION must NOT, or one night in a hundred becomes a checklist that
+       is the same every time. One assertion covering both would pass with either half
+       deleted, which is the whole failure mode this pass exists to avoid. */
+    ok('an EVENT beat fires on every rare-sky day', fired.board === evDays,
+       fired.board + '/' + evDays);
+    ok('   while the REACTION beats vary', ['auston', 'regulars', 'badge']
+       .every((b) => fired[b] > 0 && fired[b] < evDays),
+       JSON.stringify(fired) + ' of ' + evDays);
+    ok('   and a quiet day fires nothing at all',
+       !T.skyBeat('board', '2026-01-02') || !!T.skyKind('2026-01-02'));
+
+    /* ② THE DARK BOARD. It is a TOKEN override, so the risk is not "does it apply" — it is
+       whether the purple side is still findable on a dimmed square. The first attempt
+       measured 1.24 there, worse than anything in daylight. */
+    const grab = (blk, n) => {
+      const m = blk.match(new RegExp('--' + n + ':[^#;]*#([0-9a-f]{6})', 'i'));
+      return m ? [0, 2, 4].map((i) => parseInt(m[1].substr(i, 2), 16)) : null;
+    };
+    const cut = (from) => CANON.slice(CANON.indexOf(from), CANON.indexOf('}', CANON.indexOf(from)));
+    const lum = (c) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+                         return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]); };
+    const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+    const pairs = (blk) => {
+      const lt = grab(blk, 'chess-lt'), dk = grab(blk, 'chess-dk');
+      const pw = grab(blk, 'piece-w-fill'), pb = grab(blk, 'piece-b-fill');
+      if (!lt || !dk || !pw || !pb) return null;
+      return { worst: Math.min(ratio(pw, dk), ratio(pb, dk), ratio(pb, lt), ratio(pw, lt)),
+               squares: ratio(lt, dk) };
+    };
+    const day = pairs(cut(':root {')), ecl = pairs(cut('html.eclipse-total {'));
+    ok('the boards have an eclipse palette', !!ecl && !!day);
+    ok('   and its WORST piece-on-square pair beats daylight\'s own worst',
+       !!ecl && !!day && ecl.worst >= day.worst,
+       ecl && day && ('totality ' + ecl.worst.toFixed(2) + ' vs daylight ' + day.worst.toFixed(2)));
+    ok('   and the two square colors stay clearly apart', !!ecl && ecl.squares >= 2.5,
+       ecl && ecl.squares.toFixed(2));
+    /* ⚠ GATED ON TOTALITY, NOT ON `eclipse`. The eclipse class is up for two hours, most
+       of which is an ordinary bright afternoon; dimming every board on the site for that
+       long reads as a bug rather than an event. */
+    ok('   and it is gated on eclipse-TOTAL, not the whole two-hour window',
+       /html\.eclipse-total \{/.test(CANON) && !/^html\.eclipse \{/m.test(CANON));
+
+    /* ③ THE LEDGER. Classic feature-shipped-but-never-loaded shape: the dossier reads
+       window.PJCCSkyLog and renders NOTHING when it is absent — which is also what an empty
+       ledger looks like. A missing script tag would be invisible forever. */
+    ok('the sky ledger exists', fs.existsSync(path.join(REPO, 'assets/js/pjcc-sky-log.js')));
+    ok('   and EVERY page loads it (not just the one that reads it)',
+       /pjcc-sky-log\.js/.test(TW_HTML));
+    ok('   and the dossier is what reads it', /PJCCSkyLog/.test(DOSS));
+    ok('   and it goes through the beat table rather than around it',
+       /skyBeat\('record'\)/.test(fs.readFileSync(path.join(REPO, 'assets/js/pjcc-sky-log.js'), 'utf8')));
+
+    /* ④ THE OVERLAY. It is a static file OBS loads, so a missing <script> is silent there
+       too — and the wordmark would still render, which is exactly the failure that looks fine. */
+    ok('the overlay loads the town clock', /assets\/js\/pjcc-time\.js/.test(OV));
+    ok('   and has somewhere to print the sky', /id="sky"/.test(OV));
+    ok('   and asks the beat table', /skyBeat\('overlay'\)/.test(OV));
+
+    /* ⑤ THE THEMED PUZZLE. The themes are DERIVED from the pool rather than stored, so the
+       thing that can break is a theme that matches NOTHING — which would silently fall back
+       to the ordinary deal and look like the feature was never built. Replay the shipped
+       predicate against the shipped pool. */
+    const pool = (IDX.match(/var POOL = \[([\s\S]*?)\];/) || [])[1];
+    const rows = pool ? pool.split('\n').map((l) => l.trim().replace(/^'|',?$/g, '')).filter(Boolean) : [];
+    ok('the front-door pool is on the page', rows.length >= 40, rows.length + ' positions');
+    const dark = (sq) => ((sq % 8) + ((sq / 8) | 0)) % 2 === 1;
+    const pieceAt = (fen, sq) => { const b = []; for (const ch of fen) {
+      if (ch === '/') continue;
+      if (ch >= '1' && ch <= '9') { for (let k = 0; k < +ch; k++) b.push('.'); } else b.push(ch); }
+      return b[sq] || '.'; };
+    const fits = (row, kind) => { const q = row.split(' '), fen = q[0], from = +q[1], to = +q[2];
+      if (kind === 'eclipse') return dark(to);
+      if (kind === 'meteor') { if (pieceAt(fen, from).toUpperCase() === 'N') return true;
+        const dx = Math.abs((to % 8) - (from % 8)), dy = Math.abs(((to / 8) | 0) - ((from / 8) | 0));
+        return Math.max(dx, dy) >= 4; }
+      return false; };
+    const nEcl = rows.filter((r) => fits(r, 'eclipse')).length;
+    const nMet = rows.filter((r) => fits(r, 'meteor')).length;
+    ok('   the eclipse theme has positions to deal', nEcl >= 8, nEcl + '/' + rows.length);
+    ok('   and so does the meteor theme', nMet >= 8, nMet + '/' + rows.length);
+    ok('   and the picker falls back when a theme is empty',
+       /if \(themed\.length\) pool = themed;/.test(IDX));
   }
 
   console.log(`\nRESULT: ${fail ? 'FAIL' : 'PASS'} — ${pass} passed, ${fail} failed`);

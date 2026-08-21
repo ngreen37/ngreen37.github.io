@@ -19,6 +19,8 @@
  *   PJCC_TIME.daySeed() -> uint32 seeded by the Eastern date (one town, one day)
  *   PJCC_TIME.weather() -> { kind: 'rain'|'mist'|'clear', roll, phase }
  *   PJCC_TIME.level()   -> 0 (light) | 1 (medium) | 2 (heavy) — the day's opening intensity
+ *   PJCC_TIME.skyKind() -> 'eclipse' | 'meteor' | 'aurora' | null — the rare sky today
+ *   PJCC_TIME.skyBeat(name) -> does THIS rare-sky beat fire tonight (see SKY_BEATS)
  *   PJCC_TIME.clouds([kind],[level]) -> 0 (clear) | 1 (a few) | 2 (broken) | 3 (overcast)
  *   PJCC_TIME.moon()    -> { frac, lit, waxing, name, shift } — the REAL phase tonight
  *   PJCC_TIME.eclipse() -> { on, cover, total, shift } — the town's solar eclipse
@@ -400,6 +402,71 @@
      day on. Cost to the forecast, measured over 3,650 real dates: rain 21.9% → 21.0%. */
   function rareSky(ds) { return showerDay(ds) || auroraDay(ds); }
 
+  /* ⚑⚑ WHAT THE SKY IS DOING TODAY, AS ONE NAME — 2026-08-20 ═══════════════════════════
+     Nate picked all ten of the rare-sky event ideas at once ("I love all ten … can we do
+     them all?"). Everything that reacts to a rare sky needs the same two answers, so they
+     are answered HERE rather than in each feature: what kind of night is it, and does THIS
+     beat fire tonight.
+
+     ⚠⚠ THE SECOND QUESTION IS THE WHOLE POINT, AND IT IS NOT A COST QUESTION. The aurora is
+     one night in a hundred. If all ten beats fire on every single one, the night stops being
+     a surprise and becomes a checklist — and it is the SAME checklist every time, which is a
+     worse outcome than having fewer ideas. So each beat gets its own salted roll and a given
+     night lights some of them. Nothing may wire itself to "always fires on this kind"
+     without earning it below.
+
+     ⭐ WHICH BEATS ARE 100, AND WHY THAT IS NOT A CONTRADICTION: a beat that IS the event
+     always fires; a beat that is a REACTION to it rolls. The town going dark under totality
+     is the eclipse, not a comment on it — dropping it at random would just look broken. A
+     regular being away because they went to watch the lights is a reaction, and reactions
+     are exactly what should vary.
+     ⚠ In Wave 1 every beat with a consumer is a 100 — the rolled ones are the character
+     reactions in Wave 2, and they are defined and tested now so those drop straight in.
+
+     ⚠ SALTED PER BEAT AND PER DAY, never a bit-shift of the shared seed. The 32-bit day seed
+     is already carved up between the forecast (`% 80`), the intensity (`>>> 3`), the cloud
+     cover (`>>> 11`) and three cloud shapes — see the note above showerDay(). Hashing a
+     salted string is independent by construction and costs one pass over a short string. */
+  var SKY_BEATS = {
+    board:    100,   // the boards go dark under totality — this IS the eclipse
+    puzzle:   100,   // the front door's puzzle wears the night; once a day, on a rare day
+    record:   100,   // you were either here for it or you were not
+    overlay:  100,   // a readout is a readout
+    desk:     100,   // a news desk always reports an eclipse. It would be odd if it did not
+    auston:    60,   // \
+    regulars:  35,   //  } the REACTIONS — Wave 2, and the reason this table exists
+    badge:     45    // /
+  };
+  /* ⚠⚠ THE PREVIEW FLAGS HAVE TO REACH THIS, OR EVERY RARE-SKY FEATURE IS UNREVIEWABLE
+     UNTIL THE NEXT REAL ONE. `?eclipse=1` forces the eclipse to be DRAWN, and the drawing is
+     all it used to force — so a preview showed the corona while skyKind() still answered
+     "ordinary Tuesday", and the themed puzzle, the ledger and the overlay all sat out the
+     very thing he opened the link to look at. That is the `?wx=` bug of 2026-08-20 exactly,
+     one week and one feature later: **the flag moved the pixels and nothing else asked.**
+
+     ⭐ THE URL IS PARSED IN ONE PLACE, AND IT IS NOT HERE. The head include already reads
+     these params before first paint; it sets `window.PJCC_SKY_FORCE` and this reads that.
+     A second URL parser in the clock would be a second thing to keep in step, and the clock
+     would stop being a pure function of the date.
+     ⚠ AN EXPLICIT `ds` ALWAYS WINS. Walking a calendar (the gates do, over 365 days) must
+     never pick up a preview override, or the test is measuring the query string. */
+  function skyKind(ds) {
+    if (ds === undefined) {
+      try { if (window.PJCC_SKY_FORCE) return window.PJCC_SKY_FORCE; } catch (e) {}
+    }
+    if (eclipseDay(ds)) return 'eclipse';
+    if (showerDay(ds)) return 'meteor';
+    if (auroraDay(ds)) return 'aurora';
+    return null;
+  }
+  function skyBeat(name, ds) {
+    if (!skyKind(ds)) return false;
+    var odds = SKY_BEATS[name];
+    if (odds == null) return false;              // an unknown beat is OFF, never on
+    if (odds >= 100) return true;
+    return daySeed((ds || parts().ds) + '#beat#' + name) % 100 < odds;
+  }
+
   /* ⚑ A THIN VEIL ACROSS THE MOON — 2026-08-19. Nate: *"if it's cloudy that day, some faint
      clouds around the moon, and faintly covering it, to give it a more real effect? But only
      if it adds MINIMAL performance hit … some days, at a low probability, and NEVER on
@@ -438,5 +505,6 @@
   window.PJCC_TIME = { parts: parts, hour: hour, dateStr: dateStr, phase: phase,
                        daySeed: daySeed, weather: weather, clouds: clouds, level: level, orb: orb, season: season,
                        moon: moon, moonPath: moonPath, eclipse: eclipse, eclipseDay: eclipseDay,
-                       showerDay: showerDay, auroraDay: auroraDay, moonVeil: moonVeil };
+                       showerDay: showerDay, auroraDay: auroraDay, moonVeil: moonVeil,
+                       skyKind: skyKind, skyBeat: skyBeat };
 })();

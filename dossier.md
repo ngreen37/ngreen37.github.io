@@ -341,6 +341,46 @@ permalink: /dossier/
     }
     html += '</div></details>';
 
+    /* ══ NIGHTS YOU WERE HERE FOR — 2026-08-20 ═════════════════════════════════
+       Wave 1 of the rare-sky events. Nate: *"the night mints a dated line — 'You were in
+       Checker Town for the eclipse of [date].'"* A record, not a reward.
+
+       ⚠ THE LEDGER IS WRITTEN SOMEWHERE ELSE, ON EVERY PAGE (assets/js/pjcc-sky-log.js,
+       loaded from town-weather.html). This panel only READS it. That split is the feature:
+       you might spend the aurora night in the arcade and never open this page until March.
+
+       ⚠ ABSENT WHEN EMPTY, like the follows panel below and for the same reason — a
+       heading that says "Nights You Were Here For" over nothing at all reads as something
+       broken, on a site where the honest answer is "there has not been one yet". Rare
+       events are rare; almost everybody's list is empty for weeks.
+
+       ⚠ IT IS LOCAL, so it does not need the account and does not wait on a migration.
+       That is written up in the module. */
+    (function () {
+      var log = window.PJCCSkyLog;
+      if (!log) return;
+      var seen = [];
+      try { seen = log.entries() || []; } catch (e) { return; }
+      if (!seen.length) return;
+      /* newest first — the ledger is stored oldest-first so it can be capped from the front */
+      var rows = seen.slice().reverse().slice(0, 12).map(function (e) {
+        var when = e.d;
+        try {
+          var d = new Date(e.d + 'T12:00:00Z');
+          when = d.toLocaleDateString(undefined, { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' });
+        } catch (x) {}
+        return '<tr><td class="lb-name">' + esc(log.label(e.k)) + '</td>' +
+               '<td class="lb-score">' + esc(when) + '</td></tr>';
+      }).join('');
+      html += '<details class="dsr-fold"><summary class="dsr-fold-sum">' +
+        '<span class="dsr-fold-t">Nights You Were Here For</span>' +
+        '<span class="dsr-fold-hint">' + seen.length +
+        (seen.length === 1 ? ' rare sky' : ' rare skies') + ' over Checker Town</span>' +
+        '</summary><div class="dsr-fold-body">' +
+        '<table class="lb-table"><tbody>' + rows + '</tbody></table>' +
+        '</div></details>';
+    })();
+
     /* ── PLAYERS YOU FOLLOW (2026-08-19) ────────────────────────────────────────────
        The payoff for the Follow button on a player card: the place you go to find those
        people again. Each row re-opens their card, so this panel owns no rendering of its
