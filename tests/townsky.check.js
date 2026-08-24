@@ -472,6 +472,105 @@ check('every shell loads the clock and then the sky', wired === GAMES.length,
       /qp\.get\('moonveil'\)!==null/.test(HEAD), '?moonveil=1');
   }
 
+
+  /* ══ THE MILESTONE BANNER ═══════════════════════════════════════════════════════════
+     Every assertion here is about a date this feature will meet ONCE. There is no rolling
+     it back and looking again, and no percentage that makes a near miss acceptable: if the
+     epoch is off by a day the banner flies on the wrong day, and nobody finds out until the
+     day after. So the arithmetic is pinned rather than described. */
+  {
+    const T = (() => { const w = {}; new Function('window', 'self', CLOCK_ASSET)(w, w); return w.PJCC_TIME; })();
+    /* ⚠ module-scope `SKY` is pjcc-game-sky.js, a different file entirely — read the two
+       includes under their own names rather than shadowing it. */
+    const SKY_INC  = fs.readFileSync(path.join(ROOT, '_includes/town-sky.html'), 'utf8');
+    const HEAD_INC = fs.readFileSync(path.join(ROOT, '_includes/town-weather.html'), 'utf8');
+
+    check('day 180 is 2026-08-28, and that is the half-year mark',
+      T.milestone('2026-08-28') === '6 MONTHS',
+      'Nate: "6 months is coming up in like four days (today is day 176)" on 2026-08-24');
+    check('…and the days either side of it are ordinary',
+      T.milestone('2026-08-27') === null && T.milestone('2026-08-29') === null,
+      'a milestone is one day, like the shower and the aurora');
+    check('day 1 is not a milestone of itself',
+      T.milestone('2026-03-02') === null, 'year 0 is a start, not an anniversary');
+
+    /* ⚠⚠ THE ANNIVERSARIES ARE THE REASON THIS IS NOT DAY ARITHMETIC. Day 365 lands on
+       2027-03-01 and day 730 on 2028-02-29 — a day early, then a date that only exists in
+       a leap year. Both of those are what a `days % 365` implementation would have shipped,
+       and both would have been found by a human on the wrong morning. */
+    check('the year marks are real anniversaries and never drift',
+      T.milestone('2027-03-02') === '1 YEAR' && T.milestone('2028-03-02') === '2 YEARS' &&
+      T.milestone('2029-03-02') === '3 YEARS' && T.milestone('2036-03-02') === '10 YEARS',
+      '1/2/3 and 10 years, all on 03-02');
+    check('…so the dates a day-count would have picked are NOT milestones',
+      T.milestone('2027-03-01') === null && T.milestone('2028-02-29') === null,
+      'day 365 and day 730 — both wrong, both silent');
+    check('one YEAR, many YEARS',
+      T.milestone('2027-03-02') === '1 YEAR' && !/YEARS/.test(T.milestone('2027-03-02')),
+      'the banner has to read as English');
+
+    /* ⚠ parts() emits an UNPADDED date on any browser that falls through to the catch path.
+       Every other reader hashes `ds`, so it never mattered; this one compares it. */
+    check('an unpadded date still fires the banner',
+      T.milestone('2026-8-28') === '6 MONTHS' && T.milestone('2027-3-2') === '1 YEAR',
+      "the parts() fallback emits '2026-8-28', not '2026-08-28'");
+
+    check('a milestone names the sky, and outranks the rolled ones',
+      T.skyKind('2026-08-28') === 'milestone',
+      'a shower comes round again in a month; this does not');
+    /* ⚠⚠ PROVE IT THROUGH SOMETHING THAT TAKES A DATE. The first draft of this check asked
+       `T.clouds('2026-08-28')` and `T.weather('2026-08-28')` — and BOTH of those read the
+       clock directly and take no `ds` at all (clouds takes `(kind, lv)`), so it was handing a
+       date string in as a weather kind and grading the answer. It failed, which is the only
+       reason the instrument got looked at. moonVeil(ds) is the one exported function that
+       takes a date AND asks rareSky(), so it is what can actually be walked. */
+    check('…and it is in the same tier: no milestone is ever a veiled night', (() => {
+      for (let y = 0; y < 12; y++) {
+        const ds = y === 0 ? '2026-08-28' : (2026 + y) + '-03-02';
+        if (T.moonVeil(ds) !== false) return false;
+      }
+      return true;
+    })(), 'the same rareSky() gate the shower and the aurora go through');
+    check('…and rareSky() is where that comes from, not a second copy of the rule',
+      /function rareSky\([^)]*\)\s*\{[^}]*milestoneDay/.test(
+        CLOCK_ASSET.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/.*/g, ' ')),
+      'one gate, so the forecast, the cover and the veil cannot drift apart');
+
+    check('the banner beat fires on the day, and never on an ordinary one',
+      T.skyBeat('banner', '2026-08-28') === true && T.skyBeat('banner', '2026-08-27') === false,
+      'the plane IS the milestone, so it is a 100');
+
+    /* A calendar walk, because the two rules above could both be right and still overlap or
+       leave a gap somewhere in between. Exactly one banner day per year, no more. */
+    check('exactly one milestone a year, and never two', (() => {
+      const per = {};
+      const start = Date.UTC(2026, 2, 2);
+      for (let i = 0; i < 12 * 366; i++) {
+        const ds = new Date(start + i * 86400000).toISOString().slice(0, 10);
+        const m = T.milestone(ds);
+        if (m) (per[ds.slice(0, 4)] = per[ds.slice(0, 4)] || []).push(m);
+      }
+      /* the RULE, not a magic total: the first year carries the half-year mark and every
+         year after carries exactly one anniversary. A count would have to be re-derived
+         every time the walk's length changed — and the first draft of this check got that
+         count wrong by one, which is precisely the failure mode a rule avoids. */
+      for (const y of Object.keys(per)) {
+        if (per[y].length !== 1) return false;
+        if (y === '2026' ? per[y][0] !== '6 MONTHS' : !/^\d+ YEARS?$/.test(per[y][0])) return false;
+      }
+      return Object.keys(per).length >= 11 && per['2026'] && per['2027'];
+    })(), '2026 gets the half-year, every year after gets its anniversary');
+
+    check('the sky markup carries the plane and the strip',
+      /class="ts-banner"/.test(SKY_INC) && /class="ts-plane"/.test(SKY_INC) && /ts-banner-flag/.test(SKY_INC),
+      '_includes/town-sky.html');
+    check('…and the words come from the head, not from the markup',
+      /--ms-text/.test(HEAD_INC) && /milestone-day/.test(HEAD_INC),
+      'set before first paint, so the banner is never briefly wrong');
+    check('…with a preview switch, like the other rare skies',
+      /qp\.get\('milestone'\)!==null/.test(HEAD_INC), '?milestone=1');
+  }
+
   await browser.close();
   done();
 })().catch((e) => { console.error('\nABORT: ' + e.message); process.exit(2); });

@@ -645,7 +645,12 @@ const click = async p => { await p.evaluate(() => document.getElementById('flour
     }
     ok('there are rare-sky days to react to', evDays >= 15,
        evDays + ' in 2026 ' + JSON.stringify(kinds));
-    ok('   and all three kinds occur', Object.keys(kinds).length === 3, kinds);
+    /* ⚡ FOUR SINCE 2026-08-24 — the production milestone joined the tier. This assertion
+       named a COUNT, so adding a legitimate fourth kind turned it red while nothing was
+       broken. Naming the kinds instead means the next one to arrive fails this with a
+       message that says which one is missing, rather than just a number that moved. */
+    ok('   and every kind of rare sky occurs',
+       ['eclipse', 'meteor', 'aurora', 'milestone'].every((k) => kinds[k] > 0), kinds);
     /* ⚠⚠ THE TWO HALVES OF THE TABLE, AND BOTH NEED THEIR OWN CHECK. A beat that IS the
        event must fire EVERY time — dropping the dark board at random just looks broken. A
        beat that is a REACTION must NOT, or one night in a hundred becomes a checklist that

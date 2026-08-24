@@ -383,6 +383,31 @@
   <div class="ts-eclipse"></div>
 
 </div>
+{%- comment -%} 7 · THE MILESTONE BANNER (2026-08-24) — a plane towing the anniversary
+     across the town. Nate: "it could spell that out in the sky in fancy cloud lettering or
+     a plane flying by with a banner flying behind it or something?"
+
+     ⭐ THE PLANE, NOT THE CLOUD LETTERING, AND THAT WAS THE ONE DESIGN CHOICE HERE. Cloud
+     letters need a distinct soft shape per glyph, and every milestone spells something
+     different — "6 MONTHS" and "12 YEARS" would each need their own hand-built alphabet,
+     drawn to stay legible against four different skies. A towed banner carries ARBITRARY
+     TEXT in the site's own display face, so it works for a word this feature has not been
+     told about yet, and it costs one small element sliding sideways.
+
+     ⚠ THE WORDS COME FROM A CSS VARIABLE, NOT FROM THIS MARKUP. The head include knows the
+     date before first paint and sets `--ms-text`; the strip below prints it with `content`.
+     Doing it that way keeps this file static and means there is no moment where the banner
+     is in the DOM holding the wrong year. See the milestone note in _includes/pjcc-time.js
+     for where the dates come from and why day 1 is 2026-03-02. {%- endcomment -%}
+<div class="ts-banner" aria-hidden="true">
+  <b class="ts-banner-flag"></b>
+  <svg class="ts-plane" viewBox="0 0 72 30" aria-hidden="true" focusable="false">
+    <path d="M6 16 L10 3 L15 3 L14 16 Z"/>
+    <path d="M2 16 L58 14 C66 14 70 15.5 70 17 C70 18.5 66 20 58 20 L2 20 Z"/>
+    <path d="M30 19 L22 29 L29 29 L40 20 Z"/>
+  </svg>
+</div>
+
 
 {%- comment -%}
   ══════════════════════════════════════════════════════════════════════════════

@@ -409,7 +409,65 @@
      these are rarer than the eclipse — 3% and 1% against its ~3.4% — and hiding the rarest
      thing the sky does behind the most ordinary is the one outcome worth spending a rain
      day on. Cost to the forecast, measured over 3,650 real dates: rain 21.9% → 21.0%. */
-  function rareSky(ds) { return showerDay(ds) || auroraDay(ds); }
+  /* ⚑⚑ THE PRODUCTION MILESTONES — 2026-08-24 ══════════════════════════════════════════
+     Nate: *"Can we do something in the sky for every milestone reached, production-wise?
+     6 months is coming up in like four days (today is day 176). And then for '1 Year',
+     '2 Years', etc. … And that's an ultra-rare achievement, or whatever the highest tier
+     is, same as on meteor shower or northern light days. Or eclipse periods."*
+
+     ⚠⚠ DAY 1 IS DERIVED FROM HIS OWN COUNT, NOT INVENTED, AND IT IS THE ONE NUMBER HERE.
+     Nothing in this repo recorded a production start — the earliest blog post is
+     2026-03-14, which would make 2026-08-24 day 164, not 176. He said today IS day 176, so
+     day 1 is 2026-03-02, and day 180 lands on 2026-08-28: exactly the "like four days" he
+     expected. That arithmetic is the whole reason the epoch below reads what it reads.
+     ⚠ Every milestone is computed off it, so if the epoch is wrong they ALL move together.
+
+     ⭐ TWO RULES, AND THE SPLIT IS DELIBERATE. The half-year mark is a DAY COUNT (day 180),
+     because that is the number he is counting toward and the day he will be watching for.
+     Every mark after it is a CALENDAR ANNIVERSARY of the epoch, because 365-day arithmetic
+     drifts off the birthday as leap years pile up: day 365 would land on 2027-03-01 and day
+     730 on 2028-02-29, so "1 YEAR" would celebrate the day before the real one and
+     "2 YEARS" would fall on a date that does not exist in three years out of four. An
+     anniversary cannot drift. A day count can, and over a decade it would drift days.
+
+     ⚠⚠ THE DATE STRING IS PADDED BEFORE IT IS COMPARED, AND THAT IS NOT TIDYING. parts()
+     builds `ds` two different ways — the Intl path emits a 2-digit month and day
+     ('2026-08-28'), and the catch-path fallback emits neither ('2026-8-28'). Every other
+     reader in this file hands `ds` to daySeed(), where an unpadded string is merely a
+     DIFFERENT seed and nothing ever looks broken. This is the first reader that COMPARES
+     it, so on any browser that took the fallback the banner would simply never fly —
+     silently, forever, on the one day of the year it was written for. */
+  var EPOCH = '2026-03-02';                    // day 1 of production
+  var HALF_YEAR = (function () {               // day 180, counting the epoch as day 1
+    var d = new Date(EPOCH + 'T00:00:00Z');
+    d.setUTCDate(d.getUTCDate() + 179);
+    return d.toISOString().slice(0, 10);
+  })();
+  function padDs(ds) {
+    var a = String(ds).split('-');
+    return a.length === 3
+      ? a[0] + '-' + ('0' + a[1]).slice(-2) + '-' + ('0' + a[2]).slice(-2)
+      : String(ds);
+  }
+  /* The words on the banner, or null on an ordinary day. One function, one string: this is
+     the whole feature's switch, and every consumer reads it rather than re-deriving a date. */
+  function milestone(ds) {
+    ds = padDs(ds || parts().ds);
+    if (ds === HALF_YEAR) return '6 MONTHS';
+    if (ds.slice(5) === EPOCH.slice(5)) {
+      var y = parseInt(ds.slice(0, 4), 10) - parseInt(EPOCH.slice(0, 4), 10);
+      if (y >= 1) return y + (y === 1 ? ' YEAR' : ' YEARS');
+    }
+    return null;
+  }
+  function milestoneDay(ds) { return milestone(ds) !== null; }
+
+  function rareSky(ds) { return showerDay(ds) || auroraDay(ds) || milestoneDay(ds); }
+  /* ⚠ THE MILESTONE JOINED rareSky() RATHER THAN GETTING ITS OWN GATE (2026-08-24).
+     Everything that already asks "is tonight one of the special ones" — the forecast
+     clearing the sky, clouds() returning 0, moonVeil() standing down — asks THIS. A
+     separate test would have meant finding all three and keeping them in step forever,
+     and the banner would have flown behind an overcast deck the first time one was missed. */
 
   /* ⚑⚑ WHAT THE SKY IS DOING TODAY, AS ONE NAME — 2026-08-20 ═══════════════════════════
      Nate picked all ten of the rare-sky event ideas at once ("I love all ten … can we do
@@ -444,7 +502,8 @@
     desk:     100,   // a news desk always reports an eclipse. It would be odd if it did not
     auston:    60,   // \
     regulars:  35,   //  } the REACTIONS — Wave 2, and the reason this table exists
-    badge:     45    // /
+    badge:     45,   // /
+    banner:   100    // the plane IS the milestone, the same way the dark board IS the eclipse
   };
   /* ⚠⚠ THE PREVIEW FLAGS HAVE TO REACH THIS, OR EVERY RARE-SKY FEATURE IS UNREVIEWABLE
      UNTIL THE NEXT REAL ONE. `?eclipse=1` forces the eclipse to be DRAWN, and the drawing is
@@ -463,6 +522,11 @@
     if (ds === undefined) {
       try { if (window.PJCC_SKY_FORCE) return window.PJCC_SKY_FORCE; } catch (e) {}
     }
+    /* ⚠ THE MILESTONE OUTRANKS ALL THREE, and that is the only ordering choice here. The
+       other skies are ROLLS — a 3% night comes round again in a month. A milestone is a
+       fixed date that happens once and never returns, so on the rare day both land it is
+       the shower that can afford to wait. */
+    if (milestoneDay(ds)) return 'milestone';
     if (eclipseDay(ds)) return 'eclipse';
     if (showerDay(ds)) return 'meteor';
     if (auroraDay(ds)) return 'aurora';
@@ -515,5 +579,6 @@
                        daySeed: daySeed, weather: weather, clouds: clouds, level: level, orb: orb, season: season,
                        moon: moon, moonPath: moonPath, eclipse: eclipse, eclipseDay: eclipseDay,
                        showerDay: showerDay, auroraDay: auroraDay, moonVeil: moonVeil,
+                       milestone: milestone, milestoneDay: milestoneDay,
                        skyKind: skyKind, skyBeat: skyBeat };
 })();

@@ -1421,6 +1421,121 @@ html.sky-night.cloud-1 .ts-clouds { opacity: 0.13; }
 html.sky-night.cloud-2 .ts-clouds { opacity: 0.28; }
 html.sky-night.cloud-3 .ts-clouds { opacity: 0.44; }
 
+
+/* ══ THE MILESTONE BANNER ══════════════════════════════════════════════════════
+   2026-08-24, Nate: "Can we do something in the sky for every milestone reached,
+   production-wise? … a plane flying by with a banner flying behind it … And that's an
+   ultra-rare achievement, or whatever the highest tier is, same as on meteor shower or
+   northern light days. Or eclipse periods."
+
+   The dates, the epoch and the wording live in _includes/pjcc-time.js; the head include
+   stamps `html.milestone-day` and `--ms-text` before first paint. Everything here is look.
+
+   ⭐ IT FLIES AT EVERY HOUR, AND THAT IS THE ONE PLACE IT PARTS COMPANY WITH THE OTHER RARE
+   SKIES. The shower, the aurora and the moon veil are all gated on `html.sky-night` because
+   they are things you can only SEE at night — a meteor at noon is not a dimmer meteor, it is
+   nothing. A milestone is not an astronomical event, it is an announcement, and gating it on
+   night would hide it from everybody who only ever opens the site at lunch. It happens once
+   and never comes back; a visitor who missed it missed it forever.
+
+   ⚠ ONE SMALL ELEMENT SLIDING SIDEWAYS, transform and opacity only, like everything else in
+   this sky. At ~330x30 it prices at about 0.03 screens — and only on the handful of days
+   this class is ever stamped. The cost is painted AREA, and this has almost none.  */
+.ts-banner { display: none; }
+html.milestone-day .ts-banner {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  /* ⚠⚠ FIXED AND OUT ON THE PAGE, NOT INSIDE .town-sky — AND A RENDER IS THE ONLY REASON
+     THIS IS RIGHT. The first build put it in the sky with the meteors and the aurora, which
+     is where a sky thing obviously belongs. `.town-sky` is `z-index: -1`, so on the front
+     door the banner flew the entire way BEHIND the page card and was invisible: the card is
+     1204px of a 1476px viewport and starts 91px down, so there is no height at which a
+     crossing banner clears it. Every gate was green and the feature did not exist.
+     ⭐ 900 IS THE WEATHER'S OWN TIER, borrowed on purpose rather than invented (see
+     `.town-weather-overlay`): above the page content, below the command palette, the nav
+     sheet and the toasts. Rain already falls in FRONT of the cards for exactly this reason,
+     and a plane that flew behind them would be the odd one out. It is `pointer-events: none`
+     like the rain, so it never intercepts anything on the way past. */
+  position: fixed;
+  left: 0;
+  top: 22%;                 /* clear of the orb's apex (y~10%) and well above the roofline */
+  z-index: 900;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: ts-banner-fly 110s linear infinite;
+  will-change: transform;
+}
+
+/* The strip. Warm parchment with dark ink, because it has to read on all four skies — gold
+   on a day sky and anything dark on a night sky each lose one phase out of four. The notch
+   at the trailing edge is the swallowtail every towed banner has; it is a clip-path on a
+   box that is already being composited, so it costs nothing extra. */
+.ts-banner-flag {
+  font-family: 'Poppins', sans-serif;   /* the display voice — a milestone is a wordmark
+                                           moment, not body copy [[site-type-system]] */
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.16em;
+  color: #1e232c;
+  background: #fbf3e0;
+  padding: 5px 16px 5px 26px;
+  border-radius: 2px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 12px 50%);
+}
+.ts-banner-flag::after { content: var(--ms-text, ""); }
+
+/* ⭐⭐ OUTLINED, NOT TINTED PER SKY — AND THE SKY IS NO LONGER WHAT IT FLIES OVER. Two
+   earlier passes both tried to pick a fill from the hour: dark for day, light for the three
+   dark skies. Both were answering the wrong question. Now that the banner rides at z-index
+   900 it crosses the PAGE — cream cards, a green button, a parchment board — and the hour
+   says nothing about what is underneath at any given moment. A dark plane with a cream
+   outline reads on every one of them, and needs no rule per phase.
+   ⚠ `paint-order` and a stroke, NOT a drop-shadow. A filter re-rasters its whole subtree
+   every frame and this element moves for 26 seconds at a time [[ambient-layer-cost]]; an
+   SVG stroke is part of the same one-time raster as the fill. */
+.ts-plane {
+  width: 50px; height: 21px; flex: 0 0 auto;
+  fill: #1e232c; stroke: #fbf3e0; stroke-width: 2.5;
+  paint-order: stroke fill;
+  stroke-linejoin: round;
+}
+
+/* Left to right, the way the words are read. The long tail on the keyframe is the gap, and
+   the gap got LONGER once the banner moved out over the page: at 70s it was on screen 37% of
+   the time, which is fine for something in the far sky and too much for something crossing
+   the board you are trying to read. 110s puts it at ~24s of every 110 — still four passes
+   every ten minutes on the one day it flies, and gone the rest of the time. Same shutter
+   idea as the meteors' three keyframes: the event is the visit, not the loop. */
+@keyframes ts-banner-fly {
+  0%           { transform: translate3d(-105%, 0, 0); opacity: 0; }
+  2%           { opacity: 1; }
+  20%          { opacity: 1; }
+  23%          { transform: translate3d(100vw, 0, 0); opacity: 0; }
+  100%         { transform: translate3d(100vw, 0, 0); opacity: 0; }
+}
+
+/* ⚠ REDUCED MOTION PARKS IT, IT DOES NOT REMOVE IT — the opposite call to the shooting
+   stars, and for the reason the aurora note gives. A meteor IS its motion, so a parked
+   streak means nothing and goes. This banner is a MESSAGE; the flight is only how it gets
+   on screen. So it stops flying and simply hangs there, centered and readable, which is
+   what somebody who asked for less movement still wants to be told. */
+@media (prefers-reduced-motion: reduce) {
+  html.milestone-day .ts-banner {
+    animation: none;
+    left: 50%;
+    transform: translate3d(-50%, 0, 0);
+    opacity: 1;
+  }
+}
+html.reduce-flourish.milestone-day .ts-banner {
+  animation: none;
+  left: 50%;
+  transform: translate3d(-50%, 0, 0);
+  opacity: 1;
+}
+
 /* ══ CHESS CITY ON THE HORIZON ════════════════════════════════════════
    2026-08-20, Nate: "the bottom of the screen should have a basic chess city feel to it
    with skyscrapers reaching toward like the middle of the screen. It can just be basic
