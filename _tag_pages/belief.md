@@ -1,6 +1,6 @@
 ---
 layout: tag
-tag: belief
+tag: Belief
 title: "Belief"
 permalink: /tags/belief/
 ---

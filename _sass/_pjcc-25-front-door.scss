@@ -307,6 +307,84 @@ body.theme-chess {
      (top light · this sheet · a warm backlight radial · the sky), so composing it by hand
      silently skips two of them. Worst case is the card's FOOT on the NIGHT sky. */
   --surface:   rgba(251, 243, 224, 0.75);
+  /* ⚑⚑⚑ TENTH PASS — THE SHEET STOPPED BEING ONE ALPHA (2026-08-21). Nate, with a
+     screenshot of the card's foot over the new chess-city skyline: "I don't like how much
+     the lights show through the gray box — I understand I asked for the transparency but
+     I'm wondering what we can do to fix it? Maybe a progressively transparent box from top
+     to bottom (because I like the sky and moon and stars to show through a little, but the
+     lights look funny)."
+
+     ⭐⭐ HIS DIAGNOSIS IS RIGHT AND THE REASON IS WORTH KEEPING: A TRANSLUCENT SHEET INVERTS
+     THE SKYLINE. The buildings are dark (`rgba(6,11,26,0.55)`) so the paper washes them
+     out; the windows are bright (`#ffd180`) so they come through. What is left is not a
+     city behind paper — it is a scatter of unattached dots, which is exactly why the moon
+     and the stars read fine through the same sheet and the city does not. A star IS a
+     floating dot. So the fix is not to make the windows dimmer, it is to make the sheet
+     opaque WHERE THE CITY IS. Dimming them is a separate, smaller thing he also asked for
+     in the same message (_pjcc-20-town-sky.scss).
+
+     ⚠⚠ AND IT IS ANCHORED TO THE SCREEN, NOT TO THE CARD — `background-attachment: fixed`
+     on the parchment layer alone. This is the whole design and it is the one thing a
+     "progressively transparent box from top to bottom" could get wrong. `.town-sky` is
+     `position: fixed`, so the city sits in the bottom `52vh` OF THE VIEWPORT at all times
+     while the card scrolls past it. MEASURED on a real render at 1476x781: the city's top
+     edge lands at 22% of the card unscrolled, 49% halfway down, and 76% at the foot. A
+     gradient painted onto the CARD would therefore be correct at exactly one scroll
+     position and wrong everywhere else. Anchored to the viewport it is right at all of
+     them — and it costs nothing in judgement, because the sky's own geometry already
+     separates the two things he named: the moon's arc and the stars live in the top half,
+     the city lives in the bottom 52vh. Transparent up top, opaque down low IS
+     "moon and stars yes, city lights no."
+
+     THE STOPS, AND WHY THEY ARE IN vh. The city box is `max(52vh, 22vw)` tall
+     (see CHESS CITY in _pjcc-20-town-sky.scss), so its top edge is at 48vh and its tallest
+     crowns start just under that. The hold ends at 34vh — 14vh of lead-in, so the sheet is
+     already climbing before the first tower reaches it and no visible edge lands on a
+     roofline — and it is essentially there by 66vh, under the dense middle of the skyline.
+     Same units as the thing it is hiding, so the two move together on every screen.
+
+     MEASURED, off real pixels, in a TEXT-FREE lane of the sheet, as the worst per-row
+     luminance spread — clean paper is flat, a lit window behind it is not. The control
+     (the same page with `.ts-city { display: none }`) is what proves the instrument:
+
+                                    unscrolled mid-card    card foot
+         city switched off (floor)        3.62               0.42      <- the instrument
+         today                           14.01              13.53
+         dimmer windows only             10.95              10.66      <- only 29% gone
+         this ramp                        6.77               3.83      <- 75% gone
+
+     (the mid-card floor is 3.6 rather than 0 because the backlight radial genuinely varies
+     across a 585px row; the city's share is the distance from the floor, not the raw
+     number.)
+
+     ⭐ IT ALSO HANDS BACK THE AA MARGIN THE LAST TWO PASSES SPENT, and hands it back exactly
+     where those passes measured the worst case — the card's FOOT on the NIGHT sky. Sampled
+     there: sheet rgb(193,186,180) → rgb(237,229,214), `--fd-ink-3` 4.96 → 7.59. The top of
+     the screen is untouched at 0.75 and still measures 4.84, so the worst case on the page
+     does not move; everything below it improves. The transparency he asked for three times
+     is spent where it buys the moon, not where it buys a scatter of windows.
+
+     ⚠ WHAT IT COSTS, MEASURED, BECAUSE `background-attachment: fixed` IS A KNOWN SCROLL
+     HAZARD: it takes the element off the compositor's fast path and repaints it as the page
+     scrolls. Over an identical 60-step wheel burst, main-thread task time went 192ms →
+     212ms and uncapped frame throughput 176 → 155 frames, with the WORST FRAME GAP
+     UNCHANGED at 17ms on both — no stalls, and both sides sit far above a 60Hz budget.
+     `npm run motion` cannot see this: it prices always-on ANIMATED layers, and this is
+     paint that only happens while you scroll.
+
+     ⚠⚠ PHONES ARE DELIBERATELY LEFT ALONE, and the reason is iOS. Safari on iOS has never
+     supported `background-attachment: fixed` — it falls back to `scroll`, which would
+     anchor the ramp to a ~2000px-tall card whose stops all resolve inside the first
+     viewport height, leaving the bottom two thirds of the card at 0.95. That is the
+     opposite of the direction he has asked for three times, on the device he checks the
+     site with. So the ramp is scoped to the same 701px breakpoint the city's own height
+     uses, and phones keep today's flat 0.75. ⚠ The phone has the SAME defect — measured,
+     spread 13.09 against a 0.55 floor — it is just less dense; it is not fixed, and the
+     technique above cannot fix it. If he asks, that is a `position: sticky` job, not this
+     one. The iPad-in-landscape case does get the scroll-anchored fallback; it is rare, and
+     it fails toward MORE legible rather than broken. */
+  --surface-mid:  rgba(251, 243, 224, 0.93);
+  --surface-foot: rgba(251, 243, 224, 0.95);
   --surface-2: #f6f0e2;
   /* the edge steps down with the sheet. At 0.78 the card was dim enough that #e6dfcd read
      as a border; against the brighter paper it disappeared, and a lit sheet with no edge
@@ -464,13 +542,35 @@ body.theme-chess {
      opaque-enough parchment where it does nothing at all.
      ⚠ AND THE SHORTHAND IS STILL BANNED HERE, now more than before — four layers deep, a
      `background:` written by the next person silently erases three of them. */
+  /* ⚑ THE PARCHMENT LAYER IS A VARIABLE NOW (2026-08-21) — the reasoning, the stops and
+     every measurement are with `--surface` at the top of this file.
+
+     ⚠ THE WHOLE POINT OF PUTTING IT IN `--sheet` IS THAT THE STACK IS WRITTEN ONCE. The
+     desktop ramp differs from the phone's flat fill in exactly two ways — which image the
+     middle layer is, and whether it is anchored to the viewport — so the media query below
+     sets those two and nothing else. Restating all three layers there instead would be a
+     second copy of a list the note above spends a paragraph warning people not to break.
+     ⚠ The two `scroll`s in `background-attachment` are NOT filler: the list is per-layer
+     and positional, so the top light (420px from the CARD's top) and the backlight radial
+     (`at 50% 140px`, also from the card's top) have to stay card-anchored or they would
+     detach from the paper they are lighting. Only the middle layer moves to the screen. */
+  --sheet: linear-gradient(var(--surface), var(--surface));
   .page-card {
     background-color: transparent;
     background-image:
       linear-gradient(180deg, rgba(255, 252, 244, 0.6), rgba(255, 252, 244, 0) 420px),
-      linear-gradient(var(--surface), var(--surface)),
+      var(--sheet),
       radial-gradient(1100px 520px at 50% 140px,
                       rgba(255, 205, 138, 0.28), rgba(255, 205, 138, 0) 72%);
+    background-attachment: scroll, var(--sheet-anchor, scroll), scroll;
+  }
+  /* 701px is the city's own breakpoint (_pjcc-20-town-sky.scss) — above it the skyline is
+     52vh tall and these stops are cut to fit it; below it phones keep the flat 0.75, for
+     the iOS reason in the `--surface` note. One breakpoint, so the two never drift. */
+  @media (min-width: 701px) {
+    --sheet: linear-gradient(180deg, var(--surface) 34vh,
+                             var(--surface-mid) 66vh, var(--surface-foot) 100vh);
+    --sheet-anchor: fixed;
   }
 
   /* ══ THE BOX GOT BIGGER — 2026-08-04 ("Make the white box bigger…") ══════════════

@@ -115,8 +115,72 @@ for (const file of walk(ROOT, [])) {
   if (found) inlineFiles++;
 }
 
+/* ══ THE FRONT DOOR'S SHEET IS A FOUR-LAYER STACK AND THE LAYERS ARE POSITIONAL ═════
+   Added 2026-08-21 with the screen-anchored ramp (_pjcc-25-front-door.scss). `.page-card`
+   on `theme-chess` paints three background images — top light · parchment · backlight —
+   and now a matching three-item `background-attachment` list, because only the MIDDLE one
+   is pinned to the viewport. Two ways that breaks silently, both visual-only:
+
+     1. somebody writes the `background` SHORTHAND, which resets every longhand it does not
+        name and erases three layers. The partial has warned about this in prose since
+        2026-08-12; prose is not a check.
+     2. somebody adds or removes an IMAGE without touching the ATTACHMENT list. The lists
+        are matched by position and the shorter one REPEATS, so a fourth image would make
+        the top light `fixed` and the parchment `scroll` — the exact inverse of the design,
+        with no error anywhere.
+
+   So this asserts the two lists are the same length and that the pinned one is the
+   parchment. It reads the COMPILED stylesheet, not the source, and strips comments first —
+   a check that can pass on its own documentation is not a check. */
+const RULE = /body\.theme-chess\s+\.page-card\s*\{([^}]*)\}/;
+const decls = (out.css.replace(/\/\*[\s\S]*?\*\//g, ' ').match(RULE) || [])[1];
+const layers = (s) => {
+  let d = 0, n = 1;
+  for (const ch of s) { if (ch === '(') d++; else if (ch === ')') d--; else if (ch === ',' && !d) n++; }
+  return n;
+};
+const stackFails = [];
+if (!decls) stackFails.push('body.theme-chess .page-card has no rule in the compiled CSS');
+else {
+  const img = (decls.match(/background-image:([^;]*)/) || [])[1];
+  const att = (decls.match(/background-attachment:([^;]*)/) || [])[1];
+  if (/(^|[;{\s])background\s*:/.test(decls))
+    stackFails.push('the `background` shorthand is back on .page-card — it erases the other layers');
+  if (!img) stackFails.push('no background-image — the sheet stack is gone');
+  if (!att) stackFails.push('no background-attachment — nothing is pinned to the viewport any more');
+  if (img && att && layers(img) !== layers(att))
+    stackFails.push('background-image has ' + layers(img) + ' layers but background-attachment has ' +
+                    layers(att) + ' — the shorter list repeats and pins the wrong layer');
+  /* ⚠ the fallback inside `var(--sheet-anchor, scroll)` carries its OWN comma — matching
+     this with `[^,]*` fails on the correct value, which is how the first draft of this
+     check reported a green stylesheet as broken. Match the parenthesis, not the comma. */
+  if (att && !/^\s*scroll\s*,\s*var\(\s*--sheet-anchor\s*,\s*scroll\s*\)\s*,\s*scroll\s*$/.test(att))
+    stackFails.push('background-attachment is "' + att.trim() + '" — the PARCHMENT (middle) is the ' +
+                    'only layer that may be pinned; the top light and the backlight are measured ' +
+                    'from the card\'s own top and must stay `scroll`');
+}
+/* …and the ramp itself: the viewport anchor and stops cut to the city's 52vh box. Both are
+   asserted, because a rule that reads "ramp OR anchor" would stay green with either half
+   deleted — and either half alone does nothing at all. */
+if (!/@media\s*\(min-width:\s*701px\)\s*\{\s*body\.theme-chess\s*\{[^}]*--sheet-anchor:\s*fixed/.test(
+      out.css.replace(/\/\*[\s\S]*?\*\//g, ' ')))
+  stackFails.push('no `--sheet-anchor: fixed` above 701px — the ramp would follow the CARD, ' +
+                  'which is correct at exactly one scroll position');
+if (!/--sheet:\s*linear-gradient\(180deg[^;]*vh[^;]*vh[^;]*\)/.test(
+      out.css.replace(/\/\*[\s\S]*?\*\//g, ' ')))
+  stackFails.push('no vh-stopped `--sheet` ramp above 701px — the stops are cut to the ' +
+                  'city\'s max(52vh, 22vw) box and must stay in the same unit');
+
 console.log('\n=== CSS CHECK ===');
 console.log('  ✓ PASS  style.scss compiles (' + partials + ' partials in _sass/)');
+if (stackFails.length) {
+  console.error('  ✗ FAIL  the front door\'s sheet stack:');
+  for (const f of stackFails) console.error('          — ' + f);
+  console.error('\n  See the `--surface` note in _sass/_pjcc-25-front-door.scss.');
+  console.error('\nRESULT: FAIL\n');
+  process.exit(1);
+}
+console.log('  ✓ PASS  the front door\'s sheet: 3 layers, 3 anchors, only the parchment pinned');
 console.log('  ✓ PASS  expanded:   ' + (out.css.length / 1024).toFixed(1) + ' KB');
 console.log('  ✓ PASS  compressed: ' + (min.length / 1024).toFixed(1) + ' KB   ← what visitors download');
 

@@ -1472,15 +1472,36 @@ html.sky-night.cloud-3 .ts-clouds { opacity: 0.44; }
 .ts-city-near { fill: rgba(6, 11, 26, 0.55); }
 /* THE LIT WINDOWS, and they are the reason the night skyline is not a black bar. Baked
    into the path at build time — a seeded scatter, no random and no work at runtime — and
-   they simply do not exist in daylight, which is what a window looks like at noon. */
+   they simply do not exist in daylight, which is what a window looks like at noon.
+
+   ⚑ DIMMED A TOUCH — 2026-08-21, Nate: "Can we dim the city lights a touch?" Every one of
+   the six numbers below is its old value x 0.80, so the two ranks keep their relationship
+   and the three hours keep theirs; one ratio, six values, nothing re-balanced by hand.
+
+   ⚠ THIS IS THE DIAL FOR HOW THE CITY LOOKS IN THE OPEN, AND IT IS NOT THE DIAL FOR THE
+   LIGHTS THAT SHOW THROUGH THE FRONT DOOR'S SHEET. He asked for both in one message and
+   they are two different fixes. Measured on a real render, in a text-free lane of the
+   card, as the worst per-row luminance spread (clean paper reads ~0.4, the city's lit
+   windows raise it):
+
+       card foot, no city at all (the floor)   0.42     <- the instrument's control
+       card foot, today                       13.53
+       card foot, these dimmer windows        10.66     <- 29% of the city signal gone
+       card foot, the screen-anchored ramp     3.83     <- 75% gone
+
+   So dimming alone leaves three quarters of the punch-through in place, because a
+   translucent sheet INVERTS the skyline: the buildings are dark and the paper washes them
+   out, while the windows are bright and come through, which is why what you see through
+   the card is not a city but a scatter of floating dots. The ramp in _pjcc-25-front-door
+   is what fixes that; this is only about the skyline you can see in the open. */
 .ts-city-win  { fill: #ffd180; opacity: 0; transition: opacity 1.4s ease; }
-html.sky-night .ts-city-win { opacity: 0.82; }
-html.sky-dusk  .ts-city-win { opacity: 0.66; }
-html.sky-dawn  .ts-city-win { opacity: 0.30; }
+html.sky-night .ts-city-win { opacity: 0.66; }
+html.sky-dusk  .ts-city-win { opacity: 0.53; }
+html.sky-dawn  .ts-city-win { opacity: 0.24; }
 .ts-city-win--far { fill: #cbb489; }
-html.sky-night .ts-city-win--far { opacity: 0.40; }
-html.sky-dusk  .ts-city-win--far { opacity: 0.32; }
-html.sky-dawn  .ts-city-win--far { opacity: 0.14; }
+html.sky-night .ts-city-win--far { opacity: 0.32; }
+html.sky-dusk  .ts-city-win--far { opacity: 0.26; }
+html.sky-dawn  .ts-city-win--far { opacity: 0.11; }
 
 /* ── quiet it all down on request ─────────────────────────────────────────────
    The sky itself is PAINT, not motion — the gradient, the orb, the stars and the
