@@ -44,6 +44,25 @@
   .strikes { font-size: 13px; color: #ff5b6e; letter-spacing: 2px; }
   .strikes b { color: #4a1520; }
 
+  /* ── THE QUESTION COLUMN SCROLLS (2026-08-24, Nate: "you can't scroll down to hit
+     continue - you can only see three answer options") ────────────────────────────
+     MEASURED before the fix, on the g5-bishop pin question: #term.scrollHeight was 764
+     against a clientHeight of 614, `overflow: hidden`, inside an iframe that carries
+     `scrolling="no"`. So 150px of the question — two of the four options and the whole
+     NEXT button, which sat 135px BELOW the terminal's bottom edge — was not merely
+     off-screen, it was unreachable by any gesture. A diagram question was unfinishable.
+     ⚠ overflow-y:auto MAKES overflow-x AUTO TOO, which is how a box becomes a sideways
+     scroller by accident ([[mobile-window-slide]]) — hence the explicit overflow-x. */
+  .qscroll { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column;
+    overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; scrollbar-color: #7a2236 transparent; }
+  /* ⚠⚠ AND THE CHILDREN MUST NOT SHRINK. A flex column that overflows SQUASHES its items
+     by default, and a squashed item's content spills OUT of its box — on the phone the
+     NEXT button landed on top of the explanation, and `scrollHeight` never moved, because
+     shrinking had already made scrollHeight === clientHeight. A collision is not an
+     overflow ([[mobile-window-slide]]): the number said "fits", the screenshot said no. */
+  .qscroll > * { flex: 0 0 auto; }
+  .qscroll::-webkit-scrollbar { width: 6px; }
+  .qscroll::-webkit-scrollbar-thumb { background: #7a2236; border-radius: 3px; }
   .qcard { background: rgba(0,0,0,0.32); border: 1px solid #7a2236; border-radius: 10px; padding: 14px 16px; margin: 10px 0; flex: 0 0 auto; }
   .qtags { display: flex; gap: 6px; margin-bottom: 8px; }
   .qtag { font-size: 8.5px; letter-spacing: 1px; font-weight: bold; padding: 2px 7px; border-radius: 999px; text-transform: uppercase; }
@@ -114,6 +133,28 @@
   #timebar { height: 100%; width: 100%; background: linear-gradient(90deg,#ff5b6e,#F5C518); border-radius: 3px; }
   #diagram { grid-template-columns: repeat(8, 1fr); width: min(248px, 64%); margin: 2px auto 10px; border: 2px solid #7a2236; border-radius: 6px; overflow: hidden; box-shadow: 0 3px 12px rgba(0,0,0,0.4); }
   .dsq { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: clamp(13px, 4.2vw, 21px); line-height: 1; }
+
+  /* ── A DIAGRAM QUESTION IS A DIFFERENT SHAPE ──────────────────────────────────
+     Scrolling (above) guarantees the question is always REACHABLE. This makes it
+     FIT, which is the better answer for a timed exam: you cannot weigh four options
+     you have to scroll between. The board sits BESIDE its text and the card packs
+     down, which buys back the ~250px the stacked board was spending. Below 470px
+     (the phone, where the term is ~96vw) it stacks again and the scroll takes over. */
+  .qbody { display: block; }
+  .has-diag .qbody { display: flex; align-items: center; gap: 13px; }
+  .has-diag #diagram { flex: 0 0 auto; width: 178px; margin: 0; }
+  .has-diag .qbody .qtext { min-height: 0; font-size: 15px; }
+  .has-diag .dsq { font-size: 18px; }
+  .has-diag .qcard { padding: 10px 12px; margin: 8px 0; }
+  .has-diag .badge { width: 52px; height: 52px; }
+  .has-diag .badge .b-pip { font-size: 16px; }
+  .has-diag .answers { gap: 6px; }
+  .has-diag .ans { padding: 9px 14px; }
+  .has-diag .explain { margin-top: 7px; min-height: 0; }
+  @media (max-width: 470px) {
+    .has-diag .qbody { display: block; }
+    .has-diag #diagram { width: min(178px, 56%); margin: 2px auto 8px; }
+  }
   .dsq.light { background: #e8c9a0; } .dsq.dark { background: #9c5d3c; }
   .dsq .wp { color: #fff; text-shadow: 0 1px 1px #000, 0 0 2px #000; } .dsq .bp { color: #18090a; }
   .sel-grp { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
@@ -196,14 +237,20 @@
   </div>
 
   <div id="timebar-wrap" style="display:none"><div id="timebar"></div></div>
-  <div class="qcard">
-    <div class="qtags"><span class="qtag cat" id="q-cat">RULES</span><span class="qtag tier" id="q-tier">DELTA</span></div>
-    <div id="diagram" style="display:none"></div>
-    <div class="qtext" id="q-text">—</div>
+  <!-- THE QUESTION COLUMN SCROLLS (2026-08-24). The badge and the timebar stay pinned;
+       everything a question is made of lives in here, so nothing can be unreachable. -->
+  <div class="qscroll" id="qscroll">
+    <div class="qcard">
+      <div class="qtags"><span class="qtag cat" id="q-cat">RULES</span><span class="qtag tier" id="q-tier">DELTA</span></div>
+      <div class="qbody">
+        <div id="diagram" style="display:none"></div>
+        <div class="qtext" id="q-text">—</div>
+      </div>
+    </div>
+    <div class="answers" id="answers"></div>
+    <div class="explain" id="explain"></div>
+    <button class="next-btn" id="next-btn">NEXT ▸</button>
   </div>
-  <div class="answers" id="answers"></div>
-  <div class="explain" id="explain"></div>
-  <button class="next-btn" id="next-btn">NEXT ▸</button>
 
   <div class="promo" id="promo"><div class="promo-card" id="promo-card" role="dialog" aria-modal="true" aria-labelledby="promo-rank" aria-describedby="promo-file">
     <div class="pl">CLEARANCE GRANTED</div><div class="pr" id="promo-rank">DELTA</div><div class="pd" id="promo-file"></div>
@@ -278,7 +325,7 @@ const Q = [
   { t:2, cat:'RULES', q:'A pawn reaching the far rank may become…', a:['Only a queen','Any piece except a king','Any piece including a king','Nothing — it stops'], c:1, why:'Promotion: usually a queen, but any piece except a king.' },
   { t:2, cat:'RULES', q:'You may NOT castle when…', a:['It is move ten','Your king is in or moves through check','Your queen has moved','You are winning'], c:1, why:'No castling into, through, or out of check.' },
   { t:2, cat:'RULES', q:'Which piece moves like a rook AND a bishop?', a:['King','Queen','Knight','Pawn'], c:1, why:'The queen combines straight and diagonal lines.' },
-  { t:2, cat:'TACTICS', q:'A knight and a bishop are each worth about how many pawns?', a:['Two','Three','Four','Five'], c:1, why:'Minor pieces are valued at roughly three pawns apiece.' },
+  { t:2, cat:'TACTICS', q:'Knights and bishops are worth how many pawns?', a:['Two','Three','Four','Five'], c:1, why:'Minor pieces are valued at roughly three pawns apiece.' },
   // TIER 3 — tactics / history
   { t:3, cat:'TACTICS', q:'One piece attacking two enemy pieces at once is a…', a:['Pin','Fork','Skewer','Gambit'], c:1, why:'A fork hits two targets — knights are famous for it.' },
   { t:3, cat:'TACTICS', q:'In a “pin”, a piece can’t move because…', a:['It would expose a more valuable piece','It is out of moves','It is pinned to the edge','The king forbids it'], c:0, why:'Moving the pinned piece would expose something more valuable behind it.' },
@@ -363,6 +410,8 @@ let timer = null, timeLeft = 0, timeMax = 0;
 const DGLYPH = { p:'♟',n:'♞',b:'♝',r:'♜',q:'♛',k:'♚', P:'♙',N:'♘',B:'♗',R:'♖',Q:'♕',K:'♔' };
 function renderDiagram(fen){
   const host = document.getElementById('diagram'); if (!host) return;
+  // One class drives the whole compact-card layout — see .has-diag in the stylesheet.
+  document.getElementById('term').classList.toggle('has-diag', !!fen);
   if (!fen){ host.style.display = 'none'; host.innerHTML = ''; return; }
   host.style.display = 'grid'; host.innerHTML = '';
   const rows = fen.split(' ')[0].split('/');
@@ -402,6 +451,14 @@ function floatGain(pts, st){ const el = document.createElement('div'); el.classN
 let queues = {}, correct = 0, score = 0, strikes = 0, streak = 0, rankIdx = 0, cur = null, answered = false, lastFile = '';
 
 function shuffle(a){ for (let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
+/* NEXT is the one control a graded question cannot do without, so it comes to the
+   player rather than waiting to be found. Scroll the column's OWN scrollTop — a
+   scrollIntoView() from inside an iframe can walk up and move the host page too. */
+function showNext(){
+  document.getElementById('next-btn').classList.add('show');
+  const s = document.getElementById('qscroll');
+  if (s) s.scrollTop = s.scrollHeight;
+}
 function buildQueues(){
   queues = {1:[],2:[],3:[],4:[],5:[]};
   const set = CATSETS[catFilter];
@@ -473,7 +530,7 @@ function timeUp(){
   const ex = document.getElementById('explain'); ex.innerHTML = '<b style="color:#ff9fb0">Time!</b> ' + cur.why; ex.classList.add('show');
   updateHUD();
   if (strikes >= 3){ setTimeout(gameOver, 250); }
-  else document.getElementById('next-btn').classList.add('show');
+  else showNext();
 }
 function answer(origIdx, btn){
   if (answered) return;
@@ -503,7 +560,7 @@ function answer(origIdx, btn){
   ex.classList.add('show');
   updateHUD();
   if (strikes >= 3){ setTimeout(gameOver, 250); }
-  else document.getElementById('next-btn').classList.add('show');
+  else showNext();
 }
 function updateHUD(){
   document.getElementById('score-lbl').textContent = 'SCORE ' + score;

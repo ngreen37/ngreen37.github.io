@@ -1605,9 +1605,20 @@
         codename:  (profile && profile.codename) || null
       };
       var r = await sb.from('puzzle_reports').insert(row);
-      if (r && r.error) return { ok: false, reason: r.error.message || 'rejected' };
+      /* ⚠ NAME THE CAUSE, DON'T JUST SAY NO (2026-08-24). This used to hand back the raw
+         Postgrest string, which the panel then didn't print, so every failure looked the
+         same: "could not send it from here". A report that bounces because the TABLE was
+         never created and a report that bounces because the player is on a train are two
+         different problems with two different fixes, and only one of them is mine.
+         Classified exactly like PJCC.puzzleReports() below — one definition of "the
+         migration has not been run", not two that can disagree. */
+      if (r && r.error) {
+        var m = (r.error.message || ''), code = r.error.code || '';
+        var missing = code === '42P01' || code === 'PGRST205' || /does not exist|schema cache/i.test(m);
+        return { ok: false, reason: missing ? 'no-table' : 'rejected', detail: m, code: code };
+      }
       return { ok: true };
-    } catch (e) { return { ok: false, reason: (e && e.message) || 'failed' }; }
+    } catch (e) { return { ok: false, reason: 'failed', detail: (e && e.message) || '' }; }
   };
   /* The private read side. Returns [] for anybody who is not the Creator — the RLS policy
      is what actually enforces that; this is only the query.

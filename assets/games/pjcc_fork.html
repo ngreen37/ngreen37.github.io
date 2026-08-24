@@ -95,6 +95,13 @@
   /* An empty row must not sit there as a floating gap — Hint and Analysis are both hidden
      between puzzles, and Report only appears once there is a puzzle to report. */
   #tool-row:not(:has(.float-btn:not(.hidden))) { display: none; }
+  /* The puzzle's code, set big enough to read back over a phone. It is derived from the
+     position (see puzzleCode), so the same broken puzzle files under the same name for
+     everyone who ever meets it. */
+  .rep-id { font-family: ui-monospace, 'Share Tech Mono', monospace; font-size: 15px; font-weight: 700;
+    letter-spacing: 1.5px; color: #5f3e1e; margin: 0 0 6px; }
+  .rep-id small { display: block; font-family: 'Trebuchet MS', sans-serif; font-size: 10px;
+    font-weight: 400; letter-spacing: 0; color: #7b8390; margin-top: 2px; }
   .rep-fen { font-family: ui-monospace, 'Share Tech Mono', monospace; font-size: 10.5px; color: #4b5361;
     background: #f4f2ec; border: 1px solid #e5e1d8; border-radius: 8px; padding: 8px 10px;
     margin: 0 0 10px; max-width: 340px; word-break: break-all; line-height: 1.5; }
@@ -238,6 +245,9 @@
     <div class="eyebrow">Report this puzzle</div>
     <div class="big-title" style="font-size:20px;">Something wrong?</div>
     <div class="blurb" style="margin-bottom:10px;">If the "winning move" isn't winning — or another move looks just as good — send it over. It goes straight to McPuppy with the position attached.</div>
+    <!-- the code first, the position under it: the code is what a person can read back
+         to me off a photo or a phone call, the FEN is what rebuilds the board. -->
+    <div class="rep-id" id="rep-id"></div>
     <div class="rep-fen" id="rep-fen"></div>
     <!-- what the machine thinks of the move you just tried — only shown when there IS one -->
     <div class="rep-verdict hidden" id="rep-verdict"></div>
@@ -963,18 +973,60 @@ function secondMate(p, b0){
   }
   return false;
 }
+/* ⚑⚑ AND IT HAS TO LOOK AS FAR AS THE ANSWER DOES (2026-08-24). Nate, with a photo:
+   "I took a photo of a broken puzzle - knight can take queen."
+
+   ⭐ THE TWO HALVES OF THE GATE WERE SEARCHING TO DIFFERENT HORIZONS. The scripted line
+   was proved at `proveGain(…, line.length + 1, …)` — deep enough to cash a three-move
+   combination in. Every OTHER first move was screened one ply deep. So an alternative
+   that needed two moves to collect was invisible: after `Rd8+` the king simply steps
+   aside, no material has changed hands yet, depth 1 scores it 0, and the gate waves the
+   puzzle through — even though `Rd8+ K-moves Rxd2` wins the same queen the stored answer
+   does. `tests/puzzle-soak.js` put a number on it — 200 puzzles, 20 at each difficulty:
+   **21% came back suspect against the old screen, 8% against this one**, and difficulties
+   1-4 went clean. The hole was near-total on the SKEWERS and the DISCOVERED CHECKS,
+   because those are exactly the motifs whose line takes three moves. Every one of them is
+   a position where the room calls a perfectly good move wrong — the complaint, in its own
+   words. `npm run soak:puzzles 20 -- --old` puts the old screen back and shows the 21%.
+
+   The alternative now gets the SAME horizon as the answer: after it, the defender is
+   searched `line.length` plies, which is the scripted proof's depth minus the move just
+   made. A one-move material puzzle still screens at depth 1 and is untouched.
+
+   ⭐⭐ AND THE DEPTH IS PAID FOR BY ASKING A YES/NO INSTEAD OF A NUMBER. This loop never
+   wanted the alternative's VALUE, only whether it clears `start + 300`, so it searches a
+   NULL WINDOW around that threshold and alpha-beta throws away every line that cannot
+   change the answer. MEASURED, same machine, same run, 10 puzzles at each of the ten
+   difficulties (`gen-cost` harness):
+
+       old   1 ply, full window .............  70ms/puzzle   worst 109ms   14.8 men
+       deep  line.length, full window ....... 216ms/puzzle   worst 516ms   14.2 men
+       deep  line.length, NULL window .......  96ms/puzzle   worst 178ms   14.7 men   ← shipped
+       deeper line.length+1, null window .... 361ms/puzzle   worst 741ms   12.9 men
+
+   So the hole closes for 1.4x the old cost with the boards unchanged. ⚠ THE MEN COLUMN IS
+   WHY THE NEXT PLY IS NOT FREE AND NOT TAKEN: genPuzzle has a WALL CLOCK, and past its
+   deadline the first thing it gives up is the crowd — at line.length+1 the average board
+   loses two men, which quietly re-tunes every rating in the room ([[a-dial-can-run-out-of-road]]).
+   ⚠ These are THIS machine's numbers, not his; the ratios are the measurement, not the ms.
+
+   ⚠ The note above puzzleSane's call order still holds: whichever half runs first, the
+   node budget (`searchCap`) fails CLOSED, so an over-budget candidate is thrown away
+   rather than shipped ([[puzzle-room-invariants]]). */
 function secondSolution(p, b0, start){
   const foe = p.side === 'w' ? 'b' : 'w';
   const first = uci(p.line[0][0]);
+  const depth = Math.max(1, (p.line || []).length);
+  const T = start + 300;                                       // "a clean piece", the room's own bar
   const mv = legalMovesFor(b0, p.side);
   for (let i=0;i<mv.length;i++){
     const m = mv[i];
     if (m.fx === first.fx && m.fy === first.fy && m.tx === first.tx && m.ty === first.ty) continue;
     const moved = b0[m.fy][m.fx], cap = b0[m.ty][m.tx];
     b0[m.ty][m.tx] = moved; b0[m.fy][m.fx] = null;             // make — see legalMovesFor
-    const v = -proveGain(b0, foe, 1, -Infinity, Infinity);
+    const v = -proveGain(b0, foe, depth, -T, -(T - 1));        // null window: is it >= T, yes or no
     b0[m.fy][m.fx] = moved; b0[m.ty][m.tx] = cap;              // unmake
-    if (v - start >= 300) return true;
+    if (v >= T) return true;
   }
   return false;
 }
@@ -1021,6 +1073,43 @@ function pickMotif(diff, rnd){
   for (const [fn, w] of mix){ r -= w; if (r <= 0) return fn; }
   return mix[0][0];
 }
+/* ── THE PUZZLE'S NAME (2026-08-24, Nate: "Give each puzzle an ID so it can be
+   diagnosed properly") ───────────────────────────────────────────────────────────
+   It used to be `g1`, `g2`, `g3` — a counter that restarted at 1 every time anybody
+   opened the room. Two players reporting the SAME broken position filed it under two
+   different names, the same name meant a different position on every visit, and a
+   report that read `id: g3` told me nothing at all.
+
+   ⭐ THE ID IS DERIVED FROM THE POSITION, so it is the same code for everyone, forever,
+   and two reports of one bad puzzle collapse into one row. It hashes the FEN *and* the
+   solution line, because the same position with a different intended answer is a
+   different puzzle — and a wrong answer is exactly the sort of bug being reported.
+
+   ⚠ A HASH NAMES A PUZZLE, IT DOES NOT REBUILD ONE. That is what `?p=` does (see
+   openFromLink) — the code is the handle you can read off a photograph, the link is
+   the thing that puts the position back on the board. Both travel in every report.
+
+   Crockford-style base32 with no I/L/O/U, so nothing in the code can be misread as a
+   digit, or misheard, in the one place it has to survive: a photo of a screen. */
+function puzzleCode(p){
+  const s = puzzleFEN(p) + '|' + (p.line || []).map(m => m[0]).join(' ');
+  // FNV-1a, run twice from different offset bases. Not a security hash — a stable,
+  // well-mixed name. Two passes because ONE gives 32 bits, and 32 bits starts
+  // colliding around 65,000 puzzles; 40 bits pushes that past a million.
+  const fnv = (base) => {
+    let h = base >>> 0;
+    for (let i = 0; i < s.length; i++){
+      h ^= s.charCodeAt(i);
+      h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+    }
+    return h;
+  };
+  let n = fnv(0x811c9dc5) * 256 + (fnv(0x01000193) & 0xff);   // 40 bits, exact in a double
+  const A = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+  let out = '';
+  for (let i = 0; i < 8; i++){ out = A[n % 32] + out; n = Math.floor(n / 32); }
+  return out.slice(0, 4) + '-' + out.slice(4);
+}
 function genPuzzle(diff, rnd){
   rnd = rnd || Math.random;
   try {
@@ -1034,15 +1123,18 @@ function genPuzzle(diff, rnd){
       clutterEase = (a < 6 && late < 260) ? 1 : (a < 12 && late < 620) ? 0.7 : 0.45;
       let p = pickMotif(diff, rnd)(diff, rnd);
       if (!p) p = genKnightFork(diff, rnd) || genBackRankMate(diff, rnd) || genDoubleAttack(diff, rnd);
-      if (p && puzzleSane(p)) { p.id = 'g' + (genPuzzle._n = (genPuzzle._n||0) + 1); p.rating = puzzleRating(p, diff); return p; }
+      if (p && puzzleSane(p)) { p.id = puzzleCode(p); p.rating = puzzleRating(p, diff); return p; }
     }
     // guaranteed fallbacks — still gated; the last resort is a known-sane composition
     clutterEase = 0.35;
     const fb = [genKnightFork(2, rnd), genBackRankMate(2, rnd), genSkewer(2, rnd), genDoubleAttack(2, rnd)].find(q => q && puzzleSane(q));
-    if (fb){ fb.id = 'g' + (genPuzzle._n = (genPuzzle._n||0) + 1); fb.rating = puzzleRating(fb, 2); return fb; }
+    if (fb){ fb.id = puzzleCode(fb); fb.rating = puzzleRating(fb, 2); return fb; }
   } finally { clutterEase = 1; }
-  return { id:'g0', theme:'Back Rank', cat:'mate', goal:'Mate in one.', side:'w', hint:'Down the file to the back rank.',
+  // The last-resort composition names itself the same way everything else does.
+  const last = { theme:'Back Rank', cat:'mate', goal:'Mate in one.', side:'w', hint:'Down the file to the back rank.',
       rating:400, pieces:['Kg1','Rd2','kh8','pg7','ph7'], line:[['d2d8','Rd8#']] };
+  last.id = puzzleCode(last);
+  return last;
 }
 
 function parseBoard(p) {
@@ -1852,6 +1944,7 @@ function render(){
   ctx.restore();
   drawConfetti(); drawFloaters();
   if (run) drawRibbon();
+  if (G && G.p) drawPuzzleCode();
   if (refuteCard && !explainCard) drawRefute();
   drawBanner();
   if (explainCard) drawExplain();
@@ -2014,6 +2107,20 @@ function drawRefuteArrow(){
 function drawConfetti(){ confetti.forEach(p=>{ ctx.save(); ctx.globalAlpha=Math.max(0,p.life/p.max); ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.fillStyle=p.col; ctx.fillRect(-p.sz/2,-p.sz/2,p.sz,p.sz*1.6); ctx.restore(); }); }
 function drawFloaters(){ floaters.forEach(f=>{ ctx.globalAlpha=Math.max(0,f.life/f.max); ctx.fillStyle=f.col; ctx.font='bold 14px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(f.txt,f.x,f.y); ctx.globalAlpha=1; }); }
 
+/* ⚑ THE CODE, ON THE SCREEN (2026-08-24). The ID is only worth having if it survives the
+   way a bug actually gets reported here, which is Nate photographing his phone. So it is
+   printed on the canvas — bottom-left, under the ribbon, small and gray enough to be
+   furniture and large enough to read off a photo.
+   ⚠ IT IS NOT A HINT. It says nothing about the position, the motif or the rating, which
+   is why it can sit in front of an unsolved puzzle when the rating chip cannot. */
+function drawPuzzleCode(){
+  ctx.save();
+  ctx.fillStyle = C.muted; ctx.globalAlpha = 0.75;
+  ctx.font = '9.5px ui-monospace, "Share Tech Mono", monospace';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+  ctx.fillText('puzzle ' + G.p.id, 14, H - 6);
+  ctx.restore();
+}
 function drawRibbon(){
   const y = H - 34, x0 = 30, x1 = W - 30, n = run.legLen || (run.queue ? run.queue.length : 5);
   ctx.strokeStyle = 'rgba(245,197,24,0.3)'; ctx.lineWidth = 4; ctx.setLineDash([2, 6]); ctx.lineCap = 'round';
@@ -2300,6 +2407,8 @@ function currentClaim(){
 }
 document.getElementById('report-btn').addEventListener('click', ()=>{
   const p = G && G.p; if (!p) return;
+  document.getElementById('rep-id').innerHTML =
+    'PUZZLE ' + p.id + '<small>This code names this exact position — quote it and I can find it.</small>';
   document.getElementById('rep-fen').textContent = puzzleFEN(p);
   document.getElementById('rep-done').textContent = '';
   document.getElementById('rep-note').value = '';
@@ -2331,8 +2440,19 @@ document.getElementById('rep-send').addEventListener('click', async ()=>{
     btn.textContent = '✓ Sent';
     done.textContent = 'Got it — thank you. McPuppy reads these.';
   } else {
+    /* ⚠ THE PANEL SAYS WHICH FAILURE IT WAS (2026-08-24, Nate: "Report puzzle does not
+       work - It says copy or email instead"). One sentence for every cause read as the
+       button being broken. `no-table` is the honest one and the likeliest: the client
+       shipped ahead of its migration on purpose, so until docs/puzzle-reports-setup.md
+       is run there is nowhere for a report to land, and saying so beats a shrug. */
+    const WHY = {
+      'no-table':  'The report inbox is not switched on yet — the two buttons below still work.',
+      'offline':   'No connection to the account service — use email or copy below, nothing is lost.',
+      'signed_out':'No connection to the account service — use email or copy below, nothing is lost.',
+      'rejected':  'The server turned the report away — use email or copy below, nothing is lost.'
+    };
     btn.disabled = false; btn.textContent = 'Send It';
-    done.textContent = 'Could not send it from here — use email or copy below, nothing is lost.';
+    done.textContent = WHY[r.reason] || 'Could not send it from here — use email or copy below, nothing is lost.';
   }
 });
 document.getElementById('rep-close').addEventListener('click', ()=>{
