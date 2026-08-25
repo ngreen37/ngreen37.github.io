@@ -195,7 +195,13 @@ check('…and the budget is spent when an attack is COMMITTED, not when it is wo
      rather than one regex that a single surviving site would satisfy. */
   const resetFn = slice('function startYourTurn()', 'function campaignCheck');
   check('a new round hands the budget back', /G\.atks = ATTACK_CAP;/.test(resetFn));
-  const contFn = slice("$('cont').addEventListener", "newCampaign('medium')");
+  /* ⚠ THE THIRD SLICE-BOUNDARY CATCH FROM THIS FILE, 2026-08-25 — and the same lesson each
+     time. The handler's BODY moved into `function continueOn()` when the battle verdict got
+     its own on-board button (`#econt`), so both buttons share one implementation; slicing
+     from `$('cont').addEventListener` then captured two one-line listeners and none of the
+     logic, and this check went quietly green-adjacent on an empty string. Slice the FUNCTION,
+     not the place it happens to be wired up. */
+  const contFn = slice('function continueOn()', "newCampaign('medium')");
   check('spending the last attack moves you on rather than stranding you',
         /G\.atks <= 0[\s\S]{0,120}setPhase\('fortify'\)/.test(contFn),
         'the map still opens first, so you see what you took');
@@ -232,6 +238,47 @@ check('the four position bands are still a clean quarter each',
 check('the attacker\'s second rank rides the TOP band, not the wider one',
       [6, 7, 8].map(d => G.posTop(d)).join() === 'false,false,true',
       'the top face is the top reward in both chairs');
+
+/* ══ 5b. THE SECOND QUEEN — 2026-08-25 ════════════════════════════════════
+   His: "two-queen-on-perfect-roll-and-if-chain-of-three". Three conditions, and the point of
+   the rule is that ALL THREE are needed — so each one is denied on its own here. A single
+   check that passed the happy path would stay green if any one condition were dropped, which
+   is the exact mutation this rule is vulnerable to. */
+check('a perfect roll on a chain of three unlocks the second queen',
+      G.capsFor(9, 3, true).q === 2, 'ranks 9 · chained 3 · die 8');
+check('…but not without the perfect roll',
+      G.capsFor(9, 3, false).q === 1, 'a chain alone is not enough');
+check('…and not without the chain',
+      G.capsFor(9, 2, true).q === 1, 'a perfect roll alone is not enough');
+check('…and never on a holding too thin for even one queen',
+      G.capsFor(2, 9, true).q === 0, 'QUEEN_RANKS still comes first');
+check('the old call shape still means one queen',
+      G.capsFor(9).q === 1, 'capsFor(ranks) alone is unchanged behavior');
+check('the chain threshold is a named constant', G.QUEEN2_CHAIN === 3);
+check('the other caps did not move',
+      G.capsFor(9, 3, true).b === 2 && G.capsFor(9, 3, true).n === 2 &&
+      G.capsFor(9, 3, true).r === 2,
+      'two bishops, two knights, two rooks — his "never more than 2"');
+
+/* ══ 5c. HIS WORD FOR A HELD ATTACK ═════════════════════════════════════════ */
+check('a failed attack reads DEFENDED, not REPULSED',
+      /'DEFENDED'/.test(src) && !/'REPULSED'/.test(src),
+      'his 2026-08-25 word — and the old one is gone, not merely unused');
+
+/* ══ 5d. THE MATE IS DRAWN ON THE BOARD ══════════════════════════════════
+   ⚠ THE RING IS ASKED OF THE REFEREE, NOT RE-DERIVED. If lightMate ever stops calling
+   legalMoves it has become a second implementation of chess that can disagree with the
+   first — the one thing this game has never allowed. */
+check('the mate lighting asks the referee which squares are sealed',
+      /function lightMate/.test(src) && /C\.legalMoves\(B\.S\)/.test(slice('function lightMate', 'function showEndcard')),
+      'no independent king-move generator');
+check('…and it only fires on a real mate',
+      /if \(how === 'won-mate'\) lightMate\('b'\);/.test(src) &&
+      /else if \(how === 'lost-mate'\) lightMate\('w'\);/.test(src),
+      'a win on the clock has no trapped king to draw');
+check('…and both mate animations are reduced-motion guarded',
+      /@media \(prefers-reduced-motion: reduce\) \{\s*\.sq\.mated \{ animation: none; \}/.test(src),
+      'it fires exactly when a player is reading the board');
 
 /* ══ 6. IT ACTUALLY MOVES A KING, A ROOK AND THREE PAWNS ════════════════════════════ */
 function freshDefender(withRook, pawnFiles) {
@@ -504,6 +551,11 @@ function serve() {
   });
 }
 const isOn = (id) => `document.getElementById('${id}').classList.contains('on')`;
+/* ⛑ THE BATTLE'S VERDICT IS ON THE BOARD NOW — 2026-08-25. `screen-result` no longer opens
+   when a battle ends (Nate: "leave the message on the board instead"), so every wait that
+   used to look for that screen looks for the endcard instead. `screen-result` still exists
+   and is still used by the CAMPAIGN ending, which is why it was not deleted. */
+const ENDED = "document.getElementById('endcard').classList.contains('on')";
 
 (async () => {
   let pp;
@@ -584,8 +636,8 @@ const isOn = (id) => `document.getElementById('${id}').classList.contains('on')`
       await page.click('#tobattle');
       await page.waitForFunction(isOn('screen-battle'), { timeout: 9000 });
       await page.click('#resign');
-      await page.waitForFunction(isOn('screen-result'), { timeout: 9000 });
-      await page.click('#cont');
+      await page.waitForFunction(ENDED, { timeout: 9000 });
+      await page.click('#econt');
       await page.waitForFunction(isOn('screen-map'), { timeout: 9000 });
       atkSeen.push(await page.$eval('#t-atk', (e) => e.textContent));
     }
@@ -637,12 +689,12 @@ const isOn = (id) => `document.getElementById('${id}').classList.contains('on')`
 
       /* ── THE EXPLOIT ── do nothing at all, and see who wins ── */
       const t0 = Date.now();
-      await page.waitForFunction(isOn('screen-result'), { timeout: 60000 });
+      await page.waitForFunction(ENDED, { timeout: 60000 });
       const el = ((Date.now() - t0) / 1000).toFixed(1);
       const res = await page.evaluate(() => ({
-        v: document.getElementById('verdict').textContent,
-        win: /win/.test(document.getElementById('verdict').className),
-        line: document.getElementById('result-say').textContent
+        v: document.getElementById('eword').textContent,
+        win: /win/.test(document.getElementById('eword').className),
+        line: document.getElementById('eline').textContent
       }));
       /* ⚠⚠ THE CHECK THIS WHOLE PHASE EXISTS FOR. Before 2026-08-24 this returned a WIN
          after 15.1 seconds of touching nothing, in every defense in the game. */
@@ -655,7 +707,7 @@ const isOn = (id) => `document.getElementById('${id}').classList.contains('on')`
     /* ── A CLOCK MUST NEVER EXCEED WHAT IT STARTED WITH ──
        The Bronstein credit is what makes a battle terminate: a plain increment would let a
        side that answers in 180ms gain time forever. Sampled black-box off the readout. */
-    await page.click('#cont').catch(() => {});
+    await page.click('#econt').catch(() => {});
     const clockProbe = await page.evaluate(async () => {
       const readout = () => {
         const t = document.getElementById('clock').textContent.split('vs');

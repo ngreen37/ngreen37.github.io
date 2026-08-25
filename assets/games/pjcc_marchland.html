@@ -282,6 +282,44 @@
   .sq.from { box-shadow: inset 0 0 0 3px rgba(107,255,184,.55); }
   .sq.last { box-shadow: inset 0 0 0 3px rgba(255,214,102,.4); }
   .sq.chk  { box-shadow: inset 0 0 0 3px rgba(255,110,110,.9); }
+  /* ⛑⛑ THE MATE, DRAWN — 2026-08-25. Nate: *"The Checkmate should be a little more
+     dramatic - the squares light up to show the king is trapped."* Two different marks,
+     because a trapped king is two different facts: the square he is ON, and every square he
+     CANNOT GO TO. Showing only the king says "you lost"; showing the ring says WHY.
+     ⚠ `.sealed` is drawn with an inset ring plus a wash rather than a border, so it reads on
+     a light square and a dark one without two rules. Checked against both.
+     ⚠ BOTH ANIMATIONS ARE GUARDED. This fires at the exact moment a player is reading the
+     board, which is the worst possible time to ignore a reduced-motion request. */
+  .sq.mated { box-shadow: inset 0 0 0 3px rgba(255,110,138,1), 0 0 18px rgba(255,110,138,.55);
+    animation: mate-pulse 1.05s ease-in-out infinite; z-index: 1; }
+  .sq.sealed::before { content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(255,110,138,.30), rgba(255,110,138,0) 68%);
+    box-shadow: inset 0 0 0 2px rgba(255,110,138,.42);
+    animation: seal-in .32s ease-out both; }
+  @keyframes mate-pulse { 50% { box-shadow: inset 0 0 0 3px rgba(255,110,138,1), 0 0 30px rgba(255,110,138,.85); } }
+  @keyframes seal-in { from { opacity: 0; transform: scale(.72); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .sq.mated { animation: none; }
+    .sq.sealed::before { animation: none; }
+  }
+
+  /* ⛑⛑ THE VERDICT MOVED ONTO THE BOARD — 2026-08-25. Nate: *"maybe we take out that
+     screen completely and leave the message on the board instead."* The old screen-result
+     replaced the board the instant a battle ended, so the mate you had just been shown was
+     gone before you could look at it — which is exactly the thing the lighting above exists
+     to let you look at.
+     ⚠ IT DOES NOT COVER THE BOARD. It sits under it, in the space the `.say` line already
+     occupied, so the lit squares stay visible while you read the verdict. An overlay would
+     have re-created the problem it was written to fix.
+     ⚠ THE BUTTON IS EXPLICIT, NOT A TIMER. A dramatic ending that yanks itself away after
+     three seconds is the same defect in a new costume; you leave when you are done looking. */
+  .endcard { display: none; text-align: center; margin-top: 8px; }
+  .endcard.on { display: block; animation: endcard-in .28s ease-out both; }
+  .endcard .eword { font-size: 25px; font-weight: 900; letter-spacing: 1px; line-height: 1.1; }
+  .endcard .eword.win { color: var(--mine); } .endcard .eword.lose { color: var(--theirs); }
+  .endcard .eline { font-size: 12px; opacity: .82; margin-top: 5px; }
+  @keyframes endcard-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .endcard.on { animation: none; } }
   /* pieces sized off the BOARD (cqw), never the viewport — a piece is a fraction of its
      square and nothing else. Numbers match PJCCPieces.draw() exactly. */
   .pc { position: absolute; width: 12.5%; height: 12.5%; left: 0; top: 0;
@@ -483,6 +521,12 @@
     <div class="vs-aura" id="mc-aura-me" aria-hidden="true" style="--dir:-1"><i></i></div>
     <p class="ready" id="ready">&nbsp;</p>
     <p class="say" id="say">&nbsp;</p>
+    <!-- ⛑ the battle's verdict, on the board — see `.endcard` in the stylesheet above -->
+    <div class="endcard" id="endcard">
+      <p class="eword" id="eword"></p>
+      <p class="eline" id="eline"></p>
+      <button class="btn" id="econt">Back to the map &rarr;</button>
+    </div>
     <button class="btn ghost" id="resign">Withdraw</button>
   </section>
 
@@ -888,8 +932,31 @@ function posCastleFull(die) { return die >= POS_TOP; }         // …with his ro
    of an optimisation. */
 var VAL = { q:9, r:5, b:3, n:3, p:1 };
 var QUEEN_RANKS = 3;
-function capsFor(ranks) {
-  return { q: ranks >= QUEEN_RANKS ? 1 : 0,
+/* ⛑⛑ THE SECOND QUEEN — 2026-08-25. Nate: *"A perfect roll, maybe you can get 2 queens if
+   you are territory-chained to a certain degree"*, then: *"do the two-queen-on-perfect-roll-
+   and-if-chain-of-three."*
+
+   THREE CONDITIONS, ALL AT ONCE, and each one is a different kind of thing you did:
+     · a PERFECT ROLL      — the material die came up 8, the top face, 1 in 8 on one die
+     · a CHAIN OF THREE     — three or more of your holdings chained together (CHAIN_MIN is
+                              the rule for whether a holding IS chained; this is about how
+                              much chained GROUND you hold, which is a campaign you ran)
+     · and the ranks to pay  — QUEEN_RANKS still applies; a thin holding fields no queen at all
+   ⭐ WHY ALL THREE AND NOT A CURVE. Two queens should be a story you tell, not a number
+   that creeps up. Any one of these alone is reachable by accident; together they are
+   something you notice yourself doing, which is the same reasoning the ranks-are-dice caps
+   were written under — a hard legible rule beats an optimisation.
+   ⚠ IT IS A CAP, NOT A GRANT. Passing all three only makes the second queen LEGAL; the
+   muster still has to afford 18 points of queens out of a budget that tops out at 15 plus
+   ranks plus the edge. So it is rare even when it is allowed, which is the point.
+   ⚠ chainedCount IS PASSED IN, not read from G. capsFor is called by the sim and by the
+   tests with no game in scope; reaching for a global here would make it untestable and
+   would crash the vm. Default 0 = "no chain known" = the old behavior exactly. */
+var QUEEN2_CHAIN = 3;
+function capsFor(ranks, chainedCount, perfectRoll) {
+  var q = ranks >= QUEEN_RANKS ? 1 : 0;
+  if (q && perfectRoll && (chainedCount || 0) >= QUEEN2_CHAIN) q = 2;
+  return { q: q,
            r: Math.min(2, Math.max(1, ranks - 1)),
            b: 2, n: 2, p: 8 };
 }
@@ -1420,7 +1487,18 @@ function beginBattle(from, to, playerAttacks) {
   var dMat = bestOf(dMatPool), dPos = bestOf(dPosPool);
   var aBud = matBudget(aMat, aRanks, false);
   var dBud = matBudget(dMat, dRanks, true);
-  var aArmy = muster(aBud, capsFor(aRanks)), dArmy = muster(dBud, capsFor(dRanks));
+  /* ⛑ THE SECOND QUEEN'S THREE CONDITIONS, ASSEMBLED HERE — 2026-08-25 (see capsFor).
+     Each chair is asked about ITS OWN chained ground and ITS OWN material die: an attacker
+     who has strung three holdings together and rolled the top face can field two queens, and
+     so can a defender who has done the same. `chainCount` counts holdings that are chained,
+     which is the number the map has been printing in the tally since 08-24 — so the player
+     can already see the condition they are working toward before they know what it unlocks.
+     ⚠ `=== FACES` IS THE PERFECT ROLL, not a hard 8. If the die ever changes again this
+     follows it, instead of silently becoming unreachable (or free). */
+  var aPerfect = aMat === FACES, dPerfect = dMat === FACES;
+  var aChained = chainCount(G.own, G.own[from]), dChained = chainCount(G.own, G.own[to]);
+  var aArmy = muster(aBud, capsFor(aRanks, aChained, aPerfect)),
+      dArmy = muster(dBud, capsFor(dRanks, dChained, dPerfect));
 
   /* ⚑ THE BOARD IS BUILT HERE, NOT AT THE START OF THE BATTLE (2026-08-24). It has to be,
      because the roll screen now SHOWS it — and a preview that re-rolled on the way to the
@@ -1868,6 +1946,11 @@ function paint() {
     if (B.last && (i === B.last.from || i === B.last.to)) cls += ' last';
     if (i === B.sel) cls += ' from';
     if (i === kingSq) cls += ' chk';
+    /* the mate, once finish() has worked out the trap — see lightMate() */
+    if (B.mate) {
+      if (i === B.mate.king) cls += ' mated';
+      else if (B.mate.sealed.indexOf(i) >= 0) cls += ' sealed';
+    }
     var mv = B.moves.filter(function (m) { return m.to === i; })[0];
     if (mv) cls += B.S.b[i] ? ' cap' : ' hint';
     c.className = cls;
@@ -2005,13 +2088,73 @@ function finish(how) {
   var attackerWon = p.playerAttacks ? playerWon : !playerWon;
   resolveLand(p, attackerWon);
 
-  // one word for what happened to the GROUND, from your side of the table
-  $('verdict').textContent = attackerWon
+  /* one word for what happened to the GROUND, from your side of the table.
+     ⛑ "REPULSED" → "DEFENDED", 2026-08-25, his word. */
+  var word = attackerWon
     ? (p.playerAttacks ? 'TAKEN' : 'LOST')
-    : (p.playerAttacks ? 'REPULSED' : 'HELD');
-  $('verdict').className = 'verdict ' + (playerWon ? 'win' : 'lose');
-  $('result-say').textContent = line;
-  show('screen-result');
+    : (p.playerAttacks ? 'DEFENDED' : 'HELD');
+
+  /* ⛑⛑ THE BOARD KEEPS THE SCREEN — 2026-08-25. `show('screen-result')` used to fire here
+     and replace the board outright. On a mate that meant the position vanished at the exact
+     instant it became worth looking at. The verdict now lands UNDER the board and the board
+     stays lit; `#econt` does what `#cont` did.
+     ⚠ THE MATE IS LIT BEFORE THE WORD APPEARS, and only on a real mate — a win on the clock
+     or a withdrawal has no trapped king to draw, and inventing a ring for one would be the
+     board lying about the position. */
+  if (how === 'won-mate') lightMate('b');
+  else if (how === 'lost-mate') lightMate('w');
+  showEndcard(word, playerWon ? 'win' : 'lose', line);
+}
+
+/* ⛑⛑ WHY THE KING IS TRAPPED, SHOWN RATHER THAN STATED — 2026-08-25.
+   Every square the mated king touches, plus the one he stands on. A square is "sealed"
+   whether it is blocked by his own men or covered by theirs — both are reasons he cannot
+   go there, and from the player's chair they are the same fact: no way out.
+
+   ⭐ IT ASKS THE REFEREE, IT DOES NOT RE-DERIVE. `C.legalMoves` is the site's own
+   perft-verified move generator, so "he cannot go there" is the same answer the rules gave
+   when they decided this was mate. Working it out independently here would be a second
+   implementation of chess that can disagree with the first, which is the one thing this
+   game has never allowed itself ([[puzzle-room-invariants]] — the referee disposes).
+   ⚠ OFF-BOARD NEIGHBORS ARE DROPPED BY FILE DISTANCE, not by index arithmetic alone: a
+   king on h4 is index 39 and 39+1 is 40, which is a8-file — the wrong side of the board.
+   Comparing files is what makes the ring a real ring on the edges. */
+function lightMate(loserSide) {
+  if (!B || !C.kingSq) return;
+  var k = C.kingSq(B.S.b, loserSide);
+  if (k == null || k < 0) return;
+  var legal = [];
+  try {
+    legal = C.legalMoves(B.S).filter(function (m) { return m.from === k; })
+             .map(function (m) { return m.to; });
+  } catch (e) { legal = []; }
+  var kf = k % 8, kr = (k / 8) | 0, sealed = [], d, f, r, sq;
+  var STEP = [-9, -8, -7, -1, 1, 7, 8, 9];
+  for (d = 0; d < STEP.length; d++) {
+    sq = k + STEP[d];
+    if (sq < 0 || sq > 63) continue;
+    f = sq % 8; r = (sq / 8) | 0;
+    if (Math.abs(f - kf) > 1 || Math.abs(r - kr) > 1) continue;   // wrapped off the edge
+    if (legal.indexOf(sq) >= 0) continue;                          // he COULD go there
+    sealed.push(sq);
+  }
+  B.mate = { king: k, sealed: sealed };
+  paint();
+}
+
+/* The battle's verdict, on the board under it. `screen-result` still exists and is still
+   used — by the CAMPAIGN ending, which is a different thing and does deserve its own screen. */
+function showEndcard(word, cls, line) {
+  $('eword').textContent = word;
+  $('eword').className = 'eword ' + cls;
+  $('eline').textContent = line;
+  $('endcard').classList.add('on');
+  $('resign').style.display = 'none';
+}
+function hideEndcard() {
+  $('endcard').classList.remove('on');
+  $('resign').style.display = '';
+  if (B) B.mate = null;
 }
 
 function resolveLand(p, attackerWon) {
@@ -2229,7 +2372,11 @@ $('screen-roll').addEventListener('click', function (e) {
   if (v) v.classList.toggle('open');
 });
 $('resign').addEventListener('click', function () { finish('resign'); });
-$('cont').addEventListener('click', function () {
+/* ⛑ BOTH BUTTONS, ONE HANDLER (2026-08-25). `#econt` is the battle's way out of the board
+   and `#cont` is the campaign screen's; they do the same job and must never drift apart, so
+   they share this listener rather than owning a copy each. */
+function continueOn() {
+  hideEndcard();
   if (!PEND) { show('screen-home'); return; }
   var wasPlayerAttack = PEND.playerAttacks;
   PEND = null;
@@ -2250,7 +2397,9 @@ $('cont').addEventListener('click', function () {
   } else {
     show('screen-map'); pump();                  // back into their turn where it left off
   }
-});
+}
+$('cont').addEventListener('click', continueOn);
+$('econt').addEventListener('click', continueOn);
 
 newCampaign('medium');
 })();
