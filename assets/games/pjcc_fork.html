@@ -10,6 +10,14 @@
 <script src="/assets/js/pjcc-time.js"></script>
 <script src="/assets/js/pjcc-game-sky.js"></script>
 <script src="/assets/js/pjcc-config.js"></script>
+<!-- THE FRAGMENT LEDGER (2026-08-25). Half the road is one of the six fragments that open
+     P&JCC, and this room is where it is earned. Nothing in this head carries `defer`, so
+     these execute in order during parse and `window.PJCCFrag` exists long before any game
+     code runs — which is the whole reason the mint does not need a readiness dance.
+     ⚠ THIS PAGE IS IFRAMED from /games/fork-in-the-road/. Same origin, so the same
+     localStorage: minting in here is minting for the site. The ledger's own `world-open`
+     class lands on the FRAME's document, which nobody sees and nothing depends on. -->
+<script src="/assets/js/pjcc-fragments.js"></script>
 <script src="/assets/js/pjcc-profile.js"></script>
 <script src="/assets/js/pjcc-pieces.js"></script>
 <!-- THE ANALYSIS BOARD (2026-07-28). The puzzle room has its own little chess engine for
@@ -1445,7 +1453,26 @@ const BOSS = {
 };
 function gateAt(step){ return GATES.includes(step) ? BOSS[step] : null; }
 function loadProg(){ try { return Object.assign({ step:0, diff:2, best:0 }, JSON.parse(localStorage.getItem(PROG_KEY)) || {}); } catch(e){ return { step:0, diff:2, best:0 }; } }
-function saveProg(p){ try { localStorage.setItem(PROG_KEY, JSON.stringify(p)); } catch(e){} }
+function saveProg(p){ try { localStorage.setItem(PROG_KEY, JSON.stringify(p)); } catch(e){} mintHalfway(p.step); }
+/* ⛑⛑ HALF THE ROAD IS A FRAGMENT — 2026-08-25 (Nate: "let's make another egg be
+   successfully completing half of the puzzles on Fork in the Road").
+
+   ⭐ THE MINT LIVES IN saveProg, NOT AT THE CROSSING, AND THAT IS DELIBERATE. There are
+   three places `step` can move — a clean solve, the leaderboard pulling a further-along
+   figure down from the profile, and the reset button — and they do not resemble each other.
+   Hooking the one that felt like the real one would have left a player who solved their
+   500th puzzle on a phone, then opened the site on a laptop, standing on the far side of the
+   line with nothing. Every write goes through here, so every write is checked.
+   ⚠ A HINTED SOLVE STILL DOES NOT COUNT, and this file did not have to say so: the road
+   only advances on `earned` (2026-08-04), so 500 steps ARE 500 clean solves. Restating the
+   rule here would have been a second copy of it, free to drift.
+   ⚠ THE ANNOUNCEMENT IS NOT HERE. Minting is silent; the summary screen says it, because
+   this fires mid-solve where a banner would be overwritten by SOLVED! two lines later. */
+const HALF_STEP = JOURNEY_LEN / 2;
+function mintHalfway(step){
+  if (!(step >= HALF_STEP)) return false;
+  try { return !!(window.PJCCFrag && PJCCFrag.mint('road')); } catch(e){ return false; }
+}
 /* ══ THE SOLVER'S RATING (2026-08-03, priority #2) ═══════════════════════════════════
    "Give the SOLVER one — the same Elo the Park Tables run — and serve puzzles at it."
 
@@ -2314,8 +2341,23 @@ function showSummary(){
         swing = 'Your puzzle rating holds at ' + r1 + '.';
       }
       document.getElementById('sum-title').textContent = reg.toUpperCase();
-      document.getElementById('sum-msg').textContent = beat || swing ||
-        (run.step + ' puzzles solved on the road so far.');
+      /* ⛑ THE HALFWAY FRAGMENT, SAID ON THE LEG THAT CROSSED IT — 2026-08-25.
+         Asked of the RUN, not of the ledger: `mint()` returns true only on the transition,
+         but the transition already happened inside saveProg several puzzles ago. This
+         condition is the honest one — "did this leg carry you past 500" — and it means a
+         player who was already past 500 when the egg shipped gets the fragment quietly on
+         their next solve and is never congratulated for a milestone they passed in July.
+         ⚠ innerHTML only when there IS a line, and all three parts are literals from this
+         file plus an integer. Nothing here has been anywhere near a text field. */
+      const crossed = run.step >= HALF_STEP && run.legStartStep < HALF_STEP;
+      const body = beat || swing || (run.step + ' puzzles solved on the road so far.');
+      const msgEl = document.getElementById('sum-msg');
+      if (crossed) {
+        msgEl.innerHTML = body + '<br><br>✦ <b>Five hundred puzzles — half the road.</b> ' +
+          'Something was waiting out here on the water. A fragment is yours.';
+      } else {
+        msgEl.textContent = body;
+      }
       document.getElementById('sum-again').textContent = 'Continue';
     }
     if (window.PJCC) PJCC.saveScore('fork-in-the-road', run.step, { credits: 1, data: { step: run.step, level: levelFor(run.step), diff: Math.round(run.diff), best: run.best, finished: done || undefined, finishedAt: done ? loadDone().at : undefined, tactics: loadTactics() } });
@@ -2483,6 +2525,10 @@ document.getElementById('snd-toggle').addEventListener('click', ()=>{ sndOn=!snd
 
 // Restore journey progress from the profile (if logged in and further than local).
 updateJourneyLine();
+/* ⚠ THE CATCH-UP. Somebody who walked past 500 before the fragment existed — or who
+   crossed it and closed the tab before the summary — has done the thing, and a milestone
+   already earned must not need re-earning. Silent on purpose: see mintHalfway. */
+mintHalfway(loadProg().step);
 if (window.PJCC && PJCC.ready) PJCC.ready.then(async () => {
   try {
     const st = await PJCC.myStats();

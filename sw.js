@@ -13,7 +13,7 @@
  */
 'use strict';
 
-const VERSION    = 'pjcc-pwa-v14';  // v14: the gauntlet door's hydration became one shared file (/assets/js/pjcc-gauntlet-door.js) and the doors now open at the floor the ACCOUNT reached, not the one this browser remembers (2026-08-19); v13: the desk lamp's twelve-hour check became a real file (/assets/js/pjcc-desk-lamp.js) after kramdown printed it on the front door as a code block (2026-08-04); v12: chesswild.com — the front door MOVED to "/" and /chess/ became the redirect stub; the app is named ChessWild (2026-08-03); v11: the intro is DELETED — "/" is a redirect to /chess/ now, and every game shell carries the town sky (2026-08-03); v10: the app LAUNCH now lands on /chess/ — old launchers redirect off /pjcc/?source=pwa, start_url moved (2026-08-03); v9: /chess/ is the new front door — the intro hands off there, /pjcc/ became the world tab (2026-07-28); v8: the Gauntlet door became a real stylesheet the game links (2026-07-27); v7: "/" is the "McPuppy Studios Presents" intro (2026-07-23)
+const VERSION    = 'pjcc-pwa-v15';  // v15: the fragment ledger (/assets/js/pjcc-fragments.js) joined the precache — it shipped 2026-08-25 as a dependency of the already-cached pjcc-eggs.js and an offline app would have silently stopped counting fragments (2026-08-25); v14: the gauntlet door's hydration became one shared file (/assets/js/pjcc-gauntlet-door.js) and the doors now open at the floor the ACCOUNT reached, not the one this browser remembers (2026-08-19); v13: the desk lamp's twelve-hour check became a real file (/assets/js/pjcc-desk-lamp.js) after kramdown printed it on the front door as a code block (2026-08-04); v12: chesswild.com — the front door MOVED to "/" and /chess/ became the redirect stub; the app is named ChessWild (2026-08-03); v11: the intro is DELETED — "/" is a redirect to /chess/ now, and every game shell carries the town sky (2026-08-03); v10: the app LAUNCH now lands on /chess/ — old launchers redirect off /pjcc/?source=pwa, start_url moved (2026-08-03); v9: /chess/ is the new front door — the intro hands off there, /pjcc/ became the world tab (2026-07-28); v8: the Gauntlet door became a real stylesheet the game links (2026-07-27); v7: "/" is the "McPuppy Studios Presents" intro (2026-07-23)
 const SHELL      = 'pjcc-shell-' + VERSION;
 const RUNTIME    = 'pjcc-runtime-' + VERSION;
 const OFFLINE_URL = '/offline.html';
@@ -45,6 +45,16 @@ const PRECACHE = [
   '/assets/js/pjcc-nav.js', '/assets/js/pjcc-config.js', '/assets/js/pjcc-weather.js',
   '/assets/js/pjcc-profile.js', '/assets/js/pjcc-lang.js', '/assets/js/pjcc-flair.js',
   '/assets/js/pjcc-portal.js', '/assets/js/pwa-register.js', '/assets/js/pjcc-eggs.js',
+  // ⚠⚠ THE FRAGMENT LEDGER, AND IT WAS MISSING FOR A DAY (added 2026-08-25, v15).
+  // pjcc-eggs.js is precached and pjcc-fragments.js was not, so an installed app running
+  // offline served the eggs from cache and then failed to fetch the ledger. Every mint call
+  // is written `window.PJCCFrag && PJCCFrag.mint(...)` — a guard that is correct and that
+  // turns the miss into SILENCE: the door clicks, nothing throws, and the fragment is simply
+  // never counted. An egg you cannot earn looks exactly like an egg you have not found yet.
+  // ⭐ THE RULE THIS IS AN INSTANCE OF: when a precached file gains a dependency, the
+  // dependency is precached too, or the pair only works online — which is the one condition
+  // this list exists to stop mattering.
+  '/assets/js/pjcc-fragments.js',
   // the desk lamp's twelve-hour check — it stands on BOTH precached front pages ("/" and
   // "/pjcc/"), and without it the lamp is drawn but never lights, which is the exact
   // silent-looks-fine failure it was just rescued from.

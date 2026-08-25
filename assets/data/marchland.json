@@ -162,11 +162,14 @@
     ]
   },
   "balance": {
+    "faces": 8,
     "matScale": 2,
+    "matBase": -1,
     "attEdge": 12,
     "defEdge": 0,
     "diceCap": 4,
     "queenRanks": 3,
+    "queen2Chain": 3,
     "chainMin": 2,
     "attackCap": 3,
     "posCastle": 7,

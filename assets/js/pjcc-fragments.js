@@ -44,11 +44,27 @@
     { id: 'alpine', flag: 'frag_classified',
       nm: 'The Alpine File' },
     { id: 'sky',    flag: 'frag_sky',
-      nm: 'A Rare Sky' }
-    /* ⚑ FOUR SLOTS ARE STILL EMPTY, ON PURPOSE (his: "We don't need to deploy them right
+      nm: 'A Rare Sky' },
+    { id: 'road',   flag: 'frag_road',
+      nm: 'Halfway to Chess City' }
+    /* ⛑⛑ `road` IS THE ONLY ONE OF THE THREE YOU CAN EARN BY PLAYING WELL — 2026-08-25.
+       Nate: *"Let's make another egg be successfully completing half of the puzzles on Fork
+       in the Road."* Five hundred CLEAN solves on the journey; the room's own `earned` rule
+       already says a hinted solve does not advance the road, so the fragment inherits that
+       standard for free rather than restating it.
+       ⭐ THE OTHER TWO ARE FOUND, THIS ONE IS BUILT. Alpine is a hidden link and Sky is a rare
+       night — both are luck or curiosity. This one takes months. That is the point: a set that
+       is entirely secrets rewards only the people who go poking, and a set that is entirely
+       grind rewards only the people who stay. Six fragments should need both kinds of person.
+       ⚠ IT IS MINTED FROM INSIDE THE GAME'S IFRAME, which shares this origin and therefore
+       this localStorage — but NOT this document. `check()` adding `world-open` in there styles
+       a frame nobody looks at; the doors come back on the parent's next navigation, which is
+       correct and is why nothing tries to reach across the frame boundary. */
+
+    /* ⚑ THREE SLOTS ARE STILL EMPTY, ON PURPOSE (his: "We don't need to deploy them right
        away"). TARGET stays 6 so the counter tells the truth about the journey — a visitor
-       who finds both live fragments sees 2 of 6 and knows there is more, which is the
-       correct thing to tell them. It also means adding an egg is one entry here and no
+       holding every fragment that currently EXISTS sees 3 of 6 and knows there is more,
+       which is the correct thing to tell them. It also means adding an egg is one entry here and no
        other edit anywhere. */
   ];
   var TARGET = 6;

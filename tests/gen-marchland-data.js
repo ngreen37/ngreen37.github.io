@@ -43,7 +43,16 @@ function build() {
     slice(src, 'var LAND = [',     '/* ── THE CHAIN') +
     slice(src, 'var CHAIN_MIN',    '/* ── DIFFICULTY') +
     slice(src, 'var LEVELS = {',   'var G = null;') +
-    slice(src, 'var DICE_CAP',     'function rollPool') +
+    /* ⚠⚠ THIS SLICE USED TO START AT `var DICE_CAP`, WHICH IS 27 LINES BELOW THE DIE.
+       So `FACES` — the single number that says how big the die is — was not in the vm and
+       therefore not in the JSON, and a Godot build reading this file to "inherit a tuned
+       game" would have had to guess it. It guessed wrong for a day: the die was a d20 until
+       2026-08-25 and every balance number in here was retuned around a d8.
+       ⭐ THE LESSON IS ABOUT THE SLICE, NOT THE CONSTANT. A boundary picked to start at the
+       first thing you happened to want silently excludes everything above it, and nothing
+       fails — the export is simply missing a field, which reads as "Godot does not need
+       that one". Start at the DEFINITION, not at the first line you were looking for. */
+    slice(src, 'var FACES',        'function rollPool') +
     slice(src, 'var MAT_SCALE',    'function matBudget') +
     slice(src, 'var POS_CASTLE',   'function posSteps') +
     slice(src, 'var VAL = {',      'function capsFor') +
@@ -63,11 +72,20 @@ function build() {
     edges: G.EDGES.map((e) => [e[0], e[1]]),
     start: { owner: G.START_OWN.slice(), ranks: G.START_RANKS.slice() },
     balance: {
+      /* THE DIE ITSELF. Everything below is expressed in pips, so this is the first number
+         a second implementation needs and the last one it can afford to assume. */
+      faces: G.FACES,
       matScale: G.MAT_SCALE,
+      /* ⚠ matBudget IS `die * matScale + matBase + floor(ranks/2) + edge` — matBase was
+         added on 2026-08-25 with the d8 and was missed here, which made the exported
+         formula off by one point of material on every muster in the game. Half a pawn,
+         invisible in any single battle, decisive across a campaign. */
+      matBase: G.MAT_BASE,
       attEdge: G.ATT_EDGE,
       defEdge: G.DEF_EDGE,
       diceCap: G.DICE_CAP,
       queenRanks: G.QUEEN_RANKS,
+      queen2Chain: G.QUEEN2_CHAIN,   // a second queen needs a perfect roll AND this many chained
       chainMin: G.CHAIN_MIN,
       attackCap: G.ATTACK_CAP,
       posCastle: G.POS_CASTLE,

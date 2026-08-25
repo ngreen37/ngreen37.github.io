@@ -19,10 +19,25 @@
      the new set; /404.html, /archive/ and the promotion egg still carry the OLD key and still
      mint nothing, which is exactly right until Nate decides whether they are PJCC eggs. A
      rename would have quietly enrolled all four.
-     ⚠ IT WAITS FOR THE LEDGER. This script is inline and runs during parse; pjcc-fragments.js
-     is `defer` and has not executed yet, so minting on DOMContentLoaded is the difference
-     between a fragment and a no-op. Found by reading the load order, not by testing at
-     midnight. {%- endcomment -%}
+     ⛑⛑ AND FOR A DAY THERE WAS NO LEDGER ON THIS PAGE AT ALL (fixed 2026-08-25, same day).
+     THIS LAYOUT IS STANDALONE — it is its own `<!DOCTYPE html>` and does NOT inherit
+     _layouts/default.html, where the ledger's script tag was added. It includes head.html,
+     which loads exactly one script (pjcc-amp.js). So `window.PJCCFrag` was undefined here,
+     the guard below did its job, and **the Alpine File — fragment ONE, the flagship egg, the
+     entire reason the flickering "i" was moved onto a public page — minted nothing.**
+     ⭐⭐ THE NOTE UNDER THIS ONE WAS CONFIDENTLY WRONG AND STILL PASSED EVERY TEST. It reads
+     "pjcc-fragments.js is `defer` and has not executed yet", which is a precise, true-sounding
+     statement about a file that was not on the page. Reasoning about load ORDER skips straight
+     past the question of whether the thing is loaded AT ALL. `tests/fragments.check.js` now
+     asks that question of every mint site, because a guarded call to a missing dependency is
+     the quietest bug this site can have: nothing throws, nothing logs, the egg is just
+     permanently unwinnable and looks exactly like an egg nobody has found yet.
+     ⚠ NOT `defer` HERE, and that is on purpose — this tag is in the BODY, so it executes
+     where it stands and PJCCFrag exists before DOMContentLoaded fires below. {%- endcomment -%}
+<script src="{{ '/assets/js/pjcc-fragments.js' | relative_url }}"></script>
+{%- comment -%} ⚠ IT WAITS FOR THE LEDGER ANYWAY. DOMContentLoaded costs nothing and keeps
+     this block correct if the tag above is ever moved into head.html with a `defer` on it.
+     {%- endcomment -%}
 {% if page.fragment_slot %}<script>
 document.addEventListener('DOMContentLoaded', function () {
   try { if (window.PJCCFrag) PJCCFrag.mint('{{ page.fragment_slot }}'); } catch (e) {}
