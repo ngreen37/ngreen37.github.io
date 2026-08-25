@@ -448,9 +448,50 @@
 <div class="ts-eclipse-wrap">
   <button class="ts-eclipse-door" id="ts-eclipse-door" type="button" aria-label="???"></button>
 </div>
+{%- comment -%} ⛑⛑ THE RARE-SKY DOOR (2026-08-25) — Nate: *"One egg can be catching any 1 of
+     the following: Full Solar Eclipse, Meteor Shower, or Northern Lights."*
+
+     ⭐ ONE DOOR, THREE WEATHERS, AND THAT IS THE DESIGN. He said "any 1 of", so this is a
+     single fragment you can earn three different ways rather than three fragments — which
+     matters, because the three events are not equally likely: the aurora is ~1% of nights,
+     meteors ~3%, totality once every 29.5 days for about twenty minutes. Three separate
+     fragments would have made one of them a wall. One door means whichever rare sky YOU
+     happen to be standing under is the one that counts.
+
+     ⚠ IT IS A SIBLING OF THE SKY, NOT A CHILD OF IT, for the same reason the eclipse door
+     above is: `.town-sky` is `z-index:-1` and `pointer-events:none`, so anything clickable
+     inside it would paint behind every card on the page and never receive a tap. This is why
+     the meteors and the aurora themselves cannot simply be made clickable.
+     ⚠⚠ THE CSS IS WHAT ARMS IT, NOT THE SCRIPT. `pointer-events` is `none` until the root
+     carries one of the three states, so the button is inert on an ordinary evening even if
+     something else goes wrong — the handler cannot fire on a clear night. Same belt-and-braces
+     the eclipse door uses.
+     ⚠ `aria-label="???"` — a secret that announces itself to a screen reader is not a secret,
+     but an unlabeled button is a bug. This is the house compromise, copied from the two doors
+     that came before it. {%- endcomment -%}
+<div class="ts-sky-door-wrap">
+  <button class="ts-sky-door" id="ts-sky-door" type="button" aria-label="???"></button>
+</div>
+{%- comment -%} ⛑⛑ THE ✦ DOOR CAME OFF — 2026-08-25. Nate: *"Remove the shooting star door -
+     save it for later."* It was the night-shift entrance to /classified/ and it had just
+     become the ONLY one, because the day-shift door (the flickering "i") lived on /pjcc/ and
+     /pjcc/ stopped being linked that morning. Rather than leave the whole Alpine wing behind
+     a star that only flies after dark, the "i" moved to a public page and the star stands down.
+
+     ⚠ SAVED, NOT DELETED, and this is the restore recipe: put the anchor back as
+     `<a class="ts-secret" href="/classified/" aria-label="???">&#10022;</a>` inside the wrap
+     below. Its CSS, its 48-second patrol and its `is-in` entrance are ALL still here and
+     still correct — only the link was removed.
+     ⚠⚠ THE STREAK IS NOT THE DOOR AND NEVER WAS. `.ts-streak` (the hourly comet) is
+     decoration and stays; the slow patrolling ✦ was the clickable one. Deleting the wrong one
+     would have left a door nobody can see and removed a flourish everybody can.
+     ⭐ IT IS A `<b>` NOW, NOT AN `<a>` — deliberately. The star still crosses the sky, so the
+     night still looks the way he designed it; it simply does not go anywhere. A hidden door
+     that stays visible while it is disarmed is how you keep the picture and retire the
+     mechanism. {%- endcomment -%}
 <div class="ts-secret-wrap">
   {%- comment -%} the slow patrol: one crossing every 48s, all night. {%- endcomment -%}
-  <a class="ts-secret" href="{{ '/classified/' | relative_url }}" aria-label="???">&#10022;</a>
+  <b class="ts-secret" aria-hidden="true">&#10022;</b>
   {%- comment -%} #9 (2026-07-16 splash check) — ON THE HOUR the ✦ streaks with a comet
        tail: one bright pass, then back to the dim patrol. Decorative twin of the star
        above; the slow one is the actual door. {%- endcomment -%}

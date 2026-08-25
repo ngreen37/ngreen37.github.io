@@ -43,13 +43,11 @@
     'Nf3':   ['Nf3', 'Pattern recognized. The knight knows the way.'],
     'd4':    ['d4', 'The Queen\'s pawn. Solid. Methodical. Like building a website.'],
     'O-O':   ['O-O', 'Castled. Sometimes you protect what matters most.'],
-    'Qd5':   ['Qd5', 'An aggressive queen. She\'s going somewhere. → /classified/'],
     'Ke2':   ['Ke2', 'The king walks forward. Brave. Unusual. Keep going.'],
     'h4':    ['h4', 'A flank attack. Nobody expects it. Neither did Princess.']
   };
   var buf = '';
   var timer = null;
-  var lastQd5 = 0;
   var toast = document.getElementById('chess-toast');
   var toastMove = document.getElementById('chess-toast-move');
   var toastMsg  = document.getElementById('chess-toast-msg');
@@ -87,12 +85,13 @@
       timer = setTimeout(function() { buf = ''; }, 1800);
       for (var move in secrets) {
         if (buf.endsWith(move)) {
-          if (move === 'Qd5') {
-            var now = Date.now();
-            if (now - lastQd5 < 30000) { window.location.href = '/archive/'; return; }
-            lastQd5 = now;
-            try { localStorage.setItem('frag_qd5', '1'); } catch(e) {}
-          }
+          /* ⛑ THE Qd5 SECRET CAME OUT 2026-08-25 (his call, with the konami code). It was the
+             only entry here that did more than talk: it wrote `frag_qd5`, it advertised
+             "→ /classified/" in its own toast, and typing it twice inside 30 seconds jumped
+             you to /archive/. A hint that NAMES its destination is not a secret, and a
+             keyboard shortcut into the Alpine wing undercuts the door the wing is supposed
+             to be found by. The other six moves are chess flavor that mint nothing and go
+             nowhere; they stay. */
           showToast(secrets[move][0], secrets[move][1]);
           buf = '';
           break;
@@ -102,25 +101,20 @@
   });
 })();
 
-(function() {
-  var seq = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
-  var pos = 0;
-  document.addEventListener('keydown', function(e) {
-    if (e.key === seq[pos]) { pos++; } else { pos = (e.key === seq[0]) ? 1 : 0; }
-    if (pos === seq.length) {
-      pos = 0;
-      var flash = document.getElementById('konami-flash');
-      if (flash) {                                   // absent on pages without the flash overlay (e.g. game pages)
-        flash.classList.remove('is-active');
-        void flash.offsetWidth;
-        flash.classList.add('is-active');
-        setTimeout(function() { flash.classList.remove('is-active'); }, 1500);
-      }
-      try { localStorage.setItem('frag_konami', '1'); } catch(e) {}
-      showTxToast('CLEARANCE LEVEL: OMEGA — She already knows you\'re here.');
-    }
-  });
-})();
+/* ⛑⛑ THE KONAMI CODE IS GONE — 2026-08-25. Nate: *"get rid of the chessboards, the konami
+   code, the Qd5 from the site and memory… We are completely overhauling the easter egg
+   process to only PJCC eggs."*
+
+   ⭐ IT WAS THE CLEAREST CASE OF WHAT THE OVERHAUL IS FOR. Up-up-down-down is a joke about
+   video games; it is not from this world, it could sit on any site ever made, and finding it
+   told you nothing about Princess, Alpine or Chess City. Every egg from here is a piece of
+   the world, and the reward is a fragment toward opening it — see assets/js/pjcc-fragments.js.
+   ⚠⚠ `#konami-flash` STAYS, AND I ALMOST DELETED IT. The obvious cleanup — an overlay whose
+   only trigger just left — is WRONG here: the MORSE egg (three rapid taps, further up this
+   file) fires the same flash, and taking it out would have broken a working egg while
+   "tidying up" a dead one. Checked by grep, not by assumption. If morse ever retires too,
+   `#konami-flash` in _layouts/default.html and `.konami-flash` in _pjcc-07-characters.scss
+   go with it — and `npm run sweep` is what will say so. */
 
 // Transmission Received toast helper (#9)
 function showTxToast(msg, duration) {
@@ -211,13 +205,28 @@ function showTxToast(msg, duration) {
 // ordinary afternoon even if something else went wrong: the button is inert 99.9% of the
 // month. ⚑ The line is a placeholder in the site's plainest voice — the town's copy is
 // Nate's, and a toast nobody has approved should read like a note, not like a character.
+/* ⛑⛑ BOTH SKY DOORS MINT ONE FRAGMENT — 2026-08-25. Nate: *"One egg can be catching any 1
+   of the following: Full Solar Eclipse, Meteor Shower, or Northern Lights."*
+
+   ⭐ SO THE ECLIPSE DOOR STOPPED BEING ITS OWN EGG. It used to write `frag_eclipse`, which
+   nothing counted; it now mints the `sky` SLOT through the ledger, exactly like the new
+   rare-sky door does. One fragment, three weathers, two buttons — and the second click of the
+   pair does nothing, because `mint()` returns false once the slot is held.
+   ⚠ THE TOAST IS SAID ONLY ON THE TRANSITION. Re-announcing a fragment somebody already has,
+   every time they tap a pretty sky, turns a discovery into a nag.
+   ⚠ `frag_eclipse` IS NOT READ ANY MORE and is not migrated. Nobody has one — there are no
+   users yet, which is the same reason the Campaign URL took no redirect stub. */
 (function () {
-  var door = document.getElementById('ts-eclipse-door');
-  if (!door) return;
-  door.addEventListener('click', function () {
-    try { localStorage.setItem('frag_eclipse', '1'); } catch (e) {}
-    showTxToast('TOTALITY — the whole town stopped to look up.');
-  });
+  function wire(id, line) {
+    var door = document.getElementById(id);
+    if (!door) return;
+    door.addEventListener('click', function () {
+      var isNew = window.PJCCFrag && PJCCFrag.mint('sky');
+      if (isNew) showTxToast(line);
+    });
+  }
+  wire('ts-eclipse-door', 'TOTALITY — the whole town stopped to look up. A fragment is yours.');
+  wire('ts-sky-door',     'You were looking up at the right moment. A fragment is yours.');
 })();
 
 // Chess City Entry Permit badge in footer (#28)

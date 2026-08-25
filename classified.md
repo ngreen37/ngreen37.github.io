@@ -4,6 +4,10 @@ layout: easter-eggs
 title: THE ALPINE FILE
 permalink: /classified/
 fragment_key: frag_classified
+# ⛑ 2026-08-25: the Alpine File is FRAGMENT ONE of the six that open the world.
+# `fragment_slot` is what the ledger reads (assets/js/pjcc-fragments.js); `fragment_key`
+# above is the pre-overhaul flag and is kept only so nothing that already reads it breaks.
+fragment_slot: alpine
 # the other Alpine file — no weather, no sky (see _layouts/default.html)
 no_sky: true
 ---

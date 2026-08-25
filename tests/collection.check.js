@@ -125,7 +125,11 @@ check('Legendary is the top band', P.BANDS[P.BANDS.length - 1].key === 'legendar
 /* ── 6. the `found:` rules read a real localStorage flag ──────────────────────────── */
 {
   const flagged = P.EARNED.filter(e => (e.rule || '').indexOf('found:') === 0);
-  check('the hidden boards and Chess City are `found:` rules', flagged.length === 3,
+  /* ⛑ WAS THREE, IS ONE — 2026-08-25. The two hidden-board pieces went with the boards
+     themselves; Chess City is the only `found:` rule left. The NUMBER is asserted rather than
+     the check being loosened to "at least one", because a `found:` rule silently appearing or
+     vanishing is exactly the kind of drift this file exists to catch. */
+  check('Chess City is the one remaining `found:` rule', flagged.length === 1,
     flagged.map(e => e.rule.slice(6)).join(' · '));
   flagged.forEach(e => {
     const key = e.rule.slice(6);
@@ -135,9 +139,13 @@ check('Legendary is the top band', P.BANDS[P.BANDS.length - 1].key === 'legendar
     check('  unlocked once ' + key + ' is set', warm.earnedMet(e, null, []) === true);
   });
   // '0' must not count — a flag written false is not a discovery
-  const zero = boot({ frag_board_park: '0' });
-  const parkEgg = P.EARNED.filter(e => e.rule === 'found:frag_board_park')[0];
-  check('a flag of "0" does NOT unlock it', zero.earnedMet(parkEgg, null, []) === false);
+  /* ⚠ STILL PROVES "a flag written false is not a discovery" — the flag name just had to
+     stop being one that no longer exists anywhere. Any unset key does the job. */
+  const zero = boot({ 'pjcc.fork.chesscity.v1': '0' });
+  /* ⛑ was the park board's piece until 2026-08-25; it is Chess City's now. The RULE under
+     test is unchanged — a flag written "0" is not a discovery — only the piece carrying it. */
+  const flagEgg = flagged[0];
+  check('a flag of "0" does NOT unlock it', zero.earnedMet(flagEgg, null, []) === false);
 }
 
 /* ── 7. the claim refuses everything it should ────────────────────────────────────── */

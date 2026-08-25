@@ -225,7 +225,46 @@ description: McPuppy Studios — the independent studio behind ChessWild and the
              "The flagship project. An animated series." — which describes its POSITION in
              the studio, not the story. This one tells you what it's about in nine words,
              and "a dog who can learn anything" is the actual hook of the whole universe. {% endcomment %}
-        <p class="project-desc">An animated series about a dog who can learn anything.</p>
+        {% comment %} ⛑⛑ THE FLICKERING "i" MOVED HERE — 2026-08-25. Nate: *"Move the 'i' to a
+             public page (same concept, though)."*
+
+             It was in "an animated series in the mak_i_ng" on /pjcc/'s hero, and /pjcc/ stopped
+             being linked that morning — so the door to the Alpine File was standing behind the
+             door the Alpine File is meant to open. The ✦ night star was the only way in, twelve
+             hours a day, and he has now retired that too.
+
+             ⭐ THIS SENTENCE IS THE RIGHT HOST, not just a public one. It is the one place left
+             on the site that describes the series in plain words, and it is the card whose LINK
+             we removed an hour earlier — so the card still says what P&JCC is, and the way in is
+             hidden inside its own description instead of announced under it. Same concept, same
+             technique, better sentence.
+
+             ⚠ THE GLYPH IS THE `i` IN "animated", and the letter is NOT LOST to a screen reader:
+             the visible one is `aria-hidden` and an `.sr-only` twin carries it, so the accessible
+             name still reads "An animated series about a dog who can learn anything." Exactly the
+             pattern the original used — copy it if this ever moves again.
+             ⚠ IT REUSES `.tg-x` AND `@keyframes tgx-radio`, which already exist site-wide. A
+             second flicker implementation would be a second thing to keep in sync, and the
+             reduced-motion and night guards are already written for this one. {% endcomment %}
+        <p class="project-desc">An an<a class="tg-x" href="/classified/" tabindex="-1" aria-hidden="true"><i class="tg-x-glyph">i</i></a><i class="sr-only">i</i>mated series about a dog who can learn anything.</p>
+
+<style>
+/* ⛑ THE FLICKER, SCOPED TO THIS PAGE (2026-08-25). `@keyframes tgx-radio` is GLOBAL
+   (_pjcc-04-flair.scss) and is reused as-is; what was NOT global is the rule that DRIVES it —
+   the original lived as `.hero-lede .tg-x*` inside _layouts/home.html, so moving the
+   markup alone would have shipped a plain, permanently visible "i" and no door at all. Caught
+   by grepping for the keyframes, not by assuming the class carried its own styling.
+   ⚠ THE THREE ESCAPE HATCHES COME WITH IT and are not optional: night, reduced-motion and
+   `reduce-flourish` all park the glyph VISIBLE. A door that is invisible to someone who has
+   asked the site to hold still is not a secret, it is an exclusion — the letter must never go
+   missing from the sentence for those visitors. */
+.project-desc .tg-x, .project-desc .tg-x-glyph { text-decoration:none; color:inherit; -webkit-text-fill-color:inherit; font-style:inherit; }
+.project-desc .tg-x-glyph { animation:tgx-radio 7.5s steps(1, end) infinite; }
+html.sky-night .project-desc .tg-x-glyph { animation:none; visibility:visible; }
+.project-desc .tg-x:hover .tg-x-glyph, .project-desc .tg-x:focus .tg-x-glyph { animation:none; visibility:visible; }
+html.reduce-flourish .project-desc .tg-x-glyph { animation:none; visibility:visible; }
+@media (prefers-reduced-motion: reduce) { .project-desc .tg-x-glyph { animation:none; visibility:visible; } }
+</style>
         {% comment %} ⛑⛑ THE LAST PUBLIC P&JCC DOOR CLOSED HERE — 2026-08-25.
              Nate: *"delete the link on the projects page for PJCC as well."* This was the
              fourth and final one, after the rail row, the front door's world card, the

@@ -217,10 +217,18 @@
       rule: 'ach:globetrotter',  how: 'Play every game at least once' },
     { kind: 'theme',  key: 'ledger',     value: 350, label: 'Field Ledger',
       rule: 'plays:50',          how: 'Play 50 rounds across the arcade' },
-    { kind: 'title',  key: 'finder',     value: 430, label: 'The Finder',
-      rule: 'found:frag_board_park',  how: 'Find the hidden board in the world' },
-    { kind: 'avatar', key: 'ea-key',     value: 670, label: 'The Key',
-      rule: 'found:frag_board_hall',  how: 'Find the hidden board in the arcade' },
+    /* ⛑⛑ "THE FINDER" AND "THE KEY" CAME OUT WITH THE HIDDEN BOARDS — 2026-08-25.
+       Nate: *"Just remove the chessboard collectables."* They were the only two EARNED pieces
+       whose unlock condition was an egg that no longer exists, so leaving them would have put
+       two permanently unobtainable items in a 62-piece set — a collection you cannot finish is
+       worse than a smaller one.
+       ⭐ STUBBING THE RULE WAS THE WRONG FIRST INSTINCT, AND THE GATE SAID SO. I first replaced
+       both `rule:` strings with a placeholder, which left the entries in the set and crashed
+       tests/collection.check.js on `undefined.rule`. The check counts `found:` rules and then
+       reads each one — so a half-removal is louder than a whole one, which is the behavior you
+       want from a gate. Delete the entry, not its condition.
+       ⚠ THE COUNT MOVED: 62 → 60 collectables. Anything that states the total in prose needs to
+       move with it — [[collection-and-hidden-boards]]. */
     { kind: 'title',  key: 'citizen',    value: 1050, label: 'Citizen of Chess City',
       rule: 'found:pjcc.fork.chesscity.v1', how: 'Walk all 1,000 puzzles to Chess City' }
   ];

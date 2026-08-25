@@ -652,6 +652,32 @@ html.eclipse.sky-day .ts-horizon {
   opacity: 0; pointer-events: none; cursor: pointer;
 }
 html.eclipse-total.sky-day .ts-eclipse-door { pointer-events: auto; }
+
+/* ⛑⛑ THE RARE-SKY DOOR — 2026-08-25. One button, armed only when the sky is doing one of
+   the three things worth catching: totality, a meteor shower, or the aurora. See the note
+   beside the markup in _includes/town-sky.html for why it lives outside `.town-sky`.
+
+   ⚠⚠ THE DEFAULT IS INERT AND MUST STAY THAT WAY. `pointer-events: none` here is the whole
+   safety: on 96% of nights this button is an unclickable 1px in the corner of the page, and
+   the three rules below are the only things that arm it. Invert this and a fragment meant to
+   be rare becomes free on every page load, forever, for everyone.
+   ⚠ IT IS NOT INVISIBLE, IT IS UNREMARKABLE. `opacity: 0` on an armed door would be a
+   pixel-hunt; these events are already the loudest thing in the sky when they happen, so the
+   door sits ON the event's own corner and the event is the hint. Sized 44px for a finger
+   ([[tap-targets-and-audit-numbers]]) — a secret still has to be tappable once you find it. */
+.ts-sky-door-wrap { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.ts-sky-door {
+  position: absolute; top: 8vh; right: 6vw;
+  width: 44px; height: 44px;
+  padding: 0; border: 0; background: transparent; cursor: pointer;
+  pointer-events: none;                 /* ← the safety. Three rules below lift it. */
+  -webkit-tap-highlight-color: transparent;
+}
+html.sky-night.meteor-night .ts-sky-door,
+html.sky-night.aurora-night .ts-sky-door,
+html.eclipse-total.sky-day  .ts-sky-door { pointer-events: auto; }
+/* a focus ring so a keyboard can find it once it is armed — and only then */
+.ts-sky-door:focus-visible { outline: 2px solid rgba(255,255,255,.55); outline-offset: 2px; }
 html.sky-night .ts-horizon {
   background: linear-gradient(180deg, transparent, rgba(120, 100, 220, 0.10));
 }

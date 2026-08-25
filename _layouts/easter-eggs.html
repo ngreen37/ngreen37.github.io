@@ -9,6 +9,25 @@
   <main class="classified-main">
     {{ content }}
   </main>
+{%- comment -%} ⛑⛑ A PAGE THAT IS ITSELF A FRAGMENT (2026-08-25 rewrite).
+     This used to write `page.fragment_key` straight into localStorage — a flag nobody read,
+     on four pages, since the footer tally was retired 2026-07-15. It now goes through the
+     ledger, so reaching the page COUNTS toward opening the world.
+
+     ⚠⚠ `fragment_slot` IS A DIFFERENT FRONT-MATTER KEY FROM `fragment_key`, and that is
+     deliberate rather than a rename. Only /classified/ — the Alpine File — is a fragment in
+     the new set; /404.html, /archive/ and the promotion egg still carry the OLD key and still
+     mint nothing, which is exactly right until Nate decides whether they are PJCC eggs. A
+     rename would have quietly enrolled all four.
+     ⚠ IT WAITS FOR THE LEDGER. This script is inline and runs during parse; pjcc-fragments.js
+     is `defer` and has not executed yet, so minting on DOMContentLoaded is the difference
+     between a fragment and a no-op. Found by reading the load order, not by testing at
+     midnight. {%- endcomment -%}
+{% if page.fragment_slot %}<script>
+document.addEventListener('DOMContentLoaded', function () {
+  try { if (window.PJCCFrag) PJCCFrag.mint('{{ page.fragment_slot }}'); } catch (e) {}
+});
+</script>{% endif %}
 {% if page.fragment_key %}<script>try{localStorage.setItem('{{ page.fragment_key }}','1');}catch(e){}</script>{% endif %}
 </body>
 </html>

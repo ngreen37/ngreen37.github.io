@@ -204,6 +204,11 @@
 
   {% comment %} The mobile quick-nav bar was removed 2026-07-07 ("that go-to thing on the
        bottom of the pages") — restore from git if it's ever missed. {% endcomment %}
+  {%- comment -%} ⛑ THE FRAGMENT LEDGER (2026-08-25) — loaded BEFORE pjcc-eggs.js, because the
+       eggs call PJCCFrag.mint() and a mint against an undefined ledger is a fragment that
+       silently never counts. Both are `defer`, so both run in document order after parse:
+       order in the markup IS execution order here. {%- endcomment -%}
+  <script src="{{ '/assets/js/pjcc-fragments.js' | relative_url }}" defer></script>
   <script src="{{ '/assets/js/pjcc-eggs.js' | relative_url }}" defer></script>
   <script src="{{ '/assets/js/pjcc-nav.js' | relative_url }}" defer></script>
   {%- comment -%} ⚑ 2026-08-19 — lights the Follow door while the Twitch channel is live.
@@ -213,7 +218,6 @@
   <script src="{{ '/assets/js/pjcc-live.js' | relative_url }}" defer></script>
   <!-- The boards hidden around the world. Loaded site-wide and exits instantly on every
        page that hosts none, so adding a third is one line of DATA, not a page edit. -->
-  <script src="{{ '/assets/js/pjcc-hidden-board.js' | relative_url }}" defer></script>
   <!-- "It's your move at the park" — lights the Play Now nav when a table waits on you -->
   <script src="{{ '/assets/js/pjcc-mymove.js' | relative_url }}" defer></script>
 
