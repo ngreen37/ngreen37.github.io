@@ -1,0 +1,225 @@
+{
+  "_generated": "GENERATED FILE — do not hand-edit. Source of truth is assets/games/pjcc_marchland.html; regenerate with `npm run gen:marchland`.",
+  "_purpose": "Shared map + balance data. The browser game keeps these inline; a Godot build reads this file so both play the same tuned game.",
+  "name": "ChessWild: Campaign",
+  "version": "0.2",
+  "holdings": [
+    {
+      "id": 0,
+      "name": "Sand Mines",
+      "x": 28,
+      "y": 12
+    },
+    {
+      "id": 1,
+      "name": "The Fork",
+      "x": 71,
+      "y": 15
+    },
+    {
+      "id": 2,
+      "name": "Gauntlet Keep",
+      "x": 13,
+      "y": 39
+    },
+    {
+      "id": 3,
+      "name": "Checker Town",
+      "x": 47,
+      "y": 41
+    },
+    {
+      "id": 4,
+      "name": "Sea-Board",
+      "x": 85,
+      "y": 42
+    },
+    {
+      "id": 5,
+      "name": "Chess City",
+      "x": 29,
+      "y": 64
+    },
+    {
+      "id": 6,
+      "name": "Long Park",
+      "x": 69,
+      "y": 67
+    },
+    {
+      "id": 7,
+      "name": "Shogi Island",
+      "x": 15,
+      "y": 89
+    },
+    {
+      "id": 8,
+      "name": "Endgame Flats",
+      "x": 50,
+      "y": 90
+    },
+    {
+      "id": 9,
+      "name": "Pirc Pass",
+      "x": 86,
+      "y": 82
+    }
+  ],
+  "edges": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      4
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      5
+    ],
+    [
+      3,
+      5
+    ],
+    [
+      3,
+      6
+    ],
+    [
+      5,
+      6
+    ],
+    [
+      5,
+      7
+    ],
+    [
+      5,
+      8
+    ],
+    [
+      6,
+      8
+    ],
+    [
+      7,
+      8
+    ],
+    [
+      4,
+      9
+    ],
+    [
+      6,
+      9
+    ],
+    [
+      8,
+      9
+    ]
+  ],
+  "start": {
+    "owner": [
+      "t",
+      "t",
+      "m",
+      "t",
+      "t",
+      "m",
+      "t",
+      "m",
+      "m",
+      "m"
+    ],
+    "banners": [
+      3,
+      3,
+      3,
+      4,
+      2,
+      4,
+      3,
+      2,
+      3,
+      3
+    ]
+  },
+  "balance": {
+    "matScale": 0.75,
+    "attEdge": 12,
+    "defEdge": 0,
+    "diceCap": 4,
+    "queenBanners": 3,
+    "chainMin": 2,
+    "posCastle": 16,
+    "posTop": 18,
+    "clockAtt": 20,
+    "clockDef": 20,
+    "moveDelay": 1,
+    "pieceValues": {
+      "q": 9,
+      "r": 5,
+      "b": 3,
+      "n": 3,
+      "p": 1
+    }
+  },
+  "levels": {
+    "easy": {
+      "name": "Easy",
+      "depth": 2,
+      "thinkMs": 120,
+      "slip": 0.25,
+      "slipCp": 260,
+      "paceMs": 1100,
+      "note": "Makes mistakes you can see and punish.",
+      "minEdge": 2,
+      "maxAttacks": 1,
+      "smart": false,
+      "chainAware": false
+    },
+    "medium": {
+      "name": "Medium",
+      "depth": 3,
+      "thinkMs": 180,
+      "slip": 0.08,
+      "slipCp": 140,
+      "paceMs": 1500,
+      "note": "A fair fight that punishes carelessness.",
+      "minEdge": 1,
+      "maxAttacks": 2,
+      "smart": true,
+      "chainAware": false
+    },
+    "hard": {
+      "name": "Hard",
+      "depth": 4,
+      "thinkMs": 300,
+      "slip": 0,
+      "slipCp": 0,
+      "paceMs": 1800,
+      "note": "Plays the map, not just the board.",
+      "minEdge": 1,
+      "maxAttacks": 3,
+      "smart": true,
+      "chainAware": true
+    }
+  }
+}

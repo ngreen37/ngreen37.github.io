@@ -1,23 +1,37 @@
 #!/usr/bin/env node
 /* ══════════════════════════════════════════════════════════════════════════════════════
-   MARCHLAND — HIS DICE RULES, AS A GATE
+   CHESSWILD: CAMPAIGN — HIS RULES, AS A GATE
 
-   Two rules that are HIS and have now been stated twice each. A rule he has repeated
-   belongs in a test rather than in a comment, because a comment cannot disagree with the
-   code — and that is exactly how the first one shipped wrong:
+   TWO PHASES, and the split is the point:
+
+     PHASE 1 (vm)      the pure rules — position die, dice pools, banner caps, the chain,
+                       the shape of the map. Sliced straight out of the shipped HTML and
+                       run in a vm. Fast, and nothing is stubbed.
+     PHASE 2 (browser) the things a vm cannot see, because they live in the DOM and in the
+                       clock: the idle-defender exploit, the reveal beat, and whether a
+                       clock can grow. Driven with puppeteer against the real page.
+
+   ⚠⚠ PHASE 2 EXISTS BECAUSE PHASE 1 COULD NOT HAVE CAUGHT THE WORST BUG THIS GAME HAD.
+   The defending player won every single defense by never touching the board — the
+   defender's clock reaching zero WAS the defender's victory, so idling was optimal. No
+   amount of checking pure functions finds that. Driving the page found it in 15.1 seconds.
+   [[local-dev-and-verification]] — drive the thing, don't look at it.
+
+   RULES THAT ARE HIS AND HAVE BEEN STATED TWICE EACH belong in a test rather than in a
+   comment, because a comment cannot disagree with the code — and that is exactly how the
+   castling threshold shipped wrong for three days:
 
      "Castle: within three points of maximum, defenders king is castled."   (2026-08-08)
      "Castling - for the defender rolls, within 3 points of maximum."       (2026-08-11)
      "only the position dice for the castling."                             (2026-08-11)
 
-   It shipped as `die >= 18` under a comment claiming it was "his rule exactly". 18 is within
-   TWO of twenty. Nothing caught it because the only thing checking the number was prose.
-
-   HOW THIS READS THE GAME: the position-die functions are pure — no DOM, no engine — so they
-   are sliced out of the shipped HTML and run in a vm. Nothing is stubbed and nothing can pass
-   by accident; if the slice stops matching, this file throws rather than quietly testing air.
-   The two rules that are about WIRING (which die feeds castling, which side can castle) are
-   checked against the real call site in the source, since a pure function cannot see them.
+   ⚠⚠ AND A CHECK CAN PASS ON A COMMENT, WHICH HAPPENED HERE. The old check for "the roll
+   screen distinguishes a full castle from a king alone" grepped the WHOLE FILE for the
+   phrase "rook hooks around". After the v0.2 rewrite that phrase survived only in a
+   comment block explaining the rule — the roll screen itself had stopped saying it — and
+   the check would have gone on passing over a screen that no longer told the player
+   anything. Every UI-string check below now slices the function that WRITES the string
+   and searches only that. [[green-must-name-what-ran]]
    ══════════════════════════════════════════════════════════════════════════════════════ */
 const fs = require('fs');
 const vm = require('vm');
@@ -30,7 +44,7 @@ const src = fs.readFileSync(GAME, 'utf8');
 const results = [];
 function check(label, pass, detail) { results.push({ label, pass: !!pass, detail: detail || '' }); }
 
-/* ── slice the pure position-die code out of the shipped file ───────────────────────── */
+/* ── slice the pure code out of the shipped file ────────────────────────────────────── */
 function slice(from, to) {
   const a = src.indexOf(from), b = src.indexOf(to, a);
   if (a < 0) throw new Error('marchland.check: could not find "' + from + '" — the game moved, fix the slice');
@@ -41,14 +55,119 @@ function slice(from, to) {
    2026-08-11 refinement added a constant ABOVE it — so the vm got `posCastles` without the
    constant it reads and threw `POS_CASTLE is not defined` on the first call. That is the
    slice guard doing its job: a moved boundary fails loudly here instead of testing nothing. */
-const code = slice('var POS_CASTLE', 'function posSteps') +
-             slice('function posSteps', '/* ── THE MUSTER') +
-             slice('function pawnsOf', '/* ── THE ENGINE');
+const code =
+  slice('var LAND = [',     '/* ── THE CHAIN') +
+  slice('var CHAIN_MIN',    '/* ── DIFFICULTY') +
+  slice('function d20()',   '/* ── THE MATERIAL DIE') +
+  slice('var MAT_SCALE',    '/* ── THE POSITION DIE') +
+  slice('var POS_CASTLE',   'function posSteps') +
+  slice('function posSteps', '/* ── THE MUSTER') +
+  slice('var VAL = {',      '/* Placement:') +
+  slice('function pawnsOf', '/* ── THE ENGINE') +
+  /* ⚠ THE CLOCK CONSTANTS LIVE FAR DOWN THE FILE and were not in this context at first —
+     so the JSON check below compared the generated file against `undefined` and failed
+     loudly, which is exactly what it should do. A check that reads a name it was never
+     given must not quietly pass. */
+  slice('var CLOCK_ATT',    '/* THE REVEAL BEAT');
 const G = { Math, Array };
 vm.createContext(G);
 vm.runInContext(code, G);
 
-/* ── 1. THE TWO BANDS — "within two of max" vs "within four or three of max" ─────────── */
+/* ══ 1. THE MAP — ten holdings, and an even start ═══════════════════════════════════
+   ⚑ His: "Let's add another territory so they are even." He was right and it was worse
+   than one territory: the opening was 5 holdings / 14 banners against 4 / 10. */
+check('ten holdings', G.LAND.length === 10, G.LAND.length + ' on the map');
+const own = G.START_OWN, ban = G.START_BAN;
+const mine = own.filter((o) => o === 'm').length, theirs = own.filter((o) => o === 't').length;
+check('five holdings each', mine === 5 && theirs === 5, mine + ' yours · ' + theirs + ' theirs');
+const bMine = ban.reduce((s, v, i) => s + (own[i] === 'm' ? v : 0), 0);
+const bTheirs = ban.reduce((s, v, i) => s + (own[i] === 't' ? v : 0), 0);
+check('…and the same number of banners', bMine === 15 && bTheirs === 15,
+      bMine + ' yours · ' + bTheirs + ' theirs');
+/* ⭐ AND MIRRORED, NOT MERELY EQUAL. Two sides can hold fifteen banners each and still have
+   completely different shapes — one 11-stack against five 3s is "even" and unplayable. */
+const shape = (side) => ban.filter((_, i) => own[i] === side).slice().sort((a, b) => a - b).join(',');
+check('…in the same shape on both sides', shape('m') === shape('t'),
+      'yours ' + shape('m') + ' · theirs ' + shape('t'));
+
+const deg = (id) => G.ADJ[id].length;
+check('Sea-Board still borders exactly two — his rule', deg(4) === 2, 'degree ' + deg(4));
+check('Shogi Island still borders exactly two — his rule', deg(7) === 2, 'degree ' + deg(7));
+check('Checker Town still has five fronts — "tough position"', deg(3) === 5, 'degree ' + deg(3));
+check('Chess City still has five — "good position to start"', deg(5) === 5, 'degree ' + deg(5));
+/* nothing stranded: a holding nobody can reach is a holding nobody can take */
+const seen = new Set([0]); const stack = [0];
+while (stack.length) { const n = stack.pop(); G.ADJ[n].forEach((j) => { if (!seen.has(j)) { seen.add(j); stack.push(j); } }); }
+check('the map is fully connected', seen.size === G.LAND.length, seen.size + '/' + G.LAND.length + ' reachable');
+check('no edge is listed twice', new Set(G.EDGES.map((e) => e.slice().sort().join('-'))).size === G.EDGES.length);
+/* ⚠ A NAME PAST ~13 CHARACTERS WRAPS TO A THIRD LINE under a 58px node and crowds its
+   neighbors. This is a layout constraint wearing a data check. */
+const tooLong = G.LAND.filter((L) => L.nm.length > 13).map((L) => L.nm);
+check('every holding name fits under a 58px node', tooLong.length === 0, tooLong.join(', ') || 'longest ' +
+      Math.max(...G.LAND.map((L) => L.nm.length)) + ' chars');
+/* the slow-rolled locations stay off the map — a key-gated prototype is not where lore leaks */
+const banned = ['The Sea', 'Mystery City', 'Chess City Elementary'];
+check('no slow-rolled location appears on the map',
+      !G.LAND.some((L) => banned.indexOf(L.nm) >= 0), '[[slow-roll-cast]]');
+
+/* ══ 2. BANNERS ARE DICE ════════════════════════════════════════════════════════════
+   ⚑ His: "Currently, the amount of troops on a territory don't seem to matter much." */
+check('two banners is one die', G.poolFor(2, false) === 1);
+check('four banners is two', G.poolFor(4, false) === 2);
+check('eight banners is four', G.poolFor(8, false) === 4);
+check('the pool is capped, so a huge stack is not a certainty',
+      G.poolFor(40, false) === G.DICE_CAP, 'cap ' + G.DICE_CAP);
+check('a lone banner still rolls something', G.poolFor(1, false) === 1 && G.poolFor(1, true) === 1);
+check('the defender rounds UP where the attacker rounds down — nobody stays home on defense',
+      G.poolFor(3, true) === 2 && G.poolFor(3, false) === 1, '3 banners: 2 dice defending, 1 attacking');
+check('more banners is never fewer dice',
+      [1,2,3,4,5,6,7,8,9,10].every((b, i, a) => i === 0 || G.poolFor(b, false) >= G.poolFor(a[i-1], false)));
+check('bestOf keeps the largest face', G.bestOf([3, 19, 7, 11]) === 19);
+check('the ring goes on the FIRST maximum, so two 20s do not both light up',
+      G.keptIndex([20, 4, 20]) === 0);
+/* ⭐ the die bands are the conditional formatting — four bands of five, no gaps, no overlap */
+check('every face 1-20 lands in exactly one of four bands',
+      [...Array(20)].map((_, i) => G.dieBand(i + 1)).join('') === '11111222223333344444',
+      '1-5 thin · 6-10 plain · 11-15 strong · 16-20 hot');
+
+/* ══ 3. THE BANNER CAPS ═════════════════════════════════════════════════════════════
+   ⚠⚠ MUTATION-TESTED ON PURPOSE. `capsFor(2).q === 0` alone would still pass if muster()
+   ignored the caps object entirely — so the real check is BEHAVIORAL: hand a thin holding
+   an enormous budget and prove no queen comes out. [[green-must-name-what-ran]] */
+check('under three banners the cap says no queen', G.capsFor(2).q === 0);
+check('three banners unlocks one', G.capsFor(3).q === 1 && G.capsFor(9).q === 1);
+let thinQueens = 0, fatQueens = 0;
+for (let i = 0; i < 400; i++) {
+  if (G.muster(40, G.capsFor(2)).indexOf('q') >= 0) thinQueens++;
+  if (G.muster(40, G.capsFor(4)).indexOf('q') >= 0) fatQueens++;
+}
+check('…and a thin holding NEVER fields one, however big the roll',
+      thinQueens === 0, thinQueens + '/400 musters at 40 points');
+check('…while a stacked one usually does', fatQueens > 200, fatQueens + '/400');
+check('the rook cap climbs with the stack',
+      G.capsFor(2).r === 1 && G.capsFor(3).r === 2 && G.capsFor(9).r === 2);
+check('a muster never exceeds its own budget',
+      [1, 7, 14, 25, 40].every((b) => {
+        const a = G.muster(b, G.capsFor(5));
+        return a.reduce((s, k) => s + G.VAL[k], 0) <= b;
+      }));
+check('an empty budget still musters an army rather than nothing at all',
+      G.matBudget(1, 1, false) >= 1, 'matBudget floors at 1 point');
+
+/* ══ 4. THE CHAIN ═══════════════════════════════════════════════════════════════════ */
+check('two neighbors of your own is a chain', G.CHAIN_MIN === 2);
+{
+  const o = ['m','m','m','t','t','t','t','t','t','t'];   // 0,1,2 — 0-1, 0-2, 1-3…
+  check('a holding with two friendly neighbors is chained', G.chained(o, 0) === true,
+        'Sand Mines beside The Fork and Gauntlet Keep');
+  const o2 = ['m','t','m','t','t','t','t','t','t','t'];
+  check('…with one, it is not', G.chained(o2, 0) === false);
+  const o3 = own.slice();
+  check('the chain reads the OWNER array it is handed, not a global',
+        G.chained(o3, 5) === true && G.chained(['t','t','t','t','t','t','t','t','t','t'], 5) === true);
+}
+
+/* ══ 5. THE POSITION DIE — "within two of max" vs "within four or three of max" ══════ */
 check('the two bands are named constants, not typed numbers',
       G.POS_CASTLE === 16 && G.POS_TOP === 18,
       'POS_CASTLE = ' + G.POS_CASTLE + ' (within four) · POS_TOP = ' + G.POS_TOP + ' (within two)');
@@ -67,7 +186,7 @@ check('the attacker\'s second rank rides the TOP band, not the wider one',
       [17, 18, 20].map(d => G.posTop(d)).join() === 'false,true,true',
       '"within two of maximum" is the top reward in both chairs');
 
-/* ── 2. IT ACTUALLY MOVES A KING, A ROOK AND THREE PAWNS ────────────────────────────── */
+/* ══ 6. IT ACTUALLY MOVES A KING, A ROOK AND THREE PAWNS ════════════════════════════ */
 function freshDefender(withRook, pawnFiles) {
   const b = new Array(64).fill('');
   b[4] = 'k';
@@ -122,7 +241,7 @@ blocked[F.g8] = 'n';
 check('a knight on g8 blocks the castle rather than overwriting itself',
       G.applyDefenderPos(blocked, 'b', 20).castled === false && blocked[F.g8] === 'n');
 
-/* ── 3. THE WIRING — his 2026-08-11 answer: the POSITION die, and only that ─────────── */
+/* ══ 7. THE WIRING — his 2026-08-11 answer: the POSITION die, and only that ═════════ */
 const call = /applyDefenderPos\(\s*board\s*,\s*[^,]+,\s*([A-Za-z0-9_.]+)\s*\)/.exec(src);
 check('the defender\'s castle is fed by the POSITION die', !!call && /\bdPos\b/.test(call[1]),
       call ? 'applyDefenderPos(…, ' + call[1] + ')' : 'CALL SITE NOT FOUND');
@@ -130,25 +249,240 @@ check('the MATERIAL die has no path to it', !/applyDefenderPos\([^)]*dMat/.test(
       'dMat only ever buys an army');
 check('castling is the DEFENDER\'s alone — the attacker\'s half cannot reach it',
       !/posCastles/.test(slice('function applyAttackerPos', 'function applyDefenderPos')));
-
-/* ── 4. THE ROLL SCREEN SAYS THE SAME NUMBERS AS THE CODE ───────────────────────────── */
-check('the how-it-works screen states BOTH bands',
-      /<b>16 or better<\/b> tucks your\s+king into the corner/.test(src) &&
-      /<b>18 or better<\/b> brings his rook around/.test(src),
-      'the page and the rule agree, on both halves of it');
-check('the roll screen distinguishes a full castle from a king alone',
-      /rook hooks around/.test(src) && /no rook, no shield/.test(src),
-      'a 16 and an 18 no longer read identically');
 check('no bare threshold survives outside the two constants',
       !/die\s*>=\s*1[5-9]|Pos\s*>=\s*1[5-9]/.test(src),
       'every reader goes through posTop() / posCastles() / posCastleFull()');
 
-/* ── report ─────────────────────────────────────────────────────────────────────────── */
-console.log('\n=== MARCHLAND — HIS DICE RULES ===\n');
-let failed = 0;
-for (const r of results) {
-  if (!r.pass) failed++;
-  console.log('  ' + (r.pass ? '✓' : '✗') + ' ' + r.label + (r.detail ? '   ' + r.detail : ''));
+/* ══ 8. THE SCREENS SAY THE SAME NUMBERS AS THE CODE ════════════════════════════════
+   ⚠ EACH OF THESE SEARCHES ONLY THE REGION THAT WRITES THE STRING. Grepping the whole
+   file lets a check pass on a comment that explains the rule instead of on the screen
+   that states it — which is exactly what happened to the "rook hooks around" check. */
+const howScreen = slice('<section class="screen" id="screen-how">', '</section>');
+check('the how-it-works screen states BOTH castling bands',
+      /<b>16 or better<\/b> tucks your\s+king into the corner/.test(howScreen) &&
+      /<b>18 or better<\/b> brings his rook around/.test(howScreen),
+      'the page and the rule agree, on both halves of it');
+check('…and it explains that banners are dice',
+      /keep the best/i.test(howScreen) && /one die per two banners/i.test(howScreen));
+check('…and that your own flag is your own loss',
+      /Run your own clock out and you lose/i.test(howScreen),
+      'the rule that replaced "either flag goes to the defender"');
+check('…and what a chain is',
+      /chained/i.test(howScreen) && /extra die/i.test(howScreen));
+
+/* ⚠⚠ SPLIT PER CHAIR, AND A MUTATION TEST IS WHY. This was ONE check over the whole of
+   posVerdict() — and the phrase it looked for appears in BOTH branches, so deleting it from
+   the defender's half left the attacker's half satisfying the regex and the gate stayed
+   green. "A or B" needs two checks or one path can rot unwatched. You read the same
+   position from two chairs in this game; both of them have to say the right thing. */
+const verdictFn = slice('function posVerdict()', 'function boardCells');
+/* the two chairs are the two halves of posVerdict's top-level if/else. Split the sliced
+   function rather than anchoring on a brace that occurs all over the file. */
+const chairSplit = verdictFn.indexOf('} else {');
+const attChair = verdictFn.slice(0, chairSplit);
+const defChair = verdictFn.slice(chairSplit);
+check('posVerdict really does have two chairs to check', chairSplit > 0 && defChair.length > 200,
+      'attacker half ' + attChair.length + ' chars, defender half ' + defChair.length);
+check('ATTACKING, the screen tells a full enemy castle from a bare king',
+      /THEY CASTLE FULLY[\s\S]{0,90}king, rook and three pawns/.test(attChair) &&
+      /THEIR KING TUCKS IN[\s\S]{0,90}no rook, no shield/.test(attChair),
+      'a 16 and an 18 do not read identically from the attacker chair');
+check('DEFENDING, it tells your own full castle from your own bare king',
+      /FULL CASTLE[\s\S]{0,140}king, rook and three pawns/.test(defChair) &&
+      /KING IN THE CORNER[\s\S]{0,90}no rook, no shield/.test(defChair),
+      'checked in the branch that writes it, not anywhere in the file');
+check('…and it names the no-rook case honestly',
+      /no rook to bring/.test(defChair),
+      'a roll cannot conjure a rook the muster never bought');
+const matFn = slice('function matVerdict()', 'function posVerdict');
+check('the material verdict is one bold word plus one clause, not a sum',
+      /<b>' \+ word \+ '<\/b><i>' \+ clause \+ '<\/i>/.test(matFn),
+      'his "bolder and briefer"');
+check('…with the arithmetic still available underneath',
+      /class="maths"/.test(matFn), 'briefer, not hidden');
+
+/* ══ 9. THE CLOCK RULE, AT THE SOURCE ═══════════════════════════════════════════════
+   The behavioral proof is in phase 2; this is the source-level companion, so a rewrite
+   that quietly restores the old mapping fails here even before a browser opens. */
+const finishFn = slice('function finish(how)', 'function resolveLand');
+check('the ATTACKER\'s flag loses the ground for the attacker',
+      /how === 'time-att'[\s\S]{0,140}playerWon = !p\.playerAttacks/.test(finishFn));
+check('⚠ the DEFENDER\'s flag now loses the ground for the DEFENDER',
+      /how === 'time-def'[\s\S]{0,140}playerWon = p\.playerAttacks/.test(finishFn),
+      'this is the fix for the idle-defender exploit — phase 2 proves it in a browser');
+check('a draw still goes to the defender',
+      /how === 'draw'[\s\S]{0,200}playerWon = !p\.playerAttacks/.test(finishFn));
+check('the delay is a BRONSTEIN credit, capped at what the clock read when the move began',
+      /Math\.min\(B\.turnStart, B\.clk\[mover\] \+ MOVE_DELAY\)/.test(src),
+      'a plain increment would let a fast side gain time forever and the battle never end');
+
+/* == 10. THE SHARED JSON IS NOT STALE ==============================================
+   assets/data/marchland.json is DERIVED from this game and is what a Godot build reads.
+   A derived file that nobody regenerates is worse than no derived file at all: it looks
+   authoritative and quietly describes last week's map. Regenerate with
+   `npm run gen:marchland`. */
+{
+  const gen = require(path.join(ROOT, 'tests/gen-marchland-data.js'));
+  const onDisk = fs.existsSync(gen.OUT) ? fs.readFileSync(gen.OUT, 'utf8') : null;
+  check('the shared JSON exists', onDisk !== null, 'assets/data/marchland.json');
+  if (onDisk !== null) {
+    check('...and matches the game it was generated from',
+          onDisk === gen.build(), 'stale? run `npm run gen:marchland`');
+    const d = JSON.parse(onDisk);
+    check('...and carries the map a Godot build needs',
+          d.holdings.length === G.LAND.length && d.edges.length === G.EDGES.length &&
+          d.start.owner.length === G.LAND.length,
+          d.holdings.length + ' holdings, ' + d.edges.length + ' borders, ' +
+          Object.keys(d.levels).length + ' levels');
+    check('...including every balance dial, so nothing has to be retyped',
+          d.balance.attEdge === G.ATT_EDGE && d.balance.clockAtt === G.CLOCK_ATT &&
+          d.balance.moveDelay === G.MOVE_DELAY && d.balance.queenBanners === G.QUEEN_BANNERS,
+          'ATT_EDGE ' + d.balance.attEdge + ' - clocks ' + d.balance.clockAtt + '/' +
+          d.balance.clockDef + ' - delay ' + d.balance.moveDelay + 's');
+  }
 }
-console.log('\nRESULT: ' + (failed ? 'FAIL (' + failed + ')' : 'PASS (' + results.length + ' checks)') + '\n');
-process.exit(failed ? 1 : 0);
+
+/* ── report phase 1, then run phase 2 ────────────────────────────────────────────── */
+function report(title) {
+  console.log('\n=== ' + title + ' ===\n');
+  let failed = 0;
+  for (const r of results) {
+    if (!r.pass) failed++;
+    console.log('  ' + (r.pass ? '✓' : '✗') + ' ' + r.label + (r.detail ? '   ' + r.detail : ''));
+  }
+  return failed;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════════
+   PHASE 2 — DRIVE THE REAL PAGE
+   ══════════════════════════════════════════════════════════════════════════════════ */
+const http = require('http');
+const { findChrome } = require(path.join(ROOT, 'tests/harness.js'));
+
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css' };
+function serve() {
+  return new Promise((res) => {
+    const srv = http.createServer((req, r) => {
+      const p = decodeURIComponent(req.url.split('?')[0]);
+      fs.readFile(path.join(ROOT, p), (err, buf) => {
+        /* ⚠ /assets/css/vs-aura.css is a Jekyll-compiled .scss and does not exist on disk.
+           A 404 here is correct and harmless; the game does not depend on it to run. */
+        if (err) { r.writeHead(404); r.end(); return; }
+        r.writeHead(200, { 'Content-Type': MIME[path.extname(p).toLowerCase()] || 'text/plain' });
+        r.end(buf);
+      });
+    });
+    srv.listen(0, () => res(srv));
+  });
+}
+const isOn = (id) => `document.getElementById('${id}').classList.contains('on')`;
+
+(async () => {
+  let pp;
+  try { pp = require(path.join(ROOT, 'node_modules/puppeteer-core')); }
+  catch (e) { console.log('\n  (phase 2 skipped — puppeteer-core not installed)\n'); process.exit(report('CHESSWILD: CAMPAIGN — RULES (phase 1 only)') ? 1 : 0); }
+  const exe = findChrome();
+  if (!exe) { console.log('\n  (phase 2 skipped — no Chrome/Edge found; set CHROME_PATH)\n'); process.exit(report('CHESSWILD: CAMPAIGN — RULES (phase 1 only)') ? 1 : 0); }
+
+  const srv = await serve();
+  const port = srv.address().port;
+  const browser = await pp.launch({ executablePath: exe, headless: 'new',
+    args: ['--no-sandbox', '--mute-audio'], protocolTimeout: 0 });
+  try {
+    const page = await browser.newPage();
+    const errs = [];
+    page.on('pageerror', (e) => errs.push(e.message));
+    await page.goto(`http://127.0.0.1:${port}/assets/games/pjcc_marchland.html`, { waitUntil: 'load' });
+
+    /* get into a defense: skip the levy by placing everything, skip the march, skip the
+       night march, and let them come */
+    await page.click('#go');
+    await page.waitForFunction(isOn('screen-map'));
+    for (let i = 0; i < 8; i++) {
+      const left = await page.evaluate(() => document.querySelectorAll('.node.mine.can').length);
+      if (!left) break;
+      await page.click('.node.mine.can');
+      await new Promise((r) => setTimeout(r, 90));
+    }
+    await page.click('#endturn');      // levy → march
+    await page.click('#endturn');      // march → night
+    await page.click('#endturn');      // night → theirs
+
+    const gotRoll = await page.waitForFunction(isOn('screen-roll'), { timeout: 20000 })
+      .then(() => true).catch(() => false);
+    check('their turn reaches an attack the player has to defend', gotRoll === true);
+    if (gotRoll) {
+      const dl = await page.$eval('#def-label', (e) => e.textContent);
+      check('…announced before the roll screen, with you in the defender chair',
+            /You defend/.test(dl), dl.trim());
+
+      await page.waitForFunction(() => !document.getElementById('tobattle').disabled, { timeout: 10000 });
+      const prev = await page.evaluate(() => ({
+        shown: !document.getElementById('preview').hidden,
+        men: document.querySelectorAll('#pmen .pc').length,
+        kept: document.querySelectorAll('.die.kept').length
+      }));
+      check('the exact position is previewed before you commit to it',
+            prev.shown && prev.men >= 4, prev.men + ' men on the preview board');
+      check('one die per pool locks in with a ring', prev.kept === 4, prev.kept + ' rings');
+
+      await page.click('#tobattle');
+      await page.waitForFunction(isOn('screen-battle'));
+
+      /* ── THE REVEAL BEAT ── */
+      const c1 = await page.$eval('#clock', (e) => e.textContent);
+      await new Promise((r) => setTimeout(r, 700));
+      const c2 = await page.$eval('#clock', (e) => e.textContent);
+      check('⚑ the clock does NOT start with the screen — you get to look first',
+            c1 === c2, c1 + ' held for 700ms');
+
+      /* ── THE EXPLOIT ── do nothing at all, and see who wins ── */
+      const t0 = Date.now();
+      await page.waitForFunction(isOn('screen-result'), { timeout: 60000 });
+      const el = ((Date.now() - t0) / 1000).toFixed(1);
+      const res = await page.evaluate(() => ({
+        v: document.getElementById('verdict').textContent,
+        win: /win/.test(document.getElementById('verdict').className),
+        line: document.getElementById('result-say').textContent
+      }));
+      /* ⚠⚠ THE CHECK THIS WHOLE PHASE EXISTS FOR. Before 2026-08-24 this returned a WIN
+         after 15.1 seconds of touching nothing, in every defense in the game. */
+      check('⚠⚠ idling through a defense LOSES it',
+            res.win === false, el + 's of no input → ' + res.v + ' — "' + res.line.trim() + '"');
+      check('…and it ends by the clock rather than hanging',
+            +el < 40, 'resolved in ' + el + 's');
+    }
+
+    /* ── A CLOCK MUST NEVER EXCEED WHAT IT STARTED WITH ──
+       The Bronstein credit is what makes a battle terminate: a plain increment would let a
+       side that answers in 180ms gain time forever. Sampled black-box off the readout. */
+    await page.click('#cont').catch(() => {});
+    const clockProbe = await page.evaluate(async () => {
+      const readout = () => {
+        const t = document.getElementById('clock').textContent.split('vs');
+        return [parseFloat(t[0]), parseFloat(t[1])];
+      };
+      const seen = [];
+      for (let i = 0; i < 40; i++) {
+        if (document.getElementById('screen-battle').classList.contains('on')) seen.push(readout());
+        await new Promise((r) => setTimeout(r, 120));
+      }
+      return seen;
+    });
+    if (clockProbe.length > 4) {
+      const maxW = Math.max(...clockProbe.map((c) => c[0]));
+      const maxB = Math.max(...clockProbe.map((c) => c[1]));
+      check('neither clock ever exceeds its starting value',
+            maxW <= 20.01 && maxB <= 20.01, 'peak ' + maxW + ' / ' + maxB);
+    }
+
+    check('no page errors during a full round', errs.length === 0, errs.slice(0, 2).join(' | '));
+  } finally {
+    await browser.close(); srv.close();
+  }
+
+  const failed = report('CHESSWILD: CAMPAIGN — HIS RULES, AS A GATE');
+  console.log('\nRESULT: ' + (failed ? 'FAIL (' + failed + ')' : 'PASS (' + results.length + ' checks)') +
+              '   ·   phase 1 in a vm, phase 2 in a browser\n');
+  process.exit(failed ? 1 : 0);
+})().catch((e) => { console.error('CHECK CRASHED:', e); process.exit(1); });

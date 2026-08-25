@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>MARCHLAND v0.1</title>
+<title>ChessWild: Campaign v0.2</title>
 <!-- THE TOWN SKY. ORDER IS LOAD-BEARING — pjcc-game-sky.js finds no clock if these swap,
      and does nothing at all without saying so. tests/townsky.check.js checks both, in order. -->
 <script src="/assets/js/pjcc-time.js"></script>
@@ -53,6 +53,14 @@
     --panel: #171227;
     --panel-hi: #211a38;
     --rule: #2e2545;
+    /* ⚑ THE FOUR DICE BANDS (2026-08-24). Conditional formatting, his request: a die
+       should say whether it is a good roll before anyone reads the number. The fill is
+       the die's OWN value; the RING (further down) is a separate channel saying which
+       die got kept. Two channels, so neither is ambiguous. */
+    --band-1: #b9bdcb; --band-1-ink: #333a4d;   /*  1-5  thin  */
+    --band-2: #e8e2d4; --band-2-ink: #2a1a10;   /*  6-10 plain */
+    --band-3: #eec277; --band-3-ink: #40280a;   /* 11-15 strong */
+    --band-4: #f7d54c; --band-4-ink: #3d2c00;   /* 16-20 hot   */
   }
 
   #wrap { width: 100%; max-width: 460px; height: 100%; max-height: 760px;
@@ -63,6 +71,20 @@
      the fix is the fluid title below. [[mobile-window-slide]] */
   .screen { display: none; flex: 1; flex-direction: column; padding: 14px; overflow-y: auto; overflow-x: hidden; }
   .screen.on { display: flex; }
+  /* ⚠⚠ A FLEX COLUMN SQUASHES ITS CHILDREN, AND A CHILD WITH AN EXPLICIT `min-height` IS THE
+     ONE THAT LETS IT. Normally `min-height: auto` stops a flex item shrinking below its own
+     content; setting `min-height: 34px` on the verdict lines REPLACED that automatic floor, so
+     when the roll screen grew a preview board the column shrank each verdict to 34px and the
+     text simply PAINTED OUTSIDE ITS BOX — the material verdict's fine print landed on top of
+     the POSITION header. Nothing measured it: `scrollHeight` on the screen said "fits" because
+     the screen scrolls, and no two rects overlapped, because the boxes did not move — only the
+     ink did. A SCREENSHOT at 320px is what found it. [[mobile-window-slide]]
+     The screen already scrolls (`overflow-y: auto`); refusing to shrink is what makes it. */
+  .screen.on > * { flex-shrink: 0; }
+  /* ...and once nothing shrinks, the leftover room collects at the BOTTOM instead of being
+     shared out. Push the primary control into it: the screen fills, and the button lands
+     under the thumb rather than halfway up a phone. */
+  #screen-map #endturn, #screen-battle #resign, #screen-roll #tobattle { margin-top: auto; }
 
   /* ⚠ MEASURED, NOT SOFTENED: "MARCHLAND" is ONE unbreakable word, and at 30px with 6px of
      tracking it is 213px wide inside the 204px a 320px phone gives it — 9px of text painting
@@ -70,9 +92,16 @@
      nothing to blame. Both numbers scale with the stage (inside an iframe `vw` is the
      iframe), and both keep their old value from ~455px up, so nothing moves on a desktop.
      ⭐ The size AND the tracking have to scale — tracking is 54 of those 213px.
-     Same family as /dispatch/'s "TRANSMISSIONS". [[mobile-window-slide]] */
+     ⚠ THE TITLE IS DUE TO CHANGE — twenty candidates are in private/docs/marchland-rewrite.html
+     and the pick is his. Whatever lands, it comes back through this clamp, because the
+     constraint is the 320px phone and not the word. [[mobile-window-slide]] */
   h1 { font-size: clamp(21px, 6.6vw, 30px); letter-spacing: clamp(2px, 1.32vw, 6px);
        font-weight: 900; text-align: center; }
+  /* the second half of the lockup. "CHESSWILD" is nine unbreakable characters — exactly what
+     the clamp above was measured against — so the brand rides the fix the old name needed. */
+  .wordmark { text-align: center; font: 700 13px 'Trebuchet MS', sans-serif;
+    letter-spacing: clamp(3px, 1.9vw, 8px); color: var(--ink-3); text-transform: uppercase;
+    margin-top: 3px; }
   h2 { font-size: 15px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-3);
        font-weight: 700; text-align: center; margin-bottom: 8px; }
   .sub { text-align: center; color: var(--ink-2); font-size: 13px; line-height: 1.6; }
@@ -83,13 +112,23 @@
   .btn:active { transform: translateY(1px); }
   .btn.ghost { background: transparent; color: var(--ink-2); border: 1px solid var(--rule); }
   .btn[disabled] { opacity: .38; cursor: default; }
+  .btn.slim { padding: 9px; font-size: 13px; margin-top: 7px; }
 
   /* ── HOME ── */
   #screen-home { justify-content: center; gap: 4px; }
   .crest { font-size: 52px; text-align: center; line-height: 1; margin-bottom: 6px; }
+  /* THE DIFFICULTY PICKER. Three buttons rather than a select, because a select on iOS
+     opens a wheel for a three-way choice — and because the chosen one has to stay
+     visible: it is the only setting in the game. */
+  .levels { display: flex; gap: 7px; margin-top: 14px; }
+  .levels button { flex: 1; padding: 9px 4px; border-radius: 9px; cursor: pointer;
+    background: transparent; border: 1px solid var(--rule); color: var(--ink-3);
+    font: 700 12px 'Trebuchet MS', sans-serif; letter-spacing: .6px; }
+  .levels button.on { border-color: var(--mine); color: var(--mine); background: rgba(107,255,184,.09); }
+  .lvl-note { text-align: center; font-size: 11px; color: var(--ink-3); margin-top: 7px; min-height: 15px; }
 
   /* ── THE MAP ── */
-  .mapbox { position: relative; width: 100%; aspect-ratio: 1/1.12; margin: 6px 0 4px;
+  .mapbox { position: relative; width: 100%; aspect-ratio: 1/1.12; margin: 4px 0 3px;
     background: radial-gradient(circle at 50% 40%, #1c1533, #100c1e 72%);
     border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; }
   .mapbox svg { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -105,47 +144,91 @@
     letter-spacing: .3px; }
   .node.sel .disc { transform: scale(1.16); box-shadow: 0 0 0 3px rgba(107,255,184,.35); }
   .node.tgt .disc { box-shadow: 0 0 0 3px rgba(255,110,138,.5); animation: pulse 1s infinite; }
+  .node.can .disc { box-shadow: 0 0 0 3px rgba(107,255,184,.4); }
   .node.dim { opacity: .34; }
+  /* a banner landing, or a holding under an announced attack — both want a beat you can see */
+  .node.flash .disc { animation: land .42s ease; }
+  .node.doom .disc  { animation: doom .55s ease infinite; }
   @keyframes pulse { 50% { box-shadow: 0 0 0 7px rgba(255,110,138,0); } }
+  @keyframes land  { 0% { transform: scale(1); } 45% { transform: scale(1.3); } 100% { transform: scale(1); } }
+  @keyframes doom  { 50% { box-shadow: 0 0 0 8px rgba(255,110,138,.15); } }
   /* the viewBox (100x112) is stretched to fill the box, so a stroke-width of 1 lands at
      roughly 4 real pixels — these are deliberately sub-1 values, not typos. */
   .link { stroke: #33294f; stroke-width: 0.55; }
   .link.hot { stroke: var(--theirs); stroke-width: 0.9; }
+  /* ⚑ THE CHAIN, DRAWN (2026-08-24). A link between two holdings of the same side that
+     are BOTH chained is painted in that side's color instead of gray — so the shape of
+     your position reads off the map with no legend and no number. Same idea as the pawn
+     chain the position die builds, one scale up. */
+  .link.chain-m { stroke: rgba(107,255,184,.55); stroke-width: 0.8; }
+  .link.chain-t { stroke: rgba(255,110,138,.5);  stroke-width: 0.8; }
 
   .status { text-align: center; font-size: 13px; color: var(--ink-2); min-height: 34px;
     line-height: 1.45; padding: 0 4px; }
-  .tally { display: flex; justify-content: center; gap: 16px; font-size: 12px; margin: 2px 0 4px;
+  .tally { display: flex; justify-content: center; gap: 14px; font-size: 12px; margin: 2px 0 3px;
     color: var(--ink-3); }
   .tally b.m { color: var(--mine); } .tally b.t { color: var(--theirs); }
+  /* THE PHASE STRIP — the round has five parts now and three of them are yours. Without
+     this the player has to remember which one they are in, which is a thing a screen
+     should never ask. */
+  .phasebar { display: flex; gap: 4px; margin-bottom: 6px; }
+  .phasebar span { flex: 1; text-align: center; padding: 5px 2px; border-radius: 7px;
+    font: 700 10px 'Trebuchet MS', sans-serif; letter-spacing: .9px; text-transform: uppercase;
+    color: var(--ink-3); border: 1px solid var(--rule); }
+  .phasebar span.on { color: #1a0f3d; background: linear-gradient(180deg, #e9bd3c, #cf9d18);
+    border-color: transparent; }
+  .phasebar span.them.on { background: linear-gradient(180deg, #ff8fa6, #e04d6c); color: #2a0a12; }
 
   /* ── DICE / MUSTER ── */
-  .side { background: var(--panel); border: 1px solid var(--rule); border-radius: 12px;
-    padding: 11px 12px; margin-bottom: 9px; }
-  .side h3 { font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; margin-bottom: 7px; }
-  .side.att h3 { color: var(--mine); } .side.def h3 { color: var(--theirs); }
-  .dice { display: flex; gap: 7px; margin-bottom: 7px; }
-  .die { width: 34px; height: 34px; border-radius: 8px; background: #f3eddf; color: #2a1a10;
-    font: 900 18px 'Trebuchet MS', sans-serif; display: flex; align-items: center;
-    justify-content: center; box-shadow: 0 3px 0 #b9ac93; }
-  .die.roll { animation: tumble .5s ease; }
+  .rollrow { display: flex; gap: 9px; margin-bottom: 4px; }
+  .rollrow > div { flex: 1; min-width: 0; }
+  .rlab { font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; margin-bottom: 5px;
+    font-weight: 700; }
+  .rlab.att { color: var(--mine); } .rlab.def { color: var(--theirs); }
+  .rowhead { text-align: center; font-size: 10px; letter-spacing: 2.2px; text-transform: uppercase;
+    color: var(--ink-3); margin: 8px 0 5px; font-weight: 700; }
+  .dice { display: flex; gap: 5px; min-height: 38px; align-items: center; flex-wrap: wrap; }
+  .die { width: 34px; height: 34px; border-radius: 8px;
+    background: var(--band-2); color: var(--band-2-ink);
+    font: 900 17px 'Trebuchet MS', sans-serif; display: flex; align-items: center;
+    justify-content: center; box-shadow: 0 3px 0 #b9ac93; position: relative;
+    transition: transform .18s ease, opacity .18s ease; }
+  .die.b1 { background: var(--band-1); color: var(--band-1-ink); box-shadow: 0 3px 0 #8990a1; }
+  .die.b2 { background: var(--band-2); color: var(--band-2-ink); box-shadow: 0 3px 0 #b9ac93; }
+  .die.b3 { background: var(--band-3); color: var(--band-3-ink); box-shadow: 0 3px 0 #b28a44; }
+  .die.b4 { background: var(--band-4); color: var(--band-4-ink);
+            box-shadow: 0 3px 0 #b89a17, 0 0 14px rgba(247,213,76,.5); }
+  .die.roll { animation: tumble .42s ease; }
+  /* THE LOCK-IN, his words: "they roll, then lock in with a colored outline". The ring is
+     a second, independent channel — the fill already said how big the number is, the ring
+     says this is the one that counts. */
+  .die.kept::after { content: ''; position: absolute; inset: -4px; border-radius: 12px;
+    border: 2.5px solid var(--mine); animation: lockin .3s ease; }
+  .die.kept.d::after { border-color: var(--theirs); }
+  .die.drop { transform: scale(.72); opacity: .34; box-shadow: 0 2px 0 rgba(0,0,0,.25); }
   @keyframes tumble { 0%{transform:rotate(0) scale(.7)} 60%{transform:rotate(340deg) scale(1.12)} 100%{transform:none} }
-  .budget { font-size: 12px; color: var(--ink-2); margin-bottom: 6px; }
-  .budget b { color: var(--ink); }
-  /* ⚠ THE LINEUP PIECES SIT ON WOOD, and that is not decoration. The canon "black" fill
-     (--piece-b-fill, P&JCC purple) is chosen to read against MAPLE AND WALNUT — on a
-     #171227 panel it all but disappears, which is exactly what the first render showed.
-     Giving every glyph its own little square restores the contrast the canon assumes AND
-     says the true thing: these are pieces on a board, not icons in a list. */
-  .army { display: flex; flex-wrap: wrap; gap: 3px; line-height: 1; }
-  .army span { display: inline-flex; align-items: center; justify-content: center;
-    width: 27px; height: 27px; border-radius: 4px; font-size: 20px;
-    background-color: var(--chess-lt); background-image: var(--chess-grain);
-    box-shadow: inset 0 0 0 1px rgba(74,51,32,.5); paint-order: stroke fill; }
-  .army span:nth-child(even) { background-color: var(--chess-dk); }
-  .army .w { color: var(--piece-w-fill); -webkit-text-stroke: .06em var(--piece-w-line);
-    text-shadow: .03em .05em 0 rgba(0,0,0,.4); }
-  .army .b { color: var(--piece-b-fill); -webkit-text-stroke: .06em var(--piece-b-line);
-    text-shadow: .03em .05em 0 rgba(0,0,0,.4); }
+  @keyframes lockin { 0% { transform: scale(1.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  /* THE VERDICT. Bolder and briefer, his request: one word, then one short clause. The
+     arithmetic is still there for anyone who wants it — one tap on the line. */
+  .vline { text-align: center; margin: 3px 0 2px; min-height: 34px; cursor: pointer; }
+  /* ⚠ `> b`, NOT `b`. A bare `.vline b` also caught every <b> inside the fine print below and
+     made each NUMBER its own block — "you / 27 / pts · them / 8" down the middle of the screen.
+     Only the verdict word is a block; the numbers under it are inline. Caught by looking. */
+  .vline > b { display: block; font: 900 16px 'Trebuchet MS', sans-serif; letter-spacing: 1.2px; }
+  .vline > i { font-style: normal; font-size: 11.5px; color: var(--ink-2); }
+  .vline.good > b { color: var(--mine); } .vline.bad > b { color: var(--theirs); }
+  .vline.hot  > b { color: #ffd66a; }     .vline.flat > b { color: var(--ink-2); }
+  /* THE ARITHMETIC IS ONE TAP AWAY, not gone and not always on. Briefer was the request; the
+     numbers still have to be checkable, because a die whose effect you cannot verify is a die
+     that feels like the game cheating. Hidden by default buys ~50px a verdict on a 320px
+     phone, which is most of what the preview board needed. */
+  .vline .maths { display: none; font-size: 10.5px; color: var(--ink-3); margin-top: 4px;
+    line-height: 1.5; }
+  .vline .maths b { color: var(--ink-2); font-weight: 700; }
+  .vline.open .maths { display: block; }
+  .vline .tap { display: block; font-size: 9.5px; letter-spacing: 1.1px; color: var(--ink-3);
+    margin-top: 2px; text-transform: uppercase; opacity: .75; }
+  .vline.open .tap { display: none; }
 
   /* ── THE BOARD (park-table standard) ── */
   .clockbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
@@ -167,9 +250,16 @@
   /* TWO LAYERS, and that is deliberate: squares and pieces as siblings in ONE grid puts
      holes under every explicitly-placed piece (grid places explicit items first, then the
      auto-placed squares skip those cells). Same trap the front door hit. */
-  .sqs, .men { position: absolute; inset: 0; display: grid;
+  .sqs { position: absolute; inset: 0; display: grid;
     grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); }
-  .men { pointer-events: none; }
+  /* ⚑ THE MEN ARE NO LONGER A GRID (2026-08-24), and that is what buys the sliding.
+     Grid placement teleports: re-render into a new cell and the piece is simply
+     elsewhere. Each man is now an absolutely-positioned box moved by a TRANSFORM, and
+     because every element is 12.5% of the board wide, translating by 100% of ITSELF is
+     exactly one square. Persistent elements + a transform = the tween is free.
+     ⚠ pointer-events stay OFF for the whole layer: clicks fall through to the squares
+     underneath, so there is one hit-testing path instead of two that can disagree. */
+  .men { position: absolute; inset: 0; pointer-events: none; }
   .sq { position: relative; background-color: var(--chess-lt);
     background-image: linear-gradient(152deg, rgba(255,252,240,.14), rgba(0,0,0,.04) 62%), var(--chess-grain); }
   .sq.d { background-color: var(--chess-dk);
@@ -184,20 +274,45 @@
   .sq.chk  { box-shadow: inset 0 0 0 3px rgba(255,110,110,.9); }
   /* pieces sized off the BOARD (cqw), never the viewport — a piece is a fraction of its
      square and nothing else. Numbers match PJCCPieces.draw() exactly. */
-  .pc { display: flex; align-items: center; justify-content: center; position: relative;
+  .pc { position: absolute; width: 12.5%; height: 12.5%; left: 0; top: 0;
+    display: flex; align-items: center; justify-content: center;
     font: 900 10.5cqw/1 "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols2", serif;
-    paint-order: stroke fill; pointer-events: auto; cursor: default; z-index: 2; }
+    paint-order: stroke fill; z-index: 2;
+    transform: translate(calc(var(--f) * 100%), calc(var(--r) * 100%));
+    transition: transform .17s cubic-bezier(.32,.9,.36,1); }
   .pc::before { content: ''; position: absolute; left: 23.2%; top: 73.6%;
     width: 53.6%; height: 17.9%; border-radius: 50%; background: rgba(0,0,0,.32); }
   .pc.w { color: var(--piece-w-fill); -webkit-text-stroke: .085em var(--piece-w-line);
     text-shadow: .035em .06em 0 rgba(0,0,0,.4); }
   .pc.b { color: var(--piece-b-fill); -webkit-text-stroke: .085em var(--piece-b-line);
     text-shadow: .035em .06em 0 rgba(0,0,0,.4); }
-  .pc.can { cursor: pointer; }
-  .pc.lift { transform: translateY(-4px) scale(1.07); filter: drop-shadow(0 0 9px #6bffb8); }
+  .pc.lift { filter: drop-shadow(0 0 9px #6bffb8); }
+  /* a captured man is removed from the board, not from the screen — he fades where he fell */
+  .pc.gone { opacity: 0; transform: translate(calc(var(--f) * 100%), calc(var(--r) * 100%)) scale(.6);
+    transition: opacity .22s ease, transform .22s ease; }
+  /* the muster walking on. Cheap, and it is the beat that lets you read the position. */
+  .pc.arrive { animation: arrive .34s ease backwards; }
+  @keyframes arrive { from { opacity: 0; } to { opacity: 1; } }
   .say { text-align: center; font-size: 12.5px; color: var(--ink-2); margin-top: 8px;
     min-height: 32px; line-height: 1.45; }
   .say b { color: #ffd66a; }
+
+  /* ── THE PREVIEW (roll screen) ─────────────────────────────────────────────────
+     ⚑ 2026-08-24. The roll screen used to end in two flat lists of glyphs on wood chips.
+     It ends in the ACTUAL POSITION now — the same board object the battle starts from, so
+     what you study is what you get. This is the real answer to "sometimes you don't even
+     have time to see the position before you lose": by the time the clock starts you have
+     already looked at it for as long as you wanted to. */
+  .preview { margin: 6px auto 0; width: 100%; max-width: 258px; }
+  .previewhead { text-align: center; font-size: 10px; letter-spacing: 2.2px; text-transform: uppercase;
+    color: var(--ink-3); margin: 8px 0 5px; font-weight: 700; }
+  .ptally { text-align: center; font-size: 11.5px; color: var(--ink-3); margin-top: 6px; }
+  .ptally b.m { color: var(--mine); } .ptally b.t { color: var(--theirs); }
+
+  /* ── THE REVEAL BEAT ──────────────────────────────────────────────────────────
+     The clock does NOT start with the screen. It starts when this goes away. */
+  .ready { text-align: center; font: 900 15px 'Trebuchet MS', sans-serif; letter-spacing: 1.6px;
+    color: #ffd66a; min-height: 22px; }
 
   /* ── RESULT ── */
   #screen-result { justify-content: center; }
@@ -206,6 +321,15 @@
 
   .foot { font-size: 10px; color: var(--ink-3); text-align: center; margin-top: 8px;
     letter-spacing: .4px; }
+
+  /* ⚠ THE WHOLE ROOM RESPECTS reduced motion. The dice tumble, the pieces slide and the
+     banners land — three separate animations, and a player who has asked the OS for
+     stillness should get the same information without any of them. */
+  @media (prefers-reduced-motion: reduce) {
+    .die.roll, .die.kept::after, .node.flash .disc, .node.doom .disc, .pc.arrive { animation: none; }
+    .pc { transition: none; }
+    .clock.crit { animation: none; }
+  }
 </style>
 </head>
 <body>
@@ -214,43 +338,63 @@
   <!-- ══ HOME ═══════════════════════════════════════════════════════════════════ -->
   <section class="screen on" id="screen-home">
     <div class="crest">⚄</div>
-    <h1>MARCHLAND</h1>
+    <h1>CHESSWILD</h1>
+    <p class="wordmark">Campaign</p>
     <p class="sub" style="margin-top:10px">
-      Nine holdings. Take them all.<br>
+      Ten holdings. Take them all.<br>
       <span style="color:var(--ink-3)">The dice decide who shows up.<br>The board decides who wins.</span>
     </p>
+    <div class="levels" id="levels">
+      <button data-lvl="easy">Easy</button>
+      <button data-lvl="medium" class="on">Medium</button>
+      <button data-lvl="hard">Hard</button>
+    </div>
+    <p class="lvl-note" id="lvl-note">A fair fight that punishes carelessness.</p>
     <button class="btn" id="go">Begin the campaign</button>
     <button class="btn ghost" id="how">How it works</button>
-    <p class="foot">v0.1 &middot; prototype</p>
+    <p class="foot">v0.2 &middot; prototype</p>
   </section>
 
   <!-- ══ HOW ════════════════════════════════════════════════════════════════════ -->
   <section class="screen" id="screen-how">
     <h2>How it works</h2>
-    <p class="sub" style="text-align:left;line-height:1.75">
-      <b>1. Pick a fight.</b> Tap one of your holdings, then a neighboring enemy one. You need a
-      garrison of 2 or more to attack.<br><br>
-      <b>2. Both sides roll two twenty-sided dice.</b> One decides your <i>material</i>, the
-      other your <i>position</i>. Nothing is compared — the dice are spent.<br><br>
-      <b>3. Material buys an army.</b> Every point buys chess material at its real value: queen 9,
-      rook 5, bishop or knight 3, pawn 1. Kings are free — they always turn up. The defender gets
-      four points of home ground on top.<br><br>
-      <b>4. Position places it.</b> A high roll advances the attacker's pawns; a high roll digs the
-      defender's into a chain their neighbors defend. On defense, <b>16 or better</b> tucks your
+    <p class="sub" style="text-align:left;line-height:1.7">
+      <b>1. A round has five parts.</b> You get a <i>levy</i> (place your new banners), a
+      <i>march</i> (attack as often as you like) and a <i>night march</i> (one free move of
+      banners between two holdings you own). Then they take theirs, and you watch every step
+      of it.<br><br>
+      <b>2. Pick a fight.</b> Tap one of your holdings, then a bordering enemy one. You need
+      two banners or more to attack.<br><br>
+      <b>3. Banners are dice.</b> One die per two banners, up to four &mdash; and you
+      <b>keep the best</b>. A big stack is not a slightly better roll, it is a much smaller
+      chance of a bad one. Under three banners you cannot field a queen at all.<br><br>
+      <b>4. Both sides roll for material and for position.</b> Nothing is compared &mdash; the
+      dice are spent. Material buys chess material at its real value: queen 9, rook 5, bishop
+      or knight 3, pawn 1. Kings are free.<br><br>
+      <b>5. Position places it.</b> A high roll advances the attacker's pawns; a high roll digs
+      the defender's into a chain their neighbors defend. On defense, <b>16 or better</b> tucks your
       king into the corner &mdash; and <b>18 or better</b> brings his rook around and three pawns
       with him.<br><br>
-      <b>5. Twenty seconds against fifteen.</b> Two clocks, and only the side to move is burning
-      one. Checkmate takes the ground outright. If the <i>attacker's</i> clock runs out the attack
-      failed; if the <i>defender's</i> does, the ground changes hands. A draw goes to the defender —
-      ground is easier held than taken.<br><br>
-      <b>6. The winner takes the holding.</b> Lose them all and the campaign is over.
+      <b>6. Twenty seconds each, with a second back a move.</b> Only the side to move
+      burns clock, and every move gives back up to one second of what that move cost &mdash; so
+      moving quickly costs you nothing. <b>Run your own clock out and you lose:</b> the attack
+      failed, or the defense was overrun. Checkmate takes the ground outright. A draw goes to
+      the defender.<br><br>
+      <b>7. Hold together.</b> A holding with two or more neighbors of your own is
+      <i>chained</i>, and it rolls an extra die when it defends.<br><br>
+      <b>8. The winner takes the holding.</b> Lose them all and the campaign is over.
     </p>
     <button class="btn ghost" id="back">Back</button>
   </section>
 
   <!-- ══ MAP ════════════════════════════════════════════════════════════════════ -->
   <section class="screen" id="screen-map">
-    <h2 id="map-title">The March</h2>
+    <div class="phasebar" id="phasebar">
+      <span data-p="levy">Levy</span>
+      <span data-p="march">March</span>
+      <span data-p="night">Night</span>
+      <span data-p="theirs" class="them">Theirs</span>
+    </div>
     <div class="tally">
       <span>Yours <b class="m" id="t-mine">0</b></span>
       <span>Theirs <b class="t" id="t-theirs">0</b></span>
@@ -260,25 +404,37 @@
       <svg id="links" viewBox="0 0 100 112" preserveAspectRatio="none"></svg>
     </div>
     <p class="status" id="map-say">Choose a holding to attack from.</p>
-    <button class="btn ghost" id="endturn">Hold the line &middot; end round</button>
+    <button class="btn" id="endturn">End the march</button>
   </section>
 
   <!-- ══ ROLL ═══════════════════════════════════════════════════════════════════ -->
   <section class="screen" id="screen-roll">
     <h2 id="roll-title">The Roll</h2>
-    <div class="side att" id="side-att">
-      <h3 id="att-label">Attacker</h3>
-      <div class="dice" id="att-dice"></div>
-      <p class="budget" id="att-budget"></p>
-      <div class="army" id="att-army"></div>
+    <div class="rollrow">
+      <div><p class="rlab att" id="att-label">You attack</p></div>
+      <div><p class="rlab def" id="def-label">They defend</p></div>
     </div>
-    <div class="side def" id="side-def">
-      <h3 id="def-label">Defender</h3>
-      <div class="dice" id="def-dice"></div>
-      <p class="budget" id="def-budget"></p>
-      <div class="army" id="def-army"></div>
+    <p class="rowhead">Material</p>
+    <div class="rollrow">
+      <div><div class="dice" id="att-mat"></div></div>
+      <div><div class="dice" id="def-mat"></div></div>
     </div>
-    <button class="btn" id="tobattle">To the board &rarr;</button>
+    <p class="vline" id="v-mat">&nbsp;</p>
+    <p class="rowhead">Position</p>
+    <div class="rollrow">
+      <div><div class="dice" id="att-pos"></div></div>
+      <div><div class="dice" id="def-pos"></div></div>
+    </div>
+    <p class="vline" id="v-pos">&nbsp;</p>
+    <div class="preview" id="preview" hidden>
+      <p class="previewhead">The position</p>
+      <div class="board" id="pboard">
+        <div class="sqs" id="psqs"></div>
+        <div class="men" id="pmen"></div>
+      </div>
+      <p class="ptally" id="ptally"></p>
+    </div>
+    <button class="btn" id="tobattle" disabled>To the board &rarr;</button>
   </section>
 
   <!-- ══ BATTLE ═════════════════════════════════════════════════════════════════ -->
@@ -298,6 +454,7 @@
       <div class="men" id="men"></div>
     </div>
     <div class="vs-aura" id="mc-aura-me" aria-hidden="true" style="--dir:-1"><i></i></div>
+    <p class="ready" id="ready">&nbsp;</p>
     <p class="say" id="say">&nbsp;</p>
     <button class="btn ghost" id="resign">Withdraw</button>
   </section>
@@ -313,12 +470,32 @@
 
 <script>
 /* ══════════════════════════════════════════════════════════════════════════════════
-   MARCHLAND — Risk's map, chess's battles.
+   CHESSWILD: CAMPAIGN — Risk's map, chess's battles.
+
+   ⚑⚑ NAMED 2026-08-24. It was MARCHLAND for three weeks and that name is TAKEN — twice,
+   and one of them is this genre: Marchland is a card in Dominion, and an itch.io strategy
+   game about claiming and connecting regions. He picked ChessWild: Campaign off a list of
+   twenty (private/docs/marchland-rewrite.html).
+   ⚠ THE IDENTIFIERS DELIBERATELY DO NOT MOVE — this file, the `marchland` slug in
+   pjcc-games-data.js and /games/marchland/ all keep the old spelling, the same way P&JCC
+   changed in DISPLAY TEXT ONLY. Renaming the route is a separate, mechanical pass with the
+   link gate re-run; folding it into a gameplay rewrite is how a dead link ships.
+   [[site-two-brand-split]]
 
    THE ONE IDEA: in Risk the dice ARE the battle, which is why a Risk fight is over in a
    second and you never feel it. Here the dice are only the MUSTER — they decide what
    army each side can field — and then you have to actually win with it. A lucky roll
    hands you a queen; it does not hand you the game.
+
+   ⚑⚑ THE RISK QUESTION, ANSWERED ONCE SO NOBODY HAS TO ASK AGAIN (2026-08-24). Game rules
+   and mechanics are not copyrightable — Baker v. Selden, 17 U.S.C. §102(b), and DaVinci v.
+   Ziko where the rules-holder lost. A levy/attack/fortify round, a garrison count and a
+   region bonus are all methods of play. What IS protected is the NAME (a live Hasbro
+   trademark), Risk's specific 42-territory map of Earth with its continents and their
+   values, its art and trade dress, and its rulebook TEXT. This map is a fictional world,
+   the phases are renamed, and the one thing that is Risk's actual signature — COMPARING
+   the dice, highest against highest — is the one thing this game deliberately does not do.
+   Full write-up: private/docs/marchland-rewrite.html.
 
    WHAT IS REAL AND WHAT IS INVENTED:
      REAL   — every move, capture, check, mate and stalemate (window.PJCCChess, the
@@ -334,27 +511,42 @@ var C = window.PJCCChess;
 var $ = function (id) { return document.getElementById(id); };
 
 /* ── THE MAP ────────────────────────────────────────────────────────────────────
-   ⚑ THE HOLDINGS ARE THE TOWN'S OWN PLACES NOW (2026-08-08). They shipped as
-   border-country PLACEHOLDERS — Kingsbarrow, The Pale, Rook's Ford — chosen precisely
-   because locations are Nate's to name, and he has now named them: "Checker Town (tough
-   position on the board), Chess City (good position for people to start), Shogi Island
-   (connects to two locations like Japan in classical risk), Sea-Board (connects to two).
-   Then make like 5 more locations… go ahead and pick some."
+   ⚑ THE HOLDINGS ARE THE TOWN'S OWN PLACES (2026-08-08). They shipped as border-country
+   PLACEHOLDERS — Kingsbarrow, The Pale, Rook's Ford — chosen precisely because locations
+   are Nate's to name, and he has now named them: "Checker Town (tough position on the
+   board), Chess City (good position for people to start), Shogi Island (connects to two
+   locations like Japan in classical risk), Sea-Board (connects to two). Then make like 5
+   more locations… go ahead and pick some."
 
    The five I picked are all places this site already has, so the map reads as the world's
    map rather than as a fantasy borrowed for one game: the Sand Mines (the game), the Fork
    (the puzzle room), Gauntlet Keep (the ladder's tower), Long Park (where the tables are)
    and Endgame Flats.
 
+   ⚑⚑ A TENTH HOLDING, AND AN EVEN START (2026-08-24, his: "let's add another territory so
+   they are even"). He was right and it was worse than he thought: the opening position was
+   FIVE holdings and FOURTEEN banners for them against FOUR and TEN for the player — a 40%
+   troop deficit before the first die. It is 5 holdings and 15 banners each now, mirrored:
+   one 4-stack (your hub), one 2-stack (your corner), three 3s. Provably fair, which it
+   had never been.
+
+   ⚠ PIRC PASS IS A PLACEHOLDER AND THE NAME IS HIS. I like the reading — the Pirc is the
+   opening where you concede the center and counterattack, which is the right flavor for a
+   contested pass, and it points at a game this site already ships — but locations are his
+   to name and this one has not been through him. Alternates offered: The Gates, The Skyway,
+   Gambit Bluffs, The Long Road. One line.
+
    ⚠ NONE OF THEM ARE SLOW-ROLLED. /locations/the-sea/, /locations/mystery-city/ and
    /locations/chess-city-elementary/ are hidden in _config.yml until he reveals them, so
    they stay off this map — a key-gated prototype is not the place lore gets to leak.
    "Sea-Board" is his own coinage and names no page. [[slow-roll-cast]]
 
-   ⚠ TWO HOLDINGS HAVE EXACTLY TWO BORDERS, BY REQUEST, AND ONE EDGE WAS CUT TO GET THERE.
-   Shogi Island was already a degree-2 corner (5 and 8) — it is the Japan of this map. To
-   give Sea-Board the same shape the old [3,4] edge is gone, leaving it on 1 and 6 only.
-   The map is still fully connected; nothing is stranded.
+   ⚠ TWO HOLDINGS HAVE EXACTLY TWO BORDERS, BY REQUEST, AND THAT SURVIVED THE TENTH.
+   Shogi Island is untouched (5 and 8) — the Japan of this map. Sea-Board is still degree 2,
+   but its second border MOVED from Long Park to Pirc Pass, which makes it more of a dead
+   end rather than less: it is now reachable only from The Fork and from one holding the
+   player starts holding. Checker Town keeps its five fronts and Chess City keeps its five.
+   The map is fully connected; nothing is stranded.
 
    Names sit under a 58px node at 9px, so anything past ~13 characters wraps to a third
    line and starts crowding its neighbors. Every name here is 8-13. Positions are percent
@@ -372,25 +564,80 @@ var LAND = [
   { id:6, nm:'Long Park',     x:69, y:67 },
   /* two borders only — the Japan of this map */
   { id:7, nm:'Shogi Island',  x:15, y:89 },
-  { id:8, nm:'Endgame Flats', x:56, y:92 }
+  { id:8, nm:'Endgame Flats', x:50, y:90 },
+  /* the tenth, 2026-08-24 — three borders, and it puts the player one step from Sea-Board */
+  { id:9, nm:'Pirc Pass',     x:86, y:82 }
 ];
-var EDGES = [[0,1],[0,2],[0,3],[1,3],[1,4],[2,3],[2,5],[3,5],[3,6],[4,6],[5,6],[5,7],[5,8],[6,8],[7,8]];
-function adj(a, b) {
-  for (var i = 0; i < EDGES.length; i++) {
-    if ((EDGES[i][0] === a && EDGES[i][1] === b) || (EDGES[i][1] === a && EDGES[i][0] === b)) return true;
-  }
-  return false;
+var EDGES = [[0,1],[0,2],[0,3],[1,3],[1,4],[2,3],[2,5],[3,5],[3,6],[5,6],[5,7],[5,8],[6,8],[7,8],
+             [4,9],[6,9],[8,9]];
+/* the opening position: five holdings and fifteen banners a side, mirrored */
+var START_OWN = ['t','t','m','t','t','m','t','m','m','m'];
+var START_BAN = [ 3 , 3 , 3 , 4 , 2 , 4 , 3 , 2 , 3 , 3 ];
+
+var ADJ = (function () {
+  var a = [], i;
+  for (i = 0; i < LAND.length; i++) a.push([]);
+  EDGES.forEach(function (e) { a[e[0]].push(e[1]); a[e[1]].push(e[0]); });
+  return a;
+})();
+function adj(a, b) { return ADJ[a].indexOf(b) >= 0; }
+function nbrs(id) { return ADJ[id]; }
+
+/* ── THE CHAIN ──────────────────────────────────────────────────────────────────
+   ⚑ 2026-08-24, his: "There should be bonus for your territories being near each other,
+   or owning a whole region, but if that's too close to Risk let's figure something else
+   out." A continent bonus is legal (see the copyright note at the top) but it is Risk's
+   SHAPE — all-or-nothing, lost to one raid, and it only rewards the capture that completes
+   a set. This rewards the same instinct continuously instead.
+
+   ⭐ AND IT IS THE GAME'S OWN IDEA, ONE SCALE UP. The position die already digs the
+   defender's pawns into a chain where each one is guarded by the pawn beside it. This is
+   that rule applied to the map: things that protect each other are stronger. One idea on
+   two scales is a design; a number on a box is not. */
+var CHAIN_MIN = 2;
+function chained(own, id) {
+  var side = own[id], n = 0, ns = nbrs(id);
+  for (var i = 0; i < ns.length; i++) if (own[ns[i]] === side) n++;
+  return n >= CHAIN_MIN;
 }
+
+/* ── DIFFICULTY ─────────────────────────────────────────────────────────────────
+   ⚑ 2026-08-24, his: "There should be easy/medium/hard levels for the AI."
+
+   ⚠⚠ THERE ARE TWO AIs IN THIS GAME AND ONLY ONE OF THEM WAS EVER BUILT. The BATTLE ai is
+   the alpha-beta below. The CAMPAIGN ai — which holding to hit, where the banners go,
+   when to decline — was ONE LINE (strongest stack against the weakest neighbor, one
+   attack a round, forever) and it is a bigger reason the game felt shallow than the chess
+   ever was. Both move with the dial now.
+
+   ⭐ A WEAK ENGINE MUST NOT PLAY RANDOM MOVES. Random reads as broken, not as beatable.
+   `slip` picks from the moves within `slipCp` centipawns of the best instead — weak play
+   that still looks like play, the same way the rated rooms do it.
+
+   ⭐ THE DIAL IS PARTLY SELF-BALANCING, WHICH IS FREE AND WORTH KNOWING: thinking time
+   comes out of the machine's own clock, so Hard — which thinks longest — is also the
+   setting most likely to run itself out of time. */
+var LEVELS = {
+  easy:   { nm:'Easy',   depth:2, ms:120, slip:0.25, slipCp:260, pace:1100,
+            note:'Makes mistakes you can see and punish.',
+            minEdge:2, maxAtk:1, smart:false, chainAware:false },
+  medium: { nm:'Medium', depth:3, ms:180, slip:0.08, slipCp:140, pace:1500,
+            note:'A fair fight that punishes carelessness.',
+            minEdge:1, maxAtk:2, smart:true,  chainAware:false },
+  hard:   { nm:'Hard',   depth:4, ms:300, slip:0,    slipCp:0,   pace:1800,
+            note:'Plays the map, not just the board.',
+            minEdge:1, maxAtk:3, smart:true,  chainAware:true }
+};
 
 var G = null;          // campaign state
 var B = null;          // battle state
 
-function newCampaign() {
-  G = { own: [], gar: [], round: 1, sel: -1, busy: false };
-  //           0  1  2  3  4  5  6  7  8
-  var owner = ['t','t','m','t','t','m','t','m','m'];
-  var gars  = [ 2 , 3 , 3 , 4 , 3 , 3 , 2 , 2 , 2 ];
-  G.own = owner.slice(); G.gar = gars.slice();
+function newCampaign(diff) {
+  G = { own: START_OWN.slice(), ban: START_BAN.slice(), round: 1, sel: -1, busy: false,
+        diff: diff || 'medium', phase: 'levy', toPlace: 0,
+        nightFrom: -1, nightTo: -1, nightMoved: 0, nightDone: false,
+        flash: -1, hot: null, q: [] };
+  G.toPlace = levyFor('m');
 }
 
 /* ── DICE ──────────────────────────────────────────────────────────────────────────
@@ -413,29 +660,90 @@ function newCampaign() {
    plays engine-vs-engine battles and prints the rate. Move one number here and re-run it. */
 function d20() { return 1 + Math.floor(Math.random() * 20); }
 
+/* ── BANNERS ARE DICE ──────────────────────────────────────────────────────────────
+   ⚑⚑ 2026-08-24, and this is the answer to the sharpest thing he has said about this
+   game: "Currently, the amount of troops on a territory don't seem to matter much. How
+   can we fix that?"
+
+   ⚠ HE WAS RIGHT AND THE RATIO IS FIVE TO ONE. The material budget was
+   `round(d20 x 0.75) + floor(banners/2) + edge`. The DIE swings fifteen points. The whole
+   GARRISON swings three. A ten-stack and a three-stack fielded nearly the same army, so
+   stacking was almost never worth doing.
+
+   The fix is not a bigger multiplier — it is giving banners a job the die cannot do.
+   ONE DIE PER TWO BANNERS, KEEP THE BEST. The attacker rounds down (somebody stays home);
+   the defender rounds up (nobody does).
+
+   ⭐ AND THE REASON THIS IS THE RIGHT LEVER RATHER THAN A LOUDER ONE: on the MATERIAL die
+   the effect is gentle — expected best-of-k on a d20 runs 10.5 / 13.8 / 15.5 / 16.5 for
+   one through four dice, so a big stack buys about a bishop. On the POSITION die it is
+   enormous, because that die has THRESHOLDS: the chance of castling at all goes 25% → 44%
+   → 58% → 68%, and the full castle 15% → 28% → 39% → 48%. A thin holding does not dig in.
+   That is a difference you can feel without being told about it.
+
+   ⚠ AND IT IS ALSO THE DRAMA HE ASKED FOR, WHICH IS WHY IT IS ONE CHANGE AND NOT TWO:
+   "one dice at a time … they roll, then lock in with a colored outline". You cannot lock
+   one in unless there is more than one. */
+var DICE_CAP = 4;
+function poolFor(banners, isDefender) {
+  var n = isDefender ? Math.ceil(banners / 2) : Math.floor(banners / 2);
+  return Math.max(1, Math.min(DICE_CAP, n));
+}
+function rollPool(k) {
+  var out = [];
+  for (var i = 0; i < k; i++) out.push(d20());
+  return out;
+}
+function bestOf(arr) {
+  var m = arr[0];
+  for (var i = 1; i < arr.length; i++) if (arr[i] > m) m = arr[i];
+  return m;
+}
+/* which index the ring goes on — the FIRST maximum, so two 20s do not both light up */
+function keptIndex(arr) {
+  var b = bestOf(arr);
+  for (var i = 0; i < arr.length; i++) if (arr[i] === b) return i;
+  return 0;
+}
+function dieBand(v) { return v <= 5 ? 1 : v <= 10 ? 2 : v <= 15 ? 3 : 4; }
+
 /* ── THE MATERIAL DIE ──────────────────────────────────────────────────────────────
-   d20 → points, plus half the garrison, plus a flat edge for the defender because
-   ground is easier held than taken. 0.75 puts a d20 in the 1..15 band, which on real
-   chess values is "a pawn" at the bottom and "a queen and change" at the top. */
+   d20 → points, plus half the garrison, plus a flat edge. 0.75 puts a d20 in the 1..15
+   band, which on real chess values is "a pawn" at the bottom and "a queen and change" at
+   the top. The banner term stays as the smooth part of the curve — the dice pool above is
+   the part with teeth. */
 /* ⚑ THE EDGE MOVED FROM THE DEFENDER TO THE ATTACKER (2026-08-08, after measuring), and
-   the reason is the win condition above: the attacker can only win by CHECKMATE, inside
-   twenty seconds, against a defender who wins simply by still being there. That is a very
-   hard thing to do, so the army that has to do it needs to be the bigger one. The defender
-   was carrying a 4-point home-ground bonus AND the clock AND the tie — three edges — which
-   measured out at a 4% attacker success rate. Ground is still easier held than taken; it is
-   the clock and the draw that say so now, not the muster as well. */
-/* ⚑ 12 IS MEASURED, NOT PICKED. `npm run sim:marchland` swept 4→16 over 60 engine-vs-engine
-   battles a band and the curve is clean and monotonic:
-       edge  4 → 75.0% of attacks fail      edge 12 → 48.3%   ← his band, dead center
-       edge  6 → 78.3%                      edge 14 → 48.3%
-       edge  8 → 61.7%                      edge 16 → 40.0%
-   12 and 14 measure the same; 12 is the smaller edge for the same result, which is the
-   standing way to break a tie on any economy number here. His target was "40% to 60%". */
+   the reason was the win condition: the attacker could only win by CHECKMATE, inside
+   twenty seconds, against a defender who won simply by still being there.
+   ⚠⚠ THAT WIN CONDITION CHANGED ON 2026-08-24 (see THE CLOCKS), so this number was
+   RE-MEASURED FROM SCRATCH rather than carried over. Do not reason about it from the history
+   above — that curve measured a different game.
+
+   ⭐ IT LANDED ON 12 AGAIN, AND THAT IS A COINCIDENCE, NOT A CARRY-OVER. Measured at N=150,
+   engine vs engine, after the flag rule flipped and the clocks went to 20/20:
+
+       edge  8 → 56.7% of attacks fail
+       edge 12 → 50.0%      ← dead center of his 40-60% band
+       edge 16 → 44.7%
+     SHIPPED 12 → 46.0% (±8), 81 taken by checkmate, 67 held out, 2 drawn
+
+   ⭐⭐ AND ZERO OF THE 150 ENDED ON THE DEFENDER'S FLAG. That is the number that says the
+   new rule did not break the old lesson: the attacker still wins BY CHECKMATE OR NOT AT ALL
+   in practice, because the attacker moves first and so runs out first at equal pace — while
+   a defender who simply sits there still flags and still loses. Both halves, one number.
+
+   ⚠⚠ THE SAME BUILD MEASURED 35.0% AT N=40 AND 46.0% AT N=150. The band check is noisy
+   below N=150 and has now reported a false failure three separate times. RAISE N BEFORE
+   BELIEVING ONE. */
 var MAT_SCALE = 0.75;
 var ATT_EDGE = 12;
 var DEF_EDGE = 0;
 function matBudget(die, gar, isDefender) {
-  return Math.round(die * MAT_SCALE) + Math.floor(gar / 2) + (isDefender ? DEF_EDGE : ATT_EDGE);
+  var v = Math.round(die * MAT_SCALE) + Math.floor(gar / 2) + (isDefender ? DEF_EDGE : ATT_EDGE);
+  /* ⚠ FLOOR AT ONE. The sweep drives ATT_EDGE negative to find the band, and a negative
+     budget musters an empty army — a king alone on an empty board, which is a stalemate
+     machine rather than a battle. One point is one pawn, which is a real if hopeless army. */
+  return Math.max(1, v);
 }
 
 /* ── THE POSITION DIE ──────────────────────────────────────────────────────────────
@@ -490,21 +798,34 @@ function posCastleFull(die) { return die >= POS_TOP; }         // …with his ro
 /* ── THE MUSTER ────────────────────────────────────────────────────────────────
    A point budget spent on real chess material at real chess value. The king is free
    and always present — you cannot roll badly enough to lose your king before a shot
-   is fired. Caps stop a big roll turning into four queens, which stops being chess. */
+   is fired. Caps stop a big roll turning into four queens, which stops being chess.
+
+   ⚑ THE CAPS ARE A FUNCTION OF THE BANNERS NOW (2026-08-24) — the second of the three
+   ways banners were given teeth. UNDER THREE BANNERS YOU CANNOT FIELD A QUEEN, whatever
+   you roll, and the rook cap climbs with the stack too. A thin holding is thin. It is a
+   hard, legible rule rather than a curve, which is what makes stacking a decision instead
+   of an optimisation. */
 var VAL = { q:9, r:5, b:3, n:3, p:1 };
-var CAP = { q:1, r:2, b:2, n:2, p:8 };
-function muster(budget) {
+var QUEEN_BANNERS = 3;
+function capsFor(banners) {
+  return { q: banners >= QUEEN_BANNERS ? 1 : 0,
+           r: Math.min(2, Math.max(1, banners - 1)),
+           b: 2, n: 2, p: 8 };
+}
+var CAP = capsFor(99);          /* the old unconditional caps, kept as the default */
+function muster(budget, caps) {
+  var cap = caps || CAP;
   var out = [], left = budget, order = ['q', 'r', 'b', 'n'];
   function have(k) { var c = 0; for (var i = 0; i < out.length; i++) if (out[i] === k) c++; return c; }
   while (left > 0) {
-    var afford = order.filter(function (k) { return VAL[k] <= left && have(k) < CAP[k]; });
+    var afford = order.filter(function (k) { return VAL[k] <= left && have(k) < cap[k]; });
     if (!afford.length) break;
     // mostly reach for the biggest thing affordable, but not always — two identical
     // budgets should not always produce the identical army.
     var pick = (Math.random() < 0.6) ? afford[0] : afford[Math.floor(Math.random() * afford.length)];
     out.push(pick); left -= VAL[pick];
   }
-  while (left > 0 && have('p') < CAP.p) { out.push('p'); left -= 1; }
+  while (left > 0 && have('p') < cap.p) { out.push('p'); left -= 1; }
   return out;
 }
 
@@ -697,23 +1018,38 @@ function negamax(S, depth, alpha, beta, deadline) {
   }
   return best;
 }
-function bestMove(S, budgetMs) {
+var MATE_SCORE = 90000;
+/* ⚠ RETURNS AN OBJECT, NOT A MOVE (changed 2026-08-24). The caller needs the SCORE as well
+   as the move for two new things: the mercy pause (does the machine see mate?) and `slip`
+   (which moves are nearly as good as the best one?). `tests/sim-marchland.js` reads `.mv`. */
+function bestMove(S, budgetMs, maxDepth, slip, slipCp) {
   var deadline = Date.now() + (budgetMs || 700);
   var ms = ordered(S);
   if (!ms.length) return null;
-  var chosen = ms[0];
+  var chosen = { mv: ms[0], val: 0 }, lastScored = null;
   // iterative deepening: a crowded position degrades to a shallower answer rather than
   // freezing the page. Only a COMPLETED depth is allowed to replace the choice.
-  for (var d = 1; d <= 3; d++) {
-    var localBest = null, localVal = -1e9, aborted = false;
+  for (var d = 1; d <= (maxDepth || 3); d++) {
+    var scored = [], aborted = false;
     for (var i = 0; i < ms.length; i++) {
       var v = negamax(C.makeMove(S, ms[i]), d - 1, -1e9, 1e9, deadline);
       if (v === null) { aborted = true; break; }
-      v = -v;
-      if (v > localVal) { localVal = v; localBest = ms[i]; }
+      scored.push({ mv: ms[i], val: -v });
     }
     if (aborted) break;
-    if (localBest) chosen = localBest;
+    if (scored.length) lastScored = scored;
+  }
+  if (!lastScored) return chosen;
+  lastScored.sort(function (a, b) { return b.val - a.val; });
+  chosen = lastScored[0];
+  /* ── THE SLIP ─────────────────────────────────────────────────────────────────
+     ⭐ NOT A RANDOM MOVE. A random move reads as a broken opponent; a move that is
+     merely the third-best one reads as a human who missed something. The band is in
+     centipawns off the best, so the mistake is always a PLAUSIBLE one — and a position
+     with only one good move stays a position with only one good move even on Easy. */
+  if (slip && Math.random() < slip) {
+    var band = lastScored.filter(function (x) { return chosen.val - x.val <= slipCp; });
+    if (band.length > 1) chosen = band[Math.floor(Math.random() * band.length)];
   }
   return chosen;
 }
@@ -734,6 +1070,57 @@ function show(id) {
   ['screen-home','screen-how','screen-map','screen-roll','screen-battle','screen-result']
     .forEach(function (s) { $(s).classList.toggle('on', s === id); });
 }
+function say(t) { $('map-say').innerHTML = t; }
+
+/* ── THE ROUND ─────────────────────────────────────────────────────────────────────
+   ⚑⚑ FIVE PHASES (2026-08-24), his: "You should be able to add reinforcements yourself…
+   And there can be a fortify phase. User should see the map before the opponent attacks,
+   see their reinforcement phase, etc."
+
+   The old round was: one attack, then their one attack, then reinforcements scattered at
+   RANDOM across both sides while the screen sat still. Three of those five words were the
+   problem — random, both, still. Now:
+
+     LEVY    you place every banner yourself, one tap each
+     MARCH   attack as often as you like
+     NIGHT   one free move of banners between two holdings you own that touch
+     THEIRS  their levy, their attacks and their night march, narrated step by step on
+             the map with a beat between each — and every attack ANNOUNCED before the
+             roll screen opens, so you see it coming
+
+   ⚠ THE PHASE NAMES ARE DELIBERATELY NOT "reinforce / attack / fortify". That vocabulary
+   is not infringing — rules are not copyrightable — but borrowed vocabulary is most of
+   what makes a game read as a clone even when it is not one. These are his world's words.
+   Still his to veto. */
+function levyFor(side) {
+  var n = 0;
+  for (var i = 0; i < LAND.length; i++) if (G.own[i] === side) n++;
+  return Math.max(1, Math.floor(n / 3));
+}
+function idsOf(side) {
+  var out = [];
+  for (var i = 0; i < LAND.length; i++) if (G.own[i] === side) out.push(i);
+  return out;
+}
+
+function setPhase(p) {
+  G.phase = p;
+  Array.prototype.forEach.call($('phasebar').children, function (el) {
+    el.classList.toggle('on', el.getAttribute('data-p') === p);
+  });
+  var btn = $('endturn');
+  if (p === 'levy') {
+    btn.textContent = 'Place them all first';
+    btn.disabled = G.toPlace > 0;
+    if (!G.toPlace) btn.textContent = 'Begin the march →';
+  } else if (p === 'march') {
+    btn.textContent = 'End the march →'; btn.disabled = false;
+  } else if (p === 'night') {
+    btn.textContent = 'End your turn →'; btn.disabled = false;
+  } else {
+    btn.textContent = 'Their turn…'; btn.disabled = true;
+  }
+}
 
 /* ── MAP RENDER ────────────────────────────────────────────────────────────────── */
 function drawMap() {
@@ -741,9 +1128,17 @@ function drawMap() {
   Array.prototype.slice.call(box.querySelectorAll('.node')).forEach(function (n) { n.remove(); });
   var lines = '';
   EDGES.forEach(function (e) {
-    var a = LAND[e[0]], b = LAND[e[1]];
-    var hot = (G.sel >= 0 && ((e[0] === G.sel && G.own[e[1]] === 't') || (e[1] === G.sel && G.own[e[0]] === 't')));
-    lines += '<line class="link' + (hot ? ' hot' : '') + '" x1="' + a.x + '" y1="' + (a.y * 1.12) +
+    var a = LAND[e[0]], b = LAND[e[1]], cls = 'link';
+    if (G.own[e[0]] === G.own[e[1]] && chained(G.own, e[0]) && chained(G.own, e[1])) {
+      cls += G.own[e[0]] === 'm' ? ' chain-m' : ' chain-t';
+    }
+    if (G.sel >= 0 && ((e[0] === G.sel && G.own[e[1]] === 't') || (e[1] === G.sel && G.own[e[0]] === 't'))) {
+      cls += ' hot';
+    }
+    if (G.hot && ((e[0] === G.hot.from && e[1] === G.hot.to) || (e[1] === G.hot.from && e[0] === G.hot.to))) {
+      cls += ' hot';
+    }
+    lines += '<line class="' + cls + '" x1="' + a.x + '" y1="' + (a.y * 1.12) +
              '" x2="' + b.x + '" y2="' + (b.y * 1.12) + '"/>';
   });
   svg.innerHTML = lines;
@@ -751,159 +1146,420 @@ function drawMap() {
   LAND.forEach(function (L) {
     var mine = G.own[L.id] === 'm';
     var isSel = G.sel === L.id;
-    var isTgt = G.sel >= 0 && !mine && adj(G.sel, L.id) && G.gar[G.sel] >= 2;
-    var dim = G.sel >= 0 && !isSel && !isTgt;
+    var cls = 'node ' + (mine ? 'mine' : 'theirs');
+    if (isSel) cls += ' sel';
+    if (G.flash === L.id) cls += ' flash';
+    if (G.hot && G.hot.to === L.id) cls += ' doom';
+
+    if (G.phase === 'levy' && mine && G.toPlace > 0) cls += ' can';
+    if (G.phase === 'march') {
+      var isTgt = G.sel >= 0 && !mine && adj(G.sel, L.id) && G.ban[G.sel] >= 2;
+      if (isTgt) cls += ' tgt';
+      if (G.sel >= 0 && !isSel && !isTgt) cls += ' dim';
+      if (G.sel < 0 && mine && G.ban[L.id] >= 2) cls += ' can';
+    }
+    if (G.phase === 'night' && !G.nightDone) {
+      if (G.nightFrom < 0) { if (mine && G.ban[L.id] >= 2) cls += ' can'; }
+      else if (L.id === G.nightFrom) cls += ' sel';
+      else if (mine && adj(G.nightFrom, L.id) && (G.nightTo < 0 || G.nightTo === L.id)) cls += ' can';
+      else cls += ' dim';
+    }
+
     var el = document.createElement('div');
-    el.className = 'node ' + (mine ? 'mine' : 'theirs') + (isSel ? ' sel' : '') + (isTgt ? ' tgt' : '') + (dim ? ' dim' : '');
-    el.style.left = L.x + '%'; el.style.top = (L.y * 1.12 / 1.12) + '%';
-    el.innerHTML = '<div class="disc">' + G.gar[L.id] + '</div><span class="nm">' + L.nm + '</span>';
+    el.className = cls;
+    el.style.left = L.x + '%'; el.style.top = L.y + '%';
+    el.innerHTML = '<div class="disc">' + G.ban[L.id] + '</div><span class="nm">' + L.nm + '</span>';
     el.addEventListener('click', function () { tapLand(L.id); });
     box.appendChild(el);
   });
 
   var m = 0, t = 0;
-  for (var i = 0; i < 9; i++) { if (G.own[i] === 'm') m++; else t++; }
+  for (var i = 0; i < LAND.length; i++) { if (G.own[i] === 'm') m++; else t++; }
   $('t-mine').textContent = m; $('t-theirs').textContent = t; $('t-round').textContent = G.round;
 }
 
 function tapLand(id) {
   if (G.busy) return;
+
+  /* ── LEVY: one tap, one banner ── */
+  if (G.phase === 'levy') {
+    if (G.own[id] !== 'm') { say('You can only reinforce ground you hold.'); return; }
+    if (G.toPlace <= 0) return;
+    G.ban[id]++; G.toPlace--;
+    G.flash = id;
+    say(G.toPlace ? '<b>' + G.toPlace + '</b> banner' + (G.toPlace > 1 ? 's' : '') + ' left to place.'
+                  : 'All placed. Now choose a holding to attack from.');
+    setPhase('levy'); drawMap();
+    setTimeout(function () { G.flash = -1; drawMap(); }, 420);
+    return;
+  }
+
+  /* ── NIGHT MARCH: pick a source, then tap the destination once per banner ── */
+  if (G.phase === 'night') {
+    if (G.nightDone) { say('The night march is spent for this round.'); return; }
+    if (G.nightFrom < 0) {
+      if (G.own[id] !== 'm') { say('Move banners between your own holdings.'); return; }
+      if (G.ban[id] < 2) { say(LAND[id].nm + ' has one banner — it cannot spare it.'); return; }
+      G.nightFrom = id;
+      say('From ' + LAND[id].nm + ' — tap a neighbor of yours, once per banner.');
+      drawMap(); return;
+    }
+    if (id === G.nightFrom) { G.nightFrom = -1; G.nightTo = -1; G.nightMoved = 0;
+      say('Pick a holding to move banners from.'); drawMap(); return; }
+    if (G.own[id] !== 'm' || !adj(G.nightFrom, id)) {
+      say(LAND[id].nm + ' is not a neighbor you hold.'); return;
+    }
+    if (G.nightTo >= 0 && G.nightTo !== id) {
+      say('One move a night. ' + LAND[G.nightTo].nm + ' is where these are going.'); return;
+    }
+    if (G.ban[G.nightFrom] < 2) { say('One has to stay behind. Done.'); G.nightDone = true; drawMap(); return; }
+    G.nightTo = id; G.ban[G.nightFrom]--; G.ban[id]++; G.nightMoved++;
+    G.flash = id;
+    say('<b>' + G.nightMoved + '</b> moved to ' + LAND[id].nm + '. Tap again for another.');
+    drawMap();
+    setTimeout(function () { G.flash = -1; drawMap(); }, 420);
+    return;
+  }
+
+  /* ── MARCH ── */
+  if (G.phase !== 'march') return;
   if (G.own[id] === 'm') {
-    if (G.gar[id] < 2) { $('map-say').textContent = LAND[id].nm + ' has only one garrison — it cannot attack.'; drawMap(); return; }
+    if (G.ban[id] < 2) { say(LAND[id].nm + ' has only one banner — it cannot attack.'); drawMap(); return; }
     G.sel = (G.sel === id) ? -1 : id;
-    $('map-say').textContent = G.sel < 0 ? 'Choose a holding to attack from.'
-      : 'From ' + LAND[id].nm + ' — now choose a neighbor to take.';
+    say(G.sel < 0 ? 'Choose a holding to attack from.'
+      : 'From ' + LAND[id].nm + ' &mdash; ' + poolFor(G.ban[id], false) + ' dice. Choose a neighbor to take.');
     drawMap(); return;
   }
-  if (G.sel < 0) { $('map-say').textContent = 'Start from one of your own holdings.'; return; }
-  if (!adj(G.sel, id)) { $('map-say').textContent = LAND[id].nm + ' does not border ' + LAND[G.sel].nm + '.'; return; }
+  if (G.sel < 0) { say('Start from one of your own holdings.'); return; }
+  if (!adj(G.sel, id)) { say(LAND[id].nm + ' does not border ' + LAND[G.sel].nm + '.'); return; }
   beginBattle(G.sel, id, true);
 }
 
 /* ── ROLL SCREEN ───────────────────────────────────────────────────────────────── */
 var PEND = null;
+var GLY = { k:'♚', q:'♛', r:'♜', b:'♝', n:'♞', p:'♟' };
+var rollTimers = [];
+function clearRollTimers() { rollTimers.forEach(clearTimeout); rollTimers = []; }
+
 function beginBattle(from, to, playerAttacks) {
   G.busy = true;
-  var aGar = G.gar[from], dGar = G.gar[to];
-  /* TWO DICE EACH: one buys the army, one places it. */
-  var aMat = d20(), aPos = d20(), dMat = d20(), dPos = d20();
-  var aBud = matBudget(aMat, aGar, false);
-  var dBud = matBudget(dMat, dGar, true);
-  var aArmy = muster(aBud), dArmy = muster(dBud);
+  var aBan = G.ban[from], dBan = G.ban[to];
 
-  PEND = { from:from, to:to, playerAttacks:playerAttacks, aGar:aGar, dGar:dGar,
-           aArmy:aArmy, dArmy:dArmy, aPos:aPos, dPos:dPos };
+  /* ── THE POOLS ──
+     ⚠ THE CHAIN IS A DEFENDER'S DIE AND ONLY A DEFENDER'S DIE. It is a bonus for holding
+     together, and holding is what a defender does. Giving it to the attacker would have
+     made a compact position better at everything, which is not a trade-off. */
+  var aMatPool = rollPool(poolFor(aBan, false));
+  var aPosPool = rollPool(poolFor(aBan, false));
+  var dChain = chained(G.own, to);
+  var dDice = Math.min(DICE_CAP + 1, poolFor(dBan, true) + (dChain ? 1 : 0));
+  var dMatPool = rollPool(dDice);
+  var dPosPool = rollPool(dDice);
+
+  var aMat = bestOf(aMatPool), aPos = bestOf(aPosPool);
+  var dMat = bestOf(dMatPool), dPos = bestOf(dPosPool);
+  var aBud = matBudget(aMat, aBan, false);
+  var dBud = matBudget(dMat, dBan, true);
+  var aArmy = muster(aBud, capsFor(aBan)), dArmy = muster(dBud, capsFor(dBan));
+
+  /* ⚑ THE BOARD IS BUILT HERE, NOT AT THE START OF THE BATTLE (2026-08-24). It has to be,
+     because the roll screen now SHOWS it — and a preview that re-rolled on the way to the
+     board would be a lie told in a helpful voice. One board object, previewed then played. */
+  var attWhite = playerAttacks;
+  var board = buildBoard(attWhite ? aArmy : dArmy, attWhite ? dArmy : aArmy);
+  applyAttackerPos(board, attWhite ? 'w' : 'b', aPos);
+  var dInfo = applyDefenderPos(board, attWhite ? 'b' : 'w', dPos);
+
+  PEND = { from:from, to:to, playerAttacks:playerAttacks, aBan:aBan, dBan:dBan,
+           aArmy:aArmy, dArmy:dArmy, aPos:aPos, dPos:dPos, aMat:aMat, dMat:dMat,
+           aBud:aBud, dBud:dBud, board:board, dInfo:dInfo, attWhite:attWhite,
+           aMatPool:aMatPool, aPosPool:aPosPool, dMatPool:dMatPool, dPosPool:dPosPool,
+           dChain:dChain };
 
   $('roll-title').textContent = playerAttacks
     ? 'You march on ' + LAND[to].nm
     : LAND[from].nm + ' marches on ' + LAND[to].nm;
-  $('att-label').textContent = (playerAttacks ? 'You attack' : 'They attack') + ' — ' + LAND[from].nm;
-  $('def-label').textContent = (playerAttacks ? 'They defend' : 'You defend') + ' — ' + LAND[to].nm;
+  $('att-label').textContent = (playerAttacks ? 'You attack' : 'They attack') + ' · ' + LAND[from].nm;
+  $('def-label').textContent = (playerAttacks ? 'They defend' : 'You defend') + ' · ' + LAND[to].nm;
 
-  var attGlyph = playerAttacks ? 'w' : 'b', defGlyph = playerAttacks ? 'b' : 'w';
-  paintDice($('att-dice'), [aMat, aPos]); paintDice($('def-dice'), [dMat, dPos]);
-  /* both dice are read out in words. A die whose effect you cannot see is a die that
-     feels like the game cheating — the whole reason the muster was stated on screen. */
-  var aSteps = posSteps(aPos);
-  $('att-budget').innerHTML =
-    '<b>' + aMat + '</b> material + ' + Math.floor(aGar / 2) + ' garrison = <b>' + aBud + '</b> points<br>' +
-    '<b>' + aPos + '</b> position &middot; ' +
-    (aSteps ? aSteps + ' pawn' + (aSteps > 1 ? 's' : '') + ' advanced' + (posTop(aPos) ? ', one of them twice' : '')
-            : 'no pawns advanced');
-  var dSteps = posSteps(dPos);
-  var dHasRook = dArmy.indexOf('r') >= 0;
-  $('def-budget').innerHTML =
-    '<b>' + dMat + '</b> material + ' + Math.floor(dGar / 2) + ' garrison + ' + DEF_EDGE +
-    ' home ground = <b>' + dBud + '</b> points<br>' +
-    '<b>' + dPos + '</b> position &middot; ' +
-    (posCastles(dPos)
-      ? (posCastleFull(dPos)
-          ? (dHasRook ? 'king castles, rook hooks around, pawns in front'
-                      : 'king castles with a pawn shield &mdash; no rook to bring')
-          : 'king tucks into the corner &mdash; no rook, no shield')
-      : (dSteps ? dSteps + ' pawn' + (dSteps > 1 ? 's' : '') + ' in a defended chain' : 'pawns flat on their rank'));
-  paintArmy($('att-army'), aArmy, attGlyph);
-  paintArmy($('def-army'), dArmy, defGlyph);
+  ['att-mat','att-pos','def-mat','def-pos'].forEach(function (k) { $(k).innerHTML = ''; });
+  $('v-mat').innerHTML = '&nbsp;'; $('v-mat').className = 'vline';
+  $('v-pos').innerHTML = '&nbsp;'; $('v-pos').className = 'vline';
+  $('preview').hidden = true;
+  $('tobattle').disabled = true;
   show('screen-roll');
+  runRoll();
 }
-var GLY = { k:'♚', q:'♛', r:'♜', b:'♝', n:'♞', p:'♟' };
-function paintDice(host, arr) {
-  var LAB = ['material', 'position'];
-  host.innerHTML = arr.map(function (d, i) {
-    return '<span class="die roll" title="' + LAB[i] + '">' + d + '</span>';
+
+/* ── THE ROLL, AS FOUR BEATS ───────────────────────────────────────────────────────
+   ⚑ 2026-08-24, his: "let's make the roll of the dice more dramatic… One dice at a time
+   option — both the attacker's and defender's position dice for example, will roll. And
+   maybe they roll, then lock in with a colored outline — and a brief message is shown."
+
+   Built as MATERIAL first (both chairs), a verdict, then POSITION (both chairs), a verdict.
+   Pairing the two sides inside one beat is what makes it a contest rather than two reports.
+   ⚠ TAP ANYWHERE TO SKIP TO THE END. A three-second flourish is a delight once and a toll
+   on the fortieth battle, and the fortieth battle is the one that matters. */
+function paintDice(host, arr, keptIdx, isDef, revealed) {
+  host.innerHTML = arr.map(function (v, i) {
+    var cls = 'die b' + dieBand(v);
+    if (revealed) {
+      cls += (i === keptIdx) ? (' kept' + (isDef ? ' d' : '')) : ' drop';
+    } else {
+      cls += ' roll';
+    }
+    return '<span class="' + cls + '">' + v + '</span>';
   }).join('');
 }
-function paintArmy(host, arr, side) {
-  var full = ['k'].concat(arr);
-  host.innerHTML = full.map(function (k) {
-    return '<span class="' + side + '">' + GLY[k] + '</span>';
-  }).join('');
+function rollStep(hostId, pool, isDef, done) {
+  var host = $(hostId);
+  paintDice(host, pool, -1, isDef, false);
+  rollTimers.push(setTimeout(function () {
+    paintDice(host, pool, keptIndex(pool), isDef, true);
+    if (done) done();
+  }, 430));
+}
+function finishRoll() {
+  clearRollTimers();
+  var p = PEND;
+  paintDice($('att-mat'), p.aMatPool, keptIndex(p.aMatPool), false, true);
+  paintDice($('def-mat'), p.dMatPool, keptIndex(p.dMatPool), true, true);
+  paintDice($('att-pos'), p.aPosPool, keptIndex(p.aPosPool), false, true);
+  paintDice($('def-pos'), p.dPosPool, keptIndex(p.dPosPool), true, true);
+  matVerdict(); posVerdict();
+  paintPreview();
+  $('preview').hidden = false;
+  $('tobattle').disabled = false;
+}
+function runRoll() {
+  clearRollTimers();
+  var p = PEND;
+  rollStep('att-mat', p.aMatPool, false, function () {
+    rollStep('def-mat', p.dMatPool, true, function () {
+      matVerdict();
+      rollTimers.push(setTimeout(function () {
+        rollStep('att-pos', p.aPosPool, false, function () {
+          rollStep('def-pos', p.dPosPool, true, function () {
+            posVerdict();
+            rollTimers.push(setTimeout(function () {
+              paintPreview();
+              $('preview').hidden = false;
+              $('tobattle').disabled = false;
+            }, 260));
+          });
+        });
+      }, 320));
+    });
+  });
+}
+
+/* ── THE VERDICTS ──────────────────────────────────────────────────────────────────
+   ⚑ "better and bolder and briefer explain whether that's a good roll or a bad roll."
+   One word, then one clause — and the word is always about YOU, never about the abstract
+   attacker, because half the time you are in the other chair. The arithmetic that used to
+   be printed here is one tap away instead of always on. */
+function sideOf(playerAttacks) { return playerAttacks ? 'att' : 'def'; }
+function matVerdict() {
+  var p = PEND, mine, theirs;
+  if (p.playerAttacks) { mine = p.aBud; theirs = p.dBud; } else { mine = p.dBud; theirs = p.aBud; }
+  var d = mine - theirs, word, clause, cls;
+  if (d >= 8)       { word = 'YOU OUTGUN THEM'; clause = 'a rook’s worth of extra material'; cls = 'good'; }
+  else if (d >= 3)  { word = 'THE EDGE IS YOURS'; clause = 'a piece in it, near enough'; cls = 'good'; }
+  else if (d > -3)  { word = 'EVEN MUSTER'; clause = 'this one is decided on the board'; cls = 'flat'; }
+  else if (d > -8)  { word = 'THEY HAVE MORE'; clause = 'a piece behind before a move is made'; cls = 'bad'; }
+  else              { word = 'OUTNUMBERED'; clause = 'brace for something big'; cls = 'bad'; }
+  var maths = '<span class="maths">you <b>' + mine + '</b> pts · them <b>' + theirs + '</b> pts' +
+    ' &mdash; ' + (p.playerAttacks ? p.aMatPool.length : p.dMatPool.length) + ' dice from ' +
+    (p.playerAttacks ? p.aBan : p.dBan) + ' banners' + (!p.playerAttacks && p.dChain ? ', +1 chained' : '') + '</span>';
+  var el = $('v-mat');
+  el.className = 'vline ' + cls;
+  el.innerHTML = '<b>' + word + '</b><i>' + clause + '</i>' + maths + '<span class="tap">numbers</span>';
+}
+function posVerdict() {
+  var p = PEND, word, clause, cls;
+  var dHasRook = p.dArmy.indexOf('r') >= 0;
+  if (p.playerAttacks) {
+    /* your position die is the attacker's; theirs is the castle */
+    var st = posSteps(p.aPos);
+    if (posTop(p.aPos))   { word = 'PAWNS UP ' + st; clause = 'space, and one is nearly through'; cls = 'hot'; }
+    else if (st >= 2)     { word = 'PAWNS UP ' + st; clause = 'you have room to work'; cls = 'good'; }
+    else if (st === 1)    { word = 'ONE PAWN UP'; clause = 'not much, but it is something'; cls = 'flat'; }
+    else                  { word = 'NOTHING GAINED'; clause = 'your pawns are still at home'; cls = 'bad'; }
+    /* ⚠ THEIR CASTLE IS THE BIGGER NEWS AND TAKES THE HEADLINE — but it must not SWALLOW your
+       own roll. A 17 on the attacker's die is three pawns up and one of them a rank further,
+       and a screen that answers a great roll with a sentence about the enemy has thrown the
+       information away. The word is theirs; the clause carries both halves. */
+    var yours = st ? 'your pawns are up ' + st : 'your pawns are still home';
+    if (posCastleFull(p.dPos) && dHasRook) { word = 'THEY CASTLE FULLY'; clause = 'king, rook and three pawns · ' + yours; cls = 'bad'; }
+    else if (posCastles(p.dPos))           { word = 'THEIR KING TUCKS IN'; clause = 'no rook, no shield · ' + yours; cls = 'flat'; }
+  } else {
+    /* you are the defender: the castle is yours, and the attacker's pawns are the threat */
+    if (posCastleFull(p.dPos)) {
+      word = 'FULL CASTLE';
+      clause = dHasRook ? 'king, rook and three pawns' : 'king and a pawn shield — no rook to bring';
+      cls = 'hot';
+    } else if (posCastles(p.dPos)) { word = 'KING IN THE CORNER'; clause = 'no rook, no shield'; cls = 'good'; }
+    else if (posSteps(p.dPos))     { word = 'A CHAIN HOLDS'; clause = posSteps(p.dPos) + ' pawns dug in and guarded'; cls = 'flat'; }
+    else                           { word = 'FLAT LINE'; clause = 'nobody dug in — your king is loose'; cls = 'bad'; }
+  }
+  var maths = '<span class="maths">attacker <b>' + p.aPos + '</b> · defender <b>' + p.dPos + '</b>' +
+    ' &mdash; 16+ tucks the king in, 18+ brings the rook</span>';
+  var el = $('v-pos');
+  el.className = 'vline ' + cls;
+  el.innerHTML = '<b>' + word + '</b><i>' + clause + '</i>' + maths + '<span class="tap">numbers</span>';
+}
+
+/* ── THE PREVIEW BOARD ─────────────────────────────────────────────────────────────
+   The same 8x8 markup the battle uses, at a third the size — pieces scale off the board
+   through `cqw`, so nothing here needs its own numbers. */
+function boardCells(host) {
+  if (host.childNodes.length) return;
+  var h = '';
+  for (var i = 0; i < 64; i++) {
+    var r = (i / 8) | 0, f = i % 8;
+    h += '<i class="sq' + (((r + f) % 2) ? ' d' : '') + '" data-i="' + i + '"></i>';
+  }
+  host.innerHTML = h;
+}
+function paintPreview() {
+  var p = PEND;
+  boardCells($('psqs'));
+  var mh = '';
+  for (var i = 0; i < 64; i++) {
+    var pc = p.board[i]; if (!pc) continue;
+    var w = (pc >= 'A' && pc <= 'Z');
+    mh += '<b class="pc ' + (w ? 'w' : 'b') + '" style="--f:' + (i % 8) + ';--r:' + ((i / 8) | 0) + '">' +
+          GLY[pc.toLowerCase()] + '</b>';
+  }
+  $('pmen').innerHTML = mh;
+  var mw = material(p.board, 'w'), mb = material(p.board, 'b');
+  $('ptally').innerHTML = 'you <b class="m">' + mw + '</b> · them <b class="t">' + mb + '</b>' +
+    ' &nbsp;·&nbsp; ' + (p.playerAttacks ? 'you move first' : 'they move first');
 }
 
 /* ── BATTLE ────────────────────────────────────────────────────────────────────── */
 /* ── THE CLOCKS ────────────────────────────────────────────────────────────────────
-   ⚑ TWO CLOCKS NOW, NOT ONE SHARED TWO-MINUTE ONE (2026-08-08, Nate: "make it 20 seconds
-   for the attacker and 15 seconds for the defender", after "defender must hang on for 15
-   seconds").
+   ⚑ TWO CLOCKS (2026-08-08, Nate: "make it 20 seconds for the attacker and 15 seconds for
+   the defender", after "defender must hang on for 15 seconds"). Only the side to move
+   burns one. That part is unchanged and it is still what makes this a different game: the
+   attacker is buying time to force something, the defender only has to still be standing.
 
-   ⭐ THIS IS THE CHANGE THAT MAKES IT A DIFFERENT GAME. On one shared clock the pressure
-   was symmetric and the winner was whoever was ahead on material when it ran out. Two
-   clocks make the asymmetry the whole point: the attacker is buying time to force
-   something, the defender only has to still be standing. Nobody has to be told which
-   side of that they are on — they can feel it in their own clock.
+   ⚑⚑ WHAT RUNNING OUT MEANS CHANGED ON 2026-08-24, AND IT HAD TO. The old rule was that
+   EITHER flag went to the defender — the attacker won by checkmate or not at all.
 
-   THE RULE, STATED PLAINLY BECAUSE IT DECIDES EVERY UNTIDY BATTLE:
+   ⚠⚠ THAT RULE HANDED THE DEFENDING PLAYER A GUARANTEED WIN FOR DOING NOTHING. If the
+   defender's clock expiring is the defender's victory, then a defender who never touches
+   the board wins every single defense. This was not a theory: a puppeteer probe opened a
+   defense, clicked nothing for 15.1 seconds and the screen said HELD. Every defense in
+   the game was a free win available to anyone who sat still.
+
+   ⭐ AND THERE IS NO CHEAP PATCH, WHICH IS WHY THE RULE MOVED RATHER THAN GETTING A GUARD.
+   Any design where "the defender's clock reaching zero" is the defender's win condition
+   makes idling optimal, because idling is the fastest way to reach zero. The defender has
+   to be PENALISED for spending time or the exploit is structural. So:
+
      · the attacker mates      → the ground changes hands
-     · the ATTACKER's clock    → attack failed, the defender holds
-     · the DEFENDER's clock    → they hung on for the full fifteen, the defender holds
+     · the defender mates      → the attack is broken
+     · the ATTACKER's clock    → the attack ran out of daylight, the defender holds
+     · the DEFENDER's clock    → the defense was overrun, the ground changes hands
      · stalemate / a draw      → the defender holds, as it always did
-   ⚠ SO THE ATTACKER WINS BY CHECKMATE OR NOT AT ALL. Every other ending is the defender
-   still being there when the clock stopped, which is the entire job the rules gave them.
-   The first draft scored the defender's flag as a LOSS and the simulation caught it: 118
-   of 150 attacks "won" that way against only 6 mates.
+
+   Your own flag is your own loss, which is the ordinary rule of chess and needs no
+   explaining. His two numbers, 20 and 15, both survive.
+
+   ⚠⚠ THIS SUPERSEDES "THE ATTACKER WINS BY CHECKMATE OR NOT AT ALL", which was the right
+   rule for the game as it stood and is written up at length in the memory. The old
+   failure it guarded against — the attacker being handed ground for merely outlasting a
+   shorter clock — comes back if the numbers are not re-measured, so THEY WERE: ATT_EDGE
+   was swept from scratch against `npm run sim:marchland` rather than carried over.
+
+   ⚑ ONE SECOND BACK A MOVE (2026-08-24, his: "Can each move give you one second of time?
+   To help balance the scales a bit.")
+
+   ⚠⚠ IT IS A DELAY, NOT AN INCREMENT, AND THE DIFFERENCE IS WHETHER THE GAME ENDS. A plain
+   increment adds a second whatever the move cost. The engine answers in about 180ms — so
+   an engine on an increment gains 0.82s a move forever, its clock never reaches zero, and
+   the battle never finishes. A Bronstein delay gives back the LESSER of what the move cost
+   and one second, so a clock can never grow: it is monotonically non-increasing and the
+   battle always terminates. Implemented by capping at whatever the clock read when the
+   move began, which is exactly that.
+
+   Play a move inside a second and it costs you nothing. Stare for four and you pay three.
 
    ⚠ TENTHS, AND A 100ms TICK. At twenty seconds a whole-second readout is a lie you can
-   see: it can sit on "7" for most of a second while you decide. Same reason the old
-   one-second tick was fine at two minutes and is not fine here. */
-var CLOCK_ATT = 20, CLOCK_DEF = 15;
+   see: it can sit on "7" for most of a second while you decide. */
+/* ⚠⚠ THE DEFENDER'S CLOCK IS 20 NOW, NOT 15, AND THE REASON IS THE RULE ABOVE — NOT A
+   BALANCE TWEAK. His numbers were 20 and 15, and under the OLD rule the short clock was a
+   GIFT: the defender's flag was the defender's WIN, so needing less of it was an advantage.
+   Flipping the flag to a loss inverted what that number MEANS, and 15 silently became a
+   death sentence — measured, not guessed: at ATT_EDGE = -8, where the defender fields two
+   and a half times the attacker's material, the attack still succeeded 65% of the time,
+   because the defender simply ran out of moves first in a game where running out now loses.
+   ⭐ EQUAL CLOCKS, AND THE ASYMMETRY MOVES ENTIRELY INTO THE WIN CONDITION, which is where
+   it belongs: the attacker must CHECKMATE, while the defender also wins on a draw, on
+   stalemate, and on the attacker's flag. And since the attacker moves first, the attacker's
+   clock reaches zero first at equal pace — so "the attacker wins by checkmate or not at
+   all" is restored in practice, while a defender who simply sits there still flags and
+   still loses. Both halves, one number. */
+var CLOCK_ATT = 20, CLOCK_DEF = 20;
+var MOVE_DELAY = 1.0;
+/* THE REVEAL BEAT. The clock does not start with the screen — the muster walks on, you get
+   a beat to read it, and only then does anything move. Before this, `startBattle` rendered
+   the board, started the timer in the same frame and fired the machine's first move 150ms
+   later; when you were defending you had never once seen that position before it changed.
+   ⚠ 1.5s AND SKIPPABLE. Long enough to read a small board, short enough not to be a toll. */
+var REVEAL_MS = 1500;
+/* THE MERCY PAUSE (his: "make the pieces from the computer when they are going to win in
+   one or two moves delay a little bit"). When the machine's search comes back with a mate
+   score it says so and waits before playing it, so the ending is something you watch
+   arrive rather than something you find out about. ⚠ It is charged to the machine's own
+   clock, which is the right price for it. */
+var MERCY_MS = 900;
 
 function startBattle() {
   var p = PEND;
+  clearRollTimers();
   // the player is ALWAYS White at the bottom — orientation should never flip under you.
-  var attWhite = p.playerAttacks;
-  var wArmy = attWhite ? p.aArmy : p.dArmy;
-  var bArmy = attWhite ? p.dArmy : p.aArmy;
-  var board = buildBoard(wArmy, bArmy);
-  /* the position dice land here, on the built board — attacker advances, defender digs in */
-  applyAttackerPos(board, attWhite ? 'w' : 'b', p.aPos);
-  var dInfo = applyDefenderPos(board, attWhite ? 'b' : 'w', p.dPos);
+  var attWhite = p.attWhite;
   B = {
-    S: { b:board, turn: attWhite ? 'w' : 'b',
+    S: { b: p.board.slice(), turn: attWhite ? 'w' : 'b',
          cast:{K:false,Q:false,k:false,q:false}, ep:-1, half:0, full:1 },
-    sel: -1, moves: [], last: null, over: false, timer: null,
+    sel: -1, moves: [], last: null, over: false, timer: null, running: false,
     attWhite: attWhite,
     clk: { w: attWhite ? CLOCK_ATT : CLOCK_DEF, b: attWhite ? CLOCK_DEF : CLOCK_ATT },
-    tLast: Date.now()
+    tLast: Date.now(), turnStart: 0,
+    ids: new Array(64).fill(0), els: {}, seq: 0, anim: false
   };
+  B.turnStart = B.clk[B.S.turn];
   show('screen-battle');
   PJCCVs.paint('mc-aura-me', PJCCVs.color((window.PJCC && PJCC.getProfile) ? PJCC.getProfile() : null));
+  seedMen();
   paint();
+  updateClock();
   $('say').innerHTML = p.playerAttacks
-    ? 'You attack. <b>' + CLOCK_ATT + ' seconds to force it.</b>'
-    : 'You defend. <b>Hang on for ' + CLOCK_DEF + ' seconds.</b>' +
-      (dInfo.castled ? ' Your king is castled.' : '');
+    ? 'You attack. <b>Force it, or the march stalls.</b>'
+    : 'You defend. <b>Outlast their twenty seconds.</b>' +
+      (p.dInfo.castled ? ' Your king is castled.' : '');
+  $('ready').textContent = 'READY…';
+  B.revealTimer = setTimeout(goLive, REVEAL_MS);
+}
+function goLive() {
+  if (!B || B.over || B.running) return;
+  clearTimeout(B.revealTimer);
+  B.running = true;
+  $('ready').innerHTML = '&nbsp;';
+  B.tLast = Date.now();
+  B.turnStart = B.clk[B.S.turn];
   B.timer = setInterval(tickClock, 100);
   updateClock();
-  /* ⚠ THIS PAUSE COMES OUT OF THE MACHINE'S OWN CLOCK — the timer is already running. At
-     half a second it was handing away 3% of a 15-second defense before thinking once. */
-  if (B.S.turn === 'b') setTimeout(aiMove, 150);
+  if (B.S.turn === 'b') scheduleAI();
 }
 
 /* ⚠ WALL CLOCK, NOT A TICK COUNTER. setInterval is not a timer, it is a request — a
    background tab or one slow engine search and a counting tick silently gives somebody
    extra seconds. Subtracting real elapsed time cannot drift. */
 function tickClock() {
-  if (B.over) return;
+  if (B.over || !B.running) return;
   var now = Date.now(), dt = (now - B.tLast) / 1000;
   B.tLast = now;
   B.clk[B.S.turn] -= dt;
@@ -916,30 +1572,89 @@ function tickClock() {
   }
   updateClock();
 }
+/* the Bronstein credit: give back the lesser of what the move cost and MOVE_DELAY, which
+   is the same thing as capping at what the clock read when the move began */
+function creditDelay(mover) {
+  B.clk[mover] = Math.min(B.turnStart, B.clk[mover] + MOVE_DELAY);
+  B.turnStart = B.clk[B.S.turn];
+  B.tLast = Date.now();
+}
 function fmt(t) { return (Math.max(0, t)).toFixed(1); }
 function updateClock() {
   var el = $('clock');
   var mine = B.clk.w, theirs = B.clk.b;                 // the player is always White
   var live = B.S.turn;
   el.innerHTML =
-    '<span class="' + (live === 'w' ? 'run' : 'idle') + '">' + fmt(mine) + '</span>' +
+    '<span class="' + (live === 'w' && B.running ? 'run' : 'idle') + '">' + fmt(mine) + '</span>' +
     '<span class="vs">vs</span>' +
-    '<span class="' + (live === 'b' ? 'run' : 'idle') + '">' + fmt(theirs) + '</span>';
+    '<span class="' + (live === 'b' && B.running ? 'run' : 'idle') + '">' + fmt(theirs) + '</span>';
   var low = B.clk[live];
-  el.className = 'clock' + (low <= 4 ? ' crit' : low <= 8 ? ' warn' : '');
+  el.className = 'clock' + (!B.running ? '' : low <= 4 ? ' crit' : low <= 8 ? ' warn' : '');
   var mw = material(B.S.b, 'w'), mb = material(B.S.b, 'b');
   $('mat').innerHTML = 'you <b style="color:var(--mine)">' + mw + '</b> &middot; them <b style="color:var(--theirs)">' + mb + '</b>';
 }
 
+/* ── THE MEN, AS PERSISTENT ELEMENTS ───────────────────────────────────────────────
+   ⚑ 2026-08-24, his: "I'd also like the pieces to move and slide (that can be done easily
+   in Godot but not sure about JSON)."
+
+   ⚠ IT COULD NOT BE DONE AT ALL BEFORE, AND THE REASON IS WORTH KEEPING. Every man was
+   re-rendered from scratch into a CSS grid cell on every move (`men.innerHTML = mh`), so
+   there was no element that PERSISTED across a move — nothing to animate, only a fresh
+   piece appearing somewhere else. Grid placement teleports by construction.
+
+   ⭐ AND THIS IS THE PATTERN THAT PORTS. State changes instantly; an event is recorded;
+   the view plays it. It is the same shape the Godot build needs, which is the whole reason
+   for doing it in JavaScript first rather than waiting. */
+function seedMen() {
+  $('men').innerHTML = '';
+  B.ids = new Array(64).fill(0); B.els = {}; B.seq = 0;
+  for (var i = 0; i < 64; i++) if (B.S.b[i]) makeMan(i, true);
+}
+function makeMan(sq, arriving) {
+  var pc = B.S.b[sq], id = ++B.seq;
+  var el = document.createElement('b');
+  el.className = 'pc ' + ((pc >= 'A' && pc <= 'Z') ? 'w' : 'b') + (arriving ? ' arrive' : '');
+  if (arriving) el.style.animationDelay = ((sq % 8) * 22 + 60) + 'ms';
+  el.style.setProperty('--f', sq % 8);
+  el.style.setProperty('--r', (sq / 8) | 0);
+  el.textContent = GLY[pc.toLowerCase()];
+  $('men').appendChild(el);
+  B.ids[sq] = id; B.els[id] = el;
+  return id;
+}
+/* ⚠ THE ID MAP IS DERIVED BY DIFFING, NOT BY CASE ANALYSIS. En passant takes a man from a
+   square that is neither `from` nor `to`, and a promotion changes what a man IS without
+   changing who he is. Reading "which of my ids is still standing on a square that still
+   has a piece" gets both right without a branch for either. */
+function syncIds(mv) {
+  var next = new Array(64).fill(0), i;
+  next[mv.to] = B.ids[mv.from] || makeManDetached(mv.to);
+  B.ids[mv.from] = 0;
+  for (i = 0; i < 64; i++) {
+    if (i === mv.to) continue;
+    if (B.S.b[i] && B.ids[i]) next[i] = B.ids[i];
+  }
+  var kept = {};
+  for (i = 0; i < 64; i++) if (next[i]) kept[next[i]] = 1;
+  for (var id in B.els) {
+    if (kept[id]) continue;
+    (function (el) {
+      el.classList.add('gone');
+      setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 260);
+    })(B.els[id]);
+    delete B.els[id];
+  }
+  B.ids = next;
+}
+/* a safety valve: if the mover somehow has no element (a state the game should never
+   reach), make one rather than dropping a piece off the screen [[down-never-stuck]] */
+function makeManDetached(sq) { return makeMan(sq, false); }
+
 function paint() {
-  var sqs = $('sqs'), men = $('men'), i;
+  var sqs = $('sqs'), i;
   if (!sqs.childNodes.length) {
-    var h = '';
-    for (i = 0; i < 64; i++) {
-      var r = (i / 8) | 0, f = i % 8;
-      h += '<i class="sq' + (((r + f) % 2) ? ' d' : '') + '" data-i="' + i + '"></i>';
-    }
-    sqs.innerHTML = h;
+    boardCells(sqs);
     sqs.addEventListener('click', onSquare);
   }
   var cells = sqs.childNodes;
@@ -954,23 +1669,22 @@ function paint() {
     if (mv) cls += B.S.b[i] ? ' cap' : ' hint';
     c.className = cls;
   }
-  var mh = '';
+  /* the men are moved, never rebuilt */
   for (i = 0; i < 64; i++) {
-    var p = B.S.b[i]; if (!p) continue;
-    var w = (p >= 'A' && p <= 'Z');
-    var can = (!B.over && B.S.turn === 'w' && w);
-    mh += '<b class="pc ' + (w ? 'w' : 'b') + (can ? ' can' : '') + (i === B.sel ? ' lift' : '') +
-          '" style="grid-area:' + ((i / 8 | 0) + 1) + '/' + (i % 8 + 1) + '" data-i="' + i + '">' +
-          GLY[p.toLowerCase()] + '</b>';
+    var id = B.ids[i]; if (!id) continue;
+    var el = B.els[id]; if (!el) continue;
+    var pc = B.S.b[i];
+    el.style.setProperty('--f', i % 8);
+    el.style.setProperty('--r', (i / 8) | 0);
+    el.className = 'pc ' + ((pc >= 'A' && pc <= 'Z') ? 'w' : 'b') + (i === B.sel ? ' lift' : '');
+    var g = GLY[pc.toLowerCase()];
+    if (el.textContent !== g) el.textContent = g;      // a promotion, and only then
   }
-  men.innerHTML = mh;
-  Array.prototype.forEach.call(men.childNodes, function (el) {
-    el.addEventListener('click', function (e) { e.stopPropagation(); onSquare({ target: el }); });
-  });
 }
 
 function onSquare(e) {
   if (B.over || B.S.turn !== 'w') return;
+  if (!B.running) { goLive(); return; }               // tapping the board skips the reveal
   var t = e.target.closest ? e.target.closest('[data-i]') : null;
   if (!t) return;
   var i = +t.getAttribute('data-i');
@@ -986,37 +1700,64 @@ function onSquare(e) {
 
 function applyMove(m) {
   // a pawn reaching the last rank always promotes to a queen here — a prototype should
-  // not stop a two-minute battle to ask.
+  // not stop a twenty-second battle to ask.
   var p = B.S.b[m.from];
   if (p && p.toLowerCase() === 'p') {
     var rank = (m.to / 8) | 0;
     if (rank === 0 || rank === 7) m = { from:m.from, to:m.to, promo:(p === 'P' ? 'Q' : 'q') };
   }
+  var mover = B.S.turn;
   B.S = C.makeMove(B.S, m);
+  syncIds(m);
   B.last = m; B.sel = -1; B.moves = [];
+  creditDelay(mover);
   paint(); updateClock();
   var res = C.gameResult(B.S);
   if (res === 'checkmate') { finish(B.S.turn === 'w' ? 'lost-mate' : 'won-mate'); return; }
   if (res) { finish('draw'); return; }
-  if (B.S.turn === 'b' && !B.over) setTimeout(aiMove, 90);
+  if (B.S.turn === 'b' && !B.over) scheduleAI();
 }
 
+/* ── THE MACHINE ───────────────────────────────────────────────────────────────────
+   ⚠⚠ THE ENGINE'S THINKING TIME COMES OUT OF THE ENGINE'S OWN CLOCK, and the clock is
+   15-20 seconds rather than a shared two minutes — so this budget is load-bearing, not a
+   preference. At the old 650ms a ten-move defense spent 6.5s of a 15s clock on search
+   alone.
+
+   ⚑ AND THE MACHINE NOW MOVES AT A PACE YOU CAN WATCH (2026-08-24), which is a design
+   decision with two jobs. The obvious one: a piece that slides is a piece you can follow,
+   and an opponent that answers in 90ms is a flicker. The load-bearing one: under a
+   one-second delay a side that answers in 180ms NEVER LOSES CLOCK, so a machine playing at
+   full speed could not flag and the battle could not end on time at all. The pace is what
+   keeps both clocks meaningful. It is charged to the machine, as thinking time should be. */
+function scheduleAI() {
+  var L = LEVELS[G.diff] || LEVELS.medium;
+  setTimeout(aiMove, L.pace);
+}
 function aiMove() {
-  if (B.over || B.S.turn !== 'b') return;
-  /* ⚠⚠ THE ENGINE'S THINKING TIME COMES OUT OF THE ENGINE'S OWN CLOCK, and the clock is
-     now 15-20 SECONDS instead of a shared two minutes. At the old 650ms budget a ten-move
-     defense spent 6.5s of a 15s clock on search alone — the machine would have flagged
-     itself in most battles and the player would have "won" by watching. 180ms still reaches
-     depth 3 on these small armies; it is the difference between a fast opponent and a
-     self-defeating one. Re-check this with `npm run sim:marchland` if it ever moves. */
-  var m = bestMove(B.S, 180);
-  if (!m) { finish('draw'); return; }
+  if (!B || B.over || B.S.turn !== 'b' || !B.running) return;
+  var L = LEVELS[G.diff] || LEVELS.medium;
+  var pick = bestMove(B.S, L.ms, L.depth, L.slip, L.slipCp);
+  if (!pick) { finish('draw'); return; }
+  /* THE MERCY PAUSE — say it, then wait, then do it */
+  if (pick.val >= MATE_SCORE) {
+    $('say').innerHTML = '<b>They see it.</b>';
+    setTimeout(function () { playAI(pick.mv); }, MERCY_MS);
+    return;
+  }
+  playAI(pick.mv);
+}
+function playAI(m) {
+  if (!B || B.over || B.S.turn !== 'b') return;
   var p = B.S.b[m.from];
   if (p && p.toLowerCase() === 'p' && ((m.to / 8 | 0) === 7 || (m.to / 8 | 0) === 0)) {
     m = { from:m.from, to:m.to, promo:'q' };
   }
   B.S = C.makeMove(B.S, m);
-  B.last = m; paint(); updateClock();
+  syncIds(m);
+  B.last = m;
+  creditDelay('b');
+  paint(); updateClock();
   var res = C.gameResult(B.S);
   if (res === 'checkmate') { finish('lost-mate'); return; }
   if (res) { finish('draw'); return; }
@@ -1028,6 +1769,7 @@ function finish(how) {
   if (B.over) return;
   B.over = true;
   clearInterval(B.timer);
+  clearTimeout(B.revealTimer);
   var p = PEND;
   var playerWon, line;
 
@@ -1039,26 +1781,16 @@ function finish(how) {
     playerWon = !p.playerAttacks;
     line = 'A drawn battle. The defender holds.';
   }
-  /* ⚑ TIME IS NO LONGER SCORED ON MATERIAL (2026-08-08). Whose clock ran out IS the
-     verdict: the defender only ever had to still be standing, and the attacker only ever
-     had to force something before the flag. Counting material at the flag was the right
-     rule for one shared clock and is the wrong one for two. */
+  /* ⚑⚑ EACH SIDE'S FLAG IS ITS OWN LOSS (2026-08-24). See THE CLOCKS above for why this
+     replaced "either flag goes to the defender" — that rule made a defender who never
+     touched the board win every defense, and a probe confirmed it in 15.1 seconds. */
   else if (how === 'time-att') {
     playerWon = !p.playerAttacks;
-    line = 'The attack ran out of time. The defender holds.';
+    line = 'The assault ran out of daylight. The defense holds.';
   }
-  /* ⚠⚠ BOTH FLAGS GO TO THE DEFENDER, AND THE FIRST DRAFT GOT THIS BACKWARDS.
-     I built the defender's flag as a LOSS — grind them down and take the ground — which
-     reads fine until you say his rule out loud again: "Defender must hang on for 15
-     seconds." Hanging on IS the win condition. A defender who spends their whole clock and
-     is still standing did the only thing the rules ever asked of them.
-     ⭐ THE SIMULATION IS WHAT CAUGHT IT, not a playthrough: 118 of 150 attacks were
-     "winning" on the defender's flag and only 6 by mate, so the attacker was being handed
-     the ground for doing nothing but outlasting a shorter clock. A design bug, dressed as
-     a tuning problem. THE ATTACKER WINS BY CHECKMATE OR NOT AT ALL. */
   else if (how === 'time-def') {
-    playerWon = !p.playerAttacks;
-    line = 'The defense held for the full ' + CLOCK_DEF + ' seconds. The ground stays put.';
+    playerWon = p.playerAttacks;
+    line = 'The defense ran out of time to think. The line broke.';
   }
   else {
     playerWon = !p.playerAttacks;
@@ -1079,81 +1811,231 @@ function finish(how) {
 
 function resolveLand(p, attackerWon) {
   if (attackerWon) {
-    var moved = Math.max(1, p.aGar - 1);
+    var moved = Math.max(1, p.aBan - 1);
     G.own[p.to] = G.own[p.from];
-    G.gar[p.to] = moved;
-    G.gar[p.from] = p.aGar - moved;
-    if (G.gar[p.from] < 1) G.gar[p.from] = 1;
+    G.ban[p.to] = moved;
+    G.ban[p.from] = p.aBan - moved;
+    if (G.ban[p.from] < 1) G.ban[p.from] = 1;
   } else {
-    G.gar[p.from] = 1;
+    G.ban[p.from] = 1;
   }
 }
 
-/* ── THE RIVAL'S TURN ──────────────────────────────────────────────────────────── */
-function rivalTurn() {
-  // one attack per round, from its strongest border stack against your weakest neighbor.
-  var best = null;
-  for (var i = 0; i < 9; i++) {
-    if (G.own[i] !== 't' || G.gar[i] < 2) continue;
-    for (var j = 0; j < 9; j++) {
-      if (G.own[j] !== 'm' || !adj(i, j)) continue;
-      var score = G.gar[i] - G.gar[j];
-      if (!best || score > best.score) best = { from:i, to:j, score:score };
+/* ── THE RIVAL'S TURN, NARRATED ────────────────────────────────────────────────────
+   ⚑ 2026-08-24. Their whole turn is a QUEUE of small steps played back with a beat
+   between them, rather than a battle that arrives out of nowhere. The queue matters for
+   more than manners: it is the same machinery a three- or four-player game needs, where
+   most of a round is somebody else's turn.
+
+   ⚠ AN ATTACK STEP SUSPENDS THE QUEUE. beginBattle changes screens, so `pump` returns and
+   the Continue button resumes it. Every attack is re-validated when it comes up, because
+   an earlier battle in the same turn may have moved the ground under it. */
+function srcScore(id, ban) {
+  var ns = nbrs(id), best = -99;
+  for (var i = 0; i < ns.length; i++) {
+    if (G.own[ns[i]] !== 'm') continue;
+    var s = ban[id] - ban[ns[i]];
+    if (LEVELS[G.diff].chainAware && chained(G.own, ns[i])) s += 2;   // break their chain
+    if (s > best) best = s;
+  }
+  return best;
+}
+function rivalPlan() {
+  var L = LEVELS[G.diff] || LEVELS.medium;
+  var theirs = idsOf('t');
+  if (!theirs.length) return { levy: [], attacks: [], move: null };
+  var add = levyFor('t');
+  var ban = G.ban.slice();
+  var front = theirs.filter(function (id) {
+    return nbrs(id).some(function (j) { return G.own[j] === 'm'; });
+  });
+
+  /* ── the levy ──
+     Easy scatters it, which is exactly the mistake a beginner makes. The other two stack
+     it where they mean to attack from, which is exactly why they are harder. */
+  var levy = [], i;
+  if (L.smart && front.length) {
+    var ranked = front.slice().sort(function (a, b) { return srcScore(b, ban) - srcScore(a, ban); });
+    for (i = 0; i < add; i++) {
+      var pickId = (i === 0 || Math.random() < 0.7) ? ranked[0] : ranked[Math.min(ranked.length - 1, 1 + ((Math.random() * 2) | 0))];
+      levy.push(pickId); ban[pickId]++;
+    }
+  } else {
+    for (i = 0; i < add; i++) {
+      var r = theirs[(Math.random() * theirs.length) | 0];
+      levy.push(r); ban[r]++;
     }
   }
-  if (!best) { endRound(); return; }
-  beginBattle(best.from, best.to, false);
+
+  /* ── the attacks, planned against the POST-levy banners ── */
+  var cand = [];
+  theirs.forEach(function (from) {
+    if (ban[from] < 2) return;
+    nbrs(from).forEach(function (to) {
+      if (G.own[to] !== 'm') return;
+      var s = ban[from] - ban[to];
+      if (L.chainAware && chained(G.own, to)) s += 2;
+      if (s < L.minEdge) return;                 // ⚠ Hard DECLINES a bad attack rather than throwing banners at it
+      cand.push({ from:from, to:to, s:s });
+    });
+  });
+  cand.sort(function (a, b) { return b.s - a.s; });
+  var attacks = [], used = {};
+  for (i = 0; i < cand.length && attacks.length < L.maxAtk; i++) {
+    if (used[cand[i].from]) continue;            // one march per holding a round
+    used[cand[i].from] = 1;
+    attacks.push({ from:cand[i].from, to:cand[i].to });
+  }
+
+  /* ── the night march: rear to front, and only if it has a rear ── */
+  var move = null;
+  if (L.smart && front.length) {
+    var rear = theirs.filter(function (id) { return front.indexOf(id) < 0 && ban[id] >= 2; });
+    for (i = 0; i < rear.length && !move; i++) {
+      var ns = nbrs(rear[i]).filter(function (j) { return G.own[j] === 't' && front.indexOf(j) >= 0; });
+      if (ns.length) move = { from: rear[i], to: ns[0], n: ban[rear[i]] - 1 };
+    }
+  }
+  return { levy: levy, attacks: attacks, move: move };
 }
 
-function endRound() {
-  // reinforcements, Risk-style: one banner per three holdings, minimum one.
-  var m = 0, t = 0, i;
-  for (i = 0; i < 9; i++) { if (G.own[i] === 'm') m++; else t++; }
-  if (!m) { campaignOver(false); return; }
-  if (!t) { campaignOver(true); return; }
-  var mine = [], theirs = [];
-  for (i = 0; i < 9; i++) (G.own[i] === 'm' ? mine : theirs).push(i);
-  var mAdd = Math.max(1, Math.floor(m / 3)), tAdd = Math.max(1, Math.floor(t / 3));
-  for (i = 0; i < mAdd; i++) G.gar[mine[Math.floor(Math.random() * mine.length)]]++;
-  for (i = 0; i < tAdd; i++) G.gar[theirs[Math.floor(Math.random() * theirs.length)]]++;
-  G.round++; G.sel = -1; G.busy = false;
-  $('map-say').textContent = 'Reinforcements arrive. Choose a holding to attack from.';
+function theirTurn() {
+  setPhase('theirs');
+  G.sel = -1; G.busy = true;
+  var plan = rivalPlan();
+  G.q = [{ t:'say', s:'Their turn.' }];
+  plan.levy.forEach(function (id) { G.q.push({ t:'levy', id:id }); });
+  plan.attacks.forEach(function (a) {
+    G.q.push({ t:'declare', from:a.from, to:a.to });
+    G.q.push({ t:'attack', from:a.from, to:a.to });
+  });
+  if (plan.move) G.q.push({ t:'move', from:plan.move.from, to:plan.move.to, n:plan.move.n });
+  G.q.push({ t:'end' });
+  show('screen-map');
+  pump();
+}
+function pump() {
+  if (!G.q.length) { startYourTurn(); return; }
+  var s = G.q.shift();
+  if (s.t === 'say') { say(s.s); drawMap(); setTimeout(pump, 650); return; }
+  if (s.t === 'levy') {
+    G.ban[s.id]++; G.flash = s.id;
+    say('Banners reach <b>' + LAND[s.id].nm + '</b>.');
+    drawMap();
+    setTimeout(function () { G.flash = -1; drawMap(); pump(); }, 480);
+    return;
+  }
+  if (s.t === 'declare') {
+    if (G.own[s.from] !== 't' || G.ban[s.from] < 2 || G.own[s.to] !== 'm') { pump(); return; }
+    G.hot = { from:s.from, to:s.to };
+    say('<b>' + LAND[s.from].nm + '</b> marches on <b>' + LAND[s.to].nm + '</b>.');
+    drawMap();
+    setTimeout(pump, 1200);
+    return;
+  }
+  if (s.t === 'attack') {
+    G.hot = null;
+    if (G.own[s.from] !== 't' || G.ban[s.from] < 2 || G.own[s.to] !== 'm') { drawMap(); pump(); return; }
+    beginBattle(s.from, s.to, false);            // resumes from the Continue button
+    return;
+  }
+  if (s.t === 'move') {
+    var n = Math.min(s.n, Math.max(0, G.ban[s.from] - 1));
+    if (G.own[s.from] !== 't' || G.own[s.to] !== 't' || n < 1) { pump(); return; }
+    G.ban[s.from] -= n; G.ban[s.to] += n; G.flash = s.to;
+    say('They move <b>' + n + '</b> to ' + LAND[s.to].nm + ' under the dark.');
+    drawMap();
+    setTimeout(function () { G.flash = -1; drawMap(); pump(); }, 900);
+    return;
+  }
+  startYourTurn();
+}
+
+function startYourTurn() {
+  if (campaignCheck()) return;
+  G.round++;
+  G.sel = -1; G.busy = false; G.hot = null; G.flash = -1;
+  G.nightFrom = -1; G.nightTo = -1; G.nightMoved = 0; G.nightDone = false;
+  G.toPlace = levyFor('m');
+  setPhase('levy');
+  say('The levy — place <b>' + G.toPlace + '</b> banner' + (G.toPlace > 1 ? 's' : '') + '.');
   drawMap(); show('screen-map');
+}
+function campaignCheck() {
+  var m = idsOf('m').length, t = idsOf('t').length;
+  if (!m) { campaignOver(false); return true; }
+  if (!t) { campaignOver(true); return true; }
+  return false;
 }
 
 function campaignOver(won) {
   $('verdict').textContent = won ? 'THE MARCH IS YOURS' : 'THE MARCH IS LOST';
   $('verdict').className = 'verdict ' + (won ? 'win' : 'lose');
   $('result-say').textContent = won
-    ? 'Nine holdings, all of them flying your colors. Round ' + G.round + '.'
+    ? 'Ten holdings, all of them flying your colors. Round ' + G.round + '.'
     : 'They hold every road out. Round ' + G.round + '.';
-  PEND = null;
+  PEND = null; G.q = [];
   show('screen-result');
 }
 
 /* ── WIRING ────────────────────────────────────────────────────────────────────── */
+var chosenLevel = 'medium';
+Array.prototype.forEach.call($('levels').children, function (b) {
+  b.addEventListener('click', function () {
+    chosenLevel = b.getAttribute('data-lvl');
+    Array.prototype.forEach.call($('levels').children, function (o) { o.classList.toggle('on', o === b); });
+    $('lvl-note').textContent = LEVELS[chosenLevel].note;
+  });
+});
 $('go').addEventListener('click', function () {
-  newCampaign(); drawMap(); show('screen-map');
+  newCampaign(chosenLevel);
+  setPhase('levy');
+  say('The levy — place <b>' + G.toPlace + '</b> banner' + (G.toPlace > 1 ? 's' : '') + '.');
+  drawMap(); show('screen-map');
 });
 $('how').addEventListener('click', function () { show('screen-how'); });
 $('back').addEventListener('click', function () { show('screen-home'); });
 $('endturn').addEventListener('click', function () {
   if (G.busy) return;
-  G.busy = true; G.sel = -1; drawMap();
-  setTimeout(rivalTurn, 340);
+  if (G.phase === 'levy') {
+    if (G.toPlace > 0) return;
+    setPhase('march'); G.sel = -1;
+    say('Choose a holding to attack from.'); drawMap(); return;
+  }
+  if (G.phase === 'march') {
+    setPhase('night'); G.sel = -1;
+    say('The night march — one move of banners between two holdings you hold.');
+    drawMap(); return;
+  }
+  if (G.phase === 'night') { theirTurn(); return; }
 });
 $('tobattle').addEventListener('click', startBattle);
+/* tapping the roll screen skips the flourish straight to the end of it; once the roll has
+   settled, tapping a verdict shows the arithmetic behind it instead. */
+$('screen-roll').addEventListener('click', function (e) {
+  if (e.target.id === 'tobattle') return;
+  if ($('tobattle').disabled) { finishRoll(); return; }
+  var v = e.target.closest ? e.target.closest('.vline') : null;
+  if (v) v.classList.toggle('open');
+});
 $('resign').addEventListener('click', function () { finish('resign'); });
 $('cont').addEventListener('click', function () {
   if (!PEND) { show('screen-home'); return; }
   var wasPlayerAttack = PEND.playerAttacks;
   PEND = null;
-  // your attack ends your turn — then they answer. Their attack ends the round.
-  if (wasPlayerAttack) { G.busy = true; drawMap(); setTimeout(rivalTurn, 260); }
-  else endRound();
+  if (campaignCheck()) return;
+  if (wasPlayerAttack) {
+    /* your march continues — attack again, or end it */
+    G.busy = false; G.sel = -1;
+    setPhase('march');
+    say('Choose a holding to attack from, or end the march.');
+    drawMap(); show('screen-map');
+  } else {
+    show('screen-map'); pump();                  // back into their turn where it left off
+  }
 });
 
-newCampaign();
+newCampaign('medium');
 })();
 </script>
 </body>
