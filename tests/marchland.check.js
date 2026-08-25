@@ -131,10 +131,25 @@ check('more ranks is never fewer dice',
 check('bestOf keeps the largest face', G.bestOf([3, 19, 7, 11]) === 19);
 check('the ring goes on the FIRST maximum, so two 20s do not both light up',
       G.keptIndex([20, 4, 20]) === 0);
-/* ⭐ the die bands are the conditional formatting — four bands of five, no gaps, no overlap */
-check('every face 1-20 lands in exactly one of four bands',
-      [...Array(20)].map((_, i) => G.dieBand(i + 1)).join('') === '11111222223333344444',
-      '1-5 thin · 6-10 plain · 11-15 strong · 16-20 hot');
+/* ⛑⛑ THIS CHECK EXISTED, WAS GREEN, AND IS THE REASON THE BUG SURVIVED — 2026-08-25.
+   It read: dieBand over faces 1..20 spells 11111222223333344444. That is a true statement
+   about a TWENTY-sided die, and it stayed true after the die became eight-sided, because
+   the function still carried its d20 thresholds. Meanwhile every real roll landed 1-8 and
+   painted only b1 or b2. **The gate was testing a die the game no longer rolls.**
+   ⭐⭐ A CHECK PINNED TO LITERALS THE CODE ALSO HARD-CODES PROVES ONLY THAT NOBODY EDITED
+   EITHER COPY. It cannot notice that the pair went out of step with the GAME. The band
+   checks live in §5b now, written against G.FACES, so they follow the die.
+   What survives here is the one thing worth keeping from the old line — proof that the new
+   formula REPRODUCES the old one exactly, which is what makes it a generalization rather
+   than a replacement. dieBand reads FACES from the vm, so the vm is where it is asked. */
+check('the band formula still spells the d20 exactly, when the die IS a d20',
+      (() => {
+        const was = G.FACES;
+        try { G.FACES = 20; return [...Array(20)].map((_, i) => G.dieBand(i + 1)).join(''); }
+        finally { G.FACES = was; }
+      })() === '11111222223333344444',
+      '1-5 thin · 6-10 plain · 11-15 strong · 16-20 hot — the version this replaced');
+check('…and FACES was restored, so nothing below reads a borrowed die', G.FACES === 8);
 
 /* ══ 3. THE BANNER CAPS ═════════════════════════════════════════════════════════════
    ⚠⚠ MUTATION-TESTED ON PURPOSE. `capsFor(2).q === 0` alone would still pass if muster()
@@ -238,6 +253,54 @@ check('the four position bands are still a clean quarter each',
 check('the attacker\'s second rank rides the TOP band, not the wider one',
       [6, 7, 8].map(d => G.posTop(d)).join() === 'false,false,true',
       'the top face is the top reward in both chairs');
+
+/* ══ 5b. THE DIE'S COLOR IS A FUNCTION OF FACES TOO ══════════════════════════════
+   ⛑⛑ BANDS 3 AND 4 WERE UNREACHABLE FOR A DAY. `dieBand` kept its d20 thresholds
+   (v<=5, v<=10, v<=15) through the change to eight faces, so every roll painted b1 or b2
+   and the gold top band — the one with the glow — never appeared once.
+   ⭐⭐ IT SLIPPED BECAUSE IT RETURNS A CSS CLASS. Twelve constants were re-derived that day
+   by asking "what does this do to the GAME", and the answer for this one is "nothing" — it
+   cannot be wrong, only invisible. That is exactly why it needed a check and did not have
+   one. `npm run sweep` cannot help: it proves .b4 is REFERENCED, never that it is REACHED.
+   ⚠ THE FIRST THREE CHECKS BELOW ARE THE GENERAL ONES — they are written against FACES, so
+   they hold at any die size and this cannot happen again on the next change. */
+check('every face paints a band in 1..4',
+      [...Array(G.FACES)].every((_, i) => { const b = G.dieBand(i + 1); return b >= 1 && b <= 4; }));
+check('⚠ all four bands are REACHABLE — the gold top band actually appears',
+      new Set([...Array(G.FACES)].map((_, i) => G.dieBand(i + 1))).size === 4,
+      'reached: ' + [...new Set([...Array(G.FACES)].map((_, i) => G.dieBand(i + 1)))].join(','));
+check('the bands are quarters, within a face',
+      [1, 2, 3, 4].every(band => {
+        const n = [...Array(G.FACES)].filter((_, i) => G.dieBand(i + 1) === band).length;
+        return Math.abs(n - G.FACES / 4) <= 1;
+      }),
+      [1, 2, 3, 4].map(b => [...Array(G.FACES)].filter((_, i) => G.dieBand(i + 1) === b).length).join('/'));
+check('⭐ on the position die the gold band IS the castling set',
+      [...Array(G.FACES)].every((_, i) =>
+        (G.dieBand(i + 1) === 4) === G.posCastles(i + 1)),
+      'b4 = {7,8} = posCastles — the color and the rule agree without being told to');
+/* The badge itself: markup, both paint paths, and the stillness guard. */
+const diceFns = slice('function paintDice', 'function matVerdict');
+check('the castle mark is asked of posCastles(), not of the band',
+      /if \(isPos && posCastles\(v\)\) cls \+= ' castle';/.test(diceFns),
+      'one source of truth for what castles — move POS_CASTLE and the badge moves with it');
+check('⚠ …and only on the KEPT die — a dropped 7 castles nothing',
+      /i === keptIdx[\s\S]{0,160}posCastles\(v\)/.test(diceFns));
+check('the tap-to-skip path paints the castle too',
+      (slice('function finishRoll()', 'function runRoll()').match(/, true, true\)/g) || []).length === 2,
+      'the fortieth battle is played on skip — it must not lose the mark');
+check('the slow reveal marks the two POSITION pools and neither material pool',
+      /rollStep\('att-pos', p\.aPosPool, false, true,/.test(src) &&
+      /rollStep\('def-pos', p\.dPosPool, true, true,/.test(src) &&
+      /rollStep\('att-mat', p\.aMatPool, false, false,/.test(src) &&
+      /rollStep\('def-mat', p\.dMatPool, true, false,/.test(src));
+check('it is a glyph, not the ownership colors',
+      /\.die\.castle::before \{ content: '\\265A'/.test(src) &&
+      !/\.die\.castle[^{]*\{[^}]*var\(--mine\)/.test(src),
+      '--mine/--theirs already answer "whose die is this" on this screen');
+check('reduced motion parks the castle mark VISIBLE',
+      /\.die\.roll, \.die\.kept::after, \.die\.castle::before,/.test(src),
+      'it is information, not flourish — stillness costs the picture, never the fact');
 
 /* ══ 5b. THE SECOND QUEEN — 2026-08-25 ════════════════════════════════════
    His: "two-queen-on-perfect-roll-and-if-chain-of-three". Three conditions, and the point of

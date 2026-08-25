@@ -197,7 +197,15 @@
     letter-spacing: .8px; text-transform: uppercase; color: #ffd76e; }
   .rowhead { text-align: center; font-size: 10px; letter-spacing: 2.2px; text-transform: uppercase;
     color: var(--ink-3); margin: 8px 0 5px; font-weight: 700; }
-  .dice { display: flex; gap: 5px; min-height: 38px; align-items: center; flex-wrap: wrap; }
+  /* ⚠ THE 10px OF PADDING IS THE CASTLE BADGE'S ROOM, AND IT WAS MEASURED, NOT GUESSED.
+     The king sits 13px above its die. Before this, the "POSITION" label's box ran 242→253
+     and the badge ran 247→262 — a six-pixel overlap, across the label's full width, so the
+     crown printed through the lettering. Seven pixels of clearance existed; fifteen were
+     needed. Padding rather than margin so the row's own min-height still governs, and on
+     BOTH rows so material and position stay on the same rhythm — an even gap that is
+     slightly generous beats two gaps that differ by ten pixels for a reason nobody can see. */
+  .dice { display: flex; gap: 5px; min-height: 38px; align-items: center; flex-wrap: wrap;
+    padding-top: 10px; }
   .die { width: 34px; height: 34px; border-radius: 8px;
     background: var(--band-2); color: var(--band-2-ink);
     font: 900 17px 'Trebuchet MS', sans-serif; display: flex; align-items: center;
@@ -215,6 +223,27 @@
   .die.kept::after { content: ''; position: absolute; inset: -4px; border-radius: 12px;
     border: 2.5px solid var(--mine); animation: lockin .3s ease; }
   .die.kept.d::after { border-color: var(--theirs); }
+  /* ⛑ THE CASTLING DIE, his ask: "let's make the dice pulse or turn green or something
+     when you get a castling dice."
+     ⚠⚠ NOT GREEN, AND THE REASON IS THE REST OF THE SCREEN. --mine IS green and --theirs
+     is red; on this screen color already answers "whose die is this", and the lock-in ring
+     above uses exactly those two. A green castle mark on the DEFENDER's die would say
+     "yours" and "theirs" in the same 30 pixels. So the castle gets the one channel nothing
+     else is using — a GLYPH — and the pulse he asked for carries it in.
+     ⚠ IT IS DRAWN ON THE KEPT DIE ONLY. A dropped 7 castles nothing; badging it would be
+     a picture of a thing that did not happen. */
+  .die.castle::before { content: '\265A'; position: absolute; top: -13px; left: 50%;
+    z-index: 2; transform: translateX(-50%); font-size: 15px; line-height: 1; color: #f7d54c;
+    text-shadow: 0 1px 3px rgba(0,0,0,.8); animation: castle-pop .44s ease .1s both; }
+  /* ⚠ z-index ABOVE THE RING, AND FOUND IN A SCREENSHOT, NOT IN THE SOURCE. ::before and
+     ::after are siblings in paint order, so the lock-in ring (::after, inset:-4px) drew
+     straight over the bottom of the king and left a gold blob sitting on the die. Both are
+     positioned, so one z-index settles it — and it has to clear the ring VERTICALLY too,
+     which is what top:-13px buys. Nothing in the source looked wrong. */
+  @keyframes castle-pop {
+    0%   { transform: translateX(-50%) translateY(7px) scale(.35); opacity: 0; }
+    62%  { transform: translateX(-50%) translateY(-3px) scale(1.18); opacity: 1; }
+    100% { transform: translateX(-50%) scale(1); opacity: 1; } }
   .die.drop { transform: scale(.72); opacity: .34; box-shadow: 0 2px 0 rgba(0,0,0,.25); }
   @keyframes tumble { 0%{transform:rotate(0) scale(.7)} 60%{transform:rotate(340deg) scale(1.12)} 100%{transform:none} }
   @keyframes lockin { 0% { transform: scale(1.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
@@ -374,7 +403,11 @@
      ranks land — three separate animations, and a player who has asked the OS for
      stillness should get the same information without any of them. */
   @media (prefers-reduced-motion: reduce) {
-    .die.roll, .die.kept::after, .node.flash .disc, .node.doom .disc, .pc.arrive { animation: none; }
+    /* ⚠ `.die.castle::before` PARKS VISIBLE rather than being switched off — it is
+       INFORMATION (this die castles), not flourish. Stillness must cost the picture, never
+       the fact. */
+    .die.roll, .die.kept::after, .die.castle::before,
+    .node.flash .disc, .node.doom .disc, .pc.arrive { animation: none; }
     .pc { transition: none; }
     .clock.crit { animation: none; }
   }
@@ -820,7 +853,25 @@ function keptIndex(arr) {
   for (var i = 0; i < arr.length; i++) if (arr[i] === b) return i;
   return 0;
 }
-function dieBand(v) { return v <= 5 ? 1 : v <= 10 ? 2 : v <= 15 ? 3 : 4; }
+/* ⛑⛑ THREE OF THE FOUR DIE COLORS WERE DEAD FOR A DAY — fixed 2026-08-25.
+   This read `v <= 5 ? 1 : v <= 10 ? 2 : v <= 15 ? 3 : 4` — quarters of a TWENTY-sided die.
+   The die became eight-sided the same morning, so every roll landed 1–8, every die painted
+   band 1 or band 2, and bands 3 and 4 — including the gold top band with the glow — became
+   unreachable. The dice still rolled, still locked in, still decided the battle. They were
+   just quietly wearing two colors instead of four.
+
+   ⭐⭐ IT SURVIVED THE d8 PASS BECAUSE IT DOES NOT LOOK LIKE BALANCE. Twelve constants were
+   re-derived that day and every one of them was found by asking "what does this number do
+   to the game" — `posSteps` got a five-line proof directly below. `dieBand` returns a CSS
+   class. Nothing it touches can be wrong, only invisible, so it read as decoration and got
+   skipped. A number that only affects what you SEE is still a number that depends on FACES.
+   ⚠ AND NO GATE COULD HAVE SEEN IT. `npm run sweep` proves a class is referenced, not that
+   it is ever produced; .b3 and .b4 are written right here in this file. The checks below in
+   tests/marchland.check.js now walk every face and assert all four bands are reachable.
+
+   Derived, not retyped: quarters of whatever FACES is. On a d20 this returns exactly the old
+   1–5 / 6–10 / 11–15 / 16–20, which is how it proves itself against the version it replaces. */
+function dieBand(v) { return Math.min(4, Math.max(1, Math.ceil(v * 4 / FACES))); }
 
 /* ── THE MATERIAL DIE ──────────────────────────────────────────────────────────────
    die → points, plus half the ranks standing there, plus a flat edge. The scale puts the die in the 1..15
@@ -1548,32 +1599,42 @@ function beginBattle(from, to, playerAttacks) {
    Pairing the two sides inside one beat is what makes it a contest rather than two reports.
    ⚠ TAP ANYWHERE TO SKIP TO THE END. A three-second flourish is a delight once and a toll
    on the fortieth battle, and the fortieth battle is the one that matters. */
-function paintDice(host, arr, keptIdx, isDef, revealed) {
+/* ⚠ `isPos` — the POSITION pool is the only one where a high face means "the king tucks
+   in". The same 7 on the material die is just a big number, so the castle mark is asked of
+   posCastles(), the game's own rule, rather than of the band. One source of truth for what
+   castles: change POS_CASTLE and the badge moves with it. */
+function paintDice(host, arr, keptIdx, isDef, revealed, isPos) {
   host.innerHTML = arr.map(function (v, i) {
     var cls = 'die b' + dieBand(v);
     if (revealed) {
-      cls += (i === keptIdx) ? (' kept' + (isDef ? ' d' : '')) : ' drop';
+      if (i === keptIdx) {
+        cls += ' kept' + (isDef ? ' d' : '');
+        if (isPos && posCastles(v)) cls += ' castle';
+      } else { cls += ' drop'; }
     } else {
       cls += ' roll';
     }
     return '<span class="' + cls + '">' + v + '</span>';
   }).join('');
 }
-function rollStep(hostId, pool, isDef, done) {
+function rollStep(hostId, pool, isDef, isPos, done) {
   var host = $(hostId);
-  paintDice(host, pool, -1, isDef, false);
+  paintDice(host, pool, -1, isDef, false, isPos);
   rollTimers.push(setTimeout(function () {
-    paintDice(host, pool, keptIndex(pool), isDef, true);
+    paintDice(host, pool, keptIndex(pool), isDef, true, isPos);
     if (done) done();
   }, 430));
 }
 function finishRoll() {
   clearRollTimers();
   var p = PEND;
-  paintDice($('att-mat'), p.aMatPool, keptIndex(p.aMatPool), false, true);
-  paintDice($('def-mat'), p.dMatPool, keptIndex(p.dMatPool), true, true);
-  paintDice($('att-pos'), p.aPosPool, keptIndex(p.aPosPool), false, true);
-  paintDice($('def-pos'), p.dPosPool, keptIndex(p.dPosPool), true, true);
+  /* ⚠ TAP-TO-SKIP MUST LAND ON THE SAME PICTURE. These four are the fast path; the four
+     rollStep calls below are the slow one. They have drifted before — the fortieth battle
+     is the one played on skip, so it is the one that must not lose the castle mark. */
+  paintDice($('att-mat'), p.aMatPool, keptIndex(p.aMatPool), false, true, false);
+  paintDice($('def-mat'), p.dMatPool, keptIndex(p.dMatPool), true, true, false);
+  paintDice($('att-pos'), p.aPosPool, keptIndex(p.aPosPool), false, true, true);
+  paintDice($('def-pos'), p.dPosPool, keptIndex(p.dPosPool), true, true, true);
   matVerdict(); posVerdict();
   paintPreview();
   $('preview').hidden = false;
@@ -1582,12 +1643,12 @@ function finishRoll() {
 function runRoll() {
   clearRollTimers();
   var p = PEND;
-  rollStep('att-mat', p.aMatPool, false, function () {
-    rollStep('def-mat', p.dMatPool, true, function () {
+  rollStep('att-mat', p.aMatPool, false, false, function () {
+    rollStep('def-mat', p.dMatPool, true, false, function () {
       matVerdict();
       rollTimers.push(setTimeout(function () {
-        rollStep('att-pos', p.aPosPool, false, function () {
-          rollStep('def-pos', p.dPosPool, true, function () {
+        rollStep('att-pos', p.aPosPool, false, true, function () {
+          rollStep('def-pos', p.dPosPool, true, true, function () {
             posVerdict();
             rollTimers.push(setTimeout(function () {
               paintPreview();
