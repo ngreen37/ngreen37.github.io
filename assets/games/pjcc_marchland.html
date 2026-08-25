@@ -387,10 +387,10 @@
       dice are spent. Material buys chess material at its real value: queen 9, rook 5, bishop
       or knight 3, pawn 1. Kings are free.<br><br>
       <b>6. Position places it.</b> A high roll advances the attacker's pawns; a high roll digs
-      the defender's into a chain their neighbors defend. On defense, <b>16 or better</b> tucks your
-      king into the corner &mdash; and <b>18 or better</b> brings his rook around and three pawns
+      the defender's into a chain their neighbors defend. On defense, <b>7 or better</b> tucks your
+      king into the corner &mdash; and <b>an 8</b> brings his rook around and three pawns
       with him.<br><br>
-      <b>7. Twenty seconds each, with a second back a move.</b> Only the side to move
+      <b>7. Fifteen seconds each, with a second back a move.</b> Only the side to move
       burns clock, and every move gives back up to one second of what that move cost &mdash; so
       moving quickly costs you nothing. <b>Run your own clock out and you lose:</b> the attack
       failed, or the defense was overrun. Checkmate takes the ground outright. A draw goes to
@@ -403,10 +403,19 @@
   <!-- ══ MAP ════════════════════════════════════════════════════════════════════ -->
   <section class="screen" id="screen-map">
     <div class="phasebar" id="phasebar">
+      <!-- ⛑ THE "THEIRS" CELL CAME OFF — 2026-08-25, Nate: *"Take out the 'theirs' box on
+           the top right corner - stick to the three phases for each player."* This strip is
+           YOUR round, and a fourth cell for their turn made it look like a four-part round
+           two of which you could not act in.
+           ⚠ THE PHASE ITSELF STILL EXISTS. setPhase('theirs') still runs, still disables the
+           button and still says "Their turn…" — it simply has no cell to light, which
+           `setPhase` handles for free because it lights by `data-p` match and a phase with no
+           cell matches nothing. Do not "fix" that by re-adding the cell.
+           ⚠ `.phasebar span.them.on` is now the only rule in the stylesheet with no markup;
+           it is left standing deliberately so restoring the cell is one line here. -->
       <span data-p="deploy">Deploy</span>
       <span data-p="attack">Attack</span>
       <span data-p="fortify">Fortify</span>
-      <span data-p="theirs" class="them">Theirs</span>
     </div>
     <div class="tally">
       <span>Yours <b class="m" id="t-mine">0</b></span>
@@ -458,7 +467,7 @@
   <!-- ══ BATTLE ═════════════════════════════════════════════════════════════════ -->
   <section class="screen" id="screen-battle">
     <div class="clockbar">
-      <span class="clock" id="clock">20.0<span class="vs">vs</span>15.0</span>
+      <span class="clock" id="clock">15.0<span class="vs">vs</span>15.0</span>
       <span class="mat" id="mat"></span>
     </div>
     <!-- THE VS RAILS (2026-08-13). ⚠ THE RIVAL HERE HAS NO NAME AND NO AURA — MARCHLAND is
@@ -698,7 +707,29 @@ function newCampaign(diff) {
    ⚠ EVERY CONSTANT BELOW IS TUNED AGAINST A MEASURED ATTACK-FAILURE RATE, not chosen.
    His target: "Attacks SHOULD fail about what… 40% to 60% of the time?" `npm run sim:marchland`
    plays engine-vs-engine battles and prints the rate. Move one number here and re-run it. */
-function d20() { return 1 + Math.floor(Math.random() * 20); }
+/* ⛑⛑ EIGHT FACES, NOT TWENTY — 2026-08-25. Nate: *"Can we dramatically lower that and
+   keep the same feel?"* The name `d20` is KEPT ON PURPOSE: it is the identifier the sim
+   harness (tests/sim-marchland.js) reaches into the page for by name, and renaming it would
+   have broken the one instrument that can tell us whether this change was safe — on the same
+   day the change needed measuring. FACES is the dial; the function name is a handle.
+
+   ⭐ EIGHT IS NOT A GUESS, IT IS THE ONE THAT MATCHES. Computed exactly over both dice
+   before touching anything, and a d8 reproduces TWO of the three ladders to the percent:
+
+     position bands (0/1/2/3 pawn steps)   d20: 25/25/25/25    d8: 25/25/25/25   IDENTICAL
+     castles at all, by 1/2/3/4 dice       d20: 25/44/58/68    d8: 25/44/58/68   IDENTICAL
+     FULL castle (rook + shield)           d20: 15/28/39/48    d8: 13/23/33/41   drifts low
+     material budget                       d20: 1..15, 15 steps   d8: 1..15, 8 steps
+
+   Both exact ladders survive because both thresholds sit on a clean quarter of the die:
+   floor((d-1)/5) over 20 and floor((d-1)/2) over 8 are the same four equal bands, and the
+   top quarter is the castle band either way. Only the FULL castle drifts, because 3/20 (15%)
+   has no exact twin in eighths — 1/8 is 12.5%. That is the whole cost of the change, it
+   lands on the rarest outcome, and it is stated here rather than discovered later.
+   ⚠ IF THE FACES EVER MOVE AGAIN, RE-DERIVE ALL FOUR ROWS. Two of them are exact only by
+   arithmetic coincidence, not by construction. */
+var FACES = 8;
+function d20() { return 1 + Math.floor(Math.random() * FACES); }
 
 /* ── RANKS ARE DICE ──────────────────────────────────────────────────────────────
    ⚑⚑ 2026-08-24, and this is the answer to the sharpest thing he has said about this
@@ -706,7 +737,7 @@ function d20() { return 1 + Math.floor(Math.random() * 20); }
    can we fix that?"
 
    ⚠ HE WAS RIGHT AND THE RATIO IS FIVE TO ONE. The material budget was
-   `round(d20 x 0.75) + floor(ranks/2) + edge`. The DIE swings fifteen points. The whole
+   `(d8 x 2 - 1) + floor(ranks/2) + edge`. The DIE swings fifteen points. The whole
    STACK swings three. A ten-stack and a three-stack fielded nearly the same army, so
    stacking was almost never worth doing.
 
@@ -715,7 +746,7 @@ function d20() { return 1 + Math.floor(Math.random() * 20); }
    the defender rounds up (nobody does).
 
    ⭐ AND THE REASON THIS IS THE RIGHT LEVER RATHER THAN A LOUDER ONE: on the MATERIAL die
-   the effect is gentle — expected best-of-k on a d20 runs 10.5 / 13.8 / 15.5 / 16.5 for
+   the effect is gentle — expected best-of-k on the die runs 4.50 / 5.81 / 6.47 / 6.86 for
    one through four dice, so a big stack buys about a bishop. On the POSITION die it is
    enormous, because that die has THRESHOLDS: the chance of castling at all goes 25% → 44%
    → 58% → 68%, and the full castle 15% → 28% → 39% → 48%. A thin holding does not dig in.
@@ -748,7 +779,7 @@ function keptIndex(arr) {
 function dieBand(v) { return v <= 5 ? 1 : v <= 10 ? 2 : v <= 15 ? 3 : 4; }
 
 /* ── THE MATERIAL DIE ──────────────────────────────────────────────────────────────
-   d20 → points, plus half the ranks standing there, plus a flat edge. 0.75 puts a d20 in the 1..15
+   die → points, plus half the ranks standing there, plus a flat edge. The scale puts the die in the 1..15
    band, which on real chess values is "a pawn" at the bottom and "a queen and change" at
    the top. The rank term stays as the smooth part of the curve — the dice pool above is
    the part with teeth. */
@@ -775,11 +806,16 @@ function dieBand(v) { return v <= 5 ? 1 : v <= 10 ? 2 : v <= 15 ? 3 : 4; }
    ⚠⚠ THE SAME BUILD MEASURED 35.0% AT N=40 AND 46.0% AT N=150. The band check is noisy
    below N=150 and has now reported a false failure three separate times. RAISE N BEFORE
    BELIEVING ONE. */
-var MAT_SCALE = 0.75;
+/* ⛑ THE MATERIAL SCALE FOLLOWED THE DIE (2026-08-25). It was 0.75, which put a d20's
+   1..20 into 1..15. `d8 x 2 - 1` puts 1..8 into the SAME 1..15 — same floor, same ceiling,
+   same one-pawn-minimum and same fifteen-point swing, in eight steps instead of fifteen.
+   ⚠ MAT_SCALE IS STILL EXPORTED TO THE SIM by name, so it keeps its name and its meaning
+   (points per pip); MAT_BASE is the new half of the pair. budget = die*MAT_SCALE + MAT_BASE. */
+var MAT_SCALE = 2, MAT_BASE = -1;
 var ATT_EDGE = 12;
 var DEF_EDGE = 0;
 function matBudget(die, rk, isDefender) {
-  var v = Math.round(die * MAT_SCALE) + Math.floor(rk / 2) + (isDefender ? DEF_EDGE : ATT_EDGE);
+  var v = Math.round(die * MAT_SCALE) + MAT_BASE + Math.floor(rk / 2) + (isDefender ? DEF_EDGE : ATT_EDGE);
   /* ⚠ FLOOR AT ONE. The sweep drives ATT_EDGE negative to find the band, and a negative
      budget musters an empty army — a king alone on an empty board, which is a stalemate
      machine rather than a battle. One point is one pawn, which is a real if hopeless army. */
@@ -787,7 +823,7 @@ function matBudget(die, rk, isDefender) {
 }
 
 /* ── THE POSITION DIE ──────────────────────────────────────────────────────────────
-   Same d20, read two different ways depending on which chair you are in.
+   Same die, read two different ways depending on which chair you are in.
 
    ATTACKER — "how advanced the attacker's pawns are". 0-3 pawns step up, and a roll in
    the top band pushes one of them a second rank. Advanced pawns are space and tempo:
@@ -828,9 +864,14 @@ function matBudget(die, rk, isDefender) {
    two of maximum" is the top-reward band in BOTH chairs, so the two sides stay mirrored and
    there is still exactly one constant for it. Only the DEFENDER has the wider 16-17 band,
    because only the defender's reward is the one he split. */
-var POS_CASTLE = 16;                                           // within FOUR of max: the king moves
-var POS_TOP = 18;                                              // within TWO of max: the full reward
-function posSteps(die) { return Math.floor((die - 1) / 5); }   // 0,1,2,3
+/* ⛑ RE-DERIVED FOR EIGHT FACES, 2026-08-25 — NOT RESCALED BY EYE. On a d20 these were
+   16 and 18: the top QUARTER and the top FIFTEEN PERCENT. On a d8 the top quarter is 7+
+   (exactly 25%, unchanged) and the nearest the top band can get is 8 (12.5% against 15%).
+   The four position bands stay exactly 25% each because floor((d-1)/2) over eight faces is
+   the same four equal bands floor((d-1)/5) was over twenty. */
+var POS_CASTLE = 7;                                            // the top quarter: the king moves
+var POS_TOP = 8;                                               // the top face: the full reward
+function posSteps(die) { return Math.floor((die - 1) / 2); }   // 0,1,2,3 — 25% each, as before
 function posTop(die) { return die >= POS_TOP; }                // the top band, either chair
 function posCastles(die) { return die >= POS_CASTLE; }         // the king tucks in at all
 function posCastleFull(die) { return die >= POS_TOP; }         // …with his rook and his shield
@@ -873,20 +914,59 @@ function muster(budget, caps) {
    the second rank. Squares are board indices (0 = a8, 63 = h1). */
 var W_BACK = [59, 61, 58, 62, 57, 63, 56], W_PAWN = [52, 51, 53, 50, 54, 49, 55, 48];
 var B_BACK = [3, 5, 2, 6, 1, 7, 0],        B_PAWN = [12, 11, 13, 10, 14, 9, 15, 8];
+/* ⛑⛑ A PAIR OF BISHOPS MUST BE ONE OF EACH COLOR — FIXED 2026-08-25.
+   Nate: *"Bishops land on the same color; that's no good. Should only be at most 1 black
+   square bishop and 1 white square bishop."*
+
+   ⭐ THIS WAS A REAL BUG AND IT FIRED EVERY SINGLE TIME. The back rank fills from the
+   center outward — W_BACK is d1, f1, c1, g1, b1, h1, a1 — so the first two pieces always
+   took d1 and f1, and BOTH OF THOSE ARE LIGHT SQUARES. A muster that bought two bishops
+   therefore ALWAYS got two light-squared bishops: never a pair, always the weakest version
+   of three points spent twice. Nothing errored, the material tally was correct, and the
+   only symptom was that a bishop pair never felt like one.
+   ⚠ IT IS NOT A CAP PROBLEM. `capsFor` already limits bishops to 2, knights to 2, rooks to
+   ≤2 and queens to ≤1, and the king is placed unconditionally and exactly once. Those were
+   all correct; only the SQUARE was wrong.
+   ⚠ COLOR IS (row + col) PARITY, EVEN = LIGHT. Index 0 is a8, which is light, so this is
+   the real board's coloring and not an off-by-one — d1 (59) is light, c1 (58) is dark.
+   ⚠ IT DEGRADES, IT DOES NOT FAIL. If no free square of the wanted color is left (a full
+   back rank), the bishop takes the next free square of any color rather than vanishing — a
+   piece somebody paid three points for must always appear on the board. */
+function sqLight(i) { return (((i >> 3) + (i & 7)) % 2) === 0; }
+/* Returns the square it used, or -1. Returning the INDEX rather than a boolean is what lets
+   the caller record which color a bishop actually landed on without searching for it. */
+function placeBack(b, order, ch, wantLight) {
+  var i, s;
+  if (wantLight !== null) {
+    for (i = 0; i < order.length; i++) {
+      s = order[i];
+      if (!b[s] && sqLight(s) === wantLight) { b[s] = ch; return s; }
+    }
+  }
+  for (i = 0; i < order.length; i++) {
+    s = order[i];
+    if (!b[s]) { b[s] = ch; return s; }
+  }
+  return -1;
+}
 function buildBoard(wArmy, bArmy) {
   var b = new Array(64).fill('');
   b[60] = 'K'; b[4] = 'k';
-  var wb = 0, wp = 0, bb = 0, bp = 0, i;
-  for (i = 0; i < wArmy.length; i++) {
-    var k = wArmy[i];
-    if (k === 'p') { if (wp < W_PAWN.length) b[W_PAWN[wp++]] = 'P'; }
-    else if (wb < W_BACK.length) b[W_BACK[wb++]] = k.toUpperCase();
+  function side(army, order, pawns, upper) {
+    var bishopLight = null, pi = 0;
+    for (var n = 0; n < army.length; n++) {
+      var k = army[n];
+      if (k === 'p') { if (pi < pawns.length) b[pawns[pi++]] = upper ? 'P' : 'p'; continue; }
+      var ch = upper ? k.toUpperCase() : k;
+      /* the first bishop takes whatever the center-out order offers; the second is asked
+         for the OTHER color, and placeBack falls back to any free square if there is none. */
+      var want = (k === 'b' && bishopLight !== null) ? !bishopLight : null;
+      var at = placeBack(b, order, ch, want);
+      if (k === 'b' && at >= 0 && bishopLight === null) bishopLight = sqLight(at);
+    }
   }
-  for (i = 0; i < bArmy.length; i++) {
-    var j = bArmy[i];
-    if (j === 'p') { if (bp < B_PAWN.length) b[B_PAWN[bp++]] = 'p'; }
-    else if (bb < B_BACK.length) b[B_BACK[bb++]] = j;
-  }
+  side(wArmy, W_BACK, W_PAWN, true);
+  side(bArmy, B_BACK, B_PAWN, false);
   return b;
 }
 
@@ -1161,7 +1241,7 @@ function setPhase(p) {
     btn.disabled = G.toPlace > 0;
     if (!G.toPlace) btn.textContent = 'Begin your attacks →';
   } else if (p === 'attack') {
-    btn.textContent = G.atks > 0 ? 'End your attacks →' : 'No attacks left →';
+    btn.textContent = G.atks > 0 ? 'End your attacks →' : 'No attacks available →';
     btn.disabled = false;
   } else if (p === 'fortify') {
     btn.textContent = 'End your turn →'; btn.disabled = false;
@@ -1240,10 +1320,26 @@ function tapLand(id) {
     if (G.toPlace <= 0) return;
     G.ranks[id]++; G.toPlace--;
     G.flash = id;
+    /* ⛑⛑ THE LAST RANK ENDS THE PHASE BY ITSELF — 2026-08-25. Nate: *"after deployment
+       phase, let's go straight to attack phase without having to hit the yellow button on
+       the bottom."* The button was a confirmation of something the game already knew: you
+       had placed your last rank, there was nothing else deployment could do, and the only
+       legal act was to press it. A button whose label is the only available move is a toll.
+       ⚠ THE 420ms IS THE FLASH, NOT A DELAY I ADDED. The placed holding pulses for 420ms
+       already; the phase turns over on the same beat, so the last rank lands, flashes, and
+       the map is live — rather than flashing and then waiting for a click. Placing a rank
+       that is NOT the last one is untouched.
+       ⚠ THE BUTTON STILL EXISTS and still says the right thing. setPhase('attack') relabels
+       it "End your attacks →", which is a real choice (leave attacks unspent and fortify),
+       so nothing was removed — one forced press was. */
+    var last = G.toPlace <= 0;
     say(G.toPlace ? '<b>' + G.toPlace + '</b> rank' + (G.toPlace > 1 ? 's' : '') + ' left to place.'
-                  : 'All placed. You have <b>' + G.atks + '</b> attacks this round.');
-    setPhase('deploy'); drawMap();
-    setTimeout(function () { G.flash = -1; drawMap(); }, 420);
+                  : 'All placed. <b>' + G.atks + '</b> attacks available this round.');
+    setPhase(last ? 'attack' : 'deploy'); drawMap();
+    setTimeout(function () {
+      G.flash = -1; drawMap();
+      if (last) say(atksLine());
+    }, 420);
     return;
   }
 
@@ -1294,9 +1390,9 @@ function tapLand(id) {
 
 /* the one line that says how many attacks are left, in the same words everywhere */
 function atksLine() {
-  if (G.atks <= 0) return '<b>No attacks left</b> this round. Fortify, or end your turn.';
+  if (G.atks <= 0) return '<b>No attacks available</b> this round. Fortify, or end your turn.';
   return '<b>' + G.atks + '</b> attack' + (G.atks > 1 ? 's' : '') +
-         ' left. Choose a holding to attack from.';
+         ' available this round. Choose a holding to attack from.';
 }
 
 /* ── ROLL SCREEN ───────────────────────────────────────────────────────────────── */
@@ -1568,7 +1664,7 @@ function paintPreview() {
 
    Play a move inside a second and it costs you nothing. Stare for four and you pay three.
 
-   ⚠ TENTHS, AND A 100ms TICK. At twenty seconds a whole-second readout is a lie you can
+   ⚠ TENTHS, AND A 100ms TICK. At fifteen seconds a whole-second readout is a lie you can
    see: it can sit on "7" for most of a second while you decide. */
 /* ⚠⚠ THE DEFENDER'S CLOCK IS 20 NOW, NOT 15, AND THE REASON IS THE RULE ABOVE — NOT A
    BALANCE TWEAK. His numbers were 20 and 15, and under the OLD rule the short clock was a
@@ -1583,7 +1679,11 @@ function paintPreview() {
    clock reaches zero first at equal pace — so "the attacker wins by checkmate or not at
    all" is restored in practice, while a defender who simply sits there still flags and
    still loses. Both halves, one number. */
-var CLOCK_ATT = 20, CLOCK_DEF = 20;
+/* ⛑ FIFTEEN EACH, 2026-08-25 (Nate: "let's do 15 seconds each clock instead"). The
+   EQUALITY is the load-bearing half and it survives — see the note above for why an
+   asymmetric clock silently inverted its own meaning when the flag rule flipped. Both
+   numbers move together or neither moves. */
+var CLOCK_ATT = 15, CLOCK_DEF = 15;
 var MOVE_DELAY = 1.0;
 /* THE REVEAL BEAT. The clock does not start with the screen — the muster walks on, you get
    a beat to read it, and only then does anything move. Before this, `startBattle` rendered
@@ -1597,6 +1697,24 @@ var REVEAL_MS = 1500;
    arrive rather than something you find out about. ⚠ It is charged to the machine's own
    clock, which is the right price for it. */
 var MERCY_MS = 900;
+/* ⛑⛑ THREE GATES ON IT NOW — 2026-08-25. Nate: *"They see it is a nice touch but it
+   showed up 3-4 times before they finished me off. Maybe it only shows up once and only if
+   they are one or two moves away from checkmate (and maybe they don't always pull it off
+   depending on skill level of opponent and user!)"*
+
+   ⭐ THE BUG WAS THE WORD "MATE", NOT THE FREQUENCY. It fired on any `val >= MATE_SCORE`,
+   and that score is returned for a mate at ANY depth the search reaches — so a mate-in-4
+   spotted four moves out announced itself, then again at three, again at two, again at one.
+   Four "They see it"s for one mate. Capping the count alone would have hidden the symptom
+   and left the line firing at the wrong moment; the fix is to ask how CLOSE the mate is.
+   MATE_SCORE - val is (depth to mate), so <= MERCY_PLY is "one or two moves away".
+   ⚠ AND IT IS ONCE PER BATTLE. B.mercied is set the first time and never cleared — a new
+   battle builds a new B, so it resets exactly when it should.
+   ⚠ AND IT IS A COIN FLIP, his: "only shows up SOMETIMES, too - like 50% or less." Rolled
+   ONCE and remembered, not re-rolled per move: re-rolling would still let a long mate get
+   several chances to speak, which is the defect this is here to fix. */
+var MERCY_PLY = 4;        // plies, so mate-in-1 (1 ply) through mate-in-2 (4 plies)
+var MERCY_ODDS = 0.5;
 
 function startBattle() {
   var p = PEND;
@@ -1610,7 +1728,10 @@ function startBattle() {
     attWhite: attWhite,
     clk: { w: attWhite ? CLOCK_ATT : CLOCK_DEF, b: attWhite ? CLOCK_DEF : CLOCK_ATT },
     tLast: Date.now(), turnStart: 0,
-    ids: new Array(64).fill(0), els: {}, seq: 0, anim: false
+    ids: new Array(64).fill(0), els: {}, seq: 0, anim: false,
+    /* one mercy pause per battle — see MERCY_PLY. A new battle is a new B, so this
+       resets on its own and never needs clearing anywhere. */
+    mercied: false
   };
   B.turnStart = B.clk[B.S.turn];
   show('screen-battle');
@@ -1620,7 +1741,7 @@ function startBattle() {
   updateClock();
   $('say').innerHTML = p.playerAttacks
     ? 'You attack. <b>Force it, or the attack stalls.</b>'
-    : 'You defend. <b>Outlast their twenty seconds.</b>' +
+    : 'You defend. <b>Outlast their fifteen seconds.</b>' +
       (p.dInfo.castled ? ' Your king is castled.' : '');
   $('ready').textContent = 'READY…';
   B.revealTimer = setTimeout(goLive, REVEAL_MS);
@@ -1821,8 +1942,10 @@ function aiMove() {
   var L = LEVELS[G.diff] || LEVELS.medium;
   var pick = bestMove(B.S, L.ms, L.depth, L.slip, L.slipCp);
   if (!pick) { finish('draw'); return; }
-  /* THE MERCY PAUSE — say it, then wait, then do it */
-  if (pick.val >= MATE_SCORE) {
+  /* THE MERCY PAUSE — say it, then wait, then do it. Three gates, see MERCY_PLY above. */
+  if (pick.val >= MATE_SCORE && !B.mercied &&
+      (MATE_SCORE - pick.val) <= MERCY_PLY && Math.random() < MERCY_ODDS) {
+    B.mercied = true;
     $('say').innerHTML = '<b>They see it.</b>';
     setTimeout(function () { playAI(pick.mv); }, MERCY_MS);
     return;

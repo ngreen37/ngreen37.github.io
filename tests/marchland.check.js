@@ -59,7 +59,12 @@ const code =
   slice('var LAND = [',     '/* ── THE CHAIN') +
   slice('var CHAIN_MIN',    '/* ── DIFFICULTY') +
   slice('var LEVELS = {',   'var G = null;') +
-  slice('function d20()',   '/* ── THE MATERIAL DIE') +
+  /* ⚠ STARTS AT `var FACES`, NOT AT `function d20()` — 2026-08-25, and this is the SECOND
+     time this exact trap has been sprung on this slice (see the POS_CASTLE note above).
+     The d8 change put a new constant ABOVE the function, and a slice that began at the
+     function would hand the vm a `d20()` whose FACES does not exist. Same lesson: a slice
+     boundary must sit above every name the sliced code reads. */
+  slice('var FACES',        '/* ── THE MATERIAL DIE') +
   slice('var MAT_SCALE',    '/* ── THE POSITION DIE') +
   slice('var POS_CASTLE',   'function posSteps') +
   slice('function posSteps', '/* ── THE MUSTER') +
@@ -196,24 +201,37 @@ check('…and the budget is spent when an attack is COMMITTED, not when it is wo
         'the map still opens first, so you see what you took');
 }
 
-/* ══ 5. THE POSITION DIE — "within two of max" vs "within four or three of max" ══════ */
+/* ══ 5. THE POSITION DIE — EIGHT FACES SINCE 2026-08-25 ═════════════════════════════
+   The die went d20 → d8 (Nate: "dramatically lower … keep the same feel"). These checks are
+   RE-DERIVED, not rescaled: the rule was always "the top quarter castles, the top band gets
+   the rook", and on eight faces that is 7+ and 8. The percentages below are the point of the
+   change and the reason they are asserted as COUNTS over the real face range rather than as
+   remembered numbers — 25% survived exactly, 15% could not (1/8 is 12.5%) and the check says
+   so out loud instead of quietly accepting whatever the code does.
+   ⚠ IF FACES MOVES AGAIN, THESE ARE THE NUMBERS TO RE-DERIVE FIRST. */
+check('the die has eight faces', G.FACES === 8, 'd20 → d8, 2026-08-25');
 check('the two bands are named constants, not typed numbers',
-      G.POS_CASTLE === 16 && G.POS_TOP === 18,
-      'POS_CASTLE = ' + G.POS_CASTLE + ' (within four) · POS_TOP = ' + G.POS_TOP + ' (within two)');
-check('15 does NOT castle — five off the maximum is outside every band', G.posCastles(15) === false);
-check('16 castles — within FOUR of the maximum', G.posCastles(16) === true);
-check('17 castles — within three', G.posCastles(17) === true);
-check('…but 16 and 17 do NOT bring the rook',
-      G.posCastleFull(16) === false && G.posCastleFull(17) === false, 'his "they don\'t get the rook"');
-check('18, 19 and 20 bring the rook', [18, 19, 20].every(d => G.posCastleFull(d) === true));
-check('a low roll never castles', [1, 5, 10, 14].every(d => G.posCastles(d) === false));
-check('exactly five faces of the twenty castle at all',
-      [...Array(20)].filter((_, i) => G.posCastles(i + 1)).length === 5, '25% of rolls');
-check('…and exactly three of those get the full castle',
-      [...Array(20)].filter((_, i) => G.posCastleFull(i + 1)).length === 3, '15% of rolls');
+      G.POS_CASTLE === 7 && G.POS_TOP === 8,
+      'POS_CASTLE = ' + G.POS_CASTLE + ' (top quarter) · POS_TOP = ' + G.POS_TOP + ' (top face)');
+check('6 does NOT castle — outside the top quarter', G.posCastles(6) === false);
+check('7 castles — the bottom of the top quarter', G.posCastles(7) === true);
+check('…but a 7 does NOT bring the rook',
+      G.posCastleFull(7) === false, 'his "they don\'t get the rook"');
+check('an 8 brings the rook', G.posCastleFull(8) === true);
+check('a low roll never castles', [1, 2, 3, 4].every(d => G.posCastles(d) === false));
+check('exactly two faces of the eight castle at all',
+      [...Array(8)].filter((_, i) => G.posCastles(i + 1)).length === 2,
+      '25% of rolls — the SAME 25% the d20 had');
+check('…and exactly one of those gets the full castle',
+      [...Array(8)].filter((_, i) => G.posCastleFull(i + 1)).length === 1,
+      '12.5% — the d20 was 15%; eighths cannot hit 15 and this is the whole cost of the change');
+check('the four position bands are still a clean quarter each',
+      [0, 1, 2, 3].every(band =>
+        [...Array(8)].filter((_, i) => G.posSteps(i + 1) === band).length === 2),
+      '25/25/25/25, identical to the d20 — floor((d-1)/2) over 8 == floor((d-1)/5) over 20');
 check('the attacker\'s second rank rides the TOP band, not the wider one',
-      [17, 18, 20].map(d => G.posTop(d)).join() === 'false,true,true',
-      '"within two of maximum" is the top reward in both chairs');
+      [6, 7, 8].map(d => G.posTop(d)).join() === 'false,false,true',
+      'the top face is the top reward in both chairs');
 
 /* ══ 6. IT ACTUALLY MOVES A KING, A ROOK AND THREE PAWNS ════════════════════════════ */
 function freshDefender(withRook, pawnFiles) {
@@ -226,8 +244,8 @@ function freshDefender(withRook, pawnFiles) {
 const F = { f7: 13, g7: 14, h7: 15, g8: 6, f8: 5, e8: 4 };
 
 const b18 = freshDefender(true);
-const o18 = G.applyDefenderPos(b18, 'b', 18);
-check('an 18 castles the king', o18.castled === true && b18[F.g8] === 'k' && !b18[F.e8]);
+const o18 = G.applyDefenderPos(b18, 'b', 8);
+check('an 8 castles the king', o18.castled === true && b18[F.g8] === 'k' && !b18[F.e8]);
 check('…and the rook hooks around to f8', o18.rook === true && b18[F.f8] === 'r');
 check('…and three pawns stand in front of him', o18.shield === 3 &&
       b18[F.f7] === 'p' && b18[F.g7] === 'p' && b18[F.h7] === 'p');
@@ -236,13 +254,13 @@ check('…and the chain never marches a shield pawn away',
       'the shield is frozen before the chain runs');
 
 const b16 = freshDefender(true);
-const o16 = G.applyDefenderPos(b16, 'b', 16);
-check('a 16 tucks the king in ALONE', o16.castled === true && b16[F.g8] === 'k');
+const o16 = G.applyDefenderPos(b16, 'b', 7);
+check('a 7 tucks the king in ALONE', o16.castled === true && b16[F.g8] === 'k');
 check('…with NO rook — it is still on h8', o16.rook === false && b16[7] === 'r' && !b16[F.f8]);
 check('…and NO shield claimed', o16.shield === 0);
 
 const b15 = freshDefender(true);
-check('a 15 leaves the king on e8', G.applyDefenderPos(b15, 'b', 15).castled === false && b15[F.e8] === 'k');
+check('a 6 leaves the king on e8', G.applyDefenderPos(b15, 'b', 6).castled === false && b15[F.e8] === 'k');
 
 /* the shield is BUILT, not just kept: three center pawns walk across to the king */
 const bPull = freshDefender(true, [2, 3, 4]);          // c7 d7 e7 only
@@ -288,9 +306,9 @@ check('no bare threshold survives outside the two constants',
    that states it — which is exactly what happened to the "rook hooks around" check. */
 const howScreen = slice('<section class="screen" id="screen-how">', '</section>');
 check('the how-it-works screen states BOTH castling bands',
-      /<b>16 or better<\/b> tucks your\s+king into the corner/.test(howScreen) &&
-      /<b>18 or better<\/b> brings his rook around/.test(howScreen),
-      'the page and the rule agree, on both halves of it');
+      /<b>7 or better<\/b> tucks your\s+king into the corner/.test(howScreen) &&
+      /<b>an 8<\/b> brings his rook around/.test(howScreen),
+      'the page and the rule agree, on both halves of it — re-checked when the die shrank');
 check('…and it explains that ranks are dice',
       /keep the best/i.test(howScreen) && /one die per two ranks/i.test(howScreen));
 check('…and that your own flag is your own loss',
@@ -307,9 +325,14 @@ check('…and that you only get three attacks',
    ⚠ THE PHASE STRIP IS THE ONLY PLACE A PLAYER READS A PHASE NAME, so it is the region
    this slices — not the whole file, where a comment would happily satisfy the regex. */
 const phaseBar = slice('<div class="phasebar" id="phasebar">', '</div>');
-check('the phase strip reads Deploy, Attack, Fortify, Theirs',
+/* ⛑ THREE CELLS, NOT FOUR — 2026-08-25, Nate: "Take out the 'theirs' box on the top right
+   corner - stick to the three phases for each player." The strip is YOUR round.
+   ⚠ THE ABSENCE IS ASSERTED, not merely un-asserted. Dropping the `theirs` clause would
+   have left a check that passes whether or not the cell is there, which is how a removal
+   quietly comes back. The 'theirs' PHASE still exists in the script and still runs. */
+check('the phase strip reads Deploy, Attack, Fortify — and nothing for their turn',
       /data-p="deploy">Deploy</.test(phaseBar) && /data-p="attack">Attack</.test(phaseBar) &&
-      /data-p="fortify">Fortify</.test(phaseBar) && /data-p="theirs"/.test(phaseBar),
+      /data-p="fortify">Fortify</.test(phaseBar) && !/data-p="theirs"/.test(phaseBar),
       phaseBar.replace(/\s+/g, ' ').trim().slice(0, 90));
 {
   /* ⚠ TWO CHECKS, BECAUSE THE WORDS LIVE IN TWO PLACES: static markup on the screens, and
@@ -503,7 +526,16 @@ const isOn = (id) => `document.getElementById('${id}').classList.contains('on')`
        the attack-budget probe and as the way into a defense */
     await page.click('#go');
     await page.waitForFunction(isOn('screen-map'));
+    /* ⚠ BOUNDED BY THE PHASE, NOT BY `.can` — 2026-08-25. Deployment now ends ITSELF on the
+       last rank, and `.node.mine.can` is also what the ATTACK phase paints on a holding that
+       can attack — so a loop that ran until no `.can` remained kept clicking after the phase
+       had turned over, selecting attack sources and spending the budget this run is here to
+       measure. It failed as "the counter read 3", which looked like the counter was broken and
+       was really this loop playing the next phase for us. */
+    const phaseIs = (p) => page.evaluate((q) =>
+      document.querySelector('.phasebar span[data-p="' + q + '"].on') !== null, p);
     for (let i = 0; i < 8; i++) {
+      if (!(await phaseIs('deploy'))) break;
       const left = await page.evaluate(() => document.querySelectorAll('.node.mine.can').length);
       if (!left) break;
       await page.click('.node.mine.can');
@@ -514,7 +546,15 @@ const isOn = (id) => `document.getElementById('${id}').classList.contains('on')`
        real and then withdrawn from, which is instant and still costs one of the three —
        an attack you lose is one of your three, which is the rule that makes choosing
        matter. Reading the counter after each one proves it falls on COMMIT, not on a win. */
-    await page.click('#endturn');      // deploy → attack
+    /* ⛑ NO CLICK HERE ANY MORE — 2026-08-25. Placing the last rank ends deployment by
+       itself (Nate: "after deployment phase, let's go straight to attack phase without
+       having to hit the yellow button"), so this line used to press the button that now
+       means "END your attacks" — which skipped straight to Fortify and left the counter
+       reading 3. That is the gate catching a real flow change, not a broken test.
+       ⚠ WAIT FOR THE PHASE, do not sleep: the hand-off rides the 420ms placement flash. */
+    await page.waitForFunction(
+      () => document.querySelector('.phasebar span[data-p="attack"].on') !== null,
+      { timeout: 9000 });
     const atkSeen = [await page.$eval('#t-atk', (e) => e.textContent)];
     /* ⚠ EVERY CLICK GOES THROUGH evaluate, NOT AN ELEMENT HANDLE. drawMap() removes and
        rebuilds every node on each tap, so a handle taken one line earlier is detached by

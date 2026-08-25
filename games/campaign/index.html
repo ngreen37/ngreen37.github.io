@@ -6,7 +6,7 @@ title: "ChessWild: Campaign"
 # The vocabulary is three words and only three: Building · Next up · Retired. Being early is a
 # fact, not an excuse — so it says what it IS, and the plain true thing about who can play it.
 description: "Chess battles fought over a map. Building — playable by invitation while it is tuned."
-permalink: /games/marchland/
+permalink: /games/campaign/
 sitemap: false
 ---
 
@@ -21,11 +21,29 @@ sitemap: false
      unfinished game and would NOT be fine for anything that mattered — do not reuse this
      pattern for real access control.
 
-     THE KEY: /games/marchland/?key=chesswild — once used it is remembered in localStorage
+     ⛑⛑ THE URL MOVED AND THE OLD ONE IS GONE — 2026-08-25. `/games/marchland/` became
+     `/games/campaign/`, with NO redirect stub, because Nate said so and because he is right
+     about why: *"We still have no users so don't leave Marchland URL; just delete it - it was
+     secret anyway."* A stub exists to protect people who already have a link; nobody has this
+     one. `/chess/` got a stub for the opposite reason — it was the PWA start_url baked into
+     real installed launchers ([[pwa-mobile-app]]). Compare the two before adding a stub out of
+     habit: this page carries `sitemap: false` and `playable: false`, so it was never crawled
+     and never linked.
+
+     ⚠ THE NAME "marchland" SURVIVES EVERYWHERE IT IS AN IDENTIFIER, and that is deliberate,
+     not an oversight: the registry `slug`, `assets/games/pjcc_marchland.html`, the
+     `pjcc.marchland.key` localStorage name, `npm run gen:marchland`, `test:marchland`,
+     `sim:marchland`. Same rule as the P&JCC spelling ([[site-two-brand-split]]) — display
+     text moves, identifiers do not, because renaming an identifier breaks stored state and
+     buys nothing a reader can see.
+
+     THE KEY: /games/campaign/?key=chesswild — once used it is remembered in localStorage
      ('pjcc.proto.key'), so the URL only has to be typed once per BROWSER, not once per
      game: the same store opens MARCHLAND, Duel, Follow the Dog and Chess City. ?key=off
      forgets it again, on all four.
 
+     ⚠ THE HALL EMITS NO LINK, which is why the move costs nothing to fix up: the entry in
+     pjcc-games-data.js carries `playable:false`, so nothing on the site ever wrote this URL.
      The hall entry in pjcc-games-data.js carries `playable:false`, which makes the card a
      <div> rather than an <a> — so the game appears in the Building hall under its cryptic
      name and emits no link at all. The two halves are independent: this gate does not know
@@ -44,9 +62,9 @@ sitemap: false
 
   <div class="game-info">
     <p><strong>Your round has three parts.</strong> <em>Deployment</em> — place every new rank yourself. <em>Attack</em> — up to three a round. <em>Fortify</em> — one free move of ranks between two holdings you hold. Then you watch them take theirs, step by step.</p>
-    <p><strong>Ranks are dice.</strong> One die per two ranks, up to four, and you keep the best. Under three ranks you cannot field a queen at all. And <strong>the Chain</strong>: a holding with two or more neighbors of your own is chained, its borders light up in your color, and it rolls an extra die every time it defends.</p>
+    <p><strong>Ranks are dice.</strong> One eight-sided die per two ranks, up to four, and you keep the best. Under three ranks you cannot field a queen at all. And <strong>the Chain</strong>: a holding with two or more neighbors of your own is chained, its borders light up in your color, and it rolls an extra die every time it defends.</p>
     <p><strong>The dice are spent, never compared.</strong> One roll buys material at real chess values — queen 9, rook 5, bishop or knight 3, pawn 1, kings free. The other places it: a high roll advances the attacker's pawns, or digs the defender's into a chain and tucks their king into the corner.</p>
-    <p><strong>Twenty seconds each.</strong> Only the side to move burns clock, and every move gives back up to a second of what it cost — so moving quickly costs you nothing. Run your own clock out and you lose. Checkmate takes the ground outright; a draw goes to the defender.</p>
+    <p><strong>Fifteen seconds each.</strong> Only the side to move burns clock, and every move gives back up to a second of what it cost — so moving quickly costs you nothing. Run your own clock out and you lose. Checkmate takes the ground outright; a draw goes to the defender.</p>
   </div>
 </div>
 

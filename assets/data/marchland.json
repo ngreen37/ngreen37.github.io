@@ -162,17 +162,17 @@
     ]
   },
   "balance": {
-    "matScale": 0.75,
+    "matScale": 2,
     "attEdge": 12,
     "defEdge": 0,
     "diceCap": 4,
     "queenRanks": 3,
     "chainMin": 2,
     "attackCap": 3,
-    "posCastle": 16,
-    "posTop": 18,
-    "clockAtt": 20,
-    "clockDef": 20,
+    "posCastle": 7,
+    "posTop": 8,
+    "clockAtt": 15,
+    "clockDef": 15,
     "moveDelay": 1,
     "pieceValues": {
       "q": 9,

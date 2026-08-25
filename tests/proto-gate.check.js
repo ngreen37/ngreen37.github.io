@@ -38,7 +38,7 @@ function ok(cond, msg) {
    of games/space_run/ because it used to be Space Run. */
 const PROTOS = [
   { slug: 'duel',           name: 'Duel Mode',      page: 'games/duel/index.html' },
-  { slug: 'marchland',      name: 'MARCHLAND',      page: 'games/marchland/index.html' },
+  { slug: 'marchland',      name: 'MARCHLAND',      page: 'games/campaign/index.html' },
   { slug: 'follow-the-dog', name: 'Follow the Dog', page: 'games/space_run/index.html' },
   { slug: 'chess-city',     name: 'Chess City',     page: 'games/chess-city/index.html' }
 ];

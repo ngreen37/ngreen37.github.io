@@ -226,14 +226,21 @@ description: McPuppy Studios — the independent studio behind ChessWild and the
              the studio, not the story. This one tells you what it's about in nine words,
              and "a dog who can learn anything" is the actual hook of the whole universe. {% endcomment %}
         <p class="project-desc">An animated series about a dog who can learn anything.</p>
-        <div class="project-links">
-          {% comment %} was href="/", which bounced anyone who clicked it straight back out
-               through a redirect (the typing intro then; a hop to /chess/ after that). Since
-               2026-08-03 "/" is the ChessWild front door and no longer redirects at all — but
-               it is still the wrong target here, because a card about the SERIES should open
-               the world, not the chess site's home. Goes to the world itself. {% endcomment %}
-          <a href="/pjcc/" class="project-link">Enter P&JCC &rarr;</a>
-        </div>
+        {% comment %} ⛑⛑ THE LAST PUBLIC P&JCC DOOR CLOSED HERE — 2026-08-25.
+             Nate: *"delete the link on the projects page for PJCC as well."* This was the
+             fourth and final one, after the rail row, the front door's world card, the
+             header's center mark and the ⌘K entry. The CARD STAYS: the studio page's whole
+             job is to say what the studio is building, and the series is the flagship. What
+             came off is the LINK OUT of it, so the card describes the work without handing
+             over a door to it.
+
+             ⚠ THE `.project-links` DIV WENT WITH THE ANCHOR, not just its contents. An empty
+             flex row still costs its `gap` and its margin, so leaving it would have left a
+             ragged hole under the description that looks like a CSS bug rather than a
+             deliberate absence — and the next person would have "fixed" it by putting a link
+             back. Restore both together from `git show <this commit>^ -- projects.md`.
+             ⚠ IT IS NOT A DEAD END NOW, it is a statement. The card says what the series is;
+             /pjcc/ is reached by finding it. [[slow-roll-cast]] {% endcomment %}
       </div>
     </div>
   </div>
